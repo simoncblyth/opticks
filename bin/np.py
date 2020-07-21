@@ -191,6 +191,7 @@ if __name__ == '__main__':
     parser.add_argument("-n","--threshold", type=int, default=1000 )
     parser.add_argument("-d","--debug", action="store_true", default=False )
     parser.add_argument("-s","--slice", default=None )
+    parser.add_argument("-l","--lexical", action="store_true" )
 
     args = parser.parse_args()
     if args.debug:
@@ -228,7 +229,14 @@ if __name__ == '__main__':
         labels += labels.upper()
 
         ars = map(A, npys)
-        for i,ar in enumerate(sorted(ars,reverse=True, key=lambda ar:len(ar.a))):
+
+        if args.lexical:
+            s_ars = sorted(ars,reverse=False, key=lambda ar:ar.path)
+        else: 
+            s_ars = sorted(ars,reverse=True, key=lambda ar:len(ar.a))
+        pass
+
+        for i,ar in enumerate(s_ars):
             print("%s : %r" % (labels[i],ar))
             if args.verbose > 0:
                 if args.float:

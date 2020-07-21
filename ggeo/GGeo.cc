@@ -1438,7 +1438,10 @@ void GGeo::prepareVolumes()
     LOG(info) << "[ creating merged meshes from the volume tree " ; 
 
     unsigned numcsgskiplv = m_ok->getNumCSGSkipLV() ; 
-    LOG(fatal) << " numcsgskiplv " << numcsgskiplv ; 
+    if(numcsgskiplv > 0)
+    {
+        LOG(fatal) << " numcsgskiplv " << numcsgskiplv ; 
+    }
 
     bool instanced = m_ok->isInstanced();
     unsigned meshverbosity = m_ok->getMeshVerbosity() ; 

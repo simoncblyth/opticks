@@ -346,13 +346,16 @@ geocache-tds(){
     export GSurfaceLib=INFO
     export X4Solid=INFO
     export X4PhysicalVolume=INFO
+    export GMesh=INFO
+    export OGeo=INFO
+
 
     #local label=tds
     local label=tds_ngt_pcnk
     local gdml=$(opticks-prefix)/$label.gdml
     echo $msg gdml $gdml
-    geocache-gdml-kludge      $gdml
-    geocache-gdml-kludge-dump $gdml
+    #geocache-gdml-kludge      $gdml
+    #geocache-gdml-kludge-dump $gdml
 
     geocache-create- --gdmlpath $gdml -D
 

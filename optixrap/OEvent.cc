@@ -19,6 +19,7 @@
 
 #include "SLog.hh"
 #include "NPY.hpp"
+#include "NPho.hpp"
 
 // okc-
 #include "Opticks.hh"
@@ -519,6 +520,11 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
          << " hit " << hit->getShapeString()
          ; 
 
+    if(m_ok->isDumpHit())
+    {
+        NPho::Dump(hit, "OEvent::downloadHitsCompute --dumphit,post,flgs" ); 
+    }
+
     return nhit ; 
 }
 
@@ -551,6 +557,12 @@ unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
          << " nhit " << nhit
          << " hit " << hit->getShapeString()
          ; 
+
+
+    if(m_ok->isDumpHit())
+    {
+        NPho::Dump(hit, "OEvent::downloadHitsInterop --dumphit,post,flgs " ); 
+    }
 
     return nhit ; 
 }

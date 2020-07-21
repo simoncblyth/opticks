@@ -20,6 +20,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "BStr.hh"
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
@@ -29,12 +30,17 @@
 
 #include "PLOG.hh"
 
-NPho::NPho(NPY<float>* photons) 
+NPho::NPho(NPY<float>* photons, const char* opt) 
     :  
     m_photons(photons),
     m_msk(photons->getMsk()),
     m_num_photons(photons ? photons->getNumItems() : 0 ),
-    m_num_msk(m_msk ? m_msk->getNumItems() : 0 )
+    m_num_msk(m_msk ? m_msk->getNumItems() : 0 ), 
+    m_mski(opt ? BStr::Contains(opt, "mski", ',' ) : true ),
+    m_post(opt ? BStr::Contains(opt, "post", ',' ) : true ),
+    m_dirw(opt ? BStr::Contains(opt, "dirw", ',' ) : true ),
+    m_polw(opt ? BStr::Contains(opt, "polw", ',' ) : true ),
+    m_flgs(opt ? BStr::Contains(opt, "flgs", ',' ) : true )
 {
     init();
 }
@@ -78,9 +84,9 @@ glm::vec4 NPho::getPolarizationWavelength(unsigned i) const
     return polw ; 
 }
 
-glm::uvec4 NPho::getFlags(unsigned i) const 
+glm::ivec4 NPho::getFlags(unsigned i) const 
 {
-    glm::uvec4 flgs = m_photons->getQuadU(i,3);
+    glm::ivec4 flgs = m_photons->getQuadI(i,3);
     return flgs ; 
 }
 
@@ -99,33 +105,46 @@ std::string NPho::desc(unsigned i) const
     glm::vec4 post = getPositionTime(i);
     glm::vec4 dirw = getDirectionWeight(i);
     glm::vec4 polw = getPolarizationWavelength(i);
-    glm::uvec4 flgs = getFlags(i);
+    glm::ivec4 flgs = getFlags(i);
 
     std::stringstream ss ;
-    ss 
-        << " i " << std::setw(7) << i 
-        << " mski " << std::setw(7) << m_photons->getMskIndex(i) 
-        << " post " << std::setw(20) << gpresent(post) 
-        << " dirw " << std::setw(20) << gpresent(dirw) 
-        << " polw " << std::setw(20) << gpresent(polw) 
-        << " flgs " << std::setw(20) << gpresent(flgs) 
-        ;
+    ss << " i " << std::setw(7) << i ; 
+    if(m_mski) ss << " mski " << std::setw(7) << m_photons->getMskIndex(i)  ; 
+    if(m_post) ss << " post " << std::setw(20) << gpresent(post) ;
+    if(m_dirw) ss << " dirw " << std::setw(20) << gpresent(dirw) ;
+    if(m_polw) ss << " polw " << std::setw(20) << gpresent(polw) ;
+    if(m_flgs) ss << " flgs " << std::setw(20) << gpresent(flgs) ;
 
     return ss.str();
 }
 
 
-void NPho::Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* msg) 
+
+
+
+
+void NPho::Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* opt) 
 {
-    LOG(info) << msg 
+    LOG(info) << opt
               << " modulo " << modulo
               << " margin " << margin
               << " ox " << ( ox ? "Y" : "NULL" ) 
               ;
  
     if(!ox) return ; 
-    NPho ph(ox) ;
+    NPho ph(ox,opt) ;
     ph.dump(modulo, margin); 
+}
+
+void NPho::Dump(NPY<float>* ox, const char* opt) 
+{
+    LOG(info) << opt
+              << " ox " << ( ox ? "Y" : "NULL" ) 
+              ;
+ 
+    if(!ox) return ; 
+    NPho ph(ox, opt) ;
+    ph.dump(); 
 }
 
 
@@ -149,6 +168,22 @@ void NPho::dump(unsigned modulo, unsigned margin, const char* msg) const
         }
     }
 
+}
+
+
+
+void NPho::dump(const char* msg) const 
+{
+    unsigned numPhotons = getNumPhotons() ;
+    LOG(info) << msg 
+              << " desc " << desc() 
+              << " numPhotons " << numPhotons
+              ; 
+
+    for(unsigned i=0 ; i < numPhotons ; i++)
+    {
+        std::cout << desc(i) << std::endl ;
+    }
 }
 
 

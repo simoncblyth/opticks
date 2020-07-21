@@ -69,7 +69,7 @@ rtDeclareVariable(unsigned int, instance_index,  ,);
 // set by oxrap/OGeo.cc, 0 for non-instanced 
 
 rtDeclareVariable(unsigned int, primitive_count, ,);
-// TODO: instanced analytic identity, using the above and below solid level identity buffer
+rtDeclareVariable(unsigned int, repeat_index, ,);
 
 rtBuffer<Part> partBuffer; 
 rtBuffer<Matrix4x4> tranBuffer; 
@@ -171,11 +171,42 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ; 
 #endif
 
+
+//#define WITH_PRINT_IDENTITY_BOUNDS 1 
+#ifdef WITH_PRINT_IDENTITY_BOUNDS
+
+    rtPrintf("// intersect_analysic.cu:bounds WITH_PRINT_IDENTITY_BOUNDS repeat_index %d instance_index %d primitive_count %3d primIdx %3d identity ( %7d %7d %7d %7d ) \n", 
+       repeat_index, instance_index, primitive_count, primIdx, identity.x, identity.y, identity.z, identity.w );  
+
+    unsigned instance_index_test = 10u ; 
+    uint4 identity_test = identityBuffer[instance_index_test*primitive_count+primIdx] ; 
+    rtPrintf("// intersect_analysic.cu:bounds WITH_PRINT_IDENTITY_BOUNDS repeat_index %d instance_index_test %d primitive_count %3d primIdx %3d identity ( %7d %7d %7d %7d ) \n", 
+       repeat_index, instance_index_test, primitive_count, primIdx, identity_test.x, identity_test.y, identity_test.z, identity_test.w );  
+ 
+#endif
+
+
     const Prim& prim    = primBuffer[primIdx];
  
     unsigned primFlag    = prim.primFlag() ;  
     unsigned partOffset  = prim.partOffset() ;  
+    unsigned tranOffset  = prim.tranOffset() ; 
     unsigned numParts    = prim.numParts() ; 
+
+//#define WITH_PRINT_PARTS 1
+#ifdef WITH_PRINT_PARTS
+    rtPrintf("// intersect_analysic.cu:bounds WITH_PRINT_PARTS repeat_index %d primIdx %d primFlag %d partOffset %d tranOffset %d numParts %d \n", 
+       repeat_index, primIdx, primFlag, partOffset, tranOffset, numParts );
+    for(unsigned p=0 ; p < numParts ; p++)
+    {
+        Part pt = partBuffer[partOffset + p] ; 
+        unsigned typecode = pt.typecode() ; 
+        unsigned boundary = pt.boundary() ; 
+        rtPrintf("// intersect_analysic.cu:bounds WITH_PRINT_PARTS p %d typecode %d boundary %d \n", p, typecode, boundary );
+    
+    }
+#endif
+
 
 
     if(primFlag == CSG_FLAGNODETREE || primFlag == CSG_FLAGINVISIBLE )  
@@ -301,6 +332,19 @@ RT_PROGRAM void intersect(int primIdx)
 #else
     uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ; 
 #endif
+
+
+//#define WITH_PRINT_IDENTITY_INTERSECT 1 
+#ifdef WITH_PRINT_IDENTITY_INTERSECT
+
+    if(repeat_index > 0 && repeat_index < 5)
+    {
+        rtPrintf("// intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index %d instance_index %d primitive_count %3d primIdx %3d identity ( %7d %7d %7d %7d ) \n", 
+            repeat_index, instance_index, primitive_count, primIdx, identity.x, identity.y, identity.z, identity.w );  
+    }
+
+#endif
+
 
 
     if(primFlag == CSG_FLAGNODETREE)  

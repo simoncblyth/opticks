@@ -38,6 +38,22 @@ OptiX 7 : Brand New Lower Level API
 
 
 
+https://developer.nvidia.com/designworks/optix/download
+
+
+
+NOTE: Requires NVIDIA R450 driver or newer. You may need a Beta Driver for certain operating systems.
+OptiX 7.1.0 requires that you install a r450+ driver.
+
+
+OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17 Driver for linux.
+
+
+
+
+
+
+
 
 * https://www.nvidia.com/en-us/gtc/session-catalog/?search=OptiX
 * https://developer.nvidia.com/gtc/2020/video/s21904

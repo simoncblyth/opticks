@@ -326,6 +326,7 @@ optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
     unsigned instance_index = 0u ;  // so same code can run Instanced or not
     optix::GeometryInstance ggi = makeGeometryInstance(omm, mat, instance_index );
     ggi["primitive_count"]->setUint( 0u );  // non-instanced
+    ggi["repeat_index"]->setUint( mm->getIndex() );  // non-instanced
 
     optix::Acceleration accel = makeAcceleration(m_ggg_accel, false) ;
     optix::GeometryGroup ggg = makeGeometryGroup(ggi, accel );    
@@ -782,6 +783,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     geometry->setPrimitiveCount( lod > 0 ? 1 : numPrim );  // lazy lod, dont change buffers, just ignore all but the 1st prim for lod > 0
 
     geometry["primitive_count"]->setUint( numPrim );       // needed GPU side, for instanced offset into buffers 
+    geometry["repeat_index"]->setUint( mm->getIndex() );  // ridx
     geometry["analytic_version"]->setUint(analytic_version);
 
     optix::Program intersectProg = m_ocontext->createProgram("intersect_analytic.cu", "intersect") ;
@@ -879,6 +881,7 @@ optix::GeometryTriangles OGeo::makeGeometryTriangles(GMergedMesh* mm, unsigned l
     gtri["texCoordBuffer"]->setBuffer(emptyBuffer);
  
     gtri["primitive_count"]->setUint( numFaces );  // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
+    gtri["repeat_index"]->setUint(mm->getIndex()); 
 
     gtri->setPrimitiveCount( uFaces );
     gtri->setTriangleIndices( indexBuffer, indexFormat );
@@ -951,6 +954,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
 
     geometry->setPrimitiveCount( uFaces ); 
     geometry["primitive_count"]->setUint( numFaces );  // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
+    geometry["repeat_index"]->setUint( mm->getIndex() );  // non-instanced
  
     return geometry ; 
 }

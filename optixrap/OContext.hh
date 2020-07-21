@@ -127,6 +127,7 @@ class OXRAP_API OContext {
             bool isInterop();
             void snap(const char* path="/tmp/snap.ppm");
             void save(const char* path="/tmp/snap.npy");
+            std::string printDesc() const ; 
      private:
             void init();
             void initPrint();

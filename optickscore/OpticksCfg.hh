@@ -169,7 +169,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getRunLabel() const ;
      const std::string& getRunFolder() const ;
      const std::string& getDbgGDMLPath() const ;
-
+     const std::string& getDbgGSDir() const ;
 
 private:
      void init();
@@ -302,6 +302,7 @@ private:
      std::string  m_runlabel ; 
      std::string  m_runfolder ; 
      std::string  m_dbggdmlpath ; 
+     std::string  m_dbggsdir ; 
 
 };
 

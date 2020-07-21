@@ -71,10 +71,7 @@ int main(int argc, char** argv)
 
 
     unsigned tagoffset = 0 ; 
-    const char* gsp = ok.getDirectGenstepPath(tagoffset) ; 
-    LOG(error) << " gsp " << gsp ; 
-
-    NPY<float>* np = ok.loadDirectGenstep(tagoffset) ; 
+    NPY<float>* np = ok.findGensteps(tagoffset) ; 
     if(np == NULL) return 0 ; 
 
 

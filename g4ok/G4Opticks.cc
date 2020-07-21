@@ -454,9 +454,18 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
     m_gensteps->setArrayContentIndex(eventID); 
 
     unsigned tagoffset = eventID ;  // tags are 1-based : so this will normally be the Geant4 eventID + 1
-    const char* gspath = m_ok->getDirectGenstepPath(tagoffset); 
-    LOG(info) << " saving gensteps to " << gspath ; 
+    const char* gspath = m_ok->getDirectGenstepPath(tagoffset);   
+    LOG(LEVEL) << " saving gensteps to " << gspath ; 
     m_gensteps->save(gspath);  
+
+
+    if(m_ok->isDbgGSSave()) // --dbggssave
+    {
+        const char* dbggspath = m_ok->getDebugGenstepPath(eventID) ; // --dbggsdir default dir is $TMP/dbggs   
+        LOG(LEVEL) << " saving debug gensteps to dbggspath " << dbggspath << " eventID " << eventID ;   
+        m_gensteps->save(dbggspath);   // eg $TMP/dbggs/0.npy  
+    }
+
 
     // initial generated photons before propagation 
     // CPU genphotons needed only while validating 

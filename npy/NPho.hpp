@@ -36,9 +36,10 @@ accessors and dumping.
 
 class NPY_API NPho {
     public:  
-        static void Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* msg) ;
+        static void Dump(NPY<float>* ox, const char* opt="post,dirw,flgs") ;
+        static void Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* opt="post,dirw,flgs") ;
     public:  
-        NPho(NPY<float>* photons); 
+        NPho(NPY<float>* photons, const char* opt="mski,post,dirw,polw,flgs"); 
     private:
         void init();   
     public:  
@@ -48,15 +49,21 @@ class NPY_API NPho {
         glm::vec4             getPositionTime(unsigned i) const ; 
         glm::vec4             getDirectionWeight(unsigned i) const ; 
         glm::vec4             getPolarizationWavelength(unsigned i) const ;
-        glm::uvec4            getFlags(unsigned i) const ;
+        glm::ivec4            getFlags(unsigned i) const ;
         std::string           desc(unsigned i) const ;
         std::string           desc() const ;
         void                  dump(unsigned modulo, unsigned margin, const char* msg="NPho::dump") const ;
+        void                  dump(const char* msg="NPho::dump") const ; 
    private:
        NPY<float>*            m_photons ; 
        NPY<unsigned>*         m_msk ; 
        unsigned               m_num_photons ; 
        unsigned               m_num_msk ; 
 
+       bool                   m_mski ; 
+       bool                   m_post ; 
+       bool                   m_dirw ; 
+       bool                   m_polw ; 
+       bool                   m_flgs ; 
 };
 

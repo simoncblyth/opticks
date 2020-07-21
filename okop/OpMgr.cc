@@ -123,15 +123,7 @@ void OpMgr::propagate()
 
     m_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(compute));
 
-
-    /*
-    unsigned tagoffset = m_gensteps->getArrayContentIndex() ; 
-    m_run->createEvent(tagoffset);
-    m_run->setGensteps(m_gensteps); 
-    */
-
     m_run->createEvent(m_gensteps); 
-
 
     m_propagator->propagate();
 

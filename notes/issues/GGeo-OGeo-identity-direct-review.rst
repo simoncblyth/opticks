@@ -702,53 +702,60 @@ geocache identity
         ipython -i $(which np.py) -- $*
     }
 
-    epsilon:1 blyth$ inp GMergedMesh/1/*.npy
-    a :                                  GMergedMesh/1/iidentity.npy :          (128000, 4) : 925e98ab591dcdde40a42777b8331e9d : 20200702-2350 
-    b :                                 GMergedMesh/1/aiidentity.npy :        (25600, 1, 4) : 2656f9e5f92a858ac5c3d931bf4859fe : 20200702-2350 
-    c :                                GMergedMesh/1/itransforms.npy :        (25600, 4, 4) : 29a7bf21dabfd4a6f9228fadb7edabca : 20200702-2350 
-    d :                                    GMergedMesh/1/indices.npy :            (4752, 1) : b5d5dc7ce94690319fb384b1e503e2f9 : 20200702-2350 
-    e :                                 GMergedMesh/1/boundaries.npy :            (1584, 1) : 4583b9e4b2524fc02d90306a4ae93238 : 20200702-2350 
-    f :                                      GMergedMesh/1/nodes.npy :            (1584, 1) : 8cb9bf708067a07977010b6bc92bf565 : 20200702-2350 
-    g :                                    GMergedMesh/1/sensors.npy :            (1584, 1) : 30e007064ccb81e841e90dde1304ccf2 : 20200702-2350 
-    h :                                     GMergedMesh/1/colors.npy :             (805, 3) : 5b2f1391f85c6e29560eed612a0e890a : 20200702-2350 
-    i :                                    GMergedMesh/1/normals.npy :             (805, 3) : 5482a46493c73523fdc5356fd6ed5ebc : 20200702-2350 
-    j :                                   GMergedMesh/1/vertices.npy :             (805, 3) : b447acf665678da2789103b44874d6bb : 20200702-2350 
-    k :                                       GMergedMesh/1/bbox.npy :               (5, 6) : a523db9c1220c034d29d8c0113b4ac10 : 20200702-2350 
-    l :                              GMergedMesh/1/center_extent.npy :               (5, 4) : 3417b940f4da6db67abcf29937b52128 : 20200702-2350 
-    m :                                   GMergedMesh/1/identity.npy :               (5, 4) : a921a71d379336f28e7c0b908eea9218 : 20200702-2350 
-    n :                                     GMergedMesh/1/meshes.npy :               (5, 1) : 0a52a5397e61677ded7cd8a7b23bf090 : 20200702-2350 
-    o :                                   GMergedMesh/1/nodeinfo.npy :               (5, 4) : c143e214851e70197a6de58b2c86b5a9 : 20200702-2350 
-    p :                                 GMergedMesh/1/transforms.npy :              (5, 16) : 37ae1f7f4da2409596627cebfa5cb28b : 20200702-2350 
+    [blyth@localhost 1]$ t inp
+    inp is a function
+    inp () 
+    { 
+        ~/anaconda2/bin/ipython -i -- ~/opticks/bin/np.py $*
+    }
+
+
+
+::
+
+    [blyth@localhost 1]$ inp GMergedMesh/1/*.npy
+    ...
+    a :                                  GMergedMesh/1/iidentity.npy :        (25600, 5, 4) : a4a7deb934cae243b9181c80ddc1066b : 20200720-2331 
+    b :                                GMergedMesh/1/itransforms.npy :        (25600, 4, 4) : 1292187d260497fc0a694e275f0e6999 : 20200720-2331 
+    c :                                    GMergedMesh/1/indices.npy :            (4752, 1) : b5d5dc7ce94690319fb384b1e503e2f9 : 20200720-2331 
+    d :                                 GMergedMesh/1/boundaries.npy :            (1584, 1) : 4583b9e4b2524fc02d90306a4ae93238 : 20200720-2331 
+    e :                                      GMergedMesh/1/nodes.npy :            (1584, 1) : 8cb9bf708067a07977010b6bc92bf565 : 20200720-2331 
+    f :                                    GMergedMesh/1/sensors.npy :            (1584, 1) : 30e007064ccb81e841e90dde1304ccf2 : 20200720-2331 
+    g :                                     GMergedMesh/1/colors.npy :             (805, 3) : 5b2f1391f85c6e29560eed612a0e890a : 20200720-2331 
+    h :                                    GMergedMesh/1/normals.npy :             (805, 3) : 5482a46493c73523fdc5356fd6ed5ebc : 20200720-2331 
+    i :                                   GMergedMesh/1/vertices.npy :             (805, 3) : b447acf665678da2789103b44874d6bb : 20200720-2331 
+    j :                                       GMergedMesh/1/bbox.npy :               (5, 6) : a523db9c1220c034d29d8c0113b4ac10 : 20200720-2331 
+    k :                              GMergedMesh/1/center_extent.npy :               (5, 4) : 3417b940f4da6db67abcf29937b52128 : 20200720-2331 
+    l :                                   GMergedMesh/1/identity.npy :               (5, 4) : a921a71d379336f28e7c0b908eea9218 : 20200720-2331 
+    m :                                     GMergedMesh/1/meshes.npy :               (5, 1) : 0a52a5397e61677ded7cd8a7b23bf090 : 20200720-2331 
+    n :                                   GMergedMesh/1/nodeinfo.npy :               (5, 4) : c143e214851e70197a6de58b2c86b5a9 : 20200720-2331 
+    o :                                 GMergedMesh/1/transforms.npy :              (5, 16) : 37ae1f7f4da2409596627cebfa5cb28b : 20200720-2331 
 
     In [1]: 
 
+    [blyth@localhost 1]$ inp GMergedMesh/2/*.npy
+    a :                                  GMergedMesh/2/iidentity.npy :        (12612, 6, 4) : 4423ba6434c39aff488e6784df468ae1 : 20200720-2331 
+    b :                                GMergedMesh/2/itransforms.npy :        (12612, 4, 4) : c0ec856e88eb5ccdae839f25ab9c993e : 20200720-2331 
+    c :                                    GMergedMesh/2/indices.npy :           (10800, 1) : ec2e48dfe19d0b2bbb6714b5d102ff1a : 20200720-2331 
+    d :                                 GMergedMesh/2/boundaries.npy :            (3600, 1) : 7b4b60a99006ce8a5ca2668a9698c49e : 20200720-2331 
+    e :                                      GMergedMesh/2/nodes.npy :            (3600, 1) : ad1b23ff95465e42e1ce0be6113b397b : 20200720-2331 
+    f :                                    GMergedMesh/2/sensors.npy :            (3600, 1) : c09b7af09b553b5304da5a1559ca2c7d : 20200720-2331 
+    g :                                     GMergedMesh/2/colors.npy :            (1820, 3) : 89ea4c93126cd1c14e27af2e499af434 : 20200720-2331 
+    h :                                    GMergedMesh/2/normals.npy :            (1820, 3) : 0eb006545f4b8f605e0281d87b52f257 : 20200720-2331 
+    i :                                   GMergedMesh/2/vertices.npy :            (1820, 3) : b8ea611275ec809336112591abcaa4a4 : 20200720-2331 
+    j :                                       GMergedMesh/2/bbox.npy :               (6, 6) : 86926ee14d0e44cb937c9d4a87fe305f : 20200720-2331 
+    k :                              GMergedMesh/2/center_extent.npy :               (6, 4) : d14e9c7b653990cfbfe2385653fbf22a : 20200720-2331 
+    l :                                   GMergedMesh/2/identity.npy :               (6, 4) : 7c7a2c4bfb25e67c852aeac7d281c4f3 : 20200720-2331 
+    m :                                     GMergedMesh/2/meshes.npy :               (6, 1) : 4ad6dd25bda1e2e9499f267a545aa75d : 20200720-2331 
+    n :                                   GMergedMesh/2/nodeinfo.npy :               (6, 4) : 6f043e521cb6e9974fc3ab52a983c407 : 20200720-2331 
+    o :                                 GMergedMesh/2/transforms.npy :              (6, 16) : a3570ab9415c863e270b39926702568a : 20200720-2331 
 
-    epsilon:1 blyth$ inp GMergedMesh/2/*.npy
-    a :                                  GMergedMesh/2/iidentity.npy :           (75672, 4) : a01fcebdd01b8c02fe22115fe43ef7c9 : 20200702-2350 
-    b :                                 GMergedMesh/2/aiidentity.npy :        (12612, 1, 4) : 930501c72265943bd9664c699196ff4e : 20200702-2350 
-    c :                                GMergedMesh/2/itransforms.npy :        (12612, 4, 4) : 766b1e274449b0d9f2ecc35d58b52a71 : 20200702-2350 
-    d :                                    GMergedMesh/2/indices.npy :           (10800, 1) : ec2e48dfe19d0b2bbb6714b5d102ff1a : 20200702-2350 
-    e :                                 GMergedMesh/2/boundaries.npy :            (3600, 1) : 7b4b60a99006ce8a5ca2668a9698c49e : 20200702-2350 
-    f :                                      GMergedMesh/2/nodes.npy :            (3600, 1) : ad1b23ff95465e42e1ce0be6113b397b : 20200702-2350 
-    g :                                    GMergedMesh/2/sensors.npy :            (3600, 1) : c09b7af09b553b5304da5a1559ca2c7d : 20200702-2350 
-    h :                                     GMergedMesh/2/colors.npy :            (1820, 3) : 89ea4c93126cd1c14e27af2e499af434 : 20200702-2350 
-    i :                                    GMergedMesh/2/normals.npy :            (1820, 3) : 0eb006545f4b8f605e0281d87b52f257 : 20200702-2350 
-    j :                                   GMergedMesh/2/vertices.npy :            (1820, 3) : b8ea611275ec809336112591abcaa4a4 : 20200702-2350 
-    k :                                       GMergedMesh/2/bbox.npy :               (6, 6) : 86926ee14d0e44cb937c9d4a87fe305f : 20200702-2350 
-    l :                              GMergedMesh/2/center_extent.npy :               (6, 4) : d14e9c7b653990cfbfe2385653fbf22a : 20200702-2350 
-    m :                                   GMergedMesh/2/identity.npy :               (6, 4) : 7c7a2c4bfb25e67c852aeac7d281c4f3 : 20200702-2350 
-    n :                                     GMergedMesh/2/meshes.npy :               (6, 1) : 4ad6dd25bda1e2e9499f267a545aa75d : 20200702-2350 
-    o :                                   GMergedMesh/2/nodeinfo.npy :               (6, 4) : 6f043e521cb6e9974fc3ab52a983c407 : 20200702-2350 
-    p :                                 GMergedMesh/2/transforms.npy :              (6, 16) : a3570ab9415c863e270b39926702568a : 20200702-2350 
-
-    In [1]: ii = a.reshape(-1,6,4)
+    In [1]: ii = a
 
     In [5]: ii.shape
-    Out[5]: (12612, 6, 4)
+    Out[5]: (12612, 6, 4)   # (num_instances, num_volumes, num_qty )
 
-    In [2]: aii = b
-
-    In [3]: ii
+    In [3]: ii   
     Out[3]: 
     array([[[ 68250,     29,     21,      0],
             [ 68251,     24,     15,      0],
@@ -778,172 +785,8 @@ geocache identity
             [173919,     27,     23,  17611],
             [173920,     25,     24,  17611],
             [173921,     26,     25,  17611]]], dtype=uint32)
-
-::
-
-    epsilon:1 blyth$  ~/opticks/bin/cat.py GItemList/GMeshLib.txt 29,24,28,27,25,26
-    29   :1: NNVTMCPPMTsMask_virtual0x32a5060
-    24   :1: NNVTMCPPMTsMask0x32a6070
-    28   :1: NNVTMCPPMT_PMT_20inch_pmt_solid0x32a1b00
-    27   :1: NNVTMCPPMT_PMT_20inch_body_solid0x32a2840
-    25   :1: NNVTMCPPMT_PMT_20inch_inner1_solid0x32a3900
-    26   :1: NNVTMCPPMT_PMT_20inch_inner2_solid0x32a3b70
-    epsilon:1 blyth$ 
-
-    epsilon:1 blyth$ ~/opticks/ana/blib.py $PWD -s 21,15,22,23,24,25
-     nbnd  35 nmat  16 nsur  20 
-     21 : Water///Water           ## expected for the virtual mask "constainer"
-     15 : Water///Acrylic         ## expected for the mask 
-     22 : Water///Pyrex           ## OOPS : should this not be Acrylic///Pyrex ?
-     23 : Pyrex///Pyrex           ## this is the crazy thin one 
-     24 : Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum 
-     25 : Pyrex//NNVTMCPPMT_PMT_20inch_mirror_logsurf1/Vacuum 
-    epsilon:1 blyth$ 
-
-
-
-::
-
-    epsilon:1 blyth$ ~/opticks/bin/cat.py GItemList/GMeshLib.txt 35,30,34,33,31,32
-    35   :1: HamamatsuR12860sMask_virtual0x3290560
-    30   :1: HamamatsuR12860sMask0x3291550
-    34   :2: HamamatsuR12860_PMT_20inch_pmt_solid_1_90x329ed30
-    33   :2: HamamatsuR12860_PMT_20inch_body_solid_1_90x32b7d70
-    31   :1: HamamatsuR12860_PMT_20inch_inner1_solid0x32a8f30
-    32   :1: HamamatsuR12860_PMT_20inch_inner2_solid0x32a91b0
-    epsilon:1 blyth$ 
-
-    epsilon:1 blyth$ ~/opticks/ana/blib.py $PWD -s 21,15,22,23,26,27
-     nbnd  35 nmat  16 nsur  20 
-     21 : Water///Water 
-     15 : Water///Acrylic 
-     22 : Water///Pyrex 
-     23 : Pyrex///Pyrex 
-     26 : Pyrex/HamamatsuR12860_PMT_20inch_photocathode_logsurf2/HamamatsuR12860_PMT_20inch_photocathode_logsurf1/Vacuum 
-     27 : Pyrex//HamamatsuR12860_PMT_20inch_mirror_logsurf1/Vacuum 
-    epsilon:1 blyth$ 
-
-
-    epsilon:1 blyth$ ~/opticks/ana/blib.py $PWD -s 21,22,28,29,19
-     nbnd  35 nmat  16 nsur  20 
-     21 : Water///Water 
-     22 : Water///Pyrex 
-     28 : Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum 
-     29 : Pyrex//PMT_3inch_absorb_logsurf1/Vacuum 
-     19 : Water///Steel 
-    epsilon:1 blyth$ ~/opticks/bin/cat.py GItemList/GMeshLib.txt 40,38,36,37,39
-    40   :1: PMT_3inch_pmt_solid0x3a2d850
-    38   :1: PMT_3inch_body_solid_ell_ell_helper0x3a2db10
-    36   :1: PMT_3inch_inner1_solid_ell_helper0x3a2dba0
-    37   :1: PMT_3inch_inner2_solid_ell_helper0x3a2dc80
-    39   :1: PMT_3inch_cntr_solid0x3a2dd10
-    epsilon:1 blyth$ 
-
-
-
-
-
-
-    epsilon:1 blyth$ inp GMergedMesh/1/*.npy 
-    a :                                  GMergedMesh/1/iidentity.npy :          (128000, 4) : 925e98ab591dcdde40a42777b8331e9d : 20200702-2350 
-    b :                                 GMergedMesh/1/aiidentity.npy :        (25600, 1, 4) : 2656f9e5f92a858ac5c3d931bf4859fe : 20200702-2350 
-    c :                                GMergedMesh/1/itransforms.npy :        (25600, 4, 4) : 29a7bf21dabfd4a6f9228fadb7edabca : 20200702-2350 
-    d :                                    GMergedMesh/1/indices.npy :            (4752, 1) : b5d5dc7ce94690319fb384b1e503e2f9 : 20200702-2350 
-    e :                                 GMergedMesh/1/boundaries.npy :            (1584, 1) : 4583b9e4b2524fc02d90306a4ae93238 : 20200702-2350 
-    f :                                      GMergedMesh/1/nodes.npy :            (1584, 1) : 8cb9bf708067a07977010b6bc92bf565 : 20200702-2350 
-    g :                                    GMergedMesh/1/sensors.npy :            (1584, 1) : 30e007064ccb81e841e90dde1304ccf2 : 20200702-2350 
-    h :                                     GMergedMesh/1/colors.npy :             (805, 3) : 5b2f1391f85c6e29560eed612a0e890a : 20200702-2350 
-    i :                                    GMergedMesh/1/normals.npy :             (805, 3) : 5482a46493c73523fdc5356fd6ed5ebc : 20200702-2350 
-    j :                                   GMergedMesh/1/vertices.npy :             (805, 3) : b447acf665678da2789103b44874d6bb : 20200702-2350 
-    k :                                       GMergedMesh/1/bbox.npy :               (5, 6) : a523db9c1220c034d29d8c0113b4ac10 : 20200702-2350 
-    l :                              GMergedMesh/1/center_extent.npy :               (5, 4) : 3417b940f4da6db67abcf29937b52128 : 20200702-2350 
-    m :                                   GMergedMesh/1/identity.npy :               (5, 4) : a921a71d379336f28e7c0b908eea9218 : 20200702-2350 
-    n :                                     GMergedMesh/1/meshes.npy :               (5, 1) : 0a52a5397e61677ded7cd8a7b23bf090 : 20200702-2350 
-    o :                                   GMergedMesh/1/nodeinfo.npy :               (5, 4) : c143e214851e70197a6de58b2c86b5a9 : 20200702-2350 
-    p :                                 GMergedMesh/1/transforms.npy :              (5, 16) : 37ae1f7f4da2409596627cebfa5cb28b : 20200702-2350 
-
-    In [1]: ii = a.reshape(-1,5,4)
-
-    In [2]: ii.shape
-    Out[2]: (25600, 5, 4)
-
-    In [3]: ii
-    Out[3]: 
-    array([[[173922,     40,     21, 300000],
-            [173923,     38,     22, 300000],
-            [173924,     36,     28, 300000],
-            [173925,     37,     29, 300000],
-            [173926,     39,     19, 300000]],
-
-           [[173927,     40,     21, 300001],
-            [173928,     38,     22, 300001],
-            [173929,     36,     28, 300001],
-            [173930,     37,     29, 300001],
-            [173931,     39,     19, 300001]],
-
-
-
-
-
-
-
-
-    epsilon:1 blyth$ inp GMergedMesh/3/*.npy
-    a :                                  GMergedMesh/3/iidentity.npy :           (30000, 4) : e9c45b8853360f9aaba32c363364925c : 20200702-2350 
-    b :                                    GMergedMesh/3/indices.npy :           (18804, 1) : 65a60294cbd455802e8226528f31e271 : 20200702-2350 
-    c :                                 GMergedMesh/3/boundaries.npy :            (6268, 1) : af1b9ac6ea750e70f7a9cd7bf50759b4 : 20200702-2350 
-    d :                                      GMergedMesh/3/nodes.npy :            (6268, 1) : c94a7f6694877dc50412ad1f2a16a866 : 20200702-2350 
-    e :                                    GMergedMesh/3/sensors.npy :            (6268, 1) : 186c356b1fad12b12fadcfe3640b5d99 : 20200702-2350 
-    f :                                 GMergedMesh/3/aiidentity.npy :         (5000, 1, 4) : 7f35c4d8c4c3ba493006bc67a4d065b3 : 20200702-2350 
-    g :                                GMergedMesh/3/itransforms.npy :         (5000, 4, 4) : 1ff4e96acee67137c4740b05e6684c93 : 20200702-2350 
-    h :                                     GMergedMesh/3/colors.npy :            (3164, 3) : 468ea7fa88740ecca208b7e7bbf25d06 : 20200702-2350 
-    i :                                    GMergedMesh/3/normals.npy :            (3164, 3) : 6999ef21c7a80bb3a1308048da35c71c : 20200702-2350 
-    j :                                   GMergedMesh/3/vertices.npy :            (3164, 3) : 5a392ae993eb2aaa858c379248edf7ca : 20200702-2350 
-    k :                                       GMergedMesh/3/bbox.npy :               (6, 6) : 5e6fe5f9f459e16fed71ed9ccba6288e : 20200702-2350 
-    l :                              GMergedMesh/3/center_extent.npy :               (6, 4) : 246b8bede6bb4506c599d88b2016ac1e : 20200702-2350 
-    m :                                   GMergedMesh/3/identity.npy :               (6, 4) : ad9a05d473e854f8e3134e8c2d3724b9 : 20200702-2350 
-    n :                                     GMergedMesh/3/meshes.npy :               (6, 1) : 5d3ea47c78af103e226710dd8db07b13 : 20200702-2350 
-    o :                                   GMergedMesh/3/nodeinfo.npy :               (6, 4) : 7c2ca3fff4857d90659d205b4bd2e01e : 20200702-2350 
-    p :                                 GMergedMesh/3/transforms.npy :              (6, 16) : a3570ab9415c863e270b39926702568a : 20200702-2350 
-
-    In [1]: ii = a.reshape(5000,-1,4)
-
-    In [2]: ii
-    Out[2]: 
-    array([[[ 68256,     35,     21,      1],
-            [ 68257,     30,     15,      1],
-            [ 68258,     34,     22,      1],
-            [ 68259,     33,     23,      1],
-            [ 68260,     31,     26,      1],
-            [ 68261,     32,     27,      1]],
-
-           [[ 68274,     35,     21,      4],
-            [ 68275,     30,     15,      4],
-            [ 68276,     34,     22,      4],
-            [ 68277,     33,     23,      4],
-            [ 68278,     31,     26,      4],
-            [ 68279,     32,     27,      4]],
-
-           [[ 68298,     35,     21,      8],
-            [ 68299,     30,     15,      8],
-            [ 68300,     34,     22,      8],
-            [ 68301,     33,     23,      8],
-            [ 68302,     31,     26,      8],
-            [ 68303,     32,     27,      8]],
-
-           ...,
-
-           [[173868,     35,     21,  17603],
-            [173869,     30,     15,  17603],
-            [173870,     34,     22,  17603],
-            [173871,     33,     23,  17603],
-            [173872,     31,     26,  17603],
-            [173873,     32,     27,  17603]],
-
-
-
-
-
+ 
+         ## nodeIdx  meshIdx  bndIdx  copyNo/pmtid
 
 
 ::
@@ -966,12 +809,64 @@ geocache identity
     217                  );
     218 }
 
+::
+
+    epsilon:1 blyth$  ~/opticks/bin/cat.py GItemList/GMeshLib.txt 29,24,28,27,25,26
+    29   :1: NNVTMCPPMTsMask_virtual0x32a5060
+    24   :1: NNVTMCPPMTsMask0x32a6070
+    28   :1: NNVTMCPPMT_PMT_20inch_pmt_solid0x32a1b00
+    27   :1: NNVTMCPPMT_PMT_20inch_body_solid0x32a2840
+    25   :1: NNVTMCPPMT_PMT_20inch_inner1_solid0x32a3900
+    26   :1: NNVTMCPPMT_PMT_20inch_inner2_solid0x32a3b70
+
+    epsilon:1 blyth$ ~/opticks/ana/blib.py $PWD -s 21,15,22,23,24,25
+     nbnd  35 nmat  16 nsur  20 
+     21 : Water///Water           ## expected for the virtual mask "constainer"
+     15 : Water///Acrylic         ## expected for the mask 
+     22 : Water///Pyrex           ## OOPS : should this not be Acrylic///Pyrex ?
+     23 : Pyrex///Pyrex           ## this is the crazy thin one 
+     24 : Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum 
+     25 : Pyrex//NNVTMCPPMT_PMT_20inch_mirror_logsurf1/Vacuum 
+
+
+    epsilon:1 blyth$ ~/opticks/bin/cat.py GItemList/GMeshLib.txt 35,30,34,33,31,32
+    35   :1: HamamatsuR12860sMask_virtual0x3290560
+    30   :1: HamamatsuR12860sMask0x3291550
+    34   :2: HamamatsuR12860_PMT_20inch_pmt_solid_1_90x329ed30
+    33   :2: HamamatsuR12860_PMT_20inch_body_solid_1_90x32b7d70
+    31   :1: HamamatsuR12860_PMT_20inch_inner1_solid0x32a8f30
+    32   :1: HamamatsuR12860_PMT_20inch_inner2_solid0x32a91b0
+
+    epsilon:1 blyth$ ~/opticks/ana/blib.py $PWD -s 21,15,22,23,26,27
+     nbnd  35 nmat  16 nsur  20 
+     21 : Water///Water 
+     15 : Water///Acrylic 
+     22 : Water///Pyrex 
+     23 : Pyrex///Pyrex 
+     26 : Pyrex/HamamatsuR12860_PMT_20inch_photocathode_logsurf2/HamamatsuR12860_PMT_20inch_photocathode_logsurf1/Vacuum 
+     27 : Pyrex//HamamatsuR12860_PMT_20inch_mirror_logsurf1/Vacuum 
+
+
+    epsilon:1 blyth$ ~/opticks/ana/blib.py $PWD -s 21,22,28,29,19
+     nbnd  35 nmat  16 nsur  20 
+     21 : Water///Water 
+     22 : Water///Pyrex 
+     28 : Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum 
+     29 : Pyrex//PMT_3inch_absorb_logsurf1/Vacuum 
+     19 : Water///Steel 
+
+    epsilon:1 blyth$ ~/opticks/bin/cat.py GItemList/GMeshLib.txt 40,38,36,37,39
+    40   :1: PMT_3inch_pmt_solid0x3a2d850
+    38   :1: PMT_3inch_body_solid_ell_ell_helper0x3a2db10
+    36   :1: PMT_3inch_inner1_solid_ell_helper0x3a2dba0
+    37   :1: PMT_3inch_inner2_solid_ell_helper0x3a2dc80
+    39   :1: PMT_3inch_cntr_solid0x3a2dd10
 
 
 
 
-aii looking useless
---------------------
+aii looking useless : have excluded it via WITH_AII
+-----------------------------------------------------------
 
 ::
 
@@ -997,8 +892,8 @@ aii looking useless
 
 
 
-Whats happening with mm0 ?
-----------------------------
+Whats happening with global mm0 ?
+------------------------------------
 
 ::
 
@@ -1033,6 +928,135 @@ Whats happening with mm0 ?
     Program received signal SIGABRT, Aborted.
 
 
+
+
+mm0 idBuf 1,316326,4 is much too big, should be 1,374,4 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 316326 is the total number of nodes, not just the selected ridx=0 global ones 
+
+
+
+
+
+
+
+    2020-07-21 01:04:35.297 INFO  [261343] [OContext::launch@786] PRELAUNCH time: 4.22139
+    2020-07-21 01:04:35.297 INFO  [261343] [OPropagator::prelaunch@195] 0 : (0;0,0) 
+
+::
+
+    epsilon:1 blyth$ inp GMergedMesh/?/iidentity.npy 
+    a :                                  GMergedMesh/1/iidentity.npy :        (25600, 5, 4) : a4a7deb934cae243b9181c80ddc1066b : 20200719-2129 
+    b :                                  GMergedMesh/2/iidentity.npy :        (12612, 6, 4) : 4423ba6434c39aff488e6784df468ae1 : 20200719-2129 
+    c :                                  GMergedMesh/3/iidentity.npy :         (5000, 6, 4) : 52c59e1bb3179c404722c2df4c26ac81 : 20200719-2129 
+    d :                                  GMergedMesh/4/iidentity.npy :         (2400, 6, 4) : 08846aa446e53c50c1a7cea89674a398 : 20200719-2129 
+    e :                                  GMergedMesh/5/iidentity.npy :          (590, 1, 4) : 6b57bfe28d74e9e161a1a0908d568b84 : 20200719-2129 
+    f :                                  GMergedMesh/6/iidentity.npy :          (590, 1, 4) : 45836c662ac5095c0d623bf7ed8a3399 : 20200719-2129 
+    g :                                  GMergedMesh/7/iidentity.npy :          (590, 1, 4) : 92bdabddd8393af96cd10f43b8e920f2 : 20200719-2129 
+    h :                                  GMergedMesh/8/iidentity.npy :          (590, 1, 4) : 98a9c18bdf1d64f1fa80a10799073b8d : 20200719-2129 
+    i :                                  GMergedMesh/9/iidentity.npy :        (504, 130, 4) : 01278331416251ff7fd611fd2b1debd4 : 20200719-2129 
+    j :                                  GMergedMesh/0/iidentity.npy :       (1, 316326, 4) : 57ddfde998a9f5ceab681b00b3b49e5b : 20200719-2129 
+
+
+    In [4]: j[0]
+    Out[4]: 
+    array([[     0,     56,      0,      0],
+           [     1,     12,      1,      0],
+           [     2,     11,      2,      0],
+           ...,
+           [316323,     50,     23,  32399],
+           [316324,     48,     33,  32399],
+           [316325,     49,     34,  32399]], dtype=uint32)
+
+
+    In [2]: a[0]
+    Out[2]: 
+    array([[173922,     40,     21, 300000],
+           [173923,     38,     22, 300000],  primIdx 1 
+           [173924,     36,     28, 300000],
+           [173925,     37,     29, 300000],
+           [173926,     39,     19, 300000]], dtype=uint32)
+
+    In [7]: a[10]
+    Out[7]: 
+    array([[173972,     40,     21, 300010],
+           [173973,     38,     22, 300010],
+           [173974,     36,     28, 300010],
+           [173975,     37,     29, 300010],
+           [173976,     39,     19, 300010]], dtype=uint32)
+
+
+
+
+    In [3]: b[0]
+    Out[3]: 
+    array([[68250,    29,    21,     0],
+           [68251,    24,    15,     0],    primIdx 1
+           [68252,    28,    22,     0],
+           [68253,    27,    23,     0],
+           [68254,    25,    24,     0],
+           [68255,    26,    25,     0]], dtype=uint32)
+
+    In [5]: c[0]
+    Out[5]: 
+    array([[68256,    35,    21,     1],
+           [68257,    30,    15,     1],
+           [68258,    34,    22,     1],
+           [68259,    33,    23,     1],
+           [68260,    31,    26,     1],
+           [68261,    32,    27,     1]], dtype=uint32)
+
+
+
+okt --printenabled pindex 1000 reveals issue
+-----------------------------------------------
+
+::
+
+    2020-07-21 05:52:46.257 INFO  [240712] [OPropagator::resize@218]  m_oevt 0x2078a350 evt 0x581a4e0 numPhotons 11235 u_numPhotons 11235
+    2020-07-21 05:52:46.257 INFO  [240712] [OPropagator::setSize@152]  width 11235 height 1
+    2020-07-21 05:52:46.258 INFO  [240712] [OPropagator::launch@250]  _prelaunch 1 m_width 11235 m_height 1
+    2020-07-21 05:52:46.258 INFO  [240712] [OPropagator::launch@267] LAUNCH NOW -
+    2020-07-21 05:52:46.258 INFO  [240712] [OContext::launch@783]  entry 0 width 11235 height 1  --printenabled  printLaunchIndex ( 1000 0 0)
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   0 identity (  161778      35      21   15588 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   1 identity (  161779      30      15   15588 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   2 identity (  161780      34      22   15588 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   3 identity (  161781      33      23   15588 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   4 identity (  161782      31      26   15588 ) 
+    //evaluative_csg repeat_index 3 tranOffset 21 numParts 511 perfect tree height 8 exceeds current limit
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   5 identity (  161783      32      27   15588 ) 
+    //evaluative_csg repeat_index 3 tranOffset 30 numParts 511 perfect tree height 8 exceeds current limit
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 2 instance_index 11163 primitive_count   6 primIdx   0 identity (  161784      29      21   15589 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 2 instance_index 11163 primitive_count   6 primIdx   1 identity (  161785      24      15   15589 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 2 instance_index 11163 primitive_count   6 primIdx   2 identity (  161786      28      22   15589 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 2 instance_index 11163 primitive_count   6 primIdx   3 identity (  161787      27      23   15589 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 2 instance_index 11163 primitive_count   6 primIdx   4 identity (  161788      25      24   15589 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 2 instance_index 11163 primitive_count   6 primIdx   5 identity (  161789      26      25   15589 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   0 identity (  161778      35      21   15588 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   1 identity (  161779      30      15   15588 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   2 identity (  161780      34      22   15588 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   3 identity (  161781      33      23   15588 ) 
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   4 identity (  161782      31      26   15588 ) 
+    //evaluative_csg repeat_index 3 tranOffset 21 numParts 511 perfect tree height 8 exceeds current limit
+    // intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index 3 instance_index 4425 primitive_count   6 primIdx   5 identity (  161783      32      27   15588 ) 
+    //evaluative_csg repeat_index 3 tranOffset 30 numParts 511 perfect tree height 8 exceeds current limit
+
+
+
+::
+
+    epsilon:1 blyth$ inp GMergedMesh/?/iidentity.npy 
+    a :                                  GMergedMesh/1/iidentity.npy :        (25600, 5, 4) : a4a7deb934cae243b9181c80ddc1066b : 20200719-2129 
+    b :                                  GMergedMesh/2/iidentity.npy :        (12612, 6, 4) : 4423ba6434c39aff488e6784df468ae1 : 20200719-2129 
+    c :                                  GMergedMesh/3/iidentity.npy :         (5000, 6, 4) : 52c59e1bb3179c404722c2df4c26ac81 : 20200719-2129 
+    d :                                  GMergedMesh/4/iidentity.npy :         (2400, 6, 4) : 08846aa446e53c50c1a7cea89674a398 : 20200719-2129 
+    e :                                  GMergedMesh/5/iidentity.npy :          (590, 1, 4) : 6b57bfe28d74e9e161a1a0908d568b84 : 20200719-2129 
+    f :                                  GMergedMesh/6/iidentity.npy :          (590, 1, 4) : 45836c662ac5095c0d623bf7ed8a3399 : 20200719-2129 
+    g :                                  GMergedMesh/7/iidentity.npy :          (590, 1, 4) : 92bdabddd8393af96cd10f43b8e920f2 : 20200719-2129 
+    h :                                  GMergedMesh/8/iidentity.npy :          (590, 1, 4) : 98a9c18bdf1d64f1fa80a10799073b8d : 20200719-2129 
+    i :                                  GMergedMesh/9/iidentity.npy :        (504, 130, 4) : 01278331416251ff7fd611fd2b1debd4 : 20200719-2129 
+    j :                                  GMergedMesh/0/iidentity.npy :       (1, 316326, 4) : 57ddfde998a9f5ceab681b00b3b49e5b : 20200719-2129 
 
 
 

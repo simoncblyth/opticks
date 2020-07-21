@@ -509,11 +509,11 @@ optix::Group OContext::getTopGroup()
 }
 
 
-
-
-
 void OContext::initPrint()
 {
+    LOG(LEVEL) << "[" ; 
+
+
     m_context->setPrintBufferSize(4096);
     //m_context->setPrintBufferSize(2*2*2*8192);
 
@@ -567,7 +567,32 @@ void OContext::initPrint()
         << " idx " << gformat(idx) 
         << " llogpath " << ( m_llogpath ? m_llogpath : "-" )
         ;  
+    LOG(LEVEL) << "]" ; 
 }
+
+
+
+std::string OContext::printDesc() const 
+{
+    optix::int3 pindex = m_context->getPrintLaunchIndex();
+    bool printenabled = m_context->getPrintEnabled(); 
+
+    std::stringstream ss ;  
+    ss << ( printenabled ? " --printenabled " : " " )
+       << " printLaunchIndex (" 
+       << " " << pindex.x 
+       << " " << pindex.y 
+       << " " << pindex.z 
+       << ")" 
+       ;
+
+   return ss.str(); 
+} 
+
+
+
+
+
 
 const char* OContext::getPrintIndexLogPath() const 
 {
@@ -754,10 +779,13 @@ double OContext::launch(unsigned int lmode, unsigned int entry, unsigned int wid
 {
     if(!m_closed) close();
 
+
     LOG(LEVEL)
               << " entry " << entry 
               << " width " << width 
               << " height " << height 
+              << " "
+              << printDesc()
               ;
 
     double dt(0.) ; 

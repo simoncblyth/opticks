@@ -162,7 +162,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_runstamp(STime::EpochSeconds()),
        m_runlabel(""),
        m_runfolder(strdup(m_exename)),
-       m_dbggdmlpath("")
+       m_dbggdmlpath(""),
+       m_dbggsdir("$TMP/dbggs")
 {   
    init();  
    m_listener->setCfg(this); 
@@ -308,6 +309,13 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("nosaveppm",   "skip the saving of PPM files from compute snaps") ; 
+
+
+   m_desc.add_options()
+       ("dumphit",   "dump hits, see OKPropagator") ; 
+
+   m_desc.add_options()
+       ("dumpprofile",   "dump runtime profile, see Opticks::postpropagate") ; 
 
 
 
@@ -553,6 +561,15 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("dbgtex", "debug boundary texture see OBndLib "); 
+
+
+   m_desc.add_options()
+       ("dbggsdir", boost::program_options::value<std::string>(&m_dbggsdir), "directory in which to persist to debug gensteps" );   
+   m_desc.add_options()
+       ("dbggssave", "save debug gensteps to within directory specified by dbggsdir option"); 
+   m_desc.add_options()
+       ("dbggsload", "load debug gensteps from directory specified by dbggsdir option"); 
+
 
 
 
@@ -2031,8 +2048,11 @@ const std::string& OpticksCfg<Listener>::getDbgGDMLPath() const
     return m_dbggdmlpath ;  
 }
 
-
-
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getDbgGSDir() const 
+{
+    return m_dbggsdir ;  
+}
 
 
 

@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "plog/Severity.h"
+
 class SLog ; 
 class Opticks ; 
 class OpticksHub ; 
@@ -42,6 +44,8 @@ Used from primary applications such as *OKTest* (ok/tests/OKTest.cc)
 
 
 class OK_API OKMgr {
+   public:
+       static const plog::Severity LEVEL ; 
    public:
        OKMgr(int argc, char** argv, const char* argforced=0 );
        virtual ~OKMgr();

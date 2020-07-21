@@ -243,6 +243,7 @@ class OKCORE_API Opticks {
    public:
        const char* getDbgGDMLPath() const ; // --dbggdmlpath : used for sneaky GDML exports for debugging 
    public:
+   public:
        NSensorList* getSensorList();
    public:
        bool        hasGeocache() const ; 
@@ -506,18 +507,27 @@ class OKCORE_API Opticks {
    private: 
    public:
        std::string          getPreferenceDir(const char* type, const char* subtype);
+
    public:
-       //const char*          getGenstepPath() const ;  // either direct or legacy depending on mode : as distinguished by hasKey 
-       //bool                 existsGenstepPath() const ;
-       bool                 existsDirectGenstepPath(unsigned tagoffset) const ;
+       NPY<float>*          findGensteps(unsigned tagoffset) const ; 
+   public:
+       // used from OpticksGen
        bool                 existsLegacyGenstepPath() const ;
-       const char*          getDirectGenstepPath(unsigned tagoffset) const ; 
        const char*          getLegacyGenstepPath() const ; 
+       NPY<float>*          loadLegacyGenstep() const ;
+       const char*          getDirectGenstepPath(unsigned tagoffset) const ; 
+       const char*          getDebugGenstepPath(unsigned tagoffset) const ; 
+       bool isDbgGSSave() const ;  // --dbggssave
+       bool isDbgGSLoad() const ;  // --dbggsload
+   private:
+       bool                 existsDirectGenstepPath(unsigned tagoffset) const ;
+       bool                 existsDebugGenstepPath(unsigned tagoffset) const ;
+       // sneaky genstep saving/loading for debugging 
+
+       NPY<float>*          loadDirectGenstep(unsigned tagoffset) const ;
+       NPY<float>*          loadDebugGenstep(unsigned tagoffset) const ;
 
        NPY<float>*          load(const char* path) const ;
-       NPY<float>*          loadDirectGenstep(unsigned tagoffset) const ;
-       NPY<float>*          loadLegacyGenstep() const ;
-
    public:
        TorchStepNPY*        makeSimpleTorchStep();
    public:
@@ -592,6 +602,8 @@ class OKCORE_API Opticks {
        bool isDbgEmit() const ; // --dbgemit
        bool isDbgDownload() const ; // --dbgdownload
        bool isDbgHit() const ; // --dbghit
+       bool isDumpHit() const ; // --dumphit
+       bool isDumpProfile() const ; // --dumpprofile
        bool isDbgGeoTest() const ; // --dbggeotest
 
        bool isReflectCheat() const ;

@@ -436,6 +436,9 @@ bool Opticks::isDumpEnv() const
 {
     return m_dumpenv ; 
 }
+
+
+
 bool Opticks::isInternal() const 
 {
     return m_internal ; 
@@ -573,11 +576,17 @@ void Opticks::postpropagate()
    dumpProfile("Opticks::postpropagate", NULL, "_OpticksRun::createEvent", tcut  );  // spacwith spacing at start if each evt
    */
 
-   // startswith filtering 
-   dumpProfile("Opticks::postpropagate", "OPropagator::launch");  
-   dumpProfile("Opticks::postpropagate", "CG4::propagate");  
 
-   dumpParameters("Opticks::postpropagate");
+   if(isDumpProfile()) 
+   {
+       LOG(info) << "[ --dumpprofile " ;  
+       // startswith filtering 
+       dumpProfile("Opticks::postpropagate", "OPropagator::launch");  
+       dumpProfile("Opticks::postpropagate", "CG4::propagate");  
+
+       dumpParameters("Opticks::postpropagate");
+       LOG(info) << "] --dumpprofile " ;  
+   }
 
    saveParameters(); 
 
@@ -1286,6 +1295,15 @@ bool Opticks::isDbgHit() const  // --dbghit
 {
    return m_cfg->hasOpt("dbghit");
 }
+bool Opticks::isDumpHit() const  // --dumphit
+{
+   return m_cfg->hasOpt("dumphit");
+}
+bool Opticks::isDumpProfile() const  // --dumpprofile
+{
+   return m_cfg->hasOpt("dumpprofile");
+}
+
 
 bool Opticks::isDbgGeoTest() const  // --dbggeotest
 {
@@ -1932,6 +1950,24 @@ const char* Opticks::getDbgGDMLPath() const
     const std::string& dbggdmlpath = m_cfg->getDbgGDMLPath() ;
     return dbggdmlpath.empty() ? NULL : dbggdmlpath.c_str() ;
 }
+
+const char* Opticks::getDebugGenstepPath(unsigned idx) const  
+{
+    const std::string& dbggsdir = m_cfg->getDbgGSDir() ;  // --dbggsdir
+    const char* name = BStr::concat<unsigned>("",idx+1,".npy") ;  // 1-based to match signed tags  
+    std::string path = BFile::FormPath(dbggsdir.c_str(), name ); 
+    return strdup(path.c_str()); 
+}
+bool Opticks::isDbgGSSave() const   // --dbggssave
+{
+    return m_cfg->hasOpt("dbggssave");
+}
+bool Opticks::isDbgGSLoad() const   // --dbggsload
+{
+    return m_cfg->hasOpt("dbggsload");
+}
+
+
 
 
 
@@ -3120,9 +3156,37 @@ bool Opticks::existsLegacyGenstepPath() const
     return exists ; 
 }
 
+bool Opticks::existsDebugGenstepPath(unsigned tagoffset) const 
+{
+    const char* path = getDebugGenstepPath(tagoffset);
+    bool exists = path ? BFile::ExistsFile(path) : false ;
+    LOG(LEVEL) 
+       << " path " << path 
+       << " exists " << exists 
+       ;
 
+    return exists ; 
+}
 
+NPY<float>* Opticks::findGensteps( unsigned tagoffset ) const 
+{
+    LOG(LEVEL) << "[ tagoffset " ;  
 
+    NPY<float>* gs = NULL ; 
+    if( hasKey() && !isTest() )
+    {   
+        if( isDbgGSLoad() && existsDebugGenstepPath(tagoffset) )
+        {
+            gs = loadDebugGenstep(tagoffset) ; 
+        }
+        else if( existsDirectGenstepPath(tagoffset) )
+        {   
+            gs = loadDirectGenstep(tagoffset) ; 
+        }   
+    }   
+    LOG(LEVEL) << "] gs " << gs ;  
+    return gs ; 
+}
 
 
 NPY<float>* Opticks::load(const char* path) const 
@@ -3148,6 +3212,11 @@ NPY<float>* Opticks::load(const char* path) const
 NPY<float>* Opticks::loadDirectGenstep(unsigned tagoffset) const 
 {
     std::string path = getDirectGenstepPath(tagoffset);
+    return load(path.c_str()); 
+}
+NPY<float>* Opticks::loadDebugGenstep(unsigned tagoffset) const 
+{
+    std::string path = getDebugGenstepPath(tagoffset);
     return load(path.c_str()); 
 }
 NPY<float>* Opticks::loadLegacyGenstep() const 

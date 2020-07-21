@@ -44,7 +44,7 @@
 #include "OK_BODY.hh"
 
 
-const plog::Severity OKPropagator::LEVEL = debug ; 
+const plog::Severity OKPropagator::LEVEL = PLOG::EnvLevel("OKPropagator","DEBUG"); 
 
 
 OKPropagator* OKPropagator::fInstance = NULL ; 
@@ -80,9 +80,23 @@ void OKPropagator::init()
     OKI_PROFILE("OKPropagator::OKPropagator"); 
 }
 
+/**
+OKPropagator::propagate
+-------------------------
+
+Used from OKMgr.
+
+Question: 
+   Why doesnt this use OpMgr like G4Opticks ? 
+   Probably because OKMgr wants to work with graphics interop, 
+   whereas OpMgr does not want to involve graphics.
+
+**/
+
 
 void OKPropagator::propagate()
 {
+    LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OKPropagator::propagate");
 
 
@@ -107,6 +121,7 @@ void OKPropagator::propagate()
     LOG(LEVEL) << "OKPropagator::propagate(" << evt->getId() << ") DONE nhit: " << nhit    ;
 
     OK_PROFILE("OKPropagator::propagate-download");
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -124,12 +139,14 @@ int OKPropagator::uploadEvent()
 
 int OKPropagator::downloadEvent()
 {
+    LOG(LEVEL) << "[" ; 
     if(m_viz) m_viz->downloadEvent();
 
     int nhit = -1 ; 
 #ifdef OPTICKS_OPTIX
     nhit = m_engine->downloadEvent();
 #endif
+    LOG(LEVEL) << "]" ; 
     return nhit ; 
 }
 

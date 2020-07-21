@@ -41,6 +41,9 @@ class NConfigurable ;
 #include "OK_BODY.hh"
 
 
+const plog::Severity OKMgr::LEVEL = PLOG::EnvLevel("OKMgr", "DEBUG"); 
+
+
 int OKMgr::rc() const 
 {
     return m_ok->rc();
@@ -71,25 +74,34 @@ OKMgr::~OKMgr()
 
 void OKMgr::init()
 {
-    //bool g4gun = m_ok->getSourceCode() == G4GUN ;
+    LOG(LEVEL) << "[" ; 
     bool g4gun = m_ok->isG4GUNGensteps() ;
     if(g4gun)
          LOG(fatal) << "OKMgr doesnt support G4GUN, other that via loading (TO BE IMPLEMENTED) " ;
     assert(!g4gun);
 
     m_ok->dumpParameters("OKMgr::init");
+    LOG(LEVEL) << "]" ; 
 }
 
 
 void OKMgr::propagate()
 {
     const Opticks& ok = *m_ok ; 
-    
     if(ok("nopropagate|tracer")) return ; 
 
-    bool production = m_ok->isProduction();
+    bool production = ok.isProduction();
+    bool load = ok.isLoad(); 
+    bool save = ok.isSave(); 
 
-    if(ok.isLoad())
+    LOG(LEVEL) 
+        << "[ " 
+        << ( load ? " isLoad " : " NOT-isLoad " ) 
+        << ( save ? " isSave " : " NOT-isSave " ) 
+        << ( production ? " isProduction " : " NOT-isProduction " )
+        ; 
+
+    if(load)
     {
          m_run->loadEvent(); 
 
@@ -112,10 +124,16 @@ void OKMgr::propagate()
 
             m_propagator->propagate();
 
-            if(ok("save")) 
+            if(save) 
             {
+                LOG(LEVEL) << "(" ; 
                 m_run->saveEvent();
                 if(!production) m_hub->anaEvent();
+                LOG(LEVEL) << ")" ; 
+            }
+            else
+            {
+                LOG(warning) << " not saving " ; 
             }
 
             m_run->resetEvent();
@@ -123,6 +141,7 @@ void OKMgr::propagate()
 
         m_ok->postpropagate();
     }
+    LOG(LEVEL) << "]" ; 
 }
 
 void OKMgr::visualize()

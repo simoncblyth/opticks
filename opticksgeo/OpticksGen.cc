@@ -46,11 +46,14 @@
 
 #include "PLOG.hh"
 
-const plog::Severity OpticksGen::LEVEL = PLOG::EnvLevel("OpticksGen", "debug") ; 
+const plog::Severity OpticksGen::LEVEL = PLOG::EnvLevel("OpticksGen", "DEBUG") ; 
 
 
 NPY<float>* OpticksGen::getInputGensteps() const { return m_direct_gensteps ? m_direct_gensteps : m_legacy_gensteps ; }
 NPY<float>* OpticksGen::getInputPhotons() const {   return m_input_photons ; }
+
+
+
 
 OpticksGen::OpticksGen(OpticksHub* hub) 
     :
@@ -68,7 +71,7 @@ OpticksGen::OpticksGen(OpticksHub* hub)
     m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, OpticksGenstep_EMITSOURCE, m_ok->getSeed(), m_dbgemit, m_ok->getMaskBuffer(), m_ok->getGenerateOverride() ) : NULL ),
     m_input_photons(NULL),
     m_tagoffset(0),
-    m_direct_gensteps(m_ok->hasKey() && m_ok->existsDirectGenstepPath(m_tagoffset) && !m_ok->isTest() ? m_ok->loadDirectGenstep(m_tagoffset) : NULL ),
+    m_direct_gensteps(m_ok->findGensteps(m_tagoffset)),
     m_legacy_gensteps(NULL),
     m_source_code(initSourceCode())
 {
@@ -121,6 +124,7 @@ Upshot is that one of the below gets set
 
 void OpticksGen::init()
 {
+    LOG(LEVEL); 
     if(m_direct_gensteps)
     {
         initFromDirectGensteps();
@@ -140,6 +144,7 @@ void OpticksGen::initFromEmitterGensteps()
     // emitter bits and pieces get dressed up 
     // perhaps make a class to do this ?   
 
+    LOG(LEVEL); 
     NPY<float>* iox = m_emitter->getPhotons();  // these photons maybe masked 
     setInputPhotons(iox);
 
@@ -181,6 +186,7 @@ void OpticksGen::initFromDirectGensteps()
 
 void OpticksGen::initFromLegacyGensteps()
 {
+    LOG(LEVEL); 
     if(m_ok->isNoInputGensteps() || m_ok->isEmbedded())
     {
         LOG(warning) << "SKIP as isNoInputGensteps OR isEmbedded  " ; 

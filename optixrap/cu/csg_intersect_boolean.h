@@ -576,7 +576,7 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
     //
     if(height > 7)
     {
-        rtPrintf("evaluative_csg tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", tranOffset, numParts, height ) ;
+        rtPrintf("// evaluative_csg repeat_index %d tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", repeat_index, tranOffset, numParts, height ) ;
         return ; 
     } 
 #else
@@ -584,7 +584,7 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
     // by needing to stuff the postorder sequence 0x137fe6dc25ba498ull into 64 bits 
     if(height > 3)
     {
-        rtPrintf("evaluative_csg tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", tranOffset, numParts, height ) ;
+        rtPrintf("// evaluative_csg repeat_index %d tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", repeat_index, tranOffset, numParts, height ) ;
         return ; 
     } 
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
