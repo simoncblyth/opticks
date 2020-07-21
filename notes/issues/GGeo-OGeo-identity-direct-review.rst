@@ -362,6 +362,38 @@ Note one GPt added for each volume within the instance subtree::
      870 }   
 
 
+x4/X4PhysicalVolume.cc::
+
+    1216     GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ;
+    1333     volume->setPt( pt );
+
+
+::
+
+    epsilon:GPts blyth$ inp ?/iptBuffer.npy -l
+    a :                                              0/iptBuffer.npy :             (374, 4) : cfcb7b3c1f2314b02ed20609f687c52f : 20200719-2129 
+    b :                                              1/iptBuffer.npy :               (5, 4) : 0a7c1e906a6a3913f3bcfe3ab4d40dd7 : 20200719-2129 
+    c :                                              2/iptBuffer.npy :               (6, 4) : 42761fa2b500a8fd70d9f67416f9c916 : 20200719-2129 
+    d :                                              3/iptBuffer.npy :               (6, 4) : a7d635662dee3dc1ea006fd36a18763f : 20200719-2129 
+    e :                                              4/iptBuffer.npy :               (6, 4) : d0650e08593ea37ed79aab92cab13604 : 20200719-2129 
+    f :                                              5/iptBuffer.npy :               (1, 4) : 547da34217547f78916d7ec9f136ed9a : 20200719-2129 
+    g :                                              6/iptBuffer.npy :               (1, 4) : d26bda9e14e82bf4a256d1098084e692 : 20200719-2129 
+    h :                                              7/iptBuffer.npy :               (1, 4) : 07fdae2d906fed39fedc7e95ca7136d5 : 20200719-2129 
+    i :                                              8/iptBuffer.npy :               (1, 4) : 2ff7c7568240328b81716a99ab93f5ef : 20200719-2129 
+    j :                                              9/iptBuffer.npy :             (130, 4) : 8c925a62dc2af568e967e927da9b52b5 : 20200719-2129 
+
+    In [1]: d   (6,4) (num_volumes, num_qty)
+    Out[1]: 
+    array([[   35, 68256,    35,     0],
+           [   30, 68257,    30,     1],
+           [   34, 68258,    34,     2],
+           [   33, 68259,    33,     3],
+           [   31, 68260,    31,     4],
+           [   32, 68261,    32,     5]], dtype=int32)
+
+          ## lvIdx ndIdx  csgIdx             csgIdx 31 and 32 are the ones with the problem 
+
+
 
 
 Postcache deferred formation of the analytic GParts geometry, using the persistable GPts(m_pts) from each GMergedMesh::

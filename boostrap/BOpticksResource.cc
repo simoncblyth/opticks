@@ -906,6 +906,7 @@ void BOpticksResource::setupViaKey()
     bool exename_allowed = SStr::StartsWith(exename, "Use") || 
                            SStr::StartsWith(exename, "python") || 
                            SStr::StartsWith(exename, "OpticksEmbedded") || 
+                           SStr::StartsWith(exename, "x0") || 
                            SStr::EndsWith(exename, "Test") || 
                            SStr::EndsWith(exename, "Minimal") ;  
 

@@ -25,6 +25,10 @@ x4gen-usage(){ cat << EOU
 X4Gen Usage 
 ==============
 
+Geocache created with "--g4codegen" option contains g4codegen/tests/*.{cc,gdml} 
+This x4gen- script adds the CMake and bash machinery to convert the 
+sources into executables. Done this way as CMake and bash machinery ages 
+much more rapidly than the code for creating solids.
 
 ::
 
@@ -325,6 +329,7 @@ x4gen-go-(){ cat << EOG
 #!/bin/bash -l
 
 opticks-
+om-
 
 sdir=\$(pwd)
 name=\$(basename \$sdir) 
@@ -332,15 +337,13 @@ bdir=/tmp/\$USER/opticks/\$name/build
 
 rm -rf \$bdir && mkdir -p \$bdir && cd \$bdir && pwd 
 
-cmake \$sdir \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_PREFIX_PATH=\$(opticks-prefix)/externals \
-    -DCMAKE_INSTALL_PREFIX=\$(opticks-prefix) \
-    -DCMAKE_MODULE_PATH=\$(opticks-home)/cmake/Modules
-
+om-cmake \$sdir 
 
 make
 make install   
+
+echo sdir \$sdir
+echo bdir \$bdir
 
 EOG
 }
