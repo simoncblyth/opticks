@@ -26,6 +26,9 @@
 #include "NTreePositive.hpp"
 #include "NTreeAnalyse.hpp"
 #include "NTreeProcess.hpp"
+#ifdef WITH_CHOPPER
+#include "NTreeChopper.hpp"
+#endif
 
 #include "PLOG.hh"
 
@@ -51,6 +54,13 @@ void NTreeProcess<T>::SaveBuffer(const char* dir, const char* name)
 
 
 
+/**
+NTreeProcess<T>::Process
+--------------------------
+
+
+
+**/
 
 
 template <typename T>
@@ -101,6 +111,9 @@ NTreeProcess<T>::NTreeProcess( T* root_ )
     root(root_),
     balanced(NULL),
     result(NULL),
+#ifdef WITH_CHOPPER
+    chopper(new NTreeChopper<T>(root_,1e-6)),
+#endif
     balancer(new NTreeBalance<T>(root_)),    // writes depth, subdepth to all nodes
     positiver(NULL)
 {
@@ -125,7 +138,12 @@ void NTreeProcess<T>::init()
 #include "No.hpp"
 #include "NNode.hpp"
 
+#ifdef WITH_CHOPPER
+#else
 template struct NTreeProcess<no> ; 
+#endif
+
+
 template struct NTreeProcess<nnode> ; 
 
 

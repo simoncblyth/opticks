@@ -53,6 +53,8 @@ match the X4CSG::TAIL string below
 
 **/
 
+const plog::Severity X4CSG::LEVEL = PLOG::EnvLevel("X4CSG","DEBUG"); 
+
 void X4CSG::Serialize( const G4VSolid* solid, Opticks* ok, const char* csgpath ) // static
 {
     X4CSG xcsg(solid, ok);
@@ -134,12 +136,14 @@ X4CSG::X4CSG(const G4VSolid* solid_, Opticks* ok_)
 void X4CSG::init()
 {
     //checkTree();  
+    LOG(LEVEL) << "[" ;
 
     configure( csolid->getMeta() ) ; 
     configure( ccontainer->getMeta() ) ; 
 
     trees.push_back( ccontainer ); 
     trees.push_back( csolid ); 
+    LOG(LEVEL) << "]" ;
 }
 
 void X4CSG::setIndex(unsigned index_)

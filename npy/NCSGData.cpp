@@ -38,6 +38,10 @@
 
 #define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
 
+
+const plog::Severity NCSGData::LEVEL = PLOG::EnvLevel("NCSGData", "DEBUG"); 
+
+
 const NPYSpecList* NCSGData::MakeSPECS()
 {
     NPYSpecList* sl = new NPYSpecList(); 
@@ -84,9 +88,14 @@ NPY<unsigned>* NCSGData::getSrcIdxBuffer() const {       return dynamic_cast<NPY
 
 void NCSGData::init_buffers(unsigned height)  // invoked from NCSG::NCSG(nnode* root ) ie when adopting 
 {
+
     m_height = height ; 
     unsigned num_nodes = NumNodes(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
     m_num_nodes = num_nodes ; 
+    LOG(LEVEL) 
+        << " m_height " << m_height
+        << " m_num_nodes " << m_num_nodes
+        ; 
 
     bool zero = true ; 
     const char* msg = "init_buffer.adopt" ;  

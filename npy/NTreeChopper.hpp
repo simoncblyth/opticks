@@ -20,48 +20,51 @@
 #pragma once
 
 #include <vector>
+
+#include "NNodeEnum.hpp"
+#include "NBBox.hpp"
+
 #include "NPY_API_EXPORT.hh"
 
-/**
-NTreeProcess
-==============
+#include "plog/Severity.h"
 
-**/
+
+/*
+NTreeChopper
+=============
+
+*/
 
 template <typename T> class  NPY ; 
-template <typename T> class  NTreePositive ; 
-template <typename T> struct NTreeBalance ; 
-
-//#define WITH_CHOPPER 1
-#ifdef WITH_CHOPPER
-template <typename T> struct NTreeChopper ; 
-#endif
-
 
 template <typename T>
-struct NPY_API NTreeProcess
+struct NPY_API NTreeChopper
 {
-    static unsigned MaxHeight0 ;  
-    static T* Process( T* root_ , unsigned soIdx, unsigned lvIdx );
-    static std::vector<unsigned>*  LVList ;  
-    static NPY<unsigned>* ProcBuffer ; 
-    static void SaveBuffer(const char* path) ; 
-    static void SaveBuffer(const char* dir, const char* name) ; 
-
-    NTreeProcess(T* root_); 
-    void init();
+    static const plog::Severity LEVEL ; 
 
     T* root ; 
-    T* balanced  ; 
-    T* result  ; 
+    const float epsilon ; 
+    const unsigned verbosity ; 
+    bool enabled ; 
 
-#ifdef WITH_CHOPPER
-    NTreeChopper<T>*  chopper ; 
-#endif
-    NTreeBalance<T>*  balancer ; 
-    NTreePositive<T>* positiver ; 
+    std::vector<T*>           prim ; 
+    std::vector<nbbox>        bb ; 
+    std::vector<nbbox>        cc ; 
+    std::vector<unsigned>     zorder ; 
+
+    NTreeChopper(T* root, float epsilon ) ;
+  
+    void init();
+    void update_prim_bb();  // direct from param, often with gtransform applied
+    bool operator()( int i, int j)  ;
+
+    unsigned get_num_prim() const ; 
+    std::string brief() const ;
+
+    void dump(const char* msg="NTreeChopper::dump");
+    void dump_qty(char qty, int wid=10);
+    void dump_joins();
 
 };
-
 
 

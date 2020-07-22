@@ -45,6 +45,74 @@ The signed bnd index -25, -29 are 1-based : so 24 28 on the 0-based blib list::
 
 
 
+
+After implementing --pmt20inch-simplify-csg now see bnd : -27,-25,-29 : but still pmtid 0 
+----------------------------------------------------------------------------------------------
+
+
+tds::
+
+    2020-07-23 02:53:21.117 INFO  [307723] [NPho::Dump@141] OEvent::downloadHitsCompute --dumphit,post,flgs ox Y
+    2020-07-23 02:53:21.117 INFO  [307723] [NPho::dump@178] NPho::dump desc NPho 3022,4,4 numPhotons 3022
+     i       0 post ( -18126.141   586.265  6673.094     111.691) flgs     -27       0 67305985    2114
+     i       1 post ( -17290.074  -935.327 -8619.458     108.357) flgs     -27       0 67305985    2114
+     i       2 post ( -15695.236 -8559.833 -7359.639     104.279) flgs     -27       0 67305985    2114
+     i       3 post (   9776.646  7571.969-14770.719     104.236) flgs     -25       0 67305985    2114
+     i       4 post (   9616.675 12452.818-11164.268     114.923) flgs     -27       0 67305985    2162
+     i       5 post (  15334.891  5805.778-10137.195     106.520) flgs     -25       0 67305985    2130
+     i       6 post (    162.691 -1875.792-19181.787     127.113) flgs     -25       0 67305985    2146
+     i       7 post (  -3147.436  3055.649 18820.076     107.533) flgs     -25       0 67305985    2114
+     i       8 post (   5368.825 17890.312  4721.513     106.896) flgs     -27       0 67305985    2114
+     i       9 post (   7847.901 17620.602  -597.367     103.257) flgs     -25       0 67305985    2114
+     i      10 post (   2005.347 10955.664-15714.981     100.510) flgs     -27       0 67305985    2114
+     i      11 post (   4924.485-12091.954 14297.933     101.185) flgs     -27       0 67305985    2114
+
+
+To get the faster turnaround on P, grab the spec from the tail of job output::
+
+     export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.e7b204fa62c028f3d23c102bc554dcbb
+     export OPTICKS_IDPATH=/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/e7b204fa62c028f3d23c102bc554dcbb/1
+
+
+Then::
+
+    okt 
+
+    [blyth@localhost cmt]$ t okt
+    okt is a function
+    okt () 
+    { 
+        type $FUNCNAME;
+        [ -z "$OPTICKS_KEY" ] && echo $msg MISSING MANDATORY OPTICKS_KEY envvar && return 1;
+        [ "$(which OKTest 2>/dev/null)" == "" ] && echo $msg missing opticks env use : oe- && return 2;
+        local args="OKTest --xanalytic --save --dbggsload --dumphit --dbggsdir /tmp/blyth/opticks/dbggs --printenabled --pindex ${P:-1000} ";
+        if [ -z "$BP" ]; then
+            H="";
+            B="";
+            T="-ex r";
+        else
+            H="-ex \"set breakpoint pending on\"";
+            B="";
+            for bp in $BP;
+            do
+                B="$B -ex \"break $bp\" ";
+            done;
+            T="-ex \"info break\" -ex r";
+        fi;
+        local iwd=$PWD;
+        local dir=/tmp/okt;
+        mkdir -p $dir;
+        cd_func $dir;
+        local runline="gdb $H $B $T --args $args ";
+        echo $runline;
+        date;
+        eval $runline;
+        date
+    }
+
+
+
+
 Dumping from the bounds program shows the identity info is there GPU side, overwrite somewhere ?
 ---------------------------------------------------------------------------------------------------
 
@@ -499,20 +567,32 @@ GParts transitions NCSG tree of the solid to node level and provides concatenate
 
 
 
-x4gen with x031 reproduces the NCSG with 511 nodes
-----------------------------------------------------
+x4gen with x031 reproduces the NCSG with 511 nodes : Hamamatsu really is a height 8 tree 
+--------------------------------------------------------------------------------------------------------
+
+* implementing --lpmt-simplify-csg looking to be essential, not just an optimization 
+
+
+::
+
+    In [4]: map(lambda h:(0x1 << (1+h)) - 1, range(10))
+    Out[4]: [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023]
+             0  1  2   3   4   5    6    7    8     9
 
 
 Get x4gen-- to work and build the generated x031.cc x032.cc::
 
-    epsilon:tests blyth$ x031
-    2020-07-21 13:30:40.573 INFO  [10693791] [Opticks::init@405] INTEROP_MODE hostname epsilon.local
-    2020-07-21 13:30:40.573 INFO  [10693791] [Opticks::init@414]  non-legacy mode : ie mandatory keyed access to geometry, opticksaux 
-    2020-07-21 13:30:40.576 INFO  [10693791] [BOpticksResource::setupViaKey@828] 
+
+    epsilon:extg4 blyth$ NCSGData=INFO x032
+    PLOG::EnvLevel adjusting loglevel by envvar   key NCSGData level INFO fallback DEBUG
+    2020-07-21 17:33:20.086 INFO  [10883418] [Opticks::init@405] INTEROP_MODE hostname epsilon.local
+
+    2020-07-21 17:33:20.086 INFO  [10883418] [Opticks::init@414]  non-legacy mode : ie mandatory keyed access to geometry, opticksaux 
+    2020-07-21 17:33:20.090 INFO  [10883418] [BOpticksResource::setupViaKey@828] 
                  BOpticksKey  :  
           spec (OPTICKS_KEY)  : OKX4Test.X4PhysicalVolume.lWorld0x30d4f90_PV.ad026c799f5511ddb91eb379efa84bc4
                      exename  : OKX4Test
-             current_exename  : x031
+             current_exename  : x032
                        class  : X4PhysicalVolume
                      volname  : lWorld0x30d4f90_PV
                       digest  : ad026c799f5511ddb91eb379efa84bc4
@@ -521,8 +601,8 @@ Get x4gen-- to work and build the generated x031.cc x032.cc::
                       idgdml  : g4ok.gdml
                       layout  : 1
 
-    2020-07-21 13:30:40.577 INFO  [10693791] [Opticks::loadOriginCacheMeta@1838]  cachemetapath /usr/local/opticks/geocache/OKX4Test_lWorld0x30d4f90_PV_g4live/g4ok_gltf/ad026c799f5511ddb91eb379efa84bc4/1/cachemeta.json
-    2020-07-21 13:30:40.577 INFO  [10693791] [NMeta::dump@199] Opticks::loadOriginCacheMeta
+    2020-07-21 17:33:20.090 INFO  [10883418] [Opticks::loadOriginCacheMeta@1838]  cachemetapath /usr/local/opticks/geocache/OKX4Test_lWorld0x30d4f90_PV_g4live/g4ok_gltf/ad026c799f5511ddb91eb379efa84bc4/1/cachemeta.json
+    2020-07-21 17:33:20.090 INFO  [10883418] [NMeta::dump@199] Opticks::loadOriginCacheMeta
     {
         "argline": "/usr/local/opticks/lib/OKX4Test --okx4test --g4codegen --deletegeocache --gdmlpath /usr/local/opticks/tds_ngt_pcnk.gdml -D ",
         "location": "Opticks::updateCacheMeta",
@@ -531,16 +611,19 @@ Get x4gen-- to work and build the generated x031.cc x032.cc::
         "runlabel": "R0_cvd_",
         "runstamp": 1595190494
     }
-    2020-07-21 13:30:40.577 INFO  [10693791] [Opticks::loadOriginCacheMeta@1842]  gdmlpath /usr/local/opticks/tds_ngt_pcnk.gdml
-    2020-07-21 13:30:40.593 INFO  [10693791] [*NTreeBalance<nnode>::create_balanced@59] op_mask union intersection 
-    2020-07-21 13:30:40.593 INFO  [10693791] [*NTreeBalance<nnode>::create_balanced@60] hop_mask union intersection 
-    2020-07-21 13:30:40.593 FATAL [10693791] [*NTreeBalance<nnode>::create_balanced@101] balancing trees of this structure not implemented
-    2020-07-21 13:30:40.593 ERROR [10693791] [NNodeNudger::init@88] NNodeNudger::brief root.treeidx   0 num_prim  9 num_coincidence  7 num_nudge  2 
-    NCSGList::savesrc csgpath /tmp/blyth/opticks/x4gen/x031 verbosity 0 numTrees 2
-    2020-07-21 13:30:40.603 INFO  [10693791] [NCSG::savesrc@305]  treedir_ /tmp/blyth/opticks/x4gen/x031/0
-    2020-07-21 13:30:40.604 INFO  [10693791] [NCSG::savesrc@305]  treedir_ /tmp/blyth/opticks/x4gen/x031/1
-    analytic=1_csgpath=/tmp/blyth/opticks/x4gen/x031
-    2020-07-21 13:30:40.605 INFO  [10693791] [X4CSG::dumpTestMain@272] X4CSG::dumpTestMain
+    2020-07-21 17:33:20.090 INFO  [10883418] [Opticks::loadOriginCacheMeta@1842]  gdmlpath /usr/local/opticks/tds_ngt_pcnk.gdml
+    2020-07-21 17:33:20.124 INFO  [10883418] [*NTreeBalance<nnode>::create_balanced@59] op_mask union intersection 
+    2020-07-21 17:33:20.125 INFO  [10883418] [*NTreeBalance<nnode>::create_balanced@60] hop_mask union intersection 
+    2020-07-21 17:33:20.125 FATAL [10883418] [*NTreeBalance<nnode>::create_balanced@101] balancing trees of this structure not implemented
+    2020-07-21 17:33:20.125 ERROR [10883418] [NNodeNudger::init@88] NNodeNudger::brief root.treeidx   0 num_prim  9 num_coincidence  7 num_nudge  2 
+    2020-07-21 17:33:20.125 INFO  [10883418] [NCSGData::init_buffers@95]  m_height 8 m_num_nodes 511
+    2020-07-21 17:33:20.128 INFO  [10883418] [NCSGData::init_buffers@95]  m_height 0 m_num_nodes 1
+    NCSGList::savesrc csgpath /tmp/blyth/opticks/x4gen/x032 verbosity 0 numTrees 2
+    2020-07-21 17:33:20.129 INFO  [10883418] [NCSG::savesrc@308]  treedir_ /tmp/blyth/opticks/x4gen/x032/0
+    2020-07-21 17:33:20.131 INFO  [10883418] [NCSG::savesrc@308]  treedir_ /tmp/blyth/opticks/x4gen/x032/1
+    analytic=1_csgpath=/tmp/blyth/opticks/x4gen/x032
+
+
 
 
     epsilon:1 blyth$ inp *.npy
@@ -553,5 +636,37 @@ Get x4gen-- to work and build the generated x031.cc x032.cc::
 
 
 
+
+::
+
+    epsilon:tests blyth$ diff x031.cc x032.cc
+    84c84
+    <     <intersection name="HamamatsuR12860_PMT_20inch_inner1_solid0x32a8f30">
+    ---
+    >     <subtraction name="HamamatsuR12860_PMT_20inch_inner2_solid0x32a91b0">
+    87,88c87,88
+    <       <position name="HamamatsuR12860_PMT_20inch_inner1_solid0x32a8f30_pos" unit="mm" x="0" y="0" z="94.999999999"/>
+    <     </intersection>
+    ---
+    >       <position name="HamamatsuR12860_PMT_20inch_inner2_solid0x32a91b0_pos" unit="mm" x="0" y="0" z="94.999999999"/>
+    >     </subtraction>
+    94c94
+    < // LV=31
+    ---
+    > // LV=32
+    136c136
+    <     G4VSolid* a = new G4IntersectionSolid("HamamatsuR12860_PMT_20inch_inner1_solid0x32a8f30", b, y, NULL, N) ; // 0
+    ---
+    >     G4VSolid* a = new G4SubtractionSolid("HamamatsuR12860_PMT_20inch_inner2_solid0x32a91b0", b, y, NULL, N) ; // 0
+    epsilon:tests blyth$ 
+
+
+
+
+Anti-pattern detection ?
+---------------------------
+
+How to generalize noticing the anti-pattern of a top (root) operation that only 
+impacts against a single primitive of another tree ?
 
 

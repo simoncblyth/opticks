@@ -560,6 +560,7 @@ class OKCORE_API Opticks {
        void setSpaceDomain(const glm::vec4& pd); 
        std::string description() const ;
        std::string desc() const ;
+       std::string export_() const ;
    private:
        void setupTimeDomain(float extent); 
        void postgeometry();

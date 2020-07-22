@@ -43,6 +43,8 @@
 #include "NNodePoints.hpp"
 #include "NNodeUncoincide.hpp"
 #include "NNodeNudger.hpp"
+
+
 #include "NBBox.hpp"
 #include "NPY.hpp"
 #include "NCSG.hpp"
@@ -135,8 +137,11 @@ NCSG* NCSG::Adopt(nnode* root)
 
 NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvIdx)
 {
+    LOG(LEVEL) << "[" ; 
     NSceneConfig* config = new NSceneConfig(config_); 
-    return Adopt( root, config, soIdx , lvIdx ); 
+    NCSG* csg = Adopt( root, config, soIdx , lvIdx ); 
+    LOG(LEVEL) << "]" ; 
+    return csg ; 
 }
 
 NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
@@ -198,11 +203,16 @@ void NCSG::postchange()
 
 void NCSG::PrepTree(nnode* root)  // static
 {
+    root->prepTree();   // done already from  X4Solid::Convert 
+/*
     nnode::Set_parent_links_r(root, NULL);
     root->check_tree( FEATURE_PARENT_LINKS ); 
     root->update_gtransforms() ;  // sets node->gtransform (not gtransform_idx) parent links are required 
     root->check_tree( FEATURE_GTRANSFORMS ); 
     root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
+*/   
+
+ 
 }
 
 

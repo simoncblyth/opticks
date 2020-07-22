@@ -88,7 +88,6 @@ std::string G4Opticks::EmbeddedCommandLine(const char* extra)
 
 std::string G4Opticks::desc() const 
 {
-
     std::stringstream ss ; 
     ss << "G4Opticks.desc"
        << " ok " << m_ok 
@@ -96,6 +95,7 @@ std::string G4Opticks::desc() const
        << std::endl 
        << ( m_ok ? m_ok->desc() : "-" ) 
        << std::endl 
+       << ( m_ok ? m_ok->export_() : "-" ) 
        ;
     return ss.str() ; 
 }

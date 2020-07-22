@@ -69,6 +69,11 @@ struct NPY_API nsphere : nnode {
     float     radius() const  ; 
     glm::vec3 center() const  ; 
 
+    float r1() const ; 
+    float z1() const ; 
+    float r2() const ; 
+    float z2() const ; 
+
 };
 
 inline NPY_API float nsphere::x() const { return param.f.x ; }

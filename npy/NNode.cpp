@@ -1657,6 +1657,19 @@ void nnode::Set_parent_links_r(nnode* node, nnode* parent) // static
 }
 
 
+void nnode::prepTree()  
+{
+    nnode* root = this ; 
+    nnode::Set_parent_links_r(root, NULL);
+    root->check_tree( FEATURE_PARENT_LINKS ); 
+    root->update_gtransforms() ;  // sets node->gtransform (not gtransform_idx) parent links are required 
+    root->check_tree( FEATURE_GTRANSFORMS ); 
+    root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
+}
+
+
+
+
 
 void nnode::dump(const char* msg) const 
 {

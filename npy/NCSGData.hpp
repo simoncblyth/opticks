@@ -23,6 +23,7 @@
 #include <vector>
 #include <string>
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 class NPYBase ; 
 class NPYSpecList ; 
@@ -60,6 +61,7 @@ TransportBuffers
 
 class NPY_API NCSGData
 { 
+        static const plog::Severity LEVEL ; 
     public:
         typedef enum 
         { 

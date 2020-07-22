@@ -346,4 +346,8 @@ npart nsphere::zrhs(const ndisk* dsk)
 
  
 
+float nsphere::r1() const { return 0.f ; }
+float nsphere::z1() const { return 0.f ; }
+float nsphere::r2() const { return 0.f ; }
+float nsphere::z2() const { return 0.f ; } 
 

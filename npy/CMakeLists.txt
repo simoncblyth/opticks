@@ -88,6 +88,7 @@ set(SOURCES
     NNodePoints.cpp
     NNodeUncoincide.cpp
     NNodeNudger.cpp
+    NTreeChopper.cpp
     NNodeCoincidence.cpp
     
     NSolid.cpp
@@ -343,6 +344,7 @@ NField3.hpp
 NFieldGrid3.hpp
 
 NNodeNudger.hpp
+NTreeChopper.hpp
 NNodeCoincidence.hpp
 
 NSolid.hpp

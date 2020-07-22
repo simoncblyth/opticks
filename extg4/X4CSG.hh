@@ -22,6 +22,7 @@
 #include <vector>
 #include <string>
 
+#include "plog/Severity.h"
 #include "X4_API_EXPORT.hh"
 
 class Opticks; 
@@ -45,6 +46,7 @@ X4CSG
 
 struct X4_API X4CSG 
 {
+    static const plog::Severity LEVEL ; 
     static const std::string HEAD ; 
     static const std::string TAIL ; 
 

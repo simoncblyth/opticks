@@ -2698,6 +2698,20 @@ std::string Opticks::desc() const
 }
 
 
+std::string Opticks::export_() const 
+{
+    BOpticksKey* key = getKey() ;
+    std::stringstream ss ; 
+    ss 
+        << "# Opticks::export_ " 
+        << "\n"
+        << "export OPTICKS_KEY=" << key->getSpec() 
+        << "\n"
+        << "export OPTICKS_IDPATH=" << getIdPath()
+        << "\n"
+        ;
+    return ss.str();
+}
 
 
 /**

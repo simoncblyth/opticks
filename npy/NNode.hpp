@@ -226,6 +226,8 @@ struct NPY_API nnode
     void dump_transform() const ;
     void dump_gtransform() const ;
     void dump_planes() const ;
+
+    void prepTree(); 
   
     // needed for NCSG::FromNode
     static void Set_parent_links_r(nnode* node, nnode* parent);

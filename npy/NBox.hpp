@@ -99,6 +99,13 @@ struct NPY_API nbox : nnode
     glm::vec3 bmin() const  ; 
     glm::vec3 bmax() const  ; 
 
+
+    float r1() const ; 
+    float z1() const ; 
+    float r2() const ; 
+    float z2() const ; 
+ 
+
     bool is_equal( const nbox& other ) const ; 
 
     bool is_box   ;   // cannot const these without ctor

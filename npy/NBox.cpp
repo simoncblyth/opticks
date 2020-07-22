@@ -615,3 +615,8 @@ bool nbox::is_equal( const nbox& other ) const
 
 
 
+float nbox::r1() const { return 0.f ; }
+float nbox::z1() const { return 0.f ; }
+float nbox::r2() const { return 0.f ; }
+float nbox::z2() const { return 0.f ; } 
+
