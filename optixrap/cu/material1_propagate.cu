@@ -56,13 +56,20 @@ RT_PROGRAM void closest_hit_propagate()
 
      prd.cos_theta = cos_theta ;
      prd.distance_to_boundary = t ;   // huh: there is an standard attrib for this
-     unsigned int boundaryIndex = instanceIdentity.z ; 
+
+     unsigned boundaryIndex = instanceIdentity.z ; 
      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;   
      prd.identity = instanceIdentity ; 
      prd.surface_normal = cos_theta > 0.f ? -n : n ;   
 
 //#define WITH_PRINT_IDENTITY_CH 1
 #ifdef WITH_PRINT_IDENTITY_CH
+     rtPrintf("// material1_propagate.cu WITH_PRINT_IDENTITY_CH instanceIdentity (%8d %8d %8d %8d) \n", 
+        instanceIdentity.x, 
+        instanceIdentity.y, 
+        instanceIdentity.z, 
+        instanceIdentity.w) ;  
+
      rtPrintf("// material1_propagate.cu WITH_PRINT_IDENTITY_CH prd.identity (%8d %8d %8d %8d) \n", 
         prd.identity.x, 
         prd.identity.y, 

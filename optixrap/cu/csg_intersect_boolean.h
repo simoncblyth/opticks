@@ -561,11 +561,15 @@ void UNSUPPORTED_recursive_csg( const Prim& prim, const uint4& identity )
 #define USE_TWIDDLE_POSTORDER 1
 
 static __device__
-void evaluative_csg( const Prim& prim, const uint4& identity )
+void evaluative_csg( const Prim& prim, const int primIdx )
 {
     unsigned partOffset = prim.partOffset() ; 
     unsigned numParts   = prim.numParts() ;
     unsigned tranOffset = prim.tranOffset() ; 
+
+    Part pt0 = partBuffer[partOffset + 0] ; 
+    unsigned boundary = pt0.boundary() ; 
+
 
     unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
 
@@ -592,7 +596,6 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
 #endif
 
     int ierr = 0 ;  
-    bool verbose = false ; 
 
     History hist ; 
     hist.curr = -1 ; 
@@ -668,7 +671,6 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
             bool primitive = typecode >= CSG_SPHERE ; 
 
 /*
-            if(verbose)
             rtPrintf("[%5d](visi) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d  operation %d primitive %d halfNodes %2d depth %u \n", 
                            launch_index.x, 
                            nodeIdx,
@@ -836,7 +838,6 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
                     act = BREAK  ;  
                 }             // "return" or "recursive call" 
 /* 
-               if(verbose)
                 rtPrintf("[%5d](ctrl) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx ctrl %d     tloop %2d (%2d->%2d) typecode %d tlr (%10.3f,%10.3f) \n", 
                            launch_index.x, 
                            nodeIdx,
@@ -870,27 +871,35 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
     //if(ierr == 0)   // ideally, but for now incude error returns, to see where the problems are
     if(csg.curr == 0)  
     {
-         const float4& ret = csg.data[0] ;   
+        const float4& ret = csg.data[0] ;   
 /*
-         rtPrintf("[%5d]evaluative_csg ierr %4x ray.origin (%10.3f,%10.3f,%10.3f) ray.direction (%10.3f,%10.3f,%10.3f) ret (%5.2f,%5.2f,%5.3f,%7.3f) \n",
+        rtPrintf("[%5d]evaluative_csg ierr %4x ray.origin (%10.3f,%10.3f,%10.3f) ray.direction (%10.3f,%10.3f,%10.3f) ret (%5.2f,%5.2f,%5.3f,%7.3f) \n",
                launch_index.x, ierr, 
                ray.origin.x, ray.origin.y, ray.origin.z,
                ray.direction.x, ray.direction.y, ray.direction.z,
                ret.x, ret.y, ret.z, ret.w );
 */  
-             
-         if(rtPotentialIntersection( fabsf(ret.w) ))
-         {
-              shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
-              instanceIdentity = identity ;
+ 
+        if(rtPotentialIntersection( fabsf(ret.w) ))
+        {
+            shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
+            instanceIdentity = identityBuffer[instance_index*primitive_count+primIdx] ;
+
 #ifdef BOOLEAN_DEBUG
-              instanceIdentity.x = ierr > 0 ? 1 : 0 ;   // used for visualization coloring  
-              instanceIdentity.y = ierr ; 
-              // instanceIdentity.z is used for boundary passing, hijacking prevents photon visualization
-              instanceIdentity.w = tloop ; 
+            instanceIdentity.x = ierr > 0 ? 1 : 0 ;   // used for visualization coloring  
+            instanceIdentity.y = ierr ; 
+            // instanceIdentity.z is used for boundary passing, hijacking prevents photon visualization
+            instanceIdentity.w = tloop ; 
 #endif
-              rtReportIntersection(0);
-         }
+
+//#define WITH_PRINT_IDENTITY_INTERSECT_TAIL 1 
+#ifdef WITH_PRINT_IDENTITY_INTERSECT_TAIL
+            rtPrintf("// csg_intersect_boolean.h:evaluative_csg WITH_PRINT_IDENTITY_INTERSECT_TAIL repeat_index %d instance_index %d primitive_count %3d primIdx %3d instanceIdentity ( %7d %7d %7d %7d )   \n", 
+            repeat_index, instance_index, primitive_count, primIdx, instanceIdentity.x, instanceIdentity.y, instanceIdentity.z, instanceIdentity.w  );  
+#endif
+
+            rtReportIntersection(0);
+        }
     } 
 
 #ifdef BOOLEAN_DEBUG
@@ -902,11 +911,7 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
               );
         */
 
-     //if(ierr != 0)
-     //if(ierr == 0x1000 && csg.curr != 0)
-     //if(ierr == 0x6000 && csg.curr != 1)
-
-        if(verbose || ierr !=0)
+        if(ierr !=0)
         rtPrintf("[%5d](DONE) csg.curr %2d csg_repr %16llx tr_repr %16llx IERR %6x hcur %2d hi %16llx:%16llx hc %16llx:%16llx \n",
                            launch_index.x, 
                            csg.curr,
@@ -1123,11 +1128,11 @@ void intersect_csg( const Prim& prim, const uint4& identity )
     if(ierr != 0)
     {
 
-
+#ifdef BOOLEAN_DEBUG
         rtPrintf("intersect_csg u ierr %4x tloop %3d launch_index (%5d,%5d) li.x(26) %2d  \n",
               ierr, tloop, launch_index.x, launch_index.y,  launch_index.x % 26
           );
-
+#endif
 #ifdef WITH_PRINT
         rtPrintf("intersect_csg u ierr %4x tloop %3d launch_index (%5d,%5d) li.x(26) %2d ray.direction (%10.3f,%10.3f,%10.3f) ray.origin (%10.3f,%10.3f,%10.3f)   \n",
               ierr, tloop, launch_index.x, launch_index.y,  launch_index.x % 26,

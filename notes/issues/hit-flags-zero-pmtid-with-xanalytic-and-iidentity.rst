@@ -1,8 +1,8 @@
-hit-flags-zero-pmtid-with-xanalytic-and-iidentity
-===================================================
+FIXED hit-flags-zero-pmtid-with-xanalytic-and-iidentity
+=========================================================
 
-issue
----------
+issue : caused by trivial BOOLEAN_DEBUG stomping
+---------------------------------------------------
 
 With analytic geometry (using --xanalytic) note that get pmtid 0 for all hits,  whilst 
 triangulated geometry (without --xanalytic) gives expected pmtid. 
@@ -33,7 +33,9 @@ The signed bnd index -25, -29 are 1-based : so 24 28 on the 0-based blib list::
      26 : Pyrex/HamamatsuR12860_PMT_20inch_photocathode_logsurf2/HamamatsuR12860_PMT_20inch_photocathode_logsurf1/Vacuum 
      28 : Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum 
 
-* are missing bnd -27 : so no Hamamatsu hits ?
+* are missing bnd -27 : so no Hamamatsu hits ?  
+
+  * missing -27 was separate issue : fixed in source geometry with --pmt20inch-simplify-csg 
 
 ::
 
@@ -116,6 +118,8 @@ Then::
 Dumping from the bounds program shows the identity info is there GPU side, overwrite somewhere ?
 ---------------------------------------------------------------------------------------------------
 
+More on this in :doc:`direct-identity-debug.rst` 
+
 ::
 
     2020-07-21 02:29:13.972 INFO  [388191] [OContext::launch@779] COMPILE time: 7.00001e-06
@@ -142,6 +146,9 @@ need quicker debug turnaround that tds  : added okt using the geocache and genst
 -----------------------------------------------------------------------------------------------------
 
 * this avoids geometry conversion + Geant4 initialization(voxeling) time 
+
+* observe material inconsistency when booting from GDML :doc:`material-inconsistency.rst`
+
 
 ::
 
@@ -183,6 +190,8 @@ need quicker debug turnaround that tds  : added okt using the geocache and genst
 
 Switching on --printenabled with --pindex 1000 reveals CRAZY numParts 511 blowout
 ----------------------------------------------------------------------------------
+
+* simplifying source geometry with --pmt20inch-simplify-csg makes the PMTs less crazy : so they fit 
 
 ::
 
@@ -408,7 +417,7 @@ Check the GPts buffers
 Check the GParts : ridx 3 affliction shows
 ---------------------------------------------
 
-::
+This was before --pmt20inch-simplify-csg::
 
     epsilon:GParts blyth$ wc -l ?/GParts.txt
         1916 0/GParts.txt

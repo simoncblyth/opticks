@@ -130,6 +130,9 @@ oe-export-misc()
 {
     export TMP=/tmp/$USER/opticks
     export OPTICKS_EVENT_BASE=$TMP
+
+    export PATH=$(oe-home)/bin:$PATH
+    export PATH=$(oe-home)/ana:$PATH
 }
 
 oe-export-cuda()

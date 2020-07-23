@@ -165,11 +165,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     optix::Aabb* aabb = (optix::Aabb*)result;
     *aabb = optix::Aabb();
 
-#ifdef WITH_AII
-    uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
-#else
     uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ; 
-#endif
 
 
 //#define WITH_PRINT_IDENTITY_BOUNDS 1 
@@ -327,35 +323,9 @@ RT_PROGRAM void intersect(int primIdx)
     unsigned numParts    = prim.numParts() ; 
     unsigned primFlag    = prim.primFlag() ;  
 
-#ifdef WITH_AII
-    uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
-#else
-    uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ; 
-#endif
-
-
-//#define WITH_PRINT_IDENTITY_INTERSECT 1 
-#ifdef WITH_PRINT_IDENTITY_INTERSECT
-
-    if(repeat_index > 0 && repeat_index < 5)
-    {
-        rtPrintf("// intersect_analysic.cu:intersect WITH_PRINT_IDENTITY_INTERSECT repeat_index %d instance_index %d primitive_count %3d primIdx %3d identity ( %7d %7d %7d %7d ) \n", 
-            repeat_index, instance_index, primitive_count, primIdx, identity.x, identity.y, identity.z, identity.w );  
-    }
-
-#endif
-
-
-
     if(primFlag == CSG_FLAGNODETREE)  
     { 
-        Part pt0 = partBuffer[partOffset + 0] ; 
-
-        identity.z = pt0.boundary() ;        // replace placeholder zero with test analytic geometry root node boundary
-
-        evaluative_csg( prim, identity );
-        //intersect_csg( prim, identity );
-
+        evaluative_csg( prim, primIdx );
     }
     else if(primFlag == CSG_FLAGINVISIBLE)
     {
@@ -368,27 +338,27 @@ RT_PROGRAM void intersect(int primIdx)
         {  
             Part pt = partBuffer[partOffset + p] ; 
 
-            identity.z = pt.boundary() ;   
-
+            //identity.z = pt.boundary() ;   
+            unsigned boundary = pt.boundary() ;   
             unsigned typecode = pt.typecode() ; 
 
             switch(typecode)
             {
                 case CSG_ZERO:
-                    intersect_aabb(pt.q2, pt.q3, identity);
+                    intersect_aabb(pt.q2, pt.q3, boundary, primIdx);
                     break ; 
                 case CSG_SPHERE:
-                    intersect_zsphere<false>(pt.q0,pt.q1,pt.q2,pt.q3,identity);
+                    intersect_zsphere<false>(pt.q0,pt.q1,pt.q2,pt.q3,boundary, primIdx);
                     break ; 
                 case CSG_TUBS:
-                    intersect_ztubs(pt.q0,pt.q1,pt.q2,pt.q3,identity);
+                    intersect_ztubs(pt.q0,pt.q1,pt.q2,pt.q3,boundary, primIdx);
                     break ; 
                 case CSG_BOX:
-                    intersect_box(pt.q0,identity);
+                    intersect_box(pt.q0,boundary, primIdx);
                     break ; 
                 case CSG_PRISM:
                     // q0.f param used in *bounds* to construct prismBuffer, which is used within intersect_prism
-                    intersect_prism(identity);
+                    intersect_prism(boundary, primIdx);
                     break ; 
             }
         }

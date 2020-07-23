@@ -576,7 +576,7 @@ RT_PROGRAM void generate()
         // TODO: minimize active stack across the rtTrace call
         rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
 
-#define WITH_PRINT_IDENTITY 1 
+//#define WITH_PRINT_IDENTITY 1 
 #ifdef WITH_PRINT_IDENTITY
         rtPrintf("//generate.cu WITH_PRINT_IDENTITY prd.identity ( %8d %8d %8d %8d )\n", prd.identity.x, prd.identity.y, prd.identity.z, prd.identity.w); 
 #endif

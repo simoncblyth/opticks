@@ -610,6 +610,7 @@ class Evt(object):
         self.desc['hflags'] = "(hits) final photon step: flags "
         self.desc['hc4'] = "(hits) final photon step: dtype split uint8 view of ox flags"
 
+    htid = property(lambda self:self.ht.view(np.int32)[:,3,2]) ## photon_id of hits, requires optixrap/cu/generate.cu IDENTITY_DEBUG  
 
     def init_records(self):
         """
