@@ -100,6 +100,10 @@ BOpticksResource::BOpticksResource
 
 Instanciated as base class of okc/OpticksResource 
 
+
+
+OPTICKS_RESOURCE_LAYOUT envvar -> m_layout, which overrides the default of 1 
+
 TODO: eliminate testgeo param 
 
 **/

@@ -36,7 +36,7 @@ accessors and dumping.
 
 class NPY_API NPho {
     public:  
-        static void Dump(NPY<float>* ox, const char* opt="post,dirw,flgs") ;
+        static void Dump(NPY<float>* ox, unsigned maxDump=0, const char* opt="post,dirw,flgs") ;
         static void Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* opt="post,dirw,flgs") ;
     public:  
         NPho(NPY<float>* photons, const char* opt="mski,post,dirw,polw,flgs"); 
@@ -53,7 +53,7 @@ class NPY_API NPho {
         std::string           desc(unsigned i) const ;
         std::string           desc() const ;
         void                  dump(unsigned modulo, unsigned margin, const char* msg="NPho::dump") const ;
-        void                  dump(const char* msg="NPho::dump") const ; 
+        void                  dump(const char* msg="NPho::dump", unsigned maxDump=0) const ; 
    private:
        NPY<float>*            m_photons ; 
        NPY<unsigned>*         m_msk ; 

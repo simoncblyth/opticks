@@ -81,6 +81,9 @@ X4Solid::Convert
 Canonicaly used from X4PhysicalVolume::convertSolid
 
 
+Doing prepTree here triggers assert regarding not expected to change parent links
+with geocache-tds.
+
 **/
 
 nnode* X4Solid::Convert(const G4VSolid* solid, Opticks* ok, const char* boundary)
@@ -91,8 +94,8 @@ nnode* X4Solid::Convert(const G4VSolid* solid, Opticks* ok, const char* boundary
     X4Solid xs(solid, ok, top);
     nnode* root = xs.root(); 
 
-    //root->update_gtransforms(); 
-    root->prepTree(); // updates_gtransforms and sets parent links  
+    root->update_gtransforms(); 
+    //root->prepTree(); // updates_gtransforms and sets parent links  
 
 
     if(boundary) root->boundary = boundary ; 

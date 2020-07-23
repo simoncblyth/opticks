@@ -43,11 +43,13 @@ except ImportError:
 pass
 ipdb = MyPdb()
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    plt = None
-pass
+#  dont use matplotlib in base modules as it fails remotely 
+#     qt.qpa.screen: QXcbConnection: Could not connect to display Could not connect to any X display.
+#try:
+#    import matplotlib.pyplot as plt
+#except ImportError:
+#    plt = None
+#pass
 
 
 from collections import OrderedDict as odict
@@ -202,6 +204,12 @@ class Evt(object):
         sel = cls(tag=evt.tag, src=evt.src, det=evt.det, seqs=seqs, not_=not_ , label=label, maxrec=evt.maxrec, rec=evt.rec, dbg=dbg, args=evt.args )
         return sel 
 
+    @classmethod
+    def Load(cls, dirpath="/tmp/blyth/opticks/OKTest/evt/g4live/torch/1"):
+        """
+        TODO: create evt just from a dirpath 
+        """
+        pass
 
     def __init__(self, tag="1", src="natural", det="g4live", pfx=".", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?", smry=False):
         log.info("[ %s " % nom)
@@ -1722,6 +1730,13 @@ class Evt(object):
 
 
     def recflags(self, recs):
+        """
+
+        In [18]: a.rx.shape
+        Out[18]: (11235, 10, 2, 4)
+
+        Saved from optixrap/cu/photon.h:rsave 
+        """
         m1m2 = self.rx[:,recs,1,2]
         bdfl = self.rx[:,recs,1,3]
 
@@ -1736,6 +1751,13 @@ class Evt(object):
         flgs[:,2] = np.int8(bd)
         flgs[:,3] = fl
         return flgs
+
+
+    m1 = property(lambda self:(self.rx[:,:,1,2] & np.uint16(0xFF) ))
+    m2 = property(lambda self:(self.rx[:,:,1,2] & np.uint16(0xFF00)) >> 8 )
+    bd = property(lambda self:np.int8(self.rx[:,:,1,3] & np.uint16(0xFF) ))
+    fl = property(lambda self:(self.rx[:,:,1,3] & np.uint16(0xFF00)) >> 8 )
+
 
     def rflgs_(self, recs):
         return self.recflags(recs) 

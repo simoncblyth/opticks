@@ -136,7 +136,7 @@ void NPho::Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* op
     ph.dump(modulo, margin); 
 }
 
-void NPho::Dump(NPY<float>* ox, const char* opt) 
+void NPho::Dump(NPY<float>* ox, unsigned maxDump, const char* opt) 
 {
     LOG(info) << opt
               << " ox " << ( ox ? "Y" : "NULL" ) 
@@ -144,7 +144,7 @@ void NPho::Dump(NPY<float>* ox, const char* opt)
  
     if(!ox) return ; 
     NPho ph(ox, opt) ;
-    ph.dump(); 
+    ph.dump("NPho::Dump", maxDump); 
 }
 
 
@@ -172,15 +172,18 @@ void NPho::dump(unsigned modulo, unsigned margin, const char* msg) const
 
 
 
-void NPho::dump(const char* msg) const 
+void NPho::dump(const char* msg, unsigned maxDump) const 
 {
     unsigned numPhotons = getNumPhotons() ;
+    unsigned numDump = maxDump > 0 ?  std::min( numPhotons, maxDump ) : numPhotons ; 
     LOG(info) << msg 
               << " desc " << desc() 
               << " numPhotons " << numPhotons
+              << " maxDump " << maxDump
+              << " numDump " << numDump
               ; 
 
-    for(unsigned i=0 ; i < numPhotons ; i++)
+    for(unsigned i=0 ; i < numDump  ; i++)
     {
         std::cout << desc(i) << std::endl ;
     }

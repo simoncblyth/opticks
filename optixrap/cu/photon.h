@@ -194,14 +194,6 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
     qaux.uchar_.y =  s.index.y ;    // m2   
     qaux.char_.z  =  p.flags.i.x ;  // boundary(range -55:55)   debugging some funny material codes
     qaux.uchar_.w = __ffs(s.flag) ; // first set bit __ffs(0) = 0, otherwise 1->32 
-
-    // DEBUG: non-reproducibility, 
-    //        setting these to zero avoids the 1 in 2000 level non-reproducibility in "ggv --noindex" 
-    //        interop running
-    //
-    //qaux.uchar_.x = 0 ;
-    //qaux.uchar_.y = 0 ;
-   
   
     //             lsb_ (flq[0].x)    msb_ (flq[0].y)
     //            
@@ -219,182 +211,10 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
 #endif
 
 
-/*
-
-
-Observe non-reproducibility in interop running 
-at level of 1 in 2000 of entry [:,1,2]
-
-
-
-n [35]: d10 = a[:,1,0] != b[:,1,0]
-
-In [36]: d10.size
-Out[36]: 6128410
-
-In [37]: a[:,1,0][d10].size
-Out[37]: 0
-
-In [38]: d11 = a[:,1,1] != b[:,1,1]
-
-In [39]: a[:,1,1][d11].size
-Out[39]: 0
-
-In [40]: d12 = a[:,1,2] != b[:,1,2]
-
-In [41]: a[:,1,2][d12].size
-Out[41]: 25464
-
-In [42]: d13 = a[:,1,3] != b[:,1,3]
-
-In [43]: a[:,1,3][d13].size
-Out[43]: 0
-
-
-
-Non-reproducibility on consequtive running of m2,
-no-such issue seen with Juno
-
-
-
-In [11]: a1 = np.array( a[:,1,2].view(np.uint16) & 0xFF , dtype=np.uint8 )
-
-In [12]: a1
-Out[12]: array([10, 10, 11, ...,  0,  0,  0], dtype=uint8)
-
-In [13]: b1 = np.array( b[:,1,2].view(np.uint16) & 0xFF , dtype=np.uint8 )
-
-In [14]: b1
-Out[14]: array([10, 10, 11, ...,  0,  0,  0], dtype=uint8)
-
-In [15]: d1 = a1 != b1
-
-In [16]: a1[d1]
-Out[16]: array([], dtype=uint8)
-
-In [17]: b1[d1]
-Out[17]: array([], dtype=uint8)
-
-In [18]: a2 = np.array( a[:,1,2].view(np.uint16) >> 8 , dtype=np.uint8 )
-
-In [19]: b2 = np.array( b[:,1,2].view(np.uint16) >> 8 , dtype=np.uint8 )
-
-In [20]: a2
-Out[20]: array([ 10,  11,  12, ..., 128, 128, 128], dtype=uint8)
-
-In [21]: b2
-Out[21]: array([ 10,  11,  12, ..., 128, 128, 128], dtype=uint8)
-
-In [22]: d2 = a2 != b2
-
-In [23]: a2[d2].size
-Out[23]: 25464
-
-In [24]: a2[d2]
-Out[24]: array([10, 10, 10, ...,  1, 18, 10], dtype=uint8)
-
-In [25]: b2[d2]
-Out[25]: array([16, 18, 18, ..., 10, 10, 18], dtype=uint8)
-
-
-In [31]: count_unique(b2[d2])
-Out[31]: 
-array([[    1,   705],
-       [    2,    11],
-       [   10,  8214],
-       [   11,  2289],
-       [   12,   139],
-       [   16,  2032],
-       [   18, 11017],
-       [   20,   406],
-       [   21,   592],
-       [   24,    59]])
-
-In [32]: count_unique(a2[d2])
-Out[32]: 
-array([[    1,   789],
-       [    2,    18],
-       [   10,  8182],
-       [   11,  2154],
-       [   12,   176],
-       [   16,  1786],
-       [   18, 11372],
-       [   20,   343],
-       [   21,   609],
-       [   24,    35]])
-
-
-{
-    "ADTableStainlessSteel": "19",
-    "Acrylic": "3",
-    "Air": "15",
-    "Aluminium": "18",
-    "Bialkali": "5",
-    "DeadWater": "8",
-    "ESR": "10",
-    "Foam": "20",
-    "GdDopedLS": "1",
-    "IwsWater": "6",
-    "LiquidScintillator": "2",
-    "MineralOil": "4",
-    "Nitrogen": "21",
-    "NitrogenGas": "22",
-    "Nylon": "23",
-    "OwsWater": "9",
-    "PPE": "17",
-    "PVC": "24",
-    "Pyrex": "14",
-    "Rock": "16",
-    "StainlessSteel": "12",
-    "Tyvek": "25",
-    "UnstStainlessSteel": "11",
-    "Vacuum": "13",
-    "Water": "7"
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
-
-
 
 
 
 /*
-
-
-In [68]: a.shape
-Out[68]: (6128410, 2, 4)      // 8 * int16  item
-
-In [69]: a.dtype
-Out[69]: dtype('int16')
-
-    //  f = msb2_(a.view(np.uint16)[:,1,3])
-
-In [9]: count_unique(f)
-Out[9]: 
-array([[      1,  559369],
-       [      3,   59502],
-       [      4,  469483],
-       [      5,  224054],
-       [      6,   13711],
-       [     11,   62549],
-       [     12, 1204949],
-       [    128, 3534793]])
-
-
-
-
 
 ::
 
@@ -703,9 +523,6 @@ array([[58, 58, 43, 59, 43, 59, 59, 43, 59, 43],
        hence its necessary to view(np.uint16)
        its more correct to do that for all when using unorm but only matters for MSB
 
-
-
 */
-
 
 

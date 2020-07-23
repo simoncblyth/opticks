@@ -262,9 +262,8 @@ void OPropagator::launch()
     OpticksEvent* evt = m_oevt->getEvent(); 
     BTimes* launch_times = evt->getLaunchTimes() ;
 
-    const char* llogpath = m_ocontext->getPrintIndexLogPath() ; 
 
-    LOG(info) << "LAUNCH NOW " << ( llogpath ? llogpath : "-" ) ; 
+    LOG(info) << "LAUNCH NOW " << m_ocontext->printDesc() ; 
 
     OK_PROFILE("_OPropagator::launch");
     double dt = m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);

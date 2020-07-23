@@ -97,7 +97,7 @@ class BLib(object):
     selection = property(_get_selection, _set_selection)
 
     def __str__(self):
-        return "\n".join([repr(self)] +  map(lambda _:"%3d : %s " % ( _, self.bname(_)) , self.selection))
+        return "\n".join([repr(self)] +  map(lambda _:"%3d : %3d : %s " % ( _, _+1, self.bname(_)) , self.selection))
     def brief(self):
         rng = range(len(self.blib))
         rng = rng[0:5] + rng[-5:]

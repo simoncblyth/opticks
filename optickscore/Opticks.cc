@@ -2251,7 +2251,8 @@ void Opticks::configure()
     else if(m_cfg->hasOpt("fullscreen"))
     {
 #ifdef __APPLE__
-        m_size = glm::uvec4(2880,1800,2,0) ;
+        //m_size = glm::uvec4(2880,1800,2,0) ;
+        m_size = glm::uvec4(1440,900,2,0) ;
 #else
         m_size = glm::uvec4(2560,1440,1,0) ;
 #endif

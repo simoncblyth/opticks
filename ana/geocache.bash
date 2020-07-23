@@ -351,11 +351,12 @@ geocache-tds(){
 
 
     #local label=tds
-    local label=tds_ngt_pcnk
+    #local label=tds_ngt_pcnk
+    local label=tds_ngt_pcnk_sycg
     local gdml=$(opticks-prefix)/$label.gdml
     echo $msg gdml $gdml
-    #geocache-gdml-kludge      $gdml
-    #geocache-gdml-kludge-dump $gdml
+    geocache-gdml-kludge      $gdml
+    geocache-gdml-kludge-dump $gdml
 
     geocache-create- --gdmlpath $gdml -D
 

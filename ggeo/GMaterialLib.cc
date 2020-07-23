@@ -314,10 +314,15 @@ A translated "standardized" material is added to the lib.
 // invoked pre-cache by GGeo::add(GMaterial* material) AssimpGGeo::convertMaterials
 void GMaterialLib::add(GMaterial* mat)
 {
-    if(mat->hasProperty("EFFICIENCY"))
+    bool has_efficiency = mat->hasProperty("EFFICIENCY") ; 
+    LOG(LEVEL) 
+        << " matname " << mat->getName()
+        << " pre-count " << m_materials.size()
+        << ( has_efficiency ? " WITH EFFICIENCY " : " " )
+        ;  
+
+    if(has_efficiency)
     {
-        //LOG(LEVEL) << " MATERIAL WITH EFFICIENCY " ; 
-        LOG(error) << " MATERIAL WITH EFFICIENCY " ; 
         //setCathode(mat) ; 
         addSensitiveMaterial(mat); 
     }

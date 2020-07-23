@@ -576,6 +576,11 @@ RT_PROGRAM void generate()
         // TODO: minimize active stack across the rtTrace call
         rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
 
+#define WITH_PRINT_IDENTITY 1 
+#ifdef WITH_PRINT_IDENTITY
+        rtPrintf("//generate.cu WITH_PRINT_IDENTITY prd.identity ( %8d %8d %8d %8d )\n", prd.identity.x, prd.identity.y, prd.identity.z, prd.identity.w); 
+#endif
+
         if(prd.boundary == 0)
         {
             s.flag = MISS ;  // overwrite CERENKOV/SCINTILLATION for the no hitters
@@ -663,6 +668,12 @@ RT_PROGRAM void generate()
 #endif
     }
 
+
+#define IDENTITY_DEBUG  1
+#ifdef IDENTITY_DEBUG
+    p.flags.u.z = photon_id ;   // stomp on debug flags to pass the identity, so can identify the pindex of hits  
+#endif
+
     // breakers and maxers saved here
     psave(p, photon_buffer, photon_offset ); 
 
@@ -693,6 +704,14 @@ RT_PROGRAM void generate()
         sequence_buffer[photon_id*2 + 1] = seqmat ;  
     }
 #endif
+
+
+//#define WITH_PRINT_IDENTITY_GE 1
+#ifdef WITH_PRINT_IDENTITY_GE
+   //if(p.flags.i.w & SURFACE_DETECT )
+   rtPrintf("// generate.cu WITH_PRINT_IDENTITY_GE  photon_id %d \n", photon_id ); 
+#endif
+
 
 
     /**

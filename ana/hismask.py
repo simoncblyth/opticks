@@ -22,6 +22,16 @@
 hismask.py: HisMask
 ========================
 
+::
+
+    In [12]: from opticks.ana.hismask import HisMask
+    In [13]: hm = HisMask()
+    In [16]: hm.label(2114)
+    Out[16]: 'BT|SD|SI'
+
+
+
+
 
 """
 import os, datetime, logging, sys

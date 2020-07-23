@@ -574,6 +574,8 @@ void OContext::initPrint()
 
 std::string OContext::printDesc() const 
 {
+    const char* llogpath = getPrintIndexLogPath() ; 
+
     optix::int3 pindex = m_context->getPrintLaunchIndex();
     bool printenabled = m_context->getPrintEnabled(); 
 
@@ -583,7 +585,8 @@ std::string OContext::printDesc() const
        << " " << pindex.x 
        << " " << pindex.y 
        << " " << pindex.z 
-       << ")" 
+       << ") " 
+       << ( llogpath ? llogpath : "-" )
        ;
 
    return ss.str(); 

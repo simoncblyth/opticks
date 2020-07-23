@@ -60,6 +60,16 @@ RT_PROGRAM void closest_hit_propagate()
      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;   
      prd.identity = instanceIdentity ; 
      prd.surface_normal = cos_theta > 0.f ? -n : n ;   
+
+//#define WITH_PRINT_IDENTITY_CH 1
+#ifdef WITH_PRINT_IDENTITY_CH
+     rtPrintf("// material1_propagate.cu WITH_PRINT_IDENTITY_CH prd.identity (%8d %8d %8d %8d) \n", 
+        prd.identity.x, 
+        prd.identity.y, 
+        prd.identity.z, 
+        prd.identity.w) ;  
+#endif
+
 }
 
 // prd.boundary 

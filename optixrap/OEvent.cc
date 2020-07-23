@@ -522,7 +522,8 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
 
     if(m_ok->isDumpHit())
     {
-        NPho::Dump(hit, "OEvent::downloadHitsCompute --dumphit,post,flgs" ); 
+        unsigned maxDump = 100 ; 
+        NPho::Dump(hit, maxDump, "OEvent::downloadHitsCompute --dumphit,post,flgs" ); 
     }
 
     return nhit ; 
@@ -561,7 +562,8 @@ unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
 
     if(m_ok->isDumpHit())
     {
-        NPho::Dump(hit, "OEvent::downloadHitsInterop --dumphit,post,flgs " ); 
+        unsigned maxDump = 100 ; 
+        NPho::Dump(hit, maxDump, "OEvent::downloadHitsInterop --dumphit,post,flgs " ); 
     }
 
     return nhit ; 
