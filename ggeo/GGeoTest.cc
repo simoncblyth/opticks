@@ -320,10 +320,6 @@ void GGeoTest::addPlaceholderBuffers( GMergedMesh* tmm, unsigned nelem )
 
     NPY<unsigned>* idbuf = ii->getBuffer() ;  
 
-#ifdef WITH_AII
-    tmm->setAnalyticInstancedIdentityBuffer(idbuf);  
-#endif
-
     tmm->setInstancedIdentityBuffer(idbuf);  
 
     // NULL for tri avoids FaceRepeated complications

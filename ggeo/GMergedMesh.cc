@@ -1124,13 +1124,6 @@ iidentity InstanceIdentityBuffer
 
     collects the results of GVolume::getIdentity for all volumes within all instances. 
 
-aii AnalyticInstanceIdentityBuffer
-    (num_instances, 4 )
-
-    adhoc collects volume identity info for the base node of all instances
-    TODO: eliminate this ?
-    TODO: change name : Analytic is NOT appropriate name anymore, maybe makeInstanceBaseIdentityBuffer 
-
 **/
 
 void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
@@ -1142,11 +1135,6 @@ void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
 
     NPY<unsigned int>* iidentity  = GTree::makeInstanceIdentityBuffer(placements);
     setInstancedIdentityBuffer(iidentity);  
-
-#ifdef WITH_AII
-    NPY<unsigned int>* aii   = GTree::makeAnalyticInstanceIdentityBuffer(placements); 
-    setAnalyticInstancedIdentityBuffer(aii);
-#endif
 }
 
 

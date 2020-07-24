@@ -700,10 +700,6 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 
     unsigned numPrim = primBuf->getNumItems();
 
-
-#ifdef WITH_AII
-    NPY<unsigned>*  idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && ( idBuf->hasShape(-1,4) || idBuf->hasShape(-1,1,4)));
-#else
     NPY<float>* itransforms = mm->getITransformsBuffer(); assert(itransforms && itransforms->hasShape(-1,4,4) ) ;
     unsigned numInstances = itransforms->getNumItems(); 
     NPY<unsigned>*  idBuf = mm->getInstancedIdentityBuffer();   assert(idBuf); 
@@ -718,9 +714,6 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     {
         assert(idBuf->hasShape(numInstances,numPrim,4)); 
     }
-
-
-#endif
 
 
 

@@ -73,9 +73,6 @@ const char* GMesh::identity_       = "identity" ;
 const char* GMesh::itransforms_    = "itransforms" ;
 const char* GMesh::iidentity_       = "iidentity" ;
 
-#ifdef WITH_AII
-const char* GMesh::aiidentity_      = "aiidentity" ;
-#endif
 const char* GMesh::components_      = "components" ;
 
 
@@ -100,9 +97,7 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
 
     names.push_back(itransforms_); 
     names.push_back(iidentity_); 
-#ifdef WITH_AII
-    names.push_back(aiidentity_); 
-#endif
+
     names.push_back(components_); 
 }
 
@@ -193,9 +188,7 @@ GMesh::GMesh(unsigned int index,
 
       m_itransforms_buffer(NULL),
       m_iidentity_buffer(NULL),
-#ifdef WITH_AII
-      m_aiidentity_buffer(NULL),
-#endif
+
       m_components_buffer(NULL),
 
       m_facerepeated_identity_buffer(NULL),
@@ -224,9 +217,6 @@ void GMesh::stealIdentity(GMesh* other)
     setParts(other->getParts());
     setITransformsBuffer( other->getITransformsBuffer() );
     setInstancedIdentityBuffer( other->getInstancedIdentityBuffer() );
-#ifdef WITH_AII
-    setAnalyticInstancedIdentityBuffer( other->getAnalyticInstancedIdentityBuffer() );
-#endif
 
     // hmm passing everything over is too complicated, maybe better to do LODification inplace
     //     to avoid this        
@@ -600,12 +590,6 @@ NPY<unsigned>*  GMesh::getInstancedIdentityBuffer() const
 {
     return m_iidentity_buffer ;
 }
-#ifdef WITH_AII
-NPY<unsigned>*  GMesh::getAnalyticInstancedIdentityBuffer() const 
-{
-    return m_aiidentity_buffer ;
-}
-#endif
 NPY<unsigned>*  GMesh::getComponentsBuffer() const 
 {
     return m_components_buffer ;
@@ -1161,14 +1145,6 @@ void GMesh::setInstancedIdentityBuffer(NPY<unsigned int>* buffer)
     if(!buffer) return ; 
     m_iidentity = (guint4*)buffer->getPointer();
 }
-
-#ifdef WITH_AII
-void GMesh::setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* buf)
-{
-    m_aiidentity_buffer = buf ;
-}
-#endif
-
 
 
 
@@ -1800,9 +1776,6 @@ bool GMesh::isNPYBuffer(const char* name)  const
 {
     return 
            ( 
-#ifdef WITH_AII
-              strcmp( name, aiidentity_) == 0  ||
-#endif
               strcmp( name, iidentity_) == 0  ||
               strcmp( name, itransforms_) == 0  ||
               strcmp( name, components_) == 0  
@@ -1852,9 +1825,6 @@ NPYBase* GMesh::getNPYBuffer(const char* name) const
 {
     NPYBase* buf(NULL);
     if(strcmp(name, iidentity_) == 0)   buf = getInstancedIdentityBuffer();
-#ifdef WITH_AII
-    else if(strcmp(name, aiidentity_)  == 0) buf = getAnalyticInstancedIdentityBuffer();
-#endif
     else if(strcmp(name, itransforms_) == 0) buf = getITransformsBuffer();
     else if(strcmp(name, components_) == 0)  buf = getComponentsBuffer();
     return buf ; 
@@ -1873,13 +1843,6 @@ void GMesh::loadNPYBuffer(const char* path, const char* name)
         NPY<unsigned>* buf = NPY<unsigned>::load(path) ;
         setInstancedIdentityBuffer(buf);
     }
-#ifdef WITH_AII
-    else if(strcmp(name, aiidentity_) == 0)
-    {
-        NPY<unsigned>* buf = NPY<unsigned>::load(path) ;
-        setAnalyticInstancedIdentityBuffer(buf);
-    }
-#endif
     else if(strcmp(name, itransforms_) == 0)
     {
         NPY<float>* buf = NPY<float>::load(path) ;
