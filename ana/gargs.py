@@ -63,6 +63,7 @@ class GArgs(argparse.Namespace):
         labels = slist_(r"""
         tds_ngt
         tds_ngt_pcnk
+        tds_ngt_pcnk_sycg
         """)
         return labels[idx] 
 

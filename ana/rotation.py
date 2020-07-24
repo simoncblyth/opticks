@@ -77,16 +77,37 @@ def tr_inverse(tt):
 
 class Instance(object):
     def __init__(self, ridx):
+        """
+        epsilon:1 blyth$ inp GMergedMesh/?/iidentity.npy GMergedMesh/?/itransforms.npy
+        a :                                  GMergedMesh/1/iidentity.npy :        (25600, 5, 4) : a4a7deb934cae243b9181c80ddc1066b : 20200719-2129 
+        b :                                GMergedMesh/1/itransforms.npy :        (25600, 4, 4) : 29a7bf21dabfd4a6f9228fadb7edabca : 20200719-2129 
+        c :                                  GMergedMesh/2/iidentity.npy :        (12612, 6, 4) : 4423ba6434c39aff488e6784df468ae1 : 20200719-2129 
+        d :                                GMergedMesh/2/itransforms.npy :        (12612, 4, 4) : 766b1e274449b0d9f2ecc35d58b52a71 : 20200719-2129 
+        e :                                  GMergedMesh/3/iidentity.npy :         (5000, 6, 4) : 52c59e1bb3179c404722c2df4c26ac81 : 20200719-2129 
+        f :                                GMergedMesh/3/itransforms.npy :         (5000, 4, 4) : 1ff4e96acee67137c4740b05e6684c93 : 20200719-2129 
+        g :                                  GMergedMesh/4/iidentity.npy :         (2400, 6, 4) : 08846aa446e53c50c1a7cea89674a398 : 20200719-2129 
+        h :                                GMergedMesh/4/itransforms.npy :         (2400, 4, 4) : aafe0245a283080c130d8575b7a83e67 : 20200719-2129 
+
+        #. iidentity is now reshaped shortly after creation to have same item count as itransforms
+        """
         tt = np.load(os.path.expandvars("$GC/GMergedMesh/%d/itransforms.npy" % ridx))
         ii = np.load(os.path.expandvars("$GC/GMergedMesh/%d/iidentity.npy" % ridx))
-        assert len(ii) % len(tt) == 0 
-        nvol = len(ii)/len(tt)   # physvol per instance
-        ii = ii.reshape(-1,nvol,4)
-        assert len(ii) == len(tt)
+
+        assert tt.shape[1:] == (4,4)
+        assert len(ii.shape) == 3 and ii.shape[2] == 4 
+        assert len(tt) == len(ii)
+        nvol = ii.shape(1)   # physvol per instance
+
         self.ii = ii
         self.tt = tt 
+        self.nvol = nvol 
 
     def find_instance_index(self, pmtid):
+        """
+        Using vol 0 corresponds to the outer volume of the instance :
+        but the copyNo is duplicated for all the volumes of the instance
+        so all 0:nvol are the same.
+        """ 
         return np.where( self.ii[:,0,3] == pmtid )[0][0]
     def find_instance_transform(self, pmtid):
         ix = self.find_instance_index(pmtid)
