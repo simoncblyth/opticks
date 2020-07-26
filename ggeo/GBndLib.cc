@@ -513,6 +513,67 @@ std::string GBndLib::shortname(const guint4& bnd) const
 }
 
 
+void GBndLib::getBnd(int& omat, int& osur, int& isur, int& imat, unsigned boundary) const 
+{
+    unsigned int ni = getNumBnd();
+    assert(boundary < ni);
+    const guint4& bnd = m_bnd[boundary];
+
+    omat = bnd[OMAT] ;  
+    osur = bnd[OSUR] ;  
+    isur = bnd[ISUR] ;  
+    imat = bnd[IMAT] ;  
+}
+
+
+bool GBndLib::isSensorBoundary(unsigned boundary) const 
+{
+    const guint4& bnd = m_bnd[boundary];
+    bool osur_sensor = m_slib->isSensorIndex(bnd[OSUR]); 
+    bool isur_sensor = m_slib->isSensorIndex(bnd[ISUR]); 
+    bool is_sensor = osur_sensor || isur_sensor ; 
+    return is_sensor ; 
+}
+
+void GBndLib::countSensorBoundary(unsigned boundary)
+{
+    m_boundary_sensor_count[boundary] += 1 ; 
+}
+
+
+
+std::string GBndLib::getSensorBoundaryReport() const 
+{
+    std::stringstream ss ; 
+    typedef std::map<unsigned, unsigned>::const_iterator IT ; 
+
+    unsigned sensor_total = 0 ; 
+    for(IT it=m_boundary_sensor_count.begin() ; it != m_boundary_sensor_count.end() ; it++)
+    {
+        unsigned boundary = it->first ; 
+        unsigned sensor_count = it->second ; 
+        ss 
+            << " boundary " << std::setw(3) << boundary
+            << " b+1 " << std::setw(3) << boundary+1
+            << " sensor_count " << std::setw(6) << sensor_count
+            << " " << shortname(boundary)
+            << std::endl 
+            ;
+        sensor_total += sensor_count ; 
+    }
+
+    ss 
+        << "          " << "   "
+        << "     " << "   "
+        << " sensor_total " << std::setw(6) << sensor_total
+        << std::endl 
+        ;
+
+    return ss.str(); 
+}
+
+
+
 
 guint4 GBndLib::getBnd(unsigned boundary) const
 {

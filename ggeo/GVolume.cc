@@ -25,7 +25,9 @@
 
 // npy-
 #include "NGLM.hpp"
+#ifdef OLD_SENSOR
 #include "NSensor.hpp"
+#endif
 
 #include "GPropertyMap.hh"
 #include "GMesh.hh"
@@ -46,10 +48,13 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh )
     m_boundary(-1),
     m_csgflag(CSG_PARTLIST),
     m_csgskip(false),
+#ifdef OLD_SENSOR
     m_sensor(NULL),
+    m_sensor_surface_index(0),
+#endif
+    m_sensor_index(-1),
     m_pvname(NULL),
     m_lvname(NULL),
-    m_sensor_surface_index(0),
     m_parts(NULL),
     m_pt(NULL),
     m_parallel_node(NULL), 
@@ -75,11 +80,6 @@ void GVolume::setCSGSkip(bool csgskip)
 unsigned GVolume::getBoundary() const 
 {
     return m_boundary ; 
-}
-
-NSensor* GVolume::getSensor()
-{
-    return m_sensor ; 
 }
 
 void GVolume::setCopyNumber(unsigned copyNumber)
@@ -192,12 +192,10 @@ void GVolume::setBoundaryAll(unsigned boundary)
 }
 
 
-void GVolume::setSensor(NSensor* sensor)
-{
-    m_sensor = sensor ; 
-    // every triangle needs a value... use 0 to mean unset, so sensor   
-    setSensorIndices( NSensor::RefIndex(sensor) );
-}
+
+
+
+
 
 guint4 GVolume::getIdentity()
 {
@@ -218,15 +216,32 @@ guint4 GVolume::getIdentity()
 }
 
 
-//void GVolume::setIdentity(const guint4& id )
-//{
-//    assert( id.x == m_index );
-//    assert( id.y == getMeshIndex() ) ;
-//
-//    setBoundary( id.z );
-//    setSensorSurfaceIndex( id.w ); 
-//}
 
+void GVolume::setSensorIndex(int sensor_index)
+{
+    m_sensor_index = sensor_index ; 
+    setSensorIndices( m_sensor_index );   // GNode::setSensorIndices duplicate to all faces of m_mesh triangulated geometry
+}
+int GVolume::getSensorIndex() const 
+{
+    return m_sensor_index ;      
+}
+bool GVolume::hasSensorIndex() const
+{
+    return m_sensor_index > -1 ; 
+}
+
+#ifdef OLD_SENSOR
+void GVolume::setSensor(NSensor* sensor)
+{
+    m_sensor = sensor ; 
+    // every triangle needs a value... use 0 to mean unset, so sensor   
+    setSensorIndices( NSensor::RefIndex(sensor) );
+}
+NSensor* GVolume::getSensor()
+{
+    return m_sensor ; 
+}
 void GVolume::setSensorSurfaceIndex(unsigned int ssi)
 {
     m_sensor_surface_index = ssi ; 
@@ -235,6 +250,9 @@ unsigned int GVolume::getSensorSurfaceIndex()
 {
     return m_sensor_surface_index ; 
 }
+#endif
+
+
 
 void GVolume::Dump( const std::vector<GVolume*>& volumes, const char* msg )
 {

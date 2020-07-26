@@ -710,8 +710,17 @@ void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
     unsigned meshIndex = mesh->getIndex();
     unsigned boundary = volume->getBoundary();
 
+#ifdef OLD_SENSOR
     NSensor* sensor = volume->getSensor();
     unsigned sensorIndex = NSensor::RefIndex(sensor) ; 
+    LOG(debug) 
+        << " m_cur_volume " << m_cur_volume 
+        << " nodeIndex " << nodeIndex
+        << " boundaryIndex " << boundary
+        << " sensorIndex " << sensorIndex
+        << " sensor " << ( sensor ? sensor->description() : "NULL" )
+        ;
+#endif
 
     assert(_identity.x == nodeIndex);
     assert(_identity.y == meshIndex);
@@ -722,10 +731,7 @@ void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
         << " m_cur_volume " << m_cur_volume 
         << " nodeIndex " << nodeIndex
         << " boundaryIndex " << boundary
-        << " sensorIndex " << sensorIndex
-        << " sensor " << ( sensor ? sensor->description() : "NULL" )
         ;
-
 
     GNode* parent = volume->getParent();
     unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;

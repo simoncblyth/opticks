@@ -224,7 +224,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void deferredCreateGParts(); 
 
     public:
+        // via m_bndlib
         unsigned int getMaterialLine(const char* shortname);
+        std::string  getSensorBoundaryReport() const ; 
 
    private:
         void init(); 
@@ -273,6 +275,11 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GVolume* getVolumeSimple(unsigned int index) const ;  
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
+
+        unsigned addSensorVolume(GVolume* volume) ;
+        unsigned getNumSensorVolumes() const ;
+        GVolume* getSensorVolume(unsigned sensorIndex) const ;
+
     public:
         void add(GMaterial* material);
         void addRaw(GMaterial* material);
@@ -425,8 +432,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         NMeta*                        m_lv2mt ; 
         const char*                   m_origin_gdmlpath ; 
 
-
+#ifdef OLD_SENSOR
         std::vector<GVolume*>           m_sensitive_volumes ; 
+#endif
+        std::vector<GVolume*>           m_sensor_volumes ; 
         std::unordered_set<std::string> m_cathode_lv ; 
 
         std::vector<GMaterial*>       m_scintillators_raw ; 

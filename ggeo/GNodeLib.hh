@@ -107,6 +107,10 @@ class GGEO_API GNodeLib
     public:
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
+    public:
+        unsigned addSensorVolume(GVolume* volume) ;
+        unsigned getNumSensorVolumes() const ;
+        GVolume* getSensorVolume(unsigned sensorIndex) const ;
     private:
         Opticks*                           m_ok ;  
         bool                               m_analytic ; 
@@ -120,6 +124,7 @@ class GGEO_API GNodeLib
     private:
         std::map<unsigned int, GVolume*>    m_volumemap ; 
         std::vector<GVolume*>               m_volumes ; 
+        std::vector<GVolume*>               m_sensor_volumes ; 
 };
  
 

@@ -395,6 +395,9 @@ void X4PhysicalVolume::convertSurfaces()
     m_slib->addPerfectSurfaces();
     m_slib->dumpSurfaces("X4PhysicalVolume::convertSurfaces");
 
+    m_slib->collectSensorIndices(); 
+    m_slib->dumpSensorIndices("X4PhysicalVolume::convertSurfaces"); 
+
     LOG(verbose) << "]" ;
 
     LOG(info) 
@@ -914,9 +917,16 @@ void X4PhysicalVolume::convertStructure()
     X4Transform3D::SaveBuffer(TMPDIR, "X4Transform3D.npy"); 
 
     LOG(info) 
-        << "] " 
-        << "GGeo::getNumVolumes() " << m_ggeo->getNumVolumes() 
+        << "]" 
+        << " GGeo::getNumVolumes() " << m_ggeo->getNumVolumes() 
+        << " GGeo::getNumSensorVolumes() " << m_ggeo->getNumSensorVolumes() 
+        << std::endl 
+        << " GGeo::getSensorBoundaryReport() "
+        << std::endl 
+        << m_ggeo->getSensorBoundaryReport()
         ;
+
+
 
 #ifdef X4_TRANSFORM
     LOG(info) 
@@ -990,7 +1000,15 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
 X4PhysicalVolume::addBoundary
 ------------------------------
 
-See notes/issues/ab-blib.rst
+Canonically invoked from X4PhysicalVolume::convertNode during the 
+main structural traverse.
+
+For a physical volume and its parent physical volume 
+adds(if not already present) a boundary to the GBndLib m_blib instance, 
+and returns the index of the newly created or pre-existing boundary.
+A boundary is a quadruplet of omat/osur/isur/imat indices.
+
+See notes/issues/ab-blib.rst on getting A-B comparisons to match for boundaries.
 
 **/
 
@@ -1174,6 +1192,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     std::string boundaryName = m_blib->shortname(boundary); 
     int materialIdx = m_blib->getInnerMaterial(boundary); 
 
+
     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
     const std::string& lvName = lv->GetName() ; 
     const std::string& pvName = pv->GetName() ; 
@@ -1310,11 +1329,30 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     if(selected) m_selected_node_count += 1 ;  
 
     LOG(verbose) << " lv_lvIdx " << lvr_lvIdx
-                << " selected " << selected
-               ; 
+                 << " selected " << selected
+                 ; 
+
+    int sensorIndex = m_blib->isSensorBoundary(boundary) ? m_ggeo->addSensorVolume(volume) : -1 ; 
+    if(sensorIndex > -1) m_blib->countSensorBoundary(boundary); 
+
+    /*
+    if(sensorIndex > -1)
+    {
+        LOG(info)
+            << " copyNumber " << std::setw(8) << copyNumber
+            << " sensorIndex " << std::setw(8) << sensorIndex
+            << " boundary " << std::setw(4) << boundary 
+            << " boundaryName " << boundaryName
+            ;
+    }
+    */
  
+#ifdef OLD_SENSOR
     NSensor* sensor = NULL ; 
     volume->setSensor( sensor );   
+#endif
+    volume->setSensorIndex(sensorIndex); 
+
     volume->setCopyNumber(copyNumber); 
     volume->setBoundary( boundary ); 
     volume->setSelected( selected );

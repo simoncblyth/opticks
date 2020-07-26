@@ -111,7 +111,8 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void dump(GPropertyMap<float>* surf, const char* msg);
        void dump(unsigned int index);
        std::string desc() const ; 
-     
+   public:
+       void collectSensorIndices();
    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 

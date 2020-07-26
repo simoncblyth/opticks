@@ -25,7 +25,11 @@
 class GMesh ;
 class GParts ; 
 struct GPt ; 
+
+#ifdef OLD_SENSOR
 class NSensor ; 
+#endif
+
 template <typename T> class GMatrix ; 
 
 #include "OpticksCSG.h"
@@ -58,9 +62,16 @@ class GGEO_API GVolume : public GNode {
       void     setCSGSkip(bool csgskip);
       void     setBoundary(unsigned boundary);     // also sets BoundaryIndices array
       void     setBoundaryAll(unsigned boundary);  // recursive over tree
-      void     setSensor(NSensor* sensor);         // also sets SensorIndices
-      void     setSensorSurfaceIndex(unsigned int ssi);
-      unsigned getSensorSurfaceIndex();
+#ifdef OLD_SENSOR
+      void       setSensor(NSensor* sensor);         // also sets SensorIndices
+      NSensor*   getSensor();
+      void       setSensorSurfaceIndex(unsigned int ssi);
+      unsigned   getSensorSurfaceIndex();
+#endif
+  public:
+      void     setSensorIndex(int sensor_index) ;
+      int      getSensorIndex() const ;
+      bool     hasSensorIndex() const ;
   public:
       // CopyNumber comes from G4PVPlacement.CopyNo (physvol/@copynumber in GDML)
       void     setCopyNumber(unsigned copyNumber); 
@@ -75,7 +86,6 @@ class GGEO_API GVolume : public GNode {
       bool         isCSGSkip();
       unsigned     getBoundary() const ;
       guint4       getIdentity();
-      NSensor*     getSensor();
   public:
       GParts*      getParts();
       GPt*         getPt() const ;
@@ -92,10 +102,16 @@ class GGEO_API GVolume : public GNode {
       int               m_boundary ; 
       OpticksCSG_t      m_csgflag ; 
       bool              m_csgskip ; 
+
+#ifdef OLD_SENSOR
       NSensor*          m_sensor ; 
+      unsigned int      m_sensor_surface_index ; 
+#endif
+      int               m_sensor_index ; 
+
       const char*       m_pvname ; 
       const char*       m_lvname ; 
-      unsigned int      m_sensor_surface_index ; 
+
       GParts*           m_parts ; 
       GPt*              m_pt ; 
       void*             m_parallel_node ; 

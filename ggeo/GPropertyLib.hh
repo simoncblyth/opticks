@@ -128,6 +128,13 @@ class GGEO_API GPropertyLib {
         const char*  getName(unsigned index) const ;
         unsigned getIndex(const char* shortname);  // 0-based index of first matching name, UINT_MAX when no match
     public:
+        // m_sensor_indices is a transient (non-persisted) vector of material/surface indices 
+        bool isSensorIndex(unsigned index) const ; 
+        void addSensorIndex(unsigned index); 
+        unsigned getNumSensorIndices() const ;
+        unsigned getSensorIndex(unsigned i) const ;
+        void dumpSensorIndices(const char* msg) const ;
+    public:
         void getIndicesWithNameEnding( std::vector<unsigned>& indices, const char* ending ) const ; 
     public:
         GPropertyLib(GPropertyLib* other, GDomain<float>* domain=NULL, bool optional=false);
@@ -255,6 +262,9 @@ class GGEO_API GPropertyLib {
         bool                                 m_noload ;  
     private:
         std::vector<GPropertyMap<float>*>    m_raw ; 
+        std::vector<unsigned>                m_sensor_indices ; 
+
+
 };
 
 #include "GGEO_TAIL.hh"

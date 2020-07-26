@@ -165,7 +165,7 @@ int main(int argc, char** argv)
     }
 
 
-    gg->prepare();   // merging meshes, closing libs
+    gg->prepare();   // closing libs, finding repeat instances, merging meshes
 
    // not OKG4Mgr as no need for CG4 
 

@@ -624,6 +624,8 @@ unsigned GGeo::getNumRawMaterials() const { return m_materiallib->getNumRawMater
 // via GBndLib
 
 unsigned int GGeo::getMaterialLine(const char* shortname) { return m_bndlib->getMaterialLine(shortname); }
+std::string  GGeo::getSensorBoundaryReport() const { return m_bndlib->getSensorBoundaryReport() ; }
+
 
 
 // via GGeoLib
@@ -1209,6 +1211,31 @@ GNode* GGeo::getNode(unsigned index) const
 }
 
 
+unsigned GGeo::addSensorVolume(GVolume* volume)
+{
+    return m_nodelib->addSensorVolume(volume); 
+}
+unsigned GGeo::getNumSensorVolumes() const 
+{
+    return m_nodelib->getNumSensorVolumes() ; 
+}
+GVolume* GGeo::getSensorVolume(unsigned sensorIndex) const 
+{
+    return m_nodelib->getSensorVolume(sensorIndex) ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // via GMaterialLib
@@ -1278,15 +1305,15 @@ void GGeo::traverse(const char* msg)
 
 void GGeo::traverse( GNode* node, unsigned int depth)
 {
+#ifdef OLD_SENSOR
     GVolume* volume = dynamic_cast<GVolume*>(node) ;
-
     NSensor* sensor = volume->getSensor(); 
-
     if(sensor)
          LOG(debug) << "GGeo::traverse " 
                    << " nodeIndex " << node->getIndex()
                    << sensor->description() 
                    ; 
+#endif
 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1);
 }

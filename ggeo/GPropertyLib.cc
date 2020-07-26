@@ -895,4 +895,44 @@ NMeta* GPropertyLib::CreateAbbrevMeta(const std::vector<std::string>& names )
 
 
 
+// m_sensor_indices is a transient (non-persisted) vector of material/surface indices 
+bool GPropertyLib::isSensorIndex(unsigned index) const 
+{
+    typedef std::vector<unsigned>::const_iterator UI ; 
+    UI b = m_sensor_indices.begin(); 
+    UI e = m_sensor_indices.end(); 
+    UI i = std::find(b, e, index); 
+    return i != e ; 
+}
+
+/**
+GPropertyLib::addSensorIndex
+------------------------------
+
+Canonically invoked from GSurfaceLib::collectSensorIndices
+
+**/
+void GPropertyLib::addSensorIndex(unsigned index)
+{ 
+    m_sensor_indices.push_back(index); 
+}
+unsigned GPropertyLib::getNumSensorIndices() const
+{
+    return m_sensor_indices.size(); 
+}
+unsigned GPropertyLib::getSensorIndex(unsigned i) const 
+{
+    return m_sensor_indices[i] ; 
+}
+void GPropertyLib::dumpSensorIndices(const char* msg) const 
+{
+    unsigned ni = getNumSensorIndices() ; 
+    std::stringstream ss ; 
+    ss << " NumSensorIndices " << ni << " ( " ; 
+    for(unsigned i=0 ; i < ni ; i++) ss << getSensorIndex(i) << " " ; 
+    ss << " ) " ; 
+    std::string desc = ss.str();   
+    LOG(info) << msg << " " << desc ; 
+}
+  
 

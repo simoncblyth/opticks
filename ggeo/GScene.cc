@@ -822,9 +822,7 @@ void GScene::transferIdentity( GVolume* node, const nd* n)
     unsigned tri_nodeIdx          = tri_id.x ;  // full geometry absolute
     unsigned tri_meshIdx          = tri_id.y ;  // absolute (assimp) G4DAE mesh index
     unsigned tri_boundaryIdx      = tri_id.z ; 
-    unsigned tri_sensorSurfaceIdx = tri_id.w ; 
 
-    NSensor* tri_sensor = m_sensor_list->findSensorForNode(tri_nodeIdx);
 /*
     //  All 5 nodes of the PMT have associated NSensor but only cathode has non-zero index
     if(tri_sensor) std::cout << "got sensor " 
@@ -834,9 +832,13 @@ void GScene::transferIdentity( GVolume* node, const nd* n)
 */
 
     node->setBoundary(  tri_boundaryIdx ); 
+
+#ifdef OLD_SENSOR
+    unsigned tri_sensorSurfaceIdx = tri_id.w ; 
+    NSensor* tri_sensor = m_sensor_list->findSensorForNode(tri_nodeIdx);
     node->setSensor(    tri_sensor );      
     node->setSensorSurfaceIndex( tri_sensorSurfaceIdx );
-
+#endif
 
     guint4 check_id = node->getIdentity();
 

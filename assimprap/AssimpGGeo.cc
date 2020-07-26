@@ -1089,11 +1089,12 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     }
 
 
+#ifdef OLD_SENSOR
     NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
     volume->setSensor( sensor );  
+#endif 
 
     GBndLib* blib = gg->getBndLib();  
-    GSurfaceLib* slib = gg->getSurfaceLib();  
 
 
     // boundary identification via 4-uint 
@@ -1105,6 +1106,8 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
                                   );
 
     volume->setBoundary(boundary);
+#ifdef OLD_SENSOR
+    GSurfaceLib* slib = gg->getSurfaceLib();  
     {
        // sensor indices are set even for non sensitive volumes in PMT viscinity
        // TODO: change that 
@@ -1116,6 +1119,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
         unsigned int ssi = oss ? NSensor::RefIndex(sensor) : 0 ; 
         volume->setSensorSurfaceIndex( ssi ); 
     } 
+#endif
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     volume->setDescription(desc);

@@ -720,13 +720,28 @@ GItemList* GSurfaceLib::createNames()
 }
 
 
+void GSurfaceLib::collectSensorIndices()
+{
+    unsigned ni = getNumSurfaces();
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        GPropertyMap<float>* surf = m_surfaces[i] ;
+        bool is_sensor = surf->isSensor() ; 
+        if(is_sensor)
+        {
+            addSensorIndex(i); 
+            assert( isSensorIndex(i) == true ) ; 
+        }
+    }
+}
+
 
 void GSurfaceLib::dumpSurfaces(const char* msg)
 {
     unsigned ni = getNumSurfaces();
     LOG(info) << msg << " num_surfaces " << ni ; 
 
-    for(unsigned int i=0 ; i < ni ; i++)
+    for(unsigned i=0 ; i < ni ; i++)
     {
         GPropertyMap<float>* surf = m_surfaces[i] ;
         const char* name = surf->getShortName() ;
@@ -736,7 +751,7 @@ void GSurfaceLib::dumpSurfaces(const char* msg)
              << " index : " << std::setw(2) << i 
              << " is_sensor : " << ( is_sensor ? "Y" : "N" )
              << " type : " << std::setw(20) << type
-             << " name : " << std::setw(30) << name
+             << " name : " << std::setw(50) << name
              ;  
 
         if(surf->isBorderSurface())

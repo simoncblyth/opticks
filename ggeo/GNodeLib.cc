@@ -216,6 +216,28 @@ void GNodeLib::add(GVolume* volume)
 }
 
 
+
+
+unsigned GNodeLib::addSensorVolume(GVolume* volume)
+{
+    unsigned sensorIndex = m_sensor_volumes.size() ;  
+    m_sensor_volumes.push_back(volume); 
+    return sensorIndex ; 
+}
+unsigned GNodeLib::getNumSensorVolumes() const 
+{
+    return m_sensor_volumes.size(); 
+}
+GVolume* GNodeLib::getSensorVolume(unsigned sensorIndex) const 
+{
+    return m_sensor_volumes[sensorIndex]; 
+}
+
+
+
+
+
+
 GVolume* GNodeLib::getVolume(unsigned index) const 
 {
     GVolume* volume = NULL ; 

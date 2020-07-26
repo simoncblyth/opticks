@@ -108,6 +108,11 @@ class GGEO_API GBndLib : public GPropertyLib {
   public:
        // boundary index lookups
        guint4 getBnd(unsigned int boundary) const ;
+       void   getBnd(int& omat, int& osur, int& isur, int& imat, unsigned boundary) const ;
+  public:
+       bool isSensorBoundary(unsigned boundary) const ;
+       void countSensorBoundary(unsigned boundary);
+       std::string getSensorBoundaryReport() const ;
   public:
        unsigned getOuterMaterial(unsigned boundary) const;
        unsigned getOuterSurface(unsigned boundary) const;
@@ -208,6 +213,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        NPY<unsigned int>*   m_index_buffer ;  
        NPY<unsigned int>*   m_optical_buffer ;  
        std::map<std::string, unsigned int> m_materialLineMap ;
+       std::map<unsigned, unsigned>        m_boundary_sensor_count ;
 
 };
 
