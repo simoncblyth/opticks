@@ -197,7 +197,7 @@ o-lldb-identify(){
 }
 
 
-o-lldb-runline()
+o-lldb-runline-old()
 {
  
    if [ -n "${OPTICKS_LLDB_SOURCE}" -a -f "${OPTICKS_LLDB_SOURCE}" ] ; then 
@@ -209,6 +209,37 @@ o-lldb-runline()
       echo $LLDB -f ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} 
    fi 
 }
+
+
+
+o-lldb-runline()
+{
+   local H
+   local B
+   local T
+
+   if [ -n "${OPTICKS_LLDB_SOURCE}" -a -f "${OPTICKS_LLDB_SOURCE}" ] ; then 
+       H="-s ${OPTICKS_LLDB_SOURCE}";
+   else 
+       H=""
+   fi 
+   if [ -z "$BP" ]; then
+        B="";
+    else
+        B="";
+        for bp in $BP
+        do
+            B="$B -o \"b $bp\" "
+        done
+        B="$B -o b"
+    fi;
+    T="-o r"
+
+    local runline="$LLDB -f ${OPTICKS_BINARY} $H $B $T -- ${OPTICKS_ARGS}"
+    echo $runline 
+}
+
+
 
 o-gdb-runline()
 {

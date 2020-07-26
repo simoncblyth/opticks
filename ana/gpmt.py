@@ -23,12 +23,12 @@ from opticks.ana.gargs import GArgs
 if __name__ == '__main__':
 
     args = GArgs.parse(__doc__)
-    g = GDML.parse(args.gdmlpath(0))
+    g = GDML.parse(args.gdmlpath(2))
     g.smry()
 
     nnvt = 1
     hama = 2 
-    lvx = args.lvname(hama) 
+    lvx = args.lvname(nnvt) 
     lv = g.find_one_volume(lvx)
 
     if lv == None:

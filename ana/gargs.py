@@ -69,7 +69,8 @@ class GArgs(argparse.Namespace):
 
     @classmethod
     def gdmlpath(cls, idx):
-        return "$OPTICKS_PREFIX/%s.gdml" % cls.label(idx)
+        label = cls.label(idx) if type(idx) is int else idx
+        return "$OPTICKS_PREFIX/%s.gdml" % label 
 
     @classmethod
     def parse(cls, doc):

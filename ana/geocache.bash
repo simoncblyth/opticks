@@ -344,7 +344,7 @@ geocache-tds(){
 
     export GMaterialLib=INFO
     export GSurfaceLib=INFO
-    export X4Solid=INFO
+    #export X4Solid=INFO
     export X4PhysicalVolume=INFO
     export GMesh=INFO
     export OGeo=INFO
@@ -358,7 +358,7 @@ geocache-tds(){
     geocache-gdml-kludge      $gdml
     geocache-gdml-kludge-dump $gdml
 
-    geocache-create- --gdmlpath $gdml -D
+    geocache-create- --gdmlpath $gdml -D $*
 
 } 
 
