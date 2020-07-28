@@ -724,7 +724,7 @@ GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) /
     // for odd gltf : use the tri GMesh within the analytic GVolume 
     // for direct comparison of analytic ray trace with tri polygonization
 
-    GVolume* volume = new GVolume( rel_node_idx, gtransform, (m_gltf == 3 ? altmesh : mesh ) );     
+    GVolume* volume = new GVolume( rel_node_idx, gtransform, (m_gltf == 3 ? altmesh : mesh ), NULL );     
    
     volume->setLevelTransform(ltransform); 
 

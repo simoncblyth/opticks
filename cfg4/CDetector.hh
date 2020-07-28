@@ -96,7 +96,9 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     CMaterialLib*      getMaterialLib() const ;
     G4VPhysicalVolume* getTop() const ;
     bool               isValid() const ;
+#ifdef OLD_SENSOR
     void               hookupSD(); 
+#endif
  protected:
     void               setValid(bool valid); 
  public: 

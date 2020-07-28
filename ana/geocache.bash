@@ -342,12 +342,13 @@ EON
 geocache-tds(){     
     local msg="=== $FUNCNAME :"
 
-    export GMaterialLib=INFO
-    export GSurfaceLib=INFO
+    #export GMaterialLib=INFO
+    #export GSurfaceLib=INFO
     #export X4Solid=INFO
-    export X4PhysicalVolume=INFO
-    export GMesh=INFO
-    export OGeo=INFO
+    #export X4PhysicalVolume=INFO
+    #export GMesh=INFO
+    #export OGeo=INFO
+    export GGeo=INFO
 
 
     #local label=tds

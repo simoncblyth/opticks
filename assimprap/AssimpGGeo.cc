@@ -630,6 +630,7 @@ void AssimpGGeo::convertSensors(GGeo* gg)
 
     convertSensors( gg, m_tree->getRoot(), 0); 
 
+#ifdef OLD_SENSOR
     unsigned int nclv = gg->getNumCathodeLV();
 
     LOG(info) << "AssimpGGeo::convertSensors"
@@ -672,6 +673,9 @@ void AssimpGGeo::convertSensors(GGeo* gg)
             gg->addRaw(gss_raw);
         }   
     }
+
+#endif
+
 }
 
 /**
@@ -700,7 +704,6 @@ THIS CODE IS NEAR DEAD
 
 void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
-    unsigned int nodeIndex = node->getIndex();
     const char* lv_dae   = node->getName(0); 
     bool trimPtr = false ; 
     const char* lv = BStr::DAEIdToG4(lv_dae, trimPtr ); 
@@ -715,7 +718,6 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
     unsigned int mti = node->getMaterialIndex() ;
     GMaterial* mt = gg->getMaterial(mti);
     assert( mt );
-    const char* mt_name = mt->getName() ; 
     
     /*
     NSensor* sensor0 = sens->getSensor( nodeIndex ); 
@@ -724,10 +726,13 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
     // these do not match
     */
 
+#ifdef OLD_SENSOR
+    unsigned int nodeIndex = node->getIndex();
     NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
 
     //const char* sd = "SD_AssimpGGeo" ; 
     const char* sd = "SD0" ; 
+#endif
 
 
 #ifdef OLD_CATHODE
@@ -748,7 +753,10 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
          gg->addLVSD(lv, sd) ;   
     }
 
-#else
+#endif
+
+#ifdef OLD_SENSOR
+    const char* mt_name = mt->getName() ; 
     if(sensor)
     {
         gg->addLVSDMT(lv, sd, mt_name) ;     
@@ -1023,7 +1031,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     ltransform->Summary("AssimpGGeo::convertStructureVisit ltransform");
 
 
-    GVolume* volume = new GVolume(nodeIndex, gtransform, mesh ); 
+    GVolume* volume = new GVolume(nodeIndex, gtransform, mesh, NULL ); 
     volume->setLevelTransform(ltransform);
 
     const char* lv   = node->getName(0); 

@@ -49,6 +49,7 @@ class G4Track;
 class G4Step; 
 class G4VPhysicalVolume ;
 class G4VParticleChange ; 
+class G4PVPlacement ; 
 
 #include "G4Types.hh"
 
@@ -106,6 +107,8 @@ class G4OK_API G4Opticks
         void setAlignIndex(int align_idx) const ; 
 
         static void Finalize();
+
+        void getSensorPlacements(std::vector<G4PVPlacement*>& placements);
     private:
         void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
         GGeo* translateGeometry( const G4VPhysicalVolume* top );

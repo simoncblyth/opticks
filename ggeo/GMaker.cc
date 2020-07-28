@@ -197,7 +197,7 @@ GVolume* GMaker::makeVolumeFromMesh( unsigned ndIdx, const GMesh* mesh, const gl
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GVolume* volume = new GVolume( ndIdx, transform, mesh );     
+    GVolume* volume = new GVolume( ndIdx, transform, mesh, NULL );     
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
 #ifdef OLD_SENSOR
@@ -279,7 +279,7 @@ GVolume* GMaker::makeBox(gbbox& bbox)
     // TODO: tranform hookup with NTrianglesNPY 
     GMatrixF* transform = new GMatrix<float>();
 
-    GVolume* volume = new GVolume(nodeindex, transform, mesh );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL );     
 
     volume->setBoundary(0);     // unlike ctor these create arrays
 
@@ -306,7 +306,7 @@ GVolume* GMaker::makePrism(glm::vec4& param, const char* spec)
     glm::mat4 txf = tris->getTransform(); 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GVolume* volume = new GVolume(nodeindex, transform, mesh );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL );     
     volume->setBoundary(0);     // these setters create arrays
 #ifdef OLD_SENSOR
     volume->setSensor( NULL );      
@@ -514,7 +514,7 @@ GVolume* GMaker::makeSphere(NTrianglesNPY* tris)
 
     //transform->Summary("GMaker::makeSphere");
 
-    GVolume* volume = new GVolume(nodeindex, transform, mesh );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL );     
 
     volume->setBoundary(0);     // these setters create arrays
 

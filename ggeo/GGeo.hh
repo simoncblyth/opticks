@@ -194,7 +194,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void loadGeometry(); 
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
-        void postDirectTranslation(); 
+        void postDirectTranslation();  // from G4Opticks::translateGeometry
+    private: 
+        void postDirectTranslationDump() const ; 
     private: 
         void loadAnalyticFromGLTF();
         void loadAnalyticFromCache();
@@ -276,10 +278,13 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
 
-        unsigned addSensorVolume(GVolume* volume) ;
-        unsigned getNumSensorVolumes() const ;
-        GVolume* getSensorVolume(unsigned sensorIndex) const ;
-
+    public:
+        // sensor handling via GNodeLib
+        unsigned       addSensorVolume(const GVolume* volume) ;
+        unsigned       getNumSensorVolumes() const ;
+        const GVolume* getSensorVolume(unsigned sensorIndex) const ;
+        void           dumpSensorVolumes(const char* msg) const ; 
+        void           getSensorPlacements(std::vector<void*>& placements) const ;
     public:
         void add(GMaterial* material);
         void addRaw(GMaterial* material);
@@ -295,7 +300,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         const GMesh*       getMesh(unsigned index) const ;  
         void               add(const GMesh* mesh);
         void countMeshUsage(unsigned meshIndex, unsigned nodeIndex);
-        void reportMeshUsage(const char* msg="GGeo::reportMeshUsage");
+        void reportMeshUsage(const char* msg="GGeo::reportMeshUsage") const ;
     public:
    public:
         void traverse(const char* msg="GGeo::traverse");
@@ -360,6 +365,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     private:
         void saveCacheMeta() const ;
         void loadCacheMeta();
+        void saveGLTF() const ;
     public:
         // TODO: contrast with this ancient earlier way 
         void findCathodeMaterials(const char* props);
@@ -373,6 +379,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMaterial* getCathode() const ;  
         const char* getCathodeMaterialName() const ;
 #endif
+
+
+#ifdef OLD_SENSOR
     public:
         void addLVSDMT(const char* lv, const char* sd, const char* mt);
         unsigned getNumLVSD() const ;
@@ -381,19 +390,16 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         std::pair<std::string,std::string> getLVSD(unsigned idx) const ;
         std::pair<std::string,std::string> getLVMT(unsigned idx) const ;
     public:
-        // from cachemeta
-        //const char* getOriginGDMLPath() const ; 
-    public:
         void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV") const ;
         const char* getCathodeLV(unsigned int index) const ; 
-
-
-
         void getCathodeLV( std::vector<std::string>& lvnames ) const ;
         unsigned int getNumCathodeLV() const ;
         int findCathodeLVIndex(const char* lv) const ; // -1 if not found 
     public:
         void getSensitiveLVSDMT( std::vector<std::string>& lvn, std::vector<std::string>& sdn, std::vector<std::string>& mtn ) const ;
+#endif
+
+
 
 #if 0
     TODO: see if this can be reinstated

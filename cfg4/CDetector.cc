@@ -140,6 +140,8 @@ void CDetector::dumpLV(const char* msg)
 }
 
 
+#ifdef OLD_SENSOR
+
 /**
 CDetector::hookupSD
 ----------------------
@@ -204,6 +206,7 @@ void CDetector::hookupSD()
     }
 }
 
+#endif
 
 
 

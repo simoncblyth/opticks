@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     GMatrix<float>* transform = NULL ; 
     GMesh* mesh = NULL ; 
 
-    GVolume* volume = new GVolume(0, transform, mesh );
+    GVolume* volume = new GVolume(0, transform, mesh, NULL );
 
     assert(volume->getIndex() == 0);
 

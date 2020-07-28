@@ -218,7 +218,7 @@ void GNodeLib::add(GVolume* volume)
 
 
 
-unsigned GNodeLib::addSensorVolume(GVolume* volume)
+unsigned GNodeLib::addSensorVolume(const GVolume* volume)
 {
     unsigned sensorIndex = m_sensor_volumes.size() ;  
     m_sensor_volumes.push_back(volume); 
@@ -228,14 +228,61 @@ unsigned GNodeLib::getNumSensorVolumes() const
 {
     return m_sensor_volumes.size(); 
 }
-GVolume* GNodeLib::getSensorVolume(unsigned sensorIndex) const 
+const GVolume* GNodeLib::getSensorVolume(unsigned sensorIndex) const 
 {
     return m_sensor_volumes[sensorIndex]; 
 }
 
+void GNodeLib::dumpSensorVolumes(const char* msg) const 
+{
+    unsigned numSensorVolumes = getNumSensorVolumes(); 
+    LOG(info) 
+        << msg 
+        << " numSensorVolumes " << numSensorVolumes
+        ;
 
+    for(unsigned i=0 ; i < numSensorVolumes ; i++)
+    {
+        unsigned sensorIdx = i ; 
+        const GVolume* sensor = getSensorVolume(sensorIdx) ; 
+        assert(sensor); 
 
+        const char* sensorPVName =  ( sensor != NULL ? sensor->getPVName() : "-" ) ; 
+        const void* const sensorOrigin = ( sensor != NULL ? sensor->getOriginNode() : "-" ) ;  
 
+        const GVolume* outer = sensor->getOuterVolume() ; 
+        assert(outer);
+ 
+        const char* outerPVName = ( outer != NULL ? outer->getPVName() : "-" ) ;
+        const void* const outerOrigin = ( outer != NULL ? outer->getOriginNode() : "-" )  ;  
+
+        std::cout 
+            << " sensorIdx " << std::setw(6) << sensorIdx
+            << " sensor " << std::setw(8) << sensor 
+            << " outer " << std::setw(8) << outer 
+            << " sensorPVName " << std::setw(50) << sensorPVName
+            << " outerPVName "  << std::setw(50) << outerPVName
+            << " sensorOrigin " << std::setw(8) << sensorOrigin
+            << " outerOrigin " << std::setw(8) << outerOrigin
+            << std::endl 
+            ;
+    }
+}
+
+void GNodeLib::getSensorPlacements(std::vector<void*>& placements) const 
+{
+    unsigned numSensorVolumes = getNumSensorVolumes(); 
+    for(unsigned i=0 ; i < numSensorVolumes ; i++)
+    {
+        unsigned sensorIdx = i ; 
+        const GVolume* sensor = getSensorVolume(sensorIdx) ; 
+        assert(sensor); 
+        const GVolume* outer = sensor->getOuterVolume() ; 
+        assert(outer); 
+        void* outerOrigin = outer->getOriginNode() ;  
+        placements.push_back(outerOrigin); 
+    }
+}
 
 
 GVolume* GNodeLib::getVolume(unsigned index) const 

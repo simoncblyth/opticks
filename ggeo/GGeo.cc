@@ -22,6 +22,7 @@
 #include <cstring>
 #include <iomanip>
 
+#include "SSys.hh"
 #include "SLog.hh"
 #include "BStr.hh"
 #include "BMap.hh"
@@ -75,6 +76,7 @@
 #include "GParts.hh"
 
 
+#include "GGeoGLTF.hh"
 #include "GVolume.hh"
 #include "GMesh.hh"
 #include "GInstancer.hh"
@@ -325,6 +327,8 @@ const char* GGeo::getCathodeMaterialName() const
 
 
 
+#ifdef OLD_SENSOR
+
 /**
 GGeo::addLVSD
 -------------------
@@ -399,19 +403,6 @@ std::pair<std::string,std::string> GGeo::getLVMT(unsigned idx) const
     return std::pair<std::string,std::string>( lv, mt ); 
 }
 
-
-
-
-
-
-/*
-const char* GGeo::getOriginGDMLPath() const
-{
-    return m_origin_gdmlpath ; 
-}
-*/
-
-
 int GGeo::findCathodeLVIndex(const char* lv) const  // -1 if not found
 {
     int index = -1 ; 
@@ -440,6 +431,8 @@ int GGeo::findCathodeLVIndex(const char* lv) const  // -1 if not found
 
     return index ; 
 }
+
+
 
 unsigned int GGeo::getNumCathodeLV() const 
 {
@@ -501,6 +494,8 @@ void GGeo::getSensitiveLVSDMT( std::vector<std::string>& lvn, std::vector<std::s
             ;  
     }
 }
+
+#endif
 
 
 
@@ -794,9 +789,9 @@ Invoked from G4Opticks::translateGeometry after the X4PhysicalVolume conversion
 
 void GGeo::postDirectTranslation()
 {
-    LOG(debug) << "[" ; 
+    LOG(LEVEL) << "[" ; 
 
-    prepare();         
+    prepare();     // instances are formed here     
 
     LOG(info) << "( GBndLib::fillMaterialLineMap " ; 
     GBndLib* blib = getBndLib();
@@ -807,8 +802,25 @@ void GGeo::postDirectTranslation()
     save();
     LOG(info) << ") GGeo::save " ; 
 
-    LOG(debug) << "]" ; 
+
+
+    postDirectTranslationDump(); 
+
+    LOG(LEVEL) << "]" ; 
 }
+
+
+
+void GGeo::postDirectTranslationDump() const 
+{
+    LOG(LEVEL) << "[" ; 
+    reportMeshUsage();
+    dumpSensorVolumes("GGeo::postDirectTranslationDump");  
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
 
 bool GGeo::isPrepared() const { return m_prepared ; }
 
@@ -873,6 +885,7 @@ void GGeo::save()
     m_bndlib->save();  
 
     saveCacheMeta();
+    //saveGLTF(); 
 
     LOG(LEVEL) << "]" ;  
 }
@@ -893,6 +906,18 @@ void GGeo::saveCacheMeta() const
     m_ok->dumpCacheMeta("GGeo::saveCacheMeta"); 
     m_ok->saveCacheMeta(); 
 }
+
+
+void GGeo::saveGLTF() const 
+{
+    int root = SSys::getenvint( "GLTF_ROOT", 3147 );  
+    const char* gltfpath = m_ok->getGLTFPath(); 
+    m_ok->profile("_GGeo::saveGLTF"); 
+    GGeoGLTF::Save(this, gltfpath, root );  
+    m_ok->profile("GGeo:saveGLTF"); 
+}
+
+
 
 
 /**
@@ -1171,7 +1196,7 @@ void GGeo::countMeshUsage(unsigned meshIndex, unsigned nodeIndex)
 {
     m_meshlib->countMeshUsage(meshIndex, nodeIndex); 
 }
-void GGeo::reportMeshUsage(const char* msg)
+void GGeo::reportMeshUsage(const char* msg) const 
 {
     m_meshlib->reportMeshUsage(msg);
 }
@@ -1211,7 +1236,7 @@ GNode* GGeo::getNode(unsigned index) const
 }
 
 
-unsigned GGeo::addSensorVolume(GVolume* volume)
+unsigned GGeo::addSensorVolume(const GVolume* volume)
 {
     return m_nodelib->addSensorVolume(volume); 
 }
@@ -1219,19 +1244,18 @@ unsigned GGeo::getNumSensorVolumes() const
 {
     return m_nodelib->getNumSensorVolumes() ; 
 }
-GVolume* GGeo::getSensorVolume(unsigned sensorIndex) const 
+const GVolume* GGeo::getSensorVolume(unsigned sensorIndex) const 
 {
     return m_nodelib->getSensorVolume(sensorIndex) ; 
 }
-
-
-
-
-
-
-
-
-
+void GGeo::dumpSensorVolumes(const char* msg) const 
+{
+    m_nodelib->dumpSensorVolumes(msg); 
+}
+void GGeo::getSensorPlacements(std::vector<void*>& placements) const 
+{
+    m_nodelib->getSensorPlacements(placements); 
+}
 
 
 

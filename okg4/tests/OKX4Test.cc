@@ -86,9 +86,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    for(int i=0 ; i < argc ; i++)  
-        LOG(info) << i << " " << argv[i] ; 
-
+    for(int i=0 ; i < argc ; i++)  LOG(info) << i << " " << argv[i] ; 
 
     const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath", NULL) ; 
     if( gdmlpath == NULL )
@@ -97,27 +95,16 @@ int main(int argc, char** argv)
         return 0 ; 
     } 
 
-    /**
-    TODO: collect this gdmlpath into metadata stored in geocache, 
-          to avoid having to extract it by parsing the argline 
-
-    **/
-
     const char* csgskiplv = PLOG::instance->get_arg_after("--csgskiplv", NULL) ; 
     LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv : "NONE" ) ;  
 
-
     const char* digestextra2 = PLOG::instance->get_arg_after("--digestextra", NULL) ; 
     LOG(info) << " digestextra2 " << ( digestextra2 ? digestextra2 : "NONE" ) ;  
-
-    // need these prior to Opticks instanciation 
-
 
     LOG(info) << " parsing " << gdmlpath ; 
     G4VPhysicalVolume* top = CGDML::Parse( gdmlpath ) ; 
     assert(top);
     LOG(info) << "///////////////////////////////// " ; 
-
 
     const char* digestextra1 = csgskiplv ;    // kludge the digest to be sensitive to csgskiplv
     const char* spec = X4PhysicalVolume::Key(top, digestextra1, digestextra2 ) ; 
@@ -132,7 +119,6 @@ int main(int argc, char** argv)
     Opticks* ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
     ok->configure();
     ok->enforceNoGeoCache(); 
- 
 
     ok->profile("_OKX4Test:GGeo"); 
 
@@ -150,34 +136,19 @@ int main(int argc, char** argv)
 
     ok->profile("OKX4Test:X4PhysicalVolume"); 
 
+    gg->postDirectTranslation();   // closing libs, finding repeat instances, merging meshes, saving 
 
+    X4PhysicalVolume::DumpSensorVolumes(gg, "OKX4Test::main" ); 
 
-
-
-    bool save_gltf = false ; 
-    if(save_gltf)
-    {
-        int root = SSys::getenvint( "GLTF_ROOT", 3147 ); 
-        const char* gltfpath = ok->getGLTFPath(); 
-        ok->profile("_OKX4Test:GGeoGLTF"); 
-        GGeoGLTF::Save(gg, gltfpath, root ); 
-        ok->profile("OKX4Test:GGeoGLTF"); 
-    }
-
-
-    gg->prepare();   // closing libs, finding repeat instances, merging meshes
-
-   // not OKG4Mgr as no need for CG4 
 
     ok->profile("_OKX4Test:OKMgr"); 
+    assert( GGeo::GetInstance() == gg );
+
+    // not OKG4Mgr as no need for CG4 
     OKMgr mgr(argc, argv);  // OpticksHub inside here picks up the gg (last GGeo instanciated) via GGeo::GetInstance 
     ok->profile("OKX4Test:OKMgr"); 
     //mgr.propagate();
     mgr.visualize();   
-
-    assert( GGeo::GetInstance() == gg );
-    gg->reportMeshUsage();
-    gg->save();
 
     Opticks* oki = Opticks::GetInstance() ; 
     ok->saveProfile();
@@ -186,7 +157,5 @@ int main(int argc, char** argv)
     assert( oki == ok ) ; 
     ok->reportGeoCacheCoordinates(); 
 
-
     return mgr.rc() ;
-
 }

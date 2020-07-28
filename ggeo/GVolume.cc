@@ -42,7 +42,7 @@
 #include "GGEO_BODY.hh"
 
 
-GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh )
+GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, void* origin_node )
     : 
     GNode(index, transform, mesh ),
     m_boundary(-1),
@@ -58,7 +58,9 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh )
     m_parts(NULL),
     m_pt(NULL),
     m_parallel_node(NULL), 
-    m_copyNumber(-1)
+    m_copyNumber(-1),
+    m_origin_node(origin_node),
+    m_outer_volume(NULL)
 {
 }
 
@@ -162,6 +164,43 @@ void GVolume::setParallelNode(void* pnode)
     m_parallel_node = pnode ; 
 }
  
+
+/**
+GVolume::getOriginNode
+------------------------
+
+*OriginNode* set in ctor is used to record the G4VPhysicalVolume from whence the GVolume 
+was converted, see X4PhysicalVolume::convertNode
+
+**/
+
+void* GVolume::getOriginNode() const 
+{
+    return m_origin_node ; 
+}
+
+
+/**
+GVolume::setOuterVolume
+-------------------------
+
+Used from the recursive GInstancer::labelRepeats_r enabling all volumes 
+within the repeated instances to know their base volumes.
+
+**/
+
+void GVolume::setOuterVolume(const GVolume* outer_volume) 
+{
+    m_outer_volume = outer_volume ; 
+}
+const GVolume* GVolume::getOuterVolume() const 
+{
+   return m_outer_volume ;  
+}
+
+
+
+
 
 
 

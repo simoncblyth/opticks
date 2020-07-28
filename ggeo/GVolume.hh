@@ -56,7 +56,7 @@ class GGEO_API GVolume : public GNode {
   public:
       static void Dump( const std::vector<GVolume*>& solids, const char* msg="GVolume::Dump" );
   public:
-      GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh );
+      GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, void* origin_node );
   public:
       void     setCSGFlag(OpticksCSG_t flag);
       void     setCSGSkip(bool csgskip);
@@ -95,6 +95,12 @@ class GGEO_API GVolume : public GNode {
       // ancillary slot for a parallel node tree, used by X4PhysicalVolume
       void*        getParallelNode() const ;
       void         setParallelNode(void* pnode); 
+  public:
+      // OriginNode records the G4VPhysicalVolume from whence the GVolume was converted, see X4PhysicalVolume::convertNode
+      void*        getOriginNode() const ;
+  public:
+      void         setOuterVolume(const GVolume* outer_volume); 
+      const GVolume*   getOuterVolume() const ; 
   public: 
       void Summary(const char* msg="GVolume::Summary");
       std::string description();
@@ -116,6 +122,10 @@ class GGEO_API GVolume : public GNode {
       GPt*              m_pt ; 
       void*             m_parallel_node ; 
       int               m_copyNumber ; 
+
+      void*             m_origin_node ; 
+      const GVolume*    m_outer_volume ; 
+
 
 };
 #include "GGEO_TAIL.hh"

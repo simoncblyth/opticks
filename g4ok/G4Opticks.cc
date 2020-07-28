@@ -272,6 +272,16 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_gea
 }
 
 
+void G4Opticks::getSensorPlacements(std::vector<G4PVPlacement*>& placements)
+{
+    assert(m_ggeo && "must setGeometry before getSensorPlacements" ); 
+    X4PhysicalVolume::GetSensorPlacements(m_ggeo, placements);
+}
+
+
+
+
+
 /**
 G4Opticks::translateGeometry
 ------------------------------
@@ -333,20 +343,12 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     LOG(info) << ") GGeo::postDirectTranslation " ;
 
 
-    /*
-    again permissions prevents this
-    
-    int root = 0 ; 
-    const char* gltfpath = ok->getGLTFPath();   // inside geocache
-    LOG(info) << "( gltf " ;
-    GGeoGLTF::Save(gg, gltfpath, root );
-    LOG(info) << ") gltf " ;
-
-    */
-
-
     return gg ; 
 }
+
+
+
+
 
 
 /**

@@ -6,6 +6,13 @@ include(OpticksBuildOptions)
 find_package(OpticksCore REQUIRED CONFIG)
 find_package(YoctoGLRap REQUIRED CONFIG)
 
+
+set(OLD_SOURCES
+
+    GGeoSensor.cc
+
+)
+
 set(SOURCES
 
     GGEO_LOG.cc
@@ -68,7 +75,6 @@ set(SOURCES
     GVolumeList.cc
     GGeoLib.cc
     GGeoCfg.cc
-    GGeoSensor.cc
     GGeoGLTF.cc
     GSolidRec.cc
 
@@ -92,6 +98,14 @@ set(SOURCES
     GPropertyMap.cc
 
 )
+
+set(OLD_HEADERS
+
+    GGeoSensor.hh
+
+)
+
+
 set(HEADERS
 
     GGEO_LOG.hh
@@ -103,7 +117,6 @@ set(HEADERS
     GGeoBase.hh
     GGeo.hh
     GGeoCfg.hh
-    GGeoSensor.hh
     GGeoGLTF.hh
     GSolidRec.hh
 

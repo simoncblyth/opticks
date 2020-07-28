@@ -174,12 +174,13 @@ void test_GGeo(const GGeo* gg)
 } 
 
 
+#ifdef OLD_SENSOR
 void test_GGeo_sd(const GGeo* m_ggeo)
 {
     unsigned nlvsd = m_ggeo->getNumLVSD() ;
     LOG(info) << " nlvsd " << nlvsd ; 
 }
-
+#endif
 
 
 
@@ -196,7 +197,9 @@ int main(int argc, char** argv)
 
     //test_GGeo(&gg);
 
+#ifdef OLD_SENSOR
     test_GGeo_sd(&gg);
+#endif
 
 
 

@@ -508,8 +508,10 @@ void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
          for(unsigned int p=0 ; p < placements.size() ; p++)
          {
              GNode* outernode = placements[p] ; 
-             int outernode_copyNumber = dynamic_cast<GVolume*>(outernode)->getCopyNumber() ; 
-             labelRepeats_r(outernode, ridx, outernode_copyNumber );
+             const GVolume* outer_volume = dynamic_cast<const GVolume*>(outernode) ; 
+             int outernode_copyNumber = outer_volume->getCopyNumber() ; 
+             GNode* start = outernode ; 
+             labelRepeats_r(start, ridx, outernode_copyNumber, outer_volume );
          }
     }
 
@@ -536,11 +538,13 @@ GInstancer::labelRepeats_r
 
 **/
 
-void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx, int outernode_copyNumber )
+void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx, int outernode_copyNumber, const GVolume* outer_volume )
 {
     GVolume* vol = dynamic_cast<GVolume*>(node); 
     node->setRepeatIndex(ridx);
     m_repeats_count += 1 ; 
+
+    vol->setOuterVolume(outer_volume) ; 
 
     if(m_duplicate_outernode_copynumber && outernode_copyNumber > -1)
     {
@@ -569,7 +573,7 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx, int outernode_c
              ;
          m_labels++ ; 
     }
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelRepeats_r(node->getChild(i), ridx, outernode_copyNumber );
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelRepeats_r(node->getChild(i), ridx, outernode_copyNumber, outer_volume );
 }
 
 

@@ -79,7 +79,9 @@ template struct nxform<X4Nd> ;
 #include "GPts.hh"
 
 #include "GGeo.hh"
+#ifdef OLD_SENSOR
 #include "GGeoSensor.hh"
+#endif
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
@@ -184,15 +186,40 @@ void X4PhysicalVolume::init()
 
     convertMaterials();   // populate GMaterialLib
     convertSurfaces();    // populate GSurfaceLib
-    // convertSensors();  // before closeSurfaces as may add some SensorSurfaces
+#ifdef OLD_SENSOR
+    convertSensors();  // before closeSurfaces as may add some SensorSurfaces
+#endif
     closeSurfaces();
     convertSolids();      // populate GMeshLib with GMesh converted from each G4VSolid (postorder traverse processing first occurrence of G4LogicalVolume)  
     convertStructure();   // populate GNodeLib with GVolume converted from each G4VPhysicalVolume (preorder traverse) 
     convertCheck();
 
+    postConvert(); 
+
     LOG(LEVEL) << "]" ; 
 }
 
+
+
+void X4PhysicalVolume::postConvert() const 
+{
+    LOG(info) 
+        << " GGeo::getNumVolumes() " << m_ggeo->getNumVolumes() 
+        << " GGeo::getNumSensorVolumes() " << m_ggeo->getNumSensorVolumes() 
+        << std::endl 
+        << " GGeo::getSensorBoundaryReport() "
+        << std::endl 
+        << m_ggeo->getSensorBoundaryReport()
+        ;
+
+    // too soon for sensor dumping as instances not yet formed, see GGeo::postDirectTranslationDump 
+    //m_ggeo->dumpSensorVolumes("X4PhysicalVolume::postConvert"); 
+
+}
+
+
+
+#ifdef OLD_SENSOR
 
 /**
 X4PhysicalVolume::convertSensors
@@ -203,12 +230,11 @@ Predecessor in old route is AssimpGGeo::convertSensors
 * note the recursive call X4PhysicalVolume::convertSensors_r 
   which traverses the geometry looking for sensors  
   
-
-
 **/
 
 void X4PhysicalVolume::convertSensors()
 {
+    assert(0) ; // MATERIAL-CENTRIC APPROACH NO LONGER USED : NOW DETECTING SENSORS VIA SURFACES WITH EFFICIENCY 
     LOG(debug) << "[" ; 
 
     convertSensors_r(m_top, 0); 
@@ -237,7 +263,6 @@ void X4PhysicalVolume::convertSensors()
 
 
 }
-
 
 /**
 X4PhysicalVolume::convertSensors_r
@@ -285,6 +310,9 @@ GMaterialLib::setCathode getCathode
 
 void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int depth)
 {
+    assert(0) ; // MATERIAL-CENTRIC APPROACH NO LONGER USED : NOW DETECTING SENSORS VIA SURFACES WITH EFFICIENCY 
+
+
     // hot code : minimize whats done outside the if
 
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
@@ -326,6 +354,8 @@ void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int d
         convertSensors_r(child_pv, depth+1 );
     }
 }
+
+#endif
 
 
 bool X4PhysicalVolume::hasEfficiency(const G4Material* mat)
@@ -410,6 +440,11 @@ void X4PhysicalVolume::convertSurfaces()
 void X4PhysicalVolume::closeSurfaces()
 {
     m_slib->close();  // may change order if prefs dictate
+
+#ifdef OLD_SENSOR
+    m_ggeo->dumpCathodeLV("dumpCathodeLV"); 
+#endif
+    m_ggeo->dumpSkinSurface("dumpSkinSurface"); 
 }
 
 
@@ -890,12 +925,8 @@ const char* X4PhysicalVolume::TMPDIR = "$TMP/extg4/X4PhysicalVolume" ;
 
 void X4PhysicalVolume::convertStructure()
 {
-    LOG(info) << "[ creating large tree of GVolume instances" ; 
     assert(m_top) ;
-
-    m_ggeo->dumpCathodeLV("dumpCathodeLV"); 
-    m_ggeo->dumpSkinSurface("dumpSkinSurface"); 
-
+    LOG(info) << "[ creating large tree of GVolume instances" ; 
 
     const G4VPhysicalVolume* pv = m_top ; 
     GVolume* parent = NULL ; 
@@ -910,22 +941,15 @@ void X4PhysicalVolume::convertStructure()
 
     OK_PROFILE("X4PhysicalVolume::convertStructure");
 
+    convertStructureChecks(); 
+}
 
 
+void X4PhysicalVolume::convertStructureChecks() const 
+{
     NTreeProcess<nnode>::SaveBuffer(TMPDIR, "NTreeProcess.npy");      
     NNodeNudger::SaveBuffer(TMPDIR, "NNodeNudger.npy"); 
     X4Transform3D::SaveBuffer(TMPDIR, "X4Transform3D.npy"); 
-
-    LOG(info) 
-        << "]" 
-        << " GGeo::getNumVolumes() " << m_ggeo->getNumVolumes() 
-        << " GGeo::getNumSensorVolumes() " << m_ggeo->getNumSensorVolumes() 
-        << std::endl 
-        << " GGeo::getSensorBoundaryReport() "
-        << std::endl 
-        << m_ggeo->getSensorBoundaryReport()
-        ;
-
 
 
 #ifdef X4_TRANSFORM
@@ -956,8 +980,8 @@ void X4PhysicalVolume::convertStructure()
         << " m_convertNode_GVolume_dt " << m_convertNode_GVolume_dt 
         ;
 #endif
-
 }
+
 
 
 /**
@@ -1173,8 +1197,6 @@ from persisted GPts
 **/
 
 
-
-
 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
 {
 #ifdef X4_PROFILE
@@ -1321,7 +1343,9 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
     ////////////////////////////////////////////////////////////////
 
-    GVolume* volume = new GVolume(ndIdx, gtransform, mesh );
+    G4PVPlacement* _placement = const_cast<G4PVPlacement*>(placement) ;  
+    void* origin_node = static_cast<void*>(_placement) ; 
+    GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node );
     m_node_count += 1 ; 
 
     unsigned lvr_lvIdx = lvIdx ; 
@@ -1353,7 +1377,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 #endif
     volume->setSensorIndex(sensorIndex); 
 
-    volume->setCopyNumber(copyNumber); 
+    volume->setCopyNumber(copyNumber);  // NB within instances this is changed by GInstancer::labelRepeats_r when m_duplicate_outernode_copynumber is true
     volume->setBoundary( boundary ); 
     volume->setSelected( selected );
 
@@ -1389,6 +1413,69 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
 
     return volume ; 
+}
+
+
+void X4PhysicalVolume::DumpSensorVolumes(const GGeo* gg, const char* msg)
+{
+    unsigned numSensorVolumes = gg->getNumSensorVolumes();
+    LOG(info) 
+         << msg
+         << " numSensorVolumes " << numSensorVolumes 
+         ; 
+
+
+    unsigned lastTransitionIndex = -2 ; 
+    unsigned lastOuterCopyNo = -2 ; 
+
+    for(unsigned i=0 ; i < numSensorVolumes ; i++)
+    {   
+        unsigned sensorIdx = i ; 
+
+        const GVolume* sensor = gg->getSensorVolume(sensorIdx) ; 
+        assert(sensor); 
+        const void* const sensorOrigin = sensor->getOriginNode(); 
+        assert(sensorOrigin);
+        const G4PVPlacement* const sensorPlacement = static_cast<const G4PVPlacement* const>(sensorOrigin);
+        assert(sensorPlacement);  
+        G4int sensorCopyNo = sensorPlacement->GetCopyNo() ;  
+
+
+        const GVolume* outer = sensor->getOuterVolume() ; 
+        assert(outer); 
+        const void* const outerOrigin = outer->getOriginNode(); 
+        assert(outerOrigin); 
+        const G4PVPlacement* const outerPlacement = static_cast<const G4PVPlacement* const>(outerOrigin);
+        assert(outerPlacement);
+        G4int outerCopyNo = outerPlacement->GetCopyNo() ;  
+
+        if(outerCopyNo != lastOuterCopyNo + 1) lastTransitionIndex = i ; 
+        lastOuterCopyNo = outerCopyNo ; 
+
+        if(i - lastTransitionIndex < 10)
+        std::cout 
+             << " sensorIdx " << std::setw(6) << sensorIdx 
+             << " sensorPlacement " << std::setw(8) << sensorPlacement
+             << " sensorCopyNo " << std::setw(8) << sensorCopyNo
+             << " outerPlacement " << std::setw(8) << outerPlacement
+             << " outerCopyNo " << std::setw(8) << outerCopyNo
+             << std::endl 
+             ;
+    }
+}
+
+void X4PhysicalVolume::GetSensorPlacements(const GGeo* gg, std::vector<G4PVPlacement*>& placements) // static
+{
+    placements.clear(); 
+
+    std::vector<void*> placements_ ; 
+    gg->getSensorPlacements(placements_); 
+
+    for(unsigned i=0 ; i < placements_.size() ; i++)
+    {
+         G4PVPlacement* p = static_cast<G4PVPlacement*>(placements_[i]); 
+         placements.push_back(p); 
+    } 
 }
 
 

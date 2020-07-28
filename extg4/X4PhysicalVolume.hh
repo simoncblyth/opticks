@@ -29,6 +29,7 @@ class G4LogicalVolume ;
 class G4VPhysicalVolume ; 
 class G4VSolid ; 
 class G4Material ; 
+class G4PVPlacement ; 
 
 #include "G4Transform3D.hh"
 
@@ -104,6 +105,9 @@ class X4_API X4PhysicalVolume : public X4Named
         static void        Digest( const G4LogicalVolume* const lv, const G4int depth, SDigest* dig );
         std::string brief() const ;
     public:
+        static void DumpSensorVolumes(const GGeo* ggeo, const char* msg); 
+        static void GetSensorPlacements(const GGeo* gg, std::vector<G4PVPlacement*>& placements);
+    public:
         X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 
         GGeo* getGGeo();
     private:
@@ -115,7 +119,10 @@ class X4_API X4PhysicalVolume : public X4Named
         void closeSurfaces(); 
         void convertSolids(); 
         void convertStructure(); 
+        void convertStructureChecks() const ;
+    private:
         void convertCheck() const ;
+        void postConvert() const ; 
     private:
         bool hasEfficiency(const G4Material* mat);
     private:

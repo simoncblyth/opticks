@@ -101,7 +101,9 @@ void CTestDetector::init()
     // no addMPT() ? 
     attachSurfaces();
 
+#ifdef OLD_SENSOR
     hookupSD(); 
+#endif
 
     LOG(LEVEL) << "]" ; 
 }
