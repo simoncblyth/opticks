@@ -1438,7 +1438,7 @@ void X4PhysicalVolume::DumpSensorVolumes(const GGeo* gg, const char* msg)
         assert(sensorOrigin);
         const G4PVPlacement* const sensorPlacement = static_cast<const G4PVPlacement* const>(sensorOrigin);
         assert(sensorPlacement);  
-        G4int sensorCopyNo = sensorPlacement->GetCopyNo() ;  
+        unsigned sensorCopyNo = sensorPlacement->GetCopyNo() ;  
 
 
         const GVolume* outer = sensor->getOuterVolume() ; 
@@ -1447,7 +1447,7 @@ void X4PhysicalVolume::DumpSensorVolumes(const GGeo* gg, const char* msg)
         assert(outerOrigin); 
         const G4PVPlacement* const outerPlacement = static_cast<const G4PVPlacement* const>(outerOrigin);
         assert(outerPlacement);
-        G4int outerCopyNo = outerPlacement->GetCopyNo() ;  
+        unsigned outerCopyNo = outerPlacement->GetCopyNo() ;  
 
         if(outerCopyNo != lastOuterCopyNo + 1) lastTransitionIndex = i ; 
         lastOuterCopyNo = outerCopyNo ; 

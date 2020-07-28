@@ -45,8 +45,6 @@
 class G4VPhysicalVolume ;
 
 #include "G4PVPlacement.hh"
-
-
 #include "OPTICKS_LOG.hh"
 
 /**
@@ -57,9 +55,7 @@ See :doc:`../../notes/issues/OKX4Test`
 
 TODO: too much duplication between here and G4Opticks, perhaps can make 
       a G4OpticksMgr used by both ?
-
 **/
-
 
 int main(int argc, char** argv)
 {
@@ -68,11 +64,6 @@ int main(int argc, char** argv)
     for(int i=0 ; i < argc ; i++)  LOG(info) << i << " " << argv[i] ; 
 
     const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath", NULL) ; 
-    if( gdmlpath == NULL )
-    {
-        LOG(fatal) << " --gdmlpath existing-path : is required " ; 
-        return 0 ; 
-    } 
 
     const char* csgskiplv = PLOG::instance->get_arg_after("--csgskiplv", NULL) ; 
     LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv : "NONE" ) ;  
@@ -80,20 +71,15 @@ int main(int argc, char** argv)
     const char* digestextra2 = PLOG::instance->get_arg_after("--digestextra", NULL) ; 
     LOG(info) << " digestextra2 " << ( digestextra2 ? digestextra2 : "NONE" ) ;  
 
-    LOG(info) << " parsing " << gdmlpath ; 
     G4VPhysicalVolume* top = CGDML::Parse( gdmlpath ) ; 
-    assert(top);
-    LOG(info) << "///////////////////////////////// " ; 
+    if( top == NULL ) return 0 ; 
 
     const char* digestextra1 = csgskiplv ;    // kludge the digest to be sensitive to csgskiplv
     const char* spec = X4PhysicalVolume::Key(top, digestextra1, digestextra2 ) ; 
 
     Opticks::SetKey(spec);
 
-    LOG(error) << " SetKey " << spec  ;   
-
-    const char* argforce = "--tracer --nogeocache --xanalytic" ;
-    // --nogeoache to prevent GGeo booting from cache 
+    const char* argforce = "--tracer --nogeocache --xanalytic" ;   // --nogeoache to prevent GGeo booting from cache 
 
     Opticks* m_ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
     m_ok->configure();
@@ -111,7 +97,7 @@ int main(int argc, char** argv)
 
     m_ok->profile("_OKX4Test:X4PhysicalVolume"); 
 
-    X4PhysicalVolume xtop(m_ggeo, top) ;    // populates gg
+    X4PhysicalVolume xtop(m_ggeo, top) ;    // populates m_ggeo
 
     m_ok->profile("OKX4Test:X4PhysicalVolume"); 
 

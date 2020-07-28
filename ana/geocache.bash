@@ -296,7 +296,7 @@ geocache-kcd(){
  }
 geocache-tcd(){ cd $(geocache-tstdir) ; pwd ; }
 
-geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }  ## TODO: 
+geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }  
 
 
 geocache-create-()
@@ -339,6 +339,18 @@ EON
 }
 
 
+
+geocache-tds-gdmlpath()
+{
+   #local label=tds
+   #local label=tds_ngt_pcnk
+   local label=tds_ngt_pcnk_sycg
+   local gdml=$(opticks-prefix)/$label.gdml
+   echo $gdml
+}
+
+
+
 geocache-tds(){     
     local msg="=== $FUNCNAME :"
 
@@ -350,11 +362,7 @@ geocache-tds(){
     #export OGeo=INFO
     export GGeo=INFO
 
-
-    #local label=tds
-    #local label=tds_ngt_pcnk
-    local label=tds_ngt_pcnk_sycg
-    local gdml=$(opticks-prefix)/$label.gdml
+    local gdml=$(geocache-tds-gdmlpath)
     echo $msg gdml $gdml
     geocache-gdml-kludge      $gdml
     geocache-gdml-kludge-dump $gdml
@@ -362,6 +370,28 @@ geocache-tds(){
     geocache-create- --gdmlpath $gdml -D $*
 
 } 
+
+geocache-g4ok(){
+    local msg="=== $FUNCNAME :"
+    export GGeo=INFO
+
+    local gdml=$(geocache-tds-gdmlpath)
+    echo $msg gdml $gdml
+
+    geocache-gdml-kludge      $gdml
+    geocache-gdml-kludge-dump $gdml
+
+    local iwd=$PWD
+    local tmp=$(geocache-tmp $FUNCNAME)
+    mkdir -p $tmp && cd $tmp
+         
+    $(opticks-prefix)/bin/o.sh --g4oktest --g4codegen --deletegeocache --gdmlpath $gdml -D $*
+
+    cd $iwd
+}
+ 
+
+
 
 geocache-j1808(){     opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j)  --X4 debug --NPY debug $*  ; }
 geocache-j1808-v2(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv2) --csgskiplv 22  ; }

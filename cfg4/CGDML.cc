@@ -30,6 +30,13 @@
 
 G4VPhysicalVolume* CGDML::Parse(const char* path) // static 
 {
+    if( path == NULL )
+    {   
+        LOG(fatal) << " path to an existing gdml file is required " ; 
+        return NULL  ; 
+    }   
+
+    LOG(info) << "path " << path ; 
     bool validate = false ; 
     bool trimPtr = false ; 
     G4GDMLParser parser;

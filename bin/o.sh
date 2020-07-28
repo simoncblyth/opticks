@@ -37,10 +37,16 @@ Executables are selected by corresponding arguments:
     full Opticks simulation and visualization without Geant4
 
 --okg4test OKG4Test
-    full Opticks and Geant4 imulation and visualization with comparison
+    full Opticks and Geant4 simulation and visualization with comparison
 
 --okx4test OKX4Test
     direct translation of GDML geometry to Opticks geocache
+
+--g4oktest G4OKTest
+    testing G4Opticks interface used from detector frameworks
+
+
+
 
 
 * Gathering the useful parts of op.sh prior to dumping that.
@@ -72,6 +78,7 @@ o-binary-name()
          --oktest) echo OKTest ;;
        --okg4test) echo OKG4Test ;;
        --okx4test) echo OKX4Test ;;
+       --g4oktest) echo G4OKTest ;;
          --tracer) echo OTracerTest ;;
    esac 
    # no default as its important this return blank for unidentified commands

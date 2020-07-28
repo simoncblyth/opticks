@@ -80,11 +80,11 @@ Notes
 
 * :doc:`notes/issues/G4OK`
 
-
 **/
 
 class G4OK_API G4Opticks   
 {
+        friend struct G4OKTest ; 
     private:
         static const plog::Severity LEVEL ;
         static const char* fEmbeddedCommandLine ; 
@@ -108,9 +108,19 @@ class G4OK_API G4Opticks
 
         static void Finalize();
 
-        void getSensorPlacements(std::vector<G4PVPlacement*>& placements);
-    private:
+
+    public:
+        const std::vector<G4PVPlacement*>& getSensorPlacements() const ;
+        void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, unsigned sensor_category, unsigned sensor_identifier);
+        void saveSensorData(const char* path) const ; 
+        void loadSensorData(const char* path); 
+        void doSensorDataTest(const char* msg); 
+    public:
+        void setGeometry(const G4VPhysicalVolume* world); 
+        void setGeometry(const char* gdmlpath);
         void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
+        void setStandardizeGeant4Materials(bool standardize_geant4_materials);
+    private:
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
         void standardizeGeant4MaterialProperties();
         void createCollectors();
@@ -272,6 +282,7 @@ class G4OK_API G4Opticks
        ) const  ; 
             
      private:
+        bool                       m_standardize_geant4_materials ; 
         const G4VPhysicalVolume*   m_world ; 
         const GGeo*                m_ggeo ; 
         const GBndLib*             m_blib ; 
@@ -298,6 +309,10 @@ class G4OK_API G4Opticks
         OpticksEvent*              m_g4evt ; 
         NPY<float>*                m_g4hit ; 
         bool                       m_gpu_propagate ;  
+    private:
+        std::vector<G4PVPlacement*> m_sensor_placements ;
+        unsigned                    m_sensor_num ; 
+        NPY<float>*                 m_sensor_data ; 
     private:
         static G4Opticks*          fOpticks;
 

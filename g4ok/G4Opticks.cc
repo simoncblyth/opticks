@@ -70,12 +70,8 @@ const plog::Severity G4Opticks::LEVEL = PLOG::EnvLevel("G4Opticks", "DEBUG")  ;
 
 G4Opticks* G4Opticks::fOpticks = NULL ;
 
-//const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --dbgtex --printenabled --pindex 0 --bouncemax 0"  ; 
-//  --bouncemax 0 historical for checking generation   ??
-//
-
-const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0"  ; 
-//const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0 --xanalytic"  ; 
+//const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0"  ; 
+const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0 --xanalytic"  ; 
 
 std::string G4Opticks::EmbeddedCommandLine(const char* extra)
 {
@@ -84,7 +80,6 @@ std::string G4Opticks::EmbeddedCommandLine(const char* extra)
     if(extra) ss << extra ; 
     return ss.str();  
 }
-
 
 std::string G4Opticks::desc() const 
 {
@@ -99,7 +94,6 @@ std::string G4Opticks::desc() const
        ;
     return ss.str() ; 
 }
-
 
 G4Opticks* G4Opticks::GetOpticks()
 {
@@ -120,7 +114,7 @@ void G4Opticks::Initialize(const char* gdmlpath, bool standardize_geant4_materia
 
 void G4Opticks::Initialize(const G4VPhysicalVolume* world, bool standardize_geant4_materials)
 {
-    G4Opticks* g4ok = GetOpticks(); 
+    G4Opticks* g4ok = Get(); 
     g4ok->setGeometry(world, standardize_geant4_materials) ; 
 }
 
@@ -146,6 +140,7 @@ NB no OpticksHub, this is trying to be minimal
 
 G4Opticks::G4Opticks()
     :
+    m_standardize_geant4_materials(false), 
     m_world(NULL),
     m_ggeo(NULL),
     m_ok(NULL),
@@ -165,7 +160,9 @@ G4Opticks::G4Opticks()
     m_genstep_idx(0),
     m_g4evt(NULL),
     m_g4hit(NULL),
-    m_gpu_propagate(true)
+    m_gpu_propagate(true),
+    m_sensor_num(0),
+    m_sensor_data(NULL)
 {
     assert( fOpticks == NULL ); 
     LOG(info) << "ctor : DISABLE FPE detection : as it breaks OptiX launches" ; 
@@ -228,15 +225,31 @@ void G4Opticks::resetCollectors()
 }
 
 
-
 /**
 G4Opticks::setGeometry
 ------------------------
 
 **/
 
+void G4Opticks::setGeometry(const char* gdmlpath)
+{
+    const G4VPhysicalVolume* world = CGDML::Parse(gdmlpath);
+    setGeometry(world);  
+}
 
 void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials)
+{
+    setStandardizeGeant4Materials(standardize_geant4_materials ); 
+    setGeometry(world);  
+}
+
+void G4Opticks::setStandardizeGeant4Materials(bool standardize_geant4_materials)
+{
+    m_standardize_geant4_materials = standardize_geant4_materials ; 
+    assert( m_standardize_geant4_materials == false && "needs debugging as observed to mess up source materials"); 
+}
+
+void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 {
     LOG(fatal) << "[[[" ; 
 
@@ -245,7 +258,7 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_gea
     GGeo* ggeo = translateGeometry( world ) ;
     LOG(fatal) << ") translateGeometry " ; 
 
-    if( standardize_geant4_materials )
+    if( m_standardize_geant4_materials )
     {
         LOG(fatal) << "( standardizeGeant4MaterialProperties " ; 
         standardizeGeant4MaterialProperties();
@@ -271,12 +284,87 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_gea
     LOG(fatal) << "]]]" ; 
 }
 
+ 
 
-void G4Opticks::getSensorPlacements(std::vector<G4PVPlacement*>& placements)
+/**
+G4Opticks::getSensorPlacements
+--------------------------------
+
+Sensor placements are the outer volumes of instance assemblies that 
+contain sensor volumes.  The order of the returned vector of G4PVPlacement
+is that of the Opticks sensorIndex. 
+This vector allows the connection between the Opticks sensorIndex 
+and detector specific handling of sensor quantities to be established.
+
+NB this assumes only one volume with a sensitive surface within each 
+repeated geometry instance
+
+For example JUNO uses G4PVPlacement::GetCopyNo() as a non-contiguous PMT 
+identifier, which allows lookup of efficiencies and PMT categories.
+
+Sensor data is assigned via calls to setSensorData with 
+the 0-based contiguous Opticks sensorIndex as the first argument.   
+
+**/
+
+const std::vector<G4PVPlacement*>& G4Opticks::getSensorPlacements() const 
 {
-    assert(m_ggeo && "must setGeometry before getSensorPlacements" ); 
-    X4PhysicalVolume::GetSensorPlacements(m_ggeo, placements);
+    return m_sensor_placements ;
 }
+
+
+/**
+G4Opticks::setSensorData
+---------------------------
+
+sensorIndex 
+    0-based continguous index used to access the sensor data, 
+    the index must be less than the number of sensors
+efficiency_1 
+efficiency_2
+    two efficiencies which are multiplied together with the local angle dependent efficiency 
+    to yield the detection efficiency used to assign SURFACE_COLLECT to photon hits 
+    that already have SURFACE_DETECT 
+category
+    used to distinguish between sensors with different theta textures   
+identifier
+    detector specific integer representing a sensor, does not need to be contiguous
+
+**/
+
+
+void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, unsigned category, unsigned identifier)
+{
+    assert( sensorIndex < m_sensor_num ); 
+    m_sensor_data->setFloat(sensorIndex,0,0,0, efficiency_1);
+    m_sensor_data->setFloat(sensorIndex,1,0,0, efficiency_2);
+    m_sensor_data->setUInt( sensorIndex,2,0,0, category);
+    m_sensor_data->setUInt( sensorIndex,3,0,0, identifier);
+}
+void G4Opticks::saveSensorData(const char* path) const 
+{
+    LOG(info) << path ; 
+    m_sensor_data->save(path); 
+}
+void G4Opticks::loadSensorData(const char* path) 
+{
+    m_sensor_data = NPY<float>::load(path); 
+    LOG(info) << path << " shape " << m_sensor_data->getShapeString() ; 
+}
+void G4Opticks::doSensorDataTest(const char* msg)
+{
+    LOG(info) << msg << " sensor_num " << m_sensor_num ; 
+    float efficiency_1(0.5f) ; 
+    float efficiency_2(1.0f) ; 
+    for(unsigned i=0 ; i < m_sensor_num ; i++)
+    {
+        unsigned category = i % 10 ; 
+        unsigned identifier = i + 1000000 ; 
+        setSensorData(i, efficiency_1, efficiency_2, category, identifier );  
+    }
+    saveSensorData("$TMP/G4Opticks/doSensorDataTest/sensorData.npy");
+}
+
 
 
 
@@ -342,6 +430,13 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     gg->postDirectTranslation(); 
     LOG(info) << ") GGeo::postDirectTranslation " ;
 
+    LOG(info) << "( X4PhysicalVolume::GetSensorPlacements " ;
+    X4PhysicalVolume::GetSensorPlacements(gg, m_sensor_placements);
+    m_sensor_num = m_sensor_placements.size();  
+    m_sensor_data = NPY<float>::make(m_sensor_num, 4); 
+    m_sensor_data->zero(); 
+
+    LOG(info) << ") X4PhysicalVolume::GetSensorPlacements sensor_num " << m_sensor_num  ;
 
     return gg ; 
 }

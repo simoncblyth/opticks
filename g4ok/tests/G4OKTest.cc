@@ -1,48 +1,49 @@
-/*
- * Copyright (c) 2019 Opticks Team. All Rights Reserved.
- *
- * This file is part of Opticks
- * (see https://bitbucket.org/simoncblyth/opticks).
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License.  
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
- * See the License for the specific language governing permissions and 
- * limitations under the License.
- */
-
 #include <cassert>
 #include "OPTICKS_LOG.hh"
 #include "G4Opticks.hh"
 
+/**
+G4OKTest
+===============
+
+This is aiming to replace::
+
+   okg4/tests/OKX4Test.cc 
+
+in order to reduce duplicated code between G4Opticks and here
+and make G4Opticks functionality testable without ascending to the 
+detector specific level.
+
+**/
+
+
+struct G4OKTest 
+{
+    G4OKTest(int argc, char** argv) 
+        :
+        m_g4ok(new G4Opticks)
+    {
+        OPTICKS_LOG(argc, argv) ;
+        const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath", NULL) ;
+
+        m_g4ok->setGeometry(gdmlpath);  
+
+        LOG(info) << m_g4ok->desc() ; 
+        m_g4ok->doSensorDataTest("G4OKTest::G4OKTest"); 
+    }
+
+    int rc(){ return 0 ; }
+
+    G4Opticks* m_g4ok ; 
+
+};
+
+
+
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv) ;
-
-    G4Opticks* om = G4Opticks::GetOpticks() ; 
-
-    assert( om ) ;
-
-    LOG(info) << om->desc() ; 
- 
-
-    return 0 ;
+    G4OKTest g4okt(argc, argv); 
+    return g4okt.rc() ;
 }
 
 
-/**
-+Trying to do the OPTICKS_LOG inside g4ok lib gives::
-+
-+    epsilon:g4ok blyth$ G4OKTest
-+    SAr::SAr argc_ == 0  presumably from OPTICKS_LOG__(0,0) : args_from_envvar argc_ 0
-+    SAr::args_from_envvar but no argline provided 
-+    Assertion failed: (appender != this), function addAppender, file /usr/local/opticks/externals/plog/include/plog/Logger.h, line 22.
-+    Abort trap: 6
-+    epsilon:g4ok blyth$ 
-**/
