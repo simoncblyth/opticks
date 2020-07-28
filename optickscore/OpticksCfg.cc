@@ -317,6 +317,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("dumpprofile",   "dump runtime profile, see Opticks::postpropagate") ; 
 
+   m_desc.add_options()
+       ("dumpsensor",   "dump sensor volumes, see GGeo::postDirectTranslateDump ") ; 
 
 
    m_desc.add_options()
@@ -427,6 +429,7 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("dbgflat",  "see CRandomEngine::dumpFlat") ;
+
 
 
    m_desc.add_options()

@@ -107,6 +107,7 @@ class X4_API X4PhysicalVolume : public X4Named
     public:
         static void DumpSensorVolumes(const GGeo* ggeo, const char* msg); 
         static void GetSensorPlacements(const GGeo* gg, std::vector<G4PVPlacement*>& placements);
+        static void DumpSensorPlacements(const GGeo* gg, const char* msg);
     public:
         X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 
         GGeo* getGGeo();

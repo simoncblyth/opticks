@@ -815,7 +815,16 @@ void GGeo::postDirectTranslationDump() const
 {
     LOG(LEVEL) << "[" ; 
     reportMeshUsage();
-    dumpSensorVolumes("GGeo::postDirectTranslationDump");  
+
+    if(m_ok->isDumpSensor())
+    {
+        dumpSensorVolumes("GGeo::postDirectTranslationDump --dumpsensor ");  
+    }
+    else
+    {
+        LOG(info) << reportSensorVolumes("GGeo::postDirectTranslationDump NOT --dumpsensor");  
+    }
+
     LOG(LEVEL) << "]" ; 
 }
 
@@ -1247,6 +1256,10 @@ unsigned GGeo::getNumSensorVolumes() const
 const GVolume* GGeo::getSensorVolume(unsigned sensorIndex) const 
 {
     return m_nodelib->getSensorVolume(sensorIndex) ; 
+}
+std::string GGeo::reportSensorVolumes(const char* msg) const 
+{
+    return m_nodelib->reportSensorVolumes(msg); 
 }
 void GGeo::dumpSensorVolumes(const char* msg) const 
 {

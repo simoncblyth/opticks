@@ -1299,6 +1299,10 @@ bool Opticks::isDumpHit() const  // --dumphit
 {
    return m_cfg->hasOpt("dumphit");
 }
+bool Opticks::isDumpSensor() const  // --dumpsensor
+{
+   return m_cfg->hasOpt("dumpsensor");
+}
 bool Opticks::isDumpProfile() const  // --dumpprofile
 {
    return m_cfg->hasOpt("dumpprofile");

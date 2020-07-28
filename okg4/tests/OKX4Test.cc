@@ -44,42 +44,21 @@
 
 class G4VPhysicalVolume ;
 
+#include "G4PVPlacement.hh"
+
+
 #include "OPTICKS_LOG.hh"
 
 /**
 OKX4Test : checking direct from G4 conversion, starting from a GDML loaded geometry
 =======================================================================================
 
-* TODO: update these notes, looks like now using pure G4 GDML parsing to init the geometry
-
-The first Opticks is there just to work with CGDMLDetector
-to load the GDML and apply fixups for missing material property tables
-to provide the G4VPhysicalVolume world volume for checking 
-the direct from G4.
-
-It would be cleaner to do this with pure G4. Perhaps 
-new Geant4 can avoid the fixups ?  Maybe not I think even
-current G4 misses optical properties.
-
 See :doc:`../../notes/issues/OKX4Test`
 
+TODO: too much duplication between here and G4Opticks, perhaps can make 
+      a G4OpticksMgr used by both ?
+
 **/
-
-/*
-G4VPhysicalVolume* make_top(int argc, char** argv)
-{
-
-    Opticks* ok = new Opticks(argc, argv); 
-    OpticksHub* hub = new OpticksHub(ok);
-    OpticksQuery* query = ok->getQuery();
-    CSensitiveDetector* sd = NULL ; 
-    CGDMLDetector* detector  = new CGDMLDetector(hub, query, sd) ; 
-    bool valid = detector->isValid();
-    assert(valid);
-    G4VPhysicalVolume* top = detector->Construct();
-    return top ; 
-}
-*/
 
 
 int main(int argc, char** argv)
@@ -116,46 +95,49 @@ int main(int argc, char** argv)
     const char* argforce = "--tracer --nogeocache --xanalytic" ;
     // --nogeoache to prevent GGeo booting from cache 
 
-    Opticks* ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
-    ok->configure();
-    ok->enforceNoGeoCache(); 
+    Opticks* m_ok = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
+    m_ok->configure();
+    m_ok->enforceNoGeoCache(); 
 
-    ok->profile("_OKX4Test:GGeo"); 
+    m_ok->profile("_OKX4Test:GGeo"); 
 
-    GGeo* gg = new GGeo(ok) ;
-    assert(gg->getMaterialLib());
+    GGeo* m_ggeo = new GGeo(m_ok) ;
+    assert(m_ggeo->getMaterialLib());
 
-    ok->profile("OKX4Test:GGeo"); 
-    LOG(info) << " gg " << gg 
-              << " gg.mlib " << gg->getMaterialLib()
+    m_ok->profile("OKX4Test:GGeo"); 
+    LOG(info) << " ggeo " << m_ggeo 
+              << " ggeo.mlib " << m_ggeo->getMaterialLib()
               ;
 
-    ok->profile("_OKX4Test:X4PhysicalVolume"); 
+    m_ok->profile("_OKX4Test:X4PhysicalVolume"); 
 
-    X4PhysicalVolume xtop(gg, top) ;    // populates gg
+    X4PhysicalVolume xtop(m_ggeo, top) ;    // populates gg
 
-    ok->profile("OKX4Test:X4PhysicalVolume"); 
+    m_ok->profile("OKX4Test:X4PhysicalVolume"); 
 
-    gg->postDirectTranslation();   // closing libs, finding repeat instances, merging meshes, saving 
+    m_ggeo->postDirectTranslation();   // closing libs, finding repeat instances, merging meshes, saving 
 
-    X4PhysicalVolume::DumpSensorVolumes(gg, "OKX4Test::main" ); 
+    if(m_ok->isDumpSensor())
+    {
+        X4PhysicalVolume::DumpSensorVolumes(m_ggeo, "OKX4Test::main" ); 
+        X4PhysicalVolume::DumpSensorPlacements(m_ggeo, "OKX4Test::main" ); 
+    }
 
-
-    ok->profile("_OKX4Test:OKMgr"); 
-    assert( GGeo::GetInstance() == gg );
+    m_ok->profile("_OKX4Test:OKMgr"); 
+    assert( GGeo::GetInstance() == m_ggeo );
 
     // not OKG4Mgr as no need for CG4 
     OKMgr mgr(argc, argv);  // OpticksHub inside here picks up the gg (last GGeo instanciated) via GGeo::GetInstance 
-    ok->profile("OKX4Test:OKMgr"); 
+    m_ok->profile("OKX4Test:OKMgr"); 
     //mgr.propagate();
     mgr.visualize();   
 
     Opticks* oki = Opticks::GetInstance() ; 
-    ok->saveProfile();
-    ok->postgeocache(); 
+    assert( oki == m_ok ) ; 
+    m_ok->saveProfile();
+    m_ok->postgeocache(); 
 
-    assert( oki == ok ) ; 
-    ok->reportGeoCacheCoordinates(); 
+    m_ok->reportGeoCacheCoordinates(); 
 
     return mgr.rc() ;
 }

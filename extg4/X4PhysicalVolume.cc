@@ -1479,4 +1479,38 @@ void X4PhysicalVolume::GetSensorPlacements(const GGeo* gg, std::vector<G4PVPlace
 }
 
 
+void X4PhysicalVolume::DumpSensorPlacements(const GGeo* gg, const char* msg) // static
+{
+    std::vector<G4PVPlacement*> sensors ; 
+    X4PhysicalVolume::GetSensorPlacements(gg, sensors);
+    int num_sen = sensors.size();  
+
+    LOG(info) << msg <<  " num_sen " << num_sen ; 
+
+    int lastCopyNo = -2 ;   
+    int lastTransition = -2 ; 
+    int margin = 10 ; 
+
+    for(int i=0 ; i < num_sen ; i++)
+    {   
+         int sensorIdx = i ; 
+         const G4PVPlacement* sensor = sensors[sensorIdx] ; 
+         G4int copyNo = sensor->GetCopyNo(); 
+
+         if( lastCopyNo + 1 != copyNo ) lastTransition = i ; 
+
+         if( i - lastTransition < margin || i < margin || num_sen - 1 - i < margin ) 
+         std::cout 
+             << " sensorIdx " << std::setw(6) << sensorIdx
+             << " sensor " << std::setw(8) << sensor
+             << " copyNo " << std::setw(6) << copyNo
+             << std::endl 
+             ;   
+
+         lastCopyNo = copyNo ; 
+    }   
+}
+
+
+
 

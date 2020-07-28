@@ -233,28 +233,36 @@ const GVolume* GNodeLib::getSensorVolume(unsigned sensorIndex) const
     return m_sensor_volumes[sensorIndex]; 
 }
 
-void GNodeLib::dumpSensorVolumes(const char* msg) const 
+std::string GNodeLib::reportSensorVolumes(const char* msg) const 
 {
+    std::stringstream ss ; 
     unsigned numSensorVolumes = getNumSensorVolumes(); 
-    LOG(info) 
+    ss
         << msg 
         << " numSensorVolumes " << numSensorVolumes
         ;
+    return ss.str(); 
+}
 
+void GNodeLib::dumpSensorVolumes(const char* msg) const 
+{
+    LOG(info) << reportSensorVolumes(msg) ; 
+    unsigned numSensorVolumes = getNumSensorVolumes(); 
     for(unsigned i=0 ; i < numSensorVolumes ; i++)
     {
         unsigned sensorIdx = i ; 
         const GVolume* sensor = getSensorVolume(sensorIdx) ; 
         assert(sensor); 
-
-        const char* sensorPVName =  ( sensor != NULL ? sensor->getPVName() : "-" ) ; 
-        const void* const sensorOrigin = ( sensor != NULL ? sensor->getOriginNode() : "-" ) ;  
-
+        const char* sensorPVName =  sensor->getPVName() ; 
+        assert(sensorPVName);
+        const void* const sensorOrigin = sensor->getOriginNode() ;
+        assert(sensorOrigin);  
         const GVolume* outer = sensor->getOuterVolume() ; 
         assert(outer);
- 
-        const char* outerPVName = ( outer != NULL ? outer->getPVName() : "-" ) ;
-        const void* const outerOrigin = ( outer != NULL ? outer->getOriginNode() : "-" )  ;  
+        const char* outerPVName = outer->getPVName() ;
+        assert(outerPVName);
+        const void* const outerOrigin = outer->getOriginNode() ;  
+        assert(outerOrigin);
 
         std::cout 
             << " sensorIdx " << std::setw(6) << sensorIdx
