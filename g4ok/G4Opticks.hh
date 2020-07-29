@@ -108,13 +108,18 @@ class G4OK_API G4Opticks
 
         static void Finalize();
 
-
     public:
         const std::vector<G4PVPlacement*>& getSensorPlacements() const ;
         void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, unsigned sensor_category, unsigned sensor_identifier);
         void saveSensorData(const char* path) const ; 
         void loadSensorData(const char* path); 
         void doSensorDataTest(const char* msg); 
+    public:
+        void setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& data, 
+                                         int theta_steps, float theta_min, float theta_max, 
+                                         int phi_steps=0,   float phi_min=0.f, float phi_max=0.f );
+        void saveSensorAngularEfficiency(const char* path) const ;
+        void loadSensorAngularEfficiency(const char* path) ;
     public:
         void setGeometry(const G4VPhysicalVolume* world); 
         void setGeometry(const char* gdmlpath);
@@ -313,6 +318,7 @@ class G4OK_API G4Opticks
         std::vector<G4PVPlacement*> m_sensor_placements ;
         unsigned                    m_sensor_num ; 
         NPY<float>*                 m_sensor_data ; 
+        NPY<float>*                 m_sensor_angular_efficiency ; 
     private:
         static G4Opticks*          fOpticks;
 

@@ -162,7 +162,8 @@ G4Opticks::G4Opticks()
     m_g4hit(NULL),
     m_gpu_propagate(true),
     m_sensor_num(0),
-    m_sensor_data(NULL)
+    m_sensor_data(NULL),
+    m_sensor_angular_efficiency(NULL)  
 {
     assert( fOpticks == NULL ); 
     LOG(info) << "ctor : DISABLE FPE detection : as it breaks OptiX launches" ; 
@@ -366,7 +367,34 @@ void G4Opticks::doSensorDataTest(const char* msg)
 }
 
 
-
+void G4Opticks::setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& data, 
+        int theta_steps, float theta_min, float theta_max, 
+        int phi_steps,   float phi_min, float phi_max )
+{
+    LOG(LEVEL) << "[" ; 
+    std::string metadata = "" ; 
+    NPY<float>* a = new NPY<float>(shape, data, metadata); 
+    a->setMeta<int>("theta_steps", theta_steps); 
+    a->setMeta<float>("theta_min", theta_min); 
+    a->setMeta<float>("theta_max", theta_max);
+    a->setMeta<int>("phi_steps", phi_steps); 
+    a->setMeta<float>("phi_min", phi_min); 
+    a->setMeta<float>("phi_max", phi_max);
+  
+    m_sensor_angular_efficiency = a ; 
+    saveSensorAngularEfficiency("$TMP/G4Opticks/setSensorAngularEfficiency/angularEfficiency.npy");
+    LOG(LEVEL) << "]" ; 
+}
+void G4Opticks::saveSensorAngularEfficiency(const char* path) const 
+{
+    LOG(info) << path ; 
+    m_sensor_angular_efficiency->save(path); 
+}
+void G4Opticks::loadSensorAngularEfficiency(const char* path) 
+{
+    m_sensor_angular_efficiency = NPY<float>::load(path); 
+    LOG(info) << path << " shape " << m_sensor_angular_efficiency->getShapeString() ; 
+}
 
 
 
