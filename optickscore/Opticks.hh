@@ -605,6 +605,7 @@ class OKCORE_API Opticks {
        bool isDbgHit() const ; // --dbghit
        bool isDumpHit() const ; // --dumphit
        bool isDumpSensor() const ; // --dumpsensor
+       bool isSaveSensor() const ; // --savesensor
        bool isDumpProfile() const ; // --dumpprofile
        bool isDbgGeoTest() const ; // --dbggeotest
 

@@ -99,6 +99,8 @@ class G4OK_API G4Opticks
         virtual ~G4Opticks();
     public:
         std::string desc() const ;  
+        const char* dbgdesc() const ;  
+        std::string dbgdesc_() const ;
     public:
         // workflow methods
         int propagateOpticalPhotons(G4int eventID);
@@ -110,16 +112,17 @@ class G4OK_API G4Opticks
 
     public:
         const std::vector<G4PVPlacement*>& getSensorPlacements() const ;
-        void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, unsigned sensor_category, unsigned sensor_identifier);
-        void saveSensorData(const char* path) const ; 
-        void loadSensorData(const char* path); 
-        void doSensorDataTest(const char* msg); 
+    public:
+        void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int sensor_category, int sensor_identifier);
+        template <typename T> void setSensorDataMeta( const char* key, T value );
     public:
         void setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& data, 
                                          int theta_steps, float theta_min, float theta_max, 
                                          int phi_steps=0,   float phi_min=0.f, float phi_max=0.f );
-        void saveSensorAngularEfficiency(const char* path) const ;
-        void loadSensorAngularEfficiency(const char* path) ;
+
+        template <typename T> void setSensorAngularEfficiencyMeta( const char* key, T value );
+    public:
+        void saveSensorArrays(const char* dir) const ; 
     public:
         void setGeometry(const G4VPhysicalVolume* world); 
         void setGeometry(const char* gdmlpath);

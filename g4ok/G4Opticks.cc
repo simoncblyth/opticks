@@ -166,12 +166,14 @@ G4Opticks::G4Opticks()
     m_sensor_angular_efficiency(NULL)  
 {
     assert( fOpticks == NULL ); 
+    fOpticks = this ; 
     LOG(info) << "ctor : DISABLE FPE detection : as it breaks OptiX launches" ; 
     C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
 }
 
 void G4Opticks::createCollectors()
 {
+    LOG(info) << "[" ; 
     const char* prefix = NULL ; 
     m_mtab = new CMaterialTable(prefix); 
 
@@ -180,6 +182,58 @@ void G4Opticks::createCollectors()
     m_primary_collector = new CPrimaryCollector ; 
     m_g4hit_collector = new CPhotonCollector ; 
     m_g4photon_collector = new C4PhotonCollector ; 
+    LOG(info) << "]" ; 
+}
+
+/**
+G4Opticks::dbgdesc
+-------------------
+
+Dump the member variables::
+
+   (gdb) printf "%s\n", g4opticks->dbgdesc()
+
+**/
+
+const char* G4Opticks::dbgdesc() const 
+{
+    std::string s = dbgdesc_() ; 
+    return strdup(s.c_str());     
+}
+
+std::string G4Opticks::dbgdesc_() const 
+{
+    std::stringstream ss ; 
+    ss
+       << std::setw(32) << " this "                           << std::setw(12) << this << std::endl  
+       << std::setw(32) << " m_standardize_geant4_materials " << std::setw(12) << m_standardize_geant4_materials << std::endl  
+       << std::setw(32) << " m_world "                        << std::setw(12) << m_world << std::endl  
+       << std::setw(32) << " m_ggeo "                         << std::setw(12) << m_ggeo << std::endl  
+       << std::setw(32) << " m_blib "                         << std::setw(12) << m_blib << std::endl  
+       << std::setw(32) << " m_ok "                           << std::setw(12) << m_ok << std::endl  
+       << std::setw(32) << " m_traverser "                    << std::setw(12) << m_traverser << std::endl  
+       << std::setw(32) << " m_mtab  "                        << std::setw(12) << m_mtab << std::endl
+       << std::setw(32) << " m_genstep_collector "            << std::setw(12) << m_genstep_collector << std::endl
+       << std::setw(32) << " m_primary_collector "            << std::setw(12) << m_primary_collector << std::endl
+       << std::setw(32) << " m_lookup "                       << std::setw(12) << m_lookup << std::endl
+       << std::setw(32) << " m_opmgr "                        << std::setw(12) << m_opmgr  << std::endl
+       << std::setw(32) << " m_gensteps "                     << std::setw(12) << m_gensteps << std::endl
+       << std::setw(32) << " m_genphotons "                   << std::setw(12) << m_genphotons << std::endl
+       << std::setw(32) << " m_hits_ "                        << std::setw(12) << m_hits_ << std::endl 
+       << std::setw(32) << " m_hits "                         << std::setw(12) << m_hits << std::endl 
+       << std::setw(32) << " m_num_hits "                     << std::setw(12) << m_num_hits << std::endl 
+       << std::setw(32) << " m_g4hit_collector "              << std::setw(12) << m_g4hit_collector << std::endl
+       << std::setw(32) << " m_g4photon_collector "           << std::setw(12) << m_g4photon_collector << std::endl 
+       << std::setw(32) << " m_genstep_idx "                  << std::setw(12) << m_genstep_idx << std::endl
+       << std::setw(32) << " m_g4evt "                        << std::setw(12) << m_g4evt << std::endl 
+       << std::setw(32) << " m_g4hit "                        << std::setw(12) << m_g4hit << std::endl 
+       << std::setw(32) << " m_gpu_propagate "                << std::setw(12) << m_gpu_propagate << std::endl  
+       << std::setw(32) << " m_sensor_num "                   << std::setw(12) << m_sensor_num << std::endl  
+       << std::setw(32) << " m_sensor_data "                  << std::setw(12) << m_sensor_data << std::endl  
+       << std::setw(32) << " m_sensor_angular_efficiency "    << std::setw(12) << m_sensor_angular_efficiency << std::endl  
+       ;
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 
@@ -213,6 +267,7 @@ and are managed by them.
 
 void G4Opticks::resetCollectors()
 {
+    LOG(info) << "[" ; 
     m_genstep_collector->reset(); 
     m_gensteps = NULL ; 
 
@@ -223,6 +278,7 @@ void G4Opticks::resetCollectors()
 
     m_g4photon_collector->reset(); 
     m_genphotons = NULL ; 
+    LOG(info) << "]" ; 
 }
 
 
@@ -252,18 +308,16 @@ void G4Opticks::setStandardizeGeant4Materials(bool standardize_geant4_materials)
 
 void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 {
-    LOG(fatal) << "[[[" ; 
+    LOG(LEVEL) << "[" ; 
 
 
-    LOG(fatal) << "( translateGeometry " ; 
+    LOG(LEVEL) << "( translateGeometry " ; 
     GGeo* ggeo = translateGeometry( world ) ;
-    LOG(fatal) << ") translateGeometry " ; 
+    LOG(LEVEL) << ") translateGeometry " ; 
 
     if( m_standardize_geant4_materials )
     {
-        LOG(fatal) << "( standardizeGeant4MaterialProperties " ; 
         standardizeGeant4MaterialProperties();
-        LOG(fatal) << ") standardizeGeant4MaterialProperties " ; 
     }
 
     m_world = world ; 
@@ -271,18 +325,16 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     m_blib = m_ggeo->getBndLib();  
     m_ok = m_ggeo->getOpticks(); 
 
-    LOG(fatal) << "( createCollectors " ; 
     createCollectors(); 
-    LOG(fatal) << ") createCollectors " ; 
 
     //CAlignEngine::Initialize(m_ok->getIdPath()) ;
 
     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
-    LOG(fatal) << "( OpMgr " ; 
+    LOG(LEVEL) << "( OpMgr " ; 
     m_opmgr = new OpMgr(m_ok) ;   
-    LOG(fatal) << ") OpMgr " ; 
+    LOG(LEVEL) << ") OpMgr " ; 
 
-    LOG(fatal) << "]]]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
  
@@ -333,39 +385,28 @@ identifier
 
 **/
 
-
-void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, unsigned category, unsigned identifier)
+void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int category, int identifier)
 {
     assert( sensorIndex < m_sensor_num ); 
     m_sensor_data->setFloat(sensorIndex,0,0,0, efficiency_1);
     m_sensor_data->setFloat(sensorIndex,1,0,0, efficiency_2);
-    m_sensor_data->setUInt( sensorIndex,2,0,0, category);
-    m_sensor_data->setUInt( sensorIndex,3,0,0, identifier);
-}
-void G4Opticks::saveSensorData(const char* path) const 
-{
-    LOG(info) << path ; 
-    m_sensor_data->save(path); 
-}
-void G4Opticks::loadSensorData(const char* path) 
-{
-    m_sensor_data = NPY<float>::load(path); 
-    LOG(info) << path << " shape " << m_sensor_data->getShapeString() ; 
-}
-void G4Opticks::doSensorDataTest(const char* msg)
-{
-    LOG(info) << msg << " sensor_num " << m_sensor_num ; 
-    float efficiency_1(0.5f) ; 
-    float efficiency_2(1.0f) ; 
-    for(unsigned i=0 ; i < m_sensor_num ; i++)
-    {
-        unsigned category = i % 10 ; 
-        unsigned identifier = i + 1000000 ; 
-        setSensorData(i, efficiency_1, efficiency_2, category, identifier );  
-    }
-    saveSensorData("$TMP/G4Opticks/doSensorDataTest/sensorData.npy");
+    m_sensor_data->setInt(  sensorIndex,2,0,0, category);
+    m_sensor_data->setInt(  sensorIndex,3,0,0, identifier);
 }
 
+template <typename T>
+void G4Opticks::setSensorDataMeta( const char* key, T value )
+{
+    assert( m_sensor_data ); 
+    m_sensor_data->setMeta<T>( key, value ); 
+}
+
+/**
+G4Opticks::setSensorAngularEfficiency
+----------------------------------------
+
+
+**/
 
 void G4Opticks::setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& data, 
         int theta_steps, float theta_min, float theta_max, 
@@ -382,18 +423,39 @@ void G4Opticks::setSensorAngularEfficiency( const std::vector<int>& shape, const
     a->setMeta<float>("phi_max", phi_max);
   
     m_sensor_angular_efficiency = a ; 
-    saveSensorAngularEfficiency("$TMP/G4Opticks/setSensorAngularEfficiency/angularEfficiency.npy");
+
     LOG(LEVEL) << "]" ; 
 }
-void G4Opticks::saveSensorAngularEfficiency(const char* path) const 
+
+template <typename T>
+void G4Opticks::setSensorAngularEfficiencyMeta( const char* key, T value )
 {
-    LOG(info) << path ; 
-    m_sensor_angular_efficiency->save(path); 
+    assert( m_sensor_angular_efficiency ); 
+    m_sensor_angular_efficiency->setMeta<T>( key, value ); 
 }
-void G4Opticks::loadSensorAngularEfficiency(const char* path) 
+
+
+void G4Opticks::saveSensorArrays(const char* dir) const 
 {
-    m_sensor_angular_efficiency = NPY<float>::load(path); 
-    LOG(info) << path << " shape " << m_sensor_angular_efficiency->getShapeString() ; 
+    LOG(info) << dir ; 
+
+    if(m_sensor_data != NULL)
+    {
+        m_sensor_data->save(dir, "sensorData.npy"); 
+    }
+    else
+    {
+        LOG(warning) << " m_sensor_data NULL " ; 
+    }
+
+    if(m_sensor_angular_efficiency != NULL)
+    {
+        m_sensor_angular_efficiency->save(dir,"angularEfficiency.npy" ); 
+    }
+    else
+    {
+        LOG(warning) << " m_sensor_angular_efficiency NULL " ; 
+    }
 }
 
 
@@ -473,7 +535,6 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 
 
 
-
 /**
 G4Opticks::standardizeGeant4MaterialProperties
 -----------------------------------------------
@@ -489,9 +550,11 @@ standardized on material collection.
 
 void G4Opticks::standardizeGeant4MaterialProperties()
 {
+    LOG(fatal) << "[" ; 
     G4MaterialTable* mtab = G4Material::GetMaterialTable();   
     const GMaterialLib* mlib = GMaterialLib::GetInstance(); 
     X4MaterialLib::Standardize( mtab, mlib ) ;  
+    LOG(fatal) << "]" ; 
 }
 
 
@@ -573,7 +636,7 @@ what is the relationship between gensteps and G4Event ?
 int G4Opticks::propagateOpticalPhotons(G4int eventID) 
 {
     LOG(LEVEL) << "[[" ; 
-
+    assert( m_genstep_collector ); 
     m_gensteps = m_genstep_collector->getGensteps(); 
     m_gensteps->setArrayContentVersion(G4VERSION_NUMBER); 
     m_gensteps->setArrayContentIndex(eventID); 
@@ -624,7 +687,6 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
         // clears OpticksEvent buffers,   excluding gensteps
         // clone any buffers to be retained before the reset
     }
-
 
     LOG(LEVEL) << "]] num_hits " << m_num_hits ; 
     return m_num_hits ;   
@@ -873,6 +935,14 @@ void G4Opticks::collectScintillationStep
         G4double spare2 = 0
         ) {
     LOG(debug) << "[";
+
+
+    if( !m_genstep_collector ) 
+    {
+        LOG(fatal) << " m_genstep_collector NULL " << std::endl << dbgdesc() ; 
+    } 
+
+    assert( m_genstep_collector ); 
     m_genstep_collector->collectScintillationStep(
              gentype,
              parentId,
@@ -1012,8 +1082,16 @@ void G4Opticks::collectCerenkovStep
         G4double             postVelocity
     )
 {
-     LOG(debug) << "[" ; 
-     m_genstep_collector->collectCerenkovStep(
+    LOG(debug) << "[" ; 
+
+
+    if( !m_genstep_collector ) 
+    {
+        LOG(fatal) << " m_genstep_collector NULL " << std::endl << dbgdesc() ; 
+    } 
+
+    assert( m_genstep_collector ); 
+    m_genstep_collector->collectCerenkovStep(
                        gentype, 
                        parentId,
                        materialId,
@@ -1044,7 +1122,7 @@ void G4Opticks::collectCerenkovStep
                        meanNumberOfPhotons2,
                        postVelocity
                        ) ;
-     LOG(debug) << "]" ; 
+    LOG(debug) << "]" ; 
 }
   
 
@@ -1085,6 +1163,7 @@ void G4Opticks::collectHit
         G4int                flags_w
     )
 {
+     assert( m_g4hit_collector );
      m_g4hit_collector->collectPhoton(
          pos_x, 
          pos_y, 
@@ -1108,4 +1187,20 @@ void G4Opticks::collectHit
      ) ;
 }
  
+
+
+template G4OK_API void G4Opticks::setSensorDataMeta(const char* key, int value);
+template G4OK_API void G4Opticks::setSensorDataMeta(const char* key, float value);
+template G4OK_API void G4Opticks::setSensorDataMeta(const char* key, std::string value);
+
+template G4OK_API void G4Opticks::setSensorAngularEfficiencyMeta(const char* key, int value);
+template G4OK_API void G4Opticks::setSensorAngularEfficiencyMeta(const char* key, float value);
+template G4OK_API void G4Opticks::setSensorAngularEfficiencyMeta(const char* key, std::string value);
+
+
+
+
+
+
+
 

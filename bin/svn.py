@@ -9,7 +9,7 @@ to pick the flavor of version control
 
 This script enables two svn working copies "local" and "remote"
 to be kept in sync with each other without requiring the changes
-to be committed to svn.  It provides a workaround for operating with 
+to be committed to svn or git.  It provides a workaround for operating with 
 a remote svn working copy over a slow connection when you do not yet
 have permission to commit many of the changes.
 
@@ -204,7 +204,7 @@ class WC(object):
             pass
         pass
         parser = argparse.ArgumentParser(doc)
-        parser.add_argument( "cmd", default=["st"], nargs="*", choices=["rup","loc","rem","st","get","put","cf","cfu","sync", ["st"]], 
+        parser.add_argument( "cmd", default=["st"], nargs="*", choices=["rup","loc","rem","st","get","put","cf","cfu","sync","scp", ["st"]], 
             help="command specifying what to do with the working copy" ) 
         parser.add_argument( "--chdir", default=defaults["chdir"], help="chdir here" ) 
         parser.add_argument( "--rstatpath", default=defaults["rstatpath"], help="path to remote status file" ) 
@@ -407,10 +407,12 @@ if __name__ == '__main__':
         elif cmd == "cf" or cmd == "cfu":
             assert cf
             print(cf)
-        elif cmd == "sync":
+        elif cmd == "sync" or cmd == "scp":
             assert cf
             for p in cf.paths:
-                print(str(p))
+                if cmd == "sync":
+                    print(str(p))
+                pass
                 stlr = p["stlr"]
                 stdig = p["stdig"]
                 if stlr == "l ":

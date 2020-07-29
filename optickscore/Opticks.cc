@@ -1303,6 +1303,10 @@ bool Opticks::isDumpSensor() const  // --dumpsensor
 {
    return m_cfg->hasOpt("dumpsensor");
 }
+bool Opticks::isSaveSensor() const  // --savesensor
+{
+   return m_cfg->hasOpt("savesensor");
+}
 bool Opticks::isDumpProfile() const  // --dumpprofile
 {
    return m_cfg->hasOpt("dumpprofile");

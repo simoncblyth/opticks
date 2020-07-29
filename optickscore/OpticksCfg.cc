@@ -320,6 +320,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("dumpsensor",   "dump sensor volumes, see GGeo::postDirectTranslateDump ") ; 
 
+   m_desc.add_options()
+       ("savesensor",   "save sensor arrays, see G4Opticks::setSensorAngularEfficiency ") ; 
 
    m_desc.add_options()
        ("savehit",   "save hits even in production running") ; 

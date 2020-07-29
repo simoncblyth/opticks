@@ -25,11 +25,11 @@ struct G4OKTest
     {
         OPTICKS_LOG(argc, argv) ;
         const char* gdmlpath = PLOG::instance->get_arg_after("--gdmlpath", NULL) ;
+        if( gdmlpath == NULL ) return ; 
 
         m_g4ok->setGeometry(gdmlpath);  
 
-        LOG(info) << m_g4ok->desc() ; 
-        m_g4ok->doSensorDataTest("G4OKTest::G4OKTest"); 
+        LOG(info) << m_g4ok->dbgdesc() ; 
     }
 
     int rc(){ return 0 ; }
