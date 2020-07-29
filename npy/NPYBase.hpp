@@ -200,7 +200,7 @@ class NPY_API NPYBase {
 
    public:
        // provided by subclass
-       virtual void read(void* ptr) = 0;
+       virtual void read(const void* ptr) = 0;
        virtual void* getBytes() = 0 ;
 
        virtual void setQuad(const glm::vec4& vec, unsigned int i, unsigned int j, unsigned int k) = 0 ;

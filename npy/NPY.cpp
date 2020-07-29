@@ -44,7 +44,7 @@ namespace fs = boost::filesystem;
 // ctor takes ownership of a copy of the inputs 
 
 template <typename T>
-NPY<T>::NPY(const std::vector<int>& shape, std::vector<T>& data_, std::string& metadata) 
+NPY<T>::NPY(const std::vector<int>& shape, const std::vector<T>& data_, std::string& metadata) 
          :
          NPYBase(shape, sizeof(T), type, metadata, data_.size() > 0),
          m_data(data_),      // copies the vector
@@ -55,7 +55,7 @@ NPY<T>::NPY(const std::vector<int>& shape, std::vector<T>& data_, std::string& m
 } 
 
 template <typename T>
-NPY<T>::NPY(const std::vector<int>& shape, T* data_, std::string& metadata) 
+NPY<T>::NPY(const std::vector<int>& shape, const T* data_, std::string& metadata) 
          :
          NPYBase(shape, sizeof(T), type, metadata, data_ != NULL),
          m_data(),      
@@ -71,7 +71,7 @@ NPY<T>::NPY(const std::vector<int>& shape, T* data_, std::string& metadata)
 
 
 template <typename T>
-void NPY<T>::setData(T* data_)
+void NPY<T>::setData(const T* data_)
 {
     assert(data_);
     allocate();
@@ -127,7 +127,7 @@ void NPY<T>::reset()
 }
 
 template <typename T>
-void NPY<T>::read(void* src)
+void NPY<T>::read(const void* src)
 {
     if(m_data.size() == 0)
     {

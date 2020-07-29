@@ -151,8 +151,8 @@ class NPY_API NPY : public NPYBase {
        static unsigned _copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
    public:
        // ctor takes ownership of a copy of the inputs 
-       NPY(const std::vector<int>& shape, T*  data            , std::string& metadata) ;
-       NPY(const std::vector<int>& shape, std::vector<T>& data, std::string& metadata) ;
+       NPY(const std::vector<int>& shape, const T*  data            , std::string& metadata) ;
+       NPY(const std::vector<int>& shape, const std::vector<T>& data, std::string& metadata) ;
 
    public:
        // to allow binary level access to NPY data from for example gltf tools
@@ -201,7 +201,7 @@ class NPY_API NPY : public NPYBase {
        void* getPointer();   // aping GBuffer for easier migration
        BBufSpec* getBufSpec();
 
-       void read(void* src);
+       void read(const void* src);
        void write(void* dst);
     private:
        T* grow(unsigned int nitems); // increase size to contain an extra nitems, return pointer to start of them
@@ -230,7 +230,7 @@ class NPY_API NPY : public NPYBase {
        //
     public:
        std::vector<T>& data();
-       void setData(T* data);
+       void setData(const T* data);
        T* fill(T value);
        void zero();
        T* allocate();
