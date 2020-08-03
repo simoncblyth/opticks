@@ -96,7 +96,8 @@ int main(int argc, char** argv)
     GNode* base = NULL ;  // global transforms
     GNode* root = m_ggeo->getNode(0); 
 
-    GMergedMesh* mm = m_ggeo->makeMergedMesh(idx, base, root, verbosity); // this only makes when not existing TODO:split 
+    bool globalinstance = false ; 
+    GMergedMesh* mm = m_ggeo->makeMergedMesh(idx, base, root, verbosity, globalinstance ); // this only makes when not existing TODO:split 
     mm->Summary("GMergedMesh");
 
     GMaterialLib* mlib = m_ggeo->getMaterialLib();

@@ -23,16 +23,18 @@
 
 class Prog ;
 
-/*
+/**
 RendererBase
 ==============
 
-Hmm ShaderBase would be a better name, in light of transform feedback 
+Base class of both geometry(Renderer) and event(Rdr) renderers
+that handles the mechanics of compiling and linking of the shader 
+source code.
+
+NB ShaderBase would be a better name, in light of transform feedback 
 (and maybe compute shaders in future).
 
-
-*/
-
+**/
 
 #include "OGLRAP_API_EXPORT.hh"
 class OGLRAP_API RendererBase {

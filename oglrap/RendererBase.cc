@@ -30,7 +30,7 @@
 #include "OGLRAP_BODY.hh"
 
 
-const plog::Severity RendererBase::LEVEL = debug ; 
+const plog::Severity RendererBase::LEVEL = PLOG::EnvLevel("RendererBase", "DEBUG") ; 
 
 
 const char* RendererBase::getShaderTag() const 

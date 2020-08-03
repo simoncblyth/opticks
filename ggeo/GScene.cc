@@ -1029,7 +1029,9 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
          GVolume* base = ridx == 0 ? NULL : instance0 ; 
 
-         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, base, m_root, m_verbosity );   
+         bool globalinstance = false ; 
+
+         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, base, m_root, m_verbosity, globalinstance );   
 
          assert(mm);
 

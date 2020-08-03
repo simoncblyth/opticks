@@ -329,6 +329,12 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("vizg4",   "when vizualizing loaded events, upload the G4Evt not the OKEvt one ") ; 
 
+
+   m_desc.add_options()
+       ("globalinstance",  
+        "Plus one GMergedMesh collected from nodes labelled with ridx 0, ie a non-special global treated as instanced,"
+        "but with only one identity instance transform. See GInstancer. ") ;
+
    m_desc.add_options()
        ("g4codegen",   "generate and persist Geant4 geometry code for each solid of the geometry in X4PhysicalVolume, see X4GEN_DIR ") ; 
 
@@ -807,8 +813,6 @@ void OpticksCfg<Listener>::init()
    snprintf(dbglv,128, "Index of solid/LV for debugging. Default %d", m_dbglv);
    m_desc.add_options()
        ("dbglv",  boost::program_options::value<int>(&m_dbglv), dbglv );
-
-
 
 
    char dbgmesh[128];

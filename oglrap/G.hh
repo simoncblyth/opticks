@@ -22,6 +22,13 @@
 #include <string>
 #include "OGLRAP_API_EXPORT.hh"
 
+/**
+G : OpenGL error strings and utilities
+=========================================
+
+
+**/
+
 struct OGLRAP_API G
 {
      static bool VERBOSE ; 

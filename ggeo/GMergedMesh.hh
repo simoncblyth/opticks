@@ -65,7 +65,7 @@ public:
 public:
     static const plog::Severity LEVEL ; 
     static std::string Desc(const GMergedMesh* mm);
-    static GMergedMesh* Create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity);
+    static GMergedMesh* Create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity, bool globalinstance );
 private:
      // operates in COUNT and MERGE passes, COUNT find out the number of 
      // ridx selected volumes and their vertices to allocate then 
@@ -138,6 +138,10 @@ public:
     // used when obtaining relative transforms for flattening sub-trees of repeated geometry
     void   setCurrentBase(GNode* base);
     GNode* getCurrentBase(); 
+
+    void   setGlobalInstance(bool globalinstance);  // global geometry treated like instanced
+    bool   isGlobalInstance() const ;   
+
     bool   isGlobal(); 
     bool   isInstanced(); 
 public:
@@ -153,6 +157,7 @@ private:
     unsigned     m_cur_mergedmesh ; // for composite mergedmesh recording 
     unsigned     m_num_csgskip ; 
     GNode*       m_cur_base ;  
+    bool         m_globalinstance ; 
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
 
     GPts*        m_pts ; 

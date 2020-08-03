@@ -396,3 +396,39 @@ NVIDIA OptiX 7.1 adds a new curve primitive for hair and fur
 which might be used for the simulation of wires
 
 
+
+**C11** : investigate partitioned solids   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The current CSG intersect algorithm for OptiX 6 runs **within** the OptiX primitive
+so it will not need to change much when going to OptiX 7.
+
+This "complex CSG primitive" approach is convenient but performance
+would be improved by partitioning solids at the intersection boundaries 
+of the constituent primitives. Intersects with such partitioned solids is expected to 
+be faster as it makes better use of the BVH acceleration structure. The problem 
+is that this is not a general approach : only certain more simple solids could be optimized 
+in this way and it is difficult to automate the chopping up of solids.
+However the typical shape of PMTs is expected to work with this approach.
+
+The technique is similar to the partlist approach which was used 
+for analytic modelling PMTs prior to the implementation of general CSG.
+So trying this approach could start by reviving the partlist and comparing 
+performance with general CSG for applicable shapes.
+
+
+**C12** : "higher level" CSG    
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The CSG algorithm operates on a tree of constituent shapes which are currently implemented
+within the OptiX primitive. Perhaps it might be possible to expose the constituent shapes
+and their bbox to OptiX and implement the CSG on top of that : ie implementing CSG above the 
+level of the OptiX primitive in a kind of compound primitive that contains a bunch of 
+other sub-primitives. 
+This would in principal allow for the CSG intersects to benefit more from BVH than they currently do.
+
+This is a lot more ambitious than the **C11** above, as it is unclear if the technicalities 
+would even allow this to be possible.  This is something to attempt after the OptiX 7 transition
+has been completed and web trawls have been made searching for prior work on CSG with OptiX.
+
+

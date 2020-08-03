@@ -345,7 +345,14 @@ void Prog::printStatus()
 }
 
 
+/**
+Prog::traverseActive
+----------------------
 
+Introspect the shader collecting active Uniforms or Attributes into 
+m_uniforms or m_attributes.
+
+**/
 
 
 void Prog::traverseActive(Obj_t obj, bool print)

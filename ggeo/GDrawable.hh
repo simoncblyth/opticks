@@ -30,6 +30,18 @@ template <typename T> class NPY ;
 
 #include "GGEO_API_EXPORT.hh"
 
+/**
+GDrawable
+===========
+
+Purely virtual protocol base class.
+See Renderer::setDrawable for how this gets used.
+
+NB GBuffer still in use, these are slated for replacement with NPY 
+
+**/
+
+
 class GGEO_API GDrawable {
   public:
       virtual ~GDrawable(){}

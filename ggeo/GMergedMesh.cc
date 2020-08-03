@@ -85,6 +85,7 @@ GMergedMesh::GMergedMesh(
     m_cur_mergedmesh(0),
     m_num_csgskip(0),
     m_cur_base(NULL),
+    m_globalinstance(false),
     m_pts(GPts::Make()),
     m_ok(Opticks::Instance())
 {
@@ -101,6 +102,7 @@ GMergedMesh::GMergedMesh(unsigned index)
     m_cur_mergedmesh(0),
     m_num_csgskip(0),
     m_cur_base(NULL),
+    m_globalinstance(false),
     m_pts(GPts::Make()),
     m_ok(Opticks::Instance())
 {
@@ -119,6 +121,7 @@ std::string GMergedMesh::brief() const
 
     ss << "GMergedMesh::brief"
        << " index " << std::setw(6) << getIndex()
+       << " isGlobalInstance " << std::setw(1) << isGlobalInstance()
        << " num_csgskip " << std::setw(4) << m_num_csgskip
        << " isSkip " << std::setw(1) << isSkip()
        << " isAnalytic " << std::setw(1) << isAnalytic()
@@ -143,6 +146,31 @@ GNode* GMergedMesh::getCurrentBase()
 {
     return m_cur_base ; 
 }
+
+/**
+GMergedMesh::isGlobalInstance
+------------------------------
+
+GlobalInstance meshes contain the global geometry treated as an ordinary instanced mesh
+unlike the special treatment of the index 0 global GMergedMesh.
+
+**/
+bool GMergedMesh::isGlobalInstance() const 
+{
+    return m_globalinstance ; 
+}
+void GMergedMesh::setGlobalInstance(bool globalinstance)
+{
+    m_globalinstance = globalinstance ; 
+}
+
+
+
+
+
+
+
+
 
 
 bool GMergedMesh::isGlobal()
@@ -235,7 +263,7 @@ The GNode::setSelection is invoked from::
 
 **/
 
-GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity ) // static
+GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity, bool globalinstance ) // static
 {
     assert(root && "root node is required");
 
@@ -251,6 +279,7 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsign
 
     GMergedMesh* mm = new GMergedMesh( ridx ); 
     mm->setCurrentBase(base);  // <-- when NULL it means will use global not base relative transforms
+    mm->setGlobalInstance(globalinstance); 
 
     GNode* start = base ? base : root ; 
 
@@ -330,11 +359,11 @@ void GMergedMesh::traverse_r( GNode* node, unsigned depth, unsigned pass, unsign
     int idx = getIndex() ;
     assert(idx > -1 ) ; 
 
-    unsigned uidx = idx > -1 ? idx : UINT_MAX ; 
+    unsigned uidx = m_globalinstance ? 0u : idx ; 
     unsigned ridx = volume->getRepeatIndex() ;
 
-    bool repsel =  idx == -1 || ridx == uidx ;   // RepeatIndex of volume same as index of mm 
-    bool csgskip = volume->isCSGSkip() ;         // --csgskiplv
+    bool repsel =  ridx == uidx ;           // RepeatIndex of volume same as index of mm 
+    bool csgskip = volume->isCSGSkip() ;    // --csgskiplv
     bool selected_ =  volume->isSelected() && repsel ;
     bool selected = selected_ && !csgskip ;      // selection honoured by both triangulated and analytic 
 
@@ -388,6 +417,16 @@ void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosit
         << " num_volumes_selected " << m_num_volumes_selected 
         ;
 }
+
+
+/**
+GMergedMesh::countMesh
+------------------------
+
+Add the face and vertex counts from the argument GMesh into this GMergedMesh
+and increment mesh_usage.
+
+**/
 
 void GMergedMesh::countMesh( const GMesh* mesh )
 {

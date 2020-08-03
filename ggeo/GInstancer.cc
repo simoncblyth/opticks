@@ -55,6 +55,7 @@ GInstancer::GInstancer(Opticks* ok, GGeoLib* geolib, GNodeLib* nodelib, NSceneCo
     : 
     m_log(new SLog("GInstancer::GInstancer","", verbose)),
     m_ok(ok),
+    m_globalinstance(m_ok->isGlobalInstance()), // --globalinstance
     m_geolib(geolib),
     m_verbosity(geolib->getVerbosity()),
     m_nodelib(nodelib),
@@ -712,20 +713,30 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
     // passes thru to GMergedMesh::create with management of the mm in GGeoLib
     unsigned ridx0 = 0 ; 
-    GMergedMesh* mm0 = m_geolib->makeMergedMesh(ridx0, base, root, verbosity );
+    GMergedMesh* mm0 = m_geolib->makeMergedMesh(ridx0, base, root, verbosity, false );
 
 
     std::vector<GNode*> placements = getPlacements(ridx0);  // just m_root
     assert(placements.size() == 1 );
     mm0->addInstancedBuffers(placements);  // call for global for common structure 
 
-
     unsigned numRepeats = getNumRepeats();
-    unsigned numRidx = numRepeats + 1 ; 
+    unsigned numRidx = 1 + numRepeats ;
  
+
+    if(m_globalinstance)
+    {
+        LOG(LEVEL) << "[ creating --globalinstance " ;
+        GMergedMesh* mmgi = m_geolib->makeMergedMesh( numRidx, base, root, verbosity, m_globalinstance ); 
+        mmgi->addInstancedBuffers(placements);  // call for global for common structure 
+        LOG(LEVEL) << "] creating --globalinstance " ;
+    }
+
+
     LOG(info) 
         << " numRepeats " << numRepeats
         << " numRidx " << numRidx
+        << " --globalinstance " << m_globalinstance 
         ;
 
     for(unsigned ridx=1 ; ridx < numRidx ; ridx++)  // 1-based index
@@ -738,7 +749,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
              << " rbase " << rbase
              ;
 
-         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root, verbosity ); 
+         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root, verbosity, false ); 
 
          std::vector<GNode*> placements_ = getPlacements(ridx);
 
@@ -746,6 +757,8 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
      
          //mm->reportMeshUsage( ggeo, "GInstancer::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
     }
+
+
 }
 
 

@@ -91,7 +91,7 @@ struct DrawElements
 
 };
 
-const plog::Severity Renderer::LEVEL = debug ; 
+const plog::Severity Renderer::LEVEL = PLOG::EnvLevel("Renderer", "DEBUG") ; 
 
 const char* Renderer::PRINT = "print" ; 
 
@@ -122,7 +122,9 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_scanparam_location(-1),
     m_nrmparam_location(-1),
     m_lightposition_location(-1),
+#ifdef OLD_ITRANSFORM_LOC
     m_itransform_location(-1),
+#endif
     m_colordomain_location(-1),
     m_colors_location(-1),
     m_pickface_location(-1),
@@ -291,7 +293,33 @@ void Renderer::upload(Texture* texture)
 }
 
 
-void Renderer::setDrawable(GDrawable* drawable) // CPU side buffer setup
+/**
+Renderer::setDrawable
+-----------------------
+
+Buffer setup, preparing 
+
+m_vbuf
+    vertices
+m_nbuf
+    normals
+m_cbuf
+    colors
+m_fbuf
+    faces, triangle indices into vertex buffer
+m_tbuf
+    textures
+m_ibuf
+    instance transforms    
+
+
+Slicing was used during initial development, it is no longer in usage. 
+
+NB this is still partially using GBuffer, which are intended to be phased out for NPY 
+
+**/
+
+void Renderer::setDrawable(GDrawable* drawable) 
 {
     assert(drawable);
     m_drawable = drawable ;
@@ -403,35 +431,43 @@ void Renderer::createVertexArrayLOD()
 
 }
 
+/**
+Renderer::createVertexArray
+----------------------------
+
+* used from Renderer::upload
+* handles instance transform setup when an instanceBuffer is provided
+
+
+With ICDemo (presumably env/graphics/opengl/instcull/ICDemo env-;instcull-) 
+do VAO creation after uploading all buffers... 
+somehow that doesnt work here (gives unexpected "broken" render of instances)
+perhaps because there are multiple renderers ? Anyhow doesnt matter as uploads are not-redone.
+
+* as multiple GL_ARRAY_BUFFER in use must bind the appropriate ones prior to glVertexAttribPointer
+  in order to capture the (buffer,attrib) "coordinates" into the VAO
+
+* getNumElements gives 3 for both vertex and color items
+
+* enum values vPosition, vNormal, vColor, vTexcoord are duplicating layout numbers in the nrm/vert.glsl  
+
+Without glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
+got a blank despite being bound in the upload 
+when VAO creation was after upload. 
+
+VAO creation needs to be before the uploads in order for it 
+to capture this state.
+
+* although there is only a single GL_ELEMENT_ARRAY_BUFFER 
+  within this context recall that there are multiple Renderers and Rdr 
+  sharing the same OpenGL context so it is necessary to repeat the binding  
+ 
+TODO: consider adopting the more flexible ViewNPY approach used for event data    
+
+**/
 
 GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
 {
-    /*
-     With ICDemo do VAO creation after uploading all buffers... 
-     somehow that doesnt work here (gives unexpected "broken" render of instances)
-     perhaps because there are multiple renderers ? Anyhow doesnt matter as uploads are not-redone.
-
-     * as multiple GL_ARRAY_BUFFER in use must bind the appropriate ones prior to glVertexAttribPointer
-       in order to capture the (buffer,attrib) "coordinates" into the VAO
-
-     * getNumElements gives 3 for both vertex and color items
-
-     * enum values vPosition, vNormal, vColor, vTexcoord are duplicating layout numbers in the nrm/vert.glsl  
-
-     Without glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
-     got a blank despite being bound in the upload 
-     when VAO creation was after upload. 
-    
-     VAO creation needs to be before the uploads in order for it 
-     to capture this state.
-    
-     * although there is only a single GL_ELEMENT_ARRAY_BUFFER 
-       within this context recall that there are multiple Renderers and Rdr 
-       sharing the same OpenGL context so it is necessary to repeat the binding  
-     
-     TODO: consider adopting the more flexible ViewNPY approach used for event data    
-    */
-
     GLuint vao ; 
     glGenVertexArrays (1, &vao); 
     glBindVertexArray (vao);     
@@ -525,6 +561,15 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
 }
 
 
+/**
+Renderer::setupDrawsLOD
+------------------------
+
+* LOD Level-of-detail : suspect not used currently
+* Populates m_draw DrawElements 
+* invoked by Renderer::setupDraws
+
+**/
 
 
 void Renderer::setupDrawsLOD(GMergedMesh* mm)
@@ -572,6 +617,13 @@ void Renderer::setupDrawsLOD(GMergedMesh* mm)
 
 
 
+/**
+Renderer::setupDraws
+-----------------------
+
+**/
+
+
 void Renderer::setupDraws(GMergedMesh* mm)
 {   
     int num_comp = mm ? mm->getNumComponents() : 0  ; 
@@ -579,12 +631,12 @@ void Renderer::setupDraws(GMergedMesh* mm)
     //bool one_draw = mm == NULL || num_comp < 1 || m_instlodcull_enabled == false ;
     bool one_draw = mm == NULL || num_comp < 1 ;
 
-    LOG(debug) << "Renderer::setupDraws"
-              << brief()
-              << " num_comp " << num_comp 
-              << " m_lod " << m_lod 
-              << " one_draw " << ( one_draw ? "YES" : "NO" )
-              ;
+    LOG(LEVEL)
+         << brief()
+         << " num_comp " << num_comp 
+         << " m_lod " << m_lod 
+         << " one_draw " << ( one_draw ? "YES" : "NO" )
+         ;
 
     if(one_draw)
     {
@@ -603,6 +655,15 @@ void Renderer::cull()
     assert( m_instlodcull_enabled );
     m_instlodcull->launch();
 }
+
+
+/**
+Renderer::render
+------------------
+
+glDrawElementsInstanced using DrawElements from m_draw
+
+**/
 
 void Renderer::render()
 { 
@@ -713,6 +774,22 @@ GBuffer* Renderer::fslice_element_buffer(GBuffer* fbuf_orig, NSlice* fslice)
 }
 
 
+/**
+Renderer::check_uniforms
+---------------------------
+
+Update the uniform locations.
+
+
+As InstanceTransform is an attribute and not a uniform 
+the below line is mystifying::
+
+     m_itransform_location = m_shader->uniform("InstanceTransform",required);
+
+Suggests this location is not being used.
+
+**/
+
 
 void Renderer::check_uniforms()
 {
@@ -749,11 +826,17 @@ void Renderer::check_uniforms()
         m_colordomain_location = m_shader->uniform("ColorDomain", required );     
         m_colors_location = m_shader->uniform("Colors", required );     
 
+
+#ifdef OLD_ITRANSFORM_LOC
         if(inrm)
         {
             m_itransform_location = m_shader->uniform("InstanceTransform",required); 
-            // huh, aint this an att rather than a uni ?
+            // huh, aint this an att rather than a uni ? It certainly is an Att,  
+            // but seems is not used : so no matter.
         } 
+#endif
+
+
     } 
     else if(nrmvec)
     {
@@ -778,17 +861,28 @@ void Renderer::check_uniforms()
         assert(0); 
     }
 
-    LOG(verbose) << "Renderer::check_uniforms "
-              << " tag " << tag 
-              << " mvp " << m_mvp_location
-              << " mv " << m_mv_location 
-              << " nrmparam " << m_nrmparam_location 
-              << " scanparam " << m_scanparam_location 
-              << " clip " << m_clip_location 
-              << " itransform " << m_itransform_location 
-              ;
-
+    LOG(LEVEL) << locationString() ;  
 }
+
+
+std::string Renderer::locationString() const 
+{
+    std::string tag = getShaderTag();
+    std::stringstream ss ; 
+    ss << " tag " << tag 
+       << " mvp " << m_mvp_location
+       << " mv " << m_mv_location 
+       << " nrmparam " << m_nrmparam_location 
+       << " scanparam " << m_scanparam_location 
+       << " clip " << m_clip_location 
+#ifdef OLD_ITRANSFORM_LOC
+       << " itransform " << m_itransform_location 
+#endif
+       ; 
+    return ss.str(); 
+}
+
+
 
 void Renderer::update_uniforms()
 {

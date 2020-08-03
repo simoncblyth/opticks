@@ -243,7 +243,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         //void saveMergedMeshes(const char* idpath);
     public:
         // pass thru to geolib
-        GMergedMesh* makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity );
+        GMergedMesh* makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity, bool globalinstance);
         unsigned int getNumMergedMesh();
     public:
         // these are operational from cache

@@ -274,8 +274,9 @@ GMergedMesh* GGeoTest::initCreateCSG()
     GNode* base = NULL ; 
     GNode* root = top ; 
     unsigned verbosity = 1 ; 
+    bool globalinstance = false ; 
 
-    GMergedMesh* tmm = GMergedMesh::Create(ridx, base, root, verbosity );
+    GMergedMesh* tmm = GMergedMesh::Create(ridx, base, root, verbosity, globalinstance );
 
 
     // below normally done in  GGeo::deferredCreateGParts  when not --test

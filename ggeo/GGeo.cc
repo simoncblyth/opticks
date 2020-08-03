@@ -1525,7 +1525,8 @@ void GGeo::prepareVolumes()
     {
         LOG(fatal) << "instancing inhibited " ;
         GNode* root = getNode(0);
-        m_geolib->makeMergedMesh(0, NULL, root, meshverbosity);  // ridx:0 rbase:NULL 
+        bool globalinstance = false ; 
+        m_geolib->makeMergedMesh(0, NULL, root, meshverbosity, globalinstance);  // ridx:0 rbase:NULL 
     }
 
     m_instancer->dump("GGeo::prepareVolumes") ; 
@@ -1597,11 +1598,11 @@ void GGeo::deferredCreateGParts()
 
 
 
-GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity )
+GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity, bool globalinstance )
 {
     GGeoLib* geolib = getGeoLib() ;
     assert(geolib);
-    return geolib->makeMergedMesh(index, base, root, verbosity);
+    return geolib->makeMergedMesh(index, base, root, verbosity, globalinstance );
 }
 
 

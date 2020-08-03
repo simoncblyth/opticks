@@ -31,6 +31,17 @@
 
 #define MAKE_RBUF(buf) ((buf) ? new RBuf((buf)->getNumItems(), (buf)->getNumBytes(), (buf)->getNumElements(), (buf)->getPointer(), (buf)->getName() ) : NULL )
 
+/**
+RBuf : Lowlevel Management of OpenGL Render Buffers
+-----------------------------------------------------
+
+Many MAKE_RBUF instanciations done by Renderer::setDrawable.
+
+* NB buf argument can be either GBuffer or NPY buffer. 
+
+
+**/
+
 
 struct OGLRAP_API RBuf
 {

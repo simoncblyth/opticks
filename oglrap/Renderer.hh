@@ -127,6 +127,7 @@ class OGLRAP_API Renderer : public RendererBase  {
       void configureI(const char* name, std::vector<int> values);
       void dump(const char* msg="Renderer::dump");
       void Print(const char* msg="Renderer::Print");
+      std::string locationString() const ;
 
   private:
       //void bind();
@@ -172,7 +173,9 @@ class OGLRAP_API Renderer : public RendererBase  {
       GLint  m_scanparam_location ;
       GLint  m_nrmparam_location ;
       GLint  m_lightposition_location ;
+#ifdef OLD_ITRANSFORM_LOC
       GLint  m_itransform_location ;
+#endif
       GLint  m_colordomain_location ;
       GLint  m_colors_location ;
       GLint  m_pickface_location ;

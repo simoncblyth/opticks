@@ -5,10 +5,22 @@ Geometry
 ----------
 
 nrm
-     steered by *Renderer*
+     steered by *Renderer* (Scene.m_global_renderer)
+     simple vert+frag tri-shading 
+inrm
+     steered by *Renderer* (Scene.m_instance_renderer[i] and  m_bbox_renderer[i]) 
+     simple vert+frag tri-shading but using InstanceTransform mat4 attribute to yield gl_Position    
+
+nrmvec
+     steered by *Renderer* (Scene.m_globalvec_renderer) : uses geometry shader to draw normals and triangle "axes"
 
 tex
+     steered by *Renderer* (Scene.m_raytrace_renderer)
      used for OptiX raycast renders, OptiX populates a texture that OpenGL presents
+
+inrmcull
+     steered by *InstLODCull* (Scene.m_instlodcull[i]) 
+     attempt to use instance culling using an objectVisible input array
 
 
 Gensteps
@@ -29,7 +41,7 @@ pos
 Records : corresponding to each recorded step of the photon
 -------------------------------------------------------------
 
-The records buffer of has shape (3M, 16, 2, 4) with each step point 
+The records buffer has shape (3M, 16, 2, 4) with each step point 
 domain compressed into 2*4 shorts (16 bits) totalling 128 bits. 
 
 Relevant sources:

@@ -102,6 +102,11 @@ const char* Scene::INSTANCE1 = "in1" ;
 const char* Scene::INSTANCE2 = "in2" ; 
 const char* Scene::INSTANCE3 = "in3" ; 
 const char* Scene::INSTANCE4 = "in4" ; 
+const char* Scene::INSTANCE5 = "in5" ; 
+const char* Scene::INSTANCE6 = "in6" ; 
+const char* Scene::INSTANCE7 = "in7" ; 
+const char* Scene::INSTANCE8 = "in8" ; 
+const char* Scene::INSTANCE9 = "in9" ; 
 
 const char* Scene::_BBOX      = "bb" ; 
 const char* Scene::BBOX0     = "bb0" ; 
@@ -109,6 +114,11 @@ const char* Scene::BBOX1     = "bb1" ;
 const char* Scene::BBOX2     = "bb2" ; 
 const char* Scene::BBOX3     = "bb3" ; 
 const char* Scene::BBOX4     = "bb4" ; 
+const char* Scene::BBOX5     = "bb5" ; 
+const char* Scene::BBOX6     = "bb6" ; 
+const char* Scene::BBOX7     = "bb7" ; 
+const char* Scene::BBOX8     = "bb8" ; 
+const char* Scene::BBOX9     = "bb9" ; 
 
 const char* Scene::RECORD   = "record" ; 
 
@@ -325,12 +335,22 @@ void Scene::gui()
      ImGui::Checkbox(BBOX2,     m_bbox_mode+2);
      ImGui::Checkbox(BBOX3,     m_bbox_mode+3);
      ImGui::Checkbox(BBOX4,     m_bbox_mode+4);
+     ImGui::Checkbox(BBOX5,     m_bbox_mode+5);
+     ImGui::Checkbox(BBOX6,     m_bbox_mode+6);
+     ImGui::Checkbox(BBOX7,     m_bbox_mode+7);
+     ImGui::Checkbox(BBOX8,     m_bbox_mode+8);
+     ImGui::Checkbox(BBOX9,     m_bbox_mode+9);
 
      ImGui::Checkbox(INSTANCE0, m_instance_mode+0);
      ImGui::Checkbox(INSTANCE1, m_instance_mode+1);
      ImGui::Checkbox(INSTANCE2, m_instance_mode+2);
      ImGui::Checkbox(INSTANCE3, m_instance_mode+3);
      ImGui::Checkbox(INSTANCE4, m_instance_mode+4);
+     ImGui::Checkbox(INSTANCE5, m_instance_mode+5);
+     ImGui::Checkbox(INSTANCE6, m_instance_mode+6);
+     ImGui::Checkbox(INSTANCE7, m_instance_mode+7);
+     ImGui::Checkbox(INSTANCE8, m_instance_mode+8);
+     ImGui::Checkbox(INSTANCE9, m_instance_mode+9);
 
      ImGui::Checkbox(AXIS,     &m_axis_mode);
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
@@ -447,6 +467,13 @@ void Scene::setWireframe(bool wire)
 }
 
 
+/**
+Scene::initRenderersDebug
+---------------------------
+
+Init only a few of the renderers for simpler debugging environment.
+
+**/
 
 void Scene::initRenderersDebug()
 {
@@ -474,6 +501,46 @@ void Scene::initRenderersDebug()
     m_initialized = true ; 
 }
 
+/**
+Scene::initRenderers
+----------------------
+
+m_global_renderer
+    nrm
+m_globalvec_renderer
+    nrmvec
+m_raytrace_renderer
+    tex : just presents textures passed to it 
+    to follow how this gets fed, see opticksgl/OKGLTracer.cc::render
+
+m_instance_renderer[i]
+    inrm
+m_instlodcull[i]
+    inrmcull
+m_bbox_renderer[i]
+    inrm
+
+m_axis_renderer
+    axis
+m_genstep_renderer
+    p2l
+m_nopstep_renderer
+    nop
+m_photon_renderer
+    pos : dots at final photon position
+m_source_renderer
+    pos 
+
+
+m_record_renderer
+    rec
+m_altrecord_renderer
+    altrec
+m_devrecord_renderer
+    devrec
+
+**/
+
 
 void Scene::initRenderers()
 {
@@ -493,15 +560,10 @@ void Scene::initRenderers()
     m_global_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
     m_globalvec_renderer = new Renderer("nrmvec", m_shader_dir, m_shader_incl_path );
     m_raytrace_renderer = new Renderer("tex", m_shader_dir, m_shader_incl_path );
-    // m_raytrace_renderer just presents textures passed to it 
-    // to follow how this gets fed, see opticksgl/OKGLTracer.cc::render
-
 
    // small array of instance renderers to handle multiple assemblies of repeats 
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
     {
-        //m_instance_mode[i] = false ; 
-
         m_instance_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
         m_instance_renderer[i]->setInstanced();
         m_instance_renderer[i]->setIndexBBox(i, false);
@@ -514,7 +576,6 @@ void Scene::initRenderers()
             m_instance_renderer[i]->setInstLODCull(m_instlodcull[i]);
         }
 
-        //m_bbox_mode[i] = false ; 
         m_bbox_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
         m_bbox_renderer[i]->setInstanced();
         m_bbox_renderer[i]->setIndexBBox(i, true);
@@ -558,6 +619,15 @@ void Scene::initRenderers()
 
     m_initialized = true ; 
 }
+
+
+/**
+Scene::hookupRenderers
+-----------------------
+
+Set composition into all the renderers.
+
+**/
 
 void Scene::hookupRenderers()
 {
@@ -615,6 +685,18 @@ void Scene::hookupRenderers()
 }
 
 
+/**
+Scene::uploadGeometryGlobal
+-----------------------------
+
+Upload GMergedMesh mm0 via m_global_renderer and m_globalvec_renderer 
+
+Note that despite upload being called for all relevant renderers 
+buffers are only actually uploaded once even when multiple renderers 
+are using the same buffers. Upload must be called in any case in order 
+to do the binding.
+
+**/
 
 void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 {
@@ -644,6 +726,15 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
     LOG(LEVEL)<< "]" ;
 }
 
+
+/**
+Scene::uploadGeometryInstanced
+---------------------------------
+
+Upload GMergedMesh via m_instance_renderer[i] and/or m_bbox_renderer[i]
+
+
+**/
 
 void Scene::uploadGeometryInstanced(GMergedMesh* mm)
 {
@@ -689,10 +780,19 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
     }
 }
 
+/**
+Scene::uploadGeometry
+----------------------
+
+Invoked by OpticksViz::uploadGeometry
+
+Uploads all GMergedMesh obtained from GGeoLib m_geolib, GMergedMesh 0 
+is uploaded with uploadGeometryGlobal the others with uploadGeometryInstanced.
+
+**/
 
 void Scene::uploadGeometry()
 {
-    // invoked by OpticksViz::uploadGeometry
     assert(m_geolib && "must setGeometry first");
     unsigned int nmm = m_geolib->getNumMergedMesh();
 

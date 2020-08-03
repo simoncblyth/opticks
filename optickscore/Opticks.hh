@@ -393,12 +393,13 @@ class OKCORE_API Opticks {
        bool                 getAnimTimeRange(glm::vec4& range) const ;
        int                  getPrintIndex(unsigned dim=0) const ; 
        bool                 isPrintIndexLog() const ; 
-       bool                 isG4CodeGen() const ;
+       bool                 isGlobalInstance() const ; // --globalinstance
+       bool                 isG4CodeGen() const ;  // --g4codegen
        bool                 isNoSavePPM() const ; // --nosaveppm
        bool                 isNoG4Propagate() const ;     // --nog4propagate
-       bool                 isPrintEnabled() const ;
-       bool                 isExceptionEnabled() const ;
-       bool                 isXAnalytic() const ;
+       bool                 isPrintEnabled() const ;  // --printenabled
+       bool                 isExceptionEnabled() const ;  // --exceptionenabled
+       bool                 isXAnalytic() const ;      // --xanalytic : --xtriangle option will override an --xanalytic option
        bool                 isXGeometryTriangles() const ;
    public:
        bool                 canDeleteGeoCache() const ; 

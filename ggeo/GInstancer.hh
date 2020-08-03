@@ -115,6 +115,7 @@ class GGEO_API GInstancer {
    private:
        SLog*                     m_log ; 
        Opticks*                  m_ok ; 
+       bool                      m_globalinstance ;   // --globalinstance
        GGeoLib*                  m_geolib ; 
        unsigned                  m_verbosity ; 
        GNodeLib*                 m_nodelib ; 

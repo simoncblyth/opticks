@@ -75,7 +75,7 @@ class GGEO_API GGeoLib {
         void hasCache() const ;
         void loadFromCache();
         void save();
-        GMergedMesh* makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity );
+        GMergedMesh* makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity, bool globalinstance );
     private:
         const char* getRelDir(const char* name) const ;
         void loadConstituents(const char* idpath);

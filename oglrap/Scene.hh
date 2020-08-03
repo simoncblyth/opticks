@@ -149,18 +149,30 @@ class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
 
    public:
         enum { MAX_INSTANCE_RENDERER = 15 };  
+
         static const char* _INSTANCE   ;
         static const char* INSTANCE0  ;
         static const char* INSTANCE1  ;
         static const char* INSTANCE2  ;
         static const char* INSTANCE3  ;
         static const char* INSTANCE4  ;
+        static const char* INSTANCE5  ;
+        static const char* INSTANCE6  ;
+        static const char* INSTANCE7  ;
+        static const char* INSTANCE8  ;
+        static const char* INSTANCE9  ;
+
         static const char* _BBOX   ;
         static const char* BBOX0  ;
         static const char* BBOX1  ;
         static const char* BBOX2  ;
         static const char* BBOX3  ;
         static const char* BBOX4  ;
+        static const char* BBOX5  ;
+        static const char* BBOX6  ;
+        static const char* BBOX7  ;
+        static const char* BBOX8  ;
+        static const char* BBOX9  ;
 
    public:
         // SCtrl

@@ -30,6 +30,15 @@ class Shdr ;
 #include "OGLRAP_API_EXPORT.hh"
 #include "OGLRAP_HEAD.hh"
 
+/**
+Prog
+------
+
+Canonical instance is m_shader member of RendererBase
+
+
+**/
+
 class OGLRAP_API Prog {
 //      static const char* LOG_NO_FRAGMENT_SHADER ; 
 

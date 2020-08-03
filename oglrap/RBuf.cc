@@ -147,6 +147,17 @@ std::string RBuf::desc() const
 
 char* RBuf::Owner = NULL ; 
 
+
+/**
+RBuf::upload
+---------------
+
+Actual passing of data to OpenGL only happens once
+when the *id* is UNSET. Subsequently just bind to the 
+preexisting buffer.
+
+**/
+
 void RBuf::upload(GLenum target, GLenum usage )
 {
     if(this->id == UNSET)

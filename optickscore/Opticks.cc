@@ -741,20 +741,21 @@ const std::vector<unsigned>&  Opticks::getGenIndex()
 
 int Opticks::getDebugIdx() const 
 {
-   return m_cfg->getDebugIdx();
+    return m_cfg->getDebugIdx();
 }
 int Opticks::getDbgNode() const 
 {
-   return m_cfg->getDbgNode();
+    return m_cfg->getDbgNode();
 }
 int Opticks::getDbgMM() const 
 {
-   return m_cfg->getDbgMM();
+    return m_cfg->getDbgMM();
 }
 int Opticks::getDbgLV() const 
 {
-   return m_cfg->getDbgLV();
+    return m_cfg->getDbgLV();
 }
+
 
 
 
@@ -926,9 +927,11 @@ const char* Opticks::getScintillationClass() const
 
 
 
-
-
-bool Opticks::isG4CodeGen() const 
+bool Opticks::isGlobalInstance() const // --globalinstance
+{
+    return m_cfg->hasOpt("globalinstance"); 
+}
+bool Opticks::isG4CodeGen() const  // --g4codegen
 {
     return m_cfg->hasOpt("g4codegen") ;
 }
@@ -1006,16 +1009,16 @@ void Opticks::reportGeoCacheCoordinates() const
 
 
 
-bool Opticks::isPrintEnabled() const 
+bool Opticks::isPrintEnabled() const   // --printenabled
 {
     return m_cfg->hasOpt("printenabled") ;
 }
-bool Opticks::isExceptionEnabled() const 
+bool Opticks::isExceptionEnabled() const  // --exceptionenabled
 {
     return m_cfg->hasOpt("exceptionenabled") ;
 }
 
-bool Opticks::isPrintIndexLog() const 
+bool Opticks::isPrintIndexLog() const   // --pindexlog
 {
     return m_cfg->hasOpt("pindexlog") ;
 }
