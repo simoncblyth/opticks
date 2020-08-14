@@ -120,6 +120,24 @@ DASK
 * https://dask.org/
 
 
+
+Best Practices: Using NVIDIA RTX Ray Tracing (August 2020)
+------------------------------------------------------------
+
+* https://developer.nvidia.com/blog/best-practices-using-nvidia-rtx-ray-tracing/
+
+*  It’s more efficient to handle sky shading in the miss shader rather than in
+   the hit shader for the geometry representing the sky.
+
+
+OpenMC Particle Transport OptiX6 Port
+----------------------------------------
+
+* https://sc19.supercomputing.org/proceedings/workshops/workshop_files/ws_pmbsf102s2-file1.pdf
+* ~/opticks_refs/Bristol_OpenMC_Particle_Transport_OptiX6_port_ws_pmbsf102s2-file1.pdf
+
+
+
 SIGGRAPH 2019 Videos
 ------------------------
 
@@ -142,6 +160,25 @@ Gems
 --------
 
 * The Iray Light Transport Simulation and Rendering System, A Keller et.al (on arxiv)
+
+
+RTX Beyond Ray Tracing 
+-----------------------
+
+* https://www.willusher.io/publications/rtx-points
+
+
+SIGGRAPH 2019
+--------------
+
+* https://sites.google.com/view/rtx-acc-ray-tracing-with-optix
+
+* https://docs.google.com/document/d/1GKMpK6AjIQsNMPgzdpDtBzEWcJSSZZgB5iLJl7Zlp50/edit
+
+* https://drive.google.com/file/d/1wSz6wTS05YGk6tQOM1l1ubzznmhPo1lH/view
+
+  (99 pages) Ingo Wald, Tutorial OptiX 7, Step by step
+
 
 
 Steve Parker SIGGRAPH 2019 Video

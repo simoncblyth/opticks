@@ -133,6 +133,14 @@ Exceptions
 
 
 
+RTX Beyond Ray Tracing
+-------------------------
+
+RTX Beyond Ray Tracing: Exploring the Use of Hardware Ray Tracing Cores for Tet-Mesh Point Location
+
+* http://sci.utah.edu/~will/papers/rtx-points-hpg19.pdf
+
+
 DLDenoiser : Deep-learning-based denoiser
 -------------------------------------------
 
