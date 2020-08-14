@@ -95,6 +95,36 @@ direction of $\hat{u}$. Many rotations would accomplish this; the one selected
 uses $u$ as its third column and is given by: 
 
 
+g4-cls ThreeVector::
+
+    199   Hep3Vector & rotateUz(const Hep3Vector&);
+    200   // Rotates reference frame from Uz to newUz (unit vector) (Geant4).
+
+    038 Hep3Vector & Hep3Vector::rotateUz(const Hep3Vector& NewUzVector) {
+     39   // NewUzVector must be normalized !
+     40 
+     41   double u1 = NewUzVector.x();
+     42   double u2 = NewUzVector.y();
+     43   double u3 = NewUzVector.z();
+     44   double up = u1*u1 + u2*u2;
+     45     
+     46   if (up>0) {
+     47       up = std::sqrt(up);
+     //       radius in xy plane 
+     48       double px = dx,  py = dy,  pz = dz;
+     49       dx = (u1*u3*px - u2*py)/up + u1*pz;
+     50       dy = (u2*u3*px + u1*py)/up + u2*pz;
+     51       dz =    -up*px +             u3*pz;
+     52     }
+     53   else if (u3 < 0.) { dx = -dx; dz = -dz; }      // phi=0  teta=pi
+     54   else {};
+     55   return *this;
+     56 }
+
+
+
+
+
 */
 
 __device__ void rotateUz(float3& d, float3& u )

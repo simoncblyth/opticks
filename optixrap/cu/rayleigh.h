@@ -152,6 +152,10 @@ __device__ void rayleigh_scatter(Photon &p, curandState &rng)
         float constant = -dot(newDirection,p.polarization);
         newPolarization = p.polarization + constant*newDirection ;
 
+        // newPolarization 
+        // 1. transverse to newDirection (as that component is subtracted) 
+        // 2. same plane as old p.polarization and newDirection (by construction)
+        //
         // There is a corner case, where the Newmomentum direction
         // is the same as oldpolariztion direction:
         // random generate the azimuthal angle w.r.t. Newmomentum direction
