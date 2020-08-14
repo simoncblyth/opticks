@@ -26,7 +26,7 @@ Strictly Non-numpy basics
 
 import os, logging, json, ctypes, subprocess, datetime, re
 from collections import OrderedDict as odict 
-from opticks.ana.enum import Enum 
+from opticks.ana.enum_ import Enum 
 
 log = logging.getLogger(__name__) 
 

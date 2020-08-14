@@ -17,58 +17,133 @@
 # See the License for the specific language governing permissions and 
 # limitations under the License.
 #
+"""
+md5.py
+========
+
+Testing this with py2 and py3::
+
+    epsilon:bin blyth$ echo hello > /tmp/hello
+
+    epsilon:bin blyth$ md5 /tmp/hello
+    MD5 (/tmp/hello) = b1946ac92492d2347c6235b4d2611184
+
+    epsilon:bin blyth$ /opt/local/bin/python ~/opticks/bin/md5.py /tmp/hello 
+    b1946ac92492d2347c6235b4d2611184
+    epsilon:bin blyth$ /opt/local/bin/python ~/opticks/bin/md5.py /tmp/hello --python-version-override 2
+    b1946ac92492d2347c6235b4d2611184
+    epsilon:bin blyth$ /opt/local/bin/python ~/opticks/bin/md5.py /tmp/hello --python-version-override 3
+    b1946ac92492d2347c6235b4d2611184
+
+    epsilon:bin blyth$ ~/miniconda3/bin/python ~/opticks/bin/md5.py /tmp/hello --python-version-override 2
+    Traceback (most recent call last):
+      File "/Users/blyth/opticks/bin/md5.py", line 140, in <module>
+        print(digest_(path, args.python_version_override))
+      File "/Users/blyth/opticks/bin/md5.py", line 122, in digest_
+        hexdig = digest2_(path)
+      File "/Users/blyth/opticks/bin/md5.py", line 73, in digest2_
+        assert pymajor == 2, "this fails with py3" 
+    AssertionError: this fails with py3
+
+    epsilon:bin blyth$ ~/miniconda3/bin/python ~/opticks/bin/md5.py /tmp/hello --python-version-override 3
+    b1946ac92492d2347c6235b4d2611184
+    epsilon:bin blyth$ ~/miniconda3/bin/python ~/opticks/bin/md5.py /tmp/hello
+    b1946ac92492d2347c6235b4d2611184
+    epsilon:bin blyth$ /opt/local/bin/python ~/opticks/bin/md5.py /tmp/hello 
+    b1946ac92492d2347c6235b4d2611184
+
+"""
 
 try: 
     from hashlib import md5
 except ImportError: 
     from md5 import md5
 pass
-import os, logging
+import os, sys, logging, argparse
 log = logging.getLogger(__name__)
 
 
 cumulative = None
 
-def digest_(path):
+
+def digest2_(path, block_size=8192):
     """
     :param path:
+    :return: md5 hexdigest of the content of the path or None if non-existing path
+    """
+    global cumulative
+    dig = md5()
+    if cumulative is None:
+        cumulative = md5() 
+    pass
+    pymajor = sys.version_info[0] 
+    assert pymajor == 2, "this hangs with py3" 
+
+    with open(path,'rb') as f: 
+        for chunk in iter(lambda: f.read(block_size),''): 
+            dig.update(chunk)
+            cumulative.update(chunk)
+        pass
+    pass
+    return dig.hexdigest()
+
+
+def digest3_(path, block_size=8192):
+    """
+    :param path:
+    :return: md5 hexdigest of the content of the path or None if non-existing path
+    """
+    global cumulative
+    dig = md5()
+    if cumulative is None:
+        cumulative = md5() 
+    pass
+    with open(path, "rb") as f:
+        #while chunk := f.read(block_size):   walrus-operator only available in py38 + it gives error in py27
+        while True:
+            chunk = f.read(block_size)
+            if not chunk:
+                break
+            pass
+            dig.update(chunk)
+            cumulative.update(chunk)
+        pass
+    pass
+    return dig.hexdigest()
+
+
+def digest_(path, pyver=0):
+    """
+    :param path:
+    :param pyver:  
     :return: md5 hexdigest of the content of the path or None if non-existing path
 
     http://stackoverflow.com/questions/1131220/get-md5-hash-of-a-files-without-open-it-in-python
 
     Confirmed to give same hexdigest as commandline /sbin/md5::
-
-        md5 /Users/blyth/workflow/notes/php/property/colliers-4q2011.pdf 
-        MD5 (/Users/blyth/workflow/notes/php/property/colliers-4q2011.pdf) = 3a63b5232ff7cb6fa6a7c241050ceeed
-
-    And md5sum on linux:: 
-
-        [blyth@localhost opticks]$ md5.py /tmp/blyth/location/test_array_digest.npy
-        79da1243f9e602c699ec9df8527acdf7
-        [blyth@localhost opticks]$ md5sum /tmp/blyth/location/test_array_digest.npy
-        79da1243f9e602c699ec9df8527acdf7  /tmp/blyth/location/test_array_digest.npy
-
     """
-    global cumulative
-
-    if not os.path.exists(path):return None
-    if os.path.isdir(path):return None
-    dig = md5()
-
-    if cumulative is None:
-        cumulative = md5() 
-
-    with open(path,'rb') as f: 
-        for chunk in iter(lambda: f.read(8192),''): 
-            dig.update(chunk)
-            cumulative.update(chunk)
-        pass
-    return dig.hexdigest()
+    hexdig = None
+    if pyver == 0 or pyver == 3:
+        hexdig = digest3_(path)
+    elif pyver == 2:
+        hexdig = digest2_(path)
+    else:
+        assert 0, "invalid pyver %d" % pyver
+    pass 
+    return hexdig
 
 
 
 if __name__ == '__main__':
     import sys
     logging.basicConfig(level=logging.INFO)
-    print digest_(sys.argv[1])
+
+    parser = argparse.ArgumentParser(__doc__)
+    parser.add_argument(  "paths", nargs='*', help="File paths to digest" )
+    parser.add_argument("--python-version-override", type=int, default=0, choices=[0,2,3], help="Default %(default)s ." )
+
+    args = parser.parse_args()
+    for path in args.paths:
+        print(digest_(path, args.python_version_override))
+    pass
 

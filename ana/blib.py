@@ -21,7 +21,7 @@
 
 import sys, os, numpy as np, logging, argparse
 log = logging.getLogger(__name__)
-tx_load = lambda _:map(str.strip, open(_).readlines())
+tx_load = lambda _:list(map(str.strip, open(_).readlines())) # py3 needs the list, otherwise stays as map 
 
 class BLib(object):
     def path(self, rel):
@@ -52,7 +52,7 @@ class BLib(object):
         by looking for path element of length 32 corresponding to the digest string.
         """
         elem = path.split("/")
-        elen = map(len,elem)
+        elen = list(map(len,elem))
         try: 
             digp = elen.index(32)   # digest has length of 32 
             idpath = "/".join(elem[:digp+2])  # one past the digest 
@@ -66,7 +66,7 @@ class BLib(object):
         """
         Load boundary lib index and the GItemList text files with material and surface names
         """
-        self.idpath = idpath
+        self.idpath = os.path.expandvars(idpath)
         blib = np.load(self.path("GBndLib/GBndLibIndex.npy"))
         mlib = tx_load(self.path("GItemList/GMaterialLib.txt"))
         slib = tx_load(self.path("GItemList/GSurfaceLib.txt"))
@@ -97,11 +97,11 @@ class BLib(object):
     selection = property(_get_selection, _set_selection)
 
     def __str__(self):
-        return "\n".join([repr(self)] +  map(lambda _:"%3d : %3d : %s " % ( _, _+1, self.bname(_)) , self.selection))
+        return "\n".join([repr(self)] +  list(map(lambda _:"%3d : %3d : %s " % ( _, _+1, self.bname(_)) , self.selection)))
     def brief(self):
         rng = range(len(self.blib))
         rng = rng[0:5] + rng[-5:]
-        return "\n".join([repr(self)] +  map(lambda _:"%3d : %s " % ( _, self.bname(_)) , rng ))
+        return "\n".join([repr(self)] +  list(map(lambda _:"%3d : %s " % ( _, self.bname(_)) , rng )))
 
     def names(self):
         return "\n".join(map(lambda _:self.bname(_) , self.selection ))
@@ -110,7 +110,7 @@ class BLib(object):
 
 if __name__ == '__main__':
 
-    args = BLib.parse_args(__doc__, path=os.environ.get("IDPATH", None))
+    args = BLib.parse_args(__doc__, path=os.environ.get("GC", None))
     blib = BLib.make(args.path)
 
     if args.selection:

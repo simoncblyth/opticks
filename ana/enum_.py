@@ -19,14 +19,17 @@
 #
 
 """
-enum.py
+enum_.py
 =================
 
 Canonical usage is for parsing OpticksPhoton.h 
 which is done from custom commands in optickscore/CMakeLists.txt
 
+Renaming to enum_ was required due to a py3 module name clash.
+
 """
-import os, re, logging, argparse
+import os, re, argparse
+import logging
 log = logging.getLogger(__name__)
 
 class Enum(dict):
@@ -74,7 +77,7 @@ class Enum(dict):
         :param path: 
         :param mskval:
         """
-        lines = map(str.strip,file(path).readlines())
+        lines = map(str.strip,open(path,"r").readlines())
         for line in lines:
             lm = self.lptn.match(line)
             if not lm: continue
@@ -100,8 +103,7 @@ class Enum(dict):
 
 if __name__ == '__main__':
 
-    #default_path = "$OPTICKS_HOME/optickscore/OpticksPhoton.h"
-    default_path = "$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h"
+    default_path = "$OPTICKS_PREFIX/include/OpticksCore/OpticksPhoton.h"
     ## NB envvar not needed when absolute path argument given   
 
     parser = argparse.ArgumentParser(__doc__)
@@ -117,8 +119,10 @@ if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
 
     if args.path == default_path:
+        pass
         log.info("using default path %s " % args.path)
     else:
+        pass
         log.info("using argument input path %s " % args.path) 
     pass  
 

@@ -91,8 +91,12 @@ Even more minimal::
 
 
 """
-import sys, fnmatch, os, logging, numpy as np, commands, argparse
+import sys, fnmatch, os, logging, numpy as np, argparse
+#import commands   # not there in py3
 from collections import OrderedDict as odict
+
+
+
 
 log = logging.getLogger(__name__)
 
@@ -206,8 +210,8 @@ if __name__ == '__main__':
 
     np.set_printoptions(suppress=True, precision=4, linewidth=200, threshold=int(args.threshold))
 
-    dirs = filter(is_dir_, args.paths)
-    npys = filter(is_npy_, args.paths)
+    dirs = list(filter(is_dir_, args.paths))
+    npys = list(filter(is_npy_, args.paths))
     if args.debug:
         print("dirs:%s" % repr(dirs))
         print("npys:%s" % repr(npys))
@@ -228,12 +232,12 @@ if __name__ == '__main__':
         labels = "abcdefghijklmnopqrstuvwxyz"
         labels += labels.upper()
 
-        ars = map(A, npys)
+        ars = list(map(A, npys))
 
         if args.lexical:
-            s_ars = sorted(ars,reverse=False, key=lambda ar:ar.path)
+            s_ars = list(sorted(ars,reverse=False, key=lambda ar:ar.path))
         else: 
-            s_ars = sorted(ars,reverse=True, key=lambda ar:len(ar.a))
+            s_ars = list(sorted(ars,reverse=True, key=lambda ar:len(ar.a)))
         pass
 
         for i,ar in enumerate(s_ars):
