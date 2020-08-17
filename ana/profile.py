@@ -49,9 +49,6 @@ scan-pf-0 OKG4Test 239s for 1M::
     Out[25]: 239.3914
 
 
-
-
-
     In [22]: ap.times("OPropagator::launch")
     Out[22]: array([1463.7578, 1707.7422, 1950.1172, 2191.3594, 2438.7422, 2680.625 , 2916.3516, 3152.7344, 3388.9844, 3624.125 ], dtype=float32)
 
@@ -69,7 +66,6 @@ scan-pf-0 OKG4Test 239s for 1M::
 
     In [1]: pr.q
     Out[1]: array([0.0214, 0.0189, 0.019 , 0.0186, 0.0187, 0.0206, 0.0183, 0.0183, 0.0191, 0.0188])
-
 
 
 """
@@ -150,7 +146,7 @@ class Profile(object):
 
     def init(self):
         self.loadProfile() 
-        self.loadAcc()
+        self.loadAcc()    ## Accumulated timings 
         self.loadMeta()
 
         if self.g4:  
@@ -473,7 +469,12 @@ class Profile(object):
 
 
 def multievent_plot( pr, plt ):
+    """
+    TODO: split off the plotting 
 
+    * plotting should never live together with generally usable code, as plotting machinery 
+      has much more dependencies and also prone to being swapped for other plotting machinery 
+    """
     w0 = np.where(pr.l == "_OpticksRun::createEvent")[0]
     w1 = np.where(pr.l == "OpticksRun::resetEvent")[0]
     assert len(w0) == len(w1)

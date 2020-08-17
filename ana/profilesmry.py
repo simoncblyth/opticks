@@ -42,6 +42,8 @@ from opticks.ana.bashnotes import BashNotes
 class ProfileSmry(object):
     """
     A ProfileSmry is an ordered dict of Profiles, keyed by cat 
+    the Profiles are read from OpticksProfile.npy files written
+    by Opticks executables.
     """
 
     BASE = "$OPTICKS_EVENT_BASE" 

@@ -45,7 +45,7 @@ class DateParser(object):
     def __call__(self, name):
         """
         :param name: basename of a directory 
-        :return dt: datetime if matches the date format 20160819_153245
+        :return dt: datetime if matches the date format 20160819_153245 otherwise return None
         """
         m = self.ptn.match(name)
         if m is None:return None
@@ -56,6 +56,12 @@ class DateParser(object):
 dateparser = DateParser() 
 
 def finddir(base, dirfilter=lambda _:True, relative=True):
+    """
+    :param base: directory to walk looking for directories to be dirfiltered
+    :param dirfilter: function that takes directory path argument and returns true when selected
+    :param relative: when True returns the base relative path, otherwise absolute paths are returned
+    :return paths: all directory paths found that satisfy the filter
+    """
     paths = []
     for root, dirs, files in os.walk(base):
         for name in dirs:
@@ -72,6 +78,9 @@ class DatedFolder(object):
     @classmethod
     def find(cls, base):
         """
+        :param base: directory
+        :return dirs, dfolds, dtimes: 
+ 
         Groups of executable runs are grouped together by them using 
         the same datestamp datedfolder name.
         So there can be more dirs that corresponding dfolds and dtimes.
@@ -82,14 +91,18 @@ class DatedFolder(object):
 
         df = cls()
         log.info("DatedFolder.find searching for date stamped folders beneath : %s " % base)
-        metamap = {}
-        dirs = finddir(base, df)                       
 
+        dirs = finddir(base, df)                        # list of dated folders beneath base
         dfolds = list(set(map(os.path.basename, dirs))) # list of unique basenames of the dated folders
-        dtimes = map(dateparser, dfolds )               # list of datetimes
+        dtimes = list(map(dateparser, dfolds ))         # list of datetimes
+
         return dirs, dfolds, dtimes 
  
     def __call__(self, path):
+        """
+        :param path: directory 
+        :return datetime or None:   
+        """
         name = os.path.basename(path) 
         #log.info(name)
         return dateparser(name)

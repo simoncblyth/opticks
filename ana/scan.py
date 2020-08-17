@@ -26,6 +26,9 @@ scan.py is sibling to bench.py : aiming for a cleaner
 and more general approach to metadata presentation 
 based on meta.py (rather than the old metadata.py)
 
+1. finds dated folders beneath the input base directory
+2. reads metadata dicts from .json and .ini files in the dated folders
+3. dumps some metadata values in date stamp order 
 
 """
 import os, re, logging, sys, argparse
@@ -43,7 +46,7 @@ if __name__ == '__main__':
     print(cmdline)
 
     dirs, dfolds, dtimes = DatedFolder.find(base)
-    assert len(dfolds) == len(dtimes)
+    assert len(dfolds) == len(dtimes) == len(dirs)
     print( "dirs : %d  dtimes : %d " % (len(dirs), len(dtimes) ))
 
 
@@ -71,17 +74,17 @@ if __name__ == '__main__':
         df = dfolds[i] 
         dt = dtimes[i] 
 
-        udirs = filter(lambda _:_.endswith(df),dirs)
+        udirs = filter(lambda _:_.endswith(df),dirs)  ## finding all run folders with this datestamp
         #print("\n".join(udirs))
         if len(udirs) == 0: continue
 
         mm = [Meta(p, base) for p in udirs]
-        assert len(mm) == 2  
+        assert len(mm) == 2, "expecting only two matches datestamp folders containing metadata from geant4 and opticks measurements"
 
         tag0 = int(mm[0].parentfold)  
         tag1 = int(mm[1].parentfold)  
 
-        ok = 0 if tag0 > 0 else 1 
+        ok = 0 if tag0 > 0 else 1    # tag sign convention, > 0 for opticks < 0 for geant4 
         g4 = 1 if tag1 < 0 else 0
         assert ok ^ g4, ( ok, g4, tag0, tag1 )
 
@@ -89,7 +92,7 @@ if __name__ == '__main__':
         #print(mm[g4])
 
         nn = list(set(map(photons_, mm)))
-        assert len(nn) == 1
+        assert len(nn) == 1, "expecting all measurements are for the same photon count"
         n = nn[0]
 
         vq = odict()

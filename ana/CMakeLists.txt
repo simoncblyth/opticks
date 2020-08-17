@@ -10,7 +10,7 @@ set(SCRIPTS
 
    __init__.py
    nbase.py
-   enum.py
+   enum_.py
    base.py
    debug.py
    num.py

@@ -38,7 +38,7 @@ from opticks.ana.datedfolder import DatedFolder, dateparser
 class Meta(object):
     def __init__(self, path, base):
         """
-        :param path: relative path beneath base of dated folder
+        :param path: path of dated folder relative to base directory 
         :param base: directory 
 
         Reads json and ini files from the directory identified
@@ -72,6 +72,13 @@ class Meta(object):
 
 
     def __getitem__(self, kspec):
+        """
+        :param kspec: eg parameters.NumPhotons or OpticksEvent_launch.launch001
+        :return value: 
+
+        Provides values from metadata dicts read from files such as parameters.json 
+        or OpticksEvent_launch.ini from the dated folder.
+        """
         elem = kspec.split(".")
         assert len(elem) == 2
         top, key = elem 

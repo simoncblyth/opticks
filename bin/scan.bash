@@ -545,7 +545,18 @@ scan-ts-cmd(){   echo ts $1 --pfx $(scan-pfx) --generateoverride -1 --cvd 1 --rt
 scan-tp-cmd(){   echo tp $1 --pfx $(scan-pfx) --msli :1M  ; }
 scan-tv-cmd(){   echo tv $1 ; }
 
-scan-ph-post(){  scan.py $TMP/tboolean-$(scan-ph-lv) ; }
+
+scan-ph-post-notes(){ cat << EON
+scan.py 
+    1. finds dated folders beneath the input base directory
+    2. reads metadata dicts from .json and .ini files in the dated folders
+    3. dumps some metadata values in date stamp order 
+
+EON
+}
+
+
+scan-ph-post(){  scan.py $TMP/tboolean-$(scan-ph-lv) ; }  
 scan-ts-post(){  absmry.py  ; }
 
 scan-rsync(){ 
@@ -561,7 +572,10 @@ EOC
 
 scan-cmds-all-notes(){ cat << EOD
 
-This is invoked from mode specific functions that de
+This emits a sequence of commands with a variety of options
+for example "scan-cats" varies the "--cvd" and "--rtx" options
+which change the visible GPUs and RTX setup.
+
 
 EOD
 }
@@ -580,6 +594,13 @@ scan-cmds-all(){
    done
 }
 
+
+scan--notes(){ cat << EON
+scan--
+    core of the scanning machinery, invokes the sequence
+    of commands provided by scan-cmds-all
+EON
+}
 
 scan--()
 {
