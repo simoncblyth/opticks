@@ -61,6 +61,7 @@ GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh)
     m_node_indices(NULL),
     m_name(NULL),
     m_progeny_count(0),
+    m_global_progeny_count(0),
     m_repeat_index(0),
     m_progeny_num_vertices(0)
 {
@@ -358,22 +359,73 @@ std::vector<GNode*>& GNode::getAncestors()
     return m_ancestors ; 
 }
 
+
+/**
+GNode::getProgeny
+------------------
+
+Returns the progeny of a node.
+Collects into m_progeny which avoids repeating 
+the collection. 
+
+Collection starts from the children, 
+as wish to avoid collecting the start node.  
+
+**/
+
 std::vector<GNode*>& GNode::getProgeny()
 {
     if(m_progeny.size() == 0)
     {
-        // call on children, as wish to avoid collecting self  
-        for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectProgeny(m_progeny); 
+        for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectProgeny(m_progeny); 
         m_progeny_count = m_progeny.size();
     }
     return m_progeny ; 
 }
 
-void GNode::collectProgeny(std::vector<GNode*>& progeny)
+void GNode::collectProgeny(std::vector<GNode*>& progeny) 
 {
     progeny.push_back(this);
-    for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectProgeny(progeny);
+    for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectProgeny(progeny);
 }
+
+
+/**
+GNode::getGlobalProgeny
+-------------------------
+
+Returns the global progeny of a node, ie with repeat index zero.
+Collects into m_global_progeny which avoids repeating 
+the collection. 
+
+Collection starts from the children, as wish to avoid collecting the start node.  
+
+**/
+
+std::vector<GNode*>& GNode::getGlobalProgeny()
+{
+    if(m_global_progeny.size() == 0)
+    {
+        for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectGlobalProgeny(m_global_progeny); 
+        m_global_progeny_count = m_global_progeny.size();
+    }
+    return m_global_progeny ; 
+}
+
+void GNode::collectGlobalProgeny(std::vector<GNode*>& global_progeny) 
+{
+    if(getRepeatIndex() == 0)
+    {
+        global_progeny.push_back(this);
+    }
+   for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectGlobalProgeny(global_progeny);
+}
+
+
+
+
+
+
 
 
 /**
@@ -558,11 +610,37 @@ std::string& GNode::getProgenyDigest()
     return m_progeny_digest ;
 }
 
-unsigned int GNode::getLastProgenyCount()
+
+/**
+GNode::getPriorProgenyCount
+-------------------------------
+
+Former name of getLastProgenyCount too similar to other methods of different meaning.
+
+* CAUTION : only set at the first getProgeny call on a node
+
+**/
+
+unsigned GNode::getPriorProgenyCount() const 
 {
-   // oops : only gets set after getProgeny call
     return m_progeny_count ; 
 }
+
+/**
+GNode::getPriorGlobalProgenyCount
+----------------------------------
+
+* CAUTION : only set at the first getGlobalProgeny call on a node
+
+**/
+
+unsigned GNode::getPriorGlobalProgenyCount() const 
+{
+    return m_global_progeny_count ; 
+}
+
+
+
 
 /**
 GNode::findProgenyDigest

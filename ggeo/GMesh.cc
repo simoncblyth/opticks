@@ -130,6 +130,7 @@ GMesh::GMesh(unsigned int index,
         :
       GDrawable(),
       m_index(index),
+      m_globalinstance(false),
 
       m_num_vertices(num_vertices), 
       m_num_faces(num_faces),
@@ -221,6 +222,10 @@ void GMesh::stealIdentity(GMesh* other)
     // hmm passing everything over is too complicated, maybe better to do LODification inplace
     //     to avoid this        
 }
+
+
+
+
 
 
 void GMesh::setCSG(const NCSG* csg)
@@ -1044,11 +1049,11 @@ float* GMesh::getTransform(unsigned int index)
 {
     if(index >= m_num_volumes)
     {
-       // assert(0);
-        LOG(warning) << "GMesh::getTransform out of bounds " 
+        LOG(fatal) << "GMesh::getTransform out of bounds " 
                      << " m_num_volumes " << m_num_volumes 
                      << " index " << index
                      ;
+        assert(0);
     }
     return index < m_num_volumes ? m_transforms + index*16 : NULL  ;
 }
@@ -2459,6 +2464,52 @@ unsigned int GMesh::findContainer(gfloat3 p)
 
 
 
+/**
+GMesh::isGlobalInstance
+------------------------------
+
+GlobalInstance meshes contain the global geometry treated as an ordinary instanced mesh
+unlike the special treatment of the index 0 global GMesh.
+
+**/
+bool GMesh::isGlobalInstance() const 
+{
+    return m_globalinstance ; 
+}
+void GMesh::setGlobalInstance(bool globalinstance)
+{
+    m_globalinstance = globalinstance ; 
+}
+
+
+
+
+
+
+
+
+template <typename T>
+void GMesh::setMeta(const char* key, T value)
+{
+    assert( m_itransforms_buffer ); 
+    m_itransforms_buffer->setMeta<T>(key, value);
+}
+template <typename T>
+T GMesh::getMeta(const char* key, const char* fallback) const 
+{
+    assert( m_itransforms_buffer ); 
+    return m_itransforms_buffer->getMeta<T>(key, fallback);
+}
+
+
+
+template GGEO_API void GMesh::setMeta(const char* key, int value);
+template GGEO_API void GMesh::setMeta(const char* key, float value);
+template GGEO_API void GMesh::setMeta(const char* key, std::string value);
+
+template GGEO_API int GMesh::getMeta(const char* key, const char* fallback) const ;
+template GGEO_API float GMesh::getMeta(const char* key, const char* fallback) const ;
+template GGEO_API std::string GMesh::getMeta(const char* key, const char* fallback) const ;
 
 
 

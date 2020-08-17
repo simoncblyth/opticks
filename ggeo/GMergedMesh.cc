@@ -85,7 +85,6 @@ GMergedMesh::GMergedMesh(
     m_cur_mergedmesh(0),
     m_num_csgskip(0),
     m_cur_base(NULL),
-    m_globalinstance(false),
     m_pts(GPts::Make()),
     m_ok(Opticks::Instance())
 {
@@ -102,7 +101,6 @@ GMergedMesh::GMergedMesh(unsigned index)
     m_cur_mergedmesh(0),
     m_num_csgskip(0),
     m_cur_base(NULL),
-    m_globalinstance(false),
     m_pts(GPts::Make()),
     m_ok(Opticks::Instance())
 {
@@ -146,26 +144,6 @@ GNode* GMergedMesh::getCurrentBase()
 {
     return m_cur_base ; 
 }
-
-/**
-GMergedMesh::isGlobalInstance
-------------------------------
-
-GlobalInstance meshes contain the global geometry treated as an ordinary instanced mesh
-unlike the special treatment of the index 0 global GMergedMesh.
-
-**/
-bool GMergedMesh::isGlobalInstance() const 
-{
-    return m_globalinstance ; 
-}
-void GMergedMesh::setGlobalInstance(bool globalinstance)
-{
-    m_globalinstance = globalinstance ; 
-}
-
-
-
 
 
 
@@ -247,9 +225,9 @@ GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, const std::ve
 GMergedMesh::Create
 ---------------------
 
-For instanced meshes the base is set to the first occurence of the 
-instance eg invoked from GScene::makeMergedMeshAndInstancedBuffers
+This is canonically invoked from GInstancer::makeMergedMeshAndInstancedBuffers.
 
+For instanced meshes the base is set to the first occurence of the instance.
 The base is used as the frame into which the subframes are transformed, when
 base is NULL global transforms and not base relative transforms are used.
 
@@ -282,6 +260,7 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsign
     mm->setGlobalInstance(globalinstance); 
 
     GNode* start = base ? base : root ; 
+    unsigned depth = 0 ; 
 
     if(verbosity > 1)
     LOG(info)
@@ -289,7 +268,7 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsign
         << " starting from " << start->getName() ;
         ; 
 
-    mm->traverse_r( start, 0, PASS_COUNT, verbosity  );  // 1st pass traversal : counts vertices and faces
+    mm->traverse_r( start, depth, PASS_COUNT, verbosity  );  // 1st pass traversal : counts vertices and faces
 
     OKI_PROFILE("GMergedMesh::Create::Count"); 
 
@@ -310,7 +289,7 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsign
 
     OKI_PROFILE("GMergedMesh::Create::Allocate"); 
 
-    mm->traverse_r( start, 0, PASS_MERGE, verbosity );  // 2nd pass traversal : merge copy GMesh into GMergedMesh 
+    mm->traverse_r( start, depth, PASS_MERGE, verbosity );  // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 
     OKI_PROFILE("GMergedMesh::Create::Merge"); 
 
@@ -362,10 +341,10 @@ void GMergedMesh::traverse_r( GNode* node, unsigned depth, unsigned pass, unsign
     unsigned uidx = m_globalinstance ? 0u : idx ; 
     unsigned ridx = volume->getRepeatIndex() ;
 
-    bool repsel =  ridx == uidx ;           // RepeatIndex of volume same as index of mm 
-    bool csgskip = volume->isCSGSkip() ;    // --csgskiplv
-    bool selected_ =  volume->isSelected() && repsel ;
-    bool selected = selected_ && !csgskip ;      // selection honoured by both triangulated and analytic 
+    bool repeat_selection =  ridx == uidx ;                       // repeatIndex of volume same as index of mm (or 0 for globalinstance)
+    bool csgskip = volume->isCSGSkip() ;                          // --csgskiplv
+    bool selected_ =  volume->isSelected() && repeat_selection ;  // volume selection defaults to true and appears unused
+    bool selected = selected_ && !csgskip ;                       // selection honoured by both triangulated and analytic 
 
 
     if(pass == PASS_COUNT)
@@ -398,10 +377,25 @@ void GMergedMesh::traverse_r( GNode* node, unsigned depth, unsigned pass, unsign
 }
 
 
+/**
+GMergedMesh::countVolume
+--------------------------
+
+NB changes here need to parallel those made in GMergedMesh::mergeVolume 
+
+**/
+
+
 void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosity )
 {
     const GMesh* mesh = volume->getMesh();
-    m_num_volumes += 1 ; 
+
+    // with globalinstance selection is honoured at volume level too 
+    bool admit = ( m_globalinstance && selected ) || !m_globalinstance ;  
+    if(admit)
+    {
+        m_num_volumes += 1 ; 
+    }
 
     if(selected)
     {
@@ -477,6 +471,8 @@ void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
 GMergedMesh::mergeVolume
 --------------------------
 
+NB changes here need to parallel those made in GMergedMesh::countVolume 
+
 GMergedMesh::create invokes GMergedMesh::mergeVolume from node tree traversal 
 via the recursive GMergedMesh::traverse_r 
 
@@ -531,10 +527,6 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
     if( ridx == 0 ) assert( base == NULL && "expecting NULL base for ridx 0" ); 
 
 
-    float* dest = getTransform(m_cur_volume);
-    assert(dest);
-    transform->copyTo(dest);
-
     const GMesh* mesh = volume->getMesh();   // triangulated
     unsigned num_vert = mesh->getNumVertices();
     unsigned num_face = mesh->getNumFaces();
@@ -552,14 +544,21 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
     gfloat3* normals  = mesh->getTransformedNormals(*transform);  
 
     if(verbosity > 3) mergeVolumeDump(volume);
-    mergeVolumeBBox(vertices, num_vert);     // m_bbox, m_center_extent  
-    mergeVolumeIdentity(volume, selected );  // m_nodeinfo, m_identity, m_meshes
 
-    m_cur_volume += 1 ;    // irrespective of selection, as prefer absolute volume indexing 
+    // with globalinstance selection is honoured at volume level too 
+    bool admit = ( m_globalinstance && selected ) || !m_globalinstance ;  
+    if(admit)
+    {
+        mergeVolumeTransform(transform) ;        // "m_transforms[m_cur_volume]" 
+        mergeVolumeBBox(vertices, num_vert);     // m_bbox[m_cur_volume], m_center_extent[m_cur_volume]  
+        mergeVolumeIdentity(volume, selected );  // m_nodeinfo[m_cur_volume], m_identity[m_cur_volume], m_meshes[m_cur_volume]
+
+        m_cur_volume += 1 ;    // irrespective of selection, as prefer absolute volume indexing 
+        // NB admit: must parallel what is counted in countVolume 
+    }
 
     if(selected)
     {
-
         mergeVolumeVertices( num_vert, vertices, normals );  // m_vertices, m_normals
 
         unsigned* node_indices     = volume->getNodeIndices();
@@ -583,6 +582,15 @@ void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosit
         m_cur_faces    += num_face ; 
     }
 }
+
+
+void GMergedMesh::mergeVolumeTransform( GMatrixF* transform )
+{
+    float* dest = getTransform(m_cur_volume);   // m_transforms + m_cur_volume*16 
+    assert(dest);
+    transform->copyTo(dest);
+}
+
 
 
 /**
@@ -749,18 +757,6 @@ void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
     unsigned meshIndex = mesh->getIndex();
     unsigned boundary = volume->getBoundary();
 
-#ifdef OLD_SENSOR
-    NSensor* sensor = volume->getSensor();
-    unsigned sensorIndex = NSensor::RefIndex(sensor) ; 
-    LOG(debug) 
-        << " m_cur_volume " << m_cur_volume 
-        << " nodeIndex " << nodeIndex
-        << " boundaryIndex " << boundary
-        << " sensorIndex " << sensorIndex
-        << " sensor " << ( sensor ? sensor->description() : "NULL" )
-        ;
-#endif
-
     assert(_identity.x == nodeIndex);
     assert(_identity.y == meshIndex);
     assert(_identity.z == boundary);
@@ -785,7 +781,7 @@ void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
     m_nodeinfo[m_cur_volume].z = nodeIndex ;  
     m_nodeinfo[m_cur_volume].w = parentIndex ; 
 
-    if(isGlobal())
+    if(isGlobal() && !m_globalinstance)
     {
          if(nodeIndex != m_cur_volume)
              LOG(fatal) << "mismatch" 

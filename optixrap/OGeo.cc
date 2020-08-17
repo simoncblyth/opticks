@@ -710,7 +710,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
         << " idBuf " << idBuf->getShapeString()
         ;
            
-    if( mm->getIndex() > 0 )
+    if( mm->getIndex() > 0 )  // volume level buffers do not honour selection unless using globalinstance
     {
         assert(idBuf->hasShape(numInstances,numPrim,4)); 
     }

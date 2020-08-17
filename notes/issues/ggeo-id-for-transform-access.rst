@@ -5,7 +5,7 @@ Motivation
 ------------
 
 * need an identifier to facilitate accessing global transforms of any volume.
-* this is to provide instance "cathode" frame local positions for hits 
+* this is to provide instance "sensor" frame local positions for hits 
   without doubling the photon 4x4 for the locals 
 
   * instead label geometry with a ggeo_id that allows to access the transform (and its inverse)
@@ -84,6 +84,10 @@ What about globals ridx 0 ?
 
 * global arrays are special, because the higher level ones cover all volumes not just ridx 0 selected ones
 
+  * found part of this to be due to the "feature" of getProgeny returning all nodes other than root when 
+    invoked from root unlike when invoked on instance bases which gives just the small subtrees
+  * added getGlobalProgeny to select nodes with ridx 0   
+
 * zero is too special : kinda need GMergedMesh -1 to hold what 0 currently holds and have a zero that applies the ridx selection  
 
   * want to be able to treat ridx zero as just another instance for which there happens to only be one of them 
@@ -102,6 +106,7 @@ What about globals ridx 0 ?
     d :                                     GMergedMesh/0/meshes.npy :          (316326, 1) : 769ac94734ee1d4df8f43922921d739c : 20200730-1543 
     e :                                   GMergedMesh/0/nodeinfo.npy :          (316326, 4) : 5f2019eddf04b4d59a28114107d3d962 : 20200730-1543 
     f :                                 GMergedMesh/0/transforms.npy :         (316326, 16) : 5b55d80e152bfc1edb08acd50423fa7b : 20200730-1543 
+
     g :                                    GMergedMesh/0/indices.npy :          (150408, 1) : 2af831a56809847c4bac31ed8b75391d : 20200730-1543 
     h :                                 GMergedMesh/0/boundaries.npy :           (50136, 1) : ec86774a4b541196fe19060a45f80c9f : 20200730-1543 
     i :                                      GMergedMesh/0/nodes.npy :           (50136, 1) : 20b5a07b5fd9a591316ef813f917e09f : 20200730-1543 
@@ -511,7 +516,6 @@ First try at globainstance
 ----------------------------
 
 
-
 ::
 
     geocache-tds --globalinstance
@@ -540,4 +544,119 @@ First try at globainstance
         frame #19: 0x00007fff5316b015 libdyld.dylib`start + 1
     (lldb) 
 
+
+
+With --globalinstance using getGlobalProgeny and admit-ing the selection for it 
+---------------------------------------------------------------------------------------
+
+::
+
+     411 void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosity )
+     412 {
+     413     const GMesh* mesh = volume->getMesh();
+     414 
+     415     // with globalinstance selection is honoured at volume level too 
+     416     bool admit = ( m_globalinstance && selected ) || !m_globalinstance ;
+     417     if(admit)
+     418     {
+     419         m_num_volumes += 1 ;
+     420     }
+     421 
+     422     if(selected)
+     423     {
+     424         m_num_volumes_selected += 1 ;
+     425         countMesh( mesh );
+     426     }
+
+
+     540 void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosity )
+     541 {
+     542     GNode* node = static_cast<GNode*>(volume);
+     543     GNode* base = getCurrentBase();
+     544     unsigned ridx = volume->getRepeatIndex() ;
+     545 
+     546     GMatrixF* transform = base ? volume->getRelativeTransform(base) : volume->getTransform() ;     // base or root relative global transform
+     547 
+     548     if( node == base ) assert( transform->isIdentity() );
+     549     if( ridx == 0 ) assert( base == NULL && "expecting NULL base for ridx 0" );
+     ...
+     573     // with globalinstance selection is honoured at volume level too 
+     574     bool admit = ( m_globalinstance && selected ) || !m_globalinstance ;
+     575     if(admit)
+     576     {
+     577         mergeVolumeTransform(transform) ;        // "m_transforms[m_cur_volume]" 
+     578         mergeVolumeBBox(vertices, num_vert);     // m_bbox[m_cur_volume], m_center_extent[m_cur_volume]  
+     579         mergeVolumeIdentity(volume, selected );  // m_nodeinfo[m_cur_volume], m_identity[m_cur_volume], m_meshes[m_cur_volume]
+     580 
+     581         m_cur_volume += 1 ;    // irrespective of selection, as prefer absolute volume indexing 
+     582         // NB this must parallel what is counted in countVolume 
+     583     }
+     584 
+
+
+
+
+
+::
+
+    epsilon:optixrap blyth$ cd /usr/local/opticks/geocache/OKX4Test_lWorld0x338c270_PV_g4live/g4ok_gltf/ad026c799f5511ddb91eb379efa84bc4/1
+    epsilon:1 blyth$ cd GMergedMesh/
+    epsilon:GMergedMesh blyth$ l
+    total 0
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 10
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 9
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 8
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 7
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 6
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 5
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 4
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 3
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 2
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 1
+    drwxr-xr-x  17 blyth  staff  544 Aug  4 11:48 0
+    epsilon:GMergedMesh blyth$ cd 10
+    epsilon:10 blyth$ inp *.npy 
+    a :                                                  indices.npy :          (150408, 1) : 2af831a56809847c4bac31ed8b75391d : 20200804-1148 
+    b :                                               boundaries.npy :           (50136, 1) : ec86774a4b541196fe19060a45f80c9f : 20200804-1148 
+    c :                                                    nodes.npy :           (50136, 1) : 20b5a07b5fd9a591316ef813f917e09f : 20200804-1148 
+    d :                                                  sensors.npy :           (50136, 1) : 5a535a6294a983f85a9d39594f5f2025 : 20200804-1148 
+    e :                                                   colors.npy :           (26138, 3) : 72559524bfac94690a43f3372130c6a0 : 20200804-1148 
+    f :                                                  normals.npy :           (26138, 3) : 40035f80ada1486bb9abcca02cb5890b : 20200804-1148 
+    g :                                                 vertices.npy :           (26138, 3) : 2929dbcd7b89ddd816cdf59c88e1bed6 : 20200804-1148 
+
+    h :                                                     bbox.npy :             (374, 6) : 8352a1b6cc5738921822c22ff2cb712f : 20200804-1148 
+    i :                                            center_extent.npy :             (374, 4) : 00819ea53a7bbbdf6b12895443780795 : 20200804-1148 
+    j :                                                 identity.npy :             (374, 4) : 01e3424d3117bc3b953b994953ba54a6 : 20200804-1148 
+    k :                                                   meshes.npy :             (374, 1) : 970f362032b277836a7e9d9117512efc : 20200804-1148 
+    l :                                                 nodeinfo.npy :             (374, 4) : c3a3c73e947d8f118f3f9c687c77de1e : 20200804-1148 
+    m :                                               transforms.npy :            (374, 16) : c8336a438335010e57af503b98308c4f : 20200804-1148 
+
+    n :                                                iidentity.npy :          (1, 374, 4) : 1de72130fac13a93a4465eb2a0f91e3a : 20200804-1148 
+
+    o :                                              itransforms.npy :            (1, 4, 4) : 2142ffd110056f6eba647180adfbbcc9 : 20200804-1148 
+
+
+
+::
+
+    epsilon:1 blyth$ inp GMergedMesh/0/*.npy 
+    [2020-08-04 12:20:16,280] p48850 {legacy_init         :env.py    :185} WARNING  - legacy_init : OPTICKS_KEY envvar deleted for legacy running, unset IDPATH to use direct_init
+    a :                                       GMergedMesh/0/bbox.npy :          (316326, 6) : e03de9c79f6f50a14d0ccbc6ed482e09 : 20200804-1148 
+    b :                              GMergedMesh/0/center_extent.npy :          (316326, 4) : cf16b7b71b30d3de903b1fcac6b84db8 : 20200804-1148 
+    c :                                   GMergedMesh/0/identity.npy :          (316326, 4) : 2a0515dd3da7723f1e6430ecb14536fa : 20200804-1148 
+    d :                                     GMergedMesh/0/meshes.npy :          (316326, 1) : 769ac94734ee1d4df8f43922921d739c : 20200804-1148 
+    e :                                   GMergedMesh/0/nodeinfo.npy :          (316326, 4) : 5f2019eddf04b4d59a28114107d3d962 : 20200804-1148 
+    f :                                 GMergedMesh/0/transforms.npy :         (316326, 16) : 5b55d80e152bfc1edb08acd50423fa7b : 20200804-1148 
+
+    g :                                    GMergedMesh/0/indices.npy :          (150408, 1) : 2af831a56809847c4bac31ed8b75391d : 20200804-1148 
+    h :                                 GMergedMesh/0/boundaries.npy :           (50136, 1) : ec86774a4b541196fe19060a45f80c9f : 20200804-1148 
+    i :                                      GMergedMesh/0/nodes.npy :           (50136, 1) : 20b5a07b5fd9a591316ef813f917e09f : 20200804-1148 
+    j :                                    GMergedMesh/0/sensors.npy :           (50136, 1) : 5a535a6294a983f85a9d39594f5f2025 : 20200804-1148 
+    k :                                     GMergedMesh/0/colors.npy :           (26138, 3) : 70b5ff210429c7018832882046c73830 : 20200804-1148 
+    l :                                    GMergedMesh/0/normals.npy :           (26138, 3) : 40035f80ada1486bb9abcca02cb5890b : 20200804-1148 
+    m :                                   GMergedMesh/0/vertices.npy :           (26138, 3) : 2929dbcd7b89ddd816cdf59c88e1bed6 : 20200804-1148 
+    n :                                  GMergedMesh/0/iidentity.npy :          (1, 374, 4) : 1de72130fac13a93a4465eb2a0f91e3a : 20200804-1148 
+    o :                                GMergedMesh/0/itransforms.npy :            (1, 4, 4) : 2142ffd110056f6eba647180adfbbcc9 : 20200804-1148 
+
+    In [1]: 
 

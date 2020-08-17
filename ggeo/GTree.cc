@@ -41,7 +41,7 @@ for ridx > 0 returns all GNode subtree bases of the ridx repeats.
 
 **/
 
-NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<GNode*>& placements)
+NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<GNode*>& placements) // static
 {
     unsigned ni = placements.size(); 
     NPY<float>* buf = NPY<float>::make(0, 4, 4);
@@ -76,18 +76,39 @@ ie need buffer of size: num_transforms * num_triangles-per-instance
 The triangulated version can be created from the analytic one
 by duplication according to the number of triangles.
 
+
+Prior to Aug 2020 this returned an iidentity buffer with all nodes 
+when invoked on the root node, eg::  
+
+    GMergedMesh/0/iidentity.npy :       (1, 316326, 4)
+
+This was because of a fundamental difference between the repeated instances and the 
+global ridx 0 volumes. The volumes of the instances are all together in a subtree 
+whereas the global remainder volumes with ridx 0 are scattered all over the full tree.
+
+Due to this a separate getGlobalProgeny is now used which selects the collected
+nodes based on the ridx (getRepeatIndex()) being zero.
+
 **/
 
-NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& placements) 
+NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& placements)  // static
 {
     unsigned int numInstances = placements.size() ;
+    GNode* base0 = placements[0] ;
 
+    unsigned ridx0 = base0->getRepeatIndex() ; 
+    bool is_global = ridx0 == 0 ; 
 
-    std::vector<GNode*>& progeny0 = placements[0]->getProgeny();
-    unsigned numProgeny0 = placements[0]->getLastProgenyCount();
+    if(is_global)
+    {
+        assert( numInstances == 1 );  
+    }
+
+    std::vector<GNode*>& progeny0 = is_global ? base0->getGlobalProgeny() : base0->getProgeny();
+    unsigned numProgeny0 = is_global ? base0->getPriorGlobalProgenyCount() : base0->getPriorProgenyCount();
     assert( progeny0.size() == numProgeny0 );
 
-    unsigned numVolumes  = numProgeny0 + 1 ; 
+    unsigned numVolumes  = 1 + numProgeny0  ;  // "1 +" as progeny does not include base node
     unsigned num = numVolumes*numInstances ; 
 
     NPY<unsigned>* buf = NPY<unsigned>::make(0, 4);
@@ -97,10 +118,11 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
         GNode* base = placements[i] ;
 
         unsigned ridx = base->getRepeatIndex();
+        assert( ridx == ridx0) ; 
 
+        std::vector<GNode*>& progeny = is_global ? base->getGlobalProgeny() : base->getProgeny() ;
+        unsigned numProgeny = is_global ? base->getPriorGlobalProgenyCount() : base->getPriorProgenyCount();
 
-        std::vector<GNode*>& progeny = base->getProgeny();
-        unsigned numProgeny = base->getLastProgenyCount();
         assert( numProgeny == numProgeny0 && "repeated geometry for the instances, so the progeny counts must match");
 
         bool progeny_match = progeny.size() == numProgeny ;

@@ -239,12 +239,7 @@ void GVolume::setBoundaryAll(unsigned boundary)
 guint4 GVolume::getIdentity()
 {
     unsigned node_index = m_index ;    
-  
-    //unsigned identity_index = getSensorSurfaceIndex() ;   
     unsigned identity_index = m_copyNumber  ;   
-
-    // surprised to get this in the global 
-    //if(identity_index > 300000 ) std::raise(SIGINT); 
 
     return guint4(
                    node_index, 

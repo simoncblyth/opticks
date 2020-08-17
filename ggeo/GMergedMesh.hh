@@ -116,6 +116,7 @@ private:
 #endif
 
     void mergeVolumeAnalytic( GPt*    pt,  GMatrixF* transform, unsigned verbosity );
+    void mergeVolumeTransform( GMatrixF* transform ); 
     void mergeVolumeBBox( gfloat3* vertices, unsigned nvert );
     void mergeVolumeDump( GVolume* volume);
 private:
@@ -139,9 +140,6 @@ public:
     void   setCurrentBase(GNode* base);
     GNode* getCurrentBase(); 
 
-    void   setGlobalInstance(bool globalinstance);  // global geometry treated like instanced
-    bool   isGlobalInstance() const ;   
-
     bool   isGlobal(); 
     bool   isInstanced(); 
 public:
@@ -157,7 +155,6 @@ private:
     unsigned     m_cur_mergedmesh ; // for composite mergedmesh recording 
     unsigned     m_num_csgskip ; 
     GNode*       m_cur_base ;  
-    bool         m_globalinstance ; 
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
 
     GPts*        m_pts ; 

@@ -138,11 +138,17 @@ class GGEO_API GNode {
       //
       GMatrixF*            calculateTransform();  
   public:
-      std::vector<GNode*>& getAncestors();
       std::vector<GNode*>& getProgeny();
+      std::vector<GNode*>& getGlobalProgeny();
+  public:
+      std::vector<GNode*>& getAncestors();
       std::string&         getProgenyDigest();
       std::string&         getLocalDigest();
-      unsigned int         getLastProgenyCount();
+  public:
+      //unsigned int         getLastProgenyCount();
+      unsigned int         getPriorProgenyCount() const ;
+      unsigned int         getPriorGlobalProgenyCount() const ;
+  public:
       unsigned int         getProgenyNumVertices();  // includes self when m_selfdigest is true
       GNode*               findProgenyDigest(const std::string& pdig) ;
       std::vector<GNode*>  findAllProgenyDigest(std::string& dig);
@@ -151,11 +157,12 @@ class GGEO_API GNode {
       std::string          meshDigest();
       std::string          localDigest();
       static std::string   localDigest(std::vector<GNode*>& nodes, GNode* extra=NULL);
-
-      void collectProgeny(std::vector<GNode*>& progeny);
+  private:
+      void collectProgeny(std::vector<GNode*>& progeny) ;
+      void collectGlobalProgeny(std::vector<GNode*>& global_progeny) ;
+  private:
       void collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig);
       void collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside, bool honour_selection );
-
   private:
       bool                m_selfdigest ; // when true getProgenyDigest includes self node 
       bool                m_selected ;
@@ -185,8 +192,10 @@ class GGEO_API GNode {
       std::string         m_local_digest ; 
       std::string         m_progeny_digest ; 
       std::vector<GNode*> m_progeny ; 
+      std::vector<GNode*> m_global_progeny ; 
       std::vector<GNode*> m_ancestors ; 
       unsigned int        m_progeny_count ; 
+      unsigned int        m_global_progeny_count ; 
       unsigned int        m_repeat_index ; 
       unsigned int        m_progeny_num_vertices ;
   private: 

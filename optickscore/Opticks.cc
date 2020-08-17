@@ -927,9 +927,9 @@ const char* Opticks::getScintillationClass() const
 
 
 
-bool Opticks::isGlobalInstance() const // --globalinstance
+bool Opticks::isGlobalInstance() const // true : when not disabled with  --disableglobalinstance
 {
-    return m_cfg->hasOpt("globalinstance"); 
+    return m_cfg->hasOpt("disableglobalinstance") == false ; 
 }
 bool Opticks::isG4CodeGen() const  // --g4codegen
 {

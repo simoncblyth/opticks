@@ -206,7 +206,7 @@ void GInstancer::deltacheck_r( GNode* node, unsigned int depth)
     float delta = gtransform->largestDiff(*ctransform);
 
     
-    unsigned int nprogeny = node->getLastProgenyCount() ;
+    unsigned int nprogeny = node->getPriorProgenyCount() ;
 
     if(nprogeny > 0 ) 
         LOG(debug) 
@@ -250,7 +250,7 @@ struct GRepeat
           pdig(pdig_), 
           ndig(ndig_), 
           first(first_),
-          nprog(first->getLastProgenyCount()),
+          nprog(first->getPriorProgenyCount()),
           nvert(first->getProgenyNumVertices()),
           // includes self when GNode.m_selfdigest is true
           candidate(ndig > repeat_min && nvert > vertex_min ),
@@ -425,7 +425,7 @@ void GInstancer::dumpRepeatCandidate(unsigned int index, bool verbose)
     std::cout  
                   << " pdig "  << std::setw(32) << pdig  
                   << " ndig "  << std::setw(6) << std::dec << ndig
-                  << " nprog " <<  std::setw(6) << std::dec << first->getLastProgenyCount() 
+                  << " nprog " <<  std::setw(6) << std::dec << first->getPriorProgenyCount() 
                   << " placements " << std::setw(6) << placements.size()
                   << " n "          <<  first->getName() 
                   << std::endl 
