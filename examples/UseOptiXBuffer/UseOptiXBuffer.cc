@@ -82,9 +82,9 @@ int main()
     RT_CHECK_ERROR( rtBufferSetFormat( buffer, RT_FORMAT_FLOAT ) );
     RT_CHECK_ERROR( rtBufferSetSize1D( buffer, width ) );
 
-    RTvariable result_buffer ; 
-    RT_CHECK_ERROR( rtContextDeclareVariable( context, "result_buffer", &result_buffer ) );
-    RT_CHECK_ERROR( rtVariableSetObject( result_buffer, buffer ) );
+    RTvariable buffer_variable ; 
+    RT_CHECK_ERROR( rtContextDeclareVariable( context, "result_buffer", &buffer_variable ) );
+    RT_CHECK_ERROR( rtVariableSetObject( buffer_variable, buffer ) );
 
     RTprogram raygen ;
     RT_CHECK_ERROR( rtProgramCreateFromPTXFile(context, ptxpath, progname, &raygen )) ;

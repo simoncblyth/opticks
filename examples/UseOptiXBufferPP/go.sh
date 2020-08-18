@@ -41,6 +41,8 @@ make
 make install   
 
 $name --help
+#$name bufferTest.cu bufferTest_readOnly
+$name bufferTest.cu bufferTest_readWrite
 
 
 ptx=$(opticks-prefix)/installcache/PTX/${name}_generated_bufferTest.cu.ptx

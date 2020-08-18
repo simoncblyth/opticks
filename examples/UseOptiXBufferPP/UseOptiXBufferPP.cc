@@ -57,12 +57,15 @@ int main(int argc, char** argv)
     const char* cu_name = NULL ;  
     const char* progname = NULL  ;
 
+    std::cout << " argc " << argc << std::endl ; 
+
     if((argc > 1 && ( strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0 )) || argc > 3) printUsageAndExit(argv[0]);  
 
     if(argc == 1)
     {
         cu_name = "bufferTest.cu" ;  // only needs to be unique within context of the cmake_target, not the whole of Opticks
-        progname = "bufferTest" ;  
+        progname = "bufferTest_readOnly" ;  
+        //progname = "bufferTest_readWrite" ;  
     } 
     else if( argc == 2)
     {
@@ -114,7 +117,6 @@ int main(int argc, char** argv)
     context->setRayGenerationProgram( entry_point_index, program ); 
 
 
-/*
     // create and configure in_buffer
     unsigned int in_type =  RT_BUFFER_INPUT ; 
     RTformat in_format = RT_FORMAT_FLOAT4 ;
@@ -122,8 +124,6 @@ int main(int argc, char** argv)
     in_buffer->setFormat( in_format ) ; 
     in_buffer->setSize( size ) ;   // number of quads
     context["in_buffer"]->set( in_buffer );
-*/
-
 
     // create and configure out_buffer
     unsigned int out_type =  RT_BUFFER_OUTPUT ; 
@@ -134,12 +134,10 @@ int main(int argc, char** argv)
     context["out_buffer"]->set( out_buffer );
 
 
-/*
     // upload in_buffer
     unsigned numBytes = in_npy->getNumBytes(0) ;
     memcpy( in_buffer->map(), in_npy->getBytes(), numBytes );
     in_buffer->unmap() ; 
-*/
 
     // launch the kernel, that just copies from in to out 
     unsigned width = size ; 
