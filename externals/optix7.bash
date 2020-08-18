@@ -57,8 +57,9 @@ OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17
 
 * https://www.nvidia.com/en-us/gtc/session-catalog/?search=OptiX
 * https://developer.nvidia.com/gtc/2020/video/s21904
+* https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/s21904-new-features-in-optix-7.pdf
 
-  GTC 2020: New Features in OptiX 7
+  GTC 2020 (March): New Features in OptiX 7
 
 
 * https://developer.nvidia.com/gtc/2020/video/s21425 
@@ -66,6 +67,13 @@ OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17
   ESI Group Report, on OptiX 7 from 41 min
   GTC 2020: Leveraging OptiX 7 for High-Performance Multi-GPU Ray Tracing on Head-Mounted Displays
    
+
+
+
+
+ 
+
+
 
 
 

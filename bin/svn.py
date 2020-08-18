@@ -78,7 +78,14 @@ Workflow::
        ## pipe those commands to shell
 
 """
-import os, sys, commands, re, argparse, logging, platform
+import os, sys, re, argparse, logging, platform
+
+try:
+    from commands import getstatusoutput 
+except ImportError:
+    from subprocess import getstatusoutput 
+pass 
+
 from collections import OrderedDict as odict
 try: 
     from hashlib import md5 
@@ -94,8 +101,7 @@ def md5sum_py3(path):
         pass
     return d.hexdigest()
 
-
-def md5sum(path):
+def md5sum_py2(path):
     dig = md5()
     with open(path,'rb') as f:  
         for chunk in iter(lambda: f.read(8192),''): 
@@ -104,17 +110,36 @@ def md5sum(path):
     pass
     return dig.hexdigest()
 
+def md5sum(path, block_size=8192):
+    """ 
+    :param path:
+    :return: md5 hexdigest of the content of the path or None if non-existing path
+    """
+    dig = md5()
+    with open(path, "rb") as f:
+        #while chunk := f.read(block_size):   walrus-operator only available in py38 + it gives error in py27
+        while True:
+            chunk = f.read(block_size)
+            if not chunk:
+                break
+            pass
+            dig.update(chunk)
+        pass
+    pass
+    return dig.hexdigest()
+
+
 
 def md5sum_alt(path):
     system =  platform.system()
     if system == "Darwin":
         cmd = "md5 -q %s"  ## just outputs the digest 
-        rc,out = commands.getstatusoutput(cmd % path)
+        rc,out = getstatusoutput(cmd % path)
         assert rc == 0 
         dig = out      
     elif system == "Linux":
         cmd = "md5sum %s"   ## outputs the digest and the path 
-        rc,out = commands.getstatusoutput(cmd % path)
+        rc,out = getstatusoutput(cmd % path)
         assert rc == 0 
         dig = out.split(" ")[0]
     else:
@@ -234,7 +259,7 @@ class WC(object):
         Parse the status output of a remote instance of this script
         """
         log.debug("reading %s " % rstatpath) 
-        lines = map(str.rstrip, file(rstatpath, "r").readlines())
+        lines = map(str.rstrip, open(rstatpath, "r").readlines())
         paths = []
         for line in lines:
             if line.startswith("Warning: Permanently added"): continue
@@ -258,7 +283,7 @@ class WC(object):
 
         log.debug("ldig %s check %s statcmd %s " % (args.ldig,args.check, args.statcmd))
 
-        rc, out = commands.getstatusoutput(args.statcmd)
+        rc, out = getstatusoutput(args.statcmd)
         assert rc == 0 
       
         log.debug(out)  
@@ -300,7 +325,7 @@ class WC(object):
 
         index_ = lambda ls,val:ls.index(val) if val in ls else -1 
        
-        for k in sorted(list(u), key=lambda k:max(index_(l.keys(),k),index_(r.keys(),k))):
+        for k in sorted(list(u), key=lambda k:max(index_(list(l.keys()),k),index_(list(r.keys()),k))):
             st = "".join(["l" if k in l else " ","r" if k in r else " "])
             rk = r.get(k, None)
             lk = l.get(k, None)
@@ -363,7 +388,7 @@ class WC(object):
     hdr = property(_get_hdr)
 
     def __str__(self):
-        return "\n".join([self.hdr]+map(str,self.paths))
+        return "\n".join([self.hdr]+list(map(str,self.paths)))
 
 
 if __name__ == '__main__':
@@ -371,11 +396,11 @@ if __name__ == '__main__':
 
     if "rup" in args.cmd or "cfu" in args.cmd:
         log.info("running args.rstatcmd : %s " % args.rstatcmd )
-        rc,out = commands.getstatusoutput(args.rstatcmd)
+        rc,out = getstatusoutput(args.rstatcmd)
         assert rc == 0, rc
         #print(out)
         log.info("writing out to args.rstatpath : %s " % args.rstatpath)
-        file(args.rstatpath,"w").write(out)
+        open(args.rstatpath,"w").write(out)
     pass
 
     if os.path.exists(args.rstatpath):
