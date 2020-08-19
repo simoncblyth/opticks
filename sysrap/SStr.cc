@@ -129,6 +129,15 @@ bool SStr::EndsWith( const char* s, const char* q)
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
 
+
+
+
+
+
+
+
+
+
 bool SStr::StartsWith( const char* s, const char* q)
 {
     return strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
@@ -218,6 +227,8 @@ bool SStr::HasPointerSuffix( const char* name, unsigned min_hexdigits, unsigned 
 }
 
 
+
+
 const char* SStr::Concat( const char* a, const char* b, const char* c  )
 {
     std::stringstream ss ; 
@@ -267,6 +278,20 @@ const char* SStr::Replace( const char* s,  char a, char b )
     std::string r = ss.str(); 
     return strdup(r.c_str());
 }
+
+const char* SStr::ReplaceEnd( const char* s, const char* q, const char* r  )
+{
+    int pos = strlen(s) - strlen(q) ;
+    assert( pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 );
+
+    std::stringstream ss ; 
+    for(int i=0 ; i < pos ; i++) ss << *(s+i) ;  
+    ss << r ; 
+
+    std::string n = ss.str(); 
+    return strdup(n.c_str());
+}
+
 
 
 

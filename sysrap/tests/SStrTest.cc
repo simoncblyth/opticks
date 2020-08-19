@@ -172,6 +172,14 @@ void test_Replace()
     assert( strcmp(name2, xname2) == 0 );  
 }
 
+void test_ReplaceEnd()
+{
+    const char* name = "/some/path/to/hello.ppm" ; 
+    const char* xname2 = "/some/path/to/hello.npy" ; 
+    const char* name2 = SStr::ReplaceEnd(name, ".ppm", ".npy" ); 
+    assert( strcmp(name2, xname2) == 0 );  
+}
+
 
 
 int main(int argc , char** argv )
@@ -187,8 +195,9 @@ int main(int argc , char** argv )
     test_HasPointerSuffix();  
     test_HasPointerSuffix2();  
     test_StartsWith();  
-    */
     test_Replace();  
+    */
+    test_ReplaceEnd();  
 
     return 0  ; 
 }

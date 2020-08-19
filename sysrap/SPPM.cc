@@ -22,6 +22,7 @@
 #include <fstream>
 
 #include "PLOG.hh"
+#include "SStr.hh"
 #include "SPPM.hh"
 
 const plog::Severity SPPM::LEVEL = PLOG::EnvLevel("SPPM", "DEBUG")  ; 
@@ -209,6 +210,7 @@ void SPPM::dumpHeader( const char* path )
 
 int SPPM::readHeader( const char* path, unsigned& width, unsigned& height, unsigned& mode, unsigned& bits )
 {
+    assert(SStr::EndsWith(path, ".ppm")); 
     std::ifstream f(path, std::ios::binary);
     if(f.fail())
     {
@@ -233,6 +235,8 @@ int SPPM::readHeader( const char* path, unsigned& width, unsigned& height, unsig
 
 int SPPM::read( const char* path, std::vector<unsigned char>& img, unsigned& width, unsigned& height, const unsigned ncomp, const bool yflip )
 {
+    assert(SStr::EndsWith(path, ".ppm")); 
+
     std::ifstream f(path, std::ios::binary);
     if(f.fail())
     {
