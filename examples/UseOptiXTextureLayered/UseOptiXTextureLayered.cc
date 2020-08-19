@@ -69,9 +69,9 @@ tex1D, tex2D and tex3D functions.
 
 int main()
 {
-    const int nx = 10u ; 
-    const int ny = 10u ; 
-    const int nz = 10u ;
+    const int nx = 4u ; 
+    const int ny = 4u ; 
+    const int nz = 4u ;
     const int size = nx*ny*nz ; 
 
     float* values = NULL ; 
@@ -92,6 +92,8 @@ int main()
     std::array<float, size> out ;  
     out.fill(0.f);  
 #endif
+
+    // makes more sense for the layer to be first index 
 
     for(int i=0 ; i < nx ; i++){
     for(int j=0 ; j < ny ; j++){
@@ -139,6 +141,8 @@ int main()
     RT_CHECK_ERROR( rtBufferCreate( context, bufferdesc, &tex_buffer ) );
     RT_CHECK_ERROR( rtBufferSetFormat( tex_buffer, RT_FORMAT_FLOAT ) );
     RT_CHECK_ERROR( rtBufferSetSize3D( tex_buffer, nx, ny, nz ) );
+    unsigned levels = 1 ; 
+    RT_CHECK_ERROR( rtBufferSetMipLevelCount( tex_buffer, levels ) );
 
     RTvariable tex_buffer_variable ; 
     RT_CHECK_ERROR( rtContextDeclareVariable( context, "tex_buffer", &tex_buffer_variable ) );
@@ -183,7 +187,9 @@ int main()
     std::cout << ". FROM_BUF skipping sampler hookup " << std::endl ;  
 #else
     std::cout << "[ associate tex_sampler with tex_buffer " << std::endl ;  
-    RT_CHECK_ERROR( rtTextureSamplerSetBuffer( tex_sampler, 0, 0, tex_buffer ) );
+    unsigned deprecated0 = 0 ; 
+    unsigned deprecated1 = 0 ; 
+    RT_CHECK_ERROR( rtTextureSamplerSetBuffer( tex_sampler, deprecated0, deprecated1, tex_buffer ) );
     std::cout << "] associate tex_sampler with tex_buffer " << std::endl ;  
 
 
@@ -235,14 +241,41 @@ int main()
     std::cout << "] contextValidate " << std::endl ;  
 
 
-    void* tex_data ; 
-    RT_CHECK_ERROR( rtBufferMap( tex_buffer, &tex_data ) );
-#ifdef WITH_NPY
-    inp->write(tex_data); 
-#else
-    memcpy( tex_data, inp.data(), sizeof(float)*size ) ;
-#endif
-    RT_CHECK_ERROR( rtBufferUnmap( tex_buffer )) ;
+    bool exfill = false ;  
+    //bool exfill = true ;  // terminates with APIError 
+    std::cout << "[ uploading to tex buffer exfill  " << exfill << std::endl ;  
+    if(exfill == false)
+    {
+        void* tex_data ; 
+        RT_CHECK_ERROR( rtBufferMap( tex_buffer, &tex_data ) );
+        #ifdef WITH_NPY
+        inp->write(tex_data); 
+        #else
+        memcpy( tex_data, inp.data(), sizeof(float)*size ) ;
+        #endif
+        RT_CHECK_ERROR( rtBufferUnmap( tex_buffer )) ;
+    }
+    else
+    {    
+        for(int i=0 ; i < nx ; i++)
+        {
+            void* tex_data ; 
+            //unsigned map_flags = RT_BUFFER_MAP_READ ; 
+            unsigned map_flags = RT_BUFFER_MAP_READ_WRITE ; 
+            unsigned layer = i ; 
+            void* user_owned_must_be_null = NULL ; 
+
+            RT_CHECK_ERROR( rtBufferMapEx( tex_buffer, map_flags, layer, user_owned_must_be_null,  &tex_data ) );
+            #ifdef WITH_NPY
+            inp->writeItem(tex_data, layer);   // NB first array index  
+            #else
+            memcpy( tex_data, inp.data() + layer*ny*nz , sizeof(float)*ny*nz ) ;
+            #endif
+            RT_CHECK_ERROR( rtBufferUnmapEx( tex_buffer, layer )) ;
+        }
+    }
+    std::cout << "] uploading to tex buffer exfill  " << exfill << std::endl ;  
+
 
 
     std::cout << "[ launch " << std::endl ;  
