@@ -103,7 +103,7 @@ int main(int argc, char** argv)
 
 #else
     LOG(info) << "Using OConfig::configureSampler" ; 
-    OConfig::configureSampler(tex, texBuffer);
+    OConfig::ConfigureSampler(tex, texBuffer);
 #endif
 
     context["some_texture"]->setTextureSampler(tex);

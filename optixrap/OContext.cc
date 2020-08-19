@@ -1277,6 +1277,15 @@ RTformat OContext::getFormat(NPYBase::Type_t type, bool is_seed)
 }
 
 
+/**
+OContext::snap
+----------------
+
+cu/pinhole_camera.cu::
+
+    rtBuffer<uchar4, 2>  output_buffer;
+
+**/
 
 
 void OContext::snap(const char* path)

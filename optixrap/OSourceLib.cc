@@ -64,7 +64,7 @@ void OSourceLib::makeSourceTexture(NPY<float>* buf)
     upload(optixBuffer, buf);
 
     optix::TextureSampler tex = m_context->createTextureSampler();
-    OConfig::configureSampler(tex, optixBuffer);
+    OConfig::ConfigureSampler(tex, optixBuffer);
 
     m_context["source_texture"]->setTextureSampler(tex);
     m_context["source_domain"]->setFloat(domain);

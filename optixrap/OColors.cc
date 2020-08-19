@@ -75,7 +75,7 @@ void OColors::convert()
 
 
     optix::TextureSampler tex = m_context->createTextureSampler();
-    OConfig::configureSampler(tex, colorBuffer);
+    OConfig::ConfigureSampler(tex, colorBuffer);
 
     tex->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
 

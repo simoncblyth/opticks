@@ -195,7 +195,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     upload(texBuffer, buf);
 
     optix::TextureSampler tex = m_context->createTextureSampler();
-    OConfig::configureSampler(tex, texBuffer);
+    OConfig::ConfigureSampler(tex, texBuffer);
 
     unsigned int xmin = 0 ; 
     unsigned int xmax = nx - 1 ; 

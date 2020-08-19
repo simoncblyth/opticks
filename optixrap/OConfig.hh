@@ -140,7 +140,8 @@ public:
    static optix::float3 make_contrast_color(int tag);
    static unsigned Multiplicity(RTformat format);
    static const char* FormatName(RTformat format);
-   static void configureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer);
+   static void ConfigureSphericalSampler(optix::TextureSampler& sampler, optix::Buffer& buffer);
+   static void ConfigureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer);
    static unsigned OptiXVersion();
    //static bool DefaultWithTop();
 public:

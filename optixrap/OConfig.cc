@@ -280,9 +280,20 @@ optix::float3 OConfig::make_contrast_color( int tag )
 
 
 
-void OConfig::configureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer)
+void OConfig::ConfigureSphericalSampler(optix::TextureSampler& sampler, optix::Buffer& buffer)
 {
-    LOG(verbose) << "OPropertyLib::configureSampler" ; 
+    LOG(LEVEL) << "[" ; 
+
+
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
+void OConfig::ConfigureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer)
+{
+    LOG(LEVEL) << "[" ; 
 
     // cuda-pdf p43 // default is to clamp to the range
     RTwrapmode wrapmode = RT_WRAP_REPEAT ;
@@ -318,6 +329,7 @@ void OConfig::configureSampler(optix::TextureSampler& sampler, optix::Buffer& bu
     unsigned int mip_level = 0u ; 
     sampler->setBuffer(texture_array_idx, mip_level, buffer);  // deprecated in OptiX 4
 
+    LOG(LEVEL) << "]" ; 
 }
 
 

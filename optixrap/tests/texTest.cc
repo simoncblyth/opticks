@@ -94,7 +94,7 @@ int main(int argc, char** argv)
     tex->setArraySize(1);
     tex->setBuffer(0, 0, texBuffer);
 #else
-    OConfig::configureSampler(tex, texBuffer);
+    OConfig::ConfigureSampler(tex, texBuffer);
 #endif
     //context["some_texture"]->setTextureSampler(tex);
     context["out_buffer"]->setBuffer(outBuffer);   
