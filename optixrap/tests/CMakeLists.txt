@@ -12,6 +12,7 @@ set(TEST_SOURCES
     Roots3And4Test.cc
 
     UseOptiXTest.cc 
+    OFormatTest.cc 
 )
 
 

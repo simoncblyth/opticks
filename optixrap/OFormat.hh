@@ -34,6 +34,10 @@ class OXRAP_API OFormat {
 public:
   static unsigned long long ElementSizeInBytes(RTformat format); // eg sizeof(RT_FORMAT_FLOAT4) = 4*4 = 16 
   static unsigned long long Multiplicity(RTformat format);
+
+  template <typename T>
+  static RTformat TextureFormat(unsigned multiplicity) ; 
+
   static const char* FormatName(RTformat format);
 public:
   static const char* _RT_FORMAT_UNKNOWN;

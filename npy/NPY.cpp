@@ -45,23 +45,24 @@ namespace fs = boost::filesystem;
 
 template <typename T>
 NPY<T>::NPY(const std::vector<int>& shape, const std::vector<T>& data_, std::string& metadata) 
-         :
-         NPYBase(shape, sizeof(T), type, metadata, data_.size() > 0),
-         m_data(data_),      // copies the vector
-         m_unset_item(NULL),
-         m_bufspec(NULL),
-         m_msk(NULL)
+    :
+    NPYBase(shape, sizeof(T), type, metadata, data_.size() > 0),
+    m_data(data_),      // copies the vector
+    m_unset_item(NULL),
+    m_bufspec(NULL),
+    m_msk(NULL)
 {
+    setBasePtr(m_data.data());
 } 
 
 template <typename T>
 NPY<T>::NPY(const std::vector<int>& shape, const T* data_, std::string& metadata) 
-         :
-         NPYBase(shape, sizeof(T), type, metadata, data_ != NULL),
-         m_data(),      
-         m_unset_item(NULL),
-         m_bufspec(NULL),
-         m_msk(NULL)
+    :
+    NPYBase(shape, sizeof(T), type, metadata, data_ != NULL),
+    m_data(),      
+    m_unset_item(NULL),
+    m_bufspec(NULL),
+    m_msk(NULL)
 {
     if(data_) 
     {
@@ -130,23 +131,26 @@ int NPY<T>::compareWithIndexFlat()
 }
 
 
+/**
+NPY<T>::allocate()
+--------------------
 
+std::vector *reserve* vs *resize*
 
+*reserve* just allocates without changing size, does that matter ? 
+most NPY usage just treats m_data as a buffer so not greatly however
+there is some use of m_data.size() so using resize
 
+**/
 
 template <typename T>
 T* NPY<T>::allocate()
 {
     //assert(m_data.size() == 0);  tripped when indexing a loaded event
-
     setHasData(true);
     m_data.resize(getNumValues(0));
+    setBasePtr(m_data.data());
     return m_data.data();
-    //
-    // *reserve* vs *resize*
-    //     *reserve* just allocates without changing size, does that matter ? 
-    //     most NPY usage just treats m_data as a buffer so not greatly however
-    //     there is some use of m_data.size() so using resize
 }
 
 template <typename T>
@@ -154,6 +158,7 @@ void NPY<T>::deallocate()
 {
     setHasData(false);
     m_data.clear();
+    setBasePtr(NULL); 
     setNumItems( 0 );
 }
 
@@ -174,6 +179,16 @@ void NPY<T>::read(const void* src)
     }
     memcpy(m_data.data(), src, getNumBytes(0) );
 }
+
+
+/**
+NPY<T>::write
+---------------
+
+See also NPYBase::write_ perhaps can remove this
+in favor of that.
+
+**/
 
 template <typename T> 
 void NPY<T>::write(void* dst ) const 

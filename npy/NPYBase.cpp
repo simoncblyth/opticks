@@ -256,6 +256,38 @@ void NPYBase::setArrayContentIndex(int aci)
 }
 
 
+/**
+NPYBase::setBasePtr
+---------------------
+
+**/
+
+void NPYBase::setBasePtr(void* base_ptr)
+{
+    m_base_ptr = base_ptr ; 
+}
+void* NPYBase::getBasePtr() const 
+{
+    return m_base_ptr ; 
+}
+
+/**
+NPYBase::write_
+------------------
+
+CAUTION: this is a bit dodgy as a growing vector can be relocated, so 
+in that case it is necessary for the base ptr to be updated otherwise 
+it will become stale.
+
+The updating via setBasePtr is done in NPY::allocate.
+
+**/
+
+void NPYBase::write_(void* dst ) const 
+{
+    assert( m_base_ptr ); 
+    memcpy( dst, m_base_ptr, getNumBytes(0) ); 
+}
 
 
 
@@ -268,6 +300,7 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, T
     m_type(type),
     m_metadata(metadata),
     m_has_data(has_data),
+    m_base_ptr(NULL),
     m_ni(getShape(0)),
     m_nj(getShape(1)),
     m_nk(getShape(2)),
@@ -578,6 +611,9 @@ bool NPYBase::isFloatType() const
 {
     return m_type == FLOAT || m_type == DOUBLE ;
 }
+
+
+
 
 
  unsigned long long NPYBase::getNumBytes(unsigned int from_dim) const 

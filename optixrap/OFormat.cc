@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "PLOG.hh"
 #include "OFormat.hh"
 
 
@@ -122,7 +123,6 @@ unsigned long long OFormat::Multiplicity(RTformat format) // static
    unsigned long long lm = mul ;  
    return lm ; 
 }
-
 
 
 
@@ -282,4 +282,41 @@ const char* OFormat::FormatName(RTformat format) // static
 #endif
 
 
+template <typename T>
+RTformat OFormat::TextureFormat(unsigned multiplicity)
+{
+    assert( multiplicity > 0 && multiplicity < 5 ); 
+    RTformat format ; 
+    if(sizeof(T) == sizeof(unsigned char))  // TODO: fix this hack with template specialization, see NPY
+    {   
+        switch(multiplicity)
+        {   
+           case 1: format=RT_FORMAT_UNSIGNED_BYTE  ; break ; 
+           case 2: format=RT_FORMAT_UNSIGNED_BYTE2 ; break ; 
+           case 3: format=RT_FORMAT_UNSIGNED_BYTE3 ; break ; 
+           case 4: format=RT_FORMAT_UNSIGNED_BYTE4 ; break ; 
+        }   
+    }   
+    else if(sizeof(T) == sizeof(float))
+    {   
+        switch(multiplicity)
+        {   
+           case 1: format=RT_FORMAT_FLOAT  ; break ; 
+           case 2: format=RT_FORMAT_FLOAT2 ; break ; 
+           case 3: format=RT_FORMAT_FLOAT3 ; break ; 
+           case 4: format=RT_FORMAT_FLOAT4 ; break ; 
+        }   
+    }   
+    else
+    {   
+        LOG(fatal) << " expecting template type of either float or unsigned char " ;
+        assert(0); 
+    }   
+    return format ; 
+}
 
+
+template RTformat OFormat::TextureFormat<float>(unsigned); 
+template RTformat OFormat::TextureFormat<int>(unsigned); 
+template RTformat OFormat::TextureFormat<unsigned>(unsigned); 
+template RTformat OFormat::TextureFormat<unsigned char>(unsigned); 

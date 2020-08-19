@@ -222,13 +222,16 @@ class NPY_API NPYBase {
    //protected:
     public:
        void setNumItems(unsigned int ni);
-
+       void setBasePtr(void* base_ptr); 
+       void* getBasePtr() const ; 
+       void write_(void* dst ) const ;
    protected:
        std::vector<int>   m_shape ; 
        unsigned long long m_sizeoftype ; 
        Type_t             m_type ; 
        std::string        m_metadata ; 
        bool               m_has_data ;
+       void*              m_base_ptr ;  
        unsigned int       m_ni ; 
        unsigned int       m_nj ; 
        unsigned int       m_nk ; 
