@@ -24,9 +24,7 @@
 #include "PLOG.hh"
 #include "SPPM.hh"
 
-
-const plog::Severity SPPM::LEVEL = debug ; 
-
+const plog::Severity SPPM::LEVEL = PLOG::EnvLevel("SPPM", "DEBUG")  ; 
 
 SPPM::SPPM()
     :   
@@ -78,7 +76,6 @@ void SPPM::save(const char* path)
 
 void SPPM::save(const char* path, int width, int height, const unsigned char* image, bool yflip)
 {
-
     //LOG(info) << "saving to " << path ; 
     std::cout << "SPPM::save " << path << std::endl ;  
 
@@ -107,6 +104,9 @@ void SPPM::save(const char* path, int width, int height, const unsigned char* im
     delete[] data;
 }
 
+
+
+
 void SPPM::snap(const char* path)
 {
     download(); 
@@ -116,7 +116,6 @@ void SPPM::snap(const char* path)
 
 void SPPM::write( const char* filename, const float* image, int width, int height, int ncomp, bool yflip )
 {
-
     std::ofstream out( filename, std::ios::out | std::ios::binary );
     if( !out ) 
     {
@@ -126,7 +125,6 @@ void SPPM::write( const char* filename, const float* image, int width, int heigh
 
     out << "P6\n" << width << " " << height << "\n255" << std::endl;
 
-    //for( int y=height-1; y >= 0; --y ) // flip vertically
     for( int h=0; h < height ; h++ ) // flip vertically
     {   
         int y = yflip ? height - 1 - h : h ; 
@@ -141,6 +139,15 @@ void SPPM::write( const char* filename, const float* image, int width, int heigh
     LOG(LEVEL) << "Wrote file (float*)" << filename ;
 }
 
+/**
+SPPM::write
+-------------
+
+Note the intermediary array. This allows four component image data to be written into 
+PPM format which is by definition 3 component and also allows for vertical flipping
+as conventions vary in this regard resulting in a common need to yflip upside down images.
+
+**/
 
 void SPPM::write( const char* filename, const unsigned char* image, int width, int height, int ncomp, bool yflip )
 {
@@ -152,10 +159,9 @@ void SPPM::write( const char* filename, const unsigned char* image, int width, i
     unsigned size = height*width*3 ; 
     unsigned char* data = new unsigned char[size] ; 
 
-    //for( int y=height-1; y >= 0; --y ) // flip vertically
-    for( int h=0; h < height ; h++ ) // flip vertically
+    for( int h=0; h < height ; h++ ) 
     {   
-        int y = yflip ? height - 1 - h : h ; 
+        int y = yflip ? height - 1 - h : h ;   // flip vertically
 
         for( int x=0; x < width ; ++x ) 
         {   
@@ -164,11 +170,122 @@ void SPPM::write( const char* filename, const unsigned char* image, int width, i
             *(data + (y*width+x)*3+2) = image[(h*width+x)*ncomp+2] ;   
         }
     } 
+
+
     fwrite(data, sizeof(unsigned char)*size, 1, fp);
     fclose(fp);  
     LOG(LEVEL) << "Wrote file (unsigned char*) " << filename  ;
     delete[] data;
 }
 
+
+
+/**
+SPPM::read
+------------
+
+* https://en.wikipedia.org/wiki/Netpbm
+
+**/
+
+void SPPM::dumpHeader( const char* path )
+{
+    unsigned width(0); 
+    unsigned height(0); 
+    unsigned mode(0); 
+    unsigned bits(0); 
+
+    int rc = readHeader(path, width, height, mode, bits ); 
+
+    LOG(info)
+        << " path " << path 
+        << " width " << width
+        << " height " << height
+        << " mode " << mode
+        << " bits " << bits
+        << " rc " << rc 
+        ;
+}
+
+int SPPM::readHeader( const char* path, unsigned& width, unsigned& height, unsigned& mode, unsigned& bits )
+{
+    std::ifstream f(path, std::ios::binary);
+    if(f.fail())
+    {
+        std::cout << "Could not open path: " << path << std::endl;
+        return 1 ;
+    }
+
+    mode = 0;
+    std::string s;
+    f >> s;
+    if (s == "P3") mode = 3;
+    else if (s == "P6") mode = 6;
+    
+    f >> width ;
+    f >> height ;
+    f >> bits;
+
+    f.close();
+    return 0 ; 
+}
+
+
+int SPPM::read( const char* path, std::vector<unsigned char>& img, unsigned& width, unsigned& height, const unsigned ncomp, const bool yflip )
+{
+    std::ifstream f(path, std::ios::binary);
+    if(f.fail())
+    {
+        std::cout << "Could not open path: " << path << std::endl;
+        return 1 ;
+    }
+
+    int mode = 0;
+    std::string s;
+    f >> s;
+    if (s == "P3") mode = 3;
+    else if (s == "P6") mode = 6;
+    assert( mode == 6 ); 
+    
+    f >> width ;
+    f >> height ;
+
+    int bits = 0;
+    f >> bits;
+    assert( bits == 255 ); 
+    f.get();
+
+    unsigned filesize = width*height*3 ; 
+    unsigned arraysize = ncomp == 3 ? filesize : width*height*ncomp  ; 
+
+    img.clear(); 
+    img.resize(arraysize);
+    unsigned char* imgdata = img.data(); 
+
+    if( ncomp == 3 && yflip == false ) // slurp straight into the vector when no shuffling needed 
+    {
+        f.read((char*)imgdata, filesize);
+    }
+    else
+    {
+        unsigned char* tmp = new unsigned char[filesize] ; 
+        f.read( (char*)tmp, filesize);
+
+        for( int h=0; h < height ; h++ ) 
+        {   
+            int y = yflip ? height - 1 - h : h ;   // flip vertically
+            for( int x=0; x < width ; ++x ) 
+            {   
+                for( int k=0 ; k < ncomp ; k++ )
+                { 
+                    imgdata[ (h*width+x)*ncomp + k] = k < 3 ? tmp[(y*width+x)*3+k] : 0xff ;        
+                }
+            }
+        } 
+        delete [] tmp ; 
+    }
+    f.close();
+    return 0  ; 
+}
 
 

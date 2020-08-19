@@ -173,6 +173,8 @@ NNodeCollectorTest.cc
 NGridTest.cc
 
 
+ImageNPYTest 
+
 
 )
 

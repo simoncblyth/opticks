@@ -40,6 +40,7 @@ DevNotes
 
 
 #include <string>
+#include <vector>
 #include "plog/Severity.h"
 
 #include "SYSRAP_API_EXPORT.hh"
@@ -68,6 +69,11 @@ struct SYSRAP_API SPPM
 
     static void write( const char* filename, const unsigned char* image, int width, int height, int ncomp, bool yflip) ;
     static void write( const char* filename, const         float* image, int width, int height, int ncomp, bool yflip) ;
+
+
+    static int read( const char* path, std::vector<unsigned char>& data, unsigned& width, unsigned& height, const unsigned ncomp, const bool yflip );
+    static void dumpHeader( const char* path ) ; 
+    static int readHeader( const char* path, unsigned& width, unsigned& height, unsigned& mode, unsigned& bits ) ; 
 
 };
 

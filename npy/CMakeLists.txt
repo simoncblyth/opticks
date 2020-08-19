@@ -205,6 +205,7 @@ set(SOURCES
 
     NGeometry.cpp
     Ellipse.cpp
+    ImageNPY.cpp
 
 )
 
@@ -378,6 +379,7 @@ NEmitPhotonsNPY.hpp
 
 NGeometry.hpp
 Ellipse.hpp
+ImageNPY.hpp
 
 
 )
