@@ -98,6 +98,43 @@ void NPY<T>::zero()
 }
 
 template <typename T>
+void NPY<T>::fillIndexFlat()
+{
+    zero();
+    unsigned nv = getNumValues(0) ; 
+    LOG(info) << " nv " << nv ; 
+    for(unsigned idx=0 ; idx < nv ; idx++)  setValueFlat(idx, T(idx));
+}
+
+template <typename T>
+int NPY<T>::compareWithIndexFlat()
+{
+    unsigned nv = getNumValues(0) ; 
+    unsigned mismatch = 0 ;  
+    for(unsigned idx=0 ; idx < nv ; idx++)  
+    {
+        T value = getValueFlat(idx); 
+        bool match = value == T(idx) ; 
+        if(!match)
+        {
+            mismatch += 1 ; 
+            LOG(info) 
+                << " idx " << idx 
+                << " value " << value 
+                << " mismatch " << mismatch 
+                ;
+        }
+    }
+    LOG(info) << " total mismatch " << mismatch ; 
+    return mismatch ; 
+}
+
+
+
+
+
+
+template <typename T>
 T* NPY<T>::allocate()
 {
     //assert(m_data.size() == 0);  tripped when indexing a loaded event
@@ -139,11 +176,27 @@ void NPY<T>::read(const void* src)
 }
 
 template <typename T> 
-void NPY<T>::write(void* dst )
+void NPY<T>::write(void* dst ) const 
 {
     memcpy( dst, m_data.data(), getNumBytes(0) ); 
 }
 
+
+template <typename T> 
+void NPY<T>::writeItem(void* dst, unsigned item)
+{
+    unsigned itemVals = getNumValues(1); 
+    unsigned itemValsOffset = itemVals*item ;  
+    unsigned itemBytes = getNumBytes(1) ; 
+
+    LOG(info) 
+        << " itemVals " << itemVals
+        << " itemValsOffset " << itemValsOffset
+        << " itemBytes " << itemBytes
+        ;
+
+    memcpy( dst, m_data.data() + itemValsOffset , itemBytes ); 
+}
 
 
 
@@ -622,9 +675,6 @@ NPY<T>* NPY<T>::debugload(const char* path)
 
     return npy ;
 }
-
-
-
 
 
        
@@ -1904,6 +1954,15 @@ std::vector<T>& NPY<T>::data()
     return m_data ;
 }
 
+template <typename T> 
+std::vector<T>& NPY<T>::vector() 
+{
+    return m_data ;
+}
+
+
+
+
 
 template <typename T> 
 T* NPY<T>::getValues() 
@@ -1992,12 +2051,25 @@ BBufSpec* NPY<T>::getBufSpec()
 }
 
 template <typename T> 
- T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const 
+T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const 
 {
     unsigned int idx = getValueIndex(i,j,k,l);
+    return getValueFlat(idx); 
+}
+
+template <typename T> 
+T NPY<T>::getValueFlat(unsigned idx) const 
+{
     const T* data_ = getValuesConst();
     return  *(data_ + idx);
 }
+
+
+
+
+
+
+
 
 template <typename T> 
  void NPY<T>::getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k, unsigned int l)
@@ -2083,13 +2155,21 @@ template <typename T>
 
 
 template <typename T> 
- void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l, T value)
+void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l, T value)
 {
     unsigned int idx = getValueIndex(i,j,k,l);
+    setValueFlat(idx, value); 
+}
+
+template <typename T> 
+void NPY<T>::setValueFlat(unsigned idx, T value)
+{
     T* dat = getValues();
     assert(dat && "must zero() the buffer before can setValue");
     *(dat + idx) = value ;
 }
+
+
 
 
 

@@ -163,6 +163,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* debugload(const char* path);
        static NPY<T>* load(const char* path, bool quietly=false);
        static NPY<T>* load(const char* dir, const char* name, bool quietly=false);
+       //static NPY<T>* loadPPM(const char* path);
  
        void save(const char* path);
        void save(const char* dir, const char* name);
@@ -202,7 +203,8 @@ class NPY_API NPY : public NPYBase {
        BBufSpec* getBufSpec();
 
        void read(const void* src);
-       void write(void* dst);
+       void write(void* dst) const ;
+       void writeItem(void* dst, unsigned item);
     private:
        T* grow(unsigned int nitems); // increase size to contain an extra nitems, return pointer to start of them
     public:
@@ -229,9 +231,13 @@ class NPY_API NPY : public NPYBase {
        // item if not unique
        //
     public:
-       std::vector<T>& data();
+       std::vector<T>& data();  // TODO: replace this with vector()
+       std::vector<T>& vector();
+
        void setData(const T* data);
        T* fill(T value);
+       void fillIndexFlat(); // fill with flattened index values, for debugging 
+       int compareWithIndexFlat();  // return number of mismatches to flattened index values
        void zero();
        T* allocate();
     private:
@@ -270,6 +276,7 @@ class NPY_API NPY : public NPYBase {
 
        unsigned getUSum(unsigned int j, unsigned int k) const ;
 
+       T            getValueFlat(unsigned idx) const ;
        T            getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
        float        getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
        unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
@@ -280,6 +287,7 @@ class NPY_API NPY : public NPYBase {
        ucharfour    getUChar4( unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1 );
        charfour     getChar4( unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1 );
 
+       void         setValueFlat(unsigned idx, T value);
        void         setValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l, T value);
        void         setFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l, float value);
        void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value);
