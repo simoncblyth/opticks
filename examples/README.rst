@@ -256,5 +256,24 @@ UseOptiX7GeometryInstanced
 
 
 
+Standalone-ish OptiX 6 Texture Examples
+----------------------------------------
+
+UseOptiXTexture
+    C API 3D texture creation, with pullback test into out_buffer
+
+UseOptiXTextureLayered
+    Switch from 3D to layered 2D texture, *exfill* attempt to fill with MapEx failed 
+
+UseOptiXTextureLayeredPP
+    Convert to use OptiX 6 C++ API 
+
+UseOptiXTextureLayeredOK
+    Start encapsulation into Make2DLayeredTexture
+
+UseOptiXTextureLayeredOKImg
+    Use ImageNPY::LoadPPM to load images into textures 
+
+
 
 

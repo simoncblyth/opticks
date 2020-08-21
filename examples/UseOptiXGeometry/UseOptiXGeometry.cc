@@ -25,9 +25,7 @@ Minimally demonstrate OptiX geometry without using OXRAP.
 
 * "standalone" ray traces a box using a normal shader
 
-
 **/
-
 
 #include <optix_world.h>
 #include <optixu/optixpp_namespace.h>
@@ -35,46 +33,8 @@ Minimally demonstrate OptiX geometry without using OXRAP.
 #include "OPTICKS_LOG.hh"
 #include "OKConf.hh"
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
 #include "SPPM.hh"
-
-
-// Composition::getEyeUVW and examples/UseGeometryShader:getMVP
-void getEyeUVW(const glm::vec4& ce, const unsigned width, const unsigned height, glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W )
-{
-    glm::vec3 tr(ce.x, ce.y, ce.z);  // ce is center-extent of model
-    glm::vec3 sc(ce.w);
-    glm::vec3 isc(1.f/ce.w);
-    // model frame unit coordinates from/to world 
-    glm::mat4 model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
-    //glm::mat4 world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);
-
-   // View::getTransforms
-    glm::vec4 eye_m( -1.f,-1.f,1.f,1.f);  //  viewpoint in unit model frame 
-    glm::vec4 look_m( 0.f, 0.f,0.f,1.f); 
-    glm::vec4 up_m(   0.f, 0.f,1.f,1.f); 
-    glm::vec4 gze_m( look_m - eye_m ) ; 
-
-    const glm::mat4& m2w = model2world ; 
-    glm::vec3 eye_ = glm::vec3( m2w * eye_m ) ; 
-    //glm::vec3 look = glm::vec3( m2w * look_m ) ; 
-    glm::vec3 up = glm::vec3( m2w * up_m ) ; 
-    glm::vec3 gaze = glm::vec3( m2w * gze_m ) ;    
-
-    glm::vec3 forward_ax = glm::normalize(gaze);
-    glm::vec3 right_ax   = glm::normalize(glm::cross(forward_ax,up)); 
-    glm::vec3 top_ax     = glm::normalize(glm::cross(right_ax,forward_ax));
-
-    float aspect = float(width)/float(height) ;
-    float tanYfov = 1.f ;  // reciprocal of camera zoom
-    float gazelength = glm::length( gaze ) ;
-    float v_half_height = gazelength * tanYfov ;
-    float u_half_width  = v_half_height * aspect ;
-
-    U = right_ax * u_half_width ;
-    V = top_ax * v_half_height ;
-    W = forward_ax * gazelength ; 
-    eye = eye_ ; 
-}
 
 
 int main(int argc, char** argv)
@@ -85,13 +45,18 @@ int main(int argc, char** argv)
     unsigned width = 1024u ; 
     unsigned height = 768 ; 
 
-    glm::vec4 ce(0.,0.,0., 0.5); 
-
+    // model frame : center-extent of model and viewpoint 
+    glm::vec4 ce_m(    0.f,  0.f, 0.f, 0.5f ); 
+    glm::vec3 eye_m(  -1.f, -1.f, 1.f ); 
+    glm::vec3 look_m(  0.f,  0.f, 0.f ); 
+    glm::vec3 up_m(    0.f,  0.f, 1.f ); 
+ 
+    // world frame : eye point and view axes 
     glm::vec3 eye ;
     glm::vec3 U ; 
     glm::vec3 V ; 
     glm::vec3 W ; 
-    getEyeUVW( ce, width, height, eye, U, V, W ); 
+    nglmext::GetEyeUVW( ce_m, eye_m, look_m, up_m, width, height, eye, U, V, W ); 
 
 
     optix::Context context = optix::Context::create();
@@ -112,7 +77,6 @@ int main(int argc, char** argv)
     const char* box_ptx = OKConf::PTXPath( cmake_target, "box.cu" ) ; 
 
 
-
     optix::Geometry box ; 
     assert( box.get() == NULL ); 
 
@@ -124,7 +88,7 @@ int main(int argc, char** argv)
     box->setBoundingBoxProgram( context->createProgramFromPTXFile( box_ptx , "box_bounds" ) );
     box->setIntersectionProgram( context->createProgramFromPTXFile( box_ptx , "box_intersect" ) ) ;
 
-    float sz = ce.w ; 
+    float sz = ce_m.w ; 
     box["boxmin"]->setFloat( -sz/2.f, -sz/2.f, -sz/2.f );
     box["boxmax"]->setFloat(  sz/2.f,  sz/2.f,  sz/2.f );
 

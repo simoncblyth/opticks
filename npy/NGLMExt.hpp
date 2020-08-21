@@ -157,6 +157,18 @@ struct NPY_API ndeco
 
 struct NPY_API nglmext 
 { 
+    static void GetEyeUVW(
+          const glm::vec4& ce, 
+          const glm::vec3& eye_m, 
+          const glm::vec3& look_m, 
+          const glm::vec3& up_m, 
+          const unsigned width, 
+          const unsigned height, 
+          glm::vec3& eye, 
+          glm::vec3& U, 
+          glm::vec3& V, 
+          glm::vec3& W );
+
     static glm::mat4 make_yzflip() ;
     static glm::mat4 make_flip(unsigned axa, unsigned axb) ;
 

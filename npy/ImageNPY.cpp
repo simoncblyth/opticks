@@ -20,10 +20,14 @@
 #include <iostream>
 #include <iomanip>
 
-#include "NPY.hpp"
 #include "SPPM.hh"
-#include "ImageNPY.hpp"
 #include "PLOG.hh"
+#include "BFile.hh"
+#include "NPY.hpp"
+#include "ImageNPY.hpp"
+
+const plog::Severity ImageNPY::LEVEL = PLOG::EnvLevel("ImageNPY", "INFO"); 
+
 
 NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const unsigned ncomp)  // static
 {
@@ -35,7 +39,7 @@ NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const 
     int rc0 = SPPM::readHeader(path, width, height, mode, bits ); 
     assert( rc0 == 0 && mode == 6 && bits == 255 ); 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " path " << path 
         << " width " << width 
         << " height " << height 
@@ -53,5 +57,45 @@ NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const 
 
     return img ; 
 }
+
+
+
+
+void ImageNPY::SavePPM(const char* dir, const char* name,  const NPY<unsigned char>* a)
+{
+    bool createdir = true ; 
+    std::string path = BFile::preparePath(dir, name, createdir); 
+    SavePPMImp(path.c_str(), a ); 
+}
+void ImageNPY::SavePPM(const char* path_,  const NPY<unsigned char>* a)
+{
+    bool createdir = true ; 
+    std::string path = BFile::preparePath(path_, createdir); 
+    SavePPMImp(path.c_str(), a ); 
+}
+
+void ImageNPY::SavePPMImp(const char* path, const NPY<unsigned char>* a )
+{
+    unsigned nd = a->getDimensions(); 
+    assert( nd == 3 ); 
+    unsigned height = a->getShape(0); 
+    unsigned width = a->getShape(1); 
+    unsigned ncomp = a->getShape(2); 
+
+    LOG(LEVEL) 
+        << " path " << path 
+        << " width " << width 
+        << " height " << height 
+        << " ncomp " << ncomp 
+        ;
+
+    bool yflip = false ; 
+    const unsigned char* data = a->getValuesConst() ; 
+    LOG(LEVEL) << " write to " << path ; 
+    SPPM::write(path, data , width, height, ncomp, yflip );
+} 
+
+
+
 
 

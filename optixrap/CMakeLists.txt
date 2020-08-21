@@ -30,6 +30,7 @@ set(SOURCES
     OProg.cc
     OConfig.cc
     OFormat.cc
+    OTexture.cc
     OContext.cc
     OColors.cc
     OPropertyLib.cc
@@ -71,6 +72,7 @@ set(HEADERS
     OContext.hh
     OConfig.hh
     OFormat.hh
+    OTexture.hh
     OProg.hh
     OGeometry.hh
     OGeo.hh

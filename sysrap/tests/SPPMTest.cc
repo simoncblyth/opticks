@@ -1,6 +1,13 @@
 #include "SPPM.hh"
 #include "OPTICKS_LOG.hh"
 
+struct Color
+{
+    unsigned char r ; 
+    unsigned char g ; 
+    unsigned char b ; 
+};
+
 
 int main(int argc, char** argv)
 {   
@@ -9,21 +16,48 @@ int main(int argc, char** argv)
 
     const char* path = "/tmp/SPPMTest.ppm" ;
 
-    int height = 128 ; 
-    int width = 256 ; 
+    //int height = 128 ; 
+    //int width = 256 ; 
+    int height = 512 ; 
+    int width = 1024 ; 
+
+
     bool yflip = true ; 
     int ncomp = 3 ;    
 
     int size = width*height*ncomp ; 
     unsigned char* imgdata = new unsigned char[size] ;  
+    
+    Color red   = { 0xff, 0x00, 0x00 };
+    Color green = { 0x00, 0xff, 0x00 };
+    Color blue  = { 0x00, 0x00, 0xff };
+
+    Color white = { 0xff, 0xff, 0xff };
+    Color black = { 0x00, 0x00, 0x00 };
 
     for(int i=0 ; i < height ; i++){
     for(int j=0 ; j < width  ; j++){
 
         unsigned idx = i*width + j ;
-        imgdata[idx*ncomp+0] = i ; 
-        imgdata[idx*ncomp+1] = j ; 
-        imgdata[idx*ncomp+2] = 0xff ; 
+        unsigned mi = i % 32 ; 
+        unsigned mj = j % 32 ; 
+
+        float fi = float(i)/float(height) ; 
+        float fj = float(j)/float(width) ; 
+  
+        unsigned char ii = (1.-fi)*255.f ;   
+        unsigned char jj = (1.-fj)*255.f ;   
+
+        Color col = white ; 
+        if( mi < 4 ) col = black ; 
+        else if (mj < 4 ) col = red ; 
+        else col = { ii, ii, ii } ; 
+
+
+
+        imgdata[idx*ncomp+0] = col.r ; 
+        imgdata[idx*ncomp+1] = col.g ; 
+        imgdata[idx*ncomp+2] = col.b ; 
     }
     }
 

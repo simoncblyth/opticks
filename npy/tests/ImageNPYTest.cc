@@ -24,15 +24,13 @@ ImageNPYTest
 
 **/
 
-int main(int argc, char** argv)
-{
-    OPTICKS_LOG(argc, argv);
 
-    const char* path = argc > 1 ? argv[1] : "/tmp/SPPMTest.ppm" ; 
+NPY<unsigned char>*  test_LoadPPM(const char* path)
+{
     const bool yflip = false ; 
     const unsigned ncomp = 3 ; 
 
-    LOG(info) << "ImageNPY::LoadPPM from " << path ; 
+    LOG(info) << "path " << path ; 
     NPY<unsigned char>* a = ImageNPY::LoadPPM(path, yflip, ncomp ) ; 
     //a->dump();   // dumping of unsigned char array gives mess 
 
@@ -42,6 +40,27 @@ int main(int argc, char** argv)
     LOG(info) << "saving array to " << opath ; 
 
     a->save(opath); 
+
+    return a ; 
+}
+
+
+void test_SavePPM(const char* path, NPY<unsigned char>* a )
+{
+    ImageNPY::SavePPM(path, a); 
+}
+
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+    const char* path  = argc > 1 ? argv[1] : "/tmp/SPPMTest.ppm" ; 
+    const char* path2 = argc > 2 ? argv[2] : "/tmp/SPPMTest2.ppm" ; 
+
+    NPY<unsigned char>* a = test_LoadPPM(path); 
+
+    test_SavePPM(path2, a ); 
 
     return 0 ; 
 }

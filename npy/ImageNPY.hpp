@@ -20,10 +20,19 @@
 #pragma once
 
 template<typename T> class NPY ; 
+
+#include "plog/Severity.h"
 #include "NPY_API_EXPORT.hh"
 
 class NPY_API ImageNPY {
    public:  
+       static const plog::Severity LEVEL ; 
        static NPY<unsigned char>* LoadPPM(const char* path, const bool yflip=false, const unsigned ncomp=3);
+   public:  
+       static void SavePPM(const char* path, const NPY<unsigned char>* a ); 
+       static void SavePPM(const char* dir, const char* name,  const NPY<unsigned char>* a ); 
+   private:  
+       static void SavePPMImp(const char* path,  const NPY<unsigned char>* a ); 
+
 };
 

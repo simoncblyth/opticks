@@ -18,6 +18,7 @@
  */
 
 #include <optix_world.h>
+#include <optixu/optixu_math_namespace.h>
 #include "UseOptiXTextureLayeredOKImg.h"
 
 using namespace optix;
