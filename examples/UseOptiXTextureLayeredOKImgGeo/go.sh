@@ -40,9 +40,27 @@ make
 
 make install   
 
+
+runline(){ cat << EOL
 #lldb_ $name
 #$name $HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
-$name /tmp/SPPMTest.ppm
+#$name /tmp/SPPMTest.ppm
+#$name /tmp/SPPMTest2.ppm     
+$name /tmp/SPPMTest2.ppm --latlon 50.8919,-1.4483 --tanyfov 0.1
+EOL
+}
+
+cmd=$(runline)
+
+runline | cat
+echo $cmd
+eval $cmd
+
+
+
+
+## see ImageNPYTest for creation of /tmp/SPPMTest2.ppm 
+
  
 [ ! $? -eq 0 ] && echo runtime error && exit 1
 
@@ -63,7 +81,12 @@ EOP
 } 
 #npd- $name | python
 
+cd $sdir
 
-open $TMP/$name/out.ppm
+opath=$TMP/$name/out.ppm
+
+ls -l $opath
+open $opath
+ipython -i dbg.py 
 
 

@@ -35,6 +35,7 @@ class NPY_API GLMFormat {
        std::string format(float f);
        std::string format(int i);
        std::string format(unsigned int u);
+       std::string format(const glm::vec2& v);
        std::string format(const glm::vec3& v);
        std::string format(const glm::vec4& v);
        std::string format(const glm::ivec4& v);
@@ -52,6 +53,7 @@ class NPY_API GLMFormat {
        glm::ivec4 ivec4(const std::string& s );
        glm::uvec4 uvec4(const std::string& s );
        glm::ivec3 ivec3(const std::string& s );
+       glm::vec2 vec2(const std::string& s );
        glm::vec3 vec3(const std::string& s );
        glm::quat quat(const std::string& s );
        glm::mat4 mat4(const std::string& s, bool flip=false);
@@ -71,6 +73,7 @@ NPY_API std::string gformat(float f);
 NPY_API std::string gformat(int i);
 NPY_API std::string gformat(unsigned int i);
 
+NPY_API std::string gformat(const glm::vec2& v );
 NPY_API std::string gformat(const glm::vec3& v );
 NPY_API std::string gformat(const glm::ivec3& v );
 
@@ -85,6 +88,7 @@ NPY_API std::string gformat(const glm::mat3& m );
 NPY_API float       gfloat_(const std::string& s );
 NPY_API int           gint_(const std::string& s );
 NPY_API unsigned int guint_(const std::string& s );
+NPY_API glm::vec2   gvec2(const std::string& s );
 NPY_API glm::vec3   gvec3(const std::string& s );
 NPY_API glm::vec4   gvec4(const std::string& s );
 NPY_API glm::ivec4  givec4(const std::string& s );

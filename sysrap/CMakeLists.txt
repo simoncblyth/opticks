@@ -49,6 +49,7 @@ set(SOURCES
     SPairVec.cc
     md5.cc
     SPPM.cc
+    SColor.cc
     SId.cc
     SGDML.cc
     S_get_option.cc
@@ -97,6 +98,7 @@ set(HEADERS
     S_get_option.hh
     STime.hh
     SPPM.hh
+    SColor.hh
     SId.hh
     SGDML.hh
     SASCII.hh

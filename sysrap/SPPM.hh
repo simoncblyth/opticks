@@ -75,6 +75,20 @@ struct SYSRAP_API SPPM
     static void dumpHeader( const char* path ) ; 
     static int readHeader( const char* path, unsigned& width, unsigned& height, unsigned& mode, unsigned& bits ) ; 
 
+    static unsigned char* MakeTestImage(const int width, const int height, const int ncomp, const bool yflip,  const char* config); 
+    static unsigned ImageCompare(const int width, const int height, const int ncomp, const unsigned char* imgdata, const unsigned char* imgdata2 ); 
+
+    static void AddBorder( std::vector<unsigned char>& img, const int width, const int height, const int ncomp, const bool yflip );
+    static void AddBorder(unsigned char* imgdata, const int width, const int height, const int ncomp, const bool yflip );
+    static void AddMidline( std::vector<unsigned char>& img, const int width, const int height, const int ncomp, const bool yflip );
+    static void AddMidline(unsigned char* imgdata, const int width, const int height, const int ncomp, const bool yflip );
+    static void AddQuadline( std::vector<unsigned char>& img, const int width, const int height, const int ncomp, const bool yflip );
+    static void AddQuadline(unsigned char* imgdata, const int width, const int height, const int ncomp, const bool yflip );
+
+
+
+    // hmm need an SImage ? or do in SPPM ?
+ 
 };
 
 

@@ -28,6 +28,7 @@
 //template <typename T> class NPY ; 
 #include "NPY.hpp"
 
+#include "plog/Severity.h"
 #include "NGLM.hpp"
 #include "NPY_API_EXPORT.hh"
 
@@ -157,6 +158,8 @@ struct NPY_API ndeco
 
 struct NPY_API nglmext 
 { 
+    static const plog::Severity LEVEL ; 
+
     static void GetEyeUVW(
           const glm::vec4& ce, 
           const glm::vec3& eye_m, 
@@ -164,10 +167,15 @@ struct NPY_API nglmext
           const glm::vec3& up_m, 
           const unsigned width, 
           const unsigned height, 
+          const float tanYfov, // reciprocal of camera zoom  
           glm::vec3& eye, 
           glm::vec3& U, 
           glm::vec3& V, 
-          glm::vec3& W );
+          glm::vec3& W, 
+          const bool dump 
+       );
+
+    static int HandleDegenerateGaze( glm::vec3& up, const glm::vec3& gaze, const float epsilon, const bool dump ) ; 
 
     static glm::mat4 make_yzflip() ;
     static glm::mat4 make_flip(unsigned axa, unsigned axb) ;

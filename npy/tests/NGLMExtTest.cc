@@ -19,6 +19,9 @@
 
 // TEST=NGLMExtTest om-t
 
+#include <map>
+#include <string>
+
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
@@ -443,6 +446,68 @@ void test_make_yzflip()
 
 
 
+
+void test_GetEyeUVW(const unsigned width, const unsigned height, const std::string& label, const glm::vec3& eye_m, const glm::vec3& look_m, const glm::vec3& up_m)
+{
+   // model frame : center-extent of model and viewpoint 
+  //glm::vec4 ce_m(      0.f,  0.f, 0.f, 1.5f );
+    glm::vec4 ce_m(      0.f,  0.f, 0.f, 1.0f );  // <-- makes m2w matrix identity 
+
+    // world frame : eye point and view axes 
+    glm::vec3 eye ;
+    glm::vec3 U ; 
+    glm::vec3 V ; 
+    glm::vec3 W ; 
+
+    bool dump = true ; 
+    //bool dump = false ; 
+
+    float tanYfov = 1.f ; 
+
+    nglmext::GetEyeUVW( ce_m, eye_m, look_m, up_m, width, height, tanYfov, eye, U, V, W, dump);
+
+    std::cout << std::setw(10) << label << std::endl ; 
+    //std::cout << std::setw(10) << "ce_m"    << gpresent(ce_m) << std::endl ; 
+    std::cout << std::setw(10) << "eye_m "  << gpresent(eye_m) << std::endl ; 
+    //std::cout << std::setw(10) << "look_m " << gpresent(look_m) << std::endl ; 
+    std::cout << std::setw(10) << "up_m "   << gpresent(up_m) << std::endl ; 
+
+    std::cout << std::setw(10) << "eye"  << gpresent(eye) << std::endl ; 
+    std::cout << std::setw(10) << "U "   << gpresent(U) << std::endl ; 
+    std::cout << std::setw(10) << "V "   << gpresent(V) << std::endl ; 
+    std::cout << std::setw(10) << "W "   << gpresent(W) << std::endl ; 
+}
+
+
+void test_GetEyeUVW()
+{
+    unsigned height = 512 ; 
+    unsigned width = 1024 ; 
+
+    glm::vec3 look_m(    0.f,  0.f, 0.f );
+    glm::vec3 up_m(      1.f,  0.f, 0.f );
+
+    typedef std::pair<std::string, glm::vec3> SV ; 
+    std::vector<SV> ep ; 
+
+    ep.push_back(std::make_pair("-X",glm::vec3(  -1.0f,   0.0f,   0.0f )));
+    ep.push_back(std::make_pair("+X",glm::vec3(   1.0f,   0.0f,   0.0f )));
+
+    ep.push_back(std::make_pair("-Y",glm::vec3(   0.0f,  -1.0f,   0.0f )));
+    ep.push_back(std::make_pair("+Y",glm::vec3(   0.0f,   1.0f,   0.0f )));
+
+    ep.push_back(std::make_pair("-Z",glm::vec3(   0.0f,   0.0f,  -1.0f )));
+    ep.push_back(std::make_pair("+Z",glm::vec3(   0.0f,   0.0f,   1.0f )));
+
+
+    for(unsigned i=0 ; i < ep.size() ; i++)
+    test_GetEyeUVW(width, height, ep[i].first, ep[i].second,    look_m, up_m ); 
+}
+
+
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv) ; 
@@ -463,8 +528,10 @@ int main(int argc, char** argv)
     //test_nmat4triple_is_identity();
 
     //test_make_yzflip(); 
-    test_nmat4triple_is_translation() ; 
+    //test_nmat4triple_is_translation() ; 
 
+
+    test_GetEyeUVW();  
 
     return 0 ; 
 }

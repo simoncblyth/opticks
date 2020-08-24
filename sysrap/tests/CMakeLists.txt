@@ -52,6 +52,7 @@ set(TEST_SOURCES
    SASCIITest.cc
    SAbbrevTest.cc
    SPPMTest.cc
+   SColorTest.cc
 
 )
 

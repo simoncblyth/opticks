@@ -68,7 +68,13 @@ std::string GLMFormat::format(unsigned int u)
 
 
 
-
+std::string GLMFormat::format(const glm::vec2& v)
+{
+    std::vector<std::string> vals ; 
+    vals.push_back(format(v.x));
+    vals.push_back(format(v.y));
+    return boost::algorithm::join(vals, ",");
+}
 std::string GLMFormat::format(const glm::vec3& v)
 {
     std::vector<std::string> vals ; 
@@ -190,6 +196,21 @@ glm::quat GLMFormat::quat(const std::string& s )
     glm::quat q(w,x,y,z);
     return q ; 
 }
+
+
+glm::vec2 GLMFormat::vec2(const std::string& s )
+{
+    std::vector<std::string> tp; 
+    boost::split(tp, s, boost::is_any_of(","));
+    unsigned int size = tp.size();
+
+    glm::vec2 v(0.f,0.f);
+    if(size > 0) v.x = boost::lexical_cast<float>(tp[0]); 
+    if(size > 1) v.y = boost::lexical_cast<float>(tp[1]); 
+
+    return v ; 
+}
+
 
 glm::vec3 GLMFormat::vec3(const std::string& s )
 {
@@ -670,6 +691,11 @@ unsigned int guint_(const std::string&s )
 
 
 
+glm::vec2 gvec2(const std::string& s )
+{
+    GLMFormat fmt; 
+    return fmt.vec2(s);
+}
 glm::vec3 gvec3(const std::string& s )
 {
     GLMFormat fmt; 

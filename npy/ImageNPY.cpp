@@ -20,6 +20,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "SStr.hh"
 #include "SPPM.hh"
 #include "PLOG.hh"
 #include "BFile.hh"
@@ -28,8 +29,17 @@
 
 const plog::Severity ImageNPY::LEVEL = PLOG::EnvLevel("ImageNPY", "INFO"); 
 
+/**
+ImageNPY::LoadPPM
+-------------------
 
-NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const unsigned ncomp)  // static
+1. readHeader of the PPM for dimensions
+2. create NPY array sized appropriately
+3. read the PPM image into the array 
+
+**/
+
+NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const unsigned ncomp, const char* config)  // static
 {
     unsigned width(0) ; 
     unsigned height(0) ; 
@@ -49,11 +59,18 @@ NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const 
 
     NPY<unsigned char>* img = NPY<unsigned char>::make( height, width, ncomp ) ;  
     img->zero(); 
-
     std::vector<unsigned char>& imgvec = img->vector();    
 
     int rc = SPPM::read(path, imgvec, width, height, ncomp, yflip ); 
     assert( rc == 0 );  
+
+    bool add_border = SStr::Contains(config, "add_border"); 
+    bool add_midline = SStr::Contains(config, "add_midline"); 
+    bool add_quadline = SStr::Contains(config, "add_quadline"); 
+
+    if(add_border)  SPPM::AddBorder( imgvec, width, height, ncomp, yflip); 
+    if(add_midline) SPPM::AddMidline(imgvec, width, height, ncomp, yflip); 
+    if(add_quadline) SPPM::AddQuadline(imgvec, width, height, ncomp, yflip); 
 
     return img ; 
 }
@@ -61,20 +78,20 @@ NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const 
 
 
 
-void ImageNPY::SavePPM(const char* dir, const char* name,  const NPY<unsigned char>* a)
+void ImageNPY::SavePPM(const char* dir, const char* name,  const NPY<unsigned char>* a, const bool yflip)
 {
     bool createdir = true ; 
     std::string path = BFile::preparePath(dir, name, createdir); 
-    SavePPMImp(path.c_str(), a ); 
+    SavePPMImp(path.c_str(), a, yflip); 
 }
-void ImageNPY::SavePPM(const char* path_,  const NPY<unsigned char>* a)
+void ImageNPY::SavePPM(const char* path_,  const NPY<unsigned char>* a, const bool yflip)
 {
     bool createdir = true ; 
     std::string path = BFile::preparePath(path_, createdir); 
-    SavePPMImp(path.c_str(), a ); 
+    SavePPMImp(path.c_str(), a, yflip); 
 }
 
-void ImageNPY::SavePPMImp(const char* path, const NPY<unsigned char>* a )
+void ImageNPY::SavePPMImp(const char* path, const NPY<unsigned char>* a, const bool yflip )
 {
     unsigned nd = a->getDimensions(); 
     assert( nd == 3 ); 
@@ -87,9 +104,9 @@ void ImageNPY::SavePPMImp(const char* path, const NPY<unsigned char>* a )
         << " width " << width 
         << " height " << height 
         << " ncomp " << ncomp 
+        << " yflip " << yflip
         ;
 
-    bool yflip = false ; 
     const unsigned char* data = a->getValuesConst() ; 
     LOG(LEVEL) << " write to " << path ; 
     SPPM::write(path, data , width, height, ncomp, yflip );

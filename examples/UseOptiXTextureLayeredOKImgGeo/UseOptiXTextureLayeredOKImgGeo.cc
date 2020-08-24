@@ -35,6 +35,7 @@
 #include "NPY.hpp"
 #include "ImageNPY.hpp"
 #include "NGLMExt.hpp"
+#include "GLMFormat.hpp"
 
 /**
 TODO:
@@ -48,11 +49,11 @@ TODO:
 const char* const CMAKE_TARGET =  "UseOptiXTextureLayeredOKImgGeo" ;
 
 
-NPYBase* LoadPPMAsTextureArray(const char* path)
+NPYBase* LoadPPMAsTextureArray(const char* path, const bool yflip  )
 {
-    bool yflip = false ; 
     unsigned ncomp_ = 4 ; 
-    NPY<unsigned char>* inp = ImageNPY::LoadPPM(path, yflip, ncomp_) ; 
+    const char* config = "add_border" ; 
+    NPY<unsigned char>* inp = ImageNPY::LoadPPM(path, yflip, ncomp_, config) ; 
     assert( inp->getDimensions() == 3 ); 
     LOG(info) << " original inp (height, width, ncomp)  " << inp->getShapeString() ; 
 
@@ -63,11 +64,13 @@ NPYBase* LoadPPMAsTextureArray(const char* path)
 
     inp->reshape(layers,height,width,ncomp) ; // unsure re height<->width layout 
     LOG(info) << " after reshape inp (layers,height,width,ncomp) " << inp->getShapeString()  ; 
- 
+
+    /* 
     inp->setMeta<float>("xmin", 0.f); 
     inp->setMeta<float>("xmax", 360.f); 
     inp->setMeta<float>("ymin", 0.f); 
     inp->setMeta<float>("ymax", 180.f); 
+    */
 
     unsigned ncomp2 = inp->getShape(-1) ; 
     assert( ncomp2 == ncomp ); 
@@ -100,29 +103,67 @@ int main(int argc, char** argv)
     const char* cu_name = SStr::Concat(CMAKE_TARGET, ".cu" ) ;  
     const char* main_ptx = OKConf::PTXPath( CMAKE_TARGET, cu_name ); 
     const char* tmpdir = SStr::Concat("$TMP/", CMAKE_TARGET ) ; 
-
     const char* path = argc > 1 ? argv[1] : "/tmp/SPPMTest.ppm" ;
-    NPYBase* inp = LoadPPMAsTextureArray(path); 
+    //const char* marchwood = "50.8919,-1.4483" ; 
+    const char* null_island = "0.0,0.0" ; 
+    const char* latlon_degrees = PLOG::instance->get_arg_after("--latlon", null_island ) ; 
+    const char* tanyfov_ = PLOG::instance->get_arg_after("--tanyfov", "1.0" ) ; 
+
+    glm::vec2 latlon_d = gvec2(latlon_degrees); 
+
+    const float pi = glm::pi<float>() ;
+    glm::vec2 latlon(latlon_d*pi/180.f); 
+    const float tanYfov = gfloat_(tanyfov_) ; 
+    LOG(info) << " latlon_d " << glm::to_string(latlon_d) << " tanYfov " << tanYfov ;  
+
+    float dlon0 = -pi ;  // assume left edge of world texture is mid-pacific at -180 degrees longitude 
+
+    float lat = latlon.x ;         // latitude, N:+ve, S:-ve,  zero at equator
+    float lon = dlon0 + latlon.y ; // longitude, E:+ve W:-ve, zero at Greenwich 
+
+    glm::vec3 eye_m( cosf(lat)*cosf(lon), cosf(lat)*sinf(lon),  sinf(lat) );   
+    eye_m *= 1.1 ; 
+
+
+    const bool yflip0 = false ; 
+    NPYBase* inp = LoadPPMAsTextureArray(path, yflip0); 
     inp->save(tmpdir,"inp.npy"); 
 
     LOG(info) << " inp " << inp->getShapeString() ;
     unsigned height = inp->getShape(1);  
     unsigned width = inp->getShape(2);  
 
+    LOG(info) 
+        << " height " << height  
+        << " width " << width
+        ;  
+
     LOG(info) << " main_ptx: [" << main_ptx << "]" ; 
 
     // model frame : center-extent of model and viewpoint 
-    glm::vec4 ce_m(    0.f,  0.f, 0.f, 1.5f );
-    glm::vec3 eye_m(   0.f, -1.5f, 0.f );
-    glm::vec3 look_m(  0.f,  0.f, 0.f );
-    glm::vec3 up_m(    1.f,  0.f, 0.f );
+    glm::vec4 ce_m(      0.f,  0.f, 0.f, 1.5f );
+    glm::vec3 look_m(    0.f,  0.f, 0.f );
+    glm::vec3 up_m(      0.f,  0.f, 1.f );
 
     // world frame : eye point and view axes 
     glm::vec3 eye ;
     glm::vec3 U ;
     glm::vec3 V ;
     glm::vec3 W ;
-    nglmext::GetEyeUVW( ce_m, eye_m, look_m, up_m, width, height, eye, U, V, W );
+
+    const bool dump = true ; 
+
+    nglmext::GetEyeUVW( ce_m, eye_m, look_m, up_m, width, height, tanYfov, eye, U, V, W, dump );
+
+    std::cout << std::setw(10) << "ce_m"    << gpresent(ce_m) << std::endl ; 
+    std::cout << std::setw(10) << "eye_m "  << gpresent(eye_m) << std::endl ; 
+    std::cout << std::setw(10) << "look_m " << gpresent(look_m) << std::endl ; 
+    std::cout << std::setw(10) << "up_m "   << gpresent(up_m) << std::endl ; 
+
+    std::cout << std::setw(10) << "eye"  << gpresent(eye) << std::endl ; 
+    std::cout << std::setw(10) << "U "   << gpresent(U) << std::endl ; 
+    std::cout << std::setw(10) << "V "   << gpresent(V) << std::endl ; 
+    std::cout << std::setw(10) << "W "   << gpresent(W) << std::endl ; 
 
 
     optix::Context context = optix::Context::create();
@@ -133,7 +174,8 @@ int main(int argc, char** argv)
     context->setEntryPointCount(1);
     unsigned entry_point_index = 0u ; 
 
-    OTexture::Upload2DLayeredTexture<unsigned char>(context, "tex_param", "tex_domain", inp);   
+    const char* config = "INDEX_NORMALIZED_COORDINATES" ; 
+    OTexture::Upload2DLayeredTexture<unsigned char>(context, "tex_param", "tex_domain", inp, config);   
 
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT); 
     outBuffer->setFormat( RT_FORMAT_UNSIGNED_BYTE4); 
@@ -152,7 +194,10 @@ int main(int argc, char** argv)
 
 
     LOG(info) << "[ compile rg " ;  
-    optix::Program rg = context->createProgramFromPTXFile( main_ptx , "raygen" ) ; 
+
+    //const char* raygen = "raygen_reproduce_texture" ; 
+    const char* raygen = "raygen" ; 
+    optix::Program rg = context->createProgramFromPTXFile( main_ptx , raygen ) ; 
     LOG(info) << "] compile rg " ;  
 
     optix::Geometry g = CreateGeometry(context); 
@@ -202,23 +247,36 @@ int main(int argc, char** argv)
     LOG(info) << "] launch " ;  
 
 
-    NPY<unsigned char>* out = NPY<unsigned char>::make(height, width, 4); 
+    // Thinking about the way PPM images are stored in row-major order
+    // makes me want to use (height, width, 4) 
+    // BUT these are not images they are arrays 
+     
+    //unsigned s0 = width ; 
+    //unsigned s1 = height ; 
+
+    unsigned s0 = height ; 
+    unsigned s1 = width ; 
+    unsigned s2 = 4 ; 
+
+
+    NPY<unsigned char>* out = NPY<unsigned char>::make(s0, s1, s2); 
     out->zero();
     void* out_data = outBuffer->map(); 
     out->read(out_data); 
     outBuffer->unmap(); 
     out->save(tmpdir,"out.npy"); 
 
-    ImageNPY::SavePPM(tmpdir, "out.ppm", out); 
+    const bool yflip = true ; 
+    ImageNPY::SavePPM(tmpdir, "out.ppm", out, yflip ); 
 
-    NPY<float>* dbg = NPY<float>::make(height, width, 4); 
+    NPY<float>* dbg = NPY<float>::make(s0, s1, s2); 
     dbg->zero();
     void* dbg_data = dbgBuffer->map(); 
     dbg->read(dbg_data); 
     dbgBuffer->unmap(); 
     dbg->save(tmpdir,"dbg.npy"); 
 
-    NPY<float>* pos = NPY<float>::make(height, width, 4); 
+    NPY<float>* pos = NPY<float>::make(s0, s1, s2); 
     pos->zero();
     void* pos_data = posBuffer->map(); 
     pos->read(pos_data); 

@@ -274,6 +274,11 @@ UseOptiXTextureLayeredOK
 UseOptiXTextureLayeredOKImg
     Use ImageNPY::LoadPPM to load images into textures 
 
+UseOptiXTextureLayeredOKImgGeo
+    Trying to map a theta-phi texture onto a sphere 
+
+
+
 
 
 

@@ -42,13 +42,13 @@ phi = np.arctan2( c[:,1], c[:,0] )
 f_phi = phi/(2.*np.pi)
 
 
-imshow = False
+imshow = True
 if imshow:
     fig, axs = plt.subplots(3)
     fig.suptitle('%s' % tmpdir)
     axs[0].imshow(i[0])
-    axs[1].imshow(o)
-    axs[2].imshow(d)
+    axs[1].imshow(o, origin='lower')
+    axs[2].imshow(d, origin='lower')
     plt.show()                     
 pass
 
@@ -71,7 +71,7 @@ if scatter_norm:
     plt.show()
 pass
 
-scatter_pos = True
+scatter_pos = False
 if scatter_pos:
     fig4 = plt.figure()
     ax4 = fig4.add_subplot(111, projection='3d')

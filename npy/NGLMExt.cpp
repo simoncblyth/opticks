@@ -41,9 +41,17 @@ nglmext::GetEyeUVW
 
 Used for example from examples/UseOptiXGeometry 
 
+When the gaze direction and the up direction coincide this 
+yields 
+
+
+
 Adapted from Composition::getEyeUVW and examples/UseGeometryShader:getMVP
 
 **/
+
+const plog::Severity nglmext::LEVEL = PLOG::EnvLevel("nglmext", "DEBUG"); 
+
 
 void nglmext::GetEyeUVW(
     const glm::vec4& ce, 
@@ -52,10 +60,13 @@ void nglmext::GetEyeUVW(
     const glm::vec3& _up_m, 
     const unsigned width, 
     const unsigned height, 
+    const float tanYfov, // reciprocal of camera zoom  
     glm::vec3& eye, 
     glm::vec3& U, 
     glm::vec3& V, 
-    glm::vec3& W )
+    glm::vec3& W, 
+    const bool dump
+    )
 {
     glm::vec3 tr(ce.x, ce.y, ce.z);  // ce is center-extent of model
     glm::vec3 sc(ce.w);
@@ -63,25 +74,55 @@ void nglmext::GetEyeUVW(
     // model frame unit coordinates from/to world 
     glm::mat4 model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
     //glm::mat4 world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);
+    const glm::mat4& m2w = model2world ; 
+
 
    // View::getTransforms
-    glm::vec4 eye_m( _eye_m.x, _eye_m.y, _eye_m.z,1.f);  //  viewpoint in unit model frame 
-    glm::vec4 look_m( 0.f, 0.f,0.f,1.f); 
-    glm::vec4 up_m(   0.f, 0.f,1.f,1.f); 
+    glm::vec4 eye_m(  _eye_m ,1.f);  //  viewpoint in unit model frame 
+    glm::vec4 look_m( _look_m,1.f); 
+    glm::vec4 up_m(   _up_m  ,1.f); 
+
     glm::vec4 gze_m( look_m - eye_m ) ; 
 
-    const glm::mat4& m2w = model2world ; 
     glm::vec3 eye_ = glm::vec3( m2w * eye_m ) ; 
     //glm::vec3 look = glm::vec3( m2w * look_m ) ; 
     glm::vec3 up = glm::vec3( m2w * up_m ) ; 
     glm::vec3 gaze = glm::vec3( m2w * gze_m ) ;    
 
+
+    float epsilon = 1e-5 ; 
+    glm::vec3 up_original(up);    
+    int rc = HandleDegenerateGaze(up, gaze, epsilon, dump); 
+    if(rc == 1 && dump)
+    {
+        LOG(info) 
+            << " up vector changed by HandleDegenerateGaze "
+            << " up_original " << glm::to_string(up_original)
+            << " up " << glm::to_string(up)
+            << " gaze " << glm::to_string(gaze)
+            ;
+    }
+
+
     glm::vec3 forward_ax = glm::normalize(gaze);
-    glm::vec3 right_ax   = glm::normalize(glm::cross(forward_ax,up)); 
+    glm::vec3 right_ax   = glm::normalize(glm::cross(forward_ax,up));  
+    // right hand: palm horizontal facing upwards curled from directly ahead to up, thumb to the right 
+
     glm::vec3 top_ax     = glm::normalize(glm::cross(right_ax,forward_ax));
+    // right hand: vertical palm facing left curled from right around to gaze front, thumb upwards 
+
+    if(dump)
+    {
+        //std::cout << gpresent("m2w",m2w) << std::endl ;  
+        std::cout << "gze" << gpresent(gaze) << std::endl ;  
+        std::cout << "up"  << gpresent(up) << std::endl ;  
+        std::cout << "for" << gpresent(forward_ax) << std::endl ;  
+        std::cout << "rgt" << gpresent(right_ax) << std::endl ;  
+        std::cout << "top" << gpresent(top_ax) << std::endl ;  
+    }
+
 
     float aspect = float(width)/float(height) ;
-    float tanYfov = 1.f ;  // reciprocal of camera zoom
     float gazelength = glm::length( gaze ) ; 
     float v_half_height = gazelength * tanYfov ;
     float u_half_width  = v_half_height * aspect ;
@@ -95,7 +136,69 @@ void nglmext::GetEyeUVW(
 
 
 
+/**
+nglmext::HandleDegenerateGaze
+--------------------------------
 
+Gaze directions parallel to the up vector yield
+a degenerate basis. In these cases the up vector 
+is changed to the first other axis that is not degenerate.
+
+cf OpticksCore/View::handleDegenerates
+
+**/
+int nglmext::HandleDegenerateGaze( glm::vec3& up, const glm::vec3& gaze, const float epsilon, const bool dump ) 
+{
+    glm::vec3 forward_ax = glm::normalize(gaze);
+    float eul = glm::length(glm::cross(forward_ax, up));
+    if(eul > epsilon) return 0 ; 
+
+    std::vector<glm::vec3> axes = { 
+         {1.f,0.f,0.f}, 
+         {0.f,1.f,0.f}, 
+         {0.f,0.f,1.f}, 
+         {-1.f,0.f,0.f}, 
+         {0.f,-1.f,0.f}, 
+         {0.f,0.f,-1.f} 
+        } ; 
+
+   for(unsigned i=0 ; i < axes.size() ; i++)
+   {   
+        glm::vec3 axis = axes[i] ; 
+        float axd = glm::dot(forward_ax, axis);   // 1.,0. or -1.
+        float aul = glm::length(glm::cross(forward_ax, axis)); // 0. or 1. 
+
+        if(dump)
+        std::cout << gpresent(axis) << " aul:" << aul << " axd:" << axd << std::endl ;  
+
+        if(aul > 0.f)
+        {   
+            up = axis ; 
+            LOG(LEVEL) << " changing \"up\" to " << glm::to_string(up) ; 
+            return 1 ; 
+        } 
+    }   
+
+    assert( 0 && "failed to change up"); 
+    return -1 ; 
+}
+
+
+
+
+/**
+nglmext::least_parallel_axis
+------------------------------
+
+Given a vector direction, this returns the unit axis 
+least parallel to it, ie one of:: 
+
+      (1,0,0)
+      (0,1,0)
+      (0,0,1)
+
+
+**/
 
 glm::vec3 nglmext::least_parallel_axis( const glm::vec3& dir )
 {
