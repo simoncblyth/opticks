@@ -30,13 +30,19 @@ OFormat
 #include "OXRAP_API_EXPORT.hh"
 #include "OXRAP_HEAD.hh"
 
+class NPYBase ; 
+
+
 class OXRAP_API OFormat {
 public:
   static unsigned long long ElementSizeInBytes(RTformat format); // eg sizeof(RT_FORMAT_FLOAT4) = 4*4 = 16 
   static unsigned long long Multiplicity(RTformat format);
 
   template <typename T>
-  static RTformat TextureFormat(unsigned multiplicity) ; 
+  static RTformat Get(unsigned multiplicity);
+
+  static RTformat ArrayType(const NPYBase* arr); 
+ 
 
   static const char* FormatName(RTformat format);
 public:

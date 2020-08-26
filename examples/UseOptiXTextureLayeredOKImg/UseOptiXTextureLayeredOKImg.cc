@@ -109,7 +109,7 @@ void Upload2DLayeredTexture(optix::Context& context, const char* param_key, cons
     //  If RT_BUFFER_LAYERED flag is set, buffer depth specifies the number of layers, not the depth of a 3D buffer.
     optix::Buffer texBuffer = context->createBuffer(bufferdesc); 
 
-    RTformat format = OFormat::TextureFormat<T>(nl);
+    RTformat format = OFormat::Get<T>(nl);
     texBuffer->setFormat( format ); 
     texBuffer->setSize(nj, nk, ni);      // 3rd depth arg is number of layers
 
@@ -174,7 +174,8 @@ int main(int argc, char** argv)
     bool yflip = false ; 
     unsigned ncomp_ = 4 ; 
 
-    NPY<unsigned char>* inp = ImageNPY::LoadPPM(path, yflip, ncomp_) ; 
+    const char* config = "" ; 
+    NPY<unsigned char>* inp = ImageNPY::LoadPPM(path, yflip, ncomp_, config) ; 
     assert( inp->getDimensions() == 3 ); 
     LOG(info) << " original inp (height, width, ncomp)  " << inp->getShapeString() ; 
 
@@ -216,7 +217,7 @@ int main(int argc, char** argv)
     out->zero();
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT); 
 
-    RTformat format = OFormat::TextureFormat<unsigned char>(ncomp);
+    RTformat format = OFormat::Get<unsigned char>(ncomp);
     outBuffer->setFormat(format); 
     outBuffer->setSize(height, width, layers); 
     context["out_buffer"]->setBuffer(outBuffer); 

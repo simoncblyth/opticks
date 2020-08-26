@@ -111,16 +111,6 @@ void nglmext::GetEyeUVW(
     glm::vec3 top_ax     = glm::normalize(glm::cross(right_ax,forward_ax));
     // right hand: vertical palm facing left curled from right around to gaze front, thumb upwards 
 
-    if(dump)
-    {
-        //std::cout << gpresent("m2w",m2w) << std::endl ;  
-        std::cout << "gze" << gpresent(gaze) << std::endl ;  
-        std::cout << "up"  << gpresent(up) << std::endl ;  
-        std::cout << "for" << gpresent(forward_ax) << std::endl ;  
-        std::cout << "rgt" << gpresent(right_ax) << std::endl ;  
-        std::cout << "top" << gpresent(top_ax) << std::endl ;  
-    }
-
 
     float aspect = float(width)/float(height) ;
     float gazelength = glm::length( gaze ) ; 
@@ -131,6 +121,30 @@ void nglmext::GetEyeUVW(
     V = top_ax * v_half_height ;
     W = forward_ax * gazelength ; 
     eye = eye_ ; 
+
+
+    if(dump)
+    {
+        std::cout << gpresent("m2w",m2w) << std::endl ;  
+        std::cout << "gze" << gpresent(gaze) << std::endl ;  
+        std::cout << "up"  << gpresent(up) << std::endl ;  
+        std::cout << "for" << gpresent(forward_ax) << std::endl ;  
+        std::cout << "rgt" << gpresent(right_ax) << std::endl ;  
+        std::cout << "top" << gpresent(top_ax) << std::endl ;  
+ 
+        std::cout << std::setw(10) << "ce_m"    << gpresent(ce_m) << std::endl ; 
+        std::cout << std::setw(10) << "eye_m "  << gpresent(eye_m) << std::endl ; 
+        std::cout << std::setw(10) << "look_m " << gpresent(look_m) << std::endl ; 
+        std::cout << std::setw(10) << "up_m "   << gpresent(up_m) << std::endl ; 
+
+        std::cout << std::setw(10) << "eye"  << gpresent(eye) << std::endl ; 
+        std::cout << std::setw(10) << "U "   << gpresent(U) << std::endl ; 
+        std::cout << std::setw(10) << "V "   << gpresent(V) << std::endl ; 
+        std::cout << std::setw(10) << "W "   << gpresent(W) << std::endl ; 
+
+    }
+
+
 }
 
 

@@ -41,18 +41,17 @@ make
 make install   
 
 
-runline(){ cat << EOL
-#lldb_ $name
-#$name $HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
-#$name /tmp/SPPMTest.ppm
-#$name /tmp/SPPMTest2.ppm     
-$name /tmp/SPPMTest2.ppm --latlon 50.8919,-1.4483 --tanyfov 0.1
+runline(){ cat << EOL | grep -v \#
+#lldb_ $1
+#$1 $HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
+#$1 /tmp/SPPMTest.ppm
+#$1 /tmp/SPPMTest2.ppm     
+$1 /tmp/SPPMTest2.ppm --latlon 50.8919,-1.4483 --tanyfov 0.2
 EOL
 }
 
-cmd=$(runline)
+cmd=$(runline $name)
 
-runline | cat
 echo $cmd
 eval $cmd
 

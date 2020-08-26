@@ -18,6 +18,7 @@
  */
 
 #include "PLOG.hh"
+#include "NPYBase.hpp"
 #include "OFormat.hh"
 
 
@@ -282,41 +283,136 @@ const char* OFormat::FormatName(RTformat format) // static
 #endif
 
 
-template <typename T>
-RTformat OFormat::TextureFormat(unsigned multiplicity)
+
+
+
+
+
+
+
+
+// template specializations for returning the appropriate RTformat for each multiplicity 
+
+
+template<>
+RTformat OFormat::Get<float>(unsigned multiplicity)
 {
     assert( multiplicity > 0 && multiplicity < 5 ); 
     RTformat format ; 
-    if(sizeof(T) == sizeof(unsigned char))  // TODO: fix this hack with template specialization, see NPY
+    switch(multiplicity)
     {   
-        switch(multiplicity)
-        {   
-           case 1: format=RT_FORMAT_UNSIGNED_BYTE  ; break ; 
-           case 2: format=RT_FORMAT_UNSIGNED_BYTE2 ; break ; 
-           case 3: format=RT_FORMAT_UNSIGNED_BYTE3 ; break ; 
-           case 4: format=RT_FORMAT_UNSIGNED_BYTE4 ; break ; 
-        }   
+       case 1: format=RT_FORMAT_FLOAT  ; break ; 
+       case 2: format=RT_FORMAT_FLOAT2 ; break ; 
+       case 3: format=RT_FORMAT_FLOAT3 ; break ; 
+       case 4: format=RT_FORMAT_FLOAT4 ; break ; 
     }   
-    else if(sizeof(T) == sizeof(float))
+    return format ; 
+}
+
+template<>
+RTformat OFormat::Get<unsigned char>(unsigned multiplicity)
+{
+    assert( multiplicity > 0 && multiplicity < 5 ); 
+    RTformat format ; 
+    switch(multiplicity)
     {   
-        switch(multiplicity)
-        {   
-           case 1: format=RT_FORMAT_FLOAT  ; break ; 
-           case 2: format=RT_FORMAT_FLOAT2 ; break ; 
-           case 3: format=RT_FORMAT_FLOAT3 ; break ; 
-           case 4: format=RT_FORMAT_FLOAT4 ; break ; 
-        }   
+       case 1: format=RT_FORMAT_UNSIGNED_BYTE  ; break ; 
+       case 2: format=RT_FORMAT_UNSIGNED_BYTE2 ; break ; 
+       case 3: format=RT_FORMAT_UNSIGNED_BYTE3 ; break ; 
+       case 4: format=RT_FORMAT_UNSIGNED_BYTE4 ; break ; 
     }   
-    else
+    return format ; 
+}
+
+template<>
+RTformat OFormat::Get<char>(unsigned multiplicity)
+{
+    assert( multiplicity > 0 && multiplicity < 5 ); 
+    RTformat format ; 
+    switch(multiplicity)
     {   
-        LOG(fatal) << " expecting template type of either float or unsigned char " ;
-        assert(0); 
+       case 1: format=RT_FORMAT_BYTE  ; break ; 
+       case 2: format=RT_FORMAT_BYTE2 ; break ; 
+       case 3: format=RT_FORMAT_BYTE3 ; break ; 
+       case 4: format=RT_FORMAT_BYTE4 ; break ; 
+    }   
+    return format ; 
+}
+
+template<>
+RTformat OFormat::Get<unsigned>(unsigned multiplicity)
+{
+    assert( multiplicity > 0 && multiplicity < 5 ); 
+    RTformat format ; 
+    switch(multiplicity)
+    {   
+       case 1: format=RT_FORMAT_UNSIGNED_INT  ; break ; 
+       case 2: format=RT_FORMAT_UNSIGNED_INT2 ; break ; 
+       case 3: format=RT_FORMAT_UNSIGNED_INT3 ; break ; 
+       case 4: format=RT_FORMAT_UNSIGNED_INT4 ; break ; 
     }   
     return format ; 
 }
 
 
-template RTformat OFormat::TextureFormat<float>(unsigned); 
-template RTformat OFormat::TextureFormat<int>(unsigned); 
-template RTformat OFormat::TextureFormat<unsigned>(unsigned); 
-template RTformat OFormat::TextureFormat<unsigned char>(unsigned); 
+template<>
+RTformat OFormat::Get<short>(unsigned multiplicity)
+{
+    assert( multiplicity > 0 && multiplicity < 5 ); 
+    RTformat format ; 
+    switch(multiplicity)
+    {   
+       case 1: format=RT_FORMAT_SHORT  ; break ; 
+       case 2: format=RT_FORMAT_SHORT2 ; break ; 
+       case 3: format=RT_FORMAT_SHORT3 ; break ; 
+       case 4: format=RT_FORMAT_SHORT4 ; break ; 
+    }   
+    return format ; 
+}
+
+template<>
+RTformat OFormat::Get<int>(unsigned multiplicity)
+{
+    assert( multiplicity > 0 && multiplicity < 5 ); 
+    RTformat format ; 
+    switch(multiplicity)
+    {   
+       case 1: format=RT_FORMAT_INT  ; break ; 
+       case 2: format=RT_FORMAT_INT2 ; break ; 
+       case 3: format=RT_FORMAT_INT3 ; break ; 
+       case 4: format=RT_FORMAT_INT4 ; break ; 
+    }   
+    return format ; 
+}
+
+
+/**
+OFormat::ArrayType
+--------------------
+
+**/
+
+RTformat OFormat::ArrayType(const NPYBase* arr)
+{
+   unsigned multiplicity = arr->getShape(-1) ; 
+   assert( multiplicity < 5 );  
+   NPYBase::Type_t type = arr->getType() ; 
+
+   RTformat format ; 
+   switch(type)
+   {
+       case NPYBase::FLOAT:     format = OFormat::Get<float>(multiplicity)         ; break ; 
+       case NPYBase::INT:       format = OFormat::Get<int>(multiplicity)           ; break ; 
+       case NPYBase::UINT:      format = OFormat::Get<unsigned>(multiplicity)      ; break ; 
+       case NPYBase::SHORT:     format = OFormat::Get<short>(multiplicity)         ; break ;
+       case NPYBase::UCHAR:     format = OFormat::Get<unsigned char>(multiplicity) ; break ; 
+       case NPYBase::CHAR:      format = OFormat::Get<char>(multiplicity)          ; break ; 
+       case NPYBase::DOUBLE:    format = RT_FORMAT_USER                            ; break ;   
+       case NPYBase::ULONGLONG: format = RT_FORMAT_USER                            ; break ; 
+   }
+   return format ; 
+}
+
+
+
+

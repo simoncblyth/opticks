@@ -275,10 +275,9 @@ UseOptiXTextureLayeredOKImg
     Use ImageNPY::LoadPPM to load images into textures 
 
 UseOptiXTextureLayeredOKImgGeo
-    Trying to map a theta-phi texture onto a sphere 
-
-
-
-
+    Ray-traced theta-phi texture mapping onto a sphere, when using an Earth texture this provides 
+    Earth view PPM images centered around any latitude-longitude position.
+    This example was used to develop the watertight OptiX OCtx wrapper (C opaque pointer style) 
+    which does not leak any optix types into its interface.
 
 

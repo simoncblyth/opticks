@@ -52,6 +52,9 @@ set(SOURCES
     OGeo.cc
     OGeoStat.cc
     OFunc.cc
+
+    OCtx.cc
+    OTex.cc
 )
 
 set(HEADERS
@@ -93,6 +96,9 @@ set(HEADERS
     OBuf.hh
     OBufBase.hh
     OBufPair.hh 
+
+    OCtx.hh
+    OTex.hh
 )
 
 
