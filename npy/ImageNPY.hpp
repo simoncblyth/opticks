@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
 template<typename T> class NPY ; 
 
 #include "plog/Severity.h"
@@ -27,7 +29,8 @@ template<typename T> class NPY ;
 class NPY_API ImageNPY {
    public:  
        static const plog::Severity LEVEL ; 
-       static NPY<unsigned char>* LoadPPM(const char* path, const bool yflip, const unsigned ncomp, const char* config);
+       static NPY<unsigned char>* LoadPPMConcat(const std::vector<std::string>& paths, const bool yflip, const unsigned ncomp, const char* config);
+       static NPY<unsigned char>* LoadPPM(const char* path, const bool yflip, const unsigned ncomp, const char* config, bool layer_dimension);
    public:  
        static void SavePPM(const char* path, const NPY<unsigned char>* a, const bool yflip ); 
        static void SavePPM(const char* dir, const char* name,  const NPY<unsigned char>* a, const bool yflip); 

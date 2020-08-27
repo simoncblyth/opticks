@@ -280,4 +280,14 @@ UseOptiXTextureLayeredOKImgGeo
     This example was used to develop the watertight OptiX OCtx wrapper (C opaque pointer style) 
     which does not leak any optix types into its interface.
 
+UseOptiXGeometryInstanced
+    start from UseOptiXGeometryInstancedStandalone, plan:
+    
+    1. use Opticks packages to reduce the amount of code
+    2. adopt OCtx watertight wrapper, adding whats needed for instancing  
+    3. add optional switch from box to sphere 
+    4. get a layered texture to work with instances, such that 
+       different groups of instances use different layers  
+    5. generate PPM of thousands of textured Earths  
+
 

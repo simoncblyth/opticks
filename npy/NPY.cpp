@@ -311,6 +311,9 @@ unsigned NPY<T>::addItemUnique(NPY<T>* other, unsigned item)
 
 }
 
+
+/*
+// moved to base
 template <typename T>
 bool NPY<T>::hasSameItemSize(NPY<T>* a, NPY<T>* b)
 {
@@ -330,7 +333,7 @@ bool NPY<T>::hasSameItemSize(NPY<T>* a, NPY<T>* b)
  
     return same ; 
 }
-
+*/
 
 
 template <typename T>
@@ -340,9 +343,9 @@ void NPY<T>::addItem(NPY<T>* other, unsigned item)      // add another buffer to
     unsigned orig = getNumItems();
     unsigned extra = 1 ; 
 
-    bool same= hasSameItemSize(this, other);
+    bool same= HasSameItemSize(this, other);
 
-    if(!same) LOG(fatal) << "hasSameItemSize FAIL"
+    if(!same) LOG(fatal) << "HasSameItemSize FAIL"
                          << " other " << other->getShapeString()
                          << " this " << this->getShapeString()
                          ;
@@ -360,18 +363,46 @@ void NPY<T>::addItem(NPY<T>* other, unsigned item)      // add another buffer to
 
 
 template <typename T>
-void NPY<T>::add(NPY<T>* other)      // add another buffer to this one, they must have same itemsize (ie size after 1st dimension)
+void NPY<T>::add(const NPY<T>* other)      // add another buffer to this one, they must have same itemsize (ie size after 1st dimension)
 {
     unsigned orig = getNumItems();
     unsigned extra = other->getNumItems() ;
 
-    bool same= hasSameItemSize(this, other);
+    bool same= HasSameItemSize(this, other);
     assert(same);
 
     memcpy( grow(extra), other->getBytes(), other->getNumBytes(0) );
 
     setNumItems( orig + extra );
 }
+
+
+// TODO: move to base 
+
+template <typename T>
+NPY<T>* NPY<T>::concat(const std::vector<NPYBase*>& comps) // static 
+{
+    unsigned num_comps = comps.size() ; 
+    assert( num_comps > 0 ); 
+
+    for(unsigned i=0 ; i < num_comps ; i++)
+    {
+        NPY<T>* a = (NPY<T>*)comps[i];
+        LOG(info) << i << " " << a->getShapeString() ; 
+    }
+
+    NPY<T>* comb = (NPY<T>*)comps[0];  
+
+    for(unsigned i=1 ; i < num_comps ; i++)
+    {
+        const NPY<T>* other = (const NPY<T>*)comps[i] ; 
+        comb->add(other); 
+    }
+    return comb ; 
+}
+
+
+
 
 template <typename T>
 void NPY<T>::add(const T* values, unsigned int nvals)  
@@ -2040,9 +2071,9 @@ const T* NPY<T>::getValuesConst(unsigned int i, unsigned int j) const
 
 
 template <typename T> 
-void* NPY<T>::getBytes()
+void* NPY<T>::getBytes() const 
 {
-    return hasData() ? (void*)getValues() : NULL ;
+    return hasData() ? (void*)getValuesConst() : NULL ;
 }
 
 template <typename T> 
@@ -2154,19 +2185,6 @@ charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k, unsi
     return v ;
 }
 
-
-
-
-/*
-template <typename T> 
- void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T value)
-{
-    unsigned int idx = getValueIndex(i,j,k);
-    T* dat = getValues();
-    assert(dat && "must zero() the buffer before can setValue");
-    *(dat + idx) = value ;
-}
-*/
 
 
 template <typename T> 

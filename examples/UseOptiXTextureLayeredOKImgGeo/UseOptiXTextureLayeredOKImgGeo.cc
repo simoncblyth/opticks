@@ -61,28 +61,6 @@ creates orthographic views centered on any latitude, longitude.::
 
 const char* const CMAKE_TARGET =  "UseOptiXTextureLayeredOKImgGeo" ;
 
-
-NPYBase* LoadPPMAsTextureArray(const char* path, const bool yflip, const char* config)
-{
-    unsigned ncomp_ = 4 ; 
-    NPY<unsigned char>* inp = ImageNPY::LoadPPM(path, yflip, ncomp_, config) ; 
-    assert( inp->getDimensions() == 3 ); 
-    LOG(info) << " original inp (height, width, ncomp)  " << inp->getShapeString() ; 
-
-    unsigned layers = 1 ; 
-    unsigned height = inp->getShape(0);  
-    unsigned width = inp->getShape(1);  
-    unsigned ncomp = inp->getShape(2);  
-
-    inp->reshape(layers,height,width,ncomp) ; // unsure re height<->width layout 
-    LOG(info) << " after reshape inp (layers,height,width,ncomp) " << inp->getShapeString()  ; 
-
-    unsigned ncomp2 = inp->getShape(-1) ; 
-    assert( ncomp2 == ncomp ); 
-
-    return inp ; 
-}
-
 /**
 get_latitude_longitude_radians
 -------------------------------
@@ -159,24 +137,31 @@ int main(int argc, char** argv)
     glm::vec2 latlon(get_latitude_longitude_radians(latlon_q)); 
 
     const float pi = glm::pi<float>() ;
-    float dlon0 = -pi ;  // assume left edge of world texture is mid-pacific at -180 degrees longitude 
-    float lat = latlon.x ;         // latitude, N:+ve, S:-ve,  zero at equator
+    float dlon0 = -pi ;            // assume left edge of world texture is mid-pacific at -180 degrees longitude 
+    float lat = latlon.x ;         // latitude, N:+ve, S:-ve, zero at equator
     float lon = dlon0 + latlon.y ; // longitude, E:+ve W:-ve, zero at Greenwich prime meridian
 
     glm::vec3 eye_m( cosf(lat)*cosf(lon), cosf(lat)*sinf(lon),  sinf(lat) );   
     eye_m *= 1.1 ; 
 
     const bool yflip0 = false ; 
+    unsigned ncomp = 4 ; 
     const char* config0 = "add_border" ; 
-    NPYBase* inp = LoadPPMAsTextureArray(path, yflip0, config0); 
+    bool layer_dimension = true ; 
+    NPY<unsigned char>* inp = ImageNPY::LoadPPM(path, yflip0, ncomp, config0, layer_dimension ) ; 
     inp->save(tmpdir,"inp.npy"); 
 
+    int layers = inp->getShape(0); 
     int height = inp->getShape(1);  
     int width = inp->getShape(2);  
-    LOG(info) << " inp " << inp->getShapeString() << " height " << height  << " width " << width ;  
+
+    LOG(info) << " inp " << inp->getShapeString()
+              << " layers " << layers 
+              << " height " << height  
+              << " width " << width 
+              ;  
 
     std::vector<int> shape = { height, width, 4 };
-
 
     glm::vec4 ce_m(      0.f,  0.f, 0.f, 1.5f ); // model frame : center-extent of model and viewpoint 
     glm::vec3 look_m(    0.f,  0.f, 0.f );
@@ -190,9 +175,9 @@ int main(int argc, char** argv)
     const bool dump = true ; 
     nglmext::GetEyeUVW( ce_m, eye_m, look_m, up_m, width, height, tanYfov, eye, U, V, W, dump );
 
-
     const char* tex_config = "INDEX_NORMALIZED_COORDINATES" ; 
 #ifdef USE_OCTX
+    OCtx_();  
     OTex::Upload2DLayeredTexture("tex_param", "tex_domain", inp, tex_config);   
     //optix::Context context = optix::Context::take((RTcontext)OCtx_get()) ;  // interim kludge until everything is wrapped 
 #else
@@ -218,7 +203,6 @@ int main(int argc, char** argv)
     NPY<float>* pos = NPY<float>::make(shape); 
     void* posBuf = OCtx_create_buffer(pos, "pos_buffer", 'O', ' ' ); 
     OCtx_desc_buffer( posBuf );  
-
 #else
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT); 
     outBuffer->setFormat( RT_FORMAT_UNSIGNED_BYTE4); 
@@ -265,7 +249,6 @@ int main(int argc, char** argv)
     rg[ "radiance_ray_type"   ]->setUint( 0u );
 #endif
 
-
     const char* ptxpath = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
 #ifdef USE_OCTX
     void* geo_ptr = OCtx_create_geometry(1u, ptxpath, "bounds", "intersect" ); 
@@ -309,9 +292,7 @@ int main(int argc, char** argv)
     LOG(info) << "[ launch width height (" << width << " " << height << ") " ;  
     context->launch( entry_point_index , width, height  );
     LOG(info) << "] launch " ;  
-
 #endif
-
 
 #ifdef USE_OCTX
     OCtx_download_buffer(out, "out_buffer");

@@ -89,6 +89,7 @@ class NPY_API NPYBase {
        const NPYSpec* getItemSpec() const ;
        const std::vector<int>& getShapeVector() const ;
 
+       static bool HasSameItemSize(const NPYBase* a, const NPYBase* b) ;   
        bool hasSameShape(NPYBase* other, unsigned fromdim=0) const ;
        bool hasShape(int ni, int nj=0, int nk=0, int nl=0, int nm=0) const ; // -1 for anything 
        bool hasItemShape(int nj, int nk=0, int nl=0, int nm=0) const ;
@@ -201,7 +202,7 @@ class NPY_API NPYBase {
    public:
        // provided by subclass
        virtual void read(const void* ptr) = 0;
-       virtual void* getBytes() = 0 ;
+       virtual void* getBytes() const  = 0 ;
 
        virtual void setQuad(const glm::vec4& vec, unsigned int i, unsigned int j, unsigned int k) = 0 ;
        virtual void setQuad(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k) = 0 ;

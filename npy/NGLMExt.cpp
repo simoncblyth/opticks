@@ -132,7 +132,7 @@ void nglmext::GetEyeUVW(
         std::cout << "rgt" << gpresent(right_ax) << std::endl ;  
         std::cout << "top" << gpresent(top_ax) << std::endl ;  
  
-        std::cout << std::setw(10) << "ce_m"    << gpresent(ce_m) << std::endl ; 
+        std::cout << std::setw(10) << "ce"      << gpresent(ce) << std::endl ; 
         std::cout << std::setw(10) << "eye_m "  << gpresent(eye_m) << std::endl ; 
         std::cout << std::setw(10) << "look_m " << gpresent(look_m) << std::endl ; 
         std::cout << std::setw(10) << "up_m "   << gpresent(up_m) << std::endl ; 

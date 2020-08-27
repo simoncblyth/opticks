@@ -29,6 +29,24 @@
 
 const plog::Severity ImageNPY::LEVEL = PLOG::EnvLevel("ImageNPY", "INFO"); 
 
+
+NPY<unsigned char>* ImageNPY::LoadPPMConcat(const std::vector<std::string>& paths, const bool yflip, const unsigned ncomp, const char* config)  // static
+{
+    unsigned layers = paths.size(); 
+    std::vector<NPYBase*> imgs ; 
+    bool layer_dimension = true ; 
+    for(unsigned i=0 ; i < layers ; i++ ) 
+    {
+        std::string path = paths[i]; 
+        NPY<unsigned char>* img = LoadPPM(path.c_str(), yflip, ncomp, config, layer_dimension); 
+        imgs.push_back(img); 
+    }
+    NPY<unsigned char>* comb = NPY<unsigned char>::concat(imgs); 
+    LOG(info) << "concat img shape " << comb->getShapeString() ; 
+    return comb  ; 
+}
+
+
 /**
 ImageNPY::LoadPPM
 -------------------
@@ -39,7 +57,7 @@ ImageNPY::LoadPPM
 
 **/
 
-NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const unsigned ncomp, const char* config)  // static
+NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const unsigned ncomp, const char* config, bool layer_dimension)  // static
 {
     unsigned width(0) ; 
     unsigned height(0) ; 
@@ -72,6 +90,16 @@ NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const 
     if(add_midline) SPPM::AddMidline(imgvec, width, height, ncomp, yflip); 
     if(add_quadline) SPPM::AddQuadline(imgvec, width, height, ncomp, yflip); 
 
+    if(layer_dimension)
+    {
+        assert( img->getDimensions() == 3 ); 
+        LOG(info) << " reshaping original img (height, width, ncomp)  " << img->getShapeString() ;
+        unsigned layers = 1 ; 
+        img->reshape(layers,height,width,ncomp) ; // NB height before width matching PPM row major ordering 
+        LOG(info) << " after reshape img (layers,height,width,ncomp) " << img->getShapeString()  ;
+        unsigned ncomp2 = img->getShape(-1) ;
+        assert( ncomp2 == ncomp );
+    }
     return img ; 
 }
 

@@ -122,6 +122,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk );
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl );
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm);
+       static NPY<T>* concat(const std::vector<NPYBase*>& comps); 
 
        static NPY<T>* make_modulo(NPY<T>* src, unsigned int scaledown);
        static NPY<T>* make_repeat(NPY<T>* src, unsigned int n);
@@ -138,7 +139,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_dbg_like(NPY<T>* src, int label_=0);  // same shape as source, values based on indices controlled with label_
 
    public:
-       static bool hasSameItemSize(NPY<T>* a, NPY<T>* b) ;
+       //static bool hasSameItemSize(NPY<T>* a, NPY<T>* b) ;   // moved to base
    public:
         static NPY<T>* make_masked(NPY<T>* src, NPY<unsigned>* msk );
         static unsigned _copy_masked(NPY<T>* dst, NPY<T>* src, NPY<unsigned>* msk );
@@ -198,7 +199,7 @@ class NPY_API NPY : public NPYBase {
 
        T* getValues(unsigned int i, unsigned int j=0);
        const T* getValuesConst(unsigned int i, unsigned int j=0) const ;
-       void* getBytes();
+       void* getBytes() const ;
        void* getPointer();   // aping GBuffer for easier migration
        BBufSpec* getBufSpec();
 
@@ -208,7 +209,7 @@ class NPY_API NPY : public NPYBase {
     private:
        T* grow(unsigned int nitems); // increase size to contain an extra nitems, return pointer to start of them
     public:
-       void add(NPY<T>* other);   // add another buffer, it must have same itemsize (ie size after 1st dimension)
+       void add(const NPY<T>* other);   // add another buffer, it must have same itemsize (ie size after 1st dimension)
        void add(const T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  
        void addString(const char* s );   // add string, assumes a char array, strings truncated to size of last dimension  
        void add(void* bytes, unsigned int nbytes); // add bytes,  nbytes must be integral multiple of itemsize in bytes

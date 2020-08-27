@@ -592,6 +592,32 @@ unsigned long long NPYBase::getNumValues(unsigned int from_dim) const
 }
 
 
+bool NPYBase::HasSameItemSize(const NPYBase* a, const NPYBase* b)
+{
+    unsigned aItemValues = a->getNumValues(1) ;
+    unsigned bItemValues = b->getNumValues(1) ;
+
+    bool same = aItemValues == bItemValues ;  
+    if(!same)
+    {
+        LOG(fatal) << "NPYBase::HasSameItemSize MISMATCH "
+                  << " aShape " << a->getShapeString()
+                  << " bShape " << b->getShapeString()
+                  << " aItemValues " << aItemValues 
+                  << " bItemValues " << bItemValues 
+                  ;
+    } 
+    return same ; 
+}
+
+
+
+
+
+
+
+
+
 // depending on sizeoftype
 
 unsigned long long NPYBase::getSizeOfType() const 
