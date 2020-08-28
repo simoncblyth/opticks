@@ -4,12 +4,19 @@ UseOptiXGeometryInstanced
 
 Start from UseOptiXGeometryInstancedStandalone, plan:
 
-1. adopt Opticks packages to reduce the amount of code
-2. adopt OCtx watertight wrapper, adding whats needed for instancing  
-3. add optional switch from box to sphere 
+1. DONE: adopt Opticks packages to reduce the amount of code
+2. DONE: adopt OCtx watertight wrapper, adding whats needed for instancing  
+3. DONE: add optional switch from box to sphere 
 4. get a layered texture to work with instances, such that 
    different groups of instances use different layers of the texture 
-5. generate PPM of thousands of textured Earths with some visible variation 
+5. DONE: generate PPM of thousands of textured Earths with some visible variation 
+6. layered 1d float texture
+
+* the OCtx branch is mostly working, bit the traditional way is 
+  suffering from very dark renders when texturing 
+
+Next onto UseOptiXGeometryInstancedOCtx starting with the OCtx branch of this, 
+as its too difficult to do new things in two ways at once.
 
 **/
 
@@ -35,45 +42,9 @@ Start from UseOptiXGeometryInstancedStandalone, plan:
 #ifdef USE_OCTX
 #include "OCtx.hh"
 #endif
-
-
+#include "OTex.hh"   // hmm uses OCtx internally 
 
 const char* CMAKE_TARGET =  "UseOptiXGeometryInstanced" ;
-
-float angle_radians(float angle_degrees)
-{
-    return glm::pi<float>()*angle_degrees/180.f ; 
-}
-
-glm::mat4 make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal )
-{
-    glm::mat4 mat(1.f) ;
-    
-    float angle = angle_radians(axis_angle.w) ; 
-
-    for(unsigned i=0 ; i < order.length() ; i++)
-    {   
-        switch(order[i])
-        {
-           case 's': mat = glm::scale(mat, scal)         ; break ; 
-           case 'r': mat = glm::rotate(mat, angle , glm::vec3(axis_angle)) ; break ; 
-           case 't': mat = glm::translate(mat, tlat )    ; break ; 
-        }
-    }   
-    // See tests/NGLMExtTests.cc:test_make_transform it shows that 
-    // usually "trs" is the most convenient order to use
-    // * what is confusing is that to get the translation done last, 
-    //   needs to do glm::translate first 
-    return mat  ;   
-}
-
-glm::mat4 make_transform(const std::string& order)
-{
-    glm::vec3 tla(0,0,100) ; 
-    glm::vec4 rot(0,0,1,45);
-    glm::vec3 sca(1,1,1) ; 
-    return make_transform(order, tla, rot, sca );
-}
 
 
 struct APIError
@@ -124,6 +95,115 @@ void InitRTX(int rtxmode)
 
 
 
+
+
+NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw)
+{
+    unsigned num_tr = nu*nv*nw ; 
+    NPY<float>* tr = NPY<float>::make(num_tr, 4, 4); 
+    tr->zero(); 
+    bool transpose = false ; 
+    unsigned count(0) ; 
+    for( unsigned u = 0; u < nu; ++u ) { 
+    for( unsigned v = 0; v < nv ; ++v ) { 
+    for( unsigned w = 0; w < nw ; ++w ) { 
+
+        glm::vec4 rot( rand(), rand(), rand(),  rand()*360.f );
+        //glm::vec4 rot(  0,  0, 1,  0 );
+        glm::vec3 sca( 0.5 ) ; 
+        glm::vec3 tla(  10.f*u , 10.f*v , -10.f*w ) ; 
+        glm::mat4 m4 = nglmext::make_transform("trs", tla, rot, sca );
+
+        tr->setMat4(m4, count, -1, transpose); 
+        count++ ; 
+    }
+    }
+    }
+    assert( count == num_tr ); 
+    return tr ; 
+}
+
+
+#ifdef USE_OCTX
+#else
+/**
+MakeInstancedAssembly
+-----------------------
+
+      assembly (Group)
+          xform_0                       (Transform)
+             perxform_0                   (GeometryGroup)
+                instance_accel                (Acceleration)
+                pergi_0                       (GeometryInstance)
+                    mat                           (Material)
+                    instance                      (Geometry)
+
+          xform_1                       (Transform)
+             perxform_1                   (GeometryGroup)
+                instance_accel                (Acceleration)
+                pergi_1                       (GeometryInstance)
+                    mat                           (Material)
+                    instance                      (Geometry)
+
+**/
+
+optix::Group MakeInstancedAssembly(optix::Context context, NPY<float>* transforms, optix::Material mat, optix::Geometry instance)
+{
+    unsigned num_tr = transforms->getNumItems() ; 
+    optix::Group assembly = context->createGroup();
+    assembly->setChildCount( num_tr );
+    assembly->setAcceleration( context->createAcceleration( "Trbvh" ) ); 
+
+    optix::Acceleration instance_accel = context->createAcceleration( "Trbvh" );
+
+    for(unsigned ichild=0 ; ichild < num_tr ; ichild++)
+    { 
+        glm::mat4 m4 = transforms->getMat4(ichild,-1); 
+
+        bool transpose = true ; 
+        optix::Transform xform = context->createTransform();
+        xform->setMatrix(transpose, glm::value_ptr(m4), 0); 
+
+        assembly->setChild(ichild, xform);
+        ////unsigned instance_index = ichild ;  
+        //ichild++ ;
+
+        optix::GeometryInstance pergi = context->createGeometryInstance() ;
+        pergi->setMaterialCount(1);
+        pergi->setMaterial(0, mat );
+        pergi->setGeometry( instance );
+        //pergi["instance_index"]->setUint(instance_index);
+
+        optix::GeometryGroup perxform = context->createGeometryGroup();
+        perxform->addChild(pergi); 
+        perxform->setAcceleration(instance_accel) ; 
+
+        xform->setChild(perxform);
+    }
+    return assembly ; 
+}
+
+void LaunchInstrumented( optix::Context context, unsigned entry_point_index, unsigned width, unsigned height, double& t_prelaunch, double& t_launch  )
+{
+    auto t0 = std::chrono::high_resolution_clock::now();
+
+    context->launch( entry_point_index , 0, 0  ); 
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    context->launch( entry_point_index , width, height  ); 
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> t_prelaunch_ = t1 - t0; 
+    std::chrono::duration<double> t_launch_    = t2 - t1; 
+    
+    t_prelaunch = t_prelaunch_.count() ; 
+    t_launch = t_launch_.count() ; 
+}
+#endif
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -136,6 +216,19 @@ int main(int argc, char** argv)
     const char* main_ptx = OKConf::PTXPath( CMAKE_TARGET, cu_name );  
     const char* tmpdir = SStr::Concat("$TMP/", CMAKE_TARGET ) ; 
 
+    bool with_tex(true); 
+    NPY<unsigned char>* inp = NULL ; 
+    if(with_tex)
+    {
+        const char* path = argc > 1 ? argv[1] : "/tmp/SPPMTest.ppm" ;
+        const bool yflip0 = false ; 
+        unsigned ncomp = 4 ; 
+        const char* config0 = "add_border,add_midline,add_quadline" ; 
+        bool layer_dimension = true ; 
+        inp = ImageNPY::LoadPPM(path, yflip0, ncomp, config0, layer_dimension ) ; 
+    }
+
+
     unsigned factor = 1u ; 
     unsigned width =  factor*1440u ; 
     unsigned height = factor*900u ; 
@@ -143,6 +236,11 @@ int main(int argc, char** argv)
     const unsigned nu = 100u;
     const unsigned nv = 100u;
     const unsigned nw = 4u;
+
+    NPY<float>* transforms = MakeTransforms(nu,nv,nw); 
+    unsigned num_transforms = transforms->getNumItems(); 
+    assert( num_transforms == nu*nv*nw );  
+
 
     float extent = 100.0 ; 
     glm::vec4 ce_m(float(nu),float(nv), 0.f, extent ); 
@@ -163,9 +261,9 @@ int main(int argc, char** argv)
 
     InitRTX(rtxmode); 
 
-
 #ifdef USE_OCTX
-    optix::Context context = optix::Context::take((RTcontext)OCtx_get()) ;  // interim kludge until everything is wrapped 
+    OCtx_get();
+    //optix::Context context = optix::Context::take((RTcontext)OCtx_get()) ;  // interim kludge until everything is wrapped 
 #else
     optix::Context context = optix::Context::create();
 
@@ -177,100 +275,92 @@ int main(int argc, char** argv)
     context->setPrintBufferSize(4096); 
     context->setEntryPointCount(1); 
 #endif
-
+    const char* tex_config = "INDEX_NORMALIZED_COORDINATES" ;
+    OTex::Upload2DLayeredTexture("tex_param", inp, tex_config);   // this uses OCtx internally 
 
     unsigned entry_point_index = 0u ;
+#ifdef USE_OCTX
+    OCtx_set_raygen_program( entry_point_index, main_ptx, "raygen" );
+    OCtx_set_miss_program(   entry_point_index, main_ptx, "miss" );
+#else
     context->setRayGenerationProgram( entry_point_index, context->createProgramFromPTXFile( main_ptx , "raygen" )); 
     context->setMissProgram(   entry_point_index, context->createProgramFromPTXFile( main_ptx , "miss" )); 
+#endif
 
     float sz = 10.f ; 
     unsigned nbox = 10u ; 
 
-#define RUBOX 1 
+    const char* rubox_ptx = OKConf::PTXPath( CMAKE_TARGET, "rubox.cu" ) ; 
+    const char* sphere_ptx = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
 
-#ifdef RUBOX
+#ifdef USE_OCTX
+    void* box_ptr = OCtx_create_geometry(nbox, rubox_ptx, "rubox_bounds", "rubox_intersect" ); 
+    OCtx_set_geometry_float3(box_ptr, "boxmin", -sz/2.f, -sz/2.f, -sz/2.f ); 
+    OCtx_set_geometry_float3(box_ptr, "boxmax",  sz/2.f,  sz/2.f,  sz/2.f ); 
+    //optix::Geometry instance = optix::Geometry::take((RTgeometry)geo_ptr); 
+
+    void* sph_ptr = OCtx_create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
+    OCtx_set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
+
+    void* instance_ptr = sph_ptr ; 
+    //void* instance_ptr = box_ptr ; 
+#else
     optix::Geometry rubox ; 
     rubox = context->createGeometry();
     rubox->setPrimitiveCount( nbox );
-    const char* rubox_ptx = OKConf::PTXPath( CMAKE_TARGET, "rubox.cu" ) ; 
     rubox->setBoundingBoxProgram( context->createProgramFromPTXFile( rubox_ptx , "rubox_bounds" ) );
     rubox->setIntersectionProgram( context->createProgramFromPTXFile( rubox_ptx , "rubox_intersect" ) ) ;
-    optix::Geometry& instance = rubox ; 
-#else
-    optix::Geometry box ; 
-    box = context->createGeometry();
-    box->setPrimitiveCount( 1u );
-    const char* box_ptx = OKConf::PTXPath( CMAKE_TARGET, "box.cu" ) ; 
-    box->setBoundingBoxProgram( context->createProgramFromPTXFile( box_ptx , "box_bounds" ) );
-    box->setIntersectionProgram( context->createProgramFromPTXFile( box_ptx , "box_intersect" ) ) ;
-    optix::Geometry& instance = box ; 
+    rubox["boxmin"]->setFloat( -sz/2.f, -sz/2.f, -sz/2.f );
+    rubox["boxmax"]->setFloat(  sz/2.f,  sz/2.f,  sz/2.f );
+
+    optix::Geometry sphere ; 
+    sphere = context->createGeometry();
+    sphere->setPrimitiveCount(nbox);
+    sphere->setBoundingBoxProgram( context->createProgramFromPTXFile( sphere_ptx , "bounds" ) );
+    sphere->setIntersectionProgram( context->createProgramFromPTXFile( sphere_ptx , "intersect" ) );
+    sphere["sphere"]->setFloat( 0, 0, 0, 10.0 );
+
+    //optix::Geometry& instance = rubox ; 
+    optix::Geometry& instance = sphere ; 
 #endif
 
-    instance["boxmin"]->setFloat( -sz/2.f, -sz/2.f, -sz/2.f );
-    instance["boxmax"]->setFloat(  sz/2.f,  sz/2.f,  sz/2.f );
+    //const char* closest_hit = "closest_hit_radiance0" ; 
+    const char* closest_hit = "closest_hit_textured" ; 
 
+#ifdef USE_OCTX
+    void* mat_ptr = OCtx_create_material( main_ptx,  closest_hit, entry_point_index ); 
+    void* assembly_ptr = OCtx_create_instanced_assembly( transforms, instance_ptr, mat_ptr );
+    //optix::Material mat = optix::Material::take((RTmaterial)mat_ptr); 
+    //optix::Group assembly = optix::Group::take((RTgroup)assembly_ptr); 
+    void* top_ptr = OCtx_create_group("top_object", assembly_ptr );  
+    void* top_accel = OCtx_create_acceleration("Trbvh");
+    OCtx_set_group_acceleration( top_ptr, top_accel ); 
 
+#else
     optix::Material mat = context->createMaterial();
-    mat->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( main_ptx, "closest_hit_radiance0" ));
-
+    mat->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( main_ptx, closest_hit ));
+    optix::Group assembly = MakeInstancedAssembly(context, transforms, mat, instance); 
     optix::Group top = context->createGroup() ; 
     top->setAcceleration( context->createAcceleration( "Trbvh" ) ); 
     context["top_object"]->set( top );
-
-    optix::Group assembly = context->createGroup();
-    assembly->setChildCount( nu*nv*nw );
-    assembly->setAcceleration( context->createAcceleration( "Trbvh" ) ); 
     top->addChild(assembly);
-
-    optix::Acceleration instance_accel = context->createAcceleration( "Trbvh" );
-
-    unsigned ichild(0); 
-    for( unsigned u = 0; u < nu; ++u ) { 
-    for( unsigned v = 0; v < nv ; ++v ) { 
-    for( unsigned w = 0; w < nw ; ++w ) { 
-
-        optix::Transform xform = context->createTransform();
-
-        glm::vec4 rot( rand(), rand(), rand(),  rand()*360.f );
-        //glm::vec4 rot(  0,  0, 1,  0 );
-        glm::vec3 sca( 0.5 ) ; 
-        glm::vec3 tla(  10.f*u , 10.f*v , -10.f*w ) ; 
-        glm::mat4 m4 = make_transform("trs", tla, rot, sca );
-
-        bool transpose = true ; 
-        optix::Matrix4x4 m4_( glm::value_ptr(m4)  ) ;
-        xform->setMatrix(transpose, m4_.getData(), 0); 
-
-        assembly->setChild(ichild, xform);
-        //unsigned instance_index = ichild ;  
-        ichild++ ;
-
-        optix::GeometryInstance pergi = context->createGeometryInstance() ;
-        pergi->setMaterialCount(1);
-        pergi->setMaterial(0, mat );
-        pergi->setGeometry( instance );
-        //pergi["instance_index"]->setUint(instance_index);
-
-        optix::GeometryGroup perxform = context->createGeometryGroup();
-        perxform->addChild(pergi); 
-        perxform->setAcceleration(instance_accel) ; 
-
-        xform->setChild(perxform);
-    }
-    }
-    }
+#endif
 
 
-    float near = 11.f ; 
+
+
+    float near = 1.f ;   // when cut into earth, see circle of back to front geography from inside the sphere
     float scene_epsilon = near ; 
-
+#ifdef USE_OCTX
+    OCtx_set_context_viewpoint( eye, U, V, W, scene_epsilon );
+#else
     context[ "scene_epsilon"]->setFloat( scene_epsilon ); 
     context[ "eye"]->setFloat( eye.x, eye.y, eye.z  );
     context[ "U"  ]->setFloat( U.x, U.y, U.z  );
     context[ "V"  ]->setFloat( V.x, V.y, V.z  );
     context[ "W"  ]->setFloat( W.x, W.y, W.z  );
     context[ "radiance_ray_type"   ]->setUint( 0u ); 
-
+#endif
 
     NPY<unsigned char>* out = NPY<unsigned char>::make(height, width, 4);
 #ifdef USE_OCTX
@@ -281,31 +371,21 @@ int main(int argc, char** argv)
     context["output_buffer"]->set( output_buffer );
 #endif
 
-
-
     LOG(info) << "[ launch " ; 
-
-    auto t0 = std::chrono::high_resolution_clock::now();
-
-    context->launch( entry_point_index , 0, 0  ); 
-
-    auto t1 = std::chrono::high_resolution_clock::now();
-
-    context->launch( entry_point_index , width, height  ); 
-
-    auto t2 = std::chrono::high_resolution_clock::now();
-
+    double t_prelaunch ; 
+    double t_launch ; 
+#ifdef USE_OCTX
+    OCtx_launch_instrumented( entry_point_index, width, height, t_prelaunch, t_launch );
+#else
+    LaunchInstrumented( context, entry_point_index, width, height, t_prelaunch, t_launch ); 
+#endif
     LOG(info) << "] launch " ; 
-
-
-    std::chrono::duration<double> t_prelaunch = t1 - t0; 
-    std::chrono::duration<double> t_launch    = t2 - t1; 
 
     std::cout 
          << " nbox " << nbox 
          << " rtxmode " << std::setw(2) << rtxmode 
-         << " prelaunch " << std::setprecision(4) << std::fixed << std::setw(15) << t_prelaunch.count() 
-         << " launch    " << std::setprecision(4) << std::fixed << std::setw(15) << t_launch.count() 
+         << " prelaunch " << std::setprecision(4) << std::fixed << std::setw(15) << t_prelaunch 
+         << " launch    " << std::setprecision(4) << std::fixed << std::setw(15) << t_launch 
          << std::endl 
          ;
 

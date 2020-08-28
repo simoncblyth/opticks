@@ -38,10 +38,21 @@ make
 
 make install   
 
-$name
+earth=$HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
+if [ -f "$earth" ]; then 
+    path=$earth  
+else
+    path=/tmp/SPPMTest.ppm
+fi
 
+echo $name $path
+$name $path
 [ ! $? -eq 0 ] && echo runtime error && exit 1
 
 
-open /tmp/$USER/opticks/$name//out.ppm
+open /tmp/$USER/opticks/$name/out.ppm
+
+
+
+
 

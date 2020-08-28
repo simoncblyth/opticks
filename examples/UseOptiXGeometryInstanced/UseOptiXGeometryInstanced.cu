@@ -20,24 +20,23 @@
 #include <optix_world.h>
 using namespace optix;
 
-
 // from optixrap/cu/helpers.h
 
 // Convert a float3 in [0,1)^3 to a uchar4 in [0,255]^4 -- 4th channel is set to 255
 static __device__ __inline__ optix::uchar4 make_color(const optix::float3& c)
 {
-    return optix::make_uchar4( static_cast<unsigned char>(__saturatef(c.z)*255.99f),  // B 
+    return optix::make_uchar4( static_cast<unsigned char>(__saturatef(c.x)*255.99f),  // R 
                                static_cast<unsigned char>(__saturatef(c.y)*255.99f),  // G 
-                               static_cast<unsigned char>(__saturatef(c.x)*255.99f),  // R 
+                               static_cast<unsigned char>(__saturatef(c.z)*255.99f),  // B 
                                255u);                                                 // A 
 }
 
 /*
 static __device__ __inline__ optix::uchar4 make_color(const optix::float4& c)
 {
-    return optix::make_uchar4( static_cast<unsigned char>(__saturatef(c.z)*255.99f),  // B 
-                               static_cast<unsigned char>(__saturatef(c.y)*255.99f),  // G
-                               static_cast<unsigned char>(__saturatef(c.x)*255.99f),  // R 
+    return optix::make_uchar4( static_cast<unsigned char>(__saturatef(c.x)*255.99f),   // R 
+                               static_cast<unsigned char>(__saturatef(c.y)*255.99f),   // G
+                               static_cast<unsigned char>(__saturatef(c.z)*255.99f),   // B 
                                static_cast<unsigned char>(__saturatef(c.w)*255.99f));  // A
 }
 */
@@ -49,8 +48,6 @@ struct PerRayData_radiance
   float  importance;
   int depth;
 };
-
-
 
 
 rtDeclareVariable(float3,        eye, , );
@@ -76,7 +73,7 @@ rtDeclareVariable(PerRayData_radiance, prd_radiance, rtPayload, );
 rtDeclareVariable(optix::Ray,           raycur, rtCurrentRay, );
 rtDeclareVariable(float,                  t, rtIntersectionDistance, );
 
-
+rtDeclareVariable(int4,   tex_param, , );
 
 
 RT_PROGRAM void raygen()
@@ -106,6 +103,30 @@ RT_PROGRAM void closest_hit_radiance0()
   //prd_radiance.result = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, shading_normal))*0.5f + 0.5f;
   //prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
 }
+
+RT_PROGRAM void closest_hit_textured()
+{
+  float3 isect = raycur.origin + t*raycur.direction ; 
+  const float3 local = rtTransformPoint( RT_WORLD_TO_OBJECT, isect );  
+  const float3 norm = normalize(local) ;  
+
+  float f_theta = acos( norm.z )/M_PIf;                 // polar 0->pi ->  0->1
+  float f_phi_ = atan2( norm.y, norm.x )/(2.f*M_PIf) ;  // azimuthal 0->2pi ->  0->1
+  float f_phi = f_phi_ > 0.f ? f_phi_ : f_phi_ + 1.f ;  //  
+
+  int texture_id = tex_param.w ; 
+  unsigned layer = 0u ; 
+  uchar4 val = rtTex2DLayered<uchar4>( texture_id, f_phi, f_theta, layer );
+  float3 result = make_float3( float(val.x)/255.99f,  float(val.y)/255.99f,  float(val.z)/255.99f ) ;   
+
+  prd_radiance.result = result ;  ; 
+}
+
+
+
+
+
+
 RT_PROGRAM void miss()
 {
   prd_radiance.result = make_float3(1.f, 1.f, 1.f) ;
@@ -124,47 +145,6 @@ RT_PROGRAM void exception()
 {
     //rtPrintExceptionDetails();
 }
-
-
-/*
-Commenting out "rtPrintExceptionDetails()" gets rid of the .f64 in the ptx
-
-    [blyth@localhost UseOptiXGeometryInstancedStandalone]$ grep .f64 /tmp/blyth/opticks/UseOptiXGeometryInstancedStandalone/ptx/UseOptiXGeometryInstancedStandalone_generated_UseOptiXGeometryInstancedStandalone.cu.ptx
-    [blyth@localhost UseOptiXGeometryInstancedStandalone]$ 
-
-    [blyth@localhost UseOptiXGeometryInstancedStandalone]$ grep f64 /tmp/blyth/opticks/UseOptiXGeometryInstancedStandalone/ptx/UseOptiXGeometryInstancedStandalone_generated_UseOptiXGeometryInstancedStandalone.cu.ptx
-        .reg .f64   %fd<9>;
-        cvt.ftz.f64.f32 %fd1, %f1;
-        cvt.ftz.f64.f32 %fd2, %f6;
-        cvt.ftz.f64.f32 %fd3, %f3;
-        cvt.ftz.f64.f32 %fd4, %f2;
-        st.local.v2.f64     [%rd52+32], {%fd4, %fd3};
-        cvt.ftz.f64.f32 %fd5, %f5;
-        cvt.ftz.f64.f32 %fd6, %f4;
-        st.local.v2.f64     [%rd52+48], {%fd6, %fd5};
-        st.local.f64    [%rd52+64], %fd2;
-        cvt.ftz.f64.f32 %fd7, %f8;
-        cvt.ftz.f64.f32 %fd8, %f7;
-        st.local.v2.f64     [%rd52+80], {%fd8, %fd7};
-    [blyth@localhost UseOptiXGeometryInstancedStandalone]$ 
-
-
-
-[blyth@localhost UseOptiXGeometryInstancedStandalone]$ grep .visible /tmp/blyth/opticks/UseOptiXGeometryInstancedStandalone/ptx/UseOptiXGeometryInstancedStandalone_generated_UseOptiXGeometryInstancedStandalone.cu.ptx | c++filt
-.visible .entry raygen()(
-.visible .entry closest_hit_radiance0()(
-.visible .entry miss()(
-.visible .entry printTest0()(
-.visible .entry printTest1()(
-.visible .entry exception()(
-[blyth@localhost UseOptiXGeometryInstancedStandalone]$ 
-
-
-
-
-
-*/
-
 
 
 

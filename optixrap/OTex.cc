@@ -38,19 +38,25 @@ from the opaque type : so need to wrap absolutely everything ?
 **/
 
 
-void OTex::Upload2DLayeredTexture(const char* param_key, const char* domain_key, const NPYBase* inp, const char* config)
+void OTex::Upload2DLayeredTexture(const char* param_key, const NPYBase* inp, const char* config)
+{
+    void* buffer_ptr = OCtx_create_buffer(inp, NULL, 'I', 'L' ); 
+    unsigned tex_id = OCtx_create_texture_sampler(buffer_ptr, config ); 
+    OCtx_set_texture_param( buffer_ptr, tex_id, param_key );  
+}
+
+void OTex::UploadDomainFloat4(const char* domain_key, const NPYBase* inp)
 {
     float xmin = inp->getMeta<float>("xmin", "0.") ; 
     float xmax = inp->getMeta<float>("xmax", "1.") ; 
     float ymin = inp->getMeta<float>("ymin", "0.") ; 
     float ymax = inp->getMeta<float>("ymax", "1.") ; 
     LOG(info) << " xmin " << xmin << " xmax " << xmax << " ymin " << ymin << " ymax " << ymax ;
-    OCtx_set_float4(domain_key, xmin, xmax, ymin, ymax);  
-
-    void* buffer_ptr = OCtx_create_buffer(inp, NULL, 'I', 'L' ); 
-    unsigned tex_id = OCtx_create_texture_sampler(buffer_ptr, config ); 
-    OCtx_set_texture_param( buffer_ptr, tex_id, param_key );  
+    OCtx_set_context_float4(domain_key, xmin, xmax, ymin, ymax);  
 }
+
+
+
 
 /**
 OTex::IndexMode

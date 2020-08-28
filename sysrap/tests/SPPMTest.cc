@@ -10,7 +10,7 @@ void test_MakeWriteRead()
     //const char* config = "checkerboard" ; 
     //const char* config = "horizontal_gradient" ; 
     //const char* config = "vertical_gradient" ; 
-    const char* config = "vertical_gradient,add_border,add_midline" ; 
+    const char* config = "vertical_gradient,add_border,add_midline,add_quadline" ; 
 
     const int width = 1024 ; 
     const int height = 512 ; 

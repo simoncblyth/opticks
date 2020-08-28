@@ -52,20 +52,15 @@ RT_PROGRAM void closest_hit_radiance0()
 
     float f_theta = acos( norm.z )/M_PIf;                 // polar 0->pi ->  0->1
     float f_phi_ = atan2( norm.y, norm.x )/(2.f*M_PIf) ;  // azimuthal 0->2pi ->  0->1
-    float f_phi = f_phi_ > 0.f ? f_phi_ : f_phi_ + 1.f ; 
-
-    //float tx = float(tex_param.y)*f_theta ;   // tex_param ( 1 4096 8192 1  ) 
-    //float ty = float(tex_param.z)*f_phi ; 
-
-    float tx = f_phi ;   // tex_param ( 1 4096 8192 1  ) 
-    float ty = f_theta ; 
+    float f_phi = f_phi_ > 0.f ? f_phi_ : f_phi_ + 1.f ;  // 
 
     int texture_id = tex_param.w ; 
-    uchar4 val = rtTex2DLayered<uchar4>( texture_id, tx, ty, 0u );
+    unsigned layer = 0u ; 
+    uchar4 val = rtTex2DLayered<uchar4>( texture_id, f_phi, f_theta, layer );
     float3 result = make_float3( float(val.x)/255.99f,  float(val.y)/255.99f,  float(val.z)/255.99f ) ;  
 
 #ifdef DUMP
-    rtPrintf("//UseOptiXTextureLayeredOKImgGeo.cu:raygen closest_hit_radiance0 tex_param (%d %d %d %d) norm (%f %f %f) f_theta/phi (%f %f) txty (%f %f)  \n", 
+    rtPrintf("//UseOptiXTextureLayeredOKImgGeo.cu:raygen closest_hit_radiance0 tex_param (%d %d %d %d) norm (%f %f %f) f_theta/phi (%f %f)  \n", 
          tex_param.x,
          tex_param.y,
          tex_param.z,
@@ -75,11 +70,6 @@ RT_PROGRAM void closest_hit_radiance0()
          norm.z, 
          f_theta, 
          f_phi,
-         tx,
-         ty
-         //val.x, 
-         //val.y, 
-         //val.z 
      );
 #endif
 

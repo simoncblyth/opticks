@@ -105,7 +105,6 @@ optix::Geometry CreateGeometry( optix::Context context, unsigned prim_count, con
     optix::Program in = context->createProgramFromPTXFile( ptxpath, intersect_func ) ;  
     geom->setBoundingBoxProgram(bd);
     geom->setIntersectionProgram(in);
-    geom["sphere"]->setFloat( 0, 0, 0, 1.5 );
     LOG(info) << "] ptxpath " << ptxpath ; 
     return geom;
 }
@@ -178,7 +177,7 @@ int main(int argc, char** argv)
     const char* tex_config = "INDEX_NORMALIZED_COORDINATES" ; 
 #ifdef USE_OCTX
     OCtx_();  
-    OTex::Upload2DLayeredTexture("tex_param", "tex_domain", inp, tex_config);   
+    OTex::Upload2DLayeredTexture("tex_param", inp, tex_config);   
     //optix::Context context = optix::Context::take((RTcontext)OCtx_get()) ;  // interim kludge until everything is wrapped 
 #else
     optix::Context context = optix::Context::create();
@@ -239,7 +238,7 @@ int main(int argc, char** argv)
     float near = 0.01f ;
     float scene_epsilon = near ;
 #ifdef USE_OCTX
-    OCtx_set_viewpoint( eye, U, V, W, scene_epsilon ); 
+    OCtx_set_context_viewpoint( eye, U, V, W, scene_epsilon ); 
 #else
     rg[ "scene_epsilon"]->setFloat( scene_epsilon );
     rg[ "eye"]->setFloat( eye.x, eye.y, eye.z  );
@@ -249,11 +248,14 @@ int main(int argc, char** argv)
     rg[ "radiance_ray_type"   ]->setUint( 0u );
 #endif
 
-    const char* ptxpath = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
+    const char* sphere_ptx = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
+    const char* ptxpath = sphere_ptx ; 
 #ifdef USE_OCTX
     void* geo_ptr = OCtx_create_geometry(1u, ptxpath, "bounds", "intersect" ); 
+    OCtx_set_geometry_float4( geo_ptr, "sphere",  0, 0, 0, 1.5 );   
+
     void* mat_ptr = OCtx_create_material( main_ptx, "closest_hit_radiance0", entry_point_index );
-    void* gi_ptr  = OCtx_create_geometry_instance(geo_ptr, mat_ptr);  
+    void* gi_ptr  = OCtx_create_geometryinstance(geo_ptr, mat_ptr);  
 
     //optix::Geometry geo = optix::Geometry::take((RTgeometry)geo_ptr); 
     //optix::Material mat = optix::Material::take((RTmaterial)mat_ptr);  
@@ -261,16 +263,17 @@ int main(int argc, char** argv)
     //optix::GeometryGroup gg = optix::GeometryGroup::take((RTgeometrygroup)gg_ptr);  
 
     std::vector<void*> vgi = { gi_ptr } ; 
-    void* gg_ptr = OCtx_create_geometry_group( vgi ); 
+    void* gg_ptr = OCtx_create_geometrygroup( vgi ); 
     void* ac_ptr = OCtx_create_acceleration( "Trbvh" ); 
-    OCtx_set_acceleration( gg_ptr, ac_ptr ); 
-    OCtx_set_geometry_group_context_variable("top_object", gg_ptr ); 
+    OCtx_set_geometrygroup_acceleration( gg_ptr, ac_ptr ); 
+    OCtx_set_geometrygroup_context_variable("top_object", gg_ptr ); 
 
     OCtx_compile();  
     OCtx_validate();  
     OCtx_launch(entry_point_index , width, height); 
 #else
     optix::Geometry geo = CreateGeometry(context, 1u, ptxpath, "bounds", "intersect" ); 
+    geo["sphere"]->setFloat( 0, 0, 0, 1.5 );
     optix::Material mat = CreateMaterial(context, main_ptx, "closest_hit_radiance0", entry_point_index ); 
     optix::GeometryInstance gi = context->createGeometryInstance( geo, &mat, &mat+1 ) ;
 

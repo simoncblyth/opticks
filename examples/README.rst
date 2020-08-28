@@ -283,11 +283,17 @@ UseOptiXTextureLayeredOKImgGeo
 UseOptiXGeometryInstanced
     start from UseOptiXGeometryInstancedStandalone, plan:
     
-    1. use Opticks packages to reduce the amount of code
-    2. adopt OCtx watertight wrapper, adding whats needed for instancing  
-    3. add optional switch from box to sphere 
+    1. DONE: Opticks packages to reduce the amount of code
+    2. DONE: adopt OCtx watertight wrapper, adding whats needed for instancing  
+    3. DONE: add optional switch from box to sphere 
     4. get a layered texture to work with instances, such that 
        different groups of instances use different layers  
-    5. generate PPM of thousands of textured Earths  
+    5. DONE: generate PPM of thousands of textured Earths  
+
+UseOptiXGeometryInstancedOCtx
+    start from UseOptiXGeometryInstanced, using just OCtx 
+   
+    * test use of multiple layers 
+    * 1d layered float textures
 
 

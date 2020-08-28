@@ -2224,20 +2224,33 @@ void NPY<T>::setPart(const npart& p, unsigned int i)
 }
 
 
- 
+
+/**
+NPY<T>::setMat4
+------------------
+
+CAUTION: branch handling for different array shapes controlled by j_
+
+For the normal case of an array of shape (ni,4,4) with a single 
+matrix in each item slot the j_ of -1 is appropriate.
+
+For the special case of an array of shape (ni,nj,4,4) where there 
+is more than one matrix for each item slot the j_ value must 
+specify which of the nj to fill. 
+
+**/
 
 template <typename T> 
 void NPY<T>::setMat4(const glm::mat4& mat, int i, int j_, bool transpose)
 {
     T* dat = getValues();
 
-    // have to use j_ == -1, to indicate no such index
-    // as the usual approach of using default 0 wont work here  
-    // as depend on the 4,4 shape of the rest of the indices 
+    bool expect = j_ == -1 ? hasItemShape(4,4) : hasItemShape(-1,4,4) ; 
+    if(!expect) LOG(fatal) << "unexpected itemShape, shape: " << getShapeString() << " j_ " << j_  ; 
+    assert(expect);
 
     if( j_ == -1)
     { 
-        assert(hasItemShape(4,4));
         for(unsigned j=0 ; j < 4 ; j++)
         {
             for(unsigned k=0 ; k < 4 ; k++) 
@@ -2246,7 +2259,6 @@ void NPY<T>::setMat4(const glm::mat4& mat, int i, int j_, bool transpose)
    }
    else
    {
-        assert(hasItemShape(-1,4,4));
         unsigned j = j_ ; 
         for(unsigned k=0 ; k < 4 ; k++)
         {
@@ -2257,12 +2269,12 @@ void NPY<T>::setMat4(const glm::mat4& mat, int i, int j_, bool transpose)
 }
 
 
-
 template <typename T> 
 glm::mat4 NPY<T>::getMat4(int i, int j_) const 
 {
-    if(j_ == -1) assert(hasItemShape(4,4));
-    else         assert(hasItemShape(-1,4,4));
+    bool expect = j_ == -1 ? hasItemShape(4,4) : hasItemShape(-1,4,4) ; 
+    if(!expect) LOG(fatal) << "unexpected itemShape, shape: " << getShapeString() << " j_ " << j_  ; 
+    assert(expect);
 
     int j = j_ == -1 ? 0 : j_ ; 
 

@@ -615,6 +615,29 @@ float nglmext::angle_radians(float angle_degrees)
     return glm::pi<float>()*angle_degrees/180.f ; 
 }
 
+/**
+nglmext::make_transform
+--------------------------
+
+For fourth column translation unmodified the "t" must come last, ie "trs" ?? shouldnt that be order="srt"
+    
+Despite this intution from reading the code  there is the row-major business too..
+    
+See tests/NGLMExtTests.cc:test_make_transform it shows that 
+
+1. order argument "trs" : does scaling and rotation before translation, 
+2. order argument "srt" : does translation before rotation and scaling
+    
+Usually "trs" is the most convenient order to use
+
+* because want to orient about a nearby origin before translating into position
+* what is confusing is that to get the translation done last, 
+  needs to do glm::translate first 
+   
+
+**/
+
+
 glm::mat4 nglmext::make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal )
 {
     glm::mat4 mat(1.f) ;
@@ -630,19 +653,6 @@ glm::mat4 nglmext::make_transform(const std::string& order, const glm::vec3& tla
            case 't': mat = glm::translate(mat, tlat )    ; break ; 
         }
     }
-    // for fourth column translation unmodified the "t" must come last, ie "trs" ?? shouldnt that be order="srt"
-    //
-    // Despite this intution from reading the code  there is the row-major business too..
-    //
-    // See tests/NGLMExtTests.cc:test_make_transform it shows that 
-    // order argument "trs" : does scaling before translation, 
-    // order argument "srt" : does translation before scaling
-    //
-    // usually "trs" is the most convenient order to use
-    //
-    // * what is confusing is that to get the translation done last, 
-    //   needs to do glm::translate first 
-    //
     return mat  ; 
 }
 
