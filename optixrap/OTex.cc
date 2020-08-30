@@ -8,42 +8,8 @@
 #include "OCtx.hh"
 
 
-const plog::Severity OTex::LEVEL = PLOG::EnvLevel("OTex", "DEBUG") ; 
+const plog::Severity OTex::LEVEL = PLOG::EnvLevel("OTex", "INFO") ; 
 
-
-/**
-OTex::Upload2DLayeredTexture
----------------------------------
-
-Note reversed shape order of the texBuffer->setSize( width, height, depth)
-wrt to the shape of the input buffer.  
-
-For example with a landscape input PPM image of height 512 and width 1024 
-the natural array shape to use is (height, width, ncomp) ie (512,1024,3) 
-This is natural because it matches the row-major ordering of the image data 
-in PPM files starting with the top row (with a width) and rastering down 
-*height* by rows. 
-
-BUT when specifying the dimensions of the tex buffer it is necessary to use::
-
-     texBuffer->setSize(width, height, depth) 
-
-NB do not like having optix::Context in the interface..  it is OK to 
-use that within the implementation but need to avoid having it 
-in the interface... but without it in the interface cannot return it 
-from the opaque type : so need to wrap absolutely everything ?
-
-* Can cheat with void* of course ?
-
-**/
-
-
-void OTex::Upload2DLayeredTexture(const char* param_key, const NPYBase* inp, const char* config)
-{
-    void* buffer_ptr = OCtx_create_buffer(inp, NULL, 'I', 'L' ); 
-    unsigned tex_id = OCtx_create_texture_sampler(buffer_ptr, config ); 
-    OCtx_set_texture_param( buffer_ptr, tex_id, param_key );  
-}
 
 void OTex::UploadDomainFloat4(const char* domain_key, const NPYBase* inp)
 {

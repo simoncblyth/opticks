@@ -1324,12 +1324,20 @@ unsigned NPY<T>::count_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned
     return nsel ; 
 }
 
+/**
+NPY<T>::make_selection
+------------------------
+
+CPU equivalent of thrust stream compaction
+this is selecting items from src based on item values.
+When the AND of the (jj,kk) element of the item and the mask 
+is non-zero the item is selected.
+
+**/
+
 template <typename T>
 NPY<T>* NPY<T>::make_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask )
 {
-    // CPU equivalent of thrust stream compaction
-    // this is selecting items from src based the (jj,kk) element of
-    // the item ANDing with the mask 
 
     unsigned ni = src->getShape(0);
     assert( ni > 0);
@@ -1576,18 +1584,32 @@ NPY<T>* NPY<T>::make_dbg_like(NPY<T>* src, int label_)
 }
 
 
+/**
+NPY<T>::make_modulo
+---------------------
 
+Modulo selection of src array.  
 
+NB this is limited to 3d arrays. For a more general version
+use make_modulo_selection. 
+
+**/
 
 template <typename T>
 NPY<T>* NPY<T>::make_modulo(NPY<T>* src, unsigned int scaledown)
 {
+
+    assert(0 && "switch to more general make_modulo_selection"); 
+
     std::vector<T>& sdata = src->data();
     std::vector<T>  ddata ; 
 
-    unsigned int ni = src->getShape(0) ;
-    unsigned int nj = src->getShape(1) ;
-    unsigned int nk = src->getShape(2) ;
+    unsigned nd = src->getDimensions(); 
+    assert( nd == 3 ); 
+
+    unsigned ni = src->getShape(0) ;
+    unsigned nj = src->getShape(1) ;
+    unsigned nk = src->getShape(2) ;
 
     printf("make_modulo ni %d nj %d nk %d \n", ni, nj, nk );
 
@@ -1618,6 +1640,174 @@ NPY<T>* NPY<T>::make_modulo(NPY<T>* src, unsigned int scaledown)
 
     NPY<T>* dst = new NPY<T>(dshape,ddata,dmetadata) ;
     return dst ; 
+}
+
+
+
+/**
+NPY<T>::modulo_count
+---------------------
+
+Count items selected by modulo and index, where index < modulo.
+
+**/
+
+template <typename T>
+unsigned NPY<T>::modulo_count(unsigned ni, unsigned modulo, unsigned index)  // static
+{
+    unsigned count(0); 
+    for(unsigned i=0 ; i < ni ; i++ ) if( i % modulo == index ) count++ ; 
+    return count ; 
+}
+
+/**
+NPY<T>::make_modulo_selection
+------------------------------
+
+Construct a destination array from a source array by selecting 
+items according to a modulo and an index within that modulo.
+The index must be less than the modulo.
+
+For example with modulo 2, using index 0 or 1 will pick alternating items. 
+**/
+
+template <typename T>
+NPY<T>* NPY<T>::make_modulo_selection(const NPY<T>* src, unsigned modulo, unsigned index) // static
+{
+    assert( index < modulo ); 
+    unsigned ni = src->getNumItems(); 
+    unsigned dst_ni = modulo_count(ni, modulo, index); 
+
+    std::vector<int> shape(src->getShapeVector()) ; 
+    assert(shape[0] == int(ni)); 
+    shape[0] = dst_ni ; 
+
+    NPY<T>* dst = NPY<T>::make(shape);
+    dst->zero(); 
+
+    unsigned item_bytes = src->getNumBytes(1);  // from dimension 1
+
+    char* src_bytes = (char*)src->getBytes();
+    char* dst_bytes = (char*)dst->getBytes() ;    
+    
+    unsigned offset = 0 ; 
+    for(unsigned i=0 ; i < ni ; i++)
+    {  
+        if( i % modulo == index )
+        { 
+            memcpy( (void*)(dst_bytes + offset),(void*)(src_bytes + item_bytes*i), item_bytes ) ; 
+            offset += item_bytes ; 
+        }
+    }   
+    return dst ;  
+}
+
+
+/**
+NPY<T>::make_interleaved
+--------------------------
+
+Construct a destination array from multiple source arrays 
+by selecting items from each in turn creating an interleaved array.
+For example this can be used to reconstruct the original array from 
+those created by make_modulo_selection.
+
+**/
+
+template <typename T>
+NPY<T>* NPY<T>::make_interleaved( const std::vector<NPYBase*>& srcs )
+{
+    unsigned num_src = srcs.size(); 
+
+    unsigned item_bytes = 0 ; 
+    unsigned dst_ni = 0 ; 
+
+    for(unsigned s=0 ; s < num_src ; s++)
+    {
+         NPYBase* src = srcs[s] ; 
+         dst_ni += src->getNumItems();  
+         if( item_bytes == 0 )
+         {
+             item_bytes = src->getNumBytes(1); 
+         }
+         else
+         {
+              assert( item_bytes == src->getNumBytes(1) && "all sources must have the same itemsize" );
+         }
+    }
+
+    std::vector<int> shape(srcs[0]->getShapeVector()) ; 
+    shape[0] = dst_ni ; 
+
+    NPY<T>* dst = NPY<T>::make(shape);
+    dst->zero(); 
+    char* dst_bytes = (char*)dst->getBytes() ;    
+
+    for(unsigned s=0 ; s < num_src ; s++)
+    {
+        NPYBase* src = srcs[s]; 
+        char* src_bytes = (char*)src->getBasePtr(); 
+        unsigned sni = src->getNumItems(); 
+        for(unsigned si=0 ; si < sni ; si++)
+        {
+            unsigned di = num_src*si + s ;  ;      
+            memcpy( (void*)(dst_bytes + item_bytes*di),(void*)(src_bytes + item_bytes*si), item_bytes ) ; 
+        }
+    }
+    return dst ;  
+}
+
+/**
+NPY<T>::compare
+-----------------
+
+Itemwise comparison of array values. 
+
+
+**/
+
+template <typename T>
+unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, bool dump )
+{
+    LOG(info) << " a " << a->getShapeString(); 
+    LOG(info) << " b " << b->getShapeString(); 
+    assert( a->hasSameShape(b) ); 
+
+    unsigned ni = a->getNumItems(); 
+    unsigned nv = a->getNumValues(1); 
+    LOG(info) << " ni " << ni << " nv " << nv ; 
+     
+    unsigned mismatch_items(0); 
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        const T* av = a->getValuesConst(i, 0); 
+        const T* bv = b->getValuesConst(i, 0); 
+
+        unsigned mismatch_values(0); 
+        for(unsigned v=0 ; v < nv ;v++)
+        {
+            bool match = av[v] == bv[v] ; 
+            if(!match)
+            {
+                mismatch_values++ ; 
+                if(dump) 
+                {
+                    std::cout 
+                        << " mismatch_values " << std::setw(4) << mismatch_values
+                        << " i " << std::setw(4) << i 
+                        << " v " << std::setw(4) << v
+                        << " a " << std::setw(4) << av[v]
+                        << " b " << std::setw(4) << bv[v]
+                        << std::endl 
+                        ;
+                }
+            }
+        }       
+        if(mismatch_values > 0) mismatch_items++ ; 
+    }
+    LOG(info) << " mismatch_items " << mismatch_items ;
+    return mismatch_items ; 
 }
 
 

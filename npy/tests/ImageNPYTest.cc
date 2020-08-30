@@ -70,35 +70,6 @@ NPY<unsigned char>*  test_LoadPPM(const char* path, const bool yflip)
 }
 
 
-NPY<unsigned char>*  test_LoadPPMConcat(const char* path, const bool yflip, const unsigned num_concat)
-{
-    const unsigned ncomp = 3 ; 
-    const char* config = "add_border,add_midline,add_quadline" ;  
-
-    std::vector<std::string> paths ; 
-    for(int i=0 ; i < num_concat ; i++) paths.push_back(path); 
-
-    LOG(info) 
-         << " num_concat " << num_concat
-         << " path " << path 
-         << " yflip " << yflip
-         << " ncomp " << ncomp 
-         << " config " << config
-         ; 
-
-    NPY<unsigned char>* a = ImageNPY::LoadPPMConcat(paths, yflip, ncomp, config) ; 
-
-    LOG(info) << " array " << a->getShapeString() ; 
-
-    const char* opath = SStr::ReplaceEnd(path, ".ppm", "_concat.npy" ) ;
-    LOG(info) << "saving array to " << opath ; 
-
-    a->save(opath); 
-
-    return a ; 
-}
-
-
 
 void test_SavePPM(const char* path, NPY<unsigned char>* a, bool yflip)
 {
@@ -115,9 +86,6 @@ int main(int argc, char** argv)
 
     bool yflip0 = false ; 
     NPY<unsigned char>* a = test_LoadPPM(path, yflip0); 
-
-    //unsigned num_concat = 3 ; 
-    //test_LoadPPMConcat(path, yflip0, num_concat );  
 
     bool yflip1 = false ;  
     test_SavePPM(path2, a, yflip1); 

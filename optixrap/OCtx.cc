@@ -15,6 +15,7 @@
 
 #include <optixu/optixpp_namespace.h>
 #include "OFormat.hh"
+#include "OBuffer.hh"
 #include "OTex.hh"
 
 #endif
@@ -71,7 +72,7 @@ struct OCtx
         optix::Variable var = context->queryVariable(key); 
         return var.get() != NULL ; 
     }
-    void* create_buffer(const NPYBase* arr, const char* key, const char type, const char flag)
+    void* create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item )
     {
         unsigned buffer_type = 0 ; 
         switch(type)
@@ -89,6 +90,8 @@ struct OCtx
         }
 
         unsigned buffer_desc = buffer_type | buffer_flag ; 
+        LOG(LEVEL) << " buffer_desc " << OBuffer::BufferDesc(buffer_desc) ; 
+
         optix::Buffer buf = context->createBuffer(buffer_desc) ;  
 
         unsigned multiplicity = arr->getShape(-1) ;  // last shape dimension -> multiplicity -> buffer format
@@ -96,14 +99,17 @@ struct OCtx
         RTformat format = OFormat::ArrayType(arr); 
         buf->setFormat( format ); 
 
-        LOG(LEVEL) << " arr " << arr->getShapeString() ; 
+        LOG(LEVEL) << " arr " << arr->getShapeString() << " item " << item ; 
 
         unsigned nd = arr->getDimensions(); 
         if( nd == 2 )
         {
             unsigned width = arr->getShape(0); 
             buf->setSize(width);   
-            LOG(LEVEL) << " width " << width ; 
+            LOG(LEVEL) 
+                << " nd " << nd
+                << " width " << width
+                ; 
         }
         else if( nd == 3 )
         {
@@ -111,6 +117,7 @@ struct OCtx
             unsigned width = arr->getShape(1) ; 
             buf->setSize(width, height);   
             LOG(LEVEL) 
+                << " nd " << nd
                 << " height " << height 
                 << " width " << width 
                 ; 
@@ -122,6 +129,7 @@ struct OCtx
             unsigned width = arr->getShape(2) ; 
             buf->setSize(width, height, depth);   
             LOG(LEVEL) 
+                << " nd " << nd
                 << " depth " << depth 
                 << " height " << height 
                 << " width " << width 
@@ -137,9 +145,9 @@ struct OCtx
         RTbuffer bufPtr = bufObj->get(); 
         void* ptr = bufPtr ; 
 
-        if(type == 'I' || type == 'B')
+        if(type == 'I' || type == 'B') // input buffer or input-output buffer
         {
-            upload_buffer( arr, ptr ); 
+            upload_buffer( arr, ptr, item ); 
         }
         return ptr ; 
     } 
@@ -175,16 +183,25 @@ struct OCtx
             assert(0); 
         }
     }
-    void upload_buffer( const NPYBase* arr, void* buffer_ptr )
+    void upload_buffer( const NPYBase* arr, void* buffer_ptr, int item )
     {
         RTbuffer bufPtr = (RTbuffer)buffer_ptr ;  // recovering the buffer from the void* ptr 
         optix::Buffer buf = optix::Buffer::take(bufPtr) ;
 
         void* buf_data = buf->map() ; 
-        arr->write_(buf_data); 
+
+        if( item < 0 )
+        {
+            arr->write_(buf_data); 
+        }
+        else
+        {
+            arr->write_item_(buf_data, item); 
+        }
+
         buf->unmap(); 
     }
-    void download_buffer( NPYBase* arr, const char* key )
+    void download_buffer( NPYBase* arr, const char* key, int item)
     {
         bool exists = has_variable( key ); 
         if(!exists) LOG(fatal) << "no buffer in context with key " << key  ; 
@@ -192,7 +209,16 @@ struct OCtx
 
         optix::Buffer buf = context[key]->getBuffer(); 
         void* buf_data = buf->map() ; 
-        arr->read(buf_data); 
+
+        if( item < 0 )
+        {
+            arr->read_(buf_data); 
+        }
+        else
+        {
+            arr->read_item_(buf_data, item); 
+        }
+
         buf->unmap(); 
     }
 
@@ -329,6 +355,8 @@ struct OCtx
 
     void launch_instrumented( unsigned entry_point_index, unsigned width, unsigned height, double& t_prelaunch, double& t_launch  )
     {
+        LOG(LEVEL) << "[" ; 
+
         auto t0 = std::chrono::high_resolution_clock::now();
 
         context->launch( entry_point_index , 0, 0  );
@@ -344,13 +372,41 @@ struct OCtx
 
         t_prelaunch = t_prelaunch_.count() ;
         t_launch = t_launch_.count() ;
+
+        std::cout 
+             << " prelaunch " << std::setprecision(4) << std::fixed << std::setw(15) << t_prelaunch 
+             << " launch    " << std::setprecision(4) << std::fixed << std::setw(15) << t_launch 
+             << std::endl 
+             ;   
+        LOG(LEVEL) << "]" ; 
     }
     unsigned create_texture_sampler( void* buffer_ptr, const char* config )
     {
         RTbuffer bufPtr = (RTbuffer)buffer_ptr ;  
         optix::Buffer buffer = optix::Buffer::take(bufPtr) ;
         unsigned nd = buffer->getDimensionality() ;    
-        LOG(info) << "[ creating tex_sampler with buffer of dimensionality nd " << nd ;  
+        RTsize depth(0);  
+        RTsize height(0);  
+        RTsize width(0);  
+
+        switch(nd){
+            case 1: buffer->getSize(width)               ; break ; 
+            case 2: buffer->getSize(width,height)        ; break ; 
+            case 3: buffer->getSize(width,height,depth)  ; break ;
+            default: assert(0)                           ; break ; 
+        }
+
+        bool layered = depth > 0 ; 
+        //unsigned array_size = layered ? depth : 1u ; 
+        unsigned array_size = 1u ;   // setting to anything other than 1 segments ?
+
+        LOG(LEVEL) 
+            << " nd " << nd 
+            <<  " (depth, height, width )  (" << depth << " " << height << " " << width << ")" 
+            << " layered " << ( layered ? "Y" : "N" )
+            << " array_size " << array_size 
+            ; 
+
         optix::TextureSampler tex = context->createTextureSampler(); 
 
         //RTwrapmode wrapmode = RT_WRAP_REPEAT ; 
@@ -359,7 +415,7 @@ struct OCtx
         //RTwrapmode wrapmode = RT_WRAP_CLAMP_TO_BORDER ; 
         tex->setWrapMode(0, wrapmode);
         tex->setWrapMode(1, wrapmode);
-        //tex->setWrapMode(2, wrapmode);   corresponds to layer?
+        tex->setWrapMode(2, wrapmode);  // is this needed with layerd ?
 
         RTfiltermode filtermode = RT_FILTER_NEAREST ;  // RT_FILTER_LINEAR 
         RTfiltermode minification = filtermode ; 
@@ -375,6 +431,13 @@ struct OCtx
         //RTtexturereadmode readmode = RT_TEXTURE_READ_NORMALIZED_FLOAT ; // return floating point values normalized by the range of the underlying type
         RTtexturereadmode readmode = RT_TEXTURE_READ_ELEMENT_TYPE ;  // return data of the type of the underlying buffer
         // when the underlying type is float the is no difference between RT_TEXTURE_READ_NORMALIZED_FLOAT and RT_TEXTURE_READ_ELEMENT_TYPE
+
+        /*
+        tex->setMipLevelCount(1u);
+        LOG(LEVEL) << "[ setArraySize " << array_size ; 
+        tex->setArraySize(array_size);     // deprecated call : setting to anything other than 1 segments 
+        LOG(LEVEL) << "] setArraySize " << array_size ; 
+        */
 
         tex->setReadMode( readmode ); 
         tex->setMaxAnisotropy(1.0f);
@@ -408,6 +471,40 @@ struct OCtx
         LOG(info) << param_key << " ( " << param.x << " " << param.y << " " << param.z << " " << param.w << " " << " ) " << " ni/nj/nk/tex_id " ; 
     }
 
+/**
+upload_2d_texture_layered
+---------------------------------
+
+Note reversed shape order of the texBuffer->setSize( width, height, depth)
+wrt to the shape of the input buffer.  
+
+For example with a landscape input PPM image of height 512 and width 1024 
+the natural array shape to use is (height, width, ncomp) ie (512,1024,3) 
+This is natural because it matches the row-major ordering of the image data 
+in PPM files starting with the top row (with a width) and rastering down 
+*height* by rows. 
+
+BUT when specifying the dimensions of the tex buffer it is necessary to use::
+
+     texBuffer->setSize(width, height, depth) 
+
+NB do not like having optix::Context in the interface..  it is OK to 
+use that within the implementation but need to avoid having it 
+in the interface... but without it in the interface cannot return it 
+from the opaque type : so need to wrap absolutely everything ?
+
+* Can cheat with void* of course ?
+
+**/
+
+    void upload_2d_texture_layered(const char* param_key, const NPYBase* inp, const char* config, int item)
+    {
+        LOG(LEVEL) << "[" ; 
+        void* buffer_ptr = OCtx_create_buffer(inp, NULL, 'I', 'L', item ); 
+        unsigned tex_id = OCtx_create_texture_sampler(buffer_ptr, config ); 
+        OCtx_set_texture_param( buffer_ptr, tex_id, param_key );  
+        LOG(LEVEL) << "]" ; 
+    }
 
 
     void set_geometry_float4( void* geometry_ptr, const char* key, float x, float y, float z, float w )
@@ -455,6 +552,8 @@ struct OCtx
         optix::Material mat = optix::Material::take((RTmaterial)material_ptr);   
        
         unsigned num_tr = transforms->getNumItems() ; 
+        LOG(LEVEL) << " num_tr " << num_tr << " sh " << transforms->getShapeString(); 
+
         optix::Group assembly = context->createGroup();
         assembly->setChildCount( num_tr );
         assembly->setAcceleration( context->createAcceleration( "Trbvh" ) );  
@@ -511,12 +610,18 @@ struct OCtx
         return ptr ; 
     }
 
+    void group_add_child_group( void* group_ptr , void* child_group_ptr )
+    {
+        optix::Group group = optix::Group::take((RTgroup)group_ptr); 
+        optix::Group child = optix::Group::take((RTgroup)child_group_ptr); 
+        group->addChild(child);
+    }
 
 };
 
 #endif
 
-const plog::Severity OCtx::LEVEL = PLOG::EnvLevel("OCtx", "DEBUG"); 
+const plog::Severity OCtx::LEVEL = PLOG::EnvLevel("OCtx", "INFO"); 
 OCtx* OCtx::INSTANCE = NULL ; 
 OCtx* OCtx_()
 {
@@ -526,11 +631,11 @@ OCtx* OCtx_()
 void* OCtx_get() { return OCtx_()->get() ;  }
 bool  OCtx_has_variable( const char* key){ return OCtx_()->has_variable(key) ; }
 
-void* OCtx_create_buffer(const NPYBase* arr, const char* key, char type, char flag) { return OCtx_()->create_buffer(arr, key, type, flag); }
+void* OCtx_create_buffer(const NPYBase* arr, const char* key, char type, char flag, int item) { return OCtx_()->create_buffer(arr, key, type, flag, item); }
 void* OCtx_get_buffer(const char* key) {                                              return OCtx_()->get_buffer(key);  }
 void  OCtx_desc_buffer(void* ptr) {                              OCtx_()->desc_buffer(ptr); }
-void  OCtx_upload_buffer(const NPYBase* arr, void* buffer_ptr) { OCtx_()->upload_buffer(arr, buffer_ptr); }
-void  OCtx_download_buffer(NPYBase* arr, const char* key) {      OCtx_()->download_buffer(arr, key); }
+void  OCtx_upload_buffer(const NPYBase* arr, void* buffer_ptr, int item) { OCtx_()->upload_buffer(arr, buffer_ptr, item); }
+void  OCtx_download_buffer(NPYBase* arr, const char* key, int item) {      OCtx_()->download_buffer(arr, key, item); }
 
 void  OCtx_set_raygen_program(    unsigned entry_point_index, const char* ptx_path, const char* func ) { OCtx_()->set_raygen_program(entry_point_index, ptx_path, func ); }
 void  OCtx_set_miss_program(      unsigned entry_point_index, const char* ptx_path, const char* func ) { OCtx_()->set_miss_program(entry_point_index, ptx_path, func ); }
@@ -559,6 +664,8 @@ void  OCtx_launch_instrumented(unsigned entry_point_index, unsigned width, unsig
 
 unsigned OCtx_create_texture_sampler( void* buffer_ptr, const char* config ) { return OCtx_()->create_texture_sampler(buffer_ptr, config); }
 void     OCtx_set_texture_param( void* buffer_ptr, unsigned tex_id, const char* param_key ) { OCtx_()->set_texture_param(buffer_ptr, tex_id, param_key); }
+void     OCtx_upload_2d_texture_layered(const char* param_key, const NPYBase* inp, const char* config, int item){  OCtx_()->upload_2d_texture_layered(param_key, inp, config, item) ; }
+
 
 void  OCtx_set_geometry_float4(void* geometry_ptr, const char* key, float x, float y, float z, float w ) { OCtx_()->set_geometry_float4(geometry_ptr, key, x, y, z, w); }
 void  OCtx_set_geometry_float3(void* geometry_ptr, const char* key, float x, float y, float z) {           OCtx_()->set_geometry_float3(geometry_ptr, key, x, y, z); }
@@ -574,5 +681,6 @@ void* OCtx_create_transform( bool transpose, const float* m44, const float* inve
 void* OCtx_create_instanced_assembly( NPYBase* transforms, const void* geometry_ptr, const void* material_ptr ){ return OCtx_()->create_instanced_assembly(transforms, geometry_ptr, material_ptr) ; }
 
 void* OCtx_create_group( const char* key, const void* child_group_ptr ){ return OCtx_()->create_group( key, child_group_ptr ); }
+void  OCtx_group_add_child_group( void* group_ptr , void* child_group_ptr ){     OCtx_()->group_add_child_group( group_ptr, child_group_ptr ); }
 
 

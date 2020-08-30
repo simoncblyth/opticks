@@ -148,8 +148,14 @@ class NPY_API NPY : public NPYBase {
        static unsigned count_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
        static unsigned copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
        unsigned write_selection(NPY<T>* dst, unsigned jj, unsigned kk, unsigned mask);
-   private:
+  private:
        static unsigned _copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
+   public:
+       static unsigned modulo_count(unsigned ni, unsigned modulo, unsigned index); 
+       static NPY<T>* make_modulo_selection(const NPY<T>* src, unsigned modulo, unsigned index); 
+       static NPY<T>* make_interleaved( const std::vector<NPYBase*>& srcs ); 
+   public:
+       static unsigned compare( const NPY<T>* a, const NPY<T>* b, bool dump ); 
    public:
        // ctor takes ownership of a copy of the inputs 
        NPY(const std::vector<int>& shape, const T*  data            , std::string& metadata) ;

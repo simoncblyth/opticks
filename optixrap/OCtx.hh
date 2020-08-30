@@ -43,11 +43,11 @@ OCtx* OXRAP_API OCtx_();
 void* OXRAP_API OCtx_get() ;
 bool  OXRAP_API OCtx_has_variable(const char* key);
 
-void* OXRAP_API OCtx_create_buffer(const NPYBase* arr, const char* key, const char type, const char flag); 
+void* OXRAP_API OCtx_create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item=-1); 
 void* OXRAP_API OCtx_get_buffer(const char* key); 
 void  OXRAP_API OCtx_desc_buffer(void* buffer_ptr); 
-void  OXRAP_API OCtx_upload_buffer(const NPYBase* arr, void* buffer_ptr); 
-void  OXRAP_API OCtx_download_buffer(    NPYBase* arr, const char* key); 
+void  OXRAP_API OCtx_upload_buffer(const NPYBase* arr, void* buffer_ptr, int item=-1); 
+void  OXRAP_API OCtx_download_buffer(    NPYBase* arr, const char* key, int item=-1); 
 
 void  OXRAP_API OCtx_set_raygen_program(    unsigned entry_point_index, const char* ptx_path, const char* func );
 void  OXRAP_API OCtx_set_miss_program(      unsigned entry_point_index, const char* ptx_path, const char* func );
@@ -71,6 +71,7 @@ void  OXRAP_API OCtx_launch_instrumented(unsigned entry_point_index, unsigned wi
 
 unsigned OXRAP_API OCtx_create_texture_sampler( void* buffer_ptr, const char* config );
 void     OXRAP_API OCtx_set_texture_param(      void* buffer_ptr, unsigned tex_id, const char* param_key ); 
+void     OXRAP_API OCtx_upload_2d_texture_layered(const char* param_key, const NPYBase* inp, const char* config, int item=-1);
 
 void  OXRAP_API OCtx_set_geometry_float4(void* geometry_ptr, const char* key, float x, float y, float z, float w );
 void  OXRAP_API OCtx_set_geometry_float3(void* geometry_ptr, const char* key, float x, float y, float z);
@@ -83,6 +84,7 @@ void* OXRAP_API OCtx_create_transform( bool transpose, const float* m44, const f
 void* OXRAP_API OCtx_create_instanced_assembly( NPYBase* transforms, const void* geometry_ptr, const void* material_ptr ); 
 
 void* OXRAP_API OCtx_create_group( const char* key, const void* child_group_ptr); 
+void  OXRAP_API OCtx_group_add_child_group( void* group_ptr , void* child_group_ptr ); 
 
 
 

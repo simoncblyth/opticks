@@ -3,6 +3,34 @@
 #include "OPTICKS_LOG.hh"
 
 
+void test_MakeTestImage()
+{
+    const char* path = "/tmp/SPPMTest_MakeTestImage.ppm" ;
+    const char* config = "vertical_gradient" ; 
+
+    const int width = 1024 ; 
+    const int height = 512 ; 
+    const int ncomp = 3 ;    
+    const bool yflip = true ; 
+    const int size = height*width*ncomp ; 
+
+    LOG(info) 
+         << " path " << path 
+         << " width " << width
+         << " height " << height
+         << " size " << size
+         << " yflip " << yflip
+         << " config " << config
+         ;    
+
+    unsigned char* imgdata = SPPM::MakeTestImage(width, height, ncomp, yflip, config);
+
+    SPPM::write(path, imgdata, width, height, ncomp, yflip );
+
+    SPPM::dumpHeader(path); 
+}
+
+
 void test_MakeWriteRead()
 {
     const char* path = "/tmp/SPPMTest.ppm" ;
@@ -58,6 +86,7 @@ int main(int argc, char** argv)
 {   
     OPTICKS_LOG(argc, argv);
 
+    test_MakeTestImage();      
     test_MakeWriteRead();      
 
     return 0 ; 

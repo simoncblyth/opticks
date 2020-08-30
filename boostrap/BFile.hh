@@ -37,6 +37,7 @@ class BRAP_API BFile {
        static bool LooksLikePath(const char* path) ; 
    
        static std::string CWD();
+       static const char* CurrentDirectoryName(); 
        static std::string Absolute(const char* rela, const char* relb=NULL, const char* relc=NULL);   
        static std::string AbsoluteCanonical(const char* relpath);  // paths must exist to be canonicalized, otherwise the .. dots remain 
 

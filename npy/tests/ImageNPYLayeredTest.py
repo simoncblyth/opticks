@@ -2,7 +2,7 @@
 """
 ::
 
-    ipython -i ImageNPYTest.py
+    ipython -i ImageNPYLayeredTest.py
 
 
 """
@@ -10,20 +10,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt 
 
-
-
-if 0:
-    p0 = os.path.expandvars("$TMP/ImageNPYTest.npy")
-    print(p0)
-    a = np.load(p0)
-    print(a.shape)
-
-    plt.ion()
-    plt.imshow(a)
-
-
 if 1:
-    p1 = "/tmp/SPPMTest_layered.npy"
+    p1 = "/tmp/SPPMTest_MakeTestImage_layered.npy" 
     b = np.load(p1)
     print(b.shape)
     assert b.shape[0] < 4       

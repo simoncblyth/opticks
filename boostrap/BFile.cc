@@ -318,6 +318,16 @@ std::string BFile::CWD()
     return p.string();
 }
 
+const char* BFile::CurrentDirectoryName()
+{
+    fs::path p = fs::current_path();  
+    fs::path s = p.stem(); 
+
+    std::string cdn = s.string(); 
+    return strdup(cdn.c_str()); 
+}
+
+
 std::string BFile::Absolute(const char* rela, const char* relb, const char* relc)
 {
     fs::path r(rela);

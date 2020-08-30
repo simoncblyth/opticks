@@ -288,6 +288,25 @@ void NPYBase::write_(void* dst ) const
     assert( m_base_ptr ); 
     memcpy( dst, m_base_ptr, getNumBytes(0) ); 
 }
+void NPYBase::write_item_(void* dst, unsigned item) const 
+{
+    assert( m_base_ptr ); 
+    unsigned item_size = getNumBytes(1); // from_dim 
+    memcpy( dst, (char*)m_base_ptr + item*item_size, item_size ); 
+}
+
+void NPYBase::read_(const void* src) 
+{
+    assert( m_base_ptr ); 
+    memcpy( m_base_ptr, src, getNumBytes(0) ); 
+}
+void NPYBase::read_item_(const void* src, unsigned item)
+{
+    assert( m_base_ptr ); 
+    unsigned item_size = getNumBytes(1); // from_dim 
+    memcpy( (char*)m_base_ptr + item*item_size, src, item_size );
+}
+
 
 
 
@@ -683,7 +702,7 @@ unsigned int NPYBase::getNumQuads() const
 }
 
 
-bool NPYBase::hasSameShape(NPYBase* other, unsigned fromdim) const 
+bool NPYBase::hasSameShape(const NPYBase* other, unsigned fromdim) const 
 {
     const std::vector<int>& a = getShapeVector();
     const std::vector<int>& b = other->getShapeVector();

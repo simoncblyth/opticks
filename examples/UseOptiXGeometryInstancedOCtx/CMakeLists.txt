@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-set(name UseOptiXTextureLayeredOKImg)
+set(name UseOptiXGeometryInstancedOCtx)
 project(${name})
 include(OpticksBuildOptions)
 
@@ -7,8 +7,10 @@ if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
     cmake_policy(SET CMP0077 OLD)
 endif()
 
-file(WRITE CMAKE_TARGET.hh "const char* CMAKE_TARGET =  \"${name}\" ; " )
-
+# this writes into the srcdir, but thats OK for an example
+file(WRITE CMAKE_TARGET.hh
+     "const char* CMAKE_TARGET =  \"${name}\" ; " 
+)
 
 find_package(OKConf      REQUIRED CONFIG)   
 find_package(NPY         REQUIRED CONFIG)   
@@ -23,6 +25,9 @@ set(SOURCES
 
 set(OPTIX_SOURCES
     ${name}.cu
+    sphere.cu
+    box.cu
+    rubox.cu
 )
 
 CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${OPTIX_SOURCES} )

@@ -31,52 +31,55 @@
 #include "OPTICKS_LOG.hh"
 #include "NPY.hpp"
 
-/**
-TODO:
-
-1. tighten up, make it higher level by pulling off common stuff into OConfig for example
-2. for generality need to return domain range info as well as the id 
-
-   * hmm perhaps use NPY metadata for this (it survives persisting)
-
-
-3. expt with realistic 2d theta-phi layered spherical texture : especially wrt the wrapping mode, passing domain range 
-4. apply 2d theta-phi layered texture to some instanced geometry and shade based on it : eg make a variety of PPM beach-balls  
-
-**/
 
 void Make2DLayeredTexture(optix::Context& context, const char* param_key, const char* domain_key, const NPY<float>* inp)
 {
     unsigned nd = inp->getDimensions(); 
     assert( nd == 3 );    
 
+    LOG(info) << " inp " << inp->getShapeString() ;  
+
     const unsigned ni = inp->getShape(0);  // number of texture layers
     const unsigned nj = inp->getShape(1); 
     const unsigned nk = inp->getShape(2); 
 
-    float xmin = inp->getMeta<float>("xmin", "0.") ; 
-    float xmax = inp->getMeta<float>("xmax", "1.") ; 
-    float ymin = inp->getMeta<float>("ymin", "0.") ; 
-    float ymax = inp->getMeta<float>("ymax", "1.") ; 
-    context[domain_key]->setFloat(optix::make_float4(xmin, xmax, ymin, ymax));
-
-    LOG(info) 
-        << " xmin " << xmin 
-        << " xmax " << xmax 
-        << " ymin " << ymin 
-        << " ymax " << ymax 
-        ;
+    const unsigned layers = ni ; 
+    const unsigned height = nj ; 
+    const unsigned width = nk ; 
 
     unsigned bufferdesc = RT_BUFFER_INPUT | RT_BUFFER_LAYERED ; 
     //  If RT_BUFFER_LAYERED flag is set, buffer depth specifies the number of layers, not the depth of a 3D buffer.
     optix::Buffer texBuffer = context->createBuffer(bufferdesc); 
     texBuffer->setFormat( RT_FORMAT_FLOAT ); 
-    texBuffer->setSize(nj, nk, ni);      // 3rd depth arg is number of layers
+    texBuffer->setSize(width, height, layers);      // 3rd depth arg is number of layers
 
     // attempt at using mapEx failed, so upload all layers at once 
-    void* tex_data = texBuffer->map() ; 
-    inp->write(tex_data); 
-    texBuffer->unmap(); 
+
+    bool exfill = false ; 
+/**
+exfill:true always giving exception::
+
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Already mapped 
+    (Details: Function "RTresult bufferMap(RTbuffer, unsigned int, unsigned int, void *, void **)" caught exception: Buffer is already mapped)
+**/
+    if(exfill)
+    {
+        for(unsigned i=0 ; i < ni ; i++)
+        {
+            LOG(info) << "[ map i " << i ; 
+            void* tex_data = texBuffer->map(i) ; 
+            inp->write_item_(tex_data, i); 
+            texBuffer->unmap(i); 
+            LOG(info) << "] map i " << i ; 
+        }
+    }
+    else
+    {
+        void* tex_data = texBuffer->map() ; 
+        inp->write(tex_data); 
+        texBuffer->unmap(); 
+    }
+
 
     std::cout << "[ creating tex_sampler " << std::endl ;  
     optix::TextureSampler tex = context->createTextureSampler(); 
@@ -89,9 +92,9 @@ void Make2DLayeredTexture(optix::Context& context, const char* param_key, const 
     tex->setWrapMode(1, wrapmode);
     //tex->setWrapMode(2, wrapmode);   corresponds to layer?
 
-    RTfiltermode minmag = RT_FILTER_NEAREST ;  // RT_FILTER_LINEAR 
-    RTfiltermode minification = minmag ; 
-    RTfiltermode magnification = minmag ; 
+    RTfiltermode filtermode = RT_FILTER_NEAREST ;  // RT_FILTER_LINEAR 
+    RTfiltermode minification = filtermode ; 
+    RTfiltermode magnification = filtermode ; 
     RTfiltermode mipmapping = RT_FILTER_NONE ; 
 
     tex->setFilteringModes(minification, magnification, mipmapping);

@@ -29,37 +29,40 @@ bdir=/tmp/$USER/opticks/$name/build
 
 echo bdir $bdir name $name
 
-rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
+remake=0
 
-om-cmake $sdir
+if [ $remake -eq 1 ]; then  
+    rm -rf $bdir && mkdir -p $bdir 
+    cd $bdir && pwd 
+    om-cmake $sdir
+else
+    cd $bdir && pwd 
+fi 
 
 
 make
-[ ! $? -eq 0 ] && exit 1
+[ ! $? -eq 0 ] && echo build error && exit 1
 
 make install   
 
-$name
-
-npd-(){ cat << EOP
-import os, numpy as np 
-ipath = os.path.expandvars('$TMP/$1/inp.npy')
-opath = os.path.expandvars('$TMP/$1/out.npy')
-i = np.load(ipath)
-o = np.load(opath)
-print("npd inp %s %r " % (ipath,i.shape) )
-print(i) 
-print("npd out %s %r " % (opath,o.shape) )
-print(o) 
-EOP
-} 
-#npd- $name | python
+earth=$HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
+if [ -f "$earth" ]; then 
+    path=$earth  
+else
+    path=/tmp/SPPMTest.ppm
+fi
+path=/tmp/SPPMTest.ppm
 
 
-cd $sdir
-pwd
-ipython -i inp_out.py 
+echo $name $path
+$name $path
+[ ! $? -eq 0 ] && echo runtime error && exit 1
+
+
+open /tmp/$USER/opticks/$name/out.ppm
+
+
 
 
 

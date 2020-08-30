@@ -36,6 +36,7 @@ rtBuffer<uchar4, 3> tex_buffer ;
 RT_PROGRAM void readWrite()
 {
     uchar4 val = tex_buffer[launch_index] ; 
+#ifdef DUMP
     rtPrintf("//UseOptiXTextureLayeredOKImg.cu:readWrite.TEX_BUFFER_CHECK launch_index.xyz ( %u %u %u )   val ( %d %d %d %d ) \n", 
          launch_index.x, 
          launch_index.y, 
@@ -45,6 +46,7 @@ RT_PROGRAM void readWrite()
          val.z, 
          val.w 
        );
+#endif
 
     out_buffer[launch_index] = val ; 
 }
@@ -57,6 +59,7 @@ RT_PROGRAM void readWrite()
     int layer = launch_index.z ; 
     uchar4 val = rtTex2DLayered<uchar4>( texture_id, tx, ty, layer );
 
+#ifdef DUMP
     rtPrintf("//UseOptiXTextureLayeredOKImg.cu:readWrite.fromTex tex_param (%d %d %d %d) launch_index.xyz ( %u %u %u )   val ( %d %d %d %d ) \n", 
          tex_param.x,
          tex_param.y,
@@ -70,6 +73,8 @@ RT_PROGRAM void readWrite()
          val.z, 
          val.w 
        );
+#endif
+
     out_buffer[launch_index] = val ; 
 }
 #endif

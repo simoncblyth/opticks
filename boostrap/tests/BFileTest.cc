@@ -476,6 +476,11 @@ void test_CWD()
     LOG(info) << cwd ; 
 }
 
+void test_CurrentDirectoryName()
+{
+    const char* cdn = BFile::CurrentDirectoryName(); 
+    LOG(info) << cdn ; 
+}
 
 void test_Absolute()
 {
@@ -562,10 +567,12 @@ int main(int argc, char** argv)
 
    //test_CWD(); 
    //test_Absolute(); 
-   test_preparePath();
+   //test_preparePath();
    //test_ParentParentDir();
 
    //test_OPTICKS_USER_HOME(); 
+
+   test_CurrentDirectoryName(); 
 
    return 0 ; 
 }

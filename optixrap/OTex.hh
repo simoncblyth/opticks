@@ -23,7 +23,6 @@ class OXRAP_API OTex
     public:
         static const plog::Severity LEVEL ; 
         static void UploadDomainFloat4(const char* domain_key, const NPYBase* inp); 
-        static void Upload2DLayeredTexture(const char* param_key, const NPYBase* inp, const char* config); 
     public:
         static const char* IndexModeString( int indexmode );
         static int         IndexMode( const char* config );

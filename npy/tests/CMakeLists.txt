@@ -90,6 +90,7 @@ NPYTest.cc
 NPYLoadTest.cc
 NPY2Test.cc
 NPY3Test.cc
+NPY4Test.cc
 NPYminmaxTest.cc
 NPYreshapeTest.cc
 
@@ -173,7 +174,8 @@ NNodeCollectorTest.cc
 NGridTest.cc
 
 
-ImageNPYTest 
+ImageNPYTest.cc
+ImageNPYLayeredTest.cc
 
 
 )

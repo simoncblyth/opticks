@@ -90,7 +90,7 @@ class NPY_API NPYBase {
        const std::vector<int>& getShapeVector() const ;
 
        static bool HasSameItemSize(const NPYBase* a, const NPYBase* b) ;   
-       bool hasSameShape(NPYBase* other, unsigned fromdim=0) const ;
+       bool hasSameShape(const NPYBase* other, unsigned fromdim=0) const ;
        bool hasShape(int ni, int nj=0, int nk=0, int nl=0, int nm=0) const ; // -1 for anything 
        bool hasItemShape(int nj, int nk=0, int nl=0, int nm=0) const ;
   
@@ -226,6 +226,9 @@ class NPY_API NPYBase {
        void setBasePtr(void* base_ptr); 
        void* getBasePtr() const ; 
        void write_(void* dst ) const ;
+       void write_item_(void* dst, unsigned item) const ;
+       void read_(const void* src ) ;
+       void read_item_(const void* src, unsigned item) ;
    protected:
        std::vector<int>   m_shape ; 
        unsigned long long m_sizeoftype ; 
