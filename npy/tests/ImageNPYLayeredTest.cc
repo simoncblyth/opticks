@@ -21,8 +21,8 @@ NPY<unsigned char>*  test_LoadPPMLayered(const char* path, const bool yflip, con
 
     std::vector<std::string> paths ; 
     std::vector<std::string> configs ; 
-    for(int i=0 ; i < num_concat ; i++) paths.push_back(path); 
-    for(int i=0 ; i < num_concat ; i++) configs.push_back( i % 3 == 0 ? config0 : ( i % 3 == 1 ? config1  : config2 ) ); 
+    for(unsigned i=0 ; i < num_concat ; i++) paths.push_back(path); 
+    for(unsigned i=0 ; i < num_concat ; i++) configs.push_back( i % 3 == 0 ? config0 : ( i % 3 == 1 ? config1  : config2 ) ); 
 
     LOG(info) 
          << " num_concat " << num_concat

@@ -7,11 +7,16 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
  
-    NPY<float>* arr = NPY<float>::make(10, 4) ; 
+    const NPY<float>* arr = NPY<float>::make(10, 4) ; 
 
     LOG(info) << " arr " << arr->getShapeString() ;  
     
-    OCtx_create_buffer(arr, "some_buffer", 'O', ' '); 
+    int item = -1 ; 
+    const char* key = "some_context_key" ; 
+    char type = 'O' ;  
+    char flag = ' ' ; 
+
+    OCtx::Get()->create_buffer(arr, key, type, flag, item); 
 
 
     return 0 ; 

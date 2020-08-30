@@ -106,12 +106,12 @@ void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const
     const char* rubox_ptx = OKConf::PTXPath( CMAKE_TARGET, "rubox.cu" ) ; 
     const char* sphere_ptx = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
 
-    void* box_ptr = OCtx_create_geometry(nbox, rubox_ptx, "rubox_bounds", "rubox_intersect" ); 
-    OCtx_set_geometry_float3(box_ptr, "boxmin", -sz/2.f, -sz/2.f, -sz/2.f ); 
-    OCtx_set_geometry_float3(box_ptr, "boxmax",  sz/2.f,  sz/2.f,  sz/2.f ); 
+    void* box_ptr = OCtx::Get()->create_geometry(nbox, rubox_ptx, "rubox_bounds", "rubox_intersect" ); 
+    OCtx::Get()->set_geometry_float3(box_ptr, "boxmin", -sz/2.f, -sz/2.f, -sz/2.f ); 
+    OCtx::Get()->set_geometry_float3(box_ptr, "boxmax",  sz/2.f,  sz/2.f,  sz/2.f ); 
 
-    void* sph_ptr = OCtx_create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
-    OCtx_set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
+    void* sph_ptr = OCtx::Get()->create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
+    OCtx::Get()->set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
 
     //void* instance_ptr = sph_ptr ; 
     //void* instance_ptr = box_ptr ; 
@@ -119,17 +119,17 @@ void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const
     //const char* closest_hit = "closest_hit_radiance0" ; 
     const char* closest_hit = "closest_hit_textured" ; 
 
-    void* mat_ptr = OCtx_create_material( main_ptx,  closest_hit, entry_point_index ); 
+    void* mat_ptr = OCtx::Get()->create_material( main_ptx,  closest_hit, entry_point_index ); 
 
-    void* box_assembly_ptr = OCtx_create_instanced_assembly( transforms0, box_ptr, mat_ptr );
-    void* sph_assembly_ptr = OCtx_create_instanced_assembly( transforms1, sph_ptr, mat_ptr );
+    void* box_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms0, box_ptr, mat_ptr );
+    void* sph_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms1, sph_ptr, mat_ptr );
 
-    void* top_ptr = OCtx_create_group("top_object", NULL );  
-    OCtx_group_add_child_group( top_ptr, box_assembly_ptr ); 
-    OCtx_group_add_child_group( top_ptr, sph_assembly_ptr ); 
+    void* top_ptr = OCtx::Get()->create_group("top_object", NULL );  
+    OCtx::Get()->group_add_child_group( top_ptr, box_assembly_ptr ); 
+    OCtx::Get()->group_add_child_group( top_ptr, sph_assembly_ptr ); 
 
-    void* top_accel = OCtx_create_acceleration("Trbvh");
-    OCtx_set_group_acceleration( top_ptr, top_accel ); 
+    void* top_accel = OCtx::Get()->create_acceleration("Trbvh");
+    OCtx::Get()->set_group_acceleration( top_ptr, top_accel ); 
 }
 
 void SetupView(unsigned width, unsigned height, unsigned nu, unsigned nv, unsigned nw)
@@ -147,7 +147,7 @@ void SetupView(unsigned width, unsigned height, unsigned nu, unsigned nv, unsign
     glm::vec3 eye,U,V,W ;
     nglmext::GetEyeUVW( ce_m, eye_m, look_m, up_m, width, height, tanYfov, eye, U, V, W, dump );
 
-    OCtx_set_context_viewpoint( eye, U, V, W, scene_epsilon );
+    OCtx::Get()->set_context_viewpoint( eye, U, V, W, scene_epsilon );
 }
 
 
@@ -188,9 +188,8 @@ int main(int argc, char** argv)
         inp = ImageNPY::LoadPPM(path, yflip0, ncomp, config1, layer_dimension) ; 
     }
  
-    OCtx_get();
-    OCtx_upload_2d_texture_layered("tex_param_0", inp, "INDEX_NORMALIZED_COORDINATES", 0 );  
-    OCtx_upload_2d_texture_layered("tex_param_1", inp, "INDEX_NORMALIZED_COORDINATES", 1 );  
+    OCtx::Get()->upload_2d_texture_layered("tex_param_0", inp, "INDEX_NORMALIZED_COORDINATES", 0 );  
+    OCtx::Get()->upload_2d_texture_layered("tex_param_1", inp, "INDEX_NORMALIZED_COORDINATES", 1 );  
 
     unsigned factor = 1u ; 
     unsigned width =  factor*1440u ; 
@@ -216,19 +215,19 @@ int main(int argc, char** argv)
         raygen = "raygen_texture_test" ; 
     }
 
-    OCtx_set_raygen_program( entry_point_index, main_ptx, raygen );
-    OCtx_set_miss_program(   entry_point_index, main_ptx, "miss" );
+    OCtx::Get()->set_raygen_program( entry_point_index, main_ptx, raygen );
+    OCtx::Get()->set_miss_program(   entry_point_index, main_ptx, "miss" );
 
     NPY<unsigned char>* out = NPY<unsigned char>::make(height, width, 4);
-    void* outBuf = OCtx_create_buffer(out, "output_buffer", 'O', ' ');
-    OCtx_desc_buffer( outBuf );
+    void* outBuf = OCtx::Get()->create_buffer(out, "output_buffer", 'O', ' ', -1);
+    OCtx::Get()->desc_buffer( outBuf );
 
     double t_prelaunch ; 
     double t_launch ; 
-    OCtx_launch_instrumented( entry_point_index, width, height, t_prelaunch, t_launch );
+    OCtx::Get()->launch_instrumented( entry_point_index, width, height, t_prelaunch, t_launch );
 
     out->zero();  
-    OCtx_download_buffer(out, "output_buffer");
+    OCtx::Get()->download_buffer(out, "output_buffer", -1);
     const bool yflip = true ;
     ImageNPY::SavePPM(tmpdir, "out.ppm", out, yflip );
 

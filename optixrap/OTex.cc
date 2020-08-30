@@ -18,7 +18,9 @@ void OTex::UploadDomainFloat4(const char* domain_key, const NPYBase* inp)
     float ymin = inp->getMeta<float>("ymin", "0.") ; 
     float ymax = inp->getMeta<float>("ymax", "1.") ; 
     LOG(info) << " xmin " << xmin << " xmax " << xmax << " ymin " << ymin << " ymax " << ymax ;
-    OCtx_set_context_float4(domain_key, xmin, xmax, ymin, ymax);  
+
+    OCtx octx ; 
+    octx.set_context_float4(domain_key, xmin, xmax, ymin, ymax);  
 }
 
 
