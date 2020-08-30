@@ -91,6 +91,10 @@ NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const 
     unsigned bits(0) ; 
 
     int rc0 = SPPM::readHeader(path, width, height, mode, bits ); 
+     
+
+
+
     assert( rc0 == 0 && mode == 6 && bits == 255 ); 
 
     LOG(LEVEL) 

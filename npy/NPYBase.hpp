@@ -22,6 +22,7 @@
 #include <vector>
 #include <string>
 #include <cassert>
+#include "plog/Severity.h"
 
 #include "NPY_FLAGS.hh"
 
@@ -49,6 +50,7 @@ class NPY_API NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
    public:
+       static const plog::Severity LEVEL ; 
        static const char* ArrayContentVersion ; 
        static const char* ArrayContentIndex ; 
        static NPYBase* Load( const char* path, Type_t type );

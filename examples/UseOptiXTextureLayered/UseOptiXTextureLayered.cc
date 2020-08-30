@@ -242,7 +242,7 @@ int main()
 
 
     bool exfill = false ;  
-    //bool exfill = true ;  // terminates with APIError 
+    //bool exfill = true ;  // terminates with APIError on both OptiX 5 and 6 
     std::cout << "[ uploading to tex buffer exfill  " << exfill << std::endl ;  
     if(exfill == false)
     {

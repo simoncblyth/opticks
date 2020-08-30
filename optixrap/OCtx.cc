@@ -62,6 +62,7 @@ bool OCtx::has_variable( const char* key )
 
 void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item )
 {
+    LOG(LEVEL) << "[" ; 
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     unsigned buffer_type = 0 ; 
     switch(type)
@@ -138,6 +139,7 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
     {
         upload_buffer( arr, ptr, item ); 
     }
+    LOG(LEVEL) << "]" ; 
     return ptr ; 
 } 
 
@@ -179,6 +181,7 @@ void OCtx::desc_buffer( void* buffer_ptr )
 
 void OCtx::upload_buffer( const NPYBase* arr, void* buffer_ptr, int item )
 {
+    LOG(LEVEL) << "[ " << item  ; 
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     RTbuffer bufPtr = (RTbuffer)buffer_ptr ;  // recovering the buffer from the void* ptr 
     optix::Buffer buf = optix::Buffer::take(bufPtr) ;
@@ -195,6 +198,7 @@ void OCtx::upload_buffer( const NPYBase* arr, void* buffer_ptr, int item )
     }
 
     buf->unmap(); 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -409,6 +413,7 @@ void OCtx::launch_instrumented( unsigned entry_point_index, unsigned width, unsi
 
 unsigned OCtx::create_texture_sampler( void* buffer_ptr, const char* config )
 {
+    LOG(LEVEL) << "["; 
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     RTbuffer bufPtr = (RTbuffer)buffer_ptr ;  
     optix::Buffer buffer = optix::Buffer::take(bufPtr) ;
@@ -453,7 +458,7 @@ unsigned OCtx::create_texture_sampler( void* buffer_ptr, const char* config )
     tex->setFilteringModes(minification, magnification, mipmapping);
 
     RTtextureindexmode indexmode = (RTtextureindexmode)OTex::IndexMode(config) ;  
-    LOG(info) << "tex.setIndexingMode [" << OTex::IndexModeString(indexmode) << "]" ; 
+    LOG(LEVEL) << "tex.setIndexingMode [" << OTex::IndexModeString(indexmode) << "]" ; 
     tex->setIndexingMode( indexmode );  
 
     //RTtexturereadmode readmode = RT_TEXTURE_READ_NORMALIZED_FLOAT ; // return floating point values normalized by the range of the underlying type
@@ -469,13 +474,13 @@ unsigned OCtx::create_texture_sampler( void* buffer_ptr, const char* config )
 
     tex->setReadMode( readmode ); 
     tex->setMaxAnisotropy(1.0f);
-    LOG(LEVEL) << "] creating tex_sampler " ;  
 
     unsigned deprecated0 = 0 ; 
     unsigned deprecated1 = 0 ; 
     tex->setBuffer(deprecated0, deprecated1, buffer); 
 
     unsigned tex_id = tex->getId() ; 
+    LOG(LEVEL) << "]"; 
     return tex_id ; 
 }
 
@@ -539,14 +544,12 @@ void OCtx::upload_2d_texture_layered(const char* param_key, const NPYBase* inp, 
 
 void OCtx::set_geometry_float4( void* geometry_ptr, const char* key, float x, float y, float z, float w )
 {
-    //optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     optix::Geometry geometry = optix::Geometry::take((RTgeometry)geometry_ptr);   
     geometry[key]->setFloat(optix::make_float4(x, y, z, w));  
 }
 
 void OCtx::set_geometry_float3( void* geometry_ptr, const char* key, float x, float y, float z)
 {
-    //optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     optix::Geometry geometry = optix::Geometry::take((RTgeometry)geometry_ptr);   
     geometry[key]->setFloat(optix::make_float3(x, y, z));  
 }

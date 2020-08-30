@@ -80,8 +80,8 @@ RT_PROGRAM void raygen_texture_test()
 {
     float2 d = make_float2(launch_index) / make_float2(launch_dim) ;  // 0->1
 
-    //int texture_id = tex_param_0.w ; 
-    int texture_id = tex_param_1.w ; 
+    int texture_id = tex_param_0.w ; 
+    //int texture_id = tex_param_1.w ; 
     int layer = 0 ; 
     output_buffer[launch_index] = rtTex2DLayered<uchar4>( texture_id, d.x, d.y, layer );
 }

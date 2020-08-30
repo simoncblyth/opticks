@@ -174,6 +174,7 @@ int main(int argc, char** argv)
 
     NPY<unsigned char>* inp = NULL ; 
     bool layered = true ; 
+    //bool layered = false ; 
     if( layered )
     {
         std::vector<std::string> paths = {path, path} ;
@@ -189,7 +190,10 @@ int main(int argc, char** argv)
     }
  
     OCtx::Get()->upload_2d_texture_layered("tex_param_0", inp, "INDEX_NORMALIZED_COORDINATES", 0 );  
-    OCtx::Get()->upload_2d_texture_layered("tex_param_1", inp, "INDEX_NORMALIZED_COORDINATES", 1 );  
+    if(layered)
+    { 
+        OCtx::Get()->upload_2d_texture_layered("tex_param_1", inp, "INDEX_NORMALIZED_COORDINATES", 1 );  
+    }
 
     unsigned factor = 1u ; 
     unsigned width =  factor*1440u ; 

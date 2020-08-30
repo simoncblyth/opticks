@@ -214,7 +214,7 @@ int SPPM::readHeader( const char* path, unsigned& width, unsigned& height, unsig
     std::ifstream f(path, std::ios::binary);
     if(f.fail())
     {
-        std::cout << "Could not open path: " << path << std::endl;
+        LOG(fatal) << "Could not open path: " << path ;
         return 1 ;
     }
 

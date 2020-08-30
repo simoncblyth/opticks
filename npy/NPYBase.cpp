@@ -47,7 +47,7 @@ bool  NPYBase::NPDump = false ;
 void NPYBase::SetNPDump(bool npdump) { NPDump = npdump ; }
 bool NPYBase::IsNPDump(){ return NPDump ; }
 
-
+const plog::Severity NPYBase::LEVEL = PLOG::EnvLevel("NPYBase", "DEBUG"); 
 
 
 const char* NPYBase::FLOAT_ = "FLOAT" ; 
@@ -285,26 +285,43 @@ The updating via setBasePtr is done in NPY::allocate.
 
 void NPYBase::write_(void* dst ) const 
 {
+    LOG(LEVEL) << "[" ; 
     assert( m_base_ptr ); 
     memcpy( dst, m_base_ptr, getNumBytes(0) ); 
+    LOG(LEVEL) << "]" ; 
 }
 void NPYBase::write_item_(void* dst, unsigned item) const 
 {
+    LOG(LEVEL) << "[" ; 
     assert( m_base_ptr ); 
     unsigned item_size = getNumBytes(1); // from_dim 
-    memcpy( dst, (char*)m_base_ptr + item*item_size, item_size ); 
+    const void* src = (char*)m_base_ptr + item*item_size ; 
+    LOG(LEVEL) 
+        << " base_ptr " << m_base_ptr 
+        << " item_size " << item_size
+        << " item " << item   
+        << " dst " << dst            
+        << " src " << src
+        ;            
+
+    memcpy( dst, src, item_size ); 
+    LOG(LEVEL) << "]" ; 
 }
 
 void NPYBase::read_(const void* src) 
 {
+    LOG(LEVEL) << "[" ; 
     assert( m_base_ptr ); 
     memcpy( m_base_ptr, src, getNumBytes(0) ); 
+    LOG(LEVEL) << "]" ; 
 }
 void NPYBase::read_item_(const void* src, unsigned item)
 {
+    LOG(LEVEL) << "[" ; 
     assert( m_base_ptr ); 
     unsigned item_size = getNumBytes(1); // from_dim 
     memcpy( (char*)m_base_ptr + item*item_size, src, item_size );
+    LOG(LEVEL) << "]" ; 
 }
 
 

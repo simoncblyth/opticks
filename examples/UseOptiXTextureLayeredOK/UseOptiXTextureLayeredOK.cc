@@ -56,8 +56,9 @@ void Make2DLayeredTexture(optix::Context& context, const char* param_key, const 
     // attempt at using mapEx failed, so upload all layers at once 
 
     bool exfill = false ; 
+    //bool exfill = true ; 
 /**
-exfill:true always giving exception::
+exfill:true always giving exception with both OptiX 5 and 6::
 
     libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Already mapped 
     (Details: Function "RTresult bufferMap(RTbuffer, unsigned int, unsigned int, void *, void **)" caught exception: Buffer is already mapped)

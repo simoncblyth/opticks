@@ -32,7 +32,7 @@ echo bdir $bdir name $name
 
 remake=0
 
-if [ $remake -eq 1 ]; then  
+if [ $remake -eq 1 -o ! -d $bdir ]; then  
     rm -rf $bdir && mkdir -p $bdir 
     cd $bdir && pwd 
     om-cmake $sdir
@@ -56,11 +56,21 @@ path=/tmp/SPPMTest.ppm
 
 
 echo $name $path
-$name $path
+NPYBase=info $name $path
 [ ! $? -eq 0 ] && echo runtime error && exit 1
 
 
-open /tmp/$USER/opticks/$name/out.ppm
+
+outpath=/tmp/$USER/opticks/$name/out.ppm
+ls -l $outpath
+date
+
+if [ -n "$SSH_TTY" ]; then 
+    echo remote running : outpath $outpath
+else 
+    echo local running : open outpath $outpath
+    open $outpath
+fi
 
 
 

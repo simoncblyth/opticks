@@ -47,10 +47,32 @@ void test_write_item_()
     std::cout << "[b" << std::endl ;  
     for(unsigned i=0 ; i < 16 ; i++) std::cout << b[i] << " " ; 
     std::cout << "]b" << std::endl ;  
-
 }
 
+void test_write_item_big()
+{
+    LOG(info); 
+    NPY<unsigned char>* ab = NPY<unsigned char>::make(2, 512, 1024, 4) ; 
+    ab->fillIndexFlat(); 
 
+    NPY<unsigned char>* a = NPY<unsigned char>::make(1, 512, 1024, 4) ; 
+    a->zero(); 
+    NPY<unsigned char>* b = NPY<unsigned char>::make(1, 512, 1024, 4) ; 
+    b->zero(); 
+    
+    ab->write_item_(a->getBytes(), 0); 
+    ab->write_item_(b->getBytes(), 1); 
+
+    //a->dump("a");    makes a mess
+    //b->dump("b"); 
+
+    const std::vector<NPYBase*>& srcs = {a,b} ; 
+
+    NPY<unsigned char>* ab2 = NPY<unsigned char>::make_interleaved( srcs ); 
+     
+    bool dump = true ; 
+    assert( NPY<unsigned char>::compare(ab,ab2,dump) == 0 ); 
+}
 
 
 int main(int argc, char** argv)
@@ -58,7 +80,8 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     //test_make_modulo_selection();  
-    test_write_item_(); 
+    //test_write_item_(); 
+    test_write_item_big(); 
 
     return 0 ; 
 }
