@@ -308,12 +308,12 @@ int SPPM::read( const char* path, std::vector<unsigned char>& img, unsigned& wid
         unsigned char* tmp = new unsigned char[filesize] ; 
         f.read( (char*)tmp, filesize);
 
-        for( int h=0; h < height ; h++ ) 
+        for( int h=0; h < int(height) ; h++ ) 
         {   
             int y = yflip ? height - 1 - h : h ;   // flip vertically
-            for( int x=0; x < width ; ++x ) 
+            for( int x=0; x < int(width) ; ++x ) 
             {   
-                for( int k=0 ; k < ncomp ; k++ )
+                for( int k=0 ; k < int(ncomp) ; k++ )
                 { 
                     imgdata[ (h*width+x)*ncomp + k] = k < 3 ? tmp[(y*width+x)*3+k] : 0xff ;        
                 }
@@ -329,7 +329,7 @@ int SPPM::read( const char* path, std::vector<unsigned char>& img, unsigned& wid
 void SPPM::AddBorder( std::vector<unsigned char>& img, const int width, const int height, const int ncomp, const bool yflip )
 {
     int size = width*height*ncomp ; 
-    assert( img.size() == size ); 
+    assert( int(img.size()) == size ); 
     unsigned char* imgdata = img.data();  
     AddBorder( imgdata, width, height, ncomp, yflip ); 
 }
@@ -397,7 +397,7 @@ void SPPM::AddMidline( unsigned char* imgdata, const int width, const int height
 void SPPM::AddQuadline( std::vector<unsigned char>& img, const int width, const int height, const int ncomp, const bool yflip )
 {
     int size = width*height*ncomp ; 
-    assert( img.size() == size ); 
+    assert( int(img.size()) == size ); 
     unsigned char* imgdata = img.data();  
     AddQuadline( imgdata, width, height, ncomp, yflip ); 
 }

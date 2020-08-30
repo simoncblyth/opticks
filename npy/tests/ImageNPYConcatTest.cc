@@ -4,15 +4,15 @@
 #include "ImageNPY.hpp"
 
 /**
-ImageNPYLayeredTest
+ImageNPYConcatTest
 ======================
 
-See ImageNPYLayeredTest.py for imshow plotting 
+See ImageNPYConcatTest.py for imshow plotting 
 
 **/
 
 
-NPY<unsigned char>*  test_LoadPPMLayered(const char* path, const bool yflip, const unsigned num_concat)
+NPY<unsigned char>*  test_LoadPPMConcat(const char* path, const bool yflip, const unsigned num_concat)
 {
     const unsigned ncomp = 3 ; 
     const char* config0 = "add_border" ;  
@@ -33,11 +33,11 @@ NPY<unsigned char>*  test_LoadPPMLayered(const char* path, const bool yflip, con
          << " config1 " << config1
          ; 
 
-    NPY<unsigned char>* a = ImageNPY::LoadPPMLayered(paths, configs, yflip, ncomp) ; 
+    NPY<unsigned char>* a = ImageNPY::LoadPPMConcat(paths, configs, yflip, ncomp) ; 
 
     LOG(info) << " array " << a->getShapeString() ; 
 
-    const char* opath = SStr::ReplaceEnd(path, ".ppm", "_layered.npy" ) ;
+    const char* opath = SStr::ReplaceEnd(path, ".ppm", "_concat.npy" ) ;
     LOG(info) << "saving array to " << opath ; 
 
     a->save(opath); 
@@ -46,9 +46,9 @@ NPY<unsigned char>*  test_LoadPPMLayered(const char* path, const bool yflip, con
 }
 
 
-void test_SavePPMLayered( const NPY<unsigned char>* imgs, const char* basepath, bool yflip)
+void test_SavePPMConcat( const NPY<unsigned char>* imgs, const char* basepath, bool yflip)
 {
-    ImageNPY::SavePPMLayered(imgs, basepath, yflip);  
+    ImageNPY::SavePPMConcat(imgs, basepath, yflip);  
 }
 
 int main(int argc, char** argv)
@@ -58,10 +58,10 @@ int main(int argc, char** argv)
 
     bool yflip0 = false ; 
     unsigned num_concat = 3 ; 
-    NPY<unsigned char>* imgs = test_LoadPPMLayered(path, yflip0, num_concat );  
+    NPY<unsigned char>* imgs = test_LoadPPMConcat(path, yflip0, num_concat );  
     LOG(info) << " imgs " << imgs->getShapeString(); 
 
-    test_SavePPMLayered( imgs, path, yflip0 ); 
+    test_SavePPMConcat( imgs, path, yflip0 ); 
 
     return 0 ; 
 }

@@ -60,6 +60,18 @@ bool OCtx::has_variable( const char* key )
     return var.get() != NULL ; 
 }
 
+/**
+OCtx::create_buffer
+--------------------
+
+For item -1 the entire array becomes the buffer, for item values 0,1,2 etc..
+only a single item from the array goes into the buffer.
+
+The last dimension of the array determines the format multiplicity of the buffer
+which must be 1,2,3 or 4.
+
+**/
+
 void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item )
 {
     LOG(LEVEL) << "[" ; 
@@ -89,42 +101,75 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
     RTformat format = OFormat::ArrayType(arr); 
     buf->setFormat( format ); 
 
-    LOG(LEVEL) << " arr " << arr->getShapeString() << " item " << item ; 
+    unsigned array_nd = arr->getDimensions(); 
+    bool subarray = item > -1 ; 
+    unsigned buffer_nd = subarray ? array_nd - 2 : array_nd - 1 ; 
 
-    unsigned nd = arr->getDimensions(); 
-    if( nd == 2 )
+    if( buffer_nd == 1 )
     {
-        unsigned width = arr->getShape(0); 
-        buf->setSize(width);   
+        unsigned width = arr->getShape(subarray ? 1 : 0); 
         LOG(LEVEL) 
-            << " nd " << nd
-            << " width " << width
+            << " arr " << arr->getShapeString() 
+            << " item " << item 
+            << " subarray " << ( subarray ? "Y" : "N" )
+            << " array_nd " << array_nd
+            << " buffer_nd " << buffer_nd
+            << " width " << width 
             ; 
+
+        assert( width > 0 ); 
+        buf->setSize(width);   
     }
-    else if( nd == 3 )
+    else if( buffer_nd == 2 )
     {
-        unsigned height = arr->getShape(0); 
-        unsigned width = arr->getShape(1) ; 
-        buf->setSize(width, height);   
+        unsigned height = arr->getShape(subarray ? 1 : 0); 
+        unsigned width = arr->getShape(subarray ? 2 : 1) ; 
         LOG(LEVEL) 
-            << " nd " << nd
+            << " arr " << arr->getShapeString() 
+            << " item " << item 
+            << " subarray " << ( subarray ? "Y" : "N" )
+            << " array_nd " << array_nd
+            << " buffer_nd " << buffer_nd
             << " height " << height 
             << " width " << width 
             ; 
+
+        assert( height > 0 && width > 0 ); 
+        buf->setSize(width, height);   
     }
-    else if( nd == 4 )
+    else if( buffer_nd == 3 )
     {
-        unsigned depth = arr->getShape(0) ; // when layered the depth is the number of layers
-        unsigned height = arr->getShape(1); 
-        unsigned width = arr->getShape(2) ; 
-        buf->setSize(width, height, depth);   
+        unsigned depth = arr->getShape(subarray ? 1 : 0) ;
+        unsigned height = arr->getShape(subarray ? 2 : 1); 
+        unsigned width = arr->getShape(subarray ? 3 :2 ) ;
+ 
         LOG(LEVEL) 
-            << " nd " << nd
+            << " arr " << arr->getShapeString() 
+            << " item " << item 
+            << " subarray " << ( subarray ? "Y" : "N" )
+            << " array_nd " << array_nd
+            << " buffer_nd " << buffer_nd
             << " depth " << depth 
             << " height " << height 
             << " width " << width 
             ; 
+
+        assert( depth > 0 && height > 0 && width > 0 ); 
+        buf->setSize(width, height, depth);   
     }
+    else
+    {
+         LOG(fatal) 
+            << " not enough dimensions "
+            << " arr " << arr->getShapeString() 
+            << " item " << item 
+            << " subarray " << ( subarray ? "Y" : "N" )
+            << " array_nd " << array_nd
+            << " buffer_nd " << buffer_nd
+             ; 
+         assert(0); 
+    } 
+
     if(key != NULL)
     {
         LOG(info) << " placing buffer into context with key " << key ; 
@@ -448,7 +493,7 @@ unsigned OCtx::create_texture_sampler( void* buffer_ptr, const char* config )
     //RTwrapmode wrapmode = RT_WRAP_CLAMP_TO_BORDER ; 
     tex->setWrapMode(0, wrapmode);
     tex->setWrapMode(1, wrapmode);
-    tex->setWrapMode(2, wrapmode);  // is this needed with layerd ?
+    //tex->setWrapMode(2, wrapmode);  // is this needed with layerd ?
 
     RTfiltermode filtermode = RT_FILTER_NEAREST ;  // RT_FILTER_LINEAR 
     RTfiltermode minification = filtermode ; 
@@ -507,8 +552,8 @@ void OCtx::set_texture_param( void* buffer_ptr, unsigned tex_id, const char* par
 }
 
 /**
-upload_2d_texture_layered
----------------------------------
+upload_2d_texture
+------------------
 
 Note reversed shape order of the texBuffer->setSize( width, height, depth)
 wrt to the shape of the input buffer.  
@@ -532,10 +577,10 @@ from the opaque type : so need to wrap absolutely everything ?
 
 **/
 
-void OCtx::upload_2d_texture_layered(const char* param_key, const NPYBase* inp, const char* config, int item)
+void OCtx::upload_2d_texture(const char* param_key, const NPYBase* inp, const char* config, int item)
 {
     LOG(LEVEL) << "[" ; 
-    void* buffer_ptr = create_buffer(inp, NULL, 'I', 'L', item ); 
+    void* buffer_ptr = create_buffer(inp, NULL, 'I', ' ', item ); 
     unsigned tex_id = create_texture_sampler(buffer_ptr, config ); 
     set_texture_param( buffer_ptr, tex_id, param_key );  
     LOG(LEVEL) << "]" ; 

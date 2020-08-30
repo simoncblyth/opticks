@@ -175,7 +175,7 @@ NGridTest.cc
 
 
 ImageNPYTest.cc
-ImageNPYLayeredTest.cc
+ImageNPYConcatTest.cc
 
 
 )

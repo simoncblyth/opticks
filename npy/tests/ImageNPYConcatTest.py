@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 
 if 1:
-    p1 = "/tmp/SPPMTest_MakeTestImage_layered.npy" 
+    p1 = "/tmp/SPPMTest_MakeTestImage_concat.npy" 
     b = np.load(p1)
     print(b.shape)
     assert b.shape[0] < 4       

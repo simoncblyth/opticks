@@ -73,7 +73,8 @@ struct OXRAP_API OCtx
     void launch_instrumented( unsigned entry_point_index, unsigned width, unsigned height, double& t_prelaunch, double& t_launch  );
     unsigned create_texture_sampler( void* buffer_ptr, const char* config );
     void set_texture_param( void* buffer_ptr, unsigned tex_id, const char* param_key );
-    void upload_2d_texture_layered(const char* param_key, const NPYBase* inp, const char* config, int item);
+    //void upload_2d_texture_layered(const char* param_key, const NPYBase* inp, const char* config, int item);
+    void upload_2d_texture(const char* param_key, const NPYBase* inp, const char* config, int item);
     void set_geometry_float4( void* geometry_ptr, const char* key, float x, float y, float z, float w );
     void set_geometry_float3( void* geometry_ptr, const char* key, float x, float y, float z);
     void set_context_float4( const char* key, float x, float y, float z, float w );

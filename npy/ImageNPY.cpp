@@ -30,7 +30,7 @@
 const plog::Severity ImageNPY::LEVEL = PLOG::EnvLevel("ImageNPY", "INFO"); 
 
 
-NPY<unsigned char>* ImageNPY::LoadPPMLayered(const std::vector<std::string>& paths, const std::vector<std::string>& configs, const bool yflip, const unsigned ncomp)  // static
+NPY<unsigned char>* ImageNPY::LoadPPMConcat(const std::vector<std::string>& paths, const std::vector<std::string>& configs, const bool yflip, const unsigned ncomp)  // static
 {
     assert( paths.size() == configs.size() ); 
     unsigned layers = paths.size(); 
@@ -50,7 +50,7 @@ NPY<unsigned char>* ImageNPY::LoadPPMLayered(const std::vector<std::string>& pat
 
 
 
-void ImageNPY::SavePPMLayered(const NPY<unsigned char>* imgs, const char* path, const bool yflip)
+void ImageNPY::SavePPMConcat(const NPY<unsigned char>* imgs, const char* path, const bool yflip)
 {
     assert( imgs->getDimensions() == 4 ); 
     assert( SStr::EndsWith(path, ".ppm")); 
@@ -83,7 +83,7 @@ ImageNPY::LoadPPM
 
 **/
 
-NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const unsigned ncomp, const char* config, bool layer_dimension)  // static
+NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const unsigned ncomp, const char* config, bool concat_dimension)  // static
 {
     unsigned width(0) ; 
     unsigned height(0) ; 
@@ -91,9 +91,6 @@ NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const 
     unsigned bits(0) ; 
 
     int rc0 = SPPM::readHeader(path, width, height, mode, bits ); 
-     
-
-
 
     assert( rc0 == 0 && mode == 6 && bits == 255 ); 
 
@@ -121,13 +118,13 @@ NPY<unsigned char>* ImageNPY::LoadPPM(const char* path, const bool yflip, const 
     if(add_midline) SPPM::AddMidline(imgvec, width, height, ncomp, yflip); 
     if(add_quadline) SPPM::AddQuadline(imgvec, width, height, ncomp, yflip); 
 
-    if(layer_dimension)
+    if(concat_dimension)
     {
         assert( img->getDimensions() == 3 ); 
         LOG(LEVEL) << " reshaping original img (height, width, ncomp)  " << img->getShapeString() ;
         unsigned layers = 1 ; 
         img->reshape(layers,height,width,ncomp) ; // NB height before width matching PPM row major ordering 
-        LOG(LEVEL) << " after reshape img (layers,height,width,ncomp) " << img->getShapeString()  ;
+        LOG(LEVEL) << " after reshape img (items,height,width,ncomp) " << img->getShapeString()  ;
         unsigned ncomp2 = img->getShape(-1) ;
         assert( ncomp2 == ncomp );
     }

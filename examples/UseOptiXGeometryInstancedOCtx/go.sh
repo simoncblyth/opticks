@@ -56,7 +56,8 @@ path=/tmp/SPPMTest.ppm
 
 
 echo $name $path
-NPYBase=info $name $path
+#NPYBase=info $name $path
+$name $path
 [ ! $? -eq 0 ] && echo runtime error && exit 1
 
 

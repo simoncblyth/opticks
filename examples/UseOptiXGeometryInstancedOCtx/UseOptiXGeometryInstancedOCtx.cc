@@ -173,27 +173,27 @@ int main(int argc, char** argv)
     OBuffer::Dump(); 
 
     NPY<unsigned char>* inp = NULL ; 
-    bool layered = true ; 
-    //bool layered = false ; 
-    if( layered )
+    bool concat = true ; 
+    //bool concat = false ; 
+    // NB renamed from "layered" to "concat" as this not creating a real layered texture 
+    // sustained attempts to get those to work failed. 
+    if( concat )
     {
         std::vector<std::string> paths = {path, path} ;
         std::vector<std::string> configs = {config0, config1 };
-        inp = ImageNPY::LoadPPMLayered(paths, configs, yflip0, ncomp ) ; 
+        inp = ImageNPY::LoadPPMConcat(paths, configs, yflip0, ncomp ) ; 
 
-        ImageNPY::SavePPMLayered(inp, path, yflip0);
+        ImageNPY::SavePPMConcat(inp, path, yflip0);
+        OCtx::Get()->upload_2d_texture("tex_param_0", inp, "INDEX_NORMALIZED_COORDINATES", 0 );  
+        OCtx::Get()->upload_2d_texture("tex_param_1", inp, "INDEX_NORMALIZED_COORDINATES", 1 );  
     }
     else
     {
-        bool layer_dimension = true ; 
-        inp = ImageNPY::LoadPPM(path, yflip0, ncomp, config1, layer_dimension) ; 
+        bool concat_dimension = false ; 
+        inp = ImageNPY::LoadPPM(path, yflip0, ncomp, config1, concat_dimension) ; 
+        OCtx::Get()->upload_2d_texture("tex_param_0", inp, "INDEX_NORMALIZED_COORDINATES", -1 );  
     }
- 
-    OCtx::Get()->upload_2d_texture_layered("tex_param_0", inp, "INDEX_NORMALIZED_COORDINATES", 0 );  
-    if(layered)
-    { 
-        OCtx::Get()->upload_2d_texture_layered("tex_param_1", inp, "INDEX_NORMALIZED_COORDINATES", 1 );  
-    }
+
 
     unsigned factor = 1u ; 
     unsigned width =  factor*1440u ; 
@@ -214,8 +214,8 @@ int main(int argc, char** argv)
     } 
     else
     {
-        height = inp->getShape(1); 
-        width = inp->getShape(2); 
+        height = inp->getShape(concat ? 1 : 0); 
+        width = inp->getShape(concat ? 2 : 1); 
         raygen = "raygen_texture_test" ; 
     }
 
