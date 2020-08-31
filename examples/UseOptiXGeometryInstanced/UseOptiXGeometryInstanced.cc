@@ -224,7 +224,7 @@ int main(int argc, char** argv)
         const bool yflip0 = false ; 
         unsigned ncomp = 4 ; 
         const char* config0 = "add_border,add_midline,add_quadline" ; 
-        bool layer_dimension = true ; 
+        bool layer_dimension = false ; 
         inp = ImageNPY::LoadPPM(path, yflip0, ncomp, config0, layer_dimension ) ; 
     }
 
@@ -262,8 +262,6 @@ int main(int argc, char** argv)
     InitRTX(rtxmode); 
 
 #ifdef USE_OCTX
-    OCtx_get();
-    //optix::Context context = optix::Context::take((RTcontext)OCtx_get()) ;  // interim kludge until everything is wrapped 
 #else
     optix::Context context = optix::Context::create();
 
@@ -276,12 +274,13 @@ int main(int argc, char** argv)
     context->setEntryPointCount(1); 
 #endif
     const char* tex_config = "INDEX_NORMALIZED_COORDINATES" ;
-    OTex::Upload2DLayeredTexture("tex_param", inp, tex_config);   // this uses OCtx internally 
+    unsigned tex_id = OCtx::Get()->upload_2d_texture("tex_param", inp, tex_config, -1);   // this uses OCtx internally 
+    LOG(info) << " tex_id " << tex_id ; 
 
     unsigned entry_point_index = 0u ;
 #ifdef USE_OCTX
-    OCtx_set_raygen_program( entry_point_index, main_ptx, "raygen" );
-    OCtx_set_miss_program(   entry_point_index, main_ptx, "miss" );
+    OCtx::Get()->set_raygen_program( entry_point_index, main_ptx, "raygen" );
+    OCtx::Get()->set_miss_program(   entry_point_index, main_ptx, "miss" );
 #else
     context->setRayGenerationProgram( entry_point_index, context->createProgramFromPTXFile( main_ptx , "raygen" )); 
     context->setMissProgram(   entry_point_index, context->createProgramFromPTXFile( main_ptx , "miss" )); 
@@ -294,13 +293,13 @@ int main(int argc, char** argv)
     const char* sphere_ptx = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
 
 #ifdef USE_OCTX
-    void* box_ptr = OCtx_create_geometry(nbox, rubox_ptx, "rubox_bounds", "rubox_intersect" ); 
-    OCtx_set_geometry_float3(box_ptr, "boxmin", -sz/2.f, -sz/2.f, -sz/2.f ); 
-    OCtx_set_geometry_float3(box_ptr, "boxmax",  sz/2.f,  sz/2.f,  sz/2.f ); 
+    void* box_ptr = OCtx::Get()->create_geometry(nbox, rubox_ptx, "rubox_bounds", "rubox_intersect" ); 
+    OCtx::Get()->set_geometry_float3(box_ptr, "boxmin", -sz/2.f, -sz/2.f, -sz/2.f ); 
+    OCtx::Get()->set_geometry_float3(box_ptr, "boxmax",  sz/2.f,  sz/2.f,  sz/2.f ); 
     //optix::Geometry instance = optix::Geometry::take((RTgeometry)geo_ptr); 
 
-    void* sph_ptr = OCtx_create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
-    OCtx_set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
+    void* sph_ptr = OCtx::Get()->create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
+    OCtx::Get()->set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
 
     void* instance_ptr = sph_ptr ; 
     //void* instance_ptr = box_ptr ; 
@@ -328,13 +327,13 @@ int main(int argc, char** argv)
     const char* closest_hit = "closest_hit_textured" ; 
 
 #ifdef USE_OCTX
-    void* mat_ptr = OCtx_create_material( main_ptx,  closest_hit, entry_point_index ); 
-    void* assembly_ptr = OCtx_create_instanced_assembly( transforms, instance_ptr, mat_ptr );
+    void* mat_ptr = OCtx::Get()->create_material( main_ptx,  closest_hit, entry_point_index ); 
+    void* assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms, instance_ptr, mat_ptr );
     //optix::Material mat = optix::Material::take((RTmaterial)mat_ptr); 
     //optix::Group assembly = optix::Group::take((RTgroup)assembly_ptr); 
-    void* top_ptr = OCtx_create_group("top_object", assembly_ptr );  
-    void* top_accel = OCtx_create_acceleration("Trbvh");
-    OCtx_set_group_acceleration( top_ptr, top_accel ); 
+    void* top_ptr = OCtx::Get()->create_group("top_object", assembly_ptr );  
+    void* top_accel = OCtx::Get()->create_acceleration("Trbvh");
+    OCtx::Get()->set_group_acceleration( top_ptr, top_accel ); 
 
 #else
     optix::Material mat = context->createMaterial();
@@ -347,12 +346,10 @@ int main(int argc, char** argv)
 #endif
 
 
-
-
     float near = 1.f ;   // when cut into earth, see circle of back to front geography from inside the sphere
     float scene_epsilon = near ; 
 #ifdef USE_OCTX
-    OCtx_set_context_viewpoint( eye, U, V, W, scene_epsilon );
+    OCtx::Get()->set_context_viewpoint( eye, U, V, W, scene_epsilon );
 #else
     context[ "scene_epsilon"]->setFloat( scene_epsilon ); 
     context[ "eye"]->setFloat( eye.x, eye.y, eye.z  );
@@ -364,8 +361,8 @@ int main(int argc, char** argv)
 
     NPY<unsigned char>* out = NPY<unsigned char>::make(height, width, 4);
 #ifdef USE_OCTX
-    void* outBuf = OCtx_create_buffer(out, "output_buffer", 'O', ' ');
-    OCtx_desc_buffer( outBuf );
+    void* outBuf = OCtx::Get()->create_buffer(out, "output_buffer", 'O', ' ', -1);
+    OCtx::Get()->desc_buffer( outBuf );
 #else
     optix::Buffer output_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, width, height);
     context["output_buffer"]->set( output_buffer );
@@ -375,7 +372,7 @@ int main(int argc, char** argv)
     double t_prelaunch ; 
     double t_launch ; 
 #ifdef USE_OCTX
-    OCtx_launch_instrumented( entry_point_index, width, height, t_prelaunch, t_launch );
+    OCtx::Get()->launch_instrumented( entry_point_index, width, height, t_prelaunch, t_launch );
 #else
     LaunchInstrumented( context, entry_point_index, width, height, t_prelaunch, t_launch ); 
 #endif
@@ -389,11 +386,10 @@ int main(int argc, char** argv)
          << std::endl 
          ;
 
-
-#ifdef USE_OCTX
-    OCtx_download_buffer(out, "output_buffer");
-#else
     out->zero();
+#ifdef USE_OCTX
+    OCtx::Get()->download_buffer(out, "output_buffer", -1);
+#else
     void* out_data = output_buffer->map();
     out->read(out_data);
     output_buffer->unmap();

@@ -650,6 +650,41 @@ void* OCtx::create_transform( bool transpose, const float* m44, const float* inv
     return ptr ; 
 }   
 
+void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_ptr, const void* material_ptr )
+{
+    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Geometry geo = optix::Geometry::take((RTgeometry)geometry_ptr);   
+    optix::Material mat = optix::Material::take((RTmaterial)material_ptr);   
+    optix::Group assembly = context->createGroup();
+    assembly->setChildCount(1);
+    assembly->setAcceleration( context->createAcceleration( "Trbvh" ) );  
+
+    optix::Acceleration instance_accel = context->createAcceleration( "Trbvh" );
+
+    bool transpose = true ; 
+    optix::Transform xform = context->createTransform();
+    xform->setMatrix(transpose, glm::value_ptr(m4), 0); 
+
+    unsigned ichild = 0 ; 
+    assembly->setChild(ichild, xform);
+
+    optix::GeometryInstance pergi = context->createGeometryInstance() ;
+    pergi->setMaterialCount(1);
+    pergi->setMaterial(0, mat );
+    pergi->setGeometry(geo);
+
+    optix::GeometryGroup perxform = context->createGeometryGroup();
+    perxform->addChild(pergi); 
+    perxform->setAcceleration(instance_accel) ; 
+
+    xform->setChild(perxform);
+    optix::GroupObj* groupObj = assembly.get(); 
+    RTgroup groupPtr = groupObj->get();
+    void* ptr = groupPtr ; 
+    return ptr ; 
+}
+
+
 void* OCtx::create_instanced_assembly( NPYBase* transforms, const void* geometry_ptr, const void* material_ptr )
 { 
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 

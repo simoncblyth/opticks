@@ -23,6 +23,7 @@ set(SOURCES
 set(OPTIX_SOURCES
     ${name}.cu
     box.cu
+    sphere.cu
 )
 
 CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${OPTIX_SOURCES} )

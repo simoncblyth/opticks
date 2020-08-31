@@ -51,6 +51,17 @@ as its too difficult to do new things in two ways at once.
 #include "CMAKE_TARGET.hh" 
 
 
+glm::mat4 MakeTransform(unsigned u, unsigned v, unsigned w)
+{
+    //glm::vec4 rot( rand(), rand(), rand(),  rand()*360.f ); // random axis and angle 
+    //glm::vec4 rot(  0,  0, 1,  rand()*360.f );
+    glm::vec4 rot(  0,  0, 1,  0 );
+    glm::vec3 sca( 0.5 ) ; 
+    glm::vec3 tla(  10.f*u , 10.f*v , -10.f*w ) ; 
+    glm::mat4 m4 = nglmext::make_transform("trs", tla, rot, sca );
+    return m4 ; 
+}
+
 NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw)
 {
     unsigned num_tr = nu*nv*nw ; 
@@ -62,15 +73,8 @@ NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw)
     for( unsigned v = 0; v < nv ; ++v ) { 
     for( unsigned w = 0; w < nw ; ++w ) { 
 
-        //glm::vec4 rot( rand(), rand(), rand(),  rand()*360.f ); // random axis and angle 
-        //glm::vec4 rot(  0,  0, 1,  rand()*360.f );
-        glm::vec4 rot(  0,  0, 1,  0 );
-        glm::vec3 sca( 0.5 ) ; 
-        glm::vec3 tla(  10.f*u , 10.f*v , -10.f*w ) ; 
-        glm::mat4 m4 = nglmext::make_transform("trs", tla, rot, sca );
-
+        glm::mat4 m4 = MakeTransform(u,v,w); 
         tr->setMat4(m4, count, -1, transpose); 
-
         count++ ; 
     }
     }
@@ -114,24 +118,37 @@ void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const
     void* sph_ptr = OCtx::Get()->create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
     OCtx::Get()->set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
 
-    //void* instance_ptr = sph_ptr ; 
-    //void* instance_ptr = box_ptr ; 
-
-    //const char* closest_hit = "closest_hit_radiance0" ; 
-    const char* closest_hit = "closest_hit_textured" ; 
+    const char* closest_hit = "closest_hit_radiance0" ; 
+    //const char* closest_hit = "closest_hit_textured" ; 
 
     void* mat_ptr = OCtx::Get()->create_material( main_ptx,  closest_hit, entry_point_index ); 
 
-    void* box_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms0, box_ptr, mat_ptr );
-    void* sph_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms1, sph_ptr, mat_ptr );
-
     void* top_ptr = OCtx::Get()->create_group("top_object", NULL );  
-    OCtx::Get()->group_add_child_group( top_ptr, box_assembly_ptr ); 
-    OCtx::Get()->group_add_child_group( top_ptr, sph_assembly_ptr ); 
-
     void* top_accel = OCtx::Get()->create_acceleration("Trbvh");
     OCtx::Get()->set_group_acceleration( top_ptr, top_accel ); 
+
+    //bool single = false ; 
+    bool single = true ; 
+    if(single)
+    {
+        glm::mat4 m4box = MakeTransform(1,1,0); 
+        glm::mat4 m4sph = MakeTransform(1,1,1); 
+        void* box_assembly_ptr = OCtx::Get()->create_single_assembly( m4box, box_ptr, mat_ptr );
+        void* sph_assembly_ptr = OCtx::Get()->create_single_assembly( m4sph, sph_ptr, mat_ptr );
+
+        OCtx::Get()->group_add_child_group( top_ptr, box_assembly_ptr ); 
+        OCtx::Get()->group_add_child_group( top_ptr, sph_assembly_ptr ); 
+    }
+    else
+    {
+        void* box_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms0, box_ptr, mat_ptr );
+        void* sph_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms1, sph_ptr, mat_ptr );
+
+        OCtx::Get()->group_add_child_group( top_ptr, box_assembly_ptr ); 
+        OCtx::Get()->group_add_child_group( top_ptr, sph_assembly_ptr ); 
+    }
 }
+
 
 void SetupView(unsigned width, unsigned height, unsigned nu, unsigned nv, unsigned nw)
 {
@@ -139,7 +156,8 @@ void SetupView(unsigned width, unsigned height, unsigned nu, unsigned nv, unsign
 
     float extent = 100.0 ; 
     glm::vec4 ce_m(float(nu),float(nv), 0.f, extent ); 
-    glm::vec3 eye_m(  0.f, 0.f, 0.1f  );  //  viewpoint in unit model frame 
+    //glm::vec3 eye_m(  0.f, 0.f, 0.1f  );  //  viewpoint in unit model frame 
+    glm::vec3 eye_m( -0.1, -0.1f, 0.1f  );  //  viewpoint in unit model frame 
     glm::vec3 look_m( 0.7f, 0.7f, -0.7); 
     glm::vec3 up_m(   0.f, 0.f, 1.f   ); 
 
@@ -258,7 +276,7 @@ int main(int argc, char** argv)
     std::vector<int> tex_id ; 
     SetupTextures(path, tex_width, tex_height, tex_id ); 
 
-    assert( tex_index < tex_id.size() ); 
+    assert( tex_index < int(tex_id.size()) ); 
     int texture_id = tex_id[tex_index] ; 
     LOG(info) 
         << " tex_index " << tex_index
@@ -269,9 +287,13 @@ int main(int argc, char** argv)
     assert( texture_id > 0 ); 
     OCtx::Get()->set_context_int("texture_id", texture_id); 
 
-    unsigned factor = 1u ; 
-    unsigned width =  factor*1440u ; 
-    unsigned height = factor*900u ; 
+    //unsigned factor = 1u ; 
+    //unsigned width =  factor*1440u ; 
+    //unsigned height = factor*900u ; 
+
+    unsigned width = 1024 ; 
+    unsigned height = 512 ; 
+
     const unsigned entry_point_index = 0u ;
     const char* raygen = NULL ; 
 
@@ -279,8 +301,8 @@ int main(int argc, char** argv)
     bool with_geometry = true ; 
     if( with_geometry )
     {
-        const unsigned nu = 50u;
-        const unsigned nv = 50u;
+        const unsigned nu = 10u;
+        const unsigned nv = 10u;
         const unsigned nw = 4u;
         MakeGeometry( nu, nv, nw, main_ptx, entry_point_index ); 
         SetupView(width, height, nu, nv, nw);  

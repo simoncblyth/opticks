@@ -115,8 +115,9 @@ RT_PROGRAM void closest_hit_textured()
   float f_phi = f_phi_ > 0.f ? f_phi_ : f_phi_ + 1.f ;  //  
 
   int texture_id = tex_param.w ; 
-  unsigned layer = 0u ; 
-  uchar4 val = rtTex2DLayered<uchar4>( texture_id, f_phi, f_theta, layer );
+  //unsigned layer = 0u ; 
+  //uchar4 val = rtTex2DLayered<uchar4>( texture_id, f_phi, f_theta, layer );
+  uchar4 val = rtTex2D<uchar4>( texture_id, f_phi, f_theta );
   float3 result = make_float3( float(val.x)/255.99f,  float(val.y)/255.99f,  float(val.z)/255.99f ) ;   
 
   prd_radiance.result = result ;  ; 

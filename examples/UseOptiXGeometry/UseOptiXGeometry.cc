@@ -41,9 +41,15 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv) ; 
 
+    const char* geo_cu_default = "box.cu" ; 
+    const char* geo_cu = argc > 1 ? argv[1] : geo_cu_default ;  
+    LOG(info) << " geo_cu " << geo_cu ; 
+
     const char* cmake_target = "UseOptiXGeometry" ; 
     unsigned width = 1024u ; 
     unsigned height = 768 ; 
+    float tanYfov = 1.0f;
+    bool dump = false ;  
 
     // model frame : center-extent of model and viewpoint 
     glm::vec4 ce_m(    0.f,  0.f, 0.f, 0.5f ); 
@@ -56,7 +62,7 @@ int main(int argc, char** argv)
     glm::vec3 U ; 
     glm::vec3 V ; 
     glm::vec3 W ; 
-    nglmext::GetEyeUVW( ce_m, eye_m, look_m, up_m, width, height, eye, U, V, W ); 
+    nglmext::GetEyeUVW( ce_m, eye_m, look_m, up_m, width, height, tanYfov, eye, U, V, W, dump ); 
 
 
     optix::Context context = optix::Context::create();
@@ -73,29 +79,38 @@ int main(int argc, char** argv)
     const char* ptx = OKConf::PTXPath( cmake_target, "UseOptiXGeometry.cu") ; 
     context->setRayGenerationProgram( entry_point_index, context->createProgramFromPTXFile( ptx , "raygen" )); 
     context->setMissProgram(   entry_point_index, context->createProgramFromPTXFile( ptx , "miss" )); 
- 
-    const char* box_ptx = OKConf::PTXPath( cmake_target, "box.cu" ) ; 
+
+    const char* geo_ptx = OKConf::PTXPath( cmake_target, geo_cu ) ; 
+
+    optix::Geometry geo ; 
+    assert( geo.get() == NULL ); 
+
+    geo = context->createGeometry();
+    assert( geo.get() != NULL ); 
 
 
-    optix::Geometry box ; 
-    assert( box.get() == NULL ); 
-
-    box = context->createGeometry();
-    assert( box.get() != NULL ); 
-
-
-    box->setPrimitiveCount( 1u );
-    box->setBoundingBoxProgram( context->createProgramFromPTXFile( box_ptx , "box_bounds" ) );
-    box->setIntersectionProgram( context->createProgramFromPTXFile( box_ptx , "box_intersect" ) ) ;
+    geo->setPrimitiveCount( 1u );
+    geo->setBoundingBoxProgram( context->createProgramFromPTXFile( geo_ptx , "bounds" ) );
+    geo->setIntersectionProgram( context->createProgramFromPTXFile( geo_ptx , "intersect" ) ) ;
 
     float sz = ce_m.w ; 
-    box["boxmin"]->setFloat( -sz/2.f, -sz/2.f, -sz/2.f );
-    box["boxmax"]->setFloat(  sz/2.f,  sz/2.f,  sz/2.f );
 
-    optix::Material box_mat = context->createMaterial();
-    box_mat->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( ptx, "closest_hit_radiance0" ));
+    if( strcmp(geo_cu, "box.cu") == 0 )
+    {
+        geo["boxmin"]->setFloat( -sz/2.f, -sz/2.f, -sz/2.f );
+        geo["boxmax"]->setFloat(  sz/2.f,  sz/2.f,  sz/2.f );
+    }
+    else if( strcmp(geo_cu, "sphere.cu") == 0 )
+    {
+        geo["sphere"]->setFloat( 0.f, 0.f, 0.f, sz ); 
+    }
 
-    optix::GeometryInstance gi = context->createGeometryInstance( box, &box_mat, &box_mat+1 ) ;  
+
+
+    optix::Material mat = context->createMaterial();
+    mat->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( ptx, "closest_hit_radiance0" ));
+
+    optix::GeometryInstance gi = context->createGeometryInstance( geo, &mat, &mat+1 ) ;  
     optix::GeometryGroup gg = context->createGeometryGroup();
     gg->setChildCount(1); 
     gg->setChild( 0, gi );

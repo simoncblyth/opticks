@@ -39,10 +39,23 @@ om-cmake $sdir
 make
 make install   
 
-$name
 
-ls -l /tmp/$name.ppm
+cmdline="$name sphere.cu"
+echo $cmdline
+eval $cmdline
 
-open /tmp/$name.ppm
+[ $? -ne 0 ] && echo $0 : runtime error && exit 1
+
+
+outpath=/tmp/$name.ppm
+ls -l $outpath
+
+if [ -n "$SSH_TTY" ]; then 
+    echo remote running : outpath $outpath
+else 
+    echo local running : open outpath $outpath
+    open $outpath
+fi
+
 
 

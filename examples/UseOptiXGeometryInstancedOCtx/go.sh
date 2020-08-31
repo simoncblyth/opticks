@@ -53,7 +53,7 @@ if [ -f "$earth" ]; then
 else
     path=$gradient
 fi
-#path=$gradient
+path=$gradient
 exe=$(which $name)
 
 

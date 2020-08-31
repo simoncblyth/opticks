@@ -39,11 +39,14 @@ make
 make install   
 
 earth=$HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
+gradient=/tmp/SPPMTest_MakeTestImage.ppm 
 if [ -f "$earth" ]; then 
     path=$earth  
 else
-    path=/tmp/SPPMTest.ppm
+    path=$gradient
 fi
+path=$gradient
+
 
 echo $name $path
 $name $path
