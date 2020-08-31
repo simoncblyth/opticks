@@ -327,8 +327,6 @@ void NPYBase::read_item_(const void* src, unsigned item)
 
 
 
-
-
 NPYBase::NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, Type_t type, std::string& metadata, bool has_data) 
     :
     m_shape(shape),
@@ -363,6 +361,17 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, T
 {
 } 
 
+
+/**
+NPYBase::updateDimensions
+---------------------------
+
+Called internally when resizing. 
+
+Note that the updates to m_shape_spec and m_item_spec were
+omitted prior to Aug 31 2020. Fixing a very old bug.
+**/
+
 void NPYBase::updateDimensions()
 {
     m_ni = getShape(0); 
@@ -370,8 +379,12 @@ void NPYBase::updateDimensions()
     m_nk = getShape(2);
     m_nl = getShape(3);  // gives 0 when beyond dimensions
     m_nm = getShape(4);
-
     m_dim = m_shape.size();
+
+    delete m_shape_spec ; 
+    delete m_item_spec ; 
+    m_shape_spec = new NPYSpec(NULL, m_ni, m_nj, m_nk, m_nl, m_nm, m_type, "" ) ;
+    m_item_spec  = new NPYSpec(NULL,    0, m_nj, m_nk, m_nl, m_nm, m_type, "" ) ; 
 }
 
 

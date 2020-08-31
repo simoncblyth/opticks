@@ -26,11 +26,11 @@
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
+#include "plog/Severity.h"
 
 
 #include "NPY_API_EXPORT.hh"
 #include "NPY_FLAGS.hh"
-
 
 #include "uif.h"
 #include "ucharfour.h"
@@ -106,6 +106,7 @@ class NPY_API NPY : public NPYBase {
    friend class MaterialLibNPY ; 
 
    public:
+       static const plog::Severity LEVEL ; 
        static Type_t type ;  // for type branching 
        static T UNSET ; 
 
@@ -113,7 +114,7 @@ class NPY_API NPY : public NPYBase {
        // NB favor vec4 over vec3 for better GPU performance (due to memory coalescing/alignment)
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
 
-       static NPY<T>* make(unsigned int ni, const NPYSpec* itemspec);   // itemspec ni is expected to be zero, and is ignored
+       static NPY<T>* make(unsigned int ni, const NPYSpec* argspec);   // argspec ni is ignored and is replaced by ni 
        static NPY<T>* make(const NPYSpec* argspec);
 
        static NPY<T>* make(const std::vector<int>& shape);
@@ -122,7 +123,10 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk );
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl );
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm);
-       static NPY<T>* concat(const std::vector<NPYBase*>& comps); 
+
+       static NPY<T>* nasty_old_concat(const std::vector<const NPYBase*>& comps); 
+       static NPY<T>* old_concat(const std::vector<const NPYBase*>& comps); 
+       static NPY<T>* concat(const std::vector<const NPYBase*>& comps); 
 
        static NPY<T>* make_modulo(NPY<T>* src, unsigned int scaledown);
        static NPY<T>* make_repeat(NPY<T>* src, unsigned int n);

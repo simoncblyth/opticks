@@ -75,13 +75,49 @@ void test_write_item_big()
 }
 
 
+
+template<typename T>
+void test_concat()
+{
+    NPY<T>* a[3] ; 
+
+    std::vector<const NPYBase*> aa ; 
+    for(unsigned i=0 ; i < 3 ; i++)
+    {
+        //a[i] = NPY<T>::make(1, 512, 1024, 4) ; 
+        a[i] = NPY<T>::make(1, 4, 4) ; 
+        a[i]->zero(); 
+        a[i]->fillIndexFlat();  
+        aa.push_back(a[i]); 
+    }
+   
+    NPY<T>* c = NPY<T>::old_concat(aa); 
+    const char* c_path = "$TMP/NPY4Test/test_concat/old.npy" ; 
+    LOG(info) << " c " << c->getShapeString() << " save: " << c_path ; 
+    c->save(c_path); 
+
+
+    NPY<T>* d = NPY<T>::concat(aa); 
+    const char* d_path = "$TMP/NPY4Test/test_concat/new.npy" ; 
+    LOG(info) << " d " << d->getShapeString() << " save: " << d_path ; 
+    d->save(d_path); 
+
+
+    assert( NPY<T>::compare(c,d,true) == 0 ); 
+}
+
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
     //test_make_modulo_selection();  
     //test_write_item_(); 
-    test_write_item_big(); 
+    //test_write_item_big(); 
+
+    test_concat<unsigned char>(); 
 
     return 0 ; 
 }

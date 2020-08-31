@@ -14,6 +14,7 @@ See ImageNPYConcatTest.py for imshow plotting
 
 NPY<unsigned char>*  test_LoadPPMConcat(const char* path, const bool yflip, const unsigned num_concat)
 {
+    LOG(info) << "[" ; 
     const unsigned ncomp = 3 ; 
     const char* config0 = "add_border" ;  
     const char* config1 = "add_midline" ; 
@@ -33,15 +34,31 @@ NPY<unsigned char>*  test_LoadPPMConcat(const char* path, const bool yflip, cons
          << " config1 " << config1
          ; 
 
-    NPY<unsigned char>* a = ImageNPY::LoadPPMConcat(paths, configs, yflip, ncomp) ; 
+    bool old_concat ;
+    old_concat = true ;   
+    NPY<unsigned char>* a = ImageNPY::LoadPPMConcat(paths, configs, yflip, ncomp, old_concat) ;
+
+    old_concat = false ;   
+    NPY<unsigned char>* b = ImageNPY::LoadPPMConcat(paths, configs, yflip, ncomp, old_concat) ; 
 
     LOG(info) << " array " << a->getShapeString() ; 
+    LOG(info) << " array " << b->getShapeString() ; 
 
-    const char* opath = SStr::ReplaceEnd(path, ".ppm", "_concat.npy" ) ;
-    LOG(info) << "saving array to " << opath ; 
+    bool dump = true ; 
+    unsigned diffs = NPY<unsigned char>::compare(a,b,dump);  
+    LOG(info) << " diffs " ;  
 
-    a->save(opath); 
+    const char* a_path = SStr::ReplaceEnd(path, ".ppm", "_old_concat.npy" ) ;
+    LOG(info) << "saving array to " << a_path ; 
+    a->save(a_path); 
 
+    const char* b_path = SStr::ReplaceEnd(path, ".ppm", "_new_concat.npy" ) ;
+    LOG(info) << "saving array to " << b_path ; 
+    b->save(b_path); 
+
+    assert( diffs == 0 ); 
+
+    LOG(info) << "]" ; 
     return a ; 
 }
 

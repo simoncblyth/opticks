@@ -22,7 +22,7 @@
 
 #endif
 
-const plog::Severity OCtx::LEVEL = PLOG::EnvLevel("OCtx", "INFO"); 
+const plog::Severity OCtx::LEVEL = PLOG::EnvLevel("OCtx", "DEBUG"); 
 OCtx* OCtx::INSTANCE = NULL ; 
 
 OCtx::OCtx()
@@ -172,7 +172,7 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
 
     if(key != NULL)
     {
-        LOG(info) << " placing buffer into context with key " << key ; 
+        LOG(LEVEL) << " placing buffer into context with key " << key ; 
         context[key]->setBuffer(buf); 
     }
 
@@ -296,22 +296,23 @@ void OCtx::set_miss_program( unsigned entry_point_index, const char* ptx_path, c
 
 void* OCtx::create_geometry(unsigned prim_count, const char* ptxpath, const char* bounds_func, const char* intersect_func )
 {
+    LOG(LEVEL) << "[" ; 
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     optix::Geometry geom = context->createGeometry();
     geom->setPrimitiveCount( prim_count );
-    LOG(info) << "[ ptxpath " << ptxpath ; 
+    LOG(LEVEL) << "[ ptxpath " << ptxpath ; 
     optix::Program bd = context->createProgramFromPTXFile( ptxpath, bounds_func ) ;  
     optix::Program in = context->createProgramFromPTXFile( ptxpath, intersect_func ) ;  
     geom->setBoundingBoxProgram(bd);
     geom->setIntersectionProgram(in);
 
-   // geom["sphere"]->setFloat( 0, 0, 0, 1.5 );
 
-    LOG(info) << "] ptxpath " << ptxpath ; 
+    LOG(LEVEL) << "] ptxpath " << ptxpath ; 
 
     optix::GeometryObj* geomObj = geom.get(); 
     RTgeometry geomPtr = geomObj->get();  
     void* ptr = geomPtr ;  
+    LOG(LEVEL) << "]" ; 
     return ptr ;
 }
 
@@ -319,9 +320,9 @@ void* OCtx::create_material(const char* ptxpath, const char* closest_hit_func, u
 {
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     optix::Material mat = context->createMaterial();
-    LOG(info) << "[ compile ch " ;
+    LOG(LEVEL) << "[ compile ch " ;
     optix::Program ch = context->createProgramFromPTXFile( ptxpath, closest_hit_func ) ;     
-    LOG(info) << "] compile ch " ;  
+    LOG(LEVEL) << "] compile ch " ;  
     mat->setClosestHitProgram( entry_point_index, ch );
 
     optix::MaterialObj* matObj = mat.get();
@@ -547,8 +548,12 @@ void OCtx::set_texture_param( void* buffer_ptr, unsigned tex_id, const char* par
         default: assert(0)                           ; break ; 
     }
     optix::int4 param = optix::make_int4(width, height, depth, tex_id); 
-    context[param_key]->setInt(param);
-    LOG(info) << param_key << " ( " << param.x << " " << param.y << " " << param.z << " " << param.w << " " << " ) " << " ni/nj/nk/tex_id " ; 
+    LOG(LEVEL) << param_key << " ( " << param.x << " " << param.y << " " << param.z << " " << param.w << " " << " ) " << " ni/nj/nk/tex_id " ; 
+
+    if( param_key != NULL )
+    {
+        context[param_key]->setInt(param);
+    }
 }
 
 /**
@@ -577,13 +582,14 @@ from the opaque type : so need to wrap absolutely everything ?
 
 **/
 
-void OCtx::upload_2d_texture(const char* param_key, const NPYBase* inp, const char* config, int item)
+unsigned OCtx::upload_2d_texture(const char* param_key, const NPYBase* inp, const char* config, int item)
 {
     LOG(LEVEL) << "[" ; 
     void* buffer_ptr = create_buffer(inp, NULL, 'I', ' ', item ); 
     unsigned tex_id = create_texture_sampler(buffer_ptr, config ); 
     set_texture_param( buffer_ptr, tex_id, param_key );  
     LOG(LEVEL) << "]" ; 
+    return tex_id ; 
 }
 
 
@@ -610,6 +616,16 @@ void OCtx::set_context_int4( const char* key, int x, int y, int z, int w )
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     context[key]->setInt(optix::make_int4(x, y, z, w));
 }
+
+void OCtx::set_context_int( const char* key, int x )
+{
+    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    context[key]->setInt(x);
+}
+
+
+
+
 
 void OCtx::set_context_viewpoint( const glm::vec3& eye, const glm::vec3& U,  const glm::vec3& V, const glm::vec3& W, const float scene_epsilon )
 {

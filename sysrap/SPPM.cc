@@ -363,7 +363,7 @@ void SPPM::AddBorder( unsigned char* imgdata, const int width, const int height,
 void SPPM::AddMidline( std::vector<unsigned char>& img, const int width, const int height, const int ncomp, const bool yflip )
 {
     int size = width*height*ncomp ; 
-    assert( img.size() == size ); 
+    assert( int(img.size()) == size ); 
     unsigned char* imgdata = img.data();  
     AddMidline( imgdata, width, height, ncomp, yflip ); 
 }

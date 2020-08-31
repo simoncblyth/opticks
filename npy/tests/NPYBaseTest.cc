@@ -22,13 +22,9 @@
 #include "OPTICKS_LOG.hh"
 #include "NPY.hpp"
 
-int main(int argc, char** argv)
+
+void test_ArrayContentVersion()
 {
-    OPTICKS_LOG(argc, argv);
-
-    LOG(info) << argv[0] ;
-
-
     int acv = 1001 ; 
 
     NPY<int>* np = NPY<int>::make(1,1,4) ; 
@@ -43,8 +39,17 @@ int main(int argc, char** argv)
     LOG(info) << " acv2 " << acv2 ; 
 
     assert( acv2 == acv ); 
+}
 
 
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+    LOG(info) << argv[0] ;
+
+    test_ArrayContentVersion(); 
 
     return 0 ; 
 }

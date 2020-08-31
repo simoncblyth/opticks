@@ -27,14 +27,14 @@
 #include "NPY.hpp"
 #include "ImageNPY.hpp"
 
-const plog::Severity ImageNPY::LEVEL = PLOG::EnvLevel("ImageNPY", "INFO"); 
+const plog::Severity ImageNPY::LEVEL = PLOG::EnvLevel("ImageNPY", "DEBUG"); 
 
 
-NPY<unsigned char>* ImageNPY::LoadPPMConcat(const std::vector<std::string>& paths, const std::vector<std::string>& configs, const bool yflip, const unsigned ncomp)  // static
+NPY<unsigned char>* ImageNPY::LoadPPMConcat(const std::vector<std::string>& paths, const std::vector<std::string>& configs, const bool yflip, const unsigned ncomp, bool old_concat )  // static
 {
     assert( paths.size() == configs.size() ); 
     unsigned layers = paths.size(); 
-    std::vector<NPYBase*> imgs ; 
+    std::vector<const NPYBase*> imgs ; 
     bool layer_dimension = true ; 
     for(unsigned i=0 ; i < layers ; i++ ) 
     {
@@ -43,8 +43,13 @@ NPY<unsigned char>* ImageNPY::LoadPPMConcat(const std::vector<std::string>& path
         NPY<unsigned char>* img = LoadPPM(path.c_str(), yflip, ncomp, config.c_str(), layer_dimension); 
         imgs.push_back(img); 
     }
-    NPY<unsigned char>* comb = NPY<unsigned char>::concat(imgs); 
-    LOG(info) << "concat img shape " << comb->getShapeString() ; 
+
+    //std::cout << "ImageNPY::LoadPPMConcat LEVEL " << LEVEL << std::endl ; 
+
+    if(old_concat) LOG(LEVEL) << "using old_concat imp " ; 
+    NPY<unsigned char>* comb = old_concat ? NPY<unsigned char>::old_concat(imgs) : NPY<unsigned char>::concat(imgs) ; 
+
+    LOG(LEVEL) << "concat img shape " << comb->getShapeString() ; 
     return comb  ; 
 }
 

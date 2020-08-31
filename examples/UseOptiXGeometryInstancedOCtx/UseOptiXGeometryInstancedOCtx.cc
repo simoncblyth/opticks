@@ -22,6 +22,7 @@ as its too difficult to do new things in two ways at once.
 
 #include <chrono>
 
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <cstdlib>
@@ -151,6 +152,83 @@ void SetupView(unsigned width, unsigned height, unsigned nu, unsigned nv, unsign
 }
 
 
+void SetupTextures(const char* path, unsigned& tex_width, unsigned& tex_height, std::vector<int>& tex_id)
+{
+    const bool yflip0 = false ; 
+    unsigned ncomp = 4 ; 
+    const unsigned NIMG = 3 ; 
+    tex_id.resize(NIMG); 
+    std::fill(tex_id.begin(), tex_id.end(), -1);
+ 
+    typedef enum { CONCAT, SPLIT, ONE } Mode_t ; 
+    Mode_t mode = CONCAT ; 
+
+    const char* config[NIMG] ; 
+    config[0] = "add_border" ; 
+    config[1] = "add_midline" ; 
+    config[2] = "add_quadline" ; 
+
+    const char* param_key[NIMG] ; 
+    param_key[0] = "tex_param_0" ; 
+    param_key[1] = "tex_param_1" ; 
+    param_key[2] = "tex_param_2" ; 
+
+    NPY<unsigned char>* inpc = NULL ; 
+    NPY<unsigned char>* inp[NIMG] ;  
+ 
+    if( mode == SPLIT )
+    {
+        LOG(info) << " SPLIT : separate loading of PPM into distinct arrays " ;  
+        for(unsigned i=0 ; i < NIMG ; i++)
+        {
+            bool concat_dimension = false ; 
+            inp[i] = ImageNPY::LoadPPM( path, yflip0, ncomp, config[i], concat_dimension ); 
+            tex_id[i] = OCtx::Get()->upload_2d_texture(param_key[i], inp[i], "INDEX_NORMALIZED_COORDINATES", -1 );  
+            LOG(info) 
+                << " i " << i 
+                << " inp " << inp[i]->getShapeString() 
+                << " tex_id " << tex_id[i] 
+                ; 
+        }
+        tex_height = inp[0]->getShape(0);    // assumes all img are same size
+        tex_width  = inp[0]->getShape(1);  
+    } 
+    else if ( mode == CONCAT ) 
+    {
+        LOG(info) << "[ CONCAT : collective array holding multiple images " ;  
+        std::vector<std::string> paths = {path, path, path} ;
+        std::vector<std::string> configs = {config[0], config[1], config[2] };
+
+        bool old_concat = true ;   // should make no difference, now that have fixed the old imp
+        inpc = ImageNPY::LoadPPMConcat(paths, configs, yflip0, ncomp, old_concat ) ; 
+        //ImageNPY::SavePPMConcat(inpc, path, yflip0);  // just for debug
+
+        for(unsigned i=0 ; i < NIMG ; i++)
+        {
+            tex_id[i] = OCtx::Get()->upload_2d_texture(param_key[i], inpc, "INDEX_NORMALIZED_COORDINATES", i );  
+            LOG(info)
+                << " i " << i 
+                << " param_key " << param_key[i]
+                << " tex_id " << tex_id[i]
+                ;
+        }
+        tex_height = inpc->getShape(1);  
+        tex_width  = inpc->getShape(2);  
+        LOG(info) << "] CONCAT " ;  
+    }
+    else if ( mode == ONE )
+    {
+        LOG(info) << " ONE " ;  
+        bool concat_dimension = true ; 
+        inpc = ImageNPY::LoadPPM(path, yflip0, ncomp, config[0], concat_dimension) ; 
+        tex_id[0] = OCtx::Get()->upload_2d_texture(param_key[0], inpc, "INDEX_NORMALIZED_COORDINATES", -1 );  
+        tex_id[1] = -1 ; 
+        tex_id[2] = -1 ; 
+
+        tex_height = inpc->getShape(1);  
+        tex_width  = inpc->getShape(2);  
+    }
+}
 
 
 int main(int argc, char** argv)
@@ -163,37 +241,33 @@ int main(int argc, char** argv)
     const char* main_ptx = OKConf::PTXPath( CMAKE_TARGET, cu_name );  
     const char* tmpdir = SStr::Concat("$TMP/", CMAKE_TARGET ) ; 
 
-    const char* path = argc > 1 ? argv[1] : "/tmp/SPPMTest.ppm" ;
-    const bool yflip0 = false ; 
-    unsigned ncomp = 4 ; 
+    const char* path_default = "/tmp/SPPMTest_MakeTestImage.ppm" ; 
+    const char* path = argc > 1 ? argv[1] : path_default ; 
 
-    const char* config0 = "add_border" ; 
-    const char* config1 = "add_border,add_midline,add_quadline" ; 
+    int tex_index_default = 0 ;  
+    int tex_index = argc > 2 ? atoi(argv[2]) : tex_index_default ;   
 
-    OBuffer::Dump(); 
+    LOG(info) 
+        <<  " args "
+        <<  " path " << path  
+        <<  " tex_index " << tex_index
+        ;  
 
-    NPY<unsigned char>* inp = NULL ; 
-    bool concat = true ; 
-    //bool concat = false ; 
-    // NB renamed from "layered" to "concat" as this not creating a real layered texture 
-    // sustained attempts to get those to work failed. 
-    if( concat )
-    {
-        std::vector<std::string> paths = {path, path} ;
-        std::vector<std::string> configs = {config0, config1 };
-        inp = ImageNPY::LoadPPMConcat(paths, configs, yflip0, ncomp ) ; 
+    unsigned tex_width ; 
+    unsigned tex_height ;
+    std::vector<int> tex_id ; 
+    SetupTextures(path, tex_width, tex_height, tex_id ); 
 
-        ImageNPY::SavePPMConcat(inp, path, yflip0);
-        OCtx::Get()->upload_2d_texture("tex_param_0", inp, "INDEX_NORMALIZED_COORDINATES", 0 );  
-        OCtx::Get()->upload_2d_texture("tex_param_1", inp, "INDEX_NORMALIZED_COORDINATES", 1 );  
-    }
-    else
-    {
-        bool concat_dimension = false ; 
-        inp = ImageNPY::LoadPPM(path, yflip0, ncomp, config1, concat_dimension) ; 
-        OCtx::Get()->upload_2d_texture("tex_param_0", inp, "INDEX_NORMALIZED_COORDINATES", -1 );  
-    }
-
+    assert( tex_index < tex_id.size() ); 
+    int texture_id = tex_id[tex_index] ; 
+    LOG(info) 
+        << " tex_index " << tex_index
+        << " texture_id " << texture_id
+        << " tex_width " << tex_width
+        << " tex_height " << tex_height
+        ; 
+    assert( texture_id > 0 ); 
+    OCtx::Get()->set_context_int("texture_id", texture_id); 
 
     unsigned factor = 1u ; 
     unsigned width =  factor*1440u ; 
@@ -201,8 +275,8 @@ int main(int argc, char** argv)
     const unsigned entry_point_index = 0u ;
     const char* raygen = NULL ; 
 
-    bool with_geometry = false ; 
-    //bool with_geometry = true ; 
+    //bool with_geometry = false ; 
+    bool with_geometry = true ; 
     if( with_geometry )
     {
         const unsigned nu = 50u;
@@ -214,9 +288,10 @@ int main(int argc, char** argv)
     } 
     else
     {
-        height = inp->getShape(concat ? 1 : 0); 
-        width = inp->getShape(concat ? 2 : 1); 
+        height = tex_height ; 
+        width =  tex_width ; 
         raygen = "raygen_texture_test" ; 
+        LOG(info) << " height " << height << " width " << width ; 
     }
 
     OCtx::Get()->set_raygen_program( entry_point_index, main_ptx, raygen );

@@ -119,6 +119,27 @@ unsigned int NPYSpec::getDimension(unsigned int i) const
     return m_bad_index ; 
 }
 
+
+
+void NPYSpec::dumpComparison(const NPYSpec* other, const char* msg) const 
+{
+    LOG(info) << msg
+              << " type " << getType()
+              << " typeName " << getTypeName()
+              << " other type " << other->getType()
+              << " other typeName " << other->getTypeName()
+              << " match? " << ( getType() == other->getType() )
+              ;
+
+    for(int i=0 ; i < 5 ; i++)
+        LOG(info) 
+            << " i " << i 
+            << " self " << getDimension(i)
+            << " other " << other->getDimension(i)
+            << " match? " << ( getDimension(i) == other->getDimension(i) )
+            ;
+}
+
 bool NPYSpec::isEqualTo(const NPYSpec* other) const
 {
     bool match = 
@@ -130,28 +151,34 @@ bool NPYSpec::isEqualTo(const NPYSpec* other) const
          getType() == other->getType()
          ;
 
-    if(!match)
-    {
-
-       for(int i=0 ; i < 5 ; i++)
-          LOG(info) << "NPYSpec::isEqualTo" 
-                    << " i " << i 
-                    << " self " << getDimension(i)
-                    << " other " << other->getDimension(i)
-                    << " match? " << ( getDimension(i) == other->getDimension(i) )
-                    ;
- 
-        LOG(info) << "NPYSpec::isEqualTo"
-                  << " type " << getType()
-                  << " typeName " << getTypeName()
-                  << " other type " << other->getType()
-                  << " other typeName " << other->getTypeName()
-                  << " match? " << ( getType() == other->getType() )
-                  ;
-
-    }
-
+    if(!match) dumpComparison(other, "isEqualTo-FAIL" ); 
     return match ; 
 }
+
+/**
+NPYSpec::isSameItemShape
+-------------------------
+
+Same shape, excluding the first dimension.
+
+**/
+
+bool NPYSpec::isSameItemShape(const NPYSpec* other) const
+{
+    bool match = 
+         getDimension(1) == other->getDimension(1) &&
+         getDimension(2) == other->getDimension(2) &&
+         getDimension(3) == other->getDimension(3) &&
+         getDimension(4) == other->getDimension(4) &&
+         getType() == other->getType()
+         ;
+
+    if(!match) dumpComparison(other, "isSameItemShape-FAIL" ); 
+    return match ; 
+}
+
+
+
+
 
 

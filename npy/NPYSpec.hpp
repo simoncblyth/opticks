@@ -41,6 +41,9 @@ class NPY_API NPYSpec {
         int             getVerbosity() const ; 
         bool isOptional() const ; 
         bool isEqualTo(const NPYSpec* other) const ;
+        bool isSameItemShape(const NPYSpec* other) const ; 
+        void dumpComparison(const NPYSpec* other, const char* msg) const ; 
+
         std::string     description() const  ;
         std::string     desc() const  ;
         void Summary(const char* msg="NPYSpec::Summary") const ;

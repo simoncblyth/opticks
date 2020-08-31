@@ -29,7 +29,7 @@ template<typename T> class NPY ;
 class NPY_API ImageNPY {
    public:  
        static const plog::Severity LEVEL ; 
-       static NPY<unsigned char>* LoadPPMConcat(const std::vector<std::string>& paths, const std::vector<std::string>& configs, const bool yflip, const unsigned ncomp);
+       static NPY<unsigned char>* LoadPPMConcat(const std::vector<std::string>& paths, const std::vector<std::string>& configs, const bool yflip, const unsigned ncomp, bool old_concat);
        static NPY<unsigned char>* LoadPPM(const char* path, const bool yflip, const unsigned ncomp, const char* config, bool layer_dimension);
 
        static void SavePPMConcat(const NPY<unsigned char>* imgs, const char* path, const bool yflip); 

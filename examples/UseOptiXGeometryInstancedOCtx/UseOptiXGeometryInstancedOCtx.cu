@@ -73,21 +73,22 @@ rtDeclareVariable(PerRayData_radiance, prd_radiance, rtPayload, );
 rtDeclareVariable(optix::Ray,           raycur, rtCurrentRay, );
 rtDeclareVariable(float,                  t, rtIntersectionDistance, );
 
+/*
 rtDeclareVariable(int4,   tex_param_0, , );
 rtDeclareVariable(int4,   tex_param_1, , );
+rtDeclareVariable(int4,   tex_param_2, , );
+*/
+
+rtDeclareVariable(int,   texture_id, , );
+
 
 RT_PROGRAM void raygen_texture_test()
 {
     float2 d = make_float2(launch_index) / make_float2(launch_dim) ;  // 0->1
 
-    //int texture_id = tex_param_0.w ; 
-    int texture_id = tex_param_1.w ; 
-    int layer = 0 ; 
     //output_buffer[launch_index] = rtTex2DLayered<uchar4>( texture_id, d.x, d.y, layer );
     output_buffer[launch_index] = rtTex2D<uchar4>( texture_id, d.x, d.y );
-
     //output_buffer[launch_index] = make_uchar4( 255, 0, 0, 255 ); 
-
 }
 
 RT_PROGRAM void raygen()
@@ -102,7 +103,6 @@ RT_PROGRAM void raygen()
 
      //rtPrintf("//raygen launch_index.x %u launch_index.y %u launch_dim.x %u launch_dim.y %u \n", launch_index.x , launch_index.y, launch_dim.x , launch_dim.y   );
     output_buffer[launch_index] = make_color( prd.result ) ; 
-
     // make_uchar4(  255u, 0u, 0u,255u) ;  // red  (was expecting BGRA get RGBA)
 }
 
@@ -144,10 +144,7 @@ RT_PROGRAM void closest_hit_textured()
   float f_phi_ = atan2( norm.y, norm.x )/(2.f*M_PIf) ;  // azimuthal 0->2pi ->  0->1
   float f_phi = f_phi_ > 0.f ? f_phi_ : f_phi_ + 1.f ;  //  
 
-  int texture_id = tex_param_0.w ; 
-  //int texture_id = tex_param_1.w ; 
-  int layer = 0 ; 
-  uchar4 val = rtTex2DLayered<uchar4>( texture_id, f_phi, f_theta, layer );
+  uchar4 val = rtTex2D<uchar4>( texture_id, f_phi, f_theta );
   float3 result = make_float3( float(val.x)/255.99f,  float(val.y)/255.99f,  float(val.z)/255.99f ) ;   
 
   prd_radiance.result = result ;  ; 
@@ -160,23 +157,21 @@ RT_PROGRAM void closest_hit_textured()
 
 RT_PROGRAM void miss()
 {
-  prd_radiance.result = make_float3(1.f, 1.f, 1.f) ;
+    prd_radiance.result = make_float3(1.f, 1.f, 1.f) ;
 }
 RT_PROGRAM void printTest0()
 {
-     unsigned long long index = launch_index.x ;
-     rtPrintf("//printTest0 d:%d launch_index.x %u launch_index.y %u launch_dim.x %u launch_dim.y %u \n", index, launch_index.x , launch_index.y, launch_dim.x , launch_dim.y   );
+    unsigned long long index = launch_index.x ;
+    rtPrintf("//printTest0 d:%d launch_index.x %u launch_index.y %u launch_dim.x %u launch_dim.y %u \n", index, launch_index.x , launch_index.y, launch_dim.x , launch_dim.y   );
 }
 RT_PROGRAM void printTest1()
 {
-     unsigned long long index = launch_index.x ;
-     rtPrintf("//printTest1 llu:%llu launch_index.x %u launch_index.y %u launch_dim.x %u launch_dim.y %u \n", index, launch_index.x , launch_index.y, launch_dim.x , launch_dim.y   );
+    unsigned long long index = launch_index.x ;
+    rtPrintf("//printTest1 llu:%llu launch_index.x %u launch_index.y %u launch_dim.x %u launch_dim.y %u \n", index, launch_index.x , launch_index.y, launch_dim.x , launch_dim.y   );
 }
 RT_PROGRAM void exception()
 {
-    //rtPrintExceptionDetails();
+    rtPrintExceptionDetails();
 }
-
-
 
 

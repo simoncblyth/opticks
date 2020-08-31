@@ -19,6 +19,10 @@
 ##
 
 
+echo "NO LONGER WORKING : USE om-;om-- "
+exit 0 
+
+
 opticks-
 opticks-id 
 prefix=$(opticks-prefix-tmp)

@@ -42,6 +42,8 @@ namespace fs = boost::filesystem;
 
 
 // ctor takes ownership of a copy of the inputs 
+template <typename T>
+const plog::Severity NPY<T>::LEVEL = PLOG::EnvLevel("NPY", "DEBUG") ; 
 
 template <typename T>
 NPY<T>::NPY(const std::vector<int>& shape, const std::vector<T>& data_, std::string& metadata) 
@@ -232,7 +234,8 @@ T* NPY<T>::grow(unsigned int nitems)
               << " growvals " << growvals
               ;
 
-    m_data.resize(origvals + growvals);
+    m_data.resize(origvals + growvals);  // <--- CAUTION this can cause a change to the base ptr, as might need to be relocated to be contiguous
+    setBasePtr(m_data.data());
     return m_data.data() + origvals ;
 }
 
@@ -336,8 +339,18 @@ bool NPY<T>::hasSameItemSize(NPY<T>* a, NPY<T>* b)
 */
 
 
+
+/**
+NPY<T>::addItem
+-----------------
+
+Add one item from an-other array to this increasing the item count by 1.
+This array and the other array must have same itemsize (ie size after 1st dimension).
+
+**/
+
 template <typename T>
-void NPY<T>::addItem(NPY<T>* other, unsigned item)      // add another buffer to this one, they must have same itemsize (ie size after 1st dimension)
+void NPY<T>::addItem(NPY<T>* other, unsigned item)    
 {
     assert( item < other->getNumItems() );
     unsigned orig = getNumItems();
@@ -360,15 +373,28 @@ void NPY<T>::addItem(NPY<T>* other, unsigned item)      // add another buffer to
     setNumItems( orig + extra );
 }
  
+/**
+NPY<T>::add
+-------------
 
+Add all items from an-other array to this array.
+This array and the other array must have same itemsize (ie size after 1st dimension).
+
+**/
 
 template <typename T>
-void NPY<T>::add(const NPY<T>* other)      // add another buffer to this one, they must have same itemsize (ie size after 1st dimension)
+void NPY<T>::add(const NPY<T>* other)      
 {
     unsigned orig = getNumItems();
     unsigned extra = other->getNumItems() ;
 
     bool same= HasSameItemSize(this, other);
+    if(!same) 
+        LOG(fatal) << "HasSameItemSize FAIL"
+                   << " other " << other->getShapeString()
+                   << " this " << this->getShapeString()
+                   ;
+
     assert(same);
 
     memcpy( grow(extra), other->getBytes(), other->getNumBytes(0) );
@@ -377,17 +403,27 @@ void NPY<T>::add(const NPY<T>* other)      // add another buffer to this one, th
 }
 
 
-// TODO: move to base 
+
+/**
+NPY<T>::nasty_old_concat
+--------------------------
+
+OOPS: this changes the supposedly const argument array 
+
+**/
 
 template <typename T>
-NPY<T>* NPY<T>::concat(const std::vector<NPYBase*>& comps) // static 
+NPY<T>* NPY<T>::nasty_old_concat(const std::vector<const NPYBase*>& comps) // static 
 {
+    LOG(fatal) << " this old concat has some mis-behaviour  " ; 
+    assert(0); 
+
     unsigned num_comps = comps.size() ; 
     assert( num_comps > 0 ); 
 
     for(unsigned i=0 ; i < num_comps ; i++)
     {
-        NPY<T>* a = (NPY<T>*)comps[i];
+        const NPYBase* a = comps[i];
         LOG(info) << i << " " << a->getShapeString() ; 
     }
 
@@ -400,6 +436,103 @@ NPY<T>* NPY<T>::concat(const std::vector<NPYBase*>& comps) // static
     }
     return comb ; 
 }
+
+/**
+NPY<T>::old_concat
+--------------------
+
+Although old_concat is correct and creates the same array content as concat 
+it has different memory allocation behaviour due to the use of "add" 
+which has been observed to cause problems with subarray image reading 
+and textures. This could be due to a stale base ptr, but thats not been 
+confirmed.  
+
+Have now made a change which might possibly fix this issue, by 
+updating the BasePtr in grow() after resizing m_data.
+
+**/
+
+template <typename T>
+NPY<T>* NPY<T>::old_concat(const std::vector<const NPYBase*>& comps) // static 
+{
+    unsigned num_comps = comps.size() ; 
+    LOG(LEVEL) << "[" ; 
+    assert( num_comps > 0 ); 
+
+
+    // check all comps have the same item shape  
+    const NPYSpec* spec = NULL ; 
+    for(unsigned i=0 ; i < num_comps ; i++)
+    {
+        const NPYBase* a = comps[i];
+        if(spec == NULL){
+            spec = a->getShapeSpec();  
+        } else {
+            assert(spec->isSameItemShape(a->getShapeSpec())); 
+        }
+        LOG(LEVEL) << i << " " << a->getShapeString() << " spec " << spec->desc() ; 
+    }
+
+    // create new array with same item shape as inputs, but zero items
+    NPY<T>* comb = NPY<T>::make(0, spec);  
+    LOG(LEVEL) << " comb " << comb->getShapeString(); 
+
+
+    // add all input arrays into the combination array 
+    for(unsigned i=0 ; i < num_comps ; i++)
+    {
+        const NPY<T>* other = (const NPY<T>*)comps[i] ; 
+        comb->add(other); 
+    }
+    LOG(LEVEL) << "]" ; 
+    return comb ; 
+}
+
+
+template <typename T>
+NPY<T>* NPY<T>::concat(const std::vector<const NPYBase*>& comps) // static 
+{
+    LOG(LEVEL) << "[" ; 
+    unsigned item_size = 0 ; 
+    assert( comps.size() > 0 ); 
+    std::vector<int> shape(comps[0]->getShapeVector()); 
+
+    unsigned tot_items(0); 
+
+    for(unsigned i=0 ; i < comps.size() ; i++)
+    {
+        const NPYBase* a = comps[i] ; 
+        tot_items += a->getShape(0);  
+
+        if(item_size == 0)
+        {
+            item_size = a->getNumBytes(1);  
+        }
+        else
+        {
+            assert( item_size == a->getNumBytes(1));
+        }
+        LOG(LEVEL) << i << " " << a->getShapeString() << " item_size " << item_size ; 
+    }
+
+    shape[0] = tot_items ; 
+
+    NPY<T>* c = NPY<T>::make(shape);  
+    c->zero(); 
+    for(unsigned i=0 ; i < comps.size() ; i++)
+    {
+        const NPYBase* a = comps[i] ; 
+        c->read_item_( a->getBytes(), i ); 
+    }
+    LOG(LEVEL) << "]" ; 
+
+    return c ; 
+}
+
+
+
+
+
 
 
 
@@ -1005,13 +1138,20 @@ NBufferSpec NPY<T>::getBufferSpec() const
     return spec ; 
 }
 
+/**
+NPY<T>::make
+-------------
+
+Create an array with argspec shape but with NumItems replaced by ni.
+
+**/
 
 template <typename T>
-NPY<T>* NPY<T>::make(unsigned int ni, const NPYSpec* itemspec)
+NPY<T>* NPY<T>::make(unsigned int ni, const NPYSpec* argspec)
 {
-    NPYSpec* argspec = itemspec->clone(); 
-    argspec->setNumItems(ni); 
-    return NPY<T>::make( argspec ) ;  
+    NPYSpec* argspec2 = argspec->clone(); 
+    argspec2->setNumItems(ni); 
+    return NPY<T>::make( argspec2 ) ;  
 }
 
 
