@@ -296,4 +296,8 @@ UseOptiXGeometryInstancedOCtx
     * test use of multiple layers 
     * 1d layered float textures
 
+UseOptiXGeometryOCtx
+    start from UseOptiXGeometry to investigate why getting problem with instanced spheres in OptiX 6.5
+
+
 

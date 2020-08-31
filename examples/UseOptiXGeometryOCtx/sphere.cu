@@ -92,11 +92,11 @@ void intersect_sphere(void)
 }
 
 
-RT_PROGRAM void fragile_intersect(int primIdx)
+RT_PROGRAM void intersect(int primIdx)
 {
     intersect_sphere<false>();
 }
-RT_PROGRAM void intersect(int primIdx)
+RT_PROGRAM void robust_intersect(int primIdx)
 {
     intersect_sphere<true>();
 }

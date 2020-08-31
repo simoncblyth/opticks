@@ -29,31 +29,27 @@ bdir=/tmp/$USER/opticks/$name/build
 
 echo bdir $bdir name $name
 
-rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+rm -rf $bdir && mkdir -p $bdir 
+cd $bdir && pwd 
+ls -l 
 
-om-cmake $sdir
+om-cmake $sdir 
+
 
 make
-[ ! $? -eq 0 ] && echo build error && exit 1
-
+[ $? -ne 0 ] && echo $0 : buildtime error && exit 1
 make install   
 
-earth=$HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
-gradient=/tmp/SPPMTest_MakeTestImage.ppm 
-if [ -f "$earth" ]; then 
-    path=$earth  
-else
-    path=$gradient
-fi
-path=$gradient
 
-
-echo $name $path
-$name $path
-[ ! $? -eq 0 ] && echo runtime error && exit 1
+cmdline="$name sphere.cu"
+#cmdline="$name box.cu"
+echo $cmdline
+eval $cmdline
+[ $? -ne 0 ] && echo $0 : runtime error && exit 1
 
 
 outpath=/tmp/$USER/opticks/$name/out.ppm
+ls -l $outpath
 
 if [ -n "$SSH_TTY" ]; then 
     echo remote running : outpath $outpath
@@ -61,9 +57,6 @@ else
     echo local running : open outpath $outpath
     open $outpath
 fi
-
-
-
 
 
 

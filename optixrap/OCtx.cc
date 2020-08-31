@@ -53,6 +53,11 @@ OCtx* OCtx::Get()  // static
     return INSTANCE  ;  
 }
 
+void* OCtx::ptr()
+{
+    return context_ptr ; 
+}
+
 bool OCtx::has_variable( const char* key )
 {
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
@@ -344,7 +349,14 @@ void* OCtx::create_geometryinstance(void* geo_ptr, void* mat_ptr)
     return ptr ; 
 }
 
-void* OCtx::create_geometrygroup(const std::vector<void*>& v_gi_ptr)
+void* OCtx::create_geometrygroup(const void* gi_ptr)
+{
+    std::vector<const void*> v_gi_ptr ; 
+    v_gi_ptr.push_back(gi_ptr); 
+    return create_geometrygroup(v_gi_ptr ); 
+}
+
+void* OCtx::create_geometrygroup(const std::vector<const void*>& v_gi_ptr)
 {
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     optix::GeometryGroup gg = context->createGeometryGroup();
@@ -352,7 +364,7 @@ void* OCtx::create_geometrygroup(const std::vector<void*>& v_gi_ptr)
     gg->setChildCount(ngi);
     for(unsigned i=0 ; i < ngi ; i++)
     {
-        void* giPtr = v_gi_ptr[0]; 
+        const void* giPtr = v_gi_ptr[0]; 
         optix::GeometryInstance gi = optix::GeometryInstance::take((RTgeometryinstance)giPtr); 
         gg->setChild( i, gi );
     }

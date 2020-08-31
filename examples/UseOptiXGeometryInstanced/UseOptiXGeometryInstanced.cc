@@ -41,8 +41,10 @@ as its too difficult to do new things in two ways at once.
 
 #ifdef USE_OCTX
 #include "OCtx.hh"
+#else
+// tex uploading : have no-alternative
+#include "OCtx.hh"
 #endif
-#include "OTex.hh"   // hmm uses OCtx internally 
 
 const char* CMAKE_TARGET =  "UseOptiXGeometryInstanced" ;
 
@@ -261,21 +263,21 @@ int main(int argc, char** argv)
 
     InitRTX(rtxmode); 
 
-#ifdef USE_OCTX
-#else
-    optix::Context context = optix::Context::create();
+    // CAUTION: when mixing use of OCtx and non-OCtx need to avoid creating two contexts, which can leading to black textures
+    void* context_ptr = OCtx::Get()->ptr(); 
+    optix::Context context = optix::Context::take((RTcontext)context_ptr);  
 
-    context->setRayTypeCount(1); 
-
-    bool prnt = false ; 
-    context->setPrintEnabled(prnt); 
-    //context->setPrintLaunchIndex(5,0,0); 
-    context->setPrintBufferSize(4096); 
-    context->setEntryPointCount(1); 
-#endif
+    // no non-OCtx alternative
     const char* tex_config = "INDEX_NORMALIZED_COORDINATES" ;
     unsigned tex_id = OCtx::Get()->upload_2d_texture("tex_param", inp, tex_config, -1);   // this uses OCtx internally 
     LOG(info) << " tex_id " << tex_id ; 
+
+#ifdef USE_OCTX
+    LOG(info) << " USE_OCTX enabled " ; 
+#else
+    LOG(info) << " USE_OCTX NOT-enabled " ; 
+#endif
+
 
     unsigned entry_point_index = 0u ;
 #ifdef USE_OCTX
@@ -287,7 +289,7 @@ int main(int argc, char** argv)
 #endif
 
     float sz = 10.f ; 
-    unsigned nbox = 10u ; 
+    unsigned nbox = 1u ; 
 
     const char* rubox_ptx = OKConf::PTXPath( CMAKE_TARGET, "rubox.cu" ) ; 
     const char* sphere_ptx = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
@@ -299,7 +301,8 @@ int main(int argc, char** argv)
     //optix::Geometry instance = optix::Geometry::take((RTgeometry)geo_ptr); 
 
     void* sph_ptr = OCtx::Get()->create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
-    OCtx::Get()->set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
+    //OCtx::Get()->set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
+    OCtx::Get()->set_context_float4( "sphere",  0.f, 0.f, 0.f, 10.f );
 
     void* instance_ptr = sph_ptr ; 
     //void* instance_ptr = box_ptr ; 

@@ -48,6 +48,7 @@ struct OXRAP_API OCtx
 
     static OCtx* Get();
 
+    void* ptr();
     bool has_variable( const char* key );
     void* create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item );
     void* get_buffer( const char* key );
@@ -60,7 +61,8 @@ struct OXRAP_API OCtx
     void* create_geometry(unsigned prim_count, const char* ptxpath, const char* bounds_func, const char* intersect_func );
     void* create_material(const char* ptxpath, const char* closest_hit_func, unsigned entry_point_index );
     void* create_geometryinstance(void* geo_ptr, void* mat_ptr);
-    void* create_geometrygroup(const std::vector<void*>& v_gi_ptr);
+    void* create_geometrygroup(const void* gi_ptr); 
+    void* create_geometrygroup(const std::vector<const void*>& v_gi_ptr);
     void* create_acceleration( const char* accel );
     void set_geometrygroup_acceleration(void* geometrygroup_ptr, void* ac_ptr );
     void set_group_acceleration(void* group_ptr, void* ac_ptr );
