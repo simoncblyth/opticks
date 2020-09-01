@@ -130,6 +130,7 @@ set(CU_SOURCES
 
 
 
+
 set( FORMER_CU_SOURCES_NOW_MIGRATED_TO_TESTS
 
     cu/bufferTest.cu
@@ -155,7 +156,21 @@ set(CU_HEADERS
 
     cu/enums.h
     cu/photon.h
+
+    cu/csg_intersect_primitive.h 
+    cu/robust_quadratic_roots.h 
+    cu/Part.h
+    cu/quad.h
+    cu/bbox.h
+
+    cu/Prim.h
+
+    cu/csg_intersect_part.h 
+    cu/postorder.h
 )
+# these headers are used from examples/UseOptiXGeometry
+
+
 
 set(SCRIPTS
     tests/interpolationTest_interpol.py

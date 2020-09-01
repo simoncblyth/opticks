@@ -31,10 +31,34 @@ Minimally demonstrate OptiX geometry without using OXRAP.
 #include <optixu/optixpp_namespace.h>
 
 #include "OPTICKS_LOG.hh"
+#include "OpticksCSG.h"
 #include "OKConf.hh"
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+#include "NPart.hpp"
 #include "SPPM.hh"
+
+
+
+void CreateInputUserBuffer(optix::Context& context, const char* key, NPYBase* array )
+{
+    // OGeo::CreateInputUserBuffer
+    unsigned itemBytes = array->getNumBytes(1);  
+    unsigned numBytes = array->getNumBytes() ;
+    assert( numBytes % itemBytes == 0 );
+    unsigned numItems = numBytes/itemBytes ;
+    assert( array->getNumItems() == numItems ); 
+
+    optix::Buffer buffer =  context->createBuffer( RT_BUFFER_INPUT ) ; 
+    buffer->setFormat( RT_FORMAT_USER );
+    buffer->setElementSize(itemBytes);
+    buffer->setSize(numItems); 
+
+    memcpy( buffer->map(), array->getBytes(), numBytes );
+    buffer->unmap();
+
+    context[key]->setBuffer(buffer); 
+}
 
 
 int main(int argc, char** argv)
@@ -104,8 +128,54 @@ int main(int argc, char** argv)
     {
         geo["sphere"]->setFloat( 0.f, 0.f, 0.f, sz ); 
     }
+    else if( strcmp(geo_cu, "csg_intersect_primitive.cu") == 0 )
+    {
+        geo["sphere"]->setFloat( 0.f, 0.f, 0.f, sz ); 
+    }
+    else if( strcmp(geo_cu, "csg_intersect_part.cu") == 0 )
+    {
+        NPY<float>* parts = NPY<float>::make( 1, 4, 4);  
+        parts->zero();   
+
+        npart p0; 
+        p0.zero(); 
+
+        //p0.setTypeCode(CSG_SPHERE);
+        //p0.setParam(0.f,0.f ,0.f, sz) ;
+
+        /*
+        {
+            p0.setTypeCode(CSG_HYPERBOLOID);
+            float r0 = sz/2.f ; 
+            float zf = sz/2 ; 
+            float z1 = -sz/2 ; 
+            float z2 =  sz/2 ; 
+            p0.setParam(r0,zf,z1,z2) ;
+        }
+        */
+        {
+            p0.setTypeCode(CSG_CONE);
+            float r1 = 0.f ; 
+            float z1 = -sz/2 ; 
+            float r2 =  sz/2 ; 
+            float z2 =  sz/2 ; 
+            p0.setParam(r1,z1,r2,z2) ;
+        }
 
 
+        parts->setPart(p0, 0); 
+
+        CreateInputUserBuffer(context, "partBuffer", parts ); 
+
+        NPY<float>* trans = NPY<float>::make_identity_transforms(1); 
+        NPY<float>* trips = NPY<float>::make_triple_transforms(trans); 
+        trips->reshape(-1,4,4);   // GPU side expecting (n,4,4) 
+        CreateInputUserBuffer(context, "tranBuffer", trips ); 
+
+        NPY<float>* plans = NPY<float>::make_identity_transforms(1); 
+        plans->reshape(-1,4);   // GPU side expecting (n,4) 
+        CreateInputUserBuffer(context, "planBuffer", plans ); 
+    }
 
     optix::Material mat = context->createMaterial();
     mat->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( ptx, "closest_hit_radiance0" ));

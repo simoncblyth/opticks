@@ -51,18 +51,18 @@ as its too difficult to do new things in two ways at once.
 #include "CMAKE_TARGET.hh" 
 
 
-glm::mat4 MakeTransform(unsigned u, unsigned v, unsigned w)
+glm::mat4 MakeTransform(unsigned u, unsigned v, unsigned w, float scale)
 {
     //glm::vec4 rot( rand(), rand(), rand(),  rand()*360.f ); // random axis and angle 
     //glm::vec4 rot(  0,  0, 1,  rand()*360.f );
     glm::vec4 rot(  0,  0, 1,  0 );
-    glm::vec3 sca( 0.5 ) ; 
+    glm::vec3 sca( scale ) ; 
     glm::vec3 tla(  10.f*u , 10.f*v , -10.f*w ) ; 
     glm::mat4 m4 = nglmext::make_transform("trs", tla, rot, sca );
     return m4 ; 
 }
 
-NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw)
+NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw, float scale)
 {
     unsigned num_tr = nu*nv*nw ; 
     NPY<float>* tr = NPY<float>::make(num_tr, 4, 4); 
@@ -73,7 +73,7 @@ NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw)
     for( unsigned v = 0; v < nv ; ++v ) { 
     for( unsigned w = 0; w < nw ; ++w ) { 
 
-        glm::mat4 m4 = MakeTransform(u,v,w); 
+        glm::mat4 m4 = MakeTransform(u,v,w, scale); 
         tr->setMat4(m4, count, -1, transpose); 
         count++ ; 
     }
@@ -84,12 +84,13 @@ NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw)
 }
 
 
-void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const char* main_ptx, unsigned entry_point_index, bool single, const char* closest_hit)
+void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const char* main_ptx, unsigned entry_point_index, bool single, const char* closest_hit )
 {
     //  with (nu,nv,nw) of (100,100,4) have observed some flakiness that manifests as "corrupted" looking texture
     // initially interpreted this as a problem with layered textures
 
-    NPY<float>* transforms = MakeTransforms(nu,nv,nw); 
+    float scale = 1.f ; 
+    NPY<float>* transforms = MakeTransforms(nu,nv,nw, scale); 
     std::string transforms_digest = transforms->getDigestString(); 
     unsigned num_transforms = transforms->getNumItems(); 
     LOG(info) << "MakeTransforms num_transforms " << num_transforms << " transforms_digest " << transforms_digest ; 
@@ -105,8 +106,8 @@ void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const
     LOG(info) << "MakeTransforms num_transforms " << num_transforms << " transforms_digest2 " << transforms_digest2 ; 
     assert( strcmp( transforms_digest2.c_str(), transforms_digest.c_str() ) == 0 ); 
  
-    float sz = 10.f ; 
-    unsigned nbox = 10u ; 
+    float sz = 5.f ; 
+    unsigned nbox = 1u ; 
 
     const char* rubox_ptx = OKConf::PTXPath( CMAKE_TARGET, "rubox.cu" ) ; 
     const char* sphere_ptx = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
@@ -116,7 +117,7 @@ void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const
     OCtx::Get()->set_geometry_float3(box_ptr, "boxmax",  sz/2.f,  sz/2.f,  sz/2.f ); 
 
     void* sph_ptr = OCtx::Get()->create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
-    OCtx::Get()->set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
+    OCtx::Get()->set_geometry_float4( sph_ptr, "sphere",  0.f, 0.f, 0.f, sz );
 
     void* mat_ptr = OCtx::Get()->create_material( main_ptx,  closest_hit, entry_point_index ); 
 
@@ -126,8 +127,8 @@ void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const
 
     if(single)
     {
-        glm::mat4 m4box = MakeTransform(1,1,0); 
-        glm::mat4 m4sph = MakeTransform(1,1,1); 
+        glm::mat4 m4box = MakeTransform(1,1,0, scale); 
+        glm::mat4 m4sph = MakeTransform(1,1,1, scale); 
         void* box_assembly_ptr = OCtx::Get()->create_single_assembly( m4box, box_ptr, mat_ptr );
         void* sph_assembly_ptr = OCtx::Get()->create_single_assembly( m4sph, sph_ptr, mat_ptr );
 

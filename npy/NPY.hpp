@@ -133,7 +133,8 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_inverted_transforms(NPY<T>* src, bool transpose=false);
        static NPY<T>* make_paired_transforms(NPY<T>* src, bool transpose=false);
        static NPY<T>* make_triple_transforms(NPY<T>* src);
-       static NPY<T>* make_identity_transforms(unsigned n=1);
+       static NPY<T>* make_identity_transforms(unsigned ni);
+       static NPY<T>* make_identity_transforms(unsigned ni, unsigned nj);
        static NPY<T>* make(const std::vector<glm::vec4>& vals);
 
        static NPY<T>* make_from_vec(const std::vector<T>& vals);

@@ -12,8 +12,9 @@ endif()
 find_package(OKConf      REQUIRED CONFIG)   
 find_package(SysRap      REQUIRED CONFIG)
 find_package(NPY         REQUIRED CONFIG)
+find_package(OptiXRap    REQUIRED CONFIG)
 
-find_package(OptiX       REQUIRED MODULE)   
+#find_package(OptiX       REQUIRED MODULE)   
 find_package(OpticksCUDA REQUIRED MODULE) 
 
 set(SOURCES
@@ -24,6 +25,8 @@ set(OPTIX_SOURCES
     ${name}.cu
     box.cu
     sphere.cu
+    csg_intersect_primitive.cu 
+    csg_intersect_part.cu
 )
 
 CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${OPTIX_SOURCES} )
@@ -32,7 +35,7 @@ CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
 add_executable( ${name} ${_generated_OBJ_files} ${_generated_PTX_files} ${SOURCES} )
 
 target_link_libraries(${name} PUBLIC 
-      Opticks::OptiX 
+      Opticks::OptiXRap
       Opticks::OKConf 
       Opticks::SysRap 
       Opticks::NPY

@@ -281,6 +281,9 @@ UseOptiXTextureLayeredOKImgGeo
     This example was used to develop the watertight OptiX OCtx wrapper (C opaque pointer style) 
     which does not leak any optix types into its interface.
 
+    Intersects are highly instrumented with the position of each interesect recorded into a pos buffer.
+
+
 UseOptiXGeometryInstanced
     start from UseOptiXGeometryInstancedStandalone, plan:
     
@@ -305,6 +308,15 @@ UseOptiXGeometryInstancedOCtx
     /tmp/octx.sh textest,tex0  : vertical gradient with red border 
     /tmp/octx.sh textest,tex1  : vertical gradient with green midlines
     /tmp/octx.sh textest,tex2  : vertical gradient with blue quadlines
+
+    ISSUE 
+
+    on Linux/OptiX 6.5 the spheres are appearing as big boxes but there 
+    is no problem with the sphere implementation when used not in an assembly.
+    Perhaps problem with the transforms/scaling/bbox ? 
+     
+
+
 
 
 UseOptiXGeometryOCtx

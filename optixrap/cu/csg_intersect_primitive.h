@@ -1188,13 +1188,16 @@ static __device__
 bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
-   const unsigned flags = q0.u.w ;
 
    const float a = q1.f.x ; 
    const float b = q1.f.y ; 
 
-   bool ACAP = flags & SLAB_ACAP ;  
-   bool BCAP = flags & SLAB_BCAP ; // b > a by construction
+   const unsigned flags = q0.u.w ;
+   // formerly cap flags were admissable inputs using npy/NSlab.h, 
+   // but that doesnt make sense within CSG combination : so using local variant 
+   enum { SLAB_ACAP_LOCAL=1 , SLAB_BCAP_LOCAL=2 } ; 
+   bool ACAP = flags & SLAB_ACAP_LOCAL ;  
+   bool BCAP = flags & SLAB_BCAP_LOCAL ; // b > a by construction
 
    float idn = 1.f/dot(ray_direction, n );
    float on = dot(ray_origin, n ); 
@@ -1458,6 +1461,10 @@ so no point.
 
 //#define CSG_DEBUG_CYLINDER_AXIAL 1
 
+
+
+
+
 static __device__
 bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
@@ -1519,6 +1526,9 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
 #endif
 
 
+    // formerly used npy/NCylinder.h 
+    enum {  ENDCAP_P,  ENDCAP_Q } ; 
+
     // axial ray endcap handling 
     if(fabs(a) < 1e-6f)     
     {
@@ -1540,15 +1550,14 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
             t_cand = nd > 0 ? t_QCAP_AX : t_PCAP_AX ;  
         }
 
-        unsigned endcap = t_cand == t_PCAP_AX ? CYLINDER_ENDCAP_P : ( t_cand == t_QCAP_AX ? CYLINDER_ENDCAP_Q : 0 ) ;
-
+        unsigned endcap = t_cand == t_PCAP_AX ? ENDCAP_P : ( t_cand == t_QCAP_AX ? ENDCAP_Q : 0 ) ;
 
     
         bool has_axial_intersect = t_cand > t_min && endcap > 0 ;
 
         if(has_axial_intersect)
         {
-            float sign = endcap == CYLINDER_ENDCAP_P ? -1.f : 1.f ;  
+            float sign = endcap == ENDCAP_P ? -1.f : 1.f ;  
             isect.x = sign*dnorm.x ; 
             isect.y = sign*dnorm.y ; 
             isect.z = sign*dnorm.z ; 

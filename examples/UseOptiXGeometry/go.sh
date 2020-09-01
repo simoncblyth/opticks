@@ -37,10 +37,14 @@ om-cmake $sdir
 
 
 make
+[ $? -ne 0 ] && echo $0 : buildtime error && exit 1
 make install   
 
+#geocu=sphere.cu
+#geocu=csg_intersect_primitive.cu
+geocu=csg_intersect_part.cu
 
-cmdline="$name sphere.cu"
+cmdline="$name $geocu"
 echo $cmdline
 eval $cmdline
 

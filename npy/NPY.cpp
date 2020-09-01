@@ -1633,18 +1633,28 @@ NPY<T>* NPY<T>::make_triple_transforms(NPY<T>* src)
 
 
 template <typename T>
-NPY<T>* NPY<T>::make_identity_transforms(unsigned n)
+NPY<T>* NPY<T>::make_identity_transforms(unsigned ni)
 {
-     NPY<T>* dst = NPY<T>::make(n,4,4);
+     NPY<T>* dst = NPY<T>::make(ni,4,4);
      dst->zero();
      glm::mat4 identity(1.0f);
-     for(unsigned i=0 ; i < n ; i++) dst->setMat4(identity, i, -1, false);
+     for(unsigned i=0 ; i < ni ; i++) dst->setMat4(identity, i, -1, false);
      return dst ; 
 }
 
-
-
-
+template <typename T>
+NPY<T>* NPY<T>::make_identity_transforms(unsigned ni, unsigned nj)
+{
+     NPY<T>* dst = NPY<T>::make(ni,nj,4,4);
+     dst->zero();
+     glm::mat4 identity(1.0f);
+     for(unsigned i=0 ; i < ni ; i++){
+     for(unsigned j=0 ; j < nj ; j++){
+        dst->setMat4(identity, i, j, false);
+     }
+     }
+     return dst ; 
+}
 
 
 template <typename T>
