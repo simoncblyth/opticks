@@ -107,18 +107,22 @@ RT_PROGRAM void raygen()
 }
 
 // Returns shading normal as the surface shading result
-RT_PROGRAM void closest_hit_radiance0()
+RT_PROGRAM void closest_hit_local()
 {
-  float3 isect = raycur.origin + t*raycur.direction ; 
-  const float3 local = rtTransformPoint( RT_WORLD_TO_OBJECT, isect );  
-  prd_radiance.result = normalize(local)*0.5f + 0.5f ; 
-  //prd_radiance.result = normalize(isect)*0.5f + 0.5f ;    // coloring clearly global like this
-
-  //prd_radiance.result = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, shading_normal))*0.5f + 0.5f;
-  //prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
+    float3 isect = raycur.origin + t*raycur.direction ; 
+    const float3 local = rtTransformPoint( RT_WORLD_TO_OBJECT, isect );  
+    prd_radiance.result = normalize(local)*0.5f + 0.5f ; 
 }
-
-
+RT_PROGRAM void closest_hit_global()
+{
+    float3 isect = raycur.origin + t*raycur.direction ; 
+    prd_radiance.result = normalize(isect)*0.5f + 0.5f ;    // coloring clearly global like this
+}
+RT_PROGRAM void closest_hit_normal()
+{
+    prd_radiance.result = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, shading_normal))*0.5f + 0.5f;
+    //prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
+}
 /**
 
 layer:0 
@@ -131,27 +135,24 @@ layer:1
     * greyscale looks right throughout 
     * colored bands are messed up but not across the entire tex 
 
-
+    NOW SUSPECT THIS PROBLEM WAS CPU SIDE MEMORY OVERWRITE ISSUE WITH NPY::concat
 **/
 
 RT_PROGRAM void closest_hit_textured()
 {
-  float3 isect = raycur.origin + t*raycur.direction ; 
-  const float3 local = rtTransformPoint( RT_WORLD_TO_OBJECT, isect );  
-  const float3 norm = normalize(local) ;  
+    float3 isect = raycur.origin + t*raycur.direction ; 
+    const float3 local = rtTransformPoint( RT_WORLD_TO_OBJECT, isect );  
+    const float3 norm = normalize(local) ;  
 
-  float f_theta = acos( norm.z )/M_PIf;                 // polar 0->pi ->  0->1
-  float f_phi_ = atan2( norm.y, norm.x )/(2.f*M_PIf) ;  // azimuthal 0->2pi ->  0->1
-  float f_phi = f_phi_ > 0.f ? f_phi_ : f_phi_ + 1.f ;  //  
+    float f_theta = acos( norm.z )/M_PIf;                 // polar 0->pi ->  0->1
+    float f_phi_ = atan2( norm.y, norm.x )/(2.f*M_PIf) ;  // azimuthal 0->2pi ->  0->1
+    float f_phi = f_phi_ > 0.f ? f_phi_ : f_phi_ + 1.f ;  //  
 
-  uchar4 val = rtTex2D<uchar4>( texture_id, f_phi, f_theta );
-  float3 result = make_float3( float(val.x)/255.99f,  float(val.y)/255.99f,  float(val.z)/255.99f ) ;   
+    uchar4 val = rtTex2D<uchar4>( texture_id, f_phi, f_theta );
+    float3 result = make_float3( float(val.x)/255.99f,  float(val.y)/255.99f,  float(val.z)/255.99f ) ;   
 
-  prd_radiance.result = result ;  ; 
+    prd_radiance.result = result ;  ; 
 }
-
-
-
 
 
 

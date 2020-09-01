@@ -12,9 +12,6 @@ Start from UseOptiXGeometryInstancedStandalone, plan:
 5. DONE: generate PPM of thousands of textured Earths with some visible variation 
 6. layered 1d float texture
 
-* the OCtx branch is mostly working, bit the traditional way is 
-  suffering from very dark renders when texturing 
-
 Next onto UseOptiXGeometryInstancedOCtx starting with the OCtx branch of this, 
 as its too difficult to do new things in two ways at once.
 
@@ -99,7 +96,7 @@ void InitRTX(int rtxmode)
 
 
 
-NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw)
+NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw, const float scale )
 {
     unsigned num_tr = nu*nv*nw ; 
     NPY<float>* tr = NPY<float>::make(num_tr, 4, 4); 
@@ -112,7 +109,7 @@ NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw)
 
         glm::vec4 rot( rand(), rand(), rand(),  rand()*360.f );
         //glm::vec4 rot(  0,  0, 1,  0 );
-        glm::vec3 sca( 0.5 ) ; 
+        glm::vec3 sca( scale ) ; 
         glm::vec3 tla(  10.f*u , 10.f*v , -10.f*w ) ; 
         glm::mat4 m4 = nglmext::make_transform("trs", tla, rot, sca );
 
@@ -231,15 +228,15 @@ int main(int argc, char** argv)
     }
 
 
-    unsigned factor = 1u ; 
-    unsigned width =  factor*1440u ; 
-    unsigned height = factor*900u ; 
+    unsigned width =  512u ; 
+    unsigned height = 256u ; 
 
     const unsigned nu = 100u;
     const unsigned nv = 100u;
     const unsigned nw = 4u;
+    const float scale = 0.5f ; 
 
-    NPY<float>* transforms = MakeTransforms(nu,nv,nw); 
+    NPY<float>* transforms = MakeTransforms(nu,nv,nw, scale); 
     unsigned num_transforms = transforms->getNumItems(); 
     assert( num_transforms == nu*nv*nw );  
 

@@ -176,11 +176,9 @@ struct Devices
         for(unsigned i = 0; i < num_devices; ++i) 
         {
             char name[256];
-            char busid[256];
             int computeCaps[2];
-            int compat[MAX_DEVICES+1];
-            int ordinal ; 
             RTsize total_mem;
+            int ordinal ; 
 
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_NAME, sizeof(name), name));
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY, sizeof(computeCaps), &computeCaps));
@@ -188,10 +186,12 @@ struct Devices
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_CUDA_DEVICE_ORDINAL, sizeof(ordinal), &ordinal));
 
 #if OPTIX_VERSION_MAJOR >= 6
+            char busid[256];
+            int compat[MAX_DEVICES+1];
+
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_PCI_BUS_ID, sizeof(busid), busid));
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_COMPATIBLE_DEVICES, sizeof(compat), &compat));
 #endif
-
 
             ordinals.push_back(ordinal);
 
@@ -204,8 +204,9 @@ struct Devices
             names.push_back(name); 
             if(std::find(uniqs.begin(),uniqs.end(), name) == uniqs.end())  uniqs.push_back(name);
 
+#if OPTIX_VERSION_MAJOR >= 6
             bus.push_back(busid);   
-
+#endif
             if(!args.quiet())
             {
                 printf(" Device %d: %30s  ordinal:%d  ", i, name, ordinal  );

@@ -256,7 +256,7 @@ UseOptiX7GeometryInstanced
 
 
 
-Standalone-ish OptiX 6 Texture Examples
+Standalone-ish OptiX 5 or 6 Examples
 ----------------------------------------
 
 UseOptiXTexture
@@ -287,18 +287,30 @@ UseOptiXGeometryInstanced
     1. DONE: Opticks packages to reduce the amount of code
     2. DONE: adopt OCtx watertight wrapper, adding whats needed for instancing  
     3. DONE: add optional switch from box to sphere 
-    4. get a layered texture to work with instances, such that 
-       different groups of instances use different layers  
-    5. DONE: generate PPM of thousands of textured Earths  
+    4. DONE: generate PPM of thousands of textured Earths  
+
+    jumble of thousands of spheres gradient shaded with red/green/blue border/midline/quadline
+
 
 UseOptiXGeometryInstancedOCtx
     start from UseOptiXGeometryInstanced, using just OCtx 
-   
-    * test use of multiple layers 
-    * 1d layered float textures
+
+    /tmp/octx.sh               : normal shaded assembly of boxes and spheres
+    /tmp/octx.sh global        : global shaded assembly of boxes and spheres
+    /tmp/octx.sh textured,tex1 : textured assembly of boxes and spheres, using tex1 green midline
+
+    /tmp/octx.sh single        : normal shaded single box and sphere
+    /tmp/octx.sh single,textured,tex1    : single box and sphere 
+
+    /tmp/octx.sh textest,tex0  : vertical gradient with red border 
+    /tmp/octx.sh textest,tex1  : vertical gradient with green midlines
+    /tmp/octx.sh textest,tex2  : vertical gradient with blue quadlines
+
 
 UseOptiXGeometryOCtx
     start from UseOptiXGeometry to investigate why getting problem with instanced spheres in OptiX 6.5
+    Creates PPM of a single normal-shaded sphere or box picked via argument sphere.cu or box.cu 
 
-
+UseOptiXGeometryInstancedStandalone
+    creates a jumble of thousands of randomly oriented boxes, colorfully normal-shaded  
 

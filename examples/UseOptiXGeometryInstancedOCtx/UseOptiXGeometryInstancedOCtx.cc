@@ -84,7 +84,7 @@ NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw)
 }
 
 
-void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const char* main_ptx, unsigned entry_point_index)
+void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const char* main_ptx, unsigned entry_point_index, bool single, const char* closest_hit)
 {
     //  with (nu,nv,nw) of (100,100,4) have observed some flakiness that manifests as "corrupted" looking texture
     // initially interpreted this as a problem with layered textures
@@ -118,17 +118,12 @@ void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const
     void* sph_ptr = OCtx::Get()->create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
     OCtx::Get()->set_geometry_float4( sph_ptr, "sphere",  0, 0, 0, 10.0 );
 
-    const char* closest_hit = "closest_hit_radiance0" ; 
-    //const char* closest_hit = "closest_hit_textured" ; 
-
     void* mat_ptr = OCtx::Get()->create_material( main_ptx,  closest_hit, entry_point_index ); 
 
     void* top_ptr = OCtx::Get()->create_group("top_object", NULL );  
     void* top_accel = OCtx::Get()->create_acceleration("Trbvh");
     OCtx::Get()->set_group_acceleration( top_ptr, top_accel ); 
 
-    //bool single = false ; 
-    bool single = true ; 
     if(single)
     {
         glm::mat4 m4box = MakeTransform(1,1,0); 
@@ -170,6 +165,14 @@ void SetupView(unsigned width, unsigned height, unsigned nu, unsigned nv, unsign
 }
 
 
+/**
+SetupTextures
+-------------
+
+Loads a single PPM path several times with different modifications like add_border, add_midline, add_quadline 
+which each yield 2d textures which are uploaded to GPU.
+
+**/
 void SetupTextures(const char* path, unsigned& tex_width, unsigned& tex_height, std::vector<int>& tex_id)
 {
     const bool yflip0 = false ; 
@@ -262,13 +265,34 @@ int main(int argc, char** argv)
     const char* path_default = "/tmp/SPPMTest_MakeTestImage.ppm" ; 
     const char* path = argc > 1 ? argv[1] : path_default ; 
 
+    //const char* config_default = "tex0,textest" ; 
+    const char* config_default = "tex0" ; 
+    const char* config = argc > 2 ? argv[2] : config_default ; 
+
     int tex_index_default = 0 ;  
-    int tex_index = argc > 2 ? atoi(argv[2]) : tex_index_default ;   
+    int tex_index = tex_index_default ; 
+    if(SStr::Contains(config, "tex0")) tex_index = 0 ; 
+    if(SStr::Contains(config, "tex1")) tex_index = 1 ; 
+    if(SStr::Contains(config, "tex2")) tex_index = 2 ; 
+
+    bool with_geometry = !SStr::Contains(config, "textest" );  
+    bool single = SStr::Contains(config, "single" ); 
+
+    const char* closest_hit_default = "closest_hit_normal"  ; 
+    const char* closest_hit = closest_hit_default ; 
+    if(SStr::Contains(config,"normal")) closest_hit = "closest_hit_normal" ; 
+    if(SStr::Contains(config,"local"))  closest_hit = "closest_hit_local" ; 
+    if(SStr::Contains(config,"global")) closest_hit = "closest_hit_global" ; 
+    if(SStr::Contains(config,"textured")) closest_hit = "closest_hit_textured" ; 
 
     LOG(info) 
-        <<  " args "
-        <<  " path " << path  
-        <<  " tex_index " << tex_index
+        << " args "
+        << " path " << path  
+        << " config " << config
+        << " tex_index " << tex_index
+        << " with_geometry " << with_geometry 
+        << " single " << single 
+        << " closest_hit " << closest_hit  
         ;  
 
     unsigned tex_width ; 
@@ -287,24 +311,18 @@ int main(int argc, char** argv)
     assert( texture_id > 0 ); 
     OCtx::Get()->set_context_int("texture_id", texture_id); 
 
-    //unsigned factor = 1u ; 
-    //unsigned width =  factor*1440u ; 
-    //unsigned height = factor*900u ; 
-
     unsigned width = 1024 ; 
     unsigned height = 512 ; 
 
     const unsigned entry_point_index = 0u ;
     const char* raygen = NULL ; 
 
-    //bool with_geometry = false ; 
-    bool with_geometry = true ; 
     if( with_geometry )
     {
         const unsigned nu = 10u;
         const unsigned nv = 10u;
         const unsigned nw = 4u;
-        MakeGeometry( nu, nv, nw, main_ptx, entry_point_index ); 
+        MakeGeometry( nu, nv, nw, main_ptx, entry_point_index, single, closest_hit ); 
         SetupView(width, height, nu, nv, nw);  
         raygen = "raygen" ; 
     } 

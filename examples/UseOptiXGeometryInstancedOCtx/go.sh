@@ -57,7 +57,7 @@ path=$gradient
 exe=$(which $name)
 
 
-runpath=/tmp/run.sh
+runpath=/tmp/octx.sh
 
 cd $sdir
 
