@@ -17,8 +17,8 @@ print("o %s " % str(o.shape))
 
 fig, axs = plt.subplots(2)
 fig.suptitle('%s' % fold)
-axs[0].imshow(i[0])
-axs[1].imshow(o[0])
+axs[0].imshow(i)
+axs[1].imshow(o)
 
 plt.ion()
 plt.show()                     

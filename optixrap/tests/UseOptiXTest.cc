@@ -208,7 +208,10 @@ struct Devices
 
             if(!args.quiet())
             {
-                printf(" Device %d: %30s %15s ordinal:%d compat[0]:%d ", i, name, busid, ordinal, compat[0] );
+                printf(" Device %d: %30s  ordinal:%d  ", i, name, ordinal  );
+#if OPTIX_VERSION_MAJOR >= 6
+                printf(" busid: %15s compat[0]:%d ", busid, compat[0] );
+#endif
                 printf(" Compute Support: %d %d ", computeCaps[0], computeCaps[1]);
                 printf(" Total Memory: %llu bytes \n", (unsigned long long)total_mem);
             }

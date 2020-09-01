@@ -144,20 +144,20 @@ int main(int argc, char** argv)
     eye_m *= 1.1 ; 
 
     const bool yflip0 = false ; 
-    unsigned ncomp = 4 ; 
+    unsigned ncomp0 = 4 ; 
     const char* config0 = "add_border" ; 
-    bool layer_dimension = true ; 
-    NPY<unsigned char>* inp = ImageNPY::LoadPPM(path, yflip0, ncomp, config0, layer_dimension ) ; 
+    bool layer_dimension = false ; 
+    NPY<unsigned char>* inp = ImageNPY::LoadPPM(path, yflip0, ncomp0, config0, layer_dimension ) ; 
     inp->save(tmpdir,"inp.npy"); 
 
-    int layers = inp->getShape(0); 
-    int height = inp->getShape(1);  
-    int width = inp->getShape(2);  
+    int height = inp->getShape(0);  
+    int width = inp->getShape(1);  
+    int ncomp = inp->getShape(2); 
 
     LOG(info) << " inp " << inp->getShapeString()
-              << " layers " << layers 
               << " height " << height  
               << " width " << width 
+              << " ncomp " << ncomp
               ;  
 
     std::vector<int> shape = { height, width, 4 };
@@ -176,8 +176,8 @@ int main(int argc, char** argv)
 
     const char* tex_config = "INDEX_NORMALIZED_COORDINATES" ; 
 #ifdef USE_OCTX
-    OCtx_();  
-    OTex::Upload2DLayeredTexture("tex_param", inp, tex_config);   
+    OCtx::Get();  
+    OCtx::Get()->upload_2d_texture("tex_param", inp, tex_config, -1);   
     //optix::Context context = optix::Context::take((RTcontext)OCtx_get()) ;  // interim kludge until everything is wrapped 
 #else
     optix::Context context = optix::Context::create();
@@ -189,19 +189,21 @@ int main(int argc, char** argv)
     OTexture::Upload2DLayeredTexture<unsigned char>(context, "tex_param", "tex_domain", inp, tex_config);   
 #endif
     unsigned entry_point_index = 0u ; 
+
+
+    NPY<unsigned char>* out = NPY<unsigned char>::make(shape); 
+    NPY<float>* dbg = NPY<float>::make(shape); 
+    NPY<float>* pos = NPY<float>::make(shape); 
     
 #ifdef USE_OCTX
-    NPY<unsigned char>* out = NPY<unsigned char>::make(shape); 
-    void* outBuf = OCtx_create_buffer(out, "out_buffer", 'O', ' '); 
-    OCtx_desc_buffer( outBuf );  
+    void* outBuf = OCtx::Get()->create_buffer(out, "out_buffer", 'O', ' ', -1); 
+    OCtx::Get()->desc_buffer( outBuf );  
 
-    NPY<float>* dbg = NPY<float>::make(shape); 
-    void* dbgBuf = OCtx_create_buffer(dbg, "dbg_buffer", 'O', ' '); 
-    OCtx_desc_buffer( dbgBuf );  
+    void* dbgBuf = OCtx::Get()->create_buffer(dbg, "dbg_buffer", 'O', ' ', -1); 
+    OCtx::Get()->desc_buffer( dbgBuf );  
 
-    NPY<float>* pos = NPY<float>::make(shape); 
-    void* posBuf = OCtx_create_buffer(pos, "pos_buffer", 'O', ' ' ); 
-    OCtx_desc_buffer( posBuf );  
+    void* posBuf = OCtx::Get()->create_buffer(pos, "pos_buffer", 'O', ' ', -1); 
+    OCtx::Get()->desc_buffer( posBuf );  
 #else
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT); 
     outBuffer->setFormat( RT_FORMAT_UNSIGNED_BYTE4); 
@@ -223,8 +225,8 @@ int main(int argc, char** argv)
     const char* raygen = "raygen" ; 
     LOG(info) << "[ compile rg + ex " ;  
 #ifdef USE_OCTX
-    OCtx_set_raygen_program( entry_point_index, main_ptx, raygen ); 
-    OCtx_set_exception_program( entry_point_index, main_ptx, "exception" ); 
+    OCtx::Get()->set_raygen_program( entry_point_index, main_ptx, raygen ); 
+    OCtx::Get()->set_exception_program( entry_point_index, main_ptx, "exception" ); 
 #else
     optix::Program rg = context->createProgramFromPTXFile( main_ptx , raygen ) ; 
     context->setRayGenerationProgram( entry_point_index,  rg );  
@@ -234,11 +236,9 @@ int main(int argc, char** argv)
 #endif
     LOG(info) << "] compile rg + ex " ;  
 
-
-    float near = 0.01f ;
-    float scene_epsilon = near ;
+    float scene_epsilon = 0.01f ;
 #ifdef USE_OCTX
-    OCtx_set_context_viewpoint( eye, U, V, W, scene_epsilon ); 
+    OCtx::Get()->set_context_viewpoint( eye, U, V, W, scene_epsilon ); 
 #else
     rg[ "scene_epsilon"]->setFloat( scene_epsilon );
     rg[ "eye"]->setFloat( eye.x, eye.y, eye.z  );
@@ -251,26 +251,26 @@ int main(int argc, char** argv)
     const char* sphere_ptx = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
     const char* ptxpath = sphere_ptx ; 
 #ifdef USE_OCTX
-    void* geo_ptr = OCtx_create_geometry(1u, ptxpath, "bounds", "intersect" ); 
-    OCtx_set_geometry_float4( geo_ptr, "sphere",  0, 0, 0, 1.5 );   
+    void* geo_ptr = OCtx::Get()->create_geometry(1u, ptxpath, "bounds", "intersect" ); 
+    OCtx::Get()->set_geometry_float4( geo_ptr, "sphere",  0, 0, 0, 1.5 );   
 
-    void* mat_ptr = OCtx_create_material( main_ptx, "closest_hit_radiance0", entry_point_index );
-    void* gi_ptr  = OCtx_create_geometryinstance(geo_ptr, mat_ptr);  
+    void* mat_ptr = OCtx::Get()->create_material( main_ptx, "closest_hit_radiance0", entry_point_index );
+    void* gi_ptr  = OCtx::Get()->create_geometryinstance(geo_ptr, mat_ptr);  
 
     //optix::Geometry geo = optix::Geometry::take((RTgeometry)geo_ptr); 
     //optix::Material mat = optix::Material::take((RTmaterial)mat_ptr);  
     //optix::GeometryInstance gi = optix::GeometryInstance::take((RTgeometryinstance)gi_ptr);  
     //optix::GeometryGroup gg = optix::GeometryGroup::take((RTgeometrygroup)gg_ptr);  
 
-    std::vector<void*> vgi = { gi_ptr } ; 
-    void* gg_ptr = OCtx_create_geometrygroup( vgi ); 
-    void* ac_ptr = OCtx_create_acceleration( "Trbvh" ); 
-    OCtx_set_geometrygroup_acceleration( gg_ptr, ac_ptr ); 
-    OCtx_set_geometrygroup_context_variable("top_object", gg_ptr ); 
+    std::vector<const void*> vgi = { gi_ptr } ; 
+    void* gg_ptr = OCtx::Get()->create_geometrygroup( vgi ); 
+    void* ac_ptr = OCtx::Get()->create_acceleration( "Trbvh" ); 
+    OCtx::Get()->set_geometrygroup_acceleration( gg_ptr, ac_ptr ); 
+    OCtx::Get()->set_geometrygroup_context_variable("top_object", gg_ptr ); 
 
-    OCtx_compile();  
-    OCtx_validate();  
-    OCtx_launch(entry_point_index , width, height); 
+    OCtx::Get()->compile();  
+    OCtx::Get()->validate();  
+    OCtx::Get()->launch(entry_point_index , width, height); 
 #else
     optix::Geometry geo = CreateGeometry(context, 1u, ptxpath, "bounds", "intersect" ); 
     geo["sphere"]->setFloat( 0, 0, 0, 1.5 );
@@ -297,38 +297,33 @@ int main(int argc, char** argv)
     LOG(info) << "] launch " ;  
 #endif
 
-#ifdef USE_OCTX
-    OCtx_download_buffer(out, "out_buffer");
-    OCtx_download_buffer(dbg, "dbg_buffer");
-    OCtx_download_buffer(pos, "pos_buffer");
-#else
-    NPY<unsigned char>* out = NPY<unsigned char>::make(shape); 
+
     out->zero();
+    dbg->zero();
+    pos->zero();
+
+#ifdef USE_OCTX
+    OCtx::Get()->download_buffer(out, "out_buffer", -1);
+    OCtx::Get()->download_buffer(dbg, "dbg_buffer", -1);
+    OCtx::Get()->download_buffer(pos, "pos_buffer", -1);
+#else
     void* out_data = outBuffer->map(); 
     out->read(out_data); 
     outBuffer->unmap(); 
 
-    NPY<float>* dbg = NPY<float>::make(shape); 
-    dbg->zero();
     void* dbg_data = dbgBuffer->map(); 
     dbg->read(dbg_data); 
     dbgBuffer->unmap(); 
 
-    NPY<float>* pos = NPY<float>::make(shape); 
-    pos->zero();
     void* pos_data = posBuffer->map(); 
     pos->read(pos_data); 
     posBuffer->unmap(); 
 #endif
-
     out->save(tmpdir,"out.npy"); 
     dbg->save(tmpdir,"dbg.npy"); 
     pos->save(tmpdir,"pos.npy"); 
-
     const bool yflip = true ; 
     ImageNPY::SavePPM(tmpdir, "out.ppm", out, yflip ); 
-
     return 0 ; 
 }
-
 

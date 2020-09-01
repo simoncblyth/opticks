@@ -273,6 +273,7 @@ UseOptiXTextureLayeredOK
 
 UseOptiXTextureLayeredOKImg
     Use ImageNPY::LoadPPM to load images into textures 
+    First try at 2d layered tex failed, so reverted to 2d textures.
 
 UseOptiXTextureLayeredOKImgGeo
     Ray-traced theta-phi texture mapping onto a sphere, when using an Earth texture this provides 

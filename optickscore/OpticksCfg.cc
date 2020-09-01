@@ -1144,8 +1144,8 @@ void OpticksCfg<Listener>::init()
 
 
 
-   char enabledmergedmesh[128];
-   snprintf(enabledmergedmesh,128, "(former restrictmesh) Comma delimited string giving list of mesh indices to convert into OptiX geometry eg \"0,2,5\". Or blank for all. Default %s ", m_enabledmergedmesh.c_str() );
+   char enabledmergedmesh[256];
+   snprintf(enabledmergedmesh,256, "(former restrictmesh) Comma delimited string giving list of mesh indices to convert into OptiX geometry eg \"0,2,5\". Or blank for all. Default %s ", m_enabledmergedmesh.c_str() );
    m_desc.add_options()
        ("enabledmergedmesh",  boost::program_options::value<std::string>(&m_enabledmergedmesh), enabledmergedmesh );
 

@@ -31,14 +31,9 @@
 #include "NPY.hpp"
 #include "ImageNPY.hpp"
 
-//#define USE_OCTX 1
 
-#ifdef USE_OCTX
-#include "OCtx.hh"
-#else
 #include <optix_world.h>
 #include <optixu/optixpp_namespace.h>
-#endif
 
 #include "UseOptiXTextureLayeredOKImg.h"
 
@@ -81,32 +76,34 @@ void UploadBuffer(optix::Context& context, const char* buffer_key, const NPYBase
 
 
 template <typename T>
-void Upload2DLayeredTexture(optix::Context& context, const char* param_key, const NPYBase* inp)
+void Upload2DTexture(optix::Context& context, const char* param_key, const NPYBase* inp )
 {
     unsigned nd = inp->getDimensions(); 
-    assert( nd == 4 );    
+    assert( nd == 3 );    
 
-    const unsigned ni = inp->getShape(0);  // number of texture layers
-    const unsigned nj = inp->getShape(1);  // height 
-    const unsigned nk = inp->getShape(2);  // width
-    const unsigned nl = inp->getShape(3);  // components
+    const unsigned ni = inp->getShape(0);  
+    const unsigned nj = inp->getShape(1);  
+    const unsigned nk = inp->getShape(2); 
 
-    const unsigned layers = ni ; 
-    const unsigned height = nj ; 
-    const unsigned width = nk ; 
-    const unsigned components = nl ; 
+    const unsigned height = ni ; 
+    const unsigned width = nj ; 
+    const unsigned components = nk ; 
+
+    LOG(info) 
+        << " height "  << height
+        << " width "  << width
+        << " components "  << components
+        ;
 
     assert( components < 5 );   
 
-    unsigned bufferdesc = RT_BUFFER_INPUT | RT_BUFFER_LAYERED ; 
-    //  If RT_BUFFER_LAYERED flag is set, buffer depth specifies the number of layers, not the depth of a 3D buffer.
+    unsigned bufferdesc = RT_BUFFER_INPUT ; 
     optix::Buffer texBuffer = context->createBuffer(bufferdesc); 
 
     RTformat format = OFormat::Get<T>(components);
     texBuffer->setFormat( format ); 
-    texBuffer->setSize(width, height, layers);  // 3rd depth arg is number of layers
+    texBuffer->setSize(width, height);  
 
-    // attempt at using mapEx failed, so upload all layers at once 
     void* tex_data = texBuffer->map() ; 
     inp->write_(tex_data); 
     texBuffer->unmap(); 
@@ -120,7 +117,6 @@ void Upload2DLayeredTexture(optix::Context& context, const char* param_key, cons
     //RTwrapmode wrapmode = RT_WRAP_CLAMP_TO_BORDER ; 
     tex->setWrapMode(0, wrapmode);
     tex->setWrapMode(1, wrapmode);
-    //tex->setWrapMode(2, wrapmode);   corresponds to layer?
 
     RTfiltermode filtermode = RT_FILTER_NEAREST ;  // RT_FILTER_LINEAR 
     RTfiltermode minification = filtermode ; 
@@ -130,8 +126,8 @@ void Upload2DLayeredTexture(optix::Context& context, const char* param_key, cons
     tex->setFilteringModes(minification, magnification, mipmapping);
 
     // indexmode : controls the interpretation of texture coordinates
-    //RTtextureindexmode indexmode = RT_TEXTURE_INDEX_NORMALIZED_COORDINATES ;  // parametrized over [0,1]
-    RTtextureindexmode indexmode = RT_TEXTURE_INDEX_ARRAY_INDEX ;  // texture coordinates are interpreted as array indices into the contents of the underlying buffer object
+    RTtextureindexmode indexmode = RT_TEXTURE_INDEX_NORMALIZED_COORDINATES ;  // parametrized over [0,1]
+    //RTtextureindexmode indexmode = RT_TEXTURE_INDEX_ARRAY_INDEX ;  // texture coordinates are interpreted as array indices into the contents of the underlying buffer object
     tex->setIndexingMode( indexmode );  
 
     //RTtexturereadmode readmode = RT_TEXTURE_READ_NORMALIZED_FLOAT ; // return floating point values normalized by the range of the underlying type
@@ -152,7 +148,6 @@ void Upload2DLayeredTexture(optix::Context& context, const char* param_key, cons
     context[param_key]->setInt(optix::make_int4(ni, nj, nk, tex_id));
 }
 
-
 #include "CMAKE_TARGET.hh"
 
 int main(int argc, char** argv)
@@ -164,17 +159,17 @@ int main(int argc, char** argv)
     const char* progname = "readWrite" ;
     const char* tmpdir = SStr::Concat("$TMP/", CMAKE_TARGET ) ; 
 
-    //const char* path_default = "/tmp/SPPMTest.ppm" ;  
-    const char* path_default = "/tmp/SPPMTest_MakeTestImage_layered.npy" ;
+    const char* path_default = "/tmp/SPPMTest.ppm" ;  
     const char* path = argc > 1 ? argv[1] : path_default ;
+    LOG(info) << " path " << path ; 
 
     NPY<unsigned char>* inp = NULL ; 
     if( SStr::EndsWith(path, ".ppm") )
     { 
         bool yflip = false ; 
         unsigned ncomp_ = 4 ; 
-        bool layer_dimension = true ; 
         const char* config = "" ; 
+        bool layer_dimension = false ; 
         inp = ImageNPY::LoadPPM(path, yflip, ncomp_, config, layer_dimension ) ; 
     }
     else if( SStr::EndsWith(path, ".npy") )
@@ -186,13 +181,12 @@ int main(int argc, char** argv)
         assert(0 && "path expected to end .ppm or .npy"); 
     }
 
-    assert( inp->getDimensions() == 4 ); 
-    LOG(info) << " loaded  inp (layers, height, width, ncomp)  " << inp->getShapeString() ; 
+    assert( inp->getDimensions() == 3 ); 
+    LOG(info) << " loaded  inp (height, width, ncomp)  " << inp->getShapeString() ; 
 
-    unsigned layers = inp->getShape(0); 
-    unsigned height = inp->getShape(1);  
-    unsigned width = inp->getShape(2);  
-    unsigned ncomp = inp->getShape(3);  
+    unsigned height = inp->getShape(0);  
+    unsigned width = inp->getShape(1);  
+    unsigned ncomp = inp->getShape(2);  
 
     inp->save(tmpdir,"inp.npy"); 
 
@@ -202,7 +196,6 @@ int main(int argc, char** argv)
         << std::endl
         ; 
 
-
     optix::Context context = optix::Context::create();
     context->setRayTypeCount(1); 
     context->setExceptionEnabled( RT_EXCEPTION_ALL , true );
@@ -211,20 +204,18 @@ int main(int argc, char** argv)
     context->setEntryPointCount(1);
     unsigned entry_point_index = 0u ; 
 
-
 #ifdef TEX_BUFFER_CHECK
     UploadBuffer<unsigned char>(context, "tex_buffer", inp);   
 #else
-    Upload2DLayeredTexture<unsigned char>(context, "tex_param", inp);   
+    Upload2DTexture<unsigned char>(context, "tex_param", inp);   
 #endif
 
-    NPY<unsigned char>* out = NPY<unsigned char>::make(layers, height, width, ncomp); 
-    out->zero();
+    NPY<unsigned char>* out = NPY<unsigned char>::make(height, width, ncomp); 
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT); 
 
     RTformat format = OFormat::Get<unsigned char>(ncomp);
     outBuffer->setFormat(format); 
-    outBuffer->setSize(height, width, layers); 
+    outBuffer->setSize(width, height); 
     context["out_buffer"]->setBuffer(outBuffer); 
 
     optix::Program raygen = context->createProgramFromPTXFile( ptxpath , progname );
@@ -232,16 +223,13 @@ int main(int argc, char** argv)
     context->validate();  
 
     std::cout << "[ launch " << std::endl ;  
-    context->launch( entry_point_index, height, width, layers ); 
+    context->launch( entry_point_index, width, height ); 
     std::cout << "] launch " << std::endl ;  
 
+    out->zero();
     void* out_data = outBuffer->map(); 
     out->read(out_data); 
     outBuffer->unmap(); 
-
     out->save(tmpdir,"out.npy"); 
-
     return 0 ; 
 }
-
-

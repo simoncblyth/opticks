@@ -246,7 +246,6 @@ int main()
 #else
     //for(int i=0 ; i < size ; i++ ) std::cout << out[i] << " " ; 
 
-
     int count=0 ; 
 
     for(int i=0 ; i < nx ; i++){
@@ -256,9 +255,15 @@ int main()
        int index = i*ny*nz + j*nz + k ; 
        assert( count == index ); 
        count++ ; 
-
        float val = out[index] ; 
-       std::cout << "(" << i << " " << j << " " << k << ") " << val << std::endl ;  
+
+       if( count < 20 || size - count < 20 )
+       std::cout 
+           << " count " << count 
+           << "  ijk (" << i << " " << j << " " << k << ") " 
+           << " val " << val 
+           << std::endl 
+           ;  
 
        int ival = int(val); 
        assert( ival == index );    // note this works without +0.5 trickery because using RT_FILTER_NEAREST

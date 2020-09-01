@@ -58,8 +58,9 @@ int main(int argc, char** argv)
 
 #ifdef USE_OCTX
     LOG(info) << " USE_OCTX enabled " ; 
-    void* context_ptr = OCtx::Get()->ptr();  
-    assert( context_ptr ); 
+    OCtx::Get() ; 
+    //void* context_ptr = OCtx::Get()->ptr();  
+    //assert( context_ptr ); 
     //optix::Context context = optix::Context::take((RTcontext)context_ptr);
 #else
     LOG(info) << " USE_OCTX NOT-enabled " ; 

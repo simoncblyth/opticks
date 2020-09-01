@@ -51,19 +51,12 @@ EOL
 }
 
 cmd=$(runline $name)
-
 echo $cmd
 eval $cmd
 
-
-
-
 ## see ImageNPYTest for creation of /tmp/SPPMTest2.ppm 
-
  
 [ ! $? -eq 0 ] && echo runtime error && exit 1
-
-
 
 
 npd-(){ cat << EOP
@@ -82,10 +75,16 @@ EOP
 
 cd $sdir
 
-opath=$TMP/$name/out.ppm
+outpath=$TMP/$name/out.ppm
+ls -l $outpath
 
-ls -l $opath
-open $opath
+if [ -n "$SSH_TTY" ]; then 
+    echo local running outpath $outpath
+    open $outpath
+else
+    echo remote running outpath $outpath
+fi 
+
 ipython -i dbg.py 
 
 

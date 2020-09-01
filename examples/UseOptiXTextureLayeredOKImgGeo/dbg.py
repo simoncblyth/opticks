@@ -46,7 +46,7 @@ imshow = True
 if imshow:
     fig, axs = plt.subplots(3)
     fig.suptitle('%s' % tmpdir)
-    axs[0].imshow(i[0])
+    axs[0].imshow(i)
     axs[1].imshow(o, origin='lower')
     axs[2].imshow(d, origin='lower')
     plt.show()                     
@@ -81,8 +81,4 @@ if scatter_pos:
     ax4.set_zlabel('Z')
     plt.show()
 pass
-
-
-
-
 

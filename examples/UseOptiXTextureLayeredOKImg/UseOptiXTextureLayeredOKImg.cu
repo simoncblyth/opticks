@@ -23,13 +23,13 @@
 
 using namespace optix;
 
-rtDeclareVariable(uint3, launch_index, rtLaunchIndex, );
-rtDeclareVariable(uint3, launch_dim,   rtLaunchDim, );
+rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
+rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
+rtBuffer<uchar4, 2> out_buffer ; 
 
 rtDeclareVariable(int4,   tex_param, , );
 rtDeclareVariable(float4, tex_domain, , );
 
-rtBuffer<uchar4, 3> out_buffer ; 
 
 #ifdef TEX_BUFFER_CHECK
 rtBuffer<uchar4, 3> tex_buffer ; 
@@ -53,21 +53,19 @@ RT_PROGRAM void readWrite()
 #else
 RT_PROGRAM void readWrite()
 {
+    float2 d = make_float2(launch_index)/make_float2(launch_dim) ; 
     int texture_id = tex_param.w ; 
-    float tx = float(launch_index.x);  
-    float ty = float(launch_index.y);  
-    int layer = launch_index.z ; 
-    uchar4 val = rtTex2DLayered<uchar4>( texture_id, tx, ty, layer );
+    uchar4 val = rtTex2D<uchar4>( texture_id, d.x, d.y );
+    //uchar4 val = make_uchar4( 255, 0, 0, 255); 
 
 #ifdef DUMP
-    rtPrintf("//UseOptiXTextureLayeredOKImg.cu:readWrite.fromTex tex_param (%d %d %d %d) launch_index.xyz ( %u %u %u )   val ( %d %d %d %d ) \n", 
+    rtPrintf("//UseOptiXTextureLayeredOKImg.cu:readWrite.fromTex tex_param (%d %d %d %d) launch_index.xy ( %u %u )   val ( %d %d %d %d ) \n", 
          tex_param.x,
          tex_param.y,
          tex_param.z,
          tex_param.w,
          launch_index.x, 
          launch_index.y, 
-         launch_index.z, 
          val.x, 
          val.y, 
          val.z, 
