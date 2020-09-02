@@ -56,6 +56,7 @@ set(SOURCES
     STime.cc
     SASCII.cc
     SAbbrev.cc
+    SPack.cc
 ) 
 
 set(HEADERS
@@ -103,6 +104,7 @@ set(HEADERS
     SGDML.hh
     SASCII.hh
     SAbbrev.hh
+    SPack.hh
 )
 
 

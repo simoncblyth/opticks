@@ -42,11 +42,11 @@ static __device__ __inline__ optix::uchar4 make_color(const optix::float4& c)
 */
 
 
-struct PerRayData_radiance
+struct PerRayData
 {
-  float3 result;
-  float  importance;
-  int depth;
+    float3 result;
+    uint4  inid ;  
+    float4 post ; 
 };
 
 
@@ -63,21 +63,19 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 rtDeclareVariable(rtObject,      top_object, , );
 
 rtBuffer<uchar4, 2>   output_buffer;
+rtBuffer<uint4, 2>    inid_buffer;
+rtBuffer<float4, 2>   post_buffer;
 
 
-
+// from geometry intersect 
 rtDeclareVariable(float3, shading_normal,   attribute shading_normal, );  
-rtDeclareVariable(PerRayData_radiance, prd_radiance, rtPayload, );
+rtDeclareVariable(uint4, intersect_identity,   attribute intersect_identity, );  
+
+rtDeclareVariable(PerRayData, prd, rtPayload, );
 
 
 rtDeclareVariable(optix::Ray,           raycur, rtCurrentRay, );
 rtDeclareVariable(float,                  t, rtIntersectionDistance, );
-
-/*
-rtDeclareVariable(int4,   tex_param_0, , );
-rtDeclareVariable(int4,   tex_param_1, , );
-rtDeclareVariable(int4,   tex_param_2, , );
-*/
 
 rtDeclareVariable(int,   texture_id, , );
 
@@ -93,8 +91,10 @@ RT_PROGRAM void raygen_texture_test()
 
 RT_PROGRAM void raygen()
 {
-    PerRayData_radiance prd;
+    PerRayData prd;
     prd.result = make_float3( 1.f, 0.f, 0.f ) ;
+    prd.inid = make_uint4(0,0,0,0); 
+    prd.post = make_float4( 0.f, 0.f, 0.f, 0.f ) ;
 
     float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;   // -1:1
 
@@ -104,6 +104,9 @@ RT_PROGRAM void raygen()
      //rtPrintf("//raygen launch_index.x %u launch_index.y %u launch_dim.x %u launch_dim.y %u \n", launch_index.x , launch_index.y, launch_dim.x , launch_dim.y   );
     output_buffer[launch_index] = make_color( prd.result ) ; 
     // make_uchar4(  255u, 0u, 0u,255u) ;  // red  (was expecting BGRA get RGBA)
+
+    inid_buffer[launch_index] = prd.inid ; 
+    post_buffer[launch_index] = prd.post ; 
 }
 
 // Returns shading normal as the surface shading result
@@ -111,33 +114,24 @@ RT_PROGRAM void closest_hit_local()
 {
     float3 isect = raycur.origin + t*raycur.direction ; 
     const float3 local = rtTransformPoint( RT_WORLD_TO_OBJECT, isect );  
-    prd_radiance.result = normalize(local)*0.5f + 0.5f ; 
+    prd.result = normalize(local)*0.5f + 0.5f ; 
+    prd.inid = intersect_identity ; 
+    prd.post = make_float4( isect, t ); 
 }
 RT_PROGRAM void closest_hit_global()
 {
     float3 isect = raycur.origin + t*raycur.direction ; 
-    prd_radiance.result = normalize(isect)*0.5f + 0.5f ;    // coloring clearly global like this
+    prd.result = normalize(isect)*0.5f + 0.5f ;    // coloring clearly global like this
+    prd.inid = intersect_identity ; 
+    prd.post = make_float4( isect, t ); 
 }
 RT_PROGRAM void closest_hit_normal()
 {
-    prd_radiance.result = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, shading_normal))*0.5f + 0.5f;
-    //prd_radiance.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
+    float3 isect = raycur.origin + t*raycur.direction ; 
+    prd.result = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, shading_normal))*0.5f + 0.5f;
+    prd.inid = intersect_identity ; 
+    prd.post = make_float4( isect, t ); 
 }
-/**
-
-layer:0 
-    works fine
-
-layer:1
-    bizarre appearance, with messup that changes on each run
-    as if texture reads are reading from non-intended GPU memory 
-
-    * greyscale looks right throughout 
-    * colored bands are messed up but not across the entire tex 
-
-    NOW SUSPECT THIS PROBLEM WAS CPU SIDE MEMORY OVERWRITE ISSUE WITH NPY::concat
-**/
-
 RT_PROGRAM void closest_hit_textured()
 {
     float3 isect = raycur.origin + t*raycur.direction ; 
@@ -151,15 +145,21 @@ RT_PROGRAM void closest_hit_textured()
     uchar4 val = rtTex2D<uchar4>( texture_id, f_phi, f_theta );
     float3 result = make_float3( float(val.x)/255.99f,  float(val.y)/255.99f,  float(val.z)/255.99f ) ;   
 
-    prd_radiance.result = result ;  ; 
+    prd.result = result ;  ; 
+    prd.inid = intersect_identity ; 
+    prd.post = make_float4( isect, t ); 
 }
-
-
-
 RT_PROGRAM void miss()
 {
-    prd_radiance.result = make_float3(1.f, 1.f, 1.f) ;
+    prd.result = make_float3(1.f, 1.f, 1.f) ;
+    prd.inid = make_uint4( 0,0,0,0)  ; 
+    prd.post = make_float4(0.f,0.f,0.f,0.f); 
 }
+
+
+
+
+
 RT_PROGRAM void printTest0()
 {
     unsigned long long index = launch_index.x ;

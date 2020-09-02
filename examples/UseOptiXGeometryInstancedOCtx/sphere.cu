@@ -32,9 +32,14 @@ using namespace optix;
 
 rtDeclareVariable(float4,  sphere, , );
 
+// communicate to closest_hit
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
+rtDeclareVariable(uint4,  intersect_identity,   attribute intersect_identity, ); 
+
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
+rtDeclareVariable(uint4, identity,  ,);
+
 
 template<bool use_robust_method>
 static __device__
@@ -78,6 +83,7 @@ void intersect_sphere(void)
         bool check_second = true;
         if( rtPotentialIntersection( root1 + root11 ) ) {
             shading_normal = geometric_normal = (O + (root1 + root11)*D)/radius;
+            intersect_identity = identity ; 
             if(rtReportIntersection(0))
                 check_second = false;
         } 
@@ -85,6 +91,7 @@ void intersect_sphere(void)
             float root2 = (-b + sdisc) + (do_refine ? root1 : 0);
             if( rtPotentialIntersection( root2 ) ) {
                 shading_normal = geometric_normal = (O + root2*D)/radius;
+                intersect_identity = identity ; 
                 rtReportIntersection(0);
             }
         }

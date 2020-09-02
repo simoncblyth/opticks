@@ -32,10 +32,11 @@ fill out an implementation for it.
 **/
 
 #include <vector>
+#include "plog/Severity.h"
 #include "NGLM.hpp"
 #include "OXRAP_API_EXPORT.hh"
-
 class NPYBase ; 
+template <typename T> class NPY ;
 
 struct OXRAP_API OCtx 
 {
@@ -83,8 +84,8 @@ struct OXRAP_API OCtx
     void set_context_int( const char* key, int x );
     void set_context_viewpoint( const glm::vec3& eye, const glm::vec3& U,  const glm::vec3& V, const glm::vec3& W, const float scene_epsilon );
     void* create_transform( bool transpose, const float* m44, const float* inverse_m44 );
-    void* create_instanced_assembly( NPYBase* transforms, const void* geometry_ptr, const void* material_ptr );
-    void* create_single_assembly( const glm::mat4& m4, const void* geometry_ptr, const void* material_ptr );
+    void* create_instanced_assembly( const NPY<float>* transforms, const void* geometry_ptr, const void* material_ptr, const NPY<unsigned>* identity);
+    void* create_single_assembly( const glm::mat4& m4, const void* geometry_ptr, const void* material_ptr, const glm::uvec4& id );
 
     void* create_group( const char* key, const void* child_group_ptr );
     void group_add_child_group( void* group_ptr , void* child_group_ptr );

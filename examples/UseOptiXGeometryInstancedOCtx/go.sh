@@ -86,6 +86,10 @@ else
 fi
 echo lldb_ \$cmdline
 
+python intersect_sdf_test.py
+rc=\$?
+echo rc \$rc
+
 EOR
 
 chmod ugo+x $runpath

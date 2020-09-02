@@ -1,4 +1,7 @@
+// om-;TEST=NPY4Test om-t
+
 #include "NPY.hpp"
+#include "SPack.hh"
 #include "OPTICKS_LOG.hh"
 
 
@@ -107,6 +110,132 @@ void test_concat()
 }
 
 
+void test_tvec()
+{
+    glm::tvec4<unsigned char> tv ; 
+    tv.x = 1 ; 
+    tv.y = 128 ; 
+    tv.z = 255 ; 
+    tv.w = 255 ; // 256 gives warning and changes value to 0 
+
+    LOG(info) << " tv " << glm::to_string(tv) ; 
+
+
+}
+
+void test_getQuad_()
+{
+    NPY<unsigned char>* a = NPY<unsigned char>::make(64, 4); // 4*64 = 256 
+    a->fillIndexFlat(); 
+    for(unsigned i=0 ; i < a->getNumItems() ; i++)
+    {
+        glm::tvec4<unsigned char> q = a->getQuad_(i,0,0); 
+    
+        unsigned char* v = glm::value_ptr(q) ; 
+        unsigned int avalue = SPack::Encode(v, 4); 
+
+        glm::tvec4<unsigned char> q2 ; 
+        SPack::Decode( avalue, glm::value_ptr(q2), 4 ); 
+
+        LOG(info) 
+            << " i " << i 
+            << " q " << glm::to_string(q) 
+            << " q2 " << glm::to_string(q2) 
+            ; 
+
+        assert( q.x == q2.x ); 
+        assert( q.y == q2.y ); 
+        assert( q.z == q2.z ); 
+        assert( q.w == q2.w ); 
+
+    }
+}
+
+
+
+void test_setQuad_()
+{
+    LOG(info); 
+    NPY<unsigned char>* a = NPY<unsigned char>::make(64, 4); // 4*64 = 256 
+    a->fillIndexFlat(); 
+    NPY<unsigned char>* b = NPY<unsigned char>::make(64, 4); 
+    b->zero(); 
+
+    for(unsigned i=0 ; i < a->getNumItems() ; i++)
+    {
+        glm::tvec4<unsigned char> q = a->getQuad_(i); 
+        b->setQuad_( q, i); 
+    }
+    assert( NPY<unsigned char>::compare(a,b,true) == 0 ); 
+}
+
+
+void test_getQuad_crossType()
+{
+    assert( sizeof(unsigned char)*4 == sizeof(unsigned int)); 
+    NPY<unsigned char>* a = NPY<unsigned char>::make(64, 4); // 4*64 = 256 
+    a->fillIndexFlat(); 
+
+    NPY<unsigned int>* b = NPY<unsigned int>::make(64) ; 
+    b->zero(); 
+    assert( b->getNumBytes(0) == a->getNumBytes(0) ); 
+    b->read_(a->getBytes()); 
+
+    assert( a->getNumItems() == b->getNumItems() ); 
+
+    for(unsigned i=0 ; i < a->getNumItems() ; i++)
+    {
+        glm::tvec4<unsigned char> q = a->getQuad_(i); 
+        unsigned int avalue = SPack::Encode( glm::value_ptr(q), 4); 
+        unsigned int bvalue = b->getValue(i, 0,0 );
+        LOG(info) 
+            << " i " << i 
+            << " q " << glm::to_string(q) 
+            << " avalue " << avalue
+            << " bvalue " << bvalue
+            ; 
+
+        assert( avalue == bvalue );   
+    }
+}
+
+
+
+
+// reshaping needs to be type aware, so it can do the right thing when cast to a different sized type ?
+
+void test_getQuad_crossType_cast_FAILS_RESHAPE()
+{
+    assert( sizeof(unsigned char)*4 == sizeof(unsigned int)); 
+    NPY<unsigned char>* a = NPY<unsigned char>::make(64, 4); // 4*64 = 256 
+    a->fillIndexFlat(); 
+
+    NPY<unsigned int>* b = reinterpret_cast<NPY<unsigned int>*>(a) ; 
+
+    for(unsigned i=0 ; i < a->getNumItems() ; i++)
+    {
+        a->reshape(64,4); 
+        glm::tvec4<unsigned char> q = a->getQuad_(i); 
+        unsigned int avalue = SPack::Encode( glm::value_ptr(q), 4); 
+
+
+        b->reshape(64); 
+        unsigned int bvalue = b->getValue(i, 0,0 );
+        LOG(info) 
+            << " i " << i 
+            << " q " << glm::to_string(q) 
+            << " avalue " << avalue
+            << " bvalue " << bvalue
+            ; 
+
+        assert( avalue == bvalue );   
+    }
+}
+
+
+
+
+
 
 
 int main(int argc, char** argv)
@@ -117,9 +246,16 @@ int main(int argc, char** argv)
     //test_write_item_(); 
     //test_write_item_big(); 
 
-    test_concat<unsigned char>(); 
+    //test_concat<unsigned char>(); 
+
+    //test_tvec(); 
+    //test_getQuad_(); 
+    //test_setQuad_(); 
+    test_getQuad_crossType(); 
+    //test_getQuad_crossType_cast_FAILS_RESHAPE(); 
 
     return 0 ; 
 }
 
+// om-;TEST=NPY4Test om-t
 

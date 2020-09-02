@@ -805,7 +805,16 @@ void NPYBase::setNumItems(unsigned int ni)
 
 
 
+/**
+NPYBase::reshape
+------------------
 
+TODO: somehow make it possible to re-view an array of a different type
+with shape changing accordingly 
+
+See tests/NPY4Test.cc:test_getQuad_crossType_cast_FAILS_RESHAPE
+
+**/
 
 void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm)
 {
@@ -843,7 +852,7 @@ void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl
 
 
 
-std::string NPYBase::getDigestString() 
+std::string NPYBase::getDigestString() const 
 {
     return getDigestString(getBytes(), getNumBytes(0));
 }
@@ -855,7 +864,7 @@ std::string NPYBase::getDigestString(void* bytes, unsigned int nbytes)
 }
 
 
-std::string NPYBase::getItemDigestString(unsigned i) 
+std::string NPYBase::getItemDigestString(unsigned i) const 
 {
     assert( i < getNumItems() );
 
@@ -978,10 +987,12 @@ NMeta* NPYBase::LoadMeta( const char* path, const char* ext) // static
 
 
 
+template NPY_API void NPYBase::setMeta(const char* key, unsigned value);
 template NPY_API void NPYBase::setMeta(const char* key, int value);
 template NPY_API void NPYBase::setMeta(const char* key, float value);
 template NPY_API void NPYBase::setMeta(const char* key, std::string value);
 
+template NPY_API unsigned NPYBase::getMeta(const char* key, const char* fallback) const ; 
 template NPY_API int NPYBase::getMeta(const char* key, const char* fallback) const ; 
 template NPY_API float NPYBase::getMeta(const char* key, const char* fallback) const ; 
 template NPY_API std::string NPYBase::getMeta(const char* key, const char* fallback) const ; 

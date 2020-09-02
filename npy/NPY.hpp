@@ -331,6 +331,10 @@ class NPY_API NPY : public NPYBase {
        glm::uvec4   getQuadU(unsigned int i, unsigned int j=0, unsigned int k=0 ) const ;
 
 
+       glm::tvec4<T> getQuad_(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
+       void          setQuad_(const glm::tvec4<T>& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
+
+
        // Mat4 
        void         setMat4( const glm::mat4& mat, int i, int j_=-1 , bool transpose=false );
        glm::mat4    getMat4(int i, int j=-1) const ;

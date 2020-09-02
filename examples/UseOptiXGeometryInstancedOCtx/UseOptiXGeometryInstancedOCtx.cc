@@ -31,6 +31,7 @@ as its too difficult to do new things in two ways at once.
 #include <fstream>
 
 #include "OKConf.hh"
+#include "SPack.hh"
 #include "SStr.hh"
 #include "BFile.hh"
 #include "OPTICKS_LOG.hh"
@@ -51,8 +52,9 @@ as its too difficult to do new things in two ways at once.
 #include "CMAKE_TARGET.hh" 
 
 
-glm::mat4 MakeTransform(unsigned u, unsigned v, unsigned w, float scale)
+glm::mat4 MakeTransform(unsigned u, unsigned v, unsigned w)
 {
+    float scale = 1.f ; 
     //glm::vec4 rot( rand(), rand(), rand(),  rand()*360.f ); // random axis and angle 
     //glm::vec4 rot(  0,  0, 1,  rand()*360.f );
     glm::vec4 rot(  0,  0, 1,  0 );
@@ -62,42 +64,67 @@ glm::mat4 MakeTransform(unsigned u, unsigned v, unsigned w, float scale)
     return m4 ; 
 }
 
-NPY<float>* MakeTransforms(unsigned nu, unsigned nv, unsigned nw, float scale)
+glm::tvec4<unsigned> MakeIdentity(unsigned u, unsigned v, unsigned w, unsigned nu, unsigned nv, unsigned nw)
+{
+    unsigned uvw = SPack::Encode(u,v,w,0);
+    unsigned index = u*nv*nw + v*nw + w ;   
+    unsigned index1 = index + 1 ;  // make it 1-based, so 0 means none
+    glm::tvec4<unsigned> id(index1,uvw,0,0) ; 
+    return id ; 
+}
+
+void MakeTransforms(NPY<float>*& transforms, NPY<unsigned>*& identity,unsigned nu, unsigned nv, unsigned nw)
 {
     unsigned num_tr = nu*nv*nw ; 
-    NPY<float>* tr = NPY<float>::make(num_tr, 4, 4); 
-    tr->zero(); 
+    transforms = NPY<float>::make(num_tr, 4, 4); 
+    transforms->zero(); 
+
+    identity = NPY<unsigned>::make(num_tr, 4); 
+    identity->zero(); 
+    identity->setMeta<unsigned>("nu", nu); 
+    identity->setMeta<unsigned>("nv", nv); 
+    identity->setMeta<unsigned>("nw", nw); 
+
+
     bool transpose = false ; 
     unsigned count(0) ; 
     for( unsigned u = 0; u < nu; ++u ) { 
     for( unsigned v = 0; v < nv ; ++v ) { 
     for( unsigned w = 0; w < nw ; ++w ) { 
 
-        glm::mat4 m4 = MakeTransform(u,v,w, scale); 
-        tr->setMat4(m4, count, -1, transpose); 
+        glm::mat4 m4 = MakeTransform(u,v,w); 
+        transforms->setMat4(m4, count, -1, transpose); 
+        glm::uvec4 id = MakeIdentity(u,v,w,nu,nv,nw); 
+        identity->setQuad_( id, count );  
+
+        unsigned count2 = u*nv*nw + v*nw + w ; 
+        assert( count2 == count ); 
+
         count++ ; 
     }
     }
     }
     assert( count == num_tr ); 
-    return tr ; 
 }
 
 
-void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const char* main_ptx, unsigned entry_point_index, bool single, const char* closest_hit )
+void MakeGeometry(const NPY<float>* transforms, const NPY<unsigned>* identity, const char* main_ptx, unsigned entry_point_index, bool single, const char* closest_hit )
 {
-    //  with (nu,nv,nw) of (100,100,4) have observed some flakiness that manifests as "corrupted" looking texture
-    // initially interpreted this as a problem with layered textures
-
-    float scale = 1.f ; 
-    NPY<float>* transforms = MakeTransforms(nu,nv,nw, scale); 
     std::string transforms_digest = transforms->getDigestString(); 
     unsigned num_transforms = transforms->getNumItems(); 
-    LOG(info) << "MakeTransforms num_transforms " << num_transforms << " transforms_digest " << transforms_digest ; 
-    assert( num_transforms == nu*nv*nw );  
+    LOG(info) << "num_transforms " << num_transforms << " transforms_digest " << transforms_digest ; 
 
+    // split transforms and identity into two 
     NPY<float>* transforms0 = NPY<float>::make_modulo_selection(transforms, 2, 0 );
+    NPY<unsigned>* identity0 = NPY<unsigned>::make_modulo_selection(identity, 2, 0 );
+
     NPY<float>* transforms1 = NPY<float>::make_modulo_selection(transforms, 2, 1 );
+    NPY<unsigned>* identity1 = NPY<unsigned>::make_modulo_selection(identity, 2, 1 );
+
+    assert( identity0->hasShape(-1,4) ); 
+    assert( identity1->hasShape(-1,4) ); 
+    for(unsigned i=0 ; i < identity0->getNumItems() ; i++) identity0->setValue(i,3, 0,0, 1);  // setting id.w
+    for(unsigned i=0 ; i < identity1->getNumItems() ; i++) identity1->setValue(i,3, 0,0, 2);  
 
     LOG(info) << " transforms0 " << transforms0->getShapeString(); 
     LOG(info) << " transforms1 " << transforms1->getShapeString(); 
@@ -127,18 +154,26 @@ void MakeGeometry(const unsigned nu, const unsigned nv, const unsigned nw, const
 
     if(single)
     {
-        glm::mat4 m4box = MakeTransform(1,1,0, scale); 
-        glm::mat4 m4sph = MakeTransform(1,1,1, scale); 
-        void* box_assembly_ptr = OCtx::Get()->create_single_assembly( m4box, box_ptr, mat_ptr );
-        void* sph_assembly_ptr = OCtx::Get()->create_single_assembly( m4sph, sph_ptr, mat_ptr );
+        unsigned nu = identity->getMeta<unsigned>("nu","0"); 
+        unsigned nv = identity->getMeta<unsigned>("nv","0"); 
+        unsigned nw = identity->getMeta<unsigned>("nw","0"); 
+
+        glm::mat4 m4box = MakeTransform(1,1,0); 
+        glm::uvec4 idbox = MakeIdentity(1,1,0,nu,nv,nw); 
+
+        glm::mat4 m4sph = MakeTransform(1,1,1); 
+        glm::uvec4 idsph = MakeIdentity(1,1,1,nu,nv,nw); 
+
+        void* box_assembly_ptr = OCtx::Get()->create_single_assembly( m4box, box_ptr, mat_ptr, idbox);
+        void* sph_assembly_ptr = OCtx::Get()->create_single_assembly( m4sph, sph_ptr, mat_ptr, idsph);
 
         OCtx::Get()->group_add_child_group( top_ptr, box_assembly_ptr ); 
         OCtx::Get()->group_add_child_group( top_ptr, sph_assembly_ptr ); 
     }
     else
     {
-        void* box_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms0, box_ptr, mat_ptr );
-        void* sph_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms1, sph_ptr, mat_ptr );
+        void* box_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms0, box_ptr, mat_ptr, identity0 );
+        void* sph_assembly_ptr = OCtx::Get()->create_instanced_assembly( transforms1, sph_ptr, mat_ptr, identity1 );
 
         OCtx::Get()->group_add_child_group( top_ptr, box_assembly_ptr ); 
         OCtx::Get()->group_add_child_group( top_ptr, sph_assembly_ptr ); 
@@ -317,13 +352,20 @@ int main(int argc, char** argv)
 
     const unsigned entry_point_index = 0u ;
     const char* raygen = NULL ; 
-
+    NPY<float>* transforms = NULL ; 
+    NPY<unsigned>* identity = NULL ; 
+ 
     if( with_geometry )
     {
         const unsigned nu = 10u;
         const unsigned nv = 10u;
         const unsigned nw = 4u;
-        MakeGeometry( nu, nv, nw, main_ptx, entry_point_index, single, closest_hit ); 
+
+        MakeTransforms(transforms, identity, nu,nv,nw); 
+        assert( transforms->getNumItems() == nu*nv*nw ); 
+        assert( identity->getNumItems() == nu*nv*nw ); 
+
+        MakeGeometry( transforms, identity, main_ptx, entry_point_index, single, closest_hit ); 
         SetupView(width, height, nu, nv, nw);  
         raygen = "raygen" ; 
     } 
@@ -342,14 +384,36 @@ int main(int argc, char** argv)
     void* outBuf = OCtx::Get()->create_buffer(out, "output_buffer", 'O', ' ', -1);
     OCtx::Get()->desc_buffer( outBuf );
 
+    NPY<unsigned int>* inid = NPY<unsigned int>::make(height, width, 4);
+    void* inidBuf = OCtx::Get()->create_buffer(inid, "inid_buffer", 'O', ' ', -1);
+    OCtx::Get()->desc_buffer( inidBuf );
+
+    NPY<float>* post = NPY<float>::make(height, width, 4);
+    void* postBuf = OCtx::Get()->create_buffer(post, "post_buffer", 'O', ' ', -1);
+    OCtx::Get()->desc_buffer( postBuf );
+
+
     double t_prelaunch ; 
     double t_launch ; 
     OCtx::Get()->launch_instrumented( entry_point_index, width, height, t_prelaunch, t_launch );
 
+
     out->zero();  
     OCtx::Get()->download_buffer(out, "output_buffer", -1);
+    inid->zero();  
+    OCtx::Get()->download_buffer(inid, "inid_buffer", -1);
+    post->zero();  
+    OCtx::Get()->download_buffer(post, "post_buffer", -1);
+
+
     const bool yflip = true ;
     ImageNPY::SavePPM(tmpdir, "out.ppm", out, yflip );
+
+    out->save(tmpdir, "out.npy"); 
+    inid->save(tmpdir, "inid.npy"); 
+    post->save(tmpdir, "post.npy"); 
+    if(identity)   identity->save(tmpdir, "identity.npy"); 
+    if(transforms) transforms->save(tmpdir, "transforms.npy"); 
 
     return 0 ; 
 }

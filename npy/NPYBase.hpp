@@ -104,8 +104,8 @@ class NPY_API NPYBase {
        virtual void zero() = 0 ; 
 
        std::string  getItemShape(unsigned int ifr=1) const ;
-       std::string  getDigestString()  ;
-       std::string  getItemDigestString(unsigned i);
+       std::string  getDigestString() const ;
+       std::string  getItemDigestString(unsigned i) const ;
 
        static std::string  getDigestString(void* bytes, unsigned int nbytes) ; 
        bool isEqualTo(void* bytes, unsigned long long nbytes) ;

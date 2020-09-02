@@ -2740,6 +2740,15 @@ template <typename T>
     for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l,vec[l]); 
 }
 
+template <typename T> 
+void NPY<T>::setQuad_(const glm::tvec4<T>& vec, unsigned int i, unsigned int j, unsigned int k) 
+{
+    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
+}
+
+
+
+
 
 template <typename T> 
  void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, float z, float w )
@@ -2753,6 +2762,11 @@ template <typename T>
     glm::vec4 vec(x,y,z,w); 
     setQuad(vec, i, j, k);
 }
+
+
+
+
+
 
 
 // type shifting quad setters
@@ -2794,12 +2808,29 @@ template <typename T>
 
 
 template <typename T> 
- glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j, unsigned int k) const 
+glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j, unsigned int k) const 
 {
     glm::vec4 vec ; 
     for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
     return vec ; 
 }
+
+
+
+
+template <typename T> 
+glm::tvec4<T> NPY<T>::getQuad_(unsigned int i, unsigned int j, unsigned int k) const 
+{
+    glm::tvec4<T> vec ; 
+    for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
+    return vec ; 
+}
+
+
+
+
+
+
 
 
 template <typename T> 

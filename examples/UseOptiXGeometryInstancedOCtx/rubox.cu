@@ -30,6 +30,9 @@ rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 rtDeclareVariable(float3, texcoord, attribute texcoord, ); 
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
+rtDeclareVariable(uint4,  intersect_identity,   attribute intersect_identity, ); 
+rtDeclareVariable(uint4,  identity,  ,);
+
 
 static __device__ float3 boxnormal(float t, float3 t0, float3 t1)
 {
@@ -55,6 +58,7 @@ RT_PROGRAM void rubox_intersect(int primIdx)
     if( rtPotentialIntersection( tmin ) ) {
        texcoord = make_float3( 0.0f );
        shading_normal = geometric_normal = boxnormal( tmin, t0, t1 );
+       intersect_identity = identity ;  
        if(rtReportIntersection(0))
          check_second = false;
     } 
@@ -62,6 +66,7 @@ RT_PROGRAM void rubox_intersect(int primIdx)
       if( rtPotentialIntersection( tmax ) ) {
         texcoord = make_float3( 0.0f );
         shading_normal = geometric_normal = boxnormal( tmax, t0, t1 );
+        intersect_identity = identity ;  
         rtReportIntersection(0);
       }
     }

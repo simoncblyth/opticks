@@ -662,7 +662,7 @@ void* OCtx::create_transform( bool transpose, const float* m44, const float* inv
     return ptr ; 
 }   
 
-void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_ptr, const void* material_ptr )
+void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_ptr, const void* material_ptr, const glm::uvec4& id)
 {
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     optix::Geometry geo = optix::Geometry::take((RTgeometry)geometry_ptr);   
@@ -684,6 +684,7 @@ void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_pt
     pergi->setMaterialCount(1);
     pergi->setMaterial(0, mat );
     pergi->setGeometry(geo);
+    pergi["identity"]->setUint(id.x, id.y, id.z, id.w);
 
     optix::GeometryGroup perxform = context->createGeometryGroup();
     perxform->addChild(pergi); 
@@ -696,27 +697,58 @@ void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_pt
     return ptr ; 
 }
 
+/**
+OCtx::create_instanced_assembly
+--------------------------------
 
-void* OCtx::create_instanced_assembly( NPYBase* transforms, const void* geometry_ptr, const void* material_ptr )
+::
+
+   assembly                  (Group) 
+      assembly_accel         (Acceleration) 
+
+      xform_0                (Transform)
+         perxform_0          (GeometryGroup)
+             pergi_0         (GeometryInstance)  
+                geo          (Geometry)  
+                mat          (Material)
+             instance_accel  (Acceleration)   
+
+      xform_1                (Transform)
+         perxform_1          (GeometryGroup)
+             pergi_1         (GeometryInstance)  
+                geo          (Geometry)
+                mat          (Material)
+             instance_accel  (Acceleration)   
+**/
+
+void* OCtx::create_instanced_assembly( const NPY<float>* transforms, const void* geometry_ptr, const void* material_ptr, const NPY<unsigned>* identity )
 { 
+    unsigned num_tr = transforms->getNumItems() ; 
+    unsigned num_id = identity ? identity->getNumItems() : 0 ; 
+
+    LOG(LEVEL) 
+         << " transforms " << transforms->getShapeString()
+         << " identity " << ( identity ? identity->getShapeString() : "no-identity" )
+         ; 
+
+    if( num_id > 0 ) assert( num_tr == num_id ); 
+
+    const char* accel = "Trbvh" ; 
+
     optix::Context context = optix::Context::take((RTcontext)context_ptr); 
     optix::Geometry geo = optix::Geometry::take((RTgeometry)geometry_ptr);   
     optix::Material mat = optix::Material::take((RTmaterial)material_ptr);   
    
-    unsigned num_tr = transforms->getNumItems() ; 
-    LOG(LEVEL) << " num_tr " << num_tr << " sh " << transforms->getShapeString(); 
+    optix::Acceleration instance_accel = context->createAcceleration(accel);
+    optix::Acceleration assembly_accel  = context->createAcceleration(accel);
 
     optix::Group assembly = context->createGroup();
     assembly->setChildCount( num_tr );
-    assembly->setAcceleration( context->createAcceleration( "Trbvh" ) );  
-
-    optix::Acceleration instance_accel = context->createAcceleration( "Trbvh" );
-
-    NPY<float>* tr = (NPY<float>*)transforms ; 
+    assembly->setAcceleration( assembly_accel );  
 
     for(unsigned ichild=0 ; ichild < num_tr ; ichild++)
     {   
-        glm::mat4 m4 = tr->getMat4(ichild,-1); 
+        glm::mat4 m4 = transforms->getMat4(ichild,-1); 
 
         bool transpose = true ; 
         optix::Transform xform = context->createTransform();
@@ -728,7 +760,11 @@ void* OCtx::create_instanced_assembly( NPYBase* transforms, const void* geometry
         pergi->setMaterialCount(1);
         pergi->setMaterial(0, mat );
         pergi->setGeometry(geo);
-        //pergi["instance_index"]->setUint(instance_index);
+        if( identity )
+        {
+            glm::tvec4<unsigned> id = identity->getQuad_(ichild); 
+            pergi["identity"]->setUint(id.x, id.y, id.z, id.w);
+        }
 
         optix::GeometryGroup perxform = context->createGeometryGroup();
         perxform->addChild(pergi); 
