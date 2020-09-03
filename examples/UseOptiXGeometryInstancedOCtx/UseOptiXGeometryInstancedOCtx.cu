@@ -47,6 +47,7 @@ struct PerRayData
     float3 result;
     uint4  inid ;  
     float4 post ; 
+    float4 posi ; 
 };
 
 
@@ -65,11 +66,13 @@ rtDeclareVariable(rtObject,      top_object, , );
 rtBuffer<uchar4, 2>   output_buffer;
 rtBuffer<uint4, 2>    inid_buffer;
 rtBuffer<float4, 2>   post_buffer;
+rtBuffer<float4, 2>   posi_buffer;
 
 
 // from geometry intersect 
 rtDeclareVariable(float3, shading_normal,   attribute shading_normal, );  
 rtDeclareVariable(uint4, intersect_identity,   attribute intersect_identity, );  
+rtDeclareVariable(unsigned, intersect_id,   attribute intersect_id, );  
 
 rtDeclareVariable(PerRayData, prd, rtPayload, );
 
@@ -95,6 +98,7 @@ RT_PROGRAM void raygen()
     prd.result = make_float3( 1.f, 0.f, 0.f ) ;
     prd.inid = make_uint4(0,0,0,0); 
     prd.post = make_float4( 0.f, 0.f, 0.f, 0.f ) ;
+    prd.posi = make_float4( 0.f, 0.f, 0.f, 0.f ) ;
 
     float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;   // -1:1
 
@@ -107,6 +111,7 @@ RT_PROGRAM void raygen()
 
     inid_buffer[launch_index] = prd.inid ; 
     post_buffer[launch_index] = prd.post ; 
+    posi_buffer[launch_index] = prd.posi ; 
 }
 
 // Returns shading normal as the surface shading result
@@ -117,6 +122,7 @@ RT_PROGRAM void closest_hit_local()
     prd.result = normalize(local)*0.5f + 0.5f ; 
     prd.inid = intersect_identity ; 
     prd.post = make_float4( isect, t ); 
+    prd.posi = make_float4( isect, __uint_as_float(intersect_id) ); 
 }
 RT_PROGRAM void closest_hit_global()
 {
@@ -124,6 +130,7 @@ RT_PROGRAM void closest_hit_global()
     prd.result = normalize(isect)*0.5f + 0.5f ;    // coloring clearly global like this
     prd.inid = intersect_identity ; 
     prd.post = make_float4( isect, t ); 
+    prd.posi = make_float4( isect, __uint_as_float(intersect_id) ); 
 }
 RT_PROGRAM void closest_hit_normal()
 {
@@ -131,6 +138,8 @@ RT_PROGRAM void closest_hit_normal()
     prd.result = normalize(rtTransformNormal(RT_WORLD_TO_OBJECT, shading_normal))*0.5f + 0.5f;
     prd.inid = intersect_identity ; 
     prd.post = make_float4( isect, t ); 
+    prd.posi = make_float4( isect, __uint_as_float(intersect_id) ); 
+    //rtPrintf("//closest_hit_normal intersect_id %d \n", intersect_id); 
 }
 RT_PROGRAM void closest_hit_textured()
 {
@@ -148,12 +157,14 @@ RT_PROGRAM void closest_hit_textured()
     prd.result = result ;  ; 
     prd.inid = intersect_identity ; 
     prd.post = make_float4( isect, t ); 
+    prd.posi = make_float4( isect, __uint_as_float(intersect_id) ); 
 }
 RT_PROGRAM void miss()
 {
     prd.result = make_float3(1.f, 1.f, 1.f) ;
     prd.inid = make_uint4( 0,0,0,0)  ; 
     prd.post = make_float4(0.f,0.f,0.f,0.f); 
+    prd.posi = make_float4(0.f,0.f,0.f, __uint_as_float(0u)); 
 }
 
 

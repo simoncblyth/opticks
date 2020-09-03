@@ -50,6 +50,8 @@ as its too difficult to do new things in two ways at once.
 
 
 #include "CMAKE_TARGET.hh" 
+    
+enum { ZERO, BOX, SPHERE } ; 
 
 
 glm::mat4 MakeTransform(unsigned u, unsigned v, unsigned w)
@@ -68,7 +70,7 @@ glm::tvec4<unsigned> MakeIdentity(unsigned u, unsigned v, unsigned w, unsigned n
 {
     unsigned uvw = SPack::Encode(u,v,w,0);
     unsigned index = u*nv*nw + v*nw + w ;   
-    unsigned index1 = index + 1 ;  // make it 1-based, so 0 means none
+    unsigned index1 = index + 1u ;  // make it 1-based, so 0 means none
     glm::tvec4<unsigned> id(index1,uvw,0,0) ; 
     return id ; 
 }
@@ -93,7 +95,9 @@ void MakeTransforms(NPY<float>*& transforms, NPY<unsigned>*& identity,unsigned n
     for( unsigned w = 0; w < nw ; ++w ) { 
 
         glm::mat4 m4 = MakeTransform(u,v,w); 
+        m4[0].w = SPack::uint_as_float(count + 1u);  // shove the 1-based transform_index into a normally always 0. slot 
         transforms->setMat4(m4, count, -1, transpose); 
+
         glm::uvec4 id = MakeIdentity(u,v,w,nu,nv,nw); 
         identity->setQuad_( id, count );  
 
@@ -116,15 +120,18 @@ void MakeGeometry(const NPY<float>* transforms, const NPY<unsigned>* identity, c
 
     // split transforms and identity into two 
     NPY<float>* transforms0 = NPY<float>::make_modulo_selection(transforms, 2, 0 );
-    NPY<unsigned>* identity0 = NPY<unsigned>::make_modulo_selection(identity, 2, 0 );
-
     NPY<float>* transforms1 = NPY<float>::make_modulo_selection(transforms, 2, 1 );
-    NPY<unsigned>* identity1 = NPY<unsigned>::make_modulo_selection(identity, 2, 1 );
+    for(unsigned i=0 ; i < transforms0->getNumItems() ; i++) transforms0->bitwiseOrUInt(i,0,3,0, (BOX << 24)   );  
+    for(unsigned i=0 ; i < transforms1->getNumItems() ; i++) transforms1->bitwiseOrUInt(i,0,3,0, (SPHERE << 24));  
+    // hmm doing this to the split transforms means it doenst get saved into transforms
+    // but it does get thru to GPU 
 
+    NPY<unsigned>* identity0 = NPY<unsigned>::make_modulo_selection(identity, 2, 0 );
+    NPY<unsigned>* identity1 = NPY<unsigned>::make_modulo_selection(identity, 2, 1 );
     assert( identity0->hasShape(-1,4) ); 
     assert( identity1->hasShape(-1,4) ); 
-    for(unsigned i=0 ; i < identity0->getNumItems() ; i++) identity0->setValue(i,3, 0,0, 1);  // setting id.w
-    for(unsigned i=0 ; i < identity1->getNumItems() ; i++) identity1->setValue(i,3, 0,0, 2);  
+    for(unsigned i=0 ; i < identity0->getNumItems() ; i++) identity0->setValue(i,3, 0,0, BOX);  // setting id.w
+    for(unsigned i=0 ; i < identity1->getNumItems() ; i++) identity1->setValue(i,3, 0,0, SPHERE);  
 
     LOG(info) << " transforms0 " << transforms0->getShapeString(); 
     LOG(info) << " transforms1 " << transforms1->getShapeString(); 
@@ -392,6 +399,11 @@ int main(int argc, char** argv)
     void* postBuf = OCtx::Get()->create_buffer(post, "post_buffer", 'O', ' ', -1);
     OCtx::Get()->desc_buffer( postBuf );
 
+    NPY<float>* posi = NPY<float>::make(height, width, 4);
+    void* posiBuf = OCtx::Get()->create_buffer(posi, "posi_buffer", 'O', ' ', -1);
+    OCtx::Get()->desc_buffer( posiBuf );
+
+
 
     double t_prelaunch ; 
     double t_launch ; 
@@ -404,6 +416,9 @@ int main(int argc, char** argv)
     OCtx::Get()->download_buffer(inid, "inid_buffer", -1);
     post->zero();  
     OCtx::Get()->download_buffer(post, "post_buffer", -1);
+    posi->zero();  
+    OCtx::Get()->download_buffer(posi, "posi_buffer", -1);
+
 
 
     const bool yflip = true ;
@@ -412,6 +427,7 @@ int main(int argc, char** argv)
     out->save(tmpdir, "out.npy"); 
     inid->save(tmpdir, "inid.npy"); 
     post->save(tmpdir, "post.npy"); 
+    posi->save(tmpdir, "posi.npy"); 
     if(identity)   identity->save(tmpdir, "identity.npy"); 
     if(transforms) transforms->save(tmpdir, "transforms.npy"); 
 

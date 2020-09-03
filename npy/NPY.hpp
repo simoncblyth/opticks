@@ -305,6 +305,9 @@ class NPY_API NPY : public NPYBase {
        void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value);
        void         setInt(  unsigned int i, unsigned int j, unsigned int k, unsigned int l, int value);
 
+       void         bitwiseOrUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value);
+
+
        ///  quad setters 
        void         setQuad(      const nvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuad(const   glm::vec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
@@ -330,10 +333,11 @@ class NPY_API NPY : public NPYBase {
        glm::ivec4   getQuadI(unsigned int i, unsigned int j=0, unsigned int k=0 ) const ;
        glm::uvec4   getQuadU(unsigned int i, unsigned int j=0, unsigned int k=0 ) const ;
 
-
+#ifndef __CUDACC__
+       // exclude for thrustrap compilation as nvcc and glm dont get along well
        glm::tvec4<T> getQuad_(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
        void          setQuad_(const glm::tvec4<T>& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
-
+#endif
 
        // Mat4 
        void         setMat4( const glm::mat4& mat, int i, int j_=-1 , bool transpose=false );

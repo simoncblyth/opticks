@@ -5,6 +5,26 @@
 
 #include "OPTICKS_LOG.hh"
 
+void test_Encode()
+{
+    unsigned char nu = 10 ; 
+    unsigned char nv = 10 ; 
+    unsigned char nw =  4 ; 
+
+    unsigned char u = nu - 1 ; 
+    unsigned char v = nv - 1  ; 
+    unsigned char w = nw - 1 ; 
+
+    unsigned int packed = SPack::Encode(u,v,w,0); 
+    LOG(info) 
+        << " u " << u 
+        << " v " << v 
+        << " w " << w 
+        << " packed " << packed 
+        ;
+
+}
+
 
 void test_Encode_Decode()
 {
@@ -47,6 +67,41 @@ void test_Encode_Decode_ptr()
 }
 
 
+void test_Encode13_Decode13()
+{
+    LOG(info); 
+
+    unsigned char c  = 0xff ; 
+    unsigned int ccc   = 0xffffff ; 
+    unsigned expect  = 0xffffffff ; 
+
+    unsigned value = SPack::Encode13( c, ccc );  
+    assert( value == expect ); 
+
+    unsigned char c2 ; 
+    unsigned int  ccc2 ; 
+    SPack::Decode13( value, c2, ccc2 ); 
+    assert( c == c2 ); 
+    assert( ccc == ccc2 ); 
+}
+
+void test_int_as_float()
+{
+    int i0 = -420042 ;  
+    float f0 = SPack::int_as_float( i0 ); 
+    int i1 = SPack::int_from_float( f0 ); 
+    assert( i0 == i1 ); 
+    LOG(info) << " i0 " << i0 << " f0 " << f0 << " i1 " << i1 << " (NaN is expected) " ; 
+}
+
+void test_uint_as_float()
+{
+    unsigned u0 = 420042 ;  
+    float f0 = SPack::uint_as_float( u0 ); 
+    unsigned u1 = SPack::uint_from_float( f0 ); 
+    assert( u0 == u1 ); 
+    LOG(info) << " u0 " << u0 << " f0 " << f0 << " u1 " << u1 ; 
+}
 
 
 
@@ -55,8 +110,14 @@ int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
-    test_Encode_Decode();  
-    test_Encode_Decode_ptr();  
+    test_Encode();  
+
+    //test_Encode_Decode();  
+    //test_Encode_Decode_ptr();  
+    //test_Encode13_Decode13();  
+
+    //test_int_as_float(); 
+    //test_uint_as_float(); 
 
     return 0  ; 
 }

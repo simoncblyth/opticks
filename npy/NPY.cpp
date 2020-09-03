@@ -2740,13 +2740,6 @@ template <typename T>
     for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l,vec[l]); 
 }
 
-template <typename T> 
-void NPY<T>::setQuad_(const glm::tvec4<T>& vec, unsigned int i, unsigned int j, unsigned int k) 
-{
-    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
-}
-
-
 
 
 
@@ -2818,6 +2811,14 @@ glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j, unsigned int k) const
 
 
 
+#ifndef __CUDACC__
+
+template <typename T> 
+void NPY<T>::setQuad_(const glm::tvec4<T>& vec, unsigned int i, unsigned int j, unsigned int k) 
+{
+    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
+}
+
 template <typename T> 
 glm::tvec4<T> NPY<T>::getQuad_(unsigned int i, unsigned int j, unsigned int k) const 
 {
@@ -2826,7 +2827,7 @@ glm::tvec4<T> NPY<T>::getQuad_(unsigned int i, unsigned int j, unsigned int k) c
     return vec ; 
 }
 
-
+#endif
 
 
 
@@ -2924,7 +2925,7 @@ template <typename T>
 }
 
 template <typename T> 
- void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value)
+void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value)
 {
     uif_t uif ; 
     uif.u = value ;
@@ -2941,6 +2942,33 @@ template <typename T>
     }
     setValue(i,j,k,l, t); 
 }
+
+
+
+template <typename T> 
+void NPY<T>::bitwiseOrUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value)
+{
+    unsigned current = getUInt(i,j,k,l); 
+    unsigned new_value = current | value ; 
+
+    uif_t uif ; 
+    uif.u = new_value ;
+
+    T t(0) ;
+    switch(type)
+    {
+        case FLOAT:t = uif.f ; break ; 
+        case DOUBLE:t = uif.f ; break ; 
+        case SHORT:t = uif.i ; break ; 
+        case UINT:t = uif.u ; break ; 
+        case INT:t = uif.i ; break ; 
+        default: assert(0);  break ;
+    }
+    setValue(i,j,k,l, t); 
+}
+
+
+
 
 template <typename T> 
  int NPY<T>::getInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const 

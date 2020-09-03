@@ -38,6 +38,25 @@ unsigned SPack::Encode(const unsigned char* ptr, const unsigned num) // static
 }
 
 
+unsigned SPack::Encode13(unsigned char c, unsigned int ccc)  // static 
+{
+    assert( (ccc & (0xff << 24)) == 0 ); 
+    unsigned int value = ccc | ( c << 24 ) ; 
+    return value  ; 
+}
+
+void SPack::Decode13( const unsigned int value, unsigned char& c, unsigned int& ccc ) // static
+{
+    c = ( value >> 24 ) & 0xff ;  
+    ccc = value & 0xffffff ; 
+}
+
+
+
+
+
+
+
 void SPack::Decode( const unsigned int value,  unsigned char& x, unsigned char& y, unsigned char& z, unsigned char& w ) // static
 {
     assert( sizeof(unsigned char) == 1); 
@@ -65,5 +84,33 @@ void SPack::Decode( const unsigned int value,  unsigned char* ptr, const unsigne
     *(ptr + 2) = uc.c4.z ; 
     *(ptr + 3) = uc.c4.w ; 
 }
+
+
+
+float SPack::int_as_float(const int i)
+{
+    uif_t uif ; 
+    uif.i = i ; 
+    return uif.f ; 
+}
+int SPack::int_from_float(const float f)
+{
+    uif_t uif ; 
+    uif.f = f ; 
+    return uif.i ; 
+}
+float SPack::uint_as_float(const unsigned i)
+{
+    uif_t uif ; 
+    uif.i = i ; 
+    return uif.f ; 
+}
+unsigned SPack::uint_from_float(const float f)
+{
+    uif_t uif ; 
+    uif.f = f ; 
+    return uif.u ; 
+}
+
 
 

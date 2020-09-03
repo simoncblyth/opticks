@@ -1,6 +1,7 @@
 #include <chrono>
 #include "plog/Severity.h"
 
+#include "SPack.hh"
 #include "NPY.hpp"
 #include "NPYBase.hpp"
 #include "OCtx.hh"
@@ -747,10 +748,21 @@ void* OCtx::create_instanced_assembly( const NPY<float>* transforms, const void*
     assembly->setAcceleration( assembly_accel );  
 
     for(unsigned ichild=0 ; ichild < num_tr ; ichild++)
-    {   
+    {
+        unsigned m4_03 = transforms->getUInt(ichild,0,3,0);      
         glm::mat4 m4 = transforms->getMat4(ichild,-1); 
+        unsigned m4_03_check = SPack::uint_from_float(m4[0].w) ; 
+        assert( m4_03 == m4_03_check );
 
         bool transpose = true ; 
+        // Setting the right hand column incase of sneaky insertions.
+        // My (OpenGL) convention is for translation in m4[3].xyz.
+        // These slots are probably ignored by OptiX anyhow.
+        m4[0].w = 0.f ; 
+        m4[1].w = 0.f ; 
+        m4[2].w = 0.f ; 
+        m4[3].w = 1.f ; 
+
         optix::Transform xform = context->createTransform();
         xform->setMatrix(transpose, glm::value_ptr(m4), 0); 
 
@@ -764,6 +776,11 @@ void* OCtx::create_instanced_assembly( const NPY<float>* transforms, const void*
         {
             glm::tvec4<unsigned> id = identity->getQuad_(ichild); 
             pergi["identity"]->setUint(id.x, id.y, id.z, id.w);
+        }
+        //else  // do both for now
+        {
+            unsigned packed = transforms->getUInt(ichild,0,3,0);
+            pergi["id"]->setUint(packed) ;  
         }
 
         optix::GeometryGroup perxform = context->createGeometryGroup();

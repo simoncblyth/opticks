@@ -233,7 +233,39 @@ void test_getQuad_crossType_cast_FAILS_RESHAPE()
 }
 
 
+void test_bitwiseOrUInt()
+{
+    NPY<float>* transforms0 = NPY<float>::make_identity_transforms(10); 
+    unsigned num_transforms0 = transforms0->getNumItems(); 
+    for(unsigned i=0 ; i < num_transforms0 ; i++)
+    {
+        unsigned transform_index = i + 1 ;   // 1-based
+        transforms0->setUInt(i,0,3,0, transform_index ); 
+    }
 
+    unsigned geocode0 = 0xff ; 
+    for(unsigned i=0 ; i < num_transforms0 ; i++)
+    {
+        transforms0->bitwiseOrUInt(i,0,3,0, (geocode0 << 24) );
+    } 
+
+    const char* path = "$TMP/NPY4Test/transforms.npy" ; 
+    transforms0->save(path); 
+    NPY<float>* transforms1 = NPY<float>::load(path);  
+    unsigned num_transforms1 = transforms1->getNumItems(); 
+    assert( num_transforms0 == num_transforms1 ); 
+
+    for(unsigned i=0 ; i < num_transforms1 ; ++i)
+    {
+        unsigned packed = transforms1->getUInt(i,0,3,0);
+        unsigned transform_index = packed & 0xffffff ; 
+        unsigned geocode1 = packed >> 24 ; 
+
+        LOG(info) << " transform_index " << transform_index << " geocode " << geocode1 ; 
+        assert( transform_index == i + 1); 
+        assert( geocode1 == geocode0 ); 
+    }
+}
 
 
 
@@ -251,8 +283,10 @@ int main(int argc, char** argv)
     //test_tvec(); 
     //test_getQuad_(); 
     //test_setQuad_(); 
-    test_getQuad_crossType(); 
+    //test_getQuad_crossType(); 
     //test_getQuad_crossType_cast_FAILS_RESHAPE(); 
+
+    test_bitwiseOrUInt(); 
 
     return 0 ; 
 }
