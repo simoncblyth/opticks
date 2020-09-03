@@ -93,18 +93,12 @@ class IntersectSDFTest(object):
         self.epsilon = epsilon
 
         out = load_("out")               ## (height,width,4) image pixels
-        inid = load_("inid")             ## (height,width,4) pixel geometry identification  (uint4)
-        post = load_("post")             ## (height,width,4) pixel intersect position and distance (float4)
         posi = load_("posi")             ## (height,width,4) pixel intersect position and distance (float4)
         transforms = load_("transforms") ## (num_tran,4,4)
-        identity = load_("identity")     ## (num_tran,4)
 
         print("out  %s : (height,width,uchar4) : image pixels  " % repr(out.shape) )
-        print("inid %s : (height,width,uint4)  : pixel geometry identification " % repr(inid.shape) )
-        print("post %s : (height,width,float4) : pixel intersect position " % repr(post.shape) )
         print("posi %s : (height,width,float4) : pixel intersect position " % repr(posi.shape) )
         print("transforms %s : (num_tran,float4x4) " % repr(transforms.shape) )
-        print("identity   %s : (num_tran,uint4) " % repr(identity.shape) )
 
         tidx = transforms[:,0,3].view(np.uint32).copy() 
         transforms[:,0,3] = 0.   ## scrub the identity info 
@@ -112,55 +106,11 @@ class IntersectSDFTest(object):
 
         self.tidx = tidx
         self.out = out
-        self.inid = inid
-        self.post = post
         self.posi = posi
         self.transforms = transforms
-        self.identity = identity
         self.itransforms = itransforms
 
-    def get_local_intersects_inid(self, transform_index):
-        """
-        1. px : pixel coordinates of intersects that landed on geometry instance with that transform
-        2. po : intersection 3d coordinates of all those pixel intersects 
-        3. lpo : local frame 3d coordinates of pixel intersects
-        """
-        inid = self.inid
-        post = self.post
-        itransforms = self.itransforms
-
-        itr = itransforms[transform_index-1]  # index is 1-based
-        px = np.where( inid[:,:,0] == transform_index ) 
-
-        assert len(np.unique(inid[px][:,0] ))==1 
-        assert len(np.unique(inid[px][:,1] ))==1 
-        assert len(np.unique(inid[px][:,2] ))==1 
-        assert len(np.unique(inid[px][:,3] ))==1 
-
-        po = post[px].copy()
-        po[:,3] = 1
-
-        # local frame intersect positions 
-        lpo = np.dot( po, itr )[:,:3]
-        return lpo
-
-
-
-    def select_intersect_transforms_inid(self, geocode):
-        """
-        :param geocode: type of geometry BOX/SPHERE
-        :return tpx: 
-
-        1. spx : pixel coordinates of intersects with a geocode using the intersect_identity "inid.w"
-        2. tpx : unique transform indices for the those spx intersect pixels 
-        3. tpx_count : how many of each transform 
-        """
-        inid = self.inid
-        spx = np.where( inid[:,:,3] == geocode )  
-        tpx,tpx_count = np.unique(inid[spx][:,0], return_counts=True)  
-        return tpx 
-
-    def select_intersect_transforms_posi(self, geocode):
+    def select_intersect_transforms(self, geocode):
         """
         :param geocode: type of geometry BOX/SPHERE
         :return tpx: 
@@ -180,7 +130,7 @@ class IntersectSDFTest(object):
 
         return tpx 
 
-    def get_local_intersects_posi(self, transform_index):
+    def get_local_intersects(self, transform_index):
         """
         1. px : pixel coordinates of intersects that landed on geometry instance with that transform
         2. po : intersection 3d coordinates of all those pixel intersects 
@@ -208,7 +158,7 @@ class IntersectSDFTest(object):
         return lpo
 
 
-    def check(self, geocode, mode='posi'):
+    def check(self, geocode):
         """
         For all pixels check the 3d coordinates of the intersect pixels 
         are on the surface of the expected geometries, by transforming coordinates into 
@@ -216,37 +166,25 @@ class IntersectSDFTest(object):
         """
 
         ist = self 
-
-        assert mode in ['posi','inid']
-
-        tpx_posi = ist.select_intersect_transforms_posi(geocode) 
-        tpx_inid = ist.select_intersect_transforms_inid(geocode) 
-        assert np.all( tpx_posi == tpx_inid )
-        tpx = tpx_posi 
+        tpx = ist.select_intersect_transforms(geocode) 
 
         dt = np.zeros( [len(tpx), 2] )
         for i, transform_index in enumerate(tpx):
 
-            lpos_posi = ist.get_local_intersects_posi(transform_index)
-            lpos_inid = ist.get_local_intersects_inid(transform_index)
-            assert np.all( lpos_posi == lpos_inid )
-
-            delta_posi = sdf(geocode, lpos_posi, self.sz)
-            delta_inid = sdf(geocode, lpos_inid, self.sz)
-            assert np.all( delta_posi == delta_inid )
-            delta = delta_posi if mode == 'posi' else delta_inid
+            lpos = ist.get_local_intersects(transform_index)
+            delta = sdf(geocode, lpos, self.sz)
 
             dt[i,0] = delta.min()
             dt[i,1] = delta.max()
 
-            print(" mode %4s %6s transform_index %3d  sdf delta min/max %f %f  delta_shape %s  " % (mode, GNAME[geocode], transform_index, dt[i,0], dt[i,1], str(delta.shape) ))
+            print(" %6s transform_index %3d  sdf delta min/max %f %f  delta_shape %s  " % (GNAME[geocode], transform_index, dt[i,0], dt[i,1], str(delta.shape) ))
         pass
 
         dtmi = dt.min()
         dtmx = dt.max()
         epsilon = self.epsilon 
 
-        print(" mode %4s %6s sdf dt min/max %f %f  epsilon %f dt_shape %s  " % (mode, GNAME[geocode], dtmi, dtmx, epsilon, str(dt.shape) ))
+        print(" %6s sdf dt min/max %f %f  epsilon %f dt_shape %s  " % (GNAME[geocode], dtmi, dtmx, epsilon, str(dt.shape) ))
         assert np.abs(dtmi) < epsilon, ( dtmi, epsilon )
         assert np.abs(dtmx) < epsilon, ( dtmx, epsilon )
         return dt 
@@ -257,11 +195,10 @@ if __name__ == '__main__':
     np.set_printoptions(suppress=True)
 
     ist = IntersectSDFTest(sz=5., epsilon=4e-4)  
-    ist.check(BOX, mode='inid')
-    ist.check(SPHERE, mode='inid')
+    ist.check(BOX)
+    ist.check(SPHERE)
     print("TMPDIR %s " % TMPDIR) 
 
-    post = ist.post
     posi = ist.posi
 
 

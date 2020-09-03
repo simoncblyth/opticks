@@ -36,11 +36,8 @@ rtDeclareVariable(float4,  sphere, , );
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
-rtDeclareVariable(uint4,  intersect_identity,   attribute intersect_identity, ); 
-rtDeclareVariable(uint4, identity,  ,);
-
-rtDeclareVariable(unsigned,  intersect_id,   attribute intersect_id, ); 
-rtDeclareVariable(unsigned, id,  ,);
+rtDeclareVariable(unsigned,  intersect_identity,   attribute intersect_identity, ); 
+rtDeclareVariable(unsigned, identity,  ,);
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
@@ -88,7 +85,6 @@ void intersect_sphere(void)
         if( rtPotentialIntersection( root1 + root11 ) ) {
             shading_normal = geometric_normal = (O + (root1 + root11)*D)/radius;
             intersect_identity = identity ; 
-            intersect_id = id ; 
             if(rtReportIntersection(0))
                 check_second = false;
         } 
@@ -97,7 +93,6 @@ void intersect_sphere(void)
             if( rtPotentialIntersection( root2 ) ) {
                 shading_normal = geometric_normal = (O + root2*D)/radius;
                 intersect_identity = identity ; 
-                intersect_id = id ; 
                 rtReportIntersection(0);
             }
         }
