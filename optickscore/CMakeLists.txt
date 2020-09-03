@@ -65,6 +65,8 @@ set(SOURCES
 
     Demo.cc
     DemoCfg.cc
+
+    IntersectSDF.cc
 )
 
 
@@ -135,6 +137,8 @@ set(HEADERS
     OpticksPhoton.h
     OpticksGenstep.h
     OpticksQuadrant.h
+
+    IntersectSDF.hh
 )
 
 

@@ -74,7 +74,7 @@ eval \$cmdline
 
 [ ! \$? -eq 0 ] && echo \$0 : runtime error && exit 1
 
-outpath=/tmp/$USER/opticks/$name/out.ppm
+outpath=/tmp/$USER/opticks/$name/pixels.ppm
 ls -l \$outpath
 date
 

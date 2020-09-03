@@ -67,6 +67,16 @@ float nbox::sdf_(const glm::vec3& pos, NNodeFrameType fty) const
     return sd ; 
 }
 
+
+float nbox::sdf_local_(const glm::vec3& pos, const glm::vec3& halfside)
+{
+    glm::vec3 a = glm::abs(pos) ;
+    glm::vec3 d = a - halfside ; 
+    float sd = glm::compMax(d) ;
+    return sd ; 
+}
+
+
 float nbox::sdf_(const glm::vec3& pos, const nmat4triple* triple) const 
 {
     glm::vec4 q(pos,1.0); 

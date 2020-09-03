@@ -61,7 +61,7 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 rtDeclareVariable(rtObject,      top_object, , );
 
-rtBuffer<uchar4, 2>   output_buffer;
+rtBuffer<uchar4, 2>   pixels_buffer;
 rtBuffer<float4, 2>   posi_buffer;
 
 
@@ -81,10 +81,7 @@ rtDeclareVariable(int,   texture_id, , );
 RT_PROGRAM void raygen_texture_test()
 {
     float2 d = make_float2(launch_index) / make_float2(launch_dim) ;  // 0->1
-
-    //output_buffer[launch_index] = rtTex2DLayered<uchar4>( texture_id, d.x, d.y, layer );
-    output_buffer[launch_index] = rtTex2D<uchar4>( texture_id, d.x, d.y );
-    //output_buffer[launch_index] = make_uchar4( 255, 0, 0, 255 ); 
+    pixels_buffer[launch_index] = rtTex2D<uchar4>( texture_id, d.x, d.y );
 }
 
 RT_PROGRAM void raygen()
@@ -98,10 +95,7 @@ RT_PROGRAM void raygen()
     optix::Ray ray = optix::make_Ray( eye, normalize(d.x*U + d.y*V + W), radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX) ; 
     rtTrace(top_object, ray, prd);
 
-     //rtPrintf("//raygen launch_index.x %u launch_index.y %u launch_dim.x %u launch_dim.y %u \n", launch_index.x , launch_index.y, launch_dim.x , launch_dim.y   );
-    output_buffer[launch_index] = make_color( prd.result ) ; 
-    // make_uchar4(  255u, 0u, 0u,255u) ;  // red  (was expecting BGRA get RGBA)
-
+    pixels_buffer[launch_index] = make_color( prd.result ) ; 
     posi_buffer[launch_index] = prd.posi ; 
 }
 

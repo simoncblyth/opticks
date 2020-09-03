@@ -358,9 +358,9 @@ int main(int argc, char** argv)
     OCtx::Get()->set_raygen_program( entry_point_index, main_ptx, raygen );
     OCtx::Get()->set_miss_program(   entry_point_index, main_ptx, "miss" );
 
-    NPY<unsigned char>* out = NPY<unsigned char>::make(height, width, 4);
-    void* outBuf = OCtx::Get()->create_buffer(out, "output_buffer", 'O', ' ', -1);
-    OCtx::Get()->desc_buffer( outBuf );
+    NPY<unsigned char>* pixels = NPY<unsigned char>::make(height, width, 4);
+    void* pixelsBuf = OCtx::Get()->create_buffer(pixels, "pixels_buffer", 'O', ' ', -1);
+    OCtx::Get()->desc_buffer( pixelsBuf );
 
     NPY<float>* posi = NPY<float>::make(height, width, 4);
     void* posiBuf = OCtx::Get()->create_buffer(posi, "posi_buffer", 'O', ' ', -1);
@@ -370,15 +370,15 @@ int main(int argc, char** argv)
     double t_launch ; 
     OCtx::Get()->launch_instrumented( entry_point_index, width, height, t_prelaunch, t_launch );
 
-    out->zero();  
-    OCtx::Get()->download_buffer(out, "output_buffer", -1);
+    pixels->zero();  
+    OCtx::Get()->download_buffer(pixels, "pixels_buffer", -1);
     posi->zero();  
     OCtx::Get()->download_buffer(posi, "posi_buffer", -1);
 
     const bool yflip = true ;
-    ImageNPY::SavePPM(tmpdir, "out.ppm", out, yflip );
+    ImageNPY::SavePPM(tmpdir, "pixels.ppm", pixels, yflip );
 
-    out->save(tmpdir, "out.npy"); 
+    pixels->save(tmpdir, "pixels.npy"); 
     posi->save(tmpdir, "posi.npy"); 
     if(transforms) transforms->save(tmpdir, "transforms.npy"); 
 

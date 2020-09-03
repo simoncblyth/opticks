@@ -39,6 +39,7 @@ struct NPY_API nsphere : nnode {
 
     void resizeToFit(const nbbox& container_bb, float scale, float delta);
 
+    static float sdf_local_(const glm::vec3& lpos, float radius ); 
 
     nbbox bbox() const ;
 

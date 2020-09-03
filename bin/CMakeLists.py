@@ -133,7 +133,7 @@ class OpticksCMakeProj(object):
     @classmethod
     def find_export_tag(cls, names):
         tail = "_API_EXPORT.hh"
-        names = filter(lambda _:_.endswith(tail), names)
+        names = list(filter(lambda _:_.endswith(tail), names))
         tag = names[0].replace(tail,"") if len(names) == 1 else None
         return tag 
 
@@ -150,7 +150,7 @@ class OpticksCMakeProj(object):
                 reldir = dirpath[len(home)+1:]
                 path = os.path.join(dirpath, CMakeLists.NAME)
                 tag = cls.find_export_tag(names)
-                lines = map(str.strip, file(path,"r").readlines() ) 
+                lines = list(map(str.strip, open(path,"r").readlines() ))
 
                 has_obo = CMakeLists.HasOpticksBuildOptions(lines)
                 if not has_obo:
@@ -172,8 +172,12 @@ class OpticksCMakeProj(object):
         pkgs = self.read_pkgs(home=home)
         keys = pkgs.keys()
         log.debug(repr(keys))
+        for k in keys:
+            o = int(self.order.get(k,-2))
+            log.debug(" o %3d k %s  " % (o,k))
+        pass     
         self.pkgs = pkgs
-        self.keys = sorted(filter(lambda k:self.order.get(k) > -1,keys), key=lambda k:self.order.get(k,1000))
+        self.keys = sorted(filter(lambda k:self.order.get(k,-2) > -1,keys), key=lambda k:self.order.get(k,1000))
 
     def get(self, q):
         out = [] 

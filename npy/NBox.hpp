@@ -60,6 +60,8 @@ struct NPY_API nbox : nnode
     float sdf_local(const glm::vec3& pos) const ; 
     float sdf_global(const glm::vec3& pos) const ; 
 
+    static float sdf_local_(const glm::vec3& pos, const glm::vec3& halfside); 
+
     // testing sdf imps
 
     float sdf1(float x, float y, float z) const ;

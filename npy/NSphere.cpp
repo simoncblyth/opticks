@@ -38,6 +38,12 @@
 
 #include "PLOG.hh"
 
+float nsphere::sdf_local_(const glm::vec3& lpos, float radius )
+{
+    glm::vec3 c(0.f,0.f,0.f); 
+    float sd = glm::distance( lpos, c ) - radius ;
+    return sd ;  
+}
 
 float nsphere::costheta(float z_)
 {

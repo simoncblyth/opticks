@@ -92,12 +92,12 @@ class IntersectSDFTest(object):
         self.sz = sz
         self.epsilon = epsilon
 
-        out = load_("out")               ## (height,width,4) image pixels
+        pixels = load_("pixels")         ## (height,width,4) image pixels
         posi = load_("posi")             ## (height,width,4) pixel intersect position and distance (float4)
         transforms = load_("transforms") ## (num_tran,4,4)
 
-        print("out  %s : (height,width,uchar4) : image pixels  " % repr(out.shape) )
-        print("posi %s : (height,width,float4) : pixel intersect position " % repr(posi.shape) )
+        print("pixels %s : (height,width,uchar4) : image pixels  " % repr(pixels.shape) )
+        print("posi   %s : (height,width,float4) : pixel intersect position " % repr(posi.shape) )
         print("transforms %s : (num_tran,float4x4) " % repr(transforms.shape) )
 
         tidx = transforms[:,0,3].view(np.uint32).copy() 
@@ -105,7 +105,7 @@ class IntersectSDFTest(object):
         itransforms = np.linalg.inv(transforms)  ## invert all the transforms at once
 
         self.tidx = tidx
-        self.out = out
+        self.pixels = pixels
         self.posi = posi
         self.transforms = transforms
         self.itransforms = itransforms
