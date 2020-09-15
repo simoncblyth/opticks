@@ -59,7 +59,7 @@ include(CTest)
 #add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
+set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")  # override the GNUInstallDirs default of "include"
 
 find_package(BCM CONFIG)
 if(NOT BCM_FOUND)

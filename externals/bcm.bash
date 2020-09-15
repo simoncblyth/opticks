@@ -166,8 +166,9 @@ bcm-url(){
   esac
 }   
 
-bcm-base(){   echo $(opticks-prefix)/externals/bcm ; }
-bcm-prefix(){ echo $(opticks-prefix)/externals ; }
+bcm-prefix-default(){ echo $(opticks-prefix)/externals ; }
+bcm-prefix(){ echo ${BCM_PREFIX:-$(bcm-prefix-default)} ; }
+bcm-base(){   echo $(bcm-prefix)/bcm ; }
 bcm-idir(){   echo $(bcm-prefix) ; }
 
 bcm-dir(){  echo $(bcm-base)/bcm ; }
@@ -190,7 +191,7 @@ bcm-get(){
    cd $iwd
 }
 
-bcm-nuclear(){ cd $(opticks-prefix)/externals && rm -rf bcm ; }
+bcm-nuclear(){ cd $(bcm-prefix) && rm -rf bcm ; }
 
 bcm-wipe(){
   local bdir=$(bcm-bdir)
@@ -445,6 +446,31 @@ Need to set INTERFACE_PKG_CONFIG_NAME on imported targets::
      40     
      41 endif()
 
+
+
+Install into non-default prefix. Annoyingly goes into share::
+
+    (base) epsilon:UseGeant4NoOpticks blyth$ BCM_PREFIX=/usr/local/opticks_externals bcm--
+    Cloning into 'bcm'...
+    Warning: Permanently added the RSA host key for IP address '140.82.121.4' to the list of known hosts.
+    remote: Enumerating objects: 51, done.
+    remote: Counting objects: 100% (51/51), done.
+    remote: Compressing objects: 100% (20/20), done.
+    remote: Total 1378 (delta 21), reused 40 (delta 15), pack-reused 1327
+    Receiving objects: 100% (1378/1378), 404.14 KiB | 430.00 KiB/s, done.
+    Resolving deltas: 100% (749/749), done.
+    -- The CXX compiler identification is AppleClang 9.0.0.9000039
+    ...
+    -- Build files have been written to: /usr/local/opticks_externals/bcm/bcm.build
+    Install the project...
+    -- Install configuration: ""
+    -- Installing: /usr/local/opticks_externals/./share
+    -- Installing: /usr/local/opticks_externals/./share/bcm
+    -- Installing: /usr/local/opticks_externals/./share/bcm/cmake
+    -- Installing: /usr/local/opticks_externals/./share/bcm/cmake/BCMTest.cmake
+    ...
+    -- Installing: /usr/local/opticks_externals/./share/bcm/cmake/BCMToSnakeCase.cmake
+    (base) epsilon:UseGeant4NoOpticks blyth$ 
 
 
 

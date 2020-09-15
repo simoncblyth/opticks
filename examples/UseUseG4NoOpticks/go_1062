@@ -1,0 +1,32 @@
+# . go_1062
+
+pfx0=/tmp/$USER/opticks/UseG4NoOpticks
+
+ext=/usr/local/opticks_externals
+name=$(basename $(pwd))
+pfx=/tmp/$USER/opticks/$name
+
+g4_pfx=$ext/g4_1062
+clhep_pfx=$ext/clhep
+bcm_pfx=$ext    # only needed for config
+
+
+# env -i prevents inheriting the environment
+#
+#  PATH: to find cmake 
+#  USER: for build and install locations 
+#  CMAKE_PREFIX_PATH: dependencies
+
+env -i PATH=$PATH USER=$USER CMAKE_PREFIX_PATH=$pfx0:${g4_pfx}:${bcm_pfx} ./go.sh
+
+if [ "$(uname)" == "Darwin" ]; then
+    env -i DYLD_LIBRARY_PATH=$pfx0/lib:${g4_pfx}/lib:${clhep_pfx}/lib otool -L $pfx/lib/$name
+    env -i DYLD_LIBRARY_PATH=$pfx0/lib:${g4_pfx}/lib:${clhep_pfx}/lib $pfx/lib/$name
+elif [ "$(uname)" == "Linux" ]; then
+    env -i LD_LIBRARY_PATH=$pfx0/lib:${g4_pfx}/lib:${clhep_pfx}/lib ldd $pfx/lib/$name
+    env -i LD_LIBRARY_PATH=$pfx0/lib:${g4_pfx}/lib:${clhep_pfx}/lib $pfx/lib/$name
+fi 
+
+
+
+

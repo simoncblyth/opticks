@@ -1,0 +1,7 @@
+# . go_1062
+
+ext=/usr/local/opticks_externals
+g4_pfx=$ext/g4_1062
+bcm_pfx=$ext
+
+env -i USER="$USER" PATH="$PATH" CMAKE_PREFIX_PATH=$g4_pfx:$bcm_pfx ./go.sh 
