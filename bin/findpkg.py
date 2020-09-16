@@ -22,6 +22,13 @@ whereas it should in principal be useable prior to installing Opticks
 """
 import os, re, logging, argparse, sys, json, platform
 import shutil, tempfile, commands, stat, glob, fnmatch
+
+try:
+    from commands import getstatusoutput 
+except ImportError:
+    from subprocess import getstatusoutput 
+pass 
+
 from collections import OrderedDict as odict
 
 def makedirs_(path):
@@ -589,7 +596,7 @@ class FindCMakePkgDirect(Find):
         names = []
         for path in paths:
             cmd = "cat %s | grep ^#\ PROJECT_NAME -" % path 
-            rc,out = commands.getstatusoutput(cmd)
+            rc,out = getstatusoutput(cmd)
             name = None
             for line in out.split("\n"):
                 m = self.NAME.match(line)
@@ -726,7 +733,7 @@ class FindCMakePkgDirect(Find):
             mode |= (mode & 0o444) >> 2   
             os.chmod(sh, mode)
 
-            rc,out = commands.getstatusoutput(sh)
+            rc,out = getstatusoutput(sh)
 
             log.debug("RC %d : dumping out between hashes\n#####################\n%s\n###############\n" % (rc,out) )
 
