@@ -1092,7 +1092,8 @@ EOU
 
 openmesh-env(){  olocal- ; opticks- ; }
 #openmesh-vers(){ echo 4.1 ; }
-openmesh-vers(){ echo 6.3 ; }
+#openmesh-vers(){ echo 6.3 ; }
+openmesh-vers(){ echo 7.1 ; }
 
 openmesh-info(){ cat << EOI
 

@@ -114,6 +114,7 @@ if(NOT OpticksXercesC_FOUND)
              /usr/lib64
              /usr/local/lib
              /opt/local/lib
+             /usr/lib/x86_64-linux-gnu
            NO_DEFAULT_PATH  
         )
     endif()
