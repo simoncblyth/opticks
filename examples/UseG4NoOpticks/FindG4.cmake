@@ -2,35 +2,38 @@
 FindG4.cmake
 =============
 
-Integrates Geant4 provided CMake variables with the target-centric 
-approach of Opticks CMake machinery based on BCM. See bcm-
+The FindG4.cmake module integrates Geant4 provided CMake variables 
+with the target-centric approach of Opticks CMake machinery based on BCM, 
+see bcm-.
 
 0. finds Geant4 via CMAKE_PREFIX_PATH 
 1. parses Geant4_VERSION_INTEGER from define in G4Version.hh 
 2. obtains Geant4_DIRDIR from Geant4_DIR
 3. if Opticks::G4 imported target does not exist create it from the Geant4 variables
 
-The Opticks::G4 imported target creation attempts to handle multiple Geant4 versions
-(tested with 1042 and 1062) such that downstream users of this FindG4.cmake 
-need not change their CMake machinery. 
+The Opticks::G4 imported target creation attempts to handle multiple Geant4 versions, 
+tested with 1042 and 1062.
 
-Note that the INTERFACE_FIND_PACKAGE_NAME kludge tees up the arguments 
-to find_dependency in BCM generated exports such as /usr/local/opticks-cmake-overhaul/lib/cmake/useg4/useg4-config.cmake
-so downstream targets will automatically do the required find_dependency.
-
+Note that the "INTERFACE_FIND_PACKAGE_NAME" target property used by BCM (see bcm-) 
+is configured to  "G4 MODULE REQUIRED" which tees up the arguments to find_dependency 
+in BCM generated exports so downstream targets will automatically do the required find_dependency.
 This means that only one find_package call is needed amongst a tree of packages::
 
      find_package( G4 MODULE REQUIRED ) 
 
-The "INTERFACE_FIND_PACKAGE_NAME" property is a BCM defined property, not a standard one, see bcm-
+The automation is achieved by BCM by generation of .cmake config files which run on 
+finding a dependenct. 
 
+For an examples of usage see the below examples which create a Geant4 
+using library and then links an executable to that:: 
 
-
+   examples/UseG4NoOpticks
+   examples/UseUseG4NoOpticks
 
 Relevant part of Geant4 CMake config::
 
-   vimdiff /usr/local/opticks_externals/g4_1042/lib/Geant4-10.4.2/Geant4Config.cmake /usr/local/opticks_externals/g4_1062/lib/Geant4-10.6.2/Geant4Config.cmake
-
+   /usr/local/opticks_externals/g4_1042/lib/Geant4-10.4.2/Geant4Config.cmake 
+   /usr/local/opticks_externals/g4_1062/lib/Geant4-10.6.2/Geant4Config.cmake
 
 #]=]
 
@@ -114,7 +117,7 @@ if(G4_FOUND AND NOT TARGET Opticks::G4)
        elseif (${_type} STREQUAL "INTERFACE_LIBRARY")
            get_target_property(_icd ${_lib} INTERFACE_COMPILE_DEFINITIONS)
            if(G4_VERBOSE)
-           message(STATUS " _lib ${_lib} _icd ${_icd} " )
+           message(STATUS " _lib ${_lib} _icd ${_icd} : CURRENTLY IGNORING THIS INTERFACE_LIBRARY " )
            endif()
 
        else()
@@ -138,7 +141,7 @@ if(G4_FOUND AND NOT TARGET Opticks::G4)
     list(APPEND G4_targets "G4")   # still needed ? twas for standardized recursive dependency dumping (vague recollection)
 
     target_include_directories(Opticks::G4 INTERFACE "${Geant4_INCLUDE_DIRS}" )
-    target_link_libraries(Opticks::G4 INTERFACE "${_targets}" )
+    target_link_libraries(     Opticks::G4 INTERFACE "${_targets}" )
     target_compile_definitions(Opticks::G4 INTERFACE "${_defs}" )
 
 endif()

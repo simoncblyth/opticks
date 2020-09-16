@@ -9,7 +9,7 @@ EON
 sdir=$(pwd)
 name=$(basename $sdir)
 idir=/tmp/$USER/opticks/$name
-bdir=/tmp/$USER/opticks/$name./build 
+bdir=/tmp/$USER/opticks/$name.build 
 
 name0=UseG4NoOpticks
 sdir0=$(dirname $sdir)/$name0
