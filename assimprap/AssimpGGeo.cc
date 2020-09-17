@@ -50,7 +50,10 @@
 #include "GBorderSurface.hh"
 #include "GSkinSurface.hh"
 #include "GOpticalSurface.hh"
+
+#ifdef OLD_SENSOR
 #include "GGeoSensor.hh"
+#endif
 
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"

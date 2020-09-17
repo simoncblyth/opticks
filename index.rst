@@ -25,7 +25,6 @@ Contents:
    ana/tools
    bin/index
    docs/visualization
-   tests/index
    ana/index
 
    docs/integration

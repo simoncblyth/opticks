@@ -25,27 +25,37 @@ Currently the bitbucket opticks repository is used
 for day to day pushes with the github repository only 
 being pushed to infrequently when making releases 
 that are provided as github releases.
+The Github repo is usually several months behind bitbucket 
+so you are advised NOT to use it.
+
 
 Installation instructions start with a clone::
 
-    cd $HOME ;
+    cd $HOME
     git clone http://bitbucket.org/simoncblyth/opticks  
-    git clone http://github.com/simoncblyth/opticks  
 
-For commit access to *opticks*, you need to use SSH::
+To update an existing clone::
+
+    cd ~/opticks
+    git remote -v   # should list bitbucket.org urls 
+    git status
+    git pull 
+
+Setup opticks by copying *~/opticks/example.opticks_config* to your 
+HOME directory and customizing it as instructed therein::
+
+    cp ~/opticks/example.opticks_config ~/.opticks_config
+    vi ~/.opticks_config    # adapt PREFIX paths 
+    echo "source ~/.opticks_config" >> .bashrc 
+
+Then after starting a new bash session you can proceed with::
+
+    opticks-info   # check bash hookup 
+    opticks-full   # download and build externals and opticks
+
+If you have commit access to *opticks*, you need to use SSH::
 
     cd $HOME ;
     git clone git@bitbucket.org:simoncblyth/opticks.git
-
-
-Source opticks from your bash shell profile with::
-
-    export LOCAL_BASE=/usr/local       # folder beneath which opticks will be installed
-    export OPTICKS_HOME=$HOME/opticks
-    opticks-(){  [ -r $OPTICKS_HOME/opticks.bash ] && . $OPTICKS_HOME/opticks.bash && opticks-env $* ; } 
-    opticks-
-    o(){ cd $OPTICKS_HOME ; hg st ; } 
-
-
 
 

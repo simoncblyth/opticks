@@ -573,7 +573,7 @@ optix
 EOP
 }
 
-opticks-optionals(){ 
+opticks-foreign(){ 
    cat << EOL
 boost
 clhep
@@ -616,7 +616,7 @@ EOI
 }
 
 opticks-externals-install(){ opticks-installer- $(opticks-externals) ; }
-opticks-optionals-install(){ opticks-installer- $(opticks-optionals) ; }
+opticks-foreign-install(){ opticks-installer- $(opticks-foreign) ; }
 opticks-possibles-install(){ opticks-installer- $(opticks-possibles) ; }
 
 opticks-installer-(){ 
@@ -649,7 +649,7 @@ opticks-externals-status(){  echo $FUNCNAME ; opticks-externals | opticks-ext-st
 
 
 opticks-preqs-pc(){      opticks-pc- $(opticks-preqs) ; }
-opticks-optionals-pc(){  opticks-pc- $(opticks-optionals) ; }
+opticks-foreign-pc(){  opticks-pc- $(opticks-foreign) ; }
 
 opticks-pc-(){ 
     echo $FUNCNAME 
@@ -676,8 +676,8 @@ opticks-externals-setup(){   echo === $FUNCNAME ; opticks-externals | opticks-ex
 opticks-preqs-setup(){       echo === $FUNCNAME ; opticks-preqs     | opticks-ext-setup ; }
 
 
-opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | opticks-ext-url ; }
-opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | opticks-ext-dist ; }
+opticks-foreign-url(){     echo $FUNCNAME ; opticks-foreign | opticks-ext-url ; }
+opticks-foreign-dist(){    echo $FUNCNAME ; opticks-foreign | opticks-ext-dist ; }
 
 opticks-possibles-url(){     echo $FUNCNAME ; opticks-possibles | opticks-ext-url ; }
 opticks-possibles-dist(){    echo $FUNCNAME ; opticks-possibles | opticks-ext-dist ; }
@@ -884,15 +884,22 @@ opticks-setup-generate(){
     local msg="=== $FUNCNAME :"
     local rc
 
-    opticks-check-geant4 
+    : check Geant4 is on CMAKE_PREFIX_PATH 
+    opticks-check-geant4    
     rc=$?
     [ ! $rc -eq 0 ] && return $rc
 
-
-    opticks-setup-check-mandatory-buildenv
+    : check build tools on PATH
+    opticks-check-tools
     rc=$?
     [ ! $rc -eq 0 ] && return $rc
 
+    : check envvars OPTICKS_PREFIX, OPTICKS_OPTIX_PREFIX, OPTICKS_CUDA_PREFIX, OPTICKS_COMPUTE_CAPABILITY
+    opticks-setup-check-mandatory-buildenv 
+    rc=$?
+    [ ! $rc -eq 0 ] && return $rc
+
+    : check PREFIX envvars have corresponding directories 
     opticks-setup-check-mandatory-dir
     rc=$?
     [ ! $rc -eq 0 ] && return $rc
@@ -1347,6 +1354,24 @@ opticks-check-geant4(){
 }
 
 
+opticks-tools(){ cat << EOT
+cmake
+git
+make
+EOT
+}
+
+opticks-check-tools(){
+   local msg="=== $FUNCNAME :"
+   local tool
+   for tool in $(opticks-tools) ; do 
+       [ ! -x "$(which $tool 2>/dev/null)" ] && echo $msg missing $tool && return 1  
+   done 
+   return 0 
+}
+
+
+
 opticks-prepend-prefix-notes(){ cat << EON
 
 opticks-prepend-prefix
@@ -1475,9 +1500,9 @@ opticks-full-externals()
     rc=$?
     [ $rc -ne 0 ] && return $rc
 
-    echo $msg config-ing the optionals
-    opticks-optionals
-    opticks-optionals-pc
+    echo $msg config-ing the foreign
+    opticks-foreign
+    opticks-foreign-pc
     rc=$?
     [ $rc -ne 0 ] && return $rc
 
@@ -1649,8 +1674,8 @@ opticks-info(){
    opticks-env-info
    opticks-externals-url
    opticks-externals-dist
-   opticks-optionals-url
-   opticks-optionals-dist
+   opticks-foreign-url
+   opticks-foreign-dist
 }
 
 
@@ -2555,7 +2580,7 @@ opticks-rpath(){ grep RPATH $(opticks-home)/examples/*/CMakeLists.txt ; }
 opticks-bcm-deploy-(){  find . -name CMakeLists.txt -exec grep -l bcm_deploy {} \; ; }
 opticks-bcm-deploy(){ vi $(opticks-bcm-deploy-) ; }
 
-opticks-deps(){ CMakeLists.py $* ; }
+opticks-deps(){   $(opticks-home)/bin/CMakeLists.py $* ; }
 opticks-deps-vi(){ vi $(opticks-home)/bin/CMakeLists.py ; }
 
 opticks-executables(){  find . -type f -perm +111 -print | grep -v dylib | grep -v a.out | grep -v .bin | grep -v .cmake | grep -v opticks-config ; }

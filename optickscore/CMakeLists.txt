@@ -165,7 +165,7 @@ add_custom_command(
    OUTPUT 
          ${IPH}
    COMMAND 
-          ${ANADIR}/enum.py ${HPH} --quiet --inipath ${IPH}
+          ${ANADIR}/enum_.py ${HPH} --quiet --inipath ${IPH}
    DEPENDS 
          ${HPH}
 )
@@ -181,7 +181,7 @@ add_custom_command(
    OUTPUT 
          ${IGS}
    COMMAND 
-          ${ANADIR}/enum.py ${HGS} --quiet --simple --inipath ${IGS}
+          ${ANADIR}/enum_.py ${HGS} --quiet --simple --inipath ${IGS}
    DEPENDS 
          ${HGS}
 )

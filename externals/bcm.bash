@@ -189,6 +189,8 @@ bcm-get(){
        git clone $(bcm-url)
    fi 
    cd $iwd
+   [ ! -f "$(bcm-dir)/CMakeLists.txt" ] && return 1 
+   return 0 
 }
 
 bcm-nuclear(){ cd $(bcm-prefix) && rm -rf bcm ; }
@@ -221,9 +223,17 @@ bcm-make(){
 }
 
 bcm--(){
+  local msg="=== $FUNCNAME : "
   bcm-get 
+  [ $? -ne 0 ] && echo $msg get FAIL && return 1 
+
   bcm-cmake
+  [ $? -ne 0 ] && echo $msg cmake FAIL && return 2
+
   bcm-make install
+  [ $? -ne 0 ] && echo $msg install FAIL && return 3
+
+  return 0 
 }
 
 
