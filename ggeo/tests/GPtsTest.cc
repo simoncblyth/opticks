@@ -81,7 +81,7 @@ struct testGPts
 
     void init()
     {
-        assert( parts ); 
+        //assert( parts ); 
         assert( parts2 ); 
         parts2->setBndLib(bndlib); 
         parts2->close(); 
@@ -89,20 +89,28 @@ struct testGPts
 
     void dump()
     {
-        parts->dump("parts"); 
+        if(parts)  parts->dump("parts"); 
         parts2->dump("parts2"); 
     }
     void save()
     {
         LOG(info) << path ; 
-        parts->save(path.c_str(), "parts"); 
+        if(parts)  parts->save(path.c_str(), "parts"); 
         parts2->save(path.c_str(), "parts2"); 
     }
 
     void compare()
     {
-        rc = GParts::Compare( parts, parts2, false );
-        if( rc > 0)  GParts::Compare( parts, parts2, true ); 
+        if(parts && parts2)
+        {    
+            rc = GParts::Compare( parts, parts2, false );
+            if( rc > 0)  GParts::Compare( parts, parts2, true ); 
+        }
+        else
+        {
+            rc = -1 ; 
+            LOG(fatal) << " cannot compare " ;    
+        }         
 
         LOG(info) 
             << " mm.index " << mm->getIndex()
@@ -148,6 +156,7 @@ int main(int argc, char** argv)
     int rc(0) ;  
     for(unsigned i=i0 ; i < i1 ; i++)
     {
+        LOG(info) << "testing mm " << i ;    
         GMergedMesh* mm = geolib->getMergedMesh(i);
         testGPts t(meshlib, bndlib, mm); 
         rc += t.rc ; 
