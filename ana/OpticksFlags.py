@@ -20,8 +20,8 @@ def makedirs_(path):
     return path 
 
 expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
-json_load_ = lambda path:json.load(file(expand_(path)))
-json_save_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"))
+json_load_ = lambda path:json.load(open(expand_(path), "r"))
+json_save_ = lambda path, d:json.dump(d, open(makedirs_(expand_(path)),"w"))
 
 
 
@@ -62,7 +62,7 @@ class OpticksFlags(object):
  
     def __init__(self, path):
         path = os.path.expandvars(path)
-        lines = file(path).readlines() 
+        lines = open(path, "r").readlines() 
         self.flag2abbrev = self.Flag2Abbrev(lines)
 
 if __name__ == '__main__':

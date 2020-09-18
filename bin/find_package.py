@@ -46,9 +46,9 @@ years since people have been asking for this.
 
 
 """
-from findpkg import Main
+import os, findpkg 
 
 if __name__ == '__main__':
-    Main(default_mode="cmake")
+    findpkg.Main(default_mode="cmake")
 
 

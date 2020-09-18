@@ -62,7 +62,7 @@ class Enum(dict):
     def parse_simple(self, path):
         """
         """
-        lines = map(str.strip,file(path).readlines())
+        lines = list(map(str.strip,open(path,"r").readlines()))
         for line in lines:
             lm = self.lptn.match(line)
             if not lm: continue
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     pass
     if not args.inipath is None:
         log.info("writing ini to inipath %s " % args.inipath)
-        file(args.inipath, "w").write(d.ini)
+        open(args.inipath, "w").write(d.ini)
     pass 
 
 

@@ -12,13 +12,16 @@ int main(int argc, char** argv)
     IntersectSDF is(dir, epsilon) ; 
     LOG(info) << is.desc() ; 
 
+    unsigned rc = is.getRC() ; 
+    LOG(info) << " rc " << rc ; 
+
+    //assert( rc == 0 ); 
 /*
     NPY<float>* tr = NPY<float>::make_identity_transforms(10); 
     tr->fillIndexFlat(); 
     IntersectSDF::FixColumnFour(tr);      
     tr->dump(); 
 */
-
     return 0 ; 
 }
 

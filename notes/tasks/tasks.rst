@@ -268,6 +268,8 @@ standard Opticks subset.
 
 Only the small portion of G4OpBoundaryProcess surface types needed for JUNO are ported.
 
+* :doc:`G4OpBoundaryProcess_groundfrontpainted`
+
 
 **C5** : find a way to handle G4Torus which doesnt kill performance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

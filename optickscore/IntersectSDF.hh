@@ -18,6 +18,7 @@ class OKCORE_API IntersectSDF {
         static unsigned FixColumnFour( NPY<float>* a );
     public:
         IntersectSDF(const char* dir, float epsilon=4e-4); 
+        unsigned getRC() const ; 
         void select_intersect_tranforms();
         void select_intersect_tranforms(std::set<unsigned>& tpx, unsigned geocode);
         void get_local_intersects(std::vector<glm::vec4>& lpos, unsigned transform_index);
@@ -31,5 +32,6 @@ class OKCORE_API IntersectSDF {
         NPY<unsigned>*      m_identity ; 
         unsigned            m_fixcount ; 
         NPY<float>*         m_itransforms ; 
+        unsigned            m_rc ; 
 
 }; 

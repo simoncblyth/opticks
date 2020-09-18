@@ -21,7 +21,7 @@ whereas it should in principal be useable prior to installing Opticks
 
 """
 import os, re, logging, argparse, sys, json, platform
-import shutil, tempfile, commands, stat, glob, fnmatch
+import shutil, tempfile, stat, glob, fnmatch
 
 try:
     from commands import getstatusoutput 
@@ -39,9 +39,9 @@ def makedirs_(path):
     return path 
 
 expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
-json_load_ = lambda path:json.load(file(expand_(path)))
-json_save_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"))
-json_save_pretty_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"), sort_keys=True, indent=4, separators=(',', ': '))
+json_load_ = lambda path:json.load(open(expand_(path)))
+json_save_ = lambda path, d:json.dump(d, open(makedirs_(expand_(path)),"w"))
+json_save_pretty_ = lambda path, d:json.dump(d, open(makedirs_(expand_(path)),"w"), sort_keys=True, indent=4, separators=(',', ': '))
 
 
 log = logging.getLogger(__name__)
@@ -218,9 +218,10 @@ class DirectPkg(odict):
         pass    
         outpath = path.replace(".json",".out")
         log.debug("Save out %s " % outpath )
-        file(outpath, "w").write(d["out"])
+        open(outpath, "w").write(d["out"])
         d["out"] = outpath
-        log.debug("Save json %s " % path )
+        log.info("Save json %s " % path )
+        log.info(" d %s " % d )
         json_save_pretty_(path, d)
 
     @classmethod
@@ -229,7 +230,7 @@ class DirectPkg(odict):
         outpath = path.replace(".json",".out")
         log.debug("Load %s " % path )
         d = json_load_(path)
-        d["out"] = file(outpath, "r").read()
+        d["out"] = open(outpath, "r").read()
         return d
 
     name = property(lambda self:self.get("name",""))
@@ -362,7 +363,7 @@ class Pkg(odict):
         d["path"] = path 
         d["name"] = name
 
-        for line in file(path, "r").readlines():
+        for line in open(path, "r").readlines():
             m = cls.VAR.match(line)
             if not m: continue
             var = m.groupdict()["var"]
@@ -467,7 +468,7 @@ class Find(object):
         args = parser.parse_args()
         fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
         logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
-        args.lnames = map(lambda _:_.lower(), args.names)
+        args.lnames = list(map(lambda _:_.lower(), args.names))
         if args.first:
            args.index = 0 
         pass
@@ -489,9 +490,9 @@ class Find(object):
 
     def select(self, args):
         if len(args.names) > 0 and args.casesensitive:
-            pkgs = filter(lambda pkg:pkg.name in args.names, self.pkgs)
+            pkgs = list(filter(lambda pkg:pkg.name in args.names, self.pkgs))
         elif len(args.lnames) > 0:
-            pkgs = filter(lambda pkg:pkg.name.lower() in args.lnames, self.pkgs)
+            pkgs = list(filter(lambda pkg:pkg.name.lower() in args.lnames, self.pkgs))
         else:
             pkgs = self.pkgs
         pass
@@ -725,10 +726,10 @@ class FindCMakePkgDirect(Find):
 
             cm = CMakeLists(pkg=name, opts=opts)
             go = Script()
-            file("CMakeLists.txt", "w").write(str(cm))
+            open("CMakeLists.txt", "w").write(str(cm))
 
             sh = "./go.sh"
-            file(sh, "w").write(str(go))
+            open(sh, "w").write(str(go))
             mode = os.stat(sh).st_mode
             mode |= (mode & 0o444) >> 2   
             os.chmod(sh, mode)
@@ -857,10 +858,23 @@ class Main(object):
         cm_pkgs = fcm.select(args)
         return cm_pkgs
 
+    def setup_home(self): 
+        """
+        Provide a default OPTICKS_HOME if one is not in environment
+        """
+        if "OPTICKS_HOME" in os.environ:
+            log.info("Using OPTICKS_HOME from os.environ ")
+        else:
+            log.info("Setting os.environ OPTICKS_HOME based on module __file__ ") 
+            os.environ["OPTICKS_HOME"] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        pass
+        log.info("OPTICKS_HOME : %s " % os.environ["OPTICKS_HOME"] )
+
     def __init__(self, default_mode="cmake"):
 
         args = Find.parse_args(__doc__, default_mode=default_mode)
         self.args = args
+        self.setup_home()
 
         rc = 0 
         if args.mode in ["pc", "cmake"]:

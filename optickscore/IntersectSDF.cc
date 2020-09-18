@@ -33,6 +33,10 @@ float IntersectSDF::sdf(unsigned geocode, const glm::vec3& lpos )
 
 const plog::Severity IntersectSDF::LEVEL = PLOG::EnvLevel("IntersectSDF", "INFO"); 
 
+
+unsigned IntersectSDF::getRC() const { return m_rc ; }
+
+
 IntersectSDF::IntersectSDF(const char* dir, float epsilon)
     :
     m_dir( strdup(dir) ),
@@ -40,10 +44,16 @@ IntersectSDF::IntersectSDF(const char* dir, float epsilon)
     m_pixels(     NPY<unsigned char>::load(m_dir, "pixels.npy" ) ),
     m_posi(       NPY<float>::load(m_dir, "posi.npy" ) ),
     m_transforms( NPY<float>::load(m_dir, "transforms.npy" ) ),
-    m_identity(   ExtractTransformIdentity(m_transforms)),
-    m_fixcount(   FixColumnFour(m_transforms)),
-    m_itransforms(NPY<float>::make_inverted_transforms(m_transforms))
+    m_identity(   m_transforms ? ExtractTransformIdentity(m_transforms) : NULL),
+    m_fixcount(   m_transforms ? FixColumnFour(m_transforms) : 0 ),
+    m_itransforms( m_transforms ? NPY<float>::make_inverted_transforms(m_transforms) : NULL ), 
+    m_rc( m_posi && m_transforms && m_identity && m_itransforms ? 0 : 1 )
 {
+    if( m_rc > 0 )
+    {
+        LOG(fatal) << " failed to load arrays from dir " << m_dir ;   
+        return ; 
+    }
     select_intersect_tranforms();
 }
 
@@ -52,12 +62,12 @@ std::string IntersectSDF::desc() const
     std::stringstream ss ; 
     ss << " IntersectSDF "
        << " dir " << m_dir 
-       << " pixels " << m_pixels->getShapeString() 
-       << " posi " << m_posi->getShapeString() 
-       << " transforms " << m_transforms->getShapeString() 
-       << " identity " << m_identity->getShapeString() 
+       << " pixels " << ( m_pixels ? m_pixels->getShapeString() : "-" ) 
+       << " posi " << ( m_posi ? m_posi->getShapeString() : "-" )
+       << " transforms " << ( m_transforms ? m_transforms->getShapeString() : "-" )
+       << " identity " << ( m_identity ? m_identity->getShapeString() : "-" )
        << " fixcount " << m_fixcount 
-       << " itransforms " << m_itransforms->getShapeString() 
+       << " itransforms " << ( m_itransforms ? m_itransforms->getShapeString() : "-" )
        ;
     return ss.str(); 
 }
