@@ -346,6 +346,10 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
       }  while (N > NumberOfPhotons);
 
 
+      // Note that N and NumberOfPhotons are never used below.
+      // The point of the above rejection sampling loop is to come up with a 
+      // fraction that fulfils the theoretical constraint. 
+
 
       float midVelocity = cs.preVelocity + fraction*( cs.postVelocity - cs.preVelocity )*0.5f ;  
 

@@ -1036,7 +1036,7 @@ void OpticksCfg<Listener>::init()
    char rngmax[256];
    snprintf(rngmax,256, 
 "Maximum number of photons (in millions) that can be generated/propagated as limited by the number of pre-persisted curand streams. "
-"Value must match envvar CUDAWRAP_RNG_MAX and corresponding pre-cooked seeds, see cudawrap- for details. "
+"See opticks-full/opticks-prepare-installation/cudarap-prepare-installation for details. "
 "Default %d ", m_rngmax);
 
    m_desc.add_options()

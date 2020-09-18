@@ -26,6 +26,67 @@ Geant4
 
 
 
+
+GDML auxiliary
+---------------
+
+* https://github.com/hanswenzel/G4OpticksTest/blob/master/gdml/G4Opticks.gdml
+
+::
+
+
+    166         <volume name="Obj">
+    167             <materialref ref="LS0x4b61c70"/>
+    168             <solidref ref="Obj"/>
+    169             <colorref ref="blue"/>
+    170             <auxiliary auxtype="StepLimit" auxvalue="0.4" auxunit="mm"/>
+    171             <auxiliary auxtype="SensDet" auxvalue="lArTPC"/>
+    172             <physvol name="Det">
+    173                 <volumeref ref="Det"/>
+    174                 <position name="Det" unit="mm" x="0" y="0" z="100"/>
+    175             </physvol>
+    176         </volume>
+
+
+g4-cls G4GDMLWriteStructure::
+
+    95    std::map<const G4LogicalVolume*, G4GDMLAuxListType> auxmap;
+
+    580 void
+    581 G4GDMLWriteStructure::AddVolumeAuxiliary(G4GDMLAuxStructType myaux,
+    582                                          const G4LogicalVolume* const lvol)
+    583 {
+    584   std::map<const G4LogicalVolume*,
+    585            G4GDMLAuxListType>::iterator pos = auxmap.find(lvol);
+    586 
+    587   if (pos == auxmap.end())  { auxmap[lvol] = G4GDMLAuxListType(); }
+    588 
+    589   auxmap[lvol].push_back(myaux);
+    590 }
+
+g4-cls G4GDMLAuxStructType::
+
+    042 struct G4GDMLAuxStructType
+     43 {
+     44    G4String type;
+     45    G4String value;
+     46    G4String unit;
+     47    std::vector<G4GDMLAuxStructType>* auxList;
+     48 };
+     49 
+     50 typedef std::vector<G4GDMLAuxStructType> G4GDMLAuxListType;
+
+g4-cls G4GDMLParser::
+
+    119    inline G4VPhysicalVolume* GetWorldVolume(const G4String& setupName="Default") const;
+    120    inline G4GDMLAuxListType GetVolumeAuxiliaryInformation(G4LogicalVolume* lvol) const;
+    121    inline const G4GDMLAuxMapType* GetAuxMap() const;
+    122    inline const G4GDMLAuxListType* GetAuxList() const;
+    123    inline void AddAuxiliary(G4GDMLAuxStructType myaux);
+
+
+
+
 Breakpoints 
 -------------
 
