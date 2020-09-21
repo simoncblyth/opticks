@@ -11,12 +11,26 @@ intersect_sdf_test.py
 
 """
 import numpy as np
-import os 
+import os, logging, argparse
+log = logging.getLogger(__name__)
 
 NAME = os.path.basename(os.path.abspath("."))    
-TMPDIR = os.path.expandvars("/tmp/$USER/opticks/%s" % NAME ) 
-load_ = lambda name:np.load( os.path.join(TMPDIR, "%s.npy" % name)) 
- 
+
+def parse_args(doc, tmpdir=os.path.expandvars("/tmp/$USER/opticks/%s" % NAME ), size=5., epsilon=4e-4):
+    parser = argparse.ArgumentParser(doc)
+    parser.add_argument( "--tmpdir", default=tmpdir, help="tmpdir from which to load intersect arrays. Default %(default)s" ) 
+    parser.add_argument("--size", default=size, type=float, help="geometry size. Default %(default)s")
+    parser.add_argument("--epsilon", default=epsilon, type=float, help="geometry epsilon. Default %(default)s")
+    parser.add_argument( "--level", default="info", help="logging level. Default %(default)s" ) 
+    args = parser.parse_args()
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+    args.path_ = lambda name:os.path.join(args.tmpdir, "%s.npy" % name)
+    args.load_ = lambda name:np.load(args.path_(name))
+    np.set_printoptions(suppress=True)
+    return args
+
+
 BOX = 1
 SPHERE = 2
 GNAME =  {BOX:"Box", SPHERE:"Sphere"}
@@ -92,10 +106,12 @@ class IntersectSDFTest(object):
         self.sz = sz
         self.epsilon = epsilon
 
-        pixels = load_("pixels")         ## (height,width,4) image pixels
-        posi = load_("posi")             ## (height,width,4) pixel intersect position and distance (float4)
-        transforms = load_("transforms") ## (num_tran,4,4)
+        log.info("loading from args.tmpdir : %s " % args.tmpdir)
+        pixels = args.load_("pixels")         ## (height,width,4) image pixels
+        posi = args.load_("posi")             ## (height,width,4) pixel intersect position and distance (float4)
+        transforms = args.load_("transforms") ## (num_tran,4,4)
 
+       
         print("pixels %s : (height,width,uchar4) : image pixels  " % repr(pixels.shape) )
         print("posi   %s : (height,width,float4) : pixel intersect position " % repr(posi.shape) )
         print("transforms %s : (num_tran,float4x4) " % repr(transforms.shape) )
@@ -168,23 +184,26 @@ class IntersectSDFTest(object):
         ist = self 
         tpx = ist.select_intersect_transforms(geocode) 
 
+        lpos_tot = 0 
+
         dt = np.zeros( [len(tpx), 2] )
         for i, transform_index in enumerate(tpx):
 
             lpos = ist.get_local_intersects(transform_index)
+            lpos_tot += len(lpos)
             delta = sdf(geocode, lpos, self.sz)
 
             dt[i,0] = delta.min()
             dt[i,1] = delta.max()
 
-            print(" %6s transform_index %3d  sdf delta min/max %f %f  delta_shape %s  " % (GNAME[geocode], transform_index, dt[i,0], dt[i,1], str(delta.shape) ))
+            log.debug(" %6s transform_index %3d  sdf delta min/max %f %f  delta_shape %s  " % (GNAME[geocode], transform_index, dt[i,0], dt[i,1], str(delta.shape) ))
         pass
 
         dtmi = dt.min()
         dtmx = dt.max()
         epsilon = self.epsilon 
 
-        print(" %6s sdf dt min/max %f %f  epsilon %f dt_shape %s  " % (GNAME[geocode], dtmi, dtmx, epsilon, str(dt.shape) ))
+        log.info(" %6s sdf dt min/max %f %f  lpos_tot %d epsilon %f dt_shape %s  " % (GNAME[geocode], dtmi, dtmx, lpos_tot, epsilon, str(dt.shape) ))
         assert np.abs(dtmi) < epsilon, ( dtmi, epsilon )
         assert np.abs(dtmx) < epsilon, ( dtmx, epsilon )
         return dt 
@@ -192,12 +211,12 @@ class IntersectSDFTest(object):
 
 
 if __name__ == '__main__':
-    np.set_printoptions(suppress=True)
+    args = parse_args(__doc__)
 
     ist = IntersectSDFTest(sz=5., epsilon=4e-4)  
     ist.check(BOX)
     ist.check(SPHERE)
-    print("TMPDIR %s " % TMPDIR) 
+    log.info("args.tmpdir %s " % args.tmpdir) 
 
     posi = ist.posi
 

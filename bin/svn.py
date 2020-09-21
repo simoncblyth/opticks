@@ -296,7 +296,7 @@ class WC(object):
             d = m.groupdict()
             d["ldig"] = args.ldig
             d["check"] = args.check 
-            assert d["st"] in ["M","A", "?", "??"]
+            assert d["st"] in ["M","MM","A", "?", "??"], d["st"]
 
             if d["st"] == "??": d["st"] = "?"   # bring git into line
 

@@ -10,8 +10,15 @@
 #include "NSphere.hpp"
 
 /**
+IntersectSDF
+==============
 
-cf examples/UseOptiXGeometryInstancedOCtx/intersect_sdf_test.py 
+This does in C++ essentially the same as the python
+examples/UseOptiXGeometryInstancedOCtx/intersect_sdf_test.py 
+
+TODO:
+
+* find way to generalize this to typical Opticks CSG geometries
 
 **/
 
@@ -31,11 +38,15 @@ float IntersectSDF::sdf(unsigned geocode, const glm::vec3& lpos )
     return sd ; 
 }
 
-const plog::Severity IntersectSDF::LEVEL = PLOG::EnvLevel("IntersectSDF", "INFO"); 
+const plog::Severity IntersectSDF::LEVEL = PLOG::EnvLevel("IntersectSDF", "DEBUG"); 
 
 
 unsigned IntersectSDF::getRC() const { return m_rc ; }
 
+/**
+1. NB: transform identity integer is stuffed into spare [0,3] (top-right) slot in the 4x4 transform.
+2. FixColumnFour sets it to [0,0,0,1] clearing the identity 
+**/
 
 IntersectSDF::IntersectSDF(const char* dir, float epsilon)
     :
@@ -54,7 +65,7 @@ IntersectSDF::IntersectSDF(const char* dir, float epsilon)
         LOG(fatal) << " failed to load arrays from dir " << m_dir ;   
         return ; 
     }
-    select_intersect_tranforms();
+    check_lpos_sdf();
 }
 
 std::string IntersectSDF::desc() const 
@@ -116,7 +127,21 @@ unsigned IntersectSDF::FixColumnFour( NPY<float>* a ) // static
     return count ; 
 }
 
-void IntersectSDF::select_intersect_tranforms()
+
+/**
+IntersectSDF::check_lpos_sdf
+---------------------------------------------
+
+1. for each shape select all unique transform indices.
+2. for each transform index get the local frame intersect coordinates
+3. for each local frame intersect coordinate compute the sdf giving 
+   the distance to the surface, which is expected to be within epsilon of zero
+4. record the min/max values of the sdf distance for each transform and geocode
+
+**/
+
+
+void IntersectSDF::check_lpos_sdf()
 {
     typedef std::set<unsigned>::const_iterator IT ; 
     for(unsigned geocode=1 ;  geocode < 3 ; geocode++)
@@ -154,7 +179,7 @@ void IntersectSDF::select_intersect_tranforms()
                  if( sd > t_mimx.y ) t_mimx.y = sd ; 
 
             }
-            LOG(info) 
+            LOG(LEVEL) 
                 << " geocode " << geocode  
                 << " transform_index " << transform_index 
                 << " lpos " << lpos.size() 
@@ -174,6 +199,15 @@ void IntersectSDF::select_intersect_tranforms()
     }
 }
 
+/**
+IntersectSDF::select_intersect_tranforms
+-----------------------------------------
+
+Loops over all pixels collecting all unique transform indices *tpx*
+with the argument geocode, ie with box or sphere shapes.
+
+**/
+
 void IntersectSDF::select_intersect_tranforms(std::set<unsigned>& tpx, unsigned geocode)
 {
     assert( m_posi->getDimensions() == 3 ); 
@@ -187,8 +221,8 @@ void IntersectSDF::select_intersect_tranforms(std::set<unsigned>& tpx, unsigned 
     for(unsigned j=0 ; j < nj ; j++){
 
         unsigned pxid = m_posi->getUInt(i,j,3,0) ; 
-        unsigned gc = pxid >> 24 ; 
-        unsigned ti = pxid & 0xffffff ; 
+        unsigned gc = pxid >> 24 ;       // geocode
+        unsigned ti = pxid & 0xffffff ;  // transforms index
         bool select = gc == geocode  ;  
         if(!select) continue ;   
         
@@ -221,6 +255,21 @@ void IntersectSDF::select_intersect_tranforms(std::set<unsigned>& tpx, unsigned 
          ; 
 }
 
+/**
+IntersectSDF::get_local_intersects
+-----------------------------------
+
+Return in lpos the local 3d coordinates of pixels with the 
+provided transform_index corresponding to all pixels for a particular instance.
+
+*posi* array contains 3d position (global frame) and identity for every pixel 
+in a pixel raster. This selects pixels with the argument transform_index
+and transforms teh global positions for those pixels into local frame.
+
+See examples/UseOptiXGeometryInstancedOCtx
+
+**/
+
 void IntersectSDF::get_local_intersects(std::vector<glm::vec4>& lpos, unsigned transform_index)
 {
     lpos.clear(); 
@@ -243,8 +292,8 @@ void IntersectSDF::get_local_intersects(std::vector<glm::vec4>& lpos, unsigned t
     for(unsigned j=0 ; j < nj ; j++){
 
         unsigned pxid = m_posi->getUInt(i,j,3,0) ; 
-        unsigned gc = pxid >> 24 ; 
-        unsigned ti = pxid & 0xffffff ; 
+        unsigned gc = pxid >> 24 ;         // geocode for pixel
+        unsigned ti = pxid & 0xffffff ;    // transform index for pixel
         bool select = ti == transform_index  ;  
         if(!select) continue ;   
 
@@ -252,9 +301,9 @@ void IntersectSDF::get_local_intersects(std::vector<glm::vec4>& lpos, unsigned t
         count++ ;
 
         glm::vec4 posi = m_posi->getQuad(i,j,0); 
-        posi.w = 1.f ;  
+        posi.w = 1.f ;      // scrub the identity 
         
-        glm::vec4 lpo = itr * posi ; 
+        glm::vec4 lpo = itr * posi ;   // transform global 3d coordinate into local frame 
         LOG(debug) 
             << " posi " << glm::to_string( posi )  
             << " lpo " << glm::to_string( lpo )
