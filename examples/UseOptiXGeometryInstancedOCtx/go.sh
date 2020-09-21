@@ -26,17 +26,22 @@ om-
 sdir=$(pwd)
 name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/$name/build 
+msg="=== $0 :"
 
-echo bdir $bdir name $name
+echo $msg bdir $bdir name $name
 
+reconfig=0
 
-remake=0
+# Note that on macOS some auto (or reboot) cleanup seems to delete 
+# all files within /tmp directories without deleting the directories
+# so check for Makefile existance, not bdir, to trigger reconfig.
 
-if [ $remake -eq 1 -o ! -d $bdir ]; then  
+if [ $reconfig -eq 1 -o ! -f "$bdir/Makefile" ]; then  
     rm -rf $bdir && mkdir -p $bdir 
     cd $bdir && pwd 
     om-cmake $sdir
 else
+    echo $msg not reconfig : proceed to bdir $bdir
     cd $bdir && pwd 
 fi 
 

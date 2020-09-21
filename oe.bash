@@ -25,6 +25,11 @@ sets up the paths.
 * All python scripts used in testing will need to be installed, 
   already ?
 
+* Most of the below functions are no longer in active use  (?)
+  They where used to assist with development of $OPTICKS_PREFIX/bin/opticks-setup.sh  
+  and its generation
+
+
 EOU
 
 }

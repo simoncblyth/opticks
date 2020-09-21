@@ -316,13 +316,20 @@ UseOptiXGeometryInstancedOCtx
     Perhaps problem with the transforms/scaling/bbox ? 
      
 
-
-
-
 UseOptiXGeometryOCtx
     start from UseOptiXGeometry to investigate why getting problem with instanced spheres in OptiX 6.5
     Creates PPM of a single normal-shaded sphere or box picked via argument sphere.cu or box.cu 
 
 UseOptiXGeometryInstancedStandalone
     creates a jumble of thousands of randomly oriented boxes, colorfully normal-shaded  
+
+
+UseG4NoOpticks
+    used to develop a new FindG4.cmake that works with both Geant4 1042 and 1062, 
+    does not use Opticks at all : requires BCM and Geant4 to be installed 
+    and provided on CMAKE_PREFIX_PATH 
+ 
+UseUseG4NoOpticks    
+    paired with UseG4NoOpticks, creating an executable that uses the lib from UseG4NoOpticks
+
 
