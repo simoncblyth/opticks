@@ -314,6 +314,11 @@ UseOptiXGeometryInstancedOCtx
     on Linux/OptiX 6.5 the spheres are appearing as big boxes but there 
     is no problem with the sphere implementation when used not in an assembly.
     Perhaps problem with the transforms/scaling/bbox ? 
+
+    ISSUE HAS DISAPPEARED
+
+    Returning to this issue after implementing IntersectSDF to automatically 
+    test for such problems find that the problem is no longer happening. 
      
 
 UseOptiXGeometryOCtx

@@ -41,12 +41,14 @@ make
 make install   
 
 
+#ppm=/tmp/SPPMTest.ppm
+#ppm=$HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
+ppm=$HOME/opticks_refs/Earth_Albedo_8192_4096_ImageNPYTest_annotated.ppm
+
+
 runline(){ cat << EOL | grep -v \#
 #lldb_ $1
-#$1 $HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
-#$1 /tmp/SPPMTest.ppm
-#$1 /tmp/SPPMTest2.ppm     
-$1 /tmp/SPPMTest2.ppm --latlon 50.8919,-1.4483 --tanyfov 0.2
+$1 $ppm --latlon 50.8919,-1.4483 --tanyfov 0.2
 EOL
 }
 
@@ -54,7 +56,6 @@ cmd=$(runline $name)
 echo $cmd
 eval $cmd
 
-## see ImageNPYTest for creation of /tmp/SPPMTest2.ppm 
  
 [ ! $? -eq 0 ] && echo runtime error && exit 1
 

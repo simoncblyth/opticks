@@ -7,38 +7,46 @@
 ImageNPYTest
 =============
 
+1. loads a ppm image from file "*.ppm" 
+2. changes pixel colors to give: red border, green midline(equator) and blue quadlines.
+3. saved the changed image to file  name "*_ImageNPYTest_annoted.ppm"
+
 See ImageNPYTest.py for imshow plotting 
 
+Example::
 
-::
+    epsilon:tests blyth$ ImageNPYTest $HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
+    2020-09-22 12:12:26.961 INFO  [27462190] [main@95]  load ipath /Users/blyth/opticks_refs/Earth_Albedo_8192_4096.ppm
+    2020-09-22 12:12:26.961 INFO  [27462190] [*test_LoadPPM@51]  path /Users/blyth/opticks_refs/Earth_Albedo_8192_4096.ppm yflip 0 ncomp 3 config add_border,add_midline,add_quadline
+    2020-09-22 12:12:28.989 INFO  [27462190] [*test_LoadPPM@62]  array 4096,8192,3
+    2020-09-22 12:12:28.989 INFO  [27462190] [*test_LoadPPM@65] saving array to /Users/blyth/opticks_refs/Earth_Albedo_8192_4096.npy
+    2020-09-22 12:12:29.125 INFO  [27462190] [main@100]  save to opath /Users/blyth/opticks_refs/Earth_Albedo_8192_4096_ImageNPYTest_annotated.ppm
 
-    (base) epsilon:npy blyth$ ImageNPYTest $HOME/opticks_refs/Earth_Albedo_8192_4096.ppm
-    2020-08-19 13:56:33.125 INFO  [9900421] [main@34] ImageNPY::LoadPPM from /Users/blyth/opticks_refs/Earth_Albedo_8192_4096.ppm
-    2020-08-19 13:56:33.126 INFO  [9900421] [*ImageNPY::LoadPPM@38]  path /Users/blyth/opticks_refs/Earth_Albedo_8192_4096.ppm width 8192 height 4096 mode 6 bits 255
-    2020-08-19 13:56:34.530 INFO  [9900421] [main@38]  array 4096,8192,3
-    2020-08-19 13:56:34.531 INFO  [9900421] [main@41] saving array to /Users/blyth/opticks_refs/Earth_Albedo_8192_4096.npy
-    (base) epsilon:npy blyth$ 
-    (base) epsilon:npy blyth$ du -h /Users/blyth/opticks_refs/Earth_Albedo_8192_4096*
+    epsilon:tests blyth$ du -h /Users/blyth/opticks_refs/Earth_Albedo_8192_4096*
     4.2M	/Users/blyth/opticks_refs/Earth_Albedo_8192_4096.jpg
      96M	/Users/blyth/opticks_refs/Earth_Albedo_8192_4096.npy
      96M	/Users/blyth/opticks_refs/Earth_Albedo_8192_4096.ppm
-    (base) epsilon:npy blyth$ 
+     96M	/Users/blyth/opticks_refs/Earth_Albedo_8192_4096_ImageNPYTest_annotated.ppm
 
+
+Use env/bin/img.py to creating a scaled down PPM from a JPG 
+-------------------------------------------------------------
+
+::
 
     ~/env/bin/img.py ~/opticks_refs/Earth_Albedo_8192_4096.jpg --saveppm --scale 8 
 
+    epsilon:opticks blyth$ ImageNPYTest $HOME/opticks_refs/Earth_Albedo_8192_4096_scaled_8.ppm
+    2020-09-22 12:22:00.905 INFO  [27597017] [main@93]  load ipath /Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8.ppm
+    2020-09-22 12:22:00.907 INFO  [27597017] [*test_LoadPPM@59]  path /Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8.ppm yflip 0 ncomp 3 config add_border,add_midline,add_quadline
+    2020-09-22 12:22:00.953 INFO  [27597017] [*test_LoadPPM@70]  array 512,1024,3
+    2020-09-22 12:22:00.953 INFO  [27597017] [*test_LoadPPM@73] saving array to /Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8.npy
+    2020-09-22 12:22:00.956 INFO  [27597017] [main@97]  save to opath /Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8_ImageNPYTest_annotated.ppm
 
-    (base) epsilon:npy blyth$ ImageNPYTest $HOME/opticks_refs/Earth_Albedo_8192_4096_scaled_8.ppm
-    2020-08-21 19:43:31.507 INFO  [11622457] [*test_LoadPPM@33]  path /Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8.ppm yflip 0 ncomp 3 config add_border,add_midline,add_quadline
-    2020-08-21 19:43:31.509 INFO  [11622457] [*ImageNPY::LoadPPM@52]  path /Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8.ppm width 1024 height 512 mode 6 bits 255
-    2020-08-21 19:43:31.543 INFO  [11622457] [*test_LoadPPM@43]  array 512,1024,3
-    2020-08-21 19:43:31.543 INFO  [11622457] [*test_LoadPPM@46] saving array to /Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8.npy
-    2020-08-21 19:43:31.548 INFO  [11622457] [ImageNPY::SavePPMImp@102]  path /tmp/SPPMTest2.ppm width 1024 height 512 ncomp 3 yflip 0
-    2020-08-21 19:43:31.548 INFO  [11622457] [ImageNPY::SavePPMImp@111]  write to /tmp/SPPMTest2.ppm
-    (base) epsilon:npy blyth$ du -hs $HOME/opticks_refs/Earth_Albedo_8192_4096_scaled_8*
-    1.5M	/Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8.npy
+    epsilon:opticks blyth$ du -hs $HOME/opticks_refs/Earth_Albedo_8192_4096_scaled_8*
+    2.1M	/Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8.npy
     1.5M	/Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8.ppm
-    (base) epsilon:npy blyth$ 
+    1.5M	/Users/blyth/opticks_refs/Earth_Albedo_8192_4096_scaled_8_ImageNPYTest_annotated.ppm
 
 **/
 
@@ -69,27 +77,26 @@ NPY<unsigned char>*  test_LoadPPM(const char* path, const bool yflip)
     return a ; 
 }
 
-
-
 void test_SavePPM(const char* path, NPY<unsigned char>* a, bool yflip)
 {
     ImageNPY::SavePPM(path, a, yflip); 
 }
 
 
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-    const char* path  = argc > 1 ? argv[1] : "/tmp/SPPMTest.ppm" ; 
-    const char* path2 = argc > 2 ? argv[2] : "/tmp/SPPMTest2.ppm" ; 
 
+    const char* ipath = argc > 1 ? argv[1] : "/tmp/SPPMTest.ppm" ; 
+    const char* opath = argc > 2 ? argv[2] : SStr::ReplaceEnd(ipath, ".ppm", "_ImageNPYTest_annotated.ppm" ) ; 
+
+    LOG(info) << " load ipath " << ipath ; 
     bool yflip0 = false ; 
-    NPY<unsigned char>* a = test_LoadPPM(path, yflip0); 
+    NPY<unsigned char>* a = test_LoadPPM(ipath, yflip0); 
 
+    LOG(info) << " save to opath " << opath ; 
     bool yflip1 = false ;  
-    test_SavePPM(path2, a, yflip1); 
-
+    test_SavePPM(opath, a, yflip1); 
 
     return 0 ; 
 }
