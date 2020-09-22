@@ -2081,15 +2081,15 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     unsigned numInstanceIdentity = m_iidentity_buffer->getShape(0)*m_iidentity_buffer->getShape(1) ;  
 
     LOG(LEVEL)
-        << " m_index " << m_index
-        << " numITransforms " << numITransforms
-        << " numVolumes " << numVolumes
-        << " numVolumesSelected " << numVolumesSelected
-        << " numFaces " << numFaces
-        << " numRepeatedIdentity (numITransforms*numFaces) " << numRepeatedIdentity
-        << " numInstanceIdentity " << numInstanceIdentity
-        << " m_iidentity_buffer " << m_iidentity_buffer->getShapeString()
-        << " m_itransforms_buffer " << m_itransforms_buffer->getShapeString()
+        << "\n m_index " << m_index
+        << "\n numITransforms " << numITransforms
+        << "\n numVolumes " << numVolumes
+        << "\n numVolumesSelected " << numVolumesSelected
+        << "\n numFaces " << numFaces
+        << "\n numRepeatedIdentity (numITransforms*numFaces) " << numRepeatedIdentity
+        << "\n numInstanceIdentity " << numInstanceIdentity
+        << "\n m_iidentity_buffer " << m_iidentity_buffer->getShapeString()
+        << "\n m_itransforms_buffer " << m_itransforms_buffer->getShapeString()
         ;
 
 
@@ -2099,22 +2099,23 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
 
     if(!nodeinfo_ok)
         LOG(fatal) 
-            << " nodeinfo_ok " << nodeinfo_ok
-            << " nodeinfo_buffer_items " << ( m_nodeinfo_buffer ? m_nodeinfo_buffer->getNumItems() : -1 )
-            << " numVolumes " << numVolumes  
+            << "\n nodeinfo_ok " << nodeinfo_ok
+            << "\n nodeinfo_buffer_items " << ( m_nodeinfo_buffer ? m_nodeinfo_buffer->getNumItems() : -1 )
+            << "\n numVolumes " << numVolumes  
             ;
 
     if(!iidentity_ok)
        LOG(fatal) 
-           << " iidentity_ok " << iidentity_ok
-           << " iidentity_buffer_items " << ( m_iidentity_buffer ? m_iidentity_buffer->getNumItems() : -1 )
-           << " numFaces (sum of faces in numVolumes)" << numFaces 
-           << " numITransforms " << numITransforms
-           << " numVolumes*numITransforms " << numVolumes*numITransforms 
-           << " numInstanceIdentity " << numInstanceIdentity
-           << " numRepeatedIdentity " << numRepeatedIdentity 
-           << " m_iidentity_buffer " << m_iidentity_buffer->getShapeString()
-           << " m_itransforms_buffer " << m_itransforms_buffer->getShapeString()
+           << "\n iidentity_ok " << iidentity_ok
+           << "\n iidentity_buffer_items " << ( m_iidentity_buffer ? m_iidentity_buffer->getNumItems() : -1 )
+           << "\n numFaces (sum of faces in numVolumes)" << numFaces 
+           << "\n numVolumes " << numVolumes
+           << "\n numITransforms " << numITransforms
+           << "\n numVolumes*numITransforms " << numVolumes*numITransforms 
+           << "\n numInstanceIdentity " << numInstanceIdentity << " (expected to equal the above) " 
+           << "\n numRepeatedIdentity " << numRepeatedIdentity 
+           << "\n m_iidentity_buffer " << m_iidentity_buffer->getShapeString()
+           << "\n m_itransforms_buffer " << m_itransforms_buffer->getShapeString()
            ; 
 
     assert(nodeinfo_ok);
@@ -2206,14 +2207,14 @@ GBuffer*  GMesh::getAppropriateRepeatedIdentityBuffer()
     {
         id = mm->getFaceRepeatedInstancedIdentityBuffer(); 
         assert(id);
-        LOG(verbose) << "using FaceRepeatedInstancedIdentityBuffer" << " friid items " << id->getNumItems() << " numITransforms*numFaces " << numITransforms*numFaces ;     
+        LOG(LEVEL) << "using FaceRepeatedInstancedIdentityBuffer" << " friid items " << id->getNumItems() << " numITransforms*numFaces " << numITransforms*numFaces ;     
         assert( id->getNumItems() == numITransforms*numFaces );
     }
     else
     {
         id = mm->getFaceRepeatedIdentityBuffer();
         assert(id);
-        LOG(verbose) << "using FaceRepeatedIdentityBuffer" << " frid items " << id->getNumItems() << " numFaces " << numFaces ;
+        LOG(LEVEL) << "using FaceRepeatedIdentityBuffer" << " frid items " << id->getNumItems() << " numFaces " << numFaces ;
         assert( id->getNumItems() == numFaces );
     }
     return id ; 

@@ -19,7 +19,16 @@
 
 om-source(){ echo $BASH_SOURCE ; }
 om-vi(){ vi $(om-source) ; }
-om-env(){  olocal- ; opticks- ; oe- ; }
+om-env(){  olocal- ; opticks- ; 
+  local msg="=== $FUNCNAME :"
+  if [ "$1" == "quiet" -o "$1" == "q" -o -n $OPTICKS_QUIET ]; then
+     #echo $msg quiet running
+     oe- 2> /dev/null
+  else
+     echo $msg normal running
+     oe- ; 
+  fi
+}
 om-usage(){ cat << EOU
 
 OM : Opticks Minimal Approach to Configuring and Building

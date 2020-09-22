@@ -5,6 +5,13 @@ interpolationTest-OScene-OGeo-assert-Darwin
 
   * better to test on Darwin with a smaller geometry than JUNO 
 
+
+Probably some fallout from changes 
+
+* https://bitbucket.org/simoncblyth/opticks/commits/e9c799de5f209ecd1675b95d788aad8f81cb8d0d
+
+
+
 ::
 
     epsilon:optixrap blyth$ lldb_ interpolationTest 
@@ -130,6 +137,8 @@ interpolationTest-OScene-OGeo-assert-Darwin
     .bashrc OPTICKS_MODE dev
 
 
+
+     OGeo=INFO GMesh=INFO interpolationTest
 
 
 
