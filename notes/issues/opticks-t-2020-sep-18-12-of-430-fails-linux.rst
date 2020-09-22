@@ -29,10 +29,21 @@ opticks-t-2020-sep-18-12-of-430-fails-linux
 
             GGeoLib=INFO GPtsTest 
 
-                         
+            Suspect can no longer do this comparison as the GParts has been dropped ?
+
 
 
       21 /28  Test #21 : OptiXRapTest.interpolationTest                ***Failed                      10.43  
+
+           fails for lack of numpy in the python (juno) picked off PATH
+           easy to kludge eg using python3, but what is the definitive solution ?  
+
+           * added SSys::RunPythonScript and SSys:ResolvePython to fix this kind of problem definitively (hopefully)
+             by making sensitive to OPTICKS_PYTHON envvar to pick the python
+
+           opticks-c python
+
+
       2  /5   Test #2  : OKTest.OKTest                                 Child aborted***Exception:     9.92   
       3  /34  Test #3  : CFG4Test.CTestDetectorTest                    ***Exception: SegFault         1.10   
       6  /34  Test #6  : CFG4Test.CGeometryTest                        Child aborted***Exception:     1.13   

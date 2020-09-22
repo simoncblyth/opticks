@@ -32,12 +32,14 @@ and detecting the interactivity level of the session.
 
 #include <cstddef>
 #include <string>
+#include "plog/Severity.h"
 
 #include "SYSRAP_API_EXPORT.hh"
 
 class SYSRAP_API SSys {
   public:
 
+     static const plog::Severity LEVEL ; 
      static const unsigned SIGNBIT32 ;
      static const unsigned OTHERBIT32 ; 
 
@@ -46,7 +48,7 @@ class SYSRAP_API SSys {
 
      static const char* fmt(const char* tmpl="hello%u.npy", unsigned val=0);
      static int run(const char* cmd);
-     static int exec(const char* exe, const char* path);
+     static int exec(const char* exe, const char* arg1, const char* arg2=NULL);
      static std::string Which(const char* script); 
      static std::string POpen(const char* cmd, bool chomp, int& rc); 
      static std::string POpen(const char* cmda, const char* cmdb, bool chomp, int& rc); 
@@ -77,6 +79,11 @@ class SYSRAP_API SSys {
      static unsigned COUNT ; 
      static void Dump_(const char* msg);
      static void Dump(const char* msg);
+
+     static const char* ResolveExecutable(const char* envvar_key, const char* default_executable);
+     static const char* ResolvePython();
+     static int RunPythonScript(const char* script);
+     static int RunPythonCode(const char* code);
 
 
 };

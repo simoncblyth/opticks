@@ -41,6 +41,8 @@ GPtsTest
 This is checking the postcache creation of a merged GParts instance
 using the persisted higher level GPts. 
 
+Suspect can no longer do this comparison as the GParts has been dropped ?
+
 See notes/issues/x016.rst 
 
 **/

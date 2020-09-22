@@ -143,7 +143,7 @@ def dump_tree(base, args):
 def txt_brief( path, label="." ):
     fdig = digest_(path)
     stmp = stamp_(path)
-    lines = len(file(path, "r").readlines())
+    lines = len(open(path, "r").readlines())
     print("%s : %60s : %20s : %s : %s " % ( label, path, lines , fdig, stmp ))
 
 def npy_brief( path, args, label="."):

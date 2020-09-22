@@ -2111,7 +2111,10 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
            << " numFaces (sum of faces in numVolumes)" << numFaces 
            << " numITransforms " << numITransforms
            << " numVolumes*numITransforms " << numVolumes*numITransforms 
+           << " numInstanceIdentity " << numInstanceIdentity
            << " numRepeatedIdentity " << numRepeatedIdentity 
+           << " m_iidentity_buffer " << m_iidentity_buffer->getShapeString()
+           << " m_itransforms_buffer " << m_itransforms_buffer->getShapeString()
            ; 
 
     assert(nodeinfo_ok);

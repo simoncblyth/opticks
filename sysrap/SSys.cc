@@ -35,6 +35,7 @@
 #include "OKConf.hh"
 
 #include "SSys.hh"
+#include "SStr.hh"
 #include "PLOG.hh"
 
 
@@ -45,6 +46,11 @@ simon:optixrap blyth$ echo $?
 */
 
 extern char **environ;
+
+
+
+const plog::Severity SSys::LEVEL = PLOG::EnvLevel("SSys", "DEBUG")  ; 
+
 
 void SSys::DumpEnv(const char* pfx ) // static
 {
@@ -75,10 +81,13 @@ const char* SSys::fmt(const char* tmpl, unsigned val)
 }
 
 
-int SSys::exec(const char* exe, const char* path)
+int SSys::exec(const char* exe, const char* arg1, const char* arg2)
 {
     std::stringstream ss ; 
-    ss << exe << " " << path ;
+    ss << exe << " " ; 
+    if(arg1) ss << arg1 << " " ; 
+    if(arg2) ss << arg2 << " " ; 
+
     std::string cmd = ss.str();
     return SSys::run(cmd.c_str());
 }
@@ -119,7 +128,7 @@ std::string SSys::Which(const char* script)
 
     int rc(0); 
     std::string path = SSys::POpen("which", script, chomp, rc );
-    LOG(info) 
+    LOG(LEVEL) 
          << " script " << script
          << " path " << path 
          << " rc " << rc
@@ -141,7 +150,7 @@ Newlines are removed when chomp is true.
 
 std::string SSys::POpen(const char* cmd, bool chomp, int& rc)
 {
-    LOG(info) << "[ " << cmd ; 
+    LOG(LEVEL) << "[ " << cmd ; 
 
     std::stringstream ss ; 
     FILE *fp = popen(cmd, "r");
@@ -156,7 +165,7 @@ std::string SSys::POpen(const char* cmd, bool chomp, int& rc)
     rc=0 ; 
     int st = pclose(fp);
     if(WIFEXITED(st)) rc=WEXITSTATUS(st);
-    LOG(info) << "] " << cmd << " rc " << rc ; 
+    LOG(LEVEL) << "] " << cmd << " rc " << rc ; 
 
     return ss.str() ; 
 }
@@ -460,6 +469,59 @@ void SSys::Dump(const char* msg)
 }
 
 
+const char* SSys::ResolveExecutable(const char* envvar_key, const char* default_executable)
+{
+    const char* ev = SSys::getenvvar(envvar_key, default_executable) ; 
+    if(ev && ev[0] == '/') return strdup(ev) ;  // assume absolute path of python executable is provided
+    std::string path = SSys::Which(ev); 
+    return strdup(path.c_str()); 
+}
+const char* SSys::ResolvePython()
+{
+    return SSys::ResolveExecutable("OPTICKS_PYTHON", "python"); 
+}
 
+/**
+SSys::RunPythonScript
+-----------------------
+
+Control which python to use with envvar OPTICKS_PYTHON eg::
+
+    OPTICKS_PYTHON=python2.7 SSysTest 
+    OPTICKS_PYTHON=python3   SSysTest
+    OPTICKS_PYTHON=/Users/blyth/miniconda3/bin/python3 SSysTest 
+
+**/
+
+int SSys::RunPythonScript(const char* script)
+{
+    std::string script_path = SSys::Which(script);
+    const char* python_executable = SSys::ResolvePython() ; 
+    LOG(info) 
+         << " script " << script
+         << " script_path " << script_path 
+         << " python_executable " << python_executable 
+         ;   
+
+    int RC = script_path.empty() ? 101 : SSys::exec(python_executable,script_path.c_str()) ;
+    LOG(info) << " RC " << RC ; 
+    return RC ; 
+}
+
+int SSys::RunPythonCode(const char* code)
+{
+    const char* python_executable = SSys::ResolvePython() ; 
+    LOG(info) 
+         << " code [" << code  << "]"
+         << " python_executable " << python_executable 
+         ;   
+
+    const char* arg1 = "-c" ; 
+    const char* arg2 = SStr::Concat("'", code, "'") ;  
+
+    int RC = code == NULL ? 101 : SSys::exec(python_executable,arg1, arg2) ;
+    LOG(info) << " RC " << RC ; 
+    return RC ; 
+}
 
 
