@@ -142,24 +142,27 @@ if __name__ == '__main__':
            cfb[imat].append( (i,blib.B_IMAT,0) )  
  
 
-        #print "%4d omat %25s imat %25s         cf_omat %7s cf_imat %7s  " % (  i, omat, imat, cf_omat, cf_imat )  
+        #print("%4d omat %25s imat %25s         cf_omat %7s cf_imat %7s  " % (  i, omat, imat, cf_omat, cf_imat ))  
 
         if len(osur)>0 or len(isur)>0:
-            print "%4d osur %35s isur %35s         cf_osur %7s cf_isur %7s  " % (  i, osur, isur, cf_osur, cf_isur )  
+            print("%4d osur %35s isur %35s         cf_osur %7s cf_isur %7s  " % (  i, osur, isur, cf_osur, cf_isur ))  
 
     pass
 
 
-    print "cf"
+    print("cf")
 
     for b in [True,False]:
         for k,v in cf.items():
             if v == b:
                 if v:
-                    print "%30s  %s  " % (k, v) 
+                    print("%30s  %s  " % (k, v)) 
                 else:
-                    print "%30s  %s  %s " % (k, v, str(cfb[k])) 
-
+                    print("%30s  %s  %s " % (k, v, str(cfb[k])))
+                pass
+            pass 
+        pass
+    pass
 
 
 

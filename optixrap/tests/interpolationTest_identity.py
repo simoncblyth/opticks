@@ -161,23 +161,23 @@ if __name__ == '__main__':
            g4b[imat].append( (i,blib.B_IMAT,0) )  
  
 
-        #print "%4d omat %25s imat %25s         ok_omat %7s ok_imat %7s      g4_omat %7s g4_imat %7s " % (  i, omat, imat, ok_omat, ok_imat,  g4_omat, g4_imat )  
+        #print("%4d omat %25s imat %25s         ok_omat %7s ok_imat %7s      g4_omat %7s g4_imat %7s " % (  i, omat, imat, ok_omat, ok_imat,  g4_omat, g4_imat ))  
 
         if len(isur) > 0 or len(osur) > 0:
-            print "%4d osur %35s isur %35s         ok_osur %7s ok_isur %7s      g4_osur %7s g4_isur %7s " % (  i, osur, isur, ok_osur, ok_isur,  g4_osur, g4_isur )  
-              
+            print("%4d osur %35s isur %35s         ok_osur %7s ok_isur %7s      g4_osur %7s g4_isur %7s " % (  i, osur, isur, ok_osur, ok_isur,  g4_osur, g4_isur ))  
+        pass      
  
 
 
     pass
 
 
-    print "ok", ok
-    print "g4", g4
+    print("ok %r" % ok)
+    print("g4 %r" % g4)
 
     for k,v in g4b.items():
-        if len(v) > 0:print k, str(v)
-
+        if len(v) > 0:print(" %s : %s " % (k, str(v)))
+    pass
 
 
 

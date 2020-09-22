@@ -22,8 +22,13 @@
 import logging
 log = logging.getLogger(__name__) 
 
-ansi_ = lambda msg, codes:unicode("\x1b[%sm%s\x1b[0m" % (";".join(map(str, codes)), msg))
-
+# py2->py3  unicode->str str->bytes
+try:
+    unicode
+    ansi_ = lambda msg, codes:unicode("\x1b[%sm%s\x1b[0m" % (";".join(map(str, codes)), msg))
+except NameError:
+    ansi_ = lambda msg, codes:str("\x1b[%sm%s\x1b[0m" % (";".join(map(str, codes)), msg))
+pass
 
 code = {
     "white_on_red_bright":(41,37,1),
@@ -88,7 +93,7 @@ pass
 if __name__ == '__main__':
     init_logging(color=True, level="debug")
 
-    names = "debug info warning warn error critical fatal".split()
+    names = "debug info warning error critical fatal".split()
     for name in names: 
         uname = name.upper()
         func = getattr(log, name)

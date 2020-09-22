@@ -124,7 +124,7 @@ class OpticksEnv(object):
         self.ext = {}
         self.env = {}
 
-        if os.environ.has_key("IDPATH"):
+        if "IDPATH" in os.environ:
             self.legacy_init()
         else:
             self.direct_init()
@@ -150,8 +150,8 @@ class OpticksEnv(object):
         is no longer true.
         """ 
 
-        assert not os.environ.has_key("IDPATH"), "IDPATH envvar as input is forbidden"
-        assert os.environ.has_key("OPTICKS_KEY"), "OPTICKS_KEY envvar is required"
+        assert not "IDPATH" in os.environ, "IDPATH envvar as input is forbidden"
+        assert "OPTICKS_KEY" in os.environ, "OPTICKS_KEY envvar is required"
         self.key = Key(os.environ["OPTICKS_KEY"])
 
         keydir = self.key.keydir 

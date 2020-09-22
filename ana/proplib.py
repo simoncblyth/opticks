@@ -54,7 +54,11 @@ Example data shapes::
 
 """
 import os, logging, numpy as np
+import sys, codecs
+b_ = lambda _:codecs.latin_1_encode(_)[0] if sys.version_info.major > 2 else lambda _:_
 log = logging.getLogger(__name__)
+
+
 from opticks.ana.base import stamp_
 from opticks.ana.dat import Dat
 from opticks.ana.nload import np_load
@@ -143,6 +147,7 @@ class PropLib(object):
         """
         self.kls = kls
         self.paths = []
+        log.info("names : %s " % names)
 
         if names is None:
             npath=idp_("GItemList/%(kls)s.txt" % locals())
@@ -152,12 +157,14 @@ class PropLib(object):
             npath = None
         pass 
 
+        log.info("npath : %s " % npath)
         if npath is None:
             log.warning("direct names override")
         else:  
             self.paths.append(npath)
-            names = map(lambda _:_[:-1],file(npath).readlines())
+            names = list(map(lambda _:_[:-1],open(npath,"r").readlines()))
         pass
+        log.info("names : %s " % names)
         self.names = names
 
         if data is None:
@@ -222,11 +229,15 @@ class PropLib(object):
 
     def index(self, name):
         #return self.names.index(name)
-        return np.where( self._names == name )[0][0]
+        return np.where( self._names == b_(name) )[0][0]
 
 
     def interp(self, name, wavelengths, k=0):
-        idx = list(self.names).index(name)
+        bname = b_(name)
+        if not bname in self.names:
+            log.fatal("bname %s is not in list %s " % (bname, self.names))
+        pass
+        idx = list(self.names).index(bname)
         return np.interp( wavelengths, self.domain, self.data[idx][0][:,k] ) 
  
     def __call__(self, name):
@@ -295,6 +306,8 @@ if __name__ == '__main__':
     from opticks.ana.main import opticks_main
     ok = opticks_main()
 
+    log.info("---")
+
     mlib = PropLib("GMaterialLib") 
     slib = PropLib("GSurfaceLib") 
 
@@ -305,7 +318,7 @@ if __name__ == '__main__':
     wavelength = 442  
     ri = mlib.interp(m1, wavelength, mlib.M_REFRACTIVE_INDEX) 
 
-    print "m1 %s wl %s ri %s " % (m1, wavelength, ri)
+    print("m1 %s wl %s ri %s " % (m1, wavelength, ri))
 
    
     # not working , perhaps due to the move to dynamic long ago 
