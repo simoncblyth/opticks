@@ -405,6 +405,8 @@ void G4Opticks::setSensorDataMeta( const char* key, T value )
 G4Opticks::setSensorAngularEfficiency
 ----------------------------------------
 
+Invoked from detector specific code, eg LSExpDetectorConstruction::SetupOpticks
+
 
 **/
 

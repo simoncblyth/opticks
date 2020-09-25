@@ -5,8 +5,11 @@ Progress
 Updating 
 ----------
 
-Use *hg-;hg-month n* to review commits for the numbered month, 
+Use *git-;git-month n* (from env-) to review commits for the numbered month, 
 negative n eg -12 for December of last year.
+For SVN see svn-offline-blyth using::
+
+   svn log -v --search $USER
 
 
 `notes-progress` summaries
@@ -20,7 +23,123 @@ to work with that parser follow some rules:
 3. bullet lines to be included in the summary should be in bold
 
 
+2020 Sept
+----------
 
+* work with Hans (Fermilab Geant4) on changes need for current Geant4 1062 
+
+  * next release of Geant4 will allow genstep collection without changing processes
+  * discussing how to change Geant4 API to make Opticks Genstep collection simpler
+
+* IntersectSDF, per-pixel identity, transform lookup, comparison with SDF
+
+* (22) test fail fixes, OPTICKS_PYTHON
+* (15) adopt the new FindG4 within Opticks
+* (Norfolk)
+* (3) examples/UseG4NoOpticks/FindG4.cmake that works with 1042 + 1062
+
+* (1-3)  examples/UseOptiXGeometryInstancedOCtx IntersectSDF
+   systematic checking of intersect SDF using "posi" 3d pixel position and geo-identity
+   allows to recover local coordinate of every pixel intersect and calculate its distance
+   to the surface : which should be within epsilon (so far find within 4e-4)
+
+* (1st) examples/UseOptiXGeometry : using exported oxrap headers allowing Opticks CSG primitives 
+
+
+2020 Aug
+----------
+
+* (31) Linux OptiX 6.5 wierd sphere->box bug 
+* (30) fixed NPY::concat bug which could have caused much layered tex problems, but still decide to stay with separated 
+* (24-30) fighting layered 2d tex, failed : separated ones working OK though
+* (24-30) develop OCtx : OptiX 6.5 wrapper with no OptiX types in the interface (thinking about the OptiX 7 future)
+* (21st) image annotation for debugging the texture mapping 
+* (20th) texture mapping debug : wrapping Earth texture onto sphere 
+* (19th) SPPM ImageNPY : expand image handling for 2d texture 
+* (18th) examples/UseOptiXTexture examples/UseOptiXTextureLayered examples/UseOptiXTextureLayeredPP explore texturing 
+* GNode::getGlobalProgeny
+
+* (17th) notes/performance.rst thoughts : motivated by Sam Eriksen suggestion of an Opticks Hackathon organized with NERSC NVIDIA contacts
+* mid-august : neutrino telescope workshop presentation
+* (14th) ana/ggeo.py : python transform and bbox access from identity triplet + ana/vtkbboxplt.py checking global bbox
+* (8th) notice that current Opticks identity approach needs overhaul to work for global volumes   
+
+  * notes/issues/ggeo-id-for-transform-access.rst 
+  * aim to form ggeo-id combining : (mm-index,transform-index-within-mm,volume-within-the-instance) 
+  * add globalinstance type of GMergedMesh (kept in additional slot, opposite end to zero), 
+    which handles global volumes just like instances : but with only one transform
+  * initially only enabled with --globalinstance, from 17th made standard
+  * need to fix this in order to be able to convert global coordinates of intersects into local 
+    frame coordinates for any volume (this is needed for hit local_pos) 
+
+2020 July
+----------
+
+* (29th) LSExpDetectorConstruction::SetupOpticks 
+
+  * G4Opticks::setGeometry 
+  * G4Opticks::getSensorPlacements vector of G4PVPlacement of sensors
+  * G4Opticks::setSensorData( sensor_index, ... , pmtCAT, pmtID)  
+  * G4Opticks::setSensorAngularEfficiency 
+ 
+  * devise interface that communicates geometry/sensor information without any JUNO assumptions
+    (eg on ordering of sensors, or pmtcat relationship to pmtid, or pv.copyNo to pmtid ... all that 
+    must be done in detector specific code : as Opticks cannot make JUNO assumptions).
+    Done explicitly spelling out the pmtcat and pmtid of each sensor with 
+    setSensorData based on the G4PVPlacement returned for each sensor with getSensorPlacements.
+
+  * one assumption : only one volume with a sensitive surface within each repeated geometry instance 
+
+* G4Opticks::getHit 
+* revisit PMT identity to work with JUNO copyNo
+* iidentity reshaping, 
+* remove WITH_AII dead code eradicating AnalyticInstanceIdentity, instead now using InstanceIdentity for both analytic and triangulated geometry
+* start on angular efficiency
+
+* (6th) JUNO collab meeting report : next steps 
+
+  * local_pos (play to use new instance identity approach, 
+    to give access to the transform to convert global_pos to local_pos)
+  * move ce culling to GPU : added texture handling for this 
+
+* add github opticks repo, for making releases : as need tarball to integrate with junoenv 
+
+
+2020 June
+----------
+
+* getting updated geometry to work 
+* create GDML matplotlib plotter 
+* genstep versioning enum in G4Opticks, motivated by Hans
+* polycone neck work over in juno SVN
+* svn.py git.py for working copy sync between Linux and Darwin installs
+  without huge numbers of "sync" commits
+* opticks/junoenv/offline integration done 
+
+
+2020 May
+---------
+
+* pkg-config non-CMake config work ongoing, Linux testing 
+* start trying to build opticks against the junoenv externals
+* get to build against OptiX 5 again, for CUDA 9.1 limited macOS laptop
+* add higher level API for genstep collection, motivated by Hans (Fermilab Geant4) 
+
+2020 April
+-----------
+
+* create parallel universe pkg-config build opticks-config system,  
+  supporting use of the Opticks tree of packages without using CMake.
+  The pkg-config wave took more than an week to cover all packages.
+
+  * developed using examples/gogo.sh running all the examples/-/go.sh scripts 
+  
+* introduce "foreign" externals approach, so can build opticks 
+  against another packages externals using CMAKE_PREFIX_PATH 
+  (boost, clhep, xercesc, g4)
+ 
+* crystalize installation configuration into opticks-setup.sh 
+  generated by opticks-setup-generate when running opticks-full
 
 2019 Q4
 ---------
