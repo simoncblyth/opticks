@@ -246,6 +246,15 @@ void G4StepNPY::addAllowedGencodes(int gencode1, int gencode2, int gencode3, int
     if(gencode3 > -1) m_allowed_gencodes.push_back(gencode3);
     if(gencode4 > -1) m_allowed_gencodes.push_back(gencode4);
 }
+
+std::string G4StepNPY::getAllowedGencodes() const
+{
+    std::stringstream ss ; 
+    typedef std::vector<unsigned>::const_iterator IT ; 
+    for(IT it= m_allowed_gencodes.begin() ; it != m_allowed_gencodes.end() ; it++) ss << *it << "," ; 
+    return ss.str(); 
+}
+
 bool G4StepNPY::isAllowedGencode(unsigned gencode) const 
 {
     return std::find( m_allowed_gencodes.begin(), m_allowed_gencodes.end() , gencode ) != m_allowed_gencodes.end() ; 
@@ -271,7 +280,8 @@ void G4StepNPY::checkGencodes()
         {
             LOG(error) 
                 << " i " << i 
-                << " unexpected label " << label 
+                << " unexpected gencode label " << label 
+                << " allowed gencodes " << getAllowedGencodes()
                 ; 
             mismatch += 1 ;  
         }

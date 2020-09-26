@@ -59,6 +59,7 @@ class NPY_API G4StepNPY {
        void addAllowedGencodes(int gencode1=-1,int gencode2=-1, int gencode3=-1, int gencode4=-1 ); 
        bool isAllowedGencode(unsigned gencode) const ;
        void checkGencodes();
+       std::string getAllowedGencodes() const ;
    public:  
        unsigned getNumSteps();
        unsigned getNumPhotons(unsigned step);

@@ -48,6 +48,27 @@ const char* OpticksGenstep::G4GUN_                   = "g4gun" ;
 const char* OpticksGenstep::PRIMARYSOURCE_           = "primarysource" ;
 const char* OpticksGenstep::GENSTEPSOURCE_           = "genstepsource" ;
 
+
+
+std::string OpticksGenstep::Dump()   // static
+{
+    int i0 = (int)OpticksGenstep_INVALID ;  
+    int i1 = (int)OpticksGenstep_NumType ;  
+
+    std::stringstream ss ; 
+    for(int i=i0 ; i < i1 ; i++)
+    {  
+         ss << std::setw(10) << i 
+            << " : "
+            << Gentype(i)
+            << std::endl
+            ;
+    } 
+    return ss.str(); 
+}
+
+
+
 const char* OpticksGenstep::Gentype(int gentype)
 {
     const char* s = 0 ;

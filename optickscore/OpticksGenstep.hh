@@ -60,6 +60,7 @@ class OKCORE_API OpticksGenstep {
        static bool IsCerenkov(int gentype);
        static bool IsScintillation(int gentype);
        static bool IsMachinery(int gentype);
+       static std::string Dump();  
     public:
        static const char* INVALID_ ;
        static const char* G4Cerenkov_1042_ ;

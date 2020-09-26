@@ -28,6 +28,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+
+    LOG(info) << "OpticksGenstep::Dump()" ;
+    LOG(info) << std::endl << OpticksGenstep::Dump() ;
+
+
     //const char* def = "/usr/local/opticks/opticksdata/gensteps/dayabay/natural/1.npy" ; 
     const char* def = "$DATADIR/gensteps/dayabay/natural/1.npy" ; 
     const char* path = argc > 1 ? argv[1] : def ; 
