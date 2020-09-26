@@ -82,27 +82,27 @@ BBufSpec* GBuffer::getBufSpec()
 }
 
 
-unsigned int GBuffer::getNumBytes()
+unsigned int GBuffer::getNumBytes() const 
 {
     return m_nbytes ;
 }
-void* GBuffer::getPointer()
+void* GBuffer::getPointer() const 
 {
     return m_pointer ;
 }
-unsigned int GBuffer::getItemSize()
+unsigned int GBuffer::getItemSize() const 
 {
     return m_itemsize ;
 }
-unsigned int GBuffer::getNumElements()
+unsigned int GBuffer::getNumElements() const 
 {
     return m_nelem ;
 }
-unsigned int GBuffer::getNumItems()
+unsigned int GBuffer::getNumItems() const 
 {
     return m_nbytes/m_itemsize ;
 }
-unsigned int GBuffer::getNumElementsTotal()
+unsigned int GBuffer::getNumElementsTotal() const 
 {
     return m_nbytes/m_itemsize*m_nelem ;
 }
@@ -137,7 +137,7 @@ void GBuffer::setBufferId(int buffer_id)
 {
     m_buffer_id = buffer_id  ;
 }
-int GBuffer::getBufferId()
+int GBuffer::getBufferId() const 
 {
     return m_buffer_id ;
 }
@@ -145,25 +145,29 @@ void GBuffer::setBufferTarget(int buffer_target)
 {
     m_buffer_target = buffer_target  ;
 }
-int GBuffer::getBufferTarget()
+int GBuffer::getBufferTarget() const 
 {
     return m_buffer_target ;
 }
 
-
-
-
-void GBuffer::Summary(const char* msg)
+std::string GBuffer::desc() const 
 {
-    LOG(info) << std::left << std::setw(30) << msg << std::right
-              << " BufferId " << std::setw(4) << getBufferId()
-              << " BufferTarget " << std::setw(4) << getBufferTarget()
-              << " NumBytes " << std::setw(7) << getNumBytes()
-              << " ItemSize " << std::setw(7) << getItemSize()
-              << " NumElements " << std::setw(7) << getNumElements()
-              << " NumItems " << std::setw(7) << getNumItems()
-              << " NumElementsTotal " << std::setw(7) << getNumElementsTotal()
-              ;
+    std::stringstream ss ; 
+    ss << "GBuffer" 
+       << " BufferId " << std::setw(4) << getBufferId()
+       << " BufferTarget " << std::setw(4) << getBufferTarget()
+       << " NumBytes " << std::setw(7) << getNumBytes()
+       << " ItemSize " << std::setw(7) << getItemSize()
+       << " NumElements " << std::setw(7) << getNumElements()
+       << " NumItems " << std::setw(7) << getNumItems()
+       << " NumElementsTotal " << std::setw(7) << getNumElementsTotal()
+       ;
+    return ss.str(); 
+}
+
+void GBuffer::Summary(const char* msg) const 
+{
+    LOG(info) << std::left << std::setw(30) << msg << std::right << desc() ; 
 }
 
 

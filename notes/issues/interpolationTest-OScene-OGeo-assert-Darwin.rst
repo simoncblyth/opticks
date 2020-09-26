@@ -142,3 +142,68 @@ Probably some fallout from changes
 
 
 
+Same fail from OKTest, probably its an outdated identity array shape in old geocache
+
+* TODO: confirm this by creating a new geocache and testing with that::
+
+     geocache-;geocache-dx-v0    ## added --noviz in here 
+
+
+* TODO: make geocache versioning detect such problems and assert early 
+* TODO: start being religous about bumping the geocache version integer after any layout change  
+
+::
+
+    2020-09-26 16:58:42.406 INFO  [2945632] [OGeo::convert@264] [ nmm 6
+    2020-09-26 16:58:42.433 FATAL [2945632] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@2108] 
+     iidentity_ok 0
+     iidentity_buffer_items 12230
+     numFaces (sum of faces in numVolumes)480972
+     numVolumes 12230
+     numITransforms 1
+     numVolumes*numITransforms 12230
+     numInstanceIdentity 48920 (expected to equal the above) 
+     numRepeatedIdentity 480972
+     m_iidentity_buffer 12230,4
+     m_itransforms_buffer 1,4,4
+    Assertion failed: (iidentity_ok), function makeFaceRepeatedInstancedIdentityBuffer, file /Users/blyth/opticks/ggeo/GMesh.cc, line 2122.
+    Process 59938 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff57c6cb66 libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill:
+    ->  0x7fff57c6cb66 <+10>: jae    0x7fff57c6cb70            ; <+20>
+        0x7fff57c6cb68 <+12>: movq   %rax, %rdi
+        0x7fff57c6cb6b <+15>: jmp    0x7fff57c63ae9            ; cerror_nocancel
+        0x7fff57c6cb70 <+20>: retq   
+    Target 0: (OKTest) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff57c6cb66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff57e37080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff57bc81ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff57b901ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x000000010193acd6 libGGeo.dylib`GMesh::makeFaceRepeatedInstancedIdentityBuffer(this=0x0000000109413e20) at GMesh.cc:2122
+        frame #5: 0x000000010193b9cb libGGeo.dylib`GMesh::getFaceRepeatedInstancedIdentityBuffer(this=0x0000000109413e20) at GMesh.cc:2231
+        frame #6: 0x000000010193b56a libGGeo.dylib`GMesh::getAppropriateRepeatedIdentityBuffer(this=0x0000000109413e20) at GMesh.cc:2208
+        frame #7: 0x000000010050bbab libOptiXRap.dylib`OGeo::makeTriangulatedGeometry(this=0x00000001238d4e90, mm=0x0000000109413e20, lod=0) at OGeo.cc:932
+        frame #8: 0x0000000100509fc5 libOptiXRap.dylib`OGeo::makeOGeometry(this=0x00000001238d4e90, mergedmesh=0x0000000109413e20, lod=0) at OGeo.cc:595
+        frame #9: 0x00000001005085af libOptiXRap.dylib`OGeo::makeGlobalGeometryGroup(this=0x00000001238d4e90, mm=0x0000000109413e20) at OGeo.cc:324
+        frame #10: 0x0000000100507655 libOptiXRap.dylib`OGeo::convertMergedMesh(this=0x00000001238d4e90, i=0) at OGeo.cc:303
+        frame #11: 0x0000000100506fdd libOptiXRap.dylib`OGeo::convert(this=0x00000001238d4e90) at OGeo.cc:270
+        frame #12: 0x00000001004fcf29 libOptiXRap.dylib`OScene::init(this=0x0000000110f7a400) at OScene.cc:169
+        frame #13: 0x00000001004fc2e1 libOptiXRap.dylib`OScene::OScene(this=0x0000000110f7a400, hub=0x000000010921cbb0, cmake_target="OptiXRap", ptxrel=0x0000000000000000) at OScene.cc:91
+        frame #14: 0x00000001004fd4fd libOptiXRap.dylib`OScene::OScene(this=0x0000000110f7a400, hub=0x000000010921cbb0, cmake_target="OptiXRap", ptxrel=0x0000000000000000) at OScene.cc:90
+        frame #15: 0x000000010040dc16 libOKOP.dylib`OpEngine::OpEngine(this=0x0000000110f7a340, hub=0x000000010921cbb0) at OpEngine.cc:75
+        frame #16: 0x000000010040e30d libOKOP.dylib`OpEngine::OpEngine(this=0x0000000110f7a340, hub=0x000000010921cbb0) at OpEngine.cc:83
+        frame #17: 0x00000001000d4faf libOK.dylib`OKPropagator::OKPropagator(this=0x0000000110f772f0, hub=0x000000010921cbb0, idx=0x0000000111a2fe60, viz=0x0000000111a2fe80) at OKPropagator.cc:68
+        frame #18: 0x00000001000d515d libOK.dylib`OKPropagator::OKPropagator(this=0x0000000110f772f0, hub=0x000000010921cbb0, idx=0x0000000111a2fe60, viz=0x0000000111a2fe80) at OKPropagator.cc:72
+        frame #19: 0x00000001000d406c libOK.dylib`OKMgr::OKMgr(this=0x00007ffeefbfe9d8, argc=1, argv=0x00007ffeefbfea90, argforced=0x0000000000000000) at OKMgr.cc:63
+        frame #20: 0x00000001000d44db libOK.dylib`OKMgr::OKMgr(this=0x00007ffeefbfe9d8, argc=1, argv=0x00007ffeefbfea90, argforced=0x0000000000000000) at OKMgr.cc:65
+        frame #21: 0x000000010000b94b OKTest`main(argc=1, argv=0x00007ffeefbfea90) at OKTest.cc:31
+        frame #22: 0x00007fff57b1c015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+
+

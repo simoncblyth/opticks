@@ -106,21 +106,21 @@ public:
     template <typename T>            optix::Buffer createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name);
 public:
     optix::GeometryGroup   makeGlobalGeometryGroup(GMergedMesh* mm);
-    optix::Group           makeRepeatedAssembly(GMergedMesh* mm, bool lod );
+    optix::Group           makeRepeatedAssembly(GMergedMesh* mm );
 
 private:
     void                     setTransformMatrix(optix::Transform& xform, const float* tdata ) ;
     optix::Acceleration      makeAcceleration(const char* accel, bool accel_props=false);
     optix::Material          makeMaterial();
 
-    OGeometry*               makeOGeometry(GMergedMesh* mergedmesh, unsigned lod);
+    OGeometry*               makeOGeometry(GMergedMesh* mergedmesh);
     optix::GeometryInstance  makeGeometryInstance(OGeometry* geometry, optix::Material material, unsigned instance_index);
     optix::GeometryGroup     makeGeometryGroup(optix::GeometryInstance gi, optix::Acceleration accel );
 private:
-    optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh, unsigned lod);
-    optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh, unsigned lod);
+    optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh);
+    optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);
 #if OPTIX_VERSION >= 60000
-    optix::GeometryTriangles  makeGeometryTriangles(GMergedMesh* mm, unsigned lod);
+    optix::GeometryTriangles  makeGeometryTriangles(GMergedMesh* mm);
 #endif
 
 private:
@@ -140,7 +140,6 @@ private:
     // for giving "context names" to GPU buffer uploads
     const char*          getContextName() const ;
     unsigned             m_mmidx ; 
-    unsigned             m_lodidx ; 
     const char*          m_top_accel ; 
     const char*          m_ggg_accel ; 
     const char*          m_assembly_accel ; 

@@ -567,7 +567,7 @@ EON
 
 
 
-geocache-dx-v0-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-dx-)_v0.gdml --x4polyskip 211,232  --geocenter $* ; }     
+geocache-dx-v0-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-dx-)_v0.gdml --x4polyskip 211,232  --geocenter --noviz $* ; }     
 geocache-dx-v0-comment(){ echo export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation.rst ; }     
 geocache-dx-v0(){   geocache-dx-v0- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
 geocache-dx-v0-key(){ 

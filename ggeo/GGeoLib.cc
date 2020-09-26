@@ -25,6 +25,8 @@
 #include "BStr.hh"
 #include "BFile.hh"
 
+#include "NPY.hpp"
+#include "NSlice.hpp"
 #include "NLODConfig.hpp"
 
 #include "Opticks.hh"
@@ -82,7 +84,8 @@ GGeoLib::GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib)
     m_analytic(analytic),
     m_bndlib(bndlib),
     m_mesh_version(NULL),
-    m_verbosity(m_ok->getVerbosity())
+    m_verbosity(m_ok->getVerbosity()),
+    m_geolib(this)
 {
     assert(bndlib);
 }
@@ -436,6 +439,268 @@ int GGeoLib::checkMergedMeshes() const
 }
 
 
+/**
+GGeoLib::dryrun_convert
+-----------------------------
 
+Dry run the non-GPU parts of OGeo::convert to check all is well with the
+geometry prior to doing the real thing, which can cause hard crashes giving 
+kernel panics.
+
+**/
+
+void GGeoLib::dryrun_convert() 
+{
+    LOG(info); 
+    m_geolib->dump("GGeoLib::dryrun_convert");
+
+    unsigned int nmm = m_geolib->getNumMergedMesh();
+
+    LOG(info) << "[ nmm " << nmm ;
+
+    for(unsigned i=0 ; i < nmm ; i++) 
+    {    
+        dryrun_convertMergedMesh(i); 
+    }    
+
+    LOG(info) << "] nmm " << nmm  ; 
+
+}
+void GGeoLib::dryrun_convertMergedMesh(unsigned i)
+{
+    LOG(LEVEL) << "( " << i  ; 
+
+    GMergedMesh* mm = m_geolib->getMergedMesh(i);
+
+    bool raylod = m_ok->isRayLOD() ;
+    if(raylod) LOG(fatal) << " RayLOD enabled " ;
+    assert(raylod == false);  
+
+    bool is_null = mm == NULL ;
+    bool is_skip = mm->isSkip() ;
+    bool is_empty = mm->isEmpty() ;
+
+    if( is_null || is_skip || is_empty )
+    {
+        LOG(error) << " not converting mesh " << i << " is_null " << is_null << " is_skip " << is_skip << " is_empty " << is_empty ;
+        return  ;
+    }
+
+    if( i == 0 )   // global non-instanced geometry in slot 0
+    {
+        dryrun_makeGlobalGeometryGroup(mm);
+    }
+    else           // repeated geometry
+    {
+        dryrun_makeRepeatedAssembly(mm) ;
+    }
+} 
+
+void GGeoLib::dryrun_makeGlobalGeometryGroup(GMergedMesh* mm)
+{
+    int dbgmm =  m_ok->getDbgMM() ;
+    if(dbgmm == 0) mm->dumpVolumesSelected("GGeoLib::dryrun_makeGlobalGeometryGroup [--dbgmm 0] ");
+    dryrun_makeOGeometry( mm );
+}
+
+
+void GGeoLib::dryrun_makeRepeatedAssembly(GMergedMesh* mm)
+{
+    unsigned mmidx = mm->getIndex();
+    unsigned imodulo = m_ok->getInstanceModulo( mmidx );
+
+    LOG(LEVEL)
+         << " mmidx " << mmidx
+         << " imodulo " << imodulo
+         ;
+
+
+    NPY<float>* itransforms = mm->getITransformsBuffer();
+    NPY<unsigned int>* ibuf = mm->getInstancedIdentityBuffer();
+
+    NSlice* islice = mm->getInstanceSlice();
+    if(!islice) islice = new NSlice(0, itransforms->getNumItems()) ;
+
+    unsigned int numTransforms = islice->count();
+    assert(itransforms && numTransforms > 0);
+
+    unsigned int numIdentity = ibuf->getNumItems();
+
+    assert(numIdentity % numTransforms == 0 && "expecting numIdentity to be integer multiple of numTransforms");
+    unsigned int numSolids = numIdentity/numTransforms ;
+
+    unsigned count(0);
+    if(imodulo == 0u)
+    {
+        count = islice->count() ;
+    }
+    else
+    {
+        for(unsigned int i=islice->low ; i<islice->high ; i+=islice->step) //  CAUTION HEAVY LOOP eg 20k PMTs 
+        {
+            if( i % imodulo != 0u ) continue ;
+            count++ ;
+        }
+    }
+
+    LOG(LEVEL)
+        << " numTransforms " << numTransforms
+        << " numIdentity " << numIdentity
+        << " numSolids " << numSolids
+        << " islice " << islice->description()
+        << " count " << count
+        ;
+
+
+
+}
+
+
+
+void GGeoLib::dryrun_makeOGeometry(GMergedMesh* mm)
+{
+    char ugeocode  = mm->getCurrentGeoCode();
+    LOG(LEVEL) << "ugeocode [" << (char)ugeocode << "]" ;
+
+    if(ugeocode == OpticksConst::GEOCODE_TRIANGULATED )
+    {
+        dryrun_makeTriangulatedGeometry(mm);
+    }
+    else if(ugeocode == OpticksConst::GEOCODE_ANALYTIC)
+    {
+        dryrun_makeAnalyticGeometry(mm);
+    }
+    else if(ugeocode == OpticksConst::GEOCODE_GEOMETRYTRIANGLES)
+    {
+        dryrun_makeGeometryTriangles(mm);
+    }
+    else
+    {
+        LOG(fatal) << "geocode must be triangulated or analytic, not [" << (char)ugeocode  << "]" ;
+        assert(0);
+    }
+}
+
+
+ 
+void GGeoLib::dryrun_makeTriangulatedGeometry(GMergedMesh* mm)
+{
+    unsigned numVolumes = mm->getNumVolumes();
+    unsigned numFaces = mm->getNumFaces();
+    unsigned numITransforms = mm->getNumITransforms();
+            
+    GBuffer* id = mm->getAppropriateRepeatedIdentityBuffer();
+    GBuffer* vb = mm->getVerticesBuffer() ;
+    GBuffer* ib = mm->getIndicesBuffer() ;
+
+    plog::Severity lev = info ; 
+
+    LOG(lev)
+        << " mmIndex " << mm->getIndex()
+        << " numFaces (PrimitiveCount) " << numFaces
+        << " numVolumes " << numVolumes
+        << " numITransforms " << numITransforms
+        ;
+
+    LOG(lev) << " identityBuffer " << id->desc(); 
+    LOG(lev) << " verticesBuffer " << vb->desc(); 
+    LOG(lev) << " indicesBuffer  " << ib->desc(); 
+}
+void GGeoLib::dryrun_makeGeometryTriangles(GMergedMesh* mm)
+{
+    dryrun_makeTriangulatedGeometry(mm); 
+}
+
+
+void GGeoLib::dryrun_makeAnalyticGeometry(GMergedMesh* mm)
+{
+    bool dbgmm = m_ok->getDbgMM() == int(mm->getIndex()) ;
+    bool dbganalytic = m_ok->hasOpt("dbganalytic") ;
+
+    GParts* pts = mm->getParts(); assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry ");
+
+    if(pts->getPrimBuffer() == NULL)
+    {
+        LOG(LEVEL) << "( GParts::close " ;
+        pts->close();
+        LOG(LEVEL) << ") GParts::close " ;
+    }
+    else
+    {
+        LOG(LEVEL) << " skip GParts::close " ;
+    }
+   
+    LOG(LEVEL) << "mm " << mm->getIndex()
+              << " verbosity: " << m_verbosity
+              << ( dbgmm ? " --dbgmm " : " " )
+              << ( dbganalytic ? " --dbganalytic " : " " )
+              << " pts: " << pts->desc()
+              ;
+
+    if(dbgmm)
+    {
+        LOG(fatal) << "dumping as instructed by : --dbgmm " << m_ok->getDbgMM() ;
+        mm->dumpVolumesSelected("GGeoLib::dryrun_makeAnalyticGeometry");
+    }
+
+
+    if(dbganalytic || dbgmm ) pts->fulldump("--dbganalytic/--dbgmm", 10) ;
+
+    NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
+    NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
+    NPY<float>*     planBuf = pts->getPlanBuffer(); assert(planBuf && planBuf->hasShape(-1,4));      // planes used for convex polyhedra such as trapezoid
+    NPY<int>*       primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));      // prim
+
+    unsigned numPrim = primBuf->getNumItems();
+
+
+    NPY<float>* itransforms = mm->getITransformsBuffer(); assert(itransforms && itransforms->hasShape(-1,4,4) ) ;
+    unsigned numInstances = itransforms->getNumItems();
+    NPY<unsigned>*  idBuf = mm->getInstancedIdentityBuffer();   assert(idBuf);
+    LOG(LEVEL)
+        << " mmidx " << mm->getIndex()
+        << " numInstances " << numInstances
+        << " numPrim " << numPrim
+        << " idBuf " << idBuf->getShapeString()
+        ;
+
+    if( mm->getIndex() > 0 )  // volume level buffers do not honour selection unless using globalinstance
+    {
+        assert(idBuf->hasShape(numInstances,numPrim,4));
+    }
+
+
+
+    unsigned numPart = partBuf->getNumItems();
+    unsigned numTran = tranBuf->getNumItems();
+    unsigned numPlan = planBuf->getNumItems();
+
+    unsigned numVolumes = mm->getNumVolumes();
+    unsigned numVolumesSelected = mm->getNumVolumesSelected();
+
+    if( pts->isNodeTree() )
+    {
+        bool match = numPrim == numVolumes ;
+        if(!match)
+        {
+            LOG(fatal)
+                << " NodeTree : MISMATCH (numPrim != numVolumes) "
+                << " (this happens when using --csgskiplv) "
+                << " numVolumes " << numVolumes
+                << " numVolumesSelected " << numVolumesSelected
+                << " numPrim " << numPrim
+                << " numPart " << numPart
+                << " numTran " << numTran
+                << " numPlan " << numPlan
+                ;
+        }
+        //assert( match && "NodeTree Sanity check failed " );
+        // hmm tgltf-;tgltf-- violates this ?
+    }
+
+
+    //assert( numPrim < 10 );  // expecting small number
+    assert( numTran <= numPart ) ;
+}
 
 

@@ -41,7 +41,7 @@ eg 10 float3 vertices, where the item is regarded at the float3
    NumElementsTotal      30  =  NumItems*NumElements = 10*3 
 */ 
 
-
+#include <string>
 struct BBufSpec ; 
 struct NSlice ; 
 
@@ -55,21 +55,22 @@ class GGEO_API GBuffer {
         // NB reshape just changes interpretation, there is no change to NumBytes or NumElementsTotal
         //    only NumItems and NumElements are changed (reversibly)
     public:
-        unsigned int getNumBytes();
-        void*        getPointer();
+        unsigned int getNumBytes() const ;
+        void*        getPointer() const ;
         const char*  getName() const ;
-        BBufSpec*    getBufSpec();
+        BBufSpec*    getBufSpec()  ;
 
-        unsigned int getItemSize();
-        unsigned int getNumElements();
-        unsigned int getNumItems();
-        unsigned int getNumElementsTotal();
+        unsigned int getItemSize() const ;
+        unsigned int getNumElements() const ;
+        unsigned int getNumItems() const ;
+        unsigned int getNumElementsTotal() const ;
     public:
         void setName(const char* name); 
     public:
         bool isEqual(GBuffer* other);
         float fractionDifferent(GBuffer* other);
-        void Summary(const char* msg="GBuffer::Summary");
+        void Summary(const char* msg="GBuffer::Summary") const ;
+        std::string desc() const ;
     public:
         GBuffer* make_slice(const char* slice); 
         GBuffer* make_slice(NSlice* slice); 
@@ -92,9 +93,9 @@ class GGEO_API GBuffer {
     public:
         // OpenGL related : but not requiring any headers
         void         setBufferId(int buffer_id);
-        int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
+        int          getBufferId() const ;  // either -1 if not uploaded, or the OpenGL buffer Id
         void         setBufferTarget(int buffer_target);
-        int          getBufferTarget();
+        int          getBufferTarget() const ;
         void         didUpload(); 
     protected:
          unsigned int m_nbytes ;

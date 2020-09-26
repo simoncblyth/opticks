@@ -95,6 +95,7 @@ public:
              gfloat2* texcoords
          );
 public:
+    char getCurrentGeoCode() const ;
     std::string brief() const ;
     void addInstancedBuffers(const std::vector<GNode*>& placements);  // uses GTree statics to create the buffers
    // int  getNumComponents() const ;  <-- this caused some grief, silent override decl without an implementation  

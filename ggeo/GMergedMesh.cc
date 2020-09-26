@@ -67,6 +67,32 @@ bool GMergedMesh::isTriangulated() const
 }
 
 
+char GMergedMesh::getCurrentGeoCode() const 
+{
+    int rtxmode = m_ok->getRTX(); 
+
+    const GMergedMesh* mm = this ; 
+
+    char ugeocode ; 
+
+    if( m_ok->isXAnalytic() )
+    {    
+         ugeocode = OpticksConst::GEOCODE_ANALYTIC ;  
+    }    
+    else if(  m_ok->isXGeometryTriangles() || rtxmode == 2 )
+    {    
+         ugeocode = OpticksConst::GEOCODE_GEOMETRYTRIANGLES ;  
+    }    
+    else 
+    {    
+         ugeocode = mm->getGeoCode() ;  
+    }    
+    return ugeocode ; 
+}
+
+
+
+
 // expedient pass-thru ctor
 GMergedMesh::GMergedMesh(
     unsigned index, 

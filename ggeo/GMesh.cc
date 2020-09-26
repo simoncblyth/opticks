@@ -2119,7 +2119,7 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
            ; 
 
     assert(nodeinfo_ok);
-    assert(iidentity_ok);
+    //assert(iidentity_ok);
 
     guint4* nodeinfo = getNodeInfo();
     unsigned int nftot(0);

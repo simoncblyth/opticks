@@ -29,6 +29,7 @@ class Opticks ;
 class GBndLib ; 
 class GMergedMesh ; 
 class GNode ; 
+class GGeoLib ; 
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
@@ -72,6 +73,15 @@ class GGEO_API GGeoLib {
         unsigned getVerbosity() const ;  
         int checkMergedMeshes() const ; 
     public:
+        void dryrun_convert(); 
+        void dryrun_convertMergedMesh(unsigned i);
+        void dryrun_makeGlobalGeometryGroup(GMergedMesh* mm);
+        void dryrun_makeRepeatedAssembly(GMergedMesh* mm);
+        void dryrun_makeOGeometry(GMergedMesh* mm);
+        void dryrun_makeGeometryTriangles(GMergedMesh* mm);
+        void dryrun_makeAnalyticGeometry(GMergedMesh* mm);
+        void dryrun_makeTriangulatedGeometry(GMergedMesh* mm);
+    public:
         void hasCache() const ;
         void loadFromCache();
         void save();
@@ -98,7 +108,7 @@ class GGEO_API GGeoLib {
         char*   m_mesh_version ;
         int     m_verbosity ;
         std::map<unsigned,GMergedMesh*>  m_merged_mesh ; 
-        //std::map<unsigned,GMergedMesh*>  m_merged_mesh_lod ; 
+        GGeoLib* m_geolib ; 
 };
 
 #include "GGEO_TAIL.hh"
