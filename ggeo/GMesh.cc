@@ -511,6 +511,8 @@ guint4 GMesh::getNodeInfo(unsigned int index) const
     return m_nodeinfo[index] ; 
 }
 
+
+
 guint4* GMesh::getIdentity() const 
 {
     return m_identity ; 
@@ -1075,6 +1077,7 @@ float* GMesh::getITransform(unsigned int index)
 
 void GMesh::setMeshes(unsigned int* meshes)  
 {
+    LOG(LEVEL) ; 
     m_meshes = meshes ;  
     assert(m_num_volumes > 0);
     unsigned int size = sizeof(unsigned int);
@@ -1083,6 +1086,7 @@ void GMesh::setMeshes(unsigned int* meshes)
 
 void GMesh::setMeshesBuffer(GBuffer* buffer) 
 {
+    LOG(LEVEL) ; 
     m_meshes_buffer = buffer ;  
     if(!buffer) return ; 
 
@@ -1098,6 +1102,7 @@ void GMesh::setMeshesBuffer(GBuffer* buffer)
 
 void GMesh::setNodeInfo(guint4* nodeinfo)  
 {
+    LOG(LEVEL) ; 
     m_nodeinfo = nodeinfo ;  
     assert(m_num_volumes > 0);
     unsigned int size = sizeof(guint4);
@@ -1106,6 +1111,7 @@ void GMesh::setNodeInfo(guint4* nodeinfo)
 }
 void GMesh::setNodeInfoBuffer(GBuffer* buffer) 
 {
+    LOG(LEVEL) ; 
     m_nodeinfo_buffer = buffer ;  
     if(!buffer) return ; 
 
@@ -1122,6 +1128,7 @@ void GMesh::setNodeInfoBuffer(GBuffer* buffer)
 
 void GMesh::setIdentity(guint4* identity)  
 {
+    LOG(LEVEL) ; 
     m_identity = identity ;  
     assert(m_num_volumes > 0);
     unsigned int size = sizeof(guint4);
@@ -1130,6 +1137,7 @@ void GMesh::setIdentity(guint4* identity)
 }
 void GMesh::setIdentityBuffer(GBuffer* buffer) 
 {
+    LOG(LEVEL) ; 
     m_identity_buffer = buffer ;  
     if(!buffer) return ; 
 
@@ -1146,6 +1154,7 @@ void GMesh::setIdentityBuffer(GBuffer* buffer)
 
 void GMesh::setInstancedIdentityBuffer(NPY<unsigned int>* buffer) 
 {
+    LOG(LEVEL) ; 
     m_iidentity_buffer = buffer ;  
     if(!buffer) return ; 
     m_iidentity = (guint4*)buffer->getPointer();
@@ -1838,13 +1847,11 @@ NPYBase* GMesh::getNPYBuffer(const char* name) const
 
 void GMesh::loadNPYBuffer(const char* path, const char* name)
 {
-    LOG(debug) << "GMesh::loadNPYBuffer" 
-              << " name " << name
-              << " path " << path 
-              ; 
+    LOG(LEVEL) << " name " << name << " path " << path ; 
 
     if(strcmp(name, iidentity_) == 0)
     {
+        LOG(info) << " loading iidentity " << path ; 
         NPY<unsigned>* buf = NPY<unsigned>::load(path) ;
         setInstancedIdentityBuffer(buf);
     }
@@ -1860,27 +1867,37 @@ void GMesh::loadNPYBuffer(const char* path, const char* name)
     }
     else
     {
+        LOG(fatal) << " unknown: " << name ; 
         assert(0);
     }
+}
+
+void GMesh::loadGBuffer(const char* path, const char* name)
+{
+    LOG(LEVEL) << " name " << name << " path " << path ; 
+
+    GBuffer* buffer(NULL); 
+    if(isFloatBuffer(name))                    buffer = GBuffer::load<float>(path);
+    else if(isIntBuffer(name))                 buffer = GBuffer::load<int>(path);
+    else if(isUIntBuffer(name))                buffer = GBuffer::load<unsigned int>(path);
+    else LOG(fatal) << " unknown buffer " << name << " " << path ; 
+    
+    if(!buffer) LOG(fatal) << " failed to load " << name << " " << path ; 
+    assert(buffer); 
+ 
+    if(buffer) setBuffer(name, buffer);
 }
 
 
 void GMesh::loadBuffer(const char* path, const char* name)
 {
-    if(isNPYBuffer(name))
+    if(isNPYBuffer(name))  // iidentity, itransforms, components
     {
          loadNPYBuffer(path, name);
     }
     else
     {
-        GBuffer* buffer(NULL); 
-        if(isFloatBuffer(name))                    buffer = GBuffer::load<float>(path);
-        else if(isIntBuffer(name))                 buffer = GBuffer::load<int>(path);
-        else if(isUIntBuffer(name))                buffer = GBuffer::load<unsigned int>(path);
-        else
-            printf("GMesh::loadBuffer WARNING not loading %s from %s \n", name, path ); 
-
-        if(buffer) setBuffer(name, buffer);
+         loadGBuffer(path, name);
     }
 }
 
@@ -1968,7 +1985,7 @@ void GMesh::save(const char* dir, const char* typedir, const char* instancedir) 
 
 void GMesh::loadBuffers(const char* dir)
 {
-    LOG(verbose) << "GMesh::loadBuffers " << dir ;  
+    LOG(LEVEL) << dir ;  
 
     for(unsigned int i=0 ; i<m_names.size() ; i++)
     {

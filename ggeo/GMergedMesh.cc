@@ -980,7 +980,7 @@ GMergedMesh* GMergedMesh::Load(const char* dir, unsigned int index, const char* 
     std::string cachedir = BFile::FormPath(dir, NULL, NULL);
     bool existsdir = BFile::ExistsDir(dir, NULL, NULL);
 
-    LOG(debug) 
+    LOG(LEVEL) 
         << " dir " << dir 
         << " -> cachedir " << cachedir
         << " index " << index
@@ -1187,7 +1187,8 @@ itransforms InstanceTransformsBuffer
     collect GNode placement transforms into buffer
 
 iidentity InstanceIdentityBuffer
-    (num_instances*num_volumes_per_instance, 4 )
+    From Aug 2020: (num_instances, num_volumes_per_instance, 4 )
+    Before:        (num_instances*num_volumes_per_instance, 4 )
 
     collects the results of GVolume::getIdentity for all volumes within all instances. 
 

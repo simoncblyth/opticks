@@ -63,6 +63,8 @@ const plog::Severity OpticksGeometry::LEVEL = PLOG::EnvLevel("OpticksGeometry", 
 
 
 
+
+
 OpticksGeometry::OpticksGeometry(OpticksHub* hub)
    :
    m_hub(hub),

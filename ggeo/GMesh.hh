@@ -373,6 +373,7 @@ class GGEO_API GMesh : public GDrawable {
   private: 
       bool isNPYBuffer(const char* name) const ;
       void loadNPYBuffer(const char* path, const char* name);
+      void loadGBuffer(const char* path, const char* name);
       void saveNPYBuffer(const char* path, const char* name) const ;
       NPYBase* getNPYBuffer(const char* name) const ;
   private: 

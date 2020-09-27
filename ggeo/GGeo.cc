@@ -625,7 +625,7 @@ std::string  GGeo::getSensorBoundaryReport() const { return m_bndlib->getSensorB
 
 // via GGeoLib
 
-unsigned int GGeo::getNumMergedMesh()
+unsigned int GGeo::getNumMergedMesh() const 
 {
     GGeoLib* geolib = getGeoLib() ;  
     assert(geolib);

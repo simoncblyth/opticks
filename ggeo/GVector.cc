@@ -22,6 +22,7 @@
 #include <iomanip>
 #include <limits>
 
+#include "NGLM.hpp"
 #include "GVector.hh"
 
 std::string gfloat3::desc() const 
@@ -49,6 +50,13 @@ std::string gfloat4::desc() const
           ; 
 
     return ss.str(); 
+}
+
+
+glm::uvec4 guint4::as_vec() const 
+{
+    glm::uvec4 v(x,y,z,w); 
+    return v ; 
 }
 
 std::string guint4::description() const 

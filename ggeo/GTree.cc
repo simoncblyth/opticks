@@ -61,6 +61,9 @@ NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<GNode*>& place
 GTree::makeInstanceIdentityBuffer
 -----------------------------------
 
+Canonically invoked by GMergedMesh::addInstancedBuffers
+
+
 Repeating identity guint4 for all volumes of an instance (typically ~5 volumes for 1 instance)
 into all the instances (typically large 500-36k).
 
@@ -101,7 +104,7 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
 
     if(is_global)
     {
-        assert( numInstances == 1 );  
+        assert( numInstances == 1 );  // only one placement (the root node) for the global mm 
     }
 
     std::vector<GNode*>& progeny0 = is_global ? base0->getGlobalProgeny() : base0->getProgeny();
@@ -112,16 +115,22 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
     unsigned num = numVolumes*numInstances ; 
 
     NPY<unsigned>* buf = NPY<unsigned>::make(0, 4);
+    NPY<unsigned>* buf2 = NPY<unsigned>::make(numInstances, numVolumes, 4);
+    buf2->zero(); 
 
     for(unsigned int i=0 ; i < numInstances ; i++)
     {
-        GNode* base = placements[i] ;
+        GNode* base = placements[i] ; // for global only one placement 
 
         unsigned ridx = base->getRepeatIndex();
-        assert( ridx == ridx0) ; 
+        assert( ridx == ridx0) ; // all placements by definition have the same ridx 
 
         std::vector<GNode*>& progeny = is_global ? base->getGlobalProgeny() : base->getProgeny() ;
         unsigned numProgeny = is_global ? base->getPriorGlobalProgenyCount() : base->getPriorProgenyCount();
+
+        // For globals the "progeny" are nodes scattered all over the geometry tree, for instanced
+        // the progeny are nodes in a contiguous subtree.
+
 
         assert( numProgeny == numProgeny0 && "repeated geometry for the instances, so the progeny counts must match");
 
@@ -151,6 +160,10 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
             guint4 id = volume->getIdentity();
             buf->add(id.x, id.y, id.z, id.w ); 
 
+            glm::uvec4 id_ = id.as_vec(); 
+            buf2->setQuad( id_, i, s, 0) ; 
+
+
 #ifdef DEBUG
             std::cout  
                   << " i " << i
@@ -166,6 +179,17 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
     buf->reshape(-1, numVolumes, 4) ; 
     assert(buf->getNumItems() == numInstances);
     assert(buf->hasShape(numInstances,numVolumes, 4));
+
+    bool dump = false ;
+    unsigned mismatch = NPY<unsigned>::compare( buf, buf2, dump ); 
+    if( mismatch > 0 )
+    {
+         LOG(fatal) << " buf/buf2 mismatched " << mismatch ; 
+         dump = true ; 
+         NPY<unsigned>::compare( buf, buf2, dump ); 
+    }
+    assert( mismatch == 0 );  
+
 
     return buf ;  
 }

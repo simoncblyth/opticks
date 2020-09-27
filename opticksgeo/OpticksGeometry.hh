@@ -36,6 +36,10 @@ class GMergedMesh ;
 OpticksGeometry : GGeo holder/loader/fixer 
 ============================================
 
+* almost nothing here is needed anymore (meshfixing and Assimp loading no longer viable)
+* TODO: eliminate this just go direct to GGeo ?
+
+
 Actually OpticksGGeo would be a better name, this acts as a higher 
 level holder of GGeo with a triangulated (G4DAE) focus.  
 Anything related to analytic (GLTF) should not live here, OpticksHub 

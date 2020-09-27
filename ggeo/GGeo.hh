@@ -244,7 +244,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         // pass thru to geolib
         GMergedMesh* makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity, bool globalinstance);
-        unsigned int getNumMergedMesh();
+        unsigned int getNumMergedMesh() const ;
     public:
         // these are operational from cache
         // target 0 : all geometry of the mesh, >0 : specific volumes

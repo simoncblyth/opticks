@@ -20,6 +20,9 @@
 #include <set>
 #include <string>
 
+#include "SStr.hh"
+#include "NPY.hpp"
+#include "NGLM.hpp"
 
 #include "Opticks.hh"
 #include "GGeo.hh"
@@ -59,20 +62,82 @@ void misc(GGeo* m_ggeo)
 
 
 
-// TODO add methods like below to GGeo
-//
-//    private:
-//        void findSensorVolumePairs();
-//    public:
-//        unsigned getNumSensorVolumePairs();
-//        const std::pair<std::string, std::string>& getSensorVolumePair(unsigned p);    
-//
-//     use this in CGeometry to reconstruct G4LogicalBorderSurface for the cathodes
-//     when using CGDMLDetector
-//  
+void test_GGeo_identity(const GGeo* gg, unsigned mmidx)
+{
+    const GMergedMesh* mm = gg->getMergedMesh(mmidx);
+    unsigned numVolumes = mm->getNumVolumes();
+
+    NPY<int>* idchk = NPY<int>::make(numVolumes,3,4) ; 
+    idchk->zero(); 
+
+    bool global = mmidx == 0 ; 
+
+    unsigned edgeitems = 20 ; 
+    unsigned modulo = 500 ; 
+    LOG(info) << " mmidx " << mmidx << " numVolumes " << numVolumes << " edgeitems " << edgeitems << " modulo " << modulo  ; 
+    for(unsigned i=0 ; i < numVolumes ; i++)
+    {
+        guint4 nodeinfo = mm->getNodeInfo(i);
+        guint4 id = mm->getIdentity(i);
+
+        guint4 iid = mm->getInstancedIdentity(i);  // nothing new for GlobalMergedMesh 
+        //   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ what uses this for the global mesh ?
+
+        idchk->setQuad(nodeinfo.as_vec(), i, 0,0 ); 
+        idchk->setQuad(id.as_vec()      , i, 1,0 ); 
+        idchk->setQuad(iid.as_vec()     , i, 2,0 ); 
+
+        unsigned MISSING = -1 ; 
+        unsigned nface = nodeinfo.x ;
+        unsigned nvert = nodeinfo.y ;
+        unsigned node = nodeinfo.z ;
+        unsigned parent = nodeinfo.w ;
+
+        if(global) assert( node == i );
 
 
+        if(i < edgeitems || i % modulo == 0 || i > numVolumes - edgeitems)
+        std::cout 
+           << " NodeInfo "
+           << " nface " << std::setw(6) << nface
+           << " nvert " << std::setw(6) << nvert
+           << " node " << std::setw(6) << node
+           << " parent " << std::setw(6) << ( parent == MISSING ? 0 : parent ) 
+           << " Identity "
+           << " ( " 
+           << std::setw(6) << id.x
+           << std::setw(6) << id.y 
+           << std::setw(6) << id.z 
+           << std::setw(6) << id.w
+           << " ) " 
+           << " InstancedIdentity "
+           << " ( " 
+           << std::setw(10) << iid.x
+           << " "
+           << std::setw(10) << iid.y
+           << " "
+           << std::setw(10) << iid.z
+           << " "
+           << std::setw(10) << iid.w
+           << " ) " 
+           << std::endl 
+           ;
+    }
 
+    const char* path = SStr::Concat("$TMP/GGeoTest/test_GGeo_identity/",mmidx,"/idchk.npy") ;
+    LOG(info) << "write: " << path ; 
+    idchk->save(path); 
+
+    const char* cmd = SStr::Concat("a = np.load(os.path.expandvars(\"", path,"\")).reshape(-1,12) ") ; 
+    LOG(info) << "np.set_printoptions(edgeitems=10000000, linewidth=200)   " ; 
+    LOG(info) << cmd ; 
+}
+void test_GGeo_identity(const GGeo* gg)
+{
+    unsigned nmm = gg->getNumMergedMesh(); 
+    LOG(info) << " nmm " << nmm ; 
+    for(unsigned idx=0 ; idx < nmm ; idx++) test_GGeo_identity(gg, idx);  
+}
 
 
 void test_GGeo(const GGeo* gg)
@@ -91,24 +156,28 @@ void test_GGeo(const GGeo* gg)
     for(unsigned i=0 ; i < numVolumes ; i++)
     {
         guint4 nodeinfo = mm->getNodeInfo(i);
+        guint4 id = mm->getIdentity(i);
+
         unsigned nface = nodeinfo.x ;
         unsigned nvert = nodeinfo.y ;
         unsigned node = nodeinfo.z ;
         unsigned parent = nodeinfo.w ;
         assert( node == i );
 
-        guint4 id = mm->getIdentity(i);
+
         unsigned node2 = id.x ;
         unsigned mesh = id.y ;
         unsigned boundary = id.z ;
         unsigned sensor = id.w ;
-        assert( node2 == i );
+        //assert( node2 == i );
         
+     /*
         guint4 iid = mm->getInstancedIdentity(i);  // nothing new for GlobalMergedMesh 
         assert( iid.x == id.x );
         assert( iid.y == id.y );
         assert( iid.z == id.z );
         assert( iid.w == id.w );
+     */
 
         std::string bname = blib->shortname(boundary);
         guint4 bnd = blib->getBnd(boundary);
@@ -174,16 +243,6 @@ void test_GGeo(const GGeo* gg)
 } 
 
 
-#ifdef OLD_SENSOR
-void test_GGeo_sd(const GGeo* m_ggeo)
-{
-    unsigned nlvsd = m_ggeo->getNumLVSD() ;
-    LOG(info) << " nlvsd " << nlvsd ; 
-}
-#endif
-
-
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -196,11 +255,7 @@ int main(int argc, char** argv)
     gg.dumpStats();
 
     //test_GGeo(&gg);
-
-#ifdef OLD_SENSOR
-    test_GGeo_sd(&gg);
-#endif
-
+    test_GGeo_identity(&gg);
 
 
     return 0 ;

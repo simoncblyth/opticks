@@ -260,9 +260,9 @@ void OpticksHub::init()
 
 
 
-    configureGeometry() ;    
+    configureGeometry() ;      // setting mm geocode
 
-    deferredGeometryPrep(); 
+    deferredGeometryPrep();    // GGeo::deferredCreateGParts
 
 
 

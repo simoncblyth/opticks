@@ -30,6 +30,7 @@
 //#include "NBBox.hpp"
 
 #include "NQuad.hpp"
+#include "NGLM.hpp"
 #include "GMatrix.hh"
 
 #include "GGEO_API_EXPORT.hh"
@@ -191,6 +192,9 @@ struct GGEO_API guint4
 {
     guint4() : x(0), y(0), z(0), w(0) {} ;
     guint4(unsigned int _x, unsigned int _y, unsigned int _z, unsigned int _w) : x(_x), y(_y), z(_z), w(_w) {} ;
+
+    glm::uvec4 as_vec() const ;
+
 
     unsigned int operator[](unsigned int index) const
     {
