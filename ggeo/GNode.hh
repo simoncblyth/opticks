@@ -26,6 +26,8 @@
 #include "GVector.hh"
 
 struct nmat4triple ; 
+struct nbbox ; 
+struct gbbox ; 
 
 template <typename T> class GMatrix ; 
 class GMesh ;
@@ -67,7 +69,7 @@ class GGEO_API GNode {
       GNode(unsigned int index, GMatrix<float>* transform, const GMesh* mesh);
       void setIndex(unsigned int index);
       void setSelected(bool selected);
-      bool isSelected();
+      bool isSelected() const ;
       virtual ~GNode();
   private:
       void init();
@@ -79,10 +81,10 @@ class GGEO_API GNode {
       void addChild(GNode* child);
       void setDescription(char* desc);
       void setName(const char* name);
-      const char* getName();
+      const char* getName() const ;
   public:
      void setRepeatIndex(unsigned int index);
-     unsigned int getRepeatIndex();  
+     unsigned getRepeatIndex() const ;  
   public: 
       void setBoundaryIndices(unsigned int boundary_index);
       void setSensorIndices(unsigned int sensor_index);
@@ -101,24 +103,27 @@ class GGEO_API GNode {
       GVolume*      getChildVolume(unsigned index) const ; 
       unsigned int  getNumChildren() const ;
 
-      char*         getDescription();
+      char*         getDescription() const ;
       gfloat3*      getLow();
       gfloat3*      getHigh();
       const GMesh*  getMesh() const ;
       unsigned      getMeshIndex() const ;
   public:
-      unsigned int* getNodeIndices();
-      unsigned int* getBoundaryIndices();
-      unsigned int* getSensorIndices();
+      unsigned int* getNodeIndices() const ;
+      unsigned int* getBoundaryIndices() const ;
+      unsigned int* getSensorIndices() const ;
   public:
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high );
   public:
-      glm::mat4 getTransformMat4();
-
-      GMatrixF*     getTransform();  // global transform
-      GMatrixF* getLevelTransform();  // immediate "local" node transform
-      GMatrixF* getRelativeTransform(GNode* base);  // product of transforms from beneath base node
+      glm::mat4 getTransformMat4() const ;
+ public:
+      GMatrixF*     getTransform() const ;  // global transform
+      GMatrixF* getLevelTransform() const ;  // immediate "local" node transform
+  public:
+      GMatrixF* getRelativeTransform(const GNode* base);  // product of transforms from beneath base node
+      nbbox*    getRelativeVerticesBBox(const GNode* base) ; 
+      nbbox*    getVerticesBBox() const ; 
   public:
       void setLevelTransform(GMatrixF* ltransform);
   public:
@@ -139,30 +144,29 @@ class GGEO_API GNode {
       GMatrixF*            calculateTransform();  
   public:
       std::vector<GNode*>& getProgeny();
-      std::vector<GNode*>& getGlobalProgeny();
+      std::vector<GNode*>& getRemainderProgeny();
   public:
       std::vector<GNode*>& getAncestors();
       std::string&         getProgenyDigest();
       std::string&         getLocalDigest();
   public:
-      //unsigned int         getLastProgenyCount();
       unsigned int         getPriorProgenyCount() const ;
-      unsigned int         getPriorGlobalProgenyCount() const ;
+      unsigned int         getPriorRemainderProgenyCount() const ;
   public:
       unsigned int         getProgenyNumVertices();  // includes self when m_selfdigest is true
       GNode*               findProgenyDigest(const std::string& pdig) ;
-      std::vector<GNode*>  findAllProgenyDigest(std::string& dig);
-      std::vector<GNode*>  findAllInstances(unsigned ridx, bool inside, bool honour_selection );
+      std::vector<const GNode*>  findAllProgenyDigest(std::string& dig);
+      std::vector<const GNode*>  findAllInstances(unsigned ridx, bool inside, bool honour_selection );
   private:
       std::string          meshDigest();
       std::string          localDigest();
       static std::string   localDigest(std::vector<GNode*>& nodes, GNode* extra=NULL);
   private:
       void collectProgeny(std::vector<GNode*>& progeny) ;
-      void collectGlobalProgeny(std::vector<GNode*>& global_progeny) ;
+      void collectRemainderProgeny(std::vector<GNode*>& global_progeny) ;
   private:
-      void collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig);
-      void collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside, bool honour_selection );
+      void collectAllProgenyDigest(std::vector<const GNode*>& match, std::string& dig);
+      void collectAllInstances(    std::vector<const GNode*>& match, unsigned ridx, bool inside, bool honour_selection );
   private:
       bool                m_selfdigest ; // when true getProgenyDigest includes self node 
       bool                m_selected ;
@@ -192,10 +196,10 @@ class GGEO_API GNode {
       std::string         m_local_digest ; 
       std::string         m_progeny_digest ; 
       std::vector<GNode*> m_progeny ; 
-      std::vector<GNode*> m_global_progeny ; 
+      std::vector<GNode*> m_remainder_progeny ; 
       std::vector<GNode*> m_ancestors ; 
       unsigned int        m_progeny_count ; 
-      unsigned int        m_global_progeny_count ; 
+      unsigned int        m_remainder_progeny_count ; 
       unsigned int        m_repeat_index ; 
       unsigned int        m_progeny_num_vertices ;
   private: 

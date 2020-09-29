@@ -177,6 +177,7 @@ NGridTest.cc
 ImageNPYTest.cc
 ImageNPYConcatTest.cc
 
+NPointTest.cc
 
 )
 

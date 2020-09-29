@@ -54,6 +54,9 @@ set(TEST_SOURCES
     GGeoLibTest.cc
 
     GGeoTest.cc
+    GGeoIdentityTest.cc
+    GGeoConvertTest.cc
+
     GMakerTest.cc
 
     GMergedMeshTest.cc

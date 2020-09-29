@@ -215,8 +215,17 @@ void X4Mesh::collect_vtx(int ivert)
     m_vtx->setValue( ivert-1, 0, 0, 0, vtx.x() );    
     m_vtx->setValue( ivert-1, 0, 0, 1, vtx.y() );    
     m_vtx->setValue( ivert-1, 0, 0, 2, vtx.z() );    
-    //                        ^^^^ are these zeros a hangover from former different shape of m_vtx 
+    //               i,       j, k, l, value 
 }
+
+/**
+X4Mesh::collect_raw
+---------------------
+
+* collects vertex indices of tris or quads into m_raw.
+* vertex indices are 1-based, for tris the 4th slot is zero 
+
+**/
 
 void X4Mesh::collect_raw(int iface)
 {
@@ -248,8 +257,6 @@ void X4Mesh::collect_raw(int iface)
     }
 
 
-    // collect raw indices, allowing tris or quads 
-    // vertex indices are 1-based, for tris the 4th slot is zero 
 
     m_raw->setQuad( iface-1, 0, 0, 
             ivertex[0] ,
@@ -258,6 +265,14 @@ void X4Mesh::collect_raw(int iface)
             nedge == 4 ? ivertex[3]  : 0 ) ;
 }
 
+
+/**
+X4Mesh::collect_tri
+---------------------
+
+1. count total tris, detecting quads by 4th slot non-zeros
+
+**/
 
 void X4Mesh::collect_tri()
 {

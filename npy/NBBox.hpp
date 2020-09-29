@@ -22,6 +22,7 @@
 #include <functional>
 #include <vector>
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 struct nmat4triple ; 
 
@@ -31,10 +32,13 @@ struct nmat4triple ;
 
 #include "NPY_API_EXPORT.hh"
 
+class NPoint ; 
 
 
 struct NPY_API nbbox 
 {
+    static const plog::Severity LEVEL ; 
+
     std::function<float(float,float,float)> sdf() const ;
     float operator()(const glm::vec3& q, const nmat4triple* t_=NULL ) const  ;
     float operator()(float x_, float y_, float z_, const nmat4triple* t_=NULL ) const  ;
@@ -45,7 +49,10 @@ struct NPY_API nbbox
     void dump(const char* msg="nbbox::dump");
     void include(const nbbox& other );
     void include(const glm::vec3& p);
+    void include(const glm::vec4& p);
+
     static nbbox from_points(const std::vector<glm::vec3>& points, unsigned verbosity );
+    static nbbox from_points(const NPoint* points );
 
     const char* desc() const;
     std::string description() const ; 

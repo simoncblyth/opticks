@@ -64,12 +64,12 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, 
 {
 }
 
-OpticksCSG_t GVolume::getCSGFlag()
+OpticksCSG_t GVolume::getCSGFlag() const 
 {
     return m_csgflag ; 
 }
 
-bool GVolume::isCSGSkip()
+bool GVolume::isCSGSkip() const 
 {
     return m_csgskip ; 
 }
@@ -119,7 +119,7 @@ void GVolume::Summary(const char* msg )
     printf("%s\n", msg );
 }
 
-std::string GVolume::description()
+std::string GVolume::description() const 
 {
     const char* desc_ = getDescription() ;
 
@@ -130,7 +130,7 @@ std::string GVolume::description()
 }
 
 
-GParts* GVolume::getParts()
+GParts* GVolume::getParts() const 
 {
     return m_parts ;  
 }
@@ -236,7 +236,7 @@ void GVolume::setBoundaryAll(unsigned boundary)
 
 
 
-guint4 GVolume::getIdentity()
+guint4 GVolume::getIdentity() const 
 {
     unsigned node_index = m_index ;    
     unsigned identity_index = m_copyNumber  ;   

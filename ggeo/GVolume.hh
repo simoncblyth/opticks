@@ -26,10 +26,6 @@ class GMesh ;
 class GParts ; 
 struct GPt ; 
 
-#ifdef OLD_SENSOR
-class NSensor ; 
-#endif
-
 template <typename T> class GMatrix ; 
 
 #include "OpticksCSG.h"
@@ -62,12 +58,7 @@ class GGEO_API GVolume : public GNode {
       void     setCSGSkip(bool csgskip);
       void     setBoundary(unsigned boundary);     // also sets BoundaryIndices array
       void     setBoundaryAll(unsigned boundary);  // recursive over tree
-#ifdef OLD_SENSOR
-      void       setSensor(NSensor* sensor);         // also sets SensorIndices
-      NSensor*   getSensor();
-      void       setSensorSurfaceIndex(unsigned int ssi);
-      unsigned   getSensorSurfaceIndex();
-#endif
+
   public:
       void     setSensorIndex(int sensor_index) ;
       int      getSensorIndex() const ;
@@ -82,12 +73,12 @@ class GGEO_API GVolume : public GNode {
       const char* getPVName() const ;
       const char* getLVName() const ;
   public:
-      OpticksCSG_t getCSGFlag();
-      bool         isCSGSkip();
+      OpticksCSG_t getCSGFlag() const ;
+      bool         isCSGSkip() const ;
       unsigned     getBoundary() const ;
-      guint4       getIdentity();
+      guint4       getIdentity() const ;
   public:
-      GParts*      getParts();
+      GParts*      getParts() const ;
       GPt*         getPt() const ;
       void         setParts(GParts* pts);
       void         setPt(GPt* pt);
@@ -103,16 +94,11 @@ class GGEO_API GVolume : public GNode {
       const GVolume*   getOuterVolume() const ; 
   public: 
       void Summary(const char* msg="GVolume::Summary");
-      std::string description();
+      std::string description() const ;
   private:
       int               m_boundary ; 
       OpticksCSG_t      m_csgflag ; 
       bool              m_csgskip ; 
-
-#ifdef OLD_SENSOR
-      NSensor*          m_sensor ; 
-      unsigned int      m_sensor_surface_index ; 
-#endif
       int               m_sensor_index ; 
 
       const char*       m_pvname ; 

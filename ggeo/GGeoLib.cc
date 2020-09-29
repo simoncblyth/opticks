@@ -302,7 +302,7 @@ void GGeoLib::saveConstituents(const char* idpath)
 
 
 
-GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity, bool globalinstance )
+GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance )
 {
     LOG(LEVEL) << " mm " << index ;  
 

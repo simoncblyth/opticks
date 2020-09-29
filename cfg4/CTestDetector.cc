@@ -275,7 +275,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
 
     for(unsigned i=0 ; i < numVolumes ; i++) 
     {
-        GVolume* kso = nolib->getVolume(i); 
+        const GVolume* kso = nolib->getVolume(i); 
         const char* lvn = kso->getLVName();
         const char* pvn = kso->getPVName();
         const GMesh* mesh = kso->getMesh();

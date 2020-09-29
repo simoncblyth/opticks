@@ -22,6 +22,9 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "plog/Severity.h"
+
+template <typename T> class NPY ; 
 
 class Opticks ; 
 
@@ -40,8 +43,8 @@ class GTreePresent ;
 GNodeLib
 ===========
 
-Collection of GVolume/GNode instances with access by index.
-
+* collection of GVolume/GNode instances with access by index.
+* GGeo resident m_nodelib of instanciated in GGeo::initLibs
 * **NB currently only pv/lv names are persisted, not the volumes/nodes**
 * the merged meshes and analytic information is of course persisted
 
@@ -51,42 +54,27 @@ persisting directory.
 Initially was primarily a pre-cache operator, but access to pv/lv names also 
 relevant post-cache.
 
-There are several canonical m_nodelib instances:
-
-*GGeo::init precache non-analytic*
-
-     874 void GGeo::add(GVolume* volume)
-     875 {
-     876     m_nodelib->add(volume);
-     877 }
-
-
-*GScene::GScene analytic*
-
-     m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic ) : new GNodeLib(m_ok, m_analytic)), 
-
-     893 void GScene::addNode(GVolume* node, nd* n)
-     894 {
-     895     unsigned node_idx = n->idx ;
-     896     assert(m_nodes.count(node_idx) == 0);
-     897     m_nodes[node_idx] = node ;
-     898 
-     899     // TODO ... get rid of above, use the nodelib 
-     900     m_nodelib->add(node);
-     901 }
+There is now one canonical m_nodelib instance that is 
+populated from GGeo::add(GVolume*) 
+(Formerly GScene was another).
 
 */
 
+
+
 class GGEO_API GNodeLib 
 {
-        friend class GGeo   ;  // for save 
-        friend class GScene ;  // for save 
+        friend class GGeo     ;  // for save 
+        friend class GScene   ;  // for save 
     public:
-        static const char* GetRelDir(bool analytic, bool test);
-        static GNodeLib* Load(Opticks* ok, bool analytic, bool test);
-        void loadFromCache();
+        static const plog::Severity LEVEL ; 
+        static const char* RELDIR ; 
+        static const char* CacheDir(const Opticks* ok);
+        static GNodeLib* Load(Opticks* ok);
+        GNodeLib(Opticks* ok); 
+    private:
+        GNodeLib(Opticks* ok, bool loading); 
     public:
-        GNodeLib(Opticks* opticks, bool analytic, bool test, GNodeLib* basis=NULL ); 
         std::string desc() const ; 
         void dump(const char* msg="GNodeLib::dump") const ;
     private:
@@ -94,16 +82,18 @@ class GGEO_API GNodeLib
         void init();
         GItemList*   getPVList(); 
         GItemList*   getLVList(); 
+
     public:
-        GNodeLib* getBasis() const ;    
         unsigned getNumPV() const ;
         unsigned getNumLV() const ;
-        void add(GVolume*    volume);
-        GNode* getNode(unsigned index) const ; 
-        GVolume* getVolume(unsigned int index) const ;  
-        GVolume* getVolumeSimple(unsigned int index);  
+        void add(const GVolume*    volume);
+        const GNode* getNode(unsigned index) const ; 
+        const GVolume* getVolume(unsigned index) const ;  
+        GVolume* getVolumeNonConst(unsigned index);
+
+        const GVolume* getVolumeSimple(unsigned int index);  
         unsigned getNumVolumes() const ;
-        std::vector<GVolume*>& getVolumes() ; 
+        std::vector<const GVolume*>& getVolumes() ; 
     public:
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
@@ -116,18 +106,24 @@ class GGEO_API GNodeLib
         void            getSensorPlacements(std::vector<void*>& placements) const ; 
     private:
         Opticks*                           m_ok ;  
-        bool                               m_analytic ; 
-        bool                               m_test ; 
-        GNodeLib*                          m_basis ; 
+        bool                               m_loading ; 
+        const char*                        m_cachedir ; 
         const char*                        m_reldir ; 
-
+    private:
         GItemList*                         m_pvlist ; 
         GItemList*                         m_lvlist ; 
-        GTreePresent*                      m_treepresent ; 
+        NPY<float>*                        m_transforms ; 
+        NPY<float>*                        m_bounding_box ; 
+        NPY<float>*                        m_center_extent ; 
     private:
-        std::map<unsigned int, GVolume*>    m_volumemap ; 
-        std::vector<GVolume*>               m_volumes ; 
-        std::vector<const GVolume*>         m_sensor_volumes ; 
+        GTreePresent*                       m_treepresent ; 
+    private:
+        std::map<unsigned int, const GVolume*>    m_volumemap ; 
+        std::vector<const GVolume*>               m_volumes ; 
+        std::vector<const GVolume*>               m_sensor_volumes ; 
+
+
+
 };
  
 

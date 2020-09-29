@@ -567,11 +567,12 @@ void GGeo::initLibs()
    // NB this m_analytic is always false
    //    the analytic versions of these libs are born in GScene
    assert( m_analytic == false );  
-   bool testgeo = false ;  
+   //bool testgeo = false ;  
 
    m_meshlib = new GMeshLib(m_ok);
    m_geolib = new GGeoLib(m_ok, m_analytic, m_bndlib );
-   m_nodelib = new GNodeLib(m_ok, m_analytic, testgeo ); 
+   //m_nodelib = new GNodeLib(m_ok, m_analytic, testgeo ); 
+   m_nodelib = new GNodeLib(m_ok); 
 
    m_instancer = new GInstancer(m_ok, m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
 
@@ -1020,13 +1021,14 @@ void GGeo::loadFromCache()
     m_sourcelib  = GSourceLib::load(m_ok);
 
     bool analytic = false ; 
-    bool testgeo = false ; 
+    //bool testgeo = false ; 
 
     // these analytic arguments are legacy now that analytic and triangulated
     // are treated as peers and always go together
 
     m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib);
-    m_nodelib = GNodeLib::Load(m_ok, analytic, testgeo );        
+    //m_nodelib = GNodeLib::Load(m_ok, analytic, testgeo );        
+    m_nodelib = GNodeLib::Load(m_ok );        
     m_meshlib = GMeshLib::Load(m_ok );
 
     loadCacheMeta();
@@ -1223,11 +1225,11 @@ void GGeo::add(GVolume* volume)
 {
     m_nodelib->add(volume);
 }
-GVolume* GGeo::getVolume(unsigned index) const 
+const GVolume* GGeo::getVolume(unsigned index) const 
 {
     return m_nodelib->getVolume(index);
 }
-GVolume* GGeo::getVolumeSimple(unsigned int index) const 
+const GVolume* GGeo::getVolumeSimple(unsigned int index) const 
 {
     return m_nodelib->getVolumeSimple(index);
 }
@@ -1239,7 +1241,7 @@ const char* GGeo::getLVName(unsigned int index) const
 {
     return m_nodelib->getLVName(index);
 }
-GNode* GGeo::getNode(unsigned index) const 
+const GNode* GGeo::getNode(unsigned index) const 
 {
     return m_nodelib->getNode(index);
 }
@@ -1340,7 +1342,7 @@ void GGeo::traverse(const char* msg)
 }
 
 
-void GGeo::traverse( GNode* node, unsigned int depth)
+void GGeo::traverse( const GNode* node, unsigned depth)
 {
 #ifdef OLD_SENSOR
     GVolume* volume = dynamic_cast<GVolume*>(node) ;
@@ -1524,7 +1526,7 @@ void GGeo::prepareVolumes()
     else
     {
         LOG(fatal) << "instancing inhibited " ;
-        GNode* root = getNode(0);
+        const GNode* root = getNode(0);
         bool globalinstance = false ; 
         m_geolib->makeMergedMesh(0, NULL, root, meshverbosity, globalinstance);  // ridx:0 rbase:NULL 
     }
@@ -1598,7 +1600,7 @@ void GGeo::deferredCreateGParts()
 
 
 
-GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity, bool globalinstance )
+GMergedMesh* GGeo::makeMergedMesh(unsigned int index, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance )
 {
     GGeoLib* geolib = getGeoLib() ;
     assert(geolib);
@@ -2151,4 +2153,23 @@ void GGeo::anaEvent(OpticksEvent* evt)
         << " evt " << evt 
         ;
 }
+
+
+/**
+GGeo::dryrun_convert
+-----------------------
+
+This is a dryrun of OGeo::convert with no GPU involvement for safety.
+Passing the dryrun is advisable prior to trying OGeo::convert onto
+the GPU as uploading a broken geometry to the GPU tends to cause 
+hard crashes and kernel panics.
+
+**/
+
+void GGeo::dryrun_convert() 
+{
+    m_geolib->dryrun_convert(); 
+}
+
+
 

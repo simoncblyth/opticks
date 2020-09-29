@@ -207,6 +207,8 @@ set(SOURCES
     Ellipse.cpp
     ImageNPY.cpp
 
+    NPoint.cpp
+
 )
 
 set(_SOURCES
@@ -381,6 +383,7 @@ NGeometry.hpp
 Ellipse.hpp
 ImageNPY.hpp
 
+NPoint.hpp
 
 )
 

@@ -1,0 +1,93 @@
+/*
+
+Instance Identity buffer has nodeIndex/meshIndex/boundaryIndex/sensorIndex
+for all 5 volumes of each instance::
+
+    In [3]: ii = np.load("iidentity.npy")
+
+    In [40]: ii.reshape(-1,5,4)
+    Out[40]: 
+    array([[[ 3199,    47,    19,     0],
+            [ 3200,    46,    20,     0],
+            [ 3201,    43,    21,     3],
+            [ 3202,    44,     1,     0],
+            [ 3203,    45,     1,     0]],
+
+           [[ 3205,    47,    19,     0],
+            [ 3206,    46,    20,     0],
+            [ 3207,    43,    21,     8],
+            [ 3208,    44,     1,     0],
+            [ 3209,    45,     1,     0]],
+
+           [[ 3211,    47,    19,     0],
+            [ 3212,    46,    20,     0],
+            [ 3213,    43,    21,    13],
+            [ 3214,    44,     1,     0],
+            [ 3215,    45,     1,     0]],
+
+    ...
+
+    In [41]: ii.reshape(-1,5,4).shape
+    Out[41]: (672, 5, 4)
+
+    In [9]: ii.reshape(672,-1,4).shape
+    Out[9]: (672, 5, 4)
+
+
+    In [76]: fr = np.load("/tmp/friid.npy")
+
+    In [80]: fr.reshape(-1,4)
+    Out[80]: 
+    array([[ 3199,    47,    19,     0],
+           [ 3199,    47,    19,     0],
+           [ 3199,    47,    19,     0],
+           ..., 
+           [11412,    45,     1,     0],
+           [11412,    45,     1,     0],
+           [11412,    45,     1,     0]], dtype=uint32)
+
+    In [81]: fr.reshape(-1,4).shape
+    Out[81]: (1967616, 4)
+
+    In [82]: fr.reshape(672,-1,4).shape
+    Out[82]: (672, 2928, 4)
+
+    In [83]: fr[4320:5280]   # 3rd volume of 2nd instance : using face repeated IIdentity 
+    Out[83]: 
+    array([[3207,   43,   21,    8],
+           [3207,   43,   21,    8],
+           [3207,   43,   21,    8],
+           ..., 
+           [3207,   43,   21,    8],
+           [3207,   43,   21,    8],
+           [3207,   43,   21,    8]], dtype=uint32)
+
+
+    In [11]: ii.reshape(672,-1,4)[1,2]    # again 3rd volume of 2nd instance : using volume level IIdentity 
+    Out[11]: array([3207,   43,   21,    8], dtype=uint32)
+
+
+    In [10]: ii.reshape(672,-1,4)[1]
+    Out[10]: 
+    array([[3205,   47,   19,    0],
+           [3206,   46,   20,    0],
+           [3207,   43,   21,    8],
+           [3208,   44,    1,    0],
+           [3209,   45,    1,    0]], dtype=uint32)
+
+
+
+
+
+    [2015-10-09 18:39:50.180695] [0x000007fff7448031] [info]    GMesh::makeFaceRepeatedIIdentityBuffer numVolumes 5 numFaces (sum of faces in numVolumes)2928 numITransforms 672 numRepeatedIdentity 1967616
+     s 0 nf 720  i0 0:720  i1 2928:3648   il 1964688:1965408 
+     s 1 nf 672  i0 720:1392  i1 3648:4320   il 1965408:1966080 
+     s 2 nf 960  i0 1392:2352  i1 4320:5280   il 1966080:1967040 
+     s 3 nf 480  i0 2352:2832  i1 5280:5760   il 1967040:1967520 
+     s 4 nf  96  i0 2832:2928  i1 5760:5856   il 1967520:1967616 
+     ----- 2928 
+
+
+*/
+
+

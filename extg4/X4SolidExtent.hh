@@ -39,6 +39,7 @@ class X4_API X4SolidExtent {
 
    public:
        static nbbox* Extent( const G4VSolid* solid ); 
+       static nbbox* BoundingLimits(const G4VSolid* solid);
    public:
        X4SolidExtent(const G4VSolid* solid);
        void extent(const G4Transform3D& tran, glm::vec3& low, glm::vec3& high, glm::vec4& center_extent);

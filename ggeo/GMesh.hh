@@ -47,6 +47,21 @@ class GBuffer ;
 GMesh
 ======
 
+GMesh are distinct geometrical shapes, **NOT** placed nodes/volumes
+--------------------------------------------------------------------
+
+There are relatively few GMesh which get reused with different transforms
+meaning that node specifics reside in the GNode, not in GMesh. 
+
+For example the use of boundaries and nodes lists 
+within the abstract unplaced shape GMesh 
+does not make sense...
+
+CAUTION: GNode has lots of members that are used and make sense
+only from the GMergedMesh subclass
+
+
+
 TODO : Change the name to GSolid/GShape(?) OR add a GSolid/GShape that contains GMesh+NCSG  
 ----------------------------------------------------------------------------------------------
 
@@ -76,16 +91,6 @@ of the pivotal GMergedMesh (so have to be cautions with refactorings)
 4. loading persisted GMesh invokes GMesh::loadBuffer for each constituent which does the
    eg setVerticesBuffer 
 
-
-GMesh are distinct geometrical shapes, **NOT** placed nodes/volumes
---------------------------------------------------------------------
-
-There are relatively few GMesh which get reused with different transforms
-meaning that node specifics reside in the GNode, not in GMesh. 
-
-For example the use of boundaries and nodes lists 
-within the abstract unplaced shape GMesh 
-does not make sense...
 
 
 GMergedMesh isa GMesh that combines the data from many GMesh into one
@@ -253,9 +258,6 @@ class GGEO_API GMesh : public GDrawable {
       // composited GMergedMesh eg for LOD levels 
       static const char* components_ ;    
 
-      //static makers moved to GMeshMaker
-      //static GMesh* make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshindex=0);  
-      //static GMesh* make_mesh(NPY<float>* triangles, unsigned int meshindex=0);
 
       GMesh(unsigned int index=0, 
             gfloat3* vertices=NULL, unsigned int num_vertices=0, 
@@ -352,6 +354,10 @@ class GGEO_API GMesh : public GDrawable {
       gfloat3*       getColors() const ;
       gfloat2*       getTexcoords() const ;
       bool hasTexcoords() const ;
+
+  public:
+      glm::vec4 getVertex(unsigned i) const ; 
+
   public:
       guint3*        getFaces() const ;
 
@@ -442,6 +448,8 @@ class GGEO_API GMesh : public GDrawable {
       GBuffer* getFaceRepeatedIdentityBuffer(); 
       //GBuffer* getAnalyticGeometryBuffer();
   private: 
+      unsigned getFaceCount() const ;
+      void checks_faceRepeatedInstancedIdentity();
       GBuffer* makeFaceRepeatedInstancedIdentityBuffer();
       GBuffer* makeFaceRepeatedIdentityBuffer();
       //GBuffer* loadAnalyticGeometryBuffer(const char* path); 
@@ -518,12 +526,16 @@ class GGEO_API GMesh : public GDrawable {
        void applyCentering(); 
        void applyTranslation(float x, float y, float z ); 
        void applyTransform( GMatrixF& transform ) ; 
+
        gfloat3* getTransformedVertices(GMatrixF& transform ) const ;
        gfloat3* getTransformedNormals(GMatrixF& transform ) const ;
+  public:
+       void getTransformedVertices(std::vector<glm::vec4>& tvertices, const glm::mat4& transform );
 
   public:
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
+      static nbbox*  findBBox_(gfloat3* vertices, unsigned int num_vertices);
       static gbbox*  findBBox(gfloat3* vertices, unsigned int num_vertices);
       static gfloat4 findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_vertices);
   public:

@@ -22,6 +22,8 @@
 #include <iomanip>
 
 #include "PLOG.hh"
+#include "NPY.hpp"
+#include "NBBox.hpp"
 
 #include "Opticks.hh"
 
@@ -30,79 +32,64 @@
 #include "GNodeLib.hh"
 #include "GTreePresent.hh"
 
+const plog::Severity GNodeLib::LEVEL = PLOG::EnvLevel("GNodeLib", "INFO"); 
 
-const char* GNodeLib::GetRelDir(bool analytic, bool test)
+const char* GNodeLib::RELDIR = "GNodeLib" ; 
+
+const char* GNodeLib::CacheDir(const Opticks* ok)
 {
-    std::stringstream ss ; 
-    ss << "GNodeLib" ; 
-    if(analytic) ss << "Analytic" ; 
-    if(test)     ss << "Test" ; 
-
-    std::string s = ss.str() ;
-    return strdup(s.c_str()) ;
+    std::string cachedir = ok->getObjectPath(RELDIR) ; 
+    return strdup(cachedir.c_str()); 
 }
 
-GNodeLib* GNodeLib::Load(Opticks* ok, bool analytic, bool test)
-{
-    GNodeLib* nodelib = new GNodeLib(ok, analytic, test) ;
-    nodelib->loadFromCache();
-    return nodelib ; 
-}
-
-void GNodeLib::loadFromCache()
-{
-    const char* idpath = m_ok->getIdPath() ;
-    m_pvlist = GItemList::Load(idpath, "PVNames", m_reldir);
-    m_lvlist = GItemList::Load(idpath, "LVNames", m_reldir);
-}
-
-GNodeLib::GNodeLib(Opticks* ok, bool analytic, bool test, GNodeLib* basis)  
+GNodeLib::GNodeLib(Opticks* ok)  
     :
     m_ok(ok),
-    m_analytic(analytic),
-    m_test(test),
-    m_basis(basis),
-    m_reldir(GetRelDir(analytic,test)),
-    m_pvlist(NULL),
-    m_lvlist(NULL),
+    m_loading(false),
+    m_cachedir(GNodeLib::CacheDir(ok)),
+    m_reldir(RELDIR),
+    m_pvlist(new GItemList("PVNames", m_reldir)),
+    m_lvlist(new GItemList("LVNames", m_reldir)),
+    m_transforms(NPY<float>::make(0,4,4)),
+    m_bounding_box(NPY<float>::make(0,2,4)),
+    m_center_extent(NPY<float>::make(0,4)),
     m_treepresent(new GTreePresent(100, 1000))   // depth_max,sibling_max
 {
 }
 
-GNodeLib* GNodeLib::getBasis() const 
+GNodeLib::GNodeLib(Opticks* ok, bool loading)
+    :
+    m_ok(ok),
+    m_loading(loading),
+    m_cachedir(GNodeLib::CacheDir(ok)),
+    m_reldir(RELDIR),
+    m_pvlist(GItemList::Load(ok->getIdPath(), "PVNames",  m_reldir)),
+    m_lvlist(GItemList::Load(ok->getIdPath(), "LVNames",  m_reldir)),
+    m_transforms(NPY<float>::load(m_cachedir,"transforms.npy")),
+    m_bounding_box(NPY<float>::load(m_cachedir,"bounding_box.npy")),
+    m_center_extent(NPY<float>::load(m_cachedir,"center_extent.npy")),
+    m_treepresent(NULL)
 {
-    return m_basis ; 
 }
-
+ 
+GNodeLib* GNodeLib::Load(Opticks* ok)
+{
+    bool loading = true ; 
+    return new GNodeLib(ok, loading); 
+}
 
 void GNodeLib::save() const 
 {
     const char* idpath = m_ok->getIdPath() ;
-    LOG(debug) << "GNodeLib::save"
-              << " idpath " << idpath 
-              ;
+    LOG(LEVEL) << " idpath " << idpath ; 
+    m_pvlist->save(idpath);
+    m_lvlist->save(idpath);
 
-    if(m_pvlist)
-    {
-        m_pvlist->save(idpath);
-    }
-    else
-    {
-        LOG(warning) << "GNodeLib::save pvlist NULL " ; 
-    }
+    m_transforms->save(m_cachedir, "transforms.npy"); 
+    m_bounding_box->save(m_cachedir, "bounding_box.npy"); 
+    m_center_extent->save(m_cachedir, "center_extent.npy"); 
 
-
-    if(m_lvlist)
-    {
-        m_lvlist->save(idpath);
-    }
-    else
-    {
-        LOG(warning) << "GNodeLib::save lvlist NULL " ; 
-    }
-
-
-    GNode* top = getNode(0); 
+    const GNode* top = getNode(0); 
     m_treepresent->traverse(top);
     m_treepresent->write(idpath, m_reldir);
 }
@@ -121,8 +108,7 @@ std::string GNodeLib::desc() const
        << " LV(0) " << getLVName(0)
        ;
 
-
-    typedef std::map<unsigned, GVolume*>::const_iterator IT ; 
+    typedef std::map<unsigned, const GVolume*>::const_iterator IT ; 
 
     IT beg = m_volumemap.begin() ;
     IT end = m_volumemap.end() ;
@@ -163,7 +149,7 @@ unsigned GNodeLib::getNumVolumes() const
 {
     return m_volumes.size();
 }
-std::vector<GVolume*>& GNodeLib::getVolumes() 
+std::vector<const GVolume*>& GNodeLib::getVolumes() 
 {
     return m_volumes ; 
 }
@@ -179,42 +165,40 @@ GItemList* GNodeLib::getLVList()
 }
 
 
+/**
+GNodeLib::add
+---------------
 
-void GNodeLib::add(GVolume* volume)
+Collects all volume information 
+
+
+**/
+
+void GNodeLib::add(const GVolume* volume)
 {
     m_volumes.push_back(volume);
-
     unsigned int index = volume->getIndex(); 
-
-    if(m_test)
-    {
-        assert( m_volumes.size() - 1 == index && "indices of test geometry volumes added to GNodeLib must follow the sequence : 0,1,2,... " );
-    }
-
-
-    //assert( m_volumemap.size() == index );   //  only with relative GVolume indexing
-
-/*
-    LOG(info) << "GNodeLib::add"
-              << " volumeIndex " << index 
-              << " preCount " << m_volumemap.size()
-              ;
-*/
-              
+    assert( m_volumes.size() - 1 == index && "indices of test geometry volumes added to GNodeLib must follow the sequence : 0,1,2,... " ); // formerly only for m_test
     m_volumemap[index] = volume ; 
 
-    if(!m_pvlist) m_pvlist = new GItemList("PVNames", m_reldir) ; 
-    if(!m_lvlist) m_lvlist = new GItemList("LVNames", m_reldir) ; 
+    glm::mat4 transform = volume->getTransformMat4();
+    m_transforms->add(transform);  
+
+    nbbox* bb = volume->getVerticesBBox(); 
+    glm::vec4 min(bb->min, 1.f); 
+    glm::vec4 max(bb->max, 1.f); 
+    m_bounding_box->add( min, max); 
+
+    glm::vec4 ce = bb->ce(); 
+    m_center_extent->add(ce); 
 
     m_lvlist->add(volume->getLVName()); 
     m_pvlist->add(volume->getPVName()); 
-
     // NB added in tandem, so same counts and same index as the volumes  
 
-    GVolume* check = getVolume(index);
+    const GVolume* check = getVolume(index);
     assert(check == volume);
 }
-
 
 
 
@@ -293,9 +277,9 @@ void GNodeLib::getSensorPlacements(std::vector<void*>& placements) const
 }
 
 
-GVolume* GNodeLib::getVolume(unsigned index) const 
+const GVolume* GNodeLib::getVolume(unsigned index) const 
 {
-    GVolume* volume = NULL ; 
+    const GVolume* volume = NULL ; 
     if(m_volumemap.find(index) != m_volumemap.end()) 
     {
         volume = m_volumemap.at(index) ;
@@ -304,16 +288,23 @@ GVolume* GNodeLib::getVolume(unsigned index) const
     return volume ; 
 }
 
-GVolume* GNodeLib::getVolumeSimple(unsigned int index)
+
+GVolume* GNodeLib::getVolumeNonConst(unsigned index)
+{
+    const GVolume* volume = getVolume(index); 
+    return const_cast<GVolume*>(volume); 
+}
+
+const GVolume* GNodeLib::getVolumeSimple(unsigned int index)
 {
     return m_volumes[index];
 }
 
 
-GNode* GNodeLib::getNode(unsigned index) const 
+const GNode* GNodeLib::getNode(unsigned index) const 
 {
-    GVolume* volume = getVolume(index);
-    GNode* node = static_cast<GNode*>(volume); 
+    const GVolume* volume = getVolume(index);
+    const GNode* node = static_cast<const GNode*>(volume); 
     return node ; 
 }
 
@@ -325,7 +316,7 @@ void GNodeLib::dump(const char* msg) const
 
     for(unsigned i=0 ; i < std::min(m_volumes.size(), 100ul) ; i++ )
     {
-        GVolume* volume = m_volumes.at(i) ; 
+        const GVolume* volume = m_volumes.at(i) ; 
         std::cout 
             << " ix " << std::setw(5) << i 
             << " lv " << std::setw(40) << volume->getLVName()

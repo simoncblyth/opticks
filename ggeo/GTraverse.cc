@@ -47,16 +47,16 @@ void GTraverse::init()
 
 void GTraverse::traverse()
 {
-    GVolume* root = m_ggeo->getVolume(0);
+    const GVolume* root = m_ggeo->getVolume(0);
     traverse(root, 0);
 
     m_materials_count->sort(false);
     m_materials_count->dump();
 }
 
-void GTraverse::traverse( GNode* node, unsigned int depth)
+void GTraverse::traverse( const GNode* node, unsigned int depth)
 {
-    GVolume* volume = dynamic_cast<GVolume*>(node) ;
+    const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
 
     bool selected = volume->isSelected();
     if(selected)

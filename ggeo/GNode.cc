@@ -61,7 +61,7 @@ GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh)
     m_node_indices(NULL),
     m_name(NULL),
     m_progeny_count(0),
-    m_global_progeny_count(0),
+    m_remainder_progeny_count(0),
     m_repeat_index(0),
     m_progeny_num_vertices(0)
 {
@@ -78,7 +78,7 @@ void GNode::setSelected(bool selected)
 {
     m_selected = selected ; 
 }
-bool GNode::isSelected()
+bool GNode::isSelected() const 
 {
    return m_selected ; 
 }
@@ -104,7 +104,7 @@ unsigned GNode::getMeshIndex() const
 }
 
 
-glm::mat4 GNode::getTransformMat4()
+glm::mat4 GNode::getTransformMat4() const 
 {
     float* f = (float*)m_transform->getPointer();
     assert(f);
@@ -112,20 +112,23 @@ glm::mat4 GNode::getTransformMat4()
 }
 
 
-GMatrixF* GNode::getTransform()
+
+
+
+GMatrixF* GNode::getTransform() const 
 {
    return m_transform ;
 }
 
-unsigned int* GNode::getBoundaryIndices()
+unsigned int* GNode::getBoundaryIndices() const 
 {
     return m_boundary_indices ; 
 }
-unsigned int* GNode::getNodeIndices()
+unsigned int* GNode::getNodeIndices() const 
 {
     return m_node_indices ; 
 }
-unsigned int* GNode::getSensorIndices()
+unsigned int* GNode::getSensorIndices() const 
 {
     return m_sensor_indices ; 
 }
@@ -148,7 +151,7 @@ GNode* GNode::getParent() const
 {
     return m_parent ; 
 }
-char* GNode::getDescription()
+char* GNode::getDescription() const 
 {
     return m_description ;
 }
@@ -181,7 +184,7 @@ void GNode::setLevelTransform(GMatrixF* ltransform)
 {
    m_ltransform = ltransform ; 
 }
-GMatrixF* GNode::getLevelTransform()
+GMatrixF* GNode::getLevelTransform() const 
 {
    return m_ltransform ; 
 }
@@ -217,7 +220,7 @@ void GNode::setName(const char* name)
 {
     m_name = strdup(name); 
 }
-const char* GNode::getName()
+const char* GNode::getName() const 
 {
     return m_name ; 
 }
@@ -225,7 +228,7 @@ void GNode::setRepeatIndex(unsigned int index)
 {
     m_repeat_index = index ; 
 }
-unsigned int GNode::getRepeatIndex()
+unsigned int GNode::getRepeatIndex() const 
 {
     return m_repeat_index ; 
 }
@@ -391,40 +394,35 @@ void GNode::collectProgeny(std::vector<GNode*>& progeny)
 
 
 /**
-GNode::getGlobalProgeny
+GNode::getRemainderProgeny
 -------------------------
 
-Returns the global progeny of a node, ie with repeat index zero.
-Collects into m_global_progeny which avoids repeating 
+Returns the remainder progeny of a node, ie with repeat index zero.
+Collects into m_remainder_progeny which avoids repeating 
 the collection. 
 
 Collection starts from the children, as wish to avoid collecting the start node.  
 
 **/
 
-std::vector<GNode*>& GNode::getGlobalProgeny()
+std::vector<GNode*>& GNode::getRemainderProgeny()
 {
-    if(m_global_progeny.size() == 0)
+    if(m_remainder_progeny.size() == 0)
     {
-        for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectGlobalProgeny(m_global_progeny); 
-        m_global_progeny_count = m_global_progeny.size();
+        for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectRemainderProgeny(m_remainder_progeny); 
+        m_remainder_progeny_count = m_remainder_progeny.size();
     }
-    return m_global_progeny ; 
+    return m_remainder_progeny ; 
 }
 
-void GNode::collectGlobalProgeny(std::vector<GNode*>& global_progeny) 
+void GNode::collectRemainderProgeny(std::vector<GNode*>& remainder_progeny) 
 {
     if(getRepeatIndex() == 0)
     {
-        global_progeny.push_back(this);
+        remainder_progeny.push_back(this);
     }
-   for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectGlobalProgeny(global_progeny);
+    for(unsigned i = 0; i < getNumChildren(); i++) getChild(i)->collectRemainderProgeny(remainder_progeny);
 }
-
-
-
-
-
 
 
 
@@ -458,7 +456,7 @@ Only transforms after the base node are collected
 **/
 
 
-GMatrixF* GNode::getRelativeTransform(GNode* base)
+GMatrixF* GNode::getRelativeTransform(const GNode* base)  // cannot be const due to getAncestors caching 
 {
     std::vector<GNode*> nodes = getAncestors();  // <--- in order starting from root
     nodes.push_back(this);
@@ -501,6 +499,39 @@ GMatrixF* GNode::getRelativeTransform(GNode* base)
     }
     return m ; 
 }
+
+
+
+
+/**
+GNode::getRelativeVerticesBBox
+---------------------------------
+
+For base NULL the bbox is in global coordinate system, 
+otherwise the coordinate system of the given base node is used.
+See getRelativeTransform.
+
+**/
+
+nbbox* GNode::getRelativeVerticesBBox( const GNode* base ) // cannot be const due to getRelativeTransform/getAncestors
+{
+    const GMesh* mesh = getMesh();  
+    unsigned num_vert = mesh->getNumVertices();
+    GMatrixF* transform = getRelativeTransform(base) ; 
+    gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
+    nbbox* bb = GMesh::findBBox_( vertices, num_vert ); 
+    return bb ; 
+}
+nbbox* GNode::getVerticesBBox() const 
+{
+    const GMesh* mesh = getMesh();  
+    unsigned num_vert = mesh->getNumVertices();
+    GMatrixF* transform = getTransform() ; 
+    gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
+    nbbox* bb = GMesh::findBBox_( vertices, num_vert ); 
+    return bb ; 
+}
+
 
 
 
@@ -634,9 +665,9 @@ GNode::getPriorGlobalProgenyCount
 
 **/
 
-unsigned GNode::getPriorGlobalProgenyCount() const 
+unsigned GNode::getPriorRemainderProgenyCount() const 
 {
-    return m_global_progeny_count ; 
+    return m_remainder_progeny_count ; 
 }
 
 
@@ -674,23 +705,21 @@ GNode* GNode::findProgenyDigest(const std::string& dig)
 }
 
 
-std::vector<GNode*> GNode::findAllProgenyDigest(std::string& dig)
+std::vector<const GNode*> GNode::findAllProgenyDigest(std::string& dig)
 {
-    std::vector<GNode*> match ;
+    std::vector<const GNode*> match ;
     collectAllProgenyDigest(match, dig );
     return match ;
 }
-std::vector<GNode*> GNode::findAllInstances(unsigned ridx, bool inside_self, bool honour_selection)
+std::vector<const GNode*> GNode::findAllInstances(unsigned ridx, bool inside_self, bool honour_selection)
 {
-    std::vector<GNode*> match ;
+    std::vector<const GNode*> match ;
     collectAllInstances(match, ridx, inside_self, honour_selection );
     return match ;
 }
 
 
-
-
-void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig)
+void GNode::collectAllProgenyDigest(std::vector<const GNode*>& match, std::string& dig)
 {
     std::string& pdig = getProgenyDigest();
     if(strcmp(pdig.c_str(), dig.c_str())==0) 
@@ -713,7 +742,7 @@ GNode::collectAllInstances
 
 **/
 
-void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside, bool honour_selection )
+void GNode::collectAllInstances(std::vector<const GNode*>& match, unsigned ridx, bool inside, bool honour_selection )
 {
     bool matched_ridx = getRepeatIndex()==ridx ; 
     bool matched_selection = honour_selection ? m_selected : true ; 

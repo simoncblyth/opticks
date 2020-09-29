@@ -51,11 +51,11 @@ class GGEO_API GTreePresent
    public:
         GTreePresent(unsigned int depth_max, unsigned int sibling_max );
    public:
-        void traverse(GNode* top);
+        void traverse(const GNode* top);
         void dump(const char* msg="GTreePresent::dump");
         void write(const char* path, const char* reldir);
    private:
-        void traverse( GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex, bool elide);
+        void traverse(const GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex, bool elide);
    private:
        unsigned int             m_depth_max ; 
        unsigned int             m_sibling_max ; 

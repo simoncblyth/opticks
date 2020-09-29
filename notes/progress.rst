@@ -193,7 +193,7 @@ to work with that parser follow some rules:
 
 * license headers
 * glance at OptiX7
-* push out the photon ceiling to 100M for Quadro RTX 8000 tests
+* push out the photon ceiling to 100M (then 400M) for Quadro RTX 8000 tests
 * develop a binary distribution approach okdist-
 * scanning result recording and plotting machinery based on persisted ana/profilesmrytab.py
 * avoid permissions problems for running from release by reorganization of caches
@@ -223,8 +223,6 @@ to work with that parser follow some rules:
 * investigate utaildebug idea for decoupling maligned from deviant 
 
 * profilesmryplot.py benchplot.py for results plotting  
-
-
 
 
 2019 June

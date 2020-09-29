@@ -162,11 +162,11 @@ std::string GMergedMesh::brief() const
 
 
 
-void GMergedMesh::setCurrentBase(GNode* base)
+void GMergedMesh::setCurrentBase(const GNode* base)
 {
     m_cur_base = base ; 
 }
-GNode* GMergedMesh::getCurrentBase()
+const GNode* GMergedMesh::getCurrentBase()
 {
     return m_cur_base ; 
 }
@@ -267,7 +267,7 @@ The GNode::setSelection is invoked from::
 
 **/
 
-GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity, bool globalinstance ) // static
+GMergedMesh* GMergedMesh::Create(unsigned ridx, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance ) // static
 {
     assert(root && "root node is required");
 
@@ -285,7 +285,7 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, GNode* base, GNode* root, unsign
     mm->setCurrentBase(base);  // <-- when NULL it means will use global not base relative transforms
     mm->setGlobalInstance(globalinstance); 
 
-    GNode* start = base ? base : root ; 
+    const GNode* start = base ? base : root ; 
     unsigned depth = 0 ; 
 
     if(verbosity > 1)
@@ -357,18 +357,18 @@ PASS_MERGE
 
 **/
 
-void GMergedMesh::traverse_r( GNode* node, unsigned depth, unsigned pass, unsigned verbosity )
+void GMergedMesh::traverse_r( const GNode* node, unsigned depth, unsigned pass, unsigned verbosity )
 {
-    GVolume* volume = dynamic_cast<GVolume*>(node) ;
+    const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
 
     int idx = getIndex() ;
     assert(idx > -1 ) ; 
 
-    unsigned uidx = m_globalinstance ? 0u : idx ; 
+    unsigned uidx = m_globalinstance ? 0u : idx ;                 // needed as globalinstance goes into top slot (nmm-1) 
     unsigned ridx = volume->getRepeatIndex() ;
 
     bool repeat_selection =  ridx == uidx ;                       // repeatIndex of volume same as index of mm (or 0 for globalinstance)
-    bool csgskip = volume->isCSGSkip() ;                          // --csgskiplv
+    bool csgskip = volume->isCSGSkip() ;                          // --csgskiplv : for DEBUG usage only 
     bool selected_ =  volume->isSelected() && repeat_selection ;  // volume selection defaults to true and appears unused
     bool selected = selected_ && !csgskip ;                       // selection honoured by both triangulated and analytic 
 
@@ -412,7 +412,7 @@ NB changes here need to parallel those made in GMergedMesh::mergeVolume
 **/
 
 
-void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosity )
+void GMergedMesh::countVolume( const GVolume* volume, bool selected, unsigned verbosity )
 {
     const GMesh* mesh = volume->getMesh();
 
@@ -422,12 +422,15 @@ void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosit
     {
         m_num_volumes += 1 ; 
     }
-
     if(selected)
     {
         m_num_volumes_selected += 1 ;
         countMesh( mesh ); 
     }
+
+    //  hmm having both admit and selected is confusing 
+
+
 
     //if(m_verbosity > 1)
     LOG(debug) 
@@ -541,16 +544,17 @@ GInstancer is the driver of this in standard geocache creation::
 
 **/
 
-void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosity )
+void GMergedMesh::mergeVolume( const GVolume* volume, bool selected, unsigned verbosity )
 {
-    GNode* node = static_cast<GNode*>(volume);
-    GNode* base = getCurrentBase();
+    const GNode* node = static_cast<const GNode*>(volume);
+    const GNode* base = getCurrentBase();
     unsigned ridx = volume->getRepeatIndex() ;  
 
-    GMatrixF* transform = base ? volume->getRelativeTransform(base) : volume->getTransform() ;     // base or root relative global transform
+    GVolume* volume_ = const_cast<GVolume*>(volume); 
+    GMatrixF* transform = base ? volume_->getRelativeTransform(base) : volume->getTransform() ;     // base or root relative global transform
 
     if( node == base ) assert( transform->isIdentity() ); 
-    if( ridx == 0 ) assert( base == NULL && "expecting NULL base for ridx 0" ); 
+    if( ridx == 0 )    assert( base == NULL && "expecting NULL base for ridx 0" ); 
 
 
     const GMesh* mesh = volume->getMesh();   // triangulated
@@ -714,7 +718,7 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
 }
 
 
-void GMergedMesh::mergeVolumeDump( GVolume* volume)
+void GMergedMesh::mergeVolumeDump( const GVolume* volume)
 {
     const char* pvn = volume->getPVName() ;
     const char* lvn = volume->getLVName() ;
@@ -770,7 +774,7 @@ m_meshes
 
 **/
 
-void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
+void GMergedMesh::mergeVolumeIdentity( const GVolume* volume, bool selected )
 {
     const GMesh* mesh = volume->getMesh();
 
@@ -964,9 +968,9 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
 
 
 
-GMergedMesh* GMergedMesh::Load(Opticks* opticks, unsigned int ridx, const char* version)  // static
+GMergedMesh* GMergedMesh::Load(Opticks* ok, unsigned int ridx, const char* version)  // static
 {
-    std::string mmpath = opticks->getResource()->getMergedMeshPath(ridx);
+    std::string mmpath = ok->getResource()->getMergedMeshPath(ridx);
     GMergedMesh* mm = GMergedMesh::Load(mmpath.c_str(), ridx, version);
     return mm ; 
 }
@@ -1194,7 +1198,7 @@ iidentity InstanceIdentityBuffer
 
 **/
 
-void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
+void GMergedMesh::addInstancedBuffers(const std::vector<const GNode*>& placements)
 {
     LOG(LEVEL) << " placements.size() " << placements.size() ; 
 

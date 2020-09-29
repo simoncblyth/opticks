@@ -27,8 +27,12 @@
 #include "NGLMExt.hpp"
 #include <glm/gtx/component_wise.hpp>
 #include "NBBox.hpp"
+#include "NPoint.hpp"
+
 #include "PLOG.hh"
 
+
+const plog::Severity nbbox::LEVEL = PLOG::EnvLevel("NBBox","DEBUG"); 
 
 nbbox nbbox::make_transformed( const glm::mat4& t ) const 
 {
@@ -654,9 +658,14 @@ void nbbox::include(const nbbox& other)
     }
 }
 
+void nbbox::include(const glm::vec4& p_)
+{
+    glm::vec3 p(p_); 
+    include(p); 
+}
+
 void nbbox::include(const glm::vec3& p)
 {
-    //nvec3 pp = {p.x, p.y, p.z } ;
     if(is_empty())
     {
         min = p ; 
@@ -664,12 +673,8 @@ void nbbox::include(const glm::vec3& p)
     }
     else
     {
-        //min = nminf( min, pp );
-        //max = nmaxf( max, pp );
         min = glm::min( min, p );
         max = glm::max( max, p );
-
-
     }
 }
 
@@ -698,21 +703,17 @@ void nbbox::include(const glm::vec3& p)
 */
 
 
+
 nbbox nbbox::from_points(const std::vector<glm::vec3>& points, unsigned verbosity)
 {
     nbbox bb = make_bbox() ;
-
     assert( bb.is_empty() );
     assert( bb.invert == false );
 
-    if(verbosity > 5)
-    {
-       LOG(info) << "nbbox::from_points"
-                 << " verbosity " << verbosity 
-                 << " num_points " << points.size()
-                 << " bb0 " << bb.desc()
-                 ;
-    }
+    LOG(LEVEL)
+       << " num_points " << points.size()
+       << " bb0 " << bb.desc()
+       ;
 
 
     for(unsigned i=0 ; i < points.size() ; i++) 
@@ -732,6 +733,24 @@ nbbox nbbox::from_points(const std::vector<glm::vec3>& points, unsigned verbosit
     }
     return bb ; 
 }
+
+nbbox nbbox::from_points(const NPoint* points)
+{
+    nbbox bb = make_bbox() ;
+    assert( bb.is_empty() );
+    assert( bb.invert == false );
+
+    unsigned n = points->getNum(); 
+    for(unsigned i=0 ; i < n ; i++)
+    {
+        glm::vec4 p = points->get(i); 
+        bb.include(p); 
+    }
+    return bb ; 
+}
+
+
+
 
 
 

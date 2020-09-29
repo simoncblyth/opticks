@@ -233,7 +233,8 @@ class OKCORE_API Opticks {
        const char* getRNGDir();
        const char* getInstallPrefix();
        const char* getMaterialPrefix();
-       std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false);
+       std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false) const ;
+       std::string getObjectPath(const char* name, bool relative=false) const ;
        const char* getDAEPath();
    public:
        const char* getGDMLPath() const ;
@@ -276,7 +277,7 @@ class OKCORE_API Opticks {
        void setIntegrated(bool integrated=true);  // used to distinguish OKG4 usage 
        bool isIntegrated();
    public:
-       std::string getRelativePath(const char* path); 
+       std::string formCacheRelativePath(const char* path); 
    public:
        void setModeOverride(unsigned int mode);
        void setDetector(const char* detector); 

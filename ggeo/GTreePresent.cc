@@ -46,8 +46,7 @@ GTreePresent::GTreePresent(unsigned int depth_max, unsigned int sibling_max)
 {
 }
 
-
-void GTreePresent::traverse(GNode* top)
+void GTreePresent::traverse(const GNode* top)
 {
     if(!top)
     {
@@ -57,7 +56,7 @@ void GTreePresent::traverse(GNode* top)
     traverse(top, 0, 0, 0, false);
 }
 
-void GTreePresent::traverse( GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex, bool elide )
+void GTreePresent::traverse(const GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex, bool elide )
 {
 
     std::string indent(depth, ' ');

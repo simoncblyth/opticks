@@ -104,7 +104,7 @@ public:
     template <typename T, typename S> optix::Buffer createInputBuffer(NPY<S>*  buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
     
     template <typename T>            optix::Buffer createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name);
-public:
+private:
     optix::GeometryGroup   makeGlobalGeometryGroup(GMergedMesh* mm);
     optix::Group           makeRepeatedAssembly(GMergedMesh* mm );
 

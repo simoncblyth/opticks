@@ -1,3 +1,4 @@
+// om-;TEST=NBBoxTest om-t
 /*
  * Copyright (c) 2019 Opticks Team. All Rights Reserved.
  *
@@ -37,6 +38,7 @@ NBBoxTest /tmp/blyth/opticks/tboolean-csg-two-box-minus-sphere-interlocked-py-/1
 #include "NCylinder.hpp"
 #include "NCone.hpp"
 
+#include "NPoint.hpp"
 #include "NBBox.hpp"
 #include "NScan.hpp"
 
@@ -510,7 +512,7 @@ void test_sdf_transformed()
 
 void test_from_points()
 {
-    LOG(info) << "test_from_points" ; 
+    LOG(info); 
 
     std::vector<glm::vec3> pts ; 
 
@@ -523,6 +525,26 @@ void test_from_points()
 
     std::cout << bb.desc() << std::endl ;     
 }
+
+void test_from_points_2()
+{
+    LOG(info); 
+
+    NPoint* pts = new NPoint(4); 
+    pts->set(0, {-10.f,-10.f,-10.f,1.f} ); 
+    pts->set(1, {+10.f,+10.f,+10.f,1.f} ); 
+    pts->set(2, {-100.f,-10.f,-10.f,1.f} ); 
+    pts->set(3, {+100.f,+10.f,+10.f,1.f} ); 
+
+    nbbox bb = nbbox::from_points(pts);
+
+    std::cout << bb.desc() << std::endl ;     
+}
+
+
+
+
+
 
 void test_FindOverlap()
 {
@@ -662,12 +684,13 @@ int main(int argc, char** argv)
 
     test_FindOverlap();
     test_SubtractOverlap_Below();
-    */
     test_SubtractOverlap_Above();
+    */
+
+    test_from_points_2();
+    
 
 
     return 0 ; 
 }
-
-
-
+// om-;TEST=NBBoxTest om-t

@@ -143,7 +143,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
 
     m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib ) : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
-    m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic, m_testgeo )  : new GNodeLib(m_ok, m_analytic, m_testgeo )),
+    //m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic, m_testgeo )  : new GNodeLib(m_ok, m_analytic, m_testgeo )),
+    m_nodelib(loaded ? GNodeLib::Load(m_ok)                          : new GNodeLib(m_ok)),
     m_meshlib(loaded ? GMeshLib::Load(m_ok)                          : new GMeshLib(m_ok)),
 
     m_colorizer(new GColorizer(m_nodelib, m_geolib, m_tri_bndlib, ggeo->getColors(), GColorizer::PSYCHEDELIC_NODE )),   // GColorizer::SURFACE_INDEX
@@ -198,7 +199,7 @@ with the GNodeLib.
 
 **/
 
-GVolume* GScene::getVolume(unsigned idx)
+const GVolume* GScene::getVolume(unsigned idx)
 {
     return m_nodelib->getVolume(idx);
 }
@@ -1015,11 +1016,11 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
          bool inside = ridx == 0 ? false : false ; 
 
-         const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, honour_selection );
+         const std::vector<const GNode*>& instances = m_root->findAllInstances(ridx, inside, honour_selection );
 
          assert( instances.size() > 0u );
 
-         GVolume* instance0 = dynamic_cast<GVolume*>(instances[0]) ; 
+         const GVolume* instance0 = dynamic_cast<const GVolume*>(instances[0]) ; 
 
          if(ridx == 0 )
          {
@@ -1027,7 +1028,7 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
          }     
    
 
-         GVolume* base = ridx == 0 ? NULL : instance0 ; 
+         const GVolume* base = ridx == 0 ? NULL : instance0 ; 
 
          bool globalinstance = false ; 
 
@@ -1091,7 +1092,7 @@ void GScene::anaEvent(OpticksEvent* evt)
 
     int dbgnode = m_ok->getDbgNode();
 
-    GVolume* volume = m_nodelib->getVolume(dbgnode);
+    const GVolume* volume = m_nodelib->getVolume(dbgnode);
     GNodeLib* nlib = m_ggeo->getNodeLib();
 
     const GMesh* mesh = volume->getMesh();

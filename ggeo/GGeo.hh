@@ -243,7 +243,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         //void saveMergedMeshes(const char* idpath);
     public:
         // pass thru to geolib
-        GMergedMesh* makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity, bool globalinstance);
+        GMergedMesh* makeMergedMesh(unsigned int index, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance);
         unsigned int getNumMergedMesh() const ;
     public:
         // these are operational from cache
@@ -272,9 +272,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void add(GVolume*    volume);
 
         unsigned int getNumVolumes() const ;
-        GNode* getNode(unsigned index) const ; 
-        GVolume* getVolume(unsigned int index) const ;  
-        GVolume* getVolumeSimple(unsigned int index) const ;  
+        const GNode* getNode(unsigned index) const ; 
+        const GVolume* getVolume(unsigned int index) const ;  
+        const GVolume* getVolumeSimple(unsigned int index) const ;  
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
 
@@ -306,7 +306,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
    public:
         void traverse(const char* msg="GGeo::traverse");
     private:
-        void traverse(GNode* node, unsigned int depth);
+        void traverse(const GNode* node, unsigned depth);
     public:
         unsigned getNumMaterials() const ;
         unsigned getNumRawMaterials() const ;
@@ -415,6 +415,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
     public:
         GInstancer* getTreeCheck();
+    public:
+        void dryrun_convert() ;
     public:
         void setPickFace(std::string pickface);
         void setPickFace(const glm::ivec4& pickface);

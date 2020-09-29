@@ -84,6 +84,24 @@ nbbox* X4SolidExtent::Extent(const G4VSolid* solid)
     return new nbbox(bb) ;
 }
 
+nbbox* X4SolidExtent::BoundingLimits(const G4VSolid* solid)  // static 
+{
+    G4ThreeVector pMin ; 
+    G4ThreeVector pMax ;
+    solid->BoundingLimits(pMin, pMax); 
+
+    nbbox bb ; 
+
+    bb.min.x = float(pMin.x());
+    bb.min.y = float(pMin.y());
+    bb.min.z = float(pMin.z());
+
+    bb.max.x = float(pMax.x());
+    bb.max.y = float(pMax.y());
+    bb.max.z = float(pMax.z());
+
+    return new nbbox(bb) ;
+}
 
 
 

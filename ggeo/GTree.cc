@@ -41,13 +41,13 @@ for ridx > 0 returns all GNode subtree bases of the ridx repeats.
 
 **/
 
-NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<GNode*>& placements) // static
+NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<const GNode*>& placements) // static
 {
     unsigned ni = placements.size(); 
     NPY<float>* buf = NPY<float>::make(0, 4, 4);
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GNode* place = placements[i] ;
+        const GNode* place = placements[i] ;
         GMatrix<float>* t = place->getTransform();
         buf->add(t->getPointer(), 4*4*sizeof(float) );
     } 
@@ -62,6 +62,10 @@ GTree::makeInstanceIdentityBuffer
 -----------------------------------
 
 Canonically invoked by GMergedMesh::addInstancedBuffers
+
+Collects identity quads from the GVolume(GNode) tree into an array, 
+
+
 
 
 Repeating identity guint4 for all volumes of an instance (typically ~5 volumes for 1 instance)
@@ -80,35 +84,41 @@ The triangulated version can be created from the analytic one
 by duplication according to the number of triangles.
 
 
+
+
+
 Prior to Aug 2020 this returned an iidentity buffer with all nodes 
 when invoked on the root node, eg::  
 
     GMergedMesh/0/iidentity.npy :       (1, 316326, 4)
 
 This was because of a fundamental difference between the repeated instances and the 
-global ridx 0 volumes. The volumes of the instances are all together in a subtree 
-whereas the global remainder volumes with ridx 0 are scattered all over the full tree.
-
-Due to this a separate getGlobalProgeny is now used which selects the collected
-nodes based on the ridx (getRepeatIndex()) being zero.
+remainder ridx 0 volumes. The volumes of the instances are all together in subtrees 
+whereas the remainder volumes with ridx 0 are scattered all over the full tree. Thus 
+the former used of this with GGeo::m_root as the only placement resulted in getting 
+base + progeny covering all nodes of the tree. To avoid this a separate getRemainderProgeny 
+is now used which selects the collected nodes based on the ridx (getRepeatIndex()) 
+being zero.
 
 **/
 
-NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& placements)  // static
+NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNode*>& placements)  // static
 {
-    unsigned int numInstances = placements.size() ;
-    GNode* base0 = placements[0] ;
+    unsigned numInstances = placements.size() ;
+    const GNode* first_base = placements[0] ;
+    GNode* first_base_ = const_cast<GNode*>(first_base); 
 
-    unsigned ridx0 = base0->getRepeatIndex() ; 
-    bool is_global = ridx0 == 0 ; 
+    unsigned first_ridx = first_base->getRepeatIndex() ; 
+    bool is_remainder = first_ridx == 0 ; 
 
-    if(is_global)
+    if(is_remainder)
     {
-        assert( numInstances == 1 );  // only one placement (the root node) for the global mm 
+        assert( numInstances == 1 );  // only one placement (the root node) for the remainder mm 
     }
 
-    std::vector<GNode*>& progeny0 = is_global ? base0->getGlobalProgeny() : base0->getProgeny();
-    unsigned numProgeny0 = is_global ? base0->getPriorGlobalProgenyCount() : base0->getPriorProgenyCount();
+   
+    std::vector<GNode*>& progeny0 = is_remainder ? first_base_->getRemainderProgeny()           : first_base_->getProgeny();
+    unsigned numProgeny0          = is_remainder ? first_base_->getPriorRemainderProgenyCount() : first_base_->getPriorProgenyCount();
     assert( progeny0.size() == numProgeny0 );
 
     unsigned numVolumes  = 1 + numProgeny0  ;  // "1 +" as progeny does not include base node
@@ -120,17 +130,17 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
 
     for(unsigned int i=0 ; i < numInstances ; i++)
     {
-        GNode* base = placements[i] ; // for global only one placement 
+        const GNode* base = placements[i] ; // for global only one placement 
+        GNode* base_ = const_cast<GNode*>(base);    // due to progeny cache
 
         unsigned ridx = base->getRepeatIndex();
-        assert( ridx == ridx0) ; // all placements by definition have the same ridx 
+        assert( ridx == first_ridx ) ; // all placements by definition have the same ridx 
 
-        std::vector<GNode*>& progeny = is_global ? base->getGlobalProgeny() : base->getProgeny() ;
-        unsigned numProgeny = is_global ? base->getPriorGlobalProgenyCount() : base->getPriorProgenyCount();
+        std::vector<GNode*>& progeny = is_remainder ? base_->getRemainderProgeny()           : base_->getProgeny() ;
+        unsigned numProgeny =          is_remainder ? base_->getPriorRemainderProgenyCount() : base_->getPriorProgenyCount();
 
-        // For globals the "progeny" are nodes scattered all over the geometry tree, for instanced
-        // the progeny are nodes in a contiguous subtree.
-
+        // For the remainder the "progeny" are nodes scattered all over the geometry tree, for the instanced
+        // the progeny are nodes in contiguous subtrees.
 
         assert( numProgeny == numProgeny0 && "repeated geometry for the instances, so the progeny counts must match");
 
@@ -152,10 +162,10 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
             assert( progeny_match );
         }
 
-        for(unsigned int s=0 ; s < numVolumes ; s++ )
+        for(unsigned s=0 ; s < numVolumes ; s++ )
         {
-            GNode* node = s == 0 ? base : progeny[s-1] ; 
-            GVolume* volume = dynamic_cast<GVolume*>(node) ;
+            const GNode* node = s == 0 ? base : progeny[s-1] ; 
+            const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
 
             guint4 id = volume->getIdentity();
             buf->add(id.x, id.y, id.z, id.w ); 

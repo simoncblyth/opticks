@@ -215,9 +215,15 @@ bool OpticksResource::idNameContains(const char* s)
 }
 
 
+/**
+OpticksResource::formCacheRelativePath
+---------------------------------------
 
+Shorten an absolute path into a cache relative one for easy reading.
 
-std::string OpticksResource::getRelativePath(const char* path)
+**/
+
+std::string OpticksResource::formCacheRelativePath(const char* path) const 
 {
     const char* idpath = getIdPath();
 
@@ -795,6 +801,9 @@ std::string OpticksResource::getMergedMeshPath(unsigned int index)
     return getObjectPath("GMergedMesh", index);
 }
 
+
+
+
 std::string OpticksResource::getBasePath(const char* rel)
 {
     assert(m_srcbase);
@@ -818,7 +827,7 @@ std::string OpticksResource::getPmtPath(unsigned int index, bool relative)
 
 }
 
-std::string OpticksResource::getObjectPath(const char* name, unsigned int index)
+std::string OpticksResource::getObjectPath(const char* name, unsigned int index) const 
 {
     const char* idpath = getIdPath();
     assert(idpath && "OpticksResource::getObjectPath idpath not set");
@@ -828,14 +837,34 @@ std::string OpticksResource::getObjectPath(const char* name, unsigned int index)
     return dir.string() ;
 }
 
+std::string OpticksResource::getObjectPath(const char* name) const 
+{
+    const char* idpath = getIdPath();
+    assert(idpath && "OpticksResource::getObjectPath idpath not set");
+    fs::path dir(idpath);
+    dir /= name ;
+    return dir.string() ;
+}
 
-std::string OpticksResource::getRelativePath(const char* name, unsigned int index)
+
+
+std::string OpticksResource::getRelativePath(const char* name, unsigned int index) const 
 {
     // used eg by GPmt::loadFromCache returning "GPmt/0"
     fs::path reldir(name);
     reldir /= boost::lexical_cast<std::string>(index) ;
     return reldir.string() ;
 }
+std::string OpticksResource::getRelativePath(const char* name) const 
+{
+    fs::path reldir(name);
+    return reldir.string() ;
+}
+
+
+
+
+
 
 
 std::string OpticksResource::getDetectorPath(const char* name, unsigned int index)

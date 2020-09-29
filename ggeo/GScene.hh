@@ -172,7 +172,7 @@ class GGEO_API GScene : public GGeoBase
         static GScene* Load(Opticks* ok, GGeo* ggeo) ;
         GScene(Opticks* ok, GGeo* ggeo, bool loaded);
 
-        GVolume* getVolume(unsigned nidx);
+        const GVolume* getVolume(unsigned nidx);
         void dumpNode(unsigned nidx);
         void anaEvent(OpticksEvent* evt);
         void save() const ; 

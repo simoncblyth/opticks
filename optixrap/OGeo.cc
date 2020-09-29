@@ -338,6 +338,16 @@ optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
     return ggg ; 
 }
 
+
+/**
+OGeo::makeRepeatedAssembly
+---------------------------
+
+Invoked only from OGeo::convertMergedMesh.
+
+
+**/
+
 optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm)
 {
     bool raylod = false ; 
@@ -380,7 +390,7 @@ optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm)
 
     optix::Material mat = makeMaterial();
 
-    /*
+#ifdef OLD_LOD
     optix::Program visit ; 
     if(raylod)
     {
@@ -388,7 +398,7 @@ optix::Group OGeo::makeRepeatedAssembly(GMergedMesh* mm)
         float instance_bounding_radius = mm->getBoundingRadiusCE(0) ; 
         visit["instance_bounding_radius"]->setFloat( instance_bounding_radius*2.f );
     }
-    */
+#endif
 
    
     unsigned count(0); 

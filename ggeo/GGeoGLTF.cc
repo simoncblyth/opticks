@@ -119,7 +119,7 @@ void GGeoGLTF::addMeshes()
 
 void GGeoGLTF::addNodes()
 {
-    GVolume* top = m_ggeo->getVolume(0); 
+    const GVolume* top = m_ggeo->getVolume(0); 
     Nd* parent_nd = NULL ; 
 
     addNodes_r( top, parent_nd, 0 ) ; 

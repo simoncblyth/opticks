@@ -115,9 +115,13 @@ class OKCORE_API OpticksResource : public BOpticksResource {
     public:
        const char* getRunResultsDir() const ;
     public:
-       std::string getRelativePath(const char* path); 
-       std::string getRelativePath(const char* name, unsigned int ridx);
-       std::string getObjectPath(const char* name, unsigned int ridx);
+       std::string formCacheRelativePath(const char* path) const ; 
+    public:
+       std::string getRelativePath(const char* name, unsigned int ridx) const ;
+       std::string getRelativePath(const char* name) const ;
+       std::string getObjectPath(const char* name, unsigned int ridx) const ;
+       std::string getObjectPath(const char* name) const ;
+    public:
        std::string getDetectorPath(const char* name, unsigned int ridx);
        std::string getMergedMeshPath(unsigned int ridx);
 

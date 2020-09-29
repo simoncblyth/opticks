@@ -47,6 +47,16 @@
 
 #include "PLOG.hh"
 
+/**
+TODO List
+---------
+
+1. replace gfloat3/GBuffer with NPoint/NPY approach  
+
+
+**/
+
+
 const plog::Severity GMesh::LEVEL = PLOG::EnvLevel("GMesh", "DEBUG" ); 
 
 namespace fs = boost::filesystem;
@@ -112,11 +122,15 @@ bool GMesh::isEmpty() const
 
 
 
+/**
+GMesh::GMesh
+--------------
+
+GMesh are created from G4VSolid by  X4PhysicalVolume::convertSolid/X4Mesh::Convert
+which uses GMeshMaker::Make to go from NPY arrays into gfloat and calculates the normals.
 
 
-
-
-
+**/
 
 
 GMesh::GMesh(unsigned int index, 
@@ -210,6 +224,25 @@ GMesh::GMesh(unsigned int index,
      init(vertices, faces, normals, texcoords);
 }
 
+
+/**
+GMesh::init
+------------
+
+Adopts ownership of the input arrays.
+
+**/
+
+void GMesh::init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* texcoords)
+{
+   g_instance_count += 1 ; 
+   setVertices(vertices);
+   setFaces(faces);
+   setNormals(normals);
+   setTexcoords(texcoords);
+   updateBounds();
+   nameConstituents(m_names);
+}
 
 
 
@@ -334,10 +367,32 @@ unsigned int GMesh::getNumVertices() const
 {
     return m_num_vertices ; 
 }
+
+/**
+GMesh::getNumFaces
+-------------------
+
+For GMergedMesh instances this is set during mesh merging::
+
+    GMergedMesh::Create
+    GMergedMesh::traverse_r
+    GMergedMesh::countVolume 
+    GMergedMesh::countMesh 
+
+**/
+
 unsigned int GMesh::getNumFaces() const 
 {
     return m_num_faces ; 
 }
+
+/**
+GMesh::getNumVolumes
+---------------------
+
+* m_num_volumes is set by setCenterExtentBuffer
+
+**/
 unsigned int GMesh::getNumVolumes() const 
 {
     return m_num_volumes ; 
@@ -352,7 +407,7 @@ unsigned int GMesh::getNumVolumesSelected() const
 
 void GMesh::setIndex(unsigned int index)
 {
-   m_index = index ;
+    m_index = index ;
 }
 void GMesh::setNumVertices(unsigned int num_vertices)
 {
@@ -526,6 +581,21 @@ guint4* GMesh::getInstancedIdentity() const
 {
     return m_iidentity ; 
 }
+
+/**
+GMesh::getInstancedIdentity
+-----------------------------
+
+All nodes of the geometry tree have a quad of identity uint.
+InstancedIdentity exists to rearrange that identity information 
+into a buffer that can be used for creation of the GPU instanced geometry,
+which requires to access the identity with an instance index, rather 
+than the node index.
+
+See notes/issues/identity_review.rst
+
+**/
+
 guint4 GMesh::getInstancedIdentity(unsigned int index) const
 {
     return m_iidentity[index] ; 
@@ -695,20 +765,13 @@ void GMesh::setPt(GPt* pt)
 
 
 
+/**
+GMesh::allocate
+-----------------
 
+Only used from GMergedMesh in GMergedMesh::Create
 
-
-void GMesh::init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* texcoords)
-{
-   g_instance_count += 1 ; 
-   setVertices(vertices);
-   setFaces(faces);
-   setNormals(normals);
-   setTexcoords(texcoords);
-   updateBounds();
-   nameConstituents(m_names);
-}
-
+**/
 
 void GMesh::allocate()
 {
@@ -956,6 +1019,15 @@ void GMesh::setCenterExtent(gfloat4* center_extent)
     m_center_extent_buffer = new GBuffer( sizeof(gfloat4)*m_num_volumes, (void*)m_center_extent, sizeof(gfloat4), 4 , "cen_ext"); 
     assert(sizeof(gfloat4) == sizeof(float)*4);
 }
+
+/**
+GMesh::setCenterExtentBuffer
+----------------------------
+
+Also sets m_num_volumes, based on the buffer size.
+
+**/
+
 void GMesh::setCenterExtentBuffer(GBuffer* buffer) 
 {
     m_center_extent_buffer = buffer ;  
@@ -969,8 +1041,6 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
               << " m_center_extent " << m_center_extent
               << " m_num_volumes " << m_num_volumes 
               ; 
-
-
 
 }
 
@@ -1154,10 +1224,14 @@ void GMesh::setIdentityBuffer(GBuffer* buffer)
 
 void GMesh::setInstancedIdentityBuffer(NPY<unsigned int>* buffer) 
 {
-    LOG(LEVEL) ; 
+    assert(buffer); 
     m_iidentity_buffer = buffer ;  
     if(!buffer) return ; 
+
+    LOG(LEVEL) << buffer->getShapeString() ; 
     m_iidentity = (guint4*)buffer->getPointer();
+
+
 }
 
 
@@ -1511,25 +1585,31 @@ void GMesh::Summary(const char* msg) const
 
 
 
-gbbox* GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices)
+
+
+nbbox* GMesh::findBBox_(gfloat3* vertices, unsigned int num_vertices) // static
 {
-    if(num_vertices == 0) return NULL ;
-
     std::vector<glm::vec3> points ; 
-
     for( unsigned int i = 0; i < num_vertices ;++i )
     {
         gfloat3& v = vertices[i];
         glm::vec3 p(v.x,v.y,v.z);
         points.push_back(p);
     }
-
     unsigned verbosity = 0 ;  
     nbbox nbb = nbbox::from_points(points, verbosity);
-    gbbox* bb = new gbbox(nbb);
+    nbbox* bb = new nbbox(nbb);
+    return bb;
+} 
 
+gbbox* GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices) // static
+{
+    if(num_vertices == 0) return NULL ;
+    nbbox* nbb = GMesh::findBBox_(vertices, num_vertices); 
+    gbbox* bb = new gbbox(*nbb);
     return bb ; 
 } 
+
 
 
 gfloat4 GMesh::findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_vertices)
@@ -1693,14 +1773,32 @@ void GMesh::updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform)
 
 
 
+glm::vec4 GMesh::getVertex(unsigned i) const 
+{
+    assert( i < m_num_vertices ); 
+    glm::vec4 vtx(0.,0.,0.,1.); 
+    vtx.x = m_vertices[i].x ; 
+    vtx.y = m_vertices[i].y ;
+    vtx.z = m_vertices[i].z ;
+    return vtx ; 
+}
 
 
 
+void GMesh::getTransformedVertices(std::vector<glm::vec4>& tvertices, const glm::mat4& transform )
+{
+    for(unsigned i = 0; i < m_num_vertices; i++)
+    {  
+        glm::vec4 a = getVertex(i); 
+        glm::vec4 b = a * transform ;  // TODO: verify order
+        tvertices.push_back(b); 
+    }   
+}
 
 gfloat3* GMesh::getTransformedVertices(GMatrixF& transform ) const 
 {
      gfloat3* vertices = new gfloat3[m_num_vertices];
-     for(unsigned int i = 0; i < m_num_vertices; i++)
+     for(unsigned i = 0; i < m_num_vertices; i++)
      {  
          vertices[i].x = m_vertices[i].x ;   
          vertices[i].y = m_vertices[i].y ;   
@@ -2064,38 +2162,124 @@ void GMesh::findShortName()
 }
 
 
+
 /**
-GMesh::makeFaceRepeatedInstancedIdentityBuffer
------------------------------------------------------
+GMesh::getFaceCount
+--------------------
 
-Canonically invoked by optixrap-/OGeo::makeTriangulatedGeometry
-Constructing a face repeated IIdentity buffer
-to be addressed with 0:numInstances*PrimitiveCount::
-
-   instanceIdx*PrimitiveCount + primIdx ;
-
-where the primIdx goes over all the volumes 
+Alternative check getting nodeinfo per-volume sum of faces.
 
 **/
 
-GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
+unsigned GMesh::getFaceCount() const 
 {
-    unsigned int numITransforms = getNumITransforms() ;
-    if(numITransforms == 0)
-    {
-        LOG(warning) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer only relevant to instanced meshes " 
-                     << " m_index " <<  m_index
-                     << " numITransforms " << numITransforms
-                     ;
-        return NULL ; 
-    }
+    guint4* nodeinfo = getNodeInfo();
+    unsigned numVolumes = getNumVolumes();
+    unsigned int nftot(0);
 
+    for(unsigned s=0 ; s < numVolumes ; s++)
+    {
+        unsigned nf = (nodeinfo + s)->x ;
+        nftot += nf ;
+    }
+    return nftot ; 
+}
+
+
+
+
+
+
+/**
+GMesh::getAppropriateRepeatedIdentityBuffer
+---------------------------------------------
+
+mmidx > 0 (FORMERLY: numITransforms > 0)
+   friib : FaceRepeatedInstancedIdentityBuffer 
+
+frib (FORMERLY: numITransforms == 0)
+   frib :  FaceRepeatedIdentityBuffer
+
+
+Sep 2020: moved to branching on mmidx > 0 as that 
+matches the rest of the geometry conversion code.  
+In anycase numITransforms is never zero. 
+For global mmidx=0 it is always 1 (identity matrix). 
+So was previously always returning friib.
+
+**/
+
+GBuffer*  GMesh::getAppropriateRepeatedIdentityBuffer()
+{
+    GMesh* mm = this ; 
+    unsigned numITransforms = mm->getNumITransforms();
+    unsigned numFaces = mm->getNumFaces();
+    unsigned mmidx = mm->getIndex(); 
+
+    GBuffer* id = NULL ;  
+
+    if(mmidx > 0) 
+    {
+        id = mm->getFaceRepeatedInstancedIdentityBuffer(); 
+        assert(id);
+        LOG(LEVEL) << "using FaceRepeatedInstancedIdentityBuffer" << " friid items " << id->getNumItems() << " numITransforms*numFaces " << numITransforms*numFaces ;     
+        assert( id->getNumItems() == numITransforms*numFaces );
+    }
+    else
+    {
+        id = mm->getFaceRepeatedIdentityBuffer();
+        assert(id);
+        LOG(LEVEL) << "using FaceRepeatedIdentityBuffer" << " frid items " << id->getNumItems() << " numFaces " << numFaces ;
+        assert( id->getNumItems() == numFaces );
+    }
+    return id ; 
+}
+
+
+
+
+GBuffer*  GMesh::getFaceRepeatedInstancedIdentityBuffer()
+{
+    if(m_facerepeated_iidentity_buffer == NULL)
+    {
+         m_facerepeated_iidentity_buffer = makeFaceRepeatedInstancedIdentityBuffer() ;  
+    }
+    return m_facerepeated_iidentity_buffer ;
+}
+
+GBuffer*  GMesh::getFaceRepeatedIdentityBuffer()
+{
+    if(m_facerepeated_identity_buffer == NULL)
+    {
+         m_facerepeated_identity_buffer = makeFaceRepeatedIdentityBuffer() ;  
+    }
+    return m_facerepeated_identity_buffer ;
+}
+
+
+
+            
+void GMesh::checks_faceRepeatedInstancedIdentity()
+{
+    unsigned numITransforms = getNumITransforms() ;
+    unsigned mmidx = getIndex(); 
+    LOG(info) << " mmidx " << mmidx  << " numITransforms " << numITransforms ; 
+
+    assert( numITransforms > 0 && "zero should never happen anymore" ); 
+    if( mmidx == 0 ) assert( numITransforms == 1 && "global mm0 should have only one ITransform, which is the idenitity matrix" ); 
+    assert( mmidx > 0 && "GMesh::makeFaceRepeatedInstancedIdentityBuffer only relevant to instanced meshes " ); 
 
     unsigned numVolumes = getNumVolumes();
-    unsigned numVolumesSelected = getNumVolumesSelected();
+    unsigned numVolumesSelected = getNumVolumesSelected();   // NOT persisted
     unsigned numFaces = getNumFaces() ;
-    unsigned numRepeatedIdentity = numITransforms*numFaces ;
+    unsigned numRepeatedIdentity = numITransforms*numFaces ;   // total faces for all occurrences of this GMergedMesh instance
+
+
     unsigned numInstanceIdentity = m_iidentity_buffer->getShape(0)*m_iidentity_buffer->getShape(1) ;  
+
+    /*
+    recent change in ii shape for globals
+    */
 
     LOG(LEVEL)
         << "\n m_index " << m_index
@@ -2109,10 +2293,8 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
         << "\n m_itransforms_buffer " << m_itransforms_buffer->getShapeString()
         ;
 
-
     bool nodeinfo_ok = m_nodeinfo_buffer && m_nodeinfo_buffer->getNumItems() == numVolumes ;
     bool iidentity_ok = m_iidentity_buffer && numInstanceIdentity == numVolumes*numITransforms ;
-
 
     if(!nodeinfo_ok)
         LOG(fatal) 
@@ -2136,51 +2318,59 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
            ; 
 
     assert(nodeinfo_ok);
-    //assert(iidentity_ok);
+    assert(iidentity_ok);  // this is now failing 
 
-    guint4* nodeinfo = getNodeInfo();
-    unsigned int nftot(0);
-    unsigned int offset(0);
-    unsigned int i1 = numFaces ;                    // instance 1 offset
-    unsigned int il = (numITransforms-1)*numFaces ; // instance N-1 offset 
 
     // check nodeinfo per-volume sum of faces matches expected total 
-
-    if(m_verbosity > 3) 
-    LOG(info) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
-              << " verbosity " << m_verbosity
-              << " dumping per volume offsets "
-              ;
-
-    for(unsigned s=0 ; s < numVolumes ; s++)
-    {
-        unsigned nf = (nodeinfo + s)->x ;
-        if(m_verbosity > 3)
-        printf(" s %u nf %3d  i0 %d:%d  i1 %d:%d   il %d:%d \n", s, nf, offset, offset+nf, i1+offset, i1+offset+nf, il+offset, il+offset+nf ); 
-        nftot += nf ;
-        offset += nf ; 
-    }
-
-    if(m_verbosity > 3) 
-    LOG(info) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
-              << " verbosity " << m_verbosity
-              << " nftot " << nftot
-              ;
+    unsigned nftot = getFaceCount(); 
+    LOG(info) << " nftot " << nftot << " numFaces " << numFaces ; 
     assert( numFaces == nftot );
+}
 
 
 
 
+/**
+GMesh::makeFaceRepeatedInstancedIdentityBuffer
+-----------------------------------------------------
+
+Canonically invoked by optixrap-/OGeo::makeTriangulatedGeometry
+Constructing a face repeated IIdentity buffer
+to be addressed with 0:numInstances*PrimitiveCount::
+
+   instanceIdx*PrimitiveCount + primIdx ;
+
+where the primIdx goes over all the volumes 
+
+**/
+
+GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
+{ 
+    checks_faceRepeatedInstancedIdentity();
+
+    unsigned numITransforms = getNumITransforms() ;
+    unsigned numVolumes = getNumVolumes();
+    unsigned numFaces = getNumFaces() ;                          // from sum over all GMesh(solids) within the GMergedMesh 
+    unsigned numRepeatedIdentity = numITransforms*numFaces ;     // total faces for all occurrences of this GMergedMesh instance
+
+    guint4* nodeinfo = getNodeInfo();
     guint4* riid = new guint4[numRepeatedIdentity] ;
     
+    unsigned offset(0);
     for(unsigned i=0 ; i < numITransforms ; i++)
     {
+        unsigned instance_index = i ; 
         offset = 0 ; 
         for(unsigned s=0 ; s < numVolumes ; s++)
         {   
-            guint4 iid = m_iidentity[numVolumes*i + s]  ;  
-            unsigned nf = (nodeinfo + s)->x ;
-            for(unsigned f=0 ; f < nf ; ++f) riid[i*numFaces+offset+f] = iid ; 
+            unsigned volume_index = s ;  
+            guint4 iid = m_iidentity[numVolumes*instance_index + volume_index]  ;  
+
+            unsigned nf = (nodeinfo + volume_index)->x ;    // faces for the volume 
+            for(unsigned f=0 ; f < nf ; ++f) 
+            {
+                riid[instance_index*numFaces+offset+f] = iid ; 
+            }
             offset += nf ; 
         }  
     }   
@@ -2190,201 +2380,48 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     return buffer ; 
 }
 
-
-
-
 /**
-GMesh::getAppropriateRepeatedIdentityBuffer
----------------------------------------------
+GMesh::makeFaceRepeatedIdentityBuffer
+-------------------------------------
 
-Depending on the number of ITransforms returns either
-
-friib (numITransforms > 0)
-    FaceRepeatedInstancedIdentityBuffer 
-frib (numITransforms == 0)
-    FaceRepeatedIdentityBuffer
-
-Migrated here from OGeo::makeTriangulatedGeometry.
-
-TODO: suspect might always be returning friib because even 
-      for globals there may be one identity matrix ITransform.
-
+For non-instanced GMergedMesh mm0, duplicate m_identity for 
+each volume of the GMergedMesh out to each face.
 
 **/
 
-GBuffer*  GMesh::getAppropriateRepeatedIdentityBuffer()
-{
-    GMesh* mm = this ; 
-
-    unsigned numITransforms = mm->getNumITransforms();
-    unsigned numFaces = mm->getNumFaces();
-
-    GBuffer* id = NULL ;  
-    if(numITransforms > 0)  //  formerly 0   : HUH: perhaps should be 1,  always using friid even for globals ?
-    {
-        id = mm->getFaceRepeatedInstancedIdentityBuffer(); 
-        assert(id);
-        LOG(LEVEL) << "using FaceRepeatedInstancedIdentityBuffer" << " friid items " << id->getNumItems() << " numITransforms*numFaces " << numITransforms*numFaces ;     
-        assert( id->getNumItems() == numITransforms*numFaces );
-    }
-    else
-    {
-        id = mm->getFaceRepeatedIdentityBuffer();
-        assert(id);
-        LOG(LEVEL) << "using FaceRepeatedIdentityBuffer" << " frid items " << id->getNumItems() << " numFaces " << numFaces ;
-        assert( id->getNumItems() == numFaces );
-    }
-    return id ; 
-}
-
-
-
-
-
-GBuffer*  GMesh::getFaceRepeatedInstancedIdentityBuffer()
-{
-    if(m_facerepeated_iidentity_buffer == NULL)
-    {
-         m_facerepeated_iidentity_buffer = makeFaceRepeatedInstancedIdentityBuffer() ;  
-    }
-    return m_facerepeated_iidentity_buffer ;
-}
-
-
-
-/*
-
-Instance Identity buffer has nodeIndex/meshIndex/boundaryIndex/sensorIndex
-for all 5 volumes of each instance::
-
-    In [3]: ii = np.load("iidentity.npy")
-
-    In [40]: ii.reshape(-1,5,4)
-    Out[40]: 
-    array([[[ 3199,    47,    19,     0],
-            [ 3200,    46,    20,     0],
-            [ 3201,    43,    21,     3],
-            [ 3202,    44,     1,     0],
-            [ 3203,    45,     1,     0]],
-
-           [[ 3205,    47,    19,     0],
-            [ 3206,    46,    20,     0],
-            [ 3207,    43,    21,     8],
-            [ 3208,    44,     1,     0],
-            [ 3209,    45,     1,     0]],
-
-           [[ 3211,    47,    19,     0],
-            [ 3212,    46,    20,     0],
-            [ 3213,    43,    21,    13],
-            [ 3214,    44,     1,     0],
-            [ 3215,    45,     1,     0]],
-
-    ...
-
-    In [41]: ii.reshape(-1,5,4).shape
-    Out[41]: (672, 5, 4)
-
-    In [9]: ii.reshape(672,-1,4).shape
-    Out[9]: (672, 5, 4)
-
-
-    In [76]: fr = np.load("/tmp/friid.npy")
-
-    In [80]: fr.reshape(-1,4)
-    Out[80]: 
-    array([[ 3199,    47,    19,     0],
-           [ 3199,    47,    19,     0],
-           [ 3199,    47,    19,     0],
-           ..., 
-           [11412,    45,     1,     0],
-           [11412,    45,     1,     0],
-           [11412,    45,     1,     0]], dtype=uint32)
-
-    In [81]: fr.reshape(-1,4).shape
-    Out[81]: (1967616, 4)
-
-    In [82]: fr.reshape(672,-1,4).shape
-    Out[82]: (672, 2928, 4)
-
-    In [83]: fr[4320:5280]   # 3rd volume of 2nd instance : using face repeated IIdentity 
-    Out[83]: 
-    array([[3207,   43,   21,    8],
-           [3207,   43,   21,    8],
-           [3207,   43,   21,    8],
-           ..., 
-           [3207,   43,   21,    8],
-           [3207,   43,   21,    8],
-           [3207,   43,   21,    8]], dtype=uint32)
-
-
-    In [11]: ii.reshape(672,-1,4)[1,2]    # again 3rd volume of 2nd instance : using volume level IIdentity 
-    Out[11]: array([3207,   43,   21,    8], dtype=uint32)
-
-
-    In [10]: ii.reshape(672,-1,4)[1]
-    Out[10]: 
-    array([[3205,   47,   19,    0],
-           [3206,   46,   20,    0],
-           [3207,   43,   21,    8],
-           [3208,   44,    1,    0],
-           [3209,   45,    1,    0]], dtype=uint32)
-
-
-
-
-
-    [2015-10-09 18:39:50.180695] [0x000007fff7448031] [info]    GMesh::makeFaceRepeatedIIdentityBuffer numVolumes 5 numFaces (sum of faces in numVolumes)2928 numITransforms 672 numRepeatedIdentity 1967616
-     s 0 nf 720  i0 0:720  i1 2928:3648   il 1964688:1965408 
-     s 1 nf 672  i0 720:1392  i1 3648:4320   il 1965408:1966080 
-     s 2 nf 960  i0 1392:2352  i1 4320:5280   il 1966080:1967040 
-     s 3 nf 480  i0 2352:2832  i1 5280:5760   il 1967040:1967520 
-     s 4 nf  96  i0 2832:2928  i1 5760:5856   il 1967520:1967616 
-     ----- 2928 
-
-
-*/
-
-
 GBuffer* GMesh::makeFaceRepeatedIdentityBuffer()
 {
-    unsigned int numITransforms = getNumITransforms() ;
-    if(numITransforms > 1)  // formerly 0, but have moved to assigning identity buffer to non-instanced
-    {
-        LOG(warning) << "GMesh::makeFaceRepeatedIdentityBuffer only relevant to non-instanced meshes " ;
-        return NULL ; 
-    }
-    unsigned int numVolumes = getNumVolumes();
-    unsigned int numFaces = getNumFaces() ;
+    unsigned mmidx = getIndex(); 
+    unsigned numITransforms = getNumITransforms() ;
+    unsigned numVolumes = getNumVolumes();
+    unsigned numFaces = getNumFaces() ;
+    unsigned numFacesCheck = getFaceCount(); 
 
-    LOG(info) << "GMesh::makeFaceRepeatedIdentityBuffer"
-              << " numVolumes " << numVolumes 
-              << " numFaces (sum of faces in numVolumes)" << numFaces 
-               ; 
+    LOG(info) 
+        << " mmidx " << mmidx
+        << " numITransforms " << numITransforms
+        << " numVolumes " << numVolumes 
+        << " numFaces (sum of faces in numVolumes)" << numFaces 
+        << " numFacesCheck " << numFacesCheck
+        ; 
 
-    assert(m_nodeinfo_buffer->getNumItems() == numVolumes);
+    assert( mmidx == 0 );  
+    assert( numITransforms == 1 && "GMesh::makeFaceRepeatedIdentityBuffer only relevant to the non-instanced mm0 "); 
+    assert( m_nodeinfo_buffer->getNumItems() == numVolumes);
+    assert( numFaces == numFacesCheck );   // check nodeinfo sum of per-volume faces matches expectation
 
     guint4* nodeinfo = getNodeInfo();
-
-
-    // check nodeinfo sum of per-volume faces matches expectation
-    unsigned int nftot(0);
-    for(unsigned int s=0 ; s < numVolumes ; s++)
-    {
-        unsigned int nf = (nodeinfo + s)->x ;
-        nftot += nf ;
-    }
-    printf(" ----- %d \n", nftot);
-    assert( numFaces == nftot );
-
-
-    // duplicate nodeinfo for each volume out to each face
-    unsigned int offset(0);
     guint4* rid = new guint4[numFaces] ;
-    for(unsigned int s=0 ; s < numVolumes ; s++)
+
+    unsigned offset(0);
+    for(unsigned s=0 ; s < numVolumes ; s++)
     {   
         guint4 sid = m_identity[s]  ;  
         unsigned int nf = (nodeinfo + s)->x ;
-        for(unsigned int f=0 ; f < nf ; ++f) rid[offset+f] = sid ; 
+        for(unsigned f=0 ; f < nf ; ++f)
+        {
+            rid[offset+f] = sid ; 
+        }
         offset += nf ; 
     }  
     
@@ -2395,38 +2432,6 @@ GBuffer* GMesh::makeFaceRepeatedIdentityBuffer()
 
 
 
-
-GBuffer*  GMesh::getFaceRepeatedIdentityBuffer()
-{
-    if(m_facerepeated_identity_buffer == NULL)
-    {
-         m_facerepeated_identity_buffer = makeFaceRepeatedIdentityBuffer() ;  
-    }
-    return m_facerepeated_identity_buffer ;
-}
-
-
-
-/*
-
-GBuffer* GMesh::loadAnalyticGeometryBuffer(const char* path)
-{
-    GBuffer* partBuf = GBuffer::load<float>(path);
-    return partBuf ; 
-}
-
-GBuffer*  GMesh::getAnalyticGeometryBuffer()
-{
-    assert(0);
-    //if(m_analytic_geometry_buffer == NULL)
-    //{
-    //    m_analytic_geometry_buffer = loadAnalyticGeometryBuffer() ; // FIX: relying on default temporary path
-    //}
-    //return m_analytic_geometry_buffer ;
-    return NULL ; 
-}
-
-*/
 
 
 

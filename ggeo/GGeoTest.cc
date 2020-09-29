@@ -140,7 +140,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
     m_geolib(new GGeoLib(m_ok,m_input_analytic,m_bndlib)),
-    m_nodelib(new GNodeLib(m_ok, m_input_analytic, m_test, basis->getNodeLib() )),
+    m_nodelib(new GNodeLib(m_ok)),
     m_meshlib(new GMeshLib(m_ok)),
     m_maker(new GMaker(m_ok, m_bndlib, m_basemeshlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
@@ -686,7 +686,7 @@ void GGeoTest::assignBoundaries()
 
     for(unsigned i=0 ; i < numVolume ; i++)
     {
-        GVolume* volume = m_nodelib->getVolume(i) ;
+        GVolume* volume = m_nodelib->getVolumeNonConst(i) ;
         const NCSG* csg = volume->getMesh()->getCSG(); 
 
         const char* spec = csg->getBoundary();  

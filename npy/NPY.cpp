@@ -585,6 +585,11 @@ void NPY<T>::add(const glm::vec4& v)
 }
 
 
+
+
+
+
+
 template <typename T>
 void NPY<T>::add(const glm::uvec4& u)
 {
@@ -606,6 +611,23 @@ void NPY<T>::add(const glm::mat4& m)
     add((void*)values, 16*sizeof(float) );    
 }
 
+template <typename T>
+void NPY<T>::add(const glm::vec4& v0, const glm::vec4& v1)
+{
+    T* vals = new T[8] ;
+
+    vals[0] = v0.x ; 
+    vals[1] = v0.y ; 
+    vals[2] = v0.z ; 
+    vals[3] = v0.w ; 
+
+    vals[4] = v1.x ; 
+    vals[5] = v1.y ; 
+    vals[6] = v1.z ; 
+    vals[7] = v1.w ; 
+  
+    add((void*)vals, 8*sizeof(T) );    
+}
 
 
 

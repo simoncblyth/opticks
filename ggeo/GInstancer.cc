@@ -145,6 +145,9 @@ void GInstancer::traverse()
     LOG(LEVEL) << "[" ; 
 
     m_root = m_nodelib->getVolume(0);
+    m_root_ = const_cast<GVolume*>(m_root); 
+
+
     assert(m_root);
 
     // count occurences of distinct progeny digests (relative sub-tree identities) in m_digest_count 
@@ -163,9 +166,10 @@ void GInstancer::traverse()
     LOG(LEVEL) << "]" ; 
 }
 
-void GInstancer::traverse_r( GNode* node, unsigned int depth)
+void GInstancer::traverse_r( const GNode* node, unsigned int depth)
 {
-    std::string& pdig = node->getProgenyDigest();
+    GNode* no = const_cast<GNode*>(node);  
+    std::string& pdig = no->getProgenyDigest();
     m_digest_count->add(pdig.c_str());
     m_count++ ; 
 
@@ -192,9 +196,9 @@ void GInstancer::deltacheck()
     deltacheck_r(m_root, 0);
 }
 
-void GInstancer::deltacheck_r( GNode* node, unsigned int depth)
+void GInstancer::deltacheck_r( const GNode* node, unsigned int depth)
 {
-    GVolume* volume = dynamic_cast<GVolume*>(node) ;
+    const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
     GMatrixF* gtransform = volume->getTransform();
 
     // volumes levelTransform is set in AssimpGGeo and hails from the below with level -2
@@ -202,7 +206,9 @@ void GInstancer::deltacheck_r( GNode* node, unsigned int depth)
     //  looks to correspond to the placement of the LV within its PV  
 
     //GMatrixF* ltransform = volume->getLevelTransform();  
-    GMatrixF* ctransform = volume->calculateTransform();
+
+    GVolume* vol = const_cast<GVolume*>(volume);    // due to progeny cache 
+    GMatrixF* ctransform = vol->calculateTransform();
     float delta = gtransform->largestDiff(*ctransform);
 
     
@@ -309,7 +315,7 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
         std::string& pdig = kv.first ; 
         unsigned int ndig = kv.second ;  // number of occurences of the progeny digest 
 
-        GNode* first = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+        GNode* first = m_root_->findProgenyDigest(pdig) ; // first node that matches the progeny digest
 
         GRepeat cand(repeat_min, vertex_min,  i, pdig, ndig , first );
         cands.push_back(cand) ;
@@ -387,7 +393,7 @@ and is thus disallowed in favor of the ancestor that contains it.
 
 bool GInstancer::isContainedRepeat( const std::string& pdig, unsigned int levels ) const 
 {
-    GNode* node = m_root->findProgenyDigest(pdig) ; 
+    GNode* node = m_root_->findProgenyDigest(pdig) ; 
     std::vector<GNode*>& ancestors = node->getAncestors();  // ordered from root to parent 
     unsigned int asize = ancestors.size(); 
 
@@ -420,8 +426,8 @@ void GInstancer::dumpRepeatCandidate(unsigned int index, bool verbose)
     std::string pdig = m_repeat_candidates[index];
     unsigned int ndig = m_digest_count->getCount(pdig.c_str());
 
-    GNode* first = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
-    std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+    GNode* first = m_root_->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+    std::vector<const GNode*> placements = m_root_->findAllProgenyDigest(pdig);
     std::cout  
                   << " pdig "  << std::setw(32) << pdig  
                   << " ndig "  << std::setw(6) << std::dec << ndig
@@ -436,7 +442,7 @@ void GInstancer::dumpRepeatCandidate(unsigned int index, bool verbose)
     {
         for(unsigned int i=0 ; i < placements.size() ; i++)
         {
-            GNode* place = placements[i] ;
+            const GNode* place = placements[i] ;
             GMatrix<float>* t = place->getTransform();
             std::cout 
                    << " t " << t->brief() 
@@ -497,7 +503,7 @@ void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
          std::string pdig = m_repeat_candidates[i];
          unsigned int ridx = getRepeatIndex(pdig);
          assert(ridx == i + 1 );
-         std::vector<GNode*> placements = m_root->findAllProgenyDigest(pdig);
+         std::vector<const GNode*> placements = m_root_->findAllProgenyDigest(pdig);
 
          LOG(LEVEL) 
                << " i " << std::setw(2) << i 
@@ -508,10 +514,10 @@ void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
          // recursive labelling starting from the placements
          for(unsigned int p=0 ; p < placements.size() ; p++)
          {
-             GNode* outernode = placements[p] ; 
+             const GNode* outernode = placements[p] ; 
              const GVolume* outer_volume = dynamic_cast<const GVolume*>(outernode) ; 
              int outernode_copyNumber = outer_volume->getCopyNumber() ; 
-             GNode* start = outernode ; 
+             GNode* start = const_cast<GNode*>(outernode) ; 
              labelRepeats_r(start, ridx, outernode_copyNumber, outer_volume );
          }
     }
@@ -597,7 +603,7 @@ see notes/issues/torus_replacement_on_the_fly.rst
 
 **/
 
-void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
+void GInstancer::traverseGlobals_r( const GNode* node, unsigned depth )
 {
     unsigned ridx = node->getRepeatIndex() ; 
     if( ridx > 0 ) return ; 
@@ -607,6 +613,7 @@ void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
     unsigned lvidx = node->getMeshIndex();  
     m_meshset[ridx].insert( lvidx ) ; 
 
+/*
     if( m_ok->isCSGSkipLV(lvidx) )   // --csgskiplv
     {
         assert(0 && "skipping of LV used globally, ie non-instanced, is not currently working "); 
@@ -617,7 +624,8 @@ void GInstancer::traverseGlobals_r( GNode* node, unsigned depth )
         m_csgskiplv[lvidx].push_back( node->getIndex() ); 
         m_csgskiplv_count += 1 ; 
     }
-   
+*/  
+ 
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverseGlobals_r(node->getChild(i), depth + 1 );
 }
 
@@ -632,9 +640,9 @@ GInstancer::getPlacements
 **/
 
 
-std::vector<GNode*> GInstancer::getPlacements(unsigned ridx)
+std::vector<const GNode*> GInstancer::getPlacements(unsigned ridx)
 {
-    std::vector<GNode*> placements ;
+    std::vector<const GNode*> placements ;
     if(ridx == 0)
     {
         placements.push_back(m_root);
@@ -644,31 +652,31 @@ std::vector<GNode*> GInstancer::getPlacements(unsigned ridx)
         assert(ridx >= 1); // ridx is a 1-based index
         assert(ridx-1 < m_repeat_candidates.size()); 
         std::string pdig = m_repeat_candidates[ridx-1];
-        placements = m_root->findAllProgenyDigest(pdig);
+        placements = m_root_->findAllProgenyDigest(pdig);
     } 
     return placements ; 
 }
 
 
-GNode* GInstancer::getRepeatExample(unsigned ridx)
+const GNode* GInstancer::getRepeatExample(unsigned ridx)
 {
-    std::vector<GNode*> placements = getPlacements(ridx);
+    std::vector<const GNode*> placements = getPlacements(ridx);
     std::string pdig = m_repeat_candidates[ridx-1];
-    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+    GNode* node = m_root_->findProgenyDigest(pdig) ; // first node that matches the progeny digest
     assert(placements[0] == node);
 
     return node ; 
 }
 
-GNode* GInstancer::getLastRepeatExample(unsigned ridx)
+const GNode* GInstancer::getLastRepeatExample(unsigned ridx)
 {
-    std::vector<GNode*> placements = getPlacements(ridx);
+    std::vector<const GNode*> placements = getPlacements(ridx);
     std::string pdig = m_repeat_candidates[ridx-1];
-    GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+    GNode* node = m_root_->findProgenyDigest(pdig) ; // first node that matches the progeny digest
     assert(placements[0] == node);
 
-    GVolume* first = static_cast<GVolume*>(placements.front()) ; 
-    GVolume* last = static_cast<GVolume*>(placements.back()) ; 
+    const GVolume* first = static_cast<const GVolume*>(placements.front()) ; 
+    const GVolume* last = static_cast<const GVolume*>(placements.back()) ; 
 
     LOG(info) 
         << " ridx " << ridx
@@ -706,7 +714,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
     bool last = false ; 
 
-    GNode* root = m_nodelib->getNode(0);
+    const GNode* root = m_nodelib->getNode(0);
     assert(root); 
     GNode* base = NULL ; 
 
@@ -716,7 +724,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     GMergedMesh* mm0 = m_geolib->makeMergedMesh(ridx0, base, root, verbosity, false );
 
 
-    std::vector<GNode*> placements = getPlacements(ridx0);  // just m_root
+    std::vector<const GNode*> placements = getPlacements(ridx0);  // just m_root
     assert(placements.size() == 1 );
     mm0->addInstancedBuffers(placements);  // call for global for common structure 
 
@@ -741,7 +749,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
     for(unsigned ridx=1 ; ridx < numRidx ; ridx++)  // 1-based index
     {
-         GNode*   rbase  = last ? getLastRepeatExample(ridx)  : getRepeatExample(ridx) ;  
+         const GNode*   rbase  = last ? getLastRepeatExample(ridx)  : getRepeatExample(ridx) ;  
 
          if(m_verbosity > 2)
          LOG(info) 
@@ -751,7 +759,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
          GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root, verbosity, false ); 
 
-         std::vector<GNode*> placements_ = getPlacements(ridx);
+         std::vector<const GNode*> placements_ = getPlacements(ridx);
 
          mm->addInstancedBuffers(placements_);
      

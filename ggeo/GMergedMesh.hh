@@ -65,12 +65,12 @@ public:
 public:
     static const plog::Severity LEVEL ; 
     static std::string Desc(const GMergedMesh* mm);
-    static GMergedMesh* Create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity, bool globalinstance );
+    static GMergedMesh* Create(unsigned ridx, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance );
 private:
      // operates in COUNT and MERGE passes, COUNT find out the number of 
      // ridx selected volumes and their vertices to allocate then 
      // MERGE collects them together
-     void traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity );
+     void traverse_r( const GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity );
      void postcreate(); 
 public:
     static GMergedMesh* MakeComposite(std::vector<GMergedMesh*> mms );           // eg for LOD levels 
@@ -97,18 +97,18 @@ public:
 public:
     char getCurrentGeoCode() const ;
     std::string brief() const ;
-    void addInstancedBuffers(const std::vector<GNode*>& placements);  // uses GTree statics to create the buffers
+    void addInstancedBuffers(const std::vector<const GNode*>& placements);  // uses GTree statics to create the buffers
    // int  getNumComponents() const ;  <-- this caused some grief, silent override decl without an implementation  
 private:
     // NB cannot treat GMergedMesh as a GMesh wrt calling getNumVolumes 
     // explicit naming to avoid subclass confusion
     void init(); 
     void countMergedMesh( GMergedMesh* other, bool selected );   
-    void countVolume( GVolume*      volume, bool selected, unsigned verbosity  ); 
+    void countVolume( const GVolume*      volume, bool selected, unsigned verbosity  ); 
     void countMesh( const GMesh* mesh ); 
 private:
-    void mergeVolume( GVolume* volume, bool selected, unsigned verbosity );
-    void mergeVolumeIdentity( GVolume* volume, bool selected );
+    void mergeVolume( const GVolume* volume, bool selected, unsigned verbosity );
+    void mergeVolumeIdentity( const GVolume* volume, bool selected );
     void mergeVolumeVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals );
     void mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices );
 
@@ -119,7 +119,7 @@ private:
     void mergeVolumeAnalytic( GPt*    pt,  GMatrixF* transform, unsigned verbosity );
     void mergeVolumeTransform( GMatrixF* transform ); 
     void mergeVolumeBBox( gfloat3* vertices, unsigned nvert );
-    void mergeVolumeDump( GVolume* volume);
+    void mergeVolumeDump( const GVolume* volume);
 private:
     void mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity );
 public:
@@ -138,8 +138,8 @@ public:
 
 public:
     // used when obtaining relative transforms for flattening sub-trees of repeated geometry
-    void   setCurrentBase(GNode* base);
-    GNode* getCurrentBase(); 
+    void   setCurrentBase(const GNode* base);
+    const GNode* getCurrentBase(); 
 
     bool   isGlobal(); 
     bool   isInstanced(); 
@@ -155,7 +155,7 @@ private:
     unsigned     m_cur_volume ;
     unsigned     m_cur_mergedmesh ; // for composite mergedmesh recording 
     unsigned     m_num_csgskip ; 
-    GNode*       m_cur_base ;  
+    const GNode* m_cur_base ;  
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
 
     GPts*        m_pts ; 

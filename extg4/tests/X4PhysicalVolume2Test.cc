@@ -234,7 +234,7 @@ int main(int argc, char** argv)
     
     LOG(info) << " ggeo.getNumVolumes " << ggeo->getNumVolumes() ; 
 
-    GVolume* vol = ggeo->getVolume(0); 
+    const GVolume* vol = ggeo->getVolume(0); 
     assert(vol); 
     LOG(info) << " vol.getNumChildren " << vol->getNumChildren() ; 
 

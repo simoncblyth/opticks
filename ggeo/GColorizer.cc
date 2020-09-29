@@ -76,11 +76,11 @@ void GColorizer::setRepeatIndex(unsigned ridx)
 void GColorizer::writeVertexColors()
 {
     GMergedMesh* mesh0 = m_geolib->getMergedMesh(0);
-    GVolume* root = m_nodelib->getVolume(0);
+    const GVolume* root = m_nodelib->getVolume(0);
     writeVertexColors( mesh0, root );
 }
 
-void GColorizer::writeVertexColors(GMergedMesh* mesh0, GVolume* root)
+void GColorizer::writeVertexColors(GMergedMesh* mesh0, const GVolume* root)
 {
     assert(mesh0);
 
@@ -103,7 +103,7 @@ objects configured via the style.
 
 **/
 
-void GColorizer::traverse(GVolume* root)
+void GColorizer::traverse(const GVolume* root)
 {
     if(!m_target)
     {
@@ -117,9 +117,9 @@ void GColorizer::traverse(GVolume* root)
     LOG(LEVEL) << "GColorizer::traverse colorized nodes " << m_num_colorized ; 
 }
 
-void GColorizer::traverse_r( GNode* node, unsigned depth)
+void GColorizer::traverse_r( const GNode* node, unsigned depth)
 {
-    GVolume* volume = dynamic_cast<GVolume*>(node) ;
+    const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
     const GMesh* mesh = volume->getMesh();
     unsigned nvert = mesh->getNumVertices();
 
@@ -170,10 +170,9 @@ void GColorizer::traverse_r( GNode* node, unsigned depth)
 
 
 
-nvec3 GColorizer::getSurfaceColor(GNode* node)
+nvec3 GColorizer::getSurfaceColor(const GNode* node)
 {
-
-    GVolume* volume = dynamic_cast<GVolume*>(node) ;
+    const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
 
     unsigned int boundary = volume->getBoundary();
 

@@ -93,8 +93,8 @@ int main(int argc, char** argv)
     unsigned verbosity = 0 ; 
 
     unsigned idx = 0 ; 
-    GNode* base = NULL ;  // global transforms
-    GNode* root = m_ggeo->getNode(0); 
+    const GNode* base = NULL ;  // global transforms
+    const GNode* root = m_ggeo->getNode(0); 
 
     bool globalinstance = false ; 
     GMergedMesh* mm = m_ggeo->makeMergedMesh(idx, base, root, verbosity, globalinstance ); // this only makes when not existing TODO:split 

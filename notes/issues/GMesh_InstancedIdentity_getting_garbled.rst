@@ -151,3 +151,23 @@ Shape change to iidentity from Aug 2020 is not fully baked::
 
 
 
+::
+
+    epsilon:cu blyth$ grep identityBuffer *.*
+    GeometryTriangles.cu:rtBuffer<uint4>  identityBuffer; 
+    GeometryTriangles.cu:    const uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // index just primIdx for non-instanced
+    TriangleMesh.cu:rtBuffer<uint4>  identityBuffer; 
+    TriangleMesh.cu:    uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // index just primIdx for non-instanced
+    csg_intersect_boolean.h:            instanceIdentity = identityBuffer[instance_index*primitive_count+primIdx] ;
+    intersect_analytic.cu:identityBuffer sources depend on geocode of the GMergedMesh
+    intersect_analytic.cu:rtBuffer<uint4>  identityBuffer;   
+    intersect_analytic.cu:    uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ; 
+    intersect_analytic.cu:    uint4 identity_test = identityBuffer[instance_index_test*primitive_count+primIdx] ; 
+    intersect_analytic.cu:identityBuffer
+    sphere.cu:rtBuffer<uint4>  identityBuffer; 
+    sphere.cu:  uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
+    epsilon:cu blyth$ 
+
+
+
+

@@ -164,17 +164,25 @@ std::string GPts::brief() const
     std::stringstream ss ; 
 
     unsigned num_pt = getNumPt() ; 
-    ss << " GPts.NumPt " << num_pt
+    unsigned edge = 10 ; 
+    ss << " GPts.NumPt " << std::setw(5) << num_pt
        << " lvIdx (" 
         ;
 
     for( unsigned i=0 ; i < num_pt ; i++) 
     {
         const GPt* pt = getPt(i); 
-        ss << " " << pt->lvIdx  ; 
+        if( num_pt > edge*2 )
+        {
+            if( i < edge || i > num_pt - edge ) ss << " " << pt->lvIdx  ; 
+            else if( i == edge )                ss << " " << "..."  ; 
+        }
+        else
+        {
+            ss << " " << pt->lvIdx  ; 
+        }
     } 
     ss << ")" ; 
-
     return ss.str(); 
 }
 

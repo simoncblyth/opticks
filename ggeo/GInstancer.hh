@@ -72,7 +72,7 @@ class GGEO_API GInstancer {
    private:
         // compare tree calculated and persisted transforms
         void           deltacheck(); 
-        void           deltacheck_r( GNode* node, unsigned int depth );
+        void           deltacheck_r( const GNode* node, unsigned int depth );
 
    private:
         // Collecting m_repeat_candidates vector of digests
@@ -83,7 +83,7 @@ class GGEO_API GInstancer {
         // into m_repeat_candidates, erase repeats that are contained within other repeats.
         // 
         void           traverse();
-        void           traverse_r( GNode* node, unsigned int depth ); 
+        void           traverse_r( const GNode* node, unsigned int depth ); 
         void           findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min);
         bool           isContainedRepeat( const std::string& pdig, unsigned int levels ) const ;
         void           dumpRepeatCandidates(unsigned dmax);
@@ -95,9 +95,9 @@ class GGEO_API GInstancer {
         //
         unsigned            getRepeatIndex(const std::string& pdig );
         unsigned            getNumRepeats() const ;   
-        GNode*              getRepeatExample(unsigned ridx);     // first node that matches the ridx progeny digest
-        GNode*              getLastRepeatExample(unsigned ridx); // last node that matches the ridx progeny digest
-        std::vector<GNode*> getPlacements(unsigned int ridx);  // all GNode with the ridx progeny digest
+        const GNode*        getRepeatExample(unsigned ridx);     // first node that matches the ridx progeny digest
+        const GNode*        getLastRepeatExample(unsigned ridx); // last node that matches the ridx progeny digest
+        std::vector<const GNode*> getPlacements(unsigned int ridx);  // all GNode with the ridx progeny digest
    public:
         void dump(const char* msg) const ;
    private:
@@ -107,7 +107,7 @@ class GGEO_API GInstancer {
         // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
         void           labelTree();
         void           labelRepeats_r( GNode* node, unsigned ridx, int outernode_copyNo, const GVolume* outer_volume  );  // recursive labelling starting from the placements
-        void           traverseGlobals_r( GNode* node, unsigned depth );  // recursive labelling starting from root of only ridx 0 nodes
+        void           traverseGlobals_r( const GNode* node, unsigned depth );  // recursive labelling starting from root of only ridx 0 nodes
    private:
         // output side, operates via GGeo::makeMergedMesh, GGeoLib::makeMergedMesh, GMergedMesh::create
         //   GMergedMesh::traverse uses the repeat index ridx labels written into the node tree
@@ -123,7 +123,8 @@ class GGEO_API GInstancer {
 
        unsigned int              m_repeat_min ; 
        unsigned int              m_vertex_min ; 
-       GVolume*                  m_root ; 
+       const GVolume*            m_root ; 
+       GVolume*                  m_root_ ; 
        unsigned int              m_count ;  
        unsigned int              m_labels ;   // count of nodes labelled
        Counts<unsigned int>*     m_digest_count ; 

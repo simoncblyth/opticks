@@ -44,7 +44,7 @@ class GGEO_API GTraverse {
         void init();
         void traverse();
    private:
-        void traverse( GNode* node, unsigned int depth );
+        void traverse( const GNode* node, unsigned int depth );
    private:
        GGeo*                  m_ggeo ; 
        GBndLib*               m_blib ; 

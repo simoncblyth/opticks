@@ -75,7 +75,22 @@ rtBuffer<Part> partBuffer;
 rtBuffer<Matrix4x4> tranBuffer; 
 
 rtBuffer<Prim>  primBuffer; 
-rtBuffer<uint4>  identityBuffer;   // from GMergedMesh::getAnalyticInstanceIdentityBuffer()
+
+/**
+identityBuffer sources depend on geocode of the GMergedMesh
+-------------------------------------------------------------
+
+OGeo::makeGeometryTriangles
+     GBuffer* rib = mm->getAppropriateRepeatedIdentityBuffer() ;
+
+OGeo::makeTriangulatedGeometry
+     GBuffer* id = mm->getAppropriateRepeatedIdentityBuffer();
+
+OGeo::makeAnalyticGeometry
+     NPY<unsigned>*  idBuf = mm->getInstancedIdentityBuffer();
+
+**/
+rtBuffer<uint4>  identityBuffer;   
 
 rtBuffer<float4> prismBuffer ;   // TODO: migrate prism to use planBuffer
 
