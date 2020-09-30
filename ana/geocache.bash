@@ -213,7 +213,8 @@ $FUNCNAME
   IDPATH2 : $IDPATH2
        dependency on IDPATH on way out 
 
-  OPTICKS_KEY        :  ${OPTICKS_KEY}
+  (input)   OPTICKS_KEY        :  ${OPTICKS_KEY}
+  (derived) OPTICKS_KEYDIR     :  ${OPTICKS_KEYDIR}    
 
   geocache-keydir    : $(geocache-keydir)
   geocache-keydir-py : $(geocache-keydir-py)
@@ -224,6 +225,22 @@ $FUNCNAME
 
   geocache-dir       : $(geocache-dir) 
      formerly placed in install location $LOCAL_BASE/opticks/geocache 
+
+
+
+
+  (default)  opticks-sharedcache-prefix-default : $(opticks-sharedcache-prefix-default) 
+  (override) OPTICKS_GEOCACHE_PREFIX            : $OPTICKS_GEOCACHE_PREFIX   
+  (result)   opticks-geocache-prefix            : $(opticks-geocache-prefix) 
+
+  (result)   opticks-geocachedir                : $(opticks-geocachedir)
+  
+
+   
+ 
+
+
+
 
 EOI
 
@@ -564,7 +581,7 @@ EON
 
 
 
-
+geocache-dx(){  geocache-dx-v0 $* ; } 
 
 
 geocache-dx-v0-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-dx-)_v0.gdml --x4polyskip 211,232  --geocenter --noviz $* ; }     

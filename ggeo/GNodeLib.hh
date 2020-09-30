@@ -45,27 +45,36 @@ GNodeLib
 
 * collection of GVolume/GNode instances with access by index.
 * GGeo resident m_nodelib of instanciated in GGeo::initLibs
-* **NB currently only pv/lv names are persisted, not the volumes/nodes**
-* the merged meshes and analytic information is of course persisted
 
-The analytic and test ctor arguments determine the name of the 
-persisting directory.
+* **NB the full tree is not persisted currently, only arrays**
 
 Initially was primarily a pre-cache operator, but access to pv/lv names also 
 relevant post-cache.
 
 There is now one canonical m_nodelib instance that is 
-populated from GGeo::add(GVolume*) 
-(Formerly GScene was another).
+populated from GGeo::add(GVolume*) (Formerly GScene was another).
+
+See also:
+
+ggeo/tests/GNodeLibTest.cc
+    loads the persisted GNodeLib and dumps node info 
+
+ana/GNodeLib.py 
+    loads the persisted GNodeLib and dumps node info
 
 */
 
-
-
 class GGEO_API GNodeLib 
 {
-        friend class GGeo     ;  // for save 
-        friend class GScene   ;  // for save 
+       friend class GGeo     ;  // for save 
+       friend class GScene   ;  // for save 
+    private:
+       static const char* PV ; 
+       static const char* LV ; 
+       static const char* TR ; 
+       static const char* CE ; 
+       static const char* BB ; 
+       static const char* ID ; 
     public:
         static const plog::Severity LEVEL ; 
         static const char* RELDIR ; 
@@ -75,8 +84,10 @@ class GGEO_API GNodeLib
     private:
         GNodeLib(Opticks* ok, bool loading); 
     public:
+        std::string getShapeString() const ; 
         std::string desc() const ; 
         void dump(const char* msg="GNodeLib::dump") const ;
+        void Dump(const char* msg="GNodeLib::Dump") const ;
     private:
         void save() const ;
         void init();
@@ -97,6 +108,10 @@ class GGEO_API GNodeLib
     public:
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
+
+        NPY<float>* getTransforms() const ; 
+        NPY<float>* getBoundingBox() const ; 
+        NPY<float>* getCenterExtent() const ; 
     public:
         unsigned        addSensorVolume(const GVolume* volume) ;
         unsigned        getNumSensorVolumes() const ;
@@ -106,6 +121,7 @@ class GGEO_API GNodeLib
         void            getSensorPlacements(std::vector<void*>& placements) const ; 
     private:
         Opticks*                           m_ok ;  
+        const char*                        m_idpath ; 
         bool                               m_loading ; 
         const char*                        m_cachedir ; 
         const char*                        m_reldir ; 
@@ -115,8 +131,9 @@ class GGEO_API GNodeLib
         NPY<float>*                        m_transforms ; 
         NPY<float>*                        m_bounding_box ; 
         NPY<float>*                        m_center_extent ; 
+        NPY<unsigned>*                     m_identity ; 
     private:
-        GTreePresent*                       m_treepresent ; 
+        GTreePresent*                      m_treepresent ; 
     private:
         std::map<unsigned int, const GVolume*>    m_volumemap ; 
         std::vector<const GVolume*>               m_volumes ; 

@@ -249,6 +249,16 @@ guint4 GVolume::getIdentity() const
                  );
 }
 
+glm::uvec4 GVolume::getIdentity_() const 
+{
+    unsigned node_index = m_index ;    
+    unsigned identity_index = m_copyNumber  ;   
+    glm::uvec4 id(node_index, getMeshIndex(), m_boundary, identity_index) ; 
+    return id ; 
+}
+
+
+
 
 
 void GVolume::setSensorIndex(int sensor_index)

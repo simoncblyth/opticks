@@ -75,6 +75,7 @@ set(TEST_SOURCES
 
     GSceneTest.cc
     GMeshLibTest.cc
+    GNodeLibTest.cc
 
 )
 

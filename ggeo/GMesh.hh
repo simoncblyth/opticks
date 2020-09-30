@@ -57,9 +57,8 @@ For example the use of boundaries and nodes lists
 within the abstract unplaced shape GMesh 
 does not make sense...
 
-CAUTION: GNode has lots of members that are used and make sense
+CAUTION: GMesh has lots of members that are used and make sense
 only from the GMergedMesh subclass
-
 
 
 TODO : Change the name to GSolid/GShape(?) OR add a GSolid/GShape that contains GMesh+NCSG  

@@ -61,16 +61,16 @@ class GGeo(object):
     }
 
     @classmethod   
-    def Path(cls, ridx, name): 
+    def Path(cls, ridx, name, reldir="GMergedMesh"): 
         if name.endswith("raw"):
             name = name[:-3]
         pass 
         aname = cls.key2aname.get(name, name) 
-        return os.path.expandvars("$GC/GMergedMesh/%d/%s.npy" % (ridx, aname))
+        return os.path.expandvars("$OPTICKS_KEYDIR/%s/%d/%s.npy" % (reldir,ridx, aname))
 
     @classmethod   
     def TxtPath(cls, name): 
-        return os.path.expandvars("$GC/%s" % (name))
+        return os.path.expandvars("$OPTICKS_KEYDIR/%s" % (name))
 
     @classmethod   
     def Three2Four(cls, a, w=1): 

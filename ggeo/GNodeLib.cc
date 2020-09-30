@@ -35,65 +35,91 @@
 const plog::Severity GNodeLib::LEVEL = PLOG::EnvLevel("GNodeLib", "INFO"); 
 
 const char* GNodeLib::RELDIR = "GNodeLib" ; 
+const char* GNodeLib::PV = "PVNames" ; 
+const char* GNodeLib::LV = "LVNames" ; 
+const char* GNodeLib::TR = "transforms.npy" ; 
+const char* GNodeLib::CE = "center_extent.npy" ; 
+const char* GNodeLib::BB = "bbox.npy" ; 
+const char* GNodeLib::ID = "identity.npy" ; 
 
-const char* GNodeLib::CacheDir(const Opticks* ok)
+const char* GNodeLib::CacheDir(const Opticks* ok)  // static
 {
     std::string cachedir = ok->getObjectPath(RELDIR) ; 
     return strdup(cachedir.c_str()); 
 }
 
-GNodeLib::GNodeLib(Opticks* ok)  
-    :
-    m_ok(ok),
-    m_loading(false),
-    m_cachedir(GNodeLib::CacheDir(ok)),
-    m_reldir(RELDIR),
-    m_pvlist(new GItemList("PVNames", m_reldir)),
-    m_lvlist(new GItemList("LVNames", m_reldir)),
-    m_transforms(NPY<float>::make(0,4,4)),
-    m_bounding_box(NPY<float>::make(0,2,4)),
-    m_center_extent(NPY<float>::make(0,4)),
-    m_treepresent(new GTreePresent(100, 1000))   // depth_max,sibling_max
-{
-}
-
-GNodeLib::GNodeLib(Opticks* ok, bool loading)
-    :
-    m_ok(ok),
-    m_loading(loading),
-    m_cachedir(GNodeLib::CacheDir(ok)),
-    m_reldir(RELDIR),
-    m_pvlist(GItemList::Load(ok->getIdPath(), "PVNames",  m_reldir)),
-    m_lvlist(GItemList::Load(ok->getIdPath(), "LVNames",  m_reldir)),
-    m_transforms(NPY<float>::load(m_cachedir,"transforms.npy")),
-    m_bounding_box(NPY<float>::load(m_cachedir,"bounding_box.npy")),
-    m_center_extent(NPY<float>::load(m_cachedir,"center_extent.npy")),
-    m_treepresent(NULL)
-{
-}
- 
-GNodeLib* GNodeLib::Load(Opticks* ok)
+GNodeLib* GNodeLib::Load(Opticks* ok)  // static
 {
     bool loading = true ; 
     return new GNodeLib(ok, loading); 
 }
 
-void GNodeLib::save() const 
+GNodeLib::GNodeLib(Opticks* ok)  
+    :
+    m_ok(ok),
+    m_idpath(ok->getIdPath()),
+    m_loading(false),
+    m_cachedir(GNodeLib::CacheDir(ok)),
+    m_reldir(RELDIR),
+    m_pvlist(new GItemList(PV, m_reldir)),
+    m_lvlist(new GItemList(LV, m_reldir)),
+    m_transforms(NPY<float>::make(0,4,4)),
+    m_bounding_box(NPY<float>::make(0,2,4)),
+    m_center_extent(NPY<float>::make(0,4)),
+    m_identity(NPY<unsigned>::make(0,4)),
+    m_treepresent(new GTreePresent(100, 1000))   // depth_max,sibling_max
 {
-    const char* idpath = m_ok->getIdPath() ;
-    LOG(LEVEL) << " idpath " << idpath ; 
-    m_pvlist->save(idpath);
-    m_lvlist->save(idpath);
-
-    m_transforms->save(m_cachedir, "transforms.npy"); 
-    m_bounding_box->save(m_cachedir, "bounding_box.npy"); 
-    m_center_extent->save(m_cachedir, "center_extent.npy"); 
-
-    const GNode* top = getNode(0); 
-    m_treepresent->traverse(top);
-    m_treepresent->write(idpath, m_reldir);
+    LOG(LEVEL) << "created" ; 
 }
 
+GNodeLib::GNodeLib(Opticks* ok, bool loading)
+    :
+    m_ok(ok),
+    m_idpath(ok->getIdPath()),
+    m_loading(loading),
+    m_cachedir(GNodeLib::CacheDir(ok)),
+    m_reldir(RELDIR),
+    m_pvlist(GItemList::Load(ok->getIdPath(), PV, m_reldir)),
+    m_lvlist(GItemList::Load(ok->getIdPath(), LV, m_reldir)),
+    m_transforms(NPY<float>::load(m_cachedir, TR)),
+    m_bounding_box(NPY<float>::load(m_cachedir, BB)),
+    m_center_extent(NPY<float>::load(m_cachedir,CE)),
+    m_identity(NPY<unsigned>::load(m_cachedir,ID)),
+    m_treepresent(NULL)
+{
+    LOG(LEVEL) << "loaded" ; 
+}
+ 
+void GNodeLib::save() const 
+{
+    LOG(LEVEL) << " idpath " << m_idpath ; 
+    m_pvlist->save(m_idpath);
+    m_lvlist->save(m_idpath);
+
+    m_transforms->save(m_cachedir,  TR); 
+    m_bounding_box->save(m_cachedir, BB); 
+    m_center_extent->save(m_cachedir, CE); 
+    m_identity->save(m_cachedir, ID); 
+
+    if(m_treepresent)  // pre-cache only as needs the full node tree
+    {
+        const GNode* top = getNode(0); 
+        m_treepresent->traverse(top);
+        m_treepresent->write(m_idpath, m_reldir);
+    }
+}
+
+std::string GNodeLib::getShapeString() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << std::endl << std::setw(20) << TR << " " << m_transforms->getShapeString() 
+       << std::endl << std::setw(20) << BB << " " << m_bounding_box->getShapeString() 
+       << std::endl << std::setw(20) << CE << " " << m_center_extent->getShapeString() 
+       << std::endl << std::setw(20) << ID << " " << m_identity->getShapeString() 
+       ;
+    return ss.str();
+}
 
 std::string GNodeLib::desc() const 
 {
@@ -135,11 +161,11 @@ unsigned GNodeLib::getNumLV() const
     return nlv ; 
 }
 
-const char* GNodeLib::getPVName(unsigned int index) const 
+const char* GNodeLib::getPVName(unsigned index) const 
 {
     return m_pvlist ? m_pvlist->getKey(index) : NULL ; 
 }
-const char* GNodeLib::getLVName(unsigned int index) const 
+const char* GNodeLib::getLVName(unsigned index) const 
 {
     return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
 }
@@ -176,9 +202,9 @@ Collects all volume information
 
 void GNodeLib::add(const GVolume* volume)
 {
+    unsigned index = volume->getIndex(); 
     m_volumes.push_back(volume);
-    unsigned int index = volume->getIndex(); 
-    assert( m_volumes.size() - 1 == index && "indices of test geometry volumes added to GNodeLib must follow the sequence : 0,1,2,... " ); // formerly only for m_test
+    assert( m_volumes.size() - 1 == index && "indices of the geometry volumes added to GNodeLib must follow the sequence : 0,1,2,... " ); // formerly only for m_test
     m_volumemap[index] = volume ; 
 
     glm::mat4 transform = volume->getTransformMat4();
@@ -195,6 +221,9 @@ void GNodeLib::add(const GVolume* volume)
     m_lvlist->add(volume->getLVName()); 
     m_pvlist->add(volume->getPVName()); 
     // NB added in tandem, so same counts and same index as the volumes  
+
+    glm::uvec4 id = volume->getIdentity_(); 
+    m_identity->add(id);
 
     const GVolume* check = getVolume(index);
     assert(check == volume);
@@ -326,5 +355,14 @@ void GNodeLib::dump(const char* msg) const
     }
 }
 
+
+void GNodeLib::Dump(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    std::cout << desc() << std::endl ; 
+    std::cout << getShapeString() << std::endl ; 
+
+    dump(msg); 
+}
 
 

@@ -29,6 +29,23 @@ The Github repo is usually several months behind bitbucket
 so you are advised NOT to use it.
 
 
+.. table::
+    :align: center
+
+    +----------------------------------------------+---------------------------------------------------------+
+    | https://bitbucket.org/simoncblyth/opticks    | very latest code repository, unstable, breakage common  |     
+    +----------------------------------------------+---------------------------------------------------------+
+    | https://github.com/simoncblyth/opticks       | "releases" weeks/months behind, more stable             |     
+    +----------------------------------------------+---------------------------------------------------------+
+    | https://simoncblyth.bitbucket.io             | presentations and videos                                |    
+    +----------------------------------------------+---------------------------------------------------------+
+    | https://groups.io/g/opticks                  | forum/mailing list archive                              |    
+    +----------------------------------------------+---------------------------------------------------------+
+    | email:opticks+subscribe@groups.io            | subscribe to mailing list                               |    
+    +----------------------------------------------+---------------------------------------------------------+ 
+
+
+
 Installation instructions start with a clone::
 
     cd $HOME

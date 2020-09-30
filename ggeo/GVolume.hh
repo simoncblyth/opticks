@@ -22,6 +22,7 @@
 #include <vector>
 #include <string>
 
+#include "NGLM.hpp"
 class GMesh ;
 class GParts ; 
 struct GPt ; 
@@ -77,6 +78,7 @@ class GGEO_API GVolume : public GNode {
       bool         isCSGSkip() const ;
       unsigned     getBoundary() const ;
       guint4       getIdentity() const ;
+      glm::uvec4   getIdentity_() const ;
   public:
       GParts*      getParts() const ;
       GPt*         getPt() const ;
