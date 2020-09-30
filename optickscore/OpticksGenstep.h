@@ -12,6 +12,7 @@ this needs to be used everywhere.
 NB these were formely conflated with photon flags, 
 but the needs are somewhat different.
 
+See also: npy/G4StepNPY.cpp  (TODO: consolidate these?)
 
 **/
 

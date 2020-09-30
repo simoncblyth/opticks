@@ -196,7 +196,7 @@ void OpticksGen::initFromLegacyGensteps()
     const char* type = m_ok->getSourceType();
     unsigned code = m_ok->getSourceCode();
 
-    LOG(debug) 
+    LOG(LEVEL) 
         << " code " << code
         << " type " << type
         ;
@@ -224,7 +224,7 @@ NPY<float>* OpticksGen::makeLegacyGensteps(unsigned code)
     const char* srctype = OpticksFlags::SourceType( code ) ; 
     assert( srctype ); 
 
-    LOG(error) 
+    LOG(LEVEL) 
        << " code " << code
        << " srctype " << srctype  
        ;
@@ -237,7 +237,7 @@ NPY<float>* OpticksGen::makeLegacyGensteps(unsigned code)
     }
     else if(code == OpticksGenstep_TORCH)
     {
-        m_torchstep = makeTorchstep() ;
+        m_torchstep = makeTorchstep(code) ;
         gs = m_torchstep->getNPY();
     }
     else if( code == OpticksGenstep_G4Cerenkov_1042 || code == OpticksGenstep_DsG4Scintillation_r3971 || code == OpticksGenstep_NATURAL )
@@ -393,9 +393,12 @@ FabStepNPY* OpticksGen::makeFabstep()
     return fabstep ; 
 }
 
-TorchStepNPY* OpticksGen::makeTorchstep()
+
+TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)
 {
-    TorchStepNPY* torchstep = m_ok->makeSimpleTorchStep();
+    assert( gencode == OpticksGenstep_TORCH ); 
+
+    TorchStepNPY* torchstep = m_ok->makeSimpleTorchStep(gencode);
 
     if(torchstep->isDefault())
     {

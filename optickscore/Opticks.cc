@@ -633,7 +633,6 @@ unsigned Opticks::getDbgHitMask() const
 }
 
 
-
 bool Opticks::isDbgPhoton(unsigned record_id) const 
 {
    return m_dbg->isDbgPhoton(record_id);
@@ -943,6 +942,7 @@ bool Opticks::isNoG4Propagate() const  // --nog4propagate
 {
     return m_cfg->hasOpt("nog4propagate") ;
 }
+
 
 
 bool Opticks::canDeleteGeoCache() const   // --deletegeocache
@@ -1969,6 +1969,12 @@ const char* Opticks::getDebugGenstepPath(unsigned idx) const
     std::string path = BFile::FormPath(dbggsdir.c_str(), name ); 
     return strdup(path.c_str()); 
 }
+
+
+bool Opticks::isDbgGSImport() const  // --dbggsimport
+{
+    return m_cfg->hasOpt("dbggsimport") ;
+} 
 bool Opticks::isDbgGSSave() const   // --dbggssave
 {
     return m_cfg->hasOpt("dbggssave");
@@ -3325,20 +3331,30 @@ std::string Opticks::MaterialSequence(const unsigned long long seqmat)
     return ss.str();
 }
 
+/**
+Opticks::makeSimpleTorchStep
+-----------------------------
 
-TorchStepNPY* Opticks::makeSimpleTorchStep()
+TODO: relocate into OpticksGen ?
+
+**/
+
+TorchStepNPY* Opticks::makeSimpleTorchStep(unsigned gencode)
 {
+    assert( gencode == OpticksGenstep_TORCH ); 
+
     const std::string& config = m_cfg->getTorchConfig() ;
 
     const char* cfg = config.empty() ? NULL : config.c_str() ;
 
-    LOG(info)
+    LOG(fatal)
               << " enable : --torch (the default) "
               << " configure : --torchconfig [" << ( cfg ? cfg : "NULL" ) << "]" 
               << " dump details : --torchdbg " 
               ;
 
-    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1, cfg );
+    //TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1, cfg );   // see notes/issues/G4StepNPY_gencode_assert.rst
+    TorchStepNPY* torchstep = new TorchStepNPY(OpticksGenstep_TORCH, 1, cfg );
 
     unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;  // only used for cfg4-
 

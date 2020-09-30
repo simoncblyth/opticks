@@ -39,6 +39,8 @@
 #include "NPY.hpp"
 #include "NCSG.hpp"
 
+#include "Opticks.hh"
+
 
 #include "GMatrix.hh"
 #include "GMeshFixer.hh"
@@ -1950,11 +1952,13 @@ NPYBase* GMesh::getNPYBuffer(const char* name) const
 
 void GMesh::loadNPYBuffer(const char* path, const char* name)
 {
+
     LOG(LEVEL) << " name " << name << " path " << path ; 
 
     if(strcmp(name, iidentity_) == 0)
     {
-        LOG(info) << " loading iidentity " << path ; 
+        std::string rpath = Opticks::Instance()->formCacheRelativePath(path); 
+        LOG(info) << " loading iidentity " << rpath ; 
         NPY<unsigned>* buf = NPY<unsigned>::load(path) ;
         setInstancedIdentityBuffer(buf);
     }

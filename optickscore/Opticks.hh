@@ -398,6 +398,7 @@ class OKCORE_API Opticks {
        bool                 isG4CodeGen() const ;  // --g4codegen
        bool                 isNoSavePPM() const ; // --nosaveppm
        bool                 isNoG4Propagate() const ;     // --nog4propagate
+
        bool                 isPrintEnabled() const ;  // --printenabled
        bool                 isExceptionEnabled() const ;  // --exceptionenabled
        bool                 isXAnalytic() const ;      // --xanalytic : --xtriangle option will override an --xanalytic option
@@ -440,6 +441,7 @@ class OKCORE_API Opticks {
        unsigned getMaskSize() const ; 
 
        unsigned getDbgHitMask() const ;  // --dbghitmask=TO,BT,SD 
+
 
        bool isDbgPhoton(unsigned record_id) const ;
        bool isOtherPhoton(unsigned record_id) const ;
@@ -519,6 +521,8 @@ class OKCORE_API Opticks {
        NPY<float>*          loadLegacyGenstep() const ;
        const char*          getDirectGenstepPath(unsigned tagoffset) const ; 
        const char*          getDebugGenstepPath(unsigned tagoffset) const ; 
+
+       bool isDbgGSImport() const ;  // --dbggsimport
        bool isDbgGSSave() const ;  // --dbggssave
        bool isDbgGSLoad() const ;  // --dbggsload
    private:
@@ -531,7 +535,7 @@ class OKCORE_API Opticks {
 
        NPY<float>*          load(const char* path) const ;
    public:
-       TorchStepNPY*        makeSimpleTorchStep();
+       TorchStepNPY*        makeSimpleTorchStep(unsigned gencode);
    public:
        OpticksEventSpec*    getEventSpec();
        OpticksEvent*        makeEvent(bool ok=true, unsigned tagoffset=0); 

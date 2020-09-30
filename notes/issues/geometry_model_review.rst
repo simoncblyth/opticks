@@ -24,6 +24,17 @@ GGeoTest
     collective
 ana/GNodeLib.py
     loads/dumps
+OTracerTest
+    just loads and visualizes geometry avoiding genstep issues
+OKTest 
+    full geom + genstep, without G4  
+
+
+Simplifications to GMergedMesh
+---------------------------------
+
+* Can I get rid of top slot "globalinstance" with mm0 effectively becoming it ?
+
 
 Summary of issue with Geometry Model
 --------------------------------------
@@ -35,10 +46,8 @@ It tries to carry both:
 1. all volume "global" information
 2. non-instanced "remainder" information
 
-It kinda gets away with this conflation by splitting on high-level/low-level axis using 
-"selected" volumes.
-But the result is still confusing even when it can be made to work, so it is 
-prone to breakage.
+It kinda gets away with this conflation by splitting on high-level/low-level axis using "selected" volumes.
+But the result is still confusing even when it can be made to work, so it is prone to breakage.
 
 
 globalinstance just adding to confusion
@@ -46,7 +55,7 @@ globalinstance just adding to confusion
 
 In Aug I added an extra mm slot, called the GlobalInstance, which 
 treats the remainder geometry just like instanced. That was motivated 
-by identity problems.
+by identity access problems.
 
 TODO: change the GlobalInstance -> RemainderInstance  
 
@@ -91,6 +100,40 @@ Investigate the usage of the "all" info from mm0,
 
 
 This would help by moving GMergedMesh in the simpler direction.
+
+
+
+TODO: find "full volume" users of the old mm0/mesh0 and convert them to use GNodeLib
+------------------------------------------------------------------------------------- 
+
+::
+
+    epsilon:opticks blyth$ opticks-fl mm0
+    ./ana/flightpath.py
+    ./ana/geom2d.py
+    ./ana/view.py
+    ./ana/mm0prim2.py
+    ./ana/geocache.bash
+    ./opticksgeo/OpticksAim.hh
+    ./opticksgeo/OpticksHub.cc
+    ./opticksgeo/OpticksAim.cc
+    ./bin/ab.bash
+    ./ok/ok.bash
+    ./extg4/X4Transform3D.cc
+    ./ggeo/GParts.cc
+    ./ggeo/GGeoTest.hh
+    ./ggeo/GMesh.cc
+    ./ggeo/GGeo.cc
+    ./ggeo/GScene.hh
+    ./ggeo/GInstancer.cc
+    ./ggeo/GGeoLib.cc
+    ./ggeo/GMergedMesh.cc
+    ./ggeo/GScene.cc
+    ./optickscore/OpticksDomain.hh
+    ./npy/NScene.cpp
+    ./oglrap/Scene.cc
+
+
 
 
 STEPS TO MINIMIZE DUPLICATION
@@ -208,7 +251,6 @@ GMergedMesh shapes
     f :                                            0/itransforms.npy :            (1, 4, 4) : 2142ffd110056f6eba647180adfbbcc9 : 20200930-1120 
     g :                                            6/itransforms.npy :            (1, 4, 4) : 2142ffd110056f6eba647180adfbbcc9 : 20200930-1120 
 
-
     ## hmm transforms within the instance not here (all identity in DYB and JUNO) 
 
     epsilon:GMergedMesh blyth$ echo $(( 1792+864+864+864+672*5+4486 ))
@@ -271,6 +313,9 @@ GMergedMesh shapes
     i :                                              itransforms.npy :          (672, 4, 4) : 684f8b4688efd18ffab00c1910ad5dc7 : 20200930-1120 
 
 
+    To clarify these groupings have prefixed the names.
+
+
 
 
     epsilon:6 blyth$ np.py *.npy  "globalinstance"
@@ -318,11 +363,10 @@ GMergedMesh shapes
     epsilon:0 blyth$ 
 
 
-Can I get rid of top slot "globalinstance" with mm0 effectively becoming it ?
 
 
-Can meshes be removed ?
---------------------------
+Can meshes be removed ?  SEEMS YES : BUT NEED TO FIND USAGE
+-------------------------------------------------------------------
 
 ::
 

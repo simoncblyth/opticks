@@ -361,6 +361,7 @@ void OpticksCfg<Listener>::init()
        ("stamp",  "output profile stamps as they are made, see OpticksProfile") ; 
 
 
+
    m_desc.add_options()
        ("utaildebug",  "switch on the debug storing of an extra random float at the tail of the photon simulation as an additional check of random alignment") ; 
 
@@ -576,11 +577,14 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("dbggsdir", boost::program_options::value<std::string>(&m_dbggsdir), "directory in which to persist to debug gensteps" );   
+
    m_desc.add_options()
        ("dbggssave", "save debug gensteps to within directory specified by dbggsdir option"); 
    m_desc.add_options()
        ("dbggsload", "load debug gensteps from directory specified by dbggsdir option"); 
 
+   m_desc.add_options()
+       ("dbggsimport", "debug gensteps importation see OpticksRun::importGenstepData");  
 
 
 

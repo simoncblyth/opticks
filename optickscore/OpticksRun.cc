@@ -365,6 +365,15 @@ translations performed.
 
 G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 {
+    bool dbggsimport = m_ok->isDbgGSImport() ; // --dbggsimport
+    if(dbggsimport)
+    {
+        const char* dbggsimport_path = "$TMP/OpticksRun_importGenstepData/dbggsimport.npy" ; 
+        LOG(fatal) << "(--dbggsimport) saving gs to " << dbggsimport_path ; 
+        gs->save(dbggsimport_path); 
+    }    
+ 
+
     OK_PROFILE("_OpticksRun::importGenstepData");
     NMeta* gsp = gs->getParameters();
     m_parameters->append(gsp);

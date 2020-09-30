@@ -259,11 +259,9 @@ void OpticksHub::init()
     if(m_err) return ; 
 
 
-
+    // TODO:migrate these into GGeo for self-containment
     configureGeometry() ;      // setting mm geocode
-
     deferredGeometryPrep();    // GGeo::deferredCreateGParts
-
 
 
     m_gen = new OpticksGen(this) ;

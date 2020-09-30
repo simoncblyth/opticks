@@ -86,9 +86,9 @@ class OKGEO_API OpticksGen
         void                 initFromDirectGensteps();
         void                 initFromEmitterGensteps();
     private:
-        NPY<float>*          makeLegacyGensteps(unsigned code);
+        NPY<float>*          makeLegacyGensteps(unsigned gencode);
         NPY<float>*          loadLegacyGenstepFile(const char* label);
-        TorchStepNPY*        makeTorchstep();
+        TorchStepNPY*        makeTorchstep(unsigned gencode);
     private:
         //  FabStepNPY and TorchStepNPY are specializations of GenstepNPY
         void                 targetGenstep( GenstepNPY* gs );
