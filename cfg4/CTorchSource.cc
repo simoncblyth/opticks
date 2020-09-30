@@ -29,6 +29,7 @@
 
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
+#include "OpticksGenstep.hh"
 
 // cfg4-
 #include "CTorchSource.hh"
@@ -282,7 +283,8 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *event)
                    ;
 
 
-    unsigned event_gencode = TORCH ; 
+    //unsigned event_gencode = TORCH ;   
+    unsigned event_gencode = OpticksGenstep_TORCH ; 
     event->SetUserInformation( new CEventInfo(event_gencode)) ;
 
    LOG(info)

@@ -23,7 +23,7 @@
 #include <string>
 
 #include "BStr.hh"
-#include "BBit.hh"
+#include "SBit.hh"
 #include "BRegex.hh"
 
 #include "NMeta.hpp"
@@ -267,7 +267,7 @@ unsigned OpticksFlags::EnumFlag(unsigned bitpos)
 
 unsigned OpticksFlags::BitPos(unsigned flag)
 {
-    return BBit::ffs(flag)  ;  
+    return SBit::ffs(flag)  ;  
 }
 
 unsigned OpticksFlags::AbbrevToFlag( const char* abbrev )
@@ -418,7 +418,7 @@ std::string OpticksFlags::FlagMask(const unsigned mskhis, bool abbrev)
     std::vector<const char*> labels ; 
 
     assert( __MACHINERY == 0x1 << 17 );
-    unsigned lastBit = BBit::ffs(__MACHINERY) - 1 ;  
+    unsigned lastBit = SBit::ffs(__MACHINERY) - 1 ;  
     assert(lastBit == 17 ); 
  
     for(unsigned n=0 ; n <= lastBit ; n++ )
@@ -538,7 +538,7 @@ Index* OpticksFlags::parseFlags(const char* path)
     {
         upair_t p = ups[i];
         unsigned mask = p.first ;
-        unsigned bitpos = BBit::ffs(mask);  // first set bit, 1-based bit position
+        unsigned bitpos = SBit::ffs(mask);  // first set bit, 1-based bit position
         unsigned xmask = 1 << (bitpos-1) ; 
         assert( mask == xmask);
 

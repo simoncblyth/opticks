@@ -74,7 +74,6 @@ set(SOURCES
   BList.cc
   BStr.cc
   BHex.cc
-  BBit.cc
   BFile.cc
   BPath.cc
   BRegex.cc
@@ -124,7 +123,6 @@ set(HEADERS
   BList.hh
   BStr.hh
   BHex.hh
-  BBit.hh
   BFile.hh
   BRegex.hh
   BRegex.hpp

@@ -19,11 +19,18 @@
 
 #pragma once
 
-#include "BRAP_API_EXPORT.hh"
-#include "BRAP_HEAD.hh"
+#include "SYSRAP_API_EXPORT.hh"
+#include "SYSRAP_HEAD.hh"
 
+/**
+SBit
+=====
 
-class BRAP_API BBit {
+TODO: move to SBit as no boost dependency 
+
+**/
+
+class SYSRAP_API SBit {
     public:
          // ffs returns 1-based index of rightmost set bit, see man ffs 
         static int ffs(int msk);
@@ -35,6 +42,6 @@ class BRAP_API BBit {
 
 }; 
 
-#include "BRAP_TAIL.hh"
+#include "SYSRAP_TAIL.hh"
 
 

@@ -19,7 +19,6 @@ set(TEST_SOURCES
    BHexTest.cc
    BRegexTest.cc
    BStrTest.cc
-   BBitTest.cc
    BLogTest.cc
    BPLOGTest.cc
    BFileTest.cc

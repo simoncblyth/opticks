@@ -17,9 +17,10 @@
  * limitations under the License.
  */
 
-// TEST=BBitTest om-t
+// TEST=SBitTest om-t
 
-#include "BBit.hh"
+#include "OPTICKS_LOG.hh"
+#include "SBit.hh"
 #include <cassert>
 #include <iostream>
 #include <iomanip>
@@ -29,10 +30,10 @@ void test_ffs()
     for(int i=0 ; i < 64 ; i++ )
     {
         int msk = 0x1 << i ; 
-        int chk = BBit::ffs(msk) - 1;   
+        int chk = SBit::ffs(msk) - 1;   
         std::cout 
                   << " msk ( 0x1 << " << std::setw(2) << std::dec << i << ") = "  << std::hex << std::setw(16) << msk  
-                  << " BBit::ffs(msk) - 1 =  " << std::dec << std::setw(4) << chk
+                  << " SBit::ffs(msk) - 1 =  " << std::dec << std::setw(4) << chk
                   << std::endl ;   
 
          if(i < 32 ) assert(  chk == i );
@@ -46,10 +47,10 @@ void test_ffsll()
     for(LL i=0 ; i < 64 ; i++ )
     {
         LL msk = 0x1ll << i ; 
-        LL chk = BBit::ffsll(msk) - 1ll ;   
+        LL chk = SBit::ffsll(msk) - 1ll ;   
         std::cout 
                   << " msk ( 0x1 << " << std::setw(2) << std::dec << i << ") = "  << std::hex << std::setw(16) << msk  
-                  << " BBit::ffsll(msk) - 1 =  " << std::dec << std::setw(4) << chk
+                  << " SBit::ffsll(msk) - 1 =  " << std::dec << std::setw(4) << chk
                   << std::endl ;   
 
         assert(  chk == i );
@@ -66,7 +67,7 @@ void test_count_nibbles()
     for(ULL i=0 ; i < 64ull ; i++ )
     {
         msk |= 0x1ull << i ;  
-        ULL nn = BBit::count_nibbles(msk); 
+        ULL nn = SBit::count_nibbles(msk); 
         std::cout 
              << " msk 0x " << std::hex << std::setw(16) << msk  
              << " nibbles " << std::dec << std::setw(4) << nn
@@ -77,8 +78,10 @@ void test_count_nibbles()
 
 
 
-int main()
+int main(int argc, char** argv)
 {
+    OPTICKS_LOG(argc, argv); 
+
     test_ffs(); 
     test_ffsll(); 
     //test_count_nibbles(); 

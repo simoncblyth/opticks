@@ -29,7 +29,7 @@
 
 
 #include "BConverter.hh"
-#include "BBit.hh"
+#include "SBit.hh"
 
 #include "CRecorder.h"
 #include "CG4Ctx.hh"
@@ -278,7 +278,7 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
     qaux.uchar_.x = material ; 
     qaux.uchar_.y = 0 ; // TODO:m2 
     qaux.char_.z  = 0 ; // TODO:boundary (G4 equivalent ?)
-    qaux.uchar_.w = BBit::ffs(flag) ;   // ? duplicates seqhis  
+    qaux.uchar_.w = SBit::ffs(flag) ;   // ? duplicates seqhis  
 
     hquad polw ; 
     polw.ushort_.x = polx | poly << 8 ; 

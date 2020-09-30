@@ -19,7 +19,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include "BBit.hh"
+#include "SBit.hh"
 
 
 #ifdef OPTICKS_OPTIX
@@ -29,7 +29,7 @@
     std::cout << std::setw(18) << #name  \
               << std::dec << std::setw(5) << (name)  \
               << std::hex << std::setw(5) << (name) ; \
-    unsigned long long x = BBit::ffs(name) ; \
+    unsigned long long x = SBit::ffs(name) ; \
     for(unsigned int bounce=1 ; bounce < 18 ; bounce++) \
     {  \
         unsigned int shift = (bounce-1)*4 ; \
@@ -72,7 +72,7 @@ void dumpflags()
     for(unsigned int bounce=1 ; bounce < 20 ; bounce++ )
     {
        unsigned int shift = (bounce-1)*4 ; 
-       unsigned long long x = BBit::ffs(BOUNDARY_TRANSMIT) ; 
+       unsigned long long x = SBit::ffs(BOUNDARY_TRANSMIT) ; 
        unsigned long long y = x << shift ;
        mask = mask | y ;
        mask = mask | y ;

@@ -27,7 +27,7 @@
 #include "NGLM.hpp"
 
 //brap-
-#include "BBit.hh"
+#include "SBit.hh"
 
 // npy-
 #include "GLMFormat.hpp"
@@ -637,14 +637,14 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
         if(bitpos < 32)
         { 
             unsigned int bitmask = bitpos == 0 ? 0 : 1 << (bitpos - 1); 
-            unsigned int first = BBit::ffs(bitmask) ;
+            unsigned int first = SBit::ffs(bitmask) ;
             assert(first == bitpos);
             if(first != bitpos)
             {
                  LOG(warning) << "RecordsNPY::getSequenceString"
                               << " UNEXPECTED ffs(bitmask) != bitpos "
                               << " bitmask " << std::hex << bitmask << std::dec
-                              << " ffs(bitmask) " <<  BBit::ffs(bitmask)
+                              << " ffs(bitmask) " <<  SBit::ffs(bitmask)
                               << " bitpos " << bitpos 
                               ; 
 

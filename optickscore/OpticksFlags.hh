@@ -49,7 +49,7 @@ TODO : Repositioning
 * this needs to sink from okc- together with OpticksPhoton.h 
   so can use from NPY (for getting rid of Types.hpp usage from RecordsNPY for example)
 
-* Index prevents below NPY, BBit BRegex beneath brap- but 
+* Index prevents below NPY, SBit BRegex beneath brap- but 
   most of the utility could work from lowest level sysrap- 
   SFlags.hh ? 
 

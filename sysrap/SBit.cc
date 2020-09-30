@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "BBit.hh"
+#include "SBit.hh"
 
 #include <cstring>
 
@@ -25,7 +25,7 @@
 
 #include <intrin.h>
 
-int BBit::ffs(int i)
+int SBit::ffs(int i)
 {
     // https://msdn.microsoft.com/en-us/library/wfd9z0bb.aspx
     unsigned long mask = i ;
@@ -36,19 +36,19 @@ int BBit::ffs(int i)
 
 #elif defined(__MINGW32__)
 
-int BBit::ffs(int i)
+int SBit::ffs(int i)
 {
    return __builtin_ffs(i);
 }
 
 #else
 
-int BBit::ffs(int i)     
+int SBit::ffs(int i)     
 {
    return ::ffs(i);
 }
 
-long long BBit::ffsll(long long i)   
+long long SBit::ffsll(long long i)   
 {
    return ::ffsll(i);
 }
@@ -79,7 +79,7 @@ ana/nibble.py::
         return count
 **/
 
-unsigned long long BBit::count_nibbles(unsigned long long x)
+unsigned long long SBit::count_nibbles(unsigned long long x)
 {
     x |= x >> 1 ;
     x |= x >> 2 ;

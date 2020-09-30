@@ -23,7 +23,7 @@
 #include <iomanip>
 #include <cassert>
 
-#include "BBit.hh"
+#include "SBit.hh"
 
 #include "OpticksFlags.hh"
 
@@ -85,6 +85,12 @@ seqhis and seqmat nibbles of the current constrained slot.
 * DOES NOT update the slot 
 * via CRecState::constrained_slot sets _state._record_truncate when at top slot 
 
+HMM: this assumes old (0x1 << n) OpticksPhoton flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
 **/
 
 void CPhoton::add(unsigned flag, unsigned  material)
@@ -98,14 +104,14 @@ void CPhoton::add(unsigned flag, unsigned  material)
     }
 
     unsigned slot = _state.constrained_slot(); 
-    unsigned long long shift = slot*4ull ;     // 4-bits of shift for each slot 
-    unsigned long long  msk = 0xFull << shift ; 
+    unsigned long long shift = slot*4ull ;      // 4-bits of shift for each slot 
+    unsigned long long  msk = 0xFull << shift ; // slide 4-bits into place 
 
     _slot_constrained = slot ; 
 
-    _his = BBit::ffs(flag) & 0xFull ; 
+    _his = SBit::ffs(flag) & 0xFull ; 
 
-    //  BBit::ffs result is a 1-based bit index of least significant set bit 
+    //  SBit::ffs result is a 1-based bit index of least significant set bit 
     //  so anding with 0xF although looking like a bug, as the result of ffs is not a nibble, 
     //  is actually providing a warning as are constructing seqhis from nibbles : 
     //  this is showing that NATURAL is too big to fit in its nibble   
@@ -122,10 +128,11 @@ void CPhoton::add(unsigned flag, unsigned  material)
     bool flag_match = _flag == flag  ; 
     if(!flag_match)
        LOG(fatal) << "flag mismatch "
-                  << " MAYBE TOO BIG TO FIT IN THE NIBBLE " 
-                  << " _flag " << _flag 
+                  << " (expecting [0x1 << 0..15]) " 
+                  << " TOO BIG TO FIT IN THE NIBBLE " 
                   << " _his " << _his 
-                  << " flag " << flag 
+                  << " flag(input) " << flag 
+                  << " _flag(recon) " << _flag 
                   ; 
      assert( flag_match ); 
 

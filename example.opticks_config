@@ -6,6 +6,7 @@ opticks-(){  [ -r $HOME/opticks/opticks.bash ] && . $HOME/opticks/opticks.bash &
 opticks-
 
 o(){ opticks- ; cd $(opticks-home) ; git status ; }
+oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ;  }
 t(){ typeset -f $* ; }
 
 # PATH envvars control the externals that opticks/CMake or pkg-config will find  
