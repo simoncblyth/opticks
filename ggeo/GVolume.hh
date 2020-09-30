@@ -77,6 +77,7 @@ class GGEO_API GVolume : public GNode {
       OpticksCSG_t getCSGFlag() const ;
       bool         isCSGSkip() const ;
       unsigned     getBoundary() const ;
+      unsigned     getIdentityIndex() const ;
       guint4       getIdentity() const ;
       glm::uvec4   getIdentity_() const ;
   public:

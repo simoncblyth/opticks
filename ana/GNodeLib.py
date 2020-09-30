@@ -74,12 +74,12 @@ class GNodeLib(object):
 
     RELDIR = "GNodeLib" 
     key2name = {
-      "TR":"transforms.npy",
-      "BB":"bbox.npy",
-      "ID":"identity.npy",
-      "CE":"center_extent.npy",
-      "PV":"PVNames.txt",
-      "LV":"LVNames.txt",
+      "TR":"volume_transforms.npy",
+      "BB":"volume_bbox.npy",
+      "ID":"volume_identity.npy",
+      "CE":"volume_center_extent.npy",
+      "PV":"volume_PVNames.txt",
+      "LV":"volume_LVNames.txt",
     }
 
     @classmethod   

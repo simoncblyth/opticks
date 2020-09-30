@@ -75,7 +75,9 @@ void test_GMergedMesh_MakeComposite(GMergedMesh* mm)
     GMergedMesh* comp = GMergedMesh::MakeComposite(mms);
 
     comp->dumpVolumes("test_GMergedMesh_MakeComposite.dumpVolumes");
+#ifdef WITH_COMPONENT
     comp->dumpComponents("test_GMergedMesh_MakeComposite.dumpComponents");
+#endif
 
     const char* dir = "$TMP/test_GMergedMesh_MakeComposite" ; 
     comp->save(dir);    
@@ -83,7 +85,9 @@ void test_GMergedMesh_MakeComposite(GMergedMesh* mm)
     GMergedMesh* comp2 = GMergedMesh::Load(dir);
 
     comp2->dumpVolumes("test_GMergedMesh_MakeComposite.dumpVolumes.comp2");
+#ifdef WITH_COMPONENT
     comp2->dumpComponents("test_GMergedMesh_MakeComposite.dumpComponents.comp2");
+#endif
 
 }
 
@@ -93,7 +97,9 @@ void test_GMergedMesh_MakeLODComposite(GMergedMesh* mm, unsigned levels)
     GMergedMesh* comp = GMergedMesh::MakeLODComposite(mm, levels);
 
     comp->dumpVolumes("test_GMergedMesh_MakeLODComposite.dumpVolumes");
+#ifdef WITH_COMPONENT
     comp->dumpComponents("test_GMergedMesh_MakeLODComposite.dumpComponents");
+#endif
 
 }
 

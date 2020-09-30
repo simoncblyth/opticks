@@ -234,26 +234,23 @@ void GVolume::setBoundaryAll(unsigned boundary)
 
 
 
-
+unsigned GVolume::getIdentityIndex() const 
+{
+    unsigned identity_index = m_copyNumber  ;  // // SHOULD BE m_sensor_index ? which will match m_copyNumber for JUNO  
+    return identity_index ; 
+}
 
 guint4 GVolume::getIdentity() const 
 {
     unsigned node_index = m_index ;    
-    unsigned identity_index = m_copyNumber  ;   
-
-    return guint4(
-                   node_index, 
-                   getMeshIndex(), 
-                   m_boundary,
-                   identity_index
-                 );
+    guint4 id(node_index, getMeshIndex(),  m_boundary, getIdentityIndex()) ;
+    return id ; 
 }
 
 glm::uvec4 GVolume::getIdentity_() const 
 {
     unsigned node_index = m_index ;    
-    unsigned identity_index = m_copyNumber  ;   
-    glm::uvec4 id(node_index, getMeshIndex(), m_boundary, identity_index) ; 
+    glm::uvec4 id(node_index, getMeshIndex(), m_boundary, getIdentityIndex()) ; 
     return id ; 
 }
 

@@ -120,6 +120,7 @@ private:
     void mergeVolumeTransform( GMatrixF* transform ); 
     void mergeVolumeBBox( gfloat3* vertices, unsigned nvert );
     void mergeVolumeDump( const GVolume* volume);
+
 private:
     void mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity );
 public:

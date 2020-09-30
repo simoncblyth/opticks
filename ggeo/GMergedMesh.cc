@@ -409,6 +409,16 @@ GMergedMesh::countVolume
 
 NB changes here need to parallel those made in GMergedMesh::mergeVolume 
 
+
+Formerly GMergedMesh confusingly did both:
+
+* collection of sub-sets of volumes selected by the repeat index (ridx)
+* collection of all volume info into MM slot 0 aka mm0, in addition to "selected" volumes 
+
+To simplfy GMergedMesh it now focusses on just the collection 
+of the subsets of volumes with the un-selected all volume info 
+now being stored into GNodeLib.
+
 **/
 
 
@@ -416,7 +426,10 @@ void GMergedMesh::countVolume( const GVolume* volume, bool selected, unsigned ve
 {
     const GMesh* mesh = volume->getMesh();
 
-    // with globalinstance selection is honoured at volume level too 
+    // for globalinstance selection is honoured at volume level too 
+    // for !globalinstance everything is admitted
+    //  hmm having both admit and selected is confusing 
+
     bool admit = ( m_globalinstance && selected ) || !m_globalinstance ;  
     if(admit)
     {
@@ -428,11 +441,6 @@ void GMergedMesh::countVolume( const GVolume* volume, bool selected, unsigned ve
         countMesh( mesh ); 
     }
 
-    //  hmm having both admit and selected is confusing 
-
-
-
-    //if(m_verbosity > 1)
     LOG(debug) 
         << " verbosity " << verbosity 
         << " selected " << selected
@@ -623,6 +631,8 @@ void GMergedMesh::mergeVolumeTransform( GMatrixF* transform )
 
 
 
+
+
 /**
 GMergedMesh::mergeMergedMesh
 --------------------------------
@@ -700,9 +710,12 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
     unsigned* sensor_indices = other->getSensors();
 
 
+#ifdef WITH_COMPONENT
     // needs to be here, prior to incrementing m_cur_faces, m_cur_vertices
     glm::uvec4 eidx(m_cur_faces, nface, m_cur_vertices, nvert ); 
     setComponent(eidx, m_cur_mergedmesh ); 
+#endif
+
     m_cur_mergedmesh++ ; 
 
 
@@ -716,6 +729,8 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
         // offsets within the flat arrays
     }
 }
+
+
 
 
 void GMergedMesh::mergeVolumeDump( const GVolume* volume)

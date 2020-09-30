@@ -35,12 +35,12 @@
 const plog::Severity GNodeLib::LEVEL = PLOG::EnvLevel("GNodeLib", "INFO"); 
 
 const char* GNodeLib::RELDIR = "GNodeLib" ; 
-const char* GNodeLib::PV = "PVNames" ; 
-const char* GNodeLib::LV = "LVNames" ; 
-const char* GNodeLib::TR = "transforms.npy" ; 
-const char* GNodeLib::CE = "center_extent.npy" ; 
-const char* GNodeLib::BB = "bbox.npy" ; 
-const char* GNodeLib::ID = "identity.npy" ; 
+const char* GNodeLib::PV = "volume_PVNames" ; 
+const char* GNodeLib::LV = "volume_LVNames" ; 
+const char* GNodeLib::TR = "volume_transforms.npy" ; 
+const char* GNodeLib::CE = "volume_center_extent.npy" ; 
+const char* GNodeLib::BB = "volume_bbox.npy" ; 
+const char* GNodeLib::ID = "volume_identity.npy" ; 
 
 const char* GNodeLib::CacheDir(const Opticks* ok)  // static
 {

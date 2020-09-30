@@ -43,6 +43,9 @@ template <typename T> class GMatrix ;
 
 class GBuffer ; 
 
+#define WITH_COMPONENT 1 
+
+
 /*
 GMesh
 ======
@@ -102,54 +105,63 @@ are only a few GMergedMesh instances for the entire geometry.
 Vertex buffers in a GMesh
 ----------------------------------
 
-*vertices*
+*vertex_vertices*
       3*float*nvert
 
-*normals*
+*vertex_normals*
       3*float*nvert
 
-*colors*
+*vertex_colors*
       3*float*nvert
 
-*texcoords*
+*vertex_texcoords*
       2*float*nvert
 
 
 Face buffers in a GMesh (used from GMergedMesh)
 -----------------------------------------------
 
-*indices*
+*face_indices*
      3*uint*nface
 
-*nodes*
+     * TODO: rehape to (nface, 3) for clarity
+
+*face_nodes*
      1*uint*nface
 
-*boundaries*
+*face_boundaries*
      1*uint*nface
 
-*sensors*
+*face_sensors*
      1*uint*nface
+
+
+* TODO: consolidate face_nodes/face_boundaries/face_sensors into single (nface,4) buffer ?, 
+  but caution OpenGL shader access to these makes it non-trivial
 
 
 Volume buffers in a GMesh (used from GMergedMesh)
 -------------------------------------------------
 
-*center_extent*
+*volume_center_extent*
 
-*bbox*
+*volume_bbox*
 
-*transforms*
+*volume_transforms*
 
-*meshes*
+*volume_meshes*
+      meshIndex 
+    
+      * TODO: eliminate this array as it duplicates info in *volume_identity*
 
-*nodeinfo*
-      contains per-volume nface, nvert, nodeindex, parent nodeindex
+*volume_nodeinfo*
+      contains per-volume (nface, nvert, nodeindex, parent nodeindex)
       nface counts per-volume allowing volume selection even from 
       merged meshes by accessing the correct ranges  
 
       ::
 
-          In [1]: np.load("nodeinfo.npy")
+          In [1]: np.load("volume_nodeinfo.npy")
           Out[1]: 
           array([[ 720,  362, 3199, 3155],
                  [ 672,  338, 3200, 3199],
@@ -158,13 +170,13 @@ Volume buffers in a GMesh (used from GMergedMesh)
                  [  96,   50, 3203, 3200]], dtype=uint32)
 
 
-*identity*
-      per-volume identity info, nodeIndex, meshIndex, boundaryIndex, sensorSurfaceIndex
+*volume_identity*
+      per-volume identity info, (nodeIndex, meshIndex, boundaryIndex, sensorSurfaceIndex)
       see GVolume::getIdentity
        
       ::
 
-          In [2]: np.load("identity.npy")
+          In [2]: np.load("volume_identity.npy")
           Out[2]: 
           array([[3199,   47,   19,    0],
                  [3200,   46,   20,    0],
@@ -173,12 +185,12 @@ Volume buffers in a GMesh (used from GMergedMesh)
                  [3203,   45,    1,    0]], dtype=uint32)
 
 
-Indices relation to nodeinfo
--------------------------------
+face_indices relation to volume_nodeinfo
+-------------------------------------------
 
 ::
 
-    In [3]: i = np.load("indices.npy")
+    In [3]: i = np.load("face_indices.npy")
 
     In [12]: i.reshape(-1,3)
     Out[12]: 
@@ -194,7 +206,7 @@ Indices relation to nodeinfo
     Out[13]: (2928, 3)
 
 
-    In [6]: ni = np.load("nodeinfo.npy")
+    In [6]: ni = np.load("volume_nodeinfo.npy")
 
     In [7]: ni
     Out[7]: 
@@ -204,7 +216,7 @@ Indices relation to nodeinfo
            [ 480,  242, 3202, 3200],
            [  96,   50, 3203, 3200]], dtype=uint32)
 
-    In [9]: ni[:,0].sum()
+    In [9]: ni[:,0].sum()   ## sum face counts for 5 volumes 
     Out[9]: 2928
 
 
@@ -253,9 +265,6 @@ class GGEO_API GMesh : public GDrawable {
       // per instance global transforms of repeated geometry 
       static const char* itransforms_ ;    
       static const char* iidentity_ ;     // guint4: node, mesh, boundary, sensor
-
-      // composited GMergedMesh eg for LOD levels 
-      static const char* components_ ;    
 
 
       GMesh(unsigned int index=0, 
@@ -336,8 +345,6 @@ class GGEO_API GMesh : public GDrawable {
       unsigned getNumFaces() const ;
       unsigned getNumVolumesSelected() const ;
       unsigned getNumVolumes() const ;
-      int      getNumComponents() const ;
-      void     dumpComponents(const char* msg="GMesh::dumpComponents") const ;
 
   public:
       unsigned getNumTransforms() const ;
@@ -408,7 +415,6 @@ class GGEO_API GMesh : public GDrawable {
       void setITransformsBuffer(NPY<float>* buf);
       void setInstancedIdentityBuffer(NPY<unsigned int>* buf);
   public:
-      void setComponentsBuffer(NPY<unsigned>* buf);
   public:
       bool hasTransformsBuffer(); 
       bool hasITransformsBuffer(); 
@@ -433,8 +439,8 @@ class GGEO_API GMesh : public GDrawable {
       NPY<float>*        getITransformsBuffer() const ;
       NPY<unsigned int>* getInstancedIdentityBuffer() const ; 
   public:
-      // for composited GMergedMesh, eg for LOD levels 
-      NPY<unsigned>*     getComponentsBuffer() const ;
+
+
   public:
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
@@ -542,8 +548,8 @@ class GGEO_API GMesh : public GDrawable {
       void setNumVertices(unsigned int num_vertices);
       void setNumFaces(   unsigned int num_faces);
       void setNumVolumes(unsigned int num_volumes);
-      void setComponent(const glm::uvec4& eidx, unsigned icomp );
-      void getComponent(      glm::uvec4& eidx, unsigned icomp ) const ;
+
+
 
   public:
       // analytic geometry standin for OptiX
@@ -561,6 +567,22 @@ class GGEO_API GMesh : public GDrawable {
   public:
       template <typename T> void setMeta(const char* key, T value);
       template <typename T> T getMeta(const char* key, const char* fallback) const ;
+
+
+#ifdef WITH_COMPONENT 
+      // suspect still in use for bbox geometry standins, see Renderer::setupDrawsLOD
+      // for composited GMergedMesh, eg for LOD levels 
+      static const char* components_ ;    
+      void               setComponentsBuffer(NPY<unsigned>* buf);
+      NPY<unsigned>*     getComponentsBuffer() const ;
+      int                getNumComponents() const ;
+      void               dumpComponents(const char* msg="GMesh::dumpComponents") const ;
+      void               setComponent(const glm::uvec4& eidx, unsigned icomp );
+      void               getComponent(      glm::uvec4& eidx, unsigned icomp ) const ;
+#else
+      int                getNumComponents() const ;
+#endif
+
 
   protected:
       unsigned     m_index ;

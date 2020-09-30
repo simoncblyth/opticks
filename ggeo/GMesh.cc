@@ -62,28 +62,29 @@ const plog::Severity GMesh::LEVEL = PLOG::EnvLevel("GMesh", "DEBUG" );
 namespace fs = boost::filesystem;
 
 
-const char* GMesh::vertices_     = "vertices" ;
-const char* GMesh::normals_      = "normals" ;
-const char* GMesh::colors_       = "colors" ;
-const char* GMesh::texcoords_    = "texcoords" ;
+const char* GMesh::vertices_     = "vertex_vertices" ;
+const char* GMesh::normals_      = "vertex_normals" ;
+const char* GMesh::colors_       = "vertex_colors" ;
+const char* GMesh::texcoords_    = "vertex_texcoords" ;
 
-const char* GMesh::indices_      = "indices" ;
-const char* GMesh::nodes_        = "nodes" ;
-const char* GMesh::boundaries_   = "boundaries" ;
-const char* GMesh::sensors_      = "sensors" ;
+const char* GMesh::indices_        = "face_indices" ;
+const char* GMesh::nodes_          = "face_nodes" ;
+const char* GMesh::boundaries_     = "face_boundaries" ;
+const char* GMesh::sensors_        = "face_sensors" ;
 
-const char* GMesh::center_extent_ = "center_extent" ;
-const char* GMesh::bbox_           = "bbox" ;
-const char* GMesh::transforms_     = "transforms" ;
-const char* GMesh::meshes_         = "meshes" ;
-const char* GMesh::nodeinfo_       = "nodeinfo" ;
-const char* GMesh::identity_       = "identity" ;
+const char* GMesh::center_extent_  = "volume_center_extent" ;
+const char* GMesh::bbox_           = "volume_bbox" ;
+const char* GMesh::transforms_     = "volume_transforms" ;
+const char* GMesh::meshes_         = "volume_meshes" ;
+const char* GMesh::nodeinfo_       = "volume_nodeinfo" ;
+const char* GMesh::identity_       = "volume_identity" ;
 
+#ifdef WITH_COMPONENT 
+const char* GMesh::components_     = "components" ;
+#endif
 
-const char* GMesh::itransforms_    = "itransforms" ;
-const char* GMesh::iidentity_       = "iidentity" ;
-
-const char* GMesh::components_      = "components" ;
+const char* GMesh::itransforms_    = "placement_itransforms" ;
+const char* GMesh::iidentity_      = "placement_iidentity" ;
 
 
 void GMesh::nameConstituents(std::vector<std::string>& names)
@@ -108,7 +109,9 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(itransforms_); 
     names.push_back(iidentity_); 
 
+#ifdef WITH_COMPONENT 
     names.push_back(components_); 
+#endif
 }
 
 
@@ -667,11 +670,6 @@ NPY<unsigned>*  GMesh::getInstancedIdentityBuffer() const
 {
     return m_iidentity_buffer ;
 }
-NPY<unsigned>*  GMesh::getComponentsBuffer() const 
-{
-    return m_components_buffer ;
-}
-
 
 
 
@@ -1236,25 +1234,23 @@ void GMesh::setInstancedIdentityBuffer(NPY<unsigned int>* buffer)
 
 
 
-
-
-
+#ifdef WITH_COMPONENT 
+NPY<unsigned>*  GMesh::getComponentsBuffer() const 
+{
+    return m_components_buffer ;
+}
 void GMesh::setComponentsBuffer(NPY<unsigned>* buf)
 {
     m_components_buffer = buf ;
 }
-
 int GMesh::getNumComponents() const 
 {
     return m_components_buffer ? m_components_buffer->getShape(0) : -1 ; 
 }
-
 void GMesh::getComponent( glm::uvec4& eidx, unsigned icomp ) const 
 {
      eidx = m_components_buffer->getQuad(icomp);
 }
-
-
 void GMesh::setComponent(const glm::uvec4& eidx, unsigned icomp )
 {
     assert( m_num_mergedmesh > 0 && "MUST GMergedMesh::countMergedMesh before GMesh::setComponent ");
@@ -1288,7 +1284,12 @@ void GMesh::dumpComponents(const char* msg) const
     }
 
 }
-
+#else
+int GMesh::getNumComponents() const 
+{
+    return -1 ; 
+}
+#endif
 
 
 
@@ -1889,8 +1890,10 @@ bool GMesh::isNPYBuffer(const char* name)  const
     return 
            ( 
               strcmp( name, iidentity_) == 0  ||
-              strcmp( name, itransforms_) == 0  ||
-              strcmp( name, components_) == 0  
+#ifdef WITH_COMPONENT
+              strcmp( name, components_) == 0  ||
+#endif 
+              strcmp( name, itransforms_) == 0  
            );
 }
 
@@ -1938,7 +1941,9 @@ NPYBase* GMesh::getNPYBuffer(const char* name) const
     NPYBase* buf(NULL);
     if(strcmp(name, iidentity_) == 0)   buf = getInstancedIdentityBuffer();
     else if(strcmp(name, itransforms_) == 0) buf = getITransformsBuffer();
+#ifdef WITH_COMPONENT
     else if(strcmp(name, components_) == 0)  buf = getComponentsBuffer();
+#endif
     return buf ; 
 }
 
@@ -1958,11 +1963,13 @@ void GMesh::loadNPYBuffer(const char* path, const char* name)
         NPY<float>* buf = NPY<float>::load(path) ;
         setITransformsBuffer(buf);
     }
+#ifdef WITH_COMPONENT
     else if(strcmp(name, components_) == 0)
     {
         NPY<unsigned>* buf = NPY<unsigned>::load(path) ;
         setComponentsBuffer(buf);
     }
+#endif
     else
     {
         LOG(fatal) << " unknown: " << name ; 
