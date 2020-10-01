@@ -2,10 +2,18 @@ opticks-t-2020-sep-18-12-of-430-fails-linux
 ==================================================
 
 
-Now 1 FAIL : IntegrationTests.tboolean.box 
-----------------------------------------------
+Now : no slow, 1 FAIL : IntegrationTests.tboolean.box 
+-------------------------------------------------------
 
 * :doc:`GGeoTest_GMergedMesh_mergeVolumeFaces_assert_sensor_indices`
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+
+    FAILS:  1   / 434   :  Fri Oct  2 00:42:36 2020   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      1.15   
+    [blyth@localhost opticks]$ 
 
 
 

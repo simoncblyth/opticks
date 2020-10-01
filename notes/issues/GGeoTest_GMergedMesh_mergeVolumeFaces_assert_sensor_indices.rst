@@ -15,12 +15,18 @@ Rerun just the failing one with debugger::
 
     LV=box tboolean.sh --generateoverride 10000 -D
 
+For debug, better to use the non-installed approach::
+
+    tboolean-;LV=box tboolean-lv --generateoverride 10000 -D
+
+
+
 
 Issues : Problems with creation and GPU conversion of test geometry 
 -----------------------------------------------------------------------
 
 1. FIXED: sensor_indices assert
-2. numITransforms == 1 assert
+2. numITransforms == 1 assert, getting zero with test geometry 
 
 
 OGeo::convert GMesh::makeFaceRepeatedIdentityBuffer numITransforms == 1 
@@ -57,6 +63,93 @@ OGeo::convert GMesh::makeFaceRepeatedIdentityBuffer numITransforms == 1
         frame #20: 0x00000001000e1b13 libOKG4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007ffeefbfdd40, argc=32, argv=0x00007ffeefbfde18) at OKG4Mgr.cc:111
         frame #21: 0x0000000100014c73 OKG4Test`main(argc=32, argv=0x00007ffeefbfde18) at OKG4Test.cc:27
     (lldb) 
+
+::
+
+     925 optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
+     926 {
+     927     unsigned numVolumes = mm->getNumVolumes();
+     928     unsigned numFaces = mm->getNumFaces();
+     929     unsigned numITransforms = mm->getNumITransforms();
+     930 
+     931     LOG(LEVEL)
+     932         << " mmIndex " << mm->getIndex()
+     933         << " numFaces (PrimitiveCount) " << numFaces
+     934         << " numVolumes " << numVolumes
+     935         << " numITransforms " << numITransforms
+     936         ;
+     937       
+     938     GBuffer* id = mm->getAppropriateRepeatedIdentityBuffer();
+     939     GBuffer* vb = mm->getVerticesBuffer() ;
+     940     GBuffer* ib = mm->getIndicesBuffer() ;
+     941 
+     942 
+     943     optix::Geometry geometry = m_context->createGeometry();
+     944     geometry->setIntersectionProgram(m_ocontext->createProgram("TriangleMesh.cu", "mesh_intersect"));
+     945     geometry->setBoundingBoxProgram(m_ocontext->createProgram("TriangleMesh.cu", "mesh_bounds"));
+     946 
+     947     optix::Buffer identityBuffer = createInputBuffer<optix::uint4>( id, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer");
+     948     geometry["identityBuffer"]->setBuffer(identityBuffer);
+     949 
+
+
+
+
+Where do the itransforms come from ?
+----------------------------------------
+
+::
+
+    2403 GBuffer* GMesh::makeFaceRepeatedIdentityBuffer()
+    2404 {
+    2405     unsigned mmidx = getIndex();
+    2406     unsigned numITransforms = getNumITransforms() ;
+    2407     unsigned numVolumes = getNumVolumes();
+    2408     unsigned numFaces = getNumFaces() ;
+    2409     unsigned numFacesCheck = getFaceCount();
+    2410 
+    2411     LOG(info)
+    2412         << " mmidx " << mmidx
+    2413         << " numITransforms " << numITransforms
+    2414         << " numVolumes " << numVolumes
+    2415         << " numFaces (sum of faces in numVolumes)" << numFaces
+    2416         << " numFacesCheck " << numFacesCheck
+    2417         ;
+    2418 
+    2419     assert( mmidx == 0 );
+    2420     assert( numITransforms == 1 && "GMesh::makeFaceRepeatedIdentityBuffer only relevant to the non-instanced mm0 ");
+    2421     assert( m_nodeinfo_buffer->getNumItems() == numVolumes);
+    2422     assert( numFaces == numFacesCheck );   // check nodeinfo sum of per-volume faces matches expectation
+    2423 
+    2424     guint4* nodeinfo = getNodeInfo();
+    2425     guint4* rid = new guint4[numFaces] ;
+
+    1106 unsigned int GMesh::getNumTransforms() const
+    1107 {
+    1108     return m_transforms_buffer ? m_transforms_buffer->getNumBytes()/(16*sizeof(float)) : 0 ;
+    1109 }
+    1110 unsigned int GMesh::getNumITransforms() const
+    1111 {
+    1112     if(!m_itransforms_buffer) return 0 ;
+    1113     unsigned int n0 = m_itransforms_buffer->getNumBytes()/(16*sizeof(float)) ;
+    1114     unsigned int n1 = m_itransforms_buffer->getNumItems() ;
+    1115     assert(n0 == n1);
+    1116     return n1 ;
+    1117 }
+
+    1087 void GMesh::setTransformsBuffer(GBuffer* buffer)
+    1088 {
+    1089     m_transforms_buffer = buffer ;
+    1090     if(!buffer) return ;
+    1091     m_transforms = (float*)buffer->getPointer();
+    1092 }
+    1093 
+    1094 void GMesh::setITransformsBuffer(NPY<float>* buffer)
+    1095 {
+    1096     m_itransforms_buffer = buffer ;
+    1097     if(!buffer) return ;
+    1098     m_itransforms = buffer->getValues();
+    1099 }
 
 
 

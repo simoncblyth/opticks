@@ -56,6 +56,7 @@ set(TEST_SOURCES
     GGeoTest.cc
     GGeoIdentityTest.cc
     GGeoConvertTest.cc
+    GGeoTestTest.cc
 
     GMakerTest.cc
 

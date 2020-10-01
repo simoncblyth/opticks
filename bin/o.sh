@@ -45,8 +45,8 @@ Executables are selected by corresponding arguments:
 --g4oktest G4OKTest
     testing G4Opticks interface used from detector frameworks
 
-
-
+--ggeotesttest GGeoTestTest
+    pre-GPU machinery testing 
 
 
 * Gathering the useful parts of op.sh prior to dumping that.
@@ -80,6 +80,7 @@ o-binary-name()
        --okx4test) echo OKX4Test ;;
        --g4oktest) echo G4OKTest ;;
          --tracer) echo OTracerTest ;;
+   --ggeotesttest) echo GGeoTestTest ;;
    esac 
    # no default as its important this return blank for unidentified commands
 }

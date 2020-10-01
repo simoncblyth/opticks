@@ -22,6 +22,7 @@
 #include <vector>
 
 struct NLODConfig ; 
+class NCSG ; 
 class NCSGList ; 
 class Opticks ; 
 class OpticksResource ; 
@@ -106,6 +107,7 @@ class GGEO_API GGeoTest : public GGeoBase {
 
        const char*       getIdentifier() const ;
        GMergedMesh*      getMergedMesh(unsigned index) const ;
+       unsigned          getNumMergedMesh() const ;
 
     private:
        void autoTestSetup(NCSGList* csglist);

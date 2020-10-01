@@ -97,7 +97,12 @@ GMaterialLib*     GGeoTest::getMaterialLib() const {     return m_mlib ;  }
 
 // locally customized 
 const char*       GGeoTest::getIdentifier() const {       return "GGeoTest" ; }
+
+
 GMergedMesh*      GGeoTest::getMergedMesh(unsigned index) const { return m_geolib->getMergedMesh(index) ; }
+unsigned          GGeoTest::getNumMergedMesh() const {            return m_geolib->getNumMergedMesh() ; }
+
+
 GGeoLib*          GGeoTest::getGeoLib() const {                   return m_geolib ; }
 GNodeLib*         GGeoTest::getNodeLib() const {                  return m_nodelib ; }
 
@@ -159,7 +164,13 @@ void GGeoTest::init()
 {
     LOG(LEVEL) << "[" ;
 
-    assert( m_config->isNCSG() ); 
+    bool is_ncsg = m_config->isNCSG() ; 
+    if(!is_ncsg)
+    {
+        LOG(fatal) << "expecting isNCSG config" ; 
+        std::cout << " m_config_ " << ( m_config_ ? m_config_ : "NULL" ) << std::endl ; 
+    }
+    assert(is_ncsg); 
 
     GMergedMesh* tmm_ = initCreateCSG() ;
 
@@ -289,10 +300,15 @@ GMergedMesh* GGeoTest::initCreateCSG()
     parts->close(); 
 
     tmm->setParts(parts);  
- 
-    unsigned nelem = solids.size() ; 
 
-    addPlaceholderBuffers(tmm, nelem ); 
+    // 
+    //unsigned nelem = solids.size() ; 
+    //addPlaceholderBuffers(tmm, nelem ); 
+
+    std::vector<const GNode*> placements ; 
+    placements.push_back(top); 
+    tmm->addInstancedBuffers(placements); 
+
 
     glm::vec4 ce = tmm->getCE(0);    
     LOG(LEVEL) << " tmm.ce " << gformat(ce) ; 
@@ -304,6 +320,8 @@ GMergedMesh* GGeoTest::initCreateCSG()
 /**
 GGeoTest::addPlaceholderBuffers
 --------------------------------
+
+Invoked from GGeoTest::initCreateCSG immediately after GMergedMesh::Create.
 
 Similar to GMergedMesh::addInstancedBuffers
 TODO: see if reuse of that is possible

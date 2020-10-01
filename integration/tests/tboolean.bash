@@ -718,9 +718,9 @@ tboolean-lv()
    local funcname=$(tboolean-funcname)
    local testname=$(tboolean-testname)
    local RC
-   echo $msg $testname
-
    local cmdline="$*"
+   echo $msg $testname cmdline $cmdline
+
    if [ "${cmdline/--ip}" != "${cmdline}" ]; then
        TESTNAME=$testname tboolean-ipy- $* 
    elif [ "${cmdline/--py}" != "${cmdline}" ]; then
@@ -744,7 +744,7 @@ tboolean-lv()
 tboolean-pfx(){ echo ${PFX:-$TESTNAME} ; }
 tboolean-cat(){ echo ${CAT:-$TESTNAME} ; }
 
-tboolean-ipy-(){ ipython -i --pdb -- $(which tboolean.py) --cat $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" $* ; }
+tboolean-ipy-(){ ${OPTICKS_IPYTHON:-ipython} -i --pdb -- $(which tboolean.py) --cat $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" $* ; }
 tboolean-py-(){                               tboolean.py --cat $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)"  $* ; }
 tboolean-m-(){  metadata.py --cat $(tboolean-cat) --pfx $(tboolean-pfx) --tag="$(tboolean-tag)" ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
@@ -933,12 +933,12 @@ tboolean-strace()
 tboolean-proxy-lvidx(){    echo ${LV:--1} ; }
 tboolean-proxy-name(){  echo tboolean-proxy-$(tboolean-proxy-lvidx) ; }
 
-tboolean-proxy-pdb(){ ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --cat $(tboolean-cat) --pfx $(tboolean-pfx) --src torch ; }
+tboolean-proxy-pdb(){ ${OPTICKS_IPYTHON:-ipython} --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --cat $(tboolean-cat) --pfx $(tboolean-pfx) --src torch ; }
 tboolean-proxy-ip(){ TESTNAME=$(tboolean-proxy-name) tboolean-ipy- $* ; } 
 tboolean-proxy-p(){ TESTNAME=$(tboolean-proxy-name) tboolean-py- $* ; } 
 tboolean-proxy-a(){ TESTNAME=$(tboolean-proxy-name) tboolean-ana- $* ; } 
 tboolean-proxy(){ TESTNAME=$(tboolean-proxy-name) TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; RC=$? ; echo $FUNCNAME RC $RC ; return $RC ;  } 
-tboolean-proxy-(){  $FUNCNAME- | python $* ; }
+tboolean-proxy-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-proxy--(){ cat << EOP 
 import logging
 log = logging.getLogger(__name__)
@@ -1025,7 +1025,7 @@ EON
 }
 
 tboolean-boxrot(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
-tboolean-boxrot-(){  $FUNCNAME- | python $* ; }
+tboolean-boxrot-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-boxrot--(){ cat << EOP 
 import logging
 log = logging.getLogger(__name__)
@@ -1063,7 +1063,7 @@ EOP
 
 
 
-tboolean-box-dbg(){ ipython --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --det tboolean-box --src torch ; }
+tboolean-box-dbg(){ ${OPTICKS_IPYTHON:-ipython} --pdb $(which tboolean.py) -i -- --tag 1 --tagoffset 0 --det tboolean-box --src torch ; }
 
 tboolean-box-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-box-p(){  TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
@@ -1075,7 +1075,7 @@ tboolean-box(){
    echo $msg testconfig $testconfig  
    TESTNAME=$FUNCNAME TESTCONFIG=$testconfig tboolean-- $* 
  } 
-tboolean-box-(){  $FUNCNAME- | python $* ; }
+tboolean-box-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-box--(){ cat << EOP 
 import logging
 log = logging.getLogger(__name__)
@@ -1153,7 +1153,7 @@ tboolean-box3-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; }
 tboolean-box3-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-box3-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-box3(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
-tboolean-box3-(){  $FUNCNAME- | python $* ; }
+tboolean-box3-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-box3--(){ cat << EOP 
 import logging
 log = logging.getLogger(__name__)
@@ -1204,7 +1204,7 @@ tboolean-boxx(){
    echo $msg testconfig $testconfig  
    TESTNAME=$FUNCNAME TESTCONFIG=$testconfig tboolean-- $* 
  } 
-tboolean-boxx-(){  $FUNCNAME- | python $* ; }
+tboolean-boxx-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-boxx--(){ cat << EOP 
 import logging
 log = logging.getLogger(__name__)
@@ -1233,7 +1233,7 @@ tboolean-truncate-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; }
 tboolean-truncate-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-truncate-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-truncate(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
-tboolean-truncate-(){  $FUNCNAME- | python $* ; }
+tboolean-truncate-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-truncate--(){ cat << EOP 
 import logging
 log = logging.getLogger(__name__)
@@ -1297,7 +1297,7 @@ tboolean-cone-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; }
 tboolean-cone-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-cone-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-cone(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
-tboolean-cone-(){  $FUNCNAME- | python $* ; }
+tboolean-cone-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-cone--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -1354,7 +1354,7 @@ tboolean-prism-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-prism-ip(){ TESTNAME=tboolean-prism tboolean-ipy- $* ; } 
 tboolean-prism-p(){ TESTNAME=tboolean-prism tboolean-py- $* ; } 
 tboolean-prism(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
-tboolean-prism-(){  $FUNCNAME- | python $* ; }
+tboolean-prism-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-prism--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -1408,7 +1408,7 @@ tboolean-icosahedron-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-icosahedron-ip(){ TESTNAME=tboolean-icosahedron tboolean-ipy- $* ; } 
 tboolean-icosahedron-p(){ TESTNAME=tboolean-icosahedron tboolean-py- $* ; } 
 tboolean-icosahedron(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
-tboolean-icosahedron-(){  $FUNCNAME- | python $* ; }
+tboolean-icosahedron-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-icosahedron--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -1447,7 +1447,7 @@ tboolean-cubeplanes-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-cubeplanes-ip(){ TESTNAME=tboolean-cubeplanes tboolean-ipy- $* ; } 
 tboolean-cubeplanes-p(){ TESTNAME=tboolean-cubeplanes tboolean-py- $* ; } 
 tboolean-cubeplanes(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
-tboolean-cubeplanes-(){  $FUNCNAME- | python $* ; }
+tboolean-cubeplanes-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-cubeplanes--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -1504,7 +1504,7 @@ tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deseriali
 tboolean-trapezoid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-trapezoid-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-trapezoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
+tboolean-trapezoid-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-trapezoid--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -1543,7 +1543,7 @@ EON
 tboolean-uniontree-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-uniontree-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-uniontree(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
-tboolean-uniontree-(){  $FUNCNAME- | python $* ; }
+tboolean-uniontree-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-uniontree--(){ cat << EOP 
 
 import numpy as np
@@ -1683,7 +1683,7 @@ EON
 
 tboolean-parade-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-parade(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-parade-(){ $FUNCNAME- | python $* ; } 
+tboolean-parade-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-parade--(){ cat << EOP 
 
 import logging, numpy as np
@@ -1769,7 +1769,7 @@ EON
 tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-complement-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-complement(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-complement-(){ $FUNCNAME- | python $* ; } 
+tboolean-complement-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-complement--(){ cat << EOP 
 
 import logging
@@ -1838,7 +1838,7 @@ tboolean-zsphere0-a(){ TESTNAME=${FUNCNAME/-a} tboolean-a- $* ; }
 tboolean-zsphere0-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-zsphere0-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-zsphere0(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-zsphere0-(){ $FUNCNAME- | python $* ; } 
+tboolean-zsphere0-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-zsphere0--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -1899,7 +1899,7 @@ tboolean-zsphere1-a(){ TESTNAME=${FUNCNAME/-a} tboolean-a- $* ; }
 tboolean-zsphere1-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-zsphere1-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-zsphere1(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-zsphere1-(){ $FUNCNAME- | python $* ; } 
+tboolean-zsphere1-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-zsphere1--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -1963,7 +1963,7 @@ tboolean-zsphere2-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-zsphere2-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-zsphere2-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-zsphere2(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-zsphere2-(){ $FUNCNAME- | python $* ; } 
+tboolean-zsphere2-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-zsphere2--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -1998,7 +1998,7 @@ EON
 tboolean-union-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-union-zsphere-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-union-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-union-zsphere-(){ $FUNCNAME- | python $* ; } 
+tboolean-union-zsphere-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-union-zsphere--(){ cat << EOP 
 
 import numpy as np
@@ -2049,7 +2049,7 @@ EON
 
 tboolean-difference-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-difference-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-difference-zsphere-(){ $FUNCNAME- | python $* ; } 
+tboolean-difference-zsphere-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-difference-zsphere--(){ cat << EOP 
 
 import numpy as np
@@ -2101,7 +2101,7 @@ EOP
 tboolean-hybrid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-hybrid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-hybrid-combinetest(){ lldb NOpenMeshCombineTest -- $TMP/${FUNCNAME/-combinetest}--/1 ; }
-tboolean-hybrid-(){ $FUNCNAME- | python $* ; } 
+tboolean-hybrid-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-hybrid--(){ cat << EOP
 from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
@@ -2146,7 +2146,7 @@ tboolean-hyctrl-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-hyctrl(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-hyctrl-polytest-lldb(){ lldb NPolygonizerTest -- $TMP/${FUNCNAME/-polytest-lldb}--/1 ; }
 tboolean-hyctrl-polytest(){           NPolygonizerTest    $TMP/${FUNCNAME/-polytest}--/1 ; }
-tboolean-hyctrl-(){ $FUNCNAME- | python $* ; } 
+tboolean-hyctrl-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-hyctrl--(){ cat << EOP
 from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
@@ -2187,7 +2187,7 @@ EOP
 
 tboolean-boxsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-boxsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-boxsphere-(){ $FUNCNAME- | python $* ; } 
+tboolean-boxsphere-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-boxsphere--(){ cat << EOP
 from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
@@ -2211,7 +2211,7 @@ EOP
 tboolean-uncoincide-loadtest(){ ${FUNCNAME/-loadtest}- ; NCSGLoadTest $TMP/${FUNCNAME/-loadtest}--/1 ; }
 tboolean-uncoincide-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-uncoincide(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-uncoincide-(){ $FUNCNAME- | python $* ; } 
+tboolean-uncoincide-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-uncoincide--(){ cat << EOP
 
 import logging
@@ -2342,7 +2342,7 @@ EOP
 
 tboolean-disc-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-disc(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-disc-(){ $FUNCNAME- | python $* ; } 
+tboolean-disc-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-disc--(){ cat << EOP
 
 import logging
@@ -2379,7 +2379,7 @@ EOP
 
 tboolean-esr-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-esr(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-esr-(){ $FUNCNAME- | python $* ; } 
+tboolean-esr-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-esr--(){ cat << EOP
 
 con_ = "$(tboolean-container)"
@@ -2496,13 +2496,13 @@ EOP
 
 
 
-tboolean-rip(){ local fnpy="tboolean-${1:-sc}--" ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython -i $py ; }
+tboolean-rip(){ local fnpy="tboolean-${1:-sc}--" ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ${OPTICKS_IPYTHON:-ipython} -i $py ; }
 # jump into ipython session with the python streamed from a bash function
 
 tboolean-sc-loadtest(){ ${FUNCNAME/-loadtest}- ; NCSGLoadTest $TMP/${FUNCNAME/-loadtest}--/1 ; }
 tboolean-sc-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-sc(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-sc-(){ $FUNCNAME- | python $* ; } 
+tboolean-sc-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-sc--(){ cat << EOP
 
 
@@ -2586,7 +2586,7 @@ EOP
 
 tboolean-positivize-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-positivize(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-positivize-(){ $FUNCNAME- | python $* ; } 
+tboolean-positivize-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-positivize--(){ cat << EOP
 
 import logging
@@ -2672,7 +2672,7 @@ tboolean-bsi-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-bsu(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- union)        tboolean-- $* ; }
 tboolean-bsd(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- difference)   tboolean-- $* ; }
 tboolean-bsi(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- intersection) tboolean-- $* ; }
-tboolean-boxsphere-(){ $FUNCNAME- $* | python  ; } 
+tboolean-boxsphere-(){ $FUNCNAME- $* | ${OPTICKS_PYTHON:-python}  ; } 
 tboolean-boxsphere--(){ cat << EOP 
 import math
 from opticks.ana.main import opticks_main
@@ -2729,7 +2729,7 @@ EON
 
 tboolean-segment-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-segment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-segment-(){  $FUNCNAME- | python $* ; }
+tboolean-segment-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-segment--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -2764,7 +2764,7 @@ EOP
 
 tboolean-cysegment-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-cysegment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-cysegment-(){  $FUNCNAME- | python $* ; }
+tboolean-cysegment-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-cysegment--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -2807,7 +2807,7 @@ EOP
 
 tboolean-cyslab-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-cyslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-cyslab-(){  $FUNCNAME- | python $* ; } 
+tboolean-cyslab-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-cyslab--(){ cat << EOP 
 import numpy as np
 from opticks.ana.main import opticks_main
@@ -2884,7 +2884,7 @@ EOP
 
 tboolean-undefined-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-undefined(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-undefined-(){  $FUNCNAME- | python $* ; } 
+tboolean-undefined-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-undefined--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -2911,7 +2911,7 @@ EOP
 tboolean-empty-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-empty-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-empty(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
-tboolean-empty-(){  $FUNCNAME- | python $* ; } 
+tboolean-empty-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-empty--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -2935,7 +2935,7 @@ tboolean-media-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; }
 tboolean-media-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-media-g(){ TESTNAME=${FUNCNAME/-g} TESTCONFIG=$($TESTNAME- 2>/dev/null) tboolean-g- --export --dbgsurf --dbgbnd ; } 
 tboolean-media(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
-tboolean-media-(){  $FUNCNAME- | python $* ; } 
+tboolean-media-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-media--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -3049,7 +3049,7 @@ tboolean-sphere-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; }
 tboolean-sphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-sphere-g(){ TESTNAME=${FUNCNAME/-g} TESTCONFIG=$($TESTNAME- 2>/dev/null) tboolean-g- --export --dbgsurf ; } 
 tboolean-sphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
-tboolean-sphere-(){  $FUNCNAME- | python $* ; } 
+tboolean-sphere-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-sphere--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -3095,7 +3095,7 @@ tboolean-torus()
     TORCHCONFIG=$(tboolean-torchconfig-disc 0,0,350 150 $photons) \
     tboolean-- $* ; 
 } 
-tboolean-torus-(){  $FUNCNAME- | python $* ; } 
+tboolean-torus-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-torus--(){ cat << EOP 
 
 import logging
@@ -3130,7 +3130,7 @@ EOP
 
 tboolean-hyperboloid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-hyperboloid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-hyperboloid-(){  $FUNCNAME- | python $* ; } 
+tboolean-hyperboloid-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-hyperboloid--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -3157,7 +3157,7 @@ EOP
 
 tboolean-cubic-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-cubic(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-cubic-(){  $FUNCNAME- | python $* ; } 
+tboolean-cubic-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-cubic--(){ cat << EOP 
 
 from opticks.ana.main import opticks_main
@@ -3190,7 +3190,7 @@ EOP
 
 tboolean-12-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-12(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-12-(){  $FUNCNAME- | python $* ; } 
+tboolean-12-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-12--(){ cat << EOP 
 """
 PMT Neck Modelling With Hyperboloid
@@ -3396,7 +3396,7 @@ EOP
 
 tboolean-ellipsoid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-ellipsoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-ellipsoid-(){  $FUNCNAME- | python $* ; } 
+tboolean-ellipsoid-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-ellipsoid--(){ cat << EOP 
 import numpy as np
 from opticks.ana.main import opticks_main
@@ -3440,7 +3440,7 @@ EOP
 
 tboolean-spseg-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-spseg(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-spseg-(){  $FUNCNAME- | python $* ; } 
+tboolean-spseg-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-spseg--(){ cat << EOP 
 import numpy as np
 from opticks.ana.main import opticks_main
@@ -3476,7 +3476,7 @@ EOP
 
 tboolean-sphereslab-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-sphereslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-sphereslab-(){  $FUNCNAME- | python $* ; } 
+tboolean-sphereslab-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-sphereslab--(){ cat << EOP 
 import numpy as np
 from opticks.ana.main import opticks_main
@@ -3530,7 +3530,7 @@ EOP
 
 tboolean-sphereplane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-sphereplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-sphereplane-(){  $FUNCNAME- | python $* ; } 
+tboolean-sphereplane-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-sphereplane--(){ cat << EOP 
 from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
@@ -3564,7 +3564,7 @@ EOP
 
 tboolean-boxplane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-boxplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; }
-tboolean-boxplane-(){  $FUNCNAME- | python $* ; } 
+tboolean-boxplane-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-boxplane--(){ cat << EOP 
 from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
@@ -3588,7 +3588,7 @@ EOP
 
 tboolean-plane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-plane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; }
-tboolean-plane-(){ $FUNCNAME- | python $* ; } 
+tboolean-plane-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-plane--(){ cat << EOP 
 from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
@@ -3625,7 +3625,7 @@ EOP
 
 tboolean-cy-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-cy(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-cy-(){  $FUNCNAME- | python $* ; } 
+tboolean-cy-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-cy--(){ cat << EOP 
 import numpy as np
 from opticks.ana.main import opticks_main
@@ -3664,7 +3664,7 @@ tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,600 90 1000000 ; }  ## FIXE
 
 tboolean-cyd-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-cyd(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) TORCHCONFIG=$($FUNCNAME-torch-) tboolean-- $* ; }
-tboolean-cyd-(){  $FUNCNAME- | python $* ; } 
+tboolean-cyd-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-cyd--(){ cat << EOP 
 import numpy as np
 from opticks.ana.main import opticks_main
@@ -3715,7 +3715,7 @@ EOP
 
 tboolean-cylinder-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-cylinder(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-cylinder-(){  $FUNCNAME- | python $* ; } 
+tboolean-cylinder-(){  $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-cylinder--(){ cat << EOP 
 import numpy as np
 from opticks.ana.main import opticks_main
@@ -3762,7 +3762,7 @@ EOP
 
 tboolean-fromstring-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-fromstring(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-fromstring-(){ $FUNCNAME- | python ; }
+tboolean-fromstring-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} ; }
 tboolean-fromstring--(){ cat << EOP
 
 from opticks.ana.main import opticks_main
@@ -3791,7 +3791,7 @@ EOP
 
 tboolean-unbalanced-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-unbalanced(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-)  tboolean-- $* ; }
-tboolean-unbalanced-(){ $FUNCNAME- | python $*  ; }
+tboolean-unbalanced-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $*  ; }
 tboolean-unbalanced--(){  cat << EOP 
 import math, logging
 log = logging.getLogger(__name__)
@@ -3897,7 +3897,7 @@ tboolean-sst-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvSST0x --
 
 tboolean-gds-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-gds(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-gds-(){ $FUNCNAME- | python $* ; } 
+tboolean-gds-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; } 
 tboolean-gds--(){ cat << EOP
 import logging
 log = logging.getLogger(__name__)
@@ -3968,7 +3968,7 @@ tboolean-gdml-()
 {      
     local csgpath=$1
     shift
-    python $(tboolean-gdml-translator) \
+    ${OPTICKS_PYTHON:-python} $(tboolean-gdml-translator) \
           --csgpath $csgpath \
           --container $(tboolean-container)  \
           --testobject $(tboolean-testobject) \
@@ -3980,7 +3980,7 @@ tboolean-gdml-translator-vi(){ vi $(tboolean-gdml-translator); }
 tboolean-gdml-check(){ tboolean-gdml- 2> /dev/null ; }
 tboolean-gdml-edit(){ vi $(tboolean-gdml-translator)   ; }
 tboolean-gdml-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean-gdml-/1 ; }
-tboolean-gdml-ip(){  tboolean-cd ; ipython tboolean_gdml.py -i ; }
+tboolean-gdml-ip(){  tboolean-cd ; ${OPTICKS_IPYTHON:-ipython} tboolean_gdml.py -i ; }
 
 
 
@@ -3988,7 +3988,7 @@ tboolean-dd-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; }
 tboolean-dd(){   TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-dd- 2>/dev/null)     tboolean-- $* ; }
 tboolean-dd-()
 {       
-    python $(tboolean-dir)/tboolean_dd.py \
+    ${OPTICKS_PYTHON:-python} $(tboolean-dir)/tboolean_dd.py \
           --csgpath $TMP/$FUNCNAME \
           --container $(tboolean-container)  \
           --testobject $(tboolean-testobject)  
@@ -4004,7 +4004,7 @@ tboolean-dd-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean
 
 tboolean-interlocked-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-interlocked(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-interlocked-(){ $FUNCNAME- | python $* ; }
+tboolean-interlocked-(){ $FUNCNAME- | ${OPTICKS_PYTHON:-python} $* ; }
 tboolean-interlocked--(){ cat << EOP 
 import math
 from opticks.ana.main import opticks_main
