@@ -103,6 +103,16 @@ void CPhoton::add(unsigned flag, unsigned  material)
         assert(0); // check boundary_status and WhateverG4OpBoundaryProcess setup : usual cause of badflags, eg using default when should be custom
     }
 
+    if(SBit::HasOneSetBit(flag) == false)
+    {
+        LOG(fatal) 
+           << " unexpected flag value :" << flag 
+           << " expecting [0x1 << 0..15] ie single set bit " 
+           ;
+        assert(0); 
+    }
+
+
     unsigned slot = _state.constrained_slot(); 
     unsigned long long shift = slot*4ull ;      // 4-bits of shift for each slot 
     unsigned long long  msk = 0xFull << shift ; // slide 4-bits into place 
@@ -128,7 +138,6 @@ void CPhoton::add(unsigned flag, unsigned  material)
     bool flag_match = _flag == flag  ; 
     if(!flag_match)
        LOG(fatal) << "flag mismatch "
-                  << " (expecting [0x1 << 0..15]) " 
                   << " TOO BIG TO FIT IN THE NIBBLE " 
                   << " _his " << _his 
                   << " flag(input) " << flag 

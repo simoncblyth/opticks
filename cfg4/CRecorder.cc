@@ -519,7 +519,8 @@ void CRecorder::postTrackWriteSteps()
 
        // as clearStp for each track, REJOIN will always be i=0
 
-        unsigned preFlag = first ? m_ctx._gen : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
+        //unsigned preFlag = first ? m_ctx._gen : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
+        unsigned preFlag = first ? m_ctx._genflag : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
 
         if(i == 0)
         {

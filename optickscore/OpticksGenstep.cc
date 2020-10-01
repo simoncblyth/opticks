@@ -57,10 +57,15 @@ std::string OpticksGenstep::Dump()   // static
 
     std::stringstream ss ; 
     for(int i=i0 ; i < i1 ; i++)
-    {  
-         ss << std::setw(10) << i 
-            << " : "
-            << Gentype(i)
+    { 
+         unsigned gencode = i ; 
+         unsigned flag = OpticksGenstep::GenstepToPhotonFlag(gencode); 
+         ss 
+            << " gencode " << std::setw(3) << gencode 
+            << " OpticksGenstep::Gentype " << std::setw(25) << Gentype(gencode)
+            << " OpticksGenstep::GenstepToPhotonFlag " << std::setw(10) << flag 
+            << " OpticksFlags::Flag " << std::setw(20) << OpticksFlags::Flag(flag)
+            << " OpticksFlags::Abbrev " << std::setw(5) << OpticksFlags::Abbrev(flag)
             << std::endl
             ;
     } 
@@ -126,9 +131,50 @@ bool OpticksGenstep::IsScintillation(int gentype)
 {
    return gentype == OpticksGenstep_G4Scintillation_1042 || gentype == OpticksGenstep_DsG4Scintillation_r3971 ; 
 }
+bool OpticksGenstep::IsTorchLike(int gentype)
+{
+   return gentype == OpticksGenstep_TORCH || gentype == OpticksGenstep_FABRICATED || gentype == OpticksGenstep_EMITSOURCE ; 
+}
 bool OpticksGenstep::IsMachinery(int gentype)
 {
    return gentype == OpticksGenstep_MACHINERY ; 
+}
+
+
+/**
+OpticksGenstep::GenstepToPhotonFlag
+-------------------------------------
+
+Translate gentype from Genstep to Photon.
+
+**/
+
+unsigned OpticksGenstep::GenstepToPhotonFlag(int gentype)
+{
+    unsigned phcode = 0 ;  
+    if(!OpticksGenstep::IsValid(gentype))
+    {
+        LOG(fatal) << "invalid gentype " << gentype ; 
+        phcode = NAN_ABORT ; 
+    }
+    else if(OpticksGenstep::IsCerenkov(gentype))
+    {
+        phcode = CERENKOV ; 
+    }
+    else if(OpticksGenstep::IsScintillation(gentype))
+    {
+        phcode = SCINTILLATION ; 
+    }
+    else if(OpticksGenstep::IsTorchLike(gentype))
+    {
+        phcode = TORCH ; 
+    }
+    else
+    {
+        LOG(fatal) << "unexpected gentype " << gentype ; 
+        phcode = NAN_ABORT ; 
+    }
+    return phcode ;   
 }
 
 

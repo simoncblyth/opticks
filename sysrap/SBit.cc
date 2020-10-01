@@ -92,3 +92,11 @@ unsigned long long SBit::count_nibbles(unsigned long long x)
 }
 
 
+bool SBit::HasOneSetBit(int msk0)
+{
+    int idx0 = SBit::ffs(msk0) - 1 ;  // 0-based index of lsb least-significant-bit set  
+    int msk1 = ( 0x1 << idx0 );  
+    return msk0 == msk1 ; 
+}
+
+

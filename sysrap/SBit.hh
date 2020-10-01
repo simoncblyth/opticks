@@ -38,6 +38,7 @@ class SYSRAP_API SBit {
 
         static unsigned long long count_nibbles(unsigned long long x); 
 
+        static bool HasOneSetBit(int x); 
 
 
 }; 

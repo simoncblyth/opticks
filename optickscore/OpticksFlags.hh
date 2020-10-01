@@ -71,30 +71,6 @@ class OKCORE_API OpticksFlags {
   // stuff applicable to Gensteps moved to OpticksGensteps
   // leaving only stuff that applies to photons
 
-/*
-       static const char* NATURAL_ ;
-       static const char* FABRICATED_ ;
-       static const char* MACHINERY_ ;
-       static const char* G4GUN_ ;   
-       static const char* EMITSOURCE_ ;   
-       static const char* PRIMARYSOURCE_ ;   
-       static const char* GENSTEPSOURCE_ ;   
-       static const char* OTHER_ ;
-*/
-    public:
-/*
-       static const char* cerenkov_ ;
-       static const char* scintillation_ ;
-       static const char* natural_ ;
-       static const char* fabricated_ ;
-       static const char* machinery_ ;
-       static const char* torch_ ;
-       static const char* g4gun_ ;
-       static const char* emitsource_ ;
-       static const char* primarysource_ ;
-       static const char* genstepsource_ ;
-       static const char* other_ ;
-*/
     public:
        static const char* ZERO_ ;
        static const char* MISS_ ;
@@ -111,15 +87,6 @@ class OKCORE_API OpticksFlags {
        static const char* BAD_FLAG_ ;
     public:
        static const char* _ZERO ;
-/*
-       static const char* _NATURAL ;
-       static const char* _FABRICATED ;
-       static const char* _MACHINERY ;
-       static const char* _G4GUN ;   
-       static const char* _EMITSOURCE ;   
-       static const char* _PRIMARYSOURCE ;   
-       static const char* _GENSTEPSOURCE ;   
-*/
        static const char* _CERENKOV ;
        static const char* _SCINTILLATION ;
        static const char* _TORCH ;
@@ -136,9 +103,8 @@ class OKCORE_API OpticksFlags {
        static const char* _NAN_ABORT ;
        static const char* _BAD_FLAG ;
     public:
-       static const char* SourceType(int code);
-       //static const char* SourceTypeLowercase(int code);
-       static unsigned int SourceCode(const char* type);
+       static const char* SourceType(int code);          // OpticksGenstep::Gentype
+       static unsigned int SourceCode(const char* type); // OpticksGenstep::SourceCode
     public:
        static const char* Flag(const unsigned flag);
        static const char* Abbrev(const unsigned flag);
@@ -153,7 +119,6 @@ class OKCORE_API OpticksFlags {
        static unsigned PointVal1( const unsigned long long& seqval , unsigned bitpos );
        static unsigned PointFlag( const unsigned long long& seqhis , unsigned bitpos );
        static const char* PointAbbrev( const unsigned long long& seqhis , unsigned bitpos );
-
     public:
        static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1);
        static std::string FlagMask(const unsigned mskhis, bool abbrev=true);

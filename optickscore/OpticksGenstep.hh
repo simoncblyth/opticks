@@ -59,7 +59,11 @@ class OKCORE_API OpticksGenstep {
        static bool IsValid(int gentype);
        static bool IsCerenkov(int gentype);
        static bool IsScintillation(int gentype);
+       static bool IsTorchLike(int gentype);
        static bool IsMachinery(int gentype);
+    public:
+       static unsigned GenstepToPhotonFlag(int gentype);
+    public:
        static std::string Dump();  
     public:
        static const char* INVALID_ ;

@@ -72,10 +72,8 @@ struct CFG4_API CG4Ctx
     // CG4::initEvent
     int  _photons_per_g4event ;
     unsigned  _steps_per_photon  ;
-    unsigned  _gen  ;
     unsigned  _record_max ; 
     unsigned  _bounce_max ; 
-
 
     // CG4Ctx::setEvent
     bool  _ok_event_init ; 
@@ -83,6 +81,8 @@ struct CFG4_API CG4Ctx
     int  _event_id ;
     int  _event_total ; 
     int  _event_track_count ; 
+    unsigned  _gen  ;
+    unsigned  _genflag  ;
 
     // CG4Ctx::setTrack
     G4Track* _track ; 

@@ -23,6 +23,9 @@ Following old TORCH enum fix down to:  1 very slow and 4 fails. Using geocache-d
 
 
 
+CTestDetectorTest
+~~~~~~~~~~~~~~~~~~~
+
 CTestDetectorTest, G4 environment detection fails ?::
 
     2020-10-01 01:35:26.604 INFO  [326824] [OpticksGen::targetGenstep@336] setting frame 0 Id
@@ -53,7 +56,11 @@ CTestDetectorTest, G4 environment detection fails ?::
 
 
 
-CG4Test + OKG4Test, looks like old TORCH enum again::
+
+FIXED : CG4Test + OKG4Test, old TORCH enum again
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
 
     2020-10-01 01:38:18.582 WARN  [331071] [main@55]   post CG4::interactive
     2020-10-01 01:38:18.583 ERROR [331071] [main@63]  setting gensteps 0xa02afc0
@@ -111,9 +118,13 @@ CG4Test + OKG4Test, looks like old TORCH enum again::
     (gdb) 
 
 
-After fixing that one, get another. The history nibble recording assumes flags are (0x1 << n) where n in 0..15. 
+
+CG4Test + OKG4Test, CPhoton::add expecting flag (0x1 << n)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+After fixing the above, get another. The history nibble recording assumes flags are (0x1 << n) where n in 0..15. 
 That is no longer the case for the first genstep flag. So need to translate from OpticksGenstep enum code to OpticksPhoton 
-code::
+code. Added OpticksGenstep::GenstepToPhotonFlag for this::
 
     (lldb) bt
     * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
@@ -180,6 +191,30 @@ code::
     135                   << " _flag(recon) " << _flag
     136                   ;
     137      assert( flag_match );
+
+
+
+::
+
+    349 void CG4::initEvent(OpticksEvent* evt)
+    350 {
+    351     LOG(LEVEL) << "[" ;
+    352     m_generator->configureEvent(evt);
+    353 
+    354     m_ctx.initEvent(evt);
+    355 
+    356     m_recorder->initEvent(evt);
+    357 
+    358     NPY<float>* nopstep = evt->getNopstepData();
+    359     if(!nopstep) LOG(fatal) << " nopstep NULL " << " evt " << evt->getShapeString() ;
+    360     assert(nopstep);
+    361     m_steprec->initEvent(nopstep);
+    362     LOG(LEVEL) << "]" ;
+    363 }
+
+
+
+
 
 
 

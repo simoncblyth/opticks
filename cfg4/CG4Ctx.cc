@@ -120,7 +120,6 @@ void CG4Ctx::init()
 
     _photons_per_g4event = 0 ; 
     _steps_per_photon = 0 ; 
-    _gen = 0 ; 
     _record_max = 0 ;
     _bounce_max = 0 ; 
 
@@ -129,6 +128,8 @@ void CG4Ctx::init()
     _event_id = -1 ; 
     _event_total = 0 ; 
     _event_track_count = 0 ; 
+    _gen = 0 ; 
+    _genflag = 0 ; 
 
     _track = NULL ; 
     _process_manager = NULL ; 
@@ -219,6 +220,7 @@ std::string CG4Ctx::desc_event() const
        << " record_max " << _record_max
        << " bounce_max " << _bounce_max
        << " _gen " << _gen
+       << " _genflag " << _genflag
        ;
     return ss.str();
 }
@@ -247,7 +249,7 @@ void CG4Ctx::setEvent(const G4Event* event)
     assert(eui && "expecting event UserInfo set by eg CGenstepSource "); 
 
     _gen = eui->gencode ;
-
+    _genflag = OpticksGenstep::GenstepToPhotonFlag(_gen); 
 
     bool valid = OpticksGenstep::IsValid(_gen) ; 
 
@@ -255,6 +257,7 @@ void CG4Ctx::setEvent(const G4Event* event)
         << " gen " << _gen
         << " OpticksGenstep::GenType " << OpticksGenstep::Gentype(_gen) 
         << " OpticksFlags::SourceType " << OpticksFlags::SourceType(_gen)
+        << " OpticksFlags::Flag " << OpticksFlags::Flag(_genflag)
         << " valid " << valid 
         ;
 

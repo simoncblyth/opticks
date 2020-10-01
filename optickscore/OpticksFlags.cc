@@ -206,15 +206,6 @@ const char* OpticksFlags::Flag(const unsigned int flag)
         case BOUNDARY_TRANSMIT:s=BOUNDARY_TRANSMIT_ ;break; 
         case TORCH:            s=TORCH_ ;break; 
         case NAN_ABORT:        s=NAN_ABORT_ ;break; 
-/*
-        case __G4GUN:          s=G4GUN_ ;break; 
-        case __NATURAL:        s=NATURAL_ ;break; 
-        case __FABRICATED:     s=FABRICATED_ ;break; 
-        case __MACHINERY:      s=MACHINERY_;break; 
-        case __EMITSOURCE:     s=EMITSOURCE_;break; 
-        case __PRIMARYSOURCE:  s=PRIMARYSOURCE_;break; 
-        case __GENSTEPSOURCE:  s=GENSTEPSOURCE_;break; 
-*/
         default:               s=BAD_FLAG_  ;
                                LOG(debug) << "OpticksFlags::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
@@ -243,15 +234,6 @@ const char* OpticksFlags::Abbrev(const unsigned int flag)
         case BOUNDARY_TRANSMIT:s=_BOUNDARY_TRANSMIT ;break; 
         case TORCH:            s=_TORCH ;break; 
         case NAN_ABORT:        s=_NAN_ABORT ;break; 
-/*
-        case __G4GUN:          s=_G4GUN ;break; 
-        case __NATURAL:        s=_NATURAL ;break; 
-        case __FABRICATED:     s=_FABRICATED ;break; 
-        case __MACHINERY:      s=_MACHINERY;break; 
-        case __EMITSOURCE:     s=_EMITSOURCE;break; 
-        case __PRIMARYSOURCE:  s=_PRIMARYSOURCE;break; 
-        case __GENSTEPSOURCE:  s=_GENSTEPSOURCE;break; 
-*/
         default:               s=_BAD_FLAG  ;
                                LOG(verbose) << "OpticksFlags::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
@@ -566,5 +548,8 @@ Index* OpticksFlags::parseFlags(const char* path)
 
     return index ; 
 }
+
+
+
 
 

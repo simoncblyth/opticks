@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-// TEST=SBitTest om-t
+// om-;TEST=SBitTest om-t
 
 #include "OPTICKS_LOG.hh"
 #include "SBit.hh"
@@ -27,6 +27,7 @@
 
 void test_ffs()
 {
+    LOG(info);
     for(int i=0 ; i < 64 ; i++ )
     {
         int msk = 0x1 << i ; 
@@ -42,6 +43,7 @@ void test_ffs()
 
 void test_ffsll()
 {
+    LOG(info);
     typedef long long LL ; 
 
     for(LL i=0 ; i < 64 ; i++ )
@@ -60,7 +62,7 @@ void test_ffsll()
 
 void test_count_nibbles()
 {
-
+    LOG(info);
     typedef unsigned long long ULL ; 
 
     ULL msk = 0ull ;  
@@ -77,6 +79,38 @@ void test_count_nibbles()
 }
 
 
+void test_HasOneSetBit()
+{
+    LOG(info);
+
+    for(int i=0 ; i < 32 ; i++ )
+    {
+        unsigned msk0 = 0x1 << i ; 
+        unsigned msk1 = 0x1 << (32 - i - 1) ; 
+        unsigned msk01 = msk0 | msk1 ; 
+
+        bool onebit0 = SBit::HasOneSetBit(msk0); 
+        bool onebit1 = SBit::HasOneSetBit(msk1); 
+        bool onebit01 = SBit::HasOneSetBit(msk01); 
+
+        std::cout 
+             << " i " << std::setw(3) << i         
+             << " msk0 " << std::setw(10) << std::hex << msk0         
+             << " msk1 " << std::setw(10) << std::hex << msk1         
+             << " msk01 " << std::setw(10) << std::hex << msk01         
+             << " onebit0 " << std::setw(2) << std::dec << onebit0
+             << " onebit1 " << std::setw(2) << std::dec << onebit1
+             << " onebit01 " << std::setw(2) << std::dec << onebit01
+             << std::endl 
+             ;
+
+        assert( onebit0 == true );
+        assert( onebit1 == true );
+        assert( onebit01 == false );
+    }
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -84,7 +118,11 @@ int main(int argc, char** argv)
 
     test_ffs(); 
     test_ffsll(); 
-    //test_count_nibbles(); 
+    test_count_nibbles(); 
+    test_HasOneSetBit(); 
 
     return 0 ; 
 }
+
+// om-;TEST=SBitTest om-t
+
