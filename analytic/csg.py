@@ -133,7 +133,7 @@ class CSG(CSG_):
             pass
             # postorder visit 
             if not leaf:
-                print "%2d %2d %2d : %s " % (node.subdepth,node.left.subdepth,node.right.subdepth, node) 
+                print("%2d %2d %2d : %s " % (node.subdepth,node.left.subdepth,node.right.subdepth, node)) 
             pass
         pass
         balance_r(self, 0)
@@ -435,7 +435,7 @@ class CSG(CSG_):
     @classmethod
     def SaveMeta(cls, base, topmeta={}):
         path = cls.Metapath(base)
-        json.dump(topmeta,file(path,"w"))
+        json.dump(topmeta,open(path,"w"))
 
     @classmethod
     def Serialize(cls, trees, args, outerfirst=1):
@@ -465,7 +465,7 @@ class CSG(CSG_):
             tree.save(treedir)
         pass
 
-        boundaries = map(lambda tree:tree.boundary, trees)
+        boundaries = list(map(lambda tree:tree.boundary, trees))
         cls.CheckNonBlank(boundaries)
         open(cls.txtpath(base),"w").write("\n".join(boundaries))
 
@@ -487,14 +487,14 @@ class CSG(CSG_):
 
     @classmethod
     def CheckNonBlank(cls, boundaries):
-        boundaries2 = filter(None, boundaries)
+        boundaries2 = list(filter(None, boundaries))
         assert len(boundaries) == len(boundaries2), "there are blank boundaries\n%s" % "\n".join(boundaries) 
 
     @classmethod
     def Deserialize(cls, base):
         base = os.path.expandvars(base) 
         assert os.path.exists(base)
-        boundaries = file(cls.txtpath(base)).read().splitlines()
+        boundaries = open(cls.txtpath(base)).read().splitlines()
         cls.CheckNonBlank(boundaries)
         trees = []
         for idx, boundary in enumerate(boundaries): 
@@ -758,7 +758,7 @@ class CSG(CSG_):
                 os.makedirs(dir_)
             pass 
             log.debug("write nodemeta to %s %r " % (nodemetapath, nodemeta)  )
-            json.dump(nodemeta,file(nodemetapath,"w"))
+            json.dump(nodemeta,open(nodemetapath,"w"))
 
             if node.left is not None and node.right is not None:
                 save_nodemeta_r(node.left, 2*idx+1)
@@ -792,7 +792,7 @@ class CSG(CSG_):
         metapath = self.metapath(treedir)
 
         log.debug("write treemeta to %s %r  " % (metapath,self.meta)  )
-        json.dump(self.meta,file(metapath,"w"))
+        json.dump(self.meta,open(metapath,"w"))
 
         self.save_nodemeta(treedir)
         self.save_src(treedir)
@@ -1378,10 +1378,10 @@ class CSG(CSG_):
         sys.stderr.write("\n"+self.as_NNodeTest(name))
 
     def write_tbool(self, name, path):
-        file(path, "w").write("\n"+self.as_tbool(name))
+        open(path, "w").write("\n"+self.as_tbool(name))
 
     def write_NNodeTest(self, name, path):
-        file(path, "w").write("\n"+self.as_NNodeTest(name))
+        open(path, "w").write("\n"+self.as_NNodeTest(name))
 
 
     def _get_tag(self):
@@ -1520,12 +1520,12 @@ def test_positivize():
     abcde = CSG("intersection", left=ab, right=cde )
 
     abcde.analyse()
-    print "original\n\n", abcde.txt
-    print "operators: " + " ".join(map(CSG.desc, abcde.operators_()))
+    print("original\n\n%s" % abcde.txt)
+    print("operators: " + " ".join(map(CSG.desc, abcde.operators_())))
 
     abcde.positivize() 
-    print "positivize\n\n", abcde.txt
-    print "operators: " + " ".join(map(CSG.desc, abcde.operators_()))
+    print("positivize\n\n%s" % abcde.txt)
+    print("operators: " + " ".join(map(CSG.desc, abcde.operators_())))
 
 
 
@@ -1577,12 +1577,12 @@ def test_positivize_2():
 
 
     root.analyse()
-    print "original\n\n", root.txt
-    print "operators: " + " ".join(map(CSG.desc, root.operators_()))
+    print("original\n\n%s" % root.txt)
+    print("operators: " + " ".join(map(CSG.desc, root.operators_())))
 
     root.positivize() 
-    print "positivize\n\n", root.txt
-    print "operators: " + " ".join(map(CSG.desc, root.operators_()))
+    print("positivize\n\n%s" % root.txt)
+    print("operators: " + " ".join(map(CSG.desc, root.operators_())))
 
 
 
@@ -1593,14 +1593,14 @@ def test_subdepth():
     log.info("test_subdepth")
  
     sprim = "sphere box cone zsphere cylinder trapezoid"
-    primitives = map(CSG, sprim.split())
+    primitives = list(map(CSG, sprim.split()))
 
     sp,bo,co,zs,cy,tr = primitives
 
     root = sp - bo - co - zs - cy - tr
 
     root.analyse()    
-    print root.txt
+    print(root.txt)
 
 
 
@@ -1608,7 +1608,7 @@ def test_balance():
     log.info("test_balance")
  
     sprim = "sphere box cone zsphere cylinder trapezoid"
-    primitives = map(CSG, sprim.split())
+    primitives = list(map(CSG, sprim.split()))
 
     sp,bo,co,zs,cy,tr = primitives
 
@@ -1617,7 +1617,7 @@ def test_balance():
     root = sp + bo + co + zs + cy + tr
 
     root.analyse()    
-    print root.txt
+    print(root.txt)
 
     root.balance()
 
@@ -1635,9 +1635,9 @@ def test_content_generate():
     obj = ab 
 
     for lang in "py cpp".split():
-        print lang
-        #print obj.content(lang)
-        print obj.as_code(lang)
+        print(lang)
+        #print(obj.content(lang))
+        print(obj.as_code(lang))
 
 
 
@@ -1674,7 +1674,7 @@ if __name__ == '__main__':
     #ESR = 57 
     #tree = test_load(ESR)
     #tree.analyse()
-    #print tree.txt
+    #print(tree.txt)
 
    
 

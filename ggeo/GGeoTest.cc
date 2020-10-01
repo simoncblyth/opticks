@@ -169,8 +169,9 @@ void GGeoTest::init()
         return ;        
     }
 
-    GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
+    assert( m_lod == 0); 
 
+    GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
 
 
     bool output_analytic = m_ok->isXAnalytic();  
@@ -388,6 +389,10 @@ GVolume* GGeoTest::importCSG()
             prior->addChild(volume);
         }
         prior = volume ; 
+
+
+        int sensorIndex = -1 ; 
+        volume->setSensorIndex(sensorIndex); // see notes/issues/GGeoTest_GMergedMesh_mergeVolumeFaces_assert_sensor_indices.rst 
 
 
         GPt* pt = volume->getPt(); 

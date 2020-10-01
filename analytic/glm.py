@@ -352,10 +352,10 @@ def test_make_transform():
     assert(trs2.dtype == dtype )
 
 
-    print "t\n", t
-    print "r\n", r
-    print "s\n", s
-    print "trs\n", trs
+    print("t\n%s" % t)
+    print("r\n%s" % r)
+    print("s\n%s" % s)
+    print("trs\n%s" % trs)
    
 
 
@@ -363,10 +363,10 @@ def test_make_transform():
 if __name__ == '__main__':
 
     rot = rotate([0,0,1,45])
-    print "rot\n", rot 
+    print("rot\n%s" % rot) 
 
     sca = make_scale([1,2,3])
-    print "sca\n", sca
+    print("sca\n%s" % sca)
 
     test_make_transform()
 
@@ -377,18 +377,18 @@ if __name__ == '__main__':
     rot3xyz = rotate_three_axis([45,45,45])
 
 
-    print "rot3x\n", rot3x
-    print "rot3y\n", rot3y
-    print "rot3z\n", rot3z
+    print("rot3x\n%s" % rot3x)
+    print("rot3y\n%s" % rot3y)
+    print("rot3z\n%s" % rot3z)
 
-    print "rot3xyz\n", rot3xyz
+    print("rot3xyz\n%s" % rot3xyz)
 
 
-    a = np.array([1,2,3,4], dtype=np.float32)
+    a = np.array([1,2,3,4],dtype=np.float32)
     m = np.eye(4, dtype=np.float32)
 
-    print to_pyline(a, "a")
-    print to_pyline(m, "m")
+    print(to_pyline(a,"a"))
+    print(to_pyline(m,"m"))
 
 
 

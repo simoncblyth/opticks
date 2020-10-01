@@ -2,6 +2,37 @@ opticks-t-2020-sep-18-12-of-430-fails-linux
 ==================================================
 
 
+Now 1 FAIL : IntegrationTests.tboolean.box 
+----------------------------------------------
+
+* :doc:`GGeoTest_GMergedMesh_mergeVolumeFaces_assert_sensor_indices`
+
+
+
+Now 2 FAIL and no slow
+-------------------------
+
+* slow OpSnapTest transient, flakiness suspicion remains (maybe globalinstance related)
+
+::
+
+
+    SLOW: tests taking longer that 15 seconds
+
+
+    FAILS:  2   / 434   :  Thu Oct  1 22:32:49 2020   
+      3  /34  Test #3  : CFG4Test.CTestDetectorTest                    ***Exception: SegFault         5.87   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      1.14   
+
+
+
+* :doc:`G4NuclideTable_ENSDFSTATE_dat_is_not_found.rst`
+
+
+
+Now 4
+--------
+
 Following old TORCH enum fix down to:  1 very slow and 4 fails. Using geocache-dx DYB geometry::
 
     SLOW: tests taking longer that 15 seconds

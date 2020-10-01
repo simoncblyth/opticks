@@ -58,7 +58,7 @@ class CSG_(object):
 
     @classmethod
     def raw_enum(cls):
-        return filter(lambda kv:type(kv[1]) is int,cls.__dict__.items())
+        return list(filter(lambda kv:type(kv[1]) is int,cls.__dict__.items()))
 
     @classmethod
     def enum(cls):
@@ -66,17 +66,17 @@ class CSG_(object):
 
     @classmethod
     def desc(cls, typ):
-        kvs = filter(lambda kv:kv[1] == typ, cls.enum())
+        kvs = list(filter(lambda kv:kv[1] == typ, cls.enum()))
         return kvs[0][0] if len(kvs) == 1 else "UNKNOWN"
 
     @classmethod
     def descmask(cls, typ):
-        kvs = filter(lambda kv:kv[1] & typ, cls.enum()) 
+        kvs = list(filter(lambda kv:kv[1] & typ, cls.enum())) 
         return ",".join(map(lambda kv:kv[0], kvs))
 
     @classmethod
     def fromdesc(cls, label):
-        kvs = filter(lambda kv:kv[0] == label, cls.enum())
+        kvs = list(filter(lambda kv:kv[0] == label, cls.enum()))
         return kvs[0][1] if len(kvs) == 1 else -1
 
 

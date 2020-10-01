@@ -143,9 +143,11 @@ class OKGEO_API OpticksHub : public SCtrl {
    private:
        // TODO: eliminate Tri/Ana mess : as now always have both 
        void configureGeometry(); 
+#ifdef OLD_GEOM
        void configureGeometryTri(); 
        void configureGeometryTriAna(); 
        void configureGeometryTest(); 
+#endif
    private:
        //void configureGeometryPrep(); moved to Opticks
        void configureServer();
@@ -199,9 +201,12 @@ class OKGEO_API OpticksHub : public SCtrl {
        glm::mat4            getTransform(int index);
 
    private:
+
+#ifdef OLD_GEOM
        GGeoBase*            getGGeoBaseAna() const ;  // downcast GScene, didnt that go the way of the Dodo ?  TODO:eliminate  
        GGeoBase*            getGGeoBaseTri() const ;
-       GGeoBase*            getGGeoBasePrimary() const ;  // either Ana or Tri 
+#endif
+       GGeoBase*            getGGeoBasePrimary() const ;  //
        GGeoBase*            getGGeoBaseTest() const ;    // downcast of GGeoTest
    private:
    private:

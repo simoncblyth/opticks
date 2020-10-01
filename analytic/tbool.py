@@ -170,10 +170,10 @@ class TBoolBashFunction(dict):
          file(self.path,"w").write(str(self))
 
      def test(self):
-         print self.stamp
-         print self.head
-         print self.body
-         print self.tail
+         print(self.stamp)
+         print(self.head)
+         print(self.body)
+         print(self.tail)
 
      def __str__(self):
          return "\n".join([self.stamp,self.runline, self.head, self.stamp,self.runline,  self.body, self.tail])  
@@ -186,7 +186,7 @@ if __name__ == '__main__':
      tbf = TBoolBashFunction(name="0", root="a", body=test_body)
      tbf.test()
 
-     print tbf 
+     print(tbf) 
 
      tbf.save()
 

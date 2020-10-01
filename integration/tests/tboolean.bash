@@ -1005,9 +1005,24 @@ EON
 
 
 
+tboolean-boxrot-notes(){ cat << EON
 
+Most of the tboolean- tests follow the same pattern as tboolean-boxrot. 
 
+tboolean-boxrot--
+   emits python text to stdout 
 
+tboolean-boxrot-
+   pipes the text from tboolean-boxrot-- to python which serializes the geometry 
+   into a directory and emits to stdout the config including the directory path
+
+tboolean-boxrot 
+   TESTCONFIG input envvar captures the output from tboolean-boxrot- and passes this to tboolean-- 
+   with launches Opticks executables with --test option. Opticks reads the TESTCONFIG and deserializes
+   the python defined geometry   
+
+EON
+}
 
 tboolean-boxrot(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-boxrot-(){  $FUNCNAME- | python $* ; }

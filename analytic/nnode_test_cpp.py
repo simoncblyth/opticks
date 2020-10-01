@@ -123,10 +123,10 @@ class NNodeTestCPP(dict):
          file(self.path,"w").write(str(self))
 
      def test(self):
-         print self.stamp
-         print self.head
-         print self.body
-         print self.tail
+         print(self.stamp)
+         print(self.head)
+         print(self.body)
+         print(self.tail)
 
      def __str__(self):
          return "\n".join([self.stamp, self.runline, self.head, indent_("\n".join([self.stamp,self.runline])), indent_(self.body), self.tail])  
@@ -139,7 +139,7 @@ if __name__ == '__main__':
      ntc = NNodeTestCPP(name="0", root="a", body=test_body)
      #ntc.test()
 
-     print ntc 
+     print(ntc) 
 
      #ntc.save()
 

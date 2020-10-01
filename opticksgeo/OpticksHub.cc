@@ -560,7 +560,7 @@ void OpticksHub::loadGeometry()
 
         assert(m_geotest == NULL);
 
-        GGeoBase* basis = getGGeoBasePrimary(); // ana OR tri depending on --gltf
+        GGeoBase* basis = getGGeoBasePrimary();  // downcast m_ggeo
 
         m_geotest = createTestGeometry(basis);
 
@@ -707,6 +707,7 @@ TODO:
 
 void OpticksHub::configureGeometry()
 {
+#ifdef OLD_GEOM
     if(m_ok->isTest())  // --test : configure mesh skips  
     {
         configureGeometryTest();
@@ -719,9 +720,11 @@ void OpticksHub::configureGeometry()
     {
         configureGeometryTriAna();
     }
+#endif
 }
 
 
+#ifdef OLD_GEOM
 void OpticksHub::configureGeometryTri()
 {
     int nmm = m_ggeo->getNumMergedMesh();
@@ -807,7 +810,7 @@ void OpticksHub::configureGeometryTest()
     // actually unlikely to need restrictmesh with --test 
 
 }
-
+#endif
 
 
 
@@ -909,7 +912,7 @@ OpticksCfg<Opticks>* OpticksHub::getCfg()
 
 
 
-
+#ifdef OLD_GEOM
 GGeoBase* OpticksHub::getGGeoBaseAna() const 
 {
     return m_gscene ? dynamic_cast<GGeoBase*>(m_gscene) : NULL ; 
@@ -919,24 +922,33 @@ GGeoBase* OpticksHub::getGGeoBaseTri() const
 {
     return m_ggeo ? dynamic_cast<GGeoBase*>(m_ggeo) : NULL ; 
 }
+#endif
+
+
 
 GGeoBase* OpticksHub::getGGeoBaseTest() const 
 {
     return m_geotest ? dynamic_cast<GGeoBase*>(m_geotest) : NULL ; 
 }
 
+
+
+/**
+OpticksHub::getGGeoBasePrimary
+-------------------------------
+
+Formerly this returned downcast m_gscene (Ana) or m_ggeo (Tri) depending on --gltf option.
+Following ana/tri unification within GGeo some years ago, this now always returns downcast  m_ggeo 
+
+**/
+
 GGeoBase* OpticksHub::getGGeoBasePrimary() const 
 {
+#ifdef OLD_GEOM
     GGeoBase* ggb = m_gltf ? dynamic_cast<GGeoBase*>(m_gscene) : dynamic_cast<GGeoBase*>(m_ggeo) ; 
-
-    /*
-    LOG(info) << "OpticksHub::getGGeoBasePrimary"
-              << " analytic switch  "
-              << " m_gltf " << m_gltf
-              << " ggb " << ( ggb ? ggb->getIdentifier() : "NULL" )
-               ;
-    */ 
-
+#else
+    GGeoBase* ggb = dynamic_cast<GGeoBase*>(m_ggeo) ; 
+#endif
     return ggb ; 
 }
 GGeoBase* OpticksHub::getGGeoBase() const   //  3-way : m_geotest/m_gscene/m_ggeo

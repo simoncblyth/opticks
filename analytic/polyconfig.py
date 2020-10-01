@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
     for lvn in ALL:
         pc = PolyConfig(lvn)
-        print pc
+        print(pc)
 
 
 
