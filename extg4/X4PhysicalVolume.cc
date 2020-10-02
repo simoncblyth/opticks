@@ -92,6 +92,13 @@ template struct nxform<X4Nd> ;
 #include "Opticks.hh"
 #include "OpticksQuery.hh"
 
+/**
+X4PhysicalVolume
+==================
+
+
+**/
+
 
 const plog::Severity X4PhysicalVolume::LEVEL = PLOG::EnvLevel("X4PhysicalVolume", "DEBUG") ;
 const bool           X4PhysicalVolume::DBG = true ;

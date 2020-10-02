@@ -39,6 +39,10 @@ After setting PATH use::
 
    IDPATH="$(op --idpath 2>&1 > /dev/null)"  # capture only stderr
 
+Formerly used::
+
+   opticks-key2idpath(){ local dir=$(OpticksIDPATH --envkey --fatal 2>&1) ; echo $dir ; } 
+
 
 **/
 

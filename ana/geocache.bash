@@ -408,7 +408,12 @@ geocache-g4ok(){
 }
  
 
+geocache-j1808-todo(){ cat << EOT
 
+   opticksdata- needs to be replaced with opticksaux-
+
+EOT
+}
 
 geocache-j1808(){     opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j)  --X4 debug --NPY debug $*  ; }
 geocache-j1808-v2(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv2) --csgskiplv 22  ; }
@@ -581,29 +586,34 @@ EON
 
 
 
-geocache-dx(){  geocache-dx-v0 $* ; } 
 
 
-geocache-dx-v0-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-dx-)_v0.gdml --x4polyskip 211,232  --geocenter --noviz $* ; }     
-geocache-dx-v0-comment(){ echo export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation.rst ; }     
-geocache-dx-v0(){   geocache-dx-v0- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
-geocache-dx-v0-key(){ 
+geocache-dx0-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-dx0) --x4polyskip 211,232  --geocenter --noviz $* ; }     
+geocache-dx0-comment(){ echo export-dyb-gdml-from-g4-10-4-2-to-support-geocache-creation.rst ; }     
+geocache-dx0(){   geocache-dx0- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
+geocache-dx0-key(){ 
    case $(uname) in 
       Linux)  echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c ;;
       Darwin) echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.50a18baaf29b18fae8c1642927003ee3 ;;
    esac
 }
 
-geocache-dxtmp-(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-dxtmp) $* ; }
-geocache-dxtmp-comment(){  echo gdml-insitu-created-by-OKG4Test-export ; }
-geocache-dxtmp(){   $FUNCNAME- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
-
-geocache-dxtmp-key(){ echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x5d42890_PV.5aa828335373870398bf4f738781da6c ; }
-geocache-dxtmp-keydir(){ OPTICKS_KEY=$(geocache-dxtmp-key) geocache-keydir ; }
+geocache-dx0-keydir(){ OPTICKS_KEY=$(geocache-dx0-key) geocache-keydir ; }
 
 
+geocache-create-notes(){ cat << EON
 
-geocache-create(){ geocache-j1808-v5 $* ; }  
+Default geocache geometry is now Dayabay Near site detector (dx0)
+which is a lot smaller geometry than the JUNO detector (j1808-v5)
+
+EON
+}
+
+#geocache-create(){ geocache-j1808-v5 $* ; }  
+geocache-create(){ geocache-dx0 $* ; }     
+
+
+
 geocache-key-export(){   geocache-j1808-v5-export ; }
 
 

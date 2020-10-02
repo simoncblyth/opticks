@@ -5,7 +5,7 @@ Updating this documentation
 
 Edit the RST::
 
-    vi ../index.rst opticks.rst material_and_surface_properties.rst
+    vi ../index.rst install.rst misc/material_and_surface_properties.rst
 
 Build the html from RST::
 

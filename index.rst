@@ -15,19 +15,26 @@ Contents:
    :maxdepth: 2
 
    docs/opticks 
+   docs/install
+   docs/testing
+   docs/externals
+   docs/visualization
    docs/updating_this_documentation
-   docs/overview
-   docs/how_opticks_full_works
-   docs/material_and_surface_properties
-   docs/opticks_event_data
-   docs/geocache
+
+   docs/misc/opticks_event_data
+   docs/misc/generation_and_propagation
+   docs/misc/packages
+   docs/misc/how_opticks_full_works
+   docs/misc/material_and_surface_properties
+   docs/misc/shared
+   docs/misc/geometry_translation
+
+   docs/outdated/integration
 
    ana/tools
    bin/index
-   docs/visualization
    ana/index
 
-   docs/integration
 
 
    optixrap/OXRAP

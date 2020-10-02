@@ -128,6 +128,7 @@ opticks-rngcache-prefix(){    echo ${OPTICKS_RNGCACHE_PREFIX:-$(opticks-sharedca
 opticks-usercache-prefix(){   echo ${OPTICKS_USERCACHE_PREFIX:-$(opticks-usercache-prefix-default)} ; } 
 
 
+
 opticks-geocachedir(){ echo $(opticks-geocache-prefix)/geocache ; } 
 opticks-rngcachedir(){ echo $(opticks-rngcache-prefix)/rngcache ; }
 opticks-rngdir(){      echo $(opticks-rngcachedir)/RNG ; }
@@ -192,135 +193,13 @@ opticks-cmakecache(){ echo $(opticks-bdir)/CMakeCache.txt ; }
 
 opticks-pretty(){  cat ${1:-some.json} | python -m json.tool ; }
 
-opticks-key2idpath(){ local dir=$(OpticksIDPATH --envkey --fatal 2>&1) ; echo $dir ; } 
-opticks-kcd(){  local dir=$(opticks-key2idpath) && cd $dir && pwd && echo OPTICKS_KEY=$OPTICKS_KEY ; }
 
-opticks-key2idpath-notes(){ cat << EON
-
-[blyth@localhost opticks]$ OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.699463ea0065185a7ffaf10d4935fc61 opticks-key2idpath
-/home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/699463ea0065185a7ffaf10d4935fc61/1
-[blyth@localhost opticks]$ l /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/699463ea0065185a7ffaf10d4935fc61/1/
-total 8
--rw-rw-r--.  1 blyth blyth  177 May 10 16:13 cachemeta.json
-drwxrwxr-x. 42 blyth blyth 4096 May 10 16:13 GMeshLib
-drwxrwxr-x.  8 blyth blyth   60 May 10 16:13 GParts
-drwxrwxr-x.  8 blyth blyth   60 May 10 16:13 GMergedMesh
-drwxrwxr-x.  2 blyth blyth   30 May 10 15:34 GBndLib
-
-EON
-}
+opticks-key(){     echo ${OPTICKS_KEY} ; }  # below two functions depend on the OPTICKS_KEY input envvar 
+opticks-keydir(){  geocache- ; geocache-keydir ; }  # referred to from docs/opticks_testing.rst
+opticks-kcd(){     geocache- ; geocache-kcd ; }
 
 
 
-
-opticks-idfold(){ echo $(dirname $IDPATH) ; }
-opticks-srcpath(){ echo $(opticks-idpath2srcpath $IDPATH) ; }
-opticks-srcfold(){ echo $(dirname $(opticks-srcpath)) ; }
-#opticks-srcextras(){ echo $(opticks-idfold)/extras ; }   # layout 0
-opticks-srcextras(){ echo $(opticks-srcfold)/extras ; }  # layout 1
-
-opticks-join(){ local ifs=$IFS ; IFS="$1"; shift; echo "$*" ; IFS=$ifs ;  }
-
-opticks-idpath-notes(){ cat << EON
-
-$FUNCNAME
-===============================
-
-NB THIS IS THE DEPRECATED OLD WAY OF DOING THINGS
-
-The srcpath if obtained from the IDPATH envvar using 
-opticks-idpath2srcpath  which is the bash equivalant 
-of the C++ brap-/BPath and python base/bpath.py 
-
-    IDPATH          : $IDPATH
-
-    opticks-srcpath : $(opticks-srcpath)
-    opticks-srcfold : $(opticks-srcfold)
-
-
-    opticks-srcextras     : $(opticks-srcextras)
-    opticks-tbool-path 0  : $(opticks-tbool-path 0)
-    opticks-nnt-path 0    : $(opticks-nnt-path 0)
-
-EON
-}
-
-opticks-idpath2srcpath()
-{
-   local idpath=$1
-   local ifs=$IFS
-   local elem
-   IFS="/"
-   declare -a elem=($idpath)
-   IFS=$ifs 
-
-   local nelem=${#elem[@]}
-   local last=${elem[$nelem-1]}   ## -ve indices requires bash 4.3+
-   #echo nelem $nelem last $last 
-
-   IFS="." 
-   declare -a bits=($last)
-   IFS=$ifs 
-   local nbits=${#bits[@]}
- 
-   local idfile
-   local srcdigest 
-   local idname
-   local prefix
-
-   if [ "$nbits" == "3" ] ; then
-
-      idfile=$(opticks-join . ${bits[0]} ${bits[2]}) 
-      srcdigest=${bits[1]}
-      idname=${elem[$nelem-2]}
-      prefix=$(opticks-join / ${elem[@]:0:$nelem-4})
-
-      #echo triple idfile $idfile srcdigest $srcdigest idname $idname prefix $prefix 
-   else
-      srcdigest=${elem[$nelem-2]}
-      idfile=${elem[$nelem-3]}
-      idname=${elem[$nelem-4]}
-      prefix=$(opticks-join / ${elem[@]:0:$nelem-5}) 
-
-      #echo not triple idfile $idfile srcdigest $srcdigest idname $idname prefix $prefix   
-   fi  
-   local srcpath=$(opticks-join / "" $prefix "opticksdata" "export" $idname $idfile)
-   IFS=$ifs 
-
-   echo $srcpath
-}
-
-opticks-idpath2srcpath-test-one()
-{
-   local v=$IDPATH
-   local s=$(opticks-idpath2srcpath $v)
-   printf "%40s %40s \n" $v $s 
-   local s2=$(opticks-idpath2srcpath $v)
-   printf "%40s %40s \n" $v $s2 
-}
-
-opticks-idpath2srcpath-test()
-{
-    local ifs=$IFS
-    local line
-    local kv
-    env | grep IDPATH | while read line  
-    do    
-       IFS="="
-       declare -a kv=($line) 
-       IFS=$ifs
-
-       if [ ${#kv[@]} == "2" ]; then 
-
-           local k=${kv[0]}
-           local v=${kv[1]}
-
-           local s=$(opticks-idpath2srcpath $v)
-           printf "%10s %40s %40s \n" $k $v $s 
-       fi 
-    done
-
-}
 
 
 opticks-tbool-info(){ cat << EOI

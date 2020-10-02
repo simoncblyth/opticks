@@ -61,11 +61,10 @@ opticksaux-url(){       echo https://bitbucket.org/simoncblyth/opticksaux.git ; 
 opticksaux-url-ssh(){   echo git@bitbucket.org:simoncblyth/opticksaux.git ; }
 
 opticksaux-jv5(){ echo $(opticksaux-dir)/$(opticksaux-xpath j1808)_v5.gdml ; }  
-opticksaux-jv5-vi(){ vi $(opticksaux-jv5) ; }
+opticksaux-jv5-vi(){ vim -R $(opticksaux-jv5) ; }
 
-opticksaux-dx-(){  echo $(opticksaux-dir)/$(opticksaux-xpath dybx) ; }
-opticksaux-dx(){   echo $(opticksaux-dx-).gdml ; }
-opticksaux-dx-vi(){ vi $(opticksaux-dx) ; }
+opticksaux-dx0(){  echo $(opticksaux-dir)/$(opticksaux-xpath dybx)_v0.gdml ; }
+opticksaux-dx0-vi(){ vim -R $(opticksaux-dx0) ; }
 
 opticksaux-xpath(){
    case $1 in 
@@ -80,11 +79,27 @@ opticksaux-info(){ cat << EOI
    opticksaux-url-ssh   : $(opticksaux-url-ssh)
    opticksaux-dir       : $(opticksaux-dir)
 
-   opticksaux-jv5 : $(opticksaux-jv5)     opticksaux-jv5-vi 
-   opticksaux-dx  : $(opticksaux-dx)      opticksaux-dx-vi 
+   opticksaux-jv5 :  $(opticksaux-jv5)     opticksaux-jv5-vi 
+   opticksaux-dx0  : $(opticksaux-dx0)     opticksaux-dx0-vi 
 
 EOI
 }
+
+opticksaux-ls-(){
+   local geoms="jv5 dx0"
+   local geom
+   for geom in $geoms ; do 
+       local gdml=$(opticksaux-$geom)
+       echo $gdml 
+   done
+}
+opticksaux-ls(){
+  local gdmls=$(opticksaux-ls-) 
+  local gdml
+  for gdml in $gdmls ; do ls -l $gdml ; done
+  for gdml in $gdmls ; do du -h $gdml ; done
+}
+
 
 opticksaux-get(){
    local msg="$FUNCNAME :"
