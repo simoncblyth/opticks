@@ -397,7 +397,7 @@ if __name__ == '__main__':
     if "rup" in args.cmd or "cfu" in args.cmd:
         log.info("running args.rstatcmd : %s " % args.rstatcmd )
         rc,out = getstatusoutput(args.rstatcmd)
-        assert rc == 0, rc
+        assert rc == 0, (rc, "maybe the ssh tunnel is not running") 
         #print(out)
         log.info("writing out to args.rstatpath : %s " % args.rstatpath)
         open(args.rstatpath,"w").write(out)

@@ -94,25 +94,21 @@ For details see http://simoncblyth.bitbucket.io/opticks/
 
 3. start a new session and check the bash functions are hooked up correctly with:
 
-   * opticks-info
-   * bash -lc "opticks-info"
+   * **opticks-info**
+   * bash -lc **"opticks-info"**
 
 4. install the foreign externals OR use preexisting installs of boost,clhep,xercesc,g4
 
-   * opticks-foreign     # lists them 
-   * opticks-foreign-install    # installs them 
+   * **opticks-foreign**     # lists them 
+   * **opticks-foreign-install**    # installs them 
 
 5. edit ~/.opticks_config setting the paths appropriately for the 
    prefixes of the "system" and "foreign" externals and setting 
    the prefix for the opticks install (eg /usr/local/opticks)
 
-6. install the "automated" externals and opticks itself with
-
-   * opticks-full
-
-7. test the opticks build with 
-
-   * opticks-t 
+6. install the "automated" externals and opticks itself with **opticks-full**
+7. create the geocache with **geocache-create**, see :doc:`testing`
+8. test the opticks build with **opticks-t** 
 
 
 

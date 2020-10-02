@@ -32,6 +32,7 @@
 #include "GenstepNPY.hpp"
 
 #include "Opticks.hh"
+#include "OpticksGenstep.h"
 #include "OpticksFlags.hh"
 #include "GConstant.hh"
 
@@ -197,7 +198,8 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
 
     unsigned num_photons = m_tranche->tranche_size(m_gpv_count) ; 
 
-    unsigned event_gencode = TORCH ;   // no 1-based ffs indexable space for a new code, so reuse TORCH 
+    //unsigned event_gencode = TORCH ;   // no 1-based ffs indexable space for a new code, so reuse TORCH 
+    unsigned event_gencode = OpticksGenstep_TORCH ; 
     evt->SetUserInformation( new CEventInfo(event_gencode)) ;
 
     LOG(info)

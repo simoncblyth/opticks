@@ -275,7 +275,7 @@ void OpticksResource::init()
    }
    else
    {
-       assert( hasKey() && "an OPTICKS_KEY is required unless running in legacy geometry mode" );
+       assert( hasKey() && "an OPTICKS_KEY is required" );
        setupViaKey();    // from BOpticksResource base
    }
 

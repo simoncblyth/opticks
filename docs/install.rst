@@ -36,14 +36,11 @@ A high level overview of the sequence of steps to install Opticks are listed bel
    prefixes of the "system" and "foreign" externals and setting 
    the prefix for the opticks install (eg /usr/local/opticks)
 
-6. install the "automated" externals and opticks itself with
+6. install the "automated" externals and opticks itself with **opticks-full**
 
-   * opticks-full
+7. create the geocache with **geocache-create**, see :doc:`testing`
 
-7. test the opticks build with 
-
-   * opticks-t 
-   * see :doc:`testing`
+8. test the opticks build with **opticks-t**, see :doc:`testing`
 
 
 Platform Support

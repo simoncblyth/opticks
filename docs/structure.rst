@@ -1,7 +1,0 @@
-Structure of Opticks 
-=====================
-
-
-
-
-
