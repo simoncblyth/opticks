@@ -309,9 +309,9 @@ def opticks_args(**kwa):
     #    args.det = args.pfx 
     #pass
 
-    args.c2max = map(float, args.c2max.split(",")) 
-    args.rdvmax = map(float, args.rdvmax.split(",")) 
-    args.pdvmax = map(float, args.pdvmax.split(",")) 
+    args.c2max = list(map(float, args.c2max.split(",")))
+    args.rdvmax = list(map(float, args.rdvmax.split(","))) 
+    args.pdvmax = list(map(float, args.pdvmax.split(","))) 
 
     if args.multievent > 1:
         args.utags =  map(lambda offset:int(args.tag) + offset, range(args.multievent)) 
@@ -320,7 +320,7 @@ def opticks_args(**kwa):
         try:
            tag = int(args.tag)
         except ValueError:
-           tag = map(int,args.tag.split(","))
+           tag = list(map(int,args.tag.split(",")))
         pass
 
         if type(tag) is int:
@@ -340,7 +340,7 @@ def opticks_args(**kwa):
     args.dbgseqmat = int(str(args.dbgseqmat),16) 
     args.dbgmskhis = int(str(args.dbgmskhis),16) 
     args.dbgmskmat = int(str(args.dbgmskmat),16) 
-    args.figsize = map(float, args.figsize.split(","))
+    args.figsize = list(map(float, args.figsize.split(",")))
 
 
     args.msli = slice_(args.msli)   # from string to slice 

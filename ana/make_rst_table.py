@@ -143,10 +143,10 @@ def recarray_as_rst(ra, trim="key", skip=[]):
 
 
 def test_make_rst_table():
-    print make_rst_table( [['Name', 'Favorite Food', 'Favorite Subject'],
+    print(make_rst_table( [['Name', 'Favorite Food', 'Favorite Subject'],
                            ['Joe', 'Hamburgrs', 'I like things with really long names'],
                            ['Jill', 'Salads', 'American Idol'],
-                           ['Sally', 'Tofu', 'Math']])
+                           ['Sally', 'Tofu', 'Math']]))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     log.info("path %s " % path )
 
     stat = np.load(path).view(np.recarray)
-    print recarray_as_rst(stat)
+    print(recarray_as_rst(stat))
 
 
 

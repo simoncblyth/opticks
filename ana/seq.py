@@ -22,10 +22,17 @@ import os, datetime, logging, re, signal
 log = logging.getLogger(__name__)
 import numpy as np
 
+try:
+    reduce
+except NameError:
+    from functools import reduce
+pass
 
 # this doesnt work, have to insert the code
 #from opticks.ana.debug import MyPdb
 
+"""
+# not working with py3
 try:
     from IPython.core.debugger import Pdb as MyPdb
 except ImportError:
@@ -36,7 +43,8 @@ except ImportError:
     pass
 pass
 ipdb = MyPdb()
-
+"""
+ipdb = None
 
 
 
@@ -147,7 +155,7 @@ class MaskType(BaseType):
         else:
             f = self.abbr2code
             bad = self.check(s) 
-            c = reduce(lambda a,b:a|b,map(lambda n:f.get(n,0), s.split(self.delim)))
+            c = reduce(lambda a,b:a|b,list(map(lambda n:f.get(n,0), s.split(self.delim))))
         pass
         return c 
 
@@ -382,13 +390,13 @@ class SeqTable(object):
         #log.debug("codes  : %s " % repr(codes))
         #log.debug("counts : %s " % repr(counts))
 
-        labels = map(lambda i:af.label(i), codes )
-        nstep = map(lambda l:len(l.split(af.delim)),labels)
+        labels = list(map(lambda i:af.label(i), codes ))
+        nstep = list(map(lambda l:len(l.split(af.delim)),labels))
 
         self.label2nstep = dict(zip(labels, nstep))
         self.labels = labels
 
-        lines = filter(None, map(lambda n:self.line(n), range(len(cu))))
+        lines = list(filter(None, list(map(lambda n:self.line(n), range(len(cu))))))
 
         self.codes = codes  
         self.counts = counts
@@ -426,7 +434,7 @@ class SeqTable(object):
             xs = "%0.4d " % (n)        
         pass
       
-        vals = map(lambda _:" %7s " % _, self.cu[n,1:] ) 
+        vals = list(map(lambda _:" %7s " % _, self.cu[n,1:] ))
 
         idif = self.idif[n] if len(vals) == 2 else None
         idif = " %4d " % idif if idif is not None else " " 
@@ -529,9 +537,9 @@ class SeqTable(object):
         # order the labels union by descending maximum count in self or other
 
         cf = np.zeros( (len(u),3), dtype=np.uint64 )
-        cf[:,0] = map(lambda _:self.af.code(_), u )
-        cf[:,1] = map(lambda _:self.label2count.get(_,0), u )
-        cf[:,2] = map(lambda _:other.label2count.get(_,0), u )
+        cf[:,0] = list(map(lambda _:self.af.code(_), u ))
+        cf[:,1] = list(map(lambda _:self.label2count.get(_,0), u ))
+        cf[:,2] = list(map(lambda _:other.label2count.get(_,0), u ))
         # form comparison table
 
         cnames = self.cnames + other.cnames 

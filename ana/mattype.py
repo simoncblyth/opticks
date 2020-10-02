@@ -86,7 +86,7 @@ def test_roundtrip(mt):
     #s = "Ml Px Ml Ml Px Om Vm Ml"   ## huh why the capital casing not working ? These are first last 
     i = mt.code(s)
     l = mt.label(i)
-    print "%s : %x : %s" % (s, i, l )
+    print("%s : %x : %s" % (s, i, l ))
     assert l == s, (l,s) 
 
 class MatType(SeqType):

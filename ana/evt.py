@@ -32,6 +32,8 @@ import numpy as np
 
 
 #from opticks.ana.debug import MyPdb
+"""
+# not working with py3
 try:
     from IPython.core.debugger import Pdb as MyPdb
 except ImportError:
@@ -42,6 +44,8 @@ except ImportError:
     pass
 pass
 ipdb = MyPdb()
+"""
+ipdb = None
 
 #  dont use matplotlib in base modules as it fails remotely 
 #     qt.qpa.screen: QXcbConnection: Could not connect to display Could not connect to any X display.
@@ -1454,8 +1458,8 @@ class Evt(object):
         nstamp = len(sst)
         if nstamp > 1:
             log.warning("MIXED TIMESTAMP EVENT DETECTED")
-            print "\n".join(lines)
-
+            print("\n".join(lines))
+        pass 
         return nstamp
 
 
@@ -1495,7 +1499,7 @@ class Evt(object):
                 log.debug("history_table %s " % ana_ )
                 ana.table.title = ana_ 
                 ana.table.sli = sli 
-                print ana.table
+                print(ana.table)
             else:
                 log.debug("%s noattr " % ana_ )
         pass
@@ -1540,26 +1544,26 @@ class Evt(object):
             c_tab = a_tab.compare(b_tab, ordering=ordering, shortname=shortname)
             c_tab.title = ana_
 
-            if len(c_tab.lines) > lmx:
+            if len(list(c_tab.lines)) > lmx:
                 c_tab.sli = slice(0,lmx)
 
             if pr:
-                print c_tab
+                print(c_tab)
             if c2max is not None:
                 assert c_tab.c2p < c2max, "c2p deviation for table %s c_tab.c2p %s >= c2max %s " % ( ana_, c_tab.c2p, c2max )
 
         else:
             a_tab.title = "A:%s " % ana_
-            if len(a_tab.lines) > lmx:
+            if len(list(a_tab.lines)) > lmx:
                 a_tab.sli = slice(0,lmx)
             if pr:
-                print a_tab
+                print(a_tab)
 
             b_tab.title = "B:%s " % ana_
-            if len(b_tab.lines) > lmx:
+            if len(list(b_tab.lines)) > lmx:
                 b_tab.sli = slice(0,lmx)
             if pr:
-                print b_tab
+                print(b_tab)
         pass
         return c_tab
 
@@ -1581,7 +1585,7 @@ class Evt(object):
         ## TODO: fix this  
         seqmat_table(cu)
         tot = cu[:,1].astype(np.int32).sum()
-        print "tot:", tot
+        print("tot:%d" % tot)
         return cu
 
     def flags_table_old(self):
@@ -1589,7 +1593,7 @@ class Evt(object):
         cu = count_unique(flags)
         gflags_table(cu)
         tot = cu[:,1].astype(np.int32).sum()
-        print "tot:", tot
+        print("tot:%d" % tot)
         brsa = maskflags_int("BR|SA|TORCH")
         return cu
 
@@ -2058,7 +2062,7 @@ class Evt(object):
             smry = self.rsmry_(i)
 
             szrt =  fmt % tuple(zrt[i].tolist())
-            print "%3d %s smry %s " % (i, szrt, smry )
+            print("%3d %s smry %s " % (i, szrt, smry ))
 
         pass
         return zrt 

@@ -178,8 +178,9 @@ def ini_(path):
         return _ini[path] 
     try: 
         log.debug("parsing ini for key %s" % path)
-        txt = file(os.path.expandvars(os.path.expanduser(path))).read()
-        lines = filter(None, txt.split("\n"))
+        xpath = os.path.expandvars(os.path.expanduser(path))
+        txt = open(xpath,"r").read()
+        lines = list(filter(None, txt.split("\n")))
         d = dict(map(lambda _:_.split("="), lines))
         _ini[path] = d
     except IOError:
@@ -201,8 +202,8 @@ def json_(path):
         log.debug("parsing json for key %s" % path)
         xpath = os.path.expandvars(os.path.expanduser(path))
         #log.info("xpath:%s"%xpath)
-        js = json.load(file(xpath))
-        js[u"jsonLoadPath"] = unicode(xpath) 
+        js = json.load(open(xpath,"r"))
+        #js[u"jsonLoadPath"] = unicode(xpath) 
         _json[path] = js 
     except IOError:
         log.warning("failed to load json from %s : %s " % (path,xpath))
@@ -278,12 +279,12 @@ class ItemList(object): # formerly ListFlags
         """
         log.debug("txt %s reldir  %s " % (txt, reldir))
         npath=self.Path(txt, reldir)
-        names = map(lambda _:_[:-1],file(npath).readlines())
+        names = list(map(lambda _:_[:-1],open(npath,"r").readlines()))
         if translate_ is not None:
             log.info("translating")
-            names = map(translate_, names) 
+            names = list(map(translate_, names)) 
         pass
-        codes = map(lambda _:_ + offset, range(len(names)))
+        codes = list(map(lambda _:_ + offset, range(len(names))))
 
         self.npath = npath
         self.offset = offset 

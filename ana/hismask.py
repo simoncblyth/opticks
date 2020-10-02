@@ -64,12 +64,12 @@ def test_HisMask_SeqTable(aa, af):
      hflags = aa[:,3,3].view(np.uint32)
      cu = count_unique_sorted(hflags)
      st = SeqTable(cu, af)
-     print st 
+     print(st) 
 
 def test_HisMask_SeqAna(aa, af):
      hflags = aa[:,3,3].view(np.uint32)
      sa = SeqAna(hflags, af)
-     print sa.table 
+     print(sa.table) 
 
 
 if __name__ == '__main__':

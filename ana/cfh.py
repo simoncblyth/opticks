@@ -351,7 +351,7 @@ def test_load():
 if __name__ == '__main__':
     from opticks.ana.main import opticks_main
     ok = opticks_main()
-    print ok
+    print(ok)
 
     import matplotlib.pyplot as plt
     plt.rcParams["figure.max_open_warning"] = 200    # default is 20
@@ -360,7 +360,7 @@ if __name__ == '__main__':
 
     from opticks.ana.ab import AB
     from opticks.ana.cfplot import one_cfplot, qwns_plot 
-    print ok.nargs
+    print(ok.nargs)
 
     ## only reload evts for rehisting
     if ok.rehist:

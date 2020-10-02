@@ -130,7 +130,7 @@ class RC(object):
         irc = rc["rpost_dv"] << self.offset["rpost_dv"] | rc["rpol_dv"] << self.offset["rpol_dv"] | rc["ox_dv"] << self.offset["ox_dv"]
         self.rc = irc 
 
-        levels = map(lambda _:_.level, filter(None, [ab.rpost_dv.maxlevel,ab.ox_dv.maxlevel,ab.ox_dv.maxlevel]))
+        levels = list(map(lambda _:_.level, list(filter(None, [ab.rpost_dv.maxlevel,ab.ox_dv.maxlevel,ab.ox_dv.maxlevel]))))
         self.level = max(levels) if len(levels) > 0 else None
 
     def __repr__(self):

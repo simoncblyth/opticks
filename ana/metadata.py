@@ -359,11 +359,11 @@ class Metadata(object):
 
     def dump(self):
         for k,v in self.parameters.items():
-            print "%20s : %s " % (k, v)
+            print("%20s : %s " % (k, v))
         for k,v in self.delta_times.ini.items():
-            print "%20s : %s " % (k, v)
+            print("%20s : %s " % (k, v))
         for k,v in self.launch_times.ini.items():
-            print "%20s : %s " % (k, v)
+            print("%20s : %s " % (k, v))
       
 
 
@@ -376,7 +376,7 @@ def test_metadata():
 def test_tagdir():
     td = os.path.expandvars("/tmp/$USER/opticks/evt/boolean/torch/1")
     md = Metadata(td)
-    print md
+    print(md)
 
 
 

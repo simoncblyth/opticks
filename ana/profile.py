@@ -75,6 +75,8 @@ import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 #from opticks.ana.debug import MyPdb
+"""
+# not working with py3
 try:
     from IPython.core.debugger import Pdb as MyPdb
 except ImportError:
@@ -85,6 +87,8 @@ except ImportError:
     pass
 pass
 ipdb = MyPdb()
+"""
+ipdb = None
 
 from opticks.ana.log import bold_, blink_
 from opticks.ana.base import json_load_

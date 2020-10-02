@@ -197,7 +197,8 @@ class ABStat(object):
     def dump(cls, st=None): 
         if st is None:
             st = cls.load()
-        print st
+        pass
+        print(st)
 
 
 if __name__ == '__main__':
@@ -205,8 +206,8 @@ if __name__ == '__main__':
     ok = opticks_main()
     st = ABStat.load(ok)
     
-    #print st 
-    print st[st.chi2sel()]
+    #print(st) 
+    print(st[st.chi2sel()])
 
     ar = st.ar
 

@@ -211,10 +211,10 @@ if __name__ == '__main__':
 
     bins = dc.bins([avals, bvals])
 
-    print "cbins",cbins 
-    print avals 
-    print bvals 
-    print bins
+    print("cbins\n%s" % cbins) 
+    print(avals) 
+    print(bvals) 
+    print(bins)
 
 
  

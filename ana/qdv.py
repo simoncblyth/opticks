@@ -94,6 +94,8 @@ class QDV(object):
        npoi = len(sel.split())
        nelem = ndv*npoi*nitem
 
+       log.info(" nitem:%d npoi:%d nelem:%d " % (nitem,npoi,nelem))
+
        if nelem>0:
            mx = dv.max()
            mn = dv.min()
@@ -127,7 +129,11 @@ class QDV(object):
        self.dvmax = dvmax 
        self.msg = msg
 
-       if self.mx > self.dvmax[2]:
+       log.info("mx %s " % self.mx)
+       if self.mx is None:
+           lev = Level.FromName("FATAL")
+           lmsg = "  mx None " 
+       elif self.mx > self.dvmax[2]:
            lev = Level.FromName("FATAL")
            lmsg = "  > dvmax[2] %.4f " % self.dvmax[2] 
        elif self.mx > self.dvmax[1]:
@@ -207,6 +213,9 @@ class QDVTab(object):
         labels = self.seqtab.labels       # eg list of length 17 : ['TO BT BT SA', 'TO BR SA', ... ]
 
         cu = self.seqtab.cu               # eg with shape (17,3)  the 3 columns being (seqhis, a-count, b-count ) 
+
+        log.info("labels:%s" % labels)
+
         assert len(labels) == len(cu)
         nsel = len(labels)
 
@@ -310,7 +319,7 @@ class QDVTab(object):
 
 
     def findmax(self):
-        maxdv = map(lambda _:float(_.mx), self.dvs) 
+        maxdv = list(map(lambda _:float(_.mx), self.dvs))
         mmaxdv = max(maxdv) if len(maxdv) > 0 else -1
         for dv in self.dvs:
             if dv.mx == mmaxdv and dv.lev.level > Level.INFO:
@@ -325,7 +334,7 @@ class QDVTab(object):
         Overall level of the table : INFO, WARNING, ERROR or FATAL 
         based on the maximum level of the lines
         """
-        levs = map(lambda dv:dv.lev.level, self.dvs)
+        levs = list(map(lambda dv:dv.lev.level, self.dvs))
         mxl = max(levs) if len(levs) > 0 else None
         return Level.FromLevel(mxl) if mxl is not None else None
     maxlevel = property(_get_maxlevel)  
