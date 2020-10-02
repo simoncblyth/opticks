@@ -256,7 +256,7 @@ class Boolean(Geometry):
     def SaveBuffer(cls):
         num_boolean_transforms = len(cls.all_transforms)
         path = os.path.expandvars("$TMP/Boolean_all_transforms.npy")
-        print "Boolean.all_transforms %d save to %s  " % ( num_boolean_transforms, path )
+        print("Boolean.all_transforms %d save to %s  " % ( num_boolean_transforms, path ))
         if num_boolean_transforms > 0:
              tbuf = np.vstack(cls.all_transforms).reshape(-1,4,4) 
              np.save(path, tbuf)  
@@ -1490,17 +1490,17 @@ def test_children(t):
 
     v = n.children[0]
     for c in v.children:
-        print c.pv.transform
+        print(c.pv.transform)
 
 
 def test_polycone(g):
     pcs = g.findall_("solids//polycone")
     for i,pc in enumerate(pcs):
-        print "pcs[%2d].zp : %s " % (i, pc.zp)
+        print("pcs[%2d].zp : %s " % (i, pc.zp))
         cn = pc.as_ncsg()
 
 def test_gdml(g):
-    print g.world
+    print(g.world)
     g.world.rdump()
     g.volumes["/dd/Geometry/PMT/lvPmtHemi0xc133740"].rdump()
 

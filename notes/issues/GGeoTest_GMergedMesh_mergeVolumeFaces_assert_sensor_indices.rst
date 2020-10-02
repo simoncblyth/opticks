@@ -26,11 +26,133 @@ Issues : Problems with creation and GPU conversion of test geometry
 -----------------------------------------------------------------------
 
 1. FIXED: sensor_indices assert
-2. numITransforms == 1 assert, getting zero with test geometry 
+2. FIXED: numITransforms == 1 assert, getting zero with test geometry : fix by using standard GMergedMesh::addInstancedBuffers
+3. CEventAction::setEvent genstep enum assert 
+
+
+Another enum validity issue
+-----------------------------
+
+
+::
+
+    [blyth@localhost ~]$ tboolean-;LV=box tboolean-lv --generateoverride 10000 -D
+    ...
+    2020-10-02 03:38:42.001 INFO  [419485] [CG4::propagate@395]  calling BeamOn numG4Evt 1
+    HepRandomEngine::put called -- no effect!
+    2020-10-02 03:38:42.404 INFO  [419485] [CInputPhotonSource::GeneratePrimaryVertex@203]  num_photons 10000 gpv_count 0 event_gencode 4096 : TORCH
+    2020-10-02 03:38:42.415 FATAL [419485] [OpticksGenstep::GenstepToPhotonFlag@157] invalid gentype 4096
+    OKG4Test: /home/blyth/opticks/cfg4/CG4Ctx.cc:264: void CG4Ctx::setEvent(const G4Event*): Assertion `valid' failed.
+    (gdb) bt
+    #4  0x00007ffff4c4cfbf in CG4Ctx::setEvent (this=0xa70bb50, event=0xcf96e70) at /home/blyth/opticks/cfg4/CG4Ctx.cc:264
+    #5  0x00007ffff4c490c7 in CEventAction::setEvent (this=0xb98b2a0, event=0xcf96e70) at /home/blyth/opticks/cfg4/CEventAction.cc:69
+    #6  0x00007ffff4c4906e in CEventAction::BeginOfEventAction (this=0xb98b2a0, anEvent=0xcf96e70) at /home/blyth/opticks/cfg4/CEventAction.cc:59
+    #7  0x00007ffff1c9f875 in G4EventManager::DoProcessing(G4Event*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4event.so
+    #8  0x00007ffff1f3cb27 in G4RunManager::ProcessOneEvent(int) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #9  0x00007ffff1f35bd3 in G4RunManager::DoEventLoop(int, char const*, int) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #10 0x00007ffff1f3599e in G4RunManager::BeamOn(int, char const*, int) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #11 0x00007ffff4c50986 in CG4::propagate (this=0xa70bb20) at /home/blyth/opticks/cfg4/CG4.cc:398
+    #12 0x00007ffff7bd4b7f in OKG4Mgr::propagate_ (this=0x7fffffff8300) at /home/blyth/opticks/okg4/OKG4Mgr.cc:220
+    #13 0x00007ffff7bd4a1a in OKG4Mgr::propagate (this=0x7fffffff8300) at /home/blyth/opticks/okg4/OKG4Mgr.cc:158
+    #14 0x0000000000403a99 in main (argc=32, argv=0x7fffffff8648) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:28
+    (gdb) 
+
+    
+::
+
+    [blyth@localhost ~]$ tboolean-;LV=box CG4Ctx=INFO tboolean-lv --generateoverride 10000 -D
+
+    2020-10-02 03:44:10.333 INFO  [428159] [CG4Ctx::initEvent@204]  _record_max (numPhotons from genstep summation) 10000 photons_per_g4event 10000 _steps_per_photon (maxrec) 10 _bounce_max 9 typ torch
+    2020-10-02 03:44:10.333 INFO  [428159] [CG4::propagate@395]  calling BeamOn numG4Evt 1
+    HepRandomEngine::put called -- no effect!
+    2020-10-02 03:44:10.758 INFO  [428159] [CInputPhotonSource::GeneratePrimaryVertex@203]  num_photons 10000 gpv_count 0 event_gencode 4096 : TORCH
+    2020-10-02 03:44:10.769 FATAL [428159] [OpticksGenstep::GenstepToPhotonFlag@157] invalid gentype 4096
+    2020-10-02 03:44:10.769 INFO  [428159] [CG4Ctx::setEvent@256]  gen 4096 OpticksGenstep::GenType INVALID OpticksFlags::SourceType INVALID OpticksFlags::Flag NAN_ABORT valid 0
+    OKG4Test: /home/blyth/opticks/cfg4/CG4Ctx.cc:264: void CG4Ctx::setEvent(const G4Event*): Assertion `valid' failed.
+
+
+::
+
+    237 void CG4Ctx::setEvent(const G4Event* event)
+    238 {    
+    239      //OKI_PROFILE("CG4Ctx::setEvent") ; 
+    240     
+    241     _event = const_cast<G4Event*>(event) ;
+    242     _event_id = event->GetEventID() ;
+    243     
+    244     _event_total += 1 ;  
+    245     _event_track_count = 0 ;
+    246 
+    247     
+    248     CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
+    249     assert(eui && "expecting event UserInfo set by eg CGenstepSource ");
+    250     
+    251     _gen = eui->gencode ;
+    252     _genflag = OpticksGenstep::GenstepToPhotonFlag(_gen);
+    253     
+    254     bool valid = OpticksGenstep::IsValid(_gen) ;
+    255     
+    256     LOG(LEVEL) 
+    257         << " gen " << _gen
+    258         << " OpticksGenstep::GenType " << OpticksGenstep::Gentype(_gen) 
+    259         << " OpticksFlags::SourceType " << OpticksFlags::SourceType(_gen)
+    260         << " OpticksFlags::Flag " << OpticksFlags::Flag(_genflag)
+    261         << " valid " << valid
+    262         ;
+    263     
+    264     assert( valid );
+    265 }
+
+    033 struct CFG4_API CEventInfo : public G4VUserEventInformation
+     34 {
+     35     inline virtual void Print()const{};
+     36 
+     37     CEventInfo( unsigned gencode_ )
+     38        :
+     39        gencode(gencode_)
+     40     {
+     41     }
+     42 
+     43     unsigned gencode ;
+     44 };
+
+
+
+::
+
+    epsilon:cfg4 blyth$ grep CEventInfo *.cc
+    CEventInfo.cc:#include "CEventInfo.hh"
+    CG4Ctx.cc:#include "CEventInfo.hh"
+    CG4Ctx.cc:    CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
+    CGenstepSource.cc:#include "CEventInfo.hh"
+    CGenstepSource.cc:    event->SetUserInformation( new CEventInfo(event_gencode)) ;   
+    CInputPhotonSource.cc:#include "CEventInfo.hh"
+    CInputPhotonSource.cc:    evt->SetUserInformation( new CEventInfo(event_gencode)) ;
+    CTorchSource.cc:#include "CEventInfo.hh"
+    CTorchSource.cc:    event->SetUserInformation( new CEventInfo(event_gencode)) ;
+    epsilon:cfg4 blyth$ 
+
+
+
+    192 void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
+    193 {
+    194     OK_PROFILE("_CInputPhotonSource::GeneratePrimaryVertex");
+    195 
+    196     //std::raise(SIGINT); 
+    197 
+    198     unsigned num_photons = m_tranche->tranche_size(m_gpv_count) ;
+    199 
+    200     unsigned event_gencode = TORCH ;   // no 1-based ffs indexable space for a new code, so reuse TORCH 
+    201     evt->SetUserInformation( new CEventInfo(event_gencode)) ;
+    202 
+
+
+
 
 
 OGeo::convert GMesh::makeFaceRepeatedIdentityBuffer numITransforms == 1 
 ----------------------------------------------------------------------------
+
 
 ::
 

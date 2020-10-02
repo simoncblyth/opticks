@@ -225,7 +225,7 @@ def test_treebuilder():
     for n in range(0,nprim):
         tb = TreeBuilder(primitives[0:n+1])
         tb.root.analyse()
-        print tb.root.txt 
+        print(tb.root.txt) 
 
 def test_uniontree():
     log.info("test_uniontree")
@@ -235,7 +235,7 @@ def test_uniontree():
 
     for n in range(0,len(primitives)):
         root = TreeBuilder.uniontree(primitives[0:n+1], name="test_uniontree")
-        print "\n",root.txt
+        print("\n%s" % root.txt)
 
 
 
@@ -255,15 +255,15 @@ def test_balance():
     root.analyse()    
     #root.subdepth_()
 
-    print root.txt
+    print(root.txt)
 
     prims = root.primitives()
-    print "prims : %s " % repr(prims)
+    print("prims : %s " % repr(prims))
 
     root.positivize() 
 
     balanced = TreeBuilder.balance(root)
-    print balanced.txt
+    print(balanced.txt)
 
 
 def make_bileaf(name):
@@ -296,10 +296,10 @@ def test_balance_bileaf():
         root.analyse()
         root.positivize()
 
-        print root.txt
+        print(root.txt)
         balanced = TreeBuilder.balance(root)
 
-        print balanced.txt
+        print(balanced.txt)
     pass
 
 

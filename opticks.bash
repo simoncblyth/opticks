@@ -1358,6 +1358,7 @@ opticks-tools(){ cat << EOT
 cmake
 git
 make
+python
 EOT
 }
 

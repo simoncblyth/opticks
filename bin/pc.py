@@ -110,8 +110,8 @@ class PC(object):
         """
         pass
         self.path = path 
-        lines =  map(str.strip, file(path).readlines())
-        self.ls = map(Line, enumerate(lines))
+        lines =  list(map(str.strip, open(path,"r").readlines()))
+        self.ls = list(map(Line, enumerate(lines)))
   
     def _get_numfix(self):
         """

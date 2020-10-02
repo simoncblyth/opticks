@@ -19,9 +19,15 @@
 #
 
 """
+
+enu.py
+=======
+
+Extracts the strings and enumeration constants from headers 
+
 ::
 
-    g4- ; ./enu.py $(g4-dir)/source/processes/optical/include/G4OpBoundaryProcess.hh 
+    g4- ; ./bin/enu.py $(g4-dir)/source/processes/optical/include/G4OpBoundaryProcess.hh 
 
 
 """
@@ -43,7 +49,7 @@ class Enu(list):
         self.parse(path)
 
     def parse(self, path):
-        lines = map(str.strip,file(path).readlines())
+        lines = list(map(str.strip,open(path).readlines()))
         for line in lines:
 
             uline = line
@@ -72,7 +78,7 @@ class Enu(list):
             self.last = False
             tokens = []
             if taketoken:
-                tokens = filter(None,map(str.strip, uline.split(",")))
+                tokens = list(filter(None,map(str.strip, uline.split(","))))
                 #print "%3d : %30s : [%s] " % ( self.state, uline, repr(tokens)  )
             pass
             if len(tokens)>0:
@@ -99,13 +105,13 @@ class Enu(list):
     id = property(lambda self:"// enu.py %s " % self.path) 
 
     def labels(self, kls):
-        return "\n".join([self.id]+ map(lambda _:self.labels_tmpl % dict(kls=kls,token=_,qtoken="\"%s\""%_, utoken="%s_"% _), self) )
+        return "\n".join([self.id]+ list(map(lambda _:self.labels_tmpl % dict(kls=kls,token=_,qtoken="\"%s\""%_, utoken="%s_"% _), self)) )
 
     def case(self, pfx):
-        return "\n".join([self.id]+ map(lambda _:self.case_tmpl % dict(pfx=pfx,token=_, token_="%s_" % _), self) )
+        return "\n".join([self.id]+ list(map(lambda _:self.case_tmpl % dict(pfx=pfx,token=_, token_="%s_" % _), self)) )
 
     def scc(self):
-        return "\n".join([self.id]+ map(lambda _:self.scc_tmpl % dict(token=_), self) )
+        return "\n".join([self.id]+ list(map(lambda _:self.scc_tmpl % dict(token=_), self)) )
 
 
 
@@ -118,16 +124,13 @@ if __name__ == '__main__':
 
      l = Enu(path)
      
-     print l
-     print
-     print l.labels(kls="CBoundaryProcess")
-     print
-     print l.case(pfx="Ds::")
-     print
-     print l.case(pfx="")
-     print
-     print l.scc()
-
-
-    
+     print(l)
+     print("\n")
+     print(l.labels(kls="CBoundaryProcess"))
+     print("\n")
+     print(l.case(pfx="Ds::"))
+     print("\n")
+     print(l.case(pfx=""))
+     print("\n")
+     print(l.scc())
 

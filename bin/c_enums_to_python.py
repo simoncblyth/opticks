@@ -43,6 +43,10 @@ first_ = lambda kv:kv[0]
 second_ = lambda kv:kv[1]
 
 
+lfilter = lambda *args:list(filter(*args))  
+lmap = lambda *args:list(map(*args))  
+
+
 class Strings(object):
     """
     Parse header enum string consts such as the below into a dict::
@@ -56,15 +60,15 @@ class Strings(object):
     """
     pfx = "static const char* "
     def __init__(self, txt):
-        lines = filter(lambda line:line.find("=")>-1 and line.find(";")>-1,filter(lambda line:line.startswith(self.pfx), txt.splitlines()))
-        lines = map(lambda line:line[len(self.pfx):line.index(";")], lines)
-        kvs = map(lambda line:map(unquote_,map(trim_,line.split("="))), lines)
+        lines = lfilter(lambda line:line.find("=")>-1 and line.find(";")>-1,filter(lambda line:line.startswith(self.pfx), txt.splitlines()))
+        lines = lmap(lambda line:line[len(self.pfx):line.index(";")], lines)
+        kvs = lmap(lambda line:lmap(unquote_,lmap(trim_,line.split("="))), lines)
         self.kvs = kvs 
 
     def getkv(self, kpfx):
-        fkvs = filter(lambda kv:kv[0].startswith(kpfx), self.kvs)
-        keys = map(lambda k:k[:-1],filter(lambda k:k.endswith("_"),map(lambda k:k[len(kpfx):],map(trim_,map(first_,  fkvs)))))
-        vals = map(trim_,map(second_, fkvs))
+        fkvs = lfilter(lambda kv:kv[0].startswith(kpfx), self.kvs)
+        keys = lmap(lambda k:k[:-1],lfilter(lambda k:k.endswith("_"),lmap(lambda k:k[len(kpfx):],lmap(trim_,lmap(first_,  fkvs)))))
+        vals = lmap(trim_,lmap(second_, fkvs))
 
         if len(keys) != len(vals):
             log.fatal("enum string keys are expected to end with an _")
@@ -117,14 +121,14 @@ class Enum(object):
         self.index = index
         self.hdr = hdr
         etxt = eraw[eraw.index("{"):eraw.index("}")+1] 
-        lines = map(lambda l:trim_(l).replace(",",""),etxt[1:-1].split("\n"))
-        kvs = filter(lambda kv:len(kv) == 2,map(lambda line:line.split("="), lines))
-        keys = map(trim_,map(lambda kv:kv[0], kvs))
-        vals = map(trim_,map(lambda kv:kv[1], kvs))
+        lines = lmap(lambda l:trim_(l).replace(",",""),etxt[1:-1].split("\n"))
+        kvs = lfilter(lambda kv:len(kv) == 2,map(lambda line:line.split("="), lines))
+        keys = lmap(trim_,map(lambda kv:kv[0], kvs))
+        vals = lmap(trim_,map(lambda kv:kv[1], kvs))
         kpfx = os.path.commonprefix(keys)  
 
         def _kmap(keys, kpfx):
-            return dict(zip(keys, map(lambda k:kpfx+"."+k[len(kpfx):], keys)))
+            return dict(zip(keys, lmap(lambda k:kpfx+"."+k[len(kpfx):], keys)))
 
         def _translate_one_val(val):
             return self.hdr.kmap.get(val, val)
@@ -136,7 +140,7 @@ class Enum(object):
             if val.find(" ") == -1:
                 return _translate_one_val(val)
             else:
-                return " ".join(map(_translate_one_val, val.split(" ")))
+                return " ".join(lmap(_translate_one_val, val.split(" ")))
             pass
 
         if len(kpfx) == 0:
@@ -147,24 +151,24 @@ class Enum(object):
         self.kls = kls
         self.indent = indent
         self.kpfx = kpfx
-        self.keys = map(lambda k:k[len(kpfx):], keys)
-        self.vals = map(_translate_val,vals)
+        self.keys = lmap(lambda k:k[len(kpfx):], keys)
+        self.vals = lmap(_translate_val,vals)
         self.kmap = kmap
 
     def head(self):
-        return "\n".join(filter(None,["#%d" % self.index, "class %s(object):" % self.kls if self.kls is not None else None])) 
+        return "\n".join(lfilter(None,["#%d" % self.index, "class %s(object):" % self.kls if self.kls is not None else None])) 
 
     def body(self):
-        lines = map(lambda i:"%s = %s" % (self.keys[i], self.vals[i]), range(len(self.keys))) 
+        lines = lmap(lambda i:"%s = %s" % (self.keys[i], self.vals[i]), range(len(self.keys)))
 
         sk,sv = self.hdr.strings.getkv(self.kpfx)
-        vk = map( lambda k:int(self.vals[self.keys.index(k)]), sk)
+        vk = lmap( lambda k:int(self.vals[self.keys.index(k)]), sk)
         #print "keys:%r" % self.keys 
 
         srep = []
         #srep.append("V2D=%r" % dict(zip(vk,sv)))
         srep.append("D2V=%r" % dict(zip(sv,vk)))
-        return "\n".join(map(indent_,[lines, srep]))
+        return "\n".join(lmap(indent_,[lines, srep]))
 
     def tail(self):
         return self.tail_template if self.kls is not None else "#"
@@ -186,7 +190,7 @@ class Hdr(object):
         self.stem = stem
         self.ctx = {}
 
-        txt = file(path).read()
+        txt = open(path).read()
         self.strings = Strings(txt)
 
         c_enums = txt.split("enum")[1:]
@@ -224,11 +228,11 @@ class Hdr(object):
 
 
 if __name__ == '__main__':
-   logging.basicConfig(level=logging.INFO)
-   assert len(sys.argv) > 1
-   hdr = Hdr(sys.argv[1], sys.argv[0])
-   print hdr
-   #print hdr.strings
+    logging.basicConfig(level=logging.INFO)
+    assert len(sys.argv) > 1, "expecting argument pointing at c header"
+    hdr = Hdr(sys.argv[1], sys.argv[0])
+    print(hdr)
+    #print(hdr.strings)
 
 
  

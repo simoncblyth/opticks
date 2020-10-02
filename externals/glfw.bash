@@ -42,8 +42,30 @@ Headless
 * https://github.com/intel-isl/Open3D/issues/17
 
 
-Linux CentOS 7 
-----------------
+Build may fail for lack of a few system dependencies
+-----------------------------------------------------
+
+For example::
+
+    CMake Error at CMakeLists.txt:206 (message):
+    RandR headers not found; install libxrandr development package
+
+How to install these depends on your system and its package manager.
+Some suggestions for various systems are described below.
+
+
+Linux Ubuntu with apt-get
+---------------------------
+
+::
+
+     sudo apt-get install libxrandr-dev
+     sudo apt-get install libxinerama-dev
+     sudo apt-get install libxi-dev
+
+
+Linux CentOS 7 with yum
+--------------------------
 
 eventually got 3.2.1 from epel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,9 +109,6 @@ You may need::
 	/usr/bin/ld: CMakeFiles/boing.dir/boing.c.o: undefined reference to symbol 'glClear'
 	//usr/lib64/libGL.so.1: error adding symbols: DSO missing from command line
 	collect2: error: ld returned 1 exit status
-
-
-
 
 
 Windows
