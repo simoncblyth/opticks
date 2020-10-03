@@ -51,7 +51,8 @@ import logging, hashlib, sys, os
 import numpy as np
 np.set_printoptions(precision=2) 
 
-from opticks.ana.base import opticks_main, Buf
+from opticks.ana.main import opticks_main
+from opticks.ana.nbase import Buf
 
 log = logging.getLogger(__name__)
 
@@ -496,7 +497,7 @@ class Tree(object):
 
     @classmethod
     def dump(cls):
-        print cls.description()
+        print(cls.description())
 
     @classmethod
     def num_nodes(cls):
@@ -541,7 +542,7 @@ class Tree(object):
     def analyse_crowds(self):
         nn = self.find_crowds()
         for n in nn:
-            print n.lv.name, len(n.children)
+            print("%s %d " % (n.lv.name, len(n.children)))
             n.analyse_child_lv_occurrence()
             
     def apply_selection(self, query):

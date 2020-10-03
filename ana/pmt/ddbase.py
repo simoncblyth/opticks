@@ -150,7 +150,7 @@ Subtraction(Elem)
 import os, re, logging, math
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 
 import numpy as np
 import lxml.etree as ET
@@ -587,7 +587,7 @@ class Dddb(Elem):
         return dd   
 
     def dump_context(self, prefix=None):
-        print pp_(self.context_(prefix))
+        print(pp_(self.context_(prefix)))
 
 
 
@@ -624,8 +624,8 @@ class Context(object):
         txt = "float(%s)" % expr
         try:
             val = eval(txt, globals(), self.d)
-        except NameError, ex:
-            log.fatal("%s :failed to evaluate expr %s " % (repr(ex), expr))
+        except NameError:
+            log.fatal("failed to evaluate expr %s " % (expr))
             val = None 
         pass 
         return val    
@@ -763,10 +763,10 @@ class DD(E):
     def init(self):
         cat = self.find1_("./catalog")
         if cat is not None:
-            print cat  
+            print(cat)  
             cat.xmldir = self.xmldir
             for ref in cat.refs():
-                print ref, ref.ddpath
+                print("%s %s " % (ref, ref.ddpath))
                 self.g.ddr[ref.ddpath] = DD.parse(ref.xmlpath) 
 
     def __repr__(self):
@@ -796,7 +796,7 @@ if __name__ == '__main__':
     dd = DD.parse(args.addpath)
 
 
-    print dd
+    print(dd)
 
 
 

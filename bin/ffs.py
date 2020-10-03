@@ -112,16 +112,16 @@ def clz_(x):
    return n
 
 def test_clz():
-    print " %10s : %6s %6s %6s  " % ("test_clz", "clz", "32-clz",  "fls")
+    print(" %10s : %6s %6s %6s  " % ("test_clz", "clz", "32-clz",  "fls"))
     for i in [0x0,0xf,0xff,0xfff,0xffff,0xfffff,0xffffff,0xfffffff,0xffffffff]:
         c = clz_(i)
         f = cppfls_(i)
-        print " %10x : %6u %6u %6u " % (i, c, 32-c, f) 
+        print(" %10x : %6u %6u %6u " % (i, c, 32-c, f)) 
 
 def test_ffs():
     for i in range(-1,17):
         n = 0x1 << i if i > -1 else 0
-        print " i %2d n:%8d  n:0x%5x cpp.ffs_: %2d ffs_: %2d " % (i, n, n, cppffs_(n), ffs_(n) )   
+        print(" i %2d n:%8d  n:0x%5x cpp.ffs_: %2d ffs_: %2d " % (i, n, n, cppffs_(n), ffs_(n) ))
 
 
 

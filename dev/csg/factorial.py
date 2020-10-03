@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     for f in ff:
         v = f(5)
-        print f.__name__, v
+        print(f.__name__, v)
         assert v == 120
 
 

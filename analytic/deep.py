@@ -44,7 +44,7 @@ delta:analytic blyth$
 
 import logging
 log = logging.getLogger(__name__)
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/analytic/deep_py" )
 
@@ -110,17 +110,17 @@ con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", bounda
 CSG.Serialize([con, obj], args.csgpath )
 
 
-print obj.txt
+print(obj.txt)
 
 
 subdepth = 1   # bileaf level, one step up from the primitives
 subtrees = obj.subtrees_(subdepth=subdepth)   # collect the bileafs
 ops = obj.operators_(minsubdepth=subdepth+1)  # look at operators above the bileafs 
 
-print "ops:", map(CSG.desc, ops)
+print("ops:",list(map(CSG.desc, ops)))
 
 for i,sub in enumerate(subtrees):
-    print "\n\nsub %s " % i
+    print("\n\nsub %s " % i)
     sub.analyse()
     sub.dump(detailed=True)
 

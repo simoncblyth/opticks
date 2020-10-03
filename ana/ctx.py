@@ -24,6 +24,21 @@
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
+import sys, codecs
+if sys.version_info.major > 2:
+    u_ = lambda _:_                            # py3 strings are unicode already 
+    b_ = lambda _:codecs.latin_1_encode(_)[0]  # from py3 unicode string to bytes
+    d_ = lambda _:codecs.latin_1_decode(_)[0]  # from bytes to py3 unicode string
+else:
+    u_ = lambda _:unicode(_, "utf-8")          # py2 strings are bytes
+    b_ = lambda _:_
+    d_ = lambda _:_
+pass
+lfilter = lambda *args:list(filter(*args))
+lmap = lambda *args:list(map(*args))
+
+
+
 class Ctx(dict):
     """
     Utility providing conversions between various ways of addressing comparison histograms
@@ -80,10 +95,10 @@ class Ctx(dict):
         sqlab[:nsqs] = sqs 
 
         rls = np.tile(sqlab, nsqs).reshape(nsqs,-1)
-        for ir in range(nsqs):rls[ir,ir] = "[" + rls[ir,ir] + "]"
-
-        rlabs = map( lambda ir:" ".join(filter(None,rls[ir])), range(nsqs))
-
+        for ir in range(nsqs):
+            rls[ir,ir] = b_("[") + rls[ir,ir] + b_("]")  
+        pass
+        rlabs = map(lambda ir:" ".join(lmap(d_, rls[ir][rls[ir] != b_("")])), range(nsqs))  
         return rlabs  
 
 
@@ -316,6 +331,12 @@ def test_reclab2ctx_():
          log.info(" %50s -> %50r -> %s " % (k, ctx, qctx ))
          assert qctx == qctx_x, ( qctx, qctx_x ) 
 
+def test_reclab2ctx_2(ok):
+     reclab = "[TO] AB"
+     ctx = Ctx.reclab2ctx_(reclab, det=ok.det, tag=ok.tag)
+     print(ctx)
+ 
+
 
 def test_pctx2ctx_5():
 
@@ -346,19 +367,99 @@ def test_pctx2ctx_2():
              log.info( " %r -> %s " % (ctx, ctx.pctx))
 
 
+def test_reclabs_0():
+    """
+    This works in py2+py3 but its ugly, because py3 makes it 
+    awkward to flip back and forth between numpy bytes and strings. 
+
+    Solution is to avoid the flipping : do everything in numpy bytes 
+    and then flip back to python just as the last step.
+    """
+
+    #seq0 = "AA BB CC DD EE FF GG HH II JJ KK LL MM NN OO PP"
+    seq0 = "AA BB CC DD EE FF GG HH"
+
+    sqs = seq0.split()
+    nsqs = len(sqs)
+
+    sqlab = np.zeros( (16), dtype="|S4" )
+    sqlab[:nsqs] = sqs 
+
+    rls = np.tile(sqlab, nsqs).reshape(nsqs,-1)
+    for ir in range(nsqs):
+        rls[ir,ir] = b_("[") + rls[ir,ir] + b_("]")  
+    pass
+
+    rlabs = lmap(lambda ir:" ".join(lmap(d_,lfilter(lambda _:_ != b_(""),rls[ir]))), range(nsqs))
+
+    for rlab in rlabs:
+        print(rlab)
+    pass
+
+
+def test_reclabs_1():
+
+    seq0 = "AA BB CC DD EE FF GG HH"
+
+    sqs = seq0.split()
+    nsqs = len(sqs)
+
+    sqlab = np.zeros( (16), dtype="|S4" )
+    sqlab[:nsqs] = sqs 
+
+    rls = np.tile(sqlab, nsqs).reshape(nsqs,-1)
+    for ir in range(nsqs):
+        rls[ir,ir] = b_("[") + rls[ir,ir] + b_("]")  
+    pass
+
+    rlabs = []
+    for ir in range(nsqs):
+        a = rls[ir]
+        l = a[a != b_("")] 
+        rlab = " ".join(lmap(d_, l))  
+        rlabs.append(rlab)
+    pass
+
+    for rlab in rlabs:
+        print(rlab)
+    pass
+
+
+def test_reclabs_2():
+    seq0 = "AA BB CC DD EE FF GG HH"
+
+    sqs = seq0.split()
+    nsqs = len(sqs)
+
+    sqlab = np.zeros( (16), dtype="|S4" )
+    sqlab[:nsqs] = sqs 
+
+    rls = np.tile(sqlab, nsqs).reshape(nsqs,-1)
+    for ir in range(nsqs):
+        rls[ir,ir] = b_("[") + rls[ir,ir] + b_("]")  
+    pass
+    rlabs = map(lambda ir:" ".join(lmap(d_, rls[ir][rls[ir] != b_("")])), range(nsqs))  
+
+    for rlab in rlabs:
+        print(rlab)
+    pass
+
+
     
 if __name__ == '__main__':
-     from opticks.ana.main import opticks_main
-     ok = opticks_main()
+    from opticks.ana.main import opticks_main
+    ok = opticks_main()
 
-     reclab = "[TO] AB"
+    #test_reclab2ctx_()
+    #test_reclab2ctx_2(ok)
+    #test_pctx2ctx_5()
+    #test_pctx2ctx_2()
 
-     ctx = Ctx.reclab2ctx_(reclab, det=ok.det, tag=ok.tag)
-      
-     print(ctx)
- 
-     test_reclab2ctx_()
 
-     #test_pctx2ctx_5()
-     #test_pctx2ctx_2()
- 
+    #test_reclabs_0() 
+    #test_reclabs_1() 
+
+
+
+
+

@@ -179,8 +179,8 @@ class OpticksEnv(object):
         self.setdefault("TMP",                     self.TMP )
 
     def legacy_init(self): 
-        assert os.environ.has_key("IDPATH"), "IDPATH envvar is required, for legacy running"
-        if os.environ.has_key("OPTICKS_KEY"):
+        assert "IDPATH" in os.environ, "IDPATH envvar is required, for legacy running"
+        if "OPTICKS_KEY" in os.environ:
             del os.environ['OPTICKS_KEY']
             log.warning("legacy_init : OPTICKS_KEY envvar deleted for legacy running, unset IDPATH to use direct_init" )
         pass

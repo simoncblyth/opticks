@@ -52,7 +52,7 @@ class Code(dict):
         return int(nls[0][0])+1 
 
     def compile_(self):
-        print "compiling : %(cmd)s " % self
+        print("compiling : %(cmd)s " % self)
         rc = os.system(self["cmd"])
         assert rc == 0, rc
 
@@ -118,40 +118,40 @@ class Standalone(object):
 
         target = debugger.CreateTargetWithFileAndArch (exe, lldb.LLDB_ARCH_DEFAULT)
         if dump:
-            print "target:", target
+            print("target:%s" % target)
         assert target
 
         filename = target.GetExecutable().GetFilename()
         if dump:
-            print "filename ", filename
+            print("filename:%s" % filename)
 
         bp = target.BreakpointCreateByLocation(src, bpl )    # needs name.cc filename lacks .cc
         if dump:
-            print bp
+            print(bp)
 
         process = target.LaunchSimple (None, None, os.getcwd())   # synchronous mode returns at bp 
         if dump:
-            print "process:", process
+            print("process:%s" % process)
         assert process
 
         state = process.GetState ()
         if dump:
-            print "state:", state
+            print("state:%s" % state)
         assert state == lldb.eStateStopped
 
         thread = process.GetThreadAtIndex (0)
         if dump:
-            print "thread:", thread
+            print("thread:%s" % thread)
         assert thread
 
         frame = thread.GetFrameAtIndex (0)
         if dump:
-            print "frame", frame
+            print("frame:%s" % frame)
         assert frame
 
         function = frame.GetFunction()
         if dump:
-            print "function:", function
+            print("function:%s" % function)
         assert function
             
 
@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
     #co = Code(src="standalone.cc")  ## when compiling 
     co = Code(src="standalone.cc", exe="/tmp/standalone")  ## when using preexistinge exe
-    print co
+    print(co)
 
     st = Standalone(co)  
     error = lldb.SBError()

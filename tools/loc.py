@@ -51,7 +51,7 @@ class Loc(object):
         if pframe is not None:
             func = pframe.f_code.co_name
             doc = pframe.f_code.co_consts[0]
-            doclines = filter(None, doc.split("\n")) if doc is not None else []
+            doclines = list(filter(None, doc.split("\n"))) if doc is not None else []
             label = doclines[0].lstrip() if len(doclines) > 0 else "no-docstring-label"  # 1st line of docstring
             tag, idx = self.Tag(func, name)
             hdr = FMT % (tag, label) 
@@ -80,7 +80,7 @@ def test_Loc():
     """
 
     loc = Loc(sys._getframe(), __name__)
-    print loc
+    print(loc)
 
 
 
@@ -91,9 +91,9 @@ def test_Introspect_(pframe):
     doclines = filter(None, doc.split("\n"))
     label = doclines[0].lstrip() if len(doclines) > 0 else "-"
 
-    print "doc:[%s]" % doc
-    print "func:[%s]" % func
-    print "label:[%s]" % label
+    print("doc:[%s]" % doc)
+    print("func:[%s]" % func)
+    print("label:[%s]" % label)
 
 def test_Introspect():
     test_Introspect_(sys._getframe())
