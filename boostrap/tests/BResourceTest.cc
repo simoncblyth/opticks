@@ -27,8 +27,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    bool testgeo(true); 
-    BOpticksResource br(testgeo) ; 
+    BOpticksResource br ; 
 
     const char* key = argc > 1 ? argv[1] : "tmpuser_dir" ; 
     const char* nval = argc > 2 ? argv[2] : "/tmp" ; 

@@ -28,7 +28,7 @@ struct BOpticksResourceTest
 {
     BOpticksResourceTest(const char* idpath)
         :
-        _res(false)
+        _res()
     {
         _res.setupViaID(idpath);
         _res.Summary();
@@ -36,7 +36,7 @@ struct BOpticksResourceTest
     
     BOpticksResourceTest(const char* srcpath, const char* srcdigest)
         :
-        _res(false)
+        _res()
     {
         _res.setupViaSrc(srcpath, srcdigest);
         _res.Summary();

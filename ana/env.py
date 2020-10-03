@@ -132,12 +132,15 @@ class OpticksEnv(object):
         self.common_init()
 
 
-    def get_install_prefix(self):
+    def get_install_prefix_from_OKTest(self):
         """
         Determine based on location of opticks executables two levels down 
         from install prefix
         """
         return os.path.dirname(os.path.dirname(os.popen("which OKTest").read().strip()))
+
+    def get_install_prefix(self):
+        return os.environ["OPTICKS_PREFIX"]
 
     def direct_init(self): 
         """

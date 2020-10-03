@@ -26,6 +26,7 @@ Strictly Non-numpy basics
 
 import os, logging, json, ctypes, subprocess, datetime, re
 from collections import OrderedDict as odict 
+import numpy as np
 from opticks.ana.enum_ import Enum 
 
 log = logging.getLogger(__name__) 
@@ -62,7 +63,7 @@ def translate_xml_identifier_(name):
     return name.replace("__","/").replace("--","#").replace("..",":") 
 
 
-splitlines_ = lambda txtpath:file(txtpath).read().splitlines()
+splitlines_ = lambda txtpath:open(txtpath).read().splitlines()
 
 def now_(fmt="%Y%m%d-%H%M"):
     return datetime.datetime.now().strftime(fmt)
@@ -120,9 +121,39 @@ def makedirs_(path):
     return path 
 
 expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
-json_load_ = lambda path:json.load(file(expand_(path)))
-json_save_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"))
-json_save_pretty_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"), sort_keys=True, indent=4, separators=(',', ': '))
+json_load_ = lambda path:json.load(open(expand_(path)))
+json_save_ = lambda path, d:json.dump(d, open(makedirs_(expand_(path)),"w"), cls=NPEncoder)
+json_save_pretty_ = lambda path, d:json.dump(d, open(makedirs_(expand_(path)),"w"),cls=NPEncoder, sort_keys=True, indent=4, separators=(',', ': '))
+
+class NPEncoder(json.JSONEncoder):
+    """ 
+    Custom encoder for numpy data types 
+    https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not-json-serializable/50916741 
+    """
+    def default(self, obj):
+        if isinstance(obj, (np.int_, np.intc, np.intp, np.int8,
+                            np.int16, np.int32, np.int64, np.uint8,
+                            np.uint16, np.uint32, np.uint64)):
+
+            return int(obj)
+
+        elif isinstance(obj, (np.float_, np.float16, np.float32, np.float64)):
+            return float(obj)
+
+        elif isinstance(obj, (np.complex_, np.complex64, np.complex128)):
+            return {'real': obj.real, 'imag': obj.imag}
+
+        elif isinstance(obj, (np.ndarray,)):
+            return obj.tolist()
+
+        elif isinstance(obj, (np.bool_)):
+            return bool(obj)
+
+        elif isinstance(obj, (np.void)): 
+            return None
+
+        return json.JSONEncoder.default(self, obj)
+
 
 
 

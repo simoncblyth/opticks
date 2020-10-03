@@ -245,8 +245,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    bool testgeo(false); 
-    BOpticksResource rsc(testgeo) ;   // sets OPTICKS_INSTALL_PREFIX envvar
+    BOpticksResource rsc ;   // sets OPTICKS_INSTALL_PREFIX envvar
 
     //test_createSliced();
     //test_createReciprocalCDF();

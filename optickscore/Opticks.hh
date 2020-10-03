@@ -181,8 +181,9 @@ class OKCORE_API Opticks {
        void cleanup();
        void postgeocache();
        void postpropagate();
+   public:
        void ana();
-
+       OpticksAna*          getAna() const ; 
    public:
        // profile ops
        //template <typename T> void profile(T label);
@@ -422,7 +423,7 @@ class OKCORE_API Opticks {
        const char*          getAnaKey() const ;
        const char*          getAnaKeyArgs() const ;
    public:
-       OpticksResource*     getResource(); 
+       OpticksResource*     getResource() const ; 
        void                 dumpResource() const ; 
        OpticksRun*          getRun(); 
    public:

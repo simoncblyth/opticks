@@ -37,8 +37,7 @@ struct HitsNPYTest
 {
     HitsNPYTest( const char* idpath )
         :
-        _testgeo(false), 
-        _res(_testgeo)
+        _res()
     {
         
         _res.setupViaID(idpath); 

@@ -35,17 +35,25 @@ class Level(object):
     INFO = -10
     DEBUG = -20
 
-    level2name = { FATAL:"FATAL", ERROR:"ERROR", WARNING:"WARNING", INFO:"INFO", DEBUG:"DEBUG" }
-    name2level = { "FATAL":FATAL, "ERROR":ERROR, "WARNING":WARNING, "INFO":INFO, "DEBUG":DEBUG  }
-    level2func = { FATAL:fatal_, ERROR:error_, WARNING:warning_, INFO:info_, DEBUG:debug_ }
+    MISSING = -30   ## expedient whilst debugging missing levels
+
+    level2name = { FATAL:"FATAL", ERROR:"ERROR", WARNING:"WARNING", INFO:"INFO", DEBUG:"DEBUG", MISSING:"MISSING" }
+    name2level = { "FATAL":FATAL, "ERROR":ERROR, "WARNING":WARNING, "INFO":INFO, "DEBUG":DEBUG, "MISSING":MISSING  }
+    level2func = { FATAL:fatal_, ERROR:error_, WARNING:warning_, INFO:info_, DEBUG:debug_, MISSING:fatal_ }
 
 
     @classmethod
     def FromName(cls, name):
+        if name is None:
+            name = "MISSING"
+        pass     
         level = cls.name2level[name] 
         return cls(name, level) 
     @classmethod
     def FromLevel(cls, level):
+        if level is None:
+            level = MISSING
+        pass
         name = cls.level2name[level] 
         return cls(name, level) 
 

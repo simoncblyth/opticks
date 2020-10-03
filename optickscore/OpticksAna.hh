@@ -44,16 +44,20 @@ such as OKG4Mgr and OKMgr.
 
 class OKCORE_API OpticksAna
 {
+       friend struct OpticksAnaTest ;   
        static const plog::Severity LEVEL ; 
        static const char* DEFAULT_EXEC ; 
+       static const char* FALLBACK_SCRIPT_DIR ; 
     public:
        OpticksAna(Opticks* ok);
        void run();
    private:
-       std::string getCommandline(const char* anakey);
+       std::string getCommandLine(const char* anakey) const ;
        bool isKeyEnabled(const char* anakey) const ;
-       const char* getScript(const char* anakey);
-       std::string getArgs(const char* anakey);
+       const char* getScript(const char* anakey) const ;
+       const char* getScriptResolved(const char* anakey) const ;
+       bool isPythonScript(const char* anakey) const ;
+       std::string getArgs(const char* anakey) const ;
        void setEnv();
    private:
        Opticks*             m_ok ; 

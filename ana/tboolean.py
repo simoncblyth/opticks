@@ -43,7 +43,9 @@ if __name__ == '__main__':
 
     log.info(ok.brief)
 
+    log.info("[AB") 
     ab = AB(ok)
+    log.info("]AB") 
     ab.dump()
 
     rc = ab.RC

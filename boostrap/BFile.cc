@@ -189,6 +189,7 @@ const std::vector<std::string> BFile::envvars = {
    "TMP", 
    "HOME",
    "OPTICKS_INSTALL_PREFIX",    // needed for OpticksFlags to find the enum header
+   "OPTICKS_PREFIX", 
    "OPTICKS_GEOCACHE_PREFIX",  
    "OPTICKS_EVENT_BASE",
    "OPTICKS_HOME",              // needed by OInterpolationTest to find a python script
@@ -264,6 +265,13 @@ std::string BFile::ResolveKey( const char* _key )
         assert( idpath ); 
         evalue = idpath ;  
         LOG(error) << "replacing $IDPATH with " << evalue ; 
+    }
+    else if(strcmp(key,"PREFIX")==0 ) 
+    {
+        const char* prefix = BResource::GetDir("install_prefix") ; 
+        assert( prefix ); 
+        evalue = prefix ;  
+        LOG(LEVEL) << "replacing $PREFIX with " << evalue ; 
     }
     else if(strcmp(key,"DATADIR")==0 ) 
     {
@@ -876,5 +884,18 @@ std::size_t BFile::FileSize( const char* path_ )
     bool exists = fs::exists(fsp) && fs::is_regular_file(fsp) ;
     return exists ? fs::file_size(fsp) : 0 ; 
 }
+
+
+const char* BFile::ResolveScript(const char* script_name, const char* fallback_directory)
+{
+    std::string path = SSys::Which(script_name); 
+    if(path.empty() && fallback_directory != NULL)
+    {
+        path = FormPath(fallback_directory, script_name);   
+    }
+    return path.empty() ? NULL : strdup(path.c_str()) ; 
+}
+
+
 
 

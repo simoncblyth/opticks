@@ -109,9 +109,9 @@ TODO: eliminate testgeo param
 **/
 
 
-BOpticksResource::BOpticksResource(bool testgeo)
+BOpticksResource::BOpticksResource()
     :
-    m_testgeo(testgeo), 
+    m_testgeo(false), 
     m_log(new SLog("BOpticksResource::BOpticksResource","",debug)),
     m_setup(false),
     m_key(BOpticksKey::GetKey()),   // will be NULL unless BOpticksKey::SetKey has been called 

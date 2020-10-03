@@ -597,7 +597,10 @@ void Opticks::ana()
 {
    m_ana->run();
 }
-
+OpticksAna* Opticks::getAna() const 
+{
+    return m_ana  ; 
+}
 
 
 NPY<unsigned>* Opticks::getMaskBuffer() const 
@@ -1209,7 +1212,8 @@ void Opticks::saveParameters() const
 
 
 
-OpticksResource* Opticks::getResource()
+
+OpticksResource* Opticks::getResource() const 
 {
     return m_resource  ; 
 }

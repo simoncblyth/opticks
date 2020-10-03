@@ -523,6 +523,27 @@ void test_OPTICKS_USER_HOME()
 
 }
 
+void test_ResolveScript()
+{
+    LOG(info); 
+    BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
+    //rsc.Summary();
+
+    const char* script = "tboolean.py" ; 
+    std::vector<const char*> fallback_dirs = {
+         "$OPTICKS_INSTALL_PREFIX/py/opticks/ana",
+         "$OPTICKS_PREFIX/py/opticks/ana",
+         "$PREFIX/py/opticks/ana"
+        };  
+
+    for(unsigned i=0 ; i < fallback_dirs.size() ; i++)
+    {
+        const char* fallback_dir = fallback_dirs[i];  
+        const char* path = BFile::ResolveScript(script,fallback_dir); 
+        std::cout << "BFile::ResolveScript(\"" << script << "\", \"" << fallback_dir << "\") = " << path << std::endl ;    
+    }
+}
+
 
  
 
@@ -572,7 +593,8 @@ int main(int argc, char** argv)
 
    //test_OPTICKS_USER_HOME(); 
 
-   test_CurrentDirectoryName(); 
+   //test_CurrentDirectoryName(); 
+   test_ResolveScript(); 
 
    return 0 ; 
 }

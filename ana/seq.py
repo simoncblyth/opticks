@@ -21,6 +21,7 @@
 import os, datetime, logging, re, signal
 log = logging.getLogger(__name__)
 import numpy as np
+lfilter = lambda *args:list(filter(*args))
 
 try:
     reduce
@@ -506,7 +507,7 @@ class SeqTable(object):
         body_ = lambda _:" %7s " % _
         head = title + " ".join(map(body_, self.cnames ))
         tail = space + " ".join(map(body_, self.tots ))
-        return "\n".join([self.shortname,head,tail]+ filter(None,self.lines[self.sli]) + [tail])
+        return "\n".join([self.shortname,head,tail]+ lfilter(None,self.lines[self.sli]) + [tail])
 
     def __getitem__(self, sli):
          self.sli = sli

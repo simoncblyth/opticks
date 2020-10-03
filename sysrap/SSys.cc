@@ -127,7 +127,7 @@ std::string SSys::Which(const char* script)
     bool chomp = true ; 
 
     int rc(0); 
-    std::string path = SSys::POpen("which", script, chomp, rc );
+    std::string path = SSys::POpen("which 2>/dev/null", script, chomp, rc );
     LOG(LEVEL) 
          << " script " << script
          << " path " << path 
@@ -467,6 +467,7 @@ void SSys::Dump(const char* msg)
     std::cerr << std::endl  ;   
     COUNT++ ; 
 }
+
 
 
 const char* SSys::ResolveExecutable(const char* envvar_key, const char* default_executable)

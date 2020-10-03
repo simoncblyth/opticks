@@ -20,21 +20,37 @@
 #include "Opticks.hh"
 #include "OpticksAna.hh"
 
-#include "SYSRAP_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
+
+
+struct OpticksAnaTest 
+{   
+    OpticksAnaTest(const Opticks* ok)
+    {
+        OpticksAna* ana = ok->getAna(); 
+        const char* anakey = ok->getAnaKey(); 
+        std::string cmdline = ana->getCommandLine(anakey ? anakey : "tboolean");  
+        LOG(info) 
+            << "anakey " << anakey
+            ;
+        std::cout << cmdline << std::endl ; 
+
+    }
+
+};
+
+
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    SYSRAP_LOG__ ; 
-    OKCORE_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv) ; 
     ok.configure();
-    ok.ana();
-  
+    //ok.ana();
+
+    OpticksAnaTest oat(&ok); 
+ 
     return ok.getRC();
 }
 

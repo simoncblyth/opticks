@@ -40,8 +40,7 @@
 
 void test_load_csg(int argc, char** argv)
 {
-    bool testgeo(false); 
-    BOpticksResource okr(testgeo) ;  
+    BOpticksResource okr ;  
     std::string treedir = okr.getDebuggingTreedir(argc, argv);
 
     NCSG* csg = NCSG::Load( treedir.c_str() );  

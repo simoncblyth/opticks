@@ -48,8 +48,7 @@ struct NSensorListTest
 {
     NSensorListTest( const char* idpath )
         :
-        _testgeo(false),
-        _res(_testgeo)
+        _res()
     {
         _res.setupViaID(idpath); 
         const char* idmpath = _res.getIdMapPath(); 

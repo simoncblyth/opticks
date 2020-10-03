@@ -34,8 +34,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    bool testgeo(false); 
-    BOpticksResource okr(testgeo) ;  // no Opticks at this level 
+    BOpticksResource okr ;  // no Opticks at this level 
 
     const char* dbgmesh = SSys::getenvvar("DBGMESH");
     int dbgnode = SSys::getenvint("DBGNODE", -1) ; 

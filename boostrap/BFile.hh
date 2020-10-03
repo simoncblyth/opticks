@@ -86,6 +86,7 @@ class BRAP_API BFile {
         static std::string createDir(const char* basedir, const char* subdir=NULL ) ; 
         static std::string prefixShorten( const char* path, const char* prefix_);
 
+        static const char* ResolveScript(const char* script_name, const char* fallback_directory=NULL);
 
     private:
        static void setOpticksPathPrefix(const char* prefix);

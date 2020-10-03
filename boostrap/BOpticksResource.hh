@@ -156,7 +156,7 @@ class BRAP_API  BOpticksResource {
 
         const char* makeIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) ;
    public:
-        BOpticksResource(bool testgeo);
+        BOpticksResource();
         virtual ~BOpticksResource();
         virtual void Summary(const char* msg="BOpticksResource::Summary");
    public:

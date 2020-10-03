@@ -41,10 +41,11 @@ from opticks.ana.make_rst_table import recarray_as_rst
 from opticks.ana.metadata import CompareMetadata
 from opticks.ana.abprofile import ABProfile
 from opticks.ana.absmry import ABSmry
+from opticks.ana.level import Level
 
 log = logging.getLogger(__name__)
 
-
+lmap = lambda *args:list(map(*args))
 
 ratio_ = lambda num,den:float(num)/float(den) if den != 0 else -1 
 
@@ -102,7 +103,7 @@ class Maligned(object):
 
     def __repr__(self):
         return "\n".join( ["ab.mal"] + self.lines() + [repr(self.sli)]
-                   + map(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli])) + ["ab.mal.migtab"]
+                   + lmap(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli])) + ["ab.mal.migtab"]
                    + [self.migtab(), "."]
                 ) 
 
@@ -131,7 +132,12 @@ class RC(object):
         self.rc = irc 
 
         levels = list(map(lambda _:_.level, list(filter(None, [ab.rpost_dv.maxlevel,ab.ox_dv.maxlevel,ab.ox_dv.maxlevel]))))
-        self.level = max(levels) if len(levels) > 0 else None
+        level = max(levels) if len(levels) > 0 else None
+
+        if level is None:
+            level = Level.MISSING  ## artifical setting whilst debugging 
+        pass 
+        self.level = level  
 
     def __repr__(self):
         return "RC 0x%.2x" % self.rc
@@ -335,6 +341,9 @@ class AB(object):
             self.compare_domains()
             self.compare()
             self.init_point()
+
+            log.info("ABSmry.Make self.level : %s " % self.level)  
+
             self.smry = ABSmry.Make(self)
             self.smry.save()  
         pass 
@@ -593,7 +602,7 @@ class AB(object):
         offset = 0 
         for isel,clab in enumerate(self.clabels[0:None]):
             sls = Ctx.reclabs_(clab)
-            nsls = len(sls)
+            nsls = len(list(sls))
             point.isel[offset:offset+nsls] = np.repeat( isel, nsls)
             point.irec[offset:offset+nsls] = np.arange( 0   , nsls)
             point.nrec[offset:offset+nsls] = np.repeat( nsls, nsls)

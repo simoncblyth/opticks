@@ -304,7 +304,7 @@ class QDVTab(object):
 
 
     def _get_float(self, att):
-        return map(lambda dv:float(getattr(dv, att)), filter(None,self.dvs))
+        return list(map(lambda dv:float(getattr(dv, att)), list(filter(None,self.dvs))))
 
     maxdv = property(lambda self:self._get_float("mx"))  
     def _get_maxdvmax(self):  

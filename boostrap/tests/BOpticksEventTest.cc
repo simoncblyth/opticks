@@ -124,8 +124,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    bool testgeo(true); 
-    BOpticksResource res(testgeo) ; 
+    //bool testgeo(true); 
+    BOpticksResource res ; 
     res.Summary();
 /*
 

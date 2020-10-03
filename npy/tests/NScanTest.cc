@@ -147,8 +147,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
 
-    bool testgeo(false); 
-    BOpticksResource okr(testgeo)  ;  // no Opticks at this level 
+    BOpticksResource okr ;  // no Opticks at this level 
     const char* basedir = okr.getDebuggingTreedir(argc, argv);  // uses debugging only IDPATH envvar
 
     const char* gltfconfig = "csg_bbox_parsurf=1" ;

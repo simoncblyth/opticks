@@ -80,7 +80,7 @@ TODO
 
 OpticksResource::OpticksResource(Opticks* ok) 
     :
-    BOpticksResource(ok->isTest()),
+    BOpticksResource(),
     m_log(new SLog("OpticksResource::OpticksResource","",debug)),
     m_ok(ok),
     m_query(new OpticksQuery(SSys::getenvvar(

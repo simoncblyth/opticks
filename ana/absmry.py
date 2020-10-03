@@ -109,10 +109,10 @@ class ABSmry(odict):
     def Make(cls, ab):
         s = cls()
         s.dir_ = ab.a.tagdir
-
-        for q in filter(None, map(str.strip,cls.KEYS.split("\n"))):
+        log.info("s.dir_ %s " % s.dir_)  
+        for q in list(filter(None, list(map(str.strip,cls.KEYS.split("\n"))))):
             v = eval(q)
-            #log.info("eval(%s) -> %s  %r " % (q, v, type(v)) )
+            log.info("eval(%s) -> %s  %r " % (q, v, type(v)) )
             if type(v) is np.float32:
                 v = float(v)
             pass 
@@ -166,6 +166,7 @@ class ABSmry(odict):
         pass
         path = self.Path(dir_) 
         log.info("saving to %s " % path)
+        log.info("self %s " % self)
         json_save_(path, self )
 
 

@@ -19,7 +19,9 @@
 
 #include <sstream>
 
+#include "SStr.hh"
 #include "SSys.hh"
+#include "BFile.hh"
 #include "BResource.hh"
 
 #include "Opticks.hh"
@@ -32,6 +34,7 @@ const plog::Severity OpticksAna::LEVEL = debug ;
 
 
 const char* OpticksAna::DEFAULT_EXEC = "echo" ; 
+const char* OpticksAna::FALLBACK_SCRIPT_DIR = "$PREFIX/py/opticks/ana" ; 
 
 OpticksAna::OpticksAna(Opticks* ok) 
    :
@@ -49,22 +52,32 @@ bool OpticksAna::isKeyEnabled(const char* anakey) const
      return anakey && m_scripts.count(anakey) == 1 ;
 }
 
-const char* OpticksAna::getScript(const char* anakey) 
+const char* OpticksAna::getScript(const char* anakey) const 
 {
-    return isKeyEnabled(anakey) ? strdup(m_scripts[anakey].c_str()) : DEFAULT_EXEC  ;  
+    return isKeyEnabled(anakey) ? strdup(m_scripts.at(anakey).c_str()) : NULL  ;  
 }
 
+bool OpticksAna::isPythonScript(const char* anakey) const 
+{
+    const char* script = getScript(anakey);
+    return SStr::EndsWith(script, ".py"); 
+}
 
-std::string OpticksAna::getArgs(const char* /*anakey*/)
+const char* OpticksAna::getScriptResolved(const char* anakey) const 
+{
+    const char* script = getScript(anakey); 
+    if( script == NULL ) return DEFAULT_EXEC ; 
+    return BFile::ResolveScript(script, FALLBACK_SCRIPT_DIR );
+}
+
+std::string OpticksAna::getArgs(const char* /*anakey*/) const 
 {
     const char* anakeyargs = m_ok->getAnaKeyArgs();
     std::stringstream ss ; 
     ss
          << "--tagoffset " << m_ok->getTagOffset() << " "
          << "--tag " << m_ok->getEventTag() << " "
-         //<< "--det " << m_ok->getEventDet() << " "
          << "--cat " << m_ok->getInputUDet() << " "     
-         //<< "--det " << m_ok->getInputUDet() << " "
          << "--pfx " << m_ok->getEventPfx() << " "
          << "--src " << m_ok->getSourceType() << " "
          << "--show " 
@@ -74,11 +87,14 @@ std::string OpticksAna::getArgs(const char* /*anakey*/)
     return ss.str();
 }
 
-std::string OpticksAna::getCommandline(const char* anakey)
+std::string OpticksAna::getCommandLine(const char* anakey) const 
 {
+    bool py = isPythonScript(anakey); 
+
     std::stringstream ss ; 
+    if(py) ss << SSys::ResolvePython() << " " ; 
     ss
-       << getScript(anakey) << " "
+       << getScriptResolved(anakey) << " "
        << getArgs(anakey) << " "
        ;
     return ss.str();
@@ -96,7 +112,7 @@ void OpticksAna::run()
 
    if(!enabled) return ; 
 
-   std::string cmdline = getCommandline(anakey);
+   std::string cmdline = getCommandLine(anakey);
 
    LOG(info) << " cmdline " << cmdline ;  
 

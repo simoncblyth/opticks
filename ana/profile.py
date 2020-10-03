@@ -73,6 +73,8 @@ scan-pf-0 OKG4Test 239s for 1M::
 from __future__ import print_function
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
+lmap = lambda *args:list(map(*args))
+
 
 #from opticks.ana.debug import MyPdb
 """
@@ -448,11 +450,11 @@ class Profile(object):
 
         nli = stop - start
         if nli < 10:
-            ll = map(lambda i:self.line(i), np.arange(start, stop)) 
+            ll = lmap(lambda i:self.line(i), np.arange(start, stop)) 
         else:
-            ll = map(lambda i:self.line(i), np.arange(start, start+5) ) 
+            ll = lmap(lambda i:self.line(i), np.arange(start, start+5) ) 
             ll += [" ..."]
-            ll += map(lambda i:self.line(i), np.arange(stop - 5, stop) )   
+            ll += lmap(lambda i:self.line(i), np.arange(stop - 5, stop) )   
         pass
         return ll
 
