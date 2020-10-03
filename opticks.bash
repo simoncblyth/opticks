@@ -763,6 +763,11 @@ opticks-setup-generate(){
     local msg="=== $FUNCNAME :"
     local rc
 
+    : check OPTICKS_PREFIX envvar and dir exists and is distinct from opticks-home 
+    opticks-check-prefix
+    rc=$?
+    [ ! $rc -eq 0 ] && return $rc
+
     : check Geant4 is on CMAKE_PREFIX_PATH 
     opticks-check-geant4    
     rc=$?
@@ -1231,6 +1236,26 @@ opticks-check-geant4(){
    # $(opticks-home)/bin/find_package.py G4 --index 0 --nocache
     return 0 
 }
+
+
+opticks-check-prefix(){
+    local msg="=== $FUNCNAME :"
+    if [ -z "$OPTICKS_PREFIX" ]; then 
+        echo $msg ERROR no OPTICKS_PREFIX envvar
+        return 1 
+    fi 
+    if [ ! -d "$OPTICKS_PREFIX" ]; then 
+        echo $msg ERROR no OPTICKS_PREFIX $OPTICKS_PREFIX directory 
+        return 2
+    fi 
+    if [ "$OPTICKS_PREFIX" == "$(opticks-home)" ]; then 
+        echo $msg ERROR OPTICKS_PREFIX $OPTICKS_PREFIX directory MUST NOT be the same as source directory opticks-home:$(opticks-home)  
+        return 3
+    fi 
+    return 0 
+}
+
+
 
 
 opticks-tools(){ cat << EOT

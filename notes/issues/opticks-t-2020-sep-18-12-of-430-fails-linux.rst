@@ -2,6 +2,20 @@ opticks-t-2020-sep-18-12-of-430-fails-linux
 ==================================================
 
 
+
+Finally down to no slow, zero FAILs using python3 for analysis
+---------------------------------------------------------------
+
+::
+
+
+    SLOW: tests taking longer that 15 seconds
+
+    FAILS:  0   / 435   :  Sun Oct  4 00:03:43 2020   
+
+
+
+
 Now : no slow, 1 FAIL : IntegrationTests.tboolean.box 
 -------------------------------------------------------
 
