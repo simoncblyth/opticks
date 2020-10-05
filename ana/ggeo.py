@@ -50,11 +50,12 @@
 import os
 import numpy as np
 from opticks.ana.blib import BLib
+from opticks.ana.key import Key 
 
 tx_load = lambda _:list(map(str.strip, open(_).readlines()))
 
 class GGeo(object):
-
+    OPTICKS_KEYDIR = Key.Keydir(os.environ["OPTICKS_KEY"])
     key2aname = {
       "bbox4":"bbox",
       "center4":"center_extent",
@@ -66,11 +67,13 @@ class GGeo(object):
             name = name[:-3]
         pass 
         aname = cls.key2aname.get(name, name) 
-        return os.path.expandvars("$OPTICKS_KEYDIR/%s/%d/%s.npy" % (reldir,ridx, aname))
+        opticks_keydir = cls.OPTICKS_KEYDIR 
+        return os.path.expandvars("{opticks_keydir}/{reldir}/{ridx}/{aname}.npy".format(**locals()))
 
     @classmethod   
     def TxtPath(cls, name): 
-        return os.path.expandvars("$OPTICKS_KEYDIR/%s" % (name))
+        opticks_keydir = cls.OPTICKS_KEYDIR 
+        return os.path.expandvars("{opticks_keydir}/{name}".format(**locals()))
 
     @classmethod   
     def Three2Four(cls, a, w=1): 
@@ -140,10 +143,12 @@ class GGeo(object):
         return attn  
 
     def __init__(self):
-        mmidx = sorted(map(int,os.listdir(os.path.expandvars("$GC/GMergedMesh"))))
+        keydir = cls.OPTICKS_KEYDIR
+        path = os.path.expandvars("{keydir}/GMergedMesh".format(**locals()))
+        mmidx = sorted(map(int,os.listdir(path)))
         mmmx = mmidx[-1]
         self.mmmx = mmmx 
-        blib = BLib("$GC")
+        blib = BLib(keydir)
         self.blib = np.array(blib.names().split("\n"))
 
     def get_array(self, ridx, name):

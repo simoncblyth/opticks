@@ -6,7 +6,6 @@ GNodeLib.py
 Geocache nodelib to load is controlled by OPTICKS_KEYDIR envvar. Set that in ~/.opticks_config with::
 
     export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.50a18baaf29b18fae8c1642927003ee3  ## example key  
-    export OPTICKS_KEYDIR=$(geocache-keydir)  # derived from OPTICKS_KEY see geocache-info
 
 ipython -i GNodeLib.py::
 
@@ -54,6 +53,8 @@ TODO:
 import os, numpy as np, argparse, logging
 log = logging.getLogger(__name__)
 
+from opticks.ana.key import Key 
+
 class Txt(list):
     def __init__(self, *args, **kwa):
         list.__init__(self, *args, **kwa)
@@ -66,14 +67,16 @@ class Node(object):
     def __init__(self, nlib, idx):
         self.nlib = nlib
         self.idx = idx
+    def __repr__(self):
+        return "### Node idx:%d " % self.idx
     def __str__(self):
-        return "\n".join(map(lambda k:"%2s\n%r\n" % (k, getattr(self.nlib,k.lower())[idx]), self.nlib.key2name.keys()))
+        return "\n".join([repr(self),""]+list(map(lambda k:"%2s\n%r\n" % (k, getattr(self.nlib,k.lower())[idx]), self.nlib.k2name.keys())))
 
 
 class GNodeLib(object):
-
+    OPTICKS_KEYDIR = Key.Keydir(os.environ["OPTICKS_KEY"])
     RELDIR = "GNodeLib" 
-    key2name = {
+    k2name = {
       "TR":"volume_transforms.npy",
       "BB":"volume_bbox.npy",
       "ID":"volume_identity.npy",
@@ -83,21 +86,24 @@ class GNodeLib(object):
     }
 
     @classmethod   
-    def Path(cls, key): 
-        return os.path.expandvars("$OPTICKS_KEYDIR/%s/%s" % (cls.RELDIR,cls.key2name[key]))
+    def Path(cls, k): 
+        keydir = cls.OPTICKS_KEYDIR
+        reldir = cls.RELDIR
+        name = cls.k2name[k]
+        return os.path.expandvars("{keydir}/{reldir}/{name}".format(**locals()))
 
     @classmethod   
-    def Load(cls, key): 
-        path = cls.Path(key)
+    def Load(cls, k): 
+        path = cls.Path(k)
         return np.load(path) if path[-4:] == ".npy" else txt_load(path)
 
     def __init__(self):
-        for key in self.key2name.keys(): 
-            setattr( self, key.lower(), self.Load(key) )
+        for k in self.k2name.keys(): 
+            setattr( self, k.lower(), self.Load(k) )
         pass
 
     def __str__(self):
-        return "\n".join(map(lambda k:"%2s\n%r\n" % (k, getattr(self,k.lower())), self.key2name.keys()))
+        return "\n".join(map(lambda k:"%2s\n%r\n" % (k, getattr(self,k.lower())), self.k2name.keys()))
 
     def __getitem__(self, idx):
         return Node(self, idx)
@@ -116,6 +122,7 @@ def parse_args(doc, **kwa):
 
 if __name__ == '__main__':
     args = parse_args(__doc__)
+    print("GNodeLib.OPTICKS_KEYDIR : %s " % GNodeLib.OPTICKS_KEYDIR )
     nlib = GNodeLib()
     if args.dump: 
         print(nlib)

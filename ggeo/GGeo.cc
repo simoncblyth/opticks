@@ -934,34 +934,15 @@ void GGeo::saveGLTF() const
 GGeo::loadCacheMeta
 ----------------------
 
-Invoked at the tail of GGeo::loadFromCache 
+Invoked at the tail of GGeo::loadFromCache.
 
-* hmm : perhaps most of this belongs inside Opticks ??
-
+* see Opticks::loadOriginCacheMeta
 
 **/
 
 void GGeo::loadCacheMeta() // loads metadata that the process that created the geocache persisted into the geocache
 {
     LOG(LEVEL) ; 
-
-    /*
-    const char* path = m_ok->getCacheMetaPath(); 
-
-    assert( m_loadedcachemeta == NULL ); 
-    m_loadedcachemeta = NMeta::Load(path);
-    if( m_loadedcachemeta )
-    {
-        m_loadedcachemeta->dump("GGeo::loadCacheMeta");  
-    }
-    NMeta* lv2sd = m_loadedcachemeta->getObj("lv2sd"); 
-
-    std::string gdmlpath = Opticks::ExtractCacheMetaGDMLPath( m_loadedcachemeta ) ; 
-    m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str() ); 
-
-    LOG(fatal) << " origin_gdmlpath " << m_origin_gdmlpath ; 
-    */
-    
 
     NMeta* lv2sd = m_ok->getOriginCacheMeta("lv2sd"); 
     NMeta* lv2mt = m_ok->getOriginCacheMeta("lv2mt"); 

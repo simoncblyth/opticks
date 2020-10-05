@@ -90,6 +90,9 @@
 #include "OpticksCfg.hh"
 
 
+const int            Opticks::GEOCACHE_CODE_VERSION = 3 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
+
 const plog::Severity Opticks::LEVEL = PLOG::EnvLevel("Opticks", "DEBUG")  ; 
 
 
@@ -335,6 +338,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_nspec(NULL),
     m_resource(NULL),
     m_origin_gdmlpath(NULL),
+    m_origin_geocache_code_version(-1),
     m_state(NULL),
     m_apmtslice(NULL),
     m_apmtmedium(NULL),
@@ -1221,6 +1225,10 @@ void Opticks::dumpResource() const
 {
     return m_resource->Dump()  ; 
 }
+bool Opticks::isKeySource() const // name of current executable matches that of the creator of the geocache
+{
+    return m_resource->isKeySource();  
+}
 
 
 
@@ -1787,6 +1795,8 @@ void Opticks::updateCacheMeta()
     const char* runlabel = getRunLabel() ; 
     const char* runfolder = getRunFolder() ; 
 
+    m_runtxt->addLine(GEOCACHE_CODE_VERSION_KEY);
+    m_runtxt->addLine(GEOCACHE_CODE_VERSION); 
     m_runtxt->addLine("rundate") ;  
     m_runtxt->addLine( rundate ) ;  
     m_runtxt->addLine("runstamp" ) ;  
@@ -1794,6 +1804,7 @@ void Opticks::updateCacheMeta()
     m_runtxt->addLine("argline" ) ;  
     m_runtxt->addLine( argline) ;  
 
+    m_cachemeta->set<int>(GEOCACHE_CODE_VERSION_KEY, GEOCACHE_CODE_VERSION ); 
     m_cachemeta->set<std::string>("location", "Opticks::updateCacheMeta"); 
     m_cachemeta->set<std::string>("argline",  argline ); 
     m_cachemeta->set<std::string>("rundate", rundate ); 
@@ -1843,7 +1854,7 @@ Opticks::loadOriginCacheMeta
 
 Invoked by Opticks::configure 
 
-* TODO: avoid this also being done from GGeo::loadCacheMeta
+* see GGeo::loadCacheMeta
 
 **/
 
@@ -1854,9 +1865,37 @@ void Opticks::loadOriginCacheMeta()
     m_origin_cachemeta = NMeta::Load(cachemetapath); 
     m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta"); 
     std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
-    LOG(info) << " gdmlpath " << gdmlpath ; 
+    LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
 
     m_origin_gdmlpath = strdup(gdmlpath.c_str()); 
+    m_origin_geocache_code_version = m_origin_cachemeta->get<int>(GEOCACHE_CODE_VERSION_KEY, "0" );  
+
+    bool is_key_source = isKeySource(); 
+    bool geocache_code_version_match = m_origin_geocache_code_version == Opticks::GEOCACHE_CODE_VERSION ; 
+    bool geocache_code_version_pass = is_key_source || geocache_code_version_match ; 
+
+    if(is_key_source)  // necessary to allow creation of new geocache 
+    {
+        LOG(info) 
+           << " current executable isKeySource : hence immune to code matching requirements "
+           << "\n (current) Opticks::GEOCACHE_CODE_VERSION " << Opticks::GEOCACHE_CODE_VERSION
+           << "\n (loaded)  m_origin_geocache_code_version " << m_origin_geocache_code_version
+           ;           
+    }
+    else if(!geocache_code_version_pass)
+    {
+        LOG(fatal) 
+           << "\n (current) Opticks::GEOCACHE_CODE_VERSION " << Opticks::GEOCACHE_CODE_VERSION
+           << "\n (loaded)  m_origin_geocache_code_version " << m_origin_geocache_code_version
+           << "\n GEOCACHE_CODE_VERSION MISMATCH : PERSISTED CACHE VERSION DOES NOT MATCH CURRENT CODE "
+           << "\n -> RECREATE THE CACHE EG WITH geocache-create "
+           ; 
+    }
+    else
+    {
+         LOG(info) << "(pass) " << GEOCACHE_CODE_VERSION_KEY << " " << m_origin_geocache_code_version  ; 
+    }
+    assert( geocache_code_version_pass ); 
 }
 
 NMeta* Opticks::getOriginCacheMeta(const char* obj) const 

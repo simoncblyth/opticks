@@ -44,6 +44,7 @@ class BRAP_API BTxt {
        void prepDir(const char* path=NULL) const ; 
    public:
        void addLine(const std::string& line); 
+       void addLine(int value);
        void addLine(const char* line); 
        template<typename T> void addValue(T value); 
        const std::vector<std::string>& getLines() const ; 

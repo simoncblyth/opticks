@@ -116,6 +116,10 @@ class OKCORE_API Opticks {
        friend class CG4 ; 
        friend struct OpticksTest ; 
    public:
+       // (GEOCACHE_CODE_VERSION is incremented when code changes invalidate loading old geocache dirs)  
+       static const int    GEOCACHE_CODE_VERSION ; 
+       static const char*  GEOCACHE_CODE_VERSION_KEY ; 
+   public:
        static const plog::Severity LEVEL ;  
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
        static const char* DEFAULT_PFX ; 
@@ -425,6 +429,7 @@ class OKCORE_API Opticks {
    public:
        OpticksResource*     getResource() const ; 
        void                 dumpResource() const ; 
+       bool                 isKeySource() const ; // name of current executable matches that of the creator of the geocache
        OpticksRun*          getRun(); 
    public:
        OpticksQuery*        getQuery(); 
@@ -672,6 +677,7 @@ class OKCORE_API Opticks {
        OpticksEventSpec*    m_nspec ; 
        OpticksResource*     m_resource ; 
        const char*          m_origin_gdmlpath ; // formerly m_direct_gdmlpath
+       int                  m_origin_geocache_code_version ; 
        NState*              m_state ; 
        NSlice*              m_apmtslice ; 
        const char*          m_apmtmedium ; 

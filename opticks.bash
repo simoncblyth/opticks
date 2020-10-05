@@ -1796,7 +1796,7 @@ opticks-find(){
 opticks-if(){ opticks-f "$1" -Hi ; }   
 opticks-fl(){ opticks-f "$1" -l ; }   
 opticks-f(){   
-   : search most everything including C/C++ code/headers, txt cmake python scripts etc..
+   : search most everything including C/C++ code/headers, txt, rst, cmake python scripts etc..
    local str="${1:-ENV_HOME}"
    local opt=${2:--H}
 
@@ -1814,6 +1814,7 @@ opticks-f(){
        -name '*.hpp' -or \
        -name '*.h' -or \
        -name '*.txt' -or \
+       -name '*.rst' -or \
        -name '*.cmake' -or \
        -name '*.py' \
         \) \

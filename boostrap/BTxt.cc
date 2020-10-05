@@ -24,6 +24,7 @@
 #include <climits>
 
 #include "BFile.hh"
+#include "BStr.hh"
 
 #include "BTxt.hh"
 #include "PLOG.hh"
@@ -167,6 +168,11 @@ void BTxt::write(const char* path_) const
 void BTxt::addLine(const std::string& line)
 {
     addLine(line.c_str());
+}
+void BTxt::addLine(int value)
+{
+    const char* line = BStr::itoa(value); 
+    addLine(line);
 }
 void BTxt::addLine(const char* line)
 {

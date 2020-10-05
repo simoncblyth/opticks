@@ -22,7 +22,7 @@
 
 int main( int argc, char** argv )
 {
-    OPTICKS_LOG_COLOR__(argc, argv ); 
+    OPTICKS_LOG(argc, argv ); 
 
     const char* spec = "X4PhysicalVolumeTest.X4PhysicalVolume.World.3ad454e0990085f20c4689fce16c0819" ; 
 

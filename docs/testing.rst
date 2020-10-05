@@ -84,7 +84,13 @@ Opticks executables and scripts read the **OPTICKS_KEY** envvar to determine the
 Add some lines to `~/.opticks_config` exporting the OPTICKS_KEY::
 
     export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
-    export OPTICKS_KEYDIR=$(opticks-keydir)   # derived from OPTICKS_KEY
+
+The corresponding geocache directory is derived from this OPTICKS_KEY and can be found with the
+*geocache-keydir* bash function (python and C++ equivalents are *opticks.ana.key/Key* and *optickscore/OpticksResource.cc*)::
+
+    epsilon:ana blyth$ geocache-;geocache-keydir
+    /usr/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1
+
 
 
 Inspect the geocache with **opticks-kcd**
