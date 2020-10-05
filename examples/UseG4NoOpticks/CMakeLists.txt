@@ -19,7 +19,7 @@ endif()
 include(BCMDeploy)
 
 
-#set(G4_VERBOSE ON) 
+set(G4_VERBOSE ON) 
 find_package(G4 MODULE REQUIRED)   
 message(STATUS "G4_DIRDIR : ${G4_DIRDIR} ")
 

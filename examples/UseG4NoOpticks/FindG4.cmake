@@ -84,7 +84,7 @@ endif()
 if(G4_FOUND AND NOT TARGET Opticks::G4)
 
     set(_targets)
-    set(G4_targets)
+    set(G4_targets)  
     foreach(_lib ${Geant4_LIBRARIES})
        get_target_property(_type ${_lib} TYPE)
 
@@ -109,7 +109,7 @@ if(G4_FOUND AND NOT TARGET Opticks::G4)
               set_target_properties(${_tgt} PROPERTIES IMPORTED_LOCATION "${_loc}")
               set_target_properties(${_tgt} PROPERTIES INTERFACE_IMPORTED_LOCATION "${_loc}")  # workaround whitelisting restriction
               list(APPEND _targets ${_tgt})
-              list(APPEND G4_targets ${_tgt})
+              list(APPEND G4_targets ${_lib})  ## used by cmake/Modules/TopMetaTarget.cmake must not be opticks:: qualified 
            else()
               message(FATAL_ERROR "failed to locate expected lib ${_lib}  Geant4_DIR : ${Geant4_DIR}   G4_DIRDIR : ${G4_DIRDIR} ")
            endif()
@@ -138,7 +138,7 @@ if(G4_FOUND AND NOT TARGET Opticks::G4)
                                   INTERFACE_FIND_PACKAGE_NAME "G4 MODULE REQUIRED"
                                   INTERFACE_PKG_CONFIG_NAME "Geant4"
                            )
-    list(APPEND G4_targets "G4")   # still needed ? twas for standardized recursive dependency dumping (vague recollection)
+    list(APPEND G4_targets "G4")   ## used by cmake/Modules/TopMetaTarget.cmake  
 
     target_include_directories(Opticks::G4 INTERFACE "${Geant4_INCLUDE_DIRS}" )
     target_link_libraries(     Opticks::G4 INTERFACE "${_targets}" )
