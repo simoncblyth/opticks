@@ -113,6 +113,12 @@ class GGEO_API GNodeLib
         NPY<float>* getBoundingBox() const ; 
         NPY<float>* getCenterExtent() const ; 
     public:
+        unsigned getNumTransforms() const ; 
+        glm::mat4 getTransform(unsigned index) const ;
+        glm::vec4 getCE(unsigned index) const ;
+        std::string descVolume(unsigned index) const;
+        void dumpVolumes(const char* msg="GNodeLib::dumpVolumes", float extent_cut_mm=5000.f, int cursor=-1 ) const ; 
+    public:
         unsigned        addSensorVolume(const GVolume* volume) ;
         unsigned        getNumSensorVolumes() const ;
         const GVolume*  getSensorVolume(unsigned sensorIndex) const ;

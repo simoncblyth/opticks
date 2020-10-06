@@ -26,7 +26,10 @@ template <typename T> class NPY  ;
 template <typename T> class OpticksCfg ; 
 class NLookup ; 
 class NCSG ; 
+
+class GGeo ; 
 class GGeoBase ; 
+
 class GBndLib ; 
 
 class GenstepNPY ; 
@@ -101,6 +104,7 @@ class OKGEO_API OpticksGen
         OpticksGun*           m_gun ; 
         Opticks*              m_ok ; 
         OpticksCfg<Opticks>*  m_cfg ; 
+        GGeo*                 m_ggeo ; 
         GGeoBase*             m_ggb ; 
         GBndLib*              m_blib ; 
 

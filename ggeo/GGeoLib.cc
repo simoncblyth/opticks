@@ -52,36 +52,23 @@ const char* GGeoLib::GPARTS = "GParts" ;
 const char* GGeoLib::GPTS = "GPts" ; 
 
 
-const char* GGeoLib::RelDir(const char* name, bool analytic) // static
-{
-    return analytic ? BStr::concat(name, "Analytic", NULL) : name ; 
-}
-
-const char* GGeoLib::getRelDir(const char* name) const 
-{
-    return RelDir(name, m_analytic);
-}
-
-
 GBndLib* GGeoLib::getBndLib() const 
 {
     return m_bndlib ; 
 }
 
-
-GGeoLib* GGeoLib::Load(Opticks* opticks, bool analytic, GBndLib* bndlib)
+GGeoLib* GGeoLib::Load(Opticks* opticks, GBndLib* bndlib)
 {
-    GGeoLib* glib = new GGeoLib(opticks, analytic, bndlib);
+    GGeoLib* glib = new GGeoLib(opticks, bndlib);
     glib->loadFromCache();
     return glib ; 
 }
 
-GGeoLib::GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib) 
+GGeoLib::GGeoLib(Opticks* ok, GBndLib* bndlib) 
     :
     m_ok(ok),
     m_lodconfig(m_ok->getLODConfig()), 
     m_lod(m_ok->getLOD()), 
-    m_analytic(analytic),
     m_bndlib(bndlib),
     m_mesh_version(NULL),
     m_verbosity(m_ok->getVerbosity()),
@@ -133,12 +120,11 @@ void GGeoLib::save()
 
 
 
-bool GGeoLib::HasCacheConstituent(const char* idpath, bool analytic, unsigned ridx) 
+bool GGeoLib::HasCacheConstituent(const char* idpath, unsigned ridx) 
 {
     const char* sidx = BStr::itoa(ridx) ;
-    // reldir depends on m_analytic
-    std::string smmpath = BFile::FormPath(idpath, RelDir(GMERGEDMESH, analytic), sidx );
-    std::string sptpath = BFile::FormPath(idpath, RelDir(GPARTS, analytic),      sidx );
+    std::string smmpath = BFile::FormPath(idpath, GMERGEDMESH, sidx );
+    std::string sptpath = BFile::FormPath(idpath, GPARTS,      sidx );
 
     const char* mmpath = smmpath.c_str();
     const char* ptpath = sptpath.c_str();
@@ -153,9 +139,8 @@ void GGeoLib::removeConstituents(const char* idpath )
    {   
 
         const char* sidx = BStr::itoa(ridx) ;
-        // reldir depends on m_analytic
-        std::string smmpath = BFile::FormPath(idpath, getRelDir(GMERGEDMESH), sidx );
-        std::string sptpath = BFile::FormPath(idpath, getRelDir(GPARTS),      sidx );
+        std::string smmpath = BFile::FormPath(idpath, GMERGEDMESH, sidx );
+        std::string sptpath = BFile::FormPath(idpath, GPARTS,      sidx );
 
         const char* mmpath = smmpath.c_str();
         const char* ptpath = sptpath.c_str();
@@ -180,18 +165,14 @@ GGeoLib::loadConstituents
 ---------------------------
 
 * loads GMergedMesh, GParts and associates them 
-* GMergedMesh geocode ANA/TRI is set according to the m_analytic toggle
-* m_analytic toggle also changes the directory that gets loaded 
-
-  * this is kinda funny because GParts is always analytic 
 
 **/
 
 void GGeoLib::loadConstituents(const char* idpath )
 {
    LOG(LEVEL) 
-       << " mm.reldir " << getRelDir(GMERGEDMESH)
-       << " gp.reldir " << getRelDir(GPARTS)
+       << " mm.reldir " << GMERGEDMESH
+       << " gp.reldir " << GPARTS
        << " MAX_MERGED_MESH  " << MAX_MERGED_MESH 
        ; 
 
@@ -202,9 +183,9 @@ void GGeoLib::loadConstituents(const char* idpath )
    for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
    {   
         const char* sidx = BStr::itoa(ridx) ;
-        std::string smmpath = BFile::FormPath(idpath, getRelDir(GMERGEDMESH), sidx );
-        std::string sptpath = BFile::FormPath(idpath, getRelDir(GPARTS),      sidx );
-        std::string sptspath = BFile::FormPath(idpath, getRelDir(GPTS),       sidx );
+        std::string smmpath = BFile::FormPath(idpath,  GMERGEDMESH, sidx );
+        std::string sptpath = BFile::FormPath(idpath,  GPARTS,      sidx );
+        std::string sptspath = BFile::FormPath(idpath, GPTS,        sidx );
 
         const char* mmpath = smmpath.c_str();
         const char* ptpath = sptpath.c_str();
@@ -245,7 +226,8 @@ void GGeoLib::loadConstituents(const char* idpath )
             mm->setParts(parts);
             mm->setPts(pts);
             
-            mm->setGeoCode( m_analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED );  // assuming uniform : all analytic/triangulated GPU geom
+            mm->setGeoCode( OpticksConst::GEOCODE_ANALYTIC ); 
+            //mm->setGeoCode( OpticksConst::GEOCODE_TRIANGULATED );
 
             m_merged_mesh[ridx] = mm ; 
             ss << std::setw(3) << ridx << "," ; 
@@ -277,13 +259,13 @@ void GGeoLib::saveConstituents(const char* idpath)
 
         GMergedMesh* mm = it->second ; 
         assert(mm->getIndex() == ridx);
-        mm->save(idpath, getRelDir(GMERGEDMESH), sidx ); 
+        mm->save(idpath, GMERGEDMESH, sidx ); 
 
 
         GParts* pt = mm->getParts() ; 
         if(pt)  
         {          
-           std::string partsp_ = BFile::FormPath(idpath, getRelDir(GPARTS), sidx );
+           std::string partsp_ = BFile::FormPath(idpath, GPARTS, sidx );
            const char* partsp = partsp_.c_str();
            pt->save(partsp); 
         }
@@ -292,7 +274,7 @@ void GGeoLib::saveConstituents(const char* idpath)
         GPts* pts = mm->getPts() ; 
         if(pts)  
         {          
-           std::string ptsp_ = BFile::FormPath(idpath, getRelDir(GPTS), sidx );
+           std::string ptsp_ = BFile::FormPath(idpath, GPTS, sidx );
            const char* ptsp = ptsp_.c_str();
            pts->save(ptsp); 
         }
@@ -355,7 +337,6 @@ std::string GGeoLib::desc() const
     std::stringstream ss ; 
 
     ss << "GGeoLib"
-       << ( m_analytic ? " ANALYTIC " : " TRIANGULATED " ) 
        << " numMergedMesh " << getNumMergedMesh()
        << " ptr " << this
        ; 

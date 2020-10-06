@@ -1117,7 +1117,7 @@ unsigned int GMesh::getNumITransforms() const
 }
 
 
-float* GMesh::getTransform(unsigned int index)
+float* GMesh::getTransform(unsigned index) const 
 {
     if(index >= m_num_volumes)
     {
@@ -1130,13 +1130,25 @@ float* GMesh::getTransform(unsigned int index)
     return index < m_num_volumes ? m_transforms + index*16 : NULL  ;
 }
 
-float* GMesh::getITransform(unsigned int index)
+glm::mat4 GMesh::getTransform_(unsigned index) const 
+{
+    float* transform = getTransform(index) ;
+    glm::mat4 tr = glm::make_mat4(transform) ;
+    return tr ; 
+}
+
+float* GMesh::getITransform(unsigned index) const 
 {
     unsigned int num_itransforms = getNumITransforms();
     return index < num_itransforms ? m_itransforms + index*16 : NULL  ;
 }
 
-
+glm::mat4 GMesh::getITransform_(unsigned index) const 
+{
+    float* transform = getITransform(index) ;
+    glm::mat4 tr = glm::make_mat4(transform) ;
+    return tr ; 
+}
 
 
 

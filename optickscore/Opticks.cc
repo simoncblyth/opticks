@@ -86,12 +86,18 @@
 #include "OpticksAna.hh"
 #include "OpticksDbg.hh"
 
-
 #include "OpticksCfg.hh"
 
-
-const int            Opticks::GEOCACHE_CODE_VERSION = 3 ;  // (incremented when code changes invalidate loading old geocache dirs)   
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
+const int            Opticks::GEOCACHE_CODE_VERSION = 4 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+
+/**
+3: starting point 
+4: switch off by default addition of extra global_instance GMergedMesh, 
+   as GNodeLib now persists the "all volume" info enabling simplification of GMergedMesh 
+
+**/
+
 
 const plog::Severity Opticks::LEVEL = PLOG::EnvLevel("Opticks", "DEBUG")  ; 
 
@@ -299,6 +305,10 @@ TODO: handle in OpticksResource ? Why it need to be here ?
 Which makes it difficult for the key to be overridible from command line.
 
 
+
+
+
+
 **/
 
 bool Opticks::envkey()
@@ -307,7 +317,9 @@ bool Opticks::envkey()
     bool result = false ; 
     if(legacy)
     {
-        result = m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false ;    //  see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
+        LOG(fatal) << " legacy geometry is not supported anymore " ; 
+        assert(0); 
+        //result = m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false ;    //  see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
     }
     else
     {
@@ -933,9 +945,9 @@ const char* Opticks::getScintillationClass() const
 
 
 
-bool Opticks::isGlobalInstance() const // true : when not disabled with  --disableglobalinstance
+bool Opticks::isGlobalInstanceEnabled() const // --global_instance_enabled
 {
-    return m_cfg->hasOpt("disableglobalinstance") == false ; 
+    return m_cfg->hasOpt("global_instance_enabled") ; 
 }
 bool Opticks::isG4CodeGen() const  // --g4codegen
 {
@@ -992,22 +1004,25 @@ void Opticks::reportGeoCacheCoordinates() const
     const char* kspec = ok->getKeySpec() ; 
     const char* espec = SSys::getenvvar("OPTICKS_KEY", "NONE" ); 
 
-    LOG(info) << " ok.idpath  " << ok->getIdPath() ; 
-    LOG(info) << " ok.keyspec " << kspec  ; 
-    LOG(info) << " To reuse this geometry: " ; 
-    LOG(info) << "   1. set envvar OPTICKS_KEY=" << kspec ;   
-    LOG(info) << "   2. enable envvar sensitivity with --envkey argument to Opticks executables " ; 
+    LOG(info) << "ok.idpath  " << ok->getIdPath() ; 
+    LOG(info) << "ok.keyspec " << kspec  ; 
+    LOG(info) << " " ;   
+    LOG(info) << "To reuse this geometry:: " ; 
+    LOG(info) << " " ;   
+    LOG(info) << "    export OPTICKS_KEY=" << kspec ;   
+    LOG(info) << "    ## include above export in ~/.opticks_config " ;   
+    LOG(info) << " " ;   
 
-   if(strcmp(kspec, espec) == 0) 
-   {
-       LOG(info) << "This keyspec matches that of the current envvar " ; 
-   }
-   else
-   {
-       LOG(fatal) << "THE LIVE keyspec DOES NOT MATCH THAT OF THE CURRENT ENVVAR " ; 
-       LOG(info) << " (envvar) OPTICKS_KEY=" <<  espec ; 
-       LOG(info) << " (live)   OPTICKS_KEY=" <<  kspec ; 
-   }
+    if(strcmp(kspec, espec) == 0) 
+    {
+        LOG(info) << "This keyspec matches that of the current envvar " ; 
+    }
+    else
+    {
+        LOG(fatal) << "THE LIVE keyspec DOES NOT MATCH THAT OF THE CURRENT ENVVAR " ; 
+        LOG(info) << " (envvar) OPTICKS_KEY=" <<  espec ; 
+        LOG(info) << " (live)   OPTICKS_KEY=" <<  kspec ; 
+    }
 }
 
 

@@ -2246,6 +2246,40 @@ bin-(){             . $(opticks-home)/bin/bin.bash && bin-env $* ; }
 integration-(){     . $(opticks-home)/integration/integration.bash && integration-env $* ; }
 
 
+
+okconf(){ okconf- ; okconf-cd $* ; }
+sysrap(){ sysrap- ; sysrap-cd $* ; }
+brap(){   brap-;    brap-cd $* ; }
+npy(){    npy- ;    npy-cd $* ; }
+okc(){    okc-;     okc-cd $* ; }
+
+ggeo(){        ggeo-;        ggeo-cd $* ; }
+asirap(){      asirap-;      asirap-cd $* ; }
+openmeshrap(){ openmeshrap-; openmeshrap-cd $* ; }
+okg(){         okg-;         okg-cd $* ; }
+
+oglrap(){   oglrap-  ; oglrap-cd $* ; }
+cudarap(){  cudarap- ; cudarap-cd $* ; }
+thrap(){    thrap-   ; thrap-cd $* ; }
+oxrap(){    oxrap-   ; oxrap-cd $* ; }
+
+oxop(){     oxop- ; oxop-cd $* ; }
+okgl(){     okgl- ; okgl-cd $* ; }
+ok(){       ok- ; ok-cd $* ; }
+cfg4(){     cfg4- ; cfg4-cd $* ; }
+okg4(){     okg4- ; okg4-cd $* ; }
+
+g4ok(){     g4ok- ; g4ok-cd $* ; }
+x4(){       x4- ; x4-cd $* ; }
+x4gen(){    x4gen- ; x4gen-cd $* ; }
+yog(){      yog- ; yog-cd $* ; }
+
+bin(){          bin- ; bin-cd $* ; }
+integration(){  integration- ; integration-cd $* ; }
+
+
+
+
 ## opticks misc including python analysis/debugging ##
 
 ana-(){             . $(opticks-home)/ana/ana.bash && ana-env $*  ; }

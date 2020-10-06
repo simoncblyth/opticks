@@ -144,7 +144,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
-    m_geolib(new GGeoLib(m_ok,m_input_analytic,m_bndlib)),
+    m_geolib(new GGeoLib(m_ok, m_bndlib)),
     m_nodelib(new GNodeLib(m_ok)),
     m_meshlib(new GMeshLib(m_ok)),
     m_maker(new GMaker(m_ok, m_bndlib, m_basemeshlib)),
@@ -292,18 +292,18 @@ GMergedMesh* GGeoTest::initCreateCSG()
 
 
     // below normally done in  GGeo::deferredCreateGParts  when not --test
-    GPts* pts = tmm->getPts();  
+    // TODO: arrange to use standard method for testing too 
+    {
+        GPts* pts = tmm->getPts();  
 
-    const std::vector<const NCSG*>& solids = m_meshlib->getSolids(); 
-    GParts* parts = GParts::Create( pts, solids, verbosity ) ; 
-    parts->setBndLib(m_bndlib); 
-    parts->close(); 
+        const std::vector<const NCSG*>& solids = m_meshlib->getSolids(); 
+        GParts* parts = GParts::Create( pts, solids, verbosity ) ; 
+        parts->setBndLib(m_bndlib); 
+        parts->close(); 
 
-    tmm->setParts(parts);  
+        tmm->setParts(parts);  
+    }
 
-    // 
-    //unsigned nelem = solids.size() ; 
-    //addPlaceholderBuffers(tmm, nelem ); 
 
     std::vector<const GNode*> placements ; 
     placements.push_back(top); 
@@ -317,34 +317,26 @@ GMergedMesh* GGeoTest::initCreateCSG()
 }
 
 
+
 /**
-GGeoTest::addPlaceholderBuffers
---------------------------------
-
-Invoked from GGeoTest::initCreateCSG immediately after GMergedMesh::Create.
-
-Similar to GMergedMesh::addInstancedBuffers
-TODO: see if reuse of that is possible
-
-Although test geometry will always start analytic, it
-can happen that wish to subsequently test a triangulated 
-version of the geometry,  see 
-notes/issues/test-geometry-assert-with-rtx-2-geometrytriangles-identity-buffer-issue.rst 
-
+Hmm how to use standand GNodeLib machinery with test geometry ?
+To avoid placeholders. 
 **/
 
-void GGeoTest::addPlaceholderBuffers( GMergedMesh* tmm, unsigned nelem )
+unsigned GGeoTest::getNumTransforms() const 
 {
-    GTransforms* txf = GTransforms::make(nelem); // identities
-    GIds*        ii = GIds::make(nelem);        // placeholder (n,4) of zeros
-
-    NPY<unsigned>* idbuf = ii->getBuffer() ;  
-
-    tmm->setInstancedIdentityBuffer(idbuf);  
-
-    // NULL for tri avoids FaceRepeated complications
-    NPY<float>* itbuf = tmm->isTriangulated() ? NULL : txf->getBuffer() ; 
-    tmm->setITransformsBuffer(itbuf);
+    return 1 ; 
+}
+glm::mat4 GGeoTest::getTransform(unsigned index) const 
+{
+    glm::mat4 tr(1.f); 
+    return tr ; 
+}
+glm::vec4 GGeoTest::getCE(unsigned index) const 
+{    
+    float extent = 1000.f ; 
+    glm::vec4 ce(0.f,0.f,0.f, extent); 
+    return ce ; 
 }
 
 

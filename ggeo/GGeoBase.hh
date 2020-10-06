@@ -20,6 +20,7 @@
 #pragma once
 
 #include "GGEO_API_EXPORT.hh"
+#include "NGLM.hpp"
 
 class GSourceLib ; 
 class GScintillatorLib ; 
@@ -27,7 +28,6 @@ class GSurfaceLib ;
 class GMaterialLib ; 
 class GBndLib ; 
 class GGeoLib ; 
-//class GPmtLib ; 
 class GNodeLib ; 
 class GMeshLib ; 
 class GMergedMesh ; 
@@ -40,12 +40,15 @@ class GGEO_API GGeoBase {
         virtual GMaterialLib*     getMaterialLib() const = 0 ; 
 
         virtual GBndLib*          getBndLib() const = 0 ; 
-   //     virtual GPmtLib*          getPmtLib() const = 0 ; 
-        virtual GGeoLib*          getGeoLib() const = 0 ;        // GMergedMesh 
+        virtual GGeoLib*          getGeoLib() const = 0 ;        // GMergedMesh
         virtual GNodeLib*         getNodeLib() const = 0 ;       // GNode/GVolume pv,lv names
         virtual GMeshLib*         getMeshLib() const = 0 ;      
 
         virtual const char*       getIdentifier() const = 0 ; 
         virtual GMergedMesh*      getMergedMesh(unsigned index) const = 0 ; 
+
+        virtual unsigned          getNumTransforms() const = 0 ; 
+        virtual glm::mat4         getTransform(unsigned index) const = 0 ; 
+        virtual glm::vec4         getCE(unsigned index) const = 0 ; 
 
 };

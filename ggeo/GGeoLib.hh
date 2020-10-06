@@ -60,11 +60,10 @@ class GGEO_API GGeoLib {
         static const char* GPTS ; 
         enum { MAX_MERGED_MESH = 10 } ;
     public:
-        static bool HasCacheConstituent(const char* idpath, bool analytic, unsigned ridx) ;
-        static const char* RelDir(const char* name, bool analytic);
-        static GGeoLib* Load(Opticks* ok, bool analytic, GBndLib* bndlib);
+        static bool HasCacheConstituent(const char* idpath, unsigned ridx) ;
+        static GGeoLib* Load(Opticks* ok, GBndLib* bndlib);
     public:
-        GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib);
+        GGeoLib(Opticks* ok, GBndLib* bndlib);
 
         GBndLib* getBndLib() const ; 
         std::string desc() const ; 
@@ -87,7 +86,6 @@ class GGEO_API GGeoLib {
         void save();
         GMergedMesh* makeMergedMesh(unsigned index, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance );
     private:
-        const char* getRelDir(const char* name) const ;
         void loadConstituents(const char* idpath);
         void removeConstituents(const char* idpath);
         void saveConstituents(const char* idpath);
@@ -95,7 +93,6 @@ class GGEO_API GGeoLib {
         void dump(const char* msg="GGeoLib::dump");
         unsigned getNumMergedMesh() const ;
         GMergedMesh* getMergedMesh(unsigned index) const ;
-        //GMergedMesh* getMergedMeshDev(unsigned index);
         void setMergedMesh(unsigned int index, GMergedMesh* mm);
         void eraseMergedMesh(unsigned int index);
         void clear();
@@ -103,7 +100,6 @@ class GGEO_API GGeoLib {
         Opticks* m_ok ; 
         NLODConfig* m_lodconfig ; 
         int      m_lod ;  
-        bool     m_analytic ; 
         GBndLib* m_bndlib ; 
         char*   m_mesh_version ;
         int     m_verbosity ;

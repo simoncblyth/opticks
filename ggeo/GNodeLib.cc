@@ -24,6 +24,7 @@
 #include "PLOG.hh"
 #include "NPY.hpp"
 #include "NBBox.hpp"
+#include "GLMFormat.hpp"
 
 #include "Opticks.hh"
 
@@ -170,11 +171,39 @@ const char* GNodeLib::getLVName(unsigned index) const
     return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
 }
 
+/**
+GNodeLib::getNumVolumes
+-------------------------
+**/
 
 unsigned GNodeLib::getNumVolumes() const 
 {
-    return m_volumes.size();
+    unsigned npv = getNumPV(); 
+    unsigned nlv = getNumLV(); 
+    unsigned ntr = getNumTransforms(); 
+    unsigned nvo = m_volumes.size();
+
+    LOG(LEVEL) 
+        << " npv " << npv
+        << " nlv " << nlv
+        << " ntr " << ntr
+        << " nvo " << nvo << "(expect zero postcache)" 
+        ;
+
+    assert( npv == nlv ); 
+    assert( npv == ntr ); 
+    if( nvo > 0 ) assert( npv == nvo ); 
+    return npv ;
 }
+
+/**
+GNodeLib::getVolumes
+----------------------
+
+Returns empty vector postcache.
+
+**/
+
 std::vector<const GVolume*>& GNodeLib::getVolumes() 
 {
     return m_volumes ; 
@@ -196,7 +225,6 @@ GNodeLib::add
 ---------------
 
 Collects all volume information 
-
 
 **/
 
@@ -306,6 +334,11 @@ void GNodeLib::getSensorPlacements(std::vector<void*>& placements) const
 }
 
 
+/**
+GNodeLib::getVolume  (precache)
+--------------------------------
+**/
+
 const GVolume* GNodeLib::getVolume(unsigned index) const 
 {
     const GVolume* volume = NULL ; 
@@ -317,19 +350,20 @@ const GVolume* GNodeLib::getVolume(unsigned index) const
     return volume ; 
 }
 
+/**
+GNodeLib::getVolumeNonConst (precache)
+-----------------------------------------
+**/
 
 GVolume* GNodeLib::getVolumeNonConst(unsigned index)
 {
     const GVolume* volume = getVolume(index); 
     return const_cast<GVolume*>(volume); 
 }
-
 const GVolume* GNodeLib::getVolumeSimple(unsigned int index)
 {
     return m_volumes[index];
 }
-
-
 const GNode* GNodeLib::getNode(unsigned index) const 
 {
     const GVolume* volume = getVolume(index);
@@ -338,6 +372,40 @@ const GNode* GNodeLib::getNode(unsigned index) const
 }
 
 
+
+
+
+
+unsigned GNodeLib::getNumTransforms() const 
+{
+    unsigned num_transforms = m_transforms->getNumItems(); 
+    return num_transforms ; 
+}
+glm::mat4 GNodeLib::getTransform(unsigned index) const 
+{
+    unsigned num_transforms = m_transforms->getNumItems(); 
+    assert( index < num_transforms ); 
+    glm::mat4 tr = m_transforms->getMat4(index) ; 
+    return tr ;  
+}
+glm::vec4 GNodeLib::getCE(unsigned index) const 
+{
+    unsigned num_volumes = m_center_extent->getNumItems(); 
+    assert( index < num_volumes ); 
+    glm::vec4 ce = m_center_extent->getQuad(index) ; 
+    return ce ;  
+}
+
+
+
+
+/**
+GNodeLib::dump
+---------------
+
+Empty postcache.
+
+**/
 void GNodeLib::dump(const char* msg) const 
 {
     LOG(info) << msg ; 
@@ -355,14 +423,60 @@ void GNodeLib::dump(const char* msg) const
     }
 }
 
-
 void GNodeLib::Dump(const char* msg) const 
 {
     LOG(info) << msg ; 
     std::cout << desc() << std::endl ; 
     std::cout << getShapeString() << std::endl ; 
-
     dump(msg); 
 }
+
+
+std::string GNodeLib::descVolume(unsigned index) const
+{
+    bool test = m_ok->isTest() ;    // --test : dumping volumes
+    glm::vec4 ce = getCE(index);
+    const char* lvn = test ? "test" : getLVName(index) ; 
+
+    std::stringstream ss ; 
+    ss
+       << " " 
+       << std::setw(7) << index 
+       << std::setw(70) << lvn 
+       << " "  
+       << gpresent( "ce ", ce )
+       ;  
+
+    return ss.str(); 
+}
+
+
+void GNodeLib::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) const 
+{
+    unsigned num_volumes = getNumVolumes();
+    LOG(info) << msg  << " num_volumes " << num_volumes ;    
+
+    for(unsigned i=0 ; i < std::min(num_volumes, 20u) ; i++) 
+    {    
+        std::cout 
+            << ( int(i) == cursor ? " **" : "   " ) 
+            << descVolume(i)
+            ;
+    }    
+
+    LOG(info) << " volumes with extent greater than " << extent_cut_mm << " mm " ; 
+    for(unsigned i=0 ; i < num_volumes ; i++) 
+    {    
+        glm::vec4 ce = getCE(i);
+        if(ce.w > extent_cut_mm )
+        std::cout 
+            << ( int(i) == cursor ? " **" : "   " ) 
+            << descVolume(i)
+            ;    
+    }    
+}
+
+
+
 
 

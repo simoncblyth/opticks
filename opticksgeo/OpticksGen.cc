@@ -29,6 +29,7 @@
 #include "GLMFormat.hpp"
 
 #include "GGeoBase.hh"
+#include "GGeo.hh"
 #include "GBndLib.hh"
 
 #include "OpticksVersionNumber.hh"
@@ -61,6 +62,7 @@ OpticksGen::OpticksGen(OpticksHub* hub)
     m_gun(new OpticksGun(hub)),
     m_ok(hub->getOpticks()),
     m_cfg(m_ok->getCfg()),
+    m_ggeo(hub->getGGeo()),
     m_ggb(hub->getGGeoBase()),
     m_blib(m_ggb->getBndLib()),
     m_lookup(hub->getLookup()),
@@ -332,7 +334,7 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
         if(m_hub)
         {
             glm::ivec4& iframe = gs->getFrame();
-            glm::mat4 transform = m_hub->getTransform( iframe.x );
+            glm::mat4 transform = m_ggeo->getTransform( iframe.x );
             LOG(info) << "setting frame " << iframe.x << " " << gformat(transform) ;  
             gs->setFrameTransform(transform);
         }

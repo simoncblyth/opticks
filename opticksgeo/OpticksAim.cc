@@ -22,10 +22,9 @@
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
-#define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
+//#define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
-#include "GMergedMesh.hh"
-#include "GMergedMesh.hh"
+#include "GGeo.hh"
 
 #include "Composition.hh"
 #include "Opticks.hh"
@@ -45,18 +44,17 @@ OpticksAim::OpticksAim(OpticksHub* hub)
     m_dbgaim(m_ok->isDbgAim()),   // --dbgaim
     m_hub(hub),
     m_composition(hub->getComposition()),
-    m_mesh0(NULL),
+    m_ggeo(NULL),
     m_target(0),
     m_target_deferred(0)
 {
 }
 
-
-void OpticksAim::registerGeometry(GMergedMesh* mm0)
+void OpticksAim::registerGeometry(GGeo* ggeo)
 {
-    m_mesh0 = mm0 ; 
+    m_ggeo = ggeo ; 
+    glm::vec4 ce0 = m_ggeo ? m_ggeo->getCE(0) : glm::vec4(0.f,0.f,0.f,1.f) ;
 
-    glm::vec4 ce0 = getCenterExtent(); 
     m_ok->setSpaceDomain( ce0 );
 
     LOG(m_dbgaim ? fatal : LEVEL)
@@ -65,50 +63,44 @@ void OpticksAim::registerGeometry(GMergedMesh* mm0)
           ; 
 }
 
-glm::vec4 OpticksAim::getCenterExtent() 
+glm::vec4 OpticksAim::getCenterExtent() const 
 {
-    if(!m_mesh0)
-    {
-        LOG(fatal) << "OpticksAim::getCenterExtent" 
-                   << " mesh0 NULL "
-                   ;
-        
-        return glm::vec4(0.f,0.f,0.f,1.f) ;
-    } 
+    if(!m_ggeo) LOG(fatal) << " m_ggeo NULL " ; 
+    glm::vec4 ce = m_ggeo ? m_ggeo->getCE(0) : glm::vec4(0.f,0.f,0.f,1.f) ;
+    return ce ; 
+}
 
-    glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
-    return mmce ; 
+void OpticksAim::dumpTarget(const char* msg) const 
+{
+    float extent_cut_mm = 5000.f ; 
+    m_ggeo->dumpVolumes(msg, extent_cut_mm, m_target ); 
 }
 
 
-void OpticksAim::dumpTarget(const char* msg)  
-{
-    m_hub->dumpVolumes( m_target, m_mesh0, msg  ); 
-}
-
-
-unsigned OpticksAim::getTargetDeferred()
+unsigned OpticksAim::getTargetDeferred() const 
 {
     return m_target_deferred ;
 }
-unsigned OpticksAim::getTarget()
+unsigned OpticksAim::getTarget() const 
 {
     return m_target ;
 }
 
 
+/**
+OpticksAim::setupCompositionTargetting
+-----------------------------------------
 
+Used from OpticksViz::uploadGeometry
 
-// TODO : consolidate the below 
+Handles commandline --target option 
+that needs loaded geometry. 
+
+**/
 
 void OpticksAim::setupCompositionTargetting()
 {
-    // used from OpticksViz::uploadGeometry
-
-    //assert(0); 
     bool autocam = true ; 
-
-    // handle commandline --target option that needs loaded geometry 
     unsigned deferred_target = getTargetDeferred();   // default to 0 
     unsigned cmdline_target = m_ok->getTarget();
 
@@ -120,38 +112,57 @@ void OpticksAim::setupCompositionTargetting()
     setTarget(cmdline_target, autocam);
 }
 
+/**
+OpticksAim::setTarget
+----------------------
+
+Sets the composition center_extent to that of the target 
+volume identified by node index.
+
+If this is invoked prior to registering geometry the 
+target is retained in m_target_deferred.
+   
+Invoked by OpticksViz::uploadGeometry OpticksViz::init
+
+Formerly of oglrap-/Scene
+
+**/
+
 void  OpticksAim::setTarget(unsigned target, bool aim)  
 {
-    // formerly of oglrap-/Scene
-    // invoked by OpticksViz::uploadGeometry OpticksViz::init
-
-   if(m_mesh0 == NULL)
+    if(m_ggeo == NULL)
     {    
-        LOG(info) << "OpticksAim::setTarget " << target << " deferring as geometry not loaded " ; 
+        LOG(info) << "OpticksAim::setTarget " << target << " deferring as geometry not registered with OpticksAim " ; 
         m_target_deferred = target ; 
-        return ; 
     }    
-    m_target = target ; 
-
-
-    if(m_dbgaim)
+    else
     {
-        dumpTarget("OpticksAim::setTarget");
-    } 
+        m_target = target ; 
+        if(m_dbgaim) dumpTarget("OpticksAim::setTarget"); 
 
-    glm::vec4 ce = m_mesh0->getCE(target);
+        glm::vec4 ce = m_ggeo->getCE(target);
+        LOG(LEVEL)
+            << " using CenterExtent from m_ggeo "
+            << " target " << target 
+            << " aim " << aim
+            << " ce " << gformat(ce) 
+            << " for details : --dbgaim " 
+            ;    
 
-
-    LOG(LEVEL)
-        << " using CenterExtent from m_mesh0 "
-        << " target " << target 
-        << " aim " << aim
-        << " ce " << gformat(ce) 
-        << " for details : --dbgaim " 
-        ;    
-
-    m_composition->setCenterExtent(ce, aim); 
+        m_composition->setCenterExtent(ce, aim); 
+    }
 }
+
+
+/**
+OpticksAim::target
+------------------
+
+Sets composition center_extent depending on the target, 
+presence of commandline option --geocenter and event gensteps.
+This controls the view position and orientation used by rendering.
+
+**/
 
 void OpticksAim::target()
 {
@@ -167,9 +178,9 @@ void OpticksAim::target()
     }
     else if(geocenter )
     {
-        glm::vec4 mmce = getCenterExtent();
-        m_composition->setCenterExtent( mmce , autocam );
-        LOG(LEVEL) << "[--geocenter] mmce " << gformat(mmce) ; 
+        glm::vec4 ce0 = getCenterExtent();
+        m_composition->setCenterExtent( ce0 , autocam );
+        LOG(LEVEL) << "[--geocenter] ce0 " << gformat(ce0) ; 
     }
     else if(evt && evt->hasGenstepData())
     {
@@ -181,4 +192,3 @@ void OpticksAim::target()
             ; 
     }
 }
-

@@ -143,8 +143,7 @@ int main(int argc, char** argv)
     bndlib->closeConstituents();   // required otherwise GParts::close asserts
     
 
-    bool analytic = false ;   // <-- funny need to say false to get smth, TODO: eliminate this, all libs now analytic 
-    GGeoLib* geolib = GGeoLib::Load(&ok, analytic, bndlib); 
+    GGeoLib* geolib = GGeoLib::Load(&ok, bndlib); 
     //geolib->dump("geolib");
 
     unsigned nmm = geolib->getNumMergedMesh(); 

@@ -332,8 +332,13 @@ class GGEO_API GMesh : public GDrawable {
       gbbox    getBBox(unsigned int index) const ;
       gbbox*   getBBoxPtr();
 
-      float* getTransform(unsigned int index);
-      float* getITransform(unsigned int index);
+      float* getTransform(unsigned index) const ;
+      float* getITransform(unsigned index) const ;
+    
+      glm::mat4 getTransform_(unsigned index) const ;
+      glm::mat4 getITransform_(unsigned index) const ;
+ 
+
       gfloat3* getDimensions();
       GMatrix<float>* getModelToWorld();
 

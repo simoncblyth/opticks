@@ -7,11 +7,6 @@ find_package(OpticksCore REQUIRED CONFIG)
 find_package(YoctoGLRap REQUIRED CONFIG)
 
 
-set(OLD_SOURCES
-
-    GGeoSensor.cc
-
-)
 
 set(SOURCES
 
@@ -94,14 +89,20 @@ set(SOURCES
     GMeshLib.cc
 
 
-    GScene.cc 
     GPropertyMap.cc
 
 )
 
-set(OLD_HEADERS
+set(FORMER_SOURCES
+
+    GGeoSensor.cc
+    GScene.cc 
+)
+
+set(FORMER_HEADERS
 
     GGeoSensor.hh
+    GScene.hh
 
 )
 
@@ -173,7 +174,6 @@ set(HEADERS
     GNodeLib.hh
     GMeshLib.hh
 
-    GScene.hh
     GPropertyMap.hh
 )
 

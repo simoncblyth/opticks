@@ -23,7 +23,7 @@
 #include <glm/fwd.hpp>
 #include "plog/Severity.h"
 
-class GMergedMesh ; 
+class GGeo ; 
 
 class Opticks ; 
 class OpticksHub ; 
@@ -46,26 +46,25 @@ class OKGEO_API OpticksAim {
        static const plog::Severity LEVEL ; 
     public:
        OpticksAim(OpticksHub* hub);
-       void registerGeometry(GMergedMesh* mm0);
+       void registerGeometry(GGeo* ggeo);
     public:
        void            target();   // point composition at geocenter or the m_evt (last created)
        void            setTarget(unsigned target=0, bool aim=true);
        void            setupCompositionTargetting() ;
-       unsigned        getTarget();
+       unsigned        getTarget() const ;
     private:
-       glm::vec4       getCenterExtent();
-       unsigned        getTargetDeferred();
-       void            dumpTarget(const char* msg="OpticksAim::dumpTarget");  
+       glm::vec4       getCenterExtent() const ;
+       unsigned        getTargetDeferred() const ;
+       void            dumpTarget(const char* msg="OpticksAim::dumpTarget") const ;  
     private:
-       Opticks*     m_ok ; 
-       bool         m_dbgaim ;  // --dbgaim
-       OpticksHub*  m_hub ; 
-       Composition* m_composition ; 
+       Opticks*        m_ok ; 
+       bool            m_dbgaim ;  // --dbgaim
+       OpticksHub*     m_hub ; 
+       Composition*    m_composition ; 
 
-       GMergedMesh*         m_mesh0 ; 
-       unsigned             m_target ;
-       unsigned             m_target_deferred ;
- 
+       GGeo*           m_ggeo ; 
+       unsigned        m_target ;
+       unsigned        m_target_deferred ;
 
 };
 

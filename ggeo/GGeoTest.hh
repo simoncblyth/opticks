@@ -90,7 +90,6 @@ class GGEO_API GGeoTest : public GGeoBase {
        void checkPts();
 
        GMergedMesh* initCreateCSG();
-       void addPlaceholderBuffers( GMergedMesh* tmm, unsigned nelem ); 
        void setErr(int err); 
     public:
        // GGeoBase
@@ -108,6 +107,10 @@ class GGEO_API GGeoTest : public GGeoBase {
        const char*       getIdentifier() const ;
        GMergedMesh*      getMergedMesh(unsigned index) const ;
        unsigned          getNumMergedMesh() const ;
+
+       unsigned getNumTransforms() const ;
+       glm::mat4 getTransform(unsigned index) const ;
+       glm::vec4 getCE(unsigned index) const ;
 
     private:
        void autoTestSetup(NCSGList* csglist);

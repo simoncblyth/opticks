@@ -55,7 +55,7 @@ GInstancer::GInstancer(Opticks* ok, GGeoLib* geolib, GNodeLib* nodelib, NSceneCo
     : 
     m_log(new SLog("GInstancer::GInstancer","", verbose)),
     m_ok(ok),
-    m_globalinstance(m_ok->isGlobalInstance()), // --globalinstance
+    m_global_instance_enabled(m_ok->isGlobalInstanceEnabled()), // --global_instance_enabled
     m_geolib(geolib),
     m_verbosity(geolib->getVerbosity()),
     m_nodelib(nodelib),
@@ -732,19 +732,24 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     unsigned numRidx = 1 + numRepeats ;
  
 
-    if(m_globalinstance)
+    if(m_global_instance_enabled)
     {
-        LOG(LEVEL) << "[ creating --globalinstance " ;
-        GMergedMesh* mmgi = m_geolib->makeMergedMesh( numRidx, base, root, verbosity, m_globalinstance ); 
+        LOG(LEVEL) << "[ creating extra mm --global_instance_enabled " ;
+        bool global_instance = true ; 
+        GMergedMesh* mmgi = m_geolib->makeMergedMesh( numRidx, base, root, verbosity, global_instance ); 
         mmgi->addInstancedBuffers(placements);  // call for global for common structure 
-        LOG(LEVEL) << "] creating --globalinstance " ;
+        LOG(LEVEL) << "] creating extra mm --global_instance_enabled " ;
+    } 
+    else
+    {
+        LOG(LEVEL) << "NOT creating extra mm as no  --global_instance_enabled " ;
     }
 
 
     LOG(info) 
         << " numRepeats " << numRepeats
         << " numRidx " << numRidx
-        << " --globalinstance " << m_globalinstance 
+        << " --global_instance_enabled " << m_global_instance_enabled 
         ;
 
     for(unsigned ridx=1 ; ridx < numRidx ; ridx++)  // 1-based index

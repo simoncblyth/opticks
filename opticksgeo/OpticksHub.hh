@@ -36,7 +36,9 @@ class OpticksEvent ;
 class GenstepNPY  ; 
 
 class GGeoBase ; 
+#ifdef OLD_SCENE
 class GScene ; 
+#endif
 class GGeo ;
 class GGeoTest ;
 
@@ -136,33 +138,18 @@ class OKGEO_API OpticksHub : public SCtrl {
        void configureCompositionSize();
 
        void loadGeometry();
-       void adoptGeometry();  // when operating from a passed in GGeo
-       GGeoTest* createTestGeometry(GGeoBase* basis);
+       void adoptGeometry();
 
-       void registerGeometry(); 
    private:
-       // TODO: eliminate Tri/Ana mess : as now always have both 
-       void configureGeometry(); 
-#ifdef OLD_GEOM
-       void configureGeometryTri(); 
-       void configureGeometryTriAna(); 
-       void configureGeometryTest(); 
-#endif
-   private:
-       //void configureGeometryPrep(); moved to Opticks
        void configureServer();
        void configureLookupA();
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
        void overrideMaterialMapA(const char* jsonA );
    public:
-       void deferredGeometryPrep();
-   public:
        void add(BCfg* cfg);
    public:
        bool         hasOpt(const char* name);
        bool         isCompute();
-   public:
-       void         dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg="OpticksHub::dumpVolumes" );  
    public:
       // from m_gen
        unsigned       getSourceCode() const ; 
@@ -197,15 +184,10 @@ class OKGEO_API OpticksHub : public SCtrl {
        GGeoBase*            getGGeoBase() const ; // downcast of the encumbent: GGeoTest/GScene/GGeo 
 
    public:
-       // via encumbent 
-       glm::mat4            getTransform(int index);
+       //glm::mat4            getTransform(int index);
 
    private:
 
-#ifdef OLD_GEOM
-       GGeoBase*            getGGeoBaseAna() const ;  // downcast GScene, didnt that go the way of the Dodo ?  TODO:eliminate  
-       GGeoBase*            getGGeoBaseTri() const ;
-#endif
        GGeoBase*            getGGeoBasePrimary() const ;  //
        GGeoBase*            getGGeoBaseTest() const ;    // downcast of GGeoTest
    private:
@@ -260,7 +242,9 @@ class OKGEO_API OpticksHub : public SCtrl {
        OpticksGeometry* m_geometry ; 
 
        GGeo*            m_ggeo ;  
+#ifdef OLD_SCENE
        GScene*          m_gscene ;  
+#endif
        Composition*     m_composition ; 
 
    private:

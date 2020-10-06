@@ -198,8 +198,11 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     private: 
         void postDirectTranslationDump() const ; 
     private: 
+#ifdef OLD_GEOM
         void loadAnalyticFromGLTF();
         void loadAnalyticFromCache();
+        void saveAnalytic();
+#endif
 
         void afterConvertMaterials();
         //void createSurLib();
@@ -237,7 +240,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         //void removeMergedMeshes(const char* idpath);
     public:
         void save();
-        void saveAnalytic();
         void anaEvent(OpticksEvent* evt);
     private:
         //void saveMergedMeshes(const char* idpath);
@@ -248,7 +250,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         // these are operational from cache
         // target 0 : all geometry of the mesh, >0 : specific volumes
+#ifdef OLD_GEOM
         glm::vec4 getCenterExtent(unsigned int target, unsigned int merged_mesh_index=0u );
+#endif
+
         void dumpTree(const char* msg="GGeo::dumpTree");  
         void dumpVolume(unsigned int index, const char* msg="GGeo::dumpVolume");  
         void dumpNodeInfo(unsigned int mmindex, const char* msg="GGeo::dumpNodeInfo" );
@@ -265,9 +270,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         glm::vec4 getFaceCenterExtent(unsigned int face_index, unsigned int volume_index, unsigned int mergedmesh_index=0 );
         glm::vec4 getFaceRangeCenterExtent(unsigned int face_index0, unsigned int face_index1, unsigned int volume_index, unsigned int mergedmesh_index=0 );
 
-    private:
-        glm::mat4 getTransform(int index);  //TRYING TO MOVE TO HUB 
-    public:
+   public:
         // via GNodeLib
         void add(GVolume*    volume);
 
@@ -277,6 +280,13 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         const GVolume* getVolumeSimple(unsigned int index) const ;  
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
+
+    public:
+        // via GNodeLib
+        unsigned getNumTransforms() const ; 
+        glm::mat4 getTransform(unsigned index) const ;  
+        void dumpVolumes(const char* msg="GGeo::dumpVolumes", float extent_cut_mm=5000., int cursor=-1 ) const ;
+        glm::vec4 getCE(unsigned index) const ; 
 
     public:
         // sensor handling via GNodeLib
@@ -414,7 +424,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void Details(const char* msg="GGeo::Details");
 
     public:
-        GInstancer* getTreeCheck();
+        GInstancer* getInstancer() const ;
     public:
         void dryrun_convert() ;
     public:

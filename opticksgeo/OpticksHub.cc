@@ -85,63 +85,65 @@
 
 const plog::Severity OpticksHub::LEVEL = debug ; 
 
+/**
 
-//  hmm : the hub could be a GGeoBase ?
+Formerly used GGeoBase as a common interface to GGeo/GScene/GGeoTest.
+But since analytic/triangulated unification and the adoption of 
+the direct workflow there is no more need for GScene and 
+less need for GGeoBase. 
+
+Although can regard GGeoBase as a formal "hyper public" kind of 
+promotion of parts of the GGeo API that are not expected to change.
+
+Although still have GGeo and GGeoTest ?
+
+**/
 
 const char* OpticksHub::getIdentifier()
 {
-    GGeoBase* ggb = getGGeoBase();  // 3-way
+    GGeoBase* ggb = getGGeoBase(); 
     return ggb->getIdentifier();
 }
 GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
 {
-    GGeoBase* ggb = getGGeoBase();  // 3-way   m_geotest/m_ggeo/m_gscene
+    GGeoBase* ggb = getGGeoBase(); 
     return ggb->getMergedMesh(index);
 }
 
-/*
-GPmtLib* OpticksHub::getPmtLib()
-{
-    GGeoBase* ggb = getGGeoBase();  // 3-way
-    return ggb->getPmtLib();
-}
-*/
-
-
 GNodeLib* OpticksHub::getNodeLib()
 {
-    GGeoBase* ggb = getGGeoBase();  // 3-way
+    GGeoBase* ggb = getGGeoBase();  
     return ggb->getNodeLib();
 }
 GMaterialLib* OpticksHub::getMaterialLib()
 {  
-    GGeoBase* ggb = getGGeoBase();  // 3-way
+    GGeoBase* ggb = getGGeoBase();
     return ggb->getMaterialLib() ; 
 }
 GSurfaceLib* OpticksHub::getSurfaceLib() 
 {   
-    GGeoBase* ggb = getGGeoBase();  // 3-way
+    GGeoBase* ggb = getGGeoBase();
     return ggb->getSurfaceLib() ; 
 }
 
 GBndLib* OpticksHub::getBndLib() 
 {   
-    GGeoBase* ggb = getGGeoBase();  // 3-way
+    GGeoBase* ggb = getGGeoBase();
     return ggb->getBndLib() ; 
 }
 GScintillatorLib* OpticksHub::getScintillatorLib() 
 { 
-    GGeoBase* ggb = getGGeoBase();  // 3-way
+    GGeoBase* ggb = getGGeoBase();
     return ggb->getScintillatorLib() ;
 }
 GSourceLib* OpticksHub::getSourceLib() 
 { 
-    GGeoBase* ggb = getGGeoBase();  // 3-way
+    GGeoBase* ggb = getGGeoBase();
     return ggb->getSourceLib() ;
 }
 GGeoLib* OpticksHub::getGeoLib()
 {
-    GGeoBase* ggb = getGGeoBase();  // 3-way
+    GGeoBase* ggb = getGGeoBase();
     return ggb->getGeoLib() ; 
 }
 
@@ -195,8 +197,7 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
    m_run(m_ok->getRun()),
    m_geometry(NULL),
-   m_ggeo(GGeo::GetInstance()),   // if there is a GGeo instance already extant adopt it, otherwise load one  
-   m_gscene(NULL),
+   m_ggeo(GGeo::GetInstance()),   // a pre-existing instance will prevent subsequent loading from cache   
    m_composition(new Composition(m_ok)),
 #ifdef OPTICKS_NPYSERVER
    m_delegate(NULL),
@@ -235,7 +236,6 @@ void OpticksHub::init()
     add(m_fcfg);
 
     configure();
-    // configureGeometryPrep();
     configureServer();
     configureCompositionSize();
 
@@ -256,12 +256,12 @@ void OpticksHub::init()
     {
         adoptGeometry() ;    
     }
+    assert( m_ggeo ) ; 
+
     if(m_err) return ; 
 
-
-    // TODO:migrate these into GGeo for self-containment
-    configureGeometry() ;      // setting mm geocode
-    deferredGeometryPrep();    // GGeo::deferredCreateGParts
+    // TODO:migrate into GGeo for self-containment ?
+    m_ggeo->deferredCreateGParts() ;    
 
 
     m_gen = new OpticksGen(this) ;
@@ -269,6 +269,96 @@ void OpticksHub::init()
     pLOG(LEVEL,0) << "]" ; 
     OK_PROFILE("OpticksHub::init");  
 }
+
+
+
+
+
+
+/**
+OpticksHub::loadGeometry
+-------------------------
+
+TODO: get rid of OpticksGeometry intermediary 
+
+**/
+
+
+void OpticksHub::loadGeometry()
+{
+    assert(m_geometry == NULL && "OpticksHub::loadGeometry should only be called once");
+
+    LOG(info) << "[ " << m_ok->getIdPath()  ; 
+
+    m_geometry = new OpticksGeometry(this);   // m_lookup is set into m_ggeo here 
+
+    m_geometry->loadGeometry();   
+
+    m_ggeo = m_geometry->getGGeo();
+
+    //   Lookup A and B are now set ...
+    //      A : by OpticksHub::configureLookupA (ChromaMaterialMap.json)
+    //      B : on GGeo loading in GGeo::setupLookup
+
+
+    if(m_ok->isTest())  // --test : instanciate GGeoTest 
+    {
+        LOG(info) << "--test modifying geometry" ; 
+
+        assert(m_geotest == NULL);
+
+        GGeoBase* basis = getGGeoBasePrimary();  // downcast m_ggeo
+
+        m_geotest = new GGeoTest(m_ok, basis);
+
+        int err = m_geotest->getErr() ;
+        if(err) 
+        {
+            setErr(err);
+            return ; 
+        }
+    }
+    else
+    {
+        LOG(LEVEL) << "NOT modifying geometry" ; 
+    }
+
+    m_ggeo->close();  // mlib and slib  (June 2018, following remove the auto-trigger-close on getIndex in the proplib )
+
+    m_aim->registerGeometry( m_ggeo );
+    
+    m_ggeo->setComposition(m_composition);
+
+    LOG(info) << "]" ; 
+}
+
+
+/**
+OpticksHub::adoptGeometry
+--------------------------
+
+Adopts a directly created geometry, ie one that was not loaded from cache.
+
+**/
+
+
+void OpticksHub::adoptGeometry()
+{
+    LOG(LEVEL) << "[" ; 
+
+    assert( m_ggeo ); 
+
+    assert( m_ggeo->isPrepared() && "MUST GGeo::prepare() before geometry can be adopted, and uploaded to GPU " ) ;
+
+    m_aim->registerGeometry( m_ggeo );
+    
+    m_ggeo->setComposition(m_composition);
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
 
 
 
@@ -282,7 +372,6 @@ std::string OpticksHub::desc() const
     ss << "OpticksHub"
        << " encumbent " << ( ggb ? ggb->getIdentifier() : "-" ) 
        << " m_ggeo " << m_ggeo
-       << " m_gscene " << m_gscene
        << " m_geometry " << m_geometry
        << " m_gen " << m_gen
        ;  
@@ -351,24 +440,6 @@ void OpticksHub::configure()
 }
 
 
-
-
-/*
-void OpticksHub::configureGeometryPrep()
-{
-    bool geocache = !m_fcfg->hasOpt("nogeocache") ;
-    bool instanced = !m_fcfg->hasOpt("noinstanced") ; // find repeated geometry 
-
-    LOG(debug) << "OpticksGeometry::init"
-              << " geocache " << geocache 
-              << " instanced " << instanced
-              ;
-
-    m_ok->setGeocache(geocache);
-    m_ok->setInstanced(instanced); // find repeated geometry 
-}
-
-*/
 
 
 
@@ -534,88 +605,7 @@ void OpticksHub::overrideMaterialMapA(const char* jsonA )
 
 
 
-void OpticksHub::loadGeometry()
-{
-    assert(m_geometry == NULL && "OpticksHub::loadGeometry should only be called once");
 
-    LOG(info) << "[ " << m_ok->getIdPath()  ; 
-
-    m_geometry = new OpticksGeometry(this);   // m_lookup is set into m_ggeo here 
-
-    m_geometry->loadGeometry();   
-
-    m_ggeo = m_geometry->getGGeo();
-
-    m_gscene = m_ggeo->getScene();
-
-
-    //   Lookup A and B are now set ...
-    //      A : by OpticksHub::configureLookupA (ChromaMaterialMap.json)
-    //      B : on GGeo loading in GGeo::setupLookup
-
-
-    if(m_ok->isTest())  // --test : instanciate GGeoTest 
-    {
-        LOG(info) << "--test modifying geometry" ; 
-
-        assert(m_geotest == NULL);
-
-        GGeoBase* basis = getGGeoBasePrimary();  // downcast m_ggeo
-
-        m_geotest = createTestGeometry(basis);
-
-        int err = m_geotest->getErr() ;
-        if(err) 
-        {
-            setErr(err);
-            return ; 
-        }
-    }
-    else
-    {
-        LOG(LEVEL) << "NOT modifying geometry" ; 
-    }
-
-    registerGeometry();
-
-    m_ggeo->setComposition(m_composition);
-
-    m_ggeo->close();  // mlib and slib  (June 2018, following remove the auto-trigger-close on getIndex in the proplib )
-
-    LOG(info) << "]" ; 
-}
-
-
-
-void OpticksHub::adoptGeometry()
-{
-    LOG(LEVEL) << "[" ; 
-    assert( m_ggeo ); 
-    assert( m_ggeo->isPrepared() && "MUST GGeo::prepare() before geometry can be adopted, and uploaded to GPU " ) ;
-
-    m_gscene = m_ggeo->getScene();  // DONT LIKE SEPARATE GScene 
-
-    registerGeometry();
-
-    m_ggeo->setComposition(m_composition);
-
-    LOG(LEVEL) << "]" ; 
-}
-
-
-
-GGeoTest* OpticksHub::createTestGeometry(GGeoBase* basis)
-{
-    assert(m_ok->isTest());  // --test  : instanciate GGeoTest using the basis
-
-    LOG(LEVEL) << "[" ;
-
-    GGeoTest* testgeo = new GGeoTest(m_ok, basis);
-
-    LOG(LEVEL) << "]" ;
-
-    return testgeo ; 
-}
 
 
 NCSG* OpticksHub::findEmitter() const  
@@ -630,36 +620,17 @@ GGeoTest* OpticksHub::getGGeoTest()
 }
 
 
-glm::mat4 OpticksHub::getTransform(int index)
-{
-    glm::mat4 vt ; 
-    if(index > -1)
-    {    
-        GMergedMesh* mesh0 = getMergedMesh(0);
-        float* transform = mesh0 ? mesh0->getTransform(index) : NULL ;
-        assert( transform ) ; 
+/**
+OpticksHub::getTransform
+-------------------------
 
-        if(transform) vt = glm::make_mat4(transform) ;
-    }    
-    return vt ;  
+glm::mat4 OpticksHub::getTransform(int index) const 
+{
+    return m_ggeo->getTransform(index); 
 }
 
+**/
 
-
-
-
-void OpticksHub::registerGeometry()
-{
-    LOG(LEVEL) << "[" ; 
-
-    const char* ggb = getIdentifier(); 
-    LOG(LEVEL) << " ggb " << ggb ;  
-    GMergedMesh* mm0 = getMergedMesh(0);
-    assert(mm0);
-    m_aim->registerGeometry( mm0 );
-
-    LOG(LEVEL) << "]" ; 
-}
 
 void OpticksHub::setupCompositionTargetting()
 {
@@ -681,162 +652,6 @@ unsigned OpticksHub::getTarget()
 
 
 
-
-/**
-OpticksHub::configureGeometry
-------------------------------
-
-TODO: 
-   see if can eliminate the tri/ana mess now, 
-   following adoption of unified tri+ana approach 
-   ... where the assumption is to always have both 
-   ... and then switch as picked by options 
-       at late stage (in OGeo) 
-
-   configureGeometryTri
-   configureGeometryTriAna
-        just setting geocode
-        BUT --xanalytic  isXAnalytic may trump this 
-      
-        opticks-if xanalytic
-              
-   Better to set the geocode in one place only... 
-   close to where they are used in OGeo ? 
-
-**/
-
-void OpticksHub::configureGeometry()
-{
-#ifdef OLD_GEOM
-    if(m_ok->isTest())  // --test : configure mesh skips  
-    {
-        configureGeometryTest();
-    }
-    else if(m_gltf==0) 
-    { 
-        configureGeometryTri();
-    }
-    else
-    {
-        configureGeometryTriAna();
-    }
-#endif
-}
-
-
-#ifdef OLD_GEOM
-void OpticksHub::configureGeometryTri()
-{
-    int nmm = m_ggeo->getNumMergedMesh();
-
-    LOG(LEVEL) 
-              << "setting geocode" 
-              << " nmm " << nmm
-              ;
-
-    for(int i=0 ; i < nmm ; i++)
-    {
-        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-        if(!mm) continue ; 
-
-        if(!m_ok->isEnabledMergedMesh(i)) 
-        {
-            LOG(info) << "setting  OpticksConst::GEOCODE_SKIP for mm " << i ; 
-            mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
-        }
-    }
-}
-
-
-void OpticksHub::configureGeometryTriAna()
-{
-
-    LOG(info) << "OpticksHub::configureGeometryTriAna" 
-              << " desc " << desc() 
-              ;
-
-    GGeoBase* ana_g = getGGeoBaseAna();   // GScene downcast
-    GGeoBase* tri_g = getGGeoBaseTri();   // GGeo downcast
-
-    GGeoLib* ana = ana_g ? ana_g->getGeoLib() : NULL ; 
-    GGeoLib* tri = tri_g ? tri_g->getGeoLib() : NULL ; 
-
-    int nmm_a = ana->getNumMergedMesh();
-    int nmm_t = tri->getNumMergedMesh();
-
-    bool match = nmm_a == nmm_t ; 
-    if(!match)
-    {
-        LOG(fatal) << "OpticksHub::configureGeometryTriAna"
-                   << " MISMATCH "
-                   << " nmm_a " << nmm_a 
-                   << " nmm_t " << nmm_t
-                   ; 
-    }
-
-    assert( match );
-
-    for(int i=0 ; i < nmm_a ; i++)
-    {
-        GMergedMesh* mm_a = ana->getMergedMesh(i);
-        GMergedMesh* mm_t = tri->getMergedMesh(i);
-        assert( mm_a && mm_t );  
-
-        if(!m_ok->isEnabledMergedMesh(i)) 
-        {
-            LOG(info) << "setting  OpticksConst::GEOCODE_SKIP for mm " << i ; 
-            mm_a->setGeoCode(OpticksConst::GEOCODE_SKIP);      
-            mm_t->setGeoCode(OpticksConst::GEOCODE_SKIP);      
-        }
-    }
-}
-
-void OpticksHub::configureGeometryTest()
-{
-    GGeoBase* ggb = getGGeoBase();   // either ana or tri depending on gltf
-    GGeoLib*  lib = ggb->getGeoLib() ; 
-    int nmm = lib->getNumMergedMesh();
-
-    for(int i=0 ; i < nmm ; i++)
-    {
-        GMergedMesh* mm = lib->getMergedMesh(i);
-        assert( mm );  
-        if(!m_ok->isEnabledMergedMesh(i)) 
-        {
-            LOG(info) << "setting  OpticksConst::GEOCODE_SKIP for mm " << i ; 
-            mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
-        }
-    }
-    // actually unlikely to need restrictmesh with --test 
-
-}
-#endif
-
-
-
-/**
-OpticksHub::deferredGeometryPrep
----------------------------------
-
-Invoked from on high in OpticksHub::init after loading or adopting geometry.
-
-TODO: find a less surprising place to do this, here is jarringly high level :
-      I would have expected GGeoLib perhaps
-
-
-**/
-
-void OpticksHub::deferredGeometryPrep()
-{
-    m_ggeo->deferredCreateGParts() ;    
-}
-
-
-
-
-
-
-
 void OpticksHub::anaEvent(OpticksEvent* evt)
 {
     if(!OpticksEvent::CanAnalyse(evt)) return ; 
@@ -844,10 +659,6 @@ void OpticksHub::anaEvent(OpticksEvent* evt)
     if(m_geotest)
     {
         m_geotest->anaEvent( evt );  
-    }
-    else if(m_gscene)
-    { 
-        m_gscene->anaEvent( evt ); 
     }
     else
     {
@@ -880,7 +691,6 @@ unsigned        OpticksHub::getSourceCode() const {         return m_gen->getSou
 
 NPY<float>*     OpticksHub::getInputPhotons() const    {    return m_gen->getInputPhotons() ; }
 NPY<float>*     OpticksHub::getInputGensteps() const {      return m_gen->getInputGensteps(); }
-//NPY<float>*     OpticksHub::getInputPrimaries() const  {    return m_gen->getInputPrimaries() ; }
 
 TorchStepNPY*   OpticksHub::getTorchstep() const {          return m_gen->getTorchstep() ; }
 GenstepNPY*     OpticksHub::getGenstepNPY() const  {        return m_gen->getGenstepNPY() ; }
@@ -912,20 +722,6 @@ OpticksCfg<Opticks>* OpticksHub::getCfg()
 
 
 
-#ifdef OLD_GEOM
-GGeoBase* OpticksHub::getGGeoBaseAna() const 
-{
-    return m_gscene ? dynamic_cast<GGeoBase*>(m_gscene) : NULL ; 
-}
-
-GGeoBase* OpticksHub::getGGeoBaseTri() const 
-{
-    return m_ggeo ? dynamic_cast<GGeoBase*>(m_ggeo) : NULL ; 
-}
-#endif
-
-
-
 GGeoBase* OpticksHub::getGGeoBaseTest() const 
 {
     return m_geotest ? dynamic_cast<GGeoBase*>(m_geotest) : NULL ; 
@@ -944,14 +740,10 @@ Following ana/tri unification within GGeo some years ago, this now always return
 
 GGeoBase* OpticksHub::getGGeoBasePrimary() const 
 {
-#ifdef OLD_GEOM
-    GGeoBase* ggb = m_gltf ? dynamic_cast<GGeoBase*>(m_gscene) : dynamic_cast<GGeoBase*>(m_ggeo) ; 
-#else
     GGeoBase* ggb = dynamic_cast<GGeoBase*>(m_ggeo) ; 
-#endif
     return ggb ; 
 }
-GGeoBase* OpticksHub::getGGeoBase() const   //  3-way : m_geotest/m_gscene/m_ggeo
+GGeoBase* OpticksHub::getGGeoBase() const   //  2-way : m_geotest/m_ggeo
 {
     return m_geotest ? dynamic_cast<GGeoBase*>(m_geotest) : getGGeoBasePrimary() ; 
 }
@@ -1100,55 +892,5 @@ void OpticksHub::cleanup()
         gpu->dump();
     }  
 }
-
-
-void OpticksHub::dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg )  
-{
-    //assert(0); 
-    assert( mm );
-    unsigned num_volumes = mm->getNumVolumes();
-
-    LOG(info) << "OpticksHub::dumpVolumes "
-              << msg 
-              << " num_volumes " << num_volumes 
-              ;
-
-    bool test = m_ok->isTest() ;    // --test : dumping volumes
-
-    GNodeLib* nodelib = getNodeLib();
-    for(unsigned i=0 ; i < std::min(num_volumes, 20u) ; i++)
-    {
-         glm::vec4 ce_ = mm->getCE(i);
-         std::cout << " " << std::setw(7) << i 
-                   << " " << ( i == cursor ? "**" : "  " ) 
-                   << std::setw(70) << ( test ? "test" : nodelib->getLVName(i) )
-                   << " " 
-                   << gpresent( "ce", ce_ )
-                   ;
-    }
-
-
-    float extent_cut = 5000.f ;
-    LOG(info) << " volumes with extent greater than " << extent_cut << " mm " ; 
-    for(unsigned i=0 ; i < num_volumes ; i++)
-    {
-         glm::vec4 ce_ = mm->getCE(i);
-
-         if(ce_.w > extent_cut )
-         std::cout << " " << std::setw(7) << i 
-                   << " " << ( i == cursor ? "**" : "  " ) 
-                   << std::setw(70) << ( test ? "test" : nodelib->getLVName(i) )
-                   << " " 
-                   << gpresent( "ce", ce_ )
-                   ;
-    }
-
-
-
-
-
-}
-
-
 
 

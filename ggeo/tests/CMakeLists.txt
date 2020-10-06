@@ -74,11 +74,18 @@ set(TEST_SOURCES
     NLookupTest.cc
     RecordsNPYTest.cc
 
-    GSceneTest.cc
     GMeshLibTest.cc
     GNodeLibTest.cc
 
 )
+
+
+set(FORMER_TEST_SOURCES
+
+    GSceneTest.cc
+
+)
+
 
 
 set(_TEST_SOURCES

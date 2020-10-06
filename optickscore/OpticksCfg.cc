@@ -331,8 +331,8 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
-       ("disableglobalinstance",  
-        "Disable creation of the plus one GMergedMesh collected from nodes labelled with ridx 0, ie a non-special global treated as instanced,"
+       ("global_instance_enabled",  
+        "Enable creation of the plus one GMergedMesh collected from nodes labelled with ridx 0, ie a non-special global treated as instanced,"
         "but with only one identity instance transform. See GInstancer. ") ;
 
    m_desc.add_options()

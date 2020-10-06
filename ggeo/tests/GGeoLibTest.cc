@@ -155,17 +155,10 @@ int main(int argc, char** argv)
     bool constituents = true ; 
     GBndLib* bndlib = GBndLib::load(&ok, constituents);
 
-    bool analytic ; 
-    analytic = false ; 
-    GGeoLib* geolib = GGeoLib::Load(&ok, analytic, bndlib); 
+    GGeoLib* geolib = GGeoLib::Load(&ok, bndlib); 
     geolib->dump("geolib");
     test_GGeoLib(geolib);
 
-
-    analytic = true ; 
-    GGeoLib* geolib_analytic = GGeoLib::Load(&ok, analytic, bndlib ); 
-    geolib_analytic->dump("geolib_analytic");   
-    test_GGeoLib(geolib_analytic);
 
     return 0 ; 
 }

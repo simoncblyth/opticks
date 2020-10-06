@@ -105,7 +105,7 @@ const char* GGeo::PICKFACE = "pickface" ;
 
 GGeo* GGeo::fInstance = NULL ; 
 
-GGeo* GGeo::GetInstance()
+GGeo* GGeo::GetInstance() // static
 {
     return fInstance ;    
 }
@@ -294,7 +294,7 @@ gfloat3* GGeo::getHigh()
 }
 
 
-GInstancer* GGeo::getTreeCheck()
+GInstancer* GGeo::getInstancer() const 
 {
     return m_instancer ;
 }
@@ -570,8 +570,7 @@ void GGeo::initLibs()
    //bool testgeo = false ;  
 
    m_meshlib = new GMeshLib(m_ok);
-   m_geolib = new GGeoLib(m_ok, m_analytic, m_bndlib );
-   //m_nodelib = new GNodeLib(m_ok, m_analytic, testgeo ); 
+   m_geolib = new GGeoLib(m_ok, m_bndlib );
    m_nodelib = new GNodeLib(m_ok); 
 
    m_instancer = new GInstancer(m_ok, m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
@@ -678,8 +677,11 @@ void GGeo::loadGeometry()
 
             if(gltf > 0 && gltf < 10) 
             {
+                assert(0); 
+#ifdef OLD_GEOM
                 loadAnalyticFromGLTF();
                 saveAnalytic();
+#endif
             }
         }
         else
@@ -693,9 +695,13 @@ void GGeo::loadGeometry()
     else
     {
         loadFromCache();
+
         if(gltf > 0 && gltf < 10)  
         {
+            assert(0); 
+#ifdef OLD_GEOM
             loadAnalyticFromCache(); 
+#endif
         }
     } 
 
@@ -707,8 +713,11 @@ void GGeo::loadGeometry()
 
     if( gltf >= 10 )
     {
-        LOG(info) << "GGeo::loadGeometry DEBUGGING loadAnalyticFromGLTF " ; 
+        LOG(fatal) << "GGeo::loadGeometry DEBUGGING loadAnalyticFromGLTF " ; 
+        assert(0); 
+#ifdef OLD_GEOM
         loadAnalyticFromGLTF();
+#endif
     }
 
 
@@ -739,6 +748,7 @@ void GGeo::loadFromG4DAE()
 }
 
 
+#ifdef OLD_GEOM
 /**
 GGeo::loadAnalyticFromGLTF
 ----------------------------
@@ -768,12 +778,14 @@ void GGeo::loadAnalyticFromGLTF()
     LOG(LEVEL) << "]" ; 
 }
 
+
 void GGeo::saveAnalytic()
 { 
     LOG(LEVEL) ;
     m_gscene->save();   // HUH: still needed ???   THIS IS VESTIGIAL SURELY 
 }
 
+#endif
 
 
 
@@ -846,22 +858,23 @@ Prepare is needed prior to saving to geocache or GPU upload by OGeo
 void GGeo::prepare()
 {
     LOG(info) << "[" ; 
+    assert( m_instancer && "GGeo::prepare can only be done pre-cache when the full node tree is available"); 
 
     assert( m_prepared == false && "have prepared already" ); 
     m_prepared = true ; 
 
     //TODO: implement prepareSensorSurfaces() and invoke from here 
 
-    LOG(info) << "prepareScintillatorLib" ;  
+    LOG(LEVEL) << "prepareScintillatorLib" ;  
     prepareScintillatorLib();
 
-    LOG(info) << "prepareSourceLib" ;  
+    LOG(LEVEL) << "prepareSourceLib" ;  
     prepareSourceLib();
 
-    LOG(info) << "prepareVolumes" ;  
+    LOG(LEVEL) << "prepareVolumes" ;  
     prepareVolumes();   // GInstancer::createInstancedMergedMeshes
 
-    LOG(info) << "prepareVertexColors" ;  
+    LOG(LEVEL) << "prepareVertexColors" ;  
     prepareVertexColors();  // writes colors into GMergedMesh mm0
 
     LOG(info) << "]" ; 
@@ -947,7 +960,6 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     NMeta* lv2sd = m_ok->getOriginCacheMeta("lv2sd"); 
     NMeta* lv2mt = m_ok->getOriginCacheMeta("lv2mt"); 
 
-
     if( lv2sd )
     {
         lv2sd->dump("GGeo::loadCacheMeta.lv2sd"); 
@@ -957,7 +969,6 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
         LOG(error) << " NULL lv2sd " ;  
     }
 
-
     if( lv2mt )
     {
         lv2mt->dump("GGeo::loadCacheMeta.lv2mt"); 
@@ -966,11 +977,6 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     {
         LOG(error) << " NULL lv2mt " ;  
     }
-
-
-
-
-
 
     if( m_ok->isTest() )   // --test : skip lv2sd association
     {
@@ -985,6 +991,12 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
 
 
 
+
+/**
+GGeo::loadFromCache
+---------------------
+
+**/
 
  
 void GGeo::loadFromCache()
@@ -1001,14 +1013,7 @@ void GGeo::loadFromCache()
     m_scintillatorlib  = GScintillatorLib::load(m_ok);
     m_sourcelib  = GSourceLib::load(m_ok);
 
-    bool analytic = false ; 
-    //bool testgeo = false ; 
-
-    // these analytic arguments are legacy now that analytic and triangulated
-    // are treated as peers and always go together
-
-    m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib);
-    //m_nodelib = GNodeLib::Load(m_ok, analytic, testgeo );        
+    m_geolib = GGeoLib::Load(m_ok, m_bndlib);
     m_nodelib = GNodeLib::Load(m_ok );        
     m_meshlib = GMeshLib::Load(m_ok );
 
@@ -1017,6 +1022,8 @@ void GGeo::loadFromCache()
     LOG(LEVEL) << "]" ; 
 }
 
+
+#ifdef OLD_GEOM
 void GGeo::loadAnalyticFromCache()
 {
     //assert(0) ; // THIS IS THE OLD WAY ? YES : USED BY GSceneTest
@@ -1024,6 +1031,8 @@ void GGeo::loadAnalyticFromCache()
     m_gscene = GScene::Load(m_ok, this); // GGeo needed for m_bndlib 
     LOG(info) << "]" ; 
 }
+#endif
+
 
 bool GGeo::isLive() const 
 {
@@ -1372,12 +1381,19 @@ void GGeo::prepareSourceLib()
 
 
 
+/**
+GGeo::close
+-------------
+
+This needs to be invoked after all Opticks materials and surfaces have been
+created, and before boundaries are formed : typically in the recursive structure traverse
+
+
+**/
 
 void GGeo::close()
 {
     LOG(LEVEL) << "[" ; 
-    // this needs to be invoked after all Opticks materials and surfaces have been
-    // created, and before boundaries are formed : typically in the recursive structure traverse
 
     GMaterialLib* mlib = getMaterialLib() ;
     GSurfaceLib* slib = getSurfaceLib() ;
@@ -1484,6 +1500,8 @@ void GGeo::prepareVolumes()
 {
     LOG(info) << "[ creating merged meshes from the volume tree " ; 
 
+    assert( m_instancer && "prepareVolumes can only be done pre-cache when the full node tree is available"); 
+
     unsigned numcsgskiplv = m_ok->getNumCSGSkipLV() ; 
     if(numcsgskiplv > 0)
     {
@@ -1563,8 +1581,9 @@ void GGeo::deferredCreateGParts()
         GPts* pts = mm->getPts(); 
         if( pts == NULL )
         { 
-            LOG(error) << " pts NULL, cannot create GParts for mm " << i ; 
-            continue ; 
+            LOG(fatal) << " pts NULL, cannot create GParts for mm " << i ; 
+            //continue ; 
+            assert(0); 
         }
 
         GParts* parts = GParts::Create( pts, solids, verbosity ) ; 
@@ -1725,22 +1744,25 @@ void GGeo::dumpNodeInfo(unsigned int mmindex, const char* msg)
 
 
 
-glm::mat4 GGeo::getTransform(int index) // TRY TO MOVE TO HUB
+unsigned GGeo::getNumTransforms() const 
 {
-    glm::mat4 vt ;
-    if(index > -1)
-    {
-        GMergedMesh* mesh0 = getMergedMesh(0);
-        float* transform = mesh0 ? mesh0->getTransform(index) : NULL ;
-        if(transform) vt = glm::make_mat4(transform) ;
-    }
-    return vt ;  
+    return m_nodelib->getNumTransforms(); 
+}
+glm::mat4 GGeo::getTransform(unsigned index) const 
+{
+    return m_nodelib->getTransform(index); 
+}
+void GGeo::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) const 
+{
+    m_nodelib->dumpVolumes(msg, extent_cut_mm, cursor); 
+}
+glm::vec4 GGeo::getCE(unsigned index) const 
+{
+    return m_nodelib->getCE(index); 
 }
 
 
-
-
-
+#ifdef OLD_GEOM
 glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_index )
 {
     assert(0); // moved to transform approach for torch targetting 
@@ -1772,7 +1794,7 @@ glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_in
     }
     return ce ; 
 }
-
+#endif
 
 
 
@@ -2149,6 +2171,7 @@ hard crashes and kernel panics.
 
 void GGeo::dryrun_convert() 
 {
+    deferredCreateGParts();  // hmm : find somewhere better to do this 
     m_geolib->dryrun_convert(); 
 }
 
