@@ -202,6 +202,34 @@ Geant4 10.2, December 4th, 2015
 * https://geant4.web.cern.ch/geant4/support/download.shtml
 * http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/InstallationGuide/html/
 
+
+Geant4 1062 : requires minimum of gcc 4.9.3
+-----------------------------------------------
+
+Iterator erase compilation failure with gcc 4.8.5::
+
+    [ 12%] Building CXX object source/geometry/CMakeFiles/G4geometry.dir/navigation/src/G4ParameterisedNavigation.cc.o
+    /home/blyth/local/opticks_externals/g4_1062.build/geant4.10.06.p02/source/geometry/management/src/G4SolidStore.cc: In static member function ‘static void G4SolidStore::DeRegister(G4VSolid*)’:
+    /home/blyth/local/opticks_externals/g4_1062.build/geant4.10.06.p02/source/geometry/management/src/G4SolidStore.cc:141:49: error: no matching function for call to ‘G4SolidStore::erase(std::reverse_iterator<__gnu_cxx::__normal_iterator<G4VSolid* const*, std::vector<G4VSolid*> > >::iterator_type)’
+             GetInstance()->erase(std::next(i).base());
+                                                     ^
+    [blyth@localhost ~]$ l /usr/include/c++/
+    total 8
+    lrwxrwxrwx.  1 root root    5 Mar 23  2020 4.8.5 -> 4.8.2
+    drwxr-xr-x. 12 root root 4096 Mar 23  2020 4.8.2
+
+
+* https://geant4-forum.web.cern.ch/t/error-when-making-geant4/1774
+
+gcosmo::
+
+    You must use a more recent gcc compiler to build Geant4 10.6.
+    The minimum required is gcc-4.9.3 and you’re using gcc-4.8.2…i
+
+See env-;centos- for notes on yum installation of devtoolset-9 which comes with gcc 9.3.1 
+
+
+
 G4 Windows dllexport/dllimport ?
 -----------------------------------
 
@@ -223,42 +251,6 @@ Huh not many of them::
 See g4win-
 
 
-Prerequisites
----------------
-
-CMake 3.3 or higher
-~~~~~~~~~~~~~~~~~~~~
-
-Minimum required version of CMake to build Geant4 is 3.3. User applications can
-still use CMake 2.8.X or above for configuration and compilation. It is however
-recommended to migrate to CMake 3.3 or above for its improved support of C++
-compile and target features.
-
-Installed via macports, annoyingly required to install java too and entailed
-rebuilding several other packages including python, mysql, llvm see ~/macports/cmake33.log
-
-Xcode 6 or higher
-~~~~~~~~~~~~~~~~~~
-
-See xcode-vi for install notes
-
-
-storePhysicsTable
--------------------
-
-* http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsTable.html
-* http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/Control/UIcommands/_run_particle_.html
-
-...Note that physics tables are calculated before the event loop, not in the initialization phase. 
-So, at least one event must be executed before using the "storePhysicsTable" command...
-
-* /run/particle/storePhysicsTable [dirName]
-* /run/particle/retrievePhysicsTable [dirName]
-
-
-* how use this cache ? 
-
-
 Compiling GDML module
 -----------------------
 
@@ -268,52 +260,6 @@ examples/extended/persistency/gdml/G01/README::
   set the -DGEANT4_USE_GDML=ON flag during the CMAKE configuration step, 
   as well as the -DXERCESC_ROOT_DIR=<path_to_xercesc> flag pointing to 
   the path where the XercesC XML parser package is installed in your system.
-
-After adding the above::
-
-    simon:G01 blyth$ g4-cmake
-    -- Found XercesC: /opt/local/lib/libxerces-c.dylib  
-    -- Reusing dataset G4NDL (4.5)
-    -- Reusing dataset G4EMLOW (6.48)
-    -- Reusing dataset PhotonEvaporation (3.2)
-    -- Reusing dataset RadioactiveDecay (4.3)
-    -- Reusing dataset G4NEUTRONXS (1.4)
-    -- Reusing dataset G4PII (1.3)
-    -- Reusing dataset RealSurface (1.0)
-    -- Reusing dataset G4SAIDDATA (1.1)
-    -- Reusing dataset G4ABLA (3.0)
-    -- Reusing dataset G4ENSDFSTATE (1.2)
-    -- The following Geant4 features are enabled:
-    GEANT4_BUILD_CXXSTD: Compiling against C++ Standard '11'
-    GEANT4_USE_SYSTEM_EXPAT: Using system EXPAT library
-    GEANT4_USE_GDML: Building Geant4 with GDML support
-
-    -- Configuring done
-    -- Generating done
-    -- Build files have been written to: /usr/local/env/g4/geant4.10.02.build
-    simon:G01 blyth$ 
-
-
-
-Example B1
-------------
-
-::
-
-    simon:B1.build blyth$ ./exampleB1 
-    Available UI session types: [ GAG, tcsh, csh ]
-
-    -------- EEEE ------- G4Exception-START -------- EEEE -------
-    *** G4Exception : PART70000
-          issued by : G4NuclideTable
-    G4ENSDFSTATEDATA environment variable must be set
-    *** Fatal Exception *** core dump ***
-    -------- EEEE -------- G4Exception-END --------- EEEE -------
-
-
-    *** G4Exception: Aborting execution ***
-    Abort trap: 6
-
 
 
 
