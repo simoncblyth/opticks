@@ -241,7 +241,7 @@ class Grid(object):
 
     def _zorder_dump(self, limit=16):
         nloc = self.nloc 
-        print self
+        print(self)
         cc = range(nloc)
         if nloc > 2*limit:
             cc = range(limit) + range(nloc-limit, nloc) 
@@ -251,7 +251,7 @@ class Grid(object):
         for c in cc:
             loc = Loc(c, width=(self.level+1)*self.dim)  # +1 as includes child loc
             xyz,ijk = self.loc2xyz_ijk(c)
-            print " %r %r %r " % ( loc, ijk, xyz )
+            print(" %r %r %r " % ( loc, ijk, xyz ))
         pass
 
     def zorder_plot(self, ax):
@@ -353,7 +353,7 @@ if __name__ == '__main__':
         g = Grid(bb, level=lev)
         grids.append(g)
     pass
-    print "\n".join(map(repr,grids))
+    print("\n".join(map(repr,grids)))
 
 
 
@@ -433,7 +433,7 @@ if __name__ == '__main__':
     nodes = top.postorder()
     nnode = len(nodes)
 
-    print "nleaf %d nnode %d " % (nleaf, nnode) 
+    print("nleaf %d nnode %d " % (nleaf, nnode))
 
     top.corners_plot(ax, grids)
 

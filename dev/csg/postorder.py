@@ -198,10 +198,10 @@ def postorder_(height):
 
 def test_postorder():
     for height in range(10):
-        print "test_postorder height %d " % height 
+        print("test_postorder height %d " % height )
         postorder = postorder_(height)
         node_postorder = Node.postorder(height)
-        print height, postorder
+        print(height, postorder)
         assert postorder == node_postorder
     pass
 

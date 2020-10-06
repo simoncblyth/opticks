@@ -100,13 +100,13 @@ if __name__ == '__main__':
 
     mo = CMakeOutput(lines)
 
-    print repr(mo)
+    print(repr(mo))
     #print "str----"
     #print str(mo)
 
     for isect, sect in enumerate(mo.sects):
-        print "\n\n-------- %s : %s " % ( isect, repr(sect) ) 
-        print str(sect)
+        print("\n\n-------- %s : %s " % ( isect, repr(sect) ) )
+        print(str(sect))
 
 
  

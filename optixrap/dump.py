@@ -25,6 +25,6 @@ from env.g4dae.types import *
 
 p = oxc_(1)
 
-print p 
+print(p)
 
 

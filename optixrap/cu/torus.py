@@ -193,11 +193,11 @@ def torus_1():
     radii = [(A, 500), (B, 50)]
 
     for key in subs:
-        print "\n\n", key
+        print("\n\n", key)
         for j, exc_ in enumerate(exc):
-            print "\n", j, exc_
-            print exc_.subs(subs[key])
-            print exc_.subs(subs[key]).subs(radii)
+            print("\n", j, exc_)
+            print(exc_.subs(subs[key]))
+            print(exc_.subs(subs[key]).subs(radii))
     
 
 
@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
     
     
-    srot = s*cos(phi) +  
+    srot = s*cos(phi) 
 
     r = o+t*s
 

@@ -197,19 +197,19 @@ class Ijk(object):
 
 def test_2d(n, limit=16):
     nn = n*n
-    print "test_2d n:%d nn:%d " % ( n, nn) 
-    cc = range(nn) if nn < 2*limit else range(0,limit) + range(nn-limit, nn)
+    print("test_2d n:%d nn:%d " % ( n, nn) )
+    cc = list(range(nn)) if nn < 2*limit else list(range(0,limit)) + list(range(nn-limit, nn))
     for c in cc:
         m = Loc(c)
         ijk = m.ijk
-        print " %r %r " % ( m, ijk )
+        print(" %r %r " % ( m, ijk ))
 
 def test_3d():
-    print "test_3d" 
+    print("test_3d") 
     for c in range(16):
         m = Loc(c,dim=3)
         ijk = m.ijk
-        print " %r %r " % ( m, ijk )
+        print(" %r %r " % ( m, ijk ))
 
 
 

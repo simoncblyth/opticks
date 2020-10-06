@@ -5,14 +5,30 @@ py3check.py
 
 Running this finds all .py files recursively 
 within the invoking directory and attempts to parse 
-the code as python3, without running the scripts/modules.
+the code with the invoking python interpreter 
+without actually running the scripts/modules.
 
 ::
 
    cd ~/opticks
    py3check.py 
+   ...
+   pymajor:3 tot:346 tot_pass:244 tot_fail:102 frac_pass: 0.71  frac_fail: 0.29 
 
-   INFO:__main__:tot:346 tot_py3:216 tot_py2:130 frac_py3: 0.62 
+
+Despite the name, this also checks py2 when invoked with that version::
+
+    epsilon:opticks blyth$ ip2
+    ip2 () 
+    { 
+        PYMAJOR=2 source ~/.python_config;
+        ipython $*
+    }
+
+    In [1]: run bin/py3check.py 
+    pymajor:2 tot:346 tot_pass:346 tot_fail:0 frac_pass: 1.00  frac_fail: 0.00 
+
+
 
 """
 import sys, os, ast, fnmatch, logging
@@ -31,29 +47,33 @@ def ast_parse(path):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    assert sys.version_info.major == 3
 
+    pymajor = sys.version_info.major 
     tot=0
-    tot_py3=0  
-    tot_py2=0  
+    tot_pass=0  
+    tot_fail=0  
   
     for dirpath, dirnames, names in os.walk("."):
         for name in fnmatch.filter(names, "*.py"):
             path = os.path.join(dirpath, name) 
-            py3 = ast_parse(path)
+            ok = ast_parse(path)
             tot += 1 
-            if py3:
-                tot_py3 += 1 
+            if ok:
+                tot_pass += 1 
             else:
-                tot_py2 += 1 
+                tot_fail += 1 
             pass
-            st = "Y" if py3 else "N"
+            st = "Y" if ok else "N"
             if st == "N":
                 print("[%s] %s " %  (st, path))
+            pass
         pass
     pass
 
-    frac_py3 = float(tot_py3)/float(tot)
-    log.info("tot:%d tot_py3:%d tot_py2:%d frac_py3:%5.2f " % (tot,tot_py3,tot_py2,frac_py3))
+    frac_pass = float(tot_pass)/float(tot)
+    frac_fail = float(tot_fail)/float(tot)
+    msg = "pymajor:{pymajor} tot:{tot} tot_pass:{tot_pass} tot_fail:{tot_fail} frac_pass:{frac_pass:5.2f}  frac_fail:{frac_fail:5.2f} ".format(**locals())
+    print(msg)
+
 
 

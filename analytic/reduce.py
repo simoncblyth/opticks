@@ -40,6 +40,7 @@
 """
 
 from operator import mul
+from functools import reduce
 
 class A(object):
 
@@ -54,11 +55,11 @@ class A(object):
        return self.name
 
    def __mul__(self, other):
-       print "(mul) %r * %r " % (self, other)
+       print("(mul) %r * %r " % (self, other))
        return self.val * other.val 
 
    def __rmul__(self, other):
-       print "(rmul) %r * %r " % (self, other)
+       print("(rmul) %r * %r " % (self, other))
        return self.val * other
 
 
@@ -77,7 +78,7 @@ if __name__ == '__main__':
 
    res = reduce(mul, [a,b,c,d,e] )
 
-   print res 
+   print(res) 
 
 
       

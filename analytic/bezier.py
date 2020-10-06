@@ -133,9 +133,9 @@ class Bezier(object):
         return map(lambda _:self.etz_.subs(self.z,_), zz )
 
     def xval(self, tt):
-        return map(lambda _:self.etx_.subs(self.t,_), tt )
+        return list(map(lambda _:self.etx_.subs(self.t,_), tt ))
     def yval(self, tt):
-        return map(lambda _:self.ety_.subs(self.t,_), tt )
+        return list(map(lambda _:self.ety_.subs(self.t,_), tt ))
 
     def plot(self, ax, mx=50, my=50):
 
@@ -169,7 +169,7 @@ if __name__ == '__main__':
     bz.plot(ax)
     plt.show()
 
-    print Bezier.ZCoeff(xy)
+    print(Bezier.ZCoeff(xy))
 
     
 
