@@ -152,6 +152,7 @@ commands such as::
 
     conda install ipython 
     conda install numpy 
+    conda install sympy 
     conda install matplotlib
 
 In addition to your PATH you can also control which python Opticks
