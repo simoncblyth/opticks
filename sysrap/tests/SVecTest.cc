@@ -64,23 +64,47 @@ void test_vector_erase_pos()
 
     LOG(info) << " a: " << a.size(); 
     for(unsigned i=0 ; i < a.size() ; i++) std::cout << a[i] << " " ; 
+    std::cout << std::endl ; 
 }
 
+
+
+
+// clang comes up with (4 * 10000 + 2 * 100 + 1)
+
+#define GCC_VERSION (__GNUC__ * 10000 \
+                     + __GNUC_MINOR__ * 100 \
+                     + __GNUC_PATCHLEVEL__)
+
+
+#define XSTR(x) STR(x)
+#define STR(x) #x
+//#pragma message "GCC_VERSION = " XSTR(GCC_VERSION) 
 
 
 void test_vector_erase_all()
 {
     LOG(info); 
 
+    const char* gcc_version = XSTR(GCC_VERSION) ;
+    LOG(info) << " GCC_VERSION : " << gcc_version ;  
+
     std::vector<int> a = {0,1,2,3,4,5,6,7,8,9} ;
+
+    // GCC_VERSION cut is guess based on what Geant4 1062 needs
+#if GCC_VERSION > 40903 || __clang__  
 
     std::vector<int>::const_iterator beg = a.cbegin(); 
     std::vector<int>::const_iterator end = a.cend(); 
 
     a.erase(beg, end); 
+#else
+    LOG(fatal) << " needs newer GCC_VERSION than : " << gcc_version ; 
+#endif
 
     LOG(info) << " a: " << a.size(); 
     for(unsigned i=0 ; i < a.size() ; i++) std::cout << a[i] << " " ; 
+    std::cout << std::endl ; 
 }
 
 
