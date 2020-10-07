@@ -45,8 +45,12 @@
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
 
-// assimpwrap
+
+#ifdef OLD_ASIRAP
+// asirap
 #include "AssimpGGeo.hh"
+#endif
+
 
 // openmeshrap-
 #include "MFixer.hh"
@@ -141,8 +145,9 @@ void OpticksGeometry::loadGeometryBase()
     if(m_ok->hasOpt("qe1"))
         m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);
 
-
+#ifdef OLD_ASIRAP
     m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+#endif
 
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
     m_ggeo->setMeshVerbosity(m_ok->getMeshVerbosity());    

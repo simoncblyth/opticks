@@ -426,14 +426,14 @@ opticks-compute-capability-()
 
 opticks-externals(){ 
 : emits to stdout the names of the bash precursors that download and install the externals 
-  cat << EOL
+  cat << EOL  | grep -v ^#
 bcm
 glm
 glfw
 glew
 gleq
 imgui
-assimp
+#assimp
 openmesh
 plog
 opticksaux
@@ -1814,11 +1814,12 @@ opticks-f(){
        -name '*.hpp' -or \
        -name '*.h' -or \
        -name '*.txt' -or \
-       -name '*.rst' -or \
        -name '*.cmake' -or \
        -name '*.py' \
         \) \
        -exec grep $opt "$str" {} \;
+
+#      -name '*.rst' -or \
 
 }
 
@@ -1878,75 +1879,8 @@ opticks-unset()
 
 
 
+# opticks-all-projs- nearly duplicates om-subs--all so have removed to .old
 
-# below need to be precursor names
-opticks-all-projs-(){ cat << EOP
-sysrap
-brap
-npy
-okc
-ggeo
-asirap
-openmeshrap
-okg
-oglrap
-
-cudarap
-thrap
-oxrap
-okop
-okgl
-
-ok
-cfg4
-okg4
-EOP
-}
-
-
-opticks-cuda-projs-(){ cat << EOP
-cudarap
-thrap
-oxrap
-okop
-okgl
-EOP
-}
-
-
-opticks---(){ 
-   local arg=${1:-all}
-   local proj
-   opticks-${arg}-projs- | while read proj ; do
-      [ -z "$proj" ] && continue  
-      $proj-
-      $proj--
-   done
-} 
-
-opticks----(){ 
-   ## proj--- touches the API header and then does $proj-- : this forcing recompilation of everything 
-   local arg=${1:-all}
-   local proj
-   
-   opticks-${arg}-projs- | while read proj ; do
-      [ -z "$proj" ] && continue  
-      $proj-
-      echo proj $proj
-      $proj---
-   done
-
-} 
-
-opticks-list()
-{
-   local arg=${1:-all}
-   local proj
-   opticks-${arg}-projs- | while read proj ; do
-      [ -z "$proj" ] && continue  
-      echo proj $proj
-   done
-}
 
 
 

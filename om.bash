@@ -191,6 +191,10 @@ om-info(){ cat << EOI
 EOI
 }
 
+
+
+
+
 om-subs--all(){ cat << EOS
 # to update this list : opticks-deps --subdirs
 okconf
@@ -200,7 +204,7 @@ npy
 yoctoglrap
 optickscore
 ggeo
-assimprap
+#assimprap
 openmeshrap
 opticksgeo
 cudarap

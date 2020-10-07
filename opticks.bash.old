@@ -1,4 +1,78 @@
 
+# huh : this imperfectly duplicates om-subs--all 
+opticks-all-projs-(){ cat << EOP
+sysrap
+brap
+npy
+okc
+ggeo
+asirap
+openmeshrap
+okg
+oglrap
+
+cudarap
+thrap
+oxrap
+okop
+okgl
+
+ok
+cfg4
+okg4
+EOP
+}
+
+
+
+
+
+
+opticks-cuda-projs-(){ cat << EOP
+cudarap
+thrap
+oxrap
+okop
+okgl
+EOP
+}
+
+
+opticks---(){ 
+   local arg=${1:-all}
+   local proj
+   opticks-${arg}-projs- | while read proj ; do
+      [ -z "$proj" ] && continue  
+      $proj-
+      $proj--
+   done
+} 
+
+opticks----(){ 
+   ## proj--- touches the API header and then does $proj-- : this forcing recompilation of everything 
+   local arg=${1:-all}
+   local proj
+   
+   opticks-${arg}-projs- | while read proj ; do
+      [ -z "$proj" ] && continue  
+      $proj-
+      echo proj $proj
+      $proj---
+   done
+
+} 
+
+opticks-list()
+{
+   local arg=${1:-all}
+   local proj
+   opticks-${arg}-projs- | while read proj ; do
+      [ -z "$proj" ] && continue  
+      echo proj $proj
+   done
+}
+
+
 
 
 opticks-idfold(){ echo $(dirname $IDPATH) ; }

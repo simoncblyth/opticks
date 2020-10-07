@@ -99,8 +99,6 @@
 
 const plog::Severity GGeo::LEVEL = PLOG::EnvLevel("GGeo", "DEBUG")  ; 
 
-
-const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
 const char* GGeo::PICKFACE = "pickface" ;
 
 GGeo* GGeo::fInstance = NULL ; 
@@ -124,17 +122,14 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_log(new SLog("GGeo::GGeo","",verbose)),
    m_ok(ok), 
    m_enabled_legacy_g4dae(ok->isEnabledLegacyG4DAE()),   // --enabled_legacy_g4dae
-   m_live(live),
-   m_analytic(false),
+   m_live(live),    // live=false  by default 
    m_gltf(m_ok->getGLTF()),   
    m_composition(NULL), 
    m_instancer(NULL), 
    m_loaded_from_cache(false), 
    m_prepared(false), 
-   //m_loadedcachemeta(NULL),
    m_lv2sd(NULL),
    m_lv2mt(NULL),
-   //m_origin_gdmlpath(NULL),
    m_lookup(NULL), 
    m_meshlib(NULL),
    m_geolib(NULL),
@@ -146,12 +141,17 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_sourcelib(NULL),
    m_pmtlib(NULL),
    m_colorizer(NULL),
+#ifdef OLD_BOUNDS
    m_low(NULL),
    m_high(NULL),
+#endif
    m_sensitive_count(0),
    m_join_cfg(NULL),
    m_mesh_verbosity(0),
-   m_gscene(NULL)
+#ifdef OLD_SCENE
+   m_gscene(NULL),
+#endif
+   m_placeholder_last(0)
 {
    init(); 
    (*m_log)("DONE"); 
@@ -258,7 +258,6 @@ GMaterialLib*     GGeo::getMaterialLib() const { return m_materiallib ; }
 GMeshLib*         GGeo::getMeshLib() const { return m_meshlib ; }
  
 GBndLib*          GGeo::getBndLib() const { return m_bndlib ; } 
-//GPmtLib*          GGeo::getPmtLib() const { return m_pmtlib ; } 
 GGeoLib*          GGeo::getGeoLib() const { return m_geolib ; } 
 GNodeLib*         GGeo::getNodeLib() const { return m_nodelib ; } 
 
@@ -284,218 +283,12 @@ GColorizer* GGeo::getColorizer()
 }
 
 
-gfloat3* GGeo::getLow()
-{
-   return m_low ; 
-}
-gfloat3* GGeo::getHigh()
-{
-   return m_high ; 
-}
-
-
 GInstancer* GGeo::getInstancer() const 
 {
     return m_instancer ;
 }
 
 
-
-
-#ifdef OLD_CATHODE
-/**
-GGeo::setCathode
-------------------
-
-Invoked from AssimpGGeo::convertMaterials
-
-**/
-void GGeo::setCathode(GMaterial* cathode)
-{
-    m_materiallib->setCathode(cathode); 
-}
-GMaterial* GGeo::getCathode() const 
-{
-    return m_materiallib->getCathode() ; 
-}
-const char* GGeo::getCathodeMaterialName() const
-{
-    return m_materiallib->getCathodeMaterialName() ; 
-}
-
-#endif
-
-
-
-#ifdef OLD_SENSOR
-
-/**
-GGeo::addLVSD
--------------------
-
-From  
-
-1. AssimpGGeo::convertSensorsVisit
-2. X4PhysicalVolume::convertSensors_r
-
-
-Issues/TODO
-~~~~~~~~~~~~~~
-
-* integrate sensor setup with the material properties, 
-  see GMaterialLib::setCathode, GGeoSensor::AddSensorSurfaces
-
-
-**/
-
-void GGeo::addLVSDMT(const char* lv, const char* sd, const char* mt)
-{
-   assert( lv ) ;  
-   m_cathode_lv.insert(lv);
-
-
-   if(sd) 
-   {
-       assert(mt);
-       if(m_lv2sd == NULL ) m_lv2sd = new NMeta ; 
-       m_lv2sd->set<std::string>(lv, sd) ; 
-   }
-
-   if(mt) 
-   {
-       assert(sd);
-       if(m_lv2mt == NULL ) m_lv2mt = new NMeta ; 
-       m_lv2mt->set<std::string>(lv, mt) ; 
-   }
-}
-unsigned GGeo::getNumLVSD() const
-{
-   return m_lv2sd ? m_lv2sd->getNumKeys() : 0 ;  
-}
-unsigned GGeo::getNumLVMT() const
-{
-   return m_lv2mt ? m_lv2mt->getNumKeys() : 0 ;  
-}
-
-
-std::pair<std::string,std::string> GGeo::getSDMT(const char* lv) const
-{
-    std::string sd = m_lv2sd->get<std::string>(lv); 
-    std::string mt = m_lv2mt->get<std::string>(lv); 
-    return std::pair<std::string,std::string>( lv, mt ); 
-}
-
-std::pair<std::string,std::string> GGeo::getLVSD(unsigned idx) const
-{
-    unsigned nk = m_lv2sd->getNumKeys();
-    assert( idx < nk ); 
-    const char* lv = m_lv2sd->getKey(idx) ; 
-    std::string sd = m_lv2sd->get<std::string>(lv); 
-    return std::pair<std::string,std::string>( lv, sd ); 
-}
-
-std::pair<std::string,std::string> GGeo::getLVMT(unsigned idx) const
-{
-    unsigned nk = m_lv2mt->getNumKeys();
-    assert( idx < nk ); 
-    const char* lv = m_lv2mt->getKey(idx) ; 
-    std::string mt = m_lv2mt->get<std::string>(lv); 
-    return std::pair<std::string,std::string>( lv, mt ); 
-}
-
-int GGeo::findCathodeLVIndex(const char* lv) const  // -1 if not found
-{
-    int index = -1 ; 
-    if( lv == NULL ) return index ; 
-
-
-    typedef std::unordered_set<std::string>::const_iterator UCI ; 
-    UCI b = m_cathode_lv.begin() ;
-    UCI e = m_cathode_lv.end() ;
-
-    for(UCI it=b ; it != e ; it++)
-    {
-        const char* clv = it->c_str(); 
-        if( strcmp( clv, lv) == 0)
-        {
-            index = std::distance( b, it ) ; 
-            break ; 
-        }
-    }
-
-    if( index > -1 )
-    {
-        const char* clv2 = getCathodeLV(index); 
-        assert( strcmp(lv, clv2) == 0 ) ;  
-    }
-
-    return index ; 
-}
-
-
-
-unsigned int GGeo::getNumCathodeLV() const 
-{
-   return m_cathode_lv.size() ; 
-}
-const char* GGeo::getCathodeLV(unsigned int index) const 
-{
-    typedef std::unordered_set<std::string>::const_iterator UCI ; 
-    UCI it = m_cathode_lv.begin() ; 
-    std::advance( it, index );
-    return it != m_cathode_lv.end() ? it->c_str() : NULL  ; 
-}
-
-void GGeo::dumpCathodeLV(const char* msg) const 
-{
-    //printf("%s\n", msg);
-    LOG(LEVEL) << msg ; 
-
-    typedef std::unordered_set<std::string>::const_iterator UCI ; 
-    for(UCI it=m_cathode_lv.begin() ; it != m_cathode_lv.end() ; it++)
-    {
-        //printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
-        LOG(LEVEL) << it->c_str() ;  
-    }
-}
- 
-void GGeo::getCathodeLV( std::vector<std::string>& lvnames ) const 
-{
-    typedef std::unordered_set<std::string>::const_iterator UCI ; 
-    for(UCI it=m_cathode_lv.begin() ; it != m_cathode_lv.end() ; it++) 
-         lvnames.push_back(*it) ; 
-}
-
-
-void GGeo::getSensitiveLVSDMT( std::vector<std::string>& lvn, std::vector<std::string>& sdn, std::vector<std::string>& mtn ) const 
-{
-    typedef std::unordered_set<std::string>::const_iterator UCI ; 
-    for(UCI it=m_cathode_lv.begin() ; it != m_cathode_lv.end() ; it++) 
-       lvn.push_back(*it) ; 
-
-    typedef std::pair<std::string,std::string> PSS ; 
-
-    for(unsigned i=0 ; i < lvn.size() ; i++)
-    {
-        const char* lv = lvn[i].c_str();
-        PSS sdmt = getSDMT(lv);
-
-        const char* sd = sdmt.first.c_str();  
-        const char* mt = sdmt.second.c_str();  
-    
-        sdn.push_back(sd);   
-        mtn.push_back(mt);   
-
-        LOG(LEVEL)
-            << " idx " << i
-            << " lv " << lv 
-            << " sd " << sd 
-            << " mt " << mt
-            ;  
-    }
-}
-
-#endif
 
 
 
@@ -515,6 +308,9 @@ When the geocache exists and are configured to use it
 this will not instanciate the libs as those will subsequently 
 be loaded from geocache.
 
+G4Opticks::translateGeometry inhibits loading cached libs 
+via setting m_live in ctor
+
 **/
 
 void GGeo::init()
@@ -526,7 +322,7 @@ void GGeo::init()
 
     m_loaded_from_cache = m_ok->isGeocacheAvailable() ;   // cache exists and is enabled 
 
-    bool will_load_libs = m_loaded_from_cache && !m_live ; 
+    bool will_load_libs = m_loaded_from_cache && (m_live == false ); 
     bool will_init_libs = !will_load_libs ; 
 
     LOG(LEVEL) 
@@ -549,7 +345,7 @@ void GGeo::init()
 GGeo::initLibs
 ----------------
 
-This only happens when operating pre-cache 
+This only happens when operating pre-cache
 
 **/
 
@@ -563,11 +359,6 @@ void GGeo::initLibs()
 
    m_bndlib->setMaterialLib(m_materiallib);
    m_bndlib->setSurfaceLib(m_surfacelib);
-
-   // NB this m_analytic is always false
-   //    the analytic versions of these libs are born in GScene
-   assert( m_analytic == false );  
-   //bool testgeo = false ;  
 
    m_meshlib = new GMeshLib(m_ok);
    m_geolib = new GGeoLib(m_ok, m_bndlib );
@@ -592,12 +383,14 @@ void GGeo::initLibs()
 
 
 
-
+#ifdef OLD_SCENE
 // TO ELIMINATE
 GScene* GGeo::getScene() 
 {
     return m_gscene ; 
 }
+#endif
+
 
 
 // via Opticks
@@ -650,75 +443,24 @@ bool GGeo::isLoadedFromCache() const { return m_loaded_from_cache ; }
 GGeo::loadGeometry
 --------------------
 
-Contains legacy loading from G4DAE which is slated for removal, 
-but for now just place it behind --enabled_legacy_g4dae 
 
 **/
 
-#define WITH_LEGACY_G4DAE 1 
 
 void GGeo::loadGeometry()
 {
-    int gltf = m_ok->getGLTF(); 
-
-    LOG(LEVEL)
-        << "["
-        << " m_loaded_from_cache " << m_loaded_from_cache 
-        << " gltf " << gltf
-        ; 
+    LOG(LEVEL) << "[" << " m_loaded_from_cache " << m_loaded_from_cache ; 
 
     if(!m_loaded_from_cache)
     {
-#ifdef WITH_LEGACY_G4DAE
-        if(m_enabled_legacy_g4dae)
-        {
-            loadFromG4DAE();
-            save();
-
-            if(gltf > 0 && gltf < 10) 
-            {
-                assert(0); 
-#ifdef OLD_GEOM
-                loadAnalyticFromGLTF();
-                saveAnalytic();
-#endif
-            }
-        }
-        else
-#endif
-        {
-            LOG(fatal) 
-               << "MISSING geocache : create one from GDML with geocache-;geocache-create " ; 
-            assert(0);  
-        } 
+        LOG(fatal) 
+            << "MISSING geocache : create one from GDML with geocache-;geocache-create " ; 
+        assert(0);  
     }
     else
     {
         loadFromCache();
-
-        if(gltf > 0 && gltf < 10)  
-        {
-            assert(0); 
-#ifdef OLD_GEOM
-            loadAnalyticFromCache(); 
-#endif
-        }
     } 
-
-
-    if(m_ok->isAnalyticPMTLoad())
-    {
-        m_pmtlib = GPmtLib::load(m_ok, m_bndlib );
-    }
-
-    if( gltf >= 10 )
-    {
-        LOG(fatal) << "GGeo::loadGeometry DEBUGGING loadAnalyticFromGLTF " ; 
-        assert(0); 
-#ifdef OLD_GEOM
-        loadAnalyticFromGLTF();
-#endif
-    }
 
 
     // HMM : this not done in direct route ?
@@ -728,64 +470,6 @@ void GGeo::loadGeometry()
 
     LOG(LEVEL) << "]" ; 
 }
-
-void GGeo::loadFromG4DAE()
-{
-    LOG(error) << "GGeo::loadFromG4DAE START" ; 
-
-    int rc = (*m_loader_imp)(this);   //  imp set in OpticksGeometry::loadGeometryBase, m_ggeo->setLoaderImp(&AssimpGGeo::load); 
-
-    if(rc != 0)
-        LOG(fatal) << "GGeo::loadFromG4DAE"
-                   << " FAILED : probably you need to download opticksdata "
-                   ;
-
-    assert(rc == 0 && "G4DAE geometry file does not exist, try : opticksdata- ; opticksdata-- ") ;
-
-    prepare();
-
-    LOG(error) << "GGeo::loadFromG4DAE DONE" ; 
-}
-
-
-#ifdef OLD_GEOM
-/**
-GGeo::loadAnalyticFromGLTF
-----------------------------
-
-This is invoked by GGeo::loadGeometry in precache mode 
-resulting in the loading of GScene from the transport GLTF,
-that is created by the gdml2gltf python script.
-
-**/
-
-void GGeo::loadAnalyticFromGLTF()
-{
-    LOG(LEVEL) << "[" ; 
-    if(!m_ok->isGLTF()) 
-    {
-        LOG(LEVEL) << " skip loading GScene as not GLTF enabled ( needs --gltf N where N > 0 )  " ; 
-        return ; 
-    }
-
-#ifdef OPTICKS_YoctoGL
-    m_gscene = GScene::Create(m_ok, this); 
-#else
-    LOG(fatal) << "requires YoctoGL external " ; 
-    assert(0);
-#endif
-
-    LOG(LEVEL) << "]" ; 
-}
-
-
-void GGeo::saveAnalytic()
-{ 
-    LOG(LEVEL) ;
-    m_gscene->save();   // HUH: still needed ???   THIS IS VESTIGIAL SURELY 
-}
-
-#endif
 
 
 
@@ -806,16 +490,14 @@ void GGeo::postDirectTranslation()
 
     prepare();     // instances are formed here     
 
-    LOG(info) << "( GBndLib::fillMaterialLineMap " ; 
+    LOG(LEVEL) << "( GBndLib::fillMaterialLineMap " ; 
     GBndLib* blib = getBndLib();
     blib->fillMaterialLineMap();
-    LOG(info) << ") GBndLib::fillMaterialLineMap " ; 
+    LOG(LEVEL) << ") GBndLib::fillMaterialLineMap " ; 
 
-    LOG(info) << "( GGeo::save " ; 
+    LOG(LEVEL) << "( GGeo::save " ; 
     save();
-    LOG(info) << ") GGeo::save " ; 
-
-
+    LOG(LEVEL) << ") GGeo::save " ; 
 
     postDirectTranslationDump(); 
 
@@ -908,7 +590,6 @@ void GGeo::save()
     m_bndlib->save();  
 
     saveCacheMeta();
-    //saveGLTF(); 
 
     LOG(LEVEL) << "]" ;  
 }
@@ -1023,16 +704,6 @@ void GGeo::loadFromCache()
 }
 
 
-#ifdef OLD_GEOM
-void GGeo::loadAnalyticFromCache()
-{
-    //assert(0) ; // THIS IS THE OLD WAY ? YES : USED BY GSceneTest
-    LOG(info) << "[" ; 
-    m_gscene = GScene::Load(m_ok, this); // GGeo needed for m_bndlib 
-    LOG(info) << "]" ; 
-}
-#endif
-
 
 bool GGeo::isLive() const 
 {
@@ -1091,6 +762,18 @@ void GGeo::setupColors()
 }
 
 
+#ifdef OLD_BOUNDS
+
+
+gfloat3* GGeo::getLow()
+{
+   return m_low ; 
+}
+gfloat3* GGeo::getHigh()
+{
+   return m_high ; 
+}
+
 void GGeo::setLow(const gfloat3& low)
 {
     m_low = new gfloat3(low);
@@ -1108,6 +791,9 @@ void GGeo::updateBounds(GNode* node)
     node->updateBounds(*m_low, *m_high);
 }
 
+#endif
+
+
 void GGeo::Summary(const char* msg)
 {
     LOG(info) 
@@ -1119,8 +805,10 @@ void GGeo::Summary(const char* msg)
         << " ss " << getNumSkinSurfaces()
         ;
 
+#ifdef OLD_BOUNDS
     if(m_low)  printf("    low  %10.3f %10.3f %10.3f \n", m_low->x, m_low->y, m_low->z);
     if(m_high) printf("    high %10.3f %10.3f %10.3f \n", m_high->x, m_high->y, m_high->z);
+#endif
 }
 
 void GGeo::Details(const char* msg)

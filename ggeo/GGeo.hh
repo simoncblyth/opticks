@@ -75,8 +75,11 @@ class GItemIndex ;
 class GItemList ; 
 class GMergedMesh ;
 
+#ifdef OLD_SCENE
 // GLTF handling 
 class GScene ; 
+#endif
+
 
 #include "GGeoBase.hh"
 
@@ -136,7 +139,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         static const plog::Severity LEVEL ; 
         static GGeo* GetInstance();  // statically provides the last instanciated GGeo instance
-        static const char* CATHODE_MATERIAL ; 
     public:
         // see GGeoCfg.hh
         static const char* PICKFACE ;   
@@ -193,17 +195,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool isLoadedFromCache() const ;
         void loadGeometry(); 
         void loadFromCache();
-        void loadFromG4DAE();  // AssimpGGeo::load
         void postDirectTranslation();  // from G4Opticks::translateGeometry
     private: 
         void postDirectTranslationDump() const ; 
     private: 
-#ifdef OLD_GEOM
-        void loadAnalyticFromGLTF();
-        void loadAnalyticFromCache();
-        void saveAnalytic();
-#endif
-
         void afterConvertMaterials();
         //void createSurLib();
     public:
@@ -236,24 +231,16 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
    private:
         void init(); 
         void initLibs(); 
-        //void loadMergedMeshes(const char* idpath);
-        //void removeMergedMeshes(const char* idpath);
     public:
         void save();
         void anaEvent(OpticksEvent* evt);
     private:
-        //void saveMergedMeshes(const char* idpath);
     public:
         // pass thru to geolib
         GMergedMesh* makeMergedMesh(unsigned int index, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance);
         unsigned int getNumMergedMesh() const ;
     public:
         // these are operational from cache
-        // target 0 : all geometry of the mesh, >0 : specific volumes
-#ifdef OLD_GEOM
-        glm::vec4 getCenterExtent(unsigned int target, unsigned int merged_mesh_index=0u );
-#endif
-
         void dumpTree(const char* msg="GGeo::dumpTree");  
         void dumpVolume(unsigned int index, const char* msg="GGeo::dumpVolume");  
         void dumpNodeInfo(unsigned int mmindex, const char* msg="GGeo::dumpNodeInfo" );
@@ -321,8 +308,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         unsigned getNumMaterials() const ;
         unsigned getNumRawMaterials() const ;
     public:
-        GScene*            getScene()  ;
 
+#ifdef OLD_SCENE
+        GScene*            getScene()  ;
+#endif
 
         NLookup*           getLookup(); 
     public:
@@ -368,11 +357,14 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void dumpRawMaterialProperties(const char* msg="GGeo::dumpRawMaterialProperties") const ;
         std::vector<GMaterial*> getRawMaterialsWithProperties(const char* props, char delim) const ;
     public:
+
+#ifdef OLD_BOUNDS
         gfloat3* getLow();
         gfloat3* getHigh();
         void setLow(const gfloat3& low);
         void setHigh(const gfloat3& high);
         void updateBounds(GNode* node); 
+#endif
     private:
         void saveCacheMeta() const ;
         void loadCacheMeta();
@@ -383,41 +375,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void dumpCathodeMaterials(const char* msg="GGeo::dumpCathodeMaterials");
         unsigned int getNumCathodeMaterials();
         GMaterial* getCathodeMaterial(unsigned int index);
-#ifdef OLD_CATHODE
-    public:
-        // m_materiallib
-        void setCathode(GMaterial* cathode);
-        GMaterial* getCathode() const ;  
-        const char* getCathodeMaterialName() const ;
-#endif
-
-
-#ifdef OLD_SENSOR
-    public:
-        void addLVSDMT(const char* lv, const char* sd, const char* mt);
-        unsigned getNumLVSD() const ;
-        unsigned getNumLVMT() const ;
-        std::pair<std::string,std::string> getSDMT(const char* lv) const ;
-        std::pair<std::string,std::string> getLVSD(unsigned idx) const ;
-        std::pair<std::string,std::string> getLVMT(unsigned idx) const ;
-    public:
-        void dumpCathodeLV(const char* msg="GGeo::dumpCathodeLV") const ;
-        const char* getCathodeLV(unsigned int index) const ; 
-        void getCathodeLV( std::vector<std::string>& lvnames ) const ;
-        unsigned int getNumCathodeLV() const ;
-        int findCathodeLVIndex(const char* lv) const ; // -1 if not found 
-    public:
-        void getSensitiveLVSDMT( std::vector<std::string>& lvn, std::vector<std::string>& sdn, std::vector<std::string>& mtn ) const ;
-#endif
-
-
-
-#if 0
-    TODO: see if this can be reinstated
-    public:
-        void materialConsistencyCheck();
-        unsigned int materialConsistencyCheck(GVolume* volume);
-#endif
 
     public:
         void Summary(const char* msg="GGeo::Summary");
@@ -439,7 +396,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         Opticks*                      m_ok ;  
         bool                          m_enabled_legacy_g4dae ; 
         bool                          m_live ;   
-        bool                          m_analytic ; 
         int                           m_gltf ; 
         Composition*                  m_composition ; 
         GInstancer*                   m_instancer ; 
@@ -476,24 +432,26 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         GColorizer*                   m_colorizer ; 
 
+#ifdef OLD_BOUNDS
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
+#endif
 
     private:
 
-       // Index_t                            m_index ; 
         unsigned int                       m_sensitive_count ;  
-        //GMaterial*                         m_cathode ; 
         const char*                        m_join_cfg ; 
         GJoinImpFunctionPtr                m_join_imp ;  
         GLoaderImpFunctionPtr              m_loader_imp ;  
         unsigned int                       m_mesh_verbosity ; 
 
     private:
+
+#ifdef OLD_SCENE
         // glTF route 
         GScene*                            m_gscene ; 
-
-
+#endif
+        int                                m_placeholder_last ; 
 
 };
 
