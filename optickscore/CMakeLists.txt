@@ -67,6 +67,7 @@ set(SOURCES
     DemoCfg.cc
 
     IntersectSDF.cc
+    OpticksIdentity.cc
 )
 
 
@@ -139,6 +140,7 @@ set(HEADERS
     OpticksQuadrant.h
 
     IntersectSDF.hh
+    OpticksIdentity.hh
 )
 
 

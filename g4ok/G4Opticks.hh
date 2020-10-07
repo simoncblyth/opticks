@@ -112,6 +112,9 @@ class G4OK_API G4Opticks
 
     public:
         const std::vector<G4PVPlacement*>& getSensorPlacements() const ;
+
+
+
     public:
         void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int sensor_category, int sensor_identifier);
         template <typename T> void setSensorDataMeta( const char* key, T value );
@@ -121,6 +124,9 @@ class G4OK_API G4Opticks
                                          int phi_steps=0,   float phi_min=0.f, float phi_max=0.f );
 
         template <typename T> void setSensorAngularEfficiencyMeta( const char* key, T value );
+    public:
+        NPY<float>*  getSensorDataArray() const ;
+        NPY<float>*  getSensorAngularEfficiencyArray() const ;
     public:
         void saveSensorArrays(const char* dir) const ; 
     public:

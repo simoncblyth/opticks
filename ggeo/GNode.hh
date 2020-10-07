@@ -85,6 +85,8 @@ class GGEO_API GNode {
   public:
      void setRepeatIndex(unsigned int index);
      unsigned getRepeatIndex() const ;  
+     void setEncodedIdentity(unsigned encoded_identity);
+     unsigned getEncodedIdentity() const ;  
   public: 
       void setBoundaryIndices(unsigned int boundary_index);
       void setSensorIndices(unsigned int sensor_index);
@@ -201,6 +203,7 @@ class GGEO_API GNode {
       unsigned int        m_progeny_count ; 
       unsigned int        m_remainder_progeny_count ; 
       unsigned int        m_repeat_index ; 
+      unsigned int        m_encoded_identity ; 
       unsigned int        m_progeny_num_vertices ;
   private: 
       std::vector<unsigned int> m_distinct_boundary_indices ;

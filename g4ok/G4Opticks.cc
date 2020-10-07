@@ -383,6 +383,10 @@ category
 identifier
     detector specific integer representing a sensor, does not need to be contiguous
 
+
+Within JUNO simulation framework this is used from LSExpDetectorConstruction::SetupOpticks
+whilst looping over the sensor_placements G4PVPlacement provided by G4Opticks::getSensorPlacements.
+
 **/
 
 void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int category, int identifier)
@@ -435,6 +439,19 @@ void G4Opticks::setSensorAngularEfficiencyMeta( const char* key, T value )
     assert( m_sensor_angular_efficiency ); 
     m_sensor_angular_efficiency->setMeta<T>( key, value ); 
 }
+
+
+NPY<float>*  G4Opticks::getSensorDataArray() const
+{
+    return m_sensor_data ; 
+}
+NPY<float>*  G4Opticks::getSensorAngularEfficiencyArray() const
+{
+    return m_sensor_angular_efficiency ; 
+}
+
+
+
 
 
 void G4Opticks::saveSensorArrays(const char* dir) const 

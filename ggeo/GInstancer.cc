@@ -29,6 +29,7 @@
 #include "Counts.hpp"
 
 #include "Opticks.hh"
+#include "OpticksIdentity.hh"
 
 #include "GTreePresent.hh"
 #include "GMergedMesh.hh"
@@ -69,6 +70,7 @@ GInstancer::GInstancer(Opticks* ok, GGeoLib* geolib, GNodeLib* nodelib, NSceneCo
     m_csgskiplv_count(0),
     m_repeats_count(0),
     m_globals_count(0), 
+    m_offset_count(0), 
     m_duplicate_outernode_copynumber(true)
 {
 }
@@ -498,33 +500,39 @@ void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
 
     m_labels = 0 ; 
 
-    for(unsigned int i=0 ; i < m_repeat_candidates.size() ; i++)
+    for(unsigned i=0 ; i < m_repeat_candidates.size() ; i++)
     {
          std::string pdig = m_repeat_candidates[i];
-         unsigned int ridx = getRepeatIndex(pdig);
+         unsigned ridx = getRepeatIndex(pdig);
          assert(ridx == i + 1 );
          std::vector<const GNode*> placements = m_root_->findAllProgenyDigest(pdig);
-
+          
+         unsigned repeat_index = i ; 
          LOG(LEVEL) 
-               << " i " << std::setw(2) << i 
+               << " repeat_index " << std::setw(2) << repeat_index 
                << " ridx " << std::setw(2) << ridx 
                << " placements " << std::setw(7) << placements.size()
                ; 
 
-         // recursive labelling starting from the placements
-         for(unsigned int p=0 ; p < placements.size() ; p++)
+         // recursive labelling starting from each placements
+
+
+         for(unsigned p=0 ; p < placements.size() ; p++)
          {
+             unsigned pidx = p ; 
              const GNode* outernode = placements[p] ; 
              const GVolume* outer_volume = dynamic_cast<const GVolume*>(outernode) ; 
              int outernode_copyNumber = outer_volume->getCopyNumber() ; 
              GNode* start = const_cast<GNode*>(outernode) ; 
-             labelRepeats_r(start, ridx, outernode_copyNumber, outer_volume );
+             m_offset_count = 0 ; 
+             labelRepeats_r(start, ridx, pidx, outernode_copyNumber, outer_volume );
+             assert( m_offset_count > 0 ); 
          }
     }
 
     
-    assert(m_root);
-    traverseGlobals_r(m_root, 0);
+    assert(m_root_);
+    labelGlobals_r(m_root_, 0);
 
     LOG((m_csgskiplv_count > 0 ? fatal : LEVEL))
         << " m_labels (count of non-zero setRepeatIndex) " << m_labels 
@@ -545,10 +553,16 @@ GInstancer::labelRepeats_r
 
 **/
 
-void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx, int outernode_copyNumber, const GVolume* outer_volume )
+void GInstancer::labelRepeats_r( GNode* node, unsigned ridx, unsigned pidx, int outernode_copyNumber, const GVolume* outer_volume )
 {
     GVolume* vol = dynamic_cast<GVolume*>(node); 
     node->setRepeatIndex(ridx);
+
+    unsigned oidx = m_offset_count ; 
+    unsigned encoded_identity = OpticksIdentity::Encode(ridx, pidx, oidx); 
+    node->setEncodedIdentity( encoded_identity ); 
+    m_offset_count += 1 ; 
+
     m_repeats_count += 1 ; 
 
     vol->setOuterVolume(outer_volume) ; 
@@ -580,12 +594,15 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned int ridx, int outernode_c
              ;
          m_labels++ ; 
     }
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelRepeats_r(node->getChild(i), ridx, outernode_copyNumber, outer_volume );
+
+
+
+    for(unsigned i = 0; i < node->getNumChildren(); i++) labelRepeats_r(node->getChild(i), ridx, pidx, outernode_copyNumber, outer_volume );
 }
 
 
 /**
-GInstancer::traverseGlobals_r
+GInstancer::labelGlobals_r
 -------------------------------
 
 Only recurses whilst in global territory with ridx == 0, as soon as hit a repeated 
@@ -603,11 +620,17 @@ see notes/issues/torus_replacement_on_the_fly.rst
 
 **/
 
-void GInstancer::traverseGlobals_r( const GNode* node, unsigned depth )
+void GInstancer::labelGlobals_r( GNode* node, unsigned depth )
 {
     unsigned ridx = node->getRepeatIndex() ; 
     if( ridx > 0 ) return ; 
     assert( ridx == 0 ); 
+
+    unsigned pidx = 0 ; 
+    unsigned oidx = m_globals_count ; 
+    unsigned encoded_identity = OpticksIdentity::Encode(ridx, pidx, oidx); 
+    node->setEncodedIdentity( encoded_identity ); 
+ 
     m_globals_count += 1 ; 
 
     unsigned lvidx = node->getMeshIndex();  
@@ -626,7 +649,7 @@ void GInstancer::traverseGlobals_r( const GNode* node, unsigned depth )
     }
 */  
  
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverseGlobals_r(node->getChild(i), depth + 1 );
+    for(unsigned i = 0; i < node->getNumChildren(); i++) labelGlobals_r(node->getChild(i), depth + 1 );
 }
 
 
