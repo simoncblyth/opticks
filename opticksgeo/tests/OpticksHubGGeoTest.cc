@@ -17,18 +17,35 @@
  * limitations under the License.
  */
 
+
+#include "NLookup.hpp"
+
 #include "Opticks.hh"
 #include "OpticksHub.hh"
+
+#include "GGeoTest.hh"
+
 #include "OPTICKS_LOG.hh"
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    Opticks ok(argc, argv);
+
+    //const char* funcname = "tboolean-torus--" ;
+    const char* funcname = "tboolean-media--" ;
+    //const char* funcname = "tboolean-nonexisting--" ;
+
+    Opticks ok(argc, argv, GGeoTest::MakeArgForce(funcname, "--dbgsurf --dbgbnd") );
+
     OpticksHub hub(&ok);      
 
     if(hub.getErr()) LOG(fatal) << "hub error " << hub.getErr() ; 
+
+    // NLookup* lookup = hub.getLookup();
+    // lookup->close();  
+
 
     return 0 ; 
 }

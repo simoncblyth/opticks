@@ -190,33 +190,33 @@ void OpticksHub::command(const char* cmd)
 
 
 OpticksHub::OpticksHub(Opticks* ok) 
-   :
-   SCtrl(),
-   m_log(new SLog("OpticksHub::OpticksHub","", LEVEL)),
-   m_ok(ok),
-   m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
-   m_run(m_ok->getRun()),
-   m_geometry(NULL),
-   m_ggeo(GGeo::GetInstance()),   // a pre-existing instance will prevent subsequent loading from cache   
-   m_composition(new Composition(m_ok)),
+    :
+    SCtrl(),
+    m_log(new SLog("OpticksHub::OpticksHub","", LEVEL)),
+    m_ok(ok),
+    m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
+    m_run(m_ok->getRun()),
+    m_geometry(NULL),
+    m_ggeo(GGeo::GetInstance()),   // a pre-existing instance will prevent subsequent loading from cache   
+    m_composition(new Composition(m_ok)),
 #ifdef OPTICKS_NPYSERVER
-   m_delegate(NULL),
-   m_server(NULL)
+    m_delegate(NULL),
+    m_server(NULL)
 #endif
-   m_cfg(new BCfg("umbrella", false)),
-   m_fcfg(m_ok->getCfg()),
-   m_state(NULL),
-   m_lookup(new NLookup()),
-   m_bookmarks(NULL),
-   m_flightpath(NULL),
-   m_gen(NULL),
-   m_aim(NULL),
-   m_geotest(NULL),
-   m_err(0),
-   m_ctrl(this)
+    m_cfg(new BCfg("umbrella", false)),
+    m_fcfg(m_ok->getCfg()),
+    m_state(NULL),
+    m_lookup(new NLookup()),
+    m_bookmarks(NULL),
+    m_flightpath(NULL),
+    m_gen(NULL),
+    m_aim(NULL),
+    m_geotest(NULL),
+    m_err(0),
+    m_ctrl(this)
 {
-   init();
-   (*m_log)("DONE");
+    init();
+    (*m_log)("DONE");
 }
 
 
@@ -231,7 +231,6 @@ void OpticksHub::init()
 
     pLOG(LEVEL,0) << "[" ;   // -1 : one notch more easily seen than LEVEL
 
-    //m_composition->setCtrl(this); 
 
     add(m_fcfg);
 

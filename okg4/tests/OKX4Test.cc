@@ -123,7 +123,7 @@ int main(int argc, char** argv)
     m_ok->saveProfile();
     m_ok->postgeocache(); 
 
-    m_ok->reportGeoCacheCoordinates(); 
+    m_ok->reportKey("OKX4Test"); 
 
     return mgr.rc() ;
 }

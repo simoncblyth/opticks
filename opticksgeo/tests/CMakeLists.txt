@@ -6,6 +6,7 @@ include(OpticksBuildOptions)
 set(TEST_SOURCES
     OpticksGeoTest.cc
     OpticksHubTest.cc
+    OpticksHubGGeoTest.cc
     OpenMeshRapTest.cc
 )
 

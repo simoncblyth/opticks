@@ -2197,7 +2197,7 @@ cudarap(){  cudarap- ; cudarap-cd $* ; }
 thrap(){    thrap-   ; thrap-cd $* ; }
 oxrap(){    oxrap-   ; oxrap-cd $* ; }
 
-oxop(){     oxop- ; oxop-cd $* ; }
+okop(){     okop- ; okop-cd $* ; }
 okgl(){     okgl- ; okgl-cd $* ; }
 ok(){       ok- ; ok-cd $* ; }
 cfg4(){     cfg4- ; cfg4-cd $* ; }

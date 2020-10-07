@@ -318,13 +318,24 @@ TorchStepNPY* OpticksGen::getTorchstep() const // used by CGenerator for  cfg4-/
 
 
 
+/**
+OpticksGen::targetGenstep
+---------------------------
+
+Targetted positioning and directioning of the torch requires geometry info, 
+which is not available within npy- so need to externally setFrameTransform
+based on integer frame volume index.
+
+Observe that with "--machinery" option the node_index from 
+GenstepNPY::getFrame (iframe.x) is staying at -1. So have 
+added a reset to 0 for this. See:
+
+* notes/issues/opticks-t-2020-oct7-2of434-fails-eventTest-OpSeederTest.rst
+
+**/
 
 void OpticksGen::targetGenstep( GenstepNPY* gs )
 {
-    // targetted positioning and directioning of the torch requires geometry info, 
-    // which is not available within npy- so need to externally setFrameTransform
-    // based on integer frame volume index
-
     if(gs->isFrameTargetted())
     {    
         LOG(info) << "frame targetted already  " << gformat(gs->getFrameTransform()) ;  
@@ -334,7 +345,15 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
         if(m_hub)
         {
             glm::ivec4& iframe = gs->getFrame();
-            glm::mat4 transform = m_ggeo->getTransform( iframe.x );
+
+            int node_index = iframe.x ; 
+            if(node_index < 0)
+            {
+                LOG(fatal) << "node_index from GenstepNPY is -1, resetting to 0" ; 
+                node_index = 0 ; 
+            }
+
+            glm::mat4 transform = m_ggeo->getTransform( node_index );
             LOG(info) << "setting frame " << iframe.x << " " << gformat(transform) ;  
             gs->setFrameTransform(transform);
         }

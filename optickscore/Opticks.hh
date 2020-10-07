@@ -412,7 +412,7 @@ class OKCORE_API Opticks {
        bool                 canDeleteGeoCache() const ; 
        void                 deleteGeoCache() const ; 
        void                 enforceNoGeoCache() const ; 
-       void                 reportGeoCacheCoordinates() const ; 
+       void                 reportKey(const char* msg="Opticks::reportKey") const ; 
    public:
        const char*          getDbgIndex() const ;
        const char*          getDbgCSGPath();

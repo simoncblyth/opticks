@@ -997,29 +997,32 @@ void Opticks::enforceNoGeoCache() const
 }
 
 
-void Opticks::reportGeoCacheCoordinates() const
+void Opticks::reportKey(const char* msg) const
 {
     const Opticks* ok = this ; 
+    LOG(info) << msg ; 
 
     const char* kspec = ok->getKeySpec() ; 
     const char* espec = SSys::getenvvar("OPTICKS_KEY", "NONE" ); 
 
-    LOG(info) << "ok.idpath  " << ok->getIdPath() ; 
-    LOG(info) << "ok.keyspec " << kspec  ; 
-    LOG(info) << " " ;   
-    LOG(info) << "To reuse this geometry:: " ; 
-    LOG(info) << " " ;   
-    LOG(info) << "    export OPTICKS_KEY=" << kspec ;   
-    LOG(info) << "    ## include above export in ~/.opticks_config " ;   
-    LOG(info) << " " ;   
+    std::cout 
+        << std::endl << "KEYDIR  " << ok->getIdPath() 
+        << std::endl << "KEY     " << kspec  
+        << std::endl << " "    
+        << std::endl << "To reuse this geometry:: " 
+        << std::endl << " "   
+        << std::endl << "    export OPTICKS_KEY=" << kspec 
+        << std::endl << "    ## include above export in ~/.opticks_config " 
+        << std::endl << " " 
+        ;   
 
     if(strcmp(kspec, espec) == 0) 
     {
-        LOG(info) << "This keyspec matches that of the current envvar " ; 
+        LOG(info) << "This key matches that of the current envvar " ; 
     }
     else
     {
-        LOG(fatal) << "THE LIVE keyspec DOES NOT MATCH THAT OF THE CURRENT ENVVAR " ; 
+        LOG(fatal) << "THE LIVE key DOES NOT MATCH THAT OF THE CURRENT ENVVAR " ; 
         LOG(info) << " (envvar) OPTICKS_KEY=" <<  espec ; 
         LOG(info) << " (live)   OPTICKS_KEY=" <<  kspec ; 
     }
