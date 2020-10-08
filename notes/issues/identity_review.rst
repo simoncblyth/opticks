@@ -9,6 +9,214 @@ GGeoIdentityTest
     for all merged meshes loop over all volumes accessing identity 
 
 
+Changes
+---------
+
+1. non-detector specific sensor interface in G4Opticks::setSensorData providing a way 
+   to get the sensor identifier into Opticks with no detector specific assumptions
+2. added OpticksIdentity encoding triplet ridx/pidx/oidx into every GNode in the geometry tree
+
+
+Questions
+-----------
+
+1. how/where to use the sensor data  
+
+
+TODO: Identity Packing
+------------------------
+
+::
+
+     369 /**
+     370 G4Opticks::setSensorData
+     371 ---------------------------
+     372 
+     373 Calls to this for all sensor_placements G4PVPlacement provided by G4Opticks::getSensorPlacements
+     374 provides a way to associate the Opticks contiguous 0-based sensorIndex with a detector 
+     375 defined sensor identifier. 
+     376 
+     377 Within JUNO simulation framework this is used from LSExpDetectorConstruction::SetupOpticks.
+     378 
+     379 
+     380 sensorIndex 
+     381     0-based continguous index used to access the sensor data, 
+     382     the index must be less than the number of sensors
+     383 efficiency_1 
+     384 efficiency_2
+     385     two efficiencies which are multiplied together with the local angle dependent efficiency 
+     386     to yield the detection efficiency used to assign SURFACE_COLLECT to photon hits 
+     387     that already have SURFACE_DETECT 
+     388 category
+     389     used to distinguish between sensors with different theta textures   
+     390 identifier
+     391     detector specific integer representing a sensor, does not need to be contiguous
+     392 
+     393 
+     394 Within JUNO simulation framework this is used from LSExpDetectorConstruction::SetupOpticks
+     395 whilst looping over the sensor_placements G4PVPlacement provided by G4Opticks::getSensorPlacements.
+     396 
+     397 **/
+     398 
+     399 void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int category, int identifier)
+     400 {   
+     401     assert( sensorIndex < m_sensor_num ); 
+     402     m_sensor_data->setFloat(sensorIndex,0,0,0, efficiency_1);
+     403     m_sensor_data->setFloat(sensorIndex,1,0,0, efficiency_2);
+     404     m_sensor_data->setInt(  sensorIndex,2,0,0, category);
+     405     m_sensor_data->setInt(  sensorIndex,3,0,0, identifier);
+     406 }
+
+
+::
+
+    243 /**
+    244 GVolume::getIdentity
+    245 ----------------------
+    246 
+    247 Need to pack more tightly as want:
+    248 
+    249 1. node_index (3 bytes at least as JUNO needs more than 2-bytes : so little to gain from packing) 
+    250 2. mesh_index (2 bytes easily enough, 0xffff = 65535, 1-byte 0xff 255 OK for JUNO but probably not generally) how many different shapes
+    251 3. boundary_index (2 bytes easily enough)
+    252 4. sensor_identifier (32 bit) no packing possible as its an unconstrained user input from G4Opticks::setSensorData
+    253 5. encoded_volume_identifier (4 bytes)
+    254 
+    255 Combining mesh_index and boundary_index into a shape identifier seems natural 
+    256 
+    257 **/
+    258 
+    259 guint4 GVolume::getIdentity() const
+    260 {
+    261     unsigned node_index = m_index ;
+    262     guint4 id(node_index, getMeshIndex(),  m_boundary, getIdentityIndex()) ;
+    263     return id ; 
+    264 }   
+
+
+sensor_index or sensor_identifier provided from GVolume::getIdentity
+-----------------------------------------------------------------------
+
+
+* perhaps should only use the opticks sensor index, which as contiguous, can be contained in 2 bytes (0xffff = 65535)
+* also the sensor_data needs to be copied to GPU anyhow for the efficiencies, so can do sensor_index keyed 
+  lookups both on GPU and CPU as needed
+
+
+X4PhysicalVolume::convertNode tracing back where the sensor info comes from
+------------------------------------------------------------------------------
+
+::
+
+
+    1207 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
+    1208 {
+    ...
+    1213     // record copynumber in GVolume, as thats one way to handle pmtid
+    1214     const G4PVPlacement* placement = dynamic_cast<const G4PVPlacement*>(pv);
+    1215     assert(placement);
+    1216     G4int copyNumber = placement->GetCopyNo() ;
+    ...
+    1220     unsigned boundary = addBoundary( pv, pv_p );
+    1221     std::string boundaryName = m_blib->shortname(boundary);
+    1222     int materialIdx = m_blib->getInnerMaterial(boundary);
+    ...
+    1366     int sensorIndex = m_blib->isSensorBoundary(boundary) ? m_ggeo->addSensorVolume(volume) : -1 ;
+    1367     if(sensorIndex > -1) m_blib->countSensorBoundary(boundary);
+    ...
+    1385     volume->setSensorIndex(sensorIndex);
+
+
+    1046 unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
+    1047 {
+    1048     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
+    1049     const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
+    1050 
+    1051     const G4Material* const imat_ = lv->GetMaterial() ;
+    1052     const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
+    1053 
+
+
+    0529 bool GBndLib::isSensorBoundary(unsigned boundary) const
+     530 {
+     531     const guint4& bnd = m_bnd[boundary];
+     532     bool osur_sensor = m_slib->isSensorIndex(bnd[OSUR]);
+     533     bool isur_sensor = m_slib->isSensorIndex(bnd[ISUR]);
+     534     bool is_sensor = osur_sensor || isur_sensor ;
+     535     return is_sensor ;
+     536 }
+
+    898 // m_sensor_indices is a transient (non-persisted) vector of material/surface indices 
+    899 bool GPropertyLib::isSensorIndex(unsigned index) const
+    900 {
+    901     typedef std::vector<unsigned>::const_iterator UI ;
+    902     UI b = m_sensor_indices.begin();
+    903     UI e = m_sensor_indices.end();
+    904     UI i = std::find(b, e, index);
+    905     return i != e ;
+    906 }
+
+
+    908 /**
+    909 GPropertyLib::addSensorIndex
+    910 ------------------------------
+    911 
+    912 Canonically invoked from GSurfaceLib::collectSensorIndices
+    913 
+    914 **/
+    915 void GPropertyLib::addSensorIndex(unsigned index)
+    916 {
+    917     m_sensor_indices.push_back(index);
+    918 }
+
+
+    0288 template <class T>
+     289 bool GPropertyMap<T>::isSensor()
+     290 {
+     291 #ifdef OLD_SENSOR
+     292     return m_sensor ;
+     293 #else
+     294     return hasNonZeroProperty(EFFICIENCY) || hasNonZeroProperty(detect) ;
+     295 #endif
+     296 }
+
+    0723 /**
+     724 GSurfaceLib::collectSensorIndices
+     725 ----------------------------------
+     726 
+     727 Loops over all surfaces collecting the 
+     728 indices of surfaces having non-zero EFFICIENCY or detect
+     729 properties.
+     730 
+     731 **/
+     732 
+     733 void GSurfaceLib::collectSensorIndices()
+     734 {
+     735     unsigned ni = getNumSurfaces();
+     736     for(unsigned i=0 ; i < ni ; i++)
+     737     {
+     738         GPropertyMap<float>* surf = m_surfaces[i] ;
+     739         bool is_sensor = surf->isSensor() ; 
+     740         if(is_sensor)
+     741         {
+     742             addSensorIndex(i);
+     743             assert( isSensorIndex(i) == true ) ;
+     744         }   
+     745     }   
+     746 }   
+
+
+
+
+
+
+TODO: getting the user input sensor_identifier onto the GNode tree 
+--------------------------------------------------------------------
+
+* G4Opticks::getSensorArray 
+
+
+
 GPU side access to identity 
 ----------------------------
 

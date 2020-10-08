@@ -35,7 +35,9 @@ class MultiViewNPY ;
 // ggeo-
 class GDrawable ;
 class GMergedMesh ;
+class GGeo ;
 class GGeoLib ;
+class GNodeLib ;
 class GBoundaryLibMetadata ;
 
 // oglrap-
@@ -244,7 +246,7 @@ class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
         void hookupRenderers();
         void setPhotons(Photons* photons);
    public:
-        void setGeometry(GGeoLib* geolib);
+        void setGeometry(const GGeo* ggeo);
         void uploadGeometry(); 
    private:
         void uploadGeometryGlobal(GMergedMesh* mm);
@@ -339,8 +341,12 @@ class OGLRAP_API Scene : public NConfigurable, public SCtrl  {
         Rdr*         m_devrecord_renderer ; 
    private:
         Photons*     m_photons ; 
-        GGeoLib*     m_geolib ;
-        GMergedMesh* m_mesh0 ; 
+   private:
+        const GGeo*        m_ggeo ;
+        const GGeoLib*     m_geolib ;
+        const GNodeLib*    m_nodelib ;
+        const GMergedMesh* m_mesh0 ; 
+   private:
         Composition* m_composition ;
         ContentStyle*   m_content_style ; 
         NPY<unsigned char>*     m_colorbuffer ;

@@ -370,6 +370,13 @@ const std::vector<G4PVPlacement*>& G4Opticks::getSensorPlacements() const
 G4Opticks::setSensorData
 ---------------------------
 
+Calls to this for all sensor_placements G4PVPlacement provided by G4Opticks::getSensorPlacements
+provides a way to associate the Opticks contiguous 0-based sensorIndex with a detector 
+defined sensor identifier. 
+
+Within JUNO simulation framework this is used from LSExpDetectorConstruction::SetupOpticks.
+
+
 sensorIndex 
     0-based continguous index used to access the sensor data, 
     the index must be less than the number of sensors

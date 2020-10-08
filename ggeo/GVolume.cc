@@ -240,6 +240,24 @@ unsigned GVolume::getIdentityIndex() const
     return identity_index ; 
 }
 
+/**
+GVolume::getIdentity
+----------------------
+
+The volume identity quad is available GPU side for all volumes.
+
+Need to pack more tightly as want:
+
+1. node_index (3 bytes at least as JUNO needs more than 2-bytes : so little to gain from packing) 
+2. mesh_index (2 bytes easily enough, 0xffff = 65535, 1-byte 0xff 255 OK for JUNO but probably not generally) how many different shapes
+3. boundary_index (2 bytes easily enough)
+4. sensor_index or sensor_identifier (detector specific)
+5. encoded_volume_identifier (4 bytes)
+
+Combining mesh_index and boundary_index into a shape identifier seems natural 
+
+**/
+
 guint4 GVolume::getIdentity() const 
 {
     unsigned node_index = m_index ;    
@@ -255,13 +273,41 @@ glm::uvec4 GVolume::getIdentity_() const
 }
 
 
+/**
+GVolume::getNodeInfo
+----------------------
+
+Used from GMergedMesh::mergeVolumeIdentity
+
+**/
+
+glm::uvec4 GVolume::getNodeInfo_() const
+{
+    const GMesh* mesh = getMesh();
+    unsigned nvert = mesh->getNumVertices();
+    unsigned nface = mesh->getNumFaces();
+    unsigned nodeIndex = getIndex();
+    const GNode* parent = getParent();
+    unsigned parentIndex = parent ? parent->getIndex() : UINT_MAX ;
+
+    glm::uvec4 nodeinfo(nface, nvert, nodeIndex, parentIndex); 
+    return nodeinfo ;  
+}
 
 
 
+/**
+GVolume::setSensorIndex
+-------------------------
+
+
+* GNode::setSensorIndices duplicates the index to all faces of m_mesh triangulated geometry
+
+**/
 void GVolume::setSensorIndex(int sensor_index)
 {
     m_sensor_index = sensor_index ; 
-    setSensorIndices( m_sensor_index );   // GNode::setSensorIndices duplicate to all faces of m_mesh triangulated geometry
+    setSensorIndices( m_sensor_index );   
 }
 int GVolume::getSensorIndex() const 
 {

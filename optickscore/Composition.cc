@@ -127,7 +127,7 @@ const char* Composition::getColorStyleName(Composition::ColorStyle_t style)
 }
 
 
-const char* Composition::DEF_GEOMETRY_ = "default" ; 
+const char* Composition::DEF_GEOMETRY_ = "default" ;  // lightshader
 const char* Composition::NRMCOL_GEOMETRY_ = "nrmcol" ; 
 const char* Composition::VTXCOL_GEOMETRY_ = "vtxcol" ; 
 const char* Composition::FACECOL_GEOMETRY_ = "facecol" ; 
@@ -519,7 +519,22 @@ Composition::NormalStyle_t Composition::getNormalStyle()
 
 
 
-////////////// E_KEY 
+
+/**
+Composition::nextGeometryStyle  (E_KEY)
+--------------------------------------------
+
+geo:default
+   looks to be light influenced, but appears very dark
+geo:nrmcol
+    normal shader vibrant colors for both instances and remainder volumes
+geo:vtxcol
+    flat colors varying for remainder volumes, all instances are mid grey 
+geo:facecol
+    psychadelic with every triangle different colors for both instances and remainder 
+
+
+**/
 
 void Composition::nextGeometryStyle()
 {

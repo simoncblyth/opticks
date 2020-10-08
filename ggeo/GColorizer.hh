@@ -36,12 +36,28 @@ class GColors ;
 GColorizer
 ============
 
-Canonical m_colorizer instances are residents of GGeo and GScene, 
-For GGeo are instanciated in GGeo::init pre-cache.
+Canonical m_colorizer instance is resident of GGeo 
+and is pre-cache instanciated in GGeo::init.
 
 Instanciation just holds on to constituent pointers 
 the action happens when writeVertexColors() is called. This 
 gets invoked by GGeo::prepareVertexColors.
+
+
+Seeing the effects in the GUI
+-------------------------------
+
+Use "E" key to switch the Composition::nextGeometryStyle.  
+Looks like "geo:vtxcol" is showing the results of GColorizer.
+
+geo:default
+   looks to be light influenced, but appears very dark
+geo:nrmcol
+    normal shader vibrant colors for both instances and remainder volumes
+geo:vtxcol
+    flat colors varying for remainder volumes, all instances are mid grey 
+geo:facecol
+    psychadelic with every triangle different colors for both instances and remainder 
 
 
 GColorizer::traverse

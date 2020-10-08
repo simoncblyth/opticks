@@ -262,9 +262,11 @@ class Prim(object):
 
 
 class Dir(object):
-    def __init__(self, base):
+    def __init__(self, base, kd):
         """  
         :param base: directory containing primBuffer.npy etc..
+
+        TODO: reworking following deferred GParts creation, so these buffers are not persisted anymore
         """
         self.base = base
         self.blib = BLib.make(base)   # auto finds the idpath 
@@ -275,7 +277,7 @@ class Dir(object):
         idxpath = os.path.join(base,"idxBuffer.npy")          
         idx = np.load(idxpath) if os.path.exists(idxpath) else None
 
-        ma = Mesh.make()   # uses IDPATH envvar , used to lookup solid/mesh names from lvIdx 
+        ma = Mesh(kd)   # uses IDPATH envvar , used to lookup solid/mesh names from lvIdx 
 
         ntran = np.zeros( len(prim), dtype=np.uint32)
         ntran[0:len(prim)-1] = prim[1:,2] - prim[:-1,2]    ## differencing the tranOffsets to give numtran
@@ -336,18 +338,21 @@ if __name__ == '__main__':
         log.warning("using hardcoded dir" ) ;  
     pass
 
-    d = Dir(dir_)
-    print "Dir(dir_)", d
+    from opticks.ana.key import keydir
+    kd = keydir(os.environ["OPTICKS_KEY"])
+
+    d = Dir(dir_, kd)
+    print("Dir(dir_)", d)
 
     
 
     pp = d.prims
 
-    print "dump sliced prims from the dir slice %s " % repr(sli)
+    print("dump sliced prims from the dir slice %s " % repr(sli))
     for p in pp[sli]:
-        print p
+        print(p)
     pass
-    #print d.tran
+    #print(d.tran)
 
 
   

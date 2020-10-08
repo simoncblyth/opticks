@@ -1486,6 +1486,16 @@ glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_in
 
 
 
+/**
+GGeo::dumpTree
+---------------
+
+This formerly dumped all volumes from mm0. 
+Following the model change this wil dump just the 
+remainder volumes.
+
+**/
+
 void GGeo::dumpTree(const char* msg)
 {
     GMergedMesh* mm0 = getMergedMesh(0);
@@ -1517,14 +1527,10 @@ void GGeo::dumpTree(const char* msg)
     for(unsigned int i=0 ; i < nso ; i++)
     {
          guint4* info = nodeinfo + i ;  
-         glm::ivec4 offnum = getNodeOffsetCount(i);
-
-         //const char* pv = m_pvlist->getKey(i);
-         //const char* lv = m_lvlist->getKey(i);
+         glm::ivec4 offnum = getNodeOffsetCount(i);  
 
          const char* pv = m_nodelib->getPVName(i);
          const char* lv = m_nodelib->getLVName(i);
-
 
          printf(" %6u : nf %4d nv %4d id %6u pid %6d : %4d %4d %4d %4d  :%50s %50s \n", i, 
                     info->x, info->y, info->z, info->w,  offnum.x, offnum.y, offnum.z, offnum.w,
@@ -1535,20 +1541,30 @@ void GGeo::dumpTree(const char* msg)
 
 
 
+/**
+GGeo::getNodeOffsetCount
+-------------------------
 
+Adds face and vertex counts for all volumes up to volume i, 
+giving offsets into the merged arrays. 
 
-glm::ivec4 GGeo::getNodeOffsetCount(unsigned int index) // TODO: move into geolib
+Hmm: need to migrate nodeinfo to GNodeLib too ?
+
+**/
+
+glm::ivec4 GGeo::getNodeOffsetCount(unsigned index) // TODO: move into geolib
 {
     GMergedMesh* mm0 = getMergedMesh(0);
+
     guint4* nodeinfo = mm0->getNodeInfo(); 
-    unsigned int nso = mm0->getNumVolumes();   // poor name, means volumes
-    assert(index < nso );
+    unsigned num_vol = mm0->getNumVolumes();  
+    assert(index < num_vol );
 
     glm::ivec4 offset ; 
-    unsigned int cur_vert(0);
-    unsigned int cur_face(0);
+    unsigned cur_vert(0);
+    unsigned cur_face(0);
 
-    for(unsigned int i=0 ; i < nso ; i++)
+    for(unsigned i=0 ; i < num_vol ; i++)
     {
         guint4* info = nodeinfo + i ;  
         if( i == index )

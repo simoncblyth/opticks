@@ -17,6 +17,16 @@
  * limitations under the License.
  */
 
+/**
+SceneCheck
+============
+
+TODO: get this working again, currently exename_allowed asserts in BOpticksResource::setupViaKey
+
+**/
+
+
+
 // npy-
 #include "NGLM.hpp"
 
@@ -61,11 +71,11 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
     LOG(info) << argv[0] ; 
 
-    Opticks* m_opticks = new Opticks(argc, argv);
-    OpticksHub* m_hub = new OpticksHub(m_opticks);
+    Opticks* m_ok = new Opticks(argc, argv);
+    OpticksHub* m_hub = new OpticksHub(m_ok);
 
     //  hmm below is now done inside the Hub 
-    m_ggeo = new GGeo(m_opticks);
+    m_ggeo = new GGeo(m_ok);
     m_ggeo->loadFromCache();
     m_ggeo->dumpStats();
 
@@ -73,7 +83,7 @@ int main(int argc, char** argv)
 
     // see App::initViz
 
-    m_composition = new Composition(m_opticks) ; 
+    m_composition = new Composition(m_ok) ; 
 
     m_scene = new Scene(m_hub) ; 
     m_frame = new Frame() ; 
@@ -95,8 +105,8 @@ int main(int argc, char** argv)
 
     // App::prepareViz
 
-    glm::uvec4 size = m_opticks->getSize();
-    glm::uvec4 position = m_opticks->getPosition() ;
+    glm::uvec4 size = m_ok->getSize();
+    glm::uvec4 position = m_ok->getPosition() ;
 
     m_composition->setSize( size );
     m_composition->setFramePosition( position );
@@ -116,7 +126,9 @@ int main(int argc, char** argv)
 
     m_ggeo->setComposition(m_composition);
 
-    m_scene->setGeometry(m_geolib);
+    //m_scene->setGeometry(m_geolib);
+    m_scene->setGeometry(m_ggeo);
+
     m_scene->uploadGeometry();
 
     bool autocam = true ;

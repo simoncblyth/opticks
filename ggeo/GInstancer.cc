@@ -492,7 +492,7 @@ done in  GMergedMesh::addInstancedBuffers.
 
 **/
 
-void GInstancer::labelTree()   // hmm : doesnt label global volumes ?
+void GInstancer::labelTree()  
 {
     LOG(LEVEL) << "[" 
                << " nrep " << m_repeat_candidates.size() 

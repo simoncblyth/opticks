@@ -498,6 +498,12 @@ void Frame::resize(unsigned int width, unsigned int height, unsigned int coord2p
 }
 
 
+/**
+Frame::touch
+-------------
+
+
+**/
 
 int Frame::touch(int ix, int iy )
 {
@@ -513,6 +519,14 @@ float Frame::readDepth( int x, int y )
     return readDepth( x, y, m_height*m_coord2pixel );
 }
 
+/**
+Frame::readDepth
+-----------------
+
+Access the GL_DEPTH_COMPONENT float for a pixel position in the frame.
+The value is expected to be in the range 0:1
+
+**/
 
 float Frame::readDepth( int x, int y_, int yheight )
 {

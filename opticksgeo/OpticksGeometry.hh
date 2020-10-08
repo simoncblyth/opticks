@@ -37,25 +37,11 @@ OpticksGeometry : GGeo holder/loader/fixer
 ============================================
 
 * almost nothing here is needed anymore (meshfixing and Assimp loading no longer viable)
-* TODO: eliminate this just go direct to GGeo ?
-
-
-Actually OpticksGGeo would be a better name, this acts as a higher 
-level holder of GGeo with a triangulated (G4DAE) focus.  
-Anything related to analytic (GLTF) should not live here, OpticksHub 
-would be more appropriate.
-
-* ACTUALLY ARE NOW THINKING THAT ANALYTIC SHOULD LIVE INSIDE
-  A SINGLE GGeo ALONGSIDE THE TRIANGULATED 
+* TODO: eliminate this just go direct to GGeo 
 
 Canonical m_geometry instance resides in okg/OpticksHub 
 and is instanciated by OpticksHub::init which 
 happens within the ok/OKMgr or okg4/OKG4Mgr ctors.
-
-Dev History
--------------
-
-* started as spillout from monolithic GGeo
 
 **/
 
@@ -72,14 +58,18 @@ class OKGEO_API OpticksGeometry {
        GGeo*           getGGeo();
   private: 
        void loadGeometryBase();
+#ifdef OLD_MESHFIX
        void fixGeometry();
+#endif
    private:
        void init();
    private:
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 
        Composition*         m_composition ; 
+#ifdef OLD_MESHFIX
        OpticksCfg<Opticks>* m_fcfg ;
+#endif
        GGeo*                m_ggeo ; 
        unsigned             m_verbosity ;
 };

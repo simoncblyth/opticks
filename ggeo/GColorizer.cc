@@ -39,7 +39,7 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-const plog::Severity GColorizer::LEVEL = debug ; 
+const plog::Severity GColorizer::LEVEL = PLOG::EnvLevel("GColorizer","DEBUG") ; 
 
 
 GColorizer::GColorizer(GNodeLib* nodelib, GGeoLib* geolib, GBndLib* blib, OpticksColors* colors, GColorizer::Style_t style ) 
@@ -55,14 +55,23 @@ GColorizer::GColorizer(GNodeLib* nodelib, GGeoLib* geolib, GBndLib* blib, Optick
     m_num_colorized(0),
     m_repeat_index(0)
 {
-     init();
+    init();
 }
 
 void GColorizer::init()
 {
-    if(!m_colors)
-         LOG(warning) << "GColorizer::init m_colors NULL " ; 
+    if(!m_colors) LOG(fatal) << "m_colors NULL " ; 
+    assert( m_colors ); 
 }
+
+
+/**
+GColorizer::setTarget
+----------------------
+
+Sets where the vertex colors are written.
+
+**/
 
 void GColorizer::setTarget(nvec3* target)
 {
@@ -73,23 +82,36 @@ void GColorizer::setRepeatIndex(unsigned ridx)
     m_repeat_index = ridx ; 
 }
 
+
+/**
+GColorizer::writeVertexColors
+------------------------------
+
+Huh why only mesh0 ?
+
+**/
+
 void GColorizer::writeVertexColors()
 {
-    GMergedMesh* mesh0 = m_geolib->getMergedMesh(0);
+    GMergedMesh* mesh0 = m_geolib->getMergedMesh(0); // mesh0-ok
     const GVolume* root = m_nodelib->getVolume(0);
-    writeVertexColors( mesh0, root );
+    writeVertexColors( mesh0, root );   // mesh0-ok
 }
 
-void GColorizer::writeVertexColors(GMergedMesh* mesh0, const GVolume* root)
+void GColorizer::writeVertexColors(GMergedMesh* mm, const GVolume* root)
 {
-    assert(mesh0);
+    assert(mm);
+    unsigned ridx = mm->getIndex();  
+    LOG(LEVEL) << "[ ridx " << ridx ; 
 
-    gfloat3* vertex_colors = mesh0->getColors();
+    gfloat3* vertex_colors = mm->getColors();
 
     setTarget( reinterpret_cast<nvec3*>(vertex_colors) );
-    setRepeatIndex(mesh0->getIndex()); 
+    setRepeatIndex(ridx); 
 
     traverse(root);
+
+    LOG(LEVEL) << "] ridx " << ridx ; 
 }
 
 
@@ -110,12 +132,27 @@ void GColorizer::traverse(const GVolume* root)
         LOG(fatal) << "GColorizer::traverse must setTarget before traverse " ;
         return ;  
     }
-    LOG(LEVEL) << "GColorizer::traverse START" ; 
+    LOG(LEVEL) << "[" ; 
 
     traverse_r(root, 0);
 
-    LOG(LEVEL) << "GColorizer::traverse colorized nodes " << m_num_colorized ; 
+    LOG(LEVEL) << "] num_colorized  " << m_num_colorized ; 
 }
+
+/**
+GColorizer::traverse_r
+-----------------------
+
+Recurses the node tree, but writes to the flat m_target array from mm0
+for selected.  Coloring approach determined by m_style
+
+SURFACE_INDEX
+    based on node boundary 
+PSYCHEDELIC_VERTEX,PSYCHEDELIC_NODE,PSYCHEDELIC_MESH
+    controls the index that dictates how often to change the color
+
+
+**/
 
 void GColorizer::traverse_r( const GNode* node, unsigned depth)
 {
@@ -165,10 +202,17 @@ void GColorizer::traverse_r( const GNode* node, unsigned depth)
 
         m_cur_vertices += nvert ;      // offset within the flat arrays
     }
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1 );
+    for(unsigned i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1 );
 }
 
 
+/**
+GColorizer::getSurfaceColor
+-----------------------------
+
+Arrive at a color based on isur/osur from the boundary of the node/volume.
+
+**/
 
 nvec3 GColorizer::getSurfaceColor(const GNode* node)
 {

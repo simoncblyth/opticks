@@ -27,7 +27,7 @@
 #include "PLOG.hh"
 
 template <typename T>
-const plog::Severity NTreeBalance<T>::LEVEL = info ; 
+const plog::Severity NTreeBalance<T>::LEVEL = PLOG::EnvLevel("NTreeBalance","DEBUG") ; 
 
 
 template <typename T>

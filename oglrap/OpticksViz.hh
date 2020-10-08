@@ -28,6 +28,7 @@ class SLauncher ;
 template <typename T> class NPY ; 
 
 // ggeo-
+class GGeo ; 
 class GGeoBase ; 
 class GItemIndex ; 
 
@@ -123,6 +124,7 @@ class OGLRAP_API OpticksViz : public SCtrl  {
          Opticks*      m_ok ; 
          OpticksRun*   m_run ; 
          GGeoBase*     m_ggb ; 
+         GGeo*         m_ggeo ; 
 
          OpticksIdx*   m_idx ; 
          bool          m_immediate ; 

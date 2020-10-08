@@ -25,6 +25,7 @@
 #include "plog/Severity.h"
 
 template <typename T> class NPY ; 
+struct nbbox ; 
 
 class Opticks ; 
 
@@ -75,6 +76,7 @@ class GGEO_API GNodeLib
        static const char* CE ; 
        static const char* BB ; 
        static const char* ID ; 
+       static const char* NI ; 
     public:
         static const plog::Severity LEVEL ; 
         static const char* RELDIR ; 
@@ -91,6 +93,8 @@ class GGEO_API GNodeLib
     private:
         void save() const ;
         void init();
+        unsigned initNumVolumes() const ;
+
         GItemList*   getPVList(); 
         GItemList*   getLVList(); 
 
@@ -115,7 +119,13 @@ class GGEO_API GNodeLib
     public:
         unsigned getNumTransforms() const ; 
         glm::mat4 getTransform(unsigned index) const ;
+        glm::uvec4 getIdentity(unsigned index) const ;
+        glm::uvec4 getNodeInfo(unsigned index) const ;
         glm::vec4 getCE(unsigned index) const ;
+        void      getBB(unsigned index, glm::vec4& mn, glm::vec4& mx ) const ; 
+        nbbox     getBBox(unsigned index) const ;
+
+
         std::string descVolume(unsigned index) const;
         void dumpVolumes(const char* msg="GNodeLib::dumpVolumes", float extent_cut_mm=5000.f, int cursor=-1 ) const ; 
     public:
@@ -125,9 +135,11 @@ class GGEO_API GNodeLib
         std::string     reportSensorVolumes(const char* msg) const ; 
         void            dumpSensorVolumes(const char* msg) const ; 
         void            getSensorPlacements(std::vector<void*>& placements) const ; 
+    public:
+        unsigned        findContainerVolumeIndex(float x, float y, float z) const ;
     private:
         Opticks*                           m_ok ;  
-        const char*                        m_idpath ; 
+        const char*                        m_keydir ; 
         bool                               m_loading ; 
         const char*                        m_cachedir ; 
         const char*                        m_reldir ; 
@@ -138,8 +150,10 @@ class GGEO_API GNodeLib
         NPY<float>*                        m_bounding_box ; 
         NPY<float>*                        m_center_extent ; 
         NPY<unsigned>*                     m_identity ; 
+        NPY<unsigned>*                     m_nodeinfo ; 
     private:
         GTreePresent*                      m_treepresent ; 
+        unsigned                           m_num_volumes ; 
     private:
         std::map<unsigned int, const GVolume*>    m_volumemap ; 
         std::vector<const GVolume*>               m_volumes ; 

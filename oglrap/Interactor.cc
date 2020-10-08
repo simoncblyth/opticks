@@ -312,7 +312,7 @@ const char* Interactor::keys = R"LITERAL(
  B: Scene::nextGeometryStyle  bbox/norm/wire 
  C: Clipper::next             toggle geometry clipping 
  D: Camera::nextStyle         perspective/orthographic 
- E: Composition::nextGeometryStyle  lightshader/normalshader/flatvertex/facecolor 
+ E: Composition::nextGeometryStyle  default(lightshader)/nrmcol/vtxcol/facecol 
  F: far mode toggle : swipe up/down change frustum far 
  G: gui mode    toggle GUI 
  H: Trackball::home  

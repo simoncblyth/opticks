@@ -80,6 +80,7 @@ class GGEO_API GVolume : public GNode {
       unsigned     getIdentityIndex() const ;
       guint4       getIdentity() const ;
       glm::uvec4   getIdentity_() const ;
+      glm::uvec4   getNodeInfo_() const ; 
   public:
       GParts*      getParts() const ;
       GPt*         getPt() const ;

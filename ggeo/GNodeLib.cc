@@ -42,6 +42,7 @@ const char* GNodeLib::TR = "volume_transforms.npy" ;
 const char* GNodeLib::CE = "volume_center_extent.npy" ; 
 const char* GNodeLib::BB = "volume_bbox.npy" ; 
 const char* GNodeLib::ID = "volume_identity.npy" ; 
+const char* GNodeLib::NI = "volume_nodeinfo.npy" ; 
 
 const char* GNodeLib::CacheDir(const Opticks* ok)  // static
 {
@@ -58,7 +59,7 @@ GNodeLib* GNodeLib::Load(Opticks* ok)  // static
 GNodeLib::GNodeLib(Opticks* ok)  
     :
     m_ok(ok),
-    m_idpath(ok->getIdPath()),
+    m_keydir(ok->getIdPath()),
     m_loading(false),
     m_cachedir(GNodeLib::CacheDir(ok)),
     m_reldir(RELDIR),
@@ -68,7 +69,9 @@ GNodeLib::GNodeLib(Opticks* ok)
     m_bounding_box(NPY<float>::make(0,2,4)),
     m_center_extent(NPY<float>::make(0,4)),
     m_identity(NPY<unsigned>::make(0,4)),
-    m_treepresent(new GTreePresent(100, 1000))   // depth_max,sibling_max
+    m_nodeinfo(NPY<unsigned>::make(0,4)),
+    m_treepresent(new GTreePresent(100, 1000)),   // depth_max,sibling_max
+    m_num_volumes(0)
 {
     LOG(LEVEL) << "created" ; 
 }
@@ -76,7 +79,7 @@ GNodeLib::GNodeLib(Opticks* ok)
 GNodeLib::GNodeLib(Opticks* ok, bool loading)
     :
     m_ok(ok),
-    m_idpath(ok->getIdPath()),
+    m_keydir(ok->getIdPath()),
     m_loading(loading),
     m_cachedir(GNodeLib::CacheDir(ok)),
     m_reldir(RELDIR),
@@ -86,27 +89,49 @@ GNodeLib::GNodeLib(Opticks* ok, bool loading)
     m_bounding_box(NPY<float>::load(m_cachedir, BB)),
     m_center_extent(NPY<float>::load(m_cachedir,CE)),
     m_identity(NPY<unsigned>::load(m_cachedir,ID)),
-    m_treepresent(NULL)
+    m_nodeinfo(NPY<unsigned>::load(m_cachedir,NI)),
+    m_treepresent(NULL),
+    m_num_volumes(initNumVolumes())
 {
     LOG(LEVEL) << "loaded" ; 
 }
  
+unsigned GNodeLib::initNumVolumes() const
+{
+    unsigned num_volumes = m_pvlist->getNumKeys(); 
+    assert( m_lvlist->getNumKeys() == num_volumes ); 
+    assert( m_transforms->getNumItems() == num_volumes ); 
+    assert( m_bounding_box->getNumItems() == num_volumes ); 
+    assert( m_center_extent->getNumItems() == num_volumes ); 
+    assert( m_identity->getNumItems() == num_volumes ); 
+    assert( m_nodeinfo->getNumItems() == num_volumes ); 
+    assert( m_volumes.size() == 0 );  // zero live volumes  postcache
+    return num_volumes ; 
+}
+
+unsigned GNodeLib::getNumVolumes() const 
+{
+    return m_num_volumes ; 
+}
+
+
 void GNodeLib::save() const 
 {
-    LOG(LEVEL) << " idpath " << m_idpath ; 
-    m_pvlist->save(m_idpath);
-    m_lvlist->save(m_idpath);
+    LOG(LEVEL) << " keydir " << m_keydir ; 
+    m_pvlist->save(m_keydir);
+    m_lvlist->save(m_keydir);
 
     m_transforms->save(m_cachedir,  TR); 
     m_bounding_box->save(m_cachedir, BB); 
     m_center_extent->save(m_cachedir, CE); 
     m_identity->save(m_cachedir, ID); 
+    m_nodeinfo->save(m_cachedir, NI); 
 
     if(m_treepresent)  // pre-cache only as needs the full node tree
     {
         const GNode* top = getNode(0); 
         m_treepresent->traverse(top);
-        m_treepresent->write(m_idpath, m_reldir);
+        m_treepresent->write(m_keydir, m_reldir);
     }
 }
 
@@ -118,6 +143,7 @@ std::string GNodeLib::getShapeString() const
        << std::endl << std::setw(20) << BB << " " << m_bounding_box->getShapeString() 
        << std::endl << std::setw(20) << CE << " " << m_center_extent->getShapeString() 
        << std::endl << std::setw(20) << ID << " " << m_identity->getShapeString() 
+       << std::endl << std::setw(20) << NI << " " << m_nodeinfo->getShapeString() 
        ;
     return ss.str();
 }
@@ -169,31 +195,6 @@ const char* GNodeLib::getPVName(unsigned index) const
 const char* GNodeLib::getLVName(unsigned index) const 
 {
     return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
-}
-
-/**
-GNodeLib::getNumVolumes
--------------------------
-**/
-
-unsigned GNodeLib::getNumVolumes() const 
-{
-    unsigned npv = getNumPV(); 
-    unsigned nlv = getNumLV(); 
-    unsigned ntr = getNumTransforms(); 
-    unsigned nvo = m_volumes.size();
-
-    LOG(LEVEL) 
-        << " npv " << npv
-        << " nlv " << nlv
-        << " ntr " << ntr
-        << " nvo " << nvo << "(expect zero postcache)" 
-        ;
-
-    assert( npv == nlv ); 
-    assert( npv == ntr ); 
-    if( nvo > 0 ) assert( npv == nvo ); 
-    return npv ;
 }
 
 /**
@@ -253,8 +254,13 @@ void GNodeLib::add(const GVolume* volume)
     glm::uvec4 id = volume->getIdentity_(); 
     m_identity->add(id);
 
+    glm::uvec4 ni = volume->getNodeInfo_(); 
+    m_nodeinfo->add(ni);
+
     const GVolume* check = getVolume(index);
     assert(check == volume);
+
+    m_num_volumes += 1 ; 
 }
 
 
@@ -383,33 +389,60 @@ unsigned GNodeLib::getNumTransforms() const
 }
 glm::mat4 GNodeLib::getTransform(unsigned index) const 
 {
-    unsigned num_transforms = m_transforms->getNumItems(); 
-    assert( index < num_transforms ); 
+    assert( index < m_num_volumes ); 
     glm::mat4 tr = m_transforms->getMat4(index) ; 
     return tr ;  
 }
 glm::vec4 GNodeLib::getCE(unsigned index) const 
 {
-    unsigned num_volumes = m_center_extent->getNumItems(); 
-    assert( index < num_volumes ); 
+    assert( index < m_num_volumes ); 
     glm::vec4 ce = m_center_extent->getQuad(index) ; 
     return ce ;  
+}
+glm::uvec4 GNodeLib::getIdentity(unsigned index) const 
+{
+    assert( index < m_num_volumes ); 
+    glm::uvec4 id = m_identity->getQuad(index) ; 
+    return id ;  
+}
+glm::uvec4 GNodeLib::getNodeInfo(unsigned index) const 
+{
+    assert( index < m_num_volumes ); 
+    glm::uvec4 ni = m_nodeinfo->getQuad(index) ; 
+    return ni ;  
+}
+
+
+
+void GNodeLib::getBB(unsigned index, glm::vec4& mn, glm::vec4& mx ) const 
+{
+    assert( index < m_num_volumes ); 
+    mn = m_bounding_box->getQuad(index, 0); 
+    mx = m_bounding_box->getQuad(index, 1); 
+}
+
+nbbox GNodeLib::getBBox(unsigned index) const 
+{
+    glm::vec4 mn ; 
+    glm::vec4 mx ;
+    getBB(index, mn, mx); 
+    return make_bbox( mn.x, mn.y, mn.z, mx.x, mx.y, mx.z );  
 }
 
 
 
 
 /**
-GNodeLib::dump
----------------
+GNodeLib::dump  (precache)
+----------------------------
 
-Empty postcache.
+Precache dumper.
 
 **/
 void GNodeLib::dump(const char* msg) const 
 {
     LOG(info) << msg ; 
-    LOG(info) << " NumVolumes " << m_volumes.size() ; 
+    LOG(info) << " m_volumes.size() " << m_volumes.size() ; 
 
     for(unsigned i=0 ; i < std::min(m_volumes.size(), 100ul) ; i++ )
     {
@@ -456,6 +489,7 @@ void GNodeLib::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) co
     unsigned num_volumes = getNumVolumes();
     LOG(info) << msg  << " num_volumes " << num_volumes ;    
 
+    LOG(info) << "first volumes "  ; 
     for(unsigned i=0 ; i < std::min(num_volumes, 20u) ; i++) 
     {    
         std::cout 
@@ -464,7 +498,7 @@ void GNodeLib::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) co
             ;
     }    
 
-    LOG(info) << " volumes with extent greater than " << extent_cut_mm << " mm " ; 
+    LOG(info) << "volumes with extent greater than " << extent_cut_mm << " mm " ; 
     for(unsigned i=0 ; i < num_volumes ; i++) 
     {    
         glm::vec4 ce = getCE(i);
@@ -476,6 +510,49 @@ void GNodeLib::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) co
     }    
 }
 
+
+/**
+GNodeLib::findContainerVolumeIndex
+-----------------------------------
+
+Returns the absolute volume index of the smallest volume 
+that contains the provided coordinate.
+
+NB simple slow implementation as this has only been used 
+interactively with unprojected frame positions, see Scene::touch.
+
+Contrast with GMergedMesh::findContainer (actually GMesh::findContainer but it only makes
+sense in the subclass) which does the same within the volumes of that mesh only 
+and returns a volume index local to that merged mesh.
+
+**/
+
+unsigned GNodeLib::findContainerVolumeIndex(float x, float y, float z) const 
+{
+    unsigned container(0);
+    float cext(FLT_MAX) ; 
+
+    for(unsigned index=0 ; index < m_num_volumes ; index++)
+    {    
+         glm::vec4 ce = getCE(index) ;
+         glm::vec3 hi(ce.x + ce.w, ce.y + ce.w, ce.z + ce.w );
+         glm::vec3 lo(ce.x - ce.w, ce.y - ce.w, ce.z - ce.w );
+
+         if(  
+              x > lo.x && x < hi.x  &&
+              y > lo.y && y < hi.y  &&
+              z > lo.z && z < hi.z 
+           )    
+          {    
+               if(ce.w < cext)
+               {    
+                   cext = ce.w ; 
+                   container = index ; 
+               }    
+          }    
+    }    
+    return container ; 
+}
 
 
 

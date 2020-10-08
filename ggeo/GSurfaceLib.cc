@@ -720,6 +720,16 @@ GItemList* GSurfaceLib::createNames()
 }
 
 
+/**
+GSurfaceLib::collectSensorIndices
+----------------------------------
+
+Loops over all surfaces collecting the 
+indices of surfaces having non-zero EFFICIENCY or detect
+properties.
+
+**/
+
 void GSurfaceLib::collectSensorIndices()
 {
     unsigned ni = getNumSurfaces();

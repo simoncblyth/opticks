@@ -20,10 +20,10 @@
 
 """
 """
-import os, logging, numpy as np
+import os, json, logging, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.geocache import keydir
+from opticks.ana.key import keydir
 from opticks.ana.prim import Dir
 
 class Geom2d(object):
@@ -31,11 +31,20 @@ class Geom2d(object):
     Scratch geometry, for designing flight paths
     """
     def __init__(self, kd, ridx=0):
+        meta = json.load(os.path.join(kd, "cachemeta.json"))
+        gcv = meta["GEOCACHE_CODE_VERSION"]
+        log.info("GEOCACHE_CODE_VERSION:%s" % gcv)
+
         self.ridx = str(ridx)
         self.kd = kd
+        self.meta = meta
+
         self._pv = None
         self._lv = None
-        self.ce = np.load(os.path.join(self.kd, "GMergedMesh", self.ridx,"center_extent.npy"))
+        #self.ce = np.load(os.path.join(self.kd, "GMergedMesh", self.ridx,"center_extent.npy"))
+        self.ce = np.load(os.path.join(self.kd, "GNodeLib", "center_extent.npy"))
+
+        ## HMM GParts creation is now deferred so these are no longer available 
         self.d = Dir(os.path.expandvars(os.path.join("$IDPATH/GParts",self.ridx)))     ## mm0 analytic
         self.select_gprim()
     
@@ -108,11 +117,10 @@ class Geom2d(object):
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
-
-    ok = os.environ["OPTICKS_KEY"]
-    kd = keydir(ok)
+    kd = keydir()
     log.info(kd)
     assert os.path.exists(kd), kd 
+
     os.environ["IDPATH"] = kd    ## TODO: avoid having to do this, due to prim internals
 
     mm0 = Geom2d(kd, ridx=0)

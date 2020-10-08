@@ -793,13 +793,13 @@ void GMergedMesh::mergeVolumeIdentity( const GVolume* volume, bool selected )
 {
     const GMesh* mesh = volume->getMesh();
 
-    unsigned nvert = mesh->getNumVertices();
+    unsigned meshIndex = mesh->getIndex();
+
     unsigned nface = mesh->getNumFaces();
+    unsigned nvert = mesh->getNumVertices();
 
     guint4 _identity = volume->getIdentity();
-
     unsigned nodeIndex = volume->getIndex();
-    unsigned meshIndex = mesh->getIndex();
     unsigned boundary = volume->getBoundary();
 
     assert(_identity.x == nodeIndex);
@@ -814,12 +814,21 @@ void GMergedMesh::mergeVolumeIdentity( const GVolume* volume, bool selected )
         ;
 
     GNode* parent = volume->getParent();
-    unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
+    unsigned parentIndex = parent ? parent->getIndex() : UINT_MAX ;
 
     m_meshes[m_cur_volume] = meshIndex ; 
 
     // face and vertex counts must use same selection as above to be usable 
     // with the above filled vertices and indices 
+
+    glm::uvec4 ni = volume->getNodeInfo_(); 
+    assert( ni.x == nface ); 
+    assert( ni.y == nvert ); 
+    assert( ni.z == nodeIndex ); 
+    assert( ni.w == parentIndex ); 
+    // TODO: adopt ni, so can clean up the above 
+    //   model change gets rid of selected branching 
+
 
     m_nodeinfo[m_cur_volume].x = selected ? nface : 0 ; 
     m_nodeinfo[m_cur_volume].y = selected ? nvert : 0 ; 

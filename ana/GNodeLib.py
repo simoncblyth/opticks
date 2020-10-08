@@ -50,10 +50,10 @@ TODO:
 
 
 """
-import os, numpy as np, argparse, logging
+import os, json, numpy as np, argparse, logging
 log = logging.getLogger(__name__)
 
-from opticks.ana.key import Key 
+from opticks.ana.key import keydir
 
 class Txt(list):
     def __init__(self, *args, **kwa):
@@ -74,12 +74,15 @@ class Node(object):
 
 
 class GNodeLib(object):
-    OPTICKS_KEYDIR = Key.Keydir(os.environ["OPTICKS_KEY"])
+    KEY = os.environ["OPTICKS_KEY"]
+    KEYDIR = keydir(KEY)
+    META = json.load(open(os.path.join(KEYDIR, "cachemeta.json")))
     RELDIR = "GNodeLib" 
     k2name = {
       "TR":"volume_transforms.npy",
       "BB":"volume_bbox.npy",
       "ID":"volume_identity.npy",
+      "NI":"volume_nodeinfo.npy",
       "CE":"volume_center_extent.npy",
       "PV":"volume_PVNames.txt",
       "LV":"volume_LVNames.txt",
@@ -87,7 +90,7 @@ class GNodeLib(object):
 
     @classmethod   
     def Path(cls, k): 
-        keydir = cls.OPTICKS_KEYDIR
+        keydir = cls.KEYDIR
         reldir = cls.RELDIR
         name = cls.k2name[k]
         return os.path.expandvars("{keydir}/{reldir}/{name}".format(**locals()))
@@ -122,7 +125,9 @@ def parse_args(doc, **kwa):
 
 if __name__ == '__main__':
     args = parse_args(__doc__)
-    print("GNodeLib.OPTICKS_KEYDIR : %s " % GNodeLib.OPTICKS_KEYDIR )
+    print("GNodeLib.KEY    : %s " % GNodeLib.KEY )
+    print("GNodeLib.KEYDIR : %s " % GNodeLib.KEYDIR )
+    print("GNodeLib.GEOCACHE_CODE_VERSION : %s " % GNodeLib.META["GEOCACHE_CODE_VERSION"] )
     nlib = GNodeLib()
     if args.dump: 
         print(nlib)

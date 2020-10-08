@@ -1006,6 +1006,7 @@ void Opticks::reportKey(const char* msg) const
     const char* espec = SSys::getenvvar("OPTICKS_KEY", "NONE" ); 
 
     std::cout 
+        << std::endl << GEOCACHE_CODE_VERSION_KEY << " " << GEOCACHE_CODE_VERSION
         << std::endl << "KEYDIR  " << ok->getIdPath() 
         << std::endl << "KEY     " << kspec  
         << std::endl << " "    
@@ -1013,7 +1014,8 @@ void Opticks::reportKey(const char* msg) const
         << std::endl << " "   
         << std::endl << "    export OPTICKS_KEY=" << kspec 
         << std::endl << "    ## include above export in ~/.opticks_config " 
-        << std::endl << " " 
+        << std::endl  
+        << std::endl  
         ;   
 
     if(strcmp(kspec, espec) == 0) 

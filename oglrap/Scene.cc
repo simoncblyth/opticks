@@ -55,7 +55,9 @@
 // ggeo-
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
+#include "GGeo.hh"
 #include "GGeoLib.hh"
+#include "GNodeLib.hh"
 
 
 // oglrap-
@@ -178,7 +180,9 @@ Scene::Scene(OpticksHub* hub)
     m_altrecord_renderer(NULL),
     m_devrecord_renderer(NULL),
     m_photons(NULL),
+    m_ggeo(NULL),
     m_geolib(NULL),
+    m_nodelib(NULL),
     m_mesh0(NULL),
     m_composition(m_hub->getComposition()),
     m_colorbuffer(NULL),
@@ -702,8 +706,8 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 {
     LOG(LEVEL)<< "[" ;
 
-    assert(m_mesh0 == NULL); // not expected to Scene::uploadGeometryGlobal more than once 
-    m_mesh0 = mm ; 
+    assert(m_mesh0 == NULL && "not expected to Scene::uploadGeometryGlobal more than once" );  // mesh0-ok
+    m_mesh0 = mm ;   // mesh0-ok
 
     bool skip = mm == NULL ? true : mm->isSkip() ;
 
@@ -812,11 +816,11 @@ void Scene::uploadGeometry()
 
         if( i == 0 )  // first mesh assumed to be **the one and only** non-instanced global mesh
         {
-           uploadGeometryGlobal(mm);
+            uploadGeometryGlobal(mm);
         }
         else
         {
-           uploadGeometryInstanced(mm);
+            uploadGeometryInstanced(mm);
         }
     }
 
@@ -1077,28 +1081,35 @@ void Scene::render()
 }
 
 
+/**
+Scene::touch
+--------------
+
+Called with pixel coordinates and z-depth float from GL_DEPTH_COMPONENT (0:1)
+returns the index of the smallest volume that contains the point. 
+
+Formerly this made the problematic "all volume" assumption for mm0, 
+now fixed by migrating to GNodeLib. 
+
+**/
+
 int Scene::touch(int ix, int iy, float depth)
 {
-    glm::vec3 t = m_composition->unProject(ix,iy, depth);
-    gfloat3 gt(t.x, t.y, t.z );
+    assert( m_nodelib && "m_nodelib must not be NULL"); 
 
+    glm::vec3 tap = m_composition->unProject(ix,iy, depth);
 
-    if(m_mesh0 == NULL)
-    {
-         LOG(fatal) << "Scene::touch"
-                    << " mesh0 NULL "
-                    ;
-         return 0 ;
-    }
+    //gfloat3 gt(t.x, t.y, t.z );
+    //int container = m_mesh0->findContainer(gt);
 
+    int container = m_nodelib->findContainerVolumeIndex(tap.x, tap.y, tap.z); 
 
-    int container = m_mesh0->findContainer(gt);
-    LOG(debug)<<"Scene::touch " 
-             << " x " << t.x 
-             << " y " << t.y 
-             << " z " << t.z 
-             << " container " << container
-             ;
+    LOG(LEVEL)
+        << " x " << tap.x 
+        << " y " << tap.y 
+        << " z " << tap.z 
+        << " containerVolumeIndex " << container
+        ;
 
    if(container > 0) setTouch(container);
    return container ; 
@@ -1142,9 +1153,12 @@ const char* Scene::getShaderInclPath()
     return m_shader_incl_path ;
 }
 
-void Scene::setGeometry(GGeoLib* geolib)
+void Scene::setGeometry(const GGeo* ggeo)
 {
-    m_geolib = geolib ;
+    LOG(LEVEL); 
+    m_ggeo = ggeo ;
+    m_geolib = ggeo->getGeoLib();
+    m_nodelib = ggeo->getNodeLib();   
 }
 
 

@@ -52,9 +52,11 @@
 #endif
 
 
+#ifdef OLD_MESHFIX
 // openmeshrap-
 #include "MFixer.hh"
 #include "MTool.hh"
+#endif
 
 
 // opticksgeo-
@@ -66,15 +68,14 @@
 const plog::Severity OpticksGeometry::LEVEL = PLOG::EnvLevel("OpticksGeometry", "DEBUG") ; 
 
 
-
-
-
 OpticksGeometry::OpticksGeometry(OpticksHub* hub)
    :
    m_hub(hub),
    m_ok(m_hub->getOpticks()),
    m_composition(m_hub->getComposition()),
+#ifdef OLD_MESHFIX
    m_fcfg(m_ok->getCfg()),
+#endif
    m_ggeo(NULL),
 
    m_verbosity(m_ok->getVerbosity())
@@ -113,7 +114,9 @@ void OpticksGeometry::loadGeometry()
 
     // modifyGeometry moved up to OpticksHub
 
+#ifdef OLD_MESHFIX
     fixGeometry();
+#endif
 
     //registerGeometry moved up to OpticksHub
 
@@ -149,6 +152,7 @@ void OpticksGeometry::loadGeometryBase()
     m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
 #endif
 
+#ifdef OLD_MESHFIX
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
     m_ggeo->setMeshVerbosity(m_ok->getMeshVerbosity());    
     m_ggeo->setMeshJoinCfg( resource->getMeshfix() );
@@ -159,9 +163,12 @@ void OpticksGeometry::loadGeometryBase()
         LOG(error) << "using debug meshversion " << meshversion ;  
         m_ggeo->getGeoLib()->setMeshVersion(meshversion.c_str());
     }
+#endif
 
     m_ggeo->loadGeometry();   // potentially from cache : for gltf > 0 loads both tri and ana geometry 
-        
+      
+  
+#ifdef OLD_MESHFIX
     if(m_ggeo->getMeshVerbosity() > 2)
     {
         GMergedMesh* mesh1 = m_ggeo->getMergedMesh(1);
@@ -171,11 +178,13 @@ void OpticksGeometry::loadGeometryBase()
             mesh1->save("$TMP", "GMergedMesh", "baseGeometry") ;
         }
     }
+#endif
 
     LOG(LEVEL) << "]" ; 
 }
 
 
+#ifdef OLD_MESHFIX
 void OpticksGeometry::fixGeometry()
 {
     if(m_ggeo->isLoadedFromCache())
@@ -196,11 +205,12 @@ void OpticksGeometry::fixGeometry()
         glm::vec4 zexplodeconfig = gvec4(m_fcfg->getZExplodeConfig());
         print(zexplodeconfig, "zexplodeconfig");
 
-        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
-        mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
+        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);  // mesh0-ok
+        mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x );  // mesh0-ok
     }
 
     LOG(info) << "]" ; 
 }
+#endif
 
 

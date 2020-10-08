@@ -2479,16 +2479,25 @@ void GMesh::explodeZVertices(float zoffset, float zcut)
 }
 
 
-unsigned int GMesh::findContainer(gfloat3 p)
+/**
+GMesh::findContainer
+---------------------
+
+Find volumes that contains the point
+returning the index of the volume with the smallest extent 
+or 0 if none found.
+
+Caution when using mm0 as the old practice of keeping 
+all volumes in mm0 is going to change see notes/issues/geometry_model_review.rst
+
+**/
+
+unsigned GMesh::findContainer(gfloat3 p)
 {
-   // find volumes that contains the point
-   // returning the index of the volume with the smallest extent 
-   // or 0 if none found
-   //
-    unsigned int container(0);
+    unsigned container(0);
     float cext(FLT_MAX) ; 
 
-    for(unsigned int index=0 ; index < m_num_volumes ; index++)
+    for(unsigned index=0 ; index < m_num_volumes ; index++)
     {
          gfloat4 ce = m_center_extent[index] ;
          gfloat3 hi(ce.x + ce.w, ce.y + ce.w, ce.z + ce.w );

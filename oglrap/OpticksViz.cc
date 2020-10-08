@@ -109,6 +109,7 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     m_ok(hub->getOpticks()),
     m_run(m_ok->getRun()),
     m_ggb(m_hub->getGGeoBase()),
+    m_ggeo(m_hub->getGGeo()),
     m_idx(idx),
     m_immediate(immediate),
     m_interactivity(m_ok->getInteractivityLevel()),
@@ -351,7 +352,8 @@ void OpticksViz::uploadGeometry()
     m_composition->setTimeDomain(        m_ok->getTimeDomain() );
     m_composition->setDomainCenterExtent(m_ok->getSpaceDomain());
 
-    m_scene->setGeometry(m_ggb->getGeoLib());
+    //m_scene->setGeometry(m_ggb->getGeoLib());
+    m_scene->setGeometry(m_ggeo);
 
     m_scene->uploadGeometry();
 

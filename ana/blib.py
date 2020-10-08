@@ -23,15 +23,14 @@ import sys, os, numpy as np, logging, argparse
 log = logging.getLogger(__name__)
 tx_load = lambda _:list(map(str.strip, open(_).readlines())) # py3 needs the list, otherwise stays as map 
 
-class BLib(object):
-    def path(self, rel):
-        return os.path.join(self.idpath, rel)
+from opticks.ana.key import keydir
 
+class BLib(object):
     @classmethod
     def parse_args(cls, doc, **kwa):
         np.set_printoptions(suppress=True, precision=3 )
         parser = argparse.ArgumentParser(doc)
-        parser.add_argument(     "path",  nargs="?", help="Geocache directory", default=kwa.get("path",None) )
+        #parser.add_argument(     "path",  nargs="?", help="Geocache directory", default=kwa.get("path",None) )
         parser.add_argument(     "--level", default="info", help="logging level" ) 
         parser.add_argument(     "-b","--brief", action="store_true", default=False ) 
         parser.add_argument(     "-n","--names", action="store_true", default=False ) 
@@ -42,11 +41,11 @@ class BLib(object):
         return args  
 
     @classmethod
-    def make(cls, path):
+    def old_make(cls, path):
         return cls(cls.find_idpath(path))
 
     @classmethod
-    def find_idpath(cls, path):
+    def old_find_idpath(cls, path):
         """
         Heuristically convert any absolute path inside the idpath into the idpath 
         by looking for path element of length 32 corresponding to the digest string.
@@ -62,11 +61,15 @@ class BLib(object):
         pass
         return idpath
 
-    def __init__(self, idpath):
+
+    def path(self, rel):
+        return os.path.join(self.keydir, rel)
+
+    def __init__(self, kd):
         """
         Load boundary lib index and the GItemList text files with material and surface names
         """
-        self.idpath = os.path.expandvars(idpath)
+        self.keydir = kd
         blib = np.load(self.path("GBndLib/GBndLibIndex.npy"))
         mlib = tx_load(self.path("GItemList/GMaterialLib.txt"))
         slib = tx_load(self.path("GItemList/GSurfaceLib.txt"))
@@ -91,7 +94,7 @@ class BLib(object):
         return " nbnd %3d nmat %3d nsur %3d " % ( len(self.blib), len(self.mlib), len(self.slib))
 
     def _set_selection(self, q):
-        self._selection = map(int, q.split(","))
+        self._selection = list(map(int, q.split(",")))
     def _get_selection(self):
         return self._selection
     selection = property(_get_selection, _set_selection)
@@ -111,7 +114,9 @@ class BLib(object):
 if __name__ == '__main__':
 
     args = BLib.parse_args(__doc__, path=os.environ.get("GC", None))
-    blib = BLib.make(args.path)
+
+    kd = keydir(os.environ["OPTICKS_KEY"]) 
+    blib = BLib(kd)
 
     if args.selection:
         blib.selection = args.selection 

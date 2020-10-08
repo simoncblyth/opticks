@@ -74,6 +74,8 @@ struct NPY_API nbbox
     static void transform(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
 
 
+
+
     static bool HasOverlap(const nbbox& a, const nbbox& b );
     static void SubtractOverlap(nbbox& result, const nbbox& a, const nbbox& a_overlap, int verbosity );
     static bool FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b );

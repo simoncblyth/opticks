@@ -4,14 +4,121 @@ geometry_model_review
 Objective of this review
 --------------------------
 
-High level description of the GGeo geometry model:
-how it is constructed, issues with mm0.
+Geometry Model rationalizations that:
 
+* de-conflate "all volume" and "remainder volume" information
+* avoid vague term "global", ie be precise of either "all" or "remainder" 
+* provide full identity addressing for all volumes including remainder volumes
+
+  * this then allow near completion of JUNO hits by transform access to find the local positions
+
+* simplify GMergedMesh by moving the special mm0/mesh0 "all" info to GNodeLib
+
+ 
 See Also 
 ----------
 
 * :doc:`identity_review.rst`
 * :doc:`GGeo-OGeo-identity-direct-review.rst` Mechanics of the direct workflow:
+
+
+Progress with changes to geometry model
+-----------------------------------------
+
+DONE 
+~~~~~~
+
+1. GNodeLib additions "all volume info" now collected into GNodeLib::
+
+    void GNodeLib::add(const GVolume* volume)
+
+2. Opticks::GEOCACHE_CODE_VERSION checking to force geocache-create when 
+   code changes invalidate old geocache 
+   
+3. OpticksIdentity to hold the "native" RPO triplet ridx/pidx/oidx identifier 
+
+
+TODO
+~~~~~~~
+
+1. Migrate all usage of mm0/mesh0 to use the new GNodeLib source of all volume info::
+
+    opticks-f mm0
+    opticks-f mesh0
+
+    opticks-f getMergedMesh\(0\)
+
+
+What to look for:
+
+1. use of mm0 with all volume assumption, eg Scene::touch 
+
+
+
+
+::
+
+    epsilon:opticksgeo blyth$ opticks-fl mesh0
+    ./opticksgeo/OpticksGeometry.cc
+          OK old meshfix
+
+    ./ggeo/GColorizer.cc
+    ./ggeo/GColorizer.hh
+
+          GColorizer writes into mm0 GMesh::getColors 
+          Looks to be using mm0 in acceptable manner : ie not making any global assumptions.
+          It just means that all instances have mid-grey geo:vtxcol
+
+          The model simplifications effectively remove selection from GMergedMesh 
+
+          GColorizer=INFO geocache-create
+
+    ./oglrap/Scene.cc
+    ./oglrap/Scene.hh
+
+    epsilon:opticks blyth$ opticks-fl mm0
+    ./ana/flightpath.py
+    ./ana/geom2d.py
+    ./ana/view.py
+    ./ana/mm0prim2.py
+    ./ana/geocache.bash
+    ./bin/ab.bash
+    ./ok/ok.bash
+    ./extg4/X4Transform3D.cc
+    ./ggeo/GParts.cc
+    ./ggeo/GGeoTest.hh
+    ./ggeo/GMesh.cc
+    ./ggeo/GGeo.cc
+    ./ggeo/GScene.hh
+    ./ggeo/GInstancer.cc
+    ./ggeo/GGeoLib.cc
+    ./ggeo/GMergedMesh.cc
+    ./ggeo/GScene.cc
+    ./optickscore/OpticksDomain.hh
+    ./npy/NScene.cpp
+    ./oglrap/Scene.cc
+
+
+::
+
+    epsilon:oglrap blyth$ opticks-f getMergedMesh\(0\)
+    ./opticksgeo/OpticksGeometry.cc:        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);  // mesh0-ok
+    ./ggeo/GGeo.cc:    GMergedMesh* mm0 = getMergedMesh(0);
+    ./ggeo/GGeo.cc:    GMergedMesh* mm0 = getMergedMesh(0);
+    ./ggeo/GGeo.cc:    GMergedMesh* mm0 = getMergedMesh(0);
+    ./ggeo/tests/GGeoTestTest.cc:    GMergedMesh* mm = tgeo.getMergedMesh(0); 
+    ./ggeo/tests/GGeoTest.cc:    GMergedMesh* mm = gg->getMergedMesh(0);
+    ./ggeo/GColorizer.cc:    GMergedMesh* mesh0 = m_geolib->getMergedMesh(0); // mesh0-ok
+    ./ggeo/GGeoLib.cc:    GMergedMesh* mm0 = getMergedMesh(0) ; 
+    ./ggeo/GScene.cc:    m_tri_mm0(m_tri_geolib->getMergedMesh(0)),
+    epsilon:opticks blyth$ 
+
+
+
+
+
+2. prune old GMergedMesh "all volume" info
+
 
 Relevant Tests
 ----------------
@@ -50,8 +157,10 @@ It kinda gets away with this conflation by splitting on high-level/low-level axi
 But the result is still confusing even when it can be made to work, so it is prone to breakage.
 
 
-globalinstance just adding to confusion
+globalinstance just adding to confusion 
 -------------------------------------------
+
+* globalinstance is no longer enabled by default 
 
 In Aug I added an extra mm slot, called the GlobalInstance, which 
 treats the remainder geometry just like instanced. That was motivated 
@@ -82,24 +191,6 @@ TODO: change the GlobalInstance -> RemainderInstance
      430     
      431     //  hmm having both admit and selected is confusing 
      432     
-
-
-Idea for solution : keep the "all" info in GNodeLib arrays and get it persisted there 
----------------------------------------------------------------------------------------
-
-Need to have access to both "all" geometry info and "remainder" geometry info.
-Both these currently in GMergedMesh slot zero. 
-
-Investigate the usage of the "all" info from mm0, 
-
-1. relocating the "all volume info" collection into GNodeLib::
-
-    void GNodeLib::add(const GVolume* volume)
-
-2. get it persisted there (currently just persists pvlist lvlist names) for all volumes a
-
-
-This would help by moving GMergedMesh in the simpler direction.
 
 
 

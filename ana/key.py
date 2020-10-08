@@ -41,7 +41,11 @@ Notes
 import os, logging, numpy as np, argparse
 log = logging.getLogger(__name__)
 
-
+def keydir(key=None):
+    if key is None:
+        key = os.environ["OPTICKS_KEY"] 
+    pass
+    return Key.Keydir(key)
 
 
 class Key(object):
