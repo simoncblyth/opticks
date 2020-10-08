@@ -284,13 +284,13 @@ void GGeoLib::saveConstituents(const char* idpath)
 
 
 
-GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance )
+GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, const GNode* base, const GNode* root )
 {
     LOG(LEVEL) << " mm " << index ;  
 
     if(m_merged_mesh.find(index) == m_merged_mesh.end())
     {
-        m_merged_mesh[index] = GMergedMesh::Create(index, base, root, verbosity, globalinstance );
+        m_merged_mesh[index] = GMergedMesh::Create(index, base, root );
     }
     GMergedMesh* mm = m_merged_mesh[index] ;
 

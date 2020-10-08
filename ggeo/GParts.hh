@@ -225,19 +225,19 @@ class GGEO_API GParts {
     public:
       //
         static int     Compare(const GParts* a, const GParts* b, bool dump ); 
-        static GParts* Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned verbosity ); 
+        static GParts* Create(const GPts* pts, const std::vector<const NCSG*>& solids ); 
         static GParts* Make(const npart& pt, const char* spec);
         static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
         static GParts* Make(const NCSG* tree, const char* spec, unsigned ndIdx );
     public:
-        static GParts* Combine(std::vector<GParts*> subs, unsigned verbosity);
-        static GParts* Combine(GParts* onesub,            unsigned verbosity=0 );   // for consistent handling between 1 and many 
+        static GParts* Combine(std::vector<GParts*> subs );
+        static GParts* Combine(GParts* onesub );   // for consistent handling between 1 and many 
     public:
         GParts(GBndLib* bndlib=NULL);
         GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);
         GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib=NULL);
    public:
-        void add(GParts* other, unsigned verbosity);
+        void add(GParts* other );
         void close();
    public:
         void     setBndLib(GBndLib* blib);

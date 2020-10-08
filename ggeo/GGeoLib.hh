@@ -84,7 +84,7 @@ class GGEO_API GGeoLib {
         void hasCache() const ;
         void loadFromCache();
         void save();
-        GMergedMesh* makeMergedMesh(unsigned index, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance );
+        GMergedMesh* makeMergedMesh(unsigned index, const GNode* base, const GNode* root );
     private:
         void loadConstituents(const char* idpath);
         void removeConstituents(const char* idpath);

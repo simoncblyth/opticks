@@ -89,12 +89,13 @@
 #include "OpticksCfg.hh"
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
-const int            Opticks::GEOCACHE_CODE_VERSION = 4 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+const int            Opticks::GEOCACHE_CODE_VERSION = 5 ;  // (incremented when code changes invalidate loading old geocache dirs)   
 
 /**
 3: starting point 
 4: switch off by default addition of extra global_instance GMergedMesh, 
    as GNodeLib now persists the "all volume" info enabling simplification of GMergedMesh 
+5: go live with geometry model change mm0 no longer special, just remainder, GNodeLib name changes, start on triplet identity
 
 **/
 

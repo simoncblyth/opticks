@@ -50,30 +50,43 @@
 import os
 import numpy as np
 from opticks.ana.blib import BLib
-from opticks.ana.key import Key 
+from opticks.ana.key import key_
 
 tx_load = lambda _:list(map(str.strip, open(_).readlines()))
 
 class GGeo(object):
-    OPTICKS_KEYDIR = Key.Keydir(os.environ["OPTICKS_KEY"])
+    KEY = key_(os.environ["OPTICKS_KEY"])
+    KEYDIR = KEY.keydir
+    VERSION = KEY.version
+
     key2aname = {
-      "bbox4":"bbox",
-      "center4":"center_extent",
+             "bbox":"volume_bbox",
+            "bbox4":"volume_bbox",
+          "center4":"volume_center_extent",
+       "transforms":"volume_transforms",
+      "itransforms":"placement_itransforms",
     }
 
     @classmethod   
-    def Path(cls, ridx, name, reldir="GMergedMesh"): 
+    def Path(cls, ridx, name, reldir="GMergedMesh", alldir="GNodeLib"): 
         if name.endswith("raw"):
             name = name[:-3]
         pass 
         aname = cls.key2aname.get(name, name) 
-        opticks_keydir = cls.OPTICKS_KEYDIR 
-        return os.path.expandvars("{opticks_keydir}/{reldir}/{ridx}/{aname}.npy".format(**locals()))
+        keydir = cls.KEYDIR 
+        if ridx == -1:
+            fmt = "{keydir}/{alldir}/{aname}.npy"
+        elif ridx > -1: 
+            fmt = "{keydir}/{reldir}/{ridx}/{aname}.npy"
+        else:
+            assert 0
+        pass 
+        return os.path.expandvars(fmt.format(**locals()))
 
     @classmethod   
     def TxtPath(cls, name): 
-        opticks_keydir = cls.OPTICKS_KEYDIR 
-        return os.path.expandvars("{opticks_keydir}/{name}".format(**locals()))
+        keydir = cls.KEYDIR 
+        return os.path.expandvars("{keydir}/{name}".format(**locals()))
 
     @classmethod   
     def Three2Four(cls, a, w=1): 
@@ -126,11 +139,11 @@ class GGeo(object):
     def Array(cls, ridx, name): 
         path = cls.Path(ridx, name) 
         a = np.load(path)
-        r = cls.Reshape(a, name)
-        if name.endswith("4"):
-           r = cls.Three2Four(r)
-        pass
-        return r 
+        #r = cls.Reshape(a, name)
+        #if name.endswith("4"):
+        #   r = cls.Three2Four(r)
+        #pass
+        return a 
 
     @classmethod   
     def Txt(cls, name): 
@@ -143,11 +156,11 @@ class GGeo(object):
         return attn  
 
     def __init__(self):
-        keydir = cls.OPTICKS_KEYDIR
+        keydir = self.KEYDIR
         path = os.path.expandvars("{keydir}/GMergedMesh".format(**locals()))
         mmidx = sorted(map(int,os.listdir(path)))
-        mmmx = mmidx[-1]
-        self.mmmx = mmmx 
+        num_repeats = len(mmidx)
+        self.num_repeats = num_repeats 
         blib = BLib(keydir)
         self.blib = np.array(blib.names().split("\n"))
 
@@ -162,6 +175,7 @@ class GGeo(object):
         pass
         return getattr(self, attn)
 
+
     def get_txt(self, name, attn):
         if getattr(self, attn, None) is None:
             a = self.Txt(name)
@@ -170,54 +184,48 @@ class GGeo(object):
         return getattr(self, attn)
 
 
-    def lookup(self,ridx,iidx,vidx):
+    def lookup(self,ridx,pidx,oidx):
         """
         :param ridx: repeat idx or 0 for global remainder
-        :param iidx: instance idx, will be 0 for all globals
-        :param vidx: volume index within the instance or amoung the global volumes 
+        :param pidx: placement idx, will be 0 for all globals
+        :param oidx: offset index within the instance or amoung the global volumes 
         """
         gc = self
-        ggt = gc.get_transform(ridx,iidx,vidx)
-        print("\nggt : gc.get_transform(%d,%d,%d)" % (ridx,iidx,vidx))
+        ggt = gc.get_transform(ridx,pidx,oidx)
+        print("\nggt : gc.get_transform(%d,%d,%d)" % (ridx,pidx,oidx))
         print(ggt)
-
-          
-
-
-
-
 
     def __call__(self,i):
         """
         Focussing on accessing globals 
         """
-        gc = self
+        gg = self
 
-        iden = gc.identity[i] 
-        print("gc.identity[%d]  nidx/midx/bidx/sidx  %s  " % (i,iden) )
+        iden = gg.identity[i] 
+        print("gg.identity[%d]  nidx/midx/bidx/sidx  %s  " % (i,iden) )
         nidx,midx,bidx,sidx = iden  
-        print("gc.mlibnames[%d] : %s " % (i, gc.mlibnames[i]) )
-        print("gc.blibnames[%d] : %s " % (i, gc.blibnames[i]) )
+        print("gg.mlibnames[%d] : %s " % (i, gg.mlibnames[i]) )
+        print("gg.blibnames[%d] : %s " % (i, gg.blibnames[i]) )
 
-        bb = gc.bbox4[i]
-        ce = gc.center_extent[i]
-        c4 = gc.center4[i]
-        tr = gc.transforms[i]
+        bb = gg.bbox[i]
+        ce = gg.center_extent[i]
+        c4 = gg.center4[i]
+        tr = gg.transforms[i]
         it = np.linalg.inv(tr) 
         ibb = np.dot( bb, it )  
         cbb = (bb[0]+bb[1])/2.
 
         ic4 = np.dot( c4, it )
 
-        gt = gc.transforms0[nidx]  
+        gt = gg.transforms0[nidx]  
 
-        ggt = gc.get_transform(0,0,i)
+        ggt = gg.get_transform(0,0,i)
 
 
-        print("\ngt : gc.transforms0[%d]" % nidx)
+        print("\ngt : gg.transforms0[%d]" % nidx)
         print(gt)
 
-        print("\nggt : gc.get_transform(0,0,%d)" % i)
+        print("\nggt : gg.get_transform(0,0,%d)" % i)
         print(ggt)
 
         print("\ntr : transform")
@@ -237,69 +245,78 @@ class GGeo(object):
         print("\nibb : np.dot( bb, it) : inverse transform applied to bbox4 ")
         print(ibb)
 
- 
-    center_extent = property(lambda self:self.get_array(self.mmmx,"center_extent"))
-    center4     = property(lambda self:self.get_array(self.mmmx,"center4"))
-    bboxraw     = property(lambda self:self.get_array(self.mmmx,"bboxraw"))
-    bbox        = property(lambda self:self.get_array(self.mmmx,"bbox"))
-    bbox4       = property(lambda self:self.get_array(self.mmmx,"bbox4"))
-    identity    = property(lambda self:self.get_array(self.mmmx,"identity"))
 
-    transforms0  = property(lambda self:self.get_array(0,"transforms"))  # all node globals
-    transforms1  = property(lambda self:self.get_array(1,"transforms"))
-    transforms2  = property(lambda self:self.get_array(2,"transforms"))
-    transforms3  = property(lambda self:self.get_array(3,"transforms"))
-    transforms4  = property(lambda self:self.get_array(4,"transforms"))
-    transforms5  = property(lambda self:self.get_array(5,"transforms"))
-    transforms   = property(lambda self:self.get_array(self.mmmx,"transforms"))  # ridx 0 just globals 
+    all_volume_center_extent = property(lambda self:self.get_array(-1,"all_volume_center_extent"))
+    all_volume_bbox          = property(lambda self:self.get_array(-1,"all_volume_bbox"))
+    all_volume_identity      = property(lambda self:self.get_array(-1,"all_volume_identity"))
+    all_volume_transforms    = property(lambda self:self.get_array(-1,"all_volume_transforms"))  
 
-    itransforms0 = property(lambda self:self.get_array(0,"itransforms"))
-    itransforms1 = property(lambda self:self.get_array(1,"itransforms"))
-    itransforms2 = property(lambda self:self.get_array(2,"itransforms"))
-    itransforms3 = property(lambda self:self.get_array(3,"itransforms"))
-    itransforms4 = property(lambda self:self.get_array(4,"itransforms"))
-    itransforms5 = property(lambda self:self.get_array(5,"itransforms"))
+    volume_transforms0  = property(lambda self:self.get_array(0,"volume_transforms")) 
+    volume_transforms1  = property(lambda self:self.get_array(1,"volume_transforms"))
+    volume_transforms2  = property(lambda self:self.get_array(2,"volume_transforms"))
+    volume_transforms3  = property(lambda self:self.get_array(3,"volume_transforms"))
+    volume_transforms4  = property(lambda self:self.get_array(4,"volume_transforms"))
+    volume_transforms5  = property(lambda self:self.get_array(5,"volume_transforms"))
 
-    iidentity0 = property(lambda self:self.get_array(0,"iidentity"))
-    iidentity1 = property(lambda self:self.get_array(1,"iidentity"))
-    iidentity2 = property(lambda self:self.get_array(2,"iidentity"))
-    iidentity3 = property(lambda self:self.get_array(3,"iidentity"))
-    iidentity4 = property(lambda self:self.get_array(4,"iidentity"))
-    iidentity5 = property(lambda self:self.get_array(5,"iidentity"))
+    placement_itransforms0 = property(lambda self:self.get_array(0,"placement_itransforms"))
+    placement_itransforms1 = property(lambda self:self.get_array(1,"placement_itransforms"))
+    placement_itransforms2 = property(lambda self:self.get_array(2,"placement_itransforms"))
+    placement_itransforms3 = property(lambda self:self.get_array(3,"placement_itransforms"))
+    placement_itransforms4 = property(lambda self:self.get_array(4,"placement_itransforms"))
+    placement_itransforms5 = property(lambda self:self.get_array(5,"placement_itransforms"))
+
+    placement_iidentity0 = property(lambda self:self.get_array(0,"placement_iidentity"))
+    placement_iidentity1 = property(lambda self:self.get_array(1,"placement_iidentity"))
+    placement_iidentity2 = property(lambda self:self.get_array(2,"placement_iidentity"))
+    placement_iidentity3 = property(lambda self:self.get_array(3,"placement_iidentity"))
+    placement_iidentity4 = property(lambda self:self.get_array(4,"placement_iidentity"))
+    placement_iidentity5 = property(lambda self:self.get_array(5,"placement_iidentity"))
 
     mlib = property(lambda self:self.get_txt("GItemList/GMeshLib.txt", "_mlib")) 
     mlibnames = property(lambda self:self.mlib[self.identity[:,1]])
     blibnames = property(lambda self:self.blib[self.identity[:,2]])
 
-    def get_transform(self, ridx, iidx, vidx):
+    def get_transform(self, ridx, pidx, oidx):
         """
+        :param ridx: repeat index
+        :param pidx: placement index of the instance
+        :param oidx: offset index, within the instance
+
+        TODO: verify both routes match for all nodes including the remainders
         """
-        iidentity = self.get_array(ridx, "iidentity")
-        nidx0 = iidentity[iidx,vidx,0]
-        iid = iidentity[iidx, vidx]
-        nidx = iid[0] 
-        assert nidx == nidx0, (nidx, nidx0)
+        ## native (triplet access)
+        placement_itransforms = self.get_array(ridx, "placement_itransforms")
+        volume_transforms = self.get_array(ridx, "volume_transforms") 
+        itr = placement_itransforms[pidx]
+        vtr = volume_transforms[oidx].reshape(4,4)
 
-        transforms0 = self.transforms0
-        ntr = transforms0[nidx]
+        print("vtr\n",vtr.shape)
 
-        itransforms = self.get_array(ridx, "itransforms")
-
-        mmmx = self.mmmx
-        transforms = self.get_array(ridx if ridx > 0 else mmmx, "transforms") 
-
-        itr = itransforms[iidx]
-        vtr = transforms[vidx]
         ggt = np.dot( vtr, itr )  
+
+        ## cross reference to the node index
+        placement_iidentity = self.get_array(ridx, "placement_iidentity")  # eg shape  (672, 5, 4)
+        iid = placement_iidentity[pidx, oidx]
+        nidx = iid[0]    
+
+        ## nodeindex access 
+        all_volume_transforms = self.get_array(-1,"all_volume_transforms")
+        ntr = all_volume_transforms[nidx]
 
         assert np.allclose( ggt, ntr )
         return ggt
 
 
 if __name__ == '__main__':
-    gc = GGeo()
-    bbox = gc.bbox
-    print(bbox)
+    np.set_printoptions(suppress=True) 
+    gg = GGeo()
+    bbox = gg.all_volume_bbox
+    print("gg.all_volume_bbox\n",bbox)
 
+    t100 = gg.get_transform(1,0,0)
+    print("t100\n",t100)
 
+    t000 = gg.get_transform(0,0,0)
+    print("t000\n",t000)
+ 
  

@@ -145,7 +145,6 @@ std::string GMergedMesh::brief() const
 
     ss << "GMergedMesh::brief"
        << " index " << std::setw(6) << getIndex()
-       << " isGlobalInstance " << std::setw(1) << isGlobalInstance()
        << " num_csgskip " << std::setw(4) << m_num_csgskip
        << " isSkip " << std::setw(1) << isSkip()
        << " isAnalytic " << std::setw(1) << isAnalytic()
@@ -188,12 +187,12 @@ bool GMergedMesh::isInstanced()
 
 
 
-GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, GVolume* volume, unsigned verbosity ) // static
+GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, GVolume* volume ) // static
 {
     std::raise(SIGINT); 
     std::vector<GVolume*> volumes ; 
     volumes.push_back(volume);
-    return Combine(index, mm, volumes, verbosity );
+    return Combine(index, mm, volumes);
 }
 
 
@@ -211,7 +210,7 @@ Seems to only be invoked from GGeoTest running, specifically GGeoTest::combineVo
 
 **/
 
-GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity ) // static
+GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, const std::vector<GVolume*>& volumes) // static
 {
     //std::raise(SIGINT);   
     unsigned numVolumes = volumes.size(); 
@@ -219,28 +218,24 @@ GMergedMesh* GMergedMesh::Combine(unsigned index, GMergedMesh* mm, const std::ve
         << " making new mesh "
         << " index " << index 
         << " volumes " << numVolumes
-        << " verbosity " << verbosity 
         ; 
 
-    if(verbosity > 1)
-    GVolume::Dump(volumes, "GMergedMesh::combine (source volumes)");
+    //GVolume::Dump(volumes, "GMergedMesh::combine (source volumes)");
 
 
     GMergedMesh* com = new GMergedMesh( index ); 
     com->setVerbosity(mm ? mm->getVerbosity() : 0 );
 
     if(mm) com->countMergedMesh(mm, true);
-    for(unsigned i=0 ; i < numVolumes ; i++) com->countVolume(volumes[i], true, verbosity ) ;
+    for(unsigned i=0 ; i < numVolumes ; i++) com->countVolume(volumes[i], true ) ;
 
     com->allocate(); 
  
-    if(mm) com->mergeMergedMesh(mm, true, verbosity );
-    for(unsigned i=0 ; i < numVolumes ; i++) com->mergeVolume(volumes[i], true, verbosity ) ;
+    if(mm) com->mergeMergedMesh(mm, true);
+    for(unsigned i=0 ; i < numVolumes ; i++) com->mergeVolume(volumes[i], true ) ;
 
     com->updateBounds();
 
-    if(verbosity > 1)
-    com->dumpVolumes("GMergedMesh::combine (combined result) ");
    
     return com ; 
 }
@@ -267,9 +262,10 @@ The GNode::setSelection is invoked from::
 
 **/
 
-GMergedMesh* GMergedMesh::Create(unsigned ridx, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance ) // static
+GMergedMesh* GMergedMesh::Create(unsigned ridx, const GNode* base, const GNode* root ) // static
 {
     assert(root && "root node is required");
+    unsigned verbosity = 0 ; 
 
     LOG(LEVEL) 
         << " ridx " << ridx 
@@ -283,7 +279,6 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, const GNode* base, const GNode* 
 
     GMergedMesh* mm = new GMergedMesh( ridx ); 
     mm->setCurrentBase(base);  // <-- when NULL it means will use global not base relative transforms
-    mm->setGlobalInstance(globalinstance); 
 
     const GNode* start = base ? base : root ; 
     unsigned depth = 0 ; 
@@ -294,7 +289,7 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, const GNode* base, const GNode* 
         << " starting from " << start->getName() ;
         ; 
 
-    mm->traverse_r( start, depth, PASS_COUNT, verbosity  );  // 1st pass traversal : counts vertices and faces
+    mm->traverse_r( start, depth, PASS_COUNT );  // 1st pass traversal : counts vertices and faces
 
     OKI_PROFILE("GMergedMesh::Create::Count"); 
 
@@ -307,7 +302,6 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, const GNode* base, const GNode* 
            ;
     }
 
-    if(verbosity > 1) LOG(info) << mm->brief() ; 
 
     OKI_PROFILE("_GMergedMesh::Create::Allocate"); 
 
@@ -315,7 +309,7 @@ GMergedMesh* GMergedMesh::Create(unsigned ridx, const GNode* base, const GNode* 
 
     OKI_PROFILE("GMergedMesh::Create::Allocate"); 
 
-    mm->traverse_r( start, depth, PASS_MERGE, verbosity );  // 2nd pass traversal : merge copy GMesh into GMergedMesh 
+    mm->traverse_r( start, depth, PASS_MERGE );  // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 
     OKI_PROFILE("GMergedMesh::Create::Merge"); 
 
@@ -357,14 +351,15 @@ PASS_MERGE
 
 **/
 
-void GMergedMesh::traverse_r( const GNode* node, unsigned depth, unsigned pass, unsigned verbosity )
+void GMergedMesh::traverse_r( const GNode* node, unsigned depth, unsigned pass )
 {
     const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
 
     int idx = getIndex() ;
     assert(idx > -1 ) ; 
+    //unsigned uidx = m_globalinstance ? 0u : idx ;                 // needed as globalinstance goes into top slot (nmm-1) 
 
-    unsigned uidx = m_globalinstance ? 0u : idx ;                 // needed as globalinstance goes into top slot (nmm-1) 
+    unsigned uidx = idx ; 
     unsigned ridx = volume->getRepeatIndex() ;
 
     bool repeat_selection =  ridx == uidx ;                       // repeatIndex of volume same as index of mm (or 0 for globalinstance)
@@ -378,9 +373,9 @@ void GMergedMesh::traverse_r( const GNode* node, unsigned depth, unsigned pass, 
         if(selected_ && csgskip) m_num_csgskip++ ; 
     }
     
-    if(verbosity > 1)
+    if(m_verbosity > 1)
         LOG(info)
-            << " verbosity " << verbosity
+            << " m_verbosity " << m_verbosity
             << " node " << node 
             << " volume " << volume 
             << " volume.pts " << volume->getParts()
@@ -394,12 +389,12 @@ void GMergedMesh::traverse_r( const GNode* node, unsigned depth, unsigned pass, 
 
     switch(pass)
     {
-        case PASS_COUNT:    countVolume(volume, selected, verbosity)  ;break;
-        case PASS_MERGE:    mergeVolume(volume, selected, verbosity)  ;break;
-                default:    assert(0)                                 ;break;
+        case PASS_COUNT:    countVolume(volume, selected)  ;break;
+        case PASS_MERGE:    mergeVolume(volume, selected)  ;break;
+                default:    assert(0)                      ;break;
     }
 
-    for(unsigned i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1, pass, verbosity );
+    for(unsigned i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1, pass );
 }
 
 
@@ -422,7 +417,7 @@ now being stored into GNodeLib.
 **/
 
 
-void GMergedMesh::countVolume( const GVolume* volume, bool selected, unsigned verbosity )
+void GMergedMesh::countVolume( const GVolume* volume, bool selected)
 {
     const GMesh* mesh = volume->getMesh();
 
@@ -430,7 +425,9 @@ void GMergedMesh::countVolume( const GVolume* volume, bool selected, unsigned ve
     // for !globalinstance everything is admitted
     //  hmm having both admit and selected is confusing 
 
-    bool admit = ( m_globalinstance && selected ) || !m_globalinstance ;  
+    //bool admit = ( m_globalinstance && selected ) || !m_globalinstance ;  
+    bool admit = selected ;  
+
     if(admit)
     {
         m_num_volumes += 1 ; 
@@ -442,7 +439,6 @@ void GMergedMesh::countVolume( const GVolume* volume, bool selected, unsigned ve
     }
 
     LOG(debug) 
-        << " verbosity " << verbosity 
         << " selected " << selected
         << " num_volumes " << m_num_volumes 
         << " num_volumes_selected " << m_num_volumes_selected 
@@ -552,7 +548,7 @@ GInstancer is the driver of this in standard geocache creation::
 
 **/
 
-void GMergedMesh::mergeVolume( const GVolume* volume, bool selected, unsigned verbosity )
+void GMergedMesh::mergeVolume( const GVolume* volume, bool selected)
 {
     const GNode* node = static_cast<const GNode*>(volume);
     const GNode* base = getCurrentBase();
@@ -581,10 +577,13 @@ void GMergedMesh::mergeVolume( const GVolume* volume, bool selected, unsigned ve
     gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
     gfloat3* normals  = mesh->getTransformedNormals(*transform);  
 
-    if(verbosity > 3) mergeVolumeDump(volume);
+    if(m_verbosity > 3) mergeVolumeDump(volume);
 
     // with globalinstance selection is honoured at volume level too 
-    bool admit = ( m_globalinstance && selected ) || !m_globalinstance ;  
+    //bool admit = ( m_globalinstance && selected ) || !m_globalinstance ;  
+    bool admit = selected ; 
+
+
     if(admit)
     {
         mergeVolumeTransform(transform) ;        // "m_transforms[m_cur_volume]" 
@@ -608,11 +607,11 @@ void GMergedMesh::mergeVolume( const GVolume* volume, bool selected, unsigned ve
 #ifdef GPARTS_HOT 
         assert(0) ; // THIS OLD WAY WAS TERRIBLY WASTEFUL : INSTEAD MOVED TO DEFERRED GParts CONCAT USING GPt WHICH COLLECTS THE ARGS FOR GParts  
         GParts* parts = volume->getParts();  // analytic 
-        mergeVolumeAnalytic( parts, transform, verbosity );
+        mergeVolumeAnalytic( parts, transform);
 #endif
 
         GPt* pt = volume->getPt();  // analytic 
-        mergeVolumeAnalytic( pt, transform, verbosity );
+        mergeVolumeAnalytic( pt, transform);
 
 
         // offsets with the flat arrays
@@ -646,7 +645,7 @@ Called from:
 
 **/
 
-void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity )
+void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected)
 {
     //std::raise(SIGINT);  // seeing where this is called
     GParts* pts = other->getParts(); 
@@ -659,7 +658,7 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
 
     if(pts)
     {
-        m_parts->add( pts, verbosity );
+        m_parts->add( pts);
     }
 
     unsigned int nvolume = other->getNumVolumes();
@@ -835,7 +834,9 @@ void GMergedMesh::mergeVolumeIdentity( const GVolume* volume, bool selected )
     m_nodeinfo[m_cur_volume].z = nodeIndex ;  
     m_nodeinfo[m_cur_volume].w = parentIndex ; 
 
-    if(isGlobal() && !m_globalinstance)
+    //if(isGlobal() && !m_globalinstance)
+/*
+    if(isGlobal())
     {
          if(nodeIndex != m_cur_volume)
              LOG(fatal) << "mismatch" 
@@ -845,6 +846,8 @@ void GMergedMesh::mergeVolumeIdentity( const GVolume* volume, bool selected )
 
          //assert(nodeIndex == m_cur_volume);  // trips ggv-pmt still needed ?
     } 
+*/
+
     m_identity[m_cur_volume] = _identity ; 
 }
 
@@ -918,7 +921,7 @@ and the GPt collected into GPts
 **/
 
 #ifdef GPARTS_HOT
-void GMergedMesh::mergeVolumeAnalytic( GParts* parts, GMatrixF* transform, unsigned verbosity )
+void GMergedMesh::mergeVolumeAnalytic( GParts* parts, GMatrixF* transform)
 {
     assert(0); 
     if(!parts)
@@ -930,12 +933,12 @@ void GMergedMesh::mergeVolumeAnalytic( GParts* parts, GMatrixF* transform, unsig
     if(transform && !transform->isIdentity())
     {
         LOG(debug) << "applyPlacementTransform" ; 
-        parts->applyPlacementTransform(transform, verbosity );
+        parts->applyPlacementTransform(transform);
     }
 
     if(!m_parts) m_parts = new GParts() ; 
 
-    m_parts->add(parts, verbosity); 
+    m_parts->add(parts); 
 }
 #endif
 
@@ -951,7 +954,7 @@ With repeated geometry one GPt instance for each GVolume is collected into GPts 
 
 **/
 
-void GMergedMesh::mergeVolumeAnalytic( GPt* pt, GMatrixF* transform, unsigned /*verbosity*/ )
+void GMergedMesh::mergeVolumeAnalytic( GPt* pt, GMatrixF* transform)
 {
     if(!pt) return ;  // this happens with AssimpRapTest
 
@@ -1266,7 +1269,7 @@ GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // stat
     for(unsigned i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = mms[i] ;
-        com->mergeMergedMesh(mm, true, verbosity );
+        com->mergeMergedMesh(mm, true);
     } 
 
     //com->updateBounds(); ?

@@ -76,6 +76,8 @@ What to look for:
     ./oglrap/Scene.cc
     ./oglrap/Scene.hh
 
+           FIXED the use of mesh0 with all volume assumption in Scene::touch by migration to GNodeLib
+
     epsilon:opticks blyth$ opticks-fl mm0
     ./ana/flightpath.py
     ./ana/geom2d.py

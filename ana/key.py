@@ -38,14 +38,21 @@ Notes
 * some old IDPATH comparison code squatting in this namespace moved to cfgeocache
 
 """
-import os, logging, numpy as np, argparse
+import os, json, logging, numpy as np, argparse
 log = logging.getLogger(__name__)
 
-def keydir(key=None):
-    if key is None:
-        key = os.environ["OPTICKS_KEY"] 
+def keydir(keyspec=None):
+    if keyspec is None:
+        keyspec = os.environ["OPTICKS_KEY"] 
     pass
-    return Key.Keydir(key)
+    return Key.Keydir(keyspec)
+
+def key_(keyspec=None):
+    if keyspec is None:
+        keyspec = os.environ["OPTICKS_KEY"] 
+    pass
+    return Key(keyspec)
+
 
 
 class Key(object):
@@ -74,17 +81,26 @@ class Key(object):
         keydir = os.path.expandvars(tmpl)
         return keydir
 
-    def __init__(self, key=os.environ.get("OPTICKS_KEY",None)):
-        keydir = Key.Keydir(key) 
+    def __init__(self, keyspec=None):
+        if keyspec is None:
+            keyspec = os.environ.get("OPTICKS_KEY",None)
+        pass
+        keydir = Key.Keydir(keyspec) 
         exists = os.path.isdir(keydir)
+        meta = json.load(open(os.path.join(keydir, "cachemeta.json")))
 
-        self.key = key
+        self.keyspec = keyspec
         self.keydir = keydir
         self.exists = exists
-        self.digest = key.split(".")[-1]
-
-        #assert exists, "keydir does not exist %s " % str(self)
-    
+        self.digest = keyspec.split(".")[-1]
+        self.meta = meta 
+        self.version = int(meta["GEOCACHE_CODE_VERSION"])
+   
+    def __repr__(self):
+        version = self.version
+        keyspec = self.keyspec 
+        keydir = self.keydir
+        return "\n".join(["Key.v{version}:{keyspec}","{keydir}"]).format(**locals())
 
     def __str__(self):
         return "\n".join([self.key, self.keydir])

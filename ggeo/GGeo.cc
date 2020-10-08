@@ -1214,8 +1214,7 @@ void GGeo::prepareVolumes()
     {
         LOG(fatal) << "instancing inhibited " ;
         const GNode* root = getNode(0);
-        bool globalinstance = false ; 
-        m_geolib->makeMergedMesh(0, NULL, root, meshverbosity, globalinstance);  // ridx:0 rbase:NULL 
+        m_geolib->makeMergedMesh(0, NULL, root );  // ridx:0 rbase:NULL 
     }
 
     m_instancer->dump("GGeo::prepareVolumes") ; 
@@ -1244,7 +1243,7 @@ void GGeo::deferredCreateGParts()
 
     const std::vector<const NCSG*>& solids = m_meshlib->getSolids(); 
           
-    unsigned verbosity = 0 ;  
+    //unsigned verbosity = 0 ;  
 
     unsigned nmm = m_geolib->getNumMergedMesh(); 
 
@@ -1274,7 +1273,7 @@ void GGeo::deferredCreateGParts()
             assert(0); 
         }
 
-        GParts* parts = GParts::Create( pts, solids, verbosity ) ; 
+        GParts* parts = GParts::Create( pts, solids) ; 
         parts->setBndLib(m_bndlib); 
         parts->close(); 
 
@@ -1288,11 +1287,11 @@ void GGeo::deferredCreateGParts()
 
 
 
-GMergedMesh* GGeo::makeMergedMesh(unsigned int index, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance )
+GMergedMesh* GGeo::makeMergedMesh(unsigned int index, const GNode* base, const GNode* root)
 {
     GGeoLib* geolib = getGeoLib() ;
     assert(geolib);
-    return geolib->makeMergedMesh(index, base, root, verbosity, globalinstance );
+    return geolib->makeMergedMesh(index, base, root);
 }
 
 

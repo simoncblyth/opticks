@@ -285,10 +285,8 @@ GMergedMesh* GGeoTest::initCreateCSG()
     unsigned ridx = 0 ; 
     GNode* base = NULL ; 
     GNode* root = top ; 
-    unsigned verbosity = 1 ; 
-    bool globalinstance = false ; 
 
-    GMergedMesh* tmm = GMergedMesh::Create(ridx, base, root, verbosity, globalinstance );
+    GMergedMesh* tmm = GMergedMesh::Create(ridx, base, root );
 
 
     // below normally done in  GGeo::deferredCreateGParts  when not --test
@@ -297,7 +295,8 @@ GMergedMesh* GGeoTest::initCreateCSG()
         GPts* pts = tmm->getPts();  
 
         const std::vector<const NCSG*>& solids = m_meshlib->getSolids(); 
-        GParts* parts = GParts::Create( pts, solids, verbosity ) ; 
+  
+        GParts* parts = GParts::Create( pts, solids ) ; 
         parts->setBndLib(m_bndlib); 
         parts->close(); 
 

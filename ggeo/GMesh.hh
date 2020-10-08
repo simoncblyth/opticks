@@ -567,9 +567,6 @@ class GGEO_API GMesh : public GDrawable {
       void stealIdentity(GMesh* other);
 
   public:
-      void   setGlobalInstance(bool globalinstance);  // global geometry treated like instanced
-      bool   isGlobalInstance() const ;   
-  public:
       template <typename T> void setMeta(const char* key, T value);
       template <typename T> T getMeta(const char* key, const char* fallback) const ;
 
@@ -591,7 +588,6 @@ class GGEO_API GMesh : public GDrawable {
 
   protected:
       unsigned     m_index ;
-      bool         m_globalinstance ; 
 
       unsigned     m_num_vertices ;
       unsigned     m_num_faces ;

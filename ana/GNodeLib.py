@@ -53,7 +53,7 @@ TODO:
 import os, json, numpy as np, argparse, logging
 log = logging.getLogger(__name__)
 
-from opticks.ana.key import keydir
+from opticks.ana.key import key_
 
 class Txt(list):
     def __init__(self, *args, **kwa):
@@ -74,9 +74,8 @@ class Node(object):
 
 
 class GNodeLib(object):
-    KEY = os.environ["OPTICKS_KEY"]
-    KEYDIR = keydir(KEY)
-    META = json.load(open(os.path.join(KEYDIR, "cachemeta.json")))
+    KEY = key_(os.environ["OPTICKS_KEY"])
+    KEYDIR = KEY.keydir
     RELDIR = "GNodeLib" 
     k2name = {
       "TR":"volume_transforms.npy",
@@ -125,9 +124,7 @@ def parse_args(doc, **kwa):
 
 if __name__ == '__main__':
     args = parse_args(__doc__)
-    print("GNodeLib.KEY    : %s " % GNodeLib.KEY )
-    print("GNodeLib.KEYDIR : %s " % GNodeLib.KEYDIR )
-    print("GNodeLib.GEOCACHE_CODE_VERSION : %s " % GNodeLib.META["GEOCACHE_CODE_VERSION"] )
+    print(repr(GNodeLib.KEY))
     nlib = GNodeLib()
     if args.dump: 
         print(nlib)

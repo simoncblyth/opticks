@@ -744,7 +744,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
     // passes thru to GMergedMesh::create with management of the mm in GGeoLib
     unsigned ridx0 = 0 ; 
-    GMergedMesh* mm0 = m_geolib->makeMergedMesh(ridx0, base, root, verbosity, false );
+    GMergedMesh* mm0 = m_geolib->makeMergedMesh(ridx0, base, root);
 
 
     std::vector<const GNode*> placements = getPlacements(ridx0);  // just m_root
@@ -755,6 +755,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     unsigned numRidx = 1 + numRepeats ;
  
 
+/*
     if(m_global_instance_enabled)
     {
         LOG(LEVEL) << "[ creating extra mm --global_instance_enabled " ;
@@ -767,6 +768,8 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     {
         LOG(LEVEL) << "NOT creating extra mm as no  --global_instance_enabled " ;
     }
+*/
+
 
 
     LOG(info) 
@@ -785,7 +788,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
              << " rbase " << rbase
              ;
 
-         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root, verbosity, false ); 
+         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root ); 
 
          std::vector<const GNode*> placements_ = getPlacements(ridx);
 

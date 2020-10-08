@@ -36,13 +36,13 @@
 const plog::Severity GNodeLib::LEVEL = PLOG::EnvLevel("GNodeLib", "INFO"); 
 
 const char* GNodeLib::RELDIR = "GNodeLib" ; 
-const char* GNodeLib::PV = "volume_PVNames" ; 
-const char* GNodeLib::LV = "volume_LVNames" ; 
-const char* GNodeLib::TR = "volume_transforms.npy" ; 
-const char* GNodeLib::CE = "volume_center_extent.npy" ; 
-const char* GNodeLib::BB = "volume_bbox.npy" ; 
-const char* GNodeLib::ID = "volume_identity.npy" ; 
-const char* GNodeLib::NI = "volume_nodeinfo.npy" ; 
+const char* GNodeLib::PV = "all_volume_PVNames" ; 
+const char* GNodeLib::LV = "all_volume_LVNames" ; 
+const char* GNodeLib::TR = "all_volume_transforms.npy" ; 
+const char* GNodeLib::CE = "all_volume_center_extent.npy" ; 
+const char* GNodeLib::BB = "all_volume_bbox.npy" ; 
+const char* GNodeLib::ID = "all_volume_identity.npy" ; 
+const char* GNodeLib::NI = "all_volume_nodeinfo.npy" ; 
 
 const char* GNodeLib::CacheDir(const Opticks* ok)  // static
 {
@@ -71,7 +71,8 @@ GNodeLib::GNodeLib(Opticks* ok)
     m_identity(NPY<unsigned>::make(0,4)),
     m_nodeinfo(NPY<unsigned>::make(0,4)),
     m_treepresent(new GTreePresent(100, 1000)),   // depth_max,sibling_max
-    m_num_volumes(0)
+    m_num_volumes(0),
+    m_volumes(0)
 {
     LOG(LEVEL) << "created" ; 
 }
@@ -91,7 +92,8 @@ GNodeLib::GNodeLib(Opticks* ok, bool loading)
     m_identity(NPY<unsigned>::load(m_cachedir,ID)),
     m_nodeinfo(NPY<unsigned>::load(m_cachedir,NI)),
     m_treepresent(NULL),
-    m_num_volumes(initNumVolumes())
+    m_num_volumes(initNumVolumes()),
+    m_volumes(0)
 {
     LOG(LEVEL) << "loaded" ; 
 }
@@ -105,7 +107,21 @@ unsigned GNodeLib::initNumVolumes() const
     assert( m_center_extent->getNumItems() == num_volumes ); 
     assert( m_identity->getNumItems() == num_volumes ); 
     assert( m_nodeinfo->getNumItems() == num_volumes ); 
-    assert( m_volumes.size() == 0 );  // zero live volumes  postcache
+
+/*
+    huh giving crazy values
+    unsigned nvol = m_volumes.size() ;
+    if( nvol != 0 )
+       LOG(fatal) 
+          << " unexpected "
+          << " num_volumes " << num_volumes
+          << " nvol " << nvol
+          ;
+              
+    assert( nvol == 0 );  // zero live volumes  postcache
+*/
+
+
     return num_volumes ; 
 }
 

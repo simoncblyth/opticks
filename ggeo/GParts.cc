@@ -213,7 +213,7 @@ GMergedMesh::mergeVolumeAnalytic
 
 **/
 
-GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned verbosity) // static
+GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids ) // static
 {
     LOG(LEVEL) << "[  deferred creation from GPts" ; 
 
@@ -243,7 +243,7 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, 
         // GMergedMesh::mergeVolumeAnalytic
         parts->applyPlacementTransform( placement ); 
           
-        com->add( parts, verbosity ); 
+        com->add( parts ); 
     }
     LOG(LEVEL) << "]" ; 
     return com ; 
@@ -276,10 +276,9 @@ Currently GParts::Combine is used only from tests:
 
 **/
 
-GParts* GParts::Combine(std::vector<GParts*> subs, unsigned verbosity)  // static
+GParts* GParts::Combine(std::vector<GParts*> subs)  // static
 {
-    if(verbosity > 1)
-    LOG(info) << "GParts::combine " << subs.size() ; 
+    LOG(LEVEL) << "[ " << subs.size() ; 
 
     GParts* parts = new GParts(); 
 
@@ -309,7 +308,7 @@ GParts* GParts::Combine(std::vector<GParts*> subs, unsigned verbosity)  // stati
             assert(av == analytic_version && "GParts::combine requires all GParts instances to have the same analytic_version " );   
 
 
-        parts->add(sp, verbosity );
+        parts->add(sp);
 
         if(!bndlib) bndlib = sp->getBndLib(); 
     } 
@@ -318,6 +317,7 @@ GParts* GParts::Combine(std::vector<GParts*> subs, unsigned verbosity)  // stati
     parts->setAnalyticVersion(analytic_version);
     parts->setPrimFlag(primflag);
 
+    LOG(LEVEL) << "]" ; 
     return parts ; 
 }
 
@@ -325,12 +325,12 @@ GParts* GParts::Combine(std::vector<GParts*> subs, unsigned verbosity)  // stati
 
 
 
-GParts* GParts::Combine(GParts* onesub, unsigned verbosity)  // static
+GParts* GParts::Combine(GParts* onesub)  // static
 {
     // for consistency: need to combine even when only one sub
     std::vector<GParts*> subs ; 
     subs.push_back(onesub); 
-    return GParts::Combine(subs, verbosity == 0 ? onesub->getVerbosity() : verbosity  );
+    return GParts::Combine(subs);
 }
 
 
@@ -1101,7 +1101,7 @@ std::string GParts::id() const
 }
 
 
-void GParts::add(GParts* other, unsigned verbosity )
+void GParts::add(GParts* other)
 {
     if(getBndLib() == NULL)
     {
@@ -1165,8 +1165,7 @@ void GParts::add(GParts* other, unsigned verbosity )
     }
 
 
-
-    if(verbosity > 2)
+/*
     LOG(info) 
               << " n0 " << std::setw(3) << n0  
               << " n1 " << std::setw(3) << n1
@@ -1178,7 +1177,9 @@ void GParts::add(GParts* other, unsigned verbosity )
               << " other_tran_buffer  " << other_tran_buffer->getShapeString()
               << " other_plan_buffer  " << other_plan_buffer->getShapeString()
               ;  
-    
+*/ 
+
+  
 }
 
 

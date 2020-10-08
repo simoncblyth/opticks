@@ -65,12 +65,12 @@ public:
 public:
     static const plog::Severity LEVEL ; 
     static std::string Desc(const GMergedMesh* mm);
-    static GMergedMesh* Create(unsigned ridx, const GNode* base, const GNode* root, unsigned verbosity, bool globalinstance );
+    static GMergedMesh* Create(unsigned ridx, const GNode* base, const GNode* root );
 private:
      // operates in COUNT and MERGE passes, COUNT find out the number of 
      // ridx selected volumes and their vertices to allocate then 
      // MERGE collects them together
-     void traverse_r( const GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity );
+     void traverse_r( const GNode* node, unsigned int depth, unsigned int pass );
      void postcreate(); 
 public:
     static GMergedMesh* MakeComposite(std::vector<GMergedMesh*> mms );           // eg for LOD levels 
@@ -81,8 +81,8 @@ public:
 public:
     static GMergedMesh* Load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* Load(const char* dir, unsigned int index=0, const char* version=NULL );
-    static GMergedMesh* Combine(unsigned int index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity) ;
-    static GMergedMesh* Combine(unsigned int index, GMergedMesh* mm, GVolume* volume, unsigned verbosity ) ;
+    static GMergedMesh* Combine(unsigned int index, GMergedMesh* mm, const std::vector<GVolume*>& volumes ) ;
+    static GMergedMesh* Combine(unsigned int index, GMergedMesh* mm, GVolume* volume ) ;
 public:
     GMergedMesh(unsigned index) ;
     GMergedMesh(                // expedient pass-thru to GMesh ctor
@@ -104,25 +104,25 @@ private:
     // explicit naming to avoid subclass confusion
     void init(); 
     void countMergedMesh( GMergedMesh* other, bool selected );   
-    void countVolume( const GVolume*      volume, bool selected, unsigned verbosity  ); 
+    void countVolume( const GVolume*      volume, bool selected ); 
     void countMesh( const GMesh* mesh ); 
 private:
-    void mergeVolume( const GVolume* volume, bool selected, unsigned verbosity );
+    void mergeVolume( const GVolume* volume, bool selected );
     void mergeVolumeIdentity( const GVolume* volume, bool selected );
     void mergeVolumeVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals );
     void mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices );
 
 #ifdef GPARTS_HOT
-    void mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity );
+    void mergeVolumeAnalytic( GParts* pts, GMatrixF* transform );
 #endif
 
-    void mergeVolumeAnalytic( GPt*    pt,  GMatrixF* transform, unsigned verbosity );
+    void mergeVolumeAnalytic( GPt*    pt,  GMatrixF* transform );
     void mergeVolumeTransform( GMatrixF* transform ); 
     void mergeVolumeBBox( gfloat3* vertices, unsigned nvert );
     void mergeVolumeDump( const GVolume* volume);
 
 private:
-    void mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity );
+    void mergeMergedMesh( GMergedMesh* other, bool selected );
 public:
     float* getModelToWorldPtr(unsigned int index);
 

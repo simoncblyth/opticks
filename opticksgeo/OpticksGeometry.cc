@@ -143,7 +143,6 @@ OpticksGeometry::loadGeometryBase
 void OpticksGeometry::loadGeometryBase()
 {
     LOG(LEVEL) << "[" ; 
-    OpticksResource* resource = m_ok->getResource();
 
     if(m_ok->hasOpt("qe1"))
         m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);
@@ -153,6 +152,7 @@ void OpticksGeometry::loadGeometryBase()
 #endif
 
 #ifdef OLD_MESHFIX
+    OpticksResource* resource = m_ok->getResource();
     m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
     m_ggeo->setMeshVerbosity(m_ok->getMeshVerbosity());    
     m_ggeo->setMeshJoinCfg( resource->getMeshfix() );

@@ -149,7 +149,6 @@ GMesh::GMesh(unsigned int index,
         :
       GDrawable(),
       m_index(index),
-      m_globalinstance(false),
 
       m_num_vertices(num_vertices), 
       m_num_faces(num_faces),
@@ -2519,26 +2518,6 @@ unsigned GMesh::findContainer(gfloat3 p)
     }
     return container ; 
 }
-
-
-
-/**
-GMesh::isGlobalInstance
-------------------------------
-
-GlobalInstance meshes contain the global geometry treated as an ordinary instanced mesh
-unlike the special treatment of the index 0 global GMesh.
-
-**/
-bool GMesh::isGlobalInstance() const 
-{
-    return m_globalinstance ; 
-}
-void GMesh::setGlobalInstance(bool globalinstance)
-{
-    m_globalinstance = globalinstance ; 
-}
-
 
 
 

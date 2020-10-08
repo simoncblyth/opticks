@@ -72,7 +72,7 @@ struct testGPts
         parts(mm->getParts()),
         pts(mm->getPts()),
         verbosity(1), 
-        parts2(GParts::Create( pts, solids, verbosity  )),
+        parts2(GParts::Create( pts, solids)),
         path(BFile::FormPath("$TMP/ggeo/GPtsTest",BStr::itoa(imm))),
         rc(0)
     {
