@@ -113,10 +113,11 @@ class G4OK_API G4Opticks
     public:
         const std::vector<G4PVPlacement*>& getSensorPlacements() const ;
 
-
-
     public:
         void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int sensor_category, int sensor_identifier);
+        void getSensorData(unsigned sensorIndex, float& efficiency_1, float& efficiency_2, int& category, int& identifier) const ;
+        int  getSensorIdentifier(unsigned sensorIndex) const ;
+
         template <typename T> void setSensorDataMeta( const char* key, T value );
     public:
         void setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& data, 
@@ -292,7 +293,9 @@ class G4OK_API G4Opticks
             G4int* flags_z,
             G4int* flags_w,
             G4bool* is_cerenkov, 
-            G4bool* is_reemission
+            G4bool* is_reemission,
+            G4int*  sensor_index,
+            G4int*  sensor_identifier 
        ) const  ; 
             
      private:

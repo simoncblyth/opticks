@@ -559,8 +559,8 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned ridx, unsigned pidx, int 
     node->setRepeatIndex(ridx);
 
     unsigned oidx = m_offset_count ; 
-    unsigned encoded_identity = OpticksIdentity::Encode(ridx, pidx, oidx); 
-    node->setEncodedIdentity( encoded_identity ); 
+    unsigned triplet_identity = OpticksIdentity::Encode(ridx, pidx, oidx); 
+    node->setTripletIdentity( triplet_identity ); 
     m_offset_count += 1 ; 
 
     m_repeats_count += 1 ; 
@@ -628,8 +628,8 @@ void GInstancer::labelGlobals_r( GNode* node, unsigned depth )
 
     unsigned pidx = 0 ; 
     unsigned oidx = m_globals_count ; 
-    unsigned encoded_identity = OpticksIdentity::Encode(ridx, pidx, oidx); 
-    node->setEncodedIdentity( encoded_identity ); 
+    unsigned triplet_identity = OpticksIdentity::Encode(ridx, pidx, oidx); 
+    node->setTripletIdentity( triplet_identity ); 
  
     m_globals_count += 1 ; 
 

@@ -51,6 +51,31 @@ void SPack::Decode13( const unsigned int value, unsigned char& c, unsigned int& 
     ccc = value & 0xffffff ; 
 }
 
+unsigned SPack::Encode22(unsigned a, unsigned b)  // static 
+{
+    assert( sizeof(unsigned) == 4 ); 
+    assert( (a & 0xffff0000) == 0 ); 
+    assert( (b & 0xffff0000) == 0 ); 
+    unsigned value = ( a << 16 ) | ( b << 0 ) ; 
+    return value  ; 
+}
+
+void SPack::Decode22( const unsigned value, unsigned& a, unsigned& b ) // static
+{
+    assert( sizeof(unsigned) == 4 ); 
+    a = ( value >> 16 ) & 0xffff ;  
+    b = ( value >>  0 ) & 0xffff ; 
+}
+
+unsigned SPack::Decode22a( const unsigned value ) // static
+{
+    return ( value >> 16 ) & 0xffff ; 
+}
+unsigned SPack::Decode22b( const unsigned value ) // static
+{
+    return ( value >>  0 ) & 0xffff ; 
+}
+
 
 
 

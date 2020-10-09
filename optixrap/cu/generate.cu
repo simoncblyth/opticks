@@ -369,19 +369,19 @@ RT_PROGRAM void tracetest()
     // trace sets these, see material1_propagate.cu:closest_hit_propagate
     prd.distance_to_boundary = -1.f ;
 
-    prd.identity.x = 0 ; // nodeIndex
-    prd.identity.y = 0 ; // meshIndex
-    prd.identity.z = 0 ; // boundaryIndex, 0-based 
-    prd.identity.w = 0 ; // sensorIndex
+    prd.identity.x = 0 ; 
+    prd.identity.y = 0 ;
+    prd.identity.z = 0 ;
+    prd.identity.w = 0 ;
 
     prd.boundary = 0 ;   // signed, 1-based
 
     rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
 
-    p.flags.u.x = prd.identity.x ; 
-    p.flags.u.y = prd.identity.y ; 
-    p.flags.u.z = prd.identity.z ; 
-    p.flags.u.w = prd.identity.w ; 
+    p.flags.u.x = prd.identity.x ;   // nodeIndex               -> nodeIndex   
+    p.flags.u.y = prd.identity.y ;   // meshIndex               -> tripletIdentity
+    p.flags.u.z = prd.identity.z ;   // boundaryIndex, 0-based  -> SPack::Encode22(meshIndex,boundaryIndex)
+    p.flags.u.w = prd.identity.w ;   // sensorIndex             -> sensorIndex
 
 /*
     rtPrintf("[%6d]tracetest distance_to_boundary %7.2f  id %4d %4d %4d %4d  boundary %4d  tpos %7.2f %7.2f %7.2f   cos_theta %7.2f \n", 
@@ -566,10 +566,10 @@ RT_PROGRAM void generate()
 
         // trace sets these, see material1_propagate.cu:closest_hit_propagate
         prd.distance_to_boundary = -1.f ;
-        prd.identity.x = 0 ; // nodeIndex
-        prd.identity.y = 0 ; // meshIndex
-        prd.identity.z = 0 ; // boundaryIndex, 0-based 
-        prd.identity.w = 0 ; // sensorIndex
+        prd.identity.x = 0 ; // nodeIndex                -> nodeIndex
+        prd.identity.y = 0 ; // meshIndex                -> tripletIdentity
+        prd.identity.z = 0 ; // boundaryIndex, 0-based   -> SPack::Encode22(meshIndex, boundaryIndex)
+        prd.identity.w = 0 ; // sensorIndex              -> sensorIndex
         prd.boundary = 0 ;   // signed, 1-based
 
 

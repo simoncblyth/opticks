@@ -70,37 +70,164 @@ TODO: Identity Packing
 
 ::
 
-    243 /**
-    244 GVolume::getIdentity
-    245 ----------------------
-    246 
-    247 Need to pack more tightly as want:
+    245 /**
+    246 GVolume::getIdentity
+    247 ----------------------
     248 
-    249 1. node_index (3 bytes at least as JUNO needs more than 2-bytes : so little to gain from packing) 
-    250 2. mesh_index (2 bytes easily enough, 0xffff = 65535, 1-byte 0xff 255 OK for JUNO but probably not generally) how many different shapes
-    251 3. boundary_index (2 bytes easily enough)
-    252 4. sensor_identifier (32 bit) no packing possible as its an unconstrained user input from G4Opticks::setSensorData
-    253 5. encoded_volume_identifier (4 bytes)
-    254 
-    255 Combining mesh_index and boundary_index into a shape identifier seems natural 
-    256 
-    257 **/
+    249 The volume identity quad is available GPU side for all intersects
+    250 with geometry.
+    251 
+    252 1. node_index (3 bytes at least as JUNO needs more than 2-bytes : so little to gain from packing) 
+    253 2. triplet_identity (4 bytes, pre-packed)
+    254 3. SPack::Encode22(mesh_index, boundary_index)
+    255 
+    256    * mesh_index: 2 bytes easily enough, 0xffff = 65535
+    257    * boundary_index: 2 bytes easily enough  
     258 
-    259 guint4 GVolume::getIdentity() const
-    260 {
-    261     unsigned node_index = m_index ;
-    262     guint4 id(node_index, getMeshIndex(),  m_boundary, getIdentityIndex()) ;
-    263     return id ; 
-    264 }   
+    259 4. sensor_index (2 bytes easily enough) 
+    260 
+    261 The sensor_identifier is detector specific so would have to allow 4-bytes 
+    262 hence exclude it from this identity, instead can use sensor_index to 
+    263 look up sensor_identifier within G4Opticks::getHit 
+    264 
+    265 Formerly::
+    266 
+    267    guint4 id(getIndex(), getMeshIndex(),  getBoundary(), getSensorIndex()) ;
+    268 
+    269 **/
+    270 guint4 GVolume::getIdentity() const
+    271 {
+    272     guint4 id(getIndex(), getTripletIdentity(),  getShapeIdentity(), getSensorIndex()) ;
+    273     return id ; 
+    274 }   
+    275 glm::uvec4 GVolume::getIdentity_() const
+    276 {
+    277     glm::uvec4 id(getIndex(), getTripletIdentity(), getShapeIdentity(), getSensorIndex()) ;
+    278     return id ; 
+    279 }   
+    280 
+    281 /**
+    282 GVolumne::getShapeIdentity
+    283 ----------------------------
+    284 
+    285 The shape identity packs mesh index and boundary index together.
+    286 This info is used GPU side by::
+    287 
+    288    oxrap/cu/material1_propagate.cu:closest_hit_propagate
+    289 
+    290 **/
+    291 
+    292 unsigned GVolume::getShapeIdentity() const
+    293 {
+    294     return SPack::Encode22( getMeshIndex(), getBoundary() );
+    295 }   
+    296 
+
+
+
+
+users of identity.z instanceIdentity.z
+----------------------------------------
+
+::
+
+     52 RT_PROGRAM void closest_hit_propagate()
+     53 {
+     54      const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ;
+     55      float cos_theta = dot(n,ray.direction);
+     56 
+     57      prd.cos_theta = cos_theta ;
+     58      prd.distance_to_boundary = t ;   // huh: there is an standard attrib for this
+     59 
+     60      unsigned boundaryIndex = ( instanceIdentity.z & 0xffff ) ;
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     61      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;
+     62      prd.identity = instanceIdentity ;
+     63      prd.surface_normal = cos_theta > 0.f ? -n : n 
+
 
 
 sensor_index or sensor_identifier provided from GVolume::getIdentity
 -----------------------------------------------------------------------
 
-
-* perhaps should only use the opticks sensor index, which as contiguous, can be contained in 2 bytes (0xffff = 65535)
+* use the opticks sensor index, which as contiguous, can be contained in 2 bytes (0xffff = 65535)
 * also the sensor_data needs to be copied to GPU anyhow for the efficiencies, so can do sensor_index keyed 
   lookups both on GPU and CPU as needed
+
+where the sensor info is used
+--------------------------------
+
+* due to the detect property of the surface get some SURFACE_DETECT flag, which results 
+  in the hits being copied back to CPU 
+
+oxrap/cu/generate.cu::
+
+    631         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
+    632         {
+    633             command = propagate_at_surface(p, s, rng);
+    634             if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
+    635             if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT
+    636         }
+    637         else
+    638         {
+    639             //propagate_at_boundary(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    640             propagate_at_boundary_geant4_style(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    641             // tacit CONTINUE
+    642         }
+
+
+Photon flags.u.y hold identity.w oxrap/cu/generate.cu::
+
+    213 #define FLAGS(p, s, prd) \
+    214 { \
+    215     p.flags.i.x = prd.boundary ;  \
+    216     p.flags.u.y = s.identity.w ;  \
+    217     p.flags.u.w |= s.flag ; \
+    218 } \
+    ...
+
+
+Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2.cc::
+
+
+    540     int merged_count(0);
+    541     for(int i=0 ; i < nhit ; i++)
+    542     {
+    543         g4ok->getHit(i,
+    544                      &position,
+    545                      &time,
+    546                      &direction,
+    547                      &weight,
+    548                      &polarization,
+    549                      &wavelength,
+    550                      &flags_x,
+    551                      &flags_y,
+    552                      &flags_z,
+    553                      &flags_w,
+    554                      &is_cerenkov,
+    555                      &is_reemission
+    556                     );
+    557 
+    558         int pmtid = flags_y ;
+
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    using sensor_index means need to do a lookup for the hits to get the 
+    detector specific sensor identifier
+
+    TODO: 
+       getHit should provide the sensor_identifier given by G4Opticks::setSensorData
+       rather than raw flags  
+
+
+    559         G4double hittime = time ;
+    560 
+    561         bool merged = false ;
+    562         if (m_pmthitmerger_opticks and m_pmthitmerger_opticks->getMergeFlag()) {
+    563             merged = m_pmthitmerger_opticks->doMerge(pmtid, hittime);
+    564         }
+
+
+
 
 
 X4PhysicalVolume::convertNode tracing back where the sensor info comes from

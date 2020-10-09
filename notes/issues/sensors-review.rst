@@ -6,7 +6,7 @@ What is needed
 
 * DONE : contiguous 0-based sensor_index 
 
-* corresponding sensor data array (float4/uint4) containing:
+* DONE : sensor data array (float4/uint4) collected in G4Opticks:setSensorData containing:
 
   * pmt_id  
   * pmt_category (as used to pick appropriate layer of theta texture) 

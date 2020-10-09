@@ -85,6 +85,35 @@ void test_Encode13_Decode13()
     assert( ccc == ccc2 ); 
 }
 
+
+void test_Encode22_Decode22()
+{
+    LOG(info); 
+
+    unsigned a0 = 0xdead ; 
+    unsigned b0 = 0xbeef ; 
+    unsigned expect  = 0xdeadbeef ; 
+
+    unsigned value = SPack::Encode22( a0, b0 );  
+    assert( value == expect ); 
+
+    unsigned a1 ; 
+    unsigned b1 ; 
+    SPack::Decode22( value, a1, b1 ); 
+    assert( a0 == a1 ); 
+    assert( b0 == b1 ); 
+
+    unsigned a2 = SPack::Decode22a( value ); 
+    unsigned b2 = SPack::Decode22b( value ); 
+    assert( a0 == a2 ); 
+    assert( b0 == b2 ); 
+
+}
+
+
+
+
+
 void test_int_as_float()
 {
     int i0 = -420042 ;  
@@ -110,11 +139,12 @@ int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
-    test_Encode();  
+    //test_Encode();  
 
     //test_Encode_Decode();  
     //test_Encode_Decode_ptr();  
     //test_Encode13_Decode13();  
+    test_Encode22_Decode22();  
 
     //test_int_as_float(); 
     //test_uint_as_float(); 

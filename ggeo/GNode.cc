@@ -63,7 +63,7 @@ GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh)
     m_progeny_count(0),
     m_remainder_progeny_count(0),
     m_repeat_index(0),
-    m_encoded_identity(0),
+    m_triplet_identity(0),
     m_progeny_num_vertices(0)
 {
     init();
@@ -233,13 +233,21 @@ unsigned int GNode::getRepeatIndex() const
 {
     return m_repeat_index ; 
 }
-void GNode::setEncodedIdentity(unsigned encoded_identity)
+
+/**
+GNode::setTripletIdentity
+---------------------------
+
+Canonically invoked by GInstancer::labelRepeats_r
+**/
+
+void GNode::setTripletIdentity(unsigned triplet_identity)
 {
-    m_encoded_identity = encoded_identity ; 
+    m_triplet_identity = triplet_identity ; 
 }
-unsigned GNode::getEncodedIdentity() const 
+unsigned GNode::getTripletIdentity() const 
 {
-    return m_encoded_identity ; 
+    return m_triplet_identity ; 
 }
 
 

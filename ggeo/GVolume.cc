@@ -22,6 +22,7 @@
 #include <climits>
 #include <cstring>
 
+#include "SPack.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -209,7 +210,7 @@ void GVolume::setCSGFlag(OpticksCSG_t csgflag)
     m_csgflag = csgflag ; 
 }
 
-void GVolume::setBoundary(unsigned int boundary)
+void GVolume::setBoundary(unsigned boundary)
 {
     m_boundary = boundary ; 
     setBoundaryIndices( boundary );
@@ -234,43 +235,65 @@ void GVolume::setBoundaryAll(unsigned boundary)
 
 
 
-unsigned GVolume::getIdentityIndex() const 
-{
-    unsigned identity_index = m_copyNumber  ;  // // SHOULD BE m_sensor_index ? which will match m_copyNumber for JUNO  
-    return identity_index ; 
-}
+//unsigned GVolume::getIdentityIndex() const 
+//{
+//    unsigned identity_index = m_copyNumber  ;  // // SHOULD BE m_sensor_index ? which will match m_copyNumber for JUNO  
+//    return identity_index ; 
+//}
+
 
 /**
 GVolume::getIdentity
 ----------------------
 
-The volume identity quad is available GPU side for all volumes.
-
-Need to pack more tightly as want:
+The volume identity quad is available GPU side for all intersects
+with geometry.
 
 1. node_index (3 bytes at least as JUNO needs more than 2-bytes : so little to gain from packing) 
-2. mesh_index (2 bytes easily enough, 0xffff = 65535, 1-byte 0xff 255 OK for JUNO but probably not generally) how many different shapes
-3. boundary_index (2 bytes easily enough)
-4. sensor_index or sensor_identifier (detector specific)
-5. encoded_volume_identifier (4 bytes)
+2. triplet_identity (4 bytes, pre-packed)
+3. SPack::Encode22(mesh_index, boundary_index)
 
-Combining mesh_index and boundary_index into a shape identifier seems natural 
+   * mesh_index: 2 bytes easily enough, 0xffff = 65535
+   * boundary_index: 2 bytes easily enough  
+
+4. sensor_index (2 bytes easily enough) 
+
+The sensor_identifier is detector specific so would have to allow 4-bytes 
+hence exclude it from this identity, instead can use sensor_index to 
+look up sensor_identifier within G4Opticks::getHit 
+
+Formerly::
+
+   guint4 id(getIndex(), getMeshIndex(),  getBoundary(), getSensorIndex()) ;
+
+**/
+guint4 GVolume::getIdentity() const 
+{
+    guint4 id(getIndex(), getTripletIdentity(),  getShapeIdentity(), getSensorIndex()) ;
+    return id ; 
+}
+glm::uvec4 GVolume::getIdentity_() const 
+{
+    glm::uvec4 id(getIndex(), getTripletIdentity(), getShapeIdentity(), getSensorIndex()) ; 
+    return id ; 
+}
+
+/**
+GVolumne::getShapeIdentity
+----------------------------
+
+The shape identity packs mesh index and boundary index together.
+This info is used GPU side by::
+
+   oxrap/cu/material1_propagate.cu:closest_hit_propagate
 
 **/
 
-guint4 GVolume::getIdentity() const 
+unsigned GVolume::getShapeIdentity() const
 {
-    unsigned node_index = m_index ;    
-    guint4 id(node_index, getMeshIndex(),  m_boundary, getIdentityIndex()) ;
-    return id ; 
+    return SPack::Encode22( getMeshIndex(), getBoundary() ); 
 }
 
-glm::uvec4 GVolume::getIdentity_() const 
-{
-    unsigned node_index = m_index ;    
-    glm::uvec4 id(node_index, getMeshIndex(), m_boundary, getIdentityIndex()) ; 
-    return id ; 
-}
 
 
 /**
@@ -300,6 +323,10 @@ glm::uvec4 GVolume::getNodeInfo_() const
 GVolume::setSensorIndex
 -------------------------
 
+sensorIndex is expected to be a 0-based contiguous index, with the 
+default value of -1 meaning no sensor.
+
+This is canonically invoked from X4PhysicalVolume::convertNode during GVolume creation.
 
 * GNode::setSensorIndices duplicates the index to all faces of m_mesh triangulated geometry
 

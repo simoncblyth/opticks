@@ -585,7 +585,13 @@ EON
 
 
 
+geocache-dx0-notes(){ cat << EON
 
+--x4polyskip 211,232
+     to avoid ~infinite loops in G4SubtractionSolid::CreatePolyhedron called from X4Mesh::polygonize
+
+EON
+}
 
 
 geocache-dx0-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-dx0) --x4polyskip 211,232  --geocenter --noviz $* ; }     

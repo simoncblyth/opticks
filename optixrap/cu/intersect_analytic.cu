@@ -249,7 +249,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     else if(primFlag == CSG_FLAGPARTLIST)  
     {
 
-        for(unsigned int p=0 ; p < numParts ; p++)
+        for(unsigned p=0 ; p < numParts ; p++)
         { 
             Part pt = partBuffer[partOffset + p] ; 
             unsigned typecode = pt.typecode() ; 

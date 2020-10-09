@@ -798,18 +798,25 @@ void GMergedMesh::mergeVolumeIdentity( const GVolume* volume, bool selected )
     unsigned nvert = mesh->getNumVertices();
 
     guint4 _identity = volume->getIdentity();
-    unsigned nodeIndex = volume->getIndex();
-    unsigned boundary = volume->getBoundary();
 
-    assert(_identity.x == nodeIndex);
-    assert(_identity.y == meshIndex);
-    assert(_identity.z == boundary);
-    //assert(_identity.w == sensorIndex);   this is no longer the case, now require SensorSurface in the identity
+    unsigned nodeIndex = volume->getIndex();
+    unsigned tripletIdentity = volume->getTripletIdentity(); 
+    unsigned shapeIdentity = volume->getShapeIdentity();
+    unsigned sensorIndex = volume->getSensorIndex();
+
+    assert( _identity.x == nodeIndex );
+    assert( _identity.y == tripletIdentity );
+    assert( _identity.z == shapeIdentity );
+    assert( _identity.w == sensorIndex) ;  
     
+    unsigned boundary = volume->getBoundary();
+    assert( (( shapeIdentity >> 0  ) & 0xffff ) == boundary  );
+    assert( (( shapeIdentity >> 16 ) & 0xffff ) == meshIndex );
+
     LOG(debug) 
         << " m_cur_volume " << m_cur_volume 
         << " nodeIndex " << nodeIndex
-        << " boundaryIndex " << boundary
+        << " boundary " << boundary
         ;
 
     GNode* parent = volume->getParent();

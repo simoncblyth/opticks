@@ -33,6 +33,10 @@ To regenerate the sysrap/OPTICKS_LOG.hh header use commandline::
 
      sysrap-;sysrap-genlog
 
+
+TODO: rearrange OPTICKS_LOG such that it can be used in an initializer list 
+ 
+
 **/
 
 #ifdef OPTICKS_SYSRAP

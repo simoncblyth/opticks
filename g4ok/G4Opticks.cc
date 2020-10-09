@@ -405,6 +405,24 @@ void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float ef
     m_sensor_data->setInt(  sensorIndex,3,0,0, identifier);
 }
 
+void G4Opticks::getSensorData(unsigned sensorIndex, float& efficiency_1, float& efficiency_2, int& category, int& identifier) const 
+{
+    assert( sensorIndex < m_sensor_num ); 
+    assert( m_sensor_data ); 
+    efficiency_1 = m_sensor_data->getFloat(sensorIndex,0,0,0); 
+    efficiency_2 = m_sensor_data->getFloat(sensorIndex,1,0,0); 
+    category = m_sensor_data->getInt(sensorIndex,2,0,0);
+    identifier = m_sensor_data->getInt(sensorIndex,3,0,0);
+}
+
+int G4Opticks::getSensorIdentifier(unsigned sensorIndex) const 
+{
+    assert( sensorIndex < m_sensor_num ); 
+    assert( m_sensor_data ); 
+    return m_sensor_data->getInt( sensorIndex, 3, 0, 0); 
+}
+
+
 template <typename T>
 void G4Opticks::setSensorDataMeta( const char* key, T value )
 {
@@ -736,7 +754,9 @@ void G4Opticks::getHit(
             G4int* flags_z,
             G4int* flags_w,
             G4bool* is_cerenkov, 
-            G4bool* is_reemission
+            G4bool* is_reemission,
+            G4int*  sensor_index,
+            G4int*  sensor_identifier 
       ) const 
 {
     assert( i < m_num_hits ); 
@@ -762,6 +782,9 @@ void G4Opticks::getHit(
     *is_cerenkov = (flags.w & CERENKOV) != 0 ; 
     *is_reemission = (flags.w & BULK_REEMIT) != 0 ; 
 
+    unsigned sensorIndex = flags.y ; 
+    *sensor_index = sensorIndex ;     
+    *sensor_identifier = getSensorIdentifier(sensorIndex); 
 }
 
 

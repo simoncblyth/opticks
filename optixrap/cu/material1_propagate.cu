@@ -57,7 +57,7 @@ RT_PROGRAM void closest_hit_propagate()
      prd.cos_theta = cos_theta ;
      prd.distance_to_boundary = t ;   // huh: there is an standard attrib for this
 
-     unsigned boundaryIndex = instanceIdentity.z ; 
+     unsigned boundaryIndex = ( instanceIdentity.z & 0xffff ) ; 
      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;   
      prd.identity = instanceIdentity ; 
      prd.surface_normal = cos_theta > 0.f ? -n : n ;   
