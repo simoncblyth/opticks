@@ -375,6 +375,7 @@ class OKCORE_API Opticks {
        const char* getLODConfigString();
        NLODConfig* getLODConfig();
        int         getLOD();
+       int         getGenstepTarget() const ;
        int         getTarget() const ;
        int         getAlignLevel() const;
    public:

@@ -159,6 +159,7 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      const std::string& getLODConfig();
      int                getLOD() const ;
+     int                getGenstepTarget() const ;
      int                getTarget() const ;
      int                getAlignLevel() const ;
 
@@ -291,6 +292,7 @@ private:
      std::string m_lodconfig ;
      int         m_lod ;  
 
+     int         m_gensteptarget ;  
      int         m_target ;  
      int         m_alignlevel ;  
 

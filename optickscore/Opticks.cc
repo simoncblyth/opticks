@@ -306,11 +306,6 @@ Opticks::envkey
 TODO: handle in OpticksResource ? Why it need to be here ?
 Which makes it difficult for the key to be overridible from command line.
 
-
-
-
-
-
 **/
 
 bool Opticks::envkey()
@@ -429,7 +424,7 @@ void Opticks::init()
     }
     else
     {
-        LOG(info) << " non-legacy mode : ie mandatory keyed access to geometry, opticksaux " ; 
+        LOG(info) << " mandatory keyed access to geometry, opticksaux " ; 
     } 
 
     m_parameters->add<int>("OptiXVersion",  OKConf::OptiXVersionInteger() );
@@ -829,6 +824,8 @@ const char* Opticks::getDbgMesh() const
 /**
 Opticks::initResource
 -----------------------
+
+Invoked by Opticks::configure.
 
 Instanciates m_resource OpticksResource and its base BOpticksResource
 which defines the geocache paths. Note that the fork between the legacy and
@@ -2132,6 +2129,10 @@ NSceneConfig* Opticks::getSceneConfig()
 
 
 
+int  Opticks::getGenstepTarget() const
+{
+    return m_cfg->getGenstepTarget(); 
+}
 int  Opticks::getTarget() const
 {
     return m_cfg->getTarget(); 
@@ -2307,7 +2308,6 @@ void Opticks::configure()
         LOG(info) << " setting " << ek << " envvar internally to " << cvd ; 
         SSys::setenvvar(ek, cvd, true );    // Opticks::configure setting CUDA_VISIBLE_DEVICES
     }
-
 
 
     initResource();  
@@ -2547,6 +2547,14 @@ int Opticks::getInteractivityLevel() const
 }
 
 
+/**
+Opticks::setSpaceDomain
+-----------------------
+
+Invoked by OpticksAim::registerGeometry
+
+**/
+
 void Opticks::setSpaceDomain(const glm::vec4& sd)
 {
     setSpaceDomain(sd.x, sd.y, sd.z, sd.w )  ; 
@@ -2578,6 +2586,8 @@ void Opticks::setSpaceDomain(float x, float y, float z, float w)
 /**
 Opticks::setupTimeDomain
 -------------------------
+
+Invoked by setSpaceDomain
 
 When configured values of "--timemax" and "--animtimemax" are 
 negative a rule of thumb is used to setup a timedomain 
@@ -2618,11 +2628,11 @@ void Opticks::setupTimeDomain(float extent)
     float u_animtimemax = animtimemax < 0.f ? u_timemax : animtimemax ; 
 
     LOG(info)
+        << " extent (mm) " << extent 
         << " cfg.getTimeMaxThumb [--timemaxthumb] " << timemaxthumb 
         << " cfg.getAnimTimeMax [--animtimemax] " << animtimemax 
         << " cfg.getAnimTimeMax [--animtimemax] " << animtimemax 
         << " speed_of_light (mm/ns) " << speed_of_light
-        << " extent (mm) " << extent 
         << " rule_of_thumb_timemax (ns) " << rule_of_thumb_timemax 
         << " u_timemax " << u_timemax
         << " u_animtimemax " << u_animtimemax

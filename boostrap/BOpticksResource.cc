@@ -252,6 +252,17 @@ int BOpticksResource::DefaultTarget() // static
    return target  ; 
 }
 
+const char* BOpticksResource::DEFAULT_GENSTEPTARGET_KEY = "OPTICKS_DEFAULT_GENSTEPTARGET" ; 
+int BOpticksResource::DefaultGenstepTarget() // static
+{
+   int gensteptarget = SSys::getenvint(DEFAULT_GENSTEPTARGET_KEY, 0);
+   return gensteptarget  ; 
+}
+
+
+
+
+
 const char* BOpticksResource::DEFAULT_KEY_KEY = "OPTICKS_KEY" ; 
 std::string BOpticksResource::DefaultKey() // static
 {

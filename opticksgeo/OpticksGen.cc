@@ -150,7 +150,6 @@ void OpticksGen::initFromEmitterGensteps()
     NPY<float>* iox = m_emitter->getPhotons();  // these photons maybe masked 
     setInputPhotons(iox);
 
-
     m_fabstep = m_emitter->getFabStep();
 
     NPY<float>* gs = m_emitter->getFabStepData();
@@ -159,7 +158,6 @@ void OpticksGen::initFromEmitterGensteps()
     gs->setAux((void*)iox); // under-radar association of input photons with the fabricated genstep
 
     // this gets picked up by OpticksRun::setGensteps 
-
 
     const char* oac_ = "GS_EMITSOURCE" ;  
 
@@ -338,7 +336,7 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
 {
     if(gs->isFrameTargetted())
     {    
-        LOG(info) << "frame targetted already  " << gformat(gs->getFrameTransform()) ;  
+        LOG(LEVEL) << "frame targetted already  " << gformat(gs->getFrameTransform()) ;  
     }    
     else 
     {   
@@ -354,12 +352,12 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
             }
 
             glm::mat4 transform = m_ggeo->getTransform( node_index );
-            LOG(info) << "setting frame " << iframe.x << " " << gformat(transform) ;  
+            LOG(LEVEL) << "setting frame " << iframe.x << " " << gformat(transform) ;  
             gs->setFrameTransform(transform);
         }
         else
         {
-            LOG(warning) << "SKIP AS NO GEOMETRY " ; 
+            LOG(error) << "SKIP AS NO GEOMETRY " ; 
         }
 
     }    
@@ -424,14 +422,19 @@ TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)
     if(torchstep->isDefault())
     {
         int frameIdx = torchstep->getFrameIndex(); 
+
         int detectorDefaultFrame = m_ok->getDefaultFrame() ; 
+        int genstepTarget = m_ok->getGenstepTarget() ; 
+
         LOG(error) 
             << " as torchstep isDefault replacing placeholder frame " 
             << " frameIdx : " << frameIdx
             << " detectorDefaultFrame : " << detectorDefaultFrame
+            << " genstepTarget --gensteptarget : " << genstepTarget
             ; 
 
-        torchstep->setFrame(detectorDefaultFrame); 
+        torchstep->setFrame(genstepTarget); 
+        //torchstep->setFrame(detectorDefaultFrame); 
     }
 
 

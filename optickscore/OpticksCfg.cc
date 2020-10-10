@@ -154,6 +154,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_layout(1),
        m_lodconfig("levels=3,verbosity=3"),
        m_lod(0),
+       m_gensteptarget(BOpticksResource::DefaultGenstepTarget()),
        m_target(BOpticksResource::DefaultTarget()),
        m_alignlevel(0),
        m_exename(SAr::Instance ? SAr::Instance->exename() : "OpticksEmbedded" ), 
@@ -1335,7 +1336,10 @@ void OpticksCfg<Listener>::init()
 
 
 
-           
+   char gensteptarget[128];
+   snprintf(gensteptarget,128, "Integer controlling genstep targeting. Default gensteptarget %d can be defined with envvar OPTICKS_DEFAULT_GENSTEPTARGET.", m_gensteptarget );
+   m_desc.add_options()
+       ("gensteptarget",  boost::program_options::value<int>(&m_gensteptarget), gensteptarget );
 
 
    char target[128];
@@ -2118,6 +2122,11 @@ int OpticksCfg<Listener>::getLOD() const
     return m_lod ; 
 }
 
+template <class Listener>
+int OpticksCfg<Listener>::getGenstepTarget() const 
+{
+    return m_gensteptarget ; 
+}
 
 template <class Listener>
 int OpticksCfg<Listener>::getTarget() const 

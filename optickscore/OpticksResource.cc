@@ -326,9 +326,11 @@ bool OpticksResource::isResourceType(const char* type_)
 
 
 
+/**
+OpticksResource::identifyGeometry
+----------------------------------
 
-
-
+**/
 
 void OpticksResource::identifyGeometry()
 {

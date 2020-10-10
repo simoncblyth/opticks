@@ -33,7 +33,7 @@
 #include "GNodeLib.hh"
 #include "GTreePresent.hh"
 
-const plog::Severity GNodeLib::LEVEL = PLOG::EnvLevel("GNodeLib", "INFO"); 
+const plog::Severity GNodeLib::LEVEL = PLOG::EnvLevel("GNodeLib", "DEBUG"); 
 
 const char* GNodeLib::RELDIR = "GNodeLib" ; 
 const char* GNodeLib::PV = "all_volume_PVNames" ; 

@@ -57,7 +57,7 @@ void OpticksAim::registerGeometry(GGeo* ggeo)
 
     m_ok->setSpaceDomain( ce0 );
 
-    LOG(m_dbgaim ? fatal : LEVEL)
+    LOG(LEVEL)
           << " setting SpaceDomain : " 
           << " ce0 " << gformat(ce0) 
           ; 
@@ -132,7 +132,7 @@ void  OpticksAim::setTarget(unsigned target, bool aim)
 {
     if(m_ggeo == NULL)
     {    
-        LOG(info) << "OpticksAim::setTarget " << target << " deferring as geometry not registered with OpticksAim " ; 
+        LOG(LEVEL) << "target " << target << " (deferring as geometry not registered with OpticksAim) " ; 
         m_target_deferred = target ; 
     }    
     else
@@ -174,7 +174,7 @@ void OpticksAim::target()
 
     if(target_ != 0)
     {
-        LOG(info) << "SKIP as geometry target already set  " << target_ ; 
+        LOG(LEVEL) << "SKIP as geometry target already set  " << target_ ; 
     }
     else if(geocenter )
     {

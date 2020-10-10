@@ -1969,7 +1969,7 @@ void GMesh::loadNPYBuffer(const char* path, const char* name)
     if(strcmp(name, iidentity_) == 0)
     {
         std::string rpath = Opticks::Instance()->formCacheRelativePath(path); 
-        LOG(info) << " loading iidentity " << rpath ; 
+        LOG(LEVEL) << rpath ; 
         NPY<unsigned>* buf = NPY<unsigned>::load(path) ;
         setInstancedIdentityBuffer(buf);
     }

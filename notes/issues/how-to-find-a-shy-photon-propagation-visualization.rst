@@ -8,8 +8,42 @@ Look at the event numerically to debug why not visible.
 
 
 
+Rerun
+--------
+
+Increase logging of relevant classes and save event data::
+
+    OpticksAim=INFO OpticksGen=INFO OKTest --compute --save --dbgaim
+
+Forcing the target gets vtk_oxplt.py to give expected AD cylinder of final positions::
+
+    OpticksAim=INFO OpticksGen=INFO OKTest --compute --save --dbgaim --gensteptarget 3154
+
+
+0. look at gs.npy
+-------------------
+
+Zeros show are aiming at geocenter, which in DYB geom is nowhere::
+
+    In [1]: gs = np.load("gs.npy")                                                                                                                                         
+
+    In [3]: np.set_printoptions(suppress=True)                                                                                                                             
+
+    In [4]: gs                                                                                                                                                             
+    Out[4]: 
+    array([[[  0. ,   0. ,   0. ,   0. ],
+            [  0. ,   0. ,   0. ,   0.1],
+            [  0. ,   0. ,   1. ,   1. ],
+            [  0. ,   0. ,   1. , 430. ],
+            [  0. ,   1. ,   0. ,   1. ],
+            [  0. ,   0. ,   0. ,   0. ]]], dtype=float32)
+
+
+
 1. save the event and take a look at ox.npy
 -----------------------------------------------
+
+
 
 Add "--compute"  and "--save" to the commandline to download it from GPU and save to file::
 
@@ -20,7 +54,8 @@ Add "--compute"  and "--save" to the commandline to download it from GPU and sav
        CUDA_VISIBLE_DEVICES=1 OKTest --envkey \
                     --xanalytic \
                     --compute \
-                    --save 
+                    --save \
+                    --dbgaim
                   
     }
 
@@ -31,11 +66,59 @@ The directory into which events are written is reported.
 2. have a look at the saved event
 ---------------------------------------
 
+Large pos/time values
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-::
+Very large world volume position/time values suggests targetting is missing geometry::
+
+    OKTest --compute --save --dbgaim
+
+    cd /tmp/blyth/opticks/OKTest/evt/g4live/torch/1
+
+    In [1]: ox = np.load("ox.npy")   
+
+    In [7]: ox.shape                                                                                                                                                       
+    Out[7]: (10000, 4, 4)
+
+    In [11]: ox[:,0]                                                                                                                                 
+    Out[11]: 
+    array([[-1531340.5  ,   407821.53 ,  -737101.44 ,     7032.428],
+           [  626603.5  ,  -459454.1  , -2400000.   ,    12684.859],
+           [ -952960.6  , -1668494.9  ,   652445.5  ,    16838.74 ],
+           ...,
+           [  864573.75 ,   -31689.084,   -56326.715,     4036.174],
+           [-1001047.94 ,  -657957.5  ,   578423.4  ,    20682.805],
+           [ -697387.94 ,  1256682.9  , -2400000.   ,     9331.314]], dtype=float32)
+
+
+Using pyvista visualize where the photons are ending up::
+
+    In [1]: ox = np.load("ox.npy")                                                                                                                                         
+
+    In [2]: import pyvista as pv                                                                                                                                           
+
+    In [3]: pl = pv.Plotter()                                                                                                                                              
+
+    In [5]: pl.add_points(ox[:,0,:3] )                                                                                                                                     
+    Out[5]: (vtkRenderingOpenGL2Python.vtkOpenGLActor)0x16331fec0
+
+    In [6]: pl.show()                                                 
+
+Visualization shows a box of points with clumping in the middle and collection on sides. 
+This suggests are targetting node 0 world volume which misses all geometry.
+
+Quick way to do this::
+
+     cd /tmp/blyth/opticks/OKTest/evt/g4live/torch/1
+     vtk_oxplt.py 
+
+
+Small or unspread pos/time values
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Very small position time values suggests are getting stuck in some geometry::
 
    cd /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/528f4cefdac670fffe846377973af10a/1/tmp/blyth/OKTest/evt/g4live/torch/1
-
 
    In [1]: ox = np.load("ox.npy")
 
