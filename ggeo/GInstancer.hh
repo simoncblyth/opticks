@@ -27,9 +27,9 @@
 
 class SLog ; 
 struct NSceneConfig ; 
-
 class Opticks ;
 
+class GGeo ; 
 class GGeoLib ;    // merged meshes 
 class GNodeLib ;   // GVolume nodes
 class GNode ; 
@@ -50,8 +50,8 @@ Formerly was misnamed GTreeCheck.
 Invoked by GGeo::prepareMeshes : finds instanced geometry and creates GMergedMesh for 
 each instance and for the global non-instanced geometry.
 
-Canonical instance *m_treecheck* is constituent of GGeo that is used precache 
-to *createInstancedMergedMeshes* when invoked by  GGeo::loadFromG4DAE GGeo::prepareMeshes. 
+Canonical instance *m_instancer* is constituent of GGeo that is used precache 
+to *createInstancedMergedMeshes* when invoked by GGeo::prepareVolumes 
 This populates GGeo.m_geolib with GMergedMesh.
 
 **/
@@ -63,13 +63,14 @@ class GGEO_API GInstancer {
    public:
         static const plog::Severity LEVEL ;  
    public:
-        GInstancer(Opticks* ok, GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) ;
+        GInstancer(Opticks* ok, GGeo* ggeo ) ;
         void setRepeatMin(unsigned repeat_min);
         void setVertexMin(unsigned vertex_min);
    public:
         // principal method, almost everything else invoked by this 
         void createInstancedMergedMeshes(bool deltacheck, unsigned verbosity); 
    private:
+        void           initRoot();  
         // compare tree calculated and persisted transforms
         void           deltacheck(); 
         void           deltacheck_r( const GNode* node, unsigned int depth );
@@ -88,6 +89,11 @@ class GGEO_API GInstancer {
         bool           isContainedRepeat( const std::string& pdig, unsigned int levels ) const ;
         void           dumpRepeatCandidates(unsigned dmax);
         void           dumpRepeatCandidate(unsigned int index, bool verbose=false);
+
+   private: 
+        // populate GNodeLib 
+        void           collectNodes();
+        void           collectNodes_r( const GNode* node, unsigned depth );
    public:
         bool           operator()(const std::string& dig) ;
    public:
@@ -115,21 +121,22 @@ class GGEO_API GInstancer {
    private:
        SLog*                     m_log ; 
        Opticks*                  m_ok ; 
-       bool                      m_global_instance_enabled ;   // --global_instance_enabled
-       GGeoLib*                  m_geolib ; 
-       unsigned                  m_verbosity ; 
-       GNodeLib*                 m_nodelib ; 
        NSceneConfig*             m_config ; 
+       unsigned                  m_repeat_min ; 
+       unsigned                  m_vertex_min ; 
 
-       unsigned int              m_repeat_min ; 
-       unsigned int              m_vertex_min ; 
+       GGeo*                     m_ggeo ; 
+       GGeoLib*                  m_geolib ; 
+       GNodeLib*                 m_nodelib ; 
+
+       unsigned                  m_verbosity ; 
+
        const GVolume*            m_root ; 
        GVolume*                  m_root_ ; 
        unsigned int              m_count ;  
        unsigned int              m_labels ;   // count of nodes labelled
        Counts<unsigned int>*     m_digest_count ; 
        std::vector<std::string>  m_repeat_candidates ; 
-
    
 
        typedef std::set<unsigned> SU ; 

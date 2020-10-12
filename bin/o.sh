@@ -361,7 +361,8 @@ o-main()
    echo $msg $runline ======= PWD $PWD $(date)
    eval $runline
    RC=$?
-   echo $msg $runline ======= PWD $PWD  RC $RC $(date)
+   echo $msg runline PWD $PWD  RC $RC $(date)
+   echo $runline  
 
    #[ $RC -eq 0 ] && echo $postline && eval $postline 
    echo $postline && eval $postline 

@@ -64,6 +64,20 @@ unsigned OpticksIdentity::Encode(unsigned repeat_index, unsigned placement_index
     return encoded_identifier ; 
 }
 
+/**
+
+
+::
+
+    a = np.load("all_volume_identity.npy")
+    tid = a[:,1]
+    ridx = tid >> 24   
+    pidx = np.where( ridx == 0,                       0, ( tid >>  8 ) & 0xffff ) 
+    oidx = np.where( ridx == 0, ( tid >> 0 ) & 0xffffff, ( tid >> 0  ) & 0xff   )
+
+**/
+
+
 bool OpticksIdentity::Decode(unsigned identifier, unsigned& repeat_index, unsigned& placement_index, unsigned& offset_index ) // static 
 {
     repeat_index    = ( identifier >> 24 ) & 0xff ; 
@@ -99,6 +113,31 @@ OpticksIdentity::OpticksIdentity(unsigned identifier)
     m_decoded(OpticksIdentity::Decode(identifier, m_repeat_index, m_placement_index, m_offset_index))
 {
 } 
+
+
+std::string OpticksIdentity::Desc(unsigned identifier) // static 
+{
+    unsigned repeat_index ; 
+    unsigned placement_index ;
+    unsigned offset_index ;
+    Decode(identifier, repeat_index, placement_index, offset_index); 
+
+    std::stringstream ss ; 
+    ss << "OpticksIdentity(" 
+       << std::setw(2) << repeat_index 
+       << ","
+       << std::setw(6) << placement_index 
+       << ","
+       << std::setw(6) << offset_index 
+       << ")"
+       << " " << std::setw(10) << std::dec << identifier
+       << " " << std::setw(10) << std::hex << identifier
+       ;
+    return ss.str(); 
+}
+
+
+
 
 std::string OpticksIdentity::desc() const 
 {

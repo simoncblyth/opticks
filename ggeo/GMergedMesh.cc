@@ -736,14 +736,14 @@ void GMergedMesh::mergeVolumeDump( const GVolume* volume)
 {
     const char* pvn = volume->getPVName() ;
     const char* lvn = volume->getLVName() ;
-    guint4 _identity = volume->getIdentity();
+    glm::uvec4 id = volume->getIdentity();
     unsigned ridx = volume->getRepeatIndex() ;  
 
     LOG(info) 
         << " m_cur_volume " << m_cur_volume
         << " idx " << volume->getIndex()
         << " ridx " << ridx
-        << " id " << _identity.description()
+        << gpresent("id ", id) 
         << " pv " << ( pvn ? pvn : "-" )
         << " lv " << ( lvn ? lvn : "-" )
         ;
@@ -786,32 +786,42 @@ m_meshes
       mesh index 
 
 
+NB
+
+1. face and vertex counts must use same selection as above to be usable 
+   with the above filled vertices and indices 
+
+
 **/
 
 void GMergedMesh::mergeVolumeIdentity( const GVolume* volume, bool selected )
 {
     const GMesh* mesh = volume->getMesh();
-
     unsigned meshIndex = mesh->getIndex();
-
     unsigned nface = mesh->getNumFaces();
     unsigned nvert = mesh->getNumVertices();
 
-    guint4 _identity = volume->getIdentity();
-
+    glm::uvec4 identity = volume->getIdentity();
     unsigned nodeIndex = volume->getIndex();
     unsigned tripletIdentity = volume->getTripletIdentity(); 
     unsigned shapeIdentity = volume->getShapeIdentity();
     unsigned sensorIndex = volume->getSensorIndex();
 
-    assert( _identity.x == nodeIndex );
-    assert( _identity.y == tripletIdentity );
-    assert( _identity.z == shapeIdentity );
-    assert( _identity.w == sensorIndex) ;  
+    assert( identity.x == nodeIndex );
+    assert( identity.y == tripletIdentity );
+    assert( identity.z == shapeIdentity );
+    assert( identity.w == sensorIndex) ;  
     
     unsigned boundary = volume->getBoundary();
     assert( (( shapeIdentity >> 0  ) & 0xffff ) == boundary  );
     assert( (( shapeIdentity >> 16 ) & 0xffff ) == meshIndex );
+
+
+    if(nodeIndex > 0)
+    {
+        assert( tripletIdentity != 0 );  
+    }
+
 
     LOG(debug) 
         << " m_cur_volume " << m_cur_volume 
@@ -824,38 +834,24 @@ void GMergedMesh::mergeVolumeIdentity( const GVolume* volume, bool selected )
 
     m_meshes[m_cur_volume] = meshIndex ; 
 
-    // face and vertex counts must use same selection as above to be usable 
-    // with the above filled vertices and indices 
-
-    glm::uvec4 ni = volume->getNodeInfo_(); 
+    glm::uvec4 ni = volume->getNodeInfo(); 
     assert( ni.x == nface ); 
     assert( ni.y == nvert ); 
     assert( ni.z == nodeIndex ); 
     assert( ni.w == parentIndex ); 
+
     // TODO: adopt ni, so can clean up the above 
     //   model change gets rid of selected branching 
-
 
     m_nodeinfo[m_cur_volume].x = selected ? nface : 0 ; 
     m_nodeinfo[m_cur_volume].y = selected ? nvert : 0 ; 
     m_nodeinfo[m_cur_volume].z = nodeIndex ;  
     m_nodeinfo[m_cur_volume].w = parentIndex ; 
 
-    //if(isGlobal() && !m_globalinstance)
-/*
-    if(isGlobal())
-    {
-         if(nodeIndex != m_cur_volume)
-             LOG(fatal) << "mismatch" 
-                        <<  " nodeIndex " << nodeIndex 
-                        <<  " m_cur_volume " << m_cur_volume
-                        ; 
-
-         //assert(nodeIndex == m_cur_volume);  // trips ggv-pmt still needed ?
-    } 
-*/
-
-    m_identity[m_cur_volume] = _identity ; 
+    m_identity[m_cur_volume].x = identity.x ; 
+    m_identity[m_cur_volume].y = identity.y ; 
+    m_identity[m_cur_volume].z = identity.z ; 
+    m_identity[m_cur_volume].w = identity.w ; 
 }
 
 /**

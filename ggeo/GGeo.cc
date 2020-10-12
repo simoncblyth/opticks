@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iomanip>
+#include <csignal>
 
 #include "SSys.hh"
 #include "SLog.hh"
@@ -364,7 +365,7 @@ void GGeo::initLibs()
    m_geolib = new GGeoLib(m_ok, m_bndlib );
    m_nodelib = new GNodeLib(m_ok); 
 
-   m_instancer = new GInstancer(m_ok, m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
+   m_instancer = new GInstancer(m_ok, this ) ;
 
 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
@@ -480,6 +481,7 @@ GGeo::postDirectTranslation
 -------------------------------
 
 Invoked from G4Opticks::translateGeometry after the X4PhysicalVolume conversion
+for live running or from okg4/tests/OKX4Test.cc main for geocache-create.
 
 **/
 
@@ -533,12 +535,15 @@ bool GGeo::isPrepared() const { return m_prepared ; }
 GGeo::prepare
 ---------------
     
-Prepare is needed prior to saving to geocache or GPU upload by OGeo
+Prepare is needed prior to saving to geocache or GPU upload by OGeo, it 
+is invoked for example from GGeo::postDirectTranslation. 
 
 **/
 
 void GGeo::prepare()
 {
+    //std::raise(SIGINT); 
+
     LOG(info) << "[" ; 
     assert( m_instancer && "GGeo::prepare can only be done pre-cache when the full node tree is available"); 
 
@@ -892,8 +897,15 @@ void GGeo::reportMeshUsage(const char* msg) const
  
 
 
-
 // via GNodeLib
+void GGeo::setRoot(const GVolume* root)
+{
+    m_nodelib->setRoot(root); 
+}
+const GVolume* GGeo::getRoot() const 
+{
+    return m_nodelib->getRoot(); 
+}
 
 unsigned GGeo::getNumVolumes() const 
 {
@@ -1165,22 +1177,15 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 GGeo::prepareVolumes
 --------------------
 
-Uses GInstancer to create the instanced GMergedMesh by combinations
+This is invoked by GGeo::prepare. 
+
+This uses GInstancer to create the instanced GMergedMesh by combinations
 of volumes from the GVolume tree. 
 The created GMergedMesh are collected into GGeo/GGeoLib.
 
 As this is creating GMergedMesh it is clearly precache.
 (Now that GMeshLib are persisted this is not so clearly precache, 
 but that remains the case typically.)
-
-
-Old Notes
-~~~~~~~~~~
-
-This was formerly mis-named as prepareMeshes which as it 
-also does the analytic combination, with analytic GParts 
-instances hitched to the created GMergedMesh.
-
 
 **/
 

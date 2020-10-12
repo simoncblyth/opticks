@@ -237,11 +237,47 @@ GItemList* GNodeLib::getLVList()
 }
 
 
+
+/**
+GNodeLib::setRoot
+-------------------
+
+Require to defer GNodeLib::add of volumes until 
+after GInstancer identity labelling, hence need
+to hold on to root in the meantime.
+
+Canonically invoked from X4PhysicalVolume::convertStructure/GGeo::setRoot
+
+**/
+
+void GNodeLib::setRoot(const GVolume* root)
+{
+    m_root = root ; 
+
+}
+const GVolume* GNodeLib::getRoot() const 
+{
+   return m_root ;  
+}
+ 
+
+
 /**
 GNodeLib::add
 ---------------
 
-Collects all volume information 
+Collects all volume information.
+
+Hmm some identity information like the tripetID is only 
+available after GInstancer runs the labelling. So can this 
+be deferred ? 
+
+
+Formerly collection was done in X4PhysicalVolume::convertStructure
+but that is too soon to capture the identity labelling done by GInstancer, 
+so now collection done by GInstancer::collectNodes_r
+
+ 
 
 **/
 
@@ -267,10 +303,10 @@ void GNodeLib::add(const GVolume* volume)
     m_pvlist->add(volume->getPVName()); 
     // NB added in tandem, so same counts and same index as the volumes  
 
-    glm::uvec4 id = volume->getIdentity_(); 
+    glm::uvec4 id = volume->getIdentity(); 
     m_identity->add(id);
 
-    glm::uvec4 ni = volume->getNodeInfo_(); 
+    glm::uvec4 ni = volume->getNodeInfo(); 
     m_nodeinfo->add(ni);
 
     const GVolume* check = getVolume(index);
@@ -503,7 +539,21 @@ std::string GNodeLib::descVolume(unsigned index) const
 void GNodeLib::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) const 
 {
     unsigned num_volumes = getNumVolumes();
-    LOG(info) << msg  << " num_volumes " << num_volumes ;    
+
+    std::vector<int> targets ; 
+    targets.push_back(m_ok->getTarget());         // --target
+    targets.push_back(m_ok->getDomainTarget());   // --domaintarget
+    targets.push_back(m_ok->getGenstepTarget());  // --gensteptarget
+    targets.push_back(cursor); 
+
+    LOG(info) 
+        << msg  
+        << " num_volumes " << num_volumes 
+        << " --target " << m_ok->getTarget() 
+        << " --domaintarget " << m_ok->getDomainTarget() 
+        << " --gensteptarget " << m_ok->getGenstepTarget() 
+        << " cursor " << cursor 
+        ;
 
     LOG(info) << "first volumes "  ; 
     for(unsigned i=0 ; i < std::min(num_volumes, 20u) ; i++) 
@@ -514,13 +564,16 @@ void GNodeLib::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) co
             ;
     }    
 
-    LOG(info) << "volumes with extent greater than " << extent_cut_mm << " mm " ; 
+    LOG(info) << "targetted volumes(**) OR volumes with extent greater than " << extent_cut_mm << " mm " ; 
     for(unsigned i=0 ; i < num_volumes ; i++) 
     {    
         glm::vec4 ce = getCE(i);
-        if(ce.w > extent_cut_mm )
+
+        bool is_target_volume = std::count(targets.begin(), targets.end(), int(i)) > 0 ; 
+
+        if(ce.w > extent_cut_mm || is_target_volume )
         std::cout 
-            << ( int(i) == cursor ? " **" : "   " ) 
+            << ( is_target_volume ? " **" : "   " ) 
             << descVolume(i)
             ;    
     }    

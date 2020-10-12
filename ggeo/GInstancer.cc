@@ -34,7 +34,7 @@
 #include "GTreePresent.hh"
 #include "GMergedMesh.hh"
 
-
+#include "GGeo.hh"
 #include "GGeoLib.hh"
 #include "GNodeLib.hh"
 
@@ -48,21 +48,19 @@
 
 #include "PLOG.hh"
 
-
-
 const plog::Severity GInstancer::LEVEL = PLOG::EnvLevel("GInstancer", "DEBUG") ; 
 
-GInstancer::GInstancer(Opticks* ok, GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
+GInstancer::GInstancer(Opticks* ok, GGeo* ggeo) 
     : 
     m_log(new SLog("GInstancer::GInstancer","", verbose)),
     m_ok(ok),
-    m_global_instance_enabled(m_ok->isGlobalInstanceEnabled()), // --global_instance_enabled
-    m_geolib(geolib),
-    m_verbosity(geolib->getVerbosity()),
-    m_nodelib(nodelib),
-    m_config(config),
-    m_repeat_min(config->instance_repeat_min),
-    m_vertex_min(config->instance_vertex_min),  // aiming to include leaf? sStrut and sFasteners
+    m_config(m_ok->getSceneConfig()),
+    m_repeat_min(m_config->instance_repeat_min),
+    m_vertex_min(m_config->instance_vertex_min),  // aiming to include leaf? sStrut and sFasteners
+    m_ggeo(ggeo),
+    m_geolib(ggeo->getGeoLib()),
+    m_nodelib(ggeo->getNodeLib()),
+    m_verbosity(m_geolib->getVerbosity()),
     m_root(NULL),
     m_count(0),
     m_labels(0),
@@ -91,6 +89,18 @@ void GInstancer::setVertexMin(unsigned vertex_min)
     m_vertex_min = vertex_min ; 
 }
 
+
+void GInstancer::initRoot()
+{
+    //m_root = m_nodelib->getVolume(0);
+    m_root = m_ggeo->getRoot();
+    m_root_ = const_cast<GVolume*>(m_root); 
+    assert(m_root);
+    assert(m_root_);
+}
+
+
+
 /**
 GInstancer::createInstancedMergedMeshes
 ------------------------------------------
@@ -106,6 +116,8 @@ Canonical invokation from GGeo::prepareVolumes
 
 void GInstancer::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 {
+    initRoot(); 
+
     OK_PROFILE("GInstancer::createInstancedMergedMeshes"); 
 
     if(delta) deltacheck();
@@ -123,6 +135,8 @@ void GInstancer::createInstancedMergedMeshes(bool delta, unsigned verbosity)
     makeMergedMeshAndInstancedBuffers(verbosity);
 
     OK_PROFILE("GInstancer::createInstancedMergedMeshes:makeMergedMeshAndInstancedBuffers");
+
+    collectNodes();  
 
     //if(t.deltaTime() > 0.1)
     //t.dump("GInstancer::createInstancedMergedMeshes deltaTime > cut ");
@@ -145,12 +159,6 @@ DYB: minrep 120 removes repeats from headonPMT, calibration sources and RPC leav
 void GInstancer::traverse()
 {
     LOG(LEVEL) << "[" ; 
-
-    m_root = m_nodelib->getVolume(0);
-    m_root_ = const_cast<GVolume*>(m_root); 
-
-
-    assert(m_root);
 
     // count occurences of distinct progeny digests (relative sub-tree identities) in m_digest_count 
     traverse_r(m_root, 0);
@@ -192,9 +200,7 @@ Check consistency of the level transforms
 
 void GInstancer::deltacheck()
 {
-    m_root = m_nodelib->getVolume(0);
     assert(m_root);
-
     deltacheck_r(m_root, 0);
 }
 
@@ -561,6 +567,10 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned ridx, unsigned pidx, int 
     unsigned oidx = m_offset_count ; 
     unsigned triplet_identity = OpticksIdentity::Encode(ridx, pidx, oidx); 
     node->setTripletIdentity( triplet_identity ); 
+
+    LOG(info) << " triplet_identity " << OpticksIdentity::Desc(triplet_identity) ; 
+
+
     m_offset_count += 1 ; 
 
     m_repeats_count += 1 ; 
@@ -653,12 +663,33 @@ void GInstancer::labelGlobals_r( GNode* node, unsigned depth )
 }
 
 
+
+/**
+GInstancer::collectNodes
+------------------------
+
+Populates GNodeLib. Invoked from GInstancer::createInstancedMergedMeshes immediately 
+after tree labelling and merged mesh creation.  
+The node collection needs to be after this labelling to capture the triplet identity. 
+
+**/
+
+void GInstancer::collectNodes()
+{
+    assert(m_root);
+    collectNodes_r(m_root, 0);
+}
+void GInstancer::collectNodes_r(const GNode* node, unsigned depth )
+{
+    const GVolume* volume = dynamic_cast<const GVolume*>(node); 
+    m_nodelib->add(volume); 
+    for(unsigned i = 0; i < node->getNumChildren(); i++) collectNodes_r(node->getChild(i), depth + 1 );
+} 
+
+
 /**
 GInstancer::getPlacements
 --------------------------
-
-
-
 
 **/
 
@@ -737,14 +768,14 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
     bool last = false ; 
 
-    const GNode* root = m_nodelib->getNode(0);
-    assert(root); 
+    //const GNode* root = m_nodelib->getNode(0);
+    assert(m_root); 
     GNode* base = NULL ; 
 
 
     // passes thru to GMergedMesh::create with management of the mm in GGeoLib
     unsigned ridx0 = 0 ; 
-    GMergedMesh* mm0 = m_geolib->makeMergedMesh(ridx0, base, root);
+    GMergedMesh* mm0 = m_geolib->makeMergedMesh(ridx0, base, m_root);
 
 
     std::vector<const GNode*> placements = getPlacements(ridx0);  // just m_root
@@ -753,29 +784,10 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
     unsigned numRepeats = getNumRepeats();
     unsigned numRidx = 1 + numRepeats ;
- 
-
-/*
-    if(m_global_instance_enabled)
-    {
-        LOG(LEVEL) << "[ creating extra mm --global_instance_enabled " ;
-        bool global_instance = true ; 
-        GMergedMesh* mmgi = m_geolib->makeMergedMesh( numRidx, base, root, verbosity, global_instance ); 
-        mmgi->addInstancedBuffers(placements);  // call for global for common structure 
-        LOG(LEVEL) << "] creating extra mm --global_instance_enabled " ;
-    } 
-    else
-    {
-        LOG(LEVEL) << "NOT creating extra mm as no  --global_instance_enabled " ;
-    }
-*/
-
-
 
     LOG(info) 
         << " numRepeats " << numRepeats
         << " numRidx " << numRidx
-        << " --global_instance_enabled " << m_global_instance_enabled 
         ;
 
     for(unsigned ridx=1 ; ridx < numRidx ; ridx++)  // 1-based index
@@ -788,7 +800,7 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
              << " rbase " << rbase
              ;
 
-         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root ); 
+         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, m_root ); 
 
          std::vector<const GNode*> placements_ = getPlacements(ridx);
 
@@ -799,6 +811,11 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
 
 }
+
+
+
+
+
 
 
 

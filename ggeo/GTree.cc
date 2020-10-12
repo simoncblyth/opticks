@@ -167,12 +167,10 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
             const GNode* node = s == 0 ? base : progeny[s-1] ; 
             const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
 
-            guint4 id = volume->getIdentity();
+            glm::uvec4 id = volume->getIdentity(); 
             buf->add(id.x, id.y, id.z, id.w ); 
 
-            glm::uvec4 id_ = id.as_vec(); 
-            buf2->setQuad( id_, i, s, 0) ; 
-
+            buf2->setQuad( id, i, s, 0) ; 
 
 #ifdef DEBUG
             std::cout  

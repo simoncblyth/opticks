@@ -312,7 +312,7 @@ void NCSG::savesrc(const char* treedir_ ) const
     assert( !same_dir) ; 
     assert( treedir_ ) ; 
 
-    LOG(info) << " treedir_ " << treedir_ ; 
+    LOG(LEVEL) << " treedir_ " << treedir_ ; 
 
     m_csgdata->savesrc( treedir_ ) ;  
     m_meta->save( treedir_ ); 

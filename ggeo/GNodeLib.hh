@@ -97,7 +97,10 @@ class GGEO_API GNodeLib
 
         GItemList*   getPVList(); 
         GItemList*   getLVList(); 
-
+    public:
+        // need to defer adding volumes after identity labelling, so need to hold onto root
+        void           setRoot(const GVolume* root); 
+        const GVolume* getRoot() const ; 
     public:
         unsigned getNumPV() const ;
         unsigned getNumLV() const ;
@@ -158,6 +161,8 @@ class GGEO_API GNodeLib
         std::map<unsigned int, const GVolume*>    m_volumemap ; 
         std::vector<const GVolume*>               m_volumes ; 
         std::vector<const GVolume*>               m_sensor_volumes ; 
+    private:
+        const GVolume*                            m_root ;  
 
 
 

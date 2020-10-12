@@ -88,18 +88,16 @@ int main(int argc, char** argv)
     m_ok->profile("_OKX4Test:GGeo"); 
 
     GGeo* m_ggeo = new GGeo(m_ok) ;
-    assert(m_ggeo->getMaterialLib());
 
     m_ok->profile("OKX4Test:GGeo"); 
-    LOG(info) << " ggeo " << m_ggeo 
-              << " ggeo.mlib " << m_ggeo->getMaterialLib()
-              ;
+
 
     m_ok->profile("_OKX4Test:X4PhysicalVolume"); 
 
     X4PhysicalVolume xtop(m_ggeo, top) ;    // populates m_ggeo
 
     m_ok->profile("OKX4Test:X4PhysicalVolume"); 
+
 
     m_ggeo->postDirectTranslation();   // closing libs, finding repeat instances, merging meshes, saving 
 
@@ -120,6 +118,7 @@ int main(int argc, char** argv)
 
     Opticks* oki = Opticks::GetInstance() ; 
     assert( oki == m_ok ) ; 
+
     m_ok->saveProfile();
     m_ok->postgeocache(); 
 

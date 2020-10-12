@@ -78,9 +78,8 @@ class GGEO_API GVolume : public GNode {
       bool         isCSGSkip() const ;
       unsigned     getBoundary() const ;
       unsigned     getShapeIdentity() const ;
-      guint4       getIdentity() const ;
-      glm::uvec4   getIdentity_() const ;
-      glm::uvec4   getNodeInfo_() const ; 
+      glm::uvec4   getIdentity() const ;
+      glm::uvec4   getNodeInfo() const ; 
   public:
       GParts*      getParts() const ;
       GPt*         getPt() const ;

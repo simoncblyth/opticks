@@ -946,6 +946,9 @@ void X4PhysicalVolume::convertStructure()
 
     m_root = convertStructure_r(pv, parent, depth, parent_pv, recursive_select );
 
+    m_ggeo->setRoot(m_root); 
+     
+
     OK_PROFILE("X4PhysicalVolume::convertStructure");
 
     convertStructureChecks(); 
@@ -1013,7 +1016,8 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
      m_convertNode_dt += t1 - t0 ; 
 #endif
 
-     m_ggeo->add(volume); // collect in nodelib
+     // formerly collected volumes into GNodeLib here, but thats too soon for tripletIdentity 
+     // m_ggeo->add(volume);
 
      const G4LogicalVolume* const lv = pv->GetLogicalVolume();
   

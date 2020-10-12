@@ -48,8 +48,9 @@ For repeat_index 0 the placement_index is always 0, hence::
 class OKCORE_API OpticksIdentity {
     public:
         static const plog::Severity LEVEL ;   
-        static unsigned Encode(unsigned repeat_index, unsigned placement_index, unsigned offset_index);
-        static bool     Decode(unsigned identifier, unsigned& repeat_index, unsigned& placement_index, unsigned& offset_index );
+        static unsigned    Encode(unsigned repeat_index, unsigned placement_index, unsigned offset_index);
+        static bool        Decode(unsigned identifier, unsigned& repeat_index, unsigned& placement_index, unsigned& offset_index );
+        static std::string Desc(unsigned identifier);
     public:
         OpticksIdentity(unsigned repeat_index, unsigned placement_index, unsigned offset_index); 
         OpticksIdentity(unsigned identifier);

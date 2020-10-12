@@ -267,14 +267,13 @@ Formerly::
    guint4 id(getIndex(), getMeshIndex(),  getBoundary(), getSensorIndex()) ;
 
 **/
-guint4 GVolume::getIdentity() const 
+
+glm::uvec4 GVolume::getIdentity() const 
 {
-    guint4 id(getIndex(), getTripletIdentity(),  getShapeIdentity(), getSensorIndex()) ;
-    return id ; 
-}
-glm::uvec4 GVolume::getIdentity_() const 
-{
-    glm::uvec4 id(getIndex(), getTripletIdentity(), getShapeIdentity(), getSensorIndex()) ; 
+    unsigned index = getIndex() ;
+    unsigned tripid = getTripletIdentity();
+    if(index > 0 ) assert( tripid != 0 ); 
+    glm::uvec4 id(index, tripid, getShapeIdentity(), getSensorIndex()) ; 
     return id ; 
 }
 
@@ -304,7 +303,7 @@ Used from GMergedMesh::mergeVolumeIdentity
 
 **/
 
-glm::uvec4 GVolume::getNodeInfo_() const
+glm::uvec4 GVolume::getNodeInfo() const
 {
     const GMesh* mesh = getMesh();
     unsigned nvert = mesh->getNumVertices();
