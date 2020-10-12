@@ -2128,15 +2128,21 @@ NSceneConfig* Opticks::getSceneConfig()
 }
 
 
-
-int  Opticks::getGenstepTarget() const
+int  Opticks::getDomainTarget() const  // --domaintarget 
+{
+    return m_cfg->getDomainTarget(); 
+}
+int  Opticks::getGenstepTarget() const  // --gensteptarget
 {
     return m_cfg->getGenstepTarget(); 
 }
-int  Opticks::getTarget() const
+int  Opticks::getTarget() const   // --target 
 {
     return m_cfg->getTarget(); 
 }
+
+
+
 int  Opticks::getAlignLevel() const 
 {
     return m_cfg->getAlignLevel(); 
@@ -2574,7 +2580,7 @@ void Opticks::setSpaceDomain(float x, float y, float z, float w)
 
     if( isDbgAim() ) 
     {  
-        LOG(fatal) << " --dbgaim : m_space_domain " << gformat(m_space_domain) ;  
+        LOG(info) << " --dbgaim : m_space_domain " << gformat(m_space_domain) ;  
     }
 
     setupTimeDomain(w); 
@@ -2590,7 +2596,7 @@ Opticks::setupTimeDomain
 Invoked by setSpaceDomain
 
 When configured values of "--timemax" and "--animtimemax" are 
-negative a rule of thumb is used to setup a timedomain 
+negative (this is default) a rule of thumb is used to setup a timedomain 
 suitable for the extent of space domain.
 
 When the propagation yields times exeeding timemax, the 
@@ -2605,6 +2611,13 @@ and are upping the default to 6.f
 NB its better not to change this frequently, as it effects 
 event records 
 
+For geometries like DYB with a very large world volume which 
+is not relevant to optical photon propagation the rule of thumb 
+yields an overlarge time domain resulting in difficult to 
+control animated propagation visualizations.
+
+
+
 **/
 
 void Opticks::setupTimeDomain(float extent)
@@ -2613,35 +2626,49 @@ void Opticks::setupTimeDomain(float extent)
     float timemax = m_cfg->getTimeMax();  // ns
     float animtimemax = m_cfg->getAnimTimeMax() ; 
 
-
     glm::vec4 animtimerange(0., -1.f, 0.f, 0.f ); 
     getAnimTimeRange( animtimerange ); 
-    LOG(error) << " animtimerange " << gformat(animtimerange) ; 
-
-
     float speed_of_light = 300.f ;        // mm/ns 
-    
     float rule_of_thumb_timemax = timemaxthumb*extent/speed_of_light ;
+   
+
+    if(isDbgAim()) // --dbgaim
+    {
+        LOG(info)
+            << "\n [--dbgaim] output "
+            << "\n extent (mm) " << extent 
+            << "\n cfg.timemax (ns) [--timemax]" << timemax    
+            << "\n animtimerange " << gformat(animtimerange) 
+            << "\n cfg.getTimeMaxThumb [--timemaxthumb] " << timemaxthumb 
+            << "\n cfg.getAnimTimeMax [--animtimemax] " << animtimemax 
+            << "\n cfg.getAnimTimeMax [--animtimemax] " << animtimemax 
+            << "\n speed_of_light (mm/ns) " << speed_of_light
+            << "\n rule_of_thumb_timemax (ns) " << rule_of_thumb_timemax 
+            ;  
+    }
+
 
     float u_timemin = 0.f ;  // ns
     float u_timemax = timemax < 0.f ? rule_of_thumb_timemax : timemax ;  
     float u_animtimemax = animtimemax < 0.f ? u_timemax : animtimemax ; 
 
-    LOG(info)
-        << " extent (mm) " << extent 
-        << " cfg.getTimeMaxThumb [--timemaxthumb] " << timemaxthumb 
-        << " cfg.getAnimTimeMax [--animtimemax] " << animtimemax 
-        << " cfg.getAnimTimeMax [--animtimemax] " << animtimemax 
-        << " speed_of_light (mm/ns) " << speed_of_light
-        << " rule_of_thumb_timemax (ns) " << rule_of_thumb_timemax 
-        << " u_timemax " << u_timemax
-        << " u_animtimemax " << u_animtimemax
-        ;  
-
     m_time_domain.x = u_timemin ;
     m_time_domain.y = u_timemax ;
     m_time_domain.z = u_animtimemax ;
     m_time_domain.w = 0.f  ;
+
+    if(isDbgAim())
+    {
+        LOG(info)
+            << "\n [--dbgaim] output "
+            << "\n u_timemin " << u_timemin
+            << "\n u_timemax " << u_timemax
+            << "\n u_animtimemax " << u_animtimemax
+            << "\n m_time_domain " << gformat(m_time_domain) 
+            ;  
+    }
+
+
 }
 
 

@@ -154,8 +154,9 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_layout(1),
        m_lodconfig("levels=3,verbosity=3"),
        m_lod(0),
-       m_gensteptarget(BOpticksResource::DefaultGenstepTarget()),
-       m_target(BOpticksResource::DefaultTarget()),
+       m_domaintarget(BOpticksResource::DefaultDomainTarget(0)),
+       m_gensteptarget(BOpticksResource::DefaultGenstepTarget(0)),
+       m_target(BOpticksResource::DefaultTarget(0)),
        m_alignlevel(0),
        m_exename(SAr::Instance ? SAr::Instance->exename() : "OpticksEmbedded" ), 
        m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy")),
@@ -1336,14 +1337,21 @@ void OpticksCfg<Listener>::init()
 
 
 
-   char gensteptarget[128];
-   snprintf(gensteptarget,128, "Integer controlling genstep targeting. Default gensteptarget %d can be defined with envvar OPTICKS_DEFAULT_GENSTEPTARGET.", m_gensteptarget );
+   char domaintarget[256];
+   snprintf(domaintarget,256, "Integer controlling space/time domain based on extent of identified node. "
+                              "Default domaintarget %d can be defined with envvar OPTICKS_DOMAIN_TARGET.", m_domaintarget );
+   m_desc.add_options()
+       ("domaintarget",  boost::program_options::value<int>(&m_domaintarget), domaintarget );
+
+   char gensteptarget[256];
+   snprintf(gensteptarget,256, "Integer controlling where fabricated torch gensteps are located. "
+                               "Default gensteptarget %d can be defined with envvar OPTICKS_GENSTEP_TARGET.", m_gensteptarget );
    m_desc.add_options()
        ("gensteptarget",  boost::program_options::value<int>(&m_gensteptarget), gensteptarget );
 
-
-   char target[128];
-   snprintf(target,128, "Integer controlling center_extent target. Default target %d can be defined with envvar OPTICKS_DEFAULT_TARGET.", m_target );
+   char target[256];
+   snprintf(target,256, "Integer controlling the viewpoint based on the identified node. "
+                        "Default target %d can be defined with envvar OPTICKS_DEFAULT_TARGET.", m_target );
    m_desc.add_options()
        ("target",  boost::program_options::value<int>(&m_target), target );
 
@@ -2122,12 +2130,17 @@ int OpticksCfg<Listener>::getLOD() const
     return m_lod ; 
 }
 
+
+template <class Listener>
+int OpticksCfg<Listener>::getDomainTarget() const 
+{
+    return m_domaintarget ; 
+}
 template <class Listener>
 int OpticksCfg<Listener>::getGenstepTarget() const 
 {
     return m_gensteptarget ; 
 }
-
 template <class Listener>
 int OpticksCfg<Listener>::getTarget() const 
 {

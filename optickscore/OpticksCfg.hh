@@ -23,6 +23,26 @@
 
 #include "OKCORE_API_EXPORT.hh"
 
+/**
+OpticksCfg
+===========
+
+
+::
+
+    OKTest --help | wc -l
+         686
+
+
+TODO:
+
+1. reduce the number of options ? 
+ 
+   * perhaps user/developer modes with user mode presenting just options known to still work and useful for users
+
+2. group the options 
+
+**/
 
 template <class Listener>
 class OKCORE_API OpticksCfg : public BCfg {
@@ -159,8 +179,11 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      const std::string& getLODConfig();
      int                getLOD() const ;
+public:
+     int                getDomainTarget() const ;
      int                getGenstepTarget() const ;
      int                getTarget() const ;
+public:
      int                getAlignLevel() const ;
 
      const std::string& getGPUMonPath() const ;
@@ -292,6 +315,7 @@ private:
      std::string m_lodconfig ;
      int         m_lod ;  
 
+     int         m_domaintarget ;  
      int         m_gensteptarget ;  
      int         m_target ;  
      int         m_alignlevel ;  

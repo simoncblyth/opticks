@@ -375,8 +375,9 @@ class OKCORE_API Opticks {
        const char* getLODConfigString();
        NLODConfig* getLODConfig();
        int         getLOD();
-       int         getGenstepTarget() const ;
-       int         getTarget() const ;
+       int         getDomainTarget() const ;   // --domaintarget
+       int         getGenstepTarget() const ;  // --gensteptarget
+       int         getTarget() const ;         // --target 
        int         getAlignLevel() const;
    public:
        NSlice*  getAnalyticPMTSlice();

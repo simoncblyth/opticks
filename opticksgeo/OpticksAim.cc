@@ -52,19 +52,27 @@ OpticksAim::OpticksAim(OpticksHub* hub)
 
 void OpticksAim::registerGeometry(GGeo* ggeo)
 {
+    assert( ggeo ); 
     m_ggeo = ggeo ; 
-    glm::vec4 ce0 = m_ggeo ? m_ggeo->getCE(0) : glm::vec4(0.f,0.f,0.f,1.f) ;
 
-    m_ok->setSpaceDomain( ce0 );
+    //glm::vec4 ce0 = m_ggeo ? m_ggeo->getCE(0) : glm::vec4(0.f,0.f,0.f,1.f) ;
+
+    int domaintarget = m_ok->getDomainTarget();    // --domaintarget 
+    glm::vec4 center_extent = m_ggeo->getCE(domaintarget); 
+
 
     LOG(LEVEL)
           << " setting SpaceDomain : " 
-          << " ce0 " << gformat(ce0) 
+          << " --domaintarget " << domaintarget
+          << " center_extent " << gformat(center_extent) 
           ; 
+    
+    m_ok->setSpaceDomain( center_extent );
 }
 
 glm::vec4 OpticksAim::getCenterExtent() const 
 {
+    assert(0); 
     if(!m_ggeo) LOG(fatal) << " m_ggeo NULL " ; 
     glm::vec4 ce = m_ggeo ? m_ggeo->getCE(0) : glm::vec4(0.f,0.f,0.f,1.f) ;
     return ce ; 
@@ -178,7 +186,8 @@ void OpticksAim::target()
     }
     else if(geocenter )
     {
-        glm::vec4 ce0 = getCenterExtent();
+        //glm::vec4 ce0 = getCenterExtent();
+        glm::vec4 ce0 = m_ggeo->getCE(0);
         m_composition->setCenterExtent( ce0 , autocam );
         LOG(LEVEL) << "[--geocenter] ce0 " << gformat(ce0) ; 
     }
@@ -192,3 +201,5 @@ void OpticksAim::target()
             ; 
     }
 }
+
+
