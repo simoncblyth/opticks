@@ -25,6 +25,8 @@
 #include "NGLM.hpp"
 
 #include "Opticks.hh"
+#include "OpticksIdentity.hh"
+#include "OpticksShape.hh"
 #include "GGeo.hh"
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
@@ -71,28 +73,37 @@ void test_GGeo(const GGeo* gg)
 
     GBndLib* blib = gg->getBndLib();
 
-    unsigned unset(-1) ; 
+    unsigned UNSET = -1 ; 
 
     typedef std::pair<std::string, std::string> PSS ; 
     std::set<PSS> pvp ; 
 
     for(unsigned i=0 ; i < numVolumes ; i++)
     {
-        guint4 nodeinfo = mm->getNodeInfo(i);
-        guint4 id = mm->getIdentity(i);
+        guint4 ni = mm->getNodeInfo(i);
+        unsigned nface = ni.x ;
+        unsigned nvert = ni.y ;
+        unsigned node = ni.z ;
+        unsigned parent = ni.w ;
+        // assert( node == i ); // no longer true, mm0 now contains just the non-instanced remainder volumes
 
-        unsigned nface = nodeinfo.x ;
-        unsigned nvert = nodeinfo.y ;
-        unsigned node = nodeinfo.z ;
-        unsigned parent = nodeinfo.w ;
-        assert( node == i );
-
-
+        glm::uvec4 id = mm->getIdentity_(i);
         unsigned node2 = id.x ;
-        unsigned mesh = id.y ;
-        unsigned boundary = id.z ;
+        unsigned rpo   = id.y ;
+        unsigned shape = id.z ; 
+
         unsigned sensor = id.w ;
-        //assert( node2 == i );
+
+        unsigned ridx = OpticksIdentity::RepeatIndex(rpo);  
+        unsigned pidx = OpticksIdentity::PlacementIndex(rpo);  
+        unsigned oidx = OpticksIdentity::OffsetIndex(rpo);  
+
+        assert( ridx == 0 ); 
+        assert( pidx == 0 );
+        assert( oidx == i );  
+        
+        unsigned mesh = OpticksShape::MeshIndex(shape) ;
+        unsigned boundary = OpticksShape::BoundaryIndex(shape) ;
         
      /*
         guint4 iid = mm->getInstancedIdentity(i);  // nothing new for GlobalMergedMesh 
@@ -110,13 +121,16 @@ void test_GGeo(const GGeo* gg)
         unsigned osur = bnd.z ; 
         //unsigned omat = bnd.w ; 
 
-        const char* ppv = parent == unset ? NULL : gg->getPVName(parent) ;
+        
+
+
+        const char* ppv = parent == UNSET ? NULL : gg->getPVName(parent) ;
         const char* pv = gg->getPVName(i) ;
         //const char* lv = gg->getLVName(i) ;
 
-        bool hasSurface =  isur != unset || osur != unset ; 
+        bool hasSurface =  isur != UNSET || osur != UNSET ; 
 
-        bool select = hasSurface && sensor > 0 ; 
+        bool select = hasSurface && sensor != UNSET ; 
 
         if(select)
         {
@@ -157,13 +171,90 @@ void test_GGeo(const GGeo* gg)
         std::string ppv = it->second ; 
 
         std::cout 
-               << std::setw(60) << pv
-               << std::setw(60) << ppv
+               << std::setw(100) << pv
+               << std::setw(100) << ppv
                << std::endl ; 
 
     }
 
 } 
+
+
+void test_GGeo_getTransform(const GGeo* gg)
+{
+    unsigned tot_volumes = gg->getNumVolumes();  
+    unsigned num_repeats = gg->getNumRepeats(); 
+    LOG(info) 
+        << " tot_volumes " << tot_volumes 
+        << " num_repeats " << num_repeats 
+        ; 
+
+    NPY<float>* transforms0 = gg->getTransforms(); 
+    NPY<float>* transforms = NPY<float>::make(tot_volumes, 4, 4); 
+    transforms->zero();
+    for(unsigned ridx=0 ; ridx < num_repeats ; ridx++)
+    {
+        unsigned num_placements = gg->getNumPlacements(ridx); 
+        unsigned num_volumes = gg->getNumVolumes(ridx); 
+        std::cout 
+            << " ridx " << std::setw(3) << ridx
+            << " num_placements  " << std::setw(6) << num_placements
+            << " num_volumes  " << std::setw(6) << num_volumes
+            << std::endl 
+            ;     
+
+        for(unsigned pidx=0 ; pidx < num_placements ; pidx++)
+        {
+            for(unsigned oidx=0 ; oidx < num_volumes ; oidx++)
+            {
+                 glm::uvec4 id = gg->getIdentity(ridx, pidx, oidx); 
+                 unsigned nidx = id.x ; 
+                 glm::mat4 tr = gg->getTransform(ridx, pidx, oidx); 
+                 transforms->setMat4( tr, nidx ); 
+            }
+        }
+    }
+ 
+    bool dump = true ; 
+    unsigned mismatch = NPY<float>::compare(transforms0, transforms, dump);  
+    LOG(info) << "mismatch " << mismatch ; 
+}
+
+
+
+
+
+void test_GGeo_getIdentity(const GGeo* gg)
+{
+    unsigned ridx = 5 ; 
+    unsigned num_placements = gg->getNumPlacements(ridx); 
+    unsigned num_volumes = gg->getNumVolumes(ridx); 
+    LOG(info) 
+         << " ridx " << ridx 
+         << " num_placements " << num_placements
+         << " num_volumes " << num_volumes
+         ;
+             
+    for(unsigned pidx = 0 ; pidx < std::min(3u,num_placements) ; pidx++)
+    {
+        std::cout << " pidx " << pidx << std::endl ; 
+        for(unsigned oidx = 0 ; oidx < num_volumes ; oidx++)
+        {
+            glm::uvec4 tid = gg->getIdentity(ridx, pidx, oidx); 
+            unsigned nidx = tid.x ; 
+            glm::uvec4 nid = gg->getIdentity(nidx); 
+
+            std::cout 
+                << " ridx " << ridx
+                << " pidx " << pidx
+                << " oidx " << oidx
+                << OpticksIdentity::Desc(" tid", tid)
+                << OpticksIdentity::Desc(" nid", nid)
+                << std::endl
+                ;
+        }
+    }
+}
 
 
 int main(int argc, char** argv)
@@ -177,7 +268,9 @@ int main(int argc, char** argv)
     gg.loadFromCache();
     gg.dumpStats();
 
-    test_GGeo(&gg);
+    //test_GGeo(&gg);
+    //test_GGeo_getTransform(&gg);
+    test_GGeo_getIdentity(&gg);
 
     return 0 ;
 }

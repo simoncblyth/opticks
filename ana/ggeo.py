@@ -1,5 +1,23 @@
 #!/usr/bin/env python
 """
+ggeo.py
+=========
+
+
+Volume idsmry dumping::
+
+    epsilon:ana blyth$ ggeo.py 3199 -i
+    iden(  3199    5000000     2f001b     -1 )  nrpo(  3199     5     0     0 )  shape(  47  27                pmt-hemi0xc0fed900x3e85f00                       MineralOil///Pyrex) 
+    iden(  3200    5000001     2e001c     -1 )  nrpo(  3200     5     0     1 )  shape(  46  28            pmt-hemi-vac0xc21e2480x3e85290                           Pyrex///Vacuum) 
+    iden(  3201    5000002     2b001d     -1 )  nrpo(  3201     5     0     2 )  shape(  43  29        pmt-hemi-cathode0xc2f1ce80x3e842d0                        Vacuum///Bialkali) 
+    iden(  3202    5000003     2c001e     -1 )  nrpo(  3202     5     0     3 )  shape(  44  30            pmt-hemi-bot0xc22a9580x3e844c0                    Vacuum///OpaqueVacuum) 
+    iden(  3203    5000004     2d001e     -1 )  nrpo(  3203     5     0     4 )  shape(  45  30         pmt-hemi-dynode0xc346c500x3e84610                    Vacuum///OpaqueVacuum) 
+    iden(  3204        57f     30001f     -1 )  nrpo(  3204     0     0  1407 )  shape(  48  31             AdPmtCollar0xc2c52600x3e86030          MineralOil///UnstStainlessSteel) 
+    iden(  3205    5000100     2f001b     -1 )  nrpo(  3205     5     1     0 )  shape(  47  27                pmt-hemi0xc0fed900x3e85f00                       MineralOil///Pyrex) 
+    iden(  3206    5000101     2e001c     -1 )  nrpo(  3206     5     1     1 )  shape(  46  28            pmt-hemi-vac0xc21e2480x3e85290                           Pyrex///Vacuum) 
+    iden(  3207    5000102     2b001d     -1 )  nrpo(  3207     5     1     2 )  shape(  43  29        pmt-hemi-cathode0xc2f1ce80x3e842d0                        Vacuum///Bialkali) 
+
+
 ::
 
     In [52]: gc(10)
@@ -47,7 +65,7 @@
 
 
 """
-import os, logging
+import os, logging, argparse
 log = logging.getLogger(__name__)
 import numpy as np
 from opticks.ana.blib import BLib
@@ -166,6 +184,7 @@ class GGeo(object):
 
     def get_tot_volumes(self):
         return self.get_num_volumes(-1)
+    num_volumes = property(get_tot_volumes)
 
     def get_num_volumes(self, ridx):
         name = "all_volume_transforms" if ridx == -1 else "volume_transforms"
@@ -222,6 +241,7 @@ class GGeo(object):
         However can still check the match using the identity info to find
         the node index.
         """
+        log.info("get_all_transforms and do identity consistency check : triplet->node->triplet")
         tot_volumes = self.get_tot_volumes()
         tr = np.zeros([tot_volumes,4,4],dtype=np.float32)
         count = 0 
@@ -270,10 +290,22 @@ class GGeo(object):
         :param pidx: placement index of the instance, 0 for remainder
         :param oidx: offset index, within the instance or among the remainder
         :return nidx: all_volume node index 
+
+        The node index obtained from the placement_identity is used
+        to do a reverse conversion check using nrpo, looking up 
+        the triplet identity from the node index. These indices
+        are consistency checked with the inputs.
         """
         placement_iidentity = self.get_array(ridx, "placement_iidentity")  # eg shape  (672, 5, 4)
         iid = placement_iidentity[pidx, oidx]
         nidx = iid[0]    
+
+        nidx2,ridx2,pidx2,oidx2 = self.nrpo[nidx]
+        assert nidx2 == nidx 
+        assert ridx2 == ridx 
+        assert pidx2 == pidx 
+        assert oidx2 == oidx 
+
         return nidx 
 
     def make_nrpo(self):
@@ -332,8 +364,6 @@ class GGeo(object):
     all_volume_transforms    = property(lambda self:self.get_array(-1,"all_volume_transforms"))  
 
 
-
-
     volume_transforms0  = property(lambda self:self.get_array(0,"volume_transforms")) 
     volume_transforms1  = property(lambda self:self.get_array(1,"volume_transforms"))
     volume_transforms2  = property(lambda self:self.get_array(2,"volume_transforms"))
@@ -356,8 +386,30 @@ class GGeo(object):
     placement_iidentity5 = property(lambda self:self.get_array(5,"placement_iidentity"))
 
     mlib = property(lambda self:self.get_txt("GItemList/GMeshLib.txt", "_mlib")) 
-    mlibnames = property(lambda self:self.mlib[self.all_volume_identity[:,1]])   # mesh/lv names
-    blibnames = property(lambda self:self.blib[self.all_volume_identity[:,2]])   # boundary names
+
+    midx = property(lambda self:(self.all_volume_identity[:,2] >> 16) & 0xffff ) 
+    bidx = property(lambda self:(self.all_volume_identity[:,2] >>  0) & 0xffff ) 
+
+    mlibnames = property(lambda self:self.mlib[self.midx])   # mesh/lv names
+    blibnames = property(lambda self:self.blib[self.bidx])   # boundary names
+
+    def idsmry(self, nidx):
+        """
+        volume identity summary 
+        """
+        iden = self.all_volume_identity[nidx]
+        sidx = iden[-1].view(np.int32)  
+        iden_s = "iden(%6d %10x %10x %6d )" % (iden[0],iden[1],iden[2],sidx)
+
+        nrpo = self.nrpo[nidx]
+        nrpo_s = "nrpo( %5d %5d %5d %5d )" % tuple(nrpo)
+
+        midx = self.midx[nidx] 
+        bidx = self.bidx[nidx] 
+        shape_s = "shape( %3d %3d  %40s %40s)" % (midx,bidx, self.mlibnames[nidx], self.blibnames[nidx] )
+
+        print( "%s  %s  %s " % (iden_s, nrpo_s, shape_s) )
+
 
     def __call__(self,*args):
         """
@@ -435,21 +487,54 @@ class GGeo(object):
         print("\nibb : np.dot( bb, it) : inverse transform applied to bbox4 : expect symmetric around origin")
         print(ibb)
 
+    def consistency_check(self):
+        gg = self
+        log.info("consistency_check")
+        gg.summary()
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    np.set_printoptions(suppress=True, linewidth=200) 
-    gg = GGeo()
+        tr = gg.get_all_transforms()
+
+
+
+def parse_args(doc, **kwa):
+    np.set_printoptions(suppress=True, precision=3, linewidth=200)
+    parser = argparse.ArgumentParser(doc)
+    parser.add_argument(     "idx",  type=int, nargs="*", help="Node index to dump.")
+    parser.add_argument(     "--level", default="info", help="logging level" ) 
+    parser.add_argument(  "-c","--check", action="store_true", help="Consistency check" ) 
+    parser.add_argument(  "-i","--idsmry", action="store_true", help="Slice identity summary interpreting idx as slice range." ) 
+    args = parser.parse_args()
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+    if len(args.idx) == 0:
+        args.idx = [0]
+    pass
+    return args  
+
+
+def misc(gg):
     bbox = gg.all_volume_bbox
     print("gg.all_volume_bbox\n",bbox)
-
     t000 = gg.get_transform(0,0,0)
     print("t000\n",t000)
 
-    #gg.summary0()
-    gg.summary()
-    tr = gg.get_all_transforms()
 
+if __name__ == '__main__':
+    args = parse_args(__doc__)
+    gg = GGeo()
 
+    if args.check:
+        gg.consistency_check()
+    elif args.idsmry:
+        beg = args.idx[0]
+        end = args.idx[1] if len(args.idx) > 1 else min(gg.num_volumes,args.idx[0]+50) 
+        for idx in list(range(beg, end)):
+            gg.idsmry(idx)
+        pass
+    else:
+        for idx in args.idx:
+            gg(idx)
+        pass
+    pass
 
  

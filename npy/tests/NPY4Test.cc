@@ -151,6 +151,42 @@ void test_getQuad_()
     }
 }
 
+void test_getQuad_2()
+{
+    LOG(info); 
+
+    unsigned ni = 10 ; 
+    unsigned offset = (0x1 << 24) - 5 ; 
+
+    NPY<unsigned>* u = NPY<unsigned>::make(ni,4); 
+    u->fillIndexFlat(offset); 
+
+    NPY<float>* f = NPY<float>::make(ni,4); 
+    f->fillIndexFlat(offset); 
+
+    LOG(info) << " glm::uvec4  q = u->getQuad_(i,0,0) : all ok  " ; 
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        glm::uvec4  q = u->getQuad_(i,0,0);     // same as above 
+        std::cout << i << " " << glm::to_string(q) << std::endl ;        
+    }
+
+    LOG(info) << " glm::uvec4  q = u->getQuadF(i,0,0)  : LSB truncation bug " ; 
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        glm::uvec4  q = u->getQuadF(i,0,0);   
+        std::cout << i << " " << glm::to_string(q) << std::endl ;        
+    }
+
+    LOG(info) << " glm::vec4 q = f->getQuadF(i,0,0) : notice the floats canna take it up here  " ; 
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        glm::vec4           q = f->getQuad_(i,0,0);    // 
+        std::cout << i << " " << glm::to_string(q) << std::endl ;        
+    }
+}
+
+
 
 
 void test_setQuad_()
@@ -168,6 +204,10 @@ void test_setQuad_()
     }
     assert( NPY<unsigned char>::compare(a,b,true) == 0 ); 
 }
+
+
+
+
 
 
 void test_getQuad_crossType()
@@ -282,11 +322,12 @@ int main(int argc, char** argv)
 
     //test_tvec(); 
     //test_getQuad_(); 
+    test_getQuad_2(); 
     //test_setQuad_(); 
     //test_getQuad_crossType(); 
     //test_getQuad_crossType_cast_FAILS_RESHAPE(); 
 
-    test_bitwiseOrUInt(); 
+    //test_bitwiseOrUInt(); 
 
     return 0 ; 
 }

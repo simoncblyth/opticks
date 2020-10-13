@@ -142,10 +142,10 @@ NPY<float>* PhotonsNPY::make_pathinfo()
         glm::vec4 ldd = m_recs->getLengthDistanceDuration(photon_id);
         //print(ldd, "ldd" );
 
-        glm::vec4 post = m_photons->getQuad(i,0);
-        glm::vec4 dirw = m_photons->getQuad(i,1);
-        glm::vec4 polw = m_photons->getQuad(i,2);
-        glm::vec4 flag = m_photons->getQuad(i,3);
+        glm::vec4 post = m_photons->getQuadF(i,0);
+        glm::vec4 dirw = m_photons->getQuadF(i,1);
+        glm::vec4 polw = m_photons->getQuadF(i,2);
+        glm::vec4 flag = m_photons->getQuadF(i,3);  // int as floats ?
 
         pathinfo->setQuad( post, i, 0);
         pathinfo->setQuad( dirw, i, 1);
@@ -164,9 +164,9 @@ void PhotonsNPY::dumpPhoton(unsigned int i, const char* msg)
     unsigned int history = m_photons->getUInt(i, 3, 3);
     std::string phistory = m_types->getHistoryString( history );
 
-    glm::vec4 post = m_photons->getQuad(i,0);
-    //glm::vec4 dirw = m_photons->getQuad(i,1);
-    glm::vec4 polw = m_photons->getQuad(i,2);
+    glm::vec4 post = m_photons->getQuadF(i,0);
+    //glm::vec4 dirw = m_photons->getQuadF(i,1);
+    glm::vec4 polw = m_photons->getQuadF(i,2);
 
     std::string seqmat = m_recs->getSequenceString(i, Types::MATERIAL) ;
     std::string seqhis = m_recs->getSequenceString(i, Types::HISTORY) ;

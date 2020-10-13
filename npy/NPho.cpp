@@ -68,25 +68,25 @@ NPY<float>* NPho::getPhotons() const
 
 glm::vec4 NPho::getPositionTime(unsigned i) const 
 {
-    glm::vec4 post = m_photons->getQuad(i,0);
+    glm::vec4 post = m_photons->getQuadF(i,0);
     return post ; 
 }
 
 glm::vec4 NPho::getDirectionWeight(unsigned i) const 
 {
-    glm::vec4 dirw = m_photons->getQuad(i,1);
+    glm::vec4 dirw = m_photons->getQuadF(i,1);
     return dirw ; 
 }
 
 glm::vec4 NPho::getPolarizationWavelength(unsigned i) const 
 {
-    glm::vec4 polw = m_photons->getQuad(i,2);
+    glm::vec4 polw = m_photons->getQuadF(i,2);
     return polw ; 
 }
 
 glm::ivec4 NPho::getFlags(unsigned i) const 
 {
-    glm::ivec4 flgs = m_photons->getQuadI(i,3);
+    glm::ivec4 flgs = m_photons->getQuadI(i,3);  // union type shifting getter
     return flgs ; 
 }
 

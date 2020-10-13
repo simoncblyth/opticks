@@ -94,6 +94,28 @@ bool OpticksIdentity::Decode(unsigned identifier, unsigned& repeat_index, unsign
     return true ; 
 }
 
+
+unsigned OpticksIdentity::RepeatIndex(unsigned identifier) // static 
+{
+    return ( identifier >> 24 ) & 0xff ; 
+}
+unsigned OpticksIdentity::PlacementIndex(unsigned identifier) // static 
+{
+    unsigned ridx = RepeatIndex(identifier); 
+    return ridx == 0 ? 0 : (  identifier >>  8 ) & 0xffff ; 
+}
+unsigned OpticksIdentity::OffsetIndex(unsigned identifier) // static 
+{
+    unsigned ridx = RepeatIndex(identifier); 
+    return ridx == 0 ? ( identifier >> 0 ) & 0xffffff : ( identifier >>  0 ) & 0xff   ; 
+}
+
+
+
+
+
+
+
 OpticksIdentity::OpticksIdentity(unsigned repeat_index, unsigned placement_index, unsigned offset_index)
     :
     m_repeat_index(repeat_index),
@@ -120,17 +142,17 @@ std::string OpticksIdentity::Desc(unsigned identifier) // static
     unsigned repeat_index ; 
     unsigned placement_index ;
     unsigned offset_index ;
+
     Decode(identifier, repeat_index, placement_index, offset_index); 
 
     std::stringstream ss ; 
-    ss << "OpticksIdentity(" 
-       << std::setw(2) << repeat_index 
-       << ","
-       << std::setw(6) << placement_index 
-       << ","
-       << std::setw(6) << offset_index 
+    ss << "rpo(" 
+       << repeat_index 
+       << " "
+       << placement_index 
+       << " "
+       << offset_index 
        << ")"
-       << " " << std::setw(10) << std::dec << identifier
        << " " << std::setw(10) << std::hex << identifier
        ;
     return ss.str(); 
@@ -138,16 +160,29 @@ std::string OpticksIdentity::Desc(unsigned identifier) // static
 
 
 
+std::string OpticksIdentity::Desc(const char* label, const glm::uvec4& id ) // static
+{
+    std::stringstream ss ; 
+    ss  
+        << label
+        << "[" 
+        << glm::to_string(id)
+        << ";"
+        << Desc(id.y)
+        << "]" 
+        ;   
+    return ss.str(); 
+}
 
 std::string OpticksIdentity::desc() const 
 {
     std::stringstream ss ; 
     ss << "OpticksIdentity(" 
-       << std::setw(2) << m_repeat_index 
-       << ","
-       << std::setw(6) << m_placement_index 
-       << ","
-       << std::setw(6) << m_offset_index 
+       << m_repeat_index 
+       << " "
+       << m_placement_index 
+       << " "
+       << m_offset_index 
        << ")"
        << " " << std::setw(10) << std::dec << m_encoded_identifier
        << " " << std::setw(10) << std::hex << m_encoded_identifier

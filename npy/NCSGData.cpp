@@ -137,7 +137,7 @@ void NCSGData::import_src_identity()
 {
     NPY<unsigned>* idx = dynamic_cast<NPY<unsigned>*>(m_npy->getBuffer((int)SRC_IDX)) ; 
     assert( idx->hasShape(1,4) ); 
-    glm::uvec4 uidx = idx->getQuad(0) ;  
+    glm::uvec4 uidx = idx->getQuad_(0) ;  
 
     m_src_index = uidx.x ; 
     m_src_soIdx = uidx.y ; 
@@ -479,7 +479,7 @@ void NCSGData::getSrcPlanes(std::vector<glm::vec4>& _planes, unsigned idx, unsig
 
     for(unsigned i=idx ; i < idx + num_plane ; i++)
     {
-        glm::vec4 plane = srcplanes->getQuad(i) ;
+        glm::vec4 plane = srcplanes->getQuad_(i) ;
 
         _planes.push_back(plane);    
 

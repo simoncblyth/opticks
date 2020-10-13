@@ -250,7 +250,7 @@ class NPY_API NPY : public NPYBase {
 
        void setData(const T* data);
        T* fill(T value);
-       void fillIndexFlat(); // fill with flattened index values, for debugging 
+       void fillIndexFlat(T offset=0); // fill with flattened index values, for debugging 
        int compareWithIndexFlat();  // return number of mismatches to flattened index values
        void zero();
        T* allocate();
@@ -311,14 +311,23 @@ class NPY_API NPY : public NPYBase {
 
 
        ///  quad setters 
+
+       void         setQuad(unsigned int i, unsigned int j,                 float x, float y=0.f, float z=0.f, float w=0.f );
+       void         setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y=0.f, float z=0.f, float w=0.f );
+
        void         setQuad(      const nvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuad(const   glm::vec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuad(const  glm::ivec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuad(const  glm::uvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
 
-       void         setQuad(unsigned int i, unsigned int j,                 float x, float y=0.f, float z=0.f, float w=0.f );
-       void         setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y=0.f, float z=0.f, float w=0.f );
+#ifndef __CUDACC__
+       // exclude for thrustrap compilation as nvcc and glm dont get along well
+       void          setQuad_(const glm::tvec4<T>& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
+       glm::tvec4<T> getQuad_(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
+#endif
 
+
+       /// union type shifting setters
        void         setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuadI(const     nivec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
@@ -330,16 +339,10 @@ class NPY_API NPY : public NPYBase {
        // 
        nvec4        getVQuad(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
 
-       ///  quad getters
-       glm::vec4    getQuad(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
+       ///  quad getters  : NB when no union type shifting is needed its best to use the templated vec getter : getQuad_()
+       glm::vec4    getQuadF(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
        glm::ivec4   getQuadI(unsigned int i, unsigned int j=0, unsigned int k=0 ) const ;
        glm::uvec4   getQuadU(unsigned int i, unsigned int j=0, unsigned int k=0 ) const ;
-
-#ifndef __CUDACC__
-       // exclude for thrustrap compilation as nvcc and glm dont get along well
-       glm::tvec4<T> getQuad_(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
-       void          setQuad_(const glm::tvec4<T>& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
-#endif
 
        // Mat4 
        void         setMat4( const glm::mat4& mat, int i, int j_=-1 , bool transpose=false );

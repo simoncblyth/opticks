@@ -27,6 +27,12 @@ int main(int argc, char** argv)
                 assert( id.getPlacementIndex() == p ); 
                 assert( id.getOffsetIndex() == o ); 
 
+                unsigned identifier = id.getEncodedIdentifier() ; 
+
+                assert( OpticksIdentity::RepeatIndex(identifier) == r );  
+                assert( OpticksIdentity::PlacementIndex(identifier) == p );  
+                assert( OpticksIdentity::OffsetIndex(identifier) == o );  
+
                 if(count < 100)
                 std::cout << "id  " << id.desc() << std::endl ; 
 

@@ -2142,6 +2142,7 @@ om(){  om- ; om-- $* ; }
 omt(){ om- ; om-test $* ; }
 
 oe-(){       . $(opticks-home)/oe.bash      && oe-env $* ; }
+oe(){        oe- 2>/dev/null ; }
 oc-(){       . $(opticks-home)/bin/oc.bash  && oc-env $* ; }
 opnovice-(){ . $(opticks-home)/notes/geant4/opnovice.bash      && opnovice-env $* ; }
 

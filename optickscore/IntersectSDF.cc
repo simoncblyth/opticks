@@ -300,7 +300,7 @@ void IntersectSDF::get_local_intersects(std::vector<glm::vec4>& lpos, unsigned t
         assert( gc > 0 ); 
         count++ ;
 
-        glm::vec4 posi = m_posi->getQuad(i,j,0); 
+        glm::vec4 posi = m_posi->getQuad_(i,j,0); 
         posi.w = 1.f ;      // scrub the identity 
         
         glm::vec4 lpo = itr * posi ;   // transform global 3d coordinate into local frame 

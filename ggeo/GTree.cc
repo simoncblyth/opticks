@@ -33,7 +33,7 @@ const plog::Severity GTree::LEVEL = PLOG::EnvLevel("GTree", "DEBUG") ;
 GTree::makeInstanceTransformsBuffer
 -------------------------------------
 
-Returns transforms array of shape (num_instances, 4, 4)
+Returns transforms array of shape (num_placements, 4, 4)
 
 Collects transforms from GNode placement instances into a buffer.
 getPlacement for ridx=0 just returns m_root (which always has identity transform)
@@ -43,15 +43,15 @@ for ridx > 0 returns all GNode subtree bases of the ridx repeats.
 
 NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<const GNode*>& placements) // static
 {
-    unsigned ni = placements.size(); 
+    unsigned numPlacements = placements.size(); 
     NPY<float>* buf = NPY<float>::make(0, 4, 4);
-    for(unsigned int i=0 ; i < ni ; i++)
+    for(unsigned i=0 ; i < numPlacements ; i++)
     {
         const GNode* place = placements[i] ;
         GMatrix<float>* t = place->getTransform();
         buf->add(t->getPointer(), 4*4*sizeof(float) );
     } 
-    assert(buf->getNumItems() == ni);
+    assert(buf->getNumItems() == numPlacements);
     return buf ; 
 }
 
@@ -104,7 +104,7 @@ being zero.
 
 NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNode*>& placements)  // static
 {
-    unsigned numInstances = placements.size() ;
+    unsigned numPlacements = placements.size() ;
     const GNode* first_base = placements[0] ;
     GNode* first_base_ = const_cast<GNode*>(first_base); 
 
@@ -113,7 +113,7 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
 
     if(is_remainder)
     {
-        assert( numInstances == 1 );  // only one placement (the root node) for the remainder mm 
+        assert( numPlacements == 1 );  // only one placement (the root node) for the remainder mm 
     }
 
    
@@ -122,13 +122,13 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
     assert( progeny0.size() == numProgeny0 );
 
     unsigned numVolumes  = 1 + numProgeny0  ;  // "1 +" as progeny does not include base node
-    unsigned num = numVolumes*numInstances ; 
+    unsigned num = numVolumes*numPlacements ; 
 
     NPY<unsigned>* buf = NPY<unsigned>::make(0, 4);
-    NPY<unsigned>* buf2 = NPY<unsigned>::make(numInstances, numVolumes, 4);
+    NPY<unsigned>* buf2 = NPY<unsigned>::make(numPlacements, numVolumes, 4);
     buf2->zero(); 
 
-    for(unsigned int i=0 ; i < numInstances ; i++)
+    for(unsigned int i=0 ; i < numPlacements ; i++)
     {
         const GNode* base = placements[i] ; // for global only one placement 
         GNode* base_ = const_cast<GNode*>(base);    // due to progeny cache
@@ -152,7 +152,7 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
                       << " progeny_match " << ( progeny_match ? " OK " : " MISMATCH " )
                       << " progeny.size() " << progeny.size() 
                       << " numProgeny " << numProgeny
-                      << " numInstances " << numInstances
+                      << " numPlacements " << numPlacements
                       << " numVolumes " << numVolumes
                       << " i " << i 
                       << " ridx " << ridx
@@ -185,8 +185,8 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
     }
     assert(buf->getNumItems() == num);
     buf->reshape(-1, numVolumes, 4) ; 
-    assert(buf->getNumItems() == numInstances);
-    assert(buf->hasShape(numInstances,numVolumes, 4));
+    assert(buf->getNumItems() == numPlacements);
+    assert(buf->hasShape(numPlacements,numVolumes, 4));
 
     bool dump = false ;
     unsigned mismatch = NPY<unsigned>::compare( buf, buf2, dump ); 

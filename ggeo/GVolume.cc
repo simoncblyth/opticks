@@ -22,13 +22,10 @@
 #include <climits>
 #include <cstring>
 
-#include "SPack.hh"
 
 // npy-
 #include "NGLM.hpp"
-#ifdef OLD_SENSOR
-#include "NSensor.hpp"
-#endif
+#include "OpticksShape.hh"
 
 #include "GPropertyMap.hh"
 #include "GMesh.hh"
@@ -233,15 +230,6 @@ void GVolume::setBoundaryAll(unsigned boundary)
 
 
 
-
-
-//unsigned GVolume::getIdentityIndex() const 
-//{
-//    unsigned identity_index = m_copyNumber  ;  // // SHOULD BE m_sensor_index ? which will match m_copyNumber for JUNO  
-//    return identity_index ; 
-//}
-
-
 /**
 GVolume::getIdentity
 ----------------------
@@ -270,10 +258,7 @@ Formerly::
 
 glm::uvec4 GVolume::getIdentity() const 
 {
-    unsigned index = getIndex() ;
-    unsigned tripid = getTripletIdentity();
-    if(index > 0 ) assert( tripid != 0 ); 
-    glm::uvec4 id(index, tripid, getShapeIdentity(), getSensorIndex()) ; 
+    glm::uvec4 id(getIndex(), getTripletIdentity(), getShapeIdentity(), getSensorIndex()) ; 
     return id ; 
 }
 
@@ -286,11 +271,19 @@ This info is used GPU side by::
 
    oxrap/cu/material1_propagate.cu:closest_hit_propagate
 
+::
+
+    id = np.load("all_volume_identity.npy")
+
+    bidx = ( id[:,2] >>  0)  & 0xffff ) 
+    midx = ( id[:,2] >> 16)  & 0xffff ) 
+
+
 **/
 
 unsigned GVolume::getShapeIdentity() const
 {
-    return SPack::Encode22( getMeshIndex(), getBoundary() ); 
+    return OpticksShape::Encode( getMeshIndex(), getBoundary() ); 
 }
 
 

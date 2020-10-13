@@ -44,6 +44,7 @@ set(TEST_SOURCES
 
     IntersectSDFTest.cc
     OpticksIdentityTest.cc
+    OpticksShapeTest.cc
 )
 
 

@@ -31,6 +31,7 @@
 
 // npy-
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
 #include "NPY.hpp"
 #include "NQuad.hpp"
 #include "NMeta.hpp"
@@ -47,6 +48,7 @@
 
 // opticks-
 #include "Opticks.hh"
+#include "OpticksIdentity.hh"
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
 #include "OpticksFlags.hh"
@@ -915,6 +917,13 @@ void GGeo::add(GVolume* volume)
 {
     m_nodelib->add(volume);
 }
+
+
+NPY<float>* GGeo::getTransforms() const 
+{
+    return m_nodelib->getTransforms(); 
+}
+
 const GVolume* GGeo::getVolume(unsigned index) const 
 {
     return m_nodelib->getVolume(index);
@@ -1432,6 +1441,93 @@ void GGeo::dumpNodeInfo(unsigned int mmindex, const char* msg)
          printf( " %6d %6d %6d %6d lv %50s pv %s  \n", ni.x , ni.y, ni.z, ni.w, lv, pv );
     }
 }
+
+
+
+
+
+
+unsigned GGeo::getNumRepeats() const 
+{
+    return m_geolib->getNumRepeats(); 
+}
+unsigned GGeo::getNumPlacements(unsigned ridx) const 
+{
+    return m_geolib->getNumPlacements(ridx); 
+}
+unsigned GGeo::getNumVolumes(unsigned ridx) const 
+{
+    return m_geolib->getNumVolumes(ridx); 
+}
+
+
+
+glm::uvec4 GGeo::getIdentity(unsigned nidx) const 
+{
+    return m_nodelib->getIdentity(nidx); 
+}
+
+glm::uvec4 GGeo::getIdentity(unsigned ridx, unsigned pidx, unsigned oidx) const 
+{
+    return m_geolib->getIdentity(ridx, pidx, oidx); 
+}
+
+glm::mat4 GGeo::getTransform(unsigned ridx, unsigned pidx, unsigned oidx) const 
+{
+    glm::mat4  tr = m_geolib->getTransform(ridx, pidx, oidx) ;
+    glm::uvec4 id = m_geolib->getIdentity(ridx, pidx, oidx) ;
+
+    LOG(info) 
+        << " ridx " << ridx
+        << " pidx " << pidx
+        << " oidx " << oidx
+        << " id " << glm::to_string(id) 
+        << " " << OpticksIdentity::Desc(id.y) 
+        ;  
+
+    // consistency check the triplet identity  
+    unsigned triplet = id.y ;
+    assert( OpticksIdentity::RepeatIndex(triplet)    == ridx ); 
+    assert( OpticksIdentity::PlacementIndex(triplet) == pidx ); 
+    assert( OpticksIdentity::OffsetIndex(triplet)    == oidx ); 
+
+    unsigned nidx = id.x ; 
+
+    // consistency check the identity with that obtained from nodelib
+    glm::uvec4 id2 = m_nodelib->getIdentity(nidx);  
+    assert( id.x == id2.x );  
+    assert( id.y == id2.y );  
+    assert( id.z == id2.z );  
+    assert( id.w == id2.w );  
+
+    // consistency check the nodelib transform
+    glm::mat4 tr2 = m_nodelib->getTransform(nidx); 
+
+    float epsilon = 1e-5 ; 
+    float diff = nglmext::compDiff(tr, tr2 ); 
+    assert( std::abs(diff) < epsilon );
+
+    return tr ; 
+}
+
+void GGeo::dumpShape(const char* msg) const 
+{
+    const GGeo* gg = this ; 
+    unsigned num_repeats = gg->getNumRepeats(); 
+    LOG(info) << msg << " num_repeats " << num_repeats ; 
+    for(unsigned ridx=0 ; ridx < num_repeats ; ridx++)
+    {
+         unsigned num_placements = gg->getNumPlacements(ridx); 
+         unsigned num_volumes = gg->getNumVolumes(ridx); 
+         std::cout 
+             << " ridx " << std::setw(3) << ridx
+             << " num_placements  " << std::setw(6) << num_placements
+             << " num_volumes  " << std::setw(6) << num_volumes
+             << std::endl 
+             ;     
+    }
+}
+
 
 
 

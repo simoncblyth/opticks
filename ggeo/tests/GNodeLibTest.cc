@@ -2,6 +2,7 @@
 #include "NGLM.hpp"
 #include "NBBox.hpp"
 #include "Opticks.hh"
+#include "OpticksIdentity.hh"
 #include "GNodeLib.hh"
 
 /**
@@ -84,6 +85,24 @@ void test_getBBox(const GNodeLib* nlib, unsigned pick_vol)
         ;
 }
 
+void test_getIdentity(const GNodeLib* nlib, unsigned nidx0, unsigned nidx1)
+{
+    LOG(info); 
+    for(unsigned nidx=nidx0 ; nidx < nidx1 ; nidx++)
+    {
+        glm::uvec4 nid = nlib->getIdentity(nidx); 
+        std::cout 
+            << " nidx " << nidx 
+            << OpticksIdentity::Desc(" nid", nid)
+            << std::endl
+            ;
+
+        assert( nid.x == nidx ); 
+    }
+ 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -95,6 +114,7 @@ int main(int argc, char** argv)
     GNodeLib* nlib = GNodeLib::Load(&ok); 
     assert(nlib);  
     
+    /*
     unsigned num_volumes = nlib->getNumVolumes(); 
     unsigned  pick_vol = num_volumes/2 ;    // mid-volume  
 
@@ -103,6 +123,12 @@ int main(int argc, char** argv)
     test_findContainerVolumeIndex(nlib, pick_vol); 
     test_getBB(nlib, pick_vol); 
     test_getBBox(nlib, pick_vol); 
+    */
+
+    unsigned nidx0 = 3199 ; 
+    unsigned nidx1 = nidx0+20  ; 
+    
+    test_getIdentity(nlib, nidx0, nidx1 ); 
  
 
     return 0 ; 

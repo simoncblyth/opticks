@@ -94,13 +94,22 @@ void test_IsGeant4EnvironmentDetected()
     LOG(info) << detect ; 
 }
 
+void test_GetCachePath()
+{
+    const char* path = BOpticksResource::GetCachePath("GNodeLib/all_volume_identity.npy"); 
+    LOG(info) << path ; 
+}
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
   
-    test_IsGeant4EnvironmentDetected(); 
+    //test_IsGeant4EnvironmentDetected(); 
+
+    test_GetCachePath(); 
 
     return 0 ; 
 }
+// om-;TEST=BOpticksResourceTest om-t 
 

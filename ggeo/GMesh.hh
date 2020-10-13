@@ -483,6 +483,9 @@ class GGEO_API GMesh : public GDrawable {
       virtual guint4*        getInstancedIdentity() const ;
       virtual guint4         getInstancedIdentity(unsigned int index) const ;
 
+      glm::uvec4 getInstancedIdentity_(unsigned index) const ;
+      glm::uvec4 getIdentity_(unsigned index) const ;
+
       virtual unsigned int*  getMeshIndice() const ;
       virtual unsigned int   getMeshIndice(unsigned int index) const ;
 

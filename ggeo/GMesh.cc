@@ -580,6 +580,13 @@ guint4 GMesh::getIdentity(unsigned int index) const
 {
     return m_identity[index] ; 
 }
+glm::uvec4 GMesh::getIdentity_(unsigned index) const 
+{
+    guint4 id = m_identity[index] ; 
+    return id.as_vec(); 
+}
+
+
 
 guint4* GMesh::getInstancedIdentity() const
 {
@@ -604,6 +611,13 @@ guint4 GMesh::getInstancedIdentity(unsigned int index) const
 {
     return m_iidentity[index] ; 
 }
+
+glm::uvec4 GMesh::getInstancedIdentity_(unsigned index) const 
+{
+    guint4 id = m_iidentity[index]; 
+    return id.as_vec(); 
+}
+
 
 
 
@@ -1262,7 +1276,7 @@ int GMesh::getNumComponents() const
 }
 void GMesh::getComponent( glm::uvec4& eidx, unsigned icomp ) const 
 {
-     eidx = m_components_buffer->getQuad(icomp);
+     eidx = m_components_buffer->getQuad_(icomp);
 }
 void GMesh::setComponent(const glm::uvec4& eidx, unsigned icomp )
 {

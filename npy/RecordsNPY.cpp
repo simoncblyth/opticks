@@ -101,9 +101,9 @@ void RecordsNPY::dumpTyp(const char* ) const
 void RecordsNPY::setDomains(NPY<float>* domains)
 {
 
-    glm::vec4 ce = domains->getQuad(0,0);
-    glm::vec4 td = domains->getQuad(1,0);
-    glm::vec4 wd = domains->getQuad(2,0);
+    glm::vec4 ce = domains->getQuad_(0,0);
+    glm::vec4 td = domains->getQuad_(1,0);
+    glm::vec4 wd = domains->getQuad_(2,0);
 
     if(m_verbosity > 2 )
     {

@@ -28,6 +28,7 @@
 #include "plog/Severity.h"
 
 // npy-
+template <typename T> class NPY ;
 #include "NConfigurable.hpp"
 
 class NLookup ; 
@@ -264,18 +265,28 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
    public:
         // via GNodeLib
         void add(GVolume*    volume);
-
-        unsigned int getNumVolumes() const ;
-        const GNode* getNode(unsigned index) const ; 
+   public:
+        unsigned int   getNumVolumes() const ;
+        const GNode*   getNode(unsigned index) const ; 
+        NPY<float>*    getTransforms() const ;
         const GVolume* getVolume(unsigned int index) const ;  
         const GVolume* getVolumeSimple(unsigned int index) const ;  
-        const char* getPVName(unsigned int index) const ;
-        const char* getLVName(unsigned int index) const ;
+        const char*    getPVName(unsigned int index) const ;
+        const char*    getLVName(unsigned int index) const ;
+    public:
+        // from GGeoLib
+        glm::uvec4 getIdentity( unsigned ridx, unsigned pidx, unsigned oidx) const ;
+        glm::mat4  getTransform(unsigned ridx, unsigned pidx, unsigned oidx) const ;  
+        unsigned   getNumRepeats() const ; 
+        unsigned   getNumPlacements(unsigned ridx) const ;
+        unsigned   getNumVolumes(unsigned ridx) const ;
+        void       dumpShape(const char* msg="GGeo::dumpShape") const ; 
 
     public:
         // via GNodeLib
         unsigned getNumTransforms() const ; 
-        glm::mat4 getTransform(unsigned index) const ;  
+        glm::uvec4 getIdentity( unsigned nidx) const ;
+        glm::mat4 getTransform(unsigned nidx) const ;  
         void dumpVolumes(const char* msg="GGeo::dumpVolumes", float extent_cut_mm=5000., int cursor=-1 ) const ;
         glm::vec4 getCE(unsigned index) const ; 
 

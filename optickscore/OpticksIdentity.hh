@@ -2,6 +2,7 @@
 
 #include <string>
 #include "plog/Severity.h"
+#include "NGLM.hpp"
 #include "OKCORE_API_EXPORT.hh"
 
 /**
@@ -51,6 +52,11 @@ class OKCORE_API OpticksIdentity {
         static unsigned    Encode(unsigned repeat_index, unsigned placement_index, unsigned offset_index);
         static bool        Decode(unsigned identifier, unsigned& repeat_index, unsigned& placement_index, unsigned& offset_index );
         static std::string Desc(unsigned identifier);
+        static std::string Desc(const char* label, const glm::uvec4& id );
+
+        static unsigned    RepeatIndex(unsigned identifier); 
+        static unsigned    PlacementIndex(unsigned identifier); 
+        static unsigned    OffsetIndex(unsigned identifier); 
     public:
         OpticksIdentity(unsigned repeat_index, unsigned placement_index, unsigned offset_index); 
         OpticksIdentity(unsigned identifier);

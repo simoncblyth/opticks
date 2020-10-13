@@ -73,7 +73,13 @@ BRANCHES OF OPERATION : USING RELATIVE APPROACH
 
 class BRAP_API  BOpticksResource {
     public:
+        static BOpticksResource* Get() ; 
+        static const char* GetCachePath(const char* rela=NULL, const char* relb=NULL, const char* relc=NULL ); 
+    private:
         static const plog::Severity  LEVEL ; 
+        static BOpticksResource* fInstance ; 
+        static BOpticksResource* Instance() ; 
+        static BOpticksResource* Create() ; 
     public:
         static const char* LEGACY_GEOMETRY_ENABLED_KEY ; 
         static const char* FOREIGN_GEANT4_ENABLED_KEY ; 

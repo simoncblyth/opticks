@@ -399,7 +399,7 @@ glm::mat4 CTraverser::getLocalTransform(unsigned int index) const
 }
 glm::vec4 CTraverser::getCenterExtent(unsigned int index) const
 {
-    return m_center_extent->getQuad(index);
+    return m_center_extent->getQuad_(index);
 }
 
 

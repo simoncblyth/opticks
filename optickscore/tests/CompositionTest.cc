@@ -87,7 +87,7 @@ void test_center_extent(Opticks* ok)
    if(!dom) return ; 
 
    dom->dump();
-   glm::vec4 ce = dom->getQuad(0,0);
+   glm::vec4 ce = dom->getQuad_(0,0);
    print(ce, "ce");
 
    Composition c(ok) ; 

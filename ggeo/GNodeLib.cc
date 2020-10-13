@@ -72,7 +72,8 @@ GNodeLib::GNodeLib(Opticks* ok)
     m_nodeinfo(NPY<unsigned>::make(0,4)),
     m_treepresent(new GTreePresent(100, 1000)),   // depth_max,sibling_max
     m_num_volumes(0),
-    m_volumes(0)
+    m_volumes(0),
+    m_root(NULL)
 {
     LOG(LEVEL) << "created" ; 
 }
@@ -93,7 +94,8 @@ GNodeLib::GNodeLib(Opticks* ok, bool loading)
     m_nodeinfo(NPY<unsigned>::load(m_cachedir,NI)),
     m_treepresent(NULL),
     m_num_volumes(initNumVolumes()),
-    m_volumes(0)
+    m_volumes(0),
+    m_root(NULL)
 {
     LOG(LEVEL) << "loaded" ; 
 }
@@ -431,7 +433,18 @@ const GNode* GNodeLib::getNode(unsigned index) const
 
 
 
-
+NPY<float>* GNodeLib::getTransforms() const 
+{
+    return m_transforms ; 
+}
+NPY<float>* GNodeLib::getBoundingBox() const 
+{
+    return m_bounding_box ; 
+}
+NPY<float>* GNodeLib::getCenterExtent() const 
+{
+    return m_center_extent ; 
+}
 
 
 unsigned GNodeLib::getNumTransforms() const 
@@ -448,19 +461,20 @@ glm::mat4 GNodeLib::getTransform(unsigned index) const
 glm::vec4 GNodeLib::getCE(unsigned index) const 
 {
     assert( index < m_num_volumes ); 
-    glm::vec4 ce = m_center_extent->getQuad(index) ; 
+    glm::vec4 ce = m_center_extent->getQuad_(index) ; 
     return ce ;  
 }
 glm::uvec4 GNodeLib::getIdentity(unsigned index) const 
 {
     assert( index < m_num_volumes ); 
-    glm::uvec4 id = m_identity->getQuad(index) ; 
+    //glm::uvec4 id = m_identity->getQuad(index) ; see notes/issues/triplet-id-loosing-offset-index-in-NPY.rst
+    glm::uvec4 id = m_identity->getQuad_(index) ; 
     return id ;  
 }
 glm::uvec4 GNodeLib::getNodeInfo(unsigned index) const 
 {
     assert( index < m_num_volumes ); 
-    glm::uvec4 ni = m_nodeinfo->getQuad(index) ; 
+    glm::uvec4 ni = m_nodeinfo->getQuad_(index) ; 
     return ni ;  
 }
 
@@ -469,8 +483,8 @@ glm::uvec4 GNodeLib::getNodeInfo(unsigned index) const
 void GNodeLib::getBB(unsigned index, glm::vec4& mn, glm::vec4& mx ) const 
 {
     assert( index < m_num_volumes ); 
-    mn = m_bounding_box->getQuad(index, 0); 
-    mx = m_bounding_box->getQuad(index, 1); 
+    mn = m_bounding_box->getQuad_(index, 0); 
+    mx = m_bounding_box->getQuad_(index, 1); 
 }
 
 nbbox GNodeLib::getBBox(unsigned index) const 

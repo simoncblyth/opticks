@@ -125,9 +125,9 @@ void OpticksDomain::importBuffer()
 {
     NPY<float>* fdom = getFDomain();
     assert(fdom);
-    m_space_domain = fdom->getQuad(0);
-    m_time_domain = fdom->getQuad(1);
-    m_wavelength_domain = fdom->getQuad(2);
+    m_space_domain = fdom->getQuad_(0);
+    m_time_domain = fdom->getQuad_(1);
+    m_wavelength_domain = fdom->getQuad_(2);
 
     if(m_space_domain.w <= 0.)
     {
@@ -139,7 +139,7 @@ void OpticksDomain::importBuffer()
     NPY<int>* idom = getIDomain();
     assert(idom);
 
-    m_settings = idom->getQuad(0); 
+    m_settings = idom->getQuad_(0); 
     unsigned int maxrec = m_settings.w ; 
 
     if(maxrec != 10)

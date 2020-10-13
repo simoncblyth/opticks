@@ -18,23 +18,36 @@
  */
 
 #include "BOpticksKey.hh"
+#include "BOpticksResource.hh"
+#include "BFile.hh"
 #include "OPTICKS_LOG.hh"
+
+
+void test_setupViaKey()
+{
+    BOpticksResource bor ; 
+    bor.setupViaKey(); 
+    const char* p = bor.makeIdPathPath("GNodeLib/all_volume_identity.npy"); 
+    LOG(info) << "p:" << p ; 
+    assert( BFile::ExistsFile(p) ); 
+}
+
+
 
 int main( int argc, char** argv )
 {
     OPTICKS_LOG(argc, argv ); 
 
-    const char* spec = "X4PhysicalVolumeTest.X4PhysicalVolume.World.3ad454e0990085f20c4689fce16c0819" ; 
-
-    BOpticksKey::SetKey(spec); 
-
+    //BOpticksKey::SetKey("X4PhysicalVolumeTest.X4PhysicalVolume.World.3ad454e0990085f20c4689fce16c0819") ; 
+    BOpticksKey::SetKey(NULL);  // NULL means use the OPTICKS_KEY envvar 
     BOpticksKey* key = BOpticksKey::GetKey(); 
     LOG(info) << key->desc() ; 
-
 
     const char* exename = PLOG::instance->args.exename() ; 
     std::cout << " exename " << exename << std::endl ; 
 
+    test_setupViaKey(); 
 
     return 0 ; 
 }
+// om-;TEST=BOpticksKeyTest om-t

@@ -101,12 +101,12 @@ void NPY<T>::zero()
 }
 
 template <typename T>
-void NPY<T>::fillIndexFlat()
+void NPY<T>::fillIndexFlat(T offset)
 {
     zero();
     unsigned nv = getNumValues(0) ; 
     LOG(info) << " nv " << nv ; 
-    for(unsigned idx=0 ; idx < nv ; idx++)  setValueFlat(idx, T(idx));
+    for(unsigned idx=0 ; idx < nv ; idx++)  setValueFlat(idx, T(idx) + offset);
 }
 
 template <typename T>
@@ -935,12 +935,9 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
     NPY* npy = NULL ;
     try 
     {
-
-        LOG(verbose) <<  "NPY<T>::load before aoba " ; 
-         
+        LOG(LEVEL) <<  "[ aoba " ; 
         aoba::LoadArrayFromNumpy<T>(path.c_str(), shape, data );
-
-        LOG(verbose) <<  "NPY<T>::load after aoba " ; 
+        LOG(LEVEL) <<  "] aoba " ; 
 
         npy = new NPY<T>(shape,data,metadata) ;
     }
@@ -974,7 +971,11 @@ template <typename T>
 NPY<T>* NPY<T>::load(const char* dir, const char* name, bool quietly)
 {
     std::string path_ = BFile::FormPath(dir, name);
-    //std::string path_ = NPYBase::path(dir, name);
+    LOG(LEVEL) 
+        << " dir " << dir 
+        << " name " << name
+        << " path " << path_ 
+        ;
     return load(path_.c_str(), quietly);
 }
 
@@ -2733,19 +2734,31 @@ const char* NPY<T>::getString(unsigned i, unsigned j, unsigned k )
 }
 
 
+/**
+setQuad : same type quad setters
+---------------------------------
 
-// same type quad setters
+**/
+
+template <typename T> 
+void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, float z, float w )
+{
+    glm::vec4 vec(x,y,z,w); 
+    setQuad(vec, i, j);
+}
+template <typename T> 
+ void NPY<T>::setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y, float z, float w )
+{
+    glm::vec4 vec(x,y,z,w); 
+    setQuad(vec, i, j, k);
+}
+
 template <typename T> 
 void NPY<T>::setQuad(const nvec4& f, unsigned int i, unsigned int j, unsigned int k )
 {
     glm::vec4 vec(f.x,f.y,f.z,f.w); 
     for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
 }
-
-
-
-
-
 template <typename T> 
 void NPY<T>::setQuad(const glm::vec4& vec, unsigned int i, unsigned int j, unsigned int k )
 {
@@ -2764,19 +2777,34 @@ template <typename T>
 
 
 
+/**
+NPY::setQuad_ getQuad_
+------------------------
 
+Use of template vector type ensures avoids any type shifting, so the 
+method appropriate for the array type is used.  Using the wrong type 
+of vector should not compile.
+
+**/
+
+
+#ifndef __CUDACC__
 template <typename T> 
- void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, float z, float w )
+void NPY<T>::setQuad_(const glm::tvec4<T>& vec, unsigned int i, unsigned int j, unsigned int k) 
 {
-    glm::vec4 vec(x,y,z,w); 
-    setQuad(vec, i, j);
+    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
 }
+#endif
+
+#ifndef __CUDACC__
 template <typename T> 
- void NPY<T>::setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y, float z, float w )
+glm::tvec4<T> NPY<T>::getQuad_(unsigned int i, unsigned int j, unsigned int k) const 
 {
-    glm::vec4 vec(x,y,z,w); 
-    setQuad(vec, i, j, k);
+    glm::tvec4<T> vec ; 
+    for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
+    return vec ; 
 }
+#endif
 
 
 
@@ -2784,7 +2812,20 @@ template <typename T>
 
 
 
-// type shifting quad setters
+
+
+
+
+
+/**
+NPY::setQuadI setQuadU
+-------------------------
+
+Union type shifting setters.
+
+**/
+
+
 template <typename T> 
 void NPY<T>::setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k )
 {
@@ -2799,7 +2840,6 @@ void NPY<T>::setQuadI(const nivec4& vec, unsigned int i, unsigned int j, unsigne
     setInt(i,j,k,2,vec.z); 
     setInt(i,j,k,3,vec.w); 
 }
-
 
 template <typename T> 
  void NPY<T>::setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j, unsigned int k )
@@ -2820,36 +2860,58 @@ template <typename T>
 
 
 
+/**
+NPY<T>::getQuadF
+------------------
 
+Former name getQuad changed to getQuadF in attempt to 
+avoid future bugs, like the one described below.
+
+The below seems to work fine::
+
+   NPT<unsigned>* a = NPY<unsigned>::load(path); 
+   glm::uvec4 id = a->getQuadF(3199);   // SILENT LSB TRUNCATION BUG LURKS 
+
+BUT silent truncation occurs when the value of the unsigned contents 
+exceeds (0x1 << 24) = 0x1000000 at which point least significant bits 
+start getting lost, because of a silent constricting conversion unsigned->float->unsigned.   
+
+See notes/issues/triplet-id-loosing-offset-index-in-NPY.rst and tests/numpyTest.cc and::
+
+    In [14]: "{0:x} {0}".format(0x1 << 24)
+    Out[14]: '1000000 16777216'
+
+    In [10]: np.uint32(np.float32(np.uint32(0+(0x1 << 24)))) == 0+(0x1 << 24)
+    Out[10]: True
+
+    In [11]: np.uint32(np.float32(np.uint32(1+(0x1 << 24)))) == 1+(0x1 << 24)
+    Out[11]: False
+
+For getting unsigned quads should be doing, eg::
+
+    glm::uvec4 id = a->getQuadU(3199);   
+    glm::uvec4 id = a->getQuad_(3199);   
+ 
+
+Reccommendation is to not use this, instead use templated variant which 
+will use the appropriate method for the array typo::
+
+    glm::vec4  fv = af->getQuad_(i); 
+    glm::ivec4 iv = ai->getQuad_(i); 
+    glm::uvec4 uv = au->getQuad_(i); 
+
+
+ 
+**/
 
 template <typename T> 
-glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j, unsigned int k) const 
+glm::vec4 NPY<T>::getQuadF(unsigned int i, unsigned int j, unsigned int k) const 
 {
     glm::vec4 vec ; 
     for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
     return vec ; 
 }
 
-
-
-
-#ifndef __CUDACC__
-
-template <typename T> 
-void NPY<T>::setQuad_(const glm::tvec4<T>& vec, unsigned int i, unsigned int j, unsigned int k) 
-{
-    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
-}
-
-template <typename T> 
-glm::tvec4<T> NPY<T>::getQuad_(unsigned int i, unsigned int j, unsigned int k) const 
-{
-    glm::tvec4<T> vec ; 
-    for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
-    return vec ; 
-}
-
-#endif
 
 
 
@@ -2867,6 +2929,13 @@ nvec4 NPY<T>::getVQuad(unsigned int i, unsigned int j, unsigned int k) const
     return vec ; 
 }
 
+/**
+NPY::getQuadI
+---------------
+
+Type shifting getter, allowing to pull ints out of a float array.
+
+**/
 
 template <typename T> 
 glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j, unsigned int k) const 
@@ -3010,6 +3079,16 @@ template <typename T>
     return uif.i ;
 }
 
+
+/**
+NPY<T>::setInt
+----------------
+
+This is a type shifting setter that allows an integer value 
+to be set into another typed array using union trickery. 
+Viewing the array as float gives NaN values or very small/large values.
+**/
+
 template <typename T> 
  void NPY<T>::setInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, int value)
 {
@@ -3089,7 +3168,7 @@ void NPY<T>::copyTo(std::vector<glm::vec4>& dst )
     assert( hasShape(-1,4) );
     for(unsigned i=0 ; i < getShape(0) ; i++)
     {
-        glm::vec4 vec = getQuad(i) ; 
+        glm::vec4 vec = getQuadF(i) ; 
         dst.push_back(vec); 
     }
 }

@@ -72,6 +72,7 @@ class GGEO_API GGeoLib {
         unsigned getVerbosity() const ;  
         int checkMergedMeshes() const ; 
     public:
+    public:
         void dryrun_convert(); 
         void dryrun_convertMergedMesh(unsigned i);
         void dryrun_makeGlobalGeometryGroup(GMergedMesh* mm);
@@ -90,8 +91,18 @@ class GGEO_API GGeoLib {
         void removeConstituents(const char* idpath);
         void saveConstituents(const char* idpath);
     public:
+        // triplet addressing, made possible by the model simplification
+        unsigned     getNumRepeats() const ;
+        unsigned     getNumPlacements(unsigned ridx) const ;
+        unsigned     getNumVolumes(   unsigned ridx) const ;
+        bool         checkTriplet(unsigned ridx, unsigned pidx, unsigned oidx) const ;
+        glm::mat4    getTransform(unsigned ridx, unsigned pidx, unsigned oidx) const ; 
+        glm::uvec4   getIdentity( unsigned ridx, unsigned pidx, unsigned oidx) const ;
+        unsigned     getNodeIndex(unsigned ridx, unsigned pidx, unsigned oidx) const ;
+    public:
         void dump(const char* msg="GGeoLib::dump");
-        unsigned getNumMergedMesh() const ;
+
+        unsigned     getNumMergedMesh() const ;
         GMergedMesh* getMergedMesh(unsigned index) const ;
         void setMergedMesh(unsigned int index, GMergedMesh* mm);
         void eraseMergedMesh(unsigned int index);

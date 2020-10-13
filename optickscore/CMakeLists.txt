@@ -68,6 +68,7 @@ set(SOURCES
 
     IntersectSDF.cc
     OpticksIdentity.cc
+    OpticksShape.cc
 )
 
 
@@ -141,6 +142,7 @@ set(HEADERS
 
     IntersectSDF.hh
     OpticksIdentity.hh
+    OpticksShape.hh
 )
 
 

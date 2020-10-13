@@ -47,6 +47,39 @@ namespace fs = boost::filesystem;
 
 const plog::Severity BOpticksResource::LEVEL = PLOG::EnvLevel("BOpticksResource", "DEBUG") ; 
 
+
+BOpticksResource* BOpticksResource::fInstance = NULL  ;  
+BOpticksResource* BOpticksResource::Instance()
+{
+    return fInstance ; 
+}
+BOpticksResource* BOpticksResource::Get()  // static 
+{
+    return fInstance ? fInstance : Create() ; 
+}
+BOpticksResource* BOpticksResource::Create()  // static 
+{
+    BOpticksKey::SetKey(NULL) ;  // use OPTICKS_KEY envvar 
+    BOpticksResource* bor = new BOpticksResource ; 
+    bor->setupViaKey(); 
+    return bor ; 
+}
+
+/**
+BOpticksResource::GetCachePath
+-------------------------------
+
+If the BOpticksResource instance is not yet created, this will create the
+instance and do setupViaKey assuming an OPTICKS_KEY envvar.
+
+**/
+const char* BOpticksResource::GetCachePath(const char* rela, const char* relb, const char* relc ) // static 
+{
+    BOpticksResource* bor = BOpticksResource::Get() ; 
+    return bor->makeIdPathPath(rela, relb, relc); 
+}
+
+
 const char* BOpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
 const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; 
 
@@ -169,6 +202,7 @@ BOpticksResource::BOpticksResource()
 {
     init();
     (*m_log)("DONE"); 
+    fInstance = this ; 
 }
 
 

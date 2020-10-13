@@ -54,7 +54,7 @@ void NPoint::set(unsigned i, const glm::vec4& q) const
 
 glm::vec4 NPoint::get(unsigned i) const 
 {
-    return m_arr->getQuad(i, 0,0) ; 
+    return m_arr->getQuad_(i, 0,0) ; 
 }
 
 

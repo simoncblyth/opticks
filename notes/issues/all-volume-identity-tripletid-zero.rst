@@ -2,7 +2,63 @@ all-volume-identity-tripletid-zero
 ======================================
 
 
-Issue : Triplet identities all zero
+
+Issue isolated to getQuad::
+
+    epsilon:npy blyth$ om-;TEST=numpyTest om-t
+    === om-mk : bdir /usr/local/opticks/build/npy/tests rdir npy/tests : make numpyTest && ./numpyTest
+    [100%] Built target NPY
+    Scanning dependencies of target numpyTest
+    [100%] Building CXX object tests/CMakeFiles/numpyTest.dir/numpyTest.cc.o
+    [100%] Linking CXX executable numpyTest
+    [100%] Built target numpyTest
+    2020-10-13 11:19:33.604 INFO  [8092323] [main@99] 
+    /usr/local/opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/50a18baaf29b18fae8c1642927003ee3/1/GNodeLib/all_volume_identity.npy
+    2020-10-13 11:19:33.605 INFO  [8092323] [numpyTest::numpyTest@21]  aoba::LoadArrayFromNumpy 
+     shape ( 12230 4  ) 
+    ( 3199)       3199   5000000    2f001b  ffffffff
+    ( 3200)       3200   5000001    2e001c  ffffffff
+    ( 3201)       3201   5000002    2b001d  ffffffff
+    ( 3202)       3202   5000003    2c001e  ffffffff
+    ( 3203)       3203   5000004    2d001e  ffffffff
+    ( 3204)       3204       57f    30001f  ffffffff
+    ( 3205)       3205   5000100    2f001b  ffffffff
+    ( 3206)       3206   5000101    2e001c  ffffffff
+    ( 3207)       3207   5000102    2b001d  ffffffff
+    ( 3208)       3208   5000103    2c001e  ffffffff
+    /usr/local/opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/50a18baaf29b18fae8c1642927003ee3/1/GNodeLib/all_volume_identity.npy
+    2020-10-13 11:19:33.605 INFO  [8092323] [numpyTest::numpyTest@26]  NPY<unsigned>::load, getValuesConst 
+     shape ( 12230 4  ) 
+    ( 3199)       3199   5000000    2f001b  ffffffff
+    ( 3200)       3200   5000001    2e001c  ffffffff
+    ( 3201)       3201   5000002    2b001d  ffffffff
+    ( 3202)       3202   5000003    2c001e  ffffffff
+    ( 3203)       3203   5000004    2d001e  ffffffff
+    ( 3204)       3204       57f    30001f  ffffffff
+    ( 3205)       3205   5000100    2f001b  ffffffff
+    ( 3206)       3206   5000101    2e001c  ffffffff
+    ( 3207)       3207   5000102    2b001d  ffffffff
+    ( 3208)       3208   5000103    2c001e  ffffffff
+    /usr/local/opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/50a18baaf29b18fae8c1642927003ee3/1/GNodeLib/all_volume_identity.npy
+    2020-10-13 11:19:33.607 INFO  [8092323] [numpyTest::numpyTest@38]  NPY<unsigned>::load, getQuad 
+     shape ( 12230 4  ) 
+    ( 3199)       3199   5000000    2f001b         0
+    ( 3200)       3200   5000000    2e001c         0
+    ( 3201)       3201   5000000    2b001d         0
+    ( 3202)       3202   5000000    2c001e         0
+    ( 3203)       3203   5000000    2d001e         0
+    ( 3204)       3204       57f    30001f         0
+    ( 3205)       3205   5000100    2f001b         0
+    ( 3206)       3206   5000100    2e001c         0
+    ( 3207)       3207   5000100    2b001d         0
+    ( 3208)       3208   5000100    2c001e         0
+    epsilon:npy blyth$ 
+
+
+
+
+
+Issue 1 : Triplet identities all zero
 --------------------------------------
 
 ::

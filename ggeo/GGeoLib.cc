@@ -685,3 +685,96 @@ void GGeoLib::dryrun_makeAnalyticGeometry(GMergedMesh* mm)
 }
 
 
+
+
+
+unsigned GGeoLib::getNumRepeats() const 
+{
+    return getNumMergedMesh(); 
+}
+unsigned GGeoLib::getNumPlacements(unsigned ridx) const 
+{
+    unsigned num_repeats = getNumRepeats(); 
+    assert( ridx < num_repeats ); 
+    GMergedMesh* mm = getMergedMesh(ridx); 
+    assert(mm) ; 
+    return mm->getNumITransforms(); 
+}
+unsigned GGeoLib::getNumVolumes(unsigned ridx) const
+{
+    unsigned num_repeats = getNumRepeats(); 
+    assert( ridx < num_repeats ); 
+    GMergedMesh* mm = getMergedMesh(ridx); 
+    assert(mm) ; 
+    return mm->getNumTransforms(); 
+}
+
+
+bool GGeoLib::checkTriplet(unsigned ridx, unsigned pidx, unsigned oidx) const
+{
+    unsigned num_repeats = getNumRepeats(); 
+    unsigned num_placements = getNumPlacements(ridx); 
+    unsigned num_volumes = getNumVolumes(ridx); 
+
+    assert( ridx < num_repeats ); 
+    assert( pidx < num_placements ); 
+    assert( oidx < num_volumes ); 
+
+    return true ; 
+}
+
+/**
+GGeoLib::getTransform
+-----------------------
+
+cf ana/ggeo.py:get_transform(ridx, pidx, oidx) 
+
+**/
+glm::mat4 GGeoLib::getTransform(unsigned ridx, unsigned pidx, unsigned oidx) const 
+{
+    checkTriplet(ridx, pidx, oidx); 
+
+    GMergedMesh* mm = getMergedMesh(ridx); 
+    assert(mm) ; 
+
+    NPY<float>* itbuf = mm->getITransformsBuffer(); 
+    glm::mat4 placement_transform = itbuf->getMat4(pidx) ;  
+
+    //NPY<float>* trbuf = mm->getTransformsBuffer();   //nope still a GBuffer
+    glm::mat4 offset_transform = mm->getTransform_(oidx);  
+
+    glm::mat4 triplet_transform = offset_transform * placement_transform ;  // ORDER IS GUESS TO BE CHECKED 
+
+    return triplet_transform ;
+}
+
+
+glm::uvec4 GGeoLib::getIdentity(unsigned ridx, unsigned pidx, unsigned oidx) const
+{
+    checkTriplet(ridx, pidx, oidx); 
+
+    GMergedMesh* mm = getMergedMesh(ridx); 
+    assert(mm) ; 
+    NPY<unsigned>* iib = mm->getInstancedIdentityBuffer(); 
+
+    //glm::uvec4 id = iib->getQuad(pidx, oidx, 0 );   see notes/issues/triplet-id-loosing-offset-index-in-NPY.rst
+    glm::uvec4 id = iib->getQuad_(pidx, oidx, 0 ); 
+
+    return id ; 
+}
+
+ 
+/**
+GGeoLib::getNodeIndex
+----------------------
+
+cf ana/ggeo.py:get_node_index(ridx, pidx, oidx)
+
+**/
+
+unsigned GGeoLib::getNodeIndex(unsigned ridx, unsigned pidx, unsigned oidx) const
+{
+    glm::uvec4 id = getIdentity(ridx, pidx, oidx);     
+    return id.x  ; 
+}
+

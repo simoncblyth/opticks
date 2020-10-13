@@ -269,20 +269,21 @@ glm::ivec4 OpticksGenstep::getHdr(unsigned i) const
 }
 glm::vec4 OpticksGenstep::getPositionTime(unsigned i) const 
 {
-    glm::vec4 post = m_gs->getQuad(i,1);
+    glm::vec4 post = m_gs->getQuad_(i,1);
     return post ; 
 }
 glm::vec4 OpticksGenstep::getDeltaPositionStepLength(unsigned i) const 
 {
-    glm::vec4 dpsl = m_gs->getQuad(i,2);
+    glm::vec4 dpsl = m_gs->getQuad_(i,2);
     return dpsl ; 
 }
 
 
-glm::vec4 OpticksGenstep::getQ3(unsigned i) const  {  return m_gs->getQuad(i,3); }
-glm::vec4 OpticksGenstep::getQ4(unsigned i) const  {  return m_gs->getQuad(i,4); }
-glm::vec4 OpticksGenstep::getQ5(unsigned i) const  {  return m_gs->getQuad(i,5); }
+glm::vec4 OpticksGenstep::getQ3(unsigned i) const  {  return m_gs->getQuad_(i,3); }
+glm::vec4 OpticksGenstep::getQ4(unsigned i) const  {  return m_gs->getQuad_(i,4); }
+glm::vec4 OpticksGenstep::getQ5(unsigned i) const  {  return m_gs->getQuad_(i,5); }
 
+// union type shifted getters
 glm::ivec4 OpticksGenstep::getI3(unsigned i) const  {  return m_gs->getQuadI(i,3); }
 glm::ivec4 OpticksGenstep::getI4(unsigned i) const  {  return m_gs->getQuadI(i,4); }
 glm::ivec4 OpticksGenstep::getI5(unsigned i) const  {  return m_gs->getQuadI(i,5); }

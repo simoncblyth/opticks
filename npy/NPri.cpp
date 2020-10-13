@@ -56,19 +56,19 @@ const NPY<float>* NPri::getPrimaries() const
 
 glm::vec4 NPri::getPositionTime(unsigned i) const 
 {
-    glm::vec4 post = m_primaries->getQuad(i,0);
+    glm::vec4 post = m_primaries->getQuad_(i,0);
     return post ; 
 }
 
 glm::vec4 NPri::getDirectionWeight(unsigned i) const 
 {
-    glm::vec4 dirw = m_primaries->getQuad(i,1);
+    glm::vec4 dirw = m_primaries->getQuad_(i,1);
     return dirw ; 
 }
 
 glm::vec4 NPri::getPolarizationKineticEnergy(unsigned i) const 
 {
-    glm::vec4 polk = m_primaries->getQuad(i,2);
+    glm::vec4 polk = m_primaries->getQuad_(i,2);
     return polk ; 
 }
 
