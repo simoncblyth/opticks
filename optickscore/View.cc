@@ -152,10 +152,10 @@ View* View::FromArrayItem( NPY<float>* flightpath, unsigned i )
 {
     assert( flightpath->hasShape( -1, 4, 4) ) ; 
 
-    glm::vec4 eye  = flightpath->getQuadF(i, 0) ;   
-    glm::vec4 look = flightpath->getQuadF(i, 1) ;   
-    glm::vec4 up   = flightpath->getQuadF(i, 2) ;   
-    glm::vec4 vctrl = flightpath->getQuadF(i, 3) ;   
+    glm::vec4 eye  = flightpath->getQuad_(i, 0) ;   
+    glm::vec4 look = flightpath->getQuad_(i, 1) ;   
+    glm::vec4 up   = flightpath->getQuad_(i, 2) ;   
+    glm::vec4 vctrl = flightpath->getQuad_(i, 3) ;   
 
     View* v = new View ; 
     v->setEye(eye);       

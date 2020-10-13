@@ -54,10 +54,10 @@ void AxisNPY::dump(const char* msg)
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
-
-        glm::vec4 vpos = m_axis->getQuadF(i,0);
-        glm::vec4 vdir = m_axis->getQuadF(i,1);
-        glm::vec4 vcol = m_axis->getQuadF(i,2);
+        // recommendation is to use getQuad_ (templated vec approach) when no need for union type trickery 
+        glm::vec4 vpos = m_axis->getQuad_(i,0);
+        glm::vec4 vdir = m_axis->getQuad_(i,1);
+        glm::vec4 vcol = m_axis->getQuad_(i,2);
 
         printf("%2u %s %s %s  \n", 
                 i, 

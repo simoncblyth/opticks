@@ -117,9 +117,9 @@ void TrackView::init()
 {
     assert(m_track);
 
-    m_origin    = m_track->getQuadF(0,0) ;
-    m_direction = m_track->getQuadF(0,1) ;
-    m_range     = m_track->getQuadF(0,2) ;
+    m_origin    = m_track->getQuad_(0,0) ;
+    m_direction = m_track->getQuad_(0,1) ;
+    m_range     = m_track->getQuad_(0,2) ;
 
     LOG(info) << "TrackView::init"
               << " track shape " << m_track->getShapeString()

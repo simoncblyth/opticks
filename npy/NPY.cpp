@@ -2782,8 +2782,14 @@ NPY::setQuad_ getQuad_
 ------------------------
 
 Use of template vector type ensures avoids any type shifting, so the 
-method appropriate for the array type is used.  Using the wrong type 
-of vector should not compile.
+method appropriate for the array type is used.  
+
+Using vector type other than of the array does compile and run and gives
+a simply converted version of what is in the array. This is much better
+than getting invisible lsb truncation for some values which happens when 
+using getQuadF (formerly named getQuad) with a mismatched vector types::
+
+    glm::uvec4 u = af->getQuadF() ;   // SILENT TRUNCATION BUG, DO NOT DO THIS
 
 **/
 
