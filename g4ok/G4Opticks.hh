@@ -89,9 +89,9 @@ class G4OK_API G4Opticks
         static const plog::Severity LEVEL ;
         static const char* fEmbeddedCommandLine ; 
         static std::string EmbeddedCommandLine(const char* extra=NULL); 
+        Opticks* InitOpticks(const char* keyspec);
     public:
         static G4Opticks* Get();
-        static G4Opticks* GetOpticks();
         static void Initialize(const char* gdmlpath, bool standardize_geant4_materials);
         static void Initialize(const G4VPhysicalVolume* world, bool standardize_geant4_materials);
     public:
@@ -135,6 +135,8 @@ class G4OK_API G4Opticks
         void setGeometry(const char* gdmlpath);
         void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
         void setStandardizeGeant4Materials(bool standardize_geant4_materials);
+    private:
+        void setGeometry(const GGeo* ggeo); 
     private:
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
         void standardizeGeant4MaterialProperties();

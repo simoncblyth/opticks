@@ -38,6 +38,22 @@ except ImportError:
 
 
 
+
+
+def np_tostring(a, scale=1e6):
+    b = a.copy()
+    b[:,0] /= scale
+    return " ".join(list(map(str,b.ravel()))) 
+
+def np_fromstring(values, coldim=2, scale=1e6):
+    a = np.fromstring(values, dtype=np.float32, sep=' ').reshape(-1, coldim) 
+    a[:,0] *= scale     
+    return a
+
+
+
+
+
 class Buf(np.ndarray): pass
 
 
@@ -117,7 +133,9 @@ def unique2D_subarray(a):
     return a[np.unique(b, return_index=1)[1]]
 
 
-def array_digest(a):
+
+
+def np_digest(a):
     """
     https://stackoverflow.com/questions/5386694/fast-way-to-hash-numpy-objects-for-caching
 
@@ -128,6 +146,15 @@ def array_digest(a):
     data = np.ascontiguousarray(a.view(np.uint8))
     dig.update(data)
     return dig.hexdigest()
+
+
+def array_digest(a):
+    """
+    https://stackoverflow.com/questions/5386694/fast-way-to-hash-numpy-objects-for-caching
+
+    file digest includes the header, not just the data : so will not match this 
+    """
+    return np_digest(a)
 
 
 def count_unique_sorted(vals):

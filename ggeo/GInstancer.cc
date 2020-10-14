@@ -568,7 +568,7 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned ridx, unsigned pidx, int 
     unsigned triplet_identity = OpticksIdentity::Encode(ridx, pidx, oidx); 
     node->setTripletIdentity( triplet_identity ); 
 
-    LOG(info) << " triplet_identity " << OpticksIdentity::Desc(triplet_identity) ; 
+    LOG(LEVEL) << " triplet_identity " << OpticksIdentity::Desc(triplet_identity) ; 
 
 
     m_offset_count += 1 ; 

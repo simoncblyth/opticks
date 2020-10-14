@@ -94,10 +94,10 @@ class TreeBuilder(object):
         self.operator = operator 
 
         if not bileaf:
-            nprim = len(map(lambda n:n.is_primitive, subs))
+            nprim = len(list(map(lambda n:n.is_primitive, subs)))
             assert nprim == len(subs) and nprim > 0
         else:
-            nbileaf = len(map(lambda n:n.is_bileaf, subs))
+            nbileaf = len(list(map(lambda n:n.is_bileaf, subs)))
             assert nbileaf == len(subs) and nbileaf > 0
             nprim = 2*nbileaf
             log.debug("TreeBuilder bileaf mode, nbileaf: %s nprim:%s " % (nbileaf, nprim))

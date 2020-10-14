@@ -140,6 +140,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         static const plog::Severity LEVEL ; 
         static GGeo* GetInstance();  // statically provides the last instanciated GGeo instance
+        static GGeo* Load(Opticks* ok); 
     public:
         // see GGeoCfg.hh
         static const char* PICKFACE ;   
@@ -275,8 +276,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         const char*    getLVName(unsigned int index) const ;
     public:
         // from GGeoLib
-        glm::uvec4 getIdentity( unsigned ridx, unsigned pidx, unsigned oidx) const ;
-        glm::mat4  getTransform(unsigned ridx, unsigned pidx, unsigned oidx) const ;  
+        glm::uvec4 getIdentity( unsigned ridx, unsigned pidx, unsigned oidx, bool check=true) const ;
+        glm::mat4  getTransform(unsigned ridx, unsigned pidx, unsigned oidx, bool check=true) const ;  
         unsigned   getNumRepeats() const ; 
         unsigned   getNumPlacements(unsigned ridx) const ;
         unsigned   getNumVolumes(unsigned ridx) const ;
@@ -289,7 +290,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         glm::mat4 getTransform(unsigned nidx) const ;  
         void dumpVolumes(const char* msg="GGeo::dumpVolumes", float extent_cut_mm=5000., int cursor=-1 ) const ;
         glm::vec4 getCE(unsigned index) const ; 
-
+    public:
+        void dumpNode(unsigned nidx); 
+        void dumpNode(unsigned ridx, unsigned pidx, unsigned oidx); 
     public:
         // sensor handling via GNodeLib
         unsigned       addSensorVolume(const GVolume* volume) ;
@@ -297,7 +300,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         const GVolume* getSensorVolume(unsigned sensorIndex) const ;
         std::string    reportSensorVolumes(const char* msg) const ; 
         void           dumpSensorVolumes(const char* msg) const ; 
-        void           getSensorPlacements(std::vector<void*>& placements) const ;
+        void           getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const ;
     public:
         void add(GMaterial* material);
         void addRaw(GMaterial* material);

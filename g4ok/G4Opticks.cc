@@ -81,6 +81,28 @@ std::string G4Opticks::EmbeddedCommandLine(const char* extra)
     return ss.str();  
 }
 
+Opticks* G4Opticks::InitOpticks(const char* keyspec) // static
+{
+    LOG(LEVEL) << "SetKey [" << keyspec << "]"  ;   
+    BOpticksKey::SetKey(keyspec);
+    LOG(LEVEL) << ") key" ;
+
+    const char* g4opticks_debug = SSys::getenvvar("G4OPTICKS_DEBUG") ; 
+    std::string ecl = EmbeddedCommandLine(g4opticks_debug) ; 
+    LOG(LEVEL) << "EmbeddedCommandLine : [" << ecl << "]" ; 
+
+    LOG(LEVEL) << "( Opticks" ;
+    Opticks* ok = new Opticks(0,0, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
+    ok->configure();       // parses args and does resource setup
+
+    const char* idpath = ok->getIdPath(); 
+    assert(idpath);
+    LOG(LEVEL) << ") Opticks " << idpath ;
+ 
+    return ok ; 
+}
+
+
 std::string G4Opticks::desc() const 
 {
     std::stringstream ss ; 
@@ -93,11 +115,6 @@ std::string G4Opticks::desc() const
        << ( m_ok ? m_ok->export_() : "-" ) 
        ;
     return ss.str() ; 
-}
-
-G4Opticks* G4Opticks::GetOpticks()
-{
-    return Get(); 
 }
 
 G4Opticks* G4Opticks::Get()
@@ -120,7 +137,7 @@ void G4Opticks::Initialize(const G4VPhysicalVolume* world, bool standardize_gean
 
 void G4Opticks::Finalize()
 {
-    LOG(info) << G4Opticks::GetOpticks()->desc();
+    LOG(info) << G4Opticks::Get()->desc();
     delete fOpticks ; 
     fOpticks = NULL ;
 }
@@ -133,8 +150,6 @@ G4Opticks::~G4Opticks()
 /**
 G4Opticks::G4Opticks
 ----------------------
-
-NB no OpticksHub, this is trying to be minimal 
 
 **/
 
@@ -173,7 +188,7 @@ G4Opticks::G4Opticks()
 
 void G4Opticks::createCollectors()
 {
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     const char* prefix = NULL ; 
     m_mtab = new CMaterialTable(prefix); 
 
@@ -182,7 +197,7 @@ void G4Opticks::createCollectors()
     m_primary_collector = new CPrimaryCollector ; 
     m_g4hit_collector = new CPhotonCollector ; 
     m_g4photon_collector = new C4PhotonCollector ; 
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 /**
@@ -267,7 +282,7 @@ and are managed by them.
 
 void G4Opticks::resetCollectors()
 {
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     m_genstep_collector->reset(); 
     m_gensteps = NULL ; 
 
@@ -278,7 +293,7 @@ void G4Opticks::resetCollectors()
 
     m_g4photon_collector->reset(); 
     m_genphotons = NULL ; 
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -310,7 +325,6 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 {
     LOG(LEVEL) << "[" ; 
 
-
     LOG(LEVEL) << "( translateGeometry " ; 
     GGeo* ggeo = translateGeometry( world ) ;
     LOG(LEVEL) << ") translateGeometry " ; 
@@ -321,6 +335,15 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     }
 
     m_world = world ; 
+
+    setGeometry(ggeo); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+void G4Opticks::setGeometry(const GGeo* ggeo)
+{
     m_ggeo = ggeo ;
     m_blib = m_ggeo->getBndLib();  
     m_ok = m_ggeo->getOpticks(); 
@@ -333,11 +356,8 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     LOG(LEVEL) << "( OpMgr " ; 
     m_opmgr = new OpMgr(m_ok) ;   
     LOG(LEVEL) << ") OpMgr " ; 
-
-    LOG(LEVEL) << "]" ; 
 }
 
- 
 
 /**
 G4Opticks::getSensorPlacements
@@ -504,6 +524,8 @@ void G4Opticks::saveSensorArrays(const char* dir) const
 
 
 
+
+
 /**
 G4Opticks::translateGeometry
 ------------------------------
@@ -526,22 +548,8 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 {
     LOG(verbose) << "( key" ;
     const char* keyspec = X4PhysicalVolume::Key(top) ; 
-    LOG(error) << "SetKey [" << keyspec << "]"  ;   
-    BOpticksKey::SetKey(keyspec);
-    LOG(verbose) << ") key" ;
 
-    const char* g4opticks_debug = SSys::getenvvar("G4OPTICKS_DEBUG") ; 
-    std::string ecl = EmbeddedCommandLine(g4opticks_debug) ; 
-    LOG(info) << "EmbeddedCommandLine : [" << ecl << "]" ; 
-
-    LOG(info) << "( Opticks" ;
-    Opticks* ok = new Opticks(0,0, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
-    ok->configure();       // parses args and does resource setup
- 
-    const char* idpath = ok->getIdPath(); 
-    assert(idpath);
-    LOG(info) << ") Opticks " << idpath ;
-
+    Opticks* ok = InitOpticks(keyspec); 
 
     const char* dbggdmlpath = ok->getDbgGDMLPath(); 
     if( dbggdmlpath != NULL )
@@ -565,7 +573,8 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     LOG(info) << ") GGeo::postDirectTranslation " ;
 
     LOG(info) << "( X4PhysicalVolume::GetSensorPlacements " ;
-    X4PhysicalVolume::GetSensorPlacements(gg, m_sensor_placements);
+    bool outer_volume = true ; 
+    X4PhysicalVolume::GetSensorPlacements(gg, m_sensor_placements, outer_volume);
     m_sensor_num = m_sensor_placements.size();  
     m_sensor_data = NPY<float>::make(m_sensor_num, 4); 
     m_sensor_data->zero(); 

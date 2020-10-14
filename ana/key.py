@@ -95,15 +95,38 @@ class Key(object):
         self.digest = keyspec.split(".")[-1]
         self.meta = meta 
         self.version = int(meta["GEOCACHE_CODE_VERSION"])
-   
+        self.gdmlpath = self.extract_argument_after(meta, "--gdmlpath")
+  
+    @classmethod
+    def extract_argument_after(cls, meta, k):
+        argline = meta.get("argline","-")
+        args = argline.split(" ")
+        try:
+            ppos = args.index(k)
+        except ValueError:
+            ppos = -1 
+        pass
+        log.info("ppos %d" % ppos)
+        path = None
+        if ppos == -1:
+            pass
+        elif ppos + 1 >= len(args):
+            log.fatal("truncated argline ?")
+        else:
+            arg = args[ppos+1] 
+        pass
+        return arg
+
+ 
     def __repr__(self):
         version = self.version
         keyspec = self.keyspec 
         keydir = self.keydir
         return "\n".join(["Key.v{version}:{keyspec}","{keydir}"]).format(**locals())
 
+
     def __str__(self):
-        return "\n".join([self.key, self.keydir])
+        return "\n".join([self.keyspec, self.keydir, self.gdmlpath])
 
 
 if __name__ == '__main__':

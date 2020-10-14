@@ -153,7 +153,7 @@ std::string OpticksIdentity::Desc(unsigned identifier) // static
        << " "
        << offset_index 
        << ")"
-       << " " << std::setw(10) << std::hex << identifier
+       << " " << std::setw(7) << std::hex << identifier
        ;
     return ss.str(); 
 }

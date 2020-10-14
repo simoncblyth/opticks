@@ -21,15 +21,18 @@
 """
 gdml.py : parsing GDML
 =========================
-       
+
 
 """
-import os, re, logging, math, collections
+import os, re, logging, math, collections, argparse
 
 log = logging.getLogger(__name__)
 
-from opticks.ana.main import opticks_main
-from opticks.ana.nbase import find_ranges
+#from opticks.ana.main import opticks_main
+
+from opticks.ana.key import key_
+from opticks.ana.base import u_, b_, d_ 
+from opticks.ana.nbase import find_ranges, np_fromstring, np_tostring, np_digest
 from opticks.ana.shape import X, SEllipsoid, STubs, STorus, SCons, SPolycone, SSubtractionSolid, SUnionSolid, SIntersectionSolid
 
 from opticks.analytic.csg import CSG 
@@ -113,7 +116,7 @@ class G(object):
 
         """
         wrap_ = lambda e:self.g.kls.get(e.tag,G)(e,self.g)
-        fa = map(wrap_, self.elem.xpath(expr) )    # formerly used findall, moved to xpath for selective expressions
+        fa = list(map(wrap_, self.elem.xpath(expr) ))    # formerly used findall, moved to xpath for selective expressions
         kln = self.__class__.__name__
         name = self.name 
         log.debug("findall_ from %s:%s expr:%s returned %s " % (kln, name, expr, len(fa)))
@@ -942,7 +945,7 @@ class Polycone(Primitive):
 
         """
         zp = self.zplane 
-        zz = map(lambda _:_.z, zp)
+        zz = list(map(lambda _:_.z, zp))
  
         if len(zp) == 2 and zz[0] > zz[1]:
            log.warning("Polycone swap misordered pair of zplanes for %s " % self.name)
@@ -979,7 +982,7 @@ class Polycone(Primitive):
         rmin = rmin[0]
 
         zp = self.zplane 
-        z = map(lambda _:_.z, zp)
+        z = list(map(lambda _:_.z, zp))
         zmax = max(z) 
         zmin = min(z)
 
@@ -1192,7 +1195,7 @@ class odict(collections.OrderedDict):
 
     """
     def __call__(self, iarg):
-        return self.items()[iarg][1]   # items returns (key,value) the key is the name
+        return list(self.items())[iarg][1]   # items returns (key,value) the key is the name
 
 
 class GDML(G):
@@ -1225,13 +1228,13 @@ class GDML(G):
     }
 
     @classmethod
-    def parse(cls, path=None):
+    def parse(cls, path):
         """
         :param path: to GDML file
         """
-        if path is None:
-            path = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main
-            log.info("gdmlpath defaulting to OPTICKS_GDMLPATH %s which is derived by opticks.ana.base from the IDPATH input envvar " % path )
+        #if path is None:
+        #    path = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main
+        #    log.info("gdmlpath defaulting to OPTICKS_GDMLPATH %s which is derived by opticks.ana.base from the IDPATH input envvar " % path )
         pass
         log.info("parsing gdmlpath %s " % (path) )
         gdml_elem = parse_(path)         # lxml parse and return root "gdml" element
@@ -1443,7 +1446,7 @@ class GDML(G):
 
         vv = self.volumes.values()
 
-        vvs = filter(lambda v:hasattr(v,'solid'), vv)
+        vvs = list(filter(lambda v:hasattr(v,'solid'), vv))
 
         log.info("vv %s (number of logical volumes) vvs %s (number of lv with associated solid) " % (len(vv),len(vvs)))
         #for v in vvs:print repr(v)
@@ -1482,7 +1485,7 @@ def test_children(t):
     assert len(l) == 672
 
     n = l[0] 
-    sibs = n.siblings 
+    sibs = list(n.siblings) 
     assert len(sibs) == 192
    
     cn = n.lv.solid.as_ncsg()
@@ -1527,29 +1530,68 @@ def test_primitive_fromstring():
 
 
 
+def parse_args(doc, **kwa):
+    np.set_printoptions(suppress=True, precision=3, linewidth=200)
+    parser = argparse.ArgumentParser(doc)
+    parser.add_argument(     "idx",  type=int, nargs="*", help="Node index to dump.")
+    parser.add_argument(     "--level", default="info", help="logging level" ) 
+    parser.add_argument(  "-g","--gdmlpath", default=kwa.get("gdmlpath",None), help="Override the default key.gdmlpath:\n%(default)s " ) 
+    args = parser.parse_args()
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+    if len(args.idx) == 0:
+        args.idx = [0]
+    pass
+    return args  
+
+
+def define_matrix_values(elem, scale=1e6, startswith=None):
+    log.info("define_matrix_values startswith:%s scale:%s " % (startswith, scale)) 
+    mm = elem.findall("define/matrix")  
+    fmt = " {coldim:3s} {a.shape!r:8s} {dig:32s} {name:40s}   "
+    d = odict()
+    for m in mm:
+        name = m.attrib["name"]
+        if startswith is None or name.startswith(startswith):
+            coldim = int(m.attrib["coldim"])
+            values = m.attrib["values"]
+            a = np_fromstring(values, coldim=coldim, scale=scale)
+            d[name] = a
+            dig = np_digest(a)
+            print(fmt.format(**m.attrib,a=a, dig=dig)) 
+
+
+            values2 = np_tostring(a, scale=scale)  
+            a2 = np_fromstring(values2, coldim=coldim, scale=scale)    
+            assert np.allclose( a, a2)
+            ## number formatting changes, but should be no significant change in actual values
+        pass
+    pass
+    if startswith is None:
+        assert len(d) == len(mm)
+    pass
+    return d
+
+
 
 if __name__ == '__main__':
 
-    args = opticks_main()
+    key = key_()    
+    args = parse_args(__doc__, gdmlpath=key.gdmlpath)
 
-
-
-    gsel = args.gsel            # string representing target node index integer or lvname
-    gmaxnode = args.gmaxnode    # limit subtree node count
-    gmaxdepth = args.gmaxdepth  # limit subtree node depth from the target node
-    gidx = args.gidx            # target selection index, used when the gsel-ection yields multiple nodes eg when using lvname selection 
-
-    g = GDML.parse()
+    g = GDML.parse(args.gdmlpath)
 
     from opticks.analytic.treebase import Tree
     t = Tree(g.world) 
 
-    test_children(t)
-    test_polycone(g)
-    test_trd(g)
+    #test_children(t)
+    #test_polycone(g)
+    #test_trd(g)
+    #test_gdml_fromstring()
+    #test_primitive_fromstring()
 
-    test_gdml_fromstring()
-    test_primitive_fromstring()
+    mv = define_matrix_values(g.elem, startswith="EFFICIENCY")
+    #mv = define_matrix_values(g.elem)
 
 
 

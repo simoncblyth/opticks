@@ -892,10 +892,17 @@ NMeta* GPropertyLib::CreateAbbrevMeta(const std::vector<std::string>& names )
 
 
 
+/**
+GPropertyLib::isSensorIndex
+----------------------------
 
+Checks for the presense of the index within m_sensor_indices, which 
+is a pre-cache transient (non-persisted) vector of surface indices
+from the GSurfaceLib subclass or material indices 
+from GMaterialLib subclass.
 
+**/
 
-// m_sensor_indices is a transient (non-persisted) vector of material/surface indices 
 bool GPropertyLib::isSensorIndex(unsigned index) const 
 {
     typedef std::vector<unsigned>::const_iterator UI ; 

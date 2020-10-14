@@ -62,9 +62,22 @@ opticksaux-url-ssh(){   echo git@bitbucket.org:simoncblyth/opticksaux.git ; }
 
 opticksaux-jv5(){ echo $(opticksaux-dir)/$(opticksaux-xpath j1808)_v5.gdml ; }  
 opticksaux-jv5-vi(){ vim -R $(opticksaux-jv5) ; }
+opticksaux-jv5-cd(){ cd $(dirname $(opticksaux-jv5)) ; }
 
 opticksaux-dx0(){  echo $(opticksaux-dir)/$(opticksaux-xpath dybx)_v0.gdml ; }
 opticksaux-dx0-vi(){ vim -R $(opticksaux-dx0) ; }
+opticksaux-dx0-cd(){ cd $(dirname $(opticksaux-dx0)) ; }
+
+opticksaux-dx1(){  echo $(opticksaux-dir)/$(opticksaux-xpath dybx)_v1.gdml ; }
+opticksaux-dx1-vi(){ vim -R $(opticksaux-dx1) ; }
+opticksaux-dx1-cd(){ cd $(dirname $(opticksaux-dx1)) ; }
+
+opticksaux-dx1-notes(){ cat << EON
+Manually copied dx0 to dx1 and added sensor surfaces, to generate some DYB sensor 
+hits in order to test hit formation within a smaller geometry than JUNO.
+EON
+}
+
 
 opticksaux-xpath(){
    case $1 in 
@@ -81,6 +94,7 @@ opticksaux-info(){ cat << EOI
 
    opticksaux-jv5 :  $(opticksaux-jv5)     opticksaux-jv5-vi 
    opticksaux-dx0  : $(opticksaux-dx0)     opticksaux-dx0-vi 
+   opticksaux-dx1  : $(opticksaux-dx1)     opticksaux-dx1-vi 
 
 EOI
 }
@@ -96,6 +110,7 @@ opticksaux-ls-(){
 opticksaux-ls(){
   local gdmls=$(opticksaux-ls-) 
   local gdml
+  for gdml in $gdmls ; do echo  $gdml ; done
   for gdml in $gdmls ; do ls -l $gdml ; done
   for gdml in $gdmls ; do du -h $gdml ; done
 }

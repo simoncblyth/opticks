@@ -104,7 +104,8 @@ int main(int argc, char** argv)
     if(m_ok->isDumpSensor())
     {
         X4PhysicalVolume::DumpSensorVolumes(m_ggeo, "OKX4Test::main" ); 
-        X4PhysicalVolume::DumpSensorPlacements(m_ggeo, "OKX4Test::main" ); 
+        bool outer_volume = true ; 
+        X4PhysicalVolume::DumpSensorPlacements(m_ggeo, "OKX4Test::main", outer_volume); 
     }
 
     m_ok->profile("_OKX4Test:OKMgr"); 

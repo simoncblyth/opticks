@@ -28,6 +28,7 @@
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "NLODConfig.hpp"
+#include "GLMFormat.hpp"
 
 #include "Opticks.hh"
 #include "OpticksConst.hh"
@@ -743,7 +744,11 @@ glm::mat4 GGeoLib::getTransform(unsigned ridx, unsigned pidx, unsigned oidx) con
     //NPY<float>* trbuf = mm->getTransformsBuffer();   //nope still a GBuffer
     glm::mat4 offset_transform = mm->getTransform_(oidx);  
 
-    glm::mat4 triplet_transform = offset_transform * placement_transform ;  // ORDER IS GUESS TO BE CHECKED 
+    glm::mat4 triplet_transform = placement_transform * offset_transform ;  // GUESS ORDER
+
+    LOG(LEVEL) << gpresent("pTR",placement_transform) ; 
+    LOG(LEVEL) << gpresent("oTR",offset_transform) ; 
+    LOG(LEVEL) << gpresent("tTR",triplet_transform) ; 
 
     return triplet_transform ;
 }

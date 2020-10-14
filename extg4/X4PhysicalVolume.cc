@@ -1475,12 +1475,20 @@ void X4PhysicalVolume::DumpSensorVolumes(const GGeo* gg, const char* msg)
     }
 }
 
-void X4PhysicalVolume::GetSensorPlacements(const GGeo* gg, std::vector<G4PVPlacement*>& placements) // static
+/**
+X4PhysicalVolume::GetSensorPlacements
+---------------------------------------
+
+Populates placements with the void* origins obtained from ggeo, casting them back to G4PVPlacement.
+
+**/
+
+void X4PhysicalVolume::GetSensorPlacements(const GGeo* gg, std::vector<G4PVPlacement*>& placements, bool outer_volume ) // static
 {
     placements.clear(); 
 
     std::vector<void*> placements_ ; 
-    gg->getSensorPlacements(placements_); 
+    gg->getSensorPlacements(placements_, outer_volume); 
 
     for(unsigned i=0 ; i < placements_.size() ; i++)
     {
@@ -1490,10 +1498,10 @@ void X4PhysicalVolume::GetSensorPlacements(const GGeo* gg, std::vector<G4PVPlace
 }
 
 
-void X4PhysicalVolume::DumpSensorPlacements(const GGeo* gg, const char* msg) // static
+void X4PhysicalVolume::DumpSensorPlacements(const GGeo* gg, const char* msg, bool outer_volume) // static
 {
     std::vector<G4PVPlacement*> sensors ; 
-    X4PhysicalVolume::GetSensorPlacements(gg, sensors);
+    X4PhysicalVolume::GetSensorPlacements(gg, sensors, outer_volume);
     int num_sen = sensors.size();  
 
     LOG(info) << msg <<  " num_sen " << num_sen ; 

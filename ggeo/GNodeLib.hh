@@ -94,6 +94,7 @@ class GGEO_API GNodeLib
         void save() const ;
         void init();
         unsigned initNumVolumes() const ;
+        unsigned initSensorIdentity() ;
 
         GItemList*   getPVList(); 
         GItemList*   getLVList(); 
@@ -132,18 +133,19 @@ class GGEO_API GNodeLib
         std::string descVolume(unsigned index) const;
         void dumpVolumes(const char* msg="GNodeLib::dumpVolumes", float extent_cut_mm=5000.f, int cursor=-1 ) const ; 
     public:
-        unsigned        addSensorVolume(const GVolume* volume) ;
-        unsigned        getNumSensorVolumes() const ;
-        const GVolume*  getSensorVolume(unsigned sensorIndex) const ;
-        std::string     reportSensorVolumes(const char* msg) const ; 
-        void            dumpSensorVolumes(const char* msg) const ; 
-        void            getSensorPlacements(std::vector<void*>& placements) const ; 
+        unsigned         addSensorVolume(const GVolume* volume) ;
+        unsigned         getNumSensorVolumes() const ;
+        const GVolume*   getSensorVolume(unsigned sensorIndex) const ;
+        const glm::uvec4 getSensorIdentity(unsigned sensorIndex) const ;
+        std::string      reportSensorVolumes(const char* msg) const ; 
+        void             dumpSensorVolumes(const char* msg="GNodeLib::dumpSensorVolumes") const ; 
+        void             getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const ; 
     public:
-        unsigned        findContainerVolumeIndex(float x, float y, float z) const ;
+        unsigned         findContainerVolumeIndex(float x, float y, float z) const ;
     private:
         Opticks*                           m_ok ;  
         const char*                        m_keydir ; 
-        bool                               m_loading ; 
+        bool                               m_loaded ; 
         const char*                        m_cachedir ; 
         const char*                        m_reldir ; 
     private:
@@ -157,6 +159,8 @@ class GGEO_API GNodeLib
     private:
         GTreePresent*                      m_treepresent ; 
         unsigned                           m_num_volumes ; 
+        std::vector<glm::uvec4>            m_sensor_identity ; 
+        unsigned                           m_num_sensors ; 
     private:
         std::map<unsigned int, const GVolume*>    m_volumemap ; 
         std::vector<const GVolume*>               m_volumes ; 

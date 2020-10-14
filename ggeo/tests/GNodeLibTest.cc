@@ -102,6 +102,11 @@ void test_getIdentity(const GNodeLib* nlib, unsigned nidx0, unsigned nidx1)
  
 }
 
+void test_dumpSensorVolumes(const GNodeLib* nlib)
+{
+    nlib->dumpSensorVolumes();
+}
+
 
 
 int main(int argc, char** argv)
@@ -114,22 +119,25 @@ int main(int argc, char** argv)
     GNodeLib* nlib = GNodeLib::Load(&ok); 
     assert(nlib);  
     
+    test_transforms(nlib); 
+    test_dump(nlib);
+
+
     /*
     unsigned num_volumes = nlib->getNumVolumes(); 
     unsigned  pick_vol = num_volumes/2 ;    // mid-volume  
-
-    test_transforms(nlib); 
-    test_dump(nlib);
     test_findContainerVolumeIndex(nlib, pick_vol); 
     test_getBB(nlib, pick_vol); 
     test_getBBox(nlib, pick_vol); 
-    */
+
 
     unsigned nidx0 = 3199 ; 
     unsigned nidx1 = nidx0+20  ; 
-    
     test_getIdentity(nlib, nidx0, nidx1 ); 
- 
+
+    */
+
+    test_dumpSensorVolumes(nlib); 
 
     return 0 ; 
 }

@@ -250,12 +250,15 @@ class GGeo(object):
             num_volumes = self.get_num_volumes(ridx)
             for pidx in range(num_placements):
                 for oidx in range(num_volumes):
-                    tr[count] = self.get_transform(ridx,pidx,oidx)
+                    nidx = self.get_node_index(ridx,pidx,oidx)
+                    tr[nidx] = self.get_transform(ridx,pidx,oidx)
                     count += 1 
                 pass
             pass
         pass
         assert tot_volumes == count  
+        all_volume_transforms = self.get_array(-1,"all_volume_transforms")
+        assert np.allclose( all_volume_transforms, tr )
         return tr  
 
     def get_transform(self, ridx, pidx, oidx):
@@ -393,23 +396,6 @@ class GGeo(object):
     mlibnames = property(lambda self:self.mlib[self.midx])   # mesh/lv names
     blibnames = property(lambda self:self.blib[self.bidx])   # boundary names
 
-    def idsmry(self, nidx):
-        """
-        volume identity summary 
-        """
-        iden = self.all_volume_identity[nidx]
-        sidx = iden[-1].view(np.int32)  
-        iden_s = "iden(%6d %10x %10x %6d )" % (iden[0],iden[1],iden[2],sidx)
-
-        nrpo = self.nrpo[nidx]
-        nrpo_s = "nrpo( %5d %5d %5d %5d )" % tuple(nrpo)
-
-        midx = self.midx[nidx] 
-        bidx = self.bidx[nidx] 
-        shape_s = "shape( %3d %3d  %40s %40s)" % (midx,bidx, self.mlibnames[nidx], self.blibnames[nidx] )
-
-        print( "%s  %s  %s " % (iden_s, nrpo_s, shape_s) )
-
 
     def __call__(self,*args):
         """
@@ -441,24 +427,46 @@ class GGeo(object):
         pass
         self.dump_node(nidx) 
 
-    def dump_node(self,i):
+
+    def idsmry(self, nidx):
         """
-        :param i: all_volume node index 
+        volume identity summary 
         """
+        iden = self.all_volume_identity[nidx]
+        nidx2,triplet,shape,_ = iden  
+        assert nidx == nidx2
+        sidx = iden[-1].view(np.int32)  
+        iden_s = "nidx:{nidx} triplet:{triplet:7x} sh:{sh:x} sidx:{sidx:5d} ".format(nidx=nidx,triplet=triplet,sh=shape,sidx=sidx)
+
+        nrpo = self.nrpo[nidx]
+        nrpo_s = "nrpo( %5d %5d %5d %5d )" % tuple(nrpo)
+
+        midx = self.midx[nidx] 
+        bidx = self.bidx[nidx] 
+        shape_s = "shape( %3d %3d  %40s %40s)" % (midx,bidx, self.mlibnames[nidx], self.blibnames[nidx] )
+        print( "%s  %s  %s " % (iden_s, nrpo_s, shape_s) )
+
+
+    def bbsmry(self, nidx):
         gg = self
+        bb = gg.all_volume_bbox[nidx]
+        ce = gg.all_volume_center_extent[nidx]
+        print(" {nidx:5d} {ce!s:20s} ".format(nidx=nidx,bb=bb,ce=ce))
 
-        iden = gg.all_volume_identity[i] 
-        print("gg.identity[%d]  nidx/midx/bidx/sidx  %s  " % (i,iden) )
-        nidx,midx,bidx,sidx = iden  
-        print("gg.mlibnames[%d] : %s " % (i, gg.mlibnames[i]) )
-        print("gg.blibnames[%d] : %s " % (i, gg.blibnames[i]) )
 
-        bb = gg.all_volume_bbox[i]
-        ce = gg.all_volume_center_extent[i]
+    def dump_node(self,nidx):
+        gg = self
+        gg.idsmry(nidx)
+
+        #print("gg.mlibnames[%d] : %s " % (i, gg.mlibnames[nidx]) )
+        #print("gg.blibnames[%d] : %s " % (i, gg.blibnames[nidx]) )
+
+        bb = gg.all_volume_bbox[nidx]
+        ce = gg.all_volume_center_extent[nidx]
         c4 = ce.copy()
         c4[3] = 1.
         
-        tr = gg.all_volume_transforms[i]
+        tr = gg.all_volume_transforms[nidx]
         it = np.linalg.inv(tr) 
         ibb = np.dot( bb, it )   ## apply inverse transform to the volumes bbox (mn,mx), should give symmetric (mn,mx)   
         cbb = (bb[0]+bb[1])/2.   ## center of bb should be same as c4
@@ -466,7 +474,6 @@ class GGeo(object):
 
         ic4 = np.dot( c4, it )   ## should be close to origin
         gt = gg.all_volume_transforms[nidx]  
-
 
         print("\ngt : gg.all_volume_transforms[%d]" % nidx)
         print(gt)
@@ -503,6 +510,7 @@ def parse_args(doc, **kwa):
     parser.add_argument(     "--level", default="info", help="logging level" ) 
     parser.add_argument(  "-c","--check", action="store_true", help="Consistency check" ) 
     parser.add_argument(  "-i","--idsmry", action="store_true", help="Slice identity summary interpreting idx as slice range." ) 
+    parser.add_argument(  "-b","--bbsmry", action="store_true", help="Slice bbox summary interpreting idx as slice range." ) 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -525,11 +533,17 @@ if __name__ == '__main__':
 
     if args.check:
         gg.consistency_check()
-    elif args.idsmry:
+    elif args.idsmry or args.bbsmry:
         beg = args.idx[0]
         end = args.idx[1] if len(args.idx) > 1 else min(gg.num_volumes,args.idx[0]+50) 
         for idx in list(range(beg, end)):
-            gg.idsmry(idx)
+            if args.idsmry:
+                gg.idsmry(idx)
+            elif args.bbsmry:
+                gg.bbsmry(idx)
+            else:
+                pass
+            pass
         pass
     else:
         for idx in args.idx:

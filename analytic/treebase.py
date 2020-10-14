@@ -46,12 +46,16 @@ ana/pmt/analytic.py
 
 """
 
-import logging, hashlib, sys, os
+
+
+
+import logging, hashlib, os
 # from collections import Counter
 import numpy as np
 np.set_printoptions(precision=2) 
 
 from opticks.ana.main import opticks_main
+from opticks.ana.base import u_, b_, d_
 from opticks.ana.nbase import Buf
 
 log = logging.getLogger(__name__)
@@ -122,7 +126,7 @@ class Node(object):
         the tree. Use of id memory locations means that the digest will change from run to run. 
         """
         dig = ",".join(map(lambda _:str(id(_)),volpath))
-        dig = hashlib.md5(dig).hexdigest() 
+        dig = hashlib.md5(b_(dig)).hexdigest() 
         return dig
 
     @classmethod
@@ -191,7 +195,7 @@ class Node(object):
             node.posXYZ = None
         pass
 
-        log.info("################ node.posXYZ:%r  node:%r ##" % (node.posXYZ, node) )
+        log.debug("################ node.posXYZ:%r  node:%r ##" % (node.posXYZ, node) )
 
         ## HMM ? is this missing node.lv transforms ? See ddbase.py Elem._get_children
         #node.dump("visitWrap_")
@@ -413,11 +417,11 @@ class Tree(object):
 
     @classmethod
     def filternodes_pv(cls, pfx):
-        return filter(lambda node:node.pv.name.startswith(pfx), cls.byindex.values()) 
+        return list(filter(lambda node:node.pv.name.startswith(pfx), cls.byindex.values()))
 
     @classmethod
     def filternodes_lv(cls, pfx):
-        return filter(lambda node:node.lv.name.startswith(pfx), cls.byindex.values()) 
+        return list(filter(lambda node:node.lv.name.startswith(pfx), cls.byindex.values()))
 
     @classmethod
     def filternodes_so(cls, pfx):
@@ -432,7 +436,7 @@ class Tree(object):
         def filter_lv_solid(node):
             return node.lv.solid is not None and node.lv.solid.name.startswith(pfx)  
         pass
-        return filter(filter_lv_solid, cls.byindex.values()) 
+        return list(filter(filter_lv_solid, cls.byindex.values()))
 
 
     @classmethod

@@ -111,6 +111,18 @@ GGeo* GGeo::GetInstance() // static
     return fInstance ;    
 }
 
+GGeo* GGeo::Load(Opticks* ok) // static
+{
+    if(!ok->isConfigured()) ok->configure(); 
+    bool live = false ; 
+    GGeo* ggeo = new GGeo(ok, live);
+    ggeo->loadFromCache();
+    ggeo->dumpStats();
+    return ggeo ;  
+}
+
+
+
 /**
 GGeo::GGeo
 -------------
@@ -966,9 +978,9 @@ void GGeo::dumpSensorVolumes(const char* msg) const
 {
     m_nodelib->dumpSensorVolumes(msg); 
 }
-void GGeo::getSensorPlacements(std::vector<void*>& placements) const 
+void GGeo::getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const 
 {
-    m_nodelib->getSensorPlacements(placements); 
+    m_nodelib->getSensorPlacements(placements, outer_volume); 
 }
 
 
@@ -1461,54 +1473,100 @@ unsigned GGeo::getNumVolumes(unsigned ridx) const
 }
 
 
-
-glm::uvec4 GGeo::getIdentity(unsigned nidx) const 
+void GGeo::dumpNode(unsigned nidx)
 {
-    return m_nodelib->getIdentity(nidx); 
+    glm::uvec4 id = m_nodelib->getIdentity(nidx); 
+    unsigned triplet = id.y ;
+    unsigned ridx = OpticksIdentity::RepeatIndex(triplet); 
+    unsigned pidx = OpticksIdentity::PlacementIndex(triplet); 
+    unsigned oidx = OpticksIdentity::OffsetIndex(triplet); 
+    dumpNode(ridx, pidx, oidx); 
 }
-
-glm::uvec4 GGeo::getIdentity(unsigned ridx, unsigned pidx, unsigned oidx) const 
+void GGeo::dumpNode(unsigned ridx, unsigned pidx, unsigned oidx)
 {
-    return m_geolib->getIdentity(ridx, pidx, oidx); 
-}
-
-glm::mat4 GGeo::getTransform(unsigned ridx, unsigned pidx, unsigned oidx) const 
-{
-    glm::mat4  tr = m_geolib->getTransform(ridx, pidx, oidx) ;
-    glm::uvec4 id = m_geolib->getIdentity(ridx, pidx, oidx) ;
-
-    LOG(info) 
+    glm::uvec4 id = m_geolib->getIdentity(ridx, pidx, oidx); 
+    unsigned nidx = id.x ; 
+    LOG(info)
+        << " ("
         << " ridx " << ridx
         << " pidx " << pidx
         << " oidx " << oidx
-        << " id " << glm::to_string(id) 
-        << " " << OpticksIdentity::Desc(id.y) 
-        ;  
+        << " )"
+        << " nidx " << nidx
+        ;
+}
 
-    // consistency check the triplet identity  
-    unsigned triplet = id.y ;
-    assert( OpticksIdentity::RepeatIndex(triplet)    == ridx ); 
-    assert( OpticksIdentity::PlacementIndex(triplet) == pidx ); 
-    assert( OpticksIdentity::OffsetIndex(triplet)    == oidx ); 
+glm::uvec4 GGeo::getIdentity(unsigned nidx) const 
+{
+    glm::uvec4 id = m_nodelib->getIdentity(nidx); 
+    return id ; 
+}
 
-    unsigned nidx = id.x ; 
+glm::uvec4 GGeo::getIdentity(unsigned ridx, unsigned pidx, unsigned oidx, bool check) const 
+{
+    glm::uvec4 id = m_geolib->getIdentity(ridx, pidx, oidx); 
+    if(check)
+    {
+        // consistency check the identity with that obtained from nodelib
+        unsigned nidx = id.x ; 
+        glm::uvec4 id2 = m_nodelib->getIdentity(nidx);  
+        assert( id.x == id2.x );  
+        assert( id.y == id2.y );  
+        assert( id.z == id2.z );  
+        assert( id.w == id2.w );  
 
-    // consistency check the identity with that obtained from nodelib
-    glm::uvec4 id2 = m_nodelib->getIdentity(nidx);  
-    assert( id.x == id2.x );  
-    assert( id.y == id2.y );  
-    assert( id.z == id2.z );  
-    assert( id.w == id2.w );  
+        // consistency check the triplet identity  
+        unsigned triplet = id.y ;
+        assert( OpticksIdentity::RepeatIndex(triplet)    == ridx ); 
+        assert( OpticksIdentity::PlacementIndex(triplet) == pidx ); 
+        assert( OpticksIdentity::OffsetIndex(triplet)    == oidx ); 
+    }
+    return id ; 
+}
 
-    // consistency check the nodelib transform
-    glm::mat4 tr2 = m_nodelib->getTransform(nidx); 
+glm::mat4 GGeo::getTransform(unsigned ridx, unsigned pidx, unsigned oidx, bool check) const 
+{
+    glm::mat4  tr = m_geolib->getTransform(ridx, pidx, oidx) ;
 
-    float epsilon = 1e-5 ; 
-    float diff = nglmext::compDiff(tr, tr2 ); 
-    assert( std::abs(diff) < epsilon );
+    if(check)
+    {
+        glm::uvec4 id = m_geolib->getIdentity(ridx, pidx, oidx) ;
+        unsigned nidx = id.x ; 
+        // consistency check the nodelib transform
+        glm::mat4 tr2 = m_nodelib->getTransform(nidx); 
+
+        float epsilon = 1e-5 ; 
+        float diff = nglmext::compDiff(tr, tr2 ); 
+
+        LOG(LEVEL) 
+            << " ridx " << ridx
+            << " pidx " << pidx
+            << " oidx " << oidx
+            << OpticksIdentity::Desc(" id",id) 
+            << " diff*1.e9 " << diff*1.0e9 
+            << " epsilon " << epsilon 
+            ;
+
+        bool expected = std::abs(diff) < epsilon ; 
+        if(!expected)
+        {
+            LOG(fatal)
+               << " epsilon " << epsilon
+               << " diff " << diff
+               ;
+
+            std::cout << gpresent("tr", tr) << std::endl ;
+            std::cout << gpresent("tr2", tr2) << std::endl ;
+        }
+        assert( expected );
+    }
 
     return tr ; 
 }
+
+
+
+
 
 void GGeo::dumpShape(const char* msg) const 
 {

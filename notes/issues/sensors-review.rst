@@ -31,8 +31,108 @@ DONE : added auto-determined contiguous 0-based sensorIndex
 
 Invoked from X4PhysicalVolume::convertNode::
 
-    1335     int sensorIndex = m_blib->isSensorBoundary(boundary) ? m_ggeo->addSensorVolume(volume) : -1 ;
-    1336     if(sensorIndex > -1) m_blib->countSensorBoundary(boundary);
+    1357     G4PVPlacement* _placement = const_cast<G4PVPlacement*>(placement) ;
+    1358     void* origin_node = static_cast<void*>(_placement) ;
+    1359     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node );
+    1360     m_node_count += 1 ;
+    1361 
+    1362     unsigned lvr_lvIdx = lvIdx ;
+    1363     bool selected = m_query->selected(pvName.c_str(), ndIdx, depth, recursive_select, lvr_lvIdx );
+    1364     if(selected) m_selected_node_count += 1 ;
+    1365 
+    1366     LOG(verbose) << " lv_lvIdx " << lvr_lvIdx
+    1367                  << " selected " << selected
+    1368                  ;
+    1369 
+    1370     int sensorIndex = m_blib->isSensorBoundary(boundary) ? m_ggeo->addSensorVolume(volume) : -1 ;
+    1371     if(sensorIndex > -1) m_blib->countSensorBoundary(boundary);
+
+
+    0529 bool GBndLib::isSensorBoundary(unsigned boundary) const
+     530 {
+     531     const guint4& bnd = m_bnd[boundary];
+     532     bool osur_sensor = m_slib->isSensorIndex(bnd[OSUR]);
+     533     bool isur_sensor = m_slib->isSensorIndex(bnd[ISUR]);
+     534     bool is_sensor = osur_sensor || isur_sensor ;
+     535     return is_sensor ;
+     536 }
+
+    0723 /**
+     724 GSurfaceLib::collectSensorIndices
+     725 ----------------------------------
+     726 
+     727 Loops over all surfaces collecting the 
+     728 indices of surfaces having non-zero EFFICIENCY or detect
+     729 properties.
+     730 
+     731 **/
+     732 
+     733 void GSurfaceLib::collectSensorIndices()
+     734 {
+     735     unsigned ni = getNumSurfaces();
+     736     for(unsigned i=0 ; i < ni ; i++)
+     737     {
+     738         GPropertyMap<float>* surf = m_surfaces[i] ;
+     739         bool is_sensor = surf->isSensor() ;
+     740         if(is_sensor)
+     741         {
+     742             addSensorIndex(i);
+     743             assert( isSensorIndex(i) == true ) ;
+     744         }
+     745     }
+     746 }
+
+
+    895 /**
+    896 GPropertyLib::isSensorIndex
+    897 ----------------------------
+    898 
+    899 Checks for the presense of the index within m_sensor_indices, which 
+    900 is a pre-cache transient (non-persisted) vector of surface indices
+    901 from the GSurfaceLib subclass or material indices 
+    902 from GMaterialLib subclass.
+    903 
+    904 **/
+    905 
+    906 bool GPropertyLib::isSensorIndex(unsigned index) const
+    907 {   
+    908     typedef std::vector<unsigned>::const_iterator UI ;
+    909     UI b = m_sensor_indices.begin();
+    910     UI e = m_sensor_indices.end();
+    911     UI i = std::find(b, e, index);
+    912     return i != e ;
+    913 }
+
+
+    0288 template <class T>
+     289 bool GPropertyMap<T>::isSensor()
+     290 {
+     291 #ifdef OLD_SENSOR
+     292     return m_sensor ;
+     293 #else
+     294     return hasNonZeroProperty(EFFICIENCY) || hasNonZeroProperty(detect) ;
+     295 #endif
+     296 }
+     297 template <class T>
+     298 void GPropertyMap<T>::setSensor(bool sensor)
+     299 {
+     300 #ifdef OLD_SENSOR
+     301     m_sensor = sensor ;
+     302 #else
+     303     assert(0 && "sensors are now detected by the prescense of an EFFICIENCY property" );
+     304 #endif
+     305 }
+
+
+Recipe to make a surface sensor
+---------------------------------
+
+* create a non-zero EFFICIENCY and surface 
+* associate that surface with some geometry
+
+Investigate at GDML level
+
+* :doc:`sensor-gdml-review`
 
 
 How to auto-detect sensors ?

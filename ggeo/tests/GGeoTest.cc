@@ -262,15 +262,12 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
-    ok.configure(); 
 
-    GGeo gg(&ok);
-    gg.loadFromCache();
-    gg.dumpStats();
+    GGeo* gg = GGeo::Load(&ok); 
 
-    //test_GGeo(&gg);
-    //test_GGeo_getTransform(&gg);
-    test_GGeo_getIdentity(&gg);
+    //test_GGeo(gg);
+    //test_GGeo_getIdentity(gg);
+    test_GGeo_getTransform(gg);
 
     return 0 ;
 }

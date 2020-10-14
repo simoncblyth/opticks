@@ -60,7 +60,7 @@ GNodeLib::GNodeLib(Opticks* ok)
     :
     m_ok(ok),
     m_keydir(ok->getIdPath()),
-    m_loading(false),
+    m_loaded(false),
     m_cachedir(GNodeLib::CacheDir(ok)),
     m_reldir(RELDIR),
     m_pvlist(new GItemList(PV, m_reldir)),
@@ -72,6 +72,7 @@ GNodeLib::GNodeLib(Opticks* ok)
     m_nodeinfo(NPY<unsigned>::make(0,4)),
     m_treepresent(new GTreePresent(100, 1000)),   // depth_max,sibling_max
     m_num_volumes(0),
+    m_num_sensors(0),
     m_volumes(0),
     m_root(NULL)
 {
@@ -82,7 +83,7 @@ GNodeLib::GNodeLib(Opticks* ok, bool loading)
     :
     m_ok(ok),
     m_keydir(ok->getIdPath()),
-    m_loading(loading),
+    m_loaded(loading),
     m_cachedir(GNodeLib::CacheDir(ok)),
     m_reldir(RELDIR),
     m_pvlist(GItemList::Load(ok->getIdPath(), PV, m_reldir)),
@@ -94,14 +95,17 @@ GNodeLib::GNodeLib(Opticks* ok, bool loading)
     m_nodeinfo(NPY<unsigned>::load(m_cachedir,NI)),
     m_treepresent(NULL),
     m_num_volumes(initNumVolumes()),
+    m_num_sensors(initSensorIdentity()),
     m_volumes(0),
     m_root(NULL)
 {
-    LOG(LEVEL) << "loaded" ; 
+    LOG(info) << "loaded" ; 
+    assert( m_sensor_identity.size() == m_num_sensors ); 
 }
  
 unsigned GNodeLib::initNumVolumes() const
 {
+    assert( m_loaded ); 
     unsigned num_volumes = m_pvlist->getNumKeys(); 
     assert( m_lvlist->getNumKeys() == num_volumes ); 
     assert( m_transforms->getNumItems() == num_volumes ); 
@@ -109,29 +113,33 @@ unsigned GNodeLib::initNumVolumes() const
     assert( m_center_extent->getNumItems() == num_volumes ); 
     assert( m_identity->getNumItems() == num_volumes ); 
     assert( m_nodeinfo->getNumItems() == num_volumes ); 
-
-/*
-    huh giving crazy values
-    unsigned nvol = m_volumes.size() ;
-    if( nvol != 0 )
-       LOG(fatal) 
-          << " unexpected "
-          << " num_volumes " << num_volumes
-          << " nvol " << nvol
-          ;
-              
-    assert( nvol == 0 );  // zero live volumes  postcache
-*/
-
-
     return num_volumes ; 
+}
+
+unsigned GNodeLib::initSensorIdentity() 
+{
+    assert( m_loaded ); 
+    unsigned UNSET = -1 ; 
+    for(unsigned i=0 ; i < m_num_volumes ; i++)
+    {
+        glm::uvec4 id = m_identity->getQuad_(i); 
+        unsigned sensorIndex = id.w ; 
+        if( sensorIndex == UNSET ) continue ; 
+        //LOG(info) << " id " << glm::to_string(id) << " sensorIndex " << sensorIndex  ; 
+        m_sensor_identity.push_back(id); 
+    } 
+    unsigned num_sensors = m_sensor_identity.size() ;
+    LOG(LEVEL) 
+        << " m_num_volumes " << m_num_volumes 
+        << " num_sensors " << num_sensors 
+        ;
+    return num_sensors ; 
 }
 
 unsigned GNodeLib::getNumVolumes() const 
 {
     return m_num_volumes ; 
 }
-
 
 void GNodeLib::save() const 
 {
@@ -317,27 +325,67 @@ void GNodeLib::add(const GVolume* volume)
     m_num_volumes += 1 ; 
 }
 
-
+/**
+GNodeLib::addSensorVolume (precache)
+--------------------------------------
+**/
 
 unsigned GNodeLib::addSensorVolume(const GVolume* volume)
 {
     unsigned sensorIndex = m_sensor_volumes.size() ;  
     m_sensor_volumes.push_back(volume); 
+
+    glm::uvec4 id = volume->getIdentity();  
+    m_sensor_identity.push_back(id); 
+    m_num_sensors += 1 ; 
     return sensorIndex ; 
 }
+/**
+GNodeLib::getNumSensorVolumes (precache and postcache)
+---------------------------------------------------------
+**/
+
 unsigned GNodeLib::getNumSensorVolumes() const 
 {
-    return m_sensor_volumes.size(); 
+    LOG(info) 
+        << " m_num_sensors " << m_num_sensors
+        << " m_sensor_identity.size() " << m_sensor_identity.size()
+        ;
+     
+    assert( m_sensor_identity.size() == m_num_sensors );
+    return m_num_sensors ; 
 }
+
+
+/**
+GNodeLib::getSensorVolume (precache only)
+-------------------------------------------
+
+**/
+
 const GVolume* GNodeLib::getSensorVolume(unsigned sensorIndex) const 
 {
-    return m_sensor_volumes[sensorIndex]; 
+    return m_loaded ? NULL : m_sensor_volumes[sensorIndex]; 
 }
+
+/**
+GNodeLib::getSensorIdentity (precache and postcache)
+------------------------------------------------------
+
+**/
+const glm::uvec4 GNodeLib::getSensorIdentity(unsigned sensorIndex) const 
+{
+    glm::uvec4 sid = m_sensor_identity[sensorIndex]; 
+    return sid ; 
+}
+
+
+
 
 std::string GNodeLib::reportSensorVolumes(const char* msg) const 
 {
-    std::stringstream ss ; 
     unsigned numSensorVolumes = getNumSensorVolumes(); 
+    std::stringstream ss ; 
     ss
         << msg 
         << " numSensorVolumes " << numSensorVolumes
@@ -349,36 +397,64 @@ void GNodeLib::dumpSensorVolumes(const char* msg) const
 {
     LOG(info) << reportSensorVolumes(msg) ; 
     unsigned numSensorVolumes = getNumSensorVolumes(); 
-    for(unsigned i=0 ; i < numSensorVolumes ; i++)
-    {
-        unsigned sensorIdx = i ; 
-        const GVolume* sensor = getSensorVolume(sensorIdx) ; 
-        assert(sensor); 
-        const char* sensorPVName =  sensor->getPVName() ; 
-        assert(sensorPVName);
-        const void* const sensorOrigin = sensor->getOriginNode() ;
-        assert(sensorOrigin);  
-        const GVolume* outer = sensor->getOuterVolume() ; 
-        assert(outer);
-        const char* outerPVName = outer->getPVName() ;
-        assert(outerPVName);
-        const void* const outerOrigin = outer->getOriginNode() ;  
-        assert(outerOrigin);
 
-        std::cout 
-            << " sensorIdx " << std::setw(6) << sensorIdx
-            << " sensor " << std::setw(8) << sensor 
-            << " outer " << std::setw(8) << outer 
-            << " sensorPVName " << std::setw(50) << sensorPVName
-            << " outerPVName "  << std::setw(50) << outerPVName
-            << " sensorOrigin " << std::setw(8) << sensorOrigin
-            << " outerOrigin " << std::setw(8) << outerOrigin
-            << std::endl 
-            ;
+    if(m_loaded == false)
+    {
+        for(unsigned i=0 ; i < numSensorVolumes ; i++)
+        {
+            unsigned sensorIdx = i ; 
+            const GVolume* sensor = getSensorVolume(sensorIdx) ; 
+            assert(sensor); 
+            const char* sensorPVName =  sensor->getPVName() ; 
+            assert(sensorPVName);
+            const void* const sensorOrigin = sensor->getOriginNode() ;
+            assert(sensorOrigin);  
+            const GVolume* outer = sensor->getOuterVolume() ; 
+            assert(outer);
+            const char* outerPVName = outer->getPVName() ;
+            assert(outerPVName);
+            const void* const outerOrigin = outer->getOriginNode() ;  
+            assert(outerOrigin);
+
+            std::cout 
+                << " sensorIdx " << std::setw(6) << sensorIdx
+                << " sensor " << std::setw(8) << sensor 
+                << " outer " << std::setw(8) << outer 
+                << " sensorPVName " << std::setw(50) << sensorPVName
+                << " outerPVName "  << std::setw(50) << outerPVName
+                << " sensorOrigin " << std::setw(8) << sensorOrigin
+                << " outerOrigin " << std::setw(8) << outerOrigin
+                << std::endl 
+                ;
+        }
+    }
+    else
+    {
+        for(unsigned i=0 ; i < numSensorVolumes ; i++)
+        {
+            glm::uvec4 id = m_sensor_identity[i] ; 
+            unsigned nidx = id.x ; 
+            const char* pvname = getPVName(nidx);  
+            std::cout 
+                << std::setw(20) << glm::to_string(id) 
+                << " " << pvname 
+                << std::endl
+                ; 
+        }
+ 
     }
 }
 
-void GNodeLib::getSensorPlacements(std::vector<void*>& placements) const 
+
+/**
+GNodeLib::getSensorPlacements
+------------------------------
+
+TODO: eliminate the outer_volume kludge 
+
+**/
+
+void GNodeLib::getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const 
 {
     unsigned numSensorVolumes = getNumSensorVolumes(); 
     for(unsigned i=0 ; i < numSensorVolumes ; i++)
@@ -386,10 +462,21 @@ void GNodeLib::getSensorPlacements(std::vector<void*>& placements) const
         unsigned sensorIdx = i ; 
         const GVolume* sensor = getSensorVolume(sensorIdx) ; 
         assert(sensor); 
-        const GVolume* outer = sensor->getOuterVolume() ; 
-        assert(outer); 
-        void* outerOrigin = outer->getOriginNode() ;  
-        placements.push_back(outerOrigin); 
+
+        void* origin = NULL ; 
+
+        if(outer_volume) 
+        {
+            const GVolume* outer = sensor->getOuterVolume() ; 
+            assert(outer); 
+            origin = outer->getOriginNode() ;  
+        } 
+        else
+        {
+            origin = sensor->getOriginNode() ;  
+        } 
+
+        placements.push_back(origin); 
     }
 }
 

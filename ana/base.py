@@ -46,6 +46,16 @@ uidp_ = lambda _:_.replace(os.environ["IDPATH"],"$IDPATH")
 gcp_ = lambda _:"%s/%s" % (os.environ["GEOCACHE"],_) 
 
 
+import sys, codecs
+if sys.version_info.major > 2:
+    u_ = lambda _:_                            # py3 strings are unicode already 
+    b_ = lambda _:codecs.latin_1_encode(_)[0]  # from py3 unicode string to bytes
+    d_ = lambda _:codecs.latin_1_decode(_)[0]  # from bytes to py3 unicode string
+else:
+    u_ = lambda _:unicode(_, "utf-8")          # py2 strings are bytes
+    b_ = lambda _:_ 
+    d_ = lambda _:_ 
+pass
 
 
 def findfile(base, name, relative=True):
