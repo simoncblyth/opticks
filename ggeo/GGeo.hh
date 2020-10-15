@@ -76,11 +76,6 @@ class GItemIndex ;
 class GItemList ; 
 class GMergedMesh ;
 
-#ifdef OLD_SCENE
-// GLTF handling 
-class GScene ; 
-#endif
-
 
 #include "GGeoBase.hh"
 
@@ -266,7 +261,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         const GVolume* getRoot() const ; 
    public:
         // via GNodeLib
-        void add(GVolume*    volume);
+        void           addVolume(const GVolume* volume);
    public:
         unsigned int   getNumVolumes() const ;
         const GNode*   getNode(unsigned index) const ; 
@@ -296,7 +291,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void dumpNode(unsigned ridx, unsigned pidx, unsigned oidx); 
     public:
         // sensor handling via GNodeLib
-        unsigned       addSensorVolume(const GVolume* volume) ;
         unsigned       getNumSensorVolumes() const ;                    // pre-cache and post-cache
         glm::uvec4     getSensorIdentity(unsigned sensorIndex) const ;  // pre-cache and post-cache
         unsigned       getSensorIdentityStandin(unsigned sensorIndex) const ;  // pre-cache and post-cache

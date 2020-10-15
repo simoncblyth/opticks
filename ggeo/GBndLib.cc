@@ -317,7 +317,8 @@ GBndLib::GBndLib(Opticks* ok, GMaterialLib* mlib, GSurfaceLib* slib)
     m_mlib(mlib),
     m_slib(slib),
     m_index_buffer(NULL),
-    m_optical_buffer(NULL)
+    m_optical_buffer(NULL),
+    m_sensor_count(0)
 {
     init();
 }
@@ -329,7 +330,8 @@ GBndLib::GBndLib(Opticks* ok)
     m_mlib(NULL),
     m_slib(NULL),
     m_index_buffer(NULL),
-    m_optical_buffer(NULL)
+    m_optical_buffer(NULL),
+    m_sensor_count(0)
 {
     init();
 }
@@ -538,9 +540,18 @@ bool GBndLib::isSensorBoundary(unsigned boundary) const
 void GBndLib::countSensorBoundary(unsigned boundary)
 {
     m_boundary_sensor_count[boundary] += 1 ; 
+    m_sensor_count += 1 ; 
 }
 
+/**
+GBndLib::getSensorCount (precache)
+------------------------------------
 
+**/
+unsigned GBndLib::getSensorCount() const 
+{
+    return m_sensor_count ; 
+}
 
 std::string GBndLib::getSensorBoundaryReport() const 
 {

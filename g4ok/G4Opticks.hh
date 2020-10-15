@@ -115,6 +115,7 @@ class G4OK_API G4Opticks
         unsigned getNumSensorVolumes() const ; 
         unsigned getSensorIdentityStandin(unsigned sensorIndex) const ;        // pre-cache and post-cache 
         const std::vector<G4PVPlacement*>& getSensorPlacements() const ;  // pre-cache live running only 
+        unsigned getNumDistinctPlacementCopyNo() const  ; 
 
     public:
         void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int sensor_category, int sensor_identifier);

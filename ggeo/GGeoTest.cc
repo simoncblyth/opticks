@@ -413,7 +413,7 @@ GVolume* GGeoTest::importCSG()
 
         relocateSurfaces(volume, spec);
 
-        m_nodelib->add(volume);
+        m_nodelib->addVolume(volume);
     }
     LOG(LEVEL) << "]" ; 
 

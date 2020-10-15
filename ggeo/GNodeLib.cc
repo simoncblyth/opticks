@@ -273,25 +273,19 @@ const GVolume* GNodeLib::getRoot() const
 
 
 /**
-GNodeLib::add
----------------
+GNodeLib::addVolume (precache)
+--------------------------------
 
 Collects all volume information.
 
-Hmm some identity information like the tripetID is only 
-available after GInstancer runs the labelling. So can this 
-be deferred ? 
-
-
-Formerly collection was done in X4PhysicalVolume::convertStructure
-but that is too soon to capture the identity labelling done by GInstancer, 
-so now collection done by GInstancer::collectNodes_r
-
- 
+The triplet identity is only available on the volumes after 
+GInstancer does the recursive labelling. So volume collection
+is done by GInstancer::collectNodes_r rather than the former 
+X4PhysicalVolume::convertStructure.
 
 **/
 
-void GNodeLib::add(const GVolume* volume)
+void GNodeLib::addVolume(const GVolume* volume)
 {
     unsigned index = volume->getIndex(); 
     m_volumes.push_back(volume);
@@ -323,24 +317,18 @@ void GNodeLib::add(const GVolume* volume)
     assert(check == volume);
 
     m_num_volumes += 1 ; 
+
+    unsigned UNSET = -1 ; 
+    unsigned sensorIndex = volume->getSensorIndex(); 
+    bool is_sensor = sensorIndex != UNSET ; 
+    if(is_sensor)
+    {
+        m_sensor_volumes.push_back(volume); 
+        m_sensor_identity.push_back(id); 
+        m_num_sensors += 1 ; 
+    }
 }
 
-/**
-GNodeLib::addSensorVolume (precache)
---------------------------------------
-**/
-
-unsigned GNodeLib::addSensorVolume(const GVolume* volume)
-{
-    unsigned sensorIndex = m_sensor_volumes.size() ;  
-    m_sensor_volumes.push_back(volume); 
-
-    glm::uvec4 id = volume->getIdentity();    // problematic very early call 
-    m_sensor_identity.push_back(id); 
-    m_num_sensors += 1 ; 
-
-    return sensorIndex ; 
-}
 /**
 GNodeLib::getNumSensorVolumes (precache and postcache)
 ---------------------------------------------------------

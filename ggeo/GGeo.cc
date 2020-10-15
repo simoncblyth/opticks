@@ -137,7 +137,7 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_log(new SLog("GGeo::GGeo","",verbose)),
    m_ok(ok), 
    m_enabled_legacy_g4dae(ok->isEnabledLegacyG4DAE()),   // --enabled_legacy_g4dae
-   m_live(live),    // live=false  by default 
+   m_live(live),    // live=false  by default, only true when translated from Geant4 tree 
    m_gltf(m_ok->getGLTF()),   
    m_composition(NULL), 
    m_instancer(NULL), 
@@ -879,9 +879,9 @@ unsigned GGeo::getNumVolumes() const
 {
     return m_nodelib->getNumVolumes();
 }
-void GGeo::add(GVolume* volume)
+void GGeo::addVolume(const GVolume* volume)
 {
-    m_nodelib->add(volume);
+    m_nodelib->addVolume(volume);
 }
 
 
@@ -911,11 +911,6 @@ const GNode* GGeo::getNode(unsigned index) const
     return m_nodelib->getNode(index);
 }
 
-
-unsigned GGeo::addSensorVolume(const GVolume* volume)
-{
-    return m_nodelib->addSensorVolume(volume); 
-}
 unsigned GGeo::getNumSensorVolumes() const 
 {
     return m_nodelib->getNumSensorVolumes() ; 

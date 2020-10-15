@@ -103,9 +103,9 @@ class GGEO_API GNodeLib
         void           setRoot(const GVolume* root); 
         const GVolume* getRoot() const ; 
     public:
-        unsigned getNumPV() const ;
-        unsigned getNumLV() const ;
-        void add(const GVolume*    volume);
+        unsigned     getNumPV() const ;
+        unsigned     getNumLV() const ;
+        void         addVolume(const GVolume*    volume);
         const GNode* getNode(unsigned index) const ; 
         const GVolume* getVolume(unsigned index) const ;  
         GVolume* getVolumeNonConst(unsigned index);
@@ -133,7 +133,6 @@ class GGEO_API GNodeLib
         std::string descVolume(unsigned index) const;
         void dumpVolumes(const char* msg="GNodeLib::dumpVolumes", float extent_cut_mm=5000.f, int cursor=-1 ) const ; 
     public:
-        unsigned         addSensorVolume(const GVolume* volume) ;
         unsigned         getNumSensorVolumes() const ;
         const GVolume*   getSensorVolume(unsigned sensorIndex) const ;
         glm::uvec4       getSensorIdentity(unsigned sensorIndex) const ;

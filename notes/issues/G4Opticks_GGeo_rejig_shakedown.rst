@@ -5,8 +5,7 @@ G4Opticks/GGeo rejig collateral damages
 Enabling G4Opticks to run from cache has some knock on issues to fix 
 when not running from cache, with eg::
 
-    epsilon:opticks blyth$ G4OPTICKS_DEBUG="--x4polyskip 211,232" lldb_ G4OKTest --  --gdmlpath $(opticksaux-dx1) 
-
+    epsilon:opticks blyth$ opticksaux-;G4OPTICKS_DEBUG="--x4polyskip 211,232" lldb_ G4OKTest --  --gdmlpath $(opticksaux-dx1) 
 
 FIXED : Issue 1 : Calling GVolume::getIdentity whilst boundary unset(-1) asserts. : Fixed by reordering in X4PhysicalVolume::convertNode
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -233,13 +232,15 @@ Fixed by doing deferredCreateGParts from GGeo::postDirectTranslation::
 
 
 
-Issue 4 : live running giving sensor_identifier zeros (because GDML PV tree copyNo zero?) and standins zero( because collected too soon)
-------------------------------------------------------------------------------------------------------------------------------------------
+FIXED : Issue 4 : live running giving sensor_identifier zeros (because GDML PV tree copyNo zero?) and standins zero( because collected too soon)
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 Hmm : this is a problem with the early collection of sensor identities before 
 the GInstancer has defined them and labelled the tree.
 
-TODO: move collection of sensor identities after tree labelling. 
+DONE: move collection of sensor identities after tree labelling. 
+
+Fixed by moving sensor identity collection later, to GInstancer::collectNodes_r.
 
 
 ::

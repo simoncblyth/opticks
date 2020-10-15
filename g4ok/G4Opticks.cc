@@ -20,6 +20,9 @@
 #include <sstream>
 #include <iostream>
 #include <cstring>
+#include <set>
+
+#include "G4PVPlacement.hh"
 
 #include "SSys.hh"
 #include "BOpticksKey.hh"
@@ -36,7 +39,6 @@
 #include "CAlignEngine.hh"
 #include "CGDML.hh"
 #include "C4FPEDetection.hh"
-
 
 #include "G4Opticks.hh"
 
@@ -459,6 +461,28 @@ const std::vector<G4PVPlacement*>& G4Opticks::getSensorPlacements() const
 {
     return m_sensor_placements ;
 }
+
+/**
+G4Opticks::getNumDistinctPlacementCopyNo
+------------------------------------------
+
+GDML physvol/@copynumber attribute persists the CopyNo, but this 
+defaults to 0 unless set at detector level.
+
+**/
+
+unsigned G4Opticks::getNumDistinctPlacementCopyNo() const 
+{
+    std::set<int> copynumber ; 
+    for(unsigned i=0 ; i < m_sensor_placements.size() ; i++)
+    {
+        const G4PVPlacement* pv = m_sensor_placements[i];
+        G4int copyNo = pv->GetCopyNo(); 
+        copynumber.insert(copyNo);  
+    }
+    return copynumber.size(); 
+}
+
 
 
 /**

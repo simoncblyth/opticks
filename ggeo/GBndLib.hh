@@ -112,6 +112,7 @@ class GGEO_API GBndLib : public GPropertyLib {
   public:
        bool isSensorBoundary(unsigned boundary) const ;
        void countSensorBoundary(unsigned boundary);
+       unsigned getSensorCount() const ; 
        std::string getSensorBoundaryReport() const ;
   public:
        unsigned getOuterMaterial(unsigned boundary) const;
@@ -214,6 +215,8 @@ class GGEO_API GBndLib : public GPropertyLib {
        NPY<unsigned int>*   m_optical_buffer ;  
        std::map<std::string, unsigned int> m_materialLineMap ;
        std::map<unsigned, unsigned>        m_boundary_sensor_count ;
+       unsigned                            m_sensor_count ; 
+
 
 };
 

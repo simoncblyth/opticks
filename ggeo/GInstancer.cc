@@ -682,7 +682,7 @@ void GInstancer::collectNodes()
 void GInstancer::collectNodes_r(const GNode* node, unsigned depth )
 {
     const GVolume* volume = dynamic_cast<const GVolume*>(node); 
-    m_nodelib->add(volume); 
+    m_nodelib->addVolume(volume); 
     for(unsigned i = 0; i < node->getNumChildren(); i++) collectNodes_r(node->getChild(i), depth + 1 );
 } 
 

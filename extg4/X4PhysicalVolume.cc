@@ -1375,10 +1375,8 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     unsigned sensorIndex = -1; 
     if(is_sensor)
     {
-        sensorIndex = m_ggeo->getNumSensorVolumes(); 
-        unsigned sensorIndex2 = m_ggeo->addSensorVolume(volume) ; 
+        sensorIndex = m_blib->getSensorCount() ;  // 0-based
         m_blib->countSensorBoundary(boundary); 
-        assert( sensorIndex == sensorIndex2 ); 
     }
     volume->setSensorIndex(sensorIndex);   // must set to -1 for non-sensors, for sensor_indices array  
     volume->setSelected( selected );

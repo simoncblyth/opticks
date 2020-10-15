@@ -100,8 +100,12 @@ void G4OKTest::init()
     unsigned num_sensor = m_g4ok->getNumSensorVolumes(); 
     assert( sensor_placements.size() == ( loaded ? 0 : num_sensor )); 
 
+    unsigned num_distinct_copynumber = m_g4ok->getNumDistinctPlacementCopyNo();  
+    bool use_standin = num_distinct_copynumber == 1 ; 
+
     LOG(info)
         << "[ setSensorData num_sensor " << num_sensor 
+        << " num_distinct_copynumber " << num_distinct_copynumber
         << " Geometry " << ( loaded ? "LOADED FROM CACHE" : "LIVE TRANSLATED" )
         ;
 
@@ -110,8 +114,10 @@ void G4OKTest::init()
         unsigned sensor_index = i ;
         unsigned sensorIdentityStandin = m_g4ok->getSensorIdentityStandin(sensor_index); // opticks triplet identifier
 
-        const G4PVPlacement* pv = loaded ? NULL                  : sensor_placements[sensor_index] ;
-        int   sensor_identifier = loaded ? sensorIdentityStandin : pv->GetCopyNo()                 ;
+        const G4PVPlacement* pv = loaded ? NULL : sensor_placements[sensor_index] ;
+        int   sensor_identifier = use_standin ? sensorIdentityStandin : pv->GetCopyNo() ;
+
+        // GDML physvol/@copynumber attribute persists the CopyNo : but this defaults to 0 unless set at detector level
 
         float efficiency_1 = 0.5f ;    
         float efficiency_2 = 1.0f ;    
