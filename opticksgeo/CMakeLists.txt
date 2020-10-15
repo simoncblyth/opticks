@@ -10,7 +10,6 @@ find_package(OpenMeshRap REQUIRED CONFIG)
 set(SOURCES
 
     OKGEO_LOG.cc
-    OpticksGeometry.cc
     OpticksAim.cc
     OpticksHub.cc
     OpticksGen.cc
@@ -18,6 +17,11 @@ set(SOURCES
     OpticksIdx.cc
 
 )
+
+set(FORMER_SOURCES
+    OpticksGeometry.cc
+)
+
 set(HEADERS
 
     OKGEO_LOG.hh
@@ -25,12 +29,16 @@ set(HEADERS
     OKGEO_HEAD.hh
     OKGEO_TAIL.hh
 
-    OpticksGeometry.hh
     OpticksHub.hh
     OpticksGen.hh
     OpticksGun.hh
     OpticksIdx.hh
 )
+
+set(FORMER_HEADERS
+    OpticksGeometry.hh
+)
+
 
 add_library( ${name}  SHARED ${SOURCES})
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )

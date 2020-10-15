@@ -373,12 +373,17 @@ GNodeLib::getSensorIdentity (precache and postcache)
 ------------------------------------------------------
 
 **/
-const glm::uvec4 GNodeLib::getSensorIdentity(unsigned sensorIndex) const 
+glm::uvec4 GNodeLib::getSensorIdentity(unsigned sensorIndex) const 
 {
     glm::uvec4 sid = m_sensor_identity[sensorIndex]; 
     return sid ; 
 }
 
+unsigned GNodeLib::getSensorIdentityStandin(unsigned sensorIndex) const 
+{
+    glm::uvec4 sid = getSensorIdentity(sensorIndex); 
+    return sid.y ;  // Opticks triplet Identifier
+}
 
 
 

@@ -111,7 +111,10 @@ class G4OK_API G4Opticks
         static void Finalize();
 
     public:
-        const std::vector<G4PVPlacement*>& getSensorPlacements() const ;
+        bool isLoadedFromCache() const ;
+        unsigned getNumSensorVolumes() const ; 
+        unsigned getSensorIdentityStandin(unsigned sensorIndex) const ;        // pre-cache and post-cache 
+        const std::vector<G4PVPlacement*>& getSensorPlacements() const ;  // pre-cache live running only 
 
     public:
         void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int sensor_category, int sensor_identifier);
@@ -134,11 +137,15 @@ class G4OK_API G4Opticks
         void setGeometry(const G4VPhysicalVolume* world); 
         void setGeometry(const char* gdmlpath);
         void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
+        void loadGeometry(); 
+    public:
         void setStandardizeGeant4Materials(bool standardize_geant4_materials);
     private:
         void setGeometry(const GGeo* ggeo); 
     private:
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
+        void initSensorData(unsigned sensor_num);
+
         void standardizeGeant4MaterialProperties();
         void createCollectors();
         void resetCollectors(); 
@@ -334,7 +341,7 @@ class G4OK_API G4Opticks
         NPY<float>*                 m_sensor_data ; 
         NPY<float>*                 m_sensor_angular_efficiency ; 
     private:
-        static G4Opticks*          fOpticks;
+        static G4Opticks*          fInstance;
 
 };
 

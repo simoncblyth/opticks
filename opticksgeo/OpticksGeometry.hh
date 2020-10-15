@@ -19,18 +19,12 @@
 
 #pragma once
 
-#include <string>
-#include <map>
-#include <glm/fwd.hpp>
 #include "plog/Severity.h"
 
 class OpticksHub ; 
 class Opticks ; 
 class Composition ; 
-template <typename> class OpticksCfg ;
 class GGeo ; 
-class GMesh ;
-class GMergedMesh ;
 
 /**
 OpticksGeometry : GGeo holder/loader/fixer 
@@ -45,7 +39,6 @@ happens within the ok/OKMgr or okg4/OKG4Mgr ctors.
 
 **/
 
-
 #include "OKGEO_API_EXPORT.hh"
 class OKGEO_API OpticksGeometry {
    public:
@@ -56,20 +49,12 @@ class OKGEO_API OpticksGeometry {
        void loadGeometry();
   public:
        GGeo*           getGGeo();
-  private: 
-       void loadGeometryBase();
-#ifdef OLD_MESHFIX
-       void fixGeometry();
-#endif
    private:
        void init();
    private:
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 
        Composition*         m_composition ; 
-#ifdef OLD_MESHFIX
-       OpticksCfg<Opticks>* m_fcfg ;
-#endif
        GGeo*                m_ggeo ; 
        unsigned             m_verbosity ;
 };

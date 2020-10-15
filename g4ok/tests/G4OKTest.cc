@@ -8,26 +8,32 @@
 G4OKTest
 ===============
 
-This is aiming to replace::
+This test is intended to provide a way of testing G4Opticks machinery 
+without ascending to the level of the experiment.
 
-   okg4/tests/OKX4Test.cc 
-
-in order to reduce duplicated code between G4Opticks and here
-and make G4Opticks functionality testable without ascending to the 
-detector specific level.
-
-Notice that this is not using the cache::
-
-    opticksaux-;G4OKTest --gdmlpath $(opticksaux-dx0) --x4polyskip 211,232
-
-    G4OPTICKS_DEBUG="--x4polyskip 211,232" lldb_ G4OKTest --  --gdmlpath $(opticksaux-dx0) 
-    ## testing embedded, so options need to be passed in the back door 
-    ## no sensors found with dx0, so try jv5
+Formerly this could not run from geocache, it now can do 
+both. When a --gdmlpath argument is used this will 
+parse the GDML into a Geant4 geometry and translate that 
+into Opticks GGeo.   Without the --gdmlpath argument the 
+cache identified by OPTICKS_KEY envvar will be loaded.
  
+From GDML::
+
+    opticksaux-
+    G4OKTest --gdmlpath $(opticksaux-dx1)
+    G4OPTICKS_DEBUG="--x4polyskip 211,232" lldb_ G4OKTest --  --gdmlpath $(opticksaux-dx1) 
     G4OPTICKS_DEBUG="" lldb_ G4OKTest --  --gdmlpath $(opticksaux-jv5) 
 
 
-Hmm not using the cache makes this not very convenient for dev cycling
+From cache(experimental)::
+
+    G4OKTest 
+
+Notice that Opticks is "embedded" in both cases, thus 
+need to supply Opticks arguments via G4OPTICKS_DEBUG envvar backdoor.
+
+Hmm embedded running matches production usage, BUT its a pain, better for G4Opticks
+to be passed Opticks ptr ? Which when NULL results in embedded running.
 
 **/
 
@@ -40,7 +46,7 @@ struct G4OKTest
 
     int          m_log ; 
     const char*  m_gdmlpath ; 
-    G4Opticks*   m_g4opticks ; 
+    G4Opticks*   m_g4ok ; 
 };
 
 
@@ -54,7 +60,7 @@ G4OKTest::G4OKTest(int argc, char** argv)
     :
     m_log(initLog(argc, argv)),
     m_gdmlpath(PLOG::instance->get_arg_after("--gdmlpath", NULL)),
-    m_g4opticks(new G4Opticks)
+    m_g4ok(new G4Opticks)
 {
     init();
 }
@@ -64,50 +70,70 @@ G4OKTest::G4OKTest(int argc, char** argv)
 G4OKTest::init
 ----------------
 
-This is usually done from detector specific code such as:: 
+Code similar to this is usually within detector simulation frameworks, eg for JUNO:: 
 
     Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc
+
+The origin G4PVPlacement for sensor volumes are provided by Opticks in order 
+that the corresponding detector specific sensor identifiers can be 
+communicated to Opticks via setSensorData. For JUNO the sensor identifiers
+can be simply obtained with G4PVPlacement::GetCopyNo.
+
+When running from cache G4PVPlacement are not available, so the 
+opticksTripletIdentifier is used as a standin for the sensor identifier. 
 
 **/
 
 void G4OKTest::init()
 {
-    if( m_gdmlpath == NULL ) return ; 
-    LOG(info) << m_gdmlpath ;  
-    G4Opticks* g4opticks = m_g4opticks ; 
+    if(m_gdmlpath == NULL)
+    {
+        m_g4ok->loadGeometry(); 
+    }
+    else
+    {
+        m_g4ok->setGeometry(m_gdmlpath);  
+    }
 
-    g4opticks->setGeometry(m_gdmlpath);  
-    const std::vector<G4PVPlacement*>& sensor_placements = g4opticks->getSensorPlacements() ;
-    unsigned num_sensor = sensor_placements.size();
-    LOG(info) << "[ setSensorData num_sensor " << num_sensor ; 
+    bool loaded = m_g4ok->isLoadedFromCache(); 
+    const std::vector<G4PVPlacement*>& sensor_placements = m_g4ok->getSensorPlacements() ;
+    unsigned num_sensor = m_g4ok->getNumSensorVolumes(); 
+    assert( sensor_placements.size() == ( loaded ? 0 : num_sensor )); 
+
+    LOG(info)
+        << "[ setSensorData num_sensor " << num_sensor 
+        << " Geometry " << ( loaded ? "LOADED FROM CACHE" : "LIVE TRANSLATED" )
+        ;
 
     for(unsigned i=0 ; i < num_sensor ; i++)
     {
         unsigned sensor_index = i ;
-        const G4PVPlacement* pv = sensor_placements[sensor_index] ;
-        G4int copyNo = pv->GetCopyNo();
+        unsigned sensorIdentityStandin = m_g4ok->getSensorIdentityStandin(sensor_index); // opticks triplet identifier
+
+        const G4PVPlacement* pv = loaded ? NULL                  : sensor_placements[sensor_index] ;
+        int   sensor_identifier = loaded ? sensorIdentityStandin : pv->GetCopyNo()                 ;
 
         float efficiency_1 = 0.5f ;    
         float efficiency_2 = 1.0f ;    
         int   sensor_cat = 0 ; 
-        int   sensor_identifier = copyNo ;
 
         std::cout 
-            << " sensor_index " << sensor_index
-            << " sensor_identifier " << sensor_identifier
+            << " sensor_index(dec) "      << std::setw(5) << std::dec << sensor_index
+            << " (hex) "                  << std::setw(5) << std::hex << sensor_index << std::dec
+            << " sensor_identifier(hex) " << std::setw(7) << std::hex << sensor_identifier << std::dec
             << std::endl
             ;
 
-        g4opticks->setSensorData( sensor_index, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
+        m_g4ok->setSensorData( sensor_index, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
     }
     std::string SensorCategoryList = "placeholder" ; 
-    g4opticks->setSensorDataMeta<std::string>("SensorCategoryList", SensorCategoryList);
+    m_g4ok->setSensorDataMeta<std::string>("SensorCategoryList", SensorCategoryList);
     
     LOG(info) << "] setSensorData num_sensor " << num_sensor ; 
 
-    //g4opticks->setSensorAngularEfficiency...
+    //m_g4ok->setSensorAngularEfficiency...
 
-    LOG(info) << g4opticks->dbgdesc() ; 
+    LOG(info) << m_g4ok->dbgdesc() ; 
 }
 
 int G4OKTest::rc() const 

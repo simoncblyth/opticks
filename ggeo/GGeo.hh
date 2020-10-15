@@ -199,6 +199,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void loadFromCache();
         void postDirectTranslation();  // from G4Opticks::translateGeometry
     private: 
+        void postLoadFromCache();
         void postDirectTranslationDump() const ; 
     private: 
         void afterConvertMaterials();
@@ -296,8 +297,11 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         // sensor handling via GNodeLib
         unsigned       addSensorVolume(const GVolume* volume) ;
-        unsigned       getNumSensorVolumes() const ;
-        const GVolume* getSensorVolume(unsigned sensorIndex) const ;
+        unsigned       getNumSensorVolumes() const ;                    // pre-cache and post-cache
+        glm::uvec4     getSensorIdentity(unsigned sensorIndex) const ;  // pre-cache and post-cache
+        unsigned       getSensorIdentityStandin(unsigned sensorIndex) const ;  // pre-cache and post-cache
+
+        const GVolume* getSensorVolume(unsigned sensorIndex) const ;    // pre-cache only 
         std::string    reportSensorVolumes(const char* msg) const ; 
         void           dumpSensorVolumes(const char* msg) const ; 
         void           getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const ;

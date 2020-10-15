@@ -18,46 +18,31 @@
  */
 
 // brap-
-#include "BTimeKeeper.hh"
+//#include "BTimeKeeper.hh"
 
 // npy-
-#include "NGLM.hpp"
-#include "GLMFormat.hpp"
-#include "GLMPrint.hpp"
-#include "NSlice.hpp"
+//#include "NGLM.hpp"
+//#include "GLMFormat.hpp"
+//#include "GLMPrint.hpp"
+//#include "NSlice.hpp"
 
 // okc-
 #include "Opticks.hh"
-#include "Composition.hh"
-#include "OpticksConst.hh"
-#include "OpticksResource.hh"
-#include "OpticksAttrSeq.hh"
-#include "OpticksCfg.hh"
+//#include "Composition.hh"
+//#include "OpticksConst.hh"
+//#include "OpticksResource.hh"
+//#include "OpticksAttrSeq.hh"
+//#include "OpticksCfg.hh"
 
 // okg-
 #include "OpticksHub.hh"
 
 // ggeo-
+//#include "GGeoLib.hh"
+//#include "GSurfaceLib.hh"
 
-#include "GGeoLib.hh"
-#include "GSurfaceLib.hh"
-
-#include "GMergedMesh.hh"
+//#include "GMergedMesh.hh"
 #include "GGeo.hh"
-
-
-#ifdef OLD_ASIRAP
-// asirap
-#include "AssimpGGeo.hh"
-#endif
-
-
-#ifdef OLD_MESHFIX
-// openmeshrap-
-#include "MFixer.hh"
-#include "MTool.hh"
-#endif
-
 
 // opticksgeo-
 #include "OpticksGeometry.hh"
@@ -69,25 +54,15 @@ const plog::Severity OpticksGeometry::LEVEL = PLOG::EnvLevel("OpticksGeometry", 
 
 
 OpticksGeometry::OpticksGeometry(OpticksHub* hub)
-   :
-   m_hub(hub),
-   m_ok(m_hub->getOpticks()),
-   m_composition(m_hub->getComposition()),
-#ifdef OLD_MESHFIX
-   m_fcfg(m_ok->getCfg()),
-#endif
-   m_ggeo(NULL),
-
-   m_verbosity(m_ok->getVerbosity())
+    :
+    m_hub(hub),
+    m_ok(m_hub->getOpticks()),
+    m_composition(m_hub->getComposition()),
+    m_ggeo(NULL),
+    m_verbosity(m_ok->getVerbosity())
 {
     init();
 }
-
-GGeo* OpticksGeometry::getGGeo()
-{
-   return m_ggeo ; 
-}
-
 
 void OpticksGeometry::init()
 {
@@ -95,6 +70,10 @@ void OpticksGeometry::init()
     m_ggeo->setLookup(m_hub->getLookup());
 }
 
+GGeo* OpticksGeometry::getGGeo()
+{
+   return m_ggeo ; 
+}
 
 void OpticksGeometry::loadGeometry()
 {
@@ -102,7 +81,7 @@ void OpticksGeometry::loadGeometry()
     LOG(LEVEL) << "["  ; 
     OK_PROFILE("_OpticksGeometry::loadGeometry");
 
-    loadGeometryBase(); //  usually from cache
+    m_ggeo->loadGeometry();   // potentially from cache : for gltf > 0 loads both tri and ana geometry 
 
     if(!m_ggeo->isValid())
     {
@@ -111,106 +90,15 @@ void OpticksGeometry::loadGeometry()
         return ; 
     }
 
-
-    // modifyGeometry moved up to OpticksHub
-
-#ifdef OLD_MESHFIX
-    fixGeometry();
-#endif
-
-    //registerGeometry moved up to OpticksHub
-
     if(!m_ok->isGeocacheEnabled())
     {
         LOG(info) << "early exit due to --nogeocache/-G option " ; 
         m_ok->setExit(true); 
     }
 
-
     OK_PROFILE("OpticksGeometry::loadGeometry");
     LOG(LEVEL) << "]" ; 
 }
 
-
-/**
-OpticksGeometry::loadGeometryBase
-------------------------------------
-
-
-
-**/
-
-void OpticksGeometry::loadGeometryBase()
-{
-    LOG(LEVEL) << "[" ; 
-
-    if(m_ok->hasOpt("qe1"))
-        m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);
-
-#ifdef OLD_ASIRAP
-    m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-#endif
-
-#ifdef OLD_MESHFIX
-    OpticksResource* resource = m_ok->getResource();
-    m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
-    m_ggeo->setMeshVerbosity(m_ok->getMeshVerbosity());    
-    m_ggeo->setMeshJoinCfg( resource->getMeshfix() );
-
-    std::string meshversion = m_fcfg->getMeshVersion() ;;
-    if(!meshversion.empty())
-    {
-        LOG(error) << "using debug meshversion " << meshversion ;  
-        m_ggeo->getGeoLib()->setMeshVersion(meshversion.c_str());
-    }
-#endif
-
-    m_ggeo->loadGeometry();   // potentially from cache : for gltf > 0 loads both tri and ana geometry 
-      
-  
-#ifdef OLD_MESHFIX
-    if(m_ggeo->getMeshVerbosity() > 2)
-    {
-        GMergedMesh* mesh1 = m_ggeo->getMergedMesh(1);
-        if(mesh1)
-        {
-            mesh1->dumpVolumes("OpticksGeometry::loadGeometryBase mesh1");
-            mesh1->save("$TMP", "GMergedMesh", "baseGeometry") ;
-        }
-    }
-#endif
-
-    LOG(LEVEL) << "]" ; 
-}
-
-
-#ifdef OLD_MESHFIX
-void OpticksGeometry::fixGeometry()
-{
-    if(m_ggeo->isLoadedFromCache())
-    {
-        LOG(debug) << "needs to be done precache " ;
-        return ; 
-    }
-    LOG(info) << "[" ; 
-
-    MFixer* fixer = new MFixer(m_ggeo);
-    fixer->setVerbose(m_ok->hasOpt("meshfixdbg"));
-    fixer->fixMesh();
- 
-    bool zexplode = m_ok->hasOpt("zexplode");
-    if(zexplode)
-    {
-       // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
-        glm::vec4 zexplodeconfig = gvec4(m_fcfg->getZExplodeConfig());
-        print(zexplodeconfig, "zexplodeconfig");
-
-        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);  // mesh0-ok
-        mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x );  // mesh0-ok
-    }
-
-    LOG(info) << "]" ; 
-}
-#endif
 
 

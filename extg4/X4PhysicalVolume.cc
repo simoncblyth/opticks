@@ -1481,6 +1481,12 @@ X4PhysicalVolume::GetSensorPlacements
 
 Populates placements with the void* origins obtained from ggeo, casting them back to G4PVPlacement.
 
+
+Invoked from G4Opticks::translateGeometry, kinda feels misplaced being in X4PhysicalVolume
+as depends only on GGeo+G4, perhaps should live in G4Opticks ?
+Possibly the positioning is side effect from the difficulties of testing G4Opticks 
+due to it not being able to boot from cache.
+
 **/
 
 void X4PhysicalVolume::GetSensorPlacements(const GGeo* gg, std::vector<G4PVPlacement*>& placements, bool outer_volume ) // static

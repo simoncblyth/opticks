@@ -68,7 +68,7 @@
 const plog::Severity G4Opticks::LEVEL = PLOG::EnvLevel("G4Opticks", "DEBUG")  ;
 
 
-G4Opticks* G4Opticks::fOpticks = NULL ;
+G4Opticks* G4Opticks::fInstance = NULL ;
 
 //const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0"  ; 
 const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0 --xanalytic"  ; 
@@ -119,8 +119,8 @@ std::string G4Opticks::desc() const
 
 G4Opticks* G4Opticks::Get()
 {
-    if (!fOpticks) fOpticks = new G4Opticks;
-    return fOpticks ;
+    if (!fInstance) fInstance = new G4Opticks;
+    return fInstance ;
 }
 
 void G4Opticks::Initialize(const char* gdmlpath, bool standardize_geant4_materials)
@@ -138,8 +138,8 @@ void G4Opticks::Initialize(const G4VPhysicalVolume* world, bool standardize_gean
 void G4Opticks::Finalize()
 {
     LOG(info) << G4Opticks::Get()->desc();
-    delete fOpticks ; 
-    fOpticks = NULL ;
+    delete fInstance ; 
+    fInstance = NULL ;
 }
 
 G4Opticks::~G4Opticks()
@@ -180,8 +180,8 @@ G4Opticks::G4Opticks()
     m_sensor_data(NULL),
     m_sensor_angular_efficiency(NULL)  
 {
-    assert( fOpticks == NULL ); 
-    fOpticks = this ; 
+    assert( fInstance == NULL ); 
+    fInstance = this ; 
     LOG(info) << "ctor : DISABLE FPE detection : as it breaks OptiX launches" ; 
     C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
 }
@@ -303,6 +303,7 @@ G4Opticks::setGeometry
 
 **/
 
+
 void G4Opticks::setGeometry(const char* gdmlpath)
 {
     const G4VPhysicalVolume* world = CGDML::Parse(gdmlpath);
@@ -315,11 +316,6 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_gea
     setGeometry(world);  
 }
 
-void G4Opticks::setStandardizeGeant4Materials(bool standardize_geant4_materials)
-{
-    m_standardize_geant4_materials = standardize_geant4_materials ; 
-    assert( m_standardize_geant4_materials == false && "needs debugging as observed to mess up source materials"); 
-}
 
 void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 {
@@ -341,9 +337,53 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
     LOG(LEVEL) << "]" ; 
 }
 
+/**
+G4Opticks::loadGeometry
+-------------------------
+
+Load geometry cache identified by the OPTICKS_KEY envvar.
+
+**/
+
+
+void G4Opticks::loadGeometry()
+{
+    const char* keyspec = NULL ;   // NULL means get keyspec from OPTICKS_KEY envvar 
+    Opticks* ok = InitOpticks(keyspec); 
+    GGeo* ggeo = GGeo::Load(ok); 
+    setGeometry(ggeo); 
+}
+
+
+/**
+G4Opticks::setGeometry(const GGeo* ggeo)
+------------------------------------------
+
+When GGeo is loaded from cache the sensor placements
+origin nodes are not available, but their number is available.
+
+**/
 
 void G4Opticks::setGeometry(const GGeo* ggeo)
 {
+    bool loaded = ggeo->isLoadedFromCache() ; 
+    unsigned num_sensor = ggeo->getNumSensorVolumes(); 
+
+    if( loaded == false )
+    {
+        bool outer_volume = true ; 
+        X4PhysicalVolume::GetSensorPlacements(ggeo, m_sensor_placements, outer_volume);
+        assert( num_sensor == m_sensor_placements.size() ) ; 
+    }
+
+    LOG(info) 
+        << " GGeo: " 
+        << ( loaded ? "LOADED FROM CACHE " : "LIVE TRANSLATED " )  
+        << " num_sensor " << num_sensor 
+        ;
+ 
+    initSensorData(num_sensor);   
+
     m_ggeo = ggeo ;
     m_blib = m_ggeo->getBndLib();  
     m_ok = m_ggeo->getOpticks(); 
@@ -352,16 +392,51 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
 
     //CAlignEngine::Initialize(m_ok->getIdPath()) ;
 
-    // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated
+    // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated (or loaded)
     LOG(LEVEL) << "( OpMgr " ; 
     m_opmgr = new OpMgr(m_ok) ;   
     LOG(LEVEL) << ") OpMgr " ; 
 }
 
 
+
+void G4Opticks::setStandardizeGeant4Materials(bool standardize_geant4_materials)
+{
+    m_standardize_geant4_materials = standardize_geant4_materials ; 
+    assert( m_standardize_geant4_materials == false && "needs debugging as observed to mess up source materials"); 
+}
+
+
+
+bool G4Opticks::isLoadedFromCache() const
+{
+    return m_ggeo->isLoadedFromCache(); 
+}
+
+
 /**
-G4Opticks::getSensorPlacements
---------------------------------
+G4Opticks::getNumSensorVolumes (pre-cache and post-cache)
+------------------------------------------------------------
+**/
+
+unsigned G4Opticks::getNumSensorVolumes() const 
+{
+    return m_ggeo->getNumSensorVolumes(); 
+}
+
+/**
+G4Opticks::getSensorIdentity (pre-cache and post-cache)
+---------------------------------------------------------
+**/
+
+unsigned G4Opticks::getSensorIdentityStandin(unsigned sensorIndex) const 
+{
+    return m_ggeo->getSensorIdentityStandin(sensorIndex); 
+}
+
+/**
+G4Opticks::getSensorPlacements (pre-cache live running only)
+---------------------------------------------------------------
 
 Sensor placements are the outer volumes of instance assemblies that 
 contain sensor volumes.  The order of the returned vector of G4PVPlacement
@@ -383,6 +458,23 @@ the 0-based contiguous Opticks sensorIndex as the first argument.
 const std::vector<G4PVPlacement*>& G4Opticks::getSensorPlacements() const 
 {
     return m_sensor_placements ;
+}
+
+
+/**
+G4Opticks::initSensorData
+---------------------------
+
+Invoked from G4Opticks::setGeometry(const GGeo*)
+
+**/
+
+void G4Opticks::initSensorData(unsigned sensor_num)
+{
+    LOG(LEVEL) << " sensor_num " << sensor_num  ;
+    m_sensor_num = sensor_num ;  
+    m_sensor_data = NPY<float>::make(m_sensor_num, 4); 
+    m_sensor_data->zero(); 
 }
 
 
@@ -530,6 +622,9 @@ void G4Opticks::saveSensorArrays(const char* dir) const
 G4Opticks::translateGeometry
 ------------------------------
 
+Canonically invoked by G4Opticks::setGeometry with top:G4VPhysicalVolume.
+
+
 1. A keyspec representing the identity of the world G4VPhysicalVolume geometry is formed, 
    and this is set with BOpticksKey::SetKey prior to Opticks instanciation.
 
@@ -572,18 +667,8 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     gg->postDirectTranslation(); 
     LOG(info) << ") GGeo::postDirectTranslation " ;
 
-    LOG(info) << "( X4PhysicalVolume::GetSensorPlacements " ;
-    bool outer_volume = true ; 
-    X4PhysicalVolume::GetSensorPlacements(gg, m_sensor_placements, outer_volume);
-    m_sensor_num = m_sensor_placements.size();  
-    m_sensor_data = NPY<float>::make(m_sensor_num, 4); 
-    m_sensor_data->zero(); 
-
-    LOG(info) << ") X4PhysicalVolume::GetSensorPlacements sensor_num " << m_sensor_num  ;
-
     return gg ; 
 }
-
 
 
 

@@ -79,7 +79,7 @@
 #include "OpticksGen.hh"
 #include "OpticksRun.hh"
 #include "OpticksAim.hh"
-#include "OpticksGeometry.hh"
+//#include "OpticksGeometry.hh"
 
 #include "PLOG.hh"
 
@@ -196,7 +196,6 @@ OpticksHub::OpticksHub(Opticks* ok)
     m_ok(ok),
     m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
     m_run(m_ok->getRun()),
-    m_geometry(NULL),
     m_ggeo(GGeo::GetInstance()),   // a pre-existing instance will prevent subsequent loading from cache   
     m_composition(new Composition(m_ok)),
 #ifdef OPTICKS_NPYSERVER
@@ -231,7 +230,6 @@ void OpticksHub::init()
 
     pLOG(LEVEL,0) << "[" ;   // -1 : one notch more easily seen than LEVEL
 
-
     add(m_fcfg);
 
     configure();
@@ -259,9 +257,8 @@ void OpticksHub::init()
 
     if(m_err) return ; 
 
-    // TODO:migrate into GGeo for self-containment ?
-    m_ggeo->deferredCreateGParts() ;    
-
+    // DONE::migrated below into GGeo::postLoadFromCache.  HMM:what about live running ?
+    //m_ggeo->deferredCreateGParts() ;    
 
     m_gen = new OpticksGen(this) ;
 
@@ -270,52 +267,38 @@ void OpticksHub::init()
 }
 
 
-
-
-
-
 /**
 OpticksHub::loadGeometry
 -------------------------
 
-TODO: get rid of OpticksGeometry intermediary 
+
+Formerly the OpticksGeometry intermediary was used here.
 
 **/
 
 
 void OpticksHub::loadGeometry()
 {
-    assert(m_geometry == NULL && "OpticksHub::loadGeometry should only be called once");
+    assert(m_ggeo == NULL && "OpticksHub::loadGeometry should only be called once");
 
     LOG(info) << "[ " << m_ok->getIdPath()  ; 
 
-    m_geometry = new OpticksGeometry(this);   // m_lookup is set into m_ggeo here 
+    m_ggeo = new GGeo(m_ok) ; 
+    m_ggeo->setLookup(getLookup());  // TODO: see if legacy lookup stuff can be removed
+    m_ggeo->loadGeometry();  
 
-    m_geometry->loadGeometry();   
-
-    m_ggeo = m_geometry->getGGeo();
+    bool valid = m_ggeo->isValid() ; 
+    if(!valid) LOG(fatal) << "invalid geometry, try creating geocache with geocache-create and set OPTICKS_KEY " ; 
+    assert(valid); 
 
     //   Lookup A and B are now set ...
     //      A : by OpticksHub::configureLookupA (ChromaMaterialMap.json)
     //      B : on GGeo loading in GGeo::setupLookup
-
+    //
 
     if(m_ok->isTest())  // --test : instanciate GGeoTest 
     {
-        LOG(info) << "--test modifying geometry" ; 
-
-        assert(m_geotest == NULL);
-
-        GGeoBase* basis = getGGeoBasePrimary();  // downcast m_ggeo
-
-        m_geotest = new GGeoTest(m_ok, basis);
-
-        int err = m_geotest->getErr() ;
-        if(err) 
-        {
-            setErr(err);
-            return ; 
-        }
+        setupTestGeometry(); 
     }
     else
     {
@@ -337,6 +320,8 @@ OpticksHub::adoptGeometry
 --------------------------
 
 Adopts a directly created geometry, ie one that was not loaded from cache.
+Now with G4Opticks this also adopts an externally loaded from cache GGeo.
+
 
 **/
 
@@ -347,7 +332,7 @@ void OpticksHub::adoptGeometry()
 
     assert( m_ggeo ); 
 
-    assert( m_ggeo->isPrepared() && "MUST GGeo::prepare() before geometry can be adopted, and uploaded to GPU " ) ;
+    assert( m_ggeo->isLoadedFromCache() || m_ggeo->isPrepared() && "MUST GGeo::prepare() live  geometry before adoption and subsequent GPU conversion " ) ;
 
     m_aim->registerGeometry( m_ggeo );
     
@@ -357,7 +342,22 @@ void OpticksHub::adoptGeometry()
 }
 
 
+void OpticksHub::setupTestGeometry()
+{
+    LOG(info) << "--test modifying geometry" ; 
 
+    assert(m_geotest == NULL);
+
+    GGeoBase* basis = getGGeoBasePrimary();  // downcast m_ggeo
+
+    m_geotest = new GGeoTest(m_ok, basis);
+
+    int err = m_geotest->getErr() ;
+    if(err) 
+    {
+        setErr(err);
+    }
+}
 
 
 
@@ -371,7 +371,6 @@ std::string OpticksHub::desc() const
     ss << "OpticksHub"
        << " encumbent " << ( ggb ? ggb->getIdentifier() : "-" ) 
        << " m_ggeo " << m_ggeo
-       << " m_geometry " << m_geometry
        << " m_gen " << m_gen
        ;  
 
@@ -777,10 +776,6 @@ Opticks* OpticksHub::getOpticks()
 Composition* OpticksHub::getComposition()
 {
     return m_composition ;  
-}
-OpticksGeometry* OpticksHub::getGeometry()
-{
-    return m_geometry ;  
 }
 
 

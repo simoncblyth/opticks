@@ -335,14 +335,17 @@ void GGeo::init()
     LOG(LEVEL) << " idpath " << ( idpath ? idpath : "NULL" ) ; 
     assert(idpath && "GGeo::init idpath is required" );
 
-    m_loaded_from_cache = m_ok->isGeocacheAvailable() ;   // cache exists and is enabled 
 
-    bool will_load_libs = m_loaded_from_cache && (m_live == false ); 
+    bool geocache_available = m_ok->isGeocacheAvailable() ;   // cache exists and is enabled  
+
+    bool will_load_libs = geocache_available && (m_live == false ); 
     bool will_init_libs = !will_load_libs ; 
+
+    m_loaded_from_cache = will_load_libs ; 
 
     LOG(LEVEL) 
         << " idpath " << idpath
-        << " m_loaded_from_cache " << m_loaded_from_cache
+        << " geocache_available  " << geocache_available
         << " m_live " << m_live 
         << " will_init_libs " << will_init_libs 
         ;
@@ -717,11 +720,19 @@ void GGeo::loadFromCache()
     m_nodelib = GNodeLib::Load(m_ok );        
     m_meshlib = GMeshLib::Load(m_ok );
 
-    loadCacheMeta();
+    postLoadFromCache(); 
 
     LOG(LEVEL) << "]" ; 
 }
 
+
+void GGeo::postLoadFromCache()
+{
+    loadCacheMeta();
+
+    close();                  // formerly OpticksHub::loadGeometry
+    deferredCreateGParts();   // formerly OpticksHub::init 
+}
 
 
 bool GGeo::isLive() const 
@@ -966,6 +977,15 @@ unsigned GGeo::getNumSensorVolumes() const
 {
     return m_nodelib->getNumSensorVolumes() ; 
 }
+glm::uvec4 GGeo::getSensorIdentity(unsigned sensorIndex) const 
+{
+    return m_nodelib->getSensorIdentity(sensorIndex); 
+}
+unsigned GGeo::getSensorIdentityStandin(unsigned sensorIndex) const 
+{
+    return m_nodelib->getSensorIdentityStandin(sensorIndex); 
+}
+
 const GVolume* GGeo::getSensorVolume(unsigned sensorIndex) const 
 {
     return m_nodelib->getSensorVolume(sensorIndex) ; 

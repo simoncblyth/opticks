@@ -136,7 +136,8 @@ class GGEO_API GNodeLib
         unsigned         addSensorVolume(const GVolume* volume) ;
         unsigned         getNumSensorVolumes() const ;
         const GVolume*   getSensorVolume(unsigned sensorIndex) const ;
-        const glm::uvec4 getSensorIdentity(unsigned sensorIndex) const ;
+        glm::uvec4       getSensorIdentity(unsigned sensorIndex) const ;
+        unsigned         getSensorIdentityStandin(unsigned sensorIndex) const ;
         std::string      reportSensorVolumes(const char* msg) const ; 
         void             dumpSensorVolumes(const char* msg="GNodeLib::dumpSensorVolumes") const ; 
         void             getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const ; 

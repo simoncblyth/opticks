@@ -13,12 +13,12 @@ int main(int argc, char** argv)
     gg.loadFromCache();
     gg.dumpStats();
 
-
-    // TODO: relocate below preps into loadFromCache ? 
+    /**
+    // moved below into GGeo::postLoadFromCache which is invoked by GGeo::loadFromCache
     gg.close();                  // normally OpticksHub::loadGeometry
     gg.deferredCreateGParts();   // normally OpticksHub::init 
+    **/  
 
-  
     gg.dryrun_convert(); 
 
     return 0 ;

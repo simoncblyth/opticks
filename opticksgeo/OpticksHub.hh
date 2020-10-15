@@ -29,16 +29,12 @@ class SLog ;
 class BCfg ; 
 
 class Opticks ; 
-class OpticksGeometry ; 
 class OpticksAttrSeq ; 
 class OpticksEvent ; 
 
 class GenstepNPY  ; 
 
 class GGeoBase ; 
-#ifdef OLD_SCENE
-class GScene ; 
-#endif
 class GGeo ;
 class GGeoTest ;
 
@@ -53,7 +49,6 @@ class GBndLib ;
 class GSourceLib ; 
 class GScintillatorLib ; 
 class GNodeLib ;
-//class GPmtLib ;
 
 class Composition ; 
 class Bookmarks ; 
@@ -84,6 +79,9 @@ template <typename> class numpyserver ;
 
 OpticksHub
 =============
+
+TODO: reduce the number of code paths, perhaps with a GGeo argument to OpticksHub
+
 
 * Non-viz, hostside intersection of config, geometry and event
 * Intended to operate at event level, not below 
@@ -145,6 +143,7 @@ class OKGEO_API OpticksHub : public SCtrl {
        void configureLookupA();
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
        void overrideMaterialMapA(const char* jsonA );
+       void setupTestGeometry(); 
    public:
        void add(BCfg* cfg);
    public:
@@ -177,7 +176,6 @@ class OKGEO_API OpticksHub : public SCtrl {
        unsigned        getTarget();
    public:
        Composition*         getComposition();
-       OpticksGeometry*     getGeometry();
 
    public:
        GGeo*                getGGeo() const ;
@@ -239,12 +237,8 @@ class OKGEO_API OpticksHub : public SCtrl {
        int              m_gltf ;
        OpticksRun*      m_run ; 
        bool             m_immediate ; 
-       OpticksGeometry* m_geometry ; 
 
        GGeo*            m_ggeo ;  
-#ifdef OLD_SCENE
-       GScene*          m_gscene ;  
-#endif
        Composition*     m_composition ; 
 
    private:
