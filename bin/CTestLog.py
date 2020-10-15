@@ -64,7 +64,7 @@ class CTestLog(object):
                     continue 
                 pass
                 path = os.path.join(dirpath, cls.NAME)
-                lines = map(str.rstrip, file(path,"r").readlines() )
+                lines = list(map(str.rstrip, open(path,"r").readlines() ))
                 lg = cls(lines, path=path, reldir=reldir)
                 logs.append(lg)
             pass

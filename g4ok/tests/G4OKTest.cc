@@ -115,7 +115,7 @@ void G4OKTest::init()
         unsigned sensorIdentityStandin = m_g4ok->getSensorIdentityStandin(sensor_index); // opticks triplet identifier
 
         const G4PVPlacement* pv = loaded ? NULL : sensor_placements[sensor_index] ;
-        int   sensor_identifier = use_standin ? sensorIdentityStandin : pv->GetCopyNo() ;
+        int   sensor_identifier = ( use_standin || pv == NULL) ? sensorIdentityStandin : pv->GetCopyNo() ;
 
         // GDML physvol/@copynumber attribute persists the CopyNo : but this defaults to 0 unless set at detector level
 

@@ -249,23 +249,22 @@ GItemList* GNodeLib::getLVList()
 
 
 /**
-GNodeLib::setRoot
--------------------
+GNodeLib::setRootVolume
+------------------------
 
 Require to defer GNodeLib::add of volumes until 
 after GInstancer identity labelling, hence need
 to hold on to root in the meantime.
 
-Canonically invoked from X4PhysicalVolume::convertStructure/GGeo::setRoot
+Canonically invoked from X4PhysicalVolume::convertStructure/GGeo::setRootVolume
 
 **/
 
-void GNodeLib::setRoot(const GVolume* root)
+void GNodeLib::setRootVolume(const GVolume* root)
 {
     m_root = root ; 
-
 }
-const GVolume* GNodeLib::getRoot() const 
+const GVolume* GNodeLib::getRootVolume() const 
 {
    return m_root ;  
 }

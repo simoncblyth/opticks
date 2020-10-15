@@ -271,3 +271,92 @@ Fixed by moving sensor identity collection later, to GInstancer::collectNodes_r.
      sensor_index(dec)     8 (hex)     8 sensor_identifier(hex)       0 standin(hex)       0
      sensor_index(dec)     9 (hex)     9 sensor_identifier(hex)       0 standin(hex)       0
 
+
+Issue 5 : FIXED remnant AssimpRap dependency
+----------------------------------------------
+
+* curious this build issue did not show up until now 
+
+
+Issue 5 : 3 test fails
+-------------------------
+
+Linux::
+
+    FAILS:  3   / 437   :  Fri Oct 16 03:33:28 2020   
+      41 /56  Test #41 : GGeoTest.GGeoIdentityTest                     Child aborted***Exception:     5.17   
+      12 /19  Test #12 : ExtG4Test.X4PhysicalVolume2Test               Child aborted***Exception:     0.17   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      8.09   
+    [blyth@localhost opticksgeo]$ 
+
+macOS::
+
+    SLOW: tests taking longer that 15 seconds
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         20.86  
+
+    FAILS:  4   / 434   :  Thu Oct 15 20:44:10 2020   
+      41 /56  Test #41 : GGeoTest.GGeoIdentityTest                     Child aborted***Exception:     3.89   
+      12 /19  Test #12 : ExtG4Test.X4PhysicalVolume2Test               Child aborted***Exception:     0.12   
+      1  /1   Test #1  : G4OKTest.G4OKTest                             ***Exception: SegFault         7.31   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      5.88   
+    epsilon:opticks blyth$ 
+
+
+GGeoIdentityTest 
+    FIXED : mm0 is no longer "global" : thats the model change
+
+X4PhysicalVolume2Test 
+    FIXED : node collection is deferred so must now use GGeo::getRootVolume
+
+G4OKTest
+    FIXED : trivial NULL pv 
+
+
+
+Issue 6 : IntegrationTests.tboolean.box test geometry SPack assert due to boundary -1 
+----------------------------------------------------------------------------------------- 
+
+::
+
+    cd ~/opticks/integration
+    om-
+    om-test
+
+::
+
+    epsilon:tests blyth$ LV=box tboolean.sh --generateoverride 10000 -D
+
+    2020-10-15 21:29:12.510 INFO  [10234957] [Opticks::loadOriginCacheMeta@1886] ExtractCacheMetaGDMLPath /usr/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export_v1.gdml
+    2020-10-15 21:29:12.510 INFO  [10234957] [Opticks::loadOriginCacheMeta@1914] (pass) GEOCACHE_CODE_VERSION 6
+    2020-10-15 21:29:12.510 INFO  [10234957] [OpticksHub::loadGeometry@284] [ /usr/local/opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/50a18baaf29b18fae8c1642927003ee3/1
+    2020-10-15 21:29:12.709 INFO  [10234957] [GNodeLib::GNodeLib@102] loaded
+    2020-10-15 21:29:16.119 INFO  [10234957] [NMeta::dump@199] GGeo::loadCacheMeta.lv2sd
+    2020-10-15 21:29:16.119 INFO  [10234957] [NMeta::dump@199] GGeo::loadCacheMeta.lv2mt
+    2020-10-15 21:29:16.447 INFO  [10234957] [OpticksHub::setupTestGeometry@347] --test modifying geometry
+    Assertion failed: ((b & 0xffff0000) == 0), function Encode22, file /Users/blyth/opticks/sysrap/SPack.cc, line 58.
+    ...
+       frame #3: 0x00007fff589ec1ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x000000010b04722e libSysRap.dylib`SPack::Encode22(a=0, b=4294967295) at SPack.cc:58
+        frame #5: 0x0000000109dea8d9 libOpticksCore.dylib`OpticksShape::Encode(meshIndex=0, boundaryIndex=4294967295) at OpticksShape.cc:12
+        frame #6: 0x000000010984d6b5 libGGeo.dylib`GVolume::getShapeIdentity(this=0x0000000118b457e0) const at GVolume.cc:286
+        frame #7: 0x000000010984d651 libGGeo.dylib`GVolume::getIdentity(this=0x0000000118b457e0) const at GVolume.cc:261
+        frame #8: 0x000000010989e339 libGGeo.dylib`GNodeLib::addVolume(this=0x0000000119757aa0, volume=0x0000000118b457e0) at GNodeLib.cc:309
+        frame #9: 0x0000000109860a4d libGGeo.dylib`GGeoTest::importCSG(this=0x0000000119750b30) at GGeoTest.cc:416
+        frame #10: 0x0000000109860128 libGGeo.dylib`GGeoTest::initCreateCSG(this=0x0000000119750b30) at GGeoTest.cc:281
+        frame #11: 0x000000010985fa16 libGGeo.dylib`GGeoTest::init(this=0x0000000119750b30) at GGeoTest.cc:175
+        frame #12: 0x000000010985f1e7 libGGeo.dylib`GGeoTest::GGeoTest(this=0x0000000119750b30, ok=0x000000010eb5f810, basis=0x000000010ed272c0) at GGeoTest.cc:160
+        frame #13: 0x000000010985fc75 libGGeo.dylib`GGeoTest::GGeoTest(this=0x0000000119750b30, ok=0x000000010eb5f810, basis=0x000000010ed272c0) at GGeoTest.cc:154
+        frame #14: 0x00000001095d511f libOpticksGeo.dylib`OpticksHub::setupTestGeometry(this=0x000000010ed19ea0) at OpticksHub.cc:353
+        frame #15: 0x00000001095d49f4 libOpticksGeo.dylib`OpticksHub::loadGeometry(this=0x000000010ed19ea0) at OpticksHub.cc:301
+        frame #16: 0x00000001095d336b libOpticksGeo.dylib`OpticksHub::init(this=0x000000010ed19ea0) at OpticksHub.cc:250
+        frame #17: 0x00000001095d2fa5 libOpticksGeo.dylib`OpticksHub::OpticksHub(this=0x000000010ed19ea0, ok=0x000000010eb5f810) at OpticksHub.cc:217
+        frame #18: 0x00000001095d35cd libOpticksGeo.dylib`OpticksHub::OpticksHub(this=0x000000010ed19ea0, ok=0x000000010eb5f810) at OpticksHub.cc:216
+        frame #19: 0x00000001000e071a libOKG4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007ffeefbfdd40, argc=32, argv=0x00007ffeefbfde18) at OKG4Mgr.cc:100
+        frame #20: 0x00000001000e0b13 libOKG4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007ffeefbfdd40, argc=32, argv=0x00007ffeefbfde18) at OKG4Mgr.cc:111
+        frame #21: 0x0000000100013cb3 OKG4Test`main(argc=32, argv=0x00007ffeefbfde18) at OKG4Test.cc:27
+        frame #22: 0x00007fff58978015 libdyld.dylib`start + 1
+        frame #23: 0x00007fff58978015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+

@@ -864,15 +864,20 @@ void GGeo::reportMeshUsage(const char* msg) const
 }
  
 
+/**
+GGeo::setRootVolume (via GNodeLib)
+------------------------------------
 
-// via GNodeLib
-void GGeo::setRoot(const GVolume* root)
+Canonically invoked by X4PhysicalVolume::convertStructure, 
+
+**/
+void GGeo::setRootVolume(const GVolume* root)
 {
-    m_nodelib->setRoot(root); 
+    m_nodelib->setRootVolume(root); 
 }
-const GVolume* GGeo::getRoot() const 
+const GVolume* GGeo::getRootVolume() const 
 {
-    return m_nodelib->getRoot(); 
+    return m_nodelib->getRootVolume(); 
 }
 
 unsigned GGeo::getNumVolumes() const 

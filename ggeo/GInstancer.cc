@@ -92,8 +92,7 @@ void GInstancer::setVertexMin(unsigned vertex_min)
 
 void GInstancer::initRoot()
 {
-    //m_root = m_nodelib->getVolume(0);
-    m_root = m_ggeo->getRoot();
+    m_root = m_ggeo->getRootVolume();
     m_root_ = const_cast<GVolume*>(m_root); 
     assert(m_root);
     assert(m_root_);

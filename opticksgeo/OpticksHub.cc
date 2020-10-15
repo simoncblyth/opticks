@@ -332,7 +332,7 @@ void OpticksHub::adoptGeometry()
 
     assert( m_ggeo ); 
 
-    assert( m_ggeo->isLoadedFromCache() || m_ggeo->isPrepared() && "MUST GGeo::prepare() live  geometry before adoption and subsequent GPU conversion " ) ;
+    assert( ( m_ggeo->isLoadedFromCache() || m_ggeo->isPrepared() ) && "MUST GGeo::prepare() live  geometry before adoption and subsequent GPU conversion " ) ;
 
     m_aim->registerGeometry( m_ggeo );
     

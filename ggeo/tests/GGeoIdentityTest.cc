@@ -31,7 +31,6 @@ int test_GGeo_identity(const GGeo* gg, unsigned mmidx)
     NPY<int>* idchk = NPY<int>::make(numVolumes,3,4) ; 
     idchk->zero(); 
 
-    bool global = mmidx == 0 ; 
 
     unsigned edgeitems = 20 ; 
     unsigned modulo = 500 ; 
@@ -62,9 +61,6 @@ int test_GGeo_identity(const GGeo* gg, unsigned mmidx)
         unsigned nvert = nodeinfo.y ;
         unsigned node = nodeinfo.z ;
         unsigned parent = nodeinfo.w ;
-
-        if(global) assert( node == i );
-
 
         if(i < edgeitems || i % modulo == 0 || i > numVolumes - edgeitems)
         std::cout 
@@ -120,13 +116,10 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
-    ok.configure(); 
 
-    GGeo gg(&ok);
-    gg.loadFromCache();
-    gg.dumpStats();
+    GGeo* gg = GGeo::Load(&ok);  
 
-    return test_GGeo_identity(&gg);
+    return test_GGeo_identity(gg);
 }
 
 

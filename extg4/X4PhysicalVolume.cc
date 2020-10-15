@@ -946,8 +946,7 @@ void X4PhysicalVolume::convertStructure()
 
     m_root = convertStructure_r(pv, parent, depth, parent_pv, recursive_select );
 
-    m_ggeo->setRoot(m_root); 
-     
+    m_ggeo->setRootVolume(m_root); 
 
     OK_PROFILE("X4PhysicalVolume::convertStructure");
 

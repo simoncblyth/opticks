@@ -97,8 +97,7 @@ TODO: do all mm
 void GColorizer::writeVertexColors()
 {
     GMergedMesh* mesh0 = m_geolib->getMergedMesh(0); // mesh0-ok
-    //const GVolume* root = m_nodelib->getVolume(0);
-    const GVolume* root = m_nodelib->getRoot();
+    const GVolume* root = m_nodelib->getRootVolume();
     writeVertexColors( mesh0, root );   // mesh0-ok
 }
 

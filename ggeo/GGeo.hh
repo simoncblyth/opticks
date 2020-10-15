@@ -257,8 +257,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
    public:
         // via GNodeLib
-        void           setRoot(const GVolume* volume); 
-        const GVolume* getRoot() const ; 
+        void           setRootVolume(const GVolume* volume); 
+        const GVolume* getRootVolume() const ; 
    public:
         // via GNodeLib
         void           addVolume(const GVolume* volume);
