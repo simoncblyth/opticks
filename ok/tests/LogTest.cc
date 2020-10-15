@@ -24,7 +24,6 @@
 #include "NPY_LOG.hh"
 #include "OKCORE_LOG.hh"
 #include "GGEO_LOG.hh"
-#include "ASIRAP_LOG.hh"
 #include "MESHRAP_LOG.hh"
 #include "OKGEO_LOG.hh"
 #include "OGLRAP_LOG.hh"
@@ -50,7 +49,6 @@ int main(int argc, char** argv)
     NPY_LOG__ ;
     OKCORE_LOG__ ;
     GGEO_LOG__ ;
-    ASIRAP_LOG__ ;
     MESHRAP_LOG__ ;
     OKGEO_LOG__ ;
     OGLRAP_LOG__ ;
@@ -72,7 +70,6 @@ int main(int argc, char** argv)
     NPY_LOG::Check(msg) ;
     OKCORE_LOG::Check(msg) ;
     GGEO_LOG::Check(msg) ;
-    ASIRAP_LOG::Check(msg) ;
     MESHRAP_LOG::Check(msg) ;
     OKGEO_LOG::Check(msg) ;
     OGLRAP_LOG::Check(msg) ;

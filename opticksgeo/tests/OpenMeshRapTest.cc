@@ -32,10 +32,13 @@
 #include "OpticksQuery.hh"
 #include "OpticksResource.hh"
 
+
+/*
 #include "AssimpGGeo.hh"
 #include "AssimpTree.hh"
 #include "AssimpSelection.hh"
 #include "AssimpImporter.hh"
+*/
 
 #include "GMesh.hh"
 #include "GGeo.hh"
