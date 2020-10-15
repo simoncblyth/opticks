@@ -121,6 +121,7 @@ void G4OKTest::init()
             << " sensor_index(dec) "      << std::setw(5) << std::dec << sensor_index
             << " (hex) "                  << std::setw(5) << std::hex << sensor_index << std::dec
             << " sensor_identifier(hex) " << std::setw(7) << std::hex << sensor_identifier << std::dec
+            << " standin(hex) "           << std::setw(7) << std::hex << sensorIdentityStandin << std::dec
             << std::endl
             ;
 

@@ -401,16 +401,6 @@ void GGeo::initLibs()
 
 
 
-#ifdef OLD_SCENE
-// TO ELIMINATE
-GScene* GGeo::getScene() 
-{
-    return m_gscene ; 
-}
-#endif
-
-
-
 // via Opticks
 
 const char*      GGeo::getIdPath() { return m_ok->getIdPath(); } 
@@ -471,15 +461,13 @@ void GGeo::loadGeometry()
 
     if(!m_loaded_from_cache)
     {
-        LOG(fatal) 
-            << "MISSING geocache : create one from GDML with geocache-;geocache-create " ; 
+        LOG(fatal) << "MISSING geocache : create one from GDML with geocache-;geocache-create " ; 
         assert(0);  
     }
     else
     {
         loadFromCache();
     } 
-
 
     // HMM : this not done in direct route ?
     setupLookup();
@@ -490,8 +478,49 @@ void GGeo::loadGeometry()
 }
 
 
+/**
+GGeo::loadFromCache
+---------------------
+**/
+
+void GGeo::loadFromCache()
+{   
+    LOG(LEVEL) << "[ " << m_ok->getIdPath()  ; 
+
+    bool constituents = true ; 
+    m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
+
+    // GBndLib is persisted via index buffer, not float buffer
+    m_materiallib = m_bndlib->getMaterialLib();
+    m_surfacelib = m_bndlib->getSurfaceLib();
+
+    m_scintillatorlib  = GScintillatorLib::load(m_ok);
+    m_sourcelib  = GSourceLib::load(m_ok);
+
+    m_geolib = GGeoLib::Load(m_ok, m_bndlib);
+    m_nodelib = GNodeLib::Load(m_ok );        
+    m_meshlib = GMeshLib::Load(m_ok );
+
+    postLoadFromCache(); 
+
+    LOG(LEVEL) << "]" ; 
+}
 
 
+/**
+GGeo::postLoadFromCache
+-------------------------
+
+Invoked from GGeo::loadFromCache immediately after loading the libs 
+**/
+
+void GGeo::postLoadFromCache()
+{
+    loadCacheMeta();
+
+    close();                  // formerly OpticksHub::loadGeometry
+    deferredCreateGParts();   // formerly OpticksHub::init   <-- this is needed for live running also  
+}
 
 /**
 GGeo::postDirectTranslation
@@ -517,6 +546,9 @@ void GGeo::postDirectTranslation()
     LOG(LEVEL) << "( GGeo::save " ; 
     save();
     LOG(LEVEL) << ") GGeo::save " ; 
+
+
+    deferredCreateGParts();  
 
     postDirectTranslationDump(); 
 
@@ -695,44 +727,8 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
 
 
 
-/**
-GGeo::loadFromCache
----------------------
-
-**/
-
- 
-void GGeo::loadFromCache()
-{   
-    LOG(LEVEL) << "[ " << m_ok->getIdPath()  ; 
-
-    bool constituents = true ; 
-    m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
-
-    // GBndLib is persisted via index buffer, not float buffer
-    m_materiallib = m_bndlib->getMaterialLib();
-    m_surfacelib = m_bndlib->getSurfaceLib();
-
-    m_scintillatorlib  = GScintillatorLib::load(m_ok);
-    m_sourcelib  = GSourceLib::load(m_ok);
-
-    m_geolib = GGeoLib::Load(m_ok, m_bndlib);
-    m_nodelib = GNodeLib::Load(m_ok );        
-    m_meshlib = GMeshLib::Load(m_ok );
-
-    postLoadFromCache(); 
-
-    LOG(LEVEL) << "]" ; 
-}
 
 
-void GGeo::postLoadFromCache()
-{
-    loadCacheMeta();
-
-    close();                  // formerly OpticksHub::loadGeometry
-    deferredCreateGParts();   // formerly OpticksHub::init 
-}
 
 
 bool GGeo::isLive() const 
@@ -792,38 +788,6 @@ void GGeo::setupColors()
 }
 
 
-#ifdef OLD_BOUNDS
-
-
-gfloat3* GGeo::getLow()
-{
-   return m_low ; 
-}
-gfloat3* GGeo::getHigh()
-{
-   return m_high ; 
-}
-
-void GGeo::setLow(const gfloat3& low)
-{
-    m_low = new gfloat3(low);
-}
-void GGeo::setHigh(const gfloat3& high)
-{
-    m_high = new gfloat3(high);
-}
-
-void GGeo::updateBounds(GNode* node)
-{
-    if(!m_low)  m_low  = new gfloat3(1e10f, 1e10f, 1e10f) ;
-    if(!m_high) m_high = new gfloat3(-1e10f, -1e10f, -1e10f) ;
-  
-    node->updateBounds(*m_low, *m_high);
-}
-
-#endif
-
-
 void GGeo::Summary(const char* msg)
 {
     LOG(info) 
@@ -835,10 +799,6 @@ void GGeo::Summary(const char* msg)
         << " ss " << getNumSkinSurfaces()
         ;
 
-#ifdef OLD_BOUNDS
-    if(m_low)  printf("    low  %10.3f %10.3f %10.3f \n", m_low->x, m_low->y, m_low->z);
-    if(m_high) printf("    high %10.3f %10.3f %10.3f \n", m_high->x, m_high->y, m_high->z);
-#endif
 }
 
 void GGeo::Details(const char* msg)
@@ -846,15 +806,6 @@ void GGeo::Details(const char* msg)
     Summary(msg) ;
 
     char mbuf[BSIZ];
-
-    /*
-    for(unsigned int ims=0 ; ims < m_meshes.size()  ; ims++ )
-    {
-        GMesh* ms = m_meshes[ims];
-        snprintf(mbuf,BSIZ, "%s ms %u", msg, ims);
-        ms->Summary(mbuf);
-    }
-    */
 
     for(unsigned int ibs=0 ; ibs < getNumBorderSurfaces()  ; ibs++ )
     {
@@ -875,14 +826,6 @@ void GGeo::Details(const char* msg)
         mat->Summary(mbuf);
     }
 
-    /*
-    for(unsigned int isol=0 ; isol < m_volumes.size()  ; isol++ )
-    {
-        GVolume* sol = m_volumes[isol];
-        snprintf(mbuf,BSIZ, "%s so %u", msg, isol);
-        sol->Summary(mbuf);
-    }
-    */
 }
 
 
@@ -1075,16 +1018,6 @@ void GGeo::traverse(const char* msg)
 
 void GGeo::traverse( const GNode* node, unsigned depth)
 {
-#ifdef OLD_SENSOR
-    GVolume* volume = dynamic_cast<GVolume*>(node) ;
-    NSensor* sensor = volume->getSensor(); 
-    if(sensor)
-         LOG(debug) << "GGeo::traverse " 
-                   << " nodeIndex " << node->getIndex()
-                   << sensor->description() 
-                   ; 
-#endif
-
     for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1);
 }
 
@@ -1628,42 +1561,6 @@ glm::vec4 GGeo::getCE(unsigned index) const
 }
 
 
-#ifdef OLD_GEOM
-glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_index )
-{
-    assert(0); // moved to transform approach for torch targetting 
-
-    GMergedMesh* mm = getMergedMesh(merged_mesh_index);
-    assert(mm);
-
-    glm::vec4 ce ; 
-    if(merged_mesh_index == 0)
-    {
-        gfloat4 vce = mm->getCenterExtent(target); 
-        ce.x = vce.x ; 
-        ce.y = vce.y ; 
-        ce.z = vce.z ; 
-        ce.w = vce.w ; 
-        print(ce, "GGeo::getCenterExtent target:%u", target);
-    }
-    else
-    {
-        float* transform = mm->getTransform(target);
-        ce.x = *(transform + 4*3 + 0) ; 
-        ce.y = *(transform + 4*3 + 1) ; 
-        ce.z = *(transform + 4*3 + 2) ; 
-
-        gfloat4 vce = mm->getCenterExtent(0); 
-        ce.w = vce.w ;  
-        // somewhat dodgy, should probably find the largest extent 
-        // of all the local coordinate extents
-    }
-    return ce ; 
-}
-#endif
-
-
-
 /**
 GGeo::dumpTree
 ---------------
@@ -1678,7 +1575,6 @@ void GGeo::dumpTree(const char* msg)
 {
     GMergedMesh* mm0 = getMergedMesh(0);
 
-    // all these are full traverse counts, not reduced by selections or instancing
     unsigned int nso = mm0->getNumVolumes();  
     guint4* nodeinfo = mm0->getNodeInfo(); 
 

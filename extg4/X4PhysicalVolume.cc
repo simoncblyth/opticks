@@ -1357,6 +1357,9 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     G4PVPlacement* _placement = const_cast<G4PVPlacement*>(placement) ;  
     void* origin_node = static_cast<void*>(_placement) ; 
     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node );
+    volume->setBoundary( boundary );   // must setBoundary before adding sensor volume 
+    volume->setCopyNumber(copyNumber);  // NB within instances this is changed by GInstancer::labelRepeats_r when m_duplicate_outernode_copynumber is true
+
     m_node_count += 1 ; 
 
     unsigned lvr_lvIdx = lvIdx ; 
@@ -1367,33 +1370,20 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
                  << " selected " << selected
                  ; 
 
-    int sensorIndex = m_blib->isSensorBoundary(boundary) ? m_ggeo->addSensorVolume(volume) : -1 ; 
-    if(sensorIndex > -1) m_blib->countSensorBoundary(boundary); 
 
-    /*
-    if(sensorIndex > -1)
+    bool is_sensor = m_blib->isSensorBoundary(boundary) ; 
+    unsigned sensorIndex = -1; 
+    if(is_sensor)
     {
-        LOG(info)
-            << " copyNumber " << std::setw(8) << copyNumber
-            << " sensorIndex " << std::setw(8) << sensorIndex
-            << " boundary " << std::setw(4) << boundary 
-            << " boundaryName " << boundaryName
-            ;
+        sensorIndex = m_ggeo->getNumSensorVolumes(); 
+        unsigned sensorIndex2 = m_ggeo->addSensorVolume(volume) ; 
+        m_blib->countSensorBoundary(boundary); 
+        assert( sensorIndex == sensorIndex2 ); 
     }
-    */
- 
-#ifdef OLD_SENSOR
-    NSensor* sensor = NULL ; 
-    volume->setSensor( sensor );   
-#endif
-    volume->setSensorIndex(sensorIndex); 
-
-    volume->setCopyNumber(copyNumber);  // NB within instances this is changed by GInstancer::labelRepeats_r when m_duplicate_outernode_copynumber is true
-    volume->setBoundary( boundary ); 
+    volume->setSensorIndex(sensorIndex);   // must set to -1 for non-sensors, for sensor_indices array  
     volume->setSelected( selected );
 
     volume->setLevelTransform(ltransform);
-
     volume->setLocalTransform(ltriple);
     volume->setGlobalTransform(gtriple);
  

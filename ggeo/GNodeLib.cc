@@ -335,9 +335,10 @@ unsigned GNodeLib::addSensorVolume(const GVolume* volume)
     unsigned sensorIndex = m_sensor_volumes.size() ;  
     m_sensor_volumes.push_back(volume); 
 
-    glm::uvec4 id = volume->getIdentity();  
+    glm::uvec4 id = volume->getIdentity();    // problematic very early call 
     m_sensor_identity.push_back(id); 
     m_num_sensors += 1 ; 
+
     return sensorIndex ; 
 }
 /**
@@ -347,12 +348,6 @@ GNodeLib::getNumSensorVolumes (precache and postcache)
 
 unsigned GNodeLib::getNumSensorVolumes() const 
 {
-    LOG(info) 
-        << " m_num_sensors " << m_num_sensors
-        << " m_sensor_identity.size() " << m_sensor_identity.size()
-        ;
-     
-    assert( m_sensor_identity.size() == m_num_sensors );
     return m_num_sensors ; 
 }
 

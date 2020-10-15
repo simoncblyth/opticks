@@ -4,6 +4,16 @@ const char* GGeo::CATHODE_MATERIAL = "Bialkali" ;
 
 
 
+#ifdef OLD_SCENE
+// TO ELIMINATE
+GScene* GGeo::getScene() 
+{
+    return m_gscene ; 
+}
+#endif
+
+
+
 
 
 #define WITH_LEGACY_G4DAE 1 
@@ -350,6 +360,82 @@ void GGeo::getSensitiveLVSDMT( std::vector<std::string>& lvn, std::vector<std::s
     }
 }
 
+#endif
+
+
+
+#ifdef OLD_BOUNDS
+
+
+gfloat3* GGeo::getLow()
+{
+   return m_low ; 
+}
+gfloat3* GGeo::getHigh()
+{
+   return m_high ; 
+}
+
+void GGeo::setLow(const gfloat3& low)
+{
+    m_low = new gfloat3(low);
+}
+void GGeo::setHigh(const gfloat3& high)
+{
+    m_high = new gfloat3(high);
+}
+
+void GGeo::updateBounds(GNode* node)
+{
+    if(!m_low)  m_low  = new gfloat3(1e10f, 1e10f, 1e10f) ;
+    if(!m_high) m_high = new gfloat3(-1e10f, -1e10f, -1e10f) ;
+  
+    node->updateBounds(*m_low, *m_high);
+}
+
+
+#ifdef OLD_BOUNDS
+    if(m_low)  printf("    low  %10.3f %10.3f %10.3f \n", m_low->x, m_low->y, m_low->z);
+    if(m_high) printf("    high %10.3f %10.3f %10.3f \n", m_high->x, m_high->y, m_high->z);
+#endif
+
+
+
+#endif
+
+
+#ifdef OLD_GEOM
+glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_index )
+{
+    assert(0); // moved to transform approach for torch targetting 
+
+    GMergedMesh* mm = getMergedMesh(merged_mesh_index);
+    assert(mm);
+
+    glm::vec4 ce ; 
+    if(merged_mesh_index == 0)
+    {
+        gfloat4 vce = mm->getCenterExtent(target); 
+        ce.x = vce.x ; 
+        ce.y = vce.y ; 
+        ce.z = vce.z ; 
+        ce.w = vce.w ; 
+        print(ce, "GGeo::getCenterExtent target:%u", target);
+    }
+    else
+    {
+        float* transform = mm->getTransform(target);
+        ce.x = *(transform + 4*3 + 0) ; 
+        ce.y = *(transform + 4*3 + 1) ; 
+        ce.z = *(transform + 4*3 + 2) ; 
+
+        gfloat4 vce = mm->getCenterExtent(0); 
+        ce.w = vce.w ;  
+        // somewhat dodgy, should probably find the largest extent 
+        // of all the local coordinate extents
+    }
+    return ce ; 
+}
 #endif
 
 
