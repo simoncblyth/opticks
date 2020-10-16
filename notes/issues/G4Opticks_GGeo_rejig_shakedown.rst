@@ -1,11 +1,20 @@
 G4Opticks/GGeo rejig collateral damages
 ===========================================
 
+Next: 
+
+* :doc:`tboolean-box-analysis-fail`
+
+
+Issues
+----------
 
 Enabling G4Opticks to run from cache has some knock on issues to fix 
 when not running from cache, with eg::
 
     epsilon:opticks blyth$ opticksaux-;G4OPTICKS_DEBUG="--x4polyskip 211,232" lldb_ G4OKTest --  --gdmlpath $(opticksaux-dx1) 
+
+
 
 FIXED : Issue 1 : Calling GVolume::getIdentity whilst boundary unset(-1) asserts. : Fixed by reordering in X4PhysicalVolume::convertNode
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -313,6 +322,27 @@ G4OKTest
 
 
 
+One remaining fail
+
+Linux::
+
+    SLOW: tests taking longer that 15 seconds
+
+    FAILS:  1   / 434   :  Fri Oct 16 04:40:54 2020   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      8.13   
+    [blyth@localhost opticks]$ 
+
+macOS::
+
+    SLOW: tests taking longer that 15 seconds
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         20.76  
+
+    FAILS:  1   / 434   :  Thu Oct 15 21:44:15 2020   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      5.48   
+
+
+
+
 Issue 6 : IntegrationTests.tboolean.box test geometry SPack assert due to boundary -1 
 ----------------------------------------------------------------------------------------- 
 
@@ -358,5 +388,85 @@ Issue 6 : IntegrationTests.tboolean.box test geometry SPack assert due to bounda
         frame #23: 0x00007fff58978015 libdyld.dylib`start + 1
     (lldb) 
 
+
+
+
+
+
+Add some LEVEL debug to GGeoTest::
+
+    epsilon:tests blyth$ LV=box GGeoTest=INFO tboolean.sh --generateoverride 10000 -D
+
+
+Ordering problem boundaries only set after importCSG ?::
+
+    251 GMergedMesh* GGeoTest::initCreateCSG()
+    252 {
+    ...
+    281     GVolume* top = importCSG();
+    282 
+    283     assignBoundaries();
+    284 
+
+
+
+FIXED : Chicken/egg problem
+----------------------------
+
+GGeoTest::assignBoundaries needs the volumes to be in the 
+nodelib already but cannot add to nodelib because doing so 
+calls GVolume::getIdentity which fails when boundaries are not 
+defined yet. 
+
+Fix via: 
+
+* mock up parent child relation between the volumes and 
+  use a recursive traverse for assignBoundaries ... 
+  to be closer to the normal geometry path ?
+
+Subsequently 
+
+* :doc:`tboolean-box-analysis-fail`
+
+::
+
+    690 void GGeoTest::assignBoundaries()
+    691 {
+    692     plog::Severity level = m_dbggeotest ? info : debug ;
+    693 
+    694     LOG(level) << "[" ;
+    695 
+    696     unsigned numTree = m_csglist->getNumTrees() ;
+    697     unsigned numVolume = m_nodelib->getNumVolumes();
+    698     assert( numVolume == numTree );
+    699 
+    700     m_bndlib->closeConstituents();
+    701 
+    702     for(unsigned i=0 ; i < numVolume ; i++)
+    703     {
+    704         GVolume* volume = m_nodelib->getVolumeNonConst(i) ;
+    705         const NCSG* csg = volume->getMesh()->getCSG();
+    706 
+    707         const char* spec = csg->getBoundary();
+    708         assert(spec);
+    709         unsigned boundary = m_bndlib->addBoundary(spec, false);
+    710 
+    711         volume->setBoundary(boundary); // creates arrays, duplicating boundary to all tris
+    712     }
+    713 
+    714     // see notes/issues/material-names-wrong-python-side.rst
+    715     LOG(level) << "Save mlib/slib names "
+    716               << " numVolume : " << numVolume
+    717               << " csgpath : " << m_csgpath
+    718               ;
+    719 
+    720     if( numVolume > 0 )
+    721     {
+    722         m_mlib->saveNames(m_csgpath);
+    723         m_slib->saveNames(m_csgpath);
+    724     }
+    725 
+    726     LOG(level) << "]" ;
+    727 }
 
 

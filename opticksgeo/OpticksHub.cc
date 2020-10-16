@@ -257,8 +257,6 @@ void OpticksHub::init()
 
     if(m_err) return ; 
 
-    // DONE::migrated below into GGeo::postLoadFromCache.  HMM:what about live running ?
-    //m_ggeo->deferredCreateGParts() ;    
 
     m_gen = new OpticksGen(this) ;
 
@@ -309,7 +307,9 @@ void OpticksHub::loadGeometry()
 
     m_aim->registerGeometry( m_ggeo );
     
-    m_ggeo->setComposition(m_composition);
+    m_ggeo->setComposition(m_composition);  
+    // hmm: not keen on any changes to GGeo after loading, would prefer m_ggeo to be const 
+    // perhaps composition should live in m_ok
 
     LOG(info) << "]" ; 
 }
@@ -341,6 +341,16 @@ void OpticksHub::adoptGeometry()
     LOG(LEVEL) << "]" ; 
 }
 
+
+/**
+OpticksHub::setupTestGeometry
+-------------------------------
+
+TODO: find a way to handle test geometry without such different code paths ?
+possibly by making GGeoTest fulfil a common interface to GGeo and internally 
+get most of its details from the basis GGeo. 
+
+**/
 
 void OpticksHub::setupTestGeometry()
 {

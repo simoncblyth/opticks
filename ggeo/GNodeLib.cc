@@ -279,7 +279,7 @@ Collects all volume information.
 
 The triplet identity is only available on the volumes after 
 GInstancer does the recursive labelling. So volume collection
-is done by GInstancer::collectNodes_r rather than the former 
+is now done by GInstancer::collectNodes_r rather than the former 
 X4PhysicalVolume::convertStructure.
 
 **/

@@ -90,7 +90,14 @@ class GGEO_API GGeoTest : public GGeoBase {
        void checkPts();
 
        GMergedMesh* initCreateCSG();
-       void setErr(int err); 
+
+       void         assignBoundaries(GVolume* root);
+       void         assignBoundaries_r(GNode* node, unsigned depth);
+
+       void         collectNodes(const GVolume* root);
+       void         collectNodes_r(const GNode* node, unsigned depth );
+
+       void         setErr(int err); 
     public:
        // GGeoBase
 
@@ -135,8 +142,6 @@ class GGEO_API GGeoTest : public GGeoBase {
     private:
        GVolume*     importCSG();
        GMesh*       importMeshViaProxy(NCSG* tree); 
-       void         assignBoundaries();
-
 
     private:
        Opticks*         m_ok ; 

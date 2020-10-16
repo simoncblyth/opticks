@@ -35,6 +35,7 @@
 
 // okc-
 #include "Opticks.hh"
+#include "OpticksIdentity.hh"
 #include "OpticksResource.hh"
 #include "OpticksEventAna.hh"
 #include "OpticksConst.hh"
@@ -280,7 +281,10 @@ GMergedMesh* GGeoTest::initCreateCSG()
 
     GVolume* top = importCSG();
 
-    assignBoundaries(); 
+    assignBoundaries(top); 
+
+    collectNodes(top); 
+
 
     unsigned ridx = 0 ; 
     GNode* base = NULL ; 
@@ -403,6 +407,15 @@ GVolume* GGeoTest::importCSG()
         int sensorIndex = -1 ; 
         volume->setSensorIndex(sensorIndex); // see notes/issues/GGeoTest_GMergedMesh_mergeVolumeFaces_assert_sensor_indices.rst 
 
+        // forming tripletIdentity here just to match the normal way of doing things, 
+        // which is mostly redundant for non-instanced test geometry
+        unsigned ridx = 0 ; // remainder volume
+        unsigned pidx = 0 ; // only one placement
+        unsigned oidx = i ; // offset-index 
+        unsigned tripletIdentity = OpticksIdentity::Encode(ridx, pidx, oidx); 
+        assert( oidx == tripletIdentity ); 
+
+        volume->setTripletIdentity(tripletIdentity); 
 
         GPt* pt = volume->getPt(); 
         assert( pt );
@@ -410,15 +423,48 @@ GVolume* GGeoTest::importCSG()
         const NCSG* csg = mesh->getCSG(); 
         const char* spec = csg->getBoundary(); 
         assert( spec ); 
+        LOG(LEVEL) << "boundary spec " << spec ; 
 
         relocateSurfaces(volume, spec);
 
-        m_nodelib->addVolume(volume);
+        // m_nodelib->addVolume(volume); 
+        // this is too soon to be collecting volumes, manifests with assert due to boundary unset.
+        // Instead moved to collectNodes, see notes/issues/G4Opticks_GGeo_rejig_shakedown.rst 
     }
     LOG(LEVEL) << "]" ; 
 
     return top ; 
 }
+
+/**
+GGeoTest::collectNodes
+------------------------
+
+Recursive traversal collecting all nodes into m_nodelib:GNodeLib.
+
+NB Must be invoked late, as adding volumes to GNodeLib invokes GVolume::getIdentity
+which asserts when things such as the boundary are unset.
+
+Same as GInstancer::collectNodes GInstancer::collectNodes_r for normal geometry
+
+**/
+
+void GGeoTest::collectNodes(const GVolume* root)
+{
+    assert(root);
+    collectNodes_r(root, 0); 
+}
+void GGeoTest::collectNodes_r(const GNode* node, unsigned depth )
+{
+    const GVolume* volume = dynamic_cast<const GVolume*>(node); 
+    m_nodelib->addVolume(volume); 
+    for(unsigned i = 0; i < node->getNumChildren(); i++) collectNodes_r(node->getChild(i), depth + 1 );
+} 
+
+
+
+
+
 
 
 
@@ -686,37 +732,25 @@ See notes/issues/GGeoTest_isClosed_assert.rst
 
 **/
 
-void GGeoTest::assignBoundaries()
+void GGeoTest::assignBoundaries(GVolume* root)
 {
     plog::Severity level = m_dbggeotest ? info : debug ;     
 
     LOG(level) << "[" ; 
 
     unsigned numTree = m_csglist->getNumTrees() ;
-    unsigned numVolume = m_nodelib->getNumVolumes();
-    assert( numVolume == numTree );
 
     m_bndlib->closeConstituents(); 
 
-    for(unsigned i=0 ; i < numVolume ; i++)
-    {
-        GVolume* volume = m_nodelib->getVolumeNonConst(i) ;
-        const NCSG* csg = volume->getMesh()->getCSG(); 
-
-        const char* spec = csg->getBoundary();  
-        assert(spec);  
-        unsigned boundary = m_bndlib->addBoundary(spec, false); 
-
-        volume->setBoundary(boundary); // creates arrays, duplicating boundary to all tris
-    }
+    assignBoundaries_r(root, 0); 
 
     // see notes/issues/material-names-wrong-python-side.rst
     LOG(level) << "Save mlib/slib names " 
-              << " numVolume : " << numVolume
+              << " numTree : " << numTree
               << " csgpath : " << m_csgpath
               ;
 
-    if( numVolume > 0 )
+    if( numTree > 0 )
     { 
         m_mlib->saveNames(m_csgpath);
         m_slib->saveNames(m_csgpath);
@@ -724,6 +758,21 @@ void GGeoTest::assignBoundaries()
 
     LOG(level) << "]" ; 
 }
+
+
+void GGeoTest::assignBoundaries_r(GNode* node, unsigned depth )
+{
+    GVolume* volume = dynamic_cast<GVolume*>(node); 
+    const NCSG* csg = volume->getMesh()->getCSG(); 
+    const char* spec = csg->getBoundary();  
+    assert(spec);  
+    unsigned boundary = m_bndlib->addBoundary(spec, false); 
+    volume->setBoundary(boundary); // creates arrays, duplicating boundary to all tris
+ 
+    for(unsigned i = 0; i < node->getNumChildren(); i++) assignBoundaries_r(node->getChild(i), depth + 1 );
+} 
+
+
 
 
 
