@@ -77,7 +77,7 @@ def emit_ansi(fn):
         return fn(*args)
     return new
 
-def init_logging(level="info", color=True):
+def init_logging(level="info", color=True, cflog=False):
     """
     """
     if color:
@@ -85,7 +85,12 @@ def init_logging(level="info", color=True):
     pass
     #fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)-8s - %(message)s'
     #fmt = '[%(asctime)s] p%(process)s {%(filename)-10s:%(lineno)d} %(levelname)-8s - %(message)s'
-    fmt = '[%(asctime)s] p%(process)s {%(funcName)-20s:%(filename)-10s:%(lineno)d} %(levelname)-8s - %(message)s'
+
+    if cflog:
+        fmt = '[{%(funcName)-20s:%(filename)-10s:%(lineno)d} %(levelname)-8s - %(message)s'
+    else:
+        fmt = '[%(asctime)s] p%(process)s {%(funcName)-20s:%(filename)-10s:%(lineno)d} %(levelname)-8s - %(message)s'
+    pass
     logging.basicConfig(level=getattr(logging,level.upper()), format=fmt)
 pass
 

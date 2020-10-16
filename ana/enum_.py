@@ -77,7 +77,7 @@ class Enum(dict):
         :param path: 
         :param mskval:
         """
-        lines = map(str.strip,open(path,"r").readlines())
+        lines = list(map(str.strip,open(path,"r").readlines()))
         for line in lines:
             lm = self.lptn.match(line)
             if not lm: continue

@@ -294,7 +294,7 @@ class AB(object):
 
 
     def dump(self):
-        log.debug("[")
+        log.info("[")
         self.print_(self.pro)  
         if self.is_comparable: 
             self.print_(self.cfm)  
@@ -309,7 +309,7 @@ class AB(object):
             self.print_(self.rc_)
             self.print_(self.cfm)  
         pass
-        log.debug("]")
+        log.info("]")
 
 
     def __init__(self, ok, overridetag=0):
@@ -331,8 +331,9 @@ class AB(object):
         self.load_u()
 
         self.is_comparable = self.valid and not self.a.ph.missing and not self.b.ph.missing
-
+        log.info("[ABProfile")
         self.pro = ABProfile(self.a.tagdir, self.b.tagdir)
+        log.info("]ABProfile")
 
         if self.is_comparable: 
             self.cfm = self.compare_meta()
@@ -442,6 +443,7 @@ class AB(object):
             -rw-rw-r--. 1 blyth blyth 2048000096 Jul 28 12:02 /home/blyth/local/opticks/tmp/TRngBufTest_0_1000000.npy
 
         """
+        log.info("[")
         upath0 = "$TMP/TRngBufTest_0.npy"
         upath1 = "$TMP/TRngBufTest_0_1000000.npy"
 
@@ -454,6 +456,7 @@ class AB(object):
         u = np_load(upath)
         u = None if u is None else u.astype(np.float32)
         self.u = u 
+        log.info("]")
 
 
     def compare_domains(self):

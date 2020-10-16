@@ -22,8 +22,12 @@
 
 ::
 
-    export OPTICKS_ANA_DEFAULTS="det=tboolean-box,src=torch,tag=1,pfx=tboolean-box"
-    export OPTICKS_EVENT_BASE=/tmp       # <-- set this to the test invokation directory 
+    #export OPTICKS_ANA_DEFAULTS="det=tboolean-box,src=torch,tag=1,pfx=tboolean-box"
+    #export OPTICKS_EVENT_BASE=/tmp       # <-- set this to the test invokation directory 
+
+    unset OPTICKS_ANA_DEFAULTS
+    unset OPTICKS_EVENT_BASE
+    LV=box evt.py 
 
 
 """

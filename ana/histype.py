@@ -24,8 +24,12 @@ histype.py: HisType
 
 ::
 
+
+    LV=box histype.py 
+
     histype.py --det PmtInBox --tag 10 --src torch 
     histype.py --det dayabay  --tag 1  --src torch 
+
 
 ::
 
@@ -69,40 +73,40 @@ from opticks.ana.seq import SeqType, SeqTable, SeqAna
 from opticks.ana.nbase import count_unique_sorted
 from opticks.ana.nload import A
 
-def test_HistoryTable(ht, seqhis):
-     log.info("test_HistoryTable")  
-     for seq in ht.labels:
-         seqs = [seq]
-         s_seqhis = map(lambda _:seqhis == af.code(_), seqs )
-         psel = np.logical_or.reduce(s_seqhis)      
-
-         n = len(seqhis[psel])
-         assert n == ht.label2count.get(seq)
-         print("%10s %s " % (n, seq )) 
-     pass
-     log.info("test_HistoryTable DONE")  
-
-def test_roundtrip(af):
-     x=0x8cbbbcd
-     l = af.label(x)
-     c = af.code(l)
-     print("%x %s %x " % ( x,l,c ))
-     assert x == c 
-
-
 class HisType(SeqType):
     def __init__(self):
         flags = PhotonCodeFlags() 
         SeqType.__init__(self, flags, flags.abbrev)
 
 
-if __name__ == '__main__':
-     from opticks.ana.main import opticks_main
-     #args = opticks_main(src="torch", tag="10", det="PmtInBox")
-     ok = opticks_main()
 
-     af = HisType()
+def test_HistoryTable(ht, seqhis):
+     log.info("[")  
 
+     #print("ht.labels",ht.labels)
+
+     for seq in ht.labels:
+         seqs = [seq]
+         s_seqhis = list(map(lambda _:seqhis == af.code(_), seqs ))
+         psel = np.logical_or.reduce(s_seqhis)      
+
+         n = len(seqhis[psel])
+         assert n == ht.label2count.get(seq)
+         print("%10s %s " % (n, seq )) 
+     pass
+     log.info("]")  
+
+def test_roundtrip(af):
+     log.info("[")
+     x=0x8cbbbcd
+     l = af.label(x)
+     c = af.code(l)
+     print("%x %s %x " % ( x,l,c ))
+     assert x == c 
+     log.info("]")
+
+
+def test_load_SeqTable(ok, af):
      try:
          ph = A.load_("ph",ok.src,ok.tag,ok.det, pfx=ok.pfx)
      except IOError as err:
@@ -116,10 +120,33 @@ if __name__ == '__main__':
      cu = count_unique_sorted(seqhis)
 
      ht = SeqTable(cu, af, smry=True)
+      
      
      test_HistoryTable(ht, seqhis)
 
+
+
+def test_HisType(af):
+    log.info("[")
+    print(af)
+    print("af.abbrev.name2abbr",af.abbrev.name2abbr)
+    print("af.flags.names",af.flags.names)
+    print("af.flags.codes",af.flags.codes)
+    print("af.abbr2code",af.abbr2code)
+    log.info("]")
+
+
+if __name__ == '__main__':
+     from opticks.ana.main import opticks_main
+     ok = opticks_main()
+
+     af = HisType()
+
+     #test_HisType(af)
+
      #test_roundtrip(af)
+
+     test_load_SeqTable(ok, af)
 
 
 

@@ -17,7 +17,8 @@ from opticks.ana.profile import Profile
 
 class ABProfile(object):
     def __init__(self, adir, bdir=None):
-
+        log.info("adir %s" % adir) 
+        log.info("bdir %s" % bdir) 
         if bdir is None:  
             # assume OK vs G4 mode : ie profiles from a bi-simulation
             pdir = adir       
@@ -31,6 +32,7 @@ class ABProfile(object):
         valid = self.ap.valid and self.bp.valid 
         if valid:
             boa = self.bp.tim/self.ap.tim if self.ap.tim > 0 else -1  
+            log.info("self.bp.tim %s self.ap.tim %s boa %s" % (self.bp.tim, self.ap.tim, boa))
         else:
             boa = -2 
         pass 

@@ -79,6 +79,7 @@ class ABSmry(odict):
     NAME = "ABSmry.json"
     DVS = "rpost_dv rpol_dv ox_dv".split()
     DVSQ = "maxdvmax RC level ndvp".split()
+    #DVSQ = "maxdvmax RC level".split()
 
     @classmethod
     def Path(cls, dir_):
@@ -112,7 +113,7 @@ class ABSmry(odict):
         log.info("s.dir_ %s " % s.dir_)  
         for q in list(filter(None, list(map(str.strip,cls.KEYS.split("\n"))))):
             v = eval(q)
-            log.info("eval(%s) -> %s  %r " % (q, v, type(v)) )
+            log.debug("eval(%s) -> %s  %r " % (q, v, type(v)) )
             if type(v) is np.float32:
                 v = float(v)
             pass 
@@ -121,7 +122,10 @@ class ABSmry(odict):
         for dv in cls.DVS:
             for q in cls.DVSQ:
                 key = "ab.%s.%s" % (dv, q)
-                s[key] = eval(key)
+                log.debug(key)
+                val = eval(key)
+                log.debug(val)
+                s[key] = val
             pass
         pass 
         s.init()

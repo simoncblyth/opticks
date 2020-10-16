@@ -204,7 +204,11 @@ def _opticks_env(st="OPTICKS_ IDPATH"):
 
 def ihex_(i):
     """
-    # trim the 0x and L from a hex string
+    Trim the 0x and any L from a hex string::
+
+        assert ihex_(0xccd) == 'ccd' 
+        assert ihex_(0xccdL) == 'ccd'    # assumed
+
     """
     xs = hex(i)[2:]
     xs = xs[:-1] if xs[-1] == 'L' else xs 
@@ -376,17 +380,17 @@ class EnumFlags(object):
     """
     def __init__(self, path, mask2int=False): 
         d = enum_(path) 
-        ini = dict(zip(d.keys(),map(int,d.values())))  
+        ini = dict(zip(d.keys(),list(map(int,d.values()))))  
 
-        names = map(str,ini.keys())
-        codes = map(int,ini.values())
+        names = list(map(str,ini.keys()))
+        codes = list(map(int,ini.values()))
 
         if mask2int:
             mask2int = {}
             for i in range(32):
                 mask2int[1 << i] = i + 1 
             pass 
-            codes = map(lambda _:mask2int.get(_,-1), codes)
+            codes = list(map(lambda _:mask2int.get(_,-1), codes))
         pass
 
         self.names = names

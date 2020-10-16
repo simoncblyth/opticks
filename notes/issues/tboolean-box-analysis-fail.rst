@@ -10,7 +10,22 @@ Prior:
 
     LV=box GGeoTest=INFO tboolean.sh --generateoverride 10000 -D
 
-::
+
+Following analysis fail this is hanging requiring a "kill -9", ctrl-C not stopping it::
+
+    tboolean-box --src torch --show   interactivity 2 rc 7 rcmsg OpticksAna::run non-zero RC from ana script
+    2020-10-16 16:38:21.685 FATAL [10546477] [Opticks::dumpRC@239]  rc 7 rcmsg : OpticksAna::run non-zero RC from ana script
+    2020-10-16 16:38:21.685 INFO  [10546477] [SSys::WaitForInput@341] SSys::WaitForInput OpticksAna::run paused : hit RETURN to continue...
+
+    ^C^C^C^C^C^C^C
+    ^C^C^C^C/Users/blyth/opticks/integration/tests/tboolean.bash: line 756: 25786 Killed: 9               o.sh $cmdline --envkey --rendermode +global,+axis --geocenter --stack $stack --eye $(tboolean-eye) --up $(tboolean-up) --test --testconfig "$testconfig" --torch --torchconfig "$torchconfig" --torchdbg --tag $(tboolean-tag) --anakey tboolean --args --save
+    tboolean-- RC 137
+    === tboolean-lv : tboolean-box RC 137
+    ====== /Users/blyth/opticks/bin/tboolean.sh --generateoverride 10000 -D ====== PWD /Users/blyth/opticks/notes/issues ============ RC 137 =======
+    epsilon:issues blyth$ 
+
+
+py2 analysis runs, shows some problems but machinery seems still operating (py3 has output formatting issues)::
 
     ...
     [2020-10-16 16:38:21,666] p25995 {<module>            :tboolean.py:48} INFO     - ]AB
@@ -253,7 +268,119 @@ Lots of question marks from py3::
 
 
 
+ana/tboolean.py based on AB is too much of a monster to start debug with::
 
+     35 from opticks.ana.main import opticks_main
+     36 from opticks.ana.nload import np_load
+     37 from opticks.ana.ab   import AB
+     38 from opticks.ana.seq import seq2msk
+     39 
+     40 
+     41 if __name__ == '__main__':
+     42     ok = opticks_main(doc=__doc__)
+     43 
+     44     log.info(ok.brief)
+     45 
+     46     log.info("[AB")
+     47     ab = AB(ok)
+     48     log.info("]AB")
+     49     ab.dump()
+     50 
+     51     rc = ab.RC
+     52 
+     53     level = "fatal" if rc > 0 else "info"
+     54     getattr(log, level)(" RC 0x%.2x %s " % (rc,bin(rc)) )
+     55 
+
+
+
+::
+
+
+    epsilon:ana blyth$ LV=box python2.7 evt.py 
+    ...
+    [2020-10-16 17:29:22,435] p26635 {load_               :nload.py  :276} INFO     -  path /tmp/blyth/opticks/tboolean-box/evt/tboolean-box/torch/1/ph.npy size 160080 
+    [2020-10-16 17:29:22,445] p26635 {load_               :nload.py  :276} INFO     -  path /tmp/blyth/opticks/tboolean-box/evt/tboolean-box/torch/1/so.npy size 640080 
+    [2020-10-16 17:29:22,446] p26635 {__init__            :evt.py    :279} INFO     - ] ? 
+    noshortname?
+    .                            1:tboolean-box:tboolean-box 
+    .                              10000         1.00 
+    0000             8ccd        0.880        8805        [4 ] TO BT BT SA
+    0001              3bd        0.058         580        [3 ] TO BR MI
+    0002            3cbcd        0.056         563        [5 ] TO BT BR BT MI
+    0003           8cbbcd        0.003          29        [6 ] TO BT BR BR BT SA
+    0004          3cbbbcd        0.001           6        [7 ] TO BT BR BR BR BT MI
+    0005              36d        0.001           5        [3 ] TO SC MI
+    0006               4d        0.000           3        [2 ] TO AB
+    0007            86ccd        0.000           2        [5 ] TO BT BT SC SA
+    0008          3cc6ccd        0.000           1        [7 ] TO BT BT SC BT BT MI
+    0009           8b6ccd        0.000           1        [6 ] TO BT BT SC BR SA
+    0010            8c6cd        0.000           1        [5 ] TO BT SC BT SA
+    0011            3cc6d        0.000           1        [5 ] TO SC BT BT MI
+    0012            3c6cd        0.000           1        [5 ] TO BT SC BT MI
+    0013            3b6bd        0.000           1        [5 ] TO BR SC BR MI
+    0014             4ccd        0.000           1        [4 ] TO BT BT AB
+    .                              10000         1.00 
+
+
+    epsilon:ana blyth$ LV=box python evt.py 
+    ...
+    [2020-10-16 17:29:33,269] p26642 {load_               :nload.py  :276} INFO     -  path /tmp/blyth/opticks/tboolean-box/evt/tboolean-box/torch/1/ph.npy size 160080 
+    [2020-10-16 17:29:33,289] p26642 {load_               :nload.py  :276} INFO     -  path /tmp/blyth/opticks/tboolean-box/evt/tboolean-box/torch/1/so.npy size 640080 
+    [2020-10-16 17:29:33,295] p26642 {__init__            :evt.py    :279} INFO     - ] ? 
+    noshortname?
+    .                            1:tboolean-box:tboolean-box 
+    .                              10000         1.00 
+    0000             8ccd        0.880        8805        [4 ] ?13? ?12? ?12? ?8?
+    0001              3bd        0.058         580        [3 ] ?13? ?11? ?3?
+    0002            3cbcd        0.056         563        [5 ] ?13? ?12? ?11? ?12? ?3?
+    0003           8cbbcd        0.003          29        [6 ] ?13? ?12? ?11? ?11? ?12? ?8?
+    0004          3cbbbcd        0.001           6        [7 ] ?13? ?12? ?11? ?11? ?11? ?12? ?3?
+    0005              36d        0.001           5        [3 ] ?13? ?6? ?3?
+    0006               4d        0.000           3        [2 ] ?13? ?4?
+    0007            86ccd        0.000           2        [5 ] ?13? ?12? ?12? ?6? ?8?
+    0008          3cc6ccd        0.000           1        [7 ] ?13? ?12? ?12? ?6? ?12? ?12? ?3?
+    0009           8b6ccd        0.000           1        [6 ] ?13? ?12? ?12? ?6? ?11? ?8?
+    0010            8c6cd        0.000           1        [5 ] ?13? ?12? ?6? ?12? ?8?
+    0011            3cc6d        0.000           1        [5 ] ?13? ?6? ?12? ?12? ?3?
+    0012            3c6cd        0.000           1        [5 ] ?13? ?12? ?6? ?12? ?3?
+    0013            3b6bd        0.000           1        [5 ] ?13? ?11? ?6? ?11? ?3?
+    0014             4ccd        0.000           1        [4 ] ?13? ?12? ?12? ?4?
+    .                              10000         1.00 
+    epsilon:ana blyth$ 
+
+::
+
+    In [1]: from opticks.ana.histype import HisType                                 
+
+    In [2]: af = HisType()                                                          
+
+    In [3]: af.label(0xccd)                                                         
+    Out[3]: '?13? ?12? ?12?'
+
+
+
+Jump into ipython debugger::
+
+   ipython --pdb -i -- /Users/blyth/opticks/ana/tboolean.py --tagoffset 0 --tag 1 --cat tboolean-box --pfx tboolean-box --src torch --show
+   ipython --pdb -i -W -- /Users/blyth/opticks/ana/tboolean.py --tagoffset 0 --tag 1 --cat tboolean-box --pfx tboolean-box --src torch --show
+
+
+
+After basic py3 problems fixed, still more subtle problems remain as indicated by different analysis results::
+
+
+    epsilon:ana blyth$ cat cfpy.sh 
+    #!/bin/bash -l 
+
+    py2=/tmp/ana_py2.log
+    py3=/tmp/ana_py3.log
+
+    /opt/local/bin/python              /Users/blyth/opticks/ana/tboolean.py --tagoffset 0 --tag 1 --cat tboolean-box --pfx tboolean-box --src torch --show  2> $py2
+    /Users/blyth/miniconda3/bin/python /Users/blyth/opticks/ana/tboolean.py --tagoffset 0 --tag 1 --cat tboolean-box --pfx tboolean-box --src torch --show  2> $py3
+
+    echo diff $py2 $py3
+    diff $py2 $py3
 
 
 

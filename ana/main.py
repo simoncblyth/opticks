@@ -19,6 +19,18 @@
 #
 
 """
+
+::
+
+    export OPTICKS_ANA_DEFAULTS=cat=tboolean-box,det=tboolean-box,src=torch,tag=1,pfx=tboolean-box
+    main.py 
+
+    unset OPTICKS_ANA_DEFAULTS
+    export LV=box
+    main.py 
+
+
+
 """
 from __future__ import print_function
 import numpy as np
@@ -293,7 +305,8 @@ def opticks_args(**kwa):
     ok = OK()
     args = parser.parse_args(namespace=ok)
     # dont write to stdout here it messes up tboolean picking ip TESTCONFIG
-    init_logging(level=args.loglevel)
+    cflog = True 
+    init_logging(level=args.loglevel,cflog=cflog)
 
 
     if args.multievent > 1 and args.tagoffset > 0:
@@ -370,7 +383,10 @@ def opticks_main(**kwa):
 
 if __name__ == '__main__':
     ok = opticks_main(doc=__doc__)  
-    print(ok)
-    print(ok.brief)
+    log.info(ok)
+    log.info(ok.brief)
+
+    
+
      
 

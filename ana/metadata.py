@@ -160,13 +160,17 @@ class CompareMetadata(object):
         return av 
 
     def __repr__(self):
+
+        dfmt_ = lambda d:" ".join(["%s:%s" % (kv[0],kv[1]) for kv in sorted(d.items(),key=lambda kv:kv[0])])   
+
         return "\n".join([
               "ab.cfm",
               self.brief(),
               "ab.a.metadata:%s" % self.am,
               "ab.b.metadata:%s" % self.bm,
               self.Switches,
-              str(self.csgmeta0),
+              ".",
+              dfmt_(self.csgmeta0),
               #repr(self.cmdline),
               "."
                         ])

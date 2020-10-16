@@ -73,8 +73,7 @@ class BaseType(object):
         log.debug("abbrev.name2abbr %s " % abbrev.name2abbr )
         log.debug("abbrev %s " % repr(map(lambda _:abbrev.name2abbr.get(_,None),flags.names)))
 
-
-        abbrs = map(lambda name:abbrev.name2abbr.get(name,firstlast_(name)), flags.names )
+        abbrs = list(map(lambda name:abbrev.name2abbr.get(name,firstlast_(name)), flags.names ))
         self.abbr2code = dict(zip(abbrs, flags.codes))
         self.code2abbr = dict(zip(flags.codes, abbrs))
         self.flags = flags
@@ -262,10 +261,10 @@ class SeqType(BaseType):
         pass
 
         xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order 
-        seq = map(lambda _:int(_,16), xs ) 
+        seq = list(map(lambda _:int(_,16), xs )) 
         #log.debug("label xs %s seq %s " % (xs, repr(seq)) )
         d = self.code2abbr
-        elem = map(lambda _:d.get(_,'?%s?' % _ ), seq ) 
+        elem = list(map(lambda _:d.get(_,'?%s?' % _ ), seq )) 
         if wildcard:
             elem += [".."] 
 

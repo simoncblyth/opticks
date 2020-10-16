@@ -94,15 +94,15 @@ class QDV(object):
        npoi = len(sel.split())
        nelem = ndv*npoi*nitem
 
-       log.info(" nitem:%d npoi:%d nelem:%d " % (nitem,npoi,nelem))
+       log.debug(" nitem:%d npoi:%d nelem:%d " % (nitem,npoi,nelem))
 
        if nelem>0:
            mx = dv.max()
            mn = dv.min()
            avg = dv.sum()/float(nelem)
            disc=[ dv[dv>dvmax[0]], dv[dv>dvmax[1]], dv[dv>dvmax[2]] ]
-           ndisc = map(len, disc)     # elements, not items
-           fdisc =  map(lambda _:float(_)/float(nelem), ndisc ) 
+           ndisc = list(map(len, disc))     # elements, not items
+           fdisc =  list(map(lambda _:float(_)/float(nelem), ndisc ))
        else:
            mx = None
            mn = None
@@ -129,7 +129,7 @@ class QDV(object):
        self.dvmax = dvmax 
        self.msg = msg
 
-       log.info("mx %s " % self.mx)
+       log.debug("mx %s " % self.mx)
        if self.mx is None:
            lev = Level.FromName("FATAL")
            lmsg = "  mx None " 
@@ -214,7 +214,7 @@ class QDVTab(object):
 
         cu = self.seqtab.cu               # eg with shape (17,3)  the 3 columns being (seqhis, a-count, b-count ) 
 
-        log.info("labels:%s" % labels)
+        log.debug("labels:%s" % labels)
 
         assert len(labels) == len(cu)
         nsel = len(labels)
@@ -384,7 +384,7 @@ class QDVTab(object):
         if len(self.dvs) == 0:
             return "\n".join(["ab.%s" % self.name, "no dvs" ])
         else: 
-            return "\n".join( ["ab.%s" % self.name, self.brief, self.dvs[0].columns2(self.ndisc), QDV.columns()] + map(repr, filter(None,self.dvs[self.sli]) ) + ["."] )
+            return "\n".join( ["ab.%s" % self.name, self.brief, self.dvs[0].columns2(self.ndisc), QDV.columns()] + list(map(repr, list(filter(None,self.dvs[self.sli])) )) + ["."] )
         pass
 
     def __getitem__(self, sli):

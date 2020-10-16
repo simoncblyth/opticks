@@ -24,10 +24,13 @@ profile.py
 
 ::
 
+    LV=box ipython -i profile.py 
+
     LV=0 ip profile.py 
 
     LV=box ip profile.py --cat cvd_1_rtx_1_1M --pfx scan-ph --tag 0
 
+    ip(){ local arg1=${1:-evt.py}; shift; ipython -i -- $(which $arg1) $* ; }
 
 
     ip profile.py --cat cvd_1_rtx_0_1M --pfx scan-pf-0 --tag 0
@@ -94,6 +97,7 @@ ipdb = None
 
 from opticks.ana.log import bold_, blink_
 from opticks.ana.base import json_load_
+from opticks.ana.base import b_  
 from opticks.ana.nload import np_load
 from opticks.ana.nload import tagdir_, stmp_, time_, tfmt_ 
 
@@ -126,12 +130,6 @@ class Profile(object):
         :param name: informational name for outputs
         """  
         self.pdir = pdir
-
-        #tag = os.path.basename(pdir)  # now "torch" ?
-        #g4 = tag[0] == "-"
-        #log.debug(" pdir:%s name:%s tag:%s g4:%s " % (pdir, name, tag, g4))
-        #self.tag = tag
-
         self.name = name
         self.g4 = g4
 
@@ -151,6 +149,7 @@ class Profile(object):
         pass  
 
     def init(self):
+        log.info("[")
         self.loadProfile() 
         self.loadAcc()    ## Accumulated timings 
         self.loadMeta()
@@ -168,6 +167,7 @@ class Profile(object):
         self.tim = tim
         self.idx = idx
         self.sli = slice(idx[0],idx[1]+1)
+        log.info("]")
 
 
     def pfmt(self, path1, path2, path3=None):
@@ -206,7 +206,8 @@ class Profile(object):
         return os.path.join( self.pdir, "OpticksProfile%s.npy" % sfx )   # quads 
 
     def metapath(self):
-        return os.path.join( self.pdir, "0", self.PARM ) 
+        #return os.path.join( self.pdir, "0", self.PARM ) 
+        return os.path.join( self.pdir, self.PARM ) 
 
     def loadMeta(self):
         path = self.metapath()
@@ -221,19 +222,40 @@ class Profile(object):
 
     def loadProfile(self):
         """
+        ::
+
+            In [8]: pr.a                                                                                                                                                                                         
+            Out[8]: 
+            array([[    0.    , 59888.504 ,     0.    ,  4625.252 ],
+                   [    0.    ,     0.    ,     0.    ,     0.    ],
+                   [    0.    ,     0.    ,     0.    ,     0.    ],
+                   [    0.    ,     0.    ,     0.    ,     0.    ],
+                   [    3.8281,     3.8281,   155.98  ,   155.98  ],
+                   [    3.8281,     0.    ,   155.98  ,     0.    ],
+                   [    3.8281,     0.    ,   155.98  ,     0.    ],
+                   [    3.8281,     0.    ,   156.2988,     0.3188],
+                   [    3.832 ,     0.0039,   156.8149,     0.5161],
+
+            In [10]: pr.l[:10]                                                                                                                                                                                   
+            Out[10]: 
+            array([b'OpticksRun::OpticksRun', b'Opticks::Opticks', b'_OKG4Mgr::OKG4Mgr', b'_OpticksHub::init', b'_GMergedMesh::Create', b'GMergedMesh::Create::Count', b'_GMergedMesh::Create::Allocate',
+                   b'GMergedMesh::Create::Allocate', b'GMergedMesh::Create::Merge', b'GMergedMesh::Create::Bounds'], dtype='|S45')
+
         """
+        log.info("[")
         path = self.path("")
         lpath = self.path("Labels")
         qpath = self.path("Lis")
 
         self.prfmt = self.pfmt(path, lpath)
-
         a = np.load(path)
         assert a.ndim == 2
+        log.info("path:%s a.shape:%r" % (path,a.shape)) 
 
         l = np.load(lpath)
         assert l.ndim == 2 and l.shape[1] == 64
         assert len(a) == len(l) 
+        log.info("lpath:%s l.shape:%r" % (lpath,l.shape)) 
 
         ll = list(l.view("|S64")[:,0])
         lll = np.array(ll)
@@ -242,6 +264,7 @@ class Profile(object):
 
 
         q = np.load(qpath) if os.path.exists(qpath) else None
+        log.info("qpath:%s q.shape:%r" % (qpath,q.shape)) 
 
      
         self.l = lll 
@@ -253,6 +276,7 @@ class Profile(object):
         self.dv = dv
 
         self.q = q  
+        log.info("]")
 
 
     def __len__(self):
@@ -262,6 +286,7 @@ class Profile(object):
         """
         Acc are accumulated timings 
         """
+        log.info("[")
         path = self.path("")
         acpath = self.path("Acc")
         lacpath = self.path("AccLabels")
@@ -277,6 +302,7 @@ class Profile(object):
 
         self.ac = ac
         self.lac = np.array( lac.view("|S64")[:,0] )
+        log.info("]")
 
 
     def acc(self, label):
@@ -346,7 +372,7 @@ class Profile(object):
         :return array of all times matching the label:
         """ 
         pr = self
-        tt = pr.t[np.where(pr.l == l0 )] 
+        tt = pr.t[np.where(pr.l == b_(l0) )] 
         return tt 
 
     def plt_axvline(self, ax):
@@ -397,7 +423,7 @@ class Profile(object):
         """
         intervals only defined with "--multievent 2+" running 
         """
-        log.debug("[")
+        log.info("[ %r" % self.launch)
         self.avg_launch = np.average(self.launch)
         nsta = len(self.start_interval)  
         nsto = len(self.stop_interval)
@@ -414,7 +440,7 @@ class Profile(object):
             self.multievent = False
         pass
         #ipdb.set_trace()       
-        log.debug("]")
+        log.info("]")
 
     def overheads(self):
 

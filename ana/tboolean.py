@@ -53,12 +53,12 @@ if __name__ == '__main__':
     level = "fatal" if rc > 0 else "info"
     getattr(log, level)(" RC 0x%.2x %s " % (rc,bin(rc)) )
 
-    if not ok.ipython:
-        log.info("early exit as non-interactive")
-        sys.exit(rc)
-    else:
-        pass
-    pass
+    #if not ok.ipython:
+    #    log.info("early exit as non-interactive")
+    #    sys.exit(rc)
+    #else:
+    #    pass
+    #pass
 
     a = ab.a
     b = ab.b
