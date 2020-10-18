@@ -24,6 +24,10 @@ profile.py
 
 ::
 
+    LV=box profile.py 
+    LV=box python2.7 profile.py 
+
+
     LV=box ipython -i profile.py 
 
     LV=0 ip profile.py 
@@ -97,7 +101,7 @@ ipdb = None
 
 from opticks.ana.log import bold_, blink_
 from opticks.ana.base import json_load_
-from opticks.ana.base import b_  
+from opticks.ana.base import u_,b_,d_  
 from opticks.ana.nload import np_load
 from opticks.ana.nload import tagdir_, stmp_, time_, tfmt_ 
 
@@ -334,8 +338,8 @@ class Profile(object):
             l1 = arg1 
         pass
 
-        w0 = np.where( self.l == l0 )[0]   # array of matching idx, empty if not found
-        w1 = np.where( self.l == l1 )[0]
+        w0 = np.where( self.l == b_(l0) )[0]   # array of matching idx, empty if not found
+        w1 = np.where( self.l == b_(l1) )[0]
 
         return w0, w1
 
@@ -398,7 +402,7 @@ class Profile(object):
         return dt, p0, p1 
 
     def line(self, i):
-        li = self.l[i]
+        li = d_(self.l[i])
         if li in self.OKDT:
             fn_ = bold_
         elif li in self.G4DT:
@@ -406,7 +410,7 @@ class Profile(object):
         else:
             fn_ = lambda _:_
         pass
-        return " %6d : %50s : %10.4f %10.4f %10.4f %10.4f   " % ( i, fn_(self.l[i]), self.t[i], self.v[i], self.dt[i], self.dv[i] )
+        return " %6d : %50s : %10.4f %10.4f %10.4f %10.4f   " % ( i, fn_(li), self.t[i], self.v[i], self.dt[i], self.dv[i] )
 
     def labels(self):
         return " %6s : %50s : %10s %10s %10s %10s   " % ( "idx", "label", "t", "v", "dt", "dv" )
@@ -485,8 +489,7 @@ class Profile(object):
         return ll
 
     def lines(self):
-        return [self.name, self.prfmt, self.acfmt, "%r" % self.sli, self.labels()] + self.bodylines() + [self.labels()] 
-
+        return ["name:",self.name, "prfmt:",self.prfmt, "acfmt:",self.acfmt, "sli:","%r" % self.sli, "labels:",self.labels(),"bodylines:"] + self.bodylines() + ["labels:",self.labels()] 
 
     def __str__(self):
         return "\n".join(self.lines())
@@ -564,7 +567,9 @@ if __name__ == '__main__':
     log.info("tagdir: %s " % ok.tagdir)
 
     pr = Profile(ok.tagdir, "pro") 
+    log.info("[pr")
     print(pr)
+    log.info("]pr")
 
     if not pr.valid: 
         log.fatal(" pr not valid exiting ")

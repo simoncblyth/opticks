@@ -3,6 +3,10 @@
 
 ::
 
+    LV=box abprofile.py 
+    LV=box python2.7 abprofile.py 
+
+
     ip abprofile.py --cat cvd_1_rtx_0_1M --pfx scan-pf-0 --tag 0
          OKG4Test run  
 
