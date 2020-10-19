@@ -32,9 +32,20 @@ OptiX 7 : Brand New Lower Level API
 * Introduced Aug 2019 : OptiX 7 API is not backwards compatible
 
 
-
+* https://news.developer.nvidia.com/the-nvidia-optix-sdk-release-7-2/
+* https://forums.developer.nvidia.com/t/optix-7-2-release/156619
 * https://forums.developer.nvidia.com/t/optix-7-1-release/139962
+* https://forums.developer.nvidia.com/t/optix-7-breaking-changes/156801/4
+
+
 * https://github.com/NVIDIA/OptiX_Apps
+
+* https://github.com/owl-project/owl
+* https://www.willusher.io/graphics/2019/11/20/the-sbt-three-ways
+* https://github.com/Twinklebear/ChameleonRT
+
+
+
 
 
 

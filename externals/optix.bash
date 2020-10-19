@@ -569,9 +569,91 @@ optix-samples--()
 
 optix-samples-notes(){ cat << EOI
 
-   With CUDA_NVRTC_ENABLED=OFF in order to look at the PTX 
-   find that had to copy one of the order 10 common.h up to 
-   top level for it to be found.
+   Previously used CUDA_NVRTC_ENABLED=OFF in order to look at the PTX.
+
+   Found that the build had problems finding some of the headers.
+
+
+blyth@localhost SDK-src]$ find . -name common.h -exec md5sum {} \;
+e4bcd65db2f84526f978982c44a5501f  ./optixParticles/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixPrimitiveIndexOffsets/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixWhitted/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixInstancing/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixBuffersOfBuffers/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixDemandLoadBuffer/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixTutorial/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixDemandLoadTexture/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixDynamicGeometry/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixMDLExpressions/common.h
+e4bcd65db2f84526f978982c44a5501f  ./cuda/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixMDLDisplacement/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixConsole/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixGeometryTriangles/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixMotionBlur/common.h
+e4bcd65db2f84526f978982c44a5501f  ./optixMeshViewer/common.h
+
+[blyth@localhost SDK-src]$ find . -name random.h -exec md5sum {} \;
+a5a9c6939aa0c574360376b95dab65dc  ./optixWhitted/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./optixBuffersOfBuffers/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./optixPathTracerTiled/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./optixTutorial/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./optixDenoiser/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./optixDynamicGeometry/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./optixMDLSphere/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./cuda/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./optixGeometryTriangles/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./optixMotionBlur/random.h
+a5a9c6939aa0c574360376b95dab65dc  ./optixPathTracer/random.h
+
+[blyth@localhost SDK-src]$ find . -name phong.h -exec md5sum {} \;
+a5075fe708a8b4b1d640fd6eac35a115  ./optixPrimitiveIndexOffsets/phong.h
+a5075fe708a8b4b1d640fd6eac35a115  ./optixWhitted/phong.h
+a5075fe708a8b4b1d640fd6eac35a115  ./optixInstancing/phong.h
+a5075fe708a8b4b1d640fd6eac35a115  ./optixBuffersOfBuffers/phong.h
+a5075fe708a8b4b1d640fd6eac35a115  ./optixMDLExpressions/phong.h
+a5075fe708a8b4b1d640fd6eac35a115  ./cuda/phong.h
+a5075fe708a8b4b1d640fd6eac35a115  ./optixConsole/phong.h
+a5075fe708a8b4b1d640fd6eac35a115  ./optixGeometryTriangles/phong.h
+[blyth@localhost SDK-src]$ 
+
+[blyth@localhost SDK-src]$ find . -name helpers.h -exec md5sum {} \;
+2665ad4bfd545be60fee0fdfd5047059  ./optixParticles/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixPrimitiveIndexOffsets/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixWhitted/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixInstancing/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixBuffersOfBuffers/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixSphere/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixDemandLoadBuffer/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixDemandLoadTexture/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixDynamicGeometry/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixMDLExpressions/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./cuda/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixMDLDisplacement/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixCallablePrograms/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixConsole/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixGeometryTriangles/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixMotionBlur/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixSpherePP/helpers.h
+2665ad4bfd545be60fee0fdfd5047059  ./optixMeshViewer/helpers.h
+
+
+[blyth@localhost SDK-src]$ ln -s optixConsole/common.h
+[blyth@localhost SDK-src]$ ln -s optixWhitted/random.h
+[blyth@localhost SDK-src]$ ln -s optixWhitted/phong.h
+[blyth@localhost SDK-src]$ ln -s optixWhitted/helpers.h
+
+
+Remaining fails from lack of MDL : mi/neuraylib/typedefs.h 
+
+364 add_subdirectory(optixHello)
+365 add_subdirectory(optixInstancing)
+366 #add_subdirectory(optixMDLDisplacement)
+367 #add_subdirectory(optixMDLExpressions)
+368 #add_subdirectory(optixMDLSphere)
+369 add_subdirectory(optixMeshViewer)
+370 add_subdirectory(optixMotionBlur)
+371 add_subdirectory(optixParticles)
+
 
 
 EOI
