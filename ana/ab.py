@@ -297,16 +297,27 @@ class AB(object):
         log.info("[")
         self.print_(self.pro)  
         if self.is_comparable: 
+            self.print_("#ab.cfm")  
             self.print_(self.cfm)  
+            self.print_("#ab.mal")  
             self.print_(self.mal)
+            self.print_("#ab")  
             self.print_(self)
+            self.print_("#ab.cfm")  
             self.print_(self.cfm)  
+            self.print_("#ab.brief")  
             self.print_(self.brief)
+            self.print_("#ab.rpost_dv")  
             self.print_(self.rpost_dv)
+            self.print_("#ab.rpol_dv")  
             self.print_(self.rpol_dv)
+            self.print_("#ab.ox_dv")  
             self.print_(self.ox_dv)
+            self.print_("#ab.brief")  
             self.print_(self.brief)
+            self.print_("#ab.rc_")  
             self.print_(self.rc_)
+            self.print_("#ab.cfm")  
             self.print_(self.cfm)  
         pass
         log.info("]")
@@ -422,7 +433,7 @@ class AB(object):
         if len(self.mat.lines) > lmx:
             self.mat.sli = slice(0,lmx)
         pass
-        return "\n".join(map(repr, [self,self.ahis,self.flg,self.mat]))
+        return "\n".join(map(repr, [self,"#ab.__str__.ahis",self.ahis,"#ab.__str__.flg",self.flg,self.mat]))
 
 
     def load_u(self):
@@ -641,7 +652,8 @@ class AB(object):
         all_ tables have no selection applied so they are not dirtied by changing selection
         """
         ordering = self.ok.cfordering 
-        assert ordering in ["max","self","other"] 
+        assert ordering in self.ok.allowed_cfordering 
+
         c_tab = Evt.compare_ana( self.a, self.b, ana, lmx=self.ok.lmx, cmx=self.ok.cmx, c2max=None, cf=True, ordering=ordering, shortname=shortname )
         if not ana[0:3] == "all":
             self.tabs.append(c_tab)

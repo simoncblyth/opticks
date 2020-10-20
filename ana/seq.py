@@ -293,6 +293,28 @@ class SeqList(object):
 
  
 class SeqTable(object):
+
+    ptn_ = "^(?P<idx>\d{4})\s*(?P<code>[0-9a-f]+)\s*(?P<a>\d+)\s*(?P<b>\d+)\s*(?P<cf>\S*).*$" 
+    ptn = re.compile(ptn_)
+
+    @classmethod 
+    def FromTxt(cls, txt, af, **kwa):
+        """
+        Hmm this assumes a comparison table with cu(count-unique) array of shape (n,3)
+        """
+        dd = []
+        for line in txt.split("\n"):
+            m = cls.ptn.match(line)
+            if not m: continue
+            dd.append(m.groupdict())
+        pass
+        cu = np.zeros( (len(dd),3), dtype=np.uint64 )  
+        for i,d in enumerate(dd):
+            cu[i] = ( int("0x%s"%d["code"],16), int(d["a"]), int(d["b"]) )
+        pass
+        return cls(cu, af, **kwa)
+
+
     def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, smry=False, shortname="noshortname?"): 
         """
         :param cu: count unique array, typically shaped (n, 2) or (n,3) for comparisons
@@ -415,6 +437,21 @@ class SeqTable(object):
         self.sli = slice(None)
 
 
+    def cfo_line(self, n):
+        if self.ncol == 2:
+            cfo_key = getattr(self, 'cfordering_key', [] )
+            if len(cfo_key) > 0:
+                cfo_debug = " %10.5f " % self.cfordering_key[n]
+            else:
+                #log.info("no cfo_key ") 
+                cfo_debug = " no cfo_key"
+            pass
+        else:
+            cfo_debug = ""
+        pass 
+        return cfo_debug
+ 
+
     def line(self, n):
         iseq = int(self.cu[n,0]) 
         imsk = int(self.msks[n])
@@ -433,7 +470,10 @@ class SeqTable(object):
         else:
             xs = "%0.4d " % (n)        
         pass
-      
+
+        cfo_debug = self.cfo_line(n)
+ 
+
         vals = list(map(lambda _:" %7s " % _, self.cu[n,1:] ))
 
         idif = self.idif[n] if len(vals) == 2 else None
@@ -486,7 +526,7 @@ class SeqTable(object):
         else:
              frac = ""
         pass
-        cols = [xs+" "] + [frac] + vals + [idif] + ["   "]+ [sc2, sab, sba, nstep, label]
+        cols = [cfo_debug] + [xs+" "] + [frac] + vals + [idif] + ["   "]+ [sc2, sab, sba, nstep, label]
         return " ".join(filter(lambda _:_ != "", cols)) 
 
     def __call__(self, labels):
@@ -499,9 +539,9 @@ class SeqTable(object):
         """
         spacer_ = lambda _:"%1s%3s %22s " % (".","",_)
         space = spacer_("")
-        title = spacer_(getattr(self,'title',""))
-
+        title = spacer_(getattr(self,'title',"")+"  cfo:"+getattr(self,'cfordering',"-"))
         #print("title:[%s]" % title) 
+
 
         body_ = lambda _:" %7s " % _
         head = title + " ".join(map(body_, self.cnames ))
@@ -525,12 +565,18 @@ class SeqTable(object):
 
         if ordering == "max":
             ordering_ = lambda _:max(self.label2count.get(_,0),other.label2count.get(_,0))
+        elif ordering == "sum":
+            ordering_ = lambda _:self.label2count.get(_,0)+other.label2count.get(_,0)
+        elif ordering == "sum_code":
+            ordering_ = lambda _:1e9*float(self.label2count.get(_,0)+other.label2count.get(_,0))+float(self.label2code.get(_,0)+other.label2code.get(_,0))
+        elif ordering == "code":
+            ordering_ = lambda _:self.label2code.get(_,0) + other.label2code.get(_,0)
         elif ordering == "self":
             ordering_ = lambda _:self.label2count.get(_,0)
         elif ordering == "other":
             ordering_ = lambda _:other.label2count.get(_,0)
         else:
-            assert 0, "ordering_ must be one of max/self/other "
+            assert 0, "ordering_ must be one of max/sum/self/other "
         pass
 
         u = sorted( lo, key=ordering_, reverse=True)
@@ -547,6 +593,13 @@ class SeqTable(object):
         log.debug("compare dbgseq %x dbgmsk %x " % (self.dbgseq, self.dbgmsk))
 
         cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, shortname=shortname)    
+        cftab.cfordering = ordering 
+
+        cfordering_key = list(map(ordering_, u)) 
+        print("cfordering_key for %s" % shortname)
+        print(cfordering_key)
+  
+        cftab.cfordering_key = cfordering_key 
         log.debug("SeqTable.compare DONE")
         return cftab
 
@@ -638,12 +691,83 @@ class SeqAna(object):
         return psel 
 
 
+def test_simple_table():
+    log.info("test_simple_table")
+    from opticks.ana.histype import HisType
+    af = HisType() 
+    cu = np.zeros( (5,2), dtype=np.uint64 )  # mock up a count unique array 
+    cu[0] = (af.code("TO BT AB"), 100)
+    cu[1] = (af.code("TO BT AB SD"),200)
+    cu[2] = (af.code("TO BT BR BT AB"),300)
+    cu[3] = (af.code("TO BT BT BT AB SD"),400)
+    cu[4] = (af.code("TO BT AB MI"),500)
+
+    table = SeqTable(cu, af) 
+    print(table)
+
+def test_comparison_table():
+    log.info("test_comparison_table")
+    from opticks.ana.histype import HisType
+    af = HisType() 
+    cu = np.zeros( (8,3), dtype=np.uint64 )  # mock up a count unique array 
+
+    a = 0 
+    b = 0 
+
+    cu[0] = (af.code("TO"), a,b)
+    cu[1] = (af.code("TO BT"), a,b)
+    cu[2] = (af.code("TO BT BT"),a,b)
+    cu[3] = (af.code("TO BT BT BT"),a,b)
+    cu[4] = (af.code("TO BT BT BT BT"),a,b)
+    cu[5] = (af.code("TO BT BT BT BT BT"),a,b)
+    cu[6] = (af.code("TO BT BT BT BT BT BT"),a,b)
+    cu[7] = (af.code("TO BT BT BT BT BT BT BT"),a,b)
+
+    table = SeqTable(cu, af) 
+    print(table)
+
+
+def test_comparison_table_2():
+    txt = r"""
+ab.ahis
+.            all_seqhis_ana  1:tboolean-box:tboolean-box   -1:tboolean-box:tboolean-box        c2        ab        ba  
+.                              10000     10000      2285.00/5 = 457.00  (pval:1.000 prob:0.000)  
+0000             8ccd      8805      8807     -2             0.00        1.000 +- 0.011        1.000 +- 0.011  [4 ] TO BT BT SA
+0001              3bd       580         0    580           580.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] TO BR MI
+0002            3cbcd       563         0    563           563.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO BT BR BT MI
+0003           8cbbcd        29        29      0             0.00        1.000 +- 0.186        1.000 +- 0.186  [6 ] TO BT BR BR BT SA
+0004          3cbbbcd         6         0      6             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO BT BR BR BR BT MI
+0005              36d         5         0      5             0.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] TO SC MI
+0006               4d         3         0      3             0.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] TO AB
+0007            86ccd         2         2      0             0.00        1.000 +- 0.707        1.000 +- 0.707  [5 ] TO BT BT SC SA
+0008            8c6cd         1         1      0             0.00        1.000 +- 1.000        1.000 +- 1.000  [5 ] TO BT SC BT SA
+0009            3b6bd         1         0      1             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO BR SC BR MI
+0010           8b6ccd         1         0      1             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO BT BT SC BR SA
+0011            3cc6d         1         0      1             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO SC BT BT MI
+0012          3cc6ccd         1         0      1             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO BT BT SC BT BT MI
+0013             4ccd         1         1      0             0.00        1.000 +- 1.000        1.000 +- 1.000  [4 ] TO BT BT AB
+0014            3c6cd         1         0      1             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO BT SC BT MI
+0015              8bd         0       580   -580           580.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] TO BR SA
+0016           8cbc6d         0         1     -1             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO SC BT BR BT SA
+0017              86d         0         5     -5             0.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] TO SC SA
+0018        8cbbc6ccd         0         1     -1             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO BT BT SC BT BR BR BT SA
+0019        8cbbbb6cd         0         1     -1             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO BT SC BR BR BR BR BT SA
+.                              10000     10000      2285.00/5 = 457.00  (pval:1.000 prob:0.000)  
+    """
+    log.info("test_comparison_table_2")
+    from opticks.ana.histype import HisType
+    af = HisType() 
+    table = SeqTable.FromTxt(txt, af) 
+    print(table)
 
 
 if __name__ == '__main__':
     pass 
-    ## see histype.py and mattype.py for testing this
-    
+    ## see histype.py and mattype.py for other testing of this
+    logging.basicConfig(level=logging.INFO) 
+    #test_simple_table()
+    #test_comparison_table()
+    test_comparison_table_2()
 
 
 

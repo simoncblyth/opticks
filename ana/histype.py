@@ -111,7 +111,7 @@ def test_load_SeqTable(ok, af):
          ph = A.load_("ph",ok.src,ok.tag,ok.det, pfx=ok.pfx)
      except IOError as err:
          log.fatal(err) 
-         sys.exit(args.mrc)
+         sys.exit(0)
 
      log.info("loaded ph %s %s shape %s " %  (ph.path, ph.stamp, repr(ph.shape)))
 

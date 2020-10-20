@@ -1532,6 +1532,9 @@ class Evt(object):
 
         a_ana = getattr(a, ana_, None)
         b_ana = getattr(b, ana_, None)
+        log.debug("a_ana type %s " % type(a_ana))  # SeqAna
+        log.debug("b_ana type %s " % type(b_ana))
+
 
         if a_ana is None:
             log.warning("missing a_ana %s " % ana_ )  
@@ -1550,19 +1553,19 @@ class Evt(object):
 
             if len(list(c_tab.lines)) > lmx:
                 c_tab.sli = slice(0,lmx)
-
+            pass
             if pr:
                 print(c_tab)
             if c2max is not None:
                 assert c_tab.c2p < c2max, "c2p deviation for table %s c_tab.c2p %s >= c2max %s " % ( ana_, c_tab.c2p, c2max )
-
+            pass
         else:
             a_tab.title = "A:%s " % ana_
             if len(list(a_tab.lines)) > lmx:
                 a_tab.sli = slice(0,lmx)
             if pr:
                 print(a_tab)
-
+            pass
             b_tab.title = "B:%s " % ana_
             if len(list(b_tab.lines)) > lmx:
                 b_tab.sli = slice(0,lmx)

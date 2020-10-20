@@ -206,7 +206,8 @@ def opticks_args(**kwa):
     gidx = kwa.get("gidx", 0 ) 
     gmaxnode = kwa.get("gmaxnode", 0 ) 
     gmaxdepth = kwa.get("gmaxdepth", 0 ) 
-    cfordering = kwa.get("cfordering", "self" ) 
+    cfordering = kwa.get("cfordering", "sum_code" ) 
+    #cfordering = kwa.get("cfordering", "code" ) 
     dumpenv = kwa.get("dumpenv", False) 
 
     parser = argparse.ArgumentParser(doc)
@@ -313,9 +314,11 @@ def opticks_args(**kwa):
          log.fatal("use either --multievent n or --tagoffset o to pick one from multi, USING BOTH --multievent and --tagoffset NOT SUPPORTED  ") 
          sys.exit(1)
 
-    assert args.cfordering in "max self other".split() 
 
-    
+    ok.allowed_cfordering = "max self other sum sum_code code".split()
+    assert args.cfordering in ok.allowed_cfordering 
+
+      
     args.det = args.cat  # todo update use of det for cat, to avoid this 
 
     #if args.det != "g4live" and args.pfx != ".":
