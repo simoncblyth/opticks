@@ -66,9 +66,16 @@ set(OPTIX_SOURCES
 )
 
 CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${OPTIX_SOURCES} )
-CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
+message(STATUS "_generated_PTX_files : ${_generated_PTX_files} " )
 
-add_executable( ${name} ${_generated_OBJ_files} ${_generated_PTX_files} ${SOURCES} )
+#CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
+#message(STATUS "_generated_OBJ_files : ${_generated_OBJ_files} " )
+
+#add_executable( ${name} ${_generated_OBJ_files} ${_generated_PTX_files} ${SOURCES} )
+#add_executable( ${name} ${_generated_OBJ_files} ${SOURCES} )
+add_executable( ${name} ${_generated_PTX_files} ${SOURCES} )
+#add_executable( ${name}  ${SOURCES} )    
+#    need to include the _generated_PTX_files otherwise the below install of PTX fails 
 
 target_link_libraries(${name} PUBLIC 
       ImpOptiX 

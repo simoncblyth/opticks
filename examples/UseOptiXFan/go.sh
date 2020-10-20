@@ -37,5 +37,11 @@ fi
 make
 make install   
 
-DYLD_LIBRARY_PATH=${optix_prefix}/lib64:${cuda_prefix}/lib PREFIX=${install_prefix} ${install_prefix}/bin/UseOptiXFan
+
+case $(uname) in
+Darwin) libvar=DYLD_LIBRARY_PATH ;; 
+Linux) libvar=LD_LIBRARY_PATH  ;;
+esac
+
+eval $libvar=${optix_prefix}/lib64:${cuda_prefix}/lib PREFIX=${install_prefix} ${install_prefix}/bin/UseOptiXFan
 
