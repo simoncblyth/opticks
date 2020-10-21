@@ -1,20 +1,20 @@
 #!/bin/bash -l 
 
-mode=${1:-0}
+MODE=${1:-0}
 
-ana_cmd()
-{
-    local mode=${1:-0}
-    local py=${2:-2.7}
-    local fmt
-    case $mode in 
-      0) fmt="python%s $(which tboolean.py) --tagoffset 0 --tag 1 --cat tboolean-box --pfx tboolean-box --src torch --show" ;;
-      1) fmt="LV=box python%s histype.py" ;;
-      2) fmt="python%s seq.py" ;;
-    esac 
-    local ana=$(printf "$fmt" $py);  
-    echo "$ana" 
+ana_cmd_0(){ cat << EOC
+$* $(which tboolean.py) --tagoffset 0 --tag 1 --cat tboolean-box --pfx tboolean-box --src torch --show
+EOC
 }
+ana_cmd_1(){ cat << EOC
+LV=box $* $(which histype.py)
+EOC
+}
+ana_cmd_2(){ cat << EOC
+$* $(which seq.py)
+EOC
+}
+
 
 usage(){ cat << EON
 To regenerate the event files read by these analysis scripts, run::
@@ -25,20 +25,21 @@ EON
 }
 
 ana_log(){ 
-    local mode=${1:-0}
-    local py=${2:-2.7}
-    local idx=${3:-0}
-    echo /tmp/$USER/opticks/ana/ana_log_py${py}_mode${mode}_idx${idx}.log
+    local py="${*:-python3}"
+    py=${py// /_}
+    local mode=${MODE}
+    local idx=${IDX:-0}
+    echo /tmp/$USER/opticks/ana/ana_log_${py}_mode${mode}_idx${idx}.log
 }
 
 cfpy()
 {
     : compare output from running same cmd with two pythons
-    local py2cmd="$(ana_cmd $mode 2.7)"
-    local py3cmd="$(ana_cmd $mode 3)"
+    local py2cmd="$(ana_cmd_$MODE python2.7)"
+    local py3cmd="$(ana_cmd_$MODE python3)"
 
-    local py2log="$(ana_log $mode 2.7)"
-    local py3log="$(ana_log $mode 3)"
+    local py2log="$(ana_log python2.7)"
+    local py3log="$(ana_log python3)"
 
     mkdir -p $(dirname $py2log)
 
@@ -58,21 +59,39 @@ cfpy()
     echo $cmd
 }
 
+run()
+{
+    local py="${*:-python3}" 
+    echo py "$py"
+    local cmd="$(ana_cmd_$MODE "$py")" 
+    echo cmd "$cmd"
+    local log0="$(ana_log "$py")" 
+    echo log0 $log0
+    mkdir -p $(dirname $log0)
+    echo eval
+    #eval "$cmd" 2> $log0 1>&2 
+    eval "$cmd" 
+    local rc=$?
+    echo cmd $cmd : rc $rc 
+    cat $log0
+    echo cmd $cmd : rc $rc 
+}
+
 
 repeatability()
 {
     : repeat the same cmd comparing log output 
-    local py=${1:-2.7} 
-    local cmd="$(ana_cmd $mode $py)" 
-    echo $FUNCNAME : $py : $cmd  
+    local py="${1:-python3}" 
+    local cmd="$(ana_cmd_$MODE "$py")" 
+    echo $FUNCNAME : "$py" : $cmd  
 
-    local log0="$(ana_log $mode $py 0)" 
+    local log0="$(ana_log "$py")" 
     mkdir -p $(dirname $log0)
 
     local rc
     local nn=$(seq 0 9)
     for n in $nn ; do 
-       local logn="$(ana_log $mode $py $n)"
+       local logn="$(IDX=$n ana_log "$py")"
        eval "$cmd" 2> $logn 1>&2 
        local diffcmd="diff $log0 $logn"
        eval $diffcmd
@@ -84,7 +103,16 @@ repeatability()
 }
 
 
-cfpy 
-repeatability 2.7
-repeatability 3
+#cfpy 
+#repeatability python2.7
+#repeatability python3
+
+#run python2.7
+#run python3
+#run "ipython -i --"
+run "/Users/blyth/miniconda3/bin/ipython -i --"
+#run "/opt/local/bin/ipython -i --"
+#run python 
+
+
 

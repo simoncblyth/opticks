@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-import os, datetime, logging, re, signal
+import os, datetime, logging, re, signal, sys
 log = logging.getLogger(__name__)
 import numpy as np
 lfilter = lambda *args:list(filter(*args))
@@ -29,25 +29,42 @@ except NameError:
     from functools import reduce
 pass
 
-# this doesnt work, have to insert the code
-#from opticks.ana.debug import MyPdb
 
 """
-# not working with py3
-try:
-    from IPython.core.debugger import Pdb as MyPdb
-except ImportError:
-    class MyPdb(object):
-        def set_trace(self):
-            log.error("IPython is required for ipdb.set_trace() " )
-        pass  
+About using IPython debugger
+------------------------------
+
+Plant an ipython debugger breakpoint inside some python module by 
+duplicating the below code block into the head and entering
+the below at the critical code point::
+
+   ipdb.set_trace()   
+
+1. previously thought this was not working in py3, but it seems OK now
+2. attempting to import code doing the below doesnt work, have to include the code
+3. breakpoint actually lands on the statement immediately after "ipdb.set_trace()"
+4. when stopped at the breakpoint an >ipdb prompt should appear
+
+Commands available from the ipdb prompt::
+
+1. "bt" : show the stack backtrace 
+2. "c"  : continue from the breakpoint
+
+"""
+if sys.version_info.major in (2,3):  
+    try:
+        from IPython.core.debugger import Pdb as MyPdb
+    except ImportError:
+        class MyPdb(object):
+            def set_trace(self):
+                log.error("IPython is required for ipdb.set_trace() " )
+            pass  
+        pass
     pass
+    ipdb = MyPdb()
+else:
+    ipdb = None
 pass
-ipdb = MyPdb()
-"""
-ipdb = None
-
-
 
 
 from opticks.ana.base import ihex_
@@ -315,20 +332,26 @@ class SeqTable(object):
         return cls(cu, af, **kwa)
 
 
-    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, smry=False, shortname="noshortname?"): 
+    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, smry=False, shortname="noshortname"): 
         """
         :param cu: count unique array, typically shaped (n, 2) or (n,3) for comparisons
         :param af: instance of SeqType subclass such as HisType
         :param cnames: column names 
 
         """
-        log.debug("SeqTable.__init__ dbgseq %x" % dbgseq)
-
-        #ipdb.set_trace() 
 
         assert len(cu.shape) == 2 and cu.shape[1] >= 2 
-
         ncol = cu.shape[1] - 1 
+
+        log.debug("SeqTable.__init__ dbgseq %x" % dbgseq)
+        log.info("shortname %s cu.shape %s ncol: %s" % (shortname,repr(cu.shape), ncol))
+        assert shortname != "noshortname"  
+
+        if sys.version_info.major in (2,3):
+            pass
+            #ipdb.set_trace()  # plant an ipython debugger breakpoint
+        pass
+
 
         self.smry = smry
         self.dirty = False
@@ -471,8 +494,8 @@ class SeqTable(object):
             xs = "%0.4d " % (n)        
         pass
 
-        cfo_debug = self.cfo_line(n)
- 
+        #cfo_debug = self.cfo_line(n)
+        cfo_debug = ""
 
         vals = list(map(lambda _:" %7s " % _, self.cu[n,1:] ))
 
@@ -596,8 +619,8 @@ class SeqTable(object):
         cftab.cfordering = ordering 
 
         cfordering_key = list(map(ordering_, u)) 
-        print("cfordering_key for %s" % shortname)
-        print(cfordering_key)
+        log.info("cfordering_key for %s" % shortname)
+        log.info(cfordering_key)
   
         cftab.cfordering_key = cfordering_key 
         log.debug("SeqTable.compare DONE")
@@ -625,7 +648,7 @@ class SeqAna(object):
         aseq = ph[:,0,offset]
         return cls(aseq, af, cnames=[tag])
     
-    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, smry=False):
+    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, smry=False, table_shortname="no_table_shortname"):
         """
         :param aseq: photon length sequence array 
         :param af: instance of SeqType subclass, which knows what the codes mean 
@@ -647,7 +670,7 @@ class SeqAna(object):
         self.dbgzero = dbgzero
         self.cmx = cmx
 
-        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
+        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, shortname=table_shortname)
 
         self.aseq = aseq
         self.cu = cu

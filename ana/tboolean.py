@@ -46,7 +46,9 @@ if __name__ == '__main__':
     log.info("[AB") 
     ab = AB(ok)
     log.info("]AB") 
+    log.info("[ab.dump") 
     ab.dump()
+    log.info("]ab.dump") 
 
     rc = ab.RC
 
@@ -66,9 +68,9 @@ if __name__ == '__main__':
     if ab.is_comparable:
         #ab.aselhis = "TO BT BT SA"     # dev aligned comparisons
         ab.aselhis = None    # dev aligned comparisons
-
+        log.info("[ab.check_utaildebug")
         ab.check_utaildebug()
-
+        log.info("]ab.check_utaildebug")
     pass
    
        

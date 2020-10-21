@@ -366,7 +366,8 @@ class AB(object):
         It takes aound 4s on Precision Workstation to load 1M full AB evt pair. 
         So avoid needing to duplicate that.
         """
-        log.info("[ %s np.__version__ %s " % (self.ok.smry, np.__version__) )
+        pyver = "{major}.{minor}.{micro}".format(major=sys.version_info.major,minor=sys.version_info.minor,micro=sys.version_info.micro)  
+        log.info("[ smry:%s np.__version__ %s py%s" % (self.ok.smry, np.__version__, pyver) )
         args = self.ok
  
         if args.utag is None:

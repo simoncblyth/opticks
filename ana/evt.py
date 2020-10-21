@@ -83,7 +83,7 @@ def count_nonzero(a):
 
 if not hasattr(np, 'count_nonzero'): np.count_nonzero = count_nonzero
 
-pdict_ = lambda d:" ".join(["%s:%s" % kv for kv in d.items()])
+pdict_ = lambda d:" ".join(["%s:%s" % kv for kv in sorted(d.items(),key=lambda kv:kv[0]) ])
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(vnorm(a)*vnorm(b)) 
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
 cross_ = lambda a,b:np.cross(a,b)/np.repeat(vnorm(a),3).reshape(-1,3)/np.repeat(vnorm(b),3).reshape(-1,3)
@@ -494,8 +494,8 @@ class Evt(object):
         self.desc['gs'] = "(gensteps)"
 
 
-    def make_pflags_ana(self, pflags):
-        return SeqAna( pflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry )
+    def make_pflags_ana(self, pflags, table_shortname):
+        return SeqAna( pflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, table_shortname=table_shortname )
 
     def _get_pflags(self):
         if self._pflags is None:
@@ -537,7 +537,7 @@ class Evt(object):
 
         self.c4 = c4
 
-        all_pflags_ana = self.make_pflags_ana( self.pflags )
+        all_pflags_ana = self.make_pflags_ana( self.pflags, "all_pflags_ana" )
 
         self.all_pflags_ana = all_pflags_ana
         self.pflags_ana = all_pflags_ana
@@ -609,7 +609,7 @@ class Evt(object):
         self.hc4 = hc4
 
         #ipdb.set_trace() 
-        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
+        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, table_shortname="hflags_ana" )
  
         self.desc['hwl'] = "(hits) wavelength"
         self.desc['hpost'] = "(hits) final photon step: position, time"
@@ -672,11 +672,11 @@ class Evt(object):
         return jpsc
 
 
-    def make_seqhis_ana(self, seqhis):
-        return SeqAna( seqhis, self.histype, cnames=[self.cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
+    def make_seqhis_ana(self, seqhis, table_shortname):
+        return SeqAna( seqhis, self.histype, cnames=[self.cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, table_shortname=table_shortname)
 
-    def make_seqmat_ana(self, seqmat):
-        return SeqAna( seqmat, self.mattype, cnames=[self.cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
+    def make_seqmat_ana(self, seqmat, table_shortname):
+        return SeqAna( seqmat, self.mattype, cnames=[self.cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, table_shortname=table_shortname)
 
     def make_seqhis_ls(self):
         return SeqList( self.seqhis, self.histype, slice(0,50) )
@@ -723,8 +723,8 @@ class Evt(object):
         self.allseqmat = allseqmat
 
         # full history without selection
-        all_seqhis_ana = self.make_seqhis_ana(allseqhis)
-        all_seqmat_ana = self.make_seqmat_ana(allseqmat)
+        all_seqhis_ana = self.make_seqhis_ana(allseqhis, "all_seqhis_ana" )
+        all_seqmat_ana = self.make_seqmat_ana(allseqmat, "all_seqmat_ana" )
 
         #self.seqhis = seqhis
         self.seqhis_ls = self.make_seqhis_ls()
@@ -760,7 +760,8 @@ class Evt(object):
 
         for imsk in range(1,10):
             msk = msk_(imsk) 
-            setattr(self, "seqhis_ana_%d" % imsk, SeqAna(allseqhis & msk, self.histype, cnames=[self.cn])) 
+            table_shortname = "seqhis_ana_%d" % imsk
+            setattr(self, table_shortname, SeqAna(allseqhis & msk, self.histype, cnames=[self.cn], table_shortname=table_shortname)) 
         pass
 
         log.debug("init_sequence DONE")
@@ -1221,9 +1222,9 @@ class Evt(object):
             self.so = self.so_[psel]
         pass
 
-        self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel] )   # sequence history with selection applied
-        self.seqmat_ana = self.make_seqmat_ana( self.seqmat[psel] )   
-        self.pflags_ana = self.make_pflags_ana( self.pflags[psel] )
+        self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel], "seqhis_ana" )   # sequence history with selection applied
+        self.seqmat_ana = self.make_seqmat_ana( self.seqmat[psel], "seqmat_ana" )   
+        self.pflags_ana = self.make_pflags_ana( self.pflags[psel], "pflags_ana" )
 
 
     def _get_utail(self):
