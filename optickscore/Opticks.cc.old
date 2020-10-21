@@ -1,0 +1,84 @@
+/**
+Opticks::envkey
+----------------
+
+TODO: handle in OpticksResource ? Why it need to be here ?
+Which makes it difficult for the key to be overridible from command line.
+
+**/
+
+bool Opticks::envkey()
+{
+    LOG(LEVEL) << "[" ; 
+    bool legacy = Opticks::IsLegacyGeometryEnabled(); 
+    bool result = false ; 
+    if(legacy)
+    {
+        LOG(fatal) << " legacy geometry is not supported anymore " ; 
+        assert(0); 
+        //result = m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false ;    //  see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
+    }
+    else
+    {
+        result =  BOpticksKey::SetKey(NULL) ; 
+        assert( result == true && "a valid key is required in non-legacy running " );    
+    }
+
+    LOG(LEVEL) << "]" ; 
+    return result ; 
+}
+
+
+
+
+
+/**
+Opticks::initResource
+-----------------------
+
+Invoked by Opticks::configure.
+
+Instanciates m_resource OpticksResource and its base BOpticksResource
+which defines the geocache paths. Note that the fork between the legacy and
+direct geometry workflow for python scripts invoked from C++ processes 
+is effected by the setting or not of the IDPATH envvar.  
+
+When IDPATH is set the legacy route is taken by ana/env.py which is used by all 
+python scripts using opticks_main ana/main.py.
+
+See notes/issues/test-fails-from-geometry-workflow-interference.rst
+
+**/
+
+
+
+
+void Opticks::initResource()
+{
+    LOG(LEVEL) << "( OpticksResource " ;
+    m_resource = new OpticksResource(this);
+    LOG(LEVEL) << ") OpticksResource " ;
+    setDetector( m_resource->getDetector() );
+
+    const char* idpath = m_resource->getIdPath();
+    m_parameters->add<std::string>("idpath", idpath); 
+
+    bool legacy = isLegacy(); 
+    if(legacy)
+    {
+        bool overwrite = true ; 
+        LOG(error) << " (legacy mode) setting IDPATH envvar for python analysis scripts [" << idpath << "]"  ; 
+        int rc = SSys::setenvvar("IDPATH", idpath, overwrite );
+        assert( rc == 0 ); 
+    }
+    else
+    {
+        LOG(LEVEL) << " (direct mode) NOT setting IDPATH envvar  [" << idpath << "]"  ; 
+    }
+
+    LOG(LEVEL) << " DONE " << m_resource->desc()  ;
+}
+
+
+
+

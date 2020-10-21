@@ -83,24 +83,53 @@ std::string G4Opticks::EmbeddedCommandLine(const char* extra)
     return ss.str();  
 }
 
-Opticks* G4Opticks::InitOpticks(const char* keyspec) // static
+/**
+G4Opticks::InitOpticks
+-------------------------
+
+Invoked from G4Opticks::loadGeometry or G4Opticks::translateGeometry
+
+Steps:
+
+1. set the key 
+2. instanciate Opticks in embedded manner, must be after setting the key 
+
+**/
+Opticks* G4Opticks::InitOpticks(const char* keyspec, bool parse_cmdline) // static
 {
-    LOG(LEVEL) << "SetKey [" << keyspec << "]"  ;   
+    LOG(LEVEL) << "[" ;
+    LOG(LEVEL) << "[SetKey " << keyspec   ;   
     BOpticksKey::SetKey(keyspec);
-    LOG(LEVEL) << ") key" ;
+    LOG(LEVEL) << "]SetKey" ;
 
     const char* g4opticks_debug = SSys::getenvvar("G4OPTICKS_DEBUG") ; 
     std::string ecl = EmbeddedCommandLine(g4opticks_debug) ; 
     LOG(LEVEL) << "EmbeddedCommandLine : [" << ecl << "]" ; 
 
-    LOG(LEVEL) << "( Opticks" ;
-    Opticks* ok = new Opticks(0,0, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
+    LOG(LEVEL) << "[ok" ;
+    Opticks* ok = NULL ; 
+    if( parse_cmdline )
+    {
+        assert( PLOG::instance && "OPTICKS_LOG is needed to instanciate PLOG" );
+        const SAr& args = PLOG::instance->args ; 
+        LOG(info) << "instanciate Opticks using commandline captured by OPTICKS_LOG + embedded commandline" ;  
+        args.dump(); 
+        ok = new Opticks(args._argc, args._argv, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
+    }
+    else
+    {
+        LOG(info) << "instanciate Opticks using embedded commandline only + potentially G4OPTICKS_DEBUG extras" ;  
+        ok = new Opticks(0,0, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
+    }
+    LOG(LEVEL) << "]ok" ;
+
+    LOG(LEVEL) << "[ok.configure" ;
     ok->configure();       // parses args and does resource setup
+    LOG(LEVEL) << "]ok.configure" ;
 
     const char* idpath = ok->getIdPath(); 
     assert(idpath);
-    LOG(LEVEL) << ") Opticks " << idpath ;
- 
+    LOG(LEVEL) << "] " << idpath ;
     return ok ; 
 }
 
@@ -351,7 +380,8 @@ Load geometry cache identified by the OPTICKS_KEY envvar.
 void G4Opticks::loadGeometry()
 {
     const char* keyspec = NULL ;   // NULL means get keyspec from OPTICKS_KEY envvar 
-    Opticks* ok = InitOpticks(keyspec); 
+    bool parse_commandline = true ; 
+    Opticks* ok = InitOpticks(keyspec, parse_commandline); 
     GGeo* ggeo = GGeo::Load(ok); 
     setGeometry(ggeo); 
 }
@@ -668,8 +698,9 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     LOG(verbose) << "( key" ;
     const char* keyspec = X4PhysicalVolume::Key(top) ; 
 
-    Opticks* ok = InitOpticks(keyspec); 
-
+    bool parse_commandline = false ; 
+    Opticks* ok = InitOpticks(keyspec, parse_commandline); 
+ 
     const char* dbggdmlpath = ok->getDbgGDMLPath(); 
     if( dbggdmlpath != NULL )
     { 

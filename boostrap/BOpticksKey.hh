@@ -47,6 +47,7 @@ class BRAP_API BOpticksKey
         static const char* IDFILE ; 
         static const char* IDSUBD ; 
         static int         LAYOUT ; 
+        static bool         IsSet();
         static BOpticksKey* GetKey();
         static bool         SetKey(const char* spec) ;  
         static void         Desc() ;  

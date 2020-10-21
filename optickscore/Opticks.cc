@@ -299,33 +299,33 @@ Opticks* Opticks::GetInstance()
 }
 
 
+
 /**
 Opticks::envkey
 ----------------
 
-TODO: handle in OpticksResource ? Why it need to be here ?
-Which makes it difficult for the key to be overridible from command line.
+Checks if a key is set already. 
+If not attempts to set the key obtained from the OPTICKS_KEY envvar.
 
 **/
 
 bool Opticks::envkey()
 {
-    bool legacy = Opticks::IsLegacyGeometryEnabled(); 
-    bool result = false ; 
-    if(legacy)
-    {
-        LOG(fatal) << " legacy geometry is not supported anymore " ; 
-        assert(0); 
-        //result = m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(NULL) : false ;    //  see tests/OpticksEventDumpTest.cc makes sensitive to OPTICKS_KEY
-    }
-    else
-    {
-        result =  BOpticksKey::SetKey(NULL) ; 
-        assert( result == true && "a valid key is required in non-legacy running " );    
-    }
+    LOG(LEVEL); 
 
-    return result ; 
+    bool key_is_set(false) ;
+    key_is_set = BOpticksKey::IsSet() ; 
+    if(key_is_set) return true ; 
+
+    BOpticksKey::SetKey(NULL) ;  // use keyspec from OPTICKS_KEY envvar 
+
+    key_is_set = BOpticksKey::IsSet() ; 
+    assert( key_is_set == true && "valid geocache and key are required" ); 
+
+    return key_is_set ; 
 }
+
+
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
     :
@@ -828,12 +828,13 @@ Opticks::initResource
 Invoked by Opticks::configure.
 
 Instanciates m_resource OpticksResource and its base BOpticksResource
-which defines the geocache paths. Note that the fork between the legacy and
-direct geometry workflow for python scripts invoked from C++ processes 
-is effected by the setting or not of the IDPATH envvar.  
+which defines the geocache paths. 
 
-When IDPATH is set the legacy route is taken by ana/env.py which is used by all 
-python scripts using opticks_main ana/main.py.
+Previously the decision to use legacy and direct geometry workflow 
+for python scripts invoked from OpticksAna (and separately) 
+was controlled by the setting or not of the IDPATH envvar.  
+Now that legacy mode is no longer supported, there is no more need 
+for this split.
 
 See notes/issues/test-fails-from-geometry-workflow-interference.rst
 
@@ -841,28 +842,16 @@ See notes/issues/test-fails-from-geometry-workflow-interference.rst
 
 void Opticks::initResource()
 {
-    LOG(LEVEL) << "( OpticksResource " ;
+    LOG(LEVEL) << "[ OpticksResource " ;
     m_resource = new OpticksResource(this);
-    LOG(LEVEL) << ") OpticksResource " ;
-    setDetector( m_resource->getDetector() );
-
+    const char* detector = m_resource->getDetector() ; 
     const char* idpath = m_resource->getIdPath();
+    LOG(LEVEL) << "] OpticksResource " << detector ;
+
+    setDetector(detector);
     m_parameters->add<std::string>("idpath", idpath); 
 
-    bool legacy = isLegacy(); 
-    if(legacy)
-    {
-        bool overwrite = true ; 
-        LOG(error) << " (legacy mode) setting IDPATH envvar for python analysis scripts [" << idpath << "]"  ; 
-        int rc = SSys::setenvvar("IDPATH", idpath, overwrite );
-        assert( rc == 0 ); 
-    }
-    else
-    {
-        LOG(LEVEL) << " (direct mode) NOT setting IDPATH envvar  [" << idpath << "]"  ; 
-    }
-
-    LOG(LEVEL) << " DONE " << m_resource->desc()  ;
+    LOG(LEVEL) << m_resource->desc()  ;
 }
 
 
@@ -1691,13 +1680,15 @@ bool Opticks::isGLTF() const
 }
 
 const char* Opticks::getGLTFPath() const { return m_resource->getGLTFPath() ; }
-const char* Opticks::getSrcGLTFPath() const { return m_resource->getSrcGLTFPath() ; }
 const char* Opticks::getG4CodeGenDir() const { return m_resource->getG4CodeGenDir() ; }
 const char* Opticks::getCacheMetaPath() const { return m_resource->getCacheMetaPath() ; } 
 const char* Opticks::getRunCommentPath() const { return m_resource->getRunCommentPath() ; } 
 
 
 
+
+/*
+const char* Opticks::getSrcGLTFPath() const { return m_resource->getSrcGLTFPath() ; }
 
 const char* Opticks::getSrcGLTFBase() const  // config base and name only used whilst testing with gltf >= 100
 {
@@ -1708,7 +1699,6 @@ const char* Opticks::getSrcGLTFBase() const  // config base and name only used w
     return strdup(base.c_str()) ; 
 }
 
-
 const char* Opticks::getSrcGLTFName() const 
 {
     int gltf = getGLTF();
@@ -1717,7 +1707,6 @@ const char* Opticks::getSrcGLTFName() const
     std::string name = gltf < 100 ? BFile::Name(path) : m_cfg->getSrcGLTFName()  ;
     return strdup(name.c_str()) ; 
 }
-
 
 bool Opticks::hasSrcGLTF() const 
 {
@@ -1740,12 +1729,23 @@ void Opticks::configureCheckGeometryFiles()
     }
 } 
 
-
-
 const char* Opticks::getGLTFConfig()
 {
     return m_cfg->getGLTFConfig().c_str() ; 
 }
+
+NSceneConfig* Opticks::getSceneConfig()
+{
+    if(m_scene_config == NULL)
+    {
+        m_scene_config = new NSceneConfig(getGLTFConfig());
+    }
+    return m_scene_config ; 
+}
+
+*/
+
+
 
 int  Opticks::getLayout() const 
 {
@@ -2115,19 +2115,6 @@ NSnapConfig* Opticks::getSnapConfig()
 
 
 
-
-
-
-NSceneConfig* Opticks::getSceneConfig()
-{
-    if(m_scene_config == NULL)
-    {
-        m_scene_config = new NSceneConfig(getGLTFConfig());
-    }
-    return m_scene_config ; 
-}
-
-
 int  Opticks::getDomainTarget() const  // --domaintarget 
 {
     return m_cfg->getDomainTarget(); 
@@ -2249,11 +2236,10 @@ void Opticks::dumpArgs(const char* msg)
 {
     LOG(LEVEL) << msg << " argc " << m_argc ;
     for(int i=0 ; i < m_argc ; i++) 
-         LOG(LEVEL) << std::setw(3) << i << " : " << m_argv[i] << std::endl ;
+        LOG(LEVEL) << std::setw(3) << i << " : " << m_argv[i]  ;
 
    // PLOG by default writes to stdout so for easy splitting write 
    // mostly to stdout and just messages to stderr
-
 }
 
 
@@ -2401,7 +2387,7 @@ void Opticks::configure()
 
     m_verbosity = m_cfg->getVerbosity(); 
 
-    configureCheckGeometryFiles();
+    //configureCheckGeometryFiles();
 
     configureGeometryHandling();
 
@@ -2515,10 +2501,6 @@ void Opticks::Summary(const char* msg)
 
     m_resource->Summary(msg);
 
-    const char* srcgltfbase = getSrcGLTFBase() ;
-    const char* srcgltfname = getSrcGLTFName() ;
-
-
     std::cout
         << std::setw(40) << " isInternal "
         << std::setw(40) << isInternal()
@@ -2529,16 +2511,13 @@ void Opticks::Summary(const char* msg)
         << std::setw(40) << " AnalyticPMTMedium "
         << std::setw(40) << getAnalyticPMTMedium()
         << std::endl
-        << std::setw(40) << " SrcGLTFBase "
-        << std::setw(40) << ( srcgltfbase ? srcgltfbase : "-" )
-        << std::endl
-        << std::setw(40) << " SrcGLTFName "
-        << std::setw(40) << ( srcgltfname ? srcgltfname : "-" )
-        << std::endl
         ;
 
     LOG(info) << msg << "DONE" ; 
 }
+
+
+
 
 
 int Opticks::getLastArgInt()

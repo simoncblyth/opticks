@@ -11,11 +11,11 @@ G4OKTest
 This test is intended to provide a way of testing G4Opticks machinery 
 without ascending to the level of the experiment.
 
-Formerly this could not run from geocache, it now can do 
-both. When a --gdmlpath argument is used this will 
-parse the GDML into a Geant4 geometry and translate that 
-into Opticks GGeo.   Without the --gdmlpath argument the 
-cache identified by OPTICKS_KEY envvar will be loaded.
+This can now run either from GDML file OR from geocache.
+When a --gdmlpath argument is used this will parse the GDML 
+into a Geant4 geometry and translate that into Opticks GGeo.   
+Without the --gdmlpath argument the cache identified by 
+OPTICKS_KEY envvar will be loaded.
  
 From GDML::
 
@@ -24,16 +24,18 @@ From GDML::
     G4OPTICKS_DEBUG="--x4polyskip 211,232" lldb_ G4OKTest --  --gdmlpath $(opticksaux-dx1) 
     G4OPTICKS_DEBUG="" lldb_ G4OKTest --  --gdmlpath $(opticksaux-jv5) 
 
-
 From cache(experimental)::
 
     G4OKTest 
 
-Notice that Opticks is "embedded" in both cases, thus 
-need to supply Opticks arguments via G4OPTICKS_DEBUG envvar backdoor.
+Notice that Opticks is "embedded" when running from GDML which means that 
+it does not parse the commandline, this matches production usage. In order  
+supply Opticks additional arguments the G4OPTICKS_DEBUG envvar backdoor can be used.
 
-Hmm embedded running matches production usage, BUT its a pain, better for G4Opticks
-to be passed Opticks ptr ? Which when NULL results in embedded running.
+When running from cache the commandline is now parsed using the 
+arguments captured by OPTICKS_LOG. Caution that both arguments
+from the commandline and the fixed embedded commandline are used. 
+This prevents the use of some arguments as duplicates cause asserts.  
 
 **/
 

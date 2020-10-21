@@ -89,7 +89,7 @@ class G4OK_API G4Opticks
         static const plog::Severity LEVEL ;
         static const char* fEmbeddedCommandLine ; 
         static std::string EmbeddedCommandLine(const char* extra=NULL); 
-        Opticks* InitOpticks(const char* keyspec);
+        Opticks* InitOpticks(const char* keyspec, bool parse_commandline);
     public:
         static G4Opticks* Get();
         static void Initialize(const char* gdmlpath, bool standardize_geant4_materials);

@@ -19,13 +19,11 @@
 
 #include "OPTICKS_LOG.hh"
 
-int main(int argc, char** argv)
+
+
+void test_offset_level_logging()
 {
-    OPTICKS_LOG(argc, argv);
-    //OPTICKS_ELOG("EmbeddedLogTest");
-
     plog::Severity level = info ; 
-
     pLOG(level,4)  << " hello+4 " ; 
     pLOG(level,3)  << " hello+3 " ; 
     pLOG(level,2)  << " hello+2 " ; 
@@ -35,21 +33,31 @@ int main(int argc, char** argv)
     pLOG(level,-2) << " hello-2 " ; 
     pLOG(level,-3) << " hello-3 " ; 
     pLOG(level,-4) << " hello-4 " ; 
+}
 
-/*
 
-2018-08-04 09:44:56.320 VERB  [8369891] [main@14]  hello+4 
-2018-08-04 09:44:56.320 VERB  [8369891] [main@15]  hello+3 
-2018-08-04 09:44:56.320 VERB  [8369891] [main@16]  hello+2 
-2018-08-04 09:44:56.320 DEBUG [8369891] [main@17]  hello+1 
-2018-08-04 09:44:56.320 INFO  [8369891] [main@18]  hello+0 
-2018-08-04 09:44:56.320 WARN  [8369891] [main@19]  hello-1 
-2018-08-04 09:44:56.320 ERROR [8369891] [main@20]  hello-2 
-2018-08-04 09:44:56.320 FATAL [8369891] [main@21]  hello-3 
-2018-08-04 09:44:56.320 FATAL [8369891] [main@22]  hello-4 
+void test_PLOG_SAr_dump()
+{
+    // use PLOG::instance to recover commandline arguments 
+    PLOG* plog = PLOG::instance ; 
+    LOG(info) << " plog " << plog ; 
+    assert(plog && "OPTICKS_LOG is needed to instanciate PLOG"); 
+    const SAr& args = plog->args ; 
+    args.dump(); 
+    LOG(info) << " args.argc " << args._argc ; 
+    for(int i=0 ; i < args._argc ; i++)  LOG(info) << i << ":" << args._argv[i] ; 
+}
 
-*/
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+    //OPTICKS_ELOG("EmbeddedLogTest");
+
+    //test_offset_level_logging() ;
+    test_PLOG_SAr_dump();
 
     return 0 ; 
 }
-
+// om-;TEST=OPTICKS_LOG_Test om-t

@@ -43,6 +43,11 @@ const char* BOpticksKey::IDSUBD = "g4ok_gltf" ;
 int         BOpticksKey::LAYOUT = 1 ; 
 
 
+bool BOpticksKey::IsSet()  // static
+{
+    return fKey != NULL ; 
+}
+
 BOpticksKey* BOpticksKey::GetKey()
 {
     // invoked by BOpticksResource::BOpticksResource at Opticks instanciation
@@ -57,14 +62,11 @@ const char* BOpticksKey::StemName( const char* ext, const char* sep )
 
 bool BOpticksKey::SetKey(const char* spec)
 {
-    if( fKey != NULL )
+    if(BOpticksKey::IsSet())
     {
-        LOG(error) << "SetKey is already set, ignoring update with spec " << spec ;
-        Desc();   
-        // std::raise(SIGINT) ;  
+        LOG(error) << "key is already set, ignoring update with spec " << spec ;
         return true ;  
     }
-    // assert( fKey == NULL && "SetKey is only expected to be called once" );  
 
     if(spec == NULL)
     {
