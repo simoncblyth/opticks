@@ -197,8 +197,8 @@ int SSys::npdump(const char* path, const char* nptype, const char* postview, con
     ss << "python -c 'import sys, os, numpy as np ;"
        << " np.set_printoptions(" << printoptions << ") ;"
        << " a=np.load(os.path.expandvars(\"" << path << "\")) ;"
-       << " print a.shape ;"
-       << " print a.view(" << nptype << ")" << ( postview ? postview : "" ) << " ;"
+       << " print(a.shape);"
+       << " print(a.view(" << nptype << ")" << ( postview ? postview : "" ) << ") ;"
        << " sys.exit(0) ' " 
     ;    
 

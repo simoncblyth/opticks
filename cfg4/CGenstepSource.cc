@@ -130,6 +130,8 @@ CGenstepSource::generatePhotonsFromOneGenstep
 Notice that genstep arrays can contain mixed types of gensteps, BUT that
 each individual genstep is always of one particular type.
 
+SUSPECT confusion here between genstep codes and photon codes.
+
 **/
 
 G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()

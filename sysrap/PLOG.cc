@@ -314,6 +314,11 @@ const char* PLOG::get_arg_after(const char* option, const char* fallback) const
 {
     return args.get_arg_after(option, fallback); 
 }
+int PLOG::get_int_after(const char* option, const char* fallback) const 
+{
+    return args.get_int_after(option, fallback); 
+}
+
 
 
 

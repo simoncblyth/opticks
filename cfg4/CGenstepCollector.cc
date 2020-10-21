@@ -49,11 +49,11 @@ CGenstepCollector::CGenstepCollector(const NLookup* lookup)
     :
     m_lookup(lookup),
     m_genstep(NPY<float>::make(0,6,4)),
-   // m_gs(new OpticksGenstep(m_genstep)),
     m_genstep_itemsize(m_genstep->getNumValues(1)),
     m_genstep_values(new float[m_genstep_itemsize]),
     m_scintillation_count(0),
     m_cerenkov_count(0),
+    m_torch_count(0),
     m_machinery_count(0)
 {
     assert( m_genstep_itemsize == 6*4 );
@@ -73,6 +73,7 @@ void CGenstepCollector::reset()
 {
     m_scintillation_count = 0 ; 
     m_cerenkov_count = 0 ; 
+    m_torch_count = 0 ; 
     m_machinery_count = 0 ; 
     m_genstep->reset(); 
     m_gs_photons.clear(); 
@@ -111,31 +112,38 @@ void CGenstepCollector::import()
 
     assert( m_scintillation_count == 0);
     assert( m_cerenkov_count == 0);
+    assert( m_torch_count == 0);
     assert( m_machinery_count == 0);
 
     for(unsigned i=0 ; i < ni ; i++)
     {
         unsigned gentype = m_genstep->getInt(i,0u,0u);
         unsigned numPhotons = m_genstep->getInt(i,0u,3u);
+
         if(OpticksGenstep::IsScintillation(gentype))  m_scintillation_count += 1 ;       
         else if(OpticksGenstep::IsCerenkov(gentype))  m_cerenkov_count += 1 ;       
+        else if(OpticksGenstep::IsTorchLike(gentype))  m_torch_count += 1 ;       
         else if(OpticksGenstep::IsMachinery(gentype)) m_machinery_count += 1 ;       
 
         m_gs_photons.push_back(numPhotons); 
     }
 
-    unsigned total = m_scintillation_count + m_cerenkov_count + m_machinery_count ; 
+    unsigned total = m_scintillation_count + m_cerenkov_count + m_torch_count + m_machinery_count ; 
     assert( total == ni ); 
 }
 
 
 
 
+/**
+CGenstepCollector::translate
+-----------------------------
 
+Uses the lookup to translate Geant4 material index into 
+GBndLib material line for use with GPU texture.
 
-
-
-int CGenstepCollector::translate(int acode) const // raw G4 materialId translated into GBndLib material line for GPU usage 
+**/
+int CGenstepCollector::translate(int acode) const 
 {
     assert( m_lookup && m_lookup->isClosed() ); 
     int bcode = m_lookup->a2b(acode) ;
@@ -166,17 +174,11 @@ NPY<float>*  CGenstepCollector::getGensteps() const
     return m_genstep ; 
 }
 
-/*
-void CGenstepCollector::setGensteps(NPY<float>* gs)
-{
-    m_genstep = gs ; 
-}
-*/
 
 void CGenstepCollector::consistencyCheck() const 
 {
      unsigned numItems = m_genstep->getNumItems();
-     bool consistent = numItems == m_scintillation_count + m_cerenkov_count + m_machinery_count ;
+     bool consistent = numItems == m_scintillation_count + m_cerenkov_count + m_torch_count + m_machinery_count ;
      if(!consistent)
          LOG(fatal) << "CGenstepCollector::consistencyCheck FAIL " 
                     << description()
@@ -192,8 +194,9 @@ std::string CGenstepCollector::desc() const
        << " ngs " << std::setw(3) << m_genstep->getNumItems() 
        << " nsc " << std::setw(3) << m_scintillation_count
        << " nck " << std::setw(3) << m_cerenkov_count
+       << " nto " << std::setw(3) << m_torch_count
        << " nma " << std::setw(3) << m_machinery_count
-       << " tot " << std::setw(3) << m_scintillation_count + m_cerenkov_count + m_machinery_count 
+       << " tot " << std::setw(3) << m_scintillation_count + m_cerenkov_count + m_torch_count + m_machinery_count 
        ;
     return ss.str();
 }
@@ -205,8 +208,9 @@ std::string CGenstepCollector::description() const
        << " numItems " << m_genstep->getNumItems() 
        << " scintillation_count " << m_scintillation_count
        << " cerenkov_count " << m_cerenkov_count
+       << " torch_count " << m_torch_count
        << " machinery_count " << m_machinery_count
-       << " step_count " << m_scintillation_count + m_cerenkov_count + m_machinery_count 
+       << " step_count " << m_scintillation_count + m_cerenkov_count + m_torch_count + m_machinery_count 
        ;
     return ss.str();
 }
@@ -348,7 +352,7 @@ void CGenstepCollector::collectCerenkovStep
             G4double             postVelocity
 )
 {
-     m_cerenkov_count += 1 ;   // 1-based index
+     m_cerenkov_count += 1 ;   
      m_gs_photons.push_back(numPhotons); 
 
      LOG(LEVEL)
@@ -414,7 +418,7 @@ void CGenstepCollector::collectMachineryStep(unsigned gentype)
 {
      assert( OpticksGenstep::IsMachinery(gentype) ); 
 
-     m_machinery_count += 1 ;   // 1-based index
+     m_machinery_count += 1 ;  
      LOG(debug) 
            << " machinery_count " << m_machinery_count ;
 
@@ -428,5 +432,62 @@ void CGenstepCollector::collectMachineryStep(unsigned gentype)
      m_genstep->add(ms, m_genstep_itemsize);
 }
 
+
+/**
+CGenstepCollector::collectOpticksGenstep
+------------------------------------------
+
+Experimental for debugging only. Used by g4ok/G4OKTest 
+Currently expects only torchsteps.
+
+**/
+
+void CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
+{
+    unsigned num_gensteps = gs->getNumGensteps(); 
+    const NPY<float>* src = gs->getGensteps(); 
+    float* dst_values = m_genstep_values ; 
+
+    LOG(LEVEL) 
+        << " num_gensteps " << num_gensteps 
+        << " src.shape " << src->getShapeString()
+        ;
+
+    for(unsigned idx=0 ; idx < num_gensteps ; idx++)
+    {
+        unsigned gentype = gs->getGencode(idx); 
+        LOG(LEVEL) 
+            << " idx " << idx
+            << " gentype " << gentype
+            ;
+
+        if( OpticksGenstep::IsCerenkov(gentype) )
+        {
+            assert(0); 
+            m_cerenkov_count += 1 ;  
+        }
+        else if( OpticksGenstep::IsScintillation(gentype) )
+        {
+            assert(0); 
+            m_scintillation_count += 1 ;  
+        }
+        else if( OpticksGenstep::IsTorchLike(gentype) )
+        {
+            m_torch_count += 1 ;  
+            const float* src_values = src->getValuesConst(idx);  
+            for(unsigned j=0 ; j < m_genstep_itemsize ; j++) dst_values[j] = src_values[j] ; 
+            m_genstep->add(dst_values, m_genstep_itemsize);
+        }
+        else if( OpticksGenstep::IsMachinery(gentype) )
+        {
+            assert(0); 
+            m_machinery_count += 1 ;  
+        }
+        else
+        {
+            assert(0); 
+        }
+    } 
+}
 
  

@@ -342,12 +342,12 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
     {   
         if(m_hub)
         {
-            glm::ivec4& iframe = gs->getFrame();
+            const glm::ivec4& iframe = gs->getFrame();
 
             int node_index = iframe.x ; 
             if(node_index < 0)
             {
-                LOG(fatal) << "node_index from GenstepNPY is -1, resetting to 0" ; 
+                LOG(fatal) << "node_index from GenstepNPY is -1 (dummy frame), resetting to 0" ; 
                 node_index = 0 ; 
             }
 

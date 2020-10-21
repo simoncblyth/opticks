@@ -251,6 +251,9 @@ const char* BStr::xtoa( T x )
     return strdup(s.c_str());
 }
 
+/**
+:%s/boost::lexical_cast/BStr::LexicalCast/gc
+**/
 
 
 template<typename T>

@@ -29,6 +29,7 @@
 #include "NLookup.hpp"
 #include "NPho.hpp"
 #include "NPY.hpp"
+#include "TorchStepNPY.hpp"
 
 #include "CTraverser.hh"
 #include "CMaterialTable.hh"
@@ -44,6 +45,7 @@
 
 #include "OpticksPhoton.h"
 #include "OpticksGenstep.h"
+#include "OpticksGenstep.hh"
 
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
@@ -93,6 +95,12 @@ Steps:
 
 1. set the key 
 2. instanciate Opticks in embedded manner, must be after setting the key 
+
+
+As unfettered access to the commandline is not really practical in production running 
+where the commandline is used by the host application the use of parse_cmdline=true 
+by embedded Opticks should be regarded as a temporary kludge during devlopment 
+that will not be available in production.
 
 **/
 Opticks* G4Opticks::InitOpticks(const char* keyspec, bool parse_cmdline) // static
@@ -347,7 +355,6 @@ void G4Opticks::setGeometry(const G4VPhysicalVolume* world, bool standardize_gea
     setGeometry(world);  
 }
 
-
 void G4Opticks::setGeometry(const G4VPhysicalVolume* world)
 {
     LOG(LEVEL) << "[" ; 
@@ -391,8 +398,9 @@ void G4Opticks::loadGeometry()
 G4Opticks::setGeometry(const GGeo* ggeo)
 ------------------------------------------
 
-When GGeo is loaded from cache the sensor placements
-origin nodes are not available, but their number is available.
+When GGeo is loaded from cache the sensor placement origin nodes 
+are not available (as there is no Geant4 geometry tree in memory), 
+but their number is available.
 
 **/
 
@@ -457,8 +465,8 @@ unsigned G4Opticks::getNumSensorVolumes() const
 }
 
 /**
-G4Opticks::getSensorIdentity (pre-cache and post-cache)
----------------------------------------------------------
+G4Opticks::getSensorIdentityStandin (pre-cache and post-cache)
+-----------------------------------------------------------------
 **/
 
 unsigned G4Opticks::getSensorIdentityStandin(unsigned sensorIndex) const 
@@ -493,11 +501,13 @@ const std::vector<G4PVPlacement*>& G4Opticks::getSensorPlacements() const
 }
 
 /**
-G4Opticks::getNumDistinctPlacementCopyNo
-------------------------------------------
+G4Opticks::getNumDistinctPlacementCopyNo 
+-----------------------------------------
 
 GDML physvol/@copynumber attribute persists the CopyNo, but this 
-defaults to 0 unless set at detector level.
+defaults to 0 unless set at detector level. When CopyNo is not 
+used as a sensor identifier or when running from cache this 
+is expected to return 1.
 
 **/
 
@@ -542,7 +552,6 @@ defined sensor identifier.
 
 Within JUNO simulation framework this is used from LSExpDetectorConstruction::SetupOpticks.
 
-
 sensorIndex 
     0-based continguous index used to access the sensor data, 
     the index must be less than the number of sensors
@@ -556,9 +565,6 @@ category
 identifier
     detector specific integer representing a sensor, does not need to be contiguous
 
-
-Within JUNO simulation framework this is used from LSExpDetectorConstruction::SetupOpticks
-whilst looping over the sensor_placements G4PVPlacement provided by G4Opticks::getSensorPlacements.
 
 **/
 
@@ -833,6 +839,15 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
     m_gensteps = m_genstep_collector->getGensteps(); 
     m_gensteps->setArrayContentVersion(G4VERSION_NUMBER); 
     m_gensteps->setArrayContentIndex(eventID); 
+
+    unsigned num_gensteps = m_gensteps->getNumItems(); 
+    LOG(LEVEL) << " num_gensteps "  << num_gensteps ;  
+    if( num_gensteps == 0 )
+    {
+        LOG(fatal) << "SKIP as no gensteps have been collected " ; 
+        return 0 ; 
+    }
+
 
     unsigned tagoffset = eventID ;  // tags are 1-based : so this will normally be the Geant4 eventID + 1
     const char* gspath = m_ok->getDirectGenstepPath(tagoffset);   
@@ -1323,6 +1338,46 @@ void G4Opticks::collectCerenkovStep
     LOG(debug) << "]" ; 
 }
   
+
+/**
+G4Opticks::collectDefaultTorchStep
+-----------------------------------
+
+Used from G4OKTest for debugging only.
+
+**/
+
+void G4Opticks::collectDefaultTorchStep(unsigned node_index)
+{
+     unsigned gentype = OpticksGenstep_TORCH  ; 
+     unsigned num_step = 1 ; 
+     const char* config = NULL ;   
+     // encompasses a default number of photons, distribution, polarization
+
+     assert( OpticksGenstep::IsTorchLike(gentype) ); 
+
+     LOG(LEVEL) << " gentype " << gentype ; 
+
+     TorchStepNPY* ts = new TorchStepNPY(gentype, num_step, config);
+
+     glm::mat4 frame_transform = m_ggeo->getTransform( node_index ); 
+     ts->setFrameTransform(frame_transform);
+
+     for(unsigned i=0 ; i < num_step ; i++) 
+     {
+         ts->addStep(); 
+     }
+
+     NPY<float>* arr = ts->getNPY(); 
+
+     arr->save("$TMP/debugging/collectDefaultTorchStep/gs.npy");  
+
+     const OpticksGenstep* gs = new OpticksGenstep(arr); 
+    
+
+     assert( m_genstep_collector ); 
+     m_genstep_collector->collectOpticksGenstep(gs);  
+} 
 
 
 /**

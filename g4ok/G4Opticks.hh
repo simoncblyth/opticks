@@ -84,7 +84,7 @@ Notes
 
 class G4OK_API G4Opticks   
 {
-        friend struct G4OKTest ; 
+        friend class G4OKTest ; 
     private:
         static const plog::Severity LEVEL ;
         static const char* fEmbeddedCommandLine ; 
@@ -264,7 +264,8 @@ class G4OK_API G4Opticks
             G4double spare2
             );
 
-
+    private:
+        void collectDefaultTorchStep(unsigned node_index);
     public:
         void collectSecondaryPhotons(const G4VParticleChange* pc);
     public:

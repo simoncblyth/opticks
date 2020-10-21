@@ -58,53 +58,57 @@ class NPY_API GenstepNPY {
    public:  
        static const plog::Severity LEVEL ; 
    public:  
-       GenstepNPY(unsigned genstep_type, unsigned num_step=1, const char* config=NULL, bool is_default=false); 
+       GenstepNPY(unsigned gentype, unsigned num_step=1, const char* config=NULL, bool is_default=false); 
        void addStep(bool verbose=false); // increments m_step_index
-       unsigned getNumStep();
+       unsigned getNumStep() const ;
 
    public:
        // slots used by Geant4 only (not Opticks) from cfg4- 
-       unsigned int getNumG4Event();
-       unsigned int getNumPhotonsPerG4Event(); 
+       unsigned int getNumG4Event() const ;
+       unsigned int getNumPhotonsPerG4Event() const ; 
        void setNumPhotonsPerG4Event(unsigned int n);
    public:
 
 
-       NPY<float>* getNPY();
+       NPY<float>* getNPY() const ;
        void         addActionControl(unsigned long long  action_control);
 
-       virtual void update() = 0 ;   // <-- provided by subclasses such as TorchstepNPY
 
-       virtual void dump(const char* msg="GenstepNPY::dump");
-       void dumpBase(const char* msg="GenstepNPY::dumpBase");
+       virtual void dump(const char* msg="GenstepNPY::dump") const ;
+       void dumpBase(const char* msg="GenstepNPY::dumpBase") const ;
    public:  
        void setNumPhotons(const char* s );
        void setNumPhotons(unsigned int num_photons );
        void setMaterialLine(unsigned int ml);
-       unsigned int getNumPhotons();
-       unsigned int getMaterialLine();
+       unsigned getNumPhotons() const ;
+       unsigned getMaterialLine() const ;
+       unsigned getGenstepType() const ;
    private:
-       void setGenstepType(unsigned genstep_type);  
+       void setGenstepType(unsigned gentype);  
        // invoked by addStep using the ctor argument type 
        // genstep types identify what to generate eg: TORCH, CERENKOV, SCINTILLATION
        // currently limited to all gensteps within a GenstepNPY instance having same type
-
+       //   ^^^^^^^^^^^^^^^  Suspect that is no longer the case and can mix types ?
+         
    public:  
        // target setting needs external info regarding geometry 
        void setFrame(const char* s );
        void setFrame(unsigned vindex );
-       glm::ivec4&  getFrame();
-       int getFrameIndex();
+       const glm::ivec4&  getFrame() const ;
+       int getFrameIndex() const ;
        void setFrameTransform(glm::mat4& transform);
        // targetting needs frame transform info which is done by GGeo::targetTorchStep(torchstep)
 
        void setFrameTransform(const char* s );       // directly from string of 16 comma delimited floats 
-       void setFrameTargetted(bool targetted=true);
-       bool isFrameTargetted();
-       bool isDummyFrame();
-       const glm::mat4& getFrameTransform();
+       virtual void updateAfterSetFrameTransform() = 0 ;   //  <-- provided by subclasses such as TorchstepNPY
 
-       std::string brief(); 
+       bool isFrameTargetted() const ;
+       bool isDummyFrame() const ; 
+       const glm::mat4& getFrameTransform() const ;
+
+       std::string brief() const ; 
+   private:
+       void setFrameTargetted(bool targetted=true);
    public:  
         // methods invoked by update after frame transform is available
        void setPosition(const glm::vec4& pos );
@@ -124,26 +128,26 @@ class NPY_API GenstepNPY {
        void setBaseMode(unsigned umode);
        void setBaseType(unsigned utype);
    public:  
-       glm::vec3 getPosition();
-       glm::vec3 getDirection();
-       glm::vec3 getPolarization();
-       glm::vec4 getZenithAzimuth();
+       glm::vec3 getPosition() const ;
+       glm::vec3 getDirection() const ;
+       glm::vec3 getPolarization() const ;
+       glm::vec4 getZenithAzimuth() const ;
 
-       float getTime();
-       float getRadius();
-       float getWavelength();
+       float getTime() const ;
+       float getRadius() const ;
+       float getWavelength() const ;
 
 
-       unsigned getBaseMode();
-       unsigned getBaseType();
+       unsigned getBaseMode() const ;
+       unsigned getBaseType() const ;
    public:  
        // need external help to set the MaterialLine
        void setMaterial(const char* s );
-       const char* getConfig();
-       const char* getMaterial();
+       const char* getConfig() const ;
+       const char* getMaterial() const ;
        bool isDefault() const ; 
   private:
-       unsigned int m_genstep_type ; 
+       unsigned int m_gentype ; 
        unsigned int m_num_step ; 
        const char*  m_config ;
        bool         m_is_default ; 

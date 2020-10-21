@@ -21,6 +21,7 @@
 
 #include <string>
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 #include "OpticksGenstep.h"
 
@@ -54,6 +55,7 @@ TODO: incorporate npy.G4StepNPY ?
 class OKCORE_API OpticksGenstep {
 
     public:
+       static const plog::Severity LEVEL ; 
        static const char* Gentype(int gentype);
        static unsigned SourceCode(const char* type);
        static bool IsValid(int gentype);
@@ -109,6 +111,7 @@ class OKCORE_API OpticksGenstep {
         std::string           desc(unsigned i) const ;
         std::string           desc() const ;
         void                  dump(unsigned modulo, unsigned margin, const char* msg="OpticksGenstep::dump") const ;
+        void                  dump(const char* msg="OpticksGenstep::dump") const ;
     private:
         const NPY<float>*     m_gs ; 
 

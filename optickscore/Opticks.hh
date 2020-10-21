@@ -321,12 +321,13 @@ class OKCORE_API Opticks {
        const char* getSrcGLTFName() const ;  
        bool        hasSrcGLTF() const ; 
        void configureCheckGeometryFiles()  ; // non-const may setExit 
+**/
 
+       // these two still needed by GInstancer
        const char* getGLTFConfig();
        NSceneConfig* getSceneConfig();
 
 
-**/
    public:
        const char* getG4CodeGenDir() const ;  // search for g4code
        const char* getCacheMetaPath() const ;

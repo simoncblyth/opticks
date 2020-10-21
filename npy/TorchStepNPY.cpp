@@ -23,8 +23,6 @@
 #include <cstring>
 #include <cassert>
 
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 
 // brap-
 #include "BStr.hh"
@@ -78,7 +76,7 @@ const char* TorchStepNPY::T_REFLTEST_  = "refltest" ;
 const char* TorchStepNPY::T_INVCYLINDER_ = "invcylinder" ; 
 const char* TorchStepNPY::T_RING_ = "ring" ; 
 
-Torch_t TorchStepNPY::parseType(const char* k)
+Torch_t TorchStepNPY::ParseType(const char* k)  // static 
 {
     Torch_t type = T_UNDEF ;
     if(       strcmp(k,T_SPHERE_)==0)    type = T_SPHERE ; 
@@ -95,7 +93,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
     return type ;   
 }
 
-::Torch_t TorchStepNPY::getType()
+::Torch_t TorchStepNPY::getType() const 
 {
     unsigned utype = getBaseType();
     Torch_t type = T_UNDEF ;
@@ -116,7 +114,7 @@ Torch_t TorchStepNPY::parseType(const char* k)
     return type ; 
 }
 
-const char* TorchStepNPY::getTypeName()
+const char* TorchStepNPY::getTypeName() const 
 {
     ::Torch_t type = getType();
     const char* name = NULL ; 
@@ -145,7 +143,7 @@ const char* TorchStepNPY::getTypeName()
 
 void TorchStepNPY::setType(const char* s)
 {
-    ::Torch_t type = parseType(s) ;
+    ::Torch_t type = ParseType(s) ;
     unsigned utype = unsigned(type);
     setBaseType(utype);
 }
@@ -162,46 +160,44 @@ const char* TorchStepNPY::M_FLAT_COSTHETA_ = "flatCosTheta" ;
 const char* TorchStepNPY::M_WAVELENGTH_SOURCE_ = "wavelengthSource" ; 
 const char* TorchStepNPY::M_WAVELENGTH_COMB_ = "wavelengthComb" ; 
 
-Mode_t TorchStepNPY::parseMode(const char* k)
+Mode_t TorchStepNPY::ParseMode(const char* k)  // static 
 {
     Mode_t mode = M_UNDEF ;
-    if(       strcmp(k,M_SPOL_)==0)      mode = M_SPOL ; 
-    else if(  strcmp(k,M_PPOL_)==0)      mode = M_PPOL ; 
-    else if(  strcmp(k,M_FLAT_THETA_)==0)      mode = M_FLAT_THETA ; 
-    else if(  strcmp(k,M_FLAT_COSTHETA_)==0)   mode = M_FLAT_COSTHETA ; 
-    else if(  strcmp(k,M_FIXPOL_)==0)          mode = M_FIXPOL ; 
+    if(       strcmp(k,M_SPOL_)==0)               mode = M_SPOL ; 
+    else if(  strcmp(k,M_PPOL_)==0)               mode = M_PPOL ; 
+    else if(  strcmp(k,M_FLAT_THETA_)==0)         mode = M_FLAT_THETA ; 
+    else if(  strcmp(k,M_FLAT_COSTHETA_)==0)      mode = M_FLAT_COSTHETA ; 
+    else if(  strcmp(k,M_FIXPOL_)==0)             mode = M_FIXPOL ; 
     else if(  strcmp(k,M_WAVELENGTH_SOURCE_)==0)  mode = M_WAVELENGTH_SOURCE ; 
-    else if(  strcmp(k,M_WAVELENGTH_COMB_)==0)  mode = M_WAVELENGTH_COMB ; 
+    else if(  strcmp(k,M_WAVELENGTH_COMB_)==0)    mode = M_WAVELENGTH_COMB ; 
     return mode ;   
 }
 
-::Mode_t TorchStepNPY::getMode()
+::Mode_t TorchStepNPY::getMode() const 
 {
     ::Mode_t mode = (::Mode_t)getBaseMode() ;
     return mode ; 
 }
 
-
-
-std::string TorchStepNPY::getModeString()
+std::string TorchStepNPY::getModeString() const 
 {
     std::stringstream ss ; 
     ::Mode_t mode = getMode();
 
-    if(mode & M_SPOL) ss << M_SPOL_ << " " ;
-    if(mode & M_PPOL) ss << M_PPOL_ << " " ;
-    if(mode & M_FLAT_THETA) ss << M_FLAT_THETA_ << " " ; 
-    if(mode & M_FLAT_COSTHETA) ss << M_FLAT_COSTHETA_ << " " ; 
-    if(mode & M_FIXPOL) ss << M_FIXPOL_ << " " ; 
+    if(mode & M_SPOL)              ss << M_SPOL_ << " " ;
+    if(mode & M_PPOL)              ss << M_PPOL_ << " " ;
+    if(mode & M_FLAT_THETA)        ss << M_FLAT_THETA_ << " " ; 
+    if(mode & M_FLAT_COSTHETA)     ss << M_FLAT_COSTHETA_ << " " ; 
+    if(mode & M_FIXPOL)            ss << M_FIXPOL_ << " " ; 
     if(mode & M_WAVELENGTH_SOURCE) ss << M_WAVELENGTH_SOURCE_ << " " ; 
-    if(mode & M_WAVELENGTH_COMB) ss << M_WAVELENGTH_COMB_ << " " ; 
+    if(mode & M_WAVELENGTH_COMB)   ss << M_WAVELENGTH_COMB_ << " " ; 
 
     return ss.str();
 } 
 
 
 
-std::string TorchStepNPY::description()
+std::string TorchStepNPY::description() const 
 {
     glm::vec3 pos = getPosition() ;
     glm::vec3 dir = getDirection() ;
@@ -243,7 +239,7 @@ const char* TorchStepNPY::TIME_     = "time" ;
 const char* TorchStepNPY::RADIUS_   = "radius" ; 
 const char* TorchStepNPY::DISTANCE_   = "distance" ; 
 
-TorchStepNPY::Param_t TorchStepNPY::parseParam(const char* k)
+TorchStepNPY::Param_t TorchStepNPY::ParseParam(const char* k)  // static 
 {
     Param_t param = UNRECOGNIZED ; 
     if(     strcmp(k,FRAME_)==0)          param = FRAME ; 
@@ -300,9 +296,9 @@ void TorchStepNPY::set(Param_t p, const char* s)
 
 // set the below defaults to avoid a messy undefined polarization with OpSnapTest
 
-TorchStepNPY::TorchStepNPY(unsigned genstep_type, unsigned int num_step, const char* config) 
+TorchStepNPY::TorchStepNPY(unsigned gentype, unsigned int num_step, const char* config) 
     :  
-    GenstepNPY(genstep_type,  num_step, config ? strdup(config) : DEFAULT_CONFIG, config == NULL ),
+    GenstepNPY(gentype,  num_step, config ? strdup(config) : DEFAULT_CONFIG, config == NULL ),
     m_source_local(0,0,0,1),
     m_target_local(0,0,0,1),
     m_polarization_local(0,0,1,0),
@@ -339,7 +335,7 @@ void TorchStepNPY::init()
         const char* k = it->first.c_str() ;  
         const char* v = it->second.c_str() ;  
 
-        Param_t p = parseParam(k) ;
+        Param_t p = ParseParam(k) ;
 
         LOG(m_level) << std::setw(20) << k << ":" << v  ; 
 
@@ -368,15 +364,15 @@ void TorchStepNPY::init()
 
 
 
-glm::vec4& TorchStepNPY::getSourceLocal()
+glm::vec4 TorchStepNPY::getSourceLocal() const 
 {
     return m_source_local ; 
 }
-glm::vec4& TorchStepNPY::getTargetLocal()
+glm::vec4 TorchStepNPY::getTargetLocal() const 
 {
     return m_target_local ; 
 }
-glm::vec4& TorchStepNPY::getPolarizationLocal()
+glm::vec4 TorchStepNPY::getPolarizationLocal() const 
 {
     return m_polarization_local ; 
 }
@@ -385,56 +381,56 @@ glm::vec4& TorchStepNPY::getPolarizationLocal()
 
 
 
-bool TorchStepNPY::isIncidentSphere()
+bool TorchStepNPY::isIncidentSphere() const
 {
     ::Torch_t type = getType();
     return type == T_DISC_INTERSECT_SPHERE  ;
 }
 
-bool TorchStepNPY::isDisc()
+bool TorchStepNPY::isDisc() const
 {
     ::Torch_t type = getType();
     return type == T_DISC  ;
 }
-bool TorchStepNPY::isDiscLinear()
+bool TorchStepNPY::isDiscLinear() const
 {
     ::Torch_t type = getType();
     return type == T_DISCLIN  ;
 }
-bool TorchStepNPY::isRing()
+bool TorchStepNPY::isRing() const
 {
     ::Torch_t type = getType();
     return type == T_RING  ;
 }
-bool TorchStepNPY::isPoint()
+bool TorchStepNPY::isPoint() const
 {
     ::Torch_t type = getType();
     return type == T_POINT  ;
 }
-bool TorchStepNPY::isSphere()
+bool TorchStepNPY::isSphere() const
 {
     ::Torch_t type = getType();
     return type == T_SPHERE  ;
 }
 
-bool TorchStepNPY::isReflTest()
+bool TorchStepNPY::isReflTest() const
 {
     ::Torch_t type = getType();
     return type == T_REFLTEST ;
 }
 
 
-bool TorchStepNPY::isSPolarized()
+bool TorchStepNPY::isSPolarized() const
 {
     ::Mode_t  mode = getMode();
     return (mode & M_SPOL) != 0  ;
 }
-bool TorchStepNPY::isPPolarized()
+bool TorchStepNPY::isPPolarized() const
 {
     ::Mode_t  mode = getMode();
     return (mode & M_PPOL) != 0  ;
 }
-bool TorchStepNPY::isFixPolarized()
+bool TorchStepNPY::isFixPolarized() const
 {
     ::Mode_t  mode = getMode();
     return (mode & M_FIXPOL) != 0  ;
@@ -474,14 +470,23 @@ void TorchStepNPY::setPolarizationLocal(const char* s)
     m_polarization_local.w = 0.0;  // direction not position
 }
 
+/**
+TorchStepNPY::updateAfterSetFrameTransform
+--------------------------------------------
 
+This fulfils a virtual method from the base class, and is
+invoked from their after setFrameTransform is called on the base.
+The new frame transform is used to convert from local frame 
+source, target and polarization into the frame provided. 
 
+**/
 
-
-void TorchStepNPY::update()
+void TorchStepNPY::updateAfterSetFrameTransform()
 {
    // direction from: target - source
    // position from : source
+
+    LOG(LEVEL); 
 
     const glm::mat4& frame_transform = getFrameTransform() ;
 
@@ -496,14 +501,13 @@ void TorchStepNPY::update()
     setPosition(m_src);
     setDirection(dir);
     setPolarization(pol); 
-
 }
 
 
 void TorchStepNPY::setMode(const char* s)
 {
     std::vector<std::string> tp; 
-    boost::split(tp, s, boost::is_any_of(","));
+    BStr::split(tp, s, ',' ); 
 
     //::Mode_t mode = M_UNDEF ; 
     unsigned int mode = 0 ; 
@@ -511,7 +515,7 @@ void TorchStepNPY::setMode(const char* s)
     for(unsigned int i=0 ; i < tp.size() ; i++)
     {
         const char* emode_ = tp[i].c_str() ;
-        ::Mode_t emode = parseMode(emode_) ;
+        ::Mode_t emode = ParseMode(emode_) ;
         mode |= emode ; 
         LOG(debug) << "TorchStepNPY::setMode" 
                   << " emode_ " << emode_
@@ -523,9 +527,7 @@ void TorchStepNPY::setMode(const char* s)
     setBaseMode(mode);
 }
 
-
-
-void TorchStepNPY::dump(const char* msg)
+void TorchStepNPY::dump(const char* msg) const 
 {
     LOG(info) << msg  ;
 
@@ -539,14 +541,9 @@ void TorchStepNPY::dump(const char* msg)
 }
 
 
-
-void TorchStepNPY::Summary(const char* msg)
+void TorchStepNPY::Summary(const char* msg) const
 {
     LOG(info) << msg  << description() ; 
 }
-
-
-
-
 
 

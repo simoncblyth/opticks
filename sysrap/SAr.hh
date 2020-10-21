@@ -44,6 +44,7 @@ struct SYSRAP_API SAr
     std::string argline() const ;
     const char* cmdline() const ;
     const char* get_arg_after(const char* arg, const char* fallback) const ;
+    int         get_int_after(const char* arg, const char* fallback) const ;
     bool has_arg( const char* arg ) const ; 
     void dump() const ;
 

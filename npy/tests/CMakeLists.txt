@@ -6,13 +6,13 @@ include(OpticksBuildOptions)
 
 set(_TESTS_FAILING_TO_INVESTIGATE_WHEN_IN_CONTEXT
 
-_TorchStepNPYTest.cc
 
 )
 
 
 set(_TEST_SOURCES
 
+TorchStepNPYTest.cc
 FabStepTest.cc
 NPriTest.cc
 

@@ -24,6 +24,7 @@
 #include <sstream>
 #include <vector>
 
+#include "SSys.hh"
 #include "SAr.hh"
 
 SAr* SAr::Instance = NULL ; 
@@ -170,6 +171,13 @@ const char* SAr::get_arg_after(const char* option, const char* fallback) const
     }
     return fallback ; 
 }
+
+int SAr::get_int_after(const char* option, const char* fallback) const 
+{
+    const char* arg = get_arg_after(option, fallback); 
+    return SSys::atoi_(arg); 
+}
+
 
 bool SAr::has_arg( const char* arg ) const 
 {

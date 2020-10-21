@@ -40,6 +40,6 @@ void FabStepNPY::init()
     } 
 }
 
-void FabStepNPY::update()
+void FabStepNPY::updateAfterSetFrameTransform()
 {
 }

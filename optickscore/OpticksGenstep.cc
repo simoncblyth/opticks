@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <csignal>
 #include <iostream>
 #include <iomanip>
 
@@ -32,7 +33,7 @@
 
 #include "PLOG.hh"
 
-
+const plog::Severity OpticksGenstep::LEVEL = PLOG::EnvLevel("OpticksGenstep", "DEBUG"); 
 
 const char* OpticksGenstep::INVALID_                 = "INVALID" ;
 const char* OpticksGenstep::G4Cerenkov_1042_         = "G4Cerenkov_1042" ;
@@ -74,7 +75,7 @@ std::string OpticksGenstep::Dump()   // static
 
 
 
-const char* OpticksGenstep::Gentype(int gentype)
+const char* OpticksGenstep::Gentype(int gentype)  // static
 {
     const char* s = 0 ;
     switch(gentype)
@@ -98,7 +99,7 @@ const char* OpticksGenstep::Gentype(int gentype)
     return s;
 }
 
-unsigned OpticksGenstep::SourceCode(const char* type)
+unsigned OpticksGenstep::SourceCode(const char* type) // static
 {
     unsigned int code = OpticksGenstep_INVALID  ; 
     if(     strcmp(type,G4Cerenkov_1042_)==0)          code = OpticksGenstep_G4Cerenkov_1042 ;
@@ -116,26 +117,26 @@ unsigned OpticksGenstep::SourceCode(const char* type)
     return code ; 
 }
 
-bool OpticksGenstep::IsValid(int gentype)
+bool OpticksGenstep::IsValid(int gentype)   // static 
 {
    const char* s = Gentype(gentype); 
    bool invalid = strcmp(s, INVALID_) == 0 ;   
    return !invalid ; 
 }
 
-bool OpticksGenstep::IsCerenkov(int gentype)
+bool OpticksGenstep::IsCerenkov(int gentype)  // static
 {
    return gentype == OpticksGenstep_G4Cerenkov_1042  || gentype == OpticksGenstep_DsG4Cerenkov_r3971 ; 
 }
-bool OpticksGenstep::IsScintillation(int gentype)
+bool OpticksGenstep::IsScintillation(int gentype)  // static
 {
    return gentype == OpticksGenstep_G4Scintillation_1042 || gentype == OpticksGenstep_DsG4Scintillation_r3971 ; 
 }
-bool OpticksGenstep::IsTorchLike(int gentype)
+bool OpticksGenstep::IsTorchLike(int gentype)   // static
 {
    return gentype == OpticksGenstep_TORCH || gentype == OpticksGenstep_FABRICATED || gentype == OpticksGenstep_EMITSOURCE ; 
-}
-bool OpticksGenstep::IsMachinery(int gentype)
+}  
+bool OpticksGenstep::IsMachinery(int gentype)  // static
 {
    return gentype == OpticksGenstep_MACHINERY ; 
 }
@@ -147,9 +148,11 @@ OpticksGenstep::GenstepToPhotonFlag
 
 Translate gentype from Genstep to Photon.
 
+Used by CG4Ctx::setEvent 
+
 **/
 
-unsigned OpticksGenstep::GenstepToPhotonFlag(int gentype)
+unsigned OpticksGenstep::GenstepToPhotonFlag(int gentype)  // static
 {
     unsigned phcode = 0 ;  
     if(!OpticksGenstep::IsValid(gentype))
@@ -219,18 +222,36 @@ std::string OpticksGenstep::desc() const
     return ss.str();
 }
 
+/**
+OpticksGenstep::getGencode
+----------------------------
+
+SUSPECT confusion between genstep codes and photon flags.
+
+**/
 
 unsigned OpticksGenstep::getGencode(unsigned idx) const 
 {
     int gs00 = m_gs->getInt(idx,0u,0u) ;
+    assert( gs00 > 0 );  
+    unsigned gencode = gs00 ; 
+    return gencode ; 
+}
+
+/*
+unsigned OpticksGenstep::getGencode(unsigned idx) const 
+{
+    int gs00 = m_gs->getInt(idx,0u,0u) ;
+ 
+    int content_version = getContentVersion() ; 
+    LOG(LEVEL) << " idx " << idx << " gs00 " << gs00 << " content_version " << content_version ;  
 
     int gencode = -1 ; 
-
-    int content_version = getContentVersion() ; 
 
     if( content_version == 0 )  // old style unversioned gensteps , this is fallback when no metadata 
     {
         gencode = gs00 < 0 ? CERENKOV : SCINTILLATION ;  
+        // ^^^^^^^^^^^^^^^ this was happening 
     }
     else if( content_version >= 1042 )   // G4 version starting point 
     {
@@ -246,7 +267,8 @@ unsigned OpticksGenstep::getGencode(unsigned idx) const
         assert(0); 
     }
 
-    bool expected = gencode == CERENKOV || gencode == SCINTILLATION  ; 
+
+    bool expected = gencode == CERENKOV || gencode == SCINTILLATION  ;   // huh should not be photon codes here ?
 
     if(!expected)
          LOG(fatal) << "unexpected gencode " 
@@ -258,6 +280,7 @@ unsigned OpticksGenstep::getGencode(unsigned idx) const
     assert(expected) ; 
     return gencode ; 
 }
+*/
 
 
 
@@ -320,6 +343,12 @@ void OpticksGenstep::Dump(const NPY<float>* gs_, unsigned modulo, unsigned margi
     gs.dump(modulo, margin); 
 }
 
+void OpticksGenstep::dump(const char* msg) const
+{
+    unsigned modulo = 1 ; 
+    unsigned margin = 10 ; 
+    dump(modulo, margin, msg); 
+}
 
 void OpticksGenstep::dump(unsigned modulo, unsigned margin, const char* msg) const
 {

@@ -55,6 +55,7 @@
 #include "GVolume.hh"
 
 #include "GNodeLib.hh"
+#include "GNode.hh"
 
 #include "GMaker.hh"
 #include "GMeshMaker.hh"

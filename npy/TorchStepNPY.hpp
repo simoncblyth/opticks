@@ -130,47 +130,53 @@ class NPY_API TorchStepNPY : public GenstepNPY {
        static const char* M_WAVELENGTH_SOURCE_ ; 
        static const char* M_WAVELENGTH_COMB_ ; 
 
+   private:
+       static Param_t ParseParam(const char* k);
+       // global scope enum types as CUDA only sees those
+       static ::Mode_t  ParseMode(const char* k);
+       static ::Torch_t ParseType(const char* k);
    public:  
        TorchStepNPY(unsigned genstep_type, unsigned num_step=1, const char* config=NULL); 
-       void update();
+       void updateAfterSetFrameTransform();  
    private:
        void init();
-       ::Mode_t  parseMode(const char* k);
-       ::Torch_t parseType(const char* k);
-       Param_t parseParam(const char* k);
        void set(TorchStepNPY::Param_t param, const char* s );
    public:  
        void setMode(const char* s );
        void setType(const char* s );
    public:
+       // Type
+       bool isIncidentSphere() const ;
+       bool isDisc() const ;
+       bool isDiscLinear() const ;
+       bool isRing() const ;
+       bool isPoint() const ;
+       bool isSphere() const ;
+       bool isReflTest() const ;
+   public:
+       // Mode   
+       bool isSPolarized() const ;
+       bool isPPolarized() const ;
+       bool isFixPolarized() const ;
+   public:
 
-       bool isIncidentSphere();
-       bool isDisc();
-       bool isDiscLinear();
-       bool isRing();
-       bool isPoint();
-       bool isSphere();
-       bool isReflTest();
-       bool isSPolarized();
-       bool isPPolarized();
-       bool isFixPolarized();
-       std::string description();
-       void Summary(const char* msg="TorchStepNPY::Summary");
+       std::string description() const ;
+       void Summary(const char* msg="TorchStepNPY::Summary") const ;
+       void dump(const char* msg="TorchStepNPY::dump") const ;
    public:
        // local positions/vectors, frame transform is applied in *update* yielding world frame m_post m_dirw 
        void setSourceLocal(const char* s );
        void setTargetLocal(const char* s );
        void setPolarizationLocal(const char* s );
-       glm::vec4& getSourceLocal();
-       glm::vec4& getTargetLocal();
-       glm::vec4& getPolarizationLocal();
+   public:
+       glm::vec4 getSourceLocal() const ;
+       glm::vec4 getTargetLocal() const ;
+       glm::vec4 getPolarizationLocal() const ;
    public:  
-       ::Mode_t  getMode();
-       ::Torch_t getType();
-       std::string getModeString();
-       const char* getTypeName();
-
-       void dump(const char* msg="TorchStepNPY::dump");
+       ::Mode_t  getMode() const ;
+       ::Torch_t getType() const ;
+       std::string getModeString() const ;
+       const char* getTypeName() const ;
 
   private:
        // position and directions to which the frame transform is applied in update

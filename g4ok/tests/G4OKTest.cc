@@ -11,6 +11,9 @@ G4OKTest
 This test is intended to provide a way of testing G4Opticks machinery 
 without ascending to the level of the experiment.
 
+Geometry Setup
+---------------
+
 This can now run either from GDML file OR from geocache.
 When a --gdmlpath argument is used this will parse the GDML 
 into a Geant4 geometry and translate that into Opticks GGeo.   
@@ -26,7 +29,7 @@ From GDML::
 
 From cache(experimental)::
 
-    G4OKTest 
+    G4OKTest --torchtarget 3153
 
 Notice that Opticks is "embedded" when running from GDML which means that 
 it does not parse the commandline, this matches production usage. In order  
@@ -37,34 +40,56 @@ arguments captured by OPTICKS_LOG. Caution that both arguments
 from the commandline and the fixed embedded commandline are used. 
 This prevents the use of some arguments as duplicates cause asserts.  
 
+
+Genstep Setup
+---------------
+
+Hmm: Opticks can generate torch gensteps out of nowhere, but the 
+point of G4OKTest is to test G4Opticks : so need to do things 
+more closely to the production workflow. 
+
+So add::
+
+    collectTorchStep(unsigned target_nidx, unsigned num_photons);  
+
+
+
+
 **/
 
-struct G4OKTest 
+class G4OKTest 
 {
-    G4OKTest(int argc, char** argv);
-    int  initLog(int argc, char** argv);
-    void init();
-    int rc() const ; 
-
-    int          m_log ; 
-    const char*  m_gdmlpath ; 
-    G4Opticks*   m_g4ok ; 
+    public:
+        G4OKTest(int argc, char** argv);
+    private:
+        int  initLog(int argc, char** argv);
+        void init();
+    public: 
+        void collect(); 
+        void propagate(); 
+        int rc() const ; 
+    private:
+        int          m_log ; 
+        const char*  m_gdmlpath ; 
+        int          m_torchtarget ; 
+        G4Opticks*   m_g4ok ; 
 };
 
-
-int G4OKTest::initLog(int argc, char** argv)
-{
-    OPTICKS_LOG(argc, argv); 
-    return 0 ; 
-}
 
 G4OKTest::G4OKTest(int argc, char** argv)
     :
     m_log(initLog(argc, argv)),
     m_gdmlpath(PLOG::instance->get_arg_after("--gdmlpath", NULL)),
+    m_torchtarget(PLOG::instance->get_int_after("--torchtarget", "0")),
     m_g4ok(new G4Opticks)
 {
     init();
+}
+
+int G4OKTest::initLog(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+    return 0 ; 
 }
 
 
@@ -111,6 +136,7 @@ void G4OKTest::init()
         << " Geometry " << ( loaded ? "LOADED FROM CACHE" : "LIVE TRANSLATED" )
         ;
 
+    bool dump = false ; 
     for(unsigned i=0 ; i < num_sensor ; i++)
     {
         unsigned sensor_index = i ;
@@ -125,7 +151,7 @@ void G4OKTest::init()
         float efficiency_2 = 1.0f ;    
         int   sensor_cat = 0 ; 
 
-        std::cout 
+        if(dump) std::cout 
             << " sensor_index(dec) "      << std::setw(5) << std::dec << sensor_index
             << " (hex) "                  << std::setw(5) << std::hex << sensor_index << std::dec
             << " sensor_identifier(hex) " << std::setw(7) << std::hex << sensor_identifier << std::dec
@@ -145,16 +171,35 @@ void G4OKTest::init()
     LOG(info) << m_g4ok->dbgdesc() ; 
 }
 
+
+void G4OKTest::collect()
+{
+    unsigned node_index = m_torchtarget ; 
+    m_g4ok->collectDefaultTorchStep(node_index); 
+}
+
+
+void G4OKTest::propagate()
+{
+    G4int eventID = 0 ; 
+    int nhit = m_g4ok->propagateOpticalPhotons(eventID);
+    LOG(info) << " nhit " << nhit ; 
+}
+
 int G4OKTest::rc() const 
 {
     return 0 ; 
 }
 
 
+
+
 int main(int argc, char** argv)
 {
-    G4OKTest g4okt(argc, argv); 
-    return g4okt.rc() ;
+    G4OKTest t(argc, argv); 
+    t.collect();
+    t.propagate();
+    return t.rc() ;
 }
 
 

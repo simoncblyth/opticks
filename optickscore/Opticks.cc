@@ -1728,11 +1728,22 @@ void Opticks::configureCheckGeometryFiles()
         //assert(0);
     }
 } 
+*/
+
+
 
 const char* Opticks::getGLTFConfig()
 {
     return m_cfg->getGLTFConfig().c_str() ; 
 }
+
+/**
+Opticks::getSceneConfig
+-----------------------
+
+Still needed by GInstancer.
+
+**/
 
 NSceneConfig* Opticks::getSceneConfig()
 {
@@ -1743,7 +1754,6 @@ NSceneConfig* Opticks::getSceneConfig()
     return m_scene_config ; 
 }
 
-*/
 
 
 
@@ -3433,8 +3443,7 @@ TorchStepNPY* Opticks::makeSimpleTorchStep(unsigned gencode)
               << " dump details : --torchdbg " 
               ;
 
-    //TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1, cfg );   // see notes/issues/G4StepNPY_gencode_assert.rst
-    TorchStepNPY* torchstep = new TorchStepNPY(OpticksGenstep_TORCH, 1, cfg );
+    TorchStepNPY* torchstep = new TorchStepNPY(OpticksGenstep_TORCH, 1, cfg ); // see notes/issues/G4StepNPY_gencode_assert.rst
 
     unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;  // only used for cfg4-
 

@@ -18,7 +18,7 @@
  */
 
 
-#include <boost/lexical_cast.hpp>
+#include "BStr.hh"
 
 // npy-
 #include "GenstepNPY.hpp"
@@ -33,9 +33,9 @@
 const plog::Severity GenstepNPY::LEVEL = PLOG::EnvLevel("GenstepNPY", "DEBUG") ; 
 
 
-GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* config, bool is_default ) 
+GenstepNPY::GenstepNPY(unsigned gentype, unsigned num_step, const char* config, bool is_default ) 
     :  
-    m_genstep_type(genstep_type),
+    m_gentype(gentype),
     m_num_step(num_step),
     m_config(config ? strdup(config) : NULL),
     m_is_default(is_default),
@@ -49,7 +49,7 @@ GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* con
     m_zeaz(0,0,0,0),
     m_beam(0,0,0,0),
     m_frame(-1,0,0,0),
-    m_frame_transform(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1),
+    m_frame_transform(1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f),
     m_frame_targetted(false),
     m_num_photons_per_g4event(10000)
 {
@@ -65,11 +65,11 @@ void GenstepNPY::setNumPhotonsPerG4Event(unsigned int n)
 {
     m_num_photons_per_g4event = n ; 
 }
-unsigned int GenstepNPY::getNumPhotonsPerG4Event()
+unsigned int GenstepNPY::getNumPhotonsPerG4Event() const 
 {
     return m_num_photons_per_g4event ;
 }
-unsigned int GenstepNPY::getNumG4Event()
+unsigned int GenstepNPY::getNumG4Event() const 
 {
     unsigned int num_photons = getNumPhotons();
     unsigned int ppe = m_num_photons_per_g4event ; 
@@ -98,11 +98,11 @@ void GenstepNPY::addActionControl(unsigned long long  action_control)
     m_npy->addActionControl(action_control);
 }
 
-const char* GenstepNPY::getMaterial()
+const char* GenstepNPY::getMaterial() const 
 {
     return m_material ; 
 }
-const char* GenstepNPY::getConfig()
+const char* GenstepNPY::getConfig() const 
 {
     return m_config ; 
 }
@@ -112,7 +112,7 @@ void GenstepNPY::setMaterial(const char* s)
     m_material = strdup(s);
 }
 
-unsigned GenstepNPY::getNumStep()
+unsigned GenstepNPY::getNumStep() const 
 {
    return m_num_step ;  
 }
@@ -138,12 +138,11 @@ GenstepNPY::addStep
 Settings from the quads are passed into the genstep by addStep, which 
 is called from OpticksGen::makeTorchstep 
 
-
 **/
 
 void GenstepNPY::addStep(bool verbose)
 {
-    bool dummy_frame = isDummyFrame();
+    bool dummy_frame = isDummyFrame(); // m_frame.x == -1 
     bool target_acquired = dummy_frame ? true : m_frame_targetted ;
     if(!target_acquired) 
     {
@@ -160,9 +159,9 @@ void GenstepNPY::addStep(bool verbose)
 
     unsigned int i = m_step_index ; 
 
-    setGenstepType( m_genstep_type ) ;    
+    setGenstepType( m_gentype ) ;    
 
-    update(); 
+    // update();   moved this to updateAfterSetFrameTransform
 
     if(verbose) dump("GenstepNPY::addStep");
 
@@ -176,7 +175,7 @@ void GenstepNPY::addStep(bool verbose)
     m_step_index++ ; 
 }
 
-NPY<float>* GenstepNPY::getNPY()
+NPY<float>* GenstepNPY::getNPY() const 
 {
     assert( m_step_index == m_num_step && "GenstepNPY is incomplete, must addStep according to declared num_step");
     return m_npy ; 
@@ -190,25 +189,33 @@ NPY<float>* GenstepNPY::getNPY()
 
 // m_ctrl
 
-void GenstepNPY::setGenstepType(unsigned genstep_type)
+void GenstepNPY::setGenstepType(unsigned gentype)
 {
-    m_ctrl.x = genstep_type ;  // eg TORCH
+    m_ctrl.x = gentype ;  // eg OpticksGenstep_TORCH
 }
+unsigned GenstepNPY::getGenstepType() const 
+{
+    return m_ctrl.x ; 
+}
+
+
 void GenstepNPY::setMaterialLine(unsigned int ml)
 {
     m_ctrl.z = ml ; 
 }
 
 
+
+
 void GenstepNPY::setNumPhotons(const char* s)
 {
-    setNumPhotons(boost::lexical_cast<unsigned int>(s)) ; 
+    setNumPhotons(BStr::LexicalCast<unsigned int>(s)) ; 
 }
 void GenstepNPY::setNumPhotons(unsigned int num_photons)
 {
     m_ctrl.w = num_photons ; 
 }
-unsigned int GenstepNPY::getNumPhotons()
+unsigned int GenstepNPY::getNumPhotons() const 
 {
     return m_ctrl.w ; 
 }
@@ -226,14 +233,14 @@ void GenstepNPY::setPosition(const glm::vec4& pos)
 
 void GenstepNPY::setTime(const char* s)
 {
-    m_post.w = boost::lexical_cast<float>(s) ;
+    m_post.w = BStr::LexicalCast<float>(s) ;
 }
-float GenstepNPY::getTime()
+float GenstepNPY::getTime() const
 {
     return m_post.w ; 
 }
 
-glm::vec3 GenstepNPY::getPosition()
+glm::vec3 GenstepNPY::getPosition() const 
 {
     return glm::vec3(m_post);
 }
@@ -257,25 +264,14 @@ void GenstepNPY::setDirection(const glm::vec3& dir)
     m_dirw.z = dir.z ; 
 }
 
-glm::vec3 GenstepNPY::getDirection()
+glm::vec3 GenstepNPY::getDirection() const 
 {
     return glm::vec3(m_dirw);
 }
 
-
-
-
-
-
-
-
-
-
-
-
 void GenstepNPY::setWeight(const char* s)
 {
-    m_dirw.w = boost::lexical_cast<float>(s) ;
+    m_dirw.w = BStr::LexicalCast<float>(s) ;
 }
 
 
@@ -299,13 +295,13 @@ void GenstepNPY::setPolarization(const glm::vec4& pol)
 }
 void GenstepNPY::setWavelength(const char* s)
 {
-    m_polw.w = boost::lexical_cast<float>(s) ;
+    m_polw.w = BStr::LexicalCast<float>(s) ;
 }
-float GenstepNPY::getWavelength()
+float GenstepNPY::getWavelength() const 
 {
     return m_polw.w ; 
 }
-glm::vec3 GenstepNPY::getPolarization()
+glm::vec3 GenstepNPY::getPolarization() const 
 {
     return glm::vec3(m_polw);
 }
@@ -321,7 +317,7 @@ void GenstepNPY::setZenithAzimuth(const char* s)
     std::string ss(s);
     m_zeaz = gvec4(ss) ;
 }
-glm::vec4 GenstepNPY::getZenithAzimuth()
+glm::vec4 GenstepNPY::getZenithAzimuth() const
 {
     return m_zeaz ; 
 }
@@ -332,44 +328,38 @@ glm::vec4 GenstepNPY::getZenithAzimuth()
 
 void GenstepNPY::setRadius(const char* s)
 {
-    setRadius(boost::lexical_cast<float>(s)) ;
+    setRadius(BStr::LexicalCast<float>(s)) ;
 }
 void GenstepNPY::setRadius(float radius)
 {
     m_beam.x = radius ;
 }
-float GenstepNPY::getRadius()
+float GenstepNPY::getRadius() const 
 {
     return m_beam.x ; 
 }
 
-
-
 void GenstepNPY::setDistance(const char* s)
 {
-    setDistance(boost::lexical_cast<float>(s)) ;
+    setDistance(BStr::LexicalCast<float>(s)) ;
 }
 void GenstepNPY::setDistance(float distance)
 {
     m_beam.y = distance ;
 }
 
-
-
-unsigned GenstepNPY::getBaseMode()
-{
-    uif_t uif ;
-    uif.f = m_beam.z ; 
-    return uif.u ; 
-}
 void GenstepNPY::setBaseMode(unsigned umode)
 {
     uif_t uif ; 
     uif.u = umode ; 
     m_beam.z = uif.f ;
 }
-
-
+unsigned GenstepNPY::getBaseMode() const
+{
+    uif_t uif ;
+    uif.f = m_beam.z ; 
+    return uif.u ; 
+}
 
 
 void GenstepNPY::setBaseType(unsigned utype)
@@ -378,8 +368,7 @@ void GenstepNPY::setBaseType(unsigned utype)
     uif.u = utype ; 
     m_beam.w = uif.f ;
 }
-
-unsigned GenstepNPY::getBaseType()
+unsigned GenstepNPY::getBaseType() const 
 {
     uif_t uif ;
     uif.f = m_beam.w ; 
@@ -390,18 +379,22 @@ unsigned GenstepNPY::getBaseType()
 
 
 
-/*
-frame #4: 0x00000001007cfdf8 libNPY.dylib`GenstepNPY::setFrameTransform(this=0x0000000108742400, frame_transform=0x00007fff5fbfe3f8)0>&) + 56 at GenstepNPY.cpp:317
-frame #5: 0x0000000101e2bf87 libOpticksGeometry.dylib`OpticksGen::targetGenstep(this=0x0000000108740330, gs=0x0000000108742400) + 903 at OpticksGen.cc:126
-frame #6: 0x0000000101e2b774 libOpticksGeometry.dylib`OpticksGen::makeTorchstep(this=0x0000000108740330) + 52 at OpticksGen.cc:177
-frame #7: 0x0000000101e2b32e libOpticksGeometry.dylib`OpticksGen::initInputGensteps(this=0x0000000108740330) + 606 at OpticksGen.cc:74
-frame #8: 0x0000000101e2b095 libOpticksGeometry.dylib`OpticksGen::init(this=0x0000000108740330) + 21 at OpticksGen.cc:37
-frame #9: 0x0000000101e2b073 libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x0000000108740330, hub=0x0000000105609f20) + 131 at OpticksGen.cc:32
-frame #10: 0x0000000101e2b0bd libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x0000000108740330, hub=0x0000000105609f20) + 29 at OpticksGen.cc:33
-frame #11: 0x0000000101e28706 libOpticksGeometry.dylib`OpticksHub::init(this=0x0000000105609f20) + 118 at OpticksHub.cc:96
-frame #12: 0x0000000101e28610 libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105609f20, ok=0x0000000105421710) + 416 at OpticksHub.cc:81
-frame #13: 0x0000000101e287ad libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105609f20, ok=0x0000000105421710) + 29 at OpticksHub.cc:83
-*/
+
+
+/**
+GenstepNPY::setFrameTransform
+-------------------------------
+
+Canonically invoked by okg/OpticksGen::targetGenstep 
+
+**/
+
+void GenstepNPY::setFrameTransform(glm::mat4& frame_transform)
+{
+    m_frame_transform = frame_transform ;
+    setFrameTargetted(true);
+    updateAfterSetFrameTransform();  // implemented in subclasses such as TorchStepNPY and FabStepNPY 
+}
 
 void GenstepNPY::setFrameTransform(const char* s)
 {
@@ -411,26 +404,19 @@ void GenstepNPY::setFrameTransform(const char* s)
     setFrameTransform(transform);
 }
 
-
-void GenstepNPY::setFrameTransform(glm::mat4& frame_transform)
-{
-    m_frame_transform = frame_transform ;
-    setFrameTargetted(true);
-}
-const glm::mat4& GenstepNPY::getFrameTransform()
+const glm::mat4& GenstepNPY::getFrameTransform() const 
 {
     return m_frame_transform ;
 }
-
-
 void GenstepNPY::setFrameTargetted(bool targetted)
 {
     m_frame_targetted = targetted ;
 }
-bool GenstepNPY::isFrameTargetted()
+bool GenstepNPY::isFrameTargetted() const 
 {
     return m_frame_targetted ;
 } 
+
 
 void GenstepNPY::setFrame(const char* s)
 {
@@ -444,17 +430,16 @@ void GenstepNPY::setFrame(unsigned vindex)
     m_frame.z = 0 ; 
     m_frame.w = 0 ; 
 }
-glm::ivec4& GenstepNPY::getFrame()
+const glm::ivec4& GenstepNPY::getFrame() const 
 {
     return m_frame ; 
 }
-
-int GenstepNPY::getFrameIndex()
+int GenstepNPY::getFrameIndex() const 
 {
     return m_frame.x ; 
 }
 
-std::string GenstepNPY::brief()
+std::string GenstepNPY::brief() const 
 {
     std::stringstream ss ; 
 
@@ -468,20 +453,19 @@ std::string GenstepNPY::brief()
 }
 
 
-
-bool GenstepNPY::isDummyFrame()
+bool GenstepNPY::isDummyFrame() const 
 {
     return m_frame.x == -1 ; 
 }
 
 
 
-void GenstepNPY::dump(const char* msg)
+void GenstepNPY::dump(const char* msg) const 
 {
     dumpBase(msg);
 }
 
-void GenstepNPY::dumpBase(const char* msg)
+void GenstepNPY::dumpBase(const char* msg) const 
 {
     LOG(info) << msg  
               << " config " << m_config 
@@ -497,8 +481,5 @@ void GenstepNPY::dumpBase(const char* msg)
 
     print(m_frame, "m_frame ");
 }
-
-
-
 
 

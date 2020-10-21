@@ -43,6 +43,7 @@ class GMaker ;
 class GMesh ; 
 class GMergedMesh ; 
 class GVolume ; 
+class GNode ; 
 
 #include "plog/Severity.h"
 
