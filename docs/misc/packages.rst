@@ -11,30 +11,35 @@ This structure also provides fast rebuilding as typically during
 development it is only necessary to rebuild one or two packages.
 
 
-Package Dependencies
-----------------------
+Show Package Dependencies with opticks-deps
+-----------------------------------------------
 
-=====================  ===============  ===============   ==============================================================================
-directory              precursor        pkg name          required find packages 
-=====================  ===============  ===============   ==============================================================================
-sysrap                 sysrap-          SysRap            PLog
-boostrap               brap-            BoostRap          OpticksBoost PLog SysRap
-opticksnpy             npy-             NPY               OpticksBoost PLog SysRap BoostRap GLM
-optickscore            okc-             OpticksCore       OpticksBoost PLog SysRap BoostRap GLM NPY 
-ggeo                   ggeo-            GGeo              OpticksBoost PLog SysRap BoostRap GLM NPY OpticksCore (abbreviation:BASE)
-assimprap              assimprap-       AssimpRap         BASE GGeo Assimp
-openmeshrap            openmeshrap-     OpenMeshRap       BASE GGeo OpenMesh
-opticksgeo             okg-             OpticksGeometry   BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap      
-oglrap                 oglrap-          OGLRap            BASE GGeo GLEW GLFW ImGui        
-cudarap                cudarap-         CUDARap           PLog SysRap CUDA (ssl) 
-thrustrap              thrustrap-       ThrustRap         OpticksBoost PLog SysRap BoostRap GLM NPY CUDA CUDARap 
-optixrap               oxrap-           OptiXRap          BASE GGeo Assimp AssimpRap CUDARap ThrustRap
-okop                   okop-            OKOP              BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap OpticksGeometry     
-opticksgl              opticksgl-       OpticksGL         BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap OpticksOp Assimp AssimpRap GLEW GLFW OGLRap 
-ok                     ok-              OK                BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap OpticksGeometry GLEW GLFW ImGui OGLRap 
-cfg4                   cfg4-            cfg4              BASE GGeo Geant4 EnvXercesC [G4DAE] 
-okg4                   okg4-            okg4              BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap OpticksGeometry GLEW GLFW ImGui OGLRap Geant4 EnvXercesC
-=====================  ===============  ===============   ==============================================================================
+opticks-deps parses CMakeList.txt files to discern dependencies between packages::
+
+    epsilon:docs blyth$ opticks-deps
+    [2020-10-22 15:21:46,694] p70637 {/Users/blyth/opticks/bin/CMakeLists.py:145} INFO - home /Users/blyth/opticks 
+     10          OKCONF :               okconf :               OKConf : OpticksCUDA OptiX G4  
+     20          SYSRAP :               sysrap :               SysRap : OKConf PLog  
+     30            BRAP :             boostrap :             BoostRap : Boost PLog SysRap  
+     40             NPY :                  npy :                  NPY : PLog GLM OpenMesh BoostRap YoctoGL ImplicitMesher DualContouringSample  
+     45             YOG :           yoctoglrap :           YoctoGLRap : NPY  
+     50          OKCORE :          optickscore :          OpticksCore : NPY  
+     60            GGEO :                 ggeo :                 GGeo : OpticksCore YoctoGLRap  
+     80         MESHRAP :          openmeshrap :          OpenMeshRap : GGeo OpticksCore  
+     90           OKGEO :           opticksgeo :           OpticksGeo : OpticksCore OpenMeshRap  
+    100         CUDARAP :              cudarap :              CUDARap : SysRap OpticksCUDA  
+    110           THRAP :            thrustrap :            ThrustRap : OpticksCore CUDARap  
+    120           OXRAP :             optixrap :             OptiXRap : OKConf OptiX OpticksGeo ThrustRap  
+    130            OKOP :                 okop :                 OKOP : OptiXRap  
+    140          OGLRAP :               oglrap :               OGLRap : ImGui OpticksGLEW OpticksGLFW OpticksGeo  
+    150            OKGL :            opticksgl :            OpticksGL : OGLRap OKOP  
+    160              OK :                   ok :                   OK : OpticksGL  
+    165              X4 :                extg4 :                ExtG4 : G4 GGeo OpticksXercesC CLHEP  
+    170            CFG4 :                 cfg4 :                 CFG4 : G4 ExtG4 OpticksXercesC OpticksGeo ThrustRap  
+    180            OKG4 :                 okg4 :                 OKG4 : OK CFG4  
+    190            G4OK :                 g4ok :                 G4OK : CFG4 ExtG4 OKOP  
+    200            None :          integration :          Integration :   
+    epsilon:docs blyth$ 
 
 
 
@@ -57,9 +62,6 @@ yoctoglrap
     wrapper for the YoctoGL external, providing glTF 2.0 3D file format parsing/writing
 ggeo
     geometry representation appropriate for uploading to the GPU
-assimprap
-    wrapper for Assimp 3D geometry importer, can load G4DAE COLLADA geometry files
-    (no longer needed with ExtG4 direct from Geant4 conversion)
 openmeshrap
     wrapper for OpenMesh, providing mesh traversal : used for mesh fixing 
     (no longer needed with analytic geometry) 
@@ -100,6 +102,15 @@ g4ok
     top level (non-visualization) project intended to provide simple 
     interface between Geant4 code with embedded Opticks : to be 
     used from Geant4 examples
+
+
+Roles of former packages
+----------------------------
+
+assimprap
+    wrapper for Assimp 3D geometry importer, can load G4DAE COLLADA geometry files
+    (no longer needed with ExtG4 direct from Geant4 conversion)
+
 
 
 Geant4 Dependency

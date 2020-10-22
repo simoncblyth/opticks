@@ -126,7 +126,7 @@ class MatType(SeqType):
     """
     def __init__(self, reldir=None):
         material_names = ItemList("GMaterialLib", reldir=reldir)
-        material_abbrev = Abbrev("$GEOCACHE/GMaterialLib/GPropertyLibMetadata.json")
+        material_abbrev = Abbrev("$KEYDIR/GMaterialLib/GPropertyLibMetadata.json")
         SeqType.__init__(self, material_names, material_abbrev)
 
 

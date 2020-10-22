@@ -111,7 +111,7 @@ class OpticksCMakeProj(object):
              'YoctoGLRap':45,
              'OpticksCore':50, 
              'GGeo':60, 
-             'AssimpRap':70,
+             'AssimpRap':-70,
              'OpenMeshRap':80, 
              'OpticksGeo':90,
              'CUDARap':100,

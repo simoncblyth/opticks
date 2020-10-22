@@ -1,5 +1,6 @@
 #!/bin/bash -l
 
+oe  # opticks env setup
 
 torchtarget=3153   # DYB
 

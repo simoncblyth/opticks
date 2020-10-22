@@ -185,7 +185,7 @@ class MaskType(BaseType):
 
         if type(arg) is int:
             i = arg
-        elif type(arg) is np.uint64:
+        elif type(arg) in (np.uint64,np.int64,np.uint32,np.int32):
             i = arg
         elif type(arg) is str:
             if self.hexstr.match(arg):

@@ -79,6 +79,7 @@ class Key(object):
         geocache_dir = cls.GeoCacheDir()
         tmpl = "{geocache_dir}/{exe}_{top}_g4live/g4ok_gltf/{dig}/1".format(**locals())
         keydir = os.path.expandvars(tmpl)
+        os.environ["KEYDIR"] = keydir 
         return keydir
 
     def __init__(self, keyspec=None):

@@ -140,20 +140,11 @@ prd.identity (uint4)
 
 ggeo/GVolume.cc::
 
-    201 guint4 GVolume::getIdentity()
-    202 {
-    203     unsigned node_index = m_index ;
-    204 
-    205     //unsigned identity_index = getSensorSurfaceIndex() ;   
-    206     unsigned identity_index = m_copyNumber  ;
-    207 
-    208     return guint4(
-    209                    node_index,
-    210                    getMeshIndex(),
-    211                    m_boundary,
-    212                    identity_index
-    213                  );
-    214 }
+    259 glm::uvec4 GVolume::getIdentity() const
+    260 {   
+    261     glm::uvec4 id(getIndex(), getTripletIdentity(), getShapeIdentity(), getSensorIndex()) ;
+    262     return id ;
+    263 }
 
 
 

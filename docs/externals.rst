@@ -28,7 +28,7 @@ Three type of externals : system, foreign and automated
 
 3. **automated** externals are automatically installed by `opticks-full`.  To list them::
 
-        opticks-externals   # currently:  bcm, glm, glfw, glew, gleq, imgui, assimp, openmesh, plog, opticksaux, ... 
+        opticks-externals   # currently:  bcm, glm, glfw, glew, gleq, imgui, openmesh, plog, opticksaux, ... 
 
 
 Brief description of foreign and automated externals
@@ -43,7 +43,6 @@ glfw-              GLFW                    Interface between system and OpenGL, 
 glew-              GLEW                    OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
 gleq-              GLEQ                    Keyboard event handling header from GLFW author, header only
 imgui-             ImGui                   OpenGL immediate mode GUI, depends on glfw and glew
-assimp-            Assimp                  Assimp 3D asset importer, my fork that handles G4DAE extras
 openmesh-          OpenMesh                basis for mesh navigation and fixing
 plog-              PLog                    Header only logging, supporting multi dll logging on windows 
 oimplicitmesher-   ImplicitMesher          Polygonization of implicitly defined shapes
@@ -52,7 +51,7 @@ oyoctogl-          YoctoGL                 Used for glTF geometry file format ha
 ocsgbsp-           CSGBSP                  Another BSP approach to polygonization under investigation
 xercesc            XercesC                 XML handling dependency of Geant4, required for GDML parsing
 g4-                Geant4                  The preeminent simulation toolkit
-optickaux-         -                       Some GDML geometry files for testing Opticks      
+optickaux-         -                       Some GDML geometry files for testing Opticks, replaced opticksdata-      
 =================  =====================   ==============================================================================
 
 
@@ -63,6 +62,7 @@ Former externals that are no longer in use
 precursor          pkg name                notes
 =================  =====================   ==============================================================================
 opticksdata-       -                       Dayabay G4DAE and GDML geometry files for testing Opticks      
+assimp-            Assimp                  Assimp 3D asset importer, my fork that handles G4DAE extras
 =================  =====================   ==============================================================================
 
 
@@ -120,7 +120,6 @@ Listing the automated externals with bash function **opticks-externals**::
     glew
     gleq
     imgui
-    assimp
     openmesh
     plog
     opticksaux
@@ -170,15 +169,12 @@ All these are not needed with direct from G4 workflow, they
 are used for mesh manipulation and polygonization functionality.
 
 
-assimp
-    used for COLLADA DAE file format loading  
-    (not needed with direct from G4 workflow) 
 openmesh
-    provides mesh traversal 
+    provides mesh traversal, formerly used to heal cleaved meshes
 oimplicitmesher
     creating meshes from SDF analytic geometries
 odcs
-    dual-contouring-sample  
+    dual-contouring-sample used for polygonization experiments 
 ocsgbsp
     polygonization
      
@@ -188,6 +184,9 @@ Former externals
 
 opticksdata
     common repository for geometry 
+    (not needed with direct from G4 workflow) 
+assimp
+    used for COLLADA DAE file format loading  
     (not needed with direct from G4 workflow) 
 
 

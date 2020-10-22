@@ -24,6 +24,7 @@ log = logging.getLogger(__name__)
 tx_load = lambda _:list(map(str.strip, open(_).readlines())) # py3 needs the list, otherwise stays as map 
 
 from opticks.ana.key import keydir
+KEYDIR = keydir()
 
 class BLib(object):
     @classmethod
@@ -65,7 +66,7 @@ class BLib(object):
     def path(self, rel):
         return os.path.join(self.keydir, rel)
 
-    def __init__(self, kd):
+    def __init__(self, kd=KEYDIR):
         """
         Load boundary lib index and the GItemList text files with material and surface names
         """
@@ -82,6 +83,7 @@ class BLib(object):
     def sname(self, idx):
         return self.slib[idx] if idx < len(self.slib) else ""
     def bname(self, idx):
+        assert idx > -1, idx 
         omat, osur, isur, imat = self.blib[idx] 
         return "/".join(
                     [ self.mname(omat), 
@@ -115,8 +117,7 @@ if __name__ == '__main__':
 
     args = BLib.parse_args(__doc__, path=os.environ.get("GC", None))
 
-    kd = keydir(os.environ["OPTICKS_KEY"]) 
-    blib = BLib(kd)
+    blib = BLib()
 
     if args.selection:
         blib.selection = args.selection 

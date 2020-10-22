@@ -28,6 +28,9 @@ import os, logging, json, ctypes, subprocess, datetime, re
 from collections import OrderedDict as odict 
 import numpy as np
 from opticks.ana.enum_ import Enum 
+from opticks.ana.key import keydir 
+
+KEYDIR = keydir()
 
 log = logging.getLogger(__name__) 
 
@@ -39,9 +42,10 @@ except OSError:
     pass
 
 
-
-idp_ = lambda _:"%s/%s" % (os.environ["IDPATH"],_) 
-uidp_ = lambda _:_.replace(os.environ["IDPATH"],"$IDPATH")
+#idp_ = lambda _:"%s/%s" % (os.environ["IDPATH"],_) 
+#uidp_ = lambda _:_.replace(os.environ["IDPATH"],"$IDPATH")
+idp_ = lambda _:"%s/%s" % (KEYDIR,_) 
+uidp_ = lambda _:_.replace(KEYDIR,"$KEYDIR")
 
 gcp_ = lambda _:"%s/%s" % (os.environ["GEOCACHE"],_) 
 

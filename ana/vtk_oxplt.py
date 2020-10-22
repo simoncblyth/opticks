@@ -8,6 +8,9 @@ Plot final photon positions
 This requires vtk, pyvista, ipython. 
 
 
+* https://docs.pyvista.org/plotting/plotting.html
+
+
 Usage
 ------
 
@@ -45,10 +48,19 @@ if __name__ == '__main__':
         log.info("chdir %s " % os.getcwd())
     pass
     np.set_printoptions(suppress=True, linewidth=200)
-    ox = np.load("ox.npy")
-    pl = pv.Plotter()
-    pl.add_points(ox[:,0,:3] )
-    log.info("Showing the VTK/pyvista plotter window, it may be hidden behind other windows. Enter Q to quit.")
-    pl.show()
+
+    name = "ox"
+    #name = "ht"
+
+    a = np.load("%s.npy" % name)
+    size = 2*np.array([1024,768], dtype=np.int32)
+    pl = pv.Plotter(window_size=size)
+    pl.add_points(a[:,0,:3] )
+    pl.show_grid()
+    log.info("Showing the VTK/pyvista plotter window, it may be hidden behind other windows. Enter q to quit.")
+    cpos = pl.show()
+    log.info(cpos)
+
+
 
 
