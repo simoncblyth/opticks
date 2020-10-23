@@ -112,6 +112,12 @@ glm::mat4 GNode::getTransformMat4() const
     return glm::make_mat4(f);  
 }
 
+glm::mat4 GNode::getInverseTransformMat4() const 
+{
+    glm::mat4 tr = getTransformMat4(); 
+    glm::mat4 it = glm::inverse(tr) ;
+    return it ; 
+}
 
 
 

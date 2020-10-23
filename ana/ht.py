@@ -62,7 +62,9 @@ ht.py : quick checks on hits
 
 """
 
-import os, numpy as np
+import os, sys, logging, numpy as np
+log = logging.getLogger(__name__)
+
 from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
 from opticks.ana.hismask import HisMask
@@ -75,6 +77,13 @@ blib = BLib()
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    if len(sys.argv) > 1 and os.path.isdir(sys.argv[1]):
+        os.chdir(sys.argv[1])
+        log.info("chdir %s " % os.getcwd())
+    pass
+    np.set_printoptions(suppress=True, linewidth=200)
+
     ox = np.load("ox.npy")
     ht = np.load("ht.npy") # ht are a selection of the ox:photons with SD:SURFACE_DETECT flag set  
 
@@ -87,7 +96,7 @@ if __name__ == '__main__':
     triplet_id = sd.view(np.uint32)[:,3]  
     placement_id = ( triplet_id & 0x00ffff00 ) >> 8  
 
-    dump = False
+    dump = True
     if dump:
         for _ in seqhis[:10]:print("%16x : %s " %(_,histype.label(_)))
         for _ in seqmat[:10]:print("%16x : %s " %(_,mattype.label(_)))

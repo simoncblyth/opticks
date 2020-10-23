@@ -89,7 +89,7 @@
 #include "OpticksCfg.hh"
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
-const int            Opticks::GEOCACHE_CODE_VERSION = 6 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+const int            Opticks::GEOCACHE_CODE_VERSION = 7 ;  // (incremented when code changes invalidate loading old geocache dirs)   
 
 /**
 3: starting point 
@@ -97,6 +97,7 @@ const int            Opticks::GEOCACHE_CODE_VERSION = 6 ;  // (incremented when 
    as GNodeLib now persists the "all volume" info enabling simplification of GMergedMesh 
 5: go live with geometry model change mm0 no longer special, just remainder, GNodeLib name changes, start on triplet identity
 6: GVolume::getIdentity quad now packing in more info including triplet_identity and sensor_index
+7: GNodeLib add all_volume_inverse_transforms.npy
 
 **/
 

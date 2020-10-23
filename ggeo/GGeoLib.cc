@@ -739,12 +739,12 @@ glm::mat4 GGeoLib::getTransform(unsigned ridx, unsigned pidx, unsigned oidx) con
     assert(mm) ; 
 
     NPY<float>* itbuf = mm->getITransformsBuffer(); 
+
     glm::mat4 placement_transform = itbuf->getMat4(pidx) ;  
 
-    //NPY<float>* trbuf = mm->getTransformsBuffer();   //nope still a GBuffer
     glm::mat4 offset_transform = mm->getTransform_(oidx);  
 
-    glm::mat4 triplet_transform = placement_transform * offset_transform ;  // GUESS ORDER
+    glm::mat4 triplet_transform = placement_transform * offset_transform ;  // ORDER SEEMS CORRECT 
 
     LOG(LEVEL) << gpresent("pTR",placement_transform) ; 
     LOG(LEVEL) << gpresent("oTR",offset_transform) ; 

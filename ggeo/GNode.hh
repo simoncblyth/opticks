@@ -119,6 +119,7 @@ class GGEO_API GNode {
       void updateBounds(gfloat3& low, gfloat3& high );
   public:
       glm::mat4 getTransformMat4() const ;
+      glm::mat4 getInverseTransformMat4() const ;
  public:
       GMatrixF*     getTransform() const ;  // global transform
       GMatrixF* getLevelTransform() const ;  // immediate "local" node transform

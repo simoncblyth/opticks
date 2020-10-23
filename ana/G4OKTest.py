@@ -46,6 +46,8 @@ if __name__ == '__main__':
     ox_land = ox[ox.view(np.int32)[:,3,1] != -1]   # photons that land on sensors, only some become hits  
 
     lpos = np.zeros( (len(ox_land),4), dtype=np.float32 )
+    ldir = np.zeros( (len(ox_land),4), dtype=np.float32 )
+    lpol = np.zeros( (len(ox_land),4), dtype=np.float32 )
 
     for i,oxr in enumerate(ox_land):
         oxf = oxr[3].view(np.int32)
@@ -54,12 +56,21 @@ if __name__ == '__main__':
         tid = sentid[sidx]  # sensor index to triplet id
         ridx,pidx,oidx = OpticksIdentity.Decode(tid)   # triplet from id
         tr = gg.get_transform(ridx,pidx,oidx)
-        it = np.linalg.inv(tr)   ## better to do this once within ggeo 
+        it = gg.get_inverse_transform(ridx,pidx,oidx)
+        #it2 = np.linalg.inv(tr)   ## better to do this once within ggeo 
+        #assert np.allclose( it, it2 )
 
         gpos = oxr[0]
-        gpos[3] = 1.  # replace time with 1. for transforming 
+        gdir = oxr[1]
+        gpol = oxr[2]
+
+        gpos[3] = 1.  # replace time with 1. for transforming a position
+        gdir[3] = 0.  # replace weight with 0. for transforming a direction 
+        gpol[3] = 0.  # replace wavelength with 0. for transforming a direction 
 
         lpos[i] = np.dot( gpos, it )
+        ldir[i] = np.dot( gdir, it )
+        lpol[i] = np.dot( gpol, it )
 
         print("bnd/sidx/idx/pflg  %20s %15s  tid %8x  (ridx/pidx/oidx %d %4d %4d)  %s " % (oxf, hismask.label(pflg), tid,ridx,pidx,oidx, lpos[i] ))
         #print(tr)

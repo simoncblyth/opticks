@@ -637,11 +637,20 @@ geocache-create-notes(){ cat << EON
 Default geocache geometry is now Dayabay Near site detector (dx0)
 which is a lot smaller geometry than the JUNO detector (j1808-v5)
 
+
+Oct 02, 2020
+   change default to geocache-dx0 : DayaBay Near Site a much smaller geometry than the previous JUNO geocache-jv5  
+
+Oct 23, 2020
+   change default to geocache-dx1 using opticksaux-dx1 with sensors manually added (testing with G4OKTest)
+
+
 EON
 }
 
 #geocache-create(){ geocache-j1808-v5 $* ; }  
-geocache-create(){ geocache-dx0 $* ; }     
+#geocache-create(){ geocache-dx0 $* ; }     
+geocache-create(){ geocache-dx1 $* ; }     
 
 
 

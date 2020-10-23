@@ -39,6 +39,7 @@ const char* GNodeLib::RELDIR = "GNodeLib" ;
 const char* GNodeLib::PV = "all_volume_PVNames" ; 
 const char* GNodeLib::LV = "all_volume_LVNames" ; 
 const char* GNodeLib::TR = "all_volume_transforms.npy" ; 
+const char* GNodeLib::IT = "all_volume_inverse_transforms.npy" ; 
 const char* GNodeLib::CE = "all_volume_center_extent.npy" ; 
 const char* GNodeLib::BB = "all_volume_bbox.npy" ; 
 const char* GNodeLib::ID = "all_volume_identity.npy" ; 
@@ -66,6 +67,7 @@ GNodeLib::GNodeLib(Opticks* ok)
     m_pvlist(new GItemList(PV, m_reldir)),
     m_lvlist(new GItemList(LV, m_reldir)),
     m_transforms(NPY<float>::make(0,4,4)),
+    m_inverse_transforms(NPY<float>::make(0,4,4)),
     m_bounding_box(NPY<float>::make(0,2,4)),
     m_center_extent(NPY<float>::make(0,4)),
     m_identity(NPY<unsigned>::make(0,4)),
@@ -89,6 +91,7 @@ GNodeLib::GNodeLib(Opticks* ok, bool loading)
     m_pvlist(GItemList::Load(ok->getIdPath(), PV, m_reldir)),
     m_lvlist(GItemList::Load(ok->getIdPath(), LV, m_reldir)),
     m_transforms(NPY<float>::load(m_cachedir, TR)),
+    m_inverse_transforms(NPY<float>::load(m_cachedir, IT)),
     m_bounding_box(NPY<float>::load(m_cachedir, BB)),
     m_center_extent(NPY<float>::load(m_cachedir,CE)),
     m_identity(NPY<unsigned>::load(m_cachedir,ID)),
@@ -109,6 +112,7 @@ unsigned GNodeLib::initNumVolumes() const
     unsigned num_volumes = m_pvlist->getNumKeys(); 
     assert( m_lvlist->getNumKeys() == num_volumes ); 
     assert( m_transforms->getNumItems() == num_volumes ); 
+    assert( m_inverse_transforms->getNumItems() == num_volumes ); 
     assert( m_bounding_box->getNumItems() == num_volumes ); 
     assert( m_center_extent->getNumItems() == num_volumes ); 
     assert( m_identity->getNumItems() == num_volumes ); 
@@ -148,6 +152,7 @@ void GNodeLib::save() const
     m_lvlist->save(m_keydir);
 
     m_transforms->save(m_cachedir,  TR); 
+    m_inverse_transforms->save(m_cachedir,  IT); 
     m_bounding_box->save(m_cachedir, BB); 
     m_center_extent->save(m_cachedir, CE); 
     m_identity->save(m_cachedir, ID); 
@@ -166,6 +171,7 @@ std::string GNodeLib::getShapeString() const
     std::stringstream ss ; 
     ss 
        << std::endl << std::setw(20) << TR << " " << m_transforms->getShapeString() 
+       << std::endl << std::setw(20) << IT << " " << m_inverse_transforms->getShapeString() 
        << std::endl << std::setw(20) << BB << " " << m_bounding_box->getShapeString() 
        << std::endl << std::setw(20) << CE << " " << m_center_extent->getShapeString() 
        << std::endl << std::setw(20) << ID << " " << m_identity->getShapeString() 
@@ -293,6 +299,10 @@ void GNodeLib::addVolume(const GVolume* volume)
 
     glm::mat4 transform = volume->getTransformMat4();
     m_transforms->add(transform);  
+
+    glm::mat4 inverse_transform = volume->getInverseTransformMat4();
+    m_inverse_transforms->add(inverse_transform);  
+
 
     nbbox* bb = volume->getVerticesBBox(); 
     glm::vec4 min(bb->min, 1.f); 
@@ -511,6 +521,10 @@ NPY<float>* GNodeLib::getTransforms() const
 {
     return m_transforms ; 
 }
+NPY<float>* GNodeLib::getInverseTransforms() const 
+{
+    return m_inverse_transforms ; 
+}
 NPY<float>* GNodeLib::getBoundingBox() const 
 {
     return m_bounding_box ; 
@@ -532,6 +546,17 @@ glm::mat4 GNodeLib::getTransform(unsigned index) const
     glm::mat4 tr = m_transforms->getMat4(index) ; 
     return tr ;  
 }
+glm::mat4 GNodeLib::getInverseTransform(unsigned index) const 
+{
+    assert( index < m_num_volumes ); 
+    glm::mat4 it = m_inverse_transforms->getMat4(index) ; 
+    return it ;  
+}
+
+
+
+
+
 glm::vec4 GNodeLib::getCE(unsigned index) const 
 {
     assert( index < m_num_volumes ); 

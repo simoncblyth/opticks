@@ -80,6 +80,9 @@ class Key(object):
         tmpl = "{geocache_dir}/{exe}_{top}_g4live/g4ok_gltf/{dig}/1".format(**locals())
         keydir = os.path.expandvars(tmpl)
         os.environ["KEYDIR"] = keydir 
+        if not "TMP" in os.environ:
+            os.environ["TMP"] = os.path.expandvars("/tmp/$USER/opticks")
+        pass
         return keydir
 
     def __init__(self, keyspec=None):

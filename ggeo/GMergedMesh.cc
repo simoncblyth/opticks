@@ -555,7 +555,7 @@ void GMergedMesh::mergeVolume( const GVolume* volume, bool selected)
     unsigned ridx = volume->getRepeatIndex() ;  
 
     GVolume* volume_ = const_cast<GVolume*>(volume); 
-    GMatrixF* transform = base ? volume_->getRelativeTransform(base) : volume->getTransform() ;     // base or root relative global transform
+    GMatrixF* transform = base ? volume_->getRelativeTransform(base) : volume->getTransform() ;     // base relative OR global transform
 
     if( node == base ) assert( transform->isIdentity() ); 
     if( ridx == 0 )    assert( base == NULL && "expecting NULL base for ridx 0" ); 

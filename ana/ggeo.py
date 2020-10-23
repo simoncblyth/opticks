@@ -113,7 +113,7 @@ class GGeo(object):
     vertex_names    = list(map(lambda _:"vertex_%s"%_,  "colors normals vertices".split()))
     names = volume_names + placement_names + face_names + vertex_names
 
-    all_volume_names = list(map(lambda _:"all_volume_%s" % _, "nodeinfo identity center_extent bbox transforms".split()))
+    all_volume_names = list(map(lambda _:"all_volume_%s" % _, "nodeinfo identity center_extent bbox transforms inverse_transforms".split()))
 
     @classmethod   
     def Path(cls, ridx, name, subdir="GMergedMesh", alldir="GNodeLib"): 
@@ -263,6 +263,23 @@ class GGeo(object):
         assert np.allclose( all_volume_transforms, tr )
         return tr  
 
+
+    def get_transform_n(self, nidx):
+        all_volume_transforms = self.get_array(-1,"all_volume_transforms")
+        return all_volume_transforms[nidx] 
+
+    def get_inverse_transform_n(self, nidx):
+        all_volume_inverse_transforms = self.get_array(-1,"all_volume_inverse_transforms")
+        return all_volume_inverse_transforms[nidx] 
+
+
+    def get_inverse_transform(self, ridx, pidx, oidx):
+        """
+        No triplet way to do this yet, have to go via node index
+        """
+        nidx = self.get_node_index(ridx,pidx,oidx)
+        return self.get_inverse_transform_n(nidx)
+
     def get_transform(self, ridx, pidx, oidx):
         """
         :param ridx: repeat idx, 0 for remainder
@@ -283,8 +300,7 @@ class GGeo(object):
         nidx = self.get_node_index(ridx,pidx,oidx)
 
         ## nodeindex access 
-        all_volume_transforms = self.get_array(-1,"all_volume_transforms")
-        ntr = all_volume_transforms[nidx]
+        ntr = self.get_transform_n(nidx)
 
         assert np.allclose( ggt, ntr )
         return ggt

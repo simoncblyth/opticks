@@ -73,6 +73,7 @@ class GGEO_API GNodeLib
        static const char* PV ; 
        static const char* LV ; 
        static const char* TR ; 
+       static const char* IT ; 
        static const char* CE ; 
        static const char* BB ; 
        static const char* ID ; 
@@ -118,11 +119,13 @@ class GGEO_API GNodeLib
         const char* getLVName(unsigned int index) const ;
 
         NPY<float>* getTransforms() const ; 
+        NPY<float>* getInverseTransforms() const ; 
         NPY<float>* getBoundingBox() const ; 
         NPY<float>* getCenterExtent() const ; 
     public:
         unsigned getNumTransforms() const ; 
         glm::mat4 getTransform(unsigned index) const ;
+        glm::mat4 getInverseTransform(unsigned index) const ;
         glm::uvec4 getIdentity(unsigned index) const ;
         glm::uvec4 getNodeInfo(unsigned index) const ;
         glm::vec4 getCE(unsigned index) const ;
@@ -152,6 +155,7 @@ class GGEO_API GNodeLib
         GItemList*                         m_pvlist ; 
         GItemList*                         m_lvlist ; 
         NPY<float>*                        m_transforms ; 
+        NPY<float>*                        m_inverse_transforms ; 
         NPY<float>*                        m_bounding_box ; 
         NPY<float>*                        m_center_extent ; 
         NPY<unsigned>*                     m_identity ; 
