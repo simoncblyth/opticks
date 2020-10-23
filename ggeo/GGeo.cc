@@ -86,7 +86,6 @@
 #include "GTreePresent.hh"
 #include "GColorizer.hh"
 #include "GPmtLib.hh"
-#include "GScene.hh"
 
 #include "GMergedMesh.hh"
 #include "GItemIndex.hh"

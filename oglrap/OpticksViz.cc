@@ -59,7 +59,6 @@
 #include "Bookmarks.hh"
 
 // opticksgeo-
-#include "OpticksGeometry.hh"
 #include "OpticksHub.hh"
 #include "OpticksIdx.hh"
 

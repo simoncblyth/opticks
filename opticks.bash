@@ -2488,3 +2488,8 @@ opticks-linecount(){
 
 }
 
+opticks-installed-headers(){
+   find $OPTICKS_PREFIX/include \( -name '*.h' -or -name '*.hh' -or -name '*.hpp' \) -exec ${*:-echo} {} \;
+}
+
+

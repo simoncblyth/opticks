@@ -58,7 +58,6 @@
 #include "GMergedMesh.hh"
 #include "GGeoLib.hh"
 #include "GNodeLib.hh"
-#include "GScene.hh"
 #include "GGeo.hh"
 #include "GGeoTest.hh"
 
