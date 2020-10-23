@@ -1426,6 +1426,9 @@ opticks-full-make()
     echo $msg START $(date)
     local rc
 
+    local setup=$(opticks-setup-path)
+    [ ! -f "$setup" ] && echo $msg ABORT missing opticks setup script $setup && return 1
+
     om-  
     cd $(om-home)
     om-install
