@@ -79,9 +79,6 @@ template struct nxform<X4Nd> ;
 #include "GPts.hh"
 
 #include "GGeo.hh"
-#ifdef OLD_SENSOR
-#include "GGeoSensor.hh"
-#endif
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
