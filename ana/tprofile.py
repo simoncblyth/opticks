@@ -41,7 +41,7 @@ log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 from opticks.ana.main import opticks_main
-from opticks.ana.profile import Profile 
+from opticks.ana.profile_ import Profile 
 
 if __name__ == '__main__':
     ok = opticks_main(doc=__doc__)  

@@ -50,8 +50,14 @@ Commands available from the ipdb prompt::
 1. "bt" : show the stack backtrace 
 2. "c"  : continue from the breakpoint
 
+Observed that even when using python this can magically 
+jump into ipython when a breakpoint is reached. However 
+see notes/issues/ipython-ipdb-issue.rst which made
+me add the check for an ipython invokation to prevent
+such fragile magic. 
 """
-if sys.version_info.major in (2,3):  
+#if sys.argv[0].find("ipython") > -1:
+if True:
     try:
         from IPython.core.debugger import Pdb as MyPdb
     except ImportError:

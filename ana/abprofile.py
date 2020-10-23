@@ -16,7 +16,7 @@
 from __future__ import print_function
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
-from opticks.ana.profile import Profile
+from opticks.ana.profile_ import Profile
 
 
 class ABProfile(object):

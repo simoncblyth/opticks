@@ -48,7 +48,7 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.num import Num
 from opticks.ana.base import findfile
-from opticks.ana.profile import Profile
+from opticks.ana.profile_ import Profile
 from opticks.ana.profilesmry import ProfileSmry, ProfileMain
 from opticks.ana.profilesmrytab import ProfileSmryTab
 

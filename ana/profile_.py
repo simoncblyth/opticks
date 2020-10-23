@@ -19,25 +19,28 @@
 #
 
 """
-profile.py
+profile_.py
 =============
+
+Renamed from profile.py due to notes/issues/ipython-ipdb-issue.rst
+
 
 ::
 
-    LV=box profile.py 
-    LV=box python2.7 profile.py 
+    LV=box profile_.py 
+    LV=box python2.7 profile_.py 
 
 
-    LV=box ipython -i profile.py 
+    LV=box ipython -i profile_.py 
 
-    LV=0 ip profile.py 
+    LV=0 ip profile_.py 
 
-    LV=box ip profile.py --cat cvd_1_rtx_1_1M --pfx scan-ph --tag 0
+    LV=box ip profile_.py --cat cvd_1_rtx_1_1M --pfx scan-ph --tag 0
 
     ip(){ local arg1=${1:-evt.py}; shift; ipython -i -- $(which $arg1) $* ; }
 
 
-    ip profile.py --cat cvd_1_rtx_0_1M --pfx scan-pf-0 --tag 0
+    ip profile_.py --cat cvd_1_rtx_0_1M --pfx scan-pf-0 --tag 0
          OKG4Test run  
 
 
@@ -65,7 +68,7 @@ scan-pf-0 OKG4Test 239s for 1M::
 
 ::
 
-    ip profile.py --cat cvd_1_rtx_1_1M --pfx scan-pf-0 --tag 0
+    ip profile_.py --cat cvd_1_rtx_1_1M --pfx scan-pf-0 --tag 0
 
 
     In [2]: pr.q
