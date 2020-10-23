@@ -48,9 +48,21 @@ ht.py : quick checks on hits
     Out[35]: (431, 4) 
     ## many photons land on sensors but are not classified as hits 
 
+
+::
+
+    In [43]: ox_lander[:,1].min()
+    Out[43]: 0
+
+    In [44]: ox_lander[:,1].max()
+    Out[44]: 190
+
+
+
+
 """
 
-import numpy as np
+import os, numpy as np
 from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
 from opticks.ana.hismask import HisMask
@@ -69,6 +81,11 @@ if __name__ == '__main__':
     ph = np.load("ph.npy") # seqhis, seqmat sequence histories for all photons
     seqhis = ph[:,0,0]
     seqmat = ph[:,0,1]
+
+    ## hmm need a standard place for detector level stuff like this 
+    sd = np.load(os.path.expandvars("$TMP/G4OKTest/sensorData.npy"))  
+    triplet_id = sd.view(np.uint32)[:,3]  
+    placement_id = ( triplet_id & 0x00ffff00 ) >> 8  
 
     dump = False
     if dump:
@@ -98,15 +115,16 @@ if __name__ == '__main__':
 
     tot = 0 
     for oxf in ox_lander:
-        idx = oxf[2]
+        sidx = oxf[1] # sensor index 
+        tid = triplet_id[sidx]
+        pid = placement_id[sidx]
+        idx = oxf[2]  # photon index 
         sqh = seqhis[idx]
         sqm = seqmat[idx]
         is_hit = idx in ht_idx
         tot += int(is_hit)
         stat = "HIT" if is_hit else "-"
-        print("%20s %15s %10s    %16x : %30s    %16s : %30s  " % (oxf, hismask.label(oxf[3]), stat, sqh, histype.label(sqh), sqm, mattype.label(sqm) ))
+        print("%20s %15s %10s    %16x : %30s    %16s : %30s  %10x %3x %3d  " % (oxf, hismask.label(oxf[3]), stat, sqh, histype.label(sqh), sqm, mattype.label(sqm), tid, pid, pid ))
     pass
     assert tot == len(ht_idx)
-        
-
- 
+         

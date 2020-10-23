@@ -123,6 +123,9 @@ class G4OK_API G4Opticks
         int  getSensorIdentifier(unsigned sensorIndex) const ;
 
         template <typename T> void setSensorDataMeta( const char* key, T value );
+
+        void saveSensorData(const char* path) const ; 
+        void saveSensorData(const char* dir, const char* name) const ; 
     public:
         void setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& data, 
                                          int theta_steps, float theta_min, float theta_max, 

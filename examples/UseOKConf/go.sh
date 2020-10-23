@@ -49,15 +49,21 @@ The standard used everywhere in Opticks is::
 EON
 }
 
-install_prefix=$(opticks-prefix)  
-prefix_path=$(opticks-prefix)/externals
+manual=1
 
-
-cmake $sdir \
+if [ $manual -eq 1 ]; then 
+   cmake $sdir \
      -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
-     -DCMAKE_INSTALL_PREFIX=${install_prefix} \
-     -DCMAKE_PREFIX_PATH=${prefix_path} \
+     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+     -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
      -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules
+
+else
+   om-cmake $sdir 
+fi 
+
+
+
 
 make
 make install   

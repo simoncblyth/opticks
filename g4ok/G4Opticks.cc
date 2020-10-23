@@ -577,6 +577,16 @@ void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float ef
     m_sensor_data->setInt(  sensorIndex,3,0,0, identifier);
 }
 
+void G4Opticks::saveSensorData(const char* path) const 
+{
+    m_sensor_data->save(path); 
+}
+void G4Opticks::saveSensorData(const char* dir, const char* name) const 
+{
+    m_sensor_data->save(dir, name); 
+}
+
+
 void G4Opticks::getSensorData(unsigned sensorIndex, float& efficiency_1, float& efficiency_2, int& category, int& identifier) const 
 {
     assert( sensorIndex < m_sensor_num ); 

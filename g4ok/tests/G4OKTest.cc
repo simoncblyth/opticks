@@ -168,6 +168,10 @@ void G4OKTest::init()
 
     //m_g4ok->setSensorAngularEfficiency...
 
+    const char* path = "$TMP/G4OKTest/sensorData.npy" ; 
+    m_g4ok->saveSensorData(path); 
+    LOG(info) << "saveSensorData to " << path ; 
+
     LOG(info) << m_g4ok->dbgdesc() ; 
 }
 

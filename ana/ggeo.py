@@ -70,6 +70,7 @@ log = logging.getLogger(__name__)
 import numpy as np
 from opticks.ana.blib import BLib
 from opticks.ana.key import key_
+from opticks.ana.OpticksIdentity import OpticksIdentity
 
 tx_load = lambda _:list(map(str.strip, open(_).readlines()))
 
@@ -98,6 +99,7 @@ def Three2Four(a, w=1):
     pass
     r = b
     return r 
+
 
 
 class GGeo(object):
@@ -318,35 +320,10 @@ class GGeo(object):
         gg = self
         avi = gg.all_volume_identity
         tid = avi[:,1] 
-
-        nidx = np.arange(len(tid), dtype=np.uint32)
-        ridx = tid >> 24 
-        pidx = np.where( ridx == 0,                       0, ( tid >>  8 ) & 0xffff )  
-        oidx = np.where( ridx == 0, ( tid >> 0 ) & 0xffffff, ( tid >> 0  ) & 0xff   )  
-
-        nrpo = np.zeros([len(tid),4], dtype=np.uint32)
-        nrpo[:,0] = nidx
-        nrpo[:,1] = ridx
-        nrpo[:,2] = pidx
-        nrpo[:,3] = oidx
+        nrpo = OpticksIdentity.NRPO(tid)
         return nrpo
 
     def _get_nrpo(self):
-        """
-        Decode the triplet identifier to show nidx/ridx/pidx/oidx (node/repeat/placement/offset-idx)
-        of all volumes, see okc/OpticksIdentity::Decode::
-
-            In [44]: gg.nrpo[gg.nrpo[:,1] == 5]                                                                                                                                                                    
-            Out[44]: 
-            array([[ 3199,     5,     0,     0],
-                   [ 3200,     5,     0,     1],
-                   [ 3201,     5,     0,     2],
-                   ...,
-                   [11410,     5,   671,     2],
-                   [11411,     5,   671,     3],
-                   [11412,     5,   671,     4]], dtype=uint32)
-
-        """
         if getattr(self,'_nrpo',None) is None:
             setattr(self,'_nrpo',self.make_nrpo())
         return self._nrpo 
