@@ -188,6 +188,9 @@ void G4OKTest::propagate()
     G4int eventID = 0 ; 
     int nhit = m_g4ok->propagateOpticalPhotons(eventID);
     LOG(info) << " nhit " << nhit ; 
+
+    m_g4ok->dumpHits("G4OKTest::propagate"); 
+
 }
 
 int G4OKTest::rc() const 

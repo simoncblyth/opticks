@@ -76,6 +76,7 @@ set(TEST_SOURCES
 
     GMeshLibTest.cc
     GNodeLibTest.cc
+    GPhoTest.cc
 
 )
 

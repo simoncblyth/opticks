@@ -30,6 +30,12 @@
 
 #include "PLOG.hh"
 
+/**
+
+The mask gives access to origin photon indices.
+
+**/
+
 NPho::NPho(NPY<float>* photons, const char* opt) 
     :  
     m_photons(photons),

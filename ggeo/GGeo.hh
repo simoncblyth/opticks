@@ -266,6 +266,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         unsigned int   getNumVolumes() const ;
         const GNode*   getNode(unsigned index) const ; 
         NPY<float>*    getTransforms() const ;
+        NPY<float>*    getInverseTransforms() const ;
         const GVolume* getVolume(unsigned int index) const ;  
         const GVolume* getVolumeSimple(unsigned int index) const ;  
         const char*    getPVName(unsigned int index) const ;
@@ -283,7 +284,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         // via GNodeLib
         unsigned getNumTransforms() const ; 
         glm::uvec4 getIdentity( unsigned nidx) const ;
+        glm::uvec4 getNRPO(unsigned nidx) const ;
         glm::mat4 getTransform(unsigned nidx) const ;  
+        glm::mat4 getInverseTransform(unsigned nidx) const ;  
         void dumpVolumes(const char* msg="GGeo::dumpVolumes", float extent_cut_mm=5000., int cursor=-1 ) const ;
         glm::vec4 getCE(unsigned index) const ; 
     public:

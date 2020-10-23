@@ -38,7 +38,7 @@ set(SCRIPTS
    metadata.py
    nibble.py
    evt.py
-   profile.py
+   profile_.py
    absmry.py
    ab.py
    tboolean.py

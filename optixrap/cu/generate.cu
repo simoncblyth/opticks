@@ -675,6 +675,13 @@ RT_PROGRAM void generate()
 #endif
 
     // breakers and maxers saved here
+
+    p.weight = unsigned_as_float( s.identity.x ); // stomp on the weight with last intersect volume identity (see GVolume::getIdentity) 
+                                                  //    s.identity.x : nodeIndex 
+                                                  //    s.identity.y : tripletIdentity
+                                                  //    s.identity.z : shapeIdentity
+                                                  //    s.identity.w : sensorIndex   (already in flags)
+        
     psave(p, photon_buffer, photon_offset ); 
 
 #ifdef WITH_ALIGN_DEV_DEBUG

@@ -127,6 +127,8 @@ class GGEO_API GNodeLib
         glm::mat4 getTransform(unsigned index) const ;
         glm::mat4 getInverseTransform(unsigned index) const ;
         glm::uvec4 getIdentity(unsigned index) const ;
+        glm::uvec4 getNRPO(unsigned index) const ;
+
         glm::uvec4 getNodeInfo(unsigned index) const ;
         glm::vec4 getCE(unsigned index) const ;
         void      getBB(unsigned index, glm::vec4& mn, glm::vec4& mx ) const ; 

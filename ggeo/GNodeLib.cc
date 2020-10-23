@@ -27,6 +27,7 @@
 #include "GLMFormat.hpp"
 
 #include "Opticks.hh"
+#include "OpticksIdentity.hh"
 
 #include "GItemList.hh"
 #include "GVolume.hh"
@@ -570,6 +571,19 @@ glm::uvec4 GNodeLib::getIdentity(unsigned index) const
     glm::uvec4 id = m_identity->getQuad_(index) ; 
     return id ;  
 }
+glm::uvec4 GNodeLib::getNRPO(unsigned nidx) const 
+{
+    glm::uvec4 id = getIdentity(nidx); 
+    unsigned triplet = id.y ;
+    unsigned ridx = OpticksIdentity::RepeatIndex(triplet) ; 
+    unsigned pidx = OpticksIdentity::PlacementIndex(triplet) ; 
+    unsigned oidx = OpticksIdentity::OffsetIndex(triplet) ; 
+    glm::uvec4 nrpo(nidx,ridx,pidx,oidx);  
+    return nrpo ; 
+}
+
+
+
 glm::uvec4 GNodeLib::getNodeInfo(unsigned index) const 
 {
     assert( index < m_num_volumes ); 

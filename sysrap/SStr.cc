@@ -279,6 +279,16 @@ const char* SStr::Replace( const char* s,  char a, char b )
     return strdup(r.c_str());
 }
 
+
+/**
+SStr::ReplaceEnd
+------------------
+
+String s is required to have ending q.
+New string n is returned with the ending q replaced with r.
+
+**/
+
 const char* SStr::ReplaceEnd( const char* s, const char* q, const char* r  )
 {
     int pos = strlen(s) - strlen(q) ;

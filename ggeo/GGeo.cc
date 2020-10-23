@@ -893,6 +893,11 @@ NPY<float>* GGeo::getTransforms() const
 {
     return m_nodelib->getTransforms(); 
 }
+NPY<float>* GGeo::getInverseTransforms() const 
+{
+    return m_nodelib->getInverseTransforms(); 
+}
+
 
 const GVolume* GGeo::getVolume(unsigned index) const 
 {
@@ -1453,6 +1458,11 @@ glm::uvec4 GGeo::getIdentity(unsigned nidx) const
     glm::uvec4 id = m_nodelib->getIdentity(nidx); 
     return id ; 
 }
+glm::uvec4 GGeo::getNRPO(unsigned nidx) const 
+{
+    glm::uvec4 nrpo = m_nodelib->getNRPO(nidx); 
+    return nrpo ; 
+}
 
 glm::uvec4 GGeo::getIdentity(unsigned ridx, unsigned pidx, unsigned oidx, bool check) const 
 {
@@ -1550,6 +1560,14 @@ glm::mat4 GGeo::getTransform(unsigned index) const
 {
     return m_nodelib->getTransform(index); 
 }
+glm::mat4 GGeo::getInverseTransform(unsigned index) const 
+{
+    return m_nodelib->getInverseTransform(index); 
+}
+
+
+
+
 void GGeo::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) const 
 {
     m_nodelib->dumpVolumes(msg, extent_cut_mm, cursor); 

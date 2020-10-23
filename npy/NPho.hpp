@@ -32,6 +32,9 @@ NPho
 Wrapper for an (n,4,4) photon buffer providing higher level
 accessors and dumping.
 
+BUT : being in NPY means have no access to geometry, 
+so cannot convert global positions to local at this level.
+
 **/
 
 class NPY_API NPho {

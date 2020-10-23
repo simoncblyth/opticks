@@ -42,11 +42,13 @@ from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
 from opticks.ana.hismask import HisMask
 from opticks.ana.blib import BLib
+from opticks.ana.ggeo import GGeo
 
 histype = HisType()
 mattype = MatType()
 hismask = HisMask() 
 blib = BLib()
+ggeo = GGeo()
 
 
 if __name__ == '__main__':
@@ -72,14 +74,23 @@ if __name__ == '__main__':
     print("bndidx : %s " % repr(bndidx))
     for _ in bndidx:print(blib.bname(_)) 
 
-    for i, oxr in enumerate(ox[:20]):
+    for i, oxr in enumerate(ox):
         oxf = oxr[3].view(np.int32)
+
+        ## use stomped on weight, for the "always there, not just sensors" node index of last intersected volume 
+        nidx = oxr[1,3].view(np.uint32)  
+        nrpo = ggeo.get_triplet_index(nidx)
+        nidx2,ridx,pidx,oidx = nrpo
+        assert nidx2 == nidx 
+        #if ridx > 0: continue   # skip photons with last intersect on instanced geometry 
+        if ridx == 0: continue   # skip photons with last intersect on remainder geometry 
+
         bnd,sidx,idx,pflg  = oxf
         sqh = seqhis[idx]
         sqm = seqmat[idx]
         msk = " %15s " % hismask.label(pflg) 
         his = "( %16x : %30s ) " % (sqh, histype.label(sqh)) 
         mat = "( %16x : %30s ) " % (sqm, mattype.label(sqm))
-        print(" %5d : %15s :  %s %s %s " % (i, oxf, msk,his,mat) )
+        print(" %5d : %15s :  %s %s %s : %s " % (i, oxf, msk,his,mat, nrpo) )
     pass
          

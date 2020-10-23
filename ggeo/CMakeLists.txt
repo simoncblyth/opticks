@@ -90,6 +90,7 @@ set(SOURCES
 
 
     GPropertyMap.cc
+    GPho.cc
 
 )
 
@@ -175,6 +176,7 @@ set(HEADERS
     GMeshLib.hh
 
     GPropertyMap.hh
+    GPho.hh
 )
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )

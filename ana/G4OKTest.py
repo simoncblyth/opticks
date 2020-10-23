@@ -19,6 +19,7 @@ from opticks.ana.hismask import HisMask
 from opticks.ana.OpticksIdentity import OpticksIdentity
 from opticks.ana.ggeo import GGeo
 hismask = HisMask()
+ggeo = GGeo()
 
 try:
     import pyvista as pv   
@@ -34,7 +35,6 @@ if __name__ == '__main__':
     pass
     np.set_printoptions(suppress=True, linewidth=200)
 
-    gg = GGeo()
 
     ## hmm need a standard place for detector level stuff like this 
     sentid = np.load(os.path.expandvars("$TMP/G4OKTest/sensorData.npy")).view(np.uint32)[:,3]  
@@ -51,12 +51,22 @@ if __name__ == '__main__':
 
     for i,oxr in enumerate(ox_land):
         oxf = oxr[3].view(np.int32)
+
+        ## use stomped on weight, for the "always there, not just sensors" node index of last intersected volume 
+        nidx = oxr[1,3].view(np.uint32)  
+        nrpo = ggeo.get_triplet_index(nidx)
+        assert nrpo[0] == nidx 
+
+
         bnd,sidx,idx,pflg = oxf  
 
         tid = sentid[sidx]  # sensor index to triplet id
+        ## all volumes have a tid, so dont like this as only works for sensors 
+        ##  and depends on the non-standard loading of sensorData.npy
+
         ridx,pidx,oidx = OpticksIdentity.Decode(tid)   # triplet from id
-        tr = gg.get_transform(ridx,pidx,oidx)
-        it = gg.get_inverse_transform(ridx,pidx,oidx)
+        tr = ggeo.get_transform(ridx,pidx,oidx)
+        it = ggeo.get_inverse_transform(ridx,pidx,oidx)
         #it2 = np.linalg.inv(tr)   ## better to do this once within ggeo 
         #assert np.allclose( it, it2 )
 

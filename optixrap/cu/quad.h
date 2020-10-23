@@ -62,7 +62,21 @@ union uif
 };
 
 
+#ifdef __CUDACC__
 
+static __device__
+float unsigned_as_float(unsigned u)
+{
+  union {
+    float f;
+    unsigned u;
+  } v1;
+
+  v1.u = u; 
+  return v1.f;
+}
+
+#endif
 
 
 

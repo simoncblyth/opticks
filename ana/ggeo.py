@@ -347,11 +347,12 @@ class GGeo(object):
 
     def get_triplet_index(self, nidx):
         """
+         cf ggeo/GGeo::getIdentity
+
         :param nidx: all_volume node index 
         :return nidx,ridx,pidx,oidx:
         """
         return self.nrpo[nidx]
-
 
 
     all_volume_center_extent = property(lambda self:self.get_array(-1,"all_volume_center_extent"))

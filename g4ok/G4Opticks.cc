@@ -27,7 +27,6 @@
 #include "SSys.hh"
 #include "BOpticksKey.hh"
 #include "NLookup.hpp"
-#include "NPho.hpp"
 #include "NPY.hpp"
 #include "TorchStepNPY.hpp"
 
@@ -52,6 +51,7 @@
 #include "OpMgr.hh"
 
 #include "GGeo.hh"
+#include "GPho.hh"
 #include "GMaterialLib.hh"
 #include "GGeoGLTF.hh"
 #include "GBndLib.hh"
@@ -889,7 +889,7 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
 
         OpticksEvent* event = m_opmgr->getEvent(); 
         m_hits_ = event->getHitData()->clone() ; 
-        m_hits = new NPho(m_hits_) ; 
+        m_hits = new GPho(m_hits_, m_ggeo) ; 
         m_num_hits = m_hits->getNumPhotons() ; 
 
         // minimal g4 side instrumentation in "1st executable" 
@@ -914,6 +914,13 @@ NPY<float>* G4Opticks::getHits() const
 {
     return m_hits_ ; 
 }
+
+void G4Opticks::dumpHits(const char* msg) const 
+{
+    unsigned maxDump = 0 ; 
+    m_hits->dump(msg, maxDump);
+}
+
 
 void G4Opticks::getHit(
             unsigned i,

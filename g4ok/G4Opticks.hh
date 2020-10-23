@@ -29,11 +29,11 @@
 
 template <typename T> class NPY ; 
 class NLookup ; 
-class NPho ; 
 class Opticks;
 class OpticksEvent;
 class OpMgr;
 class GGeo ; 
+class GPho ; 
 class GBndLib ; 
 
 class CTraverser ; 
@@ -105,6 +105,8 @@ class G4OK_API G4Opticks
         // workflow methods
         int propagateOpticalPhotons(G4int eventID);
         NPY<float>* getHits() const ; 
+        void dumpHits(const char* msg="G4Opticks::dumpHits") const ;
+
         void reset(); 
         void setAlignIndex(int align_idx) const ; 
 
@@ -329,7 +331,7 @@ class G4OK_API G4Opticks
         NPY<float>*                m_gensteps ; 
         NPY<float>*                m_genphotons ; 
         NPY<float>*                m_hits_ ; 
-        NPho*                      m_hits ; 
+        GPho*                      m_hits ; 
         unsigned                   m_num_hits ; 
     private:
         // minimal instrumentation from the G4 side of things 

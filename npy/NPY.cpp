@@ -1386,6 +1386,12 @@ which is sized to fit
 Canonical usage is from NEmitPhotonsNPY::NEmitPhotonsNPY
 for masking input photons for Masked running.
 
+The array created retains the original mask array 
+allowing origin (unselected) indices to be looked 
+up from the selected array. Knowing origin indices
+is essential for connecting from selections to originals 
+and allows recreation of originals.
+
 **/
 
 template <typename T>
@@ -1424,11 +1430,19 @@ NPY<T>* NPY<T>::make_masked(NPY<T>* src, NPY<unsigned>* msk )
 
     return dst ; 
 }
+
+/**
+NPY::_copy_masked
+-------------------
+
+Copy items from src to dst that are pointed to via indices
+in the msk array. 
+
+**/
  
 template <typename T>
 unsigned NPY<T>::_copy_masked(NPY<T>* dst, NPY<T>* src, NPY<unsigned>* msk )
 {
-    // copy items from src to dst that are pointed to by msk 
 
     unsigned ni = src->getShape(0);
     unsigned nsel = msk->getShape(0);

@@ -143,19 +143,6 @@ Stack curr:
 **/
 
 
-static __device__
-float unsigned_as_float(unsigned u)
-{
-  union {
-    float f;
-    unsigned u;
-  } v1;
-
-  v1.u = u; 
-  return v1.f;
-}
-
-
 
 
 __device__ __forceinline__
