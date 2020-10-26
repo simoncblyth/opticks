@@ -621,38 +621,55 @@ Invoked from detector specific code, eg LSExpDetectorConstruction::SetupOpticks
 
 **/
 
-void G4Opticks::setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& data, 
+void G4Opticks::setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& values, 
         int theta_steps, float theta_min, float theta_max, 
         int phi_steps,   float phi_min, float phi_max )
 {
     LOG(LEVEL) << "[" ; 
+    const NPY<float>* a = MakeSensorAngularEfficiency(shape, values, theta_steps, theta_min, theta_max, phi_steps, phi_min, phi_max) ; 
+    setSensorAngularEfficiency(a); 
+    LOG(LEVEL) << "]" ; 
+}
+
+
+const NPY<float>*  G4Opticks::MakeSensorAngularEfficiency(const std::vector<int>& shape, const std::vector<float>& values, 
+                  int theta_steps, float theta_min, float theta_max,  int phi_steps,   float phi_min, float phi_max )   // static
+{
     std::string metadata = "" ; 
-    NPY<float>* a = new NPY<float>(shape, data, metadata); 
+    NPY<float>* a = new NPY<float>(shape, values, metadata); 
     a->setMeta<int>("theta_steps", theta_steps); 
     a->setMeta<float>("theta_min", theta_min); 
     a->setMeta<float>("theta_max", theta_max);
     a->setMeta<int>("phi_steps", phi_steps); 
     a->setMeta<float>("phi_min", phi_min); 
     a->setMeta<float>("phi_max", phi_max);
-  
-    m_sensor_angular_efficiency = a ; 
-
-    LOG(LEVEL) << "]" ; 
+ 
+    return a ; 
 }
 
+
+
+void G4Opticks::setSensorAngularEfficiency( const NPY<float>* sensor_angular_efficiency )
+{
+    m_sensor_angular_efficiency = sensor_angular_efficiency ;
+}
+
+
+/*
 template <typename T>
 void G4Opticks::setSensorAngularEfficiencyMeta( const char* key, T value )
 {
     assert( m_sensor_angular_efficiency ); 
     m_sensor_angular_efficiency->setMeta<T>( key, value ); 
 }
+*/
 
 
 NPY<float>*  G4Opticks::getSensorDataArray() const
 {
     return m_sensor_data ; 
 }
-NPY<float>*  G4Opticks::getSensorAngularEfficiencyArray() const
+const NPY<float>*  G4Opticks::getSensorAngularEfficiencyArray() const
 {
     return m_sensor_angular_efficiency ; 
 }
@@ -1463,10 +1480,11 @@ template G4OK_API void G4Opticks::setSensorDataMeta(const char* key, int value);
 template G4OK_API void G4Opticks::setSensorDataMeta(const char* key, float value);
 template G4OK_API void G4Opticks::setSensorDataMeta(const char* key, std::string value);
 
+/*
 template G4OK_API void G4Opticks::setSensorAngularEfficiencyMeta(const char* key, int value);
 template G4OK_API void G4Opticks::setSensorAngularEfficiencyMeta(const char* key, float value);
 template G4OK_API void G4Opticks::setSensorAngularEfficiencyMeta(const char* key, std::string value);
-
+*/
 
 
 

@@ -5,6 +5,7 @@ include(OpticksBuildOptions)
 
 set(TESTS
     G4OKTest.cc
+    MockSensorAngularEfficiencyTableTest.cc
 )
 
 foreach(SRC ${TESTS})

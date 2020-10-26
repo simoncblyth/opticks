@@ -212,11 +212,11 @@ class NPY_API NPYBase {
        virtual glm::vec4  getQuadF(unsigned int i, unsigned int j, unsigned int k ) const  = 0 ; 
        virtual glm::ivec4 getQuadI(unsigned int i, unsigned int j, unsigned int k ) const = 0 ; 
 
-       virtual void save(const char* path) = 0;
-       virtual void save(const char* dir, const char* name) = 0;
+       virtual void save(const char* path) const = 0;
+       virtual void save(const char* dir, const char* name) const = 0;
    public:
        // from BOpticksEvent
-       virtual void save(const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det ) = 0;
+       virtual void save(const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det ) const = 0;
  
     public:
        void Summary(const char* msg="NPYBase::Summary") const ;

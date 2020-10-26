@@ -15,13 +15,14 @@ find_package(OKOP   REQUIRED CONFIG)
 
 set(SOURCES
     G4Opticks.cc
-
+    MockSensorAngularEfficiencyTable.cc
     G4OK_LOG.cc
 )
 set(HEADERS
     G4Opticks.hh
     G4OpticksScintillationStep.hh
     G4OpticksCerenkovStep.hh
+    MockSensorAngularEfficiencyTable.hh
 
     G4OK_LOG.hh
     G4OK_API_EXPORT.hh

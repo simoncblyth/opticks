@@ -3,6 +3,7 @@
 
 #include "G4PVPlacement.hh"
 #include "G4Opticks.hh"
+#include "MockSensorAngularEfficiencyTable.hh"
 
 /**
 G4OKTest
@@ -57,6 +58,9 @@ So add::
 
 **/
 
+
+
+
 class G4OKTest 
 {
     public:
@@ -64,8 +68,11 @@ class G4OKTest
     private:
         int  initLog(int argc, char** argv);
         void init();
+        void initGeometry();
+        void initSensorData();
+        void initSensorAngularEfficiency();
     public: 
-        void collect(); 
+        void collectGensteps(); 
         void propagate(); 
         int rc() const ; 
     private:
@@ -110,8 +117,14 @@ When running from cache G4PVPlacement are not available, so the
 opticksTripletIdentifier is used as a standin for the sensor identifier. 
 
 **/
-
 void G4OKTest::init()
+{
+    initGeometry();
+    initSensorData();
+    initSensorAngularEfficiency();
+}
+
+void G4OKTest::initGeometry()
 {
     if(m_gdmlpath == NULL)
     {
@@ -121,7 +134,10 @@ void G4OKTest::init()
     {
         m_g4ok->setGeometry(m_gdmlpath);  
     }
+}
 
+void G4OKTest::initSensorData()
+{
     bool loaded = m_g4ok->isLoadedFromCache(); 
     const std::vector<G4PVPlacement*>& sensor_placements = m_g4ok->getSensorPlacements() ;
     unsigned num_sensor = m_g4ok->getNumSensorVolumes(); 
@@ -166,7 +182,6 @@ void G4OKTest::init()
     
     LOG(info) << "] setSensorData num_sensor " << num_sensor ; 
 
-    //m_g4ok->setSensorAngularEfficiency...
 
     const char* path = "$TMP/G4OKTest/sensorData.npy" ; 
     m_g4ok->saveSensorData(path); 
@@ -176,7 +191,22 @@ void G4OKTest::init()
 }
 
 
-void G4OKTest::collect()
+void G4OKTest::initSensorAngularEfficiency()
+{
+    unsigned num_cat = 1 ; 
+    unsigned num_theta_steps = 181 ;  // height
+    unsigned num_phi_steps = 361 ;    // width 
+
+    MockSensorAngularEfficiencyTable tab( num_cat, num_theta_steps, num_phi_steps ); 
+    NPY<float>* arr = tab.getArray(); 
+
+    m_g4ok->setSensorAngularEfficiency( arr ); 
+}
+
+
+
+
+void G4OKTest::collectGensteps()
 {
     unsigned node_index = m_torchtarget ; 
     m_g4ok->collectDefaultTorchStep(node_index); 
@@ -200,11 +230,10 @@ int G4OKTest::rc() const
 
 
 
-
 int main(int argc, char** argv)
 {
     G4OKTest t(argc, argv); 
-    t.collect();
+    t.collectGensteps();
     t.propagate();
     return t.rc() ;
 }

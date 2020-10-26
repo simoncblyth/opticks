@@ -177,19 +177,20 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* load(const char* dir, const char* name, bool quietly=false);
        //static NPY<T>* loadPPM(const char* path);
  
-       void save(const char* path);
-       void save(const char* dir, const char* name);
-       void save(const char* dir, const char* reldir, const char* name);
+       void save(const char* path) const ;
+       void save(const char* dir, const char* name) const ;
+       void save(const char* dir, const char* reldir, const char* name) const ;
 
        NBufferSpec saveToBuffer(std::vector<unsigned char>& vdst) const ;          // including the NPY header
        static NPY<T>* loadFromBuffer(const std::vector<unsigned char>& vsrc); // buffer must include NPY header 
-       bool exists(const char* path);
-       bool exists(const char* dir, const char* name);
+
+       bool exists(const char* path) const ;
+       bool exists(const char* dir, const char* name) const ;
    public:
        // via BOpticksEvent
-       void save(          const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det);
+       void save(          const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det) const ;
        static NPY<T>* load(const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det, bool quietly=false); 
-       bool exists(        const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det );
+       bool exists(        const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det ) const ;
    public:
        NPY<T>* clone();
        static NPY<T>* copy(NPY<T>* src);

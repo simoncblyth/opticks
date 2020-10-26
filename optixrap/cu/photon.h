@@ -51,14 +51,71 @@ struct Photon
 
    quad flags ;  
 
-   // flags.i.x : 1-based signed boundary index, 0 means no intersect 
-   // flags.u.y : sensor index (TODO: revive)   
-   // flags.u.z : 4 debug bytes
-   // flags.u.w : history mask (bitwise OR of all step flags)
+   // flags.i.x : boundary index (1-based signed, 0: no intersect)     [easily 16 bits]
+   // flags.u.y : sensor index (signed, -1 means non-sensor)           [easily 16 bits]
+   // flags.u.z : photon index (origin index useful after selections)  [needs 32 bits]
+   // flags.u.w : history mask (bitwise OR of all step flags)          [could manage 16 bits but complicated as used to define hits]
                    
 };
 
+/**
 
+* node index needs 0..1M say ~ 20 bits 
+* triplet index needs full 32 bits (its 3 packed uints already)
+
+
+TODO: encapsulate the flags with PhotonFlags struct usable from CUDA and CPP 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+TODO : avoid stomping on the weight
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* currently are stomping on the weight with unsigned_as_float(nidx), 
+  this is non-ideal but are not using weight so its OK for now  
+
+* need to make space in flags for nidx 
+
+
+TODO flags.i/u.x bitpack  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+
+* pack the boundary index and sensor index into flags.i.x combining  
+
+  * 16 bits signed boundary index (1-based)
+  * 16 bits unsigned sensor index (adopt 1-based to avoid wasting half the bits just for -1)
+
+
+flags.u.y : Sensor Index redundant (?)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* sensor index -1 for most intersects which are not onto sensors
+
+* when you have node index (nidx) you know from GNodeLib the volume 
+  intersected which makes the sensor index redundant as it can be looked up 
+  from all volume identity array which gives the result for GVolume::getIdentity for all volumes
+
+* similarly when you have the triplet identifier you know from GGeoLib the GVolume::getIdentity 
+  info for all volumes but structured by remainder and instances 
+
+* considering using flags.u.y for triplet identifier (or node index) 
+  instead of sensor index because the sensor index is a useless -1 
+  for non-sensor intersects (which are most intersects)
+
+
+::
+
+    In [7]: flags[flags[:,1] != -1]                                                                                                                                      
+    Out[7]: 
+    array([[ -30,  130,   19, 6208],
+           [ -30,  139,   74, 6208],
+           [ -30,   79,  135, 6272],
+           ...,
+           [ -30,   54, 9885, 6272],
+           [ -30,   22, 9895, 6272],
+           [ -30,   79, 9915, 6304]], dtype=int32)
+
+**/
 
 
 

@@ -21,12 +21,35 @@
 md5.py
 ========
 
-Testing this with py2 and py3::
+
+Beware newlines::
 
     epsilon:bin blyth$ echo hello > /tmp/hello
-
+    epsilon:bin blyth$ xxd /tmp/hello
+    00000000: 6865 6c6c 6f0a                           hello.
     epsilon:bin blyth$ md5 /tmp/hello
     MD5 (/tmp/hello) = b1946ac92492d2347c6235b4d2611184
+
+
+    epsilon:bin blyth$ echo -n hello > /tmp/hello-n
+    epsilon:bin blyth$ xxd /tmp/hello-n
+    00000000: 6865 6c6c 6f                             hello
+
+    epsilon:bin blyth$ md5 /tmp/hello-n
+    MD5 (/tmp/hello-n) = 5d41402abc4b2a76b9719d911017c592
+    epsilon:bin blyth$ md5 -s hello
+    MD5 ("hello") = 5d41402abc4b2a76b9719d911017c592
+    epsilon:bin blyth$ 
+
+    epsilon:bin blyth$ python -c "import sys, codecs, hashlib ; print(hashlib.md5(codecs.latin_1_encode(sys.argv[1])[0]).hexdigest())"  hello
+    5d41402abc4b2a76b9719d911017c592
+
+
+
+Testing this with py2 and py3::
+
+    epsilon:bin blyth$ md5 -s hello
+    MD5 ("hello") = 5d41402abc4b2a76b9719d911017c592
 
     epsilon:bin blyth$ /opt/local/bin/python ~/opticks/bin/md5.py /tmp/hello 
     b1946ac92492d2347c6235b4d2611184

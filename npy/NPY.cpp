@@ -981,21 +981,21 @@ NPY<T>* NPY<T>::load(const char* dir, const char* name, bool quietly)
 
 
 template <typename T>
-void NPY<T>::save(const char* dir, const char* name)
+void NPY<T>::save(const char* dir, const char* name) const 
 {
     std::string path_ = BFile::FormPath(dir, name);
     save(path_.c_str());
 }
 
 template <typename T>
-void NPY<T>::save(const char* dir, const char* reldir, const char* name)
+void NPY<T>::save(const char* dir, const char* reldir, const char* name) const 
 {
     std::string path_ = BFile::FormPath(dir, reldir, name);
     save(path_.c_str());
 }
 
 template <typename T>
-bool NPY<T>::exists(const char* dir, const char* name)
+bool NPY<T>::exists(const char* dir, const char* name) const 
 {
     std::string path_ = BFile::FormPath(dir, name);
     return exists(path_.c_str());
@@ -1016,14 +1016,14 @@ NPY<T>* NPY<T>::load(const char* pfx, const char* tfmt, const char* source, cons
     return load(path_.c_str(),quietly);
 }
 template <typename T>
-void NPY<T>::save(const char* pfx, const char* tfmt, const char* source, const char* tag, const char* det)
+void NPY<T>::save(const char* pfx, const char* tfmt, const char* source, const char* tag, const char* det) const 
 {
     std::string path_ = BOpticksEvent::path(pfx, det, source, tag, tfmt );
     save(path_.c_str());
 }
 
 template <typename T>
-bool NPY<T>::exists(const char* pfx, const char* tfmt, const char* source, const char* tag, const char* det)
+bool NPY<T>::exists(const char* pfx, const char* tfmt, const char* source, const char* tag, const char* det) const 
 {
     std::string path_ = BOpticksEvent::path(pfx, det, source, tag, tfmt );
     return exists(path_.c_str());
@@ -1036,7 +1036,7 @@ bool NPY<T>::exists(const char* pfx, const char* tfmt, const char* source, const
 
 
 template <typename T>
-bool NPY<T>::exists(const char* path_)
+bool NPY<T>::exists(const char* path_) const
 {
     fs::path _path(path_);
     return fs::exists(_path) && fs::is_regular_file(_path); 
@@ -1047,7 +1047,7 @@ bool NPY<T>::exists(const char* path_)
 
 
 template <typename T>
-void NPY<T>::save(const char* raw)
+void NPY<T>::save(const char* raw) const 
 {
     std::string native = BFile::FormPath(raw);   // potentially with prefixing/windozing 
 
@@ -1085,7 +1085,7 @@ void NPY<T>::save(const char* raw)
     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
 
-    T* values = getValues();
+    const T* values = getValuesConst();
 
     bool skip_saving_empty = false ; // <-- formerly caused flakey segfaults when passing NULL values to aoba 
 
