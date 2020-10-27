@@ -16,6 +16,7 @@ set(SOURCES
     OpticksIdx.cc
 
     SensorLib.cc
+    MockSensorLib.cc
     MockSensorAngularEfficiencyTable.cc
 )
 
@@ -36,6 +37,7 @@ set(HEADERS
     OpticksIdx.hh
 
     SensorLib.hh
+    MockSensorLib.hh
     MockSensorAngularEfficiencyTable.hh 
 )
 

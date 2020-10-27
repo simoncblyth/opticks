@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "PLOG.hh"
 #include "NPY.hpp"
 #include "SensorLib.hh"
@@ -23,6 +25,11 @@ SensorLib::SensorLib(const char* dir)
     LOG(LEVEL);
 }
 
+unsigned SensorLib::getNumSensor() const 
+{
+    return m_sensor_num ; 
+}
+
 void SensorLib::save(const char* dir) const 
 {
     LOG(info) << dir ; 
@@ -32,6 +39,71 @@ void SensorLib::save(const char* dir) const
     if(m_sensor_angular_efficiency != NULL)
         m_sensor_angular_efficiency->save(dir, SENSOR_ANGULAR_EFFICIENCY );
 }
+
+
+std::string SensorLib::getShapeString() const 
+{
+    std::stringstream ss ; 
+    ss << "SensorLib"
+       << " sensor_num " << m_sensor_num 
+       << " sensor_data " << ( m_sensor_data ? m_sensor_data->getShapeString() : "-" )
+       << " sensor_angular_efficiency " << ( m_sensor_angular_efficiency ? m_sensor_angular_efficiency->getShapeString() : "-" )
+       ;
+    return ss.str(); 
+}
+
+
+void SensorLib::dump(const char* msg) const 
+{
+    dumpSensorData(msg);
+    dumpAngularEfficiency(msg);
+
+}
+
+void SensorLib::dumpSensorData(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    LOG(info) << getShapeString() ; 
+
+    float efficiency_1 ; 
+    float efficiency_2 ; 
+    int category ; 
+    int identifier ; 
+
+    int w = 12 ; 
+
+    std::cout 
+        << std::setw(w) << "sensorIndex" 
+        << " : "
+        << std::setw(w) << "efficiency_1" 
+        << " : "
+        << std::setw(w) << "efficiency_2"
+        << " : "
+        << std::setw(w) << "category"
+        << " : "
+        << std::setw(w) << "identifier"
+        << std::endl 
+        ;
+    
+    for(unsigned i=0 ; i < m_sensor_num ; i++)
+    {
+        unsigned sensorIndex = i ; 
+        getSensorData(sensorIndex, efficiency_1, efficiency_2, category, identifier);
+        std::cout 
+            << std::setw(w) << sensorIndex 
+            << " : "
+            << std::setw(w) << efficiency_1 
+            << " : "
+            << std::setw(w) << efficiency_2
+            << " : "
+            << std::setw(w) << category
+            << " : "
+            << std::setw(w) << identifier
+            << std::endl 
+            ;
+    }  
+}
+
 
 
 void SensorLib::initSensorData(unsigned sensor_num)
@@ -140,7 +212,65 @@ void SensorLib::setSensorAngularEfficiency( const NPY<float>* sensor_angular_eff
     m_sensor_angular_efficiency = sensor_angular_efficiency ;
 }
 
+void SensorLib::dumpAngularEfficiency(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    unsigned ni = m_sensor_angular_efficiency->getShape(0); 
+    unsigned nj = m_sensor_angular_efficiency->getShape(1); 
+    unsigned nk = m_sensor_angular_efficiency->getShape(2); 
 
+    unsigned num_cat = ni ; 
+    unsigned num_theta = nj ; 
+    unsigned num_phi   = nk ; 
+
+    LOG(info) 
+        << " num_cat " << num_cat  
+        << " num_theta " << num_theta  
+        << " num_phi " << num_phi  
+        ;
+
+    unsigned edgeitems = 8 ; 
+    unsigned w = 8 ; 
+
+    std::stringstream ss ; 
+
+
+    ss << " " << std::setw(3) << "" << "  " ; 
+    for(unsigned k=0 ; k < nk ; k++)
+    {
+        if( k < edgeitems || k > nk - edgeitems ) ss << std::setw(w) << k << " " ; 
+        else if( k == edgeitems )  ss << std::setw(w) << "..." << " " ;
+    }
+    std::string phi_labels = ss.str(); 
+
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        std::cout << " category " << i << std::endl ; 
+        std::cout << phi_labels << std::endl ; 
+ 
+        for(unsigned j=0 ; j < nj ; j++)
+        {
+            std::cout << "(" << std::setw(3) << j << ") " ; 
+
+            for(unsigned k=0 ; k < nk ; k++)
+            {
+                float value = m_sensor_angular_efficiency->getValue(i, j, k);             
+
+                if( k < edgeitems || k > nk - edgeitems )
+                {
+                    std::cout << std::setw(w) << value << " "  ; 
+                }
+                else if( k == edgeitems )
+                {
+                    std::cout << std::setw(w) << "..." << " "  ; 
+                }
+            }
+            std::cout << std::endl ; 
+        }
+        std::cout << phi_labels << std::endl ; 
+    } 
+}
 
 
 

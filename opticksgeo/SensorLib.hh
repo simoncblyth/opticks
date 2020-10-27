@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <vector>
+#include <string>
 #include "plog/Severity.h"
 template <typename T> class NPY ; 
 
@@ -24,6 +25,7 @@ class OKGEO_API SensorLib
         void initSensorData(unsigned sensor_num ); 
         void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int sensor_category, int sensor_identifier);
     public: 
+        unsigned getNumSensor() const ;
         void getSensorData(unsigned sensorIndex, float& efficiency_1, float& efficiency_2, int& category, int& identifier) const ;
         int  getSensorIdentifier(unsigned sensorIndex) const ;    
 
@@ -36,7 +38,10 @@ class OKGEO_API SensorLib
 
     public: 
         void save(const char* dir) const ;
-
+        std::string getShapeString() const ; 
+        void dump(const char* msg="SensorLib::dump") const ;
+        void dumpSensorData(const char* msg) const ;
+        void dumpAngularEfficiency(const char* msg) const ;
     private:
         bool          m_loaded ; 
         NPY<float>*   m_sensor_data ; 

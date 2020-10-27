@@ -10,6 +10,7 @@ set(TEST_SOURCES
 
     SensorLibTest.cc
     MockSensorAngularEfficiencyTableTest.cc
+    MockSensorLibTest.cc
 )
 
 set(FORMER_TEST_SOURCES
