@@ -21,7 +21,16 @@ class OXRAP_API OSensorLib
 public:
     static const plog::Severity LEVEL ; 
 public:
-    OSensorLib(optix::Context& ctx, SensorLib* sensorlib);
+    OSensorLib(OCtx* octx, SensorLib* sensorlib);
+    OCtx* getOCtx() const ;
+public:
+    unsigned getNumSensorCategories() const ;
+    unsigned getNumTheta() const ;
+    unsigned getNumPhi() const ;
+    unsigned getNumElem() const ;
+public:
+    int      getTexId(unsigned icat) const ;
+
 public:
     void convert();
 private:    
@@ -35,7 +44,7 @@ private:
     unsigned           m_num_theta ;
     unsigned           m_num_phi ;
     unsigned           m_num_elem ;
-    unsigned*          m_tex_id ; 
+    int*               m_tex_id ; 
 
 
 };

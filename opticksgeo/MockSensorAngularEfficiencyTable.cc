@@ -104,4 +104,3 @@ void MockSensorAngularEfficiencyTable::init()
 }
 
 
-

@@ -102,7 +102,17 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
     optix::Buffer buf = context->createBuffer(buffer_desc) ;  
 
     unsigned multiplicity = arr->getShape(-1) ;  // last shape dimension -> multiplicity -> buffer format
-    assert( multiplicity == 1 || multiplicity == 2 || multiplicity == 3 || multiplicity == 4 ); 
+
+    bool allowed_multiplicity =  multiplicity == 1 || multiplicity == 2 || multiplicity == 3 || multiplicity == 4 ; 
+
+    if(!allowed_multiplicity)
+        LOG(fatal) 
+            << " FATAL multiplicity is not allowed " << multiplicity 
+            << " shape " << arr->getShapeString()
+            << " key " << key 
+            ; 
+
+    assert( allowed_multiplicity ); 
     RTformat format = OFormat::ArrayType(arr); 
     buf->setFormat( format ); 
 

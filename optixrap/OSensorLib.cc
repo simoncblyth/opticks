@@ -7,9 +7,9 @@
 const plog::Severity OSensorLib::LEVEL = PLOG::EnvLevel("OSensorLib", "DEBUG"); 
 
 
-OSensorLib::OSensorLib(optix::Context& ctx, SensorLib* sensorlib)
+OSensorLib::OSensorLib(OCtx* octx, SensorLib* sensorlib)
     :    
-    m_octx(new OCtx((void*)ctx.get()->get())),
+    m_octx(octx),
     m_sensorlib(sensorlib),
     m_angular_efficiency(m_sensorlib->getSensorAngularEfficiencyArray()),
     m_num_dim(  m_angular_efficiency->getNumDimensions()),
@@ -17,11 +17,44 @@ OSensorLib::OSensorLib(optix::Context& ctx, SensorLib* sensorlib)
     m_num_theta(m_angular_efficiency->getShape(1)),
     m_num_phi(  m_angular_efficiency->getShape(2)),
     m_num_elem( m_angular_efficiency->getShape(3)),
-    m_tex_id( new unsigned[m_num_cat] )
+    m_tex_id( new int[m_num_cat] )
 {
     assert( m_num_dim == 4 ); 
     assert( m_num_cat < 10 ); 
     assert( m_num_elem == 1 ); 
+}
+
+unsigned OSensorLib::getNumSensorCategories() const 
+{
+    return m_num_cat ; 
+}
+unsigned OSensorLib::getNumTheta() const 
+{
+    return m_num_theta ; 
+}
+unsigned OSensorLib::getNumPhi() const 
+{
+    return m_num_phi ; 
+}
+unsigned OSensorLib::getNumElem() const 
+{
+    return m_num_elem ; 
+}
+
+
+
+
+
+
+int OSensorLib::getTexId(unsigned icat) const
+{
+    assert( icat < m_num_cat );   
+    return m_tex_id[icat] ;  
+}
+
+OCtx* OSensorLib::getOCtx() const 
+{
+    return m_octx ; 
 }
 
 void OSensorLib::convert()

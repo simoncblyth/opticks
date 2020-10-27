@@ -15,7 +15,6 @@ set(TEST_SOURCES
     OFormatTest.cc 
     OCtxTest.cc 
 
-    OSensorLibTest.cc 
 )
 
 
@@ -37,7 +36,7 @@ set(PAIRED_TEST_SOURCES  # tests with paired cc and cu
     interpolationTest.cc
     ORngTest.cc
 
-
+    OSensorLibTest.cc 
 )
 
 
