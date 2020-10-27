@@ -10,6 +10,7 @@ MockSensorAngularEfficiencyTable::MockSensorAngularEfficiencyTable( unsigned num
     m_num_sensor_cat(num_sensor_cat),
     m_num_theta_steps(num_theta_steps),
     m_num_phi_steps(num_phi_steps),
+    m_multiplicity(1),
 
     m_theta_min(0.f),
     m_theta_max(180.f),
@@ -77,10 +78,13 @@ void MockSensorAngularEfficiencyTable::init()
     unsigned ni = m_num_sensor_cat ;
     unsigned nj = m_num_theta_steps ;
     unsigned nk = m_num_phi_steps ;
+    unsigned nl = m_multiplicity ;  // GPU textures typically use 1 or 4 for the element multiplicity
+    assert( nl == 1 );              // as last dimension is one there is no need to loop over it 
 
     m_shape.push_back(ni);
     m_shape.push_back(nj);
     m_shape.push_back(nk);
+    m_shape.push_back(nl);
 
     m_values.resize(ni*nj*nk, 0.f); 
 

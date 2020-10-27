@@ -56,6 +56,7 @@ set(SOURCES
     OCtx.cc
     OTex.cc
     OBuffer.cc
+    OSensorLib.cc
 )
 
 set(HEADERS
@@ -101,6 +102,7 @@ set(HEADERS
     OCtx.hh
     OTex.hh
     OBuffer.hh
+    OSensorLib.hh
 )
 
 

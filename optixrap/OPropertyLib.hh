@@ -29,6 +29,7 @@ Subclasses include:
 * :doc:`OSourceLib`
 * :doc:`OScintillatorLib`
 
+Hmm this provides very little : maybe not worth burden of subclassing.
 **/
 
 

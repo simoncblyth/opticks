@@ -113,7 +113,8 @@ class NPY_API NPYBase {
        unsigned int getNumQuads() const ;  // product of all dimensions excluding the last, which must be 4 
        unsigned int getNumItems(int ifr=0, int ito=1) const;  // default ifr/ito=0/1 is size of 1st dimension
        unsigned int getNumElements() const ;   // size of last dimension
-       unsigned int getDimensions() const ;
+       unsigned int getNumDimensions() const ;
+       unsigned int getDimensions() const ;  // TODO: move all usage to getNumDimensions 
        std::string  getShapeString(unsigned int ifr=0) const ;
        unsigned int getShape(int dim) const ;
        unsigned long long getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;

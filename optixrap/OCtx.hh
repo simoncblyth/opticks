@@ -4,30 +4,46 @@
 OCtx
 -----
 
-Try to create a watertight wrapper for the underlying OptiX 
+This is experimenting with a watertight wrapper for the underlying OptiX 
 that strictly does not expose any OptiX types in its interface.
 Where some identity is needed have adopted the cheat of using "void*". 
 Approach inspired by C style opaque pointer
 
 * https://en.wikipedia.org/wiki/Opaque_pointer
 
+
+Adopting a pre-existing OptiX context
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When adopting a pre-existing OptiX context created at C++ level into OCtx 
+have to first peel back to the C-API in order to reach the bare pointer::
+
+   optix::Context context = optix::Context::create(); 
+   optix::ContextObj* contextObj = context.get(); 
+   RTcontext context_ptr = contextObj->get(); 
+   void* ptr = (void*)context_ptr ; 
+   OCtx octx(ptr); 
+
+   // in brief  
+   OCtx octx((void*)context.get()->get()); 
+
+Motivation
+~~~~~~~~~~~~~
+
+Attempting to hide the OptiX 6 to OptiX 7 API change is the eventual intention. 
+But that is not going to be straightforward as API 7 is so different to API 6.  
+Given the differences between the 6 and 7 APIs it makes little
+sense to wrap at a low levels. Instead need to aim for a higher level 
+wrapping, for example making an instance assembly in one call given an
+array of transforms and the geometry pointer etc..
+Will need to become proficient in 7 before can attempt to 
+fill out an implementation for it.
+
 Googling doesnt yield much help on this:
 
 * :google:`C++ library wrapper that does not expose underlying types`
 * :google:`C wrapper that does not expose underlying types`
 * https://en.wikipedia.org/wiki/Facade_pattern
-
-Clearly attempting to hide the OptiX 6 to OptiX 7 API change
-is the intention. But that is not going to be straightforward as
-API 7 is so different to API 6.  
-
-Given the differences between the 6 and 7 APIs it makes little
-sense to wrap at a low levels. Instead need to aim for a higher level 
-wrapping, for example making an instance assembly in one call given an
-array of transforms and the geometry pointer etc..
-
-Will need to become proficient in 7 before can attempt to 
-fill out an implementation for it.
 
 **/
 

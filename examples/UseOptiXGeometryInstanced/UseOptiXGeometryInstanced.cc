@@ -266,7 +266,7 @@ int main(int argc, char** argv)
 
     // no non-OCtx alternative
     const char* tex_config = "INDEX_NORMALIZED_COORDINATES" ;
-    unsigned tex_id = OCtx::Get()->upload_2d_texture("tex_param", inp, tex_config, -1);   // this uses OCtx internally 
+    unsigned tex_id = OCtx::Get()->upload_2d_texture("tex_param", inp, tex_config, -1); 
     LOG(info) << " tex_id " << tex_id ; 
 
 #ifdef USE_OCTX

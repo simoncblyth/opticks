@@ -14,7 +14,8 @@ set(TEST_SOURCES
     UseOptiXTest.cc 
     OFormatTest.cc 
     OCtxTest.cc 
-   
+
+    OSensorLibTest.cc 
 )
 
 

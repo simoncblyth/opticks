@@ -13,6 +13,7 @@ struct OKGEO_API MockSensorAngularEfficiencyTable
     unsigned m_num_sensor_cat ;  
     unsigned m_num_theta_steps ; 
     unsigned m_num_phi_steps ; 
+    unsigned m_multiplicity ; 
 
     float m_theta_min ;     
     float m_theta_max ;     

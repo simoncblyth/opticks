@@ -585,13 +585,6 @@ BUT when specifying the dimensions of the tex buffer it is necessary to use::
 
      texBuffer->setSize(width, height, depth) 
 
-NB do not like having optix::Context in the interface..  it is OK to 
-use that within the implementation but need to avoid having it 
-in the interface... but without it in the interface cannot return it 
-from the opaque type : so need to wrap absolutely everything ?
-
-* Can cheat with void* of course ?
-
 **/
 
 unsigned OCtx::upload_2d_texture(const char* param_key, const NPYBase* inp, const char* config, int item)

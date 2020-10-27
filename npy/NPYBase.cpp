@@ -463,7 +463,10 @@ const std::vector<int>& NPYBase::getShapeVector() const
     return getShape(m_shape.size()-1);
 }
 
-
+unsigned int NPYBase::getNumDimensions() const 
+{
+    return m_shape.size(); 
+}
  unsigned int NPYBase::getDimensions() const 
 {
     return m_shape.size();

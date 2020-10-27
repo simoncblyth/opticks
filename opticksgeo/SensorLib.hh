@@ -22,6 +22,8 @@ class OKGEO_API SensorLib
         static SensorLib* Load(const char* dir);  
     public: 
         SensorLib(const char* dir=NULL);
+        bool isValid() const ; 
+
         void initSensorData(unsigned sensor_num ); 
         void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int sensor_category, int sensor_identifier);
     public: 
@@ -36,6 +38,10 @@ class OKGEO_API SensorLib
 
         void setSensorAngularEfficiency( const NPY<float>* sensor_angular_efficiency );
 
+    public: 
+         // needed for OSensorLib
+         NPY<float>*        getSensorDataArray() const;
+         const NPY<float>*  getSensorAngularEfficiencyArray() const;
     public: 
         void save(const char* dir) const ;
         std::string getShapeString() const ; 

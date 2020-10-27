@@ -12,17 +12,23 @@ const char* SensorLib::SENSOR_ANGULAR_EFFICIENCY = "angularEfficiency.npy" ;
 SensorLib* SensorLib::Load(const char* dir)  // static 
 {
     LOG(info) << dir ; 
-    return new SensorLib(dir) ; 
+    SensorLib* sensorlib = new SensorLib(dir) ; 
+    return sensorlib->isValid() ? sensorlib : NULL ; 
 }
 
 SensorLib::SensorLib(const char* dir)
     :
     m_loaded(dir ? true : false),
     m_sensor_data(m_loaded ? NPY<float>::load(dir, SENSOR_DATA) :  NULL),
-    m_sensor_num(m_loaded ? m_sensor_data->getNumItems() : 0 ),
+    m_sensor_num(m_loaded && m_sensor_data != NULL ? m_sensor_data->getNumItems() : 0 ),
     m_sensor_angular_efficiency(m_loaded ? NPY<float>::load(dir, SENSOR_ANGULAR_EFFICIENCY) : NULL)
 {
     LOG(LEVEL);
+}
+
+bool SensorLib::isValid() const
+{
+    return m_sensor_data != NULL && m_sensor_angular_efficiency != NULL ; 
 }
 
 unsigned SensorLib::getNumSensor() const 
@@ -215,19 +221,29 @@ void SensorLib::setSensorAngularEfficiency( const NPY<float>* sensor_angular_eff
 void SensorLib::dumpAngularEfficiency(const char* msg) const 
 {
     LOG(info) << msg ; 
+
+    unsigned num_dimensions = m_sensor_angular_efficiency->getNumDimensions(); 
+    assert( num_dimensions == 4 ); 
+
     unsigned ni = m_sensor_angular_efficiency->getShape(0); 
     unsigned nj = m_sensor_angular_efficiency->getShape(1); 
     unsigned nk = m_sensor_angular_efficiency->getShape(2); 
+    unsigned nl = m_sensor_angular_efficiency->getShape(3); 
 
     unsigned num_cat = ni ; 
     unsigned num_theta = nj ; 
     unsigned num_phi   = nk ; 
+    unsigned num_elem = nl ;   // multiplicity 
+
 
     LOG(info) 
         << " num_cat " << num_cat  
         << " num_theta " << num_theta  
         << " num_phi " << num_phi  
+        << " num_elem " << num_elem  
         ;
+
+    assert( num_elem == 1 ); 
 
     unsigned edgeitems = 8 ; 
     unsigned w = 8 ; 
@@ -273,9 +289,6 @@ void SensorLib::dumpAngularEfficiency(const char* msg) const
 }
 
 
-
-
-/*
 NPY<float>*  SensorLib::getSensorDataArray() const
 {
     return m_sensor_data ;
@@ -284,6 +297,8 @@ const NPY<float>*  SensorLib::getSensorAngularEfficiencyArray() const
 {
     return m_sensor_angular_efficiency ;
 }
+
+/*
 template <typename T>
 void SensorLib::setSensorAngularEfficiencyMeta( const char* key, T value )
 {

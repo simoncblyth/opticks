@@ -18,6 +18,12 @@ int main(int argc, char** argv)
 
     SensorLib* senlib2 = SensorLib::Load(dir) ;  
 
+    if( senlib2 == NULL )
+    {
+        LOG(fatal) << " FAILED to load from " << dir ; 
+        return 0 ; 
+    }
+
     assert( senlib2->getNumSensor() == num_sensor ); 
 
     senlib2->dump("MockSensorLibTest"); 
