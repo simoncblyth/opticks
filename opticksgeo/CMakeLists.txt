@@ -15,6 +15,7 @@ set(SOURCES
     OpticksGun.cc
     OpticksIdx.cc
 
+    MockSensorAngularEfficiencyTable.cc
 )
 
 set(FORMER_SOURCES
@@ -32,6 +33,8 @@ set(HEADERS
     OpticksGen.hh
     OpticksGun.hh
     OpticksIdx.hh
+
+    MockSensorAngularEfficiencyTable.hh 
 )
 
 set(FORMER_HEADERS

@@ -14,7 +14,7 @@ int main(int argc, char** argv)
   
     NPY<float>* arr = tab.getArray(); 
 
-    const char* path = "$TMP/G4OK/tests/MockSensorAngularEfficiencyTableTest.npy" ;
+    const char* path = "$TMP/opticksgeo/tests/MockSensorAngularEfficiencyTableTest.npy" ;
     LOG(info) << " save to " << path ;  
     arr->save(path); 
 

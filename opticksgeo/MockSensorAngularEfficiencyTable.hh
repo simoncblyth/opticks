@@ -4,9 +4,9 @@
 #include "plog/Severity.h"
 template <typename T> class NPY ; 
 
-#include "G4OK_API_EXPORT.hh"
+#include "OKGEO_API_EXPORT.hh"
 
-struct G4OK_API MockSensorAngularEfficiencyTable
+struct OKGEO_API MockSensorAngularEfficiencyTable
 {
     static const plog::Severity LEVEL ;  
 

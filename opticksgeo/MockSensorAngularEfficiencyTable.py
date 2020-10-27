@@ -8,7 +8,7 @@
 """
 import os, numpy as np
 os.environ.setdefault('TMP',os.path.expandvars("/tmp/$USER/opticks"))
-path = os.path.expandvars("$TMP/G4OK/tests/MockSensorAngularEfficiencyTableTest.npy")
+path = os.path.expandvars("$TMP/opticksgeo/tests/MockSensorAngularEfficiencyTableTest.npy")
 
 a = np.load(path)
 assert len(a.shape) == 3 
