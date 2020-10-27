@@ -27,13 +27,14 @@ Convenience functions to reading properties from the boundary texture.
 
 The boundary texture is constructed from material and surface 
 properties collected into ggeo/GBndLib and then converted into 
-a GPU texture by optixrap/OBndLib.
+a GPU texture by optixrap/OBndLib::convert
 
 * see cu/boundaryLookupTest.cu for usage and testing
 
 
 **/
 
+// just some BOUNDARY_ defines specifying boundary texture shape
 #include "GPropertyLib.hh"
 
 rtTextureSampler<float4, 2>  boundary_texture ;

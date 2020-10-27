@@ -26,9 +26,9 @@
 const plog::Severity OCtx::LEVEL = PLOG::EnvLevel("OCtx", "DEBUG"); 
 OCtx* OCtx::INSTANCE = NULL ; 
 
-OCtx::OCtx()
+OCtx::OCtx(void* ptr)
     :
-    context_ptr(init())
+    m_context_ptr(ptr ? ptr :  init())
 {
 }
 
@@ -41,7 +41,6 @@ void* OCtx::init()
     context->setPrintBufferSize(4096);
     context->setEntryPointCount(1);
 
-    context_ptr = context->get() ;  
     optix::ContextObj* contextObj = context.get(); 
     RTcontext contextPtr = contextObj->get(); 
     void* ptr = contextPtr ; 
@@ -56,12 +55,12 @@ OCtx* OCtx::Get()  // static
 
 void* OCtx::ptr()
 {
-    return context_ptr ; 
+    return m_context_ptr ; 
 }
 
 bool OCtx::has_variable( const char* key )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Variable var = context->queryVariable(key); 
     return var.get() != NULL ; 
 }
@@ -81,7 +80,7 @@ which must be 1,2,3 or 4.
 void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item )
 {
     LOG(LEVEL) << "[" ; 
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     unsigned buffer_type = 0 ; 
     switch(type)
     {
@@ -196,7 +195,7 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
 
 void* OCtx::get_buffer( const char* key )
 { 
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     assert( has_variable(key) ); 
     optix::Buffer buf = context[key]->getBuffer(); 
     optix::BufferObj* bufObj = buf.get();  
@@ -207,7 +206,7 @@ void* OCtx::get_buffer( const char* key )
 
 void OCtx::desc_buffer( void* buffer_ptr )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     RTbuffer bufPtr = (RTbuffer)buffer_ptr ;  // recovering the buffer from the void* ptr 
     optix::Buffer buf = optix::Buffer::take(bufPtr) ;
     unsigned nd = buf->getDimensionality(); 
@@ -233,7 +232,7 @@ void OCtx::desc_buffer( void* buffer_ptr )
 void OCtx::upload_buffer( const NPYBase* arr, void* buffer_ptr, int item )
 {
     LOG(LEVEL) << "[ " << item  ; 
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     RTbuffer bufPtr = (RTbuffer)buffer_ptr ;  // recovering the buffer from the void* ptr 
     optix::Buffer buf = optix::Buffer::take(bufPtr) ;
 
@@ -255,7 +254,7 @@ void OCtx::upload_buffer( const NPYBase* arr, void* buffer_ptr, int item )
 
 void OCtx::download_buffer( NPYBase* arr, const char* key, int item)
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     bool exists = has_variable( key ); 
     if(!exists) LOG(fatal) << "no buffer in context with key " << key  ; 
     assert(exists); 
@@ -279,7 +278,7 @@ void OCtx::download_buffer( NPYBase* arr, const char* key, int item)
 
 void OCtx::set_raygen_program( unsigned entry_point_index, const char* ptx_path, const char* func )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Program program = context->createProgramFromPTXFile( ptx_path, func ) ; 
     context->setRayGenerationProgram( entry_point_index,  program );
 }
@@ -287,14 +286,14 @@ void OCtx::set_raygen_program( unsigned entry_point_index, const char* ptx_path,
 
 void OCtx::set_exception_program( unsigned entry_point_index, const char* ptx_path, const char* func )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Program program = context->createProgramFromPTXFile( ptx_path, func ) ; 
     context->setExceptionProgram( entry_point_index,  program );
 }
 
 void OCtx::set_miss_program( unsigned entry_point_index, const char* ptx_path, const char* func )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Program program = context->createProgramFromPTXFile( ptx_path, func ) ; 
     context->setMissProgram( entry_point_index,  program );
 }
@@ -303,7 +302,7 @@ void OCtx::set_miss_program( unsigned entry_point_index, const char* ptx_path, c
 void* OCtx::create_geometry(unsigned prim_count, const char* ptxpath, const char* bounds_func, const char* intersect_func )
 {
     LOG(LEVEL) << "[" ; 
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Geometry geom = context->createGeometry();
     geom->setPrimitiveCount( prim_count );
     LOG(LEVEL) << "[ ptxpath " << ptxpath ; 
@@ -324,7 +323,7 @@ void* OCtx::create_geometry(unsigned prim_count, const char* ptxpath, const char
 
 void* OCtx::create_material(const char* ptxpath, const char* closest_hit_func, unsigned entry_point_index )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Material mat = context->createMaterial();
     LOG(LEVEL) << "[ compile ch " ;
     optix::Program ch = context->createProgramFromPTXFile( ptxpath, closest_hit_func ) ;     
@@ -339,7 +338,7 @@ void* OCtx::create_material(const char* ptxpath, const char* closest_hit_func, u
 
 void* OCtx::create_geometryinstance(void* geo_ptr, void* mat_ptr)
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Geometry geo = optix::Geometry::take((RTgeometry)geo_ptr);   
     optix::Material mat = optix::Material::take((RTmaterial)mat_ptr);   
     optix::GeometryInstance gi = context->createGeometryInstance( geo, &mat, &mat+1 ) ;
@@ -359,7 +358,7 @@ void* OCtx::create_geometrygroup(const void* gi_ptr)
 
 void* OCtx::create_geometrygroup(const std::vector<const void*>& v_gi_ptr)
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::GeometryGroup gg = context->createGeometryGroup();
     unsigned ngi = v_gi_ptr.size(); 
     gg->setChildCount(ngi);
@@ -378,7 +377,7 @@ void* OCtx::create_geometrygroup(const std::vector<const void*>& v_gi_ptr)
 
 void* OCtx::create_acceleration( const char* accel )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Acceleration acc = context->createAcceleration(accel); 
     optix::AccelerationObj* accObj = acc.get(); 
     RTacceleration accPtr = accObj->get(); 
@@ -388,7 +387,7 @@ void* OCtx::create_acceleration( const char* accel )
 
 void OCtx::set_geometrygroup_acceleration(void* geometrygroup_ptr, void* ac_ptr )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::GeometryGroup gg = optix::GeometryGroup::take((RTgeometrygroup)geometrygroup_ptr); 
     optix::Acceleration  accel = optix::Acceleration::take((RTacceleration)ac_ptr) ; 
     gg->setAcceleration(accel); 
@@ -396,7 +395,7 @@ void OCtx::set_geometrygroup_acceleration(void* geometrygroup_ptr, void* ac_ptr 
 
 void OCtx::set_group_acceleration(void* group_ptr, void* ac_ptr )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Group         group = optix::Group::take((RTgroup)group_ptr); 
     optix::Acceleration  accel = optix::Acceleration::take((RTacceleration)ac_ptr) ; 
     group->setAcceleration(accel); 
@@ -404,7 +403,7 @@ void OCtx::set_group_acceleration(void* group_ptr, void* ac_ptr )
 
 void OCtx::set_geometrygroup_context_variable( const char* key, void* gg_ptr )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::GeometryGroup gg = optix::GeometryGroup::take((RTgeometrygroup)gg_ptr); 
     context[key]->set(gg) ;  
 }
@@ -413,37 +412,37 @@ void OCtx::set_geometrygroup_context_variable( const char* key, void* gg_ptr )
 
 void OCtx::compile()
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     context->compile(); 
 }
 
 void OCtx::validate()
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     context->validate(); 
 }
 
 void OCtx::launch(unsigned entry_point_index, unsigned width, unsigned height, unsigned depth)
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     context->launch(entry_point_index, width, height, depth); 
 }
 
 void OCtx::launch(unsigned entry_point_index, unsigned width, unsigned height)
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     context->launch(entry_point_index, width, height); 
 }
 
 void OCtx::launch(unsigned entry_point_index, unsigned width)
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     context->launch(entry_point_index, width); 
 }
 
 void OCtx::launch_instrumented( unsigned entry_point_index, unsigned width, unsigned height, double& t_prelaunch, double& t_launch  )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     LOG(LEVEL) << "[" ; 
 
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -473,7 +472,7 @@ void OCtx::launch_instrumented( unsigned entry_point_index, unsigned width, unsi
 unsigned OCtx::create_texture_sampler( void* buffer_ptr, const char* config )
 {
     LOG(LEVEL) << "["; 
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     RTbuffer bufPtr = (RTbuffer)buffer_ptr ;  
     optix::Buffer buffer = optix::Buffer::take(bufPtr) ;
     unsigned nd = buffer->getDimensionality() ;    
@@ -545,7 +544,7 @@ unsigned OCtx::create_texture_sampler( void* buffer_ptr, const char* config )
 
 void OCtx::set_texture_param( void* buffer_ptr, unsigned tex_id, const char* param_key )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     RTbuffer bufPtr = (RTbuffer)buffer_ptr ;  
     optix::Buffer buffer = optix::Buffer::take(bufPtr) ;
     unsigned nd = buffer->getDimensionality() ;    
@@ -620,19 +619,19 @@ void OCtx::set_geometry_float3( void* geometry_ptr, const char* key, float x, fl
 
 void OCtx::set_context_float4( const char* key, float x, float y, float z, float w )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     context[key]->setFloat(optix::make_float4(x, y, z, w));
 }
 
 void OCtx::set_context_int4( const char* key, int x, int y, int z, int w )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     context[key]->setInt(optix::make_int4(x, y, z, w));
 }
 
 void OCtx::set_context_int( const char* key, int x )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     context[key]->setInt(x);
 }
 
@@ -642,7 +641,7 @@ void OCtx::set_context_int( const char* key, int x )
 
 void OCtx::set_context_viewpoint( const glm::vec3& eye, const glm::vec3& U,  const glm::vec3& V, const glm::vec3& W, const float scene_epsilon )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     context[ "scene_epsilon"]->setFloat( scene_epsilon );
     context[ "eye"]->setFloat( eye.x, eye.y, eye.z  );  
     context[ "U"  ]->setFloat( U.x, U.y, U.z  );  
@@ -653,7 +652,7 @@ void OCtx::set_context_viewpoint( const glm::vec3& eye, const glm::vec3& U,  con
 
 void* OCtx::create_transform( bool transpose, const float* m44, const float* inverse_m44 )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Transform xform = context->createTransform();
     xform->setMatrix(transpose, m44, inverse_m44);
 
@@ -665,7 +664,7 @@ void* OCtx::create_transform( bool transpose, const float* m44, const float* inv
 
 void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_ptr, const void* material_ptr )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Geometry geo = optix::Geometry::take((RTgeometry)geometry_ptr);   
     optix::Material mat = optix::Material::take((RTmaterial)material_ptr);   
     optix::Group assembly = context->createGroup();
@@ -742,7 +741,7 @@ void* OCtx::create_instanced_assembly( const NPY<float>* transforms, const void*
 
     const char* accel = "Trbvh" ; 
 
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Geometry geo = optix::Geometry::take((RTgeometry)geometry_ptr);   
     optix::Material mat = optix::Material::take((RTmaterial)material_ptr);   
    
@@ -797,7 +796,7 @@ void* OCtx::create_instanced_assembly( const NPY<float>* transforms, const void*
 
 void* OCtx::create_group( const char* key, const void* child_group_ptr )
 {
-    optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Group group = context->createGroup() ;
     if(key)
     {
@@ -817,7 +816,7 @@ void* OCtx::create_group( const char* key, const void* child_group_ptr )
 
 void OCtx::group_add_child_group( void* group_ptr , void* child_group_ptr )
 {
-    //optix::Context context = optix::Context::take((RTcontext)context_ptr); 
+    //optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Group group = optix::Group::take((RTgroup)group_ptr); 
     optix::Group child = optix::Group::take((RTgroup)child_group_ptr); 
     group->addChild(child);
