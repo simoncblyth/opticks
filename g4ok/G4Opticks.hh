@@ -36,6 +36,8 @@ class GGeo ;
 class GPho ; 
 class GBndLib ; 
 
+class SensorLib ; 
+
 class CTraverser ; 
 class CMaterialTable ; 
 class CGenstepCollector ; 
@@ -120,33 +122,17 @@ class G4OK_API G4Opticks
         unsigned getNumDistinctPlacementCopyNo() const  ; 
 
     public:
+        // via SensorLib 
         void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int sensor_category, int sensor_identifier);
         void getSensorData(unsigned sensorIndex, float& efficiency_1, float& efficiency_2, int& category, int& identifier) const ;
         int  getSensorIdentifier(unsigned sensorIndex) const ;
-
-        template <typename T> void setSensorDataMeta( const char* key, T value );
-
-        void saveSensorData(const char* path) const ; 
-        void saveSensorData(const char* dir, const char* name) const ; 
     public:
-
-        static const NPY<float>*  
-            MakeSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& values,
-                                         int theta_steps=181, float theta_min=0.f, float theta_max=180.f, 
-                                         int phi_steps=1,   float phi_min=0.f, float phi_max=360.f );
-
+        // via SensorLib
         void setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& values, 
                                          int theta_steps=181, float theta_min=0.f, float theta_max=180.f, 
                                          int phi_steps=1,   float phi_min=0.f, float phi_max=360.f );
-
         void setSensorAngularEfficiency( const NPY<float>* sensor_angular_efficiency );
-
-        //template <typename T> void setSensorAngularEfficiencyMeta( const char* key, T value );
-    public:
-        NPY<float>*  getSensorDataArray() const ;
-        const NPY<float>*  getSensorAngularEfficiencyArray() const ;
-    public:
-        void saveSensorArrays(const char* dir) const ; 
+        void saveSensorLib(const char* dir) const ;
     public:
         void setGeometry(const G4VPhysicalVolume* world); 
         void setGeometry(const char* gdmlpath);
@@ -158,7 +144,6 @@ class G4OK_API G4Opticks
         void setGeometry(const GGeo* ggeo); 
     private:
         GGeo* translateGeometry( const G4VPhysicalVolume* top );
-        void initSensorData(unsigned sensor_num);
 
         void standardizeGeant4MaterialProperties();
         void createCollectors();
@@ -352,9 +337,8 @@ class G4OK_API G4Opticks
         bool                       m_gpu_propagate ;  
     private:
         std::vector<G4PVPlacement*> m_sensor_placements ;
-        unsigned                    m_sensor_num ; 
-        NPY<float>*                 m_sensor_data ; 
-        const NPY<float>*           m_sensor_angular_efficiency ; 
+        SensorLib*                  m_sensorlib ; 
+
     private:
         static G4Opticks*          fInstance;
 

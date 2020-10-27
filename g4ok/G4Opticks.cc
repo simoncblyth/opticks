@@ -45,6 +45,7 @@
 #include "OpticksPhoton.h"
 #include "OpticksGenstep.h"
 #include "OpticksGenstep.hh"
+#include "SensorLib.hh"
 
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
@@ -215,9 +216,7 @@ G4Opticks::G4Opticks()
     m_g4evt(NULL),
     m_g4hit(NULL),
     m_gpu_propagate(true),
-    m_sensor_num(0),
-    m_sensor_data(NULL),
-    m_sensor_angular_efficiency(NULL)  
+    m_sensorlib(NULL)
 {
     assert( fInstance == NULL ); 
     fInstance = this ; 
@@ -282,9 +281,7 @@ std::string G4Opticks::dbgdesc_() const
        << std::setw(32) << " m_g4evt "                        << std::setw(12) << m_g4evt << std::endl 
        << std::setw(32) << " m_g4hit "                        << std::setw(12) << m_g4hit << std::endl 
        << std::setw(32) << " m_gpu_propagate "                << std::setw(12) << m_gpu_propagate << std::endl  
-       << std::setw(32) << " m_sensor_num "                   << std::setw(12) << m_sensor_num << std::endl  
-       << std::setw(32) << " m_sensor_data "                  << std::setw(12) << m_sensor_data << std::endl  
-       << std::setw(32) << " m_sensor_angular_efficiency "    << std::setw(12) << m_sensor_angular_efficiency << std::endl  
+       << std::setw(32) << " m_sensorlib "                    << std::setw(12) << m_sensorlib << std::endl  
        ;
     std::string s = ss.str(); 
     return s ; 
@@ -409,6 +406,10 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     bool loaded = ggeo->isLoadedFromCache() ; 
     unsigned num_sensor = ggeo->getNumSensorVolumes(); 
 
+    m_sensorlib = new SensorLib(); 
+    m_sensorlib->initSensorData(num_sensor);   
+
+
     if( loaded == false )
     {
         bool outer_volume = true ; 
@@ -421,8 +422,6 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
         << ( loaded ? "LOADED FROM CACHE " : "LIVE TRANSLATED " )  
         << " num_sensor " << num_sensor 
         ;
- 
-    initSensorData(num_sensor);   
 
     m_ggeo = ggeo ;
     m_blib = m_ggeo->getBndLib();  
@@ -526,23 +525,6 @@ unsigned G4Opticks::getNumDistinctPlacementCopyNo() const
 
 
 /**
-G4Opticks::initSensorData
----------------------------
-
-Invoked from G4Opticks::setGeometry(const GGeo*)
-
-**/
-
-void G4Opticks::initSensorData(unsigned sensor_num)
-{
-    LOG(LEVEL) << " sensor_num " << sensor_num  ;
-    m_sensor_num = sensor_num ;  
-    m_sensor_data = NPY<float>::make(m_sensor_num, 4); 
-    m_sensor_data->zero(); 
-}
-
-
-/**
 G4Opticks::setSensorData
 ---------------------------
 
@@ -570,47 +552,22 @@ identifier
 
 void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int category, int identifier)
 {
-    assert( sensorIndex < m_sensor_num ); 
-    m_sensor_data->setFloat(sensorIndex,0,0,0, efficiency_1);
-    m_sensor_data->setFloat(sensorIndex,1,0,0, efficiency_2);
-    m_sensor_data->setInt(  sensorIndex,2,0,0, category);
-    m_sensor_data->setInt(  sensorIndex,3,0,0, identifier);
+    assert( m_sensorlib ); 
+    m_sensorlib->setSensorData(sensorIndex, efficiency_1, efficiency_2, category, identifier); 
 }
-
-void G4Opticks::saveSensorData(const char* path) const 
-{
-    m_sensor_data->save(path); 
-}
-void G4Opticks::saveSensorData(const char* dir, const char* name) const 
-{
-    m_sensor_data->save(dir, name); 
-}
-
 
 void G4Opticks::getSensorData(unsigned sensorIndex, float& efficiency_1, float& efficiency_2, int& category, int& identifier) const 
 {
-    assert( sensorIndex < m_sensor_num ); 
-    assert( m_sensor_data ); 
-    efficiency_1 = m_sensor_data->getFloat(sensorIndex,0,0,0); 
-    efficiency_2 = m_sensor_data->getFloat(sensorIndex,1,0,0); 
-    category = m_sensor_data->getInt(sensorIndex,2,0,0);
-    identifier = m_sensor_data->getInt(sensorIndex,3,0,0);
+    assert( m_sensorlib ); 
+    m_sensorlib->getSensorData(sensorIndex, efficiency_1, efficiency_2, category, identifier);
 }
 
 int G4Opticks::getSensorIdentifier(unsigned sensorIndex) const 
 {
-    assert( sensorIndex < m_sensor_num ); 
-    assert( m_sensor_data ); 
-    return m_sensor_data->getInt( sensorIndex, 3, 0, 0); 
+    assert( m_sensorlib ); 
+    return m_sensorlib->getSensorIdentifier(sensorIndex);
 }
 
-
-template <typename T>
-void G4Opticks::setSensorDataMeta( const char* key, T value )
-{
-    assert( m_sensor_data ); 
-    m_sensor_data->setMeta<T>( key, value ); 
-}
 
 /**
 G4Opticks::setSensorAngularEfficiency
@@ -618,90 +575,30 @@ G4Opticks::setSensorAngularEfficiency
 
 Invoked from detector specific code, eg LSExpDetectorConstruction::SetupOpticks
 
-
 **/
 
 void G4Opticks::setSensorAngularEfficiency( const std::vector<int>& shape, const std::vector<float>& values, 
         int theta_steps, float theta_min, float theta_max, 
         int phi_steps,   float phi_min, float phi_max )
 {
-    LOG(LEVEL) << "[" ; 
-    const NPY<float>* a = MakeSensorAngularEfficiency(shape, values, theta_steps, theta_min, theta_max, phi_steps, phi_min, phi_max) ; 
-    setSensorAngularEfficiency(a); 
-    LOG(LEVEL) << "]" ; 
+    assert(m_sensorlib);
+    m_sensorlib->setSensorAngularEfficiency(shape, values, 
+        theta_steps, theta_min, theta_max, 
+        phi_steps, phi_min, phi_max
+    );
 }
-
-
-const NPY<float>*  G4Opticks::MakeSensorAngularEfficiency(const std::vector<int>& shape, const std::vector<float>& values, 
-                  int theta_steps, float theta_min, float theta_max,  int phi_steps,   float phi_min, float phi_max )   // static
-{
-    std::string metadata = "" ; 
-    NPY<float>* a = new NPY<float>(shape, values, metadata); 
-    a->setMeta<int>("theta_steps", theta_steps); 
-    a->setMeta<float>("theta_min", theta_min); 
-    a->setMeta<float>("theta_max", theta_max);
-    a->setMeta<int>("phi_steps", phi_steps); 
-    a->setMeta<float>("phi_min", phi_min); 
-    a->setMeta<float>("phi_max", phi_max);
- 
-    return a ; 
-}
-
-
 
 void G4Opticks::setSensorAngularEfficiency( const NPY<float>* sensor_angular_efficiency )
 {
-    m_sensor_angular_efficiency = sensor_angular_efficiency ;
+    assert( m_sensorlib ); 
+    m_sensorlib->setSensorAngularEfficiency( sensor_angular_efficiency ); 
 }
 
-
-/*
-template <typename T>
-void G4Opticks::setSensorAngularEfficiencyMeta( const char* key, T value )
+void G4Opticks::saveSensorLib(const char* dir) const 
 {
-    assert( m_sensor_angular_efficiency ); 
-    m_sensor_angular_efficiency->setMeta<T>( key, value ); 
+    LOG(info) << " saving to " << dir ;  
+    m_sensorlib->save(dir); 
 }
-*/
-
-
-NPY<float>*  G4Opticks::getSensorDataArray() const
-{
-    return m_sensor_data ; 
-}
-const NPY<float>*  G4Opticks::getSensorAngularEfficiencyArray() const
-{
-    return m_sensor_angular_efficiency ; 
-}
-
-
-
-
-
-void G4Opticks::saveSensorArrays(const char* dir) const 
-{
-    LOG(info) << dir ; 
-
-    if(m_sensor_data != NULL)
-    {
-        m_sensor_data->save(dir, "sensorData.npy"); 
-    }
-    else
-    {
-        LOG(warning) << " m_sensor_data NULL " ; 
-    }
-
-    if(m_sensor_angular_efficiency != NULL)
-    {
-        m_sensor_angular_efficiency->save(dir,"angularEfficiency.npy" ); 
-    }
-    else
-    {
-        LOG(warning) << " m_sensor_angular_efficiency NULL " ; 
-    }
-}
-
-
 
 
 
@@ -1474,18 +1371,6 @@ void G4Opticks::collectHit
      ) ;
 }
  
-
-
-template G4OK_API void G4Opticks::setSensorDataMeta(const char* key, int value);
-template G4OK_API void G4Opticks::setSensorDataMeta(const char* key, float value);
-template G4OK_API void G4Opticks::setSensorDataMeta(const char* key, std::string value);
-
-/*
-template G4OK_API void G4Opticks::setSensorAngularEfficiencyMeta(const char* key, int value);
-template G4OK_API void G4Opticks::setSensorAngularEfficiencyMeta(const char* key, float value);
-template G4OK_API void G4Opticks::setSensorAngularEfficiencyMeta(const char* key, std::string value);
-*/
-
 
 
 

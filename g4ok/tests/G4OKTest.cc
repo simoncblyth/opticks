@@ -177,15 +177,18 @@ void G4OKTest::initSensorData()
 
         m_g4ok->setSensorData( sensor_index, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
     }
+
+/*
     std::string SensorCategoryList = "placeholder" ; 
     m_g4ok->setSensorDataMeta<std::string>("SensorCategoryList", SensorCategoryList);
-    
+*/  
+  
     LOG(info) << "] setSensorData num_sensor " << num_sensor ; 
 
 
-    const char* path = "$TMP/G4OKTest/sensorData.npy" ; 
-    m_g4ok->saveSensorData(path); 
-    LOG(info) << "saveSensorData to " << path ; 
+    const char* dir = "$TMP/G4OKTest/SensorLib" ; 
+    m_g4ok->saveSensorLib(dir); 
+    LOG(info) << "saveSensorLib to directory: " << dir ; 
 
     LOG(info) << m_g4ok->dbgdesc() ; 
 }
