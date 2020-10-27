@@ -51,16 +51,20 @@ class CMakeLists(object):
            pass
        return obo_found
 
-   def __init__(self, lines, reldir=None, path=None, tag=None):
+   def __init__(self, lines, reldir=None, path=None, tag=None, precursor=None):
        self.lines = lines 
        self.reldir = reldir
        self.path = path
        self.tag = tag
+       self.precursor = precursor
        self.name = None
        self.deps = []
        self.parse()
   
    def parse(self):
+       """
+       Parse lines from a single CMakeList.txt
+       """
        obo_found = False
        for line in self.lines:
            if line.startswith(self.obo_txt):
@@ -69,8 +73,7 @@ class CMakeLists(object):
            name_match = self.name_ptn.match(line)
            find_match = self.find_ptn.match(line)
            if name_match:
-               name = name_match.groupdict()['name']
-               self.name = name
+               self.name = name_match.groupdict()['name']
            elif find_match:
                findargs = find_match.groupdict()['findargs']  
                self.deps.append(Dependent(findargs))
@@ -84,8 +87,14 @@ class CMakeLists(object):
        pass
        assert obo_found, "missing obo for %s " % self.reldir  
 
+
+   FMT = "%13s : %13s : %13s : %13s : %s "
+   @classmethod
+   def columns(cls):
+       return cls.FMT % ( "API_TAG", "reldir", "bash-", "Proj.name", "dep Proj.names" ) 
+
    def __repr__(self):
-       return "%15s : %20s : %20s : %s " % (  self.tag, self.reldir, self.name, " ".join(map(lambda _:_.name, self.deps)) )
+       return self.FMT  % (  self.tag, self.reldir, self.precursor, self.name, " ".join(map(lambda _:_.name, self.deps)) )
 
    def _get_tree(self):
        return "\n".join([self.name] + map(lambda _:"    %s" % _.name, self.deps))
@@ -138,6 +147,17 @@ class OpticksCMakeProj(object):
         return tag 
 
     @classmethod
+    def find_bash_precursor(cls, names):
+        tail = ".bash" 
+        names = list(filter(lambda _:_.endswith(tail), names))
+        stems = list(map(lambda _:_[:-len(tail)], names))
+        stems = list(filter(lambda _:not _.endswith("dev"),stems)) 
+        stems = list(filter(lambda _:not _.endswith("x4gen"),stems)) 
+        precursor = stems[0] if len(stems) == 1 else None
+        return precursor
+
+
+    @classmethod
     def read_pkgs(cls, home=None):
         if home is None:
             home = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -150,6 +170,7 @@ class OpticksCMakeProj(object):
                 reldir = dirpath[len(home)+1:]
                 path = os.path.join(dirpath, CMakeLists.NAME)
                 tag = cls.find_export_tag(names)
+                precursor = cls.find_bash_precursor(names)
                 lines = list(map(str.strip, open(path,"r").readlines() ))
 
                 has_obo = CMakeLists.HasOpticksBuildOptions(lines)
@@ -158,7 +179,7 @@ class OpticksCMakeProj(object):
                     continue
                 pass
 
-                ls = CMakeLists(lines, reldir=reldir, path=path, tag=tag)
+                ls = CMakeLists(lines, reldir=reldir, path=path, tag=tag, precursor=precursor)
                 pkgs[ls.name] = ls
                 log.debug(repr(ls))
             else:
@@ -205,6 +226,9 @@ class OpticksCMakeProj(object):
 
 
     def __call__(self, args):
+        if args.dump:
+            print("%3s %s " % ("", CMakeLists.columns()))
+        pass
         for k in self.keys:
             ls = self.pkgs[k]
             if args.subdirs:
@@ -216,9 +240,9 @@ class OpticksCMakeProj(object):
             elif args.tree:
                 print(ls.tree)
             elif args.dump:
-                print(repr(ls))
-            else:
                 print("%3s %s " % ( self.order.get(k,1000), repr(ls) ))
+            else:
+                pass
             pass
         pass
 
@@ -233,7 +257,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(     "--home",  default=None, help="Project home, eg OPTICKS_HOME " )
-    parser.add_argument(     "--dump",  action="store_true", help="Dump CMakeLists repr" )
+    parser.add_argument(     "--dump",  action="store_true", default=True, help="Dump CMakeLists repr" )
     parser.add_argument(     "--tree",  action="store_true", help="Dump tree" )
     parser.add_argument(     "--subdirs",  action="store_true", help="Dump just the subdirs" )
     parser.add_argument(     "--tags",  action="store_true", help="Dump just the tags" )
