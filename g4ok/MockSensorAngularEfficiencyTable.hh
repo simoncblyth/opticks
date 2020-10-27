@@ -27,7 +27,7 @@ struct G4OK_API MockSensorAngularEfficiencyTable
     NPY<float>*        m_array ; 
 
     // when no phi-dependency use phi_steps=1 
-    MockSensorAngularEfficiencyTable(unsigned sensor_cat, unsigned theta_steps, unsigned phi_steps );
+    MockSensorAngularEfficiencyTable(unsigned sensor_cat, unsigned theta_steps, unsigned phi_steps=1 );
     void init() ; 
 
 

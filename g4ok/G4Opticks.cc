@@ -99,7 +99,7 @@ Steps:
 
 As unfettered access to the commandline is not really practical in production running 
 where the commandline is used by the host application the use of parse_cmdline=true 
-by embedded Opticks should be regarded as a temporary kludge during devlopment 
+by embedded Opticks should be regarded as a temporary kludge during development 
 that will not be available in production.
 
 **/
