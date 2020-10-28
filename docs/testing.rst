@@ -69,15 +69,22 @@ as the geocache is composed of binary .npy files they are fast to load and uploa
 Near to the end of the logging from geocache creation you should find output 
 similar to the below which reports the OPTICKS_KEY value of the geometry::
 
-    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@755]  ok.idpath  /home/blyth/local/opticks/geocache/OKX4Test_lWorld0x4bc2710_PV_g4live/g4ok_gltf/f6cc352e44243f8fa536ab483ad390ce/1
-    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@756]  ok.keyspec OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
-    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@757]  To reuse this geometry: 
-    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@758]    1. set envvar OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
-    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@759]    2. enable envvar sensitivity with --envkey argument to Opticks executables 
-    2019-07-01 16:14:08.129 FATAL [263983] [Opticks::reportGeoCacheCoordinates@767] THE LIVE keyspec DOES NOT MATCH THAT OF THE CURRENT ENVVAR 
-    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@768]  (envvar) OPTICKS_KEY=NONE
-    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::reportGeoCacheCoordinates@769]  (live)   OPTICKS_KEY=OKX4Test.X4PhysicalVolume.lWorld0x4bc2710_PV.f6cc352e44243f8fa536ab483ad390ce
-    2019-07-01 16:14:08.129 INFO  [263983] [Opticks::dumpRC@202]  rc 0 rcmsg : -
+
+    2020-10-28 09:24:26.523 INFO  [6138491] [OpticksProfile::dump@482]  npy 69,4 /tmp/blyth/opticks/source/evt/g4live/torch/OpticksProfile.npy
+    2020-10-28 09:24:26.523 INFO  [6138491] [OpticksProfile::accumulateDump@339] Opticks::postgeocache nacc 0
+    2020-10-28 09:24:26.523 INFO  [6138491] [Opticks::reportKey@992] OKX4Test
+
+    GEOCACHE_CODE_VERSION 7
+    KEYDIR  /usr/local/opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/50a18baaf29b18fae8c1642927003ee3/1
+    KEY     OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.50a18baaf29b18fae8c1642927003ee3
+     
+    To reuse this geometry include below export in ~/.opticks_config::
+     
+        export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.50a18baaf29b18fae8c1642927003ee3
+
+    2020-10-28 09:24:26.523 INFO  [6138491] [Opticks::reportKey@1011] This key matches that of the current envvar 
+    2020-10-28 09:24:26.523 INFO  [6138491] [Opticks::dumpRC@240]  rc 0 rcmsg : -
+
 
 
 Opticks executables and scripts read the **OPTICKS_KEY** envvar to determine the geometry to load.

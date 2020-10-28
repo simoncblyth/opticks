@@ -1411,11 +1411,6 @@ opticks-full-externals()
     rc=$?
     [ $rc -ne 0 ] && return $rc
 
-    echo $msg generating setup script 
-    opticks-setup-generate 
-    rc=$?
-    [ $rc -ne 0 ] && return $rc
-
     echo $msg DONE $(date)
     return 0 
 }
@@ -1425,6 +1420,11 @@ opticks-full-make()
     local msg="=== $FUNCNAME :"
     echo $msg START $(date)
     local rc
+
+    echo $msg generating setup script 
+    opticks-setup-generate 
+    rc=$?
+    [ $rc -ne 0 ] && return $rc
 
     local setup=$(opticks-setup-path)
     [ ! -f "$setup" ] && echo $msg ABORT missing opticks setup script $setup && return 1
