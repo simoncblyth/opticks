@@ -100,6 +100,60 @@ The corresponding geocache directory is derived from this OPTICKS_KEY and can be
 
 
 
+Common issue : GEOCACHE_CODE_VERSION MISMATCH causes assert at geocache loading
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A code version integer **Opticks::GEOCACHE_CODE_VERSION** is persisted with the geocache metadata during geocache-create.
+On loading the geocache this persisted int is compared with the current static int from  **optickscode/Opticks.hh**.
+This is done to track code changes that would invalidate previously written geocache.
+When there is a mismatch the geocache loading asserts with error::
+
+
+    2020-10-28 21:15:59.717 INFO  [28974] [Opticks::loadOriginCacheMeta@1897] ExtractCacheMetaGDMLPath /home/blyth/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export_v0.gdml
+    2020-10-28 21:15:59.717 FATAL [28974] [Opticks::loadOriginCacheMeta@1916] 
+     (current) Opticks::GEOCACHE_CODE_VERSION 7
+     (loaded)  m_origin_geocache_code_version 6
+     GEOCACHE_CODE_VERSION MISMATCH : PERSISTED CACHE VERSION DOES NOT MATCH CURRENT CODE 
+     -> RECREATE THE CACHE EG WITH geocache-create 
+
+
+The solution as suggested is to recreate the geocache and ensure that the OPTICKS_KEY exported 
+into the environment is updated if necessary. 
+When running *opticks-t* against an invalid or non-existing geocache a total of ~86 out of 440 tests
+are expected to fail. The solution is to recreate the geocache with the updated code with::
+
+    geocache-create
+
+
+
+Another issue : geocache-create fails to find GDML input file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If *geocache-create* gives an error like the below::
+
+    2020-10-28 21:32:46.910 INFO  [54688] [main@72]  digestextra2 NONE
+    2020-10-28 21:32:46.910 INFO  [54688] [CGDML::Parse@39] path /home/blyth/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export_v1.gdml
+    G4GDML: Reading '/home/blyth/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export_v1.gdml'...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : InvalidRead
+          issued by : G4GDMLRead::Read()
+    Unable to open document: /home/blyth/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export_v1.gdml
+    *** Fatal Exception ***
+
+
+You probably need to update your clone of the *opticksaux* repository which is used to 
+share test GDML files. Do this with::
+
+    opticksaux-
+    opticksaux--    
+
+
+
+
+
 Inspect the geocache with **opticks-kcd**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -122,12 +176,12 @@ The bash function **opticks-kcd** changes directory to the geocache directory wh
     ./GNodeLib/volume_transforms.npy
 
 
-IPython session loadind the placement transform of a particular volume in the geometry::
+IPython session loading the placement transform of a particular volume in the geometry::
 
     epsilon:1 blyth$ ipython
 
     In [1]: import numpy as np
-    In [2]: vt = np.load("GNodeLib/volume_transforms.npy")
+    In [2]: vt = np.load("GNodeLib/all_volume_transforms.npy")
     In [3]: vt.shape
     Out[3]: (12230, 4, 4)
     In [3]: vt[3154]
@@ -146,6 +200,7 @@ Opticks Analysis and Debugging using Python, IPython, NumPy and Matplotlib : man
 Opticks uses the NumPy (NPY) buffer serialization format 
 for geometry and event data, thus analysis and debugging requires
 python and ipython with numpy and matplotib extensions.  
+Optionally pyvista/VTK is useful for fast 3D plotting of large datasets. 
 For management of these and other python packages it is 
 convenient to use miniconda.
 

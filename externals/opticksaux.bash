@@ -130,9 +130,25 @@ opticksaux-get(){
         eval $cmd
    else
         echo $msg ALREADY CLONED from $url to $(opticksaux-dir) 
+        opticksaux-update
    fi
    cd $iwd
 }
+
+opticksaux-update()
+{    
+   local msg="$FUNCNAME :"
+   opticksaux-cd
+   local status=$(git status --porcelain)
+   if [ -n "$status" ]; then
+       echo $msg : UNEXPECTED local changes detected : you need to manually update your clone from PWD $PWD
+   else
+       echo $msg : no local changes proceed to pull      
+       git pull
+   fi 
+}
+
+
 
 opticksaux--()
 {

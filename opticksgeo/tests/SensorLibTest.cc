@@ -7,8 +7,12 @@ int main(int argc, char** argv)
     
     const char* dir = "$TMP/opticksgeo/SensorLib" ; 
     SensorLib* sl = SensorLib::Load(dir); 
-  
-    assert( sl); 
+    if(sl == NULL) 
+    {
+        LOG(fatal) << " failed to load from " << dir ; 
+        return 0 ; 
+    } 
+    sl->dump("SensorLibTest");
 
     return 0 ; 
 }

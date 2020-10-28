@@ -549,7 +549,14 @@ glm::mat4 GNodeLib::getTransform(unsigned index) const
 }
 glm::mat4 GNodeLib::getInverseTransform(unsigned index) const 
 {
-    assert( index < m_num_volumes ); 
+    bool index_ok = index < m_num_volumes ; 
+    if(!index_ok)
+       LOG(fatal) 
+           << " FATAL : index out of range "
+           << " index " << index 
+           << " m_num_volumes " << m_num_volumes
+           ;
+    assert( index_ok ); 
     glm::mat4 it = m_inverse_transforms->getMat4(index) ; 
     return it ;  
 }
