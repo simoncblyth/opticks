@@ -69,15 +69,79 @@ bool OCtx::has_variable( const char* key )
 OCtx::create_buffer
 --------------------
 
-For item -1 the entire array becomes the buffer, for item values 0,1,2 etc..
-only a single item from the array goes into the buffer.
+Creates GPU buffer with dimensions and elements to match that of the 
+argument NPY array (or sub-array  when item argument is > -1).
+The last dimension of the array determines the format multiplicity 
+of the buffer which must be 1,2,3 or 4.
 
-The last dimension of the array determines the format multiplicity of the buffer
-which must be 1,2,3 or 4.
+For 'I' or 'B' type input buffers the array is also 
+uploaded to the GPU buffer.
+
+arr
+    NPYBase array, for output buffers (type 'O') this need not be allocated
+    yet for input (type 'I') or input_output (type 'B') buffers the array must 
+    be allocated and populated already 
+key 
+    name of the buffer for GPU declaration and usage 
+type
+    O:OUTPUT, I:INPUT, B:INPUT_OUTPUT
+flag
+    L:LAYERED, G:GPU_LOCAL, C:COPY_ON_DIRTY 
+    These are rarely used, typically leave as ' ' 
+item      
+    for item -1 the entire array becomes the buffer, for item values 0,1,2 etc..
+    only a single item from the array goes into the buffer.
+
+transpose_dimensions
+    when true the buffer dimensions are transposed compared to the array, 
+    when false the buffer dimensions match the array  
+
+    For 1d/2d/3d array or subarray (excluding the final element dimension), 
+    my convention is to name the array dimensions as indicated::
+
+         1d:                 (width) 
+         2d:         (height, width)
+         3d:  (depth, height, width)
+
+    This naming is to match the natural image serialization ordering 
+    starting with the top line raster etc.. 
+
+    The sizes of these dimensions are then used to control the buffer dimensions.
+    When transpose_dimensions is false the GPU buffer dimensions are not transposed, staying asis.
+    So the naming convention is then irrelevant.
+
+    When transpose_dimensions is true those yield a GPU buffer of dimensions::
+
+         1d:                (width)
+         2d:         (width,height)
+         3d:   (width,height,depth) 
+
+    
+
+
+
+
+Regarding transpose_dimensions see::
+
+    tests/OCtxTest.cc
+    test/cu/OCtxTest.cc
+
+    tests/OSensorLibTest.cc
+    test/cu/OSensorLibTest.cc
+
+
+Note that it may well not be appropriate to do::
+
+    output_buffer[launch_index] = val 
+
+Instead may need to reorder the indexing to match the buffer arrangement, eg::
+
+    output_buffer[make_uint3(icat,ithe,iphi)] = val ; 
+
 
 **/
 
-void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item )
+void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item, bool transpose_dimensions  )
 {
     LOG(LEVEL) << "[" ; 
     optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
@@ -88,6 +152,7 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
         case 'I': buffer_type = RT_BUFFER_INPUT         ; break ; 
         case 'B': buffer_type = RT_BUFFER_INPUT_OUTPUT  ; break ; 
     }
+
     unsigned buffer_flag = 0 ;
     switch(flag)
     {
@@ -116,9 +181,11 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
     RTformat format = OFormat::ArrayType(arr); 
     buf->setFormat( format ); 
 
-    unsigned array_nd = arr->getDimensions(); 
+    unsigned array_nd = arr->getNumDimensions(); 
     bool subarray = item > -1 ; 
     unsigned buffer_nd = subarray ? array_nd - 2 : array_nd - 1 ; 
+
+
 
     if( buffer_nd == 1 )
     {
@@ -130,6 +197,7 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
             << " array_nd " << array_nd
             << " buffer_nd " << buffer_nd
             << " width " << width 
+            << " transpose_dimensions " << transpose_dimensions
             ; 
 
         assert( width > 0 ); 
@@ -137,8 +205,8 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
     }
     else if( buffer_nd == 2 )
     {
-        unsigned height = arr->getShape(subarray ? 1 : 0); 
-        unsigned width = arr->getShape(subarray ? 2 : 1) ; 
+        unsigned height = arr->getShape(subarray ? 1 : 0 ) ; 
+        unsigned width  = arr->getShape(subarray ? 2 : 1 ) ; 
         LOG(LEVEL) 
             << " arr " << arr->getShapeString() 
             << " item " << item 
@@ -147,16 +215,25 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
             << " buffer_nd " << buffer_nd
             << " height " << height 
             << " width " << width 
+            << " transpose_dimensions " << transpose_dimensions
             ; 
 
         assert( height > 0 && width > 0 ); 
-        buf->setSize(width, height);   
+
+        if( transpose_dimensions )
+        {
+            buf->setSize(width, height);   
+        }
+        else
+        {
+            buf->setSize(height, width);   
+        }
     }
     else if( buffer_nd == 3 )
     {
-        unsigned depth = arr->getShape(subarray ? 1 : 0) ;
-        unsigned height = arr->getShape(subarray ? 2 : 1); 
-        unsigned width = arr->getShape(subarray ? 3 :2 ) ;
+        unsigned depth  = arr->getShape(subarray ? 1 : 0 ) ;
+        unsigned height = arr->getShape(subarray ? 2 : 1 ) ; 
+        unsigned width  = arr->getShape(subarray ? 3 : 2 ) ;
  
         LOG(LEVEL) 
             << " arr " << arr->getShapeString() 
@@ -167,10 +244,19 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
             << " depth " << depth 
             << " height " << height 
             << " width " << width 
+            << " transpose_dimensions " << transpose_dimensions
             ; 
 
         assert( depth > 0 && height > 0 && width > 0 ); 
-        buf->setSize(width, height, depth);   
+
+        if( transpose_dimensions )
+        {
+            buf->setSize(width, height, depth);   
+        }
+        else
+        {
+            buf->setSize(depth, height, width);   
+        }
     }
     else
     {
@@ -181,6 +267,7 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
             << " subarray " << ( subarray ? "Y" : "N" )
             << " array_nd " << array_nd
             << " buffer_nd " << buffer_nd
+            << " transpose_dimensions " << transpose_dimensions
              ; 
          assert(0); 
     } 

@@ -69,7 +69,7 @@ class OXRAP_API OCtx
 
         void* ptr();
         bool has_variable( const char* key );
-        void* create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item );
+        void* create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item, bool transpose_dimensions=true  );
         void* get_buffer( const char* key );
         void desc_buffer( void* buffer_ptr ); 
         void upload_buffer( const NPYBase* arr, void* buffer_ptr, int item );

@@ -91,6 +91,7 @@ NPYLoadTest.cc
 NPY2Test.cc
 NPY3Test.cc
 NPY4Test.cc
+NPY5Test.cc
 NPYminmaxTest.cc
 NPYreshapeTest.cc
 

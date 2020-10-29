@@ -1,36 +1,54 @@
 #include <optix_world.h>
-#include <optixu/optixu_math_namespace.h>
 
 using namespace optix;
 
-rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
-rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
-rtDeclareVariable(int,  tex_id, , );
+rtDeclareVariable(uint3, launch_index, rtLaunchIndex, );
+rtDeclareVariable(uint3, launch_dim,   rtLaunchDim, );
 
-rtBuffer<float,2> output_buffer;
+rtBuffer<float,3> output_buffer;
+rtBuffer<int4,1>    texid_buffer ; 
+
+/**
+Note that buffer (and launch) shapes are transposed compared to the array::
+ 
+   Array shape          :  (num_cat, num_theta, num_phi)
+   Buffer/Launch shape  :  (num_phi, num_theta, num_cat)
+   
+This is a done as a workaround to reconcile the row-major serialization
+order used by NPY arrays and the column-major one used by OptiX buffers,
+see tests/OCtx2dTest.cc tests/OCtx3dTest.cc 
+
+**/
 
 
 RT_PROGRAM void raygen()
 {
-    // texture indexing for (nx, ny)
-    //      array type indexing:   0:nx-1 , 0:ny-1
-    //      norm float indexing:   0:1-1/nx  , 0:1-1/ny
+/*
+    int  iphi = int(launch_index.x) ;                    
+    int  ithe = int(launch_index.y) ;  
+    int  icat = int(launch_index.z) ;  
 
-    int ix = int(launch_index.x) ; 
-    int iy = int(launch_index.y) ; 
+    rtPrintf("//raygen launch_index (%d %d %d) launch_dim (%d %d %d) \n",
+        launch_index.x, launch_index.y, launch_index.z,
+        launch_dim.x, launch_dim.y, launch_dim.z );
+*/
 
-    float x = (float(ix)+0.5f)/float(launch_dim.x) ; // width:phi
-    float y = (float(iy)+0.5f)/float(launch_dim.y) ; // height:theta 
-    
-    float val = rtTex2D<float>( tex_id, x, y ); 
+    float phi = (float(launch_index.x)+0.5f)/float(launch_dim.x) ; 
+    float the = (float(launch_index.y)+0.5f)/float(launch_dim.y) ; 
+   
+    int tex_id = texid_buffer[icat].x ; 
+    float val = rtTex2D<float>( tex_id, phi, the ); 
+
+    //if( val > 0.5f)
+    //rtPrintf("//raygen icat %d tex_id %d val %f \n", icat, tex_id, val ); 
 
     output_buffer[launch_index] = val ; 
 }
+
 
 RT_PROGRAM void exception()
 {
     rtPrintExceptionDetails();
 }
-
 
 

@@ -37,6 +37,8 @@ set(PAIRED_TEST_SOURCES  # tests with paired cc and cu
     ORngTest.cc
 
     OSensorLibTest.cc 
+    OCtx2dTest.cc 
+    OCtx3dTest.cc 
 )
 
 
