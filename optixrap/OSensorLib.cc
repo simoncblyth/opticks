@@ -6,8 +6,9 @@
 
 const plog::Severity OSensorLib::LEVEL = PLOG::EnvLevel("OSensorLib", "DEBUG"); 
 
+const char* OSensorLib::TEXID = "OSensorLib_texid"  ; 
 
-OSensorLib::OSensorLib(OCtx* octx, SensorLib* sensorlib)
+OSensorLib::OSensorLib(const OCtx* octx, const SensorLib* sensorlib)
     :    
     m_octx(octx),
     m_sensorlib(sensorlib),
@@ -17,11 +18,18 @@ OSensorLib::OSensorLib(OCtx* octx, SensorLib* sensorlib)
     m_num_theta(m_angular_efficiency->getShape(1)),
     m_num_phi(  m_angular_efficiency->getShape(2)),
     m_num_elem( m_angular_efficiency->getShape(3)),
-    m_tex_id( new int[m_num_cat] )
+    m_texid(NPY<int>::make(m_num_cat, 4))    // small buffer of texid    
 {
     assert( m_num_dim == 4 ); 
     assert( m_num_cat < 10 ); 
     assert( m_num_elem == 1 ); 
+    m_texid->zero();
+}
+
+
+const NPY<float>*  OSensorLib::getSensorAngularEfficiencyArray() const 
+{
+    return m_angular_efficiency ; 
 }
 
 unsigned OSensorLib::getNumSensorCategories() const 
@@ -42,17 +50,14 @@ unsigned OSensorLib::getNumElem() const
 }
 
 
-
-
-
-
 int OSensorLib::getTexId(unsigned icat) const
 {
     assert( icat < m_num_cat );   
-    return m_tex_id[icat] ;  
+    glm::ivec4 q = m_texid->getQuad_(icat) ;
+    return q.x ;  
 }
 
-OCtx* OSensorLib::getOCtx() const 
+const OCtx* OSensorLib::getOCtx() const 
 {
     return m_octx ; 
 }
@@ -67,14 +72,21 @@ void OSensorLib::makeSensorAngularEfficiencyTexture()
     const char* config = "INDEX_NORMALIZED_COORDINATES" ; 
     for(unsigned i=0 ; i < m_num_cat ; i++)
     {
+         const char* key = NULL ;  // no-key as cannot do normal reads from tex buffers 
+         char type = 'I' ;         // I:INPUT
+         char flag = ' ' ; 
          unsigned item = i ; 
-         void* buffer_ptr = m_octx->create_buffer(m_angular_efficiency, NULL, 'I', ' ', item ); 
+         bool transpose = true ; 
+         void* buffer_ptr = m_octx->create_buffer(m_angular_efficiency, key, type, flag, item, transpose ); 
          unsigned tex_id = m_octx->create_texture_sampler(buffer_ptr, config );
          LOG(info) << " item " << i << " tex_id " << tex_id ; 
-         m_tex_id[item] = tex_id ; 
+
+         glm::ivec4 q(tex_id, 0,0,0);  // placeholder zeros: eg for dimensions or ranges 
+         m_texid->setQuad_(q, i); 
     }
+
+    // create GPU buffer and upload small texid array into it 
+    m_octx->create_buffer(m_texid, TEXID, 'I', ' ', -1, true ); 
 }
 
-
- 
 

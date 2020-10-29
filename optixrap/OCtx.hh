@@ -69,10 +69,10 @@ class OXRAP_API OCtx
 
         void* ptr();
         bool has_variable( const char* key );
-        void* create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item, bool transpose_dimensions=true  );
+        void* create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item, bool transpose ) const ;
         void* get_buffer( const char* key );
         void desc_buffer( void* buffer_ptr ); 
-        void upload_buffer( const NPYBase* arr, void* buffer_ptr, int item );
+        void upload_buffer( const NPYBase* arr, void* buffer_ptr, int item ) const ;
         void download_buffer( NPYBase* arr, const char* key, int item);
         void set_raygen_program( unsigned entry_point_index, const char* ptx_path, const char* func );
         void set_exception_program( unsigned entry_point_index, const char* ptx_path, const char* func );
@@ -92,7 +92,7 @@ class OXRAP_API OCtx
         void launch(unsigned entry_point_index, unsigned width, unsigned height);
         void launch(unsigned entry_point_index, unsigned width);
         void launch_instrumented( unsigned entry_point_index, unsigned width, unsigned height, double& t_prelaunch, double& t_launch  );
-        unsigned create_texture_sampler( void* buffer_ptr, const char* config );
+        unsigned create_texture_sampler( void* buffer_ptr, const char* config ) const ;
         void set_texture_param( void* buffer_ptr, unsigned tex_id, const char* param_key );
         unsigned upload_2d_texture(const char* param_key, const NPYBase* inp, const char* config, int item);
         void set_geometry_float4( void* geometry_ptr, const char* key, float x, float y, float z, float w );

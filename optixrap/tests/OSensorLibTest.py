@@ -28,7 +28,7 @@ if __name__ == '__main__':
     b = b.reshape(b.shape[:-1])
     print("b:{b.shape!r}".format(b=b)) 
 
-
+    
     ctx = dict(name=os.path.basename(a_path),b=b,num_theta=b.shape[1],num_phi=b.shape[2])
     title = "{name} {b.shape!r} num_theta:{num_theta} num_phi:{num_phi}".format(**ctx)
     print(title)
@@ -50,7 +50,8 @@ if __name__ == '__main__':
         plt.show()    
     pass
 
-
+    assert np.allclose( a, b )
+    assert np.abs( a - b ).max() == 0.  
 
 
 

@@ -286,41 +286,73 @@ The updating via setBasePtr is done in NPY::allocate.
 void NPYBase::write_(void* dst ) const 
 {
     LOG(LEVEL) << "[" ; 
-    assert( m_base_ptr ); 
-    memcpy( dst, m_base_ptr, getNumBytes(0) ); 
+    unsigned num_bytes = getNumBytes(0) ;
+    if( num_bytes == 0 )
+    {
+         LOG(warning) << " warning writing empty " ; 
+    }
+    else
+    {
+        assert( m_base_ptr ); 
+        memcpy( dst, m_base_ptr, num_bytes ); 
+    }
     LOG(LEVEL) << "]" ; 
 }
 void NPYBase::write_item_(void* dst, unsigned item) const 
 {
     LOG(LEVEL) << "[" ; 
-    assert( m_base_ptr ); 
-    unsigned item_size = getNumBytes(1); // from_dim 
-    const void* src = (char*)m_base_ptr + item*item_size ; 
-    LOG(LEVEL) 
-        << " base_ptr " << m_base_ptr 
-        << " item_size " << item_size
-        << " item " << item   
-        << " dst " << dst            
-        << " src " << src
-        ;            
+    unsigned num_bytes = getNumBytes(1) ; // from_dim
+    if( num_bytes == 0 )
+    {
+         LOG(warning) << " warning writing empty item " ; 
+    } 
+    else
+    {
+        assert( m_base_ptr ); 
+        unsigned item_size = num_bytes ; // from_dim 
+        const void* src = (char*)m_base_ptr + item*item_size ; 
+        LOG(LEVEL) 
+            << " base_ptr " << m_base_ptr 
+            << " item_size " << item_size
+            << " item " << item   
+            << " dst " << dst            
+            << " src " << src
+            ;            
 
-    memcpy( dst, src, item_size ); 
+        memcpy( dst, src, item_size ); 
+    }
     LOG(LEVEL) << "]" ; 
 }
 
 void NPYBase::read_(const void* src) 
 {
     LOG(LEVEL) << "[" ; 
-    assert( m_base_ptr ); 
-    memcpy( m_base_ptr, src, getNumBytes(0) ); 
+    unsigned num_bytes = getNumBytes(0) ; // from_dim
+    if( num_bytes == 0)
+    {
+         LOG(warning) << " warning reading empty " ; 
+    }  
+    else
+    {
+        assert( m_base_ptr ); 
+        memcpy( m_base_ptr, src, num_bytes ); 
+    }
     LOG(LEVEL) << "]" ; 
 }
 void NPYBase::read_item_(const void* src, unsigned item)
 {
     LOG(LEVEL) << "[" ; 
-    assert( m_base_ptr ); 
-    unsigned item_size = getNumBytes(1); // from_dim 
-    memcpy( (char*)m_base_ptr + item*item_size, src, item_size );
+    unsigned num_bytes = getNumBytes(1) ; // from_dim 
+    if(num_bytes == 0)
+    {
+         LOG(warning) << " warning reading empty item " ; 
+    }
+    else
+    {
+        assert( m_base_ptr ); 
+        unsigned item_size = num_bytes ;
+        memcpy( (char*)m_base_ptr + item*item_size, src, item_size );
+    }
     LOG(LEVEL) << "]" ; 
 }
 

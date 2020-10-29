@@ -78,9 +78,14 @@ For 'I' or 'B' type input buffers the array is also
 uploaded to the GPU buffer.
 
 arr
-    NPYBase array, for output buffers (type 'O') this need not be allocated
-    yet for input (type 'I') or input_output (type 'B') buffers the array must 
-    be allocated and populated already 
+    NPYBase array, for output buffers (type 'O') the array need not be allocated yet. 
+    For input (type 'I') or input_output (type 'B') buffers the array must 
+    be allocated and populated already. 
+
+    Array dimensions of zero are accepted and treated just like non-zero values, 
+    being transposed as controlled by the transpose argument.  
+    This allows empty arrays to yield empty buffers.
+
 key 
     name of the buffer for GPU declaration and usage 
 type
@@ -92,9 +97,19 @@ item
     for item -1 the entire array becomes the buffer, for item values 0,1,2 etc..
     only a single item from the array goes into the buffer.
 
-transpose_dimensions
-    when true the buffer dimensions are transposed compared to the array, 
-    when false the buffer dimensions match the array  
+transpose
+    when *false* the buffer dimensions match the array, this 
+    will typically result in array content being scrambled with 
+    a "fold-over" structure due to serialization order mismatch.
+    
+    when *true* the buffer dimensions are transposed compared to the array, 
+
+    For 1d arrays *transpose* does nothing. 
+
+    NPY arrays use row-major serialization order whereas OptiX buffers
+    use column-major serialization order. To avoid array content being 
+    order scrambled it is necessary to use transpose_dimensions = true.
+    For details on this see tests/OCtx{2,3}dTest.cc  
 
     For 1d/2d/3d array or subarray (excluding the final element dimension), 
     my convention is to name the array dimensions as indicated::
@@ -108,7 +123,6 @@ transpose_dimensions
 
     The sizes of these dimensions are then used to control the buffer dimensions.
     When transpose_dimensions is false the GPU buffer dimensions are not transposed, staying asis.
-    So the naming convention is then irrelevant.
 
     When transpose_dimensions is true those yield a GPU buffer of dimensions::
 
@@ -116,33 +130,22 @@ transpose_dimensions
          2d:         (width,height)
          3d:   (width,height,depth) 
 
+
+    Note that transposing the buffer shape it is also necessary to transpose the shape 
+    of the launch when using::
     
+        output_buffer[launch_index] = val 
 
-
-
-
-Regarding transpose_dimensions see::
-
-    tests/OCtxTest.cc
-    test/cu/OCtxTest.cc
-
-    tests/OSensorLibTest.cc
-    test/cu/OSensorLibTest.cc
-
-
-Note that it may well not be appropriate to do::
-
-    output_buffer[launch_index] = val 
-
-Instead may need to reorder the indexing to match the buffer arrangement, eg::
-
-    output_buffer[make_uint3(icat,ithe,iphi)] = val ; 
 
 
 **/
 
-void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item, bool transpose_dimensions  )
+void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item, bool transpose  ) const 
 {
+    if(transpose == false)
+       LOG(warning) << "CAUTION : are using transpose:false, this typically causes array content order scrambling "
+       ; 
+
     LOG(LEVEL) << "[" ; 
     optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     unsigned buffer_type = 0 ; 
@@ -186,7 +189,6 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
     unsigned buffer_nd = subarray ? array_nd - 2 : array_nd - 1 ; 
 
 
-
     if( buffer_nd == 1 )
     {
         unsigned width = arr->getShape(subarray ? 1 : 0); 
@@ -197,10 +199,9 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
             << " array_nd " << array_nd
             << " buffer_nd " << buffer_nd
             << " width " << width 
-            << " transpose_dimensions " << transpose_dimensions
+            << " transpose " << transpose
             ; 
 
-        assert( width > 0 ); 
         buf->setSize(width);   
     }
     else if( buffer_nd == 2 )
@@ -215,12 +216,10 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
             << " buffer_nd " << buffer_nd
             << " height " << height 
             << " width " << width 
-            << " transpose_dimensions " << transpose_dimensions
+            << " transpose " << transpose
             ; 
 
-        assert( height > 0 && width > 0 ); 
-
-        if( transpose_dimensions )
+        if( transpose )
         {
             buf->setSize(width, height);   
         }
@@ -244,12 +243,10 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
             << " depth " << depth 
             << " height " << height 
             << " width " << width 
-            << " transpose_dimensions " << transpose_dimensions
+            << " transpose " << transpose
             ; 
-
-        assert( depth > 0 && height > 0 && width > 0 ); 
-
-        if( transpose_dimensions )
+         
+        if( transpose )
         {
             buf->setSize(width, height, depth);   
         }
@@ -257,6 +254,7 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
         {
             buf->setSize(depth, height, width);   
         }
+
     }
     else
     {
@@ -267,7 +265,7 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
             << " subarray " << ( subarray ? "Y" : "N" )
             << " array_nd " << array_nd
             << " buffer_nd " << buffer_nd
-            << " transpose_dimensions " << transpose_dimensions
+            << " transpose " << transpose
              ; 
          assert(0); 
     } 
@@ -326,7 +324,7 @@ void OCtx::desc_buffer( void* buffer_ptr )
     }
 }
 
-void OCtx::upload_buffer( const NPYBase* arr, void* buffer_ptr, int item )
+void OCtx::upload_buffer( const NPYBase* arr, void* buffer_ptr, int item ) const 
 {
     LOG(LEVEL) << "[ " << item  ; 
     optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
@@ -566,7 +564,7 @@ void OCtx::launch_instrumented( unsigned entry_point_index, unsigned width, unsi
     LOG(LEVEL) << "]" ; 
 }
 
-unsigned OCtx::create_texture_sampler( void* buffer_ptr, const char* config )
+unsigned OCtx::create_texture_sampler( void* buffer_ptr, const char* config ) const 
 {
     LOG(LEVEL) << "["; 
     optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
@@ -687,7 +685,8 @@ BUT when specifying the dimensions of the tex buffer it is necessary to use::
 unsigned OCtx::upload_2d_texture(const char* param_key, const NPYBase* inp, const char* config, int item)
 {
     LOG(LEVEL) << "[" ; 
-    void* buffer_ptr = create_buffer(inp, NULL, 'I', ' ', item ); 
+    bool transform = true ; 
+    void* buffer_ptr = create_buffer(inp, NULL, 'I', ' ', item, transform ); 
     unsigned tex_id = create_texture_sampler(buffer_ptr, config ); 
     set_texture_param( buffer_ptr, tex_id, param_key );  
     LOG(LEVEL) << "]" ; 
