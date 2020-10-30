@@ -751,7 +751,7 @@ void* OCtx::create_transform( bool transpose, const float* m44, const float* inv
     return ptr ; 
 }   
 
-void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_ptr, const void* material_ptr )
+void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_ptr, const void* material_ptr, bool identity_from_transform_03 )
 {
     optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Geometry geo = optix::Geometry::take((RTgeometry)geometry_ptr);   
@@ -762,12 +762,13 @@ void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_pt
 
     optix::Acceleration instance_accel = context->createAcceleration( "Trbvh" );
 
-    glm::mat4 m4c(m4);  
-    unsigned m4c_03_identity = SPack::uint_from_float(m4c[0].w) ; 
- 
-    // Setting the right hand column incase of sneaky insertions.
+    unsigned transform_03_identity = identity_from_transform_03 ? SPack::uint_from_float(m4[0].w) : 0 ; 
+
+    // Setting the right hand column incase of sneaky identity insertions into the transform
     // My (OpenGL) convention is for translation in m4[3].xyz.
     // These slots are probably ignored by OptiX anyhow.
+
+    glm::mat4 m4c(m4); 
     m4c[0].w = 0.f ; 
     m4c[1].w = 0.f ; 
     m4c[2].w = 0.f ; 
@@ -784,7 +785,7 @@ void* OCtx::create_single_assembly( const glm::mat4& m4, const void* geometry_pt
     pergi->setMaterialCount(1);
     pergi->setMaterial(0, mat );
     pergi->setGeometry(geo);
-    pergi["identity"]->setUint(m4c_03_identity);
+    pergi["identity"]->setUint(transform_03_identity);
 
     optix::GeometryGroup perxform = context->createGeometryGroup();
     perxform->addChild(pergi); 
@@ -821,7 +822,7 @@ OCtx::create_instanced_assembly
              instance_accel  (Acceleration)   
 **/
 
-void* OCtx::create_instanced_assembly( const NPY<float>* transforms, const void* geometry_ptr, const void* material_ptr )
+void* OCtx::create_instanced_assembly( const NPY<float>* transforms, const void* geometry_ptr, const void* material_ptr, bool identity_from_transform_03 )
 { 
     unsigned num_tr = transforms->getNumItems() ; 
     LOG(LEVEL) 
@@ -843,10 +844,10 @@ void* OCtx::create_instanced_assembly( const NPY<float>* transforms, const void*
 
     for(unsigned ichild=0 ; ichild < num_tr ; ichild++)
     {
-        unsigned m4_03_identity = transforms->getUInt(ichild,0,3,0);      
+        unsigned transform_03_identity = identity_from_transform_03 ? transforms->getUInt(ichild,0,3,0) : 0 ;      
         glm::mat4 m4 = transforms->getMat4(ichild,-1); 
         unsigned m4_03_check = SPack::uint_from_float(m4[0].w) ; 
-        assert( m4_03_identity == m4_03_check );
+        assert( transform_03_identity == m4_03_check );
 
         bool transpose = true ; 
         // Setting the right hand column incase of sneaky insertions.
@@ -867,7 +868,7 @@ void* OCtx::create_instanced_assembly( const NPY<float>* transforms, const void*
         pergi->setMaterial(0, mat );
         pergi->setGeometry(geo);
 
-        pergi["identity"]->setUint(m4_03_identity) ;  
+        pergi["identity"]->setUint(transform_03_identity) ;  
 
         optix::GeometryGroup perxform = context->createGeometryGroup();
         perxform->addChild(pergi); 

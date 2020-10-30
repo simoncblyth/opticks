@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include "PLOG.hh"
+#include "SPack.hh"
 #include "NPY.hpp"
 #include "NGLMExt.hpp"
 
@@ -9,20 +10,21 @@
 const plog::Severity  SphereOfTransforms::LEVEL = PLOG::EnvLevel("SphereOfTransforms", "DEBUG"); 
 
 
-NPY<float>* SphereOfTransforms::Make(float radius, unsigned num_theta, unsigned num_phi) // static 
+NPY<float>* SphereOfTransforms::Make(float radius, unsigned num_theta, unsigned num_phi, bool identity_from_transform_03) // static 
 {
-    SphereOfTransforms sot(radius, num_theta, num_phi); 
+    SphereOfTransforms sot(radius, num_theta, num_phi, identity_from_transform_03); 
     return sot.getTransforms(); 
 }
 
 
-SphereOfTransforms::SphereOfTransforms(float radius, unsigned num_theta, unsigned num_phi)
+SphereOfTransforms::SphereOfTransforms(float radius, unsigned num_theta, unsigned num_phi, bool identity_from_transform_03)
     :
     m_radius(radius),
     m_num_theta(num_theta),
     m_num_phi(num_phi),
     m_num_transforms(2+(m_num_theta - 2)*m_num_phi),
-    m_transforms(NPY<float>::make(m_num_transforms, 4,4))
+    m_transforms(NPY<float>::make(m_num_transforms, 4,4)),
+    m_identity_from_transform_03(identity_from_transform_03)
 {
     init(); 
 }
@@ -36,11 +38,10 @@ std::string SphereOfTransforms::desc() const
        << " num_theta " << m_num_theta  
        << " num_phi " << m_num_phi  
        << " num_transforms " << m_num_transforms
+       << " identity_from_transform_03 " << m_identity_from_transform_03
        ;
     return ss.str(); 
 }
-
-
 
 NPY<float>* SphereOfTransforms::getTransforms() const 
 {
@@ -74,11 +75,20 @@ void SphereOfTransforms::init()
             // and then translates to the point in the sphere 
             glm::mat4 tr = nglmext::make_rotate_a2b_then_translate(a, b, pos );
 
+            unsigned identity = SPack::Encode(itheta, iphi, (count & 0xff00) >> 8 , count & 0xff );
+
+            if(m_identity_from_transform_03)
+            {
+                tr[0].w = SPack::uint_as_float(identity) ; 
+            }
+
             LOG(LEVEL)
                 << " count " << count
                 << " itheta " << itheta
                 << " iphi " << iphi 
                 << " tr " << glm::to_string( tr ) 
+                << " identity_from_transform_03 " << m_identity_from_transform_03
+                << " identity " << std::hex << identity << std::dec
                 ;
 
             m_transforms->setMat4(tr, count ); 

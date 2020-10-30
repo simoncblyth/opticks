@@ -9,8 +9,9 @@ int main(int argc, char** argv)
     float radius = 1000.f ; 
     unsigned num_theta = 5 ;  // odd to get one to land on equator
     unsigned num_phi   = 8 ; 
+    bool identity_from_transform_03 = true ; 
 
-    SphereOfTransforms sot(radius, num_theta, num_phi); 
+    SphereOfTransforms sot(radius, num_theta, num_phi, identity_from_transform_03); 
     LOG(info) << sot.desc(); 
 
     NPY<float>* tr = sot.getTransforms(); 

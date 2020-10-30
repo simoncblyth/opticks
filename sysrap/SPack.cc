@@ -13,6 +13,25 @@ union ucccc_t
 };
 
 
+
+unsigned SPack::Encode(unsigned x, unsigned y, unsigned z, unsigned w)  // static 
+{
+    assert( x <= 0xff ); 
+    assert( y <= 0xff ); 
+    assert( z <= 0xff ); 
+    assert( w <= 0xff ); 
+
+    unsigned char xc = x ; 
+    unsigned char yc = y ; 
+    unsigned char zc = z ; 
+    unsigned char wc = w ; 
+
+    return SPack::Encode(xc, yc, zc, wc); 
+}
+
+
+
+
 unsigned SPack::Encode(unsigned char x, unsigned char y, unsigned char z, unsigned char w)  // static 
 {
     assert( sizeof(unsigned char) == 1); 
@@ -76,10 +95,20 @@ unsigned SPack::Decode22b( const unsigned value ) // static
     return ( value >>  0 ) & 0xffff ; 
 }
 
+void SPack::Decode( const unsigned int value,  unsigned& x, unsigned& y, unsigned& z, unsigned& w ) // static
+{
+    unsigned char ucx ; 
+    unsigned char ucy ; 
+    unsigned char ucz ; 
+    unsigned char ucw ; 
 
+    Decode(value, ucx, ucy, ucz, ucw ); 
 
-
-
+    x = ucx ; 
+    y = ucy ; 
+    z = ucz ; 
+    w = ucw ; 
+}
 
 
 void SPack::Decode( const unsigned int value,  unsigned char& x, unsigned char& y, unsigned char& z, unsigned char& w ) // static

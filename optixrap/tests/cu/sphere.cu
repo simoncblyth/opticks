@@ -30,18 +30,16 @@
 
 using namespace optix;
 
+// pergi["identity"] from geometry instance setup OCtx::create_single_assembly or OCtx::create_instanced_assembly
+rtDeclareVariable(unsigned, identity,  ,);
 rtDeclareVariable(float4,  sphere, , );
 
 // communicate to closest_hit
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
-rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
-
-rtDeclareVariable(unsigned,  intersect_identity,   attribute intersect_identity, ); 
-rtDeclareVariable(unsigned, identity,  ,);   
-// "identity" is planted into pergi["identity"] by OCtx::create_single_assembly or OCtx::create_instanced_assembly
+rtDeclareVariable(float3, shading_normal,   attribute shading_normal, ); 
+rtDeclareVariable(unsigned, intersect_identity,   attribute intersect_identity, ); 
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
-
 
 template<bool use_robust_method>
 static __device__

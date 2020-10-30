@@ -2,8 +2,38 @@
 
 #include <cassert>
 #include "SPack.hh"
-
 #include "OPTICKS_LOG.hh"
+
+void test_Encode_Decode_unsigned()
+{
+    unsigned x = 0x00 ;   
+    unsigned y = 0xaa ;   
+    unsigned z = 0xbb ;   
+    unsigned w = 0xff ;
+
+    unsigned value_expect = 0xffbbaa00 ; 
+    unsigned value = SPack::Encode(x,y,z,w); 
+
+    LOG(info) 
+        << " value " << std::hex << value 
+        << " value_expect " << std::hex << value_expect
+        ;
+
+    assert( value == value_expect ); 
+
+    unsigned x_ ; 
+    unsigned y_ ; 
+    unsigned z_ ; 
+    unsigned w_ ; 
+
+    SPack::Decode( value, x_, y_, z_, w_ ); 
+
+    assert( x == x_ );   
+    assert( y == y_ );   
+    assert( z == z_ );   
+    assert( w == w_ );   
+}
+
 
 void test_Encode()
 {
@@ -144,10 +174,12 @@ int main(int argc , char** argv )
     //test_Encode_Decode();  
     //test_Encode_Decode_ptr();  
     //test_Encode13_Decode13();  
-    test_Encode22_Decode22();  
+    //test_Encode22_Decode22();  
 
     //test_int_as_float(); 
     //test_uint_as_float(); 
+
+    test_Encode_Decode_unsigned();  
 
     return 0  ; 
 }

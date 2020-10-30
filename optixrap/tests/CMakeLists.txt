@@ -37,11 +37,56 @@ set(PAIRED_TEST_SOURCES  # tests with paired cc and cu
     ORngTest.cc
 
     OSensorLibTest.cc 
-    OSensorLibGeoTest.cc 
 
     OCtx2dTest.cc 
     OCtx3dTest.cc 
 )
+
+
+set(MULTI_CU_TEST_SOURCES   # .cc tests with more than one associated .cu 
+
+    OSensorLibGeoTest.cc@cu/OSensorLibGeoTest.cu__cu/sphere.cu 
+
+)
+
+foreach(MSRC ${MULTI_CU_TEST_SOURCES})
+    message(STATUS "MSRC:${MSRC}" )
+    string(REPLACE "@" ";" MSRC ${MSRC})
+    message(STATUS "MSRC:${MSRC}" )
+
+    list(LENGTH MSRC MSRC_LEN)
+    message(STATUS "MSRC_LEN:${MSRC_LEN}" )
+
+    list(GET MSRC 0 MSRC_CC)
+    list(GET MSRC 1 MSRC_CU)
+ 
+    message(STATUS "MSRC_CC:${MSRC_CC}" )
+    message(STATUS "MSRC_CU:${MSRC_CU}" )
+
+    string(REPLACE "__" ";" MSRC_CU ${MSRC_CU})
+
+    foreach(MSRC_CU_ELEM ${MSRC_CU})
+       message(STATUS "MSRC_CU_ELEM:${MSRC_CU_ELEM}")
+    endforeach()
+
+    get_filename_component(TGT ${MSRC_CC} NAME_WE)
+
+    CUDA_WRAP_SRCS( ${TGT} PTX _generated_PTX_files ${MSRC_CU} )
+    CUDA_WRAP_SRCS( ${TGT} OBJ _generated_OBJ_files ${MSRC_CC} )  
+
+    add_executable( ${TGT} ${_generated_OBJ_files} ${_generated_PTX_files} ${MSRC_CU} ${MSRC_CC} )
+    add_test(${name}.${TGT} ${TGT})
+
+    message(STATUS "MSRC:${MSRC} TGT:${TGT}  _generated_PTX_files:${_generated_PTX_files} _generated_OBJ_files:${_generated_OBJ_files} ")
+
+    install(FILES ${_generated_PTX_files} DESTINATION installcache/PTX/tests)
+    target_link_libraries(${TGT} OptiXRap  )
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
+
+
+
+
 
 
 foreach(SRC ${TEST_SOURCES})
