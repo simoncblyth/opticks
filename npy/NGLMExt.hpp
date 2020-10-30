@@ -225,6 +225,11 @@ struct NPY_API nglmext
     static glm::mat4 make_scale(const float x, const float y, const float z);
 
 
+    // used by okc/SphereOfTransforms
+    static glm::mat4 make_rotate_a2b(const glm::vec3& a, const glm::vec3& b, bool dump=false );
+    static glm::mat4 make_rotate_a2b_then_translate( const glm::vec3& a, const glm::vec3& b, const glm::vec3& tlat, bool dump=false );
+
+
     static void transform_planes( NPY<float>* plan_buffer, const glm::mat4& placement );
 
 

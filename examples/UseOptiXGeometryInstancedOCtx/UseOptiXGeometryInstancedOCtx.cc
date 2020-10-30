@@ -54,12 +54,14 @@ as its too difficult to do new things in two ways at once.
 enum { ZERO, BOX, SPHERE } ; 
 
 
-glm::mat4 MakeTransform(unsigned u, unsigned v, unsigned w, unsigned nu, unsigned nv, unsigned nw)
+glm::mat4 MakeTransform(unsigned u, unsigned v, unsigned w, unsigned nu, unsigned nv, unsigned nw )
 {
     float scale = 1.f ; 
+
     //glm::vec4 rot( rand(), rand(), rand(),  rand()*360.f ); // random axis and angle 
-    //glm::vec4 rot(  0,  0, 1,  rand()*360.f );
-    glm::vec4 rot(  0,  0, 1,  0 );
+    //glm::vec4 rot(  0,  0, 1,  rand()*360.f );              // random angle
+    glm::vec4 rot(  0, 0, 1,  0 );                            // no rotation    
+
     glm::vec3 sca( scale ) ; 
     glm::vec3 tla(  10.f*u , 10.f*v , -10.f*w ) ; 
     glm::mat4 m4 = nglmext::make_transform("trs", tla, rot, sca );
@@ -78,7 +80,7 @@ void MakeTransforms(NPY<float>*& transforms, unsigned nu, unsigned nv, unsigned 
 
     bool transpose = false ; 
     unsigned count(0) ; 
-    for( unsigned u = 0; u < nu; ++u ) { 
+    for( unsigned u = 0; u < nu ; ++u ) { 
     for( unsigned v = 0; v < nv ; ++v ) { 
     for( unsigned w = 0; w < nw ; ++w ) { 
 
@@ -97,6 +99,18 @@ void MakeTransforms(NPY<float>*& transforms, unsigned nu, unsigned nv, unsigned 
     assert( count == num_tr ); 
 }
 
+/**
+MakeGeometry
+--------------
+
+Creates geometry within the OptiX context,
+
+1. split the transforms into two 
+2. create box and sphere geometry 
+3. create material and top group
+4. create instanced assemblies for the sphere and box geometry and add them under top group
+
+**/
 
 void MakeGeometry(const NPY<float>* transforms, const char* main_ptx, unsigned entry_point_index, bool single, const char* closest_hit, unsigned nu, unsigned nv, unsigned nw)
 {
@@ -104,14 +118,14 @@ void MakeGeometry(const NPY<float>* transforms, const char* main_ptx, unsigned e
     unsigned num_transforms = transforms->getNumItems(); 
     LOG(info) << "num_transforms " << num_transforms << " transforms_digest " << transforms_digest ; 
 
-    // split transforms into two 
+    // 1. split transforms array into two arrays
+
     NPY<float>* transforms0 = NPY<float>::make_modulo_selection(transforms, 2, 0 );
     NPY<float>* transforms1 = NPY<float>::make_modulo_selection(transforms, 2, 1 );
     for(unsigned i=0 ; i < transforms0->getNumItems() ; i++) transforms0->bitwiseOrUInt(i,0,3,0, (BOX << 24)   );  
     for(unsigned i=0 ; i < transforms1->getNumItems() ; i++) transforms1->bitwiseOrUInt(i,0,3,0, (SPHERE << 24));  
-    // hmm doing this to the split transforms means it doenst get saved into transforms
+    // hmm doing this labelling into the split transform arrays means it does not get saved into transforms
     // but it does get thru to GPU 
-
 
     LOG(info) << " transforms0 " << transforms0->getShapeString(); 
     LOG(info) << " transforms1 " << transforms1->getShapeString(); 
@@ -120,10 +134,12 @@ void MakeGeometry(const NPY<float>* transforms, const char* main_ptx, unsigned e
     LOG(info) << "MakeTransforms num_transforms " << num_transforms << " transforms_digest2 " << transforms_digest2 ; 
     assert( strcmp( transforms_digest2.c_str(), transforms_digest.c_str() ) == 0 ); 
  
+    // 2. create box and sphere 
+
     float sz = 5.f ; 
     unsigned nbox = 1u ; 
 
-    const char* rubox_ptx = OKConf::PTXPath( CMAKE_TARGET, "rubox.cu" ) ; 
+    const char* rubox_ptx  = OKConf::PTXPath( CMAKE_TARGET, "rubox.cu" ) ; 
     const char* sphere_ptx = OKConf::PTXPath( CMAKE_TARGET, "sphere.cu" ) ; 
 
     void* box_ptr = OCtx::Get()->create_geometry(nbox, rubox_ptx, "rubox_bounds", "rubox_intersect" ); 
@@ -133,11 +149,15 @@ void MakeGeometry(const NPY<float>* transforms, const char* main_ptx, unsigned e
     void* sph_ptr = OCtx::Get()->create_geometry(nbox, sphere_ptx, "bounds", "intersect" ); 
     OCtx::Get()->set_geometry_float4( sph_ptr, "sphere",  0.f, 0.f, 0.f, sz );
 
+    // 3. create material and top group
+
     void* mat_ptr = OCtx::Get()->create_material( main_ptx,  closest_hit, entry_point_index ); 
 
     void* top_ptr = OCtx::Get()->create_group("top_object", NULL );  
     void* top_accel = OCtx::Get()->create_acceleration("Trbvh");
     OCtx::Get()->set_group_acceleration( top_ptr, top_accel ); 
+
+    // 4. create instanced assemblies for the sphere and box geometry and add them under top group
 
     if(single)
     {
@@ -359,20 +379,27 @@ int main(int argc, char** argv)
     OCtx::Get()->set_miss_program(   entry_point_index, main_ptx, "miss" );
 
     NPY<unsigned char>* pixels = NPY<unsigned char>::make(height, width, 4);
-    void* pixelsBuf = OCtx::Get()->create_buffer(pixels, "pixels_buffer", 'O', ' ', -1);
-    OCtx::Get()->desc_buffer( pixelsBuf );
-
     NPY<float>* posi = NPY<float>::make(height, width, 4);
-    void* posiBuf = OCtx::Get()->create_buffer(posi, "posi_buffer", 'O', ' ', -1);
+
+    bool transpose = true ; 
+    void* pixelsBuf = OCtx::Get()->create_buffer(pixels, "pixels_buffer", 'O', ' ', -1, transpose );
+    void* posiBuf   = OCtx::Get()->create_buffer(posi, "posi_buffer", 'O', ' ', -1, transpose );
+
+    OCtx::Get()->desc_buffer( pixelsBuf );
     OCtx::Get()->desc_buffer( posiBuf );
 
     double t_prelaunch ; 
-    double t_launch ; 
-    OCtx::Get()->launch_instrumented( entry_point_index, width, height, t_prelaunch, t_launch );
+    double t_launch ;
+
+    assert( transpose == true );  
+    unsigned l0 = transpose ? width  : height ; 
+    unsigned l1 = transpose ? height : width  ; 
+    OCtx::Get()->launch_instrumented( entry_point_index, l0, l1, t_prelaunch, t_launch );
 
     pixels->zero();  
-    OCtx::Get()->download_buffer(pixels, "pixels_buffer", -1);
     posi->zero();  
+
+    OCtx::Get()->download_buffer(pixels, "pixels_buffer", -1);
     OCtx::Get()->download_buffer(posi, "posi_buffer", -1);
 
     const bool yflip = true ;
@@ -384,5 +411,4 @@ int main(int argc, char** argv)
 
     return 0 ; 
 }
-
 

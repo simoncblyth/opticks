@@ -263,6 +263,7 @@ EOI
 }
 
 glm-doc(){ open file://$(glm-dir)/glm/doc/api/modules.html ; }
+glm-api(){ open file://$(glm-dir)/glm/doc/api/index.html ; }
 glm-pdf(){ open file://$(glm-dir)/glm/doc/manual.pdf ; }
 
 

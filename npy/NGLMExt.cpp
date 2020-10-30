@@ -211,6 +211,8 @@ least parallel to it, ie one of::
       (0,1,0)
       (0,0,1)
 
+For example an input directopn along Z axis (0,0,1)
+yields least parallel axis (1,0,0)
 
 **/
 
@@ -233,6 +235,32 @@ glm::vec3 nglmext::least_parallel_axis( const glm::vec3& dir )
     }
     return lpa ; 
 }
+
+/**
+nglmext::pick_transverse_direction
+------------------------------------
+
+Obtains a vector which is perpendicular to the input.  As there 
+are an infinite number of such transverse directions 
+it uses a heuristic approach to yield one of them by first 
+finding the coordinate axis least parallel to the input direction
+and taking the cross product with that.
+
+For example an input direction (dir) along Z axis (0,0,1)
+yields least parallel axis (lpa) along X (1,0,0) 
+the cross product lpa ^ dir is then -Y (0,-1,0)
+which is a transverse direction (trd)  to the input direction.
+
+        Z
+        |
+        |
+        +----Y 
+       /
+      /
+     X
+
+
+**/
 
 glm::vec3 nglmext::pick_transverse_direction( const glm::vec3& dir, bool dump)
 {
@@ -664,6 +692,53 @@ glm::mat4 nglmext::make_transform(const std::string& order)
 
     return make_transform(order, tla, rot, sca );
 }
+
+
+glm::mat4 nglmext::make_rotate_a2b(const glm::vec3& a, const glm::vec3& b, bool dump)
+{   
+    float ab = glm::dot(a, b);  // 0. when perpendicualar
+    float la = glm::length(a) ;     
+    float lb = glm::length(b) ;      
+    float cos_angle = ab/(lb*la) ;  // 0. when perpendicular,  1. or -1. when collinear
+    float angle_radians = acos(cos_angle);  //  pi/2 when perpendicular,  0 or pi when collinear 
+    
+    glm::vec3 axb = glm::cross(a, b);
+
+    float epsilon = 1e-5 ;    
+    float len_axb = glm::length(axb); 
+
+    glm::vec3 axis = len_axb < epsilon ? nglmext::pick_transverse_direction(a, dump) : axb ; 
+    // collinear a and b prevents obtaining a rotation axis from their cross product 
+    // so pick some arbitrary transverse direction to act as the axis
+
+
+    if(dump)
+    {
+        LOG(info) 
+            << " len_axb " << len_axb 
+            << " axis " << glm::to_string(axis) 
+            ;
+    }
+
+    glm::mat4 rot = glm::rotate(angle_radians, axis );  
+    // matrix to rotate a->b from angle_radians and axis 
+    
+    return rot ;
+}
+
+
+
+glm::mat4 nglmext::make_rotate_a2b_then_translate( const glm::vec3& a, const glm::vec3& b, const glm::vec3& tlat, bool dump )
+{
+    glm::mat4 rotate= make_rotate_a2b(a,b, dump);         
+    glm::mat4 translate = glm::translate(glm::mat4(1.0f), tlat );
+    glm::mat4 rotate_then_translate = translate * rotate ; 
+    return rotate_then_translate  ;   
+}
+
+
+
+
 
 
 

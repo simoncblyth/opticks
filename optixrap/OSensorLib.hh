@@ -8,9 +8,14 @@ OSensorLib_angular_efficiency
 Interpolated lookup of sensor angular efficiency for local angle fractions and sensor category.
 
 category
-    0-based sensor category index, typically for a small number (<10) of sensor types  
+    0-based sensor category index, typically for a small number (<10) of sensor types
+    Category -1 corresponds to the case when no angular efficiency is available for 
+    a sensor resulting in a returned angular_efficiency of 1.f 
+  
 phi_fraction
     fraction of the 360 degree azimuthal phi angle, range 0. to 1. 
+    (when there is no phi-dependence of efficiency use 0. for clarity)
+
 theta_fraction
     fraction of the 180 degree polar theta angle, range 0. to 1. 
 
@@ -24,8 +29,8 @@ rtBuffer<int4,1>  OSensorLib_texid ;
 
 static __device__ __inline__ float OSensorLib_angular_efficiency(int category, float phi_fraction, float theta_fraction  )
 {
-    int tex_id = OSensorLib_texid[category].x ; 
-    float angular_efficiency = rtTex2D<float>( tex_id, phi_fraction, theta_fraction );  
+    int tex_id = category > -1 ? OSensorLib_texid[category].x : -1 ; 
+    float angular_efficiency = tex_id > -1 ? rtTex2D<float>( tex_id, phi_fraction, theta_fraction ) : 1.f ;  
     return angular_efficiency ; 
 }
 

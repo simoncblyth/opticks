@@ -26,6 +26,8 @@
 #include "GLMFormat.hpp"
 
 #include <glm/gtc/epsilon.hpp>
+#include <glm/gtx/component_wise.hpp>
+
 
 
 #include "OPTICKS_LOG.hh"
@@ -507,6 +509,131 @@ void test_GetEyeUVW()
 
 
 
+void test_make_rotate_a2b(const glm::vec3& a, const glm::vec3& b, const char* msg, bool dump)
+{
+    LOG(info) << msg ;  
+
+    glm::mat4 rot = nglmext::make_rotate_a2b(a, b, dump); 
+
+    std::cout << "  a:" << glm::to_string(a) << std::endl ;   
+    std::cout << "  b:" << glm::to_string(b) << std::endl ;   
+    std::cout << "rot:" << glm::to_string(rot) << std::endl ;   
+
+    glm::vec4 av(a, 0.f);  // w=0.f for direction 
+    glm::vec4 rot_av = rot * av ; 
+    glm::vec4 rot_av_expected(b, 0.f); 
+    glm::vec4 av_rot = av * rot ; 
+
+    std::cout << " rot*av:" << glm::to_string(rot_av) << " (this way yields expected b vector) " << std::endl ;
+    std::cout << " av*rot:" << glm::to_string(av_rot) << " (wrong multiplication order) )" << std::endl ;
+
+    float epsilon = 1e-5f ; 
+    float diff = glm::compMax(glm::abs(rot_av - rot_av_expected)) ;
+    std::cout << " diff " << diff << std::endl ;
+    assert( diff < epsilon );
+}
+
+
+
+void test_make_rotate_a2b()
+{
+    {
+        glm::vec3 a(0.f, 0.f, 1.f);  // Z 
+        glm::vec3 b(1.f, 0.f, 0.f);  // X
+        test_make_rotate_a2b( a, b, "(rotate Z -> X)", true );
+    }
+    {
+        glm::vec3 a(0.f, 0.f,   1.f);  // Z 
+        glm::vec3 b(0.f, 0.f,  -1.f);  // -Z  
+        test_make_rotate_a2b( a, b, "(what happens when a and b anti-parallel)", true );
+    }
+    {
+        glm::vec3 a(0.f, 0.f,   1.f);  // Z 
+        glm::vec3 b(0.f, 0.f,   1.f);  // Z  
+        test_make_rotate_a2b( a, b, "(what happens when a and b are parallel)", true );
+    }
+}
+
+
+
+void test_make_rotate_a2b_then_translate(const glm::vec3& a, const glm::vec3& b, const glm::vec3& tlate, const glm::vec3& p0, const glm::vec3& p1_expected, const char* msg)
+{
+    LOG(info) << msg ; 
+    float epsilon = 1e-6 ;
+
+    glm::mat4 tr = nglmext::make_rotate_a2b_then_translate(a,b,tlate);
+    std::cout << "  tr:" << glm::to_string(tr) << std::endl ;
+
+    glm::vec4 p0v(p0, 1.f);  // w=1.f for position
+    glm::vec4 p1v_expected(p1_expected, 1.f) ;
+
+    glm::vec4 p1v = tr * p0v ;
+    glm::vec4 p1v_wrong = p0v * tr ;
+
+    std::cout << "                      p0v :" << glm::to_string(p0v) << "" << std::endl ;
+    std::cout << "           p1v = tr * p0v :" << glm::to_string(p1v) << "" << std::endl ;
+    std::cout << "     p1v_wrong = p0v * tr :" << glm::to_string(p1v_wrong) << "" << std::endl ;
+    std::cout << "           p1_expected    :" << glm::to_string(p1_expected) << "" << std::endl ;
+
+    float diff = glm::compMax(glm::abs(p1v - p1v_expected)) ;
+    std::cout << " diff " << diff << std::endl ;
+    assert( diff < epsilon );
+}
+
+void test_make_rotate_a2b_then_translate()
+{
+    {
+        const char* msg =  "Z->X rotate then translate the origin, should just be translation" ;
+        glm::vec3 a(0.f, 0.f, 1.f);  // Z 
+        glm::vec3 b(1.f, 0.f, 0.f);  // X
+        glm::vec3 tlate(1000.f, 1000.f, 2000.f);
+
+        glm::vec3 p0(0.f,0.f,0.f);  
+        glm::vec3 p1_expected(p0+tlate); 
+
+        test_make_rotate_a2b_then_translate( a, b, tlate, p0, p1_expected, msg ); 
+    }
+    {
+        const char* msg =  "Z->X rotate then translate the origin, should just be translation" ;
+        glm::vec3 a(0.f, 0.f, 1.f);  // Z 
+        glm::vec3 b(1.f, 0.f, 0.f);  // X
+        glm::vec3 tlate(1000.f, 1000.f, 2000.f);
+
+        glm::vec3 p0(0.f,0.f,100.f);
+        glm::vec3 p0r(p0.z,0.f,0.f);
+        glm::vec3 p1_expected(p0r+tlate); 
+
+        test_make_rotate_a2b_then_translate( a, b, tlate, p0, p1_expected, msg ); 
+    }
+    {
+        const char* msg =  "Z->Z rotate then translate a point along Z, should just be translation" ;
+        glm::vec3 a(0.f, 0.f, 1.f);  
+        glm::vec3 b(0.f, 0.f, 1.f);  
+        glm::vec3 tlate(1000.f, 1000.f, 2000.f);
+
+        glm::vec3 p0(0.f,0.f,100.f);
+        glm::vec3 p0r(0.f,0.f,100.f);
+        glm::vec3 p1_expected(p0r+tlate); 
+
+        test_make_rotate_a2b_then_translate( a, b, tlate, p0, p1_expected, msg ); 
+    }
+
+    {
+        const char* msg =  "Z->-Z rotate then translate a point along Z " ;
+        glm::vec3 a(0.f, 0.f, 1.f);  
+        glm::vec3 b(0.f, 0.f, -1.f);  
+        glm::vec3 tlate(1000.f, 1000.f, 2000.f);
+
+        glm::vec3 p0(0.f,0.f,100.f);
+        glm::vec3 p0r(0.f,0.f,-100.f);
+        glm::vec3 p1_expected(p0r+tlate); 
+
+        test_make_rotate_a2b_then_translate( a, b, tlate, p0, p1_expected, msg ); 
+    }
+}
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -531,7 +658,12 @@ int main(int argc, char** argv)
     //test_nmat4triple_is_translation() ; 
 
 
-    test_GetEyeUVW();  
+    //test_GetEyeUVW();  
+
+    //test_make_rotate_a2b();
+    test_make_rotate_a2b_then_translate();
 
     return 0 ; 
 }
+
+// om-;TEST=NGLMExtTest om-t

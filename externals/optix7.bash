@@ -109,6 +109,11 @@ OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17
 * ~/opticks_refs/unofficial_RayTracingGems_v1.5.pdf
 
 
+Projects Using OptiX to look into
+------------------------------------
+
+* https://github.com/BlueBrain/Brayns
+
 
 OptiX 7.1.0 Release Notes (June 2020)
 -----------------------------------------

@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     bndidx = np.unique(np.abs(ox[:,3,0].view(np.int32))) - 1   # subtract 1 to get index as signed boundaries are 1-based 
     print("bndidx : %s " % repr(bndidx))
-    for _ in bndidx:print(blib.bname(_)) 
+    #for _ in bndidx:print(blib.bname(_)) 
 
     for i, oxr in enumerate(ox):
         oxf = oxr[3].view(np.int32)
