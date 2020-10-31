@@ -389,7 +389,7 @@ const char* SSys::username()
 #else
     const char* user = SSys::getenvvar("USER") ;
 #endif
-    return user ; 
+    return user ? user : "SSys-username-undefined" ; 
 }
 
 
@@ -415,8 +415,9 @@ const char* SSys::hostname()
 const char* SSys::hostname()
 {
     char hostname[HOST_NAME_MAX];
+    hostname[0] = '\0' ;
     gethostname(hostname, HOST_NAME_MAX);
-    return strdup(hostname) ; 
+    return hostname[0] == '\0' ? "SSys-hostname-undefined" : strdup(hostname) ; 
 }
 #endif
 

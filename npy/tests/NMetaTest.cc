@@ -246,6 +246,28 @@ void test_fillMap()
 }
 
 
+void test_add_string_NULL()
+{
+    NMeta* p = new NMeta ; 
+    p->add<std::string>("HOSTNAME", "yo" );
+
+    // p->add<std::string>("WHAT_ABOUT_NULL", NULL );
+    // std::string s = NULL ;
+    // std::string s(NULL) ;
+
+/**
+
+terminate called after throwing an instance of 'std::logic_error'
+  what():  basic_string::_S_construct null not valid
+Aborted (core dumped)
+
+**/
+
+     p->dump(); 
+}
+
+
+
 
 
 int main(int argc, char** argv)
@@ -260,9 +282,11 @@ int main(int argc, char** argv)
     test_prepLines();  
     test_append();  
     test_readTxt();  
-*/
     test_fillMap();  
+*/
+
+    test_add_string_NULL(); 
 
     return 0 ; 
 }
-
+// om-;TEST=NMetaTest om-t

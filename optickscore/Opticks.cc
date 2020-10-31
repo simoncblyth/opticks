@@ -416,6 +416,7 @@ OKTest without options defaults to writing the below::
 
 void Opticks::init()
 {
+    LOG(LEVEL) << "[" ; 
     LOG(info) << m_mode->description() << " hostname " << SSys::hostname() ; 
     if(IsLegacyGeometryEnabled())
     {
@@ -442,6 +443,7 @@ void Opticks::init()
     m_parameters->add<std::string>("USERNAME", SSys::username() ); 
 
     m_parameters->add<std::string>("OpticksSwitches", OpticksSwitches() ); 
+    LOG(LEVEL) << "]" ; 
 }
 
 
