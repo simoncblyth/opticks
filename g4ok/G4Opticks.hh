@@ -312,6 +312,8 @@ class G4OK_API G4Opticks
         const G4VPhysicalVolume*   m_world ; 
         const GGeo*                m_ggeo ; 
         const GBndLib*             m_blib ; 
+        GPho*                      m_hits_wrapper ; // geometry aware hits wrapper
+        
         Opticks*                   m_ok ;
         CTraverser*                m_traverser ; 
         CMaterialTable*            m_mtab ; 
@@ -323,8 +325,7 @@ class G4OK_API G4Opticks
         // transient pointers borrowed from the collectors 
         NPY<float>*                m_gensteps ; 
         NPY<float>*                m_genphotons ; 
-        NPY<float>*                m_hits_ ; 
-        GPho*                      m_hits ; 
+        NPY<float>*                m_hits ; 
         unsigned                   m_num_hits ; 
     private:
         // minimal instrumentation from the G4 side of things 

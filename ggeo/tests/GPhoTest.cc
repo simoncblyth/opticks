@@ -42,7 +42,8 @@ int main(int argc, char** argv)
     NPY<float>* ox = NPY<float>::load( path ) ; 
     if(ox == NULL ) return 0 ; 
 
-    GPho ph( ox, gg, opt);   
+    GPho ph( gg, opt);   
+    ph.setPhotons(ox);
     ph.setSelection('L');  // A:All L:Landed H:Hit  
     
     unsigned maxDump = 0 ; 

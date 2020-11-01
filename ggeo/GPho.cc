@@ -66,14 +66,14 @@ const char* GPho::getSelectionName() const
 
 
 
-GPho::GPho(const NPY<float>* photons, const GGeo* ggeo, const char* opt) 
+GPho::GPho(const GGeo* ggeo, const char* opt) 
     :  
-    m_photons(photons),
-    m_selection('A'),
-    m_msk(photons->getMsk()),
-    m_num_photons(photons ? photons->getNumItems() : 0 ),
+    m_photons(NULL),
+    m_msk(NULL),
+    m_num_photons(0),
     m_ggeo(ggeo),
     m_opt(opt ? strdup(opt) : NULL),
+    m_selection('A'),
     m_nidx(opt ? BStr::Contains(opt, "nidx", ',' ) : true ),
     m_nrpo(opt ? BStr::Contains(opt, "nrpo", ',' ) : true ),
     m_mski(opt ? BStr::Contains(opt, "mski", ',' ) : true ),
@@ -85,19 +85,23 @@ GPho::GPho(const NPY<float>* photons, const GGeo* ggeo, const char* opt)
     m_polw(opt ? BStr::Contains(opt, "polw", ',' ) : true ),
     m_flgs(opt ? BStr::Contains(opt, "flgs", ',' ) : true )
 {
-    init();
 }
 
-void GPho::init()
+
+void GPho::setPhotons(const  NPY<float>* photons)
 {
-    LOG(LEVEL); 
+    m_photons = photons ; 
+    assert( m_photons ); 
     assert( m_photons->hasShape(-1,4,4) );
+    m_num_photons = m_photons->getNumItems() ;
+    m_msk = m_photons->getMsk();  
     if(m_msk)
     {
         unsigned num_origin_indices = m_msk->getNumItems() ; 
         assert( num_origin_indices == m_num_photons && "associated masks are required to have been already applied to the photons" ); 
     }
 }
+
 
 unsigned GPho::getNumPhotons() const 
 {
@@ -372,7 +376,8 @@ void GPho::Dump(const NPY<float>* ox, const GGeo* ggeo, unsigned modulo, unsigne
               ;
  
     if(!ox) return ; 
-    GPho ph(ox, ggeo, opt) ;
+    GPho ph(ggeo, opt) ;
+    ph.setPhotons(ox);
     ph.dump(modulo, margin); 
 }
 
@@ -383,7 +388,8 @@ void GPho::Dump(const NPY<float>* ox, const GGeo* ggeo, unsigned maxDump, const 
               ;
  
     if(!ox) return ; 
-    GPho ph(ox, ggeo, opt) ;
+    GPho ph(ggeo, opt) ;
+    ph.setPhotons(ox);
     ph.dump("GPho::Dump", maxDump); 
 }
 

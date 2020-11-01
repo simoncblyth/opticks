@@ -198,6 +198,8 @@ G4Opticks::G4Opticks()
     m_standardize_geant4_materials(false), 
     m_world(NULL),
     m_ggeo(NULL),
+    m_blib(NULL),
+    m_hits_wrapper(NULL),
     m_ok(NULL),
     m_traverser(NULL),
     m_mtab(NULL),
@@ -207,7 +209,6 @@ G4Opticks::G4Opticks()
     m_opmgr(NULL),
     m_gensteps(NULL),
     m_genphotons(NULL),
-    m_hits_(NULL),
     m_hits(NULL),
     m_num_hits(0),
     m_g4hit_collector(NULL),
@@ -272,8 +273,8 @@ std::string G4Opticks::dbgdesc_() const
        << std::setw(32) << " m_opmgr "                        << std::setw(12) << m_opmgr  << std::endl
        << std::setw(32) << " m_gensteps "                     << std::setw(12) << m_gensteps << std::endl
        << std::setw(32) << " m_genphotons "                   << std::setw(12) << m_genphotons << std::endl
-       << std::setw(32) << " m_hits_ "                        << std::setw(12) << m_hits_ << std::endl 
        << std::setw(32) << " m_hits "                         << std::setw(12) << m_hits << std::endl 
+       << std::setw(32) << " m_hits_wrapper "                 << std::setw(12) << m_hits_wrapper << std::endl 
        << std::setw(32) << " m_num_hits "                     << std::setw(12) << m_num_hits << std::endl 
        << std::setw(32) << " m_g4hit_collector "              << std::setw(12) << m_g4hit_collector << std::endl
        << std::setw(32) << " m_g4photon_collector "           << std::setw(12) << m_g4photon_collector << std::endl 
@@ -425,6 +426,8 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
 
     m_ggeo = ggeo ;
     m_blib = m_ggeo->getBndLib();  
+    m_hits_wrapper = new GPho(m_ggeo) ;   // geometry aware photon hits wrapper
+
     m_ok = m_ggeo->getOpticks(); 
 
     createCollectors(); 
@@ -802,9 +805,10 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
         m_opmgr->propagate();     // GPU simulation is done in here 
 
         OpticksEvent* event = m_opmgr->getEvent(); 
-        m_hits_ = event->getHitData()->clone() ; 
-        m_hits = new GPho(m_hits_, m_ggeo) ; 
-        m_num_hits = m_hits->getNumPhotons() ; 
+        m_hits = event->getHitData()->clone() ; 
+        m_num_hits = m_hits->getNumItems() ; 
+
+        m_hits_wrapper->setPhotons( m_hits ); 
 
         // minimal g4 side instrumentation in "1st executable" 
         // do after propagate, so the event will have been created already
@@ -826,13 +830,13 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
 
 NPY<float>* G4Opticks::getHits() const 
 {
-    return m_hits_ ; 
+    return m_hits ; 
 }
 
 void G4Opticks::dumpHits(const char* msg) const 
 {
     unsigned maxDump = 0 ; 
-    m_hits->dump(msg, maxDump);
+    m_hits_wrapper->dump(msg, maxDump);
 }
 
 
@@ -856,19 +860,19 @@ void G4Opticks::getHit(
 {
     assert( i < m_num_hits ); 
 
-    glm::vec4 post = m_hits->getPositionTime(i);      
+    glm::vec4 post = m_hits_wrapper->getPositionTime(i);      
     position->set(double(post.x), double(post.y), double(post.z)); 
     *time = double(post.w) ; 
 
-    glm::vec4 dirw = m_hits->getDirectionWeight(i);      
+    glm::vec4 dirw = m_hits_wrapper->getDirectionWeight(i);      
     direction->set(double(dirw.x), double(dirw.y), double(dirw.z)); 
     *weight = double(dirw.w) ; 
 
-    glm::vec4 polw = m_hits->getPolarizationWavelength(i); 
+    glm::vec4 polw = m_hits_wrapper->getPolarizationWavelength(i); 
     polarization->set(double(polw.x), double(polw.y), double(polw.z)); 
     *wavelength = double(polw.w);  
 
-    glm::uvec4 flags = m_hits->getFlags(i);
+    glm::uvec4 flags = m_hits_wrapper->getFlags(i);
     *flags_x = flags.x ; 
     *flags_y = flags.y ; 
     *flags_z = flags.z ; 

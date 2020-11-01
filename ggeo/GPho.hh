@@ -57,9 +57,8 @@ class GGEO_API GPho {
         void        setSelection(char selection) ;
         const char* getSelectionName() const ;
     public:  
-        GPho(const NPY<float>* photons, const GGeo* ggeo, const char* opt="mski,post,dirw,polw,flgs"); 
-    private:
-        void init();   
+        GPho(const GGeo* ggeo, const char* opt="mski,post,dirw,polw,flgs"); 
+        void setPhotons(const NPY<float>* photons); 
     public:  
         const NPY<float>*     getPhotons() const ;
         unsigned              getNumPhotons() const ;
@@ -89,12 +88,14 @@ class GGEO_API GPho {
         void                  dump(unsigned modulo, unsigned margin, const char* msg="NPho::dump") const ;
         void                  dump(const char* msg="NPho::dump", unsigned maxDump=0) const ; 
    private:
+       // these three are set by setPhotons 
        const NPY<float>*      m_photons ; 
-       char                   m_selection ; 
        const NPY<unsigned>*   m_msk ; 
        unsigned               m_num_photons ; 
+   private:
        const GGeo*            m_ggeo ; 
        const char*            m_opt ; 
+       char                   m_selection ; 
    private:
        // dumping options
        bool                   m_nidx ; 
