@@ -802,6 +802,7 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
     if(m_gpu_propagate)
     {
         m_opmgr->setGensteps(m_gensteps);      
+
         m_opmgr->propagate();     // GPU simulation is done in here 
 
         OpticksEvent* event = m_opmgr->getEvent(); 
@@ -820,6 +821,7 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
 
 
         m_opmgr->reset();   
+
         // clears OpticksEvent buffers,   excluding gensteps
         // clone any buffers to be retained before the reset
     }
@@ -1282,7 +1284,7 @@ Used from G4OKTest for debugging only.
 
 **/
 
-void G4Opticks::collectDefaultTorchStep(unsigned node_index)
+void G4Opticks::collectDefaultTorchStep(unsigned node_index, unsigned num_photons)
 {
      unsigned gentype = OpticksGenstep_TORCH  ; 
      unsigned num_step = 1 ; 
@@ -1300,12 +1302,13 @@ void G4Opticks::collectDefaultTorchStep(unsigned node_index)
 
      for(unsigned i=0 ; i < num_step ; i++) 
      {
+         if(num_photons > 0) ts->setNumPhotons(num_photons);  // otherwise use default
          ts->addStep(); 
      }
 
      NPY<float>* arr = ts->getNPY(); 
 
-     arr->save("$TMP/debugging/collectDefaultTorchStep/gs.npy");  
+     //arr->save("$TMP/debugging/collectDefaultTorchStep/gs.npy");  
 
      const OpticksGenstep* gs = new OpticksGenstep(arr); 
     

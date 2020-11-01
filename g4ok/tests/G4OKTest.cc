@@ -54,11 +54,7 @@ So add::
     collectTorchStep(unsigned target_nidx, unsigned num_photons);  
 
 
-
-
 **/
-
-
 
 
 class G4OKTest 
@@ -72,9 +68,10 @@ class G4OKTest
         void initSensorData();
         void initSensorAngularEfficiency();
     public: 
-        void collectGensteps(); 
-        void propagate(); 
-        int rc() const ; 
+        unsigned getNumGenstepPhotons(int eventID) const ;
+        void     collectGensteps(int eventID); 
+        void     propagate(int eventID); 
+        int      rc() const ; 
     private:
         int          m_log ; 
         const char*  m_gdmlpath ; 
@@ -197,8 +194,8 @@ void G4OKTest::initSensorData()
 void G4OKTest::initSensorAngularEfficiency()
 {
     unsigned num_cat = 1 ; 
-    unsigned num_theta_steps = 181 ;  // height
-    unsigned num_phi_steps = 361 ;    // width 
+    unsigned num_theta_steps = 180 ;  // height
+    unsigned num_phi_steps = 360 ;    // width 
 
     MockSensorAngularEfficiencyTable tab( num_cat, num_theta_steps, num_phi_steps ); 
     NPY<float>* arr = tab.getArray(); 
@@ -207,23 +204,54 @@ void G4OKTest::initSensorAngularEfficiency()
 }
 
 
-
-
-void G4OKTest::collectGensteps()
+unsigned G4OKTest::getNumGenstepPhotons(int eventID) const
 {
-    unsigned node_index = m_torchtarget ; 
-    m_g4ok->collectDefaultTorchStep(node_index); 
+    unsigned num_photons = 0 ;   // 0: leads to default torch genstep num_photons of 10000(?)
+    switch(eventID) 
+    {
+       case 0:  num_photons = 1000 ; break ; 
+       case 1:  num_photons = 2000 ; break ; 
+       case 2:  num_photons = 3000 ; break ; 
+       case 3:  num_photons = 4000 ; break ; 
+       case 4:  num_photons = 5000 ; break ; 
+       case 5:  num_photons = 5000 ; break ; 
+       case 6:  num_photons = 4000 ; break ; 
+       case 7:  num_photons = 3000 ; break ; 
+       case 8:  num_photons = 2000 ; break ; 
+       case 9:  num_photons = 1000 ; break ;
+       default: num_photons = 0    ; break ;  
+    }
+    return num_photons ; 
 }
 
 
-void G4OKTest::propagate()
+void G4OKTest::collectGensteps(int eventID)
 {
-    G4int eventID = 0 ; 
-    int nhit = m_g4ok->propagateOpticalPhotons(eventID);
-    LOG(info) << " nhit " << nhit ; 
+    unsigned node_index = m_torchtarget ; 
+    unsigned num_genstep_photons = getNumGenstepPhotons(eventID); 
+
+    m_g4ok->collectDefaultTorchStep(node_index, num_genstep_photons); 
+
+    LOG(error) 
+        << " eventID " << eventID
+        << " num_genstep_photons " << num_genstep_photons
+        ;  
+}
+
+void G4OKTest::propagate(int eventID)
+{
+    int num_hit = m_g4ok->propagateOpticalPhotons(eventID);
+    unsigned num_genstep_photons = getNumGenstepPhotons(eventID); 
+
+    LOG(error) 
+        << " eventID " << eventID
+        << " num_genstep_photons " << num_genstep_photons
+        << " num_hit " << num_hit 
+        ; 
 
     m_g4ok->dumpHits("G4OKTest::propagate"); 
 
+    m_g4ok->reset(); // <--- without reset gensteps just keep accumulating 
 }
 
 int G4OKTest::rc() const 
@@ -236,8 +264,13 @@ int G4OKTest::rc() const
 int main(int argc, char** argv)
 {
     G4OKTest t(argc, argv); 
-    t.collectGensteps();
-    t.propagate();
+
+    for(int ievt=0 ; ievt < 10 ; ievt++)
+    {
+       t.collectGensteps(ievt);
+       t.propagate(ievt);
+    }
+
     return t.rc() ;
 }
 

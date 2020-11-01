@@ -105,7 +105,7 @@ void OpticksAna::run()
 {
    const char* anakey = m_ok->getAnaKey();
    bool enabled = isKeyEnabled(anakey) ; 
-   LOG(info)
+   LOG(LEVEL)
        << " anakey " << anakey  
        << " enabled " << ( enabled ? "Y" : "N" )
        ; 

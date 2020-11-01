@@ -1105,7 +1105,7 @@ void OpticksEvent::resize()
     assert(enoughRng && " need to prepare and persist more RNG states up to maximual per propagation number" );
 
 
-    LOG(debug) 
+    LOG(LEVEL) 
         << " num_photons " << num_photons  
         << " num_records " << num_records 
         << " maxrec " << maxrec
@@ -1686,8 +1686,10 @@ void OpticksEvent::saveHitData(NPY<float>* ht) const
     if(ht)
     {
         unsigned num_hit = ht->getNumItems(); 
+
         ht->save(m_pfx, "ht", m_typ,  m_tag, m_udet);  // even when zero hits
-        LOG(info) 
+
+        LOG(LEVEL) 
              << " num_hit " << num_hit
              << " ht " << ht->getShapeString() 
              << " tag " << m_tag 
@@ -1771,7 +1773,7 @@ void OpticksEvent::saveSourceData(NPY<float>* so) const
 
 void OpticksEvent::makeReport(bool verbose)
 {
-    LOG(info) << "tagdir " << getTagDir()  ; 
+    LOG(LEVEL) << "tagdir " << getTagDir()  ; 
 
     if(verbose)
     m_parameters->dump();
@@ -2380,7 +2382,7 @@ void OpticksEvent::saveIndex()
     bool is_indexed = isIndexed();
     if(!is_indexed)
     {
-        LOG(error) << "SKIP as not indexed " ; 
+        LOG(LEVEL) << "SKIP as not indexed " ; 
         return ; 
     }
 
