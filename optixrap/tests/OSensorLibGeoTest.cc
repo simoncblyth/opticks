@@ -18,6 +18,25 @@ const char* CMAKE_TARGET = "OSensorLibGeoTest" ;
 const char* MAIN_PTXPATH   = OKConf::PTXPath(CMAKE_TARGET, "OSensorLibGeoTest.cu", "tests" );      
 const char* SPHERE_PTXPATH = OKConf::PTXPath(CMAKE_TARGET, "sphere.cu",            "tests" );
 
+/**
+OSensorLibGeoTest
+===================
+
+Creates a geometry of many spheres arranged at positions on a large sphere
+and oriented to point the local z-directions of the small spheres at the center 
+of the large one. Renders of the geometry are shaded using the sensor efficiency which 
+is obtained using OSensorLib_sensor_efficiency using the local theta-phi positions 
+of intersects and the sensor category.
+
+Global frame intersect positions and intersected geometry identities are recorded 
+into the posi.npy array. The posi.npy array is used by OSensorLibGeoTest.py 
+together with the inverse of the saved transforms to obtain local frame intersect
+positions which are checked to correspond to the known sphere radius.
+
+This test was used to develop OSensorLib
+
+**/
+
 class OSensorLibGeoTest 
 {
     private:
@@ -46,6 +65,7 @@ class OSensorLibGeoTest
         void save() const ; 
     private:
         void init(); 
+        void initSensorEfficiency(); 
         void initGeometry(); 
         void initPipeline(); 
         void initView(); 
@@ -78,11 +98,34 @@ OSensorLibGeoTest::OSensorLibGeoTest(const SensorLib* senlib)
 
 void OSensorLibGeoTest::init()
 {
-    // 0. creates GPU textures for each sensor category + small texid buffer 
-    m_osenlib->convert();  
+    initSensorEfficiency(); 
     initGeometry(); 
     initPipeline(); 
 }
+
+/**
+OSensorLibGeoTest::initSensorEfficiency
+----------------------------------------
+
+Creates GPU textures for each sensor category and small texid buffer
+with texture ID for each.
+
+**/
+
+void OSensorLibGeoTest::initSensorEfficiency()
+{
+    m_osenlib->convert();  
+}
+
+
+/**
+OSensorLibGeoTest::initGeometry
+--------------------------------
+
+Creates an OptiX geometry using OCtx::create_instanced_assembly with the 
+transforms array,
+
+**/
 
 void OSensorLibGeoTest::initGeometry()
 {
@@ -95,19 +138,24 @@ void OSensorLibGeoTest::initGeometry()
     unsigned num = 1 ; 
     void* sph_ptr = m_octx->create_geometry(num, SPHERE_PTXPATH, "bounds", "intersect" );  
     m_octx->set_geometry_float4( sph_ptr, "sphere",  0.f, 0.f, 0.f, m_sphere_radius );
-
-    // 3. create material and top group
-
     void* mat_ptr = m_octx->create_material( MAIN_PTXPATH,  m_closest_hit, m_entry_point_index );  
+
+    void* sph_assembly_ptr = m_octx->create_instanced_assembly( m_transforms, sph_ptr, mat_ptr, m_identity_from_transform_03 );
 
     void* top_ptr = m_octx->create_group("top_object", NULL );  
     void* top_accel = m_octx->create_acceleration("Trbvh");
     m_octx->set_group_acceleration( top_ptr, top_accel );  
 
-    void* sph_assembly_ptr = m_octx->create_instanced_assembly( m_transforms, sph_ptr, mat_ptr, m_identity_from_transform_03 );
-
     m_octx->group_add_child_group( top_ptr, sph_assembly_ptr );  
 }
+
+/**
+OSensorLibGeoTest::initPipeline
+---------------------------------
+
+Link up the pipeline and output buffers.
+
+**/
 
 void OSensorLibGeoTest::initPipeline() 
 {
@@ -124,6 +172,15 @@ void OSensorLibGeoTest::initPipeline()
     m_posi->zero();
 }
 
+
+/**
+OSensorLibGeoTest::setViewpoint
+--------------------------------
+
+Convert whole assembly model frame eye-look-up into global frame 
+and set into context.
+
+**/
 
 void OSensorLibGeoTest::setViewpoint() 
 {
@@ -146,6 +203,13 @@ void OSensorLibGeoTest::setViewpoint()
     m_octx->set_context_viewpoint( eye, U, V, W, scene_epsilon );
 }
 
+/**
+OSensorLibGeoTest::render
+--------------------------
+
+Do the GPU launch and download output buffers
+
+**/
 
 void  OSensorLibGeoTest::render()
 {
