@@ -248,6 +248,16 @@ unsigned NMeta::getNumKeys()
     return m_keys.size();
 }
 
+bool NMeta::hasKey(const char* key) const 
+{
+    return m_js.count(key) == 1 ;
+/*
+    updateKeys() ;
+    return std::find(m_keys.begin(), m_keys.end(), key ) != m_keys.end() ; 
+*/
+}
+
+
 /**
 NMeta::getKey
 ----------------

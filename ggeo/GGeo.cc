@@ -142,8 +142,11 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_instancer(NULL), 
    m_loaded_from_cache(false), 
    m_prepared(false), 
+   m_gdmlauxmeta(NULL),
+   m_loadedcachemeta(NULL),
    m_lv2sd(NULL),
    m_lv2mt(NULL),
+   m_origin_gdmlpath(NULL),
    m_lookup(NULL), 
    m_meshlib(NULL),
    m_geolib(NULL),
@@ -193,6 +196,16 @@ Composition* GGeo::getComposition()
 {
     return m_composition ; 
 }
+
+void GGeo::setGDMLAuxMeta(NMeta* gdmlauxmeta)
+{
+    m_gdmlauxmeta = gdmlauxmeta ; 
+}
+NMeta* GGeo::getGDMLAuxMeta() const 
+{
+    return m_gdmlauxmeta ; 
+}
+
 
 void GGeo::setMeshVerbosity(unsigned int verbosity)
 {
@@ -650,6 +663,12 @@ void GGeo::save()
 
 void GGeo::saveCacheMeta() const 
 {
+    if(m_gdmlauxmeta)
+    {
+         const char* gdmlauxmetapath = m_ok->getGDMLAuxMetaPath(); 
+         m_gdmlauxmeta->save(gdmlauxmetapath); 
+    }
+
     if(m_lv2sd)
     {
         m_ok->appendCacheMeta("lv2sd", m_lv2sd); 
@@ -690,6 +709,9 @@ Invoked at the tail of GGeo::loadFromCache.
 void GGeo::loadCacheMeta() // loads metadata that the process that created the geocache persisted into the geocache
 {
     LOG(LEVEL) ; 
+
+    NMeta* gdmlauxmeta = m_ok->getGDMLAuxMeta(); 
+    setGDMLAuxMeta(gdmlauxmeta); 
 
     NMeta* lv2sd = m_ok->getOriginCacheMeta("lv2sd"); 
     NMeta* lv2mt = m_ok->getOriginCacheMeta("lv2mt"); 

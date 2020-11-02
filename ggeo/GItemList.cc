@@ -186,6 +186,15 @@ void GItemList::getIndicesWithKeyEnding( std::vector<unsigned>& indices, const c
     }
 }
 
+void GItemList::getIndicesWithKey( std::vector<unsigned>& indices, const char* key ) const 
+{  
+    for(unsigned i=0 ; i < m_list.size() ; i++)
+    {
+        const std::string& k = m_list[i] ; 
+        if( strcmp( k.c_str(), key ) == 0) indices.push_back(i) ; 
+    }
+}
+
 
 int GItemList::findIndexWithKeyStarting( const char* starting ) const 
 {  

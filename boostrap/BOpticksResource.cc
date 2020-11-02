@@ -191,6 +191,7 @@ BOpticksResource::BOpticksResource()
     m_metapath(NULL),
     m_idmappath(NULL),
     m_g4codegendir(NULL),
+    m_gdmlauxmetapath(NULL),
     m_cachemetapath(NULL),
     m_runcommentpath(NULL),
     m_primariespath(NULL),
@@ -938,6 +939,9 @@ void BOpticksResource::setupViaKey()
     m_g4codegendir = makeIdPathPath("g4codegen" );
     m_res->addDir("g4codegendir", m_g4codegendir ); 
 
+    m_gdmlauxmetapath = makeIdPathPath("gdmlauxmeta.json");  
+    m_res->addPath("gdmlauxmetapath", m_gdmlauxmetapath ); 
+
     m_cachemetapath = makeIdPathPath("cachemeta.json");  
     m_res->addPath("cachemetapath", m_cachemetapath ); 
 
@@ -1140,6 +1144,7 @@ const char* BOpticksResource::getSrcGLTFName() const
 
 const char* BOpticksResource::getG4CodeGenDir() const { return m_g4codegendir ; }
 const char* BOpticksResource::getCacheMetaPath() const { return m_cachemetapath ; }
+const char* BOpticksResource::getGDMLAuxMetaPath() const { return m_gdmlauxmetapath ; }
 const char* BOpticksResource::getRunCommentPath() const { return m_runcommentpath ; }
 const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; } 
 const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; } 

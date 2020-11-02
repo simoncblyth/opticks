@@ -267,6 +267,44 @@ Aborted (core dumped)
 }
 
 
+void test_hasKey()
+{
+
+    NMeta m1 ; 
+    assert( m1.size() == 0 ); 
+
+    m1.set<int>("red", 1);
+    assert( m1.size() == 1 ); 
+    m1.set<int>("green", 2);
+    m1.set<int>("blue", 3);
+    m1.set<float>("pi", 3.1415);
+    m1.set<std::string>("name", "yo");
+
+    assert( m1.size() == 5 ); 
+    assert( m1.getNumKeys() == 5 ); 
+
+    NMeta m2 ; 
+    m2.set<int>("cyan", 7);
+    m2.set<int>("red", 100);
+    m2.set<int>("green", 200);
+    m2.set<int>("blue", 300);
+    m2.set<float>("pi", 3.1415);
+    m2.set<std::string>("name", "yo");
+
+    assert( m2.getNumKeys() == 6 ); 
+
+    NMeta m ;
+    m.setObj("m1", &m1 );
+    m.setObj("m2", &m2 );
+    m.setObj("m3", &m2 );
+    m.setObj("m4", &m2 );
+
+    assert( m.hasKey("m1") == true ); 
+    assert( m.hasKey("m5") == false ); 
+    assert( m.hasKey("m5") == false ); 
+
+}
+
 
 
 
@@ -283,9 +321,10 @@ int main(int argc, char** argv)
     test_append();  
     test_readTxt();  
     test_fillMap();  
-*/
-
     test_add_string_NULL(); 
+*/
+    test_hasKey(); 
+
 
     return 0 ; 
 }

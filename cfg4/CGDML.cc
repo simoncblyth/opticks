@@ -130,7 +130,9 @@ NMeta* CGDML::getAuxMeta() const
         const G4String& lvname = lv->GetName();  
 
         NMeta* lvmeta = new NMeta ; 
-        //lvmeta->set<std::string>("lvname", lvname ) ; 
+        lvmeta->set<std::string>("lvname", lvname ) ;  
+        // although duplicating the higher level key, its convenient
+        // for sub-objects to have this too
 
         for (VIT vit = ls.begin(); vit != ls.end(); vit++) 
         {

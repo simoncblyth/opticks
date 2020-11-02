@@ -186,6 +186,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool isValid() const ;
         bool isLive() const ;
     public:
+        void   setGDMLAuxMeta(NMeta* gdmlauxmeta); 
+        NMeta* getGDMLAuxMeta() const ; 
+    public:
         Composition* getComposition();
         void setComposition(Composition* composition);
     public:
@@ -421,14 +424,12 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool                          m_loaded_from_cache ;  
         bool                          m_prepared ;  
 
+        NMeta*                        m_gdmlauxmeta ;  
         NMeta*                        m_loadedcachemeta ; 
         NMeta*                        m_lv2sd ; 
         NMeta*                        m_lv2mt ; 
         const char*                   m_origin_gdmlpath ; 
 
-#ifdef OLD_SENSOR
-        std::vector<GVolume*>           m_sensitive_volumes ; 
-#endif
         std::vector<GVolume*>           m_sensor_volumes ; 
         std::unordered_set<std::string> m_cathode_lv ; 
 
@@ -451,11 +452,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         GColorizer*                   m_colorizer ; 
 
-#ifdef OLD_BOUNDS
-        gfloat3*                      m_low ; 
-        gfloat3*                      m_high ; 
-#endif
-
     private:
 
         unsigned int                       m_sensitive_count ;  
@@ -466,10 +462,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
     private:
 
-#ifdef OLD_SCENE
-        // glTF route 
-        GScene*                            m_gscene ; 
-#endif
         int                                m_placeholder_last ; 
 
 };

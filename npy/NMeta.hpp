@@ -31,17 +31,27 @@
 NMeta
 =======
 
-Metadata persistency using nlohmann::json
+Metadata persistency using nlohmann::json single header which 
+comes is via yocto (gltf) external::
 
-/usr/local/opticks/externals/yoctogl/yocto-gl/yocto/ext/json.hpp
+    /usr/local/opticks/externals/yoctogl/yocto-gl/yocto/ext/json.hpp
 
-https://github.com/nlohmann/json
+* https://github.com/nlohmann/json
+* https://nlohmann.github.io/json/
 
-https://nlohmann.github.io/json/
+NB 
 
+* NMeta adds a limitation of only handling keyed structures, not lists
 
-NB NMeta adds a limitation of only handling keyed structures, not lists
+* are using a very old version of json.hpp version 2.0.7 from 2016
+  just because that is what yocto uses 
 
+* newer versions has a "contains(key)" method that would be handy 
+
+* TODO: investigate updating yocto and this header : suspect 
+  multiple versions of the json.hpp header used by NMeta and yocto 
+  would not cause a problem : as the underlying type is well wrapped 
+  and not making much use of yocto gltf anymore 
 
 **/
 
@@ -63,7 +73,8 @@ class NPY_API NMeta {
        const nlohmann::json& cjs() const ;
    public:
        const char* getKey(unsigned idx) const ;
-       unsigned    getNumKeys() ;             // non-const may updateKeys
+       unsigned    getNumKeys() ;             // non-const as may updateKeys
+
        std::vector<std::string>& getLines();  // non-const may prepLines
        std::string desc(unsigned wid=0);
        void fillMap(std::map<std::string, std::string>& mss ); 
@@ -83,7 +94,11 @@ class NPY_API NMeta {
        template <typename T> T get(const char* name) const ;
        template <typename T> T get(const char* name, const char* fallback) const ;
        int getIntFromString(const char* name, const char* fallback) const ;
+
+   public:
+
        bool hasItem(const char* name) const ;
+       bool hasKey(const char* key) const ; // same as hasItem
 
    public:
        template <typename T> static T Get(const NMeta* meta, const char* name, const char* fallback)  ;

@@ -331,6 +331,7 @@ class OKCORE_API Opticks {
    public:
        const char* getG4CodeGenDir() const ;  // search for g4code
        const char* getCacheMetaPath() const ;
+       const char* getGDMLAuxMetaPath() const ;
        const char* getRunCommentPath() const ;
 
        const char* getGLTFPath() const ;      // output GLTF path
@@ -354,7 +355,13 @@ class OKCORE_API Opticks {
        void        saveCacheMeta() const ; 
        void        loadOriginCacheMeta() ; 
        NMeta*      getOriginCacheMeta(const char* obj) const ; 
-
+   public:
+       NMeta*      getGDMLAuxMeta() const  ; 
+       void        findGDMLAuxMetaEntries(std::vector<NMeta*>&, const char* key, const char* val ) const ; 
+       void        findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const ; // for entries matching (k,v) collect  q values
+       unsigned    getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const ;
+       const char* getGDMLAuxTargetLVName() const ; // returns first name or NULL when none
+   public:
        void        dumpCacheMeta(const char* msg="Opticks::dumpCacheMeta") const ; 
        static std::string ExtractCacheMetaGDMLPath(const NMeta* meta) ; 
 

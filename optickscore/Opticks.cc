@@ -1689,6 +1689,7 @@ bool Opticks::isGLTF() const
 const char* Opticks::getGLTFPath() const { return m_resource->getGLTFPath() ; }
 const char* Opticks::getG4CodeGenDir() const { return m_resource->getG4CodeGenDir() ; }
 const char* Opticks::getCacheMetaPath() const { return m_resource->getCacheMetaPath() ; } 
+const char* Opticks::getGDMLAuxMetaPath() const { return m_resource->getGDMLAuxMetaPath() ; } 
 const char* Opticks::getRunCommentPath() const { return m_resource->getRunCommentPath() ; } 
 
 
@@ -1937,6 +1938,106 @@ NMeta* Opticks::getOriginCacheMeta(const char* obj) const
 {
     return m_origin_cachemeta ? m_origin_cachemeta->getObj(obj) : NULL ; 
 }
+
+NMeta* Opticks::getGDMLAuxMeta() const 
+{
+    const char* gdmlauxmetapath = getGDMLAuxMetaPath();
+    NMeta* gdmlauxmeta = NMeta::Load(gdmlauxmetapath) ;
+    return gdmlauxmeta ; 
+}
+
+void Opticks::findGDMLAuxMetaEntries(std::vector<NMeta*>& entries, const char* k, const char* v ) const 
+{
+    NMeta* gam = getGDMLAuxMeta() ; 
+    unsigned ni = gam ? gam->getNumKeys() : 0 ;
+    bool dump = false ; 
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        const char* subKey = gam->getKey(i); 
+        NMeta* sub = gam->getObj(subKey); 
+
+        unsigned mode = 0 ; 
+
+        if(k == NULL && v == NULL) // both NULL : match all 
+        {
+            mode = 1 ; 
+            entries.push_back(sub); 
+        }
+        else if( k != NULL && v == NULL)  // key non-NULL, value NULL : match all with that key  
+        {
+            mode = 2 ; 
+            bool has_key = sub->hasKey(k); 
+            if(has_key) entries.push_back(sub) ;
+        }
+        else if( k != NULL && v != NULL)  // key non-NULL, value non-NULL : match only those with that (key,value) pair
+        {
+            mode = 3 ; 
+            bool has_key = sub->hasKey(k); 
+            std::string value = has_key ? sub->get<std::string>(k) : ""  ; 
+            if(strcmp(value.c_str(), v) == 0) entries.push_back(sub); 
+        }
+
+        if(dump)
+        std::cout 
+           << " i " << i
+           << " mode " << mode 
+           << " subKey " << subKey 
+           << std::endl 
+           ;
+
+        //sub->dump("Opticks::findGDMLAuxMetaEntries");  
+   }
+
+   LOG(LEVEL) 
+       << " ni " << ni 
+       << " k " << k 
+       << " v " << v 
+       << " entries.size() " << entries.size()
+       ; 
+}
+
+
+void Opticks::findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const 
+{
+    std::vector<NMeta*> entries ; 
+    findGDMLAuxMetaEntries(entries, k, v );
+
+    for(unsigned i=0 ; i < entries.size() ; i++)
+    {
+        NMeta* entry = entries[i]; 
+        std::string qv = entry->get<std::string>(q) ; 
+        values.push_back(qv); 
+    }
+}
+
+unsigned Opticks::getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const 
+{
+    const char* k = "label" ; 
+    const char* v = "target" ; 
+    const char* q = "lvname" ; 
+
+    findGDMLAuxValues(lvnames, k,v,q); 
+
+    LOG(LEVEL) 
+        << " for entries matching (k,v) : " << "(" << k << "," << v << ")" 
+        << " collect values of q:" << q
+        << " : lvnames.size() " << lvnames.size()
+        ;
+
+    return lvnames.size(); 
+}
+
+const char* Opticks::getGDMLAuxTargetLVName() const 
+{
+    std::vector<std::string> lvnames ; 
+    getGDMLAuxTargetLVNames(lvnames);
+    return lvnames.size() > 0 ? strdup(lvnames[0].c_str()) : NULL ; 
+}
+
+
+
+
 
 
 

@@ -230,6 +230,13 @@ const char* GNodeLib::getLVName(unsigned index) const
     return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
 }
 
+void GNodeLib::getIndicesForLVName(std::vector<unsigned>& indices, const char* lvname) const 
+{
+    m_lvlist->getIndicesWithKey(indices, lvname); 
+}
+
+
+
 /**
 GNodeLib::getVolumes
 ----------------------

@@ -62,6 +62,7 @@ class GGEO_API GItemList : public NSequence {
        void setKey(unsigned int index, const char* newkey);
        static bool isUnset(unsigned int index);
    public:
+       void getIndicesWithKey( std::vector<unsigned>& indices, const char* key ) const ; 
        void getIndicesWithKeyEnding( std::vector<unsigned>& indices, const char* ending ) const ;  
        int  findIndexWithKeyStarting( const char* starting ) const ;  // first index is returned, gives -1 if none found
        int  findIndex( const char* key ) const ;  // first index is returned, gives -1 if none found

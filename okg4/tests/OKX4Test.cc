@@ -20,6 +20,7 @@
 // TEST=OKX4Test om-t
 
 #include "SSys.hh"
+#include "NMeta.hpp"
 
 #include "Opticks.hh"     
 #include "OpticksQuery.hh"
@@ -71,8 +72,10 @@ int main(int argc, char** argv)
     const char* digestextra2 = PLOG::instance->get_arg_after("--digestextra", NULL) ; 
     LOG(info) << " digestextra2 " << ( digestextra2 ? digestextra2 : "NONE" ) ;  
 
-    G4VPhysicalVolume* top = CGDML::Parse( gdmlpath ) ; 
+    NMeta* auxmeta = NULL ; 
+    G4VPhysicalVolume* top = CGDML::Parse( gdmlpath, &auxmeta ) ; 
     if( top == NULL ) return 0 ; 
+    if(auxmeta) auxmeta->dump("auxmeta"); 
 
     const char* digestextra1 = csgskiplv ;    // kludge the digest to be sensitive to csgskiplv
     const char* spec = X4PhysicalVolume::Key(top, digestextra1, digestextra2 ) ; 
@@ -89,8 +92,9 @@ int main(int argc, char** argv)
 
     GGeo* m_ggeo = new GGeo(m_ok) ;
 
-    m_ok->profile("OKX4Test:GGeo"); 
+    m_ggeo->setGDMLAuxMeta(auxmeta); 
 
+    m_ok->profile("OKX4Test:GGeo"); 
 
     m_ok->profile("_OKX4Test:X4PhysicalVolume"); 
 

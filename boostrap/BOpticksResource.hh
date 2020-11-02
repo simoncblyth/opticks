@@ -243,6 +243,7 @@ class BRAP_API  BOpticksResource {
         const char* getSrcGLTFName() const ;
     public:
         const char* getG4CodeGenDir() const ;
+        const char* getGDMLAuxMetaPath() const ;
         const char* getCacheMetaPath() const ;
         const char* getRunCommentPath() const ;
         const char* getPrimariesPath() const ;
@@ -346,6 +347,7 @@ class BRAP_API  BOpticksResource {
         const char* m_metapath ;
         const char* m_idmappath ;
         const char* m_g4codegendir ;
+        const char* m_gdmlauxmetapath ; 
         const char* m_cachemetapath ; 
         const char* m_runcommentpath ; 
         const char* m_primariespath ; 

@@ -172,7 +172,39 @@ void test_getEventFold(Opticks* ok)
     LOG(info) << ef ;  
 }
 
+void test_findGDMLAuxMetaEntries(const Opticks* ok)
+{
+    const char* key = "label" ; 
+    const char* val = "target" ; 
+    //const char* val = NULL ; 
 
+    std::vector<NMeta*> entries ; 
+    ok->findGDMLAuxMetaEntries(entries, key, val ); 
+}
+
+void test_findGDMLAuxValues( const Opticks* ok)
+{
+    const char* k = "label" ; 
+    const char* v = "target" ; 
+    const char* q = "lvname" ; 
+
+    std::vector<std::string> values ; 
+    ok->findGDMLAuxValues(values, k,v,q); 
+
+    LOG(info) 
+        << " for entries matching (k,v) : " << "(" << k << "," << v << ")" 
+        << " collect values of q:" << q
+        << " : values.size() " << values.size()
+        ;
+
+    for(unsigned i=0 ; i < values.size() ; i++) std::cout << values[i] << std::endl ; 
+}
+
+void test_getGDMLAuxTargetLVName(const Opticks* ok)
+{
+    const char* lvn = ok->getGDMLAuxTargetLVName(); 
+    LOG(info) << lvn ; 
+}
 
 
 
@@ -200,12 +232,14 @@ int main(int argc, char** argv)
     test_getCurrentGDMLPath(&ok); 
     */
 
-
     //OpticksTest okt(&ok); 
     //okt.test_getGenstepPath();  
     //okt.test_getDirectGenstepPath();  
 
-    test_getEventFold(&ok); 
+    //test_getEventFold(&ok); 
+    //test_findGDMLAuxMetaEntries(&ok); 
+    //test_findGDMLAuxValues(&ok); 
+    test_getGDMLAuxTargetLVName(&ok); 
 
     return 0 ;
 }

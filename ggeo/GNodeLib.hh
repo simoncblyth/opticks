@@ -117,7 +117,9 @@ class GGEO_API GNodeLib
     public:
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
-
+    public:
+        void getIndicesForLVName(std::vector<unsigned>& indices, const char* lvname) const ; 
+    public:
         NPY<float>* getTransforms() const ; 
         NPY<float>* getInverseTransforms() const ; 
         NPY<float>* getBoundingBox() const ; 
