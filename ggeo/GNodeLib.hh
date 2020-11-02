@@ -103,6 +103,7 @@ class GGEO_API GNodeLib
         // need to defer adding volumes after identity labelling, so need to hold onto root
         void           setRootVolume(const GVolume* root); 
         const GVolume* getRootVolume() const ; 
+        Opticks*       getOpticks() const ; 
     public:
         unsigned     getNumPV() const ;
         unsigned     getNumLV() const ;
@@ -118,7 +119,8 @@ class GGEO_API GNodeLib
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
     public:
-        void getIndicesForLVName(std::vector<unsigned>& indices, const char* lvname) const ; 
+        void getNodeIndicesForLVName(std::vector<unsigned>& nidx, const char* lvname) const ;
+        void dumpNodes(const std::vector<unsigned>& nidxs, const char* msg="GNodeLib::dumpNodes") const ;
     public:
         NPY<float>* getTransforms() const ; 
         NPY<float>* getInverseTransforms() const ; 

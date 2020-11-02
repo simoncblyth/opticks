@@ -305,6 +305,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         std::string    reportSensorVolumes(const char* msg) const ; 
         void           dumpSensorVolumes(const char* msg) const ; 
         void           getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const ;
+        void           getNodeIndicesForLVName(std::vector<unsigned>& nidxs, const char* lvname) const ;
+        void           dumpNodes(const std::vector<unsigned>& nidxs, const char* msg="GGeo::dumpNodes") const ; 
     public:
         void add(GMaterial* material);
         void addRaw(GMaterial* material);

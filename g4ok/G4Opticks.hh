@@ -263,7 +263,7 @@ class G4OK_API G4Opticks
             );
 
     private:
-        void collectDefaultTorchStep(unsigned node_index, unsigned num_photons=0);  // zero -> default num_photons
+        void collectDefaultTorchStep(unsigned num_photons=0, int node_index=-1);  // zero -> default num_photons
     public:
         void collectSecondaryPhotons(const G4VParticleChange* pc);
     public:

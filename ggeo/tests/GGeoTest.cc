@@ -256,6 +256,14 @@ void test_GGeo_getIdentity(const GGeo* gg)
     }
 }
 
+void test_GGeo_getGDMLAuxTargetNodeIndices(const GGeo* gg)
+{
+    Opticks* ok = gg->getOpticks(); 
+    const char* lvname = ok->getGDMLAuxTargetLVName() ;
+    std::vector<unsigned> nidxs ; 
+    gg->getNodeIndicesForLVName(nidxs, lvname); 
+    gg->dumpNodes(nidxs, "test_GGeo_getGDMLAuxTargetNodeIndices"); 
+}
 
 int main(int argc, char** argv)
 {
@@ -267,7 +275,9 @@ int main(int argc, char** argv)
 
     //test_GGeo(gg);
     //test_GGeo_getIdentity(gg);
-    test_GGeo_getTransform(gg);
+    //test_GGeo_getTransform(gg);
+ 
+    test_GGeo_getGDMLAuxTargetNodeIndices(gg);
 
     return 0 ;
 }

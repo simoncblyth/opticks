@@ -1284,37 +1284,53 @@ Used from G4OKTest for debugging only.
 
 **/
 
-void G4Opticks::collectDefaultTorchStep(unsigned node_index, unsigned num_photons)
+void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index)
 {
-     unsigned gentype = OpticksGenstep_TORCH  ; 
-     unsigned num_step = 1 ; 
-     const char* config = NULL ;   
-     // encompasses a default number of photons, distribution, polarization
+    unsigned gentype = OpticksGenstep_TORCH  ; 
+    unsigned num_step = 1 ; 
+    const char* config = NULL ;   
+    // encompasses a default number of photons, distribution, polarization
 
-     assert( OpticksGenstep::IsTorchLike(gentype) ); 
+    assert( OpticksGenstep::IsTorchLike(gentype) ); 
 
-     LOG(LEVEL) << " gentype " << gentype ; 
+    LOG(LEVEL) << " gentype " << gentype ; 
 
-     TorchStepNPY* ts = new TorchStepNPY(gentype, num_step, config);
+    TorchStepNPY* ts = new TorchStepNPY(gentype, num_step, config);
 
-     glm::mat4 frame_transform = m_ggeo->getTransform( node_index ); 
-     ts->setFrameTransform(frame_transform);
+    if(node_index == -1)
+    {
+        const char* target_lvname = m_ok->getGDMLAuxTargetLVName() ; 
+        std::vector<unsigned> nidxs ; 
+        m_ggeo->getNodeIndicesForLVName(nidxs, target_lvname); 
+        unsigned num_nodes = nidxs.size() ; 
+        node_index = num_nodes > 0 ? nidxs[0] : 0 ; 
+        LOG(info)
+            << "G4GDMLAux" 
+            << " target_lvname " << target_lvname
+            << " num_nodes " << num_nodes 
+            << " node_index " << node_index
+            ;
+    }
 
-     for(unsigned i=0 ; i < num_step ; i++) 
-     {
-         if(num_photons > 0) ts->setNumPhotons(num_photons);  // otherwise use default
-         ts->addStep(); 
-     }
 
-     NPY<float>* arr = ts->getNPY(); 
+    glm::mat4 frame_transform = m_ggeo->getTransform( node_index ); 
+    ts->setFrameTransform(frame_transform);
+ 
 
-     //arr->save("$TMP/debugging/collectDefaultTorchStep/gs.npy");  
+    for(unsigned i=0 ; i < num_step ; i++) 
+    {
+        if(num_photons > 0) ts->setNumPhotons(num_photons);  // otherwise use default
+        ts->addStep(); 
+    }
 
-     const OpticksGenstep* gs = new OpticksGenstep(arr); 
+    NPY<float>* arr = ts->getNPY(); 
+
+    //arr->save("$TMP/debugging/collectDefaultTorchStep/gs.npy");  
+
+    const OpticksGenstep* gs = new OpticksGenstep(arr); 
     
-
-     assert( m_genstep_collector ); 
-     m_genstep_collector->collectOpticksGenstep(gs);  
+    assert( m_genstep_collector ); 
+    m_genstep_collector->collectOpticksGenstep(gs);  
 } 
 
 

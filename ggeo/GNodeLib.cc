@@ -106,6 +106,7 @@ GNodeLib::GNodeLib(Opticks* ok, bool loading)
     LOG(info) << "loaded" ; 
     assert( m_sensor_identity.size() == m_num_sensors ); 
 }
+
  
 unsigned GNodeLib::initNumVolumes() const
 {
@@ -144,6 +145,11 @@ unsigned GNodeLib::initSensorIdentity()
 unsigned GNodeLib::getNumVolumes() const 
 {
     return m_num_volumes ; 
+}
+
+Opticks* GNodeLib::getOpticks() const 
+{
+    return m_ok ; 
 }
 
 void GNodeLib::save() const 
@@ -230,10 +236,35 @@ const char* GNodeLib::getLVName(unsigned index) const
     return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
 }
 
-void GNodeLib::getIndicesForLVName(std::vector<unsigned>& indices, const char* lvname) const 
+
+void GNodeLib::getNodeIndicesForLVName(std::vector<unsigned>& nidx, const char* lvname) const 
 {
-    m_lvlist->getIndicesWithKey(indices, lvname); 
+    if( lvname == NULL ) return ;  
+    m_lvlist->getIndicesWithKey(nidx, lvname); 
 }
+
+
+void GNodeLib::dumpNodes(const std::vector<unsigned>& nidxs, const char* msg) const 
+{
+    LOG(info) << msg << " nidxs.size " << nidxs.size() ; 
+    for(unsigned i=0 ; i < nidxs.size() ; i++)
+    {
+        unsigned nidx = nidxs[i]; 
+        const char* pv = getPVName(nidx); 
+        const char* lv = getLVName(nidx); 
+
+        glm::vec4 ce = getCE(nidx);
+
+        std::cout 
+            << " i " << std::setw(5) << i 
+            << " nidx " << std::setw(6) << nidx 
+            << " pv " << std::setw(50) << pv 
+            << " lv " << std::setw(50) << lv 
+            << gpresent( "ce ", ce )
+            ;
+    }
+}
+
 
 
 

@@ -84,7 +84,7 @@ G4OKTest::G4OKTest(int argc, char** argv)
     :
     m_log(initLog(argc, argv)),
     m_gdmlpath(PLOG::instance->get_arg_after("--gdmlpath", NULL)),
-    m_torchtarget(PLOG::instance->get_int_after("--torchtarget", "0")),
+    m_torchtarget(PLOG::instance->get_int_after("--torchtarget", "-1")),
     m_g4ok(new G4Opticks)
 {
     init();
@@ -227,10 +227,10 @@ unsigned G4OKTest::getNumGenstepPhotons(int eventID) const
 
 void G4OKTest::collectGensteps(int eventID)
 {
-    unsigned node_index = m_torchtarget ; 
     unsigned num_genstep_photons = getNumGenstepPhotons(eventID); 
+    int node_index = m_torchtarget ; 
 
-    m_g4ok->collectDefaultTorchStep(node_index, num_genstep_photons); 
+    m_g4ok->collectDefaultTorchStep(num_genstep_photons, node_index); 
 
     LOG(error) 
         << " eventID " << eventID

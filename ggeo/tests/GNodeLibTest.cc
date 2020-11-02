@@ -107,6 +107,16 @@ void test_dumpSensorVolumes(const GNodeLib* nlib)
     nlib->dumpSensorVolumes();
 }
 
+void test_getNodeIndicesForLVName(const GNodeLib* nlib) 
+{
+    const Opticks* ok = nlib->getOpticks(); 
+    const char* lvname = ok->getGDMLAuxTargetLVName() ;
+    if( lvname == NULL ) return ;  
+    std::vector<unsigned> nidxs ; 
+    nlib->getNodeIndicesForLVName(nidxs, lvname); 
+    LOG(info) << " lvname " << lvname ;  
+    nlib->dumpNodes(nidxs, "test_getNodeIndicesForLVName" ); 
+}
 
 
 int main(int argc, char** argv)
@@ -137,7 +147,9 @@ int main(int argc, char** argv)
 
     */
 
-    test_dumpSensorVolumes(nlib); 
+    //test_dumpSensorVolumes(nlib); 
+
+    test_getNodeIndicesForLVName(nlib) ;
 
     return 0 ; 
 }
