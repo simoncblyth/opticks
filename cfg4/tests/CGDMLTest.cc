@@ -18,6 +18,11 @@
  */
 
 #include "OPTICKS_LOG.hh"
+
+#include "NMeta.hpp"
+#include "G4GDMLParser.hh"
+#include "G4VPhysicalVolume.hh"
+
 #include "CGDML.hh"
 
 
@@ -27,14 +32,68 @@ struct Demo
 };
 
 
+void test_GenerateName()
+{
+    Demo* d = new Demo { 42 } ;   
+    LOG(info) << CGDML::GenerateName( "Demo", d, true );  
+}
+
+/**
+
+::
+
+   cp $(opticksaux-dx1) /tmp/v1.gdml
+
+**/
+
+
+void test_load_0(const char* path)
+{
+    LOG(info) << path ; 
+    bool validate = false ; 
+    bool trimPtr = false ; 
+    G4GDMLParser parser;
+    parser.SetStripFlag(trimPtr);
+    parser.Read(path, validate);
+    G4VPhysicalVolume* world =  parser.GetWorldVolume() ;
+    assert( world ); 
+}
+
+void test_load(const char* path)
+{
+    CGDML cg(path); 
+    G4VPhysicalVolume* world =  cg.getWorldVolume() ;
+    assert( world ); 
+
+    cg.dumpAux("test_load.dumpAux"); 
+
+    NMeta* m = cg.getAuxMeta(); 
+    m->dump("test_load.getAuxMeta"); 
+}
+
+void test_Parse(const char* path)
+{
+    NMeta* meta = NULL ;  
+    G4VPhysicalVolume* world = CGDML::Parse(path, &meta); 
+    assert( world ); 
+    if(meta)
+    {
+        meta->dump("test_Parse"); 
+    }
+}
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    Demo* d = new Demo { 42 } ; 
-   
-    LOG(info) << CGDML::GenerateName( "Demo", d, true );  
+    const char* path = argc > 1 ? argv[1] : NULL ; 
+    if(!path) LOG(error) << " expecting path to GDML " ; 
+    if(!path) return 0 ; 
 
+    //test_GenerateName(); 
+    //test_load(path); 
+    test_Parse(path); 
 
     return 0 ; 
 }
+// om-;TEST=CGDMLTest om-t

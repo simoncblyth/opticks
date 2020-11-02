@@ -48,6 +48,41 @@ GDML auxiliary
     176         </volume>
 
 
+
+
+::
+
+    epsilon:geant4.10.04.p02 blyth$ g4-hh G4GDMLAuxMapType
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:typedef std::map<G4LogicalVolume*,G4GDMLAuxListType> G4GDMLAuxMapType;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   const G4GDMLAuxMapType* GetAuxMap() const {return &auxMap;}
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   G4GDMLAuxMapType auxMap;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   inline const G4GDMLAuxMapType* GetAuxMap() const;
+    epsilon:geant4.10.04.p02 blyth$ 
+
+
+    epsilon:geant4.10.04.p02 blyth$ g4-hh G4GDMLAuxMapType
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:typedef std::map<G4LogicalVolume*,G4GDMLAuxListType> G4GDMLAuxMapType;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   const G4GDMLAuxMapType* GetAuxMap() const {return &auxMap;}
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   G4GDMLAuxMapType auxMap;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   inline const G4GDMLAuxMapType* GetAuxMap() const;
+    epsilon:geant4.10.04.p02 blyth$ g4-hh G4GDMLAuxListType
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLRead.hh:   const G4GDMLAuxListType* GetAuxList() const;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLRead.hh:   G4GDMLAuxListType auxGlobalList;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLAuxStructType.hh:typedef std::vector<G4GDMLAuxStructType> G4GDMLAuxListType;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLWriteStructure.hh:   std::map<const G4LogicalVolume*, G4GDMLAuxListType> auxmap;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:typedef std::map<G4LogicalVolume*,G4GDMLAuxListType> G4GDMLAuxMapType;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   G4GDMLAuxListType GetVolumeAuxiliaryInformation(G4LogicalVolume*) const;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   inline G4GDMLAuxListType GetVolumeAuxiliaryInformation(G4LogicalVolume* lvol) const;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   inline const G4GDMLAuxListType* GetAuxList() const;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   G4GDMLAuxListType *rlist, *ullist;
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLWrite.hh:    void AddAuxInfo(G4GDMLAuxListType* auxInfoList, xercesc::DOMElement* element);
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLWrite.hh:    G4GDMLAuxListType auxList;
+    epsilon:geant4.10.04.p02 blyth$ 
+
+
+
+
+
 g4-cls G4GDMLWriteStructure::
 
     95    std::map<const G4LogicalVolume*, G4GDMLAuxListType> auxmap;

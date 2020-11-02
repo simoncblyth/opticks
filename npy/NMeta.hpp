@@ -40,6 +40,9 @@ https://github.com/nlohmann/json
 https://nlohmann.github.io/json/
 
 
+NB NMeta adds a limitation of only handling keyed structures, not lists
+
+
 **/
 
 class NPY_API NMeta {

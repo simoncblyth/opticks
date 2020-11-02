@@ -20,20 +20,38 @@
 #pragma once
 
 #include <string>
+#include "plog/Severity.h"
 #include "CFG4_API_EXPORT.hh"
 
 /**
 **/
 
+class G4GDMLParser ; 
 class G4VPhysicalVolume ; 
+class NMeta ; 
+
 
 class CFG4_API CGDML
 {
+    private:
+        static const plog::Severity LEVEL ; 
+        static G4GDMLParser* InitParser(const char* path);
     public:
         static G4VPhysicalVolume* Parse(const char* path);
+        static G4VPhysicalVolume* Parse(const char* path, NMeta** meta);
+    public:
         static void Export(const char* dir, const char* name, const G4VPhysicalVolume* const world );
         static void Export(const char* path, const G4VPhysicalVolume* const world );
         static std::string GenerateName(const char* name, const void* const ptr, bool addPointerToName=true );
+    public:
+        CGDML(const char* path); 
+    public:
+        G4VPhysicalVolume*  getWorldVolume() const ; 
+        NMeta*              getAuxMeta() const ; 
+        void                dumpAux(const char* msg="CGDML::dumpAux") const ; 
+    private:
+        G4GDMLParser*       m_parser  ;
+
 
 };
 
