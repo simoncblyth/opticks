@@ -27,13 +27,13 @@ MockSensorAngularEfficiencyTable::MockSensorAngularEfficiencyTable( unsigned num
     init();
 }
 
-float MockSensorAngularEfficiencyTable::getEfficiency(unsigned /*i_cat*/, unsigned j_theta, unsigned k_phi) const 
+float MockSensorAngularEfficiencyTable::getEfficiency(unsigned i_cat, unsigned j_theta, unsigned k_phi) const 
 {
     float theta =  m_theta_min + j_theta*m_theta_step ;
     float phi = m_phi_min + k_phi*m_phi_step ; 
     const float twopi = 2.f*glm::pi<float>() ; 
-
-    float phi_eff = cos(phi*twopi/360.f) ;           // some variation in phi 
+           
+    float phi_eff = i_cat == 0 ? 1.f : cos(phi*twopi/360.f) ;           // some variation in phi 
     float theta_eff = int(theta/10.) % 2 == 0 ? 0.f : 1.f ;  // stripped test function
 
     return phi_eff*theta_eff ; 

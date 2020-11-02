@@ -12,6 +12,11 @@ union ucccc_t
     C4          c4 ; 
 };
 
+bool SPack::IsLittleEndian()
+{
+    int n = 1; 
+    return (*(char *)&n == 1) ;
+}
 
 
 unsigned SPack::Encode(unsigned x, unsigned y, unsigned z, unsigned w)  // static 
@@ -28,8 +33,6 @@ unsigned SPack::Encode(unsigned x, unsigned y, unsigned z, unsigned w)  // stati
 
     return SPack::Encode(xc, yc, zc, wc); 
 }
-
-
 
 
 unsigned SPack::Encode(unsigned char x, unsigned char y, unsigned char z, unsigned char w)  // static 

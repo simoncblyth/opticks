@@ -48,6 +48,19 @@ NPY<float>* SphereOfTransforms::getTransforms() const
     return m_transforms ; 
 }
 
+/**
+SphereOfTransforms::init
+--------------------------
+
+::
+
+    tidx = tr[:,0,3].view(np.uint32).copy()
+    itheta   = ( tidx & 0x000000ff ) >> 0
+    iphi     = ( tidx & 0x0000ff00 ) >> 8
+    index    = ( tidx & 0xffff0000 ) >> 16 
+
+**/
+
 void SphereOfTransforms::init()
 {
     m_transforms->zero(); 
@@ -62,7 +75,10 @@ void SphereOfTransforms::init()
         {
             if( is_pole && iphi > 0 ) break ;  // only the first phi slot for poles
 
-            float fphi = float(iphi)/float(m_num_phi - 1) ; 
+            //float fphi = float(iphi)/float(m_num_phi - 1) ;   // 0. -> 1.  
+            //   DUPLICATION OF TRANSFORMS ALONG THE PHI SEAM NEEDS TO BE AVOIDED 
+
+            float fphi = float(iphi)/float(m_num_phi) ;  // 0. ->  (m_num_phi-1)/m_num_phi = 1 - 1/m_num_phi  
 
             glm::vec3 pos ; 
             glm::vec3 nrm ; 
@@ -75,7 +91,10 @@ void SphereOfTransforms::init()
             // and then translates to the point in the sphere 
             glm::mat4 tr = nglmext::make_rotate_a2b_then_translate(a, b, pos );
 
-            unsigned identity = SPack::Encode(itheta, iphi, (count & 0xff00) >> 8 , count & 0xff );
+
+            unsigned index = count + 1 ;  // use 1-based index for convenient selection from "posi" raster buffers with 0 meaning no-intersect 
+            unsigned identity = SPack::Encode(itheta, iphi, index & 0xff, (index & 0xff00) >> 8 );  // little endian convenience
+
 
             if(m_identity_from_transform_03)
             {

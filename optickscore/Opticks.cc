@@ -28,6 +28,7 @@
 #endif
 
 
+#include <csignal>
 #include <sstream>
 #include <iostream>
 
@@ -443,6 +444,9 @@ void Opticks::init()
     m_parameters->add<std::string>("USERNAME", SSys::username() ); 
 
     m_parameters->add<std::string>("OpticksSwitches", OpticksSwitches() ); 
+
+    //std::raise(SIGINT); 
+
     LOG(LEVEL) << "]" ; 
 }
 

@@ -163,6 +163,12 @@ void test_uint_as_float()
 }
 
 
+void test_IsLittleEndian()
+{
+    const char* LE = "LITTLE_ENDIAN : least significant byte at smaller memory address " ; 
+    const char* BE = "BIG_ENDIAN    : most significant byte at smaller memory address " ; 
+    LOG(info) << ( SPack::IsLittleEndian() ? LE : BE  ) ; 
+}
 
 
 int main(int argc , char** argv )
@@ -179,7 +185,8 @@ int main(int argc , char** argv )
     //test_int_as_float(); 
     //test_uint_as_float(); 
 
-    test_Encode_Decode_unsigned();  
+    //test_Encode_Decode_unsigned();  
+    test_IsLittleEndian();  
 
     return 0  ; 
 }

@@ -23,6 +23,7 @@ class SYSRAP_API SPack {
         }; 
 
      public:
+         static bool     IsLittleEndian(); 
          static unsigned Encode(unsigned x, unsigned y, unsigned z, unsigned w);  // values must fit into unsigned char, ie up to  0xff   
          static void     Decode( const unsigned int value,  unsigned& x, unsigned& y, unsigned& z, unsigned& w );
 
