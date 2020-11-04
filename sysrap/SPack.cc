@@ -171,3 +171,46 @@ unsigned SPack::uint_from_float(const float f)
 
 
 
+/**
+SPack::unsigned_as_int
+-----------------------
+
+The bits of unsigned integers can hold the bits of a signed int without problem 
+(within the signed range), thus can reinterpret those bits as a signed integer 
+using twos-complement.  Notice how the number of bits is relevant to the bit field 
+representation of negatives integers in a way that is not the case for positive ones.
+
+**/
+
+template <int NUM_BITS>
+int SPack::unsigned_as_int(unsigned value)   // static
+{  
+    unsigned twos_complement_sum = 0x1 << NUM_BITS ;   
+    unsigned signed_max =  (0x1 << (NUM_BITS-1)) - 1  ; 
+    int ivalue = value <= signed_max ? value : value - twos_complement_sum ; 
+    return ivalue ; 
+}
+
+
+
+template int SPack::unsigned_as_int<8>(unsigned value) ;
+template int SPack::unsigned_as_int<16>(unsigned value) ;
+
+
+int SPack::unsigned_as_int_32(unsigned value)
+{
+    uif_t uif ; 
+    uif.u = value ; 
+    return uif.i ; 
+}
+int SPack::unsigned_as_int_16(unsigned value)
+{
+    ui16_t ui ; 
+    ui.u = value ; 
+    return ui.i ; 
+}
+
+
+
+
+

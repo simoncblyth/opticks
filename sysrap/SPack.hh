@@ -11,6 +11,7 @@ Static packing/unpacking utilities.
 
 
 #include <cstddef>
+#include <cstdint>
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -21,6 +22,12 @@ class SYSRAP_API SPack {
             int      i ;
             float    f ; 
         }; 
+
+        union ui16_t {
+            uint16_t  u ; 
+            int16_t   i ; 
+        };
+
 
      public:
          static bool     IsLittleEndian(); 
@@ -49,6 +56,11 @@ class SYSRAP_API SPack {
          static float uint_as_float( const unsigned f ); 
          static unsigned uint_from_float( const float f ); 
 
+         template <int NUM_BITS>
+         static int unsigned_as_int(unsigned value);
+
+         static int unsigned_as_int_32(unsigned value);
+         static int unsigned_as_int_16(unsigned value);
 
 };
 

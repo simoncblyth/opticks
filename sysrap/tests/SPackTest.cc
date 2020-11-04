@@ -1,6 +1,7 @@
 // om-;TEST=SPackTest om-t 
 
 #include <cassert>
+#include <iomanip>
 #include "SPack.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -171,6 +172,99 @@ void test_IsLittleEndian()
 }
 
 
+void test_unsigned_as_int(int boundary, unsigned sensorIndex, bool dump)
+{
+    // LOG(info) << " boundary " << boundary ; 
+
+    unsigned packed = ( boundary << 16 | sensorIndex << 0 );   // pack the signed and unsigned into 32 bits 
+
+    unsigned hi = ( packed & 0xffff0000 ) >> 16 ;
+    unsigned lo = ( packed & 0x0000ffff ) >>  0 ;
+
+    // int hi_s = hi <= 0x7fff ? hi : hi - 0x10000 ;   
+    int hi_s = SPack::unsigned_as_int<16>(hi); 
+
+    bool expect = hi_s == boundary && lo == sensorIndex ; 
+
+    if(!expect || dump)
+    std::cout 
+        << " boundary " << std::setw(10) << std::dec << boundary 
+        << " sensorIndex(hex) " << std::hex << sensorIndex
+        << " packed(hex) " << std::hex << packed 
+        << " hi(hex) " << std::hex << hi 
+        << " lo(hex) " << std::hex << lo 
+        << " hi_s " << std::dec << hi_s 
+        << std::endl 
+        ;
+
+    assert(expect) ; 
+}
+
+void test_unsigned_as_int()
+{
+    //int boundary = -1 ; // 0xffff ;   // signed int that can easily fit into 16 bits 
+    unsigned sensorIndex = 0xbeef ;   // unsigned int that can easily fit into 16 bits 
+    unsigned signed_max_16 = (0x1 << (16 - 1)) - 1  ;   // 0x7fff  
+
+    test_unsigned_as_int( -1, sensorIndex, true); 
+    test_unsigned_as_int( -(signed_max_16+1), sensorIndex, true  );
+    test_unsigned_as_int(   signed_max_16   , sensorIndex, true  );
+
+    int boundary0 = -(signed_max_16+1) ; 
+    int boundary1 = signed_max_16 ; 
+
+    LOG(info) 
+        << " boundary0 " << boundary0
+        << " boundary1 " << boundary1
+        ;
+
+    for(int boundary=boundary0 ; boundary <= boundary1  ; boundary++)
+        test_unsigned_as_int(boundary, sensorIndex, false); 
+
+    //test_unsigned_as_int( -(signed_max_16+2), sensorIndex, false  );
+    //test_unsigned_as_int(   (signed_max_16+1), sensorIndex, false  );
+
+}
+
+
+/**
+test_unsigned_as_int_16
+------------------------
+
+This demonstrates that the union trick and twos-complement 
+reinterpretation give the same result : although note that 
+must use a union with elements of the appropriate number of bits.
+
+**/
+
+void test_unsigned_as_int_16(unsigned value)
+{
+    int v16_0 = SPack::unsigned_as_int<16>(value); 
+    int v16_1 = SPack::unsigned_as_int_16( value ); 
+
+    bool expect = v16_0 == v16_1 ; 
+    bool dump = false ; 
+
+    if(!expect || dump)
+    {
+        std::cout 
+            << " v16_0 " << v16_0 
+            << " v16_1 " << v16_1 
+            << ( expect ? " " : " NOT-EXPECT " )
+            << std::endl 
+            ; 
+    } 
+    assert( expect ); 
+}
+
+void test_unsigned_as_int_16()
+{
+    unsigned value0 = 0 ; 
+    unsigned value1 = ( 0x1 << 16 ) - 1 ; // 0xffff   
+    for(unsigned value=value0 ; value <= value1  ; value++) test_unsigned_as_int_16(value); 
+}
+
+
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
@@ -186,7 +280,10 @@ int main(int argc , char** argv )
     //test_uint_as_float(); 
 
     //test_Encode_Decode_unsigned();  
-    test_IsLittleEndian();  
+    //test_IsLittleEndian();  
+
+    //test_unsigned_as_int(); 
+    test_unsigned_as_int_16(); 
 
     return 0  ; 
 }
