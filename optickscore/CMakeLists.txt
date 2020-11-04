@@ -42,6 +42,7 @@ set(SOURCES
     OpticksGenstep.cc
     Indexer.cc
 
+    OpticksPhotonFlags.cc
     OpticksFlags.cc
     OpticksAttrSeq.cc
     Opticks.cc
@@ -117,6 +118,7 @@ set(HEADERS
     Indexer.hh
 
     OpticksSwitches.h
+    OpticksPhotonFlags.hh
     OpticksFlags.hh
     OpticksAttrSeq.hh
     Opticks.hh

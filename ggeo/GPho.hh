@@ -24,6 +24,7 @@
 #include <string>
 #include <glm/fwd.hpp>
 #include "plog/Severity.h"
+#include "OpticksPhotonFlags.hh"
 
 template <typename T> class NPY ; 
 class GGeo ; 
@@ -69,7 +70,10 @@ class GGEO_API GPho {
         glm::vec4             getPositionTime(unsigned i) const ; 
         glm::vec4             getDirectionWeight(unsigned i) const ;   // weight is stomped upon, holding unsigned_as_float(nidx)
         glm::vec4             getPolarizationWavelength(unsigned i) const ;
+    public:  
         glm::ivec4            getFlags(unsigned i) const ;
+        OpticksPhotonFlags    getOpticksPhotonFlags(unsigned i) const ;
+        int                   getBoundary(unsigned i) const ;
     public:  
         // GGeo info on volume which the ray intersected last   
         unsigned              getLastIntersectNodeIndex(unsigned i) const ;
@@ -108,5 +112,6 @@ class GGEO_API GPho {
        bool                   m_dirw ; 
        bool                   m_polw ; 
        bool                   m_flgs ; 
+       bool                   m_okfl ; 
 };
 

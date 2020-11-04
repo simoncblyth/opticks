@@ -208,17 +208,33 @@ FLAGS
 
 Set the photon flags p.flags using values from state s and per-ray-data prd
 
+Formerly::
+
+    p.flags.i.x = prd.boundary ;  \
+    p.flags.u.y = s.identity.w ;  \
+    p.flags.u.w |= s.flag ; \
+
+p.flags.u.x 
+   packed signed int boundary and unsigned sensorIndex which are 
+   assumed to fit in 16 bits into 32 bits, see SPack::unsigned_as_int 
+
+p.flags.u.y
+   now getting s.identity.x (nodeIndex) thanks to the packing 
+
+
+
+ boundary    = (( flags[:,0].view(np.uint32) & 0xffff0000 ) >> 16 ).view(np.int16)[1::2] 
+ sensorIndex = (( flags[:,0].view(np.uint32) & 0xffff ) >> 0 ).view(np.int16)[0::2] 
+
+
 **/
 
 #define FLAGS(p, s, prd) \
 { \
-    p.flags.i.x = prd.boundary ;  \
-    p.flags.u.y = s.identity.w ;  \
+    p.flags.u.x = ( prd.boundary << 16 | s.identity.w )  ;  \
+    p.flags.u.y = s.identity.x ;  \
     p.flags.u.w |= s.flag ; \
 } \
-
-
-//    p.flags.u.z = s.index.x ;   \
 
 
 

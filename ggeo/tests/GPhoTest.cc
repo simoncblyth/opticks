@@ -35,7 +35,8 @@ int main(int argc, char** argv)
     const char* default_path = "$TMP/G4OKTest/evt/g4live/natural/1/ox.npy" ; 
     const char* path = argc > 1 ? argv[1] : default_path ;  
     
-    const char* default_opt = "nidx,nrpo,post,lpst,ldrw,lpow,flgs" ; 
+    //const char* default_opt = "nidx,nrpo,post,lpst,ldrw,lpow,flgs" ; 
+    const char* default_opt = "nidx,nrpo,post,okfl" ; 
     const char* opt = argc > 2 ? argv[2] : default_opt ;  
 
 

@@ -83,7 +83,8 @@ GPho::GPho(const GGeo* ggeo, const char* opt)
     m_lpow(opt ? BStr::Contains(opt, "lpow", ',' ) : true ),
     m_dirw(opt ? BStr::Contains(opt, "dirw", ',' ) : true ),
     m_polw(opt ? BStr::Contains(opt, "polw", ',' ) : true ),
-    m_flgs(opt ? BStr::Contains(opt, "flgs", ',' ) : true )
+    m_flgs(opt ? BStr::Contains(opt, "flgs", ',' ) : true ),
+    m_okfl(opt ? BStr::Contains(opt, "okfl", ',' ) : true )
 {
 }
 
@@ -131,13 +132,24 @@ glm::vec4 GPho::getPolarizationWavelength(unsigned i) const
     glm::vec4 polw = m_photons->getQuad_(i,2);
     return polw ; 
 }
+
+
 glm::ivec4 GPho::getFlags(unsigned i) const 
 {
     glm::ivec4 flgs = m_photons->getQuadI(i,3);  // union type shifting getter
     return flgs ; 
 }
-
-
+OpticksPhotonFlags GPho::getOpticksPhotonFlags(unsigned i) const 
+{
+    glm::vec4 flgs = m_photons->getQuad_(i,3);  
+    OpticksPhotonFlags okfl(flgs); 
+    return okfl ;  
+}  
+int GPho::getBoundary(unsigned i) const
+{
+    glm::vec4 flgs = m_photons->getQuad_(i,3); 
+    return OpticksPhotonFlags::Boundary(flgs);  
+} 
 
 
 
@@ -265,6 +277,9 @@ bool GPho::isHit(unsigned i) const
 
 
 
+
+
+
 std::string GPho::desc(unsigned i) const 
 {
     glm::vec4 post = getPositionTime(i);
@@ -279,6 +294,8 @@ std::string GPho::desc(unsigned i) const
     glm::vec4 ldrw = getLocalDirectionWeight(i);
     glm::vec4 lpow = getLocalPolarizationWavelength(i);
 
+    OpticksPhotonFlags okfl = getOpticksPhotonFlags(i); 
+
     std::stringstream ss ;
     ss << " i " << std::setw(7) << i ; 
     if(m_mski) ss << " mski " << std::setw(7) << m_photons->getMskIndex(i)  ; 
@@ -291,6 +308,7 @@ std::string GPho::desc(unsigned i) const
     if(m_dirw) ss << " dirw " << std::setw(20) << gpresent(dirw) ;
     if(m_polw) ss << " polw " << std::setw(20) << gpresent(polw) ;
     if(m_flgs) ss << " flgs " << std::setw(20) << gpresent(flgs) ;
+    if(m_okfl) ss << " okfl " << std::setw(20) << okfl.brief() ;
 
     return ss.str();
 }
