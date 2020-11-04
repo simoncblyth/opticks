@@ -231,7 +231,7 @@ p.flags.u.y
 
 #define FLAGS(p, s, prd) \
 { \
-    p.flags.u.x = ( prd.boundary << 16 | s.identity.w )  ;  \
+    p.flags.u.x = ( ((prd.boundary & 0xffff) << 16) | (s.identity.w & 0xffff) )  ;  \
     p.flags.u.y = s.identity.x ;  \
     p.flags.u.w |= s.flag ; \
 } \
@@ -690,14 +690,16 @@ RT_PROGRAM void generate()
     p.flags.u.z = photon_id ;   // stomp on debug flags to pass the identity, so can identify the pindex of hits  
 #endif
 
+    // FORMERLY stomped on the weight with the nodeIndex
+    //  p.weight = unsigned_as_float( s.identity.x ); // stomp on the weight with last intersect volume identity (see GVolume::getIdentity) 
+    //
+    //           s.identity.x : nodeIndex 
+    //           s.identity.y : tripletIdentity
+    //           s.identity.z : shapeIdentity
+    //           s.identity.w : sensorIndex   (already in flags)
+    //        
+    //
     // breakers and maxers saved here
-
-    p.weight = unsigned_as_float( s.identity.x ); // stomp on the weight with last intersect volume identity (see GVolume::getIdentity) 
-                                                  //    s.identity.x : nodeIndex 
-                                                  //    s.identity.y : tripletIdentity
-                                                  //    s.identity.z : shapeIdentity
-                                                  //    s.identity.w : sensorIndex   (already in flags)
-        
     psave(p, photon_buffer, photon_offset ); 
 
 #ifdef WITH_ALIGN_DEV_DEBUG

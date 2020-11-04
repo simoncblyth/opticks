@@ -48,6 +48,7 @@ to geometry transforms.
 class GGEO_API GPho {
     private:
         static const plog::Severity LEVEL ; 
+        static const char* DEFAULT_OPT ;
         static const char* A ; 
         static const char* L ; 
         static const char* H ; 
@@ -58,7 +59,8 @@ class GGEO_API GPho {
         void        setSelection(char selection) ;
         const char* getSelectionName() const ;
     public:  
-        GPho(const GGeo* ggeo, const char* opt="mski,post,dirw,polw,flgs"); 
+        GPho(const GGeo* ggeo, const char* opt=NULL); 
+        void setOpt(const char* opt);
         void setPhotons(const NPY<float>* photons); 
     public:  
         const NPY<float>*     getPhotons() const ;
@@ -73,7 +75,7 @@ class GGEO_API GPho {
     public:  
         glm::ivec4            getFlags(unsigned i) const ;
         OpticksPhotonFlags    getOpticksPhotonFlags(unsigned i) const ;
-        int                   getBoundary(unsigned i) const ;
+        int                   getLastIntersectBoundary(unsigned i) const ;
     public:  
         // GGeo info on volume which the ray intersected last   
         unsigned              getLastIntersectNodeIndex(unsigned i) const ;
@@ -100,18 +102,5 @@ class GGEO_API GPho {
        const GGeo*            m_ggeo ; 
        const char*            m_opt ; 
        char                   m_selection ; 
-   private:
-       // dumping options
-       bool                   m_nidx ; 
-       bool                   m_nrpo ; 
-       bool                   m_mski ; 
-       bool                   m_post ; 
-       bool                   m_lpst ; 
-       bool                   m_ldrw ; 
-       bool                   m_lpow ; 
-       bool                   m_dirw ; 
-       bool                   m_polw ; 
-       bool                   m_flgs ; 
-       bool                   m_okfl ; 
 };
 

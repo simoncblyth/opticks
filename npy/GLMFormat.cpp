@@ -627,7 +627,6 @@ std::string gpresent(const glm::vec2& v, unsigned int prec, unsigned int wid)
 std::string gpresent(const glm::ivec4& v, unsigned wid)
 {
     std::stringstream ss ; 
-
     ss 
        << std::setw(wid) << v.x 
        << " "
@@ -639,15 +638,30 @@ std::string gpresent(const glm::ivec4& v, unsigned wid)
        ;
 
     return ss.str();
+
 }
 
+std::string gpresent(const glm::ivec4& v, unsigned wid_x, unsigned wid_y, unsigned wid_z, unsigned wid_w)
+{
+    std::stringstream ss ; 
+    ss 
+       << std::setw(wid_x) << v.x 
+       << " "
+       << std::setw(wid_y) << v.y 
+       << " "
+       << std::setw(wid_z) << v.z
+       << " "
+       << std::setw(wid_w) << v.w 
+       ;
+
+    return ss.str();
+}
 
 
 
 std::string gpresent(const glm::uvec4& v, unsigned wid)
 {
     std::stringstream ss ; 
-
     ss 
        << std::setw(wid) << v.x 
        << " "
@@ -657,9 +671,27 @@ std::string gpresent(const glm::uvec4& v, unsigned wid)
        << " "
        << std::setw(wid) << v.w 
        ;
-
     return ss.str();
 }
+
+
+std::string gpresent(const glm::uvec4& v, unsigned wid_x, unsigned wid_y, unsigned wid_z, unsigned wid_w)
+{
+    std::stringstream ss ; 
+    ss 
+       << std::setw(wid_x) << v.x 
+       << " "
+       << std::setw(wid_y) << v.y 
+       << " "
+       << std::setw(wid_z) << v.z
+       << " "
+       << std::setw(wid_w) << v.w 
+       ;
+    return ss.str();
+}
+
+
+
 
 
 std::string gpresent(const glm::uvec3& v, unsigned wid)

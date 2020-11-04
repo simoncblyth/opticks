@@ -6,6 +6,23 @@ intpack.py
 Thinking about twos-complement representation of signed integers 
 and bit packing. See SSys::unsigned_as_int 
 
+When packing signed ints have to be more careful with the masking
+to avoid getting "leaking" bits as -1:0xffffffff 
+
+::
+
+    In [15]: ( 0 << 16 )    
+    Out[15]: 0
+    In [16]: ( 0 << 16 ) | -1
+    Out[16]: -1
+    In [17]: pack = ( 0 << 16 ) | -1
+    In [18]: pack >> 16
+    Out[18]: -1
+    In [19]: pack = ( ( 0 & 0xffff)  << 16 ) | ( -1 & 0xffff )
+    In [20]: "%x" % pack
+    Out[20]: 'ffff'
+    In [21]: pack >> 16
+    Out[21]: 0
 
 """
 import sys, binascii as ba, numpy as np
@@ -92,5 +109,7 @@ rr_1 = (rr & 0xffff).view(np.int16)[::2]
 # just the one steps beyond dont match 
 assert len(np.where( rr_0 != r0 )[0]) == 2  
 assert len(np.where( rr_1 != r1 )[0]) == 2  
+
+
 
 

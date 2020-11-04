@@ -5,32 +5,41 @@ ox.py : quick checks on photons
 
 ::
 
-    In [2]: ox.view(np.int32)[:,3]                                                                                                                                                                 
-    Out[2]: 
-    array([[ -24,   -1,    0, 6400],
-           [  41,   -1,    1, 6152],
-           [  21,   -1,    2, 6656],
+    In [36]: ox.view(np.int32)[:,3]                                                                                                                                                                                                                                                   
+    Out[36]: 
+    array([[-1507329,     3159,        0,     6400],
+           [ 2752511,     4430,        1,     6152],
+           [ 1441791,     4425,        2,     6656],
            ...,
-           [  20,   -1, 9997, 6272],
-           [  20,   -1, 9998, 6272],
-           [  41,   -1, 9999, 6152]], dtype=int32)
+           [ 1376255,     3155,     4997,     6272],
+           [-1376257,     3157,     4998,     6416],
+           [ 1376255,     3155,     4999,     6272]], dtype=int32)
 
+           bnd_sidx
+           two int16       nidx     phidx     flags
 
-    In [5]: np.all( ox.view(np.int32)[:,3,2] == np.arange(10000) )
-    Out[5]: True
+    In [37]: np.all( ox.view(np.int32)[:,3,2] == np.arange(5000) ) 
+    Out[37]: True
 
+    In [38]: ox_flags[np.where(ox_flags[:,3] & hismask.code("SD"))]                                                                                                                                                                                                                   
+    Out[38]: 
+    array([[-1965950,     3981,       19,     6208],
+           [-1965941,     4035,       74,     6208],
+           [-1965892,     4329,      217,     6208],
+           [-1966004,     3657,      406,     6224],
+           [-1965891,     4335,      546,     6208],
+           [-1965899,     4287,      586,     7232],
+           [-1965913,     4203,      690,     6208],
 
-    In [10]: ox_flags[np.where(ox_flags[:,3] & hismask.code("SD"))]                                                                                                                                           
-    Out[10]: 
-    array([[ -30,  130,   19, 6208],
-           [ -30,  139,   74, 6208],
-           [ -30,  188,  217, 6208],
-           [ -30,   76,  406, 6224],
-           [ -30,  189,  546, 6208],
-           [ -30,  181,  586, 7232],
-           [ -30,  167,  690, 6208],
-           [ -30,  185,  767, 6208],
-             bnd sen-idx ox-idx hismask(OR of step flags)
+    In [41]: ox_flags[np.where(ox_flags[:,3] & hismask.code("SD"))][:,0] & 0xffff                                                                                                                                                                                                     
+    Out[41]: 
+    array([130, 139, 188,  76, 189, 181, 167, 185, 152, 150,  29,  89,  97, 160, 183,  37, 132,  50,  13, 169, 141,  84,  73,  85, 144, 128,  87,  19, 187, 174,  76, 180, 101,  82, 116,  66,  29,  63,
+            88, 165,  36, 169,   9, 121,  23, 129, 143], dtype=int32)
+
+    In [42]: ox_flags[np.where(ox_flags[:,3] & hismask.code("SD"))][:,0] >> 16                                                                                                                                                                                                        
+    Out[42]: 
+    array([-30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30, -30,  30,  30,  30, -30, -30, -30, -30, -30, -30, -30, -30,  30, -30, -30,
+           -30, -30, -30, -30,  30, -30, -30, -30, -30], dtype=int32)
 
 
 """
@@ -49,6 +58,30 @@ mattype = MatType()
 hismask = HisMask() 
 blib = BLib()
 ggeo = GGeo()
+
+
+def dump_boundaries(ox):
+    bndidx = (ox[:,3,0].view(np.uint32) >> 16).view(np.int16)[0::2] 
+    u_bndidx, u_bndidx_counts = np.unique(bndidx, return_counts=True)  
+    tot = 0 
+    print("dump_boundaries")
+    for bnd,bnd_count in sorted(zip(u_bndidx,u_bndidx_counts), key=lambda _:_[1], reverse=True):
+        name = blib.bname(np.abs(bnd)-1)  # subtract 1 to get index as signed boundaries are 1-based 
+        print("%4d : %7d  : %s " % (bnd, bnd_count, name))
+        tot += bnd_count
+    pass
+    print("%4s : %7d " % ("TOT",tot))
+
+def dump_sensorIdx(ox):
+    sidx = (ox[:,3,0].view(np.uint32) & 0xffff).view(np.int16)[0::2] 
+    u_sidx, u_sidx_counts = np.unique(sidx, return_counts=True)  
+    tot = 0 
+    print("dump_sensorIdx")
+    for sid,sid_count in sorted(zip(u_sidx,u_sidx_counts), key=lambda _:_[1], reverse=True):
+        print("%4d : %7d  : %s " % (sid, sid_count, ""))
+        tot += sid_count
+    pass
+    print("%4s : %7d " % ("TOT",tot))
 
 
 if __name__ == '__main__':
@@ -70,27 +103,37 @@ if __name__ == '__main__':
     print("ox_flags : %s " % repr(ox_flags.shape) )
     print("ox_lander : %s : photons landing on sensor volumes  " % repr(ox_lander.shape))  
 
-    bndidx = np.unique(np.abs(ox[:,3,0].view(np.int32))) - 1   # subtract 1 to get index as signed boundaries are 1-based 
-    print("bndidx : %s " % repr(bndidx))
-    #for _ in bndidx:print(blib.bname(_)) 
+    dump_boundaries(ox)
+    #dump_sensorIdx(ox)
 
     for i, oxr in enumerate(ox):
         oxf = oxr[3].view(np.int32)
 
         ## use stomped on weight, for the "always there, not just sensors" node index of last intersected volume 
         nidx = oxr[1,3].view(np.uint32)  
+
         nrpo = ggeo.get_triplet_index(nidx)
         nidx2,ridx,pidx,oidx = nrpo
         assert nidx2 == nidx 
         #if ridx > 0: continue   # skip photons with last intersect on instanced geometry 
         if ridx == 0: continue   # skip photons with last intersect on remainder geometry 
 
-        bnd,sidx,idx,pflg  = oxf
-        sqh = seqhis[idx]
+        # see okc/OpticksPhotonFlags optixrap/cu/generate.cu 
+        bnd_sidx,nidx3,idx,pflg  = oxf   ## nidx3 will soon become "the one" 
+        assert nidx3 == nidx
+        bnd = np.int16(bnd_sidx >> 16)      
+        sidx = np.int16(bnd_sidx & 0xffff)  
+
+        sqh = seqhis[idx]  # photon index 
         sqm = seqmat[idx]
         msk = " %15s " % hismask.label(pflg) 
         his = "( %16x : %30s ) " % (sqh, histype.label(sqh)) 
         mat = "( %16x : %30s ) " % (sqm, mattype.label(sqm))
-        print(" %5d : %15s :  %s %s %s : %s " % (i, oxf, msk,his,mat, nrpo) )
+        print(" %5d : %6s %6s : %15s :  %s %s %s : %s " % (i, bnd, sidx, oxf[1:], msk,his,mat, nrpo) )
     pass
-         
+        
+    dump_boundaries(ox)
+    #dump_sensorIdx(ox)
+
+
+ 

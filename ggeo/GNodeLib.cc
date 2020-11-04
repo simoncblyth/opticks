@@ -611,7 +611,9 @@ glm::vec4 GNodeLib::getCE(unsigned index) const
 }
 glm::uvec4 GNodeLib::getIdentity(unsigned index) const 
 {
-    assert( index < m_num_volumes ); 
+    bool expect = index < m_num_volumes ;
+    if(!expect) LOG(error) << " index " << index  << " num_volumes " << m_num_volumes ; 
+    assert( expect ); 
     //glm::uvec4 id = m_identity->getQuad(index) ; see notes/issues/triplet-id-loosing-offset-index-in-NPY.rst
     glm::uvec4 id = m_identity->getQuad_(index) ; 
     return id ;  

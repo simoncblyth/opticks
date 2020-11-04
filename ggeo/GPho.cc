@@ -62,9 +62,7 @@ const char* GPho::getSelectionName() const
     return name ; 
 }
 
-
-
-
+const char* GPho::DEFAULT_OPT = "nidx,nrpo,post,lpst,okfl" ; 
 
 GPho::GPho(const GGeo* ggeo, const char* opt) 
     :  
@@ -72,20 +70,15 @@ GPho::GPho(const GGeo* ggeo, const char* opt)
     m_msk(NULL),
     m_num_photons(0),
     m_ggeo(ggeo),
-    m_opt(opt ? strdup(opt) : NULL),
-    m_selection('A'),
-    m_nidx(opt ? BStr::Contains(opt, "nidx", ',' ) : true ),
-    m_nrpo(opt ? BStr::Contains(opt, "nrpo", ',' ) : true ),
-    m_mski(opt ? BStr::Contains(opt, "mski", ',' ) : true ),
-    m_post(opt ? BStr::Contains(opt, "post", ',' ) : true ),
-    m_lpst(opt ? BStr::Contains(opt, "lpst", ',' ) : true ),
-    m_ldrw(opt ? BStr::Contains(opt, "ldrw", ',' ) : true ),
-    m_lpow(opt ? BStr::Contains(opt, "lpow", ',' ) : true ),
-    m_dirw(opt ? BStr::Contains(opt, "dirw", ',' ) : true ),
-    m_polw(opt ? BStr::Contains(opt, "polw", ',' ) : true ),
-    m_flgs(opt ? BStr::Contains(opt, "flgs", ',' ) : true ),
-    m_okfl(opt ? BStr::Contains(opt, "okfl", ',' ) : true )
+    m_opt(opt ? strdup(opt) : DEFAULT_OPT ),
+    m_selection('A')
 {
+    setOpt(m_opt); 
+}
+
+void GPho::setOpt(const char* opt)
+{
+    m_opt = opt ? strdup(opt) : DEFAULT_OPT ; 
 }
 
 
@@ -145,25 +138,31 @@ OpticksPhotonFlags GPho::getOpticksPhotonFlags(unsigned i) const
     OpticksPhotonFlags okfl(flgs); 
     return okfl ;  
 }  
-int GPho::getBoundary(unsigned i) const
+
+
+
+int GPho::getLastIntersectBoundary(unsigned i) const
 {
     glm::vec4 flgs = m_photons->getQuad_(i,3); 
     return OpticksPhotonFlags::Boundary(flgs);  
 } 
 
-
-
 /**
-GPho::getNodeIndexOfLastIntersect
+GPho::getLastIntersectNodeIndex
 ----------------------------------
 
-This is using the stomped upon photon weight. 
+This is now using the NodeIndex from the flags.
+
+FORMERLY stomped on the weight with the nidx, getting it with::
+
+   glm::uvec4 dirw = m_photons->getQuadU(i,1);  // union type shifting getter
+   return dirw.w ;     
 
 **/
 unsigned GPho::getLastIntersectNodeIndex(unsigned i) const
 {
-    glm::uvec4 dirw = m_photons->getQuadU(i,1);  // union type shifting getter
-    return dirw.w ;     
+    glm::vec4 flgs = m_photons->getQuad_(i,3); 
+    return OpticksPhotonFlags::NodeIndex(flgs);  
 }
 glm::uvec4 GPho::getLastIntersectNRPO(unsigned i) const 
 {
@@ -184,6 +183,18 @@ glm::mat4 GPho::getLastIntersectInverseTransform(unsigned i) const
     glm::mat4 it = m_ggeo->getInverseTransform(nidx); 
     return it ; 
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -247,11 +258,6 @@ void GPho::saveLocalPhotons(const char* path) const
 }
 
 
-
-
-
-
-
 std::string GPho::desc() const 
 {
     std::stringstream ss ;
@@ -273,13 +279,6 @@ bool GPho::isHit(unsigned i) const
 }
 
 
-
-
-
-
-
-
-
 std::string GPho::desc(unsigned i) const 
 {
     glm::vec4 post = getPositionTime(i);
@@ -295,27 +294,37 @@ std::string GPho::desc(unsigned i) const
     glm::vec4 lpow = getLocalPolarizationWavelength(i);
 
     OpticksPhotonFlags okfl = getOpticksPhotonFlags(i); 
+    assert( nidx == okfl.nodeIndex ); 
+
+
+    bool _nidx = BStr::Contains(m_opt, "nidx", ',' ) ;
+    bool _nrpo = BStr::Contains(m_opt, "nrpo", ',' ) ;
+    bool _mski = BStr::Contains(m_opt, "mski", ',' ) ;
+    bool _post = BStr::Contains(m_opt, "post", ',' ) ;
+    bool _lpst = BStr::Contains(m_opt, "lpst", ',' ) ;
+    bool _ldrw = BStr::Contains(m_opt, "ldrw", ',' ) ;
+    bool _lpow = BStr::Contains(m_opt, "lpow", ',' ) ;
+    bool _dirw = BStr::Contains(m_opt, "dirw", ',' ) ;
+    bool _polw = BStr::Contains(m_opt, "polw", ',' ) ;
+    bool _flgs = BStr::Contains(m_opt, "flgs", ',' ) ;
+    bool _okfl = BStr::Contains(m_opt, "okfl", ',' ) ;
 
     std::stringstream ss ;
     ss << " i " << std::setw(7) << i ; 
-    if(m_mski) ss << " mski " << std::setw(7) << m_photons->getMskIndex(i)  ; 
-    if(m_nidx) ss << " nidx " << std::setw(7) << nidx ; 
-    if(m_nrpo) ss << " nrpo " << std::setw(20) << gpresent(nrpo) ; ; 
-    if(m_post) ss << " post " << std::setw(20) << gpresent(post) ;
-    if(m_lpst) ss << " lpst " << std::setw(20) << gpresent(lpst) ;
-    if(m_ldrw) ss << " ldrw " << std::setw(20) << gpresent(ldrw) ;
-    if(m_lpow) ss << " lpow " << std::setw(20) << gpresent(lpow) ;
-    if(m_dirw) ss << " dirw " << std::setw(20) << gpresent(dirw) ;
-    if(m_polw) ss << " polw " << std::setw(20) << gpresent(polw) ;
-    if(m_flgs) ss << " flgs " << std::setw(20) << gpresent(flgs) ;
-    if(m_okfl) ss << " okfl " << std::setw(20) << okfl.brief() ;
+    if(_mski) ss << " mski " << std::setw(7) << m_photons->getMskIndex(i)  ; 
+    if(_nidx) ss << " nidx " << std::setw(7) << nidx ; 
+    if(_nrpo) ss << " nrpo " << std::setw(20) << gpresent(nrpo,7,3,4,3) ; ; 
+    if(_post) ss << " post " << std::setw(20) << gpresent(post) ;
+    if(_lpst) ss << " lpst " << std::setw(20) << gpresent(lpst) ;
+    if(_ldrw) ss << " ldrw " << std::setw(20) << gpresent(ldrw) ;
+    if(_lpow) ss << " lpow " << std::setw(20) << gpresent(lpow) ;
+    if(_dirw) ss << " dirw " << std::setw(20) << gpresent(dirw) ;
+    if(_polw) ss << " polw " << std::setw(20) << gpresent(polw) ;
+    if(_flgs) ss << " flgs " << std::setw(20) << gpresent(flgs) ;
+    if(_okfl) ss << " okfl " << std::setw(20) << okfl.brief() ;
 
     return ss.str();
 }
-
-
-
-
 
 void GPho::dump(unsigned modulo, unsigned margin, const char* msg) const
 {
@@ -337,9 +346,6 @@ void GPho::dump(unsigned modulo, unsigned margin, const char* msg) const
         }
     }
 }
-
-
-
 
 void GPho::dump(const char* msg, unsigned maxDump) const 
 {
@@ -380,9 +386,6 @@ void GPho::dump(const char* msg, unsigned maxDump) const
         << " opt " << m_opt 
         << " count " << count 
         ;
-
-
-
 }
 
 void GPho::Dump(const NPY<float>* ox, const GGeo* ggeo, unsigned modulo, unsigned margin, const char* opt)  // static
