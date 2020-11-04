@@ -1599,6 +1599,15 @@ OpticksEvent::save
 Canonically invoked by OpticksRun::saveEvent which is 
 invoked from top level managers such as OKMgr::propagate.
 
+::
+
+    frame #3: 0x0000000106d45f96 libOpticksCore.dylib`OpticksEvent::save(this=0x0000000130c8c1d0) at OpticksEvent.cc:1619
+    frame #4: 0x0000000106d512dd libOpticksCore.dylib`OpticksRun::saveEvent(this=0x000000010f018ca0) at OpticksRun.cc:305
+    frame #5: 0x0000000106391cee libOKOP.dylib`OpMgr::propagate(this=0x0000000119540c20) at OpMgr.cc:133
+    frame #6: 0x00000001000e81a8 libG4OK.dylib`G4Opticks::propagateOpticalPhotons(this=0x000000010f15e450, eventID=0) at G4Opticks.cc:806
+    frame #7: 0x000000010001299c G4OKTest`G4OKTest::propagate(this=0x00007ffeefbfe920, eventID=0) at G4OKTest.cc:248
+    frame #8: 0x0000000100012bc2 G4OKTest`main(argc=1, argv=0x00007ffeefbfe978) at G4OKTest.cc:276
+
 
 In "--production" mode skips saving the arrays.
 
@@ -1617,12 +1626,15 @@ Formerly skipped saving when no records resulting in CanAnalyse false,
 void OpticksEvent::save()
 {
     //std::raise(SIGINT); 
+    const char* dir =  m_event_spec->getDir() ; 
+    LOG(info) << dir ; 
 
     OK_PROFILE("_OpticksEvent::save"); 
 
+
     LOG(LEVEL) 
         << description("") << getShapeString() 
-        << " dir " << m_event_spec->getDir()
+        << " dir " << dir
         ;    
 
     bool production = m_ok->isProduction() ; 

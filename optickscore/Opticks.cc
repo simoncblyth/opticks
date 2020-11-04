@@ -1218,13 +1218,13 @@ void Opticks::saveParameters() const
     if( evt )
     {
         std::string dir = evt->getTagZeroDir() ; 
-        LOG(info) << " postpropagate save " << name << " into TagZeroDir " << dir ; 
+        LOG(LEVEL) << " postpropagate save " << name << " into TagZeroDir " << dir ; 
         m_parameters->save( dir.c_str(), name ); 
     }
     else
     {
         const char* dir = getRunResultsDir() ; 
-        LOG(info) << " non-event running (eg raytrace benchmarks) save " << name << " into RunResultsDir " << dir ; 
+        LOG(LEVEL) << " non-event running (eg raytrace benchmarks) save " << name << " into RunResultsDir " << dir ; 
         m_parameters->save( dir, name ) ; 
     }
 }

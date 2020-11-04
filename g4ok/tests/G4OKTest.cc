@@ -30,7 +30,12 @@ From GDML::
 
 From cache(experimental)::
 
-    G4OKTest --torchtarget 3153
+    ##G4OKTest --torchtarget 3153
+    G4OKTest 
+
+Following implementation of passing GDML auxiliary info 
+thru the geocache now get the default torch target from the GDML 
+rather than having to specify it on the commandline.  
 
 Notice that Opticks is "embedded" when running from GDML which means that 
 it does not parse the commandline, this matches production usage. In order  
@@ -51,7 +56,7 @@ more closely to the production workflow.
 
 So add::
 
-    collectTorchStep(unsigned target_nidx, unsigned num_photons);  
+    collectTorchStep(unsigned num_photons, int node_index);  
 
 
 **/
@@ -209,7 +214,7 @@ unsigned G4OKTest::getNumGenstepPhotons(int eventID) const
     unsigned num_photons = 0 ;   // 0: leads to default torch genstep num_photons of 10000(?)
     switch(eventID) 
     {
-       case 0:  num_photons = 1000 ; break ; 
+       case 0:  num_photons = 5000 ; break ; 
        case 1:  num_photons = 2000 ; break ; 
        case 2:  num_photons = 3000 ; break ; 
        case 3:  num_photons = 4000 ; break ; 
@@ -265,7 +270,7 @@ int main(int argc, char** argv)
 {
     G4OKTest t(argc, argv); 
 
-    for(int ievt=0 ; ievt < 10 ; ievt++)
+    for(int ievt=0 ; ievt < 1 ; ievt++)
     {
        t.collectGensteps(ievt);
        t.propagate(ievt);
