@@ -109,8 +109,8 @@ if __name__ == '__main__':
     for i, oxr in enumerate(ox):
         oxf = oxr[3].view(np.int32)
 
-        ## use stomped on weight, for the "always there, not just sensors" node index of last intersected volume 
-        nidx = oxr[1,3].view(np.uint32)  
+        # see okc/OpticksPhotonFlags optixrap/cu/generate.cu 
+        bnd_sidx,nidx,idx,pflg  = oxf   ## nidx3 will soon become "the one" 
 
         nrpo = ggeo.get_triplet_index(nidx)
         nidx2,ridx,pidx,oidx = nrpo
@@ -118,9 +118,6 @@ if __name__ == '__main__':
         #if ridx > 0: continue   # skip photons with last intersect on instanced geometry 
         if ridx == 0: continue   # skip photons with last intersect on remainder geometry 
 
-        # see okc/OpticksPhotonFlags optixrap/cu/generate.cu 
-        bnd_sidx,nidx3,idx,pflg  = oxf   ## nidx3 will soon become "the one" 
-        assert nidx3 == nidx
         bnd = np.int16(bnd_sidx >> 16)      
         sidx = np.int16(bnd_sidx & 0xffff)  
 
