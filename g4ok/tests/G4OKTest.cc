@@ -75,6 +75,7 @@ class G4OKTest
         void initGeometry();
         void initSensorData();
         void initSensorAngularEfficiency();
+        void saveSensorLib() const ;
     public: 
         unsigned getNumGenstepPhotons(int eventID) const ;
         void     collectGensteps(int eventID); 
@@ -86,6 +87,7 @@ class G4OKTest
         const char*  m_gdmlpath ; 
         int          m_torchtarget ; 
         G4Opticks*   m_g4ok ; 
+        bool         m_debug ; 
 };
 
 
@@ -97,7 +99,8 @@ G4OKTest::G4OKTest(int argc, char** argv)
     m_log(initLog(argc, argv)),
     m_gdmlpath(PLOG::instance->get_arg_after("--gdmlpath", NULL)),
     m_torchtarget(PLOG::instance->get_int_after("--torchtarget", "-1")),
-    m_g4ok(new G4Opticks)
+    m_g4ok(new G4Opticks),
+    m_debug(true)
 {
     init();
 }
@@ -131,6 +134,7 @@ void G4OKTest::init()
     initGeometry();
     initSensorData();
     initSensorAngularEfficiency();
+    if(m_debug) saveSensorLib(); 
 }
 
 void G4OKTest::initGeometry()
@@ -144,6 +148,17 @@ void G4OKTest::initGeometry()
         m_g4ok->setGeometry(m_gdmlpath);  
     }
 }
+
+/**
+G4OKTest::initSensorData
+--------------------------
+
+When loading geometry from cache there is no Geant4 tree of volumes in memory resulting 
+in the vector of sensor placements being empty. However the number of sensors is available
+allowing a standin sensor identifier to be assigned to each sensor. Currently using the
+Opticks triplet identifier for this.
+
+**/
 
 void G4OKTest::initSensorData()
 {
@@ -188,12 +203,7 @@ void G4OKTest::initSensorData()
     }
 
     LOG(LEVEL) << "] setSensorData num_sensor " << num_sensor ; 
-
-    const char* dir = "$TMP/G4OKTest/SensorLib" ; 
-    m_g4ok->saveSensorLib(dir); 
-    LOG(info) << "saveSensorLib to directory: " << dir ; 
 }
-
 
 void G4OKTest::initSensorAngularEfficiency()
 {
@@ -204,9 +214,15 @@ void G4OKTest::initSensorAngularEfficiency()
     MockSensorAngularEfficiencyTable tab( num_cat, num_theta_steps, num_phi_steps ); 
     NPY<float>* arr = tab.getArray(); 
 
-    m_g4ok->setSensorAngularEfficiency( arr ); 
+    m_g4ok->setSensorAngularEfficiency( arr );  // TODO: this should make it get into GPU context
 }
 
+void G4OKTest::saveSensorLib() const
+{
+    const char* dir = "$TMP/G4OKTest/SensorLib" ; 
+    m_g4ok->saveSensorLib(dir); 
+    LOG(info) << dir ; 
+}
 
 unsigned G4OKTest::getNumGenstepPhotons(int eventID) const
 {
@@ -269,14 +285,25 @@ void G4OKTest::checkHits(int eventID) const
         << " num_hit " << num_hit
         ; 
 
+
     for(unsigned i=0 ; i < num_hit ; i++)
     {
         m_g4ok->getHit(i, &hit); 
         std::cout 
             << std::setw(5) << i 
-            << " hit.local_position " << hit.local_position 
+            << " hit.boundary "           << std::setw(4) << hit.boundary 
+            << " hit.sensor_index "       << std::setw(5) << hit.sensor_index 
+            << " hit.node_index "         << std::setw(5) << hit.node_index 
+            << " hit.photon_index "       << std::setw(5) << hit.photon_index 
+            << " hit.flag_mask    "       << std::setw(10) << std::hex << hit.flag_mask  << std::dec
+            << " hit.sensor_identifier "  << std::setw(10) << std::hex << hit.sensor_identifier << std::dec
+            << " hit.weight "             << std::setw(5) << hit.weight 
+            << " hit.wavelength "         << std::setw(8) << hit.wavelength 
+            << " hit.time "               << std::setw(8) << hit.time
+         //   << " hit.local_position " << hit.local_position 
             << std::endl 
             ;    
+        // G4ThreeVector formatter doesnt play well with setw
     }
 }
 

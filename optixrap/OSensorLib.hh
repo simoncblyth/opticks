@@ -60,6 +60,8 @@ class OXRAP_API OSensorLib
     public:
         OSensorLib(const OCtx* octx, const SensorLib* sensorlib);
         const OCtx* getOCtx() const ;
+    private:
+        void init();
     public:
         const NPY<float>*  getSensorAngularEfficiencyArray() const ;
         unsigned getNumSensorCategories() const ;
@@ -75,6 +77,7 @@ class OXRAP_API OSensorLib
     private:    
         const OCtx*        m_octx ; 
         const SensorLib*   m_sensorlib ; 
+        const NPY<float>*  m_sensor_data ; 
         const NPY<float>*  m_angular_efficiency ; 
 
         unsigned           m_num_dim ; 

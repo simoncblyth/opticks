@@ -1,11 +1,22 @@
 #pragma once 
 
 #include <vector>
+#include <map>
 #include <string>
+
 #include "plog/Severity.h"
 template <typename T> class NPY ; 
 
 #include "OKGEO_API_EXPORT.hh"
+
+/**
+SensorLib
+===========
+
+Canonically instanciated within G4Opticks::setGeometry 
+at which point initSensorData sets m_num_sensor
+
+**/
 
 class OKGEO_API SensorLib 
 {
@@ -22,7 +33,7 @@ class OKGEO_API SensorLib
         static SensorLib* Load(const char* dir);  
     public: 
         SensorLib(const char* dir=NULL);
-        bool isValid() const ; 
+        std::string desc() const ;
 
         void initSensorData(unsigned sensor_num ); 
         void setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int sensor_category, int sensor_identifier);
@@ -37,23 +48,26 @@ class OKGEO_API SensorLib
                                          int phi_steps=1,     float phi_min=0.f, float phi_max=360.f );
 
         void setSensorAngularEfficiency( const NPY<float>* sensor_angular_efficiency );
-
+        unsigned getNumSensorCategories() const ;
+    public: 
+        bool isClosed() const ;
+        void close();   // needs to be invoked after sensorlib data collection is completed
     public: 
          // needed for OSensorLib
          NPY<float>*        getSensorDataArray() const;
          const NPY<float>*  getSensorAngularEfficiencyArray() const;
     public: 
         void save(const char* dir) const ;
-        std::string getShapeString() const ; 
         void dump(const char* msg="SensorLib::dump") const ;
         void dumpSensorData(const char* msg) const ;
         void dumpAngularEfficiency(const char* msg) const ;
     private:
-        bool          m_loaded ; 
-        NPY<float>*   m_sensor_data ; 
-        unsigned      m_sensor_num ; 
-
+        bool                m_loaded ; 
+        NPY<float>*         m_sensor_data ; 
+        unsigned            m_sensor_num ; 
         const NPY<float>*   m_sensor_angular_efficiency ; 
+        bool                m_closed ;  
+        std::map<int,int>   m_category_counts ; 
 };
 
 

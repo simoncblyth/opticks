@@ -12,6 +12,7 @@ OSensorLib::OSensorLib(const OCtx* octx, const SensorLib* sensorlib)
     :    
     m_octx(octx),
     m_sensorlib(sensorlib),
+    m_sensor_data(m_sensorlib->getSensorDataArray()),
     m_angular_efficiency(m_sensorlib->getSensorAngularEfficiencyArray()),
     m_num_dim(  m_angular_efficiency->getNumDimensions()),
     m_num_cat(  m_angular_efficiency->getShape(0)),
@@ -20,11 +21,21 @@ OSensorLib::OSensorLib(const OCtx* octx, const SensorLib* sensorlib)
     m_num_elem( m_angular_efficiency->getShape(3)),
     m_texid(NPY<int>::make(m_num_cat, 4))    // small buffer of texid    
 {
+    init(); 
+}
+
+
+void OSensorLib::init() 
+{
     assert( m_num_dim == 4 ); 
     assert( m_num_cat < 10 ); 
     assert( m_num_elem == 1 ); 
     m_texid->zero();
+
+    assert( m_sensorlib->isClosed() ); 
 }
+
+
 
 
 const NPY<float>*  OSensorLib::getSensorAngularEfficiencyArray() const 

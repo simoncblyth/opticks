@@ -889,9 +889,11 @@ void G4Opticks::getHit(unsigned i, G4OpticksHit* hit ) const
     hit->photon_index  = pflag.photonIndex ; 
     hit->flag_mask     = pflag.flagMask ; 
 
-    hit->sensor_identifier = getSensorIdentifier(pflag.sensorIndex); 
     hit->is_cerenkov       = (pflag.flagMask & CERENKOV) != 0 ; 
     hit->is_reemission     = (pflag.flagMask & BULK_REEMIT) != 0 ; 
+
+    // via m_sensorlib 
+    hit->sensor_identifier = getSensorIdentifier(pflag.sensorIndex); 
 }
 
 

@@ -81,7 +81,6 @@ void GPho::setOpt(const char* opt)
     m_opt = opt ? strdup(opt) : DEFAULT_OPT ; 
 }
 
-
 void GPho::setPhotons(const  NPY<float>* photons)
 {
     m_photons = photons ; 
@@ -96,19 +95,14 @@ void GPho::setPhotons(const  NPY<float>* photons)
     }
 }
 
-
 unsigned GPho::getNumPhotons() const 
 {
     return m_num_photons ; 
 }
-
-
 const NPY<float>* GPho::getPhotons() const 
 {
     return m_photons ; 
 }
-
-
 
 glm::vec4 GPho::getPositionTime(unsigned i) const 
 {
@@ -125,8 +119,6 @@ glm::vec4 GPho::getPolarizationWavelength(unsigned i) const
     glm::vec4 polw = m_photons->getQuad_(i,2);
     return polw ; 
 }
-
-
 glm::ivec4 GPho::getFlags(unsigned i) const 
 {
     glm::ivec4 flgs = m_photons->getQuadI(i,3);  // union type shifting getter
@@ -160,11 +152,7 @@ GPho::getLastIntersectNodeIndex
 ----------------------------------
 
 This is now using the NodeIndex from the flags.
-
-FORMERLY stomped on the weight with the nidx, getting it with::
-
-   glm::uvec4 dirw = m_photons->getQuadU(i,1);  // union type shifting getter
-   return dirw.w ;     
+FORMERLY stomped on the weight with the nidx.
 
 **/
 unsigned GPho::getLastIntersectNodeIndex(unsigned i) const
@@ -192,25 +180,11 @@ glm::mat4 GPho::getLastIntersectInverseTransform(unsigned i) const
     return it ; 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 glm::vec4 GPho::getLocalPositionTime(unsigned i) const 
 {
     glm::vec4 post = getPositionTime(i); 
     float time = post.w ; 
-    post.w = 1.f ;  // transform as position  
+    post.w = 1.f ;  // w=1. to transform as a position  
     glm::mat4 it = getLastIntersectInverseTransform(i); 
     glm::vec4 lpost = it * post ; 
     lpost.w = time ; 
@@ -219,8 +193,8 @@ glm::vec4 GPho::getLocalPositionTime(unsigned i) const
 glm::vec4 GPho::getLocalDirectionWeight(unsigned i) const 
 {
     glm::vec4 dirw = getDirectionWeight(i); 
-    float weight = dirw.w ;   // <-- actually the weight is stomped on with unsigned_as_float(nidx)
-    dirw.w = 0.f ;  // transform as direction   
+    float weight = dirw.w ;  
+    dirw.w = 0.f ;     // w=0. to transform as a vector   
     glm::mat4 it = getLastIntersectInverseTransform(i); 
     glm::vec4 ldrw = it * dirw ; 
     ldrw.w = weight ; 
@@ -230,7 +204,7 @@ glm::vec4 GPho::getLocalPolarizationWavelength(unsigned i) const
 {
     glm::vec4 polw = getPolarizationWavelength(i); 
     float wavelength = polw.w ;   
-    polw.w = 0.f ;   // transform as direction   
+    polw.w = 0.f ;   // w=0. to transform as a vector   
     glm::mat4 it = getLastIntersectInverseTransform(i); 
     glm::vec4 lpow = it * polw ; 
     lpow.w = wavelength ; 
@@ -276,8 +250,8 @@ std::string GPho::desc() const
 
 bool GPho::isLandedOnSensor(unsigned i) const 
 {
-    glm::ivec4 flgs = getFlags(i);
-    return flgs.y != -1 ; 
+    OpticksPhotonFlags okfl = getOpticksPhotonFlags(i); 
+    return okfl.sensorIndex != -1 ;  
 }
 bool GPho::isHit(unsigned i) const 
 {

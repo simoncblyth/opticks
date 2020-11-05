@@ -26,6 +26,7 @@ to avoid getting "leaking" bits as -1:0xffffffff
 
 """
 import sys, binascii as ba, numpy as np
+x_ = lambda _:ba.hexlify(_)
 
 num_bytes = 4
 signed_max = (0x1 << (num_bytes*8 - 1)) - 1 
@@ -34,17 +35,23 @@ ii = list(range(-10,10)) + list(range(signed_max - 10, signed_max+1)) + list(ran
 
 assert sys.byteorder == 'little'
 
+
 for i in ii:
    u = np.uint32(i)
    v = u.view(np.int32)
    assert v == i 
 
+   uhi = ( u & 0xffff0000 ) >> 16 
+   ulo = ( u & 0x0000ffff ) >> 0
+
    l = i.to_bytes(num_bytes, "little", signed=True )  
    b = i.to_bytes(num_bytes, "big", signed=True )  
-   print("i:%12d u:%12d x:%12x little:%10s  big:%10s " % (i,u,u, ba.hexlify(l), ba.hexlify(b)))
+
+   print("i:%12d u:%12d x:%8x xhi:%4x xlo:%4x        little:%10s  big:%10s " % (i,u,u,uhi,ulo,x_(l), x_(b)))
 pass
 
-print("")
+print("(endianness is implementation detail that only very rarely need to think about even when masking and packing, only relevant when doing very low level debug eg with xxd)")
+print("(splitting a 16 bit value across two adjacent 8 bit fields and then reinterpreting them as 16 bit is one example where would need to consider endianness)") 
 print("little: least significant byte is first in memory")
 print("   big: least significant byte is last in memory")
 print("     x: hex string presentation looks like big-endian, the less common endianness" )

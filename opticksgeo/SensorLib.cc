@@ -13,7 +13,7 @@ SensorLib* SensorLib::Load(const char* dir)  // static
 {
     LOG(info) << dir ; 
     SensorLib* sensorlib = new SensorLib(dir) ; 
-    return sensorlib->isValid() ? sensorlib : NULL ; 
+    return sensorlib  ; 
 }
 
 SensorLib::SensorLib(const char* dir)
@@ -21,15 +21,12 @@ SensorLib::SensorLib(const char* dir)
     m_loaded(dir ? true : false),
     m_sensor_data(m_loaded ? NPY<float>::load(dir, SENSOR_DATA) :  NULL),
     m_sensor_num(m_loaded && m_sensor_data != NULL ? m_sensor_data->getNumItems() : 0 ),
-    m_sensor_angular_efficiency(m_loaded ? NPY<float>::load(dir, SENSOR_ANGULAR_EFFICIENCY) : NULL)
+    m_sensor_angular_efficiency(m_loaded ? NPY<float>::load(dir, SENSOR_ANGULAR_EFFICIENCY) : NULL),
+    m_closed(false)
 {
     LOG(LEVEL);
 }
 
-bool SensorLib::isValid() const
-{
-    return m_sensor_data != NULL && m_sensor_angular_efficiency != NULL ; 
-}
 
 unsigned SensorLib::getNumSensor() const 
 {
@@ -47,34 +44,42 @@ void SensorLib::save(const char* dir) const
 }
 
 
-std::string SensorLib::getShapeString() const 
+std::string SensorLib::desc() const 
 {
+    unsigned num_category = getNumSensorCategories(); // 0 when no 
     std::stringstream ss ; 
-    ss << "SensorLib"
-       << " sensor_num " << m_sensor_num 
-       << " sensor_data " << ( m_sensor_data ? m_sensor_data->getShapeString() : "-" )
-       << " sensor_angular_efficiency " << ( m_sensor_angular_efficiency ? m_sensor_angular_efficiency->getShapeString() : "-" )
+    ss
+       << "SensorLib"
+       << " closed " << ( m_closed ? "Y" : "N" ) 
+       << " loaded " << ( m_loaded ? "Y" : "N" ) 
+       << " sensor_data " << ( m_sensor_data ? m_sensor_data->getShapeString() : "N" )
+       << " sensor_num " << m_sensor_num        
+       << " sensor_angular_efficiency " << ( m_sensor_angular_efficiency ? m_sensor_angular_efficiency->getShapeString() : "N" )
+       << " num_category " << num_category 
        ;
     return ss.str(); 
 }
+
+
+
+
 
 
 void SensorLib::dump(const char* msg) const 
 {
     dumpSensorData(msg);
     dumpAngularEfficiency(msg);
-
 }
 
 void SensorLib::dumpSensorData(const char* msg) const 
 {
     LOG(info) << msg ; 
-    LOG(info) << getShapeString() ; 
+    LOG(info) << desc() ; 
 
     float efficiency_1 ; 
     float efficiency_2 ; 
-    int category ; 
-    int identifier ; 
+    int   category ; 
+    int   identifier ; 
 
     int w = 12 ; 
 
@@ -111,6 +116,13 @@ void SensorLib::dumpSensorData(const char* msg) const
 }
 
 
+/**
+SensorLib::initSensorData
+---------------------------
+
+Canonically invoked by G4Opticks::setGeometry
+
+**/
 
 void SensorLib::initSensorData(unsigned sensor_num)
 {
@@ -156,15 +168,14 @@ void SensorLib::setSensorData(unsigned sensorIndex, float efficiency_1, float ef
     m_sensor_data->setInt(  sensorIndex,3,0,0, identifier);
 }
 
-
 void SensorLib::getSensorData(unsigned sensorIndex, float& efficiency_1, float& efficiency_2, int& category, int& identifier) const
 {   
     assert( sensorIndex < m_sensor_num ); 
     assert( m_sensor_data );
     efficiency_1 = m_sensor_data->getFloat(sensorIndex,0,0,0);
     efficiency_2 = m_sensor_data->getFloat(sensorIndex,1,0,0);
-    category = m_sensor_data->getInt(sensorIndex,2,0,0);
-    identifier = m_sensor_data->getInt(sensorIndex,3,0,0);
+    category     = m_sensor_data->getInt(  sensorIndex,2,0,0);
+    identifier   = m_sensor_data->getInt(  sensorIndex,3,0,0);
 }
 
 int SensorLib::getSensorIdentifier(unsigned sensorIndex) const
@@ -217,6 +228,12 @@ void SensorLib::setSensorAngularEfficiency( const NPY<float>* sensor_angular_eff
 {
     m_sensor_angular_efficiency = sensor_angular_efficiency ;
 }
+
+unsigned SensorLib::getNumSensorCategories() const
+{
+    return m_sensor_angular_efficiency ? m_sensor_angular_efficiency->getShape(0) : 0 ; 
+} 
+
 
 void SensorLib::dumpAngularEfficiency(const char* msg) const 
 {
@@ -298,6 +315,88 @@ const NPY<float>*  SensorLib::getSensorAngularEfficiencyArray() const
     return m_sensor_angular_efficiency ;
 }
 
+
+
+bool SensorLib::isClosed() const 
+{
+    return m_closed ; 
+}
+
+
+/**
+SensorLib::close
+-----------------
+
+Closing the sensorlib checks consistency between the 
+sensorData and angularEfficiency arrays.  
+
+The 0-based category index from the sensorData must be less than the number 
+of angularEfficiency categories when an angularEfficiency array is present.
+When no angularEfficiency array has been set the sensorData categories 
+must all be -1.
+
+**/
+
+
+void SensorLib::close() 
+{
+    if(m_closed) 
+    {
+        LOG(error) << " closed already " ;
+        return ;   
+    }
+
+    if(m_sensor_num == 0 ) 
+    {
+        LOG(error) << " SKIP as m_sensor_num zero " ;
+        return ;   
+    }
+    unsigned num_category = getNumSensorCategories(); // 0 when no 
+    LOG(info) << desc() ; 
+
+    bool dump = true ; 
+    m_category_counts.clear(); 
+
+    for(unsigned i=0 ; i < m_sensor_num ; i++)
+    {
+        unsigned sensorIndex = i ; 
+
+        float efficiency_1 ; 
+        float efficiency_2 ; 
+        int category ; 
+        int identifier ; 
+
+        getSensorData(sensorIndex, efficiency_1, efficiency_2, category, identifier);
+
+        bool category_expected = ( num_category == 0 ) ? category == -1 : category > -1 ; 
+        if(!category_expected || dump)
+        std::cout 
+            << " sensorIndex "  << std::setw(6) << sensorIndex
+            << " efficiency_1 " << std::setw(10) << efficiency_1 
+            << " efficiency_2 " << std::setw(10) << efficiency_2 
+            << " category "     << std::setw(6) << category
+            << " identifier "   << std::setw(6) << identifier
+            << " category_expected " << ( category_expected ? "Y" : "N" ) 
+            << std::endl 
+            ;
+        assert(category_expected); 
+        m_category_counts[category] += 1 ;  
+    }
+
+    typedef std::map<int,int>::const_iterator IT ;
+
+    for(IT it=m_category_counts.begin() ; it != m_category_counts.end() ; it++ )
+    {
+        std::cout
+            << " category " << std::setw(10) << it->first 
+            << " count "    << std::setw(10) << it->second
+            << std::endl 
+            ;
+    }
+    m_closed = true ; 
+    LOG(info) << desc() ; 
+}
+
 /*
 template <typename T>
 void SensorLib::setSensorAngularEfficiencyMeta( const char* key, T value )
@@ -314,5 +413,4 @@ template OKGEO_API void SensorLib::setSensorAngularEfficiencyMeta(const char* ke
 template OKGEO_API void SensorLib::setSensorAngularEfficiencyMeta(const char* key, float value);
 template OKGEO_API void SensorLib::setSensorAngularEfficiencyMeta(const char* key, std::string value);
 */
-
 

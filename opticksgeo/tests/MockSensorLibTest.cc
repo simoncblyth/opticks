@@ -31,8 +31,12 @@ int main(int argc, char** argv)
     senlib2->dump("MockSensorLibTest"); 
 
     LOG(info) << dir ; 
-    LOG(info) << senlib->getShapeString()  ; 
-    LOG(info) << senlib2->getShapeString()  ; 
+    LOG(info) << senlib->desc()  ; 
+    LOG(info) << senlib2->desc()  ; 
+
+
+    senlib2->close();  
+
 
     return 0 ; 
 }

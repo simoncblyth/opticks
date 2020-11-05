@@ -49,7 +49,7 @@ std::string OpticksPhotonFlags::desc() const
         << " sensorIndex " << std::setw(10) << sensorIndex
         << " nodeIndex "   << std::setw(10) << nodeIndex
         << " photonIndex " << std::setw(10) << photonIndex 
-        << " flagMask "    << std::setw(10) << flagMask 
+        << " flagMask "    << std::setw(10) << std::hex << flagMask << std::dec 
         ;
     return ss.str(); 
 }
@@ -68,7 +68,7 @@ std::string OpticksPhotonFlags::brief() const
         << " p "
         << std::setw(6) << photonIndex 
         << " f "
-        << std::setw(10) << flagMask 
+        << std::setw(10) << std::hex << flagMask << std::dec
         << ")"
         ;
     return ss.str(); 

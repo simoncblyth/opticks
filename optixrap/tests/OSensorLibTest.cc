@@ -116,6 +116,7 @@ int main(int argc, char** argv)
         return 0 ;
     }
     senlib->dump("OSensorLibTest"); 
+    senlib->close();  
 
     OSensorLibTest oslt(senlib); 
 
