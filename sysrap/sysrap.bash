@@ -52,8 +52,8 @@ sysrap-tdir(){ echo $(opticks-home)/sysrap/tests ; }
 sysrap-idir(){ echo $(opticks-idir); }
 sysrap-bdir(){ echo $(opticks-bdir)/sysrap ; }
 
-sysrap-c(){    cd $(sysrap-sdir); }
-sysrap-cd(){   cd $(sysrap-sdir); }
+sysrap-c(){    cd $(sysrap-sdir)/$1 ; }
+sysrap-cd(){   cd $(sysrap-sdir)/$1 ; }
 sysrap-scd(){  cd $(sysrap-sdir); }
 sysrap-tcd(){  cd $(sysrap-tdir); }
 sysrap-icd(){  cd $(sysrap-idir); }

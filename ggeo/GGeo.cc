@@ -116,7 +116,7 @@ GGeo* GGeo::Load(Opticks* ok) // static
     bool live = false ; 
     GGeo* ggeo = new GGeo(ok, live);
     ggeo->loadFromCache();
-    ggeo->dumpStats();
+    ggeo->dumpStats("GGeo::Load");
     return ggeo ;  
 }
 
@@ -716,32 +716,17 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
     NMeta* lv2sd = m_ok->getOriginCacheMeta("lv2sd"); 
     NMeta* lv2mt = m_ok->getOriginCacheMeta("lv2mt"); 
 
-    if( lv2sd )
-    {
-        lv2sd->dump("GGeo::loadCacheMeta.lv2sd"); 
-    }
-    else
-    {
-        LOG(error) << " NULL lv2sd " ;  
-    }
-
-    if( lv2mt )
-    {
-        lv2mt->dump("GGeo::loadCacheMeta.lv2mt"); 
-    }
-    else
-    {
-        LOG(error) << " NULL lv2mt " ;  
-    }
+    //if(lv2sd) lv2sd->dump("GGeo::loadCacheMeta.lv2sd"); 
+    //if(lv2mt) lv2mt->dump("GGeo::loadCacheMeta.lv2mt"); 
 
     if( m_ok->isTest() )   // --test : skip lv2sd association
     {
-         LOG(LEVEL) << "NOT USING the lv2sd lv2mt association as --test is active " ;  
+        LOG(LEVEL) << "NOT USING the lv2sd lv2mt association as --test is active " ;  
     }
     else
     {
-         m_lv2sd = lv2sd ;  
-         m_lv2mt = lv2mt ;  
+        m_lv2sd = lv2sd ;  
+        m_lv2mt = lv2mt ;  
     }
 }
 
@@ -1370,7 +1355,7 @@ GMaterial* GGeo::getCathodeMaterial(unsigned int index)
 
 void GGeo::dumpStats(const char* msg)
 {
-    printf("%s\n", msg);
+    LOG(info) << msg ; 
 
     unsigned int nmm = getNumMergedMesh();
 

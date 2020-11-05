@@ -565,7 +565,7 @@ Canonically invoked by Opticks::postgeometry
 
 void Opticks::setProfileDir(const char* dir)
 {
-    LOG(fatal) << " dir " << dir ; 
+    LOG(LEVEL) << " dir " << dir ; 
     bool is_cvmfs = 
            dir[0] == '/' && 
            dir[1] == 'c' && 

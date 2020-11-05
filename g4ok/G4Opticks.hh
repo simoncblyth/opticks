@@ -53,6 +53,9 @@ class G4VPhysicalVolume ;
 class G4VParticleChange ; 
 class G4PVPlacement ; 
 
+struct G4OpticksHit ; 
+
+
 #include "G4Types.hh"
 
 /**
@@ -289,24 +292,9 @@ class G4OK_API G4Opticks
             G4int                flags_w
          ); 
 
-        void getHit(
-            unsigned i,
-            G4ThreeVector* position,  
-            G4double* time, 
-            G4ThreeVector* direction, 
-            G4double* weight,
-            G4ThreeVector* polarization,  
-            G4double* wavelength, 
-            G4int* flags_x,
-            G4int* flags_y,
-            G4int* flags_z,
-            G4int* flags_w,
-            G4bool* is_cerenkov, 
-            G4bool* is_reemission,
-            G4int*  sensor_index,
-            G4int*  sensor_identifier 
-       ) const  ; 
-            
+        unsigned getNumHit() const ; 
+        void getHit(unsigned i, G4OpticksHit* hit ) const ; 
+           
      private:
         bool                       m_standardize_geant4_materials ; 
         const G4VPhysicalVolume*   m_world ; 

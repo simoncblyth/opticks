@@ -103,7 +103,7 @@ GNodeLib::GNodeLib(Opticks* ok, bool loading)
     m_volumes(0),
     m_root(NULL)
 {
-    LOG(info) << "loaded" ; 
+    LOG(LEVEL) << "loaded" ; 
     assert( m_sensor_identity.size() == m_num_sensors ); 
 }
 

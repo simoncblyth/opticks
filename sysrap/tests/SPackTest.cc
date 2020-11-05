@@ -172,12 +172,15 @@ void test_IsLittleEndian()
 }
 
 
-void test_unsigned_as_int(int boundary, unsigned sensorIndex, bool dump)
+void test_unsigned_as_int(int boundary, int sensorIndex, bool dump)
 {
     // LOG(info) << " boundary " << boundary ; 
 
-    unsigned packed = ( boundary << 16 | sensorIndex << 0 );   // pack the signed and unsigned into 32 bits 
+    //unsigned packed = ( boundary << 16 | sensorIndex << 0 ); 
+    //     simple packing like this doesnt work with signed ints, 
+    //     must control the masking first otherwise the bits from eg -1:0xffffffff leak 
 
+    unsigned packed = ((boundary & 0xffff) << 16 ) | ((sensorIndex & 0xffff) << 0 ) ;   // pack the two 16 bit signed ints into 32 bits 
     unsigned hi = ( packed & 0xffff0000 ) >> 16 ;
     unsigned lo = ( packed & 0x0000ffff ) >>  0 ;
 
@@ -282,8 +285,8 @@ int main(int argc , char** argv )
     //test_Encode_Decode_unsigned();  
     //test_IsLittleEndian();  
 
-    //test_unsigned_as_int(); 
-    test_unsigned_as_int_16(); 
+    test_unsigned_as_int(); 
+    //test_unsigned_as_int_16(); 
 
     return 0  ; 
 }

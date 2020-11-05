@@ -132,14 +132,22 @@ glm::ivec4 GPho::getFlags(unsigned i) const
     glm::ivec4 flgs = m_photons->getQuadI(i,3);  // union type shifting getter
     return flgs ; 
 }
+
+/**
+GPho::getOpticksPhotonFlags
+---------------------------
+
+The float flags contain the bits of unsigned and signed integers with some bit packing.  
+These are decoded using OpticksPhotonFlags.
+
+**/
+
 OpticksPhotonFlags GPho::getOpticksPhotonFlags(unsigned i) const 
 {
     glm::vec4 flgs = m_photons->getQuad_(i,3);  
     OpticksPhotonFlags okfl(flgs); 
     return okfl ;  
 }  
-
-
 
 int GPho::getLastIntersectBoundary(unsigned i) const
 {

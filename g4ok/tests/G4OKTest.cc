@@ -3,6 +3,8 @@
 
 #include "G4PVPlacement.hh"
 #include "G4Opticks.hh"
+#include "G4OpticksHit.hh"
+
 #include "MockSensorAngularEfficiencyTable.hh"
 
 /**
@@ -64,6 +66,7 @@ So add::
 
 class G4OKTest 
 {
+        static const plog::Severity LEVEL ; 
     public:
         G4OKTest(int argc, char** argv);
     private:
@@ -76,6 +79,7 @@ class G4OKTest
         unsigned getNumGenstepPhotons(int eventID) const ;
         void     collectGensteps(int eventID); 
         void     propagate(int eventID); 
+        void     checkHits(int eventID) const ; 
         int      rc() const ; 
     private:
         int          m_log ; 
@@ -84,6 +88,9 @@ class G4OKTest
         G4Opticks*   m_g4ok ; 
 };
 
+
+
+const plog::Severity G4OKTest::LEVEL = PLOG::EnvLevel("G4OKTest", "DEBUG"); 
 
 G4OKTest::G4OKTest(int argc, char** argv)
     :
@@ -148,7 +155,7 @@ void G4OKTest::initSensorData()
     unsigned num_distinct_copynumber = m_g4ok->getNumDistinctPlacementCopyNo();  
     bool use_standin = num_distinct_copynumber == 1 ; 
 
-    LOG(info)
+    LOG(LEVEL)
         << "[ setSensorData num_sensor " << num_sensor 
         << " num_distinct_copynumber " << num_distinct_copynumber
         << " Geometry " << ( loaded ? "LOADED FROM CACHE" : "LIVE TRANSLATED" )
@@ -180,19 +187,11 @@ void G4OKTest::initSensorData()
         m_g4ok->setSensorData( sensor_index, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
     }
 
-/*
-    std::string SensorCategoryList = "placeholder" ; 
-    m_g4ok->setSensorDataMeta<std::string>("SensorCategoryList", SensorCategoryList);
-*/  
-  
-    LOG(info) << "] setSensorData num_sensor " << num_sensor ; 
-
+    LOG(LEVEL) << "] setSensorData num_sensor " << num_sensor ; 
 
     const char* dir = "$TMP/G4OKTest/SensorLib" ; 
     m_g4ok->saveSensorLib(dir); 
     LOG(info) << "saveSensorLib to directory: " << dir ; 
-
-    LOG(info) << m_g4ok->dbgdesc() ; 
 }
 
 
@@ -256,8 +255,31 @@ void G4OKTest::propagate(int eventID)
 
     m_g4ok->dumpHits("G4OKTest::propagate"); 
 
+    checkHits(eventID); 
+
     m_g4ok->reset(); // <--- without reset gensteps just keep accumulating 
 }
+
+void G4OKTest::checkHits(int eventID) const 
+{
+    G4OpticksHit hit ; 
+    unsigned num_hit = m_g4ok->getNumHit(); 
+    LOG(info) 
+        << " eventID " << eventID
+        << " num_hit " << num_hit
+        ; 
+
+    for(unsigned i=0 ; i < num_hit ; i++)
+    {
+        m_g4ok->getHit(i, &hit); 
+        std::cout 
+            << std::setw(5) << i 
+            << " hit.local_position " << hit.local_position 
+            << std::endl 
+            ;    
+    }
+}
+
 
 int G4OKTest::rc() const 
 {

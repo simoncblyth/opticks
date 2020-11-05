@@ -40,6 +40,7 @@
 #include "CGDML.hh"
 #include "C4FPEDetection.hh"
 
+#include "G4OpticksHit.hh"
 #include "G4Opticks.hh"
 
 #include "OpticksPhoton.h"
@@ -842,50 +843,55 @@ void G4Opticks::dumpHits(const char* msg) const
 }
 
 
-void G4Opticks::getHit(
-            unsigned i,
-            G4ThreeVector* position,  
-            G4double* time, 
-            G4ThreeVector* direction, 
-            G4double* weight,
-            G4ThreeVector* polarization,  
-            G4double* wavelength,
-            G4int* flags_x,
-            G4int* flags_y,
-            G4int* flags_z,
-            G4int* flags_w,
-            G4bool* is_cerenkov, 
-            G4bool* is_reemission,
-            G4int*  sensor_index,
-            G4int*  sensor_identifier 
-      ) const 
+unsigned G4Opticks::getNumHit() const
 {
-    assert( i < m_num_hits ); 
+    return m_num_hits ; 
+}
+
+
+/**
+G4Opticks::getHit
+-------------------
+
+The local position, direction and wavelength are within the frame 
+of the last intersect node which for hits is that of the sensor.
+
+**/
+
+void G4Opticks::getHit(unsigned i, G4OpticksHit* hit ) const 
+{
+    assert( i < m_num_hits && hit ); 
 
     glm::vec4 post = m_hits_wrapper->getPositionTime(i);      
-    position->set(double(post.x), double(post.y), double(post.z)); 
-    *time = double(post.w) ; 
-
     glm::vec4 dirw = m_hits_wrapper->getDirectionWeight(i);      
-    direction->set(double(dirw.x), double(dirw.y), double(dirw.z)); 
-    *weight = double(dirw.w) ; 
-
     glm::vec4 polw = m_hits_wrapper->getPolarizationWavelength(i); 
-    polarization->set(double(polw.x), double(polw.y), double(polw.z)); 
-    *wavelength = double(polw.w);  
 
-    glm::uvec4 flags = m_hits_wrapper->getFlags(i);
-    *flags_x = flags.x ; 
-    *flags_y = flags.y ; 
-    *flags_z = flags.z ; 
-    *flags_w = flags.w ; 
+    glm::vec4 local_post = m_hits_wrapper->getLocalPositionTime(i);      
+    glm::vec4 local_dirw = m_hits_wrapper->getLocalDirectionWeight(i);      
+    glm::vec4 local_polw = m_hits_wrapper->getLocalPolarizationWavelength(i);      
 
-    *is_cerenkov = (flags.w & CERENKOV) != 0 ; 
-    *is_reemission = (flags.w & BULK_REEMIT) != 0 ; 
+    OpticksPhotonFlags pflag = m_hits_wrapper->getOpticksPhotonFlags(i); 
 
-    unsigned sensorIndex = flags.y ; 
-    *sensor_index = sensorIndex ;     
-    *sensor_identifier = getSensorIdentifier(sensorIndex); 
+    hit->global_position.set(double(post.x), double(post.y), double(post.z)); 
+    hit->time = double(post.w) ; 
+    hit->global_direction.set(double(dirw.x), double(dirw.y), double(dirw.z)); 
+    hit->weight = double(dirw.w) ; 
+    hit->global_polarization.set(double(polw.x), double(polw.y), double(polw.z)); 
+    hit->wavelength = double(polw.w);  
+
+    hit->local_position.set(double(local_post.x), double(local_post.y), double(local_post.z)); 
+    hit->local_direction.set(double(local_dirw.x), double(local_dirw.y), double(local_dirw.z)); 
+    hit->local_polarization.set(double(local_polw.x), double(local_polw.y), double(local_polw.z)); 
+
+    hit->boundary      = pflag.boundary ; 
+    hit->sensor_index  = pflag.sensorIndex ; 
+    hit->node_index    = pflag.nodeIndex ; 
+    hit->photon_index  = pflag.photonIndex ; 
+    hit->flag_mask     = pflag.flagMask ; 
+
+    hit->sensor_identifier = getSensorIdentifier(pflag.sensorIndex); 
+    hit->is_cerenkov       = (pflag.flagMask & CERENKOV) != 0 ; 
+    hit->is_reemission     = (pflag.flagMask & BULK_REEMIT) != 0 ; 
 }
 
 
