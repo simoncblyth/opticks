@@ -41,6 +41,22 @@ static __device__ __inline__ float OSensorLib_angular_efficiency(int category, f
     return angular_efficiency ; 
 }
 
+static __device__ __inline__ float OSensorLib_combined_efficiency(unsigned sensor_index, float phi_fraction, float theta_fraction  )
+{
+    const float4& sensor_data = OSensorLib_sensor_data[sensor_index] ; 
+
+    float efficiency_1 = sensor_data.x ; 
+    float efficiency_2 = sensor_data.y ; 
+    int category = __float_as_int(sensor_data.z); 
+    //int identifier = __float_as_int(sensor_data.w); 
+
+    int tex_id = category > -1 ? OSensorLib_texid[category].x : -1 ; 
+    float angular_efficiency = tex_id > -1 ? rtTex2D<float>( tex_id, phi_fraction, theta_fraction ) : 1.f ;  
+
+    float combined_efficiency = efficiency_1*efficiency_2*angular_efficiency ;
+    return combined_efficiency ;
+} 
+
 #else
 
 #include "OXPPNS.hh"
