@@ -85,6 +85,14 @@ void OpMgr::setGensteps(NPY<float>* gensteps)
     m_gensteps = gensteps ; 
 }
 
+void OpMgr::uploadSensorLib(const SensorLib* sensorlib)
+{
+    m_propagator->uploadSensorLib(sensorlib);  
+}
+
+
+
+
 OpticksEvent* OpMgr::getEvent() const 
 {
     return m_run->getEvent() ; 

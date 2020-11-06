@@ -115,6 +115,18 @@ void OpEngine::init()
     OKI_PROFILE("OpEngine::OpEngine");
 }
 
+
+
+void OpEngine::uploadSensorLib(const SensorLib* sensorlib)
+{
+    m_scene->uploadSensorLib(sensorlib); 
+}
+
+
+
+
+
+
 /**
 OpEngine::initPropagation
 --------------------------
@@ -137,6 +149,8 @@ void OpEngine::initPropagation()
     m_zeroer = new OpZeroer(m_ok, m_oevt) ;
     m_indexer = new OpIndexer(m_ok, m_oevt) ;
 }
+
+
 
 unsigned OpEngine::uploadEvent()
 {

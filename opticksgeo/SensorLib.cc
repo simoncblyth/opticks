@@ -351,10 +351,19 @@ void SensorLib::close()
         LOG(error) << " SKIP as m_sensor_num zero " ;
         return ;   
     }
-    unsigned num_category = getNumSensorCategories(); // 0 when no 
-    LOG(info) << desc() ; 
 
     bool dump = true ; 
+    checkSensorCategories(dump); 
+
+    m_closed = true ; 
+    LOG(info) << desc() ; 
+}
+
+void SensorLib::checkSensorCategories(bool dump)
+{
+    LOG(info) << "[ " <<  desc() ; 
+    unsigned num_category = getNumSensorCategories(); // 0 when none
+ 
     m_category_counts.clear(); 
 
     for(unsigned i=0 ; i < m_sensor_num ; i++)
@@ -375,7 +384,7 @@ void SensorLib::close()
             << " efficiency_1 " << std::setw(10) << efficiency_1 
             << " efficiency_2 " << std::setw(10) << efficiency_2 
             << " category "     << std::setw(6) << category
-            << " identifier "   << std::setw(6) << identifier
+            << " identifier "   << std::setw(10) << std::hex << identifier << std::dec
             << " category_expected " << ( category_expected ? "Y" : "N" ) 
             << std::endl 
             ;
@@ -383,8 +392,15 @@ void SensorLib::close()
         m_category_counts[category] += 1 ;  
     }
 
-    typedef std::map<int,int>::const_iterator IT ;
+    dumpCategoryCounts("SensorLib::checkSensorCategories"); 
 
+    LOG(info) << "] " <<  desc() ; 
+}
+
+void SensorLib::dumpCategoryCounts(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    typedef std::map<int,int>::const_iterator IT ;
     for(IT it=m_category_counts.begin() ; it != m_category_counts.end() ; it++ )
     {
         std::cout
@@ -393,9 +409,9 @@ void SensorLib::close()
             << std::endl 
             ;
     }
-    m_closed = true ; 
-    LOG(info) << desc() ; 
 }
+
+
 
 /*
 template <typename T>

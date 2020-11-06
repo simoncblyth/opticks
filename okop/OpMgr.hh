@@ -22,6 +22,7 @@
 class SLog ; 
 class Opticks ; 
 class OpticksHub ; 
+class SensorLib ; 
 class OpticksGen ; 
 class OpticksRun ; 
 class OpticksIdx; 
@@ -78,9 +79,12 @@ class OKOP_API OpMgr {
        OpMgr(Opticks* ok );
        virtual ~OpMgr();
    public:
-
        void setGensteps(NPY<float>* gensteps); 
+       void uploadSensorLib(const SensorLib* sensorlib); 
+   public:
        void propagate();
+   public:
+
        OpticksEvent* getEvent() const ; 
        OpticksEvent* getG4Event() const ; 
        void reset();

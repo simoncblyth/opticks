@@ -2384,11 +2384,7 @@ bool Opticks::isConfigured() const
 }
 void Opticks::configure()
 {
-    if(m_configured) 
-    {
-        LOG(fatal) << " configured already " ; 
-        return ; 
-    }
+    if(m_configured) return ; 
     m_configured = true ; 
 
     dumpArgs("Opticks::configure");  

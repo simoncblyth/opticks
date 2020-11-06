@@ -32,6 +32,15 @@ OCtx::OCtx(void* ptr)
 {
 }
 
+
+/**
+OCtx::init
+------------
+
+NB when using an external context this is not called 
+
+**/
+
 void* OCtx::init()
 {
     optix::Context context = optix::Context::create();
@@ -47,9 +56,9 @@ void* OCtx::init()
     return ptr ; 
 }
 
-OCtx* OCtx::Get()  // static 
+OCtx* OCtx::Get(void* ptr)  // static 
 {
-    if(INSTANCE == NULL) INSTANCE = new OCtx() ; 
+    if(INSTANCE == NULL) INSTANCE = new OCtx(ptr) ; 
     return INSTANCE  ;  
 }
 

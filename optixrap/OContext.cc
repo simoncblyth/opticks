@@ -283,7 +283,7 @@ void OContext::SetupOptiXCachePathEnvvar()
     if( dir == NULL )
     {
         dir = Opticks::OptiXCachePathDefault();    
-        LOG(error) 
+        LOG(LEVEL) 
             << "envvar " << key 
             << " not defined "
             << "setting it internally to " << dir 
@@ -361,6 +361,24 @@ OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target
     init();
     initPrint();
     initDevices();
+}
+
+
+/**
+OContext::getRawPointer
+------------------------
+
+Used by OCtx::Get to allow the new fangled OCtx context wrapper 
+to be used with a preexisting context.
+
+**/
+
+void* OContext::getRawPointer()  
+{
+    optix::ContextObj* contextObj = m_context.get(); 
+    RTcontext context_ptr = contextObj->get(); 
+    void* ptr = (void*)context_ptr ; 
+    return ptr ; 
 }
 
 
@@ -563,7 +581,7 @@ void OContext::initPrint()
     unsigned uindex = m_ok->hasMask() ? m_ok->getMaskIndex(idx.x) : idx.x ; 
     m_llogpath = m_ok->isPrintIndexLog() ?  LaunchLogPath(uindex) : NULL ; 
 
-    LOG(fatal) 
+    LOG(LEVEL) 
         << " idx " << gformat(idx) 
         << " llogpath " << ( m_llogpath ? m_llogpath : "-" )
         ;  

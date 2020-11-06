@@ -52,6 +52,9 @@ class OKGEO_API SensorLib
     public: 
         bool isClosed() const ;
         void close();   // needs to be invoked after sensorlib data collection is completed
+    private: 
+        void checkSensorCategories(bool dump);
+        void dumpCategoryCounts(const char* msg="SensorLib::dumpCategoryCounts") const ;
     public: 
          // needed for OSensorLib
          NPY<float>*        getSensorDataArray() const;

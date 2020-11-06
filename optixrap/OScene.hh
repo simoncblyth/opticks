@@ -23,15 +23,19 @@ class SLog ;
 class BTimeKeeper ; 
 class Opticks ;
 class OpticksHub ;
+class SensorLib ; 
 template <typename> class OpticksCfg ;
 
-class OContext ; 
+class OContext ;  // old leaky wrapper  
+class OCtx ;      // new-fangled watertight wrapper
+
 class OFunc ; 
 class OColors ; 
 class OGeo ; 
 class OBndLib ; 
 class OScintillatorLib ; 
 class OSourceLib ; 
+class OSensorLib ; 
 
 /**
 OScene
@@ -61,6 +65,8 @@ class OXRAP_API OScene {
     public:
        OScene(OpticksHub* hub, const char* cmake_target="OptiXRap", const char* ptxrel=nullptr); 
     public:
+       void uploadSensorLib(const SensorLib* sensorlib); 
+    public:
        OContext*    getOContext();
        OBndLib*     getOBndLib();
     public:
@@ -76,12 +82,16 @@ class OXRAP_API OScene {
        Opticks*             m_ok ; 
 
        OContext*         m_ocontext ; 
+       OCtx*             m_octx ; 
+
        OFunc*            m_osolve ; 
        OColors*          m_ocolors ; 
        OGeo*             m_ogeo ; 
        OBndLib*          m_olib ; 
        OScintillatorLib* m_oscin ; 
        OSourceLib*       m_osrc ; 
+       OSensorLib*       m_osensorlib ; 
+
        unsigned          m_verbosity ; 
        bool              m_use_osolve ; 
 

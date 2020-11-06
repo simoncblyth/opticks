@@ -6,17 +6,17 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    unsigned num_cat = 1 ; 
-    unsigned num_theta_steps = 181 ;  // height
-    unsigned num_phi_steps = 361 ;    // width 
+    unsigned num_sensor_cat  = 1 ; 
+    unsigned num_theta_steps = 180 ;  // height
+    unsigned num_phi_steps   = 360 ;    // width 
 
-    MockSensorAngularEfficiencyTable tab( num_cat, num_theta_steps, num_phi_steps ); 
-  
-    NPY<float>* arr = tab.getArray(); 
+    NPY<float>* tab = MockSensorAngularEfficiencyTable::Make(num_sensor_cat, num_theta_steps, num_phi_steps); 
 
     const char* path = "$TMP/opticksgeo/tests/MockSensorAngularEfficiencyTableTest.npy" ;
     LOG(info) << " save to " << path ;  
-    arr->save(path); 
+    tab->save(path); 
+
+    tab->dump();
 
     return 0 ; 
 }

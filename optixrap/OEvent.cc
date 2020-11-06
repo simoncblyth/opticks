@@ -102,8 +102,6 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
 
 void OEvent::init()
 {
-    std::cout << "OEvent::init ------------------------ " << std::endl ; 
-
     LOG(LEVEL)
         << " --dbghit " << ( m_dbghit ? "Y" : "N" )
         << " hitmask 0x" << std::hex << m_hitmask << std::dec

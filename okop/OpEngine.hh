@@ -24,6 +24,7 @@ class SLog ;
 class Opticks ;       // okc-
 class OpticksEntry ; 
 class OpticksHub ;    // okg-
+class SensorLib ; 
 
 class OScene ;   // optixrap-
 class OPropagator ; 
@@ -72,6 +73,7 @@ class OKOP_API OpEngine {
        OpEngine(OpticksHub* hub);
     public:
        OContext*    getOContext();         // needed by opticksgl-/OpViz
+       void uploadSensorLib(const SensorLib* sensorlib);
 
        void propagate();                // OPropagator prelaunch+launch : populates GPU photon, record and sequence buffers
        void indexEvent();

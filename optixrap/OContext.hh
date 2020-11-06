@@ -119,6 +119,8 @@ class OXRAP_API OContext {
             void cleanUp();
             void cleanUpCache();
      public:
+            void* getRawPointer() ; 
+     public:
             const char* getRunLabel() const ;
             const char* getRunResultsDir() const ;
             const char* getModeName() const ;

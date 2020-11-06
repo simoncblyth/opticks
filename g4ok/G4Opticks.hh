@@ -136,6 +136,7 @@ class G4OK_API G4Opticks
                                          int phi_steps=1,   float phi_min=0.f, float phi_max=360.f );
         void setSensorAngularEfficiency( const NPY<float>* sensor_angular_efficiency );
         void saveSensorLib(const char* dir) const ;
+        void uploadSensorLib() ;
     public:
         void setGeometry(const G4VPhysicalVolume* world); 
         void setGeometry(const char* gdmlpath);

@@ -135,6 +135,7 @@ void G4OKTest::init()
     initSensorData();
     initSensorAngularEfficiency();
     if(m_debug) saveSensorLib(); 
+    m_g4ok->uploadSensorLib(); 
 }
 
 void G4OKTest::initGeometry()
@@ -189,7 +190,7 @@ void G4OKTest::initSensorData()
 
         float efficiency_1 = 0.5f ;    
         float efficiency_2 = 1.0f ;    
-        int   sensor_cat = 0 ; 
+        int   sensor_cat = 0 ;        // must be less than num_cat, -1 when no angular efficiency info
 
         if(dump) std::cout 
             << " sensor_index(dec) "      << std::setw(5) << std::dec << sensor_index
@@ -207,14 +208,12 @@ void G4OKTest::initSensorData()
 
 void G4OKTest::initSensorAngularEfficiency()
 {
-    unsigned num_cat = 1 ; 
+    unsigned num_sensor_cat = 1 ; 
     unsigned num_theta_steps = 180 ;  // height
     unsigned num_phi_steps = 360 ;    // width 
 
-    MockSensorAngularEfficiencyTable tab( num_cat, num_theta_steps, num_phi_steps ); 
-    NPY<float>* arr = tab.getArray(); 
-
-    m_g4ok->setSensorAngularEfficiency( arr );  // TODO: this should make it get into GPU context
+    NPY<float>* tab = MockSensorAngularEfficiencyTable::Make(num_sensor_cat, num_theta_steps, num_phi_steps); 
+    m_g4ok->setSensorAngularEfficiency( tab ); 
 }
 
 void G4OKTest::saveSensorLib() const
@@ -223,6 +222,14 @@ void G4OKTest::saveSensorLib() const
     m_g4ok->saveSensorLib(dir); 
     LOG(info) << dir ; 
 }
+
+
+
+
+
+
+
+
 
 unsigned G4OKTest::getNumGenstepPhotons(int eventID) const
 {

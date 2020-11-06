@@ -604,6 +604,25 @@ void G4Opticks::saveSensorLib(const char* dir) const
     m_sensorlib->save(dir); 
 }
 
+/**
+G4Opticks::uploadSensorLib
+----------------------------
+
+Upload sensorData array and angular efficiency tables to GPU with OSensorLib.  
+
+**/
+
+void G4Opticks::uploadSensorLib() 
+{
+    LOG(info) ;  
+    assert( m_opmgr && "must setGeometry and set sensor info before uploadSensorLib" ); 
+    assert( m_sensorlib ); 
+    m_sensorlib->close(); 
+    assert( m_sensorlib->isClosed() ); 
+
+    m_opmgr->uploadSensorLib(m_sensorlib); 
+}
+
 
 
 /**

@@ -22,6 +22,7 @@
 class SLog ; 
 template <typename T> class NPY ; 
 
+class SensorLib ; 
 class OpticksHub ; 
 class Opticks ; 
 class OpticksIdx ; 
@@ -66,6 +67,8 @@ class OKOP_API OpPropagator {
        static const plog::Severity LEVEL ; 
    public:
        OpPropagator(OpticksHub* hub, OpticksIdx* idx );
+   public:
+       void uploadSensorLib(const SensorLib* sensorlib); 
    public:
        void propagate();
        void cleanup();

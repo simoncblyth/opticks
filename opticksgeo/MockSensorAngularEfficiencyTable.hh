@@ -9,6 +9,7 @@ template <typename T> class NPY ;
 struct OKGEO_API MockSensorAngularEfficiencyTable
 {
     static const plog::Severity LEVEL ;  
+    static NPY<float>* Make(unsigned sensor_cat, unsigned theta_steps, unsigned phi_steps); 
 
     unsigned m_num_sensor_cat ;  
     unsigned m_num_theta_steps ; 

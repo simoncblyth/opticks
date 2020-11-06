@@ -5,6 +5,15 @@
 
 const plog::Severity MockSensorAngularEfficiencyTable::LEVEL = PLOG::EnvLevel("MockSensorAngularEfficiencyTable", "DEBUG"); 
 
+
+NPY<float>* MockSensorAngularEfficiencyTable::Make(unsigned num_sensor_cat, unsigned num_theta_steps, unsigned num_phi_steps)  // static 
+{
+    MockSensorAngularEfficiencyTable tab( num_sensor_cat, num_theta_steps, num_phi_steps );  
+    NPY<float>* arr = tab.getArray(); 
+    return arr ; 
+}
+
+
 MockSensorAngularEfficiencyTable::MockSensorAngularEfficiencyTable( unsigned num_sensor_cat, unsigned num_theta_steps, unsigned num_phi_steps)
     :
     m_num_sensor_cat(num_sensor_cat),

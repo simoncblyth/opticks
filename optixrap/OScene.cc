@@ -34,6 +34,7 @@
 
 // okg-
 #include "OpticksHub.hh"
+#include "SensorLib.hh"
 #include "GScintillatorLib.hh"
 
 // oxrap-
@@ -44,8 +45,11 @@
 #include "OBndLib.hh"
 #include "OScintillatorLib.hh"
 #include "OSourceLib.hh"
+#include "OSensorLib.hh"
+
 #include "OBuf.hh"
 #include "OConfig.hh"
+#include "OCtx.hh"
 
 #include "OScene.hh"
 
@@ -79,12 +83,14 @@ OScene::OScene(OpticksHub* hub, const char* cmake_target, const char* ptxrel)
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_ocontext(OContext::Create(m_ok, cmake_target, ptxrel)),
+    m_octx(OCtx::Get(m_ocontext->getRawPointer())),
     m_osolve(NULL),
     m_ocolors(NULL),
     m_ogeo(NULL),
     m_olib(NULL),
     m_oscin(NULL),
     m_osrc(NULL),
+    m_osensorlib(NULL),
     m_verbosity(m_ok->getVerbosity()),
     m_use_osolve(false)
 {
@@ -184,6 +190,15 @@ void OScene::init()
     OKI_PROFILE("OScene::OScene");  
 }
 
+
+void OScene::uploadSensorLib(const SensorLib* sensorlib)
+{
+    LOG(info) << "[" ;  
+    assert( sensorlib->isClosed()); 
+    m_osensorlib = new OSensorLib(m_octx, sensorlib); 
+    m_osensorlib->convert(); 
+    LOG(info) << "]" ;  
+}
 
 void OScene::cleanup()
 {

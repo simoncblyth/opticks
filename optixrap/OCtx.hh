@@ -22,10 +22,16 @@ have to first peel back to the C-API in order to reach the bare pointer::
    optix::ContextObj* contextObj = context.get(); 
    RTcontext context_ptr = contextObj->get(); 
    void* ptr = (void*)context_ptr ; 
+
    OCtx octx(ptr); 
 
    // in brief  
    OCtx octx((void*)context.get()->get()); 
+
+Cannot provide convenience method for this as the raison-d'etre of OCtx
+is to not expose OptiX types in its interface.  There are no such 
+constraints with the old OContext hence OContext::getRawPointer
+
 
 Motivation
 ~~~~~~~~~~~~~
@@ -65,7 +71,7 @@ class OXRAP_API OCtx
         OCtx(void* context_ptr=NULL); 
         void* init(); 
 
-        static OCtx* Get();
+        static OCtx* Get(void* context_ptr=NULL);
 
         void* ptr();
         bool has_variable( const char* key );

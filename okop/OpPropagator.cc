@@ -54,7 +54,10 @@ OpPropagator::OpPropagator(OpticksHub* hub, OpticksIdx* idx)
     (*m_log)("DONE");
 }
 
-
+void OpPropagator::uploadSensorLib(const SensorLib* sensorlib)
+{
+    m_engine->uploadSensorLib(sensorlib); 
+}
 
 void OpPropagator::propagate()
 {
