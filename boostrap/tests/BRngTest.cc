@@ -19,8 +19,17 @@
 
 #include <iostream>
 #include "BRng.hh"
-#include "BRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
+
+
+void test_rand()
+{
+    std::cout << " RAND_MAX " << RAND_MAX << std::endl ; 
+
+    for(int i=0 ; i < 10 ; i++ )
+    std::cout << rand() << std::endl ; 
+
+}
 
 
 void test_separate()
@@ -52,10 +61,10 @@ void test_separate()
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    BRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-    test_separate();
+    test_rand();
+    //test_separate();
 
 
     return 0 ; 

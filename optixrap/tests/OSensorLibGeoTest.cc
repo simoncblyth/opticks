@@ -257,6 +257,7 @@ int main(int argc, char** argv)
         return 0 ;
     }
     //senlib->dump("OSensorLibGeoTest"); 
+    senlib->close(); 
 
     OSensorLibGeoTest slt(senlib); 
 

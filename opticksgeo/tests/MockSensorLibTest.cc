@@ -1,14 +1,19 @@
 #include "OPTICKS_LOG.hh"
 #include "SensorLib.hh"
+#include "SphereOfTransforms.hh"
 #include "MockSensorLib.hh"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+    // match OSensorLibGeoTest to mock the corresponding number of sensors 
+    unsigned num_theta = 64+1 ; 
+    unsigned num_phi   = 128 ; 
+    unsigned num_sensor = SphereOfTransforms::NumTransforms(num_theta, num_phi); 
+
     unsigned num_cat = 2 ; 
     //unsigned num_cat = 0 ;        // model the case of having no angular efficiency 
-    unsigned num_sensor = 10 ;    // can still have simple sensor info without the angular efficiency   
 
     SensorLib* senlib = MockSensorLib::Make(num_cat, num_sensor); 
 

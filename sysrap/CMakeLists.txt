@@ -58,6 +58,7 @@ set(SOURCES
     SAbbrev.cc
     SPack.cc
     SBit.cc
+    SRand.cc
 ) 
 
 set(HEADERS
@@ -107,6 +108,7 @@ set(HEADERS
     SAbbrev.hh
     SPack.hh
     SBit.hh
+    SRand.hh
 )
 
 

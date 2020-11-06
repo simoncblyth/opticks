@@ -11,6 +11,7 @@ class OKCORE_API SphereOfTransforms {
     private:
         static const plog::Severity LEVEL ; 
     public:
+        static unsigned NumTransforms(unsigned num_theta, unsigned num_phi);
         static NPY<float>* Make(float radius, unsigned num_theta, unsigned num_phi, bool identity_from_transform_03);
     public:
         SphereOfTransforms(float radius, unsigned num_theta, unsigned num_phi, bool identity_from_transform_03); 

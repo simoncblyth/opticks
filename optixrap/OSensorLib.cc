@@ -6,7 +6,8 @@
 
 const plog::Severity OSensorLib::LEVEL = PLOG::EnvLevel("OSensorLib", "DEBUG"); 
 
-const char* OSensorLib::TEXID = "OSensorLib_texid"  ; 
+const char* OSensorLib::TEXID       = "OSensorLib_texid"  ; 
+const char* OSensorLib::SENSOR_DATA = "OSensorLib_sensor_data"  ; 
 
 OSensorLib::OSensorLib(const OCtx* octx, const SensorLib* sensorlib)
     :    
@@ -75,7 +76,19 @@ const OCtx* OSensorLib::getOCtx() const
 
 void OSensorLib::convert()
 {
+    makeSensorDataBuffer() ;
     makeSensorAngularEfficiencyTexture() ; 
+}
+
+void OSensorLib::makeSensorDataBuffer()
+{
+    const char* key = SENSOR_DATA ; 
+    char type = 'I' ;          // I:INPUT
+    char flag = ' ' ;          // default 
+    unsigned item = -1 ;       // whole array in one GPU buffer
+    bool transpose = true ;    // doesnt matter for 1d buffer 
+    m_octx->create_buffer(m_sensor_data, key, type, flag, item, transpose ); 
+    LOG(LEVEL) << " m_sensor_data " << m_sensor_data->getShapeString() << " upload to " << key ;   
 }
 
 void OSensorLib::makeSensorAngularEfficiencyTexture()

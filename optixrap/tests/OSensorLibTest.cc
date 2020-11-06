@@ -43,6 +43,8 @@ NPY<float>* OSensorLibTest::duplicateAngularEfficiency() const
 {
     // 1. create "out" array shaped just like the sensor lib angular efficiency array 
 
+    LOG(info) << "[" ; 
+
     unsigned num_cat   = m_osenlib->getNumSensorCategories();
     unsigned num_theta = m_osenlib->getNumTheta(); 
     unsigned num_phi   = m_osenlib->getNumPhi(); 
@@ -78,6 +80,7 @@ NPY<float>* OSensorLibTest::duplicateAngularEfficiency() const
     out->zero();
     m_octx->download_buffer(out, key, -1);
 
+    LOG(info) << "]" ; 
     return out ;
 } 
 
@@ -117,6 +120,7 @@ int main(int argc, char** argv)
     }
     senlib->dump("OSensorLibTest"); 
     senlib->close();  
+
 
     OSensorLibTest oslt(senlib); 
 

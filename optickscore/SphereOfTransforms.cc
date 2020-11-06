@@ -9,6 +9,10 @@
 
 const plog::Severity  SphereOfTransforms::LEVEL = PLOG::EnvLevel("SphereOfTransforms", "DEBUG"); 
 
+unsigned SphereOfTransforms::NumTransforms(unsigned num_theta, unsigned num_phi)
+{
+    return 2+(num_theta - 2)*num_phi ;       // only one at the N and S poles 
+}
 
 NPY<float>* SphereOfTransforms::Make(float radius, unsigned num_theta, unsigned num_phi, bool identity_from_transform_03) // static 
 {
@@ -22,7 +26,7 @@ SphereOfTransforms::SphereOfTransforms(float radius, unsigned num_theta, unsigne
     m_radius(radius),
     m_num_theta(num_theta),
     m_num_phi(num_phi),
-    m_num_transforms(2+(m_num_theta - 2)*m_num_phi),
+    m_num_transforms(NumTransforms(num_theta,num_phi)),  
     m_transforms(NPY<float>::make(m_num_transforms, 4,4)),
     m_identity_from_transform_03(identity_from_transform_03)
 {

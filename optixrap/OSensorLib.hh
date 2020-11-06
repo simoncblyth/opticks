@@ -25,7 +25,14 @@ from the array held by okg/SensorLib
 See tests/OSensorLibTest 
 **/
 
-rtBuffer<int4,1>  OSensorLib_texid ;
+rtBuffer<float4,1>  OSensorLib_sensor_data ;
+rtBuffer<int4,1>    OSensorLib_texid ;
+
+static __device__ __inline__ int OSensorLib_category(unsigned sensor_index )
+{
+    int category =  __float_as_int(OSensorLib_sensor_data[sensor_index].z) ; 
+    return category ; 
+}
 
 static __device__ __inline__ float OSensorLib_angular_efficiency(int category, float phi_fraction, float theta_fraction  )
 {
@@ -57,6 +64,7 @@ class OXRAP_API OSensorLib
     public:
         static const plog::Severity LEVEL ; 
         static const char*  TEXID ; 
+        static const char*  SENSOR_DATA ; 
     public:
         OSensorLib(const OCtx* octx, const SensorLib* sensorlib);
         const OCtx* getOCtx() const ;
@@ -73,6 +81,7 @@ class OXRAP_API OSensorLib
     public:
         void convert();
     private:    
+        void makeSensorDataBuffer();
         void makeSensorAngularEfficiencyTexture();
     private:    
         const OCtx*        m_octx ; 

@@ -1,3 +1,4 @@
+#include "SRand.hh"
 #include "PLOG.hh"
 #include "NPY.hpp"
 #include "SensorLib.hh"
@@ -21,14 +22,19 @@ MockSensorLib::MockSensorLib(unsigned num_cat, unsigned num_sensor)
 
 void MockSensorLib::initSensorData(unsigned num_sensor)
 {
+    LOG(info) << " num_sensor " << num_sensor ;  
     m_sensorlib->initSensorData(num_sensor); 
     for(unsigned i=0 ; i < num_sensor ; i++)
     {
         unsigned sensor_index = i ; 
-        unsigned sensor_identifier = 1000000 + i ; 
+
         float efficiency_1 = 0.5f ;    
         float efficiency_2 = 1.0f ;    
-        int   sensor_cat = m_num_cat > 0 ? i % m_num_cat : -1 ; 
+        //int   sensor_cat = m_num_cat > 0 ? i % m_num_cat : -1 ; 
+        int   sensor_cat = m_num_cat > 0 ? SRand::pick_random_category(m_num_cat) : -1 ; 
+
+        unsigned sensor_identifier = 1000000 + sensor_index ; 
+
         m_sensorlib->setSensorData( sensor_index, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
     }   
 }
