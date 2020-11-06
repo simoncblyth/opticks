@@ -237,7 +237,12 @@ unsigned SensorLib::getNumSensorCategories() const
 
 void SensorLib::dumpAngularEfficiency(const char* msg) const 
 {
-    LOG(info) << msg ; 
+    LOG(info) 
+        << msg 
+        << " sensor_angular_efficiency " << ( m_sensor_angular_efficiency ? m_sensor_angular_efficiency->getShapeString() : "NULL" ) 
+        ; 
+
+    if(m_sensor_angular_efficiency == NULL ) return ; 
 
     unsigned num_dimensions = m_sensor_angular_efficiency->getNumDimensions(); 
     assert( num_dimensions == 4 ); 

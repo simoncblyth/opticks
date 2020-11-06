@@ -187,7 +187,7 @@ void test_unsigned_as_int(int boundary, int sensorIndex, bool dump)
     // int hi_s = hi <= 0x7fff ? hi : hi - 0x10000 ;   
     int hi_s = SPack::unsigned_as_int<16>(hi); 
 
-    bool expect = hi_s == boundary && lo == sensorIndex ; 
+    bool expect = hi_s == boundary && int(lo) == sensorIndex ; 
 
     if(!expect || dump)
     std::cout 
