@@ -62,6 +62,7 @@ OPropagator* OpEngine::getOPropagator()
 
 int OpEngine::preinit() const
 {
+    LOG(LEVEL) ; 
     OKI_PROFILE("_OpEngine::OpEngine");
     return 0 ; 
 }
@@ -87,6 +88,8 @@ OpEngine::OpEngine(OpticksHub* hub)
 
 void OpEngine::init()
 {
+    LOG(LEVEL) << "[" ; 
+
     m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
 
     bool is_load = m_ok->isLoad() ; 
@@ -112,6 +115,7 @@ void OpEngine::init()
         initPropagation(); 
         pLOG(LEVEL,0) << ")" ;
     }
+    LOG(LEVEL) << "]" ; 
     OKI_PROFILE("OpEngine::OpEngine");
 }
 
@@ -140,7 +144,8 @@ is passed to all the residents.
 
 void OpEngine::initPropagation()
 {
-    m_entry = m_ocontext->addEntry(m_ok->getEntryCode()) ;
+    LOG(LEVEL) << "[" ; 
+    m_entry = m_ocontext->addEntry(m_ok->getEntryCode(), "OpEngine::initPropagation" ) ;
     LOG(LEVEL) << " entry " << m_entry->desc() ; 
 
     m_oevt = new OEvent(m_ok, m_ocontext);
@@ -148,9 +153,17 @@ void OpEngine::initPropagation()
     m_seeder = new OpSeeder(m_ok, m_oevt) ;
     m_zeroer = new OpZeroer(m_ok, m_oevt) ;
     m_indexer = new OpIndexer(m_ok, m_oevt) ;
+    LOG(LEVEL) << "]" ; 
 }
 
 
+/**
+OpEngine::uploadEvent
+----------------------
+
+Invoked from OpPropagator::propagate/OpPropagator::uploadEvent
+
+**/
 
 unsigned OpEngine::uploadEvent()
 {

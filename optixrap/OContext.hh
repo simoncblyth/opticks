@@ -71,9 +71,6 @@ class OXRAP_API OContext {
         friend class LTOOContextUploadDownloadTest ;
         friend class OAxisTest ;
     public:
-        //static const char* OPTIX_CACHE_LINUX ;   
-        //static const char* CacheDir() ;   
-    public:
         enum {
                 e_propagate_ray,
                 e_radiance_ray,
@@ -156,7 +153,7 @@ class OXRAP_API OContext {
             void dump(const char* msg="OContext::dump");
             void close();
      public:
-            OpticksEntry*  addEntry(char code='G');
+            OpticksEntry*  addEntry(char code, const char* from);  // code was formerly defaulted to 'G'
             unsigned int   addEntry(const char* cu_filename="generate.cu", const char* raygen="generate", const char* exception="exception", bool defer=true);
             void setMissProgram( unsigned int index, const char* filename, const char* progname, bool defer=true);
      private:
@@ -194,7 +191,6 @@ class OXRAP_API OContext {
       public:
             template<typename T>
             void resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);    // formerly static 
-      private:
      private:
             UsageReportLogger* m_logger ; 
             optix::Context    m_context ; 

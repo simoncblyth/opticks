@@ -352,7 +352,7 @@ void SensorLib::close()
         return ;   
     }
 
-    bool dump = true ; 
+    bool dump = false ; 
     checkSensorCategories(dump); 
 
     m_closed = true ; 

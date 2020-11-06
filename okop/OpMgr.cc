@@ -175,10 +175,11 @@ void OpMgr::cleanup()
 
 void OpMgr::snap(const char* dir)
 {
-    LOG(LEVEL) ; 
+    LOG(LEVEL) << "[" ; 
+    NPY<float>* gensteps = NULL ;  
+    m_run->createEvent(gensteps); 
     m_propagator->snap(dir); 
+    LOG(LEVEL) << "]" ; 
 }
-
-
 
 

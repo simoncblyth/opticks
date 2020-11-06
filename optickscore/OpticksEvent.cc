@@ -1157,13 +1157,14 @@ void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
 {
     OK_PROFILE("_OpticksEvent::setGenstepData");
 
-    int nitems = NPYBase::checkNumItems(genstep_data);
+    int nitems = NPYBase::checkNumItems(genstep_data); // -1 for genstep_data NULL 
     if(nitems < 1)
     {
-         LOG(warning) << "OpticksEvent::setGenstepData SKIP "
-                      << " nitems " << nitems
-                      ;
-         return ; 
+        LOG(warning) 
+            << " SKIP "
+            << " nitems " << nitems
+            ;
+        return ; 
     } 
 
 

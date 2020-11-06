@@ -122,7 +122,7 @@ OScene::Init
 
 void OScene::init()
 {
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
 
     plog::Severity level = LEVEL ; 
 
@@ -185,7 +185,7 @@ void OScene::init()
 
     LOG(debug) << m_ogeo->description();
 
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
 
     OKI_PROFILE("OScene::OScene");  
 }
@@ -193,11 +193,11 @@ void OScene::init()
 
 void OScene::uploadSensorLib(const SensorLib* sensorlib)
 {
-    LOG(info) << "[" ;  
+    LOG(LEVEL) << "[" ;  
     assert( sensorlib->isClosed()); 
     m_osensorlib = new OSensorLib(m_octx, sensorlib); 
     m_osensorlib->convert(); 
-    LOG(info) << "]" ;  
+    LOG(LEVEL) << "]" ;  
 }
 
 void OScene::cleanup()

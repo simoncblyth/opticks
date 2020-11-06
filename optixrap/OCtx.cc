@@ -382,6 +382,7 @@ void OCtx::download_buffer( NPYBase* arr, const char* key, int item)
 
 void OCtx::set_raygen_program( unsigned entry_point_index, const char* ptx_path, const char* func )
 {
+    LOG(LEVEL) << " entry " << entry_point_index << " ptx " << ptx_path << " func " << func ; 
     optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Program program = context->createProgramFromPTXFile( ptx_path, func ) ; 
     context->setRayGenerationProgram( entry_point_index,  program );
@@ -390,6 +391,7 @@ void OCtx::set_raygen_program( unsigned entry_point_index, const char* ptx_path,
 
 void OCtx::set_exception_program( unsigned entry_point_index, const char* ptx_path, const char* func )
 {
+    LOG(LEVEL) << " entry " << entry_point_index << " ptx " << ptx_path << " func " << func ; 
     optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Program program = context->createProgramFromPTXFile( ptx_path, func ) ; 
     context->setExceptionProgram( entry_point_index,  program );
@@ -397,6 +399,7 @@ void OCtx::set_exception_program( unsigned entry_point_index, const char* ptx_pa
 
 void OCtx::set_miss_program( unsigned entry_point_index, const char* ptx_path, const char* func )
 {
+    LOG(LEVEL) << " entry " << entry_point_index << " ptx " << ptx_path << " func " << func ; 
     optix::Context context = optix::Context::take((RTcontext)m_context_ptr); 
     optix::Program program = context->createProgramFromPTXFile( ptx_path, func ) ; 
     context->setMissProgram( entry_point_index,  program );

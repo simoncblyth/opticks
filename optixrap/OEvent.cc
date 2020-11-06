@@ -309,6 +309,13 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
 }
 
 
+/**
+OEvent::upload
+----------------
+
+Invoked by OpEngine::uploadEvent
+
+**/
 
 unsigned OEvent::upload()
 {

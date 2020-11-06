@@ -136,6 +136,10 @@ void G4OKTest::init()
     initSensorAngularEfficiency();
     if(m_debug) saveSensorLib(); 
     m_g4ok->uploadSensorLib(); 
+
+    const char* dir = "$TMP/g4ok/tests/G4OKTest" ; 
+    m_g4ok->snap(dir); 
+
 }
 
 void G4OKTest::initGeometry()

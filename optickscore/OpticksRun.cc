@@ -88,7 +88,7 @@ This
 
 void OpticksRun::createEvent(NPY<float>* gensteps) 
 {
-    unsigned tagoffset = gensteps->getArrayContentIndex() ;  // eg eventID
+    unsigned tagoffset = gensteps ? gensteps->getArrayContentIndex() : 0 ;  // eg eventID
     LOG(LEVEL) << " tagoffset " << tagoffset ; 
     createEvent(tagoffset); 
     setGensteps(gensteps); 
@@ -216,13 +216,14 @@ void OpticksRun::setGensteps(NPY<float>* gensteps)   // TODO: make this const : 
     assert(m_evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
 
     if(!gensteps) LOG(fatal) << "NULL gensteps" ; 
-    assert(gensteps); 
+    //assert(gensteps); 
 
-    LOG(LEVEL) << "gensteps " << gensteps->getShapeString() ;  
+    LOG(LEVEL) << "gensteps " << ( gensteps ? gensteps->getShapeString() : "NULL" )  ;  
 
     m_gensteps = gensteps ;   
 
-    importGensteps();
+    if(m_gensteps) importGensteps();
+
     OK_PROFILE("OpticksRun::setGensteps");
 }
 
@@ -375,7 +376,7 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
  
 
     OK_PROFILE("_OpticksRun::importGenstepData");
-    NMeta* gsp = gs->getParameters();
+    NMeta* gsp = gs->getParameters() ;
     m_parameters->append(gsp);
 
     gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));

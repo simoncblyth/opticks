@@ -60,17 +60,6 @@ using namespace optix ;
 const char* OContext::COMPUTE_ = "COMPUTE" ; 
 const char* OContext::INTEROP_ = "INTEROP" ; 
 
-
-/*
-const char* OContext::OPTIX_CACHE_LINUX = "/var/tmp/OptixCache" ; 
-const char* OContext::CacheDir()  // static
-{
-   return OPTIX_CACHE_LINUX ;  
-}
-*/
-
-
-
 plog::Severity OContext::LEVEL = PLOG::EnvLevel("OContext","DEBUG") ; 
 
 
@@ -92,9 +81,9 @@ const char* OContext::getRunResultsDir() const
     return m_runresultsdir ; 
 }
 
-OpticksEntry* OContext::addEntry(char code)
+OpticksEntry* OContext::addEntry(char code, const char* from)
 {
-    LOG(LEVEL) << "OContext::addEntry " << code ; 
+    LOG(LEVEL) << code << " : " << from ; 
 
     bool defer = true ; 
     unsigned index ;
@@ -718,17 +707,8 @@ void OContext::cleanUpCache()
 
 optix::Program OContext::createProgram(const char* cu_filename, const char* progname )
 {  
-    LOG(LEVEL) << "OContext::createProgram START "
-              << " cu_filename " << cu_filename
-              << " progname " << progname
-              ;
-
+    LOG(LEVEL) << " cu_filename " << cu_filename << " progname " << progname ; 
     optix::Program prog = m_cfg->createProgram(cu_filename, progname);
-
-    LOG(LEVEL) << "OContext::createProgram DONE "
-              << " cu_filename " << cu_filename
-              << " progname " << progname
-              ;
     return prog ; 
 }
 

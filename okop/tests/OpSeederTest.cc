@@ -70,7 +70,7 @@ struct OpSeederTest
         OContext* octx = scene.getOContext();
         OEvent oevt(&ok, octx );
         OpSeeder  seeder(&ok, &oevt );
-        OPropagator propagator(&ok, &oevt, octx->addEntry(ok.getEntryCode()) );
+        OPropagator propagator(&ok, &oevt, octx->addEntry(ok.getEntryCode(),"OpSeederTest::OpSeederTest" ) );
 
         FabStepNPY* fab = gen->makeFabstep();
         NPY<float>* gs = fab->getNPY();

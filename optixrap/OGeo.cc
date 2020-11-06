@@ -526,9 +526,11 @@ optix::Material OGeo::makeMaterial()
         << " propagate_ray " << OContext::e_propagate_ray  
         ; 
 
+    LOG(LEVEL) << "[" ; 
     optix::Material material = m_context->createMaterial();
     material->setClosestHitProgram(OContext::e_radiance_ray, m_ocontext->createProgram("material1_radiance.cu", "closest_hit_radiance"));
     material->setClosestHitProgram(OContext::e_propagate_ray, m_ocontext->createProgram("material1_propagate.cu", "closest_hit_propagate"));
+    LOG(LEVEL) << "]" ; 
     return material ; 
 }
 

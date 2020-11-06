@@ -86,7 +86,7 @@ void OTracer::init()
     bool defer = true ; 
 
     char code = 'P' ; 
-    OpticksEntry* entry =  m_ocontext->addEntry(code);
+    OpticksEntry* entry =  m_ocontext->addEntry(code, "OTracer::init");
     m_entry_index = entry->getIndex();
 
     m_ocontext->setMissProgram(           OContext::e_radiance_ray , "constantbg.cu", "miss", defer );

@@ -624,6 +624,14 @@ void G4Opticks::uploadSensorLib()
 }
 
 
+void G4Opticks::snap(const char* dir) const 
+{
+    assert( m_opmgr && "must setGeometry first" ); 
+    m_opmgr->snap(dir); 
+}
+
+
+
 
 /**
 G4Opticks::translateGeometry
