@@ -38,7 +38,6 @@ OpticksAim
 Canonical m_aim is resident of OpticksHub and is instanciated by OpticksHub::init
 The crucial for domain setup OpticksAim::registerGeometry is 
 
-
 **/
 
 class OKGEO_API OpticksAim {

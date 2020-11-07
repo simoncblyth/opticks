@@ -88,6 +88,7 @@ class G4OKTest
         int          m_torchtarget ; 
         G4Opticks*   m_g4ok ; 
         bool         m_debug ; 
+        const char*  m_tmpdir ; 
 };
 
 
@@ -100,7 +101,8 @@ G4OKTest::G4OKTest(int argc, char** argv)
     m_gdmlpath(PLOG::instance->get_arg_after("--gdmlpath", NULL)),
     m_torchtarget(PLOG::instance->get_int_after("--torchtarget", "-1")),
     m_g4ok(new G4Opticks),
-    m_debug(true)
+    m_debug(true),
+    m_tmpdir("$TMP/g4ok/tests/G4OKTest")
 {
     init();
 }
@@ -137,8 +139,7 @@ void G4OKTest::init()
     if(m_debug) saveSensorLib(); 
     m_g4ok->uploadSensorLib(); 
 
-    const char* dir = "$TMP/g4ok/tests/G4OKTest" ; 
-    m_g4ok->snap(dir); 
+    // m_g4ok->snap(m_tmpdir);   // snapping before event upload fails due to invalid context : generate.cu requires sequence_buffer
 
 }
 
@@ -285,6 +286,10 @@ void G4OKTest::propagate(int eventID)
     checkHits(eventID); 
 
     m_g4ok->reset(); // <--- without reset gensteps just keep accumulating 
+
+
+    m_g4ok->snap(m_tmpdir);   
+
 }
 
 void G4OKTest::checkHits(int eventID) const 

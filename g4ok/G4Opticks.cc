@@ -1334,17 +1334,29 @@ void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index)
 
     if(node_index == -1)
     {
+
+        node_index = m_ggeo->getFirstNodeIndexForGDMLAuxTargetLVName()  ;
+
+        /**
         const char* target_lvname = m_ok->getGDMLAuxTargetLVName() ; 
         std::vector<unsigned> nidxs ; 
         m_ggeo->getNodeIndicesForLVName(nidxs, target_lvname); 
         unsigned num_nodes = nidxs.size() ; 
         node_index = num_nodes > 0 ? nidxs[0] : 0 ; 
+
         LOG(info)
             << "G4GDMLAux" 
             << " target_lvname " << target_lvname
             << " num_nodes " << num_nodes 
             << " node_index " << node_index
             ;
+        **/
+    }
+
+    if(node_index == -1)
+    {
+        LOG(error) << " failed to find target node_index " << node_index << " (reset to zero) " ;  
+        node_index = 0 ; 
     }
 
 

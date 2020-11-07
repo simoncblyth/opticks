@@ -957,7 +957,12 @@ void GGeo::getSensorPlacements(std::vector<void*>& placements, bool outer_volume
     m_nodelib->getSensorPlacements(placements, outer_volume); 
 }
 
-//  const char* lvname = m_ok->getGDMLAuxTargetLVName() ;
+
+int GGeo::getFirstNodeIndexForGDMLAuxTargetLVName() const 
+{
+    return m_nodelib->getFirstNodeIndexForGDMLAuxTargetLVName() ; 
+}
+
 void GGeo::getNodeIndicesForLVName(std::vector<unsigned>& nidxs, const char* lvname) const 
 {
     m_nodelib->getNodeIndicesForLVName(nidxs, lvname); 

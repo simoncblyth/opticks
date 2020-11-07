@@ -50,6 +50,15 @@ OpticksAim::OpticksAim(OpticksHub* hub)
 {
 }
 
+
+/**
+OpticksAim::registerGeometry
+------------------------------
+
+Canonically invoked by OpticksHub::loadGeometry OR OpticksHub::adoptGeometry
+
+**/
+
 void OpticksAim::registerGeometry(GGeo* ggeo)
 {
     assert( ggeo ); 

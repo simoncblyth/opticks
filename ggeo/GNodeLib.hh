@@ -119,6 +119,7 @@ class GGEO_API GNodeLib
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
     public:
+        int getFirstNodeIndexForGDMLAuxTargetLVName() const ;  // returns -1 when None configured
         void getNodeIndicesForLVName(std::vector<unsigned>& nidx, const char* lvname) const ;
         void dumpNodes(const std::vector<unsigned>& nidxs, const char* msg="GNodeLib::dumpNodes") const ;
     public:

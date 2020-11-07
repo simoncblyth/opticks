@@ -173,11 +173,18 @@ void OpMgr::cleanup()
 }
 
 
+/**
+OpMgr::snap
+-------------
+
+Note that attempts to snap prior to an event upload fails with context invalid, 
+see notes/issues/G4OKTest-snap-fails-with-invalid-context.rst
+
+**/
+
 void OpMgr::snap(const char* dir)
 {
     LOG(LEVEL) << "[" ; 
-    NPY<float>* gensteps = NULL ;  
-    m_run->createEvent(gensteps); 
     m_propagator->snap(dir); 
     LOG(LEVEL) << "]" ; 
 }

@@ -27,6 +27,15 @@
 class Opticks ; 
 template <typename T> class OpticksCfg ;
 
+/**
+OpticksEntry 
+===============
+
+Commandline option controlled switching of the raygen program 
+from the default code 'G' for GENERATE.
+
+**/
+
 class OKCORE_API OpticksEntry 
 {
    private:

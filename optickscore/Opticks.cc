@@ -2013,6 +2013,15 @@ void Opticks::findGDMLAuxValues(std::vector<std::string>& values, const char* k,
     }
 }
 
+/**
+Opticks::getGDMLAuxTargetLVNames
+----------------------------------
+
+Consults the persisted GDMLAux metadata looking for entries with (k,v) pair ("label","target").
+For any such entries the "lvname" property is accesses and added to the lvnames vector.
+
+**/
+
 unsigned Opticks::getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const 
 {
     const char* k = "label" ; 
@@ -2029,6 +2038,14 @@ unsigned Opticks::getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) con
 
     return lvnames.size(); 
 }
+
+/**
+Opticks::getGDMLAuxTargetLVName
+---------------------------------
+
+Returns the first lvname or NULL
+
+**/
 
 const char* Opticks::getGDMLAuxTargetLVName() const 
 {

@@ -237,6 +237,24 @@ const char* GNodeLib::getLVName(unsigned index) const
 }
 
 
+int GNodeLib::getFirstNodeIndexForGDMLAuxTargetLVName() const 
+{
+    const char* target_lvname = m_ok->getGDMLAuxTargetLVName() ; 
+
+    std::vector<unsigned> nidxs ; 
+    getNodeIndicesForLVName(nidxs, target_lvname); 
+
+    int nidx = nidxs.size() > 0 ? nidxs[0] : -1 ; 
+
+    LOG(info) 
+        << "target_lvname " << target_lvname
+        << "nidxs.size() " << nidxs.size()
+        << "nidx " << nidx 
+        ; 
+
+    return nidx ; 
+}
+
 void GNodeLib::getNodeIndicesForLVName(std::vector<unsigned>& nidx, const char* lvname) const 
 {
     if( lvname == NULL ) return ;  

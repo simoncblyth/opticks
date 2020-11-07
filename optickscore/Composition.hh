@@ -65,6 +65,8 @@ Composition
 =============
 
 Canonical m_composition instance is ctor resident of the top level OpticksHub m_hub (okg-). 
+One crucial method is Composition::setCenterExtent which is called by okg/OpticksAim::setTarget
+or OpticksAim::target
 
 Encapsulates
 

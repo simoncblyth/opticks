@@ -1,10 +1,43 @@
-
 G4OKTest-snap-fails-with-invalid-context
 ==========================================
 
 
-Issue : adding snap fails
------------------------------
+TODO: Fix by splitting event buffer creation from event buffer resize+upload 
+-------------------------------------------------------------------------------
+
+Note that buffer resizing is done for every event so this split 
+should be straightforward. It just corresponds to starting from a 
+set of empty event buffers rather that from no-buffers. 
+
+This will allow snapping to be done in the init which is kinda the
+natural place for it.
+
+
+Workaround : move snapping after event propagation
+----------------------------------------------------
+
+This avoids the problem as the context is then valid.
+
+
+Following context setup
+--------------------------
+
+Getting a picture of context population::
+
+    OpMgr=FATAL OGeo=ERROR OContext=ERROR OpEngine=FATAL lldb_ G4OKTest 
+
+
+Issue : snap fails when attempt to use it prior to event upload 
+------------------------------------------------------------------
+
+Note that OpSnapTest is working despite it doing 
+exactly the same thing.  The reason being that
+there is no OpPropagator (and hence generate.cu) in the context in that case.
+
+The problem is that when OpPropagator is active "generate.cu" 
+is put into context which causes a problem when no event 
+has been uploaded.
+
 
 
 ::
@@ -19,6 +52,8 @@ Issue : adding snap fails
     +
      }
 
+Backtrace
+------------
 
 ::
 
@@ -57,20 +92,17 @@ Issue : adding snap fails
 
 
 
-Crossover between propagate and render ?
----------------------------------------------
 
-The sequence buffer is part of OEvent, hence it should not be needed for rendering.
+Where sequence_buffer and generate.cu come into play
+--------------------------------------------------------
 
-
-BUT, surely generate.cu not needed for making a snap::
+::
 
     epsilon:cu blyth$ grep sequence_buffer *.*
     generate.cu:rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
     generate.cu:        sequence_buffer[photon_id*2 + 0] = seqhis ; 
     generate.cu:        sequence_buffer[photon_id*2 + 1] = seqmat ;  
     epsilon:cu blyth$ 
-
 
     epsilon:optixrap blyth$ grep sequence_buffer *.cc
     OContext.cc:    86 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
@@ -85,7 +117,6 @@ BUT, surely generate.cu not needed for making a snap::
 
     127 void OEvent::createBuffers(OpticksEvent* evt)
     128 {
-
 
 
 ::
@@ -114,6 +145,41 @@ BUT, surely generate.cu not needed for making a snap::
 
 
 
+Crossover between propagate and render ?
+---------------------------------------------
+
+The sequence buffer is part of OEvent, hence it should not be needed for rendering.
+Yep, but OpEngine::initPropagation with default EntryCode of 'G' puts generate.cu 
+into context.::
+
+
+    134 /**
+    135 OpEngine::initPropagation
+    136 --------------------------
+    137 
+    138 Instanciate the residents.
+    139 
+    140 Note that the pointer to the single m_oevt (OEvent) instance  
+    141 is passed to all the residents.
+    142 
+    143 **/
+    144 
+    145 void OpEngine::initPropagation()
+    146 {
+    147     LOG(LEVEL) << "[" ;
+    148     m_entry = m_ocontext->addEntry(m_ok->getEntryCode(), "OpEngine::initPropagation" ) ;
+    149     LOG(LEVEL) << " entry " << m_entry->desc() ;
+    150 
+    151     m_oevt = new OEvent(m_ok, m_ocontext);
+    152     m_propagator = new OPropagator(m_ok, m_oevt, m_entry);
+    153     m_seeder = new OpSeeder(m_ok, m_oevt) ;
+    154     m_zeroer = new OpZeroer(m_ok, m_oevt) ;
+    155     m_indexer = new OpIndexer(m_ok, m_oevt) ;
+    156     LOG(LEVEL) << "]" ;
+    157 }
+    158 
+
+
 Both P and G entries are created so it seems need to do something like event uploading 
 with empty buffers perhaps for the context to include the expected buffers to be valid  ?
 
@@ -138,6 +204,13 @@ with empty buffers perhaps for the context to include the expected buffers to be
      100     }
      101     return new OpticksEntry(index, code) ;
      102 }
+
+
+
+
+
+Snapshot machinery
+---------------------
 
 ::
 
@@ -271,9 +344,13 @@ with empty buffers perhaps for the context to include the expected buffers to be
 
 
 
-Getting a picture of context population::
 
-    OpMgr=FATAL OGeo=ERROR OContext=ERROR OpEngine=FATAL lldb_ G4OKTest 
+Secondary problem with snap is targetting
+--------------------------------------------
+
+::
+
+    OpticksAim=ERROR G4OKTest --target 3153
 
 
 
