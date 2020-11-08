@@ -45,55 +45,50 @@
 const plog::Severity OEvent::LEVEL = PLOG::EnvLevel("OEvent", "DEBUG") ; 
 
 
-OpticksEvent* OEvent::getEvent()
+OpticksEvent* OEvent::getEvent() const 
 {
     return m_evt ; 
 }
 void OEvent::setEvent(OpticksEvent* evt)
 {
-    LOG(LEVEL) 
-        << " this (OEvent*) " << this
-        << " evt (OpticksEvent*) " << evt
-        ;
- 
+    LOG(LEVEL) << " this (OEvent*) " << this << " evt (OpticksEvent*) " << evt ; 
     m_evt = evt ; 
-
 }
-OContext* OEvent::getOContext()
+OContext* OEvent::getOContext() const 
 {
     return m_ocontext ; 
 }
 
 
 OEvent::OEvent(Opticks* ok, OContext* ocontext)
-   :
-   m_log(new SLog("OEvent::OEvent", "", LEVEL)),
-   m_ok(ok),
-   //m_hitmask(SURFACE_DETECT),
-   //m_hitmask(TORCH | BULK_SCATTER | BOUNDARY_TRANSMIT | SURFACE_ABSORB),
-   m_hitmask(ok->getDbgHitMask()), 
-   m_compute(ok->isCompute()),
-   m_dbghit(m_ok->isDbgHit()),            // --dbghit
-   m_dbgdownload(m_ok->isDbgDownload()),  // --dbgdownload
-   m_mask(m_ok->getMaskBuffer()),
-   m_ocontext(ocontext),
-   m_context(ocontext->getContext()),
-   m_evt(NULL),
-   m_photonMarkDirty(false),
+    :
+    m_log(new SLog("OEvent::OEvent", "", LEVEL)),
+    m_ok(ok),
+    //m_hitmask(SURFACE_DETECT),
+    //m_hitmask(TORCH | BULK_SCATTER | BOUNDARY_TRANSMIT | SURFACE_ABSORB),
+    m_hitmask(ok->getDbgHitMask()), 
+    m_compute(ok->isCompute()),
+    m_dbghit(m_ok->isDbgHit()),            // --dbghit
+    m_dbgdownload(m_ok->isDbgDownload()),  // --dbgdownload
+    m_mask(m_ok->getMaskBuffer()),
+    m_ocontext(ocontext),
+    m_context(ocontext->getContext()),
+    m_evt(NULL),
+    m_photonMarkDirty(false),
 #ifdef WITH_SOURCE
-   m_sourceMarkDirty(false),
+    m_sourceMarkDirty(false),
 #endif
-   m_seedMarkDirty(false),
-   m_genstep_buf(NULL),
-   m_photon_buf(NULL),
+    m_seedMarkDirty(false),
+    m_genstep_buf(NULL),
+    m_photon_buf(NULL),
 #ifdef WITH_SOURCE
-   m_source_buf(NULL),
+    m_source_buf(NULL),
 #endif
 #ifdef WITH_RECORD
-   m_record_buf(NULL),
-   m_sequence_buf(NULL),
+    m_record_buf(NULL),
+    m_sequence_buf(NULL),
 #endif
-   m_buffers_created(false)
+    m_buffers_created(false)
 {
     init();
     (*m_log)("DONE");
@@ -122,11 +117,26 @@ NB in INTEROP mode the OptiX buffers for the evt data
 are actually references to the OpenGL buffers created 
 with createBufferFromGLBO by Scene::uploadEvt Scene::uploadSelection
 
+HMM: want to do this in the init prior to real OpticksEvent/gensteps 
+being available, like a static level action ?
+
+
+Interop with CUDA : Manual single-pointer synchronization (quote from OptiX 5.0 pdf)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a buffer’s contents are not changing for every launch, then the per-launch
+copies of the automatic synchronization are not necessary. Automatic
+synchronization can be disabled when creating a buffer by specifying the
+RT_BUFFER_COPY_ON_DIRTY flag. With this flag, an application must call
+rtBufferMarkDirty for synchronizations to take place. Calling rtBufferMarkDirty
+after rtBufferUnmap will cause a synchronization from the buffer device pointer
+at launch and override any pending synchronization from the host.
+
 **/
 
 void OEvent::createBuffers(OpticksEvent* evt)
 {
-    LOG(debug) << evt->getShapeString() ; 
+    LOG(LEVEL) << evt->getShapeString() ; 
     assert(m_buffers_created==false);
     m_buffers_created = true ; 
  
@@ -575,11 +585,12 @@ unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
 }
 
 
-OBuf* OEvent::getSeedBuf() {    return m_seed_buf ; } 
-OBuf* OEvent::getPhotonBuf() {  return m_photon_buf ; } 
-OBuf* OEvent::getGenstepBuf() { return m_genstep_buf ; }
+OBuf* OEvent::getSeedBuf() const  {    return m_seed_buf ; } 
+OBuf* OEvent::getPhotonBuf() const {   return m_photon_buf ; } 
+OBuf* OEvent::getGenstepBuf() const {  return m_genstep_buf ; }
 #ifdef WITH_RECORD
-OBuf* OEvent::getRecordBuf() {   return m_record_buf ; } 
-OBuf* OEvent::getSequenceBuf() { return m_sequence_buf ; } 
+OBuf* OEvent::getRecordBuf() const  {  return m_record_buf ; } 
+OBuf* OEvent::getSequenceBuf() const { return m_sequence_buf ; } 
 #endif
+
 

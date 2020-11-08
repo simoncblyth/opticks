@@ -1019,6 +1019,14 @@ optix::Buffer OContext::createEmptyBufferF4()
 }
 
 
+/**
+OContext::createBuffer
+-----------------------
+
+Workhorse, called for example from OEvent::createBuffers
+
+**/
+
 template <typename T>
 optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 {
@@ -1096,7 +1104,14 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 }
 
 
+/**
+OContext::determineBufferSize
+-------------------------------
 
+Mostly the size is the result of NPY::getNumQuads for RT_FORMAT_USER or
+the seed buffer the size is ni*nj*nk the product of the first three dimensions.
+
+**/
 
 template <typename T>
 unsigned OContext::determineBufferSize(NPY<T>* npy, const char* name)
@@ -1136,11 +1151,9 @@ unsigned OContext::getBufferSize(NPY<T>* npy, const char* name)
 
     unsigned size = determineBufferSize( npy, name ); 
 
-
     bool is_debug_buffer_name = isDebugBufferName(name);
     bool is_production =  m_ok->isProduction() ; 
     bool is_forced_empty = is_production && is_debug_buffer_name ;     
-
 
     LOG(LEVEL) 
         << " name " << name 
@@ -1161,7 +1174,6 @@ unsigned OContext::getBufferSize(NPY<T>* npy, const char* name)
 /**
 OContext::configureBuffer
 ---------------------------
-
 
 NB in interop mode, the OptiX buffer is just a reference to the 
 OpenGL buffer object, however despite this the size

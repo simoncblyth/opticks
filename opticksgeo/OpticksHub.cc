@@ -639,6 +639,17 @@ glm::mat4 OpticksHub::getTransform(int index) const
 **/
 
 
+/**
+OpticksHub::setupCompositionTargetting
+---------------------------------------
+
+Called for example from:
+
+1. oglrap/OpticksViz::uploadGeometry after geometry uploaded
+2. okop/OpTracer::render prior to the first trace
+
+**/
+
 void OpticksHub::setupCompositionTargetting()
 {
     m_aim->setupCompositionTargetting();

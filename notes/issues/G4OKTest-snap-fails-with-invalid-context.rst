@@ -13,6 +13,16 @@ This will allow snapping to be done in the init which is kinda the
 natural place for it.
 
 
+Not straightforward to split 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Looking into oxrap/OEvent this change is not straightforward as
+buffer creation depends on having an OpticksEvent for access to 
+metadata on how to configure each buffer : OpticksBufferControl and the COPY_ON_DIRTY stuff.
+
+Perhaps an OpticksEvent prior to setting of genstep data can be made to work ?
+
+
 Workaround : move snapping after event propagation
 ----------------------------------------------------
 

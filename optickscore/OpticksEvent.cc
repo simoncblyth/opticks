@@ -116,7 +116,7 @@ const char* OpticksEvent::seed_  = "seed" ;
 const char* OpticksEvent::hit_  = "hit" ; 
 
 
-OpticksEvent* OpticksEvent::make(OpticksEventSpec* spec, unsigned tagoffset)
+OpticksEvent* OpticksEvent::Make(OpticksEventSpec* spec, unsigned tagoffset)  // static 
 {
      OpticksEventSpec* offspec = spec->clone(tagoffset);
      return new OpticksEvent(offspec) ; 
@@ -131,79 +131,78 @@ const char* OpticksEvent::LAUNCH_LABEL = "OpticksEvent_launch" ;
  
 
 OpticksEvent::OpticksEvent(OpticksEventSpec* spec) 
-          :
-          OpticksEventSpec(spec),
-          m_event_spec(spec),
-          m_ok(NULL),   // set by Opticks::makeEvent
-          m_profile(NULL),
+    :
+    OpticksEventSpec(spec),
+    m_event_spec(spec),
+    m_ok(NULL),   // set by Opticks::makeEvent
+    m_profile(NULL),
 
-          m_noload(false),
-          m_loaded(false),
-          m_versions(NULL),
-          m_parameters(NULL),
-          m_report(NULL),
+    m_noload(false),
+    m_loaded(false),
+    m_versions(NULL),
+    m_parameters(NULL),
+    m_report(NULL),
 
-          m_primary_data(NULL),
-          m_genstep_data(NULL),
-          m_nopstep_data(NULL),
-          m_photon_data(NULL),
-          m_source_data(NULL),
-          m_record_data(NULL),
-          m_phosel_data(NULL),
-          m_recsel_data(NULL),
-          m_sequence_data(NULL),
-          m_seed_data(NULL),
-          m_hit_data(NULL),
+    m_primary_data(NULL),
+    m_genstep_data(NULL),
+    m_nopstep_data(NULL),
+    m_photon_data(NULL),
+    m_source_data(NULL),
+    m_record_data(NULL),
+    m_phosel_data(NULL),
+    m_recsel_data(NULL),
+    m_sequence_data(NULL),
+    m_seed_data(NULL),
+    m_hit_data(NULL),
 
-          m_photon_ctrl(NULL),
-          m_source_ctrl(NULL),
-          m_seed_ctrl(NULL),
-          m_domain(NULL),
+    m_photon_ctrl(NULL),
+    m_source_ctrl(NULL),
+    m_seed_ctrl(NULL),
+    m_domain(NULL),
 
-          m_genstep_vpos(NULL),
-          m_genstep_attr(NULL),
-          m_nopstep_attr(NULL),
-          m_photon_attr(NULL),
-          m_source_attr(NULL),
-          m_record_attr(NULL),
-          m_phosel_attr(NULL),
-          m_recsel_attr(NULL),
-          m_sequence_attr(NULL),
-          m_seed_attr(NULL),
-          m_hit_attr(NULL),
+    m_genstep_vpos(NULL),
+    m_genstep_attr(NULL),
+    m_nopstep_attr(NULL),
+    m_photon_attr(NULL),
+    m_source_attr(NULL),
+    m_record_attr(NULL),
+    m_phosel_attr(NULL),
+    m_recsel_attr(NULL),
+    m_sequence_attr(NULL),
+    m_seed_attr(NULL),
+    m_hit_attr(NULL),
 
-          m_records(NULL),
-          m_photons(NULL),
-          m_hits(NULL),
-          m_bnd(NULL),
+    m_records(NULL),
+    m_photons(NULL),
+    m_hits(NULL),
+    m_bnd(NULL),
 
-          m_num_gensteps(0),
-          m_num_nopsteps(0),
-          m_num_photons(0),
-          m_num_source(0),
+    m_num_gensteps(0),
+    m_num_nopsteps(0),
+    m_num_photons(0),
+    m_num_source(0),
 
-          m_seqhis(NULL),
-          m_seqmat(NULL),
-          m_bndidx(NULL),
-          m_fake_nopstep_path(NULL),
+    m_seqhis(NULL),
+    m_seqmat(NULL),
+    m_bndidx(NULL),
+    m_fake_nopstep_path(NULL),
 
-          m_fdom_spec(NULL),
-          m_idom_spec(NULL),
-          m_genstep_spec(NULL),
-          m_nopstep_spec(NULL),
-          m_photon_spec(NULL),
-          m_source_spec(NULL),
-          m_record_spec(NULL),
-          m_phosel_spec(NULL),
-          m_recsel_spec(NULL),
-          m_sequence_spec(NULL),
+    m_fdom_spec(NULL),
+    m_idom_spec(NULL),
+    m_genstep_spec(NULL),
+    m_nopstep_spec(NULL),
+    m_photon_spec(NULL),
+    m_source_spec(NULL),
+    m_record_spec(NULL),
+    m_phosel_spec(NULL),
+    m_recsel_spec(NULL),
+    m_sequence_spec(NULL),
 
-          m_prelaunch_times(new BTimes(PRELAUNCH_LABEL)),
-          m_launch_times(new BTimes(LAUNCH_LABEL)),
-          m_sibling(NULL),
-          m_geopath(NULL),
-          m_geotestconfig(NULL)
-
+    m_prelaunch_times(new BTimes(PRELAUNCH_LABEL)),
+    m_launch_times(new BTimes(LAUNCH_LABEL)),
+    m_sibling(NULL),
+    m_geopath(NULL),
+    m_geotestconfig(NULL)
 {
     init();
 }

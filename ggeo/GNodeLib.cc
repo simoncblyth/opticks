@@ -247,9 +247,9 @@ int GNodeLib::getFirstNodeIndexForGDMLAuxTargetLVName() const
     int nidx = nidxs.size() > 0 ? nidxs[0] : -1 ; 
 
     LOG(info) 
-        << "target_lvname " << target_lvname
-        << "nidxs.size() " << nidxs.size()
-        << "nidx " << nidx 
+        << " target_lvname " << target_lvname
+        << " nidxs.size() " << nidxs.size()
+        << " nidx " << nidx 
         ; 
 
     return nidx ; 

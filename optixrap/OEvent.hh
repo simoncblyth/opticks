@@ -37,6 +37,9 @@ OEvent
 
 OptiX buffers representing an OpticksEvent propagation.
 
+The OEvent name is a bit misleading because there is 
+only ever one OEvent instance.
+
 The canonical single OEvent instance resides 
 in OpEngine and is instanciated with OpEngine.
 A pointer is also available in OPropagator, which
@@ -44,6 +47,11 @@ is also instanciated with OpEngine.
 
 Buffers are created at the first *upload* and
 are subsequently resized to correspond to the OpticksEvent. 
+
+NOTE: This turns out to be problematic as the context is then not 
+valid until the first upload. TODO: split creation of buffers from 
+resize/population.
+
 
 NB upload/download will only act on compute buffers, interop
 buffers are skipped within underlying OContext methods
@@ -118,8 +126,9 @@ class OXRAP_API OEvent
         OEvent(Opticks* ok, OContext* ocontext);
         unsigned upload();
         unsigned download();
-        void downloadPhotonData();
+        void     downloadPhotonData();
         unsigned downloadHits();
+        void     markDirty();
     private:
         unsigned upload(OpticksEvent* evt);
         unsigned uploadGensteps(OpticksEvent* evt);
@@ -129,19 +138,18 @@ class OXRAP_API OEvent
         unsigned downloadHitsCompute(OpticksEvent* evt);
         unsigned downloadHitsInterop(OpticksEvent* evt);
     public:
-        OContext*     getOContext();
-        OpticksEvent* getEvent();
-        OBuf* getSeedBuf();
-        OBuf* getPhotonBuf();
+        OContext*     getOContext() const ;
+        OpticksEvent* getEvent() const ;
+        OBuf*         getSeedBuf() const ;
+        OBuf*         getPhotonBuf() const ;
 #ifdef WITH_SOURCE
-        OBuf* getSourceBuf();
+        OBuf*         getSourceBuf() const ;
 #endif
-        OBuf* getGenstepBuf();
+        OBuf*         getGenstepBuf() const ;
 #ifdef WITH_RECORD
-        OBuf* getSequenceBuf();
-        OBuf* getRecordBuf();
+        OBuf*         getSequenceBuf() const ;
+        OBuf*         getRecordBuf() const ;
 #endif
-        void markDirty();
     private:
         void init(); 
         void createBuffers(OpticksEvent* evt);

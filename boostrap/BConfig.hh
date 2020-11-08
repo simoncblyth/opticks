@@ -31,9 +31,14 @@
 BConfig
 ==========
 
+Parses a delimeter-ed config string with elements and key-value pairs, eg: 
+
+    red=1,green=2,blue=3
+
+which uses default delimiters for elements are "," and key-value pairs of "=".
+
 Intended as simple alternative to BCfg, for usage examples
 see NSnapConfig, NSceneConfig
-
 
 Lifecycle:
 

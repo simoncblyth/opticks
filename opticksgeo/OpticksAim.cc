@@ -108,25 +108,54 @@ unsigned OpticksAim::getTarget() const
 OpticksAim::setupCompositionTargetting
 -----------------------------------------
 
-Used from OpticksViz::uploadGeometry
+Relayed via OpticksHub::setupCompositionTargetting from eg OpticksViz::uploadGeometry or OpTracer::render
 
-Handles commandline --target option 
-that needs loaded geometry. 
+Decides on the target volume node index to configure for rendering. 
+Priority order of inputs to control the target volume:
+
+1. command line "--target 3155" option, with target defaulting to the value of OPTICKS_TARGET envvar or fallback 0  
+2. deferred target if a request was made prior to geometry being loaded (is this still needed?)
+3. GDMLAux metadata that annotates a logical volume via GDML auxiliary elements with (key,value) ("label","target"),
+   the node index of the first physical placed volume instance of that logical volume
 
 **/
 
 void OpticksAim::setupCompositionTargetting()
 {
     bool autocam = true ; 
-    unsigned deferred_target = getTargetDeferred();   // default to 0 
-    unsigned cmdline_target = m_ok->getTarget();
+    unsigned deferred_target = getTargetDeferred();   // default to 0   
+    // ^^^^^^^^^^^^^ suspect no longer needed
 
-    LOG(LEVEL)
+    unsigned cmdline_target = m_ok->getTarget();      // sensitive to OPTICKS_TARGET envvar, fallback 0 
+
+    const char* target_lvname = m_ok->getGDMLAuxTargetLVName() ; 
+    int gdmlaux_target =  m_ggeo ? m_ggeo->getFirstNodeIndexForGDMLAuxTargetLVName() : -1 ;  // sensitive to GDML auxilary lvname metadata (label, target)  
+
+    unsigned active_target = 0 ; 
+
+    if( cmdline_target > 0 )
+    {
+        active_target = cmdline_target ; 
+    } 
+    else if( deferred_target > 0 )
+    {
+        active_target = deferred_target ; 
+    } 
+    else if( gdmlaux_target > 0 )
+    {
+        active_target = gdmlaux_target ;
+    }
+
+    LOG(error)
         << " deferred_target " << deferred_target
         << " cmdline_target " << cmdline_target
+        << " target_lvname " << target_lvname
+        << " gdmlaux_target " << gdmlaux_target  
+        << " active_target " << active_target 
         ;   
 
-    setTarget(cmdline_target, autocam);
+
+    setTarget(active_target, autocam);
 }
 
 /**
@@ -147,6 +176,8 @@ Formerly of oglrap-/Scene
 
 void  OpticksAim::setTarget(unsigned target, bool aim)  
 {
+    assert(m_ggeo) ;  // surely always now available ?
+
     if(m_ggeo == NULL)
     {    
         LOG(LEVEL) << "target " << target << " (deferring as geometry not registered with OpticksAim) " ; 

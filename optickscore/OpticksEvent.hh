@@ -139,7 +139,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
       static NPYSpec* SeedSpec(bool compute);
       static void pushNames(std::vector<std::string>& names);
    public:
-       static OpticksEvent* make(OpticksEventSpec* spec, unsigned tagoffset=0);
+       static OpticksEvent* Make(OpticksEventSpec* spec, unsigned tagoffset=0);
        OpticksEvent(OpticksEventSpec* spec);
        void reset();
        virtual ~OpticksEvent();

@@ -70,22 +70,21 @@ void OpTracer::init()
 {
     if(m_immediate)
     {
-        prepareTracer();
+        initTracer();
     }
 }
 
 
-void OpTracer::prepareTracer()
+void OpTracer::initTracer()
 {
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
 
-
-    LOG(debug) << "OpTracer::prepareTracer" 
-               << " width " << width 
-               << " height " << height 
-               << " immediate " << m_immediate
-                ;
+    LOG(LEVEL)
+        << " width " << width 
+        << " height " << height 
+        << " immediate " << m_immediate
+        ;
 
     m_ocontext = m_ope->getOContext();
 
@@ -117,17 +116,42 @@ OpTracer::snap
 
 Takes one or more GPU raytrace snapshots of geometry
 at various positions configured via --snapconfig
+for example::
+
+    --snapconfig="steps=5,eyestartz=0,eyestopz=1"
 
 **/
 
-void OpTracer::snap(const char* dir)   // --snapconfig="steps=5,eyestartz=0,eyestopz=0"
+void OpTracer::snap(const char* dir)   
 {
-
     LOG(info) 
         << "(" << m_snap_config->desc()
         << " dir " << dir 
         ;
 
+    int num_steps = m_snap_config->steps ; 
+
+    if( num_steps == 0)
+    {
+        const char* path = m_snap_config->getSnapPath(dir, -1); 
+        single_snap(path);  
+    }
+    else
+    {
+        multi_snap(dir); 
+    }
+
+    m_otracer->report("OpTracer::snap");   // saves for runresultsdir
+
+    m_ok->saveParameters(); 
+
+    LOG(info) << ")" ;
+}
+
+
+
+void OpTracer::multi_snap(const char* dir)
+{
     int num_steps = m_snap_config->steps ; 
 
     float eyestartx = m_snap_config->eyestartx ; 
@@ -140,11 +164,6 @@ void OpTracer::snap(const char* dir)   // --snapconfig="steps=5,eyestartz=0,eyes
 
     for(int i=0 ; i < num_steps ; i++)
     {
-        std::string name = m_snap_config->getSnapName(i) ; 
-        bool create = true ; 
-        std::string path = BFile::preparePath(dir ? dir : "$TMP", name.c_str(), create);  
-
-
         float frac = num_steps > 1 ? float(i)/float(num_steps-1) : 0.f ; 
 
         float eyex = m_composition->getEyeX();
@@ -167,24 +186,32 @@ void OpTracer::snap(const char* dir)   // --snapconfig="steps=5,eyestartz=0,eyes
             m_composition->setEyeZ( eyez ); 
         }
 
-        render();
-
-        std::cout << " i " << std::setw(5) << i 
-                  << " eyex " << std::setw(10) << eyex
-                  << " eyey " << std::setw(10) << eyey
-                  << " eyez " << std::setw(10) << eyez
-                  << " path " << path 
-                  << std::endl ;         
-
-        m_ocontext->snap(path.c_str());
+        const char* path = m_snap_config->getSnapPath(dir, i); 
+        single_snap(path);  
     }
-
-    m_otracer->report("OpTracer::snap");   // saves for runresultsdir
-    //m_ok->dumpMeta("OpTracer::snap");
-
-    m_ok->saveParameters(); 
-
-    LOG(info) << ")" ;
 }
-  
+
+
+
+void OpTracer::single_snap(const char* path)
+{
+    float eyex = m_composition->getEyeX();
+    float eyey = m_composition->getEyeY();
+    float eyez = m_composition->getEyeZ();
+
+    std::cout 
+        << " count " << std::setw(5) << m_count 
+        << " eyex " << std::setw(10) << eyex
+        << " eyey " << std::setw(10) << eyey
+        << " eyez " << std::setw(10) << eyez
+        << " path " << path 
+        << std::endl ;         
+
+    render();
+
+    m_ocontext->snap(path);
+} 
+
+
+ 
 

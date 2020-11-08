@@ -40,6 +40,7 @@ Principal consumer is OpTracer::snap
 struct NPY_API NSnapConfig 
 {
     static const plog::Severity LEVEL ; 
+    static const float NEGATIVE_ZERO ; 
 
     NSnapConfig(const char* cfg);
     BConfig* bconfig ;  
@@ -61,8 +62,9 @@ struct NPY_API NSnapConfig
     std::string postfix ; 
 
 
-    std::string getSnapName(unsigned index);
-    static std::string SnapIndex(unsigned index, unsigned width);
+    const char* getSnapPath(const char* dir, int index) const ;
+    std::string getSnapName(int index) const ;
+    static std::string SnapIndex(int index, unsigned width);
     std::string desc() const ; 
 
 

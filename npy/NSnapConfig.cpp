@@ -19,12 +19,14 @@
 
 #include <sstream>
 
+#include "BFile.hh"
 #include "BConfig.hh"
 #include "PLOG.hh"
 #include "NSnapConfig.hpp"
 
-const plog::Severity NSnapConfig::LEVEL = debug ; 
+const plog::Severity NSnapConfig::LEVEL = PLOG::EnvLevel("NSnapConfig","DEBUG") ; 
 
+const float NSnapConfig::NEGATIVE_ZERO = -0.f ; 
 
 NSnapConfig::NSnapConfig(const char* cfg)  
     :
@@ -32,11 +34,11 @@ NSnapConfig::NSnapConfig(const char* cfg)
     verbosity(0),
     steps(10),
     fmtwidth(5),
-    eyestartx(-0.f),   // -ve zero on startx,y,z indicates leave asis, see OpTracer::snap
-    eyestarty(-0.f),
+    eyestartx(NEGATIVE_ZERO),   // -ve zero on startx,y,z indicates leave asis, see OpTracer::snap
+    eyestarty(NEGATIVE_ZERO),
     eyestartz(0.f),
-    eyestopx(-0.f),
-    eyestopy(-0.f),
+    eyestopx(NEGATIVE_ZERO),
+    eyestopy(NEGATIVE_ZERO),
     eyestopz(1.f),
     prefix("snap"),
     postfix(".ppm")
@@ -71,29 +73,39 @@ void NSnapConfig::dump(const char* msg) const
     bconfig->dump(msg);
 }
 
-std::string NSnapConfig::SnapIndex(unsigned index, unsigned width)
+std::string NSnapConfig::SnapIndex(int index, unsigned width) // static 
 {
     std::stringstream ss ;
     ss 
-       << std::setw(width) 
-       << std::setfill('0')
-       << index 
-       ;
+        << std::setw(width) 
+        << std::setfill('0')
+        << index 
+        ;
     return ss.str();
 }
 
 
-std::string NSnapConfig::getSnapName(unsigned index)
+std::string NSnapConfig::getSnapName(int index) const 
 {
+    std::string blank(""); 
     std::stringstream ss ;
     ss 
        << prefix 
-       << SnapIndex(index, fmtwidth)
+       << ( index > -1 ? SnapIndex(index, fmtwidth) : blank )
        << postfix 
        ; 
 
     return ss.str();
 }
+
+const char* NSnapConfig::getSnapPath(const char* dir, int index) const 
+{
+    std::string name = getSnapName(index) ; 
+    bool create = true ; 
+    std::string path = BFile::preparePath(dir ? dir : "$TMP", name.c_str(), create);  
+    return strdup(path.c_str()); 
+}
+
 
 std::string NSnapConfig::desc() const 
 {

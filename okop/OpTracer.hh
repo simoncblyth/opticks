@@ -47,6 +47,9 @@ template <typename T> class NPY ;
 OpTracer
 =========
 
+Canonical m_tracer instance is resident of OpPropagator
+and is instanciated with it.
+
 snap() takes a sequence of ppm geomtry snapshots 
 configured via --snapconfig and switched on via --snap
 see okop-
@@ -60,11 +63,13 @@ class OKOP_API OpTracer : public SRenderer {
     public:
        OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate);
     public:
-       void prepareTracer();
-       void render();     // fulfils SRenderer protocol
        void snap(const char* dir);
     private:
        void init();
+       void initTracer();
+       void multi_snap(const char* dir);
+       void single_snap(const char* path);
+       void render();     // fulfils SRenderer protocol
     private:
        SLog*            m_log ; 
        OpEngine*        m_ope ; 
@@ -77,8 +82,6 @@ class OKOP_API OpTracer : public SRenderer {
        Composition*     m_composition ; 
        OTracer*         m_otracer ;
        unsigned         m_count ; 
-
-   //    NPY<unsigned char>*   m_npy ; 
 
 };
 

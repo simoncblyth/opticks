@@ -2252,15 +2252,15 @@ NSnapConfig* Opticks::getSnapConfig()
 
 
 
-int  Opticks::getDomainTarget() const  // --domaintarget 
+int  Opticks::getDomainTarget() const  // --domaintarget, default sensitive to OPTICKS_DOMAIN_TARGET envvar  
 {
     return m_cfg->getDomainTarget(); 
 }
-int  Opticks::getGenstepTarget() const  // --gensteptarget
+int  Opticks::getGenstepTarget() const  // --gensteptarget, default sensitive to OPTICKS_GENSTEP_TARGET envvar 
 {
     return m_cfg->getGenstepTarget(); 
 }
-int  Opticks::getTarget() const   // --target 
+int  Opticks::getTarget() const   // --target,  default sensitive to OPTICKS_TARGET envvar   
 {
     return m_cfg->getTarget(); 
 }
@@ -3168,7 +3168,7 @@ OpticksEventSpec* Opticks::getEventSpec()
 
 OpticksEvent* Opticks::loadEvent(bool ok, unsigned tagoffset)
 {
-    OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
+    OpticksEvent* evt = OpticksEvent::Make(ok ? m_spec : m_nspec, tagoffset);
 
     evt->setOpticks(this);
 
@@ -3206,7 +3206,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 {
     setTagOffset(tagoffset) ; 
 
-    OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
+    OpticksEvent* evt = OpticksEvent::Make(ok ? m_spec : m_nspec, tagoffset);
 
     evt->setId(m_event_count) ;   // starts from id 0 
     evt->setOpticks(this);

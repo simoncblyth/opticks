@@ -364,7 +364,7 @@ void OpticksViz::uploadGeometry()
 
 int OpticksViz::getTarget()
 {   
-   return m_hub->getTarget() ; 
+    return m_hub->getTarget() ; 
 }
 
 
