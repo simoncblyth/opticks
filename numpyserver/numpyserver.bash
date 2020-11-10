@@ -51,7 +51,7 @@ Example usage, as in main.cpp::
 Instanciation of **numpyserver** spins off a background network thread 
 that listens for UDP and ZMQ connections.
 The **numpyserver** template type and first argument identify 
-the type and instance of the delegate to me messaged.
+the type and instance of the delegate to be messaged.
 Other arguments identify the UDP port and ZMQ backend endpoint.
 
 When messages arrive the numpydelegate *on_msg* or *on_npy* 

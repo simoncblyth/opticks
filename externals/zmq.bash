@@ -23,7 +23,6 @@ zmq-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(zmq-src)} ; }
 zmq-vi(){       vi $(zmq-source) ; }
 zmq-env(){      olocal- ; }
 zmq-usage(){ cat << EOU
-
 ZMQ : Low Level C API 
 =======================
 
@@ -39,11 +38,6 @@ See also:
 
 *pyzmq-*
     python binding
-
-
-
-
-
 
 TODO
 -----

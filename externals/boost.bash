@@ -778,7 +778,17 @@ boost-rebuild()
     # -a to rebuild all targets
 }
 
+boost-rebuild-with-asio()
+{
+    boost-cd
 
+    ./b2 clean
+
+    boost-b2 -a $(boost-b2-options) --with-asio install  
+
+   
+
+}
 
 
 

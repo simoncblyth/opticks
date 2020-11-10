@@ -43,7 +43,7 @@ xercesc-(){          . $(externals-dir)/xercesc.bash           && xercesc-env $*
 g4-(){               . $(externals-dir)/g4.bash                && g4-env $* ; }
 clhep-(){            . $(externals-dir)/clhep.bash             && clhep-env $* ; }
 zmq-(){              . $(externals-dir)/zmq.bash               && zmq-env $* ; }
-asiozmq-(){          . $(externals-dir)/asiozmq.bash           && asiozmq-env $* ; }
+#asiozmq-(){          . $(externals-dir)/asiozmq.bash           && asiozmq-env $* ; }
 opticksdata-(){      . $(externals-dir)/opticksdata.bash       && opticksdata-env $* ; }
 opticksaux-(){       . $(externals-dir)/opticksaux.bash        && opticksaux-env $* ; }
 g4oktest-(){         . $(externals-dir)/g4oktest.bash          && g4oktest-env $* ; }

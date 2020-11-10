@@ -34,6 +34,12 @@ Providing the BOOST/ASIO interfaces for ZeroMQ.
 * header only, so below functions build the examples
 
 
+Alternative
+-----------------
+
+* https://github.com/zeromq/azmq
+
+
 potential problem from c++11 requirement
 --------------------------------------------
 
