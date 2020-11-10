@@ -262,6 +262,31 @@ Summary of the steps:
 A brief look suggests this is straightforward, will entail adding more properties to the 
 standard Opticks subset.
 
+As MieHG scattering is not important for many experiements, all 
+changes to support it will need to be made in an optional 
+manner for example with compilation options to include it.
+
+What needs to be done:
+
+
+1. modify Opticks material property handling and boundary texture to include the 
+   additional kMIEHG properties.  
+   Changes needed in ggeo/GMaterialLib ggeo/GBndLib extg4/X4MaterialLib.
+   The boundary texture currently has two float4 with five of the eight properties occupies, 
+   the four properties needed for MIE scattering would require changing the boundary texture
+   shape to accomodate these.  
+
+2. implement the CUDA optixrap/cu/mie.h based on source/processes/optical/src/G4OpMieHG.cc
+   in an analogous manner to how optixrap/cu/rayleigh.h is based on source/processes/optical/src/G4OpRayleigh.cc 
+
+3. modify oxrap/cu/generate.cu to access the expanded boundary texture and add the process by 
+   adding more random generation to yield a miescattering distance and compare with aborption and rayleight scattering 
+   lengths to decide history.
+
+4. validate the ported code by comparisons with Geant4 
+
+
+
 
 **C4** : add support for more G4OpBoundaryProcess surface types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
