@@ -76,8 +76,8 @@ class CFG4_API CMaterialLib : public CPropLib
 
        // G4 material access
        bool hasG4Material(const char* shortname);
-       const G4Material* getG4Material(const char* shortname);
-       const CMPT*       getG4MPT(const char* shortname);
+       const G4Material* getG4Material(const char* shortname) const ;
+       const CMPT*       getG4MPT(const char* shortname) const ;
 
 
        void dumpGroupvelMaterial(const char* msg, float wavelength, float groupvel, float tdiff, int step_id, const char* qwn="" );

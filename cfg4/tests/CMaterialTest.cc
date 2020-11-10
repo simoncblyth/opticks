@@ -43,6 +43,29 @@ void test_CMPT(CMaterialLib* clib)
     vec->dump(lkey);
 }
 
+void test_getG4MPT_and_dump(const CMaterialLib* clib, const char* shortname,  const char* lkey )
+{
+    const CMPT* mpt = clib->getG4MPT(shortname);
+    if(mpt == NULL) 
+    {
+        LOG(error) << "canot find material " << shortname ; 
+        return ;  
+    } 
+
+    mpt->dump(shortname);
+
+    CVec* vec = mpt->getCVec(lkey);
+    vec->dump(lkey);
+}
+
+
+void test_getG4MPT_and_dump(const CMaterialLib* clib)
+{
+    const char* shortname = "Pyrex" ;
+    const char* lkey = "ABSLENGTH" ; 
+    test_getG4MPT_and_dump(clib, shortname, lkey ); 
+}
+ 
 
 int main(int argc, char** argv)
 {
@@ -67,18 +90,8 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] << " dump " ; 
 
     //clib->dump();
-
-
-
-    const char* shortname = "Pyrex" ;
-
-    const CMPT* mpt = clib->getG4MPT(shortname);
-    mpt->dump(shortname);
-
-    const char* lkey = "ABSLENGTH" ; 
-
-    CVec* vec = mpt->getCVec(lkey);
-    vec->dump(lkey);
+   
+    test_getG4MPT_and_dump(clib);    
 
     return 0 ; 
 }

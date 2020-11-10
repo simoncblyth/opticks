@@ -110,17 +110,17 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
 
     void dumpLV(const char* msg="CDetector::dumpLV");
  public: 
-    const char*    getPVName(unsigned int index);
+    const char*    getPVName(unsigned int index) const ;
     // from local m_pvm map used for CTestDetector, TODO: adopt traverser for this
     G4VPhysicalVolume* getLocalPV(const char* name);
     void dumpLocalPV(const char* msg="CDetector::dumpLocalPV");
 
  public: 
      // via traverser
-    unsigned int   getNumGlobalTransforms();
-    unsigned int   getNumLocalTransforms();
-    glm::mat4      getGlobalTransform(unsigned int index);
-    glm::mat4      getLocalTransform(unsigned int index);
+    unsigned int   getNumGlobalTransforms() const ;
+    unsigned int   getNumLocalTransforms() const ;
+    glm::mat4      getGlobalTransform(unsigned int index) const ;
+    glm::mat4      getLocalTransform(unsigned int index) const ;
     NPY<float>*    getGlobalTransforms();
     NPY<float>*    getLocalTransforms();
  public: 

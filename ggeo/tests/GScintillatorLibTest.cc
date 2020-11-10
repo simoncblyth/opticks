@@ -155,6 +155,7 @@ int main(int argc, char** argv)
     else
     {
          LOG(error) << " FAILED TO FIND " << name ;
+         return 0 ; 
     }
 
 

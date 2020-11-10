@@ -231,23 +231,23 @@ void CDetector::saveBuffers(const char* objname, unsigned int objindex)
     center_extent->save(cachedir.c_str(), "center_extent.npy");
 }
 
-unsigned int CDetector::getNumGlobalTransforms()
+unsigned int CDetector::getNumGlobalTransforms() const 
 {
     assert(m_traverser);
     return m_traverser->getNumGlobalTransforms();
 }
-unsigned int CDetector::getNumLocalTransforms()
+unsigned int CDetector::getNumLocalTransforms() const 
 {
     assert(m_traverser);
     return m_traverser->getNumLocalTransforms();
 }
 
-glm::mat4 CDetector::getGlobalTransform(unsigned int index)
+glm::mat4 CDetector::getGlobalTransform(unsigned int index) const 
 {
     assert(m_traverser);
     return m_traverser->getGlobalTransform(index);
 }
-glm::mat4 CDetector::getLocalTransform(unsigned int index)
+glm::mat4 CDetector::getLocalTransform(unsigned int index) const 
 {
     assert(m_traverser);
     return m_traverser->getLocalTransform(index);
@@ -265,7 +265,7 @@ NPY<float>* CDetector::getLocalTransforms()
     return m_traverser->getLocalTransforms();
 }
 
-const char* CDetector::getPVName(unsigned int index)
+const char* CDetector::getPVName(unsigned int index) const 
 {
     assert(m_traverser);
     return m_traverser->getPVName(index);

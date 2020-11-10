@@ -50,6 +50,45 @@
 const char* TMPDIR = "$TMP/cfg4/CGDMLDetectorTest" ; 
 
 
+void dump_transforms(const CGDMLDetector* detector, unsigned index)
+{
+    // HMM: this kinda assumes are running with the default DYB 
+
+    unsigned num_global = detector->getNumGlobalTransforms(); 
+    unsigned num_local = detector->getNumLocalTransforms(); 
+
+    LOG(info) 
+        <<  " num_global " << num_global
+        <<  " num_local " << num_local
+        << " (this off-by-one is should be fixed, or this code eliminated) "
+        ; 
+
+    assert( num_global - 1 == num_local );  
+    // hmm this difference is a bug : probably the local transform (identity) not collected for top volume
+    // TODO: eliminate this code, or make these equal : looks like miss a transform
+   
+    if( index < num_global && index < num_local )
+    {
+        glm::mat4 mg = detector->getGlobalTransform(index);
+        glm::mat4 ml = detector->getLocalTransform(index);
+
+        LOG(info) << " index " << index 
+                  << " pvname " << detector->getPVName(index) 
+                  << " global " << gformat(mg)
+                  << " local "  << gformat(ml)
+                  ;
+
+    } 
+    else 
+    {
+        LOG(error) << " index " << index << " is too large for the available transforms " ; 
+    }
+
+}
+
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -92,16 +131,6 @@ int main(int argc, char** argv)
     NPY<float>* gtransforms = detector->getGlobalTransforms();
     gtransforms->save(TMPDIR, "gdml.npy");
 
-    unsigned int index = 3160 ; 
-
-    glm::mat4 mg = detector->getGlobalTransform(index);
-    glm::mat4 ml = detector->getLocalTransform(index);
-
-    LOG(info) << " index " << index 
-              << " pvname " << detector->getPVName(index) 
-              << " global " << gformat(mg)
-              << " local "  << gformat(ml)
-              ;
 
     G4VPhysicalVolume* world_pv = detector->Construct();
     assert(world_pv);
@@ -114,6 +143,12 @@ int main(int argc, char** argv)
 
     CSkinSurfaceTable skt ; 
     skt.dump("CGDMLDetectorTest CSkinSurfaceTable");
+
+
+
+    unsigned index = 3160 ;  // HMM: kinda assumes DYB
+    dump_transforms( detector, index);  
+
 
     return 0 ; 
 }

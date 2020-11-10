@@ -203,7 +203,7 @@ void CTraverser::AncestorTraverse(std::vector<const G4VPhysicalVolume*> ancestor
          m_selection.push_back(m_ancestor_index);
      }
 
-     AncestorVisit(ancestors, selected);
+     AncestorVisit(ancestors, selected);   // collects into m_gtransforms
 
 
      G4LogicalVolume* lv = pv->GetLogicalVolume() ;
@@ -442,12 +442,12 @@ G4Transform3D CTraverser::VolumeTreeTraverse(const G4LogicalVolume* const lv, co
             invrot = rot.inverse();
          }
 
-         daughterR = VolumeTreeTraverse(physvol->GetLogicalVolume(),depth+1); 
+         daughterR = VolumeTreeTraverse(physvol->GetLogicalVolume(),depth+1);  // recursive call  
 
          // G4Transform3D P(rot,physvol->GetObjectTranslation());  GDML does this : not inverting the rotation portion 
          G4Transform3D P(invrot,physvol->GetObjectTranslation());
 
-         VisitPV(physvol, invR*P*daughterR);  // postorder (visit after recursive call)
+         VisitPV(physvol, invR*P*daughterR);  // postorder (visit after recursive call), collecting into m_ltransforms
 
         // This mimicks what is done in g4dae/src/G4DAEWriteStructure.cc which follows GDML (almost) 
         // despite trying to look like it accounts for all the transforms through the tree

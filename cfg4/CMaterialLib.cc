@@ -275,13 +275,13 @@ bool CMaterialLib::hasG4Material(const char* shortname)
     return  m_g4mat.count(shortname) ; 
 }
 
-const G4Material* CMaterialLib::getG4Material(const char* shortname)
+const G4Material* CMaterialLib::getG4Material(const char* shortname) const 
 {
-    const G4Material* mat =  m_g4mat.count(shortname) == 1 ? m_g4mat[shortname] : NULL ; 
+    const G4Material* mat =  m_g4mat.count(shortname) == 1 ? m_g4mat.at(shortname) : NULL ; 
     return mat ; 
 }
 
-const CMPT* CMaterialLib::getG4MPT(const char* shortname)
+const CMPT* CMaterialLib::getG4MPT(const char* shortname) const 
 {
     const G4Material* mat = getG4Material(shortname);
     if(mat == NULL)
