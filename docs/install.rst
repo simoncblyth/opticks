@@ -296,4 +296,50 @@ external packages into the places required by Opticks.  See :doc:`externals`.
 
 
 
+Environment setup for usage of Opticks Executables
+-----------------------------------------------------
+
+During installation an opticks-setup.sh script is generated 
+at path $OPTICKS_PREFIX/bin/opticks-setup.sh.
+Sourcing this script sets up the paths to allow usage of Opticks executables.::
+
+    source $OPTICKS_PREFIX/bin/opticks-setup.sh
+
+Once the setup is working for you, avoid the output on starting each 
+session by redirecting the stdout::
+
+    source $OPTICKS_PREFIX/bin/opticks-setup.sh 1> /dev/null 
+
+The *example.opticks_config* includes these lines already. 
+
+
+
+Moving Externals
+------------------
+
+The opticks-setup.sh script complains regarding BUILD_CMAKE_PREFIX_PATH / BUILD_PKG_CONFIG_PATH 
+captured at generation not matching the current envvars then the script 
+can be regenerated with "opticks-setup-generate".
+
+When moving around externals, it is necessary to change the build environment
+using opticks-prepend-prefix eg:: 
+
+    ## hookup paths to access "foreign" externals 
+    opticks-prepend-prefix /usr/local/opticks_externals/clhep
+    opticks-prepend-prefix /usr/local/opticks_externals/xercesc
+    opticks-prepend-prefix /usr/local/opticks_externals/g4 
+    opticks-prepend-prefix /usr/local/opticks_externals/boost
+
+After that it is necessary to cleaninstall Opticks with::
+
+    o   
+    om- 
+    om-cleaninstall
+
+
+
+
+
+
+
 
