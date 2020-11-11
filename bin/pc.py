@@ -129,9 +129,9 @@ class PC(object):
     header = property(_get_header)
 
     def __repr__(self):
-        return "\n".join([self.header, ""] + map(repr, self.ls))
+        return "\n".join([self.header, ""] + list(map(repr, self.ls)))
     def __str__(self):
-        return "\n".join([self.header, ""] + map(str, self.ls))
+        return "\n".join([self.header, ""] + list(map(str, self.ls)))
 
 
 class Main(object):

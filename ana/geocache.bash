@@ -415,6 +415,9 @@ geocache-j1808-todo(){ cat << EOT
 EOT
 }
 
+
+## opticksdata- is no longer in use ...
+
 geocache-j1808(){     opticksdata- ; geocache-create- --gdmlpath $(opticksdata-j)  --X4 debug --NPY debug $*  ; }
 geocache-j1808-v2(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv2) --csgskiplv 22  ; }
 geocache-j1808-v3(){  opticksdata- ; geocache-create- --gdmlpath $(opticksdata-jv3) --csgskiplv 22  ; }
@@ -634,7 +637,7 @@ geocache-dx1-keydir(){ OPTICKS_KEY=$(geocache-dx1-key) geocache-keydir ; }
 
 geocache-create-notes(){ cat << EON
 
-Default geocache geometry is now Dayabay Near site detector (dx0)
+Default geocache geometry is now Dayabay Near site detector (dx1)
 which is a lot smaller geometry than the JUNO detector (j1808-v5)
 
 

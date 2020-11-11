@@ -756,6 +756,14 @@ opticks-setup-cat(){ cat $(opticks-setup-path) ; }
 opticks-setup-vi(){  vi $(opticks-setup-path) ; }
 opticks-setup--(){   source $(opticks-setup-path) ; }
 
+opticks-setup-generate-notes(){ cat << EON
+
+TODO : simplify the generated setup 
+
+* move -goc, -gob stuff which is not for general consumption elsewhere 
+
+EON
+}
 opticks-setup-generate(){
 
     : opticks-full/opticks-setup-generate
@@ -2494,5 +2502,9 @@ opticks-linecount(){
 opticks-installed-headers(){
    find $OPTICKS_PREFIX/include \( -name '*.h' -or -name '*.hh' -or -name '*.hpp' \) -exec ${*:-echo} {} \;
 }
+
+
+
+
 
 
