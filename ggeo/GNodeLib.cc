@@ -506,6 +506,15 @@ GNodeLib::getSensorPlacements
 
 TODO: eliminate the outer_volume kludge 
 
+When outer_volume = true the placements returned are not 
+those of the sensors themselves but rather those of the 
+outer volumes of the instances that contain the sensors.
+
+That is probably a kludge needed because it is the 
+CopyNo of the  outer volume that carries the sensorId
+for JUNO.  Need a way of getting that from the actual placed
+sensor volume in detector specific code, not here.
+
 **/
 
 void GNodeLib::getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const 
