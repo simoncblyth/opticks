@@ -73,6 +73,8 @@ class SYSRAP_API SSys {
      static bool IsHARIKARI();
      static bool IsENVVAR(const char* envvar);
      static int GetInteractivityLevel();
+     static bool IsCTestRunning();
+
      static int OKConfCheck();
 
 

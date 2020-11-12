@@ -308,6 +308,16 @@ int SSys::GetInteractivityLevel()
     return level ;
 }
 
+
+
+bool SSys::IsCTestRunning()
+{
+    char* dtmd = getenv("DART_TEST_FROM_DART");           //  ctest run with --interactive-debug-mode 0
+    char* cidm = getenv("CTEST_INTERACTIVE_DEBUG_MODE");  //  ctest run with --interactive-debug-mode 1  (the default)
+    return dtmd || cidm ; 
+}
+
+
 bool SSys::IsENVVAR(const char* envvar)
 {
     char* e = getenv(envvar);

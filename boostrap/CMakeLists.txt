@@ -10,6 +10,12 @@ find_package(Boost REQUIRED COMPONENTS ${COMPONENTS} )
 #set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS ${COMPONENTS}")
 set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_EXACT "REQUIRED COMPONENTS ${COMPONENTS}")
 
+
+# it is non-ideal that a separate check has to be made, but there is no asio component as header only ? 
+find_package(BoostAsio MODULE)  
+message(STATUS "BoostAsio_FOUND : ${BoostAsio_FOUND}")
+
+
 #[=[
 BoostRap
 ==========
@@ -157,6 +163,11 @@ set(TOXIC_HEADERS
   timeutil.hh
   BLog.hh
 )
+
+if(BoostAsio_FOUND)
+    list(APPEND SOURCES BListenUDP.cc)
+    list(APPEND HEADERS BListenUDP.hh)
+endif()
 
 # appends to flags for specific files : trying to quell warnings from underlying boost code
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")

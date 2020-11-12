@@ -17,6 +17,37 @@ To Check
    
 
 
+Issue still present with CRandomEngine::CurrentGeant4ProcessName
+------------------------------------------------------------------
+
+Notice the G4VProcess address looks like a dummy : 0x303030303030303
+
+::
+
+    2020-11-12 20:47:58.559 INFO  [90592] [CRandomEngine::init@128] [
+    2020-11-12 20:47:58.559 INFO  [90592] [CRandomEngine::initCurand@177]  DYNAMIC_CURAND 100000,16,16 curand_ni 100000 curand_nv 256
+    2020-11-12 20:47:58.559 INFO  [90592] [CRandomEngine::init@131] ]
+    2020-11-12 20:47:58.559 INFO  [90592] [CRandomEngine::setupTranche@239]  DYNAMIC_CURAND  m_tranche_id 0 m_tranche_size 100000 m_tranche_ibase 0
+    2020-11-12 20:47:58.703 INFO  [90592] [CRandomEngine::setupCurandSequence@298]  record_id 0 m_tranche_id 0 m_tranche_size 100000 m_tranche_index 0 m_curand_ni 100000 m_curand_nv 256
+    2020-11-12 20:47:58.704 INFO  [90592] [CRandomEngineTest::print@59] record_id 0
+    2020-11-12 20:47:58.704 INFO  [90592] [CRandomEngine::CurrentGeant4ProcessName@345] [ 0x303030303030303
+
+    Thread 1 "CRandomEngineTe" received signal SIGSEGV, Segmentation fault.
+    0x00007ffff6be2738 in std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) ()
+       from /lib/x86_64-linux-gnu/libstdc++.so.6
+    (gdb) bt
+    #0  0x00007ffff6be2738 in std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) ()
+       from /lib/x86_64-linux-gnu/libstdc++.so.6
+    #1  0x00007ffff7f4070a in CRandomEngine::CurrentGeant4ProcessName[abi:cxx11]() ()
+        at /home/lab110/opticks/cfg4/CRandomEngine.cc:348
+    #2  0x00007ffff7f40b74 in CRandomEngine::flat (this=0x7fffffffccb8) at /home/lab110/opticks/cfg4/CRandomEngine.cc:424
+    #3  0x000055555555b277 in CRandomEngineTest::print (this=0x7fffffffccb0, record_id=0)
+        at /home/lab110/opticks/cfg4/tests/CRandomEngineTest.cc:63
+    #4  0x0000555555559ccd in main (argc=1, argv=0x7fffffffcfb8)
+        at /home/lab110/opticks/cfg4/tests/CRandomEngineTest.cc:113
+
+
+
 Issue SEGV in CRandomEngine::CurrentProcessName on Ubuntu reported by Fan Hu
 --------------------------------------------------------------------------------
 

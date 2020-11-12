@@ -53,6 +53,16 @@ set(TEST_SOURCES
 
 )
 
+
+
+if(BoostAsio_FOUND)  
+   list(APPEND TEST_SOURCES 
+        BListenUDPTest.cc     
+   )
+endif()
+
+
+
 #[=[
 BTimeTest.cc requires boost components : thread timer, linking gives 
 

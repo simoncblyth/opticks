@@ -6,6 +6,17 @@ include(OpticksBuildOptions)
 set(COMPONENTS system program_options filesystem regex)
 find_package(Boost REQUIRED COMPONENTS ${COMPONENTS} )
 
+
+#set(BoostAsio_VERBOSE ON)
+find_package(BoostAsio MODULE)
+message(STATUS "BoostAsio_INCLUDE_DIR : ${BoostAsio_INCLUDE_DIR} ")
+message(STATUS "BoostAsio_FOUND       : ${BoostAsio_FOUND} ")
+
+if(NOT BoostAsio_FOUND)
+   message(FATAL_ERROR "The \"boost/asio.hpp\" header is required for this example. Try: boost-;boost-rebuild-with-asio " )
+endif()
+
+
 set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_EXACT "REQUIRED COMPONENTS ${COMPONENTS}") # see ../UseBoost/CMakeLists.txt 
 
 set(SOURCES

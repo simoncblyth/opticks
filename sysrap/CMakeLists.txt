@@ -59,6 +59,8 @@ set(SOURCES
     SPack.cc
     SBit.cc
     SRand.cc
+
+    SMockViz.cc
 ) 
 
 set(HEADERS
@@ -109,6 +111,8 @@ set(HEADERS
     SPack.hh
     SBit.hh
     SRand.hh
+
+    SMockViz.hh
 )
 
 
