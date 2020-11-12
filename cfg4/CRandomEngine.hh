@@ -84,7 +84,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         static const char* TMPDIR ; 
         static const plog::Severity LEVEL ; 
     public:
-        static std::string CurrentProcessName();
+        static std::string CurrentGeant4ProcessName();
         static std::string FormLocation(const char* file, int line);
         static const char* PindexLogPath(unsigned mask_index);
     public:

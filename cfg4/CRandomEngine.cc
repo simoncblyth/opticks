@@ -332,12 +332,22 @@ std::string CRandomEngine::desc() const
 }
 
 
-std::string CRandomEngine::CurrentProcessName()
+/**
+CRandomEngine::CurrentGeant4ProcessName
+-----------------------------------------
+
+Name of current Geant4 process 
+
+**/
+std::string CRandomEngine::CurrentGeant4ProcessName()  // static 
 {
     G4VProcess* proc = CProcess::CurrentProcess() ; 
-    std::stringstream ss ; 
-    ss <<  ( proc ? proc->GetProcessName().c_str() : "NoProc" )  ;  
-    return ss.str();
+    LOG(LEVEL) << "[ " << proc ; 
+    if(proc == NULL) return "NoProc" ; 
+    const G4String& procname = proc->GetProcessName() ;  
+    std::string name = procname ; 
+    LOG(LEVEL) << "] (" << name << ")" ; 
+    return name ; 
 }
 
 /**
@@ -354,7 +364,7 @@ std::string CRandomEngine::FormLocation(const char* file, int line)
 {
     assert( file ) ;  // actually the label when line is -1
     std::stringstream ss ; 
-    ss << CurrentProcessName() << "_"  ;
+    ss << CurrentGeant4ProcessName() << "_"  ;
 
     if(line > -1)
     {
@@ -411,7 +421,7 @@ it is still important to avoid call _flat() and misaligning the sequences.
 
 double CRandomEngine::flat() 
 { 
-    if(!m_internal) m_location = CurrentProcessName();
+    if(!m_internal) m_location = CurrentGeant4ProcessName();
     assert( m_current_record_flat_count < m_curand_nv ); 
 
 
