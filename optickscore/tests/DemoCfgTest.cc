@@ -17,17 +17,26 @@
  * limitations under the License.
  */
 
+#include "OPTICKS_LOG.hh"
+#include "BOpticksResource.hh"
 #include "CameraCfg.hh"
 #include "Camera.hh"
 
 int main(int argc, char** argv)
 {
+    OPTICKS_LOG(argc, argv); 
+
+    BOpticksResource rsc ;   // needed for BFile::ResolveKey 
+
     Camera camera ; 
     camera.Print("initial default camera");
 
-    CameraCfg<Camera> cfg("camera", &camera);
+    bool live = true ;  
+    CameraCfg<Camera> cfg("camera", &camera, live);
+    cfg.setVerbose(true); 
 
-    cfg.configfile("demo.cfg");
+
+    cfg.configfile("$PREFIX/include/OpticksCore/DemoCfgTest.cfg");
     camera.Print("after configfile");
 
     cfg.commandline(argc,argv);

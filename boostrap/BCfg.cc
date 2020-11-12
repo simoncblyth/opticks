@@ -23,10 +23,14 @@
 #include <sstream>
 #include <cstring>
 
+#include "BFile.hh"
 #include "BCfg.hh"
+#include "PLOG.hh"
 
 typedef std::vector<std::string>::const_iterator VSI ; 
 
+
+const plog::Severity BCfg::LEVEL = PLOG::EnvLevel("BCfg", "DEBUG"); 
 
 namespace po = boost::program_options;
 
@@ -155,8 +159,14 @@ void BCfg::dumpTree_(unsigned int depth)
 }
 
 
+/**
+BCfg::commandline
+-------------------
 
+Invoked by OpticksCfg subclass within Opticks::configure using commandline arguments
+collected in OPTICKS_LOG.
 
+**/
 
 void BCfg::commandline(int argc, char** argv)
 {
@@ -183,6 +193,16 @@ void BCfg::commandline(int argc, char** argv)
     }
 }
 
+/**
+BCfg::liveline
+---------------
+
+Recursive traversal of the BCfg tree of objects calling parse_liveline on the leaves.
+Note that umbrella BCfg objects are not parsed. Only the leaves that contain no
+other BCfg objects are parsed.
+
+**/
+
 void BCfg::liveline(const char* _line)
 {
     if(m_others.empty())
@@ -206,10 +226,12 @@ void BCfg::liveline(const char* _line)
             }
         } 
     }
-
 }
+
+
 void BCfg::configfile(const char* path)
 {
+    LOG(LEVEL) << "[" << path << "]" ; 
     if(m_others.empty())
     {
         std::vector<std::string> unrecognized = parse_configfile(path);
@@ -226,14 +248,16 @@ void BCfg::configfile(const char* path)
     }
 }
 
+/**
+BCfg::parse_liveline
+----------------------
 
+**/
 
 std::vector<std::string> BCfg::parse_liveline(const char* _line)
 {
    std::string line(_line);
 
-   if(m_verbose)
-   std::cout << "BCfg::parse_liveline [" << line << "]\n" ; 
 
    boost::char_separator<char> sep(" ");
    boost::tokenizer<boost::char_separator<char> > tok(line, sep);
@@ -241,6 +265,7 @@ std::vector<std::string> BCfg::parse_liveline(const char* _line)
    std::vector<std::string> tokens;
    std::copy(tok.begin(), tok.end(), std::back_inserter(tokens));
      
+   LOG(LEVEL) << "[" << line << "] " << tokens.size() ;  
    return parse_tokens(tokens);
 }
 
@@ -332,8 +357,13 @@ std::vector<std::string> BCfg::parse_tokens(std::vector<std::string>& tokens)
 
 
 
-std::vector<std::string> BCfg::parse_configfile(const char* path)
+std::vector<std::string> BCfg::parse_configfile(const char* path__)
 {
+    std::string path_ = BFile::FormPath(path__); 
+    const char* path = path_.c_str(); 
+    LOG(LEVEL) << "[" << path << "]" ; 
+ 
+
     std::vector<std::string> unrecognized ; 
     try {
         std::ifstream ifs(path);

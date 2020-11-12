@@ -80,6 +80,9 @@
 
 #include "PLOG.hh"
 
+
+const plog::Severity Composition::LEVEL = PLOG::EnvLevel("Composition", "DEBUG"); 
+
 const char* Composition::PREFIX = "composition" ;
 const char* Composition::getPrefix()
 {
@@ -768,14 +771,33 @@ void Composition::configureI(const char* name, std::vector<int> values )
     }
 }
 
+/**
+Composition::addConfig
+------------------------
+
+This is invoked from on high in OpticksHub::configure collecting the composition config objects.
+Instanciates the below list of BCfg subclasses and adds them to the argument cfg:
+
+1. CompositionCfg
+2. CameraCfg
+3. ViewCfg
+4. TrackballCfg
+5. ClipperCfg
+
+**/
+
 void Composition::addConfig(BCfg* cfg)
 {
+    LOG(LEVEL) << "[" ; 
     // hmm problematic with bookmarks that swap out Camera, View, ...
-    cfg->add(new CompositionCfg<Composition>("composition", this,          true));
-    cfg->add(new CameraCfg<Camera>(          "camera",      getCamera(),   true));
-    cfg->add(new ViewCfg<View>(              "view",        getView(),     true));
-    cfg->add(new TrackballCfg<Trackball>(    "trackball",   getTrackball(),true));
-    cfg->add(new ClipperCfg<Clipper>(        "clipper",     getClipper(),  true));
+
+    bool live = true ;  
+    cfg->add(new CompositionCfg<Composition>("composition", this,          live));
+    cfg->add(new CameraCfg<Camera>(          "camera",      getCamera(),   live));
+    cfg->add(new ViewCfg<View>(              "view",        getView(),     live));
+    cfg->add(new TrackballCfg<Trackball>(    "trackball",   getTrackball(),live));
+    cfg->add(new ClipperCfg<Clipper>(        "clipper",     getClipper(),  live));
+    LOG(LEVEL) << "]" ; 
 }
 
 

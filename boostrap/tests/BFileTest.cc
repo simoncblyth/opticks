@@ -68,6 +68,8 @@ void test_ResolveKey()
 
 
 
+
+
 void test_ExistsDir()
 {
 
@@ -198,6 +200,11 @@ void test_FormPath()
     ss.push_back("$OPTICKS_INSTALL_PREFIX/include/optickscore/OpticksPhoton.h");
     ss.push_back("$OPTICKS_INSTALL_PREFIX/externals/config/geant4.ini") ;
     ss.push_back("$OPTICKS_INSTALL_PREFIX/opticksdata/config/opticksdata.ini") ;
+
+    ss.push_back("$OPTICKS_INSTALL_PREFIX/include/OpticksCore/DemoCfgTest.cfg");
+    ss.push_back("$OPTICKS_PREFIX/include/OpticksCore/DemoCfgTest.cfg");
+    ss.push_back("$INSTALL_PREFIX/include/OpticksCore/DemoCfgTest.cfg");
+    ss.push_back("$PREFIX/include/OpticksCore/DemoCfgTest.cfg");
 
     ss.push_back("$OPTICKS_EVENT_BASE/evt/dayabay/cerenkov/1") ; 
 
@@ -551,14 +558,14 @@ int main(int argc, char** argv)
 {
    OPTICKS_LOG(argc, argv);
 
-   //BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
-   //rsc.Summary();
+   BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
+   rsc.Summary();
 
    //test_FindFile();
    //test_ExistsDir();
    //test_CreateDir();
    //test_ParentDir();
-   //test_FormPath();
+   test_FormPath();
    //test_Name_ParentDir();
    //test_ChangeExt();
 
@@ -594,7 +601,7 @@ int main(int argc, char** argv)
    //test_OPTICKS_USER_HOME(); 
 
    //test_CurrentDirectoryName(); 
-   test_ResolveScript(); 
+   //test_ResolveScript(); 
 
    return 0 ; 
 }

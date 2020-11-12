@@ -26,6 +26,8 @@
 
 #include <cstdio>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/tokenizer.hpp>
+
 
 #include "OPTICKS_LOG.hh"
 
@@ -448,6 +450,30 @@ void test_ctoi()
 }
 
 
+/**
+void test_tokenizer()
+{
+   const char* line = "red green blue" ; 
+
+   boost::char_separator<char> sep(" ");
+   boost::tokenizer<boost::char_separator<char> > tok(line, sep);
+
+   std::vector<std::string> tokens;
+   std::copy(tok.begin(), tok.end(), std::back_inserter(tokens));
+ 
+   for(unsigned i=0 ; i < tokens.size() ; i++)
+   {
+       std::cout 
+           << std::setw(5) << i 
+           << " : "
+           << tokens[i]
+           << std::endl 
+           ;
+   }
+}
+**/
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -478,8 +504,9 @@ int main(int argc, char** argv)
     test_WithoutEnding();
     test_GetField();
     test_ctoi();
-*/
     test_pair_split();
+*/
+//    test_tokenizer();
 
 
     return 0 ; 

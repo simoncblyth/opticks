@@ -226,7 +226,7 @@ NConfigurable* OpticksViz::getSceneConfigurable()
 OpticksViz::command
 ----------------------
 
-Commands currently only from InterpolatedView flightpaths
+Invoked from InterpolatedView::tick and also OpticksViz::commandline
 
 **/
 
@@ -246,6 +246,14 @@ void OpticksViz::command(const char* cmd)
     }
 
 }
+
+/**
+OpticksViz::commandline
+------------------------
+
+Invoked from OpticksViz::init with the --rendercmd commandline option 
+
+**/
 
 void OpticksViz::commandline(const char* cmdline)
 {

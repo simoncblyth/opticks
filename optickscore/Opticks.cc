@@ -899,7 +899,7 @@ const char* Opticks::getRenderMode() const
     const std::string& s = m_cfg->getRenderMode();
     return s.empty() ? NULL : s.c_str();
 }
-const char* Opticks::getRenderCmd() const 
+const char* Opticks::getRenderCmd() const    // --rendercmd
 {
     const std::string& s = m_cfg->getRenderCmd();
     return s.empty() ? NULL : s.c_str();
@@ -1811,6 +1811,18 @@ void Opticks::appendCacheMeta(const char* key, NMeta* obj)
     m_cachemeta->setObj(key, obj); 
 }
 
+/**
+Opticks::has_arg
+-----------------
+
+This works prior to Opticks::config via the args collected 
+into PLOG::instance by OPTICKS_LOG 
+
+**/
+bool Opticks::has_arg(const char* arg) const 
+{
+    return PLOG::instance ? PLOG::instance->has_arg(arg) : false ;
+}
 
 
 /**
@@ -1818,9 +1830,6 @@ Opticks::updateCacheMeta
 ---------------------------
 
 Invoked by Opticks::configure after initResource
-
-
-
 **/
 
 void Opticks::updateCacheMeta()  

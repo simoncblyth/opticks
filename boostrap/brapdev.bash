@@ -17,10 +17,8 @@
 ## limitations under the License.
 ##
 
-brapdev-rel(){      echo boostrap ; }
-brapdev-src(){      echo $(brapdev-rel)/bcfg.bash ; }
-brapdev-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(brapdev-src)} ; }
-brapdev-vi(){       vi $(brapdev-source) ; }
+brapdev-vi(){ vi $BASH_SOURCE ; }
+brapdev-env(){   olocal- ;  }
 brapdev-usage(){ cat << EOU
 
 Boost Bind Based Configuration
@@ -177,76 +175,6 @@ Requirements for listeners
 EOU
 }
 
-
-brapdev-sdir(){ echo $(opticks-home)/$(brapdev-rel) ; }
-brapdev-env(){      olocal- ; opticks- ;  }
-
-brapdev-idir(){ echo $(opticks-idir) ; }
-brapdev-bdir(){ echo $(opticks-bdir)/$(brapdev-rel) ; }
-
-brapdev-scd(){  cd $(brapdev-sdir); }
-brapdev-cd(){  cd $(brapdev-sdir); }
-
-brapdev-icd(){  cd $(brapdev-idir); }
-brapdev-bcd(){  cd $(brapdev-bdir); }
-
-brapdev-name(){ echo CfgTest ; }
-
-brapdev-wipe(){
-   local bdir=$(brapdev-bdir)
-   rm -rf $bdir
-}
-
-brapdev-txt(){ vi $(brapdev-sdir)/CMakeLists.txt ; }
-
-brapdev-make(){
-   local iwd=$PWD
-
-   brapdev-bcd
-   make $*
-
-   cd $iwd
-}
-
-brapdev-install(){
-   brapdev-make install
-}
-
-brapdev-bin(){ echo $(brapdev-idir)/bin/$(brapdev-name) ; }
-
-brapdev-export()
-{
-   echo -n
-}
-
-brapdev-run(){
-   local bin=$(brapdev-bin)
-   brapdev-export
-   $bin $*
-}
-
-brapdev-runq(){
-   local bin=$(brapdev-bin)
-   brapdev-export
-
-   local parms=""
-   local p
-   for p in "$@" ; do
-      [ "${p/ /}" == "$p" ] && parms="${parms} $p" || parms="${parms} \"${p}\""
-   done
-
-   cat << EOC  | sh 
-   $bin $parms
-EOC
-}
-
-
-brapdev--()
-{
-    brapdev-make clean
-    brapdev-make 
-    brapdev-install
-}
 
 
 

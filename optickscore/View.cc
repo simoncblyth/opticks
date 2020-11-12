@@ -38,7 +38,7 @@
 
 #include "PLOG.hh"
 
-
+const plog::Severity View::LEVEL = PLOG::EnvLevel("View", "DEBUG"); 
 
 const char* View::STANDARD_ = "STANDARD" ; 
 const char* View::FLIGHTPATH_ = "FLIGHTPATH" ; 
@@ -98,6 +98,12 @@ bool View::accepts(const char* name)
 void View::configure(const char* name, const char* value_)
 {
     std::string value(value_);
+
+    LOG(LEVEL) 
+        << " name [" << name << "]" 
+        << " value_ [" << value_ << "]"
+        ; 
+
     set(name, value);
 }
 
@@ -140,6 +146,12 @@ void View::configureS(const char* name, std::vector<std::string> values)
 {
     if(values.empty()) return ;
     std::string last = values.back();
+
+    LOG(LEVEL) 
+        << " name [" << name << "]" 
+        << " last [" << last << "]"
+        ; 
+
     set(name, last);
 }
 

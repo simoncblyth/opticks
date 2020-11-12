@@ -21,7 +21,7 @@
 
 #include <string>
 #include <vector>
-
+#include "plog/Severity.h"
 #include <glm/fwd.hpp>  
 
 
@@ -112,6 +112,7 @@ class OKCORE_API Composition : public NConfigurable {
    public:
       friend class GUI ; 
    public:
+      static const plog::Severity LEVEL ; 
       static const char* PREFIX ;
       const char* getPrefix();
    public:

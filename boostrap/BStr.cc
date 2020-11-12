@@ -449,9 +449,6 @@ bool BStr::Contains( const char* s_ , const char* q_, char delim )
 
 
 
-
-
-
 template<typename T> 
 unsigned BStr::Split(std::vector<T>& elem, const char* line, char delim )
 {

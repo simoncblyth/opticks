@@ -350,6 +350,8 @@ class OKCORE_API Opticks {
        // NMeta parameters 
        template <typename T> void set(const char* name, T value);
    public:
+       bool        has_arg(const char* arg) const  ; // via PLOG::instance
+
        void        updateCacheMeta() ; 
        void        appendCacheMeta(const char* key, NMeta* obj);
        void        saveCacheMeta() const ; 
@@ -401,7 +403,7 @@ class OKCORE_API Opticks {
    public:
        OpticksCfg<Opticks>* getCfg() const ;
        const char*          getRenderMode() const ;
-       const char*          getRenderCmd() const ;
+       const char*          getRenderCmd() const ;  // --rendercmd 
        const char*          getCSGSkipLV() const ;
 
        const char*          getLVSDName() const ;

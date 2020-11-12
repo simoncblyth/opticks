@@ -1580,7 +1580,7 @@ const std::string& OpticksCfg<Listener>::getRenderMode()
 }
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getRenderCmd()
+const std::string& OpticksCfg<Listener>::getRenderCmd() // --rendercmd
 {
     return m_rendercmd ;
 }

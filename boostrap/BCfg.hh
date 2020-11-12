@@ -23,6 +23,8 @@
 #include <vector>
 #include <cstdio>
 
+#include "plog/Severity.h"
+
 
 #ifdef __clang__
 #pragma GCC visibility push(default)
@@ -60,7 +62,8 @@ setter method as selected by the name.
 
 
 class BRAP_API BCfg {
-
+private:
+     static const plog::Severity LEVEL ; 
 public:
      void dumpTree(const char* msg="BCfg::dumpTree");
 private:

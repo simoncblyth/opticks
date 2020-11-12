@@ -387,11 +387,20 @@ std::string OpticksHub::desc() const
 }
 
 
+/**
+OpticksHub::configure
+----------------------
+
+Invoked from OpticksHub::init
+
+**/
+
 void OpticksHub::configure()
 {
     LOG(LEVEL) << "[" ; 
-    m_composition->addConfig(m_cfg); 
-    //m_cfg->dumpTree();
+    m_composition->addConfig(m_cfg);  // m_cfg collects the BCfg subclass objects such as ViewCfg,CameraCfg etc.. from Composition 
+
+    if(m_ok->has_arg("--dbgcfg")) m_cfg->dumpTree(); 
 
     int argc    = m_ok->getArgc();
     char** argv = m_ok->getArgv();

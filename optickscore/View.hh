@@ -23,6 +23,7 @@
 #include <vector>
 #include <string>
 #include <array>
+#include "plog/Severity.h"
 
 #include "NGLM.hpp"
 
@@ -41,7 +42,10 @@ View
 **/
 
 class OKCORE_API View : public NConfigurable {
+private:
+   static const plog::Severity LEVEL ;  
 public:
+
    //typedef enum { STANDARD, FLIGHTPATH, INTERPOLATED, ORBITAL, TRACK, NUM_VIEW_TYPE } View_t ; 
    // just the two for now
    typedef enum { STANDARD, FLIGHTPATH, NUM_VIEW_TYPE, INTERPOLATED, ORBITAL, TRACK } View_t ; 
