@@ -1,11 +1,13 @@
 #include <vector>
 #include <string>
-#include "SCtrl.hh"
+#include "Ctrl.hh"
 
-class Viz : public SCtrl 
+#define API  __attribute__ ((visibility ("default")))
+
+class API MockViz : public Ctrl 
 {
    public:
-       Viz(); 
+       MockViz(); 
        void command(const char* cmd); 
    private:
        std::vector<std::string> m_commands ; 

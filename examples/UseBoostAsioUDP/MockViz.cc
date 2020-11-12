@@ -1,15 +1,15 @@
 #include <iostream>
-#include "Viz.hh"
+#include "MockViz.hh"
 
-Viz::Viz()
+MockViz::MockViz()
 {
 }
 
-void Viz::command(const char* cmd)
+void MockViz::command(const char* cmd)
 {
     m_commands.push_back(cmd); 
     std::cout 
-         << "Viz::command " 
+         << "MockViz::command " 
          << m_commands.size() 
          << " [" << cmd << "]" 
          << std::endl 

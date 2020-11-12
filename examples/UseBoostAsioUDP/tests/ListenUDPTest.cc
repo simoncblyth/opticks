@@ -13,18 +13,20 @@ For info on Boost ASIO see env-;basio-
 #include <iostream>
 #include <boost/asio.hpp>
 
-#include "Viz.hh"
+#include "MockViz.hh"
 #include "ListenUDP.hh"
+
+template class ListenUDP<MockViz>;
 
 
 int main(int argc, char** argv)
 {
     std::cout << argv[0] << std::endl ; 
 
-    Viz vz ; 
+    MockViz viz ; 
 
     boost::asio::io_context io ; 
-    ListenUDP listen(io, &vz) ; 
+    ListenUDP<MockViz> listen(io, &viz) ; 
 
     unsigned count = 0 ; 
     while(1) {

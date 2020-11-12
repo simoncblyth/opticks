@@ -1,27 +1,46 @@
 #!/bin/bash -l
 
-boost-
-
 exe=/tmp/$USER/ListenUDPTest
-mkdir -p $(dirname $exe)
 
-g++ -o $exe \
+build-manual()
+{
+   boost-
+   local exe=$1
+   mkdir -p $(dirname $exe)
+   g++ -o $exe \
     -I. \
     -I$(boost-prefix)/include \
      ListenUDP.cc \
-     ListenUDPTest.cc \
-     Viz.cc \
+     MockViz.cc \
+     tests/ListenUDPTest.cc \
     -L$(boost-prefix)/lib \
-    -lboost_system -lboost_thread && $exe
+    -lboost_system -lboost_thread 
+}
+
+
+build-om()
+{
+    local sdir=$(pwd)
+    local bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
+    rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+
+    om-
+    om-cmake $sdir  
+    make
+    make install   
+}
+
+
+build-om && which ListenUDPTest && ListenUDPTest
+#build-manual $exe && $exe
 
 
 usage(){ cat << EOU
-
-Send udp messages to this with eg::
+Send udp messages to the ListenUDPTest server with eg::
 
    UDP_PORT=15001 udp.py hello from udp.py 
 
-
+Using ~/env/bin/udp.py 
 
 EOU
 }
