@@ -55,11 +55,11 @@ set(TEST_SOURCES
 
 
 
-if(BoostAsio_FOUND)  
+#if(BoostAsio_FOUND)  
    list(APPEND TEST_SOURCES 
         BListenUDPTest.cc     
    )
-endif()
+#endif()
 
 
 

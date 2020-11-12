@@ -89,6 +89,7 @@
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
 
+
 const plog::Severity OpticksViz::LEVEL = PLOG::EnvLevel("OpticksViz", "debug") ; 
 
 
@@ -104,6 +105,10 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     SCtrl(),
     m_preinit(preinit()), 
     m_log(new SLog("OpticksViz::OpticksViz", "", LEVEL)),
+#ifdef WITH_BOOST_ASIO
+    m_io_context(),
+    m_listen_udp(new BListenUDP<OpticksViz>(m_io_context,this)), 
+#endif
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_run(m_ok->getRun()),
@@ -227,12 +232,19 @@ Commands currently only from InterpolatedView flightpaths
 
 void OpticksViz::command(const char* cmd)
 {
-    assert( strlen(cmd) == 2 ); 
     LOG(LEVEL) << cmd ; 
+    if(strlen(cmd) == 2 )
+    { 
+        // m_hub->command(cmd); // hub always redirects to composition anyhow
+        m_composition->command(cmd) ;    
+        m_scene->command(cmd);  // some commands need explicit scene updating 
+    }
+    else
+    {
+        std::cout << "ignoring command " << cmd ; 
+        LOG(error) << "ignoring command " << cmd ;  
+    }
 
-    // m_hub->command(cmd); // hub always redirects to composition anyhow
-    m_composition->command(cmd) ;    
-    m_scene->command(cmd);  // some commands need explicit scene updating 
 }
 
 void OpticksViz::commandline(const char* cmdline)
@@ -558,6 +570,10 @@ void OpticksViz::renderLoop()
 #ifdef OPTICKS_NPYSERVER
         if(m_server) m_server->poll_one();  
 #endif
+#ifdef WITH_BOOST_ASIO
+        m_io_context.poll_one(); 
+#endif
+
         count = m_composition->tick();
 
         if(m_launcher)

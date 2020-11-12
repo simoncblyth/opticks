@@ -22,17 +22,23 @@ work from within handlers.
 **/
 
 #include <iostream>
-#include <boost/asio.hpp>
 
+#include "PLOG.hh"
 #include "SSys.hh"
 #include "SMockViz.hh"
-#include "BListenUDP.hh"
+#include "OPTICKS_LOG.hh"
 
+#ifdef WITH_BOOST_ASIO
+#include <boost/asio.hpp>
+#include "BListenUDP.hh"
 template class BListenUDP<SMockViz>;
+#endif
 
 int main(int argc, char** argv)
 {
-    std::cout << argv[0] << std::endl ; 
+    OPTICKS_LOG(argc, argv); 
+
+    LOG(info) << argv[0] ; 
 
     if(SSys::IsCTestRunning())
     {
@@ -42,8 +48,14 @@ int main(int argc, char** argv)
 
     SMockViz viz ; 
 
+
+#ifdef WITH_BOOST_ASIO
     boost::asio::io_context io ; 
     BListenUDP<SMockViz> listen(io, &viz) ; 
+#else
+    LOG(error) << "This test does nothing useful without boost::asio : try: boost-;boost-rebuild-with-asio " ; 
+    return 0 ; 
+#endif
 
     unsigned count = 0 ; 
     unsigned maxcount = 0x1 << 31 ; 
@@ -51,7 +63,9 @@ int main(int argc, char** argv)
     while(count < maxcount) {
        if( count % 1000000 == 0) std::cout << count << std::endl ; 
        count++ ; 
+#ifdef WITH_BOOST_ASIO
        io.poll_one();   // handlers observed to run on main thread 
+#endif
     }
 
     return 0;

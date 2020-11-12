@@ -169,6 +169,9 @@ if(BoostAsio_FOUND)
     list(APPEND HEADERS BListenUDP.hh)
 endif()
 
+
+
+
 # appends to flags for specific files : trying to quell warnings from underlying boost code
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
    set_source_files_properties(BLog.cc      PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
@@ -183,6 +186,10 @@ target_include_directories( ${name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/inc>
 )
 target_compile_definitions( ${name} PUBLIC OPTICKS_BRAP )
+
+if(BoostAsio_FOUND)
+target_compile_definitions(${name} PUBLIC WITH_BOOST_ASIO)  
+endif()
 
 
 target_link_libraries( ${name} PUBLIC 

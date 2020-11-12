@@ -6,6 +6,8 @@ include(OpticksBuildOptions)
 find_package(ImGui       REQUIRED MODULE)
 find_package(OpticksGLEW REQUIRED MODULE)
 
+find_package(BoostAsio MODULE)
+
 
 set(OpticksGLFW_ALT ON)
 set(OpticksGLFW_VERBOSE ON)
@@ -119,6 +121,11 @@ target_include_directories( ${name} PUBLIC
 )
 
 target_compile_definitions( ${name} PUBLIC GUI_ OPTICKS_OGLRAP ) 
+
+if(BoostAsio_FOUND)
+target_compile_definitions(${name} PUBLIC WITH_BOOST_ASIO)  
+endif()
+
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(DIRECTORY gl/ DESTINATION gl)

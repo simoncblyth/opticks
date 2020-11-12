@@ -58,9 +58,16 @@ class Interactor ;
 class Photons ; 
 class GUI ; 
 
+
 #include "plog/Severity.h"
 #include "OGLRAP_API_EXPORT.hh"
 #include "SCtrl.hh"
+
+#ifdef WITH_BOOST_ASIO
+#include <boost/asio.hpp>
+template <typename T> class BListenUDP ;
+#endif
+
 
 
 /**
@@ -120,6 +127,10 @@ class OGLRAP_API OpticksViz : public SCtrl  {
     private:
          int           m_preinit ; 
          SLog*         m_log ; 
+#ifdef WITH_BOOST_ASIO
+         boost::asio::io_context m_io_context ;    
+         BListenUDP<OpticksViz>*  m_listen_udp ; 
+#endif
          OpticksHub*   m_hub ; 
          Opticks*      m_ok ; 
          OpticksRun*   m_run ; 
@@ -155,6 +166,11 @@ class OGLRAP_API OpticksViz : public SCtrl  {
 
 };
 
+
+#ifdef WITH_BOOST_ASIO
+#include "BListenUDP.hh"
+template class BListenUDP<OpticksViz>;
+#endif
 
 
 
