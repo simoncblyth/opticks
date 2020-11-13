@@ -29,13 +29,13 @@ template <class Delegate>
 class numpyserver {
 
    boost::asio::io_service                              m_io_service ;
-   boost::scoped_ptr<boost::asio::io_service::work>     m_io_service_work ;
+   boost::scoped_ptr<boost::asio::io_service::work>     m_io_service_work ;  
    net_manager<Delegate>                                m_net_manager ; 
 
 public:
    numpyserver(Delegate* delegate)  
       :
-        m_io_service_work(new boost::asio::io_service::work(m_io_service)),
+        m_io_service_work(new boost::asio::io_service::work(m_io_service)),    // keeps context alive even when nothing to do 
         m_net_manager(delegate, m_io_service)
    {
 
@@ -109,10 +109,6 @@ void numpyserver<Delegate>::response(std::vector<int>& shape,std::vector<float>&
 {
     m_net_manager.response(shape, data, metadata);
 }
-
-
-
-
 
 
 

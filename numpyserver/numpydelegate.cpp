@@ -92,6 +92,16 @@ std::string& numpydelegate::getZMQBackend()
 }
 
 
+/**
+numpydelegate::liveConnect
+----------------------------
+
+Canonically invoked from OpticksHub::configureServer
+with the umbrella m_cfg.
+
+
+**/
+
 void numpydelegate::liveConnect(Cfg* cfg)
 {
     if( cfg->containsOthers())

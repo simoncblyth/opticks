@@ -17,8 +17,7 @@
 ## limitations under the License.
 ##
 
-numpyserver-src(){      echo numpyserver/numpyserver.bash ; }
-numpyserver-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(numpyserver-src)} ; }
+numpyserver-source(){   echo $BASH_SOURCE ; }
 numpyserver-vi(){       vi $(numpyserver-source) ; }
 numpyserver-env(){      olocal- ; }
 numpyserver-usage(){ cat << EOU

@@ -35,12 +35,21 @@
 #include "dumpbuffer.hpp"
 #endif
 
-// following /usr/local/env/network/asiozmq/example/rrworker.cpp
+/**
+npy_server
+------------
 
+Unfortunately asio-zmq project seems dead and its 
+not compiling with current asio, so need to find
+alternative or drop ZMQ ?
+
+Following /usr/local/env/network/asiozmq/example/rrworker.cpp
+
+**/
 
 template <class Delegate>
-class npy_server : public boost::enable_shared_from_this<npy_server<Delegate>>  {
-
+class npy_server : public boost::enable_shared_from_this<npy_server<Delegate>>  
+{
     boost::asio::zmq::socket             m_socket;
     std::vector<boost::asio::zmq::frame> m_buffer  ;
     Delegate*                            m_delegate ;
@@ -60,35 +69,11 @@ public:
                 Delegate*                   delegate,
                 boost::asio::io_service&    delegate_io_service, 
                 boost::asio::zmq::context&  zmq_ctx
-              )
-                : 
-                   m_socket(io_service_, zmq_ctx, ZMQ_REP), 
-                   m_buffer(),
-                   m_delegate(delegate),
-                   m_delegate_io_service(delegate_io_service),
-                   m_echo(delegate->getNPYEcho())
-    {
-
-        std::string& backend = delegate->getZMQBackend();
-
-#if VERBOSE
-        std::cout 
-             << std::setw(20) << boost::this_thread::get_id() 
-             << " npy_server::npy_server " 
-             << " backend " << backend
-             << std::endl;
-#endif
-
-        m_socket.connect(backend.c_str());   
-        m_socket.async_read_message(
-                     std::back_inserter(m_buffer),
-                     std::bind(&npy_server::handle_request, this, std::placeholders::_1)
-                 );
-    }
+              );
 
     void response(std::vector<int> shape, std::vector<float> data,  std::string metadata );
-
 private:
+    void init(); 
     void handle_request(boost::system::error_code const& ec);
     void echo() ;
     void decode_buffer();  // m_buffer -> m_metadata, m_shape and m_data 
@@ -116,10 +101,62 @@ const char npy_server<Delegate>::JSON_MAGIC = '{' ;
 
 
 template <typename Delegate>
+npy_server<Delegate>::npy_server(
+    boost::asio::io_service&    io_service_, 
+    Delegate*                   delegate,
+    boost::asio::io_service&    delegate_io_service, 
+    boost::asio::zmq::context&  zmq_ctx
+    )
+    : 
+    m_socket(io_service_, zmq_ctx, ZMQ_REP), 
+    m_buffer(),
+    m_delegate(delegate),
+    m_delegate_io_service(delegate_io_service),
+    m_echo(delegate->getNPYEcho())
+{
+    init(); 
+}
+
+template <typename Delegate>
+void npy_server<Delegate>::init()
+{
+    std::string& backend = delegate->getZMQBackend();
+#if VERBOSE
+    std::cout 
+        << std::setw(20) << boost::this_thread::get_id() 
+        << " npy_server::npy_server " 
+        << " backend " << backend
+        << std::endl;
+#endif
+
+    m_socket.connect(backend.c_str());   
+    m_socket.async_read_message(
+                     std::back_inserter(m_buffer),
+                     std::bind(&npy_server::handle_request, this, std::placeholders::_1)
+                 );
+}
+
+
+template <typename Delegate>
 void npy_server<Delegate>::sleep(unsigned int secs)
 {
     std::this_thread::sleep_for(std::chrono::seconds(secs));
 }
+
+/**
+npy_server::handle_request
+---------------------------
+
+Gets called immediately after a message arrives 
+that populates m_buffer. This decodes the buffer into 
+m_shape, m_data and m_metadata and then invokes the 
+Delegates on_npy method with the data.
+
+ZMQ demands a reply when using REQ/REP sockets 
+so in non-echo mode the delegate must respond via "response" 
+to avoid dropping the ZMQ REQ-REP ball
+
+**/
 
 template <typename Delegate>
 void npy_server<Delegate>::handle_request(boost::system::error_code const& ec)
@@ -147,28 +184,27 @@ void npy_server<Delegate>::handle_request(boost::system::error_code const& ec)
                               ));
 
 
-
-    // ZMQ demands a reply when using REQ/REP sockets 
-    // so in non-echo mode the delegate must respond via "response" 
-    // to avoid dropping the ZMQ REQ-REP ball
-    //
-
     if(m_echo)
     {
-        echo();
+        echo();  // clears m_buffer
     }
     else
     {
     }
-
-
 }
 
+/**
+npy_server::echo
+-----------------
+
+Writes m_buffer to socket then clears m_buffer and 
+tees up async read into m_buffer.
+
+**/
 
 template <typename Delegate>
 void npy_server<Delegate>::echo()
 {
-
     m_socket.write_message(std::begin(m_buffer), std::end(m_buffer));
 
     // async call to handle_request when any subsequent requests arrive
@@ -180,6 +216,14 @@ void npy_server<Delegate>::echo()
 
 }
 
+/**
+npy_server::response
+---------------------
+
+Prepares zmq frames and writes them to the zmq socket 
+then clears m_buffer and tees up an async read into the m_buffer.
+
+**/
 
 template <typename Delegate>
 void npy_server<Delegate>::response(std::vector<int> shape,std::vector<float> data,  std::string metadata )
@@ -206,8 +250,13 @@ void npy_server<Delegate>::response(std::vector<int> shape,std::vector<float> da
 
 }
 
+/**
+npy_server::decode_buffer
+--------------------------
 
+Polulates m_shape,m_data and m_metadata by deserializing the m_buffer 
 
+**/
 
 template <typename Delegate>
 void npy_server<Delegate>::decode_buffer()
@@ -216,9 +265,8 @@ void npy_server<Delegate>::decode_buffer()
     m_shape.clear();
     m_data.clear();
 
-    // populates m_metadata/m_shape/m_data
-    decode_frame(JSON_MAGIC);
-    decode_frame(NPY_MAGIC);
+    decode_frame(JSON_MAGIC);  // m_buffer -> m_metadata
+    decode_frame(NPY_MAGIC);   // m_buffer -> m_shape,m_data
 
 #if VERBOSE
     std::cout 
@@ -229,8 +277,6 @@ void npy_server<Delegate>::decode_buffer()
              << " data size " << m_data.size() 
              << std::endl;
 #endif
-
-
 }
 
 template <typename Delegate>
@@ -277,9 +323,13 @@ void npy_server<Delegate>::decode_buffer_roundtrip_test()
 
 
 
+/**
+npy_server::make_frames
+-------------------------
 
+Serializes into two zmq frames, one with NPY array including its header and the other for string metadata.
 
-
+**/
 
 template <typename Delegate>
 std::vector<boost::asio::zmq::frame> npy_server<Delegate>::make_frames(std::vector<int> shape, std::vector<float> data, std::string metadata)
@@ -316,7 +366,19 @@ std::vector<boost::asio::zmq::frame> npy_server<Delegate>::make_frames(std::vect
 }
 
 
+/**
+npy_server::decode_frame
+--------------------------
 
+Loops over m_buffer zmq frames where the first 
+byte matches the wanted magic deserializes the 
+frame into m_metadata for json strings or m_shape, m_data 
+for numpy arrays.
+
+Note this does not depend on order of the frames.
+Last frame of each type wins, but only expecting one of each.
+
+**/
 
 template <typename Delegate>
 void npy_server<Delegate>::decode_frame(char wanted)
@@ -342,18 +404,24 @@ void npy_server<Delegate>::decode_frame(char wanted)
                       break;
             }
         } 
-        // last frame of each type wins, but only expecting one of each  
     }
 }
 
 
+/**
+npy_server::dump
+------------------
+
+Dumps a vector of zmq frames by peeking at first 
+byte to distinguish json metadata from NumPy arrays.
+
+**/
 
 template <typename Delegate>
 void npy_server<Delegate>::dump()
 {
     dump(m_buffer); 
 }
- 
 
 template <typename Delegate>
 void npy_server<Delegate>::dump(std::vector<boost::asio::zmq::frame>& buffer)
@@ -383,6 +451,14 @@ void npy_server<Delegate>::dump(std::vector<boost::asio::zmq::frame>& buffer)
     }
 }
 
+/**
+npy_server::dump_npy
+----------------------
+
+Deserializes bytes into shape and float data vectors
+assuming the bytes hold a numpy array.
+
+**/
 
 template <typename Delegate>
 void npy_server<Delegate>::dump_npy( char* bytes, size_t size )
@@ -405,7 +481,6 @@ void npy_server<Delegate>::dump_npy( char* bytes, size_t size )
     printf("\n itemsize %d fullsize %d nitems %d \n", itemsize, fullsize, nitems);
     assert(fullsize == data.size());
 
-
     for(size_t f=0 ; f<data.size(); ++f)
     {
          if(f < itemsize*3 || f >= (nitems - 3)*itemsize )
@@ -418,6 +493,5 @@ void npy_server<Delegate>::dump_npy( char* bytes, size_t size )
     }
 
 }
-
 
 
