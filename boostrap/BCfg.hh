@@ -19,12 +19,28 @@
 
 #pragma once
 
+
+/**
+BCfg
+======
+
+Listener classes must have methods::
+
+   void configureF(const char* name, std::vector<float> values);
+   void configureI(const char* name, std::vector<int> values);
+   void configureS(const char* name, std::vector<std::string> values);
+ 
+which are called whenever the option parsing methods are called. 
+Typically the last value in the vector should be used to call the Listeners 
+setter method as selected by the name.
+
+**/
+
 #include <string>
 #include <vector>
 #include <cstdio>
 
 #include "plog/Severity.h"
-
 
 #ifdef __clang__
 #pragma GCC visibility push(default)
@@ -40,17 +56,7 @@
 #pragma GCC visibility pop
 #endif
 
-/*
-Listener classes need to provide a methods::
 
-   void configureF(const char* name, std::vector<float> values);
-   void configureI(const char* name, std::vector<int> values);
-   void configureS(const char* name, std::vector<std::string> values);
- 
-which is called whenever the option parsing methods are called. 
-Typically the last value in the vector should be used to call the Listeners 
-setter method as selected by the name.
-*/
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
@@ -74,6 +80,7 @@ protected:
     boost::program_options::options_description m_desc ; 
 
     // binding to overloaded methods is problematic : so spell it out 
+    // these templated methods are implemented below in this header
 
     template <class Listener>
     void addOptionF(Listener* listener, const char* name, const char* description);
@@ -107,10 +114,10 @@ public:
     const std::string& getCommandLine(); 
     virtual void commandline(int argc, char** argv);
     void liveline(const char* line);
-    void configfile(const char* path);
+    void configfile(const char* path) ;
 
     std::vector<std::string> parse_commandline(int argc, char** argv, bool verbose=false);
-    std::vector<std::string> parse_configfile(const char* path);
+    std::vector<std::string> parse_configfile(const char* path) ;
     std::vector<std::string> parse_liveline(const char* line);
     std::vector<std::string> parse_tokens(std::vector<std::string>& tokens);
 
@@ -135,7 +142,16 @@ private:
 };
 
 
+/**
+BCfg::addOptionF BCfg::addOptionI BCfg::addOptionS
+----------------------------------------------------
 
+These methods add the options the boost program_options m_desc 
+and sets up notifications. When boost program_options parses a commandline element 
+the corresponding listener is notified via the configureF/configureI/configureS 
+methods setup via boost::bind.
+
+**/
 
 template <class Listener>
 inline void BCfg::addOptionF(Listener* listener, const char* name, const char* description )

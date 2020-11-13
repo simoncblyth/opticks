@@ -48,7 +48,7 @@ set(TEST_SOURCES
     OpticksShapeTest.cc
 
     SphereOfTransformsTest.cc
-    DemoCfgTest.cc
+    CfgTest.cc
 )
 
 

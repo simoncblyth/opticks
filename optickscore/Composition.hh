@@ -146,6 +146,7 @@ class OKCORE_API Composition : public NConfigurable {
       static const glm::vec3 Z ; 
   public:
       Composition(Opticks* ok);
+      Opticks* getOpticks() const ; 
       void addConstituentConfigurables(NState* state);
       virtual ~Composition();
    public:

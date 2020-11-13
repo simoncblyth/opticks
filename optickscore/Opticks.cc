@@ -2415,8 +2415,7 @@ void Opticks::configure()
 
     dumpArgs("Opticks::configure");  
 
-
-    m_cfg->commandline(m_argc, m_argv);
+    m_cfg->commandline(m_argc, m_argv);   // see 
 
     checkOptionValidity();
 

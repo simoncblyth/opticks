@@ -201,7 +201,7 @@ OpticksHub::OpticksHub(Opticks* ok)
     m_delegate(NULL),
     m_server(NULL)
 #endif
-    m_cfg(new BCfg("umbrella", false)),
+    m_umbrella_cfg(new BCfg("umbrella", false)),
     m_fcfg(m_ok->getCfg()),
     m_state(NULL),
     m_lookup(new NLookup()),
@@ -398,16 +398,16 @@ Invoked from OpticksHub::init
 void OpticksHub::configure()
 {
     LOG(LEVEL) << "[" ; 
-    m_composition->addConfig(m_cfg);  // m_cfg collects the BCfg subclass objects such as ViewCfg,CameraCfg etc.. from Composition 
+    m_composition->addConfig(m_umbrella_cfg);  // m_umbrella_cfg collects the BCfg subclass objects such as ViewCfg,CameraCfg etc.. from Composition 
 
-    if(m_ok->has_arg("--dbgcfg")) m_cfg->dumpTree(); 
+    if(m_ok->has_arg("--dbgcfg")) m_umbrella_cfg->dumpTree(); 
 
     int argc    = m_ok->getArgc();
     char** argv = m_ok->getArgv();
 
     LOG(debug) << "argv0 " << argv[0] ; 
 
-    m_cfg->commandline(argc, argv);
+    m_umbrella_cfg->commandline(argc, argv);
     m_ok->configure();        // <--- dont like 
 
     if(m_fcfg->hasError())
@@ -437,7 +437,7 @@ void OpticksHub::configure()
 
 
     if(hasOpt("idpath")) std::cout << m_ok->getIdPath() << std::endl ;
-    if(hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
+    if(hasOpt("help"))   std::cout << m_umbrella_cfg->getDesc()     << std::endl ;
     if(hasOpt("help|version|idpath"))
     {
         m_ok->setExit(true);
@@ -469,7 +469,7 @@ void OpticksHub::configureServer()
     if(!hasOpt("nonet"))
     {
       // MAYBE liveConnect should happen in initialization, not here now that event creation happens latter 
-        m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
+        m_delegate->liveConnect(m_umbrella_cfg); // hookup live config via UDP messages
 
         try { 
             m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
@@ -738,7 +738,7 @@ bool OpticksHub::isCompute()
 }
 std::string OpticksHub::getCfgString()
 {
-    return m_cfg->getDescString();
+    return m_umbrella_cfg->getDescString();
 }
 OpticksCfg<Opticks>* OpticksHub::getCfg()
 {
@@ -831,9 +831,14 @@ OpticksRun* OpticksHub::getRun()
 
 
 
+BCfg* OpticksHub::getUmbrellaCfg() const 
+{
+    return m_umbrella_cfg ; 
+}
+
 void OpticksHub::add(BCfg* cfg)
 {
-    m_cfg->add(cfg); 
+    m_umbrella_cfg->add(cfg); 
 }
 
 

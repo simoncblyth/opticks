@@ -34,7 +34,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity Camera::LEVEL = debug ; 
+const plog::Severity Camera::LEVEL = PLOG::EnvLevel("Camera", "DEBUG") ; 
 
 
 // Unexplained interference between plog and Camera..
@@ -88,8 +88,8 @@ std::string Camera::get(const char* name)
 {
     float v(0.f) ; 
 
-    if(     strcmp(name,NEAR_)==0)     v = getNear();
-    else if(strcmp(name,FAR_)== 0 )    v = getFar();
+    if(     strcmp(name,NEAR_)==0)    v = getNear();
+    else if(strcmp(name,FAR_)== 0 )   v = getFar();
     else if(strcmp(name,ZOOM)== 0 )   v = getZoom();
     else if(strcmp(name,SCALE)== 0 )  v = getScale();
     else
@@ -102,8 +102,8 @@ void Camera::set(const char* name, std::string& s)
 {
     float v = gfloat_(s); 
 
-    if(     strcmp(name,NEAR_)==0)    setNear(v);
-    else if(strcmp(name,FAR_)== 0 )   setFar(v);
+    if(     strcmp(name,NEAR_)==0)   setNear(v);
+    else if(strcmp(name,FAR_)== 0 )  setFar(v);
     else if(strcmp(name,ZOOM)== 0 )  setZoom(v);
     else if(strcmp(name,SCALE)== 0 ) setScale(v);
     else
@@ -119,19 +119,14 @@ void Camera::configure(const char* name, const char* val_)
 
 void Camera::configure(const char* name, float value)
 {
-    if( strcmp(name, ZOOM) ==  0)        setZoom(value);
-    else if( strcmp(name, SCALE) ==  0)  setScale(value);
-    else if( strcmp(name, NEAR_) ==  0)  setNear(value);
-    else if( strcmp(name, FAR_) ==  0)   setFar(value);
-    else if( strcmp(name, TYPE) ==  0)   setType(unsigned(value));
-    else
-        printf("Camera::configure ignoring unknown parameter %s : %10.3f \n", name, value); 
+    if(       strcmp(name, ZOOM)  ==  0)  setZoom(value);
+    else if( strcmp(name,  SCALE) ==  0)  setScale(value);
+    else if( strcmp(name,  NEAR_) ==  0)  setNear(value);
+    else if( strcmp(name,  FAR_)  ==  0)  setFar(value);
+    else if( strcmp(name,  TYPE)  ==  0)  setType(unsigned(value));
+    else LOG(error) << " ignoring unknown parameter " << name << " : " << value ; 
 }
  
-
-
-
-
 
 void Camera::configureS(const char* , std::vector<std::string> )
 {
@@ -144,6 +139,7 @@ void Camera::configureI(const char* name, std::vector<int> /*values*/)
 
 void Camera::configureF(const char* name, std::vector<float> values)
 {
+
      if(values.empty())
      {
          printf("Camera::parameter_set %s no values \n", name);
@@ -151,6 +147,7 @@ void Camera::configureF(const char* name, std::vector<float> values)
      else         
      {
          float vlast = values.back() ;
+         LOG(LEVEL) << name << " : " << vlast ; 
 
 #ifdef VERBOSE
          LOG(info) << "Camera::configureF"
@@ -170,10 +167,10 @@ void Camera::configureF(const char* name, std::vector<float> values)
 
 
 Camera::Camera(int width, int height, float basis ) 
-       :
-         m_zoom(1.0f),
-         m_type(0u),
-         m_changed(true)
+    :
+    m_zoom(1.0f),
+    m_type(0u),
+    m_changed(true)
 {
     bool internal = true ; 
     setSize(width, height, internal);

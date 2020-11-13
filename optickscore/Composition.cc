@@ -224,6 +224,11 @@ Composition::Composition(Opticks* ok)
 }
 
 
+Opticks* Composition::getOpticks() const 
+{
+   return m_ok ;  
+}
+
 void Composition::setFramePosition(const glm::uvec4& position)
 {
     m_frame_position = position ; 

@@ -107,9 +107,10 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     m_log(new SLog("OpticksViz::OpticksViz", "", LEVEL)),
 #ifdef WITH_BOOST_ASIO
     m_io_context(),
-    m_listen_udp(new BListenUDP<OpticksViz>(m_io_context,this)), 
+    m_listen_udp(new BListenUDP<OpticksViz>(m_io_context,this)),   // UDP messages -> ::command calls to this
 #endif
     m_hub(hub),
+    m_umbrella_cfg(hub->getUmbrellaCfg()),
     m_ok(hub->getOpticks()),
     m_run(m_ok->getRun()),
     m_ggb(m_hub->getGGeoBase()),
@@ -241,8 +242,9 @@ void OpticksViz::command(const char* cmd)
     }
     else
     {
-        std::cout << "ignoring command " << cmd ; 
-        LOG(error) << "ignoring command " << cmd ;  
+        LOG(error) << "passing command to umbrella_cfg.liveline " << cmd ;  
+        m_umbrella_cfg->liveline(cmd); 
+
     }
 
 }

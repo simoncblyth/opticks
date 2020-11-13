@@ -20,7 +20,11 @@
 #pragma once
 
 
-/*
+/**
+
+Camera
+========
+
 
 Perspective Projection
 -------------------------
@@ -115,7 +119,7 @@ zoom defined as apparent size of an object relative to the size for a 90 degree 
               + . . . +
                     zoom~2
 
-*/
+**/
 
 
 

@@ -146,6 +146,7 @@ class OKGEO_API OpticksHub : public SCtrl {
        void setupTestGeometry(); 
    public:
        void add(BCfg* cfg);
+       BCfg* getUmbrellaCfg() const ; 
    public:
        bool         hasOpt(const char* name);
        bool         isCompute();
@@ -246,7 +247,7 @@ class OKGEO_API OpticksHub : public SCtrl {
        numpydelegate*              m_delegate ; 
        numpyserver<numpydelegate>* m_server ;
 #endif
-       BCfg*                m_cfg ;
+       BCfg*                m_umbrella_cfg ;
        OpticksCfg<Opticks>* m_fcfg ;   
        NState*              m_state ; 
        NLookup*             m_lookup ; 

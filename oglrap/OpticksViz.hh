@@ -24,6 +24,8 @@ class SLog ;
 class SRenderer ; 
 class SLauncher ; 
 
+class BCfg ; 
+
 // npy-
 template <typename T> class NPY ; 
 
@@ -132,6 +134,7 @@ class OGLRAP_API OpticksViz : public SCtrl  {
          BListenUDP<OpticksViz>*  m_listen_udp ; 
 #endif
          OpticksHub*   m_hub ; 
+         BCfg*         m_umbrella_cfg ; 
          Opticks*      m_ok ; 
          OpticksRun*   m_run ; 
          GGeoBase*     m_ggb ; 

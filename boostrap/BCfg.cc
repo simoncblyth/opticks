@@ -170,8 +170,7 @@ collected in OPTICKS_LOG.
 
 void BCfg::commandline(int argc, char** argv)
 {
-    if(m_verbose)
-    std::cout << "BCfg::commandline " << m_name << std::endl ; 
+    LOG(LEVEL) << "[" << m_name ; 
 
     std::stringstream ss ; 
     for(int i=1 ; i < argc ; ++i ) ss << argv[i] << " " ;
@@ -191,6 +190,7 @@ void BCfg::commandline(int argc, char** argv)
             other->commandline(argc, argv);
         } 
     }
+    LOG(LEVEL) << "]" << m_name ; 
 }
 
 /**
@@ -209,9 +209,9 @@ void BCfg::liveline(const char* _line)
     {
         std::vector<std::string> unrecognized = parse_liveline(_line);
 
+        LOG(LEVEL) << _line ; 
         if(m_verbose)
         {
-            printf("BCfg::liveline %s \n", _line);
             dump(unrecognized, "BCfg::liveline unrecognized "); 
         }
     }
@@ -229,7 +229,7 @@ void BCfg::liveline(const char* _line)
 }
 
 
-void BCfg::configfile(const char* path)
+void BCfg::configfile(const char* path) 
 {
     LOG(LEVEL) << "[" << path << "]" ; 
     if(m_others.empty())
@@ -357,7 +357,7 @@ std::vector<std::string> BCfg::parse_tokens(std::vector<std::string>& tokens)
 
 
 
-std::vector<std::string> BCfg::parse_configfile(const char* path__)
+std::vector<std::string> BCfg::parse_configfile(const char* path__) 
 {
     std::string path_ = BFile::FormPath(path__); 
     const char* path = path_.c_str(); 
@@ -408,7 +408,7 @@ void BCfg::dump(const char* msg)
 
 void BCfg::dump(std::vector<std::string>& ss, const char* msg )
 {
-   std::cout << msg << " vec with " << ss.size() << " strings : " ; 
+   LOG(info) << msg << " vec with " << ss.size() << " strings : " ; 
    for(VSI it=ss.begin() ; it != ss.end() ; it++) std::cout << "[" << *it << "]" ; 
    std::cout << std::endl ; 
 }

@@ -200,7 +200,7 @@ add_custom_target(PythonGS ALL DEPENDS ${IGS} )
 
 set(CCFL ${CMAKE_CURRENT_SOURCE_DIR}/OpticksFlags.cc)
 set(PYJS ${CMAKE_CURRENT_BINARY_DIR}/OpticksFlags_Abbrev.json)
-set(CFGS  ${CMAKE_CURRENT_SOURCE_DIR}/DemoCfgTest.cfg)
+set(CFGS  ${CMAKE_CURRENT_SOURCE_DIR}/CfgTest.cfg)
 
 add_custom_command(
    OUTPUT 
