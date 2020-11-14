@@ -216,6 +216,11 @@ void NPYBase::setMeta(NMeta* meta)
 {
     m_meta = meta ;
 }
+NMeta* NPYBase::getMeta() const 
+{
+    return m_meta ; 
+}
+
 
 template <typename T>
 void NPYBase::setMeta(const char* key, T value)

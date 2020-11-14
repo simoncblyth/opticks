@@ -170,6 +170,15 @@ void test_RunPythonCode()
        ;
 }
 
+void test_hexlify()
+{
+    unsigned u = 0x12abcdef ; 
+    std::cout << std::hex << u << " std::hex " << std::endl ; 
+    std::cout << SSys::hexlify(&u,4,true) << " SSys::hexlify reverse=true " << std::endl ; 
+    std::cout << SSys::hexlify(&u,4,false) << " SSys::hexlify reverse=false " << std::endl ; 
+}
+
+
 
 int main(int argc , char** argv )
 {
@@ -201,7 +210,9 @@ int main(int argc , char** argv )
     //test_python_numpy(); 
     //test_ResolvePython(); 
     //test_RunPythonScript(); 
-    test_RunPythonCode(); 
+    //test_RunPythonCode(); 
+
+    test_hexlify(); 
 
 
     return rc  ; 

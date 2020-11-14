@@ -57,6 +57,7 @@ class SYSRAP_API SSys {
      static int npdump(const char* path="$TMP/torchstep.npy", const char* nptype="np.int32", const char* postview=NULL, const char* printoptions=NULL);
      static void xxdump(char* buf, int num_bytes, int width=16, char non_printable='.' ); 
      static std::string xxd(char* buf, int num_bytes, int width=16, char non_printable='.' ); 
+     static std::string hexlify(const void* obj, size_t size, bool reverse=true ) ; 
 
      static void WaitForInput(const char* msg="Enter any key to continue...\n");
      static int getenvint( const char* envkey, int fallback=-1 );

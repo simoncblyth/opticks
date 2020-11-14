@@ -104,9 +104,9 @@ def deserialize_with_header(buf):
     :param fd: io.BytesIO stream 
     :return arr,meta:
 
-    Note that body_bytes not actually needed when are sure of completeness
+    Note that arr_bytes, meta_bytes not actually needed when are sure of completeness
     of the buffer, unlike when reading from a network socket where there is 
-    no gaurantee of completeness. 
+    no gaurantee of completeness of the bytes received so far.
     """
     fd = io.BytesIO(buf)
     hdr = fd.read(HEADER_LENGTH)
@@ -191,13 +191,36 @@ def client(args, arr, meta):
     print(meta2)
 
 
+def demo():
+    arr = np.arange(100, dtype=np.float32)
+    meta = dict(hello="world",src="npy.py")
+    path = os.path.expandvars("/tmp/$USER/opticks/demo.npy")
+    fold = os.path.dirname(path)
+    if not os.path.isdir(fold):
+        os.makedirs(fold)
+    pass
+    log.info("saving to %s " % path )
+    np.save(path,arr)
+    json.dump(meta, open(path+".json","w"))
+
+
 def parse_args(doc):
     parser = argparse.ArgumentParser(doc)
     parser.add_argument("-p","--path", default=None)
     parser.add_argument("-s","--server", action="store_true", default=False)
     parser.add_argument("-c","--client", action="store_true", default=False)
     parser.add_argument("-t","--test", action="store_true", default=False)
+    parser.add_argument("-d","--demo", action="store_true", default=False)
     args = parser.parse_args()
+
+    args.metapath = None
+    if not args.path is None: 
+        args.metapath = args.path + ".json" 
+        if not os.path.exists(args.metapath): 
+            args.metapath = None
+        pass
+    pass
+
     port = os.environ.get("TCP_PORT","15006")
     host = os.environ.get("TCP_HOST", "127.0.0.1" ) 
     if host == "hostname":
@@ -208,10 +231,11 @@ def parse_args(doc):
     logging.basicConfig(level=logging.INFO)
     return args
 
+
 if __name__ == '__main__':
     args = parse_args(__doc__)
     arr0 = make_array() if args.path is None else np.load(args.path) 
-    meta0 = dict(red=1,green=2,blue=3)
+    meta0 = dict(red=1,green=2,blue=3) if args.metapath is None else json.load(open(args.metapath))
 
     if args.server:
         server(args)
@@ -219,6 +243,8 @@ if __name__ == '__main__':
         client(args, arr0, meta0)
     elif args.test:
         test_serialize_deserialize(arr0, meta0)
+    elif args.demo:
+        demo()
     else:
         pass
     pass 

@@ -125,7 +125,9 @@ class NPY_API NPYBase {
        template <typename T> void setParameter(const char* key, T value);
        template <typename T> T getParameter(const char* key, const char* fallback) const ;
 
-       void setMeta(NMeta* meta); 
+       void   setMeta(NMeta* meta); 
+       NMeta* getMeta() const ; 
+   
        template <typename T> void setMeta(const char* key, T value);
        template <typename T> T getMeta(const char* key, const char* fallback) const ;
 

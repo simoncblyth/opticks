@@ -246,6 +246,15 @@ std::string SSys::xxd( char* buf, int num_bytes, int width, char non_printable )
 
 
 
+std::string SSys::hexlify(const void* obj, size_t size, bool reverse)
+{ 
+    const unsigned char * const bytes = static_cast<const unsigned char *>(obj);
+    std::stringstream ss ; 
+    for(size_t i=0 ; i < size ; i++) ss << std::setw(2) << std::hex << std::setfill('0') << unsigned(bytes[reverse ? size - 1 - i : i]) ; 
+    return ss.str(); 
+}
+
+
 
 
 
