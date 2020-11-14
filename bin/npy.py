@@ -3,23 +3,27 @@
 npy.py
 =======
 
-Demonstrates sending and receiving NPY arrays over TCP 
+Demonstrates sending and receiving NPY arrays and dict/json metadata over TCP socket.
+To test serialization/deserialization::
+
+    npy.py --test
+
 In one session start the server::
 
     npy.py --server
 
-In the other start the client::
+In the other run the client::
 
     npy.py --client 
 
-
 The client sends an array to the server where some processing 
-is done on the array after which the array is sent back to the client.
+is done on the array after which the array is sent back to the client
+together with some metadata.
 
 * https://docs.python.org/3/howto/sockets.html
 
 """
-import os, sys, logging, argparse
+import os, sys, logging, argparse, json, datetime
 import io, struct, binascii as ba
 import socket 
 import numpy as np
@@ -27,9 +31,9 @@ import numpy as np
 log = logging.getLogger(__name__)
 x_ = lambda _:ba.hexlify(_)
 
-HEADER_FORMAT, HEADER_LENGTH = ">L", 4   # big-endian unsigned long which is 4 bytes 
+HEADER_FORMAT, HEADER_LENGTH = ">LL", 8   # two big-endian unsigned long which is 2*4 bytes 
 
-def serialize(arr):
+def npy_serialize(arr):
     """
     :param arr: ndarray
     :return buf: bytes  
@@ -41,7 +45,7 @@ def serialize(arr):
     log.info("serialized arr %r into memoryview buf of length %d " % (arr.shape, len(buf)))
     return buf  
 
-def deserialize(buf):
+def npy_deserialize(buf):
     """
     :param buf:
     :return arr:
@@ -50,42 +54,55 @@ def deserialize(buf):
     arr = np.load(fd)
     return arr
 
-def pack_header(num_bytes):
+def meta_serialize(meta):
+    buf = json.dumps(meta).encode() 
+    return buf 
+
+def meta_deserialize(buf):
+    fd = io.BytesIO(buf) 
+    meta = json.load(fd)
+    return meta  
+
+def pack_header(arr_bytes, meta_bytes):
     """
-    :param num_bytes: int
+    :param arr_bytes: uint
+    :param meta_bytes: uint
     :return bytes:
     """
-    return struct.pack(HEADER_FORMAT, num_bytes) 
+    return struct.pack(HEADER_FORMAT, arr_bytes, meta_bytes) 
 
 def unpack_header(data):
-    num_bytes, = struct.unpack(HEADER_FORMAT, data)  # tuple -> , 
-    return num_bytes
+    arr_bytes,meta_bytes = struct.unpack(HEADER_FORMAT, data)  
+    return arr_bytes, meta_bytes
 
-def serialize_with_header(arr):
+def serialize_with_header(arr, meta):
     """
     :param arr: numpy array
-    :return buf: memoryview of NPY serialized bytes 
+    :param meta: metadata dict 
+    :return buf: memoryview containing transport header followed by serialized NPY and metadata
     """
     fd = io.BytesIO()
 
-    hdr = pack_header(0)
-    fd.write(hdr)              # placeholder zero in header 
-    np.save( fd, arr)          # write ndarray to stream 
-    tot_bytes = fd.tell()      # better than fd.getbuffer().nbytes
-    body_bytes = tot_bytes - len(hdr)
+    hdr = pack_header(0,0)  # placeholder zeroes in header
+    fd.write(hdr)            
+    np.save( fd, arr)       # write ndarray to stream 
+    arr_bytes = fd.tell() - len(hdr)
+     
+    fd.write(meta_serialize(meta))
+    meta_bytes = fd.tell() - arr_bytes - len(hdr)
 
-    fd.seek(0)  # rewind and fill in the header now that we know the size 
-    fd.write(pack_header(body_bytes))
+    fd.seek(0)  # rewind and fill in the header with the sizes 
+    fd.write(pack_header(arr_bytes,meta_bytes))
 
     buf = fd.getbuffer()
     assert type(buf) is memoryview
-    log.info("serialized arr %r into memoryview len(buf) %d  tot_bytes %d body_bytes %d  " % (arr.shape, len(buf), tot_bytes, body_bytes ))
+    log.info("serialized arr %r into memoryview len(buf) %d  arr_bytes %d meta_bytes %d  " % (arr.shape, len(buf), arr_bytes, meta_bytes ))
     return buf
 
 def deserialize_with_header(buf):
     """
-    :param buf:
-    :return arr:
+    :param fd: io.BytesIO stream 
+    :return arr,meta:
 
     Note that body_bytes not actually needed when are sure of completeness
     of the buffer, unlike when reading from a network socket where there is 
@@ -93,27 +110,34 @@ def deserialize_with_header(buf):
     """
     fd = io.BytesIO(buf)
     hdr = fd.read(HEADER_LENGTH)
-    body_bytes = unpack_header(hdr)
-    arr = np.load(fd)
-    log.info("body_bytes:%d deserialized:%r" % (body_bytes,arr.shape))
-    return arr
+    arr_bytes,meta_bytes = unpack_header(hdr)
+    arr = np.load(fd)      # fortunately np.load ignores the metadata that follows the array 
+    meta = json.load(fd)
+    log.info("arr_bytes:%d meta_bytes:%d deserialized:%r" % (arr_bytes,meta_bytes,arr.shape))
+    return arr, meta
 
-def test_serialize_deserialize(arr0, dump=False):
-    buf0 = serialize(arr0)
+
+def test_serialize_deserialize(arr0, meta0, dump=False):
+    buf0 = npy_serialize(arr0)
     if dump:
         print(x_(buf0))
     pass
-    arr1 = deserialize(buf0) 
+    arr1 = npy_deserialize(buf0) 
     assert np.all(arr0 == arr1)
-    buf1 = serialize_with_header(arr1)
+    meta1 = meta0
+
+    buf1 = serialize_with_header(arr1,meta1)
     if dump:
         print(x_(buf1))
     pass
-    arr2 = deserialize_with_header(buf1)
+
+    arr2,meta2 = deserialize_with_header(buf1)
     assert np.all(arr0 == arr2)
+
+    print("meta2:%s" % repr(meta2))
     log.info("buf0:%d buf1:%d" % (len(buf0),len(buf1)))
 
-def read_exactly(sock, n):
+def recv_exactly(sock, n):
     """ 
     https://eli.thegreenplace.net/2011/08/02/length-prefix-framing-for-protocol-buffers
 
@@ -131,16 +155,16 @@ def read_exactly(sock, n):
 def make_array():
     return np.arange(16, dtype=np.uint8)
 
-def npy_send(sock, arr):
-    buf = serialize_with_header(arr)   
+def npy_send(sock, arr, meta):
+    buf = serialize_with_header(arr, meta)   
     sock.sendall(buf)
 
 def npy_recv(sock):
-    body_bytes = unpack_header(read_exactly(sock, HEADER_LENGTH))
-    buf = read_exactly(sock, body_bytes)
-    arr = deserialize(buf)    
-    log.info("body_bytes:%d arr:%s " % (body_bytes,repr(arr.shape)))
-    return arr
+    arr_bytes, meta_bytes = unpack_header(recv_exactly(sock, HEADER_LENGTH))
+    arr = npy_deserialize(recv_exactly(sock, arr_bytes))    
+    meta = meta_deserialize(recv_exactly(sock, meta_bytes))
+    log.info("arr_bytes:%d meta_bytes:%d arr:%s " % (arr_bytes,meta_bytes,repr(arr.shape)))
+    return arr, meta
 
 def server(args):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -148,20 +172,24 @@ def server(args):
     sock.listen(1)   # 1:connect requests
     while True:
         conn, addr = sock.accept()
-        arr = npy_recv(conn)
+        arr, meta = npy_recv(conn)
         arr *= 10               ## server does some processing on the array 
-        npy_send(conn, arr)
+        meta["stamp"] = datetime.datetime.now().strftime("%c")  
+        npy_send(conn, arr, meta)
     pass
     conn.close()
 
-def client(args, arr):
+def client(args, arr, meta):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(args.addr)
-    npy_send(sock, arr)
-    arr2 = npy_recv(sock)
+    npy_send(sock, arr, meta)
+    arr2,meta2 = npy_recv(sock)
     sock.close()
     print("arr2")
     print(arr2)
+    print("meta2")
+    print(meta2)
+
 
 def parse_args(doc):
     parser = argparse.ArgumentParser(doc)
@@ -171,7 +199,10 @@ def parse_args(doc):
     parser.add_argument("-t","--test", action="store_true", default=False)
     args = parser.parse_args()
     port = os.environ.get("TCP_PORT","15006")
-    host = os.environ.get("TCP_HOST", "127.0.0.1" )  # socket.gethostname()
+    host = os.environ.get("TCP_HOST", "127.0.0.1" ) 
+    if host == "hostname":
+        host = socket.gethostname()
+    pass
     addr = (host, int(port))
     args.addr = addr 
     logging.basicConfig(level=logging.INFO)
@@ -180,13 +211,14 @@ def parse_args(doc):
 if __name__ == '__main__':
     args = parse_args(__doc__)
     arr0 = make_array() if args.path is None else np.load(args.path) 
+    meta0 = dict(red=1,green=2,blue=3)
 
     if args.server:
         server(args)
     elif args.client:
-        client(args, arr0)
+        client(args, arr0, meta0)
     elif args.test:
-        test_serialize_deserialize(arr0)
+        test_serialize_deserialize(arr0, meta0)
     else:
         pass
     pass 
