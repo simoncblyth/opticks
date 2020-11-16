@@ -5,6 +5,25 @@
 #include "NPY.hpp"
 #include "NMeta.hpp"
 
+/**
+ABANDONED : npy_serialize_test.cc
+------------------------------------
+
+Decided better to do serialization/deserialization at lower standalone level 
+instead of at NPY level. This is for generality, ease of use and deployment.
+
+Aiming for header only NP server/client using boost::asio 
+so Opticks C++ clients can just include a header to 
+get GPU propagation.
+
+See:
+
+* https://github.com/simoncblyth/np
+* ~/np 
+
+
+**/
+
 int main(int argc, char** argv)
 {
     NPY<float>* arr0 = NPY<float>::make(10,4); 
