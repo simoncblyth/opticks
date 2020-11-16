@@ -8,6 +8,37 @@ Async functionalities
 3. Compute server that recieve NPY gensteps and responds with NPY hits 
 
 
+"np.h" : header only deployment of array+metadata send/receive functionality
+------------------------------------------------------------------------------
+
+* depending only on "boost/asio.hpp" (which is header only)
+* so any job gets access to Opticks processing just by including a single header
+  that enables collected gensteps to be sent to the server and hits returned
+
+
+Hmm what about nlohmann::json which is the basis of npy/NMeta.
+
+* avoid depending on this, metadata should just be a std::string that 
+  happens to be json, defaulting to "{}" 
+
+
+Where to put this implementation ?
+-------------------------------------
+
+Experimenting in ~/opticks/examples/UseBoostAsioNPY
+
+* hmm depending on Opticks NPY is probably not appropriate 
+* do not need all the NPY bells and whistles and aiming 
+  for a simple header only implementation so aim lower level 
+* this fits with the very general level of this functionality, 
+  it is way beneath Opticks
+
+Better to target http://github.com:simoncblyth/np.git  ~/np/
+
+See: ~/np/tests/NPNetTest.cc
+
+
+
 DONE : UDP liveline config : sends "commandline" options over UDP 
 --------------------------------------------------------------
 

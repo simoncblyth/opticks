@@ -23,15 +23,16 @@ together with some metadata.
 * https://docs.python.org/3/howto/sockets.html
 
 """
-import os, sys, logging, argparse, json, datetime
+import os, sys, logging, argparse, json, datetime, operator, functools
 import io, struct, binascii as ba
 import socket 
 import numpy as np
+mul_ = lambda _:functools.reduce(operator.mul, _) 
 
 log = logging.getLogger(__name__)
 x_ = lambda _:ba.hexlify(_)
 
-HEADER_FORMAT, HEADER_LENGTH = ">LL", 8   # two big-endian unsigned long which is 2*4 bytes 
+HEADER_FORMAT, HEADER_SIZE, HEADER_BYTES = ">LLL", 3, 12   # three big-endian unsigned long which is 3*4 bytes 
 
 def npy_serialize(arr):
     """
@@ -63,17 +64,19 @@ def meta_deserialize(buf):
     meta = json.load(fd)
     return meta  
 
-def pack_header(arr_bytes, meta_bytes):
+def pack_net_header(*sizes):
     """
     :param arr_bytes: uint
     :param meta_bytes: uint
     :return bytes:
     """
-    return struct.pack(HEADER_FORMAT, arr_bytes, meta_bytes) 
+    assert len(sizes) == HEADER_SIZE 
+    return struct.pack(HEADER_FORMAT, *sizes) 
 
-def unpack_header(data):
-    arr_bytes,meta_bytes = struct.unpack(HEADER_FORMAT, data)  
-    return arr_bytes, meta_bytes
+def unpack_net_header(data):
+    sizes = struct.unpack(HEADER_FORMAT, data)  
+    assert len(sizes) == HEADER_SIZE 
+    return sizes
 
 def serialize_with_header(arr, meta):
     """
@@ -83,20 +86,25 @@ def serialize_with_header(arr, meta):
     """
     fd = io.BytesIO()
 
-    hdr = pack_header(0,0)  # placeholder zeroes in header
-    fd.write(hdr)            
+    net_hdr = pack_net_header(0,0,0)  # placeholder zeroes in header
+    fd.write(net_hdr)          
+  
     np.save( fd, arr)       # write ndarray to stream 
-    arr_bytes = fd.tell() - len(hdr)
+    hdr_arr_bytes = fd.tell() - len(net_hdr)
      
     fd.write(meta_serialize(meta))
-    meta_bytes = fd.tell() - arr_bytes - len(hdr)
+    meta_bytes = fd.tell() - hdr_arr_bytes - len(net_hdr)
 
     fd.seek(0)  # rewind and fill in the header with the sizes 
-    fd.write(pack_header(arr_bytes,meta_bytes))
+
+    arr_bytes = arr.nbytes
+    hdr_bytes = hdr_arr_bytes - arr_bytes
+    
+    fd.write(pack_net_header(hdr_bytes,arr_bytes,meta_bytes))
 
     buf = fd.getbuffer()
     assert type(buf) is memoryview
-    log.info("serialized arr %r into memoryview len(buf) %d  arr_bytes %d meta_bytes %d  " % (arr.shape, len(buf), arr_bytes, meta_bytes ))
+    log.info("serialized arr %r into memoryview len(buf) %d  hdr_bytes %d arr_bytes %d meta_bytes %d  " % (arr.shape, len(buf), hdr_bytes, arr_bytes, meta_bytes ))
     return buf
 
 def deserialize_with_header(buf):
@@ -109,11 +117,11 @@ def deserialize_with_header(buf):
     no gaurantee of completeness of the bytes received so far.
     """
     fd = io.BytesIO(buf)
-    hdr = fd.read(HEADER_LENGTH)
-    arr_bytes,meta_bytes = unpack_header(hdr)
-    arr = np.load(fd)      # fortunately np.load ignores the metadata that follows the array 
+    hdr = fd.read(HEADER_BYTES)
+    hdr_bytes,arr_bytes,meta_bytes = unpack_net_header(hdr)
+    arr = np.load(fd)         # fortunately np.load ignores the metadata that follows the array 
     meta = json.load(fd)
-    log.info("arr_bytes:%d meta_bytes:%d deserialized:%r" % (arr_bytes,meta_bytes,arr.shape))
+    log.info("hdr_bytes:%d arr_bytes:%d meta_bytes:%d deserialized:%r" % (hdr_bytes,arr_bytes,meta_bytes,arr.shape))
     return arr, meta
 
 
@@ -152,18 +160,23 @@ def recv_exactly(sock, n):
         n -= len(data)
     return buf
 
-def make_array():
-    return np.arange(16, dtype=np.uint8)
+def make_array(dtype="float32", shape="10,4"):
+    log.info("make_array %s %s " % (dtype, shape))
+    dtype = getattr(np, dtype, np.float32)
+    shape = tuple(map(int,shape.split(",")))
+    size = mul_(shape)
+    arr = np.arange(size, dtype=dtype).reshape(shape)
+    return arr
 
 def npy_send(sock, arr, meta):
     buf = serialize_with_header(arr, meta)   
     sock.sendall(buf)
 
 def npy_recv(sock):
-    arr_bytes, meta_bytes = unpack_header(recv_exactly(sock, HEADER_LENGTH))
-    arr = npy_deserialize(recv_exactly(sock, arr_bytes))    
+    hdr_bytes, arr_bytes, meta_bytes = unpack_net_header(recv_exactly(sock, HEADER_BYTES))
+    arr = npy_deserialize(recv_exactly(sock, hdr_bytes+arr_bytes))    
     meta = meta_deserialize(recv_exactly(sock, meta_bytes))
-    log.info("arr_bytes:%d meta_bytes:%d arr:%s " % (arr_bytes,meta_bytes,repr(arr.shape)))
+    log.info("hdr_bytes:%d arr_bytes:%d meta_bytes:%d arr:%s " % (hdr_bytes,arr_bytes,meta_bytes,repr(arr.shape)))
     return arr, meta
 
 def server(args):
@@ -180,6 +193,9 @@ def server(args):
     conn.close()
 
 def client(args, arr, meta):
+    log.info("client")
+    log.info("\n%s"%arr)
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(args.addr)
     npy_send(sock, arr, meta)
@@ -210,6 +226,8 @@ def parse_args(doc):
     parser.add_argument("-s","--server", action="store_true", default=False)
     parser.add_argument("-c","--client", action="store_true", default=False)
     parser.add_argument("-t","--test", action="store_true", default=False)
+    parser.add_argument("--dtype", default="float32")
+    parser.add_argument("--shape", default="10,4")
     parser.add_argument("-d","--demo", action="store_true", default=False)
     args = parser.parse_args()
 
@@ -229,12 +247,13 @@ def parse_args(doc):
     addr = (host, int(port))
     args.addr = addr 
     logging.basicConfig(level=logging.INFO)
+    log.info("addr: %s" % repr(addr))
     return args
 
 
 if __name__ == '__main__':
     args = parse_args(__doc__)
-    arr0 = make_array() if args.path is None else np.load(args.path) 
+    arr0 = make_array(args.dtype, args.shape) if args.path is None else np.load(args.path) 
     meta0 = dict(red=1,green=2,blue=3) if args.metapath is None else json.load(open(args.metapath))
 
     if args.server:
