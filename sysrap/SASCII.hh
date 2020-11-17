@@ -37,6 +37,7 @@ class SYSRAP_API SASCII
       static const char LOWER[] ;  
       static const char NUMBER[] ;  
       static const char OTHER[] ;  
+      static const char EXTRA[] ;  
       static const char ALLOWED[] ;  
   public:
       static unsigned Count( char c, const char* list );  
@@ -44,6 +45,7 @@ class SYSRAP_API SASCII
       static bool IsLower( char c );  
       static bool IsNumber( char c );  
       static bool IsOther( char c );  
+      static bool IsExtra( char c );  
       static bool IsAllowed( char c );
       static char Classify( char c); 
 
@@ -65,9 +67,12 @@ class SYSRAP_API SASCII
       unsigned lower; 
       unsigned number; 
       unsigned other ; 
+      unsigned extra ; 
       unsigned allowed ; 
+
       int first_upper_index ; 
       int first_other_index ; 
+      int first_extra_index ; 
       int first_number_index ; 
 };
 

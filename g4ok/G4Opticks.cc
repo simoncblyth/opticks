@@ -197,6 +197,7 @@ G4Opticks::G4Opticks
 G4Opticks::G4Opticks()
     :
     m_standardize_geant4_materials(false), 
+    m_placement_outer_volume(false),
     m_world(NULL),
     m_ggeo(NULL),
     m_blib(NULL),
@@ -224,6 +225,11 @@ G4Opticks::G4Opticks()
     fInstance = this ; 
     LOG(info) << "ctor : DISABLE FPE detection : as it breaks OptiX launches" ; 
     C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
+}
+
+void G4Opticks::setPlacementOuterVolume(bool outer_volume)  // TODO: eliminate the need for this
+{
+    m_placement_outer_volume = outer_volume ;  
 }
 
 void G4Opticks::createCollectors()
@@ -414,8 +420,8 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
 
     if( loaded == false )
     {
-        bool outer_volume = true ; 
-        X4PhysicalVolume::GetSensorPlacements(ggeo, m_sensor_placements, outer_volume);
+        if(m_placement_outer_volume) LOG(error) << "CAUTION : m_placement_outer_volume TRUE " ; 
+        X4PhysicalVolume::GetSensorPlacements(ggeo, m_sensor_placements, m_placement_outer_volume);
         assert( num_sensor == m_sensor_placements.size() ) ; 
     }
 

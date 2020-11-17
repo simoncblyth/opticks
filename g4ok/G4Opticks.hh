@@ -145,6 +145,7 @@ class G4OK_API G4Opticks
         void loadGeometry(); 
     public:
         void setStandardizeGeant4Materials(bool standardize_geant4_materials);
+        void setPlacementOuterVolume(bool outer_volume);  // TODO: eliminate
     private:
         void setGeometry(const GGeo* ggeo); 
     private:
@@ -299,6 +300,7 @@ class G4OK_API G4Opticks
            
      private:
         bool                       m_standardize_geant4_materials ; 
+        bool                       m_placement_outer_volume ; 
         const G4VPhysicalVolume*   m_world ; 
         const GGeo*                m_ggeo ; 
         const GBndLib*             m_blib ; 

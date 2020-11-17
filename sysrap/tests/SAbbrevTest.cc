@@ -97,7 +97,8 @@ void test_1()
         "photocathode_MCP8inch",
         "photocathode_Ham20inch",
         "photocathode_Ham8inch",
-        "photocathode_HZC9inch"
+        "photocathode_HZC9inch",
+        "G4_STAINLESS-STEEL"
     } ;
 
     SAbbrev ab(ss);
