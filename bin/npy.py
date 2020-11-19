@@ -32,7 +32,7 @@ mul_ = lambda _:functools.reduce(operator.mul, _)
 log = logging.getLogger(__name__)
 x_ = lambda _:ba.hexlify(_)
 
-HEADER_FORMAT, HEADER_SIZE, HEADER_BYTES = ">LLL", 3, 12   # three big-endian unsigned long which is 3*4 bytes 
+HEADER_FORMAT, HEADER_SIZE, HEADER_BYTES = ">LLLL", 4, 16   # four big-endian unsigned long which is 4*4 bytes 
 
 def npy_serialize(arr):
     """
@@ -64,7 +64,7 @@ def meta_deserialize(buf):
     meta = json.load(fd)
     return meta  
 
-def pack_net_header(*sizes):
+def pack_prefix(*sizes):
     """
     :param arr_bytes: uint
     :param meta_bytes: uint
@@ -73,7 +73,7 @@ def pack_net_header(*sizes):
     assert len(sizes) == HEADER_SIZE 
     return struct.pack(HEADER_FORMAT, *sizes) 
 
-def unpack_net_header(data):
+def unpack_prefix(data):
     sizes = struct.unpack(HEADER_FORMAT, data)  
     assert len(sizes) == HEADER_SIZE 
     return sizes
@@ -86,21 +86,21 @@ def serialize_with_header(arr, meta):
     """
     fd = io.BytesIO()
 
-    net_hdr = pack_net_header(0,0,0)  # placeholder zeroes in header
-    fd.write(net_hdr)          
+    prefix = pack_prefix(0,0,0,0)  # placeholder zeroes in header
+    fd.write(prefix)          
   
     np.save( fd, arr)       # write ndarray to stream 
-    hdr_arr_bytes = fd.tell() - len(net_hdr)
+    hdr_arr_bytes = fd.tell() - len(prefix)
      
     fd.write(meta_serialize(meta))
-    meta_bytes = fd.tell() - hdr_arr_bytes - len(net_hdr)
+    meta_bytes = fd.tell() - hdr_arr_bytes - len(prefix)
 
     fd.seek(0)  # rewind and fill in the header with the sizes 
 
     arr_bytes = arr.nbytes
     hdr_bytes = hdr_arr_bytes - arr_bytes
     
-    fd.write(pack_net_header(hdr_bytes,arr_bytes,meta_bytes))
+    fd.write(pack_prefix(hdr_bytes,arr_bytes,meta_bytes,0))
 
     buf = fd.getbuffer()
     assert type(buf) is memoryview
@@ -117,8 +117,9 @@ def deserialize_with_header(buf):
     no gaurantee of completeness of the bytes received so far.
     """
     fd = io.BytesIO(buf)
-    hdr = fd.read(HEADER_BYTES)
-    hdr_bytes,arr_bytes,meta_bytes = unpack_net_header(hdr)
+    prefix = fd.read(HEADER_BYTES)
+    hdr_bytes,arr_bytes,meta_bytes,zero = unpack_prefix(prefix)
+    assert zero == 0  
     arr = np.load(fd)         # fortunately np.load ignores the metadata that follows the array 
     meta = json.load(fd)
     log.info("hdr_bytes:%d arr_bytes:%d meta_bytes:%d deserialized:%r" % (hdr_bytes,arr_bytes,meta_bytes,arr.shape))
@@ -173,7 +174,8 @@ def npy_send(sock, arr, meta):
     sock.sendall(buf)
 
 def npy_recv(sock):
-    hdr_bytes, arr_bytes, meta_bytes = unpack_net_header(recv_exactly(sock, HEADER_BYTES))
+    hdr_bytes, arr_bytes, meta_bytes, zero = unpack_net_header(recv_exactly(sock, HEADER_BYTES))
+    assert zero == 0 
     arr = npy_deserialize(recv_exactly(sock, hdr_bytes+arr_bytes))    
     meta = meta_deserialize(recv_exactly(sock, meta_bytes))
     log.info("hdr_bytes:%d arr_bytes:%d meta_bytes:%d arr:%s " % (hdr_bytes,arr_bytes,meta_bytes,repr(arr.shape)))

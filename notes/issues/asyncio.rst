@@ -192,3 +192,32 @@ env/zeromq/pyzmq/npysend.py uses the socket subclass to send_npy recv_npy::
 
 
 
+trawling env for old concurrency and message queue experiments
+----------------------------------------------------------------
+
+env/rootmq/include/EvMQ.h
+    message queue monitor 
+    
+env/rootmq/include/rootmq.h
+    amqp.h based C interface to message queue 
+
+env/rootmq/include/MQ.h
+    131 R__EXTERN MQ* gMQ ; 
+
+    gMQ interface for sending receiving messages with control over a monitoring thread 
+
+env/rootmq/src/MQ.cc
+     
+    527 void MQ::StartMonitorThread()
+    528 {
+    529    if(!fConfigured) this->Configure();
+    530    fMonitorRunning = kTRUE ;
+    531    rootmq_basic_consume_async( fQueue.Data() );
+    532    //rootmq_basic_consume( fQueue.Data() );  // ....  dont spin off thread (means that GUI doesnt update) ... BUT useful to check if threading is the cause of issues
+    533 }
+
+env/rootmq/src/rootmq_collection.c
+
+   glib based 
+
+
