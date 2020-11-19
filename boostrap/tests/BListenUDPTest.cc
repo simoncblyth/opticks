@@ -3,21 +3,29 @@ BListenUDPTest.cc
 ==================
 
 This demonstrates how to integrate async-io for handling 
-UDP messages with a fake GUI vizualization loop. 
-Using io_context::poll_one
+UDP messages with a fake GUI vizualization loop, using 
+io_context::poll_one which does not block thanks to boost::asio
+doing the blocking io for you behind the scenes.
 
-For info on Boost ASIO see env-;basio- 
+UDP messages received as passed to the delegates SCtrl::command method.
 
-This test started from examples/UseBoostAsioUDP/ListenUDPTest.cc
+Run the UDP listener with::
 
-Send UDP messages to this with eg ~/env/bin/udp.py::
+   BListenUDPTest
 
-   UDP_PORT=15001 udp.py hello from udp.py 
+From another terminal (actually can be from a different node) send
+UDP messages to the listener with eg ~/env/bin/udp.py::
 
+   UDP_PORT=15001 udp.py hello from udp.py $(hostname) $(date) 
 
-Have observed that PLOG logging does not provide any output 
-from within asio callback handlers. Simple std::cout does
-work from within handlers.
+Note that everything is happening on the main thread so there is no 
+danger of contention or any concerns about locking.
+
+* for info on Boost ASIO see env-;basio- 
+* this test started from examples/UseBoostAsioUDP/ListenUDPTest.cc
+
+Initial problems with PLOG logging from within boost::asio handlers 
+turned out to be pilot error.  
 
 **/
 
