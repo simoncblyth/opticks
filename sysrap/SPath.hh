@@ -30,6 +30,8 @@ SPath
 class SYSRAP_API SPath {
   public:
       static const char* Stem( const char* name );
+      static bool IsReadable(const char* path);
+      static const char* GetHomePath(const char* rel); 
 };
 
 

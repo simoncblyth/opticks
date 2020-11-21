@@ -28,18 +28,42 @@
 
 void test_Stem()
 {
+    LOG(info); 
     const char* name = "hello.cu" ; 
     const char* stem = SPath::Stem(name); 
     const char* x_stem = "hello" ; 
     assert( strcmp( stem, x_stem ) == 0 ); 
 }
 
+void test_GetHomePath()
+{
+    LOG(info); 
+    const char* bashrc = SPath::GetHomePath(".bashrc") ; 
+    std::cout << bashrc << std::endl ; 
+}
+
+void test_IsReadable()
+{
+    LOG(info); 
+    const char* self = SPath::GetHomePath("opticks/sysrap/tests/SPathTest.cc") ; 
+    const char* non = SPath::GetHomePath("opticks/sysrap/tests/SPathTest.cc.non") ; 
+    std::cout << self << std::endl ; 
+    bool readable = SPath::IsReadable(self); 
+    assert( readable == true ); 
+
+    bool readable_non = SPath::IsReadable(non); 
+    assert( readable_non == false ); 
+
+
+}
 
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
     test_Stem();  
+    test_GetHomePath();  
+    test_IsReadable();  
 
     return 0  ; 
 }

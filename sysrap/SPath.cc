@@ -19,12 +19,37 @@
 
 #include <string>
 #include <cstring>
+#include <cassert>
+#include <sstream>
+#include <fstream>
+
 #include "SPath.hh"
 
-const char* SPath::Stem( const char* name )
+const char* SPath::Stem( const char* name ) // static
 {
     std::string arg = name ;
     std::string base = arg.substr(0, arg.find_last_of(".")) ; 
     return strdup( base.c_str() ) ; 
 }
+
+bool SPath::IsReadable(const char* path)  // static 
+{
+    std::ifstream fp(path, std::ios::in|std::ios::binary);
+    bool readable = !fp.fail(); 
+    fp.close(); 
+    return readable ; 
+}
+
+const char* SPath::GetHomePath(const char* rel)  // static 
+{
+    char* home = getenv("HOME"); 
+    assert(home);  
+    std::stringstream ss ; 
+    ss << home ;
+    if(rel != NULL) ss << "/" << rel ; 
+    std::string path = ss.str(); 
+    return strdup(path.c_str()) ; 
+}
+
+
 
