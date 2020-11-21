@@ -54,11 +54,11 @@ allocate_rng_wrapper
 ---------------------
 
 Allocates curandState device buffer sized to hold the number
-of items from LaunchSequence and returns pointer to it. 
+of items from LaunchSequence (aka rngmax) and returns pointer to it. 
 
 **/
 
-CUdeviceptr allocate_rng_wrapper( LaunchSequence* launchseq)
+CUdeviceptr allocate_rng_wrapper( const LaunchSequence* launchseq)
 {
     unsigned int items = launchseq->getItems(); 
     size_t nbytes = items*sizeof(curandState) ;
@@ -107,7 +107,7 @@ copytohost_rng_wrapper
 
 **/
 
-curandState* copytohost_rng_wrapper( LaunchSequence* launchseq, CUdeviceptr dev_rng_states)
+curandState* copytohost_rng_wrapper( const LaunchSequence* launchseq, CUdeviceptr dev_rng_states)
 {
     unsigned items = launchseq->getItems(); 
 
@@ -130,9 +130,8 @@ copytodevice_rng_wrapper
 
 **/
 
-CUdeviceptr copytodevice_rng_wrapper( LaunchSequence* launchseq, void* host_rng_states)
+CUdeviceptr copytodevice_rng_wrapper( const LaunchSequence* launchseq, void* host_rng_states)
 {
-
     unsigned int items = launchseq->getItems(); 
 
     CUdeviceptr dev_rng_states; 
@@ -170,12 +169,14 @@ void before_kernel( cudaEvent_t& start, cudaEvent_t& stop )
 after_kernel
 --------------
 
-* record the stop, returning elapsed time in kernel time argument
+* record the stop, returning elapsed time 
 
 **/
 
-void after_kernel( cudaEvent_t& start, cudaEvent_t& stop, float& kernel_time )
+float after_kernel( cudaEvent_t& start, cudaEvent_t& stop )
 {
+    float kernel_time = 0.f ; 
+
     CUDA_SAFE_CALL( cudaEventRecord( stop,0 ) );
     CUDA_SAFE_CALL( cudaEventSynchronize(stop) );
 
@@ -184,6 +185,8 @@ void after_kernel( cudaEvent_t& start, cudaEvent_t& stop, float& kernel_time )
     CUDA_SAFE_CALL( cudaEventDestroy( stop ) );
 
     CUDA_SAFE_CALL( cudaDeviceSynchronize() );
+
+    return kernel_time ; 
 }
 
 
@@ -229,9 +232,6 @@ starting from 262144 running the kernel launch sequence in reverse
 confirms this finding 
    
 * :google:`curand_init slow with large sequence numbers`
-
-
-
 
 
 From cuda-curand CURAND_Library.pdf Chapter 3::
@@ -281,18 +281,21 @@ __global__ void init_rng(int threads_per_launch, int thread_offset, curandState*
 init_rng_wrapper
 -----------------
 
+Typically multiple launches are made in order to initialize the curandState buffer
+for rngmax items.
+
 Loops over launchseq NumLaunches invoking init_rng
 which writes curandStates into offset device buffer locations.
 
 **/
 
-void init_rng_wrapper( LaunchSequence* launchseq, CUdeviceptr dev_rng_states, unsigned long long seed, unsigned long long offset)
+void init_rng_wrapper( const LaunchSequence* launchseq, CUdeviceptr dev_rng_states, unsigned long long seed, unsigned long long offset)
 {
     cudaEvent_t start, stop ;
 
     for(unsigned i=0 ; i < launchseq->getNumLaunches() ; i++ )
     {
-        Launch& launch = launchseq->getLaunch(i) ;
+        const Launch& launch = launchseq->getLaunch(i) ;
     
         curandState* dev_rng_states_launch = (curandState*)dev_rng_states + launch.thread_offset ; 
 
@@ -300,7 +303,9 @@ void init_rng_wrapper( LaunchSequence* launchseq, CUdeviceptr dev_rng_states, un
 
         init_rng<<<launch.blocks_per_launch, launch.threads_per_block>>>( launch.threads_per_launch, launch.thread_offset, dev_rng_states_launch, seed, offset );
 
-        after_kernel( start, stop, launch.kernel_time );
+        float kernel_time = after_kernel( start, stop );
+
+        const_cast<Launch&>(launch).kernel_time = kernel_time ; 
 
         launch.Summary("init_rng_wrapper");
     } 
@@ -357,7 +362,7 @@ test_rng_wrapper
 **/
 
 void test_rng_wrapper(
-    LaunchSequence* launchseq,
+    const LaunchSequence* launchseq,
     CUdeviceptr dev_rng_states,
     float* host_a, 
     bool update_states
@@ -372,7 +377,7 @@ void test_rng_wrapper(
 
     for(unsigned i=0 ; i < launchseq->getNumLaunches() ; i++ )
     {
-        Launch& launch = launchseq->getLaunch(i) ;
+        const Launch& launch = launchseq->getLaunch(i) ;
 
         curandState* dev_rng_states_launch = (curandState*)dev_rng_states + launch.thread_offset ; 
         float*       dev_a_launch = dev_a + launch.thread_offset ; 
@@ -381,7 +386,10 @@ void test_rng_wrapper(
 
         test_rng<<<launch.blocks_per_launch, launch.threads_per_block>>>( launch.threads_per_launch, launch.thread_offset, dev_rng_states_launch, dev_a_launch, update_states );
 
-        after_kernel( start, stop, launch.kernel_time );
+        float kernel_time = after_kernel( start, stop );
+
+        const_cast<Launch&>(launch).kernel_time = kernel_time ; 
+
     } 
 
     CUDA_SAFE_CALL( cudaMemcpy(host_a, dev_a, items*sizeof(float), cudaMemcpyDeviceToHost) ); 

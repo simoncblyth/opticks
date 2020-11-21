@@ -127,7 +127,7 @@ private:
     }
 
 public:
-    LaunchSequence* copy(unsigned int max_blocks=0, unsigned int threads_per_block=0)
+    LaunchSequence* copy(unsigned int max_blocks=0, unsigned int threads_per_block=0) const 
     {
        return new LaunchSequence(
                      m_items, 
@@ -137,12 +137,12 @@ public:
                     ); 
     }
 
-    unsigned int getNumLaunches(){     return m_launches.size(); }
-    unsigned int getItems(){           return m_items ; }
-    unsigned int getThreadsPerBlock(){ return m_threads_per_block ; }
-    unsigned int getMaxBlocks(){       return m_max_blocks ; }
-    char*        getTag(){             return m_tag ; }
-    bool         getReverse(){         return m_reverse ; }
+    unsigned int getNumLaunches() const {     return m_launches.size(); }
+    unsigned int getItems() const {           return m_items ; }
+    unsigned int getThreadsPerBlock() const { return m_threads_per_block ; }
+    unsigned int getMaxBlocks() const {       return m_max_blocks ; }
+    char*        getTag() const {             return m_tag ; }
+    bool         getReverse() const {         return m_reverse ; }
 
     void setTag(const char* tag)
     {
@@ -176,15 +176,21 @@ public:
     }
 
 
-    float getTotalTime(){
+    float getTotalTime() const {
         float total = 0.0f ; 
         for(unsigned int i=0 ; i<getNumLaunches() ; i++ )
         {
-            Launch& launch = getLaunch(i) ;
+            const Launch& launch = getLaunch(i) ;
             if(launch.kernel_time > 0.f ) total += launch.kernel_time ;
         }
         return total ; 
     } 
+
+    const Launch& getLaunch(unsigned int i) const 
+    { 
+         unsigned int nlaunch = m_launches.size() ; 
+         return m_reverse ? m_launches[nlaunch - 1 - i] : m_launches[i] ; 
+    }
 
     Launch& getLaunch(unsigned int i)
     { 
@@ -192,7 +198,7 @@ public:
          return m_reverse ? m_launches[nlaunch - 1 - i] : m_launches[i] ; 
     }
 
-    void Summary(const char* msg)
+    void Summary(const char* msg) const 
     {
         unsigned int nlaunch = getNumLaunches();
         printf("%s tag %s workitems %7u  threads_per_block %5u  max_blocks %6u reverse %1d nlaunch %3u TotalTime %10.4f ms \n", 
@@ -208,7 +214,7 @@ public:
 
     }
 
-    void dump(const char* msg)  
+    void dump(const char* msg) const  
     {
         Summary(msg);
         unsigned int nlaunch = getNumLaunches();

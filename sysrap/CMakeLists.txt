@@ -61,6 +61,7 @@ set(SOURCES
     SRand.cc
 
     SMockViz.cc
+    SRngSpec.cc
 ) 
 
 set(HEADERS
@@ -113,6 +114,7 @@ set(HEADERS
     SRand.hh
 
     SMockViz.hh
+    SRngSpec.hh
 )
 
 

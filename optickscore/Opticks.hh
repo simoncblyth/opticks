@@ -29,6 +29,9 @@
 
 
 class SLog ; 
+class SRngSpec ; 
+
+
 struct SArgs ; 
 template <typename> class NPY ;
 template <typename> class OpticksCfg ;
@@ -234,7 +237,6 @@ class OKCORE_API Opticks {
        unsigned getVerbosity() const ;
        void setVerbosity(unsigned verbosity);
    public:
-       const char* getRNGDir();
        const char* getInstallPrefix();
        const char* getMaterialPrefix();
        std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false) const ;
@@ -597,7 +599,13 @@ class OKCORE_API Opticks {
        void configureDomains();
    public:
        unsigned getNumPhotonsPerG4Event();
-       unsigned getRngMax();
+   public:
+       const char*        getRNGDir() const ;
+       unsigned           getRngMax()   const ; 
+       unsigned long long getRngSeed()  const ;
+       unsigned long long getRngOffset() const ; 
+       const char*        getCURANDStatePath(bool assert_readable=true) const ; 
+   public:
        unsigned getBounceMax();
        unsigned getRecordMax();
        float    getEpsilon() const ;
@@ -731,7 +739,6 @@ class OKCORE_API Opticks {
 
 
        OpticksRun*          m_run ;   // actually used for dual running 
-       //OpticksEvent*        m_evt ; 
 
        OpticksAna*          m_ana ; 
        OpticksDbg*          m_dbg ; 
@@ -746,6 +753,7 @@ class OKCORE_API Opticks {
        unsigned             m_verbosity ; 
        bool                 m_internal ; 
        const char*          m_frame_renderer ; 
+       SRngSpec*            m_rngspec ; 
      
 
 };

@@ -27,21 +27,30 @@ Not exporting API, as look local.
 
 **/
 
-
 #include "cuda.h"
 #include "curand_kernel.h"
 
 class LaunchSequence ; 
 
-void init_rng_wrapper( LaunchSequence* launchseq, CUdeviceptr dev_rng_states, unsigned long long seed, unsigned long long offset);
-void test_rng_wrapper( LaunchSequence* launchseq, CUdeviceptr dev_rng_states, float* host_a, bool update_states );
-curandState* copytohost_rng_wrapper( LaunchSequence* launchseq, CUdeviceptr dev_rng_states);
+// allocate curandState GPU buffer large enough for rngmax launchseq items  
+CUdeviceptr allocate_rng_wrapper( const LaunchSequence* launchseq);
 
-CUdeviceptr allocate_rng_wrapper( LaunchSequence* launchseq);
+// free the curandState GPU buffer
 void free_rng_wrapper( CUdeviceptr dev_rng_states );
 
-CUdeviceptr copytodevice_rng_wrapper( LaunchSequence* launchseq, void* host_rng_states);
+// allocates host memory and copies from GPU buffer to it, returning pointer 
+curandState* copytohost_rng_wrapper( const LaunchSequence* launchseq, CUdeviceptr dev_rng_states);
 
+// allocates device memory and copues from host buffer to it 
+CUdeviceptr copytodevice_rng_wrapper( const LaunchSequence* launchseq, void* host_rng_states);
+
+// multiple launches to initialized the curandState GPU buffer
+void init_rng_wrapper( const LaunchSequence* launchseq, CUdeviceptr dev_rng_states, unsigned long long seed, unsigned long long offset);
+
+// multiple launches with each thread generating a single curand_uniform float 
+void test_rng_wrapper( const LaunchSequence* launchseq, CUdeviceptr dev_rng_states, float* host_a, bool update_states );
+
+// cudaDeviceSynchronize 
 void devicesync_wrapper();
 
 

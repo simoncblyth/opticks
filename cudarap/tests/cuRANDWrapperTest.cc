@@ -68,7 +68,9 @@ int main(int argc, char** argv)
     // CAUTION: without Init still provides random numbers but different ones every time
 
     // can increase max_blocks as generation much faster than initialization 
-    crw->getLaunchSequence()->setMaxBlocks(max_blocks*32);  
+
+    const LaunchSequence* launchseq = crw->getLaunchSequence() ;
+    const_cast<LaunchSequence*>(launchseq)->setMaxBlocks(max_blocks*32);  
 
     crw->Test();
 

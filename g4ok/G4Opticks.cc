@@ -79,11 +79,12 @@ G4Opticks* G4Opticks::fInstance = NULL ;
 //const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0"  ; 
 const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0 --xanalytic"  ; 
 
-std::string G4Opticks::EmbeddedCommandLine(const char* extra)
+std::string G4Opticks::EmbeddedCommandLine(const char* extra1, const char* extra2)
 {
     std::stringstream ss ; 
     ss << fEmbeddedCommandLine << " " ;
-    if(extra) ss << extra ; 
+    if(extra1) ss << " " << extra1 ; 
+    if(extra2) ss << " " << extra2 ; 
     return ss.str();  
 }
 
@@ -104,8 +105,17 @@ where the commandline is used by the host application the use of parse_cmdline=t
 by embedded Opticks should be regarded as a temporary kludge during development 
 that will not be available in production.
 
+Note that because the keyspec that is obtained from the geometry is needed 
+prior to Opticks instanciation it is necessary to defer this until G4Opticks::setGeometry 
+is called. That is problematic as it prevents being able to directly configure Opticks, 
+eg to change rngmax other than via the commandline and G4OPTICKS_DEBUG.
+
+As a workaround for this the commandline_extra arg is used to provide a way to 
+change the embedded command line from G4Opticks level.
+
+
 **/
-Opticks* G4Opticks::InitOpticks(const char* keyspec, bool parse_cmdline) // static
+Opticks* G4Opticks::InitOpticks(const char* keyspec, const char* commandline_extra, bool parse_argv ) // static
 {
     LOG(LEVEL) << "[" ;
     LOG(LEVEL) << "[SetKey " << keyspec   ;   
@@ -113,12 +123,12 @@ Opticks* G4Opticks::InitOpticks(const char* keyspec, bool parse_cmdline) // stat
     LOG(LEVEL) << "]SetKey" ;
 
     const char* g4opticks_debug = SSys::getenvvar("G4OPTICKS_DEBUG") ; 
-    std::string ecl = EmbeddedCommandLine(g4opticks_debug) ; 
+    std::string ecl = EmbeddedCommandLine(g4opticks_debug, commandline_extra) ; 
     LOG(LEVEL) << "EmbeddedCommandLine : [" << ecl << "]" ; 
 
     LOG(LEVEL) << "[ok" ;
     Opticks* ok = NULL ; 
-    if( parse_cmdline )
+    if( parse_argv )
     {
         assert( PLOG::instance && "OPTICKS_LOG is needed to instanciate PLOG" );
         const SAr& args = PLOG::instance->args ; 
@@ -202,6 +212,7 @@ G4Opticks::G4Opticks()
     m_ggeo(NULL),
     m_blib(NULL),
     m_hits_wrapper(NULL),
+    m_embedded_commandline_extra(NULL),
     m_ok(NULL),
     m_traverser(NULL),
     m_mtab(NULL),
@@ -231,6 +242,33 @@ void G4Opticks::setPlacementOuterVolume(bool outer_volume)  // TODO: eliminate t
 {
     m_placement_outer_volume = outer_volume ;  
 }
+
+
+/**
+G4Opticks::setEmbeddedCommandlineExtra
+----------------------------------------
+
+Sets up the Opticks commandline used during Opticks instanciation in G4Opticks::InitOpticks
+which is invoked from G4Opticks::setGeometry or G4Opticks::loadGeometry
+
+**/
+
+void  G4Opticks::setEmbeddedCommandlineExtra(const char* extra)   // TODO: eliminate the need for this
+{
+    m_embedded_commandline_extra = extra ? strdup(extra) : NULL ; 
+}
+const char* G4Opticks::getEmbeddedCommandlineExtra() const 
+{
+    return m_embedded_commandline_extra ; 
+}
+
+
+
+
+
+
+
+
 
 void G4Opticks::createCollectors()
 {
@@ -393,7 +431,7 @@ void G4Opticks::loadGeometry()
 {
     const char* keyspec = NULL ;   // NULL means get keyspec from OPTICKS_KEY envvar 
     bool parse_commandline = true ; 
-    Opticks* ok = InitOpticks(keyspec, parse_commandline); 
+    Opticks* ok = InitOpticks(keyspec, m_embedded_commandline_extra, parse_commandline); 
     GGeo* ggeo = GGeo::Load(ok); 
     setGeometry(ggeo); 
 }
@@ -666,7 +704,7 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     const char* keyspec = X4PhysicalVolume::Key(top) ; 
 
     bool parse_commandline = false ; 
-    Opticks* ok = InitOpticks(keyspec, parse_commandline); 
+    Opticks* ok = InitOpticks(keyspec, m_embedded_commandline_extra, parse_commandline); 
  
     const char* dbggdmlpath = ok->getDbgGDMLPath(); 
     if( dbggdmlpath != NULL )

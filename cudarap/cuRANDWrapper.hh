@@ -81,7 +81,7 @@ class CUDARAP_API cuRANDWrapper {
   public: 
      static const plog::Severity LEVEL ; 
   public: 
-     cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed=0, unsigned long long offset=0, bool verbose=false);
+     cuRANDWrapper( const LaunchSequence* launchseq, unsigned long long seed=0, unsigned long long offset=0, bool verbose=false);
  
      static cuRANDWrapper* instanciate(
          unsigned int elements, 
@@ -94,23 +94,23 @@ class CUDARAP_API cuRANDWrapper {
      );
 
   public: 
-     const char* getCachePath() ;
+     const char* getCachePath() const ;
   public: 
      unsigned getSeed() const ;
      unsigned getOffset() const ;
      bool isVerbose() const ;
-     LaunchSequence* getLaunchSequence() const ;
+     const LaunchSequence* getLaunchSequence() const ;
   public: 
      unsigned getItems() const ;
      bool hasCacheEnabled() const ;
   public: 
-     void setItems(unsigned items);
+     void setItems(unsigned items);  // via a const_cast 
      void setCacheEnabled(bool enabled);
   public: 
      void setDevRngStates(CUdeviceptr dev_rng_states, bool owner );
   public: 
      CUdeviceptr getDevRngStates() const ;
-     bool isOwner() const ;
+     bool        isOwner() const ;
   public: 
      curandState* getHostRngStates() const ;
   public: 
@@ -124,7 +124,7 @@ class CUDARAP_API cuRANDWrapper {
      int LoadIntoHostBuffer(curandState* host_rng_states, unsigned int elements);
      int LoadIntoHostBufferMasked(curandState* host_rng_states, const std::vector<unsigned>& mask);
 
-     void Summary(const char* msg);
+     void Summary(const char* msg) const ;
      void Dump(const char* msg="cuRANDWrapper::Dump", unsigned int imod=1000);
 
   public:
@@ -154,17 +154,17 @@ class CUDARAP_API cuRANDWrapper {
      bool               m_verbose ; 
 
   private:
-     CUdeviceptr      m_dev_rng_states ;
-     curandState*     m_host_rng_states ;
-     float*           m_test ;
-     LaunchSequence*  m_launchseq ; 
-     unsigned         m_imod ;
-     char*            m_cache_dir ; 
-     bool             m_cache_enabled ;
-     bool             m_owner ; 
-     bool             m_first_resize ; 
+     CUdeviceptr            m_dev_rng_states ;
+     curandState*           m_host_rng_states ;
+     float*                 m_test ;
+     const LaunchSequence*  m_launchseq ; 
+     unsigned               m_imod ;
+     char*                  m_cache_dir ; 
+     bool                   m_cache_enabled ;
+     bool                   m_owner ; 
+     bool                   m_first_resize ; 
 
-     std::vector<LaunchSequence*> m_launchrec ; 
+     std::vector<const LaunchSequence*> m_launchrec ; 
 
 };
 

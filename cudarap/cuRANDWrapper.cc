@@ -23,6 +23,7 @@
 // sysrap-
 #include "PLOG.hh"
 #include "SDigest.hh"
+#include "SRngSpec.hh"
 
 #include "cuRANDWrapper.hh"
 #include "cuRANDWrapper_kernel.hh"
@@ -40,6 +41,10 @@ cuRANDWrapper::instanciate
 ---------------------------
 
 Canonically invoked from ORng::init and from cuRANDWrapperTest::main 
+
+1. instanciates LaunchSequence needed for num_items given the threads_per_block and max_blocks config
+2. instanciates the cuRANDWrapper
+3. sets the cachedir
 
 **/
 
@@ -84,7 +89,7 @@ cuRANDWrapper::cuRANDWrapper
 **/
 
 
-cuRANDWrapper::cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed, unsigned long long offset, bool verbose )
+cuRANDWrapper::cuRANDWrapper( const LaunchSequence* launchseq, unsigned long long seed, unsigned long long offset, bool verbose )
     :
     m_seed(seed),
     m_offset(offset),
@@ -103,17 +108,20 @@ cuRANDWrapper::cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed
 }
 
 
+/**
+cuRANDWrapper::getCachePath
+-----------------------------
 
-const char* cuRANDWrapper::getCachePath() 
+Paths incorporate the rngmax, rngseed and rngoffset, eg::
+
+    /Users/blyth/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin
+
+**/
+const char* cuRANDWrapper::getCachePath() const  
 {
-    char buf[256];
-    snprintf(buf, 256, "%s/cuRANDWrapper_%u_%llu_%llu.bin", 
-                 m_cache_dir,
-                 getItems(),
-                 m_seed,
-                 m_offset); 
-
-    return strdup(buf) ; 
+    unsigned rngmax = getItems(); 
+    const char* rngdir = m_cache_dir ; 
+    return SRngSpec::CURANDStatePath(rngdir, rngmax, m_seed, m_offset );
 }
 
 unsigned cuRANDWrapper::getSeed() const 
@@ -128,7 +136,7 @@ bool cuRANDWrapper::isVerbose() const
 {
     return m_verbose ; 
 }
-LaunchSequence* cuRANDWrapper::getLaunchSequence() const 
+const LaunchSequence* cuRANDWrapper::getLaunchSequence() const 
 { 
     return m_launchseq ; 
 }
@@ -141,8 +149,13 @@ unsigned cuRANDWrapper::getItems() const
 
 void cuRANDWrapper::setItems(unsigned int items)
 {
-    m_launchseq->setItems(items); 
+    LaunchSequence* launchseq = const_cast<LaunchSequence*>(m_launchseq); 
+
+    LOG(error) << "CAUTION : are resizing the launch sequence " ;  
+
+    launchseq->setItems(items); 
 }
+
 
 void cuRANDWrapper::setCacheEnabled(bool enabled)
 { 
@@ -189,8 +202,13 @@ void cuRANDWrapper::setCacheDir(const char* dir)
     m_cache_dir = strdup(dir);
 }
 
- 
+/** 
+cuRANDWrapper::digest
+------------------------
 
+Digest of the entire host curandState buffer.
+
+**/
 
 char* cuRANDWrapper::digest()
 {
@@ -274,12 +292,12 @@ void cuRANDWrapper::test_rng(const char* tag, bool update_states )
 }
 
 
-void cuRANDWrapper::Summary(const char* msg)
+void cuRANDWrapper::Summary(const char* msg) const 
 {
     unsigned nrec = m_launchrec.size();
     for(unsigned i=0 ; i < nrec ; i++)
     {
-        LaunchSequence* seq = m_launchrec[i];  
+        const LaunchSequence* seq = m_launchrec[i];  
         seq->Summary(msg); 
     }
 }

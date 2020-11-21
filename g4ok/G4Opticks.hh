@@ -93,8 +93,8 @@ class G4OK_API G4Opticks
     private:
         static const plog::Severity LEVEL ;
         static const char* fEmbeddedCommandLine ; 
-        static std::string EmbeddedCommandLine(const char* extra=NULL); 
-        Opticks* InitOpticks(const char* keyspec, bool parse_commandline);
+        static std::string EmbeddedCommandLine(const char* extra1=NULL, const char* extra2=NULL); 
+        static Opticks* InitOpticks(const char* keyspec, const char* commandline_extra, bool parse_argv );
     public:
         static G4Opticks* Get();
         static void Initialize(const char* gdmlpath, bool standardize_geant4_materials);
@@ -116,6 +116,10 @@ class G4OK_API G4Opticks
         void setAlignIndex(int align_idx) const ; 
 
         static void Finalize();
+    public:
+        // workaround for getting config to the deferred Opticks instanciation
+        void        setEmbeddedCommandlineExtra(const char* extra); 
+        const char* getEmbeddedCommandlineExtra() const ; 
 
     public:
         bool isLoadedFromCache() const ;
@@ -306,6 +310,7 @@ class G4OK_API G4Opticks
         const GBndLib*             m_blib ; 
         GPho*                      m_hits_wrapper ; // geometry aware hits wrapper
         
+        const char*                m_embedded_commandline_extra ; 
         Opticks*                   m_ok ;
         CTraverser*                m_traverser ; 
         CMaterialTable*            m_mtab ; 

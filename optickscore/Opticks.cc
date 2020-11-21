@@ -39,6 +39,10 @@
 #include "SArgs.hh"
 #include "STime.hh"
 #include "SSys.hh"
+#include "SPath.hh"
+#include "SRngSpec.hh"
+
+
 // brap-
 #include "BTimeKeeper.hh"
 
@@ -387,7 +391,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_tagoffset(0),
     m_verbosity(0),
     m_internal(false),
-    m_frame_renderer(NULL)
+    m_frame_renderer(NULL),
+    m_rngspec(NULL)
 {
 
     m_profile->setStamp(m_sargs->hasArg("--stamp"));
@@ -859,6 +864,10 @@ void Opticks::initResource()
 
     setDetector(detector);
     m_parameters->add<std::string>("idpath", idpath); 
+
+    bool assert_readable = true ; 
+    const char* curandstatepath = getCURANDStatePath(assert_readable);
+    m_parameters->add<std::string>("curandstatepath", curandstatepath); 
 
     LOG(LEVEL) << m_resource->desc()  ;
 }
@@ -3585,7 +3594,43 @@ TorchStepNPY* Opticks::makeSimpleTorchStep(unsigned gencode)
 
 
 unsigned Opticks::getNumPhotonsPerG4Event(){ return m_cfg->getNumPhotonsPerG4Event() ; }
-unsigned Opticks::getRngMax(){       return m_cfg->getRngMax(); }
+
+
+
+const char*        Opticks::getRNGDir() const  { return m_resource->getRNGDir(); } 
+unsigned           Opticks::getRngMax()   const {  return m_cfg->getRngMax() ; }
+unsigned long long Opticks::getRngSeed()  const {  return m_cfg->getRngSeed() ; }
+unsigned long long Opticks::getRngOffset() const { return m_cfg->getRngOffset() ; }
+const char*        Opticks::getCURANDStatePath(bool assert_readable) const 
+{
+    const char* rngdir = getRNGDir(); 
+    unsigned    rngmax = getRngMax();
+    unsigned    rngseed = getRngSeed();
+    unsigned    rngoffset = getRngOffset();
+    const char* path = SRngSpec::CURANDStatePath(rngdir, rngmax, rngseed, rngoffset);
+
+    bool readable = SPath::IsReadable(path); 
+    if(!readable)
+    {
+        LOG(fatal) 
+           << " CURANDStatePath IS NOT READABLE " 
+           << " INVALID RNG config : change options --rngmax/--rngseed/--rngoffset "  
+           << " path " << path 
+           << " rngdir " << rngdir
+           << " rngmax " << rngmax
+           << " rngseed " << rngseed
+           << " rngoffset " << rngoffset
+           ;
+    }
+    if(assert_readable)
+    {
+        assert(readable);
+    }
+    return path ; 
+}
+
+
+
 unsigned Opticks::getBounceMax() {   return m_cfg->getBounceMax(); }
 unsigned Opticks::getRecordMax() {   return m_cfg->getRecordMax() ; }
 
@@ -3633,7 +3678,6 @@ bool Opticks::isValid() {   return m_resource->isValid(); }
 bool Opticks::hasCtrlKey(const char* key) const  { return m_resource->hasCtrlKey(key); }
 bool Opticks::hasVolnames() const { return !hasCtrlKey("novolnames") ; }
 
-const char* Opticks::getRNGDir() { return m_resource->getRNGDir(); } 
 
 std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
 {

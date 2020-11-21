@@ -111,6 +111,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_rtx(0),
     m_renderlooplimit(0),
     m_rngmax(3),     
+    m_rngseed(0ull),     
+    m_rngoffset(0ull),     
     m_rngmaxscale(1000000),     
     m_bouncemax(9),     
     m_recordmax(10),
@@ -1039,14 +1041,38 @@ void OpticksCfg<Listener>::init()
        ("seed",  boost::program_options::value<unsigned>(&m_seed), seed );
 
 
+
+
+
+
    char rngmax[256];
    snprintf(rngmax,256, 
 "Maximum number of photons (in millions) that can be generated/propagated as limited by the number of pre-persisted curand streams. "
 "See opticks-full/opticks-prepare-installation/cudarap-prepare-installation for details. "
 "Default %d ", m_rngmax);
-
    m_desc.add_options()
        ("rngmax",  boost::program_options::value<int>(&m_rngmax), rngmax );
+
+   char rngseed[256];
+   snprintf(rngseed,256, 
+"RNG seed used to select the CURANDState file "
+"Default %llu ", m_rngseed);
+   m_desc.add_options()
+       ("rngseed",  boost::program_options::value<unsigned long long>(&m_rngseed), rngseed );
+
+   char rngoffset[256];
+   snprintf(rngoffset,256, 
+"RNG offset used to select the CURANDState file "
+"Default %llu ", m_rngoffset);
+   m_desc.add_options()
+       ("rngoffset",  boost::program_options::value<unsigned long long>(&m_rngoffset), rngoffset );
+
+
+
+
+
+
+
 
    char bouncemax[128];
    snprintf(bouncemax,128, 
@@ -1813,11 +1839,27 @@ int OpticksCfg<Listener>::getRenderLoopLimit() const
     return m_renderlooplimit ; 
 }
 
+
 template <class Listener>
-int OpticksCfg<Listener>::getRngMax()
+int OpticksCfg<Listener>::getRngMax() const 
 {
     return m_rngmax*m_rngmaxscale ; 
 }
+template <class Listener>
+unsigned long long OpticksCfg<Listener>::getRngSeed() const 
+{
+    return m_rngseed ; 
+}
+template <class Listener>
+unsigned long long OpticksCfg<Listener>::getRngOffset() const 
+{
+    return m_rngoffset ; 
+}
+
+
+
+
+
 
 template <class Listener>
 int OpticksCfg<Listener>::getBounceMax()

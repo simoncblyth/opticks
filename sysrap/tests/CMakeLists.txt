@@ -58,6 +58,7 @@ set(TEST_SOURCES
    SBitTest.cc
    SRandTest.cc
 
+   SRngSpecTest.cc 
 )
 
 set(_TEST_SOURCES
