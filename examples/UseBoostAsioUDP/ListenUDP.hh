@@ -31,8 +31,22 @@ class API ListenUDP
 #include <cstdlib>
 #include <iostream>
 #include <boost/array.hpp>
-#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
+
+#ifdef WITH_BOOST_THREAD
+#include <boost/thread.hpp>
+std::string TID()
+{
+    std::string tid = boost::lexical_cast<std::string>(boost::this_thread::get_id());
+    return tid ;  
+}
+#else
+std::string TID()
+{
+    return "-" ; 
+}
+#endif
 
 
 template <typename T>
@@ -47,10 +61,9 @@ ListenUDP<T>::ListenUDP(boost::asio::io_context& io_context, T* ctrl_ )
     local_endpoint(boost::asio::ip::udp::endpoint( host, port )),
     socket(io_context_)
 {
-    std::string tid = boost::lexical_cast<std::string>(boost::this_thread::get_id());
     std::cout 
         << "ListenUDP::ListenUDP"
-        << " tid " << tid  
+        << " tid " << TID()
         << " local_endpoint " << local_endpoint 
         << std::endl
         ;
@@ -72,10 +85,9 @@ void ListenUDP<T>::handle_receive_from(const boost::system::error_code& error,si
 {
     std::string  message(data_, bytes_recvd); 
 
-    std::string tid = boost::lexical_cast<std::string>(boost::this_thread::get_id());
     std::cout 
         << "ListenUDP::handle_receive_from"
-        << " tid " << tid  
+        << " tid " << TID() 
         << " bytes_recvd " << bytes_recvd 
         << " message " << message  
         << std::endl
@@ -88,6 +100,5 @@ void ListenUDP<T>::handle_receive_from(const boost::system::error_code& error,si
         boost::bind(&ListenUDP::handle_receive_from, this, boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred)
     );
 }
-
 
 

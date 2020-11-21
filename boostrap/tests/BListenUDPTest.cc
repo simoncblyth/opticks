@@ -56,6 +56,9 @@ int main(int argc, char** argv)
 
     SMockViz viz ; 
 
+    LOG(info) << "send this test a message over UDP with eg:" ;  
+    std::cout << "UDP_PORT=15001 ~/env/bin/udp.py hello " << std::endl ;
+
 
 #ifdef WITH_BOOST_ASIO
     boost::asio::io_context io ; 

@@ -14,7 +14,7 @@ build-manual()
      MockViz.cc \
      tests/ListenUDPTest.cc \
     -L$(boost-prefix)/lib \
-    -lboost_system -lboost_thread 
+    -lboost_system -lboost_thread -lpthread
 }
 
 

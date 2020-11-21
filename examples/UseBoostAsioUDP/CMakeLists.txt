@@ -17,6 +17,13 @@ if(NOT BoostAsio_FOUND)
 endif()
 
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
+
+
+
+
 set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_EXACT "REQUIRED COMPONENTS ${COMPONENTS}") # see ../UseBoost/CMakeLists.txt 
 
 set(SOURCES
@@ -34,6 +41,7 @@ target_link_libraries(${name} PUBLIC
    Boost::program_options
    Boost::filesystem
    Boost::regex
+   Threads::Threads
 )
 
 target_include_directories( ${name} PUBLIC 
