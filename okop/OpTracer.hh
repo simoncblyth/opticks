@@ -63,11 +63,11 @@ class OKOP_API OpTracer : public SRenderer {
     public:
        OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate);
     public:
-       void snap(const char* dir);
+       void snap(const char* dir, const char* reldir=NULL);
     private:
        void init();
        void initTracer();
-       void multi_snap(const char* dir);
+       void multi_snap(const char* dir, const char* reldir=NULL);
        void single_snap(const char* path);
        void render();     // fulfils SRenderer protocol
     private:

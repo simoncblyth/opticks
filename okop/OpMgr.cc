@@ -182,10 +182,10 @@ see notes/issues/G4OKTest-snap-fails-with-invalid-context.rst
 
 **/
 
-void OpMgr::snap(const char* dir)
+void OpMgr::snap(const char* dir, const char* reldir)
 {
     LOG(LEVEL) << "[" ; 
-    m_propagator->snap(dir); 
+    m_propagator->snap(dir, reldir); 
     LOG(LEVEL) << "]" ; 
 }
 

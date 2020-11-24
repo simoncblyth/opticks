@@ -62,7 +62,7 @@ struct NPY_API NSnapConfig
     std::string postfix ; 
 
 
-    const char* getSnapPath(const char* dir, int index) const ;
+    const char* getSnapPath(const char* dir, const char* reldir, int index) const ;
     std::string getSnapName(int index) const ;
     static std::string SnapIndex(int index, unsigned width);
     std::string desc() const ; 

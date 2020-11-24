@@ -143,7 +143,7 @@ class G4OK_API G4Opticks
         void setSensorAngularEfficiency( const NPY<float>* sensor_angular_efficiency );
         void saveSensorLib(const char* dir) const ;
         void uploadSensorLib() ;
-        void snap(const char* dir) const ;
+        void snap(const char* dir, const char* reldir=NULL) const ;
     public:
         void setGeometry(const G4VPhysicalVolume* world); 
         void setGeometry(const char* gdmlpath);

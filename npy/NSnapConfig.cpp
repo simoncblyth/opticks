@@ -98,11 +98,11 @@ std::string NSnapConfig::getSnapName(int index) const
     return ss.str();
 }
 
-const char* NSnapConfig::getSnapPath(const char* dir, int index) const 
+const char* NSnapConfig::getSnapPath(const char* dir, const char* reldir, int index) const 
 {
     std::string name = getSnapName(index) ; 
     bool create = true ; 
-    std::string path = BFile::preparePath(dir ? dir : "$TMP", name.c_str(), create);  
+    std::string path = BFile::preparePath(dir ? dir : "$TMP", reldir, name.c_str(), create);  
     return strdup(path.c_str()); 
 }
 

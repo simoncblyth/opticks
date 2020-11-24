@@ -154,7 +154,7 @@ Steps:
 
 
 As unfettered access to the commandline is not really practical in production running 
-where the commandline is used by the host application the use of parse_cmdline=true 
+where the commandline is used by the host application the use of parse_argv=true 
 by embedded Opticks should be regarded as a temporary kludge during development 
 that will not be available in production.
 
@@ -190,7 +190,8 @@ Opticks* G4Opticks::InitOpticks(const char* keyspec, const char* commandline_ext
     }
     else
     {
-        LOG(info) << "instanciate Opticks using embedded commandline only + potentially G4OPTICKS_DEBUG extras" ;  
+        LOG(info) << "instanciate Opticks using embedded commandline only " ;
+        std::cout << ecl << std::endl ;   
         ok = new Opticks(0,0, ecl.c_str() );  // Opticks instanciation must be after BOpticksKey::SetKey
     }
     LOG(LEVEL) << "]ok" ;
@@ -457,8 +458,8 @@ Load geometry cache identified by the OPTICKS_KEY envvar.
 void G4Opticks::loadGeometry()
 {
     const char* keyspec = NULL ;   // NULL means get keyspec from OPTICKS_KEY envvar 
-    bool parse_commandline = true ; 
-    Opticks* ok = InitOpticks(keyspec, m_embedded_commandline_extra, parse_commandline); 
+    bool parse_argv = false ; 
+    Opticks* ok = InitOpticks(keyspec, m_embedded_commandline_extra, parse_argv ); 
     GGeo* ggeo = GGeo::Load(ok); 
     setGeometry(ggeo); 
 }
@@ -695,10 +696,10 @@ void G4Opticks::uploadSensorLib()
 }
 
 
-void G4Opticks::snap(const char* dir) const 
+void G4Opticks::snap(const char* dir, const char* reldir) const 
 {
     assert( m_opmgr && "must setGeometry first" ); 
-    m_opmgr->snap(dir); 
+    m_opmgr->snap(dir, reldir); 
 }
 
 
@@ -730,8 +731,8 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     LOG(verbose) << "( key" ;
     const char* keyspec = X4PhysicalVolume::Key(top) ; 
 
-    bool parse_commandline = false ; 
-    Opticks* ok = InitOpticks(keyspec, m_embedded_commandline_extra, parse_commandline); 
+    bool parse_argv = false ; 
+    Opticks* ok = InitOpticks(keyspec, m_embedded_commandline_extra, parse_argv ); 
  
     const char* dbggdmlpath = ok->getDbgGDMLPath(); 
     if( dbggdmlpath != NULL )
@@ -876,10 +877,14 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
 
 
     unsigned tagoffset = eventID ;  // tags are 1-based : so this will normally be the Geant4 eventID + 1
-    const char* gspath = m_ok->getDirectGenstepPath(tagoffset);   
-    LOG(LEVEL) << " saving gensteps to " << gspath ; 
-    m_gensteps->save(gspath);  
 
+    if(!m_ok->isProduction()) // --production
+    {
+        const char* gspath = m_ok->getDirectGenstepPath(tagoffset);   
+        LOG(LEVEL) << "[ saving gensteps to " << gspath ; 
+        m_gensteps->save(gspath);  
+        LOG(LEVEL) << "] saving gensteps to " << gspath ; 
+    }
 
     if(m_ok->isDbgGSSave()) // --dbggssave
     {
@@ -910,19 +915,21 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
 
         m_hits_wrapper->setPhotons( m_hits ); 
 
-        // minimal g4 side instrumentation in "1st executable" 
-        // do after propagate, so the event will have been created already
-        m_g4hit = m_g4hit_collector->getPhoton();  
-        m_g4evt = m_opmgr->getG4Event(); 
-        m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
 
-        m_g4evt->saveSourceData( m_genphotons ) ; 
+        if(!m_ok->isProduction())
+        {
+            // minimal g4 side instrumentation in "1st executable" 
+            // do after propagate, so the event will have been created already
+            m_g4hit = m_g4hit_collector->getPhoton();  
+            m_g4evt = m_opmgr->getG4Event(); 
+            m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
+            m_g4evt->saveSourceData( m_genphotons ) ; 
+        }
 
 
         m_opmgr->reset();   
-
-        // clears OpticksEvent buffers,   excluding gensteps
-        // clone any buffers to be retained before the reset
+        // reset : clears OpticksEvent buffers, excluding gensteps
+        //         must clone any buffers to be retained before the reset
     }
 
     LOG(LEVEL) << "]] num_hits " << m_num_hits ; 

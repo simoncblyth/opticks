@@ -122,23 +122,24 @@ for example::
 
 **/
 
-void OpTracer::snap(const char* dir)   
+void OpTracer::snap(const char* dir, const char* reldir)   
 {
     LOG(info) 
         << "(" << m_snap_config->desc()
         << " dir " << dir 
+        << " reldir " << reldir 
         ;
 
     int num_steps = m_snap_config->steps ; 
 
     if( num_steps == 0)
     {
-        const char* path = m_snap_config->getSnapPath(dir, -1); 
+        const char* path = m_snap_config->getSnapPath(dir, reldir, -1); 
         single_snap(path);  
     }
     else
     {
-        multi_snap(dir); 
+        multi_snap(dir, reldir); 
     }
 
     m_otracer->report("OpTracer::snap");   // saves for runresultsdir
@@ -150,7 +151,7 @@ void OpTracer::snap(const char* dir)
 
 
 
-void OpTracer::multi_snap(const char* dir)
+void OpTracer::multi_snap(const char* dir, const char* reldir)
 {
     int num_steps = m_snap_config->steps ; 
 
@@ -186,7 +187,7 @@ void OpTracer::multi_snap(const char* dir)
             m_composition->setEyeZ( eyez ); 
         }
 
-        const char* path = m_snap_config->getSnapPath(dir, i); 
+        const char* path = m_snap_config->getSnapPath(dir, reldir, i); 
         single_snap(path);  
     }
 }

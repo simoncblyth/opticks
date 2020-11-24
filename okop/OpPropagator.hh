@@ -72,7 +72,7 @@ class OKOP_API OpPropagator {
    public:
        void propagate();
        void cleanup();
-       void snap(const char* dir);
+       void snap(const char* dir, const char* reldir=NULL);
 
    private:
        // invoked internally by propagate

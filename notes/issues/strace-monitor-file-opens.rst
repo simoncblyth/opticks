@@ -3,6 +3,174 @@ strace-monitor-file-opens
 
 
 
+
+Still some remain
+--------------------
+
+::
+
+    o.sh --g4oktest --strace
+
+    2020-11-25 00:55:55.311 DEBUG [206873] [G4OKTest::propagate@297] ]
+    === o-main : runline PWD /home/blyth/opticks/g4ok RC 0 Wed Nov 25 00:55:55 CST 2020
+    strace -o /tmp/strace.log -e open /home/blyth/local/opticks/lib/G4OKTest --g4oktest --strace
+    /home/blyth/local/opticks/bin/strace.py -f O_CREAT
+    strace.py -f O_CREAT
+     G4OKTest.log                                                                     :          O_WRONLY|O_CREAT :  0644 
+     /var/tmp/blyth/OptiXCache/cache.db                                               :            O_RDWR|O_CREAT :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db                                               : O_WRONLY|O_CREAT|O_APPEND :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db-wal                                           :            O_RDWR|O_CREAT :  0664 
+     /var/tmp/blyth/OptiXCache/cache.db-shm                                           :            O_RDWR|O_CREAT :  0664 
+     /home/blyth/.opticks/runcache/CDevice.bin                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/SensorLib/sensorData.npy                             :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/SensorLib/angularEfficiency.npy                      :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+
+     /tmp/blyth/opticks/g4ok/tests/G4OKTest/snap.ppm                                  :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+
+     /home/blyth/local/opticks/results/G4OKTest/R0_cvd_/20201125_005541/OTracerTimes.ini :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/evt/g4live/torch/0/parameters.json                   :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+
+
+    /home/blyth/local/opticks/bin/o.sh : RC : 0
+    [blyth@localhost g4ok]$ 
+
+
+    ::
+
+    G4Opticks=INFO G4OKTest=INFO strace  -e open /home/blyth/local/opticks/lib/G4OKTest
+
+    ...
+    2020-11-25 00:42:10.681 INFO  [184824] [GNodeLib::getFirstNodeIndexForGDMLAuxTargetLVName@249]  target_lvname /dd/Geometry/AD/lvADE0xc2a78c00x3ef9140 nidxs.size() 2 nidx 3153
+    2020-11-25 00:42:10.682 ERROR [184824] [G4OKTest::collectGensteps@267]  eventID 0 num_genstep_photons 5000
+    open("/tmp/blyth/opticks/evt/g4live/torch/1/gs.json", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 54
+    open("/tmp/blyth/opticks/evt/g4live/torch/1/gs.npy", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 54
+    open("/proc/self/status", O_RDONLY)     = 54
+
+
+Skip saving gensteps in production::
+
+     862 int G4Opticks::propagateOpticalPhotons(G4int eventID)
+     863 {
+     864     LOG(LEVEL) << "[[" ;
+     865     assert( m_genstep_collector );
+     866     m_gensteps = m_genstep_collector->getGensteps();
+     867     m_gensteps->setArrayContentVersion(G4VERSION_NUMBER);
+     868     m_gensteps->setArrayContentIndex(eventID);
+     869 
+     870     unsigned num_gensteps = m_gensteps->getNumItems();
+     871     LOG(LEVEL) << " num_gensteps "  << num_gensteps ;
+     872     if( num_gensteps == 0 )
+     873     {
+     874         LOG(fatal) << "SKIP as no gensteps have been collected " ;
+     875         return 0 ;
+     876     }
+     877 
+     878 
+     879     unsigned tagoffset = eventID ;  // tags are 1-based : so this will normally be the Geant4 eventID + 1
+     880     
+     881     if(!m_ok->isProduction()) // --production
+     882     {
+     883         const char* gspath = m_ok->getDirectGenstepPath(tagoffset);
+     884         LOG(LEVEL) << "[ saving gensteps to " << gspath ; 
+     885         m_gensteps->save(gspath);  
+     886         LOG(LEVEL) << "] saving gensteps to " << gspath ;
+     887     }   
+
+
+
+
+
+
+Check with new defaults for embedded commandline in G4Opticks
+-----------------------------------------------------------------
+
+::
+
+    o.sh --g4oktest --strace
+
+    2020-11-25 00:12:34.053 INFO  [139870] [G4Opticks::InitOpticks@193] instanciate Opticks using embedded commandline only 
+     --compute --embedded --xanalytic --production --nosave 
+    ...
+
+    2020-11-25 00:12:47.181 INFO  [139870] [OpTracer::snap@148] )
+    === o-main : runline PWD /home/blyth/opticks/g4ok RC 0 Wed Nov 25 00:12:47 CST 2020
+    strace -o /tmp/strace.log -e open /home/blyth/local/opticks/lib/G4OKTest --g4oktest --strace
+    /home/blyth/local/opticks/bin/strace.py -f O_CREAT
+    strace.py -f O_CREAT
+     G4OKTest.log                                                                     :          O_WRONLY|O_CREAT :  0644 
+
+     /var/tmp/blyth/OptiXCache/cache.db                                               :            O_RDWR|O_CREAT :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db                                               : O_WRONLY|O_CREAT|O_APPEND :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db-wal                                           :            O_RDWR|O_CREAT :  0664 
+     /var/tmp/blyth/OptiXCache/cache.db-shm                                           :            O_RDWR|O_CREAT :  0664 
+     /home/blyth/.opticks/runcache/CDevice.bin                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+           judged OK
+
+     /tmp/blyth/opticks/G4OKTest/SensorLib/sensorData.npy                             :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/SensorLib/angularEfficiency.npy                      :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+           explicitly done from that test and positioned appropriately, so OK 
+
+     /tmp/blyth/opticks/evt/g4live/torch/1/gs.json                                    :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/evt/g4live/torch/1/gs.npy                                     :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+           genstep saving from where ? 
+
+     /tmp/blyth/opticks/G4OKTest/evt/g4live/torch/-1/ht.npy                           :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/evt/g4live/torch/-1/so.json                          :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/evt/g4live/torch/-1/so.npy                           :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+           Geant4 source photons are empty anyhow  : so skip these in production
+
+     /tmp/blyth/opticks/g4ok/tests/G4OKTest/snap.ppm                                  :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+           TODO: should use standard dir for G4OKTest 
+ 
+     /home/blyth/local/opticks/results/G4OKTest/R0_cvd_/20201125_001234/OTracerTimes.ini :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/evt/g4live/torch/0/parameters.json                   :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+
+
+
+    /home/blyth/local/opticks/bin/o.sh : RC : 0
+    [blyth@localhost g4ok]$ 
+
+
+
+Interleaved::
+
+   strace -e open /home/blyth/local/opticks/lib/G4OKTest --g4oktest --strace
+
+
+The -1 are Geant4 which are empty anyhow so skip them in production::
+
+     862 int G4Opticks::propagateOpticalPhotons(G4int eventID)
+     863 {
+     ...
+     902     if(m_gpu_propagate)
+     903     {
+     904         m_opmgr->setGensteps(m_gensteps);
+     905 
+     906         m_opmgr->propagate();     // GPU simulation is done in here 
+     907 
+     908         OpticksEvent* event = m_opmgr->getEvent();
+     909         m_hits = event->getHitData()->clone() ;
+     910         m_num_hits = m_hits->getNumItems() ;
+     911 
+     912         m_hits_wrapper->setPhotons( m_hits );
+     913 
+     914         
+     915         if(!m_ok->isProduction())
+     916         {
+     917             // minimal g4 side instrumentation in "1st executable" 
+     918             // do after propagate, so the event will have been created already
+     919             m_g4hit = m_g4hit_collector->getPhoton();
+     920             m_g4evt = m_opmgr->getG4Event();
+     921             m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
+     922             m_g4evt->saveSourceData( m_genphotons ) ;
+     923         }
+     924         
+
+
+
+
+
+
 Nov 2020 : OKTest strace check
 --------------------------------
 

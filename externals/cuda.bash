@@ -43,6 +43,28 @@ Samples
 * https://github.com/NVIDIA/cuda-samples
 
 
+CUDA Multithreading
+---------------------
+
+* https://docs.nvidia.com/cuda/cuda-samples/index.html#cudaopenmp
+
+::
+
+    cuda-samples-cd 0_Simple/simpleMPI
+    cuda-samples-cd 0_Simple/simpleCallback
+
+
+    epsilon:simpleMPI blyth$ cuda-samples-find pthread.h
+    /usr/local/epsilon/cuda/NVIDIA_CUDA-9.1_Samples/4_Finance/MonteCarloMultiGPU/multithreading.h
+    /usr/local/epsilon/cuda/NVIDIA_CUDA-9.1_Samples/6_Advanced/interval/boost/config/platform/bsd.hpp
+    /usr/local/epsilon/cuda/NVIDIA_CUDA-9.1_Samples/6_Advanced/threadMigration/threadMigration.cpp
+    /usr/local/epsilon/cuda/NVIDIA_CUDA-9.1_Samples/common/inc/multithreading.h
+    /usr/local/epsilon/cuda/NVIDIA_CUDA-9.1_Samples/0_Simple/UnifiedMemoryStreams/UnifiedMemoryStreams.cu
+    /usr/local/epsilon/cuda/NVIDIA_CUDA-9.1_Samples/0_Simple/simpleCallback/multithreading.h
+    epsilon:simpleMPI blyth$ 
+
+
+
 CUDA learning refs
 ---------------------
 
@@ -1168,7 +1190,7 @@ cuda-ecd(){          cd $(cuda-edir); }
 cuda-icd(){          cd $(cuda-idir); }
 cuda-dcd(){          cd $(cuda-download-dir); }
 cuda-wcd(){          cd $(cuda-writable-dir); }
-cuda-samples-cd(){   cd $(cuda-samples-dir) ; }
+cuda-samples-cd(){   cd $(cuda-samples-dir)/$1 ; }
 
 cuda-find(){ find $(cuda-idir) -name '*.h' -exec grep -H ${1:-cudaGraphics} {} \; ; }
 

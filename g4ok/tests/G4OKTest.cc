@@ -88,7 +88,7 @@ class G4OKTest
         int          m_torchtarget ; 
         G4Opticks*   m_g4ok ; 
         bool         m_debug ; 
-        const char*  m_snapdir ; 
+        const char*  m_tmpdir ; 
 };
 
 
@@ -102,7 +102,7 @@ G4OKTest::G4OKTest(int argc, char** argv)
     m_torchtarget(PLOG::instance->get_int_after("--torchtarget", "-1")),
     m_g4ok(new G4Opticks),
     m_debug(true),
-    m_snapdir("$TMP/g4ok/tests/G4OKTest")
+    m_tmpdir("$TMP/G4OKTest")
 {
     init();
 }
@@ -272,6 +272,7 @@ void G4OKTest::collectGensteps(int eventID)
 
 void G4OKTest::propagate(int eventID)
 {
+    LOG(LEVEL) << "[" ; 
     int num_hit = m_g4ok->propagateOpticalPhotons(eventID);
     unsigned num_genstep_photons = getNumGenstepPhotons(eventID); 
 
@@ -291,9 +292,9 @@ void G4OKTest::propagate(int eventID)
 
     if( eventID == 0 )
     {       
-        m_g4ok->snap(m_snapdir);
+        m_g4ok->snap(m_tmpdir, "snap");
     }
-
+    LOG(LEVEL) << "]" ; 
 }
 
 void G4OKTest::checkHits(int eventID) const 

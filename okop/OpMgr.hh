@@ -33,7 +33,7 @@ template <typename T> class NPY ;
 
 class OpPropagator ; 
 
-
+#include <cstddef>
 #include "plog/Severity.h"
 #include "OKOP_API_EXPORT.hh"
 #include "OKOP_HEAD.hh"
@@ -89,7 +89,7 @@ class OKOP_API OpMgr {
        OpticksEvent* getG4Event() const ; 
        void reset();
 
-       void snap(const char* dir);
+       void snap(const char* dir, const char* reldir=NULL);
    private:
        void init();
        void cleanup();
