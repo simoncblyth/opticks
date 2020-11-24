@@ -70,23 +70,76 @@
 
 #include "PLOG.hh"
 
-
 const plog::Severity G4Opticks::LEVEL = PLOG::EnvLevel("G4Opticks", "DEBUG")  ;
-
 
 G4Opticks* G4Opticks::fInstance = NULL ;
 
-//const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0"  ; 
-const char* G4Opticks::fEmbeddedCommandLine = " --gltf 3 --compute --save --embedded --natural --printenabled --pindex 0 --xanalytic"  ; 
+const char* G4Opticks::OPTICKS_EMBEDDED_COMMANDLINE = "OPTICKS_EMBEDDED_COMMANDLINE" ; 
+const char* G4Opticks::fEmbeddedCommandLine_pro = " --compute --embedded --xanalytic --production --nosave" ;
+const char* G4Opticks::fEmbeddedCommandLine_dev = " --compute --embedded --xanalytic --save --natural --printenabled --pindex 0" ;
 
-std::string G4Opticks::EmbeddedCommandLine(const char* extra1, const char* extra2)
+/**
+G4Opticks::EmbeddedCommandLine
+--------------------------------
+
+When the OPTICKS_EMBEDDED_COMMANDLINE envvar is not defined the default value of "pro" 
+is used. If the envvar OPTICKS_EMBEDDED_COMMANDLINE is defined with 
+special values of "dev" or "pro" then the corresponding static 
+variable default commandlines are used for the embedded Opticks commandline.
+Other values of the envvar are passed asis to the Opticks instanciation.
+
+Calls to G4Opticks::setEmbeddedCommandLineExtra made prior to 
+Opticks instanciation in G4Opticks::setGeometry will append to the 
+embedded commandline setup via envvar or default. Caution that duplication 
+of options or invalid combinations of options will cause asserts.
+
+**/
+
+std::string G4Opticks::EmbeddedCommandLine(const char* extra )  // static
 {
+    const char* ecl = SSys::getenvvar(OPTICKS_EMBEDDED_COMMANDLINE, "pro") ; 
+
+    if(strcmp(ecl, "pro") == 0)
+    {
+        ecl = fEmbeddedCommandLine_pro ; 
+    }
+    else if(strcmp(ecl, "dev") == 0)
+    {
+        ecl = fEmbeddedCommandLine_dev ; 
+    } 
+    else
+    {
+        LOG(LEVEL) << "Using " << OPTICKS_EMBEDDED_COMMANDLINE << " as is " << ecl ; 
+    }
+
     std::stringstream ss ; 
-    ss << fEmbeddedCommandLine << " " ;
-    if(extra1) ss << " " << extra1 ; 
-    if(extra2) ss << " " << extra2 ; 
+    ss << ecl << " " ;
+    if(extra) ss << " " << extra ; 
     return ss.str();  
 }
+
+/**
+G4Opticks::setEmbeddedCommandLineExtra
+----------------------------------------
+
+Sets up the Opticks commandline used during Opticks instanciation in G4Opticks::InitOpticks
+which is invoked from G4Opticks::setGeometry or G4Opticks::loadGeometry
+
+**/
+
+void  G4Opticks::setEmbeddedCommandLineExtra(const char* extra)  
+{
+    m_embedded_commandline_extra = extra ? strdup(extra) : NULL ; 
+}
+const char* G4Opticks::getEmbeddedCommandLineExtra() const 
+{
+    return m_embedded_commandline_extra ; 
+}
+
+
+
+
+
 
 /**
 G4Opticks::InitOpticks
@@ -122,8 +175,7 @@ Opticks* G4Opticks::InitOpticks(const char* keyspec, const char* commandline_ext
     BOpticksKey::SetKey(keyspec);
     LOG(LEVEL) << "]SetKey" ;
 
-    const char* g4opticks_debug = SSys::getenvvar("G4OPTICKS_DEBUG") ; 
-    std::string ecl = EmbeddedCommandLine(g4opticks_debug, commandline_extra) ; 
+    std::string ecl = EmbeddedCommandLine(commandline_extra) ; 
     LOG(LEVEL) << "EmbeddedCommandLine : [" << ecl << "]" ; 
 
     LOG(LEVEL) << "[ok" ;
@@ -242,31 +294,6 @@ void G4Opticks::setPlacementOuterVolume(bool outer_volume)  // TODO: eliminate t
 {
     m_placement_outer_volume = outer_volume ;  
 }
-
-
-/**
-G4Opticks::setEmbeddedCommandlineExtra
-----------------------------------------
-
-Sets up the Opticks commandline used during Opticks instanciation in G4Opticks::InitOpticks
-which is invoked from G4Opticks::setGeometry or G4Opticks::loadGeometry
-
-**/
-
-void  G4Opticks::setEmbeddedCommandlineExtra(const char* extra)   // TODO: eliminate the need for this
-{
-    m_embedded_commandline_extra = extra ? strdup(extra) : NULL ; 
-}
-const char* G4Opticks::getEmbeddedCommandlineExtra() const 
-{
-    return m_embedded_commandline_extra ; 
-}
-
-
-
-
-
-
 
 
 

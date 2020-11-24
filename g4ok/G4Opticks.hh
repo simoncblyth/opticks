@@ -92,9 +92,16 @@ class G4OK_API G4Opticks
         friend class G4OKTest ; 
     private:
         static const plog::Severity LEVEL ;
-        static const char* fEmbeddedCommandLine ; 
-        static std::string EmbeddedCommandLine(const char* extra1=NULL, const char* extra2=NULL); 
+
+        static const char* OPTICKS_EMBEDDED_COMMANDLINE ; 
+        static const char* fEmbeddedCommandLine_dev ;
+        static const char* fEmbeddedCommandLine_pro ;
+        static std::string EmbeddedCommandLine(const char* extra); 
         static Opticks* InitOpticks(const char* keyspec, const char* commandline_extra, bool parse_argv );
+    public:
+        // workaround for getting config to the deferred Opticks instanciation
+        void        setEmbeddedCommandLineExtra(const char* extra); 
+        const char* getEmbeddedCommandLineExtra() const ; 
     public:
         static G4Opticks* Get();
         static void Initialize(const char* gdmlpath, bool standardize_geant4_materials);
@@ -116,11 +123,6 @@ class G4OK_API G4Opticks
         void setAlignIndex(int align_idx) const ; 
 
         static void Finalize();
-    public:
-        // workaround for getting config to the deferred Opticks instanciation
-        void        setEmbeddedCommandlineExtra(const char* extra); 
-        const char* getEmbeddedCommandlineExtra() const ; 
-
     public:
         bool isLoadedFromCache() const ;
         unsigned getNumSensorVolumes() const ; 

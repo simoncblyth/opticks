@@ -151,7 +151,9 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_srcgltfbase("$TMP/nd"),
     m_srcgltfname("scene.gltf"),
     m_gltfconfig("check_surf_containment=0,check_aabb_containment=0,instance_repeat_min=400,instance_vertex_min=0"),
+#ifdef WITH_M_GLTF
     m_gltf(0),
+#endif
     m_gltftarget(0),
     m_layout(1),
     m_lodconfig("levels=3,verbosity=3"),
@@ -1290,6 +1292,7 @@ void OpticksCfg<Listener>::init()
        ("gltftarget",  boost::program_options::value<int>(&m_gltftarget), gltftarget );
 
 
+#ifdef WITH_M_GLTF
    m_desc.add_options()
        ("gltf",  boost::program_options::value<int>(&m_gltf), 
              "Integer controlling  glTF analytic geometry file loading. "
@@ -1299,6 +1302,7 @@ void OpticksCfg<Listener>::init()
              "gltf == 3 combines G4 triangulation for OpenGL viz (lowpoly and more reliable that home grown poly)   "
              "with glTF analytic for raytrace and simulation (see GScene::createVolume)  "                 
        );
+#endif
 
 
    char layout[128];
@@ -2140,12 +2144,14 @@ const std::string& OpticksCfg<Listener>::getGLTFConfig()
    return m_gltfconfig ; 
 }
 
+
+#ifdef WITH_M_GLTF
 template <class Listener>
 int OpticksCfg<Listener>::getGLTF()
 {
     return m_gltf ; 
 }
-
+#endif
 
 template <class Listener>
 int OpticksCfg<Listener>::getGLTFTarget()

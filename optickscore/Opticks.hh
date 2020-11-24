@@ -339,9 +339,11 @@ class OKCORE_API Opticks {
        const char* getGLTFPath() const ;      // output GLTF path
    public:
        // from cfg
+#ifdef WITH_M_GLTF
        int         getGLTF() const ;
-       int         getGLTFTarget() const ;
        bool        isGLTF() const ;
+#endif
+       int         getGLTFTarget() const ;
 
    public:
        int         getLayout() const ;

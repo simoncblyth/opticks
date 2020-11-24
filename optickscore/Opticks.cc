@@ -1684,19 +1684,20 @@ const char* Opticks::getSensorSurface()
 
 
 
-
+#ifdef WITH_M_GLTF
 int  Opticks::getGLTF() const 
 {
     return m_cfg->getGLTF(); 
 }
-int  Opticks::getGLTFTarget() const 
-{
-    return m_cfg->getGLTFTarget(); 
-}
-
 bool Opticks::isGLTF() const 
 {
     return getGLTF() > 0 ; 
+}
+#endif
+
+int  Opticks::getGLTFTarget() const 
+{
+    return m_cfg->getGLTFTarget(); 
 }
 
 const char* Opticks::getGLTFPath() const { return m_resource->getGLTFPath() ; }
