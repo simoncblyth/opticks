@@ -17,7 +17,16 @@
 # See the License for the specific language governing permissions and 
 # limitations under the License.
 #
+"""
+strace.py
+===========
+ 
+Filters strace logging output, for example produced by::
+ 
+   o.sh --oktest --strace
 
+
+"""
 
 import os, sys, re, argparse, logging
 from collections import OrderedDict as odict

@@ -595,6 +595,8 @@ void Opticks::postgeocache()
 
 void Opticks::postpropagate()
 {
+   if(isProduction()) return ;  // --production
+
    saveProfile();
 
    //double tcut = 0.0001 ; 

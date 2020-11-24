@@ -3,6 +3,41 @@ strace-monitor-file-opens
 
 
 
+Nov 2020 : OKTest strace check
+--------------------------------
+
+::
+
+    [blyth@localhost ok]$ o.sh --oktest --strace --production --nosave
+    ...
+    2020-11-24 18:10:27.892 INFO  [29724] [Opticks::dumpRC@247]  rc 0 rcmsg : -
+    === o-main : runline PWD /home/blyth/opticks/ok RC 0 Tue Nov 24 18:10:28 CST 2020
+    strace -o /tmp/strace.log -e open /home/blyth/local/opticks/lib/OKTest --oktest --strace --production --nosave
+    /home/blyth/local/opticks/bin/strace.py -f O_CREAT
+    strace.py -f O_CREAT
+     OKTest.log                                                                       :          O_WRONLY|O_CREAT :  0644 
+     /var/tmp/blyth/OptiXCache/cache.db                                               :            O_RDWR|O_CREAT :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db                                               : O_WRONLY|O_CREAT|O_APPEND :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db-wal                                           :            O_RDWR|O_CREAT :  0664 
+     /var/tmp/blyth/OptiXCache/cache.db-shm                                           :            O_RDWR|O_CREAT :  0664 
+     /home/blyth/.opticks/runcache/CDevice.bin                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/Time.ini                              :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/DeltaTime.ini                         :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/VM.ini                                :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/DeltaVM.ini                           :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/OpticksProfile.npy                    :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/OpticksProfileLabels.npy              :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/OpticksProfileAcc.npy                 :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/OpticksProfileAccLabels.npy           :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/OpticksProfileLis.npy                 :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/OpticksProfileLisLabels.npy           :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/OKTest/evt/g4live/torch/0/parameters.json                     :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+    /home/blyth/local/opticks/bin/o.sh : RC : 0
+
+
+
+
+
 
 FIXED ISSUE : strace running shows log being written into unexpected location beside the binary /home/blyth/local/opticks/lib/OKG4Test.log
 --------------------------------------------------------------------------------------------------------------------------------------------

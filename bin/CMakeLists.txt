@@ -26,7 +26,13 @@ set(SCRIPTS
    findpkg.py
    pc.py
    ptx.py
+   strace.py 
 )
+
+if(APPLE)
+   list(APPEND SCRIPTS OKTest_macOS_standalone.sh)
+endif()
+
 
 # top level python needs to go in bin, 
 # but modules that need to be imported must go to py/opticks/bin

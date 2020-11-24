@@ -304,7 +304,7 @@ o-postline()
 {
    local postline
    if [ "${OPTICKS_DBG}" == "2" ]; then 
-       postline="strace.py -f O_CREAT"  
+       postline="$OPTICKS_PREFIX/bin/strace.py -f O_CREAT"  
    else
        postline="echo $FUNCNAME : dummy"
    fi

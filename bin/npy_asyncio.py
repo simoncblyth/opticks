@@ -25,6 +25,12 @@ https://docs.python.org/3/library/asyncio-dev.html#asyncio-multithreading
 https://docs.python.org/3/library/asyncio-dev.html#concurrency-and-multithreading
 https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor
 
+
+Similar to first example from:
+
+* https://www.oreilly.com/library/view/using-asyncio-in/9781492075325/ch04.html
+
+
 """
 import os, sys, logging, asyncio, numpy as np
 from opticks.bin.npy import serialize_with_header, HEADER_BYTES, unpack_prefix
