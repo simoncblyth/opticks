@@ -1,5 +1,6 @@
 #include <vector>
 #include "CDevice.hh"
+#include "SPath.hh"
 #include "OPTICKS_LOG.hh"
 
 void test_SaveLoad(const char* dirpath)
@@ -27,8 +28,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //const char* dirpath = "/tmp"  ; 
-    const char* dirpath = "/home/blyth/.opticks/runcache" ; 
+    const char* dirpath = SPath::GetHomePath(".opticks/runcache") ; 
 
     //test_SaveLoad(dirpath); 
     test_Visible(dirpath); 

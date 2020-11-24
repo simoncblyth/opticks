@@ -4,6 +4,17 @@
 CDevice
 ============
 
+CDevice instance persists summary details about a single device.
+Static methods with std::vector arguments used to handle multiple
+devices.  
+
+By persisting CDevice for all attached devices when the CUDA_VISIBLE_DEVICES
+envvar is not defined it becomes possible to get the "absolute" ordinal 
+when the envvar is used and only a subset of all devices are visible.
+
+This is used from OContext::initDevices
+
+
 **/
 
 #include <cstddef>

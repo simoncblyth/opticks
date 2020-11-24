@@ -14,6 +14,9 @@
 
 const plog::Severity CDevice::LEVEL = PLOG::EnvLevel("CDevice", "DEBUG"); 
 
+
+const char* CDevice::CVD = "CUDA_VISIBLE_DEVICES" ; 
+
 const char* CDevice::desc() const 
 {
     std::stringstream ss ; 
@@ -43,6 +46,11 @@ bool CDevice::matches(const CDevice& other) const
 CDevice::Collect
 --------------------
 
+Use CUDA API to collect a summary of the cudaDeviceProp properties 
+regarding all attached devices into the vector of CDevice argument.
+
+When ordinal_from_index=true the CDevice.ordinal value is taken 
+from the index in the order returned by cudaGetDeviceProperties(&p, i)
 
 **/
 
@@ -113,7 +121,9 @@ void CDevice::write( std::ostream& out ) const
     memcpy( p, &totalGlobalMem,      sizeof(totalGlobalMem) )      ; p += sizeof(totalGlobalMem) ; 
 
     out.write(buffer, size);   
+    assert( p - buffer == size ); 
     delete [] buffer ; 
+
 }
 
 void CDevice::read( std::istream& in )
@@ -136,7 +146,6 @@ void CDevice::read( std::istream& in )
     delete [] buffer ; 
 }  
 
-const char* CDevice::CVD = "CUDA_VISIBLE_DEVICES" ; 
 
 
 /**
@@ -196,6 +205,11 @@ void CDevice::Visible(std::vector<CDevice>& visible, const char* dirpath, bool n
     }
 }
 
+/**
+CDevice::FindIndexOfMatchingDevice
+------------------------------------
+
+**/
 
 int CDevice::FindIndexOfMatchingDevice( const CDevice& d, const std::vector<CDevice>& all )
 {

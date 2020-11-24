@@ -35,6 +35,52 @@ Nov 2020 : OKTest strace check
     /home/blyth/local/opticks/bin/o.sh : RC : 0
 
 
+Running with logging intermingled::
+
+    strace -e open /home/blyth/local/opticks/lib/OKTest --oktest --strace --production --nosave 
+
+Shows that all those creates are happening together, coming from Opticks::postpropagate. 
+So avoid that by skipping in production::
+
+     596 void Opticks::postpropagate()
+     597 {
+     598    if(isProduction()) return ;  // --production
+     600    saveProfile();
+     ...
+     620    saveParameters();
+     623 }
+
+
+After that are down to six O_CREAT::
+
+    === o-main : runline PWD /home/blyth/opticks RC 0 Tue Nov 24 19:57:14 CST 2020
+    strace -o /tmp/strace.log -e open /home/blyth/local/opticks/lib/OKTest --oktest --strace --production --nosave
+    /home/blyth/local/opticks/bin/strace.py -f O_CREAT
+    strace.py -f O_CREAT
+     OKTest.log                                                                       :          O_WRONLY|O_CREAT :  0644 
+     /var/tmp/blyth/OptiXCache/cache.db                                               :            O_RDWR|O_CREAT :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db                                               : O_WRONLY|O_CREAT|O_APPEND :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db-wal                                           :            O_RDWR|O_CREAT :  0664 
+     /var/tmp/blyth/OptiXCache/cache.db-shm                                           :            O_RDWR|O_CREAT :  0664 
+     /home/blyth/.opticks/runcache/CDevice.bin                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+
+
+
+/home/blyth/.opticks/runcache/CDevice.bin
+    written from OContext::initDevices CDevice::Visible the save happens at OContext instanciation
+    when CUDA_VISIBLE_DEVICES envvar is not defined  
+
+/var/tmp/blyth/OptiXCache/cache.db                                               :            O_RDWR|O_CREAT :  0666 
+/var/tmp/blyth/OptiXCache/cache.db                                               : O_WRONLY|O_CREAT|O_APPEND :  0666 
+/var/tmp/blyth/OptiXCache/cache.db-wal                                           :            O_RDWR|O_CREAT :  0664 
+/var/tmp/blyth/OptiXCache/cache.db-shm                                           :            O_RDWR|O_CREAT :  0664 
+
+     the cache is created at every run because it is by default deleted at termination by OContext::cleanUpCache
+     that used to be necessary due to the default path not including the username but could now
+     be skipped as the default cache path is controlled to be within user directory 
+ 
+
+Because these creates only happen at startup, not per event, I judge it OK even in production running.
 
 
 
