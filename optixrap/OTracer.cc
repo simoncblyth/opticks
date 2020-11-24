@@ -199,9 +199,14 @@ void OTracer::report(const char* msg)
     m_trace_times->addAverage("launch"); 
     m_trace_times->dump("OTracer::report"); 
 
-    const char* runresultsdir = m_ocontext->getRunResultsDir(); 
-    LOG(info) << "save to " << runresultsdir ; 
-    m_trace_times->save(runresultsdir);
+
+    if(!m_ok->isProduction())
+    {
+        const char* runresultsdir = m_ocontext->getRunResultsDir(); 
+        LOG(info) << "save to " << runresultsdir ; 
+        m_trace_times->save(runresultsdir);
+    }
+
 }
 
 

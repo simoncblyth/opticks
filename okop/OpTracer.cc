@@ -125,7 +125,7 @@ for example::
 void OpTracer::snap(const char* dir, const char* reldir)   
 {
     LOG(info) 
-        << "(" << m_snap_config->desc()
+        << "[" << m_snap_config->desc()
         << " dir " << dir 
         << " reldir " << reldir 
         ;
@@ -144,9 +144,12 @@ void OpTracer::snap(const char* dir, const char* reldir)
 
     m_otracer->report("OpTracer::snap");   // saves for runresultsdir
 
-    m_ok->saveParameters(); 
+    if(!m_ok->isProduction())
+    {
+        m_ok->saveParameters(); 
+    }
 
-    LOG(info) << ")" ;
+    LOG(info) << "]" ;
 }
 
 

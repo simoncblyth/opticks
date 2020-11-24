@@ -27,6 +27,7 @@ set(SCRIPTS
    pc.py
    ptx.py
    strace.py 
+   js.py 
 )
 
 if(APPLE)

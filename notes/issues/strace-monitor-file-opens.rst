@@ -3,9 +3,88 @@ strace-monitor-file-opens
 
 
 
+Commandline to enable strace monitoring
+-----------------------------------------
+
+::
+
+    o.sh --g4oktest --strace
+
 
 Still some remain
 --------------------
+
+But none of the remaining are per-event so should be OK like this.
+
+::
+
+    2020-11-25 03:07:37.074 DEBUG [415365] [G4OKTest::propagate@297] ]
+    === o-main : runline PWD /home/blyth RC 0 Wed Nov 25 03:07:37 CST 2020
+    strace -o /tmp/strace.log -e open /home/blyth/local/opticks/lib/G4OKTest --g4oktest --strace
+    /home/blyth/local/opticks/bin/strace.py -f O_CREAT
+    strace.py -f O_CREAT
+     G4OKTest.log                                                                     :          O_WRONLY|O_CREAT :  0644 
+     /var/tmp/blyth/OptiXCache/cache.db                                               :            O_RDWR|O_CREAT :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db                                               : O_WRONLY|O_CREAT|O_APPEND :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db-wal                                           :            O_RDWR|O_CREAT :  0664 
+     /var/tmp/blyth/OptiXCache/cache.db-shm                                           :            O_RDWR|O_CREAT :  0664 
+     /home/blyth/.opticks/runcache/CDevice.bin                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/SensorLib/sensorData.npy                             :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/SensorLib/angularEfficiency.npy                      :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/snap/snap.ppm                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+    /home/blyth/local/opticks/bin/o.sh : RC : 0
+    [blyth@localhost ~]$ 
+
+
+::
+
+    2020-11-25 02:55:12.241 INFO  [395872] [OpTracer::snap@149] )
+    2020-11-25 02:55:12.241 DEBUG [395872] [G4OKTest::propagate@297] ]
+    === o-main : runline PWD /home/blyth/opticks/optixrap RC 0 Wed Nov 25 02:55:12 CST 2020
+    strace -o /tmp/strace.log -e open /home/blyth/local/opticks/lib/G4OKTest --g4oktest --strace
+    /home/blyth/local/opticks/bin/strace.py -f O_CREAT
+    strace.py -f O_CREAT
+     G4OKTest.log                                                                     :          O_WRONLY|O_CREAT :  0644 
+     /var/tmp/blyth/OptiXCache/cache.db                                               :            O_RDWR|O_CREAT :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db                                               : O_WRONLY|O_CREAT|O_APPEND :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db-wal                                           :            O_RDWR|O_CREAT :  0664 
+     /var/tmp/blyth/OptiXCache/cache.db-shm                                           :            O_RDWR|O_CREAT :  0664 
+     /home/blyth/.opticks/runcache/CDevice.bin                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/SensorLib/sensorData.npy                             :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/SensorLib/angularEfficiency.npy                      :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/snap/snap.ppm                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/evt/g4live/torch/0/parameters.json                   :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+    /home/blyth/local/opticks/bin/o.sh : RC : 0
+    [blyth@localhost optixrap]$ 
+
+
+::
+
+    2020-11-25 02:46:17.524 INFO  [381203] [OpTracer::snap@149] )
+    2020-11-25 02:46:17.524 DEBUG [381203] [G4OKTest::propagate@297] ]
+    === o-main : runline PWD /home/blyth/opticks RC 0 Wed Nov 25 02:46:17 CST 2020
+    strace -o /tmp/strace.log -e open /home/blyth/local/opticks/lib/G4OKTest --g4oktest --strace
+    /home/blyth/local/opticks/bin/strace.py -f O_CREAT
+    strace.py -f O_CREAT
+     G4OKTest.log                                                                     :          O_WRONLY|O_CREAT :  0644 
+     /var/tmp/blyth/OptiXCache/cache.db                                               :            O_RDWR|O_CREAT :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db                                               : O_WRONLY|O_CREAT|O_APPEND :  0666 
+     /var/tmp/blyth/OptiXCache/cache.db-wal                                           :            O_RDWR|O_CREAT :  0664 
+     /var/tmp/blyth/OptiXCache/cache.db-shm                                           :            O_RDWR|O_CREAT :  0664 
+     /home/blyth/.opticks/runcache/CDevice.bin                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/SensorLib/sensorData.npy                             :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/SensorLib/angularEfficiency.npy                      :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/snap/snap.ppm                                        :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /home/blyth/local/opticks/results/G4OKTest/R0_cvd_/20201125_024604/OTracerTimes.ini :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+     /tmp/blyth/opticks/G4OKTest/evt/g4live/torch/0/parameters.json                   :  O_WRONLY|O_CREAT|O_TRUNC :  0666 
+    /home/blyth/local/opticks/bin/o.sh : RC : 0
+    [blyth@localhost opticks]$ 
+
+
+    strace -e open /home/blyth/local/opticks/lib/G4OKTest 
+    
+
+
 
 ::
 
