@@ -62,8 +62,8 @@ The primordial approach used asio + ZMQ + asio-zmq project to do this. But that
 project appears dead and doesnt compile with current boost.
 
 
-Manual TCP framing ? Instead of using ZMQ 
----------------------------------------------
+Manual TCP framing ? Instead of using ZMQ : DONE with simple 16 byte prefix holding hdr/arr/meta/spare sizes
+-------------------------------------------------------------------------------------------------------------------
 
 * :google:`tcp message framing`
 
@@ -219,5 +219,108 @@ env/rootmq/src/MQ.cc
 env/rootmq/src/rootmq_collection.c
 
    glib based 
+
+
+
+
+OptiX 6 host thread safety
+--------------------------
+
+::
+
+    optix7-;optix6-p 123   # optix 6.5 pdf 
+
+Currently, the OptiX host API is not guaranteed to be thread-safe. While it may
+be successful in some applications to use OptiX contexts in different host
+threads, it may fail in others. OptiX should therefore only be used from within
+a single host thread.
+
+**HMM: need to make the jump to optix 7 before attempting the compute server**
+
+
+OptiX 7 host thread safety
+-----------------------------
+
+::
+
+    optix7-;optix7-p 7
+
+3.2 Thread safety
+Almost all host functions are thread-safe. Exceptions to this rule are
+identified in the API documentation. A general requirement for thread-safety is
+that output buffers and any temporary or state buffers are unique. For example,
+you can build more than one acceleration structure concurrently from the same
+input geometry, as long as the temporary and output device memory are disjoint.
+Temporary and state buffers are always part of the parameter list if they are
+needed to execute the method.
+
+
+p49: Ray generation launches
+
+To initiate a pipeline launch, use the optixLaunch function. All launches are
+asynchronous, using CUDA streams. When it is necessary to implement
+synchronization, use the mechanisms provided by CUDA streams and events.
+
+p50::
+
+    CUstream stream;
+    cuStreamCreate(&stream);
+    CUdeviceptr raygenRecord, hitgroupRecords;
+    ...
+    Generate acceleration structures and SBT records
+    unsigned int width = ...;
+    unsigned int height = ...;
+    unsigned int depth = ...;
+    OptixShaderBindingTable sbt = {};
+    sbt.raygenRecord = raygenRecord;
+    sbt.hitgroupRecords = hitgroupRecords;
+    sbt.hitgroupRecordStrideInBytes = sizeof(HitGroupRecord);
+    sbt.hitgroupRecordCount = numHitGroupRecords;
+    MyPipelineParams pipelineParams = ...;
+    CUdeviceptr d_pipelineParams;
+    ...
+    Allocate and copy the params to the device
+    optixLaunch(pipeline, stream,
+       d_pipelineParams, sizeof(MyPipelineParams),
+       &sbt, width, height, depth);
+
+
+strategy for compute server
+------------------------------
+
+* no point of anything more than "long range learning" work on this prior to moving to optix 7 
+
+Things to investigate:
+
+* CUstream
+
+CUDA Streams
+---------------
+
+
+* :google:`cuda multiple host threads`
+
+* http://developer.download.nvidia.com/CUDA/training/StreamsAndConcurrencyWebinar.pdf
+* ~/opticks_refs/CUDAStreamsAndConcurrencyWebinar.pdf
+* this looks rather old
+
+* https://www.olcf.ornl.gov/wp-content/uploads/2020/07/07_Concurrency.pdf
+* ~/opticks_refs/CUDA_Concurrency_Bob_Crovella_07_2020.pdf
+
+cudaLaunchHostFunc
+    add host callback for when a stream completes
+    (Uses a thread spawned by the GPU driver to perform the work)
+
+
+
+requirements for a compute server 
+----------------------------------
+
+0. populate GPU context with geometry at initialization, reuse that context for processing 
+1. accept gensteps and return hits to caller via network (boost::asio server) 
+2. queue gensteps when some are received whilst a launch is already in progress
+   (could investigate concurrent launches when have multiple GPUs but the number will be small)
+3. json responses to json status queries, eg returning number in queue 
+
 
 

@@ -207,9 +207,6 @@ OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib )
     m_ocontext(ocontext),
     m_context(m_ocontext->getContext()),
     m_ok(ok),
-#ifdef WITH_M_GLTF
-    m_gltf(ok->getGLTF()),
-#endif
     m_geolib(geolib),
     m_verbosity(m_ok->getVerbosity()),
     m_mmidx(0),

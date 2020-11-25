@@ -133,9 +133,6 @@ private:
     optix::Context       m_context ; 
     optix::Group         m_top ; 
     Opticks*             m_ok ; 
-#ifdef WITH_M_GLTF
-    int                  m_gltf ; 
-#endif
     GGeoLib*             m_geolib ;  
     unsigned             m_verbosity ; 
 private:

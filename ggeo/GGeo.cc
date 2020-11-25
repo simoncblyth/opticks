@@ -137,9 +137,6 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_ok(ok), 
    m_enabled_legacy_g4dae(ok->isEnabledLegacyG4DAE()),   // --enabled_legacy_g4dae
    m_live(live),    // live=false  by default, only true when translated from Geant4 tree 
-#ifdef WITH_M_GLTF
-   m_gltf(m_ok->getGLTF()),   
-#endif
    m_composition(NULL), 
    m_instancer(NULL), 
    m_loaded_from_cache(false), 

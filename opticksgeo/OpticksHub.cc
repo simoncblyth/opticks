@@ -193,9 +193,6 @@ OpticksHub::OpticksHub(Opticks* ok)
     SCtrl(),
     m_log(new SLog("OpticksHub::OpticksHub","", LEVEL)),
     m_ok(ok),
-#ifdef WITH_M_GLTF
-    m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
-#endif
     m_run(m_ok->getRun()),
     m_ggeo(GGeo::GetInstance()),   // a pre-existing instance will prevent subsequent loading from cache   
     m_composition(new Composition(m_ok)),
@@ -420,9 +417,6 @@ void OpticksHub::configure()
         return ; 
     }
 
-#ifdef WITH_M_GLTF
-    m_gltf =  m_ok->getGLTF() ;
-#endif
 
     LOG(LEVEL)
           << " argc " << argc 

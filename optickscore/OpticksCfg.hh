@@ -177,9 +177,6 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getSrcGLTFBase();
      const std::string& getSrcGLTFName();
      const std::string& getGLTFConfig();
-#ifdef WITH_M_GLTF
-     int                getGLTF();
-#endif
      int                getGLTFTarget();
      int                getLayout() const ;
 
@@ -318,9 +315,6 @@ private:
      std::string m_srcgltfbase ; 
      std::string m_srcgltfname ;
      std::string m_gltfconfig ;
-#ifdef WITH_M_GLTF
-     int         m_gltf ;  
-#endif
      int         m_gltftarget ;  
 
      int         m_layout ;  

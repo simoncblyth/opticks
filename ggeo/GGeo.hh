@@ -423,9 +423,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         Opticks*                      m_ok ;  
         bool                          m_enabled_legacy_g4dae ; 
         bool                          m_live ;   
-#ifdef WITH_M_GLTF
-        int                           m_gltf ; 
-#endif
         Composition*                  m_composition ; 
         GInstancer*                   m_instancer ; 
         bool                          m_loaded_from_cache ;  
