@@ -7,13 +7,21 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+    unsigned num_cat = argc > 1 ? atoi(argv[1]) : 2 ;   // use 0 to model the case of having no angular efficiency 
+
     // match OSensorLibGeoTest to mock the corresponding number of sensors 
     unsigned num_theta = 64+1 ; 
     unsigned num_phi   = 128 ; 
     unsigned num_sensor = SphereOfTransforms::NumTransforms(num_theta, num_phi); 
 
-    unsigned num_cat = 2 ; 
-    //unsigned num_cat = 0 ;        // model the case of having no angular efficiency 
+    LOG(info) 
+        << " num_theta " << num_theta
+        << " num_phi " << num_phi
+        << " num_sensor " << num_sensor
+        << " num_cat " << num_cat
+        << ( num_cat == 0 ? " NO ANGULAR EFFICIENCY " : " with angular efficiency " )
+        ;
+
 
     SensorLib* senlib = MockSensorLib::Make(num_cat, num_sensor); 
 
@@ -33,7 +41,8 @@ int main(int argc, char** argv)
 
     assert( senlib2->getNumSensor() == num_sensor ); 
 
-    senlib2->dump("MockSensorLibTest"); 
+    unsigned modulo = 100 ; 
+    senlib2->dump("MockSensorLibTest", modulo); 
 
     LOG(info) << dir ; 
     LOG(info) << senlib->desc()  ; 
@@ -45,3 +54,4 @@ int main(int argc, char** argv)
 
     return 0 ; 
 }
+// om-;TEST=MockSensorLibTest om-t

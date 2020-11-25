@@ -35,6 +35,21 @@ positions which are checked to correspond to the known sphere radius.
 
 This test was used to develop OSensorLib
 
+Normal running::
+
+    MockSensorLibTest 0   # creates SensorLib arrays persisted to $TMP/opticksgeo/tests/MockSensorLibTest
+    OSensorLibGeoTest     # loads, converts to GPU and tests texture access making a snapshot shaded by efficiency
+
+Check operation when there is no angular efficiency::
+
+    MockSensorLibTest 0   # argv[1] is the number of angular categories, 0 when no angular efficiency 
+    OSensorLibGeoTest     # the snapshot should be uniform grey across the spheres
+
+To check error handling with no persisted SensorLib::
+
+    rm -rf $TMP/opticksgeo/tests/MockSensorLibTest
+    OSensorLibGeoTest    ## should exit with FATAL message 
+    
 **/
 
 class OSensorLibGeoTest 
@@ -258,6 +273,13 @@ int main(int argc, char** argv)
     }
     //senlib->dump("OSensorLibGeoTest"); 
     senlib->close(); 
+
+    if(!senlib->isClosed())
+    {
+        LOG(fatal) << " FAILED to close SensorLib : probably you need to run : \"MockSensorLibTest\" OR \"MockSensorLibTest 0\"" ; 
+        return 0 ;  
+    }
+
 
     OSensorLibGeoTest slt(senlib); 
 

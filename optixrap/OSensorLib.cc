@@ -15,12 +15,12 @@ OSensorLib::OSensorLib(const OCtx* octx, const SensorLib* sensorlib)
     m_sensorlib(sensorlib),
     m_sensor_data(m_sensorlib->getSensorDataArray()),
     m_angular_efficiency(m_sensorlib->getSensorAngularEfficiencyArray()),
-    m_num_dim(  m_angular_efficiency->getNumDimensions()),
-    m_num_cat(  m_angular_efficiency->getShape(0)),
-    m_num_theta(m_angular_efficiency->getShape(1)),
-    m_num_phi(  m_angular_efficiency->getShape(2)),
-    m_num_elem( m_angular_efficiency->getShape(3)),
-    m_texid(NPY<int>::make(m_num_cat, 4))    // small buffer of texid    
+    m_num_dim(   m_angular_efficiency ? m_angular_efficiency->getNumDimensions() : 0),
+    m_num_cat(   m_angular_efficiency ? m_angular_efficiency->getShape(0) : 0),
+    m_num_theta( m_angular_efficiency ? m_angular_efficiency->getShape(1) : 0),
+    m_num_phi(   m_angular_efficiency ? m_angular_efficiency->getShape(2) : 0),
+    m_num_elem(  m_angular_efficiency ? m_angular_efficiency->getShape(3) : 0),
+    m_texid( NPY<int>::make(m_num_cat, 4) )    // small buffer of texid, NB empty when no angular efficiency     
 {
     init(); 
 }
@@ -28,12 +28,13 @@ OSensorLib::OSensorLib(const OCtx* octx, const SensorLib* sensorlib)
 
 void OSensorLib::init() 
 {
+    assert( m_sensorlib->isClosed() ); 
     assert( m_num_dim == 4 ); 
     assert( m_num_cat < 10 ); 
     assert( m_num_elem == 1 ); 
-    m_texid->zero();
+    assert( m_texid ); 
 
-    assert( m_sensorlib->isClosed() ); 
+    m_texid->zero();
 }
 
 

@@ -65,16 +65,16 @@ std::string SensorLib::desc() const
 
 
 
-void SensorLib::dump(const char* msg) const 
+void SensorLib::dump(const char* msg, unsigned modulo) const 
 {
-    dumpSensorData(msg);
+    dumpSensorData(msg, modulo);
     dumpAngularEfficiency(msg);
 }
 
-void SensorLib::dumpSensorData(const char* msg) const 
+void SensorLib::dumpSensorData(const char* msg, unsigned modulo) const 
 {
-    LOG(info) << msg ; 
-    LOG(info) << desc() ; 
+    LOG(info) << msg << " modulo " << modulo ; 
+    LOG(info) << desc()  ; 
 
     float efficiency_1 ; 
     float efficiency_2 ; 
@@ -100,6 +100,8 @@ void SensorLib::dumpSensorData(const char* msg) const
     {
         unsigned sensorIndex = i ; 
         getSensorData(sensorIndex, efficiency_1, efficiency_2, category, identifier);
+
+        if(modulo == 0 || i % modulo == 0 )
         std::cout 
             << std::setw(w) << sensorIndex 
             << " : "

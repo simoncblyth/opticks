@@ -61,8 +61,8 @@ class OKGEO_API SensorLib
          const NPY<float>*  getSensorAngularEfficiencyArray() const;
     public: 
         void save(const char* dir) const ;
-        void dump(const char* msg="SensorLib::dump") const ;
-        void dumpSensorData(const char* msg) const ;
+        void dump(const char* msg="SensorLib::dump", unsigned modulo=0) const ;
+        void dumpSensorData(const char* msg, unsigned modulo=0) const ;
         void dumpAngularEfficiency(const char* msg) const ;
     private:
         bool                m_loaded ; 

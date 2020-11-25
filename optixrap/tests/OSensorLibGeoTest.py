@@ -67,7 +67,7 @@ class OSensorLibGeoTest(object):
         isect_pix = np.where( identity > 0 )      # pixel coordinates of intersected pixels 
         isect_identity = identity[identity > 0]   # identity of intersected pixels 
         isect_pos = posi[identity > 0].copy()
-        isect_pos[:,3] = 1.    
+        isect_pos[:,3] = 1.   ## replace identity with 1. so can apply transforms 
 
         isect_itheta = itheta_(isect_identity)
         isect_iphi   = iphi_(isect_identity)
