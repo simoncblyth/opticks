@@ -617,10 +617,6 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
 
     GPropertyMap<float>* dst = new GPropertyMap<float>(src);
 
-#ifdef OLD_SENSOR
-    dst->setSensor( src ? src->isSensor() : false ); 
-#endif
-
     dst->addProperty( detect          , _detect          );
     dst->addProperty( absorb          , _absorb          );
     dst->addProperty( reflect_specular, _reflect_specular);

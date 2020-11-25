@@ -135,9 +135,6 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain)
       m_shortname(NULL),
       m_type(other ? other->getType() : "" ),
       m_index(other ? other->getIndex() : UINT_MAX ),
-#ifdef OLD_SENSOR
-      m_sensor(other ? other->isSensor() : false),
-#endif
       m_valid(other ? other->isValid() : false),
       m_standard_domain(domain),
       m_optical_surface(other ? other->getOpticalSurface() : NULL ),
@@ -173,9 +170,6 @@ GPropertyMap<T>::GPropertyMap(const char* name)
 {
    m_name = name ;   // m_name is std::string, no need for strdup 
    m_index = UINT_MAX ;
-#ifdef OLD_SENSOR
-   m_sensor = false ;
-#endif
    m_valid = false ;
    m_type = "" ;
 
@@ -188,9 +182,6 @@ template <typename T>
 GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface, NMeta* meta) 
    : 
    m_index(index), 
-#ifdef OLD_SENSOR
-   m_sensor(false),
-#endif
    m_valid(false),
    m_standard_domain(NULL),
    m_optical_surface(optical_surface),
@@ -288,20 +279,12 @@ const char*  GPropertyMap<T>::detect = "detect" ;
 template <class T>
 bool GPropertyMap<T>::isSensor()
 {
-#ifdef OLD_SENSOR
-    return m_sensor ; 
-#else
     return hasNonZeroProperty(EFFICIENCY) || hasNonZeroProperty(detect) ; 
-#endif
 }
 template <class T>
 void GPropertyMap<T>::setSensor(bool sensor)
 {
-#ifdef OLD_SENSOR
-    m_sensor = sensor ; 
-#else
     assert(0 && "sensors are now detected by the prescense of an EFFICIENCY property" ); 
-#endif
 }
 
 template <class T>

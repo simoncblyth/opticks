@@ -190,9 +190,6 @@ void X4PhysicalVolume::init()
 
     convertMaterials();   // populate GMaterialLib
     convertSurfaces();    // populate GSurfaceLib
-#ifdef OLD_SENSOR
-    convertSensors();  // before closeSurfaces as may add some SensorSurfaces
-#endif
     closeSurfaces();
     convertSolids();      // populate GMeshLib with GMesh converted from each G4VSolid (postorder traverse processing first occurrence of G4LogicalVolume)  
     convertStructure();   // populate GNodeLib with GVolume converted from each G4VPhysicalVolume (preorder traverse) 
@@ -222,144 +219,6 @@ void X4PhysicalVolume::postConvert() const
 }
 
 
-
-#ifdef OLD_SENSOR
-
-/**
-X4PhysicalVolume::convertSensors
----------------------------------
-
-Predecessor in old route is AssimpGGeo::convertSensors
-
-* note the recursive call X4PhysicalVolume::convertSensors_r 
-  which traverses the geometry looking for sensors  
-  
-**/
-
-void X4PhysicalVolume::convertSensors()
-{
-    assert(0) ; // MATERIAL-CENTRIC APPROACH NO LONGER USED : NOW DETECTING SENSORS VIA SURFACES WITH EFFICIENCY 
-    LOG(debug) << "[" ; 
-
-    convertSensors_r(m_top, 0); 
-
-    unsigned num_clv = m_ggeo->getNumCathodeLV();
-    unsigned num_bds = m_ggeo->getNumBorderSurfaces() ; 
-    unsigned num_sks0 = m_ggeo->getNumSkinSurfaces() ; 
-
-    GGeoSensor::AddSensorSurfaces(m_ggeo) ;
-
-    unsigned num_sks1 = m_ggeo->getNumSkinSurfaces() ; 
-    assert( num_bds == m_ggeo->getNumBorderSurfaces()  ); 
-
-    unsigned num_lvsd = m_ggeo->getNumLVSD() ; 
-
-    LOG(debug) << "]" ; 
-
-    LOG(info) 
-         << " m_lvsdname " << m_lvsdname 
-         << " num_lvsd " << num_lvsd 
-         << " num_clv " << num_clv 
-         << " num_bds " << num_bds
-         << " num_sks0 " << num_sks0
-         << " num_sks1 " << num_sks1
-         ; 
-
-
-}
-
-/**
-X4PhysicalVolume::convertSensors_r
------------------------------------
-
-Recurses over the geometry looking for volumes with associated SensitiveDetector, 
-when found invokes GGeo::addLVSD persisting the association between an LV name 
-and an SD name.
-
-Sensors are identified by two approaches:
-
-1. logical volume having an associated sensitive detector G4VSensitiveDetector
-2. name of logical volume matching one of a comma delimited list 
-   of strings provided by the "LV sensitive detector name" option
-   eg  "--lvsdname Cathode,cathode,Sensor,SD" 
-
-The second approach is useful as a workaround when operating 
-with a GDML loaded geometry, as GDML does not yet(?) persist 
-the SD LV association.
-
-Names of sensitive LV are inserted into a set datastructure in GGeo. 
-
-
-
-Issues/TODO
-~~~~~~~~~~~~~
-
-* how to flexibly associate an EFFICIENCY property
-  with the sensor ?
-
-  * currently a simplifying assumption of a single "Cathode" 
-    material is made : how to generalize ?
-
-**Possible Generalization Approach**
-
-First thing to try is extend GGeo::addLVSD to GGeo::addLVSDMT
-which collects material names which are asserted to hold a
-an EFFICIENCY property. These materials can then replace the 
-GMaterialLib::setCathode getCathode
-
-* If the efficiency is zero should a sensor be created ?
- 
-
-**/
-
-void X4PhysicalVolume::convertSensors_r(const G4VPhysicalVolume* const pv, int depth)
-{
-    assert(0) ; // MATERIAL-CENTRIC APPROACH NO LONGER USED : NOW DETECTING SENSORS VIA SURFACES WITH EFFICIENCY 
-
-
-    // hot code : minimize whats done outside the if
-
-    const G4LogicalVolume* const lv = pv->GetLogicalVolume();
-    G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ; 
-
-    const G4Material* const mt = lv->GetMaterial() ;
-    bool has_efficiency = hasEfficiency(mt) ;  
-
-    const char* lvname = lv->GetName().c_str(); 
-    bool is_lvsdname = m_lvsdname && BStr::Contains(lvname, m_lvsdname, ',' ) ;
-    bool is_sd = sd != NULL || is_lvsdname ; 
-
-
-    if( is_sd || has_efficiency )
-    {
-        const std::string sdn = sd ? sd->GetName() : "SD?" ;   // perhaps GetFullPathName() 
-        const char* mt_name = mt->GetName().c_str(); 
-
-        std::string name = BFile::Name(lvname); 
-        bool addPointerToName = false ;   // <-- maybe this should depend on if booting from GDML or not ?
-        std::string nameref = SGDML::GenerateName( name.c_str() , lv , addPointerToName );   
-
-        LOG(LEVEL) 
-            << " is_lvsdname " << is_lvsdname
-            << " is_sd " << is_sd
-            << " has_efficiency " << has_efficiency
-            << " sdn " << sdn 
-            << " name " << name 
-            << " nameref " << nameref 
-            << " mt_name " << mt_name
-            ;
- 
-        m_ggeo->addLVSDMT(nameref.c_str(), sdn.c_str(), mt_name ) ;
-    }  
-
-    for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
-    {
-        const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);
-        convertSensors_r(child_pv, depth+1 );
-    }
-}
-
-#endif
 
 
 bool X4PhysicalVolume::hasEfficiency(const G4Material* mat)
@@ -445,9 +304,6 @@ void X4PhysicalVolume::closeSurfaces()
 {
     m_slib->close();  // may change order if prefs dictate
 
-#ifdef OLD_SENSOR
-    m_ggeo->dumpCathodeLV("dumpCathodeLV"); 
-#endif
     m_ggeo->dumpSkinSurface("dumpSkinSurface"); 
 }
 

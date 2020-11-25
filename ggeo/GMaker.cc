@@ -200,10 +200,6 @@ GVolume* GMaker::makeVolumeFromMesh( unsigned ndIdx, const GMesh* mesh, const gl
     GVolume* volume = new GVolume( ndIdx, transform, mesh, NULL );     
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
-#ifdef OLD_SENSOR
-    volume->setSensor( NULL );      
-#endif
-
     OpticksCSG_t type = csg->getRootType() ;
 
     std::string lvn = csg->getTestLVName();
@@ -283,10 +279,6 @@ GVolume* GMaker::makeBox(gbbox& bbox)
 
     volume->setBoundary(0);     // unlike ctor these create arrays
 
-#ifdef OLD_SENSOR
-    volume->setSensor( NULL );      
-#endif
-
 
     return volume ; 
 }
@@ -308,10 +300,6 @@ GVolume* GMaker::makePrism(glm::vec4& param, const char* spec)
 
     GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL );     
     volume->setBoundary(0);     // these setters create arrays
-#ifdef OLD_SENSOR
-    volume->setSensor( NULL );      
-#endif
-
     nprism prism(param.x, param.y, param.z, param.w);
     npart  pprism = prism.part();
 
@@ -517,10 +505,6 @@ GVolume* GMaker::makeSphere(NTrianglesNPY* tris)
     GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL );     
 
     volume->setBoundary(0);     // these setters create arrays
-
-#ifdef OLD_SENSOR
-    volume->setSensor( NULL );      
-#endif
 
     return volume ; 
 }

@@ -51,10 +51,6 @@
 #include "GSkinSurface.hh"
 #include "GOpticalSurface.hh"
 
-#ifdef OLD_SENSOR
-#include "GGeoSensor.hh"
-#endif
-
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
 
@@ -633,52 +629,6 @@ void AssimpGGeo::convertSensors(GGeo* gg)
 
     convertSensors( gg, m_tree->getRoot(), 0); 
 
-#ifdef OLD_SENSOR
-    unsigned int nclv = gg->getNumCathodeLV();
-
-    LOG(info) << "AssimpGGeo::convertSensors"
-              << " nclv " << nclv
-              ;
-
-    assert( nclv > 0 ); 
-
-
-    // DYB: nclv=2 for hemi and headon PMTs 
-    for(unsigned int i=0 ; i < nclv ; i++)
-    {
-        const char* sslv = gg->getCathodeLV(i);
-        unsigned int index = gg->getNumMaterials() + gg->getNumSkinSurfaces() + gg->getNumBorderSurfaces() ; 
-        // standard materials/surfaces use the originating aiMaterial index, 
-        // extend that for fake SensorSurface by toting up all 
-
-        LOG(info) << "AssimpGGeo::convertSensors" 
-                  << " i " << i
-                  << " sslv " << sslv 
-                  << " index " << index 
-                  ;
-
-
-        GSkinSurface* gss = GGeoSensor::MakeSensorSurface(sslv, index);
-        gss->setStandardDomain() ;  // default domain 
-        gss->setSensor();
-
-        addProperties(gss, m_cathode_amat );
-
-        LOG(info) << "AssimpGGeo::convertSensors gss " << gss->description(); 
- 
-        gg->add(gss);
-
-        {
-            // without standard domain applied
-            GSkinSurface* gss_raw = GGeoSensor::MakeSensorSurface(sslv, index);
-            // not setting sensor, only the standardized need that
-            addProperties(gss_raw, m_cathode_amat );
-            gg->addRaw(gss_raw);
-        }   
-    }
-
-#endif
-
 }
 
 /**
@@ -729,14 +679,6 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
     // these do not match
     */
 
-#ifdef OLD_SENSOR
-    unsigned int nodeIndex = node->getIndex();
-    NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
-
-    //const char* sd = "SD_AssimpGGeo" ; 
-    const char* sd = "SD0" ; 
-#endif
-
 
 #ifdef OLD_CATHODE
     GMaterial* cathode = gg->getCathode() ; 
@@ -754,15 +696,6 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
                    << " ptr_match " << ptr_match 
                    ;
          gg->addLVSD(lv, sd) ;   
-    }
-
-#endif
-
-#ifdef OLD_SENSOR
-    const char* mt_name = mt->getName() ; 
-    if(sensor)
-    {
-        gg->addLVSDMT(lv, sd, mt_name) ;     
     }
 
 #endif
@@ -1100,11 +1033,6 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     }
 
 
-#ifdef OLD_SENSOR
-    NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
-    volume->setSensor( sensor );  
-#endif 
-
     GBndLib* blib = gg->getBndLib();  
 
 
@@ -1117,21 +1045,6 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
                                   );
 
     volume->setBoundary(boundary);
-#ifdef OLD_SENSOR
-    GSurfaceLib* slib = gg->getSurfaceLib();  
-    {
-       // sensor indices are set even for non sensitive volumes in PMT viscinity
-       // TODO: change that 
-       // this is a workaround that requires an associated sensitive surface
-       // in order for the index to be provided
-
-        unsigned int surface = blib->getOuterSurface(boundary);
-        bool oss = slib->isSensorSurface(surface); 
-        unsigned int ssi = oss ? NSensor::RefIndex(sensor) : 0 ; 
-        volume->setSensorSurfaceIndex( ssi ); 
-    } 
-#endif
-
     char* desc = node->getDescription("\n\noriginal node description"); 
     volume->setDescription(desc);
     volume->setName(node->getName());  // this is LV name, maybe set PV name too : actully PV name would make more sense

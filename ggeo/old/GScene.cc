@@ -834,13 +834,6 @@ void GScene::transferIdentity( GVolume* node, const nd* n)
 
     node->setBoundary(  tri_boundaryIdx ); 
 
-#ifdef OLD_SENSOR
-    unsigned tri_sensorSurfaceIdx = tri_id.w ; 
-    NSensor* tri_sensor = m_sensor_list->findSensorForNode(tri_nodeIdx);
-    node->setSensor(    tri_sensor );      
-    node->setSensorSurfaceIndex( tri_sensorSurfaceIdx );
-#endif
-
     guint4 check_id = node->getIdentity();
 
     //bool match_node_index     = check_id.x == tri_id.x ;

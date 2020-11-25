@@ -109,9 +109,6 @@ void CGDMLDetector::init()
     attachSurfaces();
     // kludge_cathode_efficiency(); 
 
-#ifdef OLD_SENSOR
-    hookupSD(); 
-#endif
 
 }
 

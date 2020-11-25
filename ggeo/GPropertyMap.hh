@@ -186,9 +186,6 @@ class GGEO_API GPropertyMap {
       std::string m_type ;
 
       unsigned int m_index ;
-#ifdef OLD_SENSOR
-      bool         m_sensor ;  
-#endif
       bool         m_valid ;  
 
       GPropertyMap_t           m_prop ; 

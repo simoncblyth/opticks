@@ -46,10 +46,6 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, 
     m_boundary(-1),
     m_csgflag(CSG_PARTLIST),
     m_csgskip(false),
-#ifdef OLD_SENSOR
-    m_sensor(NULL),
-    m_sensor_surface_index(0),
-#endif
     m_sensor_index(-1),
     m_pvname(NULL),
     m_lvname(NULL),
@@ -336,28 +332,6 @@ bool GVolume::hasSensorIndex() const
 {
     return m_sensor_index > -1 ; 
 }
-
-#ifdef OLD_SENSOR
-void GVolume::setSensor(NSensor* sensor)
-{
-    m_sensor = sensor ; 
-    // every triangle needs a value... use 0 to mean unset, so sensor   
-    setSensorIndices( NSensor::RefIndex(sensor) );
-}
-NSensor* GVolume::getSensor()
-{
-    return m_sensor ; 
-}
-void GVolume::setSensorSurfaceIndex(unsigned int ssi)
-{
-    m_sensor_surface_index = ssi ; 
-}
-unsigned int GVolume::getSensorSurfaceIndex()
-{
-    return m_sensor_surface_index ; 
-}
-#endif
-
 
 
 void GVolume::Dump( const std::vector<GVolume*>& volumes, const char* msg )
