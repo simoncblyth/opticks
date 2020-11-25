@@ -143,6 +143,16 @@ void G4OKTest::init()
 
 }
 
+
+/**
+G4OKTest::initGeometry
+-----------------------
+
+When no gdmlpath argument is provided the geometry is 
+loaded from the geocache identified by OPTICKS_KEY envvar.
+
+**/
+
 void G4OKTest::initGeometry()
 {
     if(m_gdmlpath == NULL)

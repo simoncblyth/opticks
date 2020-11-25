@@ -80,6 +80,7 @@ GNodeLib::GNodeLib(Opticks* ok)
     m_root(NULL)
 {
     LOG(LEVEL) << "created" ; 
+    assert( m_loaded == false ); 
 }
 
 GNodeLib::GNodeLib(Opticks* ok, bool loading)
@@ -104,6 +105,7 @@ GNodeLib::GNodeLib(Opticks* ok, bool loading)
     m_root(NULL)
 {
     LOG(LEVEL) << "loaded" ; 
+    assert( m_loaded == true ); 
     assert( m_sensor_identity.size() == m_num_sensors ); 
 }
 
@@ -121,6 +123,16 @@ unsigned GNodeLib::initNumVolumes() const
     assert( m_nodeinfo->getNumItems() == num_volumes ); 
     return num_volumes ; 
 }
+
+/**
+GNodeLib::initSensorIdentity
+-----------------------------
+
+Loops over m_identity volume identity array, collecting 
+identity quads for volumes with a sensorIndex assigned
+into m_sensor_identity.  Returns the number of such sensor volumes. 
+
+**/
 
 unsigned GNodeLib::initSensorIdentity() 
 {

@@ -33,11 +33,12 @@ into the posi.npy array. The posi.npy array is used by OSensorLibGeoTest.py
 together with the inverse of the saved transforms to obtain local frame intersect
 positions which are checked to correspond to the known sphere radius.
 
-This test was used to develop OSensorLib
+This test was used to develop OSensorLib, it operates using the SensorLib 
+persisted to $TMP/opticksgeo/tests/MockSensorLibTest by MockSensorLibTest.
 
 Normal running::
 
-    MockSensorLibTest 0   # creates SensorLib arrays persisted to $TMP/opticksgeo/tests/MockSensorLibTest
+    MockSensorLibTest     # creates SensorLib arrays with default number of angular efficiency categories 
     OSensorLibGeoTest     # loads, converts to GPU and tests texture access making a snapshot shaded by efficiency
 
 Check operation when there is no angular efficiency::

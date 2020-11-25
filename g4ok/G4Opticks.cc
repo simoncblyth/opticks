@@ -532,6 +532,10 @@ bool G4Opticks::isLoadedFromCache() const
 /**
 G4Opticks::getNumSensorVolumes (pre-cache and post-cache)
 ------------------------------------------------------------
+
+The number is obtained by GNodeLib::initSensorIdentity from 
+counting volumes with associated sensorIndex in the volume identity array. 
+
 **/
 
 unsigned G4Opticks::getNumSensorVolumes() const 
@@ -959,7 +963,7 @@ G4Opticks::getHit
 -------------------
 
 The local position, direction and wavelength are within the frame 
-of the last intersect node which for hits is that of the sensor.
+of the last intersect volume, ie the sensor volume.
 
 **/
 
