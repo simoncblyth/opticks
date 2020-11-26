@@ -425,7 +425,7 @@ OKTest without options defaults to writing the below::
 void Opticks::init()
 {
     LOG(LEVEL) << "[" ; 
-    LOG(info) << m_mode->description() << " hostname " << SSys::hostname() ; 
+    LOG(info) << m_mode->desc() << " hostname " << SSys::hostname() ; 
     if(IsLegacyGeometryEnabled())
     {
         LOG(fatal) << "OPTICKS_LEGACY_GEOMETRY_ENABLED mode is active " 
@@ -889,12 +889,24 @@ char* Opticks::getArgv0()
 }
 
 
-bool Opticks::hasArg(const char* arg)
+/**
+Opticks::hasArg
+-----------------
+
+The old hasArg only looked at the actual argv commandline arguments not the 
+combination of commandline and extraline (aka argforced) that SArgs::hasArg checks.
+As embedded running such as G4Opticks uses the extraline to configure Opticks
+it is vital to check with m_sargs.
+
+**/
+
+bool Opticks::hasArg(const char* arg) const 
 {
-    bool has = false ; 
-    for(int i=1 ; i < m_argc ; i++ ) if(strcmp(m_argv[i], arg) == 0) has = true ; 
-    return has ; 
+    return m_sargs->hasArg(arg); 
 }
+
+
+
 
 void Opticks::setCfg(OpticksCfg<Opticks>* cfg)
 {
@@ -1273,26 +1285,17 @@ const char* Opticks::getLastArg()
 
 
 
-void Opticks::setModeOverride(unsigned int mode)
-{
-    m_mode->setOverride(mode) ; 
-}
-bool Opticks::isRemoteSession()
+bool Opticks::isRemoteSession() const 
 {
     return SSys::IsRemoteSession();
 }
-bool Opticks::isCompute()
+bool Opticks::isCompute() const 
 {
     return m_mode->isCompute() ;
 }
-bool Opticks::isInterop()
+bool Opticks::isInterop() const 
 {
     return m_mode->isInterop() ;
-}
-bool Opticks::isCfG4()
-{
-    assert(0); 
-    return m_mode->isCfG4(); 
 }
 
 
@@ -2638,7 +2641,7 @@ void Opticks::Summary(const char* msg)
     LOG(info) << msg 
               << " sourceCode " << getSourceCode() 
               << " sourceType " << getSourceType() 
-              << " mode " << m_mode->description()
+              << " mode " << m_mode->desc()
               ; 
 
     m_resource->Summary(msg);
@@ -3280,7 +3283,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     parameters->add<unsigned int>("BounceMax", bounce_max );
     parameters->add<unsigned int>("RecordMax", record_max );
 
-    parameters->add<std::string>("mode", m_mode->description());
+    parameters->add<std::string>("mode", m_mode->desc());
     parameters->add<std::string>("cmdline", m_cfg->getCommandLine() );
 
     parameters->add<std::string>("EntryCode", BStr::ctoa(getEntryCode()) );

@@ -19,6 +19,7 @@
 
 #pragma once
 #include <string>
+#include "plog/Severity.h"
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
@@ -34,6 +35,7 @@ class Opticks ;
 
 
 class OKCORE_API OpticksMode {
+       static const plog::Severity LEVEL ; 
     public:
        static const char* COMPUTE_ARG_ ; 
        static const char* INTEROP_ARG_ ; 
@@ -42,12 +44,10 @@ class OKCORE_API OpticksMode {
        static const char* UNSET_MODE_ ;
        static const char* COMPUTE_MODE_ ;
        static const char* INTEROP_MODE_ ;
-       static const char* CFG4_MODE_ ;
        enum {
                 UNSET_MODE   = 0x1 << 0, 
                 COMPUTE_MODE = 0x1 << 1, 
-                INTEROP_MODE = 0x1 << 2, 
-                CFG4_MODE    = 0x1 << 3
+                INTEROP_MODE = 0x1 << 2
             }; 
     public:
        static unsigned Parse(const char* tag);
@@ -56,12 +56,9 @@ class OKCORE_API OpticksMode {
         OpticksMode(Opticks* ok);
     public:
         int getInteractivityLevel() const ;
-        std::string description() const ;
+        std::string desc() const ;
         bool isCompute() const ;
         bool isInterop() const ;
-        bool isCfG4() const ;   // needs manual override to set to CFG4_MODE
-    public:
-        void setOverride(unsigned mode);
     private:
         unsigned  m_mode ;  
         bool      m_compute_requested ;  

@@ -285,7 +285,6 @@ class OKCORE_API Opticks {
    public:
        std::string formCacheRelativePath(const char* path); 
    public:
-       void setModeOverride(unsigned int mode);
        void setDetector(const char* detector); 
 
    public:
@@ -613,18 +612,17 @@ class OKCORE_API Opticks {
    public:
        void setExit(bool exit=true);
    public:
-       bool hasArg(const char* arg);
+       bool hasArg(const char* arg) const ;
        bool isExit();
-       bool isRemoteSession();
    public:
        int    getArgc();
        char** getArgv();
        char*  getArgv0();
    public:
+       bool isRemoteSession() const ;
        // attempt to follow request,  but constrain to compute when remote session
-       bool isCompute();
-       bool isInterop();
-       bool isCfG4();   // needs manual override to set to CFG4_MODE
+       bool isCompute() const ;
+       bool isInterop() const ;
 
        bool isUTailDebug() const ; // --utaildebug
        bool isProduction() const ; // --production

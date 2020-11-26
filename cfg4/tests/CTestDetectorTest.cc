@@ -48,7 +48,6 @@ int main(int argc, char** argv)
     const char* forced = NULL ; 
 
     Opticks ok(argc, argv, forced);
-    ok.setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 
     OpticksResource::SetupG4Environment(); 
 

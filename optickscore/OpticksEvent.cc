@@ -1894,7 +1894,7 @@ void OpticksEvent::importParameters()
     OpticksMode* mode = new OpticksMode(mode_.c_str());
     LOG(debug) << "OpticksEvent::importParameters "
               << " mode_ " << mode_ 
-              << " --> " << mode->description() ; 
+              << " --> " << mode->desc() ; 
     setMode(mode);
 }
 

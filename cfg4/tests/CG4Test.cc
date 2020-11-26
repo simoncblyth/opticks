@@ -38,7 +38,6 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] ;
 
     Opticks ok(argc, argv);
-    ok.setModeOverride( OpticksMode::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
 
     OpticksHub hub(&ok) ; 
     LOG(warning) << " post hub " ; 

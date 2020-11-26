@@ -125,8 +125,6 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
     
-    ok.setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
-
     OpticksHub hub(&ok); 
 
     CMaterialLib* clib = new CMaterialLib(&hub); 

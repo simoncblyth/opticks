@@ -27,27 +27,25 @@
 #include "PLOG.hh"
 
 
+const plog::Severity OpticksMode::LEVEL = PLOG::EnvLevel("OpticksMode", "DEBUG" ); 
+
 const char* OpticksMode::COMPUTE_ARG_ = "--compute" ; 
 const char* OpticksMode::INTEROP_ARG_ = "--interop" ; 
 const char* OpticksMode::NOVIZ_ARG_ = "--noviz" ; 
 
-
 const char* OpticksMode::UNSET_MODE_  = "UNSET_MODE" ;
 const char* OpticksMode::COMPUTE_MODE_  = "COMPUTE_MODE" ;
 const char* OpticksMode::INTEROP_MODE_  = "INTEROP_MODE" ;
-const char* OpticksMode::CFG4_MODE_     = "CFG4_MODE" ;
 
 bool OpticksMode::isCompute() const { return (m_mode & COMPUTE_MODE) != 0 ; }
 bool OpticksMode::isInterop() const { return (m_mode & INTEROP_MODE) != 0 ; } 
-bool OpticksMode::isCfG4()    const { return (m_mode & CFG4_MODE) != 0  ; }
 
-std::string OpticksMode::description() const 
+std::string OpticksMode::desc() const 
 {
     std::stringstream ss ; 
 
     if(isCompute()) ss << COMPUTE_MODE_ ; 
     if(isInterop()) ss << INTEROP_MODE_ ; 
-    if(isCfG4())    ss << CFG4_MODE_ ; 
 
     if(m_compute_requested) ss << " compute_requested " ; 
     if(m_forced_compute)    ss << " forced_compute " ; 
@@ -60,7 +58,6 @@ unsigned int OpticksMode::Parse(const char* tag)  // static
     unsigned int mode = UNSET_MODE  ; 
     if(     strcmp(tag, INTEROP_MODE_)==0)  mode = INTEROP_MODE ; 
     else if(strcmp(tag, COMPUTE_MODE_)==0)  mode = COMPUTE_MODE ; 
-    else if(strcmp(tag, CFG4_MODE_)==0)     mode = CFG4_MODE ; 
     return mode ; 
 }
 
@@ -89,6 +86,7 @@ OpticksMode::OpticksMode(const char* tag)
     m_noviz(false),
     m_forced_compute(false)
 {
+    LOG(LEVEL) << " tag " << tag ;  
 }
 
 OpticksMode::OpticksMode(Opticks* ok) 
@@ -107,11 +105,8 @@ OpticksMode::OpticksMode(Opticks* ok)
     {
         m_mode = m_compute_requested ? COMPUTE_MODE : INTEROP_MODE ;
     }
+    LOG(LEVEL) << desc() ;  
 }
 
-void OpticksMode::setOverride(unsigned int mode)
-{
-   assert( mode == CFG4_MODE );
-   m_mode = mode ;
-}
+
 

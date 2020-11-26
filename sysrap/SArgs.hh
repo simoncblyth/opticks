@@ -99,7 +99,7 @@ struct SArgs
     } 
 
 
-    void dump()
+    void dump() const 
     {
         for(int i=0 ; i < argc ; i++)
         {
@@ -131,13 +131,13 @@ struct SArgs
         make();
     }
 
-    bool hasArg(const char* arg)
+    bool hasArg(const char* arg) const 
     {
         for(int i=0 ; i < argc ; i++) if(strcmp(argv[i], arg) == 0) return true ; 
         return false ;         
     }
 
-    std::string getArgLine()
+    std::string getArgLine() const 
     {
         std::stringstream ss ;  
         for(int i=0 ; i < argc ; i++) ss << argv[i] << " " ; 

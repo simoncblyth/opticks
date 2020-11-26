@@ -27,20 +27,15 @@
 #include "GGEO_LOG.hh"
 #include "CFG4_LOG.hh"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_COLOR(argc, argv);
-
-    GGEO_LOG__ ;  
-    CFG4_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ; 
 
     Opticks ok(argc, argv);
-    
-    ok.setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 
     OpticksHub hub(&ok); 
 

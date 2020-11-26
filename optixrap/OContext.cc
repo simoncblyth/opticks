@@ -1041,17 +1041,16 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 
 
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
-    bool verbose = ctrl("VERBOSE_MODE") || SSys::IsVERBOSE() ;
+    //bool verbose = ctrl("VERBOSE_MODE") || SSys::IsVERBOSE() ;
 
     bool compute = isCompute()  ; 
 
-    if(verbose) 
-       LOG(info) 
-           << std::setw(20) << name 
-           << std::setw(20) << npy->getShapeString()
-           << " mode : " << ( compute ? "COMPUTE " : "INTEROP " )
-           << " BufferControl : " << ctrl.description(name)
-           ;
+    LOG(LEVEL) 
+        << std::setw(20) << name 
+        << std::setw(20) << npy->getShapeString()
+        << " mode : " << ( compute ? "COMPUTE " : "INTEROP " )
+        << " BufferControl : " << ctrl.description(name)
+        ;
 
     unsigned int type(0);
     bool noctrl = false ; 
