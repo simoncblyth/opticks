@@ -1224,13 +1224,13 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
 
     bool is_sensor = m_blib->isSensorBoundary(boundary) ; 
-    unsigned sensorIndex = -1; 
+    unsigned sensorIndex = GVolume::SENSOR_UNSET ; 
     if(is_sensor)
     {
-        sensorIndex = m_blib->getSensorCount() ;  // 0-based
+        sensorIndex = 1 + m_blib->getSensorCount() ;  // 1-based index
         m_blib->countSensorBoundary(boundary); 
     }
-    volume->setSensorIndex(sensorIndex);   // must set to -1 for non-sensors, for sensor_indices array  
+    volume->setSensorIndex(sensorIndex);   // must set to GVolume::SENSOR_UNSET for non-sensors, for sensor_indices array  
     volume->setSelected( selected );
 
     volume->setLevelTransform(ltransform);
@@ -1281,9 +1281,9 @@ void X4PhysicalVolume::DumpSensorVolumes(const GGeo* gg, const char* msg)
 
     for(unsigned i=0 ; i < numSensorVolumes ; i++)
     {   
-        unsigned sensorIdx = i ; 
+        unsigned sensorIndex = 1+i ;  // 1-based 
 
-        const GVolume* sensor = gg->getSensorVolume(sensorIdx) ; 
+        const GVolume* sensor = gg->getSensorVolume(sensorIndex) ; 
         assert(sensor); 
         const void* const sensorOrigin = sensor->getOriginNode(); 
         assert(sensorOrigin);
@@ -1305,7 +1305,7 @@ void X4PhysicalVolume::DumpSensorVolumes(const GGeo* gg, const char* msg)
 
         if(i - lastTransitionIndex < 10)
         std::cout 
-             << " sensorIdx " << std::setw(6) << sensorIdx 
+             << " sensorIndex " << std::setw(6) << sensorIndex 
              << " sensorPlacement " << std::setw(8) << sensorPlacement
              << " sensorCopyNo " << std::setw(8) << sensorCopyNo
              << " outerPlacement " << std::setw(8) << outerPlacement
@@ -1358,15 +1358,15 @@ void X4PhysicalVolume::DumpSensorPlacements(const GGeo* gg, const char* msg, boo
 
     for(int i=0 ; i < num_sen ; i++)
     {   
-         int sensorIdx = i ; 
-         const G4PVPlacement* sensor = sensors[sensorIdx] ; 
+         int sensorIndex = 1+i ; 
+         const G4PVPlacement* sensor = sensors[sensorIndex-1] ; 
          G4int copyNo = sensor->GetCopyNo(); 
 
          if( lastCopyNo + 1 != copyNo ) lastTransition = i ; 
 
          if( i - lastTransition < margin || i < margin || num_sen - 1 - i < margin ) 
          std::cout 
-             << " sensorIdx " << std::setw(6) << sensorIdx
+             << " sensorIndex " << std::setw(6) << sensorIndex
              << " sensor " << std::setw(8) << sensor
              << " copyNo " << std::setw(6) << copyNo
              << std::endl 

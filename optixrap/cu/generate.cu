@@ -224,8 +224,11 @@ p.flags.u.y
 
 
  boundary    = (( flags[:,0].view(np.uint32) & 0xffff0000 ) >> 16 ).view(np.int16)[1::2] 
- sensorIndex = (( flags[:,0].view(np.uint32) & 0xffff ) >> 0 ).view(np.int16)[0::2] 
+ sensorIndex = (( flags[:,0].view(np.uint32) & 0x0000ffff ) >>  0 ).view(np.int16)[0::2] 
 
+
+s.identity.w 
+    sensor index arriving from GVolume::getIdentity.w
 
 **/
 

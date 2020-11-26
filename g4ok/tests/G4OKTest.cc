@@ -195,10 +195,10 @@ void G4OKTest::initSensorData()
     bool dump = false ; 
     for(unsigned i=0 ; i < num_sensor ; i++)
     {
-        unsigned sensor_index = i ;
-        unsigned sensorIdentityStandin = m_g4ok->getSensorIdentityStandin(sensor_index); // opticks triplet identifier
+        unsigned sensorIndex = 1+i ;  // 1-based
+        unsigned sensorIdentityStandin = m_g4ok->getSensorIdentityStandin(sensorIndex); // opticks triplet identifier
 
-        const G4PVPlacement* pv = loaded ? NULL : sensor_placements[sensor_index] ;
+        const G4PVPlacement* pv = loaded ? NULL : sensor_placements[sensorIndex-1] ;
         int   sensor_identifier = ( use_standin || pv == NULL) ? sensorIdentityStandin : pv->GetCopyNo() ;
 
         // GDML physvol/@copynumber attribute persists the CopyNo : but this defaults to 0 unless set at detector level
@@ -208,14 +208,14 @@ void G4OKTest::initSensorData()
         int   sensor_cat = 0 ;        // must be less than num_cat, -1 when no angular efficiency info
 
         if(dump) std::cout 
-            << " sensor_index(dec) "      << std::setw(5) << std::dec << sensor_index
-            << " (hex) "                  << std::setw(5) << std::hex << sensor_index << std::dec
+            << " sensorIndex(dec) "       << std::setw(5) << std::dec << sensorIndex
+            << " (hex) "                  << std::setw(5) << std::hex << sensorIndex << std::dec
             << " sensor_identifier(hex) " << std::setw(7) << std::hex << sensor_identifier << std::dec
             << " standin(hex) "           << std::setw(7) << std::hex << sensorIdentityStandin << std::dec
             << std::endl
             ;
 
-        m_g4ok->setSensorData( sensor_index, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
+        m_g4ok->setSensorData( sensorIndex, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
     }
 
     LOG(LEVEL) << "] setSensorData num_sensor " << num_sensor ; 
@@ -323,9 +323,9 @@ void G4OKTest::checkHits(int eventID) const
         std::cout 
             << std::setw(5) << i 
             << " hit.boundary "           << std::setw(4) << hit.boundary 
-            << " hit.sensor_index "       << std::setw(5) << hit.sensor_index 
-            << " hit.node_index "         << std::setw(5) << hit.node_index 
-            << " hit.photon_index "       << std::setw(5) << hit.photon_index 
+            << " hit.sensorIndex "        << std::setw(5) << hit.sensorIndex 
+            << " hit.nodeIndex "          << std::setw(5) << hit.nodeIndex 
+            << " hit.photonIndex "        << std::setw(5) << hit.photonIndex 
             << " hit.flag_mask    "       << std::setw(10) << std::hex << hit.flag_mask  << std::dec
             << " hit.sensor_identifier "  << std::setw(10) << std::hex << hit.sensor_identifier << std::dec
             << " hit.weight "             << std::setw(5) << hit.weight 

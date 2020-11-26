@@ -26,16 +26,16 @@ void MockSensorLib::initSensorData(unsigned num_sensor)
     m_sensorlib->initSensorData(num_sensor); 
     for(unsigned i=0 ; i < num_sensor ; i++)
     {
-        unsigned sensor_index = i ; 
+        unsigned sensorIndex = 1+i ;  // 1-based 
 
         float efficiency_1 = 0.5f ;    
         float efficiency_2 = 1.0f ;    
         //int   sensor_cat = m_num_cat > 0 ? i % m_num_cat : -1 ; 
         int   sensor_cat = m_num_cat > 0 ? SRand::pick_random_category(m_num_cat) : -1 ; 
 
-        unsigned sensor_identifier = 1000000 + sensor_index ; 
+        unsigned sensor_identifier = 1000000 + sensorIndex - 1  ; 
 
-        m_sensorlib->setSensorData( sensor_index, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
+        m_sensorlib->setSensorData( sensorIndex, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
     }   
 }
 

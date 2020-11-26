@@ -11,11 +11,11 @@ union Quad
 }; 
 
 
-void test_OpticksPhotonFlags(int boundary, int sensorIndex, unsigned nodeIndex, unsigned photonIndex, unsigned flagMask, bool dump  )
+void test_OpticksPhotonFlags(int boundary, unsigned sensorIndex, unsigned nodeIndex, unsigned photonIndex, unsigned flagMask, bool dump  )
 {
     OpticksPhotonFlags a(boundary, sensorIndex, nodeIndex, photonIndex, flagMask); 
 
-    unsigned x = ( boundary << 16 ) | sensorIndex ; 
+    unsigned x = ( (boundary & 0xffff) << 16 ) | ( sensorIndex & 0xffff )  ; 
     unsigned y = nodeIndex ; 
     unsigned z = photonIndex ; 
     unsigned w = flagMask ; 
@@ -24,7 +24,7 @@ void test_OpticksPhotonFlags(int boundary, int sensorIndex, unsigned nodeIndex, 
     q.u = { x, y, z, w } ; 
 
     int      boundary_    = OpticksPhotonFlags::Boundary(   q.f);  
-    int      sensorIndex_ = OpticksPhotonFlags::SensorIndex(q.f);  
+    unsigned sensorIndex_ = OpticksPhotonFlags::SensorIndex(q.f);  
     unsigned nodeIndex_   = OpticksPhotonFlags::NodeIndex(  q.f);  
     unsigned photonIndex_ = OpticksPhotonFlags::PhotonIndex(q.f);  
     unsigned flagMask_    = OpticksPhotonFlags::FlagMask(   q.f);  
@@ -69,7 +69,7 @@ void test_OpticksPhotonFlags()
    
     std::vector<int> boundary = { -0x7fff-2, -0x7fff-1, -0x7fff, -0x1000, -0x100, -0x10, -0x1, 0x1, 0x10, 0x100, 0x1000, 0x7fff, 0x7fff+1 } ;     
 
-    int      sensorIndex = 0x7fff ; 
+    unsigned sensorIndex = 0xffff ; 
     unsigned nodeIndex = 10000001 ; // s_identity_x
     unsigned photonIndex = 99999 ; 
     unsigned flagMask = 0x1 | 0x2 | 0x4 | 0x8 ;

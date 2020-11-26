@@ -86,13 +86,13 @@ RT_PROGRAM void closest_hit()
     // see okg/SphereOfTransforms.cc
     //unsigned itheta       = ( intersect_identity & 0x000000ff ) >> 0 ;
     //unsigned iphi         = ( intersect_identity & 0x0000ff00 ) >> 8 ;
-    unsigned sensor_index   = ( intersect_identity & 0xffff0000 ) >> 16  ;  
+    unsigned sensorIndex   = ( intersect_identity & 0xffff0000 ) >> 16  ;  
 
     /*
-    const int category = OSensorLib_category( sensor_index ) ; 
+    const int category = OSensorLib_category( sensorIndex ) ; 
     const float eff    = OSensorLib_angular_efficiency(category, f_phi, f_theta); 
     */ 
-    const float eff    = OSensorLib_combined_efficiency(sensor_index, f_phi, f_theta); 
+    const float eff    = OSensorLib_combined_efficiency(sensorIndex, f_phi, f_theta); 
 
 
     prd.result = make_float3( eff, eff, eff );

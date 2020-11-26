@@ -19,7 +19,7 @@ OpticksPhotonFlags::OpticksPhotonFlags( const glm::vec4& f )
     LOG(LEVEL); 
 }
 
-OpticksPhotonFlags::OpticksPhotonFlags(int boundary_, int sensorIndex_, unsigned nodeIndex_, unsigned photonIndex_, unsigned flagMask_ )
+OpticksPhotonFlags::OpticksPhotonFlags(int boundary_, unsigned sensorIndex_, unsigned nodeIndex_, unsigned photonIndex_, unsigned flagMask_ )
     :
     boundary(boundary_),
     sensorIndex(sensorIndex_),
@@ -82,12 +82,12 @@ int OpticksPhotonFlags::Boundary(const float& x, const float& , const float& , c
     unsigned hi = uif.u >> 16 ;          
     return hi <= 0x7fff  ? hi : hi - 0x10000 ;  // twos-complement see SPack::unsigned_as_int 
 }
-int OpticksPhotonFlags::SensorIndex(const float& x, const float& , const float& , const float& ) // static
+unsigned OpticksPhotonFlags::SensorIndex(const float& x, const float& , const float& , const float& ) // static
 {
     uif_t uif ; 
     uif.f = x ; 
     unsigned lo = uif.u & 0xffff  ; 
-    return lo <= 0x7fff  ? lo : lo - 0x10000 ;  // twos-complement see SPack::unsigned_as_int 
+    return lo ; 
 }
 unsigned OpticksPhotonFlags::NodeIndex(const float&, const float& y, const float& , const float& )
 {
@@ -109,7 +109,7 @@ unsigned OpticksPhotonFlags::FlagMask(const float&, const float& , const float& 
 }
 
 int      OpticksPhotonFlags::Boundary(     const glm::vec4& f){ return OpticksPhotonFlags::Boundary(    f.x, f.y, f.z, f.w); }
-int      OpticksPhotonFlags::SensorIndex(  const glm::vec4& f){ return OpticksPhotonFlags::SensorIndex( f.x, f.y, f.z, f.w); }
+unsigned OpticksPhotonFlags::SensorIndex(  const glm::vec4& f){ return OpticksPhotonFlags::SensorIndex( f.x, f.y, f.z, f.w); }
 unsigned OpticksPhotonFlags::NodeIndex(    const glm::vec4& f){ return OpticksPhotonFlags::NodeIndex(   f.x, f.y, f.z, f.w); }
 unsigned OpticksPhotonFlags::PhotonIndex(  const glm::vec4& f){ return OpticksPhotonFlags::PhotonIndex( f.x, f.y, f.z, f.w); }
 unsigned OpticksPhotonFlags::FlagMask(     const glm::vec4& f){ return OpticksPhotonFlags::FlagMask(    f.x, f.y, f.z, f.w); }

@@ -98,7 +98,7 @@ void SensorLib::dumpSensorData(const char* msg, unsigned modulo) const
     
     for(unsigned i=0 ; i < m_sensor_num ; i++)
     {
-        unsigned sensorIndex = i ; 
+        unsigned sensorIndex = 1 + i ;  // 1-based 
         getSensorData(sensorIndex, efficiency_1, efficiency_2, category, identifier);
 
         if(modulo == 0 || i % modulo == 0 )
@@ -140,14 +140,14 @@ SensorLib::setSensorData
 ---------------------------
 
 Calls to this for all sensor_placements G4PVPlacement provided by SensorLib::getSensorPlacements
-provides a way to associate the Opticks contiguous 0-based sensorIndex with a detector 
+provides a way to associate the Opticks contiguous 1-based sensorIndex with a detector 
 defined sensor identifier. 
 
 Within JUNO simulation framework this is used from LSExpDetectorConstruction::SetupOpticks.
 
 sensorIndex 
-    0-based continguous index used to access the sensor data, 
-    the index must be less than the number of sensors
+    1-based contiguous index used to access the sensor data, 
+    the (sensorIndex - 1) must be less than the number of sensors
 efficiency_1 
 efficiency_2
     two efficiencies which are multiplied together with the local angle dependent efficiency 
@@ -163,28 +163,31 @@ identifier
 
 void SensorLib::setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int category, int identifier)
 {
-    assert( sensorIndex < m_sensor_num );
-    m_sensor_data->setFloat(sensorIndex,0,0,0, efficiency_1);
-    m_sensor_data->setFloat(sensorIndex,1,0,0, efficiency_2);
-    m_sensor_data->setInt(  sensorIndex,2,0,0, category);
-    m_sensor_data->setInt(  sensorIndex,3,0,0, identifier);
+    unsigned i = sensorIndex - 1 ;   // 1-based
+    assert( i < m_sensor_num );
+    m_sensor_data->setFloat(i,0,0,0, efficiency_1);
+    m_sensor_data->setFloat(i,1,0,0, efficiency_2);
+    m_sensor_data->setInt(  i,2,0,0, category);
+    m_sensor_data->setInt(  i,3,0,0, identifier);
 }
 
 void SensorLib::getSensorData(unsigned sensorIndex, float& efficiency_1, float& efficiency_2, int& category, int& identifier) const
-{   
-    assert( sensorIndex < m_sensor_num ); 
+{  
+    unsigned i = sensorIndex - 1 ;   // 1-based
+    assert( i < m_sensor_num ); 
     assert( m_sensor_data );
-    efficiency_1 = m_sensor_data->getFloat(sensorIndex,0,0,0);
-    efficiency_2 = m_sensor_data->getFloat(sensorIndex,1,0,0);
-    category     = m_sensor_data->getInt(  sensorIndex,2,0,0);
-    identifier   = m_sensor_data->getInt(  sensorIndex,3,0,0);
+    efficiency_1 = m_sensor_data->getFloat(i,0,0,0);
+    efficiency_2 = m_sensor_data->getFloat(i,1,0,0);
+    category     = m_sensor_data->getInt(  i,2,0,0);
+    identifier   = m_sensor_data->getInt(  i,3,0,0);
 }
 
 int SensorLib::getSensorIdentifier(unsigned sensorIndex) const
 {
-    assert( sensorIndex < m_sensor_num );
+    unsigned i = sensorIndex - 1 ;   // 1-based
+    assert( i < m_sensor_num );
     assert( m_sensor_data );
-    return m_sensor_data->getInt( sensorIndex, 3, 0, 0);
+    return m_sensor_data->getInt( i, 3, 0, 0);
 }
 
 /*
@@ -375,7 +378,7 @@ void SensorLib::checkSensorCategories(bool dump)
 
     for(unsigned i=0 ; i < m_sensor_num ; i++)
     {
-        unsigned sensorIndex = i ; 
+        unsigned sensorIndex = 1 + i ;  // 1-based 
 
         float efficiency_1 ; 
         float efficiency_2 ; 

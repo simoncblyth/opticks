@@ -23,9 +23,9 @@ struct G4OpticksHit
     G4ThreeVector global_polarization ; 
     G4double      wavelength ; 
     G4int         boundary ;
-    G4int         sensor_index ;
-    G4int         node_index ;
-    G4int         photon_index ;
+    G4int         sensorIndex ;
+    G4int         nodeIndex ;
+    G4int         photonIndex ;
     G4int         flag_mask ; 
     G4int         sensor_identifier ; 
     G4bool        is_cerenkov ; 

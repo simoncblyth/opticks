@@ -29,8 +29,11 @@
 #include "G4StepNPY.hpp"
 #include "NPY.hpp"
 
-
 #include "PLOG.hh"
+
+
+const plog::Severity G4StepNPY::LEVEL = PLOG::EnvLevel("G4StepNPY", "DEBUG"); 
+
 
 G4StepNPY::G4StepNPY(NPY<float>* npy) 
     :  
@@ -39,6 +42,7 @@ G4StepNPY::G4StepNPY(NPY<float>* npy)
     m_total_photons(0),
     m_apply_lookup_count(0)
 {
+    LOG(LEVEL) << " npy " << ( npy ? npy->getShapeString() : "-" ) ; 
 }
 
 NPY<float>* G4StepNPY::getNPY()
@@ -71,6 +75,13 @@ unsigned G4StepNPY::getGencode(unsigned i)
     unsigned ni = getNumSteps();
     assert(i < ni);
     unsigned gencode = m_npy->getInt(i,0u,0u);
+
+    LOG(LEVEL)
+       << " i " << i 
+       << " ni " << ni
+       << " gencode " << gencode 
+       ;
+
     return gencode  ; 
 }
 
@@ -267,7 +278,9 @@ void G4StepNPY::checkGencodes()
     unsigned numStep = m_npy->getNumItems();
     unsigned mismatch = 0 ;  
 
-    for(unsigned int i=0 ; i<numStep ; i++ )
+    LOG(LEVEL) << "  numStep " << numStep << " allowedGencodes: " << getAllowedGencodes() ; 
+
+    for(unsigned i=0 ; i<numStep ; i++ )
     {
         int label = m_npy->getInt(i,0u,0u);
         bool allowed = label > -1 && isAllowedGencode(unsigned(label)) ;  
@@ -428,21 +441,6 @@ int G4StepNPY::getStepId(unsigned int i)
 {
     return m_npy->getInt(i,0,0);
 }
-
-/*
-
-no longer valid as using the enum codes on collection
-
-bool G4StepNPY::isCerenkovStep(unsigned int i)  
-{
-    return getStepId(i) < 0 ; 
-}
-bool G4StepNPY::isScintillationStep(unsigned int i)
-{
-    return getStepId(i) > 0 ; 
-}
-*/
-
 
 
 void G4StepNPY::applyLookup(unsigned int jj, unsigned int kk)

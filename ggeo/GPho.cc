@@ -31,6 +31,7 @@
 
 #include "GGeo.hh"
 #include "GPho.hh"
+#include "GVolume.hh"
 
 #include "PLOG.hh"
 
@@ -251,7 +252,7 @@ std::string GPho::desc() const
 bool GPho::isLandedOnSensor(unsigned i) const 
 {
     OpticksPhotonFlags okfl = getOpticksPhotonFlags(i); 
-    return okfl.sensorIndex != -1 ;  
+    return okfl.sensorIndex != GVolume::SENSOR_UNSET ;  
 }
 bool GPho::isHit(unsigned i) const 
 {

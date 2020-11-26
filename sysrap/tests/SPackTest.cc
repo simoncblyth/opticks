@@ -172,7 +172,7 @@ void test_IsLittleEndian()
 }
 
 
-void test_unsigned_as_int(int boundary, int sensorIndex, bool dump)
+void test_unsigned_as_int(int boundary, unsigned sensorIndex, bool dump)
 {
     // LOG(info) << " boundary " << boundary ; 
 
@@ -180,14 +180,14 @@ void test_unsigned_as_int(int boundary, int sensorIndex, bool dump)
     //     simple packing like this doesnt work with signed ints, 
     //     must control the masking first otherwise the bits from eg -1:0xffffffff leak 
 
-    unsigned packed = ((boundary & 0xffff) << 16 ) | ((sensorIndex & 0xffff) << 0 ) ;   // pack the two 16 bit signed ints into 32 bits 
+    unsigned packed = ((boundary & 0xffff) << 16 ) | ((sensorIndex & 0xffff) << 0 ) ;  
     unsigned hi = ( packed & 0xffff0000 ) >> 16 ;
     unsigned lo = ( packed & 0x0000ffff ) >>  0 ;
 
-    // int hi_s = hi <= 0x7fff ? hi : hi - 0x10000 ;   
+    // int hi_s = hi <= 0x7fff ? hi : hi - 0x10000 ;    // twos complement
     int hi_s = SPack::unsigned_as_int<16>(hi); 
 
-    bool expect = hi_s == boundary && int(lo) == sensorIndex ; 
+    bool expect = hi_s == boundary && lo == sensorIndex ; 
 
     if(!expect || dump)
     std::cout 
@@ -209,9 +209,9 @@ void test_unsigned_as_int()
     unsigned sensorIndex = 0xbeef ;   // unsigned int that can easily fit into 16 bits 
     unsigned signed_max_16 = (0x1 << (16 - 1)) - 1  ;   // 0x7fff  
 
-    test_unsigned_as_int( -1, sensorIndex, true); 
-    test_unsigned_as_int( -(signed_max_16+1), sensorIndex, true  );
-    test_unsigned_as_int(   signed_max_16   , sensorIndex, true  );
+    test_unsigned_as_int( -1                 , sensorIndex, true ); 
+    test_unsigned_as_int( -(signed_max_16+1) , sensorIndex, true );
+    test_unsigned_as_int(   signed_max_16    , sensorIndex, true );
 
     int boundary0 = -(signed_max_16+1) ; 
     int boundary1 = signed_max_16 ; 

@@ -137,12 +137,11 @@ into m_sensor_identity.  Returns the number of such sensor volumes.
 unsigned GNodeLib::initSensorIdentity() 
 {
     assert( m_loaded ); 
-    unsigned UNSET = -1 ; 
     for(unsigned i=0 ; i < m_num_volumes ; i++)
     {
         glm::uvec4 id = m_identity->getQuad_(i); 
         unsigned sensorIndex = id.w ; 
-        if( sensorIndex == UNSET ) continue ; 
+        if( sensorIndex == GVolume::SENSOR_UNSET ) continue ; 
         //LOG(info) << " id " << glm::to_string(id) << " sensorIndex " << sensorIndex  ; 
         m_sensor_identity.push_back(id); 
     } 
@@ -396,9 +395,7 @@ void GNodeLib::addVolume(const GVolume* volume)
 
     m_num_volumes += 1 ; 
 
-    unsigned UNSET = -1 ; 
-    unsigned sensorIndex = volume->getSensorIndex(); 
-    bool is_sensor = sensorIndex != UNSET ; 
+    bool is_sensor = volume->hasSensorIndex();
     if(is_sensor)
     {
         m_sensor_volumes.push_back(volume); 
@@ -426,7 +423,7 @@ GNodeLib::getSensorVolume (precache only)
 
 const GVolume* GNodeLib::getSensorVolume(unsigned sensorIndex) const 
 {
-    return m_loaded ? NULL : m_sensor_volumes[sensorIndex]; 
+    return m_loaded ? NULL : m_sensor_volumes[sensorIndex-1];  // 1-based sensorIndex
 }
 
 /**
@@ -436,7 +433,7 @@ GNodeLib::getSensorIdentity (precache and postcache)
 **/
 glm::uvec4 GNodeLib::getSensorIdentity(unsigned sensorIndex) const 
 {
-    glm::uvec4 sid = m_sensor_identity[sensorIndex]; 
+    glm::uvec4 sid = m_sensor_identity[sensorIndex-1];  // 1-based sensorIndex
     return sid ; 
 }
 
@@ -468,8 +465,8 @@ void GNodeLib::dumpSensorVolumes(const char* msg) const
     {
         for(unsigned i=0 ; i < numSensorVolumes ; i++)
         {
-            unsigned sensorIdx = i ; 
-            const GVolume* sensor = getSensorVolume(sensorIdx) ; 
+            unsigned sensorIndex = 1 + i ; // 1-based 
+            const GVolume* sensor = getSensorVolume(sensorIndex) ; 
             assert(sensor); 
             const char* sensorPVName =  sensor->getPVName() ; 
             assert(sensorPVName);
@@ -483,7 +480,7 @@ void GNodeLib::dumpSensorVolumes(const char* msg) const
             assert(outerOrigin);
 
             std::cout 
-                << " sensorIdx " << std::setw(6) << sensorIdx
+                << " sensorIndex " << std::setw(6) << sensorIndex
                 << " sensor " << std::setw(8) << sensor 
                 << " outer " << std::setw(8) << outer 
                 << " sensorPVName " << std::setw(50) << sensorPVName
@@ -534,8 +531,8 @@ void GNodeLib::getSensorPlacements(std::vector<void*>& placements, bool outer_vo
     unsigned numSensorVolumes = getNumSensorVolumes(); 
     for(unsigned i=0 ; i < numSensorVolumes ; i++)
     {
-        unsigned sensorIdx = i ; 
-        const GVolume* sensor = getSensorVolume(sensorIdx) ; 
+        unsigned sensorIndex = 1 + i ; // 1-based
+        const GVolume* sensor = getSensorVolume(sensorIndex) ; 
         assert(sensor); 
 
         void* origin = NULL ; 

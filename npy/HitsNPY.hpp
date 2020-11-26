@@ -22,6 +22,16 @@
 template <typename T> class NPY ; 
 class NSensorList ; 
 
+/**
+HitsNPY
+========
+
+This class may be obsolete, using the old sensot approach.
+
+TODO: investigate and eliminate
+
+**/
+
 #include "NPY_API_EXPORT.hh"
 class NPY_API HitsNPY {
    public:  

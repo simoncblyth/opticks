@@ -609,14 +609,14 @@ G4Opticks::setSensorData
 ---------------------------
 
 Calls to this for all sensor_placements G4PVPlacement provided by G4Opticks::getSensorPlacements
-provides a way to associate the Opticks contiguous 0-based sensorIndex with a detector 
+provides a way to associate the Opticks contiguous 1-based sensorIndex with a detector 
 defined sensor identifier. 
 
 Within JUNO simulation framework this is used from LSExpDetectorConstruction::SetupOpticks.
 
 sensorIndex 
-    0-based continguous index used to access the sensor data, 
-    the index must be less than the number of sensors
+    1-based contiguous index used to access the sensor data, 
+    the (index-1) must be less than the number of sensors
 efficiency_1 
 efficiency_2
     two efficiencies which are multiplied together with the local angle dependent efficiency 
@@ -993,9 +993,9 @@ void G4Opticks::getHit(unsigned i, G4OpticksHit* hit ) const
     hit->local_polarization.set(double(local_polw.x), double(local_polw.y), double(local_polw.z)); 
 
     hit->boundary      = pflag.boundary ; 
-    hit->sensor_index  = pflag.sensorIndex ; 
-    hit->node_index    = pflag.nodeIndex ; 
-    hit->photon_index  = pflag.photonIndex ; 
+    hit->sensorIndex   = pflag.sensorIndex ; 
+    hit->nodeIndex     = pflag.nodeIndex ; 
+    hit->photonIndex   = pflag.photonIndex ; 
     hit->flag_mask     = pflag.flagMask ; 
 
     hit->is_cerenkov       = (pflag.flagMask & CERENKOV) != 0 ; 

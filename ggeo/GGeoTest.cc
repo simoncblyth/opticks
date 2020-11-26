@@ -405,7 +405,7 @@ GVolume* GGeoTest::importCSG()
         prior = volume ; 
 
 
-        int sensorIndex = -1 ; 
+        unsigned sensorIndex = GVolume::SENSOR_UNSET  ; 
         volume->setSensorIndex(sensorIndex); // see notes/issues/GGeoTest_GMergedMesh_mergeVolumeFaces_assert_sensor_indices.rst 
 
         // forming tripletIdentity here just to match the normal way of doing things, 

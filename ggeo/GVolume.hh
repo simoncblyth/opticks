@@ -61,8 +61,9 @@ class GGEO_API GVolume : public GNode {
       void     setBoundaryAll(unsigned boundary);  // recursive over tree
 
   public:
-      void     setSensorIndex(int sensor_index) ;
-      int      getSensorIndex() const ;
+      static const unsigned SENSOR_UNSET ; 
+      void     setSensorIndex(unsigned sensorIndex) ;
+      unsigned getSensorIndex() const ;
       bool     hasSensorIndex() const ;
   public:
       // CopyNumber comes from G4PVPlacement.CopyNo (physvol/@copynumber in GDML)
@@ -102,7 +103,7 @@ class GGEO_API GVolume : public GNode {
       int               m_boundary ; 
       OpticksCSG_t      m_csgflag ; 
       bool              m_csgskip ; 
-      int               m_sensor_index ; 
+      unsigned          m_sensorIndex ; 
 
       const char*       m_pvname ; 
       const char*       m_lvname ; 

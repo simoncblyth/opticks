@@ -39,6 +39,7 @@
 #include "PLOG.hh"
 #include "GGEO_BODY.hh"
 
+const unsigned GVolume::SENSOR_UNSET = 0u ; 
 
 GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, void* origin_node )
     : 
@@ -46,7 +47,7 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, 
     m_boundary(-1),
     m_csgflag(CSG_PARTLIST),
     m_csgskip(false),
-    m_sensor_index(-1),
+    m_sensorIndex(SENSOR_UNSET),
     m_pvname(NULL),
     m_lvname(NULL),
     m_parts(NULL),
@@ -240,10 +241,10 @@ with geometry.
    * mesh_index: 2 bytes easily enough, 0xffff = 65535
    * boundary_index: 2 bytes easily enough  
 
-4. sensor_index (2 bytes easily enough) 
+4. sensorIndex (2 bytes easily enough) 
 
 The sensor_identifier is detector specific so would have to allow 4-bytes 
-hence exclude it from this identity, instead can use sensor_index to 
+hence exclude it from this identity, instead can use sensorIndex to 
 look up sensor_identifier within G4Opticks::getHit 
 
 Formerly::
@@ -311,26 +312,26 @@ glm::uvec4 GVolume::getNodeInfo() const
 GVolume::setSensorIndex
 -------------------------
 
-sensorIndex is expected to be a 0-based contiguous index, with the 
-default value of -1 meaning no sensor.
+sensorIndex is expected to be a 1-based contiguous index, with the 
+default value of SENSOR_UNSET (0)  meaning no sensor.
 
 This is canonically invoked from X4PhysicalVolume::convertNode during GVolume creation.
 
 * GNode::setSensorIndices duplicates the index to all faces of m_mesh triangulated geometry
 
 **/
-void GVolume::setSensorIndex(int sensor_index)
+void GVolume::setSensorIndex(unsigned sensorIndex)
 {
-    m_sensor_index = sensor_index ; 
-    setSensorIndices( m_sensor_index );   
+    m_sensorIndex = sensorIndex ; 
+    setSensorIndices( m_sensorIndex );   
 }
-int GVolume::getSensorIndex() const 
+unsigned GVolume::getSensorIndex() const 
 {
-    return m_sensor_index ;      
+    return m_sensorIndex ;      
 }
 bool GVolume::hasSensorIndex() const
 {
-    return m_sensor_index > -1 ; 
+    return m_sensorIndex != SENSOR_UNSET ; 
 }
 
 

@@ -89,7 +89,7 @@ class GGEO_API GNode {
      unsigned getTripletIdentity() const ;  
   public: 
       void setBoundaryIndices(unsigned int boundary_index);
-      void setSensorIndices(unsigned int sensor_index);
+      void setSensorIndices(unsigned int sensorIndex);
   private:
       void setNodeIndices(unsigned int index); 
   public: 

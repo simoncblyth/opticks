@@ -28,9 +28,9 @@ See tests/OSensorLibTest
 rtBuffer<float4,1>  OSensorLib_sensor_data ;
 rtBuffer<int4,1>    OSensorLib_texid ;
 
-static __device__ __inline__ int OSensorLib_category(unsigned sensor_index )
+static __device__ __inline__ int OSensorLib_category(unsigned sensorIndex ) 
 {
-    int category =  __float_as_int(OSensorLib_sensor_data[sensor_index].z) ; 
+    int category =  __float_as_int(OSensorLib_sensor_data[sensorIndex-1].z) ;  // 1-based sensorIndex
     return category ; 
 }
 
@@ -41,9 +41,9 @@ static __device__ __inline__ float OSensorLib_angular_efficiency(int category, f
     return angular_efficiency ; 
 }
 
-static __device__ __inline__ float OSensorLib_combined_efficiency(unsigned sensor_index, float phi_fraction, float theta_fraction  )
+static __device__ __inline__ float OSensorLib_combined_efficiency(unsigned sensorIndex, float phi_fraction, float theta_fraction  )
 {
-    const float4& sensor_data = OSensorLib_sensor_data[sensor_index] ; 
+    const float4& sensor_data = OSensorLib_sensor_data[sensorIndex-1] ;  // 1-based sensorIndex
 
     float efficiency_1 = sensor_data.x ; 
     float efficiency_2 = sensor_data.y ; 

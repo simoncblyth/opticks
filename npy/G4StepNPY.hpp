@@ -24,6 +24,8 @@
 #include <vector>
 #include <string>
 
+#include "plog/Severity.h"
+
 template <typename T> class NPY ; 
 class NLookup ; 
 
@@ -48,6 +50,7 @@ TODO: merge up into okc/OpticksGenstep ?
 
 class NPY_API G4StepNPY {
    public:  
+        static const plog::Severity LEVEL ; 
         typedef std::set<unsigned int> Set_t ; 
    public:  
        G4StepNPY(NPY<float>* npy); // weak reference to NPY* only

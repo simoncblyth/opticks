@@ -250,9 +250,10 @@ void OpticksRun::importGensteps()
     OK_PROFILE("_OpticksRun::importGensteps");
 
     const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ; 
+
+    LOG(LEVEL) << " oac_label " << oac_label ; 
  
     m_g4step = importGenstepData(m_gensteps, oac_label) ;
-
 
     if(m_g4evt)
     { 
@@ -357,9 +358,14 @@ void OpticksRun::loadEvent()
 OpticksRun::importGenstepData
 --------------------------------
 
+Invoked by OpticksRun::importGensteps
+
 The NPY<float> genstep buffer is wrapped in a G4StepNPY 
 and metadata and labelling checks are done  and any material
 translations performed.
+
+OpticksActionControl is used to modify the NPYBase::m_action_control 
+of the gensteps.
 
 **/
 

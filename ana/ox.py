@@ -72,11 +72,11 @@ def dump_boundaries(ox):
     pass
     print("%4s : %7d " % ("TOT",tot))
 
-def dump_sensorIdx(ox):
+def dump_sensorIndex(ox):
     sidx = (ox[:,3,0].view(np.uint32) & 0xffff).view(np.int16)[0::2] 
     u_sidx, u_sidx_counts = np.unique(sidx, return_counts=True)  
     tot = 0 
-    print("dump_sensorIdx")
+    print("dump_sensorIndex")
     for sid,sid_count in sorted(zip(u_sidx,u_sidx_counts), key=lambda _:_[1], reverse=True):
         print("%4d : %7d  : %s " % (sid, sid_count, ""))
         tot += sid_count
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     print("ox_lander : %s : photons landing on sensor volumes  " % repr(ox_lander.shape))  
 
     dump_boundaries(ox)
-    #dump_sensorIdx(ox)
+    #dump_sensorIndex(ox)
 
     for i, oxr in enumerate(ox):
         oxf = oxr[3].view(np.int32)
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     pass
         
     dump_boundaries(ox)
-    #dump_sensorIdx(ox)
+    #dump_sensorIndex(ox)
 
 
  

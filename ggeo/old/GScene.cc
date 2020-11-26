@@ -839,12 +839,12 @@ void GScene::transferIdentity( GVolume* node, const nd* n)
     //bool match_node_index     = check_id.x == tri_id.x ;
     //bool match_mesh_index     = check_id.y == tri_id.y ;
     bool match_boundary_index = check_id.z == tri_id.z ;
-    bool match_sensor_index   = check_id.w == tri_id.w ;
+    bool match_sensorIndex   = check_id.w == tri_id.w ;
 
     //assert( match_node_index );    
     //assert( match_mesh_index );
     assert( match_boundary_index );
-    assert( match_sensor_index );
+    assert( match_sensorIndex );
 
 
     assert( rel_node_idx == node->getIndex() );
@@ -875,8 +875,8 @@ void GScene::transferIdentity( GVolume* node, const nd* n)
            ; 
 */
 
-    if(!match_sensor_index)
-        LOG(info) << " match_sensor_index "
+    if(!match_sensorIndex)
+        LOG(info) << " match_sensorIndex "
                   << " check_id.w  " << check_id.w 
                   << " tri_id.w " << tri_id.w
                   ;

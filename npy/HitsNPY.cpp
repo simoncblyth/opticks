@@ -29,9 +29,9 @@
 
 
 HitsNPY::HitsNPY(NPY<float>* photons, NSensorList* sensorlist) 
-       :  
-       m_photons(photons),
-       m_sensorlist(sensorlist)
+    :  
+    m_photons(photons),
+    m_sensorlist(sensorlist)
 {
 }
 
@@ -53,7 +53,7 @@ void HitsNPY::debugdump(const char* msg)
 
     for(UU::const_iterator it=cuu.begin() ; it != cuu.end() ; it++)
     {
-        unsigned int sensorIndex = it->first ; 
+        unsigned sensorIndex = it->first ; 
 
         NSensor* sensor = sensorIndex > 0 ? m_sensorlist->getSensor(sensorIndex-1) : NULL ;
 

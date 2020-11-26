@@ -1,6 +1,16 @@
 triplet-id-loosing-offset-index-in-NPY
 ========================================
 
+
+Cause of the now fixed Issue
+-----------------------------
+
+Cause of problem was the old getQuad (now renamed to getQuadF) returning a glm::vec4 float 
+which got silently converted into glm::uvec4 : the trouble with that is that everything 
+appears as expected until the content value gets sufficiently large that the precision loss
+of going through float results in getting wrong values.
+
+
 FIXED by correcting improper glm::uvec4 getQuad to templated getQuad_
 -----------------------------------------------------------------------------
 
