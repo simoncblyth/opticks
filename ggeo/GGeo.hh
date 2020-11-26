@@ -20,6 +20,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <vector>
 #include <unordered_set>
 #include <iterator>
@@ -290,7 +291,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         glm::uvec4 getNRPO(unsigned nidx) const ;
         glm::mat4 getTransform(unsigned nidx) const ;  
         glm::mat4 getInverseTransform(unsigned nidx) const ;  
-        void dumpVolumes(const char* msg="GGeo::dumpVolumes", float extent_cut_mm=5000., int cursor=-1 ) const ;
+        void dumpVolumes(const std::map<std::string, int>& targets, const char* msg="GGeo::dumpVolumes", float extent_cut_mm=5000., int cursor=-1 ) const ;
         glm::vec4 getCE(unsigned index) const ; 
     public:
         void dumpNode(unsigned nidx); 

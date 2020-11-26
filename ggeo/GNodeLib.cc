@@ -746,15 +746,9 @@ std::string GNodeLib::descVolume(unsigned index) const
 }
 
 
-void GNodeLib::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) const 
+void GNodeLib::dumpVolumes(const std::map<std::string, int>& label_target, const char* msg, float extent_cut_mm, int cursor ) const 
 {
     unsigned num_volumes = getNumVolumes();
-
-    std::vector<int> targets ; 
-    targets.push_back(m_ok->getTarget());         // --target
-    targets.push_back(m_ok->getDomainTarget());   // --domaintarget
-    targets.push_back(m_ok->getGenstepTarget());  // --gensteptarget
-    targets.push_back(cursor); 
 
     LOG(info) 
         << msg  
@@ -764,6 +758,27 @@ void GNodeLib::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) co
         << " --gensteptarget " << m_ok->getGenstepTarget() 
         << " cursor " << cursor 
         ;
+
+    std::vector<int> targets ; 
+    targets.push_back(m_ok->getTarget());         // --target
+    targets.push_back(m_ok->getDomainTarget());   // --domaintarget
+    targets.push_back(m_ok->getGenstepTarget());  // --gensteptarget
+    targets.push_back(cursor); 
+
+    typedef std::map<std::string, int>::const_iterator IT ; 
+    for(IT it=label_target.begin() ; it != label_target.end() ; it++)
+    {
+        std::string label = it->first ; 
+        int target = it->second ; 
+        targets.push_back(target); 
+
+        std::cout 
+            << std::setw(30) << label
+            << " : "
+            << std::setw(10) << target
+            << std::endl
+            ;
+    }
 
     LOG(info) << "first volumes "  ; 
     for(unsigned i=0 ; i < std::min(num_volumes, 20u) ; i++) 

@@ -413,6 +413,7 @@ FabStepNPY* OpticksGen::makeFabstep()
 }
 
 
+
 TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)
 {
     assert( gencode == OpticksGenstep_TORCH ); 
@@ -422,19 +423,31 @@ TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)
     if(torchstep->isDefault())
     {
         int frameIdx = torchstep->getFrameIndex(); 
-
         int detectorDefaultFrame = m_ok->getDefaultFrame() ; 
-        int genstepTarget = m_ok->getGenstepTarget() ; 
+        int gdmlaux_target =  m_ggeo ? m_ggeo->getFirstNodeIndexForGDMLAuxTargetLVName() : -1 ;  // sensitive to GDML auxilary lvname metadata (label, target) 
+        int cmdline_target = m_ok->getGenstepTarget() ;   // --gensteptarget
 
+        unsigned active_target = 0 ;
+           
+        if( cmdline_target > 0 )
+        {
+            active_target = cmdline_target ;  
+        }
+        else if( gdmlaux_target > 0 )
+        {
+            active_target = gdmlaux_target ;  
+        }
+        
         LOG(error) 
             << " as torchstep isDefault replacing placeholder frame " 
             << " frameIdx : " << frameIdx
             << " detectorDefaultFrame : " << detectorDefaultFrame
-            << " genstepTarget --gensteptarget : " << genstepTarget
+            << " cmdline_target [--gensteptarget] : " << cmdline_target
+            << " gdmlaux_target : " << gdmlaux_target
+            << " active_target : " << active_target
             ; 
 
-        torchstep->setFrame(genstepTarget); 
-        //torchstep->setFrame(detectorDefaultFrame); 
+        torchstep->setFrame(active_target); 
     }
 
 

@@ -17,7 +17,9 @@ void test_dump(const GNodeLib* nlib)
 {
     LOG(info) << "nlib " << nlib ; 
     nlib->Dump("GNodeLibTest"); 
-    nlib->dumpVolumes(); 
+
+    std::map<std::string, int> targets ;  
+    nlib->dumpVolumes(targets); 
 }
 
 void test_transforms(const GNodeLib* nlib)

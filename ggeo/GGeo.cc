@@ -1588,9 +1588,9 @@ glm::mat4 GGeo::getInverseTransform(unsigned index) const
 
 
 
-void GGeo::dumpVolumes(const char* msg, float extent_cut_mm, int cursor ) const 
+void GGeo::dumpVolumes(const std::map<std::string, int>& targets, const char* msg, float extent_cut_mm, int cursor ) const 
 {
-    m_nodelib->dumpVolumes(msg, extent_cut_mm, cursor); 
+    m_nodelib->dumpVolumes(targets, msg, extent_cut_mm, cursor); 
 }
 glm::vec4 GGeo::getCE(unsigned index) const 
 {

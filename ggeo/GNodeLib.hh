@@ -141,7 +141,8 @@ class GGEO_API GNodeLib
 
 
         std::string descVolume(unsigned index) const;
-        void dumpVolumes(const char* msg="GNodeLib::dumpVolumes", float extent_cut_mm=5000.f, int cursor=-1 ) const ; 
+        void dumpVolumes(const std::map<std::string, int>& targets, const char* msg="GNodeLib::dumpVolumes", float extent_cut_mm=5000.f, int cursor=-1 ) const ; 
+
     public:
         unsigned         getNumSensorVolumes() const ;
         const GVolume*   getSensorVolume(unsigned sensorIndex) const ;

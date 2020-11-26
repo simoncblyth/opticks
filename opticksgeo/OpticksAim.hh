@@ -20,6 +20,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 #include <glm/fwd.hpp>
 #include "plog/Severity.h"
 
@@ -48,12 +49,10 @@ class OKGEO_API OpticksAim {
        void registerGeometry(GGeo* ggeo);
     public:
        void            target();   // point composition at geocenter or the m_evt (last created)
-       void            setTarget(unsigned target=0, bool aim=true);
        void            setupCompositionTargetting() ;
        unsigned        getTarget() const ;
+       void            setTarget(unsigned target=0, bool aim=true);
     private:
-       glm::vec4       getCenterExtent() const ;
-       unsigned        getTargetDeferred() const ;
        void            dumpTarget(const char* msg="OpticksAim::dumpTarget") const ;  
     private:
        Opticks*        m_ok ; 
@@ -63,7 +62,11 @@ class OKGEO_API OpticksAim {
 
        GGeo*           m_ggeo ; 
        unsigned        m_target ;
-       unsigned        m_target_deferred ;
+       unsigned        m_gdmlaux_target ; 
+       bool            m_autocam ; 
+
+       std::map<std::string, int> m_targets ; 
+
 
 };
 

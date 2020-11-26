@@ -666,6 +666,7 @@ void OpticksHub::target()   // point composition at geocenter or the m_evt (last
 }
 void OpticksHub::setTarget(unsigned target, bool aim)
 {
+    assert(0); 
     m_aim->setTarget(target, aim);
 }
 unsigned OpticksHub::getTarget()

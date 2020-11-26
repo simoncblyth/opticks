@@ -46,7 +46,8 @@ OpticksAim::OpticksAim(OpticksHub* hub)
     m_composition(hub->getComposition()),
     m_ggeo(NULL),
     m_target(0),
-    m_target_deferred(0)
+    m_gdmlaux_target(0),
+    m_autocam(true)
 {
 }
 
@@ -64,40 +65,47 @@ void OpticksAim::registerGeometry(GGeo* ggeo)
     assert( ggeo ); 
     m_ggeo = ggeo ; 
 
-    //glm::vec4 ce0 = m_ggeo ? m_ggeo->getCE(0) : glm::vec4(0.f,0.f,0.f,1.f) ;
+    const char* gdmlaux_target_lvname = m_ok->getGDMLAuxTargetLVName() ; 
+    m_gdmlaux_target =  m_ggeo->getFirstNodeIndexForGDMLAuxTargetLVName() ; // sensitive to GDML auxilary lvname metadata (label, target)  
 
-    int domaintarget = m_ok->getDomainTarget();    // --domaintarget 
-    glm::vec4 center_extent = m_ggeo->getCE(domaintarget); 
+    int cmdline_domaintarget = m_ok->getDomainTarget();    // --domaintarget 
 
+    unsigned active_domaintarget = 0 ;  
+    if( cmdline_domaintarget > 0 )
+    {
+        active_domaintarget = cmdline_domaintarget ; 
+    } 
+    else if( m_gdmlaux_target > 0 )
+    {
+        active_domaintarget = m_gdmlaux_target ; 
+    }
+
+    m_targets["gdmlaux_domain"] = m_gdmlaux_target  ; 
+    m_targets["cmdline_domain"] = cmdline_domaintarget  ; 
+    m_targets["active_domain"] = active_domaintarget  ; 
+
+    glm::vec4 center_extent = m_ggeo->getCE(active_domaintarget); 
 
     LOG(LEVEL)
-          << " setting SpaceDomain : " 
-          << " --domaintarget " << domaintarget
-          << " center_extent " << gformat(center_extent) 
-          ; 
+        << " setting SpaceDomain : " 
+        << " cmdline_domaintarget [--domaintarget] " << cmdline_domaintarget
+        << " gdmlaux_target " << m_gdmlaux_target
+        << " gdmlaux_target_lvname  " << gdmlaux_target_lvname 
+        << " active_domaintarget " << active_domaintarget
+        << " center_extent " << gformat(center_extent) 
+        ; 
     
     m_ok->setSpaceDomain( center_extent );
 }
 
-glm::vec4 OpticksAim::getCenterExtent() const 
-{
-    assert(0); 
-    if(!m_ggeo) LOG(fatal) << " m_ggeo NULL " ; 
-    glm::vec4 ce = m_ggeo ? m_ggeo->getCE(0) : glm::vec4(0.f,0.f,0.f,1.f) ;
-    return ce ; 
-}
-
 void OpticksAim::dumpTarget(const char* msg) const 
 {
+    assert( m_ggeo ); 
     float extent_cut_mm = 5000.f ; 
-    m_ggeo->dumpVolumes(msg, extent_cut_mm, m_target ); 
+    m_ggeo->dumpVolumes(m_targets, msg, extent_cut_mm, m_target ); 
 }
 
 
-unsigned OpticksAim::getTargetDeferred() const 
-{
-    return m_target_deferred ;
-}
 unsigned OpticksAim::getTarget() const 
 {
     return m_target ;
@@ -122,40 +130,29 @@ Priority order of inputs to control the target volume:
 
 void OpticksAim::setupCompositionTargetting()
 {
-    bool autocam = true ; 
-    unsigned deferred_target = getTargetDeferred();   // default to 0   
-    // ^^^^^^^^^^^^^ suspect no longer needed
-
     unsigned cmdline_target = m_ok->getTarget();      // sensitive to OPTICKS_TARGET envvar, fallback 0 
-
-    const char* target_lvname = m_ok->getGDMLAuxTargetLVName() ; 
-    int gdmlaux_target =  m_ggeo ? m_ggeo->getFirstNodeIndexForGDMLAuxTargetLVName() : -1 ;  // sensitive to GDML auxilary lvname metadata (label, target)  
-
     unsigned active_target = 0 ; 
 
     if( cmdline_target > 0 )
     {
         active_target = cmdline_target ; 
     } 
-    else if( deferred_target > 0 )
+    else if( m_gdmlaux_target > 0 )
     {
-        active_target = deferred_target ; 
-    } 
-    else if( gdmlaux_target > 0 )
-    {
-        active_target = gdmlaux_target ;
+        active_target = m_gdmlaux_target ;
     }
 
+    m_targets["gdmlaux_composition"] = m_gdmlaux_target ; 
+    m_targets["cmdline_composition"] = cmdline_target ; 
+    m_targets["active_composition" ] = active_target ; 
+
     LOG(error)
-        << " deferred_target " << deferred_target
         << " cmdline_target " << cmdline_target
-        << " target_lvname " << target_lvname
-        << " gdmlaux_target " << gdmlaux_target  
+        << " gdmlaux_target " << m_gdmlaux_target  
         << " active_target " << active_target 
         ;   
 
-
-    setTarget(active_target, autocam);
+    setTarget(active_target, m_autocam);
 }
 
 /**
@@ -168,7 +165,7 @@ volume identified by node index.
 If this is invoked prior to registering geometry the 
 target is retained in m_target_deferred.
    
-Invoked by OpticksViz::uploadGeometry OpticksViz::init
+Invoked by OpticksViz::uploadGeometry OpticksViz::init OpticksHub::setTarget
 
 Formerly of oglrap-/Scene
 
@@ -178,27 +175,19 @@ void  OpticksAim::setTarget(unsigned target, bool aim)
 {
     assert(m_ggeo) ;  // surely always now available ?
 
-    if(m_ggeo == NULL)
-    {    
-        LOG(LEVEL) << "target " << target << " (deferring as geometry not registered with OpticksAim) " ; 
-        m_target_deferred = target ; 
-    }    
-    else
-    {
-        m_target = target ; 
-        if(m_dbgaim) dumpTarget("OpticksAim::setTarget"); 
+    m_target = target ; 
+    if(m_dbgaim) dumpTarget("OpticksAim::setTarget"); 
 
-        glm::vec4 ce = m_ggeo->getCE(target);
-        LOG(LEVEL)
-            << " using CenterExtent from m_ggeo "
-            << " target " << target 
-            << " aim " << aim
-            << " ce " << gformat(ce) 
-            << " for details : --dbgaim " 
-            ;    
+    glm::vec4 ce = m_ggeo->getCE(target);
+    LOG(LEVEL)
+        << " using CenterExtent from m_ggeo "
+        << " target " << target 
+        << " aim " << aim
+        << " ce " << gformat(ce) 
+        << " for details : --dbgaim " 
+        ;    
 
-        m_composition->setCenterExtent(ce, aim); 
-    }
+    m_composition->setCenterExtent(ce, aim); 
 }
 
 
@@ -216,7 +205,6 @@ void OpticksAim::target()
 {
     int target_ = getTarget() ;
     bool geocenter  = m_ok->hasOpt("geocenter");  // --geocenter
-    bool autocam = true ; 
 
     OpticksEvent* evt = m_hub->getEvent();
 
@@ -226,15 +214,14 @@ void OpticksAim::target()
     }
     else if(geocenter )
     {
-        //glm::vec4 ce0 = getCenterExtent();
         glm::vec4 ce0 = m_ggeo->getCE(0);
-        m_composition->setCenterExtent( ce0 , autocam );
+        m_composition->setCenterExtent( ce0 , m_autocam );
         LOG(LEVEL) << "[--geocenter] ce0 " << gformat(ce0) ; 
     }
     else if(evt && evt->hasGenstepData())
     {
         glm::vec4 gsce = evt->getGenstepCenterExtent();  // need to setGenStepData before this will work 
-        m_composition->setCenterExtent( gsce , autocam );
+        m_composition->setCenterExtent( gsce , m_autocam );
         LOG(LEVEL) 
             << " evt " << evt->brief()
             << " gsce " << gformat(gsce) 
