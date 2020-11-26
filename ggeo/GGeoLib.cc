@@ -346,12 +346,20 @@ std::string GGeoLib::desc() const
 }
 
 
+/**
+GGeoLib::dump
+---------------
+
+This has been updated for mm0 holding remainder volumes (not all volumes as it used to).
+
+**/
+
 void GGeoLib::dump(const char* msg)
 {
     LOG(info) << msg << " " << desc() ; 
 
     GMergedMesh* mm0 = getMergedMesh(0) ; 
-    unsigned num_total_volumes = mm0 ?  mm0->getNumVolumes() : -1 ; 
+    unsigned num_remainder_volumes = mm0 ?  mm0->getNumVolumes() : -1 ; 
     unsigned nmm = getNumMergedMesh();
     unsigned num_instanced_volumes = 0 ; 
     unsigned num_total_faces = 0 ; 
@@ -371,9 +379,9 @@ void GGeoLib::dump(const char* msg)
 
     }
     std::cout
-                << " num_total_volumes " << num_total_volumes 
+                << " num_remainder_volumes " << num_remainder_volumes 
                 << " num_instanced_volumes " << num_instanced_volumes 
-                << " num_global_volumes " << num_total_volumes - num_instanced_volumes
+                << " num_remainder_volumes + num_instanced_volumes " << num_remainder_volumes + num_instanced_volumes
                 << " num_total_faces " << num_total_faces
                 << " num_total_faces_woi " << num_total_faces_woi << " (woi:without instancing) " 
                 << std::endl
@@ -382,9 +390,7 @@ void GGeoLib::dump(const char* msg)
     for(unsigned i=0 ; i < nmm ; i++)
     {   
         GMergedMesh* mm = getMergedMesh(i); 
-
         GPts* pts = mm->getPts(); 
-
         std::cout 
              << std::setw(4) << i 
              << " pts " << ( pts ? "Y" : "N" )
@@ -392,10 +398,6 @@ void GGeoLib::dump(const char* msg)
              << std::endl
              ;
     }
-
-
-
-     
 }
 
 int GGeoLib::checkMergedMeshes() const 
