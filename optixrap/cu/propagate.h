@@ -234,7 +234,7 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 //            -s.surface_normal 
 //
 //   final momentum dir (c1 = 1.f)
-//            -s.surface_normal + 2.0f*c1*s.surface_normal  = -p.direction 
+//            -s.surface_normal + 2.0f*c1*s.surface_normal  = +s.surface_normal = -p.direction 
 //                                                    
 //
 //  minimise use of trancendental functions 
@@ -401,15 +401,15 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
 
 
 
-__device__ void propagate_at_boundary( Photon& p, State& s, curandState &rng)
+__device__ void UNUSED_DEAD_CODE_propagate_at_boundary( Photon& p, State& s, curandState &rng)
 {
     float eta = s.material1.x/s.material2.x ;    // eta = n1/n2   x:refractive_index  PRE-FLIPPED
 
-    float3 incident_plane_normal = fabs(s.cos_theta) < 1e-6f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
+    const float c1 = -dot(p.direction, s.surface_normal ); // c1 arranged to be +ve   
+
+    float3 incident_plane_normal = fabs(c1) < 1e-6f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
 
     float normal_coefficient = dot(p.polarization, incident_plane_normal);  // fraction of E vector perpendicular to plane of incidence, ie S polarization
-
-    const float c1 = -dot(p.direction, s.surface_normal ); // c1 arranged to be +ve   
 
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ; 
 
@@ -494,7 +494,6 @@ __device__ void propagate_at_specular_reflector(Photon &p, State &s, curandState
     //   c1 +ve for directions opposite to normal, (ie from outside) 
     //   c1 -ve for directions same as normal (ie from inside)
  
-    //float3 incident_plane_normal = fabs(s.cos_theta) < 1e-6f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
     // see notes/issues/photon-polarization-testauto-SR.rst
 
     float3 incident_plane_normal = fabs(c1) > 0.999999f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;

@@ -677,6 +677,7 @@ RT_PROGRAM void generate()
     // setting p.flags for things like boundary, history flags  
     FLAGS(p, s, prd); 
 
+    p.flags.u.z = photon_id ;  // formerly behind IDENTITY_DEBUG macro, but has become indispensable
 
     if( utaildebug )   // --utaildebug    see notes/issues/ts-box-utaildebug-decouple-maligned-from-deviant.rst
     {
@@ -688,10 +689,6 @@ RT_PROGRAM void generate()
     }
 
 
-#define IDENTITY_DEBUG  1
-#ifdef IDENTITY_DEBUG
-    p.flags.u.z = photon_id ;   // stomp on debug flags to pass the identity, so can identify the pindex of hits  
-#endif
 
     // FORMERLY stomped on the weight with the nodeIndex
     //  p.weight = unsigned_as_float( s.identity.x ); // stomp on the weight with last intersect volume identity (see GVolume::getIdentity) 

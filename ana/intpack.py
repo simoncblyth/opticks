@@ -36,6 +36,12 @@ ii = list(range(-10,10)) + list(range(signed_max - 10, signed_max+1)) + list(ran
 assert sys.byteorder == 'little'
 
 
+i2big_ = lambda _:ba.hexlify(_.to_bytes(2, "big", signed=True )).decode()   
+i4big_ = lambda _:ba.hexlify(_.to_bytes(4, "big", signed=True )).decode()   
+
+
+
+
 for i in ii:
    u = np.uint32(i)
    v = u.view(np.int32)

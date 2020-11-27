@@ -73,30 +73,75 @@ void SPack::Decode13( const unsigned int value, unsigned char& c, unsigned int& 
     ccc = value & 0xffffff ; 
 }
 
+
+
+
+
+
+
+
 unsigned SPack::Encode22(unsigned a, unsigned b)  // static 
 {
     assert( sizeof(unsigned) == 4 ); 
     assert( (a & 0xffff0000) == 0 ); 
     assert( (b & 0xffff0000) == 0 ); 
-    unsigned value = ( a << 16 ) | ( b << 0 ) ; 
-    return value  ; 
+    unsigned packed = ( a << 16 ) | ( b << 0 ) ; 
+    return packed  ; 
 }
-
-void SPack::Decode22( const unsigned value, unsigned& a, unsigned& b ) // static
+void SPack::Decode22( const unsigned packed, unsigned& hi, unsigned& lo ) // static
 {
     assert( sizeof(unsigned) == 4 ); 
-    a = ( value >> 16 ) & 0xffff ;  
-    b = ( value >>  0 ) & 0xffff ; 
+    hi = ( packed & 0xffff0000 ) >> 16 ;  
+    lo = ( packed & 0x0000ffff ) >>  0 ;
 }
 
-unsigned SPack::Decode22a( const unsigned value ) // static
+unsigned SPack::Decode22a( const unsigned packed ) // static
 {
-    return ( value >> 16 ) & 0xffff ; 
+    return ( packed & 0xffff0000 ) >> 16  ; 
 }
-unsigned SPack::Decode22b( const unsigned value ) // static
+unsigned SPack::Decode22b( const unsigned packed ) // static
 {
-    return ( value >>  0 ) & 0xffff ; 
+    return ( packed & 0x0000ffff ) >>  0 ; 
 }
+
+/**
+SPack::Decode22hilo SPack::Decode22hi SPack::Decode22lo
+-----------------------------------------------------------
+
+Signed variants of SPack::Decode22 SPack::Decode22a and SPack::Decode22b
+
+**/
+
+unsigned SPack::Encode22hilo( int a, int b )
+{
+    assert( a >= -0x8000 && a <= 0x7fff );   // 16 bit signed range     0x8000 - 0x10000 = -0x8000
+    assert( b >= -0x8000 && b <= 0x7fff ); 
+    unsigned packed = (( a & 0x0000ffff ) << 16 ) | (( b & 0x0000ffff ) << 0 ) ;  
+    return packed ; 
+}
+
+void SPack::Decode22hilo( const unsigned packed, int& a, int& b ) // static
+{
+    unsigned hi = ( packed & 0xffff0000 ) >> 16 ;
+    unsigned lo = ( packed & 0x0000ffff ) >>  0 ;
+
+    a = hi <= 0x7fff ? hi : hi - 0x10000 ;    // 16-bit twos complement
+    b = lo <= 0x7fff ? lo : lo - 0x10000 ;    
+}
+
+int SPack::Decode22hi( const unsigned packed ) // static
+{
+    unsigned hi = ( packed & 0xffff0000 ) >> 16 ;
+    return hi <= 0x7fff ? hi : hi - 0x10000 ;    // 16-bit twos complement
+}
+int SPack::Decode22lo( const unsigned packed ) // static
+{
+    unsigned lo = ( packed & 0x0000ffff ) >>  0 ;
+    return lo <= 0x7fff ? lo : lo - 0x10000 ;    // 16-bit twos complement
+}
+
+
+
 
 void SPack::Decode( const unsigned int value,  unsigned& x, unsigned& y, unsigned& z, unsigned& w ) // static
 {
@@ -178,7 +223,7 @@ SPack::unsigned_as_int
 The bits of unsigned integers can hold the bits of a signed int without problem 
 (within the signed range), thus can reinterpret those bits as a signed integer 
 using twos-complement.  Notice how the number of bits is relevant to the bit field 
-representation of negatives integers in a way that is not the case for positive ones.
+representation of negative integers in a way that is not the case for positive ones.
 
 **/
 

@@ -31,4 +31,33 @@ struct PerRayData_propagate
     float cos_theta ;
 };
 
+/**
+
+It would be good to squeeze this down to the size of 2*float4 
+
+
+surface_normal
+    essential for propagate.h eg for reflection
+
+distance_to_boundary 
+    rtIntersectionDistance is not available in raygen, so need in PRD 
+    to pass from closest hit to raygen : essential for deciding history 
+
+boundary
+    signed 1-based index, currently occupying 32 bits, 16 bits easily enough
+
+identity
+    GVolume::getIdentity nodeIndex/tripletIdentity/shapeIdentity/sensorIndex
+     
+    16 bytes, but so useful : in principal could just use 4 bytes of nodeIndex and look 
+    up the identity from identity buffers 
+
+    actually this identity already has the 16 bits of unsigned boundary index
+    within the shapeIdentity :  could just sign that in place  and avoid the separate boundary 
+
+cos_theta
+    sign is definitely needed, but is the value ? Actually the sign info  
+    is already carried in the sign of the 1-based boundary index 
+
+**/
 

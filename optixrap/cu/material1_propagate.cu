@@ -55,7 +55,7 @@ RT_PROGRAM void closest_hit_propagate()
      float cos_theta = dot(n,ray.direction); 
 
      prd.cos_theta = cos_theta ;
-     prd.distance_to_boundary = t ;   // huh: there is an standard attrib for this
+     prd.distance_to_boundary = t ;   // standard semantic attrib for this not available in raygen, so must pass it
 
      unsigned boundaryIndex = ( instanceIdentity.z & 0xffff ) ; 
      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;   

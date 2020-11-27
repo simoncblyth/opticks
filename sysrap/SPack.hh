@@ -46,10 +46,14 @@ class SYSRAP_API SPack {
 
      public:
          static unsigned Encode22(unsigned a, unsigned b);
-         static void Decode22( const unsigned value, unsigned& a, unsigned& b);
+         static void     Decode22( const unsigned value, unsigned& a, unsigned& b);
          static unsigned Decode22a( const unsigned value ); 
          static unsigned Decode22b( const unsigned value ); 
-     
+     public:
+         static unsigned Encode22hilo( int a, int b ); 
+         static void     Decode22hilo( const unsigned packed, int& a, int& b ); 
+         static int      Decode22hi( const unsigned packed ); 
+         static int      Decode22lo( const unsigned packed ); 
      public:
          static float int_as_float( const int i ); 
          static int int_from_float( const float f ); 

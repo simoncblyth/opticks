@@ -1,5 +1,6 @@
 // om-;TEST=SPackTest om-t 
 
+#include <vector>
 #include <cassert>
 #include <iomanip>
 #include "SPack.hh"
@@ -142,6 +143,70 @@ void test_Encode22_Decode22()
 }
 
 
+void test_Encode22hilo_Decode22hilo(int a0, int b0, bool dump)
+{
+    unsigned packed = SPack::Encode22hilo( a0, b0 );  
+
+    int a1 ; 
+    int b1 ; 
+    SPack::Decode22hilo(packed, a1, b1 ); 
+
+    int a2 = SPack::Decode22hi(packed); 
+    int b2 = SPack::Decode22lo(packed); 
+
+    if(dump)
+    {
+        std::cout 
+            << std::hex
+            << " pk " << std::setw(8) << packed
+            << "    "
+            << " a0 " << std::setw(8) << a0
+            << " a1 " << std::setw(8) << a1
+            << " a2 " << std::setw(8) << a2
+            << "    "
+            << " b0 " << std::setw(8) << b0
+            << " b1 " << std::setw(8) << b1
+            << " b2 " << std::setw(8) << b2
+            << std::endl
+            ;
+    }
+
+    assert( a0 == a1 ); 
+    assert( b0 == b1 ); 
+    assert( a0 == a2 ); 
+    assert( b0 == b2 ); 
+}
+
+void test_Encode22hilo_Decode22hilo()
+{
+    LOG(info); 
+    int i0 = -0x8000 ; 
+    int i1 =  0x7fff ; 
+    int s = 10 ; 
+    bool dump = false ; 
+
+    for(int i=i0 ; i <= i1 ; i+=s ) for(int j=i0 ; j <= i1 ; j+=s ) test_Encode22hilo_Decode22hilo(i,j,dump); 
+
+    typedef std::vector<std::pair<int,int>> VII ; 
+    VII hilo = { 
+                  { 0x0000, -0x0000},
+                  { 0x0001, -0x0001},
+                  { 0x0002, -0x0002},
+                  { 0x0003, -0x0003},
+                  { 0x0004, -0x0004},
+                  { 0x0005, -0x0005},
+                  { 0x0006, -0x0006},
+                  { 0x0007, -0x0007},
+                  { 0x0008, -0x0008},
+               }; 
+
+    for(VII::const_iterator it=hilo.begin() ; it != hilo.end() ; it++)
+        test_Encode22hilo_Decode22hilo(  it->first,  it->second, true); 
+
+    for(VII::const_iterator it=hilo.begin() ; it != hilo.end() ; it++)
+        test_Encode22hilo_Decode22hilo( -it->first, -it->second, true); 
+
+}
 
 
 
@@ -285,8 +350,10 @@ int main(int argc , char** argv )
     //test_Encode_Decode_unsigned();  
     //test_IsLittleEndian();  
 
-    test_unsigned_as_int(); 
+    //test_unsigned_as_int(); 
     //test_unsigned_as_int_16(); 
+
+    test_Encode22hilo_Decode22hilo(); 
 
     return 0  ; 
 }
