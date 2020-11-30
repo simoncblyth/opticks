@@ -487,8 +487,8 @@ cudarap-tdir(){ echo $(opticks-home)/cudarap/tests ; }
 cudarap-ibin(){ echo $(cudarap-idir)/lib/cuRANDWrapperTest ; }
 
 
-cudarap-c(){    cd $(cudarap-sdir); }
-cudarap-cd(){   cd $(cudarap-sdir); }
+cudarap-c(){    cd $(cudarap-sdir)/$1 ; }
+cudarap-cd(){   cd $(cudarap-sdir)/$1 ; }
 cudarap-scd(){  cd $(cudarap-sdir); }
 cudarap-tcd(){  cd $(cudarap-tdir); }
 cudarap-bcd(){  cd $(cudarap-bdir); }
