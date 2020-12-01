@@ -395,7 +395,7 @@ void GNodeLib::addVolume(const GVolume* volume)
 
     m_num_volumes += 1 ; 
 
-    bool is_sensor = volume->hasSensorIndex();
+    bool is_sensor = volume->hasSensorIndex(); // volume with 1-based sensorIndex assigned
     if(is_sensor)
     {
         m_sensor_volumes.push_back(volume); 

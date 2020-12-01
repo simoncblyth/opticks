@@ -72,6 +72,10 @@ set(SOURCES
     OpticksShape.cc
 
     SphereOfTransforms.cc
+
+    SensorLib.cc
+    MockSensorLib.cc
+    MockSensorAngularEfficiencyTable.cc
 )
 
 
@@ -149,6 +153,11 @@ set(HEADERS
     OpticksShape.hh
 
     SphereOfTransforms.hh
+
+    SensorLib.hh
+    MockSensorLib.hh
+    MockSensorAngularEfficiencyTable.hh 
+
 )
 
 

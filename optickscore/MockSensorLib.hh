@@ -3,9 +3,9 @@
 #include "plog/Severity.h"
 class SensorLib ; 
 
-#include "OKGEO_API_EXPORT.hh"
+#include "OKCORE_API_EXPORT.hh"
 
-class OKGEO_API MockSensorLib
+class OKCORE_API MockSensorLib
 {
     private:
         static const plog::Severity LEVEL ;  

@@ -2,7 +2,8 @@ OSensorLib_texid_missing
 ==========================
 
 
-
+OKTest/OKG4Test FAILs reveal need to reposition SensorLib to avoid duplicity
+-------------------------------------------------------------------------------
 
 ::
 
@@ -14,7 +15,6 @@ OSensorLib_texid_missing
     libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Variable not found (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: Variable "Unresolved reference to variable OSensorLib_texid from _Z8generatev_cp6" not found in scope)
     Abort trap: 6
     epsilon:opticks blyth$ 
-
 
 ::
 
@@ -28,13 +28,21 @@ OSensorLib_texid_missing
 Note that G4OKTest does not fail.
 
 Including the OSensorLib.hh header into OptiX kernels requires OSensorLib::convert to be called
-to populate the context, that happens via call to OScene::uploadSensorLib
+to populate the context, that happens via call to OScene::uploadSensorLib that does not happen 
+as standard.
+
+Have prevented the fails by switching off WITH_ANGULAR : but need a better way as 
+want that on for G4OKTest.
+
+Perhaps a minimal default sensorlib with zero sensors ? Yes, perhaps : but still need to move SensorLib anyhow.
 
 
-::
+Reproduce the fail
+---------------------
+
+Switch on WITH_ANGULAR then::
 
      OSensorLib=INFO OKTest 
-
 
 ::
 
@@ -77,6 +85,48 @@ G4OKTest
     141     if(m_debug) saveSensorLib();
     142     m_g4ok->uploadSensorLib();
     143 
+
+
+okg/SensorLib
+----------------
+
+Instanciation of SensorLib in G4Opticks is untenable
+for canonical integration.::
+ 
+     478 void G4Opticks::setGeometry(const GGeo* ggeo)
+     479 {
+     480     bool loaded = ggeo->isLoadedFromCache() ;
+     481     unsigned num_sensor = ggeo->getNumSensorVolumes();
+     482 
+     483     m_sensorlib = new SensorLib();
+     484     m_sensorlib->initSensorData(num_sensor);
+     485 
+
+Hmm maybe relocate to okc/Opticks ? 
+
+
+
+Integrating SensorLib : where should SensorLib live ?
+---------------------------------------------------------
+
+SensorLib currently in okg depends only on NPY so it can live in : okc ggeo okg
+
+Hmm moving SensorLib and its population into GGeo, prevents "const GGeo" which would prefer to keep.
+
+Also it makes sense to keep SensorLib separate from GGeo,
+as it is additional info on top of the GDML geometry.
+But it needs to be at a lot lower level than G4Opticks
+
+Makes no sense for SensorLib to live on high in g4ok/G4Opticks ok/OKMgr okg4/OKG4Mgr 
+as that would be very duplicitous.
+
+The lower the better so okc/Opticks makes a lot of sense.
+
+Although conceptually SensorLib belongs within GGeo, that 
+is not practical because the definition of sensor identifiers
+and their angular efficiency cannot be done from geometry alone
+it needs detector specific invokations of API like SensorLib::setSensorData 
+
 
 
 

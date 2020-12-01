@@ -7,7 +7,7 @@
 #include "plog/Severity.h"
 template <typename T> class NPY ; 
 
-#include "OKGEO_API_EXPORT.hh"
+#include "OKCORE_API_EXPORT.hh"
 
 /**
 SensorLib
@@ -18,7 +18,7 @@ at which point initSensorData sets m_num_sensor
 
 **/
 
-class OKGEO_API SensorLib 
+class OKCORE_API SensorLib 
 {
     private:
         static const plog::Severity LEVEL ;  
@@ -32,7 +32,7 @@ class OKGEO_API SensorLib
     public: 
         static SensorLib* Load(const char* dir);  
     public: 
-        SensorLib(const char* dir=NULL);
+        SensorLib(const char* dir=NULL); // with non-NULL dir the SensorLib arrays are loaded
         std::string desc() const ;
 
         void initSensorData(unsigned sensor_num ); 

@@ -8,9 +8,6 @@ set(TEST_SOURCES
     OpticksHubTest.cc
     OpticksHubGGeoTest.cc
 
-    SensorLibTest.cc
-    MockSensorAngularEfficiencyTableTest.cc
-    MockSensorLibTest.cc
 )
 
 set(FORMER_TEST_SOURCES

@@ -49,6 +49,10 @@ set(TEST_SOURCES
 
     SphereOfTransformsTest.cc
     CfgTest.cc
+
+    SensorLibTest.cc
+    MockSensorAngularEfficiencyTableTest.cc
+    MockSensorLibTest.cc
 )
 
 
