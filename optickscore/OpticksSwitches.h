@@ -48,6 +48,10 @@ NB when searching for switches in python include the space at the end, eg::
 //#define WITH_EXCEPTION 1 
 
 
+#define WITH_ANGULAR 1
+
+//#define WITH_DEBUG_BUFFER 1
+
 
 #ifndef __CUDACC__
 
@@ -91,7 +95,13 @@ static std::string OpticksSwitches()
     ss << "WITH_EXCEPTION " ;   
 #endif
 
+#ifdef WITH_ANGULAR
+    ss << "WITH_ANGULAR " ;   
+#endif
 
+#ifdef WITH_DEBUG_BUFFER
+    ss << "WITH_DEBUG_BUFFER " ;   
+#endif
 
 
     std::string switches = ss.str(); 

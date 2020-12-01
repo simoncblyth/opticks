@@ -88,6 +88,7 @@ class G4OKTest
         int          m_torchtarget ; 
         G4Opticks*   m_g4ok ; 
         bool         m_debug ; 
+        bool         m_snap ; 
         const char*  m_tmpdir ; 
 };
 
@@ -102,6 +103,7 @@ G4OKTest::G4OKTest(int argc, char** argv)
     m_torchtarget(PLOG::instance->get_int_after("--torchtarget", "-1")),
     m_g4ok(new G4Opticks),
     m_debug(true),
+    m_snap(PLOG::instance->has_arg("--snap")),
     m_tmpdir("$TMP/G4OKTest")
 {
     init();
@@ -298,12 +300,11 @@ void G4OKTest::propagate(int eventID)
 
     m_g4ok->reset(); // <--- without reset gensteps just keep accumulating 
 
-
-
-    if( eventID == 0 )
+    if( m_snap && eventID == 0 )
     {       
         m_g4ok->snap(m_tmpdir, "snap");
     }
+
     LOG(LEVEL) << "]" ; 
 }
 

@@ -84,6 +84,8 @@ class OKCORE_API OpticksFlags {
        static const char* BOUNDARY_REFLECT_ ;
        static const char* BOUNDARY_TRANSMIT_ ;
        static const char* NAN_ABORT_ ;
+       static const char* EFFICIENCY_CULL_ ;
+       static const char* EFFICIENCY_COLLECT_ ;
        static const char* BAD_FLAG_ ;
     public:
        static const char* _ZERO ;
@@ -101,6 +103,8 @@ class OKCORE_API OpticksFlags {
        static const char* _BOUNDARY_REFLECT ;
        static const char* _BOUNDARY_TRANSMIT ;
        static const char* _NAN_ABORT ;
+       static const char* _EFFICIENCY_COLLECT ;
+       static const char* _EFFICIENCY_CULL ;
        static const char* _BAD_FLAG ;
     public:
        static const char* SourceType(int code);          // OpticksGenstep::Gentype

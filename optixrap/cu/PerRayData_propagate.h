@@ -22,18 +22,31 @@
 #include <optix.h>
 #include <optix_math.h>
 
+#include "OpticksSwitches.h"
+
 struct PerRayData_propagate
 {
     float3 surface_normal ; 
     float distance_to_boundary ;
     int   boundary ; 
-    uint4 identity ; 
-    float cos_theta ;
+    uint4 identity ;
+
+#ifdef WITH_ANGULAR
+    float f_theta ;
+    float f_phi ; 
+#endif
+
+#ifdef WITH_DEBUG_BUFFER 
+    float3 debug ; 
+#endif
+
 };
 
 /**
 
-It would be good to squeeze this down to the size of 2*float4 
+* It would be good to squeeze this down to the size of 2*float4 
+
+What is essential and what is just being a passenger here ?
 
 
 surface_normal
@@ -55,7 +68,7 @@ identity
     actually this identity already has the 16 bits of unsigned boundary index
     within the shapeIdentity :  could just sign that in place  and avoid the separate boundary 
 
-cos_theta
+cos_theta (formerly)
     sign is definitely needed, but is the value ? Actually the sign info  
     is already carried in the sign of the 1-based boundary index 
 

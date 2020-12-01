@@ -450,7 +450,10 @@ void Opticks::init()
     m_parameters->add<std::string>("HOSTNAME", SSys::hostname() ); 
     m_parameters->add<std::string>("USERNAME", SSys::username() ); 
 
-    m_parameters->add<std::string>("OpticksSwitches", OpticksSwitches() ); 
+
+    std::string switches = OpticksSwitches() ; 
+    m_parameters->add<std::string>("OpticksSwitches", switches ); 
+    LOG(info) << "OpticksSwitches:" << switches ; 
 
     //std::raise(SIGINT); 
 

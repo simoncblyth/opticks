@@ -108,6 +108,7 @@ const char* OpticksBufferSpec::photon_compute_ = "OPTIX_INPUT_OUTPUT,BUFFER_COPY
 const char* OpticksBufferSpec::photon_interop_ = "OPTIX_INPUT_OUTPUT,BUFFER_COPY_ON_DIRTY,INTEROP_PTR_FROM_OPENGL"  ;
 #endif
 
+
 #elif OKCONF_OPTIX_VERSION_MAJOR == 6 
 
 #ifdef WITH_SEED_BUFFER
@@ -119,6 +120,9 @@ const char* OpticksBufferSpec::photon_interop_ = "OPTIX_INPUT_OUTPUT,INTEROP_PTR
 #endif
 
 #endif
+
+
+
 
 
 
@@ -157,6 +161,9 @@ const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ;
 
 
 
+
+const char* OpticksBufferSpec::debug_compute_ = "OPTIX_OUTPUT_ONLY"  ;
+const char* OpticksBufferSpec::debug_interop_ = "OPTIX_OUTPUT_ONLY"  ;
 
 const char* OpticksBufferSpec::record_compute_ = "OPTIX_OUTPUT_ONLY"  ;
 const char* OpticksBufferSpec::record_interop_ = "OPTIX_OUTPUT_ONLY"  ;
@@ -197,6 +204,7 @@ const char* OpticksBufferSpec::Get(const char* name, bool compute )
     if(     strcmp(name, OpticksEvent::genstep_)==0)  bspc = compute ? genstep_compute_ : genstep_interop_ ; 
     else if(strcmp(name, OpticksEvent::nopstep_)==0)  bspc = compute ? nopstep_compute_ : nopstep_interop_ ; 
     else if(strcmp(name, OpticksEvent::photon_)==0)   bspc = compute ? photon_compute_  : photon_interop_ ;
+    else if(strcmp(name, OpticksEvent::debug_)==0)    bspc = compute ? debug_compute_   : debug_interop_ ;
     else if(strcmp(name, OpticksEvent::source_)==0)   bspc = compute ? source_compute_  : source_interop_ ;
     else if(strcmp(name, OpticksEvent::record_)==0)   bspc = compute ? record_compute_  : record_interop_ ;
     else if(strcmp(name, OpticksEvent::phosel_)==0)   bspc = compute ? phosel_compute_  : phosel_interop_ ;

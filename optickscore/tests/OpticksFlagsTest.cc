@@ -38,11 +38,19 @@ void test_ctor()
 
 void test_FlagMask()
 {
-    unsigned msk = 0x1890 ;
-    LOG(info) << std::setw(10) << std::hex << msk << std::dec 
-              << " flagmask(abbrev) " << OpticksFlags::FlagMask(msk, true) 
-              << " flagmask " << OpticksFlags::FlagMask(msk, false)
-              ; 
+    LOG(info); 
+    std::vector<unsigned> vmsk = { 0x5840, 0x5840, 0x5850, 0x5c40, 0x5940, 0x5860,  } ; 
+
+    for(unsigned i=0 ; i < vmsk.size() ; i++)
+    { 
+        unsigned msk = vmsk[i] ;  
+        std::cout 
+            << std::setw(10) << std::hex << msk << std::dec 
+            << " flagmask(abbrev) " << std::setw(20) << OpticksFlags::FlagMask(msk, true) 
+            << " flagmask " << OpticksFlags::FlagMask(msk, false)
+            << std::endl
+            ; 
+    }
 }
 
 void test_AbbrevToFlag()
@@ -231,7 +239,11 @@ int main(int argc, char** argv)
 
     /*
     test_ctor();
+    */
+
     test_FlagMask();
+
+    /*
     test_AbbrevToFlag();
     test_AbbrevToFlagSequence();
     test_AbbrevToFlagValSequence();
@@ -243,7 +255,7 @@ int main(int argc, char** argv)
 
     //test_AbbrevSequenceToMask(); 
 
-    test_Opticks_getDbgHitMask(&ok);
+    //test_Opticks_getDbgHitMask(&ok);
 
 
     return 0 ; 

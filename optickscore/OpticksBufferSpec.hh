@@ -30,6 +30,7 @@ class OKCORE_API OpticksBufferSpec
         static const char*  genstep_compute_ ; 
         static const char*  nopstep_compute_ ; 
         static const char*  photon_compute_ ; 
+        static const char*  debug_compute_ ; 
         static const char*  source_compute_ ; 
         static const char*  record_compute_ ; 
         static const char*  phosel_compute_ ; 
@@ -41,6 +42,7 @@ class OKCORE_API OpticksBufferSpec
         static const char*  genstep_interop_ ; 
         static const char*  nopstep_interop_ ; 
         static const char*  photon_interop_ ; 
+        static const char*  debug_interop_ ; 
         static const char*  source_interop_ ; 
         static const char*  record_interop_ ; 
         static const char*  phosel_interop_ ; 

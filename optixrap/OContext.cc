@@ -986,6 +986,7 @@ void OContext::InitBufferNames(std::vector<std::string>& names)
     names.push_back("source");
     names.push_back("record");
     names.push_back("sequence");
+    names.push_back("debug");
 
     names.push_back("demo");
     names.push_back("axis");

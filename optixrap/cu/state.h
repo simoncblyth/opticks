@@ -28,7 +28,6 @@ struct State
    float4 material2 ;  
    float4 surface    ;   //  detect/absorb/reflect_specular/reflect_diffuse
    float3 surface_normal ; 
-   float cos_theta ; 
    float distance_to_boundary ;
    uint4 optical ;   // x/y/z/w index/type/finish/value  
    uint4 index ;     // indices of m1/m2/surf/sensor

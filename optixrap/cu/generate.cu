@@ -69,15 +69,13 @@
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
 
-
-//#define WITH_PRINT 1 
-//#define DEBUG 1 
-
-
-#include "PerRayData_propagate.h"
 #include "OpticksSwitches.h"
+#include "PerRayData_propagate.h"
 
 using namespace optix;
+
+#include "OSensorLib.hh"
+
 
 //rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
 rtDeclareVariable(unsigned int,  PNUMQUAD, , );
@@ -115,9 +113,7 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 rtBuffer<float4>               genstep_buffer;
 rtBuffer<float4>               source_buffer;
-#ifdef WITH_SEED_BUFFER
 rtBuffer<unsigned>             seed_buffer ; 
-#endif
 rtBuffer<curandState, 1>       rng_states ;
 
 // output buffers 
@@ -128,6 +124,10 @@ rtBuffer<short4>               record_buffer;     // 2 short4 take same space as
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
 #endif
 
+
+#ifdef WITH_DEBUG_BUFFER
+rtBuffer<float4>               debug_buffer;
+#endif
 
 
 
@@ -227,8 +227,20 @@ p.flags.u.y
  sensorIndex = (( flags[:,0].view(np.uint32) & 0x0000ffff ) >>  0 ).view(np.int16)[0::2] 
 
 
+
+s.identity.x
+    node index 
+
 s.identity.w 
     sensor index arriving from GVolume::getIdentity.w
+
+
+    256 glm::uvec4 GVolume::getIdentity() const
+    257 {
+    258     glm::uvec4 id(getIndex(), getTripletIdentity(), getShapeIdentity(), getSensorIndex()) ;
+    259     return id ;
+    260 }
+
 
 **/
 
@@ -261,15 +273,8 @@ RT_PROGRAM void dumpseed()
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
 
-#ifdef WITH_SEED_BUFFER
     unsigned int genstep_id = seed_buffer[photon_id] ;      
-    rtPrintf("(dumpseed WITH_SEED_BUFFER) genstep_id %u \n", genstep_id );
-#else
-    union quad phead ;
-    phead.f = photon_buffer[photon_offset+0] ;   
-    unsigned int genstep_id = phead.u.x ;        
-    rtPrintf("(dumpseed NOT with_seed_buffer) genstep_id %u \n", genstep_id );
-#endif
+    rtPrintf("(dumpseed) genstep_id %u \n", genstep_id );
 
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
     //rtPrintf("(trivial) genstep_offset %u \n", genstep_offset );
@@ -295,14 +300,7 @@ RT_PROGRAM void trivial()
 
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
-
-#ifdef WITH_SEED_BUFFER
     unsigned int genstep_id = seed_buffer[photon_id] ;      
-#else
-    union quad phead ;
-    phead.f = photon_buffer[photon_offset+0] ;   // crazy values for this in interop mode on Linux, photon_buffer being overwritten ?? 
-    unsigned int genstep_id = phead.u.x ;        // input "seed" pointing from photon to genstep (see seedPhotonsFromGensteps)
-#endif
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
 
@@ -439,14 +437,7 @@ RT_PROGRAM void generate()
   
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
 
-#ifdef WITH_SEED_BUFFER
-    // this is default 
     unsigned int genstep_id = seed_buffer[photon_id] ;      
-#else
-    union quad phead ;
-    phead.f = photon_buffer[photon_offset+0] ;   // crazy values for this in interop mode on Linux, photon_buffer being overwritten ?? 
-    unsigned int genstep_id = phead.u.x ;        // input "seed" pointing from photon to genstep (see seedPhotonsFromGensteps)
-#endif
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
     union quad ghead ; 
@@ -575,6 +566,12 @@ RT_PROGRAM void generate()
 
     PerRayData_propagate prd ;
 
+#ifdef WITH_DEBUG_BUFFER
+    prd.debug.x = 0.f ; 
+    prd.debug.y = 0.f ; 
+    prd.debug.z = 0.f ; 
+#endif
+
     while( bounce < bounce_max )
     {
 #ifdef WITH_ALIGN_DEV_DEBUG
@@ -617,7 +614,6 @@ RT_PROGRAM void generate()
 
         s.distance_to_boundary = prd.distance_to_boundary ; 
         s.surface_normal = prd.surface_normal ; 
-        s.cos_theta = prd.cos_theta ; 
 
         // setting p.flags for things like boundary, history flags  
         FLAGS(p, s, prd); 
@@ -672,6 +668,32 @@ RT_PROGRAM void generate()
     {
         s.index.x = s.index.y ;   // kludge putting m2->m1 for seqmat for the truncated
     }
+
+
+
+#ifdef WITH_ANGULAR
+    if( s.flag == SURFACE_DETECT ) 
+    {
+        const unsigned& sensorIndex = s.identity.w ;   // should always be > 0 as flag is SD
+        const float& f_theta =  prd.f_theta ;
+        const float& f_phi = prd.f_phi ; 
+        const float efficiency = OSensorLib_combined_efficiency(sensorIndex, f_phi, f_theta);
+        rtPrintf("//SD sensorIndex %d f_theta %f f_phi %f efficiency %f \n", sensorIndex, f_theta, f_phi, efficiency );
+        float u_angular = curand_uniform(&rng) ;
+
+        p.flags.u.w |= u_angular < efficiency ?  EFFICIENCY_COLLECT : EFFICIENCY_CULL ;   
+
+#ifdef WITH_DEBUG_BUFFER
+        //debug_buffer[photon_id] = make_float4( f_theta, f_phi, efficiency, unsigned_as_float(sensorIndex) ); 
+#endif
+
+    } 
+#endif
+
+#ifdef WITH_DEBUG_BUFFER
+    debug_buffer[photon_id] = make_float4( prd.debug.x, prd.debug.y, prd.debug.z, unsigned_as_float(s.identity.y) ); 
+#endif
+
 
 
     // setting p.flags for things like boundary, history flags  

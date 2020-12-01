@@ -120,7 +120,12 @@ class OXRAP_API OEvent
             SEQUENCE = 0x1 << 4,
             SEED     = 0x1 << 5,
             SOURCE   = 0x1 << 6,
+            DEBUG    = 0x1 << 7,
+#ifdef WITH_DEBUG_BUFFER
+            DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | DEBUG
+#else
             DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE 
+#endif
             };
     public:
         OEvent(Opticks* ok, OContext* ocontext);
@@ -175,6 +180,10 @@ class OXRAP_API OEvent
     protected:
         optix::Buffer   m_genstep_buffer ; 
         optix::Buffer   m_photon_buffer ; 
+#ifdef WITH_DEBUG_BUFFER
+        optix::Buffer   m_debug_buffer ; 
+#endif
+
 #ifdef WITH_SOURCE
         optix::Buffer   m_source_buffer ; 
 #endif
@@ -194,6 +203,11 @@ class OXRAP_API OEvent
         OBuf*           m_sequence_buf ;
 #endif
         OBuf*           m_seed_buf ;
+
+#ifdef WITH_DEBUG_BUFFER
+        OBuf*           m_debug_buf ; 
+#endif
+
     private:
         bool            m_buffers_created ; 
 

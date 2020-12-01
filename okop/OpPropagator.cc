@@ -39,7 +39,7 @@
 #include "OKOP_BODY.hh"
 
 
-const plog::Severity OpPropagator::LEVEL = debug ; 
+const plog::Severity OpPropagator::LEVEL = PLOG::EnvLevel("OpPropagator", "DEBUG" ) ; 
 
 OpPropagator::OpPropagator(OpticksHub* hub, OpticksIdx* idx) 
     :
@@ -87,8 +87,10 @@ void OpPropagator::propagate()
 
 int OpPropagator::uploadEvent()
 {
+    LOG(LEVEL) << "[" ; 
     int npho = -1 ; 
     npho = m_engine->uploadEvent();
+    LOG(LEVEL) << "]" ; 
     return npho ; 
 }
 

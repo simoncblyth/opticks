@@ -88,6 +88,9 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
     m_record_buf(NULL),
     m_sequence_buf(NULL),
 #endif
+#ifdef WITH_DEBUG_BUFFER
+    m_debug_buf(NULL),
+#endif
     m_buffers_created(false)
 {
     init();
@@ -169,6 +172,13 @@ void OEvent::createBuffers(OpticksEvent* evt)
     m_context["photon_buffer"]->set( m_photon_buffer );
     m_photon_buf = new OBuf("photon", m_photon_buffer);
 
+#ifdef WITH_DEBUG_BUFFER
+    NPY<float>* debug_ = evt->getDebugData() ; 
+    assert(debug_); 
+    m_debug_buffer = m_ocontext->createBuffer<float>( debug_, "debug"); 
+    m_context["debug_buffer"]->set( m_debug_buffer );
+    m_debug_buf = new OBuf("debug", m_debug_buffer);
+#endif
 
 
 #ifdef WITH_SOURCE
@@ -490,6 +500,16 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
         if(m_dbgdownload) LOG(info) << "sq " << sq->getShapeString() ;   
     }
 #endif
+
+#ifdef WITH_DEBUG_BUFFER
+    if(mask & DEBUG)  
+    {
+        NPY<float>* dg = evt->getDebugData();
+        OContext::download<float>( m_debug_buffer, dg );
+        if(m_dbgdownload) LOG(info) << "dg " << dg->getShapeString() ;   
+    }
+#endif
+
 
     LOG(LEVEL) << "]" ;
     OK_PROFILE("OEvent::download");

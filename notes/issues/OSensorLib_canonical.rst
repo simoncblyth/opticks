@@ -19,6 +19,7 @@ DONE
 
 1. made a github 0.1.0-rc1 tag so can update junoenv opticks 
 2. adopt 1-based  sensorIndex with 0 for none, to save half the bits by going unsigned
+3. removed cos_theta from prd 
 
  
 TODO
@@ -225,4 +226,30 @@ Before adding, can PRD be slimmed ?::
     409 
     410     float normal_coefficient = dot(p.polarization, incident_plane_normal);  // fraction of E vector perpendicular to plane of incidence, ie S polarization
     41
+
+
+
+Slimming PRD ? Can some of the full 16 bytes of identity be removed ?
+------------------------------------------------------------------------
+
+::
+
+    s.identity.x   nodeIndex
+    s.identity.y   tripletIdentity (a more meaningfull way to identify the volume, but duplicates nodeIndex)
+    s.identity.z   shape (packed shape and boundary)
+    s.identity.w   sensorIndex 
+
+
+    235 #define FLAGS(p, s, prd) \
+    236 { \
+    237     p.flags.u.x = ( ((prd.boundary & 0xffff) << 16) | (s.identity.w & 0xffff) )  ;  \
+    238     p.flags.u.y = s.identity.x ;  \
+    239     p.flags.u.w |= s.flag ; \
+    240 } \
+
+
+
+
+
+
 
