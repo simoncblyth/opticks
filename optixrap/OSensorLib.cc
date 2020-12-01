@@ -77,8 +77,10 @@ const OCtx* OSensorLib::getOCtx() const
 
 void OSensorLib::convert()
 {
+    LOG(LEVEL) << "[" ; 
     makeSensorDataBuffer() ;
     makeSensorAngularEfficiencyTexture() ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 void OSensorLib::makeSensorDataBuffer()
@@ -112,6 +114,7 @@ void OSensorLib::makeSensorAngularEfficiencyTexture()
 
     // create GPU buffer and upload small texid array into it 
     m_octx->create_buffer(m_texid, TEXID, 'I', ' ', -1, true ); 
+    LOG(LEVEL) << " m_texid " << m_texid->getShapeString() << " upload to " << TEXID ;   
 }
 
 

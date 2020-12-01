@@ -74,6 +74,12 @@ template <typename T> class NPY ;
 OSensorLib
 ===========
 
+Canonical m_osensorlib defaults to NULL in OScene ctor.
+It is instancianted and converted by OScene::uploadSensorLib
+
+
+
+
 **/
 
 class OXRAP_API OSensorLib 

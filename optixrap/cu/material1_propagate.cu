@@ -61,7 +61,6 @@ RT_PROGRAM void closest_hit_propagate()
      prd.identity = instanceIdentity ; 
      prd.surface_normal = cos_theta > 0.f ? -n : n ;   
 
-//#ifdef WITH_ANGULAR
      // for angular efficiency 
      const float3 isect = ray.origin + t*ray.direction ; 
      const float3 local_point = rtTransformPoint( RT_WORLD_TO_OBJECT, isect ); 
@@ -72,14 +71,13 @@ RT_PROGRAM void closest_hit_propagate()
      prd.debug = local_point ;
 #endif
  
+#ifdef WITH_ANGULAR
      const float f_theta = acos( local_point.z )/M_PIf;                        // polar 0->pi ->  0->1
      const float f_phi_ = atan2( local_point.y, local_point.x )/(2.f*M_PIf) ;  // azimuthal 0->2pi ->  0->1
      const float f_phi = f_phi_ > 0.f ? f_phi_ : f_phi_ + 1.f ;  //  
      prd.f_theta = f_theta ; 
      prd.f_phi = f_phi ; 
-
-     rtPrintf("// material1_propagate.cu WITH_ANGULAR isect %f %f %f \n", isect.x, isect.y, isect.z ); 
-//#endif
+#endif
 
 
 //#define WITH_PRINT_IDENTITY_CH 1

@@ -74,8 +74,9 @@
 
 using namespace optix;
 
+#ifdef WITH_ANGULAR
 #include "OSensorLib.hh"
-
+#endif
 
 //rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
 rtDeclareVariable(unsigned int,  PNUMQUAD, , );
@@ -686,7 +687,6 @@ RT_PROGRAM void generate()
 #ifdef WITH_DEBUG_BUFFER
         //debug_buffer[photon_id] = make_float4( f_theta, f_phi, efficiency, unsigned_as_float(sensorIndex) ); 
 #endif
-
     } 
 #endif
 
