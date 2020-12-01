@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
     assert( senlib->getNumSensor() == num_sensor ); 
   
-    const char* dir = "$TMP/opticksgeo/tests/MockSensorLibTest" ; 
+    const char* dir = "$TMP/optickscore/tests/MockSensorLibTest" ; 
 
     senlib->save( dir );  
 

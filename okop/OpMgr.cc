@@ -85,11 +85,10 @@ void OpMgr::setGensteps(NPY<float>* gensteps)
     m_gensteps = gensteps ; 
 }
 
-void OpMgr::uploadSensorLib(const SensorLib* sensorlib)
-{
-    m_propagator->uploadSensorLib(sensorlib);  
-}
-
+//void OpMgr::uploadSensorLib(const SensorLib* sensorlib)
+//{
+//    m_propagator->uploadSensorLib(sensorlib);  
+//}
 
 
 

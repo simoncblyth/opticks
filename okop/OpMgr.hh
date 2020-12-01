@@ -58,7 +58,7 @@ in direct running.
 Responsibilities:
 
 1. receive gensteps
-2. invoke lower level OpPropagator
+2. invoke lower level m_propagator OpPropagator
 3. supply hits 
 
 
@@ -80,7 +80,7 @@ class OKOP_API OpMgr {
        virtual ~OpMgr();
    public:
        void setGensteps(NPY<float>* gensteps); 
-       void uploadSensorLib(const SensorLib* sensorlib); 
+       //void uploadSensorLib(const SensorLib* sensorlib); 
    public:
        void propagate();
    public:

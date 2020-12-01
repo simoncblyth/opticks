@@ -139,10 +139,7 @@ void G4OKTest::init()
     initSensorData();
     initSensorAngularEfficiency();
     if(m_debug) saveSensorLib(); 
-    m_g4ok->uploadSensorLib(); 
-
-    // m_g4ok->snap(m_tmpdir);   // snapping before event upload fails due to invalid context : generate.cu requires sequence_buffer
-
+    //m_g4ok->snap(m_tmpdir);   // snapping before event upload fails due to invalid context : generate.cu requires sequence_buffer
 }
 
 

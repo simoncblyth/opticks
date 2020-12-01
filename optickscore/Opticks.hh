@@ -73,6 +73,8 @@ class OpticksProfile ;
 class OpticksAna ;
 class OpticksDbg ;
 
+class SensorLib ; 
+
 #define OK_PROFILE(s) \
     { \
        if(m_ok)\
@@ -189,7 +191,10 @@ class OKCORE_API Opticks {
        void postpropagate();
    public:
        void ana();
-       OpticksAna*          getAna() const ; 
+       OpticksAna*  getAna() const ; 
+   public:
+       SensorLib*   getSensorLib() const ;  
+       void         initSensorData(unsigned num_sensors); 
    public:
        // profile ops
        //template <typename T> void profile(T label);
@@ -750,6 +755,7 @@ class OKCORE_API Opticks {
        bool                 m_internal ; 
        const char*          m_frame_renderer ; 
        SRngSpec*            m_rngspec ; 
+       SensorLib*           m_sensorlib ; 
      
 
 };

@@ -46,19 +46,24 @@ OpEngine takes a central role, it holds the OScene
 which creates the OptiX context holding the GPU geometry
 and all GPU buffers.
 
-Instanciating an OpEngine 
+Notice that OpEngine is used by both *okop* and *ok* projects
+leading to two canonical m_engine instanciations in the 
+compute only *okop* and interop viz *ok* projects.
 
+okop/OpPropagator.cc
+   compute only branch using purely OptiX buffers, as used by 
+   okop/OpMgr.cc(instanciated within G4Opticks::setGeometry) 
 
-Canonical OpEngine instance m_engine resides in ok-/OKPropagator 
-which resides as m_propagator at top level in ok-/OKMgr
+ok/OKPropagator.cc
+   branch using underlying OpenGL buffers with OptiX referencing 
+   them to enable interop visualization, as used by ok/OKMgr(OKTest) 
+   and okg4/OKG4Mgr(OKG4Test)  
 
-* BUT: ok- depends on OpenGL ... need compute only equivalents okop-/OpPropagator okop/OpMgr
+NB as OpEngine is ONLY AT COMPUTE LEVEL, FOR THE FULL PICTURE 
+OF THE OK PROJECT OpenGL BUFFERS MUST SEE ONE LEVEL UP::
 
-NB OpEngine is ONLY AT COMPUTE LEVEL, FOR THE FULL PICTURE NEED TO SEE ONE LEVEL UP 
-   IN ok-
    OKPropagator::uploadEvent 
    OKPropagator::downloadEvent
-
   
 **/
 
@@ -72,24 +77,25 @@ class OKOP_API OpEngine {
     public:
        OpEngine(OpticksHub* hub);
     public:
-       OContext*    getOContext();         // needed by opticksgl-/OpViz
+       OContext*    getOContext() const ;         // needed by opticksgl-/OpViz
        void uploadSensorLib(const SensorLib* sensorlib);
 
        void propagate();                // OPropagator prelaunch+launch : populates GPU photon, record and sequence buffers
        void indexEvent();
        unsigned downloadEvent();
        unsigned uploadEvent();
-       unsigned getOptiXVersion();
+       unsigned getOptiXVersion() const ;
        void cleanup();
        void Summary(const char* msg="OpEngine::Summary");
 
     private:
-       OPropagator* getOPropagator();
+       OPropagator* getOPropagator() const ;
     private:
        void downloadPhotonData();       // see App::dbgSeed
        int preinit() const ;
        void init();
        void initPropagation();
+       void close(); 
     private:
        // ctor instanciated always
        int                  m_preinit ; 
@@ -106,6 +112,6 @@ class OKOP_API OpEngine {
        OpSeeder*            m_seeder ; 
        OpZeroer*            m_zeroer ; 
        OpIndexer*           m_indexer ; 
+       bool                 m_closed ;    
 };
-
 

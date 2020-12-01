@@ -129,4 +129,80 @@ it needs detector specific invokations of API like SensorLib::setSensorData
 
 
 
+* DONE : relocated SensorLib down to okc, with canonical m_sensorlib residing in okc/Opticks
+
+
+::
+
+     682 /**
+     683 G4Opticks::uploadSensorLib
+     684 ----------------------------
+     685 
+     686 Invoked from G4OKTest::init
+     687 
+     688 Upload sensorData array and angular efficiency tables to GPU with OSensorLib.  
+     689 
+     690 TODO: this needs to move somewhere more general 
+     691 
+     692 **/
+     693 
+     694 void G4Opticks::uploadSensorLib()
+     695 {
+     696     LOG(info) ;
+     697     assert( m_opmgr && "must setGeometry and set sensor info before uploadSensorLib" );
+     698     assert( m_sensorlib );
+     699     m_sensorlib->close();
+     700     assert( m_sensorlib->isClosed() );
+     701 
+     702     m_opmgr->uploadSensorLib(m_sensorlib);
+     703 }
+
+
+Doing uploadSensorLib at instanciation of OpMgr (perhaps within there at lower level to avoid duplication)
+looks appropriate. But cannot do that as need to give users the chance to setSensorData between 
+setting the geometry and doing propagations. 
+
+So the uploadSensorlib can happen when the first *propagate* gets called or need 
+a new stage to "close the context".
+
+::
+
+
+     478 void G4Opticks::setGeometry(const GGeo* ggeo)
+     479 {
+     480     bool loaded = ggeo->isLoadedFromCache() ;
+     481     unsigned num_sensor = ggeo->getNumSensorVolumes();
+     482 
+     483 
+     484     if( loaded == false )
+     485     {
+     486         if(m_placement_outer_volume) LOG(error) << "CAUTION : m_placement_outer_volume TRUE " ;
+     487         X4PhysicalVolume::GetSensorPlacements(ggeo, m_sensor_placements, m_placement_outer_volume);
+     488         assert( num_sensor == m_sensor_placements.size() ) ;
+     489     }
+     490 
+     491     LOG(info)
+     492         << " GGeo: "
+     493         << ( loaded ? "LOADED FROM CACHE " : "LIVE TRANSLATED " )
+     494         << " num_sensor " << num_sensor
+     495         ;
+     496 
+     497     m_ggeo = ggeo ;
+     498     m_blib = m_ggeo->getBndLib();
+     499     m_hits_wrapper = new GPho(m_ggeo) ;   // geometry aware photon hits wrapper
+     500 
+     501     m_ok = m_ggeo->getOpticks();
+     502     m_ok->initSensorData(num_sensor);   // instanciates SensorLib 
+     503     m_sensorlib = m_ok->getSensorLib();
+     504 
+     505     createCollectors();
+     506 
+     507     //CAlignEngine::Initialize(m_ok->getIdPath()) ;
+     508 
+     509     // OpMgr instanciates OpticksHub which adopts the pre-existing m_ggeo instance just translated (or loaded)
+     510     LOG(LEVEL) << "( OpMgr " ;
+     511     m_opmgr = new OpMgr(m_ok) ;
+     512     LOG(LEVEL) << ") OpMgr " ;
+     513 }
+
 

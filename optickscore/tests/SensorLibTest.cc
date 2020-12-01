@@ -5,7 +5,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     
-    const char* dir = "$TMP/opticksgeo/SensorLib" ; 
+    const char* dir = "$TMP/optickscore/SensorLib" ; 
     SensorLib* sl = SensorLib::Load(dir); 
     if(sl == NULL) 
     {

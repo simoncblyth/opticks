@@ -24,6 +24,7 @@
 #include "OpticksEntry.hh" 
 #include "OpticksHub.hh" // okg-
 #include "OpticksSwitches.h" 
+#include "SensorLib.hh"
 
 // opop-
 #include "OpEngine.hh"
@@ -40,25 +41,22 @@
 
 #include "PLOG.hh"
 
-
 const plog::Severity OpEngine::LEVEL = PLOG::EnvLevel("OpEngine", "DEBUG") ; 
 
-
-unsigned OpEngine::getOptiXVersion()
+unsigned OpEngine::getOptiXVersion() const 
 {
    return OConfig::OptiXVersion();
 }
 
-OContext* OpEngine::getOContext()
+OContext* OpEngine::getOContext() const 
 {
     return m_scene->getOContext(); 
 }
 
-OPropagator* OpEngine::getOPropagator()
+OPropagator* OpEngine::getOPropagator() const 
 {
     return m_propagator ; 
 }
-
 
 int OpEngine::preinit() const
 {
@@ -80,16 +78,16 @@ OpEngine::OpEngine(OpticksHub* hub)
     m_propagator(NULL),
     m_seeder(NULL),
     m_zeroer(NULL),
-    m_indexer(NULL)
+    m_indexer(NULL),
+    m_closed(false)
 {
-   init();
-   (*m_log)("DONE");
+    init();
+    (*m_log)("DONE");
 }
 
 void OpEngine::init()
 {
     LOG(LEVEL) << "[" ; 
-
     m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
 
     bool is_load = m_ok->isLoad() ; 
@@ -119,23 +117,16 @@ void OpEngine::init()
     OKI_PROFILE("OpEngine::OpEngine");
 }
 
-
-
 void OpEngine::uploadSensorLib(const SensorLib* sensorlib)
 {
     m_scene->uploadSensorLib(sensorlib); 
 }
 
-
-
-
-
-
 /**
 OpEngine::initPropagation
 --------------------------
 
-Instanciate the residents.
+Instanciate the residents. Invoked by OpEngine::init
 
 Note that the pointer to the single m_oevt (OEvent) instance  
 is passed to all the residents.
@@ -156,12 +147,32 @@ void OpEngine::initPropagation()
     LOG(LEVEL) << "]" ; 
 }
 
+/**
+OpEngine::close
+----------------
+
+**/
+void OpEngine::close()
+{
+    LOG(LEVEL) << "[" ; 
+    assert( m_closed == false ); 
+    m_closed = true ; 
+    
+    SensorLib* sensorlib = m_ok->getSensorLib(); 
+    assert( sensorlib ); 
+    sensorlib->close(); 
+    assert( sensorlib->isClosed() ); 
+
+    uploadSensorLib(sensorlib); 
+    LOG(LEVEL) << "]" ; 
+}
 
 /**
 OpEngine::uploadEvent
 ----------------------
 
-Invoked from OpPropagator::propagate/OpPropagator::uploadEvent
+With okop invoked from OpPropagator::propagate/OpPropagator::uploadEvent
+With ok,okg4 invoked from OKPropagator::uploadEvent after OpticksViz::uploadEvent
 
 **/
 
@@ -176,6 +187,7 @@ unsigned OpEngine::uploadEvent()
 void OpEngine::propagate()
 {
     LOG(LEVEL) << "[" ; 
+    if(m_closed == false) close(); 
 
     LOG(LEVEL) << "( seeder.seedPhotonsFromGensteps ";  
     m_seeder->seedPhotonsFromGensteps();  // distributes genstep indices into the photons buffer OR seed buffer

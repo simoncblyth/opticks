@@ -480,9 +480,6 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     bool loaded = ggeo->isLoadedFromCache() ; 
     unsigned num_sensor = ggeo->getNumSensorVolumes(); 
 
-    m_sensorlib = new SensorLib(); 
-    m_sensorlib->initSensorData(num_sensor);   
-
 
     if( loaded == false )
     {
@@ -502,6 +499,8 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     m_hits_wrapper = new GPho(m_ggeo) ;   // geometry aware photon hits wrapper
 
     m_ok = m_ggeo->getOpticks(); 
+    m_ok->initSensorData(num_sensor);   // instanciates SensorLib 
+    m_sensorlib = m_ok->getSensorLib(); 
 
     createCollectors(); 
 
@@ -684,9 +683,12 @@ void G4Opticks::saveSensorLib(const char* dir) const
 G4Opticks::uploadSensorLib
 ----------------------------
 
+Invoked from G4OKTest::init
+
 Upload sensorData array and angular efficiency tables to GPU with OSensorLib.  
 
-**/
+TODO: this needs to move somewhere more general 
+
 
 void G4Opticks::uploadSensorLib() 
 {
@@ -698,6 +700,7 @@ void G4Opticks::uploadSensorLib()
 
     m_opmgr->uploadSensorLib(m_sensorlib); 
 }
+**/
 
 
 void G4Opticks::snap(const char* dir, const char* reldir) const 

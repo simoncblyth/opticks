@@ -93,12 +93,10 @@ Question:
 
 **/
 
-
 void OKPropagator::propagate()
 {
     LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OKPropagator::propagate");
-
 
     OpticksEvent* evt = m_hub->getEvent();
 
@@ -124,8 +122,6 @@ void OKPropagator::propagate()
     LOG(LEVEL) << "]" ; 
 }
 
-
-
 int OKPropagator::uploadEvent()
 {
     if(m_viz) m_viz->uploadEvent();
@@ -150,7 +146,6 @@ int OKPropagator::downloadEvent()
     return nhit ; 
 }
 
-
 void OKPropagator::indexEvent()
 {
     m_idx->indexBoundariesHost();
@@ -160,14 +155,11 @@ void OKPropagator::indexEvent()
     m_idx->indexSeqHost();
 }
 
-
 void OKPropagator::cleanup()
 {
 #ifdef OPTICKS_OPTIX
     m_engine->cleanup();
 #endif
 }
-
-
 
 

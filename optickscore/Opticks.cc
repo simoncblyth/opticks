@@ -92,6 +92,7 @@
 #include "OpticksDbg.hh"
 
 #include "OpticksCfg.hh"
+#include "SensorLib.hh"
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
 const int            Opticks::GEOCACHE_CODE_VERSION = 8 ;  // (incremented when code changes invalidate loading old geocache dirs)   
@@ -392,7 +393,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_verbosity(0),
     m_internal(false),
     m_frame_renderer(NULL),
-    m_rngspec(NULL)
+    m_rngspec(NULL),
+    m_sensorlib(NULL)
 {
 
     m_profile->setStamp(m_sargs->hasArg("--stamp"));
@@ -633,6 +635,26 @@ OpticksAna* Opticks::getAna() const
 {
     return m_ana  ; 
 }
+SensorLib* Opticks::getSensorLib() const 
+{
+    return m_sensorlib  ; 
+}
+
+/**
+Opticks::initSensorData
+------------------------
+
+Relocated from G4Opticks::setGeometry for generality 
+
+**/
+void Opticks::initSensorData(unsigned num_sensors)
+{
+    LOG(LEVEL) << " num_sensors " << num_sensors ; 
+    assert( m_sensorlib == NULL && "not expecting Opticks::initSensorData to be called more than once"); 
+    m_sensorlib = new SensorLib ; 
+    m_sensorlib->initSensorData(num_sensors); 
+}
+
 
 
 NPY<unsigned>* Opticks::getMaskBuffer() const 

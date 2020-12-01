@@ -68,7 +68,7 @@ class OKOP_API OpPropagator {
    public:
        OpPropagator(OpticksHub* hub, OpticksIdx* idx );
    public:
-       void uploadSensorLib(const SensorLib* sensorlib); 
+       //void uploadSensorLib(const SensorLib* sensorlib); 
    public:
        void propagate();
        void cleanup();

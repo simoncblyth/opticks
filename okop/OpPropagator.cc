@@ -19,7 +19,6 @@
 
 #include "SLog.hh"
 
-
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
@@ -34,10 +33,8 @@
 #include "OpEngine.hh"  
 #include "OpTracer.hh"  
 
-
 #include "PLOG.hh"
 #include "OKOP_BODY.hh"
-
 
 const plog::Severity OpPropagator::LEVEL = PLOG::EnvLevel("OpPropagator", "DEBUG" ) ; 
 
@@ -54,15 +51,14 @@ OpPropagator::OpPropagator(OpticksHub* hub, OpticksIdx* idx)
     (*m_log)("DONE");
 }
 
-void OpPropagator::uploadSensorLib(const SensorLib* sensorlib)
-{
-    m_engine->uploadSensorLib(sensorlib); 
-}
+//void OpPropagator::uploadSensorLib(const SensorLib* sensorlib)
+//{
+//    m_engine->uploadSensorLib(sensorlib); 
+//}
 
 void OpPropagator::propagate()
 {
     OK_PROFILE("_OpPropagator::propagate");
-
 
     OpticksEvent* evt = m_hub->getEvent();
 
@@ -83,8 +79,6 @@ void OpPropagator::propagate()
     OK_PROFILE("OpPropagator::propagate-download");
 }
 
-
-
 int OpPropagator::uploadEvent()
 {
     LOG(LEVEL) << "[" ; 
@@ -101,7 +95,6 @@ int OpPropagator::downloadEvent()
     return nhit ; 
 }
 
-
 void OpPropagator::indexEvent()
 {
     m_idx->indexBoundariesHost();
@@ -110,7 +103,6 @@ void OpPropagator::indexEvent()
 
     m_idx->indexSeqHost();
 }
-
 
 void OpPropagator::cleanup()
 {
@@ -121,8 +113,5 @@ void OpPropagator::snap(const char* dir, const char* reldir)
 {
     LOG(info) << " dir " << dir << " reldir " << reldir  ; 
     m_tracer->snap(dir, reldir);
-
 }
-
-
 
