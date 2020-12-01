@@ -1,6 +1,46 @@
 oglrap-compilation-fail-junoenv-missing-new-opengl-symbols
 ==============================================================
 
+Report from Artem, missing GL_GEOMETRY_SHADER GL_CONTEXT_LOST
+-----------------------------------------------------------------
+
+I am trying to install opticks support in juno soft and found...::
+
+    [opticks-make] /cern/juno/ExternalLibs/Build/opticks-0.0.0-rc3/oglrap/G.cc: In static member function 'static const char* G::Shader(GLenum)':
+    [opticks-make] /cern/juno/ExternalLibs/Build/opticks-0.0.0-rc3/oglrap/G.cc:50:13: error: 'GL_GEOMETRY_SHADER' was not declared in this scope; did you mean 'GL_GEOMETRY_SHADER_'?
+    [opticks-make]    50 |        case GL_GEOMETRY_SHADER: s = GL_GEOMETRY_SHADER_ ; break ;
+    [opticks-make]       |             ^~~~~~~~~~~~~~~~~~
+    [opticks-make]       |             GL_GEOMETRY_SHADER_
+    [opticks-make] /cern/juno/ExternalLibs/Build/opticks-0.0.0-rc3/oglrap/G.cc: In static member function 'static const char* G::Err(GLenum)':
+    [opticks-make] /cern/juno/ExternalLibs/Build/opticks-0.0.0-rc3/oglrap/G.cc:68:14: error: 'GL_CONTEXT_LOST' was not declared in this scope; did you mean 'GL_CONTEXT_LOST_'?
+    [opticks-make]    68 |         case GL_CONTEXT_LOST : s = GL_CONTEXT_LOST_ ; break ;
+
+
+Probable Cause : build finding ancient glew.h
+-----------------------------------------------
+
+The build is probably finding an ancient version of glew.h which does not 
+have the necessary OpenGL symbols. 
+
+
+/Users/blyth/junotop/ExternalLibs/Opticks/0.0.0-rc1/externals/glew/glew-1.13.0/include/GL/glew.h
+
+
+Relevant Opticks Examples
+--------------------------
+
+
+examples/UseOpticksGLEW
+    CMake finding GLEW and version dumping 
+
+examples/UseOpenGL
+    CMake finding OpenGL (not so useful as all use of OpenGL is via glew or glfw)
+
+examples/UseGeometryShader
+    near minimal example using OpenGL/GLEW to setup shaders and popup a window
+
+
+
 libGLEW.so glew.h Issue
 -------------------------
 
@@ -37,6 +77,54 @@ Then try to rebuild ROOT with "-Dbuiltin_glew=OFF"::
 
     [blyth@localhost ~]$ cd $JUNOTOP/junoenv
     [blyth@localhost junoenv]$ bash junoenv libs all ROOT
+
+
+junoenv switch off the ancient glew that comes with ROOT::
+
+    174 function juno-ext-libs-ROOT-conf-cmake {
+    175     local msg="===== $FUNCNAME: "
+    176     cmake .. -DCMAKE_INSTALL_PREFIX=$(juno-ext-libs-ROOT-install-dir) \
+    177           -DVc=ON \
+    178           -DVecCore=ON \
+    179           -Dxrootd=ON \
+    180           -Dminuit2=ON \
+    181           -Droofit=ON \
+    182           -Dtbb=ON \
+    183           -Dgdml=ON \
+    184           -Dcastor=OFF \
+    185           -Drfio=OFF \
+    186           -Dsqlite=ON \
+    187           -DGSL_DIR=$(juno-ext-libs-gsl-install-dir) \
+    188           -DFFTW3_DIR=$(juno-ext-libs-fftw3-install-dir) \
+    189           -DTBB=$(juno-ext-libs-tbb-install-dir) \
+    190           -DXROOTD_ROOT_DIR=$(juno-ext-libs-xrootd-install-dir) \
+    191           -DXROOTD_INCLUDE_DIR=$(juno-ext-libs-xrootd-install-dir)/include/xrootd \
+    192           -DSQLITE_LIBRARIES=$(juno-ext-libs-sqlite3-install-dir)/lib/libsqlite3.so \
+    193           -Dbuiltin_glew=OFF
+    194     # SCB: dont use builtin GLEW as it is ancient and breaks Opticks build against JUNO externals
+    195 }
+
+That is in SVN, however does mean users will have to rebuild ROOT::
+
+    epsilon:packages blyth$ pwd
+    /Users/blyth/junotop/junoenv/packages
+
+    epsilon:packages blyth$ svn log ROOT.sh -l3
+    ------------------------------------------------------------------------
+    r3912 | blyth | 2020-05-21 14:29:37 +0100 (Thu, 21 May 2020) | 1 line
+
+    Opticks integration requires ROOT to not use an ancient builtin GLEW, and Geant4 to not use builtin G4clhep 
+    ------------------------------------------------------------------------
+    r3826 | lintao | 2020-03-26 13:20:03 +0000 (Thu, 26 Mar 2020) | 1 line
+
+    WIP: upgrade ROOT from 6.18.00 to 6.20.02
+    ------------------------------------------------------------------------
+    r3554 | lintao | 2019-08-19 16:38:32 +0100 (Mon, 19 Aug 2019) | 1 line
+
+    update ROOT and add sqlite3.
+    ------------------------------------------------------------------------
+    epsilon:packages blyth$ 
+
 
 Hmm, this is not what we want : ROOT build should be independent of Opticks one::
 
