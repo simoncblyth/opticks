@@ -682,16 +682,16 @@ RT_PROGRAM void generate()
         rtPrintf("//SD sensorIndex %d f_theta %f f_phi %f efficiency %f \n", sensorIndex, f_theta, f_phi, efficiency );
         float u_angular = curand_uniform(&rng) ;
 
-        p.flags.u.w |= u_angular < efficiency ?  EFFICIENCY_COLLECT : EFFICIENCY_CULL ;   
+        p.flags.u.w |= ( u_angular < efficiency ?  EFFICIENCY_COLLECT : EFFICIENCY_CULL ) ;   
 
 #ifdef WITH_DEBUG_BUFFER
-        //debug_buffer[photon_id] = make_float4( f_theta, f_phi, efficiency, unsigned_as_float(sensorIndex) ); 
+        debug_buffer[photon_id] = make_float4( f_theta, f_phi, efficiency, unsigned_as_float(sensorIndex) ); 
 #endif
     } 
 #endif
 
 #ifdef WITH_DEBUG_BUFFER
-    debug_buffer[photon_id] = make_float4( prd.debug.x, prd.debug.y, prd.debug.z, unsigned_as_float(s.identity.y) ); 
+    //debug_buffer[photon_id] = make_float4( prd.debug.x, prd.debug.y, prd.debug.z, unsigned_as_float(s.identity.y) ); 
 #endif
 
 

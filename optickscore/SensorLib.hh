@@ -60,7 +60,7 @@ class OKCORE_API SensorLib
          NPY<float>*        getSensorDataArray() const;
          const NPY<float>*  getSensorAngularEfficiencyArray() const;
     public: 
-        void save(const char* dir) const ;
+        void save(const char* dir, const char* reldir=NULL) const ;
         void dump(const char* msg="SensorLib::dump", unsigned modulo=0) const ;
         void dumpSensorData(const char* msg, unsigned modulo=0) const ;
         void dumpAngularEfficiency(const char* msg) const ;

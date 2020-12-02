@@ -673,10 +673,10 @@ void G4Opticks::setSensorAngularEfficiency( const NPY<float>* sensor_angular_eff
     m_sensorlib->setSensorAngularEfficiency( sensor_angular_efficiency ); 
 }
 
-void G4Opticks::saveSensorLib(const char* dir) const 
+void G4Opticks::saveSensorLib(const char* dir, const char* reldir) const 
 {
-    LOG(info) << " saving to " << dir ;  
-    m_sensorlib->save(dir); 
+    LOG(info) << " saving to " << dir << "/" << reldir  ;  
+    m_sensorlib->save(dir, reldir ); 
 }
 
 /**

@@ -141,7 +141,7 @@ class G4OK_API G4Opticks
                                          int theta_steps=181, float theta_min=0.f, float theta_max=180.f, 
                                          int phi_steps=1,   float phi_min=0.f, float phi_max=360.f );
         void setSensorAngularEfficiency( const NPY<float>* sensor_angular_efficiency );
-        void saveSensorLib(const char* dir) const ;
+        void saveSensorLib(const char* dir, const char* reldir=NULL) const ;
         //void uploadSensorLib() ;
         void snap(const char* dir, const char* reldir=NULL) const ;
     public:

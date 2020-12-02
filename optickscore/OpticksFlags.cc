@@ -364,6 +364,13 @@ std::string OpticksFlags::FlagSequence(const unsigned long long seqhis, bool abb
     return ss.str();
 }
 
+/**
+OpticksFlags::FlagMask
+-----------------------
+
+A string labelling the bits set in the mskhis is returned.
+
+**/
 
 std::string OpticksFlags::FlagMask(const unsigned mskhis, bool abbrev)
 {

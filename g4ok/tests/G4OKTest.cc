@@ -4,6 +4,7 @@
 #include "G4PVPlacement.hh"
 #include "G4Opticks.hh"
 #include "G4OpticksHit.hh"
+#include "OpticksFlags.hh"
 
 #include "MockSensorAngularEfficiencyTable.hh"
 
@@ -232,9 +233,7 @@ void G4OKTest::initSensorAngularEfficiency()
 
 void G4OKTest::saveSensorLib() const
 {
-    const char* dir = "$TMP/G4OKTest/SensorLib" ; 
-    m_g4ok->saveSensorLib(dir); 
-    LOG(info) << dir ; 
+    m_g4ok->saveSensorLib(m_tmpdir, "SensorLib"); 
 }
 
 
@@ -320,16 +319,17 @@ void G4OKTest::checkHits(int eventID) const
         m_g4ok->getHit(i, &hit); 
         std::cout 
             << std::setw(5) << i 
-            << " hit.boundary "           << std::setw(4) << hit.boundary 
-            << " hit.sensorIndex "        << std::setw(5) << hit.sensorIndex 
-            << " hit.nodeIndex "          << std::setw(5) << hit.nodeIndex 
-            << " hit.photonIndex "        << std::setw(5) << hit.photonIndex 
-            << " hit.flag_mask    "       << std::setw(10) << std::hex << hit.flag_mask  << std::dec
-            << " hit.sensor_identifier "  << std::setw(10) << std::hex << hit.sensor_identifier << std::dec
-            << " hit.weight "             << std::setw(5) << hit.weight 
-            << " hit.wavelength "         << std::setw(8) << hit.wavelength 
-            << " hit.time "               << std::setw(8) << hit.time
-         //   << " hit.local_position " << hit.local_position 
+            << " boundary "           << std::setw(4) << hit.boundary 
+            << " sensorIndex "        << std::setw(5) << hit.sensorIndex 
+            << " nodeIndex "          << std::setw(5) << hit.nodeIndex 
+            << " photonIndex "        << std::setw(5) << hit.photonIndex 
+            << " flag_mask    "       << std::setw(10) << std::hex << hit.flag_mask  << std::dec
+            << " sensor_identifier "  << std::setw(10) << std::hex << hit.sensor_identifier << std::dec
+         // << " weight "             << std::setw(5) << hit.weight 
+            << " wavelength "         << std::setw(8) << hit.wavelength 
+            << " time "               << std::setw(8) << hit.time
+         // << " local_position " << hit.local_position 
+            << " " << OpticksFlags::FlagMask(hit.flag_mask, true)
             << std::endl 
             ;    
         // G4ThreeVector formatter doesnt play well with setw

@@ -63,17 +63,17 @@ RT_PROGRAM void closest_hit_propagate()
 
      // for angular efficiency 
      const float3 isect = ray.origin + t*ray.direction ; 
-     const float3 local_point = rtTransformPoint( RT_WORLD_TO_OBJECT, isect ); 
-     //const float3 local_point = normalize(rtTransformPoint( RT_WORLD_TO_OBJECT, isect )); 
+     //const float3 local_point = rtTransformPoint( RT_WORLD_TO_OBJECT, isect ); 
+     const float3 local_point_norm = normalize(rtTransformPoint( RT_WORLD_TO_OBJECT, isect )); 
 
 #ifdef WITH_DEBUG_BUFFER
      //prd.debug = isect ; 
-     prd.debug = local_point ;
+     prd.debug = local_point_norm ;
 #endif
  
 #ifdef WITH_ANGULAR
-     const float f_theta = acos( local_point.z )/M_PIf;                        // polar 0->pi ->  0->1
-     const float f_phi_ = atan2( local_point.y, local_point.x )/(2.f*M_PIf) ;  // azimuthal 0->2pi ->  0->1
+     const float f_theta = acos( local_point_norm.z )/M_PIf;                             // polar 0->pi ->  0->1
+     const float f_phi_ = atan2( local_point_norm.y, local_point_norm.x )/(2.f*M_PIf) ;  // azimuthal 0->2pi ->  0->1
      const float f_phi = f_phi_ > 0.f ? f_phi_ : f_phi_ + 1.f ;  //  
      prd.f_theta = f_theta ; 
      prd.f_phi = f_phi ; 
