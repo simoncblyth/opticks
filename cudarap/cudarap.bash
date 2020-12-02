@@ -563,18 +563,9 @@ EON
 
 
 
-cudarap-prepare-sizes-Linux-(){ cat << EOS
-1
-3
-10
-EOS
-}
-cudarap-prepare-sizes-Darwin-(){ cat << EOS
-1
-3
-EOS
-}
-cudarap-prepare-sizes(){ $FUNCNAME-$(uname)- ; }
+cudarap-prepare-sizes-Linux-(){  echo ${OPTICKS_CUDARAP_RNGMAX:-1,3,10} ; }
+cudarap-prepare-sizes-Darwin-(){ echo ${OPTICKS_CUDARAP_RNGMAX:-1,3} ; }
+cudarap-prepare-sizes(){ $FUNCNAME-$(uname)- | tr "," "\n"  ; }
 
 cudarap-prepare-installation()
 {

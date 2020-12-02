@@ -60,6 +60,22 @@ OpenMesh compilation fail, add header to OpenMesh-6.3/src/OpenMesh/Tools/Utils/c
 
 
 
+Another Report from Artem
+---------------------------
+
+::
+
+    Also, please add to the file
+
+    ExternalLibs/Opticks/0.0.0-rc3/externals/openmesh/OpenMesh-6.3/src/OpenMesh/Tools/Utils/conio.cc
+
+    string:
+
+    #include <sys/time.h>
+
+    otherwise in Debian system with gcc >= 7 compilation gives an error.
+
+
 
 Mailing List 
 ---------------
