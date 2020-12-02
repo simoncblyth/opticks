@@ -22,6 +22,21 @@
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+/**
+OpticksBufferSpec::Get 
+=======================
+
+The static Get method returns a comma delimited string containing buffer 
+handling tags for each named buffer which are often different in compute and interop modes. 
+
+Canonical usage is from OpticksEvent::createSpec which sets up the NPYSpec for 
+all named event buffers using the buffer spec string as an argument which is 
+subsequently accessible with NPYSpec::getCtrl.
+
+The strings are parsed into an enumerated bitfield by okc/OpticksBufferControl.cc
+
+**/
+
 class OKCORE_API OpticksBufferSpec 
 {
     public:

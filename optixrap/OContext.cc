@@ -890,6 +890,12 @@ indicating that the cleanup is not complete::
 */
 
 
+/**
+OContext::upload
+------------------
+
+
+**/
 
 template <typename T>
 void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
@@ -931,6 +937,16 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
 }
 
 
+/**
+OContext::download
+--------------------
+
+Downloading from GPU buffer to NPY array only proceeds 
+for appropriate OpticksBufferControl settings associated 
+with the named array.
+
+**/
+
 template <typename T>
 void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 {
@@ -958,6 +974,12 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
          proceed = true ;
          LOG(info) << "PROCEED for " << npy->getBufferName() << " as " << OpticksBufferControl::OPTIX_NON_INTEROP_  ;
     }   
+    else
+    {
+         proceed = false ; 
+         LOG(fatal) << "NOT PROCEEDing for " << npy->getBufferName()   ;
+    }
+
     
     if(proceed)
     {
@@ -1026,24 +1048,24 @@ OContext::createBuffer
 
 Workhorse, called for example from OEvent::createBuffers
 
+For OpenGL visualized buffers the NPY array must have a valid bufferId 
+indicating that the data was uploaded to an OpenGL buffer by Rdr::upload.
+For buffers that are not visualized such as the "debug" buffer it is 
+necessary for the OpticksBufferSpec/OpticksBufferControl tag of 
+OPTIX_NON_INTEROP to be set to avoid assertions when running interactively.
+See notes/issues/OKTest_CANNOT_createBufferFromGLBO_as_not_uploaded_name_debug.rst 
+
 **/
 
 template <typename T>
 optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 {
     assert(npy);
-
     bool allowed_name = isAllowedBufferName(name); 
-    if(!allowed_name)
-    {
-        LOG(fatal) << " name " << name << " IS NOT ALLOWED " ; 
-        assert(0);   
-    } 
-
+    if(!allowed_name) LOG(fatal) << " name " << name << " IS NOT ALLOWED " ; 
+    assert(allowed_name);   
 
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
-    //bool verbose = ctrl("VERBOSE_MODE") || SSys::IsVERBOSE() ;
-
     bool compute = isCompute()  ; 
 
     LOG(LEVEL) 
@@ -1063,11 +1085,9 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
    
     if(noctrl) LOG(fatal) << "no buffer control for " << name << ctrl.description("") ;
     assert(!noctrl);
-
  
     if( ctrl("BUFFER_COPY_ON_DIRTY") )     type |= RT_BUFFER_COPY_ON_DIRTY ;
     // p170 of OptiX_600 optix-api 
-
 
     optix::Buffer buffer ; 
 

@@ -19,14 +19,8 @@
 
 #include "OpticksEvent.hh"
 #include "OpticksBufferSpec.hh"
-
 #include "OpticksSwitches.h"
-
-
-//#include "OKConf_Config.hh"
 #include "OKConf.hh"
-
-
 
 /**
 OpticksBufferSpec
@@ -49,18 +43,16 @@ To find the version to handle see sysrap-/OpticksCMakeConfigTest
 Meanings of the settings
 ---------------------------
 
-
 OPTIX_NON_INTEROP  
     creates OptiX buffer even in INTEROP mode, this is possible for buffers such as "sequence"
     which are not used from OpenGL shaders so there is no need for the INTEROP OpenGL buffer
     instead can profit from speed and simplicity of pure OptiX buffer
 
- INTEROP_PTR_FROM_OPENGL  
+INTEROP_PTR_FROM_OPENGL  
     adopted this with OptiX 4.0, as OpenGL/OptiX/CUDA 3-way interop not working in 400000 
     instead moved to 
            OpenGL/OptiX : to write the photon data
            OpenGL/CUDA  : to index the photons  
-
 
 NB have just moved to splitting the spec by compute and interop
    so some simplifications should be possible
@@ -162,8 +154,8 @@ const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ;
 
 
 
-const char* OpticksBufferSpec::debug_compute_ = "OPTIX_OUTPUT_ONLY"  ;
-const char* OpticksBufferSpec::debug_interop_ = "OPTIX_OUTPUT_ONLY"  ;
+const char* OpticksBufferSpec::debug_compute_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY"  ;
+const char* OpticksBufferSpec::debug_interop_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY"  ;
 
 const char* OpticksBufferSpec::record_compute_ = "OPTIX_OUTPUT_ONLY"  ;
 const char* OpticksBufferSpec::record_interop_ = "OPTIX_OUTPUT_ONLY"  ;

@@ -44,6 +44,10 @@ static __device__ __inline__ float OSensorLib_angular_efficiency(int category, f
 static __device__ __inline__ float OSensorLib_combined_efficiency(unsigned sensorIndex, float phi_fraction, float theta_fraction  )
 {
     // not expecting sensorIndex 0 which means that the volume is not a sensor
+
+    unsigned sensor_data_size = OSensorLib_sensor_data.size(); 
+    if( sensor_data_size == 0 ) return 1.f ; 
+
     const float4& sensor_data = OSensorLib_sensor_data[sensorIndex-1] ;  // 1-based sensorIndex
 
     float efficiency_1 = sensor_data.x ; 

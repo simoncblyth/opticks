@@ -30,7 +30,20 @@ OpticksBufferControl
 ======================
 
 Combinations of control flags for the standard OpticksEvent buffers
-are defined in OpticksEvent::createSpec.
+are defined in OpticksEvent::createSpec. 
+See also okc/OpticksBufferSpec which supplies the tags string for 
+each named OpticksEvent buffer in compute and interop modes.
+
+Canonical users of the buffer control settings are:
+
+oglrap/Rdr.cc
+    Rdr::download
+
+optixrap/OContext.cc
+    OContext::createBuffer
+    OContext::resizeBuffer
+    OContext::download
+    OContext::upload
 
 
 BUFFER_COPY_ON_DIRTY
@@ -45,7 +58,6 @@ BUFFER_COPY_ON_DIRTY
 OPTIX_NON_INTEROP
      Used for the sequence buffer which is not visualized hence in both interop 
      and compute modes a pure OptiX buffer is used with no interop.
-
 
 
 **/

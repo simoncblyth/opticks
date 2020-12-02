@@ -86,6 +86,15 @@ Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* incl_path
 }
 
 
+/**
+Rdr::download
+-------------
+
+Download is skipped for OpticksBufferControl::OPTIX_NON_INTEROP_ buffers 
+
+
+**/
+
 template <typename T>
 void Rdr::download( NPY<T>* npy )
 {

@@ -960,6 +960,17 @@ void OpticksEvent::addBufferControl(const char* name, const char* ctrl_)
 }
 
 
+/**
+OpticksEvent::setBufferControl
+-------------------------------
+
+The OpticksBufferControl argument is a pointer to 64-bit int 
+living inside the NPYBase which has its contents 
+defined by the below depending on the OpticksBufferSpec::Get ctrl 
+string lodged into the spec.
+ 
+**/
+
 void OpticksEvent::setBufferControl(NPYBase* data)
 {
     const NPYSpec* spec = data->getBufferSpec();
@@ -978,12 +989,7 @@ void OpticksEvent::setBufferControl(NPYBase* data)
         assert(0);
         return ; 
     }
-
-
-    // OpticksBufferControl argument is a pointer to 64-bit int 
-    // living inside the NPYBase which has its contents 
-    // defined by the below
-    
+   
     OpticksBufferControl ctrl(data->getBufferControlPtr());
     ctrl.add(spec->getCtrl());
 

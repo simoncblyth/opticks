@@ -61,6 +61,23 @@ om-test :opticksgeo
     run the tests for all subprojects from the first okconf upto opticksgeo    
 
 
+Real World Usage 
+------------------
+
+::
+
+   ggeo    # change directory to ggeo 
+   okc     # change directory to optickscore
+   vi OpticksSwitches.h 
+
+   om :    # build current dir project and all subsequent 
+   om +    # build all subsequent proj (not including current)
+   om      # build just current dir project 
+ 
+   om-subs :    #  list this project and all subsequent 
+   om-subs +    #  list all subsequent projects 
+
+
 SUBPROJ FUNCTIONS 
 -----------------
 
@@ -76,6 +93,9 @@ om-make
 om--
    shorter name for om-make
 
+om
+   even shorter function that does om-;om--
+   
 om-install
    configures, builds and installs by doing both om-conf and om-make 
 

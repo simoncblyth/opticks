@@ -294,7 +294,7 @@ void NPYBase::write_(void* dst ) const
     unsigned num_bytes = getNumBytes(0) ;
     if( num_bytes == 0 )
     {
-         LOG(warning) << " warning writing empty " ; 
+         LOG(warning) << " warning writing empty " << getName() ; 
     }
     else
     {
@@ -309,7 +309,7 @@ void NPYBase::write_item_(void* dst, unsigned item) const
     unsigned num_bytes = getNumBytes(1) ; // from_dim
     if( num_bytes == 0 )
     {
-         LOG(warning) << " warning writing empty item " ; 
+         LOG(warning) << " warning writing empty item " << getName() ; 
     } 
     else
     {
