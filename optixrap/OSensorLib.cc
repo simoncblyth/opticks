@@ -29,11 +29,14 @@ OSensorLib::OSensorLib(const OCtx* octx, const SensorLib* sensorlib)
 void OSensorLib::init() 
 {
     assert( m_sensorlib->isClosed() ); 
-    assert( m_num_dim == 4 ); 
-    assert( m_num_cat < 10 ); 
-    assert( m_num_elem == 1 ); 
-    assert( m_texid ); 
 
+    if( m_angular_efficiency )
+    {
+        assert( m_num_dim == 4 ); 
+        assert( m_num_cat < 10 ); 
+        assert( m_num_elem == 1 ); 
+        assert( m_texid ); 
+    }
     m_texid->zero();
 }
 

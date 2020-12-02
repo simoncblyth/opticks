@@ -158,7 +158,17 @@ void OpEngine::close()
     assert( m_closed == false ); 
     m_closed = true ; 
     
-    SensorLib* sensorlib = m_ok->getSensorLib(); 
+    SensorLib* sensorlib = NULL ; 
+    sensorlib = m_ok->getSensorLib(); 
+    
+    if( sensorlib == NULL )
+    {
+        LOG(info) << " sensorlib NULL : defaulting it with zero sensors " ; 
+        unsigned num_sensors = 0 ; 
+        m_ok->initSensorData(num_sensors);  
+    }
+    sensorlib = m_ok->getSensorLib(); 
+
     assert( sensorlib ); 
     sensorlib->close(); 
     assert( sensorlib->isClosed() ); 

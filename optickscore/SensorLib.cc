@@ -355,6 +355,7 @@ void SensorLib::close()
         LOG(error) << " closed already " ;
         return ;   
     }
+    m_closed = true ; 
 
     if(m_sensor_num == 0 ) 
     {
@@ -365,7 +366,6 @@ void SensorLib::close()
     bool dump = false ; 
     checkSensorCategories(dump); 
 
-    m_closed = true ; 
     LOG(info) << desc() ; 
 }
 
