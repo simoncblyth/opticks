@@ -60,6 +60,27 @@ Fix split the line in common/gdt/gdt/math/vec.h
 
 
 
+Background on bin2c
+----------------------
+
+bin2c is a binary tool that comes with CUDA which
+creates c code of an array from arbitrary input data.::
+
+    epsilon:1 blyth$ which bin2c
+    /usr/local/cuda/bin/bin2c
+
+    epsilon:1 blyth$ pwd
+    /tmp/blyth/opticks/evt/g4live/natural/1
+    epsilon:1 blyth$ bin2c gs.npy
+
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
+
+    unsigned char imageBytes[] = {
+    0x93,0x4e,0x55,0x4d,0x50,0x59,0x01,0x00,0x46,0x00,0x7b,0x27,0x64,0x65,0x73,0x63,
+    ...
+
 Observation : bin2c embedding of ptx inside executable
 ---------------------------------------------------------
 
@@ -142,6 +163,35 @@ Mysteries
 * appears that __align__ is being accepted by gcc in example02_pipelineAndRayGen/SampleRenderer.cpp ?
 
 
+"struct __align__(8)" Alignment Specifiers
+-------------------------------------------
+
+* https://stackoverflow.com/questions/13205742/how-to-specify-alignment-for-global-device-variables-in-cuda
+* CUDA guide "Size and Alignment Requirement"
+
+Global memory instructions support reading or writing words of size equal to 1,
+2, 4, 8, or 16 bytes. Any access (via a variable or a pointer) to data residing
+in global memory compiles to a single global memory instruction if and only if
+the size of the data type is 1, 2, 4, 8, or 16 bytes and the data is naturally
+aligned (i.e., its address is a multiple of that size).
+
+If this size and alignment requirement is not fulfilled, the access compiles to
+multiple instructions with interleaved access patterns that prevent these
+instructions from fully coalescing. It is therefore recommended to use types
+that meet this requirement for data that resides in global memory.
+
+::
+
+    struct __align__(16) {
+        float x;
+        float y;
+        float z;
+    };
+
+
+
+
+
 Note that examples are not using OpenGL/CUDA interop : so inefficient drawing
 --------------------------------------------------------------------------------
 
@@ -188,7 +238,7 @@ optix7c-bdir(){ echo $(optix7c-dir).build ; }
 
 optix7c-cd(){  cd $(optix7c-dir) ; } 
 optix7c-c(){   cd $(optix7c-dir) ; } 
-optix7c--(){   opticks-- $(optix7c-dir) ; } 
+optix7c-bcd(){  cd $(optix7c-bdir) ; } 
 
 
 optix7c-url(){ 
@@ -224,4 +274,24 @@ optix7c--()
    optix7c-cmake
    make
 }
+
+optix7c-bin(){ cat << EOB
+ex01_helloOptix
+ex02_pipelineAndRayGen
+EOB
+}
+
+
+optix7c-run()
+{
+   optix7c-bcd
+   local bin
+   optix7c-bin | while read bin ; do 
+      echo $bin
+      [ ! -x "$bin" ] && echo not executable && break
+      ./$bin
+      [ $? -ne 0 ] && echo non-zero return code && break
+   done
+}
+
 
