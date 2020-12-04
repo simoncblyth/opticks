@@ -181,7 +181,6 @@ void PIP::createShaderBindingTable()
 }
 
 
-
 void PIP::updateShaderBindingTable()
 {
     rg_sbt.data = {};
@@ -231,6 +230,14 @@ void PIP::updateShaderBindingTable()
 
 
 }
+
+
+
+/**
+Huh: surely view params would be better handled as launch params 
+that reside in constant memory rather than having to keep updating sbt ?
+**/
+
 
 void PIP::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_)
 {

@@ -61,4 +61,5 @@ mgpu-(){             . $(externals-dir)/mgpu.bash              && mgpu-env $* ; 
 
 g4dev-(){            . $(externals-dir)/g4dev.bash             && g4dev-env $* ; }
 g4dae-(){            . $(externals-dir)/g4dae.bash             && g4dae-env $* ; }
+owl-(){              . $(externals-dir)/owl.bash               && owl-env $* ; }
 

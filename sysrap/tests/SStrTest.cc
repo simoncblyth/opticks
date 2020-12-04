@@ -180,6 +180,21 @@ void test_ReplaceEnd()
     assert( strcmp(name2, xname2) == 0 );  
 }
 
+void test_ArrayToString()
+{
+    // thinking about optix7c- and embedded_ptx_code from bin2c 
+    // observe that without NULL termination get garbage on the end of the string 
+    // which is why must use "--padd 0" which sets trailing bytes::
+    // 
+    //       bin2c --name data_variable_name --padd 0 inputfile > data.c 
+    //
+    const char imageBytes[] = { 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x00 } ; 
+    std::string s = imageBytes ; 
+    std::cout << "[" << s << "]" << std::endl ; 
+    assert( s.compare("ABCDEF") == 0 ); 
+    assert( 'A' == 0x41 ); 
+}
+
 
 
 int main(int argc , char** argv )
@@ -196,9 +211,10 @@ int main(int argc , char** argv )
     test_HasPointerSuffix2();  
     test_StartsWith();  
     test_Replace();  
-    */
     test_ReplaceEnd();  
+    */
+    test_ArrayToString();  
 
     return 0  ; 
 }
-
+// om-;TEST=SStrTest om-t

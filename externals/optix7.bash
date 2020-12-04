@@ -25,6 +25,15 @@ optix7-usage(){ cat << \EOU
 OptiX 7 : Brand New Lower Level API
 ======================================= 
 
+See Also 
+---------
+
+* optix7c- course from Ingo Wald
+
+
+Refs
+------
+
 * no multi-GPU, no mem mamagement : all that burden is shifted to application
   (Vulkanization of OptiX 6) 
 * but its thread safe 

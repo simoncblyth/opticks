@@ -13,6 +13,12 @@
 
 
 // transitional class for adiabatic breakup of the monolith 
+
+/**
+static context doesnt look like a good idea
+**/
+
+
 struct Engine
 {
     int rc ; 
