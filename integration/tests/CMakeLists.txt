@@ -60,6 +60,8 @@ Run without ctest::
 
    LV=box tboolean.sh --generateoverride 10000
 
+   LV=box tboolean.sh --generateoverride 10000 -D    # run under gdb 
+
 
 #]=]
 

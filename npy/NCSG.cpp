@@ -1114,6 +1114,12 @@ std::string NCSG::desc()
 }
 
 
+NTrianglesNPY* NCSG::polygonize_bbox_placeholder()
+{
+    nbbox bb = bbox(); 
+    NTrianglesNPY* tris = NTrianglesNPY::box(bb) ;
+    return tris ; 
+}
 
 
 NTrianglesNPY* NCSG::polygonize()
@@ -1127,8 +1133,8 @@ NTrianglesNPY* NCSG::polygonize()
         NPolygonizer pg(this);
         m_tris = pg.polygonize();
 #else
-        LOG(fatal) << "NCSG::polygonize requires compilation with the optional OpenMesh" ;  
-        assert(0); 
+        LOG(fatal) << "NCSG::polygonize requires compilation with the optional OpenMesh : using bbox triangles placeholder " ;  
+        m_tris = polygonize_bbox_placeholder() ; 
 #endif
     }
     return m_tris ; 

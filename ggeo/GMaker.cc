@@ -159,10 +159,13 @@ Hmm : this is using my (very temperamental) polygonization,
 but there is no need to do so in direct workflow as the Geant4 
 polygonization GMesh is available. 
 
+Still used from GGeoTest which gets its geometry from the 
+analytic python description with no Geant4 in sight.
+
 **/
 
 
-GMesh* GMaker::makeMeshFromCSG( NCSG* csg ) // cannot be const due to lazy NCSG::polgonize 
+GMesh* GMaker::makeMeshFromCSG( NCSG* csg ) // cannot be const NCSG due to lazy NCSG::polgonize 
 {
     unsigned index = csg->getIndex();
     const char* spec = csg->getBoundary();  

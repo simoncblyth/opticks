@@ -144,7 +144,11 @@ int main(int argc, char** argv)
 
     tst.makeSphere();
     LOG(error) << " after makeSphere  " ; 
+#ifdef WITH_OPENMESH
     tst.makeFromCSG();
+#else
+    LOG(error) << "makeFromCSG requires compilation WITH_OPENMESH " ; 
+#endif
     LOG(error) << " after makeFromCSG   " ; 
 
 }

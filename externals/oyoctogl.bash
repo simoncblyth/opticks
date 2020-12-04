@@ -36,6 +36,25 @@ See also env-;yoctogl-
 * https://github.com/simoncblyth/yocto-gl/commits/master
 
 
+current use
+------------
+
+Currently Opticks only using two things from my ancient fork of Yocto-GL 
+
+1. GLTF handling, which is non-critical : should be 
+2. nlohmann json header, a really old version  
+
+Intension : adopt an uptodate nlohmann json.hpp and drop Yocto-GL  dependency 
+
+
+upstream
+----------
+
+* https://xelatihy.github.io/yocto-gl/
+
+
+
+
 gcc issue reported by YL Chan
 -------------------------------
 

@@ -195,6 +195,8 @@ class NPY_API NCSG {
         void resizeToFit( const nbbox& container, float scale, float delta ) const ;
     public:
         NTrianglesNPY* polygonize();
+        NTrianglesNPY* polygonize_bbox_placeholder();
+
         NTrianglesNPY* getTris() const ;
 
         NCSGData* getCSGData() const ;
