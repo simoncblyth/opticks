@@ -215,6 +215,16 @@ void NMeta::setObj(const char* name, NMeta* obj)
     m_js[name] = obj->js(); 
 }
 
+
+/**
+NMeta::getObj
+--------------
+
+Create new NMeta object and sets its json to the
+keyed sub-object from this NMeta.
+
+**/
+
 NMeta* NMeta::getObj(const char* name)
 {
     nlohmann::json& this_js = m_js ;

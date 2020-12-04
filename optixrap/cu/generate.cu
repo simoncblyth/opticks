@@ -676,10 +676,10 @@ RT_PROGRAM void generate()
     if( s.flag == SURFACE_DETECT ) 
     {
         const unsigned& sensorIndex = s.identity.w ;   // should always be > 0 as flag is SD
-        const float& f_theta =  prd.f_theta ;
+        const float& f_theta = prd.f_theta ;
         const float& f_phi = prd.f_phi ; 
         const float efficiency = OSensorLib_combined_efficiency(sensorIndex, f_phi, f_theta);
-        rtPrintf("//SD sensorIndex %d f_theta %f f_phi %f efficiency %f \n", sensorIndex, f_theta, f_phi, efficiency );
+        //rtPrintf("//SD sensorIndex %d f_theta %f f_phi %f efficiency %f \n", sensorIndex, f_theta, f_phi, efficiency );
         float u_angular = curand_uniform(&rng) ;
 
         p.flags.u.w |= ( u_angular < efficiency ?  EFFICIENCY_COLLECT : EFFICIENCY_CULL ) ;   
