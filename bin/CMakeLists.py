@@ -121,7 +121,7 @@ class OpticksCMakeProj(object):
              'OpticksCore':50, 
              'GGeo':60, 
              'AssimpRap':-70,
-             'OpenMeshRap':80, 
+             'OpenMeshRap':-80, 
              'OpticksGeo':90,
              'CUDARap':100,
              'ThrustRap':110,

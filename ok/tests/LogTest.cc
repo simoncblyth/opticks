@@ -24,7 +24,9 @@
 #include "NPY_LOG.hh"
 #include "OKCORE_LOG.hh"
 #include "GGEO_LOG.hh"
+#ifdef  WITH_OPENMESHRAP
 #include "MESHRAP_LOG.hh"
+#endif
 #include "OKGEO_LOG.hh"
 #include "OGLRAP_LOG.hh"
 
@@ -49,7 +51,9 @@ int main(int argc, char** argv)
     NPY_LOG__ ;
     OKCORE_LOG__ ;
     GGEO_LOG__ ;
+#ifdef  WITH_OPENMESHRAP
     MESHRAP_LOG__ ;
+#endif
     OKGEO_LOG__ ;
     OGLRAP_LOG__ ;
 
@@ -70,7 +74,9 @@ int main(int argc, char** argv)
     NPY_LOG::Check(msg) ;
     OKCORE_LOG::Check(msg) ;
     GGEO_LOG::Check(msg) ;
+#ifdef  WITH_OPENMESHRAP
     MESHRAP_LOG::Check(msg) ;
+#endif
     OKGEO_LOG::Check(msg) ;
     OGLRAP_LOG::Check(msg) ;
 
@@ -106,5 +112,4 @@ int main(int argc, char** argv)
 
 
 */
-
 

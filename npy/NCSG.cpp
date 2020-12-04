@@ -33,7 +33,11 @@
 #include "NMeta.hpp"
 
 #include "NTrianglesNPY.hpp"
+
+
+#ifdef WITH_OPENMESH
 #include "NPolygonizer.hpp"
+#endif
 
 #include "NPrimitives.hpp"
 
@@ -1119,8 +1123,13 @@ NTrianglesNPY* NCSG::polygonize()
 
     if(m_tris == NULL)
     {
+#ifdef WITH_OPENMESH
         NPolygonizer pg(this);
         m_tris = pg.polygonize();
+#else
+        LOG(fatal) << "NCSG::polygonize requires compilation with the optional OpenMesh" ;  
+        assert(0); 
+#endif
     }
     return m_tris ; 
 }

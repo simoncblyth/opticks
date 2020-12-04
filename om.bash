@@ -225,7 +225,7 @@ yoctoglrap
 optickscore
 ggeo
 #assimprap
-openmeshrap
+#openmeshrap
 opticksgeo
 cudarap
 thrustrap

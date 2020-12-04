@@ -500,17 +500,17 @@ EOU
 
 
 
-#optix7-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_700 ; }
-#optix6-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_650 ; }
+optix7-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_700 ; }
+optix6-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_650 ; }
 
-optix7-realprefix(){ 
-  local prefix=$OPTICKS_OPTIX_PREFIX 
-  [ -L "$prefix" ] && prefix=$(readlink $OPTICKS_OPTIX_PREFIX) 
-  echo $prefix
-} 
-
-optix7-prefix(){ echo $(dirname $(optix7-realprefix))/OptiX_700 ; }
-optix6-prefix(){ echo $(dirname $(optix7-realprefix))/OptiX_650 ; }
+#optix7-realprefix(){ 
+#  local prefix=$OPTICKS_OPTIX_PREFIX 
+#  [ -L "$prefix" ] && prefix=$(readlink $OPTICKS_OPTIX_PREFIX) 
+#  echo $prefix
+#} 
+#  no longer works as the links are relative 
+#optix7-prefix(){ echo $(dirname $(optix7-realprefix))/OptiX_700 ; }
+#optix6-prefix(){ echo $(dirname $(optix7-realprefix))/OptiX_650 ; }
 
 
 optix7-icd(){ cd $(optix7-prefix)/include ; }

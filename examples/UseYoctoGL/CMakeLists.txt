@@ -5,7 +5,7 @@ include(OpticksBuildOptions)
 
 find_package(YoctoGL REQUIRED CONFIG)  # from /usr/local/opticks/externals/lib/cmake/yoctogl/  
 
-set(YoctoGL_VERBOSE OFF)
+set(YoctoGL_VERBOSE ON)
 if(YoctoGL_VERBOSE)
     message(STATUS "YoctoGL_DIR   : ${YoctoGL_DIR} ")
     message(STATUS "YoctoGL_FOUND : ${YoctoGL_FOUND} ")

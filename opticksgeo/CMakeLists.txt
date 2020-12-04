@@ -4,7 +4,11 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
 find_package(OpticksCore REQUIRED CONFIG)
-find_package(OpenMeshRap REQUIRED CONFIG)
+
+#find_package(OpenMeshRap REQUIRED CONFIG)
+set(OpenMeshRap_FOUND NO)
+
+
 
 set(SOURCES
 
@@ -43,7 +47,17 @@ set(FORMER_HEADERS
 add_library( ${name}  SHARED ${SOURCES})
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 target_compile_definitions( ${name} PUBLIC OPTICKS_OKGEO )
-target_link_libraries( ${name} PUBLIC  Opticks::OpticksCore Opticks::OpenMeshRap )
+target_link_libraries( ${name} PUBLIC  Opticks::OpticksCore )
+
+if(OpenMeshRap_FOUND)
+   target_link_libraries( ${name} PUBLIC Opticks::OpenMeshRap )
+   target_compile_definitions( ${name} PUBLIC WITH_OPENMESHRAP )
+else()
+   find_package(GGeo   REQUIRED CONFIG)
+   target_link_libraries( ${name} PUBLIC Opticks::GGeo )
+endif()
+
+
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

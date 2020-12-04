@@ -7,23 +7,23 @@ include(OpticksBuildOptions)
 ## (external projects where I do not control CMakeLists.txt)
 find_package(PLog    REQUIRED MODULE)   
 find_package(GLM     REQUIRED MODULE)
-find_package(OpenMesh REQUIRED MODULE)
 
 ## Targets serialized via BCM export to PREFIX/lib/cmake/ 
 ## (controlled from their CMakeLists.txt)
 find_package(BoostRap REQUIRED CONFIG)
-find_package(YoctoGL REQUIRED CONFIG) 
+find_package(YoctoGL  REQUIRED CONFIG) 
 
-## Optional targets
-find_package(ImplicitMesher CONFIG) 
-find_package(DualContouringSample CONFIG) 
-
-# recently rationalized ocsgbsp- has symbol visibility issues, so for now must skip NCSGBSP
+## Former externals
+#find_package(OpenMesh REQUIRED MODULE)
+#find_package(ImplicitMesher CONFIG) 
+#find_package(DualContouringSample CONFIG) 
 #find_package(CSGBSP CONFIG) 
 
-## TODO 
-##     splitoff mesh related things depending on (OpenMesh ImplicitMesher DualContouringSample CSGBSP) 
-##     into a separate package, pick a name : OpticksMesh/OKMesh  ?
+set(OpenMesh_FOUND             NO)
+set(ImplicitMesher_FOUND       NO)
+set(DualContouringSample_FOUND NO)
+set(CSGBSP_FOUND               NO)
+
 
 
 set(SOURCES
@@ -172,28 +172,15 @@ set(SOURCES
 
     NGLMExt.cpp
     NGLMCF.cpp
-    NPolygonizer.cpp
 
     Nd.cpp
     NXform.cpp
 
     NTris.cpp
-    NOpenMesh.cpp
-    NOpenMeshDesc.cpp
-    NOpenMeshBoundary.cpp
-    NOpenMeshSubdiv.cpp
-    NOpenMeshFind.cpp
-    NOpenMeshProp.cpp
-    NOpenMeshBuild.cpp
-    NOpenMeshEnum.cpp
-    NOpenMeshCfg.cpp
-    NOpenMeshBisect.cpp
-    NOpenMeshZipper.cpp
 
     NPlaneFromPoints.cpp
 
 
-    NHybridMesher.cpp
     Nuv.cpp
 
     BoundarySnappingT.cc
@@ -334,6 +321,8 @@ Report.hpp
 
 PyMCubes/marchingcubes.hpp
 NMarchingCubesNPY.hpp
+
+
 NCSG.hpp
 NCSGData.hpp
 NCSGIntersect.hpp
@@ -365,7 +354,6 @@ NGPU.hpp
 
 
 NGLMExt.hpp
-NPolygonizer.hpp
 NGLMCF.hpp
 
 NSnapConfig.hpp
@@ -386,6 +374,36 @@ ImageNPY.hpp
 NPoint.hpp
 
 )
+
+
+
+
+if(OpenMesh_FOUND)
+   list(APPEND SOURCES 
+    NOpenMesh.cpp
+    NOpenMeshDesc.cpp
+    NOpenMeshBoundary.cpp
+    NOpenMeshSubdiv.cpp
+    NOpenMeshFind.cpp
+    NOpenMeshProp.cpp
+    NOpenMeshBuild.cpp
+    NOpenMeshEnum.cpp
+    NOpenMeshCfg.cpp
+    NOpenMeshBisect.cpp
+    NOpenMeshZipper.cpp
+
+    NPolygonizer.cpp
+    NHybridMesher.cpp
+    )
+
+    list(APPEND HEADERS
+    NPolygonizer.hpp
+    )
+
+   target_compile_definitions( ${name} PUBLIC WITH_OPENMESH )
+
+endif()
+
 
 
 
@@ -425,9 +443,10 @@ endif()
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 # needed for PyMCubes/marchingcubes.cpp
-target_include_directories( ${name} PUBLIC 
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-) 
+target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>) 
+
+# some external header inclusion expects the package name prefix, eg OpenMesh YoctoGL : see notes/issues/NPY-remove-deps-OpenMesh-ImplicitMesher.rst
+target_include_directories( ${name} PUBLIC ${OPTICKS_PREFIX}/externals/include )
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_NPY )
 
@@ -436,16 +455,18 @@ target_link_libraries( ${name}
      Opticks::GLM
      Opticks::SysRap 
      Opticks::BoostRap 
-     Opticks::OpenMesh
      Opticks::PLog
   PRIVATE
 )
-
 
 top_meta_target(GLM_TOPMETA      "GLM"      "${GLM_targets}" )
 top_meta_target(OpenMesh_TOPMETA "OpenMesh" "${OpenMesh_targets}" )
 
 
+if(OpenMesh_FOUND)
+   target_link_libraries( ${name} PUBLIC Opticks::OpenMesh )  
+   target_compile_definitions(${name} PUBLIC OPTICKS_OpenMesh )
+endif()
 
 if(YoctoGL_FOUND)
    target_link_libraries( ${name} PUBLIC Opticks::YoctoGL )  # headers included into PUBLIC headers need to be PUBLIC

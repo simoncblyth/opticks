@@ -154,11 +154,7 @@ set(TEST_SOURCES
 NPYConfigTest.cc
 NBBoxTest.cc
 
-NOpenMeshTest.cc
-NOpenMeshCfgTest.cc
-NOpenMeshFindTest.cc
-NOpenMeshCombineTest.cc
-NPolygonizerTest.cc
+
 NCSGBSPTest.cc
 NuvTest.cc
 NSnapConfigTest.cc
@@ -184,12 +180,17 @@ NPointTest.cc
 
 
 
-
-
 list(APPEND TEST_SOURCES ${_TEST_SOURCES})
 
-
-
+if(OpenMesh_FOUND)
+   list(APPEND TEST_SOURCES  
+        NOpenMeshTest.cc
+        NOpenMeshCfgTest.cc
+        NOpenMeshFindTest.cc
+        NOpenMeshCombineTest.cc
+        NPolygonizerTest.cc
+   )
+endif()
 
 
 if(NonExisting_FOUND)
@@ -204,7 +205,7 @@ if(DualContouringSample_FOUND)
    list(APPEND TEST_SOURCES  
        NDualContouringSampleTest.cc
        NFieldGrid3Test.cc
-)
+   )
 endif()
 
 

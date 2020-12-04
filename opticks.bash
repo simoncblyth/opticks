@@ -434,13 +434,13 @@ glew
 gleq
 imgui
 #assimp
-openmesh
+#openmesh
 plog
 opticksaux
-oimplicitmesher
-odcs
+#oimplicitmesher
+#odcs
 oyoctogl
-ocsgbsp
+#ocsgbsp
 EOL
 }
 
