@@ -84,13 +84,17 @@ void OpticksAim::registerGeometry(GGeo* ggeo)
     m_targets["cmdline_domain"] = cmdline_domaintarget  ; 
     m_targets["active_domain"] = active_domaintarget  ; 
 
+    LOG(LEVEL)
+        << " cmdline_domaintarget [--domaintarget] " << cmdline_domaintarget
+        << " gdmlaux_target " << m_gdmlaux_target
+        << " gdmlaux_target_lvname  " << gdmlaux_target_lvname 
+        << " active_domaintarget " << active_domaintarget
+        ; 
+
     glm::vec4 center_extent = m_ggeo->getCE(active_domaintarget); 
 
     LOG(LEVEL)
         << " setting SpaceDomain : " 
-        << " cmdline_domaintarget [--domaintarget] " << cmdline_domaintarget
-        << " gdmlaux_target " << m_gdmlaux_target
-        << " gdmlaux_target_lvname  " << gdmlaux_target_lvname 
         << " active_domaintarget " << active_domaintarget
         << " center_extent " << gformat(center_extent) 
         ; 

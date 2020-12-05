@@ -641,7 +641,9 @@ glm::mat4 GNodeLib::getInverseTransform(unsigned index) const
 
 glm::vec4 GNodeLib::getCE(unsigned index) const 
 {
-    assert( index < m_num_volumes ); 
+    bool valid = index < m_num_volumes ; 
+    if(!valid) LOG(fatal) << " invalid index " << index << " num_volumes " << m_num_volumes ; 
+    assert(valid); 
     glm::vec4 ce = m_center_extent->getQuad_(index) ; 
     return ce ;  
 }
