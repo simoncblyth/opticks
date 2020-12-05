@@ -247,6 +247,17 @@ const char* GNodeLib::getLVName(unsigned index) const
     return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
 }
 
+/**
+GNodeLib::getFirstNodeIndexForGDMLAuxTargetLVName
+--------------------------------------------------
+
+When there is more than one node index for the lvname the
+first node index is returned.
+If there is no target lvname a value of -1 is returned.
+
+This is used via GGeo from OpticksAim::registerGeometry
+
+**/
 
 int GNodeLib::getFirstNodeIndexForGDMLAuxTargetLVName() const 
 {

@@ -61,8 +61,8 @@ class OKGEO_API OpticksAim {
        Composition*    m_composition ; 
 
        GGeo*           m_ggeo ; 
-       unsigned        m_target ;
-       unsigned        m_gdmlaux_target ; 
+       int             m_target ;
+       int             m_gdmlaux_target ; 
        bool            m_autocam ; 
 
        std::map<std::string, int> m_targets ; 
