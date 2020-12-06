@@ -540,6 +540,7 @@ sensor volume in detector specific code, not here.
 void GNodeLib::getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const 
 {
     unsigned numSensorVolumes = getNumSensorVolumes(); 
+    LOG(LEVEL) << "numSensorVolumes " << numSensorVolumes ; 
     for(unsigned i=0 ; i < numSensorVolumes ; i++)
     {
         unsigned sensorIndex = 1 + i ; // 1-based
@@ -553,10 +554,12 @@ void GNodeLib::getSensorPlacements(std::vector<void*>& placements, bool outer_vo
             const GVolume* outer = sensor->getOuterVolume() ; 
             assert(outer); 
             origin = outer->getOriginNode() ;  
+            assert(origin);
         } 
         else
         {
             origin = sensor->getOriginNode() ;  
+            assert(origin);
         } 
 
         placements.push_back(origin); 

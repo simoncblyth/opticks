@@ -369,6 +369,30 @@ void SensorLib::close()
     LOG(info) << desc() ; 
 }
 
+
+/**
+SensorLib::checkSensorCategories
+----------------------------------
+
+::
+
+    In [11]: cat = sd[:,2].view(np.int32)                                                                                                                
+
+    In [12]: sid = sd[:,3].view(np.int32)                                                                                                                
+
+    In [13]: sid                                                                                                                                         
+    Out[13]: array([    0,     1,     2, ..., 32397, 32398, 32399], dtype=int32)
+
+    In [14]: sid.min(), sid.max()                                                                                                                                    
+    Out[14]: (0, 325599)
+
+    In [16]: np.unique(cat, return_counts=True)                                                                                                          
+    Out[16]: 
+    (array([-1,  0,  1,  2,  3], dtype=int32),
+     array([ 2400,  2033,  5000, 25600, 10579]))
+
+**/
+
 void SensorLib::checkSensorCategories(bool dump)
 {
     LOG(info) << "[ " <<  desc() ; 
@@ -387,7 +411,7 @@ void SensorLib::checkSensorCategories(bool dump)
 
         getSensorData(sensorIndex, efficiency_1, efficiency_2, category, identifier);
 
-        bool category_expected = ( num_category == 0 ) ? category == -1 : category > -1 ; 
+        bool category_expected = ( num_category == 0 ) ? category == -1 : category >= -1 ; 
         if(!category_expected || dump)
         std::cout 
             << " sensorIndex "  << std::setw(6) << sensorIndex

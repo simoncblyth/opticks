@@ -44,6 +44,8 @@ class SensorLib(object):
 
 if __name__ == '__main__':
     sl = SensorLib("$TMP/G4OKTest/SensorLib")
+    #sl = SensorLib("$TMP/LSExpDetectorConstruction__SetupOpticks/SensorLib")
+    #sl = SensorLib("$HOME/SensorLib")
 
     assert np.all( sl.sensorData[:,0] == 0.5 ) 
     assert np.all( sl.sensorData[:,1] == 1.0 ) 
