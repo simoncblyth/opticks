@@ -119,6 +119,29 @@ Tasks **A3** and **A4** from the tasks list :doc:`../tasks/tasks.rst` reflect th
 high priority of **cluster** optimization efforts. 
 
 
+Is optimization of NVIDIA OptiX 6 based Opticks worthwhile when migration to NVIDIA OptiX 7 is essential ?
+------------------------------------------------------------------------------------------------------------------
+
+Almost certainly NOT, assuming that:
+
+1. migration to NVIDIA OptiX 7 can be done within a reasonable timeframe (a few months)
+
+   * NVIDIA OptiX 7 has a totally new API compared to NVIDIA OptiX 6, so migration is far from trivial. 
+
+2. performance of OptiX 7 is at least as good as OptiX 6 (lack of multi-GPU support "out of the box" with OptiX 7 
+   is an issue here in the shortterm : but presumably can be overcome) 
+
+Given this situation the most sensible next step for Opticks is to migrate it to OptiX 7. 
+Initially I had considered first working on an Opticks Server based on OptiX 6, but that non-trivial task
+would also benefit from the threadsafe and lower level CUDA-centric nature of OptiX 7 and thus expending any 
+development effort that will be impacted by the 6 to 7 transition looks increasingly pointless.   
+
+My feeling is that for the JUNO muon simulation type workloads with huge photon samples in the hundreds
+of millions per event the most benefit for development effort will come from implementing an 
+Opticks server as I think this is will enable the best use of small numbers of GPU nodes working 
+together with large numbers of CPU nodes by solving the problem of GPU starvation.
+
+
 profiling and run metadata machinery
 --------------------------------------
 
