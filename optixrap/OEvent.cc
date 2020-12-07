@@ -64,9 +64,7 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
     :
     m_log(new SLog("OEvent::OEvent", "", LEVEL)),
     m_ok(ok),
-    //m_hitmask(SURFACE_DETECT),
-    //m_hitmask(TORCH | BULK_SCATTER | BOUNDARY_TRANSMIT | SURFACE_ABSORB),
-    m_hitmask(ok->getDbgHitMask()), 
+    m_hitmask(ok->getDbgHitMask()),  // default string from okc/OpticksCfg.cc "SD" converted to mask in Opticks::getDbgHitMask
     m_compute(ok->isCompute()),
     m_dbghit(m_ok->isDbgHit()),            // --dbghit
     m_dbgdownload(m_ok->isDbgDownload()),  // --dbgdownload
@@ -121,7 +119,8 @@ are actually references to the OpenGL buffers created
 with createBufferFromGLBO by Scene::uploadEvt Scene::uploadSelection
 
 HMM: want to do this in the init prior to real OpticksEvent/gensteps 
-being available, like a static level action ?
+being available, like a static level action ? This would allow 
+the context to become valid prior to uploading an event.
 
 
 Interop with CUDA : Manual single-pointer synchronization (quote from OptiX 5.0 pdf)
@@ -460,6 +459,14 @@ unsigned OEvent::download()
     return nhit ; 
 }
 
+
+/**
+OEvent::download
+-------------------
+
+Note that hits are not downloaded with this, see OEvent::downloadHits 
+
+**/
 
 void OEvent::download(OpticksEvent* evt, unsigned mask)
 {

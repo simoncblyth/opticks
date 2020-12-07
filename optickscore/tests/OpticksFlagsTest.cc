@@ -214,12 +214,14 @@ test_Opticks_getDbgHitMask
 ::
 
     OpticksFlagsTest --dbghitmask TO,BT,SD,SC
+    OpticksFlagsTest --dbghitmask SD,EC           # EC: EFFICIENCY_COLLECT 
+
 
 **/
 
 void test_Opticks_getDbgHitMask(Opticks* ok)
 {
-    unsigned msk = ok->getDbgHitMask(); 
+    unsigned msk = ok->getDbgHitMask();   // using OpticksFlags::AbbrevSequenceToMask
 
     LOG(info) 
         << " (dec) " << msk 
@@ -239,9 +241,8 @@ int main(int argc, char** argv)
 
     /*
     test_ctor();
-    */
-
     test_FlagMask();
+    */
 
     /*
     test_AbbrevToFlag();
@@ -255,7 +256,7 @@ int main(int argc, char** argv)
 
     //test_AbbrevSequenceToMask(); 
 
-    //test_Opticks_getDbgHitMask(&ok);
+    test_Opticks_getDbgHitMask(&ok);
 
 
     return 0 ; 

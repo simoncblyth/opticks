@@ -51,10 +51,16 @@ OpPropagator::OpPropagator(OpticksHub* hub, OpticksIdx* idx)
     (*m_log)("DONE");
 }
 
-//void OpPropagator::uploadSensorLib(const SensorLib* sensorlib)
-//{
-//    m_engine->uploadSensorLib(sensorlib); 
-//}
+
+/**
+OpPropagator::propagate
+-------------------------
+
+Formerly this did not download when "m_ok->isSave()" was not active, 
+but in production or nosave running with G4Opticks hit downloading is still 
+needed even without opticks event saving being used.
+
+**/
 
 void OpPropagator::propagate()
 {
@@ -72,7 +78,8 @@ void OpPropagator::propagate()
 
     OK_PROFILE("OpPropagator::propagate");
 
-    int nhit = m_ok->isSave() ? downloadEvent() : -1 ; 
+    //int nhit = m_ok->isSave() ? downloadEvent() : -1 ; 
+    int nhit = downloadEvent() ; 
 
     LOG(fatal) << "evtId(" << evt->getId() << ") DONE nhit: " << nhit    ;
 
