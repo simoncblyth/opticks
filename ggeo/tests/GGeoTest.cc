@@ -265,6 +265,59 @@ void test_GGeo_getGDMLAuxTargetNodeIndices(const GGeo* gg)
     gg->dumpNodes(nidxs, "test_GGeo_getGDMLAuxTargetNodeIndices"); 
 }
 
+
+void test_GGeo_getFirstNodeIndexForPVName(const GGeo* gg)
+{
+    Opticks* ok = gg->getOpticks(); 
+    const char* pvname = ok->getPVName() ;
+    int nidx = gg->getFirstNodeIndexForPVName(pvname); 
+    const char* pvname2 = gg->getPVName(nidx);
+
+    LOG(info) 
+        << " pvname " << pvname
+        << " nidx " << nidx
+        << " pvname2 " << pvname2
+        ;
+
+    if(pvname)
+    {
+        assert( strcmp(pvname, pvname2) == 0 ); 
+    }
+}
+
+
+void test_GGeo_getSignedBoundary(const GGeo* gg)
+{
+    Opticks* ok = gg->getOpticks(); 
+    const char* spec = ok->getBoundary() ;
+    int boundary = gg->getSignedBoundary(spec);  // 1-based, signed   0:UNSET 
+    unsigned bidx = std::abs(boundary) - 1 ;    // 0-based         
+    bool unset =  bidx == GBndLib::UNSET  ;  
+
+
+    LOG(info) 
+        << " spec " << spec
+        << " boundary " << boundary 
+        << " bidx " << bidx 
+        ;  
+
+    GBndLib* blib = gg->getBndLib(); 
+    std::string spec2 = unset  ? "unset" : blib->shortname(bidx); 
+
+    LOG(info) 
+        << " spec2 " << spec2
+        ;  
+
+    if(!unset && spec)
+    {
+        const char* pspec = spec[0] == '-' ? (spec+1) : spec ;   // handle negated spec
+        assert( strcmp(pspec, spec2.c_str()) == 0 );  
+    }
+
+} 
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -276,8 +329,10 @@ int main(int argc, char** argv)
     //test_GGeo(gg);
     //test_GGeo_getIdentity(gg);
     //test_GGeo_getTransform(gg);
- 
-    test_GGeo_getGDMLAuxTargetNodeIndices(gg);
+    //test_GGeo_getGDMLAuxTargetNodeIndices(gg);
+
+    test_GGeo_getFirstNodeIndexForPVName(gg);
+    test_GGeo_getSignedBoundary(gg);
 
     return 0 ;
 }

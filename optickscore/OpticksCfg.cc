@@ -166,7 +166,9 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_runlabel(""),
     m_runfolder(strdup(m_exename)),
     m_dbggdmlpath(""),
-    m_dbggsdir("$TMP/dbggs")
+    m_dbggsdir("$TMP/dbggs"),
+    m_pvname(""),
+    m_boundary("")
 {   
    init();  
    m_listener->setCfg(this); 
@@ -580,6 +582,14 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("dbggsdir", boost::program_options::value<std::string>(&m_dbggsdir), "directory in which to persist to debug gensteps" );   
+
+   m_desc.add_options()
+       ("pvname", boost::program_options::value<std::string>(&m_pvname), "name of PV volume selected for some purpose" );   
+
+   m_desc.add_options()
+       ("boundary", boost::program_options::value<std::string>(&m_boundary), "name of boundary selected for some purpose" );   
+
+
 
    m_desc.add_options()
        ("dbggssave", "save debug gensteps to within directory specified by dbggsdir option"); 
@@ -2117,6 +2127,19 @@ const std::string& OpticksCfg<Listener>::getDbgGSDir() const
 {
     return m_dbggsdir ;  
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getPVName() const 
+{
+    return m_pvname ;  
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getBoundary() const 
+{
+    return m_boundary ;  
+}
+
 
 
 

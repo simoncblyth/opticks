@@ -124,6 +124,7 @@ class PropLib(object):
             blib = None
         else:
             blib = cls("GBndLib", data=t, names=os.path.join(base,"GItemList/GBndLib.txt"), optical=o )
+            ## hmm GBndLib.txt no longer exists ? presumably due top more dynamic nature of boundaries?
         pass
         return blib 
 

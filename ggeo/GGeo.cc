@@ -432,7 +432,8 @@ unsigned GGeo::getNumRawMaterials() const { return m_materiallib->getNumRawMater
 
 unsigned int GGeo::getMaterialLine(const char* shortname) { return m_bndlib->getMaterialLine(shortname); }
 std::string  GGeo::getSensorBoundaryReport() const { return m_bndlib->getSensorBoundaryReport() ; }
-
+unsigned     GGeo::getBoundary(const char* spec) const { return m_bndlib->getBoundary(spec) ; }
+int          GGeo::getSignedBoundary(const char* spec) const { return m_bndlib->getSignedBoundary(spec) ; }  
 
 
 // via GGeoLib
@@ -973,6 +974,15 @@ void GGeo::dumpNodes(const std::vector<unsigned>& nidxs, const char* msg) const
 {
     m_nodelib->dumpNodes(nidxs,msg);
 }
+
+int GGeo::getFirstNodeIndexForPVName(const char* pvname) const 
+{
+    return m_nodelib->getFirstNodeIndexForPVName(pvname);
+}
+
+
+
+
 
 
 // via GMaterialLib

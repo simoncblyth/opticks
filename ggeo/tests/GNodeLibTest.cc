@@ -120,6 +120,19 @@ void test_getNodeIndicesForLVName(const GNodeLib* nlib)
     nlib->dumpNodes(nidxs, "test_getNodeIndicesForLVName" ); 
 }
 
+void test_getNodeIndicesForPVName(const GNodeLib* nlib) 
+{
+    const Opticks* ok = nlib->getOpticks(); 
+    const char* pvname = ok->getPVName(); 
+    if( pvname == NULL ) return ;  
+    std::vector<unsigned> nidxs ; 
+    nlib->getNodeIndicesForPVName(nidxs, pvname); 
+    LOG(info) << " pvname " << pvname ;  
+    nlib->dumpNodes(nidxs, "test_getNodeIndicesForPVName" ); 
+}
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -151,7 +164,9 @@ int main(int argc, char** argv)
 
     //test_dumpSensorVolumes(nlib); 
 
-    test_getNodeIndicesForLVName(nlib) ;
+    //test_getNodeIndicesForLVName(nlib) ;
+
+    test_getNodeIndicesForPVName(nlib) ;
 
     return 0 ; 
 }

@@ -151,7 +151,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMeshLib*         getMeshLib() const ;
 
         GBndLib*          getBndLib() const ; 
-        //GPmtLib*          getPmtLib() const ; 
         GGeoLib*          getGeoLib()  const ; 
         GNodeLib*         getNodeLib() const ;
 
@@ -230,6 +229,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         unsigned int getMaterialLine(const char* shortname);
         std::string  getSensorBoundaryReport() const ; 
 
+        unsigned getBoundary(const char* spec) const ; // 0-based, 0xffffffff UNSET
+        int      getSignedBoundary(const char* spec) const ; // 1-based, 0 UNSET    
    private:
         void init(); 
         void initLibs(); 
@@ -311,6 +312,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         int            getFirstNodeIndexForGDMLAuxTargetLVName() const ;
         void           getNodeIndicesForLVName(std::vector<unsigned>& nidxs, const char* lvname) const ;
         void           dumpNodes(const std::vector<unsigned>& nidxs, const char* msg="GGeo::dumpNodes") const ; 
+        int            getFirstNodeIndexForPVName(const char* pvname) const ;
     public:
         void add(GMaterial* material);
         void addRaw(GMaterial* material);

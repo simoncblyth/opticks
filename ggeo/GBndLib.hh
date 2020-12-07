@@ -140,6 +140,9 @@ class GGEO_API GBndLib : public GPropertyLib {
        // char* adders convert names to indices using m_mlib, m_slib 
        unsigned int addBoundary( const char* spec, bool flip=false ) ;
        unsigned int addBoundary( const char* omat, const char* osur, const char* isur, const char* imat) ;
+  public:
+       unsigned getBoundary( const char* spec) const ;       // 0-based, 0xffffffff UNSET
+       int      getSignedBoundary( const char* spec) const ; // 1-based, 0:None
   private:
        friend class GBndLibTest ; 
        void add(const guint4& bnd);

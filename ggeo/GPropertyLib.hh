@@ -126,7 +126,7 @@ class GGEO_API GPropertyLib {
         static NMeta* CreateAbbrevMeta(const std::vector<std::string>& names ); 
     public:
         const char*  getName(unsigned index) const ;
-        unsigned getIndex(const char* shortname);  // 0-based index of first matching name, UINT_MAX when no match
+        unsigned getIndex(const char* shortname) const ;  // 0-based index of first matching name, UINT_MAX when no match
     public:
         // m_sensor_indices is a transient (non-persisted) vector of material/surface indices 
         bool isSensorIndex(unsigned index) const ; 
@@ -144,7 +144,7 @@ class GGEO_API GPropertyLib {
         unsigned    getUNSET();
         const char* getType();
         const char* getComponentType();
-        Opticks*    getOpticks(); 
+        Opticks*    getOpticks() const ; 
         std::string getCacheDir();
         std::string getPreferenceDir();
     public:

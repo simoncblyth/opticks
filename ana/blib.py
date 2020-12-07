@@ -115,7 +115,7 @@ class BLib(object):
 
 if __name__ == '__main__':
 
-    args = BLib.parse_args(__doc__, path=os.environ.get("GC", None))
+    args = BLib.parse_args(__doc__)
 
     blib = BLib()
 
@@ -130,7 +130,6 @@ if __name__ == '__main__':
     else:
         print(blib)
     pass
-
 
 
      

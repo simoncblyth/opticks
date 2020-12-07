@@ -151,7 +151,7 @@ GPropertyLib::GPropertyLib(Opticks* ok, const char* type, bool optional)
      //(*m_log)("DONE");
 }
 
-Opticks* GPropertyLib::getOpticks()
+Opticks* GPropertyLib::getOpticks() const 
 {
     return m_ok ; 
 }
@@ -394,24 +394,14 @@ std::string GPropertyLib::getPreferenceDir()
 }
 
 
-unsigned int GPropertyLib::getIndex(const char* shortname)
+unsigned int GPropertyLib::getIndex(const char* shortname) const 
 {
     assert( isClosed() && " must close the lib before the indices can be used, as preference sort order may be applied at the close" ); 
-    
-    /*
-    if(!isClosed())
-    {
-        LOG(info) << "GPropertyLib::getIndex type " << m_type 
-                     << " TRIGGERED A CLOSE " 
-                     << " shortname [" << ( shortname ? shortname : "" ) << "]"  
-                     ;
-
-        close();
-    }
-    */
     assert(m_names);
     return m_names->getIndex(shortname);
 }
+
+
 
 const char* GPropertyLib::getName(unsigned index) const 
 {

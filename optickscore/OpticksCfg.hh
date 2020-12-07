@@ -197,6 +197,8 @@ public:
      const std::string& getRunFolder() const ;
      const std::string& getDbgGDMLPath() const ;
      const std::string& getDbgGSDir() const ;
+     const std::string& getPVName() const ;
+     const std::string& getBoundary() const ;
 
 private:
      void init();
@@ -336,6 +338,8 @@ private:
      std::string  m_runfolder ; 
      std::string  m_dbggdmlpath ; 
      std::string  m_dbggsdir ; 
+     std::string  m_pvname ; 
+     std::string  m_boundary ; 
 
 };
 

@@ -378,6 +378,41 @@ guint4 GBndLib::parse( const char* spec, bool flip) const
 }
 
 
+/**
+GBndLib::getBoundary
+---------------------
+
+Parses the spec returning the 0-based index of the boundary 
+if present, otherwise returns UNSET which is 0xffffffff unsigned -1 
+
+**/
+
+unsigned GBndLib::getBoundary( const char* spec) const
+{
+    if( spec == NULL ) return UNSET ; 
+    bool flip = false ; // omat/osur/isur/imat
+    GBnd b(spec, flip, m_mlib, m_slib, m_dbgbnd);
+    guint4 bnd = guint4( b.omat, b.osur, b.isur, b.imat );
+    unsigned boundary = index(bnd) ;
+    return boundary ; 
+} 
+
+/**
+GBndLib::getSignedBoundary
+---------------------------
+
+Return signed 1-based boundary for the spec where negation is done 
+when the first char is '-'
+
+**/
+
+int GBndLib::getSignedBoundary( const char* spec ) const 
+{
+    bool negate = spec != NULL && strlen(spec) > 1 && spec[0] == '-' ;  
+    unsigned boundary = getBoundary(negate ? spec + 1 : spec ); 
+    if( boundary == UNSET ) return 0 ; 
+    return negate ? -(boundary+1) : (boundary+1) ; 
+}
 
 
 unsigned GBndLib::addBoundary( const char* spec, bool flip)

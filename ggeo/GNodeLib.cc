@@ -283,6 +283,26 @@ void GNodeLib::getNodeIndicesForLVName(std::vector<unsigned>& nidx, const char* 
     m_lvlist->getIndicesWithKey(nidx, lvname); 
 }
 
+void GNodeLib::getNodeIndicesForPVName(std::vector<unsigned>& nidx, const char* pvname) const 
+{
+    if( pvname == NULL ) return ;  
+    m_pvlist->getIndicesWithKey(nidx, pvname); 
+}
+
+int GNodeLib::getFirstNodeIndexForPVName(const char* pvname) const
+{
+    if( pvname == NULL ) return -1 ;  
+    std::vector<unsigned> nidxs ; 
+    getNodeIndicesForPVName(nidxs, pvname); 
+    int nidx = nidxs.size() > 0 ? nidxs[0] : -1 ; 
+    LOG(info) 
+        << " pvname " << pvname
+        << " nidxs.size() " << nidxs.size()
+        << " nidx " << nidx 
+        ; 
+    return nidx ; 
+}
+
 
 void GNodeLib::dumpNodes(const std::vector<unsigned>& nidxs, const char* msg) const 
 {

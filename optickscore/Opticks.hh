@@ -552,6 +552,9 @@ class OKCORE_API Opticks {
        bool isDbgGSImport() const ;  // --dbggsimport
        bool isDbgGSSave() const ;  // --dbggssave
        bool isDbgGSLoad() const ;  // --dbggsload
+   public:
+       const char*          getPVName() const ; // --pvname
+       const char*          getBoundary() const ; // --boundary
    private:
        bool                 existsDirectGenstepPath(unsigned tagoffset) const ;
        bool                 existsDebugGenstepPath(unsigned tagoffset) const ;

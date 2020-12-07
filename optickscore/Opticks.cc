@@ -2206,6 +2206,18 @@ const char* Opticks::getDebugGenstepPath(unsigned idx) const
     return strdup(path.c_str()); 
 }
 
+const char* Opticks::getPVName() const  
+{
+    const std::string& pvname = m_cfg->getPVName() ;  // --pvname
+    return pvname.empty() ? NULL : pvname.c_str() ;
+}
+const char* Opticks::getBoundary() const  
+{
+    const std::string& boundary = m_cfg->getBoundary() ;  // --boundary
+    return boundary.empty() ? NULL : boundary.c_str() ;
+}
+
+
 
 bool Opticks::isDbgGSImport() const  // --dbggsimport
 {

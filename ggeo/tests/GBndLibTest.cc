@@ -60,6 +60,35 @@ void GBndLibTest::test_add()
 }
 
 
+void test_getBoundary(const GBndLib* blib)
+{
+    Opticks* ok = blib->getOpticks(); 
+    const char* spec = ok->getBoundary(); 
+    unsigned boundary = blib->getBoundary(spec);  
+
+    LOG(info) 
+        << " spec " << spec
+        << " boundary " << boundary 
+        ;  
+}
+
+
+void test_getSignedBoundary(const GBndLib* blib)
+{
+    Opticks* ok = blib->getOpticks(); 
+    const char* spec = ok->getBoundary(); 
+    int boundary = blib->getSignedBoundary(spec);  
+
+    LOG(info) 
+        << " spec " << spec
+        << " boundary " << boundary 
+        ;  
+}
+
+
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -86,7 +115,9 @@ int main(int argc, char** argv)
 
     blib->setMaterialLib(mlib);
     blib->setSurfaceLib(slib);
+    blib->closeConstituents();  // prevents isClosed asserts
     blib->dump();
+
 
     blib->dumpMaterialLineMap();
 
@@ -99,6 +130,9 @@ int main(int argc, char** argv)
     blib->dumpNames("names");
 
     //test_add(blib);
+
+    test_getBoundary(blib); 
+    test_getSignedBoundary(blib); 
 
  
     return 0 ; 
