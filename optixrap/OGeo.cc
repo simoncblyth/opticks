@@ -45,6 +45,7 @@
 
 
 
+#include "GGeo.hh"
 #include "GGeoLib.hh"
 #include "GMergedMesh.hh"
 #include "GParts.hh"
@@ -202,12 +203,13 @@ const plog::Severity OGeo::LEVEL = PLOG::EnvLevel("OGeo", "DEBUG") ;
 
 const char* OGeo::ACCEL = "Sbvh" ; 
 
-OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib )
+OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeo* ggeo )
     : 
     m_ocontext(ocontext),
     m_context(m_ocontext->getContext()),
     m_ok(ok),
-    m_geolib(geolib),
+    m_ggeo(ggeo),
+    m_geolib(ggeo->getGeoLib()),
     m_verbosity(m_ok->getVerbosity()),
     m_mmidx(0),
     m_top_accel(ACCEL),
@@ -233,8 +235,28 @@ void OGeo::init()
 
     setTopGroup(m_ocontext->getTopGroup());
 
+    initWayControl(); 
+
     LOG(info) << description() ; 
 }
+
+
+void OGeo::initWayControl()
+{
+    int node     = m_ggeo->getFirstNodeIndexForPVName();   // --pvname pInnerWater 
+    int boundary = m_ggeo->getSignedBoundary() ;           // --boundary Water///Acrylic  
+
+    optix::int4 way_control = optix::make_int4(node,boundary,0,0); // HMM: need GGeo to set these
+    LOG(LEVEL) 
+        << " way_control.x (node) " << way_control.x 
+        << " way_control.y (boundary) " << way_control.y
+        << " way_control.z " << way_control.z 
+        << " way_control.w " << way_control.w 
+        ;
+    m_context["way_control"]->setInt(way_control); 
+} 
+
+
 
 void OGeo::setTopGroup(optix::Group top)
 {

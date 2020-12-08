@@ -269,7 +269,6 @@ Aborted (core dumped)
 
 void test_hasKey()
 {
-
     NMeta m1 ; 
     assert( m1.size() == 0 ); 
 
@@ -305,7 +304,49 @@ void test_hasKey()
 
 }
 
+void test_kvdump(const NMeta& m)
+{
+    m.kvdump(); 
+}
+void test_kvdump()
+{
+    NMeta m1 ; 
+    assert( m1.size() == 0 ); 
 
+    m1.set<int>("red", 1);
+    assert( m1.size() == 1 ); 
+    m1.set<int>("green", 2);
+    m1.set<int>("blue", 3);
+    m1.set<float>("pi", 3.1415);
+    m1.set<std::string>("name", "yo");
+    assert( m1.size() == 5 ); 
+     
+    test_kvdump(m1); 
+}
+
+void test_getKV()
+{
+    NMeta m1 ; 
+    assert( m1.size() == 0 ); 
+
+    m1.set<std::string>("red", "cyan");
+    m1.set<std::string>("green", "magenta");
+    m1.set<std::string>("blue", "yellow");
+
+    std::string k ; 
+    std::string v ; 
+
+    for(unsigned i=0 ; i < m1.getNumKeys() ; i++)
+    {     
+        m1.getKV(i, k, v);
+        std::cout 
+            << std::setw(10) << i 
+            << std::setw(10) << k
+            << std::setw(10) << v
+            << std::endl
+            ; 
+    }
+}
 
 
 int main(int argc, char** argv)
@@ -322,9 +363,10 @@ int main(int argc, char** argv)
     test_readTxt();  
     test_fillMap();  
     test_add_string_NULL(); 
-*/
     test_hasKey(); 
-
+    test_kvdump(); 
+*/
+    test_getKV(); 
 
     return 0 ; 
 }

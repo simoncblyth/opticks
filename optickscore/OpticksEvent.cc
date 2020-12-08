@@ -107,7 +107,8 @@ const char* OpticksEvent::idom_    = "idom" ;
 const char* OpticksEvent::genstep_ = "genstep" ; 
 const char* OpticksEvent::nopstep_ = "nopstep" ; 
 const char* OpticksEvent::photon_  = "photon" ; 
-const char* OpticksEvent::debug_  = "debug" ; 
+const char* OpticksEvent::debug_   = "debug" ; 
+const char* OpticksEvent::way_     = "way" ; 
 const char* OpticksEvent::source_  = "source" ; 
 const char* OpticksEvent::record_  = "record" ; 
 const char* OpticksEvent::phosel_ = "phosel" ; 
@@ -149,6 +150,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_nopstep_data(NULL),
     m_photon_data(NULL),
     m_debug_data(NULL),
+    m_way_data(NULL),
     m_source_data(NULL),
     m_record_data(NULL),
     m_phosel_data(NULL),
@@ -195,6 +197,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_nopstep_spec(NULL),
     m_photon_spec(NULL),
     m_debug_spec(NULL),
+    m_way_spec(NULL),
     m_source_spec(NULL),
     m_record_spec(NULL),
     m_phosel_spec(NULL),
@@ -325,6 +328,10 @@ bool OpticksEvent::hasDebugData() const
 {
     return m_debug_data && m_debug_data->hasData() ; 
 }
+bool OpticksEvent::hasWayData() const 
+{
+    return m_way_data && m_way_data->hasData() ; 
+}
 bool OpticksEvent::hasRecordData() const
 {
     return m_record_data && m_record_data->hasData() ; 
@@ -348,6 +355,10 @@ NPY<float>* OpticksEvent::getPhotonData() const
 NPY<float>* OpticksEvent::getDebugData() const 
 {
     return m_debug_data ; 
+} 
+NPY<float>* OpticksEvent::getWayData() const 
+{
+    return m_way_data ; 
 } 
 NPY<float>* OpticksEvent::getSourceData() const 
 {
@@ -643,6 +654,7 @@ void OpticksEvent::init()
     m_abbrev[nopstep_] = "no" ;    // non optical particle steps obtained from G4 eg with g4gun
     m_abbrev[photon_] = "ox" ;     // photon final step uncompressed 
     m_abbrev[debug_] = "dg" ;     // photon level debug  
+    m_abbrev[way_] = "wy" ;       // extra photon level info analogous to JUNO NormalAnaMgr info recording configurable points and times from photon history    
     m_abbrev[source_] = "so" ;     // input photon  
     m_abbrev[record_] = "rx" ;     // photon step compressed record
     m_abbrev[phosel_] = "ps" ;     // photon selection index
@@ -662,6 +674,7 @@ NPYBase* OpticksEvent::getData(const char* name)
     else if(strcmp(name, nopstep_)==0) data = static_cast<NPYBase*>(m_nopstep_data) ;
     else if(strcmp(name, photon_)==0)  data = static_cast<NPYBase*>(m_photon_data) ;
     else if(strcmp(name, debug_)==0)  data = static_cast<NPYBase*>(m_debug_data) ;
+    else if(strcmp(name, way_)==0)     data = static_cast<NPYBase*>(m_way_data) ;
     else if(strcmp(name, source_)==0)  data = static_cast<NPYBase*>(m_source_data) ;
     else if(strcmp(name, record_)==0)  data = static_cast<NPYBase*>(m_record_data) ;
     else if(strcmp(name, phosel_)==0)  data = static_cast<NPYBase*>(m_phosel_data) ;
@@ -679,6 +692,7 @@ NPYSpec* OpticksEvent::getSpec(const char* name)
     else if(strcmp(name, nopstep_)==0) spec = static_cast<NPYSpec*>(m_nopstep_spec) ;
     else if(strcmp(name, photon_)==0)  spec = static_cast<NPYSpec*>(m_photon_spec) ;
     else if(strcmp(name, debug_)==0)  spec = static_cast<NPYSpec*>(m_debug_spec) ;
+    else if(strcmp(name, way_)==0)     spec = static_cast<NPYSpec*>(m_way_spec) ;
     else if(strcmp(name, source_)==0)  spec = static_cast<NPYSpec*>(m_source_spec) ;
     else if(strcmp(name, record_)==0)  spec = static_cast<NPYSpec*>(m_record_spec) ;
     else if(strcmp(name, phosel_)==0)  spec = static_cast<NPYSpec*>(m_phosel_spec) ;
@@ -927,6 +941,7 @@ void OpticksEvent::createSpec()
     m_hit_spec      = new NPYSpec(hit_       , 0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(hit_, compute));
     m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(photon_, compute)) ;
     m_debug_spec    = new NPYSpec(debug_    ,  0,1,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(debug_, compute)) ;
+    m_way_spec      = new NPYSpec(way_      ,  0,1,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(way_, compute)) ;
     m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4,0, NPYBase::SHORT     ,  OpticksBufferSpec::Get(record_, compute)) ;
     //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
 

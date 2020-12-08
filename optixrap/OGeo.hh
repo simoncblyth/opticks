@@ -32,8 +32,7 @@ class Opticks ;
 
 class OContext ; 
 
-//class GGeo ; 
-//class GGeoBase ; 
+class GGeo ; 
 class GGeoLib ; 
 class GMergedMesh ; 
 class GBuffer ; 
@@ -86,7 +85,7 @@ public:
 
     static const char* ACCEL ; 
 
-    OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib );
+    OGeo(OContext* ocontext, Opticks* ok, GGeo* ggeo );
     void setTopGroup(optix::Group top);
     void setVerbose(bool verbose=true);
     std::string description() const ;
@@ -95,6 +94,7 @@ public:
 
 private:
     void init();
+    void initWayControl();
     void convertMergedMesh(unsigned i);
     void dumpStats(const char* msg="OGeo::dumpStats");
 public:
@@ -133,6 +133,7 @@ private:
     optix::Context       m_context ; 
     optix::Group         m_top ; 
     Opticks*             m_ok ; 
+    GGeo*                m_ggeo ;  
     GGeoLib*             m_geolib ;  
     unsigned             m_verbosity ; 
 private:

@@ -121,7 +121,12 @@ class OXRAP_API OEvent
             SEED     = 0x1 << 5,
             SOURCE   = 0x1 << 6,
             DEBUG    = 0x1 << 7,
-#ifdef WITH_DEBUG_BUFFER
+            WAY      = 0x1 << 8,
+#if defined(WITH_DEBUG_BUFFER) && defined(WITH_WAY_BUFFER)
+            DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | DEBUG | WAY
+#elif defined(WITH_WAY_BUFFER)
+            DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | WAY
+#elif defined(WITH_DEBUG_BUFFER)
             DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | DEBUG
 #else
             DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE 
@@ -183,6 +188,11 @@ class OXRAP_API OEvent
 #ifdef WITH_DEBUG_BUFFER
         optix::Buffer   m_debug_buffer ; 
 #endif
+#ifdef WITH_WAY_BUFFER
+        optix::Buffer   m_way_buffer ; 
+#endif
+
+
 
 #ifdef WITH_SOURCE
         optix::Buffer   m_source_buffer ; 
@@ -206,6 +216,9 @@ class OXRAP_API OEvent
 
 #ifdef WITH_DEBUG_BUFFER
         OBuf*           m_debug_buf ; 
+#endif
+#ifdef WITH_WAY_BUFFER
+        OBuf*           m_way_buf ; 
 #endif
 
     private:

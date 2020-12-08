@@ -157,6 +157,9 @@ const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ;
 const char* OpticksBufferSpec::debug_compute_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY"  ;
 const char* OpticksBufferSpec::debug_interop_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY"  ;
 
+const char* OpticksBufferSpec::way_compute_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY"  ;
+const char* OpticksBufferSpec::way_interop_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY"  ;
+
 const char* OpticksBufferSpec::record_compute_ = "OPTIX_OUTPUT_ONLY"  ;
 const char* OpticksBufferSpec::record_interop_ = "OPTIX_OUTPUT_ONLY"  ;
 
@@ -197,6 +200,7 @@ const char* OpticksBufferSpec::Get(const char* name, bool compute )
     else if(strcmp(name, OpticksEvent::nopstep_)==0)  bspc = compute ? nopstep_compute_ : nopstep_interop_ ; 
     else if(strcmp(name, OpticksEvent::photon_)==0)   bspc = compute ? photon_compute_  : photon_interop_ ;
     else if(strcmp(name, OpticksEvent::debug_)==0)    bspc = compute ? debug_compute_   : debug_interop_ ;
+    else if(strcmp(name, OpticksEvent::way_)==0)      bspc = compute ? way_compute_     : way_interop_ ;
     else if(strcmp(name, OpticksEvent::source_)==0)   bspc = compute ? source_compute_  : source_interop_ ;
     else if(strcmp(name, OpticksEvent::record_)==0)   bspc = compute ? record_compute_  : record_interop_ ;
     else if(strcmp(name, OpticksEvent::phosel_)==0)   bspc = compute ? phosel_compute_  : phosel_interop_ ;

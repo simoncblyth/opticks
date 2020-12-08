@@ -82,6 +82,122 @@ GDML auxiliary
 
 
 
+::
+
+    epsilon:src blyth$ grep AuxiliaryRead *.*
+    G4GDMLRead.cc:AuxiliaryRead(const xercesc::DOMElement* const auxiliaryElement)
+    G4GDMLRead.cc:        G4Exception("G4GDMLRead::AuxiliaryRead()",
+    G4GDMLRead.cc:         G4Exception("G4GDMLRead::AuxiliaryRead()",
+    G4GDMLRead.cc:         auxList->push_back(AuxiliaryRead(child));
+
+           
+
+    G4GDMLRead.cc:        auxGlobalList.push_back(AuxiliaryRead(child));
+    G4GDMLReadStructure.cc:        { auxList.push_back(AuxiliaryRead(child)); } else
+           from volume elements 
+
+    epsilon:src blyth$ 
+
+
+
+    322 void G4GDMLRead::UserinfoRead(const xercesc::DOMElement* const userinfoElement)
+    323 {
+    324 #ifdef G4VERBOSE
+    325    G4cout << "G4GDML: Reading userinfo..." << G4endl;
+    326 #endif
+    327    for (xercesc::DOMNode* iter = userinfoElement->getFirstChild();
+    328         iter != 0; iter = iter->getNextSibling())
+    329    {
+    330       if (iter->getNodeType() != xercesc::DOMNode::ELEMENT_NODE)  { continue; }
+    331 
+    332       const xercesc::DOMElement* const child
+    333             = dynamic_cast<xercesc::DOMElement*>(iter);
+    334       if (!child)
+    335       {
+    336         G4Exception("G4GDMLRead::UserinfoRead()",
+    337                     "InvalidRead", FatalException, "No child found!");
+    338         return;
+    339       }
+    340       const G4String tag = Transcode(child->getTagName());
+    341 
+    342       if (tag=="auxiliary")
+    343       {
+    344         auxGlobalList.push_back(AuxiliaryRead(child));
+    345       }
+
+    474 const G4GDMLAuxListType* G4GDMLRead::GetAuxList() const
+    475 {
+    476    return &auxGlobalList;
+    477 }
+
+
+    111 void G4GDMLWrite::UserinfoWrite(xercesc::DOMElement* gdmlElement)
+    112 {
+    113   if(auxList.size()>0)
+    114   {
+    115 #ifdef G4VERBOSE
+    116     G4cout << "G4GDML: Writing userinfo..." << G4endl;
+    117 #endif
+    118     userinfoElement = NewElement("userinfo");
+    119     gdmlElement->appendChild(userinfoElement);
+    120     AddAuxInfo(&auxList, userinfoElement);
+    121   }
+    122 }
+
+
+    352 void G4GDMLWrite::AddAuxiliary(G4GDMLAuxStructType myaux)
+    353 {
+    354    auxList.push_back(myaux);
+    355 }
+
+    epsilon:src blyth$ grep AddAuxiliary *.*
+    G4GDMLParser.cc:    AddAuxiliary(raux);
+    G4GDMLWrite.cc:void G4GDMLWrite::AddAuxiliary(G4GDMLAuxStructType myaux)
+
+    epsilon:src blyth$ g4-cc AddAuxiliary
+    /usr/local/opticks_externals/g4.build/geant4.10.04.p02/source/persistency/gdml/src/G4GDMLParser.cc:    AddAuxiliary(raux);
+    /usr/local/opticks_externals/g4.build/geant4.10.04.p02/source/persistency/gdml/src/G4GDMLWrite.cc:void G4GDMLWrite::AddAuxiliary(G4GDMLAuxStructType myaux)
+
+
+Looks like can use GDML like below::  
+
+      <gdml>
+           <userinfo>
+               <auxiliary auxtype="type" auxvalue="value" auxunit="" />
+           </userinfo>
+      </gdml>
+
+
+::
+
+    160 inline
+    161 G4GDMLAuxListType
+    162 G4GDMLParser::GetVolumeAuxiliaryInformation(G4LogicalVolume* logvol) const
+    163 {
+    164   return reader->GetVolumeAuxiliaryInformation(logvol);
+    165 }
+    166 
+    167 inline
+    168 const G4GDMLAuxMapType* G4GDMLParser::GetAuxMap() const
+    169 {
+    170   return reader->GetAuxMap();
+    171 }
+    172 
+    173 inline
+    174 const G4GDMLAuxListType* G4GDMLParser::GetAuxList() const
+    175 {
+    176   return reader->GetAuxList();
+    177 }
+    178 
+    179 inline
+    180 void G4GDMLParser::AddAuxiliary(G4GDMLAuxStructType myaux)
+    181 {
+    182   return writer->AddAuxiliary(myaux);
+    183 }
+
+
+
+
 
 g4-cls G4GDMLWriteStructure::
 

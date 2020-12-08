@@ -170,7 +170,7 @@ void OScene::init()
 
 
     LOG(level) << "(OGeo)" ;
-    m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGeoLib() );
+    m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGGeo() );
     LOG(level) << "(OGeo) convert" ;
     m_ogeo->convert();
     LOG(level) << "(OGeo) done" ;

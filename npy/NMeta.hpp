@@ -73,7 +73,9 @@ class NPY_API NMeta {
        const nlohmann::json& cjs() const ;
    public:
        const char* getKey(unsigned idx) const ;
-       unsigned    getNumKeys() ;             // non-const as may updateKeys
+       unsigned    getNumKeys_old() ;             // non-const as may updateKeys
+       unsigned    getNumKeys() const ;           // assumes obj 
+       void        getKV(unsigned i, std::string& k, std::string& v ) const ; 
 
        std::vector<std::string>& getLines();  // non-const may prepLines
        std::string desc(unsigned wid=0);
@@ -84,7 +86,7 @@ class NPY_API NMeta {
 
    public:
        void   setObj(const char* name, NMeta* obj); 
-       NMeta* getObj(const char* name);
+       NMeta* getObj(const char* name) const ;
    public:
        template <typename T> void add(const char* name, T value);   // same as set, for easier migration for B_P_a_r_a_m_e_t_e_r_s
        template <typename T> void set(const char* name, T value);
@@ -99,6 +101,8 @@ class NPY_API NMeta {
 
        bool hasItem(const char* name) const ;
        bool hasKey(const char* key) const ; // same as hasItem
+
+       void kvdump() const ;
 
    public:
        template <typename T> static T Get(const NMeta* meta, const char* name, const char* fallback)  ;

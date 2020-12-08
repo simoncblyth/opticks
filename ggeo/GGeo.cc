@@ -434,6 +434,11 @@ unsigned int GGeo::getMaterialLine(const char* shortname) { return m_bndlib->get
 std::string  GGeo::getSensorBoundaryReport() const { return m_bndlib->getSensorBoundaryReport() ; }
 unsigned     GGeo::getBoundary(const char* spec) const { return m_bndlib->getBoundary(spec) ; }
 int          GGeo::getSignedBoundary(const char* spec) const { return m_bndlib->getSignedBoundary(spec) ; }  
+int          GGeo::getSignedBoundary() const 
+{ 
+     const char* spec = m_ok->getBoundary(); 
+     return m_bndlib->getSignedBoundary(spec) ; 
+}  
 
 
 // via GGeoLib
@@ -980,6 +985,11 @@ int GGeo::getFirstNodeIndexForPVName(const char* pvname) const
     return m_nodelib->getFirstNodeIndexForPVName(pvname);
 }
 
+int GGeo::getFirstNodeIndexForPVName() const 
+{
+    const char* pvname = m_ok->getPVName(); 
+    return getFirstNodeIndexForPVName(pvname); 
+}
 
 
 

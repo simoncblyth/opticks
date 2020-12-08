@@ -89,6 +89,9 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
 #ifdef WITH_DEBUG_BUFFER
     m_debug_buf(NULL),
 #endif
+#ifdef WITH_WAY_BUFFER
+    m_way_buf(NULL),
+#endif
     m_buffers_created(false)
 {
     init();
@@ -177,6 +180,14 @@ void OEvent::createBuffers(OpticksEvent* evt)
     m_debug_buffer = m_ocontext->createBuffer<float>( debug_, "debug"); 
     m_context["debug_buffer"]->set( m_debug_buffer );
     m_debug_buf = new OBuf("debug", m_debug_buffer);
+#endif
+
+#ifdef WITH_WAY_BUFFER
+    NPY<float>* way = evt->getWayData() ; 
+    assert(way); 
+    m_way_buffer = m_ocontext->createBuffer<float>( way, "way"); 
+    m_context["way_buffer"]->set( m_way_buffer );
+    m_way_buf = new OBuf("way", m_way_buffer);
 #endif
 
 
@@ -514,6 +525,15 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
         NPY<float>* dg = evt->getDebugData();
         OContext::download<float>( m_debug_buffer, dg );
         if(m_dbgdownload) LOG(info) << "dg " << dg->getShapeString() ;   
+    }
+#endif
+
+#ifdef WITH_WAY_BUFFER
+    if(mask & WAY)  
+    {
+        NPY<float>* wy = evt->getWayData();
+        OContext::download<float>( m_way_buffer, wy );
+        if(m_dbgdownload) LOG(info) << "wy " << wy->getShapeString() ;   
     }
 #endif
 

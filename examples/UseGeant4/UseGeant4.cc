@@ -32,6 +32,7 @@ struct Test
    static void make_polycone_0(); 
    static void make_polycone_1(); 
    static void make_transform(); 
+   static void make_G4GDMLAux();  
 };
 
 
@@ -219,13 +220,37 @@ $8 = (const G4AffineTransform &) @0x252ff58: {rxx = -0.10182051317974285, rxy = 
      }
 }
 
+
+
+
+#include "G4GDMLAuxStructType.hh"
+
+G4GDMLAuxStructType make_aux(const char* type, const char* value, const char* unit )
+{
+    G4GDMLAuxStructType aux ; 
+    aux.type = type ;
+    aux.value = value ; 
+    aux.unit = unit ; 
+    aux.auxList = NULL ; 
+    return aux ; 
+}
+
+void Test::make_G4GDMLAux()
+{
+    G4GDMLAuxStructType aux = make_aux( "opticks_embedded_commandline_extra", "--pvname pInnerWater --boundary Water///Acrylic ", "" );
+
+
+}
+
+
+
 int main()
 {
     Test::dump_version(); 
     //Test::make_polycone_0(); 
     //Test::make_polycone_1(); 
-
-    Test::make_transform(); 
+    //Test::make_transform(); 
+    Test::make_G4GDMLAux(); 
 
     return 0 ; 
 }

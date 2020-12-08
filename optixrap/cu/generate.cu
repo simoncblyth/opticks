@@ -125,10 +125,13 @@ rtBuffer<short4>               record_buffer;     // 2 short4 take same space as
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
 #endif
 
-
 #ifdef WITH_DEBUG_BUFFER
 rtBuffer<float4>               debug_buffer;
 #endif
+#ifdef WITH_WAY_BUFFER
+rtBuffer<float4>               way_buffer;
+#endif
+
 
 
 
@@ -136,12 +139,15 @@ rtDeclareVariable(float4,        center_extent, , );
 rtDeclareVariable(float4,        time_domain  , , );
 rtDeclareVariable(uint4,         debug_control , , );
 rtDeclareVariable(float,         propagate_epsilon, , );
-rtDeclareVariable(unsigned int,  propagate_ray_type, , );
 
+rtDeclareVariable(unsigned int,  propagate_ray_type, , );
 rtDeclareVariable(unsigned int,  utaildebug, , );
 rtDeclareVariable(unsigned int,  production, , );
 rtDeclareVariable(unsigned int,  bounce_max, , );
 rtDeclareVariable(unsigned int,  record_max, , );
+
+rtDeclareVariable(int4,          way_control, , );
+
 
 rtDeclareVariable(rtObject,      top_object, , );
 
@@ -434,7 +440,9 @@ RT_PROGRAM void tracetest()
 RT_PROGRAM void generate()
 {
     unsigned long long photon_id = launch_index.x ;  
+#ifdef WITH_REFLECT_CHEAT_DEBUG
     unsigned long long num_photon = launch_dim.x ;
+#endif
   
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
 
@@ -459,7 +467,9 @@ RT_PROGRAM void generate()
     State s ;   
     Photon p ;  
 
+#ifdef WITH_REFLECT_CHEAT_DEBUG
     s.ureflectcheat = 0.f ; 
+#endif
 
     if(gencode == OpticksGenstep_G4Cerenkov_1042 ) 
     {
@@ -507,10 +517,17 @@ RT_PROGRAM void generate()
         // photon_offset is same for both these buffers
         pload(p, source_buffer, photon_offset ); 
         s.flag = TORCH ;  
+#ifdef WITH_REFLECT_CHEAT_DEBUG
         s.ureflectcheat = debug_control.w > 0u ? float(photon_id)/float(num_photon) : -1.f ;
+#endif
     }
 
-
+#ifdef WITH_WAY_BUFFER
+    s.way.x = 0.f ; 
+    s.way.y = 0.f ; 
+    s.way.z = 0.f ; 
+    s.way.w = p.time ;   // origin time of generated photon
+#endif
 
     // initial quadrant 
     uifchar4 c4 ; 
@@ -528,10 +545,6 @@ RT_PROGRAM void generate()
 
     p.flags.f.z = c4.f ; 
 
-
-
-
-    
 
     //rtPrintf("(generate.cu) p0 %10.4f %10.4f %10.4f  \n", p.position.x, p.position.y, p.position.z );
 
@@ -652,10 +665,19 @@ RT_PROGRAM void generate()
         }
         else
         {
-            //propagate_at_boundary(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
             propagate_at_boundary_geant4_style(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
             // tacit CONTINUE
         }
+
+
+#ifdef WITH_WAY_BUFFER
+       if( way_control.x == prd.identity.x && way_control.y == prd.boundary )
+       {
+           s.way.x = p.position.x ; 
+           s.way.y = p.position.y ; 
+           s.way.z = p.position.z ; 
+       }
+#endif
 
     }   // bounce < bounce_max
 
@@ -711,15 +733,15 @@ RT_PROGRAM void generate()
     }
 
 
+#ifdef WITH_WAY_BUFFER
+    // hmm could do this only for hits or collected ?
+    way_buffer[photon_id] = s.way ; 
+#endif
 
-    // FORMERLY stomped on the weight with the nodeIndex
-    //  p.weight = unsigned_as_float( s.identity.x ); // stomp on the weight with last intersect volume identity (see GVolume::getIdentity) 
-    //
-    //           s.identity.x : nodeIndex 
-    //           s.identity.y : tripletIdentity
-    //           s.identity.z : shapeIdentity
-    //           s.identity.w : sensorIndex   (already in flags)
-    //        
+    //  s.identity.x : nodeIndex 
+    //  s.identity.y : tripletIdentity
+    //  s.identity.z : shapeIdentity
+    //  s.identity.w : sensorIndex   (already in flags)
     //
     // breakers and maxers saved here
     psave(p, photon_buffer, photon_offset ); 

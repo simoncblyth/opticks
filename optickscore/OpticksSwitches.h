@@ -52,6 +52,8 @@ NB when searching for switches in python include the space at the end, eg::
 
 #define WITH_DEBUG_BUFFER 1
 
+#define WITH_WAY_BUFFER 1
+
 
 #ifndef __CUDACC__
 
@@ -61,21 +63,27 @@ NB when searching for switches in python include the space at the end, eg::
 static std::string OpticksSwitches()
 { 
     std::stringstream ss ; 
+
 #ifdef WITH_SEED_BUFFER
     ss << "WITH_SEED_BUFFER " ;   
 #endif
+
 #ifdef WITH_RECORD
     ss << "WITH_RECORD " ;   
 #endif
+
 #ifdef WITH_SOURCE
     ss << "WITH_SOURCE " ;   
 #endif
+
 #ifdef WITH_ALIGN_DEV
     ss << "WITH_ALIGN_DEV " ;   
 #endif
+
 #ifdef WITH_ALIGN_DEV_DEBUG
     ss << "WITH_ALIGN_DEV_DEBUG " ;   
 #endif
+
 #ifdef WITH_REFLECT_CHEAT_DEBUG
     ss << "WITH_REFLECT_CHEAT_DEBUG " ;   
 #endif
@@ -85,7 +93,6 @@ static std::string OpticksSwitches()
 #elif WITH_LOGDOUBLE_ALT
     ss << "WITH_LOGDOUBLE_ALT " ;   
 #endif
-
 
 #ifdef WITH_KLUDGE_FLAT_ZERO_NOPEEK
     ss << "WITH_KLUDGE_FLAT_ZERO_NOPEEK " ;   
@@ -103,11 +110,13 @@ static std::string OpticksSwitches()
     ss << "WITH_DEBUG_BUFFER " ;   
 #endif
 
+#ifdef WITH_WAY_BUFFER
+    ss << "WITH_WAY_BUFFER " ;   
+#endif
 
     std::string switches = ss.str(); 
     return switches  ; 
 }
-
 #endif
 
 

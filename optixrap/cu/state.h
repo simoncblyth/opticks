@@ -18,6 +18,7 @@
  */
 
 #pragma once
+#include "OpticksSwitches.h"
 
 
 struct State 
@@ -32,7 +33,14 @@ struct State
    uint4 optical ;   // x/y/z/w index/type/finish/value  
    uint4 index ;     // indices of m1/m2/surf/sensor
    uint4 identity ;  //  node/mesh/boundary/sensor indices of last intersection
+
+#ifdef WITH_REFLECT_CHEAT_DEBUG
    float ureflectcheat ;  
+#endif
+#ifdef WITH_WAY_BUFFER
+   float4 way ;  
+#endif
+
 };
 
 

@@ -73,6 +73,7 @@ class G4OKTest
     private:
         int  initLog(int argc, char** argv);
         void init();
+        void initCommandLine();
         void initGeometry();
         void initSensorData();
         void initSensorAngularEfficiency();
@@ -136,6 +137,7 @@ opticksTripletIdentifier is used as a standin for the sensor identifier.
 **/
 void G4OKTest::init()
 {
+    initCommandLine(); 
     initGeometry();
     initSensorData();
     initSensorAngularEfficiency();
@@ -143,6 +145,27 @@ void G4OKTest::init()
     //m_g4ok->snap(m_tmpdir);   // snapping before event upload fails due to invalid context : generate.cu requires sequence_buffer
 }
 
+
+/**
+G4OKTest::initCommandLine
+---------------------------
+
+HMM how to handle detector specific options like --pvname ... --boundary ... needed for WAY_BUFFER ?
+Actually in normal G4Opticks usage this is a non-problem as a single detector geometry is implicitly assumed, 
+so can simply use detector specific commandline options with setEmbeddedCommandLineExtra.
+
+G4OKTest is unusual in that it attempts to work for multiple geometries. 
+One way is to somehow include these settings within geocache (or GDMLAux) metadata, 
+so each geometry auto-gets the needed config without having to painfully discern the
+detector then pick between hardcoded options.
+
+**/
+
+void G4OKTest::initCommandLine()
+{
+    const char* extra = NULL ; 
+    m_g4ok->setEmbeddedCommandLineExtra(extra); 
+}
 
 /**
 G4OKTest::initGeometry

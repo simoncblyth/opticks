@@ -95,7 +95,7 @@
 #include "SensorLib.hh"
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
-const int            Opticks::GEOCACHE_CODE_VERSION = 8 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+const int            Opticks::GEOCACHE_CODE_VERSION = 9 ;  // (incremented when code changes invalidate loading old geocache dirs)   
 
 /**
 3: starting point 
@@ -106,6 +106,7 @@ const int            Opticks::GEOCACHE_CODE_VERSION = 8 ;  // (incremented when 
 7: GNodeLib add all_volume_inverse_transforms.npy
 8: GGeo/GNodeLib/NMeta/CGDML/Opticks get G4GDMLAux info thru geocache for default genstep targetting configured 
    from within the GDML, opticksaux-dx1 modified with added auxiliary element for lvADE. Used for example by g4ok/G4OKTest   
+9: GDMLAux metadata now arranged with lvmeta and usermeta top objects  
 
 **/
 
@@ -1988,14 +1989,16 @@ NMeta* Opticks::getGDMLAuxMeta() const
 
 void Opticks::findGDMLAuxMetaEntries(std::vector<NMeta*>& entries, const char* k, const char* v ) const 
 {
-    NMeta* gam = getGDMLAuxMeta() ; 
-    unsigned ni = gam ? gam->getNumKeys() : 0 ;
+    NMeta* meta = getGDMLAuxMeta() ; 
+    NMeta* lvmeta = meta->getObj("lvmeta"); 
+
+    unsigned ni = lvmeta ? lvmeta->getNumKeys() : 0 ;
     bool dump = false ; 
 
     for(unsigned i=0 ; i < ni ; i++)
     {
-        const char* subKey = gam->getKey(i); 
-        NMeta* sub = gam->getObj(subKey); 
+        const char* subKey = lvmeta->getKey(i); 
+        NMeta* sub = lvmeta->getObj(subKey); 
 
         unsigned mode = 0 ; 
 

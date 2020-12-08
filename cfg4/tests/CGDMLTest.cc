@@ -31,20 +31,21 @@ struct Demo
    int answer ; 
 };
 
-
 void test_GenerateName()
 {
     Demo* d = new Demo { 42 } ;   
     LOG(info) << CGDML::GenerateName( "Demo", d, true );  
 }
 
-/**
 
-::
 
-   cp $(opticksaux-dx1) /tmp/v1.gdml
+struct CGDMLTest 
+{
+    static void test_load(const char* path); 
+    static void test_Parse(const char* path); 
+    static void test_Parse_Export(const char* ipath, const char* opath); 
+}; 
 
-**/
 
 
 void test_load_0(const char* path)
@@ -59,40 +60,64 @@ void test_load_0(const char* path)
     assert( world ); 
 }
 
-void test_load(const char* path)
+void CGDMLTest::test_load(const char* path)
 {
-    CGDML cg(path); 
+    CGDML cg ;
+    cg.read(path); 
     G4VPhysicalVolume* world =  cg.getWorldVolume() ;
     assert( world ); 
 
-    cg.dumpAux("test_load.dumpAux"); 
+    cg.dumpLVMeta("test_load.dumpLVMeta"); 
+    cg.dumpUserMeta("test_load.dumpUserMeta"); 
 
-    NMeta* m = cg.getAuxMeta(); 
-    m->dump("test_load.getAuxMeta"); 
+    NMeta* m = cg.getLVMeta(); 
+    m->dump("test_load.getLVMeta"); 
 }
 
-void test_Parse(const char* path)
+void CGDMLTest::test_Parse(const char* path)
 {
     NMeta* meta = NULL ;  
     G4VPhysicalVolume* world = CGDML::Parse(path, &meta); 
     assert( world ); 
-    if(meta)
-    {
-        meta->dump("test_Parse"); 
-    }
+    if(meta) meta->dump("CGDMLTest::test_Parse"); 
 }
+
+
+/**
+Parse and then Export by default looses the GDMLAux metadata.
+**/
+
+void CGDMLTest::test_Parse_Export(const char* ipath, const char* opath)
+{
+    NMeta* meta = NULL ;  
+    G4VPhysicalVolume* world = CGDML::Parse(ipath, &meta); 
+    assert( world ); 
+    if(meta) meta->dump("CGDMLTest::test_Parse_Export"); 
+    if(opath) CGDML::Export(opath, world, meta); 
+}
+
+/**
+
+::
+
+   opticksaux-;cp $(opticksaux-dx1) /tmp/v1.gdml
+
+**/
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* path = argc > 1 ? argv[1] : NULL ; 
-    if(!path) LOG(error) << " expecting path to GDML " ; 
-    if(!path) return 0 ; 
+    const char* ipath = argc > 1 ? argv[1] : NULL ; 
+    const char* opath = argc > 2 ? argv[2] : NULL ; 
+    if(!ipath) LOG(error) << " expecting path to GDML " ; 
+    if(!ipath) return 0 ; 
 
     //test_GenerateName(); 
-    //test_load(path); 
-    test_Parse(path); 
+    //CGDMLTest::test_load(ipath); 
+    //CGDMLTest::test_Parse(ipath); 
+    CGDMLTest::test_Parse_Export(ipath, opath); 
 
     return 0 ; 
 }

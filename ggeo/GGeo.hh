@@ -231,6 +231,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         unsigned getBoundary(const char* spec) const ; // 0-based, 0xffffffff UNSET
         int      getSignedBoundary(const char* spec) const ; // 1-based, 0 UNSET    
+        int      getSignedBoundary() const ; 
    private:
         void init(); 
         void initLibs(); 
@@ -313,6 +314,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void           getNodeIndicesForLVName(std::vector<unsigned>& nidxs, const char* lvname) const ;
         void           dumpNodes(const std::vector<unsigned>& nidxs, const char* msg="GGeo::dumpNodes") const ; 
         int            getFirstNodeIndexForPVName(const char* pvname) const ;
+        int            getFirstNodeIndexForPVName() const ;
     public:
         void add(GMaterial* material);
         void addRaw(GMaterial* material);

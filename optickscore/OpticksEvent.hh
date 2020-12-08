@@ -201,6 +201,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        static const char* nopstep_ ;
        static const char* photon_ ;
        static const char* debug_ ;
+       static const char* way_ ;
        static const char* source_ ;
        static const char* record_  ;
        static const char* phosel_ ;
@@ -346,6 +347,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool                 hasSourceData() const ;
        bool                 hasPhotonData() const ;
        bool                 hasDebugData() const ;
+       bool                 hasWayData() const ;
        bool                 hasRecordData() const ;
    public:
        const glm::vec4&     getGenstepCenterExtent();
@@ -354,6 +356,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<float>*          getNopstepData() const ;
        NPY<float>*          getPhotonData() const ;
        NPY<float>*          getDebugData() const ;
+       NPY<float>*          getWayData() const ;
        NPY<float>*          getSourceData() const ;
        NPY<short>*          getRecordData() const ;
        NPY<unsigned char>*  getPhoselData() const ;
@@ -440,6 +443,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<float>*           m_nopstep_data ;
        NPY<float>*           m_photon_data ;
        NPY<float>*           m_debug_data ;
+       NPY<float>*           m_way_data ;
        NPY<float>*           m_source_data ;
        NPY<short>*           m_record_data ;
        NPY<unsigned char>*   m_phosel_data ;
@@ -492,6 +496,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPYSpec* m_nopstep_spec ;  
        NPYSpec* m_photon_spec ;  
        NPYSpec* m_debug_spec ;  
+       NPYSpec* m_way_spec ;  
        NPYSpec* m_source_spec ;  
        NPYSpec* m_record_spec ;  
        NPYSpec* m_phosel_spec ;  

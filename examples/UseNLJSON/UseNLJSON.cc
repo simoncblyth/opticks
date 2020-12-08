@@ -7,6 +7,7 @@
 
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -33,6 +34,11 @@ namespace ns {
 
 
 
+
+
+
+
+
 void dump(const char* label, const json& j )
 {
     std::cout << label << std::endl ; 
@@ -40,24 +46,18 @@ void dump(const char* label, const json& j )
     std::cout << j << std::endl;
     for (json::const_iterator it = j.begin(); it != j.end(); ++it) std::cout << *it << '\n';
 
+    unsigned nk = j.size() ; 
+    std::cout << " size " << nk << std::endl ; 
     std::cout << " is_null " << j.is_null() << std::endl ;   
     std::cout << " is_string " << j.is_string() << std::endl ;   
     std::cout << " is_object " << j.is_object() << std::endl ;   
     std::cout << " is_array " << j.is_array() << std::endl ;   
+
 }
 
-/**
 
-https://nlohmann.github.io/json/features/arbitrary_types/
-
-https://github.com/nlohmann/json#json-as-first-class-data-type
-
-**/
-
-int main(int argc, char** argv)
+void test_dump()
 {
-    std::cout << argv[0] << std::endl ; 
-
     ns::person p = {"Ned Flanders", "744 Evergreen Terrace", 60};
 
     json j = p;
@@ -113,7 +113,103 @@ int main(int argc, char** argv)
 
     json jn ; 
     dump("jn", jn); 
+}
 
+
+
+
+
+void dump_keyed( const char* label, const json& j )
+{
+    unsigned nk = j.size() ; 
+    
+    for (json::const_iterator it = j.begin(); it != j.end(); ++it) 
+    {
+        std::cout 
+           << std::setw(10) << it.key()
+           << " : "
+           << std::setw(10) << it.value()
+           << std::endl 
+           ;
+    }
+
+    json::const_iterator it = j.begin() ; 
+    for(unsigned i=0 ; i < nk ; i++)
+    {
+        std::cout 
+            << std::setw(10) << i 
+            << " : " 
+            << std::setw(10) << it.key()
+            << " : " 
+            << std::setw(10) << it.value()
+            << std::endl 
+            ;
+        ++it ;   
+    }
+}
+
+
+
+void test_keyed()
+{
+    json j ;
+
+    j["red"] = "cyan" ; 
+    j["green"] = "magenta" ; 
+    j["blue"] = "yellow" ; 
+
+    dump_keyed("test_keyed", j ); 
+}
+
+
+
+
+
+
+void get_kv(const json& j, unsigned i, std::string& k, std::string& v )
+{
+    json::const_iterator it = j.begin() ; 
+    assert( i < j.size() ); 
+    std::advance( it, i );
+    k = it.key(); 
+    v = it.value();  
+}
+
+void test_get_kv()
+{
+    json j ;
+
+    j["red"] = "cyan" ; 
+    j["green"] = "magenta" ; 
+    j["blue"] = "yellow" ; 
+
+    std::string k, v ; 
+    for(unsigned i=0 ; i < j.size() ; i++)
+    {
+        get_kv(j, i, k, v  ); 
+
+        std::cout 
+            << " i:" << std::setw(10) << i
+            << " k:" << std::setw(10) << k 
+            << " v:" << std::setw(10) << v
+            << std::endl
+            ; 
+    }
+}
+
+
+/**
+https://nlohmann.github.io/json/features/arbitrary_types/
+https://github.com/nlohmann/json#json-as-first-class-data-type
+**/
+
+int main(int argc, char** argv)
+{
+    std::cout << argv[0] << std::endl ; 
+
+    //test_dump(); 
+    //test_keyed(); 
+    test_get_kv(); 
 
     return 0 ; 
 }

@@ -223,11 +223,16 @@ NMeta::getObj
 Create new NMeta object and sets its json to the
 keyed sub-object from this NMeta.
 
+TODO: handle non-existing key 
+
+
 **/
 
-NMeta* NMeta::getObj(const char* name)
+NMeta* NMeta::getObj(const char* name) const 
 {
-    nlohmann::json& this_js = m_js ;
+    if(m_js.count(name) == 0) return NULL ;  
+
+    const nlohmann::json& this_js = m_js ;
 
     NMeta* obj = new NMeta ; 
     nlohmann::json& obj_js = obj->js();
@@ -252,11 +257,26 @@ std::string NMeta::desc(unsigned wid)
     return ss.str();
 }
 
-unsigned NMeta::getNumKeys() 
+unsigned NMeta::getNumKeys_old() 
 {
     updateKeys() ;
     return m_keys.size();
 }
+
+unsigned NMeta::getNumKeys() const  
+{
+    return m_js.size();
+}
+
+void NMeta::getKV(unsigned i, std::string& k, std::string& v ) const 
+{
+    nlohmann::json::const_iterator it = m_js.begin() ; 
+    assert( i < m_js.size() );  
+    std::advance( it, i );
+    k = it.key(); 
+    v = it.value();  
+}
+
 
 bool NMeta::hasKey(const char* key) const 
 {
@@ -266,6 +286,17 @@ bool NMeta::hasKey(const char* key) const
     return std::find(m_keys.begin(), m_keys.end(), key ) != m_keys.end() ; 
 */
 }
+
+
+void NMeta::kvdump() const 
+{
+    LOG(info) << " size " << m_js.size() ; 
+    for (nlohmann::json::const_iterator it = m_js.begin(); it != m_js.end(); ++it) 
+    {
+        std::cout << it.key() << " : " << it.value() << "\n";
+    }
+}
+
 
 
 /**

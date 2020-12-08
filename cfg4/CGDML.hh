@@ -34,25 +34,44 @@ class NMeta ;
 class CFG4_API CGDML
 {
     private:
+        friend struct CGDMLTest ; 
+    private:
+        static const char* LVMETA ; 
+        static const char* USERMETA ; 
+    private:
         static const plog::Severity LEVEL ; 
-        static G4GDMLParser* InitParser(const char* path);
     public:
         static G4VPhysicalVolume* Parse(const char* path);
-        static G4VPhysicalVolume* Parse(const char* path, NMeta** meta);
+        static G4VPhysicalVolume* Parse(const char* path, NMeta** meta );
     public:
-        static void Export(const char* dir, const char* name, const G4VPhysicalVolume* const world );
-        static void Export(const char* path, const G4VPhysicalVolume* const world );
+        static G4VPhysicalVolume* Parse(const char* dir, const char* name);
+        static G4VPhysicalVolume* Parse(const char* dir, const char* name, NMeta** meta );
+    public:
+        static void Export(const char* dir, const char* name, const G4VPhysicalVolume* const world, const NMeta* meta=NULL );
+        static void Export(const char* path,                  const G4VPhysicalVolume* const world, const NMeta* meta=NULL );
         static std::string GenerateName(const char* name, const void* const ptr, bool addPointerToName=true );
     public:
-        CGDML(const char* path); 
+        CGDML(); 
+        void read(const char* path);  
+        void write(const char* path,  const G4VPhysicalVolume* const world, const NMeta* meta=NULL );
     public:
         G4VPhysicalVolume*  getWorldVolume() const ; 
-        NMeta*              getAuxMeta() const ; 
-        void                dumpAux(const char* msg="CGDML::dumpAux") const ; 
+        NMeta*              getMeta() const ; 
+        void                addMeta(const NMeta* meta);
+    private:
+        void                addLVMeta(const NMeta* lvmeta);
+        void                addUserMeta(const NMeta* user);
+    private:
+        NMeta*              getLVMeta() const ; 
+        NMeta*              getUserMeta() const ; 
+        void                dumpLVMeta(const char* msg="CGDML::dumpLVMeta") const ; 
+        void                dumpUserMeta(const char* msg="CGDML::dumpLVMeta") const ; 
     private:
         G4GDMLParser*       m_parser  ;
-
-
+        bool                m_write_refs ; 
+        const char*         m_write_schema_location ; 
+        bool                m_read_validate ; 
+        bool                m_read_trimPtr ; 
 };
 
 
