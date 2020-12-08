@@ -162,25 +162,25 @@ void NMeta::prepLines()
 
 
 
-void NMeta::fillMap(std::map<std::string, std::string>& mss )
+void NMeta::fillMap(std::map<std::string, std::string>& mss, bool dump )
 {
     unsigned nk = getNumKeys(); 
     LOG(LEVEL) << " nk " << nk ; 
+
+    std::string k ; 
+    std::string v ; 
     for(unsigned i=0 ; i < nk ; i++)
     {
-        const char* key = getKey(i); 
-        std::string val = get<std::string>(key); 
-
-        /*
+        getKV(i, k, v ); 
+        if(dump)
         std::cout 
-            << std::setw(20) << key 
+            << std::setw(20) << k 
             << " : " 
-            << std::setw(20) << val 
+            << std::setw(20) << v 
             << std::endl 
             ; 
-        */
 
-        mss[key] = val ;  
+        mss[k] = v ;  
     }
 }
 
@@ -278,6 +278,17 @@ void NMeta::getKV(unsigned i, std::string& k, std::string& v ) const
 }
 
 
+const char* NMeta::getKey(unsigned i) const 
+{
+    nlohmann::json::const_iterator it = m_js.begin() ; 
+    assert( i < m_js.size() );  
+    std::advance( it, i );
+    std::string k = it.key(); 
+    return strdup(k.c_str()); 
+}
+
+
+
 bool NMeta::hasKey(const char* key) const 
 {
     return m_js.count(key) == 1 ;
@@ -307,7 +318,7 @@ Huh: trips assert if updateKeys not run
 
 **/
 
-const char* NMeta::getKey(unsigned idx) const 
+const char* NMeta::getKey_old(unsigned idx) const 
 {
     assert( idx < m_keys.size() );
     return m_keys[idx].c_str() ; 

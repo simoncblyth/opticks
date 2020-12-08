@@ -73,13 +73,14 @@ class NPY_API NMeta {
        const nlohmann::json& cjs() const ;
    public:
        const char* getKey(unsigned idx) const ;
+       const char* getKey_old(unsigned idx) const ;
        unsigned    getNumKeys_old() ;             // non-const as may updateKeys
        unsigned    getNumKeys() const ;           // assumes obj 
        void        getKV(unsigned i, std::string& k, std::string& v ) const ; 
 
        std::vector<std::string>& getLines();  // non-const may prepLines
        std::string desc(unsigned wid=0);
-       void fillMap(std::map<std::string, std::string>& mss ); 
+       void fillMap(std::map<std::string, std::string>& mss, bool dump=false ); 
    private:
        void        updateKeys();
        void        prepLines();

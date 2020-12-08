@@ -1053,6 +1053,9 @@ void OpticksEvent::createBuffers(NPY<float>* gs)
     NPY<float>* dbg = NPY<float>::make(m_debug_spec);
     setDebugData(dbg);   
 
+    NPY<float>* way = NPY<float>::make(m_way_spec);
+    setWayData(way);   
+
     NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_sequence_spec); 
     setSequenceData(seq);   
 
@@ -1093,6 +1096,7 @@ void OpticksEvent::resetBuffers()
     if(m_nopstep_data)  m_nopstep_data->reset();    
     if(m_photon_data)   m_photon_data->reset();    
     if(m_debug_data)    m_debug_data->reset();    
+    if(m_way_data)      m_way_data->reset();    
     if(m_sequence_data) m_sequence_data->reset();    
     if(m_seed_data)     m_seed_data->reset();    
     if(m_phosel_data)   m_phosel_data->reset();    
@@ -1297,6 +1301,17 @@ void OpticksEvent::setDebugData(NPY<float>* debug_data)
         return ; 
     }
     setBufferControl(debug_data);
+}
+
+void OpticksEvent::setWayData(NPY<float>* way_data)
+{
+    m_way_data = way_data  ;
+    if(!way_data)
+    {
+        LOG(debug) << "OpticksEvent::setWayData way_data NULL " ;
+        return ; 
+    }
+    setBufferControl(way_data);
 }
 
 

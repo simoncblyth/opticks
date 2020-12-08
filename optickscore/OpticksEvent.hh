@@ -322,6 +322,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setSeedData(NPY<unsigned>* seed_data);
        void setHitData(NPY<float>* hit_data);
        void setDebugData(NPY<float>* debug_data);
+       void setWayData(NPY<float>* way_data);
        void setRecordData(NPY<short>* record_data);
        void setRecselData(NPY<unsigned char>* recsel_data);
        void setPhoselData(NPY<unsigned char>* phosel_data);
