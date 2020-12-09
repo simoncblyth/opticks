@@ -41,6 +41,7 @@ const char* OpticksQuery::ALL_   = "all" ;
 const char* OpticksQuery::EMPTY_   = "" ; 
 
 
+
 OpticksQuery::OpticksQuery(const char* query) 
     : 
     m_query_string(strdup(query)),

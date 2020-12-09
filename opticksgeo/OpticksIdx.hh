@@ -61,7 +61,9 @@ class OKGEO_API OpticksIdx {
 
    public:
        // hostside indexing 
+#ifdef OLD_RESOURCE
        void indexEvtOld();
+#endif
        void indexBoundariesHost();
        void indexSeqHost();
    private:

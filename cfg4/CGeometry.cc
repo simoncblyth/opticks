@@ -126,7 +126,7 @@ void CGeometry::postinitialize()
 {
     // both these are deferred til here as needs G4 materials table to have been constructed 
 
-    m_material_table = new CMaterialTable(m_ok->getMaterialPrefix()); 
+    m_material_table = new CMaterialTable(); 
     //m_material_table->dump("CGeometry::postinitialize");
 
     GMaterialLib* mlib = m_hub->getMaterialLib(); 

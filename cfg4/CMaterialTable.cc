@@ -22,6 +22,7 @@
 #include <iomanip>
 #include <vector>
 
+#include "SPath.hh"
 #include "PLOG.hh"
 
 #include "G4Material.hh"
@@ -31,13 +32,9 @@
 #include "CMPT.hh"
 #include "CMaterialTable.hh"
 
+const plog::Severity CMaterialTable::LEVEL = PLOG::EnvLevel("CMaterialTable", "DEBUG" ) ; 
 
-const plog::Severity CMaterialTable::LEVEL = debug ; 
-
-
-CMaterialTable::CMaterialTable(const char* prefix)
-    :
-    m_prefix(prefix ? strdup(prefix) : NULL)
+CMaterialTable::CMaterialTable()
 {
     init();
 }
@@ -53,15 +50,14 @@ void CMaterialTable::initNameIndex()
 
     LOG(LEVEL)
               << " numOfMaterials " << nmat
-              << " prefix " << ( m_prefix ? m_prefix : "NULL" ) 
               ;
-    
+
     for(unsigned i=0 ; i < nmat ; i++)
     {
         G4Material* material = (*mtab)[i];
         G4String name_ = material->GetName() ;
         const char* name = name_.c_str();
-        const char* shortname =  m_prefix && strncmp(name, m_prefix, strlen(m_prefix)) == 0 ? name + strlen(m_prefix) : name ; 
+        const char* shortname =  SPath::Basename(name) ;  // remove any prefix eg /dd/materials/Water -> Water 
 
         pLOG(LEVEL,+1) 
             << " index " << std::setw(3) << i 
@@ -76,7 +72,7 @@ void CMaterialTable::initNameIndex()
 
 void CMaterialTable::dump(const char* msg)
 {
-    LOG(info) << msg << " prefix " << m_prefix ; 
+    LOG(info) << msg ; 
 
     typedef std::map<unsigned, std::string> MUS ; 
     for(MUS::const_iterator it=m_index2name.begin() ; it != m_index2name.end() ; it++)

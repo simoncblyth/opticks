@@ -101,7 +101,7 @@ class NPY_API NPY : public NPYBase {
    friend class SequenceNPY ; 
    friend class RecordsNPY ; 
    friend class PhotonsNPY ; 
-   friend class HitsNPY ; 
+   //friend class HitsNPY ; 
    friend class G4StepNPY ; 
    friend class MaterialLibNPY ; 
 

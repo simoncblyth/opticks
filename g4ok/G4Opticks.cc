@@ -301,9 +301,7 @@ void G4Opticks::setPlacementOuterVolume(bool outer_volume)  // TODO: eliminate t
 void G4Opticks::createCollectors()
 {
     LOG(LEVEL) << "[" ; 
-    const char* prefix = NULL ; 
-    m_mtab = new CMaterialTable(prefix); 
-
+    m_mtab = new CMaterialTable(); 
     setupMaterialLookup();
     m_genstep_collector = new CGenstepCollector(m_lookup);   // <-- CG4 holds an instance too : and they are singletons, so should not use G4Opticks and CG4 together
     m_primary_collector = new CPrimaryCollector ; 

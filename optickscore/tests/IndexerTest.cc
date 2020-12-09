@@ -30,6 +30,7 @@ IndexerTest
 
 **/
 
+#include "NPY.hpp"
 #include "NGLM.hpp"
 #include "Opticks.hh"
 #include "OpticksConst.hh"

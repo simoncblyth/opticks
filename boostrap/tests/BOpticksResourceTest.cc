@@ -24,6 +24,8 @@
 #include "BOpticksResource.hh"
 #include "OPTICKS_LOG.hh"
 
+
+#ifdef OLD_RESOURCE
 struct BOpticksResourceTest
 {
     BOpticksResourceTest(const char* idpath)
@@ -46,19 +48,6 @@ struct BOpticksResourceTest
 
 };
 
-
-
-/*
-
-    const char* treedir_ = brt._res.getDebuggingTreedir(argc, argv);  //  requires the debugging only IDPATH envvar
-    std::string treedir = treedir_ ? treedir_ : "/tmp/error-no-IDPATH-envvar" ; 
-
-    std::cout 
-              << " treedir " << treedir
-              << std::endl 
-              ;
-
-*/
 
 
 
@@ -86,6 +75,7 @@ void test_Setup()
     // the two setup approaches, should yield exactly the same paths 
     BResource::Dump("BOpticksResourceTest"); 
 }
+#endif
 
 
 void test_IsGeant4EnvironmentDetected()
@@ -104,7 +94,13 @@ void test_GetCachePath()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-  
+ 
+#ifdef OLD_RESOURCE
+    //test_ViaSrc(); 
+    //test_Setup(); 
+#endif
+
+ 
     //test_IsGeant4EnvironmentDetected(); 
 
     test_GetCachePath(); 

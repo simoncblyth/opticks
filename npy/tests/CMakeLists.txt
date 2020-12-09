@@ -43,7 +43,6 @@ CountsTest.cc
 TypesTest.cc
 readFlagsTest.cc
 
-NSensorListTest.cc
 NGunConfigTest.cc
 
 NQuadTest.cc
@@ -138,7 +137,6 @@ NLoadCheck.cc
 NGLMTest.cc
 NCSGDeserializeTest.cc
 MultiViewNPYTest.cc
-HitsNPYTest.cc
 G4StepNPYTest.cc
 
 
@@ -245,7 +243,6 @@ NGLMTest.cc
 NCSGDeserializeTest.cc
 NBBoxTest.cc
 MultiViewNPYTest.cc
-HitsNPYTest.cc
 G4StepNPYTest.cc
 
 )

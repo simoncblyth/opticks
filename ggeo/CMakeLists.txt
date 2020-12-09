@@ -51,14 +51,12 @@ set(SOURCES
 
     GSource.cc
     GSourceLib.cc
-    GPmtLib.cc
 
     GBnd.cc
     GBndLib.cc
     GParts.cc
     GPts.cc
     GPt.cc
-    GPmt.cc
 
     GMeshFixer.cc
     GMeshMaker.cc
@@ -98,12 +96,16 @@ set(FORMER_SOURCES
 
     GGeoSensor.cc
     GScene.cc 
+    GPmtLib.cc
+    GPmt.cc
 )
 
 set(FORMER_HEADERS
 
     GGeoSensor.hh
     GScene.hh
+    GPmtLib.hh
+    GPmt.hh
 
 )
 
@@ -143,7 +145,6 @@ set(HEADERS
     GBndLib.hh
     GMaterialLib.hh
     GSurfaceLib.hh
-    GPmtLib.hh
 
     GVector.hh
     GBBox.hh
@@ -168,7 +169,6 @@ set(HEADERS
     GPts.hh
     GPt.hh
     GCSG.hh
-    GPmt.hh
     GMaker.hh
     GCIE.hh
     GGeoTest.hh

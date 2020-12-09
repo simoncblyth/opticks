@@ -232,7 +232,10 @@ NPY<float>* OpticksGen::makeLegacyGensteps(unsigned code)
 
     if( code == OpticksGenstep_FABRICATED || code == OpticksGenstep_MACHINERY  )
     {
+        assert(0);
+#ifdef OLD_RESOURCE
         m_fabstep = makeFabstep();
+#endif
         gs = m_fabstep->getNPY();
     }
     else if(code == OpticksGenstep_TORCH)
@@ -403,7 +406,8 @@ FabStepNPY* OpticksGen::makeFabstep()
 {
     FabStepNPY* fabstep = new FabStepNPY(OpticksGenstep_FABRICATED, 10, 10 );
 
-    const char* material = m_ok->getDefaultMaterial();
+    //const char* material = m_ok->getDefaultMaterial();  old way was from hardcoded strings via OpticksResource
+    const char* material = m_ok->getMaterial();      // now from commandline config, but soon from geo specific commandline embedded in geometry metadata  
     fabstep->setMaterial(material);
 
     targetGenstep(fabstep);  // sets frame transform
@@ -411,7 +415,6 @@ FabStepNPY* OpticksGen::makeFabstep()
     fabstep->addActionControl(OpticksActionControl::Parse("GS_FABRICATED"));
     return fabstep ; 
 }
-
 
 
 TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)

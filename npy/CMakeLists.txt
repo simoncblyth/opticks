@@ -139,7 +139,6 @@ set(SOURCES
     NPri.cpp
 
     RecordsNPY.cpp
-    HitsNPY.cpp
     BoundariesNPY.cpp
     MaterialLibNPY.cpp
     DummyPhotonsNPY.cpp
@@ -198,10 +197,14 @@ set(SOURCES
 
 )
 
-set(_SOURCES
+set(FORMER_SOURCES
     NOct.cpp
+    HitsNPY.cpp
 )
 
+set(FORMER_HEADERS
+    HitsNPY.hpp
+)
 
 
 SET(HEADERS
@@ -240,7 +243,6 @@ NPho.hpp
 NPri.hpp
 
 
-HitsNPY.hpp
 RecordsNPY.hpp
 BoundariesNPY.hpp
 MaterialLibNPY.hpp

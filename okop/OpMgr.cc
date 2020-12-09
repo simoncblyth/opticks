@@ -24,9 +24,10 @@ class NConfigurable ;
 
 #include "PLOG.hh"
 
-
 #include "SLog.hh"
 #include "BTimeKeeper.hh"
+#include "NPY.hpp"
+
 
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"

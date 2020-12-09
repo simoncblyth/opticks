@@ -41,7 +41,6 @@ class BDynamicDefine ;
 
 class TorchStepNPY ; 
 class NState ;
-class NSensorList ;
 class NMeta ; 
 
 struct NSlice ;
@@ -54,12 +53,14 @@ class BTxt ;
 
 
 class BPropNames ; 
+class BOpticksKey ; 
+class BOpticksResource ; 
+
 class Types ;
 class Typ ;
 class Index ; 
 
 class Opticks ; 
-class BOpticksKey ; 
 class OpticksEventSpec ;
 class OpticksEvent ;
 class OpticksRun ;
@@ -217,6 +218,8 @@ class OKCORE_API Opticks {
        void checkOptionValidity();
    public:
        // from OpticksResource
+       bool isValid();
+#ifdef OLD_RESOURCE
        const char* getDetector();
        const char* getDefaultMaterial();
        const char* getExampleMaterialNames();
@@ -224,8 +227,8 @@ class OKCORE_API Opticks {
        bool isDayabay();
        bool isPmtInBox();
        bool isOther();
-       bool isValid();
        bool hasVolnames() const ; 
+#endif
        bool isEnabledLegacyG4DAE() const ;  // --enabled_legacy_g4dae 
        //bool isLocalG4() const ; // --localg4 
    public:
@@ -243,10 +246,11 @@ class OKCORE_API Opticks {
        void setVerbosity(unsigned verbosity);
    public:
        const char* getInstallPrefix();
+#ifdef OLD_RESOURCE
        const char* getMaterialPrefix();
+#endif
        std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false) const ;
        std::string getObjectPath(const char* name, bool relative=false) const ;
-       const char* getDAEPath();
    public:
        const char* getGDMLPath() const ;
        const char* getSrcGDMLPath() const ;
@@ -255,14 +259,15 @@ class OKCORE_API Opticks {
    public:
        const char* getDbgGDMLPath() const ; // --dbggdmlpath : used for sneaky GDML exports for debugging 
    public:
-   public:
-       NSensorList* getSensorList();
-   public:
        bool        hasGeocache() const ; 
        const char* getIdPath() const ;
        const char* getIdFold() const ;
+#ifdef OLD_RESOURCE
        const char* getDetectorBase();
        const char* getMaterialMap();
+       const char* getDAEPath();
+#endif
+
        const char* getLastArg();
        int         getLastArgInt();
        int         getInteractivityLevel() const ;  // from m_mode (OpticksMode)
@@ -399,10 +404,12 @@ class OKCORE_API Opticks {
        int         getTarget() const ;         // --target 
        int         getAlignLevel() const;
    public:
+#ifdef OLD_RESOURCE
        NSlice*  getAnalyticPMTSlice();
        bool     isAnalyticPMTLoad();
        unsigned getAnalyticPMTIndex();
        const char* getAnalyticPMTMedium();
+#endif
        int         getDefaultFrame() const ; 
    public:
        OpticksCfg<Opticks>* getCfg() const ;
@@ -555,6 +562,9 @@ class OKCORE_API Opticks {
    public:
        const char*          getPVName() const ; // --pvname
        const char*          getBoundary() const ; // --boundary
+       const char*          getMaterial() const ; // --material
+       bool                 isLarge() const ; // --large 
+       bool                 isMedium() const ; // --medium 
    private:
        bool                 existsDirectGenstepPath(unsigned tagoffset) const ;
        bool                 existsDebugGenstepPath(unsigned tagoffset) const ;
@@ -698,13 +708,16 @@ class OKCORE_API Opticks {
        bool                 m_envkey ; 
        bool                 m_production ; 
        OpticksProfile*      m_profile ; 
+#ifdef OLD_RESOURCE
        const char*          m_materialprefix ;
+#endif
    private:
        unsigned             m_photons_per_g4event ;
    private:
        OpticksEventSpec*    m_spec ; 
        OpticksEventSpec*    m_nspec ; 
        OpticksResource*     m_resource ; 
+       BOpticksResource*    m_rsc ; 
        const char*          m_origin_gdmlpath ; // formerly m_direct_gdmlpath
        int                  m_origin_geocache_code_version ; 
        NState*              m_state ; 

@@ -52,4 +52,13 @@ const char* SPath::GetHomePath(const char* rel)  // static
 }
 
 
+const char* SPath::Basename(const char* path)
+{
+    std::string p = path ; 
+    std::size_t pos = p.find_last_of("/");
+    std::string base = pos == std::string::npos ? p : p.substr(pos+1) ; 
+    return strdup( base.c_str() ) ; 
+}
+
+
 

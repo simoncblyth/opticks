@@ -89,13 +89,23 @@ struct OpticksTest
 
 
 
-
+#ifdef OLD_RESOURCE
 void test_getDAEPath(Opticks* ok)
 {
     assert(ok);
     const char* path = ok->getDAEPath();
     test_path("getDAEPath", path);
 }
+
+void test_getMaterialMap(Opticks* ok)
+{
+    assert(ok);
+    const char* path = ok->getMaterialMap();
+    test_path("getMaterialMap", path);
+}
+
+#endif
+
 
 void test_getGDMLPath(Opticks* ok)
 {
@@ -110,13 +120,6 @@ void test_getGDMLPath(Opticks* ok)
     test_path("getCurrentGDMLPath", path2);
 }
 
-
-void test_getMaterialMap(Opticks* ok)
-{
-    assert(ok);
-    const char* path = ok->getMaterialMap();
-    test_path("getMaterialMap", path);
-}
 
 
 void test_getDbgSeqhisMap(Opticks* ok)

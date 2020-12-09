@@ -46,10 +46,10 @@
 // brap-
 #include "BTimeKeeper.hh"
 
-#include "NMeta.hpp"
 
 #include "BDynamicDefine.hh"
 #include "BOpticksEvent.hh"
+#include "BOpticksResource.hh"
 #include "BResource.hh"
 #include "BOpticksKey.hh"
 #include "BFile.hh"
@@ -63,6 +63,8 @@
 
 
 // npy-
+#include "NPY.hpp"
+#include "NMeta.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 #include "NState.hpp"
@@ -350,12 +352,15 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_envkey(envkey()),
     m_production(m_sargs->hasArg("--production")),
     m_profile(new OpticksProfile()),
+#ifdef OLD_RESOURCE
     m_materialprefix(NULL),
+#endif
     m_photons_per_g4event(0), 
 
     m_spec(NULL),
     m_nspec(NULL),
     m_resource(NULL),
+    m_rsc(NULL),
     m_origin_gdmlpath(NULL),
     m_origin_geocache_code_version(-1),
     m_state(NULL),
@@ -880,24 +885,28 @@ for this split.
 
 See notes/issues/test-fails-from-geometry-workflow-interference.rst
 
+
 **/
 
 void Opticks::initResource()
 {
     LOG(LEVEL) << "[ OpticksResource " ;
     m_resource = new OpticksResource(this);
-    const char* detector = m_resource->getDetector() ; 
-    const char* idpath = m_resource->getIdPath();
-    LOG(LEVEL) << "] OpticksResource " << detector ;
+    m_rsc = m_resource->getRsc(); 
 
+#ifdef OLD_RESOURCE
+    const char* detector = m_resource->getDetector() ; 
     setDetector(detector);
+#endif
+
+    const char* idpath = m_rsc->getIdPath();
     m_parameters->add<std::string>("idpath", idpath); 
 
     bool assert_readable = true ; 
     const char* curandstatepath = getCURANDStatePath(assert_readable);
     m_parameters->add<std::string>("curandstatepath", curandstatepath); 
 
-    LOG(LEVEL) << m_resource->desc()  ;
+    LOG(LEVEL) << m_rsc->desc()  ;
 }
 
 
@@ -1292,7 +1301,7 @@ void Opticks::dumpResource() const
 }
 bool Opticks::isKeySource() const // name of current executable matches that of the creator of the geocache
 {
-    return m_resource->isKeySource();  
+    return m_rsc->isKeySource();  
 }
 
 
@@ -1637,13 +1646,12 @@ float Opticks::getFxSc()
 }
 
 
+
+#ifdef OLD_RESOURCE
 bool Opticks::isAnalyticPMTLoad()
 {
     return m_cfg->hasOpt("apmtload");
 }
-
-
-
 
 unsigned Opticks::getAnalyticPMTIndex()
 {
@@ -1668,6 +1676,9 @@ const char* Opticks::getAnalyticPMTMedium()
     return m_apmtmedium ;
 }
 
+#endif
+
+
 int Opticks::getDefaultFrame() const 
 {
     return m_resource->getDefaultFrame() ; 
@@ -1679,11 +1690,11 @@ const char* Opticks::getRunResultsDir() const
 }
 const char* Opticks::getRuncacheDir() const 
 {
-    return m_resource ? m_resource->getRuncacheDir() : NULL ; 
+    return m_rsc ? m_rsc->getRuncacheDir() : NULL ; 
 }
 const char* Opticks::getOptiXCacheDirDefault() const 
 {
-    return m_resource ? m_resource->getOptiXCacheDirDefault() : NULL ; 
+    return m_rsc ? m_rsc->getOptiXCacheDirDefault() : NULL ; 
 }
 
 
@@ -1691,7 +1702,7 @@ const char* Opticks::getOptiXCacheDirDefault() const
 
 
 
-
+#ifdef OLD_RESOURCE
 NSlice* Opticks::getAnalyticPMTSlice()
 {
     if(m_apmtslice == 0)
@@ -1708,7 +1719,7 @@ const char* Opticks::getSensorSurface()
     return m_resource->getSensorSurface() ;
 }
 
-
+#endif
 
 
 
@@ -1718,11 +1729,11 @@ int  Opticks::getGLTFTarget() const
     return m_cfg->getGLTFTarget(); 
 }
 
-const char* Opticks::getGLTFPath() const { return m_resource->getGLTFPath() ; }
-const char* Opticks::getG4CodeGenDir() const { return m_resource->getG4CodeGenDir() ; }
-const char* Opticks::getCacheMetaPath() const { return m_resource->getCacheMetaPath() ; } 
-const char* Opticks::getGDMLAuxMetaPath() const { return m_resource->getGDMLAuxMetaPath() ; } 
-const char* Opticks::getRunCommentPath() const { return m_resource->getRunCommentPath() ; } 
+const char* Opticks::getGLTFPath() const { return m_rsc->getGLTFPath() ; }
+const char* Opticks::getG4CodeGenDir() const { return m_rsc->getG4CodeGenDir() ; }
+const char* Opticks::getCacheMetaPath() const { return m_rsc->getCacheMetaPath() ; } 
+const char* Opticks::getGDMLAuxMetaPath() const { return m_rsc->getGDMLAuxMetaPath() ; } 
+const char* Opticks::getRunCommentPath() const { return m_rsc->getRunCommentPath() ; } 
 
 
 
@@ -2219,6 +2230,19 @@ const char* Opticks::getBoundary() const
     const std::string& boundary = m_cfg->getBoundary() ;  // --boundary
     return boundary.empty() ? NULL : boundary.c_str() ;
 }
+const char* Opticks::getMaterial() const 
+{
+    const std::string& material = m_cfg->getBoundary() ;  // --material
+    return material.empty() ? NULL : material.c_str() ;
+}
+bool Opticks::isLarge() const 
+{
+    return m_cfg->hasOpt("large") ;  // --large
+}
+bool Opticks::isMedium() const 
+{
+    return m_cfg->hasOpt("medium") ;  // --medium
+}
 
 
 
@@ -2389,7 +2413,7 @@ void Opticks::defineEventSpec()
     const char* ntag = BStr::negate(tag) ; 
     const char* typ = getSourceType(); 
 
-    const char* resource_pfx = m_resource->getEventPfx() ; 
+    const char* resource_pfx = m_rsc->getEventPfx() ; 
     const char* config_pfx = m_cfg->getEventPfx() ; 
     const char* pfx = config_pfx ? config_pfx : resource_pfx ;  
     if( !pfx )
@@ -2560,8 +2584,10 @@ void Opticks::configure()
     m_state = new NState(prefdir.c_str(), "state")  ;
 
 
+#ifdef OLD_RESOURCE
     const std::string& mpfx = m_cfg->getMaterialPrefix();
     m_materialprefix = ( mpfx.empty() || isJuno()) ? NULL : strdup(mpfx.c_str()) ;
+#endif
 
 
     m_photons_per_g4event = m_cfg->getNumPhotonsPerG4Event();
@@ -2693,9 +2719,11 @@ void Opticks::Summary(const char* msg)
         << std::setw(40) << " Verbosity "
         << std::setw(40) << getVerbosity()
         << std::endl
+#ifdef OLD_RESOURCE
         << std::setw(40) << " AnalyticPMTMedium "
         << std::setw(40) << getAnalyticPMTMedium()
         << std::endl
+#endif
         ;
 
     LOG(info) << msg << "DONE" ; 
@@ -3060,7 +3088,7 @@ bool Opticks::isEmbedded() const { return hasOpt("embedded"); }
 
 
 
-bool Opticks::hasKey() const { return m_resource->hasKey() ; }
+bool Opticks::hasKey() const { return m_rsc->hasKey() ; }
 bool Opticks::isDirect() const { return isEmbedded() || hasKey() ; }
 bool Opticks::isLegacy() const { return !isDirect() ; } 
 
@@ -3562,11 +3590,13 @@ NPY<float>* Opticks::loadPrimaries() const
 */
 
 
-
+#ifdef OLD_RESOURCE
 const char* Opticks::getMaterialPrefix()
 {
     return m_materialprefix ; 
 }
+#endif
+
 
 const char* Opticks::Material(const unsigned int mat)
 {
@@ -3632,7 +3662,7 @@ unsigned Opticks::getNumPhotonsPerG4Event(){ return m_cfg->getNumPhotonsPerG4Eve
 
 
 
-const char*        Opticks::getRNGDir() const  { return m_resource->getRNGDir(); } 
+const char*        Opticks::getRNGDir() const  { return m_rsc->getRNGDir(); } 
 unsigned           Opticks::getRngMax()   const {  return m_cfg->getRngMax() ; }
 unsigned long long Opticks::getRngSeed()  const {  return m_cfg->getRngSeed() ; }
 unsigned long long Opticks::getRngOffset() const { return m_cfg->getRngOffset() ; }
@@ -3702,6 +3732,7 @@ const char* Opticks::getG4GunConfig() const
 }
 
 
+#ifdef OLD_RESOURCE
 const char* Opticks::getExampleMaterialNames() { return m_resource->getExampleMaterialNames(); }
 const char* Opticks::getDefaultMaterial() { return m_resource->getDefaultMaterial(); }
 const char* Opticks::getDetector() { return m_resource->getDetector(); }
@@ -3709,9 +3740,11 @@ bool Opticks::isJuno() {    return m_resource->isJuno(); }
 bool Opticks::isDayabay() { return m_resource->isDayabay(); }
 bool Opticks::isPmtInBox(){ return m_resource->isPmtInBox(); }
 bool Opticks::isOther() {   return m_resource->isOther(); }
-bool Opticks::isValid() {   return m_resource->isValid(); }
 bool Opticks::hasCtrlKey(const char* key) const  { return m_resource->hasCtrlKey(key); }
 bool Opticks::hasVolnames() const { return !hasCtrlKey("novolnames") ; }
+#endif
+
+bool Opticks::isValid() {   return m_resource->isValid(); }
 
 
 std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
@@ -3719,6 +3752,7 @@ std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
     const char* udet = getEventDet();
     return m_resource->getPreferenceDir(type, udet, subtype);
 }
+
 
 std::string Opticks::getObjectPath(const char* name, unsigned int ridx, bool relative) const 
 {
@@ -3742,7 +3776,7 @@ std::string Opticks::getObjectPath(const char* name, bool relative) const
 
 
 
-std::string Opticks::formCacheRelativePath(const char* path) { return m_resource->formCacheRelativePath(path); }
+std::string Opticks::formCacheRelativePath(const char* path) { return m_rsc->formCacheRelativePath(path); }
 
 OpticksQuery*   Opticks::getQuery() {     return m_resource->getQuery(); }
 OpticksColors*  Opticks::getColors() {    return m_resource->getColors(); }
@@ -3760,23 +3794,27 @@ Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 
 
 
-NSensorList*    Opticks::getSensorList(){ return m_resource ? m_resource->getSensorList() : NULL ; }
-const char*     Opticks::getIdPath() const { return m_resource ? m_resource->getIdPath() : NULL ; }
+const char*     Opticks::getIdPath() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
 
 
-const char*     Opticks::getIdFold() const { return m_resource ? m_resource->getIdFold() : NULL ; }
+const char*     Opticks::getIdFold() const { return m_rsc ? m_rsc->getIdFold() : NULL ; }
+
+
+#ifdef OLD_RESOURCE
 const char*     Opticks::getDetectorBase() {    return m_resource ? m_resource->getDetectorBase() : NULL ; }
 const char*     Opticks::getMaterialMap() {  return m_resource ? m_resource->getMaterialMap() : NULL ; }
-const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
-const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }
+const char*     Opticks::getDAEPath() {   return m_rsc ? m_rsc->getDAEPath() : NULL ; }
+#endif
+
+const char*     Opticks::getInstallPrefix() { return m_rsc ? m_rsc->getInstallPrefix() : NULL ; }
 
 bool             Opticks::SetKey(const char* spec) { return BOpticksKey::SetKey(spec) ; }
 BOpticksKey*     Opticks::GetKey() {                 return BOpticksKey::GetKey() ; }
-BOpticksKey*     Opticks::getKey() const {           return m_resource->getKey() ; }
+BOpticksKey*     Opticks::getKey() const {           return m_rsc->getKey() ; }
 const char*      Opticks::getKeySpec() const {       BOpticksKey* key = getKey(); return key ? key->getSpec() : "no-key-spec" ; }
 
-const char*     Opticks::getSrcGDMLPath() const {  return m_resource ? m_resource->getSrcGDMLPath() : NULL ; }
-const char*     Opticks::getGDMLPath()    const {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
+const char*     Opticks::getSrcGDMLPath() const {  return m_rsc ? m_rsc->getSrcGDMLPath() : NULL ; }
+const char*     Opticks::getGDMLPath()    const {  return m_rsc ? m_rsc->getGDMLPath() : NULL ; }
 
 const char*     Opticks::getOriginGDMLPath() const { return m_origin_gdmlpath ; }
 
@@ -3792,7 +3830,7 @@ const char*     Opticks::getCurrentGDMLPath() const
 
 void Opticks::setIdPathOverride(const char* idpath_tmp) // used for saves into non-standard locations whilst testing
 {
-    m_resource->setIdPathOverride(idpath_tmp);
+    m_rsc->setIdPathOverride(idpath_tmp);
 }
 
 

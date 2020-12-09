@@ -19,6 +19,7 @@
 
 
 
+#include "NPY.hpp"
 #include "NMeta.hpp"
 #include "NLookup.hpp"
 

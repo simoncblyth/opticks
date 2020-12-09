@@ -295,7 +295,7 @@ void OpticksViz::setupRendermode(const char* rendermode )
     } 
     else
     { 
-        if(m_ok->isJuno())  // hmm: dirty, can such stuff "default argument setup" be done at bash level
+        if(m_ok->isLarge()) 
         {
             m_scene->setRenderMode("bb0,bb1,-global");
         }
@@ -309,17 +309,17 @@ void OpticksViz::setupRendermode(const char* rendermode )
 
 void OpticksViz::setupRestrictions()
 {
-    if(m_ok->isJuno())
+    if(m_ok->isLarge())
     {
-        LOG(error) << "disable GeometryStyle  WIRE for JUNO as too slow " ;
+        LOG(error) << "disable GeometryStyle  WIRE for large geometry as too slow " ;
 
-        if(!hasOpt("jwire")) // use --jwire to enable wireframe with JUNO, do this only on workstations with very recent GPUs
+        if(!hasOpt("jwire")) // use --jwire to enable wireframe with --large geometry , do this only on workstations with very recent GPUs
         { 
             m_content_style->setNumContentStyle(ContentStyle::WIRE); 
         }
         m_global_style->setNumGlobalStyle(GlobalStyle::GVISVEC); // disable GVISVEC, GVEC debug styles
     }
-    else if(m_ok->isDayabay())
+    else if(m_ok->isMedium())
     {
         m_global_style->setNumGlobalStyle(GlobalStyle::GVISVEC);   // disable GVISVEC, GVEC debug styles
     }

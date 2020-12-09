@@ -82,21 +82,17 @@ const char* BOpticksResource::GetCachePath(const char* rela, const char* relb, c
 
 const char* BOpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
 const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; 
-
+const char* BOpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
 
 const char* BOpticksResource::EMPTY  = "" ; 
 
+
+#ifdef OLD_RESOURCE
 const char* BOpticksResource::G4LIVE  = "g4live" ; 
 const char* BOpticksResource::JUNO    = "juno1707" ; 
 const char* BOpticksResource::DAYABAY = "dayabay" ; 
 const char* BOpticksResource::DPIB    = "PmtInBox" ; 
 const char* BOpticksResource::OTHER   = "other" ; 
-
-const char* BOpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
-
-
-// TODO: having these defaults compiled in is problematic, better to read in from
-//       json/ini so they are available at python level
 
 const char* BOpticksResource::DEFAULT_GEOKEY = "OPTICKSDATA_DAEPATH_DYB" ; 
 const char* BOpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
@@ -125,6 +121,7 @@ const char* BOpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ;
 const int BOpticksResource::DEFAULT_FRAME_OTHER = 0 ; 
 const int BOpticksResource::DEFAULT_FRAME_DYB = 3153 ; 
 const int BOpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
+#endif
 
 
 /**
@@ -188,7 +185,9 @@ BOpticksResource::BOpticksResource()
     m_gdmlpath(NULL),
     m_srcgdmlpath(NULL),
     m_srcgltfpath(NULL),
+#ifdef OLD_RESOURCE
     m_metapath(NULL),
+#endif
     m_idmappath(NULL),
     m_g4codegendir(NULL),
     m_gdmlauxmetapath(NULL),
@@ -772,6 +771,7 @@ NB not in geocache, points to actual G4DAE export from opticksdata
 
 **/
 
+#ifdef OLD_RESOURCE
 void BOpticksResource::setSrcPath(const char* srcpath)  
 {
     assert( srcpath );
@@ -813,11 +813,19 @@ void BOpticksResource::setSrcPath(const char* srcpath)
     m_res->addName("idfile", m_idfile ); 
 }
 
-void BOpticksResource::setSrcDigest(const char* srcdigest)
+
+
+
+std::string BOpticksResource::getBasePath(const char* rel)  // from OpticksResource::getBasePath
 {
-    assert( srcdigest );
-    m_srcdigest = strdup( srcdigest );
+    assert(m_srcbase);
+    fs::path dir(m_srcbase);
+    if(rel) dir /= rel ;
+    return dir.string() ;
 }
+
+
+
 
 
 void BOpticksResource::setupViaID(const char* idpath)
@@ -832,6 +840,17 @@ void BOpticksResource::setupViaID(const char* idpath)
     setSrcPath( srcpath );
     setSrcDigest( srcdigest );
 }
+#endif
+
+
+void BOpticksResource::setSrcDigest(const char* srcdigest)
+{
+    assert( srcdigest );
+    m_srcdigest = strdup( srcdigest );
+}
+
+
+
 
 /**
 BOpticksResource::setupViaKey
@@ -1019,6 +1038,39 @@ void BOpticksResource::setupViaKey()
 
 }
 
+bool BOpticksResource::idNameContains(const char* s) const 
+{
+    assert(m_idname); 
+    std::string idn(m_idname);
+    std::string ss(s);
+    return idn.find(ss) != std::string::npos ;
+}
+
+
+
+/**
+BOpticksResource::formCacheRelativePath
+---------------------------------------
+
+Shorten an absolute path into a cache relative one for easy reading.
+
+**/
+
+std::string BOpticksResource::formCacheRelativePath(const char* path) const
+{
+    const char* idpath = getIdPath();
+    if(strncmp(idpath, path, strlen(idpath)) == 0)
+    {      
+        return path + strlen(idpath) + 1 ;
+    }      
+    else   
+    {      
+        return path ;
+    }  
+}
+
+
+
 
 
 
@@ -1034,6 +1086,7 @@ Direct mode equivalent (loosely speaking) is setupViaKey
 
 **/
 
+#ifdef OLD_RESOURCE
 void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
 {  
     LOG(LEVEL) 
@@ -1102,6 +1155,8 @@ evtbase
 
 
 }
+#endif
+
 
 
 
@@ -1120,6 +1175,43 @@ std::string BOpticksResource::getPropertyLibDir(const char* name) const
     const char* idpath = getIdPath();    // direct use of m_idpath would fail to honour overrides from m_ipath_tmp 
     return BFile::FormPath( idpath, name ) ;
 }
+
+
+std::string BOpticksResource::getObjectPath(const char* name, unsigned int index) const
+{
+    const char* idpath = getIdPath();
+    assert(idpath && "OpticksResource::getObjectPath idpath not set");
+    fs::path dir(idpath);
+    dir /= name ;
+    dir /= BStr::utoa(index) ;
+    return dir.string() ;
+}
+
+std::string BOpticksResource::getObjectPath(const char* name) const
+{
+    const char* idpath = getIdPath();
+    assert(idpath && "OpticksResource::getObjectPath idpath not set");
+    fs::path dir(idpath);
+    dir /= name ;
+    return dir.string() ;
+}
+
+std::string BOpticksResource::getRelativePath(const char* name, unsigned int index) const
+{
+    // used eg by GPmt::loadFromCache returning "GPmt/0"
+    fs::path reldir(name);
+    reldir /= BStr::utoa(index) ;
+    return reldir.string() ;
+}
+std::string BOpticksResource::getRelativePath(const char* name) const
+{
+    fs::path reldir(name);
+    return reldir.string() ;
+}
+
+
+
+
 
 
 
@@ -1148,7 +1240,11 @@ const char* BOpticksResource::getGDMLAuxMetaPath() const { return m_gdmlauxmetap
 const char* BOpticksResource::getRunCommentPath() const { return m_runcommentpath ; }
 const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; } 
 const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; } 
+
+#ifdef OLD_RESOURCE
 const char* BOpticksResource::getMetaPath() const { return m_metapath ; }
+#endif
+
 const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; } 
 
 //const char* BOpticksResource::getSrcEventBase() const { return m_srcevtbase ; } 
@@ -1220,23 +1316,65 @@ const char* BOpticksResource::getIdFold() const
 }
 
 
-void BOpticksResource::Summary(const char* msg)
+
+void BOpticksResource::Brief(const char* msg) const 
+{
+    std::cerr << msg << std::endl ; 
+    std::cerr << "install_prefix    : " <<  (m_install_prefix ? m_install_prefix : "NULL" ) << std::endl ; 
+    std::cerr << "opticksdata_dir   : " <<  (m_opticksdata_dir ? m_opticksdata_dir : "NULL" ) << std::endl ; 
+    std::cerr << "geocache_dir      : " <<  (m_geocache_dir ? m_geocache_dir : "NULL" ) << std::endl ; 
+    std::cerr << "resource_dir      : " <<  (m_resource_dir ? m_resource_dir : "NULL" ) << std::endl ; 
+
+    std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"NULL") << std::endl; 
+    std::cerr << "gdmlpath : " <<  (m_gdmlpath?m_gdmlpath:"NULL") << std::endl; 
+    std::cerr << "gltfpath : " <<  (m_gltfpath?m_gltfpath:"NULL") << std::endl; 
+#ifdef OLD_RESOURCE
+    std::cerr << "metapath : " <<  (m_metapath?m_metapath:"NULL") << std::endl; 
+#endif
+    std::cerr << "digest   : " <<  (m_srcdigest?m_srcdigest:"NULL") << std::endl; 
+    std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
+    std::cerr << "idpath_tmp " <<  (m_idpath_tmp?m_idpath_tmp:"NULL") << std::endl; 
+    std::cerr << "idfold   : " <<  (m_idfold?m_idfold:"NULL") << std::endl; 
+    std::cerr << "idname   : " <<  (m_idname?m_idname:"NULL") << std::endl; 
+
+    m_res->dumpPaths("dumpPaths");
+    m_res->dumpDirs("dumpDirs");
+
+}
+
+std::string BOpticksResource::desc() const
+{
+    std::stringstream ss ;
+
+    std::time_t* slwt = BFile::SinceLastWriteTime(m_idpath);
+    long seconds = slwt ? *slwt : -1 ;
+
+    float minutes = float(seconds)/float(60) ;
+    float hours = float(seconds)/float(60*60) ;
+    float days = float(seconds)/float(60*60*24) ;
+
+    ss << "cache.SinceLastWriteTime"
+       << " digest " << ( m_srcdigest ? m_srcdigest : "NULL" )
+       << " seconds " << std::setw(6) << seconds
+       << std::fixed << std::setprecision(3)
+       << " minutes " << std::setw(6) << minutes
+       << " hours " << std::setw(6) << hours
+       << " days " << std::setw(10) << days
+       ;
+
+    return ss.str();
+}
+
+
+
+
+void BOpticksResource::Summary(const char* msg) const 
 {
     LOG(info) << msg << " layout " << m_layout ; 
 
     const char* prefix = m_install_prefix ; 
 
     std::cerr << "prefix   : " <<  (prefix ? prefix : "NULL" ) << std::endl ; 
-
-/*
-    const char* name = "generate.cu.ptx" ;
-    std::string ptxpath = getPTXPath(name); 
-    std::cerr << "getPTXPath(" << name << ") = " << ptxpath << std::endl ;   
-
-    std::string ptxpath_static = PTXPath(name); 
-    std::cerr << "PTXPath(" << name << ") = " << ptxpath_static << std::endl ;   
-*/
-
 
     std::cerr << "debugging_idpath  " << ( m_debugging_idpath ? m_debugging_idpath : "-" )<< std::endl ; 
     std::cerr << "debugging_idfold  " << ( m_debugging_idfold ? m_debugging_idfold : "-" )<< std::endl ; 

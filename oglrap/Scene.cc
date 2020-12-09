@@ -34,6 +34,7 @@
 
 // brap-
 #include "BDynamicDefine.hh"
+#include "BOpticksResource.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -235,7 +236,7 @@ void Scene::init()
           ;   
 */
 
-    const char* shader_dir = OpticksResource::ShaderDir(); 
+    const char* shader_dir = BOpticksResource::ShaderDir(); 
     m_shader_dir = strdup(shader_dir) ; 
     m_shader_incl_path = strdup(shader_dir);
     m_shader_dynamic_dir = strdup(shader_dir);

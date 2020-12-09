@@ -140,7 +140,9 @@ class OKGEO_API OpticksHub : public SCtrl {
 
    private:
        void configureServer();
+#ifdef LEGACY
        void configureLookupA();
+#endif
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
        void overrideMaterialMapA(const char* jsonA );
        void setupTestGeometry(); 

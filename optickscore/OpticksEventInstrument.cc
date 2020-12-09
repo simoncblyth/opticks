@@ -19,6 +19,8 @@
 
 
 #include <iostream>
+
+#include "NPY.hpp"
 #include "RecordsNPY.hpp"
 #include "Opticks.hh"
 #include "OpticksEvent.hh"

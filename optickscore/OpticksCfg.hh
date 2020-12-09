@@ -199,6 +199,7 @@ public:
      const std::string& getDbgGSDir() const ;
      const std::string& getPVName() const ;
      const std::string& getBoundary() const ;
+     const std::string& getMaterial() const ;
 
 private:
      void init();
@@ -338,8 +339,10 @@ private:
      std::string  m_runfolder ; 
      std::string  m_dbggdmlpath ; 
      std::string  m_dbggsdir ; 
+
      std::string  m_pvname ; 
      std::string  m_boundary ; 
+     std::string  m_material ; 
 
 };
 

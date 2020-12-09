@@ -20,20 +20,19 @@
 
 
 #include <map>
+#include <vector>
 #include <string>
 
-//template <typename T> class NPY ; 
-#include "NPY.hpp"
 #include "plog/Severity.h"
+#include "NGLM.hpp"
 
+class NMeta ; 
+class NPYBase ; 
+template <typename T> class NPY ; 
 
 class BTimes ; 
 class BTimesTable ; 
-
 class BTimeKeeper ; 
-
-class NMeta ; 
-
 
 class Report ;
 
@@ -44,8 +43,7 @@ class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
 class BoundariesNPY ; 
-//class G4StepNPY ; 
-class HitsNPY ; 
+//class HitsNPY ; 
 class NPYSpec ; 
 class NGeoTestConfig ; 
 
@@ -378,12 +376,12 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        // optionals lodged here for debug dumping single photons/records  
        void setRecordsNPY(RecordsNPY* recs);
        void setPhotonsNPY(PhotonsNPY* pho);
-       void setHitsNPY(HitsNPY* hit);
+       //void setHitsNPY(HitsNPY* hit);
        void setBoundariesNPY(BoundariesNPY* bnd);
 
        RecordsNPY*          getRecordsNPY();  // use OpticksEventInstrument::SetupRecordsNPY 
        PhotonsNPY*          getPhotonsNPY();
-       HitsNPY*             getHitsNPY();
+       //HitsNPY*             getHitsNPY();
        BoundariesNPY*       getBoundariesNPY();
    public:
        NPY<float>*          getFDomain() const ;
@@ -474,7 +472,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
 
        RecordsNPY*     m_records ; 
        PhotonsNPY*     m_photons ; 
-       HitsNPY*        m_hits ; 
+       //HitsNPY*        m_hits ; 
        BoundariesNPY*  m_bnd ; 
 
        unsigned int    m_num_gensteps ; 

@@ -169,7 +169,7 @@ GItemIndex* OpticksIdx::makeBoundaryItemIndex()
 }
  
 
-
+#ifdef OLD_RESOURCE
 void OpticksIdx::indexEvtOld()
 {
     OpticksEvent* evt = getEvent();
@@ -207,8 +207,8 @@ void OpticksIdx::indexEvtOld()
         }
         evt->setRecordsNPY(rec);
     }
-
 }
+#endif
 
 
 void OpticksIdx::indexSeqHost()

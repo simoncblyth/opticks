@@ -39,6 +39,11 @@ BOpticksResource : base class to okc.OpticksResource
 
 TODO: rearrange this, avoid confusing split between okc.OpticksResource and brap.BOpticksResource
 
+
+TODO: Remove alternative setup paths, leaving just the setupViaKey done in ctor 
+
+
+
 Constituents:
 
 BPath m_id
@@ -113,16 +118,16 @@ class BRAP_API  BOpticksResource {
     protected:
         static const char* G4ENV_RELPATH ; 
         static const char* OKDATA_RELPATH ;
-    protected:
+    public:
+        static const char* PREFERENCE_BASE  ;
         static const char* EMPTY ; 
+#ifdef OLD_RESOURCE
+    protected:
         static const char* G4LIVE ; 
         static const char* JUNO ; 
         static const char* DAYABAY ; 
         static const char* DPIB ; 
         static const char* OTHER ; 
-    protected:
-        static const char* PREFERENCE_BASE  ;
-
     public:
         static const char* DEFAULT_GEOKEY ;
         static const char* DEFAULT_QUERY ;
@@ -150,9 +155,9 @@ class BRAP_API  BOpticksResource {
         static const char* EXAMPLE_MATNAMES_DYB ;
         static const char* EXAMPLE_MATNAMES_JUNO ;
         static const char* EXAMPLE_MATNAMES_OTHER ;
- 
+#endif 
 
-    protected:
+    public:
         static const char* InstallPathOKDATA() ;
         static const char* InstallPathG4ENV() ;
         static const char* InstallPath(const char* relpath) ;
@@ -168,7 +173,10 @@ class BRAP_API  BOpticksResource {
    public:
         BOpticksResource();
         virtual ~BOpticksResource();
-        virtual void Summary(const char* msg="BOpticksResource::Summary");
+        void Summary(const char* msg="BOpticksResource::Summary") const ;
+        void Brief(const char* msg="BOpticksResource::Brief") const ;
+        std::string desc() const ;
+    
    public:
         static std::string BuildDir(const char* proj);
         static std::string BuildProduct(const char* proj, const char* name);
@@ -227,6 +235,13 @@ class BRAP_API  BOpticksResource {
         std::string getResultsPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
         std::string getPropertyLibDir(const char* name) const ;
 
+        std::string getObjectPath(const char* name, unsigned int index) const ;
+        std::string getObjectPath(const char* name) const ;
+        std::string getRelativePath(const char* name, unsigned int index) const ;
+        std::string getRelativePath(const char* name) const ;
+
+
+
         std::string getInstallPath(const char* relpath) const ;
         const char* getIdPath() const ;
         const char* getIdFold() const ;  // parent directory of idpath containing g4_00.dae
@@ -248,7 +263,9 @@ class BRAP_API  BOpticksResource {
         const char* getRunCommentPath() const ;
         const char* getPrimariesPath() const ;
         const char* getGLTFPath() const ;     // output path 
+#ifdef OLD_RESOURCE
         const char* getMetaPath() const ;
+#endif
         const char* getIdMapPath() const ;
     public:
         const char* getEventBase() const ; 
@@ -281,17 +298,24 @@ class BRAP_API  BOpticksResource {
         friend struct BOpticksResourceTest ; 
         // only use one setup route
         
+#ifdef OLD_RESOURCE
         void setupViaSrc(const char* srcpath, const char* srcdigest);
         void setupViaID(const char* idpath );
+        std::string getBasePath(const char* rel);  // from OpticksResource::getBasePath
+#endif
    public: 
         void setupViaKey();
+        bool idNameContains(const char* s) const ;
+        std::string formCacheRelativePath(const char* path) const ;
 
         // unfortunately having 2 routes difficult to avoid, as IDPATH is 
         // more convenient in that a single path yields everything, whereas
         // the OpticksResource geokey stuff needs to go via Src
    private:
-        void setSrcPath(const char* srcpath);
         void setSrcDigest(const char* srcdigest);
+#ifdef OLD_RESOURCE
+        void setSrcPath(const char* srcpath);
+#endif
    protected:
         bool         m_testgeo ;   
         SLog*        m_log ; 
@@ -344,7 +368,9 @@ class BRAP_API  BOpticksResource {
         const char* m_gdmlpath ;
         const char* m_srcgdmlpath ;
         const char* m_srcgltfpath ;
+#ifdef OLD_RESOURCE
         const char* m_metapath ;
+#endif
         const char* m_idmappath ;
         const char* m_g4codegendir ;
         const char* m_gdmlauxmetapath ; 

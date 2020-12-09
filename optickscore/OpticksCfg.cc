@@ -168,7 +168,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_dbggdmlpath(""),
     m_dbggsdir("$TMP/dbggs"),
     m_pvname(""),
-    m_boundary("")
+    m_boundary(""),
+    m_material("Water")
 {   
    init();  
    m_listener->setCfg(this); 
@@ -588,6 +589,15 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("boundary", boost::program_options::value<std::string>(&m_boundary), "name of boundary selected for some purpose" );   
+
+   m_desc.add_options()
+       ("material", boost::program_options::value<std::string>(&m_material), "name of material used for some purpose" );   
+
+   m_desc.add_options()
+       ("large",  "large geometry flag switching off some expensive visualizations, see oglrap/OpticksViz ") ;
+
+   m_desc.add_options()
+       ("medium",  "medium geometry flag switching off some expensive visualizations, see oglrap/OpticksViz ") ;
 
 
 
@@ -2138,6 +2148,12 @@ template <class Listener>
 const std::string& OpticksCfg<Listener>::getBoundary() const 
 {
     return m_boundary ;  
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getMaterial() const 
+{
+    return m_material ;  
 }
 
 

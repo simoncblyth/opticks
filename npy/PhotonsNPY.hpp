@@ -25,7 +25,21 @@ class Types ;
 class RecordsNPY ; 
 class Index ; 
 
-// detailed host based photon and record dumper 
+/**
+PhotonsNPY
+============
+
+Detailed host based photon and record dumper 
+
+Possibly PhotonsNPY is superceeded by:
+
+NPho
+    which has mask handling 
+
+ggeo/GPho
+    geometry aware photon wrapper with access to transforms 
+
+**/
 
 #include "NPY_API_EXPORT.hh"
 class NPY_API PhotonsNPY {

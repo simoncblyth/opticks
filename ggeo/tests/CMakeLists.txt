@@ -43,7 +43,6 @@ set(TEST_SOURCES
     GPtTest.cc
     GGeoNCSGTest.cc
 
-    GPmtTest.cc
 
     BoundariesNPYTest.cc
     GAttrSeqTest.cc
@@ -71,7 +70,6 @@ set(TEST_SOURCES
     GSurfaceLibTest.cc
     GTestBoxTest.cc
 
-    NLookupTest.cc
     RecordsNPYTest.cc
 
     GMeshLibTest.cc
@@ -84,6 +82,8 @@ set(TEST_SOURCES
 set(FORMER_TEST_SOURCES
 
     GSceneTest.cc
+    NLookupTest.cc   // TODO: reinstate for new resource handling 
+    GPmtTest.cc
 
 )
 

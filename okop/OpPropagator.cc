@@ -106,7 +106,7 @@ void OpPropagator::indexEvent()
 {
     m_idx->indexBoundariesHost();
 
-    m_idx->indexEvtOld();   // hostside checks, when saving makes sense 
+    //m_idx->indexEvtOld();   // hostside checks, when saving makes sense 
 
     m_idx->indexSeqHost();
 }

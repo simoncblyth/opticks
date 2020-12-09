@@ -37,6 +37,7 @@ namespace fs = boost::filesystem;
 #include "BStr.hh"
 #include "PLOG.hh"
 #include "Map.hh"
+#include "BOpticksResource.hh"
 #include "BResource.hh"
 #include "BOpticksKey.hh"
 #include "BEnv.hh"
@@ -80,17 +81,17 @@ TODO
 
 OpticksResource::OpticksResource(Opticks* ok) 
     :
-    BOpticksResource(),
     m_log(new SLog("OpticksResource::OpticksResource","",debug)),
+    m_rsc(new BOpticksResource()),
+    m_key(m_rsc->getKey()),
     m_ok(ok),
-    m_query(new OpticksQuery(SSys::getenvvar(
-                      m_key ? "OPTICKS_QUERY_LIVE" : "OPTICKS_QUERY" ,
-                      m_key ? DEFAULT_QUERY_LIVE : DEFAULT_QUERY 
-              ))), 
+    m_query(new OpticksQuery("all")),
+#ifdef OLD_RESOURCE
     m_geokey(NULL),
     m_ctrl(NULL),
     m_meshfix(NULL),
     m_meshfixcfg(NULL),
+#endif
     m_valid(true),
     m_colors(NULL),
     m_flags(new OpticksFlags),
@@ -99,6 +100,8 @@ OpticksResource::OpticksResource(Opticks* ok)
     m_typ(NULL),
     m_g4env(NULL),
     m_okenv(NULL),
+#ifdef OLD_RESOURCE
+    m_g4live(false),
     m_dayabay(false),
     m_juno(false),
     m_dpib(false),
@@ -112,8 +115,8 @@ OpticksResource::OpticksResource(Opticks* ok)
     m_default_medium(NULL),
     m_example_matnames(NULL),
     m_sensor_surface(NULL),
-    m_default_frame(DEFAULT_FRAME_OTHER),
-    m_sensor_list(NULL),
+    m_default_frame(BOpticksResource::DEFAULT_FRAME_OTHER),
+#endif
     m_runresultsdir(NULL)
 {
     init();
@@ -130,6 +133,13 @@ bool OpticksResource::isValid()
 {
    return m_valid ; 
 }
+OpticksQuery* OpticksResource::getQuery() const 
+{
+    return m_query ;
+}
+
+
+#ifdef OLD_RESOURCE
 const char* OpticksResource::getDetectorBase()
 {
     return m_detector_base ;
@@ -138,21 +148,14 @@ const char* OpticksResource::getMaterialMap()
 {
     return m_material_map ;
 }
-OpticksQuery* OpticksResource::getQuery()
-{
-    return m_query ;
-}
 const char* OpticksResource::getCtrl()
 {
     return m_ctrl ;
 }
-
 bool OpticksResource::hasCtrlKey(const char* key) const 
 {
     return BStr::listHasKey(m_ctrl, key, ",");
 }
-
-
 const char* OpticksResource::getMeshfix()
 {
     return m_meshfix ;
@@ -161,8 +164,6 @@ const char* OpticksResource::getMeshfixCfg()
 {
     return m_meshfixcfg ;
 }
-
-
 const char* OpticksResource::getDetector()
 {
     return m_detector ;
@@ -171,9 +172,6 @@ const char* OpticksResource::getDetectorName()
 {
     return m_detector_name ;
 }
-
-
-
 bool OpticksResource::isG4Live()
 {
    return m_g4live ; 
@@ -194,48 +192,8 @@ bool OpticksResource::isOther()
 {
    return m_other ; 
 }
+#endif
 
-
-
-bool OpticksResource::idNameContains(const char* s)
-{
-    bool ret = false ; 
-    if(m_idname)
-    {
-        std::string idn(m_idname);
-        std::string ss(s);
-        ret = idn.find(ss) != std::string::npos ;
-    }
-    else
-    {
-        LOG(error) << " idname NULL " ; 
-    }
-
-    return ret ; 
-}
-
-
-/**
-OpticksResource::formCacheRelativePath
----------------------------------------
-
-Shorten an absolute path into a cache relative one for easy reading.
-
-**/
-
-std::string OpticksResource::formCacheRelativePath(const char* path) const 
-{
-    const char* idpath = getIdPath();
-
-    if(strncmp(idpath, path, strlen(idpath)) == 0)
-    {
-        return path + strlen(idpath) + 1 ; 
-    }
-    else
-    {
-        return path ;  
-    }
-}
 
 
 /**
@@ -260,11 +218,12 @@ void OpticksResource::init()
    // readG4Environment();  moved to OpticksResource::SetupG4Environment invoked from CG4::init when --localg4 
 
 
+#ifdef OLD_RESOURCE
    if(Opticks::IsLegacyGeometryEnabled())  // envvar OPTICKS_LEGACY_GEOMETRY_ENABLED is set to 1 
    {
-       if( hasKey() )  
+       if( m_rsc->hasKey() )  
        {
-           setupViaKey();    // from BOpticksResource base
+           m_rsc->setupViaKey();    // from BOpticksResource base
        } 
        else
        {
@@ -274,16 +233,20 @@ void OpticksResource::init()
 
    }
    else
+#endif
    {
-       assert( hasKey() && "an OPTICKS_KEY is required" );
-       setupViaKey();    // from BOpticksResource base
+       assert( m_rsc->hasKey() && "an OPTICKS_KEY is required" );
+       m_rsc->setupViaKey();    // from BOpticksResource base
    }
 
 
+
+#ifdef OLD_RESOURCE
    readMetadata();
    identifyGeometry();
    assignDetectorName(); 
    assignDefaultMaterial(); 
+#endif
 
    initRunResultsDir(); 
 
@@ -296,7 +259,7 @@ void OpticksResource::initRunResultsDir()
     const char* runlabel = m_ok->getRunLabel();    // eg OFF_TITAN_V_AND_TITAN_RTX
     const char* rundate = m_ok->getRunDate() ;     // eg 20190422_162401 
 
-    std::string runresultsdir = getResultsPath( runfolder, runlabel, rundate ) ;  // eg /usr/local/opticks/results/geocache-bench/OFF_TITAN_V_AND_TITAN_RTX/20190422_162401
+    std::string runresultsdir = m_rsc->getResultsPath( runfolder, runlabel, rundate ) ;  // eg /usr/local/opticks/results/geocache-bench/OFF_TITAN_V_AND_TITAN_RTX/20190422_162401
 
     m_runresultsdir = strdup(runresultsdir.c_str());
     LOG(LEVEL) << runresultsdir ; 
@@ -332,6 +295,7 @@ OpticksResource::identifyGeometry
 
 **/
 
+#ifdef OLD_RESOURCE
 void OpticksResource::identifyGeometry()
 {
    // TODO: somehow extract detector name from the exported file metadata or sidecar
@@ -383,6 +347,7 @@ void OpticksResource::identifyGeometry()
 
 }
 
+
 void OpticksResource::assignDefaultMaterial()
 {
     m_default_material =  DEFAULT_MATERIAL_OTHER ; 
@@ -424,15 +389,32 @@ const char* OpticksResource::getSensorSurface()
 {
     return m_sensor_surface ; 
 }
+
+#endif
+
+
+
+/**
+OpticksResource::getDefaultFrame
+---------------------------------
+
+This must come from detector specific config
+
+
+**/
+
 int OpticksResource::getDefaultFrame() const 
 {
-    return m_default_frame ; 
+    LOG(fatal) << " PLACEHOLDER ZERO " ; 
+    return 0 ; 
 }
 
 
 
 
 
+
+#ifdef OLD_RESOURCE
 void OpticksResource::assignDetectorName()
 {
    /**
@@ -504,6 +486,8 @@ void OpticksResource::assignDetectorName()
    m_material_map = strdup(cmm.c_str());
 
 }
+#endif
+
 
 
 
@@ -516,7 +500,7 @@ void OpticksResource::SetupG4Environment()
     //    it is relative to the install_prefix which 
     //    is canonically /usr/local/opticks
     //
-    const char* inipath = InstallPathG4ENV();
+    const char* inipath = BOpticksResource::InstallPathG4ENV();
 
     LOG(error) << "inipath " << inipath ; 
 
@@ -566,7 +550,7 @@ void OpticksResource::readOpticksEnvironment()
 {
     // assert(0) ; // around 90/412 fails with this in place
 
-    const char* inipath = InstallPathOKDATA();
+    const char* inipath = BOpticksResource::InstallPathOKDATA();
     LOG(LEVEL) << " inipath " << inipath ; 
 
     m_okenv = ReadIniEnvironment(inipath);
@@ -601,6 +585,8 @@ BEnv* OpticksResource::ReadIniEnvironment(const std::string& inipath)
 
 
 
+
+#ifdef OLD_RESOURCE
 void OpticksResource::readEnvironment()
 {
 /*
@@ -649,6 +635,7 @@ OPTICKS_GEOKEY
     } 
 
     m_ctrl         = SSys::getenvvar("OPTICKS_CTRL", DEFAULT_CTRL);
+
     m_meshfix      = SSys::getenvvar("OPTICKS_MESHFIX", DEFAULT_MESHFIX);
     m_meshfixcfg   = SSys::getenvvar("OPTICKS_MESHFIX_CFG", DEFAULT_MESHFIX_CFG);
 
@@ -665,7 +652,6 @@ OPTICKS_GEOKEY
     }
 }
 
-
 void OpticksResource::readMetadata()
 {
     if(m_metapath)
@@ -674,6 +660,11 @@ void OpticksResource::readMetadata()
          //dumpMetadata(m_metadata);
     }
 }
+
+#endif
+
+
+
 
 void OpticksResource::Dump(const char* msg)
 {
@@ -686,22 +677,24 @@ void OpticksResource::Dump(const char* msg)
            << mmsp
            << std::endl ; 
 
+#ifdef OLD_RESOURCE
     std::string pmtp = getPmtPath(0);
     std::cout 
            << std::setw(40) << " getPmtPath(0) " 
            << " : " 
            << pmtp
            << std::endl ; 
+#endif
 
 
-    std::string bndlib = getPropertyLibDir("GBndLib");
+    std::string bndlib = m_rsc->getPropertyLibDir("GBndLib");
     std::cout 
            << std::setw(40) << " getPropertyLibDir(\"GBndLib\") " 
            << " : " 
            << bndlib 
            << std::endl ; 
 
-    const char* testcsgpath = getTestCSGPath() ; 
+    const char* testcsgpath = m_rsc->getTestCSGPath() ; 
     std::cout 
            << std::setw(40) << " getTestCSGPath() " 
            << " : " 
@@ -715,75 +708,20 @@ void OpticksResource::Dump(const char* msg)
 void OpticksResource::Summary(const char* msg)
 {
     std::cerr << msg << std::endl ; 
-
-    std::cerr << "install_prefix    : " <<  (m_install_prefix ? m_install_prefix : "NULL" ) << std::endl ; 
-    std::cerr << "opticksdata_dir   : " <<  (m_opticksdata_dir ? m_opticksdata_dir : "NULL" ) << std::endl ; 
-    std::cerr << "geocache_dir      : " <<  (m_geocache_dir ? m_geocache_dir : "NULL" ) << std::endl ; 
-    std::cerr << "resource_dir      : " <<  (m_resource_dir ? m_resource_dir : "NULL" ) << std::endl ; 
     std::cerr << "valid    : " <<  (m_valid ? "valid" : "NOT VALID" ) << std::endl ; 
+#ifdef OLD_RESOURCE
     std::cerr << "geokey   : " <<  (m_geokey?m_geokey:"NULL") << std::endl; 
-    std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"NULL") << std::endl; 
-    std::cerr << "gdmlpath : " <<  (m_gdmlpath?m_gdmlpath:"NULL") << std::endl; 
-    std::cerr << "gltfpath : " <<  (m_gltfpath?m_gltfpath:"NULL") << std::endl; 
-    std::cerr << "metapath : " <<  (m_metapath?m_metapath:"NULL") << std::endl; 
-    std::cerr << "query    : " <<  (m_query?m_query->getQueryString():"NULL") << std::endl; 
-    std::cerr << "ctrl     : " <<  (m_ctrl?m_ctrl:"NULL") << std::endl; 
-    std::cerr << "digest   : " <<  (m_srcdigest?m_srcdigest:"NULL") << std::endl; 
-    std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
-    std::cerr << "idpath_tmp " <<  (m_idpath_tmp?m_idpath_tmp:"NULL") << std::endl; 
-    std::cerr << "idfold   : " <<  (m_idfold?m_idfold:"NULL") << std::endl; 
-    std::cerr << "idname   : " <<  (m_idname?m_idname:"NULL") << std::endl; 
-
-    std::cerr << "detector : " <<  (m_detector?m_detector:"NULL") << std::endl; 
-    std::cerr << "detector_name : " <<  (m_detector_name?m_detector_name:"NULL") << std::endl; 
-    std::cerr << "detector_base : " <<  (m_detector_base?m_detector_base:"NULL") << std::endl; 
-    std::cerr << "material_map  : " <<  (m_material_map?m_material_map:"NULL") << std::endl; 
-    std::cerr << "getPmtPath(0) : " <<  (m_detector_base?getPmtPath(0):"-") << std::endl; 
-    std::cerr << "getMMPath(0)  : " <<  (m_detector_base?getMergedMeshPath(0):"-") << std::endl; 
-    std::cerr << "getBasePath(?): " <<  (m_srcbase?getBasePath("?"):"-") << std::endl; 
-    std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
-    std::cerr << "example_matnames  : " <<  (m_example_matnames ? m_example_matnames : "NULL" ) << std::endl; 
-    std::cerr << "sensor_surface    : " <<  (m_sensor_surface ? m_sensor_surface : "NULL" ) << std::endl; 
-    std::cerr << "default_medium    : " <<  (m_default_medium ? m_default_medium : "NULL" ) << std::endl; 
-    std::cerr << "------ from " << ( m_metapath ? m_metapath : "NULL" ) << " -------- " << std::endl ;  
-
+#endif
     typedef std::map<std::string, std::string> SS ;
     for(SS::const_iterator it=m_metadata.begin() ; it != m_metadata.end() ; it++)
         std::cerr <<  std::setw(10) << it->first.c_str() << ":" <<  it->second.c_str() << std::endl  ;
 
-
-    m_res->dumpPaths("dumpPaths");
-    m_res->dumpDirs("dumpDirs");
-
-}
-
-
-std::string OpticksResource::desc() const 
-{
-    std::stringstream ss ; 
-
-    std::time_t* slwt = BFile::SinceLastWriteTime(m_idpath); 
-    long seconds = slwt ? *slwt : -1 ;
-
-    float minutes = float(seconds)/float(60) ; 
-    float hours = float(seconds)/float(60*60) ; 
-    float days = float(seconds)/float(60*60*24) ; 
-
-    ss << "cache.SinceLastWriteTime"
-       << " digest " << ( m_srcdigest ? m_srcdigest : "NULL" )
-       << " seconds " << std::setw(6) << seconds
-       << std::fixed << std::setprecision(3)  
-       << " minutes " << std::setw(6) << minutes
-       << " hours " << std::setw(6) << hours
-       << " days " << std::setw(10) << days
-       ;
-
-    return ss.str();
 }
 
 
 
 
+#ifdef OLD_RESOURCE
 glm::vec4 OpticksResource::getMeshfixFacePairingCriteria()
 {
    //
@@ -797,6 +735,8 @@ glm::vec4 OpticksResource::getMeshfixFacePairingCriteria()
     std::string meshfixcfg = m_meshfixcfg ;
     return gvec4(meshfixcfg);
 }
+#endif
+
 
 std::string OpticksResource::getMergedMeshPath(unsigned int index)
 {
@@ -804,16 +744,50 @@ std::string OpticksResource::getMergedMeshPath(unsigned int index)
 }
 
 
-
-
-std::string OpticksResource::getBasePath(const char* rel)
+const char* OpticksResource::getIdPath() const
 {
-    assert(m_srcbase);
-    fs::path dir(m_srcbase);
-    if(rel) dir /= rel ;
-    return dir.string() ;
+    return m_rsc->getIdPath(); 
 }
 
+
+std::string OpticksResource::getPropertyLibDir(const char* name) const
+{
+    return m_rsc->getPropertyLibDir(name); 
+}
+std::string OpticksResource::getObjectPath(const char* name, unsigned int index) const 
+{
+    return m_rsc->getObjectPath(name, index); 
+}
+
+std::string OpticksResource::getObjectPath(const char* name) const 
+{
+    return m_rsc->getObjectPath(name); 
+}
+
+
+std::string OpticksResource::getRelativePath(const char* name, unsigned int index) const 
+{
+    return m_rsc->getRelativePath(name, index); 
+
+}
+std::string OpticksResource::getRelativePath(const char* name) const 
+{
+    return m_rsc->getRelativePath(name); 
+}
+
+
+
+
+
+#ifdef OLD_RESOURCE
+std::string OpticksResource::getDetectorPath(const char* name, unsigned int index)
+{
+    assert(m_detector_base && "OpticksResource::getDetectorPath detector_path not set");
+    fs::path dir(m_detector_base);
+    dir /= name ;
+    dir /= boost::lexical_cast<std::string>(index) ;
+    return dir.string() ;
+}
 
 
 std::string OpticksResource::getPmtPath(unsigned int index, bool relative)
@@ -829,54 +803,7 @@ std::string OpticksResource::getPmtPath(unsigned int index, bool relative)
 
 }
 
-std::string OpticksResource::getObjectPath(const char* name, unsigned int index) const 
-{
-    const char* idpath = getIdPath();
-    assert(idpath && "OpticksResource::getObjectPath idpath not set");
-    fs::path dir(idpath);
-    dir /= name ;
-    dir /= boost::lexical_cast<std::string>(index) ;
-    return dir.string() ;
-}
-
-std::string OpticksResource::getObjectPath(const char* name) const 
-{
-    const char* idpath = getIdPath();
-    assert(idpath && "OpticksResource::getObjectPath idpath not set");
-    fs::path dir(idpath);
-    dir /= name ;
-    return dir.string() ;
-}
-
-
-
-std::string OpticksResource::getRelativePath(const char* name, unsigned int index) const 
-{
-    // used eg by GPmt::loadFromCache returning "GPmt/0"
-    fs::path reldir(name);
-    reldir /= boost::lexical_cast<std::string>(index) ;
-    return reldir.string() ;
-}
-std::string OpticksResource::getRelativePath(const char* name) const 
-{
-    fs::path reldir(name);
-    return reldir.string() ;
-}
-
-
-
-
-
-
-
-std::string OpticksResource::getDetectorPath(const char* name, unsigned int index)
-{
-    assert(m_detector_base && "OpticksResource::getDetectorPath detector_path not set");
-    fs::path dir(m_detector_base);
-    dir /= name ;
-    dir /= boost::lexical_cast<std::string>(index) ;
-    return dir.string() ;
-}
+#endif
 
 
 /**
@@ -908,18 +835,24 @@ OpticksResource::getPreferenceDir
 std::string OpticksResource::getPreferenceDir(const char* type, const char* udet, const char* subtype )
 {
     //if(isG4Live()) return EMPTY ;   // g4live running needs o standardize material order too 
+    const char* prefbase = BOpticksResource::PREFERENCE_BASE ;
 
+#ifdef OLD_RESOURCE
     bool detector_type = isDetectorType(type) ; // GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib
     bool resource_type = isResourceType(type) ; // GFlags,OpticksColors 
-
-    const char* prefbase = PREFERENCE_BASE ;
     if(detector_type) prefbase = m_detector_base ; 
     if(resource_type) prefbase = m_resource_dir ;   // one of the top down dirs, set in base BOpticksResource, eg /usr/local/opticks/opticksdata/resource/ containing GFlags, OpticksColors
-
     if(detector_type)
     {
         assert(udet == NULL); // detector types dont need another detector subdir
     }
+
+    LOG(verbose) 
+        << " type " << type 
+        << " detector_type " << detector_type
+        << " resource_type " << resource_type
+        ;
+#endif
 
 
     fs::path prefdir(prefbase) ;
@@ -928,17 +861,16 @@ std::string OpticksResource::getPreferenceDir(const char* type, const char* udet
     if(subtype) prefdir /= subtype ; 
     std::string pdir = prefdir.string() ;
 
-    LOG(verbose) << "OpticksResource::getPreferenceDir"
-              << " type " << type 
-              << " detector_type " << detector_type
-              << " resource_type " << resource_type
-              << " udet " << udet
-              << " subtype " << subtype 
-              << " pdir " << pdir 
-              ;
+    LOG(LEVEL)
+        << " type " << type 
+        << " udet " << udet
+        << " subtype " << subtype 
+        << " pdir " << pdir 
+        ;
 
     return pdir ; 
 }
+
 
 
 /*
@@ -1221,6 +1153,7 @@ void OpticksResource::saveTypes(const char* dir)
 }
 
 
+#ifdef OLD_SENSOR
 NSensorList* OpticksResource::getSensorList()
 {
     if(!m_sensor_list)
@@ -1231,3 +1164,25 @@ NSensorList* OpticksResource::getSensorList()
     }
     return m_sensor_list ; 
 }
+#endif
+
+
+
+/**
+OpticksResource was formerly a subclass of BOpticksResource ... replaced the
+inheritance relationship with constituent m_rsc for better flexibility 
+as are aiming to eventually make OpticksResource disappear.
+**/
+
+
+BOpticksResource* OpticksResource::getRsc() const { return m_rsc ; }
+const char* OpticksResource::getTestCSGPath() const { return m_rsc->getTestCSGPath() ; }
+const char* OpticksResource::getTestConfig()  const { return m_rsc->getTestConfig() ; }
+
+void OpticksResource::setTestCSGPath(const char* path){  m_rsc->setTestCSGPath(path) ; }
+void OpticksResource::setTestConfig(const char* config){  m_rsc->setTestConfig(config) ; }
+
+
+
+
+

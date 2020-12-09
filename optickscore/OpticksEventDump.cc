@@ -19,6 +19,7 @@
 
 
 #include <iostream>
+#include "NPY.hpp"
 #include "RecordsNPY.hpp"
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"

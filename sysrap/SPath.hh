@@ -32,6 +32,7 @@ class SYSRAP_API SPath {
       static const char* Stem( const char* name );
       static bool IsReadable(const char* path);
       static const char* GetHomePath(const char* rel); 
+      static const char* Basename(const char* path); 
 };
 
 

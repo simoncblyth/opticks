@@ -235,11 +235,13 @@ void OpticksHub::init()
     configureCompositionSize();
 
 
+#ifdef LEGACY
     if(m_ok->isLegacy()) 
     { 
         LOG(fatal) << m_ok->getLegacyDesc(); 
         configureLookupA();
     }
+#endif
 
     m_aim = new OpticksAim(this) ; 
 
@@ -579,7 +581,7 @@ in direct mode when everything should be from geocache ?
 
 
 **/
-
+#ifdef LEGACY
 void OpticksHub::configureLookupA()
 {
     const char* path = m_ok->getMaterialMap();   // eg "/home/blyth/local/opticks/opticksdata/export/CerenkovMinimal/ChromaMaterialMap.json"
@@ -596,6 +598,8 @@ void OpticksHub::configureLookupA()
 
     m_lookup->setA(A, prefix, path);
 }
+#endif
+
 
 /**
 OpticksHub::overrideMaterialMapA

@@ -20,7 +20,11 @@
 // om-;TEST=SPathTest om-t 
 
 #include <cassert>
+#include <vector>
 #include <string>
+#include <iomanip>
+#include <iostream>
+
 #include "SPath.hh"
 
 #include "OPTICKS_LOG.hh"
@@ -53,9 +57,24 @@ void test_IsReadable()
 
     bool readable_non = SPath::IsReadable(non); 
     assert( readable_non == false ); 
-
-
 }
+
+void test_Basename()
+{
+    LOG(info); 
+    std::vector<std::string> paths = { "/dd/materials/Water", "Water", "" } ; 
+    for(unsigned i=0 ; i < paths.size() ; i++)
+    {
+        const char* path = paths[i].c_str() ;
+        const char* base = SPath::Basename(path) ;
+        std::cout 
+            << " path [" << path << "]"  
+            << " base [" << base << "]" 
+            << std::endl 
+            ;  
+    }
+}
+
 
 int main(int argc , char** argv )
 {
@@ -64,7 +83,8 @@ int main(int argc , char** argv )
     test_Stem();  
     test_GetHomePath();  
     test_IsReadable();  
+    test_Basename(); 
 
     return 0  ; 
 }
-
+// om-;TEST=SPathTest om-t 

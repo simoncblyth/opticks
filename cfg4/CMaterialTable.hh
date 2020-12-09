@@ -32,7 +32,7 @@ class CFG4_API CMaterialTable {
     public:
          static const plog::Severity LEVEL ;  
     public:
-         CMaterialTable(const char* prefix="/dd/Materials/");
+         CMaterialTable();
          void dump(const char* msg="CMaterialMap::dump");
          void fillMaterialIndexMap( std::map<std::string, unsigned>&  mixm );
          const std::map<std::string, unsigned>& getMaterialMap() const ;
@@ -45,7 +45,6 @@ class CFG4_API CMaterialTable {
          void init();
          void initNameIndex();
     private:
-         const char* m_prefix ; 
          std::map<std::string, unsigned> m_name2index ; 
          std::map<unsigned, std::string> m_index2name ; 
 
