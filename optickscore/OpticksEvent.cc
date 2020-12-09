@@ -178,7 +178,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
 
     m_records(NULL),
     m_photons(NULL),
-    m_hits(NULL),
+    //m_hits(NULL),
     m_bnd(NULL),
 
     m_num_gensteps(0),
@@ -433,14 +433,15 @@ PhotonsNPY* OpticksEvent::getPhotonsNPY()
 }
 
 
-void OpticksEvent::setHitsNPY(HitsNPY* hits)
-{
-    m_hits = hits ; 
-}
-HitsNPY* OpticksEvent::getHitsNPY()
-{
-    return m_hits ;
-}
+
+//void OpticksEvent::setHitsNPY(HitsNPY* hits)
+//{
+//    m_hits = hits ; 
+//}
+//HitsNPY* OpticksEvent::getHitsNPY()
+//{
+//    return m_hits ;
+//}
 
 
 void OpticksEvent::setBoundariesNPY(BoundariesNPY* bnd)
@@ -1116,9 +1117,11 @@ subsequent resize makes no difference to those buffers but pulls
 up the counts for phosel and recsel (and seed) ready to 
 hold the CPU indices. 
 
+* all photon level qtys have num_photons for the first dimension
+  including recsel and record thanks to structured arrays (num_photons, maxrec, ...)
 
-NB are all photon level qtys on the first dimension
-   including recsel and record thanks to structured arrays (num_photons, maxrec, ...)
+* note that NPY arrays are allocated lazily so setting NumItems for sometimes
+  unused arrays such as m_debug_data and m_way_data does not cost memory  
 
 **/
 
@@ -1131,6 +1134,7 @@ void OpticksEvent::resize()
     assert(m_record_data);
     assert(m_seed_data);
     assert(m_debug_data);
+    assert(m_way_data);
 
     unsigned int num_photons = getNumPhotons();
     unsigned int num_records = getNumRecords();
@@ -1162,6 +1166,7 @@ void OpticksEvent::resize()
     m_phosel_data->setNumItems(num_photons);
     m_recsel_data->setNumItems(num_photons);
     m_debug_data->setNumItems(num_photons);
+    m_way_data->setNumItems(num_photons);
 
     m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
     m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
