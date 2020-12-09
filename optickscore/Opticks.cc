@@ -897,6 +897,9 @@ void Opticks::initResource()
 #ifdef OLD_RESOURCE
     const char* detector = m_resource->getDetector() ; 
     setDetector(detector);
+#else
+    const char* detector = BOpticksResource::G4LIVE ; 
+    setDetector(detector);
 #endif
 
     const char* idpath = m_rsc->getIdPath();
@@ -2232,7 +2235,7 @@ const char* Opticks::getBoundary() const
 }
 const char* Opticks::getMaterial() const 
 {
-    const std::string& material = m_cfg->getBoundary() ;  // --material
+    const std::string& material = m_cfg->getMaterial() ;  // --material
     return material.empty() ? NULL : material.c_str() ;
 }
 bool Opticks::isLarge() const 
@@ -2367,8 +2370,6 @@ void  Opticks::setVerbosity(unsigned verbosity)
 /**
 Opticks::getInputUDet
 -------------------------
-
-
 
 **/
 

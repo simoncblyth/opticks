@@ -85,10 +85,10 @@ const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.i
 const char* BOpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
 
 const char* BOpticksResource::EMPTY  = "" ; 
+const char* BOpticksResource::G4LIVE  = "g4live" ; 
 
 
 #ifdef OLD_RESOURCE
-const char* BOpticksResource::G4LIVE  = "g4live" ; 
 const char* BOpticksResource::JUNO    = "juno1707" ; 
 const char* BOpticksResource::DAYABAY = "dayabay" ; 
 const char* BOpticksResource::DPIB    = "PmtInBox" ; 

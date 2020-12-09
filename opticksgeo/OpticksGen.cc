@@ -136,7 +136,8 @@ void OpticksGen::init()
         initFromEmitterGensteps();
     }
     else
-    { 
+    {
+        // OptiXRapTest.eventTest and OKOPTest.OpSeederTest go this way which both use argforced "--machinery" option  
         initFromLegacyGensteps();
     }
 }
@@ -173,8 +174,6 @@ void OpticksGen::initFromEmitterGensteps()
         << " oac : " << oac.description("oac") 
         ; 
 }
-
-
 
 void OpticksGen::initFromDirectGensteps()
 {
@@ -232,10 +231,7 @@ NPY<float>* OpticksGen::makeLegacyGensteps(unsigned code)
 
     if( code == OpticksGenstep_FABRICATED || code == OpticksGenstep_MACHINERY  )
     {
-        assert(0);
-#ifdef OLD_RESOURCE
         m_fabstep = makeFabstep();
-#endif
         gs = m_fabstep->getNPY();
     }
     else if(code == OpticksGenstep_TORCH)
@@ -407,7 +403,8 @@ FabStepNPY* OpticksGen::makeFabstep()
     FabStepNPY* fabstep = new FabStepNPY(OpticksGenstep_FABRICATED, 10, 10 );
 
     //const char* material = m_ok->getDefaultMaterial();  old way was from hardcoded strings via OpticksResource
-    const char* material = m_ok->getMaterial();      // now from commandline config, but soon from geo specific commandline embedded in geometry metadata  
+    const char* material = m_ok->getMaterial();      // WIP now from commandline config, but soon from geo specific commandline embedded in geometry metadata  
+    assert(material); 
     fabstep->setMaterial(material);
 
     targetGenstep(fabstep);  // sets frame transform

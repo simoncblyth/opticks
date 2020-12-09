@@ -121,9 +121,9 @@ class BRAP_API  BOpticksResource {
     public:
         static const char* PREFERENCE_BASE  ;
         static const char* EMPTY ; 
+        static const char* G4LIVE ; 
 #ifdef OLD_RESOURCE
     protected:
-        static const char* G4LIVE ; 
         static const char* JUNO ; 
         static const char* DAYABAY ; 
         static const char* DPIB ; 
