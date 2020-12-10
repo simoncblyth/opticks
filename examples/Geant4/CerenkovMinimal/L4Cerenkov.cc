@@ -296,11 +296,11 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #ifdef WITH_OPTICKS
     unsigned opticks_photon_offset = 0 ; 
     {
-        opticks_photon_offset = G4Opticks::GetOpticks()->getNumPhotons(); 
+        opticks_photon_offset = G4Opticks::Get()->getNumPhotons(); 
         // total number of photons for all gensteps collected before this one
         // within this OpticksEvent (potentially crossing multiple G4Event) 
           
-        G4Opticks::GetOpticks()->collectGenstep_G4Cerenkov_1042(
+        G4Opticks::Get()->collectGenstep_G4Cerenkov_1042(
              &aTrack, 
              &aStep, 
              NumPhotons,
@@ -327,7 +327,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #ifdef WITH_OPTICKS
         unsigned record_id = opticks_photon_offset+i ; 
         //std::cout << "(photon gen loop) " << record_id << std::endl ;
-        G4Opticks::GetOpticks()->setAlignIndex(record_id); 
+        G4Opticks::Get()->setAlignIndex(record_id); 
 #endif
 
 		G4double rand;
@@ -439,7 +439,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 #ifdef WITH_OPTICKS
         aSecondaryTrack->SetUserInformation(new TrackInfo( record_id ) );
-        G4Opticks::GetOpticks()->setAlignIndex(-1); 
+        G4Opticks::Get()->setAlignIndex(-1); 
 #endif
 
 
@@ -457,7 +457,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
            << G4endl 
            ;
  
-        G4Opticks::GetOpticks()->collectSecondaryPhotons(pParticleChange) ; 
+        G4Opticks::Get()->collectSecondaryPhotons(pParticleChange) ; 
 #endif
 
         return pParticleChange;

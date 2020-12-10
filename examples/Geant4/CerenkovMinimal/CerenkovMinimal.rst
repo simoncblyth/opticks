@@ -17,7 +17,7 @@ PhysicsList
 
 L4Cerenkov
     minimally modified Cerenkov process that invokes
-    G4Opticks::GetOpticks()->collectCerenkovStep
+    G4Opticks::Get()->collectCerenkovStep
 
     Currently for validation the ordinary photon generation loop
     is performed, with G4Opticks::setAlignIndex(photon_record_id)
@@ -114,11 +114,11 @@ L4Cerenkov
     306                << G4endl
     307                ;
     308 
-    309         opticks_photon_offset = G4Opticks::GetOpticks()->getNumPhotons();
+    309         opticks_photon_offset = G4Opticks::Get()->getNumPhotons();
     310         // total number of photons for all gensteps collected before this one
     311         // within this OpticksEvent (potentially crossing multiple G4Event) 
     312 
-    313         G4Opticks::GetOpticks()->collectCerenkovStep(
+    313         G4Opticks::Get()->collectCerenkovStep(
     314                0,                  // 0     id:zero means use cerenkov step count 
     315                aTrack.GetTrackID(),
     316                materialIndex,
@@ -161,7 +161,7 @@ L4Cerenkov
     353         // Determine photon energy
     354 #ifdef WITH_OPTICKS
     355         unsigned record_id = opticks_photon_offset+i ;
-    356         G4Opticks::GetOpticks()->setAlignIndex(record_id);
+    356         G4Opticks::Get()->setAlignIndex(record_id);
     357 #endif
     358 
     359         G4double rand;
@@ -183,7 +183,7 @@ L4Cerenkov
     465 
     466 #ifdef WITH_OPTICKS
     467         aSecondaryTrack->SetUserInformation(new TrackInfo( record_id ) );
-    468         G4Opticks::GetOpticks()->setAlignIndex(-1);
+    468         G4Opticks::Get()->setAlignIndex(-1);
     469 #endif
     470 
     471 
@@ -201,7 +201,7 @@ L4Cerenkov
     483            << G4endl
     484            ;
     485 
-    486         G4Opticks::GetOpticks()->collectSecondaryPhotons(pParticleChange) ;
+    486         G4Opticks::Get()->collectSecondaryPhotons(pParticleChange) ;
     487 #endif
     488 
     489         return pParticleChange;

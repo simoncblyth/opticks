@@ -82,7 +82,7 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step,G4TouchableHistory* )
         G4int flags_z = 0 ; 
         G4int flags_w = 0 ; 
  
-        G4Opticks::GetOpticks()->collectHit(
+        G4Opticks::Get()->collectHit(
              pos.x()/mm, 
              pos.y()/mm, 
              pos.z()/mm,

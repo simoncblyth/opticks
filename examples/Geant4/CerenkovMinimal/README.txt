@@ -40,7 +40,7 @@ DetectorConstruction.hh
 
 RunAction.hh
     RunAction::BeginOfRunAction passes the Geant4 geometry to Opticks 
-    with G4Opticks::GetOpticks()->setGeometry
+    with G4Opticks::Get()->setGeometry
 
 Ctx.hh
     context struct used via setEvent setTrack setStep etc.. 
