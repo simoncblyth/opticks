@@ -115,7 +115,7 @@ def tagdir_(det, typ, tag, pfx=".", layout=2):
         with pfx being the name of the test eg "tboolean-box"      
 
     """
-    log.debug("tagdir_ det %s typ %s tag %s layout %s DEFAULT_DIR_TEMPLATE %s " % (det,typ,tag,layout, DEFAULT_DIR_TEMPLATE))
+    log.info("tagdir_ det %s typ %s tag %s layout %s DEFAULT_DIR_TEMPLATE %s " % (det,typ,tag,layout, DEFAULT_DIR_TEMPLATE))
     log.debug("tagdir_ type(tag) %s " % type(tag)) 
 
     if layout == 1: 

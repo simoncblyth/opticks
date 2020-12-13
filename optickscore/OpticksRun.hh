@@ -59,13 +59,14 @@ class OKCORE_API OpticksRun
         void setGensteps(NPY<float>* gs);
         bool hasGensteps() const ;
 
-        void createEvent(NPY<float>* gensteps);
-        void createEvent(unsigned tagoffset=0);  
+        void createEvent(NPY<float>* gensteps, bool cfg4evt);
 
         void resetEvent();  
         void loadEvent();
         void saveEvent(); 
         void anaEvent(); // analysis based on saved evts 
+    private:
+        void createEvent(unsigned tagoffset, bool cfg4evt );  
     private:
         void annotateEvent(); 
         G4StepNPY* importGenstepData(NPY<float>* gs, const char* oac_label=NULL);

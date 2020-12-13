@@ -470,6 +470,7 @@ void Opticks::init()
 
 
 
+
 bool Opticks::isDumpEnv() const 
 {
     return m_dumpenv ; 
@@ -616,7 +617,6 @@ void Opticks::postpropagate()
    dumpProfile("Opticks::postpropagate", NULL, "_OpticksRun::createEvent", tcut  );  // spacwith spacing at start if each evt
    */
 
-
    if(isDumpProfile()) 
    {
        LOG(info) << "[ --dumpprofile " ;  
@@ -629,9 +629,26 @@ void Opticks::postpropagate()
    }
 
    saveParameters(); 
-
-
 }
+
+
+/**
+Opticks::Finalize
+-------------------
+
+Invoked from G4Opticks::Finalize
+
+**/
+
+void Opticks::Finalize()   // static 
+{
+    LOG(LEVEL); 
+    if(!HasInstance()) return ;  
+
+    Opticks* ok = Instance(); 
+    if(ok->isSaveProfile()) ok->saveProfile(); 
+}
+
 
 void Opticks::ana()
 {
@@ -1019,9 +1036,10 @@ bool Opticks::isNoG4Propagate() const  // --nog4propagate
 {
     return m_cfg->hasOpt("nog4propagate") ;
 }
-
-
-
+bool Opticks::isSaveProfile() const // --saveprofile
+{
+    return m_cfg->hasOpt("saveprofile") ;
+}
 bool Opticks::canDeleteGeoCache() const   // --deletegeocache
 {
     return m_cfg->hasOpt("deletegeocache") ;
@@ -1236,10 +1254,27 @@ OpticksRun* Opticks::getRun()
 {
     return m_run ;  
 }
+void Opticks::createEvent(NPY<float>* gensteps, bool cfg4evt)
+{
+    m_run->createEvent(gensteps, cfg4evt );
+}
+void Opticks::saveEvent()
+{
+    m_run->saveEvent(); 
+}
+void Opticks::resetEvent()
+{
+    m_run->resetEvent();
+}
 OpticksEvent* Opticks::getEvent() const 
 {
     return m_run->getEvent()  ; 
 }
+OpticksEvent* Opticks::getG4Event() const 
+{
+    return m_run->getG4Event()  ; 
+}
+
 
 
 
@@ -3833,6 +3868,7 @@ void Opticks::setIdPathOverride(const char* idpath_tmp) // used for saves into n
 {
     m_rsc->setIdPathOverride(idpath_tmp);
 }
+
 
 
 void Opticks::cleanup()

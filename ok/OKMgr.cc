@@ -58,7 +58,7 @@ OKMgr::OKMgr(int argc, char** argv, const char* argforced )
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks
     m_gen(m_hub->getGen()),
-    m_run(m_hub->getRun()),
+    m_run(m_ok->getRun()),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz)),
     m_count(0)
@@ -118,16 +118,16 @@ void OKMgr::propagate()
     {
         for(int i=0 ; i < m_num_event ; i++) 
         {
-            m_run->createEvent(i);
+            bool cfg4evt = false ; 
 
-            m_run->setGensteps(m_gen->getInputGensteps()); 
+            m_ok->createEvent(m_gen->getInputGensteps(), cfg4evt);
 
             m_propagator->propagate();
 
             if(save) 
             {
                 LOG(LEVEL) << "(" ; 
-                m_run->saveEvent();
+                m_ok->saveEvent();
                 if(!production) m_hub->anaEvent();
                 LOG(LEVEL) << ")" ; 
             }
@@ -136,7 +136,7 @@ void OKMgr::propagate()
                 LOG(warning) << " not saving " ; 
             }
 
-            m_run->resetEvent();
+            m_ok->resetEvent();
         }
 
         m_ok->postpropagate();

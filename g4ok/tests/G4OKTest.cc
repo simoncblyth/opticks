@@ -369,9 +369,11 @@ int G4OKTest::rc() const
 
 int main(int argc, char** argv)
 {
+    int nevt = argc > 1 ? atoi(argv[1]) : 3 ; 
+
     G4OKTest t(argc, argv); 
 
-    for(int ievt=0 ; ievt < 1 ; ievt++)
+    for(int ievt=0 ; ievt < nevt ; ievt++)
     {
        t.collectGensteps(ievt);
        t.propagate(ievt);

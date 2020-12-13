@@ -191,6 +191,8 @@ class OKCORE_API Opticks {
        void postgeocache();
        void postpropagate();
    public:
+       static void Finalize(); 
+   public:
        void ana();
        OpticksAna*  getAna() const ; 
    public:
@@ -431,6 +433,7 @@ class OKCORE_API Opticks {
        bool                 isG4CodeGen() const ;  // --g4codegen
        bool                 isNoSavePPM() const ; // --nosaveppm
        bool                 isNoG4Propagate() const ;     // --nog4propagate
+       bool                 isSaveProfile() const ; // --saveprofile
 
        bool                 isPrintEnabled() const ;  // --printenabled
        bool                 isExceptionEnabled() const ;  // --exceptionenabled
@@ -582,7 +585,12 @@ class OKCORE_API Opticks {
        OpticksEvent*        loadEvent(bool ok=true, unsigned tagoffset=0); 
        BDynamicDefine*      makeDynamicDefine();
    public:
-       OpticksEvent*        getEvent() const ;   // from m_run
+       // via m_run
+       void createEvent(NPY<float>* gensteps, bool cfg4evt) ;
+       void saveEvent() ;
+       void resetEvent() ;
+       OpticksEvent*        getEvent() const ;   
+       OpticksEvent*        getG4Event() const ; 
    public:
        // load precooked indices
        Index*               loadHistoryIndex();

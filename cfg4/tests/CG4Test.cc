@@ -53,14 +53,12 @@ int main(int argc, char** argv)
 
     LOG(warning) << "  post CG4::interactive"  ;
 
-
-    run->createEvent();
-
     if(ok.isFabricatedGensteps())  // eg TORCH running
     { 
         NPY<float>* gs = gen->getInputGensteps() ;
         LOG(error) << " setting gensteps " << gs ; 
-        run->setGensteps(gs);
+        bool cfg4evt = true ; 
+        ok.createEvent(gs, cfg4evt);
     }
     else
     {

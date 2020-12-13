@@ -239,9 +239,10 @@ void G4Opticks::Initialize(const G4VPhysicalVolume* world, bool standardize_gean
     g4ok->setGeometry(world, standardize_geant4_materials) ; 
 }
 
-void G4Opticks::Finalize()
+void G4Opticks::Finalize()  // static 
 {
     LOG(info) << G4Opticks::Get()->desc();
+    Opticks::Finalize() ; 
     delete fInstance ; 
     fInstance = NULL ;
 }
@@ -927,8 +928,11 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
             // do after propagate, so the event will have been created already
             m_g4hit = m_g4hit_collector->getPhoton();  
             m_g4evt = m_opmgr->getG4Event(); 
-            m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
-            m_g4evt->saveSourceData( m_genphotons ) ; 
+            if(m_g4evt)  // the "cfg4evt" is no longer created by default
+            {
+                m_g4evt->saveHitData( m_g4hit ) ; // pass thru to the dir, owned by m_g4hit_collector ?
+                m_g4evt->saveSourceData( m_genphotons ) ; 
+            }
         }
 
 

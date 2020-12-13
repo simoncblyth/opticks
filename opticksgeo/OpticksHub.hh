@@ -228,7 +228,7 @@ class OKGEO_API OpticksHub : public SCtrl {
 
        std::string          desc() const ;
    public:
-       OpticksRun*          getRun();
+       //OpticksRun*          getRun();
        OpticksGen*          getGen();
    public:
        void configureState(NConfigurable* scene);
@@ -238,7 +238,7 @@ class OKGEO_API OpticksHub : public SCtrl {
        SLog*            m_log ; 
        Opticks*         m_ok ; 
        int              m_gltf ;
-       OpticksRun*      m_run ; 
+       //OpticksRun*      m_run ; 
        bool             m_immediate ; 
 
        GGeo*            m_ggeo ;  

@@ -48,7 +48,7 @@ OpIndexerApp::OpIndexerApp(int argc, char** argv)
      m_ok(new Opticks(argc, argv)),
      m_cfg(m_ok->getCfg()),
      m_hub(new OpticksHub(m_ok)),
-     m_run(m_hub->getRun()),
+     m_run(m_ok->getRun()),
      m_scene(new OScene(m_hub)),
      m_ocontext(m_scene->getOContext()),
      m_oevt(new OEvent(m_ok,m_ocontext)),

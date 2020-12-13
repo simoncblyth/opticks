@@ -82,14 +82,15 @@ struct OpSeederTest
         int multi = ok.getMultiEvent();
         char entryCode = ok.getEntryCode();
 
+        bool cfg4evt = false ; 
+
         for(int i=0 ; i < multi ; i++)
         {
-            hub.createEvent(i);
+            ok.createEvent(gs, cfg4evt);
 
-            OpticksEvent* evt = hub.getEvent();
+            OpticksEvent* evt = ok.getEvent();
             assert(evt->isMachineryType() && "--machinery type is forced as this writes non-standardOpticksEvents which would otherwise cause test failures for event reading tests" ); 
 
-            evt->setGenstepData(gs);   // <-- asserts in here, OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC
 
             oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
 

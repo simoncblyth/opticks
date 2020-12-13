@@ -98,7 +98,7 @@ void OKPropagator::propagate()
     LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OKPropagator::propagate");
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_ok->getEvent();
 
     assert(evt);
 

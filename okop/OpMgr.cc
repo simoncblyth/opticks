@@ -57,7 +57,7 @@ OpMgr::OpMgr(Opticks* ok )
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks
     m_gen(m_hub->getGen()),
-    m_run(m_hub->getRun()),
+    m_run(m_ok->getRun()),
     m_propagator(new OpPropagator(m_hub, m_idx)),
     m_count(0)
 {
@@ -129,9 +129,11 @@ void OpMgr::propagate()
 
     bool compute = true ; 
 
+    bool cfg4evt = false ; 
+
     m_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(compute));
 
-    m_run->createEvent(m_gensteps); 
+    m_run->createEvent(m_gensteps, cfg4evt ); 
 
     m_propagator->propagate();
 

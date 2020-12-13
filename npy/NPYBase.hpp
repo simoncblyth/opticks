@@ -264,12 +264,7 @@ class NPY_API NPYBase {
        bool               m_dynamic ;
        NLookup*           m_lookup ;   // only needed for legacy gensteps 
 
-#ifdef OLD_PARAMETESR
-       X_BParameters*     m_parameters ;  // for keeping notes, especially for gensteps
-#else
        NMeta*             m_parameters ;  // for keeping notes, especially for gensteps
-#endif
-
        NMeta*             m_meta ; 
 
        const char*        m_name ; 

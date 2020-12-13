@@ -250,6 +250,16 @@ int G4StepNPY::getNumPhotonsCounted()
     return m_total_photons ; 
 }
 
+
+/**
+G4StepNPY::addAllowedGencodes
+------------------------------
+
+This is invoked by OpticksRun::importGenstepData
+depending 
+
+**/
+
 void G4StepNPY::addAllowedGencodes(int gencode1, int gencode2, int gencode3, int gencode4 )
 {
     if(gencode1 > -1) m_allowed_gencodes.push_back(gencode1);

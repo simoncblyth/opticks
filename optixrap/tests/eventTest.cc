@@ -70,17 +70,25 @@ int main(int argc, char** argv)
     OEvent* oevt = new OEvent(&ok, ctx);   
  
     bool prelaunch = false ; 
+    bool cfg4evt = false ; 
 
     for(unsigned i=0 ; i < 10 ; i++)
     {
          NPY<float>* gs = gs0->clone();
 
-         run->createEvent(i);
+         gs->setArrayContentIndex(i); 
+
+         run->createEvent(gs, cfg4evt); 
+
+         //run->createEvent(i);
          OpticksEvent* evt = run->getEvent();
 
          assert(evt->isMachineryType() && "--machinery type is forced as this writes incomplete OpticksEvents which would otherwise cause test failures for event reading tests" );
 
-         evt->setGenstepData(gs);
+         //evt->setGenstepData(gs);
+
+
+
 
          evt->addBufferControl("photon", OpticksBufferControl::COMPUTE_MODE_ );
          evt->addBufferControl("record", OpticksBufferControl::COMPUTE_MODE_ );

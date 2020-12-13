@@ -324,6 +324,10 @@ void OpticksCfg<Listener>::init()
        ("dumpprofile",   "dump runtime profile, see Opticks::postpropagate") ; 
 
    m_desc.add_options()
+       ("saveprofile",   "save runtime profile, see Opticks::finalize") ; 
+
+
+   m_desc.add_options()
        ("dumpsensor",   "dump sensor volumes, see GGeo::postDirectTranslateDump ") ; 
 
    m_desc.add_options()

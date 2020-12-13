@@ -97,7 +97,6 @@ void NPY<T>::zero()
 {
     T* data_ = allocate();
     memset( data_, 0, getNumBytes(0) );
-    //return data_ ; 
 }
 
 template <typename T>
@@ -169,6 +168,13 @@ void NPY<T>::reset()
 {
     deallocate();
 }
+
+template <typename T>
+unsigned NPY<T>::capacity() const 
+{
+    return m_data.capacity(); 
+}
+
 
 template <typename T>
 void NPY<T>::read(const void* src)

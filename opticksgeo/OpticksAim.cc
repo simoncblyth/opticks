@@ -210,7 +210,7 @@ void OpticksAim::target()
     int target_ = getTarget() ;
     bool geocenter  = m_ok->hasOpt("geocenter");  // --geocenter
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_ok->getEvent();
 
     if(target_ != 0)
     {

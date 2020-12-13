@@ -3,6 +3,7 @@
 #include "OPTICKS_LOG.hh"
 #include "SStr.hh"
 #include "SSys.hh"
+#include "SProc.hh"
 #include "NPY.hpp"
 
 /**
@@ -47,12 +48,41 @@ void test_row_major_serialization()
 
 
 
+void test_make(int n)
+{
+    LOG(info); 
+    float vm0 = SProc::VirtualMemoryUsageMB() ; 
+    for(unsigned i=0 ; i < n ; i++)
+    {
+        NPY<float>* a = NPY<float>::make(10000, 4 ); 
+        a->zero(); 
+        a->reset();    // reset alone not enough, need to delete too 
+
+        float vm = SProc::VirtualMemoryUsageMB() ; 
+        float dv = vm - vm0 ; 
+        std::cout 
+            << std::setw(6) << i 
+            << " : "
+            << std::setw(6) << vm
+            << " : "
+            << std::setw(6) << dv
+            << " : "
+            << std::setw(6) << a->capacity()
+            << std::endl
+            ; 
+        
+        //delete a ;  
+    }
+}
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+    int n = argc > 1 ? atoi(argv[1]) : 10 ; 
 
-    test_row_major_serialization(); 
+    //test_row_major_serialization(); 
+
+    test_make(n); 
 
     return 0 ; 
 }

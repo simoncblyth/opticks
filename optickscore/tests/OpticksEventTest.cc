@@ -27,6 +27,7 @@
 #include "OPTICKS_LOG.hh"
 
 // okc-
+#include "Opticks.hh"
 #include "OpticksEventSpec.hh"
 #include "OpticksEvent.hh"
 
@@ -41,9 +42,9 @@ void test_genstep_derivative()
 
     LOG(info) << trk->getShapeString();
 
-    glm::vec4 origin    = trk->getQuad(0,0) ;
-    glm::vec4 direction = trk->getQuad(0,1) ;
-    glm::vec4 range     = trk->getQuad(0,2) ;
+    glm::vec4 origin    = trk->getQuadF(0,0) ;
+    glm::vec4 direction = trk->getQuadF(0,1) ;
+    glm::vec4 range     = trk->getQuadF(0,2) ;
 
     print(origin,"origin");
     print(direction,"direction");
@@ -86,7 +87,6 @@ void test_appendNote()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-
     //test_genstep_derivative();
     //test_genstep();
     test_appendNote();

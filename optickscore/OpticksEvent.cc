@@ -178,7 +178,6 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
 
     m_records(NULL),
     m_photons(NULL),
-    //m_hits(NULL),
     m_bnd(NULL),
 
     m_num_gensteps(0),
@@ -593,6 +592,7 @@ void OpticksEvent::pushNames(std::vector<std::string>& names)
     names.push_back(nopstep_);
     names.push_back(photon_);
     names.push_back(debug_);
+    names.push_back(way_);
     names.push_back(source_);
     names.push_back(record_);
     names.push_back(phosel_);
@@ -1094,16 +1094,66 @@ void OpticksEvent::reset()
 void OpticksEvent::resetBuffers()
 {
     // deallocate (clearing the underlying vector) and setNumItems to 0 
-    if(m_nopstep_data)  m_nopstep_data->reset();    
-    if(m_photon_data)   m_photon_data->reset();    
-    if(m_debug_data)    m_debug_data->reset();    
-    if(m_way_data)      m_way_data->reset();    
-    if(m_sequence_data) m_sequence_data->reset();    
-    if(m_seed_data)     m_seed_data->reset();    
-    if(m_phosel_data)   m_phosel_data->reset();    
-    if(m_recsel_data)   m_recsel_data->reset();    
-    if(m_record_data)   m_record_data->reset();    
-    if(m_hit_data)      m_hit_data->reset();    
+    if(m_nopstep_data)
+    {
+        m_nopstep_data->reset();    
+        delete m_nopstep_data ; 
+        m_nopstep_data = NULL ; 
+    }
+    if(m_photon_data)   
+    {
+        m_photon_data->reset();    
+        delete m_photon_data ; 
+        m_photon_data = NULL ; 
+    }
+    if(m_debug_data)  
+    {
+        m_debug_data->reset();    
+        delete m_debug_data ;
+        m_debug_data = NULL ; 
+    }
+    if(m_way_data)
+    {
+        m_way_data->reset();    
+        delete m_way_data ; 
+        m_way_data = NULL ; 
+    }
+    if(m_sequence_data) 
+    {
+        m_sequence_data->reset();    
+        delete m_sequence_data ; 
+        m_sequence_data = NULL ; 
+    }
+    if(m_seed_data)     
+    {
+        m_seed_data->reset();    
+        delete m_seed_data ; 
+        m_seed_data = NULL ; 
+    }
+    if(m_phosel_data)   
+    {
+        m_phosel_data->reset();    
+        delete m_phosel_data ; 
+        m_phosel_data = NULL ; 
+    } 
+    if(m_recsel_data) 
+    {
+        m_recsel_data->reset();    
+        delete m_recsel_data ; 
+        m_recsel_data = NULL ; 
+    }
+    if(m_record_data)   
+    {
+        m_record_data->reset();    
+        delete m_record_data ; 
+        m_record_data = NULL ; 
+    }
+    if(m_hit_data)    
+    {
+        m_hit_data->reset();    
+        delete m_hit_data ; 
+        m_hit_data = NULL ; 
+    }
 }
 
 

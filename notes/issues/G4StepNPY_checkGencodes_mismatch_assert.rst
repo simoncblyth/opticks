@@ -17,6 +17,87 @@ The issue looks the same as one from Sept
 
 
 
+Dec 2020 : tripping this again with OpticksRunTest using a torchstep from OpticksGenstep::Candle
+--------------------------------------------------------------------------------------------------
+
+::
+
+    2020-12-13 16:14:58.562 INFO  [7283277] [Opticks::loadOriginCacheMeta@2018] (pass) GEOCACHE_CODE_VERSION 9
+    2020-12-13 16:14:58.562 INFO  [7283277] [test_OpticksRun_reset@20] 0
+    2020-12-13 16:14:58.564 ERROR [7283277] [G4StepNPY::checkGencodes@294]  i 0 unexpected gencode label 5 allowed gencodes 1,2,3,4,7,
+    2020-12-13 16:14:58.564 FATAL [7283277] [G4StepNPY::checkGencodes@306] G4StepNPY::checklabel FAIL numStep 1 mismatch 1
+    Assertion failed: (mismatch == 0), function checkGencodes, file /Users/blyth/opticks/npy/G4StepNPY.cpp, line 311.
+
+
+What should be allowed ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The gencodes that oxrap/cu/generate.cu understands, namely::
+
+    epsilon:optixrap blyth$ grep gencode\ == cu/generate.cu 
+        if(gencode == OpticksGenstep_G4Cerenkov_1042 ) 
+        else if(gencode == OpticksGenstep_DsG4Scintillation_r3971 )
+        else if(gencode == OpticksGenstep_G4Scintillation_1042 )
+        else if(gencode == OpticksGenstep_TORCH)
+        else if(gencode == OpticksGenstep_EMITSOURCE)
+    epsilon:optixrap blyth$     
+
+::
+
+    474     if(gencode == OpticksGenstep_G4Cerenkov_1042 )
+    475     {
+    476         CerenkovStep cs ;
+    477         csload(cs, genstep_buffer, genstep_offset, genstep_id);
+    481         generate_cerenkov_photon(p, cs, rng );
+    482         s.flag = CERENKOV ;
+    483     }
+    484     else if(gencode == OpticksGenstep_DsG4Scintillation_r3971 )
+    485     {
+    486         ScintillationStep ss ;
+    487         ssload(ss, genstep_buffer, genstep_offset, genstep_id);
+    491         generate_scintillation_photon(p, ss, rng );  // maybe split on gencode ?
+    492         s.flag = SCINTILLATION ;
+    493     }
+    494     else if(gencode == OpticksGenstep_G4Scintillation_1042 )
+    495     {
+    496         Genstep_G4Scintillation_1042 ss ;
+    497         ss.load( genstep_buffer, genstep_offset, genstep_id);
+    501         ss.generate_photon(p, rng );
+    502         s.flag = SCINTILLATION ;
+    503     }
+    504     else if(gencode == OpticksGenstep_TORCH)
+    505     {
+    506         TorchStep ts ;
+    507         tsload(ts, genstep_buffer, genstep_offset, genstep_id);
+    511         generate_torch_photon(p, ts, rng );
+    512         s.flag = TORCH ;
+    513     }
+    514     else if(gencode == OpticksGenstep_EMITSOURCE)
+    515     {
+    516         // source_buffer is input only, photon_buffer output only, 
+    517         // photon_offset is same for both these buffers
+    518         pload(p, source_buffer, photon_offset );
+    519         s.flag = TORCH ;
+    523     }
+
+
+okc/OpticksGenstep.h::
+
+     19 enum
+     20 {
+     21     OpticksGenstep_INVALID                  = 0,   // Allowed?
+     22     OpticksGenstep_G4Cerenkov_1042          = 1,   // Y
+     23     OpticksGenstep_G4Scintillation_1042     = 2,   // Y
+     24     OpticksGenstep_DsG4Cerenkov_r3971       = 3,   // Y  <<<< OOPS : LISTED AS ALLOWED BUT NOT COVERED : PROBABLY ASSUMING SAME AS G4Cerenkov_1042 ?
+     25     OpticksGenstep_DsG4Scintillation_r3971  = 4,   // Y
+     26     OpticksGenstep_TORCH                    = 5,   // N  <<<<  OOPS : COVERED BUT NOT LISTED AS ALLOWED
+     27     OpticksGenstep_FABRICATED               = 6,   // N 
+     28     OpticksGenstep_EMITSOURCE               = 7,   // Y
+     29     OpticksGenstep_NATURAL                  = 8,   // N
+
+
+
+
 macOS fails
 --------------
 

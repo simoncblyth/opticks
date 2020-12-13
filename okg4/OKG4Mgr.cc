@@ -153,7 +153,6 @@ void OKG4Mgr::propagate()
     {
         for(int i=0 ; i < m_num_event ; i++) 
         {   
-            m_run->createEvent(i);
 
             propagate_();
 
@@ -207,11 +206,12 @@ instanciate m_g4 and m_generator : but the machinery forces to do so
 void OKG4Mgr::propagate_()
 { 
     bool align = m_ok->isAlign();
+    bool cfg4evt = true ; 
 
     if(m_generator->hasGensteps())   // TORCH
     {
          NPY<float>* gs = m_generator->getGensteps() ;
-         m_run->setGensteps(gs); 
+         m_ok->createEvent(gs, cfg4evt);
 
          if(align)
              m_propagator->propagate();
@@ -226,7 +226,7 @@ void OKG4Mgr::propagate_()
          if(!gs) LOG(fatal) << "CG4::propagate failed to return gensteps" ; 
          assert(gs);
 
-         m_run->setGensteps(gs); 
+         m_ok->createEvent(gs, cfg4evt );
     }
             
     if(!align)

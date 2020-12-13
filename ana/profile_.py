@@ -24,8 +24,10 @@ profile_.py
 
 Renamed from profile.py due to notes/issues/ipython-ipdb-issue.rst
 
-
 ::
+
+    TEST=OpticksRunTest ipython -i ~/opticks/ana/profile_.py -- --tag 0
+
 
     LV=box profile_.py 
     LV=box python2.7 profile_.py 
@@ -283,6 +285,11 @@ class Profile(object):
         self.dv = dv
 
         self.q = q  
+
+
+        self.apath = path
+        self.lpath = lpath
+
         log.info("]")
 
 
@@ -401,6 +408,11 @@ class Profile(object):
         pass
 
     def deltaT(self, arg0, arg1=None):
+        """
+        :param arg0:
+        :param arg1: 
+        :return dt,p0,p1: time between labels and indices of the labels
+        """
         dt, dv, p0, p1 = self.delta(arg0, arg1)
         return dt, p0, p1 
 
@@ -513,13 +525,13 @@ def multievent_plot( pr, plt ):
     * plotting should never live together with generally usable code, as plotting machinery 
       has much more dependencies and also prone to being swapped for other plotting machinery 
     """
-    w0 = np.where(pr.l == "_OpticksRun::createEvent")[0]
-    w1 = np.where(pr.l == "OpticksRun::resetEvent")[0]
+    w0 = np.where(pr.l == b_("_OpticksRun::createEvent"))[0]
+    w1 = np.where(pr.l == b_("OpticksRun::resetEvent"))[0]
     assert len(w0) == len(w1)
 
     w10 = w1 - w0 
-    uw10 = np.unique(w10[1:])
-    assert len(uw10) == 1
+    uw10 = np.unique(w10[1:])   # exclude the first, as initialization stamps may be different 
+    assert len(uw10) == 1       # number of profile stamps should be the same for all events 
     uw = uw10[0]
 
     ## each event after the 1st has the same set of labels 
@@ -551,7 +563,21 @@ def multievent_plot( pr, plt ):
     plt.ion()
     fig.show()
 
- 
+
+def simple_plot( pr, plt):
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    plt.plot( pr.t, pr.v, 'o' )
+
+    ax.set_ylabel("Process Virtual Memory (MB)")
+    ax.set_xlabel("Time since executable start (s)")
+
+    plt.ion()
+    fig.show()
+
+
 
 
 
@@ -561,12 +587,10 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     init_rcParams(plt)
 
-
     ok = opticks_main(doc=__doc__)  
     log.debug(ok.brief)
 
     #test_ABProfile( ok, plt )
-
     log.info("tagdir: %s " % ok.tagdir)
 
     pr = Profile(ok.tagdir, "pro") 
@@ -582,6 +606,8 @@ if __name__ == '__main__':
     if pr.multievent:
         multievent_plot(pr, plt)  
     pass
+
+    simple_plot( pr, plt )
 
 
 

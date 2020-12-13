@@ -107,7 +107,18 @@ class OK(argparse.Namespace):
 
 
 def opticks_args(**kwa):
+    """
+    The envvar OPTICKS_ANA_DEFAULTS provides a convenient way to 
+    communicate where the events of interest are, eg::
 
+        OPTICKS_ANA_DEFAULTS=det=g4live,cat=g4live,src=torch,tag=1,pfx=OKTest
+
+    The pfx setting default from here can be separately overridden using
+    the TEST envvar, for example::
+
+         TEST=OpticksRunTest ipython -i ~/opticks/ana/profile_.py 
+
+    """
     oad_key = "OPTICKS_ANA_DEFAULTS"
     oad = os.environ.get(oad_key,"det=g4live,cat=g4live,src=torch,tag=1,pfx=.")
     defaults = dict(map(lambda ekv:ekv.split("="), oad.split(","))) 
@@ -120,6 +131,11 @@ def opticks_args(**kwa):
         defaults["cat"] = defaults["pfx"]
         log.info("override pfx, cat defaults as LV=%s envvar defined, %s " % (lv, defaults["pfx"])) 
     pass  
+
+    test = os.environ.get("TEST", None)   
+    if test is not None:
+        defaults["pfx"] = test
+    pass 
 
     log.info("envvar %s -> defaults %s " % (oad_key, repr(defaults)))
 

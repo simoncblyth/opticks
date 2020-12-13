@@ -193,7 +193,7 @@ OpticksHub::OpticksHub(Opticks* ok)
     SCtrl(),
     m_log(new SLog("OpticksHub::OpticksHub","", LEVEL)),
     m_ok(ok),
-    m_run(m_ok->getRun()),
+    //m_run(m_ok->getRun()),
     m_ggeo(GGeo::GetInstance()),   // a pre-existing instance will prevent subsequent loading from cache   
     m_composition(new Composition(m_ok)),
 #ifdef OPTICKS_NPYSERVER
@@ -699,13 +699,15 @@ void OpticksHub::anaEvent()
 {
     LOG(LEVEL) << "[" ;
 
-    OpticksEvent* evt = m_run->getEvent();
+    OpticksRun* run = m_ok->getRun();  
+
+    OpticksEvent* evt = run->getEvent();
     anaEvent(evt); 
 
-    OpticksEvent* g4evt = m_run->getG4Event();
+    OpticksEvent* g4evt = run->getG4Event();
     anaEvent(g4evt); 
 
-    m_run->anaEvent();
+    run->anaEvent();
 
     LOG(LEVEL) << "]" ;
 }
@@ -826,11 +828,13 @@ OpticksGen* OpticksHub::getGen()
 {
     return m_gen ; 
 }
+
+/*
 OpticksRun* OpticksHub::getRun()
 {
     return m_run ; 
 }
-
+*/
 
 
 BCfg* OpticksHub::getUmbrellaCfg() const 
@@ -882,6 +886,8 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
 
 
 
+
+/*
 void OpticksHub::createEvent(unsigned tagoffset)
 {
     m_run->createEvent(tagoffset);
@@ -894,7 +900,7 @@ OpticksEvent* OpticksHub::getEvent()
 {
     return m_run->getEvent() ; 
 }
-
+*/
 
 
 

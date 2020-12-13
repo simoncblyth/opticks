@@ -26,10 +26,13 @@
 #include "GLMPrint.hpp"
 #include "NPY.hpp"
 #include "NSlice.hpp"
+#include "TorchStepNPY.hpp"
 
 #include "OpticksPhoton.h"
 #include "OpticksFlags.hh"
 #include "OpticksGenstep.hh"
+#include "OpticksEvent.hh"
+#include "OpticksActionControl.hh"
 
 #include "PLOG.hh"
 
@@ -370,5 +373,32 @@ void OpticksGenstep::dump(unsigned modulo, unsigned margin, const char* msg) con
         }
     }
 }
+
+
+
+NPY<float>* OpticksGenstep::MakeCandle(unsigned num_photons, unsigned tagoffset )
+{
+    unsigned gentype = OpticksGenstep_TORCH  ;
+    unsigned num_step = 1 ; 
+    const char* config = NULL ; 
+    TorchStepNPY* ts = new TorchStepNPY(gentype, num_step, config);
+    glm::mat4 frame_transform(1.0); 
+    ts->setFrameTransform(frame_transform);
+    for(unsigned i=0 ; i < num_step ; i++) 
+    {    
+        if(num_photons > 0) ts->setNumPhotons(num_photons);  // otherwise use default
+        ts->addStep(); 
+    }    
+    NPY<float>* gs = ts->getNPY(); 
+    bool compute = true ; 
+    gs->setBufferSpec(OpticksEvent::GenstepSpec(compute));
+    gs->setArrayContentIndex( tagoffset ); 
+
+    OpticksActionControl oac(gs->getActionControlPtr());     
+    oac.add(OpticksActionControl::GS_TORCH_);
+
+    return gs ; 
+}
+
 
 

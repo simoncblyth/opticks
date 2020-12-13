@@ -233,6 +233,7 @@ class NPY_API NPY : public NPYBase {
        void add(const glm::ivec4& u ) ; // add quad, itemsize must be 4 
        void add(const glm::mat4& m ) ;  // add mat4, itemsize must be 4,4
        void reset();   //  clears data, setHasData to false and setNumItems to zero
+       unsigned capacity() const ; 
     public:
        void updateDigests();
        void addItem(NPY<T>* other, unsigned item);   // add single item from another buffer, it must have same itemsize (ie size after 1st dimension)

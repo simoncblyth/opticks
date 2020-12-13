@@ -53,12 +53,13 @@ set(TEST_SOURCES
     SensorLibTest.cc
     MockSensorAngularEfficiencyTableTest.cc
     MockSensorLibTest.cc
+    OpticksEventTest.cc
+    OpticksRunTest.cc
 )
 
 
 set(TEST_SOURCES_NOK 
 
-    OpticksEventTest.cc
 
     OpticksAppTest.cc
 

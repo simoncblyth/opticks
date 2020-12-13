@@ -87,15 +87,15 @@ This
 
 
 
-void OpticksRun::createEvent(NPY<float>* gensteps) 
+void OpticksRun::createEvent(NPY<float>* gensteps, bool cfg4evt ) 
 {
     unsigned tagoffset = gensteps ? gensteps->getArrayContentIndex() : 0 ;  // eg eventID
     LOG(LEVEL) << " tagoffset " << tagoffset ; 
-    createEvent(tagoffset); 
+    createEvent(tagoffset, cfg4evt ); 
     setGensteps(gensteps); 
 }
 
-void OpticksRun::createEvent(unsigned tagoffset)
+void OpticksRun::createEvent(unsigned tagoffset, bool cfg4evt )
 {
     bool nog4propagate = m_ok->isNoG4Propagate() ;   // --nog4propagate
 
@@ -108,16 +108,16 @@ void OpticksRun::createEvent(unsigned tagoffset)
     m_evt = m_ok->makeEvent(true, tagoffset) ;
     std::string tstamp = m_evt->getTimeStamp();
 
-    if(nog4propagate) 
-    { 
-        m_g4evt = NULL ;   
-    }
-    else
+    if( cfg4evt && !nog4propagate )
     {  
         m_g4evt = m_ok->makeEvent(false, tagoffset) ;
         m_g4evt->setSibling(m_evt);
         m_g4evt->setTimeStamp( tstamp.c_str() );   // align timestamps
         m_evt->setSibling(m_g4evt);
+    }
+    else
+    {
+        m_g4evt = NULL ;   
     }
 
     LOG(LEVEL)
@@ -327,7 +327,9 @@ void OpticksRun::anaEvent()
 
 void OpticksRun::loadEvent()
 {
-    createEvent();
+    unsigned tagoffset = 0 ; 
+    bool cfg4evt = false ; 
+    createEvent(tagoffset, cfg4evt);
 
     bool verbose ; 
     m_evt->loadBuffers(verbose=false);
@@ -368,6 +370,10 @@ translations performed.
 OpticksActionControl is used to modify the NPYBase::m_action_control 
 of the gensteps.
 
+Why should allowed gencodes depend on the OpticksActionControl ? Surely 
+what is allowed should depend solely on what is implemented in oxrap/cu/generate.cu ?
+See notes/issues/G4StepNPY_checkGencodes_mismatch_assert.rst 
+
 **/
 
 
@@ -405,6 +411,10 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
         << " shape " << gs->getShapeString()
         << " " << oac.description("oac")
         ;
+
+
+    
+
 
     if(oac("GS_LEGACY"))
     {
