@@ -640,23 +640,24 @@ RT_PROGRAM void generate()
         } 
 #endif
 
-
-        //
-        // see seqvol.rst 
-        //     below dumping more useful with option --pindex 0/1/2 etc.. restricting indices to dump
-        //     in order to follow a single photons intersect volumes
-        //   
-        // rtPrintf(" photon_id %d slot %d s.identity.x %d \n", photon_id, slot, s.identity.x );
-        //
-
         slot++ ; 
 
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ;           // BULK_ABSORB
         if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER
-        // PASS : survivors will go on to pick up one of the below flags, 
 
+        // tacit PASS : survivors succeed to reach the boundary 
+        // proceeding to pick up one of the below SURFACE_ or BOUNDARY_ flags 
 
+#ifdef WITH_WAY_BUFFER
+        //if( way_control.x == prd.identity.x && way_control.y == prd.boundary )
+        if( way_control.y == prd.boundary )
+        {
+            s.way.x = p.position.x ; 
+            s.way.y = p.position.y ; 
+            s.way.z = p.position.z ; 
+        }
+#endif
         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
         {
             command = propagate_at_surface(p, s, rng);
@@ -669,15 +670,6 @@ RT_PROGRAM void generate()
             // tacit CONTINUE
         }
 
-
-#ifdef WITH_WAY_BUFFER
-       if( way_control.x == prd.identity.x && way_control.y == prd.boundary )
-       {
-           s.way.x = p.position.x ; 
-           s.way.y = p.position.y ; 
-           s.way.z = p.position.z ; 
-       }
-#endif
 
     }   // bounce < bounce_max
 
