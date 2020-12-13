@@ -1729,6 +1729,7 @@ void OpticksEvent::save()
         saveRecordData();
         saveSequenceData();
         saveDebugData();
+        saveWayData();
 
         //saveSeedData();
         saveIndex();
@@ -1834,6 +1835,11 @@ void OpticksEvent::saveDebugData()
 {
     NPY<float>* dg = getDebugData();
     if(dg) dg->save(m_pfx, "dg", m_typ,  m_tag, m_udet);
+}
+void OpticksEvent::saveWayData()
+{
+    NPY<float>* wy = getWayData();
+    if(wy) wy->save(m_pfx, "wy", m_typ,  m_tag, m_udet);
 }
 
 

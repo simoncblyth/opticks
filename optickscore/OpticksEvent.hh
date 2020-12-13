@@ -302,6 +302,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void saveSequenceData(); 
        void saveSeedData(); 
        void saveDebugData(); 
+       void saveWayData(); 
        void saveIndex();
        void loadIndex();
        void loadBuffers(bool verbose=true);
