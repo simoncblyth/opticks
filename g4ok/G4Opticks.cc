@@ -75,6 +75,7 @@ const plog::Severity G4Opticks::LEVEL = PLOG::EnvLevel("G4Opticks", "DEBUG")  ;
 G4Opticks* G4Opticks::fInstance = NULL ;
 
 const char* G4Opticks::OPTICKS_EMBEDDED_COMMANDLINE = "OPTICKS_EMBEDDED_COMMANDLINE" ; 
+const char* G4Opticks::OPTICKS_EMBEDDED_COMMANDLINE_EXTRA = "OPTICKS_EMBEDDED_COMMANDLINE_EXTRA" ; 
 const char* G4Opticks::fEmbeddedCommandLine_pro = " --compute --embedded --xanalytic --production --nosave" ;
 const char* G4Opticks::fEmbeddedCommandLine_dev = " --compute --embedded --xanalytic --save --natural --printenabled --pindex 0" ;
 
@@ -97,7 +98,7 @@ of options or invalid combinations of options will cause asserts.
 
 std::string G4Opticks::EmbeddedCommandLine(const char* extra )  // static
 {
-    const char* ecl = SSys::getenvvar(OPTICKS_EMBEDDED_COMMANDLINE, "pro") ; 
+    const char* ecl  = SSys::getenvvar(OPTICKS_EMBEDDED_COMMANDLINE, "pro") ; 
 
     if(strcmp(ecl, "pro") == 0)
     {
@@ -112,9 +113,12 @@ std::string G4Opticks::EmbeddedCommandLine(const char* extra )  // static
         LOG(LEVEL) << "Using " << OPTICKS_EMBEDDED_COMMANDLINE << " as is " << ecl ; 
     }
 
+    const char* eclx = SSys::getenvvar(OPTICKS_EMBEDDED_COMMANDLINE_EXTRA, "") ; 
+
     std::stringstream ss ; 
     ss << ecl << " " ;
     if(extra) ss << " " << extra ; 
+    if(eclx) ss << " " << eclx ; 
     return ss.str();  
 }
 

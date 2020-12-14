@@ -22,7 +22,7 @@ okc/OpticksRunTest::
 
 ::
 
-    epsilon:optickscore blyth$ OpticksRunTest 10000
+    epsilon:optickscore blyth$ OpticksRunTest 10000 --profile
     epsilon:optickscore blyth$ TEST=OpticksRunTest ipython -i ~/opticks/ana/profile_.py -- --tag 0
 
     ##  plot of VM against time ramps up to almost 600M  : so reset is missing lots of memory 

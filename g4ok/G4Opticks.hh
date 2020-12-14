@@ -94,6 +94,7 @@ class G4OK_API G4Opticks
         static const plog::Severity LEVEL ;
 
         static const char* OPTICKS_EMBEDDED_COMMANDLINE ; 
+        static const char* OPTICKS_EMBEDDED_COMMANDLINE_EXTRA ; 
         static const char* fEmbeddedCommandLine_dev ;
         static const char* fEmbeddedCommandLine_pro ;
         static std::string EmbeddedCommandLine(const char* extra); 
