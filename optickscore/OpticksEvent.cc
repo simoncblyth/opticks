@@ -1050,6 +1050,10 @@ NB allocation is deferred until zeroing and they start at 0 items anyhow
 
 void OpticksEvent::createBuffers()
 {
+    NPY<float>* nop = NPY<float>::make(m_nopstep_spec);
+    bool clone_ = false ; 
+    setNopstepData(nop, clone_);   
+
     NPY<float>* pho = NPY<float>::make(m_photon_spec); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
