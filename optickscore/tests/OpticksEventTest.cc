@@ -20,6 +20,9 @@
 #include <cassert>
 #include <iostream>
 
+
+#include "SProc.hh"
+
 // npy-
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
@@ -82,21 +85,42 @@ void test_appendNote()
 
 }
 
-void test_resetEvent(Opticks* ok, bool cfg4evt)
+void test_resetEvent(Opticks* ok, unsigned nevt, bool cfg4evt)
 {
     unsigned num_photons = 10000 ; 
     unsigned tagoffset = 0 ; 
 
     NPY<float>* gs = OpticksGenstep::MakeCandle(num_photons, tagoffset ) ;
 
-    ok->createEvent(gs, cfg4evt); 
+    float vm0 = SProc::VirtualMemoryUsageMB() ; 
+
+    for(unsigned i=0 ; i < nevt ; i++)
+    {
+        ok->createEvent(gs, cfg4evt); 
+        ok->resetEvent(); 
+    }
+
+    float vm1 = SProc::VirtualMemoryUsageMB() ; 
+    float dvm = vm1 - vm0 ; 
+    float leak_per_evt = dvm/float(nevt) ; 
+
+    LOG(info) 
+       << " vm0 " << vm0
+       << " vm1 " << vm1
+       << " dvm " << dvm
+       << " nevt " << nevt 
+       << " leak_per_evt (MB) " << leak_per_evt 
+       << " cfg4evt " << cfg4evt
+       ;
+
     delete gs ; 
 
-    ok->resetEvent(); 
 }
 
 int main(int argc, char** argv)
 {
+    int nevt = argc > 1 ? atoi(argv[1]) : 1000 ; 
+
     OPTICKS_LOG(argc, argv);
     //test_genstep_derivative();
     //test_genstep();
@@ -108,8 +132,8 @@ int main(int argc, char** argv)
     glm::vec4 space_domain(0.f,0.f,0.f,1000.f); 
     ok.setSpaceDomain(space_domain); 
 
-    test_resetEvent(&ok, false); 
-    test_resetEvent(&ok, true); 
+    test_resetEvent(&ok, nevt, false); 
+    //test_resetEvent(&ok, nevt, true); 
 
     return 0 ;
 }

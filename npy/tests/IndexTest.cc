@@ -19,7 +19,7 @@
 
 #include "Index.hpp"
 #include <cassert>
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 
@@ -27,13 +27,21 @@
 
 int main(int argc , char** argv )
 {
-   PLOG_(argc, argv);
+   OPTICKS_LOG(argc, argv);
 
    const char* reldir = NULL ; 
+
+   bool sort = true ;  
+
+   std::cout << "#0" << std::endl ;  
    Index idx("IndexTest", reldir);
-   idx.add("red",1);
-   idx.add("green",2);
-   idx.add("blue",3);
+   std::cout << "#1" << std::endl ;  
+   idx.add("red",1, sort);
+   std::cout << "#2" << std::endl ;  
+   idx.add("green",2, sort);
+   std::cout << "#3" << std::endl ;  
+   idx.add("blue",3, sort );
+   std::cout << "#4" << std::endl ;  
 
    assert(idx.getIndexSource("green") == 2 );
 

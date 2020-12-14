@@ -69,6 +69,8 @@ class BRAP_API BTimes {
      std::string name();
   public:
      BTimes(const char* label="nolabel");
+     virtual ~BTimes(); 
+
      void setLabel(const char* label);
      BTimes* clone(const char* label);
      void add(const char* name, double t );

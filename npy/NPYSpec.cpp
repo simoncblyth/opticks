@@ -28,7 +28,7 @@
 #include "PLOG.hh"
 
 NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsigned nl, unsigned nm, NPYBase::Type_t type, const char* ctrl, bool optional, int verbosity)
-  :
+    :
     m_name(name ? strdup(name) : NULL),
     m_ni(ni),
     m_nj(nj),
@@ -41,6 +41,12 @@ NPYSpec::NPYSpec(const char* name, unsigned ni, unsigned nj, unsigned nk, unsign
     m_optional(optional),
     m_verbosity(verbosity)
 {
+}
+
+NPYSpec::~NPYSpec()
+{
+    free((char*)m_name); 
+    free((char*)m_ctrl); 
 }
 
 NPYSpec* NPYSpec::clone() const 

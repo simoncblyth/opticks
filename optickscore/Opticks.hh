@@ -718,6 +718,7 @@ class OKCORE_API Opticks {
        bool                 m_envkey ; 
        bool                 m_production ; 
        OpticksProfile*      m_profile ; 
+       bool                 m_profile_enabled ; 
 #ifdef OLD_RESOURCE
        const char*          m_materialprefix ;
 #endif

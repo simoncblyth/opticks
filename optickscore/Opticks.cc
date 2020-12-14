@@ -352,6 +352,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_envkey(envkey()),
     m_production(m_sargs->hasArg("--production")),
     m_profile(new OpticksProfile()),
+    m_profile_enabled(m_sargs->hasArg("--profile")),
 #ifdef OLD_RESOURCE
     m_materialprefix(NULL),
 #endif
@@ -511,17 +512,12 @@ std::string Opticks::getArgLine()
 }
 
 
-/*
-template <typename T>
-void Opticks::profile(T label)
-{
-    m_profile->stamp<T>(label, m_tagoffset);
-}
-*/
+
 
 
 void Opticks::profile(const char* label)
 {
+    if(!m_profile_enabled) return ; 
     m_profile->stamp(label, m_tagoffset);
    // m_tagoffset is set by Opticks::makeEvent
 }
@@ -601,7 +597,8 @@ void Opticks::setProfileDir(const char* dir)
 }
 void Opticks::saveProfile()
 {
-   m_profile->save();
+    if(!m_profile_enabled) return ; 
+    m_profile->save();
 }
 
 void Opticks::postgeocache()
@@ -621,7 +618,7 @@ void Opticks::postpropagate()
    dumpProfile("Opticks::postpropagate", NULL, "_OpticksRun::createEvent", tcut  );  // spacwith spacing at start if each evt
    */
 
-   if(isDumpProfile()) 
+   if(isDumpProfile() && m_profile_enabled) 
    {
        LOG(info) << "[ --dumpprofile " ;  
        // startswith filtering 

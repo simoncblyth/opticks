@@ -47,6 +47,9 @@ const char* ViewNPY::INT_2_10_10_10_REV_ = "INT_2_10_10_10_REV"  ;
 const char* ViewNPY::UNSIGNED_INT_2_10_10_10_REV_ = "UNSIGNED_INT_2_10_10_10_REV" ; 
 const char* ViewNPY::UNSIGNED_INT_10F_11F_11F_REV_ = "UNSIGNED_INT_10F_11F_11F_REV" ;
 
+const plog::Severity ViewNPY::LEVEL = PLOG::EnvLevel("ViewNPY", "DEBUG"); 
+
+
 const char* ViewNPY::getTypeName()
 {
     const char* name = NULL ; 
@@ -70,10 +73,7 @@ const char* ViewNPY::getTypeName()
 }
 
 
-
-
-
-ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size, Type_t type, bool norm, bool iatt, unsigned int item_from_dim) 
+ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned j, unsigned k, unsigned l, unsigned size, Type_t type, bool norm, bool iatt, unsigned item_from_dim) 
     :
     m_name(strdup(name)),
     m_npy(npy),
@@ -104,6 +104,17 @@ ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k,
 }
 
 
+ViewNPY::~ViewNPY()
+{
+    LOG(info); 
+    free((char*)m_name); 
+
+    delete m_low ; 
+    delete m_high ; 
+    delete m_dimensions ; 
+    delete m_center ; 
+}
+
 void ViewNPY::init()
 {
     assert(m_npy);
@@ -116,20 +127,7 @@ void ViewNPY::init()
     m_numbytes = m_npy->getNumBytes(0) ;
     m_stride   = m_npy->getNumBytes(m_item_from_dim) ;
     m_offset   = m_npy->getByteIndex(0,m_j,m_k,m_l) ;  //  i*nj*nk*nl + j*nk*nl + k*nl + l     scaled by sizeoftype
-
-
-/*
-   // too expensive 
-    if( m_npy->hasData() )
-    { 
-        addressNPY();
-    } 
-*/
-
 }
-
-
-
 
 glm::vec4& ViewNPY::getCenterExtent()
 {

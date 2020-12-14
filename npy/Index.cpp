@@ -32,26 +32,38 @@
 // npy-
 #include "Index.hpp"
 
-
-
 #include "PLOG.hh"
 
 
 const plog::Severity Index::LEVEL = PLOG::EnvLevel("Index", "DEBUG") ; 
 
+int Index::COUNT = 0 ; 
 
 Index::Index(const char* itemtype, const char* reldir, const char* title, bool onebased)
-   : 
-   NSequence(),
-   m_itemtype(strdup(itemtype)),
-   m_reldir(reldir ? strdup(reldir) : NULL),
-   m_title(title ? strdup(title) : strdup(itemtype)),
-   m_ext(".json"),
-   m_selected(0),
-   m_onebased(onebased),
-   m_source_total(0)
+    : 
+    NSequence(),
+    m_itemtype(strdup(itemtype)),
+    m_reldir(reldir ? strdup(reldir) : NULL),
+    m_title(title ? strdup(title) : strdup(itemtype)),
+    m_ext(strdup(".json")),
+    m_selected(0),
+    m_onebased(onebased),
+    m_source_total(0),
+    m_count(COUNT)
 {
+    LOG(LEVEL) << "ctor " << m_count  ; 
+    COUNT += 1 ; 
 }
+
+Index::~Index()
+{
+   LOG(LEVEL) << "dtor " << m_count ; 
+   free((char*)m_itemtype);
+   free((char*)m_reldir);
+   free((char*)m_title);
+   free((char*)m_ext);
+}
+
 const char* Index::getItemType()
 {
     return m_itemtype ; 
@@ -60,8 +72,6 @@ const char* Index::getRelDir()
 {
     return m_reldir ; 
 }
-
-
 const char* Index::getTitle()
 {
     return m_title ; 
@@ -135,16 +145,23 @@ void Index::add(const VS& vs)
     }
 }
 
-void Index::add(const char* name, unsigned int source, bool sort )
+/**
+Index::add
+------------
+
+only the first ocurrence of a repeated name is added
+local index incremented for each unique name
+
+**/
+void Index::add(const char* name, unsigned source, bool sort )
 {
-    // only the first ocurrence of a repeated name is added
-    // local index incremented for each unique name
+    LOG(info) << "[" ; 
     if(m_source.count(name)==0)
     { 
         m_source[name] = source ;
 
        // historically have been using : 1-based index in addition order  
-        unsigned int local = m_onebased ? m_local.size() + 1 : m_local.size() ; 
+        unsigned local = m_onebased ? m_local.size() + 1 : m_local.size() ; 
         m_local[name] = local ; 
 
         m_source2local[source] = local ; 
@@ -152,20 +169,32 @@ void Index::add(const char* name, unsigned int source, bool sort )
    
         if(sort) sortNames(); // when dealing with very big indices could just do this after all adds are made 
     }
+    LOG(info) << "]" ; 
 }
+
+/**
+Index::sortNames
+-----------------
+
+Former approach with operator() and "*this" was calling dtor on every call 
+so no go unless just leak::
+
+   std::sort(m_names.begin(), m_names.end(), *this ); // ascending local index
+
+**/
 
 void Index::sortNames()
 {
    typedef std::map<std::string, unsigned int> MSU ; 
    m_names.clear();
    for(MSU::iterator it=m_local.begin() ; it != m_local.end() ; it++ ) m_names.push_back(it->first) ;
-   std::sort(m_names.begin(), m_names.end(), *this ); // ascending local index
+
+
+   std::sort(m_names.begin(), m_names.end(), std::bind(&Index::local_order, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-
-bool Index::operator() (const std::string& a, const std::string& b)
+bool Index::local_order(const std::string& a, const std::string& b)
 {
-    // sort order for dump 
     return m_local[a] < m_local[b] ; 
 }
 

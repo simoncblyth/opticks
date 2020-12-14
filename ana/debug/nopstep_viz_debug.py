@@ -22,6 +22,7 @@
 nopstep_viz_debug.py: Creates fake nopstep (non-photon step) for visualization debugging
 ============================================================================================
 
+See okc/OpticksEvent::setFakeNopstepPath
 
 
 """

@@ -36,9 +36,12 @@
 class NPY_API Index : public NSequence {
    public:
         static const plog::Severity LEVEL ; 
+        static int COUNT ; 
+
         typedef std::vector<std::string> VS ;
    public:
         Index(const char* itemtype, const char* reldir, const char* title=NULL, bool onebased=true);
+        virtual ~Index(); 
    public:
         //static Index* load(const char* pfold, const char* rfold, const char* itemtype);
         static Index* load(const char* idpath, const char* itemtype, const char* reldir);
@@ -76,7 +79,7 @@ class NPY_API Index : public NSequence {
 
         void sortNames(); // currently by ascending local index : ie addition order
         std::vector<std::string>& getNames();
-        bool operator() (const std::string& a, const std::string& b);
+        bool local_order(const std::string& a, const std::string& b);
    public:
         std::string getPrefixedString(const char* tail);
         void setExt(const char* ext);
@@ -116,6 +119,8 @@ class NPY_API Index : public NSequence {
         // populated by formTable
         std::vector<std::string>             m_labels ; 
         std::vector<unsigned int>            m_codes ; 
+        int                                  m_count ; 
+
 };
 
 #include "NPY_TAIL.hh"

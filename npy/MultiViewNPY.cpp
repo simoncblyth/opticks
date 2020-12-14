@@ -28,9 +28,14 @@
 #include "NPY_FLAGS.hh"
 
 MultiViewNPY::MultiViewNPY(const char* name)
-   :   
+    :   
     m_name(strdup(name))
 {
+}
+
+MultiViewNPY::~MultiViewNPY()
+{
+    free((char*)m_name); 
 }
 
 const char* MultiViewNPY::getName()

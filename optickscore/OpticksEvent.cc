@@ -136,16 +136,20 @@ const char* OpticksEvent::LAUNCH_LABEL = "OpticksEvent_launch" ;
 OpticksEvent::OpticksEvent(OpticksEventSpec* spec) 
     :
     OpticksEventSpec(spec),
-    m_event_spec(spec),
+    //m_event_spec(spec),
     m_ok(NULL),   // set by Opticks::makeEvent
     m_profile(NULL),
 
     m_noload(false),
     m_loaded(false),
+
     m_versions(NULL),
     m_parameters(NULL),
     m_report(NULL),
     m_domain(NULL),
+    m_prelaunch_times(new BTimes(PRELAUNCH_LABEL)),
+    m_launch_times(new BTimes(LAUNCH_LABEL)),
+    m_geopath(NULL),
 
     m_genstep_data(NULL),
     m_nopstep_data(NULL),
@@ -188,7 +192,6 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_seqhis(NULL),
     m_seqmat(NULL),
     m_bndidx(NULL),
-    m_fake_nopstep_path(NULL),
 
     m_fdom_spec(NULL),
     m_idom_spec(NULL),
@@ -203,11 +206,9 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_recsel_spec(NULL),
     m_sequence_spec(NULL),
 
-    m_prelaunch_times(new BTimes(PRELAUNCH_LABEL)),
-    m_launch_times(new BTimes(LAUNCH_LABEL)),
     m_sibling(NULL),
-    m_geopath(NULL),
-    m_geotestconfig(NULL)
+    m_geotestconfig(NULL),
+    m_fake_nopstep_path(NULL)
 {
     init();
 }
@@ -652,11 +653,26 @@ void OpticksEvent::deleteMeta()
     delete m_parameters ; 
     delete m_report ; 
     delete m_domain ; 
+
+    delete m_prelaunch_times ; 
+    delete m_launch_times ; 
+
+    free((char*)m_geopath); 
 }
 
+void OpticksEvent::deleteCtrl()
+{
+    delete m_photon_ctrl ; 
+    delete m_source_ctrl ; 
+    delete m_seed_ctrl ; 
+}
 
-
-
+void OpticksEvent::deleteIndex()
+{
+    delete m_seqhis ; 
+    delete m_seqmat ; 
+    delete m_bndidx ;  
+}
 
 NPYBase* OpticksEvent::getData(const char* name)
 {
@@ -970,6 +986,8 @@ void OpticksEvent::deleteSpec()
 OpticksEvent::~OpticksEvent()
 {
     deleteMeta(); 
+    deleteCtrl(); 
+    deleteIndex(); 
     deleteSpec(); 
     deleteBuffers(); 
     deleteAttr(); 
@@ -1359,7 +1377,7 @@ void OpticksEvent::setWayData(NPY<float>* way_data)
 
 OpticksBufferControl* OpticksEvent::getPhotonCtrl()
 {
-   return m_photon_ctrl ; 
+    return m_photon_ctrl ; 
 }
 
 OpticksBufferControl* OpticksEvent::getSourceCtrl()
@@ -1723,7 +1741,8 @@ Formerly skipped saving when no records resulting in CanAnalyse false,
 void OpticksEvent::save()
 {
     //std::raise(SIGINT); 
-    const char* dir =  m_event_spec->getDir() ; 
+    //const char* dir =  m_event_spec->getDir() ; 
+    const char* dir =  getDir() ; 
     LOG(info) << dir ; 
 
     OK_PROFILE("_OpticksEvent::save"); 
@@ -2053,13 +2072,17 @@ void OpticksEvent::loadTimes()
 }
 
 
+/**
+OpticksEvent::setFakeNopstepPath
+---------------------------------
 
+Fake path used by OpticksEvent::load rather than standard one
+used for visualization debugging.  See: ana/debug/nopstep_viz_debug.py
+
+**/
 
 void OpticksEvent::setFakeNopstepPath(const char* path)
 {
-    // fake path used by OpticksEvent::load rather than standard one
-    // see npy-/nopstep_viz_debug.py
-
     m_fake_nopstep_path = path ? strdup(path) : NULL ;
 }
 

@@ -37,15 +37,14 @@ const char* OpticksEventSpec::NO_ = "NO" ;
 
 const plog::Severity OpticksEventSpec::LEVEL = PLOG::EnvLevel("OpticksEventSpec", "DEBUG") ; 
 
-
 OpticksEventSpec::OpticksEventSpec(OpticksEventSpec* spec) 
     :
-    m_pfx(spec->getPfx()),
-    m_typ(spec->getTyp()),
-    m_tag(spec->getTag()),
-    m_det(spec->getDet()),
-    m_cat(spec->getCat()),
-    m_udet(spec->getUDet()),
+    m_pfx(strdup(spec->getPfx())),
+    m_typ(strdup(spec->getTyp())),
+    m_tag(strdup(spec->getTag())),
+    m_det(strdup(spec->getDet())),
+    m_cat(spec->getCat() ? strdup(spec->getCat()) : NULL),
+    m_udet(spec->getUDet() ? strdup(spec->getUDet()) : NULL),
     m_dir(NULL),
     m_reldir(NULL),
     m_fold(NULL),
@@ -68,7 +67,19 @@ OpticksEventSpec::OpticksEventSpec(const char* pfx, const char* typ, const char*
 {
 }
 
-
+OpticksEventSpec::~OpticksEventSpec()
+{
+    //LOG(info); 
+    free((char*)m_pfx);
+    free((char*)m_typ);
+    free((char*)m_tag);
+    free((char*)m_det);
+    free((char*)m_cat);
+    free((char*)m_udet);
+    free((char*)m_dir);
+    free((char*)m_reldir);
+    free((char*)m_fold);
+}
 
 const char* OpticksEventSpec::getOffsetTag(unsigned tagoffset) const
 {

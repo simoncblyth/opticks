@@ -34,6 +34,7 @@ class ViewNPY ;
 class NPY_API MultiViewNPY {
     public:
         MultiViewNPY(const char* name="no-name");
+        virtual ~MultiViewNPY(); 
         const char* getName();
     public:
         void add(ViewNPY* vec);

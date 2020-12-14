@@ -30,6 +30,7 @@ class NPY_API NPYSpec {
    public:
         NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm, NPYBase::Type_t type, const char* ctrl, bool optional=false, int verbosity=0);
         void setNumItems(unsigned ni) ; 
+        virtual ~NPYSpec(); 
 
         NPYSpec* clone() const ; 
         NPYBase::Type_t getType() const ;
@@ -55,7 +56,7 @@ class NPY_API NPYSpec {
         unsigned         m_nk ; 
         unsigned         m_nl ; 
         unsigned         m_nm ; 
-        unsigned int     m_bad_index ; 
+        unsigned         m_bad_index ; 
         NPYBase::Type_t  m_type ; 
         const char*      m_ctrl  ; 
         bool             m_optional ; 

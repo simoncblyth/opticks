@@ -41,6 +41,12 @@ BTimes::BTimes(const char* label)
 {
 }
 
+BTimes::~BTimes()
+{
+    free((char*)m_label); 
+}
+
+
 void BTimes::setLabel(const char* label)
 {
     m_label = strdup(label);

@@ -20,6 +20,7 @@
 #pragma once
 
 #include <string>
+#include "plog/Severity.h"
 #include "NGLM.hpp"
 
 /**
@@ -55,6 +56,8 @@ class NPY_API ViewNPY {
 
         friend class OpticksEvent ; 
         friend struct test_ViewNPY ; 
+
+        static const plog::Severity LEVEL ; 
     public:
         static const char* BYTE_ ; 
         static const char* UNSIGNED_BYTE_ ; 
@@ -93,6 +96,8 @@ class NPY_API ViewNPY {
                bool iatt=false, 
                unsigned int item_from_dim=1) ;
 
+        virtual ~ViewNPY(); 
+        
         void addressNPY();
         std::string getTypeString();
         void setCustomOffset(unsigned long offset);
@@ -136,6 +141,8 @@ class NPY_API ViewNPY {
         void findBounds();
     private:
         char*         m_name   ; 
+    private:
+        // un-owned visitors 
         NPYBase*      m_npy ; 
         MultiViewNPY* m_parent ;  
         void*         m_bytes   ;
@@ -152,12 +159,12 @@ class NPY_API ViewNPY {
         unsigned int  m_numbytes ;  
         unsigned int  m_stride ;  
         unsigned long m_offset ;  
-
     private:
         glm::vec3*  m_low ;
         glm::vec3*  m_high ;
         glm::vec3*  m_dimensions ;
         glm::vec3*  m_center ;
+    private:
         glm::mat4   m_model_to_world ; 
         glm::vec4   m_center_extent ; 
         float       m_extent ; 

@@ -314,8 +314,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    private:
        void createBuffers(); 
        void createSpec(); 
+   private:
        void deleteSpec(); 
        void deleteMeta(); 
+       void deleteCtrl(); 
+       void deleteIndex(); 
        void deleteAttr(); 
        void deleteBuffers(); 
    private:
@@ -428,10 +431,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool         isCompute();
 
    private:
-       OpticksEventSpec*     m_event_spec ; 
+       // foreign  
        Opticks*              m_ok ;  
        OpticksProfile*       m_profile ;  
        OpticksMode*          m_mode ; 
+   private:
        bool                  m_noload ; 
        bool                  m_loaded ; 
    private:
@@ -440,7 +444,9 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NMeta*                m_parameters ;
        Report*               m_report ;
        OpticksDomain*        m_domain ; 
-
+       BTimes*               m_prelaunch_times ; 
+       BTimes*               m_launch_times ; 
+       const char*           m_geopath ; 
    private: 
        // owned : deleteBuffers
        NPY<float>*               m_genstep_data ;
@@ -455,15 +461,15 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<unsigned long long>*  m_sequence_data ;
        NPY<unsigned>*            m_seed_data ;
        NPY<float>*               m_hit_data ;
-
    private:
-       // tiny : unmanaged
+       // owned : deleteCtrl
        OpticksBufferControl*  m_photon_ctrl ; 
        OpticksBufferControl*  m_source_ctrl ; 
        OpticksBufferControl*  m_seed_ctrl ; 
-
+   private:
+       // weak : constituent of m_genstep_attr 
        ViewNPY*        m_genstep_vpos ;
-   
+
    private:
        // owned : deleteAttr
        MultiViewNPY*   m_genstep_attr ;
@@ -490,7 +496,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        unsigned int    m_num_source ; 
 
    private:
-       // unmanaged
+       // owned : deleteIndex
        Index*          m_seqhis ; 
        Index*          m_seqmat ; 
        Index*          m_bndidx ; 
@@ -498,10 +504,6 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    private:
        std::vector<std::string>           m_data_names ; 
        std::map<std::string, std::string> m_abbrev ; 
-
-   private:
-       // unmanaged
-       const char*     m_fake_nopstep_path ; 
 
    private:
        // owned: deleteSpec
@@ -522,17 +524,12 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPYSpec* m_hit_spec ;  
 
     private:
-       // unmanaged  
-       BTimes*         m_prelaunch_times ; 
-       BTimes*         m_launch_times ; 
-
-    private:
        OpticksEvent*   m_sibling ;    // weak 
 
     private:
-       // unmanaged  
-       const char*     m_geopath ; 
+       // unmanaged, not usually present
        NGeoTestConfig* m_geotestconfig ; 
+       const char*     m_fake_nopstep_path ; 
 
 };
 

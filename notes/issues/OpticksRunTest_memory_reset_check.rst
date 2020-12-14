@@ -77,6 +77,11 @@ okc/OpticksRunTest::
 
     2020-12-14 15:05:58.700 INFO  [477125] [test_OpticksRun_reset@44]  vm0 4407.2 vm1 4615.36 dvm 208.155 nevt 10000 leak_per_evt (MB) 0.0208155 cfg4evt 0
 
+ 
+    ## disabling profiling gives signficant reduction 
+
+    2020-12-14 15:52:58.292 INFO  [540955] [test_OpticksRun_reset@44]  vm0 4407.2 vm1 4495.29 dvm 88.0889 nevt 10000 leak_per_evt (MB) 0.00880889 cfg4evt 0
+
 
 ::
 
