@@ -43,7 +43,6 @@ class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
 class BoundariesNPY ; 
-//class HitsNPY ; 
 class NPYSpec ; 
 class NGeoTestConfig ; 
 
@@ -210,8 +209,10 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        bool isIndexed() const ;
        NPY<float>* loadGenstepDerivativeFromFile(const char* stem="track");
-       void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
-       void setNopstepData(NPY<float>* nopstep_data);
+
+       void setGenstepData(NPY<float>* genstep_data_, bool resize_ , bool clone_ );
+       void setNopstepData(NPY<float>* nopstep_data_, bool clone_ );
+       void setSourceData(NPY<float>* source_data_, bool clone_ );   // from CG4::postpropagate
 
        void zero();
    public:
@@ -310,11 +311,13 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    private:
        void importGenstepDataLoaded(NPY<float>* gs);
        void loadBuffersImportSpec(NPYBase* npy, NPYSpec* spec);
-   public: 
-       void createBuffers(NPY<float>* gs=NULL); 
+   private:
+       void createBuffers(); 
        void createSpec(); 
-   public:
-       void setSourceData(NPY<float>* source_data); // from CG4::postpropagate
+       void deleteSpec(); 
+       void deleteMeta(); 
+       void deleteAttr(); 
+       void deleteBuffers(); 
    private:
        void setPhotonData(NPY<float>* photon_data);
        void setSequenceData(NPY<unsigned long long>* history_data);
@@ -429,37 +432,40 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        Opticks*              m_ok ;  
        OpticksProfile*       m_profile ;  
        OpticksMode*          m_mode ; 
-
        bool                  m_noload ; 
        bool                  m_loaded ; 
-
+   private:
+       // owned : deleteMeta
        NMeta*                m_versions ;
        NMeta*                m_parameters ;
-
        Report*               m_report ;
+       OpticksDomain*        m_domain ; 
 
-       NPY<float>*           m_primary_data ; 
-       NPY<float>*           m_genstep_data ;
-       NPY<float>*           m_nopstep_data ;
-       NPY<float>*           m_photon_data ;
-       NPY<float>*           m_debug_data ;
-       NPY<float>*           m_way_data ;
-       NPY<float>*           m_source_data ;
-       NPY<short>*           m_record_data ;
-       NPY<unsigned char>*   m_phosel_data ;
-       NPY<unsigned char>*   m_recsel_data ;
+   private: 
+       // owned : deleteBuffers
+       NPY<float>*               m_genstep_data ;
+       NPY<float>*               m_nopstep_data ;
+       NPY<float>*               m_photon_data ;
+       NPY<float>*               m_debug_data ;
+       NPY<float>*               m_way_data ;
+       NPY<float>*               m_source_data ;
+       NPY<short>*               m_record_data ;
+       NPY<unsigned char>*       m_phosel_data ;
+       NPY<unsigned char>*       m_recsel_data ;
        NPY<unsigned long long>*  m_sequence_data ;
-       NPY<unsigned>*           m_seed_data ;
-       NPY<float>*              m_hit_data ;
+       NPY<unsigned>*            m_seed_data ;
+       NPY<float>*               m_hit_data ;
 
+   private:
+       // tiny : unmanaged
        OpticksBufferControl*  m_photon_ctrl ; 
        OpticksBufferControl*  m_source_ctrl ; 
        OpticksBufferControl*  m_seed_ctrl ; 
-       OpticksDomain*        m_domain ; 
 
-       //G4StepNPY*      m_g4step ; 
        ViewNPY*        m_genstep_vpos ;
-
+   
+   private:
+       // owned : deleteAttr
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_nopstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
@@ -471,27 +477,37 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        MultiViewNPY*   m_seed_attr  ;
        MultiViewNPY*   m_hit_attr  ;
 
+   private:
+       // unmanaged
        RecordsNPY*     m_records ; 
        PhotonsNPY*     m_photons ; 
-       //HitsNPY*        m_hits ; 
        BoundariesNPY*  m_bnd ; 
 
+   private:
        unsigned int    m_num_gensteps ; 
        unsigned int    m_num_nopsteps ; 
        unsigned int    m_num_photons ; 
        unsigned int    m_num_source ; 
 
+   private:
+       // unmanaged
        Index*          m_seqhis ; 
        Index*          m_seqmat ; 
        Index*          m_bndidx ; 
 
+   private:
        std::vector<std::string>           m_data_names ; 
        std::map<std::string, std::string> m_abbrev ; 
 
+   private:
+       // unmanaged
        const char*     m_fake_nopstep_path ; 
 
+   private:
+       // owned: deleteSpec
        NPYSpec* m_fdom_spec ;  
        NPYSpec* m_idom_spec ;  
+
        NPYSpec* m_genstep_spec ;  
        NPYSpec* m_nopstep_spec ;  
        NPYSpec* m_photon_spec ;  
@@ -505,10 +521,16 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPYSpec* m_seed_spec ;  
        NPYSpec* m_hit_spec ;  
 
-       BTimes*  m_prelaunch_times ; 
-       BTimes*  m_launch_times ; 
+    private:
+       // unmanaged  
+       BTimes*         m_prelaunch_times ; 
+       BTimes*         m_launch_times ; 
 
-       OpticksEvent*   m_sibling ; 
+    private:
+       OpticksEvent*   m_sibling ;    // weak 
+
+    private:
+       // unmanaged  
        const char*     m_geopath ; 
        NGeoTestConfig* m_geotestconfig ; 
 

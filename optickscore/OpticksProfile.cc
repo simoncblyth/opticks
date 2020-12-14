@@ -27,7 +27,6 @@
 #include "BFile.hh"
 #include "BStr.hh"
 
-#include "NGLM.hpp"
 #include "NPY.hpp"
 
 #include "OpticksProfile.hh"
@@ -77,7 +76,8 @@ OpticksProfile::OpticksProfile()
     m_vmprev(0),
     m_vm(0),
 
-    m_num_stamp(0)
+    m_num_stamp(0),
+    m_last_stamp(0.f, 0.f, 0.f, 0.f)
 {
 }
 
@@ -218,6 +218,11 @@ void OpticksProfile::stamp(const char* label, int count)
    float vm   = m_vm - m_vm0 ;     // vm since instanciation
    float dvm  = m_vm - m_vmprev ;  // vm since previous stamp
 
+   m_last_stamp.x = t ;
+   m_last_stamp.y = dt ;
+   m_last_stamp.z = vm ;
+   m_last_stamp.w = dvm ;
+
    // the prev start at zero, so first dt and dvm give absolute m_t0 m_vm0 valules
 
    m_tt->add<const char*>(label, t, dt, vm, dvm,  count );
@@ -235,7 +240,10 @@ void OpticksProfile::stamp(const char* label, int count)
 }
 
 
-
+const glm::vec4& OpticksProfile::getLastStamp() const 
+{
+    return m_last_stamp ; 
+}
 
 
 

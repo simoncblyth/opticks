@@ -30,6 +30,7 @@
 #include "Opticks.hh"
 #include "OpticksEventSpec.hh"
 #include "OpticksEvent.hh"
+#include "OpticksGenstep.hh"
 
 
 void test_genstep_derivative()
@@ -81,14 +82,34 @@ void test_appendNote()
 
 }
 
+void test_resetEvent(Opticks* ok, bool cfg4evt)
+{
+    unsigned num_photons = 10000 ; 
+    unsigned tagoffset = 0 ; 
 
+    NPY<float>* gs = OpticksGenstep::MakeCandle(num_photons, tagoffset ) ;
 
+    ok->createEvent(gs, cfg4evt); 
+    delete gs ; 
+
+    ok->resetEvent(); 
+}
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
     //test_genstep_derivative();
     //test_genstep();
-    test_appendNote();
+    //test_appendNote();
+
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
+    glm::vec4 space_domain(0.f,0.f,0.f,1000.f); 
+    ok.setSpaceDomain(space_domain); 
+
+    test_resetEvent(&ok, false); 
+    test_resetEvent(&ok, true); 
+
     return 0 ;
 }

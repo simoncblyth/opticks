@@ -580,6 +580,13 @@ unsigned long long* NPYBase::getActionControlPtr()
     return &m_action_control ;  
 }
 
+/**
+NPYBase::transfer
+------------------
+
+Used via NPY::copy by NPY::clone 
+
+**/
 
 void NPYBase::transfer(NPYBase* dst, NPYBase* src)
 {

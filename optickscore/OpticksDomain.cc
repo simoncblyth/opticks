@@ -42,6 +42,12 @@ void OpticksDomain::init()
 {
 }
 
+OpticksDomain::~OpticksDomain()
+{
+    delete m_fdom ; 
+    delete m_idom ; 
+}
+
 
 void OpticksDomain::setFDomain(NPY<float>* fdom)
 {

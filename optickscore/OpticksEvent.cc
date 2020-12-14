@@ -104,6 +104,7 @@ std::string OpticksEvent::timestamp()
 
 const char* OpticksEvent::fdom_    = "fdom" ; 
 const char* OpticksEvent::idom_    = "idom" ; 
+
 const char* OpticksEvent::genstep_ = "genstep" ; 
 const char* OpticksEvent::nopstep_ = "nopstep" ; 
 const char* OpticksEvent::photon_  = "photon" ; 
@@ -144,8 +145,8 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_versions(NULL),
     m_parameters(NULL),
     m_report(NULL),
+    m_domain(NULL),
 
-    m_primary_data(NULL),
     m_genstep_data(NULL),
     m_nopstep_data(NULL),
     m_photon_data(NULL),
@@ -162,7 +163,6 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_photon_ctrl(NULL),
     m_source_ctrl(NULL),
     m_seed_ctrl(NULL),
-    m_domain(NULL),
 
     m_genstep_vpos(NULL),
     m_genstep_attr(NULL),
@@ -211,12 +211,6 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
 {
     init();
 }
-
-
-OpticksEvent::~OpticksEvent()
-{
-    LOG(info) << "OpticksEvent::~OpticksEvent PLACEHOLDER" ; 
-} 
 
 
 BTimes* OpticksEvent::getPrelaunchTimes()
@@ -433,16 +427,6 @@ PhotonsNPY* OpticksEvent::getPhotonsNPY()
 
 
 
-//void OpticksEvent::setHitsNPY(HitsNPY* hits)
-//{
-//    m_hits = hits ; 
-//}
-//HitsNPY* OpticksEvent::getHitsNPY()
-//{
-//    return m_hits ;
-//}
-
-
 void OpticksEvent::setBoundariesNPY(BoundariesNPY* bnd)
 {
     m_bnd = bnd ; 
@@ -451,9 +435,6 @@ BoundariesNPY* OpticksEvent::getBoundariesNPY()
 {
     return m_bnd ;
 }
-
-
-
 
 
 //////////////// m_domain related ///////////////////////////////////
@@ -664,6 +645,15 @@ void OpticksEvent::init()
     m_abbrev[seed_] = "se" ;   //   (short) genstep id used for photon seeding 
     m_abbrev[hit_] = "ht" ;  
 }
+
+void OpticksEvent::deleteMeta()
+{
+    delete m_versions ; 
+    delete m_parameters ; 
+    delete m_report ; 
+    delete m_domain ; 
+}
+
 
 
 
@@ -958,6 +948,32 @@ void OpticksEvent::createSpec()
 
 }
 
+void OpticksEvent::deleteSpec()
+{
+    delete m_genstep_spec ; 
+    delete m_seed_spec ; 
+    delete m_source_spec ; 
+    delete m_hit_spec ; 
+    delete m_photon_spec ; 
+    delete m_debug_spec ; 
+    delete m_way_spec ; 
+    delete m_record_spec ; 
+    delete m_sequence_spec ; 
+    delete m_nopstep_spec ; 
+    delete m_phosel_spec ; 
+    delete m_recsel_spec ; 
+
+    delete m_fdom_spec ; 
+    delete m_idom_spec ; 
+}
+
+OpticksEvent::~OpticksEvent()
+{
+    deleteMeta(); 
+    deleteSpec(); 
+    deleteBuffers(); 
+    deleteAttr(); 
+} 
 
 void OpticksEvent::addBufferControl(const char* name, const char* ctrl_)
 {
@@ -1029,25 +1045,11 @@ Invoked by Opticks::makeEvent
 
 NB allocation is deferred until zeroing and they start at 0 items anyhow
    
-NB by default gs = NULL and genstep buffer creation is excluded, 
-   those coming externally
-   however they are needed for "template" zero events 
-
-
 **/
 
 
-void OpticksEvent::createBuffers(NPY<float>* gs)
+void OpticksEvent::createBuffers()
 {
-    if(gs)   
-    {
-        bool progenitor = false ;    
-        setGenstepData(gs, progenitor);   
-    }
-
-    NPY<float>* nop = NPY<float>::make(m_nopstep_spec); 
-    setNopstepData(nop);   
-
     NPY<float>* pho = NPY<float>::make(m_photon_spec); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
@@ -1076,85 +1078,65 @@ void OpticksEvent::createBuffers(NPY<float>* gs)
     setRecordData(rec);   
 
     NPY<float>* fdom = NPY<float>::make(m_fdom_spec);
+    fdom->zero();   // allocate small buffer immediately 
     setFDomain(fdom);
 
     NPY<int>* idom = NPY<int>::make(m_idom_spec);
+    idom->zero();   // alloc small buffer immediately 
     setIDomain(idom);
-
-    // these small ones can be zeroed directly 
-    fdom->zero();
-    idom->zero();
 }
-
 
 void OpticksEvent::reset()
 {
     resetBuffers();
 }
+
 void OpticksEvent::resetBuffers()
 {
-    // deallocate (clearing the underlying vector) and setNumItems to 0 
-    if(m_nopstep_data)
-    {
-        m_nopstep_data->reset();    
-        delete m_nopstep_data ; 
-        m_nopstep_data = NULL ; 
-    }
-    if(m_photon_data)   
-    {
-        m_photon_data->reset();    
-        delete m_photon_data ; 
-        m_photon_data = NULL ; 
-    }
-    if(m_debug_data)  
-    {
-        m_debug_data->reset();    
-        delete m_debug_data ;
-        m_debug_data = NULL ; 
-    }
-    if(m_way_data)
-    {
-        m_way_data->reset();    
-        delete m_way_data ; 
-        m_way_data = NULL ; 
-    }
-    if(m_sequence_data) 
-    {
-        m_sequence_data->reset();    
-        delete m_sequence_data ; 
-        m_sequence_data = NULL ; 
-    }
-    if(m_seed_data)     
-    {
-        m_seed_data->reset();    
-        delete m_seed_data ; 
-        m_seed_data = NULL ; 
-    }
-    if(m_phosel_data)   
-    {
-        m_phosel_data->reset();    
-        delete m_phosel_data ; 
-        m_phosel_data = NULL ; 
-    } 
-    if(m_recsel_data) 
-    {
-        m_recsel_data->reset();    
-        delete m_recsel_data ; 
-        m_recsel_data = NULL ; 
-    }
-    if(m_record_data)   
-    {
-        m_record_data->reset();    
-        delete m_record_data ; 
-        m_record_data = NULL ; 
-    }
-    if(m_hit_data)    
-    {
-        m_hit_data->reset();    
-        delete m_hit_data ; 
-        m_hit_data = NULL ; 
-    }
+    if(m_genstep_data)  m_genstep_data->reset();    
+    if(m_nopstep_data)  m_nopstep_data->reset();    
+    if(m_photon_data)   m_photon_data->reset();    
+    if(m_debug_data)    m_debug_data->reset();    
+    if(m_way_data)      m_way_data->reset();    
+    if(m_source_data)   m_source_data->reset();    
+    if(m_record_data)   m_record_data->reset();    
+    if(m_phosel_data)   m_phosel_data->reset();    
+    if(m_recsel_data)   m_recsel_data->reset();    
+    if(m_sequence_data) m_sequence_data->reset();    
+    if(m_seed_data)     m_seed_data->reset();    
+    if(m_hit_data)      m_hit_data->reset();    
 }
+
+void OpticksEvent::deleteBuffers()
+{
+    delete m_genstep_data  ; m_genstep_data = NULL ; 
+    delete m_nopstep_data  ; m_nopstep_data = NULL ; 
+    delete m_photon_data   ; m_photon_data = NULL ; 
+    delete m_debug_data    ; m_debug_data = NULL ; 
+    delete m_way_data      ; m_way_data = NULL ; 
+    delete m_source_data   ; m_source_data = NULL ; 
+    delete m_record_data   ; m_record_data = NULL ; 
+    delete m_phosel_data   ; m_phosel_data = NULL ; 
+    delete m_recsel_data   ; m_recsel_data = NULL ; 
+    delete m_sequence_data ; m_sequence_data = NULL ; 
+    delete m_seed_data     ; m_seed_data = NULL ; 
+    delete m_hit_data      ; m_hit_data = NULL ; 
+}
+
+void OpticksEvent::deleteAttr()
+{
+    delete m_genstep_attr  ; m_genstep_attr = NULL ; 
+    delete m_seed_attr     ; m_seed_attr = NULL ; 
+    delete m_hit_attr      ; m_hit_attr = NULL ; 
+    delete m_photon_attr   ; m_photon_attr = NULL ; 
+    delete m_source_attr   ; m_source_attr = NULL ; 
+    delete m_nopstep_attr  ; m_nopstep_attr = NULL ; 
+    delete m_record_attr   ; m_record_attr = NULL ; 
+    delete m_phosel_attr   ; m_phosel_attr = NULL ; 
+    delete m_recsel_attr   ; m_recsel_attr = NULL ; 
+    delete m_sequence_attr ; m_sequence_attr = NULL ; 
+}
+
 
 
 /**
@@ -1252,9 +1234,11 @@ oac_label
 
 **/
 
-void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
+void OpticksEvent::setGenstepData(NPY<float>* genstep_data_, bool resize_, bool clone_  )
 {
     OK_PROFILE("_OpticksEvent::setGenstepData");
+
+    NPY<float>* genstep_data = clone_ ? genstep_data_->clone() : genstep_data_ ; 
 
     int nitems = NPYBase::checkNumItems(genstep_data); // -1 for genstep_data NULL 
     if(nitems < 1)
@@ -1285,7 +1269,6 @@ void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
     {
         m_num_gensteps = m_genstep_data->getShape(0) ;
         unsigned int num_photons = m_genstep_data->getUSum(0,3);
-        bool resize_ = progenitor ; 
         setNumPhotons(num_photons, resize_); // triggers a resize   <<<<<<<<<<<<< SPECIAL HANDLING OF GENSTEP <<<<<<<<<<<<<<
     }
 
@@ -1308,10 +1291,6 @@ bool OpticksEvent::isMachineryType()
 {    
    return strcmp(m_typ, OpticksGenstep::MACHINERY_) == 0 ; 
 }
-
-
-
-
 
 
 
@@ -1443,13 +1422,14 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
     //
 }
 
-void OpticksEvent::setSourceData(NPY<float>* source_data)
+void OpticksEvent::setSourceData(NPY<float>* source_data_, bool clone_ )
 {
     OK_PROFILE("_OpticksEvent::setSourceData");
-    if(!source_data) return ; 
+    if(!source_data_) return ; 
+
+    NPY<float>* source_data = clone_ ? source_data_->clone() : source_data_ ;  
 
     source_data->setBufferSpec(m_source_spec);  
-    
     setBufferControl(source_data);
 
     m_source_data = source_data  ;
@@ -1486,30 +1466,18 @@ void OpticksEvent::setSourceData(NPY<float>* source_data)
 
 
 
-void OpticksEvent::setNopstepData(NPY<float>* nopstep)
+void OpticksEvent::setNopstepData(NPY<float>* nopstep_data_ , bool clone_ )
 {
     OK_PROFILE("_OpticksEvent::setNopstepData");
-   /*
-    int nitems = NPYBase::checkNumItems(nopstep);
-    if(nitems < 1)
-    {
-         LOG(debug) << "OpticksEvent::setNopstepData SKIP "
-                      << " nitems " << nitems
-                      ;
-         return ; 
-    } 
-   */
 
+    if(!nopstep_data_) return ; 
+    m_nopstep_data = clone_ ? nopstep_data_->clone() : nopstep_data_  ;
 
-
-    m_nopstep_data = nopstep  ;
-    if(!nopstep) return ; 
-
-    setBufferControl(nopstep);
+    setBufferControl(m_nopstep_data);
 
     m_num_nopsteps = m_nopstep_data->getShape(0) ;
     LOG(debug) << "OpticksEvent::setNopstepData"
-              << " shape " << nopstep->getShapeString()
+              << " shape " << m_nopstep_data->getShapeString()
               ;
 
     //                                                j k l sz   type         norm   iatt   item_from_dim
@@ -2292,9 +2260,11 @@ void OpticksEvent::loadBuffers(bool verbose)
     // treat "persisted for posterity" gensteps just like all other buffers
     // progenitor input gensteps need different treatment
 
-    bool progenitor = false; 
-    setGenstepData(gs, progenitor);
-    setNopstepData(no);
+    bool resize_ = false;
+    bool clone_ = false ;  
+    setGenstepData(gs, resize_, clone_ );
+    setNopstepData(no, clone_ );
+
     setPhotonData(ox);
     setSequenceData(ph);
     setRecordData(rx);

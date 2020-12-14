@@ -432,7 +432,8 @@ void CG4::postpropagate()
     assert(evt);
 
     NPY<float>* so = m_generator->getSourcePhotons(); 
-    if(so) evt->setSourceData(so); 
+    bool clone_ = true ; 
+    if(so) evt->setSourceData(so, clone_); 
 
     evt->postPropagateGeant4();
 

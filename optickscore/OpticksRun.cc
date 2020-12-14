@@ -45,7 +45,9 @@ OpticksRun::OpticksRun(Opticks* ok)
     m_g4evt(NULL),
     m_evt(NULL),
     m_g4step(NULL),
-    m_parameters(new NMeta)
+    m_parameters(new NMeta),
+    m_resize(true),
+    m_clone(true)
 {
     OK_PROFILE("OpticksRun::OpticksRun");
 }
@@ -180,7 +182,16 @@ void OpticksRun::resetEvent()
     LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OpticksRun::resetEvent");
     m_evt->reset();
-    if(m_g4evt) m_g4evt->reset(); 
+    delete m_evt ; 
+    m_evt = NULL  ; 
+
+    if(m_g4evt) 
+    {
+        m_g4evt->reset(); 
+        delete m_g4evt ; 
+        m_g4evt = NULL ; 
+    }
+
     OK_PROFILE("OpticksRun::resetEvent");
     LOG(LEVEL) << "]" ; 
 }
@@ -242,6 +253,17 @@ not distinct between Geant4 and Opticks
 Nopstep and Genstep should be treated as owned 
 by the m_g4evt not the Opticks m_evt 
 where the m_evt pointers are just weak reference guests 
+
+
+The slightly reduced memory from having genstep, source and nopstep 
+shared between m_g4evt and m_evt instances is not worth the 
+complexity regarding ownership : especially when you consider the
+various possibilites of not having a paired m_g4evt and loading and saving 
+of events. Instead simplify by cloning these to make the paired OpticksEvent 
+independent of each other.
+
+Hmm: sharing of genstep, source and nopstep between g4evt and okevt
+makes ownership too complicated when considering the varo
  
 **/
 
@@ -251,30 +273,27 @@ void OpticksRun::importGensteps()
     OK_PROFILE("_OpticksRun::importGensteps");
 
     const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ; 
-
     LOG(LEVEL) << " oac_label " << oac_label ; 
  
     m_g4step = importGenstepData(m_gensteps, oac_label) ;
 
+
     if(m_g4evt)
     { 
-        bool progenitor=true ; 
-        m_g4evt->setGenstepData(m_gensteps, progenitor);
+        m_g4evt->setGenstepData(m_gensteps, m_resize, m_clone );
     }
 
-    m_evt->setGenstepData(m_gensteps);
+    m_evt->setGenstepData(m_gensteps, m_resize, m_clone );
 
 
     if(hasActionControl(m_gensteps, "GS_EMITSOURCE"))
     {
         void* aux = m_gensteps->getAux();
         assert( aux );
-
         NPY<float>* emitsource = (NPY<float>*)aux ; 
 
-        if(m_g4evt) m_g4evt->setSourceData( emitsource ); 
-
-        m_evt->setSourceData( emitsource);
+        if(m_g4evt) m_g4evt->setSourceData( emitsource, m_clone ); 
+        m_evt->setSourceData( emitsource, m_clone );
 
         LOG(LEVEL) 
             << "GS_EMITSOURCE"
@@ -283,10 +302,10 @@ void OpticksRun::importGensteps()
     }
     else
     {
-        m_evt->setSourceData( m_g4evt ? m_g4evt->getSourceData() : NULL ) ;   
+        m_evt->setSourceData( m_g4evt ? m_g4evt->getSourceData() : NULL, m_clone ) ;   
     }
 
-    m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL );  
+    m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL, m_clone );  
     OK_PROFILE("OpticksRun::importGensteps");
 }
 
@@ -486,9 +505,18 @@ bool OpticksRun::hasActionControl(NPYBase* npy, const char* label)
     OpticksActionControl oac(npy->getActionControlPtr());
     return oac.isSet(label) ;
 } 
+
+/**
+OpticksRun::translateLegacyGensteps
+--------------------------------------
+
+**/
  
 void OpticksRun::translateLegacyGensteps(G4StepNPY* g4step)
 {
+    LOG(fatal) << "Attempting to elimate this" ; 
+    assert( 0 ); 
+
     NPY<float>* gs = g4step->getNPY();
 
     OpticksActionControl oac(gs->getActionControlPtr());

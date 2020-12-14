@@ -202,6 +202,8 @@ class OKCORE_API Opticks {
        // profile ops
        //template <typename T> void profile(T label);
        void profile(const char* label);
+       const glm::vec4& getLastStamp() const  ;
+
        void dumpProfile(const char* msg="Opticks::dumpProfile", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0 );
        void setProfileDir(const char* dir);
        const char* getProfileDir() const ;   

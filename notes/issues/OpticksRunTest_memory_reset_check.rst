@@ -5,7 +5,7 @@ Testing how effective resetEvent is a cleaning up memory usage.
 
 okc/OpticksRunTest::
 
-     23 void test_OpticksRun_reset(Opticks* ok, unsigned nevt)
+     23 void test_OpticksRun_reset(Opticks* ok, unsigned nevt, bool cfg4evt)
      24 {
      25     unsigned num_photons = 10000 ;
      26     NPY<float>* gs0 = OpticksGenstep::MakeCandle(num_photons, 0);
@@ -13,13 +13,11 @@ okc/OpticksRunTest::
      28     {
      29         LOG(info) << i ;
      30         gs0->setArrayContentIndex(i);
-     31         bool cfg4evt = false ;
-     32         ok->createEvent(gs0, cfg4evt);
-     33         ok->resetEvent();
-     34     }
-     35     ok->saveProfile();
-     36 }
-
+     31         ok->createEvent(gs0, cfg4evt);   // input argument gensteps are cloned by OpticksEvent 
+     32         ok->resetEvent();
+     33     }
+     34     ok->saveProfile();
+     35 }
 
 
 ::
@@ -50,6 +48,34 @@ okc/OpticksRunTest::
      [    7.2969     0.       553.1479     0.    ]
      [    7.2969     0.       553.1479     0.    ]
      [    7.2969     0.       553.1479     0.    ]]
+
+
+    # simplifications by cloning inputs 
+
+    In [1]: pr.a                                                                                                                                                                                   
+    Out[1]: 
+    array([[    0.    , 50597.656 ,     0.    ,  4397.752 ],
+           [    0.    ,     0.    ,     0.    ,     0.    ],
+           [    0.0078,     0.0078,     9.437 ,     9.437 ],
+           ...,
+           [    6.5938,     0.    ,   468.2139,     0.    ],
+           [    6.5938,     0.    ,   468.2139,     0.    ],
+           [    6.5938,     0.    ,   468.2139,     0.    ]], dtype=float32)
+
+
+  
+::
+
+    2020-12-14 14:03:24.248 INFO  [412267] [test_OpticksRun_reset@44]  vm0 4407.19 vm1 4865.97 dvm 458.777 nevt 10000 leak_per_evt (MB) 0.0458777
+ 
+    2020-12-14 14:10:20.138 INFO  [418961] [OpticksEvent::~OpticksEvent@218] OpticksEvent::~OpticksEvent PLACEHOLDER
+    2020-12-14 14:10:20.138 INFO  [418961] [test_OpticksRun_reset@44]  vm0 4408.24 vm1 4816.68 dvm 408.445 nevt 10000 leak_per_evt (MB) 0.0408445
+
+    ## progressively deleting more of OpticksEvent 
+
+    2020-12-14 14:57:58.832 INFO  [449357] [test_OpticksRun_reset@44]  vm0 4407.2 vm1 4733.85 dvm 326.648 nevt 10000 leak_per_evt (MB) 0.0326648 cfg4evt 1 
+
+    2020-12-14 15:05:58.700 INFO  [477125] [test_OpticksRun_reset@44]  vm0 4407.2 vm1 4615.36 dvm 208.155 nevt 10000 leak_per_evt (MB) 0.0208155 cfg4evt 0
 
 
 ::

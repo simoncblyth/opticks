@@ -20,6 +20,7 @@
 // TEST=OpticksProfileTest om-t
 
 #include "OpticksProfile.hh"
+#include "NGLM.hpp"
 #include "OPTICKS_LOG.hh"
 
 

@@ -526,6 +526,10 @@ void Opticks::profile(const char* label)
    // m_tagoffset is set by Opticks::makeEvent
 }
 
+const glm::vec4& Opticks::getLastStamp() const 
+{
+    return m_profile->getLastStamp() ; 
+}
 
 unsigned Opticks::accumulateAdd(const char* label)
 {
@@ -3313,9 +3317,6 @@ unsigned Opticks::getTagOffset()
 /**
 Opticks::makeEvent
 ---------------------
-
-
-
 
 **/
 OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)

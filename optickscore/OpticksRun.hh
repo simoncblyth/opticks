@@ -82,5 +82,7 @@ class OKCORE_API OpticksRun
         G4StepNPY*       m_g4step ; 
         NMeta*           m_parameters ;
 
+        bool             m_resize ;
+        bool             m_clone ;
 
 };

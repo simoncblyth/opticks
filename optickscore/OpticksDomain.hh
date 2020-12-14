@@ -74,6 +74,7 @@ critically important for record domain compression.
 class OKCORE_API OpticksDomain {
     public:
        OpticksDomain();
+       virtual ~OpticksDomain();
        void updateBuffer();  // copy from local vec into idom/fdom
        void importBuffer();  // copy from fdom/idom into local vec
        void dump(const char* msg="OpticksDomains::dump");

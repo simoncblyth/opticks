@@ -24,6 +24,7 @@
 class BTimesTable ; 
 template <typename T> class NPY ; 
 
+#include "NGLM.hpp"
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 #include "plog/Severity.h"
@@ -123,6 +124,8 @@ class OKCORE_API OpticksProfile
 
        std::string brief();
 
+       const glm::vec4& getLastStamp() const ; 
+
     public:
        void save(const char* dir);
     private:
@@ -168,6 +171,8 @@ class OKCORE_API OpticksProfile
 
        std::vector<OpticksLis>   m_lis ; 
        std::vector<std::string>  m_lis_labels  ; 
+
+       glm::vec4  m_last_stamp ; 
 
 
 };
