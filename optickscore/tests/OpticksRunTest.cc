@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    int nevt = argc > 1 ? atoi(argv[1]) : 10 ; 
+    int nevt = argc > 1 ? atoi(argv[1]) : 1000 ; 
     Opticks ok(argc, argv); 
     ok.configure(); 
 

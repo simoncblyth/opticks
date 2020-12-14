@@ -732,7 +732,7 @@ tboolean-lv()
    elif [ "${cmdline/--noalign}" != "${cmdline}" ]; then
        $funcname --okg4test  $*   
    else
-       $funcname --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero $*   
+       $funcname --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile $*   
        RC=$?
    fi 
    echo $msg $funcname RC $RC
