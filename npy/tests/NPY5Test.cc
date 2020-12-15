@@ -52,7 +52,7 @@ void test_make(int n)
 {
     LOG(info); 
     float vm0 = SProc::VirtualMemoryUsageMB() ; 
-    for(unsigned i=0 ; i < n ; i++)
+    for(int i=0 ; i < n ; i++)
     {
         NPY<float>* a = NPY<float>::make(10000, 4 ); 
         a->zero(); 

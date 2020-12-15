@@ -372,7 +372,7 @@ void X4Mesh::save(const char* path) const
     YOG::Maker::SaveToGLTF( vtx, idx, path ); 
 #else
     LOG(fatal) << "saving to GLTF requires non-default WITH_YOG " ; 
-    assert(0); 
+    //assert(0);   //would be tripped by X4SolidTest
 #endif
 
 }
