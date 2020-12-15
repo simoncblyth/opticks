@@ -49,18 +49,16 @@ set(TEST_SOURCES
    BTimeStampTest.cc
    BTimesTest.cc
    BTimesTableTest.cc
-
-
 )
 
 
+list(APPEND TEST_SOURCES 
+    BListenUDPTest.cc     
+)
 
-#if(BoostAsio_FOUND)  
-   list(APPEND TEST_SOURCES 
-        BListenUDPTest.cc     
-   )
-#endif()
-
+if(NLJSON_FOUND)
+list(APPEND TEST_SOURCES BMetaTest.cc)
+endif()
 
 
 #[=[

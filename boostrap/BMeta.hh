@@ -23,54 +23,43 @@
 #include <string>
 #include "plog/Severity.h"
 
-#include "NPY_API_EXPORT.hh"
-#include "NYJSON.hpp"
-#include "NPY_HEAD.hh"
+#include "BRAP_API_EXPORT.hh"
+#include "BRAP_HEAD.hh"
+
+#include "json.hpp"
+
 
 /**
-NMeta (will remove, migrating to BMeta )
-==========================================
+BMeta (formerly NMeta)
+========================
 
 Metadata persistency using nlohmann::json single header which 
-comes is via yocto (gltf) external::
-
-    /usr/local/opticks/externals/yoctogl/yocto-gl/yocto/ext/json.hpp
 
 * https://github.com/nlohmann/json
 * https://nlohmann.github.io/json/
 
-NB 
+* BMeta adds a limitation of only handling keyed structures, not lists
+* newer versions has a "contains(key)" method that may be handy 
 
-* NMeta adds a limitation of only handling keyed structures, not lists
-
-* are using a very old version of json.hpp version 2.0.7 from 2016
-  just because that is what yocto uses 
-
-* newer versions has a "contains(key)" method that would be handy 
-
-* TODO: investigate updating yocto and this header : suspect 
-  multiple versions of the json.hpp header used by NMeta and yocto 
-  would not cause a problem : as the underlying type is well wrapped 
-  and not making much use of yocto gltf anymore 
-
-
-TODO: this depends on very little from NPY, but file handling from BoostRap
-      so sink it down to BMeta and base directly off NLJSON rather than
-      getting that via YoctoGL
+In a prior life this was npy/NMeta however as it depended
+very little on NPY but used file handling from BoostRap it 
+has been moved down in the heirarchy to BMeta. In addition NMeta 
+depended on an ancient nlogmann::json that came along with YoctoGL.
+Instead this directly uses a recent header from nljson- external.
 
 **/
 
-class NPY_API NMeta {
+class BRAP_API BMeta {
        static const plog::Severity LEVEL ; 
    public:
-       static NMeta* Load(const char* path);
-       static NMeta* Load(const char* dir, const char* name);
-       static NMeta* FromTxt(const char* txt);
+       static BMeta* Load(const char* path);
+       static BMeta* Load(const char* dir, const char* name);
+       static BMeta* FromTxt(const char* txt);
    public:
-       NMeta();
-       NMeta(const NMeta& other);
+       BMeta();
+       BMeta(const BMeta& other);
 
-       void append(NMeta* other); // duplicate keys are overwritten
+       void append(BMeta* other); // duplicate keys are overwritten
 
        unsigned size() const ; 
 
@@ -91,8 +80,8 @@ class NPY_API NMeta {
        void        prepLines();
 
    public:
-       void   setObj(const char* name, NMeta* obj); 
-       NMeta* getObj(const char* name) const ;
+       void   setObj(const char* name, BMeta* obj); 
+       BMeta* getObj(const char* name) const ;
    public:
        template <typename T> void add(const char* name, T value);   // same as set, for easier migration for B_P_a_r_a_m_e_t_e_r_s
        template <typename T> void set(const char* name, T value);
@@ -111,13 +100,13 @@ class NPY_API NMeta {
        void kvdump() const ;
 
    public:
-       template <typename T> static T Get(const NMeta* meta, const char* name, const char* fallback)  ;
+       template <typename T> static T Get(const BMeta* meta, const char* name, const char* fallback)  ;
    public:
        void save(const char* path) const ;
        void save(const char* dir, const char* name) const ;
        void dump() const ; 
        void dump(const char* msg) const ; 
-       void dumpLines(const char* msg="NMeta::dumpLines") ; 
+       void dumpLines(const char* msg="BMeta::dumpLines") ; 
    public:
        void addEnvvar( const char* key ) ;
        void addEnvvarsWithPrefix( const char* prefix="OPTICKS_", bool trim=true );  
@@ -142,6 +131,6 @@ class NPY_API NMeta {
 
 };
 
-#include "NPY_TAIL.hh"
+#include "BRAP_TAIL.hh"
 
 

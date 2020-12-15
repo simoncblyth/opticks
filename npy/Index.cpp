@@ -181,6 +181,11 @@ so no go unless just leak::
 
    std::sort(m_names.begin(), m_names.end(), *this ); // ascending local index
 
+The reason is explained by the below link. 
+
+* https://stackoverflow.com/questions/13384576/c-stdsort-calling-destructor
+
+
 **/
 
 void Index::sortNames()

@@ -25,17 +25,17 @@
 #include "NSDF.hpp"
 
 NSDF::NSDF(std::function<float(float,float,float)> sdf, const glm::mat4& inverse )
-        :
-        sdf(sdf),
-        inverse(inverse),
-        verbosity(0),
-        tot(0,0,0,0),
-        range(0,0),
-        epsilon(0),
-        expect(0),
-        qqptr(NULL)
-    {
-    }
+    :
+    sdf(sdf),
+    inverse(inverse),
+    verbosity(0),
+    tot(0,0,0,0),
+    range(0,0),
+    epsilon(0),
+    expect(0),
+    qqptr(NULL)
+{
+}
     
 
 void NSDF::clear()

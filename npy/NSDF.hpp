@@ -25,17 +25,23 @@
 #include "NPY_API_EXPORT.hh"
 #include "NGLM.hpp"
 
+/**
+NSDF
+=====
+
+Applies inverse transform v to take global positions 
+into frame of the structural nd 
+where the CSG is placed, these positions local 
+to the CSG can then be used with the CSG SDF to 
+see the distance from the point to the surface of the 
+solid.
+ 
+TODO: investigate: currently only compiled when YoctoGL_FOUND but seems no dependency on that ?
+
+**/
+
 struct NPY_API NSDF
 {
-   /*
-   Applies inverse transform v to take global positions 
-   into frame of the structural nd 
-   where the CSG is placed, these positions local 
-   to the CSG can then be used with the CSG SDF to 
-   see the distance from the point to the surface of the 
-   solid.
-   */
-
     typedef std::vector<float>::const_iterator VFI ; 
 
     NSDF(std::function<float(float,float,float)> sdf, const glm::mat4& inverse );
@@ -49,7 +55,6 @@ struct NPY_API NSDF
     std::string desc() const ;
     std::string detail() const ;
 
-
     std::function<float(float,float,float)> sdf ; 
     const glm::mat4                         inverse ; 
     unsigned                                verbosity ; 
@@ -62,9 +67,5 @@ struct NPY_API NSDF
     float                                   epsilon ; 
     unsigned                                expect ; 
     const std::vector<glm::vec3>*           qqptr ; 
-
-
-
 };
-
 

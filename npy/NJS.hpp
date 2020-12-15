@@ -33,6 +33,9 @@ NJS
 
 Convenience wrapper for JSON read/write 
 
+This was formerly used from NMeta but now NMeta
+directly uses nlohmann::json for simplicity.
+
 **/
 
 

@@ -14,6 +14,10 @@ set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_EXACT "RE
 find_package(BoostAsio MODULE)  
 message(STATUS "BoostAsio_FOUND : ${BoostAsio_FOUND}")
 
+find_package(NLJSON MODULE)      # will become REQUIRED shortly 
+find_package(PLog   REQUIRED MODULE)     # for integrated-building ?
+find_package(SysRap REQUIRED CONFIG)
+
 
 #[=[
 BoostRap
@@ -56,9 +60,6 @@ TODO
 
 
 #]=]
-
-find_package(PLog REQUIRED MODULE)     # for integrated-building ?
-find_package(SysRap REQUIRED CONFIG)
 
 
 set(SOURCES
@@ -154,6 +155,16 @@ set(HEADERS
 
 )
 
+
+if(NLJSON_FOUND)  
+   message(STATUS "BRAP.NLJSON_FOUND")
+   list(APPEND SOURCES  BMeta.cc)
+   list(APPEND HEADERS  BMeta.hh)
+endif()
+
+
+
+
 set(TOXIC_SOURCES
   BLog.cc
   timeutil.cc
@@ -208,6 +219,9 @@ if(BoostAsio_FOUND)
 target_link_libraries(${name} PUBLIC Threads::Threads)  
 endif()
 
+if(NLJSON_FOUND)
+target_link_libraries(${name} PUBLIC Opticks::NLJSON)
+endif()
 
 if(UNIX AND NOT APPLE)
 target_link_libraries( ${name} PUBLIC ssl crypto )
