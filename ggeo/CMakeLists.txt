@@ -4,8 +4,9 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 find_package(OpticksCore REQUIRED CONFIG)
-find_package(YoctoGLRap REQUIRED CONFIG)
 
+#find_package(YoctoGLRap REQUIRED CONFIG)
+set(YoctoGLRap_FOUND NO)
 
 
 set(SOURCES
@@ -68,7 +69,6 @@ set(SOURCES
     GVolumeList.cc
     GGeoLib.cc
     GGeoCfg.cc
-    GGeoGLTF.cc
     GSolidRec.cc
 
     GGeoTest.cc
@@ -121,7 +121,6 @@ set(HEADERS
     GGeoBase.hh
     GGeo.hh
     GGeoCfg.hh
-    GGeoGLTF.hh
     GSolidRec.hh
 
     GMaterial.hh
@@ -179,9 +178,27 @@ set(HEADERS
     GPho.hh
 )
 
+if(YoctoGLRap_FOUND)
+   message(STATUS "GGeo.YoctoGLRap_FOUND")
+   list(APPEND SOURCES GGeoGLTF.cc)
+   list(APPEND HEADERS GGeoGLTF.hh)
+else()
+   message(STATUS "GGeo.NOT YoctoGLRap_FOUND")
+endif()
+
+
+
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>) 
-target_link_libraries( ${name} PUBLIC Opticks::OpticksCore Opticks::YoctoGLRap)
+target_link_libraries( ${name} PUBLIC Opticks::OpticksCore)
+
+if(YoctoGLRap_FOUND)
+target_link_libraries( ${name} PUBLIC Opticks::YoctoGLRap)
+target_compile_definitions(${name} PUBLIC WITH_YOCTOGLRAP)
+endif()
+
+
+
 target_compile_definitions( ${name} PUBLIC OPTICKS_GGEO )
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)

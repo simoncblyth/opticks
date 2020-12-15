@@ -11,7 +11,8 @@ find_package(GLM     REQUIRED MODULE)
 ## Targets serialized via BCM export to PREFIX/lib/cmake/ 
 ## (controlled from their CMakeLists.txt)
 find_package(BoostRap REQUIRED CONFIG)
-find_package(YoctoGL  REQUIRED CONFIG) 
+
+#find_package(YoctoGL REQUIRED CONFIG) 
 
 ## Former externals
 #find_package(OpenMesh REQUIRED MODULE)
@@ -23,6 +24,7 @@ set(OpenMesh_FOUND             NO)
 set(ImplicitMesher_FOUND       NO)
 set(DualContouringSample_FOUND NO)
 set(CSGBSP_FOUND               NO)
+set(YoctoGL_FOUND              NO)
 
 
 
@@ -406,11 +408,14 @@ endif()
 
 
 
+list(APPEND SOURCES   NSceneConfig.cpp  )  
+list(APPEND HEADERS   NSceneConfig.hpp  )
+
 
 if(YoctoGL_FOUND)  # this is no-longer optional
    message(STATUS "NPY.YoctoGL_FOUND")
-   list(APPEND SOURCES  NGLTF.cpp  NScene.cpp  NSceneConfig.cpp NSDF.cpp N.cpp NJS.cpp NMeta.cpp NGeometry.cpp)
-   list(APPEND HEADERS  NGLTF.hpp  NScene.hpp  NSceneConfig.hpp NSDF.hpp N.hpp NJS.hpp NMeta.hpp NYJSON.hpp NGeometry.hpp)
+   list(APPEND SOURCES  NGLTF.cpp  NScene.cpp NSDF.cpp N.cpp NJS.cpp NMeta.cpp NGeometry.cpp)
+   list(APPEND HEADERS  NGLTF.hpp  NScene.hpp NSDF.hpp N.hpp NJS.hpp NMeta.hpp NYJSON.hpp NGeometry.hpp)
 endif()
 
 if(ImplicitMesher_FOUND)

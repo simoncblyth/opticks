@@ -117,7 +117,7 @@ class OpticksCMakeProj(object):
              'SysRap':20, 
              'BoostRap':30, 
              'NPY':40, 
-             'YoctoGLRap':45,
+             'YoctoGLRap':-45,
              'OpticksCore':50, 
              'GGeo':60, 
              'AssimpRap':-70,

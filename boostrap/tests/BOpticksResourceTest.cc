@@ -93,6 +93,7 @@ void test_GetCachePath()
 void test_getGDMLAuxTargetLVName()
 {
     BOpticksResource bor ; 
+    //bor.setupViaKey();   
     const char* target = bor.getGDMLAuxTargetLVName() ; 
     LOG(info) << target ; 
 }

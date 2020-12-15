@@ -3,6 +3,7 @@ set(name YoctoGLRap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+find_package(YoctoGL  REQUIRED CONFIG)
 find_package(NPY     REQUIRED CONFIG) 
 # NPY depends on SysRap and YoctoGL among others, so no need to repeat here
 

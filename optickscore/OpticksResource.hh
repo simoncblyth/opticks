@@ -30,13 +30,9 @@ class BOpticksResource ;
 class BEnv ; 
 
 class Opticks ; 
-#ifdef OLD_RESOURCE
-class OpticksQuery ; 
-#endif
 class OpticksColors ; 
 class OpticksFlags ; 
 class OpticksAttrSeq ;
-
 
 class Types ;
 class Typ ;
@@ -57,7 +53,6 @@ WHY PRIOR TO CONFIG ?
 
 * more convenient to be after, then can feed in some values
 
-
 TODO:
 
 * the split between whats in BOpticksResource and OpticksResource 
@@ -75,7 +70,6 @@ TODO:
 
 * need a better way to feed in metadata thru the keyhole, for live running 
   (probably a json string passed from user code ?) eg for OPTICKS_QUERY_LIVE 
-
 
 **/
 
@@ -98,27 +92,11 @@ class OKCORE_API OpticksResource
        void init();
        void readOpticksEnvironment();
        void readEnvironment();
-#ifdef OLD_RESOURCE
-       void readMetadata();
-       void identifyGeometry();
-       void assignDetectorName();
-       void assignDefaultMaterial();
-#endif
 
        void initRunResultsDir();
        void setValid(bool valid);
     public:
-
-#ifdef OLD_RESOURCE
-       const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
-       const char* getMaterialMap();   // eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json 
-       const char* getDefaultMaterial();  // material shortname based on the assigned detector, used for machinery tests only 
-       const char* getDefaultMedium();    // PMT medium material name 
-       const char* getExampleMaterialNames();  // comma delimited list of short material names
-       const char* getSensorSurface(); 
-#endif
        int         getDefaultFrame() const ; 
-
     public:
        const char* getRunResultsDir() const ;
     public:
@@ -130,15 +108,8 @@ class OKCORE_API OpticksResource
        std::string getObjectPath(const char* name) const ;
        std::string getPropertyLibDir(const char* name) const ;
        const char* getIdPath() const ;
-
-   
     public:
-#ifdef OLD_RESOURCE
-       std::string getDetectorPath(const char* name, unsigned int ridx);
-       std::string getPmtPath(unsigned int index, bool relative=false);
-#endif
        std::string getMergedMeshPath(unsigned int ridx);
-
     public:
        std::string getPreferenceDir(const char* type, const char* udet=NULL, const char* subtype=NULL);
        bool loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name);
@@ -156,10 +127,7 @@ class OKCORE_API OpticksResource
        void Dump(const char* msg="OpticksResource::Dump");
     public:
        OpticksQuery* getQuery() const ;
-#ifdef OLD_RESOURCE
-       const char* getCtrl();
-       bool hasCtrlKey(const char* key) const ;
-#endif
+
     public:
        // split these off as cannot assume users can write into geocache
        void saveFlags(const char* dir);
@@ -181,20 +149,6 @@ class OKCORE_API OpticksResource
     private:
        std::string makeSidecarPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
 
-#ifdef OLD_RESOURCE
-    public:
-       const char* getMeshfix();
-       const char* getMeshfixCfg();
-       glm::vec4   getMeshfixFacePairingCriteria();
-    public:
-       const char* getDetector();
-       const char* getDetectorName();
-       bool        isG4Live();
-       bool        isJuno();
-       bool        isDayabay();
-       bool        isPmtInBox();
-       bool        isOther();
-#endif
    public: 
        BOpticksResource*  getRsc() const ;
        // via m_rsc
@@ -202,20 +156,13 @@ class OKCORE_API OpticksResource
        const char* getTestConfig() const ;
        void        setTestCSGPath(const char* path) ;     
        void        setTestConfig(const char* config) ; 
+
    private:
        SLog*             m_log ; 
        BOpticksResource* m_rsc ; 
        BOpticksKey*      m_key ; 
        Opticks*          m_ok ; 
        OpticksQuery*     m_query ;
-   private:
-#ifdef OLD_RESOURCE
-       // results of readEnvironment
-       const char* m_geokey ;
-       const char* m_ctrl ;
-       const char* m_meshfix ;
-       const char* m_meshfixcfg ;
-#endif
    private:
        bool        m_valid ; 
    private:
@@ -226,25 +173,6 @@ class OKCORE_API OpticksResource
        Typ*           m_typ ;
        BEnv*          m_g4env ; 
        BEnv*          m_okenv ; 
-   private:
-       // results of identifyGeometry
-#ifdef OLD_RESOURCE
-       bool        m_g4live ;
-       bool        m_dayabay ; 
-       bool        m_juno ; 
-       bool        m_dpib ; 
-       bool        m_other ; 
-       const char* m_detector ;
-       const char* m_detector_name ;
-       const char* m_detector_base ;
-       const char* m_resource_base ;
-       const char* m_material_map  ;
-       const char* m_default_material  ;
-       const char* m_default_medium  ;
-       const char* m_example_matnames  ;
-       const char* m_sensor_surface  ;
-       int         m_default_frame ; 
-#endif
    private:
        const char* m_runresultsdir ;  
    private:

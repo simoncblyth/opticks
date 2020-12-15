@@ -351,9 +351,6 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_production(m_sargs->hasArg("--production")),
     m_profile(new OpticksProfile()),
     m_profile_enabled(m_sargs->hasArg("--profile")),
-#ifdef OLD_RESOURCE
-    m_materialprefix(NULL),
-#endif
     m_photons_per_g4event(0), 
 
     m_spec(NULL),
@@ -890,7 +887,7 @@ Opticks::initResource
 
 Invoked by Opticks::configure.
 
-Instanciates m_resource OpticksResource and its base BOpticksResource
+Instanciates m_resource OpticksResource and its constituent BOpticksResource (m_rsc)
 which defines the geocache paths. 
 
 Previously the decision to use legacy and direct geometry workflow 
@@ -901,7 +898,6 @@ for this split.
 
 See notes/issues/test-fails-from-geometry-workflow-interference.rst
 
-
 **/
 
 void Opticks::initResource()
@@ -910,13 +906,8 @@ void Opticks::initResource()
     m_resource = new OpticksResource(this);
     m_rsc = m_resource->getRsc(); 
 
-#ifdef OLD_RESOURCE
-    const char* detector = m_resource->getDetector() ; 
-    setDetector(detector);
-#else
     const char* detector = BOpticksResource::G4LIVE ; 
     setDetector(detector);
-#endif
 
     const char* idpath = m_rsc->getIdPath();
     m_parameters->add<std::string>("idpath", idpath); 
@@ -1684,37 +1675,6 @@ float Opticks::getFxSc()
 
 
 
-#ifdef OLD_RESOURCE
-bool Opticks::isAnalyticPMTLoad()
-{
-    return m_cfg->hasOpt("apmtload");
-}
-
-unsigned Opticks::getAnalyticPMTIndex()
-{
-    return m_cfg->getAnalyticPMTIndex();
-}
-
-const char* Opticks::getAnalyticPMTMedium()
-{
-    if(m_apmtmedium == NULL)
-    {
-        std::string cmed = m_cfg->getAnalyticPMTMedium() ;
-        std::string dmed = m_resource->getDefaultMedium()  ; 
-        LOG(verbose) 
-            << " cmed " << cmed 
-            << " cmed.empty " << cmed.empty()
-            << " dmed " << dmed 
-            << " dmed.empty " << dmed.empty()
-            ;
-
-        m_apmtmedium = !cmed.empty() ? strdup(cmed.c_str()) : strdup(dmed.c_str()) ;
-    }
-    return m_apmtmedium ;
-}
-
-#endif
-
 
 int Opticks::getDefaultFrame() const 
 {
@@ -1737,35 +1697,6 @@ const char* Opticks::getOptiXCacheDirDefault() const
 
 
 
-
-
-#ifdef OLD_RESOURCE
-NSlice* Opticks::getAnalyticPMTSlice()
-{
-    if(m_apmtslice == 0)
-    {
-        std::string sli = m_cfg->getAnalyticPMTSlice() ; 
-        if(!sli.empty()) m_apmtslice = new NSlice(sli.c_str());
-    }
-    return m_apmtslice ; 
-}
-
-
-const char* Opticks::getSensorSurface()
-{
-    return m_resource->getSensorSurface() ;
-}
-
-#endif
-
-
-
-
-int  Opticks::getGLTFTarget() const 
-{
-    return m_cfg->getGLTFTarget(); 
-}
-
 const char* Opticks::getGLTFPath() const { return m_rsc->getGLTFPath() ; }
 const char* Opticks::getG4CodeGenDir() const { return m_rsc->getG4CodeGenDir() ; }
 const char* Opticks::getCacheMetaPath() const { return m_rsc->getCacheMetaPath() ; } 
@@ -1774,52 +1705,10 @@ const char* Opticks::getRunCommentPath() const { return m_rsc->getRunCommentPath
 
 
 
-
-/*
-const char* Opticks::getSrcGLTFPath() const { return m_resource->getSrcGLTFPath() ; }
-
-const char* Opticks::getSrcGLTFBase() const  // config base and name only used whilst testing with gltf >= 100
+int  Opticks::getGLTFTarget() const 
 {
-    int gltf = getGLTF();
-    const char* path = getSrcGLTFPath() ;
-    if(!path) return NULL ; 
-    std::string base = gltf < 100 ? BFile::ParentDir(path) : m_cfg->getSrcGLTFBase() ;
-    return strdup(base.c_str()) ; 
+    return m_cfg->getGLTFTarget(); 
 }
-
-const char* Opticks::getSrcGLTFName() const 
-{
-    int gltf = getGLTF();
-    const char* path = getSrcGLTFPath() ;
-    if(!path) return NULL ; 
-    std::string name = gltf < 100 ? BFile::Name(path) : m_cfg->getSrcGLTFName()  ;
-    return strdup(name.c_str()) ; 
-}
-
-bool Opticks::hasSrcGLTF() const 
-{
-    // lookahead to what GScene::GScene will do
-    return NGLTF::Exists(getSrcGLTFBase(), getSrcGLTFName()) ;
-}
-
-
-void Opticks::configureCheckGeometryFiles() 
-{
-    if(isGLTF() && !hasSrcGLTF())
-    {
-        LOG(fatal) << "gltf option is selected but there is no gltf file " ;
-        LOG(fatal) << " SrcGLTFBase " << getSrcGLTFBase() ;
-        LOG(fatal) << " SrcGLTFName " << getSrcGLTFName() ;
-        LOG(fatal) << "Try to create the GLTF from GDML with eg:  op --j1707 --gdml2gltf  "  ;
-        
-        //setExit(true); 
-        //assert(0);
-    }
-} 
-*/
-
-
-
 const char* Opticks::getGLTFConfig()
 {
     return m_cfg->getGLTFConfig().c_str() ; 
@@ -2552,17 +2441,8 @@ void Opticks::configure()
 
     m_state = new NState(prefdir.c_str(), "state")  ;
 
-
-#ifdef OLD_RESOURCE
-    const std::string& mpfx = m_cfg->getMaterialPrefix();
-    m_materialprefix = ( mpfx.empty() || isJuno()) ? NULL : strdup(mpfx.c_str()) ;
-#endif
-
-
     m_photons_per_g4event = m_cfg->getNumPhotonsPerG4Event();
     m_dbg->postconfigure();
-
-
 
 
     m_verbosity = m_cfg->getVerbosity(); 
@@ -2688,11 +2568,6 @@ void Opticks::Summary(const char* msg)
         << std::setw(40) << " Verbosity "
         << std::setw(40) << getVerbosity()
         << std::endl
-#ifdef OLD_RESOURCE
-        << std::setw(40) << " AnalyticPMTMedium "
-        << std::setw(40) << getAnalyticPMTMedium()
-        << std::endl
-#endif
         ;
 
     LOG(info) << msg << "DONE" ; 
@@ -2777,8 +2652,6 @@ is not relevant to optical photon propagation the rule of thumb
 yields an overlarge time domain resulting in difficult to 
 control animated propagation visualizations.
 
-
-
 **/
 
 void Opticks::setupTimeDomain(float extent)
@@ -2828,14 +2701,7 @@ void Opticks::setupTimeDomain(float extent)
             << "\n m_time_domain " << gformat(m_time_domain) 
             ;  
     }
-
-
 }
-
-
-
-
-
 
 
 
@@ -3556,14 +3422,6 @@ NPY<float>* Opticks::loadPrimaries() const
 */
 
 
-#ifdef OLD_RESOURCE
-const char* Opticks::getMaterialPrefix()
-{
-    return m_materialprefix ; 
-}
-#endif
-
-
 const char* Opticks::Material(const unsigned int mat)
 {
     if(G_MATERIAL_NAMES == NULL)
@@ -3697,19 +3555,6 @@ const char* Opticks::getG4GunConfig() const
     return s.empty() ? NULL : s.c_str() ; 
 }
 
-
-#ifdef OLD_RESOURCE
-const char* Opticks::getExampleMaterialNames() { return m_resource->getExampleMaterialNames(); }
-const char* Opticks::getDefaultMaterial() { return m_resource->getDefaultMaterial(); }
-const char* Opticks::getDetector() { return m_resource->getDetector(); }
-bool Opticks::isJuno() {    return m_resource->isJuno(); }
-bool Opticks::isDayabay() { return m_resource->isDayabay(); }
-bool Opticks::isPmtInBox(){ return m_resource->isPmtInBox(); }
-bool Opticks::isOther() {   return m_resource->isOther(); }
-bool Opticks::hasCtrlKey(const char* key) const  { return m_resource->hasCtrlKey(key); }
-bool Opticks::hasVolnames() const { return !hasCtrlKey("novolnames") ; }
-#endif
-
 bool Opticks::isValid() {   return m_resource->isValid(); }
 
 
@@ -3765,12 +3610,6 @@ const char*     Opticks::getIdPath() const { return m_rsc ? m_rsc->getIdPath() :
 
 const char*     Opticks::getIdFold() const { return m_rsc ? m_rsc->getIdFold() : NULL ; }
 
-
-#ifdef OLD_RESOURCE
-const char*     Opticks::getDetectorBase() {    return m_resource ? m_resource->getDetectorBase() : NULL ; }
-const char*     Opticks::getMaterialMap() {  return m_resource ? m_resource->getMaterialMap() : NULL ; }
-const char*     Opticks::getDAEPath() {   return m_rsc ? m_rsc->getDAEPath() : NULL ; }
-#endif
 
 const char*     Opticks::getInstallPrefix() { return m_rsc ? m_rsc->getInstallPrefix() : NULL ; }
 
@@ -3837,14 +3676,6 @@ void Opticks::set(const char* name, T value)
     m_parameters->set<T>(name, value); 
 }
 
-
-
-/*
-template OKCORE_API void Opticks::profile<unsigned>(unsigned);
-template OKCORE_API void Opticks::profile<int>(int);
-template OKCORE_API void Opticks::profile<char*>(char*);
-template OKCORE_API void Opticks::profile<const char*>(const char*);
-*/
 
 template OKCORE_API void Opticks::set(const char* name, bool value);
 template OKCORE_API void Opticks::set(const char* name, int value);

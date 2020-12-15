@@ -123,40 +123,6 @@ class BRAP_API  BOpticksResource {
         static const char* PREFERENCE_BASE  ;
         static const char* EMPTY ; 
         static const char* G4LIVE ; 
-#ifdef OLD_RESOURCE
-    protected:
-        static const char* JUNO ; 
-        static const char* DAYABAY ; 
-        static const char* DPIB ; 
-        static const char* OTHER ; 
-    public:
-        static const char* DEFAULT_GEOKEY ;
-        static const char* DEFAULT_QUERY ;
-        static const char* DEFAULT_QUERY_LIVE ;
-        static const char* DEFAULT_CTRL ;
-        static const char* DEFAULT_MESHFIX ;
-        static const char* DEFAULT_MESHFIX_CFG ;
-    public:
-        static const char* DEFAULT_MATERIAL_DYB ;
-        static const char* DEFAULT_MATERIAL_JUNO ;
-        static const char* DEFAULT_MATERIAL_OTHER ;
-    public:
-        static const char* DEFAULT_MEDIUM_DYB ;
-        static const char* DEFAULT_MEDIUM_JUNO ;
-        static const char* DEFAULT_MEDIUM_OTHER ;
-    public:
-        static const int DEFAULT_FRAME_DYB ;
-        static const int DEFAULT_FRAME_JUNO ;
-        static const int DEFAULT_FRAME_OTHER ;
-    public:
-        static const char* SENSOR_SURFACE_DYB ;
-        static const char* SENSOR_SURFACE_JUNO ;
-        static const char* SENSOR_SURFACE_OTHER ;
-    public:
-        static const char* EXAMPLE_MATNAMES_DYB ;
-        static const char* EXAMPLE_MATNAMES_JUNO ;
-        static const char* EXAMPLE_MATNAMES_OTHER ;
-#endif 
 
     public:
         static const char* InstallPathOKDATA() ;
@@ -201,7 +167,6 @@ class BRAP_API  BOpticksResource {
         static const char* ExportDir();
 
         static const char* InstallCacheDir();
-        //static const char* OKCInstallPath();
    private:
 
         static const char* MakePath( const char* prefix, const char* main, const char* sub );
@@ -241,8 +206,6 @@ class BRAP_API  BOpticksResource {
         std::string getRelativePath(const char* name, unsigned int index) const ;
         std::string getRelativePath(const char* name) const ;
 
-
-
         std::string getInstallPath(const char* relpath) const ;
         const char* getIdPath() const ;
         const char* getIdFold() const ;  // parent directory of idpath containing g4_00.dae
@@ -270,12 +233,7 @@ class BRAP_API  BOpticksResource {
         void        findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const ; // for entries matching (k,v) collect  q values
         unsigned    getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const ;
         const char* getGDMLAuxTargetLVName() const ; // returns first name or NULL when none
-
     public:
-
-#ifdef OLD_RESOURCE
-        const char* getMetaPath() const ;
-#endif
         const char* getIdMapPath() const ;
     public:
         const char* getEventBase() const ; 
@@ -308,11 +266,6 @@ class BRAP_API  BOpticksResource {
         friend struct BOpticksResourceTest ; 
         // only use one setup route
         
-#ifdef OLD_RESOURCE
-        void setupViaSrc(const char* srcpath, const char* srcdigest);
-        void setupViaID(const char* idpath );
-        std::string getBasePath(const char* rel);  // from OpticksResource::getBasePath
-#endif
    public: 
         void setupViaKey();
         bool idNameContains(const char* s) const ;
@@ -323,9 +276,7 @@ class BRAP_API  BOpticksResource {
         // the OpticksResource geokey stuff needs to go via Src
    private:
         void setSrcDigest(const char* srcdigest);
-#ifdef OLD_RESOURCE
-        void setSrcPath(const char* srcpath);
-#endif
+
    protected:
         bool         m_testgeo ;   
         SLog*        m_log ; 
@@ -367,7 +318,6 @@ class BRAP_API  BOpticksResource {
         const char* m_idname ; 
         const char* m_idpath ; 
         const char* m_idpath_tmp ; 
-        //const char* m_srcevtbase ; 
         const char* m_evtbase ; 
         const char* m_evtpfx ; 
    protected:
@@ -378,9 +328,7 @@ class BRAP_API  BOpticksResource {
         const char* m_gdmlpath ;
         const char* m_srcgdmlpath ;
         const char* m_srcgltfpath ;
-#ifdef OLD_RESOURCE
-        const char* m_metapath ;
-#endif
+
         const char* m_idmappath ;
         const char* m_g4codegendir ;
         const char* m_gdmlauxmetapath ; 
@@ -396,4 +344,6 @@ class BRAP_API  BOpticksResource {
 };
 
 #include "BRAP_TAIL.hh"
+
+
 

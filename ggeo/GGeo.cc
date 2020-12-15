@@ -78,8 +78,10 @@
 
 #include "GParts.hh"
 
-
+#ifdef WITH_YOCTOGLRAP
 #include "GGeoGLTF.hh"
+#endif
+
 #include "GVolume.hh"
 #include "GMesh.hh"
 #include "GInstancer.hh"
@@ -691,13 +693,17 @@ void GGeo::saveCacheMeta() const
 
 void GGeo::saveGLTF() const 
 {
+#ifdef WITH_YOCTOGLRAP
     int root = SSys::getenvint( "GLTF_ROOT", 3147 );  
     const char* gltfpath = m_ok->getGLTFPath(); 
     m_ok->profile("_GGeo::saveGLTF"); 
     GGeoGLTF::Save(this, gltfpath, root );  
     m_ok->profile("GGeo:saveGLTF"); 
+#else
+    LOG(fatal) << "saving to GLTF now requires WITH_YOCTOGLRAP " ; 
+    assert(0);  
+#endif
 }
-
 
 
 

@@ -27,39 +27,31 @@
 
 #include "NGLM.hpp"
 
-
 class SLog ; 
 class SRngSpec ; 
-
-
 struct SArgs ; 
-template <typename> class NPY ;
-template <typename> class OpticksCfg ;
 
 class BDynamicDefine ; 
+class BMeta ; 
+class BTxt ; 
+class BPropNames ; 
+class BOpticksKey ; 
+class BOpticksResource ; 
 
-
+template <typename> class NPY ;
 class TorchStepNPY ; 
 class NState ;
-class BMeta ; 
 
 struct NSlice ;
 struct NSceneConfig ; 
 struct NLODConfig ; 
 struct NSnapConfig ; 
 
-class BTxt ; 
-
-
-
-class BPropNames ; 
-class BOpticksKey ; 
-class BOpticksResource ; 
-
 class Types ;
 class Typ ;
 class Index ; 
 
+template <typename> class OpticksCfg ;
 class Opticks ; 
 class OpticksEventSpec ;
 class OpticksEvent ;
@@ -94,9 +86,6 @@ class SensorLib ;
 
 
 
-
-
-
 #include "OpticksPhoton.h"
 
 #include "OKCORE_API_EXPORT.hh"
@@ -108,11 +97,7 @@ Opticks
 
 Handles commandline or envvar user arguments.
 
-
-
-
 **/
-
 
 
 class OKCORE_API Opticks {
@@ -200,7 +185,6 @@ class OKCORE_API Opticks {
        void         initSensorData(unsigned num_sensors); 
    public:
        // profile ops
-       //template <typename T> void profile(T label);
        void profile(const char* label);
        const glm::vec4& getLastStamp() const  ;
 
@@ -223,16 +207,7 @@ class OKCORE_API Opticks {
    public:
        // from OpticksResource
        bool isValid();
-#ifdef OLD_RESOURCE
-       const char* getDetector();
-       const char* getDefaultMaterial();
-       const char* getExampleMaterialNames();
-       bool isJuno();
-       bool isDayabay();
-       bool isPmtInBox();
-       bool isOther();
-       bool hasVolnames() const ; 
-#endif
+
        bool isEnabledLegacyG4DAE() const ;  // --enabled_legacy_g4dae 
        //bool isLocalG4() const ; // --localg4 
    public:
@@ -250,9 +225,7 @@ class OKCORE_API Opticks {
        void setVerbosity(unsigned verbosity);
    public:
        const char* getInstallPrefix();
-#ifdef OLD_RESOURCE
-       const char* getMaterialPrefix();
-#endif
+
        std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false) const ;
        std::string getObjectPath(const char* name, bool relative=false) const ;
    public:
@@ -266,11 +239,7 @@ class OKCORE_API Opticks {
        bool        hasGeocache() const ; 
        const char* getIdPath() const ;
        const char* getIdFold() const ;
-#ifdef OLD_RESOURCE
-       const char* getDetectorBase();
-       const char* getMaterialMap();
-       const char* getDAEPath();
-#endif
+
 
        const char* getLastArg();
        int         getLastArgInt();
@@ -326,23 +295,9 @@ class OKCORE_API Opticks {
        float getFxAb();
        float getFxSc();
    public:
-       // from resource
-       const char* getSensorSurface(); 
-   public:
-/**
-       // see GScene, NScene, NGLTF
-       const char* getSrcGLTFPath() const ;   // <- standard above geocache position next to the .gdml and .dae
-       const char* getSrcGLTFBase() const ;   
-       const char* getSrcGLTFName() const ;  
-       bool        hasSrcGLTF() const ; 
-       void configureCheckGeometryFiles()  ; // non-const may setExit 
-**/
-
        // these two still needed by GInstancer
        const char* getGLTFConfig();
        NSceneConfig* getSceneConfig();
-
-
    public:
        const char* getG4CodeGenDir() const ;  // search for g4code
        const char* getCacheMetaPath() const ;
@@ -408,12 +363,6 @@ class OKCORE_API Opticks {
        int         getTarget() const ;         // --target 
        int         getAlignLevel() const;
    public:
-#ifdef OLD_RESOURCE
-       NSlice*  getAnalyticPMTSlice();
-       bool     isAnalyticPMTLoad();
-       unsigned getAnalyticPMTIndex();
-       const char* getAnalyticPMTMedium();
-#endif
        int         getDefaultFrame() const ; 
    public:
        OpticksCfg<Opticks>* getCfg() const ;
@@ -480,7 +429,6 @@ class OKCORE_API Opticks {
        unsigned getMaskSize() const ; 
 
        unsigned getDbgHitMask() const ;  // --dbghitmask=TO,BT,SD 
-
 
        bool isDbgPhoton(unsigned record_id) const ;
        bool isOtherPhoton(unsigned record_id) const ;
@@ -719,9 +667,7 @@ class OKCORE_API Opticks {
        bool                 m_production ; 
        OpticksProfile*      m_profile ; 
        bool                 m_profile_enabled ; 
-#ifdef OLD_RESOURCE
-       const char*          m_materialprefix ;
-#endif
+
    private:
        unsigned             m_photons_per_g4event ;
    private:
@@ -765,12 +711,9 @@ class OKCORE_API Opticks {
        glm::ivec4       m_settings ; 
        //NB avoid duplication between here and OpticksCfg , only things that need more control need be here
 
-
        OpticksRun*          m_run ;   // actually used for dual running 
-
        OpticksAna*          m_ana ; 
        OpticksDbg*          m_dbg ; 
-
 
        int                  m_rc ; 
        const char*          m_rcmsg ; 
@@ -783,8 +726,6 @@ class OKCORE_API Opticks {
        const char*          m_frame_renderer ; 
        SRngSpec*            m_rngspec ; 
        SensorLib*           m_sensorlib ; 
-     
-
 };
 
 #include "OKCORE_TAIL.hh"

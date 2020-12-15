@@ -23,7 +23,6 @@
 #include <string>
 
 
-// #include "G4VisExtent.hh"  
 
 #include "G4VSolid.hh"
 #include "G4Polyhedron.hh"
@@ -31,7 +30,11 @@
 #include "X4SolidExtent.hh"
 #include "X4Mesh.hh"
 
+#ifdef WITH_YOG
 #include "YOGMaker.hh"
+#endif
+
+
 #include "GMesh.hh"
 #include "GMeshMaker.hh"
 #include "BFile.hh"
@@ -361,11 +364,17 @@ void X4Mesh::save(const char* path) const
 
     m_mesh->save(dir); 
 
+#ifdef WITH_YOG
     GMesh* mesh = getMesh();
     const NPY<float>* vtx = mesh->m_x4src_vtx ; 
     const NPY<unsigned>* idx = mesh->m_x4src_idx ; 
 
     YOG::Maker::SaveToGLTF( vtx, idx, path ); 
+#else
+    LOG(fatal) << "saving to GLTF requires non-default WITH_YOG " ; 
+    assert(0); 
+#endif
+
 }
 
 

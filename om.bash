@@ -221,7 +221,7 @@ okconf
 sysrap
 boostrap
 npy
-yoctoglrap
+#yoctoglrap
 optickscore
 ggeo
 #assimprap

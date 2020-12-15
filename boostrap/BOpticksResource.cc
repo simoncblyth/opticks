@@ -89,42 +89,6 @@ const char* BOpticksResource::EMPTY  = "" ;
 const char* BOpticksResource::G4LIVE  = "g4live" ; 
 
 
-#ifdef OLD_RESOURCE
-const char* BOpticksResource::JUNO    = "juno1707" ; 
-const char* BOpticksResource::DAYABAY = "dayabay" ; 
-const char* BOpticksResource::DPIB    = "PmtInBox" ; 
-const char* BOpticksResource::OTHER   = "other" ; 
-
-const char* BOpticksResource::DEFAULT_GEOKEY = "OPTICKSDATA_DAEPATH_DYB" ; 
-const char* BOpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
-const char* BOpticksResource::DEFAULT_QUERY_LIVE = "all" ;
-//const char* BOpticksResource::DEFAULT_QUERY_LIVE = "range:3153:12221" ;  // <-- EXPEDIENT ASSUMPTION THAT G4LIVE GEOMETRY IS DYB  
-const char* BOpticksResource::DEFAULT_CTRL = "" ; 
-const char* BOpticksResource::DEFAULT_MESHFIX = "iav,oav" ; 
-const char* BOpticksResource::DEFAULT_MESHFIX_CFG = "100,100,10,-0.999" ; 
-
-const char* BOpticksResource::DEFAULT_MATERIAL_DYB  = "GdDopedLS" ; 
-const char* BOpticksResource::DEFAULT_MATERIAL_JUNO = "LS" ; 
-const char* BOpticksResource::DEFAULT_MATERIAL_OTHER = "Water" ; 
-
-const char* BOpticksResource::DEFAULT_MEDIUM_DYB  = "MineralOil" ; 
-const char* BOpticksResource::DEFAULT_MEDIUM_JUNO = "Water" ; 
-const char* BOpticksResource::DEFAULT_MEDIUM_OTHER = "Water" ; 
-
-const char* BOpticksResource::EXAMPLE_MATNAMES_DYB = "GdDopedLS,Acrylic,LiquidScintillator,MineralOil,Bialkali" ;
-const char* BOpticksResource::EXAMPLE_MATNAMES_JUNO = "LS,Acrylic" ; 
-const char* BOpticksResource::EXAMPLE_MATNAMES_OTHER = "LS,Acrylic" ; 
-
-const char* BOpticksResource::SENSOR_SURFACE_DYB = "lvPmtHemiCathodeSensorSurface" ;
-const char* BOpticksResource::SENSOR_SURFACE_JUNO = "SS-JUNO-UNKNOWN" ; 
-const char* BOpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ; 
-
-const int BOpticksResource::DEFAULT_FRAME_OTHER = 0 ; 
-const int BOpticksResource::DEFAULT_FRAME_DYB = 3153 ; 
-const int BOpticksResource::DEFAULT_FRAME_JUNO = 62593 ; 
-#endif
-
-
 /**
 BOpticksResource::BOpticksResource
 ----------------------------------------
@@ -186,9 +150,6 @@ BOpticksResource::BOpticksResource()
     m_gdmlpath(NULL),
     m_srcgdmlpath(NULL),
     m_srcgltfpath(NULL),
-#ifdef OLD_RESOURCE
-    m_metapath(NULL),
-#endif
     m_idmappath(NULL),
     m_g4codegendir(NULL),
     m_gdmlauxmetapath(NULL),
@@ -761,88 +722,6 @@ const char* BOpticksResource::makeIdPathPath(const char* rela, const char* relb,
 }
 
 
-/**
-BOpticksResource::setSrcPath  THIS IS SLATED FOR REMOVAL
------------------------------------------------------------
-
-Invoked by setupViaSrc or setupViaID
-
-example srcpath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
-NB not in geocache, points to actual G4DAE export from opticksdata 
-
-**/
-
-#ifdef OLD_RESOURCE
-void BOpticksResource::setSrcPath(const char* srcpath)  
-{
-    assert( srcpath );
-    m_srcpath = strdup( srcpath );
-
-    std::string srcfold = BFile::ParentDir(m_srcpath);
-    m_srcfold = strdup(srcfold.c_str());
-
-    std::string srcbase = BFile::ParentDir(srcfold.c_str());
-    m_srcbase = strdup(srcbase.c_str());
-
-    m_res->addDir("srcfold", m_srcfold ); 
-    m_res->addDir("srcbase", m_srcbase ); 
-
-    m_daepath = MakeSrcPath(m_srcpath,".dae"); 
-    m_srcgdmlpath = MakeSrcPath(m_srcpath,".gdml"); 
-    m_srcgltfpath = MakeSrcPath(m_srcpath,".gltf"); 
-    m_metapath = MakeSrcPath(m_srcpath,".ini"); 
-    m_idmappath = MakeSrcPath(m_srcpath,".idmap"); 
-
-
-    m_res->addPath("srcpath", m_srcpath );
-    m_res->addPath("daepath", m_daepath );
-    m_res->addPath("srcgdmlpath", m_srcgdmlpath );
-    m_res->addPath("srcgltfpath", m_srcgltfpath );
-    m_res->addPath("metapath", m_metapath );
-    m_res->addPath("idmappath", m_idmappath );
-
-    m_g4codegendir = MakeSrcDir(m_srcpath,"g4codegen"); 
-    m_res->addDir("g4codegendir", m_g4codegendir ); 
-
-    std::string idname = BFile::ParentName(m_srcpath);
-    m_idname = strdup(idname.c_str());   // idname is name of dir containing the srcpath eg DayaBay_VGDX_20140414-1300
-
-    std::string idfile = BFile::Name(m_srcpath);
-    m_idfile = strdup(idfile.c_str());    // idfile is name of srcpath geometry file, eg g4_00.dae
-
-    m_res->addName("idname", m_idname ); 
-    m_res->addName("idfile", m_idfile ); 
-}
-
-
-
-
-std::string BOpticksResource::getBasePath(const char* rel)  // from OpticksResource::getBasePath
-{
-    assert(m_srcbase);
-    fs::path dir(m_srcbase);
-    if(rel) dir /= rel ;
-    return dir.string() ;
-}
-
-
-
-
-
-void BOpticksResource::setupViaID(const char* idpath)
-{
-    assert( !m_setup );
-    m_setup = true ; 
-
-    m_id = new BPath( idpath ); // juicing the IDPATH
-    const char* srcpath = m_id->getSrcPath(); 
-    const char* srcdigest = m_id->getSrcDigest(); 
-
-    setSrcPath( srcpath );
-    setSrcDigest( srcdigest );
-}
-#endif
-
 
 void BOpticksResource::setSrcDigest(const char* srcdigest)
 {
@@ -1070,104 +949,9 @@ std::string BOpticksResource::formCacheRelativePath(const char* path) const
     }  
 }
 
-
-
-
-
-
-
-
-/**
-BOpticksResource::setupViaSrc  LEGACY approach to resource setup, based on envvars pointing at src dae
-------------------------------------------------------------------------------------------------------------
-
-Invoked from OpticksResource::init OpticksResource::readEnvironment
-
-Direct mode equivalent (loosely speaking) is setupViaKey
-
-**/
-
-#ifdef OLD_RESOURCE
-void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
-{  
-    LOG(LEVEL) 
-        << " srcpath " << srcpath 
-        << " srcdigest " << srcdigest
-        ;
-
- 
-    assert( !m_setup );
-    m_setup = true ; 
-
-    setSrcPath(srcpath);
-    setSrcDigest(srcdigest);
-    
-    const char* layout = BStr::itoa(m_layout) ;
-    m_res->addName("OPTICKS_RESOURCE_LAYOUT", layout );
-
-
-    if(m_layout == 0)  // geocache co-located with the srcpath typically from opticksdata
-    {
-        m_idfold = strdup(m_srcfold);
-     
-        std::string kfn = BStr::insertField( m_srcpath, '.', -1 , m_srcdigest );
-        m_idpath = strdup(kfn.c_str());
-     
-        // IDPATH envvar setup for legacy workflow now done in Opticks::initResource
-    } 
-    else if(m_layout > 0)  // geocache decoupled from opticksdata
-    {
-        std::string fold = getGeocachePath(  m_idname ) ; 
-        m_idfold = strdup(fold.c_str()) ; 
-
-        std::string idpath = getGeocachePath( m_idname, m_idfile, m_srcdigest, layout );
-        m_idpath = strdup(idpath.c_str()) ; 
-    }
-
-    m_res->addDir("idfold", m_idfold );
-    m_res->addDir("idpath", m_idpath );
-
-    m_res->addDir("idpath_tmp", m_idpath_tmp );
-
-
-    m_gltfpath = makeIdPathPath("ok.gltf") ;
-    m_res->addPath("gltfpath", m_gltfpath ); 
-
-    m_cachemetapath = makeIdPathPath("cachemeta.json");  
-    m_res->addPath("cachemetapath", m_cachemetapath ); 
-
-    m_runcommentpath = makeIdPathPath("runcomment.txt");  
-    m_res->addPath("runcommentpath", m_runcommentpath ); 
-
-
-
-
-
-/**
-Legacy mode equivalents for resource dirs:
-
-srcevtbase 
-    directory within opticksdata with the gensteps ?
-
-evtbase
-    user tmp directory for outputting events 
-
-**/
-
-
-}
-#endif
-
-
-
-
 /**
 BOpticksResource::getPropertyLibDir
 ---------------------------------------
-
-
-
-
 
 **/
 
@@ -1367,15 +1151,8 @@ const char* BOpticksResource::getGDMLAuxTargetLVName() const
 
 
 
-
-
-#ifdef OLD_RESOURCE
-const char* BOpticksResource::getMetaPath() const { return m_metapath ; }
-#endif
-
 const char* BOpticksResource::getIdMapPath() const { return m_idmappath ; } 
 
-//const char* BOpticksResource::getSrcEventBase() const { return m_srcevtbase ; } 
 const char* BOpticksResource::getEventBase() const { return m_evtbase ; } 
 const char* BOpticksResource::getEventPfx() const {  return m_evtpfx ; } 
 
@@ -1456,9 +1233,6 @@ void BOpticksResource::Brief(const char* msg) const
     std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"NULL") << std::endl; 
     std::cerr << "gdmlpath : " <<  (m_gdmlpath?m_gdmlpath:"NULL") << std::endl; 
     std::cerr << "gltfpath : " <<  (m_gltfpath?m_gltfpath:"NULL") << std::endl; 
-#ifdef OLD_RESOURCE
-    std::cerr << "metapath : " <<  (m_metapath?m_metapath:"NULL") << std::endl; 
-#endif
     std::cerr << "digest   : " <<  (m_srcdigest?m_srcdigest:"NULL") << std::endl; 
     std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
     std::cerr << "idpath_tmp " <<  (m_idpath_tmp?m_idpath_tmp:"NULL") << std::endl; 

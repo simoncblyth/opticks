@@ -1,0 +1,558 @@
+#ifdef OLD_RESOURCE
+       void readMetadata();
+       void identifyGeometry();
+       void assignDetectorName();
+       void assignDefaultMaterial();
+#endif
+
+
+#ifdef OLD_RESOURCE
+       const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
+       const char* getMaterialMap();   // eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json 
+       const char* getDefaultMaterial();  // material shortname based on the assigned detector, used for machinery tests only 
+       const char* getDefaultMedium();    // PMT medium material name 
+       const char* getExampleMaterialNames();  // comma delimited list of short material names
+       const char* getSensorSurface(); 
+#endif
+
+
+
+#ifdef OLD_RESOURCE
+       std::string getDetectorPath(const char* name, unsigned int ridx);
+       std::string getPmtPath(unsigned int index, bool relative=false);
+#endif
+
+#ifdef OLD_RESOURCE
+       const char* getCtrl();
+       bool hasCtrlKey(const char* key) const ;
+#endif
+
+
+
+#ifdef OLD_RESOURCE
+    public:
+       const char* getMeshfix();
+       const char* getMeshfixCfg();
+       glm::vec4   getMeshfixFacePairingCriteria();
+    public:
+       const char* getDetector();
+       const char* getDetectorName();
+       bool        isG4Live();
+       bool        isJuno();
+       bool        isDayabay();
+       bool        isPmtInBox();
+       bool        isOther();
+#endif
+
+
+   private:
+#ifdef OLD_RESOURCE
+       // results of readEnvironment
+       const char* m_geokey ;
+       const char* m_ctrl ;
+       const char* m_meshfix ;
+       const char* m_meshfixcfg ;
+#endif
+
+
+
+   private:
+       // results of identifyGeometry
+#ifdef OLD_RESOURCE
+       bool        m_g4live ;
+       bool        m_dayabay ; 
+       bool        m_juno ; 
+       bool        m_dpib ; 
+       bool        m_other ; 
+       const char* m_detector ;
+       const char* m_detector_name ;
+       const char* m_detector_base ;
+       const char* m_resource_base ;
+       const char* m_material_map  ;
+       const char* m_default_material  ;
+       const char* m_default_medium  ;
+       const char* m_example_matnames  ;
+       const char* m_sensor_surface  ;
+       int         m_default_frame ; 
+#endif
+
+
+
+
+
+
+
+
+#ifdef OLD_RESOURCE
+    m_geokey(NULL),
+    m_ctrl(NULL),
+    m_meshfix(NULL),
+    m_meshfixcfg(NULL),
+#endif
+
+
+
+#ifdef OLD_RESOURCE
+    m_g4live(false),
+    m_dayabay(false),
+    m_juno(false),
+    m_dpib(false),
+    m_other(false),
+    m_detector(NULL),
+    m_detector_name(NULL),
+    m_detector_base(NULL),
+    m_resource_base(NULL),
+    m_material_map(NULL),
+    m_default_material(NULL),
+    m_default_medium(NULL),
+    m_example_matnames(NULL),
+    m_sensor_surface(NULL),
+    m_default_frame(BOpticksResource::DEFAULT_FRAME_OTHER),
+#endif
+
+
+
+
+
+#ifdef OLD_RESOURCE
+   if(Opticks::IsLegacyGeometryEnabled())  // envvar OPTICKS_LEGACY_GEOMETRY_ENABLED is set to 1 
+   {
+       if( m_rsc->hasKey() )  
+       {
+           m_rsc->setupViaKey();    // from BOpticksResource base
+       } 
+       else
+       {
+           readOpticksEnvironment();   // reads the opticksdata ini file
+           readEnvironment();          // invokes BOpticksResource::setupViaSrc after getting daepath from envvar
+       }
+
+   }
+   else
+#endif
+   {
+       assert( m_rsc->hasKey() && "an OPTICKS_KEY is required" );
+       m_rsc->setupViaKey();    // from BOpticksResource base
+   }
+
+
+
+#ifdef OLD_RESOURCE
+   readMetadata();
+   identifyGeometry();
+   assignDetectorName(); 
+   assignDefaultMaterial(); 
+#endif
+
+
+
+/**
+OpticksResource::identifyGeometry
+----------------------------------
+
+**/
+
+#ifdef OLD_RESOURCE
+void OpticksResource::identifyGeometry()
+{
+   // TODO: somehow extract detector name from the exported file metadata or sidecar
+
+   m_g4live   = idNameContains(G4LIVE) ;
+   m_juno     = idNameContains("juno") ;
+   m_dayabay  = idNameContains("DayaBay") ;
+   m_dpib     = idNameContains("dpib") ;
+
+   if(m_g4live == false && m_juno == false && m_dayabay == false && m_dpib == false )
+   {
+       const char* detector = getMetaValue("detector") ;
+       if(detector)
+       {
+           if(     strcmp(detector, G4LIVE)  == 0) m_g4live = true ; 
+           else if(strcmp(detector, DAYABAY) == 0) m_dayabay = true ; 
+           else if(strcmp(detector, JUNO)    == 0) m_juno = true ; 
+           else if(strcmp(detector, DPIB)    == 0) m_dpib = true ; 
+           else 
+                 m_other = true ;
+
+           LOG(verbose) << "OpticksResource::identifyGeometry" 
+                      << " metavalue detector " <<  detector 
+                      ; 
+       }
+       else
+       {
+           m_other = true ;
+       }
+   }
+
+
+   assert( m_g4live ^ m_juno ^ m_dayabay ^ m_dpib ^ m_other ); // exclusive-or
+   
+   if(m_g4live)  m_detector = G4LIVE ; 
+   if(m_juno)    m_detector = JUNO ; 
+   if(m_dayabay) m_detector = DAYABAY ; 
+   if(m_dpib)    m_detector = DPIB ; 
+   if(m_other)   m_detector = OTHER ; 
+
+   if(m_detector == NULL)
+       LOG(fatal) << "FAILED TO ASSIGN m_detector " ; 
+
+   assert(m_detector);
+
+   LOG(verbose) << "OpticksResource::identifyGeometry"
+              << " m_detector " << m_detector
+              ;
+
+}
+
+
+void OpticksResource::assignDefaultMaterial()
+{
+    m_default_material =  DEFAULT_MATERIAL_OTHER ; 
+    if(m_juno)    m_default_material = DEFAULT_MATERIAL_JUNO ;
+    if(m_dayabay) m_default_material = DEFAULT_MATERIAL_DYB ;
+
+    m_default_medium =  DEFAULT_MEDIUM_OTHER ; 
+    if(m_juno)    m_default_medium = DEFAULT_MEDIUM_JUNO ;
+    if(m_dayabay) m_default_medium = DEFAULT_MEDIUM_DYB ;
+
+    m_example_matnames =  EXAMPLE_MATNAMES_OTHER ; 
+    if(m_juno)    m_example_matnames = EXAMPLE_MATNAMES_JUNO ;
+    if(m_dayabay) m_example_matnames = EXAMPLE_MATNAMES_DYB ;
+
+    m_sensor_surface = SENSOR_SURFACE_OTHER ; 
+    if(m_juno)   m_sensor_surface =  SENSOR_SURFACE_JUNO  ; 
+    if(m_dayabay) m_sensor_surface = SENSOR_SURFACE_DYB ; 
+
+    m_default_frame = DEFAULT_FRAME_OTHER ; 
+    if(m_juno)    m_default_frame = DEFAULT_FRAME_JUNO ;
+    if(m_dayabay) m_default_frame = DEFAULT_FRAME_DYB ;
+
+}
+
+const char* OpticksResource::getDefaultMaterial()
+{
+    return m_default_material ; 
+}
+const char* OpticksResource::getDefaultMedium()
+{
+    return m_default_medium ; 
+}
+const char* OpticksResource::getExampleMaterialNames()
+{
+    return m_example_matnames ; 
+}
+
+const char* OpticksResource::getSensorSurface()
+{
+    return m_sensor_surface ; 
+}
+
+#endif
+
+
+
+
+#ifdef OLD_RESOURCE
+const char* OpticksResource::getDetectorBase()
+{
+    return m_detector_base ;
+}
+const char* OpticksResource::getMaterialMap()
+{
+    return m_material_map ;
+}
+const char* OpticksResource::getCtrl()
+{
+    return m_ctrl ;
+}
+bool OpticksResource::hasCtrlKey(const char* key) const 
+{
+    return BStr::listHasKey(m_ctrl, key, ",");
+}
+const char* OpticksResource::getMeshfix()
+{
+    return m_meshfix ;
+}
+const char* OpticksResource::getMeshfixCfg()
+{
+    return m_meshfixcfg ;
+}
+const char* OpticksResource::getDetector()
+{
+    return m_detector ;
+}
+const char* OpticksResource::getDetectorName()
+{
+    return m_detector_name ;
+}
+bool OpticksResource::isG4Live()
+{
+   return m_g4live ; 
+}
+bool OpticksResource::isJuno()
+{
+   return m_juno ; 
+}
+bool OpticksResource::isDayabay()
+{
+   return m_dayabay ; 
+}
+bool OpticksResource::isPmtInBox()
+{
+   return m_dpib ; 
+}
+bool OpticksResource::isOther()
+{
+   return m_other ; 
+}
+#endif
+
+
+
+
+#ifdef OLD_RESOURCE
+void OpticksResource::assignDetectorName()
+{
+   /**
+       m_detector 
+    -> m_detector_name    
+          from lookup of a short list, for name standardization
+
+       m_srcbase, m_detector_name  (eg /usr/local/opticks/opticksdata/export ,  DayaBay ) 
+    -> m_detector_base             (eg /usr/local/opticks/opticksdata/export/DayaBay )
+
+       m_detector_base 
+    -> m_material_map              (eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json )
+
+   **/ 
+
+   std::map<std::string, std::string> detname ; 
+   detname[JUNO]    = "juno1707" ;
+   detname[DAYABAY] = "DayaBay" ;
+   detname[DPIB]    = "dpib" ;
+   detname[OTHER]   = "other" ;
+
+   assert(m_detector);
+
+   LOG(LEVEL)
+             << " m_detector " << m_detector
+             ; 
+
+   bool g4live = strcmp(m_detector, G4LIVE) == 0 ; 
+   if(g4live)
+   {
+       const char* exename = m_key->getExename() ;
+       assert(exename); 
+       m_detector_name = strdup(exename) ; 
+   }
+   else
+   {
+       if(detname.count(m_detector) == 1) m_detector_name =  strdup(detname[m_detector].c_str()) ; 
+   }
+
+   if(m_detector_name == NULL)
+   {
+       Summary("FAILED TO ASSIGN m_detector_name");
+       LOG(fatal) << "FAILED TO ASSIGN m_detector_name " ; 
+   }
+   assert(m_detector_name);
+
+
+   // move detector_base relative to topdown export_dir 
+   // rather than bottom-up (and src dependant) srcbase
+
+   //if(m_srcbase )  // eg /usr/local/opticks/opticksdata/export
+   if(m_export_dir )  // eg /usr/local/opticks/opticksdata/export
+   {
+        std::string detbase = BFile::FormPath(m_export_dir, m_detector_name);
+        m_detector_base = strdup(detbase.c_str());
+        m_res->addDir("detector_base",   m_detector_base  );
+   }
+
+   if(m_detector_base == NULL)
+   {
+       Summary("FAILED TO ASSIGN m_detector_base"); 
+       LOG(fatal) 
+           << "FAILED TO ASSIGN m_detector_base " ; 
+   }
+   assert(m_detector_base);
+
+
+   std::string cmm = BFile::FormPath(m_detector_base, "ChromaMaterialMap.json" );
+   m_material_map = strdup(cmm.c_str());
+
+}
+#endif
+
+
+#ifdef OLD_RESOURCE
+void OpticksResource::readEnvironment()
+{
+/*
+
+
+*path* 
+     identifies the source geometry G4DAE exported file
+
+*query*
+     string used to select volumes from the geometry 
+
+*idpath* 
+     directory name based on *path* incorporating a hexdigest of the *query* 
+     this directory is used to house:
+
+     * geocache of NPY persisted buffers of the geometry
+     * json metadata files
+     * bookmarks
+
+*ctrl*
+     not currently used?
+
+
+
+OPTICKS_GEOKEY 
+    envvar naming another envvar (eg OPTICKSDATA_DAEPATH_DYB) that points to geometry file
+
+*/
+    if(m_ok->isDumpEnv())  SSys::DumpEnv("OPTICKS") ; 
+
+    m_geokey = SSys::getenvvar("OPTICKS_GEOKEY", DEFAULT_GEOKEY);
+    LOG(LEVEL) << " initial m_geokey " << m_geokey ;  
+
+    const char* daepath = SSys::getenvvar(m_geokey);
+
+    if(daepath == NULL)
+    {
+        LOG(error)
+                     << " NO DAEPATH "
+                     << " geokey " << m_geokey 
+                     << " daepath " << ( daepath ? daepath : "NULL" )
+                     ;
+ 
+        //assert(0);
+        setValid(false);
+    } 
+
+    m_ctrl         = SSys::getenvvar("OPTICKS_CTRL", DEFAULT_CTRL);
+
+    m_meshfix      = SSys::getenvvar("OPTICKS_MESHFIX", DEFAULT_MESHFIX);
+    m_meshfixcfg   = SSys::getenvvar("OPTICKS_MESHFIX_CFG", DEFAULT_MESHFIX_CFG);
+
+    // idpath incorporates digest of geometry selection envvar 
+    // allowing to benefit from caching as vary geometry selection 
+    // while still only having a single source geometry file.
+
+    if(daepath)
+    {
+        setupViaSrc(daepath, m_query->getQueryDigest() );  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
+        assert(m_idpath) ; 
+        assert(m_idname) ; 
+        assert(m_idfold) ; 
+    }
+}
+
+void OpticksResource::readMetadata()
+{
+    if(m_metapath)
+    {
+         loadMetadata(m_metadata, m_metapath);
+         //dumpMetadata(m_metadata);
+    }
+}
+
+#endif
+
+#ifdef OLD_RESOURCE
+    std::string pmtp = getPmtPath(0);
+    std::cout 
+           << std::setw(40) << " getPmtPath(0) " 
+           << " : " 
+           << pmtp
+           << std::endl ; 
+#endif
+
+
+
+#ifdef OLD_RESOURCE
+glm::vec4 OpticksResource::getMeshfixFacePairingCriteria()
+{
+   //
+   // 4 comma delimited floats specifying criteria for faces to be deleted from the mesh
+   //
+   //   xyz : face barycenter alignment 
+   //     w : dot face normal cuts 
+   //
+
+    assert(m_meshfixcfg) ; 
+    std::string meshfixcfg = m_meshfixcfg ;
+    return gvec4(meshfixcfg);
+}
+#endif
+
+
+#ifdef OLD_RESOURCE
+std::string OpticksResource::getDetectorPath(const char* name, unsigned int index)
+{
+    assert(m_detector_base && "OpticksResource::getDetectorPath detector_path not set");
+    fs::path dir(m_detector_base);
+    dir /= name ;
+    dir /= boost::lexical_cast<std::string>(index) ;
+    return dir.string() ;
+}
+
+
+std::string OpticksResource::getPmtPath(unsigned int index, bool relative)
+{
+    return relative ?
+                        getRelativePath("GPmt", index)
+                    :
+                        getDetectorPath("GPmt", index)
+                    ;
+
+    // relocate from inside the "digested" idpath up to eg export/Dayabay/GPmt/0
+    // as analytic PMT definitions dont change with the geometry selection parameters
+
+}
+
+#endif
+
+std::string OpticksResource::getPreferenceDir(const char* type, const char* udet, const char* subtype )
+{
+    //if(isG4Live()) return EMPTY ;   // g4live running needs o standardize material order too 
+    const char* prefbase = BOpticksResource::PREFERENCE_BASE ;
+
+#ifdef OLD_RESOURCE
+    bool detector_type = isDetectorType(type) ; // GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib
+    bool resource_type = isResourceType(type) ; // GFlags,OpticksColors 
+    if(detector_type) prefbase = m_detector_base ; 
+    if(resource_type) prefbase = m_resource_dir ;   // one of the top down dirs, set in base BOpticksResource, eg /usr/local/opticks/opticksdata/resource/ containing GFlags, OpticksColors
+    if(detector_type)
+    {
+        assert(udet == NULL); // detector types dont need another detector subdir
+    }
+
+    LOG(verbose) 
+        << " type " << type 
+        << " detector_type " << detector_type
+        << " resource_type " << resource_type
+        ;
+#endif
+
+    fs::path prefdir(prefbase) ;
+    if(udet) prefdir /= udet ;
+    prefdir /= type ; 
+    if(subtype) prefdir /= subtype ; 
+    std::string pdir = prefdir.string() ;
+
+    LOG(LEVEL)
+        << " type " << type 
+        << " udet " << udet
+        << " subtype " << subtype 
+        << " pdir " << pdir 
+        ;
+
+    return pdir ; 
+}
+
+
+
