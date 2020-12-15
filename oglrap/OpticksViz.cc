@@ -25,8 +25,7 @@
 #include "SRenderer.hh"
 
 #include "BStr.hh"
-
-#include "NMeta.hpp"
+#include "BMeta.hh"
 
 
 // npy-
@@ -484,7 +483,7 @@ void OpticksViz::prepareGUI()
         LOG(LEVEL) << "NULL profile " ; 
     }  
 
-    NMeta* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
+    BMeta* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
     m_gui->setupParams(parameters->getLines());
 
 #endif

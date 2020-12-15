@@ -32,10 +32,7 @@ namespace fs = boost::filesystem;
 // brap-
 #include "BStr.hh"
 #include "BDir.hh"
-
-// npy-
-#include "NMeta.hpp"
-
+#include "BMeta.hh"
 
 // ggeo-
 
@@ -58,7 +55,7 @@ const plog::Severity GPropertyMap<T>::LEVEL = debug ;
 
 
 template <typename T>
-NMeta* GPropertyMap<T>::getMeta() const 
+BMeta* GPropertyMap<T>::getMeta() const 
 {
     return m_meta ; 
 }
@@ -138,7 +135,7 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain)
       m_valid(other ? other->isValid() : false),
       m_standard_domain(domain),
       m_optical_surface(other ? other->getOpticalSurface() : NULL ),
-      m_meta(other && other->getMeta() ? new NMeta(*other->getMeta()) :  new NMeta) 
+      m_meta(other && other->getMeta() ? new BMeta(*other->getMeta()) :  new BMeta) 
 {
     init();
 
@@ -166,7 +163,7 @@ GPropertyMap<T>::GPropertyMap(const char* name)
     m_shortname(NULL),
     m_standard_domain(NULL),
     m_optical_surface(NULL),
-    m_meta(new NMeta)
+    m_meta(new BMeta)
 {
    m_name = name ;   // m_name is std::string, no need for strdup 
    m_index = UINT_MAX ;
@@ -179,13 +176,13 @@ GPropertyMap<T>::GPropertyMap(const char* name)
 
 // this ctor is used in eg GSurfaceLib::importForTex2d
 template <typename T>
-GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface, NMeta* meta) 
+GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface, BMeta* meta) 
    : 
    m_index(index), 
    m_valid(false),
    m_standard_domain(NULL),
    m_optical_surface(optical_surface),
-   m_meta(meta ? new NMeta(*meta) : new NMeta)
+   m_meta(meta ? new BMeta(*meta) : new BMeta)
 {
    // set the std::string
    m_name = name ; 

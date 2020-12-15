@@ -22,13 +22,12 @@
 #include <vector>
 #include <string>
 
+#include "PLOG.hh"
 #include "BStr.hh"
 #include "SBit.hh"
+
 #include "BRegex.hh"
-
-#include "NMeta.hpp"
-
-#include "PLOG.hh"
+#include "BMeta.hh"
 
 #include "Index.hpp"
 
@@ -93,9 +92,9 @@ const char* OpticksFlags::_EFFICIENCY_CULL   = "EX" ;
 const char* OpticksFlags::_EFFICIENCY_COLLECT = "EC" ; 
 
 
-NMeta* OpticksFlags::MakeAbbrevMeta()  // static 
+BMeta* OpticksFlags::MakeAbbrevMeta()  // static 
 {
-    NMeta* m = new NMeta ; 
+    BMeta* m = new BMeta ; 
     m->set<std::string>(CERENKOV_ , _CERENKOV); 
     m->set<std::string>(SCINTILLATION_ , _SCINTILLATION); 
     m->set<std::string>(TORCH_ , _TORCH); 
@@ -115,7 +114,7 @@ NMeta* OpticksFlags::MakeAbbrevMeta()  // static
     return m ; 
 }
 
-NMeta* OpticksFlags::MakeFlag2ColorMeta()  // static 
+BMeta* OpticksFlags::MakeFlag2ColorMeta()  // static 
 {
     const char* flag2color = R"LITERAL(
     {
@@ -138,7 +137,7 @@ NMeta* OpticksFlags::MakeFlag2ColorMeta()  // static
     }
 )LITERAL";
 
-    NMeta* m = NMeta::FromTxt(flag2color); 
+    BMeta* m = BMeta::FromTxt(flag2color); 
     return m ; 
 }
 
@@ -404,8 +403,8 @@ unsigned int OpticksFlags::SourceCode(const char* type)
 
 
 Index* OpticksFlags::getIndex()     const { return m_index ;  } 
-NMeta* OpticksFlags::getAbbrevMeta() const { return m_abbrev_meta ;  } 
-NMeta* OpticksFlags::getColorMeta() const { return m_color_meta ;  } 
+BMeta* OpticksFlags::getAbbrevMeta() const { return m_abbrev_meta ;  } 
+BMeta* OpticksFlags::getColorMeta() const { return m_color_meta ;  } 
 
 OpticksFlags::OpticksFlags(const char* path) 
     :

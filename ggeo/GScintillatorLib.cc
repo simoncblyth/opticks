@@ -19,7 +19,7 @@
 
 #include <cassert>
 #include "NPY.hpp"
-#include "NMeta.hpp"
+#include "BMeta.hh"
 
 #include "GDomain.hh"
 #include "GAry.hh"
@@ -116,7 +116,7 @@ void GScintillatorLib::import()
     //m_buffer->Summary("GScintillatorLib::import");
 }
 
-NMeta* GScintillatorLib::createMeta()
+BMeta* GScintillatorLib::createMeta()
 {
     return NULL ; 
 }

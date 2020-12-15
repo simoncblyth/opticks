@@ -18,7 +18,7 @@
  */
 
 
-#include "NMeta.hpp"
+#include "BMeta.hh"
 
 #include "NCSG.hpp"
 #include "NPY.hpp"
@@ -496,7 +496,7 @@ NPY<float>* OpticksGen::loadLegacyGenstepFile(const char* label)
 
     int modulo = m_cfg->getModulo();
 
-    NMeta* parameters = gs->getParameters();
+    BMeta* parameters = gs->getParameters();
     parameters->add<int>("Modulo", modulo );
     if(modulo > 0) 
     {    

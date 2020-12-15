@@ -36,11 +36,11 @@
 #include "BTimeStamp.hh"
 //#include "STimes.hh"
 #include "BTimes.hh"
+#include "BMeta.hh"
 
 // npy-
 #include "NGLM.hpp"
 #include "NPY.hpp"
-#include "NMeta.hpp"
 #include "GLMFormat.hpp"
 
 // okc-
@@ -195,7 +195,7 @@ void OContext::CheckDevices(Opticks* ok)
     VisibleDevices vdev ; 
     LOG(info) << std::endl << vdev.desc(); 
 
-    NMeta* parameters = ok->getParameters(); 
+    BMeta* parameters = ok->getParameters(); 
     parameters->add<int>("NumDevices", vdev.num_devices );
     parameters->add<std::string>("VisibleDevices", vdev.brief() );
 
@@ -226,7 +226,7 @@ OContext* OContext::Create(Opticks* ok, const char* cmake_target, const char* pt
 
     SetupOptiXCachePathEnvvar();
 
-    NMeta* parameters = ok->getParameters(); 
+    BMeta* parameters = ok->getParameters(); 
     int rtxmode = ok->getRTX();
 #if OPTIX_VERSION_MAJOR >= 6
     InitRTX( rtxmode ); 
@@ -480,7 +480,7 @@ void OContext::initDevices()
     CDevice::Dump(   m_visible_devices, "Visible devices"); 
     CDevice::Dump(   m_all_devices, "All devices"); 
 
-    NMeta* parameters = m_ok->getParameters(); 
+    BMeta* parameters = m_ok->getParameters(); 
     std::string cdb_all = CDevice::Brief(m_all_devices) ; 
     std::string cdb_vis = CDevice::Brief(m_visible_devices) ;
  

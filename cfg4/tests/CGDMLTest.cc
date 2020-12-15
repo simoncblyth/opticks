@@ -19,7 +19,7 @@
 
 #include "OPTICKS_LOG.hh"
 
-#include "NMeta.hpp"
+#include "BMeta.hh"
 #include "G4GDMLParser.hh"
 #include "G4VPhysicalVolume.hh"
 
@@ -70,13 +70,13 @@ void CGDMLTest::test_load(const char* path)
     cg.dumpLVMeta("test_load.dumpLVMeta"); 
     cg.dumpUserMeta("test_load.dumpUserMeta"); 
 
-    NMeta* m = cg.getLVMeta(); 
+    BMeta* m = cg.getLVMeta(); 
     m->dump("test_load.getLVMeta"); 
 }
 
 void CGDMLTest::test_Parse(const char* path)
 {
-    NMeta* meta = NULL ;  
+    BMeta* meta = NULL ;  
     G4VPhysicalVolume* world = CGDML::Parse(path, &meta); 
     assert( world ); 
     if(meta) meta->dump("CGDMLTest::test_Parse"); 
@@ -89,7 +89,7 @@ Parse and then Export by default looses the GDMLAux metadata.
 
 void CGDMLTest::test_Parse_Export(const char* ipath, const char* opath)
 {
-    NMeta* meta = NULL ;  
+    BMeta* meta = NULL ;  
     G4VPhysicalVolume* world = CGDML::Parse(ipath, &meta); 
     assert( world ); 
     if(meta) meta->dump("CGDMLTest::test_Parse_Export"); 

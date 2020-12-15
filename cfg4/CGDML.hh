@@ -28,7 +28,7 @@
 
 class G4GDMLParser ; 
 class G4VPhysicalVolume ; 
-class NMeta ; 
+class BMeta ; 
 
 
 class CFG4_API CGDML
@@ -42,28 +42,28 @@ class CFG4_API CGDML
         static const plog::Severity LEVEL ; 
     public:
         static G4VPhysicalVolume* Parse(const char* path);
-        static G4VPhysicalVolume* Parse(const char* path, NMeta** meta );
+        static G4VPhysicalVolume* Parse(const char* path, BMeta** meta );
     public:
         static G4VPhysicalVolume* Parse(const char* dir, const char* name);
-        static G4VPhysicalVolume* Parse(const char* dir, const char* name, NMeta** meta );
+        static G4VPhysicalVolume* Parse(const char* dir, const char* name, BMeta** meta );
     public:
-        static void Export(const char* dir, const char* name, const G4VPhysicalVolume* const world, const NMeta* meta=NULL );
-        static void Export(const char* path,                  const G4VPhysicalVolume* const world, const NMeta* meta=NULL );
+        static void Export(const char* dir, const char* name, const G4VPhysicalVolume* const world, const BMeta* meta=NULL );
+        static void Export(const char* path,                  const G4VPhysicalVolume* const world, const BMeta* meta=NULL );
         static std::string GenerateName(const char* name, const void* const ptr, bool addPointerToName=true );
     public:
         CGDML(); 
         void read(const char* path);  
-        void write(const char* path,  const G4VPhysicalVolume* const world, const NMeta* meta=NULL );
+        void write(const char* path,  const G4VPhysicalVolume* const world, const BMeta* meta=NULL );
     public:
         G4VPhysicalVolume*  getWorldVolume() const ; 
-        NMeta*              getMeta() const ; 
-        void                addMeta(const NMeta* meta);
+        BMeta*              getMeta() const ; 
+        void                addMeta(const BMeta* meta);
     private:
-        void                addLVMeta(const NMeta* lvmeta);
-        void                addUserMeta(const NMeta* user);
+        void                addLVMeta(const BMeta* lvmeta);
+        void                addUserMeta(const BMeta* user);
     private:
-        NMeta*              getLVMeta() const ; 
-        NMeta*              getUserMeta() const ; 
+        BMeta*              getLVMeta() const ; 
+        BMeta*              getUserMeta() const ; 
         void                dumpLVMeta(const char* msg="CGDML::dumpLVMeta") const ; 
         void                dumpUserMeta(const char* msg="CGDML::dumpLVMeta") const ; 
     private:

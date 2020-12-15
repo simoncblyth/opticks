@@ -155,7 +155,7 @@ local index incremented for each unique name
 **/
 void Index::add(const char* name, unsigned source, bool sort )
 {
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     if(m_source.count(name)==0)
     { 
         m_source[name] = source ;
@@ -169,7 +169,7 @@ void Index::add(const char* name, unsigned source, bool sort )
    
         if(sort) sortNames(); // when dealing with very big indices could just do this after all adds are made 
     }
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 /**

@@ -28,11 +28,7 @@
 class NCSG ; 
 class BTxt ; 
 
-#ifdef OLD_PARAMETERS
-class X_BParameters ; 
-#else
-class NMeta ; 
-#endif
+class BMeta ; 
 
 class NGeometry ;
  
@@ -189,13 +185,7 @@ class NPY_API NScene
 
         nd*                               m_root ; 
 
-#ifdef OLD_PARAMETERS
-        std::map<unsigned, X_BParameters*>  m_csg_metadata ;
-#else
-        std::map<unsigned, NMeta*>       m_csg_metadata ;
-#endif
-
-
+        std::map<unsigned, BMeta*>       m_csg_metadata ;
         std::map<unsigned, NCSG*>         m_csg ; 
         std::map<unsigned, int>           m_csg_lvIdx ; 
        

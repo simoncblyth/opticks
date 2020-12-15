@@ -181,7 +181,7 @@ void test_findGDMLAuxMetaEntries(const Opticks* ok)
     const char* val = "target" ; 
     //const char* val = NULL ; 
 
-    std::vector<NMeta*> entries ; 
+    std::vector<BMeta*> entries ; 
     ok->findGDMLAuxMetaEntries(entries, key, val ); 
 }
 

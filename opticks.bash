@@ -439,7 +439,8 @@ plog
 opticksaux
 #oimplicitmesher
 #odcs
-oyoctogl
+#oyoctogl
+nljson
 #ocsgbsp
 EOL
 }

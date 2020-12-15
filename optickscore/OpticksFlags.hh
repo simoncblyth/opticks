@@ -25,7 +25,7 @@
 #include "plog/Severity.h"
 
 class Index ; 
-class NMeta ; 
+class BMeta ; 
 
 /**
 OpticksFlags
@@ -131,16 +131,16 @@ class OKCORE_API OpticksFlags {
         void save(const char* installcachedir);
     private:
         Index* parseFlags(const char* path);
-        static NMeta* MakeAbbrevMeta(); 
-        static NMeta* MakeFlag2ColorMeta(); 
+        static BMeta* MakeAbbrevMeta(); 
+        static BMeta* MakeFlag2ColorMeta(); 
     public:
         Index*             getIndex() const ;  
-        NMeta*             getAbbrevMeta() const ; 
-        NMeta*             getColorMeta() const ; 
+        BMeta*             getAbbrevMeta() const ; 
+        BMeta*             getColorMeta() const ; 
     private:
         Index*             m_index ; 
-        NMeta*             m_abbrev_meta ;  
-        NMeta*             m_color_meta ;  
+        BMeta*             m_abbrev_meta ;  
+        BMeta*             m_color_meta ;  
 };
 
  

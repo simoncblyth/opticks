@@ -28,7 +28,7 @@ template <typename T> class GPropertyMap ;
 template <typename T> class GProperty ; 
 template <typename T> class GDomain ; 
 
-class NMeta ; 
+class BMeta ; 
 class GOpticalSurface ; 
 
 #include "plog/Severity.h"
@@ -59,7 +59,7 @@ class GGEO_API GPropertyMap {
   public:
       GPropertyMap(GPropertyMap* other, GDomain<T>* domain=NULL);  // used for interpolation when domain provided
       GPropertyMap(const char* name);
-      GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface=NULL, NMeta* meta=NULL);
+      GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface=NULL, BMeta* meta=NULL);
 
       virtual ~GPropertyMap();
   private:
@@ -78,7 +78,7 @@ class GGEO_API GPropertyMap {
       bool hasDefinedName();
       bool hasNameEnding(const char* end);
 
-      NMeta* getMeta() const ; 
+      BMeta* getMeta() const ; 
       std::string getMetaDesc() const ; 
 
       template <typename S> 
@@ -194,7 +194,7 @@ class GGEO_API GPropertyMap {
       GDomain<T>*      m_standard_domain ; 
       GOpticalSurface* m_optical_surface ; 
 
-      NMeta*      m_meta ; 
+      BMeta*      m_meta ; 
 
 
 };

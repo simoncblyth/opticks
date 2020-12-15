@@ -20,6 +20,7 @@
 #include "CMaker.hh"
 
 #include "BStr.hh"
+#include "BMeta.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -28,7 +29,6 @@
 #include "NCSG.hpp"
 #include "NNode.hpp"
 
-#include "NMeta.hpp"
 
 
 #include "NPrimitives.hpp"
@@ -313,7 +313,7 @@ g4-;g4-cls G4VFacet
  
 G4VSolid* CMaker::ConvertConvexPolyhedron(const nnode* node) // static
 {
-    NMeta* meta = node->meta ;  
+    BMeta* meta = node->meta ;  
     assert(meta);
     std::string src_type = meta->get<std::string>("src_type");
    
@@ -579,15 +579,9 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     }
     else if(node->type == CSG_TRAPEZOID || node->type == CSG_SEGMENT || node->type == CSG_CONVEXPOLYHEDRON)
     {
-#ifdef OLD_PARAMETERS
-        X_BParameters* meta = node->meta ;  
-        assert(meta);
-        std::string src_type = meta->getStringValue("src_type");
-#else
-        NMeta* meta = node->meta ;  
+        BMeta* meta = node->meta ;  
         assert(meta);
         std::string src_type = meta->get<std::string>("src_type");
-#endif
 
         if(src_type.compare("trapezoid")==0)
         {

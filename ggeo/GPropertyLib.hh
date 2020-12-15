@@ -38,7 +38,7 @@ class SLog ;
 template <typename T> class NPY ;
 class NPYBase ; 
 
-class NMeta ; 
+class BMeta ; 
 
 class Opticks ; 
 class OpticksResource ; 
@@ -123,7 +123,7 @@ class GGEO_API GPropertyLib {
         static const char* source ; 
         static const char* bnd_ ;
     public:
-        static NMeta* CreateAbbrevMeta(const std::vector<std::string>& names ); 
+        static BMeta* CreateAbbrevMeta(const std::vector<std::string>& names ); 
     public:
         const char*  getName(unsigned index) const ;
         unsigned getIndex(const char* shortname) const ;  // 0-based index of first matching name, UINT_MAX when no match
@@ -182,7 +182,7 @@ class GGEO_API GPropertyLib {
         virtual void import() = 0 ; 
         virtual void sort() = 0 ; 
         virtual NPY<float>* createBuffer() = 0;
-        virtual NMeta*      createMeta() = 0;
+        virtual BMeta*      createMeta() = 0;
         virtual GItemList*  createNames() = 0;
     public:
         virtual void beforeClose() ;   // dont force an implemnetation, using empty dummy, but allow override 
@@ -225,7 +225,7 @@ class GGEO_API GPropertyLib {
 
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
-        NMeta*       getMeta() const  ;
+        BMeta*       getMeta() const  ;
         GItemList*   getNames() const ;
         void saveNames(const char* idpath, const char* reldir, const char* txtname) const ; 
 
@@ -238,7 +238,7 @@ class GGEO_API GPropertyLib {
        void loadFromCache();
     public:
         void setBuffer(NPY<float>* buf);
-        void setMeta(NMeta* meta);
+        void setMeta(BMeta* meta);
         void setNames(GItemList* names);
     protected:
         SLog*                                m_log ; 
@@ -246,7 +246,7 @@ class GGEO_API GPropertyLib {
         OpticksResource*                     m_resource ; 
     protected:
         NPY<float>*                          m_buffer ; 
-        NMeta*                               m_meta ; 
+        BMeta*                               m_meta ; 
         OpticksAttrSeq*                      m_attrnames ; // attributed name list 
         GItemList*                           m_names ;     // simple name list 
     protected:

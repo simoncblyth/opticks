@@ -45,8 +45,7 @@
 
 // brap-
 #include "BTimeKeeper.hh"
-
-
+#include "BMeta.hh"
 #include "BDynamicDefine.hh"
 #include "BOpticksEvent.hh"
 #include "BOpticksResource.hh"
@@ -64,7 +63,6 @@
 
 // npy-
 #include "NPY.hpp"
-#include "NMeta.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 #include "NState.hpp"
@@ -106,7 +104,7 @@ const int            Opticks::GEOCACHE_CODE_VERSION = 9 ;  // (incremented when 
 5: go live with geometry model change mm0 no longer special, just remainder, GNodeLib name changes, start on triplet identity
 6: GVolume::getIdentity quad now packing in more info including triplet_identity and sensorIndex
 7: GNodeLib add all_volume_inverse_transforms.npy
-8: GGeo/GNodeLib/NMeta/CGDML/Opticks get G4GDMLAux info thru geocache for default genstep targetting configured 
+8: GGeo/GNodeLib/BMeta/CGDML/Opticks get G4GDMLAux info thru geocache for default genstep targetting configured 
    from within the GDML, opticksaux-dx1 modified with added auxiliary element for lvADE. Used for example by g4ok/G4OKTest   
 9: GDMLAux metadata now arranged with lvmeta and usermeta top objects  
 
@@ -375,9 +373,9 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_configured(false),
 
     m_cfg(new OpticksCfg<Opticks>("opticks", this,false)),
-    m_parameters(new NMeta), 
+    m_parameters(new BMeta), 
     m_runtxt(new BTxt),  
-    m_cachemeta(new NMeta), 
+    m_cachemeta(new BMeta), 
     m_origin_cachemeta(NULL), 
 
     m_scene_config(NULL),
@@ -1285,7 +1283,7 @@ OpticksProfile* Opticks::getProfile() const
 }
 
 
-NMeta*       Opticks::getParameters() const 
+BMeta*       Opticks::getParameters() const 
 {
     return m_parameters ; 
 }
@@ -1886,7 +1884,7 @@ const char* Opticks::getRunDate() const
     return strdup(s.c_str());
 }
 
-void Opticks::appendCacheMeta(const char* key, NMeta* obj)
+void Opticks::appendCacheMeta(const char* key, BMeta* obj)
 {
     m_cachemeta->setObj(key, obj); 
 }
@@ -1989,7 +1987,7 @@ void Opticks::loadOriginCacheMeta()
 {
     const char* cachemetapath = getCacheMetaPath();
     LOG(info) << " cachemetapath " << cachemetapath ; 
-    m_origin_cachemeta = NMeta::Load(cachemetapath); 
+    m_origin_cachemeta = BMeta::Load(cachemetapath); 
     m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta"); 
     std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
     LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
@@ -2025,83 +2023,35 @@ void Opticks::loadOriginCacheMeta()
     assert( geocache_code_version_pass ); 
 }
 
-NMeta* Opticks::getOriginCacheMeta(const char* obj) const 
+BMeta* Opticks::getOriginCacheMeta(const char* obj) const 
 {
     return m_origin_cachemeta ? m_origin_cachemeta->getObj(obj) : NULL ; 
 }
 
-NMeta* Opticks::getGDMLAuxMeta() const 
+
+
+
+
+BMeta* Opticks::getGDMLAuxMeta() const 
 {
-    const char* gdmlauxmetapath = getGDMLAuxMetaPath();
-    NMeta* gdmlauxmeta = NMeta::Load(gdmlauxmetapath) ;
-    return gdmlauxmeta ; 
+    return m_rsc->getGDMLAuxMeta() ; 
 }
 
-void Opticks::findGDMLAuxMetaEntries(std::vector<NMeta*>& entries, const char* k, const char* v ) const 
+void Opticks::findGDMLAuxMetaEntries(std::vector<BMeta*>& entries, const char* k, const char* v ) const 
 {
-    NMeta* meta = getGDMLAuxMeta() ; 
-    NMeta* lvmeta = meta->getObj("lvmeta"); 
-
-    unsigned ni = lvmeta ? lvmeta->getNumKeys() : 0 ;
-    bool dump = false ; 
-
-    for(unsigned i=0 ; i < ni ; i++)
-    {
-        const char* subKey = lvmeta->getKey(i); 
-        NMeta* sub = lvmeta->getObj(subKey); 
-
-        unsigned mode = 0 ; 
-
-        if(k == NULL && v == NULL) // both NULL : match all 
-        {
-            mode = 1 ; 
-            entries.push_back(sub); 
-        }
-        else if( k != NULL && v == NULL)  // key non-NULL, value NULL : match all with that key  
-        {
-            mode = 2 ; 
-            bool has_key = sub->hasKey(k); 
-            if(has_key) entries.push_back(sub) ;
-        }
-        else if( k != NULL && v != NULL)  // key non-NULL, value non-NULL : match only those with that (key,value) pair
-        {
-            mode = 3 ; 
-            bool has_key = sub->hasKey(k); 
-            std::string value = has_key ? sub->get<std::string>(k) : ""  ; 
-            if(strcmp(value.c_str(), v) == 0) entries.push_back(sub); 
-        }
-
-        if(dump)
-        std::cout 
-           << " i " << i
-           << " mode " << mode 
-           << " subKey " << subKey 
-           << std::endl 
-           ;
-
-        //sub->dump("Opticks::findGDMLAuxMetaEntries");  
-   }
-
-   LOG(LEVEL) 
-       << " ni " << ni 
-       << " k " << k 
-       << " v " << v 
-       << " entries.size() " << entries.size()
-       ; 
+    m_rsc->findGDMLAuxMetaEntries(entries, k, v );
 }
 
+/**
+Opticks::findGDMLAuxValues
+----------------------------
+
+For metadata entries matching k,v collect q values into the vector.  
+**/
 
 void Opticks::findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const 
 {
-    std::vector<NMeta*> entries ; 
-    findGDMLAuxMetaEntries(entries, k, v );
-
-    for(unsigned i=0 ; i < entries.size() ; i++)
-    {
-        NMeta* entry = entries[i]; 
-        std::string qv = entry->get<std::string>(q) ; 
-        values.push_back(qv); 
-    }
+    m_rsc->findGDMLAuxValues(values, k, v, q ); 
 }
 
 /**
@@ -2115,19 +2065,7 @@ For any such entries the "lvname" property is accesses and added to the lvnames 
 
 unsigned Opticks::getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const 
 {
-    const char* k = "label" ; 
-    const char* v = "target" ; 
-    const char* q = "lvname" ; 
-
-    findGDMLAuxValues(lvnames, k,v,q); 
-
-    LOG(LEVEL) 
-        << " for entries matching (k,v) : " << "(" << k << "," << v << ")" 
-        << " collect values of q:" << q
-        << " : lvnames.size() " << lvnames.size()
-        ;
-
-    return lvnames.size(); 
+    return m_rsc->getGDMLAuxTargetLVNames(lvnames); 
 }
 
 /**
@@ -2140,14 +2078,8 @@ Returns the first lvname or NULL
 
 const char* Opticks::getGDMLAuxTargetLVName() const 
 {
-    std::vector<std::string> lvnames ; 
-    getGDMLAuxTargetLVNames(lvnames);
-    return lvnames.size() > 0 ? strdup(lvnames[0].c_str()) : NULL ; 
+    return m_rsc->getGDMLAuxTargetLVName() ; 
 }
-
-
-
-
 
 
 
@@ -2161,7 +2093,7 @@ Going via the tokpath enables sharing of geocaches across different installs.
 
 **/
 
-std::string Opticks::ExtractCacheMetaGDMLPath(const NMeta* meta)  // static
+std::string Opticks::ExtractCacheMetaGDMLPath(const BMeta* meta)  // static
 {
     std::string argline = meta->get<std::string>("argline", "-");  
 
@@ -3380,7 +3312,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     // other params are best keep in m_parameters where they get saved/loaded  
     // with the evt 
 
-    NMeta*       parameters = evt->getParameters();
+    BMeta*       parameters = evt->getParameters();
     parameters->add<unsigned int>("RngMax",    rng_max );
     parameters->add<unsigned int>("BounceMax", bounce_max );
     parameters->add<unsigned int>("RecordMax", record_max );

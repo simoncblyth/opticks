@@ -26,11 +26,11 @@
 
 #include "BStr.hh"
 #include "BFile.hh"
+#include "BMeta.hh"
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
-#include "NMeta.hpp"
 
 #include "NTrianglesNPY.hpp"
 
@@ -516,7 +516,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     }
     assert(node); 
 
-    NMeta* nodemeta = m_meta->getMeta(idx);
+    BMeta* nodemeta = m_meta->getMeta(idx);
 
     if(nodemeta) node->meta = nodemeta ; 
 
@@ -1074,7 +1074,7 @@ void NCSG::dump(const char* msg) const
 
     m_root->dump("NCSG::dump");   
 
-    NMeta* _meta = m_meta->getMeta(-1) ;
+    BMeta* _meta = m_meta->getMeta(-1) ;
 
     if(_meta) _meta->dump(); 
 
@@ -1368,7 +1368,7 @@ void NCSG::postimport_autoscan()
 }
 
 
-NMeta* NCSG::LoadMetadata( const char* treedir, int item )
+BMeta* NCSG::LoadMetadata( const char* treedir, int item )
 {
     return NPYMeta::LoadMetadata(treedir, item); 
 } 
@@ -1435,7 +1435,7 @@ std::string NCSG::getTestLVName() const
 // corresponding to the tree, rather than individual nodes with index 0,1,... etc
 
 NPYMeta* NCSG::getMeta() const { return m_meta ;  }
-NMeta*   NCSG::getMeta(int idx) const { return m_meta->getMeta(idx); }
+BMeta*   NCSG::getMeta(int idx) const { return m_meta->getMeta(idx); }
 
 void NCSG::set_lvname(const char* name) { m_meta->setValue<std::string>("lvname", name) ; }
 void NCSG::set_soname(const char* name) { m_meta->setValue<std::string>("soname", name) ; }

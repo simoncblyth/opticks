@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "NPY.hpp"
-#include "NMeta.hpp"
+#include "BMeta.hh"
 
 /**
 ABANDONED : npy_serialize_test.cc
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     arr0->setMeta<float>("float", 42.5);
     arr0->setMeta<std::string>("string", "hello");
      
-    NMeta* meta0 = arr0->getMeta();  
+    BMeta* meta0 = arr0->getMeta();  
     meta0->dump(); 
     std::cout << "meta0 " << meta0 << std::endl ; 
     meta0->dumpLines(); 

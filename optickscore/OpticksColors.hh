@@ -21,7 +21,7 @@
 
 #include "NQuad.hpp"
 
-class NMeta ; 
+class BMeta ; 
 
 #include <map>
 #include <string>
@@ -115,7 +115,7 @@ class OKCORE_API OpticksColors {
        void initCompositeColorBuffer(unsigned int max_colors);
        void addColors(std::vector<unsigned int>& codes, unsigned int offset=0 );
        void loadMaps(const char* dir);
-       void loadMeta(NMeta* meta);
+       void loadMeta(BMeta* meta);
 
    private:
        std::vector<std::string>            m_psychedelic_names ; 

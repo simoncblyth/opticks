@@ -53,7 +53,7 @@ class SLog ;
 class Opticks ;
 class OpticksResource ;
 class NSequence ; 
-class NMeta ; 
+class BMeta ; 
 class Index ; 
 
 #include "OKCORE_API_EXPORT.hh"
@@ -85,8 +85,8 @@ class OKCORE_API OpticksAttrSeq {
         std::map<std::string, unsigned int>& getOrder();
         void setSequence(NSequence* seq);
         bool hasSequence();
-        void setAbbrevMeta(NMeta* abbrev); 
-        void setColorMeta(NMeta* color); 
+        void setAbbrevMeta(BMeta* abbrev); 
+        void setColorMeta(BMeta* color); 
     public:
         void setTableCompact();
         void setTableWide();
@@ -118,8 +118,8 @@ class OKCORE_API OpticksAttrSeq {
         const char*                          m_type ; 
         unsigned char                        m_ctrl ; 
         NSequence*                           m_sequence ; 
-        NMeta*                               m_abbrev_meta ; 
-        NMeta*                               m_color_meta ; 
+        BMeta*                               m_abbrev_meta ; 
+        BMeta*                               m_color_meta ; 
     private:
         std::map<std::string, std::string>   m_abbrev ;
         std::map<std::string, std::string>   m_color ;

@@ -20,9 +20,10 @@
 #include <iomanip>
 
 #include "SStr.hh"
-#include "BStr.hh"
 
-#include "NMeta.hpp"
+#include "BStr.hh"
+#include "BMeta.hh"
+
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
@@ -281,7 +282,7 @@ void GSurfaceLib::init()
 
 
 /**
-const char* GSurfaceLib::AssignSurfaceType(NMeta* surfmeta )
+const char* GSurfaceLib::AssignSurfaceType(BMeta* surfmeta )
 --------------------------------------------------------------
 
 Return SKINSURFACE, BORDERSURFACE or TESTSURFACE depending on the
@@ -290,7 +291,7 @@ SSLV, BPV1, BPV2, name keys present in the surfmeta.
 
 **/
 
-const char* GSurfaceLib::AssignSurfaceType( NMeta* surfmeta ) // static 
+const char* GSurfaceLib::AssignSurfaceType( BMeta* surfmeta ) // static 
 {
      assert( surfmeta );
      const char* surftype = NULL ; 
@@ -781,7 +782,7 @@ void GSurfaceLib::dumpSurfaces(const char* msg)
 
 
 /**
-NMeta* GSurfaceLib::createMeta()
+BMeta* GSurfaceLib::createMeta()
 ---------------------------------
 
 Compose collective metadata keyed by surface shortnames
@@ -789,16 +790,16 @@ with all metadata for each surface.
 
 **/
 
-NMeta* GSurfaceLib::createMeta()
+BMeta* GSurfaceLib::createMeta()
 {
     LOG(LEVEL) ; 
-    NMeta* libmeta = new NMeta ; 
+    BMeta* libmeta = new BMeta ; 
     unsigned int ni = getNumSurfaces();
     for(unsigned int i=0 ; i < ni ; i++)
     {
         GPropertyMap<float>* surf = getSurface(i) ;
         const char* key = surf->getShortName() ;
-        NMeta* surfmeta = surf->getMeta();
+        BMeta* surfmeta = surf->getMeta();
         assert( surfmeta );
         libmeta->setObj(key, surfmeta );  
     }
@@ -974,7 +975,7 @@ void GSurfaceLib::importForTex2d()
 
         GOpticalSurface* os = NULL ;  // huh : not reconstructed ?
 
-        NMeta* surfmeta = m_meta ? m_meta->getObj(key) : NULL  ;  
+        BMeta* surfmeta = m_meta ? m_meta->getObj(key) : NULL  ;  
 
         const char* surftype = surfmeta ? AssignSurfaceType(surfmeta) : NULL ;
 

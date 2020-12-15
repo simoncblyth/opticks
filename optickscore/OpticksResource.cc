@@ -1097,8 +1097,8 @@ OpticksAttrSeq* OpticksResource::getFlagNames()
     if(!m_flagnames)
     {
         OpticksFlags* flags = getFlags();
-        NMeta* abbrev = flags->getAbbrevMeta(); 
-        NMeta* color = flags->getColorMeta(); 
+        BMeta* abbrev = flags->getAbbrevMeta(); 
+        BMeta* color = flags->getColorMeta(); 
 
         Index* index = flags->getIndex();
 

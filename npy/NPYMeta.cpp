@@ -19,8 +19,8 @@
 
 #include "BFile.hh"
 #include "BStr.hh"
+#include "BMeta.hh"
 
-#include "NMeta.hpp"
 #include "NPYMeta.hpp"
 
 #include "PLOG.hh"
@@ -39,17 +39,17 @@ bool NPYMeta::ExistsMeta(const char* dir, int idx)  // static
     return BFile::ExistsFile(path.c_str()) ;
 }
 
-NMeta* NPYMeta::LoadMetadata(const char* dir, int idx ) // static
+BMeta* NPYMeta::LoadMetadata(const char* dir, int idx ) // static
 {
     std::string path = MetaPath(dir, idx) ;
-    return NMeta::Load(path.c_str()) ; 
+    return BMeta::Load(path.c_str()) ; 
 }
 
 NPYMeta::NPYMeta()
 {
 }
 
-NMeta* NPYMeta::getMeta(int idx) const
+BMeta* NPYMeta::getMeta(int idx) const
 {
     return m_meta.count(idx) == 1 ? m_meta.at(idx) : NULL ; 
 }
@@ -61,21 +61,21 @@ bool NPYMeta::hasMeta(int idx) const
 template<typename T>
 T NPYMeta::getValue(const char* key, const char* fallback, int item) const 
 {
-    NMeta* meta = getMeta(item);  
+    BMeta* meta = getMeta(item);  
     return meta ? meta->get<T>(key, fallback) : BStr::LexicalCast<T>(fallback) ;
 }
 
 int NPYMeta::getIntFromString(const char* key, const char* fallback, int item) const
 {
-    NMeta* meta = getMeta(item);  
+    BMeta* meta = getMeta(item);  
     return meta ? meta->getIntFromString(key,fallback) : BStr::LexicalCast<int>(fallback) ;
 }
 
 template<typename T>
 void NPYMeta::setValue(const char* key, T value, int item)
 {
-    if(!hasMeta(item)) m_meta[item] = new NMeta ; 
-    NMeta* meta = getMeta(item);  
+    if(!hasMeta(item)) m_meta[item] = new BMeta ; 
+    BMeta* meta = getMeta(item);  
 
     assert( meta ) ; 
     return meta->set<T>(key, value) ;
@@ -85,17 +85,17 @@ void NPYMeta::load(const char* dir, int num_item)
 {
     for(int item=-1 ; item < num_item ; item++)
     {
-        NMeta* meta = LoadMetadata(dir, item);
+        BMeta* meta = LoadMetadata(dir, item);
         if(meta) m_meta[item] = meta ; 
     } 
 }
 void NPYMeta::save(const char* dir) const 
 {
-    typedef std::map<int, NMeta*> MIP ; 
+    typedef std::map<int, BMeta*> MIP ; 
     for(MIP::const_iterator it=m_meta.begin() ; it != m_meta.end() ; it++)
     {
         int item = it->first ; 
-        NMeta* meta = it->second ; 
+        BMeta* meta = it->second ; 
         std::string metapath = MetaPath(dir, item) ;
         assert(meta); 
         meta->save(metapath.c_str()); 

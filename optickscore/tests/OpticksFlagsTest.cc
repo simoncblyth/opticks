@@ -20,7 +20,7 @@
 // TEST=OpticksFlagsTest om-t
 
 #include "BStr.hh"
-#include "NMeta.hpp"
+#include "BMeta.hh"
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "Index.hpp"
@@ -187,7 +187,7 @@ void test_cfTypes(Opticks* ok)
 void test_getAbbrevMeta(Opticks* ok)
 {
     OpticksFlags* f = ok->getFlags(); 
-    NMeta* m = f->getAbbrevMeta(); 
+    BMeta* m = f->getAbbrevMeta(); 
     m->dump();
 }
 

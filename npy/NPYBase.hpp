@@ -31,7 +31,7 @@
 #include <glm/fwd.hpp>
 
 
-class NMeta ; 
+class BMeta ; 
 class NLookup ; 
 class NPYSpec ; 
 #include "NPY_API_EXPORT.hh"
@@ -120,13 +120,13 @@ class NPY_API NPYBase {
        unsigned long long getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
        unsigned long long getNumValues(unsigned int from_dim=0) const ;
 
-       NMeta*        getParameters() const ;
+       BMeta*        getParameters() const ;
 
        template <typename T> void setParameter(const char* key, T value);
        template <typename T> T getParameter(const char* key, const char* fallback) const ;
 
-       void   setMeta(NMeta* meta); 
-       NMeta* getMeta() const ; 
+       void   setMeta(BMeta* meta); 
+       BMeta* getMeta() const ; 
    
        template <typename T> void setMeta(const char* key, T value);
        template <typename T> T getMeta(const char* key, const char* fallback) const ;
@@ -138,7 +138,7 @@ class NPY_API NPYBase {
 
    public:
        void saveMeta( const char* path, const char* ext=".json") const ; 
-       static NMeta* LoadMeta( const char* path, const char* ext=".json"); 
+       static BMeta* LoadMeta( const char* path, const char* ext=".json"); 
 
    public:
        // depending on sizeoftype
@@ -264,8 +264,8 @@ class NPY_API NPYBase {
        bool               m_dynamic ;
        NLookup*           m_lookup ;   // only needed for legacy gensteps 
 
-       NMeta*             m_parameters ;  // for keeping notes, especially for gensteps
-       NMeta*             m_meta ; 
+       BMeta*             m_parameters ;  // for keeping notes, especially for gensteps
+       BMeta*             m_meta ; 
 
        const char*        m_name ; 
 

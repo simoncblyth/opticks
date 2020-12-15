@@ -25,13 +25,7 @@
 #include "BStr.hh"
 #include "BFile.hh"
 #include "BTxt.hh"
-
-
-#ifdef OLD_PARAMETERS
-#include "X_BParameters.hh"
-#else
-#include "NMeta.hpp"
-#endif
+#include "BMeta.hh"
 
 
 #include "GLMFormat.hpp"
@@ -393,11 +387,7 @@ void NScene::load_csg_metadata()
 
         m_csg_lvIdx[mesh_id] = lvIdx ; 
 
-#ifdef OLD_PARAMETERS
-        X_BParameters* meta = m_source->getCSGMetadata(mesh_id);
-#else
-        NMeta* meta = m_source->getCSGMetadata(mesh_id);
-#endif
+        BMeta* meta = m_source->getCSGMetadata(mesh_id);
         
         //assert( meta ) ; 
 
@@ -442,11 +432,7 @@ void NScene::load_csg_metadata()
 template<typename T>
 T NScene::getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const 
 {
-#ifdef OLD_PARAMETERS
-    const X_BParameters* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
-#else
-    const NMeta* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
-#endif
+    const BMeta* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
 
     if( meta == NULL )
         LOG(warning) << " missing ALL metadata for mesh_id  " << mesh_id ;

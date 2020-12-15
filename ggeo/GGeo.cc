@@ -28,13 +28,13 @@
 #include "BStr.hh"
 #include "BMap.hh"
 #include "BTxt.hh"
+#include "BMeta.hh"
 
 // npy-
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
 #include "NPY.hpp"
 #include "NQuad.hpp"
-#include "NMeta.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "TorchStepNPY.hpp"
@@ -196,11 +196,11 @@ Composition* GGeo::getComposition()
     return m_composition ; 
 }
 
-void GGeo::setGDMLAuxMeta(NMeta* gdmlauxmeta)
+void GGeo::setGDMLAuxMeta(BMeta* gdmlauxmeta)
 {
     m_gdmlauxmeta = gdmlauxmeta ; 
 }
-NMeta* GGeo::getGDMLAuxMeta() const 
+BMeta* GGeo::getGDMLAuxMeta() const 
 {
     return m_gdmlauxmeta ; 
 }
@@ -715,11 +715,11 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
 {
     LOG(LEVEL) ; 
 
-    NMeta* gdmlauxmeta = m_ok->getGDMLAuxMeta(); 
+    BMeta* gdmlauxmeta = m_ok->getGDMLAuxMeta(); 
     setGDMLAuxMeta(gdmlauxmeta); 
 
-    NMeta* lv2sd = m_ok->getOriginCacheMeta("lv2sd"); 
-    NMeta* lv2mt = m_ok->getOriginCacheMeta("lv2mt"); 
+    BMeta* lv2sd = m_ok->getOriginCacheMeta("lv2sd"); 
+    BMeta* lv2mt = m_ok->getOriginCacheMeta("lv2mt"); 
 
     //if(lv2sd) lv2sd->dump("GGeo::loadCacheMeta.lv2sd"); 
     //if(lv2mt) lv2mt->dump("GGeo::loadCacheMeta.lv2mt"); 

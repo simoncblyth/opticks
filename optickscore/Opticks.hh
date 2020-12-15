@@ -41,7 +41,7 @@ class BDynamicDefine ;
 
 class TorchStepNPY ; 
 class NState ;
-class NMeta ; 
+class BMeta ; 
 
 struct NSlice ;
 struct NSceneConfig ; 
@@ -360,25 +360,25 @@ class OKCORE_API Opticks {
        const char* getGPUMonPath() const ;   
        bool        isGPUMon() const ;  
    public:
-       // NMeta parameters 
+       // BMeta parameters 
        template <typename T> void set(const char* name, T value);
    public:
        bool        has_arg(const char* arg) const  ; // via PLOG::instance
 
        void        updateCacheMeta() ; 
-       void        appendCacheMeta(const char* key, NMeta* obj);
+       void        appendCacheMeta(const char* key, BMeta* obj);
        void        saveCacheMeta() const ; 
        void        loadOriginCacheMeta() ; 
-       NMeta*      getOriginCacheMeta(const char* obj) const ; 
+       BMeta*      getOriginCacheMeta(const char* obj) const ; 
    public:
-       NMeta*      getGDMLAuxMeta() const  ; 
-       void        findGDMLAuxMetaEntries(std::vector<NMeta*>&, const char* key, const char* val ) const ; 
+       BMeta*      getGDMLAuxMeta() const  ; 
+       void        findGDMLAuxMetaEntries(std::vector<BMeta*>&, const char* key, const char* val ) const ; 
        void        findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const ; // for entries matching (k,v) collect  q values
        unsigned    getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const ;
        const char* getGDMLAuxTargetLVName() const ; // returns first name or NULL when none
    public:
        void        dumpCacheMeta(const char* msg="Opticks::dumpCacheMeta") const ; 
-       static std::string ExtractCacheMetaGDMLPath(const NMeta* meta) ; 
+       static std::string ExtractCacheMetaGDMLPath(const BMeta* meta) ; 
 
        const char* getRunComment() const ;
        int         getRunStamp() const ; 
@@ -512,7 +512,7 @@ class OKCORE_API Opticks {
        Typ*                 getTyp();
    public:
        OpticksProfile*      getProfile() const ;
-       NMeta*               getParameters() const ;
+       BMeta*               getParameters() const ;
        NState*              getState() const ;
    public:
        int                  getMultiEvent() const ;
@@ -745,10 +745,10 @@ class OKCORE_API Opticks {
        bool                 m_configured ; 
        OpticksCfg<Opticks>* m_cfg ; 
 
-       NMeta*               m_parameters ; 
+       BMeta*               m_parameters ; 
        BTxt*                m_runtxt ;  
-       NMeta*               m_cachemeta ;  
-       NMeta*               m_origin_cachemeta ;  
+       BMeta*               m_cachemeta ;  
+       BMeta*               m_origin_cachemeta ;  
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 
        NSnapConfig*         m_snap_config ; 

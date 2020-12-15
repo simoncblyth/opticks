@@ -25,7 +25,7 @@
 #include <glm/fwd.hpp>
 struct nd ; 
 
-class NMeta ; 
+class BMeta ; 
 
 class NCSG ; 
 struct NSceneConfig ; 
@@ -58,7 +58,7 @@ class NPY_API NGeometry
        virtual int                      getLogicalVolumeIndex(int mesh_id) = 0 ; 
 
 
-       virtual NMeta*                   getCSGMetadata(int mesh_id) = 0 ;
+       virtual BMeta*                   getCSGMetadata(int mesh_id) = 0 ;
 
        virtual NCSG*                    getCSG(int mesh_id) = 0 ; 
 

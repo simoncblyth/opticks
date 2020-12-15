@@ -14,8 +14,8 @@ set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_EXACT "RE
 find_package(BoostAsio MODULE)  
 message(STATUS "BoostAsio_FOUND : ${BoostAsio_FOUND}")
 
-find_package(NLJSON MODULE)      # will become REQUIRED shortly 
-find_package(PLog   REQUIRED MODULE)     # for integrated-building ?
+find_package(NLJSON REQUIRED MODULE)  
+find_package(PLog   REQUIRED MODULE)   
 find_package(SysRap REQUIRED CONFIG)
 
 

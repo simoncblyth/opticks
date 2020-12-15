@@ -160,7 +160,7 @@ GItemList*  GSourceLib::createNames()
     return names ; 
 }
  
-NMeta*  GSourceLib::createMeta()
+BMeta*  GSourceLib::createMeta()
 {
     return NULL ; 
 }

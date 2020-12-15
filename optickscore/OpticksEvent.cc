@@ -41,6 +41,7 @@
 #include "BFile.hh"
 #include "BOpticksResource.hh"
 #include "BOpticksEvent.hh"
+#include "BMeta.hh"
 
 // npy-
 #include "uif.h"
@@ -50,7 +51,6 @@
 #include "NPYSpec.hpp"
 #include "NLookup.hpp"
 #include "NGeoTestConfig.hpp"
-#include "NMeta.hpp"
 
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
@@ -562,7 +562,7 @@ Index* OpticksEvent::getBoundaryIndex()
 }
 
 
-NMeta*      OpticksEvent::getParameters()
+BMeta*      OpticksEvent::getParameters()
 {
     return m_parameters ;
 }
@@ -611,8 +611,8 @@ From ipython ab.py testing::
 
 void OpticksEvent::init()
 {
-    m_versions = new NMeta ;
-    m_parameters = new NMeta ;
+    m_versions = new BMeta ;
+    m_parameters = new BMeta ;
     m_report = new Report ; 
     m_domain = new OpticksDomain ; 
 
@@ -1033,7 +1033,7 @@ void OpticksEvent::setBufferControl(NPYBase* data)
                      << " SKIPPED FOR " << name 
                      << " AS NO spec "
                      ;
-        NMeta*       param = data->getParameters();
+        BMeta*       param = data->getParameters();
         if(param)
             param->dump("OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC"); 
         assert(0);

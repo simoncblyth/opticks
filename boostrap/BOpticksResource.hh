@@ -31,6 +31,7 @@ class SLog ;
 
 class BOpticksKey ; 
 class BPath ; 
+class BMeta ; 
 class BResource ; 
 
 /**
@@ -263,6 +264,15 @@ class BRAP_API  BOpticksResource {
         const char* getRunCommentPath() const ;
         const char* getPrimariesPath() const ;
         const char* getGLTFPath() const ;     // output path 
+    public:
+        BMeta*      getGDMLAuxMeta() const  ;
+        void        findGDMLAuxMetaEntries(std::vector<BMeta*>&, const char* key, const char* val ) const ;
+        void        findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const ; // for entries matching (k,v) collect  q values
+        unsigned    getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const ;
+        const char* getGDMLAuxTargetLVName() const ; // returns first name or NULL when none
+
+    public:
+
 #ifdef OLD_RESOURCE
         const char* getMetaPath() const ;
 #endif

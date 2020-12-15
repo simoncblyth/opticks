@@ -28,6 +28,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
+
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "Opticks.hh"
@@ -58,6 +59,11 @@ unsigned GBndLib::MaterialIndexFromLine( unsigned line )
     return INSTANCE->getMaterialIndexFromLine(line) ;
 }
 
+// for GPropertyLib base
+BMeta* GBndLib::createMeta()
+{
+    return NULL ;
+}
 
 void GBndLib::save()
 {
@@ -184,11 +190,6 @@ void GBndLib::dumpOpticalBuffer() const
 }
 
 
-
-NMeta* GBndLib::createMeta()
-{
-    return NULL ; 
-}
 
 
 

@@ -957,7 +957,7 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
 
     if( npy != NULL)
     {
-        NMeta* meta = NPYBase::LoadMeta( path.c_str(), ".json" ) ; 
+        BMeta* meta = NPYBase::LoadMeta( path.c_str(), ".json" ) ; 
         if(meta != NULL)
         {
             npy->setMeta(meta); 

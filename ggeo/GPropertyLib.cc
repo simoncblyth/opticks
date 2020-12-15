@@ -30,12 +30,12 @@
 #include "SLog.hh"
 #include "SAbbrev.hh"
 // brap-
+#include "BMeta.hh"
 #include "BDir.hh"
 #include "Map.hh"
 
 // npy-
 #include "NGLM.hpp"
-#include "NMeta.hpp"
 #include "NPY.hpp"
 
 // optickscore-
@@ -225,11 +225,11 @@ NPY<float>* GPropertyLib::getBuffer()
 }
 
 
-void GPropertyLib::setMeta(NMeta* meta)
+void GPropertyLib::setMeta(BMeta* meta)
 {
     m_meta = meta ;
 }
-NMeta* GPropertyLib::getMeta() const 
+BMeta* GPropertyLib::getMeta() const 
 {
     return m_meta ; 
 }
@@ -458,7 +458,7 @@ void GPropertyLib::close()
     // create methods from sub-class specializations
     GItemList* names = createNames();  
     NPY<float>* buf = createBuffer() ;  
-    NMeta* meta = createMeta();
+    BMeta* meta = createMeta();
 
     LOG(LEVEL)
          << " type " << m_type 
@@ -589,7 +589,7 @@ void GPropertyLib::loadFromCache()
     }
     assert(buf && "YOU PROBABLY NEED TO CREATE/RE-CREATE THE GEOCACHE BY RUNNING  : op.sh -G ");
 
-    NMeta* meta = NMeta::Load(dir.c_str(), METANAME ) ; 
+    BMeta* meta = BMeta::Load(dir.c_str(), METANAME ) ; 
     assert( meta && "probably the geocache is an old version : lacking metadata : recreate geocache with -G option " );
 
 
@@ -862,14 +862,14 @@ void GPropertyLib::dumpNames(const char* msg) const
 
 
 
-NMeta* GPropertyLib::CreateAbbrevMeta(const std::vector<std::string>& names )
+BMeta* GPropertyLib::CreateAbbrevMeta(const std::vector<std::string>& names )
 {
     LOG(LEVEL) << "[" ; 
 
     SAbbrev abbrev(names); 
     assert( abbrev.abbrev.size() == names.size() ); 
 
-    NMeta* abbrevmeta = new NMeta ; 
+    BMeta* abbrevmeta = new BMeta ; 
     for(unsigned i=0 ; i < names.size() ; i++)
     {
         const std::string& nm = names[i] ; 

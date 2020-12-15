@@ -23,7 +23,7 @@
 
 
 #include "BStr.hh"
-#include "NMeta.hpp"
+#include "BMeta.hh"
 
 
 #include "NPY.hpp"
@@ -531,10 +531,10 @@ unsigned int GMaterialLib::getMaterialIndex(const GMaterial* qmaterial)
 
 
 
-NMeta* GMaterialLib::createMeta()
+BMeta* GMaterialLib::createMeta()
 {
     LOG(LEVEL) << "[" ; 
-    NMeta* libmeta = new NMeta ; 
+    BMeta* libmeta = new BMeta ; 
     unsigned int ni = getNumMaterials();
 
     std::vector<std::string> names ; 
@@ -545,7 +545,7 @@ NMeta* GMaterialLib::createMeta()
         names.push_back(name); 
     }
 
-    NMeta* abbrevmeta = GPropertyLib::CreateAbbrevMeta(names); 
+    BMeta* abbrevmeta = GPropertyLib::CreateAbbrevMeta(names); 
 
     libmeta->setObj("abbrev", abbrevmeta );  
     LOG(LEVEL) << "]" ; 

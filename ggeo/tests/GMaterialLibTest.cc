@@ -34,8 +34,7 @@
 #include "BFile.hh"
 #include "BTxt.hh"
 #include "BStr.hh"
-
-#include "NMeta.hpp"
+#include "BMeta.hh"
 
 #include "Opticks.hh"
 #include "OpticksAttrSeq.hh"
@@ -180,10 +179,10 @@ void test_createAbbrevMeta()
     bt.read();
     bt.dump("test_createAbbrevMeta");
 
-    NMeta* abbrevmeta = GPropertyLib::CreateAbbrevMeta( bt.getLines() );
+    BMeta* abbrevmeta = GPropertyLib::CreateAbbrevMeta( bt.getLines() );
     abbrevmeta->dump(); 
 
-    NMeta* libmeta = new NMeta ; 
+    BMeta* libmeta = new BMeta ; 
     libmeta->setObj("abbrev", abbrevmeta );  
 
     libmeta->dump() ; 

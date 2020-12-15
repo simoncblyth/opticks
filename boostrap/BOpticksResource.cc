@@ -35,6 +35,7 @@ namespace fs = boost::filesystem;
 #include "SProc.hh"
 #include "SAr.hh"
 
+#include "BMeta.hh"
 #include "BFile.hh"
 #include "BStr.hh"
 #include "BPath.hh"
@@ -1240,6 +1241,133 @@ const char* BOpticksResource::getGDMLAuxMetaPath() const { return m_gdmlauxmetap
 const char* BOpticksResource::getRunCommentPath() const { return m_runcommentpath ; }
 const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; } 
 const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; } 
+
+
+BMeta* BOpticksResource::getGDMLAuxMeta() const 
+{
+    const char* gdmlauxmetapath = getGDMLAuxMetaPath();
+    LOG(LEVEL) << " gdmlauxmetapath " << gdmlauxmetapath ; 
+    BMeta* gdmlauxmeta = BMeta::Load(gdmlauxmetapath) ;
+    return gdmlauxmeta ; 
+}
+
+/**
+BOpticksResource::findGDMLAuxMetaEntries
+------------------------------------------
+
+**/
+void BOpticksResource::findGDMLAuxMetaEntries(std::vector<BMeta*>& entries, const char* k, const char* v ) const
+{
+    BMeta* meta = getGDMLAuxMeta() ;
+    BMeta* lvmeta = meta->getObj("lvmeta");
+
+    unsigned ni = lvmeta ? lvmeta->getNumKeys() : 0 ;
+    bool dump = false ;
+
+    for(unsigned i=0 ; i < ni ; i++) 
+    {    
+        const char* subKey = lvmeta->getKey(i); 
+        BMeta* sub = lvmeta->getObj(subKey); 
+
+        unsigned mode = 0 ;  
+
+        if(k == NULL && v == NULL) // both NULL : match all 
+        {    
+            mode = 1 ;
+            entries.push_back(sub);
+        }
+        else if( k != NULL && v == NULL)  // key non-NULL, value NULL : match all with that key  
+        {
+            mode = 2 ;
+            bool has_key = sub->hasKey(k);
+            if(has_key) entries.push_back(sub) ;
+        }
+        else if( k != NULL && v != NULL)  // key non-NULL, value non-NULL : match only those with that (key,value) pair
+        {
+            mode = 3 ;
+            bool has_key = sub->hasKey(k);
+            std::string value = has_key ? sub->get<std::string>(k) : ""  ;
+            if(strcmp(value.c_str(), v) == 0) entries.push_back(sub);
+        }
+
+        if(dump)
+        std::cout
+           << " i " << i
+           << " mode " << mode
+           << " subKey " << subKey
+           << std::endl
+           ;
+
+        //sub->dump("Opticks::findGDMLAuxMetaEntries");  
+   }
+   LOG(LEVEL)
+       << " ni " << ni
+       << " k " << k
+       << " v " << v
+       << " entries.size() " << entries.size()
+       ;
+
+}
+
+void BOpticksResource::findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const
+{
+    std::vector<BMeta*> entries ;
+    findGDMLAuxMetaEntries(entries, k, v );
+
+    for(unsigned i=0 ; i < entries.size() ; i++)
+    {
+        BMeta* entry = entries[i];
+        std::string qv = entry->get<std::string>(q) ;
+        values.push_back(qv);
+    }
+}
+
+/**
+BOpticksResource::getGDMLAuxTargetLVNames
+------------------------------------------
+
+Consults the persisted GDMLAux metadata looking for entries with (k,v) pair ("label","target").
+For any such entries the "lvname" property is accesses and added to the lvnames vector.
+
+**/
+
+unsigned BOpticksResource::getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const
+{
+    const char* k = "label" ;
+    const char* v = "target" ;
+    const char* q = "lvname" ;
+
+    findGDMLAuxValues(lvnames, k,v,q);
+
+    LOG(LEVEL)
+        << " for entries matching (k,v) : " << "(" << k << "," << v << ")"
+        << " collect values of q:" << q
+        << " : lvnames.size() " << lvnames.size()
+        ;
+
+    return lvnames.size();
+}
+
+
+/**
+BOpticksResource::getGDMLAuxTargetLVName
+-------------------------------------------
+
+Returns the first lvname or NULL
+
+**/
+
+const char* BOpticksResource::getGDMLAuxTargetLVName() const
+{
+    std::vector<std::string> lvnames ;
+    getGDMLAuxTargetLVNames(lvnames);
+    return lvnames.size() > 0 ? strdup(lvnames[0].c_str()) : NULL ;
+}
+
+
+
+
+
 
 #ifdef OLD_RESOURCE
 const char* BOpticksResource::getMetaPath() const { return m_metapath ; }

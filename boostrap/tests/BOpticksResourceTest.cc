@@ -90,6 +90,14 @@ void test_GetCachePath()
     LOG(info) << path ; 
 }
 
+void test_getGDMLAuxTargetLVName()
+{
+    BOpticksResource bor ; 
+    const char* target = bor.getGDMLAuxTargetLVName() ; 
+    LOG(info) << target ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -103,7 +111,9 @@ int main(int argc, char** argv)
  
     //test_IsGeant4EnvironmentDetected(); 
 
-    test_GetCachePath(); 
+    //test_GetCachePath(); 
+
+    test_getGDMLAuxTargetLVName(); 
 
     return 0 ; 
 }

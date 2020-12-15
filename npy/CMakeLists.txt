@@ -189,7 +189,6 @@ set(SOURCES
     NEmitPhotonsNPY.cpp
     NRngDiffuse.cpp
 
-    NGeometry.cpp
     Ellipse.cpp
     ImageNPY.cpp
 
@@ -369,7 +368,6 @@ NTris.hpp
 
 NEmitPhotonsNPY.hpp
 
-NGeometry.hpp
 Ellipse.hpp
 ImageNPY.hpp
 
@@ -411,8 +409,8 @@ endif()
 
 if(YoctoGL_FOUND)  # this is no-longer optional
    message(STATUS "NPY.YoctoGL_FOUND")
-   list(APPEND SOURCES  NGLTF.cpp  NScene.cpp  NSceneConfig.cpp NSDF.cpp N.cpp NJS.cpp NMeta.cpp)
-   list(APPEND HEADERS  NGLTF.hpp  NScene.hpp  NSceneConfig.hpp NSDF.hpp N.hpp NJS.hpp NMeta.hpp NYJSON.hpp)
+   list(APPEND SOURCES  NGLTF.cpp  NScene.cpp  NSceneConfig.cpp NSDF.cpp N.cpp NJS.cpp NMeta.cpp NGeometry.cpp)
+   list(APPEND HEADERS  NGLTF.hpp  NScene.hpp  NSceneConfig.hpp NSDF.hpp N.hpp NJS.hpp NMeta.hpp NYJSON.hpp NGeometry.hpp)
 endif()
 
 if(ImplicitMesher_FOUND)

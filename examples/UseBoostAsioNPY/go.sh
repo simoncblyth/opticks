@@ -46,12 +46,8 @@ build-om()
 
 #chat-build chat_server.cpp 
 #chat-build chat_client.cpp 
-#char-usage
-
+#chat-usage
 
 build-om
-
-
-
 
 

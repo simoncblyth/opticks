@@ -18,9 +18,9 @@
  */
 
 
+#include "BMeta.hh"
 
 #include "NPY.hpp"
-#include "NMeta.hpp"
 #include "NLookup.hpp"
 
 #include "Opticks.hh"
@@ -45,7 +45,7 @@ OpticksRun::OpticksRun(Opticks* ok)
     m_g4evt(NULL),
     m_evt(NULL),
     m_g4step(NULL),
-    m_parameters(new NMeta),
+    m_parameters(new BMeta),
     m_resize(true),
     m_clone(true)
 {
@@ -408,7 +408,7 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
  
 
     OK_PROFILE("_OpticksRun::importGenstepData");
-    NMeta* gsp = gs->getParameters() ;
+    BMeta* gsp = gs->getParameters() ;
     m_parameters->append(gsp);
 
     gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));

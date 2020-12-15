@@ -26,8 +26,8 @@
 
 #include "BFile.hh"
 #include "BMap.hh"
+#include "BMeta.hh"
 
-#include "NMeta.hpp"
 #include "NPY.hpp"
 #include "NSpectral.hpp"
 
@@ -81,7 +81,7 @@ OpticksColors* OpticksColors::LoadMeta()
 {
     OpticksColors* oc = new OpticksColors ; 
 
-    NMeta* a = NMeta::FromTxt(OpticksColors::COLORMAP_NAME2HEX);
+    BMeta* a = BMeta::FromTxt(OpticksColors::COLORMAP_NAME2HEX);
     oc->loadMeta(a);
 
     return oc ; 
@@ -94,7 +94,7 @@ void OpticksColors::loadMaps(const char* dir)
     BMap<std::string, std::string>::load( &m_name2hex, dir, NAME );
 }
 
-void OpticksColors::loadMeta(NMeta* meta)
+void OpticksColors::loadMeta(BMeta* meta)
 {
     meta->fillMap(m_name2hex); 
     LOG(LEVEL) << " loaded m_name2hex " << m_name2hex.size() ; 

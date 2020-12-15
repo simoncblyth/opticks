@@ -35,8 +35,8 @@
 //brap- 
 #include "BFile.hh"
 #include "BStr.hh"
+#include "BMeta.hh"
 
-#include "NMeta.hpp"
 #include "NPYSpec.hpp"
 #include "PLOG.hh"
 
@@ -168,7 +168,7 @@ NLookup* NPYBase::getLookup() const
 
 
 
-NMeta* NPYBase::getParameters() const 
+BMeta* NPYBase::getParameters() const 
 {
     return m_parameters ;
 }
@@ -212,11 +212,11 @@ unsigned NPYBase::getNumHit() const
 
 
 
-void NPYBase::setMeta(NMeta* meta)
+void NPYBase::setMeta(BMeta* meta)
 {
     m_meta = meta ;
 }
-NMeta* NPYBase::getMeta() const 
+BMeta* NPYBase::getMeta() const 
 {
     return m_meta ; 
 }
@@ -225,7 +225,7 @@ NMeta* NPYBase::getMeta() const
 template <typename T>
 void NPYBase::setMeta(const char* key, T value)
 {
-    if(!m_meta) m_meta = new NMeta ; 
+    if(!m_meta) m_meta = new BMeta ; 
     m_meta->set<T>(key, value);
 }
 template <typename T>
@@ -392,8 +392,8 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, T
     m_allow_prealloc(false),
     m_dynamic(false),
     m_lookup(NULL),
-    m_parameters(new NMeta),
-    m_meta(new NMeta),
+    m_parameters(new BMeta),
+    m_meta(new BMeta),
     m_name(NULL)
 {
 } 
@@ -1021,12 +1021,12 @@ void NPYBase::saveMeta( const char* path, const char* ext) const
     m_meta->save(metapath); 
 }
 
-NMeta* NPYBase::LoadMeta( const char* path, const char* ext) // static 
+BMeta* NPYBase::LoadMeta( const char* path, const char* ext) // static 
 {
     std::string _metapath = BFile::ChangeExt(path, ext );  
     const char* metapath = _metapath.c_str(); 
 
-    return BFile::ExistsFile(metapath) ? NMeta::Load(metapath) : NULL ;      
+    return BFile::ExistsFile(metapath) ? BMeta::Load(metapath) : NULL ;      
 }
 
 

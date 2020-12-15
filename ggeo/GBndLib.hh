@@ -24,8 +24,9 @@
 #include <string>
 #include "plog/Severity.h"
 
-class NMeta ; 
 class Opticks ; 
+
+class BMeta ; 
 
 struct guint4 ; 
 template <typename T> class GPropertyMap ;
@@ -105,6 +106,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        std::string shortname(unsigned boundary) const ;
        bool contains(const guint4& bnd) const ;
        unsigned index(const guint4& bnd) const ;
+       BMeta* createMeta() ; 
   public:
        // boundary index lookups
        guint4 getBnd(unsigned int boundary) const ;
@@ -193,7 +195,6 @@ class GGEO_API GBndLib : public GPropertyLib {
        NPY<float>* createBufferOld();
   public:
        GItemList* createNames(); // spec shortnames
-       NMeta*      createMeta();
        NPY<float>* createBuffer();  // invokes createBufferForTex2d
        void import();
        void sort();

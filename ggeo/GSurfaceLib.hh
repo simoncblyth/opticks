@@ -42,7 +42,7 @@ ISSUE
 
 **/
 
-class NMeta ; 
+class BMeta ; 
 struct guint4 ; 
 class GOpticalSurface ; 
 class GSkinSurface ; 
@@ -72,7 +72,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        static const char* extra_z ; 
        static const char* extra_w ; 
   public:
-       static const char* AssignSurfaceType( NMeta* surfmeta );
+       static const char* AssignSurfaceType( BMeta* surfmeta );
        static const char* BORDERSURFACE ;  
        static const char* SKINSURFACE ;  
        static const char* TESTSURFACE ;  
@@ -117,7 +117,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
        NPY<float>* createBuffer();
-       NMeta*      createMeta();
+       BMeta*      createMeta();
        GItemList*  createNames();
    public:
        NPY<float>* createBufferForTex2d();

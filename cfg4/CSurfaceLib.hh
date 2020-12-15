@@ -46,7 +46,7 @@ See :doc:`notes/issues/surface_review`
 
 * CSurfaceLib is aiming to eliminate the kludgy classes (GSur/GSurLib/CSurLib)
   by using a simpler direct from GSurfaceLib approach : made possible
-  by improved GPropLib NMeta persisting 
+  by improved GPropLib BMeta persisting 
 
 Predecessor CSurLib
 ~~~~~~~~~~~~~~~~~~~~~

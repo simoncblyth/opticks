@@ -22,7 +22,7 @@
 #include <vector>
 #include "plog/Severity.h"
 
-class NMeta ; 
+class BMeta ; 
 class Opticks ; 
 class GItemList ;
 
@@ -55,7 +55,7 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
        void import();
        void sort();
        NPY<float>* createBuffer();
-       NMeta*      createMeta();
+       BMeta*      createMeta();
        GItemList*  createNames();
     private:
         void init();

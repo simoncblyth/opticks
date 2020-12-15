@@ -26,7 +26,7 @@
 #include "plog/Severity.h"
 #include "NGLM.hpp"
 
-class NMeta ; 
+class BMeta ; 
 class NPYBase ; 
 template <typename T> class NPY ; 
 
@@ -223,7 +223,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
 
    public:
        const char* getPath(const char* xx);  // accepts abbreviated or full constituent names
-       NMeta*       getParameters();
+       BMeta*       getParameters();
    public:
        void makeReport(bool verbose=false);
        void saveReport();
@@ -440,8 +440,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool                  m_loaded ; 
    private:
        // owned : deleteMeta
-       NMeta*                m_versions ;
-       NMeta*                m_parameters ;
+       BMeta*                m_versions ;
+       BMeta*                m_parameters ;
        Report*               m_report ;
        OpticksDomain*        m_domain ; 
        BTimes*               m_prelaunch_times ; 

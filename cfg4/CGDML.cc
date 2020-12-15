@@ -19,9 +19,10 @@
 
 
 #include "SGDML.hh"
-#include "NMeta.hpp"
-#include "CGDML.hh"
+#include "BMeta.hh"
 #include "BFile.hh"
+
+#include "CGDML.hh"
 #include "G4GDMLParser.hh"
 
 #include "PLOG.hh"
@@ -34,7 +35,7 @@ G4VPhysicalVolume* CGDML::Parse(const char* path) // static
     cg.read(path);  
     return cg.getWorldVolume() ;
 }
-G4VPhysicalVolume* CGDML::Parse(const char* path, NMeta** meta) // static 
+G4VPhysicalVolume* CGDML::Parse(const char* path, BMeta** meta) // static 
 {
     CGDML cg ;
     cg.read(path);  
@@ -46,7 +47,7 @@ G4VPhysicalVolume* CGDML::Parse(const char* dir, const char* name) // static
     std::string path = BFile::FormPath(dir, name);
     return CGDML::Parse(path.c_str());
 }
-G4VPhysicalVolume* CGDML::Parse(const char* dir, const char* name, NMeta** meta) // static 
+G4VPhysicalVolume* CGDML::Parse(const char* dir, const char* name, BMeta** meta) // static 
 {
     std::string path = BFile::FormPath(dir, name);
     return CGDML::Parse(path.c_str(), meta);
@@ -79,7 +80,7 @@ G4VPhysicalVolume* CGDML::getWorldVolume() const
 CGDML::getLVMeta
 --------------------
 
-Due to current keyed only (no lists) limitations of NMeta interface 
+Due to current keyed only (no lists) limitations of BMeta interface 
 to the underlying json implementation this does not completely capture the aux info. 
 But enough to be useful. eg::
 
@@ -93,7 +94,7 @@ But enough to be useful. eg::
     G4GDML: Reading setup...
     G4GDML: Reading '/tmp/v1.gdml' done!
     2020-12-08 18:48:40.448 INFO  [3590231] [*CGDML::getUserMeta@245] auxlist 0x7ff7e9726438
-    2020-12-08 18:48:40.449 INFO  [3590231] [NMeta::dump@199] CGDMLTest::test_Parse
+    2020-12-08 18:48:40.449 INFO  [3590231] [BMeta::dump@199] CGDMLTest::test_Parse
     {
         "lvmeta": {
             "/dd/Geometry/AD/lvADE0xc2a78c00x3ef9140": {
@@ -159,12 +160,12 @@ G4GDMLAux::
 **/
 
 
-NMeta* CGDML::getLVMeta() const 
+BMeta* CGDML::getLVMeta() const 
 {
     const G4GDMLAuxMapType* auxmap = m_parser->GetAuxMap();
     if( auxmap->size() == 0 ) return NULL ; 
 
-    NMeta* lvmeta = new NMeta ; 
+    BMeta* lvmeta = new BMeta ; 
 
     typedef G4GDMLAuxMapType::const_iterator MIT ;  
     typedef G4GDMLAuxListType::const_iterator VIT ; 
@@ -175,7 +176,7 @@ NMeta* CGDML::getLVMeta() const
         G4GDMLAuxListType ls = mit->second ;      
         const G4String& lvname = lv->GetName();  
 
-        NMeta* one = new NMeta ; 
+        BMeta* one = new BMeta ; 
         one->set<std::string>("lvname", lvname ) ;  
 
         // although duplicating the higher level key, its convenient
@@ -192,7 +193,7 @@ NMeta* CGDML::getLVMeta() const
 }
 
 
-void CGDML::addLVMeta(const NMeta* lvmeta)
+void CGDML::addLVMeta(const BMeta* lvmeta)
 {
     LOG(info) << " NOT IMPLEMENTED " << lvmeta ; 
 }
@@ -201,12 +202,12 @@ void CGDML::addLVMeta(const NMeta* lvmeta)
 const char* CGDML::LVMETA = "lvmeta" ; 
 const char* CGDML::USERMETA = "usermeta" ; 
 
-NMeta* CGDML::getMeta() const 
+BMeta* CGDML::getMeta() const 
 {
-    NMeta* meta = new NMeta ; 
+    BMeta* meta = new BMeta ; 
     
-    NMeta* lv = getLVMeta(); 
-    NMeta* user = getUserMeta(); 
+    BMeta* lv = getLVMeta(); 
+    BMeta* user = getUserMeta(); 
 
     if(lv)   meta->setObj(LVMETA,  lv) ; 
     if(user) meta->setObj(USERMETA,  user) ; 
@@ -214,10 +215,10 @@ NMeta* CGDML::getMeta() const
     return meta ; 
 }
 
-void CGDML::addMeta(const NMeta* meta)
+void CGDML::addMeta(const BMeta* meta)
 {
-    NMeta* lv   = meta->getObj(LVMETA);   
-    NMeta* user = meta->getObj(USERMETA);   
+    BMeta* lv   = meta->getObj(LVMETA);   
+    BMeta* user = meta->getObj(USERMETA);   
     
     addLVMeta(lv); 
     addUserMeta(user); 
@@ -303,7 +304,7 @@ only metadata with aux.type keys starting with "opticks_" prefix.
 
 **/
 
-NMeta* CGDML::getUserMeta() const 
+BMeta* CGDML::getUserMeta() const 
 {
     const G4GDMLAuxListType* auxlist = m_parser->GetAuxList() ; 
     LOG(info) << "auxlist " << auxlist ;  
@@ -311,7 +312,7 @@ NMeta* CGDML::getUserMeta() const
     if(auxlist->size() == 0 ) return NULL ; 
  
     typedef G4GDMLAuxListType::const_iterator VIT ; 
-    NMeta* user = new NMeta ; 
+    BMeta* user = new BMeta ; 
 
     for (VIT vit = auxlist->begin(); vit != auxlist->end(); vit++) 
     {
@@ -321,7 +322,7 @@ NMeta* CGDML::getUserMeta() const
     return user ; 
 }
 
-void CGDML::addUserMeta(const NMeta* user)
+void CGDML::addUserMeta(const BMeta* user)
 {
     unsigned nk = user->getNumKeys(); 
     std::string k ; 
@@ -338,13 +339,13 @@ void CGDML::addUserMeta(const NMeta* user)
     }
 }
 
-void CGDML::Export(const char* dir, const char* name, const G4VPhysicalVolume* const world, const NMeta* meta)
+void CGDML::Export(const char* dir, const char* name, const G4VPhysicalVolume* const world, const BMeta* meta)
 {
     std::string path = BFile::FormPath(dir, name);
     CGDML::Export( path.c_str(), world, meta ); 
 }
 
-void CGDML::Export(const char* path, const G4VPhysicalVolume* const world, const NMeta* meta)
+void CGDML::Export(const char* path, const G4VPhysicalVolume* const world, const BMeta* meta)
 {
     assert( world );
     CGDML cg ; 
@@ -352,7 +353,7 @@ void CGDML::Export(const char* path, const G4VPhysicalVolume* const world, const
     cg.write(path, world, meta ); 
 }
 
-void CGDML::write( const char* path,  const G4VPhysicalVolume* const world, const NMeta* meta )
+void CGDML::write( const char* path,  const G4VPhysicalVolume* const world, const BMeta* meta )
 {
     bool exists = BFile::ExistsFile( path ); 
     // cannot skip and reuse existing despite it having the same digest 

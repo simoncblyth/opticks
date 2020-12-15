@@ -33,7 +33,7 @@ template <typename T> class NPY ;
 #include "NConfigurable.hpp"
 
 class NLookup ; 
-class NMeta ;
+class BMeta ;
 class TorchStepNPY ; 
 class SLog ; 
 
@@ -186,8 +186,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool isValid() const ;
         bool isLive() const ;
     public:
-        void   setGDMLAuxMeta(NMeta* gdmlauxmeta); 
-        NMeta* getGDMLAuxMeta() const ; 
+        void   setGDMLAuxMeta(BMeta* gdmlauxmeta); 
+        BMeta* getGDMLAuxMeta() const ; 
     public:
         Composition* getComposition();
         void setComposition(Composition* composition);
@@ -433,10 +433,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool                          m_loaded_from_cache ;  
         bool                          m_prepared ;  
 
-        NMeta*                        m_gdmlauxmeta ;  
-        NMeta*                        m_loadedcachemeta ; 
-        NMeta*                        m_lv2sd ; 
-        NMeta*                        m_lv2mt ; 
+        BMeta*                        m_gdmlauxmeta ;  
+        BMeta*                        m_loadedcachemeta ; 
+        BMeta*                        m_lv2sd ; 
+        BMeta*                        m_lv2mt ; 
         const char*                   m_origin_gdmlpath ; 
 
         std::vector<GVolume*>           m_sensor_volumes ; 

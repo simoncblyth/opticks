@@ -26,7 +26,7 @@ class OpticksEvent ;
 template <typename T> class NPY ; 
 class NPYBase ; 
 class G4StepNPY ; 
-class NMeta ; 
+class BMeta ; 
 
 #include "plog/Severity.h"
 
@@ -80,7 +80,7 @@ class OKCORE_API OpticksRun
         OpticksEvent*    m_g4evt ; 
         OpticksEvent*    m_evt ; 
         G4StepNPY*       m_g4step ; 
-        NMeta*           m_parameters ;
+        BMeta*           m_parameters ;
 
         bool             m_resize ;
         bool             m_clone ;

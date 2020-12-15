@@ -34,7 +34,7 @@
 #include "PLOG.hh"
 
 // npy-
-#include "NMeta.hpp"
+#include "BMeta.hh"
 #include "Index.hpp"
 
 //opticks-
@@ -114,11 +114,11 @@ void OpticksAttrSeq::setCtrl(unsigned char ctrl)
     m_ctrl = ctrl ; 
 }
 
-void OpticksAttrSeq::setAbbrevMeta(NMeta* abbrev)
+void OpticksAttrSeq::setAbbrevMeta(BMeta* abbrev)
 {
     m_abbrev_meta = abbrev ; 
 }
-void OpticksAttrSeq::setColorMeta(NMeta* color)
+void OpticksAttrSeq::setColorMeta(BMeta* color)
 {
     m_color_meta = color ; 
 }
