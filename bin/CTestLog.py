@@ -49,6 +49,7 @@ class CTestLog(object):
     """
     NAME = "ctest.log" 
     TPATN = re.compile("\s*(?P<num>\d*)/(?P<den>\d*)\s*Test\s*#(?P<num2>\d*):\s*(?P<name>\S*)\s*(?P<div>\.*)\s*(?P<result>.*)\s+(?P<time>\d+\.\d+) sec$") 
+    SKIPS = "yoctoglrap openmeshrap".split()
 
     @classmethod
     def examine_logs(cls, args):
@@ -62,6 +63,10 @@ class CTestLog(object):
                 if reldir == "" and not args.withtop: 
                     log.debug("skipping toplevel tests, reldir [%s]" % reldir)
                     continue 
+                pass
+                if reldir in cls.SKIPS:
+                    log.info("skipping reldir [%s]" % reldir)
+                    continue
                 pass
                 path = os.path.join(dirpath, cls.NAME)
                 lines = list(map(str.rstrip, open(path,"r").readlines() ))
