@@ -38,14 +38,6 @@ BOpticks::BOpticks(int argc, char** argv, const char* argforced )
     m_resource(BOpticksResource::Get(NULL)),    // creates if no instance yet
     m_error(0)
 {
-    if(m_resource->hasKey())
-    {
-        m_resource->setupViaKey();  
-    }
-    else
-    {
-        m_error = 1 ;  
-    }
 }
 
 

@@ -116,7 +116,7 @@ void OpticksResource::init()
    BStr::split(m_resource_types, "GFlags,OpticksColors", ',' ); 
 
    assert( m_rsc->hasKey() && "an OPTICKS_KEY is required" );
-   m_rsc->setupViaKey();   
+   //m_rsc->setupViaKey();   // setupViaKey NOW DONE within BOpticksResource::BOpticksResource
 
    initRunResultsDir(); 
 

@@ -315,6 +315,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void createBuffers(); 
        void createSpec(); 
    private:
+       void dumpSpec(); 
        void deleteSpec(); 
        void deleteMeta(); 
        void deleteCtrl(); 

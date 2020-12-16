@@ -195,6 +195,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
 
     m_fdom_spec(NULL),
     m_idom_spec(NULL),
+
     m_genstep_spec(NULL),
     m_nopstep_spec(NULL),
     m_photon_spec(NULL),
@@ -205,6 +206,8 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_phosel_spec(NULL),
     m_recsel_spec(NULL),
     m_sequence_spec(NULL),
+    m_seed_spec(NULL),
+    m_hit_spec(NULL),
 
     m_sibling(NULL),
     m_geotestconfig(NULL),
@@ -964,8 +967,28 @@ void OpticksEvent::createSpec()
 
 }
 
+void OpticksEvent::dumpSpec()
+{
+    LOG(info) << "m_genstep_spec " << m_genstep_spec ;
+    LOG(info) << "m_seed_spec " << m_seed_spec ;
+    LOG(info) << "m_source_spec " << m_source_spec ;
+    LOG(info) << "m_hit_spec " << m_hit_spec ;
+    LOG(info) << "m_photon_spec " << m_photon_spec ;
+    LOG(info) << "m_debug_spec " << m_debug_spec ;
+    LOG(info) << "m_way_spec " << m_way_spec ;
+    LOG(info) << "m_record_spec " << m_record_spec ;
+    LOG(info) << "m_sequence_spec " << m_sequence_spec ;
+    LOG(info) << "m_nopstep_spec " << m_nopstep_spec ;
+    LOG(info) << "m_phosel_spec " << m_phosel_spec ;
+    LOG(info) << "m_recsel_spec " << m_recsel_spec ;
+    LOG(info) << "m_fdom_spec " << m_fdom_spec ;
+    LOG(info) << "m_idom_spec " << m_idom_spec ;
+}
+
 void OpticksEvent::deleteSpec()
 {
+    //dumpSpec(); 
+
     delete m_genstep_spec ; 
     delete m_seed_spec ; 
     delete m_source_spec ; 
