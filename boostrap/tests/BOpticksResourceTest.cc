@@ -97,6 +97,10 @@ void test_getGDMLAuxTargetLVName()
     LOG(info) << "getGDMLAuxTargetLVName : " << target ; 
     const char* keyspec= rsc->getKeySpec() ;
     LOG(info) << "getKeySpec : " << keyspec ; 
+
+    LOG(info) << std::endl << rsc->export_(); 
+
+
 }  
 
 

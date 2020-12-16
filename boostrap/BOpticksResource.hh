@@ -245,6 +245,7 @@ class BRAP_API  BOpticksResource {
     public:
         BOpticksKey* getKey() const ; 
         const char*  getKeySpec() const ;
+        std::string  export_() const ; 
         bool         hasKey() const ;   // distinguishes direct from legacy 
         bool         isKeySource() const ; 
     public:

@@ -143,6 +143,23 @@ const char* BOpticksKey::getSpec() const
 {
     return m_spec ;  
 }
+
+std::string BOpticksKey::export_() const 
+{
+    std::stringstream ss ; 
+    ss   
+        << "# BOpticksKey::export_ " 
+        << "\n" 
+        << "export OPTICKS_KEY=" << m_spec 
+        << "\n" 
+        ;    
+    return ss.str();
+}
+
+
+
+
+
 const char* BOpticksKey::getExename() const 
 {
     return m_exename ;  

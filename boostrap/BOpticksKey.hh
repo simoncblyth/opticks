@@ -67,6 +67,7 @@ class BRAP_API BOpticksKey
     public:
         std::string desc() const ; 
         bool isKeySource() const ;   // current executable is direct geocache creator
+        std::string export_() const ;
     private:
         BOpticksKey(const char* spec); 
     private:

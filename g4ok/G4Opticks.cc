@@ -183,6 +183,7 @@ Opticks* G4Opticks::InitOpticks(const char* keyspec, const char* commandline_ext
         assert( strcmp( keyspec, keyspec2) == 0 ); // prior creation of BOpticksResource/BOpticksKey with different spec would trip this
     }
     LOG(LEVEL) << "]BOpticksResource::Get" ;
+    LOG(info) << std::endl << rsc->export_(); 
 
     std::string ecl = EmbeddedCommandLine(commandline_extra) ; 
     LOG(LEVEL) << "EmbeddedCommandLine : [" << ecl << "]" ; 

@@ -1206,7 +1206,11 @@ const char* BOpticksResource::getKeySpec() const
 {
     return m_key ? m_key->getSpec() : NULL ; 
 }
-
+std::string BOpticksResource::export_() const 
+{
+    assert(m_key); 
+    return m_key->export_(); 
+}
 
 bool BOpticksResource::isKeySource() const   // name of current executable matches that of the creator of the geocache
 {
