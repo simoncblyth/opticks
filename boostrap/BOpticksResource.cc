@@ -62,9 +62,8 @@ BOpticksResource* BOpticksResource::Get(const char* spec)  // static
 BOpticksResource* BOpticksResource::Create(const char* spec)  // static 
 {
     BOpticksKey::SetKey(spec) ;  //  spec is normally NULL indicating use OPTICKS_KEY envvar 
-    BOpticksResource* bor = new BOpticksResource ; 
-    // bor->setupViaKey();   this is now done standardly 
-    return bor ; 
+    BOpticksResource* rsc = new BOpticksResource ; 
+    return rsc ; 
 }
 
 /**
@@ -77,8 +76,8 @@ instance and do setupViaKey assuming an OPTICKS_KEY envvar.
 **/
 const char* BOpticksResource::GetCachePath(const char* rela, const char* relb, const char* relc ) // static 
 {
-    BOpticksResource* bor = BOpticksResource::Get(NULL) ; 
-    return bor->makeIdPathPath(rela, relb, relc); 
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ; 
+    return rsc->makeIdPathPath(rela, relb, relc); 
 }
 
 
@@ -94,13 +93,7 @@ const char* BOpticksResource::G4LIVE  = "g4live" ;
 BOpticksResource::BOpticksResource
 ----------------------------------------
 
-Instanciated as base class of okc/OpticksResource 
-
-
-
-OPTICKS_RESOURCE_LAYOUT envvar -> m_layout, which overrides the default of 1 
-
-TODO: eliminate testgeo param 
+OPTICKS_RESOURCE_LAYOUT envvar -> m_layout, which overrides the default of 0
 
 **/
 
@@ -113,7 +106,7 @@ BOpticksResource::BOpticksResource()
     m_key(BOpticksKey::GetKey()),   // will be NULL unless BOpticksKey::SetKey has been called 
     m_id(NULL),
     m_res(new BResource),
-    m_layout(SSys::getenvint("OPTICKS_RESOURCE_LAYOUT", 0)),
+    m_layout(SSys::getenvint("OPTICKS_RESOURCE_LAYOUT", 0)),   //  gets reset by from the key 
     m_install_prefix(NULL),
     m_geocache_prefix(NULL),
     m_rngcache_prefix(NULL),
@@ -129,7 +122,6 @@ BOpticksResource::BOpticksResource()
     m_installcache_dir(NULL),
     m_optixcachedefault_dir(NULL),
     m_rng_dir(NULL),
-    //m_okc_installcache_dir(NULL),
     m_tmpuser_dir(NULL),
     m_srcpath(NULL),
     m_srcfold(NULL),
@@ -142,7 +134,6 @@ BOpticksResource::BOpticksResource()
     m_idname(NULL),
     m_idpath(NULL),
     m_idpath_tmp(NULL),
-    //m_srcevtbase(NULL),
     m_evtbase(NULL),
     m_evtpfx(NULL),
     m_debugging_idpath(NULL),

@@ -2847,7 +2847,6 @@ std::string Opticks::export_() const
 {
     BOpticksKey* key = getKey() ;
     return key->export_(); 
-    return ss.str();
 }
 
 
