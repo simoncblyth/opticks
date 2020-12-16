@@ -386,7 +386,6 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_wavelength_domain(0.f, 0.f, 0.f, 0.f),
     m_settings(0,0,0,0),
     m_run(new OpticksRun(this)),
-    //m_evt(NULL),
     m_ana(new OpticksAna(this)),
     m_dbg(new OpticksDbg(this)),
     m_rc(0),
@@ -3613,8 +3612,9 @@ const char*     Opticks::getIdFold() const { return m_rsc ? m_rsc->getIdFold() :
 
 const char*     Opticks::getInstallPrefix() { return m_rsc ? m_rsc->getInstallPrefix() : NULL ; }
 
-bool             Opticks::SetKey(const char* spec) { return BOpticksKey::SetKey(spec) ; }
-BOpticksKey*     Opticks::GetKey() {                 return BOpticksKey::GetKey() ; }
+bool             Opticks::SetKey(const char* spec) { return BOpticksKey::SetKey(spec) ; }   // static
+BOpticksKey*     Opticks::GetKey() {                 return BOpticksKey::GetKey() ; }       // static
+
 BOpticksKey*     Opticks::getKey() const {           return m_rsc->getKey() ; }
 const char*      Opticks::getKeySpec() const {       BOpticksKey* key = getKey(); return key ? key->getSpec() : "no-key-spec" ; }
 

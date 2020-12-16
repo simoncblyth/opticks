@@ -38,7 +38,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    BOpticksResource rsc ;  // sets internal envvar OPTICKS_INSTALL_PREFIX
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ;  // sets internal envvar OPTICKS_INSTALL_PREFIX
+    assert(rsc); 
 
     const char* path = "$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy";
     GProperty<float>* f2 = GProperty<float>::load(path);

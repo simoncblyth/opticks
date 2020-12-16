@@ -25,9 +25,9 @@
 
 void test_setupViaKey()
 {
-    BOpticksResource bor ; 
-    bor.setupViaKey(); 
-    const char* p = bor.makeIdPathPath("GNodeLib/all_volume_identity.npy"); 
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ; 
+    // bor.setupViaKey();  NOW DONE BY DEFAULT
+    const char* p = rsc->makeIdPathPath("GNodeLib/all_volume_identity.npy"); 
     LOG(info) << "p:" << p ; 
     assert( BFile::ExistsFile(p) ); 
 }

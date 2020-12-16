@@ -125,8 +125,8 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
     //bool testgeo(true); 
-    BOpticksResource res ; 
-    res.Summary();
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ; 
+    rsc->Summary();
 /*
 
     BOpticksEventTest oet ; 

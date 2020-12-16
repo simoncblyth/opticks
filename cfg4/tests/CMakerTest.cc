@@ -40,8 +40,8 @@
 
 void test_load_csg(int argc, char** argv)
 {
-    BOpticksResource okr ;  
-    std::string treedir = okr.getDebuggingTreedir(argc, argv);
+    BOpticksResource* rsc = BOpticksResource::Get(NULL)  ;  
+    std::string treedir = rsc->getDebuggingTreedir(argc, argv);
 
     NCSG* csg = NCSG::Load( treedir.c_str() );  
     if(!csg) return ; 

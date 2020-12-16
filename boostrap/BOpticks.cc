@@ -35,7 +35,7 @@ BOpticks::BOpticks(int argc, char** argv, const char* argforced )
     m_argv(m_sargs->argv),
     m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(nullptr) : false),
     m_testgeo(false),
-    m_resource(new BOpticksResource()),
+    m_resource(BOpticksResource::Get(NULL)),    // creates if no instance yet
     m_error(0)
 {
     if(m_resource->hasKey())

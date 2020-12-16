@@ -27,7 +27,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    BOpticksResource br ; 
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ; 
+    assert(rsc); 
 
     const char* key = argc > 1 ? argv[1] : "tmpuser_dir" ; 
     const char* nval = argc > 2 ? argv[2] : "/tmp" ; 

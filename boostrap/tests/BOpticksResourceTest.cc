@@ -92,11 +92,12 @@ void test_GetCachePath()
 
 void test_getGDMLAuxTargetLVName()
 {
-    BOpticksResource bor ; 
-    //bor.setupViaKey();   
-    const char* target = bor.getGDMLAuxTargetLVName() ; 
-    LOG(info) << target ; 
-}
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ;  // use preexisting instance or create new one
+    const char* target = rsc->getGDMLAuxTargetLVName() ; 
+    LOG(info) << "getGDMLAuxTargetLVName : " << target ; 
+    const char* keyspec= rsc->getKeySpec() ;
+    LOG(info) << "getKeySpec : " << keyspec ; 
+}  
 
 
 

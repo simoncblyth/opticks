@@ -25,6 +25,7 @@
 #include "G4PVPlacement.hh"
 
 #include "SSys.hh"
+#include "BOpticksResource.hh"
 #include "BOpticksKey.hh"
 #include "NLookup.hpp"
 #include "NPY.hpp"
@@ -175,9 +176,11 @@ change the embedded command line from G4Opticks level.
 Opticks* G4Opticks::InitOpticks(const char* keyspec, const char* commandline_extra, bool parse_argv ) // static
 {
     LOG(LEVEL) << "[" ;
-    LOG(LEVEL) << "[SetKey " << keyspec   ;   
-    BOpticksKey::SetKey(keyspec);
-    LOG(LEVEL) << "]SetKey" ;
+    LOG(LEVEL) << "[BOpticksResource::Get " << keyspec   ;   
+    BOpticksResource* rsc = BOpticksResource::Get(keyspec) ; 
+    const char* keyspec2 = rsc->getKeySpec(); 
+    assert( strcmp( keyspec, keyspec2) == 0 ); // prior creation of BOpticksResource/BOpticksKey with different spec would trip this
+    LOG(LEVEL) << "]BOpticksResource::Get" ;
 
     std::string ecl = EmbeddedCommandLine(commandline_extra) ; 
     LOG(LEVEL) << "EmbeddedCommandLine : [" << ecl << "]" ; 

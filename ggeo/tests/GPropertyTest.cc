@@ -245,8 +245,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    BOpticksResource rsc ;   // sets OPTICKS_INSTALL_PREFIX envvar
-
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ;   // sets OPTICKS_INSTALL_PREFIX envvar
+    assert(rsc); 
+  
     //test_createSliced();
     //test_createReciprocalCDF();
     //test_traditional_remission_cdf_sampling();

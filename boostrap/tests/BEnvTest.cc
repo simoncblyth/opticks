@@ -131,8 +131,8 @@ int main(int argc, char** argv, char** /*envp*/)
 {
     OPTICKS_LOG(argc, argv);
 
-    BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
-    rsc.Summary();
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
+    rsc->Summary();
 
 /*
     testIniLoad("$OPTICKS_INSTALL_PREFIX/externals/config/geant4.ini") ;

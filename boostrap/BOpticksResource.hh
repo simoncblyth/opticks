@@ -79,13 +79,13 @@ BRANCHES OF OPERATION : USING RELATIVE APPROACH
 
 class BRAP_API  BOpticksResource {
     public:
-        static BOpticksResource* Get() ; 
+        static BOpticksResource* Get(const char* spec) ; 
         static const char* GetCachePath(const char* rela=NULL, const char* relb=NULL, const char* relc=NULL ); 
     private:
         static const plog::Severity  LEVEL ; 
         static BOpticksResource* fInstance ; 
         static BOpticksResource* Instance() ; 
-        static BOpticksResource* Create() ; 
+        static BOpticksResource* Create(const char* spec) ;   // normally NULL indicating use OPTICKS_KEY envvar
     public:
         static const char* LEGACY_GEOMETRY_ENABLED_KEY ; 
         static const char* FOREIGN_GEANT4_ENABLED_KEY ; 
@@ -137,8 +137,10 @@ class BRAP_API  BOpticksResource {
         static const char* MakeUserDir(const char* sub, const char* rel) ;
 
         const char* makeIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) ;
-   public:
+
+   private:
         BOpticksResource();
+   public:
         virtual ~BOpticksResource();
         void Summary(const char* msg="BOpticksResource::Summary") const ;
         void Brief(const char* msg="BOpticksResource::Brief") const ;
@@ -242,6 +244,7 @@ class BRAP_API  BOpticksResource {
         void setEventPfx(const char* pfx) ; 
     public:
         BOpticksKey* getKey() const ; 
+        const char*  getKeySpec() const ;
         bool         hasKey() const ;   // distinguishes direct from legacy 
         bool         isKeySource() const ; 
     public:

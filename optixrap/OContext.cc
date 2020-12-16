@@ -524,7 +524,8 @@ void OContext::initPrint()
     m_context->setPrintBufferSize(4096);
     //m_context->setPrintBufferSize(2*2*2*8192);
 
-    m_context->setExceptionEnabled(RT_EXCEPTION_ALL, false );  
+    bool enabled = false ; 
+    m_context->setExceptionEnabled(RT_EXCEPTION_ALL, enabled );  
     // disable all exceptions 
     // this is different from the default of leaving STACKOVERFLOW exception enabled
 
@@ -563,7 +564,9 @@ void OContext::initPrint()
     // only enable exceptions when print also enabled
     if( m_ok->isExceptionEnabled() )
     {
-        m_context->setExceptionEnabled(RT_EXCEPTION_ALL, false );  
+        LOG(info) << " --exceptionenabled "  ;    
+        bool enabled = true ; 
+        m_context->setExceptionEnabled(RT_EXCEPTION_ALL, enabled );  
     }
 
 

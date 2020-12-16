@@ -533,8 +533,9 @@ void test_OPTICKS_USER_HOME()
 void test_ResolveScript()
 {
     LOG(info); 
-    BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
-    //rsc.Summary();
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
+    assert(rsc); 
+    //rsc->Summary();
 
     const char* script = "tboolean.py" ; 
     std::vector<const char*> fallback_dirs = {
@@ -558,8 +559,8 @@ int main(int argc, char** argv)
 {
    OPTICKS_LOG(argc, argv);
 
-   BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
-   rsc.Summary();
+   BOpticksResource* rsc = BOpticksResource::Get(NULL) ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
+   rsc->Summary();
 
    //test_FindFile();
    //test_ExistsDir();

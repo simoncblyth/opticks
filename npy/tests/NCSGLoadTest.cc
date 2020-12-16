@@ -104,9 +104,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    BOpticksResource okr ;  // no Opticks at this level 
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ;  // no Opticks at this level 
 
-    const char* basedir = okr.getDebuggingTreedir(argc, argv);
+    const char* basedir = rsc->getDebuggingTreedir(argc, argv);
 
     LOG(info) << "basedir:" << basedir ; 
 

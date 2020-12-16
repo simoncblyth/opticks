@@ -54,15 +54,16 @@ BOpticksResource* BOpticksResource::Instance()
 {
     return fInstance ; 
 }
-BOpticksResource* BOpticksResource::Get()  // static 
+BOpticksResource* BOpticksResource::Get(const char* spec)  // static 
 {
-    return fInstance ? fInstance : Create() ; 
+    return fInstance ? fInstance : Create(spec) ; 
 }
-BOpticksResource* BOpticksResource::Create()  // static 
+
+BOpticksResource* BOpticksResource::Create(const char* spec)  // static 
 {
-    BOpticksKey::SetKey(NULL) ;  // use OPTICKS_KEY envvar 
+    BOpticksKey::SetKey(spec) ;  //  spec is normally NULL indicating use OPTICKS_KEY envvar 
     BOpticksResource* bor = new BOpticksResource ; 
-    bor->setupViaKey(); 
+    // bor->setupViaKey();   this is now done standardly 
     return bor ; 
 }
 
@@ -76,7 +77,7 @@ instance and do setupViaKey assuming an OPTICKS_KEY envvar.
 **/
 const char* BOpticksResource::GetCachePath(const char* rela, const char* relb, const char* relc ) // static 
 {
-    BOpticksResource* bor = BOpticksResource::Get() ; 
+    BOpticksResource* bor = BOpticksResource::Get(NULL) ; 
     return bor->makeIdPathPath(rela, relb, relc); 
 }
 
@@ -165,6 +166,8 @@ BOpticksResource::BOpticksResource()
     init();
     (*m_log)("DONE"); 
     fInstance = this ; 
+
+    setupViaKey();    // now the one and only way of setting up 
 }
 
 
@@ -1035,6 +1038,11 @@ BMeta* BOpticksResource::getGDMLAuxMeta() const
     return gdmlauxmeta ; 
 }
 
+
+
+
+
+
 /**
 BOpticksResource::findGDMLAuxMetaEntries
 ------------------------------------------
@@ -1194,6 +1202,11 @@ BOpticksKey*  BOpticksResource::getKey() const
 {
     return m_key ; 
 }
+const char* BOpticksResource::getKeySpec() const 
+{
+    return m_key ? m_key->getSpec() : NULL ; 
+}
+
 
 bool BOpticksResource::isKeySource() const   // name of current executable matches that of the creator of the geocache
 {

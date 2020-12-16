@@ -41,7 +41,8 @@ void test_load_and_dump()
     const char* def = "$DATADIR/gensteps/dayabay/natural/1.npy" ;  // DATADIR is an internal "envvar"
     const char* path = args._argc > 1 ? args._argv[1] : def ; 
 
-    BOpticksResource bor ;  // needed to resolve internal "envvar" DATADIR, see BResourceTest, BFile 
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ;  // needed to resolve internal "envvar" DATADIR, see BResourceTest, BFile 
+    assert(rsc); 
 
     LOG(info) << "path:" << path ; 
     NPY<float>* arr = NPY<float>::load(path) ; 
