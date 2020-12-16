@@ -2852,8 +2852,6 @@ std::string Opticks::export_() const
         << "\n"
         << "export OPTICKS_KEY=" << key->getSpec() 
         << "\n"
-        << "export OPTICKS_IDPATH=" << getIdPath()
-        << "\n"
         ;
     return ss.str();
 }

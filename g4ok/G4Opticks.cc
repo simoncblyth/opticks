@@ -166,11 +166,10 @@ that will not be available in production.
 Note that because the keyspec that is obtained from the geometry is needed 
 prior to Opticks instanciation it is necessary to defer this until G4Opticks::setGeometry 
 is called. That is problematic as it prevents being able to directly configure Opticks, 
-eg to change rngmax other than via the commandline and G4OPTICKS_DEBUG.
+eg to change rngmax other than via the commandline and envvars.
 
 As a workaround for this the commandline_extra arg is used to provide a way to 
 change the embedded command line from G4Opticks level.
-
 
 **/
 Opticks* G4Opticks::InitOpticks(const char* keyspec, const char* commandline_extra, bool parse_argv ) // static
@@ -178,8 +177,11 @@ Opticks* G4Opticks::InitOpticks(const char* keyspec, const char* commandline_ext
     LOG(LEVEL) << "[" ;
     LOG(LEVEL) << "[BOpticksResource::Get " << keyspec   ;   
     BOpticksResource* rsc = BOpticksResource::Get(keyspec) ; 
-    const char* keyspec2 = rsc->getKeySpec(); 
-    assert( strcmp( keyspec, keyspec2) == 0 ); // prior creation of BOpticksResource/BOpticksKey with different spec would trip this
+    if(keyspec)
+    {
+        const char* keyspec2 = rsc->getKeySpec(); 
+        assert( strcmp( keyspec, keyspec2) == 0 ); // prior creation of BOpticksResource/BOpticksKey with different spec would trip this
+    }
     LOG(LEVEL) << "]BOpticksResource::Get" ;
 
     std::string ecl = EmbeddedCommandLine(commandline_extra) ; 
@@ -248,7 +250,8 @@ void G4Opticks::Initialize(const G4VPhysicalVolume* world, bool standardize_gean
 
 void G4Opticks::Finalize()  // static 
 {
-    LOG(info) << G4Opticks::Get()->desc();
+    G4Opticks* g4ok = Get(); 
+    LOG(info) << g4ok->desc();
     Opticks::Finalize() ; 
     delete fInstance ; 
     fInstance = NULL ;
@@ -625,10 +628,11 @@ sensorIndex
 efficiency_1 
 efficiency_2
     two efficiencies which are multiplied together with the local angle dependent efficiency 
-    to yield the detection efficiency used to assign SURFACE_COLLECT to photon hits 
-    that already have SURFACE_DETECT 
+    to yield the detection efficiency used together with a uniform random to set the 
+    EFFICIENCY_COLLECT (EC) or EFFICIENCY_CULL (EX) flag for photons that already 
+    have SURFACE_DETECT flag 
 category
-    used to distinguish between sensors with different theta textures   
+    used to distinguish between sensors with different theta-phi textures   
 identifier
     detector specific integer representing a sensor, does not need to be contiguous
 
