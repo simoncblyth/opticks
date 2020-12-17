@@ -32,7 +32,9 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ;
 
-    Opticks* ok = new Opticks(argc, argv);
+    const char* argforce = "--nogdmlpath" ; 
+
+    Opticks* ok = new Opticks(argc, argv, argforce);
 
     BCfg* cfg  = new BCfg("umbrella", false) ;
 
@@ -40,7 +42,11 @@ int main(int argc, char** argv)
 
     cfg->add(ocfg);
 
-    cfg->commandline(argc, argv);
+
+    int    _argc = ok->getArgc(); 
+    char** _argv = ok->getArgv(); 
+
+    cfg->commandline(_argc, _argv);
 
     std::string desc = cfg->getDescString();
 
@@ -56,13 +62,11 @@ int main(int argc, char** argv)
     sc->dump("SnapConfig");
 
 
-
-
+    assert( ok->isNoGDMLPath() ); 
 
 
     //const std::string& csgskiplv = ocfg->getCSGSkipLV(); 
     //LOG(info) << " csgskiplv " << csgskiplv ; 
-
 
 
     LOG(info) << "DONE "  ;

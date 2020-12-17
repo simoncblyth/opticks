@@ -23,11 +23,12 @@
 #include "OPTICKS_LOG.hh"
 
 
-void test_basics(int argc, char** argv)
+void test_argforced(int argc, char** argv)
 {
-    const char* extra = "--compute --nopropagate --tracer" ;
+    const char* argforced = "--compute --nopropagate --tracer --nogdmlpath" ;
+    //const char* argforced = "--nogdmlpath" ;
 
-    SArgs* sa = new SArgs(argc, argv, extra );
+    SArgs* sa = new SArgs(argc, argv, argforced );
 
     std::cout << " sa->argc " << sa->argc << std::endl ; 
     sa->dump();
@@ -35,7 +36,12 @@ void test_basics(int argc, char** argv)
     assert(sa->hasArg("--compute"));
     assert(sa->hasArg("--nopropagate"));
     assert(sa->hasArg("--tracer"));
+    assert(sa->hasArg("--nogdmlpath"));
+}
 
+
+void test_starts_with()
+{
     std::string e = "--hello" ;  
     std::string f = "hello" ;  
     assert( SArgs::starts_with(e,"--") == true ) ;
@@ -55,9 +61,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_basics(argc, argv); 
+    test_starts_with(); 
+    test_argforced(argc, argv); 
 
-    test_get_first_arg_ending_with( argc, argv ); 
+    //test_get_first_arg_ending_with( argc, argv ); 
 
     return 0 ; 
 }

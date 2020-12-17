@@ -357,6 +357,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_nspec(NULL),
     m_resource(NULL),
     m_rsc(NULL),
+    m_nogdmlpath(m_sargs->hasArg("--nogdmlpath")),
     m_origin_gdmlpath(NULL),
     m_origin_geocache_code_version(-1),
     m_state(NULL),
@@ -1033,6 +1034,12 @@ bool Opticks::canDeleteGeoCache() const   // --deletegeocache
 {
     return m_cfg->hasOpt("deletegeocache") ;
 }
+
+bool Opticks::isNoGDMLPath() const   // --nogdmlpath
+{
+    return m_cfg->hasOpt("nogdmlpath") ;
+}
+
 void Opticks::deleteGeoCache() const 
 {
     assert( canDeleteGeoCache() ); 
@@ -1877,18 +1884,25 @@ void Opticks::loadOriginCacheMeta()
     LOG(info) << " cachemetapath " << cachemetapath ; 
     m_origin_cachemeta = BMeta::Load(cachemetapath); 
     m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta"); 
-    std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
-    LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
 
-    m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str()); 
-
-    if(m_origin_gdmlpath == NULL)
+    if(m_nogdmlpath)
     {
-        LOG(fatal) << "cachemetapath " << cachemetapath ; 
-        LOG(fatal) << "argline that creates cachemetapath must include \"--gdmlpath /path/to/geometry.gdml\" " ; 
+        LOG(LEVEL) << " --nogdmlpath option prevents attempt to find a gdmlpath in cache metadata " ; 
     }
-    assert( m_origin_gdmlpath ); 
+    else
+    {
+        std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
+        LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
 
+        m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str()); 
+
+        if(m_origin_gdmlpath == NULL)
+        {
+            LOG(fatal) << "cachemetapath " << cachemetapath ; 
+            LOG(fatal) << "argline that creates cachemetapath must include \"--gdmlpath /path/to/geometry.gdml\" " ; 
+        }
+        assert( m_origin_gdmlpath ); 
+    }
 
     m_origin_geocache_code_version = m_origin_cachemeta->get<int>(GEOCACHE_CODE_VERSION_KEY, "0" );  
 
@@ -2353,6 +2367,16 @@ void Opticks::checkOptionValidity()
         LOG(fatal) << " --xanalytic --rtx 2 : no point doing that as rtx 2 and 1 are the same when not dealing with triangles " ;  
         setExit(true);
    }
+
+   if(isNoGDMLPath() != m_nogdmlpath)
+   {
+        LOG(fatal) << " INCONSISTENCY "
+                   << " isNoGDMLPath() " << isNoGDMLPath()
+                   << " m_nogdmlpath   " << m_nogdmlpath
+                   ;
+      
+        setExit(true);
+   }
 }
 
 bool Opticks::isConfigured() const
@@ -2361,15 +2385,29 @@ bool Opticks::isConfigured() const
 }
 void Opticks::configure()
 {
+    LOG(LEVEL) << "[" ; 
+
     if(m_configured) return ; 
     m_configured = true ; 
 
     dumpArgs("Opticks::configure");  
 
-    m_cfg->commandline(m_argc, m_argv);   // see 
+    LOG(LEVEL) <<  "m_argc " << m_argc ; 
+    for(int i=0 ; i < m_argc ; i++ ) LOG(LEVEL) << " m_argv[" << i << "] " << m_argv[i] << " " ; 
+
+    m_cfg->commandline(m_argc, m_argv);   
+
+    postconfigure(); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+void Opticks::postconfigure()
+{
+    LOG(LEVEL) << "[" ; 
 
     checkOptionValidity();
-
 
     const std::string& cvdcfg = m_cfg->getCVD();
     const char* cvd = cvdcfg.empty() ? NULL : cvdcfg.c_str() ; 
@@ -2485,10 +2523,8 @@ void Opticks::configure()
               << " verbosity " << m_verbosity 
               ;
 
+    LOG(LEVEL) << "]" ; 
 }
-
-
-
 
 void Opticks::configureGeometryHandling()
 {

@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     LOG(info) << "/////////////////////////////////////////////////" ;
 
    
-    GGeo* ggeo = X4PhysicalVolume::Convert(world_pv) ;
+    GGeo* ggeo = X4PhysicalVolume::Convert(world_pv, NULL) ;  // HMM: this will instanciate another Opticks ??
     assert( ggeo ); 
 
     ggeo->save();  // saves to /usr/local/opticks/geocache/CX4GDMLTest_World0xc15cfc0_PV_g4live

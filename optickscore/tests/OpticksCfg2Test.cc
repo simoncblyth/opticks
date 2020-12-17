@@ -30,17 +30,19 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ;
 
-    Opticks* ok = new Opticks(argc, argv);
+    const char* argforced = "--nogdmlpath" ; 
+
+    //Opticks* ok = new Opticks(argc, argv, argforced );
+    Opticks* ok = new Opticks(0, NULL, argforced );
 
     ok->configure();
-
 
     const char* csgskiplv = ok->getCSGSkipLV(); 
     LOG(info) << " csgskiplv " << ( csgskiplv ? csgskiplv  : "NONE" )  ; 
 
+    assert( ok->isNoGDMLPath() ); 
 
     LOG(info) << "DONE "  ;
-
 
 
     return 0 ; 

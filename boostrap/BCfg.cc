@@ -173,8 +173,15 @@ void BCfg::commandline(int argc, char** argv)
     LOG(LEVEL) << "[" << m_name ; 
 
     std::stringstream ss ; 
-    for(int i=1 ; i < argc ; ++i ) ss << argv[i] << " " ;
+    for(int i=1 ; i < argc ; ++i )
+    {
+        LOG(LEVEL) << std::setw(6) << i << " : " << argv[i] << std::endl ; 
+        ss << argv[i] << " " ;
+    }
+
     m_commandline = ss.str();
+
+    LOG(LEVEL) << "commandline " << m_commandline ; 
 
     if(m_others.size() == 0)
     {

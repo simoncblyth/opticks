@@ -1384,6 +1384,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("dbggdmlpath",   boost::program_options::value<std::string>(&m_dbggdmlpath), "dbggdmlpath " );
 
+   m_desc.add_options()
+       ("nogdmlpath",   "prevent assertions for tests using simple Geant4 geometries without persisted gdml" );
+
 
 
    char domaintarget[256];

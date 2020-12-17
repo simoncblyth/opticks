@@ -161,6 +161,7 @@ class OKCORE_API Opticks {
        void configure();  // invoked after commandline parsed
        bool isConfigured() const ;  
    private:
+       void postconfigure(); 
        void configureGeometryHandling() ; 
    public:
        std::string brief();
@@ -390,6 +391,7 @@ class OKCORE_API Opticks {
        bool                 isExceptionEnabled() const ;  // --exceptionenabled
        bool                 isXAnalytic() const ;      // --xanalytic : --xtriangle option will override an --xanalytic option
        bool                 isXGeometryTriangles() const ;
+       bool                 isNoGDMLPath() const ;    // --nogdmlpath
    public:
        bool                 canDeleteGeoCache() const ; 
        void                 deleteGeoCache() const ; 
@@ -675,6 +677,7 @@ class OKCORE_API Opticks {
        OpticksEventSpec*    m_nspec ; 
        OpticksResource*     m_resource ; 
        BOpticksResource*    m_rsc ; 
+       bool                 m_nogdmlpath ; // --nogdmlpath
        const char*          m_origin_gdmlpath ; // formerly m_direct_gdmlpath
        int                  m_origin_geocache_code_version ; 
        NState*              m_state ; 

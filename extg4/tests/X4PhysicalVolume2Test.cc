@@ -229,7 +229,8 @@ int main(int argc, char** argv)
     G4VPhysicalVolume* top = check_convexpolyhedron(lm);
     //G4VPhysicalVolume* top = check_placement(lm);
 
-    GGeo* ggeo = X4PhysicalVolume::Convert(top) ;   
+    const char* argforce = "--nogdmlpath" ; 
+    GGeo* ggeo = X4PhysicalVolume::Convert(top, argforce) ;   
     assert(ggeo);  
     
     LOG(info) << " ggeo.getNumVolumes " << ggeo->getNumVolumes() ; 

@@ -108,7 +108,7 @@ const G4VPhysicalVolume* const X4PhysicalVolume::Top()
     return top ; 
 }
 
-GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
+GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top, const char* argforce)
 {
     const char* key = X4PhysicalVolume::Key(top) ; 
 
@@ -116,7 +116,7 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
 
     LOG(error) << " SetKey " << key  ; 
 
-    Opticks* ok = new Opticks(0,0);  // Opticks instanciation must be after BOpticksKey::SetKey
+    Opticks* ok = new Opticks(0,0, argforce);  // Opticks instanciation must be after BOpticksKey::SetKey
 
     ok->configure();   // see notes/issues/configuration_resource_rejig.rst
 

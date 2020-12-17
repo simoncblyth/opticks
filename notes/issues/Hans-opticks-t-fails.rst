@@ -1,54 +1,74 @@
 Hans-opticks-t-fails
 =======================
 
+::
 
-Hi simon 
+    Hi simon 
 
-I used the head of the git repository 
-git clone http://bitbucket.org/simoncblyth/opticks
+    I used the head of the git repository 
+    git clone http://bitbucket.org/simoncblyth/opticks
 
-building the externasl went fine 
+    building the externasl went fine 
 
-But to do opticks-full I had to change
+    But to do opticks-full I had to change
 
- /data2/wenzel/gputest3/opticks/optickscore/CMakeLists.txt
- /data2/wenzel/gputest3/opticks/opticksgeo/CMakeLists.txt
+     /data2/wenzel/gputest3/opticks/optickscore/CMakeLists.txt
+     /data2/wenzel/gputest3/opticks/opticksgeo/CMakeLists.txt
 
-to include 
+    to include 
 
-include_directories($ENV{OPTICKS_HOME}/npy)
+    include_directories($ENV{OPTICKS_HOME}/npy)
 
-then opticks-full  completed fine and 
-with this  opticks-t only reports 9 failures 
+    then opticks-full  completed fine and 
+    with this  opticks-t only reports 9 failures 
 
-FAILS:  9   / 431   :  Wed Dec 16 19:01:35 2020  
+        FAILS:  9   / 431   :  Wed Dec 16 19:01:35 2020  
 
-  22 /32  Test #22 : OptiXRapTest.interpolationTest                ***Failed                      0.51  
-  3  /34  Test #3  : CFG4Test.CTestDetectorTest                    ***Exception: SegFault         0.18  
-  5  /34  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     0.16  
-  6  /34  Test #6  : CFG4Test.CGeometryTest                        Child aborted***Exception:     0.16  
-  7  /34  Test #7  : CFG4Test.CG4Test                              ***Exception: SegFault         0.18  
-  1  /1   Test #1  : OKG4Test.OKG4Test                             ***Exception: SegFault         0.20  
-  23 /34  Test #23 : CFG4Test.CInterpolationTest                   ***Exception: SegFault         0.18  
-
-       All these are failing from the same cause, of being unable to extract the gdmlpath from 
-       the geocache metadata as was expecting "--gdmlpath path/to/geometry.gdml"
-       I have generalized the parsing of the argline in Opticks::ExtractCacheMetaGDMLPath 
-       to also just grab the first arg ending with ".gdml" so this will work in the 
-       G4OpticksTest case if you provide an absolute gdmlpath on commandline. 
-       You could use $PWD/name.gdml to get the shell to so the work.
+          22 /32  Test #22 : OptiXRapTest.interpolationTest                ***Failed                      0.51  
+          3  /34  Test #3  : CFG4Test.CTestDetectorTest                    ***Exception: SegFault         0.18  
+          5  /34  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     0.16  
+          6  /34  Test #6  : CFG4Test.CGeometryTest                        Child aborted***Exception:     0.16  
+          7  /34  Test #7  : CFG4Test.CG4Test                              ***Exception: SegFault         0.18  
+          1  /1   Test #1  : OKG4Test.OKG4Test                             ***Exception: SegFault         0.20  
+          23 /34  Test #23 : CFG4Test.CInterpolationTest                   ***Exception: SegFault         0.18  
+          29 /34  Test #29 : CFG4Test.CRandomEngineTest                    ***Exception: SegFault         0.18  
+          2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.00   
 
 
-  29 /34  Test #29 : CFG4Test.CRandomEngineTest                    ***Exception: SegFault         0.18  
-  2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.00   
+    below is the result of running these tests with gdb and backtracing. 
+
+    hope that helps 
+
+    cheers Hans 
 
 
-below is the result of running these tests with gdb and backtracing. 
+All these are failing from the same cause, of being unable to extract the gdmlpath from 
+the geocache metadata as was expecting "--gdmlpath path/to/geometry.gdml"
+I have generalized the parsing of the argline in Opticks::ExtractCacheMetaGDMLPath 
+to also just grab the first arg ending with ".gdml" so this will work in the 
+G4OpticksTest case if you provide an absolute gdmlpath on commandline. 
+You could use $PWD/name.gdml to get the shell to so the work.
 
-hope that helps 
 
 
-cheers Hans 
+gdmlpath assert trips up a few tests
+---------------------------------------
+
+::
+
+    FAILS:  2   / 431   :  Fri Dec 18 00:02:49 2020   
+      11 /19  Test #11 : ExtG4Test.X4PhysicalVolumeTest                Child aborted***Exception:     0.15   
+      12 /19  Test #12 : ExtG4Test.X4PhysicalVolume2Test               Child aborted***Exception:     0.64   
+
+
+Added "--nogdmlpath" to prevent the assert but message not getting thru::
+
+    Opticks=INFO BCfg=INFO X4PhysicalVolumeTest
+
+Found and fixed this problem due to sysrap/SArgs when argc=0 was ignoring the first forced argument.
+
+
+
 
 
 interpolationTest : fails as the cached argline in geocache metadata does not have "--gdmlpath ..."  

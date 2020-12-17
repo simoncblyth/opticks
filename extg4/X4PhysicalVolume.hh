@@ -96,7 +96,7 @@ class X4_API X4PhysicalVolume : public X4Named
         static const plog::Severity  LEVEL ; 
         static const bool            DBG ; 
         static const G4VPhysicalVolume* const Top();
-        static GGeo* Convert(const G4VPhysicalVolume* const top);
+        static GGeo* Convert(const G4VPhysicalVolume* const top, const char* argforce);
     public:
         // digestextra is a kludge for things like csgskiplv arguments that change geometry, 
         // see notes/issues/opticks_key_digest_no_updating_for_changed_geometry.rst

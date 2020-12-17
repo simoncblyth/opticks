@@ -51,7 +51,14 @@ struct SArgs
 
     void add(int argc_, char** argv_)
     {
-        for(int i=0 ; i < argc_ ; i++) elem.push_back(argv_[i]) ;
+        if(argc_ == 0)  // needed for Opticks(0, NULL, argforce)  
+        {
+            elem.push_back("SArgsDummyExecutable"); 
+        }
+        else
+        {
+            for(int i=0 ; i < argc_ ; i++) elem.push_back(argv_[i]) ;
+        }
     }
 
     static bool starts_with( const std::string& e, const char* pfx )
@@ -166,9 +173,6 @@ struct SArgs
         }
         return fallback ; 
     }
-
-
-
 
 
 };
