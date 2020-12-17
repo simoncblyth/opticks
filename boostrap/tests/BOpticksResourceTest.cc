@@ -99,9 +99,22 @@ void test_getGDMLAuxTargetLVName()
     LOG(info) << "getKeySpec : " << keyspec ; 
 
     LOG(info) << std::endl << rsc->export_(); 
-
-
 }  
+
+void test_getGDMLAuxUserinfo()
+{
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ;  // use preexisting instance or create new one
+
+    const char* k = "opticks_geospecific_options" ; 
+    std::string v = rsc->getGDMLAuxUserinfo(k); 
+    LOG(info) << k << " : [" << v << "]";  
+}
+
+void test_getGDMLAuxUserinfoGeospecificOptions()
+{
+    BOpticksResource* rsc = BOpticksResource::Get(NULL) ;  // use preexisting instance or create new one
+    LOG(info) << rsc->getGDMLAuxUserinfoGeospecificOptions() ; 
+}
 
 
 
@@ -114,12 +127,12 @@ int main(int argc, char** argv)
     //test_Setup(); 
 #endif
 
- 
     //test_IsGeant4EnvironmentDetected(); 
-
     //test_GetCachePath(); 
+    //test_getGDMLAuxTargetLVName(); 
 
-    test_getGDMLAuxTargetLVName(); 
+    test_getGDMLAuxUserinfo();
+    test_getGDMLAuxUserinfoGeospecificOptions() ; 
 
     return 0 ; 
 }

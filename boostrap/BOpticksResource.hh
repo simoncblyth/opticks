@@ -230,11 +230,17 @@ class BRAP_API  BOpticksResource {
         const char* getPrimariesPath() const ;
         const char* getGLTFPath() const ;     // output path 
     public:
-        BMeta*      getGDMLAuxMeta() const  ;
-        void        findGDMLAuxMetaEntries(std::vector<BMeta*>&, const char* key, const char* val ) const ;
-        void        findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const ; // for entries matching (k,v) collect  q values
-        unsigned    getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const ;
-        const char* getGDMLAuxTargetLVName() const ; // returns first name or NULL when none
+        static const char* opticks_geospecific_options ; 
+        const BMeta* getGDMLAuxMeta() const  ;
+        std::string  getGDMLAuxUserinfo(const char* k) const ;
+        const char*  getGDMLAuxUserinfoGeospecificOptions() const ;
+    public:
+        void         findGDMLAuxMetaEntries(std::vector<BMeta*>&, const char* key, const char* val ) const ;
+        void         findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const ; // for entries matching (k,v) collect  q values
+        unsigned     getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const ;
+        const char*  getGDMLAuxTargetLVName() const ; // returns first name or NULL when none
+    private:
+        BMeta*       LoadGDMLAuxMeta() const ;
     public:
         const char* getIdMapPath() const ;
     public:
@@ -263,6 +269,9 @@ class BRAP_API  BOpticksResource {
         void initUserCachePrefix();
         void initTopDownDirs();
         void initDebuggingIDPATH(); 
+        void initViaKey();
+        void initMetadata();
+
    protected:
         friend struct NSensorListTest ; 
         friend struct NSceneTest ; 
@@ -271,7 +280,6 @@ class BRAP_API  BOpticksResource {
         // only use one setup route
         
    public: 
-        void setupViaKey();
         bool idNameContains(const char* s) const ;
         std::string formCacheRelativePath(const char* path) const ;
 
@@ -345,6 +353,13 @@ class BRAP_API  BOpticksResource {
    protected:
         const char* m_testcsgpath ;
         const char* m_testconfig ;
+
+   private:
+        const BMeta* m_gdmlauxmeta ; 
+        const BMeta* m_gdmlauxmeta_lvmeta ; 
+        const BMeta* m_gdmlauxmeta_usermeta ; 
+        const char*  m_opticks_geospecific_options ; 
+
 };
 
 #include "BRAP_TAIL.hh"

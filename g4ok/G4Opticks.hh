@@ -97,7 +97,7 @@ class G4OK_API G4Opticks
         static const char* OPTICKS_EMBEDDED_COMMANDLINE_EXTRA ; 
         static const char* fEmbeddedCommandLine_dev ;
         static const char* fEmbeddedCommandLine_pro ;
-        static std::string EmbeddedCommandLine(const char* extra); 
+        static std::string EmbeddedCommandLine(const char* extra1, const char* extra2); 
         static Opticks* InitOpticks(const char* keyspec, const char* commandline_extra, bool parse_argv );
     public:
         // workaround for getting config to the deferred Opticks instanciation

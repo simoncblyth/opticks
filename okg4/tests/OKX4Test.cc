@@ -77,6 +77,14 @@ int main(int argc, char** argv)
     if( top == NULL ) return 0 ; 
     if(auxmeta) auxmeta->dump("auxmeta"); 
 
+
+    if(PLOG::instance->has_arg("--earlyexit"))
+    {
+        LOG(info) << " --earlyexit " ; 
+        return 0 ;  
+    } 
+
+
     const char* digestextra1 = csgskiplv ;    // kludge the digest to be sensitive to csgskiplv
     const char* spec = X4PhysicalVolume::Key(top, digestextra1, digestextra2 ) ; 
 
@@ -92,7 +100,7 @@ int main(int argc, char** argv)
 
     GGeo* m_ggeo = new GGeo(m_ok) ;
 
-    m_ggeo->setGDMLAuxMeta(auxmeta); 
+    m_ggeo->setGDMLAuxMeta(auxmeta);  // pass the GDMLAux metadata into GGeo and hence into the geocache which is persisted below
 
     m_ok->profile("OKX4Test:GGeo"); 
 
@@ -131,3 +139,4 @@ int main(int argc, char** argv)
 
     return mgr.rc() ;
 }
+

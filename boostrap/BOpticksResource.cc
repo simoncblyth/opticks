@@ -71,7 +71,7 @@ BOpticksResource::GetCachePath
 -------------------------------
 
 If the BOpticksResource instance is not yet created, this will create the
-instance and do setupViaKey assuming an OPTICKS_KEY envvar.
+instance and do initViaKey assuming an OPTICKS_KEY envvar.
 
 **/
 const char* BOpticksResource::GetCachePath(const char* rela, const char* relb, const char* relc ) // static 
@@ -152,13 +152,16 @@ BOpticksResource::BOpticksResource()
     m_directphotonspath(NULL),
     m_gltfpath(NULL),
     m_testcsgpath(NULL),
-    m_testconfig(NULL)
+    m_testconfig(NULL),
+    m_gdmlauxmeta(NULL),
+    m_gdmlauxmeta_lvmeta(NULL),
+    m_gdmlauxmeta_usermeta(NULL),
+    m_opticks_geospecific_options(NULL) 
 {
     init();
     (*m_log)("DONE"); 
     fInstance = this ; 
 
-    setupViaKey();    // now the one and only way of setting up 
 }
 
 
@@ -176,6 +179,8 @@ void BOpticksResource::init()
     initUserCachePrefix() ;
     initTopDownDirs();
     initDebuggingIDPATH();
+    initViaKey();    // now the one and only way of setting up 
+    initMetadata(); 
 }
 
 const char* BOpticksResource::getInstallPrefix() // canonically /usr/local/opticks
@@ -765,7 +770,7 @@ Hmm could append the geocache digest to the directory path ?
 
 **/
 
-void BOpticksResource::setupViaKey()
+void BOpticksResource::initViaKey()
 {
     assert( !m_setup ) ;  
     m_setup = true ; 
@@ -835,6 +840,9 @@ void BOpticksResource::setupViaKey()
     m_gdmlauxmetapath = makeIdPathPath("gdmlauxmeta.json");  
     m_res->addPath("gdmlauxmetapath", m_gdmlauxmetapath ); 
 
+   
+
+
     m_cachemetapath = makeIdPathPath("cachemeta.json");  
     m_res->addPath("cachemetapath", m_cachemetapath ); 
 
@@ -900,17 +908,8 @@ void BOpticksResource::setupViaKey()
 
     m_res->addDir( "evtbase", m_evtbase ); 
 
-
-/*
-    m_srcevtbase = makeIdPathPath("source"); 
-    m_res->addDir( "srcevtbase", m_srcevtbase ); 
-
-    // KeySource means name of current executable is same as the one that created the geocache
-    m_evtbase = isKeySource() ? strdup(m_srcevtbase) : makeIdPathPath(exename ) ;  
-    m_res->addDir( "evtbase", m_evtbase ); 
-*/
-
 }
+
 
 bool BOpticksResource::idNameContains(const char* s) const 
 {
@@ -1021,7 +1020,8 @@ const char* BOpticksResource::getPrimariesPath() const { return m_primariespath 
 const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; } 
 
 
-BMeta* BOpticksResource::getGDMLAuxMeta() const 
+
+BMeta* BOpticksResource::LoadGDMLAuxMeta() const 
 {
     const char* gdmlauxmetapath = getGDMLAuxMetaPath();
     LOG(LEVEL) << " gdmlauxmetapath " << gdmlauxmetapath ; 
@@ -1029,6 +1029,41 @@ BMeta* BOpticksResource::getGDMLAuxMeta() const
     return gdmlauxmeta ; 
 }
 
+const BMeta* BOpticksResource::getGDMLAuxMeta() const 
+{
+    return m_gdmlauxmeta ; 
+}
+
+
+const char* BOpticksResource::opticks_geospecific_options = "opticks_geospecific_options" ; 
+
+void BOpticksResource::initMetadata()
+{
+    m_gdmlauxmeta = LoadGDMLAuxMeta(); 
+    if(m_gdmlauxmeta)
+    {
+        m_gdmlauxmeta_lvmeta = m_gdmlauxmeta->getObj("lvmeta"); 
+        m_gdmlauxmeta_usermeta = m_gdmlauxmeta->getObj("usermeta"); 
+    }
+    if(m_gdmlauxmeta_usermeta)
+    {
+        std::string opts = m_gdmlauxmeta_usermeta->get<std::string>(opticks_geospecific_options, "");
+        m_opticks_geospecific_options = opts.empty() ? NULL : strdup(opts.c_str()) ;  
+    }
+}
+
+const char* BOpticksResource::getGDMLAuxUserinfoGeospecificOptions() const 
+{
+    return m_opticks_geospecific_options ; 
+}
+
+std::string BOpticksResource::getGDMLAuxUserinfo(const char* k) const 
+{
+    const BMeta* usermeta = m_gdmlauxmeta_usermeta ;  
+    std::string value ;
+    if(usermeta) value = usermeta->get<std::string>(k, "") ;
+    return value ; 
+}
 
 
 
@@ -1041,8 +1076,7 @@ BOpticksResource::findGDMLAuxMetaEntries
 **/
 void BOpticksResource::findGDMLAuxMetaEntries(std::vector<BMeta*>& entries, const char* k, const char* v ) const
 {
-    BMeta* meta = getGDMLAuxMeta() ;
-    BMeta* lvmeta = meta->getObj("lvmeta");
+    const BMeta* lvmeta = m_gdmlauxmeta_lvmeta ; 
 
     unsigned ni = lvmeta ? lvmeta->getNumKeys() : 0 ;
     bool dump = false ;

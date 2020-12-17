@@ -97,7 +97,7 @@ of options or invalid combinations of options will cause asserts.
 
 **/
 
-std::string G4Opticks::EmbeddedCommandLine(const char* extra )  // static
+std::string G4Opticks::EmbeddedCommandLine(const char* extra1, const char* extra2 )  // static
 {
     const char* ecl  = SSys::getenvvar(OPTICKS_EMBEDDED_COMMANDLINE, "pro") ; 
 
@@ -118,7 +118,8 @@ std::string G4Opticks::EmbeddedCommandLine(const char* extra )  // static
 
     std::stringstream ss ; 
     ss << ecl << " " ;
-    if(extra) ss << " " << extra ; 
+    if(extra1) ss << " " << extra1 ; 
+    if(extra2) ss << " " << extra2 ; 
     if(eclx) ss << " " << eclx ; 
     return ss.str();  
 }
@@ -184,8 +185,11 @@ Opticks* G4Opticks::InitOpticks(const char* keyspec, const char* commandline_ext
     }
     LOG(LEVEL) << "]BOpticksResource::Get" ;
     LOG(info) << std::endl << rsc->export_(); 
+    
+    const char* geospecific_options = rsc->getGDMLAuxUserinfoGeospecificOptions() ; 
+    LOG(LEVEL) << "GDMLAuxUserinfoGeospecificOptions [" << geospecific_options << "]" ;  
 
-    std::string ecl = EmbeddedCommandLine(commandline_extra) ; 
+    std::string ecl = EmbeddedCommandLine(commandline_extra, geospecific_options) ; 
     LOG(LEVEL) << "EmbeddedCommandLine : [" << ecl << "]" ; 
 
     LOG(LEVEL) << "[ok" ;

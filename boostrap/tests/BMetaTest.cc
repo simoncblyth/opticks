@@ -217,11 +217,15 @@ const char* COLORMAP_NAME2HEX = R"LITERAL(
 )LITERAL";
 
 
+
+
+
 void test_readTxt()
 {
     LOG(info); 
     BMeta* a = BMeta::FromTxt(COLORMAP_NAME2HEX); 
     a->dump();
+
     LOG(info) << " green is " << a->get<std::string>("green") ; 
 }
 
@@ -358,10 +362,53 @@ void test_getKV()
 }
 
 
+const char* AUXMETA = R"LITERAL(
+
+  {
+        "lvmeta": {
+            "/dd/Geometry/AD/lvADE0xc2a78c00x3ef9140": {
+                "label": "target",
+                "lvname": "/dd/Geometry/AD/lvADE0xc2a78c00x3ef9140"
+            },
+            "/dd/Geometry/PMT/lvHeadonPmtCathode0xc2c8d980x3ee9e20": {
+                "SensDet": "SD0",
+                "lvname": "/dd/Geometry/PMT/lvHeadonPmtCathode0xc2c8d980x3ee9e20"
+            },
+            "/dd/Geometry/PMT/lvPmtHemiCathode0xc2cdca00x3ee9400": {
+                "SensDet": "SD0",
+                "lvname": "/dd/Geometry/PMT/lvPmtHemiCathode0xc2cdca00x3ee9400"
+            }
+        },
+        "usermeta": {
+            "opticks_geospecific_options": "--boundary MineralOil///Acrylic --pvname /dd/Geometry/AD/lvSST#pvOIL0xc2415100x3f0b6a0 "
+        }
+    }
+
+)LITERAL";
+
+
+void test_query()
+{
+    LOG(info); 
+    BMeta* a = BMeta::FromTxt(AUXMETA); 
+    a->dump();
+
+
+    BMeta* usermeta = a->getObj("usermeta");
+    usermeta->dump(); 
+
+    std::string opts = usermeta->get<std::string>("opticks_geospecific_options", ""); 
+    LOG(info) << opts ; 
+
+}
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+/*
     test_write_read();
     test_composable();
     test_copy_ctor();
@@ -375,6 +422,8 @@ int main(int argc, char** argv)
     test_hasKey(); 
     test_kvdump(); 
     test_getKV(); 
+*/
+    test_query(); 
 
     return 0 ; 
 }
