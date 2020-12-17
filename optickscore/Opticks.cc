@@ -1880,7 +1880,16 @@ void Opticks::loadOriginCacheMeta()
     std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
     LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
 
-    m_origin_gdmlpath = strdup(gdmlpath.c_str()); 
+    m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str()); 
+
+    if(m_origin_gdmlpath == NULL)
+    {
+        LOG(fatal) << "cachemetapath " << cachemetapath ; 
+        LOG(fatal) << "argline that creates cachemetapath must include \"--gdmlpath /path/to/geometry.gdml\" " ; 
+    }
+    assert( m_origin_gdmlpath ); 
+
+
     m_origin_geocache_code_version = m_origin_cachemeta->get<int>(GEOCACHE_CODE_VERSION_KEY, "0" );  
 
     bool is_key_source = isKeySource(); 
@@ -2012,7 +2021,6 @@ std::string Opticks::ExtractCacheMetaGDMLPath(const BMeta* meta)  // static
     {
         tokpath = gdmlpath ; 
     }   
-    
 
     LOG(LEVEL) 
         << "\n argline " << argline
@@ -2024,6 +2032,24 @@ std::string Opticks::ExtractCacheMetaGDMLPath(const BMeta* meta)  // static
         << "\n consistent_prefix " << consistent_prefix
         ;  
 
+    if(tokpath.empty())
+    {
+        LOG(fatal)
+            << " FAILED TO EXTRACT ORIGIN GDMLPATH FROM METADATA argline "  
+            << "\n argline " << argline
+            ;
+    
+        const char* fallback_gdmlpath = sa.get_first_arg_ending_with(".gdml", NULL ) ;
+        if( fallback_gdmlpath ) 
+        {
+            LOG(info) 
+                << " HOWEVER found a gdmlpath on argline, try using that "
+                << " fallback_gdmlpath " << fallback_gdmlpath 
+                ;
+               
+            tokpath = fallback_gdmlpath ; 
+        }
+    }
     return tokpath ; 
 }
 

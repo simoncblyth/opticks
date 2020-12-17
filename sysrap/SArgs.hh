@@ -156,6 +156,17 @@ struct SArgs
         return fallback ; 
     }
 
+    const char* get_first_arg_ending_with(const char* ending, const char* fallback) const
+    {
+        for(int i=1 ; i < int(elem.size())  ; i++ ) 
+        {
+            const char* arg = elem[i].c_str() ; 
+            int pos = strlen(arg) - strlen(ending) ;
+            if( pos > 0 && strncmp(arg + pos, ending, strlen(ending)) == 0 ) return arg ;
+        }
+        return fallback ; 
+    }
+
 
 
 

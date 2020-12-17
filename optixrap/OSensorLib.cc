@@ -30,6 +30,9 @@ void OSensorLib::init()
 {
     assert( m_sensorlib->isClosed() ); 
 
+    if(!m_sensor_data) LOG(fatal) << " sensor_data NULL " ; 
+    assert( m_sensor_data ); 
+
     if( m_angular_efficiency )
     {
         assert( m_num_dim == 4 ); 

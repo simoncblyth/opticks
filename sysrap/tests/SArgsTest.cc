@@ -22,21 +22,15 @@
 
 #include "OPTICKS_LOG.hh"
 
-int main(int argc, char** argv)
-{
-    OPTICKS_LOG(argc, argv);
 
+void test_basics(int argc, char** argv)
+{
     const char* extra = "--compute --nopropagate --tracer" ;
 
     SArgs* sa = new SArgs(argc, argv, extra );
 
     std::cout << " sa->argc " << sa->argc << std::endl ; 
-
-
     sa->dump();
-
-
-
 
     assert(sa->hasArg("--compute"));
     assert(sa->hasArg("--nopropagate"));
@@ -46,6 +40,24 @@ int main(int argc, char** argv)
     std::string f = "hello" ;  
     assert( SArgs::starts_with(e,"--") == true ) ;
     assert( SArgs::starts_with(f,"--") == false ) ;
+}
+
+void test_get_first_arg_ending_with(int argc, char** argv)
+{
+    const char* extra = "--red --green path/to/geometry.gdmlx --blue another.gdml" ;
+    SArgs* sa = new SArgs(argc, argv, extra );
+    const char* arg = sa->get_first_arg_ending_with(".gdml", NULL ); 
+    LOG(info) << arg ; 
+}
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+
+    //test_basics(argc, argv); 
+
+    test_get_first_arg_ending_with( argc, argv ); 
 
     return 0 ; 
 }

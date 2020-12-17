@@ -151,6 +151,9 @@ transpose
 
 void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, const char flag, int item, bool transpose  ) const 
 {
+    if(arr == NULL) LOG(fatal) << " arr NULL " ; 
+    assert(arr); 
+
     if(transpose == false)
        LOG(warning) << "CAUTION : are using transpose:false, this typically causes array content order scrambling "
        ; 

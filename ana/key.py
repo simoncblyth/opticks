@@ -103,6 +103,11 @@ class Key(object):
   
     @classmethod
     def extract_argument_after(cls, meta, k):
+        """
+        :param meta: metadata dict including argline key   
+        :param k: argument to look for the value of
+        :return path: commandline value following k or None if k is not found
+        """
         argline = meta.get("argline","-")
         args = argline.split(" ")
         try:
@@ -117,9 +122,9 @@ class Key(object):
         elif ppos + 1 >= len(args):
             log.fatal("truncated argline ?")
         else:
-            arg = args[ppos+1] 
+            path = args[ppos+1] 
         pass
-        return arg
+        return path
 
  
     def __repr__(self):
