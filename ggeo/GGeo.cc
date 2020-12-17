@@ -198,11 +198,11 @@ Composition* GGeo::getComposition()
     return m_composition ; 
 }
 
-void GGeo::setGDMLAuxMeta(BMeta* gdmlauxmeta)
+void GGeo::setGDMLAuxMeta(const BMeta* gdmlauxmeta)
 {
     m_gdmlauxmeta = gdmlauxmeta ; 
 }
-BMeta* GGeo::getGDMLAuxMeta() const 
+const BMeta* GGeo::getGDMLAuxMeta() const 
 {
     return m_gdmlauxmeta ; 
 }
@@ -721,7 +721,7 @@ void GGeo::loadCacheMeta() // loads metadata that the process that created the g
 {
     LOG(LEVEL) ; 
 
-    BMeta* gdmlauxmeta = m_ok->getGDMLAuxMeta(); 
+    const BMeta* gdmlauxmeta = m_ok->getGDMLAuxMeta(); 
     setGDMLAuxMeta(gdmlauxmeta); 
 
     BMeta* lv2sd = m_ok->getOriginCacheMeta("lv2sd"); 

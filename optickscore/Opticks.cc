@@ -1943,7 +1943,7 @@ BMeta* Opticks::getOriginCacheMeta(const char* obj) const
 
 
 
-BMeta* Opticks::getGDMLAuxMeta() const 
+const BMeta* Opticks::getGDMLAuxMeta() const 
 {
     return m_rsc->getGDMLAuxMeta() ; 
 }

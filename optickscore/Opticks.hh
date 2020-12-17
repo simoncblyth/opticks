@@ -327,8 +327,8 @@ class OKCORE_API Opticks {
        void        loadOriginCacheMeta() ; 
        BMeta*      getOriginCacheMeta(const char* obj) const ; 
    public:
-       BMeta*      getGDMLAuxMeta() const  ; 
-       void        findGDMLAuxMetaEntries(std::vector<BMeta*>&, const char* key, const char* val ) const ; 
+       const BMeta* getGDMLAuxMeta() const  ; 
+       void         findGDMLAuxMetaEntries(std::vector<BMeta*>&, const char* key, const char* val ) const ; 
        void        findGDMLAuxValues(std::vector<std::string>& values, const char* k, const char* v, const char* q) const ; // for entries matching (k,v) collect  q values
        unsigned    getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const ;
        const char* getGDMLAuxTargetLVName() const ; // returns first name or NULL when none

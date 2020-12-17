@@ -186,8 +186,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool isValid() const ;
         bool isLive() const ;
     public:
-        void   setGDMLAuxMeta(BMeta* gdmlauxmeta); 
-        BMeta* getGDMLAuxMeta() const ; 
+        void   setGDMLAuxMeta(const BMeta* gdmlauxmeta); 
+        const BMeta* getGDMLAuxMeta() const ; 
     public:
         Composition* getComposition();
         void setComposition(Composition* composition);
@@ -433,7 +433,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         bool                          m_loaded_from_cache ;  
         bool                          m_prepared ;  
 
-        BMeta*                        m_gdmlauxmeta ;  
+        const BMeta*                  m_gdmlauxmeta ;  
         BMeta*                        m_loadedcachemeta ; 
         BMeta*                        m_lv2sd ; 
         BMeta*                        m_lv2mt ; 
