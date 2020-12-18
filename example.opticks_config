@@ -22,7 +22,7 @@ export OPTICKS_CUDA_PREFIX=/usr/local/cuda
 export OPTICKS_OPTIX_PREFIX=/usr/local/optix
 export OPTICKS_COMPUTE_CAPABILITY=70
 
-## hookup paths to access "foreign" externals 
+## hookup paths to access "foreign" externals, not yet existing dirs just give warnings
 opticks-prepend-prefix /usr/local/opticks_externals/clhep
 opticks-prepend-prefix /usr/local/opticks_externals/xercesc
 opticks-prepend-prefix /usr/local/opticks_externals/g4_1042

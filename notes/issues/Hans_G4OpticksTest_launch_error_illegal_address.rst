@@ -84,45 +84,11 @@ Avoided the private method::
 
 
 
-But still a problem with old Geant4 1042::
 
-    ...
+Hmm its going to be laborious to do this as need new gcc and geant4
 
-    [ 66%] Built target G4OpticksTest
-    [ 67%] Linking CXX shared library libG4OpticksTestClassesDict.so
-    /usr/bin/ld: anHCAllocator_G4MT_TLS_: TLS definition in /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4digits_hits.so section .tbss mismatches non-TLS reference in CMakeFiles/G4OpticksTestClassesDict.dir/src/PhotonSD.cc.o
-    /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4digits_hits.so: error adding symbols: Bad value
-    collect2: error: ld returned 1 exit status
-    make[2]: *** [libG4OpticksTestClassesDict.so] Error 1
-    make[1]: *** [CMakeFiles/G4OpticksTestClassesDict.dir/all] Error 2
-    make: *** [all] Error 2
+* :doc:`g4_1062_opticks_with_newer_gcc_for_G4OpticksTest.rst`
 
 
 
-
-Clear up some space then::
-
-    [blyth@localhost ~]$ g4-;g4--1062
-
-
-Nope::
-
-    [ 13%] Building CXX object source/geometry/CMakeFiles/G4geometry.dir/magneticfield/src/G4TrialsCounter.cc.o
-    -- [download 13% complete]
-    /home/blyth/local/opticks_externals/g4_1062.build/geant4.10.06.p02/source/geometry/magneticfield/src/G4FieldManagerStore.cc: In static member function ‘static void G4FieldManagerStore::DeRegister(G4FieldManager*)’:
-    /home/blyth/local/opticks_externals/g4_1062.build/geant4.10.06.p02/source/geometry/magneticfield/src/G4FieldManagerStore.cc:119:31: error: no matching function for call to ‘G4FieldManagerStore::erase(__gnu_cxx::__normal_iterator<G4FieldManager* const*, std::vector<G4FieldManager*> >&)’
-             GetInstance()->erase(i);
-                                   ^
-
-* https://geant4-forum.web.cern.ch/t/error-when-making-geant4/1774
-
-gcosmo::
-
-    You must use a more recent gcc compiler to build Geant4 10.6.
-    The minimum required is gcc-4.9.3 and you’re using gcc-4.8.2…i
-
-See env-;centos- for notes on yum installation of devtoolset-9 which comes with gcc 9.3.1 
-
-
-     
 
