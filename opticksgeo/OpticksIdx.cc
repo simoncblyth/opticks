@@ -27,7 +27,6 @@
 // npy-
 #include "SeqNPY.hpp"
 #include "PhotonsNPY.hpp"
-#include "HitsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
 #include "SequenceNPY.hpp"
@@ -168,49 +167,6 @@ GItemIndex* OpticksIdx::makeBoundaryItemIndex()
     return boundaries ; 
 }
  
-
-#ifdef OLD_RESOURCE
-void OpticksIdx::indexEvtOld()
-{
-    OpticksEvent* evt = getEvent();
-    if(!evt) return ; 
-
-    // TODO: wean this off use of Types, for the new way (GFlags..)
-    Types* types = m_ok->getTypes();
-    Typ* typ = m_ok->getTyp();
-
-    NPY<float>* ox = evt->getPhotonData();
-
-    if(ox && ox->hasData())
-    {
-        PhotonsNPY* pho = new PhotonsNPY(ox);   // a detailed photon/record dumper : looks good for photon level debug 
-        pho->setTypes(types);
-        pho->setTyp(typ);
-        evt->setPhotonsNPY(pho);
-        HitsNPY* hit = new HitsNPY(ox, m_ok->getSensorList());
-        evt->setHitsNPY(hit);
-    }
-
-    NPY<short>* rx = evt->getRecordData();
-
-    if(rx && rx->hasData())
-    {
-        RecordsNPY* rec = new RecordsNPY(rx, evt->getMaxRec());
-        rec->setTypes(types);
-        rec->setTyp(typ);
-        rec->setDomains(evt->getFDomain()) ;
-
-        PhotonsNPY* pho = evt->getPhotonsNPY();
-        if(pho)
-        {
-            pho->setRecs(rec);
-        }
-        evt->setRecordsNPY(rec);
-    }
-}
-#endif
-
-
 void OpticksIdx::indexSeqHost()
 {
     LOG(info) << "OpticksIdx::indexSeqHost" ; 

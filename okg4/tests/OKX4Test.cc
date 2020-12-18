@@ -35,7 +35,6 @@
 
 #include "GBndLib.hh"
 #include "GGeo.hh"
-#include "GGeoGLTF.hh"
 
 #include "CGDML.hh"
 #include "CGDMLDetector.hh"

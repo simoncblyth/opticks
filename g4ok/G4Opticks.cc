@@ -56,7 +56,6 @@
 #include "GGeo.hh"
 #include "GPho.hh"
 #include "GMaterialLib.hh"
-#include "GGeoGLTF.hh"
 #include "GBndLib.hh"
 
 #include "X4PhysicalVolume.hh"

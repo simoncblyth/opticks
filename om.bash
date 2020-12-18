@@ -174,7 +174,49 @@ EPY
 }
 
 
+om-prefix-clean-dirs-(){ cat << EOD
+lib
+lib64
+build
+include
+EOD
+}
+om-prefix-clean-notes(){ cat << EON
 
+See notes/issues/CMake_dependency_include_dirs_issue_reported_by_Hans.rst 
+
+If users report CMake dependency issues, the cause might not be due to CMake 
+but rather due to failures to include stale headers.  In order to find 
+these bad inclusions a deeper clean than om-cleaninstall is needed.
+In that case use::
+
+    om-prefix-clean 
+
+EON
+}
+om-prefix-clean(){
+   local msg="=== $FUNCNAME :"
+   cd $(om-prefix)
+   pwd
+   local dirs=$(om-prefix-clean-dirs-) 
+   echo $msg om-prefix : $(om-prefix)  
+   echo $msg pwd       : $(pwd)  
+   echo $msg om-prefix-clean-dirs- : $dirs  
+  
+   local ans
+   read -p "$msg enter YES to proceed with deletion of prefix dirs : " ans
+
+   if [ "$ans" == "YES" ]; then 
+       local cmd
+       for dir in $dirs ; do 
+           cmd="rm -rf $dir" 
+           echo $cmd
+           eval $cmd
+       done 
+   else
+       echo $msg SKIPPED 
+   fi
+}
 
 
 

@@ -66,8 +66,6 @@
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 #include "NState.hpp"
-#include "NGLTF.hpp"
-#include "NScene.hpp"
 #include "NLoad.hpp"
 #include "NSlice.hpp"
 #include "NSceneConfig.hpp"
