@@ -348,20 +348,39 @@ CUDA Toolkit
 
 ::
 
-    Distrib     kernel  GCC     GLIBC
-    RHEL 8.0	4.18	8.2.1	2.28	 	 	 	 
-    RHEL 7.6	3.10	4.8.5	2.17
-    RHEL 6.10	2.6.32	4.4.7	2.12
-    CentOS 7.6	3.10	4.8.5	2.17
-    CentOS 6.10	2.6.32	4.4.7	2.12
-    Fedora 29	4.16	8.0.1	2.27
+    Distrib             kernel  GCC     GLIBC
+    RHEL 8.0	        4.18	8.2.1	2.28	 	 	 	 
+    RHEL 7.6	        3.10	4.8.5	2.17
+    RHEL 6.10	        2.6.32	4.4.7	2.12
+    CentOS 7.6     	    3.10	4.8.5	2.17
+    CentOS 6.10	        2.6.32	4.4.7	2.12
+    Fedora 29	        4.16	8.0.1	2.27
     OpenSUSE Leap 15.0	4.15.0	7.3.1	2.26
-    SLES 15.0	4.12.14	7.2.1	2.26
-    SLES 12.4	4.12.14	4.8.5	2.22
-    Ubuntu 18.10	4.18.0	8.2.0	2.28
+    SLES 15.0	        4.12.14	7.2.1	2.26
+    SLES 12.4	        4.12.14	4.8.5	2.22
+    Ubuntu 18.10	    4.18.0	8.2.0	2.28
     Ubuntu 18.04.3 (**)	5.0.0	7.4.0	2.27
-    Ubuntu 16.04.6 (**)	4.4	5.4.0	2.23
+    Ubuntu 16.04.6 (**)	4.4	    5.4.0	2.23
     Ubuntu 14.04.6 (**)	3.13	4.8.4	2.19
+
+
+::
+
+    [simon@localhost ~]$ uname -a
+    Linux localhost.localdomain 3.10.0-957.10.1.el7.x86_64 #1 SMP Mon Mar 18 15:06:45 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+
+    [simon@localhost ~]$ cat /etc/centos-release
+    CentOS Linux release 7.6.1810 (Core) 
+
+    [blyth@localhost ~]$ gcc --version
+    gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39)
+    Copyright (C) 2015 Free Software Foundation, Inc.
+    This is free software; see the source for copying conditions.  There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+It looks like CUDA might pin you to the standard gcc version for your kernel.
+But plough on regardless to see what error you get.
 
 
 devtoolset
@@ -415,7 +434,6 @@ Do something dirty try to resume the build with different compiler... no chance:
 
 Delete everything from gcc 9
 ---------------------------------
-
 
 ::
 
@@ -476,11 +494,278 @@ Back to beginning with devtoolset-8  : opticks-foreign-install
 
 
 
+After that : opticks-full  : runs into cudarap issue
+-------------------------------------------------------
+
+::
+
+    === om-make-one : cudarap         /home/simon/opticks/cudarap                                  /home/simon/local/opticks/build/cudarap                      
+    [  4%] Building NVCC (Device) object CMakeFiles/CUDARap.dir/CUDARap_generated_CDevice.cu.o
+    [  8%] Building NVCC (Device) object CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o
+    [ 13%] Building NVCC (Device) object CMakeFiles/CUDARap.dir/CUDARap_generated_cuRANDWrapper_kernel.cu.o
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc: In instantiation of ‘static std::basic_string<_CharT, _Traits, _Alloc>::_Rep* std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_create(std::basic_string<_CharT, _Traits, _Alloc>::size_type, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’:
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:578:28:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&, std::forward_iterator_tag) [with _FwdIterator = const char16_t*; _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:5052:20:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct_aux(_InIterator, _InIterator, const _Alloc&, std::__false_type) [with _InIterator = const char16_t*; _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:5073:24:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&) [with _InIterator = const char16_t*; _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:656:134:   required from ‘std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:6725:95:   required from here
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:1067:1: error: cannot call member function ‘void std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_M_set_sharable() [with _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’ without object
+           __p->_M_set_sharable();
+     ^     ~~~~~~~~~
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc: In instantiation of ‘static std::basic_string<_CharT, _Traits, _Alloc>::_Rep* std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_create(std::basic_string<_CharT, _Traits, _Alloc>::size_type, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’:
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:578:28:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&, std::forward_iterator_tag) [with _FwdIterator = const char32_t*; _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:5052:20:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct_aux(_InIterator, _InIterator, const _Alloc&, std::__false_type) [with _InIterator = const char32_t*; _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:5073:24:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&) [with _InIterator = const char32_t*; _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:656:134:   required from ‘std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:6730:95:   required from here
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:1067:1: error: cannot call member function ‘void std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_M_set_sharable() [with _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’ without object
+    CMake Error at CUDARap_generated_CResource_.cu.o.Debug.cmake:279 (message):
+      Error generating file
+      /home/simon/local/opticks/build/cudarap/CMakeFiles/CUDARap.dir//./CUDARap_generated_CResource_.cu.o
 
 
-After that : opticks-full 
------------------------------
+    make[2]: *** [CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o] Error 1
+    make[2]: *** Waiting for unfinished jobs....
+    /home/simon/opticks/cudarap/CDevice.cu: In static member function ‘static void CDevice::Collect(std::vector<CDevice>&, bool)’:
+    /home/simon/opticks/cudarap/CDevice.cu:71:25: warning: argument to ‘sizeof’ in ‘char* strncpy(char*, const char*, size_t)’ call is the same expression as the source; did you mean to use the size of the destination? [-Wsizeof-pointer-memaccess]
+             strncpy( d.name, p.name, sizeof(p.name) );
+                             ^~~~~~~~~~~~~~~
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc: In instantiation of ‘static std::basic_string<_CharT, _Traits, _Alloc>::_Rep* std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_create(std::basic_string<_CharT, _Traits, _Alloc>::size_type, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’:
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:578:28:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&, std::forward_iterator_tag) [with _FwdIterator = const char16_t*; _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:5052:20:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct_aux(_InIterator, _InIterator, const _Alloc&, std::__false_type) [with _InIterator = const char16_t*; _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:5073:24:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&) [with _InIterator = const char16_t*; _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:656:134:   required from ‘std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:6725:95:   required from here
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:1067:1: error: cannot call member function ‘void std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_M_set_sharable() [with _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’ without object
+           __p->_M_set_sharable();
+     ^     ~~~~~~~~~
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc: In instantiation of ‘static std::basic_string<_CharT, _Traits, _Alloc>::_Rep* std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_create(std::basic_string<_CharT, _Traits, _Alloc>::size_type, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’:
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:578:28:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&, std::forward_iterator_tag) [with _FwdIterator = const char32_t*; _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:5052:20:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct_aux(_InIterator, _InIterator, const _Alloc&, std::__false_type) [with _InIterator = const char32_t*; _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:5073:24:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&) [with _InIterator = const char32_t*; _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:656:134:   required from ‘std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.h:6730:95:   required from here
+    /opt/rh/devtoolset-8/root/usr/include/c++/8/bits/basic_string.tcc:1067:1: error: cannot call member function ‘void std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_M_set_sharable() [with _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’ without object
+    CMake Error at CUDARap_generated_CDevice.cu.o.Debug.cmake:279 (message):
+      Error generating file
+      /home/simon/local/opticks/build/cudarap/CMakeFiles/CUDARap.dir//./CUDARap_generated_CDevice.cu.o
 
+    ...
+
+    === om-one-or-all install : non-zero rc 2
+    === om-all om-install : ERROR bdir /home/simon/local/opticks/build/cudarap : non-zero rc 2
+    === opticks-prepare-installation : generating RNG seeds into installcache
+
+
+* https://github.com/pytorch/vision/issues/1893
+
+::
+
+    [simon@localhost ~]$ which nvcc
+    /usr/local/cuda-10.1/bin/nvcc
+    [simon@localhost ~]$ nvcc --version
+    nvcc: NVIDIA (R) Cuda compiler driver
+    Copyright (c) 2005-2019 NVIDIA Corporation
+    Built on Fri_Feb__8_19:08:17_PST_2019
+    Cuda compilation tools, release 10.1, V10.1.105
+    [simon@localhost ~]$ 
+
+
+* https://forums.developer.nvidia.com/t/cuda-10-1-nvidia-youre-now-fixing-gcc-bugs-that-gcc-doesnt-even-have/71063/5
+
+::
+
+    yep. but this depend in what system is installed. if you see in the system requeriments:
+
+    Ubuntu 18.10 supports gcc 8.2.0
+    Fedora 29 supports gcc 8.0.2
+
+    thats why nvcc supports gcc 8 series. but you only can use it in that distros, or if update the glib/gcc to the same versions, then you can use it
+
+    for this in arch use gcc 7 (7.4.1) for build cuda code instead of default gcc (8.2.1)
+
+    see for example this issue in the incubator-mxnet project:
+
+
+CUDA devtoolset-8 ?
+---------------------
+
+* :google:`CUDA devtoolset` 
+
+* https://forums.developer.nvidia.com/t/rhel-centos-7-5-with-devtoolset-7-gcc-v-7-3-1-and-cuda-toolkit-v-10-0-130-compile-issue/68004
+
+* https://stackoverflow.com/questions/60817809/using-cuda-thrust-in-existing-c-project-compilation-error
+
+
+When I compile the code from godbolt on RHEL7, CUDA 10.1.243, gcc 4.8.5, it
+compiles cleanly for me. The last gcc 8 version that was tested with CUDA
+10.1.243 is 8.2.1, not 8.3, so its possible there is a difference there. But if
+you say that you switched to gcc 4.8.5 and it didn't fix anything, then I'm
+quite confident your host environment is messed up. Those claims are not all
+supportable. If you switched to gcc 4.8.5, and you are still getting errors of
+the form /opt/rh/devtoolset-8/..., then my claim is you did not switch to
+gcc4.8.5 (correctly). – Robert Crovella Mar 23 at 17:28
+
+::
+
+    [simon@localhost ~]$ gcc --version
+    gcc (GCC) 8.3.1 20190311 (Red Hat 8.3.1-3)
+    Copyright (C) 2018 Free Software Foundation, Inc.
+    This is free software; see the source for copying conditions.  There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+
+
+devtoolset-7 ?
+-----------------
+
+Get similar errors with 
+
+
+::
+
+    [simon@localhost tests]$ pwd
+    /home/simon/opticks/thrustrap/tests
+    [simon@localhost tests]$ 
+
+
+    [simon@localhost tests]$ nvcc rng.cu -o /tmp/rng
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.tcc: In instantiation of ‘static std::basic_string<_CharT, _Traits, _Alloc>::_Rep* std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_create(std::basic_string<_CharT, _Traits, _Alloc>::size_type, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’:
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.tcc:578:28:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&, std::forward_iterator_tag) [with _FwdIterator = const char16_t*; _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.h:5033:20:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct_aux(_InIterator, _InIterator, const _Alloc&, std::__false_type) [with _InIterator = const char16_t*; _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.h:5054:24:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&) [with _InIterator = const char16_t*; _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.tcc:656:134:   required from ‘std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.h:6676:95:   required from here
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.tcc:1067:16: error: cannot call member function ‘void std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_M_set_sharable() [with _CharT = char16_t; _Traits = std::char_traits<char16_t>; _Alloc = std::allocator<char16_t>]’ without object
+           __p->_M_set_sharable();
+           ~~~~~~~~~^~
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.tcc: In instantiation of ‘static std::basic_string<_CharT, _Traits, _Alloc>::_Rep* std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_create(std::basic_string<_CharT, _Traits, _Alloc>::size_type, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’:
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.tcc:578:28:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&, std::forward_iterator_tag) [with _FwdIterator = const char32_t*; _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.h:5033:20:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct_aux(_InIterator, _InIterator, const _Alloc&, std::__false_type) [with _InIterator = const char32_t*; _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.h:5054:24:   required from ‘static _CharT* std::basic_string<_CharT, _Traits, _Alloc>::_S_construct(_InIterator, _InIterator, const _Alloc&) [with _InIterator = const char32_t*; _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.tcc:656:134:   required from ‘std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, std::basic_string<_CharT, _Traits, _Alloc>::size_type, const _Alloc&) [with _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>; std::basic_string<_CharT, _Traits, _Alloc>::size_type = long unsigned int]’
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.h:6681:95:   required from here
+    /opt/rh/devtoolset-7/root/usr/include/c++/7/bits/basic_string.tcc:1067:16: error: cannot call member function ‘void std::basic_string<_CharT, _Traits, _Alloc>::_Rep::_M_set_sharable() [with _CharT = char32_t; _Traits = std::char_traits<char32_t>; _Alloc = std::allocator<char32_t>]’ without object
+
+
+
+
+Observe that only the standard gcc works with CUDA nvcc : seems devtoolset changing gcc version doesnt work for CUDA
+---------------------------------------------------------------------------------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ S
+    Warning: Permanently added '[127.0.0.1]:2001' (ECDSA) to the list of known hosts.
+    Last login: Sat Dec 19 03:14:53 2020 from lxslc706.ihep.ac.cn
+    [simon@localhost ~]$ cd /home/simon/opticks/thrustrap/tests
+    [simon@localhost tests]$ gcc --version
+    gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39)
+    Copyright (C) 2015 Free Software Foundation, Inc.
+    This is free software; see the source for copying conditions.  There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+    [simon@localhost tests]$ nvcc rng.cu -o /tmp/rng
+    [simon@localhost tests]$ /tmp/rng
+          0 :    0.740219   0.438451   0.517013   0.156989   0.071368   0.462508   0.227643   0.329358   0.144065   0.187799   0.915383   0.540125   0.974661   0.547469   0.653160   0.230238
+          1 :    0.920994   0.460364   0.333464   0.372520   0.489602   0.567271   0.079906   0.233368   0.509378   0.088979   0.006710   0.954227   0.546711   0.824547   0.527063   0.930132
+          2 :    0.039020   0.250215   0.184484   0.962422   0.520555   0.939965   0.830578   0.409733   0.081622   0.806771   0.695286   0.617707   0.256335   0.213682   0.342424   0.224079
+          3 :    0.968963   0.494743   0.673381   0.562773   0.120194   0.976486   0.135831   0.588972   0.490618   0.328445   0.911430   0.190679   0.963701   0.897554   0.624288   0.710151
+          4 :    0.925141   0.053011   0.163102   0.889695   0.566639   0.241424   0.493690   0.321228   0.078608   0.147878   0.598657   0.426472   0.243465   0.489182   0.409532   0.667640
+
+
+
+* :google:`devtoolset changing gcc version doesnt work for CUDA`
+
+
+* https://stackoverflow.com/questions/6622454/cuda-incompatible-with-my-gcc-version
+
+This isn't s binary compatibility question. The CUDA toolchain requires that
+nvcc and the GPU front end parser can intercept and overload various compiler
+and libc/libc++ internal headers to both compile host and device code and
+integrate them together. The CUDA parser needs to be able to parse the gcc
+internal headers correctly, amongst other things. Untested gcc versions can and
+do fail, irrespective of preprocessor guards built into the NVIDIA headers. You
+can either believe me (as someone who has been hacking on the CUDA toolchain
+for almost 10 years), or not. At this point I don't really – talonmies Nov 28
+'16 at 20:33
+
+
+
+Darwin  "charles" : x4 link errors not stopping opticks-full
+---------------------------------------------------------------
+
+
+::
+
+    ssh A 
+
+    epsilon:~ charles$ opticks-
+    epsilon:~ charles$ opticks-full
+    ...   
+    [ 50%] Linking CXX shared library libExtG4.dylib
+    Undefined symbols for architecture x86_64:
+      "G4GDMLRead::UserinfoRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLRead::ExtensionRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLWrite::AddExtension(xercesc_3_2::DOMElement*, G4LogicalVolume const*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+      "G4GDMLWrite::UserinfoWrite(xercesc_3_2::DOMElement*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+      "G4GDMLWrite::ExtensionWrite(xercesc_3_2::DOMElement*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+      "G4GDMLReadSetup::SetupRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLReadDefine::DefineRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLReadSolids::SolidsRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLWriteSetup::SetupWrite(xercesc_3_2::DOMElement*, G4LogicalVolume const*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+      "G4GDMLWriteDefine::DefineWrite(xercesc_3_2::DOMElement*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+      "G4GDMLWriteSolids::SolidsWrite(xercesc_3_2::DOMElement*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+      "G4GDMLReadParamvol::ParamvolRead(xercesc_3_2::DOMElement const*, G4LogicalVolume*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLReadParamvol::Paramvol_contentRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLReadMaterials::MaterialsRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLReadStructure::VolumeRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLReadStructure::StructureRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLReadStructure::Volume_contentRead(xercesc_3_2::DOMElement const*)", referenced from:
+          vtable for X4GDMLReadStructure in X4GDMLReadStructure.cc.o
+      "G4GDMLWriteParamvol::ParamvolWrite(xercesc_3_2::DOMElement*, G4VPhysicalVolume const*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+      "G4GDMLWriteParamvol::ParamvolAlgorithmWrite(xercesc_3_2::DOMElement*, G4VPhysicalVolume const*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+      "G4GDMLWriteMaterials::MaterialsWrite(xercesc_3_2::DOMElement*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+      "G4GDMLWriteStructure::StructureWrite(xercesc_3_2::DOMElement*)", referenced from:
+          vtable for X4GDMLWriteStructure in X4GDMLWriteStructure.cc.o
+    ld: symbol(s) not found for architecture x86_64
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    make[2]: *** [libExtG4.dylib] Error 1
+    make[1]: *** [CMakeFiles/ExtG4.dir/all] Error 2
+    make: *** [all] Error 2
+    === om-one-or-all install : non-zero rc 2
+    === om-all om-install : ERROR bdir /Users/charles/local/opticks/build/extg4 : non-zero rc 2
+    === opticks-prepare-installation : generating RNG seeds into installcache
+    2020-12-18 20:48:00.036 INFO  [4934099] [main@54]  work 1000000 max_blocks 128 seed 0 offset 0 threads_per_block 256 cachedir /Users/charles/.opticks/rngcache/RNG
+
+
+::
+
+    -- _lib Geant4::G4persistency _type SHARED_LIBRARY  
+    -- _lib G4persistency _loc /usr/local/opticks_externals/g4_1062/lib/libG4persistency.dylib 
+
+
+Fixed the error propagation failure by changing the "while pipe read" into for loop.
 
 
 

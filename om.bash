@@ -407,30 +407,30 @@ om-bcd(){ cd $(om-bdir $(om-reldir)) ; pwd ;  }
 om-scd(){ cd $(om-sdir $(om-reldir)) ; pwd ;  }
 
 
-om-visit-all(){     om-all ${FUNCNAME/-all} $* ; }
-om-conf-all(){      om-all ${FUNCNAME/-all} $* ; }
-om-make-all(){      om-all ${FUNCNAME/-all} $* ; }
-om-install-all(){   om-all ${FUNCNAME/-all} $* ; }
-om-cleaninstall-all(){   om-all ${FUNCNAME/-all} $* ; }
-om-test-all(){      om-all ${FUNCNAME/-all} $* ; om-testlog ; }
-om-echo-all(){      om-all ${FUNCNAME/-all} $* ; }
-om-clean-all(){     om-all ${FUNCNAME/-all} $* ; }
-om-find-all(){      om-all ${FUNCNAME/-all} $* ; }
+om-visit-all(){     om-all ${FUNCNAME/-all} $* ; return $? ; }
+om-conf-all(){      om-all ${FUNCNAME/-all} $* ; return $? ; }
+om-make-all(){      om-all ${FUNCNAME/-all} $* ; return $? ; }
+om-install-all(){   om-all ${FUNCNAME/-all} $* ; return $? ; }
+om-cleaninstall-all(){   om-all ${FUNCNAME/-all} $* ; return $? ; }
+om-test-all(){      om-all ${FUNCNAME/-all} $* ; om-testlog ; return $? ; }
+om-echo-all(){      om-all ${FUNCNAME/-all} $* ; return $? ; }
+om-clean-all(){     om-all ${FUNCNAME/-all} $* ; return $? ; }
+om-find-all(){      om-all ${FUNCNAME/-all} $* ; return $? ; }
 
 om-testlog(){      CTestLog.py $(om-bdir)  ; }
 
 
 om-conf-xcode(){ OPTICKS_CMAKE_GENERATOR=Xcode om-conf ; }
 
-om-conf(){    om-one-or-all conf $* ; }
-om-make(){    om-one-or-all make $* ; }
-om-install(){ om-one-or-all install $* ; }
-om-cleaninstall(){ om-one-or-all cleaninstall $* ; }
-om-visit(){   om-one-or-all visit $* ; }
-om-test(){    om-one-or-all test $* ; }
-om-echo(){    om-one-or-all echo $* ; }
-om-clean(){   om-one-or-all clean $* ; }
-om-find(){    om-one-or-all find $* ; }
+om-conf(){    om-one-or-all conf $* ; return $? ; }
+om-make(){    om-one-or-all make $* ; return $? ; }
+om-install(){ om-one-or-all install $* ; return $? ; }
+om-cleaninstall(){ om-one-or-all cleaninstall $* ; return $? ; }
+om-visit(){   om-one-or-all visit $* ; return $? ; }
+om-test(){    om-one-or-all test $* ; return $? ; }
+om-echo(){    om-one-or-all echo $* ; return $? ; }
+om-clean(){   om-one-or-all clean $* ; return $? ; }
+om-find(){    om-one-or-all find $* ; return $? ; }
 
 om--(){       om-make $* ; }     ## just this proj
 om---(){      om-make-all : ; }  ## all projs from this one onwards 
@@ -467,8 +467,10 @@ om-all()
     rc=$?
     [ "$rc" != "0" ] && echo $msg ERROR om-check failed && return $rc
 
+    local subs=$(om-subs) 
     local name
-    om-subs $* | while read name 
+    : switched to for loop is easier for error propagation than piping 
+    for name in $subs 
     do 
         local sdir=$(om-sdir $name)
         local bdir=$(om-bdir $name)
