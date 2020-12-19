@@ -1812,6 +1812,7 @@ void Opticks::updateCacheMeta()
     const char* runcomment = getRunComment() ; 
     const char* runlabel = getRunLabel() ; 
     const char* runfolder = getRunFolder() ; 
+    std::string cwd = BFile::CWD(); 
 
     m_runtxt->addLine(GEOCACHE_CODE_VERSION_KEY);
     m_runtxt->addLine(GEOCACHE_CODE_VERSION); 
@@ -1819,11 +1820,14 @@ void Opticks::updateCacheMeta()
     m_runtxt->addLine( rundate ) ;  
     m_runtxt->addLine("runstamp" ) ;  
     m_runtxt->addValue( runstamp);  
+    m_runtxt->addLine("cwd" ) ;  
+    m_runtxt->addLine( cwd ) ;  
     m_runtxt->addLine("argline" ) ;  
     m_runtxt->addLine( argline) ;  
 
     m_cachemeta->set<int>(GEOCACHE_CODE_VERSION_KEY, GEOCACHE_CODE_VERSION ); 
     m_cachemeta->set<std::string>("location", "Opticks::updateCacheMeta"); 
+    m_cachemeta->set<std::string>("cwd", cwd ); 
     m_cachemeta->set<std::string>("argline",  argline ); 
     m_cachemeta->set<std::string>("rundate", rundate ); 
     m_cachemeta->set<int>("runstamp", runstamp ); 
@@ -2102,6 +2106,8 @@ const char* Opticks::getRunFolder() const
     const std::string& runfolder = m_cfg->getRunFolder() ;
     return runfolder.c_str() ;
 }
+
+
 
 const char* Opticks::getDbgGDMLPath() const 
 {
