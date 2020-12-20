@@ -254,6 +254,7 @@ class BRAP_API  BOpticksResource {
         std::string  export_() const ; 
         bool         hasKey() const ;   // distinguishes direct from legacy 
         bool         isKeySource() const ; 
+        bool         isKeyLive() const ; // true: when creating geocache from live Geant4 geometry 
     public:
        // used to communicate test geometry config from geometry loading to test event writing 
        // see GGeoTest::initCreateCSG 

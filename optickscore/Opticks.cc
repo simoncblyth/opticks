@@ -1331,9 +1331,32 @@ void Opticks::dumpResource() const
 {
     return m_resource->Dump()  ; 
 }
-bool Opticks::isKeySource() const // name of current executable matches that of the creator of the geocache
+
+/**
+Opticks::isKeySource
+----------------------
+
+Name of current executable matches that of the creator of the geocache.
+BUT what about the first run of geocache-create ?
+
+**/
+
+bool Opticks::isKeySource() const 
 {
     return m_rsc->isKeySource();  
+}
+
+/**
+Opticks::isKeyLive() 
+---------------------
+
+true when creating geocache from live Geant4 geometry tree
+
+**/
+
+bool Opticks::isKeyLive() const 
+{
+    return m_rsc->isKeyLive();  
 }
 
 
@@ -1882,59 +1905,56 @@ Invoked by Opticks::configure
 
 void Opticks::loadOriginCacheMeta() 
 {
+    bool is_key_live = isKeyLive(); 
+    if( is_key_live )
+    {
+        LOG(LEVEL) << " is_key_live prevents loading of cache metadata and code version matching " ; 
+    }
+    else 
+    {
+        loadOriginCacheMeta_();
+    }
+}
+
+void Opticks::loadOriginCacheMeta_() 
+{
     const char* cachemetapath = getCacheMetaPath();
     LOG(info) << " cachemetapath " << cachemetapath ; 
     m_origin_cachemeta = BMeta::Load(cachemetapath); 
-    m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta"); 
+    m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta_"); 
 
-    if(m_nogdmlpath)
+    std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
+    LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
+
+    m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str()); 
+    if(m_origin_gdmlpath == NULL)
     {
-        LOG(LEVEL) << " --nogdmlpath option prevents attempt to find a gdmlpath in cache metadata " ; 
+        LOG(fatal) << "cachemetapath " << cachemetapath ; 
+        LOG(fatal) << "argline that creates cachemetapath must include \"--gdmlpath /path/to/geometry.gdml\" " ; 
     }
-    else
-    {
-        std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
-        LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
-
-        m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str()); 
-
-        if(m_origin_gdmlpath == NULL)
-        {
-            LOG(fatal) << "cachemetapath " << cachemetapath ; 
-            LOG(fatal) << "argline that creates cachemetapath must include \"--gdmlpath /path/to/geometry.gdml\" " ; 
-        }
-        assert( m_origin_gdmlpath ); 
-    }
+    assert( m_origin_gdmlpath ); 
 
     m_origin_geocache_code_version = m_origin_cachemeta->get<int>(GEOCACHE_CODE_VERSION_KEY, "0" );  
 
-    bool is_key_source = isKeySource(); 
     bool geocache_code_version_match = m_origin_geocache_code_version == Opticks::GEOCACHE_CODE_VERSION ; 
-    bool geocache_code_version_pass = is_key_source || geocache_code_version_match ; 
+    bool geocache_code_version_pass = geocache_code_version_match ; 
 
-    if(is_key_source)  // necessary to allow creation of new geocache 
-    {
-        LOG(info) 
-           << " current executable isKeySource : hence immune to code matching requirements "
-           << "\n (current) Opticks::GEOCACHE_CODE_VERSION " << Opticks::GEOCACHE_CODE_VERSION
-           << "\n (loaded)  m_origin_geocache_code_version " << m_origin_geocache_code_version
-           ;           
-    }
-    else if(!geocache_code_version_pass)
+    if(!geocache_code_version_pass)
     {
         LOG(fatal) 
-           << "\n (current) Opticks::GEOCACHE_CODE_VERSION " << Opticks::GEOCACHE_CODE_VERSION
-           << "\n (loaded)  m_origin_geocache_code_version " << m_origin_geocache_code_version
-           << "\n GEOCACHE_CODE_VERSION MISMATCH : PERSISTED CACHE VERSION DOES NOT MATCH CURRENT CODE "
-           << "\n -> RECREATE THE CACHE EG WITH geocache-create "
-           ; 
+            << "\n (current) Opticks::GEOCACHE_CODE_VERSION " << Opticks::GEOCACHE_CODE_VERSION
+            << "\n (loaded)  m_origin_geocache_code_version " << m_origin_geocache_code_version
+            << "\n GEOCACHE_CODE_VERSION MISMATCH : PERSISTED CACHE VERSION DOES NOT MATCH CURRENT CODE "
+            << "\n -> RECREATE THE CACHE EG WITH geocache-create "
+            ; 
     }
     else
     {
-         LOG(info) << "(pass) " << GEOCACHE_CODE_VERSION_KEY << " " << m_origin_geocache_code_version  ; 
+        LOG(info) << "(pass) " << GEOCACHE_CODE_VERSION_KEY << " " << m_origin_geocache_code_version  ; 
     }
     assert( geocache_code_version_pass ); 
 }
+
 
 BMeta* Opticks::getOriginCacheMeta(const char* obj) const 
 {

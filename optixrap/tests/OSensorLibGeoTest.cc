@@ -265,7 +265,7 @@ int main(int argc, char** argv)
 
     // -1. load mock SensorLib
 
-    const char* dir = "$TMP/opticksgeo/tests/MockSensorLibTest" ;
+    const char* dir = "$TMP/optickscore/tests/MockSensorLibTest" ;
     SensorLib* senlib = SensorLib::Load(dir); 
     if( senlib == NULL )
     {

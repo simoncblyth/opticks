@@ -326,6 +326,8 @@ class OKCORE_API Opticks {
        void        saveCacheMeta() const ; 
        void        loadOriginCacheMeta() ; 
        BMeta*      getOriginCacheMeta(const char* obj) const ; 
+   private:
+       void        loadOriginCacheMeta_() ; 
    public:
        const BMeta* getGDMLAuxMeta() const  ; 
        void         findGDMLAuxMetaEntries(std::vector<BMeta*>&, const char* key, const char* val ) const ; 
@@ -414,6 +416,7 @@ class OKCORE_API Opticks {
        OpticksResource*     getResource() const ; 
        void                 dumpResource() const ; 
        bool                 isKeySource() const ; // name of current executable matches that of the creator of the geocache
+       bool                 isKeyLive() const ; 
        OpticksRun*          getRun(); 
    public:
        OpticksQuery*        getQuery(); 

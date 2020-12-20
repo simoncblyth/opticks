@@ -48,6 +48,7 @@ bool BOpticksKey::IsSet()  // static
     return fKey != NULL ; 
 }
 
+
 BOpticksKey* BOpticksKey::GetKey()
 {
     // invoked by BOpticksResource::BOpticksResource at Opticks instanciation
@@ -60,6 +61,16 @@ const char* BOpticksKey::StemName( const char* ext, const char* sep )
 }
 
 
+/**
+BOpticksKey::SetKey
+---------------------
+
+Argument spec NULL is the normal case, signalling an 
+attempt to get the spec from envvar OPTICKS_KEY.
+
+
+**/
+
 bool BOpticksKey::SetKey(const char* spec)
 {
     if(BOpticksKey::IsSet())
@@ -67,6 +78,8 @@ bool BOpticksKey::SetKey(const char* spec)
         LOG(error) << "key is already set, ignoring update with spec " << spec ;
         return true ;  
     }
+
+    bool live = spec != NULL ;  ; 
 
     if(spec == NULL)
     {
@@ -78,7 +91,11 @@ bool BOpticksKey::SetKey(const char* spec)
 
     fKey = spec ? new BOpticksKey(spec) : NULL  ; 
 
-    if(fKey) LOG(LEVEL) << std::endl << fKey->desc() ; 
+    if(fKey) 
+    {
+         LOG(LEVEL) << std::endl << fKey->desc() ; 
+         fKey->setLive(live); 
+    }
 
     return true ; 
 }
@@ -89,6 +106,21 @@ void BOpticksKey::Desc()
 }
 
 
+
+bool BOpticksKey::IsLive() // static
+{
+    return fKey ? fKey->isLive() : false ; 
+}
+void BOpticksKey::setLive(bool live)
+{
+    m_live = live ; 
+}
+bool BOpticksKey::isLive() const 
+{
+    return m_live ; 
+}
+
+   
 
 
 bool BOpticksKey::isKeySource() const  // current executable is geocache creator 
@@ -108,7 +140,8 @@ BOpticksKey::BOpticksKey(const char* spec)
     m_idgdml( StemName("gdml", ".") ),
     m_idsubd( IDSUBD ),
     m_layout( LAYOUT ),
-    m_current_exename( SAr::Instance ? SAr::Instance->exename() : "OpticksEmbedded" )
+    m_current_exename( SAr::Instance ? SAr::Instance->exename() : "OpticksEmbedded" ), 
+    m_live(false)
 {
     std::vector<std::string> elem ; 
     BStr::split(elem, spec, '.' ); 
@@ -155,11 +188,6 @@ std::string BOpticksKey::export_() const
         ;    
     return ss.str();
 }
-
-
-
-
-
 const char* BOpticksKey::getExename() const 
 {
     return m_exename ;  
@@ -176,13 +204,10 @@ const char* BOpticksKey::getDigest() const
 {
     return m_digest ;  
 }
-
-
 const char* BOpticksKey::getIdname() const 
 {
     return m_idname ;  
 }
-
 const char* BOpticksKey::getIdfile() const 
 {
     return m_idfile ;  
@@ -191,19 +216,14 @@ const char* BOpticksKey::getIdGDML() const
 {
     return m_idgdml ;  
 }
-
-
 const char* BOpticksKey::getIdsubd() const 
 {
     return m_idsubd ;  
 }
-
-
 int BOpticksKey::getLayout() const 
 {
     return m_layout ;  
 }
-
 
 std::string BOpticksKey::desc() const 
 {

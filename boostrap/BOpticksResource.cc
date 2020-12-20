@@ -1242,6 +1242,21 @@ bool BOpticksResource::isKeySource() const   // name of current executable match
     return m_key ? m_key->isKeySource() : false ; 
 }
 
+/**
+BOpticksResource::isKeyLive
+-----------------------------
+
+Only true when Opticks::SetKey used with a non-NULL spec. This is the 
+case when operating from a live Geant4 geometry, such as when 
+creating a geocache with geocache-create.
+
+**/
+
+bool BOpticksResource::isKeyLive() const  
+{
+    return m_key ? m_key->isLive() : false ; 
+}
+
 
 
 void BOpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for test saves into non-standard locations
