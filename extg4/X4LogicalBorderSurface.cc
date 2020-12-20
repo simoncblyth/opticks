@@ -58,6 +58,7 @@ GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* sr
 
     dst->setBorderSurface( X4::Name(pv1), X4::Name(pv2) );   
 
+    LOG(LEVEL) << name << " is_sensor " << dst->isSensor() ; 
 
     return dst ; 
 }

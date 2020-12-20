@@ -703,28 +703,6 @@ void GPropertyMap<T>::addProperty(const char* pname,  GProperty<T>* prop, const 
 }
 
 
-/*
-template <typename T>
-void GPropertyMap<T>::replaceProperty(const char* pname, GProperty<T>* repl, const char* _prefix) 
-{
-    assert(0) ; // this needs testing, dont use
-
-    std::string key(pname) ;
-    if(_prefix) key = _prefix + key ;
-
-    GProperty<T>* prior = getProperty(key.c_str());
-    assert(prior && "replaceProperty requires a prior property with key provided" );
-
-    LOG(info) << "GPropertyMap<T>::replaceProperty replacing key " << key ; 
-
-    m_prop.erase(key);
-    m_prop[key] = repl ;
-}
-*/
-
-
-
-
 template <typename T>
 std::vector<std::string>& GPropertyMap<T>::getKeys()
 {
@@ -749,7 +727,7 @@ const GProperty<T>* GPropertyMap<T>::getPropertyConst(const char* pname) const
 template <typename T>
 unsigned GPropertyMap<T>::size() const
 {
-   return m_prop.size(); 
+    return m_prop.size(); 
 }
 
 template <typename T>
@@ -769,10 +747,6 @@ std::string GPropertyMap<T>::dump_ptr() const
     return ss.str();  
 }
 
-
-
-
-
 template <typename T>
 GProperty<T>* GPropertyMap<T>::getProperty(const char* pname, const char* prefix)
 {
@@ -785,26 +759,26 @@ GProperty<T>* GPropertyMap<T>::getProperty(const char* pname, const char* prefix
 template <typename T>
 bool GPropertyMap<T>::hasNonZeroProperty(const char* pname) 
 {
-     if(!hasProperty(pname)) return false ; 
-     GProperty<T>* prop = getProperty(pname);
-     return !prop->isZero();
+    if(!hasProperty(pname)) return false ; 
+    GProperty<T>* prop = getProperty(pname);
+    return !prop->isZero();
 }
 
 
 template <typename T>
 bool GPropertyMap<T>::setPropertyValues(const char* pname, T val) 
 {
-     if(!hasProperty(pname)) return false ; 
-     GProperty<T>* prop = getProperty(pname);
-     prop->setValues(val);
-     return true ; 
+    if(!hasProperty(pname)) return false ; 
+    GProperty<T>* prop = getProperty(pname);
+    prop->setValues(val);
+    return true ; 
 }
 
 
 template <typename T>
 bool GPropertyMap<T>::hasProperty(const char* pname) const  
 {
-   return m_prop.find(pname) != m_prop.end() ;
+    return m_prop.find(pname) != m_prop.end() ;
 }
 
 template <typename T>

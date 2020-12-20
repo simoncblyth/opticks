@@ -81,6 +81,13 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
         }
 
         GProperty<float>* prop = X4PhysicsVector<float>::Convert(pvec) ; 
+
+        if(strcmp(pname.c_str(), "EFFICIENCY") == 0)
+        {
+            LOG(LEVEL) << prop->brief("X4MaterialPropertiesTable::AddProperties.EFFICIENCY"); 
+        }
+
+
         pmap->addPropertyStandardized( pname.c_str(), prop );  // interpolates onto standard domain 
     }
     LOG(LEVEL) 

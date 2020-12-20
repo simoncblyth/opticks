@@ -553,6 +553,8 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
     GProperty<float>* _reflect_specular = NULL ; 
     GProperty<float>* _reflect_diffuse  = NULL ; 
 
+    bool is_sensor = src->isSensor() ; 
+
     if(!src)
     {
         _detect           = getDefaultProperty(detect); 
@@ -569,7 +571,7 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
         GOpticalSurface* os = src->getOpticalSurface() ;  // GSkinSurface and GBorderSurface ctor plant the OpticalSurface into the PropertyMap
         assert( os && " all surfaces must have associated OpticalSurface " );
 
-        if(src->isSensor())  // this means it has non-zero EFFICIENCY or detect property
+        if(is_sensor)  // this means it has non-zero EFFICIENCY or detect property
         {
             GProperty<float>* _EFFICIENCY = src->getProperty(EFFICIENCY); 
             assert(_EFFICIENCY && os && "sensor surfaces must have an efficiency" );

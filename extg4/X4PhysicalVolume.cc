@@ -274,7 +274,7 @@ X4PhysicalVolume::convertSurfaces
 
 void X4PhysicalVolume::convertSurfaces()
 {
-    LOG(verbose) << "[" ;
+    LOG(LEVEL) << "[" ;
 
     size_t num_surf0 = m_slib->getNumSurfaces() ; 
     assert( num_surf0 == 0 );
@@ -291,12 +291,11 @@ void X4PhysicalVolume::convertSurfaces()
     m_slib->collectSensorIndices(); 
     m_slib->dumpSensorIndices("X4PhysicalVolume::convertSurfaces"); 
 
-    LOG(verbose) << "]" ;
-
-    LOG(info) 
-           << " num_lbs " << num_lbs
-           << " num_sks " << num_sks
-           ;
+    LOG(LEVEL) 
+        << "]" 
+        << " num_lbs " << num_lbs
+        << " num_sks " << num_sks
+        ;
 
 }
 
