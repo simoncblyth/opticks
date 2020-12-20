@@ -39,12 +39,27 @@ problems of picking up different versions of XercesC.
 
 #]=]
 
-if(TARGET G4persistency)
-    set(xercesc_lib)
-    set(xercesc_include_dir)
+set(xercesc_lib)
+set(xercesc_include_dir)
 
+if(TARGET Geant4::G4persistency AND TARGET XercesC::XercesC)
+   # this works with Geant4 1062
+   get_target_property(_lll Geant4::G4persistency INTERFACE_LINK_LIBRARIES)
+   message(STATUS "FindOpticksXercesC.cmake. Found Geant4::G4persistency AND XercesC::XercesC target _lll ${_lll} " )
+
+   get_target_property(xercesc_lib         XercesC::XercesC IMPORTED_LOCATION )
+   get_target_property(xercesc_include_dir XercesC::XercesC INTERFACE_INCLUDE_DIRECTORIES )
+
+   if(OpticksXercesC_VERBOSE)
+       message(STATUS "FindOpticksXercesC.cmake. XercesC::XercesC target xercesc_lib         : ${xercesc_lib} " )
+       message(STATUS "FindOpticksXercesC.cmake. XercesC::XercesC target xercesc_include_dir : ${xercesc_include_dir} " )
+   endif()
+
+
+elseif(TARGET G4persistency)
+   # this works with Geant4 1042
     get_target_property(_lll G4persistency INTERFACE_LINK_LIBRARIES)
-    #message(STATUS "_lll ${_lll} " )
+    message(STATUS "FindOpticksXercesC.cmake. Found G4persistency target _lll ${_lll}" )
     foreach(_lib ${_lll})
         get_filename_component(_nam ${_lib} NAME) 
         string(FIND "${_nam}" "libxerces-c" _pos ) 

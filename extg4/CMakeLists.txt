@@ -30,6 +30,7 @@ find_package(G4         REQUIRED MODULE)
 find_package(GGeo       REQUIRED CONFIG)   
 
 # just for X4GDMLWrite
+set(OpticksXercesC_VERBOSE ON)
 find_package(OpticksXercesC REQUIRED MODULE)
 
 

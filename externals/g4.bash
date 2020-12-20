@@ -488,8 +488,54 @@ g4-info(){ cat << EOI
 EOI
 }
 
-g4-ver(){    echo ${OPTICKS_GEANT4_VER:-1042} ; }
-g4-prefix(){ echo ${OPTICKS_GEANT4_PREFIX:-$(opticks-prefix)_externals/g4_$(g4-ver)}  ; }
+g4-ver-default(){ echo 1042 ; }
+g4-ver(){         echo ${OPTICKS_GEANT4_VER:-$(g4-ver-default)} ; }
+
+
+g4-prefix-notes(){ cat << EON
+g4-prefix-notes
+=================
+
+When using the Opticks g4- bash functions to build and install Geant4 it is required that there is no 
+prior Geant4 installation in the CMAKE_PREFIX_PATH. If there is g4-- aborts via a non zero rc 
+from g4-check-no-prior-prefix. In this building situation the g4-prefix-default is the g4-prefix. 
+
+When using a pre-existing Geant4 installation in a build the CMAKE_PREFIX_PATH determines 
+which Geant4 is used and g4-prefix-frompath will locate the prefix directory.  
+
+Note that you do not need to use the Opticks g4- bash functions. Opticks can work 
+with a Geant4 installed by other means into any location. All that is required is that 
+the CMAKE_PREFIX_PATH is setup appropriately to find the install.  This can be 
+done using the opticks-prepend-prefix bash function.
+
+ g4-ver-default     : $(g4-ver-default) 
+ g4-ver             : $(g4-ver) 
+    default version can be overridden using OPTICKS_GEANT4_VER envvar, eg set it to 1062 
+    The version is also incorporated into the basename of the g4-prefix
+
+ g4-prefix          : $(g4-prefix)
+ g4-prefix-default  : $(g4-prefix-default)
+ g4-prefix-frompath : $(g4-prefix-frompath)    
+    should be blank when building otherwise g4-- will abort via g4-check-no-prior-prefix 
+ g4-prefix-old      : $(g4-prefix-old)         
+    was formerly sensitive to OPTICKS_GEANT4_PREFIX envvar, but that was confusing 
+
+OPTICKS_GEANT4_VER    : $OPTICKS_GEANT4_VER  
+    this envvar overrides the default version of the Geant4 distribution to be downloaded 
+    and installed
+
+OPTICKS_GEANT4_PREFIX : $OPTICKS_GEANT4_PREFIX
+    this envvar is set by opticks-setup.sh based on the Geant4 found from the CMAKE_PREFIX_PATH 
+    in order to assist with sourcing of Geant4 environment setup script.  This is used for the 
+    runtime use of Geant4 in executables : it is no longer used to control install locations.  
+
+EON
+}
+
+g4-prefix(){          echo $(g4-prefix-default) ; }
+g4-prefix-frompath(){ echo $(opticks-setup-find-geant4-prefix) ; }
+g4-prefix-default(){  echo $(opticks-prefix)_externals/g4_$(g4-ver)  ; }
+g4-prefix-old(){      echo ${OPTICKS_GEANT4_PREFIX:-$(g4-prefix-default)}  ; }
 
 g4-dir(){   echo $(g4-prefix).build/$(g4-name) ; }  # exploded distribution dir
 
@@ -606,6 +652,8 @@ g4-get(){
 g4--()
 {
     local msg="=== $FUNCNAME :"
+    g4-check-no-prior-prefix
+    [ $? -ne 0 ] && echo $msg check-prior-prefix FAIL && return 1
     g4-get
     [ $? -ne 0 ] && echo $msg get FAIL && return 1
     g4-configure 
@@ -620,6 +668,20 @@ g4--()
     return 0 
 }
 
+
+g4-check-no-prior-prefix()
+{
+    local msg="=== $FUNCNAME :"
+    local prior=$(opticks-setup-find-geant4-prefix)
+    local rc 
+    if [ "$prior" == "" ]; then 
+        rc=0
+    else
+        echo $msg prior prefix found : $prior : remove geant4 prefix from CMAKE_PREFIX_PATH and or remove the prefix dir and try again 
+        rc=1
+    fi   
+    return $rc
+}
 
 
 
@@ -709,7 +771,7 @@ $FUNCNAME
        -DGEANT4_INSTALL_DATA=ON \\ 
        -DGEANT4_USE_GDML=ON \\
        -DGEANT4_USE_SYSTEM_CLHEP=ON \\ 
-       -DGEANT4_INSTALL_DATA_TIMEOUT=3000  \\
+       -DGEANT4_INSTALL_DATA_TIMEOUT=100000  \\
        -DXERCESC_LIBRARY=$(xercesc-pc-library) \\
        -DXERCESC_INCLUDE_DIR=$(xercesc-pc-includedir) \\
        -DCMAKE_INSTALL_PREFIX=$(g4-prefix) \\
@@ -748,7 +810,7 @@ g4-cmake(){
        -DGEANT4_INSTALL_DATA=ON \
        -DGEANT4_USE_GDML=ON \
        -DGEANT4_USE_SYSTEM_CLHEP=ON \
-       -DGEANT4_INSTALL_DATA_TIMEOUT=3000 \
+       -DGEANT4_INSTALL_DATA_TIMEOUT=100000 \
        -DXERCESC_LIBRARY=$(xercesc-pc-library) \
        -DXERCESC_INCLUDE_DIR=$(xercesc-pc-includedir) \
        -DCMAKE_INSTALL_PREFIX=$idir \
