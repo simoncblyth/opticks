@@ -552,6 +552,11 @@ void test_ResolveScript()
     }
 }
 
+void test_UserTmpPath()
+{
+    const char* utp = BFile::UserTmpPath(); 
+    LOG(info) << utp ; 
+}
 
  
 
@@ -566,7 +571,7 @@ int main(int argc, char** argv)
    //test_ExistsDir();
    //test_CreateDir();
    //test_ParentDir();
-   test_FormPath();
+   //test_FormPath();
    //test_Name_ParentDir();
    //test_ChangeExt();
 
@@ -603,6 +608,8 @@ int main(int argc, char** argv)
 
    //test_CurrentDirectoryName(); 
    //test_ResolveScript(); 
+
+   test_UserTmpPath();  
 
    return 0 ; 
 }

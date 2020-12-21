@@ -110,6 +110,36 @@ std::string BFile::UserTmpDir()
     return usertmpdir("/tmp", "opticks", NULL ) ; 
 }
 
+/**
+BFile::UserTmpPath
+--------------------
+
+Returns a string suitable for temporary paths including 
+random hex higits to avoid clashes.
+
+**/
+
+std::string BFile::UserTmpPath_(const char* pfx_)
+{
+    fs::path tmpl = boost::filesystem::path(UserTmpDir()) ; 
+
+    std::stringstream ss ; 
+    ss << pfx_ << "_%%%%-%%%%-%%%%-%%%%" ; 
+    std::string pfx = ss.str(); 
+    tmpl /= pfx ; 
+
+    fs::path p = boost::filesystem::unique_path(tmpl);
+    const std::string tmp = p.native();
+    return tmp ; 
+}
+
+const char* BFile::UserTmpPath(const char* pfx)
+{
+    std::string path = UserTmpPath_(pfx);
+    return strdup(path.c_str()); 
+}
+
+
 
 std::string BFile::usertmpdir(const char* base, const char* sub, const char* rel )
 {
@@ -895,7 +925,6 @@ const char* BFile::ResolveScript(const char* script_name, const char* fallback_d
     }
     return path.empty() ? NULL : strdup(path.c_str()) ; 
 }
-
 
 
 

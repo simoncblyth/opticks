@@ -139,7 +139,7 @@ int main( int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
-    Opticks ok(argc, argv); 
+    Opticks ok(argc, argv, "--allownokey" ); 
     ok.configure();
     
     test_write_read() ; 

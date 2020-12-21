@@ -708,6 +708,92 @@ See no changes to Geant4 code for property handling with::
 
 So suspicion now pointing to a GDML parsing difference. 
 
+::
+
+    g4n-cd source/persistency/gdml/src
+
+    epsilon:src blyth$ g4n-cls G4GDMLReadStructure
+
+
+
+Need a piecemeal way to test. Exploit protected methods with X4GDMLReadStructure ?::
+
+     54 class G4GDMLReadStructure : public G4GDMLReadParamvol
+     55 {
+     56 
+     57  public:
+     58 
+     59    G4GDMLReadStructure();
+     60    virtual ~G4GDMLReadStructure();
+     61 
+     62    G4VPhysicalVolume* GetPhysvol(const G4String&) const;
+     63    G4LogicalVolume* GetVolume(const G4String&) const;
+     64    G4AssemblyVolume* GetAssembly(const G4String&) const;
+     65    G4GDMLAuxListType GetVolumeAuxiliaryInformation(G4LogicalVolume*) const;
+     66    G4VPhysicalVolume* GetWorldVolume(const G4String&);
+     67    const G4GDMLAuxMapType* GetAuxMap() const {return &auxMap;}
+     68    void Clear();   // Clears internal map and evaluator
+     69 
+     70    virtual void VolumeRead(const xercesc::DOMElement* const);
+     71    virtual void Volume_contentRead(const xercesc::DOMElement* const);
+     72    virtual void StructureRead(const xercesc::DOMElement* const);
+     73 
+     74  protected:
+     75 
+     76    void AssemblyRead(const xercesc::DOMElement* const);
+     77    void DivisionvolRead(const xercesc::DOMElement* const);
+     78    G4LogicalVolume* FileRead(const xercesc::DOMElement* const);
+     79    void PhysvolRead(const xercesc::DOMElement* const,
+     80                     G4AssemblyVolume* assembly=0);
+     81    void ReplicavolRead(const xercesc::DOMElement* const, G4int number);
+     82    void ReplicaRead(const xercesc::DOMElement* const replicaElement,
+     83                     G4LogicalVolume* logvol,G4int number);
+     84    EAxis AxisRead(const xercesc::DOMElement* const axisElement);
+     85    G4double QuantityRead(const xercesc::DOMElement* const readElement);
+     86    void BorderSurfaceRead(const xercesc::DOMElement* const);
+     87    void SkinSurfaceRead(const xercesc::DOMElement* const);
+     88 
+     89  protected:
+     90 
+     91    G4GDMLAuxMapType auxMap;
+     92    G4GDMLAssemblyMapType assemblyMap;
+     93    G4LogicalVolume *pMotherLogical;
+     94    std::map<std::string, G4VPhysicalVolume*> setuptoPV;
+     95    G4bool strip;
+     96 };
+
+
+
+
+::
+
+
+   ..3164     <!-- SCB manual addition start : see notes/issues/sensor-gdml-review.rst -->
+     3165     <!-- see bordersurface referencing at tail of structure -->
+     3166 
+     3167     <opticalsurface finish="0" model="0" name="SCB_photocathode_opsurf" type="0" value="1">
+     3168          <property name="EFFICIENCY" ref="EFFICIENCY0x1d79780"/>   <!-- the non-zero efficiency-->
+     3169     </opticalsurface>
+     3170     <!-- SCB manual addition end : see notes/issues/sensor-gdml-review.rst -->
+     3171 
+     3172   </solids>
+
+
+    31971     <!-- SCB manual addition start : see notes/issues/sensor-gdml-review.rst -->
+    31972     <!-- see opticalsurface at tail of solids -->
+    31973 
+    31974     <bordersurface name="SCB_photocathode_logsurf1" surfaceproperty="SCB_photocathode_opsurf">
+    31975        <physvolref ref="/dd/Geometry/PMT/lvPmtHemi#pvPmtHemiVacuum0xc1340e80x3ee9ae0" />
+    31976        <physvolref ref="/dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiCathode0xc02c3800x3ee9720" />
+    31977     </bordersurface>
+    31978 
+    31979     <bordersurface name="SCB_photocathode_logsurf2" surfaceproperty="SCB_photocathode_opsurf">
+    31980        <physvolref ref="/dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiCathode0xc02c3800x3ee9720" />
+    31981        <physvolref ref="/dd/Geometry/PMT/lvPmtHemi#pvPmtHemiVacuum0xc1340e80x3ee9ae0" />
+    31982     </bordersurface>
+    31983     <!-- SCB manual addition end : see notes/issues/sensor-gdml-review.rst -->
+    31984   </structure>
+
 
 
 

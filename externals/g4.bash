@@ -607,8 +607,8 @@ g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-nom)/examples ; }
 g4-gdml-dir(){      echo $(g4-dir)/source/persistency/gdml ; }
 g4-optical-dir(){   echo $(g4-dir)/source/processes/optical/src ; }
 
-g4-c(){    cd $(g4-dir); }
-g4-cd(){   cd $(g4-dir); }
+g4-c(){    cd $(g4-dir)/$1 ; }
+g4-cd(){   cd $(g4-dir)/$1 ; }
 g4-icd(){  cd $(g4-prefix); }
 g4-bcd(){  cd $(g4-bdir); }
 g4-ccd(){  cd $(g4-cmake-dir); }
@@ -978,6 +978,7 @@ g4-cls-copy(){
 
 
 
+g4n-cd(){   OPTICKS_GEANT4_VER=1062 g4-cd $* ; }
 g4n-cls(){  OPTICKS_GEANT4_VER=1062 g4-cls $* ; }
 
 g4-cls(){  

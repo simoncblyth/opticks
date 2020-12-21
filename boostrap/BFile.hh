@@ -73,8 +73,11 @@ class BRAP_API BFile {
 
        static std::string CreateDir(const char* base, const char* asub=NULL, const char* bsub=NULL);
 
+
     public:
        static std::string UserTmpDir();
+       static std::string UserTmpPath_(const char* pfx="BFile__UserTmpPath");
+       static const char* UserTmpPath(const char* pfx="BFile__UserTmpPath");
     private:
        static std::string usertmpdir(const char* base, const char* sub, const char* rel );
 

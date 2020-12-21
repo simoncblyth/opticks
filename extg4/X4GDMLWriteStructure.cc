@@ -99,6 +99,21 @@ void X4GDMLWriteStructure::add(const G4VSolid* solid )
    AddSolid( solid );
 }
 
+/**
+X4GDMLWriteStructure::write
+-----------------------------
+
+Action depends on the value of the path argument:
+
+NULL
+    write gdml to stdout
+MEMBUF 
+    return string with the gdml
+some/path/to/write.gdml 
+    writes gdml to the given path 
+
+**/
+
 std::string X4GDMLWriteStructure::write(const char* path)
 {
 
