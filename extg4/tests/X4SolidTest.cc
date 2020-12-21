@@ -57,8 +57,7 @@ void test_solid(G4VSolid* so)
     G4VisExtent vx = so->GetExtent() ; 
     std::cout << vx << std::endl ; 
 
-    Opticks* ok = new Opticks(0,0);
-    ok->configure();
+    Opticks* ok = Opticks::Instance(); 
 
     bool top = true ; 
     X4Solid* xs = new X4Solid(so, ok, top) ; 
@@ -297,21 +296,28 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_G4Sphere();
-    //test_G4Orb();
-    //test_G4Box();
-    //test_G4Tubs();
-    //test_G4Trd();
-    //test_G4Cons();
-    //test_G4Torus();
-    //test_G4Ellipsoid();
-    //test_G4Hype();
-    //test_intersectWithPhiSegment();
-    //test_union_of_two_differences();
-    test_cathode();
+    Opticks* ok = new Opticks(argc, argv, "--allownokey" );
+    ok->configure();
+  
+     
+    test_G4Orb();
 
-    //test_boolean();
-    //test_boolean_displaced();
+    /*
+    test_G4Sphere();
+    test_G4Box();
+    test_G4Tubs();
+    test_G4Trd();
+    test_G4Cons();
+    test_G4Torus();
+    test_G4Ellipsoid();
+    test_G4Hype();
+    test_intersectWithPhiSegment();
+    test_union_of_two_differences();
+    test_cathode();
+    test_boolean();
+    test_boolean_displaced();
+
+    */
 
     return 0 ; 
 }

@@ -978,10 +978,12 @@ g4-cls-copy(){
 
 
 
+g4n-cls(){  OPTICKS_GEANT4_VER=1062 g4-cls $* ; }
 
 g4-cls(){  
    local iwd=$PWD
    g4-cd 
+   pwd
    g4-cls- source    $* ; 
    cd $iwd
 }

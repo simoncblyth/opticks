@@ -11,6 +11,8 @@ set(TEST_SOURCES
     CTestDetectorTest.cc
     CGDMLTest.cc
     CGDMLDetectorTest.cc
+    CGDMLPropertyTest.cc
+
     CGeometryTest.cc
     CG4Test.cc
     G4MaterialTest.cc

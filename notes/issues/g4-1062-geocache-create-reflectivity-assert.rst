@@ -561,3 +561,153 @@ Possibly is_sensor is what is different.
 
 
 
+
+Added test CGDMLPropertyTest the 1042 vs 1062 difference is plain
+-------------------------------------------------------------------
+
+1042 has some values::
+
+    epsilon:tests blyth$ om-;TEST=CGDMLPropertyTest;om-t 
+    === om-mk : bdir /usr/local/opticks/build/cfg4/tests rdir cfg4/tests : make CGDMLPropertyTest && ./CGDMLPropertyTest
+    [ 98%] Built target CFG4
+    Scanning dependencies of target CGDMLPropertyTest
+    [ 98%] Building CXX object tests/CMakeFiles/CGDMLPropertyTest.dir/CGDMLPropertyTest.cc.o
+    [100%] Linking CXX executable CGDMLPropertyTest
+    [100%] Built target CGDMLPropertyTest
+    2020-12-21 12:36:59.293 INFO  [7364433] [main@36] OKConf::Geant4VersionInteger() : 1042
+    2020-12-21 12:36:59.293 INFO  [7364433] [main@42]  parsing /tmp/v1.gdml
+    G4GDML: Reading '/tmp/v1.gdml'...
+    G4GDML: Reading userinfo...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+    G4GDML: Reading setup...
+    G4GDML: Reading '/tmp/v1.gdml' done!
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@47]  nmat 36
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@50]  nlbs 10
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@70] ESRAirSurfaceTop 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7fd97d11a0b0 plen       39
+    0.98505 0.98505 0.984548 0.983585 0.968716 0.970241 0.971068 0.965398 0.951738 0.981663 0.980112 0.988567 0.985178 0.965753 0.975675 0.977987 0.975159 0.965276 0.966203 0.961376 0.958306 0.957332 0.726586 0.11559 0.104132 0.116531 0.142322 0.118947 0.179949 0.173176 0.09159 0.0100036 0.0099 0.0099 0.0099 0.0099 0.0099 0.0099 0.0099 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd97d11a840 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@70] ESRAirSurfaceBot 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7fd97d11db90 plen       39
+    0.98505 0.98505 0.984548 0.983585 0.968716 0.970241 0.971068 0.965398 0.951738 0.981663 0.980112 0.988567 0.985178 0.965753 0.975675 0.977987 0.975159 0.965276 0.966203 0.961376 0.958306 0.957332 0.726586 0.11559 0.104132 0.116531 0.142322 0.118947 0.179949 0.173176 0.09159 0.0100036 0.0099 0.0099 0.0099 0.0099 0.0099 0.0099 0.0099 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd97d11de90 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@70] SSTOilSurface 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7fd97d128550 plen       39
+    0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd97d128d20 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@70] SSTWaterSurfaceNear1 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7fd979c1c3a0 plen       39
+    0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd979c1c6a0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@70] SSTWaterSurfaceNear2 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7fd979c1c4d0 plen       39
+    0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 0.8 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd979c1c560 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@70] NearIWSCurtainSurface 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7fd979c300e0 plen       39
+    0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.982963 0.987913 0.99 0.995 0.99 0.960524 0.940209 0.91045 0.870413 0.800692 0.760381 0.720299 0.680216 0.640134 0.600051 0.6 0.6 0.6 0.6 0.6 0.6 0.6 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd979c303e0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@70] NearOWSLinerSurface 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7fd979f853a0 plen       39
+    0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.982963 0.987913 0.99 0.995 0.99 0.960524 0.940209 0.91045 0.870413 0.800692 0.760381 0.720299 0.680216 0.640134 0.600051 0.6 0.6 0.6 0.6 0.6 0.6 0.6 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd979f856a0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@70] NearDeadLinerSurface 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7fd979f88930 plen       39
+    0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.982963 0.987913 0.99 0.995 0.99 0.960524 0.940209 0.91045 0.870413 0.800692 0.760381 0.720299 0.680216 0.640134 0.600051 0.6 0.6 0.6 0.6 0.6 0.6 0.6 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd979f89100 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:36:59.716 INFO  [7364433] [main@70] SCB_photocathode_logsurf1 23
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd979f8ac90 plen       39
+    0.0001 0.0001 0.000440306 0.000782349 0.00112439 0.00146644 0.00180848 0.00272834 0.00438339 0.00692303 0.00998793 0.0190265 0.027468 0.0460445 0.0652553 0.0849149 0.104962 0.139298 0.170217 0.19469 0.214631 0.225015 0.24 0.235045 0.21478 0.154862 0.031507 0.00478915 0.00242326 0.000850572 0.000475524 0.000100476 7.50165e-05 5.00012e-05 2.49859e-05 0 0 0 0 
+    2020-12-21 12:36:59.717 INFO  [7364433] [main@70] SCB_photocathode_logsurf2 23
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fd979f8ac90 plen       39
+    0.0001 0.0001 0.000440306 0.000782349 0.00112439 0.00146644 0.00180848 0.00272834 0.00438339 0.00692303 0.00998793 0.0190265 0.027468 0.0460445 0.0652553 0.0849149 0.104962 0.139298 0.170217 0.19469 0.214631 0.225015 0.24 0.235045 0.21478 0.154862 0.031507 0.00478915 0.00242326 0.000850572 0.000475524 0.000100476 7.50165e-05 5.00012e-05 2.49859e-05 0 0 0 0 
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ 
+
+
+
+1062 gives all zeros from the same GDML::
+
+    2020-12-21 12:37:29.267 INFO  [7365045] [main@36] OKConf::Geant4VersionInteger() : 1062
+    2020-12-21 12:37:29.267 INFO  [7365045] [main@42]  parsing /tmp/v1.gdml
+    G4GDML: Reading '/tmp/v1.gdml'...
+    G4GDML: Reading userinfo...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+    G4GDML: Reading setup...
+    G4GDML: Reading '/tmp/v1.gdml' done!
+    2020-12-21 12:37:29.683 INFO  [7365045] [main@47]  nmat 36
+    2020-12-21 12:37:29.683 INFO  [7365045] [main@50]  nlbs 10
+    2020-12-21 12:37:29.683 INFO  [7365045] [main@70] ESRAirSurfaceTop 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7ffdca116e80 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:37:29.683 INFO  [7365045] [main@70] ESRAirSurfaceBot 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7ffdca116e80 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:37:29.683 INFO  [7365045] [main@70] SSTOilSurface 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7ffdca116e80 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:37:29.683 INFO  [7365045] [main@70] SSTWaterSurfaceNear1 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7ffdca116e80 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:37:29.683 INFO  [7365045] [main@70] SSTWaterSurfaceNear2 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7ffdca116e80 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:37:29.683 INFO  [7365045] [main@70] NearIWSCurtainSurface 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7ffdca116e80 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:37:29.684 INFO  [7365045] [main@70] NearOWSLinerSurface 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7ffdca116e80 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:37:29.684 INFO  [7365045] [main@70] NearDeadLinerSurface 23
+     i     1 pidx     1 pname                  REFLECTIVITY pvec 0x7ffdca116e80 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:37:29.684 INFO  [7365045] [main@70] SCB_photocathode_logsurf1 23
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    2020-12-21 12:37:29.684 INFO  [7365045] [main@70] SCB_photocathode_logsurf2 23
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7ffdca116dc0 plen       39
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+    epsilon:cfg4 charles$ 
+
+
+See no changes to Geant4 code for property handling with::
+
+   g4n-cls G4MaterialPropertiesTable
+   g4n-cls G4PhysicsVector 
+
+So suspicion now pointing to a GDML parsing difference. 
+
+
+
+

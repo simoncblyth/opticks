@@ -173,6 +173,14 @@ G4Sphere* X4SolidBase::MakeZSphere(const char* name, float rmin, float rmax, flo
     return sp ; 
 }
 
+/**
+X4SolidBase::MakeSphere
+------------------------
+
+rmin arg after rmax as rmin is often default zero for no inner
+
+**/
+
 G4Sphere* X4SolidBase::MakeSphere(const char* name, float rmax, float rmin)
 {
    return MakeZSphere(name, rmin, rmax, 0.f, 360.f, 0.f, 180.f ); 
