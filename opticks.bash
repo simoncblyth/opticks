@@ -19,6 +19,10 @@
 
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
 
+o(){ opticks- ; cd $(opticks-home) ; git status ; } 
+oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ;  }
+t(){ typeset -f $* ; } 
+
 opticks-source(){   echo $BASH_SOURCE ; }
 opticks-ldir(){     echo $(dirname $BASH_SOURCE) ; }
 opticks-vi(){       vi $(opticks-source) ; }

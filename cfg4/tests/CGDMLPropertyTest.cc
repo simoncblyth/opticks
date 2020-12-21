@@ -6,6 +6,7 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4Material.hh"
 #include "G4LogicalBorderSurface.hh"
+#include "G4LogicalSkinSurface.hh"
 #include "G4OpticalSurface.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4String.hh"
@@ -29,6 +30,106 @@ all coming out as zero in 1062 that prevents identification as a sensor.
 
 **/
 
+void dump_MPT(const char* name, const G4MaterialPropertiesTable* mpt, unsigned edgeitems)
+{
+    std::cout << name << " " ; 
+    if(mpt == NULL) std::cout << " NULL mpt " << std::endl ; 
+    if(mpt == NULL) return ; 
+
+    std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ; 
+    std::cout  << pns.size() << std::endl ; 
+
+    typedef G4MaterialPropertyVector MPV ; 
+    for(unsigned i=0 ; i < pns.size() ; i++)
+    {
+        const std::string& pname = pns[i] ; 
+        bool warning = false ; 
+        G4int pidx = mpt->GetPropertyIndex(pname, warning);
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning );
+        size_t plen = pvec ? pvec->GetVectorLength() : 0 ;
+        if(pvec != NULL)
+        {
+            std::cout 
+                << " i " << std::setw(5) << i
+                << " pidx " << std::setw(5) << pidx
+                << " " << std::setw(23) << pname 
+                << " pvec " << std::setw(8) << pvec 
+                << " plen " << std::setw(3) << plen 
+                << " " 
+                ; 
+
+            double mn = std::numeric_limits<double>::max();   
+            double mx = std::numeric_limits<double>::lowest(); 
+
+            for (size_t j=0; j<plen; j++)
+            {   
+                double value = (*pvec)[j] ;
+                if(value > mx) mx = value ; 
+                if(value < mn) mn = value ; 
+
+                if( j < edgeitems || j > plen - edgeitems ) std::cout << value << " " ; 
+                else if( j == edgeitems ) std::cout << "... " ; 
+            }
+            std::cout << " mn " << mn << " mx " << mx << std::endl ; 
+        }
+    }
+}
+
+void dump_G4LogicalBorderSurfaceTable(unsigned edgeitems)
+{
+    unsigned nlbs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ;
+    const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable() ; 
+    LOG(info) << " nlbs " << nlbs << " tab.size " << tab->size() ; 
+
+    for(size_t i=0 ; i < tab->size() ; i++)
+    {   
+        G4LogicalBorderSurface* src = (*tab)[i] ; 
+
+        G4OpticalSurface* opsurf = dynamic_cast<G4OpticalSurface*>(src->GetSurfaceProperty());
+        assert(opsurf); 
+
+        const G4String& name = src->GetName(); 
+        const G4MaterialPropertiesTable* mpt = opsurf->GetMaterialPropertiesTable(); 
+        dump_MPT(name.c_str(), mpt, edgeitems); 
+    }   
+}
+
+
+void dump_G4LogicalSkinSurface(unsigned edgeitems)
+{
+    unsigned nlss = G4LogicalSkinSurface::GetNumberOfSkinSurfaces() ;
+    const G4LogicalSkinSurfaceTable* tab = G4LogicalSkinSurface::GetSurfaceTable();
+    LOG(info) << " nlss " << nlss << " tab.size " << tab->size() ; 
+
+    for(size_t i=0 ; i < tab->size() ; i++)
+    {   
+        G4LogicalSkinSurface* src = (*tab)[i] ; 
+
+        G4OpticalSurface* opsurf = dynamic_cast<G4OpticalSurface*>(src->GetSurfaceProperty());
+        assert(opsurf); 
+
+        const G4String& name = src->GetName(); 
+        const G4MaterialPropertiesTable* mpt = opsurf->GetMaterialPropertiesTable(); 
+        dump_MPT(name.c_str(), mpt, edgeitems); 
+    }   
+}
+
+void dump_G4MaterialTable(unsigned edgeitems)
+{
+    unsigned nmat = G4Material::GetNumberOfMaterials();
+    const G4MaterialTable* tab = G4Material::GetMaterialTable();
+    LOG(info) << " nmat " << nmat << " tab.size " << tab->size() ; 
+
+    for(size_t i=0 ; i < tab->size() ; i++)
+    {   
+        G4Material* src = (*tab)[i] ; 
+        const G4String& name = src->GetName(); 
+        const G4MaterialPropertiesTable* mpt = src->GetMaterialPropertiesTable(); 
+        dump_MPT(name.c_str(), mpt, edgeitems ); 
+    }
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -44,69 +145,11 @@ int main(int argc, char** argv)
     G4VPhysicalVolume* world = CGDML::Parse(path); 
     assert( world ); 
 
-    unsigned nmat = G4Material::GetNumberOfMaterials();
-    LOG(info) << " nmat " << nmat ; 
+    unsigned edgeitems = 5; 
 
-    unsigned nlbs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ;
-    LOG(info) << " nlbs " << nlbs ; 
-
-    // X4LogicalBorderSurfaceTable
-    const G4LogicalBorderSurfaceTable*  m_src = G4LogicalBorderSurface::GetSurfaceTable() ; 
-   
-    for(size_t i=0 ; i < m_src->size() ; i++)
-    {   
-        G4LogicalBorderSurface* src = (*m_src)[i] ; 
-
-
-        // X4LogicalBorderSurface
-        G4OpticalSurface* opsurf = dynamic_cast<G4OpticalSurface*>(src->GetSurfaceProperty());
-        assert(opsurf); 
-
-        G4MaterialPropertiesTable* mpt = opsurf->GetMaterialPropertiesTable() ; 
-        assert(mpt);  
-
-        std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ; 
-
-
-        LOG(info) << src->GetName() << " "  << pns.size(); 
-
-        typedef G4MaterialPropertyVector MPV ; 
-
-        for(unsigned i=0 ; i < pns.size() ; i++)
-        {
-            const std::string& pname = pns[i] ; 
-
-            bool warning = false ; 
-            G4int pidx = mpt->GetPropertyIndex(pname, warning);
-            MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning );
-            size_t plen = pvec ? pvec->GetVectorLength() : 0 ;
- 
-            if(pvec != NULL)
-            {
-                std::cout 
-                    << " i " << std::setw(5) << i
-                    << " pidx " << std::setw(5) << pidx
-                    << " pname" << std::setw(30) << pname 
-                    << " pvec " << std::setw(8) << pvec 
-                    << " plen " << std::setw(8) << plen 
-                    << std::endl ; 
-
-                for (size_t j=0; j<plen; j++)
-                {       
-                    double value = (*pvec)[j] ;
-                    std::cout << value << " " ; 
-                }
-                std::cout << std::endl ; 
-
-            }
-
-
-        }
-
-
-
-    }   
-
+    dump_G4LogicalBorderSurfaceTable(edgeitems); 
+    dump_G4LogicalSkinSurface(edgeitems);
+    dump_G4MaterialTable(edgeitems) ; 
 
     return 0 ; 
 }

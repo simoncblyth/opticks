@@ -54,11 +54,13 @@ class X4_API X4GDMLReadStructure : public G4GDMLReadStructure
         static const plog::Severity LEVEL ; 
         static const G4VSolid* ReadSolid(const char* path); 
         static const G4VSolid* ReadSolidFromString(const char* gdmlstring); 
+        static void WriteGDMLString(const char* gdmlstring, const char* path) ;
         static const char* WriteGDMLStringToTmpPath(const char* gdmlstring);
     public:
         X4GDMLReadStructure() ; 
-        const G4VSolid* read_solid(const char* path, int offset);  // offset:-1 last solid in store
-        const G4VSolid* read_solid_from_string(const char* gdmlstring, int offset); 
+        const G4VSolid* getSolid(int offset=-1);
+        void readString(const char* gdmlstring); 
+        void readFile(const char* path); 
 
 
 };

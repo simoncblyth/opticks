@@ -796,4 +796,46 @@ Need a piecemeal way to test. Exploit protected methods with X4GDMLReadStructure
 
 
 
+::
+
+    X4GDMLReadStructureTest /tmp/t.gdml   # writes the GDML string literal in the code to the path provided and parses the file into Geant4 geometry
+
+    CGDMLPropertyTest /tmp/t.gdml         #  
+
+
+Darwin.charles.1062::
+
+    epsilon:opticks charles$ X4GDMLReadStructureTest /tmp/s.gdml
+    2020-12-21 18:59:48.609 INFO  [7924624] [test_readString@149] writing GDMLString to path /tmp/s.gdml
+    G4GDML: Reading '/tmp/s.gdml'...
+    G4GDML: Reading userinfo...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+    G4GDML: Reading setup...
+    G4GDML: Reading '/tmp/s.gdml' done!
+
+    epsilon:opticks charles$ CGDMLPropertyTest /tmp/s.gdml
+    2020-12-21 19:00:11.324 INFO  [7928334] [main@36] OKConf::Geant4VersionInteger() : 1062
+    2020-12-21 19:00:11.324 INFO  [7928334] [main@43]  parsing /tmp/s.gdml
+    G4GDML: Reading '/tmp/s.gdml'...
+    G4GDML: Reading userinfo...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+    G4GDML: Reading setup...
+    G4GDML: Reading '/tmp/s.gdml' done!
+    2020-12-21 19:00:11.342 INFO  [7928334] [main@48]  nmat 2
+    2020-12-21 19:00:11.342 INFO  [7928334] [main@51]  nlbs 1
+    2020-12-21 19:00:11.342 INFO  [7928334] [main@71] SCB_photocathode_logsurf1 23
+     i     4 pidx     4 pname                    EFFICIENCY pvec 0x7fdc81f048a0 plen       39
+    0.0001 0.0001 0.000440306 0.000782349 0.00112439 0.00146644 0.00180848 0.00272834 0.00438339 0.00692303 0.00998793 0.0190265 0.027468 0.0460445 0.0652553 0.0849149 0.104962 0.139298 0.170217 0.19469 0.214631 0.225015 0.24 0.235045 0.21478 0.154862 0.031507 0.00478915 0.00242326 0.000850572 0.000475524 0.000100476 7.50165e-05 5.00012e-05 2.49859e-05 0 0 0 0 
+    epsilon:opticks charles$ 
+
+
+The problem with the full geometry is not manifesting in the partial one.
+
+
 

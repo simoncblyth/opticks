@@ -32,7 +32,13 @@ X4GDMLReadStructure::X4GDMLReadStructure()
 {
 }
 
-const G4VSolid* X4GDMLReadStructure::read_solid(const char* path, int offset)
+void X4GDMLReadStructure::readString(const char* gdmlstring)
+{
+    const char* path = WriteGDMLStringToTmpPath(gdmlstring) ;    
+    readFile(path); 
+}
+
+void X4GDMLReadStructure::readFile(const char* path)
 {
     G4String fileName = path ; 
     G4bool validation = false ; 
@@ -40,42 +46,44 @@ const G4VSolid* X4GDMLReadStructure::read_solid(const char* path, int offset)
     G4bool strip = false ;  
 
     Read( fileName, validation, isModule, strip ); 
+}
 
+
+const G4VSolid* X4GDMLReadStructure::getSolid(int offset)
+{
     return X4SolidStore::Get(offset) ;    
 }
 
-const G4VSolid* X4GDMLReadStructure::read_solid_from_string(const char* gdmlstring, int offset)
+
+void X4GDMLReadStructure::WriteGDMLString(const char* gdmlstring, const char* path) // static
 {
-    const char* path = WriteGDMLStringToTmpPath(gdmlstring) ;    
-    return read_solid(path, offset); 
-}
-
-
-const char* X4GDMLReadStructure::WriteGDMLStringToTmpPath(const char* gdmlstring) // static
-{
-    const char* pfx = "X4GDMLReadStructure__WriteGDMLStringToTmpPath" ; 
-    const char* path = BFile::UserTmpPath(pfx) ; 
-
     std::ofstream stream(path, std::ios::out); 
     stream.write(gdmlstring, strlen(gdmlstring)) ; 
     stream.close();   
     // curiosly without explicitly closing the stream or closing out the scope 
     // the subsequent read acts as if there was nothing in the file (buffering perhaps?) 
+}
+
+const char* X4GDMLReadStructure::WriteGDMLStringToTmpPath(const char* gdmlstring) // static
+{
+    const char* pfx = "X4GDMLReadStructure__WriteGDMLStringToTmpPath" ; 
+    const char* path = BFile::UserTmpPath(pfx) ; 
+    WriteGDMLString(gdmlstring, path); 
     return path ; 
 }
 
 const G4VSolid* X4GDMLReadStructure::ReadSolid(const char* path)
 {
     X4GDMLReadStructure reader ; 
-    return reader.read_solid(path, -1); 
+    reader.readFile(path);
+    return reader.getSolid(-1); 
 }
 
 const G4VSolid* X4GDMLReadStructure::ReadSolidFromString(const char* gdmlstring)
 {
     X4GDMLReadStructure reader ; 
-    return reader.read_solid_from_string(gdmlstring, -1); 
+    reader.readString(gdmlstring);
+    return reader.getSolid(-1); 
 }
-
-
 
 

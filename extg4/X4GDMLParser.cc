@@ -130,7 +130,8 @@ std::string X4GDMLParser::to_string( const G4VSolid* solid )
 const G4VSolid* X4GDMLParser::read_solid( const char* path, int offset )
 {
     std::string p = BFile::FormPath(path); 
-    return reader->read_solid(p.c_str(), offset) ; 
+    reader->readFile(p.c_str()) ; 
+    return reader->getSolid(offset) ; 
 }
 
 
