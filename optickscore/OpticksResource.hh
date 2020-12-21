@@ -162,6 +162,7 @@ class OKCORE_API OpticksResource
        BOpticksResource* m_rsc ; 
        BOpticksKey*      m_key ; 
        Opticks*          m_ok ; 
+       bool              m_allownokey ; 
        OpticksQuery*     m_query ;
    private:
        bool        m_valid ; 

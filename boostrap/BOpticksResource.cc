@@ -774,7 +774,13 @@ void BOpticksResource::initViaKey()
 {
     assert( !m_setup ) ;  
     m_setup = true ; 
-    assert( m_key ) ; // BOpticksResource::setupViaKey called with a NULL key 
+
+    if( m_key == NULL )
+    {
+        LOG(fatal) << " m_key is NULL : early exit " ; 
+        return ;    // temporary whilst debugging geocache creation
+    }
+    assert( m_key ) ;
 
     LOG(info) << std::endl << m_key->desc()  ;  
 

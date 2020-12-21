@@ -1261,7 +1261,9 @@ void OpticksCfg<Listener>::init()
         );
 
 
-
+   m_desc.add_options()
+       ("allownokey",  "prevent assertions over not having keys : for usage whilst debugging geocache creation" ) ; 
+ 
 
    m_desc.add_options()
        ("size",  boost::program_options::value<std::string>(&m_size),

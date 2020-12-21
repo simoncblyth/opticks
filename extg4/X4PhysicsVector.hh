@@ -20,6 +20,7 @@
 #pragma once
 
 #include "X4_API_EXPORT.hh"
+#include "plog/Severity.h"
 #include <string>
 
 class G4PhysicsVector ; 
@@ -42,6 +43,7 @@ Converts G4PhysicsVector into ggeo.GProperty<T>
 template <typename T>
 class X4_API X4PhysicsVector
 {
+        static const plog::Severity LEVEL ; 
     public:
         static std::string    Digest0(const G4PhysicsVector* vec ) ; 
         static std::string    Digest(const G4PhysicsVector* vec ) ; 

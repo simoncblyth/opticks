@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 
     assert( opnov.water && opnov.air ) ; 
 
-    Opticks ok(argc, argv);
+    Opticks ok(argc, argv, "--allownokey");
     ok.configure();
 
     GMaterialLib* mlib = new GMaterialLib(&ok);

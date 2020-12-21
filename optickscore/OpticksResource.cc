@@ -87,6 +87,7 @@ OpticksResource::OpticksResource(Opticks* ok)
     m_rsc(BOpticksResource::Get(NULL)),   // use prior instance or create if not existing
     m_key(m_rsc->getKey()),
     m_ok(ok),
+    m_allownokey(ok->isAllowNoKey()),
     m_query(new OpticksQuery("all")),
     m_valid(true),
     m_colors(NULL),
@@ -115,8 +116,15 @@ void OpticksResource::init()
    BStr::split(m_detector_types, "GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib", ',' ); 
    BStr::split(m_resource_types, "GFlags,OpticksColors", ',' ); 
 
-   assert( m_rsc->hasKey() && "an OPTICKS_KEY is required" );
-   //m_rsc->setupViaKey();   // setupViaKey NOW DONE within BOpticksResource::BOpticksResource
+
+   if( m_allownokey )
+   {
+       LOG(fatal) << " CAUTION : are allowing no key " ; 
+   } 
+   else
+   {
+       assert( m_rsc->hasKey() && "an OPTICKS_KEY is required" );
+   }
 
    initRunResultsDir(); 
 

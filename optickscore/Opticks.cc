@@ -320,6 +320,12 @@ If not attempts to set the key obtained from the OPTICKS_KEY envvar.
 bool Opticks::envkey()
 {
     LOG(LEVEL); 
+    bool allownokey = isAllowNoKey(); 
+    if(allownokey)
+    {
+        LOG(fatal) << " --allownokey option prevents key checking : this is for debugging of geocache creation " ; 
+        return false ; 
+    }
 
     bool key_is_set(false) ;
     key_is_set = BOpticksKey::IsSet() ; 
@@ -345,6 +351,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_lastarg(m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL),
     m_mode(new OpticksMode(this)),
     m_dumpenv(m_sargs->hasArg("--dumpenv")),
+    m_allownokey(m_sargs->hasArg("--allownokey")),
     m_envkey(envkey()),
     m_production(m_sargs->hasArg("--production")),
     m_profile(new OpticksProfile()),
@@ -908,11 +915,26 @@ void Opticks::initResource()
     setDetector(detector);
 
     const char* idpath = m_rsc->getIdPath();
-    m_parameters->add<std::string>("idpath", idpath); 
+    if( idpath )
+    {
+        m_parameters->add<std::string>("idpath", idpath); 
+    }
+    else
+    {
+        LOG(fatal) << " idpath NULL " ; 
+    }
 
     bool assert_readable = true ; 
     const char* curandstatepath = getCURANDStatePath(assert_readable);
-    m_parameters->add<std::string>("curandstatepath", curandstatepath); 
+
+    if(curandstatepath)
+    {
+        m_parameters->add<std::string>("curandstatepath", curandstatepath); 
+    }
+    else
+    {
+        LOG(fatal) << " curandstatepath NULL " ; 
+    }
 
     LOG(LEVEL) << m_rsc->desc()  ;
 }
@@ -1037,6 +1059,23 @@ bool Opticks::isNoGDMLPath() const   // --nogdmlpath
 {
     return m_cfg->hasOpt("nogdmlpath") ;
 }
+
+
+/**
+Opticks::isAllowNoKey
+-----------------------
+
+As this is needed prior to configure it directly uses
+the bool set early in instanciation.
+
+**/
+
+bool Opticks::isAllowNoKey() const   // --allownokey
+{
+    return m_allownokey ;
+}
+
+
 
 void Opticks::deleteGeoCache() const 
 {

@@ -30,6 +30,9 @@
 #include "PLOG.hh"
 
 
+template <typename T>
+const plog::Severity X4PhysicsVector<T>::LEVEL = PLOG::EnvLevel("X4PhysicsVector", "DEBUG" ) ; 
+
 
 template <typename T>
 std::string X4PhysicsVector<T>::Digest(const G4PhysicsVector* vec)  // see cfg4.G4PhysicsOrderedFreeVectorTest
@@ -91,6 +94,8 @@ void X4PhysicsVector<T>::init()
 {
     size_t len = getVectorLength() ; 
 
+    LOG(LEVEL) << " len " << len ; 
+
     // converting assumed ascending energies domain to ascending wavelengths 
     // so must reverse ordering
     bool reverse = true ;   
@@ -102,6 +107,7 @@ void X4PhysicsVector<T>::init()
     // GProperty ctor copies inputs, so cleanup 
     delete[] values ;
     delete[] domain ;
+
 }
 
 template <typename T>
@@ -115,7 +121,15 @@ T* X4PhysicsVector<T>::getValues(bool reverse) const
 {
     size_t n = getVectorLength() ; 
     T* a = new T[n] ; 
-    for (size_t i=0; i<n; i++) a[reverse ? n-1-i : i] = (*m_vec)[i] ; 
+    for (size_t i=0; i<n; i++) 
+    {
+        T value = (*m_vec)[i] ; 
+        a[reverse ? n-1-i : i] = value ;
+        LOG(LEVEL) 
+            << " i " << std::setw(4) << i 
+            << " value " << std::setw(10) << value 
+            ;  
+    }
     return a ; 
 }
 
@@ -124,7 +138,17 @@ T* X4PhysicsVector<T>::getEnergies(bool reverse) const
 {
     size_t n = getVectorLength() ; 
     T* a = new T[n] ; 
-    for (size_t i=0; i<n; i++) a[reverse ? n-1-i : i ] = m_vec->Energy(i) ; 
+    for (size_t i=0; i<n; i++) 
+    {
+        T energy = m_vec->Energy(i) ;
+        a[reverse ? n-1-i : i ] = energy ; 
+
+        LOG(LEVEL) 
+            << " i " << std::setw(4) << i 
+            << " energy " << std::setw(10) << energy   
+            ;
+
+    }
     return a ; 
 }
 
@@ -140,6 +164,12 @@ T* X4PhysicsVector<T>::getWavelengths(bool reverse) const
     {
         T energy = m_vec->Energy(i)/eV ;  // convert into eV   (assumes input in G4 standard energy unit (MeV))
         T wavelength = hc/energy ;        // wavelength in nm
+
+        LOG(LEVEL) 
+            << " i " << std::setw(4) << i 
+            << " energy " << std::setw(10) << energy   
+            << " wavelength " << std::setw(10) << wavelength   
+            ;
 
         a[reverse ? n-1-i : i] = wavelength ; 
     }

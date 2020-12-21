@@ -394,6 +394,7 @@ class OKCORE_API Opticks {
        bool                 isXAnalytic() const ;      // --xanalytic : --xtriangle option will override an --xanalytic option
        bool                 isXGeometryTriangles() const ;
        bool                 isNoGDMLPath() const ;    // --nogdmlpath
+       bool                 isAllowNoKey() const ;    // --allownokey
    public:
        bool                 canDeleteGeoCache() const ; 
        void                 deleteGeoCache() const ; 
@@ -668,6 +669,7 @@ class OKCORE_API Opticks {
        OpticksMode*         m_mode ; 
 
        bool                 m_dumpenv ; 
+       bool                 m_allownokey ; 
        bool                 m_envkey ; 
        bool                 m_production ; 
        OpticksProfile*      m_profile ; 
