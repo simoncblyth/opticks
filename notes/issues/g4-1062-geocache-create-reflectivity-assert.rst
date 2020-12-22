@@ -1509,6 +1509,15 @@ Now in a fresh "blyth" session::
 
 
 
+File a Geant4 bug : 2305
+--------------------------
+
+Problem 2305 - All GDML read properties of skinsurface and bordersurface
+elements yields only the G4MaterialPropertyVector of the first occurrence of
+each property name (edit)
+
+* https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2305
+
 
 
 
