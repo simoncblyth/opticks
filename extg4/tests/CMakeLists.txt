@@ -28,6 +28,7 @@ set(TEST_SOURCES
     X4GDMLBalanceTest.cc
 
     X4GDMLReadStructureTest.cc
+    X4DumpTest.cc 
 )
 
 

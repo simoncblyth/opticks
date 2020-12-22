@@ -146,6 +146,8 @@ set(SOURCES
     CStepping.cc
     CSteppingState.cc
     CStepStatus.cc
+
+    CDump.cc
 )
 
 set(HEADERS
@@ -261,6 +263,7 @@ set(HEADERS
     CRandomListener.hh
     CMixMaxRng.hh
 
+    CDump.hh
 )
 
 add_library(${name} SHARED  ${SOURCES})

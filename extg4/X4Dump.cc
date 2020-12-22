@@ -1,9 +1,8 @@
-#include <vector>
-#include "OPTICKS_LOG.hh"
-#include "OKConf.hh"
+#include <string>
+#include <iostream>
+#include <iomanip>
 
-#include "G4GDMLParser.hh"
-#include "G4VPhysicalVolume.hh"
+#include "G4Version.hh"
 #include "G4Material.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
@@ -11,32 +10,40 @@
 #include "G4MaterialPropertiesTable.hh"
 #include "G4String.hh"
 
-#include "CGDML.hh"
+#include "X4Dump.hh"
 
-/**
-CGDMLPropertyTest
-===================
-
-See CDumpTest which uses CDump.cc/CDump.hh that 
-makes the dump functions started here easier to share.
-
-::
-
-   opticksaux-;cp $(opticksaux-dx1) /tmp/v1.gdml
-
-   CGDMLPropertyTest /tmp/v1.gdml
+const unsigned X4Dump::EDGEITEMS = 5 ; 
 
 
-See notes/issues/g4-1062-geocache-create-reflectivity-assert.rst 
 
-Observe some difference between Geant4 1042 and 1062 that prevents 
-the geometry conversion for 1062. Looks like efficiency values
-all coming out as zero in 1062 that prevents identification as a sensor.
-
-**/
-
-void dump_MPT(const char* name, const G4MaterialPropertiesTable* mpt, unsigned edgeitems)
+void X4Dump::G4(const char* cfg) // static
 {
+    std::cout << cfg << std::endl ;
+    X4Dump::G4Version_() ; 
+    std::istringstream f(cfg);
+    std::string s;
+    char delim = ',' ; 
+    while (getline(f, s, delim))
+    {   
+        std::cout << s << std::endl ; 
+        if(s.compare("bs") == 0) X4Dump::G4LogicalBorderSurfaceTable_();  ;
+        if(s.compare("sk") == 0) X4Dump::G4LogicalSkinSurface_() ;
+        if(s.compare("mt") == 0) X4Dump::G4MaterialTable_() ; 
+    }   
+    X4Dump::G4Version_() ; 
+}
+
+void X4Dump::G4Version_()  // static 
+{
+    std::cout << "G4VERSION_NUMBER " << G4VERSION_NUMBER << std::endl ; 
+    std::cout << "G4VERSION_TAG    " << G4VERSION_TAG << std::endl ; 
+    std::cout << "G4Version        " << G4Version << std::endl ; 
+    std::cout << "G4Date           " << G4Date << std::endl ; 
+}
+
+void X4Dump::G4MaterialPropertiesTable_(const char* name, const G4MaterialPropertiesTable* mpt) // static
+{
+    unsigned edgeitems = EDGEITEMS ; 
     std::cout << name << " " ; 
     if(mpt == NULL) std::cout << " NULL mpt " << std::endl ; 
     if(mpt == NULL) return ; 
@@ -80,11 +87,11 @@ void dump_MPT(const char* name, const G4MaterialPropertiesTable* mpt, unsigned e
     }
 }
 
-void dump_G4LogicalBorderSurfaceTable(unsigned edgeitems)
+void X4Dump::G4LogicalBorderSurfaceTable_() // static 
 {
     unsigned nlbs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ;
     const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable() ; 
-    LOG(info) << " nlbs " << nlbs << " tab.size " << tab->size() ; 
+    std::cout << " nlbs " << nlbs << " tab.size " << tab->size() << std::endl  ; 
 
     for(size_t i=0 ; i < tab->size() ; i++)
     {   
@@ -95,16 +102,16 @@ void dump_G4LogicalBorderSurfaceTable(unsigned edgeitems)
 
         const G4String& name = src->GetName(); 
         const G4MaterialPropertiesTable* mpt = opsurf->GetMaterialPropertiesTable(); 
-        dump_MPT(name.c_str(), mpt, edgeitems); 
+        X4Dump::G4MaterialPropertiesTable_(name.c_str(), mpt) ; 
     }   
 }
 
 
-void dump_G4LogicalSkinSurface(unsigned edgeitems)
+void X4Dump::G4LogicalSkinSurface_()  // static
 {
     unsigned nlss = G4LogicalSkinSurface::GetNumberOfSkinSurfaces() ;
     const G4LogicalSkinSurfaceTable* tab = G4LogicalSkinSurface::GetSurfaceTable();
-    LOG(info) << " nlss " << nlss << " tab.size " << tab->size() ; 
+    std::cout << " nlss " << nlss << " tab.size " << tab->size() << std::endl ; 
 
     for(size_t i=0 ; i < tab->size() ; i++)
     {   
@@ -115,49 +122,23 @@ void dump_G4LogicalSkinSurface(unsigned edgeitems)
 
         const G4String& name = src->GetName(); 
         const G4MaterialPropertiesTable* mpt = opsurf->GetMaterialPropertiesTable(); 
-        dump_MPT(name.c_str(), mpt, edgeitems); 
+        X4Dump::G4MaterialPropertiesTable_(name.c_str(), mpt); 
     }   
 }
 
-void dump_G4MaterialTable(unsigned edgeitems)
+void X4Dump::G4MaterialTable_() // static
 {
     unsigned nmat = G4Material::GetNumberOfMaterials();
     const G4MaterialTable* tab = G4Material::GetMaterialTable();
-    LOG(info) << " nmat " << nmat << " tab.size " << tab->size() ; 
+    std::cout << " nmat " << nmat << " tab.size " << tab->size() << std::endl ; 
 
     for(size_t i=0 ; i < tab->size() ; i++)
     {   
         G4Material* src = (*tab)[i] ; 
         const G4String& name = src->GetName(); 
         const G4MaterialPropertiesTable* mpt = src->GetMaterialPropertiesTable(); 
-        dump_MPT(name.c_str(), mpt, edgeitems ); 
+        X4Dump::G4MaterialPropertiesTable_(name.c_str(), mpt ); 
     }
 }
 
-
-int main(int argc, char** argv)
-{
-    OPTICKS_LOG(argc, argv);
-
-    LOG(info) << "OKConf::Geant4VersionInteger() : " << OKConf::Geant4VersionInteger()  ;
-
-    const char* path = argc > 1 ? argv[1] : "/tmp/v1.gdml" ; 
-
-    if(!path) LOG(error) << " expecting path to GDML " ; 
-    if(!path) return 0 ; 
-
-    LOG(info) << " parsing " << path ; 
-    G4VPhysicalVolume* world = CGDML::Parse(path); 
-    assert( world ); 
-
-    unsigned edgeitems = 5; 
-
-    dump_G4LogicalBorderSurfaceTable(edgeitems); 
-    dump_G4LogicalSkinSurface(edgeitems);
-    dump_G4MaterialTable(edgeitems) ; 
-
-    return 0 ; 
-}
-
-// om-;TEST=CGDMLPropertyTest;om-t 
 

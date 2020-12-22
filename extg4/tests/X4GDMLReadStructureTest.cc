@@ -2,6 +2,7 @@
 
 #include "OPTICKS_LOG.hh"
 #include "BFile.hh"
+#include "X4Dump.hh"
 #include "X4GDMLReadStructure.hh"
 
 #include <xercesc/util/PlatformUtils.hpp>
@@ -174,10 +175,14 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    const char* cfg = argc > 1 ? argv[1] : "mt,sk,bs" ; 
+
     xercesc::XMLPlatformUtils::Initialize();
 
     //test_ReadSolidFromString(); 
     test_readString(argc, argv); 
+
+    X4Dump::G4(cfg); 
 
     return 0 ; 
 }

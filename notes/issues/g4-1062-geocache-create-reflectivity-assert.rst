@@ -1,6 +1,40 @@
 g4-1062-geocache-create-reflectivity-assert
 =============================================
 
+Issue
+------
+
+When loading DYB GDML with Geant4 1062. 
+
+* for all border and skin surfaces the number of values 39 is as expected, BUT all the values are zero
+* material properties are not zeroed 
+
+Investigation techniques
+--------------------------
+
+::
+
+    geocache-create -D
+
+    CGDMLPropertyTest /tmp/v1.gdml
+        load gdml and dump surface and material property values
+
+    X4GDMLReadStructureTest /tmp/outpath.gdml   # if a path is provided the GDML string is written to it, allowing use of CGDMLPropertyTest with it  
+        test_readString : parse GDML string literal, attempting to make the problem 
+        manifest with a small geometry : so far the issue does not manifest  
+      
+        actually how do I know ? 
+
+
+
+Lack of a non-zero efficiency causes a REFLECTIVITY assert for geocache-create with 1062
+------------------------------------------------------------------------------------------
+
+* assert occurs because non-sensor surfaces are required to have a REFLECTIVITY : if the 
+  efficiency values were not all zero then it would be classified as a sensor surface
+  and the assert would not be tripped 
+
+
 ::
 
     epsilon:opticks charles$ geocache-create -D
@@ -564,6 +598,8 @@ Possibly is_sensor is what is different.
 
 Added test CGDMLPropertyTest the 1042 vs 1062 difference is plain
 -------------------------------------------------------------------
+
+The new test loads the GDML and dumps properties using mostly pure Geant4 code.
 
 1042 has some values::
 

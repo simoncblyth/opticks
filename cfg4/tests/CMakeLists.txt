@@ -49,6 +49,8 @@ set(TEST_SOURCES
     CGenstepSourceTest.cc
     C4FPEDetectionTest.cc
 
+    CDumpTest.cc
+
 )
 
 # generate targets for these, but dont add_test 
