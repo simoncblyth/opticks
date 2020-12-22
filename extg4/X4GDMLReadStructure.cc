@@ -18,12 +18,18 @@
  */
 
 
+#include <map>
 #include <fstream>
+#include <cstring>
+
 #include "BFile.hh"
 #include "X4GDMLReadStructure.hh"
 #include "X4SolidStore.hh"
+#include "X4GDMLMatrix.hh"
 
-#include <cstring>
+#include "G4String.hh"
+#include "G4GDMLReadDefine.hh"  // for G4GDMLMatrix
+
 #include "PLOG.hh"
 
 const plog::Severity X4GDMLReadStructure::LEVEL = PLOG::EnvLevel("X4GDMLReadStructure", "DEBUG" ); 
@@ -85,5 +91,25 @@ const G4VSolid* X4GDMLReadStructure::ReadSolidFromString(const char* gdmlstring)
     reader.readString(gdmlstring);
     return reader.getSolid(-1); 
 }
+
+
+void X4GDMLReadStructure::dumpMatrixMap(const char* msg) const 
+{
+    LOG(info) << msg ; 
+
+    unsigned edgeitems = 5 ; 
+    typedef std::map<G4String,G4GDMLMatrix>::const_iterator IT ; 
+    for(IT it=matrixMap.begin() ; it != matrixMap.end() ; it++)
+    {
+        std::cout << it->first << std::endl ;
+        const G4GDMLMatrix& matrix = it->second ; 
+
+        X4GDMLMatrix xmatrix(matrix); 
+        std::cout << xmatrix.desc(edgeitems) << std::endl ;  
+    }
+}
+
+// the below is private (not protected) in G4GDMLReadSolids so cannot dump 
+// std::map<G4String, G4MaterialPropertyVector*> mapOfMatPropVects;
 
 

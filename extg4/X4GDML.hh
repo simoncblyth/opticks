@@ -52,6 +52,7 @@ class X4_API X4GDML
         static std::string GenerateName(const char* name, const void* const ptr, bool addPointerToName=true );
     public:
         X4GDML(); 
+        void setReadValidate(bool read_validate); 
         void read(const char* path);  
         void write(const char* path,  const G4VPhysicalVolume* const world, const BMeta* meta=NULL );
     public:

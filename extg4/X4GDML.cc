@@ -59,10 +59,16 @@ X4GDML::X4GDML()
     m_parser(new G4GDMLParser),
     m_write_refs(true),
     m_write_schema_location(""),
-    m_read_validate(false),
+    m_read_validate(true),
     m_read_trimPtr(false)
 {
 }
+
+void X4GDML::setReadValidate(bool read_validate)
+{
+    m_read_validate = read_validate ; 
+}
+
 
 void X4GDML::read(const char* path)
 {

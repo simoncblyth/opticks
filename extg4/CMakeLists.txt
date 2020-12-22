@@ -102,6 +102,7 @@ set(SOURCES
 
     X4GDML.cc
     X4Dump.cc   
+    X4GDMLMatrix.cc
 
     X4_LOG.cc
 
@@ -155,6 +156,8 @@ set(HEADERS
 
     X4GDML.hh
     X4Dump.hh
+    X4GDMLMatrix.hh
+
     X4_LOG.hh
     X4_API_EXPORT.hh
     X4_HEAD.hh

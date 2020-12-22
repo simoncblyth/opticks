@@ -42,12 +42,15 @@ rather than having to specify it on the commandline.
 
 Notice that Opticks is "embedded" when running from GDML which means that 
 it does not parse the commandline, this matches production usage. In order  
-supply Opticks additional arguments the G4OPTICKS_DEBUG envvar backdoor can be used.
+to control the Opticks commandline the below envvars can be used.
 
-When running from cache the commandline is now parsed using the 
-arguments captured by OPTICKS_LOG. Caution that both arguments
-from the commandline and the fixed embedded commandline are used. 
-This prevents the use of some arguments as duplicates cause asserts.  
+OPTICKS_EMBEDDED_COMMANDLINE
+   default when not defined is "pro" 
+
+OPTICKS_EMBEDDED_COMMANDLINE_EXTRA
+   adds to the commandline
+
+Note that duplicate arguments cause asserts.  
 
 
 Genstep Setup

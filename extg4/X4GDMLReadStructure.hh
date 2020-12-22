@@ -61,6 +61,7 @@ class X4_API X4GDMLReadStructure : public G4GDMLReadStructure
         const G4VSolid* getSolid(int offset=-1);
         void readString(const char* gdmlstring); 
         void readFile(const char* path); 
+        void dumpMatrixMap(const char* msg="X4GDMLReadStructure::dumpMatrixMap") const ;
 
 
 };

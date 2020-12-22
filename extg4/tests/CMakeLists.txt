@@ -28,7 +28,10 @@ set(TEST_SOURCES
     X4GDMLBalanceTest.cc
 
     X4GDMLReadStructureTest.cc
+    X4GDMLReadStructure2Test.cc
     X4DumpTest.cc 
+    X4GDMLReadDefineTest.cc
+    G4GDMLReadSolids_1062_mapOfMatPropVects_bug.cc
 )
 
 

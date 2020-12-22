@@ -15,15 +15,611 @@ Investigation techniques
 ::
 
     geocache-create -D
+        asserts with 1062
 
     CGDMLPropertyTest /tmp/v1.gdml
         load gdml and dump surface and material property values
 
-    X4GDMLReadStructureTest /tmp/outpath.gdml   # if a path is provided the GDML string is written to it, allowing use of CGDMLPropertyTest with it  
+    X4GDMLReadStructureTest 
         test_readString : parse GDML string literal, attempting to make the problem 
-        manifest with a small geometry : so far the issue does not manifest  
-      
-        actually how do I know ? 
+        manifest with a small geometry : so far the issue does not manifest as shown below.
+
+        If a path argument such as /tmp/outpath.gdml is provided the GDML string 
+        is written to it, allowing use of CGDMLPropertyTest for the small geometry.
+
+    X4GDMLReadStructure2Test  /tmp/v1.gdml
+        X4GDMLReadStructure inherits from the G4GDMLReadStructure giving 
+        access to protected intermediates from the GDML parsing such as the matrixMap
+        Doing this suggests the values are still instact within the matrixMap
+
+    extg4/tests/G4GDMLReadSolids_1062_mapOfMatPropVects_bug.cc
+        capture the issue 
+
+
+
+Geant4 GDML source
+--------------------
+
+Read and Write inheritance chains::
+
+    g4-;g4n-cd source/persistency/gdml/src
+
+    epsilon:include blyth$ grep :\ public *.hh
+    G4GDMLMessenger.hh:class G4GDMLMessenger : public G4UImessenger
+    G4GDMLParameterisation.hh:class G4GDMLParameterisation : public G4VPVParameterisation
+    G4GDMLRead.hh:class G4GDMLErrorHandler : public xercesc::ErrorHandler
+
+    G4GDMLReadDefine.hh:class G4GDMLReadDefine : public G4GDMLRead
+    G4GDMLReadMaterials.hh:class G4GDMLReadMaterials : public G4GDMLReadDefine 
+    G4GDMLReadSolids.hh:class G4GDMLReadSolids : public G4GDMLReadMaterials
+    G4GDMLReadSetup.hh:class G4GDMLReadSetup : public G4GDMLReadSolids
+    G4GDMLReadParamvol.hh:class G4GDMLReadParamvol : public G4GDMLReadSetup
+    G4GDMLReadStructure.hh:class G4GDMLReadStructure : public G4GDMLReadParamvol
+
+    G4GDMLWriteDefine.hh:class G4GDMLWriteDefine : public G4GDMLWrite
+    G4GDMLWriteMaterials.hh:class G4GDMLWriteMaterials : public G4GDMLWriteDefine
+    G4GDMLWriteSolids.hh:class G4GDMLWriteSolids : public G4GDMLWriteMaterials
+    G4GDMLWriteSetup.hh:class G4GDMLWriteSetup : public G4GDMLWriteSolids
+    G4GDMLWriteParamvol.hh:class G4GDMLWriteParamvol : public G4GDMLWriteSetup
+    G4GDMLWriteStructure.hh:class G4GDMLWriteStructure : public G4GDMLWriteParamvol
+
+    epsilon:include blyth$ 
+
+
+G4GDMLParser has reader and writer constituents which are the tops of the inheritance chains::
+
+    G4GDMLReadStructure
+
+    G4GDMLWriteStructure
+
+
+::
+
+    362 void G4GDMLRead::Read(const G4String& fileName,
+    363                             G4bool validation,
+    364                             G4bool isModule,
+    365                             G4bool strip)
+    366 {
+    367    dostrip = strip;
+
+    ... loop over top level gdml child elements ...
+
+    441       const G4String tag = Transcode(child->getTagName());
+    442 
+    443       if (tag=="define")    { DefineRead(child);    } else
+    444       if (tag=="materials") { MaterialsRead(child); } else
+    445       if (tag=="solids")    { SolidsRead(child);    } else
+    446       if (tag=="setup")     { SetupRead(child);     } else
+    447       if (tag=="structure") { StructureRead(child); } else
+    448       if (tag=="userinfo")  { UserinfoRead(child);  } else
+    449       if (tag=="extension") { ExtensionRead(child); }
+    450       else
+    451       {
+    452         G4String error_msg = "Unknown tag in gdml: " + tag;
+    453         G4Exception("G4GDMLRead::Read()", "InvalidRead",
+    454                     FatalException, error_msg);
+    455       }
+    456    }
+    ...     strip never done for modules 
+    468    {
+    469       G4cout << "G4GDML: Reading '" << fileName << "' done!" << G4endl;
+    470       if (strip)  { StripNames(); }
+    471    }
+    472 }
+
+
+    465 void
+    466 G4GDMLReadDefine::DefineRead(const xercesc::DOMElement* const defineElement)
+    467 {
+    ...
+    484       const G4String tag = Transcode(child->getTagName());
+    485 
+    486       if (tag=="constant") { ConstantRead(child); } else
+    487       if (tag=="matrix")   { MatrixRead(child); }   else
+    488       if (tag=="position") { PositionRead(child); } else
+    489       if (tag=="rotation") { RotationRead(child); } else
+    490       if (tag=="scale")    { ScaleRead(child); }    else
+    491       if (tag=="variable") { VariableRead(child); } else
+    492       if (tag=="quantity") { QuantityRead(child); } else
+    493       if (tag=="expression") { ExpressionRead(child); }
+    494       else
+    495       {
+
+
+::
+
+    079 void G4GDMLEvaluator::DefineMatrix(const G4String& name,
+     80                                          G4int coldim,
+     81                                          std::vector<G4double> valueList)
+     82 {
+    ...
+    118    else   // Normal matrix
+    119    {
+    120       const G4int rowdim = size/coldim;
+    121 
+    122       for (G4int i=0;i<rowdim;i++)
+    123       {
+    124         for (G4int j=0;j<coldim;j++)
+    125         {
+    126           std::stringstream MatrixElementNameStream;
+    127           MatrixElementNameStream << name << "_" << i << "_" << j;
+    128           DefineConstant(MatrixElementNameStream.str(),valueList[coldim*i+j]);
+    129         }
+    130       }
+    131    }
+    132 }
+
+
+::
+
+    632 G4GDMLMatrix G4GDMLReadDefine::GetMatrix(const G4String& ref)
+    633 {
+    634    if (matrixMap.find(ref) == matrixMap.end())
+    635    {
+    636      G4String error_msg = "Matrix '"+ref+"' was not found!";
+    637      G4Exception("G4GDMLReadDefine::getMatrix()", "ReadError",
+    638                  FatalException, error_msg);
+    639    }
+    640    return matrixMap[ref];
+    641 }
+
+
+    epsilon:src blyth$ grep GetMatrix *.cc
+    G4GDMLReadDefine.cc:G4GDMLMatrix G4GDMLReadDefine::GetMatrix(const G4String& ref)
+    G4GDMLReadMaterials.cc:      if (attName=="ref")  { matrix = GetMatrix(ref=attValue); }
+    G4GDMLReadSolids.cc:      if (attName=="ref")  { matrix = GetMatrix(ref=attValue); }
+    epsilon:src blyth$ 
+    epsilon:src blyth$ 
+    epsilon:src blyth$ grep GetMatrix ../include/*.icc
+    G4GDMLMatrix G4GDMLParser::GetMatrix(const G4String& name) const
+      return reader->GetMatrix(name);
+
+    epsilon:src blyth$ grep GetMatrix ../include/*.hh
+    ../include/G4GDMLParser.hh:   inline G4GDMLMatrix GetMatrix(const G4String& name) const;
+    ../include/G4GDMLReadDefine.hh:   G4GDMLMatrix GetMatrix(const G4String&);
+    epsilon:src blyth$ 
+
+
+1062::
+
+    627 void G4GDMLReadMaterials::
+    628 PropertyRead(const xercesc::DOMElement* const propertyElement,
+    629              G4Material* material)
+    630 {
+    631    G4String name;
+    632    G4String ref;
+    633    G4GDMLMatrix matrix;
+    ...
+
+    675    G4MaterialPropertiesTable* matprop=material->GetMaterialPropertiesTable();
+    676    if (!matprop)
+    677    {
+    678      matprop = new G4MaterialPropertiesTable();
+    679      material->SetMaterialPropertiesTable(matprop);
+    680    }
+    681    if (matrix.GetCols() == 1)  // constant property assumed
+    682    {
+    683      matprop->AddConstProperty(Strip(name), matrix.Get(0,0));
+    684    }
+    685    else  // build the material properties vector
+    686    {
+    687      G4MaterialPropertyVector* propvect = new G4MaterialPropertyVector();
+    688      for (size_t i=0; i<matrix.GetRows(); i++)
+    689      {
+    690        propvect->InsertValues(matrix.Get(i,0),matrix.Get(i,1));
+    691      }
+    692      matprop->AddProperty(Strip(name),propvect);
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  wisps of smoke here : stripping the name could cause the zeroing 
+      ^^^^^^^^^^^^ actually it is not a problem it is the reference to the matrix name that could not cope with being 0x stripped 
+      ^^^^^^^^^^^^ not the property name
+    693    }
+    694 }
+
+
+::
+
+    g4n-cls G4GDMLReadMaterials
+
+
+
+DYB has loadsa optical surfaces with same property names like "EFFICIENCY" and "REFLECTIVITY" 
+where most of the EFFICIENCY are zero.  But some are non-zero and need to stay that way::
+
+     87     <opticalsurface finish="0" model="0" name="SCB_photocathode_opsurf" type="0" value="1">
+     88          <property name="EFFICIENCY" ref="EFFICIENCY0x1d79780"/>   <!-- the non-zero efficiency-->
+     89     </opticalsurface>
+     ...
+     2632     <opticalsurface finish="3" model="1" name="TablePanelSurface" type="0" value="1">
+     2633       <property name="REFLECTIVITY" ref="REFLECTIVITY0x1e2eae0"/>
+     2634       <property name="EFFICIENCY" ref="EFFICIENCY0x1e2e540"/>
+     2635     </opticalsurface>
+     2636     <box lunit="mm" name="support_rib1_box0xc0d3bc00x3eb1550" x="3429" y="20" z="230"/>
+     2637     <opticalsurface finish="3" model="1" name="SupportRib1Surface" type="0" value="1">
+     2638       <property name="REFLECTIVITY" ref="REFLECTIVITY0x1e2b9f0"/>
+     2639       <property name="EFFICIENCY" ref="EFFICIENCY0x1e2b450"/>
+     2640     </opticalsurface>
+
+
+1062::
+
+    2477 void G4GDMLReadSolids::
+    2478 PropertyRead(const xercesc::DOMElement* const propertyElement,
+    2479              G4OpticalSurface* opticalsurface)
+    2480 {
+    2481    G4String name;
+    2482    G4String ref;
+    2483    G4GDMLMatrix matrix;
+
+    ....    attribute loop ...  
+
+    2484 
+    2505       const G4String attName = Transcode(attribute->getName());
+    2506       const G4String attValue = Transcode(attribute->getValue());
+    2507 
+    2508       if (attName=="name") { name = GenerateName(attValue); } else
+    2509       if (attName=="ref")  { matrix = GetMatrix(ref=attValue); }
+
+    ....
+
+    2525    G4MaterialPropertiesTable* matprop=opticalsurface->GetMaterialPropertiesTable();
+    2526    if (!matprop)
+    2527    {
+    2528      matprop = new G4MaterialPropertiesTable();
+    2529      opticalsurface->SetMaterialPropertiesTable(matprop);
+    2530    }
+
+    2531    if (matrix.GetCols() == 1)  // constant property assumed
+    2532    {
+    2533      matprop->AddConstProperty(Strip(name), matrix.Get(0,0));
+    2534    }
+    2535    else  // build the material properties vector
+    2536    {
+    2537      G4MaterialPropertyVector* propvect;
+    2538      // first check if it was already built
+    2539      if ( mapOfMatPropVects.find(Strip(name)) == mapOfMatPropVects.end())
+    2540      {
+    2541           // if not create a new one
+    2542           propvect = new G4MaterialPropertyVector();
+    2543           for (size_t i=0; i<matrix.GetRows(); i++)
+    2544           {
+    2545               propvect->InsertValues(matrix.Get(i,0),matrix.Get(i,1));
+    2546           }
+    2547           // and add it to the list for potential future reuse
+    2548           mapOfMatPropVects[Strip(name)] = propvect;
+    2549       }
+
+
+    2550      else
+    2551      {
+    2552           propvect = mapOfMatPropVects[Strip(name)];
+    2553      }
+
+
+    //////  this assumes the names of all properties are unique across all surfaces 
+    //////   THAT IS AN OBVIOUS BUG AND IT IS STILL THERE IN  1070
+    //////        https://github.com/Geant4/geant4/blob/master/source/persistency/gdml/src/G4GDMLReadSolids.cc
+    //////
+    //////   
+
+
+    
+    2554    
+    2555      matprop->AddProperty(Strip(name),propvect);
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  assumption of stripped names being unique very smoky 
+    2556    }
+    2557 }
+
+1062::
+
+    113 private:
+    114   std::map<G4String, G4MaterialPropertyVector*> mapOfMatPropVects;
+    115 
+    116 };
+
+
+1042::
+
+    2525    if (matrix.GetRows() == 0) { return; }
+    2526 
+    2527    G4MaterialPropertiesTable* matprop=opticalsurface->GetMaterialPropertiesTable();
+    2528    if (!matprop)
+    2529    {
+    2530      matprop = new G4MaterialPropertiesTable();
+    2531      opticalsurface->SetMaterialPropertiesTable(matprop);
+    2532    }
+    2533    if (matrix.GetCols() == 1)  // constant property assumed
+    2534    {
+    2535      matprop->AddConstProperty(Strip(name), matrix.Get(0,0));
+    2536    }
+    2537    else  // build the material properties vector
+    2538    {
+    2539      G4MaterialPropertyVector* propvect = new G4MaterialPropertyVector();
+    2540      for (size_t i=0; i<matrix.GetRows(); i++)
+    2541      {
+    2542        propvect->InsertValues(matrix.Get(i,0),matrix.Get(i,1));
+    2543      }
+    2544      matprop->AddProperty(Strip(name),propvect);
+    2545    }
+    2546 }
+
+
+Huh 1042 also stripping. Yes the problem is not the stripping its the use of mapOfMatPropVects::
+
+    2525    if (matrix.GetRows() == 0) { return; }
+    2526 
+    2527    G4MaterialPropertiesTable* matprop=opticalsurface->GetMaterialPropertiesTable();
+    2528    if (!matprop)
+    2529    {
+    2530      matprop = new G4MaterialPropertiesTable();
+    2531      opticalsurface->SetMaterialPropertiesTable(matprop);
+    2532    }
+    2533    if (matrix.GetCols() == 1)  // constant property assumed
+    2534    {
+    2535      matprop->AddConstProperty(Strip(name), matrix.Get(0,0));
+    2536    }
+    2537    else  // build the material properties vector
+    2538    {
+    2539      G4MaterialPropertyVector* propvect = new G4MaterialPropertyVector();
+    2540      for (size_t i=0; i<matrix.GetRows(); i++)
+    2541      {
+    2542        propvect->InsertValues(matrix.Get(i,0),matrix.Get(i,1));
+    2543      }
+    2544      matprop->AddProperty(Strip(name),propvect);
+    2545    }
+    2546 }
+
+
+
+
+
+Name stripping is a really dumb thing to do::
+
+
+    097 G4String G4GDMLRead::Strip(const G4String& name) const
+     98 {
+     99   G4String sname(name);
+    100   return sname.remove(sname.find("0x"));
+    101 }
+    102 
+    103 void G4GDMLRead::StripName(G4String& name) const
+    104 {
+    105   name.remove(name.find("0x"));
+    106 }
+
+
+
+
+
+
+
+Geant4 Release Notes
+----------------------
+
+* https://geant4-data.web.cern.ch/ReleaseNotes/ReleaseNotes4.10.6.html
+
+GDML:
+Added support for writing out assemblies envelopes.
+*Improved reading of optical properties reader, by allowing reuse of the 
+same G4MaterialPropertyVector object for identical properties.*
+
+   * this change could be implicated : CONFIRMED : Improved -> Broken 
+
+G4GDMLMessenger: fix to avoid UI commands from being broadcasted to worker threads.
+G4GDMLRead: fix to avoid double-definition of system units.
+
+
+* https://github.com/Geant4/geant4/releases
+
+
+* https://github.com/Geant4/geant4/files/2855943/Patch4.10.4-3.txt
+
+  o Persistency - gdml
+    ------------------
+    + Clear auxiliary map information in G4GDMLReadStructure::Clear().
+      Addressing problem report #2064.
+    + Added stripping of invalid characters for names generation in writer classes
+      to prevent invalid NCName strings in exported GDML files. Adopt properly
+      stripped generated strings for exporting names of optical surfaces.
+
+
+* https://github.com/Geant4/geant4/files/3088653/Patch4.10.5-1.txt
+
+ o Persistency
+    -----------
+    + ascii:
+      o Fixed shadowing compilation warnings.
+    + gdml:
+      o Fix in G4GDMLReadStructure::PhysvolRead() to allow correct import of
+        recursive assembly structures. Addressing problem report #2141.
+      o Added protection to G4GDMLParser for dumping geometry only through
+        the master thread. Added extra protection also in reading.
+        Addressing problem report #2156.
+      o Fixed export of optical surface properties.
+        Addressing problem reports #2142 and 2143.
+
+
+* https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2142
+
+Problem 2142 - A PhysicalVolume with more than two BorderSurface will not be writed to GDML file in correct way.
+
+* https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2143
+
+Problem 2143 - Diffrent OpticalSurface with same MaterialPropertiesTable will not be writed to GDML file in correct way.
+
+* https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2156
+
+Problem 2156 - GDML export shows Segmentation Fault in Multithreading, but runs fine in Sequential
+
+
+* file:///Users/blyth/Downloads/ReleaseNotes4.10.7.html
+
+Optical
+Added second wavelength shifting process, G4OpWLS2, within the same material.
+Use new ConstPropertyExists(int) method rather than passing strings.
+G4OpRayleigh, G4OpAbsorption, G4OpMieHG, G4OpWLS, G4OpWLS2: moved to new G4OpticalParameters class to control simulation parameters.
+G4OpRayleigh: avoid double deletion of property vectors.
+G4OpBoundaryProcess: increase geometry tolerance to kCarTolerance.
+Fixed reading of Davis LUT data out of bounds. Addressing problem report #2287.
+Code cleanup/formatting and improved readability.
+
+
+
+
+GDML schema validation
+------------------------
+
+Change gdml element to have the schema location::
+
+    <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+::
+
+
+    epsilon:extg4 blyth$ X4DumpTest /tmp/v1.gdml > /tmp/out
+
+    ## loads of invalid NCName
+
+    epsilon:extg4 blyth$ grep -v NCName /tmp/out
+    2020-12-22 12:20:27.386 INFO  [8494907] [main@24] OKConf::Geant4VersionInteger() : 1042
+    2020-12-22 12:20:27.386 INFO  [8494907] [main@32]  parsing /tmp/v1.gdml
+    G4GDML: Reading '/tmp/v1.gdml'...
+    G4GDML: VALIDATION ERROR! element 'auxiliary' is not allowed for content model '(materialref,solidref,(physvol+|divisionvol|replicavol|paramvol),loop*,auxiliary*)' at line: 8810
+
+
+         8754     <volume name="/dd/Geometry/AD/lvADE0xc2a78c00x3ef9140">
+         8755       <auxiliary auxtype="label" auxvalue="target"/>
+         8756       <materialref ref="/dd/Materials/IwsWater0x3e6bf60"/>
+         8757       <solidref ref="ade0xc2a74380x3eafdb0"/>
+         ...
+         8805       <physvol name="/dd/Geometry/AD/lvADE#pvlvMOOverflowTankE20xbf4f7a80x3ef9be0">
+         8806         <volumeref ref="/dd/Geometry/AdDetails/lvMOOverflowTankE0xbfa59f00x3f2f570"/>
+         8807         <position name="/dd/Geometry/AD/lvADE#pvlvMOOverflowTankE20xbf4f7a80x3ef9be0_pos" unit="mm" x="-1637.57647137626" y="-678.306383867122" z="2153.5"/>
+         8808         <rotation name="/dd/Geometry/AD/lvADE#pvlvMOOverflowTankE20xbf4f7a80x3ef9be0_rot" unit="deg" x="0" y="0" z="157.5"/>
+         8809       </physvol>
+         8810     </volume>
+
+         Try repositioning auxiliary to the last child position.
+
+
+    G4GDML: VALIDATION ERROR! ID value 'NearPoolCoverSurface' is not unique at line: 31833
+    G4GDML: VALIDATION ERROR! ID value 'RSOilSurface' is not unique at line: 31836
+    G4GDML: VALIDATION ERROR! ID value 'AdCableTraySurface' is not unique at line: 31839
+    G4GDML: VALIDATION ERROR! ID value 'PmtMtTopRingSurface' is not unique at line: 31842
+    G4GDML: VALIDATION ERROR! ID value 'PmtMtBaseRingSurface' is not unique at line: 31845
+    G4GDML: VALIDATION ERROR! ID value 'PmtMtRib1Surface' is not unique at line: 31848
+    G4GDML: VALIDATION ERROR! ID value 'PmtMtRib2Surface' is not unique at line: 31851
+    G4GDML: VALIDATION ERROR! ID value 'PmtMtRib3Surface' is not unique at line: 31854
+    G4GDML: VALIDATION ERROR! ID value 'LegInIWSTubSurface' is not unique at line: 31857
+    G4GDML: VALIDATION ERROR! ID value 'TablePanelSurface' is not unique at line: 31860
+    G4GDML: VALIDATION ERROR! ID value 'SupportRib1Surface' is not unique at line: 31863
+    G4GDML: VALIDATION ERROR! ID value 'SupportRib5Surface' is not unique at line: 31866
+    G4GDML: VALIDATION ERROR! ID value 'SlopeRib1Surface' is not unique at line: 31869
+    G4GDML: VALIDATION ERROR! ID value 'SlopeRib5Surface' is not unique at line: 31872
+    G4GDML: VALIDATION ERROR! ID value 'ADVertiCableTraySurface' is not unique at line: 31875
+    G4GDML: VALIDATION ERROR! ID value 'ShortParCableTraySurface' is not unique at line: 31878
+    G4GDML: VALIDATION ERROR! ID value 'NearInnInPiperSurface' is not unique at line: 31881
+    G4GDML: VALIDATION ERROR! ID value 'NearInnOutPiperSurface' is not unique at line: 31884
+    G4GDML: VALIDATION ERROR! ID value 'LegInOWSTubSurface' is not unique at line: 31887
+    G4GDML: VALIDATION ERROR! ID value 'UnistrutRib6Surface' is not unique at line: 31890
+    G4GDML: VALIDATION ERROR! ID value 'UnistrutRib7Surface' is not unique at line: 31893
+    G4GDML: VALIDATION ERROR! ID value 'UnistrutRib3Surface' is not unique at line: 31896
+    G4GDML: VALIDATION ERROR! ID value 'UnistrutRib5Surface' is not unique at line: 31899
+    G4GDML: VALIDATION ERROR! ID value 'UnistrutRib4Surface' is not unique at line: 31902
+    G4GDML: VALIDATION ERROR! ID value 'UnistrutRib1Surface' is not unique at line: 31905
+    G4GDML: VALIDATION ERROR! ID value 'UnistrutRib2Surface' is not unique at line: 31908
+    G4GDML: VALIDATION ERROR! ID value 'UnistrutRib8Surface' is not unique at line: 31911
+    G4GDML: VALIDATION ERROR! ID value 'UnistrutRib9Surface' is not unique at line: 31914
+    G4GDML: VALIDATION ERROR! ID value 'TopShortCableTraySurface' is not unique at line: 31917
+    G4GDML: VALIDATION ERROR! ID value 'TopCornerCableTraySurface' is not unique at line: 31920
+    G4GDML: VALIDATION ERROR! ID value 'VertiCableTraySurface' is not unique at line: 31923
+    G4GDML: VALIDATION ERROR! ID value 'NearOutInPiperSurface' is not unique at line: 31926
+    G4GDML: VALIDATION ERROR! ID value 'NearOutOutPiperSurface' is not unique at line: 31929
+    G4GDML: VALIDATION ERROR! ID value 'LegInDeadTubSurface' is not unique at line: 31932
+    G4GDML: VALIDATION ERROR! ID value 'ESRAirSurfaceTop' is not unique at line: 31935
+    G4GDML: VALIDATION ERROR! ID value 'ESRAirSurfaceBot' is not unique at line: 31939
+    G4GDML: VALIDATION ERROR! ID value 'SSTOilSurface' is not unique at line: 31943
+    G4GDML: VALIDATION ERROR! ID value 'SSTWaterSurfaceNear1' is not unique at line: 31947
+    G4GDML: VALIDATION ERROR! ID value 'SSTWaterSurfaceNear2' is not unique at line: 31951
+    G4GDML: VALIDATION ERROR! ID value 'NearIWSCurtainSurface' is not unique at line: 31955
+    G4GDML: VALIDATION ERROR! ID value 'NearOWSLinerSurface' is not unique at line: 31959
+    G4GDML: VALIDATION ERROR! ID value 'NearDeadLinerSurface' is not unique at line: 31963
+    G4GDML: VALIDATION ERROR! element 'userinfo' is not allowed for content model '(define,materials,solids,structure,userinfo?,setup+)' at line: 31990
+
+        31989 
+        31990 </gdml>
+
+        complaint at last line  : move userinfo between structure and setup
+
+
+    G4GDML: Reading userinfo...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+    G4GDML: Reading setup...
+    G4GDML: Reading '/tmp/v1.gdml' done!
+    mt,sk,bs
+    G4VERSION_NUMBER 1042
+
+
+After moving auxiliary and userinfo get two types of complaint.
+
+1. invalid NCName
+2. ID value is not unique
+
+::
+
+     grep -v NCName /tmp/out2 | grep -v not\ unique
+
+NCName
+-------
+
+* https://stackoverflow.com/questions/1631396/what-is-an-xsncname-type-and-when-should-it-be-used
+
+The practical restrictions of NCName are that it cannot contain several symbol
+characters like :, @, $, %, &, /, +, ,, ;, whitespace characters or different
+parenthesis. Furthermore an NCName cannot begin with a number, dot or minus
+character although they can appear later in an NCName.
+
+
+
+
+X4GDMLReadStructureTest with 1062 : zeroing not happening with simple gdml
+-----------------------------------------------------------------------------
+
+::
+
+    epsilon:extg4 charles$ X4GDMLReadStructureTest
+    G4GDML: Reading '/tmp/charles/opticks/X4GDMLReadStructure__WriteGDMLStringToTmpPath_3c55-c24c-235a-3dc3'...
+    G4GDML: Reading userinfo...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+    G4GDML: Reading setup...
+    G4GDML: Reading '/tmp/charles/opticks/X4GDMLReadStructure__WriteGDMLStringToTmpPath_3c55-c24c-235a-3dc3' done!
+    mt,sk,bs
+    G4VERSION_NUMBER 1062
+    G4VERSION_TAG    $Name: geant4-10-06-patch-02 $
+    G4Version        $Name: geant4-10-06-patch-02 $
+    G4Date           (29-May-2020)
+    mt
+    nmat 2 tab.size 2
+    /dd/Materials/fakePyrex  NULL mpt 
+    /dd/Materials/fakeVacuum  NULL mpt 
+    sk
+    nlss 0 tab.size 0
+    bs
+    nlbs 2 tab.size 2
+    SCB_photocathode_logsurf1 23
+    i     4 pidx     4              EFFICIENCY pvec 0x7fc5b585b730 plen  39 0.0001 0.0001 0.000440306 0.000782349 0.00112439 ... 0 0 0 0  mn 0 mx 0.24
+    SCB_photocathode_logsurf2 23
+    i     4 pidx     4              EFFICIENCY pvec 0x7fc5b585b730 plen  39 0.0001 0.0001 0.000440306 0.000782349 0.00112439 ... 0 0 0 0  mn 0 mx 0.24
+    G4VERSION_NUMBER 1062
+    G4VERSION_TAG    $Name: geant4-10-06-patch-02 $
+    G4Version        $Name: geant4-10-06-patch-02 $
+    G4Date           (29-May-2020)
+    epsilon:extg4 charles$ 
 
 
 
@@ -872,6 +1468,47 @@ Darwin.charles.1062::
 
 
 The problem with the full geometry is not manifesting in the partial one.
+
+
+
+Rebuild my changed g4_1062
+---------------------------
+
+Change ~/.opticks_config setting OPTICKS_GEANT4_VER=1062 and removing the "opticks-prepend-prefix /usr/local/opticks_externals/g4_1042"::
+
+     22 # temporary setting whilst building g4_1062 for use from charles account 
+     23 export OPTICKS_GEANT4_VER=1062
+     24 
+     25 ## hookup paths to access "foreign" externals 
+     26 opticks-prepend-prefix /usr/local/opticks_externals/boost
+     27 
+     28 opticks-prepend-prefix /usr/local/opticks_externals/clhep
+     29 opticks-prepend-prefix /usr/local/opticks_externals/xercesc
+     30 #opticks-prepend-prefix /usr/local/opticks_externals/g4_1042
+     31 
+
+Now in a fresh "blyth" session::
+
+    epsilon:opticks blyth$ g4-
+    epsilon:opticks blyth$ g4-prefix
+    /usr/local/opticks_externals/g4_1062
+
+::
+
+    g4-build
+    ...
+    [ 85%] Built target G4interfaces
+    [ 86%] Built target G4parmodels
+    Scanning dependencies of target G4persistency
+    [ 86%] Building CXX object source/persistency/CMakeFiles/G4persistency.dir/gdml/src/G4GDMLRead.cc.o
+    [ 86%] Building CXX object source/persistency/CMakeFiles/G4persistency.dir/gdml/src/G4GDMLReadSolids.cc.o
+    [ 86%] Linking CXX shared library ../../BuildProducts/lib/libG4persistency.dylib
+    [ 88%] Built target G4persistency
+    [ 94%] Built target G4physicslists
+    [ 95%] Built target G4readout
+
+
+
 
 
 
