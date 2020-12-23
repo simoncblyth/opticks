@@ -10,6 +10,7 @@ Everyone attempting to install Opticks needs to read these.
 * :doc:`externals`
 * :doc:`testing` 
 * :doc:`visualization`
+* :doc:`quickstart`
 * :doc:`updating_this_documentation`
 
 

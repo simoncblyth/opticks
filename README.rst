@@ -8,12 +8,13 @@ For presentations and videos about Opticks:
 
 For instructions on building Opticks and externals: 
 
+* http://simoncblyth.bitbucket.io/opticks/docs/opticks.html
+* http://simoncblyth.bitbucket.io/opticks/docs/quickstart.html
 * http://simoncblyth.bitbucket.io/opticks/
 
 Related repositories:
 
 * https://bitbucket.org/simoncblyth/env
-
 
 Bitbucket and Github repositories
 

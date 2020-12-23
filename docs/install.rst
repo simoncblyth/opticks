@@ -113,7 +113,7 @@ Extracts from the example `~/.opticks_config` are shown below.
     ## hookup paths to access "foreign" externals 
     opticks-prepend-prefix /usr/local/opticks_externals/clhep
     opticks-prepend-prefix /usr/local/opticks_externals/xercesc
-    opticks-prepend-prefix /usr/local/opticks_externals/g4
+    opticks-prepend-prefix /usr/local/opticks_externals/g4_1042
     opticks-prepend-prefix /usr/local/opticks_externals/boost
 
     ## NB changing any directory paths demands an opticks-full rebuild 
