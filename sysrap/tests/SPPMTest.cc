@@ -1,3 +1,4 @@
+#include "SPath.hh"
 #include "SStr.hh"
 #include "SPPM.hh"
 #include "OPTICKS_LOG.hh"
@@ -5,7 +6,7 @@
 
 void test_MakeTestImage()
 {
-    const char* path = "/tmp/SPPMTest_MakeTestImage.ppm" ;
+    const char* path = SPath::Resolve("$TMP/SPPMTest_MakeTestImage.ppm") ;
     const char* config = "vertical_gradient" ; 
 
     const int width = 1024 ; 
@@ -33,7 +34,7 @@ void test_MakeTestImage()
 
 void test_MakeWriteRead()
 {
-    const char* path = "/tmp/SPPMTest.ppm" ;
+    const char* path = SPath::Resolve("$TMP/SPPMTest.ppm") ;
 
     //const char* config = "checkerboard" ; 
     //const char* config = "horizontal_gradient" ; 

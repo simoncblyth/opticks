@@ -14,8 +14,8 @@ Investigation techniques
 
 ::
 
-    geocache-create -D
-        asserts with 1062
+    geocache-;geocache-create -D
+        asserts with 1062 without 
 
     CGDMLPropertyTest /tmp/v1.gdml
         load gdml and dump surface and material property values

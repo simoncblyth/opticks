@@ -7,12 +7,13 @@
 
 #include <xercesc/util/PlatformUtils.hpp>
 
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
     const char* path = argc > 1 ? argv[1] : NULL ; 
+    if(path == NULL) LOG(fatal) << "expecting argument with path of gdml file to parse"  ; 
+    if(path == NULL) return 0 ; 
 
     xercesc::XMLPlatformUtils::Initialize();
 

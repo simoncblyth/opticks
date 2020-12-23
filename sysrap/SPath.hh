@@ -32,7 +32,10 @@ class SYSRAP_API SPath {
       static const char* Stem( const char* name );
       static bool IsReadable(const char* path);
       static const char* GetHomePath(const char* rel); 
+      static const char* Dirname(const char* path); 
       static const char* Basename(const char* path); 
+      static const char* UserTmpDir(const char* pfx="/tmp", const char* user_envvar="USER", const char* sub="opticks", char sep='/'  );
+      static const char* Resolve(const char* path); 
 };
 
 

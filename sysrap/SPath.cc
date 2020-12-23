@@ -22,6 +22,7 @@
 #include <cassert>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
 #include "SPath.hh"
 
@@ -51,6 +52,13 @@ const char* SPath::GetHomePath(const char* rel)  // static
     return strdup(path.c_str()) ; 
 }
 
+const char* SPath::Dirname(const char* path)
+{
+    std::string p = path ; 
+    std::size_t pos = p.find_last_of("/");
+    std::string dir = pos == std::string::npos ? p : p.substr(0,pos) ; 
+    return strdup( dir.c_str() ) ; 
+}
 
 const char* SPath::Basename(const char* path)
 {
@@ -59,6 +67,58 @@ const char* SPath::Basename(const char* path)
     std::string base = pos == std::string::npos ? p : p.substr(pos+1) ; 
     return strdup( base.c_str() ) ; 
 }
+
+const char* SPath::UserTmpDir(const char* pfx, const char* user_envvar, const char* sub, char sep  ) // static 
+{
+    char* user = getenv(user_envvar); 
+    std::stringstream ss ; 
+    ss << pfx 
+       << sep
+       << user 
+       << sep
+       << sub 
+       ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
+
+/**
+SPath::Resolve
+---------------
+
+Resolves tokenized paths such as "$PREFIX/name.ext" where PREFIX must 
+be an existing envvar. Special handling if "$TMP" is provided that defaults 
+the TMP envvar to "/tmp/username/opticks" 
+
+**/
+
+const char* SPath::Resolve(const char* spec_)
+{
+    if(!spec_) return NULL ;       
+
+    char* spec = strdup(spec_);            // copy to allow modifications 
+    char sep = '/' ; 
+    char* spec_sep = strchr(spec, sep);    // pointer to first separator
+    char* spec_end = strchr(spec, '\0') ;  // pointer to null terminator
+
+    std::stringstream ss ; 
+    if(spec[0] == '$' && spec_sep && spec_end && spec_sep != spec_end)
+    {
+        *spec_sep = '\0' ; // temporarily null terminate at the first slash  
+        char* pfx = getenv(spec+1); 
+        *spec_sep = sep ;  // put back the separator
+        const char* prefix = pfx ? pfx : UserTmpDir() ; 
+        ss << prefix << spec_sep ; 
+    }
+    else
+    {
+        ss << spec ; 
+    }
+    std::string s = ss.str(); 
+    return strdup(s.c_str()) ; 
+}
+
+
 
 
 

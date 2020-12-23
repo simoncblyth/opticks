@@ -1,6 +1,7 @@
 #include "OPTICKS_LOG.hh"
 #include "NPY.hpp"
 #include "SStr.hh"
+#include "SPath.hh"
 #include "ImageNPY.hpp"
 
 /**
@@ -71,7 +72,7 @@ void test_SavePPMConcat( const NPY<unsigned char>* imgs, const char* basepath, b
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-    const char* path  = argc > 1 ? argv[1] : "/tmp/SPPMTest_MakeTestImage.ppm" ; 
+    const char* path  = argc > 1 ? argv[1] : SPath::Resolve("$TMP/SPPMTest_MakeTestImage.ppm") ; 
 
     bool yflip0 = false ; 
     unsigned num_concat = 3 ; 

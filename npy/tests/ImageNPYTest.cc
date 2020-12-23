@@ -1,6 +1,7 @@
 #include "OPTICKS_LOG.hh"
 #include "NPY.hpp"
 #include "SStr.hh"
+#include "SPath.hh"
 #include "ImageNPY.hpp"
 
 /**
@@ -87,7 +88,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* ipath = argc > 1 ? argv[1] : "/tmp/SPPMTest.ppm" ; 
+    const char* ipath = argc > 1 ? argv[1] : SPath::Resolve("$TMP/SPPMTest.ppm") ; 
     const char* opath = argc > 2 ? argv[2] : SStr::ReplaceEnd(ipath, ".ppm", "_ImageNPYTest_annotated.ppm" ) ; 
 
     LOG(info) << " load ipath " << ipath ; 

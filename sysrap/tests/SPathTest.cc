@@ -59,6 +59,34 @@ void test_IsReadable()
     assert( readable_non == false ); 
 }
 
+void test_Dirname()
+{
+    LOG(info); 
+    const char* lines = R"LIT(
+$HOME/hello 
+$TMP/somewhere/over/the/rainbow.txt
+$NON_EXISTING_EVAR/elsewhere/sub.txt
+/just/some/path.txt
+stem.ext
+/
+$
+)LIT";
+    std::stringstream ss(lines); 
+    std::string line ;
+    while (std::getline(ss, line, '\n'))
+    {
+        if(line.empty()) continue ; 
+        const char* path = SPath::Dirname(line.c_str()); 
+        std::cout 
+            << std::setw(60) << line
+            << " : "
+            << std::setw(60) << path
+            << std::endl 
+            ; 
+    }
+}
+
+
 void test_Basename()
 {
     LOG(info); 
@@ -75,6 +103,40 @@ void test_Basename()
     }
 }
 
+void test_UserTmpDir()
+{
+    LOG(info); 
+    const char* tmp = SPath::UserTmpDir(); 
+    std::cout << tmp << std::endl ; 
+}
+
+void test_Resolve()
+{
+    LOG(info); 
+    const char* lines = R"LIT(
+$HOME/hello 
+$TMP/somewhere/over/the/rainbow.txt
+$NON_EXISTING_EVAR/elsewhere/sub.txt
+/just/some/path.txt
+stem.ext
+/
+$
+)LIT";
+    std::stringstream ss(lines); 
+    std::string line ;
+    while (std::getline(ss, line, '\n'))
+    {
+        if(line.empty()) continue ; 
+        const char* path = SPath::Resolve(line.c_str()); 
+        std::cout 
+            << std::setw(60) << line
+            << " : "
+            << std::setw(60) << path
+            << std::endl 
+            ; 
+    }
+}
+
 
 int main(int argc , char** argv )
 {
@@ -83,7 +145,10 @@ int main(int argc , char** argv )
     test_Stem();  
     test_GetHomePath();  
     test_IsReadable();  
+    test_Dirname(); 
     test_Basename(); 
+    test_UserTmpDir(); 
+    test_Resolve(); 
 
     return 0  ; 
 }

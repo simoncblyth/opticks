@@ -40,6 +40,7 @@ opticks-prepend-prefix /usr/local/opticks_externals/boost
 opticks-check-prefix
 [ $? -ne 0 ] && echo ABORT && sleep 1000000000
 
+export PYTHONPATH=$HOME   # needed to allow python scripts to "import opticks"
 
 # Sourcing opticks-setup.sh sets the path envvars for using Opticks executables.  
 # To avoid output on starting every terminal session redirect it to /dev/null.  
