@@ -9,6 +9,16 @@ When loading DYB GDML with Geant4 1062.
 * for all border and skin surfaces the number of values 39 is as expected, BUT all the values are zero
 * material properties are not zeroed 
 
+FIXED
+--------
+
+Fixed by changing g4_1062.G4GDMLSolids effectively eliminating mapOfMatPropVects 
+see 
+
+* ~/opticks/extg4/tests/G4GDMLReadSolids_1062_mapOfMatPropVects_bug.cc
+* https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2305
+
+
 Investigation techniques
 --------------------------
 

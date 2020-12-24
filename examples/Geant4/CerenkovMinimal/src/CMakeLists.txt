@@ -1,0 +1,28 @@
+target_sources(${name}
+    PRIVATE
+        DetectorConstruction.cc
+        PhysicsList.cc
+        L4Cerenkov.cc
+        PrimaryGeneratorAction.cc
+        SteppingAction.cc
+        TrackingAction.cc
+        EventAction.cc
+        RunAction.cc
+        Ctx.cc
+        G4.cc
+        SensitiveDetector.cc
+        OpHit.cc
+    PUBLIC
+        DetectorConstruction.hh
+        PhysicsList.hh
+        L4Cerenkov.hh
+        PrimaryGeneratorAction.hh
+        SteppingAction.hh
+        TrackingAction.hh
+        EventAction.hh
+        RunAction.hh
+        Ctx.hh
+        G4.hh
+        SensitiveDetector.hh
+        OpHit.hh
+)

@@ -25,6 +25,9 @@ ckm-usage(){ cat << EOU
 CerenkovMinimal
 ==================
 
+HAVE MOVED THIS TO BIN AS THIS IS NOT DIGESTIBLE BY NEWBIES
+
+
 Exploring a different architecture for Opticks executables, 
 revolving around the direct geometry geocache and persisted gensteps which
 are identified via OPTICKS_KEY envvar.   
@@ -64,7 +67,7 @@ As intermediate step:
 
 EOU
 }
-ckm-dir(){ echo $(dirname $(ckm-source)) ; }
+ckm-dir(){ echo $(dirname $(dirname $(ckm-source)))/examples/Geant4/CerenkovMinimal  ; }
 ckm-cd(){  cd $(ckm-dir) ; }
 ckm-c(){  cd $(ckm-dir) ; }
 

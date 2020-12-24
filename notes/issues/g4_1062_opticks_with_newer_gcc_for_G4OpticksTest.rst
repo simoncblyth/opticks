@@ -77,7 +77,17 @@ Hmm to test this need:
 2. build Opticks against those
 3. build G4OpticksTest against those
 
-Decide that is too disruptive to do in blyth account so adopt simon account for this.
+Decide that is too disruptive to do in blyth account so adopt Linux.simon and Darwin.charles accounts for this.
+
+
+Darwin.charles
+-----------------
+
+Common symbolic linked sources between blyth and charles accounts on Darwin:: 
+
+    epsilon:~ charles$ ln -s /Users/blyth/opticks
+    epsilon:~ charles$ ln -s /Users/blyth/G4OpticksTest 
+
 
 
 Enable gcc 9.3.1 within simon account
@@ -1520,4 +1530,46 @@ g4 1062 with DYB geom has issue with surface conversion
 
 * :doc:`g4-1062-geocache-create-reflectivity-assert.rst`
 
+
+g4_1062 changes
+----------------
+
+::
+
+    epsilon:~ blyth$ g4-cd
+    epsilon:geant4.10.06.p02 blyth$ 
+
+    epsilon:geant4.10.06.p02 blyth$ pwd
+    /usr/local/opticks_externals/g4_1062.build/geant4.10.06.p02
+
+    epsilon:geant4.10.06.p02 blyth$ find . -name '*.orig'
+    ./source/processes/electromagnetic/xrays/include/G4Cerenkov.hh.orig
+    ./source/persistency/gdml/src/G4GDMLReadSolids.cc.orig
+
+    epsilon:geant4.10.06.p02 blyth$ diff source/processes/electromagnetic/xrays/include/G4Cerenkov.hh.orig source/processes/electromagnetic/xrays/include/G4Cerenkov.hh
+    199a200
+    > public:
+
+    epsilon:geant4.10.06.p02 blyth$ diff source/persistency/gdml/src/G4GDMLReadSolids.cc.orig source/persistency/gdml/src/G4GDMLReadSolids.cc
+    2548c2548
+    < 	 mapOfMatPropVects[Strip(name)] = propvect;
+    ---
+    > 	 //mapOfMatPropVects[Strip(name)] = propvect;  //SCB:opticks/extg4/tests/G4GDMLReadSolids_1062_mapOfMatPropVects_bug.cc
+
+
+
+    epsilon:geant4.10.06.p02 blyth$ g4-build
+    Thu Dec 24 10:20:12 GMT 2020
+    [  0%] Built target G4ENSDFSTATE
+    [  0%] Built target G4INCL
+    ...
+    [ 18%] Built target G4geometry
+    [ 24%] Built target G4particles
+    [ 24%] Built target G4track
+    [ 27%] Built target G4digits_hits
+    Scanning dependencies of target G4processes
+    [ 27%] Building CXX object source/processes/CMakeFiles/G4processes.dir/electromagnetic/xrays/src/G4Cerenkov.cc.o
+    [ 27%] Linking CXX shared library ../../BuildProducts/lib/libG4processes.dylib
+    [ 82%] Built target G4processes
+    [ 83%] Built target G4tracking
 

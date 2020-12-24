@@ -2,7 +2,9 @@
 # ~/.bash_profile > ~/.bashrc > ~/.opticks_config
 # https://simoncblyth.bitbucket.io/opticks/docs/opticks.html#bash-shell-setup-with-opticks-config
 
-opticks-(){  [ -r $HOME/opticks/opticks.bash ] && . $HOME/opticks/opticks.bash && opticks-env $* ; }
+export OPTICKS_HOME=$HOME/opticks
+
+opticks-(){  [ -r $OPTICKS_HOME/opticks.bash ] && . $OPTICKS_HOME/opticks.bash && opticks-env $* ; }
 opticks-
 
 o(){ opticks- ; cd $(opticks-home) ; git status ; }
@@ -22,6 +24,9 @@ export OPTICKS_CUDA_PREFIX=/usr/local/cuda
 export OPTICKS_OPTIX_PREFIX=/usr/local/optix
 export OPTICKS_COMPUTE_CAPABILITY=70
 
+export PYTHONPATH=$(dirname $OPTICKS_HOME)    # needed to allow python scripts to "import opticks"
+
+
 ## hookup paths to access "foreign" externals, not yet existing dirs just give warnings
 opticks-prepend-prefix /usr/local/opticks_externals/clhep
 opticks-prepend-prefix /usr/local/opticks_externals/xercesc
@@ -40,14 +45,11 @@ opticks-prepend-prefix /usr/local/opticks_externals/boost
 opticks-check-prefix
 [ $? -ne 0 ] && echo ABORT && sleep 1000000000
 
-export PYTHONPATH=$HOME   # needed to allow python scripts to "import opticks"
-
 # Sourcing opticks-setup.sh sets the path envvars for using Opticks executables.  
 # To avoid output on starting every terminal session redirect it to /dev/null.  
 
 if [ -f "$OPTICKS_PREFIX/bin/opticks-setup.sh" ]; then 
-    source $OPTICKS_PREFIX/bin/opticks-setup.sh
-#   source $OPTICKS_PREFIX/bin/opticks-setup.sh 1> /dev/null 
+    source $OPTICKS_PREFIX/bin/opticks-setup.sh 1> /dev/null 
 else
     echo $OPTICKS_PREFIX/bin/opticks-setup.sh does not exist : it should have been generated during opticks-full
 fi 

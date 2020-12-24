@@ -1,5 +1,25 @@
 CerenkovMinimal
 ==================
+Objective
+-----------
+
+CerenkovMinimal aims to show minimal use of embedded Opticks
+to act as an starting point for users familiar with Geant4 examples.
+
+Overview
+----------
+
+The idea is to simplify Opticks usage by everything going 
+through the G4Opticks interface. This intentionally constrains
+Opticks functionality and flexibility.   
+
+
+Full Opticks usage, via geocache
+----------------------------------
+
+The geocache and gensteps created from the simple CerenkovMinimal 
+Geant4 geometry can be used from full unconstrained Opticks executables 
+by setting the OPTICKS_KEY reported by CerenkovMinimal.
 
 
 Review Sources
@@ -37,7 +57,10 @@ SensitiveDetector
 
 Ctx
     instance is resident of G4 and is passed as only argument to 
-    all the action ctors. Nexus. 
+    all the action ctors. 
+
+    Context struct used via setEvent setTrack setStep etc.. 
+    to maintain convenient state access
  
     Ctx::setTrack currently kills non-optical tracks after the first 
     genstep has been collected : for debugging with a single genstep 
@@ -49,6 +72,12 @@ Ctx
 TrackInfo
     used to pass the photon_record_id from the L4Cerenkov photon generation 
     loop to subsequent propagation.    
+
+    G4VUserTrackInformation subclass that holds a photon_record_id, this 
+    is convenient for example when multiple Geant4 events correspond 
+    to a single Opticks event and also when doing reemission continuation : 
+    ie maintaining the original identity of a photon through a reemission in 
+    Geant4 to allow comparison with Opticks that does this naturally
 
 
 RunAction
@@ -67,7 +96,23 @@ SteppingAction
 PrimaryGeneratorAction
     standard simple G4ParticleGun
 
-OpHit
+Cerenkov.hh
+    shim on top of G4Cerenkov for debug dumping only
+
+L4Cerenkov.hh
+    G4VProcess subclass based on G4Cerenkov that collects Cerenkov gensteps
+    using G4Opticks. Currently the CPU photon generation loop is still being 
+    done for comparison purposes.
+
+PhysicsList.hh
+    EM and Optical physics, ConstructOp is templated, currently using 
+    L4Cerenkov 
+
+SensitiveDetector.hh
+    SensitiveDetector::ProcessHits is for standard Geant4 hits not ones from GPU.
+    Fairly undeveloped, needs machinery to shovel GPU hits in bulk into 
+    collections.
+
 
 
 

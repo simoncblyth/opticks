@@ -374,7 +374,13 @@ opticks-xdir(){   echo $(opticks-prefix)/externals ; }  ## try putting externals
 opticks-installcachedir(){ echo $(opticks-prefix)/installcache ; }
 opticks-setup-path(){ echo $(opticks-prefix)/bin/opticks-setup.sh ; }
 
-
+opticks-setup(){
+   local msg="=== $FUNCNAME :"
+   local setup=$(opticks-setup-path)
+   [ ! -f $setup ] && echo "$msg MISSING setup script $setup : incomplete opticks installation  " && return 1   
+   source $setup   
+   return 0 
+}
 
 opticks-setup-find-geant4-prefix(){ opticks-setup-find-config-prefix Geant4 ; }
 opticks-setup-find-boost-prefix(){  opticks-setup-find-config-prefix Boost ; }
@@ -2278,7 +2284,7 @@ fn-(){              . $(opticks-home)/bin/fn.bash && fn-env $* ; }
 
 
 geocache-(){      . $(opticks-home)/ana/geocache.bash  && geocache-env $* ; }
-ckm-(){           . $(opticks-home)/examples/Geant4/CerenkovMinimal/ckm.bash  && ckm-env $* ; }
+ckm-(){           . $(opticks-home)/bin/ckm.bash  && ckm-env $* ; }
 ckm(){            ckm- ; ckm-cd $* ; }
 
 ####### below functions support analysis on machines without a full opticks install

@@ -63,4 +63,5 @@ g4dev-(){            . $(externals-dir)/g4dev.bash             && g4dev-env $* ;
 g4dae-(){            . $(externals-dir)/g4dae.bash             && g4dae-env $* ; }
 owl-(){              . $(externals-dir)/owl.bash               && owl-env $* ; }
 nljson-(){           . $(externals-dir)/nljson.bash            && nljson-env $* ; }
+root-(){             . $(externals-dir)/root.bash              && root-env $* ; }
 

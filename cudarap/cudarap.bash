@@ -589,6 +589,7 @@ cudarap-prepare-rng-400M(){ CUDARAP_RNGMAX_M=400 cudarap-prepare-rng- ; }
 cudarap-prepare-rng-200M(){ CUDARAP_RNGMAX_M=200 cudarap-prepare-rng- ; }
 cudarap-prepare-rng-100M(){ CUDARAP_RNGMAX_M=100 cudarap-prepare-rng- ; }
 cudarap-prepare-rng-10M(){  CUDARAP_RNGMAX_M=10  cudarap-prepare-rng- ; }
+cudarap-prepare-rng-5M(){   CUDARAP_RNGMAX_M=5   cudarap-prepare-rng- ; }
 cudarap-prepare-rng-2M(){   CUDARAP_RNGMAX_M=2   cudarap-prepare-rng- ; }
 cudarap-prepare-rng-1M(){   CUDARAP_RNGMAX_M=1   cudarap-prepare-rng- ; }
 
