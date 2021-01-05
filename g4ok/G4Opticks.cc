@@ -641,6 +641,21 @@ identifier
     detector specific integer representing a sensor, does not need to be contiguous
 
 
+Why call G4Opticks::setSensorData ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not everything is in GDML.  Detector simulation frameworks often add things on top 
+for example local theta and/or phi dependent sensor efficiencies and additional 
+efficiency factors.  Also detectors often use there own numbering schemes for sensors. 
+That is what the sensor_identifier is. 
+
+Normally after hits are collected detector simulation frameworks cull them 
+randomly based on efficiencies. G4Opticks::setSensorData allows that culling 
+to effectively be done on the GPU so the CPU side memory requirements can be reduced 
+by a factor of the  efficiency. Often that is something like a quarter of the memory 
+reqirements. It also correspondingly reduces the volume of hit data that needs to be copied 
+from GPU to CPU.
+
 **/
 
 void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int category, int identifier)
