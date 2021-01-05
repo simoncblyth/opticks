@@ -33,6 +33,9 @@ const plog::Severity X4MaterialPropertiesTable::LEVEL = PLOG::EnvLevel("X4Materi
 
 void X4MaterialPropertiesTable::Convert( GPropertyMap<float>* pmap,  const G4MaterialPropertiesTable* const mpt )
 {
+    if(mpt == NULL) 
+      LOG(fatal) << "cannot convert a null G4MaterialPropertiesTable : this usually means you have omitted to setup any properties for a surface or material" ;  
+    assert( mpt ); 
     X4MaterialPropertiesTable xtab(pmap, mpt);
 }
 

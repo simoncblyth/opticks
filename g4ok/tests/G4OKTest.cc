@@ -28,8 +28,8 @@ From GDML::
 
     opticksaux-
     G4OKTest --gdmlpath $(opticksaux-dx1)
-    G4OPTICKS_DEBUG="--x4polyskip 211,232" lldb_ G4OKTest --  --gdmlpath $(opticksaux-dx1) 
-    G4OPTICKS_DEBUG="" lldb_ G4OKTest --  --gdmlpath $(opticksaux-jv5) 
+    OPTICKS_EMBEDDED_COMMANDLINE_EXTRA="--x4polyskip 211,232" lldb_ G4OKTest --  --gdmlpath $(opticksaux-dx1) 
+    OPTICKS_EMBEDDED_COMMANDLINE_EXTRA="" lldb_ G4OKTest --  --gdmlpath $(opticksaux-jv5) 
 
 From cache(experimental)::
 
