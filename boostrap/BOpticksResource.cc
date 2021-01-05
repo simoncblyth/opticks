@@ -866,6 +866,8 @@ void BOpticksResource::initViaKey()
     m_res->addPath("directphotonspath", m_directphotonspath ); 
 
     const char* exename = SProc::ExecutableName() ;
+
+#ifdef WITH_EXENAME_ALLOWED_ASSERT
     bool exename_allowed = SStr::StartsWith(exename, "Use") || 
                            SStr::StartsWith(exename, "python") || 
                            SStr::StartsWith(exename, "OpticksEmbedded") || 
@@ -882,6 +884,7 @@ void BOpticksResource::initViaKey()
                    ; 
     }   
     assert( exename_allowed ); 
+#endif
 
     // see notes/issues/opticks-event-paths.rst 
     // matching python approach to event path addressing 
