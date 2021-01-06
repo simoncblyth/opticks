@@ -79,8 +79,8 @@ void Ctx::setTrack(const G4Track* track)
     {
 #ifdef WITH_OPTICKS
         unsigned num_gs = G4Opticks::Get()->getNumGensteps() ; 
-        unsigned max_gs = 1 ;   // quick kill for fast dev cycle
-        bool kill = num_gs >= max_gs ; 
+        unsigned max_gs = G4Opticks::Get()->getMaxGensteps() ; // default of zero means no limit  
+        bool kill = max_gs > 0 && num_gs >= max_gs ;   
 
         G4cout 
             << "Ctx::setTrack"   

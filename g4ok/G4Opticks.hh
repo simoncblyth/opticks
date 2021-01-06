@@ -165,6 +165,7 @@ class G4OK_API G4Opticks
     public:
         unsigned getNumPhotons() const ;
         unsigned getNumGensteps() const ;
+        unsigned getMaxGensteps() const ; // default of zero, means no limit
 
         void collectGenstep_G4Cerenkov_1042(  
              const G4Track*  aTrack, 

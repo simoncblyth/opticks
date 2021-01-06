@@ -852,6 +852,25 @@ unsigned G4Opticks::getNumGensteps() const
     return m_genstep_collector->getNumGensteps()  ; 
 }
 
+/**
+G4Opticks::getMaxGensteps
+--------------------------
+
+Default of zero means no limit.  Setting this to 1 or a small 
+number of gensteps can sometimes be convienient whilst debugging.
+Used for example from the CerenkovMinimal examples Ctx::setTrack. 
+
+**/
+
+unsigned G4Opticks::getMaxGensteps() const 
+{
+    return 0  ; 
+}
+
+
+
+
+
 
 void G4Opticks::setAlignIndex(int align_idx) const 
 {
