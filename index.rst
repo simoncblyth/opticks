@@ -19,6 +19,8 @@ Contents:
    docs/testing
    docs/externals
    docs/visualization
+   docs/examples
+   docs/orientation
    docs/updating_this_documentation
 
    docs/misc/opticks_event_data

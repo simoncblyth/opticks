@@ -13,10 +13,24 @@ Build the html from RST::
     [blyth@localhost opticks]$ make
     ## fix any major RST problems 
 
-Open the html documentation in your browser locally::
+Open the html documentation in your browser locally (file based)::
 
     epsilon:opticks blyth$ open ~/simoncblyth.bitbucket.io/opticks/index.html
     ## tip for gnome users, add open function to .bashrc :  open(){ gio open $* ; }
+
+Preview using local webserver::
+
+    open http://localhost/opticks/index.html
+
+In the rst reference images from ~/simoncblyth.bitbucket.io using urls 
+starting with "//env" such as::
+
+    .. image:: //env/Documents/Geant4OpticksWorkflow/Geant4OpticksWorkflow.001.png
+        :width: 1024
+        :alt: Geant4-Opticks-OptiX Workflow 
+
+
+This works via the *env* and *opticks* symbolic links planted in `/Library/WebServer/Documents/` 
 
 Publish html to bitbucket::
 

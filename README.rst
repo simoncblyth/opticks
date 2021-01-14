@@ -9,7 +9,7 @@ For presentations and videos about Opticks:
 For instructions on building Opticks and externals: 
 
 * http://simoncblyth.bitbucket.io/opticks/docs/opticks.html
-* http://simoncblyth.bitbucket.io/opticks/docs/quickstart.html
+* http://simoncblyth.bitbucket.io/opticks/docs/examples.html
 * http://simoncblyth.bitbucket.io/opticks/
 
 Related repositories:

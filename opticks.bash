@@ -2070,13 +2070,22 @@ opticks-co(){      opticks-open  https://bitbucket.org/simoncblyth/opticks/commi
 ########## building opticks docs 
 
 opticks-bb(){      opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
-opticks-docs-remote(){   opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
+
+#opticks-docs-page(){     echo ${P:-index.html} ; }
+opticks-docs-page(){     echo ${P:-docs/orientation.html} ; }
+opticks-docs-vi(){       local page=$(opticks-docs-page) ; vi $(opticks-home)/${page/.html/.rst} ; }
+opticks-docs-remote(){   opticks-open  http://simoncblyth.bitbucket.io/opticks/$(opticks-docs-page) ; } 
+opticks-docs-local(){    opticks-open  http://localhost/opticks/$(opticks-docs-page) ; } 
+
 opticks-notes-remote(){  opticks-open  http://simoncblyth.bitbucket.io/opticks_notes/index.html ; } 
 opticks-docs(){    opticks-open  $(opticks-docs-htmldir)/index.html ; } 
 opticks-docs-htmldir(){ 
    local htmldirbb=$HOME/simoncblyth.bitbucket.io/opticks 
    [ -d "$htmldirbb" ] && echo $htmldirbb || echo $(opticks-prefix)/html 
 }
+
+
+
 
 opticks-docs-make-info(){ cat << EOI
 
@@ -2095,7 +2104,9 @@ opticks-docs-make()
    opticks-scd
    sphinx-build -b html  . $(opticks-docs-htmldir)
    cd $iwd 
-   opticks-docs
+
+   #opticks-docs
+   opticks-docs-local
 
    echo $msg publish the docs via bitbucket commit/push from $(opticks-docs-htmldir)
 
