@@ -16,31 +16,29 @@ Show Package Dependencies with opticks-deps
 
 opticks-deps parses CMakeList.txt files to discern dependencies between packages::
 
-    epsilon:docs blyth$ opticks-deps
-    [2020-10-22 15:21:46,694] p70637 {/Users/blyth/opticks/bin/CMakeLists.py:145} INFO - home /Users/blyth/opticks 
-     10          OKCONF :               okconf :               OKConf : OpticksCUDA OptiX G4  
-     20          SYSRAP :               sysrap :               SysRap : OKConf PLog  
-     30            BRAP :             boostrap :             BoostRap : Boost PLog SysRap  
-     40             NPY :                  npy :                  NPY : PLog GLM OpenMesh BoostRap YoctoGL ImplicitMesher DualContouringSample  
-     45             YOG :           yoctoglrap :           YoctoGLRap : NPY  
-     50          OKCORE :          optickscore :          OpticksCore : NPY  
-     60            GGEO :                 ggeo :                 GGeo : OpticksCore YoctoGLRap  
-     80         MESHRAP :          openmeshrap :          OpenMeshRap : GGeo OpticksCore  
-     90           OKGEO :           opticksgeo :           OpticksGeo : OpticksCore OpenMeshRap  
-    100         CUDARAP :              cudarap :              CUDARap : SysRap OpticksCUDA  
-    110           THRAP :            thrustrap :            ThrustRap : OpticksCore CUDARap  
-    120           OXRAP :             optixrap :             OptiXRap : OKConf OptiX OpticksGeo ThrustRap  
-    130            OKOP :                 okop :                 OKOP : OptiXRap  
-    140          OGLRAP :               oglrap :               OGLRap : ImGui OpticksGLEW OpticksGLFW OpticksGeo  
-    150            OKGL :            opticksgl :            OpticksGL : OGLRap OKOP  
-    160              OK :                   ok :                   OK : OpticksGL  
-    165              X4 :                extg4 :                ExtG4 : G4 GGeo OpticksXercesC CLHEP  
-    170            CFG4 :                 cfg4 :                 CFG4 : G4 ExtG4 OpticksXercesC OpticksGeo ThrustRap  
-    180            OKG4 :                 okg4 :                 OKG4 : OK CFG4  
-    190            G4OK :                 g4ok :                 G4OK : CFG4 ExtG4 OKOP  
-    200            None :          integration :          Integration :   
-    epsilon:docs blyth$ 
 
+    epsilon:opticks blyth$ opticks-deps
+    [2021-01-14 18:57:39,007] p90686 {/Users/blyth/opticks/bin/CMakeLists.py:165} INFO - home /Users/blyth/opticks 
+              API_TAG :        reldir :         bash- :     Proj.name : dep Proj.names  
+     10        OKCONF :        okconf :        okconf :        OKConf : OpticksCUDA OptiX G4  
+     20        SYSRAP :        sysrap :        sysrap :        SysRap : OKConf PLog  
+     30          BRAP :      boostrap :          brap :      BoostRap : Boost BoostAsio NLJSON PLog SysRap Threads  
+     40           NPY :           npy :           npy :           NPY : PLog GLM BoostRap  
+     50        OKCORE :   optickscore :           okc :   OpticksCore : NPY  
+     60          GGEO :          ggeo :          ggeo :          GGeo : OpticksCore  
+     90         OKGEO :    opticksgeo :           okg :    OpticksGeo : OpticksCore GGeo  
+    100       CUDARAP :       cudarap :       cudarap :       CUDARap : SysRap OpticksCUDA  
+    110         THRAP :     thrustrap :         thrap :     ThrustRap : OpticksCore CUDARap  
+    120         OXRAP :      optixrap :         oxrap :      OptiXRap : OKConf OptiX OpticksGeo ThrustRap  
+    130          OKOP :          okop :          okop :          OKOP : OptiXRap  
+    140        OGLRAP :        oglrap :        oglrap :        OGLRap : ImGui OpticksGLEW BoostAsio OpticksGLFW OpticksGeo  
+    150          OKGL :     opticksgl :          okgl :     OpticksGL : OGLRap OKOP  
+    160            OK :            ok :            ok :            OK : OpticksGL  
+    165            X4 :         extg4 :            x4 :         ExtG4 : G4 GGeo OpticksXercesC CLHEP  
+    170          CFG4 :          cfg4 :          cfg4 :          CFG4 : G4 ExtG4 OpticksXercesC OpticksGeo ThrustRap  
+    180          OKG4 :          okg4 :          okg4 :          OKG4 : OK CFG4  
+    190          G4OK :          g4ok :          g4ok :          G4OK : CFG4 ExtG4 OKOP  
+    200          None :   integration :   integration :   Integration :   
 
 
 
@@ -58,15 +56,11 @@ npy
     (currently this package is too big, it needs to be split)
 optickscore
     definitions, loosely the model of the app 
-yoctoglrap
-    wrapper for the YoctoGL external, providing glTF 2.0 3D file format parsing/writing
 ggeo
     geometry representation appropriate for uploading to the GPU
-openmeshrap
-    wrapper for OpenMesh, providing mesh traversal : used for mesh fixing 
-    (no longer needed with analytic geometry) 
 opticksgeo
-    bring together ggeo, assimprap and openmeshrap to load and fix geometry
+    following removals of assimprap and openmeshrap this has started to 
+    become vestigial middle management 
 oglrap
     wrapper for OpenGL, visualization of geometry and photon propagations :
     OpenGL rendering, including GLSL shader sources
@@ -110,6 +104,11 @@ Roles of former packages
 assimprap
     wrapper for Assimp 3D geometry importer, can load G4DAE COLLADA geometry files
     (no longer needed with ExtG4 direct from Geant4 conversion)
+openmeshrap
+    wrapper for OpenMesh, providing mesh traversal : used for mesh fixing 
+    (no longer needed with analytic geometry) 
+yoctoglrap
+    wrapper for the YoctoGL external, providing glTF 2.0 3D file format parsing/writing
 
 
 

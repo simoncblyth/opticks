@@ -343,20 +343,20 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
     unsigned num_repcan = m_repeat_candidates.size() ; 
 
     LOG(info) 
-              << " nall " << nall 
-              << " repeat_min " << repeat_min 
-              << " vertex_min " << vertex_min 
-              << " num_repcan " << num_repcan
-              ;
+        << " nall " << nall 
+        << " repeat_min " << repeat_min 
+        << " vertex_min " << vertex_min 
+        << " num_repcan " << num_repcan
+        ;
 
     if(num_repcan > 0)
     {
         unsigned dmax = 30u ;  
         LOG(info) 
-                  << " num_all " << num_all 
-                  << " num_repcan " << num_repcan 
-                  << " dmax " << dmax
-                  ;
+            << " num_all " << num_all 
+            << " num_repcan " << num_repcan 
+            << " dmax " << dmax
+            ;
         std::cout << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
         std::cout << " (##) selected survive contained-repeat disqualification " << std::endl ;
 

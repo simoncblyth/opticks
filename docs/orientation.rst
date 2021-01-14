@@ -58,7 +58,7 @@ of an experiment.
 * https://bitbucket.org/simoncblyth/opticks/src/master/g4ok/G4Opticks.hh
 * https://bitbucket.org/simoncblyth/opticks/src/master/g4ok/G4Opticks.cc
 
-Geometry translation : Geant4->Opticks(GGeo)->OptiX (green arrows)
+Geometry translation Overview : Geant4->Opticks(GGeo)->OptiX (green arrows)
 ------------------------------------------------------------------------------------------------
 
 The green lines in the above workflow diagram represent the translation of geometry information 
@@ -69,15 +69,25 @@ Geometry translation is steered by *G4Opticks::translateGeometry* with *X4Physic
 taking the leading role.
 
 
-extg4 "x4"  
-    translates Geant4->GGeo only
+Primary Packages and Classes for geometry
+-------------------------------------------
 
-ggeo "ggeo"
-    model the geometry : GMaterialLib, GSurfaceLib, GBndLib, GNodeLib, GGeoLib, ... 
-    provide binary persistency in *.npy* arrays
+The below linked orientation pages for the sub projects 
+highlight a few of the more important classes. 
+The quoted names correspond to utility bash functions. 
+
+extg4 "x4"  
+    :doc:`../extg4/orientation`
+
+ggeo "ggeo" 
+    :doc:`../ggeo/orientation`
 
 optixrap "oxrap"
-    translates GGeo->OptiX 
+    translates GGeo->OptiX, :doc:`../optixrap/orientation`
+
+npy "npy"
+    array creation, updating and persisting, :doc:`../npy/orientation`
+
 
 
 * https://bitbucket.org/simoncblyth/opticks/src/master/extg4/
@@ -86,6 +96,11 @@ optixrap "oxrap"
 * https://bitbucket.org/simoncblyth/opticks/src/master/ggeo/GGeo.cc
 * https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/
 * https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/OGeo.cc
+* https://bitbucket.org/simoncblyth/opticks/src/master/npy/
+* https://bitbucket.org/simoncblyth/opticks/src/master/npy/NPY.cpp
+
+
+Descriptions of all ~20 packages : :doc:`misc/packages`
 
 
 Geant4 Links
@@ -165,7 +180,9 @@ Geant4 classes which are partially ported to CUDA/OptiX
 
 * G4Cerenkov (only generation loop)
 * G4Scintillation (only generation loop)
-* G4OpBoundaryProcess
+* G4OpRayleigh (bulk scattering)
+* G4OpAbsorption (bulk absorption)
+* G4OpBoundaryProcess (only a few surface types)
 
 To quickly view the sources of any Geant4 classes use the opticks bash function g4-cls::
 
@@ -174,7 +191,7 @@ To quickly view the sources of any Geant4 classes use the opticks bash function 
 CMake Structure 
 -----------------
 
-Opticks is structured as a collection of ~20 modular CMake sub-projects organized by
+Opticks is structured as a collection of ~20 modular CMake sub-projects organized by 
 their dependencies. The sub-projects are hooked together into a tree using the CMake *find_package* mechanism 
 which uses *BCM* (Boost CMake Modules) to reduce CMake boilerplate.  The upshot is that 
 you only need to worry about one level of dependencires 

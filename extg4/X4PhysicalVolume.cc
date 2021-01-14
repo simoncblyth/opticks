@@ -227,6 +227,14 @@ bool X4PhysicalVolume::hasEfficiency(const G4Material* mat)
 }
 
 
+/**
+X4PhysicalVolume::convertMaterials
+-----------------------------------
+
+Populates the GGeo/GMaterialLib 
+
+**/
+
 void X4PhysicalVolume::convertMaterials()
 {
     OK_PROFILE("_X4PhysicalVolume::convertMaterials");
@@ -265,6 +273,8 @@ void X4PhysicalVolume::convertMaterials()
 /**
 X4PhysicalVolume::convertSurfaces
 -------------------------------------
+
+Populates GSurfaceLib 
 
 * G4LogicalSkinSurface -> GSkinSurface -> slib
 * G4LogicalBorderSurface -> GBorderSurface -> slib
@@ -432,6 +442,8 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
 /**
 X4PhysicalVolume::convertSolids
 -----------------------------------
+
+Populates GGeo/GMeshLib
 
 Uses postorder recursive traverse, ie the "visit" is in the 
 tail after the recursive call, to match the traverse used 
@@ -852,6 +864,11 @@ X4PhysicalVolume::convertStructure_r
 
 Preorder traverse.
 
+Formerly collected volumes into GGeo/GNodeLib here, 
+but thats too soon for tripletIdentity, so instead the GVolume 
+are just held in the tree of GVolume until collected 
+into GGeo/GNodeLib by a traversal by GInstancer. 
+
 **/
 
 GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select )
@@ -866,9 +883,6 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
      float t1 = BTimeStamp::RealTime() ; 
      m_convertNode_dt += t1 - t0 ; 
 #endif
-
-     // formerly collected volumes into GNodeLib here, but thats too soon for tripletIdentity 
-     // m_ggeo->add(volume);
 
      const G4LogicalVolume* const lv = pv->GetLogicalVolume();
   
