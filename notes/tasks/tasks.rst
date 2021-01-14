@@ -74,6 +74,27 @@ situation by allowing the many more CPU nodes available to effectively share the
 fewer GPUs.
 
 
+**A?** : Event Splitting/Joining
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For handling events with more optical photons than can be accommodated in the available VRAM,
+what matters is the GPU VRAM that the photons require, not the number of gensteps.  
+When collecting gensteps a calculation of the GPU VRAM needed can be made
+based on the cumulative photon count. When the VRAM exceeds a configurable limit then the 
+propagation needs to be done and hits collected.  
+This could happen during the collection rather than waiting for the end of event.
+
+Actually some users of Opticks will have the problem of having too few 
+photons per event causing overheads of GPU launching to impact performance. 
+To avoid this the gensteps of multiple events need to be combined up to a configurable 
+maximum number of events that can be combined before GPU launches are done. Followed
+by bookkeeping to place the hits into the hit collections of the appropriate events.  
+
+Clearly the implementation of both these features are similar enough that they
+should be done in a unified way.
+
+
+
 **A4** : Opticks Server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

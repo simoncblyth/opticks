@@ -23,6 +23,67 @@ to work with that parser follow some rules:
 3. bullet lines to be included in the summary should be in bold
 
 
+Others
+--------
+
+* several SNOMASS contributions
+
+
+
+
+2020 Dec : tidy up in prep for release candidates, remove old externals, G4 10.6 tests reveals Geant4 bug, way buffer for hit completion 
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+* bug link https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2305 
+* capture the g4_1062 bordersurface/skinsurface repeated property bug in extg4/tests/G4GDMLReadSolids_1062_mapOfMatPropVects_bug.cc
+* both skin surface and border surface properties have all values zero in 1062, values ok in 1042 from same gdml
+* debugging why Opticks conversion from Geant4 1062 sees all zero efficiency values while Geant4 1042 sees non-zero values
+* notes on trying to use devtoolset-9 devtoolset-8 to use newer gcc to install g4 1062 and test G4OpticksTest BUT CUDA 10.1 needed by OptiX 6.5 is not compatible with gcc 9
+* pass the opticks_geospecific_options from GDMLAux via BOpticksResource into G4Opticks for the embedded opticks instanciation commandline
+* rejig allowing BOpticksResource to run prior to Opticks and OpticksResource instanciation
+* remove YoctoGL external, YoctoGLRap pkg and GLTF saving, eliminate the OLD_RESOURCE blocks 
+* plugging OpticksEvent leaks, whilst testing with OpticksRunTest 
+* add WAY_BUFFER needed for JUNO acrylic point on-the-way recording 
+* take at look at nlohmann::json v3.9.1 as potential new external to replace the old one from yoctogl when remove that and GLTF functionality
+* remove externals OpenMesh ImplicitMesher and corresponding OpenMeshRap proj and NPY classes and tests 
+
+2020 Nov : async revival, NP transport  
+---------------------------------------
+
+* add EFFICIENCY_CULL EFFICIENCY_COLLECT photon flags, plus WITH_DEBUG_BUFFER macro to shake down the inputs to the efficiency cull decision
+* investigate slimming PerRayData_propagate prior to adding local f_theta f_phi for sensor efficiency
+* switch to 1-based unsigned sensorIndex doubling the maximum number of sensor indices in 2 bytes to 0xffff
+* change prefix network header to 16 bytes for xxd clarity, experiment with npy reading and writing over network using async/await in py3 with asyncio, notes on asyncio
+* np:think about set_dtype type shifting shape changes, experiment with std::future std::async and NP arrays
+* np:migrate all tests and server/client to non-templated NP 
+* np:np_client np_server now working with boost::asio async send/recv of NP objects over TCP socket
+* Explore cleaner approach to network transport of arrays in np_client/np_server 
+  over in np:(https://github.com/simoncblyth/np.git) based on boost::asio only (avoids the need for ZMQ or asio-zmq glue)
+* review old ZMQ asio-zmq based numpyserver, implement npy transport with python socket over TCP in bin/npy.py
+* liveline config over UDP is restored in OpticksViz using boostrap/BListenUDP
+* add BListenUDP m_listen_udp to OpticksViz allowing commands to be passed to the visualization via UDP messages
+* incorporate BListenUDP into brap, when boost/asio.hpp header is found with FindBoostAsio
+* take a look at the state of the async machinery ZeroMQ BoostAsio used for the old NumpyServer, old asiozmq project seems dead with the 
+  version used not operational with current Boost Asio so needs reworking  
+* look into bit packing of signed integers, compare using two-complement reinterpretation in SPack::unsigned_as_int with the union trick
+* GDML Aux info capture into NMeta json to CGDML
+
+2020 Oct : SensorLib for on GPU angular efficiency culling, ggeo rejig fixing mm0 exceptionalism and adopting geometry model native identity
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+* for OSensorLibGeoTest add optickscore/SphereOfTransforms npy/NGLMExt methods to assist creation of a set of 
+  transforms to orient and position geometry instances around a sphere with reference directions all pointing at the global origin
+* OCtx3dTest reveals OptiX 2d and 3d buffer serialization is column-major contrary to NPY row-major
+* GPU uploading SensorLib with OSensorLib based on OCtx (watertight API)
+* prepare for setup of angular efficiency via G4Opticks, tested with G4OKTest using MockSensorAngularEfficiencyTable
+* remove Assimp external and AssimpRap 
+* OpticksIdentity triplet RPO ridx/pidx/oidx 32-bit encoded identifiers : this is the native identity 
+  for the Opticks geometry model unlike the straight node index which is needed for Geant4 model  
+* start moving all volume GMergedMesh slot 0 (mm0) usage to GNodeLib : aiming to eliminate mm0 special caused
+  that has caused 
+* start getting python scripts to work with py3  
+
+
 2020 Sept
 ----------
 
@@ -71,6 +132,21 @@ to work with that parser follow some rules:
   * initially only enabled with --globalinstance, from 17th made standard
   * need to fix this in order to be able to convert global coordinates of intersects into local 
     frame coordinates for any volume (this is needed for hit local_pos) 
+
+
+2020 Aug 13 : SJTU Neutrino Telescope Simulation Workshop
+-------------------------------------------------------------
+
+Donglian Xu from SJTU::
+
+    https://indico-tdli.sjtu.edu.cn/event/238/overview
+
+    Tao told us you are in UK now, so we've tentatively scheduled your talk to be
+    on ~16:00 of 8.13 Beijing time (9:00am London time). Please let us know if you
+    can accept our invitation to speak via ZOOM. If the answer is positive, we will
+    be more than happy to reallocate any time slot that works best for you.
+
+
 
 2020 July
 ----------
@@ -122,8 +198,56 @@ to work with that parser follow some rules:
 
 * pkg-config non-CMake config work ongoing, Linux testing 
 * start trying to build opticks against the junoenv externals
-* get to build against OptiX 5 again, for CUDA 9.1 limited macOS laptop
+* get build against OptiX 5 to work again, for CUDA 9.1 limited macOS laptop
 * add higher level API for genstep collection, motivated by Hans (Fermilab Geant4) 
+
+
+* invited present Opticks at HSF meeting 
+  with small audience including several of the core Geant4 developers from CERN  
+
+* HSF meeting link is https://indico.cern.ch/event/921244/ 
+
+
+May 13::
+
+    Dear Simon,
+
+    in the context of the HSF Simulation Working Group we would like to focus our
+    future discussion on accelerators for simulation. 
+    We think that the community would profit from the experience of people that
+    have already used GPU to tackle their specific simulation environment, from
+    their successes as well as the problems they encountered. 
+
+    We are contacting you to ask if you (one of you) would be willing to present
+    Opticks and your experience with Nvidia OptiX at the HSF Simulation Working
+    Group meeting that we are scheduling for May 27th at 16h00 CET ?
+
+    We will follow it up with one or two meeting in June with lighting talks of R&D
+    projects and proposals.
+
+    Please let us know if you can attend the (virtual) meeting and share your
+    experience with the HSF community.
+
+    Keep safe,
+    Witek, Philippe, Gloria
+
+
+
+Some notes on progress:
+
+* bitbucket mercurial to git migrations of ~16 repositories completed
+
+* integration Opticks builds met an issue with multiple CLHEP in junoenv, 
+  fixed by preventing the building of the geant4 builtin 
+  G4clhep via -DGEANT4_USE_SYSTEM_CLHEP=ON 
+
+* currently working on the geometry translation which happens at BeginOfRun
+  where the world pointer is passed to Opticks. 
+  The first problem is multiple types of cathodes : I need to generalize 
+  Opticks to handle this 
+
+
+
 
 2020 April
 -----------
@@ -140,6 +264,8 @@ to work with that parser follow some rules:
  
 * crystalize installation configuration into opticks-setup.sh 
   generated by opticks-setup-generate when running opticks-full
+
+
 
 2019 Q4
 ---------

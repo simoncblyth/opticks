@@ -1,4 +1,5 @@
 #!/bin/bash -l
+msg="=== $BASH_SOURCE :"
 usage(){ cat << EOU
 ::
 
@@ -15,7 +16,7 @@ sdir=$(pwd)
 name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/examples/$name/build 
 
-[ "$1" == "clean" ] && rm -rf $bdir
+[ "$1" == "clean" ] && echo $msg removing bdir $bdir && rm -rf $bdir
  
 if [ ! -d "$bdir" ]; then 
    mkdir -p $bdir && cd $bdir 
