@@ -60,15 +60,18 @@ const std::vector<G4LogicalBorderSurface*>* X4LogicalBorderSurfaceTable::Prepare
 #if G4VERSION_NUMBER >= 1070
     typedef std::vector<G4LogicalBorderSurface*> VBS ; 
     typedef std::pair<const G4VPhysicalVolume*, const G4VPhysicalVolume*> PPV ; 
-    typedef std::map<PPV, G4LogicalBorderSurface*>  PPVBS ;   
     typedef std::map<PPV, G4LogicalBorderSurface*>::const_iterator IT ; 
 
     VBS* vec = new VBS ;  
     for(IT it=tab->begin() ; it != tab->end() ; it++ )
     {
-        PVPV* pvpv = it.first ; 
-        G4LogicalBorderSurface* bs = it.second ;    
+        G4LogicalBorderSurface* bs = it->second ;    
         vec->push_back(bs);        
+
+        const PPV pvpv = it->first ; 
+
+        assert( pvpv.first == bs->GetVolume1());  
+        assert( pvpv.second == bs->GetVolume2());  
     }
     return vec ; 
 #else

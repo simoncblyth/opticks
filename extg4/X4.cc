@@ -22,6 +22,8 @@
 #include <algorithm>
 
 #include "X4.hh"
+#include "X4LogicalBorderSurfaceTable.hh"
+
 #include "SGDML.hh"
 #include "BStr.hh"
 #include "BFile.hh"
@@ -310,18 +312,20 @@ size_t X4::GetOpticksIndex( const G4LogicalSurface* const surf )
     size_t num_sks = G4LogicalSkinSurface::GetNumberOfSkinSurfaces() ; 
 
     const G4LogicalBorderSurfaceTable* lbs_table = G4LogicalBorderSurface::GetSurfaceTable() ; 
-    const G4LogicalSkinSurfaceTable*   sks_table = G4LogicalSkinSurface::GetSurfaceTable() ; 
+    const std::vector<G4LogicalBorderSurface*>* lbs_vec = X4LogicalBorderSurfaceTable::PrepareVector(lbs_table); 
 
-    assert( num_lbs == lbs_table->size() );
-    assert( num_sks == sks_table->size() );
+    const G4LogicalSkinSurfaceTable*   sks_vec = G4LogicalSkinSurface::GetSurfaceTable() ; 
+
+    assert( num_lbs == lbs_vec->size() );
+    assert( num_sks == sks_vec->size() );
 
     const G4LogicalBorderSurface* const lbs = dynamic_cast<const G4LogicalBorderSurface* const>(surf);
     const G4LogicalSkinSurface*   const sks = dynamic_cast<const G4LogicalSkinSurface* const>(surf);
 
     assert( (lbs == NULL) ^ (sks == NULL) );   // one or other must be NULL, but not both   
 
-    int idx_lbs = lbs ? GetItemIndex<G4LogicalBorderSurface>( lbs_table, lbs ) : -1 ;    
-    int idx_sks = sks ? GetItemIndex<G4LogicalSkinSurface>(   sks_table, sks ) : -1 ;    
+    int idx_lbs = lbs ? GetItemIndex<G4LogicalBorderSurface>( lbs_vec  , lbs ) : -1 ;    
+    int idx_sks = sks ? GetItemIndex<G4LogicalSkinSurface>(   sks_vec  , sks ) : -1 ;    
 
     assert( (idx_lbs == -1) ^ (idx_sks == -1) ); // one or other must be -1, but not both 
 

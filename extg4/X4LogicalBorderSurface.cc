@@ -25,6 +25,7 @@
 #include "X4.hh"
 #include "X4LogicalSurface.hh"
 #include "X4LogicalBorderSurface.hh"
+#include "X4LogicalBorderSurfaceTable.hh"
 #include "X4OpticalSurface.hh"
 
 #include "GOpticalSurface.hh"   
@@ -65,7 +66,12 @@ GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* sr
 
 int X4LogicalBorderSurface::GetItemIndex( const G4LogicalBorderSurface* src )
 {
-    const G4LogicalBorderSurfaceTable* vec = G4LogicalBorderSurface::GetSurfaceTable() ; 
+    const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable() ; 
+
+    typedef std::vector<G4LogicalBorderSurface*> VBS ; 
+
+    const VBS* vec = X4LogicalBorderSurfaceTable::PrepareVector(tab) ; 
+
     return X4::GetItemIndex<G4LogicalBorderSurface>( vec, src ); 
 }
 

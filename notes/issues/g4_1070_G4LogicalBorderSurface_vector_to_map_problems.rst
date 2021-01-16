@@ -60,4 +60,24 @@ With the creation order index can explicitly control the ordering despite using 
 
      
 
+::
+
+    === om-make-one : extg4           /Users/francis/opticks/extg4                                 /Users/francis/local/opticks/build/extg4                     
+    Scanning dependencies of target ExtG4
+    [  2%] Building CXX object CMakeFiles/ExtG4.dir/X4LogicalBorderSurfaceTable.cc.o
+    [  2%] Building CXX object CMakeFiles/ExtG4.dir/X4PhysicalVolume.cc.o
+    In file included from /Users/francis/opticks/extg4/X4PhysicalVolume.cc:33:
+    In file included from /usr/local/opticks_externals/g4_1070/include/Geant4/G4VSensitiveDetector.hh:33:
+    In file included from /usr/local/opticks_externals/g4_1070/include/Geant4/G4Step.hh:56:
+    In file included from /usr/local/opticks_externals/g4_1070/include/Geant4/G4Profiler.hh:43:
+    /usr/local/opticks_externals/g4_1070/include/Geant4/G4Profiler.icc:44:12: fatal error: 'PTL/Globals.hh' file not found
+    #  include "PTL/Globals.hh"
+               ^~~~~~~~~~~~~~~~
+    [  3%] Building CXX object CMakeFiles/ExtG4.dir/OpNoviceDetectorConstruction.cc.o
+    1 error generated.
+    make[2]: *** [CMakeFiles/ExtG4.dir/X4PhysicalVolume.cc.o] Error 1
+    make[2]: *** Waiting for unfinished jobs....
+    make[1]: *** [CMakeFiles/ExtG4.dir/all] Error 2
+    make: *** [all] Error 2
+    === om-one-or-all make : non-zero rc 2
 
