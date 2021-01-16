@@ -200,8 +200,6 @@ Donglian Xu from SJTU::
 * start trying to build opticks against the junoenv externals
 * get build against OptiX 5 to work again, for CUDA 9.1 limited macOS laptop
 * add higher level API for genstep collection, motivated by Hans (Fermilab Geant4) 
-
-
 * invited present Opticks at HSF meeting 
   with small audience including several of the core Geant4 developers from CERN  
 

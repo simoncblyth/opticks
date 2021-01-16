@@ -7,7 +7,7 @@ Outline of the steps to translate Geant4 geometry to OptiX GPU Geometry
    with the global geometry of solids that are not repeated enough to pass the 
    instancing cuts.  Repeats that are contained within other repeats are disqualified 
    in order to end up with "assemblies" of multiple volumes. 
-   This for example finds the ~5 volumes that comprise the JUNO PMTs and 
+   This for example finds the ~9 volumes that comprise the JUNO PMTs and 
    all their 4x4 transforms. 
 
 2. convert each G4VSolid into a Opticks nnode/NCSG tree 

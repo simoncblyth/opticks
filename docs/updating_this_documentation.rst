@@ -50,5 +50,18 @@ Check the published result::
 
 
 
+Tip for inclusion of RST that is maintained within sources
+------------------------------------------------------------
+
+::
+
+    find . -name '*.rst' -exec grep -H start-after {} \;
+
+
+cfg4/CTraverser.rst::
+
+    .. include:: CTraverser.hh
+       :start-after: /**
+       :end-before: **/
 
 

@@ -164,7 +164,7 @@ Why proliferate the *pergi* ? So can assign an instance index to it : ie know wh
 * Need to assign an index to each instance means need a GeometryInstance beneath the xform ? 
 
 * "Geometry" and "Material" can also hold variables, but that doesnt help for instance_index 
-   as there is only geometry and material instance for each assembly
+   as there is only one geometry and material instance for each assembly
 
   
 Could the perxform GeometryGroup be common to all ?

@@ -3,6 +3,14 @@ ExtG4 Orientation : Translates Geant4->GGeo only
 
 * :doc:`../docs/orientation`
 
+* https://bitbucket.org/simoncblyth/opticks/src/master/extg4/
+* https://bitbucket.org/simoncblyth/opticks/src/master/extg4/X4PhysicalVolume.cc
+
+
+X4 Class names mostly correspond to Geant4 classnames 
+
+
+
 X4PhysicalVolume 
     top level translator 
 

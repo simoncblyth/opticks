@@ -546,7 +546,33 @@ OPTICKS_GEANT4_PREFIX : $OPTICKS_GEANT4_PREFIX
 EON
 }
 
+g4-1017-notes(){ cat << EON
 
+
+::
+
+    -- Detecting CXX compile features - done
+    CMake Error at cmake/Modules/G4OptionalComponents.cmake:64 (find_package):
+      Could not find a configuration file for package "CLHEP" that is compatible
+      with requested version "2.4.4.0".
+
+      The following configuration files were considered but not accepted:
+
+        /usr/local/opticks_externals/clhep/lib/CLHEP-2.4.1.0/CLHEPConfig.cmake, version: 2.4.1.0
+
+
+
+
+https://proj-clhep.web.cern.ch/proj-clhep/
+
+ The latest releases are:
+
+2.4.4.0, released November 9, 2020.
+2.3.4.6, released February 15, 2018.
+
+
+EON
+}
 
 
 

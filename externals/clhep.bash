@@ -14,17 +14,34 @@ in your environment simultaneously.
 To prevent building that ancient CLHEP use -DGEANT4_USE_SYSTEM_CLHEP=ON 
 when building Geant4.
 
+
+https://proj-clhep.web.cern.ch/proj-clhep/
+
+The latest releases are::
+
+   2.4.4.0, released November 9, 2020.
+   2.3.4.6, released February 15, 2018.
+
+Geant4 1070 requires 2.4.4.0
+
 EOU
 }
 
-clhep-prefix(){  echo ${OPTICKS_CLHEP_PREFIX:-$(opticks-prefix)_externals/clhep}  ; }
-clhep-ver(){     echo 2.4.1.0 ; }
-clhep-url(){     echo http://proj-clhep.web.cern.ch/proj-clhep/DISTRIBUTION/tarFiles/clhep-$(clhep-ver).tgz ; }
+clhep-prefix-default(){  echo $(opticks-prefix)_externals/clhep_$(clhep-version)  ; }
+clhep-prefix(){  echo ${OPTICKS_CLHEP_PREFIX:-$(clhep-prefix-default)}  ; }
+#clhep-ver(){     echo 2.4.1.0 ; }
+clhep-ver(){     echo 2.4.4.0 ; }
+clhep-version(){  local v=$(clhep-ver) ; echo ${v//./} ; }
+
+#clhep-url(){     echo http://proj-clhep.web.cern.ch/proj-clhep/DISTRIBUTION/tarFiles/clhep-$(clhep-ver).tgz ; }
+clhep-url(){     echo https://proj-clhep.web.cern.ch/proj-clhep/dist1/clhep-$(clhep-ver).tgz ; }
+
 clhep-dstname(){ echo $(clhep-ver) ; }     
 clhep-dir(){     echo $(clhep-prefix).build/$(clhep-dstname)/CLHEP ; }  
 clhep-bdir(){    echo $(clhep-dir).build ; }
 
 clhep-info(){ cat << EOI
+
 
    clhep-ver     : $(clhep-ver)
    clhep-url     : $(clhep-url)

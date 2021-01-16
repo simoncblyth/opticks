@@ -13,6 +13,8 @@ GVolume
 GNodeLib
     collects GVolume instances *GNodeLib::addVolume* 
 
+GParts
+    analytic geometry holding npy/NCSG :doc:`../npy/orientation`
 
 GInstancer
     Does multiple traversals over full GVolume tree, identifying 
