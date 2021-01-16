@@ -11,6 +11,8 @@
 #include "G4MaterialPropertiesTable.hh"
 #include "G4String.hh"
 
+#include "X4LogicalBorderSurfaceTable.hh"
+
 #include "CGDML.hh"
 
 /**
@@ -83,7 +85,9 @@ void dump_MPT(const char* name, const G4MaterialPropertiesTable* mpt, unsigned e
 void dump_G4LogicalBorderSurfaceTable(unsigned edgeitems)
 {
     unsigned nlbs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ;
-    const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable() ; 
+    const G4LogicalBorderSurfaceTable* tab_ = G4LogicalBorderSurface::GetSurfaceTable() ; 
+    const std::vector<G4LogicalBorderSurface*>* tab = X4LogicalBorderSurfaceTable::PrepareVector(tab_); 
+
     LOG(info) << " nlbs " << nlbs << " tab.size " << tab->size() ; 
 
     for(size_t i=0 ; i < tab->size() ; i++)

@@ -32,6 +32,8 @@
 #include "G4SystemOfUnits.hh"
 #include "CFG4_POP.hh"
 
+#include "X4LogicalBorderSurfaceTable.hh"
+
 // okc-
 #include "Opticks.hh"
 #include "PLOG.hh"
@@ -68,8 +70,9 @@ const G4LogicalBorderSurface* CCheck::GetBorderSurface(const G4VPhysicalVolume* 
   G4int nsurf = G4LogicalBorderSurface::GetNumberOfBorderSurfaces();
   if (nsurf)
   {
-    const G4LogicalBorderSurfaceTable* btable =
-          G4LogicalBorderSurface::GetSurfaceTable();
+    const G4LogicalBorderSurfaceTable* btable_ = G4LogicalBorderSurface::GetSurfaceTable();
+    const std::vector<G4LogicalBorderSurface*>* btable = X4LogicalBorderSurfaceTable::PrepareVector(btable_); 
+
     std::vector<G4LogicalBorderSurface*>::const_iterator pos;
     for (pos = btable->begin(); pos != btable->end(); pos++)
     {   

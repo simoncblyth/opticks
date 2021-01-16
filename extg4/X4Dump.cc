@@ -10,6 +10,7 @@
 #include "G4MaterialPropertiesTable.hh"
 #include "G4String.hh"
 
+#include "X4LogicalBorderSurfaceTable.hh"
 #include "X4Dump.hh"
 
 const unsigned X4Dump::EDGEITEMS = 5 ; 
@@ -91,11 +92,13 @@ void X4Dump::G4LogicalBorderSurfaceTable_() // static
 {
     unsigned nlbs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ;
     const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable() ; 
-    std::cout << " nlbs " << nlbs << " tab.size " << tab->size() << std::endl  ; 
+    const std::vector<G4LogicalBorderSurface*>* vec = X4LogicalBorderSurfaceTable::PrepareVector(tab); 
 
-    for(size_t i=0 ; i < tab->size() ; i++)
+    std::cout << " nlbs " << nlbs << " vec.size " << vec->size() << std::endl  ; 
+
+    for(size_t i=0 ; i < vec->size() ; i++)
     {   
-        G4LogicalBorderSurface* src = (*tab)[i] ; 
+        G4LogicalBorderSurface* src = (*vec)[i] ; 
 
         G4OpticalSurface* opsurf = dynamic_cast<G4OpticalSurface*>(src->GetSurfaceProperty());
         assert(opsurf); 

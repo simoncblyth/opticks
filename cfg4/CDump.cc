@@ -10,6 +10,8 @@
 #include "G4MaterialPropertiesTable.hh"
 #include "G4String.hh"
 
+#include "X4LogicalBorderSurfaceTable.hh"
+
 #include "CDump.hh"
 
 const unsigned CDump::EDGEITEMS = 5 ; 
@@ -90,7 +92,9 @@ void CDump::G4MaterialPropertiesTable_(const char* name, const G4MaterialPropert
 void CDump::G4LogicalBorderSurfaceTable_() // static 
 {
     unsigned nlbs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ;
-    const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable() ; 
+    const G4LogicalBorderSurfaceTable* tab_ = G4LogicalBorderSurface::GetSurfaceTable() ; 
+    const std::vector<G4LogicalBorderSurface*>* tab = X4LogicalBorderSurfaceTable::PrepareVector(tab_); 
+
     std::cout << " nlbs " << nlbs << " tab.size " << tab->size() << std::endl  ; 
 
     for(size_t i=0 ; i < tab->size() ; i++)

@@ -23,7 +23,12 @@
 #include "globals.hh"
 #include "G4OpticalPhysics.hh"
 #include "G4EmPenelopePhysics.hh"
+#include "G4Version.hh"
+
+#if G4VERSION_NUMBER >= 1070
+#else
 #include "G4OpticalProcessIndex.hh"
+#endif
 
 #include "G4SystemOfUnits.hh"
 

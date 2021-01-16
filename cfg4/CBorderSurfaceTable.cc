@@ -28,6 +28,7 @@
 #include "G4LogicalBorderSurface.hh"
 #include "G4OpticalSurface.hh"
 
+#include "X4LogicalBorderSurfaceTable.hh"
 
 const plog::Severity CBorderSurfaceTable::LEVEL = PLOG::EnvLevel("CBorderSurfaceTable", "DEBUG"); 
 
@@ -44,7 +45,8 @@ void CBorderSurfaceTable::init()
 
     LOG(LEVEL) << " nsurf " << nsurf ; 
 
-    const G4LogicalBorderSurfaceTable* bst = G4LogicalBorderSurface::GetSurfaceTable();
+    const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable();
+    const std::vector<G4LogicalBorderSurface*>* bst = X4LogicalBorderSurfaceTable::PrepareVector(tab); 
 
     assert( int(bst->size()) == nsurf );
 
