@@ -18,6 +18,7 @@
  */
 
 
+#include "G4Version.hh"
 #include "G4LogicalBorderSurface.hh"
 
 #include "X4LogicalBorderSurfaceTable.hh"
@@ -37,9 +38,48 @@ void X4LogicalBorderSurfaceTable::Convert( GSurfaceLib* dst )
     X4LogicalBorderSurfaceTable xtab(dst); 
 }
 
+
+/**
+X4LogicalBorderSurfaceTable::PrepareVector
+-------------------------------------------
+
+Prior to Geant4 1070 the G4LogicalBorderSurfaceTable type
+was a std::vector, for 1070 and above the table changed to a std::map 
+requiring conversion to a std::vector in order to have a well defined order.
+
+The problem with the below conversion approach is that the ordering is 
+potentially unreliable, changing from invokation to invokation 
+and not matching between platforms. The std::map has an order determined 
+by key comparisons, but when the key is a pair of pointers it is anyones 
+guess what the order will be and how consistent it will be.
+
+**/
+
+const std::vector<G4LogicalBorderSurface*>* X4LogicalBorderSurfaceTable::PrepareVector(const G4LogicalBorderSurfaceTable* tab) 
+{
+#if G4VERSION_NUMBER >= 1070
+    typedef std::vector<G4LogicalBorderSurface*> VBS ; 
+    typedef std::pair<const G4VPhysicalVolume*, const G4VPhysicalVolume*> PPV ; 
+    typedef std::map<PPV, G4LogicalBorderSurface*>  PPVBS ;   
+    typedef std::map<PPV, G4LogicalBorderSurface*>::const_iterator IT ; 
+
+    VBS* vec = new VBS ;  
+    for(IT it=tab->begin() ; it != tab->end() ; it++ )
+    {
+        PVPV* pvpv = it.first ; 
+        G4LogicalBorderSurface* bs = it.second ;    
+        vec->push_back(bs);        
+    }
+    return vec ; 
+#else
+    return tab ; 
+#endif
+}
+
+
 X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(GSurfaceLib* dst )
     :
-    m_src(G4LogicalBorderSurface::GetSurfaceTable()),
+    m_src(PrepareVector(G4LogicalBorderSurface::GetSurfaceTable())),
     m_dst(dst)
 {
     init();
@@ -55,6 +95,7 @@ void X4LogicalBorderSurfaceTable::init()
     
     for(size_t i=0 ; i < m_src->size() ; i++)
     {
+
         G4LogicalBorderSurface* src = (*m_src)[i] ; 
 
         LOG(LEVEL) << src->GetName() ; 
@@ -66,5 +107,10 @@ void X4LogicalBorderSurfaceTable::init()
         m_dst->add(dst) ; // GSurfaceLib
     }
 }
+
+
+
+
+
 
 
