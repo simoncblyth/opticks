@@ -27,11 +27,29 @@ struct Demo
 };
 
 
+void test_GenerateName()
+{
+    Demo* d = new Demo { 42 } ; 
+    LOG(info) << SGDML::GenerateName( "Demo", d, true );
+}
+
+
+void test_Strip()
+{
+    std::string name = "hello0xworld0xcruel" ; 
+    name = SGDML::Strip(name) ; 
+    LOG(info) << name ; 
+}
+
+
+
 int main(int argc, char** argv)
 {   
     OPTICKS_LOG(argc, argv);
-    Demo* d = new Demo { 42 } ; 
-    LOG(info) << SGDML::GenerateName( "Demo", d, true );
+
+    test_GenerateName(); 
+    test_Strip(); 
+ 
     return 0 ;
 }   
 

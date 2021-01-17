@@ -1,6 +1,7 @@
 #include <vector>
 #include "OPTICKS_LOG.hh"
 #include "OKConf.hh"
+#include "SPath.hh"
 
 #include "G4GDMLParser.hh"
 #include "G4VPhysicalVolume.hh"
@@ -145,10 +146,14 @@ int main(int argc, char** argv)
 
     LOG(info) << "OKConf::Geant4VersionInteger() : " << OKConf::Geant4VersionInteger()  ;
 
-    const char* path = argc > 1 ? argv[1] : "/tmp/v1.gdml" ; 
+    const char* path_ = argc > 1 ? argv[1] : "$TMP/v1.gdml" ; 
+    const char* path = SPath::Resolve(path_); 
 
     if(!path) LOG(error) << " expecting path to GDML " ; 
     if(!path) return 0 ; 
+    bool readable = SPath::IsReadable(path) ; 
+    if(!readable)  LOG(error) << " path is not readable " << path ; 
+    if(!readable) return 0 ; 
 
     LOG(info) << " parsing " << path ; 
     G4VPhysicalVolume* world = CGDML::Parse(path); 

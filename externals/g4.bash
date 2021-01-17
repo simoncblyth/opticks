@@ -626,7 +626,93 @@ g4-title()
 }
 
 g4-version-hh() { echo $(g4-dir)/source/global/management/include/G4Version.hh ; }
-g4-version-number() { perl -n -e 'm,#define G4VERSION_NUMBER\s*(\d*), && print $1' $(g4-version-hh) ; } 
+g4-version-number() { perl -n -e 'm,#\s*define G4VERSION_NUMBER\s*(\d*), && print $1' $(g4-version-hh) ; } 
+
+g4-version-notes(){
+   local ver=${1:-$(g4-version-number)}
+   echo $FUNCNAME $ver 
+   g4-version-notes-$ver 2> /dev/null 
+   [ $? -ne 0 ] && g4-version-notes-other $ver 
+}
+
+g4-version-notes-other(){  echo $1 : no known issues ; }
+
+g4-version-notes-1060(){ g4-bug-2305 ; }
+g4-version-notes-1061(){ g4-bug-2305 ; }
+g4-version-notes-1062(){ g4-bug-2305 ; }
+g4-version-notes-1063(){ g4-bug-2305 ; }
+g4-version-notes-1070(){ g4-bug-2305 ; g4-bug-2311 ; }
+
+g4-bug-2305(){ cat << EON
+
+https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2305
+
+Geant4 versions 1060,1061,1062,1063,1070 are known to have 
+a severe GDML optical surface bug 2305 in 
+source/persistency/gdml/src/G4GDMLReadSolids.cc
+
+If your geometry has more than one optical surface and you 
+use GDML then you are advised not to use these Geant4 versions with Opticks.
+
+EON
+}
+
+g4-bug-2305-fix(){
+  local msg="=== $FUNCNAME :"
+
+  local cc=$(g4-dir)/source/persistency/gdml/src/G4GDMLReadSolids.cc 
+
+  if [ -f "$cc.orig" ]; then 
+     echo $msg it looks like a fix has been applied already : aborting 
+     return 0  
+  fi 
+
+  local tmp=/tmp/$USER/opticks/$FUNCNAME/$(basename $cc) 
+  mkdir -p $(dirname $tmp)
+
+  cp $cc $tmp
+  echo cc $cc
+  echo tmp $tmp
+
+  perl -pi -e "s,(\s*)(mapOfMatPropVects\[Strip\(name\)\] = propvect;),\$1//\$2 //$FUNCNAME," $tmp
+
+  echo diff $cc $tmp
+  diff $cc $tmp
+
+  local ans
+  read -p "Enter YES to copy the changed cc file into location $cc "  ans
+
+  if [ "$ans" == "YES" ]; then 
+     echo $msg proceeding 
+     cp $cc $cc.orig
+     cp $tmp $cc   
+     echo diff $cc.orig $cc
+     diff $cc.orig $cc 
+
+     echo $msg following this change recompile libG4persistency with command : g4-build
+
+  else
+     echo $msg skip leaving cc untouched $cc  
+  fi 
+
+}
+
+
+g4-bug-2311(){ cat << EON
+
+https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2311
+
+Geant4 1070 is known to feature an API change that means that 
+the ordering of G4LogicalBorderSurface objects may not be reliable.
+Although not an major issue in isolation this might cause confusion in 
+comparisons between separate invokations or runs on different systems.
+
+EON
+}
+
+
+
+
 
 
 # the below inline version approach is not recommended, 

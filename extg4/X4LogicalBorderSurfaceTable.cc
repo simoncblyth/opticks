@@ -18,9 +18,15 @@
  */
 
 
+#include <string>
+#include <iomanip>
+
 #include "G4Version.hh"
 #include "G4LogicalBorderSurface.hh"
 
+#include "SGDML.hh"
+
+#include "X4NameOrder.hh"
 #include "X4LogicalBorderSurfaceTable.hh"
 #include "X4LogicalBorderSurface.hh"
 
@@ -30,7 +36,6 @@
 #include "PLOG.hh"
 
 
-
 const plog::Severity X4LogicalBorderSurfaceTable::LEVEL = PLOG::EnvLevel("X4LogicalBorderSurfaceTable","DEBUG"); 
 
 void X4LogicalBorderSurfaceTable::Convert( GSurfaceLib* dst )
@@ -38,27 +43,31 @@ void X4LogicalBorderSurfaceTable::Convert( GSurfaceLib* dst )
     X4LogicalBorderSurfaceTable xtab(dst); 
 }
 
-
 /**
 X4LogicalBorderSurfaceTable::PrepareVector
 -------------------------------------------
 
-Prior to Geant4 1070 the G4LogicalBorderSurfaceTable type
-was a std::vector, for 1070 and above the table changed to a std::map 
-requiring conversion to a std::vector in order to have a well defined order.
+Prior to Geant4 1070 the G4LogicalBorderSurfaceTable type was a std::vector, 
+for 1070 and above the table type changed to become a std::map with  
+pair of pointers key : std::pair<const G4VPhysicalVolume*, const G4VPhysicalVolume*>.
+As the std::map iteration order with such a key could potentially change from 
+invokation to invokation or between platforms depending on where the pointer 
+addresses got allocated it is necessary to impose a more meaningful 
+and consistent order. 
 
-The problem with the below conversion approach is that the ordering is 
-potentially unreliable, changing from invokation to invokation 
-and not matching between platforms. The std::map has an order determined 
-by key comparisons, but when the key is a pair of pointers it is anyones 
-guess what the order will be and how consistent it will be.
+As Opticks serializes all geometry objects into arrays for upload 
+to GPU buffers and textures and uses indices to reference into these 
+buffers and textures it is necessary for all collections of geometry objects 
+to have well defined and consistent ordering.
+To guarantee this the std::vector obtained from the std::map is sorted based on 
+the 0x stripped name of the G4LogicalBorderSurface.
 
 **/
 
-const std::vector<G4LogicalBorderSurface*>* X4LogicalBorderSurfaceTable::PrepareVector(const G4LogicalBorderSurfaceTable* tab) 
+const std::vector<G4LogicalBorderSurface*>* X4LogicalBorderSurfaceTable::PrepareVector(const G4LogicalBorderSurfaceTable* tab ) 
 {
-#if G4VERSION_NUMBER >= 1070
     typedef std::vector<G4LogicalBorderSurface*> VBS ; 
+#if G4VERSION_NUMBER >= 1070
     typedef std::pair<const G4VPhysicalVolume*, const G4VPhysicalVolume*> PPV ; 
     typedef std::map<PPV, G4LogicalBorderSurface*>::const_iterator IT ; 
 
@@ -67,18 +76,27 @@ const std::vector<G4LogicalBorderSurface*>* X4LogicalBorderSurfaceTable::Prepare
     {
         G4LogicalBorderSurface* bs = it->second ;    
         vec->push_back(bs);        
-
-        const PPV pvpv = it->first ; 
-
-        assert( pvpv.first == bs->GetVolume1());  
-        assert( pvpv.second == bs->GetVolume2());  
+        const PPV ppv = it->first ; 
+        assert( ppv.first == bs->GetVolume1());  
+        assert( ppv.second == bs->GetVolume2());  
     }
-    return vec ; 
-#else
-    return tab ; 
-#endif
-}
 
+    {
+        bool reverse = false ; 
+        bool strip = true ; 
+        X4NameOrder<G4LogicalBorderSurface> name_order(reverse, strip); 
+        std::sort( vec->begin(), vec->end(), name_order ); 
+        X4NameOrder<G4LogicalBorderSurface>::Dump("X4LogicalBorderSurfaceTable::PrepareVector after sort", *vec ); 
+    }
+
+#else
+    const VBS* vec = tab ;  
+    // hmm maybe should name sort pre 1070 too for consistency 
+    // otherwise they will stay in creation order
+    // Do this once 107* becomes more relevant to Opticks.
+#endif
+    return vec ; 
+}
 
 X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(GSurfaceLib* dst )
     :
@@ -87,7 +105,6 @@ X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(GSurfaceLib* dst )
 {
     init();
 }
-
 
 void X4LogicalBorderSurfaceTable::init()
 {

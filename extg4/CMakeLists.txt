@@ -57,6 +57,7 @@ set(SOURCES
     X4Gen.cc
     X4.cc
     X4Named.cc
+    X4NameOrder.cc
     X4Entity.cc
     X4SolidBase.cc
     X4Solid.cc
@@ -114,6 +115,7 @@ set(HEADERS
     X4Gen.hh
     X4.hh
     X4Named.hh
+    X4NameOrder.hh
     X4Entity.hh
     X4SolidBase.hh
     X4Solid.hh

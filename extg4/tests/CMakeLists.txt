@@ -32,6 +32,8 @@ set(TEST_SOURCES
     X4DumpTest.cc 
     X4GDMLReadDefineTest.cc
     G4GDMLReadSolids_1062_mapOfMatPropVects_bug.cc
+
+    X4NameOrderTest.cc
 )
 
 

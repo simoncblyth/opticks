@@ -35,6 +35,7 @@ set(SOURCES
     SArgs.cc
     SPPM.cc
     SVec.cc
+    SNameVec.cc
     SMap.cc
     SDigest.cc
     SDirect.cc
@@ -83,6 +84,7 @@ set(HEADERS
     SSeq.hh
     STranche.hh
     SVec.hh
+    SNameVec.hh
     SMap.hh
     SDigest.hh
     SDirect.hh

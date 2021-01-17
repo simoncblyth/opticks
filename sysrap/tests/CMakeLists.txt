@@ -16,6 +16,7 @@ set(TEST_SOURCES
    SPathTest.cc
    STrancheTest.cc
    SVecTest.cc
+   SNameVecTest.cc
    SMapTest.cc
    SSeqTest.cc
    SProcTest.cc

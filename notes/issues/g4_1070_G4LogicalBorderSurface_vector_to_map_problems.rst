@@ -232,6 +232,10 @@ With the creation order index can explicitly control the ordering despite using 
 geocache-create fails
 --------------------------
 
+Presumably thats the famous G4 bug 
+
+* :doc:`g4-1062-geocache-create-reflectivity-assert`
+
 ::
 
     ...
@@ -248,4 +252,285 @@ geocache-create fails
     epsilon:~ francis$ 
 
 
+
+
+.opticks_config setup for easier geant4 switching
+----------------------------------------------------
+
+::
+
+     22 ## hookup paths to access "foreign" externals 
+     23 opticks-prepend-prefix /usr/local/opticks_externals/boost
+     24 opticks-prepend-prefix /usr/local/opticks_externals/xercesc
+     25 
+     26 # leave only one of the below clhep+geant4 setup "stanzas" uncommented 
+     27 # to pick the geant4 version and start a new session before doing anything 
+     28 # like using the g4- functions or building opticks against this geant4 
+     29 
+     30 # standard 1042 
+     31 #opticks-prepend-prefix /usr/local/opticks_externals/clhep
+     32 #opticks-prepend-prefix /usr/local/opticks_externals/g4_1042
+     33 
+     34 # non-standard 1070
+     35 export OPTICKS_GEANT4_VER=1070
+     36 opticks-prepend-prefix /usr/local/opticks_externals/clhep_2440
+     37 opticks-prepend-prefix /usr/local/opticks_externals/g4_1070
+     38 
+     39 # For convenient use of multiple geant4 versions with the same opticks
+     40 # source create diffrent user accounts for each 
+     41 #
+     42 #   blyth   : 1042
+     43 #   charles : 1062   has manual 2305 fix effectively eliminating mapOfMatPropVects + private/public fix for G4Cerenkov  
+     44 #   francis : 1070
+     45 #
+     46 # where /Users/charles/opticks and /Users/francis/opticks are 
+     47 # symbolic links to /Users/blyth/opticks
+
+
+
+
+::
+
+     660 g4-bug-2305-fix(){
+     661   local msg="=== $FUNCNAME :"
+     662 
+     663   local cc=$(g4-dir)/source/persistency/gdml/src/G4GDMLReadSolids.cc
+     664 
+     665   if [ -f "$cc.orig" ]; then
+     666      echo $msg it looks like a fix has been applied already : aborting 
+     667      return 0
+     668   fi
+     669 
+     670   local tmp=/tmp/$USER/opticks/$FUNCNAME/$(basename $cc)
+     671   mkdir -p $(dirname $tmp)
+     672 
+     673   cp $cc $tmp
+     674   echo cc $cc
+     675   echo tmp $tmp
+     676 
+     677   perl -pi -e "s,(\s*)(mapOfMatPropVects\[Strip\(name\)\] = propvect;),\$1//\$2 //$FUNCNAME," $tmp
+     678 
+     679   echo diff $cc $tmp
+     680   diff $cc $tmp
+     681 
+     682   local ans
+     683   read -p "Enter YES to copy the changed cc file into location $cc "  ans
+     684 
+     685   if [ "$ans" == "YES" ]; then
+     686      echo $msg proceeding 
+     687      cp $cc $cc.orig
+     688      cp $tmp $cc
+     689      echo diff $cc.orig $cc
+     690      diff $cc.orig $cc
+     691   else
+     692      echo $msg skip leaving cc untouched $cc  
+     693   fi
+     694 
+     695 }
+
+
+
+
+geocache-create::
+
+    2021-01-17 15:17:14.074 INFO  [27361602] [GGeo::postDirectTranslationDump@590] GGeo::postDirectTranslationDump NOT --dumpsensor numSensorVolumes 672
+    2021-01-17 15:17:14.078 ERROR [27361602] [OpticksHub::configure@435] FORCED COMPUTE MODE : as remote session detected 
+    2021-01-17 15:17:14.079 INFO  [27361602] [GNodeLib::getFirstNodeIndexForGDMLAuxTargetLVName@271]  target_lvname (null) nidxs.size() 0 nidx -1
+    2021-01-17 15:17:14.080 FATAL [27361602] [*Opticks::makeSimpleTorchStep@3584]  enable : --torch (the default)  configure : --torchconfig [NULL] dump details : --torchdbg 
+    2021-01-17 15:17:14.082 FATAL [27361602] [OpticksResource::getDefaultFrame@207]  PLACEHOLDER ZERO 
+    2021-01-17 15:17:14.082 INFO  [27361602] [GNodeLib::getFirstNodeIndexForGDMLAuxTargetLVName@271]  target_lvname (null) nidxs.size() 0 nidx -1
+    2021-01-17 15:17:14.082 ERROR [27361602] [*OpticksGen::makeTorchstep@441]  as torchstep isDefault replacing placeholder frame  frameIdx : 0 detectorDefaultFrame : 0 cmdline_target [--gensteptarget] : 0 gdmlaux_target : -1 active_target : 0
+    2021-01-17 15:17:14.082 ERROR [27361602] [*OpticksGen::makeTorchstep@468]  generateoverride 0 num_photons0 10000 num_photons 10000
+    libc++abi.dylib: terminating with uncaught exception of type APIError
+    /Users/francis/local/opticks/bin/o.sh: line 362: 80343 Abort trap: 6           /Users/francis/local/opticks/lib/OKX4Test --okx4test --g4codegen --deletegeocache --gdmlpath /Users/francis/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export_v1.gdml --x4polyskip 211,232 --geocenter --noviz --runfolder geocache-dx1 --runcomment sensors-gdml-review.rst
+    === o-main : runline PWD /tmp/francis/opticks/geocache-create- RC 134 Sun Jan 17 15:17:14 GMT 2021
+    /Users/francis/local/opticks/lib/OKX4Test --okx4test --g4codegen --deletegeocache --gdmlpath /Users/francis/local/opticks/opticksaux/export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export_v1.gdml --x4polyskip 211,232 --geocenter --noviz --runfolder geocache-dx1 --runcomment sensors-gdml-review.rst
+    echo o-postline : dummy
+    o-postline : dummy
+    /Users/francis/local/opticks/bin/o.sh : RC : 134
+    epsilon:~ francis$ 
+
+
+
+Huh SIGABRT from VisibleDevices, which is wierd as that is not related to Geant4.
+
+geocache-create -D::
+
+     tot  node :   12230 vert : 1289446 face : 2533452
+    2021-01-17 15:18:53.982 INFO  [27367799] [GGeo::postDirectTranslationDump@590] GGeo::postDirectTranslationDump NOT --dumpsensor numSensorVolumes 672
+    2021-01-17 15:18:53.983 ERROR [27367799] [OpticksHub::configure@435] FORCED COMPUTE MODE : as remote session detected 
+    2021-01-17 15:18:53.984 INFO  [27367799] [GNodeLib::getFirstNodeIndexForGDMLAuxTargetLVName@271]  target_lvname /dd/Geometry/AD/lvADE0xc2a78c00x3ef9140 nidxs.size() 2 nidx 3153
+    2021-01-17 15:18:53.985 FATAL [27367799] [Opticks::makeSimpleTorchStep@3584]  enable : --torch (the default)  configure : --torchconfig [NULL] dump details : --torchdbg 
+    2021-01-17 15:18:53.985 FATAL [27367799] [OpticksResource::getDefaultFrame@207]  PLACEHOLDER ZERO 
+    2021-01-17 15:18:53.985 INFO  [27367799] [GNodeLib::getFirstNodeIndexForGDMLAuxTargetLVName@271]  target_lvname /dd/Geometry/AD/lvADE0xc2a78c00x3ef9140 nidxs.size() 2 nidx 3153
+    2021-01-17 15:18:53.985 ERROR [27367799] [OpticksGen::makeTorchstep@441]  as torchstep isDefault replacing placeholder frame  frameIdx : 0 detectorDefaultFrame : 0 cmdline_target [--gensteptarget] : 0 gdmlaux_target : 3153 active_target : 3153
+    2021-01-17 15:18:53.985 ERROR [27367799] [OpticksGen::makeTorchstep@468]  generateoverride 0 num_photons0 10000 num_photons 10000
+    libc++abi.dylib: terminating with uncaught exception of type APIError
+    Process 80481 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+    ...
+    Process 80481 launched: '/Users/francis/local/opticks/lib/OKX4Test' (x86_64)
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #8: 0x00000001007ad6e2 libOptiXRap.dylib`VisibleDevices::VisibleDevices(this=0x00007ffeefbfdb68) at OContext.cc:163
+        frame #9: 0x00000001007966c5 libOptiXRap.dylib`VisibleDevices::VisibleDevices(this=0x00007ffeefbfdb68) at OContext.cc:162
+        frame #10: 0x0000000100795d68 libOptiXRap.dylib`OContext::CheckDevices(ok=0x000000010f4c98b0) at OContext.cc:195
+        frame #11: 0x00000001007977fb libOptiXRap.dylib`OContext::Create(ok=0x000000010f4c98b0, cmake_target="OptiXRap", ptxrel=0x0000000000000000) at OContext.cc:238
+        frame #12: 0x00000001007b96bd libOptiXRap.dylib`OScene::OScene(this=0x0000000129ee9cd0, hub=0x000000012993bac0, cmake_target="OptiXRap", ptxrel=0x0000000000000000) at OScene.cc:85
+        frame #13: 0x00000001007ba94d libOptiXRap.dylib`OScene::OScene(this=0x0000000129ee9cd0, hub=0x000000012993bac0, cmake_target="OptiXRap", ptxrel=0x0000000000000000) at OScene.cc:96
+        frame #14: 0x00000001006cc416 libOKOP.dylib`OpEngine::OpEngine(this=0x00000001299408b0, hub=0x000000012993bac0) at OpEngine.cc:74
+        frame #15: 0x00000001006ccced libOKOP.dylib`OpEngine::OpEngine(this=0x00000001299408b0, hub=0x000000012993bac0) at OpEngine.cc:83
+        frame #16: 0x000000010022a94f libOK.dylib`OKPropagator::OKPropagator(this=0x0000000129940860, hub=0x000000012993bac0, idx=0x000000012986ce10, viz=0x0000000000000000) at OKPropagator.cc:68
+        frame #17: 0x000000010022aafd libOK.dylib`OKPropagator::OKPropagator(this=0x0000000129940860, hub=0x000000012993bac0, idx=0x000000012986ce10, viz=0x0000000000000000) at OKPropagator.cc:72
+        frame #18: 0x000000010020d22c libOK.dylib`OKMgr::OKMgr(this=0x00007ffeefbfe428, argc=15, argv=0x00007ffeefbfec80, argforced=0x0000000000000000) at OKMgr.cc:63
+        frame #19: 0x000000010020d69b libOK.dylib`OKMgr::OKMgr(this=0x00007ffeefbfe428, argc=15, argv=0x00007ffeefbfec80, argforced=0x0000000000000000) at OKMgr.cc:65
+        frame #20: 0x000000010001586f OKX4Test`main(argc=15, argv=0x00007ffeefbfec80) at OKX4Test.cc:126
+        frame #21: 0x00007fff77c24015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+
+The SIGABRT looks to happen at the first attempt to access the GPU::
+
+     155 struct VisibleDevices
+     156 {
+     157     unsigned num_devices;
+     158     unsigned version;
+     159     std::vector<Device> devices ;
+     160 
+     161     VisibleDevices()
+     162     {
+     163         RT_CHECK_ERROR(rtDeviceGetDeviceCount(&num_devices));
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   
+     164         RT_CHECK_ERROR(rtGetVersion(&version));
+     165         for(unsigned i = 0; i < num_devices; ++i)
+     166         {
+     167             Device d(i);
+     168             devices.push_back(d);
+     169         }
+     170     }
+
+
+
+Was testing from blyth GUI account in a ssh session into francis account.
+Possibly there is a GPU access permissions problem for user francis as that user does not 
+have a GUI session running ? 
+
+Yep, confirmed this. After starting GUI session for francis the geocache-create completes OK.
+
+
+After setting OPTICKS_KEY opticks-t gives 3 fails
+----------------------------------------------------
+
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      8  /36  Test #8  : CFG4Test.CG4Test                              Passed                         16.65  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         23.34  
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 Passed                         15.67  
+
+
+    FAILS:  3   / 438   :  Sun Jan 17 15:35:15 2021   
+      1  /1   Test #1  : OKConfTest.OKConfTest                         Child aborted***Exception:     0.03   
+      1  /50  Test #1  : SysRapTest.SOKConfTest                        Child aborted***Exception:     0.03   
+      6  /36  Test #6  : CFG4Test.CGDMLPropertyTest                    Child aborted***Exception:     0.13   
+    epsilon:~ francis$ 
+
+
+::
+
+    epsilon:~ francis$ OKConfTest
+    OKConf::Dump
+                       OKConf::OpticksInstallPrefix() /Users/francis/local/opticks
+                            OKConf::CMAKE_CXX_FLAGS()  -fvisibility=hidden -fvisibility-inlines-hidden -fdiagnostics-show-option -Wall -Wno-unused-function -Wno-unused-private-field -Wno-shadow
+                         OKConf::CUDAVersionInteger() 9010
+                   OKConf::ComputeCapabilityInteger() 30
+                            OKConf::OptiXInstallDir() /usr/local/optix
+                         OKCONF_OPTIX_VERSION_INTEGER 50001
+                        OKConf::OptiXVersionInteger() 50001
+                         OKCONF_OPTIX_VERSION_MAJOR   5
+                          OKConf::OptiXVersionMajor() 5
+                         OKCONF_OPTIX_VERSION_MINOR   0
+                          OKConf::OptiXVersionMinor() 0
+                         OKCONF_OPTIX_VERSION_MICRO   1
+                          OKConf::OptiXVersionMicro() 1
+                       OKConf::Geant4VersionInteger() 0
+                       OKConf::ShaderDir()            /Users/francis/local/opticks/gl
+
+     OKConf::Check() 1
+    Assertion failed: (rc == 0), function main, file /Users/francis/opticks/okconf/tests/OKConfTest.cc, line 32.
+    Abort trap: 6
+    epsilon:~ francis$ 
+
+
+
+okconf failing to peek at the Geant4 version with 1070 : FIXED
+-----------------------------------------------------------------
+
+::
+
+    epsilon:okconf francis$ om-conf
+    === om-one-or-all conf : okconf          /Users/francis/opticks/okconf                                /Users/francis/local/opticks/build/okconf                    
+    -- Configuring OKConf
+    ,,,
+    -- OKCONF_OPTIX_INSTALL_DIR : 
+    -- OptiX_VERSION_INTEGER : 50001
+    -- OpticksCUDA_API_VERSION : 9010
+    -- G4_VERSION_INTEGER      : 
+    -- Configuring OKConfTest
+
+
+Fixed two of the fails by generalizing the cmake/Modules/FindG4.cmake  pattern match::
+
+
+    .    foreach(_line ${_contents})
+    -        if (_line MATCHES "#define G4VERSION_NUMBER[ ]+([0-9]+)$")
+    +        if (_line MATCHES "#[ ]*define[ ]+G4VERSION_NUMBER[ ]+([0-9]+)$")
+                 set(G4_VERSION_INTEGER ${CMAKE_MATCH_1})
+             endif()
+         endforeach()
+
+
+
+CGDMLPropertyTest : looks like permissions issue due to inadvertent shared path /tmp/v1.gdml
+-----------------------------------------------------------------------------------------------
+
+::
+
+    epsilon:sysrap francis$ CGDMLPropertyTest 
+    2021-01-17 16:54:04.659 INFO  [27420776] [main@146] OKConf::Geant4VersionInteger() : 1070
+    2021-01-17 16:54:04.660 INFO  [27420776] [main@153]  parsing /tmp/v1.gdml
+    G4GDML: Reading '/tmp/v1.gdml'...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : InvalidRead
+          issued by : G4GDMLRead::Read()
+    Unable to open document: /tmp/v1.gdml
+    *** Fatal Exception ***
+    -------- EEEE ------- G4Exception-END -------- EEEE -------
+
+
+    *** G4Exception: Aborting execution ***
+    Abort trap: 6
+    epsilon:sysrap francis$ 
+
+
+
+
+francis 1070 down to 0/438 fails
+-----------------------------------
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      8  /36  Test #8  : CFG4Test.CG4Test                              Passed                         15.77  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         23.63  
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 Passed                         15.67  
+
+
+    FAILS:  0   / 438   :  Sun Jan 17 17:13:36 2021   
 

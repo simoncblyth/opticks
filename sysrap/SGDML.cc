@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <string>
 #include <sstream>
 #include <algorithm>
 #include "SGDML.hh"
@@ -38,6 +39,15 @@ std::string SGDML::GenerateName(const char* name, const void* const ptr, bool ad
     //
 
     return nameOut;
+}
+
+
+
+// after G4GDMLRead::Strip
+std::string SGDML::Strip(const std::string& name)  // static 
+{
+    std::string sname = name.substr(0, name.find("0x")) ;
+    return sname ;
 }
 
 
