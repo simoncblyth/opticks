@@ -324,7 +324,7 @@ om-install : configures, builds and installs
 
 For details *om-;om-vi* or:
 
-* https://bitbucket.org/simoncblyth/opticks/src/default/om.bash
+* https://bitbucket.org/simoncblyth/opticks/src/master/om.bash
 
 Note that the invoking directory is taken as an "argument" to the `om-` functions 
 such as *om-install*, *om-conf*, *om-make* controlling whether to operate on all subprojects 

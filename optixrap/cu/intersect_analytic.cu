@@ -17,6 +17,33 @@
  * limitations under the License.
  */
 
+
+/**0
+intersect_analytic.cu : General Analytic CSG intersection 
+===========================================================
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/cu/intersect_analytic.cu
+
+.. contents:: Table of Contents
+   :depth: 2
+
+*intersect_analytic.cu* provides intersection of rays with arbitrarily complex 
+solids represented using a constructive solid geometry model.
+The model uses a complete binary tree, with primitives at the leaves 
+and boolean operations (intersection, union, difference) at the other nodes.
+
+The C++ code that creates the OptiX program is *OGeo::makeAnalyticGeometry* see:
+
+* :doc:`../OGeo`
+
+The principal of the approach is described in a note by Andrew Kensler
+"Ray Tracing CSG Objects Using Single Hit Intersections",  available from
+the below link together with a discussion of the technique as used in the XRT raytracer.
+
+* http://xrt.wikidot.com/doc:csg 
+
+0**/
+
 #include "OpticksCSG.h"
 
 // shape flag enums from npy-
@@ -71,10 +98,43 @@ rtDeclareVariable(unsigned int, instance_index,  ,);
 rtDeclareVariable(unsigned int, primitive_count, ,);
 rtDeclareVariable(unsigned int, repeat_index, ,);
 
+
 rtBuffer<Part> partBuffer; 
+
 rtBuffer<Matrix4x4> tranBuffer; 
 
 rtBuffer<Prim>  primBuffer; 
+
+rtBuffer<uint4>  identityBuffer;   
+
+rtBuffer<float4> prismBuffer ;   // TODO: migrate prism to use planBuffer
+
+rtBuffer<rtCallableProgramId<unsigned(double,double,double,double*,unsigned)> > solve_callable ;
+
+
+/**1
+intersect_analytic.cu : buffers 
+----------------------------------
+
+primBuffer 
+   offsets into part,tran,plan buffers  
+
+partBuffer 
+   nodes of the CSG tree (both operators and primitives) (4 quads) 
+
+tranBuffer 
+   transforms
+
+planBuffer 
+   planes
+
+identityBuffer
+   volume identity uint4 from instance_index and primIdx::
+
+       uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ; 
+   
+1**/
+
 
 /**
 identityBuffer sources depend on geocode of the GMergedMesh
@@ -90,11 +150,12 @@ OGeo::makeAnalyticGeometry
      NPY<unsigned>*  idBuf = mm->getInstancedIdentityBuffer();
 
 **/
-rtBuffer<uint4>  identityBuffer;   
 
-rtBuffer<float4> prismBuffer ;   // TODO: migrate prism to use planBuffer
 
-rtBuffer<rtCallableProgramId<unsigned(double,double,double,double*,unsigned)> > solve_callable ;
+
+
+
+
 
 // attributes communicate to closest hit program,
 // they must be set inbetween rtPotentialIntersection and rtReportIntersection
@@ -153,6 +214,12 @@ typedef double Cubic_t ;
 #include "solve_callable_test.h"
 #endif
 
+/**2
+intersect_analytic.cu : bounds
+--------------------------------
+
+
+2**/
 
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
@@ -314,12 +381,10 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 }
 
 
-/**
+/*
 
 identityBuffer
 ~~~~~~~~~~~~~~~~
-
-* just placeholder zeros for analytic test geometry 
 
 * setting identity.z adopts boundary index from partBuffer, see npy/NPart.hpp for layout (also GPmt)
   at intersections the uint4 identity is copied into the instanceIdentity attribute,
@@ -327,8 +392,22 @@ identityBuffer
   where crucially the instanceIdentity.z -> boundaryIndex
 
 
-**/
+*/
 
+
+/**3
+intersect_analytic.cu : intersect
+------------------------------------
+
+Intersection of the primIdx prim using *evaluative_csg*.
+
+The *CSG_FLAGNODETREE* approach is the default.
+The former *CSG_FLAGPARTLIST* approach is not general and requires semi-manual 
+partitioning of CSG solids at constituent intersection planes. This 
+approach may be faster for suitable shapes but lack of generality makes 
+it difficult to use.
+
+3**/
 
 RT_PROGRAM void intersect(int primIdx)
 {

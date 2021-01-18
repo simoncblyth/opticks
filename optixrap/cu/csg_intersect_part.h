@@ -22,6 +22,27 @@
 //#define CSG_BOUNDS_DEBUG 1
 
 
+/**0
+csg_intersect_part.h : csg_bounds_prim / csg_intersect_part
+==============================================================
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/cu/csg_intersect_part.h
+
+.. contents:: Table of Contents
+   :depth: 2
+
+0**/
+
+
+/**1
+csg_intersect_part.h : csg_bounds_prim
+-----------------------------------------
+
+Large typecode switch statement invoking functions such as *csg_bounds_sphere* *csg_bounds_box* etc 
+
+1**/
+
+
 static __device__
 void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )  // NB OptiX primitive, but can be CSG tree for Opticks
 {
@@ -161,6 +182,16 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )  // NB O
     }
 }
 
+
+
+/**2
+csg_intersect_part.h : csg_intersect_part
+------------------------------------------
+
+Large switch statement invoking functions such as *csg_intersect_sphere* *csg_intersect_box* etc depending 
+on the part typecode.
+
+2**/
 
 
 static __device__

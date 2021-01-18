@@ -28,7 +28,6 @@ Contents:
    docs/misc/packages
    docs/misc/how_opticks_full_works
    docs/misc/material_and_surface_properties
-   docs/misc/shared
    docs/misc/geometry_translation
 
    docs/outdated/integration

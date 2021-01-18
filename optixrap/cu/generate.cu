@@ -17,53 +17,6 @@
  * limitations under the License.
  */
 
-// Where best to record the propagation ? 
-// =======================================
-//
-// Code prior to inloop record save 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//                             /\
-//      *--> . . . . . . m1  ./* \ - m2 - - - -
-//     p                     / su \
-//                          /______\
-//
-// * finds intersected triangle along ray from p.position along p.direction
-// * uses triangle primIdx to find boundaryIndex 
-// * use boundaryIndex and p.wavelength to look up surface/material properties 
-//   including s.index.x/y/z  m1/m2/su indices 
-// 
-// * **NB THIS CODE DOES NOT change p.direction/p.position/p.time** 
-//   they are still at their generated OR last changed positions 
-//   from CONTINUE-ers from the below propagation code 
-//
-//  In summary this code is looking ahead to see where to go next
-//  while the photon remains with exitant position and direction
-//  and flags from the last "step"
-//
-// Code after inloop record save
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-// * changes p.position p.time p.direction p.polarization ... 
-//   then CONTINUEs back to the above to find the next intersection
-//   or BREAKs
-//
-//
-//            BULK_SCATTER/BULK_REEMIT
-//                 ^
-//                 |           /\
-//      *--> . # . *. . . m1  /* \ - m2 - - - -
-//     p       .             / su \
-//          BULK_ABSORB     /______\
-//
-// * each turn of the loop only sets a single history bit  
-// * bit position is used rather than the full mask in the photon record
-//   to save bits  
-//
-// * control the or-ing of that flag into photon history at this level
-// * integrate surface optical props: finish=polished/ground
-//
-//
-
 
 #include <curand_kernel.h>
 #include <optix_world.h>
@@ -78,7 +31,6 @@ using namespace optix;
 #include "OSensorLib.hh"
 #endif
 
-//rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
 rtDeclareVariable(unsigned int,  PNUMQUAD, , );
 rtDeclareVariable(unsigned int,  RNUMQUAD, , );
 rtDeclareVariable(unsigned int,  GNUMQUAD, , );
@@ -95,9 +47,6 @@ rtBuffer<uint4>                optical_buffer;
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
-
-//rtDeclareVariable(float, t_parameter, rtIntersectionDistance, );
-// not giving prd.distance_to_boundary
 
 #include "cerenkovstep.h"
 
@@ -167,9 +116,21 @@ rtDeclareVariable(rtObject,      top_object, , );
 //
 
 
-/**
-RSAVE
---------
+/**0
+generate.cu
+==============
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/cu/generate.cu
+
+.. contents:: Table of Contents
+   :depth: 2
+
+0**/
+
+
+/**1
+RSAVE Macro
+------------
 
 Writes compressed step points into the record buffer
 
@@ -182,7 +143,7 @@ seqmat
     shifts in "mat" nibble obtained from s.index.x
 
 
-**/
+1**/
  
 #define RSAVE(seqhis, seqmat, p, s, slot, slot_offset)  \
 {    \
@@ -209,17 +170,11 @@ seqmat
         
 
 
-/**
-FLAGS
--------
+/**2
+FLAGS Macro 
+------------
 
-Set the photon flags p.flags using values from state s and per-ray-data prd
-
-Formerly::
-
-    p.flags.i.x = prd.boundary ;  \
-    p.flags.u.y = s.identity.w ;  \
-    p.flags.u.w |= s.flag ; \
+Sets the photon flags p.flags using values from state s and per-ray-data prd
 
 p.flags.u.x 
    packed signed int boundary and unsigned sensorIndex which are 
@@ -228,19 +183,13 @@ p.flags.u.x
 p.flags.u.y
    now getting s.identity.x (nodeIndex) thanks to the packing 
 
-
-
- boundary    = (( flags[:,0].view(np.uint32) & 0xffff0000 ) >> 16 ).view(np.int16)[1::2] 
- sensorIndex = (( flags[:,0].view(np.uint32) & 0x0000ffff ) >>  0 ).view(np.int16)[0::2] 
-
-
-
 s.identity.x
     node index 
 
 s.identity.w 
     sensor index arriving from GVolume::getIdentity.w
 
+::
 
     256 glm::uvec4 GVolume::getIdentity() const
     257 {
@@ -248,8 +197,19 @@ s.identity.w
     259     return id ;
     260 }
 
+NumPy array access::
 
-**/
+    boundary    = (( flags[:,0].view(np.uint32) & 0xffff0000 ) >> 16 ).view(np.int16)[1::2] 
+    sensorIndex = (( flags[:,0].view(np.uint32) & 0x0000ffff ) >>  0 ).view(np.int16)[0::2] 
+
+
+Formerly::
+
+    p.flags.i.x = prd.boundary ;  \
+    p.flags.u.y = s.identity.w ;  \
+    p.flags.u.w |= s.flag ; \
+
+2**/
 
 #define FLAGS(p, s, prd) \
 { \
@@ -259,6 +219,14 @@ s.identity.w
 } \
 
 
+
+/*
+nothing
+---------
+
+Used for debug swapping functions.
+
+*/
 
 RT_PROGRAM void nothing()
 {
@@ -274,6 +242,14 @@ RT_PROGRAM void nothing()
 // rtPrintf("(trivial) photon_offset %u \n", photon_offset );
 // rtPrintf("(trivial) photon_id %u photon_id %u photon_offset %u \n", photon_id, photon_id, photon_offset );
 //
+
+/*
+dumpseed
+---------
+
+Just dumps the genstep_id for this photon_id obtained from the seed_buffer.
+
+*/
 
 RT_PROGRAM void dumpseed()
 {
@@ -300,11 +276,17 @@ RT_PROGRAM void dumpseed()
 }
 
 
+/*
+trivial
+--------
+
+"trivial" goes one step beyond "dumpseed" in that 
+it attempts to read from the genstep buffer
+
+*/
+
 RT_PROGRAM void trivial()
 {
-    // "trivial" goes one step beyond "dumpseed" in that 
-    // it attempts to read from the genstep buffer
-
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
     unsigned int genstep_id = seed_buffer[photon_id] ;      
@@ -317,8 +299,6 @@ RT_PROGRAM void trivial()
     int gencode = ghead.i.x ; 
 
     rtPrintf("(trivial) genstep_id %u genstep_offset %u gencode %d \n", genstep_id, genstep_offset, gencode );
-
-
    
     quad indices ;  
     indices.u.x = photon_id ; 
@@ -346,6 +326,13 @@ RT_PROGRAM void trivial()
 }
 
 
+/*
+zrngtest
+---------
+
+Testing curand_uniform into the photon buffer.
+
+*/
 
 RT_PROGRAM void zrngtest()
 {
@@ -363,7 +350,13 @@ RT_PROGRAM void zrngtest()
 }
 
 
+/*
+tracetest
+----------
 
+Test a single call to rtTrace
+
+*/
 
 RT_PROGRAM void tracetest()
 {
@@ -372,13 +365,8 @@ RT_PROGRAM void tracetest()
     unsigned int genstep_id = seed_buffer[photon_id] ;      
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
-    //union quad ghead ; 
-    //ghead.f = genstep_buffer[genstep_offset+0]; 
-    //int gencode = ghead.i.x ; 
-
     curandState rng = rng_states[photon_id];
 
-    //State s ;   
     Photon p ;  
 
     TorchStep ts ;
@@ -386,7 +374,6 @@ RT_PROGRAM void tracetest()
     //tsdebug(ts);
     generate_torch_photon(p, ts, rng );         
 
-    //s.flag = TORCH ;  
  
     PerRayData_propagate prd ;
 
@@ -435,6 +422,69 @@ RT_PROGRAM void tracetest()
 }
 
 
+
+/**3
+generate.cu:generate : generate + propagate filling photon_buffer 
+-------------------------------------------------------------------
+
+Prior to bounce loop 
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* get genstep_id from seed_buffer and access the genstep for the photon_id 
+* generate Cerenkov/Scintillation/Torch photons using implementations 
+  from the corresponding headers
+  
+Inside bounce loop before record save 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+                            /\
+     *--> . . . . . . m1  ./  \ - m2 - - - -
+    p                     / su \
+                         /______\
+
+
+* rtTrace finds intersect along ray from p.position in p.direction, 
+  and geometry closest hit function sets prd.boundary  
+
+* prd.boundary and p.wavelength used to lookup surface/material properties 
+  from the boundary texture
+
+* note that so far there is no change to **p.direction/p.position/p.time** 
+  they are still at their generated OR last changed positions 
+  from CONTINUE-ers from the below propagation code 
+
+In summary before record save are looking ahead to see where 
+to go next while the photon remains with the existing position, 
+direction and flags from the prior "step" or generation.
+
+
+Inside bounce loop after record save
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* changes p.position p.time p.direction p.polarization ... 
+  then CONTINUEs back to the above to find the next intersection
+  or BREAKs
+
+
+::
+
+    .       BULK_SCATTER/BULK_REEMIT
+                ^
+                |           /\
+     *--> . # . *. . . m1  /  \ - m2 - - - -
+    p       .             / su \
+         BULK_ABSORB     /______\
+
+* each turn of the loop only sets a single history bit  
+* bit position is used rather than the full mask in the photon record
+  to save bits  
+
+* control the or-ing of that flag into photon history at this level
+* integrate surface optical props: finish=polished/ground
+
+3**/
 
 
 RT_PROGRAM void generate()

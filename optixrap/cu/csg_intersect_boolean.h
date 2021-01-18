@@ -19,9 +19,44 @@
 
 #pragma once
 
-/**
-csg_intersect_boolean.h
-==========================
+/**0
+csg_intersect_boolean.h : General CSG intersection using evaluative_csg approach
+===================================================================================
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/cu/csg_intersect_boolean.h
+
+
+Intersecting rays with general CSG shapes requires the appropriate primitive intersect to be  
+selected depending on the origin and direction of the ray and the current t_min. 
+
+Traditional implementations of CSG intersection first calculate 
+ray intervals with each primitive and then combine these intervals using the boolean operators to determine intersects.  
+Efficient use of GPUs requires many thousands of simultaneously operational threads which disfavors the traditional approach due to  
+the requirement to store intervals for all constituent primitives.  A quite different approach
+described by Andrew Kensler avoids interval storage by instead selecting between 
+the two candidate intersects at each level of the binary tree, which allows a recursive algorithm 
+to be developed. The two candidate intersects at each level are classified as "Enter", "Exit" or "Miss" 
+using the angle between the ray direction and surface normal. 
+Six decision tables corresponding to which side is closer and 
+to the three boolean operators are used to determine an action from the classifications such as returning an intersect 
+or advancing t_min and intersecting again. 
+
+Recursive function calls are a natural way to process self similar structures such as CSG trees,  
+however recursion is a memory expensive technique which makes it inappropriate for GPU usage.
+Although NVIDIA OptiX supports recursive ray tracing in does not support recursion within intersect programs. 
+The Opticks "evaluative" CSG implementation was inspired by the realization that CSG node tree intersection 
+directly parallels binary expression tree evaluation and that techniques to simplify expression 
+tree evaluation such as using postorder traversals could be applied. 
+Binary expression trees are used to represent and evaluate mathematical expressions. 
+Factoring out the postorder sequence allowed an iterative solution to be developed 
+for a recursive problem.  
+
+The CSG implementation relies on selection of the closer of two intersects at each level 
+of the node tree. When the faces of constituent shapes coincide the ambiguity regarding which is closer
+can cause spurious intersects. Modifying some constituents to prevent coincident faces avoids 
+the issue without changing the intended geometry. As such coincidences are rather common Opticks includes 
+detection and automated fixing for some common situations.    
+
 
 * postorder traversal means that have always 
   visited left and right subtrees before visiting a node
@@ -41,6 +76,8 @@ csg_intersect_boolean.h
 
 Below indices are postorder slice flavor, not levelorder
 
+::
+
    Height 3 tree, numNodes = 15, halfNodes = 7, root at i = 14 
 
       upTree       i      : numNodes    14        : 15      =  14:15    
@@ -48,6 +85,55 @@ Below indices are postorder slice flavor, not levelorder
       rightTree    i -  h : i           14 -  7   : 14      =   7:14
 
   NB all nodes including root needs an upTree tranche to evaluate left and right 
+
+
+
+CSG shape complete binary tree serialization 
+------------------------------------------------
+
+A complete binary tree serialization with array indices matching level order tree indices
+and zeros at missing nodes is used for the serialization of the CSG trees. This simple 
+serialization allows tree navigation directly from bitwise manipulations of the serialized array index.
+ 
+Advantages:
+
+* simple, with no tree overheads for child/parent etc.. 
+* no need to deserialize as can postorder tree traverse direct from the serialized buffer 
+  just by bit twiddling, as shown below
+
+Disadvantages:
+
+* very inefficient for complex CSG shapes with many constituent nodes  
+* must implement tree balancing to handle CSG shapes of "medium" complexity, 
+  this is done in geometry preprocessing 
+
+
+::
+
+    .
+                                                      depth     elevation
+
+                         1                               0           3    
+
+              10                   11                    1           2    
+
+         100       101        110        111             2           1    
+     
+     1000 1001  1010 1011  1100 1101  1110  1111         3           0    
+
+
+    postorder_next(i,elevation) = i & 1 ? i >> 1 : (i << elevation) + (1 << elevation) ;   // from pattern of bits 
+
+
+A postorder tree traverse visits all nodes, starting from leftmost, such that children 
+are visited prior to their parents.
+
+
+
+CSG Development code including python implementations of the CUDA
+-------------------------------------------------------------------
+
+:doc:`../../dev/csg/index`
 
 
 1-based binary tree indices in binary
@@ -138,9 +224,7 @@ Stack curr:
 * SIZE - 1 : SIZE items, full stack
 
 
-
-
-**/
+0**/
 
 
 
@@ -153,6 +237,13 @@ unsigned long getBitField(unsigned long val, int pos, int len) {
 }
 
 
+/*
+intersect_boolean_only_first
+-----------------------------
+
+Used during development only, gives intersects only with the first part.
+
+*/
 
 static __device__
 void intersect_boolean_only_first( const Prim& prim, const uint4& identity )
@@ -322,6 +413,26 @@ void intersect_boolean_only_first( const Prim& prim, const uint4& identity )
 #include "pack.h"
 
 
+/**1
+csg_intersect_boolean.h : struct Tranche
+-------------------------------------------
+
+Postorder Tranch storing a stack of slices into the postorder sequence.
+
+slice
+   32 bit unsigned holding a pair of begin and end indices 
+   specifying a range over the postorder traversal sequence
+
+tranche_push 
+    push (slice, tmin) onto the small stack 
+
+tranche_pop
+    pops off (slice, tmin) 
+
+tranche_repr
+    representation of the stack of slices packed into a 64 bit unsigned long long  
+
+1**/
 
 struct Tranche
 {
@@ -351,7 +462,7 @@ __device__ int tranche_pop(Tranche& tr, unsigned& slice, float& tmin)
 
 __device__ unsigned long long tranche_repr(Tranche& tr)
 {
-    unsigned long long val = 0 ; 
+    unsigned long long val = 0ull ; 
     if(tr.curr == -1) return val ; 
 
     unsigned long long c = tr.curr ;
@@ -399,6 +510,22 @@ __device__ int history_append( History& h, unsigned idx, unsigned ctrl)
 }
 
 
+
+
+
+/**2
+csg_intersect_boolean.h : struct CSG
+-------------------------------------------
+
+Small stack of float4 isect (surface normals and t:distance_to_intersect).
+
+csg_push 
+    push float4 isect and nodeIdx into stack
+
+csg_pop
+    pop float4 isect and nodeIdx off the stack   
+
+2**/
 
 struct CSG 
 {
@@ -452,10 +579,17 @@ __device__ unsigned long long csg_repr(CSG& csg)
 
 
 
+/*
+unsupported_recursive_csg_r
+----------------------------
 
+Demonstration unsupported recursive implemetation. 
+Does not run as recursion is not allowed in OptiX intersect functions.
+
+*/
 
 __device__
-float4 recursive_csg_r( const Prim& prim, unsigned partOffset, unsigned numInternalNodes, unsigned nodeIdx, float tmin )
+float4 unsupported_recursive_csg_r( const Prim& prim, unsigned partOffset, unsigned numInternalNodes, unsigned nodeIdx, float tmin )
 {
     unsigned leftIdx = nodeIdx*2 ; 
     unsigned rightIdx = leftIdx + 1 ; 
@@ -473,8 +607,8 @@ float4 recursive_csg_r( const Prim& prim, unsigned partOffset, unsigned numInter
     }  
     else
     {
-        isect[LEFT]  = recursive_csg_r( prim, partOffset, numInternalNodes, leftIdx, tmin);
-        isect[RIGHT] = recursive_csg_r( prim, partOffset, numInternalNodes, rightIdx, tmin);
+        isect[LEFT]  = unsupported_recursive_csg_r( prim, partOffset, numInternalNodes, leftIdx, tmin);
+        isect[RIGHT] = unsupported_recursive_csg_r( prim, partOffset, numInternalNodes, rightIdx, tmin);
     } 
 
     Part pt = partBuffer[partOffset+nodeIdx-1] ; 
@@ -505,7 +639,7 @@ float4 recursive_csg_r( const Prim& prim, unsigned partOffset, unsigned numInter
             }
             else
             {
-                isect[LEFT+side] = recursive_csg_r( prim, partOffset, numInternalNodes, leftIdx+side, x_tmin[side]);
+                isect[LEFT+side] = unsupported_recursive_csg_r( prim, partOffset, numInternalNodes, leftIdx+side, x_tmin[side]);
             }
             x_state[LEFT+side] = CSG_CLASSIFY( isect[LEFT+side], ray.direction, x_tmin[side] );
             ctrl = boolean_ctrl_packed_lookup( operation, x_state[LEFT], x_state[RIGHT], isect[LEFT].w <= isect[RIGHT].w ) ;
@@ -535,7 +669,7 @@ void UNSUPPORTED_recursive_csg( const Prim& prim, const uint4& identity )
     unsigned numInternalNodes = TREE_NODES(fullHeight-1) ;
     unsigned rootIdx = 1 ; 
 
-    float4 ret = recursive_csg_r( prim, partOffset, numInternalNodes, rootIdx, ray.tmin ); 
+    float4 ret = unsupported_recursive_csg_r( prim, partOffset, numInternalNodes, rootIdx, ray.tmin ); 
     if(rtPotentialIntersection( fabsf(ret.w) ))
     {
         shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
@@ -546,6 +680,29 @@ void UNSUPPORTED_recursive_csg( const Prim& prim, const uint4& identity )
 
  
 #define USE_TWIDDLE_POSTORDER 1
+
+/**3
+csg_intersect_boolean.h : evaluative_csg
+-------------------------------------------
+
+Recursive CSG intersection algorithm implemented iteratively 
+using a stack of slices into the postorder traversal sequence 
+of the complete binary tree, effectively emulating recursion.
+
+The whole algoritm depends on the postorder traversal feature 
+that the left and right children of a node are always visited 
+before the node itself. 
+
+USE_TWIDDLE_POSTORDER 
+   macro that is now standardly defined
+
+   bit-twiddle postorder is limited to trees of height 7, 
+   ie a maximum of 0xff (255) nodes
+   (using 2-bytes with PACK2 would bump that to 0xffff (65535) nodes)
+   In any case 0xff nodes are far more than this is expected to be used with
+
+
+3**/
 
 static __device__
 void evaluative_csg( const Prim& prim, const int primIdx )
@@ -561,10 +718,6 @@ void evaluative_csg( const Prim& prim, const int primIdx )
     unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
 
 #ifdef USE_TWIDDLE_POSTORDER
-    // bit-twiddle postorder limited to height 7, ie maximum of 0xff (255) nodes
-    // (using 2-bytes with PACK2 would bump that to 0xffff (65535) nodes)
-    // In any case 0xff nodes are far more than this is expected to be used with
-    //
     if(height > 7)
     {
         rtPrintf("// evaluative_csg repeat_index %d tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", repeat_index, tranOffset, numParts, height ) ;
@@ -919,6 +1072,11 @@ void evaluative_csg( const Prim& prim, const int primIdx )
 #endif
 }
 
+/*
+intersect_csg  : an early attempt that is not in use ?
+--------------------------------------------------------
+
+*/
 
 
 static __device__
@@ -1160,6 +1318,16 @@ void csg_intersect_bileaf(const Prim& prim, const unsigned partIdx, const float&
 
 
 
+/*
+intersect_boolean_triplet
+--------------------------
+
+Used during development and for illustrative purposes only.
+It demonstrates the algorithm for the special case of a CSG tree of 
+three nodes, ie one CSG operation (union/intersection)
+and two constituent primitives.
+
+*/
 static __device__
 void intersect_boolean_triplet( const Prim& prim, const uint4& identity )
 {

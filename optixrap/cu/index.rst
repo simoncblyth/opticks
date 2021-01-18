@@ -37,6 +37,10 @@ TODO
     material1_radiance.cu
 
 
+* :doc:`material1_propagate.cu`
+
+
+
 .h
 -----
 

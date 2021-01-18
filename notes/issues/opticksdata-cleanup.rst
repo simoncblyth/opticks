@@ -7,8 +7,8 @@ ISSUE : repository contains geocache files that should not have been comitted
 
 This results in a mesh of merge conflicts from geocache creations done on different machines.
 
-* https://bitbucket.org/simoncblyth/opticksdata/src/default/export/DayaBay_VGDX_20140414-1300/extras/
-* https://bitbucket.org/simoncblyth/opticksdata/src/default/export/DayaBay_VGDX_20140414-1300/extras/186/
+* https://bitbucket.org/simoncblyth/opticksdata/src/master/export/DayaBay_VGDX_20140414-1300/extras/
+* https://bitbucket.org/simoncblyth/opticksdata/src/master/export/DayaBay_VGDX_20140414-1300/extras/186/
 
 
 Objective

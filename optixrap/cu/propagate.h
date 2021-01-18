@@ -19,26 +19,36 @@
 
 #pragma once
 
-/*
-propagate_to_boundary absorb/scatter/sail ? 
-=============================================
+/**0
+propagate.h : propagate_to_boundary / propagate_at_boundary_geant4_style
+===========================================================================
 
-see /usr/local/env/chroma_env/src/chroma/chroma/cuda/photon.h
+* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/cu/propagate.h
+
+.. contents:: Table of Contents
+   :depth: 2
+
+0**/
+
+
+/**1
+propagate.h : propagate_to_boundary absorb/scatter/sail 
+--------------------------------------------------------
 
 * absorb 
 
-  #. advance .time and .position to absorption point
-  #. if BULK_REEMIT(CONTINUE) change .direction .polarization .wavelength
+  #. advance p.time and p.position to absorption point
+  #. if BULK_REEMIT(CONTINUE) change p.direction p.polarization p.wavelength
   #. if BULK_ABSORB(BREAK)  .last_hit_triangle -1  
 
 * scatter
 
-  #. advance .time and .position to scattering point
-  #. RAYLEIGH_SCATTER(CONTINUE)  .direction .polarization twiddled 
+  #. advance p.time and p.position to scattering point
+  #. RAYLEIGH_SCATTER(CONTINUE)  change p.direction p.polarization 
 
 * sail
 
-  #. advance .position .time to boundary 
+  #. advance p.position p.time to boundary 
   #. sail to boundary(PASS)  
   #. consumes 3u 
 
@@ -71,8 +81,7 @@ Returns:
 * CONTINUE(RAYLEIGH_SCATTER)
 * PASS("SAIL")
 
-
-*/
+1**/
 
 
 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
@@ -178,103 +187,14 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 } // propagate_to_boundary
 
 
-//
-//  fresnel reflect/transmit conventional directions
-//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//                     s1
-//                   +----+          
-//                    \   .   /      ^
-//               c1   i\  .  / r    /|\
-//                      \ . /        |                      
-//         material1     \./         | n
-//         ---------------+----------+----------
-//         material2      .\
-//                        . \
-//                   c2   .  \ t
-//                        .   \
-//                        +----+
-//                          s2
-//   i, incident photons 
-//      pointing down to interface (from material1 towards material2)
-//
-//   n, surface normal (s.surface_normal)
-//      pointing up from interface (from material2 back into material1)
-//      Orientation is arranged by flipping geometric normal 
-//      based on photon direction.
-//
-//   t, transmitted photons
-//      from interface into material2
-//
-//   r, reflected photons
-//      from interface back into material1
-//
-//   c1, costheta_1 
-//      cosine of incident angle,  c1 = dot(-i, n) = - dot(i, n)
-//      arranged to be positive via normal flipping 
-//      and corresponding flip of which material is labelled 1 and 2 
-//     
-//
-//  polarisation
-//  ~~~~~~~~~~~~~~~
-//                    
-//   S polarized : E field perpendicular to plane of incidence
-//   P polarized : E field within plane of incidence 
-//
-//
-// normal incidence photons
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-// 
-// * no unique plane of incidence, 
-// * artifically setting incident_plane_normal to initial p.polarisation yields normal_coefficient = 1.0f 
-//   so always treated as S polarized 
-//   
-//
-//   initial momentum dir
-//            -s.surface_normal 
-//
-//   final momentum dir (c1 = 1.f)
-//            -s.surface_normal + 2.0f*c1*s.surface_normal  = +s.surface_normal = -p.direction 
-//                                                    
-//
-//  minimise use of trancendental functions 
-//  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  Obtain c2c2 from Snells Law without lots of expensive function calls.
-//  
-//        n1 s1 = n2 s2
-//
-//           s2 = eta * s1       eta = n1/n2
-//
-//
-//   
-//         c2c2 = 1 - s2s2 
-//              = 1 - eta eta s1 s1  
-//              = 1 - eta eta (1 - c1c1) 
-//
-//
-//         c2c2 - 1 = (c1c1 - 1) eta eta
-//
-//        
-//
-//  TIR
-//  ~~~~
-//
-//  Total internal reflection, occurs when c2c2 < 0.f  (c2 imaginary)
-//
-//  Handled by: 
-//
-//  * artificially setting c2 = 0.f 
-//  * results in reflection_coefficient = 1.0f so will always reflect for both S and P cases
-//
-//
-//
 
-/*
-propagate_at_boundary
-======================
 
-See g4op- for comparison of Geant4/Chroma/OptiX-refract
+/**2
+propagate.h : propagate_at_boundary_geant4_style
+-------------------------------------------------
+
+See env-/g4op-/G4OpBoundaryProcess.cc annotations to follow this
+and compare the Opticks and Geant4 implementations.
 
 Inputs:
 
@@ -300,13 +220,101 @@ Notes:
 *  when geometry dictates TIR there is no dependence on u_reflect, 
    just always get reflection
 
-*/
+
+fresnel reflect/transmit conventional directions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+                    s1
+                  +----+          
+                   \   .   /      ^
+              c1   i\  .  / r    /|\
+                     \ . /        |                      
+        material1     \./         | n
+        ---------------+----------+----------
+        material2      .\
+                       . \
+                  c2   .  \ t
+                       .   \
+                       +----+
+                         s2
+
+i, incident photons 
+   pointing down to interface (from material1 towards material2)
+
+n, surface normal (s.surface_normal)
+   pointing up from interface (from material2 back into material1)
+   Orientation is arranged by flipping geometric normal 
+   based on photon direction.
+
+t, transmitted photons
+   from interface into material2
+
+r, reflected photons
+   from interface back into material1
+
+c1, costheta_1 
+   cosine of incident angle,  c1 = dot(-i, n) = - dot(i, n)
+   arranged to be positive via normal flipping 
+   and corresponding flip of which material is labelled 1 and 2 
+    
+
+polarisation
+~~~~~~~~~~~~~~
+
+::
+                   
+   S polarized : E field perpendicular to plane of incidence
+   P polarized : E field within plane of incidence 
+
+
+normal incidence photons
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* no unique plane of incidence, 
+* artifically setting incident_plane_normal to initial p.polarisation yields normal_coefficient = 1.0f 
+  so always treated as S polarized 
+  
+initial momentum dir
+     -s.surface_normal 
+
+final momentum dir (c1 = 1.f)
+     -s.surface_normal + 2.0f*c1*s.surface_normal  = +s.surface_normal = -p.direction 
+                                                   
+
+minimise use of trancendental functions 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Obtain c2c2 from Snells Law without lots of expensive function calls.::
+ 
+       n1 s1 = n2 s2
+
+          s2 = eta * s1       eta = n1/n2
+
+        c2c2 = 1 - s2s2 
+             = 1 - eta eta s1 s1  
+             = 1 - eta eta (1 - c1c1) 
+
+
+        c2c2 - 1 = (c1c1 - 1) eta eta
+
+
+TIR : total internal reflection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Total internal reflection, occurs when c2c2 < 0.f  (c2 imaginary)
+
+Handled by: 
+
+* artificially setting c2 = 0.f 
+* results in reflection_coefficient = 1.0f so will always reflect for both S and P cases
+
+2**/
 
 
 __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandState &rng)
 {
-    // see g4op-/G4OpBoundaryProcess.cc annotations to follow this
-
     const float n1 = s.material1.x ;
     const float n2 = s.material2.x ;   
     const float eta = n1/n2 ; 
@@ -460,9 +468,9 @@ __device__ void UNUSED_DEAD_CODE_propagate_at_boundary( Photon& p, State& s, cur
 
 
 
-/*
-propagate_at_specular_reflector / propagate_at_diffuse_reflector
-===================================================================
+/**3
+propagate.h : propagate_at_specular_reflector / propagate_at_specular_reflector_geant4_style
+----------------------------------------------------------------------------------------------
 
 Inputs:
 
@@ -483,8 +491,7 @@ Returns:
 
 CONTINUE
 
-
-*/
+3**/
 
 //#define DEBUG_POLZ 1
 
@@ -569,6 +576,14 @@ __device__ void propagate_at_specular_reflector_geant4_style(Photon &p, State &s
 */
 
 
+/**4
+propagate.h : propagate_at_diffuse_reflector / propagate_at_diffuse_reflector_geant4_style
+--------------------------------------------------------------------------------------------
+
+Changes p.direction, p.polarization and p.flags.i.x
+
+4**/
+
 __device__ void propagate_at_diffuse_reflector(Photon &p, State &s, curandState &rng)
 {
     float ndotv;
@@ -586,11 +601,8 @@ __device__ void propagate_at_diffuse_reflector(Photon &p, State &s, curandState 
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 }                       
 
-
-
 __device__ void propagate_at_diffuse_reflector_geant4_style(Photon &p, State &s, curandState &rng)
 {
-
     float3 old_direction = p.direction ; 
 
     float ndotv;
@@ -616,13 +628,9 @@ __device__ void propagate_at_diffuse_reflector_geant4_style(Photon &p, State &s,
 
 
 
-
-
-
-
-/*
-propagate_at_surface
-======================
+/**5
+propagate.h : propagate_at_surface
+------------------------------------
 
 Inputs:
 
@@ -648,16 +656,14 @@ Returns:
 * CONTINUE(SURFACE_DREFLECT) 
 * CONTINUE(SURFACE_SREFLECT) 
 
-
-
 Known differences vs counterpart DsG4OpBoundaryProcess::DoAbsorption
----------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * u_surface_burn not compared against theEfficiency to decide on detect 
 
 
 TODO
------
+~~~~~~
 
 * arrange values to do equivalent to G4 ?
 
@@ -668,7 +674,7 @@ TODO
   * SPECULARLOBE...
 
 
-*/
+5**/
 
 __device__ int
 propagate_at_surface(Photon &p, State &s, curandState &rng)

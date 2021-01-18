@@ -44,15 +44,18 @@ template <typename S> class NPY ;
 OGeo
 =====
 
-Canonical OGeo instance resides in OScene and is
-instanciated and has its *convert* called from OScene::init.
-OScene::convert loops over the GMergedMesh within GGeo 
-converting them into OptiX geometry groups. The first 
-GMergedMesh is assumed to be non-instanced, the remainder
-are expected to be instanced with appropriate 
-transform and identity buffers.
+The canonical OGeo instance resides in OScene and is
+instanciated and has *OGeo::convert* called from *OScene::init*.
+*OGeo::convert* loops over the GMergedMesh within GGeo/GGeoLib
+converting them into optix::Group or optix::GeometryGroup
+and adds them to m_top(optix::Group).
 
-Details of geometry tree are documented with the OGeo::convert method.
+The first ridx 0 GMergedMesh is non-instanced, 
+the rest are instanced and hold the necessary transform 
+and identity buffers.
+
+Details of geometry tree are documented with 
+the OGeo::convert method.
 
 **/
 

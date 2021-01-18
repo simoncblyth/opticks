@@ -18,9 +18,6 @@
  */
 
 
-// csg_intersect_primitive.h : is included into top level program: intersect_analytic.cu
-// csg_intersect_part.h      : is primary user of these functions
-
 
 #include "robust_quadratic_roots.h"
 
@@ -32,7 +29,36 @@
 //  currentlt this gives lots of unused warnings without WITH_PRINT defined
 
 
+/**0
+csg_intersect_primitive.h :  Intersections with ~10 different primitives
+=================================================================================
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/cu/csg_intersect_primitive.h
+
+* *csg_intersect_primitive.h* is included into top level program *intersect_analytic.cu*
+* *csg_intersect_part.h* is primary user of these intersect and bounds functions
+
+
+.. image:: //env/presentation/tboolean_parade_sep2017.png
+   :width: 1024
+   :alt: //env/presentation/tboolean_parade_sep2017.png
+
+.. contents:: Table of Contents
+   :depth: 2
+
+0**/
+
 using namespace optix;
+
+
+/**1
+csg_intersect_primitive.h : csg_bounds_convexpolyhedron
+----------------------------------------------------------
+
+Bounds of convex polyhedron defined by a set of planes.
+
+1**/
+
 
 rtBuffer<float4> planBuffer ;
 
@@ -65,6 +91,13 @@ void csg_bounds_convexpolyhedron(const Part& pt, optix::Aabb* aabb, optix::Matri
     aabb->include(tbb);
 }
 
+/**2
+csg_intersect_primitive.h : csg_intersect_convexpolyhedron
+-----------------------------------------------------------
+
+Intersect with convex polyhedron defined by a set of planes.
+
+2**/
 
 
 static __device__
@@ -207,6 +240,12 @@ void csg_intersect_convexpolyhedron_test(unsigned long long photon_id)
 }
 
 
+/**3
+csg_intersect_primitive.h : csg_bounds_cone
+-----------------------------------------------------------
+
+3**/
+
 
 
 static __device__
@@ -245,6 +284,13 @@ enum {
     FAR_OBJ   = 0x1 << 2 ,
     FAR_CAP   = 0x1 << 3 
 };
+
+
+/**4
+csg_intersect_primitive.h : csg_intersect_cone
+-----------------------------------------------------------
+
+4**/
 
 
 static __device__
@@ -585,6 +631,13 @@ void csg_intersect_cone_test(unsigned long long photon_id)
 
 
 
+/**5
+csg_intersect_primitive.h : csg_bounds_hyperboloid
+-----------------------------------------------------------
+
+5**/
+
+
 
 static __device__
 void csg_bounds_hyperboloid(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
@@ -614,6 +667,15 @@ void csg_bounds_hyperboloid(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4*
 
     aabb->include(tbb);
 }
+
+
+
+/**6
+csg_intersect_primitive.h : csg_intersect_hyperboloid
+-----------------------------------------------------------
+
+6**/
+
 
 
 static __device__
@@ -719,6 +781,13 @@ bool csg_intersect_hyperboloid(const quad& q0, const float& t_min, float4& isect
 
 
 
+/**7
+csg_intersect_primitive.h : csg_bounds_sphere
+-----------------------------------------------------------
+
+7**/
+
+
 
 static __device__
 void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
@@ -742,6 +811,16 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
 #endif
     aabb->include(tbb);
 }
+
+
+
+/**8
+csg_intersect_primitive.h : csg_intersect_sphere
+-----------------------------------------------------------
+
+8**/
+
+
 
 static __device__
 bool csg_intersect_sphere(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
@@ -845,6 +924,13 @@ void csg_intersect_sphere_test(unsigned long long photon_id)
 
 
 
+/**9
+csg_intersect_primitive.h : csg_bounds_zsphere
+-----------------------------------------------------------
+
+9**/
+
+
 
 
 static __device__
@@ -877,11 +963,15 @@ void csg_bounds_zsphere(const quad& q0, const quad& q1, const quad& q2, optix::A
 
 
 
-/*
-Plane eqn in general frame:
-               point_in_plane.plane_normal = plane_dist_to_origin
+/**10
+csg_intersect_primitive.h : csg_intersect_zsphere
+-----------------------------------------------------------
 
-Ray-Plane intersection 
+Plane eqn in general frame::
+
+      point_in_plane.plane_normal = plane_dist_to_origin
+
+Ray-Plane intersection:: 
 
     ( ray_origin + t ray_direction ).plane_normal = plane_dist_to_origin
  
@@ -889,31 +979,30 @@ Ray-Plane intersection
         -------------------------------------------------
                 ray_direction.plane_normal
 
-
-Now consider plane normal to be +z axis and 
+Now consider plane normal to be +z axis and::
 
      t = plane_dist_to_origin - ray_origin.z
         --------------------------------------
               ray_direction.z
 
-plane_dist_to_orign = zmin or zmax
+     plane_dist_to_orign = zmin or zmax
 
 
-
-Intersect with sphere
+Intersect with sphere::
 
      O = ray_origin - center 
      D = ray_direction  
 
      (O + t D).(O + t D) = rr
 
-   t^2 D.D + 2 t O.D + O.O - rr  = 0 
+     t^2 D.D + 2 t O.D + O.O - rr  = 0 
 
      d = D.D
      b = O.D
      c = O.O - rr
 
-*/
+10**/
+
 
 
 static __device__
@@ -1000,6 +1089,12 @@ bool csg_intersect_zsphere(const quad& q0, const quad& q1, const quad& q2, const
 
 
 
+/**11
+csg_intersect_primitive.h : csg_bounds_box
+-----------------------------------------------------------
+
+11**/
+
 
 static __device__
 void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
@@ -1014,6 +1109,14 @@ void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
     aabb->include(tbb);
 }
 
+
+/**12
+csg_intersect_primitive.h : csg_bounds_box3
+-----------------------------------------------------------
+
+12**/
+
+
 static __device__
 void csg_bounds_box3(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
@@ -1027,6 +1130,23 @@ void csg_bounds_box3(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 }
 
 
+/**13
+csg_intersect_primitive.h : _csg_intersect_box
+-----------------------------------------------------
+
+Just because the ray intersects the box doesnt 
+mean its a usable intersect, there are 3 possibilities
+
+::
+
+              t_near       t_far   
+
+                |           |
+      -----1----|----2------|------3---------->
+                |           |
+
+
+13**/
 
 static __device__
 bool _csg_intersect_box(const float3& bmin, const float3& bmax, const float3& bcen, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
@@ -1045,7 +1165,6 @@ bool _csg_intersect_box(const float3& bmin, const float3& bmax, const float3& bc
    float t_near = fmaxf( near );              //  furthest near intersect              
    float t_far  = fminf( far );               //  closest far intersect 
 
-
    bool along_x = ray_direction.x != 0.f && ray_direction.y == 0.f && ray_direction.z == 0.f ;
    bool along_y = ray_direction.x == 0.f && ray_direction.y != 0.f && ray_direction.z == 0.f ;
    bool along_z = ray_direction.x == 0.f && ray_direction.y == 0.f && ray_direction.z != 0.f ;
@@ -1063,17 +1182,6 @@ bool _csg_intersect_box(const float3& bmin, const float3& bmax, const float3& bc
    bool has_valid_intersect = false ; 
    if( has_intersect ) 
    {
-       //  just because the ray intersects the box doesnt 
-       //  mean its a usable intersect, there are 3 possibilities
-       //
-       //                t_near       t_far   
-       //
-       //                  |           |
-       //        -----1----|----2------|------3---------->
-       //                  |           |
-       //
-       //
-
        float tt_cand = tt_min < t_near ?  t_near : ( tt_min < t_far ? t_far : tt_min ) ; 
 
        //rtPrintf(" intersect_box : t_near %f t_far %f tt %f tt_min %f \n", t_near, t_far, tt, tt_min  );
@@ -1107,6 +1215,14 @@ bool _csg_intersect_box(const float3& bmin, const float3& bmax, const float3& bc
 }
 
 
+
+/**14
+csg_intersect_primitive.h : csg_intersect_box3
+-----------------------------------------------------------
+
+14**/
+
+
 static __device__
 bool csg_intersect_box3(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
 {
@@ -1116,6 +1232,13 @@ bool csg_intersect_box3(const quad& q0, const float& tt_min, float4& tt, const f
 
    return _csg_intersect_box( bmin, bmax, bcen , tt_min, tt, ray_origin, ray_direction );   
 }
+
+
+/**15
+csg_intersect_primitive.h : csg_intersect_box
+-----------------------------------------------------------
+
+15**/
  
 static __device__
 bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
@@ -1133,6 +1256,12 @@ bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
 
 
 
+/**16
+csg_intersect_primitive.h : csg_bounds_plane
+-----------------------------------------------------------
+
+16**/
+ 
 
 static __device__
 void csg_bounds_plane(const quad& q0, optix::Aabb* /*aabb*/, optix::Matrix4x4* /*tr*/  )
@@ -1144,6 +1273,16 @@ void csg_bounds_plane(const quad& q0, optix::Aabb* /*aabb*/, optix::Matrix4x4* /
    rtPrintf("## csg_bounds_plane n %7.3f %7.3f %7.3f  d %7.3f  \n", n.x, n.y, n.z, d );
 #endif
 }
+
+
+
+/**17
+csg_intersect_primitive.h : csg_intersect_plane
+-----------------------------------------------------------
+
+17**/
+ 
+
 static __device__
 bool csg_intersect_plane(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
@@ -1167,6 +1306,15 @@ bool csg_intersect_plane(const quad& q0, const float& t_min, float4& isect, cons
 }
 
 
+
+/**18
+csg_intersect_primitive.h : csg_bounds_slab
+-----------------------------------------------------------
+
+18**/
+ 
+
+
 static __device__
 void csg_bounds_slab(const quad& q0, const quad& q1, optix::Aabb* /*aabb*/, optix::Matrix4x4* /*tr*/  )
 {
@@ -1183,6 +1331,15 @@ void csg_bounds_slab(const quad& q0, const quad& q1, optix::Aabb* /*aabb*/, opti
    rtPrintf("## csg_bounds_slab n %7.3f %7.3f %7.3f  a %7.3f b %7.3f flags %u ACAP %d BCAP %d  \n", n.x, n.y, n.z, a, b, flags, ACAP, BCAP );
 #endif
 }
+
+
+
+/**19
+csg_intersect_primitive.h : csg_intersect_slab
+-----------------------------------------------------------
+
+19**/
+ 
 
 static __device__
 bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
@@ -1232,7 +1389,13 @@ bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, floa
 
 
 
-   
+
+/**20
+csg_intersect_primitive.h : csg_bounds_cylinder
+-----------------------------------------------------------
+
+20**/
+    
 
 static __device__
 void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
@@ -1259,6 +1422,12 @@ void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, opti
 
 
 
+/**21
+csg_intersect_primitive.h : csg_bounds_disc
+-----------------------------------------------------------
+
+21**/
+ 
 static __device__
 void csg_bounds_disc(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
@@ -1283,31 +1452,30 @@ void csg_bounds_disc(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::M
 }
 
 
-static __device__
-bool csg_intersect_disc(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
-{
-    /*
-    RTCD p197
 
-    CSG_DISC was implemented to avoid degeneracy/speckle problems when using CSG_CYLINDER
-    to describe very flat cylinders such as Daya Bays ESR mirror surface. 
-    Note that the simplicity of disc intersects compared to cylinder has allowed 
-    inner radius handling (in param.f.z) for easy annulus definition without using CSG subtraction.
+/**22
+csg_intersect_primitive.h : csg_intersect_disc
+-----------------------------------------------------------
 
-    NB ray-plane intersects are performed with the center disc only at:  z = zc = (z1+z2)/2 
-    The t_center obtained is then deltared up and down depending on (z2-z1)/2
+RTCD p197  (Real Time Collision Detection)
 
-    This approach appears to avoid the numerical instability speckling problems encountered 
-    with csg_intersect_cylinder when dealing with very flat disc like cylinders. 
+CSG_DISC was implemented to avoid degeneracy/speckle problems when using CSG_CYLINDER
+to describe very flat cylinders such as Daya Bays ESR mirror surface. 
+Note that the simplicity of disc intersects compared to cylinder has allowed 
+inner radius handling (in param.f.z) for easy annulus definition without using CSG subtraction.
 
-    Note that intersects with the edge of the disk are not implemented, if such intersects
-    are relevant you need to use CSG_CYLINDER not CSG_DISC.
+NB ray-plane intersects are performed with the center disc only at:  z = zc = (z1+z2)/2 
+The t_center obtained is then deltared up and down depending on (z2-z1)/2
 
+This approach appears to avoid the numerical instability speckling problems encountered 
+with csg_intersect_cylinder when dealing with very flat disc like cylinders. 
 
-    For testing see tboolean-esr and tboolean-disc.
+Note that intersects with the edge of the disk are not implemented, if such intersects
+are relevant you need to use CSG_CYLINDER not CSG_DISC.
 
 
-                           
+For testing see tboolean-esr and tboolean-disc.::
+
                 r(t) = O + t n 
 
                                ^ /         ^ 
@@ -1325,59 +1493,59 @@ bool csg_intersect_disc(const quad& q0, const quad& q1, const float& t_min, floa
           m = O - C
 
 
-
-    To work as a CSG sub-object MUST have a different intersect 
-    on the other side and normals must be rigidly attached to 
-    geometry (must not depend on ray direction)
-
-
-    Intersect of ray and plane
+To work as a CSG sub-object MUST have a different intersect 
+on the other side and normals must be rigidly attached to 
+geometry (must not depend on ray direction)
 
 
-        r(t) = ray_origin + t * ray_direction
+Intersect of ray and plane::
 
-        (r(t) - center).d  = ( m + t * n ).d  = 0    <-- at intersections of ray and plane thru center with normal d 
+    r(t) = ray_origin + t * ray_direction
 
-        t = -m.d / n.d 
+    (r(t) - center).d  = ( m + t * n ).d  = 0    <-- at intersections of ray and plane thru center with normal d 
 
+    t = -m.d / n.d 
 
-    Consider wiggling center up to z2 and down to z1 (in direction of normal d) n.d is unchanged 
+Consider wiggling center up to z2 and down to z1 (in direction of normal d) n.d is unchanged::
 
-        (r(t) - (center+ delta d )).d = 0
+    (r(t) - (center+ delta d )).d = 0
 
-        (m - delta d ).d + t * n.d = 0 
+    (m - delta d ).d + t * n.d = 0 
 
-        m.d - delta + t* nd = 0 
-   
-        t =  -(m.d + delta) / n.d              
+    m.d - delta + t* nd = 0 
 
-          = -m.d/n.d  +- delta/n.d
+    t =  -(m.d + delta) / n.d              
 
-
-    Intersect is inside disc radius when 
-
-         rsq =   (r(t) - center).(r(t) - center) < radius*radius
-
-         (m + t n).(m + t n)  <  rr
-
-         t*t nn + 2 t nm + mm  <  rr  
-
-         t ( 2 nm + t nn ) + mm   <  rr    
-
-         rsq < rr    checkr(from cylinder) is: rsq - rr 
+      = -m.d/n.d  +- delta/n.d
 
 
-    Determine whether the t_cand intersect hit after delta-ing 
-    is on the upside (normal +Z) or downside (normal -Z) of disc
-    from the sign of the below dot product, allowing determination 
-    of the rigid outward normal direction.
+Intersect is inside disc radius when::
 
-        r(t) = ray_origin + t * ray_direction
+    rsq =   (r(t) - center).(r(t) - center) < radius*radius
 
-        (r(t_cand) - center).d  = m.d + t_cand n.d     
+    (m + t n).(m + t n)  <  rr
 
-    */
+    t*t nn + 2 t nm + mm  <  rr  
 
+    t ( 2 nm + t nn ) + mm   <  rr    
+
+    rsq < rr    checkr(from cylinder) is: rsq - rr 
+
+
+Determine whether the t_cand intersect hit after delta-ing 
+is on the upside (normal +Z) or downside (normal -Z) of disc
+from the sign of the below dot product, allowing determination 
+of the rigid outward normal direction.::
+
+    r(t) = ray_origin + t * ray_direction
+
+    (r(t_cand) - center).d  = m.d + t_cand n.d     
+
+22**/
+
+static __device__
+bool csg_intersect_disc(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
     const float   inner  = q0.f.z ; 
     const float   radius = q0.f.w ; 
     const float       z1 = q1.f.x  ; 
@@ -1430,10 +1598,19 @@ bool csg_intersect_disc(const quad& q0, const quad& q1, const float& t_min, floa
 
 /*
 
-#define WITH_CYLINDER_INNER 1
+*/
+
+
+//#define CSG_DEBUG_CYLINDER_AXIAL 1
+
+
+
+/**23
+csg_intersect_primitive.h : csg_intersect_cylinder
+-----------------------------------------------------------
 
 Hmm supporting cylinder with inner radius
-directly will add a boatload of cases...
+directly will add a boatload of cases...::
 
 
                   /    /        /
@@ -1456,14 +1633,7 @@ and inner cylinder. Hmm this just duplicates what
 CSG difference or intersect with complement would do though...
 so no point.
 
-*/
-
-
-//#define CSG_DEBUG_CYLINDER_AXIAL 1
-
-
-
-
+23**/
 
 static __device__
 bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )

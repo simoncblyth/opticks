@@ -1,20 +1,20 @@
 
-
-.. include:: intersect_analytic.cu
+.. include:: csg_intersect_boolean.h
    :start-after: /**0
    :end-before: 0**/
 
-.. include:: intersect_analytic.cu
+.. include:: csg_intersect_boolean.h
    :start-after: /**1
    :end-before: 1**/
 
-.. include:: intersect_analytic.cu
+.. include:: csg_intersect_boolean.h
    :start-after: /**2
    :end-before: 2**/
 
-.. include:: intersect_analytic.cu
+.. include:: csg_intersect_boolean.h
    :start-after: /**3
    :end-before: 3**/
+
 
 
 

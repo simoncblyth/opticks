@@ -19,12 +19,40 @@
 
 #pragma once
 
+/**0
+pack.h
+========
+
+* * https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/cu/pack.h
+
+.. contents:: Table of Contents
+   :depth: 2
+
+0**/
+
+
+/**1
+pack.h : PACK4 Macro
+---------------------
+
+Packs 4 8bit integers into 32 bits  
+
+1**/
+
 #define PACK4( a, b, c, d)   ( \
        (( (a) & 0xff ) <<  0 ) | \
        (( (b) & 0xff ) <<  8 ) | \
        (( (c) & 0xff ) << 16 ) | \
        (( (d) & 0xff ) << 24 ) \
                              )
+
+/**2
+pack.h : UNPACK4_0/1/2/3 Macros
+--------------------------------
+
+Returns 8 bit constituent from the packed 32 bits. 
+
+2**/
 
 #define UNPACK4_0( packed ) (  ((packed) >>  0) & 0xff )
 #define UNPACK4_1( packed ) (  ((packed) >>  8) & 0xff )

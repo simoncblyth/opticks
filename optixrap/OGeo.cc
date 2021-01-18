@@ -61,7 +61,7 @@
 
 #include "OConfig.hh"
 
-/**
+/**0
 OGeo Details
 -----------------
 
@@ -195,7 +195,7 @@ Investigate if container groups might be better as "pass through"
 NoAccel as the geometryGroup and groups they contain have all the 
 geometry.
 
-**/
+0**/
 
 
 const plog::Severity OGeo::LEVEL = PLOG::EnvLevel("OGeo", "DEBUG") ; 
@@ -275,6 +275,16 @@ std::string OGeo::description() const
     return ss.str(); 
 }
 
+/**1
+OGeo::convert
+---------------
+
+Converts the GMergedMesh instances from (m_geolib)GGeoLib
+into optix::Group and optix::GeometryGroup and adds them 
+to m_top(optix::Group). 
+
+1**/
+
 void OGeo::convert()
 {
     m_geolib->dump("OGeo::convert"); 
@@ -296,6 +306,14 @@ void OGeo::convert()
 
     LOG(info) << "] nmm " << nmm  ; 
 }
+
+/**
+OGeo::convertMergedMesh
+-------------------------
+
+Only invoked from OGeo::convert 
+
+**/
 
 void OGeo::convertMergedMesh(unsigned i)
 {
@@ -335,6 +353,16 @@ void OGeo::convertMergedMesh(unsigned i)
     LOG(LEVEL) << ") " << i << " numInstances " << numInstances ; 
 }
 
+
+
+/**
+OGeo::makeGlobalGeometryGroup
+-------------------------------
+
+Invoked only from OGeo::convertMergedMesh.
+
+**/
+
 optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
 {
     int dbgmm =  m_ok->getDbgMM() ; 
@@ -359,13 +387,11 @@ optix::GeometryGroup OGeo::makeGlobalGeometryGroup(GMergedMesh* mm)
     return ggg ; 
 }
 
-
 /**
 OGeo::makeRepeatedAssembly
 ---------------------------
 
 Invoked only from OGeo::convertMergedMesh.
-
 
 **/
 
@@ -673,7 +699,7 @@ OGeometry* OGeo::makeOGeometry(GMergedMesh* mergedmesh)
 }
 
 
-/**
+/**2
 OGeo::makeAnalyticGeometry
 ----------------------------
 
@@ -686,7 +712,7 @@ For repeated geometry note how all bar one of the geometry buffers
 are small. Only the idBuf is large and usage GPU side requires 
 use of the instance_index. 
 
-**/
+2**/
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {

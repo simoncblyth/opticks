@@ -38,6 +38,17 @@ rtDeclareVariable(float4,        ZProj, , );     // Composition::getEyeUVW, fed 
 rtDeclareVariable(float3,        front, , );     // normalized look direction, fed in by OTracer::trace_
 rtDeclareVariable(unsigned,      cameratype, , );  // camera type
 
+/**
+material1_radiance.cu:closest_hit_radiance
+-------------------------------------------
+
+Simple labertian shading used for ray trace images.
+
+*prd.result.w* provides the z-depth which is used to allow 
+compositing of raytrace images and rasterized images 
+
+**/
+
 
 RT_PROGRAM void closest_hit_radiance()
 {
@@ -52,7 +63,8 @@ RT_PROGRAM void closest_hit_radiance()
 
     //rtPrintf("closest_hit_radiance t %10.4f zHit_eye %10.4f  ZProj.z %10.4f ZProj.w %10.4f zHit_ndc %10.4f zHit_clip %10.4f \n", t, zHit_eye, ZProj.z, ZProj.w , zHit_ndc, zHit_clip );
 
-    prd.result = make_float4(intensity, intensity, intensity, cameratype == 2u ? 0.1f : zHit_clip ); // hijack .w for the depth, see notes/issues/equirectangular_camera_blackholes_sensitive_to_far.rst  
+    prd.result = make_float4(intensity, intensity, intensity, cameratype == 2u ? 0.1f : zHit_clip ); 
+    // hijack .w for the depth, see notes/issues/equirectangular_camera_blackholes_sensitive_to_far.rst  
 
 #ifdef BOOLEAN_DEBUG
      switch(instanceIdentity.x)

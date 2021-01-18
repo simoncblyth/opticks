@@ -68,6 +68,14 @@ the Opticks(GGeo) geometry model is persisted to binary *.npy* files which act a
 Geometry translation is steered by *G4Opticks::translateGeometry* with *X4PhysicalVolume*
 taking the leading role.
 
+The translation entails the serialization of Geant4 C++ geometry objects for materials, surfaces 
+and solid shapes into arrays and the upload of those into GPU buffers and textures. 
+
+Structural geometry volumes are translated into the NVIDIA OptiX geometry model using a very small 
+and flat heirarchy by effectively "factorizing" the structural geometry in a way that exploits 
+the large degree of repetition present in typical detector geometries such as JUNO, 
+with many thousands of photomultiplier tubes of various types. This "factorization" is
+done with the **GInstancer** as detailed below. 
 
 Geant4 Links
 --------------
@@ -189,7 +197,7 @@ G4LogicalBorderSurface
    surface properties associated with the interface between two placed volumes (PV)
 
 G4LogicalSkinSurface
-   surface properties associates with all placements of a logical volume (LV)
+   surface properties associates with all placements of an unplaced logical volume (LV)
 
 
 **Opticks GGeo classes:** 
@@ -219,6 +227,7 @@ GBndLib
 * :doc:`../optixrap/orientation`
 
 
+
 Solid Shapes : Geant4 classes and Opticks + OptiX translations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -237,8 +246,8 @@ ggeo/GMesh
    of distinct solid shapes
 
 ggeo/GMergedMesh
-   merged mesh contain merges of both triangulated and analytic geometry representations
-   from multiple GMesh
+   merged mesh containing merges of both triangulated and analytic geometry representations
+   from multiple GMesh.  
 
 ggeo/GGeoLib
    holds the GMergedMesh and handles persisting   
@@ -258,17 +267,20 @@ G4VPhysicalVolume "PV"
    placed volume positioning the G4LogicalVolume within a hierarchy  
 
 ggeo/GVolume 
-   converted from Geant4 physical and logical volume, has GMesh and transform constituents
+   converted from Geant4 physical+logical volume, has GMesh and transform constituents
+
+ggeo/GMergedMesh
+   as GMergedMesh holds identity and transform arrays across the entire geometry it straddles both 
+   shape and structure geometry categories
+
+   GMergedMesh are Translated into optix::Group OR optix::GeometryGroup underneath 
+   a top level *m_top* optix::Group by optixrap/OGeo.
 
 ggeo/GGeo
    top level geometry object holding instances of GNodeLib, GMeshLib, GBndLib, GMaterialLib, GSurfaceLib, ...
 
-ggeo/GMergedMesh
-   as GMergedMesh holds identity arrays and transform arrays across the entire geometry it straddles both 
-   shape and structure geometry categories
-
 optixrap/OGeo
-   converts the GGeo instance into optix Geometry. 
+   converts the GGeo/GGeoLib/GMergedMesh into shallow optix::Group optix::GeometryGroup tree. 
    The approach taken was chosen because it allows instances to 
    have variables assigned as allowing instance indices to 
    be associated and thus providing identity information for all intersects.
@@ -306,16 +318,95 @@ Traversals allow the global transforms of each of these repeated assemblies to b
 collected into arrays. The remainder volumes of course only have one transform : the identity matrix.
 
 The subtree of GVolumes of the first occurrence of each repeated assembly are combined
-together into GMergedMesh instances.  Thus the full JUNO geometry "factors" into 
-about 10 GMergedMesh instances with arrays in up to 30,000 4x4 transforms.
+together into GMergedMesh instances. Thus the full JUNO geometry "factorizes" into 
+about 10 GMergedMesh instances with each having arrays of up to 30,000 4x4 transforms.
 
 
-GMergedMesh -> OptiX geometry
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GMergedMesh -> optix::Group OR optix::GeometryGroup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The details of the OptiX geometry structure are documented in 
+
+* :doc:`../optixrap/orientation` 
+* :doc:`../optixrap/OGeo`
+
+With simulation it is necessary to know the identity of the instance for every geometry intersect
+as different instances can have different efficiencies and as it is expensive to reconstruct 
+identity just from position.
+
+The need to assign an index to the instances is the reason behind the choice of 
+NVIDIA OptiX geometry structure.
 
 
 
+OptiX generate functions for simulation
+-----------------------------------------
 
+optixrap/cu/generate.cu
+   :doc:`../optixrap/cu/generate.cu`
+
+   Steers photon generation and propagation from input Scintillation/Cerenkov/Torch gensteps
+
+optixrap/cu/propagate.h
+   :doc:`../optixrap/cu/propagate.h`
+
+   Included into generate.cu, provides a CUDA port of Geant4 optical physics. 
+
+
+OptiX closest hit functions
+-----------------------------
+
+optixrap/cu/material1_propagate.cu
+   :doc:`../optixrap/cu/material1_propagate.cu`
+
+   Used for photon simulation, populating PerRayData_propagate.h
+
+optixrap/cu/material1_radiance.cu 
+   :doc:`../optixrap/cu/material1_radiance.cu`
+
+   Used for creation of ray trace images of geometry, populating PerRayData_radiance.h
+
+
+OptiX ray-geometry intersect and bounds functions
+-----------------------------------------------------
+
+optixrap/cu/intersect_analytic.cu
+   :doc:`../optixrap/cu/intersect_analytic.cu`
+
+   CUDA/OptiX bounds and intersect functions for general CSG shapes created into OptiX RTprogram by::
+
+       optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
+
+optixrap/cu/csg_intersect_boolean.h
+   :doc:`../optixrap/cu/csg_intersect_boolean.h`
+
+   Evaluative CSG : iterative implementation of recursive algorithm 
+
+optixrap/cu/csg_intersect_part.h
+   :doc:`../optixrap/cu/csg_intersect_part.h`
+
+   Large switch statements using the bounds and intersect functions from *cu/csg_intersect_primitive.h*
+
+optixrap/cu/csg_intersect_primitive.h
+   :doc:`../optixrap/cu/csg_intersect_primitive.h`
+
+   Bounds and intersect functions for of order 10 primitive shapes::
+
+       csg_bounds_convexpolyhedron, csg_intersect_convexpolyhedron  
+       csg_bounds_cone,             csg_intersect_cone
+       ...
+
+optixrap/cu/pack.h
+   :doc:`../optixrap/cu/pack.h`
+
+   PACK4 UNPACK4_0/1/2/3 macros 
+
+
+../dev/csg/index
+   :doc:`../dev/csg/index`
+
+   CSG algorithm development notes, including "slavish" python of the CSG implementation
+ 
 
 
 CMake Structure 
@@ -332,14 +423,12 @@ Bash Functions
 Bash functions are used for building the tree of CMake projects, see *om.bash*
 
 
-
 Opticks Usage of NVIDIA OptiX
 --------------------------------
 
 Direct use of OptiX is primarily in the optixrap subproject :doc:`../optixrap/orientation`
 however the most of the rest of Opticks is involved with the conversion of the 
 Geant4 geometry into a form that can become an OptiX geometry. 
-
 
 
 

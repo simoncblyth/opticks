@@ -31,7 +31,7 @@ rtDeclareVariable(optix::Ray,           ray, rtCurrentRay, );
 rtDeclareVariable(float,                  t, rtIntersectionDistance, );
 
 
-/**
+/*
 Quoting from optix_device.h:rtTransformPoint
 
     rtTransformPoint transforms a point using the current
@@ -47,7 +47,42 @@ Quoting from optix_device.h:rtTransformPoint
     any-hit and closest-hit programs, the transform will be dependent on
     the set of active transform nodes for the current state.
 
+*/
+
+/**
+material1_propagate.cu:closest_hit_propagate
+----------------------------------------------
+
+The closest hit function passes attributes set by the intersection functions 
+into the prd (per-ray-data) struct with for access from the raygen function 
+after calling **rtTrace**.  The quantities include::
+
+    t (float) 
+    geometricNormal (float3)
+    instanceIdentity (uint4)
+
+
+A few of the prd struct quantities are cos_theta signed.
+
+cos_theta > 0.f
+    outward going photons, with p.direction in same hemi as the geometry normal
+
+cos_theta < 0.f  
+    inward going photons, with p.direction in opposite hemi to geometry normal
+
+
+**prd.boundary** 
+
+* 1-based index with cos_theta signing, 0 means miss
+* sign identifies which of inner/outer-material is material1/material2 
+* by virtue of zero initialization, a miss leaves prd.boundary at zero
+
+**prd.surface_normal**
+ 
+cos_theta oriented to point from material2 back into material1 
+
 **/
+
 
 RT_PROGRAM void closest_hit_propagate()
 {
@@ -97,17 +132,4 @@ RT_PROGRAM void closest_hit_propagate()
 
 }
 
-// prd.boundary 
-//    * 1-based index with cos_theta signing, 0 means miss
-//    * sign identifies which of inner/outer-material is material1/material2 
-//    * by virtue of zero initialization, a miss leaves prd.boundary at zero
-//
-//  cos_theta > 0.f
-//        outward going photons, with p.direction in same hemi as the geometry normal
-//
-//  cos_theta < 0.f  
-//        inward going photons, with p.direction in opposite hemi to geometry normal
-//
-// surface_normal oriented to point from material2 back into material1 
-//
 

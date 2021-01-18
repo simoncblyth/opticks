@@ -5,32 +5,23 @@ OptiXRap Orientation : translates GGeo->OptiX
 
 
 OScene
-    steering for creation of OptiX context 
-
+   steering for creation of OptiX context 
 
 OGeo
-   top level construction of OptiX geometry
-
-
+   top level construction of OptiX geometry :doc:`OGeo`
 
 OEvent
+   used for uploading gensteps and downloading hits 
 
 OSensorLib
    buffer of sensor efficiencies and GPU angular efficiency texture  
 
-OScintillatorLib
-    
-  
 OCtx
-    experiment with a watertight wrapper around OptiX 5/6 that 
-    exposes no OptiX types in its interface  
+   experiment with a watertight wrapper around OptiX 5/6 that 
+   exposes no OptiX types in its interface  
 
 
-
-
-
-
-::
+Other classes::
 
     OContext.hh
     OTracer.hh
@@ -60,5 +51,13 @@ OCtx
 
 
 
- 
+
+OptiX CUDA Sources
+--------------------
+
+.. toctree::
+
+   cu/intersect_analytic.cu
+   cu/material1_propagate.cu
+  
 
