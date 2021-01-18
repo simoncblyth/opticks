@@ -1,12 +1,106 @@
 Opticks Setup Script
 =============================
 
+
+.. contents:: Table of Contents
+   :depth: 2
+
+
+Summary
+----------
+
 * path `$(opticks-prefix)/bin/opticks-setup.sh`
 * appends to the envvars necessary for building Opticks including CMAKE_PREFIX_PATH
 * generated within `opticks-full` by `opticks-full-externals`.
 * sourced by the `oe-env` bash function that is invoked by the **om** build function.  
 
 
+How important is the setup script ?
+--------------------------------------
+
+The installation of the Opticks sub-projects with *om-install* 
+will immediately fail with a configuration error related to not finding 
+the BCM package if the setup script has not been sourced.
+The script sets up the below vital PATH envvars::  
+
+    CMAKE_PREFIX_PATH
+    LD_LIBRARY_PATH
+    DYLD_LIBRARY_PATH
+    PKG_CONFIG_PATH  
+    PATH
+
+The script also runs the Geant4 setup script setting up
+envvars starting with G4 that are needed by Geant4 to find its datafiles.
+
+
+
+How is the setup script generated ?
+----------------------------------------
+
+The *opticks-full* bash function that installs Opticks first installs
+the "automated" externals (not the foreign ones) with *opticks-full-externals* then 
+it proceeds to *opticks-full-make* as you can see by looking at the bash function:: 
+
+
+    epsilon:docs blyth$ type opticks-full
+    opticks-full () 
+    { 
+        local msg="=== $FUNCNAME :";
+        opticks-info;
+        if [ ! -d "$(opticks-prefix)/externals" ]; then
+            opticks-full-externals;
+        else
+            echo $msg using preexisting externals from $(opticks-prefix)/externals;
+        fi;
+        opticks-full-make
+    }
+
+
+The *opticks-full-make* bash function starts by running *opticks-setup-generate* 
+which generates the setup script at the path given by *opticks-setup-path*.::
+
+    epsilon:docs blyth$ type opticks-setup-path
+    opticks-setup-path () 
+    { 
+        echo $(opticks-prefix)/bin/opticks-setup.sh
+    }
+
+
+If the setup script has somehow not been generated the *opticks-full-make* 
+function will abort.  If the script is present then the opticks sub projects 
+are built with *om-install*. This is all readily apparent by instrospecting 
+the bash function::
+
+    epsilon:docs blyth$ type opticks-full-make
+    opticks-full-make () 
+    { 
+        local msg="=== $FUNCNAME :";
+        echo $msg START $(date);
+        local rc;
+        echo $msg generating setup script;
+        opticks-setup-generate;
+        rc=$?;
+        [ $rc -ne 0 ] && return $rc;
+        local setup=$(opticks-setup-path);
+        [ ! -f "$setup" ] && echo $msg ABORT missing opticks setup script $setup && return 1;
+        om-;
+        cd_func $(om-home);
+        om-install;
+        rc=$?;
+        [ $rc -ne 0 ] && return $rc;
+        opticks-prepare-installation;
+        rc=$?;
+        [ $rc -ne 0 ] && return $rc;
+        echo $msg DONE $(date);
+        return 0
+    }
+    epsilon:docs blyth$ 
+
+
+
+
+Example showing CMAKE_PREFIX_PATH before and after sourcing opticks-setup.sh
+-------------------------------------------------------------------------------
 
 ::
 
@@ -64,10 +158,14 @@ Opticks Setup Script
 The above is from my macOS laptop. On Linux LD_LIBRARY_PATH is used rather than DYLD_LIBRARY_PATH.
 
 
-How the setup script is used
-------------------------------
+
+How is the setup script used ?
+-------------------------------
 
 Tracing the bash functions that normally do the above source of the setup::
+
+    epsilon:~ blyth$ alias t     ## using an alias for "type"
+    alias t='type'
 
     epsilon:misc blyth$ t om 
     om () 
@@ -108,6 +206,8 @@ Tracing the bash functions that normally do the above source of the setup::
         source $OPTICKS_PREFIX/bin/opticks-setup.sh 1>&2
     }
     epsilon:misc blyth$ 
+
+
 
 
 

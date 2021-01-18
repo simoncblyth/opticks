@@ -296,12 +296,12 @@ external packages into the places required by Opticks.  See :doc:`externals`.
 
 
 
-Environment setup for usage of Opticks Executables
------------------------------------------------------
+opticks-setup.sh : Environment setup for building and using Opticks
+------------------------------------------------------------------------
 
 During installation an opticks-setup.sh script is generated 
 at path $OPTICKS_PREFIX/bin/opticks-setup.sh.
-Sourcing this script sets up the paths to allow usage of Opticks executables.::
+Sourcing this script sets up the paths to allow building and usage of Opticks executables.::
 
     source $OPTICKS_PREFIX/bin/opticks-setup.sh
 
@@ -312,6 +312,7 @@ session by redirecting the stdout::
 
 The *example.opticks_config* includes these lines already. 
 
+For further details on *opticks-setup.sh* see :doc:`misc/opticks_setup_script`.
 
 
 Moving Externals
