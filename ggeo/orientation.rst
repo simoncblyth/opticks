@@ -3,6 +3,9 @@ GGeo Orientation : Geometry Modelling and Persisting
 
 * :doc:`../docs/orientation`
 
+* https://bitbucket.org/simoncblyth/opticks/src/master/ggeo/
+* https://bitbucket.org/simoncblyth/opticks/src/master/ggeo/GGeo.cc
+
 
 GGeo 
     top level holder of geometry libraries : GMaterialLib, GSurfaceLib, GBndLib, GNodeLib, GGeoLib

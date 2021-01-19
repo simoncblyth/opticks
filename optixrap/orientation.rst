@@ -3,6 +3,10 @@ OptiXRap Orientation : translates GGeo->OptiX
 
 * :doc:`../docs/orientation`
 
+* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/
+* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/OGeo.cc
+
+
 
 OScene
    steering for creation of OptiX context 

@@ -3,6 +3,9 @@ NPY Orientation : array creation, updating and persisting
 
 * :doc:`../docs/orientation`
 
+* https://bitbucket.org/simoncblyth/opticks/src/master/npy/
+* https://bitbucket.org/simoncblyth/opticks/src/master/npy/NPY.cpp
+
 
 NPY
    holds simple arrays with metadata, used for both geometry and event data. Provides **.npy** format load/save 

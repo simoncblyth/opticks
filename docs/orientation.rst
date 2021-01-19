@@ -2,15 +2,8 @@
 ==============================================================
 
 .. contents:: Table of Contents
-   :depth: 2
+   :depth: 3
 
-
-Page Overview
----------------
-
-The focus of this description is on the Opticks usage of NVIDIA OptiX however necessary 
-summary contextual info for developers unfamiliar with Opticks is also collected here together
-with references to more extensive documentation.
 
 Opticks Objectives
 --------------------
@@ -20,9 +13,13 @@ Opticks Objectives
 3. provide a workflow that integrates the Opticks/OptiX simulation of optical photons with 
    the Geant4 simulation of all other particles
 
+**Page Overview**
 
-Links 
-------
+The focus of this description is on the Opticks usage of NVIDIA OptiX however necessary 
+summary contextual info for developers unfamiliar with Opticks is also collected here together
+with references to more extensive documentation.
+
+**Links**
 
 .. table::
     :align: center
@@ -39,31 +36,52 @@ Links
     | email:opticks+subscribe@groups.io            | subscribe to mailing list                               |    
     +----------------------------------------------+---------------------------------------------------------+ 
 
-
 Geant4-Opticks-NVIDIA_OptiX workflow
---------------------------------
+----------------------------------------
 
 .. image:: //env/Documents/Geant4OpticksWorkflow/Geant4OpticksWorkflow.001.png
   :width: 1024
   :alt: Geant4-Opticks-OptiX workflow
 
 
-G4Opticks : Geant4-Opticks interface class
---------------------------------------------
+**G4Opticks : Geant4-Opticks interface class**
 
-G4Opticks provides a minimal interface to using embedded Opticks. It is
+Despite the classname G4Opticks is an Opticks class from g4ok sub-project
+that provides a minimal interface to using embedded Opticks. It is
 intended to be integrated with the Geant4 based simulation framework 
 of an experiment.
 
-* https://bitbucket.org/simoncblyth/opticks/src/master/g4ok/G4Opticks.hh
-* https://bitbucket.org/simoncblyth/opticks/src/master/g4ok/G4Opticks.cc
+* :doc:`../g4ok/orientation`
 
-Geometry translation Overview : Geant4->Opticks(GGeo)->OptiX (green arrows)
+
+Physics Background
+--------------------
+
+Scintillation and Cerenkov are the two physical processes which are the principal sources 
+of light relevant to neutrino and dark matter experiments.
+
+* https://en.wikipedia.org/wiki/Scintillation_(physics)
+* https://en.wikipedia.org/wiki/Cherenkov_radiation
+
+After generation the photons propagate through the detector geometry 
+being scattered, absorbed, reemitted (in the bulk) and reflected, refracted, detected
+or absorbed (on surfaces encountered).  
+
+The objective of simulation is to provide estimates of times and numbers of photons 
+that reach detectors such as Photomultipler tubes (PMTs) by creation of large samples with 
+various input particles types and parameters. 
+
+Simulation is the best way to understand complex detectors and as a result 
+form a better understanding of the physics of interest such as neutrinos coming 
+from nuclear reactors or from the sun or from earths mantle or from distant galaxies. 
+ 
+
+Geometry translation : Geant4->Opticks(GGeo)->OptiX (green arrows)
 ------------------------------------------------------------------------------------------------
 
-The green lines in the above workflow diagram represent the translation of geometry information 
-that happens at initialization.  As this translation can be take minutes for large geometries
-the Opticks(GGeo) geometry model is persisted to binary *.npy* files which act as a **geocache**.  
+The green arrows in the above workflow diagram represent the translation of geometry information 
+that happens at initialization.  As this translation can take minutes for large geometries
+the Opticks(GGeo) geometry model is persisted to binary *.npy* files which can act as a **geocache**.  
 
 Geometry translation is steered by *G4Opticks::translateGeometry* with *X4PhysicalVolume*
 taking the leading role.
@@ -77,12 +95,36 @@ the large degree of repetition present in typical detector geometries such as JU
 with many thousands of photomultiplier tubes of various types. This "factorization" is
 done with the **GInstancer** as detailed below. 
 
-Geant4 Links
---------------
+
+Opticks Usage of NVIDIA OptiX
+--------------------------------
+
+Direct use of OptiX is primarily in the optixrap subproject :doc:`../optixrap/orientation`
+however most of the rest of Opticks is involved with the conversion of the 
+Geant4 geometry into a form that can become an OptiX geometry suitable for optical photon simulation.
+
+
+
+Familiarity with Geant4 
+-------------------------
 
 Some familiarity with the Geant4 geometry model is required to understand Opticks
 as the bulk of Opticks code is concerned with the automated translation of Geant4 
 geometries into Opticks(GGeo) geometries and subsequently OptiX geometries. 
+
+Opticks provides some simple bash functions to viewing Geant4 source, eg::
+
+   g4-   # precursor bash function 
+   g4-cls G4VSolid 
+
+
+* all Geant4 class names are prefixed with "G4"
+* Opticks/ggeo class names mostly start with "G"
+* Opticks/npy class names mostly start with "N"
+* **G4Opticks** has an exceptional name, it is an Opticks/g4ok class 
+
+
+**Geant4 Links**
 
 * https://geant4.web.cern.ch
 * https://geant4-userdoc.web.cern.ch/UsersGuides/ForToolkitDeveloper/BackupVersions/V10.6c/html/OOAnalysisDesign/Geometry/geometry.html
@@ -127,27 +169,7 @@ Geant4 CPU collection of gensteps
 * https://bitbucket.org/simoncblyth/opticks/src/master/examples/Geant4/CerenkovMinimal/src/L4Cerenkov.cc
 
 
-Physics Background
---------------------
-
-Scintillation and Cerenkov are the two physical processes which are the principal sources 
-of light relevant to neutrino and dark matter experiments.
-
-* https://en.wikipedia.org/wiki/Scintillation_(physics)
-* https://en.wikipedia.org/wiki/Cherenkov_radiation
-
-After generation the photons propagate through the detector geometry 
-being scattered, absorbed, reemitted (in the bulk) and reflected, refracted, detected
-or absorbed (on surfaces encountered).  
-
-The objective of simulation is to provide estimates of times and numbers of photons 
-that reach detectors such as Photomultipler tubes (PMTs) by creation of large samples with 
-various input particles types and parameters. 
-
-Simulation is the best way to understand complex detectors and as a result 
-form a better understanding of the physics of interest such as neutrinos coming 
-from nuclear reactors or from the sun or from distant galaxies. 
-  
+ 
 
 Geant4 classes which are partially ported to CUDA/OptiX 
 ----------------------------------------------------------
@@ -163,44 +185,69 @@ To quickly view the sources of any Geant4 classes use the opticks bash function 
     g4-;g4-cls G4Cerenkov 
 
 
+Primary Opticks Packages relevant to geometry
+-----------------------------------------------
 
-Relevant Geant4 geometry classes and how they are translated  
---------------------------------------------------------------
+The below Opticks sub-projects are the most relevant 
+ones for understanding the geometry translation.
+The linked sub-project orientation pages highlight a few of the more important classes. 
+The quoted names are common abbeviations used for the sub-projects.
 
-To understand Opticks some level of familiarity with Geant4 is necessary.
-Opticks provides some simple bash functions to viewing Geant4 source, eg::
+extg4 "x4"  
+    :doc:`../extg4/orientation`
 
-   g4-   # precursor bash function 
-   g4-cls G4VSolid 
+ggeo "ggeo" 
+    :doc:`../ggeo/orientation`
+
+optixrap "oxrap"
+    :doc:`../optixrap/orientation`
+
+npy "npy"
+    :doc:`../npy/orientation`
+
+g4ok "g4ok"
+    :doc:`../g4ok/orientation`
+
+Descriptions of all ~20 packages : :doc:`misc/packages`
 
 
-Geometry classes can be split into three aspects:
+Highlighted Geometry classes from Geant4 and Opticks 
+-----------------------------------------------------
+
+Geometry classes can be split into three categories:
 
 1. material and surface properties
-2. solid shapes (sometimes Geant4 primitives become trees in Opticks)
+2. solid shapes 
 3. volume structure   
 
+The below sections list the classes from Geant4 and Opticks
+that you need to be familiar with in order to understand how 
+Opticks translates the Geant4 geometry into an NVIDIA OptiX 
+geomety suitable for optical photon simulation.
 
 
 Material and Surface property classes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------
 
-**Geant4 property classes:**
+Geant4 material/surface property classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 G4MaterialPropertiesTable
    holds properties such as RINDEX (refractive index), ABSLENGTH (absorption length), RAYLEIGH (scattering length)
+   as a function of energy
 
 G4Material 
-   name with properties as a function of energy.
+   name and properties table 
 
 G4LogicalBorderSurface
    surface properties associated with the interface between two placed volumes (PV)
 
 G4LogicalSkinSurface
-   surface properties associates with all placements of an unplaced logical volume (LV)
+   surface properties associated with all placements of an unplaced logical volume (LV)
 
 
-**Opticks GGeo classes:** 
+Opticks/ggeo material/surface property classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Material and surface properties from Geant4 
 are interpolated onto a common wavelength domain 
@@ -216,20 +263,31 @@ GBndLib
    holds vector of int4 where the integers are indices pointing at surfaces and materials 
    inner-material/inner-surface/outer-surface/outer-material 
 
-   This boundary lib is converted by oxrap/OBndLib into the GPU boundary texture
-
-   * all volumes are assigned a boundary index which is available GPU side
-     to make wavelength interpolated lookups into the boundary texture yielding float4 
-     of material and surface properties
-
-
 * :doc:`../ggeo/orientation`
 * :doc:`../optixrap/orientation`
 
 
+Vital role of Boundary Indices and Boundary Texture
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Solid Shapes : Geant4 classes and Opticks + OptiX translations
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This GGeo/GBndLib boundary lib is converted by oxrap/OBndLib into 
+the GPU boundary texture interleaving properties from the GMaterialLib and GSurfaceLib 
+into the boundary texture.  
+
+During initial traversal of the Geant4 volume tree a boundary index is assigned 
+to every volume corresponding to unique combinations of the 
+four indices (inner-material,inner-surface,outer-surface,outer-material).
+
+This boundary index together with other identity information from *GVolume::getIdentity*
+is available GPU side in the identity buffer.
+
+The boundary index together with the boundary texture allows the current and next 
+material properties and the relevant surface properties to be obtained
+via wavlength interpolated lookups on the boundary texture.
+ 
+
+Geometrical shape classes 
+----------------------------
 
 G4VSolid 
    abstract base class for solids such as G4Sphere, G4Cons (cone), ...
@@ -257,8 +315,9 @@ ggeo/GGeoLib
 * :doc:`../ggeo/orientation`
 
 
-Volume Structure in Geant4 and Opticks/GGeo
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Volume Structure classes in Geant4 and Opticks/GGeo
+-----------------------------------------------------
+
 
 G4LogicalVolume "LV"
    unplaced volume having a solid and material
@@ -338,8 +397,7 @@ The need to assign an index to the instances is the reason behind the choice of
 NVIDIA OptiX geometry structure.
 
 
-
-OptiX generate functions for simulation
+OptiX raygen function for simulation
 -----------------------------------------
 
 optixrap/cu/generate.cu
@@ -421,47 +479,6 @@ Bash Functions
 ----------------
 
 Bash functions are used for building the tree of CMake projects, see *om.bash*
-
-
-Opticks Usage of NVIDIA OptiX
---------------------------------
-
-Direct use of OptiX is primarily in the optixrap subproject :doc:`../optixrap/orientation`
-however the most of the rest of Opticks is involved with the conversion of the 
-Geant4 geometry into a form that can become an OptiX geometry. 
-
-
-
-Primary Packages and Classes for geometry
--------------------------------------------
-
-The below linked orientation pages for the sub projects 
-highlight a few of the more important classes. 
-The quoted names correspond to utility bash functions. 
-
-extg4 "x4"  
-    :doc:`../extg4/orientation`
-
-ggeo "ggeo" 
-    :doc:`../ggeo/orientation`
-
-optixrap "oxrap"
-    :doc:`../optixrap/orientation`
-
-npy "npy"
-    :doc:`../npy/orientation`
-
-
-
-* https://bitbucket.org/simoncblyth/opticks/src/master/ggeo/
-* https://bitbucket.org/simoncblyth/opticks/src/master/ggeo/GGeo.cc
-* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/
-* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/OGeo.cc
-* https://bitbucket.org/simoncblyth/opticks/src/master/npy/
-* https://bitbucket.org/simoncblyth/opticks/src/master/npy/NPY.cpp
-
-Descriptions of all ~20 packages : :doc:`misc/packages`
-
 
 
 
