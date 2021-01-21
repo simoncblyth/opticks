@@ -5,13 +5,11 @@ Tasks
    :depth: 3
 
 
-**A** : Needed within 2020 for JUNO 
+**A** : Needed ASAP for JUNO 
 ---------------------------------
 
 **A1** : Expand GPU processing to detector collection efficiency hit culling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* **New development : but intended approach uses techniques familiar from reemission texture**
 
 Typically candidate photon hits are culled stocastically using 
 a combined detection efficiency computed from the characteristics
@@ -33,6 +31,28 @@ will allow the results of the interpolation to be available on the GPU using
 dedicated texture lookup hardware that does linear interpolation. The resolution of the
 GPU texture can be increased as much as needed to closely reproduce the result 
 of the cubic spline interpolation.
+
+**2020 Aug/Sep/Oct**
+
+* GSensorLib/OSensorLib angular GPU texture handling added, tested with 
+  2d theta-phi textures for generality even through JUNO only needs theta dependent 
+  efficiencies
+
+* local/global frame positions for hits without doubling photon size  
+
+* local/global implementation revealed problem with Opticks geometry model 
+  that made it impossible to address the remainder volumes with Opticks native 
+  triplet addressing (mm0 special treatment problem). Fixing this required widespread changes
+  but has strong benefits of simplifying the geometry model and avoiding a longstanding 
+  cause of confusion and bugs.
+
+**What remains to be done ?**
+
+* optional "way point" recording (needed to complete JUNO hits) 
+
+  * currently doing in separate way buffer just doesnt fly 
+  * need to integrate way points into the photon buffer in optional way 
+    with the normal 4x4 photon optionally becoming 4x5
 
 
 **A2** : Machinery for Random Aligned "Bi-Simulation" Validation 
@@ -78,7 +98,68 @@ situation by allowing the many more CPU nodes available to effectively share the
 fewer GPUs.
 
 
-**A?** : Event Splitting/Joining
+**A4** : Opticks Server + Client 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Early versions of Opticks incorporated a message queue based asynchronous
+server (using ZeroMQ and Boost Asio) which allowed the Opticks GPU simulation to be provided 
+as a service to network clients. Reviving this Opticks Server functionality would drastically increase
+the flexibility of Opticks usage by bringing it to any network connected device including
+learning environments such as IPython and Jupyter Notebooks.
+
+Experimentation is needed to see if these Opticks Server capabilities could allow
+limited GPU resources to be effectively shared from a larger number of CPU only nodes.
+
+**Nov 2020** 
+
+* reviewed old NumpyServer, conclude simpler to start over 
+* prototyped array transport and server-client in **np** repository https://github.com/simoncblyth/np/
+
+  * conclude dependency on Boost-Asio alone is feasible and advantageous
+
+* "OpticksClient.hh" aims to be header only and trivial to incorporate into Geant4 based simulation code
+
+
+**A5** : migrate OptixRap geometry to OptiX 7.1+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* **Adoption of New API : significant learning/experimentation needed** 
+
+
+1. OptiX 7 learning via developing standalone examples (see examples/UseOptiX7*)
+   in response to techniques gleaned from how others are using optix7 see optix7-vi 
+
+2. improve compartmentalization of the Opticks dependency on OptiX : 
+   so can cleanly switch backwards and forwards between 6.5 and 7.1
+   and other versions
+    
+3. explore ways of bringing the geometry to OptiX 7
+
+**Jan 2021**
+
+* LZ/LBL/NERSC/NVIDIA people keen to get involved with this task
+* Created orientation documentation as until planned bi-weekly meetings start 
+* https://simoncblyth.bitbucket.io/opticks/docs/orientation.html
+
+
+
+**A6** : geometry model BVH "tuning" with OptiX 6.5, 7.1,...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* **A critical task for performance**
+
+
+The NVIDIA BVH acceleration structure dictates intersection 
+performance both in itself and to what extent the dedicated ray trace hardware RT Cores
+are utilized.  The only way of influencing the "black box" BVH is via the choices of 
+OptiX geometry modelling (heirarchy, instances, different OptiX geometry classes).
+
+Performance measurements with a variety of GPUs and geometries while exploring 
+different ways of setting up the OptiX geometry are needed to arrive at the 
+optimal performance and gain some intuition of what works best.
+
+
+**A7** : Event Splitting/Joining
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For handling events with more optical photons than can be accommodated in the available VRAM,
@@ -99,57 +180,8 @@ should be done in a unified way.
 
 
 
-**A4** : Opticks Server
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* **Reviving old code : little new development but much experimentation to see if useful**
-
-
-Early versions of Opticks incorporated a message queue based asynchronous
-server (using ZeroMQ and Boost Asio) which allowed the Opticks GPU simulation to be provided 
-as a service to network clients. Reviving this Opticks Server functionality would drastically increase
-the flexibility of Opticks usage by bringing it to any network connected device including
-learning environments such as IPython and Jupyter Notebooks.
-
-Experimentation is needed to see if these Opticks Server capabilities could allow
-limited GPU resources to be effectively shared from a larger number of CPU only nodes.
-
-
-**A5** : migrate OptixRap geometry to OptiX 7.1+
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* **Adoption of New API : significant learning/experimentation needed** 
-
-
-1. OptiX 7 learning via developing standalone examples (see examples/UseOptiX7*)
-   in response to techniques gleaned from how others are using optix7 see optix7-vi 
-
-2. improve compartmentalization of the Opticks dependency on OptiX : 
-   so can cleanly switch backwards and forwards between 6.5 and 7.1
-   and other versions
-    
-3. explore ways of bringing the geometry to 7.1 
-
-
-**A6** : geometry model BVH "tuning" with OptiX 6.5, 7.1,...
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* **A critical task for performance**
-
-
-The NVIDIA BVH acceleration structure dictates intersection 
-performance both in itself and to what extent the dedicated ray trace hardware RT Cores
-are utilized.  The only way of influencing the "black box" BVH is via the choices of 
-OptiX geometry modelling (heirarchy, instances, different OptiX geometry classes).
-
-Performance measurements with a variety of GPUs and geometries while exploring 
-different ways of setting up the OptiX geometry are needed to arrive at the 
-optimal performance and gain some intuition of what works best.
-
-
-
-**B** : Useful for JUNO but not expected to be required in 2020 
---------------------------------------------------------------
+**B** : Useful for JUNO but not urgently required 
+-----------------------------------------------------
 
 **B1** : prototype Geant4 optical genstep API and try to get Geant4 to incorporate it
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
