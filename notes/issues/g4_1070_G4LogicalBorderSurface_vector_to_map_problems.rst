@@ -534,3 +534,77 @@ francis 1070 down to 0/438 fails
 
     FAILS:  0   / 438   :  Sun Jan 17 17:13:36 2021   
 
+
+
+What about GDML writing of border surfaces, how is the order controlled ?
+---------------------------------------------------------------------------
+
+::
+
+    epsilon:src francis$ pwd
+    /Users/francis/local/opticks_externals/g4_1070.build/geant4.10.07/source/persistency/gdml/src
+    epsilon:src francis$ vi G4GDMLWriteStructure.cc
+
+    467 void G4GDMLWriteStructure::SurfacesWrite()
+    468 {
+    469 #ifdef G4VERBOSE
+    470   G4cout << "G4GDML: Writing surfaces..." << G4endl;
+    471 #endif
+    472   for(auto pos = skinElementVec.cbegin();
+    473            pos != skinElementVec.cend(); ++pos)
+    474   {
+    475     structureElement->appendChild(*pos);
+    476   }
+    477   for(auto pos = borderElementVec.cbegin();
+    478            pos != borderElementVec.cend(); ++pos)
+    479   {
+    480     structureElement->appendChild(*pos);
+    481   }
+    482 }
+
+    322 void G4GDMLWriteStructure::BorderSurfaceCache(
+    323   const G4LogicalBorderSurface* const bsurf)
+    324 { 
+    325   if(bsurf == nullptr)
+    326   { 
+    327     return;
+    328   }
+    329   
+    330   const G4SurfaceProperty* psurf = bsurf->GetSurfaceProperty();
+    331   
+    332   // Generate the new element for border-surface
+    333   //
+    334   const G4String& bsname             = GenerateName(bsurf->GetName(), bsurf);
+    335   const G4String& psname             = GenerateName(psurf->GetName(), psurf);
+    336   xercesc::DOMElement* borderElement = NewElement("bordersurface");
+    337   borderElement->setAttributeNode(NewAttribute("name", bsname));
+    338   borderElement->setAttributeNode(NewAttribute("surfaceproperty", psname));
+    339   
+    340   const G4String volumeref1 =
+    341     GenerateName(bsurf->GetVolume1()->GetName(), bsurf->GetVolume1());
+    342   const G4String volumeref2 =
+    343     GenerateName(bsurf->GetVolume2()->GetName(), bsurf->GetVolume2());
+    344   xercesc::DOMElement* volumerefElement1 = NewElement("physvolref");
+    345   xercesc::DOMElement* volumerefElement2 = NewElement("physvolref");
+    346   volumerefElement1->setAttributeNode(NewAttribute("ref", volumeref1));
+    347   volumerefElement2->setAttributeNode(NewAttribute("ref", volumeref2));
+    348   borderElement->appendChild(volumerefElement1);
+    349   borderElement->appendChild(volumerefElement2);
+    350   
+    351   if(FindOpticalSurface(psurf))
+    352   { 
+    353     const G4OpticalSurface* opsurf =
+    354       dynamic_cast<const G4OpticalSurface*>(psurf);
+    355     if(opsurf == nullptr)
+    356     { 
+    357       G4Exception("G4GDMLWriteStructure::BorderSurfaceCache()", "InvalidSetup",
+    358                   FatalException, "No optical surface found!");
+    359       return;
+    360     }
+    361     OpticalSurfaceWrite(solidsElement, opsurf);
+    362   }
+    363   
+    364   borderElementVec.push_back(borderElement);
+    365 }
+
+

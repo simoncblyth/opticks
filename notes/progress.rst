@@ -23,13 +23,6 @@ to work with that parser follow some rules:
 3. bullet lines to be included in the summary should be in bold
 
 
-Others
---------
-
-* several SNOMASS contributions
-
-
-
 
 2020 Dec : tidy up in prep for release candidates, remove old externals, G4 10.6 tests reveals Geant4 bug, way buffer for hit completion 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -110,6 +103,8 @@ Others
 2020 Aug
 ----------
 
+* Opticks ended up in a least 3 Snomass 2021 LoI
+
 * (31) Linux OptiX 6.5 wierd sphere->box bug 
 * (30) fixed NPY::concat bug which could have caused much layered tex problems, but still decide to stay with separated 
 * (24-30) fighting layered 2d tex, failed : separated ones working OK though
@@ -145,7 +140,6 @@ Donglian Xu from SJTU::
     on ~16:00 of 8.13 Beijing time (9:00am London time). Please let us know if you
     can accept our invitation to speak via ZOOM. If the answer is positive, we will
     be more than happy to reallocate any time slot that works best for you.
-
 
 
 2020 July

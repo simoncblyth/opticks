@@ -1,6 +1,10 @@
 Tasks
 =======
 
+.. contents:: Table of Contents
+   :depth: 3
+
+
 **A** : Needed within 2020 for JUNO 
 ---------------------------------
 
