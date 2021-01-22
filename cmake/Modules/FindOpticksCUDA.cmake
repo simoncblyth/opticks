@@ -61,6 +61,7 @@ if(OpticksCUDA_FOUND)
        NAMES "helper_cuda.h"
        PATHS
            "${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc"
+           "${CUDA_TOOLKIT_ROOT_DIR}/cuda-samples/common/inc"
            "${CMAKE_CURRENT_LIST_DIR}/include/helper_cuda_fallback/${CUDA_VERSION}"
     )
     if(HELPER_CUDA_INCLUDE_DIR)
