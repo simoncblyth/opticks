@@ -36,7 +36,52 @@ See Also
 * https://raytracing-docs.nvidia.com/optix_6_0/index.html
 * https://raytracing-docs.nvidia.com/optix_6_0/tutorials_6_0/index.html#preface#
 
-    
+
+OptiX Release Notes : CUDA and NVIDIA GPU driver version requirements 
+------------------------------------------------------------------------
+
+* https://developer.nvidia.com/designworks/optix/download
+
+ 
+
+OptiX 7.0.0 (July 29, 2019) : 435.12 Driver for linux : CUDA 10.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``~/opticks_refs/OptiX_Release_Notes_7_0729.pdf``  
+* OptiX 7.0.0 requires that you install the 435.80 driver on Windows or the 435.12 Driver for linux. 
+* OptiX 7.0.0 has been built with CUDA 10.1
+
+OptiX 6.5.0 (Aug 26, 2019) : 435.17 Driver for linux : CUDA 10.1 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``~/opticks_refs/OptiX_Release_Notes_65.pdf`` 
+* OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17 Driver for linux.
+* OptiX 6.5.0 has been built with CUDA 10.1  
+ 
+OptiX 7.1.0 (June 2020)  : r450+ driver : CUDA 11?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ~/opticks_refs/OptiX_Release_Notes_7.1_03.pdf
+* OptiX 7.1.0 requires that you install a r450+ driver.
+* The OptiX 7.1.0 prebuilt samples on Windows have been built with CUDA 11
+
+OptiX 7.2.0 (October 2020) : r455+ driver : CUDA 11.1 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+
+* ~/opticks_refs/OptiX_Release_Notes_7.2.0.pdf
+* Applications compiled with the 7.2.0 SDK headers will require driver version 455 or later
+* SCB: CUDA 11.1 is mentioned but no strong statement about version requirements 
+
+
+On GPU Workstation
+~~~~~~~~~~~~~~~~~~~~
+
+nvidia-smi::
+
+    Driver Version: 435.21       CUDA Version: 10.1  
+
+
+
 
 Changing OptiX version
 -------------------------

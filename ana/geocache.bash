@@ -583,7 +583,10 @@ EON
 
 
 
-
+geocache-fan-gdmlpath(){ echo /Users/blyth/Documents/fan_hu.gdml ; }
+geocache-fan-comment(){ echo testing a user geometry for oceanic neutrino telescope ; }
+geocache-fan-(){ geocache-create- --gdmlpath $(geocache-fan-gdmlpath) --geocenter --noviz $* ; }
+geocache-fan(){ geocache-fan- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; }
 
 
 

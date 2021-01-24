@@ -25,8 +25,9 @@ The G4OKTest executable is built by the standard opticks build::
 
 
 The G4OKTest executable will use the geometry identified by the OPTICKS_KEY envvar 
-or will create the geometry directly from GDML file identified by the "--gdmlpath" 
-argument.  
+or will create the geometry directly from GDML file identified by the `--gdmlpath` 
+argument (NB there are two dashes before almost all commandline options used by Opticks
+but the html conversion and also email clients are sometimes double-dash challenged).
 
 
 CerenkovMinimal : Extended Example
