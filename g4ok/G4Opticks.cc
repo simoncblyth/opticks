@@ -1019,6 +1019,11 @@ G4Opticks::getHit
 The local position, direction and wavelength are within the frame 
 of the last intersect volume, ie the sensor volume.
 
+Local positions, directions and polarizations are obtained using 
+the geometry aware *m_hits_wrapper(GPho)* which looks up the 
+appropriate transform avoiding having to almost double the size 
+of the photon.
+
 **/
 
 void G4Opticks::getHit(unsigned i, G4OpticksHit* hit ) const 

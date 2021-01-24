@@ -140,7 +140,7 @@ transpose
          3d:   (width,height,depth) 
 
 
-    Note that transposing the buffer shape it is also necessary to transpose the shape 
+    Note that when transposing the buffer shape it is also necessary to transpose the shape 
     of the launch when using::
     
         output_buffer[launch_index] = val 

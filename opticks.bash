@@ -2529,6 +2529,18 @@ opticks-installed-headers(){
 
 
 
+opticks-src(){      echo https://bitbucket.org/simoncblyth/opticks/src/master ; }
+opticks-src-rel(){  echo ${1:-notes/tasks/tasks.rst}  ; }
+opticks-src-url(){  echo $(opticks-src)/$(opticks-src-rel $*) ; }
+opticks-src-path(){ echo $(opticks-home)/$(opticks-src-rel $*) ; }
+opticks-src-open(){ 
+   echo open $(opticks-src-url $*)  
+   echo vi $(opticks-src-path $*)  
+   open $(opticks-src-url $*)  
+   vi $(opticks-src-path $*)  
+}
 
-
+opticks-tasks(){    opticks-src-open notes/tasks/tasks.rst ; }
+opticks-progress(){ opticks-src-open notes/progress.rst ; }
+opticks-examples(){ opticks-src-open examples/README.rst ; }
 

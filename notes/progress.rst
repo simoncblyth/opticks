@@ -1,27 +1,11 @@
 Progress
 =========
 
-
-Updating 
+Contents
 ----------
 
-Use *git-;git-month n* (from env-) to review commits for the numbered month, 
-negative n eg -12 for December of last year.
-For SVN see svn-offline-blyth using::
-
-   svn log -v --search $USER
-
-
-`notes-progress` summaries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This progress text is parsed by `bin/progress.py` in preparation of ``notes-progress`` summaries, 
-to work with that parser follow some rules:
-
-1. title lines have a colon after the date, suppress a title by using semi-colon instead
-2. other lines have no colons
-3. bullet lines to be included in the summary should be in bold
-
+.. contents:: Table of Contents https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
+   :depth: 3
 
 
 2020 Dec : tidy up in prep for release candidates, remove old externals, G4 10.6 tests reveals Geant4 bug, way buffer for hit completion 
@@ -1288,5 +1272,30 @@ Notes
 ----------
 
 Early years copied here from okc-vi there is more detail over there than here.
+
+
+Updating 
+----------
+
+Use *git-;git-month n* (from env-) to review commits for the numbered month, 
+negative n eg -12 for December of last year.
+For SVN see svn-offline-blyth using::
+
+   svn log -v --search $USER
+
+
+`notes-progress` summaries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This progress text is parsed by `bin/progress.py` in preparation of ``notes-progress`` summaries, 
+to work with that parser follow some rules:
+
+1. title lines have a colon after the date, suppress a title by using semi-colon instead
+2. other lines have no colons
+3. bullet lines to be included in the summary should be in bold
+
+
+
+
 
 

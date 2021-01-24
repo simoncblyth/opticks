@@ -20,6 +20,15 @@ MockSensorLib::MockSensorLib(unsigned num_cat, unsigned num_sensor)
     initAngularEfficiency( 180, 360 );  // height:theta, width:phi
 }
 
+/**
+MockSensorLib::initSensorData
+------------------------------
+
+* sensors are randomly assigned a sensor category in range 0:m_num_cat-1
+* overall efficiencies for all sensors are set to 0.5
+
+**/
+
 void MockSensorLib::initSensorData(unsigned num_sensor)
 {
     LOG(info) << " num_sensor " << num_sensor ;  
@@ -38,6 +47,14 @@ void MockSensorLib::initSensorData(unsigned num_sensor)
         m_sensorlib->setSensorData( sensorIndex, efficiency_1, efficiency_2, sensor_cat, sensor_identifier );
     }   
 }
+
+/**
+MockSensorLib::initAngularEfficiency
+-------------------------------------
+
+The angular efficiency table is created by MockSensorAngularEfficiencyTable
+
+**/
 
 void MockSensorLib::initAngularEfficiency(unsigned num_theta_steps, unsigned num_phi_steps)
 {

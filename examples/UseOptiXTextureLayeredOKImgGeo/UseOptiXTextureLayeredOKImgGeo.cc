@@ -196,13 +196,13 @@ int main(int argc, char** argv)
     NPY<float>* pos = NPY<float>::make(shape); 
     
 #ifdef USE_OCTX
-    void* outBuf = OCtx::Get()->create_buffer(out, "out_buffer", 'O', ' ', -1); 
+    void* outBuf = OCtx::Get()->create_buffer(out, "out_buffer", 'O', ' ', -1, true); 
     OCtx::Get()->desc_buffer( outBuf );  
 
-    void* dbgBuf = OCtx::Get()->create_buffer(dbg, "dbg_buffer", 'O', ' ', -1); 
+    void* dbgBuf = OCtx::Get()->create_buffer(dbg, "dbg_buffer", 'O', ' ', -1, true); 
     OCtx::Get()->desc_buffer( dbgBuf );  
 
-    void* posBuf = OCtx::Get()->create_buffer(pos, "pos_buffer", 'O', ' ', -1); 
+    void* posBuf = OCtx::Get()->create_buffer(pos, "pos_buffer", 'O', ' ', -1, true); 
     OCtx::Get()->desc_buffer( posBuf );  
 #else
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT); 

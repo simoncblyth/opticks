@@ -64,4 +64,6 @@ OptiX CUDA Sources
    cu/intersect_analytic.cu
    cu/material1_propagate.cu
   
+   tests/OSensorLibGeoTest.cc
+
 

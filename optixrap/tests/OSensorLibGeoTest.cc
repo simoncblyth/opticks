@@ -18,7 +18,7 @@ const char* CMAKE_TARGET = "OSensorLibGeoTest" ;
 const char* MAIN_PTXPATH   = OKConf::PTXPath(CMAKE_TARGET, "OSensorLibGeoTest.cu", "tests" );      
 const char* SPHERE_PTXPATH = OKConf::PTXPath(CMAKE_TARGET, "sphere.cu",            "tests" );
 
-/**
+/**0
 OSensorLibGeoTest
 ===================
 
@@ -27,6 +27,10 @@ and oriented to point the local z-directions of the small spheres at the center
 of the large one. Renders of the geometry are shaded using the sensor efficiency which 
 is obtained using OSensorLib_sensor_efficiency using the local theta-phi positions 
 of intersects and the sensor category.
+
+.. image:: //env/presentation/optixrap/OSensorLibGeoTest_half.png
+   :width: 1024
+   :alt: //env/presentation/optixrap/OSensorLibGeoTest_half.png
 
 Global frame intersect positions and intersected geometry identities are recorded 
 into the posi.npy array. The posi.npy array is used by OSensorLibGeoTest.py 
@@ -50,8 +54,13 @@ To check error handling with no persisted SensorLib::
 
     rm -rf $TMP/opticksgeo/tests/MockSensorLibTest
     OSensorLibGeoTest    ## should exit with FATAL message 
-    
-**/
+   
+See: ``optickscore/tests/MockSensorLibTest.cc``
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/optickscore/tests/MockSensorLibTest.cc
+* https://bitbucket.org/simoncblyth/opticks/src/master/optixrap/tests/OSensorLibGeoTest.cc
+ 
+0**/
 
 class OSensorLibGeoTest 
 {
