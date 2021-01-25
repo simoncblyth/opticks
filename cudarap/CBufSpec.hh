@@ -49,8 +49,6 @@ struct CUDARAP_API CBufSpec
         return CBufSlice(dev_ptr, size, num_bytes, stride, begin, end);
    }
 
-
-
 }; 
 
 // size expected to be num_bytes/sizeof(T)

@@ -1473,6 +1473,11 @@ bool Opticks::isDumpHit() const  // --dumphit
 {
    return m_cfg->hasOpt("dumphit");
 }
+bool Opticks::isDumpHiy() const  // --dumphiy
+{
+   return m_cfg->hasOpt("dumphiy");
+}
+
 bool Opticks::isDumpSensor() const  // --dumpsensor
 {
    return m_cfg->hasOpt("dumpsensor");

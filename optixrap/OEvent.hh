@@ -138,6 +138,7 @@ class OXRAP_API OEvent
         unsigned download();
         void     downloadPhotonData();
         unsigned downloadHits();
+        unsigned downloadHiys();
         void     markDirty();
     private:
         unsigned upload(OpticksEvent* evt);
@@ -147,6 +148,8 @@ class OXRAP_API OEvent
 #endif
         unsigned downloadHitsCompute(OpticksEvent* evt);
         unsigned downloadHitsInterop(OpticksEvent* evt);
+        unsigned downloadHiysCompute(OpticksEvent* evt);
+        unsigned downloadHiysInterop(OpticksEvent* evt);
     public:
         OContext*     getOContext() const ;
         OpticksEvent* getEvent() const ;

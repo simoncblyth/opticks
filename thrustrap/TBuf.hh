@@ -44,9 +44,13 @@ class THRAP_API TBuf {
       unsigned long long getSize() const ;      // NumItems might be better name
       unsigned long long getItemSize() const ;  //  NumBytes/Size
 
-     
+      unsigned downloadSelection6x4(const char* name, NPY<float>* npy, unsigned mskhis, bool verbose=false) const ; // selection done on items of size float4x4
       unsigned downloadSelection4x4(const char* name, NPY<float>* npy, unsigned mskhis, bool verbose=false) const ; // selection done on items of size float4x4
+      unsigned downloadSelection2x4(const char* name, NPY<float>* npy, unsigned mskhis, bool verbose=false) const ; // selection done on items of size float4x4
+
+      void dump6x4(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const ;
       void dump4x4(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const ;
+      void dump2x4(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const ;
 
       template <typename T> unsigned downloadSelection(const char* name, NPY<float>* npy, unsigned mskhis, bool verbose=false) const ; // selection done on items of size T
       template <typename T> void fill(T value) const ;

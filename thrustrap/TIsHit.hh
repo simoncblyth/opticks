@@ -43,13 +43,17 @@ Potentially a template instanciation and nvcc issue ?
 It may be easier to surface this functor type as a template 
 argument.
 
+
+TODO: get rid of the 4x4 and 2x4 if the templated one works OK
+
+
 **/
 
-struct TIsHit : public thrust::unary_function<float4x4,bool>
+struct TIsHit4x4 : public thrust::unary_function<float4x4,bool>
 {
     unsigned hitmask ; 
 
-    TIsHit(unsigned hitmask_) : hitmask(hitmask_) {}   
+    TIsHit4x4(unsigned hitmask_) : hitmask(hitmask_) {}   
 
     __host__ __device__
     bool operator()(float4x4 photon)
@@ -59,6 +63,39 @@ struct TIsHit : public thrust::unary_function<float4x4,bool>
         return ( q3.u.w & hitmask ) == hitmask ;   
     }   
 };
+
+
+struct TIsHit2x4 : public thrust::unary_function<float2x4,bool>
+{
+    unsigned hitmask ; 
+
+    TIsHit2x4(unsigned hitmask_) : hitmask(hitmask_) {}   
+
+    __host__ __device__
+    bool operator()(float2x4 way)
+    {   
+        tquad q1 ; 
+        q1.f = way.q1 ; 
+        return ( q1.u.w & hitmask ) == hitmask ;   
+    }   
+};
+
+
+template <typename T>
+struct TIsHit : public thrust::unary_function<T,bool>
+{
+    unsigned hitmask ; 
+
+    TIsHit(unsigned hitmask_) : hitmask(hitmask_) {}   
+
+    __host__ __device__
+    bool operator()(T item)
+    {   
+        return ( item.flags() & hitmask ) == hitmask ;   
+    }   
+};
+
+
 
 
 

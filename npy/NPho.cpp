@@ -42,6 +42,7 @@ NPho::NPho(NPY<float>* photons, const char* opt)
     m_msk(photons->getMsk()),
     m_num_photons(photons ? photons->getNumItems() : 0 ),
     m_num_msk(m_msk ? m_msk->getNumItems() : 0 ), 
+    m_num_quad(photons->getShape(1)),
     m_mski(opt ? BStr::Contains(opt, "mski", ',' ) : true ),
     m_post(opt ? BStr::Contains(opt, "post", ',' ) : true ),
     m_dirw(opt ? BStr::Contains(opt, "dirw", ',' ) : true ),
@@ -53,7 +54,7 @@ NPho::NPho(NPY<float>* photons, const char* opt)
 
 void NPho::init()
 {
-    assert( m_photons->hasShape(-1,4,4) );
+    assert( m_photons->hasShape(-1,m_num_quad,4) );
 
     if(m_msk)
     {
@@ -66,10 +67,35 @@ unsigned NPho::getNumPhotons() const
     return m_num_photons ; 
 }
 
+/**
+NPho::getNumQuad
+-------------------
+
+* Usually 4 from with photons array shape: (num_photons, *4*, 4)   
+* Sometimes 2 with hiy array shape: (num_hiy, 2, 4) 
+
+**/
+
+unsigned NPho::getNumQuad() const 
+{
+    return m_num_quad ; 
+}
+
 
 NPY<float>* NPho::getPhotons() const 
 {
     return m_photons ; 
+}
+
+glm::vec4 NPho::getQ0(unsigned i) const 
+{
+    glm::vec4 q0 = m_photons->getQuad_(i,0);
+    return q0 ; 
+}
+glm::vec4 NPho::getQ1(unsigned i) const 
+{
+    glm::vec4 q1 = m_photons->getQuad_(i,1);
+    return q1 ; 
 }
 
 glm::vec4 NPho::getPositionTime(unsigned i) const 
@@ -86,13 +112,15 @@ glm::vec4 NPho::getDirectionWeight(unsigned i) const
 
 glm::vec4 NPho::getPolarizationWavelength(unsigned i) const 
 {
-    glm::vec4 polw = m_photons->getQuad_(i,2);
+    assert( m_num_quad >= 1 );
+    glm::vec4 polw = m_photons->getQuad_(i,2); 
     return polw ; 
 }
 
 glm::ivec4 NPho::getFlags(unsigned i) const 
 {
-    glm::ivec4 flgs = m_photons->getQuadI(i,3);  // union type shifting getter
+    unsigned qlast = m_num_quad - 1 ; 
+    glm::ivec4 flgs = m_photons->getQuadI(i,qlast);  // union type shifting getter
     return flgs ; 
 }
 
@@ -108,24 +136,34 @@ std::string NPho::desc() const
 
 std::string NPho::desc(unsigned i) const 
 {
-    glm::vec4 post = getPositionTime(i);
-    glm::vec4 dirw = getDirectionWeight(i);
-    glm::vec4 polw = getPolarizationWavelength(i);
-    glm::ivec4 flgs = getFlags(i);
-
     std::stringstream ss ;
     ss << " i " << std::setw(7) << i ; 
-    if(m_mski) ss << " mski " << std::setw(7) << m_photons->getMskIndex(i)  ; 
-    if(m_post) ss << " post " << std::setw(20) << gpresent(post) ;
-    if(m_dirw) ss << " dirw " << std::setw(20) << gpresent(dirw) ;
-    if(m_polw) ss << " polw " << std::setw(20) << gpresent(polw) ;
-    if(m_flgs) ss << " flgs " << std::setw(20) << gpresent(flgs) ;
 
+    if(m_num_quad == 4)
+    {
+        glm::vec4 post = getPositionTime(i);
+        glm::vec4 dirw = getDirectionWeight(i);
+        glm::vec4 polw = getPolarizationWavelength(i);
+        glm::ivec4 flgs = getFlags(i);
+
+        if(m_mski) ss << " mski " << std::setw(7) << m_photons->getMskIndex(i)  ; 
+        if(m_post) ss << " post " << std::setw(20) << gpresent(post) ;
+        if(m_dirw) ss << " dirw " << std::setw(20) << gpresent(dirw) ;
+        if(m_polw) ss << " polw " << std::setw(20) << gpresent(polw) ;
+        if(m_flgs) ss << " flgs " << std::setw(20) << gpresent(flgs) ;
+    }
+    else if(m_num_quad == 2)
+    {
+        glm::vec4 q0 = getQ0(i);
+        glm::vec4 q1 = getQ1(i);
+        glm::ivec4 flgs = getFlags(i);
+ 
+        ss << " q0 " << std::setw(20) << gpresent(q0)  ; 
+        ss << " q1 " << std::setw(20) << gpresent(q1)  ; 
+        ss << " flgs " << std::setw(20) << gpresent(flgs)  ; 
+    }
     return ss.str();
 }
-
-
-
 
 
 

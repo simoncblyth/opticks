@@ -321,6 +321,11 @@ void OpticksCfg<Listener>::init()
        ("dumphit",   "dump hits, see OKPropagator") ; 
 
    m_desc.add_options()
+       ("dumphiy",   "dump hiys, see OKPropagator") ; 
+
+
+
+   m_desc.add_options()
        ("dumpprofile",   "dump runtime profile, see Opticks::postpropagate") ; 
 
    m_desc.add_options()

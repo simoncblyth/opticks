@@ -117,6 +117,7 @@ const char* OpticksEvent::recsel_  = "recsel" ;
 const char* OpticksEvent::sequence_  = "sequence" ; 
 const char* OpticksEvent::seed_  = "seed" ; 
 const char* OpticksEvent::hit_  = "hit" ; 
+const char* OpticksEvent::hiy_  = "hiy" ; 
 
 
 OpticksEvent* OpticksEvent::Make(OpticksEventSpec* spec, unsigned tagoffset)  // static 
@@ -385,6 +386,12 @@ NPY<float>* OpticksEvent::getHitData() const
 { 
     return m_hit_data ;
 }
+NPY<float>* OpticksEvent::getHiyData() const 
+{ 
+    return m_hiy_data ;
+}
+
+
 
 MultiViewNPY* OpticksEvent::getGenstepAttr(){ return m_genstep_attr ; }
 MultiViewNPY* OpticksEvent::getNopstepAttr(){ return m_nopstep_attr ; }
@@ -396,6 +403,7 @@ MultiViewNPY* OpticksEvent::getRecselAttr(){ return m_recsel_attr ; }
 MultiViewNPY* OpticksEvent::getSequenceAttr(){ return m_sequence_attr ; }
 MultiViewNPY* OpticksEvent::getSeedAttr(){   return m_seed_attr ; }
 MultiViewNPY* OpticksEvent::getHitAttr(){    return m_hit_attr ; }
+MultiViewNPY* OpticksEvent::getHiyAttr(){    return m_hiy_attr ; }
 
 
 
@@ -648,6 +656,7 @@ void OpticksEvent::init()
     m_abbrev[sequence_] = "ph" ;   // (unsigned long long) photon seqhis/seqmat
     m_abbrev[seed_] = "se" ;   //   (short) genstep id used for photon seeding 
     m_abbrev[hit_] = "ht" ;  
+    m_abbrev[hiy_] = "hy" ;  
 }
 
 void OpticksEvent::deleteMeta()
@@ -949,9 +958,10 @@ void OpticksEvent::createSpec()
     m_source_spec  = SourceSpec(compute);
 
     m_hit_spec      = new NPYSpec(hit_       , 0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(hit_, compute));
+    m_hiy_spec      = new NPYSpec(hiy_       , 0,2,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(hiy_, compute));
     m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(photon_, compute)) ;
     m_debug_spec    = new NPYSpec(debug_    ,  0,1,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(debug_, compute)) ;
-    m_way_spec      = new NPYSpec(way_      ,  0,1,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(way_, compute)) ;
+    m_way_spec      = new NPYSpec(way_      ,  0,2,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(way_, compute)) ;
     m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4,0, NPYBase::SHORT     ,  OpticksBufferSpec::Get(record_, compute)) ;
     //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
 
@@ -973,6 +983,7 @@ void OpticksEvent::dumpSpec()
     LOG(info) << "m_seed_spec " << m_seed_spec ;
     LOG(info) << "m_source_spec " << m_source_spec ;
     LOG(info) << "m_hit_spec " << m_hit_spec ;
+    LOG(info) << "m_hiy_spec " << m_hiy_spec ;
     LOG(info) << "m_photon_spec " << m_photon_spec ;
     LOG(info) << "m_debug_spec " << m_debug_spec ;
     LOG(info) << "m_way_spec " << m_way_spec ;
@@ -993,6 +1004,7 @@ void OpticksEvent::deleteSpec()
     delete m_seed_spec ; 
     delete m_source_spec ; 
     delete m_hit_spec ; 
+    delete m_hiy_spec ; 
     delete m_photon_spec ; 
     delete m_debug_spec ; 
     delete m_way_spec ; 
@@ -1111,7 +1123,10 @@ void OpticksEvent::createBuffers()
     setSeedData(seed);   
 
     NPY<float>* hit = NPY<float>::make(m_hit_spec); 
-    setHitData(hit);   
+    setHitData(hit);  
+
+    NPY<float>* hiy = NPY<float>::make(m_hiy_spec); 
+    setHiyData(hiy);  
 
     NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_phosel_spec); 
     setPhoselData(phosel);   
@@ -1370,6 +1385,23 @@ void OpticksEvent::setHitData(NPY<float>* hit_data)
     setBufferControl(hit_data);
     m_hit_attr = new MultiViewNPY("hit_attr");
 }
+
+void OpticksEvent::setHiyData(NPY<float>* hiy_data)
+{
+    m_hiy_data = hiy_data  ;
+    if(!hiy_data)
+    {
+        LOG(debug) << "OpticksEvent::setHiyData hiy_data NULL " ;
+        return ; 
+    }
+
+    setBufferControl(hiy_data);
+    m_hiy_attr = new MultiViewNPY("hiy_attr");
+}
+
+
+
+
 
 void OpticksEvent::setDebugData(NPY<float>* debug_data)
 {
@@ -1786,6 +1818,7 @@ void OpticksEvent::save()
     else
     {
         saveHitData();   
+        saveHiyData();   
         saveNopstepData();
         saveGenstepData();
         savePhotonData();
@@ -1840,19 +1873,46 @@ void OpticksEvent::saveHitData(NPY<float>* ht) const
     if(ht)
     {
         unsigned num_hit = ht->getNumItems(); 
-
         ht->save(m_pfx, "ht", m_typ,  m_tag, m_udet);  // even when zero hits
-
         LOG(LEVEL) 
              << " num_hit " << num_hit
              << " ht " << ht->getShapeString() 
              << " tag " << m_tag 
              ; 
-
-        
-
     }
 }
+
+
+/**
+OpticksEvent::saveHiyData
+--------------------------
+
+Writes hiy buffer even when empty, otherwise get inconsistent 
+buffer time stamps when changes makes hits go away and are writing 
+into the same directory.
+
+**/
+
+void OpticksEvent::saveHiyData() const 
+{
+    NPY<float>* hy = getHiyData();
+    saveHiyData(hy); 
+}
+
+void OpticksEvent::saveHiyData(NPY<float>* hy) const 
+{
+    if(hy)
+    {
+        unsigned num_hiy = hy->getNumItems(); 
+        hy->save(m_pfx, "hy", m_typ,  m_tag, m_udet);  // even when zero hits
+        LOG(LEVEL) 
+             << " num_hiy " << num_hiy
+             << " hy " << hy->getShapeString() 
+             << " tag " << m_tag 
+             ; 
+    }
+}
+
 
 
 

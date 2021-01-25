@@ -206,6 +206,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        static const char* sequence_  ;
        static const char* seed_  ;
        static const char* hit_  ;
+       static const char* hiy_  ;
    public:
        bool isIndexed() const ;
        NPY<float>* loadGenstepDerivativeFromFile(const char* stem="track");
@@ -292,9 +293,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        // used from G4Opticks for the minimal G4 side instrumentation of "1st executable"
        void saveHitData(NPY<float>* ht) const ; 
+       void saveHiyData(NPY<float>* hy) const ; 
        void saveSourceData(NPY<float>* so) const ; 
    private:
        void saveHitData() const ; 
+       void saveHiyData() const ; 
        void saveSourceData() const ; 
        void saveNopstepData(); 
        void saveGenstepData(); 
@@ -327,6 +330,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setSequenceData(NPY<unsigned long long>* history_data);
        void setSeedData(NPY<unsigned>* seed_data);
        void setHitData(NPY<float>* hit_data);
+       void setHiyData(NPY<float>* hiy_data);
        void setDebugData(NPY<float>* debug_data);
        void setWayData(NPY<float>* way_data);
        void setRecordData(NPY<short>* record_data);
@@ -371,6 +375,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<unsigned long long>*  getSequenceData() const ;
        NPY<unsigned>*          getSeedData() const ;
        NPY<float>*             getHitData() const ;
+       NPY<float>*             getHiyData() const ;
 
    public:
        OpticksBufferControl* getPhotonCtrl();
@@ -407,6 +412,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        MultiViewNPY* getSequenceAttr();
        MultiViewNPY* getSeedAttr();
        MultiViewNPY* getHitAttr();
+       MultiViewNPY* getHiyAttr();
 
        ViewNPY* operator [](const char* spec);
 
@@ -462,6 +468,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<unsigned long long>*  m_sequence_data ;
        NPY<unsigned>*            m_seed_data ;
        NPY<float>*               m_hit_data ;
+       NPY<float>*               m_hiy_data ;
    private:
        // owned : deleteCtrl
        OpticksBufferControl*  m_photon_ctrl ; 
@@ -483,6 +490,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        MultiViewNPY*   m_sequence_attr  ;
        MultiViewNPY*   m_seed_attr  ;
        MultiViewNPY*   m_hit_attr  ;
+       MultiViewNPY*   m_hiy_attr  ;
 
    private:
        // unmanaged
@@ -523,6 +531,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPYSpec* m_sequence_spec ;  
        NPYSpec* m_seed_spec ;  
        NPYSpec* m_hit_spec ;  
+       NPYSpec* m_hiy_spec ;  
 
     private:
        OpticksEvent*   m_sibling ;    // weak 

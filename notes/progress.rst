@@ -1,11 +1,13 @@
 Progress
 =========
 
-Contents
-----------
 
-.. contents:: Table of Contents https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
-   :depth: 3
+.. comment
+   
+    Needs lots of change to titles and splitting by year to make the toc useful 
+
+    .. contents:: Table of Contents https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
+       :depth: 3
 
 
 2020 Dec : tidy up in prep for release candidates, remove old externals, G4 10.6 tests reveals Geant4 bug, way buffer for hit completion 

@@ -116,6 +116,14 @@ void CResource::streamSync()
     m_imp->streamSync();
 }
 
+/**
+CResource::mapGLToCUDA
+-----------------------
+
+The CBufSpec only uses the template type for its size. 
+
+**/
+
 template <typename T>
 CBufSpec CResource::mapGLToCUDA()
 {
@@ -142,7 +150,10 @@ template CUDARAP_API CBufSpec CResource::mapGLToCUDA<unsigned long long>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<short>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<int>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<float>();
+
+template CUDARAP_API CBufSpec CResource::mapGLToCUDA<cfloat2x4>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<cfloat4x4>();
+template CUDARAP_API CBufSpec CResource::mapGLToCUDA<cfloat6x4>();
 
 
 

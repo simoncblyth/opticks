@@ -112,6 +112,8 @@ void OPropagator::initParameters()
     m_context[ "RNUMQUAD" ]->setUint( 2 );   // quads per record 
     m_context[ "PNUMQUAD" ]->setUint( 4 );   // quads per photon
     m_context[ "GNUMQUAD" ]->setUint( 6 );   // quads per genstep
+    m_context[ "WNUMQUAD" ]->setUint( 2 );   // quads per photon way buffer item 
+
     m_context["SPEED_OF_LIGHT"]->setFloat(299.792458f) ;   // mm/ns
 
 

@@ -48,7 +48,10 @@ class NPY_API NPho {
     public:  
         NPY<float>*           getPhotons() const ;
         unsigned              getNumPhotons() const ;
+        unsigned              getNumQuad() const ;
     public:  
+        glm::vec4             getQ0(unsigned i) const ; 
+        glm::vec4             getQ1(unsigned i) const ; 
         glm::vec4             getPositionTime(unsigned i) const ; 
         glm::vec4             getDirectionWeight(unsigned i) const ; 
         glm::vec4             getPolarizationWavelength(unsigned i) const ;
@@ -62,6 +65,7 @@ class NPY_API NPho {
        NPY<unsigned>*         m_msk ; 
        unsigned               m_num_photons ; 
        unsigned               m_num_msk ; 
+       unsigned               m_num_quad ;
 
        bool                   m_mski ; 
        bool                   m_post ; 

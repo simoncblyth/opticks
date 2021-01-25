@@ -76,6 +76,20 @@ float unsigned_as_float(unsigned u)
   return v1.f;
 }
 
+
+static __device__
+float qint_as_float(int i)
+{
+  union {
+    float f;
+    int   i;
+  } v1;
+
+  v1.i = i; 
+  return v1.f;
+}
+
+
 #endif
 
 

@@ -26,14 +26,54 @@ union tquad
    uint4  u ; 
 };
 
+
+struct float6x4 
+{
+   float4 q0 ; 
+   float4 q1 ; 
+   float4 q2 ; 
+   float4 q3 ; 
+   float4 q4 ; 
+   float4 q5 ; 
+
+   __host__ __device__
+   unsigned flags() const 
+   {  
+      tquad qlast ; 
+      qlast.f = q5 ;  
+      return qlast.u.w ; 
+   }
+};
+
 struct float4x4 
 {
    float4 q0 ; 
    float4 q1 ; 
    float4 q2 ; 
    float4 q3 ; 
+
+   __host__ __device__
+   unsigned flags() const 
+   {  
+      tquad qlast ; 
+      qlast.f = q3 ;  
+      return qlast.u.w ; 
+   }
 };
 
+struct float2x4 
+{
+   float4 q0 ; 
+   float4 q1 ; 
+
+   __host__ __device__
+   unsigned flags() const 
+   {  
+      tquad qlast ; 
+      qlast.f = q1 ;  
+      return qlast.u.w ; 
+   }
+};
 
 
 inline std::ostream& operator<<(std::ostream& os, const uint4& v)
@@ -48,22 +88,47 @@ inline std::ostream& operator<<(std::ostream& os, const float4& v)
     return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const float6x4& v)
+{
+    tquad qlast ; 
+    qlast.f = v.q5 ; 
+    os 
+       << " 0f:" << v.q0 
+       << " 1f:" << v.q1
+       << " 2f:" << v.q2 
+       << " 3f:" << v.q3 
+       << " 4f:" << v.q4 
+       << " 5u:" << qlast.u
+    ; 
+    return os;
+}
+
 inline std::ostream& operator<<(std::ostream& os, const float4x4& v)
 {
-    tquad q3 ; 
-    q3.f = v.q3 ; 
+    tquad qlast ; 
+    qlast.f = v.q3 ; 
 
     os 
        << " 0f:" << v.q0 
        << " 1f:" << v.q1
        << " 2f:" << v.q2 
-       << " 3u:" << q3.u
+       << " 3u:" << qlast.u
     ; 
 
     return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const float2x4& v)
+{
+    tquad qlast ; 
+    qlast.f = v.q1 ; 
 
+    os 
+       << " 0f:" << v.q0 
+       << " 1f:" << v.q1
+       << " 1u:" << qlast.u
+    ; 
 
-
+    return os;
+}
 

@@ -453,6 +453,42 @@ unsigned OEvent::downloadHits()
 
 
 /**
+OEvent::downloadHiys
+---------------------
+
+downloadHiysCompute works but downloadHiysInterop does not with error::
+
+    2021-01-25 23:16:19.421 INFO  [4926544] [OEvent::downloadHitsInterop@699] ]
+    2021-01-25 23:16:19.422 INFO  [4926544] [OEvent::downloadHits@443]  nhit 87 --dbghit N hitmask 0x40 SD SURFACE_DETECT
+    2021-01-25 23:16:19.422 INFO  [4926544] [OEvent::download@489]  nhit 87
+    CUDA error at /Users/blyth/opticks/cudarap/CResource_.cu:67 code=11(cudaErrorInvalidValue) "cudaGraphicsGLRegisterBuffer(&resource, buffer_id, flags)" 
+
+Presumably this is because the way buffer that hiy selects from is 
+never involved with visualization ? 
+
+**/
+
+unsigned OEvent::downloadHiys()
+{
+    //unsigned nhiy = m_compute ? downloadHiysCompute(m_evt) : downloadHiysInterop(m_evt) ;
+    unsigned nhiy = downloadHiysCompute(m_evt) ;
+
+    LOG(info) 
+        << " nhiy " << nhiy 
+        << " --dbghit " << ( m_dbghit ? "Y" : "N" )
+        << " hitmask 0x" << std::hex << m_hitmask << std::dec
+        << " " << OpticksFlags::FlagMask(m_hitmask, true)
+        << " " << OpticksFlags::FlagMask(m_hitmask, false)
+        ;
+
+    return nhiy ; 
+}
+
+
+
+
+
+/**
 OEvent::download
 -------------------
 
@@ -462,11 +498,20 @@ In "--production" mode does not download the full event, only hits.
 
 unsigned OEvent::download()
 {
+    LOG(LEVEL) << "[" ; 
+
     if(!m_ok->isProduction()) download(m_evt, DOWNLOAD_DEFAULT);
 
     unsigned nhit = downloadHits();  
     LOG(LEVEL) << " nhit " << nhit ; 
 
+#ifdef WITH_WAY_BUFFER
+    unsigned nhiy = downloadHiys();  
+    LOG(LEVEL) << " nhiy " << nhiy ; 
+    assert( nhit == nhiy ); 
+#endif
+
+    LOG(LEVEL) << "]" ; 
     return nhit ; 
 }
 
@@ -535,6 +580,8 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
         OContext::download<float>( m_way_buffer, wy );
         if(m_dbgdownload) LOG(info) << "wy " << wy->getShapeString() ;   
     }
+
+
 #endif
 
 
@@ -591,8 +638,47 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
     return nhit ; 
 }
 
+unsigned OEvent::downloadHiysCompute(OpticksEvent* evt)
+{
+    LOG(LEVEL) << "[" ; 
+
+    OK_PROFILE("_OEvent::downloadHiysCompute");
+
+    NPY<float>* hiy = evt->getHiyData();
+
+    CBufSpec cway = m_way_buf->bufspec();  
+    assert( cway.size % 4 == 0 );
+    cway.size /= 2 ;    //  decrease size by factor of 2, increases cway "item" from 1*float4 to 2*float4 
+
+    bool verbose = m_dbghit ; 
+    TBuf tway("tway", cway );
+    unsigned nhiy = tway.downloadSelection2x4("OEvent::downloadHits", hiy, m_hitmask, verbose);
+    assert(hiy->hasShape(nhiy,2,4));
+
+    OK_PROFILE("OEvent::downloadHiysCompute");
+
+    LOG(LEVEL) 
+         << " nhiy " << nhiy
+         << " hiy " << hiy->getShapeString()
+         ; 
+
+    if(m_ok->isDumpHiy())
+    {
+        unsigned maxDump = 100 ; 
+        NPho::Dump(hiy, maxDump, "OEvent::downloadHiysCompute" ); 
+    }
+
+    LOG(LEVEL) << "]" ; 
+    return nhiy ; 
+}
+
+
+
+
+
 unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
 {
+    LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OEvent::downloadHitsInterop");
 
     NPY<float>* hit = evt->getHitData();
@@ -627,9 +713,51 @@ unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
         unsigned maxDump = 100 ; 
         NPho::Dump(hit, maxDump, "OEvent::downloadHitsInterop --dumphit,post,flgs " ); 
     }
-
+    LOG(LEVEL) << "]" ; 
     return nhit ; 
 }
+
+unsigned OEvent::downloadHiysInterop(OpticksEvent* evt)
+{
+    OK_PROFILE("_OEvent::downloadHiysInterop");
+
+    NPY<float>* hiy = evt->getHiyData();
+    NPY<float>* way = evt->getWayData();
+
+    unsigned photon_id = way->getBufferId();
+
+    CResource rway( photon_id, CResource::R );
+    CBufSpec cway = rway.mapGLToCUDA<float>();
+
+    assert( cway.size % 8 == 0 );
+    cway.size /= 8 ;    //  decrease size by factor of 8, increases cway "item" from 1*float to 2*4*float 
+
+
+    bool verbose = m_dbghit ; 
+    TBuf tway("tway", cway );
+    unsigned nhiy = tway.downloadSelection2x4("OEvent::downloadHiys", hiy, m_hitmask, verbose);
+    assert(hiy->hasShape(nhiy,2,4));
+
+
+    OK_PROFILE("OEvent::downloadHiysInterop");
+    LOG(LEVEL) 
+         << " nhiy " << nhiy
+         << " hiy " << hiy->getShapeString()
+         ; 
+
+
+    if(m_ok->isDumpHiy())
+    {
+        unsigned maxDump = 100 ; 
+        NPho::Dump(hiy, maxDump, "OEvent::downloadHiysInterop --dumphiy " ); 
+    }
+
+    return nhiy ; 
+}
+
+
+
+
 
 
 OBuf* OEvent::getSeedBuf() const  {    return m_seed_buf ; } 

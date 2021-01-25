@@ -960,13 +960,13 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     bool proceed = false ; 
     if(ctrl(OpticksBufferControl::OPTIX_INPUT_ONLY_))
     {
-         proceed = false ; 
-         LOG(error) 
-             << "NOT PROCEEDING "
-             << " name " << npy->getBufferName()
-             << " as " << OpticksBufferControl::OPTIX_INPUT_ONLY_
-             << " desc " << npy->description("skip-download") 
-             ;
+        proceed = false ; 
+        LOG(error) 
+            << "NOT PROCEEDING "
+            << " name " << npy->getBufferName()
+            << " as " << OpticksBufferControl::OPTIX_INPUT_ONLY_
+            << " desc " << npy->description("skip-download") 
+            ;
     }
     else if(ctrl(OpticksBufferControl::COMPUTE_MODE_))
     {
@@ -1162,6 +1162,14 @@ unsigned OContext::determineBufferSize(NPY<T>* npy, const char* name)
 }
 
 
+/**
+OContext::getBufferSize
+------------------------
+
+Debug buffers that return true from isDebugBufferName
+are forced to be empty in production mode running.
+
+**/
 
 template <typename T>
 unsigned OContext::getBufferSize(NPY<T>* npy, const char* name)

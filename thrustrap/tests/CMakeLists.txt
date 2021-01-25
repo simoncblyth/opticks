@@ -40,6 +40,7 @@ thrust_curand_printf.cu
 thrust_curand_printf_redirect.cu
 thrust_curand_printf_redirect2.cu
 TBuf4x4Test.cu
+TBuf2x4Test.cu
 
 )
 

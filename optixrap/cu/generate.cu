@@ -34,6 +34,8 @@ using namespace optix;
 rtDeclareVariable(unsigned int,  PNUMQUAD, , );
 rtDeclareVariable(unsigned int,  RNUMQUAD, , );
 rtDeclareVariable(unsigned int,  GNUMQUAD, , );
+rtDeclareVariable(unsigned int,  WNUMQUAD, , );
+
 
 #include "quad.h"
 #include "boundary_lookup.h"
@@ -495,7 +497,9 @@ RT_PROGRAM void generate()
 #endif
   
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
-
+#ifdef WITH_WAY_BUFFER
+    const unsigned int way_offset = photon_id*WNUMQUAD ; 
+#endif
     unsigned int genstep_id = seed_buffer[photon_id] ;      
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
@@ -573,10 +577,12 @@ RT_PROGRAM void generate()
     }
 
 #ifdef WITH_WAY_BUFFER
+    int way_parentTrackID = ghead.i.y ; // 0*4+1 is G4Track::GetTrackID of parent
+
     s.way.x = 0.f ; 
     s.way.y = 0.f ; 
     s.way.z = 0.f ; 
-    s.way.w = p.time ;   // origin time of generated photon
+    s.way.w = p.time ;   // origin time of generated photon, hmm need flags duplicated here for hit selection
 #endif
 
     // initial quadrant 
@@ -777,7 +783,8 @@ RT_PROGRAM void generate()
 
 #ifdef WITH_WAY_BUFFER
     // hmm could do this only for hits or collected ?
-    way_buffer[photon_id] = s.way ; 
+    way_buffer[way_offset+0] = make_float4( int_as_float(way_parentTrackID), s.way.w, 0.f, 0.f)  ; 
+    way_buffer[way_offset+1] = make_float4( s.way.x, s.way.y, s.way.z, unsigned_as_float(p.flags.u.w))  ; 
 #endif
 
     //  s.identity.x : nodeIndex 

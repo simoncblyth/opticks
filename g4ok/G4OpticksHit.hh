@@ -30,6 +30,8 @@ struct G4OpticksHit
     G4int         sensor_identifier ; 
     G4bool        is_cerenkov ; 
     G4bool        is_reemission ; 
+
+
 };
 
 

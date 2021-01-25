@@ -117,7 +117,7 @@ void test_count4x4()
     tph.dump<float4x4>("tph dump<float4x4>", 1, 0, num_photons );  // stride, begin, end 
 
 
-    TIsHit is_hit(hitmask) ;
+    TIsHit4x4 is_hit(hitmask) ;
     unsigned numHit = thrust::count_if(d_ph.begin(), d_ph.end(), is_hit );
 
     LOG(info) << "numHit :" << numHit ; 
@@ -149,7 +149,7 @@ void test_count4x4_ptr()
 
     thrust::device_ptr<float4x4> ptr = thrust::device_pointer_cast((float4x4*)tph.getDevicePtr()) ;
 
-    TIsHit is_hit(hitmask) ;
+    TIsHit4x4 is_hit(hitmask) ;
     unsigned numHit = thrust::count_if(ptr, ptr+num_photons, is_hit );
 
     LOG(info) << "numHit :" << numHit ; 
@@ -179,7 +179,7 @@ void test_copy4x4()
 
     tpho.dump<float4x4>("tpho dump<float4x4>", 1, 0, num_photons );  // stride, begin, end 
 
-    TIsHit is_hit(hitmask) ;
+    TIsHit4x4 is_hit(hitmask) ;
 
     unsigned numHit = thrust::count_if(d_pho.begin(), d_pho.end(), is_hit );
 
@@ -235,7 +235,7 @@ void test_copy4x4_ptr()
 
     assert(num_photons == tpho.getSize());
 
-    TIsHit is_hit(hitmask) ;
+    TIsHit4x4 is_hit(hitmask) ;
     unsigned numHit = thrust::count_if(ptr, ptr+num_photons, is_hit );
 
     LOG(info) << "numHit :" << numHit ; 

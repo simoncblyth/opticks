@@ -190,6 +190,13 @@ unsigned TBuf::downloadSelection4x4(const char* name, NPY<float>* npy, unsigned 
     return downloadSelection<float4x4>(name, npy, hitmask, verbose);
 }
 
+unsigned TBuf::downloadSelection2x4(const char* name, NPY<float>* npy, unsigned hitmask, bool verbose) const 
+{
+    return downloadSelection<float2x4>(name, npy, hitmask, verbose);
+}
+
+
+
 /**
 TBuf::downloadSelection
 ------------------------
@@ -214,7 +221,7 @@ unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, unsign
 
     unsigned long long numItems = getSize();
 
-    TIsHit is_hit(hitmask); 
+    TIsHit<T> is_hit(hitmask); 
 
     unsigned numSel = thrust::count_if(ptr, ptr+numItems, is_hit );
 
@@ -308,12 +315,27 @@ void TBuf::fill(T value) const
 
 
 
+void TBuf::dump6x4(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const 
+{
+     dump<float6x4>(msg, stride, begin, end);
+}
 void TBuf::dump4x4(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const 
 {
      dump<float4x4>(msg, stride, begin, end);
 }
+void TBuf::dump2x4(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const 
+{
+     dump<float2x4>(msg, stride, begin, end);
+}
 
 
+/**
+TBuf::dump
+-----------
+
+Streams are in float4x4.h 
+
+**/
 
 template <typename T>
 void TBuf::dump(const char* msg, unsigned long long stride, unsigned long long begin, unsigned long long end ) const 
@@ -414,7 +436,10 @@ void TBuf::repeat_to( TBuf* other, unsigned long long stride, unsigned long long
 
 
 
+template void TBuf::dump<float6x4>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
 template void TBuf::dump<float4x4>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
+template void TBuf::dump<float2x4>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
+
 template void TBuf::dump<float4>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
 template void TBuf::dump<double>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
 template void TBuf::dump<float>(const char*, unsigned long long, unsigned long long, unsigned long long) const ;
@@ -442,7 +467,7 @@ template void TBuf::upload<unsigned long long>(NPY<unsigned long long>*) const ;
 template void TBuf::fill<unsigned>(unsigned value) const ;
 template void TBuf::fill<unsigned char>(unsigned char value) const ;
 
-
+template unsigned TBuf::downloadSelection<float6x4>(const char*, NPY<float>*, unsigned, bool ) const ;
 template unsigned TBuf::downloadSelection<float4x4>(const char*, NPY<float>*, unsigned, bool ) const ;
-
+template unsigned TBuf::downloadSelection<float2x4>(const char*, NPY<float>*, unsigned, bool ) const ;
 
