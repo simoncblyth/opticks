@@ -20,7 +20,16 @@
 #include <plog/Log.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 #include <plog/Appenders/ConsoleAppender.h>
+
 #include <plog/Formatters/FuncMessageFormatter.h>
+#include <plog/Formatters/MessageOnlyFormatter.h>
+#include <plog/Formatters/TxtFormatter.h>
+#include <plog/Formatters/CsvFormatter.h>
+
+typedef plog::FuncMessageFormatter FMT ;     // useful to avoid dates and pids when comparing logs
+//typedef plog::MessageOnlyFormatter FMT ;   // really minimal 
+//typedef plog::TxtFormatter         FMT ;   // default full format 
+//typedef plog::CsvFormatter         FMT ;   // semicolon delimited full format  
 
 #include "PlainFormatter.hh"
 
@@ -68,24 +77,24 @@ PLOG\_INIT macros are used in two situations:
 #define PLOG_ECOLOR(name) \
 { \
     PLOG* _plog = new PLOG(name); \
-    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
-    static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender; \
+    static plog::RollingFileAppender<FMT> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
+    static plog::ColorConsoleAppender<FMT> consoleAppender; \
     PLOG_INIT( _plog->level, &consoleAppender, &fileAppender ); \
 } \
 
 #define PLOG_COLOR(argc, argv) \
 { \
     PLOG* _plog = new PLOG(argc, argv); \
-    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
-    static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender; \
+    static plog::RollingFileAppender<FMT> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
+    static plog::ColorConsoleAppender<FMT> consoleAppender; \
     PLOG_INIT( _plog->level, &consoleAppender, &fileAppender ); \
 } \
 
 #define PLOG_(argc, argv) \
 { \
     PLOG* _plog = new PLOG(argc, argv); \
-    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
-    static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender; \
+    static plog::RollingFileAppender<FMT> fileAppender( _plog->filename, _plog->maxFileSize, _plog->maxFiles ); \
+    static plog::ConsoleAppender<FMT> consoleAppender; \
     PLOG_INIT( _plog->level,  &consoleAppender, &fileAppender ); \
 } \
 

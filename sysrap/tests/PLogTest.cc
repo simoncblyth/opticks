@@ -19,6 +19,12 @@
 
 // om-;TEST=PLogTest om-t
 #include <plog/Log.h>
+
+#include <plog/Formatters/MessageOnlyFormatter.h>
+#include <plog/Formatters/FuncMessageFormatter.h>
+#include <plog/Formatters/TxtFormatter.h>
+#include <plog/Formatters/CsvFormatter.h>
+
 #include <plog/Appenders/ColorConsoleAppender.h>
 
 // translate from boost log levels to plog  ... but this are dangerous
@@ -38,8 +44,12 @@ using namespace plog ;
 
 int main(int, char** argv)
 {
+    //typedef plog::MessageOnlyFormatter FMT ; 
+    typedef plog::FuncMessageFormatter FMT ;     // useful for log comparisons
+    //typedef plog::TxtFormatter         FMT ;   // this the default full format 
+    //typedef plog::CsvFormatter         FMT ; 
 
-    static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
+    static plog::ColorConsoleAppender<FMT> consoleAppender;
     plog::init(plog::verbose, &consoleAppender);
 
     //plog::init(plog::debug, "PLogTest.txt");
@@ -83,5 +93,5 @@ int main(int, char** argv)
     return 0 ; 
 }
 
-
+// om-;TEST=PLogTest om-t 
 
