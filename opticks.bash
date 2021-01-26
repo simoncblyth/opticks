@@ -1769,26 +1769,44 @@ opticks-i(){
 }
 
 
+opticks-check-key()
+{
+   local msg="=== $FUNCNAME :"
+   if [ -z "$OPTICKS_KEY" ]; then 
+       echo $msg OPTICKS_KEY envvar is not defined : read the docs https://simoncblyth.bitbucket.io/opticks/docs/testing.html
+       return 1 
+   fi  
+   return 0 
+}
+
+
+opticks-t-notes(){ cat << EON
+
+Basic environment (PATH and envvars to find data) 
+should happen at profile level (or at least be invoked from there) 
+not here (and there) for clarity of a single location 
+where smth is done.
+
+Powershell presents a challenge to this principal,
+TODO:find a cross platform way of doing envvar setup 
+
+EON
+}
+
 
 opticks-t-()
 {
-   # 
-   # Basic environment (PATH and envvars to find data) 
-   # should happen at profile level (or at least be invoked from there) 
-   # not here (and there) for clarity of a single location 
-   # where smth is done.
-   #
-   # Powershell presents a challenge to this principal,
-   # TODO:find a cross platform way of doing envvar setup 
-   #
-   #
    local msg="=== $FUNCNAME : "
    local iwd=$PWD
 
    local rc=0
    opticks-check-installation
    rc=$?
-   [ "$rc" != "0" ] && echo $msg ABORT : missing installcache components : create with opticks-prepare-installation && return $rc
+   [ $rc -ne 0 ] && echo $msg ABORT : missing installcache components : create with opticks-prepare-installation && return $rc
+
+   opticks-check-key 
+   rc=$?
+   [ $rc -ne 0 ] && echo $msg ABORT : opticks-check-key failed && return $rc 
 
 
    ## if 1st arg is a directory, cd there to run ctest     
