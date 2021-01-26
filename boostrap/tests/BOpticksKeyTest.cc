@@ -41,6 +41,11 @@ int main( int argc, char** argv )
     //BOpticksKey::SetKey("X4PhysicalVolumeTest.X4PhysicalVolume.World.3ad454e0990085f20c4689fce16c0819") ; 
     BOpticksKey::SetKey(NULL);  // NULL means use the OPTICKS_KEY envvar 
     BOpticksKey* key = BOpticksKey::GetKey(); 
+    if( key == NULL ) 
+    {
+        LOG(fatal) << "key is NULL, that means you did not set the OPTICKS_KEY envvar " ; 
+        return 1 ; 
+    }    
     LOG(info) << key->desc() ; 
 
     const char* exename = PLOG::instance->args.exename() ; 

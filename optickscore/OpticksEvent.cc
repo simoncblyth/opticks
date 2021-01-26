@@ -1153,6 +1153,7 @@ void OpticksEvent::reset()
 
 void OpticksEvent::resetBuffers()
 {
+    LOG(LEVEL) << "[" ; 
     if(m_genstep_data)  m_genstep_data->reset();    
     if(m_nopstep_data)  m_nopstep_data->reset();    
     if(m_photon_data)   m_photon_data->reset();    
@@ -1165,6 +1166,8 @@ void OpticksEvent::resetBuffers()
     if(m_sequence_data) m_sequence_data->reset();    
     if(m_seed_data)     m_seed_data->reset();    
     if(m_hit_data)      m_hit_data->reset();    
+    if(m_hiy_data)      m_hiy_data->reset();    
+    LOG(LEVEL) << "]" ; 
 }
 
 void OpticksEvent::deleteBuffers()
@@ -1181,6 +1184,7 @@ void OpticksEvent::deleteBuffers()
     delete m_sequence_data ; m_sequence_data = NULL ; 
     delete m_seed_data     ; m_seed_data = NULL ; 
     delete m_hit_data      ; m_hit_data = NULL ; 
+    delete m_hiy_data      ; m_hiy_data = NULL ; 
 }
 
 void OpticksEvent::deleteAttr()
@@ -1188,6 +1192,7 @@ void OpticksEvent::deleteAttr()
     delete m_genstep_attr  ; m_genstep_attr = NULL ; 
     delete m_seed_attr     ; m_seed_attr = NULL ; 
     delete m_hit_attr      ; m_hit_attr = NULL ; 
+    delete m_hiy_attr      ; m_hiy_attr = NULL ; 
     delete m_photon_attr   ; m_photon_attr = NULL ; 
     delete m_source_attr   ; m_source_attr = NULL ; 
     delete m_nopstep_attr  ; m_nopstep_attr = NULL ; 

@@ -111,6 +111,7 @@ const char* OpticksBufferSpec::photon_compute_ = "OPTIX_INPUT_OUTPUT,BUFFER_COPY
 const char* OpticksBufferSpec::photon_interop_ = "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL,BUFFER_COPY_ON_DIRTY"  ;
 #endif
 
+
 #endif
 
 
@@ -159,6 +160,8 @@ const char* OpticksBufferSpec::debug_interop_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_
 
 const char* OpticksBufferSpec::way_compute_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY"  ;
 const char* OpticksBufferSpec::way_interop_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY"  ;
+
+
 
 const char* OpticksBufferSpec::record_compute_ = "OPTIX_OUTPUT_ONLY"  ;
 const char* OpticksBufferSpec::record_interop_ = "OPTIX_OUTPUT_ONLY"  ;

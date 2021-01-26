@@ -1132,9 +1132,11 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 OContext::determineBufferSize
 -------------------------------
 
-Mostly the size is the result of NPY::getNumQuads for RT_FORMAT_USER or
-the seed buffer the size is ni*nj*nk the product of the first three dimensions.
+For most buffers the size returned is the result of NPY::getNumQuads.
 
+For buffers with special format RT_FORMAT_USER and for the seed buffer
+the size returned is ni*nj*nk, ie the product of the first three dimensions
+of the NPY array.
 **/
 
 template <typename T>
@@ -1166,6 +1168,10 @@ unsigned OContext::determineBufferSize(NPY<T>* npy, const char* name)
 OContext::getBufferSize
 ------------------------
 
+For most buffers the size from determineBufferSize 
+comes from NPY::getNumQuads 
+(seed buffer and user format buffers are exceptions).
+
 Debug buffers that return true from isDebugBufferName
 are forced to be empty in production mode running.
 
@@ -1181,7 +1187,7 @@ unsigned OContext::getBufferSize(NPY<T>* npy, const char* name)
         assert(0);   
     } 
 
-    unsigned size = determineBufferSize( npy, name ); 
+    unsigned size = determineBufferSize( npy, name );  
 
     bool is_debug_buffer_name = isDebugBufferName(name);
     bool is_production =  m_ok->isProduction() ; 
@@ -1231,13 +1237,12 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
     RTformat format = getFormat(npy->getType(), is_seed);
     buffer->setFormat(format);  // must set format, before can set ElementSize
 
-    unsigned size = getBufferSize(npy, name);
+    unsigned size = getBufferSize(npy, name);  // mostly NPY::getNumQuads
 
     const char* label ; 
     if(     format == RT_FORMAT_USER) label = "USER";
     else if(is_seed)                  label = "SEED";
     else                              label = "QUAD";
-
 
 
     std::stringstream ss ; 
@@ -1271,6 +1276,9 @@ OContext::resizeBuffer
 -------------------------
 
 Canonical usage is from OEvent::resizeBuffers
+
+The GPU side OptiX buffer is resized based on the 
+size of the CPU side NPY array.
 
 **/
 

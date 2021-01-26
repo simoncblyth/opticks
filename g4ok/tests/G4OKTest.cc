@@ -369,6 +369,20 @@ int G4OKTest::rc() const
 }
 
 
+std::string banner(int ievt, char c)
+{
+    std::string mkr(100, c) ;
+    std::stringstream ss ; 
+    ss << std::endl ; 
+    ss << mkr << " " << std::endl  ; 
+    ss << mkr << " " << ievt << std::endl ; 
+    ss << mkr << " " << std::endl  ; 
+    ss << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -378,8 +392,10 @@ int main(int argc, char** argv)
 
     for(int ievt=0 ; ievt < nevt ; ievt++)
     {
+       std::cout << banner(ievt,'['); 
        t.collectGensteps(ievt);
        t.propagate(ievt);
+       std::cout << banner(ievt,']'); 
     }
 
     return t.rc() ;

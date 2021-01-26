@@ -137,6 +137,23 @@ rtBufferMarkDirty for synchronizations to take place. Calling rtBufferMarkDirty
 after rtBufferUnmap will cause a synchronization from the buffer device pointer
 at launch and override any pending synchronization from the host.
 
+buffer vs buf vs array
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+buffer
+    the OptiX buffer
+buf 
+    OBuf wrapper for the buffer
+arr
+    arrays from the OpticksEvent for CPU side inputs or copies of outputs 
+
+
+The buffer spec come from optickscore/OpticksBufferSpec.cc
+
+The WAY buffer should be regarded as an optional extension of the photon buffer
+
+TODO: try to make the way buffer choose-able at runtime rather than compiletime
+
 **/
 
 void OEvent::createBuffers(OpticksEvent* evt)
@@ -168,19 +185,10 @@ void OEvent::createBuffers(OpticksEvent* evt)
 
     OpticksBufferControl* photonCtrl = evt->getPhotonCtrl();
     m_photonMarkDirty = photonCtrl->isSet("BUFFER_COPY_ON_DIRTY") ;
-
     m_photon_buffer = m_ocontext->createBuffer<float>( photon, "photon");
 
     m_context["photon_buffer"]->set( m_photon_buffer );
     m_photon_buf = new OBuf("photon", m_photon_buffer);
-
-#ifdef WITH_DEBUG_BUFFER
-    NPY<float>* debug_ = evt->getDebugData() ; 
-    assert(debug_); 
-    m_debug_buffer = m_ocontext->createBuffer<float>( debug_, "debug"); 
-    m_context["debug_buffer"]->set( m_debug_buffer );
-    m_debug_buf = new OBuf("debug", m_debug_buffer);
-#endif
 
 #ifdef WITH_WAY_BUFFER
     NPY<float>* way = evt->getWayData() ; 
@@ -190,6 +198,14 @@ void OEvent::createBuffers(OpticksEvent* evt)
     m_way_buf = new OBuf("way", m_way_buffer);
 #endif
 
+
+#ifdef WITH_DEBUG_BUFFER
+    NPY<float>* debug_ = evt->getDebugData() ; 
+    assert(debug_); 
+    m_debug_buffer = m_ocontext->createBuffer<float>( debug_, "debug"); 
+    m_context["debug_buffer"]->set( m_debug_buffer );
+    m_debug_buf = new OBuf("debug", m_debug_buffer);
+#endif
 
 #ifdef WITH_SOURCE
     NPY<float>* source = evt->getSourceData() ; 
@@ -298,6 +314,7 @@ OEvent::resizeBuffers
 ----------------------
 
 Internally called by OEvent::upload
+GPU side buffers are resized based on the the CPU side array sizes.
 
 **/
 
@@ -317,6 +334,13 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
     NPY<float>* photon = evt->getPhotonData() ; 
     assert(photon);
     m_ocontext->resizeBuffer<float>(m_photon_buffer,  photon, "photon");
+
+#ifdef WITH_WAY_BUFFER
+    NPY<float>* way = evt->getWayData() ; 
+    assert(way);
+    m_ocontext->resizeBuffer<float>(m_way_buffer,  way, "way");
+#endif
+
 
 #ifdef WITH_SOURCE
     NPY<float>* source = evt->getSourceData() ; 
@@ -511,13 +535,13 @@ unsigned OEvent::download()
         << " nhiy " << nhiy ; 
     if( nhit != nhiy )
     {
-        LOG(info) 
+        LOG(fatal) 
             << " nhit " << nhit 
             << " nhiy " << nhiy 
             ; 
     }
 
-    //assert( nhit == nhiy ); 
+    assert( nhit == nhiy ); 
 #endif
 
     LOG(LEVEL) << "]" ; 
@@ -620,7 +644,7 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
     OK_PROFILE("_OEvent::downloadHitsCompute");
 
     NPY<float>* hit = evt->getHitData();
-
+    LOG(LEVEL) << "into hit array :" << hit->getShapeString();  
     CBufSpec cpho = m_photon_buf->bufspec();  
     assert( cpho.size % 4 == 0 );
     cpho.size /= 4 ;    //  decrease size by factor of 4, increases cpho "item" from 1*float4 to 4*float4 
@@ -648,6 +672,12 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
 }
 
 #ifdef WITH_WAY_BUFFER
+/**
+OEvent::downloadHiysCompute
+----------------------------
+
+
+**/
 unsigned OEvent::downloadHiysCompute(OpticksEvent* evt)
 {
     LOG(LEVEL) << "[" ; 
@@ -655,6 +685,7 @@ unsigned OEvent::downloadHiysCompute(OpticksEvent* evt)
     OK_PROFILE("_OEvent::downloadHiysCompute");
 
     NPY<float>* hiy = evt->getHiyData();
+    LOG(LEVEL) << "into hiy array :" << hiy->getShapeString();  
 
     CBufSpec cway = m_way_buf->bufspec();  
     assert( cway.size % 4 == 0 );
@@ -662,7 +693,8 @@ unsigned OEvent::downloadHiysCompute(OpticksEvent* evt)
 
     bool verbose = m_dbghit ; 
     TBuf tway("tway", cway );
-    unsigned nhiy = tway.downloadSelection2x4("OEvent::downloadHits", hiy, m_hitmask, verbose);
+    unsigned nhiy = tway.downloadSelection2x4("OEvent::downloadHiys", hiy, m_hitmask, verbose);
+    // hiy buffer (0,2,4) resized to fit downloaded hiys (nhiy,4,4)
     assert(hiy->hasShape(nhiy,2,4));
 
     OK_PROFILE("OEvent::downloadHiysCompute");
@@ -730,6 +762,8 @@ unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
 #ifdef WITH_WAY_BUFFER
 unsigned OEvent::downloadHiysInterop(OpticksEvent* evt)
 {
+    assert(0) ; // not used 
+ 
     OK_PROFILE("_OEvent::downloadHiysInterop");
 
     NPY<float>* hiy = evt->getHiyData();
