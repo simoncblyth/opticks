@@ -45,12 +45,12 @@ opticks-prepend-prefix /usr/local/opticks_externals/boost
 opticks-check-prefix
 [ $? -ne 0 ] && echo ABORT && sleep 1000000000
 
-# Sourcing opticks-setup.sh sets the path envvars for using Opticks executables.  
-# To avoid output on starting every terminal session redirect it to /dev/null.  
+# opticks-setup sets the path envvars for using Opticks executables.  
+# To avoid output on starting every terminal session the output is redirected to  /dev/null
+# Remove this redirection to see any error messages.
+opticks-setup > /dev/null
+[ $? -ne 0 ] && echo ERROR running opticks-setup && sleep 1000000000
 
-if [ -f "$OPTICKS_PREFIX/bin/opticks-setup.sh" ]; then 
-    source $OPTICKS_PREFIX/bin/opticks-setup.sh 1> /dev/null 
-else
-    echo $OPTICKS_PREFIX/bin/opticks-setup.sh does not exist : it should have been generated during opticks-full
-fi 
+
+
 
