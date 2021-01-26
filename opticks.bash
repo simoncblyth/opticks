@@ -789,6 +789,11 @@ opticks-setup-generate(){
     rc=$?
     [ ! $rc -eq 0 ] && return $rc
 
+    : check OPTICKS_COMPUTE_CAPABILITY envvar 
+    opticks-check-compute-capability
+    rc=$?
+    [ ! $rc -eq 0 ] && return $rc
+
     : check Geant4 is on CMAKE_PREFIX_PATH 
     opticks-check-geant4    
     rc=$?
@@ -1273,6 +1278,60 @@ opticks-check-prefix(){
         echo $msg ERROR OPTICKS_PREFIX $OPTICKS_PREFIX directory MUST NOT be the same as source directory opticks-home:$(opticks-home)  
         return 3
     fi 
+    return 0 
+}
+
+
+opticks-check-compute-capability-msg(){ cat << EON
+$FUNCNAME
+=======================================
+
+Envvar OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY
+
+The OPTICKS_COMPUTE_CAPABILITY must be set appropriately 
+for your GPU as it controls the CUDA compilation flags.
+See cmake/Modules/OpticksCUDAFlags.cmake
+
+To obtain the compute capability of your GPU run the 
+deviceQuery program from the CUDA samples, it 
+reports a line like the below::
+
+    CUDA Capability Major/Minor version number:    7.0
+
+This corresponds setting the below envvar in your ~/.opticks_config::
+
+    export OPTICKS_COMPUTE_CAPABILITY=70
+
+Opticks/OptiX supports a compute capability greater than or equal to 30 
+although modern GPUs are typically 70 or 75
+
+EON
+}
+
+opticks-check-compute-capability(){
+    local msg="=== $FUNCNAME :"
+    if [ -z "$OPTICKS_COMPUTE_CAPABILITY" ]; then 
+        echo $msg ERROR no OPTICKS_COMPUTE_CAPABILITY envvar
+        opticks-check-compute-capability-msg
+        return 1 
+    fi 
+    local cc=$OPTICKS_COMPUTE_CAPABILITY
+
+    [ $cc -lt 30 ] 2> /dev/null
+
+    if [ $? -ne 0 ]; then 
+       echo $msg OPTICKS_COMPUTE_CAPABILITY $cc : ERROR envvar must contain an integer expression such as 70 or 75  
+       opticks-check-compute-capability-msg
+       return 2
+    fi  
+
+    if [ $cc -lt 30 ]; then 
+        echo $msg OPTICKS_COMPUTE_CAPABILITY $cc : ERROR it must must be 30 or more  
+        opticks-check-compute-capability-msg
+        return 3
+    else
+        echo $msg OPTICKS_COMPUTE_CAPABILITY $cc : looking good it is an integer expression of  30 or more 
+    fi
     return 0 
 }
 
