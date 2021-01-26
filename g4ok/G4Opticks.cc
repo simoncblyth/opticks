@@ -31,6 +31,8 @@
 #include "NPY.hpp"
 #include "TorchStepNPY.hpp"
 
+#include "OpticksSwitches.h"
+
 #include "CTraverser.hh"
 #include "CMaterialTable.hh"
 #include "CGenstepCollector.hh"
@@ -291,7 +293,9 @@ G4Opticks::G4Opticks()
     m_gensteps(NULL),
     m_genphotons(NULL),
     m_hits(NULL),
+    m_hiys(NULL),
     m_num_hits(0),
+    m_num_hiys(0),
     m_g4hit_collector(NULL),
     m_g4photon_collector(NULL),
     m_genstep_idx(0),
@@ -968,6 +972,14 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
         m_hits = event->getHitData()->clone() ; 
         m_num_hits = m_hits->getNumItems() ; 
 
+#ifdef WITH_WAY_BUFFER
+        m_hiys = event->getHiyData()->clone() ; 
+        m_num_hiys = m_hits->getNumItems() ; 
+        LOG(fatal) << " WAY_BUFFER num_hiys " << m_num_hiys ;  
+#else
+        LOG(fatal) << " no-WAY_BUFFER " ;  
+#endif
+
         m_hits_wrapper->setPhotons( m_hits ); 
 
 
@@ -983,7 +995,6 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
                 m_g4evt->saveSourceData( m_genphotons ) ; 
             }
         }
-
 
         m_opmgr->reset();   
         // reset : clears OpticksEvent buffers, excluding gensteps

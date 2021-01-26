@@ -452,6 +452,7 @@ unsigned OEvent::downloadHits()
 }
 
 
+
 /**
 OEvent::downloadHiys
 ---------------------
@@ -468,6 +469,7 @@ never involved with visualization ?
 
 **/
 
+#ifdef WITH_WAY_BUFFER
 unsigned OEvent::downloadHiys()
 {
     //unsigned nhiy = m_compute ? downloadHiysCompute(m_evt) : downloadHiysInterop(m_evt) ;
@@ -483,9 +485,7 @@ unsigned OEvent::downloadHiys()
 
     return nhiy ; 
 }
-
-
-
+#endif
 
 
 /**
@@ -507,8 +507,17 @@ unsigned OEvent::download()
 
 #ifdef WITH_WAY_BUFFER
     unsigned nhiy = downloadHiys();  
-    LOG(LEVEL) << " nhiy " << nhiy ; 
-    assert( nhit == nhiy ); 
+    LOG(LEVEL) 
+        << " nhiy " << nhiy ; 
+    if( nhit != nhiy )
+    {
+        LOG(info) 
+            << " nhit " << nhit 
+            << " nhiy " << nhiy 
+            ; 
+    }
+
+    //assert( nhit == nhiy ); 
 #endif
 
     LOG(LEVEL) << "]" ; 
@@ -638,6 +647,7 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
     return nhit ; 
 }
 
+#ifdef WITH_WAY_BUFFER
 unsigned OEvent::downloadHiysCompute(OpticksEvent* evt)
 {
     LOG(LEVEL) << "[" ; 
@@ -671,7 +681,7 @@ unsigned OEvent::downloadHiysCompute(OpticksEvent* evt)
     LOG(LEVEL) << "]" ; 
     return nhiy ; 
 }
-
+#endif
 
 
 
@@ -717,6 +727,7 @@ unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
     return nhit ; 
 }
 
+#ifdef WITH_WAY_BUFFER
 unsigned OEvent::downloadHiysInterop(OpticksEvent* evt)
 {
     OK_PROFILE("_OEvent::downloadHiysInterop");
@@ -732,19 +743,16 @@ unsigned OEvent::downloadHiysInterop(OpticksEvent* evt)
     assert( cway.size % 8 == 0 );
     cway.size /= 8 ;    //  decrease size by factor of 8, increases cway "item" from 1*float to 2*4*float 
 
-
     bool verbose = m_dbghit ; 
     TBuf tway("tway", cway );
     unsigned nhiy = tway.downloadSelection2x4("OEvent::downloadHiys", hiy, m_hitmask, verbose);
     assert(hiy->hasShape(nhiy,2,4));
-
 
     OK_PROFILE("OEvent::downloadHiysInterop");
     LOG(LEVEL) 
          << " nhiy " << nhiy
          << " hiy " << hiy->getShapeString()
          ; 
-
 
     if(m_ok->isDumpHiy())
     {
@@ -754,7 +762,7 @@ unsigned OEvent::downloadHiysInterop(OpticksEvent* evt)
 
     return nhiy ; 
 }
-
+#endif
 
 
 

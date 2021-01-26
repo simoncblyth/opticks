@@ -6,6 +6,10 @@
 
     OEvent=INFO OKTest --save --compute --dumphit --dumphiy
 
+    OEvent=INFO OKTest --save --dumphit --dumphiy    ##
+
+    OEvent=INFO lldb_ -- OKTest --save --dumphit --dumphiy
+
     ipython -i ~/opticks/ana/way_buffer.py 
 
     ipython > run ~/opticks/ana/way_buffer.py  

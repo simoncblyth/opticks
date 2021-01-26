@@ -327,7 +327,9 @@ class G4OK_API G4Opticks
         NPY<float>*                m_gensteps ; 
         NPY<float>*                m_genphotons ; 
         NPY<float>*                m_hits ; 
+        NPY<float>*                m_hiys ; 
         unsigned                   m_num_hits ; 
+        unsigned                   m_num_hiys ; 
     private:
         // minimal instrumentation from the G4 side of things 
         CPhotonCollector*          m_g4hit_collector ; 
