@@ -164,6 +164,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_sequence_data(NULL),
     m_seed_data(NULL),
     m_hit_data(NULL),
+    m_hiy_data(NULL),
 
     m_photon_ctrl(NULL),
     m_source_ctrl(NULL),
@@ -180,6 +181,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_sequence_attr(NULL),
     m_seed_attr(NULL),
     m_hit_attr(NULL),
+    m_hiy_attr(NULL),
 
     m_records(NULL),
     m_photons(NULL),
@@ -209,6 +211,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_sequence_spec(NULL),
     m_seed_spec(NULL),
     m_hit_spec(NULL),
+    m_hiy_spec(NULL),
 
     m_sibling(NULL),
     m_geotestconfig(NULL),
