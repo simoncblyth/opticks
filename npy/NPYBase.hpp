@@ -212,8 +212,8 @@ class NPY_API NPYBase {
        virtual void setQuad(const glm::vec4& vec, unsigned int i, unsigned int j, unsigned int k) = 0 ;
        virtual void setQuad(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k) = 0 ;
 
-       virtual glm::vec4  getQuadF(unsigned int i, unsigned int j, unsigned int k ) const  = 0 ; 
-       virtual glm::ivec4 getQuadI(unsigned int i, unsigned int j, unsigned int k ) const = 0 ; 
+       virtual glm::vec4  getQuadF( int i,  int j,  int k ) const  = 0 ; 
+       virtual glm::ivec4 getQuadI( int i,  int j,  int k ) const = 0 ; 
 
        virtual void save(const char* path) const = 0;
        virtual void save(const char* dir, const char* name) const = 0;

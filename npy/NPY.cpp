@@ -2929,13 +2929,13 @@ Union type shifting setters.
 
 
 template <typename T> 
-void NPY<T>::setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k )
+void NPY<T>::setQuadI(const glm::ivec4& vec,  int i,  int j,  int k )
 {
     for(unsigned int l=0 ; l < 4 ; l++) setInt(i,j,k,l,vec[l]); 
 }
 
 template <typename T> 
-void NPY<T>::setQuadI(const nivec4& vec, unsigned int i, unsigned int j, unsigned int k )
+void NPY<T>::setQuadI(const nivec4& vec,  int i,  int j,  int k )
 {
     setInt(i,j,k,0,vec.x); 
     setInt(i,j,k,1,vec.y); 
@@ -2944,13 +2944,13 @@ void NPY<T>::setQuadI(const nivec4& vec, unsigned int i, unsigned int j, unsigne
 }
 
 template <typename T> 
- void NPY<T>::setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j, unsigned int k )
+void NPY<T>::setQuadU(const glm::uvec4& vec,  int i,  int j,  int k )
 {
     for(unsigned int l=0 ; l < 4 ; l++) setUInt(i,j,k,l,vec[l]); 
 }
 
 template <typename T> 
- void NPY<T>::setQuadU(const nuvec4& vec, unsigned int i, unsigned int j, unsigned int k )
+ void NPY<T>::setQuadU(const nuvec4& vec,  int i,  int j,  int k )
 {
     setUInt(i,j,k,0,vec.x); 
     setUInt(i,j,k,1,vec.y); 
@@ -3007,7 +3007,7 @@ will use the appropriate method for the array typo::
 **/
 
 template <typename T> 
-glm::vec4 NPY<T>::getQuadF(unsigned int i, unsigned int j, unsigned int k) const 
+glm::vec4 NPY<T>::getQuadF( int i,  int j,  int k) const 
 {
     glm::vec4 vec ; 
     for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
@@ -3040,7 +3040,7 @@ Type shifting getter, allowing to pull ints out of a float array.
 **/
 
 template <typename T> 
-glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j, unsigned int k) const 
+glm::ivec4 NPY<T>::getQuadI( int i,  int j,  int k) const 
 {
     glm::ivec4 vec ; 
     for(unsigned l=0 ; l < 4 ; l++) vec[l] = getInt(i,j,k,l);   // changed from getValue Aug18 2018 
@@ -3048,7 +3048,7 @@ glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j, unsigned int k) cons
 }
 
 template <typename T> 
- glm::uvec4 NPY<T>::getQuadU(unsigned int i, unsigned int j, unsigned int k) const 
+glm::uvec4 NPY<T>::getQuadU( int i,  int j,  int k) const 
 {
     glm::uvec4 vec ; 
     for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getUInt(i,j,k,l); 

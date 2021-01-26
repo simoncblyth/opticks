@@ -337,10 +337,10 @@ class NPY_API NPY : public NPYBase {
 
 
        /// union type shifting setters
-       void         setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
-       void         setQuadI(const     nivec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
-       void         setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
-       void         setQuadU(const     nuvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
+       void         setQuadI(const glm::ivec4& vec,  int i,  int j=0,  int k=0 );
+       void         setQuadI(const     nivec4& vec,  int i,  int j=0,  int k=0 );
+       void         setQuadU(const glm::uvec4& vec,  int i,  int j=0,  int k=0 );
+       void         setQuadU(const     nuvec4& vec,  int i,  int j=0,  int k=0 );
 
        void         setPart( const npart& part, unsigned int i ); ///  parts are comprised of four quads
 
@@ -349,9 +349,9 @@ class NPY_API NPY : public NPYBase {
        nvec4        getVQuad(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
 
        ///  quad getters  : NB when no union type shifting is needed its best to use the templated vec getter : getQuad_()
-       glm::vec4    getQuadF(unsigned int i,  unsigned int j=0, unsigned int k=0 ) const ;
-       glm::ivec4   getQuadI(unsigned int i, unsigned int j=0, unsigned int k=0 ) const ;
-       glm::uvec4   getQuadU(unsigned int i, unsigned int j=0, unsigned int k=0 ) const ;
+       glm::vec4    getQuadF( int i,  int j=0,  int k=0 ) const ;
+       glm::ivec4   getQuadI( int i,  int j=0,  int k=0 ) const ;
+       glm::uvec4   getQuadU( int i,  int j=0,  int k=0 ) const ;
 
        // Mat4 
        void         setMat4( const glm::mat4& mat, int i, int j_=-1 , bool transpose=false );

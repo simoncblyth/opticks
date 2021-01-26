@@ -437,8 +437,8 @@ std::string GPho::desc(unsigned i) const
     {
          _way0 = true ; 
          _way1 = true ; 
-         glm::vec4 way0 = m_way->getQuad_(i, 0); 
-         glm::vec4 way1 = m_way->getQuad_(i, 1); 
+         glm::vec4  way0 = m_way->getQuad_(i, 0); 
+         glm::uvec4 way1 = m_way->getQuadU(i, 1); 
          if(_way0) ss << " way0 " << std::setw(20) << gpresent(way0) ; 
          if(_way1) ss << " way1 " << std::setw(20) << gpresent(way1) ; 
     }
