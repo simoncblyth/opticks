@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 
 #include "SYSRAP_API_EXPORT.hh"
 
