@@ -198,6 +198,32 @@ unsigned GenstepNPY::getGenstepType() const
     return m_ctrl.x ; 
 }
 
+/**
+GenstepNPY::setOriginTrackID
+------------------------------
+
+m_ctrl.y seems to be unused by torch gensteps, 
+but it is used for OriginTrackID for "real" gensteps
+hence for debugging with for example with g4ok/tests/G4OKTest.cc
+it is handy to be able to set this.
+
+**/
+
+void GenstepNPY::setOriginTrackID(unsigned trackID)
+{
+    m_ctrl.y = trackID ;  // eg OpticksGenstep_TORCH
+}
+unsigned GenstepNPY::getOriginTrackID() const 
+{
+    return m_ctrl.y ; 
+}
+
+
+
+
+
+
+
 
 void GenstepNPY::setMaterialLine(unsigned int ml)
 {

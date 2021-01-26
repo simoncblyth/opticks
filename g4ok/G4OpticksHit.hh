@@ -35,5 +35,34 @@ struct G4OpticksHit
 };
 
 
+/**
+G4OpticksHitExtra
+-------------------
+
+This extra hit information is only filled 
+when WITH_WAY_BUFFER from optickscore/OpticksSwitches.h 
+is defined.
+
+t0 
+   initial time of the first photon at generation from the genstep 
+   obtained some other particle. This time is obtained immediately 
+   after generation before starting the "bounce" loop 
+
+boundary_pos
+   global frame position of the photon when it crosses a boundary 
+   configured by (TODO: lookup how to configure which boundary to record)) 
+
+
+**/
+
+struct G4OpticksHitExtra
+{
+    G4ThreeVector boundary_pos ; 
+    G4double      boundary_time ;     
+
+    G4double      origin_time ;     
+    G4int         origin_trackID ; 
+};
+
 
 

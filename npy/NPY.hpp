@@ -161,6 +161,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_interleaved( const std::vector<NPYBase*>& srcs ); 
    public:
        static unsigned compare( const NPY<T>* a, const NPY<T>* b, bool dump ); 
+       static unsigned compare_element_jk(const NPY<T>* a, const NPY<T>* b, int j, int k, bool dump );
    public:
        // ctor takes ownership of a copy of the inputs 
        NPY(const std::vector<int>& shape, const T*  data            , std::string& metadata) ;
@@ -293,10 +294,12 @@ class NPY_API NPY : public NPYBase {
        unsigned getUSum(unsigned int j, unsigned int k) const ;
 
        T            getValueFlat(unsigned idx) const ;
-       T            getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
-       float        getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
-       unsigned int getUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
-       int          getInt(  unsigned int i, unsigned int j, unsigned int k, unsigned int l=0) const ;
+       T            getValue( int i,  int j,  int k,  int l=0) const ;
+       float        getFloat( int i,  int j,  int k,  int l=0) const ;
+
+        // -ve indices are relative to ni, nj, nk, nl  
+       unsigned     getUInt(  int i,  int j,  int k,  int l=0) const ;
+       int          getInt(   int i,  int j,  int k,  int l=0) const ;
 
        void         getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
 
@@ -304,10 +307,14 @@ class NPY_API NPY : public NPYBase {
        charfour     getChar4( unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1 );
 
        void         setValueFlat(unsigned idx, T value);
-       void         setValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l, T value);
-       void         setFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l, float value);
-       void         setUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value);
-       void         setInt(  unsigned int i, unsigned int j, unsigned int k, unsigned int l, int value);
+       void         setValue( int i,  int j,  int k,  int l, T value);
+       void         setFloat( int i,  int j,  int k,  int l, float value);
+
+
+        // -ve indices are relative to ni, nj, nk, nl  
+       void         setUInt(  int i,  int j,  int k,  int l,  unsigned  value);
+       void         setInt(   int i,  int j,  int k,  int l,  int       value);
+
 
        void         bitwiseOrUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value);
 

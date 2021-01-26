@@ -117,7 +117,7 @@ class NPY_API NPYBase {
        unsigned int getDimensions() const ;  // TODO: move all usage to getNumDimensions 
        std::string  getShapeString(unsigned int ifr=0) const ;
        unsigned int getShape(int dim) const ;
-       unsigned long long getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
+       unsigned long long getValueIndex(int i, int j, int k, int l=0, int m=0) const ;
        unsigned long long getNumValues(unsigned int from_dim=0) const ;
 
        BMeta*        getParameters() const ;

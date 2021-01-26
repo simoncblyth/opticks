@@ -38,7 +38,8 @@ struct State
    float ureflectcheat ;  
 #endif
 #ifdef WITH_WAY_BUFFER
-   float4 way ;  
+   float4 way0 ;  
+   float4 way1 ;  
 #endif
 
 };

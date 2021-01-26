@@ -83,6 +83,10 @@ class NPY_API GenstepNPY {
        unsigned getNumPhotons() const ;
        unsigned getMaterialLine() const ;
        unsigned getGenstepType() const ;
+   public:  
+       // sets into m_ctrl
+       void setOriginTrackID(unsigned trackID);
+       unsigned getOriginTrackID() const ; 
    private:
        void setGenstepType(unsigned gentype);  
        // invoked by addStep using the ctor argument type 

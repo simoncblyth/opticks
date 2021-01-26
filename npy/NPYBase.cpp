@@ -664,8 +664,16 @@ const NPYSpec* NPYBase::getBufferSpec() const
 }
 
 
-unsigned long long NPYBase::getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m) const  
+unsigned long long NPYBase::getValueIndex(int i_, int j_, int k_, int l_, int m_) const  
 {
+    // -ve indice is relative to that dimension, so -1 for the last 
+    unsigned i = i_ < 0 ? m_ni + i_ : i_ ; 
+    unsigned j = j_ < 0 ? m_nj + j_ : j_ ; 
+    unsigned k = k_ < 0 ? m_nk + k_ : k_ ; 
+    unsigned l = l_ < 0 ? m_nl + l_ : l_ ; 
+    unsigned m = m_ < 0 ? m_nm + m_ : m_ ; 
+
+    //ULL ni = m_ni == 0 ? 1ull : ULL(m_ni) ;
     ULL nj = m_nj == 0 ? 1ull : ULL(m_nj) ;
     ULL nk = m_nk == 0 ? 1ull : ULL(m_nk) ;
     ULL nl = m_nl == 0 ? 1ull : ULL(m_nl) ;

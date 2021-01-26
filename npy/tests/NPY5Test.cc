@@ -75,14 +75,44 @@ void test_make(int n)
     }
 }
 
+
+void test_compare_element_jk()
+{
+    unsigned ni = 100 ; 
+    NPY<unsigned>* a = NPY<unsigned>::make(ni, 4, 4 ); 
+    a->fillIndexFlat(); 
+
+    NPY<unsigned>* b = NPY<unsigned>::make(ni, 2, 4 ); 
+    b->fillIndexFlat(); 
+
+    int j = -1 ;  // last of nj dimension which is 3 for a and 1 for b 
+    int k = -1 ;  // last of nk dimension which is 3 for both a and b 
+    int l = 0 ; 
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        unsigned value = 0xc0ffee + i ; 
+        a->setUInt(i, j, k, l, value ); 
+        b->setUInt(i, j, k, l, value ); 
+    }
+
+    bool dump = true ; 
+    unsigned mismatch = NPY<unsigned>::compare_element_jk( a, b, j, k, dump ); 
+    LOG(info) << " mismatch " << mismatch ;  
+
+    assert(mismatch == 0 ); 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    int n = argc > 1 ? atoi(argv[1]) : 10 ; 
+
+    //int n = argc > 1 ? atoi(argv[1]) : 10 ; 
 
     //test_row_major_serialization(); 
-
-    test_make(n); 
+    //test_make(n); 
+    test_compare_element_jk(); 
 
     return 0 ; 
 }

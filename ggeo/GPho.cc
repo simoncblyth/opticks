@@ -82,12 +82,39 @@ void GPho::setOpt(const char* opt)
     m_opt = opt ? strdup(opt) : DEFAULT_OPT ; 
 }
 
+/**
+GPho::setPhotons
+------------------
+
+The way array is only available when optickscore/OpticksSwitches.h:WITH_WAY_BUFFER is defined. 
+When there us no *way* use NULL for the argmument.
+
+The way array provides extra information about the photons such as the original 
+start time and a boundary_pos at a configurable border along the path of the photon.
+
+**/
+
 void GPho::setPhotons(const  NPY<float>* photons)
 {
     m_photons = photons ; 
+
+    const void* aux = photons->getAux(); 
+    const NPY<float>* way = aux ? static_cast<const NPY<float>*>(aux) : NULL ; 
+    m_way = way ; 
+
     assert( m_photons ); 
     assert( m_photons->hasShape(-1,4,4) );
     m_num_photons = m_photons->getNumItems() ;
+
+    if(m_way)
+    {
+        assert( m_way->hasShape(m_num_photons, 2, 4)); 
+        bool dump = false ;
+        unsigned mismatch = wayConsistencyCheck(dump); 
+        if(mismatch > 0 ) wayConsistencyCheck(true) ; 
+        assert( mismatch == 0 ); 
+    }
+
     m_msk = m_photons->getMsk();  
     if(m_msk)
     {
@@ -95,6 +122,45 @@ void GPho::setPhotons(const  NPY<float>* photons)
         assert( num_origin_indices == m_num_photons && "associated masks are required to have been already applied to the photons" ); 
     }
 }
+
+/**
+GPho::wayConsistencyCheck
+--------------------------
+
+Check consistency of the flags and index between the *photon* and *way* arrays. 
+
+**/
+
+unsigned GPho::wayConsistencyCheck(bool dump)
+{
+    assert(m_photons);     
+    assert(m_way);     
+
+    int j_flags = -1 ;  // last quad
+    int k_flags = 3 ;  // last element of last quad (-1 would work too)
+
+    int j_index = -1 ;  // last quad 
+    int k_index = 2 ;  // penultimate element of last quad (-2 would work fine too)
+
+    unsigned mismatch = 0 ; 
+    unsigned mismatch_flags = NPY<float>::compare_element_jk( m_photons, m_way, j_flags, k_flags, dump ); 
+    unsigned mismatch_index = NPY<float>::compare_element_jk( m_photons, m_way, j_index, k_index, dump ); 
+    
+    mismatch += mismatch_flags ; 
+    mismatch += mismatch_index ; 
+
+    LOG(info) 
+        << " mismatch_flags " << mismatch_flags
+        << " mismatch_index " << mismatch_index
+        ;
+
+    return mismatch ; 
+}
+
+
+
+
+
 
 unsigned GPho::getNumPhotons() const 
 {
@@ -104,12 +170,68 @@ const NPY<float>* GPho::getPhotons() const
 {
     return m_photons ; 
 }
+const NPY<float>* GPho::getWay() const 
+{
+    return m_way ; 
+}
+
+bool GPho::hasWay() const 
+{
+    return m_way != NULL ; 
+}
+/**
+GPho::getWayPositionTime
+-------------------------
+
+Will assert if m_way is NULL, check before calling with hasWay.
+
+**/
+glm::vec4 GPho::getWayPositionTime(unsigned i) const 
+{
+    assert( m_way ); 
+    glm::vec4 q0 = m_way->getQuad_(i,0);
+    return q0 ; 
+}
+/**
+GPho::getWayOriginTime
+------------------------
+
+Will assert if m_way is NULL, check before calling with hasWay.
+
+**/
+float GPho::getWayOriginTime(unsigned i) const 
+{
+    assert( m_way ); 
+    glm::vec4 q1 = m_way->getQuad_(i,1);
+    return q1.x ; 
+}
+
+/**
+GPho::getWayOriginTrackID
+----------------------------
+
+Will assert if m_way is NULL, check before calling with hasWay.
+
+**/
+int GPho::getWayOriginTrackID(unsigned i) const 
+{
+    assert( m_way ); 
+    glm::ivec4 q1 = m_way->getQuadI(i,1);
+    return q1.y ; 
+}
+
+
+
+
+
+
 
 glm::vec4 GPho::getPositionTime(unsigned i) const 
 {
     glm::vec4 post = m_photons->getQuad_(i,0);
     return post ; 
 }
+
 glm::vec4 GPho::getDirectionWeight(unsigned i) const 
 {
     glm::vec4 dirw = m_photons->getQuad_(i,1);
@@ -244,7 +366,10 @@ void GPho::saveLocalPhotons(const char* path) const
 std::string GPho::desc() const 
 {
     std::stringstream ss ;
-    ss << "GPho " << ( m_photons ? m_photons->getShapeString() : "-" ) ; 
+    ss << "GPho " 
+       << " ph " << ( m_photons ? m_photons->getShapeString() : "-" ) 
+       << " wy " << ( m_way ? m_way->getShapeString() : "-" ) 
+       ; 
     return ss.str();
 }
 
@@ -291,6 +416,8 @@ std::string GPho::desc(unsigned i) const
     bool _polw = BStr::Contains(m_opt, "polw", ',' ) ;
     bool _flgs = BStr::Contains(m_opt, "flgs", ',' ) ;
     bool _okfl = BStr::Contains(m_opt, "okfl", ',' ) ;
+    bool _way0 = BStr::Contains(m_opt, "way0", ',' ) ;
+    bool _way1 = BStr::Contains(m_opt, "way1", ',' ) ;
 
     std::stringstream ss ;
     ss << " i " << std::setw(7) << i ; 
@@ -305,6 +432,16 @@ std::string GPho::desc(unsigned i) const
     if(_polw) ss << " polw " << std::setw(20) << gpresent(polw) ;
     if(_flgs) ss << " flgs " << std::setw(20) << gpresent(flgs) ;
     if(_okfl) ss << " okfl " << std::setw(20) << okfl.brief() ;
+
+    if(m_way)
+    {
+         _way0 = true ; 
+         _way1 = true ; 
+         glm::vec4 way0 = m_way->getQuad_(i, 0); 
+         glm::vec4 way1 = m_way->getQuad_(i, 1); 
+         if(_way0) ss << " way0 " << std::setw(20) << gpresent(way0) ; 
+         if(_way1) ss << " way1 " << std::setw(20) << gpresent(way1) ; 
+    }
 
     return ss.str();
 }
@@ -380,6 +517,7 @@ void GPho::Dump(const NPY<float>* ox, const GGeo* ggeo, unsigned modulo, unsigne
               ;
  
     if(!ox) return ; 
+
     GPho ph(ggeo, opt) ;
     ph.setPhotons(ox);
     ph.dump(modulo, margin); 

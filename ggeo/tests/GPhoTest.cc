@@ -32,16 +32,32 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     GGeo* gg = GGeo::Load(&ok); 
 
-    const char* default_path = "$TMP/G4OKTest/evt/g4live/natural/1/ox.npy" ; 
-    const char* path = argc > 1 ? argv[1] : default_path ;  
-    
+
     //const char* default_opt = "nidx,nrpo,post,lpst,ldrw,lpow,flgs" ; 
     const char* default_opt = "nidx,nrpo,post,okfl" ; 
-    const char* opt = argc > 2 ? argv[2] : default_opt ;  
+    const char* opt = argc > 1 ? argv[1] : default_opt ;  
+
+    const char* default_ox = "$TMP/G4OKTest/evt/g4live/natural/1/ox.npy" ; 
+    const char* default_wy = "$TMP/G4OKTest/evt/g4live/natural/1/wy.npy" ; 
+    const char* ox_path = argc > 2 ? argv[2] : default_ox ;  
+    const char* wy_path = argc > 3 ? argv[3] : default_wy ;  
 
 
-    NPY<float>* ox = NPY<float>::load( path ) ; 
+    NPY<float>* ox = NPY<float>::load( ox_path ) ; 
     if(ox == NULL ) return 0 ; 
+
+    NPY<float>* wy = NPY<float>::load( wy_path ) ; 
+    ox->setAux(wy); 
+
+    LOG(info) 
+        << " ox_path " << ox_path 
+        << " ox " << ox->getShapeString()
+        ; 
+    LOG(info) 
+        << " wy_path " << wy_path 
+        << " wy " << ( wy ? wy->getShapeString() : "" )
+        ; 
+
 
     GPho ph( gg, opt);   
     ph.setPhotons(ox);
@@ -50,8 +66,8 @@ int main(int argc, char** argv)
     unsigned maxDump = 0 ; 
     ph.dump("GPhoTest", maxDump); 
 
-    const char* out_path = SStr::ReplaceEnd(path, ".npy", "_local.npy" ); 
-    ph.saveLocalPhotons( out_path ); 
+    const char* ox_local = SStr::ReplaceEnd(ox_path, ".npy", "_local.npy" ); 
+    ph.saveLocalPhotons( ox_local ); 
 
     return 0 ;
 }

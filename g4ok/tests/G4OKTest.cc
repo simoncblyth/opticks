@@ -295,8 +295,9 @@ void G4OKTest::collectGensteps(int eventID)
 {
     unsigned num_genstep_photons = getNumGenstepPhotons(eventID); 
     int node_index = m_torchtarget ; 
+    unsigned originTrackID = 100+eventID ;  // arbitrary setting for debugging 
 
-    m_g4ok->collectDefaultTorchStep(num_genstep_photons, node_index); 
+    m_g4ok->collectDefaultTorchStep(num_genstep_photons, node_index, originTrackID ); 
 
     LOG(error) 
         << " eventID " << eventID
@@ -333,31 +334,44 @@ void G4OKTest::propagate(int eventID)
 void G4OKTest::checkHits(int eventID) const 
 {
     G4OpticksHit hit ; 
+    G4OpticksHitExtra hit_extra ;
+ 
     unsigned num_hit = m_g4ok->getNumHit(); 
     LOG(info) 
         << " eventID " << eventID
         << " num_hit " << num_hit
         ; 
 
+    G4OpticksHitExtra* hit_extra_ptr = &hit_extra ;
+    //G4OpticksHitExtra* hit_extra_ptr = NULL ;
 
     for(unsigned i=0 ; i < num_hit ; i++)
     {
-        m_g4ok->getHit(i, &hit); 
+        m_g4ok->getHit(i, &hit, hit_extra_ptr ); 
         std::cout 
             << std::setw(5) << i 
-            << " boundary "           << std::setw(4) << hit.boundary 
-            << " sensorIndex "        << std::setw(5) << hit.sensorIndex 
-            << " nodeIndex "          << std::setw(5) << hit.nodeIndex 
-            << " photonIndex "        << std::setw(5) << hit.photonIndex 
-            << " flag_mask    "       << std::setw(10) << std::hex << hit.flag_mask  << std::dec
-            << " sensor_identifier "  << std::setw(10) << std::hex << hit.sensor_identifier << std::dec
-         // << " weight "             << std::setw(5) << hit.weight 
-            << " wavelength "         << std::setw(8) << hit.wavelength 
-            << " time "               << std::setw(8) << hit.time
-         // << " local_position " << hit.local_position 
-            << " " << OpticksFlags::FlagMask(hit.flag_mask, true)
-            << std::endl 
-            ;    
+            << " bnd "  << std::setw(4) << hit.boundary 
+            << " sIdx " << std::setw(5) << hit.sensorIndex 
+            << " nIdx " << std::setw(5) << hit.nodeIndex 
+            << " pIdx " << std::setw(5) << hit.photonIndex 
+            << " fMsk " << std::setw(10) << std::hex << hit.flag_mask  << std::dec
+            << " sID "  << std::setw(10) << std::hex << hit.sensor_identifier << std::dec
+            << " nm "   << std::setw(8) << hit.wavelength 
+            << " ns "   << std::setw(8) << hit.time
+            << " " << std::setw(20) << OpticksFlags::FlagMask(hit.flag_mask, true)
+            ;
+
+        if(hit_extra_ptr)
+        {   
+            std::cout 
+                << " hiy "
+                << " tk " << hit_extra_ptr->origin_trackID 
+                << " t0 " << hit_extra_ptr->origin_time 
+                << " bt " << hit_extra_ptr->boundary_time 
+                << " bp " << hit_extra_ptr->boundary_pos 
+                << std::endl 
+                ;    
+        } 
         // G4ThreeVector formatter doesnt play well with setw
     }
 }

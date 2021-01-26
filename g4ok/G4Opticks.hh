@@ -54,6 +54,7 @@ class G4VParticleChange ;
 class G4PVPlacement ; 
 
 struct G4OpticksHit ; 
+struct G4OpticksHitExtra ; 
 
 
 #include "G4Types.hh"
@@ -277,7 +278,7 @@ class G4OK_API G4Opticks
             );
 
     private:
-        void collectDefaultTorchStep(unsigned num_photons=0, int node_index=-1);  // zero -> default num_photons
+        void collectDefaultTorchStep(unsigned num_photons=0, int node_index=-1, unsigned originTrackID=44 );  // zero -> default num_photons
     public:
         void collectSecondaryPhotons(const G4VParticleChange* pc);
     public:
@@ -304,7 +305,7 @@ class G4OK_API G4Opticks
          ); 
 
         unsigned getNumHit() const ; 
-        void getHit(unsigned i, G4OpticksHit* hit ) const ; 
+        void getHit(unsigned i, G4OpticksHit* hit, G4OpticksHitExtra* hit_extra ) const ; 
            
      private:
         bool                       m_standardize_geant4_materials ; 

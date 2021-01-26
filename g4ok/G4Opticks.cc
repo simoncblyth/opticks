@@ -975,12 +975,13 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
 #ifdef WITH_WAY_BUFFER
         m_hiys = event->getHiyData()->clone() ; 
         m_num_hiys = m_hits->getNumItems() ; 
-        LOG(fatal) << " WAY_BUFFER num_hiys " << m_num_hiys ;  
+        LOG(fatal) << " WAY_BUFFER num_hiys " << m_num_hiys ;
+        m_hits->setAux(m_hiys);   // associate the extra hiy selected from way buffer with hits array 
 #else
         LOG(fatal) << " no-WAY_BUFFER " ;  
 #endif
 
-        m_hits_wrapper->setPhotons( m_hits ); 
+        m_hits_wrapper->setPhotons( m_hits );  // (GPho)
 
 
         if(!m_ok->isProduction())
@@ -1037,7 +1038,7 @@ of the photon.
 
 **/
 
-void G4Opticks::getHit(unsigned i, G4OpticksHit* hit ) const 
+void G4Opticks::getHit(unsigned i, G4OpticksHit* hit, G4OpticksHitExtra* hit_extra ) const 
 {
     assert( i < m_num_hits && hit ); 
 
@@ -1073,6 +1074,19 @@ void G4Opticks::getHit(unsigned i, G4OpticksHit* hit ) const
 
     // via m_sensorlib 
     hit->sensor_identifier = getSensorIdentifier(pflag.sensorIndex); 
+
+    if(hit_extra != NULL)
+    {
+        assert( m_hits_wrapper->hasWay() );  
+        glm::vec4 way_post = m_hits_wrapper->getWayPositionTime(i); 
+        float     origin_time   = m_hits_wrapper->getWayOriginTime(i); 
+        int       origin_trackID = m_hits_wrapper->getWayOriginTrackID(i); 
+
+        hit_extra->boundary_pos.set(double(way_post.x), double(way_post.y), double(way_post.z));
+        hit_extra->boundary_time = double(way_post.w);
+        hit_extra->origin_time = origin_time ; 
+        hit_extra->origin_trackID = origin_trackID ; 
+    }
 }
 
 
@@ -1471,10 +1485,11 @@ Used from G4OKTest for debugging only.
 
 **/
 
-void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index)
+void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID )
 {
     unsigned gentype = OpticksGenstep_TORCH  ; 
     unsigned num_step = 1 ; 
+
     const char* config = NULL ;   
     // encompasses a default number of photons, distribution, polarization
 
@@ -1483,6 +1498,8 @@ void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index)
     LOG(LEVEL) << " gentype " << gentype ; 
 
     TorchStepNPY* ts = new TorchStepNPY(gentype, num_step, config);
+    ts->setOriginTrackID(originTrackID); 
+
 
     if(node_index == -1)
     {

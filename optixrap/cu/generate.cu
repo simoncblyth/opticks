@@ -577,12 +577,21 @@ RT_PROGRAM void generate()
     }
 
 #ifdef WITH_WAY_BUFFER
-    int way_parentTrackID = ghead.i.y ; // 0*4+1 is G4Track::GetTrackID of parent
+/**
+Contents of way buffer must correspond to the ggeo/GPho/getWay methods. 
+The final values are fed into *way* buffer which gets selected down to *hiy* array 
+which ends up in G4OpticksHitExtra. Note the *way* to *hiy* is precisely 
+analogous to *photon* to *hit* selexction.
+**/
+    s.way0.x = 0.f ;                          // boundary_pos.x   (mm)
+    s.way0.y = 0.f ;                          // boundary_pos.y   (mm)
+    s.way0.z = 0.f ;                          // boundary_pos.z   (mm)
+    s.way0.w = 0.f ;                          // boundary_time    (ns)
 
-    s.way.x = 0.f ; 
-    s.way.y = 0.f ; 
-    s.way.z = 0.f ; 
-    s.way.w = p.time ;   // origin time of generated photon, hmm need flags duplicated here for hit selection
+    s.way1.x = p.time ;                       // origin_time of generated photon (ns)
+    s.way1.y = int_as_float( ghead.i.y ) ;    // origin_trackID  from genstep  0*4+1 which is G4Track::GetTrackID of parent
+    s.way1.z = 0.f ;                          // p.flags.u.z (photon_index) is duplicated here for debugging post selection
+    s.way1.w = 0.f ;                          // p.flags.u.w (bitwise-or-of-step-flags) is duplicated here for hiy selection
 #endif
 
     // initial quadrant 
@@ -709,9 +718,10 @@ RT_PROGRAM void generate()
         //if( way_control.x == prd.identity.x && way_control.y == prd.boundary )
         if( way_control.y == prd.boundary )
         {
-            s.way.x = p.position.x ; 
-            s.way.y = p.position.y ; 
-            s.way.z = p.position.z ; 
+            s.way0.x = p.position.x ; 
+            s.way0.y = p.position.y ; 
+            s.way0.z = p.position.z ; 
+            s.way0.w = p.time ; 
         }
 #endif
         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
@@ -782,9 +792,10 @@ RT_PROGRAM void generate()
 
 
 #ifdef WITH_WAY_BUFFER
-    // hmm could do this only for hits or collected ?
-    way_buffer[way_offset+0] = make_float4( int_as_float(way_parentTrackID), s.way.w, 0.f, 0.f)  ; 
-    way_buffer[way_offset+1] = make_float4( s.way.x, s.way.y, s.way.z, unsigned_as_float(p.flags.u.w))  ; 
+    s.way1.z = unsigned_as_float(p.flags.u.z) ;  // photon index  
+    s.way1.w = unsigned_as_float(p.flags.u.w) ;  // flags duplicated for hiy selection from way buffer (analogous to hit selection from photons buffer)
+    way_buffer[way_offset+0] = s.way0 ; 
+    way_buffer[way_offset+1] = s.way1 ; 
 #endif
 
     //  s.identity.x : nodeIndex 

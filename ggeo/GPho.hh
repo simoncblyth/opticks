@@ -65,6 +65,13 @@ class GGEO_API GPho {
     public:  
         const NPY<float>*     getPhotons() const ;
         unsigned              getNumPhotons() const ;
+        unsigned              wayConsistencyCheck(bool dump);
+    public:  
+        bool                  hasWay() const ; 
+        const NPY<float>*     getWay() const ;
+        glm::vec4             getWayPositionTime(unsigned i) const ; 
+        float                 getWayOriginTime(unsigned i) const ;  
+        int                   getWayOriginTrackID(unsigned i) const ;
     public:  
         bool                  isLandedOnSensor(unsigned i) const ;  // not necessarily a hit 
         bool                  isHit(unsigned i) const ; 
@@ -96,6 +103,7 @@ class GGEO_API GPho {
    private:
        // these three are set by setPhotons 
        const NPY<float>*      m_photons ; 
+       const NPY<float>*      m_way ; 
        const NPY<unsigned>*   m_msk ; 
        unsigned               m_num_photons ; 
    private:

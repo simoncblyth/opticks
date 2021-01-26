@@ -2005,6 +2005,82 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, bool dump )
 
 
 
+/**
+NPY<T>::compare_element_jk
+------------------------------
+**/
+template <typename T>
+unsigned NPY<T>::compare_element_jk(const NPY<T>* a, const NPY<T>* b, int j, int k, bool dump )  // static
+{
+    LOG(info) << " a " << a->getShapeString(); 
+    LOG(info) << " b " << b->getShapeString(); 
+
+    unsigned nd_a = a->getNumDimensions(); 
+    unsigned nd_b = b->getNumDimensions(); 
+    assert( nd_a == nd_b ); 
+    assert( nd_a == 3 ); 
+
+
+    unsigned ni_a = a->getShape(0); 
+    unsigned ni_b = b->getShape(0); 
+    assert( ni_a == ni_b ); 
+    unsigned ni = ni_a ; 
+
+/*
+    unsigned nj_a = a->getShape(1); 
+    unsigned nj_b = b->getShape(1); 
+
+    unsigned nk_a = a->getShape(2); 
+    unsigned nk_b = b->getShape(2); 
+
+    // the j argument can be -ve to indicate relative to the end, eg -1 for the last 
+    unsigned ja = j < 0 ? nj_a + j : j ; 
+    unsigned jb = j < 0 ? nj_b + j : j ; 
+
+    unsigned ka = k < 0 ? nk_a + k : k ; 
+    unsigned kb = k < 0 ? nk_b + k : k ; 
+
+    LOG(info) 
+        << " (ja,ka): " << "(" << ja << "," << ka << ") " 
+        << " (jb,kb): " << "(" << jb << "," << kb << ") " 
+        ;
+
+*/
+
+
+    unsigned mismatch = 0 ; 
+
+    LOG(info) 
+        << " (j,k):   " << "(" << j << "," << k << ") " 
+        ;
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        unsigned av = a->getUInt(i,j,k);
+        unsigned bv = b->getUInt(i,j,k);
+
+        bool match = av == bv ; 
+        if(!match) mismatch++ ; 
+
+        if(dump)   
+        {
+            std::cout 
+                << std::setw(10) << i 
+                << " : " << std::setw(10) << av 
+                << " : " << std::setw(10) << bv 
+                << std::endl 
+                ;
+        }
+
+    }
+    return mismatch ; 
+}
+
+
+
+
+
+
 
 template <typename T>
 NPY<T>* NPY<T>::make_slice(const char* slice_)
@@ -2480,7 +2556,7 @@ BBufSpec* NPY<T>::getBufSpec()
 }
 
 template <typename T> 
-T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const 
+T NPY<T>::getValue( int i,  int j,  int k,  int l) const 
 {
     unsigned int idx = getValueIndex(i,j,k,l);
     return getValueFlat(idx); 
@@ -2571,7 +2647,7 @@ charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k, unsi
 
 
 template <typename T> 
-void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l, T value)
+void NPY<T>::setValue(int i, int j, int k, int l, T value)
 {
     unsigned int idx = getValueIndex(i,j,k,l);
     setValueFlat(idx, value); 
@@ -2987,7 +3063,7 @@ template <typename T>
 
 
 template <typename T> 
- float NPY<T>::getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const
+float NPY<T>::getFloat( int i,  int j,  int k,  int l) const
 {
     uif_t uif ; 
     uif.u = 0 ;
@@ -3004,7 +3080,7 @@ template <typename T>
 }
 
 template <typename T> 
- void NPY<T>::setFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l, float  value)
+ void NPY<T>::setFloat( int i,  int j,  int k,  int l, float  value)
 {
     uif_t uif ; 
     uif.f = value ;
@@ -3023,7 +3099,7 @@ template <typename T>
 
 
 template <typename T> 
- unsigned int NPY<T>::getUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const 
+unsigned NPY<T>::getUInt( int i,  int j,  int k,  int l) const 
 {
     uif_t uif ; 
     uif.u = 0 ;
@@ -3042,7 +3118,7 @@ template <typename T>
 }
 
 template <typename T> 
-void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value)
+void NPY<T>::setUInt(int i, int j, int k, int l, unsigned value)
 {
     uif_t uif ; 
     uif.u = value ;
@@ -3059,6 +3135,14 @@ void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned in
     }
     setValue(i,j,k,l, t); 
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -3088,7 +3172,7 @@ void NPY<T>::bitwiseOrUInt(unsigned int i, unsigned int j, unsigned int k, unsig
 
 
 template <typename T> 
- int NPY<T>::getInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const 
+ int NPY<T>::getInt( int i,  int j,  int k,  int l) const 
 {
     uif_t uif ;             // how does union handle different sizes ? 
     uif.u = 0 ; 
@@ -3116,7 +3200,7 @@ Viewing the array as float gives NaN values or very small/large values.
 **/
 
 template <typename T> 
- void NPY<T>::setInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, int value)
+void NPY<T>::setInt( int i,  int j,  int k,  int l, int value)
 {
     uif_t uif ; 
     uif.i = value ;
