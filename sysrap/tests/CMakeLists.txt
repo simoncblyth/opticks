@@ -5,6 +5,7 @@ include(OpticksBuildOptions)
 
 set(TEST_SOURCES
 
+   PythonImportTest.cc
    SOKConfTest.cc
    SArTest.cc
    SArgsTest.cc

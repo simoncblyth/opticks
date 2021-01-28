@@ -57,6 +57,7 @@ int test_OKConfCheck()
     return rc ; 
 }
 
+
 void test_DumpEnv()
 {
     SSys::DumpEnv("OPTICKS"); 
@@ -138,37 +139,6 @@ void test_Which()
 }
 
 
-void test_python_numpy()
-{
-    SSys::run("python -c 'import numpy as np ; print(np.__version__)'" ); 
-}
-
-
-void test_ResolvePython()
-{
-    const char* p = SSys::ResolvePython(); 
-    LOG(info) << " p " << p ; 
-}
-
-void test_RunPythonScript()
-{
-    const char* script = "np.py" ; 
-    int rc = SSys::RunPythonScript(script); 
-    LOG(info) 
-       << " script " << script 
-       << " rc " << rc
-       ;
-}
-
-void test_RunPythonCode()
-{
-    const char* code = "import numpy as np ; print(np.__version__)" ; 
-    int rc = SSys::RunPythonCode(code); 
-    LOG(info) 
-       << " code " << code 
-       << " rc " << rc
-       ;
-}
 
 void test_hexlify()
 {
@@ -207,12 +177,9 @@ int main(int argc , char** argv )
     //test_POpen2(false);
 
     //test_Which(); 
-    //test_python_numpy(); 
-    //test_ResolvePython(); 
-    //test_RunPythonScript(); 
-    //test_RunPythonCode(); 
 
-    test_hexlify(); 
+    test_hexlify();  
+
 
 
     return rc  ; 
