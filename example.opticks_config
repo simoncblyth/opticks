@@ -11,8 +11,8 @@ o(){ opticks- ; cd $(opticks-home) ; git status ; }
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ;  }
 t(){ typeset -f $* ; }
 
-oed(){ vi $BASH_SOURCE && ofu ; }
-ofu(){ source $BASH_SOURCE ; }
+oed(){ vi $BASH_SOURCE && ofu ; }  # edit this file
+ofu(){ source $BASH_SOURCE ; }  # source this file
 
 # PATH envvars control the externals that opticks/CMake or pkg-config will find  
 unset CMAKE_PREFIX_PATH
@@ -22,13 +22,11 @@ unset PKG_CONFIG_PATH
 export OPTICKS_PREFIX=/usr/local/opticks
 export OPTICKS_CUDA_PREFIX=/usr/local/cuda
 export OPTICKS_OPTIX_PREFIX=/usr/local/optix
+
 export OPTICKS_COMPUTE_CAPABILITY=70
 
-export PYTHONPATH=$(dirname $OPTICKS_HOME)    # needed to allow python scripts to "import opticks"
-
-
 ## hookup paths to access "foreign" externals, not yet existing dirs just give warnings
-opticks-prepend-prefix /usr/local/opticks_externals/clhep
+opticks-prepend-prefix /usr/local/opticks_externals/clhep_2440
 opticks-prepend-prefix /usr/local/opticks_externals/xercesc
 opticks-prepend-prefix /usr/local/opticks_externals/g4_1042
 opticks-prepend-prefix /usr/local/opticks_externals/boost
@@ -51,6 +49,7 @@ opticks-check-prefix
 opticks-setup > /dev/null
 [ $? -ne 0 ] && echo ERROR running opticks-setup && sleep 1000000000
 
-
-
+# PYTHONPATH is needed to allow python scripts to "import opticks"
+# without this some of the opticks-t tests will fail
+export PYTHONPATH=$(dirname $OPTICKS_HOME)    
 
