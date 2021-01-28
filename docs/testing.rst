@@ -43,6 +43,13 @@ The *opticks-t* function runs ctests for all the opticks projects::
     opticks-ctest : use -V to show output
 
 
+How to proceed when tests fail
+----------------------------------
+
+See the instructions for running tests individually and running them in the *gdb* 
+debugger at  :doc:`misc/debugging_failing_tests`.
+
+
 Creating a geocache geometry directory with **geocache-create**
 -----------------------------------------------------------------
 

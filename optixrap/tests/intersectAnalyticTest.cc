@@ -24,7 +24,8 @@
     intersectAnalyticTest --cu torusTest.cu            
     intersectAnalyticTest --cu sphereTest.cu
     intersectAnalyticTest --cu coneTest.cu
-    intersectAnalyticTest --cu convexpolyhedronTest.cu
+
+    intersectAnalyticTest --cu iaConvexpolyhedronTest.cu
 
 **/
 #include "OptiXTest.hh"
@@ -33,8 +34,23 @@
 #include "OContext.hh"
 #include "OGeo.hh"
 #include "NPY.hpp"
+
+#include "GLMFormat.hpp"
 #include "OPTICKS_LOG.hh"
 
+/**
+intersectAnalyticTest.cc
+==========================
+
+Looks like this test was mostly used for debugging the intersect 
+header whilst looking at the rtPrintf output from OptiX 
+using very small numbers of pixels to keep the output 
+comprehensible.
+
+It looks like the output buffer is mostly just dummy content, 
+rather than pulling intersect info back. Other tests do that.
+
+**/
 
 int main( int argc, char** argv ) 
 {
@@ -73,7 +89,7 @@ int main( int argc, char** argv )
 
     std::cout << test->description() << std::endl ; 
 
-    unsigned width = 1 ; 
+    unsigned width = 4 ; 
     unsigned height = 1 ; 
 
     // optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width, height );
@@ -102,7 +118,9 @@ int main( int argc, char** argv )
 
     context->validate();
     context->compile();
-    context->launch(0, width, height);
+
+    unsigned entry_point_index = 0 ; 
+    context->launch(entry_point_index, width, height);
 
 
     NPY<float>* npy = NPY<float>::make(width, height, 4) ;
@@ -111,6 +129,11 @@ int main( int argc, char** argv )
     void* ptr = buffer->map() ; 
     npy->read( ptr );
     buffer->unmap(); 
+
+
+    glm::vec4 isect = npy->getQuadF(0,0); 
+    std::cout << gpresent("isect", isect) << std::endl ; 
+
 
     const char* path = "$TMP/optixrap/intersectAnalyticTest/intersectAnalyticTest.npy";
     std::cerr << "save result npy to " << path << std::endl ; 
