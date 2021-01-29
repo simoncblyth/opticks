@@ -109,6 +109,7 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
         << " finish " << finish  
         << " value " << value 
         << " value_s " << value_s 
+        << " specular " << specular
         ; 
 
     const char* osnam = name ; 

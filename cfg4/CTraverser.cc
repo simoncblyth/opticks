@@ -207,7 +207,7 @@ void CTraverser::AncestorTraverse(std::vector<const G4VPhysicalVolume*> ancestor
 
 
      G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-     for (int i=0 ; i<lv->GetNoDaughters() ;i++) AncestorTraverse(ancestors, lv->GetDaughter(i), depth+1, recursive_select ); 
+     for (size_t i=0 ; i<lv->GetNoDaughters() ;i++) AncestorTraverse(ancestors, lv->GetDaughter(i), depth+1, recursive_select ); 
 }
 
 

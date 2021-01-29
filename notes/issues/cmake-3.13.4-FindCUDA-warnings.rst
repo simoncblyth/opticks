@@ -89,5 +89,108 @@ in OpticksBuildOpticks didnt work::
      582 option(CUDA_VERBOSE_BUILD "Print out the commands run while compiling the CUDA source file.  With the Makefile generator this defaults to VERBOSE variable specified on the command line, but can be forced on with this option." OFF)
      583 
        
-        
+     
+
+
+With gcc 8.3.1 and cmake 3.17 the warning is appearing again for g4ok::
+
+
+      6 if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+      7     cmake_policy(SET CMP0077 OLD)
+      8 endif()
+      9 
+
+
+   
+
+
+cmake/Modules/OpticksCUDAFlags.cmake::
+
+     07 set(CUDA_NVCC_FLAGS)
+      8 
+      9 if(NOT (COMPUTE_CAPABILITY LESS 30))
+     10 
+     11    #list(APPEND CUDA_NVCC_FLAGS "-arch=sm_${COMPUTE_CAPABILITY}")
+     12    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
+     13    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${COMPUTE_CAPABILITY},code=sm_${COMPUTE_CAPABILITY}")
+     14 
+     15    #list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+     16    # https://github.com/facebookresearch/Detectron/issues/185
+     17 
+     18    list(APPEND CUDA_NVCC_FLAGS "-O2")
+     19    #list(APPEND CUDA_NVCC_FLAGS "-DVERBOSE")
+     20    list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
+     21 
+     22    #list(APPEND CUDA_NVCC_FLAGS "-m64")
+     23    #list(APPEND CUDA_NVCC_FLAGS "--disable-warnings")
+     24 
+     25    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+     26    set(CUDA_VERBOSE_BUILD OFF)
+     27 
+     28 endif()
+     29 
+      
+
+
+::
+
+    [simon@localhost cfg4]$ cmake --help-policy CMP0077
+    CMP0077
+    -------
+
+    ``option()`` honors normal variables.
+
+    The ``option()`` command is typically used to create a cache entry
+    to allow users to set the option.  However, there are cases in which a
+    normal (non-cached) variable of the same name as the option may be
+    defined by the project prior to calling the ``option()`` command.
+    For example, a project that embeds another project as a subdirectory
+    may want to hard-code options of the subproject to build the way it needs.
+
+    For historical reasons in CMake 3.12 and below the ``option()``
+    command *removes* a normal (non-cached) variable of the same name when:
+
+    * a cache entry of the specified name does not exist at all, or
+    * a cache entry of the specified name exists but has not been given
+      a type (e.g. via ``-D<name>=ON`` on the command line).
+
+    In both of these cases (typically on the first run in a new build tree),
+    the ``option()`` command gives the cache entry type ``BOOL`` and
+    removes any normal (non-cached) variable of the same name.  In the
+    remaining case that the cache entry of the specified name already
+    exists and has a type (typically on later runs in a build tree), the
+    ``option()`` command changes nothing and any normal variable of
+    the same name remains set.
+
+    In CMake 3.13 and above the ``option()`` command prefers to
+    do nothing when a normal variable of the given name already exists.
+    It does not create or update a cache entry or remove the normal variable.
+    The new behavior is consistent between the first and later runs in a
+    build tree.  This policy provides compatibility with projects that have
+    not been updated to expect the new behavior.
+
+    When the ``option()`` command sees a normal variable of the given
+    name:
+
+    * The ``OLD`` behavior for this policy is to proceed even when a normal
+      variable of the same name exists.  If the cache entry does not already
+      exist and have a type then it is created and/or given a type and the
+      normal variable is removed.
+
+    * The ``NEW`` behavior for this policy is to do nothing when a normal
+      variable of the same name exists.  The normal variable is not removed.
+      The cache entry is not created or updated and is ignored if it exists.
+
+    This policy was introduced in CMake version 3.13.  CMake version
+    3.13.4 warns when the policy is not set and uses ``OLD`` behavior.
+    Use the ``cmake_policy()`` command to set it to ``OLD`` or ``NEW``
+    explicitly.
+
+    .. note::
+      The ``OLD`` behavior of a policy is
+      ``deprecated by definition``
+      and may be removed in a future version of CMake.
+    [simon@localhost cfg4]$ 
+
+
 

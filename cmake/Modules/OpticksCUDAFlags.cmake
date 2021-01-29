@@ -12,8 +12,9 @@ if(NOT (COMPUTE_CAPABILITY LESS 30))
    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${COMPUTE_CAPABILITY},code=sm_${COMPUTE_CAPABILITY}")
 
-   #list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+   list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
    # https://github.com/facebookresearch/Detectron/issues/185
+   # notes/issues/g4_1062_opticks_with_newer_gcc_for_G4OpticksTest.rst 
 
    list(APPEND CUDA_NVCC_FLAGS "-O2")
    #list(APPEND CUDA_NVCC_FLAGS "-DVERBOSE")

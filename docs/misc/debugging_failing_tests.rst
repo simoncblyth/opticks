@@ -28,7 +28,7 @@ uses the NPY serialization and .npy files so several tests will fail if numpy
 is not installed within the python that is used.
 
 Opticks will use the default python from your PATH. You can control 
-this by setting the OPTICKS_PYTHON envvar, eg:
+this by setting the OPTICKS_PYTHON envvar, eg::
 
    export OPTICKS_PYTHON=python3
    export OPTICKS_PYTHON=/usr/bin/python3

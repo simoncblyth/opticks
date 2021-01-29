@@ -390,7 +390,7 @@ void Prog::traverseActive(Obj_t obj, bool print)
         {
             for(int j = 0; j < size; j++)
             {
-                char long_name[64];
+                char long_name[128];
                 sprintf (long_name, "%s[%i]", name, j);
                 traverseLocation(obj, type, long_name, print);
             }

@@ -340,12 +340,12 @@ thrap-tdir(){ echo $(opticks-home)/thrustrap/tests ; }
 thrap-idir(){ echo $(opticks-idir) ; }
 thrap-bdir(){ echo $(opticks-bdir)/thrustrap ; }
 
-thrap-c(){    cd $(thrap-sdir); }
-thrap-cd(){   cd $(thrap-sdir); }
-thrap-scd(){  cd $(thrap-sdir); }
-thrap-tcd(){  cd $(thrap-tdir); }
-thrap-icd(){  cd $(thrap-idir); }
-thrap-bcd(){  cd $(thrap-bdir); }
+thrap-c(){    cd $(thrap-sdir)/$1 ; }
+thrap-cd(){   cd $(thrap-sdir)/$1 ; }
+thrap-scd(){  cd $(thrap-sdir)/$1 ; }
+thrap-tcd(){  cd $(thrap-tdir)/$1 ; }
+thrap-icd(){  cd $(thrap-idir)/$1 ; }
+thrap-bcd(){  cd $(thrap-bdir)/$1 ; }
 
 thrap-name(){ echo ThrustRap ; }
 thrap-tag(){  echo THRAP ; }

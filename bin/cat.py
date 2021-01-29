@@ -19,7 +19,7 @@ class Cat(object):
 
     def __init__(self, path):
         assert os.path.exists(path)
-        lines = map(str.strip,open(path, "r").readlines())
+        lines = list(map(str.strip,open(path, "r").readlines()))
 
         self.path = path 
         self.lines = lines

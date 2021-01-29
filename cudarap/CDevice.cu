@@ -68,7 +68,8 @@ void CDevice::Collect(std::vector<CDevice>& devices, bool ordinal_from_index)
         CDevice d ;   
 
         assert( sizeof(p.name) == sizeof(char)*256 ) ;  
-        strncpy( d.name, p.name, sizeof(p.name) ); 
+        assert( sizeof(d.name) == sizeof(char)*256 ) ;  
+        strncpy( d.name, p.name, sizeof(d.name) ); 
 
 #ifndef CUDART_VERSION
 #error CUDART_VERSION Undefined!
