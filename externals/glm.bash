@@ -180,7 +180,8 @@ glm-scd(){  cd $(glm-sdir) ; }
 glm-edit(){  vi $(opticks-home)/cmake/Modules/FindGLM.cmake ; }
 
 #glm-version(){ echo 0.9.6.3 ; }
-glm-version(){ echo 0.9.9.5 ; }
+glm-version(){ echo 0.9.9.5 ; }   # loadsa warnings with gcc 8.3.1 and CUDA 10.1 nvcc
+#glm-version(){ echo 0.9.9.8 ; }  # still loadsa warning, see glm-nvcc-test
 
 glm-current(){ echo $(readlink $(opticks-prefix)/externals/glm/glm) ; }
 
@@ -421,5 +422,43 @@ glm-setup(){ cat << EOS
 EOS
 }
 
+
+
+glm-nvcc-test-(){ cat << EOC
+#include <glm/glm.hpp>
+EOC
+}
+glm-nvcc-test-notes(){ cat << EON
+
+See notes/issues/glm_anno_warnings_with_gcc_831.rst::
+
+   warning: __device__ annotation is ignored on a function("vec") that is explicitly defaulted on its first declaration
+
+suppress the warning with::
+
+   -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored 
+
+EON
+}
+
+
+glm-nvcc-test(){
+   : see notes/issues/glm_anno_warnings_with_gcc_831.rst 
+   local tmpdir=/tmp/$USER/$FUNCNAME
+   mkdir -p $tmpdir
+   cd $tmpdir
+   local capability=${OPTICKS_COMPUTE_CAPABILITY:-70} 
+
+   $FUNCNAME- > tglm.cu
+
+   local ccbin=$(which cc)
+   echo ccbin $ccbin
+
+   nvcc tglm.cu -c -ccbin $ccbin -m64 -I$(glm-dir2) \
+  -Xcompiler ,\"-fvisibility=hidden\",\"-fvisibility-inlines-hidden\",\"-fdiagnostics-show-option\",\"-Wall\",\"-Wno-unused-function\",\"-Wno-comment\",\"-Wno-deprecated\",\"-Wno-shadow\",\"-fPIC\",\"-g\" \
+  -Xcompiler -fPIC -gencode=arch=compute_$capability,code=sm_$capability -std=c++11 -O2 --use_fast_math -DNVCC \
+   -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored 
+
+}
 
 

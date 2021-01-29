@@ -2,11 +2,12 @@ opticks_centos7_gcc_831_warnings
 ===================================
 
 
-Following 
+.. contents:: Table of Contents
+   :depth: 3 
 
 
-Most prolific is glm : TODO see if can fix by updating to 0.9.9.8 
---------------------------------------------------------------------
+Most warnings from nvcc compilation of glm headers
+-----------------------------------------------------
 
 * https://github.com/g-truc/glm/releases
 
@@ -16,6 +17,11 @@ Most prolific is glm : TODO see if can fix by updating to 0.9.9.8
 
     GLM 0.9.9.5 released Apr 2, 2019 
     GLM 0.9.9.8 released Apr 13, 2020
+
+
+* both these versions have the warnings
+
+* :doc:`glm_anno_warnings_with_gcc_831`
 
 
 List the warnings
@@ -55,7 +61,7 @@ cudarap FIXED::
 
     
 
-thrap loadsa glm warnings TODO try newer glm::
+thrap loadsa glm warnings : suppresssed it::
 
     [ 13%] Building NVCC (Device) object CMakeFiles/ThrustRap.dir/ThrustRap_generated_TRngBuf_.cu.o
     /home/simon/local/opticks/externals/glm/glm/glm/./ext/../detail/type_vec2.hpp(94): warning: __device__ annotation is ignored on a function("vec") that is explicitly defaulted on its first declaration
@@ -72,7 +78,7 @@ thrap loadsa glm warnings TODO try newer glm::
 
 
 
-optixrap a few of this old warning::
+optixrap a few of this old warning : not too many so leave asis::
 
     /home/simon/opticks/optixrap/cu/compactionTest.cu(39): warning: variable "q3" was set but never used
 
@@ -93,7 +99,80 @@ optixrap a few of this old warning::
 
 
 
-okop again loadsa glm warnings::
+* :google:`warning: overloaded virtual function is only partially overridden in class`
+
+
+/home/blyth/local/opticks/externals/OptiX_650/include/optixu/optixpp_namespace.h::
+
+     269   class APIObj {
+     270   public:
+     271     APIObj() : ref_count(0) {}
+     272     virtual ~APIObj() {}
+     273 
+     274     /// Increment the reference count for this object
+     275     void addReference()    { ++ref_count; }
+     276     /// Decrement the reference count for this object
+     277     int  removeReference() { return --ref_count; }
+     278 
+     279     /// Retrieve the context this object is associated with.  See rt[ObjectType]GetContext.
+     280     virtual Context getContext()const=0;
+     281 
+     282     /// Check the given result code and throw an error with appropriate message
+     283     /// if the code is not RTsuccess
+     284     virtual void checkError(RTresult code)const;
+     285     virtual void checkError(RTresult code, Context context )const;
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not overidden in ContextObj causes warning 
+     286 
+     287     void checkErrorNoGetContext(RTresult code)const;
+     288 
+     289     /// For backwards compatability.  Use Exception::makeException instead.
+     290     static Exception makeException( RTresult code, RTcontext context );
+     291   private:
+     292     int ref_count;
+     293   };
+
+
+     647   class ContextObj : public ScopedObj {
+     648   public:
+     649 
+     650     /// Call rtDeviceGetDeviceCount and returns number of valid devices
+     651     static unsigned int getDeviceCount();
+     652 
+     653     /// Call rtDeviceGetAttribute and return the name of the device
+     654     static std::string getDeviceName(int ordinal);
+     655 
+     656     /// Call rtDeviceGetAttribute and return the PCI bus id of the device
+     657     static std::string getDevicePCIBusId(int ordinal);
+     658 
+     659     /// Call rtDeviceGetAttribute and return the desired attribute value
+     660     static void getDeviceAttribute(int ordinal, RTdeviceattribute attrib, RTsize size, void* p);
+     661 
+     662     /// Call rtDeviceGetAttribute and return the list of ordinals compatible with the device; a device is always compatible with itself.
+     663     static std::vector<int> getCompatibleDevices( int ordinal );
+     664 
+     665     /// Creates a Context object.  See @ref rtContextCreate
+     666     static Context create();
+     667 
+     668     /// Destroy Context and all of its associated objects.  See @ref rtContextDestroy.
+     669     void destroy();
+     670 
+     671     /// See @ref rtContextValidate
+     672     void validate();
+     673 
+     674     /// Retrieve the Context object associated with this APIObject.  In this case,
+     675     /// simply returns itself.
+     676     Context getContext() const;
+     677 
+     678     /// @{
+     679     /// See @ref APIObj::checkError
+     680     void checkError(RTresult code)const;
+     681 
+     
+
+ 
+
+
+okop again loadsa glm warnings, suppressed these::
 
     -- Build files have been written to: /home/simon/local/opticks/build/okop
     === om-make-one : okop            /home/simon/opticks/okop                                     /home/simon/local/opticks/build/okop                         

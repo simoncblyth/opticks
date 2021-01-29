@@ -20,6 +20,9 @@ if(NOT (COMPUTE_CAPABILITY LESS 30))
    #list(APPEND CUDA_NVCC_FLAGS "-DVERBOSE")
    list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
 
+   list(APPEND CUDA_NVCC_FLAGS "-Xcudafe --diag_suppress=esa_on_defaulted_function_ignored ") 
+   # notes/issues/glm_anno_warnings_with_gcc_831.rst 
+
    #list(APPEND CUDA_NVCC_FLAGS "-m64")
    #list(APPEND CUDA_NVCC_FLAGS "--disable-warnings")
 

@@ -4,7 +4,11 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+    message(STATUS "with-policy-CMP0077") 
     cmake_policy(SET CMP0077 OLD)
+    #cmake_policy(SET CMP0077 NEW)
+else()
+    message(STATUS "no-policy-CMP0077") 
 endif()
 
 

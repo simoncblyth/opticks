@@ -194,3 +194,92 @@ cmake/Modules/OpticksCUDAFlags.cmake::
 
 
 
+
+
+
+g4ok::
+
+    -- Looking for pthread_create in pthread - found
+    -- Found Threads: TRUE  
+    -- FindOpticksXercesC.cmake. Found Geant4::G4persistency AND XercesC::XercesC target _lll Geant4::G4geometry;Geant4::G4global;Geant4::G4graphics_reps;Geant4::G4intercoms;Geant4::G4materials;Geant4::G4particles;Geant4::G4digits_hits;Geant4::G4event;Geant4::G4processes;Geant4::G4run;Geant4::G4track;Geant4::G4tracking;XercesC::XercesC 
+    CMake Warning (dev) at /usr/share/cmake3/Modules/FindCUDA.cmake:576 (option):
+      Policy CMP0077 is not set: option() honors normal variables.  Run "cmake
+      --help-policy CMP0077" for policy details.  Use the cmake_policy command to
+      set the policy and suppress this warning.
+
+      For compatibility with older versions of CMake, option is clearing the
+      normal variable 'CUDA_PROPAGATE_HOST_FLAGS'.
+    Call Stack (most recent call first):
+      /home/simon/opticks/cmake/Modules/FindOpticksCUDA.cmake:29 (find_package)
+      /usr/share/cmake3/Modules/CMakeFindDependencyMacro.cmake:48 (find_package)
+      /home/simon/local/opticks/lib64/cmake/cudarap/cudarap-config.cmake:18 (find_dependency)
+      /usr/share/cmake3/Modules/CMakeFindDependencyMacro.cmake:48 (find_package)
+      /home/simon/local/opticks/lib64/cmake/thrustrap/thrustrap-config.cmake:18 (find_dependency)
+      /usr/share/cmake3/Modules/CMakeFindDependencyMacro.cmake:48 (find_package)
+      /home/simon/local/opticks/lib64/cmake/cfg4/cfg4-config.cmake:16 (find_dependency)
+      CMakeLists.txt:11 (find_package)
+    This warning is for project developers.  Use -Wno-dev to suppress it.
+
+    CMake Warning (dev) at /usr/share/cmake3/Modules/FindCUDA.cmake:582 (option):
+      Policy CMP0077 is not set: option() honors normal variables.  Run "cmake
+      --help-policy CMP0077" for policy details.  Use the cmake_policy command to
+      set the policy and suppress this warning.
+
+      For compatibility with older versions of CMake, option is clearing the
+      normal variable 'CUDA_VERBOSE_BUILD'.
+    Call Stack (most recent call first):
+      /home/simon/opticks/cmake/Modules/FindOpticksCUDA.cmake:29 (find_package)
+      /usr/share/cmake3/Modules/CMakeFindDependencyMacro.cmake:48 (find_package)
+      /home/simon/local/opticks/lib64/cmake/cudarap/cudarap-config.cmake:18 (find_dependency)
+      /usr/share/cmake3/Modules/CMakeFindDependencyMacro.cmake:48 (find_package)
+      /home/simon/local/opticks/lib64/cmake/thrustrap/thrustrap-config.cmake:18 (find_dependency)
+      /usr/share/cmake3/Modules/CMakeFindDependencyMacro.cmake:48 (find_package)
+      /home/simon/local/opticks/lib64/cmake/cfg4/cfg4-config.cmake:16 (find_dependency)
+      CMakeLists.txt:11 (find_package)
+    This warning is for project developers.  Use -Wno-dev to suppress it.
+
+    -- Found CUDA: /usr/local/cuda-10.1 (found version "10.1") 
+    -- Configuring G4OKTest
+
+
+/usr/share/cmake3/Modules/FindCUDA.cmake::
+
+     574 
+     575 # Propagate the host flags to the host compiler via -Xcompiler
+     576 option(CUDA_PROPAGATE_HOST_FLAGS "Propagate C/CXX_FLAGS and friends to the host compiler via -Xcompile" ON)
+     577 
+     578 # Enable CUDA_SEPARABLE_COMPILATION
+     579 option(CUDA_SEPARABLE_COMPILATION "Compile CUDA objects with separable compilation enabled.  Requires CUDA 5.0+" OFF)
+     580 
+     581 # Specifies whether the commands used when compiling the .cu file will be printed out.
+     582 option(CUDA_VERBOSE_BUILD "Print out the commands run while compiling the CUDA source file.  With the Makefile generator this defaults to VERBOSE variable specified on the command line, but can      be forced on with this option." OFF)
+     583 
+
+
+
+
+
+
+g4ok om-cleaninstall gives the above warnings with cmake 3.13.4 but not with 3.17.0::
+
+    [simon@localhost g4ok]$ cmake --version
+    cmake3 version 3.13.4
+
+    CMake suite maintained and supported by Kitware (kitware.com/cmake).
+    [simon@localhost g4ok]$ which cmake
+    /usr/bin/cmake
+    [simon@localhost g4ok]$ 
+
+
+
+::
+
+    [blyth@localhost opticks]$ cmake --version
+    cmake version 3.17.0
+
+    CMake suite maintained and supported by Kitware (kitware.com/cmake).
+    [blyth@localhost opticks]$ which cmake
+    ~/junotop/ExternalLibs/Cmake/3.17.0/bin/cmake
+
+
+
