@@ -504,7 +504,9 @@ for persistency convenience.
 void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int depth)
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-    for (size_t i=0 ; i < lv->GetNoDaughters() ;i++ )
+
+    // G4LogicalVolume::GetNoDaughters returns 1042:G4int, 1062:size_t
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ )
     {
         const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);
         convertSolids_r( daughter_pv , depth + 1 );
@@ -886,7 +888,8 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
 
      const G4LogicalVolume* const lv = pv->GetLogicalVolume();
   
-     for (size_t i=0 ; i < lv->GetNoDaughters() ;i++ )
+    // G4LogicalVolume::GetNoDaughters returns 1042:G4int, 1062:size_t
+     for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ )
      {
          const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);
          convertStructure_r(child_pv, volume, depth+1, pv, recursive_select );

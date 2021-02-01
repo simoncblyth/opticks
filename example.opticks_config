@@ -1,6 +1,6 @@
 # ~/.opticks_config
 # ~/.bash_profile > ~/.bashrc > ~/.opticks_config
-# https://simoncblyth.bitbucket.io/opticks/docs/opticks.html#bash-shell-setup-with-opticks-config
+# https://simoncblyth.bitbucket.io/opticks/docs/install.html#bash-shell-setup-with-opticks-config 
 
 export OPTICKS_HOME=$HOME/opticks
 

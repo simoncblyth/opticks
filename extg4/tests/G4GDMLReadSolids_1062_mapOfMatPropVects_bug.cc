@@ -85,6 +85,7 @@ const char* GDML = R"LITERAL(<?xml version="1.0" encoding="UTF-8" ?>
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <cstdlib>
 
 #include <set>
 
@@ -109,6 +110,21 @@ void getRange(G4double& mn, G4double& mx, const G4MaterialPropertyVector* pvec)
     }
 }
 
+/**
+G4GDMLReadSolids_1062_mapOfMatPropVects_bug.cc
+-----------------------------------------------
+
+::
+
+    G4GDMLReadSolids_1062_mapOfMatPropVects_bug  
+       ## gdml schema validation no longer done by default due to network hangs
+
+    VALIDATE=1 G4GDMLReadSolids_1062_mapOfMatPropVects_bug
+        ## enable schema validation with envvar
+
+**/
+
+
 int main(int argc, char** argv)
 {
     const char* path = argc > 1 ? argv[1] : "/tmp/mapOfMatPropVects_BUG.gdml" ;   
@@ -120,7 +136,8 @@ int main(int argc, char** argv)
 
     std::cout << "parsing gdml from " << path << std::endl ; 
     std::cout << "G4VERSION_NUMBER " << G4VERSION_NUMBER << std::endl; 
-    bool validate = true ; 
+    bool validate = getenv("VALIDATE") != NULL ; 
+    std::cout << "VALIDATE " << validate << std::endl ; 
     G4GDMLParser parser ; 
     parser.Read(path, validate);  
 
