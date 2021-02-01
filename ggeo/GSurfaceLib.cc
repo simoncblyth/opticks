@@ -594,6 +594,13 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
         else
         {
             GProperty<float>* _REFLECTIVITY = src->getProperty(REFLECTIVITY); 
+            if(_REFLECTIVITY == NULL)
+            {
+                LOG(fatal) << "ABORT : non-sensor surfaces must have a reflectivity" ; 
+                LOG(fatal) << "This ABORT may be caused by Geant4 bug 2305 https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2305 " ;
+                LOG(fatal) << "which is present in Geant4 releases 1060,1061,1062,1063,1070 " ;   
+                LOG(fatal) << "See the bash function g4-;g4-bug-2305-fix to change Geant4 or use a different Geant4 release" ; 
+            }
             assert(_REFLECTIVITY && os && "non-sensor surfaces must have a reflectivity " );
 
             if(os->isSpecular())
