@@ -5,9 +5,10 @@
 #include <fstream>
 
 #include <optix.h>
+#include <optix_function_table_definition.h>
 #include <optix_stubs.h>
-
 #include <cuda_runtime.h>
+
 #include "sutil_vec_math.h"    // roundUp
 #include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
@@ -84,6 +85,7 @@ void Engine::init()
 
 void Engine::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_)
 {
+    // updates sbt just to change view ? 
     pip.setView(eye_, U_, V_, W_); 
 }
 

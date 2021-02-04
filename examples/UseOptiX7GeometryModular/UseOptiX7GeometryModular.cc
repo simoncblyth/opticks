@@ -29,27 +29,13 @@ UseOptiX7GeometryModular
 #include <cstring>
 #include <sstream>
 #include <fstream>
-
 #include <vector>
-
-#include <optix.h>
-#include <optix_function_table_definition.h>
-#include <optix_stubs.h>
-
-#include <cuda_runtime.h>
 
 #include "Engine.h"
 #include "GAS.h"
 
-
-#include "sutil_vec_math.h"    // roundUp
-#include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
-
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
-
-
-
 
 // Composition::getEyeUVW and examples/UseGeometryShader:getMVP
 void getEyeUVW(const glm::vec4& ce, const unsigned width, const unsigned height, glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W )
@@ -133,7 +119,7 @@ int main(int argc, char** argv)
     unsigned width = 1024u ; 
     unsigned height = 768 ; 
 
-    glm::vec4 ce(0.f,0.f,0.f, 3.f); 
+    glm::vec4 ce(0.f,0.f,0.f, 3.f);  // center-extent
 
     glm::vec3 eye ;
     glm::vec3 U ; 

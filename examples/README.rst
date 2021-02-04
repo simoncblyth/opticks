@@ -327,6 +327,13 @@ UseOptiXGeometryInstancedStandalone
     creates a jumble of thousands of randomly oriented boxes, colorfully normal-shaded  
 
 
+Experimental pre7 and 7 machinery
+---------------------------------
+
+UseOpticksOptiX
+   checking FindOpticksOptiX.cmake can be made to work with 5,6 and 7 
+
+
 Standalone-ish OptiX 7 Examples
 -----------------------------------
 

@@ -6,6 +6,14 @@
 #include "Binding.h"
 
 
+/**
+PIP
+=====
+
+Set of programs to form pipeline
+
+**/
+
 struct PIP
 {
     const char* ptx_path = nullptr ; 

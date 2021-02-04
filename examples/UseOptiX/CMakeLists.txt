@@ -18,7 +18,7 @@ This setting is now done as standard by OpticksBuildOptions.cmake
 
 set(OptiX_VERBOSE ON)
 find_package(OptiX MODULE QUIET)   
-find_package(OpticksCUDA  MODULE QUIET)   
+find_package(OpticksCUDA MODULE QUIET)   
 
 if(OptiX_FOUND)
     message(STATUS "OptiX_MODULE  : ${OptiX_MODULE} ")  
@@ -43,6 +43,9 @@ target_link_libraries(${name}
      PUBLIC 
          Opticks::OptiX
          Opticks::OpticksCUDA
+         ${CMAKE_DL_LIBS}
+         rt
+         pthread
 )
 install(TARGETS ${name}  DESTINATION lib)
 

@@ -33,6 +33,13 @@ cd $bdir && pwd
 
 
 om-
+
+if [ "$1" == "7" ]; then
+   echo $0 === override to use OptiX 7  
+   OPTICKS_OPTIX_PREFIX=$OPTICKS_OPTIX7_PREFIX
+else
+   echo $0 === proceed with default OptiX 
+fi 
 om-cmake $sdir
 
 make

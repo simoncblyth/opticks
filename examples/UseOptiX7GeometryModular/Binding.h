@@ -1,9 +1,9 @@
 #pragma once
 
-
 #include <stdint.h>
+#include <vector_types.h>
 
-
+// both gpu side and host side
 
 struct Params
 {
@@ -15,7 +15,6 @@ struct Params
     OptixTraversableHandle handle;
 };
 
-
 struct RayGenData
 {
     float3 cam_eye;
@@ -24,12 +23,10 @@ struct RayGenData
     float3 camera_w;
 };
 
-
 struct MissData
 {
     float r, g, b;
 };
-
 
 struct HitGroupData
 {
@@ -38,9 +35,9 @@ struct HitGroupData
 
 
 
-
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+// not cuda sources, ie host side code
 
 #include <optix_types.h>
 
@@ -54,7 +51,6 @@ struct SbtRecord
 typedef SbtRecord<RayGenData>     RayGenSbtRecord;
 typedef SbtRecord<MissData>       MissSbtRecord;
 typedef SbtRecord<HitGroupData>   HitGroupSbtRecord;
-
 
 #endif
 

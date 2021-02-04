@@ -3,19 +3,24 @@
 #include <vector>
 
 #include <optix.h>
-
-
-
-
-
 #include "GAS.h"
 #include "PIP.h"
 
 
-// transitional class for adiabatic breakup of the monolith 
-
 /**
-static context doesnt look like a good idea
+Engine
+==========
+
+Breaking up a monolithic example, aiming to kick 
+things into an integratable form.
+
+* static context doesnt look like a good idea
+
+* maybe hide the optix types in EngineImp to keep them out of this header
+  for version switchability 
+
+  * want the Engine to be above the detail of which OptiX version is being used
+
 **/
 
 
@@ -25,7 +30,6 @@ struct Engine
 
     GAS gas = {} ;
     PIP pip ;   
-
     static OptixDeviceContext context ;
 
     static void context_log_cb( unsigned int level, const char* tag, const char* message, void* /*cbdata */); 
@@ -35,7 +39,6 @@ struct Engine
 
     std::vector<uchar4> host_pixels ; 
     uchar4* device_pixels = nullptr ; 
-
 
     Engine(const char* ptx_path_); 
     int preinit(); 

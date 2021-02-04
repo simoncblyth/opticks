@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name UseOptiX7)
 project(${name})
 
-find_package(CUDA REQUIRED)   
+find_package(OpticksCUDA  MODULE QUIET)   
 find_package(OptiX REQUIRED)   
 
 #[=[

@@ -29,6 +29,40 @@ endif()
 # Our initial guess will be within the SDK.
 #set(OptiX_INSTALL_DIR "${CMAKE_SOURCE_DIR}/../" CACHE PATH "Path to OptiX installed location.")
 
+
+# Include
+find_path(OptiX_INCLUDE
+  NAMES optix.h
+  PATHS 
+   "${OptiX_INSTALL_DIR}/include"
+   "$ENV{OPTICKS_OPTIX_PREFIX}/include"
+  NO_DEFAULT_PATH
+  )
+
+
+#find_path(OptiX_INCLUDE
+#  NAMES optix.h
+#  )
+
+set(OptiX_VERSION 0)
+if(OptiX_INCLUDE)
+   file(READ "${OptiX_INCLUDE}/optix.h" _contents)
+   #message(STATUS "FindOptiX.cmake:_contents : ${_contents} ")
+   string(REGEX REPLACE "\n" ";" _contents "${_contents}")
+   foreach(_line ${_contents})
+        if (_line MATCHES "#define OPTIX_VERSION ([0-9]+)")
+            set(OptiX_VERSION ${CMAKE_MATCH_1} )
+            #message(STATUS "FindOptiX.cmake._line ${_line} ===> ${CMAKE_MATCH_1} ") 
+        endif()
+   endforeach()
+endif()
+
+
+
+
+
+
+
 # The distribution contains both 32 and 64 bit libraries.  Adjust the library
 # search path based on the bit-ness of the build.  (i.e. 64: bin64, lib64; 32:
 # bin, lib).  Note that on Mac, the OptiX library is a universal binary, so we
@@ -64,18 +98,6 @@ OPTIX_find_api_library(optix 1)
 OPTIX_find_api_library(optixu 1)
 OPTIX_find_api_library(optix_prime 1)
 
-
-# Include
-find_path(OptiX_INCLUDE
-  NAMES optix.h
-  PATHS "${OptiX_INSTALL_DIR}/include"
-  NO_DEFAULT_PATH
-  )
-
-
-find_path(OptiX_INCLUDE
-  NAMES optix.h
-  )
 
 
 # Check to make sure we found what we were looking for
@@ -215,24 +237,11 @@ else()
    set(OptiX_FOUND "NO")
 endif()
 
-set(OptiX_VERSION_INTEGER 0)
-if(OptiX_FOUND)
-   file(READ "${OptiX_INCLUDE}/optix.h" _contents)
-   #message(STATUS "FindOptiX.cmake:_contents : ${_contents} ")
-   string(REGEX REPLACE "\n" ";" _contents "${_contents}")
-   foreach(_line ${_contents})
-        if (_line MATCHES "#define OPTIX_VERSION ([0-9]+) ")
-            set(OptiX_VERSION_INTEGER ${CMAKE_MATCH_1} )
-            #message(STATUS "FindOptiX.cmake._line ${_line} ===> ${CMAKE_MATCH_1} ") 
-        endif()
-   endforeach()
-endif()
-
 #set(OptiX_VERBOSE NO)
 if(OptiX_VERBOSE)
    message(STATUS "FindOptiX.cmake.OptiX_MODULE          : ${OptiX_MODULE}")
    message(STATUS "FindOptiX.cmake.OptiX_FOUND           : ${OptiX_FOUND}")
-   message(STATUS "FindOptiX.cmake.OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
+   message(STATUS "FindOptiX.cmake.OptiX_VERSION         : ${OptiX_VERSION}")
    message(STATUS "FindOptiX.cmake.OptiX_INCLUDE         : ${OptiX_INCLUDE}")
    message(STATUS "FindOptiX.cmake.OptiX_LIBDIR          : ${OptiX_LIBDIR}")
    message(STATUS "FindOptiX.cmake.optix_LIBRARY         : ${optix_LIBRARY}")

@@ -47,6 +47,16 @@ void PIP::init()
     createShaderBindingTable(); 
 }
 
+/**
+PIP::createModule
+------------------
+
+1. read ptx from file
+2. setup module and pipeline compilation options
+3. create module from PTX 
+
+**/
+
 void PIP::createModule()
 {
     std::string ptx ; 
@@ -80,6 +90,18 @@ void PIP::createModule()
                 &module
                 ) );
 }
+
+/**
+PIP::createProgramGroups
+-------------------------
+
+Creates ProgramGroup
+
+1. RAYGEN : rg
+2. MISS : ms
+3. HITGROUP : ch, in
+
+**/
 
 void PIP::createProgramGroups()
 {
@@ -134,6 +156,14 @@ void PIP::createProgramGroups()
                 &hitgroup_prog_group
                 ) );
 }
+
+/**
+PIP::linkPipeline
+---------------------
+
+Create pipeline
+
+**/
 
 void PIP::linkPipeline()
 {

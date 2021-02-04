@@ -17,13 +17,20 @@
  * limitations under the License.
  */
 
+#include <cassert>
 #include <cstring>
 #include <cstdlib>
 #include <string>
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <iostream>
+
+#include <optix.h>
+
+#if OPTIX_VERSION < 70000
 #include <optix_world.h>
+
 
 // from SDK/sutil/sutil.h
 
@@ -45,7 +52,27 @@ struct APIError
   } while(0)
 
 
+#else
 
+#include <cuda_runtime.h>
+
+#define OPTIX_CHECK(error)                                                     \
+  {                                                                            \
+    if (error != OPTIX_SUCCESS)                                                \
+      std::cerr << __FILE__ << ":" << __LINE__ << " Optix Error: '"            \
+                << optixGetErrorString(error) << "'\n";                        \
+  }
+
+#define CUDA_CHECK(error)                                                      \
+  {                                                                            \
+    if (error != cudaSuccess)                                                  \
+      std::cerr << __FILE__ << ":" << __LINE__ << " CUDA Error: '"             \
+                << cudaGetErrorString(error) << "'\n";                         \
+  }
+
+
+
+#endif
 
 
 struct Args
@@ -162,10 +189,21 @@ struct Devices
 
     void init()
     {
+        num_devices = 0 ; 
+        version = 0 ;  
+#if OPTIX_VERSION < 70000
+        std::cout << "Devices::init optix pre7 " << std::endl ; 
+
         // extracts from /Developer/OptiX/SDK/optixDeviceQuery/optixDeviceQuery.cpp
         RT_CHECK_ERROR(rtDeviceGetDeviceCount(&num_devices));
         RT_CHECK_ERROR(rtGetVersion(&version));
         assert( num_devices <= MAX_DEVICES ); 
+#else
+        std::cout << "Devices::init optix7 " << std::endl ; 
+        int num_devices_ = 0 ; 
+        CUDA_CHECK(cudaGetDeviceCount(&num_devices_));
+        num_devices = num_devices_ ; 
+#endif
 
         if(!args.quiet())
         {
@@ -179,7 +217,8 @@ struct Devices
             char busid[256];
             int computeCaps[2];
             int compat[MAX_DEVICES+1];
-            int ordinal ; 
+            int ordinal = -1 ; 
+#if OPTIX_VERSION < 70000
             RTsize total_mem;
 
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_NAME, sizeof(name), name));
@@ -192,6 +231,20 @@ struct Devices
             RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_COMPATIBLE_DEVICES, sizeof(compat), &compat));
 #endif
 
+#else
+            size_t total_mem = 0 ;   
+
+            cudaDeviceProp prop;
+            CUDA_CHECK(cudaGetDeviceProperties(&prop, i));
+            std::cout << "\tDevice " << i << ": " << prop.name << "\n";
+           
+            strncpy(name, prop.name, sizeof(name)); 
+
+            CUDA_CHECK(cudaDeviceGetPCIBusId ( busid, sizeof(busid), i ));
+            std::cout << "\tbusid  " << i << ": " << busid << "\n";
+            CUDA_CHECK(cudaDeviceGetByPCIBusId ( &ordinal, busid ));
+            std::cout << "\nordinal " << i << ": " << ordinal << "\n" ; 
+#endif
             ordinals.push_back(ordinal);
 
             char* p = name ; 
@@ -297,6 +350,7 @@ int main(int argc, char** argv)
 
     if(!args.ctx) return 0 ; 
 
+#if OPTIX_VERSION < 70000
     RTcontext context = 0;
 
     //RTprogram program;
@@ -322,6 +376,10 @@ int main(int argc, char** argv)
 
     std::cout << " RT_FORMAT_FLOAT4 size " << size << std::endl ; 
     assert( size == sizeof(float)*4 ) ; 
+
+#else
+    std::cout << " not updated for 7 " << std::endl ; 
+#endif
 
     return 0 ; 
 }

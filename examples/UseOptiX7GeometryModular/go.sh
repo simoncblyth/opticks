@@ -89,13 +89,14 @@ rm -rf $prefix/ppm
 
 mkdir -p $prefix/{ptx,bin,ppm} 
 
+export VERBOSE=1
 make
 make install   
 
 which $name
 $name
 
-open $prefix/ppm/$name.ppm
+#open $prefix/ppm/$name.ppm
 
 
 
