@@ -369,7 +369,7 @@ UseOptiX7GeometryInstanced
 
     TODO:
 
-    1. split off geometry from engine 
-
+    1. split geometry from engine 
+    2. hide optix types for version flexibility 
  
 

@@ -18,6 +18,7 @@ TODO:
 * aim for maximally flat structure in order  
   for the traversal to be handled by RT cores  
 
+* replace OptixTraversableHandle with an index into an array 
 
 **/
 

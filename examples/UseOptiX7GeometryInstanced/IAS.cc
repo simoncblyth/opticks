@@ -46,6 +46,10 @@ IAS::addInstance
 
 Collect instance transforms 
 
+TODO: accept an array of transforms 
+and do it all at once, keeping the optix types 
+out of the interface
+
 **/
 
 void IAS::addInstance(const glm::mat4& mat)
@@ -58,7 +62,8 @@ void IAS::addInstance(const glm::mat4& mat)
 
     OptixInstance instance = {} ; 
 
-    instance.flags = OPTIX_INSTANCE_FLAG_NONE;
+    //instance.flags = OPTIX_INSTANCE_FLAG_NONE;
+    instance.flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;
     instance.instanceId = idx ; 
     instance.sbtOffset = 0 ; 
     instance.visibilityMask = 255;
