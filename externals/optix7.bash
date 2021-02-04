@@ -499,9 +499,11 @@ EOU
 }
 
 
+optix7-prefix-default(){ echo $OPTICKS_PREFIX/externals/OptiX_700 ; }
+optix6-prefix-default(){ echo $OPTICKS_PREFIX/externals/OptiX_650 ; }
 
-optix7-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_700 ; }
-optix6-prefix(){ echo $OPTICKS_PREFIX/externals/OptiX_650 ; }
+optix7-prefix(){ echo ${OPTICKS_OPTIX7_PREFIX:-$(optix7-prefix-default)} ; }
+optix6-prefix(){ echo ${OPTICKS_OPTIX6_PREFIX:-$(optix6-prefix-default)} ; }
 
 #optix7-realprefix(){ 
 #  local prefix=$OPTICKS_OPTIX_PREFIX 

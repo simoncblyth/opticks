@@ -27,6 +27,13 @@
 int main(int argc, char** argv)
 {
     std::cout << argv[0] << std::endl ; 
+
+#if OPTIX_VERSION >= 70000
+    std::cout << " OPTIX_VERSION >= 70000 " << std::endl ; 
+#else
+    std::cout << "NOT: OPTIX_VERSION >= 70000 " << std::endl ; 
+#endif
+
     return 0 ; 
 }
 

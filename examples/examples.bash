@@ -1,6 +1,13 @@
-
-
 examples-vi(){ vi $BASH_SOURCE ; }
+examples-dir(){ echo $(dirname $BASH_SOURCE) ; } 
+examples-cd(){  cd $(examples-dir) ; }
+examples-env(){ echo -n ; }
+
+examples-use(){
+   examples-cd
+   grep ^Use README.rst  
+}
+
 
 examples-copy-goc(){
 

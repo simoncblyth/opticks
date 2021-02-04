@@ -65,3 +65,5 @@ owl-(){              . $(externals-dir)/owl.bash               && owl-env $* ; }
 nljson-(){           . $(externals-dir)/nljson.bash            && nljson-env $* ; }
 root-(){             . $(externals-dir)/root.bash              && root-env $* ; }
 
+examples-(){         . $(opticks-home)/examples/examples.bash  && examples-env $* ; }
+

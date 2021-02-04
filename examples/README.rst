@@ -1,14 +1,21 @@
 Examples of Opticks Usage, especially the CMake machinery  
 =============================================================
 
+.. contents:: Table of Contents
+   :depth: 3 
+
+
 The examples have go.sh scripts which perform the normal 
 config, make, install using a fresh build dir every time.
 This is a convenient when the focus is on the CMake machinery. 
 
+
+Testing CMake finding externals and minimal usage
+----------------------------------------------------
+
 UsePLog
     simple executable using PLog via imported interface target 
     from cmake/Modules/FindPLog.cmake
-
  
 UseGLMRaw
    (plain vanilla modern CMake with target import/export)
@@ -53,15 +60,12 @@ UseUseGLMViaBCM
     
    * similar observations to UseUseGLM
 
-UseSysRap
-   vends a library that uses the SysRap target exported by sysrap/CMakeLists.txt  
 
-UseUseSysRap
-   uses the UseSysRap exported library, succeeds to auto-find the dependencies (SysRap)
-   of its direct dependent UseSysRap 
 
 UseOpticksBoost
    no longer operational exercise for the old variable-centric approach to Boost hookup 
+
+
 
 UseBoost 
    Attempt to vend a library target that uses Boost::filesystem::
@@ -92,11 +96,34 @@ UseUseBoost
         # this works with cmake_minimum_version set to 3.5 with cmake 3.11 
 
 
+UseOpenMesh
+   check consumption of BCM exported targets done by cmake/Modules/FindOpenMesh.cmake
+
+
+UseG4NoOpticks
+    used to develop a new FindG4.cmake that works with both Geant4 1042 and 1062, 
+    does not use Opticks at all : requires BCM and Geant4 to be installed 
+    and provided on CMAKE_PREFIX_PATH 
+ 
+UseUseG4NoOpticks    
+    paired with UseG4NoOpticks, creating an executable that uses the lib from UseG4NoOpticks
+
+
+
+
+CMake finding Opticks sub-packages
+-----------------------------------
+
+UseSysRap
+   vends a library that uses the SysRap target exported by sysrap/CMakeLists.txt  
+
+UseUseSysRap
+   uses the UseSysRap exported library, succeeds to auto-find the dependencies (SysRap)
+   of its direct dependent UseSysRap 
+
 UseBoostRap
    testing dependency isolation of BoostRap 
 
-UseOpenMesh
-   check consumption of BCM exported targets done by cmake/Modules/FindOpenMesh.cmake
 
 
 UseNPY(needs-revisit)
@@ -108,60 +135,6 @@ UseNPY(needs-revisit)
       BUT: this approach is jumping into the thicket of the dependency tree.  Better to 
       get experience out in the leaves, before tackling the interior of the bush.  
 
-
-
-
-UseOptiX
-   really minimal usage of OptiX C API, checking creation of context and buffer, 
-   no kernel launching
-
-UseOptiXProgram
-   OptiX C API creates raygen program and launches it, just dumping launch index  
-
-UseOptiXProgramPP
-   OptiX C++ API variant of the above : provides a command line interface to quickly run 
-   simple OptiX code (no buffers in context).
-
-UseOptiXBuffer
-    OptiX C API creates raygen program that just writes constant values to a buffer
-
-UseOptiXBufferPP
-   OptiX C++ API : creates in and out buffers from NPY arrays and launches a program that 
-   simply copies from in to out.  Provides a command line interface to quickly run variants
-   of the buffer accessing GPU code. 
-
-UseOptiXGeometry
-   Minimally demonstrate OptiX geometry without using OXRAP, performs a "standalone" raytrace
-   of a box with normal shader coloring.
- 
-UseOptiXGeometryTriangles
-   Minimally demonstrate the use of optix::GeometryTriangles introduced in OptiX 6.0.0. 
-   Raytraces an octahedron writing a PPM file. 
-   Based on NPY and SYSRAP for buffer and PPM handling. No OXRAP.
-
-   * https://raytracing-docs.nvidia.com/optix/api/html/group___geometry_triangles.html
-
-UseOContextBufferPP
-   Use the OptiXRap.OContext to reimplement UseOptiXBufferPP in a higher level style, 
-   hoping to approach close enough to UseOptiXRap for the problem to manifest.  
-   But it hasnt.
-
-UseOptiXRap
-   Uses Opticks higher level OptiXRap API to test changing the sizes of buffers.  
-
-   Issue with OptiX 6.0.0 : the buffer manipulations seem to work but the rtPrintf 
-   output does not appear unless the buffer writing is commented out.
-
-   Huh, now rtPrintf seems to be working without any clear fix.  
-   Now not working.
-   Now working again, immediately after an oxrap--  
-
-   Perhaps a problem of host code being updated and PTX not, because the
-   PTX is from oxrap ?
-
-   Can change the progname via envvar::
-
-       USEOPTIXRAP_PROGNAME="bufferTest_2" UseOptiXRap   
 
 
 
@@ -224,35 +197,60 @@ UseOpticksGLEW
 
 
 
+OptiX pre7 usage examples
+----------------------------
 
-Standalone-ish OptiX 7 Examples
------------------------------------
+UseOptiX
+   really minimal usage of OptiX C API, checking creation of context and buffer, 
+   no kernel launching
 
-UseOptiX7
-    Basic check of CMake machinery, finding OptiX 7
+UseOptiXProgram
+   OptiX C API creates raygen program and launches it, just dumping launch index  
 
-UseOptiX7GeometryStandalone
-    Start from the SDK optixSphere example, which uses custom(aka analytic) geometry.
-    Follows the monolithic layout of optixSphere, just adapting to use glm for 
-    viewpoint math.
+UseOptiXProgramPP
+   OptiX C++ API variant of the above : provides a command line interface to quickly run 
+   simple OptiX code (no buffers in context).
 
-UseOptiX7GeometryModular
-    Apply wrecking ball to the monolith, splitting into: 
+UseOptiXBuffer
+    OptiX C API creates raygen program that just writes constant values to a buffer
 
-    Engine
-       context, control
-    Binding 
-       common types between CPU and GPU 
-    PIP
-       pipeline of programs creation and updating  
-    GAS
-       geometry acceleration structure building 
+UseOptiXBufferPP
+   OptiX C++ API : creates in and out buffers from NPY arrays and launches a program that 
+   simply copies from in to out.  Provides a command line interface to quickly run variants
+   of the buffer accessing GPU code. 
 
-UseOptiX7GeometryInstanced
-    Attempting to switch UseOptiX7GeometryModular to use an
-    instanced custom geometry for lots of spheres.
+UseOptiXGeometry
+   Minimally demonstrate OptiX geometry without using OXRAP, performs a "standalone" raytrace
+   of a box with normal shader coloring.
+ 
+UseOptiXGeometryTriangles
+   Minimally demonstrate the use of optix::GeometryTriangles introduced in OptiX 6.0.0. 
+   Raytraces an octahedron writing a PPM file. 
+   Based on NPY and SYSRAP for buffer and PPM handling. No OXRAP.
 
+   * https://raytracing-docs.nvidia.com/optix/api/html/group___geometry_triangles.html
 
+UseOContextBufferPP
+   Use the OptiXRap.OContext to reimplement UseOptiXBufferPP in a higher level style, 
+   hoping to approach close enough to UseOptiXRap for the problem to manifest.  
+   But it hasnt.
+
+UseOptiXRap
+   Uses Opticks higher level OptiXRap API to test changing the sizes of buffers.  
+
+   Issue with OptiX 6.0.0 : the buffer manipulations seem to work but the rtPrintf 
+   output does not appear unless the buffer writing is commented out.
+
+   Huh, now rtPrintf seems to be working without any clear fix.  
+   Now not working.
+   Now working again, immediately after an oxrap--  
+
+   Perhaps a problem of host code being updated and PTX not, because the
+   PTX is from oxrap ?
+
+   Can change the progname via envvar::
+
+       USEOPTIXRAP_PROGNAME="bufferTest_2" UseOptiXRap   
 
 
 
@@ -329,12 +327,32 @@ UseOptiXGeometryInstancedStandalone
     creates a jumble of thousands of randomly oriented boxes, colorfully normal-shaded  
 
 
-UseG4NoOpticks
-    used to develop a new FindG4.cmake that works with both Geant4 1042 and 1062, 
-    does not use Opticks at all : requires BCM and Geant4 to be installed 
-    and provided on CMAKE_PREFIX_PATH 
- 
-UseUseG4NoOpticks    
-    paired with UseG4NoOpticks, creating an executable that uses the lib from UseG4NoOpticks
+Standalone-ish OptiX 7 Examples
+-----------------------------------
+
+UseOptiX7
+    Basic check of CMake machinery, finding OptiX 7
+
+UseOptiX7GeometryStandalone
+    Start from the SDK optixSphere example, which uses custom(aka analytic) geometry.
+    Follows the monolithic layout of optixSphere, just adapting to use glm for 
+    viewpoint math.
+
+UseOptiX7GeometryModular
+    Apply wrecking ball to the monolith, splitting into: 
+
+    Engine
+       context, control
+    Binding 
+       common types between CPU and GPU 
+    PIP
+       pipeline of programs creation and updating  
+    GAS
+       geometry acceleration structure building 
+
+UseOptiX7GeometryInstanced
+    Attempting to switch UseOptiX7GeometryModular to use an
+    instanced custom geometry for lots of spheres.
+
 
 
