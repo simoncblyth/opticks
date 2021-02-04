@@ -24,15 +24,11 @@ UseOptiX7GeometryModular
 **/
 
 #include <iostream>
-#include <iomanip>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
-#include <fstream>
-#include <vector>
 
 #include "Engine.h"
-#include "GAS.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>

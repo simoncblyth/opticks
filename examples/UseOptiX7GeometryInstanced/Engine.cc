@@ -6,6 +6,7 @@
 
 #include <optix.h>
 #include <optix_stubs.h>
+#include <optix_function_table_definition.h>
 
 #include <cuda_runtime.h>
 #include "sutil_vec_math.h"    // roundUp
@@ -16,6 +17,7 @@
 #include "Engine.h"
 
 #include "Binding.h"
+
 
 
 static void SPPM_write( const char* filename, const uchar4* image, int width, int height, bool yflip )

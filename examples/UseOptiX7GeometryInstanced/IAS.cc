@@ -40,6 +40,13 @@ void IAS::dump(const float* imp)
     }
 }
 
+/**
+IAS::addInstance
+-----------------
+
+Collect instance transforms 
+
+**/
 
 void IAS::addInstance(const glm::mat4& mat)
 {
@@ -220,16 +227,3 @@ OptixTraversableHandle IAS::build(OptixBuildInput buildInput)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
- 

@@ -24,26 +24,11 @@ UseOptiX7GeometryModular
 **/
 
 #include <iostream>
-#include <iomanip>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
-#include <fstream>
-
-#include <vector>
-
-#include <optix.h>
-#include <optix_function_table_definition.h>
-#include <optix_stubs.h>
-
-#include <cuda_runtime.h>
 
 #include "Engine.h"
-#include "GAS.h"
-
-
-#include "sutil_vec_math.h"    // roundUp
-#include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>

@@ -341,11 +341,13 @@ UseOptiX7
     Basic check of CMake machinery, finding OptiX 7
 
 UseOptiX7GeometryStandalone
-    Start from the SDK optixSphere example, which uses custom(aka analytic) geometry.
-    Follows the monolithic layout of optixSphere, just adapting to use glm for 
+    Start from the SDK optixSphere example
+    This example uses custom(aka analytic or non-triangulated) geometry.
+    Follows the monolithic main layout of optixSphere, just adapting to use glm for 
     viewpoint math.
 
 UseOptiX7GeometryModular
+    Start from UseOptiX7GeometryStandalone
     Apply wrecking ball to the monolith, splitting into: 
 
     Engine
@@ -357,9 +359,17 @@ UseOptiX7GeometryModular
     GAS
        geometry acceleration structure building 
 
+    Revisited this, tidying up the headers aiming to 
+    eliminate optix types from high levels in order to hide the version.
+
+
 UseOptiX7GeometryInstanced
     Attempting to switch UseOptiX7GeometryModular to use an
     instanced custom geometry for lots of spheres.
 
+    TODO:
 
+    1. split off geometry from engine 
+
+ 
 

@@ -95,7 +95,7 @@ make install
 which $name
 $name
 
-open $prefix/ppm/$name.ppm
+#open $prefix/ppm/$name.ppm
 
 
 
