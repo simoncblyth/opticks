@@ -42,13 +42,15 @@ static __forceinline__ __device__ void trace(
         float3                 ray_direction,
         float                  tmin,
         float                  tmax,
-        float3*                prd
+        float3*                prd, 
+        unsigned*              iidx  
         )
 {
-    uint32_t p0, p1, p2;
+    uint32_t p0, p1, p2, p3;
     p0 = float_as_int( prd->x );
     p1 = float_as_int( prd->y );
     p2 = float_as_int( prd->z );
+    p3 = *iidx ;
     optixTrace(
             handle,
             ray_origin,
@@ -61,37 +63,39 @@ static __forceinline__ __device__ void trace(
             0,                   // SBT offset
             0,                   // SBT stride
             0,                   // missSBTIndex
-            p0, p1, p2 );
+            p0, p1, p2, p3 );
     prd->x = int_as_float( p0 );
     prd->y = int_as_float( p1 );
     prd->z = int_as_float( p2 );
+    *iidx = p3 ; 
 }
 
 
-static __forceinline__ __device__ void setPayload( float3 p )
+static __forceinline__ __device__ void setPayload( float3 p, unsigned instance_idx)
 {
     optixSetPayload_0( float_as_int( p.x ) );
     optixSetPayload_1( float_as_int( p.y ) );
     optixSetPayload_2( float_as_int( p.z ) );
+    optixSetPayload_3( instance_idx );
 }
 
 
-static __forceinline__ __device__ float3 getPayload()
+static __forceinline__ __device__ void getPayload(float3& p, unsigned& instance_idx)
 {
-    return make_float3(
-            int_as_float( optixGetPayload_0() ),
-            int_as_float( optixGetPayload_1() ),
-            int_as_float( optixGetPayload_2() )
-            );
+    p.x = int_as_float( optixGetPayload_0() );
+    p.y = int_as_float( optixGetPayload_1() );
+    p.z = int_as_float( optixGetPayload_2() );
+    instance_idx = optixGetPayload_3() ; 
 }
 
 
-__forceinline__ __device__ uchar4 make_color( const float3&  c )
+__forceinline__ __device__ uchar4 make_color( const float3&  c, unsigned iidx )
 {
+    float scale = iidx % 2u == 0u ? 0.5f : 1.f ; 
     return make_uchar4(
-            static_cast<uint8_t>( clamp( c.x, 0.0f, 1.0f ) *255.0f ),
-            static_cast<uint8_t>( clamp( c.y, 0.0f, 1.0f ) *255.0f ),
-            static_cast<uint8_t>( clamp( c.z, 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( c.x, 0.0f, 1.0f ) *255.0f )*scale ,
+            static_cast<uint8_t>( clamp( c.y, 0.0f, 1.0f ) *255.0f )*scale ,
+            static_cast<uint8_t>( clamp( c.z, 0.0f, 1.0f ) *255.0f )*scale ,
             255u
             );
 }
@@ -114,22 +118,27 @@ extern "C" __global__ void __raygen__rg()
     const float3 origin      = rtData->cam_eye;
     const float3 direction   = normalize( d.x * U + d.y * V + W );
     float3       payload_rgb = make_float3( 0.5f, 0.5f, 0.5f );
+    unsigned instance_idx = 0u ; 
     trace( params.handle,
             origin,
             direction,
             0.00f,  // tmin
             1e16f,  // tmax
-            &payload_rgb );
+            &payload_rgb, 
+            &instance_idx );
 
-    params.image[idx.y * params.image_width + idx.x] = make_color( payload_rgb );
+    params.image[idx.y * params.image_width + idx.x] = make_color( payload_rgb, instance_idx );
 }
 
 
 extern "C" __global__ void __miss__ms()
 {
     MissData* rt_data  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
-    float3    payload = getPayload();
-    setPayload( make_float3( rt_data->r, rt_data->g, rt_data->b ) );
+    float3    p = make_float3( 0.f, 0.f, 0.f); 
+    unsigned instance_idx = 0 ; 
+    //getPayload(&p, &instance_idx);
+
+    setPayload( make_float3( rt_data->r, rt_data->g, rt_data->b ), instance_idx );
 }
 
 
@@ -177,5 +186,13 @@ extern "C" __global__ void __closesthit__ch()
                 int_as_float( optixGetAttribute_1() ),
                 int_as_float( optixGetAttribute_2() )
                 );
-    setPayload( normalize( optixTransformNormalFromObjectToWorldSpace( shading_normal ) ) * 0.5f + 0.5f );
+
+
+    //OptixTraversableHandle gas = optixGetGASTraversableHandle(); 
+    unsigned instance_idx = optixGetInstanceIndex() ;
+
+    setPayload( normalize( optixTransformNormalFromObjectToWorldSpace( shading_normal ) ) * 0.5f + 0.5f , instance_idx );
+
+    
+
 }

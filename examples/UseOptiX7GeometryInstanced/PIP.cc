@@ -79,7 +79,7 @@ void PIP::createModule()
     pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ; 
 
 
-    pipeline_compile_options.numPayloadValues      = 3;
+    pipeline_compile_options.numPayloadValues      = 4;   // in optixTrace call
     pipeline_compile_options.numAttributeValues    = 3;
     pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_NONE;  // TODO: should be OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW;
     pipeline_compile_options.pipelineLaunchParamsVariableName = "params";

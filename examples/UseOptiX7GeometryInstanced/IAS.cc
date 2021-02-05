@@ -46,9 +46,20 @@ IAS::addInstance
 
 Collect instance transforms 
 
-TODO: accept an array of transforms 
+TODO: 
+method accepting an array of transforms 
 and do it all at once, keeping the optix types 
 out of the interface
+
+the "spare" slots in the 4x4 transform can carry identity info 
+and index of which of the ~10 gas to wheel in 
+(actually the Opticks triplet identity can do both those)
+
+hmm what about which volume within the gas the intersect is with ?
+(ie the OptiX6 primIdx equivalent)
+
+TODO: what about flipping between of order 10 different gas at this level ?
+
 
 **/
 
@@ -109,7 +120,7 @@ void IAS::initInstancesMany()
 {
     //int n=100 ;   // 8,120,601
     int n=50 ;   // 
-    int s=1 ; 
+    int s=4 ; 
 
     for(int i=-n ; i <= n ; i+=s ){
     for(int j=-n ; j <= n ; j+=s ){
