@@ -100,6 +100,15 @@ __forceinline__ __device__ uchar4 make_color( const float3&  c, unsigned iidx )
             );
 }
 
+/**
+__raygen__rg
+----------------
+
+Q: Why get "uniform" camera data form from sbt ? When 
+   changing it requires rebuilding sbt as opposed 
+   to getting it from __constant__ memory params ?
+
+**/
 
 extern "C" __global__ void __raygen__rg()
 {

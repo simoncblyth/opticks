@@ -46,6 +46,17 @@ void GAS::init()
 }
 
 
+/**
+GAS::build
+------------
+
+TODO: array of buildInput for multi-prim in single GAS
+(what is the priIdx equivalent, to lookup which we intersected ?)
+
+* presumably : unsigned int optixGetPrimitiveIndex()
+* SDK/optixWhitted : 3 prim -> 3 aabb -> 1 OptixBuildInput -> 1 GAS
+
+**/
 
 OptixTraversableHandle GAS::build(OptixBuildInput buildInput)
 { 
