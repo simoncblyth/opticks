@@ -26,14 +26,14 @@
 
 struct PerRayData_propagate
 {
-    float3 surface_normal ; 
-    float distance_to_boundary ;
-    int   boundary ; 
-    uint4 identity ;
+    float3 surface_normal ;         // essential (3)
+    float distance_to_boundary ;    // essential (1)
+    int   boundary ;                // essential (1)
+    uint4 identity ;                // handy (4) could be squeezed to (1)
 
 #ifdef WITH_ANGULAR
-    float f_theta ;
-    float f_phi ; 
+    float f_theta ;                 //       (1)
+    float f_phi ;                   //       (1)
 #endif
 
 #ifdef WITH_DEBUG_BUFFER 
@@ -45,6 +45,9 @@ struct PerRayData_propagate
 /**
 
 * It would be good to squeeze this down to the size of 2*float4 
+
+* for OptiX 7 the payload is restricted to 8 : to do that will need to squeeze the identity
+
 
 What is essential and what is just being a passenger here ?
 

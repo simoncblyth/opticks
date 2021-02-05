@@ -29,7 +29,7 @@ See Also
 ---------
 
 * optix7c- course from Ingo Wald
-
+* env-;rcs- from Vishal Mehta, compute usage of OptiX7 
 
 optix_stubs.h
 --------------

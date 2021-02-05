@@ -67,3 +67,34 @@ OptiX CUDA Sources
    tests/OSensorLibGeoTest.cc
 
 
+
+Thoughts about migrating to OptiX 7
+-------------------------------------
+
+optixTrace Payload Restricted to 8*32b, no more PerRayData struct
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* moving from uint4 identity to a single identity int (nodeIndex or tripletIdentity) 
+  that allows lookups into identity buffers 
+  would just allow all of cu/PerRayData_propagate.h  to squeeze into 8 slots.
+
+* should the identity buffers for all GMergedMesh be combined into one 
+  (with offsets being done to the indices) and a global identity index used ?
+ 
+
+Instance Identity
+~~~~~~~~~~~~~~~~~~~~
+
+
+optix_7_device.h::
+
+    324 /// Returns the traversable handle for the Geometry Acceleration Structure (GAS) containing
+    325 /// the current hit. May be called from IS, AH and CH.
+    326 static __forceinline__ __device__ OptixTraversableHandle optixGetGASTraversableHandle();
+
+    388 static __forceinline__ __device__ unsigned int optixGetInstanceIdFromHandle( OptixTraversableHandle handle );
+
+
+TODO: test if the above two can be combined to grab instance identity of every intersect
+
+
