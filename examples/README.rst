@@ -197,8 +197,29 @@ UseOpticksGLEW
 
 
 
+.. comment OPTIX_START
+
+
+
+Examples Directly Using NVIDIA OptiX
+---------------------------------------
+
+The below sections list examples using OptiX, named after directory names.
+Many of the examples are standalone in nature, not depending on an Opticks install.
+The steps to build (and sometimes run) are often simply::
+ 
+    cd ~/opticks/examples/UseOptiX
+    ./go.sh 
+
+    cd ~/opticks/examples/UseOptiX7GeometryInstanced
+    ./go.sh    
+
+
+
+
 OptiX pre7 usage examples
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 UseOptiX
    really minimal usage of OptiX C API, checking creation of context and buffer, 
@@ -254,8 +275,10 @@ UseOptiXRap
 
 
 
+
+
 Standalone-ish OptiX 5 or 6 Examples
-----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 UseOptiXTexture
     C API 3D texture creation, with pullback test into out_buffer
@@ -328,14 +351,14 @@ UseOptiXGeometryInstancedStandalone
 
 
 Experimental pre7 and 7 machinery
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 UseOpticksOptiX
    checking FindOpticksOptiX.cmake can be made to work with 5,6 and 7 
 
 
 Standalone-ish OptiX 7 Examples
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 UseOptiX7
     Basic check of CMake machinery, finding OptiX 7
@@ -372,4 +395,10 @@ UseOptiX7GeometryInstanced
     1. split geometry from engine 
     2. hide optix types for version flexibility 
  
+
+
+.. comment OPTIX_END
+
+
+
 

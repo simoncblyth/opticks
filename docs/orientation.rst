@@ -467,6 +467,15 @@ optixrap/cu/pack.h
  
 
 
+
+
+.. include:: ../examples/README.rst 
+   :start-after: .. comment OPTIX_START
+   :end-before: .. comment OPTIX_END 
+
+
+
+
 CMake Structure 
 -----------------
 

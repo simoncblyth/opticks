@@ -67,3 +67,8 @@ can be manually setup by your detector simulation framework machinery.::
     opticks-prepend-prefix /usr/local/mysimframework_externals/boost
 
 
+
+
+
+
+
