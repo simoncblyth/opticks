@@ -31,6 +31,51 @@ See Also
 * optix7c- course from Ingo Wald
 
 
+optix_stubs.h
+--------------
+
+::
+
+    // The function table needs to be defined in exactly one translation unit. This can be
+    // achieved by including optix_function_table_definition.h in that translation unit.
+    extern OptixFunctionTable g_optixFunctionTable;
+
+
+optix_7_types.h
+----------------
+
+::
+
+      69 /// Traversable handle
+      70 typedef unsigned long long OptixTraversableHandle;
+
+
+dependencies between the headers
+-----------------------------------
+
+::
+
+    optix.h
+        optix_device.h (ifdef __CUDACC__)
+            optix_7_device.h
+
+        optix_host.h
+            optix_7_host.h
+
+    optix_function_table_definition.h   : plants g_optixFunctionTable
+        optix_function_table.h
+            optix_types.h
+                optix_7_types.h
+
+    optix_stubs.h
+        optix_function_table.h          : also plants g_optixFunctionTable
+            optix_types.h
+                optix_7_types.h
+
+    optix_stack_size.h
+        optix.h 
+
+
 Refs
 ------
 
@@ -529,6 +574,10 @@ optix6-pdf-(){ echo $(optix6-prefix)/doc/OptiX_Programming_Guide_6.5.0.pdf ; }
 
 optix7-pdf(){ open $($FUNCNAME-) ; }
 optix6-pdf(){ open $($FUNCNAME-) ; }
+
+optix7-html(){ open https://raytracing-docs.nvidia.com/optix7/index.html ; }
+optix7-guide(){ open https://raytracing-docs.nvidia.com/optix7/guide/index.html ; }
+
 
 # open- is from env-
 optix6-p(){ open- ; open-page $(( 8 + ${1:-0} )) $(optix6-pdf-) ; }
