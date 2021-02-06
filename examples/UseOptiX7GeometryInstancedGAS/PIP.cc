@@ -29,11 +29,29 @@ static bool readFile( std::string& str, const char* path )
     return false;
 }
 
+OptixPipelineCompileOptions PIP::CreateOptions(unsigned numPayloadValues, unsigned numAttributeValues ) // static
+{
+    OptixPipelineCompileOptions pipeline_compile_options = {} ;
+
+    pipeline_compile_options.usesMotionBlur        = false;
+    //pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
+    pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ; 
+    // without the OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING  got no intersects
+
+    pipeline_compile_options.numPayloadValues      = numPayloadValues ;   // in optixTrace call
+    pipeline_compile_options.numAttributeValues    = numAttributeValues ;
+    //pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_NONE; 
+    pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW;
+    pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
+
+    return pipeline_compile_options ;  
+}
+
 
 PIP::PIP(const char* ptx_path_) 
     :
-    sizeof_log(sizeof( log )),
-    ptx_path(strdup(ptx_path_))
+    pipeline_compile_options(CreateOptions(4,3)),
+    module(CreateModule(ptx_path_,pipeline_compile_options))
 {
     init(); 
 }
@@ -41,7 +59,6 @@ PIP::PIP(const char* ptx_path_)
 
 void PIP::init()
 {
-    createModule(); 
     createProgramGroups();
     linkPipeline();
     createShaderBindingTable(); 
@@ -51,15 +68,11 @@ void PIP::init()
 PIP::createModule
 -------------------
 
-Current IAS implementation requires the SINGLE_LEVEL_INSTANCING flag otherwise 
-gives no intersects:: 
-
-   pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ;
-
+PTX from file is read and compiled into the module
 
 **/
 
-void PIP::createModule()
+OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options ) // static 
 {
     std::string ptx ; 
     readFile(ptx, ptx_path ); 
@@ -69,21 +82,15 @@ void PIP::createModule()
         << " ptx size " << ptx.size() << std::endl 
         ;
 
+    OptixModule module = nullptr ;
+
     OptixModuleCompileOptions module_compile_options = {};
     module_compile_options.maxRegisterCount     = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
     module_compile_options.optLevel             = OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
     module_compile_options.debugLevel           = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO;
 
-    pipeline_compile_options.usesMotionBlur        = false;
-    //pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
-    pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ; 
-
-
-    pipeline_compile_options.numPayloadValues      = 4;   // in optixTrace call
-    pipeline_compile_options.numAttributeValues    = 3;
-    //pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_NONE; 
-    pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW;
-    pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
+    size_t sizeof_log = 0 ; 
+    char log[2048]; // For error reporting from OptiX creation functions
 
     OPTIX_CHECK_LOG( optixModuleCreateFromPTX(
                 Engine::context,
@@ -95,10 +102,15 @@ void PIP::createModule()
                 &sizeof_log,
                 &module
                 ) );
+
+    return module ; 
 }
 
 void PIP::createProgramGroups()
 {
+    size_t sizeof_log = 0 ; 
+    char log[2048]; // For error reporting from OptiX creation functions
+
     OptixProgramGroupOptions program_group_options   = {}; // Initialize to zeros
 
     OptixProgramGroupDesc raygen_prog_group_desc    = {}; //
@@ -153,6 +165,9 @@ void PIP::createProgramGroups()
 
 void PIP::linkPipeline()
 {
+    size_t sizeof_log = 0 ; 
+    char log[2048]; // For error reporting from OptiX creation functions
+
     OptixProgramGroup program_groups[] = { raygen_prog_group, miss_prog_group, hitgroup_prog_group };
 
     OptixPipelineLinkOptions pipeline_link_options = {};
