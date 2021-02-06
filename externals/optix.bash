@@ -25,6 +25,18 @@ optix-usage(){ cat << \EOU
 NVIDIA OptiX Ray Trace Toolkit
 ================================== 
 
+
+About These Functions
+--------------------------
+
+The installation docs directs you to install OptiX yourself manually 
+following NVIDIA instructions.  
+
+You can try using optix- functions of course, but they are not part of the automated 
+install and you should be sure to understand what they are doing before running them 
+because they do not get run often and are liable to become stale for new optix releases.
+
+
 See Also
 ------------
 
@@ -817,6 +829,7 @@ optix-runfile()
        510) echo NVIDIA-OptiX-SDK-5.1.0-linux64_24109458.sh ;;
        511) echo NVIDIA-OptiX-SDK-5.1.1-linux64-25109142.sh ;;
        600) echo NVIDIA-OptiX-SDK-6.0.0-linux64-25650775.sh ;;
+       650) echo NVIDIA-OptiX-SDK-6.5.0-linux64.sh ;;
     esac
 }
 

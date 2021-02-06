@@ -1315,22 +1315,20 @@ opticks-check-compute-capability(){
         opticks-check-compute-capability-msg
         return 1 
     fi 
-    local cc=$OPTICKS_COMPUTE_CAPABILITY
 
-    [ $cc -lt 30 ] 2> /dev/null
-
-    if [ $? -ne 0 ]; then 
-       echo $msg OPTICKS_COMPUTE_CAPABILITY $cc : ERROR envvar must contain an integer expression such as 70 or 75  
+   local occ=$OPTICKS_COMPUTE_CAPABILITY 
+    if [ "${occ/.}" != "${occ}"  ]; then 
+       echo $msg OPTICKS_COMPUTE_CAPABILITY $occ : ERROR envvar must contain an integer expression such as 70 or 75 , not 7.0 or 7.5
        opticks-check-compute-capability-msg
        return 2
     fi  
 
-    if [ $cc -lt 30 ]; then 
-        echo $msg OPTICKS_COMPUTE_CAPABILITY $cc : ERROR it must must be 30 or more  
+    if [ $occ -lt 30 ]; then 
+        echo $msg OPTICKS_COMPUTE_CAPABILITY $occ : ERROR it must must be 30 or more  
         opticks-check-compute-capability-msg
         return 3
     else
-        echo $msg OPTICKS_COMPUTE_CAPABILITY $cc : looking good it is an integer expression of  30 or more 
+        echo $msg OPTICKS_COMPUTE_CAPABILITY $occ : looking good it is an integer expression of  30 or more 
     fi
     return 0 
 }
