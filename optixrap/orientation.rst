@@ -82,19 +82,53 @@ optixTrace Payload Restricted to 8*32b, no more PerRayData struct
   (with offsets being done to the indices) and a global identity index used ?
  
 
-Instance Identity
-~~~~~~~~~~~~~~~~~~~~
+
+How much in SBT and how much in buffers ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SBT is like laying down inputs to shader programs. What is the 
+benefit of access from there as opposed to access from general global memory ? 
+
+With CSG trees vary in size greatly ? 
 
 
-optix_7_device.h::
-
-    324 /// Returns the traversable handle for the Geometry Acceleration Structure (GAS) containing
-    325 /// the current hit. May be called from IS, AH and CH.
-    326 static __forceinline__ __device__ OptixTraversableHandle optixGetGASTraversableHandle();
-
-    388 static __forceinline__ __device__ unsigned int optixGetInstanceIdFromHandle( OptixTraversableHandle handle );
+Hmm all the geometry intersect examples getting their data from SBT : optixGetSbtDataPointer() 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-TODO: test if the above two can be combined to grab instance identity of every intersect
+primIdx
+~~~~~~~~~~~
+
+700pdf p19
+
+Primitives inside a build input are indexed starting from zero. This primitive
+index is accessible inside the IS, AH and CH program. The application can
+choose to offset this index for all primitives in a build input with no
+overhead at runtime. This can be particularly useful when data for consecutive
+build inputs is stored consecutively in device memory. The primitiveIndexOffset
+is only used when reporting the intersection primitive.
+
+
+IAS can reference multiple GAS handles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* is it advantageous to have separate IAS for each GAS ?
+* or one IAS for the entire geometry ?
+
+GAS
+~~~~~
+
+Opticks GParts is generally concatenation of multiple GParts each from single solids.
+Each solid being a CSG node tree.
+
+In OptiX < 7 used rtBuffer at geometry context with primBuffer, partBuffer, tranBuffer, ...
+
+
+
+
+
+
+
+
 
 

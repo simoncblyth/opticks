@@ -7,6 +7,15 @@ optix7c-usage(){ cat << EOU
 optix7c Usage 
 ===================
 
+See Also
+-----------
+
+* https://github.com/search?q=optix7&type=
+
+
+Build
+--------
+
 ::
 
    [blyth@localhost build]$ cmake .. -DOptiX_INSTALL_DIR=$(opticks-prefix)/externals/OptiX_700

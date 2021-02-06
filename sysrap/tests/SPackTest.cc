@@ -332,6 +332,53 @@ void test_unsigned_as_int_16()
     for(unsigned value=value0 ; value <= value1  ; value++) test_unsigned_as_int_16(value); 
 }
 
+/**
+
+OptiX_700/SDK/optixWhitted/helpers.h 
+
+138 #define float3_as_args(u) \
+139     reinterpret_cast<uint32_t&>((u).x), \
+140     reinterpret_cast<uint32_t&>((u).y), \
+141     reinterpret_cast<uint32_t&>((u).z)
+
+**/
+
+
+union uif_t {
+   unsigned u ; 
+   int      i ; 
+   float    f ; 
+};  
+
+void test_reinterpret_cast()
+{
+    unsigned u = 42 ; 
+    uif_t uif ; 
+    uif.u = u  ; 
+
+    //unsigned u2 = reinterpret_cast<uint32_t&>(uif.f) ; 
+    unsigned u2 = reinterpret_cast<unsigned&>(uif.f) ; 
+    LOG(info) << " uif.f " << uif.f << " u2 " << u2 ; 
+    assert( u2 == u ); 
+}
+
+void dummy_optixTrace(unsigned& p0 )
+{
+    p0 += 100u ; 
+}
+
+void test_reinterpret_cast_arg()
+{
+    uif_t uif ; 
+    uif.u = 42u  ; 
+    LOG(info) << " uif.f " << uif.f << " uif.u " << uif.u  ; 
+    dummy_optixTrace(  reinterpret_cast<unsigned&>(uif.f) ) ; 
+    LOG(info) << " uif.f " << uif.f << " uif.u " << uif.u  ; 
+    assert( uif.u == 142u  );  
+}
+
+
+
 
 int main(int argc , char** argv )
 {
@@ -353,7 +400,10 @@ int main(int argc , char** argv )
     //test_unsigned_as_int(); 
     //test_unsigned_as_int_16(); 
 
-    test_Encode22hilo_Decode22hilo(); 
+    //test_Encode22hilo_Decode22hilo(); 
+
+    //test_reinterpret_cast(); 
+    test_reinterpret_cast_arg(); 
 
     return 0  ; 
 }

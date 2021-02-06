@@ -763,6 +763,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     NPY<float>*     planBuf = pts->getPlanBuffer(); assert(planBuf && planBuf->hasShape(-1,4));      // planes used for convex polyhedra such as trapezoid
     NPY<int>*       primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));      // prim
 
+    // NB these buffers are concatenations of the corresponding buffers for multiple prim 
     unsigned numPrim = primBuf->getNumItems();
 
     NPY<float>* itransforms = mm->getITransformsBuffer(); assert(itransforms && itransforms->hasShape(-1,4,4) ) ;

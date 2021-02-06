@@ -132,7 +132,11 @@ identityBuffer
    volume identity uint4 from instance_index and primIdx::
 
        uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ; 
-   
+  
+
+Q: with OptiX7 does all this have to go into SBT ?
+
+ 
 1**/
 
 
@@ -406,6 +410,15 @@ The former *CSG_FLAGPARTLIST* approach is not general and requires semi-manual
 partitioning of CSG solids at constituent intersection planes. This 
 approach may be faster for suitable shapes but lack of generality makes 
 it difficult to use.
+
+Q: what is the OptiX7 equivalent for primIdx
+   telling or a multi OptixBuildInput GAS which aabb was intersected
+   and hence whic h primitive intersect function to use ? 
+
+A: optix7-pdf p18 : Each build input maps to one or more consecutive SBT records
+   that control program dispatch. See “Shader binding table” (page 41) for more
+   information.    
+
 
 3**/
 
