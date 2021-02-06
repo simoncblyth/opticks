@@ -14,6 +14,7 @@
 
 #include "GAS.h"
 #include "IAS.h"
+#include "Geo.h"
 #include "Engine.h"
 
 #include "Binding.h"
@@ -56,18 +57,6 @@ void Engine::context_log_cb( unsigned int level, const char* tag, const char* me
         << message << "\n";
 }
 
-
-Engine::Engine(const char* ptx_path_)
-    :
-    rc(preinit()),
-    bb({-1.5,-1.5,-1.5,1.5,1.5,1.5}),
-    gas(GAS::Build(bb)),
-    ias(gas.handle),
-    pip(strdup(ptx_path_))
-{
-    init();  
-}
-
 int Engine::preinit()
 {
     CUDA_CHECK( cudaFree( 0 ) ); // Initialize CUDA
@@ -80,6 +69,15 @@ int Engine::preinit()
     OPTIX_CHECK( optixDeviceContextCreate( cuCtx, &options, &context ) );
 
     return 0 ; 
+}
+
+Engine::Engine(const char* ptx_path_)
+    :
+    rc(preinit()),
+    geo(new Geo),
+    pip(strdup(ptx_path_))
+{
+    init();  
 }
 
 void Engine::init()
@@ -120,10 +118,7 @@ void Engine::launch()
     params.image_height = height;
     params.origin_x     = width / 2;
     params.origin_y     = height / 2;
-
-    //params.handle       = gas.gas_handle;  // OK
-    //params.handle       = ias.gas_handle;  // OK 
-    params.handle       = ias.ias_handle;    // now OK when set 
+    params.handle       = geo->getTop(); 
 
     CUdeviceptr d_param;
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_param ), sizeof( Params ) ) );

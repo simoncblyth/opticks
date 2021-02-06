@@ -5,7 +5,7 @@
 #include <optix.h>
 
 
-
+struct Geo ; 
 
 
 #include "GAS.h"
@@ -18,9 +18,7 @@ struct Engine
 {
     int rc ; 
 
-    std::vector<float> bb ; 
-    GAS gas = {} ;
-    IAS ias ;
+    Geo* geo ; 
     PIP pip ;   
 
     static OptixDeviceContext context ;

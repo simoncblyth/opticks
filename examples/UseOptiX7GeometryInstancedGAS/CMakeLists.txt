@@ -44,6 +44,8 @@ set(SOURCES
     GAS_Builder.cc 
     PIP.cc 
     IAS.cc 
+    IAS_Builder.cc 
+    Geo.cc
 )
 
 set(OPTIX_SOURCES

@@ -81,7 +81,8 @@ void PIP::createModule()
 
     pipeline_compile_options.numPayloadValues      = 4;   // in optixTrace call
     pipeline_compile_options.numAttributeValues    = 3;
-    pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_NONE;  // TODO: should be OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW;
+    //pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_NONE; 
+    pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW;
     pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
 
     OPTIX_CHECK_LOG( optixModuleCreateFromPTX(
