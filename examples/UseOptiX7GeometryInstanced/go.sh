@@ -19,9 +19,18 @@
 ##
 
 
-opticks-
-optix-prefix(){ echo $(opticks-prefix)/externals/OptiX_700 ; }
+# try to make this work without opticks bash hookup
+# just needs an OPTIX_PREFIX envvar set in .bash_profile/.bashrc
+if [ -n "$OPTIX_PREFIX" ]; then 
+    echo using OPTIX_PREFIX $OPTIX_PREFIX envvar not the opticks bash hookup 
+    optix-prefix(){ echo $OPTIX_PREFIX ; }
+else
+    opticks-
+    optix-prefix(){ echo $(opticks-prefix)/externals/OptiX_700 ; }
+fi 
+
 [ ! -d "$(optix-prefix)" ] && echo no optix-prefix dir $(optix-prefix) && exit 0 
+
 
 
 sdir=$(pwd)
