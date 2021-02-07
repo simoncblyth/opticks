@@ -107,27 +107,27 @@ const char* PPMPath( const char* install_prefix, const char* stem, const char* e
 
 int main(int argc, char** argv)
 {
+    const char* spec = argc > 1 ? argv[1] : "i0" ; 
+    std::cout << argv[0] << " spec " << spec << std::endl ;  
+
     const char* name = "UseOptiX7GeometryInstancedGASComp" ; 
     const char* prefix = getenv("PREFIX"); 
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
 
     const char* cmake_target = name ; 
     const char* ptx_path = PTXPath( prefix, cmake_target, name ) ; 
-
     std::cout << " ptx_path " << ptx_path << std::endl ; 
 
     unsigned width = 1024u ; 
     unsigned height = 768u ; 
     unsigned depth = 1u ; 
 
-    std::cout << argv[0] << std::endl ;  
-
-    Engine engine(ptx_path) ; 
+    Engine engine(ptx_path, spec ) ; 
 
     Geo* geo = Geo::Get(); 
-    const IAS& top = geo->getIAS(0) ;
+    float top_extent = geo->getTopExtent() ;  
 
-    glm::vec4 ce(0.f,0.f,0.f, top.extent*1.4f );   // defines the center-extent of the region to view
+    glm::vec4 ce(0.f,0.f,0.f, top_extent*1.4f );   // defines the center-extent of the region to view
 
     glm::vec3 eye ;
     glm::vec3 U ; 
@@ -135,11 +135,11 @@ int main(int argc, char** argv)
     glm::vec3 W ; 
     getEyeUVW( ce, width, height, eye, U, V, W ); 
 
-    float tmin = top.extent*0.75f ;   // <-- so can see inside the big sphere  
-    float tmax = top.extent*10000.f ; 
+    float tmin = geo->getTmin(); 
+    float tmax = geo->getTmax();
 
     std::cout << "main"
-              << " top.extent " << top.extent 
+              << " top_extent " << top_extent 
               << " tmin " << tmin  
               << " tmax " << tmax
               << std::endl 

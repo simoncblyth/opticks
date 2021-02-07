@@ -33,7 +33,7 @@ struct Engine
     uchar4* device_pixels = nullptr ; 
 
 
-    Engine(const char* ptx_path_); 
+    Engine(const char* ptx_path_, const char* spec); 
     int preinit(); 
     void init(); 
 

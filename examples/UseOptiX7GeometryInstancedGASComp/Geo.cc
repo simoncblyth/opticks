@@ -1,4 +1,6 @@
+
 #include <iostream>
+#include <cstring>
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -6,15 +8,21 @@
 
 Geo* Geo::fGeo = NULL ; 
 
-Geo::Geo()
+Geo::Geo(const char* spec_) 
+   :
+   spec(strdup(spec_))  
 {
     fGeo = this ; 
 
     init_sphere_containing_grid_of_two_radii_spheres();
+    //init_sphere();
+    //init_sphere_two();
 }
 
 void Geo::init_sphere_containing_grid_of_two_radii_spheres()
 {
+    std::cout << "Geo::init_sphere_containing_grid_of_two_radii_spheres " << spec << std::endl ; 
+
     float ias_extent = 10.f ; 
     float ias_step = 2.f ; 
 
@@ -27,9 +35,59 @@ void Geo::init_sphere_containing_grid_of_two_radii_spheres()
 
     makeIAS(ias_extent, ias_step, gas_modulo, gas_single ); 
 
-    const IAS& ias = getIAS(0); 
-    setTop((AS*)&ias); 
+    setTop(spec); 
+
+    float top_extent = getTopExtent(); 
+    setTmin(top_extent*0.75f) ;   // <-- so can see inside the big sphere  
+    setTmax(top_extent*10000.f) ; 
 }
+void Geo::init_sphere()
+{
+    std::cout << "Geo::init_sphere" << std::endl ; 
+    makeGAS(100.f); 
+    setTop("g0"); 
+
+    float top_extent = getTopExtent(); 
+    std::cout << "Geo::init_sphere top_extent " << top_extent  << std::endl ; 
+
+    setTmin(top_extent*1.60f) ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
+    setTmax(top_extent*10000.f) ; 
+}
+void Geo::init_sphere_two()
+{
+    std::cout << "Geo::init_sphere_two" << std::endl ; 
+    std::vector<float> extents = {100.f, 99.f, 98.f, 97.f, 96.f } ; 
+    makeGAS(extents); 
+    setTop("g0"); 
+
+    float top_extent = getTopExtent(); 
+    std::cout << "Geo::init_sphere_two top_extent " << top_extent  << std::endl ; 
+
+    setTmin(top_extent*1.50f) ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
+    setTmax(top_extent*10000.f) ; 
+}
+
+
+void Geo::setTmin(float tmin_)
+{
+    tmin = tmin_ ; 
+}
+float Geo::getTmin() const 
+{
+    return tmin ; 
+}
+
+void Geo::setTmax(float tmax_)
+{
+    tmax = tmax_ ; 
+}
+float Geo::getTmax() const 
+{
+    return tmax ; 
+}
+
+
+
 
 
 
@@ -42,9 +100,61 @@ AS* Geo::getTop() const
 {
     return top ; 
 }
+
+float Geo::getTopExtent() const 
+{
+    assert(top); 
+    return top ? top->extent : -1.f ;  
+}
+
+
+
+void Geo::setTop(const char* spec)
+{
+    AS* a = getAS(spec); 
+    setTop(a); 
+
+
+
+}
+
+AS* Geo::getAS(const char* spec) const 
+{
+   assert( strlen(spec) > 1 ); 
+   char c = spec[0]; 
+   assert( c == 'i' || c == 'g' ); 
+   int idx = atoi( spec + 1 ); 
+
+   std::cout << "Geo::getAS " << spec << " c " << c << " idx " << idx << std::endl ; 
+
+   AS* a = nullptr ; 
+   if( c == 'i' )
+   {
+       const IAS& ias = getIAS(idx); 
+       a = (AS*)&ias ; 
+   } 
+   else if( c == 'g' )
+   {
+       const GAS& gas = getGAS(idx); 
+       a = (AS*)&gas ; 
+   }
+
+   if(a)
+   {
+       std::cout << "Geo::getAS " << spec << " a->extent " << a->extent << std::endl ; 
+   } 
+   return a ; 
+}
+
+
+
 void Geo::setTop(AS* top_)
 {
     top = top_ ; 
+
+
+
+
 }
 
 
@@ -61,10 +171,50 @@ void Geo::makeGAS(float extent)
 {
     std::cout << "Geo::makeGAS extent " << extent << std::endl ; 
     std::vector<float> bb = { -extent, -extent, -extent, +extent, +extent, +extent } ;  
+
     GAS gas = GAS::Build(bb); 
     gas.extent = extent ; 
     vgas.push_back(gas); 
 }
+
+
+/**
+Geo::makeGAS
+--------------
+
+The first extent must be the largest 
+
+
+**/
+void Geo::makeGAS(const std::vector<float>& extents)
+{
+    std::cout << "Geo::makeGAS extents.size() " << extents.size() << std::endl ; 
+    std::vector<float> bb ; 
+
+    float extent0 = extents[0] ; 
+
+    for(unsigned i=0 ; i < extents.size() ; i++)
+    {
+        float extent = extents[i] ;
+        assert( extent <= extent0 );  
+ 
+        bb.push_back(-extent); 
+        bb.push_back(-extent); 
+        bb.push_back(-extent); 
+        bb.push_back(+extent); 
+        bb.push_back(+extent); 
+        bb.push_back(+extent); 
+    }
+
+    GAS gas = GAS::Build(bb); 
+    gas.extent = extent0 ; 
+    vgas.push_back(gas); 
+}
+
+
+
+
+
 
 unsigned Geo::getNumGAS() const 
 {
@@ -74,13 +224,15 @@ unsigned Geo::getNumIAS() const
 {
     return vias.size() ; 
 }
-const GAS& Geo::getGAS(unsigned gas_idx) const
+const GAS& Geo::getGAS(int gas_idx_) const
 {
+    unsigned gas_idx = gas_idx_ < 0 ? vgas.size() + gas_idx_ : gas_idx_ ;  
     assert( gas_idx < vgas.size() ); 
     return vgas[gas_idx] ; 
 }
-const IAS& Geo::getIAS(unsigned ias_idx) const
+const IAS& Geo::getIAS(int ias_idx_) const
 {
+    unsigned ias_idx = ias_idx_ < 0 ? vias.size() + ias_idx_ : ias_idx_ ;  
     assert( ias_idx < vias.size() ); 
     return vias[ias_idx] ; 
 }

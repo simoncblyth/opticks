@@ -82,8 +82,6 @@ glm-get(){
 
 glm-get
 
-
-
  
 cmake $sdir \
      -DCMAKE_BUILD_TYPE=Debug \
@@ -102,11 +100,17 @@ make
 make install   
 [ $? -ne 0 ] && echo $0 : install FAIL && exit 2
 
-which $name
-$name
+bin=$(which $name)
+spec=$1
+$name $spec
+
 [ $? -ne 0 ] && echo $0 : run  FAIL && exit 3
 
 #open $prefix/ppm/$name.ppm
+
+echo name : $name
+echo bin  : $(which $name)
+echo spec : $spec
 
 exit 0
 

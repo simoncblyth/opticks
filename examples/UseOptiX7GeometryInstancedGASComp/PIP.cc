@@ -53,7 +53,7 @@ PIP::PIP(const char* ptx_path_)
     :
     geo(Geo::Get()),
     num_gas(geo->getNumGAS()), 
-    pipeline_compile_options(CreateOptions(4,3)),
+    pipeline_compile_options(CreateOptions(5,4)),
     module(CreateModule(ptx_path_,pipeline_compile_options))
 {
     init(); 

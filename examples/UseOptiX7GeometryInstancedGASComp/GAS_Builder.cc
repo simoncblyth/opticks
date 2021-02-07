@@ -106,12 +106,31 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
     // p18 Each build input also specifies an array of OptixGeometryFlags, one for each SBT record.
     unsigned flag = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ;
     unsigned* flags = new unsigned[num_bb];
-    for(unsigned i=0 ; i < num_bb ; i++) flags[i] = flag ;
+    unsigned* sbt_index = new unsigned[num_bb];
+    for(unsigned i=0 ; i < num_bb ; i++)
+    {
+        flags[i] = flag ;
+        sbt_index[i] = i ; 
+    } 
 
     aabbArray.flags         = flags;
      
     // optixWhitted sets up sbtOffsets 
     // see p18 for setting up offsets 
+
+    if(num_bb > 1)
+    {
+        unsigned sbt_index_size = sizeof(unsigned)*num_bb ; 
+        CUdeviceptr    d_sbt_index ;
+        CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_sbt_index ), sbt_index_size ) ); 
+        CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( d_sbt_index ),
+                       sbt_index, sbt_index_size, 
+                        cudaMemcpyHostToDevice ) ); 
+
+        aabbArray.sbtIndexOffsetBuffer  = d_sbt_index ;
+        aabbArray.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);
+        aabbArray.sbtIndexOffsetStrideInBytes = sizeof(unsigned);
+    }
 
     GAS gas = Build(build_input); 
 

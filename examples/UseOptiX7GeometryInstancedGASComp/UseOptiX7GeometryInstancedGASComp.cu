@@ -54,21 +54,21 @@ static __forceinline__ __device__ void trace(
         float3                 ray_direction,
         float                  tmin,
         float                  tmax,
-        float3*                prd, 
+        float4*                prd, 
         unsigned*              iidx  
         )
 {
-    uint32_t p0, p1, p2, p3;
+    uint32_t p0, p1, p2, p3, p4;
     p0 = float_as_int( prd->x );
     p1 = float_as_int( prd->y );
     p2 = float_as_int( prd->z );
-    p3 = *iidx ;
+    p3 = float_as_int( prd->w );
+    p4 = *iidx ;
 
     // think that these are to handle multiple ray types 
     // eg with 2 ray types would have stride 2 and offsets 0 and 1 
     unsigned SBToffset = 0u ; 
     unsigned SBTstride = 0u ; 
-
     unsigned missSBTIndex = 0u ; 
 
     optixTrace(
@@ -83,33 +83,25 @@ static __forceinline__ __device__ void trace(
             SBToffset,
             SBTstride,
             missSBTIndex,
-            p0, p1, p2, p3 );
+            p0, p1, p2, p3, p4 );
     prd->x = int_as_float( p0 );
     prd->y = int_as_float( p1 );
     prd->z = int_as_float( p2 );
-    *iidx = p3 ; 
+    prd->w = int_as_float( p3 );
+    *iidx = p4 ; 
 }
 
 
-static __forceinline__ __device__ void setPayload( float3 p, unsigned instance_idx)
+static __forceinline__ __device__ void setPayload( float4 p, unsigned instance_idx)
 {
     optixSetPayload_0( float_as_int( p.x ) );
     optixSetPayload_1( float_as_int( p.y ) );
     optixSetPayload_2( float_as_int( p.z ) );
-    optixSetPayload_3( instance_idx );
+    optixSetPayload_3( float_as_int( p.w ) );
+    optixSetPayload_4( instance_idx );
 }
 
-/**
-static __forceinline__ __device__ void getPayload(float3& p, unsigned& instance_idx)
-{
-    p.x = int_as_float( optixGetPayload_0() );
-    p.y = int_as_float( optixGetPayload_1() );
-    p.z = int_as_float( optixGetPayload_2() );
-    instance_idx = optixGetPayload_3() ; 
-}
-**/
-
-__forceinline__ __device__ uchar4 make_color( const float3&  c, unsigned iidx )
+__forceinline__ __device__ uchar4 make_color( const float4&  c, unsigned iidx )
 {
     //float scale = iidx % 2u == 0u ? 0.5f : 1.f ; 
     float scale = 1.f ; 
@@ -151,17 +143,19 @@ extern "C" __global__ void __raygen__rg()
 
     const float3 origin      = rtData->cam_eye;
     const float3 direction   = normalize( d.x * U + d.y * V + W );
-    float3       payload_rgb = make_float3( 0.5f, 0.5f, 0.5f );
-    unsigned instance_idx = 0u ; 
+    float4       isect       = make_float4( 0.5f, 0.5f, 0.5f, 0.f );
+    unsigned instance_idx = ~0u ; 
     trace( params.handle,
             origin,
             direction,
             tmin,
             tmax,
-            &payload_rgb, 
+            &isect, 
             &instance_idx );
 
-    params.image[idx.y * params.image_width + idx.x] = make_color( payload_rgb, instance_idx );
+    uchar4 color = make_color( isect, instance_idx );
+    //uchar4 color = make_uchar4( instance_idx == ~0u ? 0u : 255u , 255u, 255u, 255u ); 
+    params.image[idx.y * params.image_width + idx.x] = color ; 
 }
 
 extern "C" __global__ void __miss__ms()
@@ -170,8 +164,9 @@ extern "C" __global__ void __miss__ms()
     float3    p = make_float3( 0.f, 0.f, 0.f); 
     unsigned instance_idx = 0 ; 
     //getPayload(&p, &instance_idx);
+    float t_cand = 0.f ; // should this be tmin ?
 
-    setPayload( make_float3( rt_data->r, rt_data->g, rt_data->b ), instance_idx );
+    setPayload( make_float4( rt_data->r, rt_data->g, rt_data->b, t_cand), instance_idx );
 }
 
 /**
@@ -181,10 +176,9 @@ How could an __intersection__analytic_csg_list work ?
 
 * can see how to branch to different shapes based on content of Sbt 
   but how do you associate the sbt records to custom geomtry bb ? 
-
 **/
 
-extern "C" __global__ void __intersection__is()
+extern "C" __global__ void __intersection__is_sphere_only_first_root()
 {
     HitGroupData* hg_data  = reinterpret_cast<HitGroupData*>( optixGetSbtDataPointer() );
     const float3 orig = optixGetObjectRayOrigin();
@@ -206,18 +200,73 @@ extern "C" __global__ void __intersection__is()
 
         const float        root11        = 0.0f;
         const float3       shading_normal = ( O + ( root1 + root11 ) * D ) / radius;
-        unsigned int p0, p1, p2;
+        unsigned int p0, p1, p2, p3;
         p0 = float_as_int( shading_normal.x );
         p1 = float_as_int( shading_normal.y );
         p2 = float_as_int( shading_normal.z );
+        p3 = float_as_int( root1 )  ; 
 
         optixReportIntersection(
                 root1,      // t hit
                 0,          // user hit kind
-                p0, p1, p2
+                p0, p1, p2, p3
                 );
     }
 }
+
+
+/**
+__intersection__is
+--------------------
+
+Intersects with back face too.
+
+**/
+
+extern "C" __global__ void __intersection__is()
+{
+    HitGroupData* hg_data  = reinterpret_cast<HitGroupData*>( optixGetSbtDataPointer() );
+    const float3 orig = optixGetObjectRayOrigin();
+    const float3 dir  = optixGetObjectRayDirection();
+    const float  t_min = optixGetRayTmin() ; 
+
+    const float3 center = {0.f, 0.f, 0.f};
+    const float  radius = hg_data->radius;
+    const float3 O      = orig - center;
+    const float3 D      = dir ; 
+ 
+    float b = dot(O, D);
+    float c = dot(O, O)-radius*radius;
+    float d = dot(D, D);
+    float disc = b*b-d*c;
+
+    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
+    float root1 = (-b - sdisc)/d ;
+    float root2 = (-b + sdisc)/d ;  // root2 > root1 always
+
+    float t_cand = sdisc > 0.f ? ( root1 > t_min ? root1 : root2 ) : t_min ; 
+    bool valid_isect = t_cand > t_min ;
+
+    if(valid_isect)
+    {
+        const float3 shading_normal = ( O + t_cand*D )/radius;
+        unsigned p0, p1, p2, p3;
+        p0 = float_as_int( shading_normal.x );
+        p1 = float_as_int( shading_normal.y );
+        p2 = float_as_int( shading_normal.z );
+        p3 = float_as_int( t_cand ) ; 
+
+        optixReportIntersection(
+                t_cand,      
+                0,          // user hit kind
+                p0, p1, p2, p3
+                );
+    }
+}
+
+
+
+
 
 extern "C" __global__ void __closesthit__ch()
 {
@@ -228,9 +277,12 @@ extern "C" __global__ void __closesthit__ch()
                 int_as_float( optixGetAttribute_2() )
                 );
 
-    //OptixTraversableHandle gas = optixGetGASTraversableHandle(); 
+    float t_cand = int_as_float( optixGetAttribute_3() ) ; 
     unsigned instance_idx = optixGetInstanceIndex() ;
 
-    setPayload( normalize( optixTransformNormalFromObjectToWorldSpace( shading_normal ) ) * 0.5f + 0.5f , instance_idx );
+    float3 normal = normalize( optixTransformNormalFromObjectToWorldSpace( shading_normal ) ) * 0.5f + 0.5f ;  
+    float4 isect = make_float4( normal.x, normal.y, normal.z, t_cand ); 
+
+    setPayload( isect, instance_idx );
 }
 

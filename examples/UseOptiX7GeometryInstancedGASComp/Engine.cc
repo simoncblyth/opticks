@@ -43,10 +43,10 @@ int Engine::preinit()
     return 0 ; 
 }
 
-Engine::Engine(const char* ptx_path_)
+Engine::Engine(const char* ptx_path_, const char* spec)
     :
     rc(preinit()),
-    geo(new Geo),
+    geo(new Geo(spec)),
     pip(strdup(ptx_path_))
 {
 }

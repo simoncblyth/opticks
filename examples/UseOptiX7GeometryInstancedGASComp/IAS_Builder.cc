@@ -17,22 +17,6 @@
 #include "Geo.h"
 
 /**
-
-For OpenGL convenience Opticks uses transforms like this
-with the transform in the last four slots in memory::
-
-    1  0  0  a
-    0  1  0  b
-    0  0  1  c 
-    tx ty tz 1
-
-OptiX7 needs 3*4 floats, so transpose first::
-
-    1  0  0  tx
-    0  1  0  ty
-    0  0  1  tz
-    a  b  c  1
-
 **/
 
 
