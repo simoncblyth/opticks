@@ -113,6 +113,7 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
         sbt_index[i] = i ; 
     } 
 
+    aabbArray.numSbtRecords = num_bb ; 
     aabbArray.flags         = flags;
      
     // optixWhitted sets up sbtOffsets 

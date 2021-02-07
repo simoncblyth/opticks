@@ -68,7 +68,7 @@ static __forceinline__ __device__ void trace(
     // think that these are to handle multiple ray types 
     // eg with 2 ray types would have stride 2 and offsets 0 and 1 
     unsigned SBToffset = 0u ; 
-    unsigned SBTstride = 0u ; 
+    unsigned SBTstride = 1u ; 
     unsigned missSBTIndex = 0u ; 
 
     optixTrace(
