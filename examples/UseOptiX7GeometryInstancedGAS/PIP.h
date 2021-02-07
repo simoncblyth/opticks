@@ -22,6 +22,8 @@ struct PIP
     glm::vec3 U = {} ; 
     glm::vec3 V = {} ; 
     glm::vec3 W = {} ; 
+    float tmin = 0.f ; 
+    float tmax = 1e16f ; 
 
     ///////////////////
 
@@ -55,7 +57,7 @@ struct PIP
     void init(); 
     void createProgramGroups(); 
     void linkPipeline(); 
-    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_); 
+    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_ ); 
 
     void createSbt();  
     void createRayGenSbt();  

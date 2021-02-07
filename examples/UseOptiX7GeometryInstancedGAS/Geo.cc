@@ -10,15 +10,25 @@ Geo::Geo()
 {
     fGeo = this ; 
 
-    // Three GAS with symmetrical about origin extents  
-    makeGAS(0.7f); 
-    makeGAS(1.0f); 
-    //makeGAS(1.3f); 
+    init_sphere_containing_grid_of_two_radii_spheres();
+}
 
+void Geo::init_sphere_containing_grid_of_two_radii_spheres()
+{
     float ias_extent = 10.f ; 
     float ias_step = 2.f ; 
-    makeIAS(ias_extent, ias_step); 
+
+    makeGAS(0.7f); 
+    makeGAS(1.0f); 
+    std::vector<unsigned> gas_modulo = {0, 1} ;
+
+    makeGAS(ias_extent*2.0f); 
+    std::vector<unsigned> gas_single = {2} ;
+
+    makeIAS(ias_extent, ias_step, gas_modulo, gas_single ); 
 }
+
+
 
 Geo* Geo::Get()
 {
@@ -62,13 +72,11 @@ const IAS& Geo::getIAS(unsigned ias_idx) const
     assert( ias_idx < vias.size() ); 
     return vias[ias_idx] ; 
 }
-
 float Geo::getGAS_Extent(unsigned gas_idx) const
 {
     assert( gas_idx < vgas_extent.size() ); 
     return vgas_extent[gas_idx] ; 
 }
-
 float Geo::getIAS_Extent(unsigned ias_idx) const
 {
     assert( ias_idx < vias_extent.size() ); 
@@ -86,8 +94,8 @@ float unsigned_as_float( unsigned u )
 
 OptixTraversableHandle Geo::getTop() const
 { 
-    //return vgas[0].handle;  
-    return vias[0].handle ;
+    const IAS& ias = getIAS(0); 
+    return ias.handle ;
 }
 
 /**
@@ -99,20 +107,44 @@ Currently a 3D grid of translate transforms with all available GAS repeated modu
 
 **/
 
-void Geo::makeIAS(float extent, float step)
+void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single )
 {
-    int ctrl = -1 ; // modulo cycle thru the GAS
     int n=int(extent) ;   // 
     int s=int(step) ; 
 
     unsigned num_gas = getNumGAS(); 
+    unsigned num_gas_modulo = gas_modulo.size() ; 
+    unsigned num_gas_single = gas_single.size() ; 
+
 
     std::cout << "Geo::makeIAS"
               << " num_gas " << num_gas
+              << " num_gas_modulo " << num_gas_modulo
+              << " num_gas_single " << num_gas_single
               << std::endl
               ;
 
+    for(unsigned i=0 ; i < num_gas_modulo ; i++ ) assert(gas_modulo[i] < num_gas) ; 
+    for(unsigned i=0 ; i < num_gas_single ; i++ ) assert(gas_single[i] < num_gas) ; 
+
+
     std::vector<glm::mat4> trs ; 
+
+    for(int i=0 ; i < int(num_gas_single) ; i++)
+    {
+        unsigned idx = trs.size(); 
+        unsigned instance_id = idx ; 
+        unsigned gas_idx = gas_single[i] ; 
+
+        glm::mat4 tr(1.f) ;
+        tr[0][3] = unsigned_as_float(instance_id); 
+        tr[1][3] = unsigned_as_float(gas_idx) ;
+        tr[2][3] = unsigned_as_float(0) ;   
+        tr[3][3] = unsigned_as_float(0) ;   
+
+        trs.push_back(tr); 
+    }
+
 
     for(int i=-n ; i <= n ; i+=s ){
     for(int j=-n ; j <= n ; j+=s ){
@@ -124,7 +156,8 @@ void Geo::makeIAS(float extent, float step)
 
         unsigned idx = trs.size(); 
         unsigned instance_id = idx ; 
-        unsigned gas_idx = ctrl < 0 ? idx % num_gas : ctrl ; 
+        unsigned gas_modulo_idx = idx % num_gas_modulo ; 
+        unsigned gas_idx = gas_modulo[gas_modulo_idx] ; 
 
         tr[0][3] = unsigned_as_float(instance_id); 
         tr[1][3] = unsigned_as_float(gas_idx) ;

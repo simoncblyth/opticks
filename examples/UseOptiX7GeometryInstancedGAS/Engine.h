@@ -27,6 +27,7 @@ struct Engine
 
     unsigned width = 0u ; 
     unsigned height = 0u ; 
+    unsigned depth = 0u ; 
 
     std::vector<uchar4> host_pixels ; 
     uchar4* device_pixels = nullptr ; 
@@ -36,8 +37,8 @@ struct Engine
     int preinit(); 
     void init(); 
 
-    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_); 
-    void setSize(unsigned width_, unsigned height_); 
+    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_); 
+    void setSize(unsigned width_, unsigned height_, unsigned depth_); 
     void allocOutputBuffer(); 
     void launch(); 
     void download(); 

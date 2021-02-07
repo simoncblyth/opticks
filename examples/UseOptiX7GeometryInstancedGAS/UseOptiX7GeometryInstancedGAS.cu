@@ -97,7 +97,7 @@ static __forceinline__ __device__ void setPayload( float3 p, unsigned instance_i
     optixSetPayload_3( instance_idx );
 }
 
-
+/**
 static __forceinline__ __device__ void getPayload(float3& p, unsigned& instance_idx)
 {
     p.x = int_as_float( optixGetPayload_0() );
@@ -105,7 +105,7 @@ static __forceinline__ __device__ void getPayload(float3& p, unsigned& instance_
     p.z = int_as_float( optixGetPayload_2() );
     instance_idx = optixGetPayload_3() ; 
 }
-
+**/
 
 __forceinline__ __device__ uchar4 make_color( const float3&  c, unsigned iidx )
 {
@@ -138,6 +138,10 @@ extern "C" __global__ void __raygen__rg()
     const float3      U      = rtData->camera_u;
     const float3      V      = rtData->camera_v;
     const float3      W      = rtData->camera_w;
+
+     const float   tmin = rtData->tmin ; 
+     const float   tmax = rtData->tmax ; 
+
     const float2      d = 2.0f * make_float2(
             static_cast<float>( idx.x ) / static_cast<float>( dim.x ),
             static_cast<float>( idx.y ) / static_cast<float>( dim.y )
@@ -150,8 +154,8 @@ extern "C" __global__ void __raygen__rg()
     trace( params.handle,
             origin,
             direction,
-            0.00f,  // tmin
-            1e16f,  // tmax
+            tmin,
+            tmax,
             &payload_rgb, 
             &instance_idx );
 

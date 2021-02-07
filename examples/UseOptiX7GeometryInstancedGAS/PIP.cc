@@ -356,6 +356,8 @@ void PIP::updateSbt()
 
 void PIP::updateRayGenSbt()
 {
+    std::cout <<  "PIP::updateRayGenSbt tmin " << tmin << " tmax " << tmax << std::endl ; 
+
     rg_sbt.data = {};
 
     rg_sbt.data.cam_eye.x = eye.x ;
@@ -374,6 +376,9 @@ void PIP::updateRayGenSbt()
     rg_sbt.data.camera_w.y = W.y ; 
     rg_sbt.data.camera_w.z = W.z ; 
 
+    rg_sbt.data.tmin = tmin ; 
+    rg_sbt.data.tmax = tmax ; 
+
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( raygen_record ),
                 &rg_sbt,
@@ -383,12 +388,15 @@ void PIP::updateRayGenSbt()
 }
 
 
-void PIP::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_)
+void PIP::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_)
 {
+    std::cout <<  "PIP::setView tmin " << tmin << " tmax " << tmax << std::endl ; 
     eye = eye_ ; 
     U = U_ ; 
     V = V_ ; 
     W = W_ ; 
+    tmin = tmin_ ; 
+    tmax = tmax_ ; 
 
     updateSbt(); 
 }

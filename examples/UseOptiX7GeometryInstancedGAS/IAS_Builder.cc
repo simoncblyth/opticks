@@ -94,9 +94,10 @@ IAS IAS_Builder::Build( const float* vals, unsigned num_vals ) // static
 
         OptixInstance instance = {} ; 
         instance.flags = flags ;
+
         instance.instanceId = instanceId ; 
-        //instance.sbtOffset = 0 ;           
         instance.sbtOffset = gasIdx ;           
+
         instance.visibilityMask = 255;
         instance.traversableHandle = gas.handle ; 
 

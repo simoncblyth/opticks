@@ -18,6 +18,8 @@ struct RayGenData
     float3 camera_u;
     float3 camera_v; 
     float3 camera_w;
+    float  tmin ; 
+    float  tmax ; 
 };
 
 struct MissData

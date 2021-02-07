@@ -117,7 +117,8 @@ int main(int argc, char** argv)
     std::cout << " ptx_path " << ptx_path << std::endl ; 
 
     unsigned width = 1024u ; 
-    unsigned height = 768 ; 
+    unsigned height = 768u ; 
+    unsigned depth = 1u ; 
 
     std::cout << argv[0] << std::endl ;  
 
@@ -133,11 +134,19 @@ int main(int argc, char** argv)
     glm::vec3 W ; 
     getEyeUVW( ce, width, height, eye, U, V, W ); 
 
+    float tmin = top_extent*0.75f ;   // <-- so can see inside the big sphere  
+    float tmax = top_extent*10000.f ; 
 
+    std::cout << "main"
+              << " top_extent " << top_extent 
+              << " tmin " << tmin  
+              << " tmax " << tmax
+              << std::endl 
+              ;  
 
-    engine.setView(eye, U, V, W); 
+    engine.setView(eye, U, V, W, tmin, tmax ); 
 
-    engine.setSize(width, height); 
+    engine.setSize(width, height, depth); 
     engine.allocOutputBuffer(); 
 
     engine.launch(); 

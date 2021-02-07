@@ -6,10 +6,11 @@
 
 struct Geo
 {
-    Geo(); 
-
     static Geo* fGeo ; 
     static Geo* Get();  
+
+    Geo(); 
+    void init_sphere_containing_grid_of_two_radii_spheres();
 
     OptixTraversableHandle getTop() const ;
 
@@ -22,7 +23,9 @@ struct Geo
     float getIAS_Extent(unsigned ias_idx) const ;
 
     void makeGAS(float extent);
+
     void makeIAS(float extent, float step);
+    void makeIAS(float extent, float step, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single );
 
     std::vector<float> vgas_extent ; 
     std::vector<GAS> vgas ; 

@@ -52,15 +52,16 @@ Engine::Engine(const char* ptx_path_)
 }
 
 
-void Engine::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_)
+void Engine::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_)
 {
-    pip.setView(eye_, U_, V_, W_); 
+    pip.setView(eye_, U_, V_, W_, tmin_, tmax_); 
 }
 
-void Engine::setSize(unsigned width_, unsigned height_)
+void Engine::setSize(unsigned width_, unsigned height_, unsigned depth_)
 {
     width = width_ ; 
     height = height_ ; 
+    depth = depth_ ; 
 }
 
 void Engine::allocOutputBuffer()
@@ -86,6 +87,7 @@ void Engine::launch()
     params.origin_y     = height / 2;
     params.handle       = geo->getTop(); 
 
+
     CUdeviceptr d_param;
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_param ), sizeof( Params ) ) );
     CUDA_CHECK( cudaMemcpy(
@@ -94,7 +96,7 @@ void Engine::launch()
                 cudaMemcpyHostToDevice
                 ) );
 
-    OPTIX_CHECK( optixLaunch( pip.pipeline, stream, d_param, sizeof( Params ), &pip.sbt, width, height, /*depth=*/1 ) );
+    OPTIX_CHECK( optixLaunch( pip.pipeline, stream, d_param, sizeof( Params ), &pip.sbt, width, height, depth ) );
     CUDA_SYNC_CHECK();
 }
 
