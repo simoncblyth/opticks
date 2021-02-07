@@ -11,11 +11,13 @@ Geo::Geo()
     fGeo = this ; 
 
     // Three GAS with symmetrical about origin extents  
-    //makeGAS(0.5f); 
-    //makeGAS(1.0f); 
-    makeGAS(1.5f); 
+    makeGAS(0.7f); 
+    makeGAS(1.0f); 
+    //makeGAS(1.3f); 
 
-    makeIAS(); 
+    float ias_extent = 10.f ; 
+    float ias_step = 2.f ; 
+    makeIAS(ias_extent, ias_step); 
 }
 
 Geo* Geo::Get()
@@ -37,16 +39,17 @@ void Geo::makeGAS(float extent)
     std::vector<float> bb = { -extent, -extent, -extent, +extent, +extent, +extent } ;  
     GAS gas = GAS::Build(bb); 
     vgas.push_back(gas); 
-    vextent.push_back(extent); 
+    vgas_extent.push_back(extent); 
 }
 
 unsigned Geo::getNumGAS() const 
 {
-    assert( vextent.size() == vgas.size() ); 
+    assert( vgas_extent.size() == vgas.size() ); 
     return vgas.size() ; 
 }
 unsigned Geo::getNumIAS() const 
 {
+    assert( vias_extent.size() == vias.size() ); 
     return vias.size() ; 
 }
 const GAS& Geo::getGAS(unsigned gas_idx) const
@@ -60,10 +63,16 @@ const IAS& Geo::getIAS(unsigned ias_idx) const
     return vias[ias_idx] ; 
 }
 
-float Geo::getExtent(unsigned gas_idx) const
+float Geo::getGAS_Extent(unsigned gas_idx) const
 {
-    assert( gas_idx < vextent.size() ); 
-    return vextent[gas_idx] ; 
+    assert( gas_idx < vgas_extent.size() ); 
+    return vgas_extent[gas_idx] ; 
+}
+
+float Geo::getIAS_Extent(unsigned ias_idx) const
+{
+    assert( ias_idx < vias_extent.size() ); 
+    return vias_extent[ias_idx] ; 
 }
 
 
@@ -90,11 +99,11 @@ Currently a 3D grid of translate transforms with all available GAS repeated modu
 
 **/
 
-void Geo::makeIAS()
+void Geo::makeIAS(float extent, float step)
 {
     int ctrl = -1 ; // modulo cycle thru the GAS
-    int n=50 ;   // 
-    int s=4 ; 
+    int n=int(extent) ;   // 
+    int s=int(step) ; 
 
     unsigned num_gas = getNumGAS(); 
 
@@ -129,5 +138,6 @@ void Geo::makeIAS()
 
     IAS ias = IAS::Build(trs); 
     vias.push_back(ias); 
+    vias_extent.push_back(extent);
 }
 

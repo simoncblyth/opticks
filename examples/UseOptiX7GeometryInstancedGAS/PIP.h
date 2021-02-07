@@ -61,7 +61,7 @@ struct PIP
     void createRayGenSbt();  
     void createMissSbt();  
     void createHitGroupSbt();  
-    void createHitGroupSbt_1();  
+    void createHitGroupSbt_0();  
 
     void updateSbt();  
     void updateRayGenSbt();  

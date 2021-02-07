@@ -35,6 +35,18 @@ extern "C" {
 __constant__ Params params;
 }
 
+/**
+
+UseOptiX7GeometryInstancedGAS.cu
+
+700p43
+
+    (hitgroup) 
+    sbt-index = sbt-instance-offset + (sbt-GAS-index * sbt-stride-from-trace-call) + sbt-offset-from-trace-call
+
+    sbt-GAS-index : order of GAS creation 
+
+**/
 
 static __forceinline__ __device__ void trace(
         OptixTraversableHandle handle,
@@ -51,6 +63,12 @@ static __forceinline__ __device__ void trace(
     p1 = float_as_int( prd->y );
     p2 = float_as_int( prd->z );
     p3 = *iidx ;
+
+    unsigned SBToffset = 0u ; 
+    //unsigned SBTstride = 0u ; 
+    unsigned SBTstride = 1u ; 
+    unsigned missSBTIndex = 0u ; 
+
     optixTrace(
             handle,
             ray_origin,
@@ -60,9 +78,9 @@ static __forceinline__ __device__ void trace(
             0.0f,                // rayTime
             OptixVisibilityMask( 1 ),
             OPTIX_RAY_FLAG_NONE,
-            0,                   // SBT offset
-            0,                   // SBT stride
-            0,                   // missSBTIndex
+            SBToffset,
+            SBTstride,
+            missSBTIndex,
             p0, p1, p2, p3 );
     prd->x = int_as_float( p0 );
     prd->y = int_as_float( p1 );
@@ -91,7 +109,8 @@ static __forceinline__ __device__ void getPayload(float3& p, unsigned& instance_
 
 __forceinline__ __device__ uchar4 make_color( const float3&  c, unsigned iidx )
 {
-    float scale = iidx % 2u == 0u ? 0.5f : 1.f ; 
+    //float scale = iidx % 2u == 0u ? 0.5f : 1.f ; 
+    float scale = 1.f ; 
     return make_uchar4(
             static_cast<uint8_t>( clamp( c.x, 0.0f, 1.0f ) *255.0f )*scale ,
             static_cast<uint8_t>( clamp( c.y, 0.0f, 1.0f ) *255.0f )*scale ,

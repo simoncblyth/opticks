@@ -253,8 +253,9 @@ void PIP::createMissSbt()
     sbt.missRecordCount             = 1;
 }
 
-void PIP::createHitGroupSbt()
+void PIP::createHitGroupSbt_0()
 {
+    assert(0);  // this only works for a single gas
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), sizeof(HitGroupSbtRecord)*num_gas ) );
 
     sbt.hitgroupRecordBase  = hitgroup_record;
@@ -266,8 +267,8 @@ void PIP::createHitGroupSbt()
     sbt.hitgroupRecordCount         = num_gas ;
 
     assert( num_gas == 1 ); 
-    float extent = geo->getExtent(0) ;
-    hg_sbt.data = { extent };
+    float extent = geo->getGAS_Extent(0) ;
+    hg_sbt.data.radius = extent ;
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( hitgroup_record ),
@@ -278,7 +279,7 @@ void PIP::createHitGroupSbt()
 
 }
 
-void PIP::createHitGroupSbt_1()
+void PIP::createHitGroupSbt()
 {
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), sizeof(HitGroupSbtRecord)*num_gas ) );
 
@@ -290,37 +291,28 @@ void PIP::createHitGroupSbt_1()
         OPTIX_CHECK( optixSbtRecordPackHeader( hitgroup_prog_group, hg_sbt_ptr + i ) );
     }
 
-
     sbt.hitgroupRecordStrideInBytes = sizeof( HitGroupSbtRecord );
     sbt.hitgroupRecordCount         = num_gas ;
 
     for(unsigned i=0 ; i < num_gas ; i++)
     {
-        float extent = geo->getExtent(i) ;  
+        float extent = geo->getGAS_Extent(i) ;  
         (hg_sbt_ptr + i)->data.radius = extent ;
-        std::cout << "PIP::updateHitGroupSbt extent " << extent << std::endl ;  
+        std::cout << "PIP::createHitGroupSbt extent " << extent << std::endl ;  
     }
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( hitgroup_record ),
-                &hg_sbt,
+                hg_sbt_ptr,
                 sizeof( HitGroupSbtRecord )*num_gas,
                 cudaMemcpyHostToDevice
                 ) );
 
-
 }
-
-
-
-
-
-
 
 void PIP::createSbt()
 {
     std::cout << "PIP::createSbt num_gas " << num_gas << std::endl ; 
-
     createRayGenSbt();
     createMissSbt();
     createHitGroupSbt(); 
@@ -350,7 +342,7 @@ PIP::updateSbt
 ------------------------------
 
 1. populate the CPU side sbt records
-2. copy CPU side sbt records to GPU 
+2. upload sbt records 
 
 **/
 
@@ -364,8 +356,6 @@ void PIP::updateSbt()
 
 void PIP::updateRayGenSbt()
 {
-    // 1. Populate the CPU side sbt records
-
     rg_sbt.data = {};
 
     rg_sbt.data.cam_eye.x = eye.x ;
@@ -383,7 +373,6 @@ void PIP::updateRayGenSbt()
     rg_sbt.data.camera_w.x = W.x ; 
     rg_sbt.data.camera_w.y = W.y ; 
     rg_sbt.data.camera_w.z = W.z ; 
-
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( raygen_record ),

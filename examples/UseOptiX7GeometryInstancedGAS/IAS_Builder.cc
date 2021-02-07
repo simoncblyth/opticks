@@ -50,6 +50,17 @@ IAS IAS_Builder::Build( const std::vector<glm::mat4>& tr ) // static
     return Build( (float*)tr.data(), num_tr*16 ); 
 }
 
+/**
+
+instance.sbtOffset 
+    SBT record offset.  Will only be used for instances of geometry acceleration structure (GAS) objects.
+    Needs to be set to 0 for instances of instance acceleration structure (IAS) objects. 
+    The maximal SBT offset can be queried using OPTIX_DEVICE_PROPERTY_LIMIT_MAX_INSTANCE_SBT_OFFSET.
+
+    See 700p43  
+
+**/
+
 IAS IAS_Builder::Build( const float* vals, unsigned num_vals ) // static 
 {
     assert( num_vals % 16 == 0 ); 
@@ -84,7 +95,8 @@ IAS IAS_Builder::Build( const float* vals, unsigned num_vals ) // static
         OptixInstance instance = {} ; 
         instance.flags = flags ;
         instance.instanceId = instanceId ; 
-        instance.sbtOffset = 0 ; 
+        //instance.sbtOffset = 0 ;           
+        instance.sbtOffset = gasIdx ;           
         instance.visibilityMask = 255;
         instance.traversableHandle = gas.handle ; 
 

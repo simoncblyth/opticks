@@ -20,13 +20,33 @@ Each bb could be with a CSG tree represented
 inside, so its going to need a collection of buffers.
 Hmm perhaps one sbt entry per bb (or could be more).
 
-700_pdf p18 
+
+700p17
+    Acceleration structures over custom primitives are supported by referencing an
+    array of primitive AABB (axis aligned bounding box) buffers in device memory,
+    with one buffer per motion key. The layout of an AABB is defined in the struct
+    OptixAabb. Here is an example of how to specify the build input for custom
+    primitives:
+
+    * Q:optixWhitted uses 3 bbox in one build and seems not to be doing motion ?
+
+
+
+700p18 
     Each build input maps to one or more consecutive SBT records that control
     program dispatch.
     If multiple SBT records are required the application needs to provide a device buffer 
     with per-primitive SBT record indices for that build input. 
     If only a single SBT record is requested, 
     all primitives reference this same unique SBT record. 
+
+
+Consider a set of 3 spheres of different radii, each with 
+different bounds but sharing the same intersect program which 
+uses the radius it reads from the SbtRecord. 
+
+
+
 
 Thoughts 
 
@@ -72,20 +92,23 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
                 ) );
 
     OptixBuildInput build_input = {};
-
     build_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
-    build_input.aabbArray.aabbBuffers   = &d_aabb_buffer;
-    build_input.aabbArray.numPrimitives = num_bb ;
+
+    OptixBuildInputCustomPrimitiveArray& aabbArray = build_input.aabbArray ;  
+
+    aabbArray.aabbBuffers   = &d_aabb_buffer;
+    aabbArray.numPrimitives = num_bb ;
+    aabbArray.numSbtRecords = num_bb ;   // ? 
+
 
     //unsigned flag = OPTIX_GEOMETRY_FLAG_NONE ;
 
-    // flags are for each 
+    // p18 Each build input also specifies an array of OptixGeometryFlags, one for each SBT record.
     unsigned flag = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ;
     unsigned* flags = new unsigned[num_bb];
     for(unsigned i=0 ; i < num_bb ; i++) flags[i] = flag ;
 
-    build_input.aabbArray.flags         = flags;
-    build_input.aabbArray.numSbtRecords = num_bb ;   // ? 
+    aabbArray.flags         = flags;
      
     // optixWhitted sets up sbtOffsets 
     // see p18 for setting up offsets 

@@ -29,6 +29,7 @@ UseOptiX7GeometryModular
 #include <sstream>
 
 #include "Engine.h"
+#include "Geo.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -118,7 +119,13 @@ int main(int argc, char** argv)
     unsigned width = 1024u ; 
     unsigned height = 768 ; 
 
-    glm::vec4 ce(0.f,0.f,0.f, 70.f);   // defines the center-extent of the region to view
+    std::cout << argv[0] << std::endl ;  
+
+    Engine engine(ptx_path) ; 
+
+    Geo* geo = Geo::Get(); 
+    float top_extent = geo->getIAS_Extent(0); 
+    glm::vec4 ce(0.f,0.f,0.f, top_extent*1.4f );   // defines the center-extent of the region to view
 
     glm::vec3 eye ;
     glm::vec3 U ; 
@@ -126,9 +133,7 @@ int main(int argc, char** argv)
     glm::vec3 W ; 
     getEyeUVW( ce, width, height, eye, U, V, W ); 
 
-    std::cout << argv[0] << std::endl ;  
 
-    Engine engine(ptx_path) ; 
 
     engine.setView(eye, U, V, W); 
 
