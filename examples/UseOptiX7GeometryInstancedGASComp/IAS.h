@@ -1,0 +1,16 @@
+#pragma once
+
+#include <vector>
+#include <glm/glm.hpp>
+#include "AS.h"
+
+struct IAS : public AS
+{
+    CUdeviceptr             d_instances ;   
+
+    static IAS Build(const std::vector<float>& tr ); // must contain a multiple of 16 transform floats with integer identity in spare slots 
+    static IAS Build(const std::vector<glm::mat4>& tr ); // must contain a multiple of 16 transform floats with integer identity in spare slots 
+    static IAS Build(const float* vals, unsigned num_vals); 
+};
+
+
