@@ -12,6 +12,7 @@
 #include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
 #include "Engine.h"
+#include "Geo.h"
 #include "Binding.h"
 #include "PIP.h"
 
@@ -47,9 +48,11 @@ OptixPipelineCompileOptions PIP::CreateOptions(unsigned numPayloadValues, unsign
     return pipeline_compile_options ;  
 }
 
-
+ 
 PIP::PIP(const char* ptx_path_) 
     :
+    geo(Geo::Get()),
+    num_gas(geo->getNumGAS()), 
     pipeline_compile_options(CreateOptions(4,3)),
     module(CreateModule(ptx_path_,pipeline_compile_options))
 {
@@ -59,9 +62,14 @@ PIP::PIP(const char* ptx_path_)
 
 void PIP::init()
 {
+    std::cout << "PIP::init "
+              << " num_gas " << num_gas
+              << std::endl 
+              ;
+
     createProgramGroups();
     linkPipeline();
-    createShaderBindingTable(); 
+    createSbt(); 
 }
 
 /**
@@ -216,7 +224,7 @@ void PIP::linkPipeline()
 }
 
 /**
-PIP::createShaderBindingTable
+PIP::createSbt
 -------------------------------
 
 p31 
@@ -225,39 +233,120 @@ p31
 
 **/
 
-void PIP::createShaderBindingTable()
+
+void PIP::createRayGenSbt()
 {
-    // device allocation of SbtRecord
-
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &raygen_record ),   sizeof(RayGenSbtRecord) ) );
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &miss_record ),     sizeof(MissSbtRecord) ) );
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), sizeof(HitGroupSbtRecord) ) );
-
-    // record device pointers to SbtRecords into sbt   
-
     sbt.raygenRecord        = raygen_record;
-    sbt.missRecordBase      = miss_record;
-    sbt.hitgroupRecordBase  = hitgroup_record;
-
-    // CPU side records RayGenSbtRecord rg_sbt, MissSbtRecord ms_sbt, HitGroupSbtRecord hg_sbt (for ease of preparation ?)
- 
     OPTIX_CHECK( optixSbtRecordPackHeader( raygen_prog_group,   &rg_sbt ) );
-    OPTIX_CHECK( optixSbtRecordPackHeader( miss_prog_group,     &ms_sbt ) );
-    OPTIX_CHECK( optixSbtRecordPackHeader( hitgroup_prog_group, &hg_sbt ) );
-
-
     // presumably the pipeline always has 1 RayGenRecord so no need for counts ?
+}
+
+void PIP::createMissSbt()
+{
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &miss_record ),     sizeof(MissSbtRecord) ) );
+    sbt.missRecordBase      = miss_record;
+    OPTIX_CHECK( optixSbtRecordPackHeader( miss_prog_group,     &ms_sbt ) );
+
 
     sbt.missRecordStrideInBytes     = sizeof( MissSbtRecord );
     sbt.missRecordCount             = 1;
+}
+
+void PIP::createHitGroupSbt()
+{
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), sizeof(HitGroupSbtRecord)*num_gas ) );
+
+    sbt.hitgroupRecordBase  = hitgroup_record;
+
+    OPTIX_CHECK( optixSbtRecordPackHeader( hitgroup_prog_group, &hg_sbt ) );
+    assert( num_gas == 1 ); 
 
     sbt.hitgroupRecordStrideInBytes = sizeof( HitGroupSbtRecord );
-    sbt.hitgroupRecordCount         = 1;
+    sbt.hitgroupRecordCount         = num_gas ;
+
+    assert( num_gas == 1 ); 
+    float extent = geo->getExtent(0) ;
+    hg_sbt.data = { extent };
+
+    CUDA_CHECK( cudaMemcpy(
+                reinterpret_cast<void*>( hitgroup_record ),
+                &hg_sbt,
+                sizeof( HitGroupSbtRecord )*num_gas,
+                cudaMemcpyHostToDevice
+                ) );
+
+}
+
+void PIP::createHitGroupSbt_1()
+{
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), sizeof(HitGroupSbtRecord)*num_gas ) );
+
+    sbt.hitgroupRecordBase  = hitgroup_record;
+
+    HitGroupSbtRecord* hg_sbt_ptr = new HitGroupSbtRecord[num_gas] ; 
+    for(unsigned i=0 ; i < num_gas ; i++)
+    { 
+        OPTIX_CHECK( optixSbtRecordPackHeader( hitgroup_prog_group, hg_sbt_ptr + i ) );
+    }
+
+
+    sbt.hitgroupRecordStrideInBytes = sizeof( HitGroupSbtRecord );
+    sbt.hitgroupRecordCount         = num_gas ;
+
+    for(unsigned i=0 ; i < num_gas ; i++)
+    {
+        float extent = geo->getExtent(i) ;  
+        (hg_sbt_ptr + i)->data.radius = extent ;
+        std::cout << "PIP::updateHitGroupSbt extent " << extent << std::endl ;  
+    }
+
+    CUDA_CHECK( cudaMemcpy(
+                reinterpret_cast<void*>( hitgroup_record ),
+                &hg_sbt,
+                sizeof( HitGroupSbtRecord )*num_gas,
+                cudaMemcpyHostToDevice
+                ) );
+
+
+}
+
+
+
+
+
+
+
+void PIP::createSbt()
+{
+    std::cout << "PIP::createSbt num_gas " << num_gas << std::endl ; 
+
+    createRayGenSbt();
+    createMissSbt();
+    createHitGroupSbt(); 
+}
+
+ 
+void PIP::updateHitGroupSbt()
+{
+    std::cout << "PIP::updateHitGroupSbt num_gas " << num_gas << " nothing to do : geo is constant " << std::endl ; 
+}
+
+void PIP::updateMissSbt()
+{
+    ms_sbt.data = { 0.3f, 0.1f, 0.2f };
+
+    CUDA_CHECK( cudaMemcpy(
+                reinterpret_cast<void*>( miss_record ),
+                &ms_sbt,
+                sizeof(MissSbtRecord),
+                cudaMemcpyHostToDevice
+                ) );
 }
 
 
 /**
-PIP::updateShaderBindingTable
+PIP::updateSbt
 ------------------------------
 
 1. populate the CPU side sbt records
@@ -265,9 +354,16 @@ PIP::updateShaderBindingTable
 
 **/
 
-void PIP::updateShaderBindingTable()
+void PIP::updateSbt()
 {
+    updateRayGenSbt();
+    updateMissSbt();
+    updateHitGroupSbt();
+}
 
+
+void PIP::updateRayGenSbt()
+{
     // 1. Populate the CPU side sbt records
 
     rg_sbt.data = {};
@@ -289,36 +385,14 @@ void PIP::updateShaderBindingTable()
     rg_sbt.data.camera_w.z = W.z ; 
 
 
-    ms_sbt.data = { 0.3f, 0.1f, 0.2f };
-
-    hg_sbt.data = { 1.5f };
-
-
-    // 2. copy CPU side sbt records to GPU 
-
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( raygen_record ),
                 &rg_sbt,
                 sizeof( RayGenSbtRecord ),
                 cudaMemcpyHostToDevice
                 ) );
-
-    CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( miss_record ),
-                &ms_sbt,
-                sizeof(MissSbtRecord),
-                cudaMemcpyHostToDevice
-                ) );
-
-    CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( hitgroup_record ),
-                &hg_sbt,
-                sizeof( HitGroupSbtRecord ),
-                cudaMemcpyHostToDevice
-                ) );
-
-
 }
+
 
 void PIP::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_)
 {
@@ -327,7 +401,6 @@ void PIP::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V
     V = V_ ; 
     W = W_ ; 
 
-    updateShaderBindingTable(); 
+    updateSbt(); 
 }
-
 

@@ -58,9 +58,11 @@ IAS IAS_Builder::Build( const float* vals, unsigned num_vals ) // static
     //unsigned flags = OPTIX_INSTANCE_FLAG_NONE ;  
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
 
-    const Geo* g = Geo::Get();  
-    unsigned num_gas = g->vgas.size();  
-   
+    const Geo* geo = Geo::Get();  
+    unsigned num_gas = geo->getNumGAS(); 
+    std::cout << "IAS_Builder::Build"
+              << " num_gas " << num_gas << std::endl ;   
+ 
     std::vector<OptixInstance> instances ;  
     for(unsigned i=0 ; i < num_tr ; i++)
     {
@@ -77,8 +79,7 @@ IAS IAS_Builder::Build( const float* vals, unsigned num_vals ) // static
         unsigned instanceId = idv.x ;  
         unsigned gasIdx = idv.y ;   
 
-        assert( gasIdx < num_gas );   
-        const GAS& gas = g->vgas[gasIdx]; 
+        const GAS& gas = geo->getGAS(gasIdx); 
 
         OptixInstance instance = {} ; 
         instance.flags = flags ;

@@ -4,6 +4,8 @@
 #include <glm/gtx/transform.hpp>
 #include "Binding.h"
 
+struct Geo ; 
+
 /**
 
 
@@ -13,6 +15,9 @@ Hmm maybe PIP_Builder too ?
 
 struct PIP
 {
+    Geo* geo ; 
+    unsigned num_gas ; 
+
     glm::vec3 eye = {} ; 
     glm::vec3 U = {} ; 
     glm::vec3 V = {} ; 
@@ -36,7 +41,7 @@ struct PIP
     MissSbtRecord ms_sbt;
 
     CUdeviceptr hitgroup_record;
-    HitGroupSbtRecord hg_sbt;
+    HitGroupSbtRecord hg_sbt ;
  
     OptixShaderBindingTable sbt = {};
 
@@ -51,7 +56,16 @@ struct PIP
     void createProgramGroups(); 
     void linkPipeline(); 
     void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_); 
-    void createShaderBindingTable();  
-    void updateShaderBindingTable();  
+
+    void createSbt();  
+    void createRayGenSbt();  
+    void createMissSbt();  
+    void createHitGroupSbt();  
+    void createHitGroupSbt_1();  
+
+    void updateSbt();  
+    void updateRayGenSbt();  
+    void updateMissSbt();  
+    void updateHitGroupSbt();  
 }; 
 
