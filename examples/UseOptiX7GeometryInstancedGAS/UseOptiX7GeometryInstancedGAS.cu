@@ -139,7 +139,6 @@ extern "C" __global__ void __raygen__rg()
     params.image[idx.y * params.image_width + idx.x] = make_color( payload_rgb, instance_idx );
 }
 
-
 extern "C" __global__ void __miss__ms()
 {
     MissData* rt_data  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
@@ -150,6 +149,15 @@ extern "C" __global__ void __miss__ms()
     setPayload( make_float3( rt_data->r, rt_data->g, rt_data->b ), instance_idx );
 }
 
+/**
+
+
+How could an __intersection__analytic_csg_list work ?
+
+* can see how to branch to different shapes based on content of Sbt 
+  but how do you associate the sbt records to custom geomtry bb ? 
+
+**/
 
 extern "C" __global__ void __intersection__is()
 {
@@ -186,7 +194,6 @@ extern "C" __global__ void __intersection__is()
     }
 }
 
-
 extern "C" __global__ void __closesthit__ch()
 {
     const float3 shading_normal =
@@ -196,12 +203,9 @@ extern "C" __global__ void __closesthit__ch()
                 int_as_float( optixGetAttribute_2() )
                 );
 
-
     //OptixTraversableHandle gas = optixGetGASTraversableHandle(); 
     unsigned instance_idx = optixGetInstanceIndex() ;
 
     setPayload( normalize( optixTransformNormalFromObjectToWorldSpace( shading_normal ) ) * 0.5f + 0.5f , instance_idx );
-
-    
-
 }
+

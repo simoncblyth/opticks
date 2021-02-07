@@ -18,35 +18,7 @@
 #include "Engine.h"
 
 #include "Binding.h"
-
-
-
-static void SPPM_write( const char* filename, const uchar4* image, int width, int height, bool yflip )
-{
-    FILE * fp; 
-    fp = fopen(filename, "wb");
-
-    fprintf(fp, "P6\n%d %d\n%d\n", width, height, 255);
-
-    unsigned size = height*width*3 ; 
-    unsigned char* data = new unsigned char[size] ; 
-
-    for( int h=0; h < height ; h++ ) // flip vertically
-    {   
-        int y = yflip ? height - 1 - h : h ; 
-
-        for( int x=0; x < width ; ++x ) 
-        {
-            *(data + (y*width+x)*3+0) = image[(h*width+x)].x ;   
-            *(data + (y*width+x)*3+1) = image[(h*width+x)].y ;   
-            *(data + (y*width+x)*3+2) = image[(h*width+x)].z ;   
-        }
-    }   
-    fwrite(data, sizeof(unsigned char)*size, 1, fp);
-    fclose(fp);  
-    std::cout << "Wrote file (uchar4) " << filename << std::endl  ;
-    delete[] data;
-}
+#include "SPPM.h"
 
 OptixDeviceContext Engine::context = nullptr ;
 
@@ -77,11 +49,6 @@ Engine::Engine(const char* ptx_path_)
     geo(new Geo),
     pip(strdup(ptx_path_))
 {
-    init();  
-}
-
-void Engine::init()
-{
 }
 
 
@@ -89,7 +56,6 @@ void Engine::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3
 {
     pip.setView(eye_, U_, V_, W_); 
 }
-
 
 void Engine::setSize(unsigned width_, unsigned height_)
 {

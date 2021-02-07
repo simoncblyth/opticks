@@ -106,6 +106,26 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     return module ; 
 }
 
+
+/**
+PIP::createProgramGroups
+--------------------------
+
+Associates function names from module(s) into OptixProgramGroup
+
+Thoughts
+~~~~~~~~~~~
+
+Twas initially thinking of needing multiple
+intersection programs for different shapes, but its 
+closer to OptiX6 to just have one equivalent to 
+oxrap/cu/intersect_analytic.cu:intersect 
+
+which acts as the shape ordered by the contents of the SBT 
+
+
+**/
+
 void PIP::createProgramGroups()
 {
     size_t sizeof_log = 0 ; 
@@ -163,6 +183,14 @@ void PIP::createProgramGroups()
                 ) );
 }
 
+/**
+PIP::linkPipeline
+-------------------
+
+Create pipeline from the program_groups
+
+**/
+
 void PIP::linkPipeline()
 {
     size_t sizeof_log = 0 ; 
@@ -187,34 +215,61 @@ void PIP::linkPipeline()
                 ) );
 }
 
+/**
+PIP::createShaderBindingTable
+-------------------------------
+
+p31 
+    The program groups are also used to initialize the header of the SBT record
+    associated with those programs.
+
+**/
 
 void PIP::createShaderBindingTable()
 {
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &raygen_record ), sizeof(RayGenSbtRecord) ) );
-    OPTIX_CHECK( optixSbtRecordPackHeader( raygen_prog_group, &rg_sbt ) );
+    // device allocation of SbtRecord
 
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &miss_record ), sizeof(MissSbtRecord) ) );
-    OPTIX_CHECK( optixSbtRecordPackHeader( miss_prog_group, &ms_sbt ) );
-
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &raygen_record ),   sizeof(RayGenSbtRecord) ) );
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &miss_record ),     sizeof(MissSbtRecord) ) );
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), sizeof(HitGroupSbtRecord) ) );
+
+    // record device pointers to SbtRecords into sbt   
+
+    sbt.raygenRecord        = raygen_record;
+    sbt.missRecordBase      = miss_record;
+    sbt.hitgroupRecordBase  = hitgroup_record;
+
+    // CPU side records RayGenSbtRecord rg_sbt, MissSbtRecord ms_sbt, HitGroupSbtRecord hg_sbt (for ease of preparation ?)
+ 
+    OPTIX_CHECK( optixSbtRecordPackHeader( raygen_prog_group,   &rg_sbt ) );
+    OPTIX_CHECK( optixSbtRecordPackHeader( miss_prog_group,     &ms_sbt ) );
     OPTIX_CHECK( optixSbtRecordPackHeader( hitgroup_prog_group, &hg_sbt ) );
 
 
-    sbt.raygenRecord                = raygen_record;
+    // presumably the pipeline always has 1 RayGenRecord so no need for counts ?
 
-    sbt.missRecordBase              = miss_record;
     sbt.missRecordStrideInBytes     = sizeof( MissSbtRecord );
     sbt.missRecordCount             = 1;
 
-    sbt.hitgroupRecordBase          = hitgroup_record;
     sbt.hitgroupRecordStrideInBytes = sizeof( HitGroupSbtRecord );
     sbt.hitgroupRecordCount         = 1;
 }
 
 
+/**
+PIP::updateShaderBindingTable
+------------------------------
+
+1. populate the CPU side sbt records
+2. copy CPU side sbt records to GPU 
+
+**/
 
 void PIP::updateShaderBindingTable()
 {
+
+    // 1. Populate the CPU side sbt records
+
     rg_sbt.data = {};
 
     rg_sbt.data.cam_eye.x = eye.x ;
@@ -238,6 +293,8 @@ void PIP::updateShaderBindingTable()
 
     hg_sbt.data = { 1.5f };
 
+
+    // 2. copy CPU side sbt records to GPU 
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( raygen_record ),
@@ -272,7 +329,5 @@ void PIP::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V
 
     updateShaderBindingTable(); 
 }
-
-
 
 

@@ -11,6 +11,49 @@
 #include "GAS_Builder.h"
 #include "Engine.h"
 
+/**
+GAS_Builder::Build
+--------------------
+
+Potentially multiple bb in a single BuildInput.
+Each bb could be with a CSG tree represented 
+inside, so its going to need a collection of buffers.
+Hmm perhaps one sbt entry per bb (or could be more).
+
+700_pdf p18 
+    Each build input maps to one or more consecutive SBT records that control
+    program dispatch.
+    If multiple SBT records are required the application needs to provide a device buffer 
+    with per-primitive SBT record indices for that build input. 
+    If only a single SBT record is requested, 
+    all primitives reference this same unique SBT record. 
+
+Thoughts 
+
+* one SBT record per bb (ie per CSG solid) or one SBT for all solids within the GAS ?
+
+* GParts is already concatenated with everything in buffers so actually 
+  going with a single SBT record might be closest to OptiX6 geometry  
+
+* how to handle variability (eg the number of nodes, transforms, planes in the trees)
+  actually in the sum of the trees : all examples I havce seen have values for everything 
+  there in the SBT (not pointers)
+
+* sizes are variable for each GAS but they are known CPU side, 
+  perhaps could use a CSGList template type with 4 or 5 integer template arguments 
+  causing a type with appropriately sized arrays ?  For the dimensions
+  of the primBuffer, tranBuffer etc...
+
+
+Perhaps the best would be per-bb records and then a GAS global one
+with the concatenated ?
+
+GParts could be de-concatenated ? Hmm not so trivial probably index offsets 
+to fix up.
+
+
+
+**/
 
 GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
 {
@@ -35,6 +78,8 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
     build_input.aabbArray.numPrimitives = num_bb ;
 
     //unsigned flag = OPTIX_GEOMETRY_FLAG_NONE ;
+
+    // flags are for each 
     unsigned flag = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ;
     unsigned* flags = new unsigned[num_bb];
     for(unsigned i=0 ; i < num_bb ; i++) flags[i] = flag ;
@@ -43,7 +88,7 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
     build_input.aabbArray.numSbtRecords = num_bb ;   // ? 
      
     // optixWhitted sets up sbtOffsets 
-
+    // see p18 for setting up offsets 
 
     GAS gas = Build(build_input); 
 
