@@ -402,9 +402,7 @@ UseOptiX7GeometryInstancedGAS
 UseOptiX7GeometryInstancedGASComp
     Started from UseOptiX7GeometryInstancedGAS.
 
-    TODO:
-
-    1. attempt to use a compound GAS
+    * compound GAS, still not working 
     
  
     

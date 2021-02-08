@@ -32,6 +32,7 @@ set(SOURCES
     SSeq.cc
     STranche.cc
     SAr.cc
+    SArr.cc
     SArgs.cc
     SPPM.cc
     SVec.cc
@@ -101,6 +102,7 @@ set(HEADERS
     OpticksCSGMask.h
     PlainFormatter.hh
     SAr.hh
+    SArr.hh
     SArgs.hh
     S_freopen_redirect.hh
     S_get_option.hh
