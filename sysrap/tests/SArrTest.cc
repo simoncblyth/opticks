@@ -11,6 +11,8 @@ Attemting to do that at runtime gives compilation error::
 
    non-type template argument is not a constant expression
 
+:google:`C++ runtime dynamically sized type`
+
 **/
 
 int main(int argc, char** argv)

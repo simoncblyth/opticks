@@ -31,6 +31,13 @@ See Also
 * optix7c- course from Ingo Wald
 * env-;rcs- from Vishal Mehta, compute usage of OptiX7 
 
+
+GTC ON DEMAND
+---------------
+
+* https://www.nvidia.com/en-us/gtc/on-demand/?search=OptiX
+
+
 optix_stubs.h
 --------------
 
