@@ -58,7 +58,7 @@ if(OptiX_INCLUDE)
 endif()
 
 
-
+set(OptiX_VERSION_INTEGER ${OptiX_VERSION}) # needed by OKConf machinery 
 
 
 
