@@ -291,6 +291,9 @@ RT_PROGRAM void trivial()
 {
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
+#ifdef WITH_WAY_BUFFER
+    const unsigned int way_offset = photon_id*WNUMQUAD ; 
+#endif
     unsigned int genstep_id = seed_buffer[photon_id] ;      
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
@@ -302,16 +305,26 @@ RT_PROGRAM void trivial()
 
     rtPrintf("(trivial) genstep_id %u genstep_offset %u gencode %d \n", genstep_id, genstep_offset, gencode );
    
+
+    unsigned trivial_flags = photon_id % 1000 == 0 ? SURFACE_DETECT : 0u ; 
+
     quad indices ;  
     indices.u.x = photon_id ; 
     indices.u.y = photon_offset ; 
     indices.u.z = genstep_id ; 
-    indices.u.w = genstep_offset ; 
+    indices.u.w = trivial_flags ; 
 
     photon_buffer[photon_offset+0] = make_float4(  0.f , 0.f , 0.f, 0.f );
     photon_buffer[photon_offset+1] = make_float4(  0.f , 0.f , 0.f, 0.f );
     photon_buffer[photon_offset+2] = make_float4(  ghead.f.x,     ghead.f.y,    ghead.f.z,     ghead.f.w); 
     photon_buffer[photon_offset+3] = make_float4(  indices.f.x,   indices.f.y,  indices.f.z,   indices.f.w); 
+
+#ifdef WITH_WAY_BUFFER
+    way_buffer[way_offset+0] = make_float4( 0.f, 0.f, 0.f, 0.f ) ; 
+    way_buffer[way_offset+1] = make_float4(  indices.f.x,   indices.f.y,  indices.f.z,   indices.f.w);  
+#endif
+
+
 
  
     //rtPrintf("(trivial) GNUMQUAD %d PNUMQUAD %d RNUMQUAD %d \n", GNUMQUAD, PNUMQUAD, RNUMQUAD );
