@@ -22,6 +22,28 @@ see the file run5000::
 https://fermicloud-my.sharepoint.com/:f:/g/personal/wenzel_services_fnal_gov/EnuVx0NpChRJqPAN89DKs-EBbuK0h2NX01n7G8G18BE8uQ?e=c5OvO3 )
 
 
+Possible fix : switch off WITH_DEBUG_BUFFER
+-----------------------------------------------
+
+::
+
+    diff --git a/optickscore/OpticksSwitches.h b/optickscore/OpticksSwitches.h
+    index 553dfd5..20bfc9f 100644
+    --- a/optickscore/OpticksSwitches.h
+    +++ b/optickscore/OpticksSwitches.h
+    @@ -50,6 +50,11 @@ NB when searching for switches in python include the space at the end, eg::
+     
+     #define WITH_ANGULAR 1
+     
+    +// have observed flaky fails when WITH_DEBUG_BUFFER is enabled
+    +// that is probably related to the PerRayData_propagate.h float3 
+    +// see notes/issues/G4OpticksTest_illegal_address_issue.rst
+    +// CONCLUSION : DO NOT LEAVE WITH_DEBUG_BUFFER enabled 
+    +// use only for quick checks
+     //#define WITH_DEBUG_BUFFER 1
+     
+
+
 Immediate impression
 ------------------------
 

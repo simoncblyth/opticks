@@ -2012,47 +2012,26 @@ NPY<T>::compare_element_jk
 template <typename T>
 unsigned NPY<T>::compare_element_jk(const NPY<T>* a, const NPY<T>* b, int j, int k, bool dump )  // static
 {
-    LOG(info) << " a " << a->getShapeString(); 
-    LOG(info) << " b " << b->getShapeString(); 
+    if(dump)
+    {
+        LOG(info) << " a " << a->getShapeString(); 
+        LOG(info) << " b " << b->getShapeString(); 
+        LOG(info) 
+            << " (j,k):   " << "(" << j << "," << k << ") " 
+            ;
+    }
 
     unsigned nd_a = a->getNumDimensions(); 
     unsigned nd_b = b->getNumDimensions(); 
     assert( nd_a == nd_b ); 
     assert( nd_a == 3 ); 
 
-
     unsigned ni_a = a->getShape(0); 
     unsigned ni_b = b->getShape(0); 
     assert( ni_a == ni_b ); 
     unsigned ni = ni_a ; 
 
-/*
-    unsigned nj_a = a->getShape(1); 
-    unsigned nj_b = b->getShape(1); 
-
-    unsigned nk_a = a->getShape(2); 
-    unsigned nk_b = b->getShape(2); 
-
-    // the j argument can be -ve to indicate relative to the end, eg -1 for the last 
-    unsigned ja = j < 0 ? nj_a + j : j ; 
-    unsigned jb = j < 0 ? nj_b + j : j ; 
-
-    unsigned ka = k < 0 ? nk_a + k : k ; 
-    unsigned kb = k < 0 ? nk_b + k : k ; 
-
-    LOG(info) 
-        << " (ja,ka): " << "(" << ja << "," << ka << ") " 
-        << " (jb,kb): " << "(" << jb << "," << kb << ") " 
-        ;
-
-*/
-
-
     unsigned mismatch = 0 ; 
-
-    LOG(info) 
-        << " (j,k):   " << "(" << j << "," << k << ") " 
-        ;
 
     for(unsigned i=0 ; i < ni ; i++)
     {

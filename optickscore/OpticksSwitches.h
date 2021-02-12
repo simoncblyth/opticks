@@ -50,6 +50,11 @@ NB when searching for switches in python include the space at the end, eg::
 
 #define WITH_ANGULAR 1
 
+// have observed flaky fails when WITH_DEBUG_BUFFER is enabled
+// that is probably related to the PerRayData_propagate.h float3 
+// see notes/issues/G4OpticksTest_illegal_address_issue.rst
+// CONCLUSION : DO NOT LEAVE WITH_DEBUG_BUFFER enabled 
+// use only for quick checks
 //#define WITH_DEBUG_BUFFER 1
 
 #define WITH_WAY_BUFFER 1
