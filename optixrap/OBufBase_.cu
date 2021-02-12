@@ -53,9 +53,6 @@ CBufSpec OBufBase::bufspec()
 
 void* OBufBase::getDevicePtr() 
 {
-    //printf("OBufBase::getDevicePtr %s \n", ( m_name ? m_name : "-") ) ;
-    //return (void*) m_buffer->getDevicePointer(m_device); 
-
     CUdeviceptr cu_ptr = (CUdeviceptr)m_buffer->getDevicePointer(m_device) ;
     return (void*)cu_ptr ; 
 }
@@ -98,20 +95,22 @@ void OBufBase::setHexDump(bool hexdump)
    m_hexdump = hexdump ; 
 }
 
-/*
-   *getSize()*  Excludes multiplicity of the type of the OptiX buffer, ie the size
-                is the number of float4 
+/**
+OBufBase::getSize
+----------------------
 
-         Examples:
+Excludes multiplicity of the type of the OptiX buffer, ie the size
+is the number of float4 
 
-          1) Cerenkov genstep NPY<float> buffer with dimensions (7836,6,4)
-             is canonically represented as an OptiX float4 buffer of size 7836*6 = 47016 
+Examples:
 
-          2) Torch genstep NPY<float> buffer with dimensions (1,6,4)
-             is canonically represented as an OptiX float4 buffer of size 1*6 = 6 
+1) Cerenkov genstep NPY<float> buffer with dimensions (7836,6,4)
+   is canonically represented as an OptiX float4 buffer of size 7836*6 = 47016 
 
-*/
+2) Torch genstep NPY<float> buffer with dimensions (1,6,4)
+   is canonically represented as an OptiX float4 buffer of size 1*6 = 6 
 
+**/
 
 unsigned long long OBufBase::getSize() const 
 {
@@ -230,6 +229,16 @@ void OBufBase::setMultiplicity(unsigned long long mul)
 } 
 
 
+
+/**
+OBufBase::Size
+---------------
+
+Product of optix::Buffer width*height*depth which means that 
+this size does not descend into the format (eg float4) it
+is rather the number of such elements.
+
+**/
 
 unsigned long long OBufBase::Size(const optix::Buffer& buffer) // static
 {

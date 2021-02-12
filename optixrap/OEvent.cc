@@ -192,10 +192,14 @@ void OEvent::createBuffers(OpticksEvent* evt)
 
 #ifdef WITH_WAY_BUFFER
     NPY<float>* way = evt->getWayData() ; 
+    LOG(LEVEL) << "WITH_WAY_BUFFER way " << way->getShapeString() ; 
     assert(way); 
     m_way_buffer = m_ocontext->createBuffer<float>( way, "way"); 
     m_context["way_buffer"]->set( m_way_buffer );
     m_way_buf = new OBuf("way", m_way_buffer);
+
+#else
+    LOG(LEVEL) << "not WITH_WAY_BUFFER " ; 
 #endif
 
 
@@ -676,6 +680,12 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
 OEvent::downloadHiysCompute
 ----------------------------
 
+Formerly had an incorrect assert "cway.size % 4 == 0 "
+but that is not correct as the CBufSpec.size is above the 
+level of the float4 format of the optix::Buffer, rather it counts them.
+
+The cway.size should be twice the number of photons as it 
+takes 2 float4 for the cway item. 
 
 **/
 unsigned OEvent::downloadHiysCompute(OpticksEvent* evt)
@@ -687,12 +697,12 @@ unsigned OEvent::downloadHiysCompute(OpticksEvent* evt)
     NPY<float>* hiy = evt->getHiyData();
     LOG(LEVEL) << "into hiy array :" << hiy->getShapeString();  
 
-    CBufSpec cway = m_way_buf->bufspec();  
-    assert( cway.size % 4 == 0 );
-    cway.size /= 2 ;    //  decrease size by factor of 2, increases cway "item" from 1*float4 to 2*float4 
-
     bool verbose = m_dbghit ; 
+
+    CBufSpec cway = m_way_buf->bufspec();  
+    cway.size /= 2 ;    //  decrease size by factor of 2, increases cway "item" from 1*float4 to 2*float4 
     TBuf tway("tway", cway );
+
     unsigned nhiy = tway.downloadSelection2x4("OEvent::downloadHiys", hiy, m_hitmask, verbose);
     // hiy buffer (0,2,4) resized to fit downloaded hiys (nhiy,4,4)
     assert(hiy->hasShape(nhiy,2,4));

@@ -26,9 +26,9 @@
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Formatters/CsvFormatter.h>
 
-typedef plog::FuncMessageFormatter FMT ;     // useful to avoid dates and pids when comparing logs
+//typedef plog::FuncMessageFormatter FMT ;     // useful to avoid dates and pids when comparing logs
 //typedef plog::MessageOnlyFormatter FMT ;   // really minimal 
-//typedef plog::TxtFormatter         FMT ;   // default full format 
+typedef plog::TxtFormatter         FMT ;   // default full format 
 //typedef plog::CsvFormatter         FMT ;   // semicolon delimited full format  
 
 #include "PlainFormatter.hh"
