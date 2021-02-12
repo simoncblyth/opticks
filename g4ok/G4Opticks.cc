@@ -258,6 +258,9 @@ void G4Opticks::Finalize()  // static
 {
     G4Opticks* g4ok = Get(); 
     LOG(info) << g4ok->desc();
+
+    g4ok->finalize();
+
     Opticks::Finalize() ; 
     delete fInstance ; 
     fInstance = NULL ;
@@ -304,9 +307,10 @@ G4Opticks::G4Opticks()
     m_gpu_propagate(true),
     m_sensorlib(NULL),
     m_skip_gencode(),
-    m_skip_gencode_count(SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ','))
+    m_skip_gencode_count(SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ',')),
+    m_skip_gencode_totals()
 {
-    if(m_skip_gencode_count > 0) dumpSkipGencode() ; 
+    initSkipGencode() ; 
 
     assert( fInstance == NULL ); 
     fInstance = this ; 
@@ -314,15 +318,35 @@ G4Opticks::G4Opticks()
     C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
 }
 
-void G4Opticks::dumpSkipGencode() const 
+void G4Opticks::initSkipGencode() 
 {
     LOG(fatal) << "OPTICKS_SKIP_GENCODE m_skip_gencode_count " << m_skip_gencode_count ; 
     assert( m_skip_gencode_count == m_skip_gencode.size() ); 
     for(unsigned i=0 ; i < m_skip_gencode.size() ; i++)
     {
-        std::cout << m_skip_gencode[i] << " " ;    
+        unsigned gencode = m_skip_gencode[i] ;
+        LOG(fatal) << " m_skip_gencode[" << i <<"] " << gencode << " " << OpticksGenstep::Gentype(gencode) ;    
+        m_skip_gencode_totals[gencode] = 0 ; 
     }
-    std::cout << std::endl ; 
+}
+
+void G4Opticks::dumpSkipGencode() const  
+{
+    LOG(fatal) << "OPTICKS_SKIP_GENCODE m_skip_gencode_count " << m_skip_gencode_count ; 
+    assert( m_skip_gencode_count == m_skip_gencode.size() ); 
+    for(unsigned i=0 ; i < m_skip_gencode.size() ; i++)
+    {
+        unsigned gencode = m_skip_gencode[i] ;
+        unsigned total = m_skip_gencode_totals.at(gencode)  ; 
+        LOG(fatal) 
+            << " m_skip_gencode_totals[" 
+            << std::setw(2) << gencode 
+            <<"] " 
+            << std::setw(6) << total 
+            << " " 
+            << OpticksGenstep::Gentype(gencode)
+            ;    
+    }
 }
 
 bool G4Opticks::isSkipGencode(unsigned gencode) const 
@@ -330,6 +354,10 @@ bool G4Opticks::isSkipGencode(unsigned gencode) const
     return std::count(m_skip_gencode.begin(), m_skip_gencode.end(), gencode) > 0 ; 
 }
 
+void G4Opticks::finalize() const 
+{
+    dumpSkipGencode();
+}
 
 
 void G4Opticks::setPlacementOuterVolume(bool outer_volume)  // TODO: eliminate the need for this
@@ -1312,7 +1340,7 @@ void G4Opticks::collectScintillationStep
     bool skip = isSkipGencode(gentype); 
     if(skip)
     {
-        LOG(fatal) << "gentype " << gentype << " is on the  OPTICKS_SKIP  list" ; 
+        m_skip_gencode_totals[gentype] += 1 ; 
         return ;    
     }
 
@@ -1466,7 +1494,7 @@ void G4Opticks::collectCerenkovStep
     bool skip = isSkipGencode(gentype); 
     if(skip)
     {
-        LOG(fatal) << "gentype " << gentype << " is on the  OPTICKS_SKIP  list" ; 
+        m_skip_gencode_totals[gentype] += 1 ; 
         return ;    
     }
 

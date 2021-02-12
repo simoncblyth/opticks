@@ -125,6 +125,7 @@ class G4OK_API G4Opticks
         void setAlignIndex(int align_idx) const ; 
 
         static void Finalize();
+        void finalize() const ; 
     public:
         bool isLoadedFromCache() const ;
         unsigned getNumSensorVolumes() const ; 
@@ -307,6 +308,7 @@ class G4OK_API G4Opticks
         unsigned getNumHit() const ; 
         void getHit(unsigned i, G4OpticksHit* hit, G4OpticksHitExtra* hit_extra ) const ; 
      private:
+        void initSkipGencode() ;
         void dumpSkipGencode() const ;
         bool isSkipGencode(unsigned gencode) const ;
        
@@ -348,6 +350,7 @@ class G4OK_API G4Opticks
         SensorLib*                  m_sensorlib ; 
         std::vector<int>            m_skip_gencode ; 
         unsigned                    m_skip_gencode_count ;  
+        std::map<int, int>          m_skip_gencode_totals ; 
     private:
         static G4Opticks*          fInstance;
 
