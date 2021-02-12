@@ -20,6 +20,7 @@
 optix7-source(){   echo ${BASH_SOURCE} ; }
 optix7-vi(){       vi $(optix7-source) ; }
 optix7-env(){      olocal- ; }
+optix7-sbt(){      open ~/opticks_refs/sbt-s21888-rtx-accelerated-raytracing-with-optix-7.pdf ; }
 optix7-usage(){ cat << \EOU
 
 OptiX 7 : Brand New Lower Level API
@@ -30,12 +31,255 @@ See Also
 
 * optix7c- course from Ingo Wald
 * env-;rcs- from Vishal Mehta, compute usage of OptiX7 
+* owl-;owl-vi  Higher Level Layer on top of OptiX7 including 
 
 
-GTC ON DEMAND
----------------
+GTC ON DEMAND and other learning links
+-----------------------------------------
 
 * https://www.nvidia.com/en-us/gtc/on-demand/?search=OptiX
+
+* https://developer.nvidia.com/blog/how-to-get-started-with-optix-7/
+
+
+Presentation covering OptiX 7 and SBT Description in Great Detail
+------------------------------------------------------------------
+
+* https://developer.nvidia.com/gtc/2020/video/s21888
+
+  * 67 min
+
+* https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/s21888-rtx-accelerated-raytracing-with-optix-7.pdf
+
+  * 112 page presentation, p73-99 on SBT  
+
+* ~/opticks_refs/sbt-s21888-rtx-accelerated-raytracing-with-optix-7.pdf
+* optix7-sbt 
+
+
+Notes
+~~~~~~~
+
+-35:00
+     SBT links together programs, program data and geometry
+ 
+-34:00
+     pipeline is for the programs, not the program data   
+
+-32:00
+     one level instancing is "free" : done in hardware
+     if you have a mix of instances and GAS, just add a dummy instance ove the GAS
+
+-31:50
+     attributes use registers and are expensive, do not duplicate the built-ins
+
+-31:14
+     typically cheaper to recompute the surface normal than to pass attribute from IN to CH
+     (huh: do not follow that, because direction of normal depends on geometry ?)
+
+-30:30
+     PRD payload, 2x32bit encoding a 64bit pointer to local struct in raygen program
+
+     * using this can write into the local variables of the raygen program from the CH 
+     * the examples in the accompanying code do this 2 payload slots encoding a 64bit pointer
+
+-27:43
+    Programs comopiled at ProgramGroup granularity
+
+-26:21
+    Pipeline hooks up the graph of programGropys, not the data : that comes later
+
+-24:40
+    That Tricky Thing : SBT 
+
+-23:07
+    SBT specifies which program gets called - with which data - when a given ray hits a given object.
+
+-22:41
+    programmatic mapping using a formula based on:
+
+    a) which of the build inputs for a GAS was hit
+    b) numSBTRecords in GAS and sbtOffsets in IAS
+    c) index and stride from trace call  
+
+    outcome is an integer index into the SBT, specifying 
+    the hitprogram group and program data to be executed 
+
+-21:53
+    problem: you have to get **four** different things to match:
+
+    a) order of build inputs in GAS(es)
+    b) numSBTRecords and sbtOffsets in ASes build inputs
+    c) index and stride values passed to optixTrace
+    d) the size and order of elements in your SBT 
+
+    Of those four, "d" is the most flexible (and fully under your control) 
+    -> this is where you have to make it all match 
+
+    * get this wrong means rays will call the wring programs with wring data
+ 
+-21:18
+    SBT : linear array of "SBT Records"
+
+    Each SBT Record
+   
+    * has a "header" which specifies which program group to execute 
+      (stores function pointers, like a virtual method table)
+    * has a "payload" or "body" that gets passed to programs as "program data"
+
+      * you choose what to put there
+      * has to have the same size (pad smaller elements) 
+      * has to satisfy some alignment criteria
+      * pointers must point to device memory 
+      * programs need to be able to digest the SBT record body  
+ 
+
+-20:17
+   There are actually three such arrays of SBT records for:
+
+   * pointers to RayGen programs + RayGen data
+   * pointers to Miss programs + Miss data
+   * pointers to HitGroup programs + HitGroup data    (HitGroup: IN/CH) 
+
+   The first two are simple. Usually get problems with the HitGroup SBT.
+  
+-19:07
+   Building/using the SBT involves six steps:
+
+   a) determine the size and order of SBT elements
+   b) "build" the SBT entries
+   c) upload SBT arrays to device
+   d) specify SBT to use during launch
+   e) specify "stride" and "offset" to use for each optixTrace call
+   f) access SBT data in shader programs
+
+-18:54
+   Step b) build
+
+   1. plant "PG function pointers" into header of SBT entry : optixSbtRecordPackHeader(programGroupToUse, sbtRecord.header)
+   2. copy the data into body of SBT entry
+
+-18:20
+   Step c) upload
+
+   Setup CPU side OptixShaderBindingTable sbt, fill in
+   pointers, stride and count for each of the three SBT (raygen, miss, hitgroup) 
+
+   * stride must be a multiple of required alignment 
+   * miss, raygen, hitgroup can each have different size 
+     but all elements of each array have the same size 
+
+
+-17:26
+   Step d) launch with particular sbt
+
+   * sbt struct is in host mem but arrays it points to are in device mem
+
+
+-17:13
+   Step e) specify stride and offset during launch 
+
+   In raygen, assume ONE ray tyoe
+
+   int sbtStride = 1 ; // num ray types
+   int sbtOffset = 0 ; // the ray type
+   int sbtMissIndex = 0 ; // the ray type -> which miss program to call when a miss happens
+
+   optixTrace(traversable, ray.origin, ..., sbtOffset,sbtStride,sbtMissIndex, ... )
+
+-16:10
+   Assume we traced a slide (with given stride/offset values)...
+
+   * and it hit a triangle/prim in a given instance
+   * of a given GAS
+   * and that this triangle belongs to the i-th build input for this GAS
+
+   ::
+
+       ias
+          i0
+             gas0
+                bi0 (numSBT=1)
+                bi1 (numSBT=1)
+          i1
+             gas1
+                bi0 (numSBT=1)
+                bi1 (numSBT=1) 
+                bi2 (numSBT=1)
+          i2
+             gas0
+                bi0 
+                bi1 
+          i3
+             gas1
+                bi0 
+                *bi1*    i3.sbtOffset
+                bi2
+          i4
+             gas0
+                bi0 
+                bi1 
+          i5
+             gas1
+                bi0 
+                bi1 
+                bi2
+ 
+
+
+          gas0
+
+
+-15:51
+    SBT : what happens under the hood
+
+    a) get the sbtOffset value from the instance we hit -> instOffset 
+    b) compute a second offset based on which build input in the GAS we hit -> gasOffset
+       eg: 
+
+       * if the GAS has build inputs : A,B,C,D each with numSBT=1 
+       * and the prim we hit came from build input C
+       * then the GASoffset will be num_A+num_B = 1 + 1 = 2  (for A it would be 0) 
+
+       * Q: what about multiple GAS ?
+
+
+
+
+
+
+
+   * then the driver/pipeline will:
+
+
+
+
+
+
+
+
+
+
+
+Dynamic Advice from Vishal
+-------------------------------
+
+Regarding the dynamic size of data inferred at runtime.
+SBT data lives in GPU global memory like cudaMalloc() 
+So, to allow dynamic size is by doing:
+ 
+1. cudaMalloc(&d_data, size);  // size is dynamic
+2. packing the pointer in optixLaunch() params. in this you can set params.<var> = d_data to the allocated data.
+
+OR
+
+1. cudaMalloc(&d_data, size);  // size is dynamic
+2. then set the pointer d_data to a variable in SBTRecord data structure. So::
+
+    struct HitGroup_CSG_Data
+    {
+        float *values = d_data;
+    };
 
 
 optix_stubs.h

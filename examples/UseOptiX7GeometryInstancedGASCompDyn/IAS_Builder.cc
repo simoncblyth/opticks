@@ -120,7 +120,9 @@ IAS IAS_Builder::Build(const std::vector<OptixInstance>& instances)
 
 
     OptixAccelBuildOptions accel_options = {};
-    accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
+    accel_options.buildFlags = 
+        OPTIX_BUILD_FLAG_PREFER_FAST_TRACE |
+        OPTIX_BUILD_FLAG_ALLOW_COMPACTION ;
     accel_options.operation  = OPTIX_BUILD_OPERATION_BUILD;
 
     OptixAccelBufferSizes as_buffer_sizes;

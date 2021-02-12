@@ -159,7 +159,9 @@ GAS GAS_Builder::Build(OptixBuildInput buildInput)   // static
     GAS out = {} ; 
 
     OptixAccelBuildOptions accel_options = {};
-    accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
+    accel_options.buildFlags = 
+        OPTIX_BUILD_FLAG_PREFER_FAST_TRACE |
+        OPTIX_BUILD_FLAG_ALLOW_COMPACTION ;
     accel_options.operation  = OPTIX_BUILD_OPERATION_BUILD;
 
     OptixAccelBufferSizes gas_buffer_sizes;

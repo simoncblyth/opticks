@@ -43,6 +43,13 @@ Samples
 * https://github.com/NVIDIA/cuda-samples
 
 
+CUDA gcc 9 : CUDA_HOST_COMPILER=/usr/bin/gcc-8 
+------------------------------------------------
+
+* https://ingowald.blog/2020/05/14/quick-note-on-cuda-owl-on-ubuntu-20/
+* https://forums.developer.nvidia.com/t/cmake-file-bug-in-optix-5-x-can-cause-incorrectly-formatted-nvcc-command/63076
+
+
 CUDA Multithreading
 ---------------------
 
