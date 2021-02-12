@@ -375,6 +375,29 @@ int SSys::getenvint( const char* envkey, int fallback )
     return ival ; 
 }
 
+bool SSys::getenvbool( const char* envkey )
+{
+    char* val = getenv(envkey);
+    bool ival = val ? true : false ;
+    return ival ; 
+}
+
+int SSys::getenvintvec( const char* envkey, std::vector<int>& ivec, char delim )
+{
+    char* line = getenv(envkey);
+    if(!line) return 0 ; 
+
+    std::stringstream ss; 
+    ss.str(line)  ;
+
+    std::string s;
+    while (std::getline(ss, s, delim)) ivec.push_back(atoi_(s.c_str())) ; 
+    
+    return ivec.size(); 
+}
+
+
+
 int SSys::atoi_( const char* a )
 {
     std::string s(a);

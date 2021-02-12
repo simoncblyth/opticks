@@ -22,14 +22,15 @@ from opticks.ana.nbase import count_unique_sorted
 X,Y,Z,T = 0,1,2,3
 
 class GS(object):
-    enum = OpticksGenstepEnum()
+    etyp = OpticksGenstepEnum()
     epdg = PDGCodeEnum()
 
     @classmethod
     def parse_args(cls, doc, **kwa):
         np.set_printoptions(suppress=True, precision=3 )
         parser = argparse.ArgumentParser(doc)
-        parser.add_argument(     "path",  nargs="?", help="Path of genstep file", default=kwa.get("path",None) )
+        parser.add_argument(     "pathtmpl",  help="Path template of genstep file", default=kwa.get("pathtmpl",None) )
+        parser.add_argument(     "paths", nargs="*",  help="Paths of genstep files" )
         parser.add_argument(     "--level", default="info", help="logging level" ) 
         args = parser.parse_args()
         fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
@@ -44,14 +45,15 @@ class GS(object):
         self.f = f
         self.i = i
 
+        log.info(" path %s shape %s " % (self.path, str(self.f.shape)))
         self.check_counts()
         self.check_pdgcode()
         self.check_ranges()
 
     
-    ID = property(lambda self:self.i[:,0,0])
-    PID = property(lambda self:self.i[:,0,1])
-    numPhotons = property(lambda self:self.i[:,0,3])
+    ID = property(lambda self:self.i[:,0,0])  # gencode: the OpticksGenstep enum value
+    PID = property(lambda self:self.i[:,0,1]) # parentID
+    numPhotons = property(lambda self:self.i[:,0,3]) 
 
     xyzt = property(lambda self:self.f[:,1])
 
@@ -73,6 +75,7 @@ class GS(object):
         print("num_photons  : %d " % num_photons )
 
         cu = count_unique_sorted(self.ID)
+
         nph_tot = 0 
         ngs_tot = 0 
         fmt = " (%d)%-25s : ngs:%5d  npho:%5d "
@@ -81,16 +84,22 @@ class GS(object):
             nph = i[sel][:,0,3].sum()
             nph_tot += nph
             ngs_tot += ngs 
-            print(fmt % (typ,self.enum(typ),ngs,nph )) 
+            print(fmt % (typ,self.etyp(typ),ngs,nph )) 
         pass
         print(fmt % (0, "TOTALS", ngs_tot, nph_tot))     
 
     def check_pdgcode(self):
-        cu = count_unique_sorted(self.pdgCode)
-        print(cu)
+        log.info("check_pdgcode")
+        #cu = count_unique_sorted(self.pdgCode)  doesnt work with -ve coded
+        #print(cu)
+        pdgcodes, counts = np.unique(self.pdgCode, return_counts=True) # needs numpy > 1.9
+        assert len(pdgcodes) == len(counts)
+
         fmt = " %7d : %10s : %d "  
-        for typ,npc in cu:
-            print(fmt % (typ,self.epdg(typ),npc )) 
+        for i in range(len(pdgcodes)):
+            pdgcode = pdgcodes[i]
+            count = counts[i]
+            print(fmt % (pdgcode,self.epdg(pdgcode),count )) 
         pass
 
     def check_ranges(self):
@@ -113,9 +122,11 @@ class GS(object):
 
 
 if __name__ == '__main__':
-    path = "$TMP/evt/g4live/natural/1/gs.npy"
-    args = GS.parse_args(__doc__, path=path)
-    gs = GS(args.path)
+    pathtmpl = "$TMP/evt/g4live/natural/%d/gs.npy"
+    args = GS.parse_args(__doc__, pathtmpl=pathtmpl)
+    for path in args.paths:
+        gs = GS(path)
+    pass
 
 
 

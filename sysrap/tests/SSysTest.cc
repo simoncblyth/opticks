@@ -148,7 +148,36 @@ void test_hexlify()
     std::cout << SSys::hexlify(&u,4,false) << " SSys::hexlify reverse=false " << std::endl ; 
 }
 
+void test_getenvintvec()
+{
+    LOG(info); 
+    std::vector<int> ivec ; 
 
+    std::vector<int> ivals = {42,43,-44,1,2,3} ; 
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < ivals.size() ; i++)
+    {
+       ss << ivals[i] << ( i < ivals.size() -1 ? "," : "" ) ;   
+    }
+    std::string s = ss.str(); 
+
+    const char* key = "SSYSTEST_GETENVINTVEC" ; 
+    bool overwrite = true ; 
+    SSys::setenvvar(key, s.c_str(), overwrite); 
+
+    std::vector<int> ivals2 ; 
+    unsigned n = SSys::getenvintvec(key, ivals2);
+    assert( n == ivals.size() ); 
+    assert( n == ivals2.size() ); 
+
+    for(unsigned i=0 ; i < n ; i++)
+    {
+        std::cout << i << " " << ivals[i] <<  " " << ivals2[i] << std::endl ; 
+        assert( ivals[i] == ivals2[i] );   
+    } 
+
+
+}
 
 int main(int argc , char** argv )
 {
@@ -178,9 +207,10 @@ int main(int argc , char** argv )
 
     //test_Which(); 
 
-    test_hexlify();  
+    //test_hexlify();  
 
 
+    test_getenvintvec(); 
 
     return rc  ; 
 }

@@ -306,7 +306,10 @@ class G4OK_API G4Opticks
 
         unsigned getNumHit() const ; 
         void getHit(unsigned i, G4OpticksHit* hit, G4OpticksHitExtra* hit_extra ) const ; 
-           
+     private:
+        void dumpSkipGencode() const ;
+        bool isSkipGencode(unsigned gencode) const ;
+       
      private:
         bool                       m_standardize_geant4_materials ; 
         bool                       m_placement_outer_volume ; 
@@ -343,7 +346,8 @@ class G4OK_API G4Opticks
     private:
         std::vector<G4PVPlacement*> m_sensor_placements ;
         SensorLib*                  m_sensorlib ; 
-
+        std::vector<int>            m_skip_gencode ; 
+        unsigned                    m_skip_gencode_count ;  
     private:
         static G4Opticks*          fInstance;
 

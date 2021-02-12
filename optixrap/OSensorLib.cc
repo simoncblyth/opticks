@@ -91,17 +91,19 @@ void OSensorLib::convert()
 
 void OSensorLib::makeSensorDataBuffer()
 {
+    LOG(LEVEL) << "[" ; 
     const char* key = SENSOR_DATA ; 
     char type = 'I' ;          // I:INPUT
     char flag = ' ' ;          // default 
     unsigned item = -1 ;       // whole array in one GPU buffer
     bool transpose = true ;    // doesnt matter for 1d buffer 
     m_octx->create_buffer(m_sensor_data, key, type, flag, item, transpose ); 
-    LOG(LEVEL) << " m_sensor_data " << m_sensor_data->getShapeString() << " upload to " << key ;   
+    LOG(LEVEL) << "] m_sensor_data " << m_sensor_data->getShapeString() << " upload to " << key ;   
 }
 
 void OSensorLib::makeSensorAngularEfficiencyTexture()
 {
+    LOG(LEVEL) << "[ m_num_cat " << m_num_cat  ; 
     const char* config = "INDEX_NORMALIZED_COORDINATES" ; 
     for(unsigned i=0 ; i < m_num_cat ; i++)
     {
@@ -112,7 +114,7 @@ void OSensorLib::makeSensorAngularEfficiencyTexture()
          bool transpose = true ; 
          void* buffer_ptr = m_octx->create_buffer(m_angular_efficiency, key, type, flag, item, transpose ); 
          unsigned tex_id = m_octx->create_texture_sampler(buffer_ptr, config );
-         LOG(info) << " item " << i << " tex_id " << tex_id ; 
+         LOG(LEVEL) << " item " << i << " tex_id " << tex_id ; 
 
          glm::ivec4 q(tex_id, 0,0,0);  // placeholder zeros: eg for dimensions or ranges 
          m_texid->setQuad_(q, i); 
@@ -120,7 +122,7 @@ void OSensorLib::makeSensorAngularEfficiencyTexture()
 
     // create GPU buffer and upload small texid array into it 
     m_octx->create_buffer(m_texid, TEXID, 'I', ' ', -1, true ); 
-    LOG(LEVEL) << " m_texid " << m_texid->getShapeString() << " upload to " << TEXID ;   
+    LOG(LEVEL) << "] m_texid " << m_texid->getShapeString() << " upload to " << TEXID ;   
 }
 
 

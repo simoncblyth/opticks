@@ -119,7 +119,9 @@ void OpEngine::init()
 
 void OpEngine::uploadSensorLib(const SensorLib* sensorlib)
 {
+    LOG(LEVEL) << "[" ; 
     m_scene->uploadSensorLib(sensorlib); 
+    LOG(LEVEL) << "]" ; 
 }
 
 /**

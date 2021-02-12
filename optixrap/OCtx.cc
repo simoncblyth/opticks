@@ -294,7 +294,16 @@ void* OCtx::create_buffer(const NPYBase* arr, const char* key, const char type, 
 
     if(type == 'I' || type == 'B') // input buffer or input-output buffer
     {
-        upload_buffer( arr, ptr, item ); 
+        unsigned num_bytes = item == -1 ? arr->getNumBytes(0) : arr->getNumBytes(1) ; 
+        if(num_bytes == 0 )
+        {
+            LOG(fatal) << "skip upload_buffer as num_bytes zero key:" << key ;  
+        } 
+        else
+        {
+            LOG(LEVEL) << "upload_buffer num_bytes " << num_bytes ;  
+            upload_buffer( arr, ptr, item ); 
+        }
     }
     LOG(LEVEL) << "]" ; 
     return ptr ; 

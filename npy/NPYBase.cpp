@@ -295,6 +295,7 @@ void NPYBase::write_(void* dst ) const
     if( num_bytes == 0 )
     {
          LOG(warning) << " warning writing empty " << getName() ; 
+         assert(0); 
     }
     else
     {

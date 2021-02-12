@@ -32,6 +32,7 @@ and detecting the interactivity level of the session.
 
 #include <cstddef>
 #include <string>
+#include <vector>
 #include "plog/Severity.h"
 
 #include "SYSRAP_API_EXPORT.hh"
@@ -61,6 +62,10 @@ class SYSRAP_API SSys {
 
      static void WaitForInput(const char* msg="Enter any key to continue...\n");
      static int getenvint( const char* envkey, int fallback=-1 );
+     static bool getenvbool( const char* envkey );
+     static int getenvintvec( const char* envkey, std::vector<int>& ivec, char delim=',' );
+
+
      static int atoi_( const char* a );
      static const char* getenvvar( const char* envkey, const char* fallback );
      static const char* getenvvar( const char* envkey );

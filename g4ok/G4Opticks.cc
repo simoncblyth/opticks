@@ -302,20 +302,40 @@ G4Opticks::G4Opticks()
     m_g4evt(NULL),
     m_g4hit(NULL),
     m_gpu_propagate(true),
-    m_sensorlib(NULL)
+    m_sensorlib(NULL),
+    m_skip_gencode(),
+    m_skip_gencode_count(SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ','))
 {
+    if(m_skip_gencode_count > 0) dumpSkipGencode() ; 
+
     assert( fInstance == NULL ); 
     fInstance = this ; 
     LOG(info) << "ctor : DISABLE FPE detection : as it breaks OptiX launches" ; 
     C4FPEDetection::InvalidOperationDetection_Disable();  // see notes/issues/OKG4Test_prelaunch_FPE_causing_fail.rst
 }
 
+void G4Opticks::dumpSkipGencode() const 
+{
+    LOG(fatal) << "OPTICKS_SKIP_GENCODE m_skip_gencode_count " << m_skip_gencode_count ; 
+    assert( m_skip_gencode_count == m_skip_gencode.size() ); 
+    for(unsigned i=0 ; i < m_skip_gencode.size() ; i++)
+    {
+        std::cout << m_skip_gencode[i] << " " ;    
+    }
+    std::cout << std::endl ; 
+}
+
+bool G4Opticks::isSkipGencode(unsigned gencode) const 
+{
+    return std::count(m_skip_gencode.begin(), m_skip_gencode.end(), gencode) > 0 ; 
+}
+
+
+
 void G4Opticks::setPlacementOuterVolume(bool outer_volume)  // TODO: eliminate the need for this
 {
     m_placement_outer_volume = outer_volume ;  
 }
-
-
 
 void G4Opticks::createCollectors()
 {
@@ -966,7 +986,9 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
     {
         m_opmgr->setGensteps(m_gensteps);      
 
+        LOG(LEVEL) << "[ m_opmgr->propagate " ; 
         m_opmgr->propagate();     // GPU simulation is done in here 
+        LOG(LEVEL) << "] m_opmgr->propagate " ; 
 
         OpticksEvent* event = m_opmgr->getEvent(); 
         m_hits = event->getHitData()->clone() ; 
@@ -1121,7 +1143,6 @@ void G4Opticks::collectGenstep_G4Scintillation_1042(
 )
 {
     // CAUTION : UNTESTED CODE
-
     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
 
@@ -1288,6 +1309,14 @@ void G4Opticks::collectScintillationStep
     LOG(debug) << "[";
 
 
+    bool skip = isSkipGencode(gentype); 
+    if(skip)
+    {
+        LOG(fatal) << "gentype " << gentype << " is on the  OPTICKS_SKIP  list" ; 
+        return ;    
+    }
+
+
     if( !m_genstep_collector ) 
     {
         LOG(fatal) << " m_genstep_collector NULL " << std::endl << dbgdesc() ; 
@@ -1434,6 +1463,13 @@ void G4Opticks::collectCerenkovStep
     )
 {
     LOG(debug) << "[" ; 
+    bool skip = isSkipGencode(gentype); 
+    if(skip)
+    {
+        LOG(fatal) << "gentype " << gentype << " is on the  OPTICKS_SKIP  list" ; 
+        return ;    
+    }
+
 
 
     if( !m_genstep_collector ) 

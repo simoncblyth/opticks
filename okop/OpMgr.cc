@@ -135,7 +135,9 @@ void OpMgr::propagate()
 
     m_run->createEvent(m_gensteps, cfg4evt ); 
 
+    LOG(LEVEL) << "[ m_propagator->propagate " ; 
     m_propagator->propagate();
+    LOG(LEVEL) << "] m_propagator->propagate " ; 
 
     if(ok("save")) 
     {

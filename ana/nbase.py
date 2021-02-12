@@ -161,7 +161,7 @@ def count_unique_sorted(vals):
     """
     Older numpy has problem with the argsort line when cu is empty
     """
-    vals = vals.astype(np.uint64)
+    #vals = vals.astype(np.uint64)  cannot do this with -ve pdgcode
     cu = count_unique(vals) 
     if len(cu) != 0:
         cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order

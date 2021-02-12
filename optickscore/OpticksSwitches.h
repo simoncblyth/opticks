@@ -50,7 +50,7 @@ NB when searching for switches in python include the space at the end, eg::
 
 #define WITH_ANGULAR 1
 
-#define WITH_DEBUG_BUFFER 1
+//#define WITH_DEBUG_BUFFER 1
 
 #define WITH_WAY_BUFFER 1
 

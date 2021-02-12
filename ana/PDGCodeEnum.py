@@ -3,6 +3,10 @@
 PDGCodeEnum.py
 =======================
 
+::
+
+   ~/opticks/ana/PDGCodeEnum.py
+
 """
 
 from collections import OrderedDict as odict
@@ -11,6 +15,9 @@ class PDGCodeEnum(object):
     def __init__(self):
         code2name = odict()
         code2name[11] = "e-"
+        code2name[13] = "mu-"
+        code2name[-11] = "e+"
+        code2name[-13] = "mu+"
         code2name[22] = "gamma"
         code2name[20022] = "photon"
         self.code2name = code2name
