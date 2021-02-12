@@ -22,6 +22,34 @@ see the file run5000::
 https://fermicloud-my.sharepoint.com/:f:/g/personal/wenzel_services_fnal_gov/EnuVx0NpChRJqPAN89DKs-EBbuK0h2NX01n7G8G18BE8uQ?e=c5OvO3 )
 
 
+Response
+----------
+
+I investigated the “illegal address” problem, adding the capability 
+to skip gensteps at collection based on a list of gencodes passed in 
+by envvar. But after all that I found that the problem doesn’t depend 
+on the gensteps.
+
+However I observe that switching off WITH_DEBUG_BUFFER in optickscore/OpticksSwitches.h
+makes the issue go away.  The problem is some kind of flakey fail : the fail location 
+varies with the kernel used.  The “—trivial” option changes to a very simple kernel. 
+
+All this low level stuff is going to soon be reimplemented for OptiX 7 so no point 
+delving deeper.
+
+My testing was in my fork of G4OpticksTest using Geant4 1062 with 
+the private->public change.    
+
+The run.sh in the fork also shows how to run with different GDML files:
+
+* https://github.com/simoncblyth/G4OpticksTest/blob/master/run.sh
+
+My notes are in 
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/G4OpticksTest_illegal_address_issue.rst    
+
+
+
 Possible fix : switch off WITH_DEBUG_BUFFER
 -----------------------------------------------
 
