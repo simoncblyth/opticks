@@ -188,26 +188,22 @@ int GParts::Compare(const GParts* a, const GParts* b, bool dump )
 GParts::Create from GPts
 --------------------------
 
+Canoically invoked from ``GGeo::deferredCreateGParts``
+by ``GGeo::postLoadFromCache`` or ``GGeo::postDirectTranslation``.
+
 The (GPt)pt from each GVolume yields a per-volume (GParts)parts instance
 that is added to the (GParts)com instance.
 
-
-GParts::Create from GPts attempts to duplicate the standard precache GParts 
+``GParts::Create`` from ``GPts`` duplicates the standard precache GParts 
 in a deferred postcache manner using NCSG solids persisted with GMeshLib 
 and the requisite GParts arguments (spec, placement transforms) persisted by GPts 
 together with the GGeoLib merged meshes.  
-
-Previously the merged GParts was created precache by:
-
-X4PhysicalVolume::convertNode  
-    creating single volume GParts from NCSG and associating to GVolume
 
 GMergedMesh::mergeVolume
 GMergedMesh::mergeVolumeAnalytic
      combining and applying placement transform
 
-* There are GPts instances for each mergedMesh 
-* hmm: need to match csgskips
+* GPts instances for each mergedMesh and merged from individual volume GPts. 
 
 * testing this with GPtsTest, using GParts::Compare 
 
@@ -250,6 +246,12 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids )
 }
 
 
+const std::vector<GParts*>& GParts::getSubs() const 
+{
+    return m_subs ; 
+}
+
+
 
 /**
 GParts::Combine
@@ -273,6 +275,8 @@ Currently GParts::Combine is used only from tests:
 * extg4/tests/X4PhysicalVolume2Test.cc
 * extg4/tests/X4SolidTest.cc
 
+for example GMergedMesh::mergeMergedMesh uses GParts::add (as does this) 
+rather than using this higher level function.
 
 **/
 
@@ -1101,8 +1105,19 @@ std::string GParts::id() const
 }
 
 
+/**
+GParts::add
+-------------
+
+Basis for combination of analytic geometry.
+
+
+**/
+
 void GParts::add(GParts* other)
 {
+    m_subs.push_back(other); 
+
     if(getBndLib() == NULL)
     {
         setBndLib(other->getBndLib()); 
@@ -1111,9 +1126,6 @@ void GParts::add(GParts* other)
     {
         assert(getBndLib() == other->getBndLib());
     }
-
-    //LOG(error) << " add other : " << other->id() ; 
-
 
     unsigned int n0 = getNumParts(); // before adding
 
@@ -1163,6 +1175,7 @@ void GParts::add(GParts* other)
     {
         setIndex(p, p);
     }
+
 
 
 /*
@@ -1350,6 +1363,11 @@ GParts::makePrimBuffer
 ------------------------
 
 Derives prim buffer from the part buffer
+
+BUT it relies on the _per_add vectors so this 
+only works from a live combined GParts instance, 
+no one that has just been loaded from file.
+
 
 Primbuffer acts as an "index" providing cross
 referencing associating a primitive via
@@ -1697,6 +1715,17 @@ nivec4 GParts::getPrimInfo(unsigned int iprim)
     nivec4 pri = make_nivec4( *ptr, *(ptr+1), *(ptr+2), *(ptr+3) );
     return pri ;  
 }
+
+/**
+GParts::getBBox
+----------------
+
+Suspect this is only valid for old partlist which carry the bbox
+rather than the CSG node tree which needs to call bounds methods
+with the analytic parameters to get the bbox.
+
+**/
+
 nbbox GParts::getBBox(unsigned int i)
 {
    gfloat3 min = getGfloat3(i, BBMIN_J, BBMIN_K );  

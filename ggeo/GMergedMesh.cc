@@ -604,15 +604,8 @@ void GMergedMesh::mergeVolume( const GVolume* volume, bool selected)
 
         mergeVolumeFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  ); // m_faces, m_nodes, m_boundaries, m_sensors
    
-#ifdef GPARTS_HOT 
-        assert(0) ; // THIS OLD WAY WAS TERRIBLY WASTEFUL : INSTEAD MOVED TO DEFERRED GParts CONCAT USING GPt WHICH COLLECTS THE ARGS FOR GParts  
-        GParts* parts = volume->getParts();  // analytic 
-        mergeVolumeAnalytic( parts, transform);
-#endif
-
         GPt* pt = volume->getPt();  // analytic 
         mergeVolumeAnalytic( pt, transform);
-
 
         // offsets with the flat arrays
         m_cur_vertices += num_vert ;  
@@ -906,50 +899,12 @@ void GMergedMesh::mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* nod
 
 
 /**
-GMergedMesh::mergeVolumeAnalytic
-----------------------------------
+``GMergedMesh::mergeVolumeAnalytic``
+-------------------------------------
 
-Analytic CSG combined at node level.
+Canonically invoked from ``GMergedMesh::mergeVolume``
 
-NB this is a very rare/unsual piece of code, because of the meeting 
-between the CSG tree of transforms and the structure tree of transforms/
-  
-* doing the applyPlacementTransform inside GMergedMesh seems mal-placed ? 
-  Always have to search to find it.
-
-Aiming to allow postcache deferred analytic merging from a bunch of NCSG 
-and the GPt collected into GPts
-
-
-**/
-
-#ifdef GPARTS_HOT
-void GMergedMesh::mergeVolumeAnalytic( GParts* parts, GMatrixF* transform)
-{
-    assert(0); 
-    if(!parts)
-    {
-        LOG(fatal) << "parts NULL  " ;
-    }
-    assert(parts);
-
-    if(transform && !transform->isIdentity())
-    {
-        LOG(debug) << "applyPlacementTransform" ; 
-        parts->applyPlacementTransform(transform);
-    }
-
-    if(!m_parts) m_parts = new GParts() ; 
-
-    m_parts->add(parts); 
-}
-#endif
-
-/**
-GMergedMesh::mergeVolumeAnalytic
-----------------------------------
-
-GPt instance from the volume are instanciated within X4PhysicalVolume::convertNode.
+``GPt`` instance from the volume are instanciated within ``X4PhysicalVolume::convertNode``.
 Here the placement transform is set into the GPt and it is collected into the GPts m_pts, 
 which is able to persist into the geocache. 
 
@@ -959,7 +914,7 @@ With repeated geometry one GPt instance for each GVolume is collected into GPts 
 
 void GMergedMesh::mergeVolumeAnalytic( GPt* pt, GMatrixF* transform)
 {
-    if(!pt) return ;  // this happens with AssimpRapTest
+    if(!pt) return ;  
 
     const float* data = static_cast<float*>(transform->getPointer());
 

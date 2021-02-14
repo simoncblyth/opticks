@@ -83,50 +83,11 @@ class GMergedMesh ;
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
-/*
+/**
 GGeo
 =====
 
-Looks like started to move "steering" of GGeo up
-to OpticksGeometry.  
-
-* Not sure if I now think that a good route in the light of direct translation
-* better to slim GGeo by moving things off into sub-libs
-  and have one locus-of-control ?
-
-
-
-In the beginning GGeo was intended to be  a dumb substrate 
-from which the geometry model is created eg by AssimpGGeo::convert 
-However it grew to be somewhat monolithic.
-
-When possible break pieces off the monolith.
-
-Primary Constituents
-----------------------
-
-Opticks
-Composition
-GInstancer
-NLookup
-GMeshLib
-GGeoLib
-GNodeLib
-   precache : holds GVolume
-   persists pvnames, lvname
-
-GBndLib
-GMaterialLib
-GSurfaceLib
-GScintillatorLib
-GSourceLib
-GPmtLib
-
-GColorizer
-GScene
-
-
-*/
+**/
 
 class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
@@ -220,7 +181,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void prepareSourceLib();
         void prepareVolumes();   
         void prepareVertexColors();
-    public:
+    private:
 
         void deferredCreateGParts(); 
 

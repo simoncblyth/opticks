@@ -34,12 +34,125 @@ See Also
 * owl-;owl-vi  Higher Level Layer on top of OptiX7 including 
 
 
+DirectX raytracing is using the same SBT
+-------------------------------------------
+
+* ~/opticks_refs/unofficial_RayTracingGems_v1.7.pdf
+
+* "Ray Tracing Gems" v1.7 Chapter 3 "Introduction to DirectX raytracing"  
+* although describing DirectX the underlying SBT is the same 
+* actually the VulkanRT, DirectX RT and OptiX API all very similar wrt the SBT
+* https://www.realtimerendering.com/raytracinggems/
+* http://www.realtimerendering.com/raytracinggems/unofficial_RayTracingGems_v1.7.pdf
+
+
 GTC ON DEMAND and other learning links
 -----------------------------------------
 
 * https://www.nvidia.com/en-us/gtc/on-demand/?search=OptiX
 
 * https://developer.nvidia.com/blog/how-to-get-started-with-optix-7/
+
+
+:google:`optix sbt`
+-----------------------
+
+* https://www.willusher.io/graphics/2019/11/20/the-sbt-three-ways
+
+Thus, there should be at least one Shader Record in the table for each unique
+combination of shader functions and embedded parameters.
+It is possible to write the same shader record multiple times in the table, and
+this may be necessary depending on how the instances and geometries in the
+scene are setup. Finally, it is also possible to use the instance and geometry
+IDs available in the shaders to perform indirect access into other tables
+containing the scene data.
+
+
+Ray Generation
+~~~~~~~~~~~~~~~~~~
+
+The Ray Generation shader record consists of a single function referring to the
+ray generation shader to be called, along with any desired embedded parameters
+for the function. While some parameters can be passed in the shader record, **for
+parameters that get updated each frame (e.g., the camera position) it is better
+to pass them separately through a different globally accessible buffer**. While
+multiple ray generation shaders can be written into the table, only one can be
+called for a launch.
+
+Hit Group
+~~~~~~~~~~~~
+
+Each Hit Group shader record consists of a Closest Hit shader, Any Hit shader
+(optional) and Intersection shader (optional), followed by the set of embedded
+parameters to be made available to the three shaders. As the hit group which
+should be called is dependent on the instance and geometry which were hit and
+the ray type, the indexing rules for hit groups are the most complicated. The
+rules for hit group indexing are discussed in detail below.
+
+Hit Group Shader Record Index Calculation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The main point of difficulty in setting up the SBT and scene geometry is
+understanding how the two are coupled together, i.e., if a geometry is hit by a
+ray, which shader record is called? The shader record to call is determined by
+parameters set on the instance, trace ray call, and the order of geometries in
+the bottom-level acceleration structure. These parameters are set on both the
+host and device during different parts of the scene and pipeline setup and
+execution, making it difficult to see how they fit together.
+
+::
+
+   HG=&HG[0]+(HGstride×(Roffset+Rstride×GID+Ioffset))(1)
+
+[Yes, that is a good way to think off it as can then write a CPU side
+ dumper for the SBT table]
+
+
+OptiXInstance is 5 quads (5*16 = 80 bytes = 5 quads) 
+------------------------------------------------------
+
+::
+
+    echo $(( 12*4 + 6*4 + 1*8  ))
+
+    // for alignment count quads, the instance corresponds to 5 quads (quad is size of float4, ie 16bytes) 
+    // OptixTraversableHandle is 64bit so it takes two slots in the last quad and the pad[2] 
+    // makes up the 16bytes of the last quad
+
+::
+
+     069 /// Traversable handle
+     070 typedef unsigned long long OptixTraversableHandle;
+
+     530 typedef struct OptixInstance
+     531 {
+     532     /// affine world-to-object transformation as 3x4 matrix in row-major layout
+     533     float transform[12];
+     534 
+     535     /// Application supplied ID. The maximal ID can be queried using OPTIX_DEVICE_PROPERTY_LIMIT_MAX_INSTANCE_ID.
+     536     unsigned int instanceId;
+     537 
+     538     /// SBT record offset.  Will only be used for instances of geometry acceleration structure (GAS) objects.
+     539     /// Needs to be set to 0 for instances of instance acceleration structure (IAS) objects. The maximal SBT offset
+     540     /// can be queried using OPTIX_DEVICE_PROPERTY_LIMIT_MAX_INSTANCE_SBT_OFFSET.
+     541     unsigned int sbtOffset;
+     542 
+     543     /// Visibility mask. If rayMask & instanceMask == 0 the instance is culled. The number of available bits can be
+     544     /// queried using OPTIX_DEVICE_PROPERTY_LIMIT_NUM_BITS_INSTANCE_VISIBILITY_MASK.
+     545     unsigned int visibilityMask;
+     546 
+     547     /// Any combination of OptixInstanceFlags is allowed.
+     548     unsigned int flags;
+     549 
+     550     /// Set with an OptixTraversableHandle.
+     551     OptixTraversableHandle traversableHandle;
+     552 
+     553     /// round up to 80-byte, to ensure 16-byte alignment
+     554     unsigned int pad[2];
+     555 } OptixInstance;
+     556 
+
+
 
 
 Presentation covering OptiX 7 and SBT Description in Great Detail
@@ -243,19 +356,113 @@ Notes
 
        * Q: what about multiple GAS ?
 
+-14:44
+
+    c) Take sbtOffset and sbtStride from optixTrace call
+    d) compute final SBT index::
+
+       int sbtIdx = ray.sbtOffset + instOffset + ray.sbtStride*blasOffset 
+       void* addr = (sbtIdx)*sbt.sbtIndexStrideInBytes + sbtBase
+
+    e) call program packed in sbt[sbtIdx].header with data sbt[sbtIdx].body 
+
+
+-14:22
+    So, what about the order of SBT(HitGroup) elements
+
+    Basically, order has to match what this formula computes:
+
+    * all entries from same BLAS/GAS should be in one block 
+    * all entries from same BLAS/GAS must match order of build inputs
+    * instance sbtOffsets point to where in the SBT the referenced BLAS/GAS starts
+
+
+-13:18
+    eg one BLAS/GAS G with meshes A,B,C one instance I of G 
+
+    * SBT contains { sbtRecord(A), sbtRecord{B}, sbtRecord{C} }
+    * I.sbtOffset = 0 
+    * ray.sbtOffset = 0, ray.sbtStride = 1 
+
+-12:14
+    Another example
+  
+    * one BLAS G with {A,B,C}
+    * 2nd BLAS H woth {D,E}
+    * one instance IG (of G) and one IH(of H) in same IAS
+
+    Then:
+
+    * SBT is {A,B,C,D,E}  (first all inputs from G, then all from H)
+    * IG.sbtIffset : 0  (offset if A, first entry in G, in the SBT)
+    * IH.sbtOffset : 3  (offset of D, first entry in H, in the SBT)
+
+    Note : could have swapped order to {D,E,A,B,A}
+    so long as contiguous within each BLAS/GAS
+
+-11:51
+    More complicated
+
+    * G = {A,B,C}    H = {E,F}
+    * Two instances IG0, IG1 in one IAS + ine instance IH in another IAS
+
+    * SBT is still {A,B,C,D,E}  (build inputs for BLAS/GASes didnt change)
+    
+    * IG0.sbtOffset : 0
+    * IG1.sbtOffset : 0   (both same as same BLAS/GAS with same SBT records)  
+
+    * IH.sbtOffset : 3 (still 3, no matter what IASes there are)  
+
+    [so in this usage pattern the SBT is acting more as an index to the build inputs]
+    [that is advantageous for a small SBT, but means instance specifics needs to be handled 
+    some other way]
+
+
+-10:40
+     For different ray types to execute different programs
+     for same mesh -> need multiple different SBT entries for each mesh (one per ray type)
+
+     Different ways of doing this, "best known method"
+
+     * create N successive SBT entries for each build input (N=num ray types) 
+     * adjust the instance offsets
+     * pass offset=rayType, stride=N to optixTrace 
+
+-10:02
+     Example G={A,B,C} H={E,F} and IG,IH again, but with 2 ray types
+    
+     * SBT : {A0,A1,B0,B1,C0,C1,E0,E1,F0,F1} 
+     * bodies of those entries typically the same
+     * optixTrace offset=rayType, stride=2
+
+-08:29
+     CAREFUL pitfall: rayStride does not get multiplied into inst.sbtOffset
+     
+     * so IH.sbtOffset must now change to 6 (from 3)  
+     * BLAS/GAS build input for A:F still all numSBTRecords=1 
+       because that does get multipled
+    
+       * think of numSBTRecords as "1 *set* of entries per mesh"
+
+-05:18
+     optixLaunch is async, need to cudaStreamSynchronize(stream) to control 
+  
+     * frame may not be ready until after Synchronize(stream)
+       
+-04:49
+     launch param 
+
+     * fast, lightweight way of passing data 
+     * per-frame changing values without SBT rebuild
+     * can have multiple launches in flight in parallel 
+
+       * [hmm so each launch gets its own constant memory block] 
 
 
 
 
 
-
-   * then the driver/pipeline will:
-
-
-
-
-
-
+    
 
 
 

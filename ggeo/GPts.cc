@@ -40,7 +40,6 @@ const char* GPts::GPTS_LIST = "GPts" ;
 GPts* GPts::Make()  // static
 {
     LOG(LEVEL) ; 
-    //std::raise(SIGINT); 
     NPY<int>* ipt = NPY<int>::make(0, 4 ) ; 
     NPY<float>* plc = NPY<float>::make(0, 4, 4 ) ; 
     GItemList* specs = new GItemList(GPTS_LIST, "") ; 
@@ -58,10 +57,19 @@ GPts* GPts::Load(const char* dir)  // static
     return pts ; 
 }
 
+/**
+GPts::save
+-----------
+
+Exports from vector of GPt into transport array
+and then writes the arrays to file.
+
+**/
+
 void GPts::save(const char* dir)
 {
     LOG(LEVEL) << dir ; 
-    export_();  
+    export_();   
     if(m_ipt_buffer) m_ipt_buffer->save(dir, BufferName("ipt"));    
     if(m_plc_buffer) m_plc_buffer->save(dir, BufferName("plc"));    
     if(m_specs) m_specs->save(dir); 
@@ -116,7 +124,8 @@ void GPts::export_() // to the buffer
 GPts::import
 --------------
 
-From transport arrays into the vector of GPt instances.
+From transport arrays into the vector of newly instanciated 
+GPt instances.
 
 **/
  

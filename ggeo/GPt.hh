@@ -28,7 +28,20 @@
 GPt
 =====
 
-Canonically instanciated in X4PhysicalVolume::convertNode
+GPt captures node placement of a solid within the 
+full geometry tree in a minimal way, holding only:
+
+placement
+   global transform 
+lvIdx, csgIdx
+   indices referencing the solid shape
+ndIdx
+   index of the node in the full tree 
+spec
+   string representing the boundary of this node in the tree
+   (material and surface  omat/osur/isur/imat) 
+
+GPt are canonically instanciated in X4PhysicalVolume::convertNode
 where instances are associated with the GVolume of the 
 structural tree.
 

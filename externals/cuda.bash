@@ -43,6 +43,21 @@ Samples
 * https://github.com/NVIDIA/cuda-samples
 
 
+CUDA VM
+----------
+
+* https://stackoverflow.com/questions/11631191/why-does-the-cuda-runtime-reserve-80-gib-virtual-memory-upon-initialization
+
+talonmies
+    Nothing to do with scratch space, it is the result of the addressing system
+    that allows unified andressing and peer to peer access between host and
+    multiple GPUs. The CUDA driver registers all the GPU(s) memory + host memory in
+    a single virtual address space using the kernel's virtual memory system. It
+    isn't actually memory consumption, per se, it is just a "trick" to map all the
+    available address spaces into a linear virtual space for unified addressing.
+
+
+
 CUDA gcc 9 : CUDA_HOST_COMPILER=/usr/bin/gcc-8 
 ------------------------------------------------
 

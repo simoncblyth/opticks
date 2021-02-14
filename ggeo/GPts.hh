@@ -31,6 +31,16 @@ class GItemList ;
 GPts
 ======= 
 
+``GPts::export_`` serializes a vector of ``GPt`` into transport arrays  
+
+``m_ipt_buffer(n,4;int)`` 
+    four indices from ``GPt`` struct referencing the solid and the node 
+``m_plc_buffer(n,4,4;float)``
+    placement transforms 
+``m_specs(GItemList)``
+    list of boundary spec strings   
+
+
 Canonical m_pts instances are residents of GMergedMesh and
 are instanciated by GMergedMesh::GMergedMesh with GPts::Make.
 

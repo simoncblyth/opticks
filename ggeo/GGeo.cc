@@ -1251,20 +1251,19 @@ void GGeo::prepareVolumes()
 }
 
 
-/**
-GGeo::deferredCreateGParts
-------------------------------
+/**10
+``GGeo::deferredCreateGParts``
+--------------------------------
 
-This is invoked from on high in OpticksHub::init/OpticksHub::deferredGeometryPrep
-after GGeo geometry is loaded or adopted into OpticksHub.
+Canonically invoked from ``GGeo::postLoadFromCache`` and ``GGeo::postDirectTranslation``.
 
 This is needed prior to GPU upload of analytic geometry by OGeo,
 it requires the GMergedMesh from GGeoLib and the NCSG solids from GMeshLib.  
 Thus it can be done postcache, as all the ingredients are loaded from cache.
 
-See notes/issues/GPts_GParts_optimization.rst
+See :doc:`../notes/issues/GPts_GParts_optimization`
 
-**/
+10**/
 
 void GGeo::deferredCreateGParts()
 {

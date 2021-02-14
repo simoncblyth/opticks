@@ -233,6 +233,8 @@ class GGEO_API GParts {
         static GParts* Combine(std::vector<GParts*> subs );
         static GParts* Combine(GParts* onesub );   // for consistent handling between 1 and many 
     public:
+        const std::vector<GParts*>& getSubs() const ;
+    public:
         GParts(GBndLib* bndlib=NULL);
         GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);
         GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib=NULL);
@@ -388,6 +390,8 @@ class GGEO_API GParts {
         OpticksCSG_t       m_primflag ; 
         const char*        m_medium ; 
         const NCSG*        m_csg ; 
+
+        std::vector<GParts*> m_subs ; 
 
 
 };

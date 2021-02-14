@@ -39,9 +39,6 @@ struct nnode ;
 #include "X4Named.hh"
 
 
-//#define X4_TRANSFORM 1
-
-
 template <typename T> struct nxform ; 
 
 class GGeo ; 

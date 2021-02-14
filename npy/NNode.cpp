@@ -912,6 +912,13 @@ void nnode::check_primitive_bb( const nbbox& bb) const
     assert( invert_is_complement );
 }
 
+/**
+nnode::get_composite_bbox
+---------------------------
+
+Is this pre-cache only ?
+
+**/
 
 void nnode::get_composite_bbox( nbbox& bb ) const 
 {

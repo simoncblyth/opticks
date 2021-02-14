@@ -27,7 +27,6 @@
 #include "G4LogicalSkinSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4Material.hh"
-//#include "G4VisExtent.hh"
 #include "G4VSolid.hh"
 #include "G4TransportationManager.hh"
 #include "G4VSensitiveDetector.hh"
@@ -70,10 +69,6 @@ template struct nxform<X4Nd> ;
 
 #include "GMesh.hh"
 #include "GVolume.hh"
-
-#ifdef GPARTS_HOT
-#include "GParts.hh"
-#endif
 
 #include "GPt.hh"
 #include "GPts.hh"
@@ -1047,9 +1042,10 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
 X4PhysicalVolume::convertNode
 --------------------------------
 
-* creates pts(GParts) from the csg(NCSG) associated to the mesh(GMesh) for the lvIdx solid. 
+* creates pt(GPt) minimal struct holding indices associating the node(ndIdx) with its shape(lvIdx, csgIdx) and boundaryName   
+  (although GPt can hold placement transforms that is not set here) 
 
-* pts(GParts) are associated to the GVolume returned for structural node
+* pt(GPt) are associated to the GVolume returned for structural node
 
 * suspect the parallel tree is for gltf creation only ?
 
@@ -1118,14 +1114,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     unsigned csgIdx = csg->getIndex() ; 
 
 
-#ifdef GPARTS_OLD
-    GParts* parts = GParts::Make( csg, boundaryName.c_str(), ndIdx );  // painful to do this here in hot node code
-    parts->setBndLib(m_blib);
-    //parts->setVolumeIndex( ndIdx );  
-    unsigned volIdx = parts->getVolumeIndex(0); 
-    assert( volIdx == ndIdx ); 
-#endif
-
 
      ///////////////////////////////////////////////////////////////  
 
@@ -1133,7 +1121,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     float t10 = BTimeStamp::RealTime(); 
 #endif
 
-    GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ; 
+    GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ;  // HUH: no placement transform here ?
 
     glm::mat4 xf_local_t = X4Transform3D::GetObjectTransform(pv);  
 
@@ -1254,10 +1242,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     volume->setGlobalTransform(gtriple);
  
     volume->setParallelNode( nd ); 
-
-#ifdef GPARTS_HOT
-     volume->setParts( parts ); 
-#endif
 
     volume->setPt( pt ); 
     volume->setPVName( pvName.c_str() );

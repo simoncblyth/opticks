@@ -38,10 +38,13 @@ csg_intersect_part.h : csg_bounds_prim / csg_intersect_part
 csg_intersect_part.h : csg_bounds_prim
 -----------------------------------------
 
-Large typecode switch statement invoking functions such as *csg_bounds_sphere* *csg_bounds_box* etc 
+Postorder traversal of the CSG tree nodes invoking bounds methods 
+such as ``csg_bounds_sphere`` which compute the bbox and invoke 
+``optix::Aabb:include``.  The bounds methods appropriate for the 
+``Part::typecode`` are called with parameter ``part.q0/q1`` 
+and transform arguments via a typecode switch statement.
 
 1**/
-
 
 static __device__
 void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )  // NB OptiX primitive, but can be CSG tree for Opticks
