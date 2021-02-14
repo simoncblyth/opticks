@@ -91,10 +91,10 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
                 cudaMemcpyHostToDevice
                 ) );
 
-    OptixBuildInput build_input = {};
-    build_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    OptixBuildInput buildInput = {};
+    buildInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
 
-    OptixBuildInputCustomPrimitiveArray& aabbArray = build_input.aabbArray ;  
+    OptixBuildInputCustomPrimitiveArray& aabbArray = buildInput.aabbArray ;  
 
     aabbArray.aabbBuffers   = &d_aabb_buffer;
     aabbArray.numPrimitives = num_bb ;
@@ -133,7 +133,7 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
         aabbArray.sbtIndexOffsetStrideInBytes = sizeof(unsigned);
     }
 
-    GAS gas = Build(build_input); 
+    GAS gas = Build(buildInput); 
 
     delete[] flags ; 
     CUDA_CHECK( cudaFree( (void*)d_aabb_buffer ) );
