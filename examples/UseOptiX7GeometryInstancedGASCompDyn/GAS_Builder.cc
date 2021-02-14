@@ -155,6 +155,14 @@ TODO: array of buildInput for multi-prim in single GAS
 **/
 
 GAS GAS_Builder::Build(OptixBuildInput buildInput)   // static 
+{
+    std::vector<OptixBuildInput> buildInputs ; 
+    buildInputs.push_back(buildInput); 
+    return Build(buildInputs) ; 
+}
+
+
+GAS GAS_Builder::Build(const std::vector<OptixBuildInput>& buildInputs)   // static 
 { 
     GAS out = {} ; 
 
@@ -168,8 +176,8 @@ GAS GAS_Builder::Build(OptixBuildInput buildInput)   // static
 
     OPTIX_CHECK( optixAccelComputeMemoryUsage( Engine::context, 
                                                &accel_options, 
-                                               &buildInput, 
-                                               1, 
+                                               buildInputs.data(), 
+                                               buildInputs.size(), 
                                                &gas_buffer_sizes 
                                              ) );
     CUdeviceptr d_temp_buffer_gas;
@@ -195,8 +203,8 @@ GAS GAS_Builder::Build(OptixBuildInput buildInput)   // static
     OPTIX_CHECK( optixAccelBuild( Engine::context,
                                   0,                  // CUDA stream
                                   &accel_options,
-                                  &buildInput,
-                                  1,                  // num build inputs
+                                  buildInputs.data(),
+                                  buildInputs.size(),                  // num build inputs
                                   d_temp_buffer_gas,
                                   gas_buffer_sizes.tempSizeInBytes,
                                   d_buffer_temp_output_gas_and_compacted_size,
