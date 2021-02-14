@@ -98,7 +98,7 @@ int TrivialCheckNPY::checkPhotons(unsigned istep, NPY<float>* photons, unsigned 
     }
 
     unsigned PNUMQUAD = 4 ; 
-    unsigned GNUMQUAD = 6 ; 
+    //unsigned GNUMQUAD = 6 ; 
 
  
     if(m_entryCode == 'T' || m_entryCode == 'D')
@@ -106,7 +106,9 @@ int TrivialCheckNPY::checkPhotons(unsigned istep, NPY<float>* photons, unsigned 
         fail += checkItemValue( istep, photons, i0, i1, 3, 0, "(indices.u.x)photon_id"     , IS_UINDEX,              -1,        0 );
         fail += checkItemValue( istep, photons, i0, i1, 3, 1, "(indices.u.y)photon_offset" , IS_UINDEX_SCALED,       -1, PNUMQUAD );
         fail += checkItemValue( istep, photons, i0, i1, 3, 2, "(indices.u.z)genstep_id"    , IS_UCONSTANT,        istep,        0 );
-        fail += checkItemValue( istep, photons, i0, i1, 3, 3, "(indices.u.w)genstep_offset", IS_UCONSTANT_SCALED, istep, GNUMQUAD );
+        //fail += checkItemValue( istep, photons, i0, i1, 3, 3, "(indices.u.w)genstep_offset", IS_UCONSTANT_SCALED, istep, GNUMQUAD );
+        // see notes/issues/opticks-t-3-of-443-fails-python-related-plus-OpSeederTest.rst
+        // keeping the way and photon buffers to match requires (3,3) to hold the flags 
     }
 
     return fail ; 
