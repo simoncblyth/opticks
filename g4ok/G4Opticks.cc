@@ -380,6 +380,13 @@ void G4Opticks::finalize() const
 void G4Opticks::finalizeProfile() const 
 {
     NPY<float>* a = NPY<float>::make_from_vec(m_profile_stamps); 
+    unsigned num_items = a->getNumItems() ;
+    if(num_items < 4 )
+    {
+        LOG(fatal) << " not enough profile stamps" << num_items ;
+        return ; 
+    }
+
     a->reshape(-1, 4); 
     const char* path = "$TMP/G4Opticks/tests/G4OpticksProfilePlot.npy" ; 
     LOG(info) << "saving time/vm stamps to path " << path ; 

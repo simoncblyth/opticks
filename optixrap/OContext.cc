@@ -828,6 +828,8 @@ double OContext::launch(unsigned int lmode, unsigned int entry, unsigned int wid
 }
 
 
+
+
 double OContext::validate_()
 {
     double t0, t1 ; 

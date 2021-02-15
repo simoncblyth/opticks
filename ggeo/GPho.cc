@@ -149,7 +149,7 @@ unsigned GPho::wayConsistencyCheck(bool dump)
     mismatch += mismatch_flags ; 
     mismatch += mismatch_index ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " mismatch_flags " << mismatch_flags
         << " mismatch_index " << mismatch_index
         ;

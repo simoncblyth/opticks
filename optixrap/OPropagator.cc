@@ -265,7 +265,7 @@ void OPropagator::launch()
     BTimes* launch_times = evt->getLaunchTimes() ;
 
 
-    LOG(info) << "LAUNCH NOW " << m_ocontext->printDesc() ; 
+    LOG(LEVEL) << "LAUNCH NOW " << m_ocontext->printDesc() ; 
 
     OK_PROFILE("_OPropagator::launch");
     double dt = m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
@@ -274,9 +274,9 @@ void OPropagator::launch()
     m_ok->accumulateSet(m_launch_acc, dt ); 
     m_ok->lisAppend(m_launch_lis, dt ); 
 
-    LOG(info) << "LAUNCH DONE" ; 
+    LOG(LEVEL) << "LAUNCH DONE" ; 
 
-    LOG(info) << brief() ;
-    launch_times->dump("OPropagator::launch");
+    LOG(info) << brief() << " launch time " << dt ;
+    //launch_times->dump("OPropagator::launch");
 }
 

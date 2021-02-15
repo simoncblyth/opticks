@@ -319,7 +319,10 @@ unsigned G4OKTest::getNumGenstepPhotons(int eventID) const
        case 9:  num_photons = 1000 ; break ;
        default: num_photons = 0    ; break ;  
     }
-    return num_photons ; 
+    //unsigned num = num_photons*1000 ; 
+    unsigned num = num_photons ; 
+    LOG(info) << " eventID " << eventID << " num " << num ; 
+    return num ; 
 }
 
 
@@ -349,7 +352,7 @@ void G4OKTest::propagate(int eventID)
         << " num_hit " << num_hit 
         ; 
 
-    m_g4ok->dumpHits("G4OKTest::propagate"); 
+    //m_g4ok->dumpHits("G4OKTest::propagate"); 
 
     checkHits(eventID); 
 
@@ -368,18 +371,24 @@ void G4OKTest::checkHits(int eventID) const
     G4OpticksHit hit ; 
     G4OpticksHitExtra hit_extra ;
  
+    unsigned num_gensteps = m_g4ok->getNumGensteps(); 
+    unsigned num_photons = m_g4ok->getNumPhotons(); 
     unsigned num_hit = m_g4ok->getNumHit(); 
+
     LOG(info) 
         << " eventID " << eventID
+        << " num_gensteps " << num_gensteps
+        << " num_photons " << num_photons
         << " num_hit " << num_hit
         ; 
 
     G4OpticksHitExtra* hit_extra_ptr = &hit_extra ;
     //G4OpticksHitExtra* hit_extra_ptr = NULL ;
 
-    for(unsigned i=0 ; i < num_hit ; i++)
+    for(unsigned i=0 ; i < std::min(num_hit,20u) ; i++)
     {
         m_g4ok->getHit(i, &hit, hit_extra_ptr ); 
+
         std::cout 
             << std::setw(5) << i 
             << " bnd "  << std::setw(4) << hit.boundary 
@@ -401,9 +410,9 @@ void G4OKTest::checkHits(int eventID) const
                 << " t0 " << hit_extra_ptr->origin_time 
                 << " bt " << hit_extra_ptr->boundary_time 
                 << " bp " << hit_extra_ptr->boundary_pos 
-                << std::endl 
                 ;    
         } 
+        std::cout << std::endl ; 
         // G4ThreeVector formatter doesnt play well with setw
     }
 }
@@ -432,9 +441,10 @@ std::string banner(int ievt, char c)
 
 int main(int argc, char** argv)
 {
-    int nevt = argc > 1 ? atoi(argv[1]) : 3 ; 
+    int nevt = SSys::getenvint("G4OKTEST_NEVT", 10 ); 
 
     G4OKTest t(argc, argv); 
+    LOG(info) << "(G4OKTEST_NEVT) nevt " << nevt ; 
 
     for(int ievt=0 ; ievt < nevt ; ievt++)
     {

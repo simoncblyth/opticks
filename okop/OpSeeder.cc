@@ -24,7 +24,6 @@
 #include "OpticksSwitches.h"  
 #include "Opticks.hh"  
 #include "OpticksEvent.hh"  
-//#include "OpticksHub.hh"    // okg-
 
 #include "BTimeKeeper.hh"   // npy-
 #include "NPY.hpp"
@@ -171,7 +170,7 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
     CBufSpec s_gs = genstep->bufspec();
 
 #ifdef WITH_SEED_BUFFER
-    LOG(info) << "SEEDING TO SEED BUF  " ; 
+    LOG(LEVEL) << "SEEDING TO SEED BUF  " ; 
     OBuf* seed = m_oevt->getSeedBuf() ;
     CBufSpec s_se = seed->bufspec();   //  optix::Buffer::getDevicePointer happens here  ( CBufSpec just holder for devPtr, size, numBytes )
     seedPhotonsFromGenstepsImp(s_gs, s_se);
