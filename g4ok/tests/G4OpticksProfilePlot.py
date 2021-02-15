@@ -2,24 +2,51 @@
 
 import os
 import numpy as np
-import matplotlib.pyplot as plt
+from numpy.polynomial import Polynomial as Poly
 
-plt.ion()
-plt.close()
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+     plt = None
+pass
+
+#plt = None  
+
 
 path = "$TMP/G4Opticks/tests/G4OpticksProfilePlot.npy"
 path = os.path.expandvars(path)
 a = np.load(path)
 print(a)
 
-fig, axs = plt.subplots(1, 2)
-
-ax = axs[0] 
-ax.plot( a[:,1] )
-
-ax = axs[1] 
-ax.plot( a[:,0], a[:,1] )
+delta = (a[-1,1] - a[0,1])
+slope0 = delta/len(a)
+msg = " delta:%10.2f slope0:%10.2f " % ( delta, slope0 )
+print(msg)
 
 
-plt.show()
+x = np.arange(len(a))
+y = a[:,1]   # VM 
+
+#p = Poly.fit(x,y,1, domain=(x.min(), x.max()), window=(y.min(),y.max()) )  
+# coeffs are somehow transformed from the obvious slope/intercept with Poly ?
+
+p = np.poly1d(np.polyfit(x,y,1))  ## old way gives expected coef meanings immediately  
+
+
+label = "line fit:  slope %10.2f    intercept %10.2f " % (p.coef[0], p.coef[1])
+print(label)
+
+
+if plt:
+    plt.ion()
+    plt.close()
+
+    fig, ax = plt.subplots(1, 1)
+
+    ax.plot( x, y , 'o' )
+    ax.plot(x, p(x), lw=2)
+    plt.xlabel(msg + " " + label)
+
+    plt.show()
+pass
 
