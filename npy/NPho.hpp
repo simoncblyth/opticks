@@ -32,6 +32,10 @@ NPho
 Wrapper for an (n,4,4) photon buffer providing higher level
 accessors and dumping.
 
+NB: ggeo/GPho provides a more advanced geometry aware 
+wrapper that is able to provide local frame position, polarization etc..
+
+
 BUT : being in NPY means have no access to geometry, 
 so cannot convert global positions to local at this level.
 
@@ -39,10 +43,12 @@ so cannot convert global positions to local at this level.
 
 class NPY_API NPho {
     public:  
+        static NPho* Make( NPY<float>* photons, const char* opt="mski,post,dirw,polw,flgs" ); 
         static void Dump(NPY<float>* ox, unsigned maxDump=0, const char* opt="post,dirw,flgs") ;
         static void Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* opt="post,dirw,flgs") ;
     public:  
-        NPho(NPY<float>* photons, const char* opt="mski,post,dirw,polw,flgs"); 
+        NPho(const char* opt="mski,post,dirw,polw,flgs"); 
+        void setPhotons(NPY<float>* photons); 
     private:
         void init();   
     public:  

@@ -36,13 +36,21 @@ The mask gives access to origin photon indices.
 
 **/
 
-NPho::NPho(NPY<float>* photons, const char* opt) 
+NPho* NPho::Make( NPY<float>* photons, const char* opt) // static 
+{
+    NPho* pho = new NPho(opt); 
+    pho->setPhotons(photons); 
+    return pho ; 
+}
+
+
+NPho::NPho(const char* opt) 
     :  
-    m_photons(photons),
-    m_msk(photons->getMsk()),
-    m_num_photons(photons ? photons->getNumItems() : 0 ),
-    m_num_msk(m_msk ? m_msk->getNumItems() : 0 ), 
-    m_num_quad(photons->getShape(1)),
+    m_photons(NULL),
+    m_msk(NULL),
+    m_num_photons(0),
+    m_num_msk(0), 
+    m_num_quad(0),
     m_mski(opt ? BStr::Contains(opt, "mski", ',' ) : true ),
     m_post(opt ? BStr::Contains(opt, "post", ',' ) : true ),
     m_dirw(opt ? BStr::Contains(opt, "dirw", ',' ) : true ),
@@ -52,14 +60,26 @@ NPho::NPho(NPY<float>* photons, const char* opt)
     init();
 }
 
-void NPho::init()
+
+void NPho::setPhotons(NPY<float>* photons)
 {
+    m_photons = photons ;
+    assert( m_photons );  
+    assert( m_photons->hasShape(-1,4,4) );
+    m_num_photons = m_photons->getNumItems() ;    
+    m_num_quad = photons->getShape(1) ; 
     assert( m_photons->hasShape(-1,m_num_quad,4) );
 
+    m_msk = m_photons->getMsk();
     if(m_msk)
     {
+        m_num_msk = m_msk->getNumItems() ; 
         assert( m_num_msk == m_num_photons ); // the mask is assumed to have been already applied to the photons
     }
+}
+
+void NPho::init()
+{
 }
 
 unsigned NPho::getNumPhotons() const 
@@ -167,6 +187,8 @@ std::string NPho::desc(unsigned i) const
 
 
 
+
+
 void NPho::Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* opt) 
 {
     LOG(info) << opt
@@ -176,7 +198,8 @@ void NPho::Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* op
               ;
  
     if(!ox) return ; 
-    NPho ph(ox,opt) ;
+    NPho ph(opt) ;
+    ph.setPhotons(ox); 
     ph.dump(modulo, margin); 
 }
 
@@ -187,7 +210,8 @@ void NPho::Dump(NPY<float>* ox, unsigned maxDump, const char* opt)
               ;
  
     if(!ox) return ; 
-    NPho ph(ox, opt) ;
+    NPho ph(opt) ;
+    ph.setPhotons(ox); 
     ph.dump("NPho::Dump", maxDump); 
 }
 

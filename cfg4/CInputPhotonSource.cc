@@ -61,7 +61,7 @@ CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, G
     :
     CSource(ok),
     m_sourcedbg(ok->isDbgSource()),
-    m_pho(new NPho(input_photons)),
+    m_pho(NPho::Make(input_photons)),
     m_gsnpy(gsnpy), 
     m_numPhotonsPerG4Event(m_gsnpy->getNumPhotonsPerG4Event()),
     m_numPhotons(m_pho->getNumPhotons()),

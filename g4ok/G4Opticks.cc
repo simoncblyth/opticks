@@ -499,6 +499,12 @@ from event to event with each propagation redoing the simulation again.
 void G4Opticks::reset()
 {
     resetCollectors(); 
+
+    m_hits->reset();   // the cloned hits (and hiys) are owned by G4Opticks, so they must be reset here  
+#ifdef WITH_WAY_BUFFER
+    m_hiys->reset(); 
+#endif
+
 }
 
 
