@@ -73,6 +73,7 @@ class G4OKTest
         static const plog::Severity LEVEL ; 
     public:
         G4OKTest(int argc, char** argv);
+        virtual ~G4OKTest(); 
     private:
         int  initLog(int argc, char** argv);
         void init();
@@ -113,6 +114,12 @@ G4OKTest::G4OKTest(int argc, char** argv)
 {
     init();
 }
+
+G4OKTest::~G4OKTest()
+{
+    m_g4ok->finalize(); 
+}
+
 
 int G4OKTest::initLog(int argc, char** argv)
 {
@@ -273,7 +280,7 @@ void G4OKTest::saveSensorLib() const
 unsigned G4OKTest::getNumGenstepPhotons(int eventID) const
 {
     unsigned num_photons = 0 ;   // 0: leads to default torch genstep num_photons of 10000(?)
-    switch(eventID) 
+    switch(eventID % 10) 
     {
        case 0:  num_photons = 5000 ; break ; 
        case 1:  num_photons = 2000 ; break ; 

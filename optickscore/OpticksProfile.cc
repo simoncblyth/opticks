@@ -239,6 +239,17 @@ void OpticksProfile::stamp(const char* label, int count)
        ; 
 }
 
+glm::vec4 OpticksProfile::Stamp() // static
+{
+    glm::vec4 stamp ; 
+    stamp.x = BTimeStamp::RealTime2() ; 
+    stamp.y = SProc::VirtualMemoryUsageMB() ; 
+    stamp.z = 0.f ; 
+    stamp.w = 0.f ; 
+    return stamp ; 
+}
+
+
 
 const glm::vec4& OpticksProfile::getLastStamp() const 
 {

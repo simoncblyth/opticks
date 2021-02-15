@@ -351,6 +351,8 @@ class G4OK_API G4Opticks
         std::vector<int>            m_skip_gencode ; 
         unsigned                    m_skip_gencode_count ;  
         std::map<int, int>          m_skip_gencode_totals ; 
+        bool                        m_profile ; 
+        std::vector<float>          m_profile_stamps ; 
     private:
         static G4Opticks*          fInstance;
 

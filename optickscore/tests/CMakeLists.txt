@@ -54,6 +54,7 @@ set(TEST_SOURCES
     MockSensorAngularEfficiencyTableTest.cc
     MockSensorLibTest.cc
     OpticksEventTest.cc
+    OpticksEventLeakTest.cc
     OpticksRunTest.cc
 )
 

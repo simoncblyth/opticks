@@ -88,6 +88,8 @@ class OKCORE_API OpticksProfile
        template <typename T> void stampOld(T row, int count);
        void stamp(const char* label, int count);
 
+       static glm::vec4 Stamp(); 
+
        unsigned lisAdd(const char* label); 
        void lisAppend(unsigned idx, double t ); 
 

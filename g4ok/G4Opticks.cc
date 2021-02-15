@@ -49,6 +49,7 @@
 #include "OpticksPhoton.h"
 #include "OpticksGenstep.h"
 #include "OpticksGenstep.hh"
+#include "OpticksProfile.hh"
 #include "SensorLib.hh"
 
 #include "Opticks.hh"
@@ -308,7 +309,8 @@ G4Opticks::G4Opticks()
     m_sensorlib(NULL),
     m_skip_gencode(),
     m_skip_gencode_count(SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ',')),
-    m_skip_gencode_totals()
+    m_skip_gencode_totals(),
+    m_profile(true)
 {
     initSkipGencode() ; 
 
@@ -357,6 +359,15 @@ bool G4Opticks::isSkipGencode(unsigned gencode) const
 void G4Opticks::finalize() const 
 {
     dumpSkipGencode();
+    if(m_profile)
+    {
+        NPY<float>* a = NPY<float>::make_from_vec(m_profile_stamps); 
+        a->reshape(-1, 4); 
+        const char* path = "$TMP/G4Opticks/tests/G4OpticksProfilePlot.npy" ; 
+        LOG(info) << "saving time/vm stamps to path " << path ; 
+        LOG(info) << "make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py " ; 
+        a->save(path);  
+    }
 }
 
 
@@ -1053,6 +1064,17 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
     }
 
     LOG(LEVEL) << "]] num_hits " << m_num_hits ; 
+
+
+    if( m_profile )
+    {
+        glm::vec4 stamp = OpticksProfile::Stamp(); 
+        m_profile_stamps.push_back( stamp.x );  
+        m_profile_stamps.push_back( stamp.y );  
+        m_profile_stamps.push_back( stamp.z );  
+        m_profile_stamps.push_back( stamp.w );  
+    } 
+
     return m_num_hits ;   
 }
 
