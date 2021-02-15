@@ -126,6 +126,8 @@ class G4OK_API G4Opticks
 
         static void Finalize();
         void finalize() const ; 
+    private:
+        void finalizeProfile() const ;
     public:
         bool isLoadedFromCache() const ;
         unsigned getNumSensorVolumes() const ; 

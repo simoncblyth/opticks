@@ -359,15 +359,40 @@ bool G4Opticks::isSkipGencode(unsigned gencode) const
 void G4Opticks::finalize() const 
 {
     dumpSkipGencode();
-    if(m_profile)
-    {
-        NPY<float>* a = NPY<float>::make_from_vec(m_profile_stamps); 
-        a->reshape(-1, 4); 
-        const char* path = "$TMP/G4Opticks/tests/G4OpticksProfilePlot.npy" ; 
-        LOG(info) << "saving time/vm stamps to path " << path ; 
-        LOG(info) << "make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py " ; 
-        a->save(path);  
-    }
+    if(m_profile) finalizeProfile(); 
+}
+
+
+void G4Opticks::finalizeProfile() const 
+{
+    NPY<float>* a = NPY<float>::make_from_vec(m_profile_stamps); 
+    a->reshape(-1, 4); 
+    const char* path = "$TMP/G4Opticks/tests/G4OpticksProfilePlot.npy" ; 
+    LOG(info) << "saving time/vm stamps to path " << path ; 
+    LOG(info) << "make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py " ; 
+    a->save(path);  
+
+    unsigned num_stamp = a->getNumItems(); 
+    float t0 = a->getValue( 0, 0, 0) ; 
+    float t1 = a->getValue(-1, 0, 0) ; 
+    float v0 = a->getValue( 0, 1, 0) ; 
+    float v1 = a->getValue(-1, 1, 0) ; 
+
+    float dt = t1 - t0 ; 
+    float dv = v1 - v0 ; 
+
+    float dv_per_stamp = dv/float(num_stamp); 
+
+    std::cout 
+        << " t0 " << t0  
+        << " v0 " << v0  
+        << " t1 " << t1  
+        << " v1 " << v1  
+        << " dt " << dt  
+        << " dv " << dv  
+        << " average dv_per_stamp " << dv_per_stamp
+        << std::endl
+        ;   
 }
 
 
