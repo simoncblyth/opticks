@@ -262,6 +262,12 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("nog4propagate",  "inhibit G4 propagate in a bi-simulation executable such as OKG4Test, see OpticksRun OKG4Mgr") ;
 
+   m_desc.add_options()
+       ("way",     "enable way/hiy point recording at runtime, requires the WITH_WAY_BUFFER compile time switch to be enabled") ;
+
+   m_desc.add_options()
+       ("angular",  "enable GPU side angular efficiency culling, requires the WITH_ANGULAR compile time switch to be enabled") ;
+
 
    m_desc.add_options()
        ("nointerpol",  "inhibit interpolation in cfg4/tests/CInterpolationTest for identity check") ;
@@ -346,11 +352,6 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("vizg4",   "when vizualizing loaded events, upload the G4Evt not the OKEvt one ") ; 
 
-
-   m_desc.add_options()
-       ("global_instance_enabled",  
-        "Enable creation of the plus one GMergedMesh collected from nodes labelled with ridx 0, ie a non-special global treated as instanced,"
-        "but with only one identity instance transform. See GInstancer. ") ;
 
    m_desc.add_options()
        ("g4codegen",   "generate and persist Geant4 geometry code for each solid of the geometry in X4PhysicalVolume, see X4GEN_DIR ") ; 

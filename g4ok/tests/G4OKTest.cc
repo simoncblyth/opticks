@@ -1,6 +1,7 @@
 #include <cassert>
 #include "OPTICKS_LOG.hh"
 
+#include "SSys.hh"
 #include "G4PVPlacement.hh"
 #include "G4Opticks.hh"
 #include "G4OpticksHit.hh"
@@ -14,6 +15,21 @@ G4OKTest
 
 This test is intended to provide a way of testing G4Opticks machinery 
 without ascending to the level of the experiment.
+
+Leak Checking
+--------------
+
+::
+
+   G4OKTEST_PROFILE_LEAK_MB=10 G4OKTest 100
+   G4OKTEST_PROFILE_LEAK_MB=10 G4OKTest 100
+
+::
+
+    2021-02-15 14:58:43.569 INFO  [9756895] [G4Opticks::finalizeProfile@385] saving time/vm stamps to path $TMP/G4Opticks/tests/G4OpticksProfilePlot.npy
+    2021-02-15 14:58:43.569 INFO  [9756895] [G4Opticks::finalizeProfile@386] make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py 
+     num_stamp 100 m_profile_leak_mb 20     t0 53871.2 t1 53923.6 dt 52.4023 dt/(num_stamp-1) 0.529317     v0 (MB) 35316.6 v1 (MB) 37296.7 dv 1980.09 dv/(num_stamp-1) 20.0009
+
 
 Geometry Setup
 ---------------
@@ -77,6 +93,7 @@ class G4OKTest
     private:
         int  initLog(int argc, char** argv);
         void init();
+        void initProfile();
         void initCommandLine();
         void initGeometry();
         void initSensorData();
@@ -147,12 +164,20 @@ opticksTripletIdentifier is used as a standin for the sensor identifier.
 **/
 void G4OKTest::init()
 {
+    initProfile(); 
     initCommandLine(); 
     initGeometry();
     initSensorData();
     initSensorAngularEfficiency();
     if(m_debug) saveSensorLib(); 
     //m_g4ok->snap(m_tmpdir);   // snapping before event upload fails due to invalid context : generate.cu requires sequence_buffer
+}
+
+
+void G4OKTest::initProfile()
+{
+    m_g4ok->setProfile(true); 
+    m_g4ok->setProfileLeakMB(SSys::getenvfloat("G4OKTEST_PROFILE_LEAK_MB", 0.f));  
 }
 
 

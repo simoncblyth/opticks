@@ -115,6 +115,8 @@ class G4OK_API G4Opticks
         std::string desc() const ;  
         const char* dbgdesc() const ;  
         std::string dbgdesc_() const ;
+        void setProfile(bool profile);
+        void setProfileLeakMB(float profile_leak_mb);
     public:
         // workflow methods
         int propagateOpticalPhotons(G4int eventID);
@@ -354,6 +356,7 @@ class G4OK_API G4Opticks
         unsigned                    m_skip_gencode_count ;  
         std::map<int, int>          m_skip_gencode_totals ; 
         bool                        m_profile ; 
+        float                       m_profile_leak_mb ; 
         std::vector<float>          m_profile_stamps ; 
     private:
         static G4Opticks*          fInstance;

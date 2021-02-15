@@ -72,8 +72,6 @@ int main(int argc, char** argv)
     const char* path = "$TMP/optickscore/tests/OpticksEventLeakTest.npy" ; 
     LOG(info) << " save to path " << path ; 
     LOG(info) << " make plot with: ipython -i ~/opticks/optickscore/tests/OpticksEventLeakTest.py "  ;
-    
-
     a->save(path); 
 
     unsigned num_stamp = a->getNumItems(); 
@@ -84,17 +82,21 @@ int main(int argc, char** argv)
 
     float dt = t1 - t0 ; 
     float dv = v1 - v0 ; 
-
+    float dt_per_stamp = dt/float(num_stamp); 
     float dv_per_stamp = dv/float(num_stamp); 
 
     std::cout 
+        << " num_stamp " << num_stamp
+        << "    "
         << " t0 " << t0 
-        << " v0 " << v0 
         << " t1 " << t1 
-        << " v1 " << v1 
         << " dt " << dt 
+        << " dt/num_stamp " << dt_per_stamp
+        << "    "
+        << " v0 " << v0 
+        << " v1 " << v1 
         << " dv " << dv 
-        << " dv_per_stamp " << dv_per_stamp
+        << " dv/num_stamp " << dv_per_stamp
         << std::endl
         ;
 

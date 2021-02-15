@@ -61,12 +61,14 @@ class SYSRAP_API SSys {
      static std::string hexlify(const void* obj, size_t size, bool reverse=true ) ; 
 
      static void WaitForInput(const char* msg="Enter any key to continue...\n");
-     static int getenvint( const char* envkey, int fallback=-1 );
+     static int  getenvint( const char* envkey, int fallback=-1 );
+     static float getenvfloat( const char* envkey, float fallback=-1.f );
      static bool getenvbool( const char* envkey );
      static int getenvintvec( const char* envkey, std::vector<int>& ivec, char delim=',' );
 
 
-     static int atoi_( const char* a );
+     static int   atoi_( const char* a );
+     static float atof_( const char* a );
      static const char* getenvvar( const char* envkey, const char* fallback );
      static const char* getenvvar( const char* envkey );
      static const char* username(); 

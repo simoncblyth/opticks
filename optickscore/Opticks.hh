@@ -383,7 +383,10 @@ class OKCORE_API Opticks {
        bool                 getAnimTimeRange(glm::vec4& range) const ;
        int                  getPrintIndex(unsigned dim=0) const ; 
        bool                 isPrintIndexLog() const ; 
-       bool                 isGlobalInstanceEnabled() const ; // --global_instance_enabled
+
+       bool                 isWay() const ;      // --way
+       bool                 isAngular() const ;  // --angular
+
        bool                 isG4CodeGen() const ;  // --g4codegen
        bool                 isNoSavePPM() const ; // --nosaveppm
        bool                 isNoG4Propagate() const ;     // --nog4propagate

@@ -310,7 +310,8 @@ G4Opticks::G4Opticks()
     m_skip_gencode(),
     m_skip_gencode_count(SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ',')),
     m_skip_gencode_totals(),
-    m_profile(true)
+    m_profile(false),
+    m_profile_leak_mb(0.f)
 {
     initSkipGencode() ; 
 
@@ -331,6 +332,19 @@ void G4Opticks::initSkipGencode()
         m_skip_gencode_totals[gencode] = 0 ; 
     }
 }
+
+void G4Opticks::setProfile(bool profile)
+{
+    m_profile = profile ; 
+}
+void G4Opticks::setProfileLeakMB(float profile_leak_mb)
+{
+    LOG(info) << " profile_leak_mb " << profile_leak_mb ; 
+    m_profile = true ; 
+    m_profile_leak_mb = profile_leak_mb ; 
+}
+
+
 
 void G4Opticks::dumpSkipGencode() const  
 {
@@ -373,24 +387,30 @@ void G4Opticks::finalizeProfile() const
     a->save(path);  
 
     unsigned num_stamp = a->getNumItems(); 
+
     float t0 = a->getValue( 0, 0, 0) ; 
     float t1 = a->getValue(-1, 0, 0) ; 
+    float dt = t1 - t0 ; 
+    float dt_per_stamp = dt/float(num_stamp-1);   // subtract 1 because profile stamps only at one point  
+
     float v0 = a->getValue( 0, 1, 0) ; 
     float v1 = a->getValue(-1, 1, 0) ; 
-
-    float dt = t1 - t0 ; 
     float dv = v1 - v0 ; 
-
-    float dv_per_stamp = dv/float(num_stamp); 
+    float dv_per_stamp = dv/float(num_stamp-1);    // subtract 1 because profile stamps only at one point  
 
     std::cout 
+        << " num_stamp " << num_stamp
+        << " m_profile_leak_mb " << m_profile_leak_mb
+        << "    "
         << " t0 " << t0  
-        << " v0 " << v0  
         << " t1 " << t1  
-        << " v1 " << v1  
         << " dt " << dt  
+        << " dt/(num_stamp-1) " << dt_per_stamp
+        << "    "
+        << " v0 (MB) " << v0  
+        << " v1 (MB) " << v1  
         << " dv " << dv  
-        << " average dv_per_stamp " << dv_per_stamp
+        << " dv/(num_stamp-1) " << dv_per_stamp
         << std::endl
         ;   
 }
@@ -1086,9 +1106,21 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
         m_opmgr->reset();   
         // reset : clears OpticksEvent buffers, excluding gensteps
         //         must clone any buffers to be retained before the reset
+
+        
+        if(m_profile && m_profile_leak_mb > 0.f)
+        {
+            size_t leak_bytes = size_t(1000000*m_profile_leak_mb) ;  
+            LOG(fatal) << "m_profile_leak_mb > 0.f : " << m_profile_leak_mb << " deliberate leak_bytes " << leak_bytes ; 
+            char* leak = new char[leak_bytes] ; 
+            assert( leak ); 
+        }
     }
 
     LOG(LEVEL) << "]] num_hits " << m_num_hits ; 
+
+
+
 
 
     if( m_profile )

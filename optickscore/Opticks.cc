@@ -1029,15 +1029,22 @@ const char* Opticks::getScintillationClass() const
 }
 
 
-
-bool Opticks::isGlobalInstanceEnabled() const // --global_instance_enabled
+bool Opticks::isWay() const  // --way
 {
-    return m_cfg->hasOpt("global_instance_enabled") ; 
+    return m_cfg->hasOpt("way") ;
 }
+bool Opticks::isAngular() const  // --angular
+{
+    return m_cfg->hasOpt("angular") ;
+}
+
+
+
 bool Opticks::isG4CodeGen() const  // --g4codegen
 {
     return m_cfg->hasOpt("g4codegen") ;
 }
+
 bool Opticks::isNoSavePPM() const  // --nosaveppm
 {
     return m_cfg->hasOpt("nosaveppm") ;

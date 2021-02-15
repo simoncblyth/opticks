@@ -375,12 +375,25 @@ int SSys::getenvint( const char* envkey, int fallback )
     return ival ; 
 }
 
+float SSys::getenvfloat( const char* envkey, float fallback )
+{
+    char* val = getenv(envkey);
+    float fval = val ? atof_(val) : fallback ;
+    return fval ; 
+}
+
+
+
+
 bool SSys::getenvbool( const char* envkey )
 {
     char* val = getenv(envkey);
     bool ival = val ? true : false ;
     return ival ; 
 }
+
+
+
 
 int SSys::getenvintvec( const char* envkey, std::vector<int>& ivec, char delim )
 {
@@ -406,6 +419,20 @@ int SSys::atoi_( const char* a )
     iss >> i ; 
     return i ;
 }
+
+
+float SSys::atof_( const char* a )
+{
+    std::string s(a);
+    std::istringstream iss(s);
+    float f ;
+    iss >> f ; 
+    return f ;
+}
+
+
+
+
 
 
 const char* SSys::getenvvar( const char* envvar )

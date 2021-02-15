@@ -175,9 +175,41 @@ void test_getenvintvec()
         std::cout << i << " " << ivals[i] <<  " " << ivals2[i] << std::endl ; 
         assert( ivals[i] == ivals2[i] );   
     } 
+}
 
+void test_atof()
+{
+   const char* s = "45.2" ; 
+   float f = SSys::atof_(s) ; 
+   LOG(info) 
+       << " s " << s 
+       << " f " << f 
+       ;
 
 }
+
+void test_getenvfloat()
+{
+    LOG(info); 
+    const char* key = "SSYSTEST_GETENVFLOAT" ; 
+
+    float f = 42.5f ; 
+    std::stringstream ss ; 
+    ss << std::fixed << f ;  
+    std::string s = ss.str(); 
+
+    bool overwrite = true ; 
+    SSys::setenvvar(key, s.c_str(), overwrite); 
+
+    float f2 = SSys::getenvfloat(key); 
+    LOG(info) 
+        << " f " << f 
+        << " s " << s 
+        << " f2 " << f2 
+        ; 
+    assert( f2 == f ); 
+}
+
 
 int main(int argc , char** argv )
 {
@@ -210,7 +242,9 @@ int main(int argc , char** argv )
     //test_hexlify();  
 
 
-    test_getenvintvec(); 
+    //test_getenvintvec(); 
+    test_getenvfloat(); 
+    //test_atof(); 
 
     return rc  ; 
 }
