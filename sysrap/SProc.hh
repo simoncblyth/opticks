@@ -35,6 +35,10 @@ class SYSRAP_API SProc {
   public:
       static float VirtualMemoryUsageMB();
       static float VirtualMemoryUsageKB();
+      static float ResidentSetSizeMB();
+      static float ResidentSetSizeKB();
+
+
       static const char* ExecutablePath(bool basename=false); 
       static const char* ExecutableName(); 
 

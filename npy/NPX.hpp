@@ -24,7 +24,7 @@ struct NPY_API NPX : public NPYBase {
     void add(const T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  
 
     T* grow(unsigned int nitems);
-
+    void reserve(unsigned nitems);
 
     void zero();
     void read(const void* ptr);

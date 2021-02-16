@@ -1,8 +1,9 @@
 #include <iostream>
 #include <iomanip>
 #include "OPTICKS_LOG.hh"
+#include "SSys.hh"
 #include "SProc.hh"
-#include "NPY.hpp"
+#include "NPX.hpp"
 
 unsigned mock_numsteps( unsigned evt, unsigned scale=1 )
 {
@@ -23,46 +24,136 @@ unsigned mock_numsteps( unsigned evt, unsigned scale=1 )
    return ns*scale ;   
 }
 
+
+unsigned mock_numsteps2( unsigned evt )
+{
+    unsigned ns = 0 ; 
+    switch( evt % 10 )
+    {   
+       case 0: ns = 3271 ; break ;
+       case 1: ns = 3270 ; break ;
+       case 2: ns = 3057 ; break ;
+       case 3: ns = 3453 ; break ;
+       case 4: ns = 3459 ; break ;
+       case 5: ns = 3362 ; break ;
+       case 6: ns = 3111 ; break ;
+       case 7: ns = 3702 ; break ;
+       case 8: ns = 3479 ; break ;
+       case 9: ns = 3500 ; break ;
+   }   
+   return ns ;   
+}
+
+
+
+
+
 struct test_grow_leak
 {
-    NPY<float>* a ;
+    NPX<float>* a ;
     unsigned itemsize ; 
     float* gs ; 
+    int nevt ; 
+    int reservation ; 
+    unsigned scale ; 
 
+    test_grow_leak()
+        :
+        a(NPX<float>::make(0,6,4)),
+        itemsize(6*4),
+        gs(new float[itemsize]),
+        nevt(SSys::getenvint("NEVT",10)),
+        reservation(SSys::getenvint("RESERVATION",0)),
+        scale(1000)
+    {
+        std::cout 
+            << " nevt " << nevt 
+            << " reservation " << reservation
+            << std::endl
+            ;
+ 
+        for(unsigned i=0 ; i < itemsize ; i++) gs[i] = float(i) ; 
+    }
+
+
+    float vm(){  return SProc::VirtualMemoryUsageMB() ; }
+    float rss(){ return SProc::ResidentSetSizeMB() ; }
 
     void stamp(unsigned i)
     {
-        float vm = SProc::VirtualMemoryUsageMB() ;
         std::cout 
             << std::setw(5) << i  
             << " : "
-            << vm 
+            << vm()
+            << " : "
+            << rss()
             << " : "
             << a->getShapeString()
             << std::endl ; 
             ;
     }
 
-    test_grow_leak()
-        :
-        a(NPY<float>::make(0,6,4)),
-        itemsize(6*4),
-        gs(new float[itemsize])  
+    unsigned get_numsteps(unsigned  i)
     {
-        for(unsigned i=0 ; i < itemsize ; i++) gs[i] = float(i) ; 
+        //unsigned numsteps = mock_numsteps(i, scale);  
+        unsigned numsteps = mock_numsteps2(i);  
+        return numsteps ;
     }
 
-    void one(unsigned i)
+    void one(int i)
     {
-        unsigned numsteps = mock_numsteps(i, 1000);  
+        unsigned numsteps = get_numsteps(i) ;
+
+        if(reservation != 0)
+        a->reserve( reservation > 0 ? reservation : numsteps );
+        
         for(unsigned j=0 ; j < numsteps ; j++) a->add(gs, itemsize) ;  // mimic collecting gensteps        
         stamp(i); 
         a->reset();  
     }
 
-    void many()
+    void dump(int i)
     {
-        for(unsigned i=0 ; i < 100 ; i++) one(i); 
+        unsigned numsteps = get_numsteps(i) ;  
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " numsteps " << numsteps 
+            << std::endl 
+            ; 
+    }
+
+    void many()
+    {  
+        for(int i=0 ; i < nevt ; i++) dump(i); 
+ 
+        float vm0 = vm();  
+        float rss0 = rss();  
+        for(int i=0 ; i < nevt ; i++) one(i); 
+        float vm1 = vm();
+        float rss1 = rss();  
+    
+        float dvm = vm1 - vm0 ; 
+        float dvm_nevt = dvm/float(nevt); 
+
+        float drss = rss1 - rss0 ; 
+        float drss_nevt = drss/float(nevt); 
+
+
+        for(int i=0 ; i < nevt ; i++) dump(i); 
+
+        std::cout 
+            << " reservation " << reservation 
+            << " nevt " << nevt 
+            << " vm0 " << vm0  
+            << " vm1 " << vm1
+            << " dvm " << dvm 
+            << " dvm_nevt " << dvm_nevt
+            << " rss0 " << rss0  
+            << " rss1 " << rss1
+            << " drss " << drss 
+            << " drss_nevt " << drss_nevt
+            << std::endl
+            ; 
     }
 };
 

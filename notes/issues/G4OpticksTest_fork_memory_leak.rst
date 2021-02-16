@@ -6,6 +6,172 @@ Added simple per G4Opticks::propagateOptical call profile collection.
 * VM steadily increasing at around 4MB per call to propagate. 
 
 
+.. contents:: Table of Contents
+
+Overview
+-----------
+
+**is this a leak, or is it fragmentation : ie using up clumps of memory that will be reclaimed by OS later**
+
+G4OpticksTest appears to leak when observing SProc::VirtualMemoryUsageMB
+but G4OKTest does not.  They are both doing much the same thing, the primary difference
+is that G4OpticksTest does lots of dynamic genstep array growing up to 3000 or so items. 
+G4OKTest uses few torch gensteps with lots of photons each.
+
+Investigations reveal that reserving ahead does seem to reduce resource usage.
+
+
+
+cfg4/tests/CGenstepCollectorLeakTest.cc
+    simple application of CGenstepCollector
+
+cfg4/tests/CGenstepCollectorLeak2Test.cc
+    eliminates the collector, just uses the array and adopts NPX 
+
+npy/NPX.hpp
+    stripped down variant of NPY for memory issue testing and 
+    trying out alternative m_data approaches
+    
+npy/tests/NPY6Test.cc
+    dynamic growing of NPX, looking into base pointer shifts and capacity changes
+
+sysrap/tests/reallocTest.cc
+    take a look at a lower level 
+
+
+Reliability of /proc/self/status and mac equivalent ?
+---------------------------------------------------------
+
+* https://stackoverflow.com/questions/42260960/inconsistent-change-in-vmrss-or-vmsize-when-looking-at-proc-self-status
+
+* https://unix.stackexchange.com/questions/35129/need-explanation-on-resident-set-size-virtual-size
+
+RSS seems less flakey a candle than VM on macOS::
+
+    reserve  items 4000 itemvals 24 vals 96000 cap0 0 cap1 96000
+    NPY<T>::grow base_ptr shift 0,6,4 m_data->size() 24 m_data->capacity() 96000
+        8 : 4383.27 : 2.379 : 3479,6,4
+    reserve  items 4000 itemvals 24 vals 96000 cap0 0 cap1 96000
+    NPY<T>::grow base_ptr shift 0,6,4 m_data->size() 24 m_data->capacity() 96000
+        9 : 4384.32 : 2.392 : 3500,6,4
+     i   0 numsteps 3271
+     i   1 numsteps 3270
+     i   2 numsteps 3057
+     i   3 numsteps 3453
+     i   4 numsteps 3459
+     i   5 numsteps 3362
+     i   6 numsteps 3111
+     i   7 numsteps 3702
+     i   8 numsteps 3479
+     i   9 numsteps 3500
+     reservation 4000 nevt 10 vm0 4382.88 vm1 4384.32 dvm 1.43799 dvm_nevt 0.143799 rss0 1.957 rss1 2.392 drss 0.435 drss_nevt 0.0435
+    epsilon:npy blyth$ RESERVATION=4000 NPY6Test 
+
+
+    reservation 4000 nevt 10 vm0 4382.88 vm1 4383.27 dvm 0.38916 dvm_nevt 0.038916 rss0 1.957 rss1 2.379 drss 0.422 drss_nevt 0.0422
+    epsilon:npy blyth$ RESERVATION=4000 NPY6Test 
+
+    reserve  items 3500 itemvals 24 vals 84000 cap0 0 cap1 84000
+    NPY<T>::grow base_ptr shift 0,6,4 m_data->size() 24 m_data->capacity() 84000
+        9 : 4385.27 : 3.375 : 3500,6,4
+     i   0 numsteps 3271
+     i   1 numsteps 3270
+     i   2 numsteps 3057
+     i   3 numsteps 3453
+     i   4 numsteps 3459
+     i   5 numsteps 3362
+     i   6 numsteps 3111
+     i   7 numsteps 3702
+     i   8 numsteps 3479
+     i   9 numsteps 3500
+     reservation -1 nevt 10 vm0 4382.88 vm1 4385.27 dvm 2.39209 dvm_nevt 0.239209 rss0 1.957 rss1 3.375 drss 1.418 drss_nevt 0.1418
+     epsilon:npy blyth$ RESERVATION=-1 NPY6Test 
+
+
+Resource wise the best thing to do is to set a fixed max size to the array.
+Presumably as that prevents realloc calls.
+Adjusting that using pre-knowledge of the number of steps event by event does not help, actually does harm.
+
+
+
+CGenstepCollectorLeakTest : exercises a lot of dynamic genstep growing 
+-------------------------------------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ CGenstepCollectorLeakTest
+     evt 0 num_steps 10000 gs 10000,6,4
+     evt 1 num_steps 50000 gs 50000,6,4
+     evt 2 num_steps 60000 gs 60000,6,4
+     evt 3 num_steps 80000 gs 80000,6,4
+     evt 4 num_steps 10000 gs 10000,6,4
+     evt 5 num_steps 100000 gs 100000,6,4
+     evt 6 num_steps 30000 gs 30000,6,4
+     evt 7 num_steps 300000 gs 300000,6,4
+     evt 8 num_steps 20000 gs 20000,6,4
+     evt 9 num_steps 10000 gs 10000,6,4
+     mock_numevt 10 v0 4604.66 v1 4713.52 dv 108.86 dvp 10.886
+
+
+CGenstepCollectorLeak2Test : simplifies CGenstepCollectorLeakTest and uses NPX 
+---------------------------------------------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ CGenstepCollectorLeak2Test
+     ...
+     evt 0 num_steps 10000 gs 10000,6,4
+     evt 1 num_steps 50000 gs 50000,6,4
+     evt 2 num_steps 60000 gs 60000,6,4
+     evt 3 num_steps 80000 gs 80000,6,4
+     evt 4 num_steps 10000 gs 10000,6,4
+     evt 5 num_steps 100000 gs 100000,6,4
+     evt 6 num_steps 30000 gs 30000,6,4
+     evt 7 num_steps 300000 gs 300000,6,4
+     evt 8 num_steps 20000 gs 20000,6,4
+     evt 9 num_steps 10000 gs 10000,6,4
+     mock_numevt 10 v0 4585.78 v1 4686.25 dv 100.471 dvp 10.0471
+    epsilon:opticks blyth$ 
+
+
+NPY6Test : NPX capacity reservation tests
+-------------------------------------------
+
+::
+
+    .  98 : 4538.92 : 20000,6,4
+    NPY<T>::grow base_ptr shift 0,6,4 m_data->size() 24 m_data->capacity() 24
+    NPY<T>::grow base_ptr shift 1,6,4 m_data->size() 48 m_data->capacity() 48
+    NPY<T>::grow base_ptr shift 2,6,4 m_data->size() 72 m_data->capacity() 96
+    NPY<T>::grow base_ptr shift 4,6,4 m_data->size() 120 m_data->capacity() 192
+    NPY<T>::grow base_ptr shift 8,6,4 m_data->size() 216 m_data->capacity() 384
+    NPY<T>::grow base_ptr shift 16,6,4 m_data->size() 408 m_data->capacity() 768
+    NPY<T>::grow base_ptr shift 32,6,4 m_data->size() 792 m_data->capacity() 1536
+    NPY<T>::grow base_ptr shift 64,6,4 m_data->size() 1560 m_data->capacity() 3072
+    NPY<T>::grow base_ptr shift 128,6,4 m_data->size() 3096 m_data->capacity() 6144
+    NPY<T>::grow base_ptr shift 256,6,4 m_data->size() 6168 m_data->capacity() 12288
+    NPY<T>::grow base_ptr shift 512,6,4 m_data->size() 12312 m_data->capacity() 24576
+    NPY<T>::grow base_ptr shift 1024,6,4 m_data->size() 24600 m_data->capacity() 49152
+    NPY<T>::grow base_ptr shift 2048,6,4 m_data->size() 49176 m_data->capacity() 98304
+    NPY<T>::grow base_ptr shift 4096,6,4 m_data->size() 98328 m_data->capacity() 196608
+    NPY<T>::grow base_ptr shift 8192,6,4 m_data->size() 196632 m_data->capacity() 393216
+       99 : 4548.36 : 10000,6,4
+     reservation 0 nevt 100 vm0 4382.88 vm1 4548.36 dvm 165.483 dvm_nevt 1.65483
+    epsilon:npy blyth$ 
+
+
+Reserving capacity ahead does seem to reduce resource usage::
+
+    epsilon:npy blyth$ NEVT=1 RESERVATION=10000 NPY6Test 
+     nevt 1 reservation 10000
+     reserve  items 10000 itemvals 24 vals 240000 cap0 0 cap1 240000
+    NPY<T>::grow base_ptr shift 0,6,4 m_data->size() 24 m_data->capacity() 240000
+        0 : 4383.85 : 10000,6,4
+     reservation 10000 nevt 1 vm0 4383.85 vm1 4383.85 dvm 0 dvm_nevt 0
+    epsilon:npy blyth$ 
+
+
+
 Plotting the leak
 ------------------- 
 
@@ -124,7 +290,35 @@ Notice high genstep counts in G4OpticksTest
 
 Possibly a leak from NPY::add which has to do dynamic resizing rather a lot with such large genstep counts.
 
-But NPY6Test.cc shows no leak, so long as reset is called of course.
+
+
+NPY6Test reserving ahead helps, but seems flakey 
+---------------------------------------------------
+
+::
+
+    epsilon:npy blyth$ RESERVATION=4000 NPY6Test 
+    ...
+
+     reserve  items 4000 itemvals 24 vals 96000 cap0 0 cap1 96000
+    NPY<T>::grow base_ptr shift 0,6,4 m_data->size() 24 m_data->capacity() 96000
+        8 : 4383.27 : 3479,6,4
+     reserve  items 4000 itemvals 24 vals 96000 cap0 0 cap1 96000
+    NPY<T>::grow base_ptr shift 0,6,4 m_data->size() 24 m_data->capacity() 96000
+        9 : 4383.27 : 3500,6,4
+     i   0 numsteps 3271
+     i   1 numsteps 3270
+     i   2 numsteps 3057
+     i   3 numsteps 3453
+     i   4 numsteps 3459
+     i   5 numsteps 3362
+     i   6 numsteps 3111
+     i   7 numsteps 3702
+     i   8 numsteps 3479
+     i   9 numsteps 3500
+     reservation 4000 nevt 10 vm0 4382.88 vm1 4383.27 dvm 0.38916 dvm_nevt 0.038916
+    epsilon:npy blyth$ 
+    epsilon:npy blyth$ 
 
 
 

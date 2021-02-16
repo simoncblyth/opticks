@@ -24,6 +24,7 @@ NPX<T>* NPX<T>::make(const std::vector<int>& shape)
     return npy ; 
 }
 
+
 template <typename T>
 NPX<T>::NPX(const std::vector<int>& shape, const T* data_, std::string& metadata) 
     :
@@ -53,8 +54,21 @@ T* NPX<T>::allocate()
     assert(m_data->size() == 0);  
     setHasData(true);
     m_data->resize(num_vals);
-    setBasePtr(m_data->data());
-    return m_data->data();
+
+    void* old_base_ptr = getBasePtr(); 
+    void* new_base_ptr = m_data->data() ;
+
+    if( new_base_ptr != old_base_ptr )
+    {
+        std::cout << "base_ptr moved " << std::endl ; 
+    }
+    else
+    {
+        std::cout << "base_ptr same " << std::endl ; 
+    }
+
+    setBasePtr(new_base_ptr);
+    return (T*)new_base_ptr ;
 }
 
 template <typename T>
@@ -115,16 +129,51 @@ T* NPX<T>::grow(unsigned int nitems)
     unsigned int itemvals = getNumValues(1); 
     unsigned int growvals = nitems*itemvals ; 
 
-    m_data->resize(origvals + growvals);  // <--- CAUTION this can cause a change to the base ptr, as might need to be relocated to be contiguous
+    unsigned new_size = origvals + growvals ; 
+    m_data->resize(new_size);  // <--- CAUTION this can cause a change to the base ptr, as might need to be relocated to be contiguous
 
-    //void* old_base_ptr  = getBasePtr();   
+    void* old_base_ptr  = getBasePtr();   
     void* new_base_ptr = (void*)m_data->data() ; 
     setBasePtr(new_base_ptr);
 
-    //if(old_base_ptr != new_base_ptr) std::cout << "NPY<T>::grow base_ptr shift " << std::endl ; 
+    if(old_base_ptr != new_base_ptr) 
+    {
+        std::cout 
+            << "NPY<T>::grow base_ptr shift " 
+            << getShapeString()
+            << " m_data->size() " << m_data->size() 
+            << " m_data->capacity() " << m_data->capacity() 
+            << std::endl 
+            ; 
+    }
 
     return m_data->data() + origvals ;
 }
+
+template <typename T>
+void NPX<T>::reserve(unsigned items)
+{
+    unsigned itemvals = getNumValues(1); 
+    unsigned vals = items*itemvals ; 
+    unsigned cap0 = m_data->capacity(); 
+
+    m_data->reserve(vals); 
+
+    unsigned cap1 = m_data->capacity(); 
+
+    std::cout 
+        << " reserve " 
+        << " items " << items
+        << " itemvals " << itemvals
+        << " vals " << vals
+        << " cap0 " << cap0
+        << " cap1 " << cap1
+        << std::endl 
+        ; 
+    
+}
+
+
 
 template <typename T>
 void NPX<T>::zero()

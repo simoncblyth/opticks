@@ -31,6 +31,13 @@ float SProc::VirtualMemoryUsageMB()
 
 #include<mach/mach.h>
 
+/**
+
+https://developer.apple.com/forums/thread/105088
+
+**/
+
+
 float SProc::VirtualMemoryUsageKB()
 {
     struct mach_task_basic_info info;
@@ -55,6 +62,35 @@ float SProc::VirtualMemoryUsageKB()
 }
 
 
+
+float SProc::ResidentSetSizeKB()
+{
+    struct mach_task_basic_info info;
+    mach_msg_type_number_t size = MACH_TASK_BASIC_INFO_COUNT;
+    kern_return_t kerr = task_info(mach_task_self(),
+                                   MACH_TASK_BASIC_INFO,
+                                   (task_info_t)&info,
+                                   &size);
+
+    if( kerr == KERN_SUCCESS ) 
+    {
+        vm_size_t rsize_ = info.resident_size  ;  
+        unsigned long long rsize(rsize_); 
+        unsigned long long KB = 1000 ; 
+        float usage = float(rsize/KB) ; 
+        return usage  ;
+    }
+
+    LOG(error) << mach_error_string(kerr)   ; 
+
+    return 0 ;   
+}
+
+
+
+
+
+
 #else
     
 // https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
@@ -63,8 +99,17 @@ float SProc::VirtualMemoryUsageKB()
 #include "stdio.h"
 #include "string.h"
 
+/**
+parseLine
+-----------
+
+Expects a line the below form with digits and ending in " Kb"::
+
+   VmSize:	  108092 kB
+
+**/
+
 int parseLine(char* line){
-    // This assumes that a digit will be found and the line ends in " Kb".
     int i = strlen(line);
     const char* p = line;
     while (*p <'0' || *p > '9') p++;
@@ -89,6 +134,24 @@ float SProc::VirtualMemoryUsageKB()
     return result;
 }
 
+
+float SProc::ResidentSetSizeKB()
+{
+    FILE* file = fopen("/proc/self/status", "r");
+    float result = 0.f ;
+    char line[128];
+
+    while (fgets(line, 128, file) != NULL){
+        if (strncmp(line, "VmRSS:", 6) == 0){
+            result = parseLine(line);   // value in Kb 
+            break;
+        }
+    }
+    fclose(file);
+    return result;
+}
+
+
 #endif
 
 float SProc::VirtualMemoryUsageMB()
@@ -96,6 +159,16 @@ float SProc::VirtualMemoryUsageMB()
     float result = VirtualMemoryUsageKB() ; 
     return result/1000.f ;   
 }
+
+float SProc::ResidentSetSizeMB()
+{
+    float result = ResidentSetSizeKB() ; 
+    return result/1000.f ;   
+}
+
+
+
+
 
 
 /**

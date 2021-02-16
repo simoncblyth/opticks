@@ -38,7 +38,7 @@ set(TEST_SOURCES
    pLOG_MACRO_Test.cc
    PLOG_exename_Test.cc
     
-
+   reallocTest.cc
    OpticksCSGTest.cc
    hash_define_without_value.cc
    SDirectTest.cc 

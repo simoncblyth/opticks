@@ -39,12 +39,27 @@ int main(int argc, char** argv)
     unsigned itemsize = 6*4 ;  
     float gsi[itemsize];
 
+
+    int reservation = SSys::getenvint("RESERVATION",0) ; 
     for(int i=0 ; i < itemsize ; i++) gsi[i] = float(i); 
 
     float v0 = SProc::VirtualMemoryUsageMB() ;
     for(unsigned evt=0 ; evt < mock_numevt ; evt++)
     {
         unsigned num_steps = mock_numsteps(evt, scale) ; 
+
+        if(reservation > 0 ) 
+        {
+            std::cout << " fixed reservation " << reservation << std::endl ; 
+            gs->reserve( reservation ); 
+        } 
+        else if( reservation < 0 )
+        {
+            std::cout << " cheat and use pre-knowledge of the number of items : " << num_steps ; 
+            gs->reserve(num_steps);   
+        }  
+
+
         for(unsigned i=0 ; i < num_steps ; i++) gs->add(gsi, itemsize);  
         std::cout 
             << " evt " << evt
@@ -59,7 +74,20 @@ int main(int argc, char** argv)
     float dv = v1 - v0 ; 
     float dvp = dv/float(mock_numevt) ;  
 
+
+
+    if(reservation > 0 ) 
+    {
+        std::cout << " +ve reservation : fixed reservation " << reservation << std::endl ; 
+    } 
+    else if( reservation < 0 )
+    {
+        std::cout << " -ve reservation : cheat and use pre-knowledge of the number of items for each event  " ; 
+    }  
+
+
     std::cout 
+        << " reservation " << reservation
         << " mock_numevt " << mock_numevt
         << " v0 " << v0 
         << " v1 " << v1
