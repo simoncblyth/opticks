@@ -138,6 +138,7 @@ optix::Program OConfig::createProgram(const char* cu_name, const char* progname 
 
 unsigned int OConfig::addEntry(const char* cu_name, const char* raygen, const char* exception, bool defer)
 {
+    LOG(LEVEL) << " cu_name " << cu_name << " raygen " << raygen ; 
     int raygen_index = addRayGenerationProgram( cu_name, raygen, defer);
     int exception_index = addExceptionProgram( cu_name, exception, defer);
     assert(raygen_index == exception_index && raygen_index > -1);

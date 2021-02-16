@@ -576,7 +576,18 @@ optix::Material OGeo::makeMaterial()
     LOG(LEVEL) << "[" ; 
     optix::Material material = m_context->createMaterial();
     material->setClosestHitProgram(OContext::e_radiance_ray, m_ocontext->createProgram("material1_radiance.cu", "closest_hit_radiance"));
-    material->setClosestHitProgram(OContext::e_propagate_ray, m_ocontext->createProgram("material1_propagate.cu", "closest_hit_propagate"));
+
+    bool angular = m_ok->isAngularEnabled() ; 
+    const char* ch_module = angular ? "closest_hit_angular_propagate.cu" : "closest_hit_propagate.cu" ;
+    const char* ch_func   = angular ? "closest_hit_angular_propagate"    : "closest_hit_propagate" ; 
+
+    LOG(LEVEL) 
+        << " angular " << angular 
+        << " ch_module " << ch_module 
+        << " ch_func " << ch_func 
+        ;
+    material->setClosestHitProgram(OContext::e_propagate_ray, m_ocontext->createProgram(ch_module, ch_func));
+   
     LOG(LEVEL) << "]" ; 
     return material ; 
 }

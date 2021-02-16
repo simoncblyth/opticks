@@ -81,20 +81,43 @@ const char* OContext::getRunResultsDir() const
     return m_runresultsdir ; 
 }
 
+std::string OContext::getGenerateFilename() const  
+{
+    char a = m_ok->isAngularEnabled() ? '+' : '-' ;  
+    char w = m_ok->isWayEnabled() ? '+' : '-' ;  
+
+    std::stringstream ss ; 
+    ss 
+        << "generate_"
+        << a << "WITH_ANGULAR"
+        << ","
+        << w << "WITH_WAY_BUFFER"
+        << ".cu"
+        ;
+       
+    std::string s = ss.str(); 
+    return s ;   
+}
+
+
 OpticksEntry* OContext::addEntry(char code, const char* from)
 {
     LOG(LEVEL) << code << " : " << from ; 
 
     bool defer = true ; 
     unsigned index ;
+
+    std::string gfn_ = getGenerateFilename(); 
+    const char* gfn = gfn_.c_str();  
+    LOG(LEVEL) << " gfn " << gfn ;  
     switch(code)
     { 
-        case 'G': index = addEntry("generate.cu", "generate", "exception", defer) ; break ;
-        case 'T': index = addEntry("generate.cu", "trivial",  "exception", defer) ; break ;
-        case 'Z': index = addEntry("generate.cu", "zrngtest",  "exception", defer) ; break ;
-        case 'N': index = addEntry("generate.cu", "nothing",  "exception", defer) ; break ;
-        case 'R': index = addEntry("generate.cu", "tracetest",  "exception", defer) ; break ;
-        case 'D': index = addEntry("generate.cu", "dumpseed", "exception", defer) ; break ;
+        case 'G': index = addEntry(gfn, "generate", "exception", defer) ; break ;
+        case 'T': index = addEntry(gfn, "trivial",  "exception", defer) ; break ;
+        case 'Z': index = addEntry(gfn, "zrngtest",  "exception", defer) ; break ;
+        case 'N': index = addEntry(gfn, "nothing",  "exception", defer) ; break ;
+        case 'R': index = addEntry(gfn, "tracetest",  "exception", defer) ; break ;
+        case 'D': index = addEntry(gfn, "dumpseed", "exception", defer) ; break ;
         case 'S': index = addEntry("seedTest.cu", "seedTest", "exception", defer) ; break ;
         case 'P': index = addEntry("pinhole_camera.cu", "pinhole_camera" , "exception", defer);  break;
     }

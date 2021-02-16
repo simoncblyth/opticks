@@ -23,7 +23,12 @@
 #include <optixu/optixu_math_namespace.h>
 
 #include "OpticksSwitches.h"
+
+#ifdef WITH_ANGULAR
+#include "PerRayData_angular_propagate.h"
+#else
 #include "PerRayData_propagate.h"
+#endif
 
 using namespace optix;
 
@@ -386,8 +391,11 @@ RT_PROGRAM void tracetest()
     //tsdebug(ts);
     generate_torch_photon(p, ts, rng );         
 
- 
+#ifdef WITH_ANGULAR
+    PerRayData_angular_propagate prd ;
+#else 
     PerRayData_propagate prd ;
+#endif
 
     // trace sets these, see material1_propagate.cu:closest_hit_propagate
     prd.distance_to_boundary = -1.f ;
@@ -653,7 +661,11 @@ analogous to *photon* to *hit* selexction.
 
 
 
+#ifdef WITH_ANGULAR
+    PerRayData_angular_propagate prd ;
+#else
     PerRayData_propagate prd ;
+#endif
 
 #ifdef WITH_DEBUG_BUFFER
     prd.debug.x = 0.f ; 

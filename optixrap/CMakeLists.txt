@@ -19,6 +19,36 @@ find_package(OpticksGeo REQUIRED CONFIG)
 find_package(ThrustRap  REQUIRED CONFIG )
 
 
+set(flags_AW +WITH_ANGULAR,+WITH_WAY_BUFFER)
+set(flags_Aw +WITH_ANGULAR,-WITH_WAY_BUFFER)
+set(flags_aW -WITH_ANGULAR,+WITH_WAY_BUFFER)
+set(flags_aw -WITH_ANGULAR,-WITH_WAY_BUFFER)
+
+
+add_custom_command(
+    OUTPUT  generate_${flags_AW}.cu
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cu/preprocessor.py ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu --flags="${flags_AW}" --out ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_AW}.cu
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu
+)
+add_custom_command(
+    OUTPUT  generate_${flags_Aw}.cu
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cu/preprocessor.py ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu --flags="${flags_Aw}" --out ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_Aw}.cu
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu
+)
+add_custom_command(
+    OUTPUT  generate_${flags_aW}.cu
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cu/preprocessor.py ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu --flags="${flags_aW}" --out ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_aW}.cu
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu
+)
+add_custom_command(
+    OUTPUT  generate_${flags_aw}.cu
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cu/preprocessor.py ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu --flags="${flags_aw}" --out ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_aw}.cu
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu
+)
+
+
+
+
 set(SOURCES
      
     OXRAP_LOG.cc
@@ -112,13 +142,13 @@ set(CU_SOURCES
     cu/GeometryTriangles.cu
     cu/constantbg.cu
     cu/material1_radiance.cu 
-    cu/material1_propagate.cu 
+    cu/closest_hit_propagate.cu 
+    cu/closest_hit_angular_propagate.cu 
     cu/TriangleMesh.cu 
     cu/sphere.cu 
     cu/visit_instance.cu
     cu/intersect_analytic.cu 
     cu/solve_callable.cu 
-    cu/generate.cu
 
     cu/dirtyBufferTest.cu
     cu/compactionTest.cu
@@ -128,12 +158,20 @@ set(CU_SOURCES
 
     cu/cbrtTest.cu
     cu/Roots3And4Test.cu
+
+    ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_AW}.cu
+    ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_Aw}.cu
+    ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_aW}.cu
+    ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_aw}.cu
 )
 
 
 
 
 set( FORMER_CU_SOURCES_NOW_MIGRATED_TO_TESTS
+
+    cu/generate.cu
+
 
     cu/bufferTest.cu
     cu/textureTest.cu
@@ -214,7 +252,10 @@ come before the OptiX.
 #]=]
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_OXRAP )
-target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
+target_include_directories( ${name} PUBLIC 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cu> 
+)
 
 if(OptiXRap_VERBOSE)
   message(STATUS "${name}._generated_PTX_files : ${_generated_PTX_files} ")

@@ -384,8 +384,8 @@ class OKCORE_API Opticks {
        int                  getPrintIndex(unsigned dim=0) const ; 
        bool                 isPrintIndexLog() const ; 
 
-       bool                 isWay() const ;      // --way
-       bool                 isAngular() const ;  // --angular
+       bool                 isWayEnabled() const ;      // --way
+       bool                 isAngularEnabled() const ;  // --angular
 
        bool                 isG4CodeGen() const ;  // --g4codegen
        bool                 isNoSavePPM() const ; // --nosaveppm

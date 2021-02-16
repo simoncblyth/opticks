@@ -1029,11 +1029,11 @@ const char* Opticks::getScintillationClass() const
 }
 
 
-bool Opticks::isWay() const  // --way
+bool Opticks::isWayEnabled() const  // --way
 {
     return m_cfg->hasOpt("way") ;
 }
-bool Opticks::isAngular() const  // --angular
+bool Opticks::isAngularEnabled() const  // --angular
 {
     return m_cfg->hasOpt("angular") ;
 }

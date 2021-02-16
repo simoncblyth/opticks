@@ -153,6 +153,7 @@ class OXRAP_API OContext {
             void dump(const char* msg="OContext::dump");
             void close();
      public:
+            std::string getGenerateFilename() const  ;
             OpticksEntry*  addEntry(char code, const char* from);  // code was formerly defaulted to 'G'
             unsigned int   addEntry(const char* cu_filename="generate.cu", const char* raygen="generate", const char* exception="exception", bool defer=true);
             void setMissProgram( unsigned int index, const char* filename, const char* progname, bool defer=true);
