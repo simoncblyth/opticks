@@ -89,6 +89,7 @@ class OKCORE_API OpticksProfile
        void stamp(const char* label, int count);
 
        static glm::vec4 Stamp(); 
+       static void Report(const NPY<float>* a, float profile_leak_mb=0.f );
 
        unsigned lisAdd(const char* label); 
        void lisAppend(unsigned idx, double t ); 

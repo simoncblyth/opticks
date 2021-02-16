@@ -159,6 +159,7 @@ void NPY<T>::deallocate()
 {
     setHasData(false);
     m_data.clear();
+    m_data.shrink_to_fit(); 
     setBasePtr(NULL); 
     setNumItems( 0 );
 }
@@ -241,7 +242,13 @@ T* NPY<T>::grow(unsigned int nitems)
               ;
 
     m_data.resize(origvals + growvals);  // <--- CAUTION this can cause a change to the base ptr, as might need to be relocated to be contiguous
-    setBasePtr(m_data.data());
+
+    //void* old_base_ptr  = getBasePtr();   
+    void* new_base_ptr = (void*)m_data.data() ; 
+    setBasePtr(new_base_ptr);
+
+    //if(old_base_ptr != new_base_ptr) std::cout << "NPY<T>::grow base_ptr shift " << std::endl ; 
+
     return m_data.data() + origvals ;
 }
 

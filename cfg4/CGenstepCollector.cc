@@ -414,6 +414,14 @@ void CGenstepCollector::collectCerenkovStep
      m_genstep->add(cs, m_genstep_itemsize);
 }
 
+/**
+CGenstepCollector::collectMachineryStep
+-----------------------------------------
+
+Duplicates the gentype as a float into normal genstep itemsize.
+
+**/
+
 void CGenstepCollector::collectMachineryStep(unsigned gentype)
 {
      assert( OpticksGenstep::IsMachinery(gentype) ); 
@@ -427,7 +435,7 @@ void CGenstepCollector::collectMachineryStep(unsigned gentype)
 
      uif_t uif ; 
      uif.u = gentype ; 
-     for(unsigned i=0 ; i < m_genstep_itemsize ; i++) ms[i] = uif.f ; 
+     for(unsigned i=0 ; i < m_genstep_itemsize ; i++) ms[i] = uif.f ;  
 
      m_genstep->add(ms, m_genstep_itemsize);
 }

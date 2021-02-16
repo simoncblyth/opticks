@@ -26,6 +26,7 @@
 #include "NPY.hpp"
 
 #include "Opticks.hh"
+#include "OpticksProfile.hh"
 #include "OpticksHub.hh"
 #include "OpticksGenstep.h"
 
@@ -34,10 +35,10 @@
 #include "OPTICKS_LOG.hh"
 
 
-unsigned mock_num_steps( unsigned e )
+unsigned mock_numsteps( unsigned evt, unsigned scale=1 )
 {
     unsigned ns = 0 ; 
-    switch( e % 10 )
+    switch( evt % 10 )
     {
        case 0: ns = 10 ; break ;
        case 1: ns = 50 ; break ;
@@ -50,7 +51,7 @@ unsigned mock_num_steps( unsigned e )
        case 8: ns = 20 ; break ;
        case 9: ns = 10 ; break ;
    }
-   return ns ;  
+   return ns*scale ;  
 }
 
 
@@ -69,18 +70,21 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    unsigned mock_num_evt = 10 ; 
+    unsigned mock_numevt = 10 ; 
 
+/*
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
-
-
     NLookup* lookup = hub.getLookup(); 
 
     if(ok.isLegacy())
     {
         lookup->close(); 
     }
+
+*/
+    NLookup* lookup = NULL ; 
+
     // For real genstep collection it is essential 
     // to close the lookup and do cross-referencing
     // which will need OpticksHub::overrideMaterialMapA
@@ -90,37 +94,55 @@ int main(int argc, char** argv)
     CGenstepCollector cc(lookup);
     //NPY<float>* gs = cc.getGensteps(); 
 
-    for(unsigned e=0 ; e < mock_num_evt ; e++)
+    unsigned scale = 1000 ; 
+    std::vector<float> stamps ; 
+
+    for(unsigned evt=0 ; evt < mock_numevt ; evt++)
     {
-        unsigned num_steps = mock_num_steps(e); 
+        unsigned num_steps = mock_numsteps(evt, scale); 
         unsigned gentype = OpticksGenstep_MACHINERY ; 
         for(unsigned i=0 ; i < num_steps ; i++) CGenstepCollector::Instance()->collectMachineryStep(gentype);
 
-        const char* path = genstep_path(e); 
-        CGenstepCollector::Instance()->setArrayContentIndex(e); 
+        const char* path = genstep_path(evt); 
+        CGenstepCollector::Instance()->setArrayContentIndex(evt); 
         CGenstepCollector::Instance()->save(path); 
         CGenstepCollector::Instance()->reset(); 
 
-        SSys::npdump(path, "np.uint32" );
-        ok.profile(SStr::Concat(NULL, e)) ; 
+        //SSys::npdump(path, "np.uint32" );
+        //ok.profile(SStr::Concat(NULL, evt)) ; 
+
+        glm::vec4 stamp = OpticksProfile::Stamp() ; 
+        stamps.push_back(stamp.x); 
+        stamps.push_back(stamp.y); 
+        stamps.push_back(stamp.z); 
+        stamps.push_back(stamp.w); 
     }
 
-    ok.dumpProfile(argv[0]); 
-    ok.saveProfile();
+    //ok.dumpProfile(argv[0]); 
+    //ok.saveProfile();
    
+    NPY<float>* a = NPY<float>::make_from_vec(stamps); 
+    a->reshape(-1,4); 
+    a->dump(); 
 
-    for(unsigned e=0 ; e < mock_num_evt ; e++)
+    OpticksProfile::Report(a);
+
+
+/*
+    for(unsigned evt=0 ; evt < mock_numevt ; evt++)
     {
-        const char* path = genstep_path(e); 
+        const char* path = genstep_path(evt); 
         CGenstepCollector::Instance()->load(path);
 
-        unsigned e2 = CGenstepCollector::Instance()->getArrayContentIndex(); 
-        assert( e == e2 ); 
+        unsigned evt2 = CGenstepCollector::Instance()->getArrayContentIndex(); 
+        assert( evt == evt2 ); 
 
         std::cout << CGenstepCollector::Instance()->desc() << std::endl ; 
     }
+*/
 
-    return ok.getRC() ; 
+    //return ok.getRC() ; 
+    return 0 ; 
 }
 
 

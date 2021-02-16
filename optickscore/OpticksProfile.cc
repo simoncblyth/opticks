@@ -504,6 +504,37 @@ void OpticksProfile::dump(const char* msg, const char* startswith, const char* s
 }
 
 
+void OpticksProfile::Report(const NPY<float>* a, float profile_leak_mb)  // static
+{
+    unsigned num_stamp = a->getNumItems(); 
+
+    float t0 = a->getValue( 0, 0, 0) ; 
+    float t1 = a->getValue(-1, 0, 0) ; 
+    float dt = t1 - t0 ; 
+    float dt_per_stamp = dt/float(num_stamp-1);   // subtract 1 because profile stamps only at one point  
+
+    float v0 = a->getValue( 0, 1, 0) ; 
+    float v1 = a->getValue(-1, 1, 0) ; 
+    float dv = v1 - v0 ; 
+    float dv_per_stamp = dv/float(num_stamp-1);    // subtract 1 because profile stamps only at one point  
+
+    LOG(info) 
+        << " num_stamp " << num_stamp
+        << " profile_leak_mb " << profile_leak_mb
+        << "    "
+        << " t0 " << t0   
+        << " t1 " << t1 
+        << " dt " << dt 
+        << " dt/(num_stamp-1) " << dt_per_stamp
+        << "    "
+        << " v0 (MB) " << v0 
+        << " v1 (MB) " << v1 
+        << " dv " << dv 
+        << " dv/(num_stamp-1) " << dv_per_stamp
+        ;
+}
+
+
 
 
 template OKCORE_API void OpticksProfile::stampOld<unsigned>(unsigned , int);

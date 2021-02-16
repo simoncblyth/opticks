@@ -64,4 +64,129 @@ Check the measurement using deliberate extra leak::
 * looks like a leak of 1.4~3.5 MB per propagate
 
 
+::
+
+    2021-02-16 01:39:00.035 FATAL [158904] [G4Opticks::dumpSkipGencode@351] OPTICKS_SKIP_GENCODE m_skip_gencode_count 0
+    2021-02-16 01:39:00.036 INFO  [158904] [G4Opticks::finalizeProfile@385] saving time/vm stamps to path $TMP/G4Opticks/tests/G4OpticksProfilePlot.npy
+    2021-02-16 01:39:00.036 INFO  [158904] [G4Opticks::finalizeProfile@386] make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py 
+     num_stamp 1000 m_profile_leak_mb 0     t0 5119.42 t1 5939.96 dt 820.541 dt/(num_stamp-1) 0.821362     v0 (MB) 21317.1 v1 (MB) 24825.6 dv 3508.57 dv/(num_stamp-1) 3.51208
+
+
+Adding the reset of m_hits and m_hiys seems to make no difference::
+
+     499 void G4Opticks::reset()
+     500 {
+     501     resetCollectors();
+     502 
+     503     m_hits->reset();   // the cloned hits (and hiys) are owned by G4Opticks, so they must be reset here  
+     504 #ifdef WITH_WAY_BUFFER
+     505     m_hiys->reset();
+     506 #endif
+     507 
+     508 }
+
+
+::
+
+     157 template <typename T>
+     158 void NPY<T>::deallocate()
+     159 {
+     160     setHasData(false);
+     161     m_data.clear();
+     162     setBasePtr(NULL);
+     163     setNumItems( 0 );
+     164 }
+     165 
+     166 template <typename T>
+     167 void NPY<T>::reset()
+     168 {
+     169     deallocate();
+     170 }
+
+
+
+Notice high genstep counts in G4OpticksTest
+----------------------------------------------
+
+::
+
+    EventAction::EndOfEventAction eventid 0 num_gensteps 3271 num_photons 4536823 num_hits 36180
+    EventAction::EndOfEventAction eventid 1 num_gensteps 3270 num_photons 4470236 num_hits 35264
+    EventAction::EndOfEventAction eventid 2 num_gensteps 3057 num_photons 4092944 num_hits 32331
+    EventAction::EndOfEventAction eventid 3 num_gensteps 3453 num_photons 4657689 num_hits 37099
+    EventAction::EndOfEventAction eventid 4 num_gensteps 3459 num_photons 4751552 num_hits 37818
+    EventAction::EndOfEventAction eventid 5 num_gensteps 3362 num_photons 4568483 num_hits 35884
+    EventAction::EndOfEventAction eventid 6 num_gensteps 3111 num_photons 4248472 num_hits 33761
+    EventAction::EndOfEventAction eventid 7 num_gensteps 3143 num_photons 4307171 num_hits 34277
+    EventAction::EndOfEventAction eventid 8 num_gensteps 3702 num_photons 4944439 num_hits 39437
+    EventAction::EndOfEventAction eventid 9 num_gensteps 3479 num_photons 4700233 num_hits 37371
+
+
+Possibly a leak from NPY::add which has to do dynamic resizing rather a lot with such large genstep counts.
+
+But NPY6Test.cc shows no leak, so long as reset is called of course.
+
+
+
+CGenstepCollectorLeakTest
+----------------------------
+
+::
+
+    epsilon:cfg4 blyth$ CGenstepCollectorLeakTest 
+    2021-02-15 21:11:59.512 ERROR [10112770] [CGenstepCollector::CGenstepCollector@64]  lookup is not complete : will not be able to collect real gensteps, only machinery ones 
+    2021-02-15 21:11:59.840 INFO  [10112770] [NPY<float>::dump@2298] NPY::dump (10,4) 
+
+    (  0)   76319.516    4580.335       0.000       0.000 
+    (  1)   76319.547    4589.772       0.000       0.000 
+    (  2)   76319.570    4589.772       0.000       0.000 
+    (  3)   76319.609    4602.355       0.000       0.000 
+    (  4)   76319.609    4602.355       0.000       0.000 
+    (  5)   76319.648    4602.355       0.000       0.000 
+    (  6)   76319.664    4602.355       0.000       0.000 
+    (  7)   76319.828    4677.853       0.000       0.000 
+    (  8)   76319.836    4677.853       0.000       0.000 
+    (  9)   76319.844    4677.853       0.000       0.000 
+    2021-02-15 21:11:59.841 INFO  [10112770] [OpticksProfile::Report@521]  num_stamp 10 profile_leak_mb 0     t0 76319.5 t1 76319.8 dt 0.328125 dt/(num_stamp-1) 0.0364583     v0 (MB) 4580.33 v1 (MB) 4677.85 dv 97.5181 dv/(num_stamp-1) 10.8353
+    epsilon:cfg4 blyth$ 
+    epsilon:cfg4 blyth$ 
+
+
+
+
+G4OKTest not leaking at all
+------------------------------
+
+::
+
+    [blyth@localhost g4ok]$ G4OKTest 100
+    ...
+    2021-02-16 01:44:52.508 FATAL [201160] [G4Opticks::dumpSkipGencode@351] OPTICKS_SKIP_GENCODE m_skip_gencode_count 0
+    2021-02-16 01:44:52.508 INFO  [201160] [G4Opticks::finalizeProfile@385] saving time/vm stamps to path $TMP/G4Opticks/tests/G4OpticksProfilePlot.npy
+    2021-02-16 01:44:52.508 INFO  [201160] [G4Opticks::finalizeProfile@386] make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py 
+     num_stamp 100 m_profile_leak_mb 0     t0 6282.86 t1 6292.51 dt 9.64453 dt/(num_stamp-1) 0.0974195     v0 (MB) 20009 v1 (MB) 20009 dv 0 dv/(num_stamp-1) 0
+    [blyth@localhost g4ok]$ 
+
+
+    [blyth@localhost g4ok]$ G4OKTEST_PROFILE_LEAK_MB=10 G4OKTest 100   ## checking that the measument works
+    ...
+    2021-02-16 01:47:00.135 FATAL [204436] [G4Opticks::dumpSkipGencode@351] OPTICKS_SKIP_GENCODE m_skip_gencode_count 0
+    2021-02-16 01:47:00.135 INFO  [204436] [G4Opticks::finalizeProfile@385] saving time/vm stamps to path $TMP/G4Opticks/tests/G4OpticksProfilePlot.npy
+    2021-02-16 01:47:00.135 INFO  [204436] [G4Opticks::finalizeProfile@386] make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py 
+     num_stamp 100 m_profile_leak_mb 10     t0 6411.61 t1 6420.13 dt 8.52686 dt/(num_stamp-1) 0.0861299     v0 (MB) 20017.8 v1 (MB) 20984.6 dv 966.801 dv/(num_stamp-1) 9.76566
+    [blyth@localhost g4ok]$ 
+
+
+Try upping the photon sizes with G4OKTest but getting a negative leak!
+
+::
+
+    2021-02-16 03:57:01.426 FATAL [418142] [G4Opticks::dumpSkipGencode@351] OPTICKS_SKIP_GENCODE m_skip_gencode_count 0
+    2021-02-16 03:57:01.427 INFO  [418142] [G4Opticks::finalizeProfile@392] saving time/vm stamps to path $TMP/G4Opticks/tests/G4OpticksProfilePlot.npy
+    2021-02-16 03:57:01.427 INFO  [418142] [G4Opticks::finalizeProfile@393] make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py 
+     num_stamp 10 m_profile_leak_mb 0     t0 14169.9 t1 14221.4 dt 51.4902 dt/(num_stamp-1) 5.72114     v0 (MB) 21504.1 v1 (MB) 21117 dv -387.08 dv/(num_stamp-1) -43.0089
+    [blyth@localhost tests]$ 
+
+
+
 
