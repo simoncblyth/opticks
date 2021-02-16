@@ -255,6 +255,34 @@ T* NPY<T>::grow(unsigned int nitems)
 
 
 template <typename T>
+void NPY<T>::reserve(unsigned items)
+{
+    unsigned itemvals = getNumValues(1); 
+    unsigned vals = items*itemvals ; 
+    unsigned cap0 = m_data.capacity(); 
+
+    m_data.reserve(vals); 
+
+    unsigned cap1 = m_data.capacity(); 
+
+    LOG(LEVEL)
+        << " reserve " 
+        << " items " << items
+        << " itemvals " << itemvals
+        << " vals " << vals
+        << " cap0 " << cap0
+        << " cap1 " << cap1
+        ; 
+    
+}
+
+
+
+
+
+
+
+template <typename T>
 void NPY<T>::updateDigests()
 {
     unsigned ni = getNumItems() ;
