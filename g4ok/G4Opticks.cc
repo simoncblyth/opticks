@@ -1225,6 +1225,29 @@ void G4Opticks::collectSecondaryPhotons(const G4VParticleChange* pc)
 }
 
 
+/**
+G4Opticks::setGenstepReservation
+----------------------------------
+
+Setting the genstep reservation is optional. 
+Doing so may reduce the resource usage when collecting 
+large numbers of gensteps. For maximum effect the *max_gensteps_expected* 
+value should be larger than the maximum expected number of gensteps 
+collected prior to a reset bringing that down to zero. 
+Values less than the actual maxium do not cause a problem.
+
+**/
+
+void G4Opticks::setGenstepReservation(int max_gensteps_expected)
+{
+    m_genstep_collector->setReservation(max_gensteps_expected); 
+}
+
+int  G4Opticks::getGenstepReservation() const 
+{
+    return m_genstep_collector->getReservation() ;  
+}
+
 
 
 void G4Opticks::collectGenstep_G4Scintillation_1042(  

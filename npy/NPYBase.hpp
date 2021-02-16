@@ -103,6 +103,11 @@ class NPY_API NPYBase {
 
        virtual void zero() = 0 ; 
 
+    public:
+       void setReservation(int items) ;
+       int  getReservation() const ;
+       bool hasReservation() const ;
+
        std::string  getItemShape(unsigned int ifr=1) const ;
        std::string  getDigestString() const ;
        std::string  getItemDigestString(unsigned i) const ;
@@ -268,6 +273,7 @@ class NPY_API NPYBase {
        BMeta*             m_meta ; 
 
        const char*        m_name ; 
+       int                m_reservation ; 
 
 };
 

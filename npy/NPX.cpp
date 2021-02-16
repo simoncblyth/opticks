@@ -112,6 +112,14 @@ void NPX<T>::add(const T* values, unsigned int nvals)
 {
     //LOG(LEVEL) << "nvals " << nvals ; 
     unsigned int orig = getNumItems();
+
+    int reservation = getReservation(); 
+    if(orig == 0 && hasReservation())
+    {    
+        LOG(info) << "adding on empty : setting reservation " << reservation ; 
+        reserve(getReservation()); 
+    }    
+
     unsigned int itemsize = getNumValues(1) ;
     assert( nvals % itemsize == 0 && "values adding is restricted to integral multiples of the item size");
     unsigned int extra = nvals/itemsize ; 
@@ -139,7 +147,7 @@ T* NPX<T>::grow(unsigned int nitems)
     if(old_base_ptr != new_base_ptr) 
     {
         std::cout 
-            << "NPY<T>::grow base_ptr shift " 
+            << "NPX<T>::grow base_ptr shift " 
             << getShapeString()
             << " m_data->size() " << m_data->size() 
             << " m_data->capacity() " << m_data->capacity() 

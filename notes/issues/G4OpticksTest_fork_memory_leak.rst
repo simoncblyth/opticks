@@ -8,6 +8,37 @@ Added simple per G4Opticks::propagateOptical call profile collection.
 
 .. contents:: Table of Contents
 
+
+Possible Reduction of Resources with G4Opticks::setGenstepsReservation
+-----------------------------------------------------------------------
+
+::
+
+    /**
+    G4Opticks::setGenstepReservation
+    ----------------------------------
+
+    Setting the genstep reservation is optional. 
+    Doing so may reduce the resource usage when collecting 
+    large numbers of gensteps. For maximum effect the *max_gensteps_expected* 
+    value should be larger than the maximum expected number of gensteps 
+    collected prior to a reset bringing that down to zero. 
+    Values less than the actual maxium do not cause a problem.
+
+    **/
+
+    void G4Opticks::setGenstepReservation(int max_gensteps_expected)
+    {
+    m_genstep_collector->setReservation(max_gensteps_expected); 
+    }
+
+    int  G4Opticks::getGenstepReservation() const 
+    {
+    return m_genstep_collector->getReservation() ;  
+    }
+
+
+
 Overview
 -----------
 
@@ -91,6 +122,66 @@ RSS seems less flakey a candle than VM on macOS::
 Resource wise the best thing to do is to set a fixed max size to the array.
 Presumably as that prevents realloc calls.
 Adjusting that using pre-knowledge of the number of steps event by event does not help, actually does harm.
+
+
+NPY6Test 
+-----------
+
+::
+
+    epsilon:npy blyth$ NPYBase=INFO RESERVATION=4096 NPY6Test 
+    PLOG::EnvLevel adjusting loglevel by envvar   key NPYBase level INFO fallback DEBUG
+     nevt 10 reservation 4096
+    2021-02-16 14:33:20.564 INFO  [10766527] [NPYBase::setReservation@209] items 4096
+     i   0 numsteps 3271
+     i   1 numsteps 3270
+     i   2 numsteps 3057
+     i   3 numsteps 3453
+     i   4 numsteps 3459
+     i   5 numsteps 3362
+     i   6 numsteps 3111
+     i   7 numsteps 3702
+     i   8 numsteps 3479
+     i   9 numsteps 3500
+    NPY<T>::grow base_ptr shift 0,6,4 m_data->size() 24 m_data->capacity() 24
+    NPY<T>::grow base_ptr shift 1,6,4 m_data->size() 48 m_data->capacity() 48
+    NPY<T>::grow base_ptr shift 2,6,4 m_data->size() 72 m_data->capacity() 96
+    NPY<T>::grow base_ptr shift 4,6,4 m_data->size() 120 m_data->capacity() 192
+
+
+
+Looks like resource use is approx halved when reserve ahead
+-----------------------------------------------------------------
+
+::
+
+    RESERVATION=4000 CGenstepCollectorLeak2Test 
+    RESERVATION=0 CGenstepCollectorLeak2Test 
+
+
+G4OpticksTest_fork
+--------------------
+
+::
+
+    (base) [simon@localhost G4OpticksTest_fork]$ ./run.sh 
+    === ./check.sh : environment check PASSED : rc 0
+    G4OpticksTest /home/simon/G4OpticksTest_fork/gdml/G4Opticks_50000.gdml macros/muon_noIO_10.mac
+    ...
+
+    2021-02-16 21:01:12.970 INFO  [157434] [G4Opticks::finalizeProfile@392] saving time/vm stamps to path $TMP/G4Opticks/tests/G4OpticksProfilePlot.npy
+    2021-02-16 21:01:12.970 INFO  [157434] [G4Opticks::finalizeProfile@393] make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py 
+    2021-02-16 21:01:12.971 INFO  [157434] [OpticksProfile::Report@526]  num_stamp 10 profile_leak_mb 0 v0,v1 VmSize(MB) r0,r1 RSS(MB) 
+     t0  75665.9 t1  75672.9 dt  7.03906 dt/(num_stamp-1) 0.782118
+     v0    21317 v1    21300 dv -17.0352 dv/(num_stamp-1)  -1.8928
+     r0  1745.91 r1  1761.68 dr   15.764 dr/(num_stamp-1)  1.75156
+
+
+    ###] RunAction::EndOfRunAction G4Opticks.Finalize
+
+
+    TimeTotal> 17.704 17.590
+    (base) [simon@localhost G4OpticksTest_fork]$ 
 
 
 

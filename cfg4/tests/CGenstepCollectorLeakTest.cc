@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     unsigned scale = 1000 ; 
     unsigned itemsize = 6*4 ;  
     float gsi[itemsize];
-    for(int i=0 ; i < itemsize ; i++) gsi[i] = float(i); 
+    for(int i=0 ; i < int(itemsize) ; i++) gsi[i] = float(i); 
 
 
     float v0 = SProc::VirtualMemoryUsageMB() ;

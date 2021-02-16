@@ -221,8 +221,8 @@ class NPY_API NPY : public NPYBase {
        void writeItem(void* dst, unsigned item);
     private:
        T* grow(unsigned items); // increase size to contain an extra nitems, return pointer to start of them
-    public:
-       void reserve(unsigned items);  // set capacity to hold items 
+   public:
+       void reserve(unsigned items);  // set capacity to hold items  -> private ?
     public:
        void add(const NPY<T>* other);   // add another buffer, it must have same itemsize (ie size after 1st dimension)
        void add(const T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  

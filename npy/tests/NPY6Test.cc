@@ -3,7 +3,9 @@
 #include "OPTICKS_LOG.hh"
 #include "SSys.hh"
 #include "SProc.hh"
+
 #include "NPX.hpp"
+#include "NPY.hpp"
 
 unsigned mock_numsteps( unsigned evt, unsigned scale=1 )
 {
@@ -50,7 +52,11 @@ unsigned mock_numsteps2( unsigned evt )
 
 struct test_grow_leak
 {
+#ifdef WITH_NPX
     NPX<float>* a ;
+#else
+    NPY<float>* a ;
+#endif
     unsigned itemsize ; 
     float* gs ; 
     int nevt ; 
@@ -59,18 +65,25 @@ struct test_grow_leak
 
     test_grow_leak()
         :
+#ifdef WITH_NPX
         a(NPX<float>::make(0,6,4)),
+#else
+        a(NPY<float>::make(0,6,4)),
+#endif
         itemsize(6*4),
         gs(new float[itemsize]),
         nevt(SSys::getenvint("NEVT",10)),
         reservation(SSys::getenvint("RESERVATION",0)),
         scale(1000)
     {
+
         std::cout 
             << " nevt " << nevt 
             << " reservation " << reservation
             << std::endl
             ;
+
+        a->setReservation( reservation );
  
         for(unsigned i=0 ; i < itemsize ; i++) gs[i] = float(i) ; 
     }
@@ -103,10 +116,6 @@ struct test_grow_leak
     void one(int i)
     {
         unsigned numsteps = get_numsteps(i) ;
-
-        if(reservation != 0)
-        a->reserve( reservation > 0 ? reservation : numsteps );
-        
         for(unsigned j=0 ; j < numsteps ; j++) a->add(gs, itemsize) ;  // mimic collecting gensteps        
         stamp(i); 
         a->reset();  

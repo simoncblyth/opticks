@@ -88,7 +88,7 @@ int main()
 { 
     unsigned itemsize = 6*4 ; 
     float* f = new float[itemsize]; 
-    for(int i=0 ; i < itemsize ; i++) f[i] = float(i); 
+    for(int i=0 ; i < int(itemsize) ; i++) f[i] = float(i); 
 
     A<float>* a = new A<float>(0, 6, 4 ); 
 

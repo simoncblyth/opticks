@@ -173,6 +173,9 @@ class G4OK_API G4Opticks
         unsigned getNumGensteps() const ;
         unsigned getMaxGensteps() const ; // default of zero, means no limit
 
+        void setGenstepReservation(int max_gensteps_expected);
+        int  getGenstepReservation() const ;
+
         void collectGenstep_G4Cerenkov_1042(  
              const G4Track*  aTrack, 
              const G4Step*   aStep, 

@@ -188,6 +188,51 @@ T NPYBase::getParameter(const char* key, const char* fallback) const
 
 
 
+
+/**
+NPY::setReservation getReservation hasReservation
+---------------------------------------------------
+
+The reservation is the number of items (not values) 
+that the capacity of the vector will be reserved to hold
+when first adding values into a zero item array.
+
+This is used for example from cfg4/CGenstepCollector 
+to reduce resource usage from the multiple reallocs necessary from 
+adding thousands of gensteps into an array without any reservation.
+
+**/
+
+
+void NPYBase::setReservation(int items)
+{
+    LOG(LEVEL) << "items " << items ; 
+    m_reservation = items ; 
+}
+int NPYBase::getReservation() const
+{
+    return m_reservation ; 
+}
+bool NPYBase::hasReservation() const
+{
+    return m_reservation > 0 ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //// TODO : get rid of the specifics 
 ////        they look out of place in this generic code
 
@@ -395,7 +440,8 @@ NPYBase::NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, T
     m_lookup(NULL),
     m_parameters(new BMeta),
     m_meta(new BMeta),
-    m_name(NULL)
+    m_name(NULL),
+    m_reservation(0)
 {
 } 
 

@@ -190,6 +190,13 @@ void NPY<T>::read(const void* src)
 }
 
 
+
+
+
+
+
+
+
 /**
 NPY<T>::write
 ---------------
@@ -572,16 +579,27 @@ NPY<T>* NPY<T>::concat(const std::vector<const NPYBase*>& comps) // static
 
 
 
+/**
+NPY::add T* values, unsigned nvals
+-------------------------------------
 
+Used for example by genstep collection.
 
-
-
+**/
 
 
 template <typename T>
 void NPY<T>::add(const T* values, unsigned int nvals)  
 {
     unsigned int orig = getNumItems();
+
+    int reservation = getReservation(); 
+    if(orig == 0 && hasReservation())
+    {
+        LOG(info) << "adding on empty : setting reservation " << reservation ; 
+        reserve(getReservation()); 
+    }
+
     unsigned int itemsize = getNumValues(1) ;
     assert( nvals % itemsize == 0 && "values adding is restricted to integral multiples of the item size");
     unsigned int extra = nvals/itemsize ; 

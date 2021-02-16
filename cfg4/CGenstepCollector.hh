@@ -96,6 +96,9 @@ class CFG4_API CGenstepCollector
         void consistencyCheck() const ;
         void import(); 
     public:
+        void setReservation(int items);
+        int getReservation() const ; 
+    public:
         void collectScintillationStep(
             G4int                gentype, 
             G4int                parentId,

@@ -222,6 +222,15 @@ void CGenstepCollector::Summary(const char* msg) const
               ;
 }
 
+void CGenstepCollector::setReservation(int items)
+{
+    m_genstep->setReservation(items); 
+}
+int CGenstepCollector::getReservation() const 
+{
+    return m_genstep->getReservation();
+}
+
 void CGenstepCollector::collectScintillationStep
 (
             G4int                gentype, 
