@@ -244,7 +244,7 @@ glm::vec4 OpticksProfile::Stamp() // static
     glm::vec4 stamp ; 
     stamp.x = BTimeStamp::RealTime2() ; 
     stamp.y = SProc::VirtualMemoryUsageMB() ; 
-    stamp.z = 0.f ; 
+    stamp.z = SProc::ResidentSetSizeMB() ;   
     stamp.w = 0.f ; 
     return stamp ; 
 }
@@ -516,21 +516,35 @@ void OpticksProfile::Report(const NPY<float>* a, float profile_leak_mb)  // stat
     float v0 = a->getValue( 0, 1, 0) ; 
     float v1 = a->getValue(-1, 1, 0) ; 
     float dv = v1 - v0 ; 
-    float dv_per_stamp = dv/float(num_stamp-1);    // subtract 1 because profile stamps only at one point  
+    float dv_per_stamp = dv/float(num_stamp-1);  
+
+    float r0 = a->getValue( 0, 2, 0) ; 
+    float r1 = a->getValue(-1, 2, 0) ; 
+    float dr = r1 - r0 ; 
+    float dr_per_stamp = dr/float(num_stamp-1);   
 
     LOG(info) 
         << " num_stamp " << num_stamp
         << " profile_leak_mb " << profile_leak_mb
-        << "    "
-        << " t0 " << t0   
-        << " t1 " << t1 
-        << " dt " << dt 
-        << " dt/(num_stamp-1) " << dt_per_stamp
-        << "    "
-        << " v0 (MB) " << v0 
-        << " v1 (MB) " << v1 
-        << " dv " << dv 
-        << " dv/(num_stamp-1) " << dv_per_stamp
+        << " v0,v1 VmSize(MB) r0,r1 RSS(MB) "  
+        ;
+
+    std::cout 
+        << " t0 " << std::setw(8) << t0   
+        << " t1 " << std::setw(8) << t1 
+        << " dt " << std::setw(8) << dt 
+        << " dt/(num_stamp-1) " << std::setw(8) << dt_per_stamp
+        << std::endl
+        << " v0 " << std::setw(8) << v0 
+        << " v1 " << std::setw(8) << v1 
+        << " dv " << std::setw(8) << dv 
+        << " dv/(num_stamp-1) " << std::setw(8) << dv_per_stamp
+        << std::endl
+        << " r0 " << std::setw(8) << r0 
+        << " r1 " << std::setw(8) << r1 
+        << " dr " << std::setw(8) << dr 
+        << " dr/(num_stamp-1) " << std::setw(8) << dr_per_stamp
+        << std::endl
         ;
 }
 
