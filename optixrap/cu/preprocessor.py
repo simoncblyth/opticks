@@ -182,7 +182,7 @@ if __name__ == '__main__':
         print("\n".join(pp.plines))
     else:
         log.info("writing to %s " % args.out )
-        print("\n".join(pp.plines), file=open(args.out,"w"))
+        open(args.out,"w").write("\n".join(pp.plines)) 
     pass
 
 

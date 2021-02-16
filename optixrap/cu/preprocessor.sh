@@ -20,7 +20,7 @@ EOF
 }
 
 pp-cmd(){ cat << EOC
-./preprocessor.py $1 --flags="$2" --out $3
+python preprocessor.py $1 --flags="$2" --out $3
 EOC
 }
 
