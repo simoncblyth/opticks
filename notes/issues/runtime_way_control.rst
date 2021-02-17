@@ -1,4 +1,4 @@
-runtime_angular_and_way_control
+runtime_way_control
 =================================
 
 
@@ -7,24 +7,9 @@ Objective
 
 Add runtime control inside the inconvenient on their own compiletime switches.
 
-WITH_ANGULAR
-   angular efficiency culling 
-   --angular Opticks::isAngularEnabled
-
 WITH_WAY_BUFFER
    way point recording 
    --way Opticks::isWayEnabled
-
-
-
-angular 
----------------------------------------
-
-The major difference with angular is that the PRD changes, handle
-that at runtime by splitting into two materials::
-
-    epsilon:cu blyth$ git mv material1_propagate.cu closest_hit_propagate.cu
-    epsilon:cu blyth$ mv material1_angular_propagate.cu closest_hit_angular_propagate.cu
 
 
 
@@ -160,8 +145,11 @@ Both fails from the same assert::
 * TODO: check all WITH_WAY_BUFFER WITH_ANGULAR and add runtime checks inside them 
 
 
-WITH_WAY_BUFFER
-------------------
+Migrate from compile time WITH_WAY_BUFFER to --way option and Opticks::isWayEnabled and WAY_ENABLED preprocessor.py flag 
+----------------------------------------------------------------------------------------------------------------------------
+
+* https://bitbucket.org/simoncblyth/opticks/commits/eaebae4a59ee859b85c49ccb2a2d9e4c38e14f3e
+
 
 ::
 
@@ -308,5 +296,30 @@ WITH_WAY_BUFFER
 
 
 
-WITH_ANGULAR
-----------------
+
+
+opticks-t
+
+::
+
+    FAILS:  1   / 448   :  Wed Feb 17 19:01:06 2021   
+      1  /2   Test #1  : G4OKTest.G4OKTest                             Child aborted***Exception:     13.08  
+    [blyth@localhost opticks]$ 
+
+
+    2021-02-17 19:00:40.755 INFO  [372726] [OEvent::downloadHits@485]  nhit 53 --dbghit N hitmask 0x40 SD SURFACE_DETECT
+    2021-02-17 19:00:40.755 INFO  [372726] [OpticksEvent::save@1809] /tmp/blyth/opticks/G4OKTest/evt/g4live/natural/1
+    2021-02-17 19:00:40.763 FATAL [372726] [G4Opticks::propagateOpticalPhotons@1081]  NOT-m_way_enabled 
+    2021-02-17 19:00:40.764 INFO  [372726] [G4OKTest::getNumGenstepPhotons@324]  eventID 0 num 5000
+    2021-02-17 19:00:40.764 ERROR [372726] [G4OKTest::propagate@349]  eventID 0 num_genstep_photons 5000 num_hit 53
+    2021-02-17 19:00:40.764 INFO  [372726] [G4OKTest::checkHits@378]  eventID 0 num_gensteps 0 num_photons 0 num_hit 53
+    G4OKTest: /home/blyth/opticks/g4ok/G4Opticks.cc:1203: void G4Opticks::getHit(unsigned int, G4OpticksHit*, G4OpticksHitExtra*) const: Assertion `m_hits_wrapper->hasWay()' failed.
+
+        Start 2: G4OKTest.G4OpticksHitTest
+    2/2 Test #2: G4OKTest.G4OpticksHitTest ........   Passed    4.76 sec
+
+
+    [blyth@localhost optickscore]$ OPTICKS_EMBEDDED_COMMANDLINE_EXTRA="--way" G4OKTest 
+
+
+

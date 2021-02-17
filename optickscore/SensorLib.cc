@@ -190,15 +190,6 @@ int SensorLib::getSensorIdentifier(unsigned sensorIndex) const
     return m_sensor_data->getInt( i, 3, 0, 0);
 }
 
-/*
-template <typename T>
-void SensorLib::setSensorDataMeta( const char* key, T value )
-{
-    assert( m_sensor_data );
-    m_sensor_data->setMeta<T>( key, value );
-}
-*/
-
 void SensorLib::setSensorAngularEfficiency( 
         const std::vector<int>& shape, 
         const std::vector<float>& values,
@@ -233,6 +224,15 @@ void SensorLib::setSensorAngularEfficiency( const NPY<float>* sensor_angular_eff
 {
     m_sensor_angular_efficiency = sensor_angular_efficiency ;
 }
+
+/**
+SensorLib::getNumSensorCategories
+----------------------------------
+
+When no sensor_angular_efficiency has be set the number of sensor categories is zero,
+otherwise the number of sensor_angular_efficiency items is returned. 
+
+**/
 
 unsigned SensorLib::getNumSensorCategories() const
 {
@@ -445,22 +445,4 @@ void SensorLib::dumpCategoryCounts(const char* msg) const
     }
 }
 
-
-
-/*
-template <typename T>
-void SensorLib::setSensorAngularEfficiencyMeta( const char* key, T value )
-{
-    assert( m_sensor_angular_efficiency ); 
-    m_sensor_angular_efficiency->setMeta<T>( key, value ); 
-}
-
-template OKGEO_API void SensorLib::setSensorDataMeta(const char* key, int value);
-template OKGEO_API void SensorLib::setSensorDataMeta(const char* key, float value);
-template OKGEO_API void SensorLib::setSensorDataMeta(const char* key, std::string value);
-
-template OKGEO_API void SensorLib::setSensorAngularEfficiencyMeta(const char* key, int value);
-template OKGEO_API void SensorLib::setSensorAngularEfficiencyMeta(const char* key, float value);
-template OKGEO_API void SensorLib::setSensorAngularEfficiencyMeta(const char* key, std::string value);
-*/
 

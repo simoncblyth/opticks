@@ -265,9 +265,6 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("way",     "enable way/hiy point recording at runtime with Opticks::isWayEnabled and WAY_ENABLED preprocessor.py flag in generate.cu ") ;
 
-   m_desc.add_options()
-       ("angular",  "enable GPU side angular efficiency culling, requires the WITH_ANGULAR compile time switch to be enabled") ;
-
 
    m_desc.add_options()
        ("nointerpol",  "inhibit interpolation in cfg4/tests/CInterpolationTest for identity check") ;

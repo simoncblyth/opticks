@@ -24,7 +24,8 @@
 
 #include "OpticksSwitches.h"
 
-#ifdef WITH_ANGULAR
+#ifdef ANGULAR_ENABLED
+// Additional f_theta f_phi 
 #include "PerRayData_angular_propagate.h"
 #else
 #include "PerRayData_propagate.h"
@@ -32,7 +33,8 @@
 
 using namespace optix;
 
-#ifdef WITH_ANGULAR
+#ifdef WITH_SENSORLIB
+// OSensorLib_* buffers and functions 
 #include "OSensorLib.hh"
 #endif
 
@@ -418,7 +420,7 @@ RT_PROGRAM void tracetest()
     //tsdebug(ts);
     generate_torch_photon(p, ts, rng );         
 
-#ifdef WITH_ANGULAR
+#ifdef ANGULAR_ENABLED
     PerRayData_angular_propagate prd ;
 #else 
     PerRayData_propagate prd ;
@@ -688,7 +690,7 @@ analogous to *photon* to *hit* selexction.
 
 
 
-#ifdef WITH_ANGULAR
+#ifdef ANGULAR_ENABLED
     PerRayData_angular_propagate prd ;
 #else
     PerRayData_propagate prd ;
@@ -801,28 +803,23 @@ analogous to *photon* to *hit* selexction.
 
 
 
-#ifdef WITH_ANGULAR
+#ifdef WITH_SENSORLIB
     if( s.flag == SURFACE_DETECT ) 
     {
         const unsigned& sensorIndex = s.identity.w ;   // should always be > 0 as flag is SD
+#ifdef ANGULAR_ENABLED
         const float& f_theta = prd.f_theta ;
         const float& f_phi = prd.f_phi ; 
         const float efficiency = OSensorLib_combined_efficiency(sensorIndex, f_phi, f_theta);
         //rtPrintf("//SD sensorIndex %d f_theta %f f_phi %f efficiency %f \n", sensorIndex, f_theta, f_phi, efficiency );
-        float u_angular = curand_uniform(&rng) ;
-
-        p.flags.u.w |= ( u_angular < efficiency ?  EFFICIENCY_COLLECT : EFFICIENCY_CULL ) ;   
-
-#ifdef WITH_DEBUG_BUFFER
-        debug_buffer[photon_id] = make_float4( f_theta, f_phi, efficiency, unsigned_as_float(sensorIndex) ); 
+#else
+        const float efficiency = OSensorLib_simple_efficiency(sensorIndex);
+        //rtPrintf("//SD sensorIndex %d efficiency %f \n", sensorIndex, efficiency );
 #endif
+        float u_angular = curand_uniform(&rng) ;
+        p.flags.u.w |= ( u_angular < efficiency ?  EFFICIENCY_COLLECT : EFFICIENCY_CULL ) ;   
     } 
 #endif
-
-#ifdef WITH_DEBUG_BUFFER
-    //debug_buffer[photon_id] = make_float4( prd.debug.x, prd.debug.y, prd.debug.z, unsigned_as_float(s.identity.y) ); 
-#endif
-
 
 
     // setting p.flags for things like boundary, history flags  

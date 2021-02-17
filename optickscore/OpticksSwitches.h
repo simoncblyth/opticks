@@ -48,7 +48,9 @@ NB when searching for switches in python include the space at the end, eg::
 //#define WITH_EXCEPTION 1 
 
 
-#define WITH_ANGULAR 1
+#define WITH_SENSORLIB 1
+
+
 
 // have observed flaky fails when WITH_DEBUG_BUFFER is enabled
 // that is probably related to the PerRayData_propagate.h float3 
@@ -106,8 +108,8 @@ static std::string OpticksSwitches()
     ss << "WITH_EXCEPTION " ;   
 #endif
 
-#ifdef WITH_ANGULAR
-    ss << "WITH_ANGULAR " ;   
+#ifdef WITH_SENSORLIB
+    ss << "WITH_SENSORLIB " ;   
 #endif
 
 #ifdef WITH_DEBUG_BUFFER

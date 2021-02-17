@@ -19,10 +19,10 @@ find_package(OpticksGeo REQUIRED CONFIG)
 find_package(ThrustRap  REQUIRED CONFIG )
 
 
-set(flags_AW +WITH_ANGULAR,+WAY_ENABLED)
-set(flags_Aw +WITH_ANGULAR,-WAY_ENABLED)
-set(flags_aW -WITH_ANGULAR,+WAY_ENABLED)
-set(flags_aw -WITH_ANGULAR,-WAY_ENABLED)
+set(flags_AW +ANGULAR_ENABLED,+WAY_ENABLED)
+set(flags_Aw +ANGULAR_ENABLED,-WAY_ENABLED)
+set(flags_aW -ANGULAR_ENABLED,+WAY_ENABLED)
+set(flags_aw -ANGULAR_ENABLED,-WAY_ENABLED)
 
 
 add_custom_command(

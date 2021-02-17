@@ -385,7 +385,9 @@ class OKCORE_API Opticks {
        bool                 isPrintIndexLog() const ; 
 
        bool                 isWayEnabled() const ;      // --way
-       bool                 isAngularEnabled() const ;  // --angular
+       bool                 isAngularEnabled() const ;  
+       void                 setAngularEnabled(bool angular_enabled); 
+
 
        bool                 isG4CodeGen() const ;  // --g4codegen
        bool                 isNoSavePPM() const ; // --nosaveppm
@@ -701,6 +703,7 @@ class OKCORE_API Opticks {
 
    private:
        bool                 m_configured ; 
+       bool                 m_angular_enabled ; 
        OpticksCfg<Opticks>* m_cfg ; 
 
        BMeta*               m_parameters ; 

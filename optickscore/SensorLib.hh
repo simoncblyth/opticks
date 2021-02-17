@@ -16,6 +16,10 @@ SensorLib
 Canonically instanciated within G4Opticks::setGeometry 
 at which point initSensorData sets m_num_sensor
 
+The SensorLib holds efficiencies for each sensor
+and possibly angular efficiencies if SensorLib::setSensorAngularEfficiency 
+is called.
+
 **/
 
 class OKCORE_API SensorLib 

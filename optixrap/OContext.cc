@@ -89,7 +89,7 @@ std::string OContext::getGenerateFilename() const
     std::stringstream ss ; 
     ss 
         << "generate_"
-        << a << "WITH_ANGULAR"
+        << a << "ANGULAR_ENABLED"
         << ","
         << w << "WAY_ENABLED"
         << ".cu"

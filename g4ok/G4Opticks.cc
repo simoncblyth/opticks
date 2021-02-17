@@ -797,6 +797,8 @@ void G4Opticks::setSensorAngularEfficiency( const std::vector<int>& shape, const
         theta_steps, theta_min, theta_max, 
         phi_steps, phi_min, phi_max
     );
+    m_ok->setAngularEnabled(true);   // see notes/issues/runtime_angular_control.rst
+
 }
 
 void G4Opticks::setSensorAngularEfficiency( const NPY<float>* sensor_angular_efficiency )

@@ -374,6 +374,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_geocache(false),
     m_instanced(true),
     m_configured(false),
+    m_angular_enabled(false),
 
     m_cfg(new OpticksCfg<Opticks>("opticks", this,false)),
     m_parameters(new BMeta), 
@@ -1033,12 +1034,24 @@ bool Opticks::isWayEnabled() const  // --way
 {
     return m_cfg->hasOpt("way") ;
 }
-bool Opticks::isAngularEnabled() const  // --angular
+bool Opticks::isAngularEnabled() const 
 {
-    return m_cfg->hasOpt("angular") ;
+    return m_angular_enabled ;  
 }
 
+/**
+Opticks::setAngularEnabled
+----------------------------
 
+Canonically invoked from G4Opticks::setSensorAngularEfficiency
+immediately after passing the angular array to okc/SensorLib
+
+**/
+void Opticks::setAngularEnabled(bool angular_enabled )
+{
+    LOG(fatal) << " angular_enabled " << angular_enabled  ; 
+    m_angular_enabled = angular_enabled ; 
+}
 
 bool Opticks::isG4CodeGen() const  // --g4codegen
 {
