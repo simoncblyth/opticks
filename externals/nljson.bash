@@ -25,3 +25,32 @@ nljson--(){
 nljson-r(){ vim -R $(nljson-path) ; }
 
 
+nljson-pc-(){ cat << EOP
+
+prefix=$(opticks-prefix)
+includedir=\${prefix}/externals/include/nljson
+
+Name: NLJSON
+Description: JSON parse
+Version: 0.1.0
+
+Cflags:  -I\${includedir}
+Libs: -lstdc++
+Requires: 
+
+EOP
+}
+
+nljson-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/NLJSON.pc ; }
+nljson-pc(){ 
+   local msg="=== $FUNCNAME :"
+   local path=$(nljson-pc-path)
+   local dir=$(dirname $path)
+
+   [ ! -d "$dir" ] && echo $msg creating dir $dir && mkdir -p $dir 
+   echo $msg $path
+   nljson-pc- > $path 
+}
+
+
+

@@ -193,6 +193,12 @@ xercesc
 g4
     bash generation in g4-pc- NOT using oc-variables-
 
+
+
+
+
+
+
 EON
 }
 

@@ -94,16 +94,6 @@ How to shrink that ? Whats the biz with planting symbols in the separate proj li
 Can I make it invisible, controlled via envvar ?
 
 
-
-
-
-
-
-
-
-
-
-
 EOU
 }
 plog-env(){      opticks- ;  }
