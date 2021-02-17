@@ -1259,6 +1259,7 @@ Values less than the actual maxium do not cause a problem.
 
 void G4Opticks::setGenstepReservation(int max_gensteps_expected)
 {
+    LOG(LEVEL) << " max_gensteps_expected " << max_gensteps_expected ;  
     m_genstep_collector->setReservation(max_gensteps_expected); 
 }
 
