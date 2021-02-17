@@ -160,6 +160,7 @@ WITH_ANGULAR -> ANGULAR_ENABLED
 ----------------------------------
 
 * replace the compile time switch with an oxrap/cu/preprocessor.py ANGULAR_ENABLED flag 
+* https://bitbucket.org/simoncblyth/opticks/commits/eb8b5ed323b5290fc376c05bbb5b5ce16dae86f9
 
 ::
 

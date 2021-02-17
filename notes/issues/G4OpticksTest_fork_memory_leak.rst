@@ -9,6 +9,54 @@ Added simple per G4Opticks::propagateOptical call profile collection.
 .. contents:: Table of Contents
 
 
+
+Added setGenstepReservation to G4OpticksTest_fork
+------------------------------------------------------
+
+* https://github.com/simoncblyth/G4OpticksTest/commit/f7a8943db3bb34832bb28cf26197c5fb8c38cf81
+
+::
+
+    (base) [simon@localhost G4OpticksTest_fork]$ ./run.sh 
+    === ./check.sh : environment check PASSED : rc 0
+    G4OpticksTest /home/simon/G4OpticksTest_fork/gdml/G4Opticks_50000.gdml macros/muon_noIO.mac
+
+    ...
+
+    2021-02-17 23:29:21.802 FATAL [370428] [G4Opticks::propagateOpticalPhotons@1087]  NOT-m_way_enabled 
+    EventAction::EndOfEventAction eventid 47 num_gensteps 3821 num_photons 5173198 num_hits 40260 way_enabled 0
+    2021-02-17 23:29:21.892 INFO  [370428] [NPY<T>::add@599] adding on empty : setting reservation 4000
+    2021-02-17 23:29:22.514 INFO  [370428] [OPropagator::launch@279] 0 : (0;6102434,1)  launch time 0.527379
+    2021-02-17 23:29:22.586 INFO  [370428] [OEvent::downloadHits@485]  nhit 48531 --dbghit N hitmask 0x40 SD SURFACE_DETECT
+    2021-02-17 23:29:22.589 FATAL [370428] [G4Opticks::propagateOpticalPhotons@1087]  NOT-m_way_enabled 
+    EventAction::EndOfEventAction eventid 48 num_gensteps 4362 num_photons 6102434 num_hits 48531 way_enabled 0
+    2021-02-17 23:29:22.697 INFO  [370428] [NPY<T>::add@599] adding on empty : setting reservation 4000
+    2021-02-17 23:29:23.185 INFO  [370428] [OPropagator::launch@279] 0 : (0;4639103,1)  launch time 0.400528
+    2021-02-17 23:29:23.240 INFO  [370428] [OEvent::downloadHits@485]  nhit 36746 --dbghit N hitmask 0x40 SD SURFACE_DETECT
+    2021-02-17 23:29:23.242 FATAL [370428] [G4Opticks::propagateOpticalPhotons@1087]  NOT-m_way_enabled 
+    EventAction::EndOfEventAction eventid 49 num_gensteps 3409 num_photons 4639103 num_hits 36746 way_enabled 0
+
+    ...
+
+    2021-02-17 23:29:23.322 FATAL [370428] [G4Opticks::dumpSkipGencode@352] OPTICKS_SKIP_GENCODE m_skip_gencode_count 0
+    2021-02-17 23:29:23.323 INFO  [370428] [G4Opticks::finalizeProfile@393] saving time/vm stamps to path $TMP/G4Opticks/tests/G4OpticksProfilePlot.npy
+    2021-02-17 23:29:23.323 INFO  [370428] [G4Opticks::finalizeProfile@394] make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py 
+    2021-02-17 23:29:23.323 INFO  [370428] [OpticksProfile::Report@526]  num_stamp 50 profile_leak_mb 0
+                 Time(s)      t0  84532.953 t1  84563.242 dt     30.289 dt/(num_stamp-1)      0.618
+              VmSize(MB)      v0  21174.316 v1  21151.947 dv    -22.369 dv/(num_stamp-1)     -0.457
+                 RSS(MB)      r0   1611.332 r1   1621.708 dr     10.376 dr/(num_stamp-1)      0.212
+
+
+    ###] RunAction::EndOfRunAction G4Opticks.Finalize
+
+
+    TimeTotal> 40.674 40.520
+    (base) [simon@localhost G4OpticksTest_fork]$ 
+
+
+
+
+
 Possible Reduction of Resources with G4Opticks::setGenstepsReservation
 -----------------------------------------------------------------------
 
