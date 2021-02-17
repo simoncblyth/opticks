@@ -40,7 +40,7 @@ rtBuffer<float4,2>  rayleigh_buffer;
 
 rtBuffer<uint4>                optical_buffer; 
 
-#include "cu/state.h"
+//#include "cu/state.h"
 #include "cu/photon.h"
 #include "cu/rayleigh.h"
 

@@ -482,9 +482,12 @@ void G4Opticks::reset()
     resetCollectors(); 
 
     m_hits->reset();   // the cloned hits (and hiys) are owned by G4Opticks, so they must be reset here  
-#ifdef WITH_WAY_BUFFER
-    m_hiys->reset(); 
-#endif
+
+    if(m_way_enabled)
+    {
+        LOG(fatal) << " m_way_enabled reset m_hiys " ; 
+        m_hiys->reset(); 
+    }
 
 }
 
@@ -607,6 +610,7 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     m_hits_wrapper = new GPho(m_ggeo) ;   // geometry aware photon hits wrapper
 
     m_ok = m_ggeo->getOpticks(); 
+    m_way_enabled = m_ok->isWayEnabled() ; 
     m_ok->initSensorData(num_sensor);   // instanciates SensorLib 
     m_sensorlib = m_ok->getSensorLib(); 
 
@@ -1065,14 +1069,17 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
         m_hits = event->getHitData()->clone() ; 
         m_num_hits = m_hits->getNumItems() ; 
 
-#ifdef WITH_WAY_BUFFER
-        m_hiys = event->getHiyData()->clone() ; 
-        m_num_hiys = m_hits->getNumItems() ; 
-        LOG(fatal) << " WAY_BUFFER num_hiys " << m_num_hiys ;
-        m_hits->setAux(m_hiys);   // associate the extra hiy selected from way buffer with hits array 
-#else
-        LOG(fatal) << " no-WAY_BUFFER " ;  
-#endif
+        if(m_way_enabled)
+        {
+            m_hiys = event->getHiyData()->clone() ; 
+            m_num_hiys = m_hits->getNumItems() ; 
+            LOG(fatal) << " m_way_enabled num_hiys " << m_num_hiys ;
+            m_hits->setAux(m_hiys);   // associate the extra hiy selected from way buffer with hits array 
+        }
+        else
+        {
+            LOG(fatal) << " NOT-m_way_enabled " ;  
+        }
 
         m_hits_wrapper->setPhotons( m_hits );  // (GPho)
 

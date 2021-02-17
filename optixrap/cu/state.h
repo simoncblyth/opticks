@@ -21,30 +21,6 @@
 #include "OpticksSwitches.h"
 
 
-struct State 
-{
-   unsigned int flag ; 
-   float4 material1 ;    // refractive_index/absorption_length/scattering_length/reemission_prob
-   float4 m1group2  ;    // group_velocity/spare1/spare2/spare3
-   float4 material2 ;  
-   float4 surface    ;   //  detect/absorb/reflect_specular/reflect_diffuse
-   float3 surface_normal ; 
-   float distance_to_boundary ;
-   uint4 optical ;   // x/y/z/w index/type/finish/value  
-   uint4 index ;     // indices of m1/m2/surf/sensor
-   uint4 identity ;  //  node/mesh/boundary/sensor indices of last intersection
-
-#ifdef WITH_REFLECT_CHEAT_DEBUG
-   float ureflectcheat ;  
-#endif
-#ifdef WITH_WAY_BUFFER
-   float4 way0 ;  
-   float4 way1 ;  
-#endif
-
-};
-
-
 // TODO: get this from a GBndLib rather than duplicating 
 enum {
     OMAT,

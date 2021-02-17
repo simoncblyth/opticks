@@ -329,6 +329,7 @@ class G4OK_API G4Opticks
         
         const char*                m_embedded_commandline_extra ; 
         Opticks*                   m_ok ;
+        bool                       m_way_enabled ; 
         CTraverser*                m_traverser ; 
         CMaterialTable*            m_mtab ; 
         CGenstepCollector*         m_genstep_collector ; 

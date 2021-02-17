@@ -86,9 +86,7 @@ void GPho::setOpt(const char* opt)
 GPho::setPhotons
 ------------------
 
-The way array is only available when optickscore/OpticksSwitches.h:WITH_WAY_BUFFER is defined. 
-When there us no *way* use NULL for the argmument.
-
+The way array is only available when Opticks::isWayEnabled is switched on via runtime --way option.
 The way array provides extra information about the photons such as the original 
 start time and a boundary_pos at a configurable border along the path of the photon.
 

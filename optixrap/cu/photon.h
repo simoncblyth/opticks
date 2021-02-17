@@ -211,7 +211,7 @@ POSSIBLE ALTERNATIVE: use a more vectorized approach, ie
 
 **/
 
-__device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain )
+__device__ void rsave( Photon& p, unsigned s_flag, uint4& s_index, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain )
 {
     rbuffer[record_offset+0] = make_short4(    // 4*int16 = 64 bits 
                     shortnorm(p.position.x, center_extent.x, center_extent.w), 
@@ -247,10 +247,10 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
     //  uchar: 0 to 255,   char: -128 to 127 
 
     qquad qaux ;  
-    qaux.uchar_.x =  s.index.x ;    // m1  
-    qaux.uchar_.y =  s.index.y ;    // m2   
+    qaux.uchar_.x =  s_index.x ;    // m1  
+    qaux.uchar_.y =  s_index.y ;    // m2   
     qaux.char_.z  =  p.flags.i.x ;  // boundary(range -55:55)   debugging some funny material codes
-    qaux.uchar_.w = __ffs(s.flag) ; // first set bit __ffs(0) = 0, otherwise 1->32 
+    qaux.uchar_.w = __ffs(s_flag) ; // first set bit __ffs(0) = 0, otherwise 1->32 
   
     //             lsb_ (flq[0].x)    msb_ (flq[0].y)
     //            

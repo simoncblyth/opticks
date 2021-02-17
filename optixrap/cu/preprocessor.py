@@ -4,7 +4,7 @@ preprocessor.py
 ================
 
 A preprocessor that acts upon only a selction 
-of flag macros, eg WITH_ANGULAR WITH_WAY_BUFFER 
+of flag macros, eg -WITH_ANGULAR,+WAY_ENABLED 
 
 """
 
@@ -164,7 +164,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument( "path", help="File path to preprocess" )
     parser.add_argument( "-d", "--dump",    action="store_true", help="Dump the input file showing the tags assigned to each line and process result." )
-    parser.add_argument( "-f", "--flags", help="Comma delimited control flags eg +WITH_WAY_BUFFER,-WITH_ANGULAR " )
+    parser.add_argument( "-f", "--flags", help="Comma delimited control flags eg +WAY_ENABLED,-WITH_ANGULAR " )
     parser.add_argument( "-l", "--lines", help="Comma delimited line range", default=None )
     parser.add_argument( "-o", "--out",   help="Path to write the output", default=None )
     args = parser.parse_args()

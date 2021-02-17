@@ -57,7 +57,6 @@ NB when searching for switches in python include the space at the end, eg::
 // use only for quick checks
 //#define WITH_DEBUG_BUFFER 1
 
-#define WITH_WAY_BUFFER 1
 
 
 #ifndef __CUDACC__
@@ -115,9 +114,6 @@ static std::string OpticksSwitches()
     ss << "WITH_DEBUG_BUFFER " ;   
 #endif
 
-#ifdef WITH_WAY_BUFFER
-    ss << "WITH_WAY_BUFFER " ;   
-#endif
 
     std::string switches = ss.str(); 
     return switches  ; 

@@ -1895,7 +1895,7 @@ opticks-find(){
 opticks-if(){ opticks-f "$1" -Hi ; }   
 opticks-fl(){ opticks-f "$1" -l ; }   
 opticks-f(){   
-   : search most everything including C/C++ code/headers, txt, rst, cmake python scripts etc..
+   : search most everything including C/C++ code/headers, txt, rst, cmake python scripts etc.. BUT not .rst
    local str="${1:-ENV_HOME}"
    local opt=${2:--H}
 
@@ -1921,6 +1921,30 @@ opticks-f(){
 #      -name '*.rst' -or \
 
 }
+
+
+opticks-r(){   
+   : search rst, bash, txt, cmake py  BUT not code or headers
+   local str="${1:-ENV_HOME}"
+   local opt=${2:--H}
+
+   local iwd=$PWD
+   opticks-scd
+
+   find . \
+        \( \
+       -name '*.rst' -or \
+       -name '*.bash' -or \
+       -name '*.txt' -or \
+       -name '*.cmake' -or \
+       -name '*.py' \
+        \) \
+       -exec grep $opt "$str" {} \;
+
+}
+
+
+
 
 
 opticks-c(){   

@@ -48,7 +48,34 @@ rtDeclareVariable(unsigned int,  WNUMQUAD, , );
 
 rtBuffer<uint4>                optical_buffer; 
 
+// state.h struct embodied here as preprocessor.py switch control applies to .cu, not the .h included 
+struct State 
+{
+   unsigned int flag ; 
+   float4 material1 ;    // refractive_index/absorption_length/scattering_length/reemission_prob
+   float4 m1group2  ;    // group_velocity/spare1/spare2/spare3
+   float4 material2 ;  
+   float4 surface    ;   //  detect/absorb/reflect_specular/reflect_diffuse
+   float3 surface_normal ; 
+   float distance_to_boundary ;
+   uint4 optical ;   // x/y/z/w index/type/finish/value  
+   uint4 index ;     // indices of m1/m2/surf/sensor
+   uint4 identity ;  //  node/mesh/boundary/sensor indices of last intersection
+
+#ifdef WITH_REFLECT_CHEAT_DEBUG
+   float ureflectcheat ;  
+#endif
+
+#ifdef WAY_ENABLED
+   float4 way0 ;  
+   float4 way1 ;  
+#endif
+
+};
+
 #include "state.h"
+
+
 #include "photon.h"
 #include "OpticksGenstep.h"
 
@@ -84,7 +111,7 @@ rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes
 #ifdef WITH_DEBUG_BUFFER
 rtBuffer<float4>               debug_buffer;
 #endif
-#ifdef WITH_WAY_BUFFER
+#ifdef WAY_ENABLED
 rtBuffer<float4>               way_buffer;
 #endif
 
@@ -159,7 +186,7 @@ seqmat
     unsigned long long mat = (s).index.x < 0xF ? (s).index.x : 0xF ; \
     seqhis |= his << shift ; \
     seqmat |= mat << shift ; \
-    rsave((p), (s), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
+    rsave((p), (s).flag, (s).index, record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
 }   \
 
 
@@ -291,7 +318,7 @@ RT_PROGRAM void trivial()
 {
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
-#ifdef WITH_WAY_BUFFER
+#ifdef WAY_ENABLED
     const unsigned int way_offset = photon_id*WNUMQUAD ; 
 #endif
     unsigned int genstep_id = seed_buffer[photon_id] ;      
@@ -319,7 +346,7 @@ RT_PROGRAM void trivial()
     photon_buffer[photon_offset+2] = make_float4(  ghead.f.x,     ghead.f.y,    ghead.f.z,     ghead.f.w); 
     photon_buffer[photon_offset+3] = make_float4(  indices.f.x,   indices.f.y,  indices.f.z,   indices.f.w); 
 
-#ifdef WITH_WAY_BUFFER
+#ifdef WAY_ENABLED
     way_buffer[way_offset+0] = make_float4( 0.f, 0.f, 0.f, 0.f ) ; 
     way_buffer[way_offset+1] = make_float4(  indices.f.x,   indices.f.y,  indices.f.z,   indices.f.w);  
 #endif
@@ -515,7 +542,7 @@ RT_PROGRAM void generate()
 #endif
   
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
-#ifdef WITH_WAY_BUFFER
+#ifdef WAY_ENABLED
     const unsigned int way_offset = photon_id*WNUMQUAD ; 
 #endif
     unsigned int genstep_id = seed_buffer[photon_id] ;      
@@ -594,7 +621,7 @@ RT_PROGRAM void generate()
 #endif
     }
 
-#ifdef WITH_WAY_BUFFER
+#ifdef WAY_ENABLED
 /**
 Contents of way buffer must correspond to the ggeo/GPho/getWay methods. 
 The final values are fed into *way* buffer which gets selected down to *hiy* array 
@@ -736,7 +763,7 @@ analogous to *photon* to *hit* selexction.
         // tacit PASS : survivors succeed to reach the boundary 
         // proceeding to pick up one of the below SURFACE_ or BOUNDARY_ flags 
 
-#ifdef WITH_WAY_BUFFER
+#ifdef WAY_ENABLED
         //if( way_control.x == prd.identity.x && way_control.y == prd.boundary )
         if( way_control.y == prd.boundary )
         {
@@ -813,7 +840,7 @@ analogous to *photon* to *hit* selexction.
     }
 
 
-#ifdef WITH_WAY_BUFFER
+#ifdef WAY_ENABLED
     s.way1.z = unsigned_as_float(p.flags.u.z) ;  // photon index  
     s.way1.w = unsigned_as_float(p.flags.u.w) ;  // flags duplicated for hiy selection from way buffer (analogous to hit selection from photons buffer)
     way_buffer[way_offset+0] = s.way0 ; 

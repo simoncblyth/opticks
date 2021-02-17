@@ -39,9 +39,8 @@ struct G4OpticksHit
 G4OpticksHitExtra
 -------------------
 
-This extra hit information is only filled 
-when WITH_WAY_BUFFER from optickscore/OpticksSwitches.h 
-is defined.
+This extra hit information is only filled when Opticks::isWayEnabled 
+is switched on with the --way option on the embedded Opticks commandline.
 
 t0 
    initial time of the first photon at generation from the genstep 

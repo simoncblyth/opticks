@@ -263,7 +263,7 @@ void OpticksCfg<Listener>::init()
        ("nog4propagate",  "inhibit G4 propagate in a bi-simulation executable such as OKG4Test, see OpticksRun OKG4Mgr") ;
 
    m_desc.add_options()
-       ("way",     "enable way/hiy point recording at runtime, requires the WITH_WAY_BUFFER compile time switch to be enabled") ;
+       ("way",     "enable way/hiy point recording at runtime with Opticks::isWayEnabled and WAY_ENABLED preprocessor.py flag in generate.cu ") ;
 
    m_desc.add_options()
        ("angular",  "enable GPU side angular efficiency culling, requires the WITH_ANGULAR compile time switch to be enabled") ;

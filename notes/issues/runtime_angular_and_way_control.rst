@@ -98,3 +98,215 @@ checking are using the generated cu and ptx
 
 
 
+Some Fails as the default does not inclyde --way
+----------------------------------------------------
+
+Both fails from the same assert::
+
+ 
+
+::
+
+
+    FAILS:  2   / 448   :  Wed Feb 17 07:23:06 2021   
+      2  /5   Test #2  : OKOPTest.OpSeederTest                         Child aborted***Exception:     10.49  
+      1  /2   Test #1  : G4OKTest.G4OKTest                             Child aborted***Exception:     13.81  
+    [blyth@localhost opticks]$ 
+
+    Test project /home/blyth/local/opticks/build/g4ok
+        Start 1: G4OKTest.G4OKTest
+    1/2 Test #1: G4OKTest.G4OKTest ................Child aborted***Exception:  13.81 sec
+
+    2021-02-17 07:22:45.068 INFO  [212887] [OEvent::downloadHits@471]  nhit 53 --dbghit N hitmask 0x40 SD SURFACE_DETECT
+    TBuf::download SKIP  numItems_tbuf 0
+    CBufSpec.Summary (empty tbuf?) : dev_ptr (nil) size 0 num_bytes 0 hexdump 0 
+    create_empty_npy
+    2021-02-17 07:22:45.069 INFO  [212887] [OEvent::downloadHiys@506]  nhiy 0 --dbghit N hitmask 0x40 SD SURFACE_DETECT
+    2021-02-17 07:22:45.069 FATAL [212887] [OEvent::download@542]  nhit 53 nhiy 0
+    G4OKTest: /home/blyth/opticks/optixrap/OEvent.cc:548: unsigned int OEvent::download(): Assertion nhit == nhiy failed.
+
+
+::
+
+    527 unsigned OEvent::download()
+    528 {
+    529     LOG(LEVEL) << "[" ;
+    530 
+    531     if(!m_ok->isProduction()) download(m_evt, DOWNLOAD_DEFAULT);
+    532 
+    533     unsigned nhit = downloadHits();
+    534     LOG(LEVEL) << " nhit " << nhit ;
+    535 
+    536 #ifdef WITH_WAY_BUFFER
+    537     unsigned nhiy = downloadHiys();
+    538     LOG(LEVEL)
+    539         << " nhiy " << nhiy ;
+    540     if( nhit != nhiy )
+    541     {
+    542         LOG(fatal)
+    543             << " nhit " << nhit
+    544             << " nhiy " << nhiy
+    545             ;
+    546     }
+    547 
+    548     assert( nhit == nhiy );
+    549 #endif
+    550 
+    551     LOG(LEVEL) << "]" ;
+    552     return nhit ;
+    553 }
+
+
+* TODO: check all WITH_WAY_BUFFER WITH_ANGULAR and add runtime checks inside them 
+
+
+WITH_WAY_BUFFER
+------------------
+
+::
+
+    epsilon:opticks blyth$ opticks-f WITH_WAY_BUFFER
+    ./g4ok/G4Opticks.cc:#ifdef WITH_WAY_BUFFER
+    ./g4ok/G4Opticks.cc:#ifdef WITH_WAY_BUFFER
+
+    handling the hiys
+
+    0480 void G4Opticks::reset()
+     481 {
+     482     resetCollectors();
+     483 
+     484     m_hits->reset();   // the cloned hits (and hiys) are owned by G4Opticks, so they must be reset here  
+     485 #ifdef WITH_WAY_BUFFER
+     486     m_hiys->reset();
+     487 #endif
+     488 
+     489 }
+
+    1068 #ifdef WITH_WAY_BUFFER
+    1069         m_hiys = event->getHiyData()->clone() ;
+    1070         m_num_hiys = m_hits->getNumItems() ;
+    1071         LOG(fatal) << " WAY_BUFFER num_hiys " << m_num_hiys ;
+    1072         m_hits->setAux(m_hiys);   // associate the extra hiy selected from way buffer with hits array 
+    1073 #else
+    1074         LOG(fatal) << " no-WAY_BUFFER " ;
+    1075 #endif
+
+
+
+    ./g4ok/G4OpticksHit.hh:when WITH_WAY_BUFFER from optickscore/OpticksSwitches.h 
+    ./ggeo/GPho.cc:The way array is only available when optickscore/OpticksSwitches.h:WITH_WAY_BUFFER is defined. 
+
+    comments only 
+
+    ./optickscore/OpticksSwitches.h:#define WITH_WAY_BUFFER 1
+    ./optickscore/OpticksSwitches.h:#ifdef WITH_WAY_BUFFER
+    ./optickscore/OpticksSwitches.h:    ss << "WITH_WAY_BUFFER " ;   
+
+    define and present  
+
+    ./optickscore/OpticksCfg.cc:       ("way",     "enable way/hiy point recording at runtime, requires the WITH_WAY_BUFFER compile time switch to be enabled") ;
+
+    runtime control
+
+    ./optixrap/CMakeLists.txt:set(flags_AW +WITH_ANGULAR,+WITH_WAY_BUFFER)
+    ./optixrap/CMakeLists.txt:set(flags_Aw +WITH_ANGULAR,-WITH_WAY_BUFFER)
+    ./optixrap/CMakeLists.txt:set(flags_aW -WITH_ANGULAR,+WITH_WAY_BUFFER)
+    ./optixrap/CMakeLists.txt:set(flags_aw -WITH_ANGULAR,-WITH_WAY_BUFFER)
+
+    ./optixrap/cu/generate.cu:#ifdef WITH_WAY_BUFFER
+    ./optixrap/cu/generate.cu:#ifdef WITH_WAY_BUFFER
+    ./optixrap/cu/generate.cu:#ifdef WITH_WAY_BUFFER
+    ./optixrap/cu/generate.cu:#ifdef WITH_WAY_BUFFER
+    ./optixrap/cu/generate.cu:#ifdef WITH_WAY_BUFFER
+    ./optixrap/cu/generate.cu:#ifdef WITH_WAY_BUFFER
+    ./optixrap/cu/generate.cu:#ifdef WITH_WAY_BUFFER
+
+    ./optixrap/cu/state.h:#ifdef WITH_WAY_BUFFER
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+    state.h in included into generate.cu making this one problematic because generate.cu 
+    gets preprocessed into multiple with various flag settings for runtime switching 
+    of OptiX raygen program
+    
+    * so need to bodily include state.h into generate.cu 
+
+    ./optixrap/cu/preprocessor.py:of flag macros, eg WITH_ANGULAR WITH_WAY_BUFFER 
+    ./optixrap/cu/preprocessor.py:    parser.add_argument( "-f", "--flags", help="Comma delimited control flags eg +WITH_WAY_BUFFER,-WITH_ANGULAR " )
+    ./optixrap/cu/preprocessor.sh:+WITH_ANGULAR,+WITH_WAY_BUFFER
+    ./optixrap/cu/preprocessor.sh:+WITH_ANGULAR,-WITH_WAY_BUFFER
+    ./optixrap/cu/preprocessor.sh:-WITH_ANGULAR,+WITH_WAY_BUFFER
+    ./optixrap/cu/preprocessor.sh:-WITH_ANGULAR,-WITH_WAY_BUFFER
+
+    ./optixrap/OContext.cc:        << w << "WITH_WAY_BUFFER"
+
+    forming the filename 
+
+
+
+    ./optixrap/OEvent.cc:#ifdef WITH_WAY_BUFFER
+    ./optixrap/OEvent.cc:#ifdef WITH_WAY_BUFFER
+    ./optixrap/OEvent.cc:    LOG(LEVEL) << "WITH_WAY_BUFFER way " << way->getShapeString() ; 
+    ./optixrap/OEvent.cc:    LOG(LEVEL) << "not WITH_WAY_BUFFER " ; 
+    ./optixrap/OEvent.cc:#ifdef WITH_WAY_BUFFER
+    ./optixrap/OEvent.cc:#ifdef WITH_WAY_BUFFER
+    ./optixrap/OEvent.cc:#ifdef WITH_WAY_BUFFER
+    ./optixrap/OEvent.cc:#ifdef WITH_WAY_BUFFER
+    ./optixrap/OEvent.cc:#ifdef WITH_WAY_BUFFER
+    ./optixrap/OEvent.cc:#ifdef WITH_WAY_BUFFER
+
+
+
+
+    ./optixrap/OEvent.hh:#if defined(WITH_DEBUG_BUFFER) && defined(WITH_WAY_BUFFER)
+    ./optixrap/OEvent.hh:#elif defined(WITH_WAY_BUFFER)
+    ./optixrap/OEvent.hh:#ifdef WITH_WAY_BUFFER
+    ./optixrap/OEvent.hh:#ifdef WITH_WAY_BUFFER
+    ./optixrap/OEvent.hh:#ifdef WITH_WAY_BUFFER
+
+    111 class OXRAP_API OEvent
+    112 {
+    113     public:
+    114         static const plog::Severity LEVEL ;
+    115     public:
+    116         enum {
+    117             GENSTEP  = 0x1 << 1,
+    118             PHOTON   = 0x1 << 2,
+    119             RECORD   = 0x1 << 3,
+    120             SEQUENCE = 0x1 << 4,
+    121             SEED     = 0x1 << 5,
+    122             SOURCE   = 0x1 << 6,
+    123             DEBUG    = 0x1 << 7,
+    124             WAY      = 0x1 << 8,
+    125 #if defined(WITH_DEBUG_BUFFER) && defined(WITH_WAY_BUFFER)
+    126             DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | DEBUG | WAY
+    127 #elif defined(WITH_WAY_BUFFER)
+    128             DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | WAY
+    129 #elif defined(WITH_DEBUG_BUFFER)
+    130             DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | DEBUG
+    131 #else
+    132             DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE
+    133 #endif
+    134             };
+
+    * TODO: DOWNLOAD_DEFAULT setup at runtime
+
+    151 #ifdef WITH_WAY_BUFFER
+    152     public:
+    153         unsigned downloadHiys();
+    154     private:
+    155         unsigned downloadHiysCompute(OpticksEvent* evt);
+    156         unsigned downloadHiysInterop(OpticksEvent* evt);
+    157 #endif
+
+    196 #ifdef WITH_DEBUG_BUFFER
+    197         optix::Buffer   m_debug_buffer ;
+    198 #endif
+    199 #ifdef WITH_WAY_BUFFER
+    200         optix::Buffer   m_way_buffer ;
+    201 #endif
+
+    * just leave empty buffer ?
+
+
+
+WITH_ANGULAR
+----------------

@@ -121,18 +121,11 @@ class OXRAP_API OEvent
             SEED     = 0x1 << 5,
             SOURCE   = 0x1 << 6,
             DEBUG    = 0x1 << 7,
-            WAY      = 0x1 << 8,
-#if defined(WITH_DEBUG_BUFFER) && defined(WITH_WAY_BUFFER)
-            DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | DEBUG | WAY
-#elif defined(WITH_WAY_BUFFER)
-            DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | WAY
-#elif defined(WITH_DEBUG_BUFFER)
-            DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE | DEBUG
-#else
-            DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE 
-#endif
+            WAY      = 0x1 << 8
             };
     public:
+
+
         OEvent(Opticks* ok, OContext* ocontext);
         unsigned upload();
         unsigned download();
@@ -148,13 +141,11 @@ class OXRAP_API OEvent
         unsigned downloadHitsCompute(OpticksEvent* evt);
         unsigned downloadHitsInterop(OpticksEvent* evt);
 
-#ifdef WITH_WAY_BUFFER
     public:
         unsigned downloadHiys();
     private:
         unsigned downloadHiysCompute(OpticksEvent* evt);
         unsigned downloadHiysInterop(OpticksEvent* evt);
-#endif
     public:
         OContext*     getOContext() const ;
         OpticksEvent* getEvent() const ;
@@ -170,13 +161,16 @@ class OXRAP_API OEvent
 #endif
     private:
         void init(); 
+        unsigned initDownloadMask() const ;
         void createBuffers(OpticksEvent* evt);
         void resizeBuffers(OpticksEvent* evt);
         void setEvent(OpticksEvent* evt);
-        void download(OpticksEvent* evt, unsigned mask=DOWNLOAD_DEFAULT );
+        void download(OpticksEvent* evt, unsigned mask);
     private:
         SLog*           m_log ; 
         Opticks*        m_ok ; 
+        bool            m_way_enabled ; 
+        unsigned        m_downloadmask ; 
         unsigned        m_hitmask ;  
         bool            m_compute ;  
         bool            m_dbghit ; 
@@ -196,9 +190,7 @@ class OXRAP_API OEvent
 #ifdef WITH_DEBUG_BUFFER
         optix::Buffer   m_debug_buffer ; 
 #endif
-#ifdef WITH_WAY_BUFFER
         optix::Buffer   m_way_buffer ; 
-#endif
 
 
 
@@ -225,9 +217,7 @@ class OXRAP_API OEvent
 #ifdef WITH_DEBUG_BUFFER
         OBuf*           m_debug_buf ; 
 #endif
-#ifdef WITH_WAY_BUFFER
         OBuf*           m_way_buf ; 
-#endif
 
     private:
         bool            m_buffers_created ; 

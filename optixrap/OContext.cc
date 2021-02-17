@@ -91,7 +91,7 @@ std::string OContext::getGenerateFilename() const
         << "generate_"
         << a << "WITH_ANGULAR"
         << ","
-        << w << "WITH_WAY_BUFFER"
+        << w << "WAY_ENABLED"
         << ".cu"
         ;
        
@@ -1069,6 +1069,8 @@ optix::Buffer OContext::createEmptyBufferF4()
     optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT4, 0);
     return emptyBuffer ;
 }
+
+
 
 
 /**

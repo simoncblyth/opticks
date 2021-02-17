@@ -64,6 +64,8 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
     :
     m_log(new SLog("OEvent::OEvent", "", LEVEL)),
     m_ok(ok),
+    m_way_enabled(m_ok->isWayEnabled()),
+    m_downloadmask(initDownloadMask()),
     m_hitmask(ok->getDbgHitMask()),  // default string from okc/OpticksCfg.cc "SD" converted to mask in Opticks::getDbgHitMask
     m_compute(ok->isCompute()),
     m_dbghit(m_ok->isDbgHit()),            // --dbghit
@@ -89,15 +91,23 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
 #ifdef WITH_DEBUG_BUFFER
     m_debug_buf(NULL),
 #endif
-#ifdef WITH_WAY_BUFFER
     m_way_buf(NULL),
-#endif
     m_buffers_created(false)
 {
     init();
     (*m_log)("DONE");
 }
 
+
+unsigned OEvent::initDownloadMask() const 
+{
+    unsigned mask =  PHOTON | RECORD | SEQUENCE ; 
+    if(m_way_enabled) mask |= WAY ; 
+#ifdef WITH_DEBUG_BUFFER 
+    mask |= DEBUG ;       
+#endif
+    return mask ;  
+}
 
 void OEvent::init()
 {
@@ -190,17 +200,20 @@ void OEvent::createBuffers(OpticksEvent* evt)
     m_context["photon_buffer"]->set( m_photon_buffer );
     m_photon_buf = new OBuf("photon", m_photon_buffer);
 
-#ifdef WITH_WAY_BUFFER
-    NPY<float>* way = evt->getWayData() ; 
-    LOG(LEVEL) << "WITH_WAY_BUFFER way " << way->getShapeString() ; 
-    assert(way); 
-    m_way_buffer = m_ocontext->createBuffer<float>( way, "way"); 
+    if(m_way_enabled)
+    {
+        NPY<float>* way = evt->getWayData() ; 
+        assert(way); 
+        LOG(LEVEL) << "m_way_enabled " << way->getShapeString() ; 
+        m_way_buffer = m_ocontext->createBuffer<float>( way, "way"); 
+    }
+    else
+    {
+        LOG(LEVEL) << "NOT m_way_enabled " ;
+        m_way_buffer = m_ocontext->createEmptyBufferF4();
+    } 
     m_context["way_buffer"]->set( m_way_buffer );
     m_way_buf = new OBuf("way", m_way_buffer);
-
-#else
-    LOG(LEVEL) << "not WITH_WAY_BUFFER " ; 
-#endif
 
 
 #ifdef WITH_DEBUG_BUFFER
@@ -319,6 +332,8 @@ OEvent::resizeBuffers
 
 Internally called by OEvent::upload
 GPU side buffers are resized based on the the CPU side array sizes.
+Recall that CPU side arrays can take any size without needing any allocation.
+CPU side allocation is deferred until downloading for example.
 
 **/
 
@@ -328,7 +343,6 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
     assert(gensteps);
-    //OContext::resizeBuffer<float>(m_genstep_buffer, gensteps, "gensteps");
     m_ocontext->resizeBuffer<float>(m_genstep_buffer, gensteps, "gensteps");
 
     NPY<unsigned>* se = evt->getSeedData() ; 
@@ -339,12 +353,13 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
     assert(photon);
     m_ocontext->resizeBuffer<float>(m_photon_buffer,  photon, "photon");
 
-#ifdef WITH_WAY_BUFFER
-    NPY<float>* way = evt->getWayData() ; 
-    assert(way);
-    m_ocontext->resizeBuffer<float>(m_way_buffer,  way, "way");
-#endif
 
+    if(m_way_enabled)
+    {
+        NPY<float>* way = evt->getWayData() ; 
+        assert(way);
+        m_ocontext->resizeBuffer<float>(m_way_buffer,  way, "way");
+    }
 
 #ifdef WITH_SOURCE
     NPY<float>* source = evt->getSourceData() ; 
@@ -353,7 +368,6 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
         m_ocontext->resizeBuffer<float>(m_source_buffer,  source, "source");
     }
 #endif
-
 
 #ifdef WITH_RECORD
     NPY<short>* rx = evt->getRecordData() ; 
@@ -497,7 +511,6 @@ never involved with visualization ?
 
 **/
 
-#ifdef WITH_WAY_BUFFER
 unsigned OEvent::downloadHiys()
 {
     //unsigned nhiy = m_compute ? downloadHiysCompute(m_evt) : downloadHiysInterop(m_evt) ;
@@ -513,7 +526,9 @@ unsigned OEvent::downloadHiys()
 
     return nhiy ; 
 }
-#endif
+
+
+
 
 
 /**
@@ -528,25 +543,26 @@ unsigned OEvent::download()
 {
     LOG(LEVEL) << "[" ; 
 
-    if(!m_ok->isProduction()) download(m_evt, DOWNLOAD_DEFAULT);
+    unsigned mask = m_downloadmask ;
+
+    if(!m_ok->isProduction()) download(m_evt, mask );
 
     unsigned nhit = downloadHits();  
     LOG(LEVEL) << " nhit " << nhit ; 
 
-#ifdef WITH_WAY_BUFFER
-    unsigned nhiy = downloadHiys();  
-    LOG(LEVEL) 
-        << " nhiy " << nhiy ; 
-    if( nhit != nhiy )
+    if(mask & WAY)
     {
-        LOG(fatal) 
-            << " nhit " << nhit 
-            << " nhiy " << nhiy 
-            ; 
+        unsigned nhiy = downloadHiys();  
+        LOG(LEVEL) << " nhiy " << nhiy ;
+        if( nhit != nhiy )
+        {
+            LOG(fatal) 
+                << " nhit " << nhit 
+                << " nhiy " << nhiy 
+                ; 
+        }
+        assert( nhit == nhiy ); 
     }
-
-    assert( nhit == nhiy ); 
-#endif
 
     LOG(LEVEL) << "]" ; 
     return nhit ; 
@@ -610,16 +626,12 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
     }
 #endif
 
-#ifdef WITH_WAY_BUFFER
-    if(mask & WAY)  
+    if(m_way_enabled && (mask & WAY))  
     {
         NPY<float>* wy = evt->getWayData();
         OContext::download<float>( m_way_buffer, wy );
         if(m_dbgdownload) LOG(info) << "wy " << wy->getShapeString() ;   
     }
-
-
-#endif
 
 
     LOG(LEVEL) << "]" ;
@@ -675,7 +687,6 @@ unsigned OEvent::downloadHitsCompute(OpticksEvent* evt)
     return nhit ; 
 }
 
-#ifdef WITH_WAY_BUFFER
 /**
 OEvent::downloadHiysCompute
 ----------------------------
@@ -723,7 +734,6 @@ unsigned OEvent::downloadHiysCompute(OpticksEvent* evt)
     LOG(LEVEL) << "]" ; 
     return nhiy ; 
 }
-#endif
 
 
 
@@ -769,7 +779,6 @@ unsigned OEvent::downloadHitsInterop(OpticksEvent* evt)
     return nhit ; 
 }
 
-#ifdef WITH_WAY_BUFFER
 unsigned OEvent::downloadHiysInterop(OpticksEvent* evt)
 {
     assert(0) ; // not used 
@@ -806,7 +815,6 @@ unsigned OEvent::downloadHiysInterop(OpticksEvent* evt)
 
     return nhiy ; 
 }
-#endif
 
 
 
