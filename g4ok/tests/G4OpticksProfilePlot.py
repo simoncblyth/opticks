@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+import os, sys
 import numpy as np
 from numpy.polynomial import Polynomial as Poly
 
@@ -13,7 +13,9 @@ pass
 #plt = None  
 
 
-path = "$TMP/G4Opticks/tests/G4OpticksProfilePlot.npy"
+path = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("OPTICKS_PROFILE_PATH") 
+
+
 path = os.path.expandvars(path)
 a = np.load(path)
 print(a)

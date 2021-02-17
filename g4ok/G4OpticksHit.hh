@@ -31,7 +31,6 @@ struct G4OpticksHit
     G4bool        is_cerenkov ; 
     G4bool        is_reemission ; 
 
-
 };
 
 

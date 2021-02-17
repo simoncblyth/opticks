@@ -116,6 +116,7 @@ class G4OK_API G4Opticks
         const char* dbgdesc() const ;  
         std::string dbgdesc_() const ;
         void setProfile(bool profile);
+        void setProfilePath(const char* path);
         void setProfileLeakMB(float profile_leak_mb);
     public:
         // workflow methods
@@ -362,6 +363,7 @@ class G4OK_API G4Opticks
         unsigned                    m_skip_gencode_count ;  
         std::map<int, int>          m_skip_gencode_totals ; 
         bool                        m_profile ; 
+        const char*                 m_profile_path ; 
         float                       m_profile_leak_mb ; 
         std::vector<float>          m_profile_stamps ; 
     private:

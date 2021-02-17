@@ -370,10 +370,6 @@ void G4OKTest::propagate(int eventID)
 
 void G4OKTest::checkHits(int eventID) const 
 {
-    G4OpticksHit hit ; 
-    G4OpticksHitExtra hit_extra ;
-
- 
     unsigned num_gensteps = m_g4ok->getNumGensteps(); 
     unsigned num_photons = m_g4ok->getNumPhotons(); 
     unsigned num_hit = m_g4ok->getNumHit(); 
@@ -387,6 +383,8 @@ void G4OKTest::checkHits(int eventID) const
         << " way_enabled " << way_enabled 
         ; 
 
+    G4OpticksHit hit ; 
+    G4OpticksHitExtra hit_extra ;
     G4OpticksHitExtra* hit_extra_ptr = way_enabled ? &hit_extra : NULL ;
 
     for(unsigned i=0 ; i < std::min(num_hit,20u) ; i++)

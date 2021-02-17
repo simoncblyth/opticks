@@ -312,6 +312,7 @@ G4Opticks::G4Opticks()
     m_skip_gencode_count(SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ',')),
     m_skip_gencode_totals(),
     m_profile(false),
+    m_profile_path(SSys::getenvvar("OPTICKS_PROFILE_PATH")),
     m_profile_leak_mb(0.f)
 {
     initSkipGencode() ; 
@@ -337,6 +338,11 @@ void G4Opticks::initSkipGencode()
 void G4Opticks::setProfile(bool profile)
 {
     m_profile = profile ; 
+}
+void G4Opticks::setProfilePath(const char* path)
+{
+    m_profile = true ; 
+    m_profile_path = strdup(path) ; 
 }
 void G4Opticks::setProfileLeakMB(float profile_leak_mb)
 {
@@ -388,11 +394,18 @@ void G4Opticks::finalizeProfile() const
         return ; 
     }
 
-    a->reshape(-1, 4); 
-    const char* path = "$TMP/G4Opticks/tests/G4OpticksProfilePlot.npy" ; 
-    LOG(info) << "saving time/vm stamps to path " << path ; 
-    LOG(info) << "make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py " ; 
-    a->save(path);  
+    a->reshape(-1, 4);
+  
+    if(m_profile_path)
+    {
+        LOG(info) << "saving time/vm stamps to path " << m_profile_path ; 
+        LOG(info) << "make plot with: ipython -i ~/opticks/g4ok/tests/G4OpticksProfilePlot.py " << m_profile_path ; 
+        a->save(m_profile_path);  
+    }
+    else
+    {
+        LOG(info) << "to set path to save the profile set envvar OPTICKS_PROFILE_PATH or use G4Opticks::setProfilePath  " ; 
+    }
 
     OpticksProfile::Report(a, m_profile_leak_mb); 
 }
