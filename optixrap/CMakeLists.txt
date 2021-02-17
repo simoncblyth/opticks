@@ -18,39 +18,33 @@ find_package(OptiX      REQUIRED MODULE)
 find_package(OpticksGeo REQUIRED CONFIG)
 find_package(ThrustRap  REQUIRED CONFIG )
 
-
-set(flags_AW +ANGULAR_ENABLED,+WAY_ENABLED)
-set(flags_Aw +ANGULAR_ENABLED,-WAY_ENABLED)
-set(flags_aW -ANGULAR_ENABLED,+WAY_ENABLED)
-set(flags_aw -ANGULAR_ENABLED,-WAY_ENABLED)
+set(SOURCES)
+set(CU_SOURCES)
 
 
-add_custom_command(
-    OUTPUT  generate_${flags_AW}.cu
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cu/preprocessor.py ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu --flags="${flags_AW}" --out ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_AW}.cu
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu
-)
-add_custom_command(
-    OUTPUT  generate_${flags_Aw}.cu
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cu/preprocessor.py ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu --flags="${flags_Aw}" --out ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_Aw}.cu
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu
-)
-add_custom_command(
-    OUTPUT  generate_${flags_aW}.cu
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cu/preprocessor.py ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu --flags="${flags_aW}" --out ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_aW}.cu
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu
-)
-add_custom_command(
-    OUTPUT  generate_${flags_aw}.cu
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cu/preprocessor.py ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu --flags="${flags_aw}" --out ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_aw}.cu
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu
+set(generate_enabled_combinations 
++ANGULAR_ENABLED,+WAY_ENABLED
++ANGULAR_ENABLED,-WAY_ENABLED
+-ANGULAR_ENABLED,+WAY_ENABLED
+-ANGULAR_ENABLED,-WAY_ENABLED
 )
 
+foreach(flags ${generate_enabled_combinations})
+    set(srcfile ${CMAKE_CURRENT_SOURCE_DIR}/cu/generate.cu)
+    set(outfile ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags}.cu)
+    set(script  ${CMAKE_CURRENT_SOURCE_DIR}/cu/preprocessor.py)
+    message(STATUS "flags:${flags} outfile:${outfile}")
+    add_custom_command(
+        OUTPUT  ${outfile}
+        COMMAND ${script} ${srcfile} --flags="${flags}" --out=${outfile}
+        DEPENDS ${srcfile}
+    )
+    list(APPEND CU_SOURCES ${outfile})
+endforeach()
 
 
+list(APPEND SOURCES
 
-set(SOURCES
-     
     OXRAP_LOG.cc
     OError.cc
 
@@ -136,8 +130,7 @@ set(HEADERS
 )
 
 
-set(CU_SOURCES
-
+list(APPEND CU_SOURCES
     cu/pinhole_camera.cu
     cu/GeometryTriangles.cu
     cu/constantbg.cu
@@ -158,11 +151,6 @@ set(CU_SOURCES
 
     cu/cbrtTest.cu
     cu/Roots3And4Test.cu
-
-    ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_AW}.cu
-    ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_Aw}.cu
-    ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_aW}.cu
-    ${CMAKE_CURRENT_BINARY_DIR}/generate_${flags_aw}.cu
 )
 
 
