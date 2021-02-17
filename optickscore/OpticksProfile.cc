@@ -526,24 +526,30 @@ void OpticksProfile::Report(const NPY<float>* a, float profile_leak_mb)  // stat
     LOG(info) 
         << " num_stamp " << num_stamp
         << " profile_leak_mb " << profile_leak_mb
-        << " v0,v1 VmSize(MB) r0,r1 RSS(MB) "  
         ;
 
+    int w = 10 ; 
     std::cout 
-        << " t0 " << std::setw(8) << t0   
-        << " t1 " << std::setw(8) << t1 
-        << " dt " << std::setw(8) << dt 
-        << " dt/(num_stamp-1) " << std::setw(8) << dt_per_stamp
+        << std::setw(20) << "Time(s)"
+        << std::setw(5) << " " 
+        << " t0 " << std::setw(w) << std::fixed << std::setprecision(3) << t0   
+        << " t1 " << std::setw(w) << std::fixed << std::setprecision(3) << t1 
+        << " dt " << std::setw(w) << std::fixed << std::setprecision(3) << dt 
+        << " dt/(num_stamp-1) " << std::setw(w) << std::fixed << std::setprecision(3) << dt_per_stamp
         << std::endl
-        << " v0 " << std::setw(8) << v0 
-        << " v1 " << std::setw(8) << v1 
-        << " dv " << std::setw(8) << dv 
-        << " dv/(num_stamp-1) " << std::setw(8) << dv_per_stamp
+        << std::setw(20) << "VmSize(MB)"
+        << std::setw(5) << " " 
+        << " v0 " << std::setw(w) << std::fixed << std::setprecision(3) << v0 
+        << " v1 " << std::setw(w) << std::fixed << std::setprecision(3) << v1 
+        << " dv " << std::setw(w) << std::fixed << std::setprecision(3) << dv 
+        << " dv/(num_stamp-1) " << std::setw(w) << std::fixed << std::setprecision(3) << dv_per_stamp
         << std::endl
-        << " r0 " << std::setw(8) << r0 
-        << " r1 " << std::setw(8) << r1 
-        << " dr " << std::setw(8) << dr 
-        << " dr/(num_stamp-1) " << std::setw(8) << dr_per_stamp
+        << std::setw(20) << "RSS(MB)"
+        << std::setw(5) << " " 
+        << " r0 " << std::setw(w) << std::fixed << std::setprecision(3) << r0 
+        << " r1 " << std::setw(w) << std::fixed << std::setprecision(3) << r1 
+        << " dr " << std::setw(w) << std::fixed << std::setprecision(3) << dr 
+        << " dr/(num_stamp-1) " << std::setw(w) << std::fixed << std::setprecision(3) << dr_per_stamp
         << std::endl
         ;
 }

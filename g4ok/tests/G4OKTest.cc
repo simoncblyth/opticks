@@ -16,13 +16,23 @@ G4OKTest
 This test is intended to provide a way of testing G4Opticks machinery 
 without ascending to the level of the experiment.
 
+Running with extra hit info using the way buffer
+--------------------------------------------------
+
+::
+
+   OPTICKS_EMBEDDED_COMMANDLINE_EXTRA=--way G4OKTest
+
+
 Leak Checking
 --------------
 
 ::
 
-   G4OKTEST_PROFILE_LEAK_MB=10 G4OKTest 100
-   G4OKTEST_PROFILE_LEAK_MB=20 G4OKTest 100
+   
+
+   G4OKTEST_PROFILE_LEAK_MB=10 NEVT=100 G4OKTest 
+   G4OKTEST_PROFILE_LEAK_MB=20 NEVT=100 G4OKTest 
 
 ::
 
@@ -294,14 +304,6 @@ void G4OKTest::saveSensorLib() const
     m_g4ok->saveSensorLib(m_tmpdir, "SensorLib"); 
 }
 
-
-
-
-
-
-
-
-
 unsigned G4OKTest::getNumGenstepPhotons(int eventID) const
 {
     unsigned num_photons = 0 ;   // 0: leads to default torch genstep num_photons of 10000(?)
@@ -370,20 +372,22 @@ void G4OKTest::checkHits(int eventID) const
 {
     G4OpticksHit hit ; 
     G4OpticksHitExtra hit_extra ;
+
  
     unsigned num_gensteps = m_g4ok->getNumGensteps(); 
     unsigned num_photons = m_g4ok->getNumPhotons(); 
     unsigned num_hit = m_g4ok->getNumHit(); 
+    bool way_enabled = m_g4ok->isWayEnabled() ; 
 
     LOG(info) 
         << " eventID " << eventID
         << " num_gensteps " << num_gensteps
         << " num_photons " << num_photons
         << " num_hit " << num_hit
+        << " way_enabled " << way_enabled 
         ; 
 
-    G4OpticksHitExtra* hit_extra_ptr = &hit_extra ;
-    //G4OpticksHitExtra* hit_extra_ptr = NULL ;
+    G4OpticksHitExtra* hit_extra_ptr = way_enabled ? &hit_extra : NULL ;
 
     for(unsigned i=0 ; i < std::min(num_hit,20u) ; i++)
     {

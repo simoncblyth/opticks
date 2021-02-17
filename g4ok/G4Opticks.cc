@@ -288,6 +288,7 @@ G4Opticks::G4Opticks()
     m_hits_wrapper(NULL),
     m_embedded_commandline_extra(NULL),
     m_ok(NULL),
+    m_way_enabled(false),
     m_traverser(NULL),
     m_mtab(NULL),
     m_genstep_collector(NULL),
@@ -624,7 +625,10 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     LOG(LEVEL) << ") OpMgr " ; 
 }
 
-
+bool G4Opticks::isWayEnabled() const 
+{
+    return m_way_enabled ; 
+}
 
 void G4Opticks::setStandardizeGeant4Materials(bool standardize_geant4_materials)
 {
@@ -1200,15 +1204,21 @@ void G4Opticks::getHit(unsigned i, G4OpticksHit* hit, G4OpticksHitExtra* hit_ext
 
     if(hit_extra != NULL)
     {
-        assert( m_hits_wrapper->hasWay() );  
-        glm::vec4 way_post = m_hits_wrapper->getWayPositionTime(i); 
-        float     origin_time   = m_hits_wrapper->getWayOriginTime(i); 
-        int       origin_trackID = m_hits_wrapper->getWayOriginTrackID(i); 
+        if(m_hits_wrapper->hasWay() )
+        {
+            glm::vec4 way_post = m_hits_wrapper->getWayPositionTime(i); 
+            float     origin_time   = m_hits_wrapper->getWayOriginTime(i); 
+            int       origin_trackID = m_hits_wrapper->getWayOriginTrackID(i); 
 
-        hit_extra->boundary_pos.set(double(way_post.x), double(way_post.y), double(way_post.z));
-        hit_extra->boundary_time = double(way_post.w);
-        hit_extra->origin_time = origin_time ; 
-        hit_extra->origin_trackID = origin_trackID ; 
+            hit_extra->boundary_pos.set(double(way_post.x), double(way_post.y), double(way_post.z));
+            hit_extra->boundary_time = double(way_post.w);
+            hit_extra->origin_time = origin_time ; 
+            hit_extra->origin_trackID = origin_trackID ; 
+        }      
+        else
+        {
+            LOG(fatal) << "Extra hit info requires the --way option on embedded opticks commandline " ;    
+        } 
     }
 }
 

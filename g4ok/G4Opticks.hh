@@ -157,6 +157,8 @@ class G4OK_API G4Opticks
         void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
         void loadGeometry(); 
     public:
+        bool isWayEnabled() const ; 
+    public:
         void setStandardizeGeant4Materials(bool standardize_geant4_materials);
         void setPlacementOuterVolume(bool outer_volume);  // TODO: eliminate
     private:
