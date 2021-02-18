@@ -436,9 +436,20 @@ unsigned int GGeo::getMaterialLine(const char* shortname) { return m_bndlib->get
 std::string  GGeo::getSensorBoundaryReport() const { return m_bndlib->getSensorBoundaryReport() ; }
 unsigned     GGeo::getBoundary(const char* spec) const { return m_bndlib->getBoundary(spec) ; }
 int          GGeo::getSignedBoundary(const char* spec) const { return m_bndlib->getSignedBoundary(spec) ; }  
-int          GGeo::getSignedBoundary() const 
+
+
+/**
+GGeo::getSignedBoundary ``--boundary``
+-----------------------------------------
+
+This is canonically invoked from OGeo::initWayControl with the result being 
+passed into **way_control** in the OptiX GPU context. 
+
+**/
+
+int GGeo::getSignedBoundary() const 
 { 
-     const char* spec = m_ok->getBoundary(); 
+     const char* spec = m_ok->getBoundary();   // --boundary 
      return m_bndlib->getSignedBoundary(spec) ; 
 }  
 
@@ -990,6 +1001,19 @@ int GGeo::getFirstNodeIndexForPVName(const char* pvname) const
 {
     return m_nodelib->getFirstNodeIndexForPVName(pvname);
 }
+
+/**
+GGeo::getFirstNodeIndexForPVName ``--pvname`` 
+-----------------------------------------------
+
+Returns the first node index with name corresponding 
+to the ``--pvname`` commandline option value.
+
+This is canonically invoked from ``OGeo::initWayControl``
+with the result being included into ``way_control``
+in the OptiX GPU context. 
+
+**/
 
 int GGeo::getFirstNodeIndexForPVName() const 
 {

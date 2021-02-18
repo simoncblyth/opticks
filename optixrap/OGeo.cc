@@ -240,6 +240,13 @@ void OGeo::init()
     LOG(info) << description() ; 
 }
 
+/**
+OGeo::initWayControl
+----------------------
+
+Currently only the signed boundary is used in 
+
+**/
 
 void OGeo::initWayControl()
 {

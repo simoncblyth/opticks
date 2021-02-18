@@ -12,3 +12,10 @@ G4OK : Interface between Geant4 and embedded Opticks
         approach used in G4Opticks ?
 
 
+
+
+.. toctree::
+
+   G4OpticksHit 
+
+
