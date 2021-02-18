@@ -1325,9 +1325,15 @@ void GGeo::deferredCreateGParts()
             assert(0); 
         }
 
+        LOG(LEVEL) << "[ GParts::Create i/nmm " << i << "/" << nmm ; 
         GParts* parts = GParts::Create( pts, solids) ; 
+        LOG(LEVEL) << "] GParts::Create i/nmm " << i << "/" << nmm ; 
+
         parts->setBndLib(m_bndlib); 
+
+        LOG(LEVEL) << "[ parts->close i/nmm " << i << "/" << nmm ; 
         parts->close(); 
+        LOG(LEVEL) << "] parts->close i/nmm " << i << "/" << nmm ; 
 
         mm->setParts( parts ); 
     }
