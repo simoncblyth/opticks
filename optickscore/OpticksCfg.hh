@@ -162,6 +162,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getDbgMM() const ;  
      int          getDbgLV() const ;  
      int          getStack() const ; 
+     unsigned     getWayMask() const ;   // --waymask 3 
      int          getMaxCallableProgramDepth() const ; 
      int          getMaxTraceDepth() const ; 
      int          getUsageReportLevel() const ; 
@@ -303,6 +304,7 @@ private:
      int         m_dbgmm ; 
      int         m_dbglv ; 
      int         m_stack ; 
+     unsigned    m_waymask ; 
      int         m_maxCallableProgramDepth ; 
      int         m_maxTraceDepth ; 
      int         m_usageReportLevel ; 

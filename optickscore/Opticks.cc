@@ -1030,6 +1030,10 @@ const char* Opticks::getScintillationClass() const
 }
 
 
+unsigned Opticks::getWayMask() const // --waymask 3
+{
+    return m_cfg->getWayMask(); 
+}
 bool Opticks::isWayEnabled() const  // --way
 {
     return m_cfg->hasOpt("way") ;

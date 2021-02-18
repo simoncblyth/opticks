@@ -1030,6 +1030,13 @@ what is the relationship between gensteps and G4Event ?
   G4Event into one genstep array : but for now are assuming
   that there is 1-to-1 relationship between G4Event and genstep arrays
 
+
+TO TRY: 
+
+* relying on G4Opticks::reset being called might allow to not cloning the hit/hiy ?  
+
+
+
 **/
 
 int G4Opticks::propagateOpticalPhotons(G4int eventID) 
@@ -1085,7 +1092,7 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
         LOG(LEVEL) << "] m_opmgr->propagate " ; 
 
         OpticksEvent* event = m_opmgr->getEvent(); 
-        m_hits = event->getHitData()->clone() ; 
+        m_hits = event->getHitData()->clone() ;      // TOTRY: moving OpMgr::reset later inside G4Opticks::reset would avoid the need to clone ?
         m_num_hits = m_hits->getNumItems() ; 
 
         if(m_way_enabled)
@@ -1132,10 +1139,6 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
 
     LOG(LEVEL) << "]] num_hits " << m_num_hits ; 
 
-
-
-
-
     if( m_profile )
     {
         glm::vec4 stamp = OpticksProfile::Stamp(); 
@@ -1177,6 +1180,9 @@ Local positions, directions and polarizations are obtained using
 the geometry aware *m_hits_wrapper(GPho)* which looks up the 
 appropriate transform avoiding having to almost double the size 
 of the photon.
+
+Hit data is provided by m_hits_wrapper (GPho) which wraps m_hits.
+
 
 **/
 

@@ -766,8 +766,14 @@ analogous to *photon* to *hit* selexction.
         // proceeding to pick up one of the below SURFACE_ or BOUNDARY_ flags 
 
 #ifdef WAY_ENABLED
-        //if( way_control.x == prd.identity.x && way_control.y == prd.boundary )
-        if( way_control.y == prd.boundary )
+        bool way_select = false ; 
+        switch(way_control.w)   // --waymask 1/2/3
+        {
+           case 1u: way_select = way_control.x == prd.identity.x  ; break ; 
+           case 2u: way_select = way_control.y == prd.boundary    ; break ; 
+           case 3u: way_select = way_control.x == prd.identity.x && way_control.y == prd.boundary ; break ; 
+        }
+        if( way_select )
         {
             s.way0.x = p.position.x ; 
             s.way0.y = p.position.y ; 

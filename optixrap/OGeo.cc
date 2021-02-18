@@ -244,7 +244,6 @@ void OGeo::init()
 OGeo::initWayControl
 ----------------------
 
-Currently only the signed boundary is used in 
 
 **/
 
@@ -252,13 +251,14 @@ void OGeo::initWayControl()
 {
     int node     = m_ggeo->getFirstNodeIndexForPVName();   // --pvname pInnerWater 
     int boundary = m_ggeo->getSignedBoundary() ;           // --boundary Water///Acrylic  
+    unsigned waymask = m_ok->getWayMask() ;    // --waymask 0/1/2/3   controls way_select 
 
-    optix::int4 way_control = optix::make_int4(node,boundary,0,0); // HMM: need GGeo to set these
+    optix::int4 way_control = optix::make_int4(node,boundary,0,waymask); 
     LOG(LEVEL) 
         << " way_control.x (node) " << way_control.x 
         << " way_control.y (boundary) " << way_control.y
         << " way_control.z " << way_control.z 
-        << " way_control.w " << way_control.w 
+        << " way_control.w (waymask) " << way_control.w 
         ;
     m_context["way_control"]->setInt(way_control); 
 } 

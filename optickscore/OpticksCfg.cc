@@ -137,6 +137,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_dbgmm(-1),
     m_dbglv(-1),
     m_stack(2180),
+    m_waymask(3),
     m_maxCallableProgramDepth(0),
     m_maxTraceDepth(0),
     m_usageReportLevel(0),
@@ -264,6 +265,12 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("way",     "enable way/hiy point recording at runtime with Opticks::isWayEnabled and WAY_ENABLED preprocessor.py flag in generate.cu ") ;
+
+
+   char waymask[128];
+   snprintf(waymask,128, "Controls which parts of the way_selection are applied, see OGeo::initWayControl. Default %d", m_waymask );
+   m_desc.add_options()
+       ("waymask",  boost::program_options::value<unsigned>(&m_waymask), waymask );
 
 
    m_desc.add_options()
@@ -2045,6 +2052,12 @@ int OpticksCfg<Listener>::getStack() const
 {
     return m_stack ; 
 }
+template <class Listener>
+unsigned OpticksCfg<Listener>::getWayMask() const 
+{
+    return m_waymask ; 
+}
+
 
 
 template <class Listener>
