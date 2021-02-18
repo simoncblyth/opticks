@@ -289,6 +289,7 @@ G4Opticks::G4Opticks()
     m_embedded_commandline_extra(NULL),
     m_ok(NULL),
     m_way_enabled(false),
+    m_way_mask(0),
     m_traverser(NULL),
     m_mtab(NULL),
     m_genstep_collector(NULL),
@@ -625,6 +626,7 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
 
     m_ok = m_ggeo->getOpticks(); 
     m_way_enabled = m_ok->isWayEnabled() ; 
+    m_way_mask = m_ok->getWayMask(); 
     m_ok->initSensorData(num_sensor);   // instanciates SensorLib 
     m_sensorlib = m_ok->getSensorLib(); 
 
@@ -642,6 +644,12 @@ bool G4Opticks::isWayEnabled() const
 {
     return m_way_enabled ; 
 }
+unsigned G4Opticks::getWayMask() const 
+{
+    return m_way_mask ; 
+}
+
+
 
 void G4Opticks::setStandardizeGeant4Materials(bool standardize_geant4_materials)
 {

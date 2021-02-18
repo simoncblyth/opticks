@@ -159,6 +159,7 @@ class G4OK_API G4Opticks
         void loadGeometry(); 
     public:
         bool isWayEnabled() const ; 
+        unsigned getWayMask() const ; 
     public:
         void setStandardizeGeant4Materials(bool standardize_geant4_materials);
         void setPlacementOuterVolume(bool outer_volume);  // TODO: eliminate
@@ -333,6 +334,7 @@ class G4OK_API G4Opticks
         const char*                m_embedded_commandline_extra ; 
         Opticks*                   m_ok ;
         bool                       m_way_enabled ; 
+        unsigned                   m_way_mask ; 
         CTraverser*                m_traverser ; 
         CMaterialTable*            m_mtab ; 
         CGenstepCollector*         m_genstep_collector ; 
