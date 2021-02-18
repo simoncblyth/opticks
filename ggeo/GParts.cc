@@ -232,7 +232,10 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids )
         assert( csg ); 
 
         //  X4PhysicalVolume::convertNode
+
+        LOG(LEVEL) << "[ GParts::Make i " << i << " lvIdx " << lvIdx << " ndIdx " << ndIdx ; 
         GParts* parts = GParts::Make( csg, spec.c_str(), ndIdx ); 
+        LOG(LEVEL) << "] GParts::Make i " << i << " lvIdx " << lvIdx << " ndIdx " << ndIdx ; 
         //parts->setVolumeIndex(ndIdx); 
 
         // GMergedMesh::mergeVolume
@@ -1028,7 +1031,7 @@ void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbos
 
 void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbosity )
 {
-    LOG(debug) << "placement " << glm::to_string( placement ) ; 
+    LOG(LEVEL) << "[ placement " << glm::to_string( placement ) ; 
 
     //std::raise(SIGINT); 
 
@@ -1083,6 +1086,7 @@ void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbos
         m_plan_buffer->dump("planes_after_transform");
     }
 
+    LOG(LEVEL) << "] placement " << glm::to_string( placement ) ; 
 }
 
 
