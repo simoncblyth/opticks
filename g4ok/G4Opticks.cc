@@ -103,26 +103,43 @@ std::string G4Opticks::EmbeddedCommandLine(const char* extra1, const char* extra
 {
     const char* ecl  = SSys::getenvvar(OPTICKS_EMBEDDED_COMMANDLINE, "pro") ; 
 
+    char mode = '?' ; 
     if(strcmp(ecl, "pro") == 0)
     {
         ecl = fEmbeddedCommandLine_pro ; 
+        mode = 'P' ; 
     }
     else if(strcmp(ecl, "dev") == 0)
     {
         ecl = fEmbeddedCommandLine_dev ; 
+        mode = 'D' ; 
     } 
     else
     {
-        LOG(LEVEL) << "Using " << OPTICKS_EMBEDDED_COMMANDLINE << " as is " << ecl ; 
+        mode = 'A' ; 
     }
 
     const char* eclx = SSys::getenvvar(OPTICKS_EMBEDDED_COMMANDLINE_EXTRA, "") ; 
 
     std::stringstream ss ; 
     ss << ecl << " " ;
-    if(extra1) ss << " " << extra1 ; 
-    if(extra2) ss << " " << extra2 ; 
-    if(eclx) ss << " " << eclx ; 
+    LOG(LEVEL) << "Using ecl :[" << ecl << "] " << OPTICKS_EMBEDDED_COMMANDLINE << " mode(Pro/Dev/Asis) " << mode ;    ; 
+
+    if(extra1)
+    {
+        ss << " " << extra1 ; 
+        LOG(LEVEL) << "Using extra1 argument :[" << extra1 << "]" ; 
+    }
+    if(extra2)
+    {
+        ss << " " << extra2 ; 
+        LOG(LEVEL) << "Using extra2 argument :[" << extra2 << "]" ; 
+    }
+    if(eclx) 
+    {
+        ss << " " << eclx ; 
+        LOG(LEVEL) << "Using eclx envvar :[" << eclx << "] "  << OPTICKS_EMBEDDED_COMMANDLINE_EXTRA ; 
+    }
     return ss.str();  
 }
 
@@ -830,7 +847,7 @@ void G4Opticks::setSensorAngularEfficiency( const NPY<float>* sensor_angular_eff
 
 void G4Opticks::saveSensorLib(const char* dir, const char* reldir) const 
 {
-    LOG(info) << " saving to " << dir << "/" << reldir  ;  
+    LOG(info) << " saving to " << dir << "/" << ( reldir ? reldir : "" )  ;  
     m_sensorlib->save(dir, reldir ); 
 }
 

@@ -1691,13 +1691,25 @@ NPY<T>* NPY<T>::make_paired_transforms(NPY<T>* src, bool transpose)
      NPY<T>* dst = NPY<T>::make(ni, 2, 4, 4);
      dst->zero();
 
+     bool match = true ; 
+     std::vector<unsigned> mismatch ; 
+
      for(unsigned i=0 ; i < ni ; i++)
      {
          glm::mat4 t = src->getMat4(i);  
-         glm::mat4 v = nglmext::invert_trs( t );
+         glm::mat4 v = nglmext::invert_trs( t, match );
+         if(!match) mismatch.push_back(i); 
 
          dst->setMat4(t, i, 0, transpose );
          dst->setMat4(v, i, 1, transpose );
+     }
+
+     if(mismatch.size() > 0)
+     {
+         LOG(error) << " invert_trs mis-matches found " ;  
+         std::cout << " num_mismatch " << mismatch.size() << " num_items " << ni << "  mismatch indices : " ;
+         for(unsigned i=0 ; i < mismatch.size() ; i++) std::cout << mismatch[i] << " " ; 
+         std::cout << std::endl ; 
      }
      return dst ; 
 }
@@ -1713,16 +1725,30 @@ NPY<T>* NPY<T>::make_triple_transforms(NPY<T>* src)
      NPY<T>* dst = NPY<T>::make(ni, 3, 4, 4);
      dst->zero();
 
+     bool match = true ; 
+     std::vector<unsigned> mismatch ; 
+
      for(unsigned i=0 ; i < ni ; i++)
      {
          glm::mat4 t = src->getMat4(i);  
-         glm::mat4 v = nglmext::invert_trs( t );
+         glm::mat4 v = nglmext::invert_trs( t, match );
          glm::mat4 q = glm::transpose( v ) ;
+
+         if(!match) mismatch.push_back(i); 
 
          dst->setMat4(t, i, 0 );
          dst->setMat4(v, i, 1 );
          dst->setMat4(q, i, 2 );
      }
+
+     if(mismatch.size() > 0)
+     {
+         LOG(error) << " invert_trs mis-matches found " ;  
+         std::cout << " num_mismatch " << mismatch.size() << " num_items " << ni << "  mismatch indices : " ;
+         for(unsigned i=0 ; i < mismatch.size() ; i++) std::cout << mismatch[i] << " " ; 
+         std::cout << std::endl ; 
+     }
+
      return dst ; 
 }
 
@@ -2015,14 +2041,21 @@ Itemwise comparison of array values.
 template <typename T>
 unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, bool dump )
 {
-    LOG(info) << " a " << a->getShapeString(); 
-    LOG(info) << " b " << b->getShapeString(); 
-    assert( a->hasSameShape(b) ); 
+    if(dump)
+    {
+        LOG(info) << " a " << a->getShapeString(); 
+        LOG(info) << " b " << b->getShapeString(); 
+    }
 
+    assert( a->hasSameShape(b) ); 
     unsigned ni = a->getNumItems(); 
     unsigned nv = a->getNumValues(1); 
-    LOG(info) << " ni " << ni << " nv " << nv ; 
-     
+
+    if(dump)
+    {
+        LOG(info) << " ni " << ni << " nv " << nv ; 
+    }     
+
     unsigned mismatch_items(0); 
 
     for(unsigned i=0 ; i < ni ; i++)
@@ -2052,7 +2085,10 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, bool dump )
         }       
         if(mismatch_values > 0) mismatch_items++ ; 
     }
-    LOG(info) << " mismatch_items " << mismatch_items ;
+    if( dump || mismatch_items > 0 )
+    {
+        LOG(info) << " mismatch_items " << mismatch_items ;
+    }
     return mismatch_items ; 
 }
 

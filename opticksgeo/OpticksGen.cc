@@ -188,7 +188,7 @@ void OpticksGen::initFromLegacyGensteps()
     LOG(LEVEL); 
     if(m_ok->isNoInputGensteps() || m_ok->isEmbedded())
     {
-        LOG(warning) << "SKIP as isNoInputGensteps OR isEmbedded  " ; 
+        LOG(error) << "SKIP as isNoInputGensteps OR isEmbedded  " ; 
         return ; 
     } 
 

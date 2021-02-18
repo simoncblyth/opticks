@@ -35,12 +35,24 @@ unsigned SensorLib::getNumSensor() const
 
 void SensorLib::save(const char* dir, const char* reldir) const 
 {
-    LOG(info) << dir << "/" << reldir ; 
+    LOG(info) << dir << "/" << ( reldir ? reldir : "")  ; 
     if(m_sensor_data != NULL)
+    { 
         m_sensor_data->save(dir, reldir, SENSOR_DATA); 
+    }
+    else
+    {
+        LOG(info) << " no m_sensor_data " ;  
+    } 
 
     if(m_sensor_angular_efficiency != NULL)
+    {
         m_sensor_angular_efficiency->save(dir, reldir, SENSOR_ANGULAR_EFFICIENCY );
+    }
+    else
+    {
+        LOG(info) << " no m_sensor_angular_efficiency " ;  
+    }
 }
 
 

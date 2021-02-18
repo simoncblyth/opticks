@@ -57,6 +57,7 @@ struct NPY_API nmat4pair
     nmat4pair( const glm::mat4& transform, const glm::mat4& inverse ) : t(transform), v(inverse) {} ;
     std::string digest();
 
+    bool match ; 
     glm::mat4 t ; 
     glm::mat4 v ; 
 };
@@ -94,11 +95,13 @@ struct NPY_API nmat4triple
     nmat4triple( const glm::mat4& transform ); 
     nmat4triple( const float* data ); 
     nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) 
-         : 
-            t(transform), 
-            v(inverse), 
-            q(inverse_T) 
-         {} ;
+        : 
+        match(true),
+        t(transform), 
+        v(inverse), 
+        q(inverse_T) 
+    {
+    } ;
 
     std::string digest() const ;
 
@@ -114,6 +117,7 @@ struct NPY_API nmat4triple
     bool is_equal_to(const nmat4triple* other, float epsilon=1e-5) const ; 
 
 
+    bool match ; 
     glm::mat4 t ; 
     glm::mat4 v ; 
     glm::mat4 q ; 
@@ -210,7 +214,7 @@ struct NPY_API nglmext
     static bool is_identity(const glm::mat4& t, float eps=1e-5); 
 
 
-    static glm::mat4 invert_trs( const glm::mat4& trs ); 
+    static glm::mat4 invert_trs( const glm::mat4& trs, bool& match ); 
     static glm::mat4 make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal );
     static glm::mat4 make_transform(const std::string& order);
 

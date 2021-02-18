@@ -440,10 +440,17 @@ bool nglmext::is_identity(const glm::mat4& t, float eps)
 }
 
 
+/**
+nglmext::invert_trs
+---------------------
+
+The match bool should return true, when it returns false
+it indicates possible precision problems with the inverse.
+
+**/
 
 
-
-glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
+glm::mat4 nglmext::invert_trs( const glm::mat4& trs, bool& match )
 {
     /**
     Input transforms are TRS (scale first, then rotate, then translate)::
@@ -477,8 +484,10 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
 
     if(!cf.match) 
     {
-        LOG(warning) << cf.desc("ngmext::invert_trs polar_decomposition inverse and straight inverse are mismatched " );
+        LOG(error) << cf.desc("ngmext::invert_trs polar_decomposition inverse and straight inverse are mismatched " );
     }
+
+    match = cf.match ; 
 
     return isirit ; 
 }
@@ -863,26 +872,33 @@ nmat4pair* nmat4pair::product(const std::vector<nmat4pair*>& pairs)
 
 nmat4pair::nmat4pair(const glm::mat4& t_ ) 
      : 
+     match(true),
      t(t_),
-     v(nglmext::invert_trs(t))
+     v(nglmext::invert_trs(t, match))
 {
+     if(!match) LOG(error) << " mis-match " ; 
+
 }
 
 
 nmat4triple::nmat4triple(const float* data ) 
      : 
+     match(true),
      t(glm::make_mat4(data)),
-     v(nglmext::invert_trs(t)),
+     v(nglmext::invert_trs(t, match)),
      q(glm::transpose(v))
 {
+     if(!match) LOG(error) << " mis-match " ; 
 }
 
 nmat4triple::nmat4triple(const glm::mat4& t_ ) 
      : 
+     match(true),
      t(t_),
-     v(nglmext::invert_trs(t)),
+     v(nglmext::invert_trs(t, match)),
      q(glm::transpose(v))
 {
+     if(!match) LOG(error) << " mis-match " ; 
 }
 
 const nmat4triple* nmat4triple::clone() const 
