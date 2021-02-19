@@ -109,7 +109,12 @@ void GPho::setPhotons(const  NPY<float>* photons)
         assert( m_way->hasShape(m_num_photons, 2, 4)); 
         bool dump = false ;
         unsigned mismatch = wayConsistencyCheck(dump); 
-        if(mismatch > 0 ) wayConsistencyCheck(true) ; 
+        if(mismatch > 0 ) 
+        {
+            LOG(error) << " mismatch " << mismatch ;  
+            //wayConsistencyCheck(true) ; 
+            //LOG(error) << " mismatch " << mismatch ;  
+        }
         assert( mismatch == 0 ); 
     }
 
@@ -147,10 +152,11 @@ unsigned GPho::wayConsistencyCheck(bool dump)
     mismatch += mismatch_flags ; 
     mismatch += mismatch_index ; 
 
-    LOG(LEVEL) 
-        << " mismatch_flags " << mismatch_flags
-        << " mismatch_index " << mismatch_index
-        ;
+    if(mismatch > 0)
+        LOG(info) 
+            << " mismatch_flags " << mismatch_flags
+            << " mismatch_index " << mismatch_index
+            ;
 
     return mismatch ; 
 }

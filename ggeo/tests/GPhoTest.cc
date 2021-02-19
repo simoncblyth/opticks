@@ -44,9 +44,18 @@ int main(int argc, char** argv)
 
 
     NPY<float>* ox = NPY<float>::load( ox_path ) ; 
-    if(ox == NULL ) return 0 ; 
+    if(ox == NULL ) 
+    {
+        LOG(error) << " no ox " ;  
+        return 0 ; 
+    }
 
     NPY<float>* wy = NPY<float>::load( wy_path ) ; 
+    if(wy == NULL)
+    {
+        LOG(error) << " no wy " ;  
+    }
+
     ox->setAux(wy); 
 
     LOG(info) 
