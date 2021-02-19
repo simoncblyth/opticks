@@ -75,7 +75,8 @@ void CGDML::read(const char* path_)
 
 G4VPhysicalVolume* CGDML::getWorldVolume() const 
 {
-    return m_parser->GetWorldVolume() ; 
+    const G4String setupName = "Default" ; 
+    return m_parser->GetWorldVolume(setupName) ; 
 }
 
 

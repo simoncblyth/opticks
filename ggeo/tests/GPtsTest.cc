@@ -58,6 +58,7 @@ struct testGPts
     GParts* parts ; 
     GPts*   pts ; 
     unsigned verbosity ; 
+    unsigned num_mismatch_pt ; 
     GParts* parts2 ; 
     std::string path ; 
     int rc ; 
@@ -72,10 +73,12 @@ struct testGPts
         parts(mm->getParts()),
         pts(mm->getPts()),
         verbosity(1), 
-        parts2(GParts::Create( pts, solids)),
+        num_mismatch_pt(0),
+        parts2(GParts::Create( pts, solids, num_mismatch_pt)),
         path(BFile::FormPath("$TMP/ggeo/GPtsTest",BStr::itoa(imm))),
         rc(0)
     {
+        assert( num_mismatch_pt == 0);
         init();
         compare(); 
         save(); 

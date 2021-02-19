@@ -209,7 +209,7 @@ GMergedMesh::mergeVolumeAnalytic
 
 **/
 
-GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids ) // static
+GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt ) // static
 {
     LOG(LEVEL) << "[  deferred creation from GPts" ; 
 
@@ -218,6 +218,10 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids )
     unsigned num_pt = pts->getNumPt(); 
 
     LOG(LEVEL) << " num_pt " << num_pt ; 
+
+    unsigned verbosity = 0 ; 
+
+    std::vector<unsigned> mismatch_pt ; 
 
     for(unsigned i=0 ; i < num_pt ; i++)
     {
@@ -236,14 +240,27 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids )
         LOG(LEVEL) << "[ GParts::Make i " << i << " lvIdx " << lvIdx << " ndIdx " << ndIdx ; 
         GParts* parts = GParts::Make( csg, spec.c_str(), ndIdx ); 
         LOG(LEVEL) << "] GParts::Make i " << i << " lvIdx " << lvIdx << " ndIdx " << ndIdx ; 
-        //parts->setVolumeIndex(ndIdx); 
 
-        // GMergedMesh::mergeVolume
-        // GMergedMesh::mergeVolumeAnalytic
-        parts->applyPlacementTransform( placement ); 
-          
+        unsigned num_mismatch = 0 ; 
+        parts->applyPlacementTransform( placement, verbosity, num_mismatch ); 
+        if(num_mismatch > 0 )
+        {
+            LOG(error) << " pt " << i << " invert_trs num_mismatch : " << num_mismatch ; 
+            mismatch_pt.push_back(i); 
+        }
+
         com->add( parts ); 
     }
+
+    num_mismatch_pt = mismatch_pt.size(); 
+    if(num_mismatch_pt > 0)
+    {
+        LOG(error) << "num_mismatch_pt : " << num_mismatch_pt ; 
+        std::cout << " mismatch_pt indices : " ; 
+        for(unsigned i=0 ; i < num_mismatch_pt ; i++) std::cout << mismatch_pt[i] << " " ; 
+        std::cout << std::endl ; 
+    }
+
     LOG(LEVEL) << "]" ; 
     return com ; 
 }
@@ -1019,17 +1036,30 @@ This gets invoked from GGeo::prepare...GMergedMesh::mergeVolumeAnalytic
 
 **/
 
-void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )
+void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity, unsigned& num_mismatch )
 {
     const float* data = static_cast<float*>(gtransform->getPointer());
     if(verbosity > 2)
     nmat4triple::dump(data, "GParts::applyPlacementTransform gtransform:" ); 
     glm::mat4 placement = glm::make_mat4( data ) ;  
 
-    applyPlacementTransform( placement, verbosity ); 
+    applyPlacementTransform( placement, verbosity, num_mismatch ); 
 }
 
-void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbosity )
+
+
+/**
+GParts::applyPlacementTransform
+---------------------------------
+
+Formerly all geometry that required planes (eg trapezoids) 
+was part of instanced solids... so this was not needed.
+BUT for debugging it is useful to be able to operate in global mode
+whilst testing small subsets of geometry
+
+**/
+
+void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbosity, unsigned& num_mismatch )
 {
     LOG(LEVEL) << "[ placement " << glm::to_string( placement ) ; 
 
@@ -1051,29 +1081,39 @@ void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbos
     if(verbosity > 2)
     nmat4triple::dump(m_tran_buffer,"GParts::applyPlacementTransform before");
 
+
+    std::vector<unsigned> mismatch ;  
+
     for(unsigned i=0 ; i < ni ; i++)
     {
         nmat4triple* tvq = m_tran_buffer->getMat4TriplePtr(i) ;
 
-        const nmat4triple* ntvq = nmat4triple::make_transformed( tvq, placement, reversed, "GParts::applyPlacementTransform" );
+        bool match = true ; 
+        const nmat4triple* ntvq = nmat4triple::make_transformed( tvq, placement, reversed, "GParts::applyPlacementTransform", match );
                               //  ^^^^^^^^^^^^^^^^^^^^^^^ SUSPECT DOUBLE NEGATIVE RE REVERSED  ^^^^^^^
+
+        if(!match) mismatch.push_back(i);   
 
         m_tran_buffer->setMat4Triple( ntvq, i ); 
     }
 
-    if(verbosity > 2)
-    nmat4triple::dump(m_tran_buffer,"GParts::applyPlacementTransform after");
+   
+    num_mismatch = mismatch.size(); 
+
+    if(num_mismatch > 0 || verbosity > 2)
+    {
+        nmat4triple::dump(m_tran_buffer,"GParts::applyPlacementTransform after");
+
+        LOG(info) << " num_mismatch " << num_mismatch ; 
+        std::cout << " mismatch indices : " ; 
+        for(unsigned i=0 ; i < mismatch.size() ; i++) std::cout << mismatch[i] << " " ; 
+        std::cout << std::endl ; 
+
+    }
 
 
     assert(m_plan_buffer->hasShape(-1,4));
     unsigned num_plane = m_plan_buffer->getNumItems();
-
-    // Formerly all geometry that required planes (eg trapezoids) 
-    // was part of instanced solids... so this was not needed.
-    // BUT for debugging it is useful to be able to operate in global mode
-    // whilst testing small subsets of geometry
-    //
-    //if(num_plane > 0 ) assert(0 && "plane placement not implemented" );
 
     if(num_plane > 0) 
     {

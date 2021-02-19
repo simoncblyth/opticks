@@ -817,7 +817,14 @@ unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
 
     bool reverse = true ; // <-- apply transfrom at root of transform hierarchy (rather than leaf)
 
-    const nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse, "NCSG::addUniqueTransform" ) ;
+    bool match = true ; 
+
+    const nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse, "NCSG::addUniqueTransform", match ) ;
+
+    if(!match)
+    {
+        LOG(error) << "matrix inversion precision issue ?" ; 
+    }
 
     /*
     std::cout << "NCSG::addUniqueTransform"

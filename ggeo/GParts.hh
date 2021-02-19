@@ -225,7 +225,7 @@ class GGEO_API GParts {
     public:
       //
         static int     Compare(const GParts* a, const GParts* b, bool dump ); 
-        static GParts* Create(const GPts* pts, const std::vector<const NCSG*>& solids ); 
+        static GParts* Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt  ); 
         static GParts* Make(const npart& pt, const char* spec);
         static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
         static GParts* Make(const NCSG* tree, const char* spec, unsigned ndIdx );
@@ -317,8 +317,8 @@ class GGEO_API GParts {
     public:
         void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
         void setContainingMaterial(const char* material="MineralOil");
-        void applyPlacementTransform(GMatrix<float>* placement, unsigned verbosity=0);
-        void applyPlacementTransform(const glm::mat4& placement, unsigned verbosity=0);
+        void applyPlacementTransform(GMatrix<float>* placement, unsigned verbosity, unsigned& num_mismatch );
+        void applyPlacementTransform(const glm::mat4& placement, unsigned verbosity, unsigned& num_mismatch );
 
         void save(const char* dir);
         void save(const char* dir, const char* rela);

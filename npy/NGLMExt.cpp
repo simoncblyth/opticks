@@ -19,6 +19,7 @@
 
 #include <array>
 #include <iterator>
+#include <csignal>
 
 #include "SDigest.hh"
 #include "NPY.hpp"
@@ -881,24 +882,41 @@ nmat4pair::nmat4pair(const glm::mat4& t_ )
 }
 
 
-nmat4triple::nmat4triple(const float* data ) 
-     : 
-     match(true),
-     t(glm::make_mat4(data)),
-     v(nglmext::invert_trs(t, match)),
-     q(glm::transpose(v))
+
+const plog::Severity nmat4triple::LEVEL = PLOG::EnvLevel("nmat4triple", "DEBUG"); 
+
+
+nmat4triple::nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) 
+    : 
+    match(true),
+    t(transform), 
+    v(inverse), 
+    q(inverse_T) 
 {
-     if(!match) LOG(error) << " mis-match " ; 
+} 
+
+nmat4triple::nmat4triple(const float* data ) 
+    : 
+    match(true),
+    t(glm::make_mat4(data)),
+    v(nglmext::invert_trs(t, match)),
+    q(glm::transpose(v))
+{
+    if(!match) LOG(error) << " mis-match " ; 
 }
 
 nmat4triple::nmat4triple(const glm::mat4& t_ ) 
-     : 
-     match(true),
-     t(t_),
-     v(nglmext::invert_trs(t, match)),
-     q(glm::transpose(v))
+    : 
+    match(true),
+    t(t_),
+    v(nglmext::invert_trs(t, match)),
+    q(glm::transpose(v))
 {
-     if(!match) LOG(error) << " mis-match " ; 
+    if(!match)
+    {
+        LOG(error) << " mis-match " ; 
+        //std::raise(SIGINT); 
+    }
 }
 
 const nmat4triple* nmat4triple::clone() const 
@@ -1081,42 +1099,60 @@ const nmat4triple* nmat4triple::make_identity()
     return new nmat4triple(identity);
 }
 
+/**
+nmat4triple::make_translated
+------------------------------
 
-const nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate, bool reverse, const char* user ) const 
+reverse:true 
+    means the tlate happens at the root 
+
+reverse:false 
+    means the tlate happens at the leaf
+
+**/
+
+const nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate, bool reverse, const char* user, bool& match ) const 
 {
-    // reverse:true means the tlate happens at the root 
-    // reverse:false means the tlate happens at the leaf
-    return make_translated(this, tlate, reverse, user );
+    return make_translated(this, tlate, reverse, user, match );
 }
 
-const nmat4triple* nmat4triple::make_translated(const nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user)
+const nmat4triple* nmat4triple::make_translated(const nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user, bool& match)
 { 
     glm::mat4 tra = glm::translate(glm::mat4(1.f), tlate);
-    return make_transformed(src, tra, reverse, user );
+    return make_transformed(src, tra, reverse, user, match );
 }
 
-const nmat4triple* nmat4triple::make_transformed(const nmat4triple* src, const glm::mat4& txf, bool reverse, const char* /*user*/)
-{
-    // reverse:true means the transform ordering is from leaf to root 
-    // so when wishing to extend the hierarchy with a higher level root transform, 
-    // that means just pushing another transform on the end of the existing vector
+/**
+nmat4triple::make_transformed
+-------------------------------
 
-/*
-    LOG(info) << "nmat4triple::make_transformed" 
-              << " user " << user
-              ;
-*/
+reverse=true
+     means the transform ordering is from leaf to root 
+     so when wishing to extend the hierarchy with a higher level root transform, 
+     that means just pushing another transform on the end of the existing vector
+
+// HMM its confusing to reverse here 
+// because reversal is also done in nmat4triple::product
+// so they will counteract ??
+// Who uses this ?
+
+// used by GMergedMesh::mergeSolidAnalytic/GParts::applyPlacementTransform
+
+**/
+
+const nmat4triple* nmat4triple::make_transformed(const nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user, bool& match) // static
+{
+    LOG(LEVEL) << "[ " << user ; 
 
     nmat4triple perturb( txf );
-    std::vector<const nmat4triple*> triples ; 
+    if(perturb.match == false)
+    {
+        LOG(error) << "perturb.match false : precision issue in inverse ? " ; 
+    }
 
-    // HMM its confusing to reverse here 
-    // because reversal is also done in nmat4triple::product
-    // so they will counteract ??
-    // Who uses this ?
-    
-    // used by GMergedMesh::mergeSolidAnalytic/GParts::applyPlacementTransform
-    //assert(0);
+    match = perturb.match ; 
+
+    std::vector<const nmat4triple*> triples ; 
 
     if(reverse)
     { 
@@ -1130,6 +1166,8 @@ const nmat4triple* nmat4triple::make_transformed(const nmat4triple* src, const g
     }
 
     const nmat4triple* transformed = nmat4triple::product( triples, reverse );  
+
+    LOG(LEVEL) << "] " << user ; 
     return transformed ; 
 }
 

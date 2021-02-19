@@ -1326,7 +1326,14 @@ void GGeo::deferredCreateGParts()
         }
 
         LOG(LEVEL) << "[ GParts::Create i/nmm " << i << "/" << nmm ; 
-        GParts* parts = GParts::Create( pts, solids) ; 
+        unsigned num_mismatch_pt = 0 ; 
+        GParts* parts = GParts::Create( pts, solids, num_mismatch_pt ) ; 
+
+        if(num_mismatch_pt > 0 )
+        {
+            LOG(error) << "num_mismatch_pt " << num_mismatch_pt << " for GMergedMesh i/nmm " << i << "/" << nmm ; 
+        }
+
         LOG(LEVEL) << "] GParts::Create i/nmm " << i << "/" << nmm ; 
 
         parts->setBndLib(m_bndlib); 

@@ -64,6 +64,22 @@ opticksaux-jv5(){ echo $(opticksaux-dir)/$(opticksaux-xpath j1808)_v5.gdml ; }
 opticksaux-jv5-vi(){ vim -R $(opticksaux-jv5) ; }
 opticksaux-jv5-cd(){ cd $(dirname $(opticksaux-jv5)) ; }
 
+opticksaux-j21-version(){ echo v2 ; }
+opticksaux-j21(){ echo $(opticksaux-dir)/$(opticksaux-xpath j2102)_$(opticksaux-j21-version).gdml ; }  
+opticksaux-j21-vi(){ vim -R $(opticksaux-j21) ; }
+opticksaux-j21-cd(){ cd $(dirname $(opticksaux-j21)) ; }
+
+
+opticksaux-j21-notes(){ cat << EON
+see ~/jnu/issues/geocache-j2102-shakedown.rst  
+EON
+}
+opticksaux-j21v1(){ echo $(opticksaux-dir)/$(opticksaux-xpath j2102)_v1.gdml ; }  
+opticksaux-j21v1-vi(){ vim -R $(opticksaux-j21v0) ; }
+opticksaux-j21v1-cd(){ cd $(dirname $(opticksaux-j21v0)) ; }
+
+
+
 opticksaux-dx0(){  echo $(opticksaux-dir)/$(opticksaux-xpath dybx)_v0.gdml ; }
 opticksaux-dx0-vi(){ vim -R $(opticksaux-dx0) ; }
 opticksaux-dx0-cd(){ cd $(dirname $(opticksaux-dx0)) ; }
@@ -81,6 +97,7 @@ EON
 
 opticksaux-xpath(){
    case $1 in 
+       j2102) echo export/juno2102/tds_ngt_pcnk_sycg_202102 ;;  
        j1808) echo export/juno1808/g4_00 ;;  
        dybx)  echo export/DayaBay_VGDX_20140414-1300/g4_00_CGeometry_export ;;
    esac 

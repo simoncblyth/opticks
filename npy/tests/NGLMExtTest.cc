@@ -289,8 +289,12 @@ void test_nmat4triple_make_translated()
     glm::vec3 tlat2(-100,0,0) ; 
 
     bool reverse(true);
-    const nmat4triple* tt1 = tt0.make_translated( tlat2, reverse, "test_nmat4triple_make_translated" );
-    const nmat4triple* tt2 = tt0.make_translated( tlat2, !reverse, "test_nmat4triple_make_translated" );
+
+    bool match = true ; 
+    const nmat4triple* tt1 = tt0.make_translated( tlat2, reverse, "test_nmat4triple_make_translated", match );
+    assert( match == true ); 
+    const nmat4triple* tt2 = tt0.make_translated( tlat2, !reverse, "test_nmat4triple_make_translated", match );
+    assert( match == true ); 
 
     std::cout 
          << std::endl 

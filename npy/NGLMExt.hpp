@@ -65,6 +65,8 @@ struct NPY_API nmat4pair
 
 struct NPY_API nmat4triple
 {
+    static const plog::Severity LEVEL ; 
+
     static const nmat4triple* make_translate(const glm::vec3& tlate);
     static const nmat4triple* make_rotate(   const glm::vec4& trot);
     static const nmat4triple* make_scale(    const glm::vec3& tsca);
@@ -83,25 +85,19 @@ struct NPY_API nmat4triple
     static const nmat4triple* product(const nmat4triple* a, const nmat4triple* b, bool reverse);
     static const nmat4triple* product(const nmat4triple* a, const nmat4triple* b, const nmat4triple* c, bool reverse);
     static const nmat4triple* product(const std::vector<const nmat4triple*>& tt, bool reverse );
-    static const nmat4triple* make_translated(const nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user  );
-    static const nmat4triple* make_transformed(const nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user);
+    static const nmat4triple* make_translated(const nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user, bool& match  );
+    static const nmat4triple* make_transformed(const nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user, bool& match );
     static const nmat4triple* make_identity();
     static void dump( const NPY<float>* buf, const char* msg="nmat4triple::dump");
     static void dump( const float* data4x4, const char* msg="nmat4triple::dump");
 
     const nmat4triple* clone() const ;
-    const nmat4triple* make_translated(const glm::vec3& tlate, bool reverse, const char* user ) const ;
+    const nmat4triple* make_translated(const glm::vec3& tlate, bool reverse, const char* user, bool& match ) const ;
 
     nmat4triple( const glm::mat4& transform ); 
     nmat4triple( const float* data ); 
-    nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) 
-        : 
-        match(true),
-        t(transform), 
-        v(inverse), 
-        q(inverse_T) 
-    {
-    } ;
+    nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) ;
+
 
     std::string digest() const ;
 
