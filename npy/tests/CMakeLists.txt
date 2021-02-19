@@ -154,6 +154,8 @@ set(TEST_SOURCES
 NPYConfigTest.cc
 NBBoxTest.cc
 
+nmat4triple_Test.cc
+
 
 NCSGBSPTest.cc
 NuvTest.cc

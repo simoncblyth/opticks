@@ -48,6 +48,9 @@ struct NSlice ;
 struct nmat4pair ; 
 struct nmat4triple ; 
 
+template <typename T> struct nmat4triple_ ; 
+
+
 class NPYSpec ; 
 class G4StepNPY ; 
 
@@ -360,10 +363,17 @@ class NPY_API NPY : public NPYBase {
        glm::mat4    getMat4(int i, int j=-1) const ;
        glm::mat4*   getMat4Ptr(int i, int j=-1) const ;
 
+       glm::tmat4x4<T> getMat4_(int i, int j=-1) const ;
+
+
        nmat4pair*   getMat4PairPtr(int i) const ;
        void         setMat4Pair(const nmat4pair* mpair, unsigned i );
        nmat4triple* getMat4TriplePtr(int i) const ;
        void         setMat4Triple(const nmat4triple* mpair, unsigned i );
+
+
+       //nmat4triple_<T>* getMat4Triple_Ptr(int i) const ;
+
 
        void         setString( const char* s , unsigned i, unsigned j=0, unsigned k=0 );
        const char*  getString( unsigned i, unsigned j=0, unsigned k=0 );

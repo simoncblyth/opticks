@@ -2814,6 +2814,22 @@ glm::mat4 NPY<T>::getMat4(int i, int j_) const
 }
 
 
+template <typename T> 
+glm::tmat4x4<T> NPY<T>::getMat4_(int i, int j_) const 
+{
+    bool expect = j_ == -1 ? hasItemShape(4,4) : hasItemShape(-1,4,4) ; 
+    if(!expect) LOG(fatal) << "unexpected itemShape, shape: " << getShapeString() << " j_ " << j_  ; 
+    assert(expect);
+
+    int j = j_ == -1 ? 0 : j_ ; 
+
+    const T* vals = getValuesConst(i, j);
+    return glm::make_mat4x4(vals);
+}
+
+
+
+
 
 template <typename T> 
 glm::mat4* NPY<T>::getMat4Ptr(int i, int j_) const 
@@ -2837,6 +2853,7 @@ nmat4pair* NPY<T>::getMat4PairPtr(int i) const
     return new nmat4pair(t, v) ; 
 }
 
+
 template <typename T> 
 nmat4triple* NPY<T>::getMat4TriplePtr(int i) const 
 {
@@ -2848,6 +2865,25 @@ nmat4triple* NPY<T>::getMat4TriplePtr(int i) const
 
     return new nmat4triple(t, v, q) ; 
 }
+
+
+/*
+
+template <typename T> 
+nmat4triple_<T>* NPY<T>::getMat4Triple_Ptr(int i) const 
+{
+    assert(hasShape(-1,3,4,4));
+
+    glm::tmat4x4<T> t = getMat4_(i, 0);   
+    glm::tmat4x4<T> v = getMat4_(i, 1);
+    glm::tmat4x4<T> q = getMat4_(i, 2);
+
+    return new nmat4triple_<T>(t, v, q) ; 
+}
+
+*/
+
+
 
 
 

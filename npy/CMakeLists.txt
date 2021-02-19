@@ -176,6 +176,7 @@ set(SOURCES
     ndeco.cpp
     nmat4pair.cpp
     nmat4triple.cpp
+    nmat4triple_.cpp
 
     NGLMCF.cpp
 
@@ -366,6 +367,7 @@ NGLMExt.hpp
 ndeco.hpp
 nmat4pair.hpp
 nmat4triple.hpp
+nmat4triple_.hpp
 
 
 NGLMCF.hpp
