@@ -22,6 +22,7 @@
 #include "OpticksCSG.h"
 
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "GLMFormat.hpp"
 #include "NNode.hpp"
 #include "NBBox.hpp"

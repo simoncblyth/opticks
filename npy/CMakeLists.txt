@@ -173,6 +173,10 @@ set(SOURCES
     NGPU.cpp
 
     NGLMExt.cpp
+    ndeco.cpp
+    nmat4pair.cpp
+    nmat4triple.cpp
+
     NGLMCF.cpp
 
     Nd.cpp
@@ -359,6 +363,11 @@ NGPU.hpp
 
 
 NGLMExt.hpp
+ndeco.hpp
+nmat4pair.hpp
+nmat4triple.hpp
+
+
 NGLMCF.hpp
 
 NSnapConfig.hpp

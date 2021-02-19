@@ -40,6 +40,17 @@
 #include "GLMFormat.hpp"
 #include "PLOG.hh"
 
+
+template <>
+const char* GLMType<float>::np_dtype = "np.float32" ; 
+
+template <>
+const char* GLMType<double>::np_dtype = "np.float64" ; 
+
+template struct GLMType<float> ;
+template struct GLMType<double>;
+
+
 GLMFormat::GLMFormat(const char* delim, unsigned int prec)
 {
     m_delim = delim ; 
@@ -65,6 +76,7 @@ std::string GLMFormat::format(unsigned int u)
     m_ss << u ; 
     return m_ss.str();
 }
+
 
 
 
@@ -481,6 +493,31 @@ std::string gfromstring(const glm::mat4& m, bool flip)
 
 
 
+template<typename T>
+std::string gfromstring_(const glm::tmat4x4<T>& m, bool flip)
+{
+    std::stringstream ss ; 
+
+    ss << "np.fromstring("  ;
+    ss << "\"" ;
+
+    for(int i=0 ; i < 4 ; i++)
+    for(int j=0 ; j < 4 ; j++)
+        ss << ( flip ? m[j][i] : m[i][j] ) << " " ; 
+        
+    ss << "\"" ;
+    ss << ", dtype=" << GLMType<T>::np_dtype  << ", sep=\" \").reshape(4,4) " ;
+
+    return ss.str();
+}
+
+
+
+
+
+
+
+
 std::string gpresent(const char* label, const glm::mat4& m, unsigned prec, unsigned wid, unsigned lwid, bool flip )
 {
     std::stringstream ss ; 
@@ -491,6 +528,35 @@ std::string gpresent(const char* label, const glm::mat4& m, unsigned prec, unsig
         ss << std::endl ; 
     }
     ss << gfromstring(m, flip) <<  std::endl ; 
+    return ss.str();
+}
+
+
+
+
+NPY_API std::string gpresent__(const char* label, const glm::tmat4x4<float>& m, unsigned prec, unsigned wid, unsigned lwid, bool flip )
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < 4 ; i++)
+    {
+        ss << std::setw(lwid) << ( i == 0 && label ? label  : " " ) ; 
+        for(int j=0 ; j < 4 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[j][i] : m[i][j] ) << " " ; 
+        ss << std::endl ; 
+    }
+    ss << gfromstring_<float>(m, flip) <<  std::endl ; 
+    return ss.str();
+}
+
+NPY_API std::string gpresent__(const char* label, const glm::tmat4x4<double>& m, unsigned prec, unsigned wid, unsigned lwid, bool flip )
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < 4 ; i++)
+    {
+        ss << std::setw(lwid) << ( i == 0 && label ? label  : " " ) ; 
+        for(int j=0 ; j < 4 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[j][i] : m[i][j] ) << " " ; 
+        ss << std::endl ; 
+    }
+    ss << gfromstring_<double>(m, flip) <<  std::endl ; 
     return ss.str();
 }
 
@@ -782,4 +848,6 @@ glm::mat3 gmat3(const std::string& s, bool flip, const char* delim)
 
 
 
+NPY_API std::string gfromstring_(const glm::tmat4x4<float>& m, bool flip) ;
+NPY_API std::string gfromstring_(const glm::tmat4x4<double>& m, bool flip) ;
 

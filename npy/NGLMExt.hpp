@@ -27,6 +27,7 @@
 // trying to fwd declare leads to linker errors for static NPY methods with some tests : G4StepNPYTest.cc, HitsNPYTest.cc see tests/CMakeLists.txt
 //template <typename T> class NPY ; 
 #include "NPY.hpp"
+#include "ndeco.hpp"
 
 #include "plog/Severity.h"
 #include "NGLM.hpp"
@@ -48,79 +49,6 @@ void sincos_(const T angle, T& s, T& c)
 }
 
 
-struct NPY_API nmat4pair 
-{
-    static nmat4pair* product(const std::vector<nmat4pair*>& tt);
-
-    nmat4pair* clone();
-    nmat4pair( const glm::mat4& transform ); 
-    nmat4pair( const glm::mat4& transform, const glm::mat4& inverse ) : t(transform), v(inverse) {} ;
-    std::string digest();
-
-    bool match ; 
-    glm::mat4 t ; 
-    glm::mat4 v ; 
-};
-
-
-struct NPY_API nmat4triple
-{
-    static const plog::Severity LEVEL ; 
-
-    static const nmat4triple* make_translate(const glm::vec3& tlate);
-    static const nmat4triple* make_rotate(   const glm::vec4& trot);
-    static const nmat4triple* make_scale(    const glm::vec3& tsca);
-
-    static const nmat4triple* make_transform( 
-           const float x0, const float y0, const float z0, const float w0,
-           const float x1, const float y1, const float z1, const float w1, 
-           const float x2, const float y2, const float z2, const float w2, 
-           const float x3, const float y3, const float z3, const float w3 
-       );
-
-    static const nmat4triple* make_translate( const float x, const float y, const float z);
-    static const nmat4triple* make_rotate(    const float x, const float y, const float z, const float w);
-    static const nmat4triple* make_scale(     const float x, const float y, const float z);
-
-    static const nmat4triple* product(const nmat4triple* a, const nmat4triple* b, bool reverse);
-    static const nmat4triple* product(const nmat4triple* a, const nmat4triple* b, const nmat4triple* c, bool reverse);
-    static const nmat4triple* product(const std::vector<const nmat4triple*>& tt, bool reverse );
-    static const nmat4triple* make_translated(const nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user, bool& match  );
-    static const nmat4triple* make_transformed(const nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user, bool& match );
-    static const nmat4triple* make_identity();
-    static void dump( const NPY<float>* buf, const char* msg="nmat4triple::dump");
-    static void dump( const float* data4x4, const char* msg="nmat4triple::dump");
-
-    const nmat4triple* clone() const ;
-    const nmat4triple* make_translated(const glm::vec3& tlate, bool reverse, const char* user, bool& match ) const ;
-
-    nmat4triple( const glm::mat4& transform ); 
-    nmat4triple( const float* data ); 
-    nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) ;
-
-
-    std::string digest() const ;
-
-    glm::vec3 apply_transform_t( const glm::vec3& p, const float w=1.0f ) const ;
-    glm::vec3 apply_transform_v( const glm::vec3& p, const float w=1.0f ) const ;
-
-    void apply_transform_t(std::vector<glm::vec3>& dst, const std::vector<glm::vec3>& src, float w=1.0f) const ;
-    void apply_transform_v(std::vector<glm::vec3>& dst, const std::vector<glm::vec3>& src, float w=1.0f) const ;
-
-    glm::vec3 get_translation() const ; 
-    bool is_translation_only(float epsilon=1e-5) const ; 
-    bool is_identity(float epsilon=1e-5) const ; 
-    bool is_equal_to(const nmat4triple* other, float epsilon=1e-5) const ; 
-
-
-    bool match ; 
-    glm::mat4 t ; 
-    glm::mat4 v ; 
-    glm::mat4 q ; 
-};
-
-
-
 struct NPY_API ntransformer
 {
     ntransformer( const glm::mat4& t_, const float w_ ) : t(t_),w(w_) {} ;
@@ -134,25 +62,6 @@ struct NPY_API ntransformer
 
     const glm::mat4 t ; 
     const float w ; 
-};
-
-
-
-struct NPY_API ndeco
-{  
-    glm::mat4 t ; 
-    glm::mat4 r ; 
-    glm::mat4 s ; 
-
-    glm::mat4 it ; 
-    glm::mat4 ir ; 
-    glm::mat4 is ; 
-
-    glm::mat4 rs ;
-
-    glm::mat4 tr ;
-    glm::mat4 trs ;
-    glm::mat4 isirit ;
 };
 
 
@@ -176,6 +85,11 @@ struct NPY_API nglmext
        );
 
     static int HandleDegenerateGaze( glm::vec3& up, const glm::vec3& gaze, const float epsilon, const bool dump ) ; 
+
+
+    static glm::dmat4 upconvert( const glm::mat4& ft );
+    static glm::mat4  downconvert( const glm::dmat4& dt );
+
 
     static glm::mat4 make_yzflip() ;
     static glm::mat4 make_flip(unsigned axa, unsigned axb) ;
@@ -201,8 +115,33 @@ struct NPY_API nglmext
     static float compDiff(const glm::vec3& a , const glm::vec3& b );
     static float compDiff(const glm::vec2& a , const glm::vec2& b );
 
+    template<typename T>
+    static T compDiff_(const glm::tmat4x4<T>& a , const glm::tmat4x4<T>& b );
+
+
+    template<typename T>
+    static T abs_(T v) ;
+
+    template<typename T>
+    static T compDiff2_(const glm::tmat4x4<T>& a , const glm::tmat4x4<T>& b, bool fractional=false, T epsilon=1e-5, T epsilon_translation=1e-3 );
+
+    template<typename T>
+    static T compDiff2_(const T a_     , const T b_    , bool fractional=false, T epsilon=1e-5);
+
+
+
     static glm::mat4 average_to_inverse_transpose( const glm::mat4& m );
-    static void polar_decomposition( const glm::mat4& trs, ndeco& deco, bool verbose=false );
+
+    template<typename T>
+    static glm::tmat4x4<T> average_to_inverse_transpose_( const glm::tmat4x4<T>& m );
+
+
+
+    static void polar_decomposition( const glm::mat4& trs, ndeco& deco, bool verbose );
+
+    template<typename T>
+    static void polar_decomposition_(const glm::tmat4x4<T>& trs, ndeco_<T>& d,  bool verbose ); 
+
     static glm::vec3 pluck_scale( const ndeco& d );
     static bool has_scale( const glm::vec3& scale, float epsilon=1e-3 ); 
 
@@ -211,10 +150,16 @@ struct NPY_API nglmext
 
 
     static glm::mat4 invert_trs( const glm::mat4& trs, bool& match ); 
-    static glm::mat4 make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal );
     static glm::mat4 make_transform(const std::string& order);
 
+    static glm::mat4 make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal );
+    template<typename T>
+    static glm::tmat4x4<T> make_transform_(const std::string& order, const glm::tvec3<T>& tlat, const glm::tvec4<T>& axis_angle, const glm::tvec3<T>& scal );
+
     static float angle_radians(float angle_degrees);
+    template<typename T> 
+    static T angle_radians_(T angle_degrees);
+
     static glm::mat4 make_translate(const glm::vec3& tlat);
     static glm::mat4 make_rotate(const glm::vec4& axis_angle);
     static glm::mat4 make_scale(const glm::vec3& scal);
@@ -243,7 +188,6 @@ struct NPY_API nglmext
 };
 
 
-NPY_API std::ostream& operator<< (std::ostream& out, const nmat4triple& triple); 
 NPY_API std::ostream& operator<< (std::ostream& out, const nmat4pair& pair); 
 
 NPY_API std::ostream& operator<< (std::ostream& out, const glm::mat3& v);

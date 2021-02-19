@@ -30,6 +30,7 @@
 #include "Nd.hpp"
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "NGLMCF.hpp"
 
 #include "PLOG.hh"
@@ -162,7 +163,8 @@ const nmat4triple* nd::make_triple( const float* data)
 
     glm::mat4 T = glm::make_mat4(data) ;
     ndeco d ;
-    nglmext::polar_decomposition( T, d ) ;
+    bool verbose = false ; 
+    nglmext::polar_decomposition( T, d, verbose ) ;
 
     glm::mat4 isirit = d.isirit ; 
     glm::mat4 i_trs = glm::inverse( T ) ; 

@@ -25,6 +25,7 @@
 
 #include "NBox.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "NBBox.hpp"
 
 #include "OPTICKS_LOG.hh"

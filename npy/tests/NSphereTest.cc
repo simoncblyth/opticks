@@ -21,6 +21,7 @@
 
 #include <cstdlib>
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 
 #include "NGenerator.hpp"
 #include "NSphere.hpp"

@@ -62,8 +62,15 @@ class NPY_API GLMFormat {
    private:
        std::ostringstream m_ss  ;
        std::string        m_delim ; 
-
 };
+
+
+template <typename T> 
+struct NPY_API GLMType {
+   static const char* np_dtype ; 
+};
+
+
 
 #include "NPY_TAIL.hh"
 
@@ -98,6 +105,9 @@ NPY_API glm::quat   gquat(const std::string& s );
 NPY_API glm::mat4   gmat4(const std::string& s, bool flip=false, const char* delim=",");
 NPY_API glm::mat3   gmat3(const std::string& s, bool flip=false, const char* delim=",");
 
+
+// not static : these are freestanding functions 
+
 NPY_API std::string gpresent(const glm::ivec4& v, unsigned wid=7);
 NPY_API std::string gpresent(const glm::ivec4& v, unsigned wid_x, unsigned wid_y, unsigned wid_z, unsigned wid_w);
 NPY_API std::string gpresent(const glm::uvec4& v, unsigned wid=7);
@@ -109,6 +119,10 @@ NPY_API std::string gpresent(const glm::vec2& v, unsigned prec=3, unsigned wid=1
 
 NPY_API std::string gfromstring(const glm::mat4& m, bool flip=false) ;
 
+template<typename T>
+NPY_API std::string gfromstring_(const glm::tmat4x4<T>& m, bool flip=false) ; 
+
+
 NPY_API std::string gpresent(const char* label, const glm::mat4& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10, bool flip=false );
 NPY_API std::string gpresent(const char* label, const glm::mat3& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10, bool flip=false );
 
@@ -119,6 +133,12 @@ NPY_API std::string gpresent_(const char* label, const glm::vec4& m, unsigned pr
 
 NPY_API std::string gpresent(const char* label, const glm::vec3& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10 );
 NPY_API std::string gpresent(const char* label, const glm::ivec3& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10 );
+
+
+NPY_API std::string gpresent__(const char* label, const glm::tmat4x4<float>& m,  unsigned prec=3, unsigned wid=7, unsigned lwid=10, bool flip=false );
+NPY_API std::string gpresent__(const char* label, const glm::tmat4x4<double>& m, unsigned prec=4, unsigned wid=8, unsigned lwid=11, bool flip=false );
+
+
 
 
 

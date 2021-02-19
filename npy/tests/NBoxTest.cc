@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cfloat>
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 
 #include "GLMFormat.hpp"
 #include "NGenerator.hpp"

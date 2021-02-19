@@ -29,6 +29,7 @@
 #include "BMeta.hh"
 
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "GLMFormat.hpp"
 
 

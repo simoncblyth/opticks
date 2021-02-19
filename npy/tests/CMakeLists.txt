@@ -132,6 +132,7 @@ NField3Test.cc
 NTreeToolsTest.cc
 
 NGLMExtTest.cc
+NGLMExt2Test.cc
 
 
 NLoadCheck.cc

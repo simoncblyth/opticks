@@ -25,6 +25,7 @@
 // npy-
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "GLMFormat.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"

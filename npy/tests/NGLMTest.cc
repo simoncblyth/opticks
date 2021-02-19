@@ -22,6 +22,7 @@
 #include "NGLM.hpp"
 
 #include "NGLMExt.hpp"
+#include "nmat4pair.hpp"
 #include "GLMFormat.hpp"
 
 #include "NPY.hpp"
@@ -292,115 +293,6 @@ void test_compDiff_vec3()
 
 
 
-/*
-
-PBRT 2nd Edition, p97
-
-Next we’d like to extract the pure rotation component of M. We’ll use a
-technique called polar decomposition to do this. It can be shown that the polar
-decomposition of a matrix M into rotation R and scale S can be computed by
-successively averaging M to its inverse transpose
-
-... if M is a pure rotation, then averaging it with its inverse transpose 
-will leave it unchanged, since its inverse is equal to its transpose.
-
-*/
-
-
-
-void test_polar_decomposition_pluck_scale()
-{
-    LOG(info) ;
- 
-    glm::vec3 tla(10,0,10);
-    glm::vec4 rot(1,1,1,45);   // 45 degrees about some axes
-    glm::vec3 sca(1,2,3);
-
-    glm::mat4 s   = nglmext::make_transform("s", tla, rot, sca);
-    glm::mat4 r   = nglmext::make_transform("r", tla, rot, sca);
-    glm::mat4 t   = nglmext::make_transform("t", tla, rot, sca);
-    glm::mat4 trs = nglmext::make_transform("trs", tla, rot, sca);
-
-    ndeco d ;
-    nglmext::polar_decomposition( trs, d );
-
-    std::cout << gpresent( "trs", trs ) << std::endl ;
-    std::cout << gpresent( "d.trs", d.trs ) << std::endl ;
-    std::cout << std::endl; 
-
-    std::cout << gpresent( "s", s ) << std::endl ;
-    std::cout << gpresent( "d.s", d.s ) << std::endl ;
-    std::cout << gpresent( "d.is", d.is ) << std::endl ;
-    std::cout << std::endl; 
-
-    std::cout << gpresent( "r", r ) << std::endl ;
-    std::cout << gpresent( "d.r", d.r ) << std::endl ;
-    std::cout << gpresent( "d.ir", d.ir ) << std::endl ;
-    std::cout << std::endl; 
-
-    std::cout << gpresent( "t", t ) << std::endl ;
-    std::cout << gpresent( "d.t", d.t ) << std::endl ;
-    std::cout << gpresent( "d.it", d.it ) << std::endl ;
-    std::cout << std::endl; 
-
-
-    glm::vec3 dsca = nglmext::pluck_scale( d ); 
-    std::cout << gpresent( "dsca", dsca ) << std::endl ;
-
-    bool has_scale = nglmext::has_scale( dsca ); 
-    std::cout << " has_scale " << has_scale << std::endl ; 
-
-
-}
-
-
-
-void test_polar_decomposition_trs()
-{
-    LOG(info) << "test_polar_decomposition_trs" ; 
-
-    glm::vec3 tla(0,0,100);
-    glm::vec4 rot(0,0,1,45);
-    glm::vec3 sca(2.f);
-
-    glm::mat4 s   = nglmext::make_transform("s", tla, rot, sca);
-    glm::mat4 r   = nglmext::make_transform("r", tla, rot, sca);
-    glm::mat4 t   = nglmext::make_transform("t", tla, rot, sca);
-    glm::mat4 trs = nglmext::make_transform("trs", tla, rot, sca);
-
-    ndeco d ;
-    nglmext::polar_decomposition( trs, d );
-
-    std::cout << gpresent( "trs", trs ) << std::endl ;
-    std::cout << gpresent( "d.trs", d.trs ) << std::endl ;
-    std::cout << std::endl; 
-
-    std::cout << gpresent( "s", s ) << std::endl ;
-    std::cout << gpresent( "d.s", d.s ) << std::endl ;
-    std::cout << gpresent( "d.is", d.is ) << std::endl ;
-    std::cout << std::endl; 
-
-    std::cout << gpresent( "r", r ) << std::endl ;
-    std::cout << gpresent( "d.r", d.r ) << std::endl ;
-    std::cout << gpresent( "d.ir", d.ir ) << std::endl ;
-    std::cout << std::endl; 
-
-    std::cout << gpresent( "t", t ) << std::endl ;
-    std::cout << gpresent( "d.t", d.t ) << std::endl ;
-    std::cout << gpresent( "d.it", d.it ) << std::endl ;
-    std::cout << std::endl; 
-
-    glm::mat4 i_trs = glm::inverse(d.trs);
-
-    std::cout << gpresent( "i_trs", i_trs ) << std::endl ;
-    std::cout << gpresent( "d.isirit", d.isirit ) << std::endl ;
-
-    glm::mat4 i_trs_x_trs = i_trs * trs ;  
-    std::cout << gpresent( "i_trs_x_trs", i_trs_x_trs ) << std::endl ;
-
-    glm::mat4 isirit_x_trs = d.isirit * trs ;  
-    std::cout << gpresent( "isirit_x_trs", isirit_x_trs ) << std::endl ;
-}
 
 /*
 /usr/local/opticks/externals/glm/glm-0.9.6.3/glm/detail/type_mat4x4.inl
@@ -515,7 +407,8 @@ void test_transform_normal()
     glm::mat4 trs = nglmext::make_transform("trs", tla, rot, sca);
 
     ndeco d ;
-    nglmext::polar_decomposition( trs, d );
+    bool verbose = true ; 
+    nglmext::polar_decomposition( trs, d, verbose );
 
 
     transform_normal( glm::vec3(1,0,0) , trs, d.isirit, true );
@@ -530,6 +423,9 @@ void test_transform_normal()
     // when the normal has some component in the scaled direction the 
     // and there is some translation getting stiff in the w ?
 }
+
+
+
 
 
 void test_mix()
@@ -564,7 +460,6 @@ int main(int argc, char** argv)
     //test_decompose_tr();
     test_compDiff();
     test_dump_trs();
-    test_polar_decomposition_trs();
 
     test_order();
 
@@ -578,8 +473,7 @@ int main(int argc, char** argv)
     test_linearRand();
 */
 
-    test_polar_decomposition_pluck_scale();
-    //test_compDiff_vec3();
+    test_compDiff_vec3();
 
 
     return 0 ; 

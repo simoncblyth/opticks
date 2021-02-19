@@ -22,6 +22,7 @@
 
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include <glm/gtx/component_wise.hpp> 
 #include "NConvexPolyhedron.hpp"
 #include "Nuv.hpp"

@@ -24,6 +24,7 @@
 #include "NSolid.hpp"
 
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "GLMPrint.hpp"
 #include "NTorus.hpp"
 #include "NSphere.hpp"

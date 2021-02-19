@@ -19,6 +19,7 @@
 
 
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include <glm/gtx/component_wise.hpp> 
 #include "Nuv.hpp"
 #include "NSlab.hpp"

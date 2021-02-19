@@ -25,6 +25,7 @@
 
 #include "NPlane.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 

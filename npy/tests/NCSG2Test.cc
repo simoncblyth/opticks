@@ -29,6 +29,7 @@
 #include "NNode.hpp"
 #include "NBBox.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "NQuad.hpp"
 #include "GLMFormat.hpp"
 

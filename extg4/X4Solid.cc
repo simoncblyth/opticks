@@ -49,6 +49,7 @@
 #include "OpticksCSG.h"
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "NGLM.hpp"
 #include "NHyperboloid.hpp"
 #include "NTorus.hpp"

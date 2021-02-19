@@ -24,6 +24,7 @@
 #include <cstring>
 
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 
 // sysrap-
 #include "OpticksCSG.h"

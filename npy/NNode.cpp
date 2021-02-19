@@ -29,6 +29,7 @@
 
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
 
@@ -2062,7 +2063,7 @@ bool nnode::is_ellipsoid(bool verbose) const
 
    
     ndeco d ;
-    nglmext::polar_decomposition( transform->t, d );
+    nglmext::polar_decomposition( transform->t, d, verbose );
 
     glm::vec3 dsca = nglmext::pluck_scale( d ); 
 
@@ -2110,7 +2111,8 @@ void nnode::reconstruct_ellipsoid( glm::vec3& axes, glm::vec2& zcut, glm::mat4& 
     //print(txf->t , "t" ) ; 
 
     ndeco d ;
-    nglmext::polar_decomposition( txf->t, d ); 
+    bool verbose = false ; 
+    nglmext::polar_decomposition( txf->t, d, verbose ); 
     //print(d.t , "t" ) ; 
     //print(d.r , "r" ) ; 
     //print(d.s , "s" ) ; 

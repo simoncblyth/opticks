@@ -33,6 +33,7 @@
 #include "NPYSpecList.hpp"
 #include "NPY.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "NCSGData.hpp"
 #include "GLMFormat.hpp"
 

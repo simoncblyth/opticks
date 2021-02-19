@@ -635,7 +635,8 @@ geocache-dx1-keydir(){ OPTICKS_KEY=$(geocache-dx1-key) geocache-keydir ; }
 
 geocache-j21-env()
 {
-   export GParts=INFO
+   unset GParts 
+   #export GParts=INFO
 }
 
 geocache-j21-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-j21) --geocenter --noviz $* ; }     

@@ -20,6 +20,7 @@
 
 #include "NPrimitives.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "NNode.hpp"
 
 #include "OPTICKS_LOG.hh"

@@ -34,7 +34,11 @@ namespace fs = boost::filesystem;
 
 #include "NSlice.hpp"
 #include "NGLM.hpp"
+
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
+#include "nmat4pair.hpp"
+
 #include "NPYSpec.hpp"
 #include "NPY.hpp"
 

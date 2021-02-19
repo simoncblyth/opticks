@@ -29,6 +29,7 @@ NBBoxTest /tmp/blyth/opticks/tboolean-csg-two-box-minus-sphere-interlocked-py-/1
 #include "SVec.hh"
 
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "GLMFormat.hpp"
 
 #include "NPY.hpp"

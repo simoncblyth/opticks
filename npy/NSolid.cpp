@@ -19,6 +19,7 @@
 
 
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "NZSphere.hpp"
 #include "NSphere.hpp"
 #include "NCylinder.hpp"

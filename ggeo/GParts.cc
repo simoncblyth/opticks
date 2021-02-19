@@ -35,6 +35,7 @@
 #include "NCSG.hpp"
 #include "NBBox.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "NPart.hpp"

@@ -25,6 +25,7 @@
 #include "GLMFormat.hpp"
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
 #include <glm/gtx/component_wise.hpp>
 #include "NBBox.hpp"
 #include "NPoint.hpp"

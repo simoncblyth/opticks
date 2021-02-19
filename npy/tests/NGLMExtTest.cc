@@ -23,6 +23,8 @@
 #include <string>
 
 #include "NGLMExt.hpp"
+#include "nmat4triple.hpp"
+#include "nmat4pair.hpp"
 #include "GLMFormat.hpp"
 
 #include <glm/gtc/epsilon.hpp>

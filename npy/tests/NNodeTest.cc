@@ -19,6 +19,8 @@
 
 
 #include "NGLMExt.hpp"
+#include "nmat4pair.hpp"
+#include "nmat4triple.hpp"
 #include "GLMFormat.hpp"
 
 #include "NNode.hpp"
