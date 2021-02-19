@@ -150,13 +150,25 @@ struct NPY_API nglmext
 
 
     static glm::mat4 invert_trs( const glm::mat4& trs, bool& match ); 
+
+    template<typename T>
+    static glm::tmat4x4<T> invert_trs_( const glm::tmat4x4<T>& trs, bool& match ); 
+
     static glm::mat4 make_transform(const std::string& order);
 
     static glm::mat4 make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal );
+
     template<typename T>
     static glm::tmat4x4<T> make_transform_(const std::string& order, const glm::tvec3<T>& tlat, const glm::tvec4<T>& axis_angle, const glm::tvec3<T>& scal );
 
+    template<typename T>
+    static glm::tmat4x4<T> make_transform_(const char* s, char delim=' '); 
+
+    template<typename T>
+    static T ato_( const char* a ) ;
+
     static float angle_radians(float angle_degrees);
+
     template<typename T> 
     static T angle_radians_(T angle_degrees);
 

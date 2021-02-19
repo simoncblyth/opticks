@@ -523,37 +523,60 @@ bool nglmext::is_identity(const glm::mat4& t, float eps)
 nglmext::invert_trs
 ---------------------
 
+Input transforms are TRS (scale first, then rotate, then translate)::
+
+      T*R*S*v
+
+invert by dis-membering trs into rs and t by inspection 
+then extract the r by polar decomposition, ie by 
+iteratively averaging with the inverse transpose until 
+the iteration stops changing much ... at which point
+are left with the rotation portion
+
+Then separately transpose the rotation,
+negate the translation and reciprocate the scaling 
+and multiply in reverse order
+
+      IS*IR*IT
+
+The result should be close to directly taking 
+the inverse and has advantage that it tests the form 
+of the transform.
+
 The match bool should return true, when it returns false
 it indicates possible precision problems with the inverse.
 
 **/
 
 
+template<typename T> 
+glm::tmat4x4<T> nglmext::invert_trs_( const glm::tmat4x4<T>& trs, bool& match )
+{
+    bool verbose = false ; 
+    ndeco_<T> d ;
+    polar_decomposition_( trs, d, verbose) ;
+    glm::tmat4x4<T> isirit = d.isirit ; 
+    glm::tmat4x4<T> i_trs = glm::inverse( trs ) ; 
+
+    NGLMCF_<T> cf(isirit, i_trs );
+
+    if(!cf.match) 
+    {
+        LOG(error) << cf.desc("ngmext::invert_trs_ polar_decomposition inverse and straight inverse are mismatched " );
+    }
+
+    match = cf.match ; 
+
+    return isirit ; 
+}
+
+
+
+
+
+
 glm::mat4 nglmext::invert_trs( const glm::mat4& trs, bool& match )
 {
-    /**
-    Input transforms are TRS (scale first, then rotate, then translate)::
-
-          T*R*S*v
-
-    invert by dis-membering trs into rs and t by inspection 
-    then extract the r by polar decomposition, ie by 
-    iteratively averaging with the inverse transpose until 
-    the iteration stops changing much ... at which point
-    are left with the rotation portion
-
-    Then separately transpose the rotation,
-    negate the translation and reciprocate the scaling 
-    and multiply in reverse order
-
-          IS*IR*IT
-
-    The result should be close to directly taking 
-    the inverse and has advantage that it tests the form 
-    of the transform.
- 
-    **/
-
     bool verbose = false ; 
     ndeco d ;
     polar_decomposition( trs, d, verbose) ;
@@ -871,6 +894,34 @@ glm::tmat4x4<T> nglmext::make_transform_(const std::string& order, const glm::tv
     return mat  ; 
 }
 
+template<typename T>
+glm::tmat4x4<T> nglmext::make_transform_(const char* line, char delim )
+{
+    std::vector<T> vv ; 
+    std::stringstream ss(line); 
+    std::string s;
+    while (std::getline(ss, s, delim))
+    {
+        T v = ato_<T>(s.c_str()) ; 
+        //std::cout << s << " " << std::fixed << std::setw(10) << std::setprecision(6) << v << std::endl ; 
+        vv.push_back(v) ; 
+    }
+    assert( vv.size() == 16 ); 
+
+    glm::tmat4x4<T> t = glm::make_mat4x4(vv.data()) ;  
+    return t ; 
+}
+ 
+
+template<typename T>
+T nglmext::ato_( const char* a ) 
+{
+    std::string s(a);
+    std::istringstream iss(s);
+    T t ; 
+    iss >> t ; 
+    return t ; 
+}
 
 
 
@@ -1106,6 +1157,16 @@ template NPY_API void nglmext::polar_decomposition_( const glm::tmat4x4<double>&
 template NPY_API glm::tmat4x4<float> nglmext::make_transform_(const std::string& order, const glm::tvec3<float>& tlat, const glm::tvec4<float>& axis_angle, const glm::tvec3<float>& scal );
 template NPY_API glm::tmat4x4<double> nglmext::make_transform_(const std::string& order, const glm::tvec3<double>& tlat, const glm::tvec4<double>& axis_angle, const glm::tvec3<double>& scal );
 
+template NPY_API glm::tmat4x4<float> nglmext::make_transform_(const char* s, char delim=' '); 
+template NPY_API glm::tmat4x4<double> nglmext::make_transform_(const char* s, char delim=' '); 
+
 template NPY_API float nglmext::compDiff_(const glm::tmat4x4<float>& a , const glm::tmat4x4<float>& b );
 template NPY_API double nglmext::compDiff_(const glm::tmat4x4<double>& a , const glm::tmat4x4<double>& b );
+
+template NPY_API glm::tmat4x4<float>  nglmext::invert_trs_( const glm::tmat4x4<float>& trs, bool& match ); 
+template NPY_API glm::tmat4x4<double> nglmext::invert_trs_( const glm::tmat4x4<double>& trs, bool& match ); 
+
+template NPY_API float nglmext::ato_( const char* a ) ;
+template NPY_API double nglmext::ato_( const char* a ) ;
+
 

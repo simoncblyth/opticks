@@ -5,7 +5,7 @@
 #include "GLMFormat.hpp"
 #include "OPTICKS_LOG.hh"
 
-void test_d()
+void test_make_translate_d()
 {
     LOG(info) ; 
     double x = 1. ; 
@@ -16,7 +16,7 @@ void test_d()
     std::cout << *t << std::endl ; 
 }
 
-void test_f()
+void test_make_translate_f()
 {
     LOG(info) ; 
     float x = 1.f ; 
@@ -33,8 +33,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    test_d();
-    test_f();
+    test_make_translate_d();
+    test_make_translate_f();
 
     return 0 ; 
 

@@ -171,13 +171,50 @@ void test_polar_decomposition_trs_()
 template void test_polar_decomposition_trs_<float>() ; 
 template void test_polar_decomposition_trs_<double>() ; 
 
+
+template<typename T>
+void test_make_transform_()
+{
+    const char* s = "0.368736 0.5 0.783603 0 0.21289 -0.866025 0.452414 0 0.904827 1.58207e-15 -0.425779 0 -0.000488281 -1.27856e-11 18980.7 1" ; 
+    std::cout << " s " << s << std::endl ;  
+    glm::tmat4x4<T> t = nglmext::make_transform_<T>(s); 
+    std::cout << gpresent__("t", t ) << std::endl ; 
+}
+
+template void test_make_transform_<float>() ;
+template void test_make_transform_<double>() ;
+
+template<typename T>
+void test_invert_trs_()
+{
+    const char* s = "0.368736 0.5 0.783603 0 0.21289 -0.866025 0.452414 0 0.904827 1.58207e-15 -0.425779 0 -0.000488281 -1.27856e-11 18980.7 1" ; 
+    glm::tmat4x4<T> t = nglmext::make_transform_<T>(s); 
+    std::cout << gpresent__("t", t ) << std::endl ; 
+
+    bool match = true ; 
+    glm::tmat4x4<T> v = nglmext::invert_trs_<T>( t, match ); 
+    std::cout << " match " << match << std::endl ; 
+
+    std::cout << gpresent__("v", v ) << std::endl ; 
+}
+
+template void test_invert_trs_<float>() ;
+template void test_invert_trs_<double>() ;
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
+    
+    //test_polar_decomposition_trs();
+    //test_polar_decomposition_trs_<float>();
+    //test_polar_decomposition_trs_<double>();
 
-    test_polar_decomposition_trs();
-    test_polar_decomposition_trs_<float>();
-    test_polar_decomposition_trs_<double>();
+    //test_make_transform_<float>(); 
+    //test_make_transform_<double>(); 
+
+    test_invert_trs_<float>(); 
+    test_invert_trs_<double>(); 
 
     return 0 ; 
 }

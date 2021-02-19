@@ -49,3 +49,25 @@ struct NPY_API NGLMCF
 
 
 
+template <typename T>
+struct NPY_API NGLMCF_
+{
+    const glm::tmat4x4<T>& A ; 
+    const glm::tmat4x4<T>& B ; 
+
+    T epsilon_translation ; 
+    T epsilon ; 
+    T diff ; 
+    T diff2 ; 
+    T diffFractional ;
+    T diffFractionalMax ;
+    bool match ;
+ 
+    NGLMCF_( const glm::tmat4x4<T>& A_, const glm::tmat4x4<T>& B_ ) ;
+    std::string desc(const char* msg="NGLMCF_::desc"); 
+
+};
+
+
+
+
