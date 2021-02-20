@@ -10,6 +10,14 @@ Progress
        :depth: 3
 
 
+
+2021 Jan
+------------
+
+* compiletime -> runtime control for way data and angular efficiencies 
+
+
+
 2020 Dec : tidy up in prep for release candidates, remove old externals, G4 10.6 tests reveals Geant4 bug, way buffer for hit completion 
 -------------------------------------------------------------------------------------------------------------------------------------------
 

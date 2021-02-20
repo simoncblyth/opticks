@@ -843,6 +843,7 @@ void G4Opticks::setSensorAngularEfficiency( const NPY<float>* sensor_angular_eff
 {
     assert( m_sensorlib ); 
     m_sensorlib->setSensorAngularEfficiency( sensor_angular_efficiency ); 
+    m_ok->setAngularEnabled(true);   // see notes/issues/runtime_angular_control.rst
 }
 
 void G4Opticks::saveSensorLib(const char* dir, const char* reldir) const 

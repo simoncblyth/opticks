@@ -907,6 +907,7 @@ GPropertyLib::addSensorIndex
 ------------------------------
 
 Canonically invoked from GSurfaceLib::collectSensorIndices
+based on finding non-zero EFFICIENCY property.
 
 **/
 void GPropertyLib::addSensorIndex(unsigned index)

@@ -58,6 +58,16 @@ GNodeLib* GNodeLib::Load(Opticks* ok)  // static
     return new GNodeLib(ok, loading); 
 }
 
+
+/**
+GNodeLib::GNodeLib live precache ctor
+--------------------------------------
+
+The content arrays all start with zero items. These arrays 
+are subsequently populated by GNodeLib::addVolume calls. 
+
+**/
+
 GNodeLib::GNodeLib(Opticks* ok)  
     :
     m_ok(ok),
@@ -82,6 +92,14 @@ GNodeLib::GNodeLib(Opticks* ok)
     LOG(LEVEL) << "created" ; 
     assert( m_loaded == false ); 
 }
+
+/**
+GNodeLib::GNodeLib loaded postcache ctor
+------------------------------------------
+
+Content arrays all loaded from files. 
+
+**/
 
 GNodeLib::GNodeLib(Opticks* ok, bool loading)
     :

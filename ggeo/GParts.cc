@@ -200,6 +200,11 @@ in a deferred postcache manner using NCSG solids persisted with GMeshLib
 and the requisite GParts arguments (spec, placement transforms) persisted by GPts 
 together with the GGeoLib merged meshes.  
 
+Note that GParts::applyPlacementTransform is applied to each individual 
+GParts prior to combination into a composite GParts using the placement 
+transform collected into the GPt objects transported via GPts.
+
+
 GMergedMesh::mergeVolume
 GMergedMesh::mergeVolumeAnalytic
      combining and applying placement transform

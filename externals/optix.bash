@@ -37,6 +37,29 @@ install and you should be sure to understand what they are doing before running 
 because they do not get run often and are liable to become stale for new optix releases.
 
 
+Old Paper that describes OptiX execution model and fine-grained scheduling 
+-----------------------------------------------------------------------------
+
+* https://casual-effects.com/research/Parker2013GPURayTracing/Parker2013GPURayTracing.pdf
+
+
+:google:`ray tracing instancing` looking for a good description
+-------------------------------------------------------------------
+
+Shirley chapter 13 : detailing ray tracing instancing in section 13.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://graphics.cs.wisc.edu/WP/cs559-fall2016/files/2016/12/shirley_chapter_13.pdf
+* ~/opticks_refs/shirley_chapter_13.pdf
+
+
+* https://kadircenk.com/blog/trace-the-ray-part-3-transformations-instancing-distribution-ray-tracing/
+
+
+
+
+
+
 See Also
 ------------
 

@@ -55,7 +55,6 @@
 #include "BTimeStamp.hh"
 #include "BOpticksKey.hh"
 
-class NSensor ; 
 
 #include "NXform.hpp"  // header with the implementation
 template struct nxform<X4Nd> ; 
@@ -1049,24 +1048,29 @@ X4PhysicalVolume::convertNode
 
 * suspect the parallel tree is for gltf creation only ?
 
-* observe the NSensor is always NULL here 
-
 * convertNode is hot code : should move whatever possible elsewhere 
 
 
-Doing GParts::Make at node level is very repetitive, think 300,000 nodes for JUNO
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+node/pv level vs shape/lv level
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Note that boundary name is a node level thing, not mesh level : so are forced to 
-do GParts::Make at node level 
+There are many more nodes/pv(eg 300,000 for JUNO) than there are mesh/lv/shapes (eg ~200 for JUNO)  
+so it is beneficial to minimize what is done at node level. Whatever can be 
+done at mesh/lv/shape level should be done there.
+
+* boundary and boundaryName are node level things as they require the node pv and parent pv to form them
+* GParts::Make is technically a node level thing because it needs the boundaryName but want 
+  to avoid doing this rather expensive processing here 
+
+* solution is light weight GPt which collects the arguments needed for GParts::Make allowing 
+  deferred postcache GParts::Create from persisted GPts
 
 
-Can GParts stuff not needing the boundary be done elsewhere ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sensor decision
+~~~~~~~~~~~~~~~~~
 
-Actually GPt/GPts may provide a way of avoiding doing GParts::Make here, 
-instead the arguments are collected allowing deferred postcache GParts::Create 
-from persisted GPts
+* sensor indices are assigned to each GVolume based on ``GBndLib::isSensorBoundary(boundary)``
+
 
 
 **/
@@ -1121,7 +1125,14 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     float t10 = BTimeStamp::RealTime(); 
 #endif
 
-    GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ;  // HUH: no placement transform here ?
+    GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundaryName.c_str() )  ;  
+
+    //
+    // Q: where is the GPt placement transform set ?
+    // A: by GMergedMesh::mergeVolume/GMergedMesh::mergeVolumeAnalytic 
+    //    using a base relative or global transform depending on ridx
+    //
+
 
     glm::mat4 xf_local_t = X4Transform3D::GetObjectTransform(pv);  
 
@@ -1227,7 +1238,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
                  ; 
 
 
-    bool is_sensor = m_blib->isSensorBoundary(boundary) ; 
+    ///////// sensor decision for the volume happens here  ////////////////////////
+    //////// TODO: encapsulate into a GBndLib::formSensorIndex ? 
+
+    bool is_sensor = m_blib->isSensorBoundary(boundary) ; // this means that isurf/osurf has non-zero EFFICIENCY property 
     unsigned sensorIndex = GVolume::SENSOR_UNSET ; 
     if(is_sensor)
     {
@@ -1235,8 +1249,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
         m_blib->countSensorBoundary(boundary); 
     }
     volume->setSensorIndex(sensorIndex);   // must set to GVolume::SENSOR_UNSET for non-sensors, for sensor_indices array  
-    volume->setSelected( selected );
 
+    ///////////////////////////////////////////////////////////////////////////
+
+    volume->setSelected( selected );
     volume->setLevelTransform(ltransform);
     volume->setLocalTransform(ltriple);
     volume->setGlobalTransform(gtriple);

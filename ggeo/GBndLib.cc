@@ -564,6 +564,15 @@ void GBndLib::getBnd(int& omat, int& osur, int& isur, int& imat, unsigned bounda
 }
 
 
+/**
+GBndLib::isSensorBoundary
+--------------------------
+
+Canonically invoked from X4PhysicalVolume::convertNode 
+
+
+**/
+
 bool GBndLib::isSensorBoundary(unsigned boundary) const 
 {
     const guint4& bnd = m_bnd[boundary];
