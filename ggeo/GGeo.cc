@@ -1348,8 +1348,17 @@ void GGeo::deferredCreateGParts()
     LOG(LEVEL) << "]" ; 
 }
 
+GParts* GGeo::getCompositeParts(unsigned index) const
+{
+    GGeoLib* geolib = getGeoLib() ;
+    return geolib->getCompositeParts(index) ; 
+}
 
-
+void GGeo::dumpParts(const char* msg) const 
+{
+    GGeoLib* geolib = getGeoLib() ;
+    geolib->dumpParts(msg) ; 
+}
 
 
 GMergedMesh* GGeo::makeMergedMesh(unsigned int index, const GNode* base, const GNode* root)

@@ -29,6 +29,13 @@ no separate install needed. Any gets done below
 are just for the documentation and source/examples perusal.
 
 
+Stream Compaction paper claiming to have algorithm faster than Thrust
+-------------------------------------------------------------------------
+
+* http://www.ijnc.org/index.php/ijnc/article/view/151
+* ~/opticks_refs/efficient_algorithms_for_stream_compaction_on_GPUs_151-202-1-PB.pdf.pdf
+
+
 Guides
 ---------
 

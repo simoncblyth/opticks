@@ -234,6 +234,9 @@ class GGEO_API GParts {
         static GParts* Combine(GParts* onesub );   // for consistent handling between 1 and many 
     public:
         const std::vector<GParts*>& getSubs() const ;
+        unsigned getNumSubs() const ; 
+        GParts*  getSub(unsigned i) const ; 
+
     public:
         GParts(GBndLib* bndlib=NULL);
         GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);

@@ -106,6 +106,32 @@ GMergedMesh* GGeoLib::getMergedMesh(unsigned index) const
     return mm ; 
 }
 
+GParts* GGeoLib::getCompositeParts(unsigned index) const 
+{
+    GMergedMesh* mm = getMergedMesh(index);
+    return mm->getParts();  
+}
+
+void GGeoLib::dumpParts(const char* msg) const
+{
+    unsigned nmm = getNumMergedMesh(); 
+    LOG(info) << msg << " nmm:" << nmm ; 
+    for(unsigned i=0 ; i < nmm ; i++)
+    {
+        GParts* comp = getCompositeParts(i);  
+        unsigned num_subs = comp->getNumSubs(); 
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " comp " << std::setw(10) << comp
+            << " num_subs " << std::setw(5) << num_subs
+            << std::endl 
+            ;
+    }
+}
+
+
+
+
 void GGeoLib::loadFromCache()
 {
     const char* idpath = m_ok->getIdPath() ;

@@ -68,7 +68,7 @@ class GSurfaceLib ;
 class GScintillatorLib ;
 class GSourceLib ;
 class GPmtLib ; 
-
+class GParts ; 
 
 class GInstancer ;
 class GColorizer ; 
@@ -184,7 +184,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     private:
 
         void deferredCreateGParts(); 
-
+    public:
+        GParts* getCompositeParts(unsigned index) const ;
+        void dumpParts(const char* msg="GGeo::dumpParts") const ;
     public:
         // via m_bndlib
         unsigned int getMaterialLine(const char* shortname);

@@ -30,6 +30,7 @@ class GBndLib ;
 class GMergedMesh ; 
 class GNode ; 
 class GGeoLib ; 
+class GParts ; 
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
@@ -104,6 +105,9 @@ class GGEO_API GGeoLib {
 
         unsigned     getNumMergedMesh() const ;
         GMergedMesh* getMergedMesh(unsigned index) const ;
+        GParts*      getCompositeParts(unsigned index) const ; 
+        void         dumpParts(const char* msg="GGeoLib::dumpParts") const ; 
+ 
         void setMergedMesh(unsigned int index, GMergedMesh* mm);
         void eraseMergedMesh(unsigned int index);
         void clear();

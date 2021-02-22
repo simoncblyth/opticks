@@ -276,6 +276,15 @@ const std::vector<GParts*>& GParts::getSubs() const
 {
     return m_subs ; 
 }
+unsigned GParts::getNumSubs() const 
+{
+    return m_subs.size(); 
+}
+GParts* GParts::getSub(unsigned i) const 
+{
+    assert( i < m_subs.size() ); 
+    return m_subs[i] ; 
+}
 
 
 
