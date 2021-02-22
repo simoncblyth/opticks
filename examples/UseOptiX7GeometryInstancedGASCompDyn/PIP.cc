@@ -11,6 +11,7 @@
 #include "sutil_vec_math.h"    // roundUp
 #include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
+#include "Ctx.h"
 #include "Engine.h"
 #include "Geo.h"
 #include "Binding.h"
@@ -105,7 +106,7 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     char log[2048]; // For error reporting from OptiX creation functions
 
     OPTIX_CHECK_LOG( optixModuleCreateFromPTX(
-                Engine::context,
+                Ctx::context,
                 &module_compile_options,
                 &pipeline_compile_options,
                 ptx.c_str(),
@@ -122,7 +123,7 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
 PIP::createRaygenPG
 ---------------------
 
-Creates member raygen_prog_group
+Creates member raygen_pg
 
 **/
 
@@ -141,13 +142,13 @@ void PIP::createRaygenPG(const char* rg)
     unsigned num_program_groups = 1 ; 
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
-                Engine::context,
+                Ctx::context,
                 &desc,
                 num_program_groups,
                 &program_group_options,
                 log,
                 &sizeof_log,
-                &raygen_prog_group
+                &raygen_pg
                 ) );
 
     if(sizeof_log > 0) std::cout << log << std::endl ; 
@@ -158,7 +159,7 @@ void PIP::createRaygenPG(const char* rg)
 PIP::createMissPG
 ---------------------
 
-Creates member miss_prog_group
+Creates member miss_pg
 
 **/
 
@@ -177,13 +178,13 @@ void PIP::createMissPG(const char* ms)
     unsigned num_program_groups = 1 ; 
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
-                Engine::context,
+                Ctx::context,
                 &desc,
                 num_program_groups,
                 &program_group_options,
                 log,
                 &sizeof_log,
-                &miss_prog_group
+                &miss_pg
                 ) );
 
     if(sizeof_log > 0) std::cout << log << std::endl ; 
@@ -194,7 +195,7 @@ void PIP::createMissPG(const char* ms)
 PIP::createHitgroupPG
 ---------------------
 
-Creates member hitgroup_prog_group
+Creates member hitgroup_pg
 
 **/
 
@@ -233,13 +234,13 @@ void PIP::createHitgroupPG(const char* is, const char* ch, const char* ah )
 
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
-                Engine::context,
+                Ctx::context,
                 &desc,
                 num_program_groups,
                 &program_group_options,
                 log,
                 &sizeof_log,
-                &hitgroup_prog_group
+                &hitgroup_pg
                 ) );
 
     if(sizeof_log > 0) std::cout << log << std::endl ; 
@@ -256,7 +257,7 @@ Create pipeline from the program_groups
 
 void PIP::linkPipeline(unsigned max_trace_depth)
 {
-    OptixProgramGroup program_groups[] = { raygen_prog_group, miss_prog_group, hitgroup_prog_group };
+    OptixProgramGroup program_groups[] = { raygen_pg, miss_pg, hitgroup_pg };
 
     OptixPipelineLinkOptions pipeline_link_options = {};
     pipeline_link_options.maxTraceDepth          = max_trace_depth ;
@@ -267,7 +268,7 @@ void PIP::linkPipeline(unsigned max_trace_depth)
     char log[2048]; 
 
     OPTIX_CHECK_LOG( optixPipelineCreate(
-                Engine::context,
+                Ctx::context,
                 &pipeline_compile_options,
                 &pipeline_link_options,
                 program_groups,

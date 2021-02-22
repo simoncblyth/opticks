@@ -1,4 +1,7 @@
 
+#include <cassert>
+#include <iostream>
+
 #include <optix.h>
 #include <optix_stubs.h>
 
@@ -7,6 +10,7 @@
 #include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
 
+#include "Ctx.h"
 #include "GAS.h"
 #include "GAS_Builder.h"
 #include "Engine.h"
@@ -161,9 +165,10 @@ GAS GAS_Builder::Build(OptixBuildInput buildInput)   // static
     return Build(buildInputs) ; 
 }
 
-
 GAS GAS_Builder::Build(const std::vector<OptixBuildInput>& buildInputs)   // static 
 { 
+    std::cout << "GAS_Builder::Build" << std::endl ;  
+
     GAS out = {} ; 
 
     OptixAccelBuildOptions accel_options = {};
@@ -174,7 +179,7 @@ GAS GAS_Builder::Build(const std::vector<OptixBuildInput>& buildInputs)   // sta
 
     OptixAccelBufferSizes gas_buffer_sizes;
 
-    OPTIX_CHECK( optixAccelComputeMemoryUsage( Engine::context, 
+    OPTIX_CHECK( optixAccelComputeMemoryUsage( Ctx::context, 
                                                &accel_options, 
                                                buildInputs.data(), 
                                                buildInputs.size(), 
@@ -200,7 +205,7 @@ GAS GAS_Builder::Build(const std::vector<OptixBuildInput>& buildInputs)   // sta
     emitProperty.type               = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
     emitProperty.result             = ( CUdeviceptr )( (char*)d_buffer_temp_output_gas_and_compacted_size + compactedSizeOffset );
 
-    OPTIX_CHECK( optixAccelBuild( Engine::context,
+    OPTIX_CHECK( optixAccelBuild( Ctx::context,
                                   0,                  // CUDA stream
                                   &accel_options,
                                   buildInputs.data(),
@@ -225,7 +230,7 @@ GAS GAS_Builder::Build(const std::vector<OptixBuildInput>& buildInputs)   // sta
         CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &out.d_buffer ), compacted_gas_size ) );
 
         // use handle as input and output
-        OPTIX_CHECK( optixAccelCompact( Engine::context, 
+        OPTIX_CHECK( optixAccelCompact( Ctx::context, 
                                         0, 
                                         out.handle, 
                                         out.d_buffer, 
@@ -238,10 +243,6 @@ GAS GAS_Builder::Build(const std::vector<OptixBuildInput>& buildInputs)   // sta
     {
         out.d_buffer = d_buffer_temp_output_gas_and_compacted_size;
     }
-
     return out ; 
 }
-
-
-
 

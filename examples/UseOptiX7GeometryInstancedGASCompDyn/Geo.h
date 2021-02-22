@@ -11,11 +11,6 @@ struct Geo
 
     Geo(const char* spec_);
 
-    void setTmin(float tmin_); 
-    void setTmax(float tmax_); 
-    float getTmin() const ; 
-    float getTmax() const ; 
- 
     void init_sphere_containing_grid_of_two_radii_spheres();
     void init_sphere();
     void init_sphere_two();
@@ -38,6 +33,7 @@ struct Geo
 
     const char* spec = nullptr ; 
     AS* top = nullptr ; 
+
     float tmin = 0.f ; 
     float tmax = 1e16f ; 
 

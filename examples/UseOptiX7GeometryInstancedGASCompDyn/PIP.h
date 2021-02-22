@@ -18,9 +18,9 @@ struct PIP
 
     OptixModule module = nullptr;
 
-    OptixProgramGroup raygen_prog_group   = nullptr;
-    OptixProgramGroup miss_prog_group     = nullptr;
-    OptixProgramGroup hitgroup_prog_group = nullptr;
+    OptixProgramGroup raygen_pg   = nullptr;
+    OptixProgramGroup miss_pg     = nullptr;
+    OptixProgramGroup hitgroup_pg = nullptr;
 
     OptixPipeline pipeline = nullptr;
 

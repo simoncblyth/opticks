@@ -28,14 +28,13 @@ UseOptiX7GeometryInstancedGASCompDyn
 #include <cstring>
 #include <sstream>
 
+#include "Ctx.h"
+#include "Params.h"
 #include "Engine.h"
 #include "Geo.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
-
-
-
 
 // Composition::getEyeUVW and examples/UseGeometryShader:getMVP
 void getEyeUVW(const glm::vec4& ce, const unsigned width, const unsigned height, glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W )
@@ -75,7 +74,6 @@ void getEyeUVW(const glm::vec4& ce, const unsigned width, const unsigned height,
     eye = eye_ ; 
 }
 
-
 const char* PTXPath( const char* install_prefix, const char* cmake_target, const char* cu_stem, const char* cu_ext=".cu" )
 {
     std::stringstream ss ; 
@@ -91,7 +89,6 @@ const char* PTXPath( const char* install_prefix, const char* cmake_target, const
     return strdup(path.c_str()); 
 }
 
-
 const char* PPMPath( const char* install_prefix, const char* stem, const char* ext=".ppm" )
 {
     std::stringstream ss ; 
@@ -103,6 +100,41 @@ const char* PPMPath( const char* install_prefix, const char* stem, const char* e
     std::string path = ss.str();
     return strdup(path.c_str()); 
 }
+
+void Params_setView(Params& params, const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_)
+{
+    params.eye.x = eye_.x ;
+    params.eye.y = eye_.y ;
+    params.eye.z = eye_.z ;
+
+    params.U.x = U_.x ; 
+    params.U.y = U_.y ; 
+    params.U.z = U_.z ; 
+
+    params.V.x = V_.x ; 
+    params.V.y = V_.y ; 
+    params.V.z = V_.z ; 
+
+    params.W.x = W_.x ; 
+    params.W.y = W_.y ; 
+    params.W.z = W_.z ; 
+
+    params.tmin = tmin_ ; 
+    params.tmax = tmax_ ; 
+}
+
+void Params_setSize(Params& params, unsigned width_, unsigned height_, unsigned depth_ )
+{
+    params.width = width_ ;
+    params.height = height_ ;
+    params.depth = depth_ ;
+
+    params.origin_x = width_ / 2;
+    params.origin_y = height_ / 2;
+}
+
+
+
 
 
 int main(int argc, char** argv)
@@ -122,34 +154,33 @@ int main(int argc, char** argv)
     unsigned height = 768u ; 
     unsigned depth = 1u ; 
 
-    Engine engine(ptx_path, spec ) ; 
+    Ctx ctx ; 
 
-    Geo* geo = Geo::Get(); 
-    float top_extent = geo->getTopExtent() ;  
+    Geo geo(spec); 
 
+    float top_extent = geo.getTopExtent() ;  
     glm::vec4 ce(0.f,0.f,0.f, top_extent*1.4f );   // defines the center-extent of the region to view
-
     glm::vec3 eye ;
     glm::vec3 U ; 
     glm::vec3 V ; 
     glm::vec3 W ; 
     getEyeUVW( ce, width, height, eye, U, V, W ); 
 
-    float tmin = geo->getTmin(); 
-    float tmax = geo->getTmax();
-
     std::cout << "main"
               << " top_extent " << top_extent 
-              << " tmin " << tmin  
-              << " tmax " << tmax
+              << " tmin " << geo.tmin  
+              << " tmax " << geo.tmax
               << std::endl 
               ;  
 
-    engine.setView(eye, U, V, W, tmin, tmax ); 
+    Params params ;  
+    Params_setView(params, eye, U, V, W, geo.tmin, geo.tmax ); 
+    Params_setSize(params, width, height, depth); 
 
-    engine.setSize(width, height, depth); 
+    Engine engine(ptx_path, &params ) ; 
+    engine.setGeo(&geo); 
+
     engine.allocOutputBuffer(); 
-
     engine.launch(); 
     engine.download(); 
 

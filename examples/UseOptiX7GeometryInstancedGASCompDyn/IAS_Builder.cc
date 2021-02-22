@@ -10,6 +10,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Ctx.h"
 #include "IAS.h"
 #include "IAS_Builder.h"
 #include "Engine.h"
@@ -127,7 +128,7 @@ IAS IAS_Builder::Build(const std::vector<OptixInstance>& instances)
 
     OptixAccelBufferSizes as_buffer_sizes;
 
-    OPTIX_CHECK( optixAccelComputeMemoryUsage( Engine::context, &accel_options, &buildInput, 1, &as_buffer_sizes ) );
+    OPTIX_CHECK( optixAccelComputeMemoryUsage( Ctx::context, &accel_options, &buildInput, 1, &as_buffer_sizes ) );
     CUdeviceptr d_temp_buffer_as;
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_temp_buffer_as ), as_buffer_sizes.tempSizeInBytes ) );
 
@@ -144,7 +145,7 @@ IAS IAS_Builder::Build(const std::vector<OptixInstance>& instances)
     emitProperty.result             = ( CUdeviceptr )( (char*)d_buffer_temp_output_as_and_compacted_size + compactedSizeOffset );
 
 
-    OPTIX_CHECK( optixAccelBuild( Engine::context,
+    OPTIX_CHECK( optixAccelBuild( Ctx::context,
                                   0,                  // CUDA stream
                                   &accel_options,
                                   &buildInput,
@@ -169,7 +170,7 @@ IAS IAS_Builder::Build(const std::vector<OptixInstance>& instances)
         CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &ias.d_buffer ), compacted_as_size ) );
 
         // use ias.handle as input and output
-        OPTIX_CHECK( optixAccelCompact( Engine::context, 0, ias.handle, ias.d_buffer, compacted_as_size, &ias.handle ) );
+        OPTIX_CHECK( optixAccelCompact( Ctx::context, 0, ias.handle, ias.d_buffer, compacted_as_size, &ias.handle ) );
 
         CUDA_CHECK( cudaFree( (void*)d_buffer_temp_output_as_and_compacted_size ) );
 

@@ -29,6 +29,7 @@
 #include <optix.h>
 
 #include "Binding.h"
+#include "Params.h"
 #include "sutil_vec_math.h"
 
 extern "C" {
@@ -91,7 +92,6 @@ static __forceinline__ __device__ void trace(
     *iidx = p4 ; 
 }
 
-
 static __forceinline__ __device__ void setPayload( float4 p, unsigned instance_idx)
 {
     optixSetPayload_0( float_as_int( p.x ) );
@@ -113,36 +113,24 @@ __forceinline__ __device__ uchar4 make_color( const float4&  c, unsigned iidx )
             );
 }
 
-/**
-__raygen__rg
-----------------
-
-Q: Why get "uniform" camera data form from sbt ? When 
-   changing it requires rebuilding sbt as opposed 
-   to getting it from __constant__ memory params ?
-
-**/
-
 extern "C" __global__ void __raygen__rg()
 {
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
-
-    const RaygenData* rtData = (RaygenData*)optixGetSbtDataPointer();
-    const float3      U      = rtData->camera_u;
-    const float3      V      = rtData->camera_v;
-    const float3      W      = rtData->camera_w;
-
-     const float   tmin = rtData->tmin ; 
-     const float   tmax = rtData->tmax ; 
 
     const float2      d = 2.0f * make_float2(
             static_cast<float>( idx.x ) / static_cast<float>( dim.x ),
             static_cast<float>( idx.y ) / static_cast<float>( dim.y )
             ) - 1.0f;
 
-    const float3 origin      = rtData->cam_eye;
+    const float3& origin = params.eye;
+    const float3& U = params.U ;
+    const float3& V = params.V ;
+    const float3& W = params.W ;
+    const float& tmin = params.tmin ; 
+    const float& tmax = params.tmax ; 
     const float3 direction   = normalize( d.x * U + d.y * V + W );
+
     float4       isect       = make_float4( 0.5f, 0.5f, 0.5f, 0.f );
     unsigned instance_idx = ~0u ; 
     trace( params.handle,
@@ -155,7 +143,7 @@ extern "C" __global__ void __raygen__rg()
 
     uchar4 color = make_color( isect, instance_idx );
     //uchar4 color = make_uchar4( instance_idx == ~0u ? 0u : 255u , 255u, 255u, 255u ); 
-    params.image[idx.y * params.image_width + idx.x] = color ; 
+    params.image[idx.y * params.width + idx.x] = color ; 
 }
 
 extern "C" __global__ void __miss__ms()
@@ -218,10 +206,6 @@ extern "C" __global__ void __intersection__is()
                 );
     }
 }
-
-
-
-
 
 extern "C" __global__ void __closesthit__ch()
 {

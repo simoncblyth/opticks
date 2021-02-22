@@ -39,6 +39,7 @@ list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 
 set(SOURCES
     ${name}.cc
+    Ctx.cc 
     Engine.cc 
     GAS.cc 
     GAS_Builder.cc 

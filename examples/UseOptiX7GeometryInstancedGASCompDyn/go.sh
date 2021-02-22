@@ -102,7 +102,7 @@ make install
 
 bin=$(which $name)
 spec=$1
-$name $spec
+gdb -ex r --args $bin $spec
 
 [ $? -ne 0 ] && echo $0 : run  FAIL && exit 3
 

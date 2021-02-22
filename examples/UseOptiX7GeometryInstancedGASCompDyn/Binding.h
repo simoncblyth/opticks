@@ -2,25 +2,25 @@
 #include <stdint.h>
 #include <vector_types.h>
 
-struct Params
-{
-    uchar4*                image;
-    uint32_t               image_width;
-    uint32_t               image_height;
-    int32_t                origin_x;
-    int32_t                origin_y;
-    OptixTraversableHandle handle;
-};
-
+#define SBT_VIEW 1
+#ifdef SBT_VIEW
 struct RaygenData
 {
-    float3 cam_eye;
-    float3 camera_u;
-    float3 camera_v; 
-    float3 camera_w;
+    float3 eye;
+    float3 U;
+    float3 V; 
+    float3 W;
     float  tmin ; 
     float  tmax ; 
 };
+#else
+struct RaygenData
+{
+    float placeholder ; 
+};
+
+#endif
+
 
 struct MissData
 {
@@ -31,25 +31,6 @@ struct HitGroupData
 {
     float* values ;
 };
-
-/**
-HitGroupAnalyticCSGData
--------------------------
-
-Maybe a templated type with integer template args 
-can turn a concatenation of CSG shapes (from GParts) 
-with variable numbers of prims, nodes, planes, transforms
-into something of fixed size for the Sbt data.
-
-Otherwise would need to access global buffers ?
-
-What are the performance implications of that ?
-**/
-
-struct HitGroupAnalyticCSGData
-{
-};
-
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)

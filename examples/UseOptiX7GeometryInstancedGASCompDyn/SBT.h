@@ -3,7 +3,9 @@
 #include <optix.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
+
 #include "Binding.h"
+struct Params ; 
 
 
 /**
@@ -16,31 +18,22 @@ Geometry specifics live here
 
 struct Geo ; 
 
-
 struct SBT 
 {
-    SBT( const PIP* pip_ ); 
+    SBT( const PIP* pip_, Params* params_ ); 
     void setGeo(const Geo* geo); 
 
+    const PIP*    pip ; 
 
-    float tmin = 0.f ; 
-    float tmax = 1e16f ; 
-    glm::vec3 eye = {} ; 
-    glm::vec3 U = {} ; 
-    glm::vec3 V = {} ; 
-    glm::vec3 W = {} ; 
-    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_ ); 
-
-    const PIP* pip ; 
-
-    CUdeviceptr       d_raygen ;
-    CUdeviceptr       d_miss ;
-    CUdeviceptr       d_hitgroup ;
-
-    Raygen   raygen ;
-    Miss     miss ;
-    HitGroup hitgroup ;
+    Params*    params ; 
+    Raygen*    raygen ;
+    Miss*      miss ;
+    HitGroup*  hitgroup ;
  
+    CUdeviceptr  d_raygen ;
+    CUdeviceptr  d_miss ;
+    CUdeviceptr  d_hitgroup ;
+
     OptixShaderBindingTable sbt = {};
 
     void init();  
@@ -51,6 +44,5 @@ struct SBT
     void updateRaygen();  
     void updateMiss();  
     void updateHitgroup();  
-
 };
 
