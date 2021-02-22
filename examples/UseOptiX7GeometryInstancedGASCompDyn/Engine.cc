@@ -6,7 +6,6 @@
 
 #include <optix.h>
 #include <optix_stubs.h>
-//#include <optix_function_table_definition.h>
 
 #include <cuda_runtime.h>
 #include "sutil_vec_math.h"    // roundUp
@@ -63,9 +62,9 @@ void Engine::launch()
 
 void Engine::download()
 {
-    host_pixels.resize(params->width*params->height);  
+    pixels.resize(params->width*params->height);  
     CUDA_CHECK( cudaMemcpy(
-                static_cast<void*>( host_pixels.data() ),
+                static_cast<void*>( pixels.data() ),
                 d_pixels,
                 params->width*params->height*sizeof(uchar4),
                 cudaMemcpyDeviceToHost
@@ -74,6 +73,6 @@ void Engine::download()
 
 void Engine::writePPM(const char* path, bool yflip )
 {
-    SPPM_write( path, host_pixels.data(), params->width, params->height, yflip );
+    SPPM_write( path, pixels.data(), params->width, params->height, yflip );
 }
 

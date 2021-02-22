@@ -15,7 +15,7 @@ struct Engine
     PIP*    pip ;   
     SBT*    sbt ; 
 
-    std::vector<uchar4> host_pixels ; 
+    std::vector<uchar4> pixels ; 
     uchar4* d_pixels = nullptr ; 
 
     Engine(const char* ptx_path_, Params* params); 

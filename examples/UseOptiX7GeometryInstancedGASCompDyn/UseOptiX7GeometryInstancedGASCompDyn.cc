@@ -133,10 +133,6 @@ void Params_setSize(Params& params, unsigned width_, unsigned height_, unsigned 
     params.origin_y = height_ / 2;
 }
 
-
-
-
-
 int main(int argc, char** argv)
 {
     const char* spec = argc > 1 ? argv[1] : "i0" ; 
@@ -155,7 +151,6 @@ int main(int argc, char** argv)
     unsigned depth = 1u ; 
 
     Ctx ctx ; 
-
     Geo geo(spec); 
 
     float top_extent = geo.getTopExtent() ;  
@@ -190,4 +185,3 @@ int main(int argc, char** argv)
 
     return 0 ; 
 }
-
