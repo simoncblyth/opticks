@@ -1,25 +1,21 @@
 #pragma once
 
 #include <vector>
-
 #include <optix.h>
-
+#include <glm/glm.hpp>
+#include <vector_types.h>
 
 struct Geo ; 
+struct PIP ; 
+struct SBT ; 
 
-
-#include "GAS.h"
-#include "IAS.h"
-#include "PIP.h"
-
-
-// transitional class for adiabatic breakup of the monolith 
 struct Engine
 {
     int rc ; 
 
+    PIP* pip ;   
     Geo* geo ; 
-    PIP pip ;   
+    SBT* sbt ; 
 
     static OptixDeviceContext context ;
 

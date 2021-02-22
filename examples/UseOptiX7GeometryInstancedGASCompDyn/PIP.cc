@@ -30,7 +30,7 @@ static bool readFile( std::string& str, const char* path )
     return false;
 }
 
-OptixPipelineCompileOptions PIP::CreateOptions(unsigned numPayloadValues, unsigned numAttributeValues ) // static
+OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues ) // static
 {
     OptixPipelineCompileOptions pipeline_compile_options = {} ;
 
@@ -48,12 +48,19 @@ OptixPipelineCompileOptions PIP::CreateOptions(unsigned numPayloadValues, unsign
     return pipeline_compile_options ;  
 }
 
+
+OptixProgramGroupOptions PIP::CreateProgramGroupOptions() // static
+{
+    OptixProgramGroupOptions program_group_options   = {}; // Initialize to zeros
+    return program_group_options ; 
+}
+
  
 PIP::PIP(const char* ptx_path_) 
     :
-    geo(Geo::Get()),
-    num_gas(geo->getNumGAS()), 
-    pipeline_compile_options(CreateOptions(5,4)),
+    max_trace_depth(2),
+    pipeline_compile_options(CreatePipelineOptions(5,4)),
+    program_group_options(CreateProgramGroupOptions()),
     module(CreateModule(ptx_path_,pipeline_compile_options))
 {
     init(); 
@@ -62,14 +69,11 @@ PIP::PIP(const char* ptx_path_)
 
 void PIP::init()
 {
-    std::cout << "PIP::init "
-              << " num_gas " << num_gas
-              << std::endl 
-              ;
-
-    createProgramGroups();
-    linkPipeline();
-    createSbt(); 
+    std::cout << "PIP::init " << std::endl ;
+    createRaygenPG("rg"); 
+    createMissPG("ms"); 
+    createHitgroupPG("is", "ch", nullptr); 
+    linkPipeline(max_trace_depth);
 }
 
 /**
@@ -114,81 +118,132 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     return module ; 
 }
 
-
 /**
-PIP::createProgramGroups
---------------------------
+PIP::createRaygenPG
+---------------------
 
-Associates function names from module(s) into OptixProgramGroup
-
-Thoughts
-~~~~~~~~~~~
-
-Twas initially thinking of needing multiple
-intersection programs for different shapes, but its 
-closer to OptiX6 to just have one equivalent to 
-oxrap/cu/intersect_analytic.cu:intersect 
-
-which acts as the shape ordered by the contents of the SBT 
-
+Creates member raygen_prog_group
 
 **/
 
-void PIP::createProgramGroups()
+void PIP::createRaygenPG(const char* rg)
 {
+    std::string rg_ = "__raygen__" ; 
+    rg_ += rg ;  
+
+    OptixProgramGroupDesc desc    = {}; 
+    desc.kind                     = OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
+    desc.raygen.module            = module;
+    desc.raygen.entryFunctionName = rg_.c_str() ;
+
     size_t sizeof_log = 0 ; 
-    char log[2048]; // For error reporting from OptiX creation functions
-
-    OptixProgramGroupOptions program_group_options   = {}; // Initialize to zeros
-
-    OptixProgramGroupDesc raygen_prog_group_desc    = {}; //
-    raygen_prog_group_desc.kind                     = OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
-    raygen_prog_group_desc.raygen.module            = module;
-    raygen_prog_group_desc.raygen.entryFunctionName = "__raygen__rg";
+    char log[2048]; 
+    unsigned num_program_groups = 1 ; 
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
                 Engine::context,
-                &raygen_prog_group_desc,
-                1,   // num program groups
+                &desc,
+                num_program_groups,
                 &program_group_options,
                 log,
                 &sizeof_log,
                 &raygen_prog_group
                 ) );
 
-    OptixProgramGroupDesc miss_prog_group_desc  = {};
-    miss_prog_group_desc.kind                   = OPTIX_PROGRAM_GROUP_KIND_MISS;
-    miss_prog_group_desc.miss.module            = module;
-    miss_prog_group_desc.miss.entryFunctionName = "__miss__ms";
+    if(sizeof_log > 0) std::cout << log << std::endl ; 
+    assert( sizeof_log == 0); 
+}
+
+/**
+PIP::createMissPG
+---------------------
+
+Creates member miss_prog_group
+
+**/
+
+void PIP::createMissPG(const char* ms)
+{
+    std::string ms_ = "__miss__" ; 
+    ms_ += ms ;  
+
+    OptixProgramGroupDesc desc  = {};
+    desc.kind                   = OPTIX_PROGRAM_GROUP_KIND_MISS;
+    desc.miss.module            = module;
+    desc.miss.entryFunctionName = ms_.c_str() ;
+
+    size_t sizeof_log = 0 ; 
+    char log[2048]; 
+    unsigned num_program_groups = 1 ; 
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
                 Engine::context,
-                &miss_prog_group_desc,
-                1,   // num program groups
+                &desc,
+                num_program_groups,
                 &program_group_options,
                 log,
                 &sizeof_log,
                 &miss_prog_group
                 ) );
 
-    OptixProgramGroupDesc hitgroup_prog_group_desc = {};
-    hitgroup_prog_group_desc.kind                         = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
-    hitgroup_prog_group_desc.hitgroup.moduleCH            = module;
-    hitgroup_prog_group_desc.hitgroup.entryFunctionNameCH = "__closesthit__ch";
-    hitgroup_prog_group_desc.hitgroup.moduleAH            = nullptr;
-    hitgroup_prog_group_desc.hitgroup.entryFunctionNameAH = nullptr;
-    hitgroup_prog_group_desc.hitgroup.moduleIS            = module;
-    hitgroup_prog_group_desc.hitgroup.entryFunctionNameIS = "__intersection__is";
+    if(sizeof_log > 0) std::cout << log << std::endl ; 
+    assert( sizeof_log == 0); 
+}
+
+/**
+PIP::createHitgroupPG
+---------------------
+
+Creates member hitgroup_prog_group
+
+**/
+
+void PIP::createHitgroupPG(const char* is, const char* ch, const char* ah )
+{
+    std::string is_ = "__intersection__" ; 
+    std::string ch_ = "__closesthit__" ; 
+    std::string ah_ = "__anyhit__" ; 
+
+    if(is) is_ += is ;  
+    if(ch) ch_ += ch ;  
+    if(ah) ah_ += ah ;  
+
+    OptixProgramGroupDesc desc = {};
+    desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
+
+    if(is)  
+    { 
+        desc.hitgroup.moduleIS            = module ;
+        desc.hitgroup.entryFunctionNameIS =  is_.c_str() ;
+    }
+    if(ch)
+    {
+        desc.hitgroup.moduleCH            = module  ; 
+        desc.hitgroup.entryFunctionNameCH = ch_.c_str() ;
+    }
+    if(ah)
+    {
+        desc.hitgroup.moduleAH            = module ;
+        desc.hitgroup.entryFunctionNameAH = ah_.c_str();
+    }
+
+    size_t sizeof_log = 0 ; 
+    char log[2048]; 
+    unsigned num_program_groups = 1 ; 
+
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
                 Engine::context,
-                &hitgroup_prog_group_desc,
-                1,   // num program groups
+                &desc,
+                num_program_groups,
                 &program_group_options,
                 log,
                 &sizeof_log,
                 &hitgroup_prog_group
                 ) );
+
+    if(sizeof_log > 0) std::cout << log << std::endl ; 
+    assert( sizeof_log == 0); 
 }
 
 /**
@@ -199,17 +254,17 @@ Create pipeline from the program_groups
 
 **/
 
-void PIP::linkPipeline()
+void PIP::linkPipeline(unsigned max_trace_depth)
 {
-    size_t sizeof_log = 0 ; 
-    char log[2048]; // For error reporting from OptiX creation functions
-
     OptixProgramGroup program_groups[] = { raygen_prog_group, miss_prog_group, hitgroup_prog_group };
 
     OptixPipelineLinkOptions pipeline_link_options = {};
-    pipeline_link_options.maxTraceDepth          = 5;
+    pipeline_link_options.maxTraceDepth          = max_trace_depth ;
     pipeline_link_options.debugLevel             = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
     pipeline_link_options.overrideUsesMotionBlur = false;
+
+    size_t sizeof_log = 0 ; 
+    char log[2048]; 
 
     OPTIX_CHECK_LOG( optixPipelineCreate(
                 Engine::context,
@@ -221,186 +276,19 @@ void PIP::linkPipeline()
                 &sizeof_log,
                 &pipeline
                 ) );
-}
 
-/**
-PIP::createSbt
--------------------------------
-
-p31 
-    The program groups are also used to initialize the header of the SBT record
-    associated with those programs.
-
-**/
-
-
-void PIP::createRayGenSbt()
-{
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &raygen_record ),   sizeof(RayGenSbtRecord) ) );
-    sbt.raygenRecord        = raygen_record;
-    OPTIX_CHECK( optixSbtRecordPackHeader( raygen_prog_group,   &rg_sbt ) );
-    // presumably the pipeline always has 1 RayGenRecord so no need for counts ?
-}
-
-void PIP::createMissSbt()
-{
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &miss_record ),     sizeof(MissSbtRecord) ) );
-    sbt.missRecordBase      = miss_record;
-    OPTIX_CHECK( optixSbtRecordPackHeader( miss_prog_group,     &ms_sbt ) );
-
-
-    sbt.missRecordStrideInBytes     = sizeof( MissSbtRecord );
-    sbt.missRecordCount             = 1;
-}
-
-void PIP::createHitGroupSbt()
-{
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), sizeof(HitGroupSbtRecord)*num_gas ) );
-
-    sbt.hitgroupRecordBase  = hitgroup_record;
-
-    // allocate CPU side records 
-
-    HitGroupSbtRecord* hg_sbt_ptr = new HitGroupSbtRecord[num_gas] ; 
-    for(unsigned i=0 ; i < num_gas ; i++)
-    { 
-        OPTIX_CHECK( optixSbtRecordPackHeader( hitgroup_prog_group, hg_sbt_ptr + i ) );
-    }
-
-    sbt.hitgroupRecordStrideInBytes = sizeof( HitGroupSbtRecord );
-    sbt.hitgroupRecordCount         = num_gas ;
-    
-    unsigned num_values = 1 ; 
-
-    for(unsigned i=0 ; i < num_gas ; i++)
-    {
-        const GAS& gas = geo->getGAS(i) ;    
-
-        // -------- dynamic SBT values ---------------------------   
-        float* values = new float[num_values]; 
-        for(unsigned i=0 ; i < num_values ; i++) values[i] = 0.f ; 
-        values[0] = gas.extent ;  
-
-        float* d_values = nullptr ; 
-        CUDA_CHECK( cudaMalloc(
-                    reinterpret_cast<void**>( &d_values ),
-                    num_values*sizeof(float)
-                    ) );
-
-        CUDA_CHECK( cudaMemcpy(
-                    reinterpret_cast<void*>( d_values ),
-                    values,
-                    sizeof(float)*num_values,
-                    cudaMemcpyHostToDevice
-                    ) );
-
-        delete [] values ; 
-        // --------------------------------------------------------
-
-        (hg_sbt_ptr + i)->data.values = d_values ;  
-        // sets device pointer into CPU struct about to be copied to device
-        std::cout << "PIP::createHitGroupSbt gas.extent " << gas.extent << std::endl ;  
-    }
-
-    // copy CPU side records to GPU 
-    CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( hitgroup_record ),
-                hg_sbt_ptr,
-                sizeof( HitGroupSbtRecord )*num_gas,
-                cudaMemcpyHostToDevice
-                ) );
-
+    if(sizeof_log > 0) std::cout << log << std::endl ; 
+    assert( sizeof_log == 0); 
 }
 
 
-void PIP::createSbt()
-{
-    std::cout << "PIP::createSbt num_gas " << num_gas << std::endl ; 
-    createRayGenSbt();
-    createMissSbt();
-    createHitGroupSbt(); 
-}
-
- 
-void PIP::updateHitGroupSbt()
-{
-    std::cout << "PIP::updateHitGroupSbt num_gas " << num_gas << " nothing to do : geo is constant " << std::endl ; 
-}
-
-void PIP::updateMissSbt()
-{
-    ms_sbt.data = { 0.3f, 0.1f, 0.2f };
-
-    CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( miss_record ),
-                &ms_sbt,
-                sizeof(MissSbtRecord),
-                cudaMemcpyHostToDevice
-                ) );
-}
 
 
-/**
-PIP::updateSbt
-------------------------------
-
-1. populate the CPU side sbt records
-2. upload sbt records 
-
-**/
-
-void PIP::updateSbt()
-{
-    updateRayGenSbt();
-    updateMissSbt();
-    updateHitGroupSbt();
-}
 
 
-void PIP::updateRayGenSbt()
-{
-    std::cout <<  "PIP::updateRayGenSbt tmin " << tmin << " tmax " << tmax << std::endl ; 
-
-    rg_sbt.data = {};
-
-    rg_sbt.data.cam_eye.x = eye.x ;
-    rg_sbt.data.cam_eye.y = eye.y ;
-    rg_sbt.data.cam_eye.z = eye.z ;
-
-    rg_sbt.data.camera_u.x = U.x ; 
-    rg_sbt.data.camera_u.y = U.y ; 
-    rg_sbt.data.camera_u.z = U.z ; 
-
-    rg_sbt.data.camera_v.x = V.x ; 
-    rg_sbt.data.camera_v.y = V.y ; 
-    rg_sbt.data.camera_v.z = V.z ; 
-
-    rg_sbt.data.camera_w.x = W.x ; 
-    rg_sbt.data.camera_w.y = W.y ; 
-    rg_sbt.data.camera_w.z = W.z ; 
-
-    rg_sbt.data.tmin = tmin ; 
-    rg_sbt.data.tmax = tmax ; 
-
-    CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( raygen_record ),
-                &rg_sbt,
-                sizeof( RayGenSbtRecord ),
-                cudaMemcpyHostToDevice
-                ) );
-}
 
 
-void PIP::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_)
-{
-    std::cout <<  "PIP::setView tmin " << tmin << " tmax " << tmax << std::endl ; 
-    eye = eye_ ; 
-    U = U_ ; 
-    V = V_ ; 
-    W = W_ ; 
-    tmin = tmin_ ; 
-    tmax = tmax_ ; 
 
-    updateSbt(); 
-}
+
+
 

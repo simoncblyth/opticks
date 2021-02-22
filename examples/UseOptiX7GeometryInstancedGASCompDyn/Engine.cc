@@ -14,6 +14,9 @@
 
 #include "GAS.h"
 #include "IAS.h"
+#include "PIP.h"
+#include "SBT.h"
+
 #include "Geo.h"
 #include "Engine.h"
 
@@ -46,15 +49,17 @@ int Engine::preinit()
 Engine::Engine(const char* ptx_path_, const char* spec)
     :
     rc(preinit()),
+    pip(new PIP(strdup(ptx_path_))),
     geo(new Geo(spec)),
-    pip(strdup(ptx_path_))
+    sbt(new SBT(pip))
 {
+    sbt->setGeo(geo); 
 }
 
 
 void Engine::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_)
 {
-    pip.setView(eye_, U_, V_, W_, tmin_, tmax_); 
+    sbt->setView(eye_, U_, V_, W_, tmin_, tmax_); 
 }
 
 void Engine::setSize(unsigned width_, unsigned height_, unsigned depth_)
@@ -99,7 +104,7 @@ void Engine::launch()
                 cudaMemcpyHostToDevice
                 ) );
 
-    OPTIX_CHECK( optixLaunch( pip.pipeline, stream, d_param, sizeof( Params ), &pip.sbt, width, height, depth ) );
+    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
     CUDA_SYNC_CHECK();
 }
 

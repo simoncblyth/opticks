@@ -128,7 +128,7 @@ extern "C" __global__ void __raygen__rg()
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
-    const RayGenData* rtData = (RayGenData*)optixGetSbtDataPointer();
+    const RaygenData* rtData = (RaygenData*)optixGetSbtDataPointer();
     const float3      U      = rtData->camera_u;
     const float3      V      = rtData->camera_v;
     const float3      W      = rtData->camera_w;

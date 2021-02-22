@@ -12,7 +12,7 @@ struct Params
     OptixTraversableHandle handle;
 };
 
-struct RayGenData
+struct RaygenData
 {
     float3 cam_eye;
     float3 camera_u;
@@ -64,9 +64,9 @@ struct SbtRecord
     T data;
 };
 
-typedef SbtRecord<RayGenData>     RayGenSbtRecord;
-typedef SbtRecord<MissData>       MissSbtRecord;
-typedef SbtRecord<HitGroupData>   HitGroupSbtRecord;
+typedef SbtRecord<RaygenData>     Raygen ;
+typedef SbtRecord<MissData>       Miss ;
+typedef SbtRecord<HitGroupData>   HitGroup ;
 
 #endif
 

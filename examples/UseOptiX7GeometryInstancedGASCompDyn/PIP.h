@@ -1,33 +1,21 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-#include "Binding.h"
-
-struct Geo ; 
 
 /**
+PIP
+=====
 
-
-Hmm maybe PIP_Builder too ? 
+Aiming to keep this geometry independent 
 
 **/
 
 struct PIP
 {
-    Geo* geo ; 
-    unsigned num_gas ; 
-
-    glm::vec3 eye = {} ; 
-    glm::vec3 U = {} ; 
-    glm::vec3 V = {} ; 
-    glm::vec3 W = {} ; 
-    float tmin = 0.f ; 
-    float tmax = 1e16f ; 
-
-    ///////////////////
+    unsigned max_trace_depth ; 
 
     OptixPipelineCompileOptions pipeline_compile_options = {};
+    OptixProgramGroupOptions program_group_options = {};
+
     OptixModule module = nullptr;
 
     OptixProgramGroup raygen_prog_group   = nullptr;
@@ -36,37 +24,18 @@ struct PIP
 
     OptixPipeline pipeline = nullptr;
 
-    CUdeviceptr  raygen_record;
-    RayGenSbtRecord rg_sbt;
-
-    CUdeviceptr miss_record;
-    MissSbtRecord ms_sbt;
-
-    CUdeviceptr hitgroup_record;
-    HitGroupSbtRecord hg_sbt ;
- 
-    OptixShaderBindingTable sbt = {};
-
-    ///////////////////
-
-    static OptixPipelineCompileOptions CreateOptions(unsigned numPayloadValues, unsigned numAttributeValues );
+    static OptixPipelineCompileOptions CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues );
+    static OptixProgramGroupOptions CreateProgramGroupOptions();
     static OptixModule CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options );
 
     PIP(const char* ptx_path_); 
-    void upload(); 
+
     void init(); 
-    void createProgramGroups(); 
-    void linkPipeline(); 
-    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_ ); 
+    void createRaygenPG(const char* rg);
+    void createMissPG(const char* ms);
+    void createHitgroupPG(const char* is, const char* ch, const char* ah );
 
-    void createSbt();  
-    void createRayGenSbt();  
-    void createMissSbt();  
-    void createHitGroupSbt();  
-
-    void updateSbt();  
-    void updateRayGenSbt();  
-    void updateMissSbt();  
-    void updateHitGroupSbt();  
+    void linkPipeline(unsigned max_trace_depth);
 }; 
+
 
