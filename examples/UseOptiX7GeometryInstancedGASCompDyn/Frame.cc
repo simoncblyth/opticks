@@ -16,7 +16,7 @@ Frame::Frame(Params* params_)
     :
     params(params_)
 {
-    init()
+    init();
 }
 
 void Frame::init()

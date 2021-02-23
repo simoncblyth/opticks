@@ -12,7 +12,6 @@
 #include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
 #include "Ctx.h"
-#include "Engine.h"
 #include "Geo.h"
 #include "Binding.h"
 #include "PIP.h"
