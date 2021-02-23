@@ -12,6 +12,8 @@ Aiming to keep this geometry independent
 struct PIP
 {
     unsigned max_trace_depth ; 
+    unsigned num_payload_values ; 
+    unsigned num_attribute_values ; 
 
     OptixPipelineCompileOptions pipeline_compile_options = {};
     OptixProgramGroupOptions program_group_options = {};

@@ -227,11 +227,18 @@ void Geo::makeGAS(const std::vector<float>& extents)
     std::cout << std::endl ; 
 
     std::vector<float> bb ; 
-    float extent0 = extents[0] ; 
+
+    float fudge = Util::GetEValue("FUDGE", 1.5f)  ; 
+    std::cout << "Geo::makeGAS fudge " << fudge << " : " ; 
+
+    float extent0 = extents[0]*fudge ; 
+
     for(unsigned i=0 ; i < extents.size() ; i++)
     {
-        float extent = extents[i] ;
+        float extent = extents[i]*fudge ;
         assert( extent <= extent0 );  
+
+        std::cout << extent << " " ; 
  
         bb.push_back(-extent); 
         bb.push_back(-extent); 
@@ -240,6 +247,7 @@ void Geo::makeGAS(const std::vector<float>& extents)
         bb.push_back(+extent); 
         bb.push_back(+extent); 
     }
+    std::cout << std::endl ; 
 
     GAS gas = GAS::Build(bb); 
     gas.extent0 = extent0 ; 

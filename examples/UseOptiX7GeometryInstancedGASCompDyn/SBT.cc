@@ -231,7 +231,7 @@ T* SBT::DownloadArray(const T* d_array, unsigned num_items ) // static
     T* array = new T[num_items] ;  
     CUDA_CHECK( cudaMemcpy(
                 array,
-                reinterpret_cast<void*>( d_array ),
+                d_array,
                 sizeof(T)*num_items,
                 cudaMemcpyDeviceToHost
                 ) );

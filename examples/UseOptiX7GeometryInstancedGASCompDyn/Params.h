@@ -6,7 +6,8 @@
 
 struct Params
 {
-    uchar4*    image;
+    uchar4*    pixels ;
+    float4*    isect ;
 
     uint32_t   width;
     uint32_t   height;

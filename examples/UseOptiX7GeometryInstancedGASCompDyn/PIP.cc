@@ -59,7 +59,9 @@ OptixProgramGroupOptions PIP::CreateProgramGroupOptions() // static
 PIP::PIP(const char* ptx_path_) 
     :
     max_trace_depth(2),
-    pipeline_compile_options(CreatePipelineOptions(5,4)),
+    num_payload_values(8),
+    num_attribute_values(8),
+    pipeline_compile_options(CreatePipelineOptions(num_payload_values,num_attribute_values)),
     program_group_options(CreateProgramGroupOptions()),
     module(CreateModule(ptx_path_,pipeline_compile_options))
 {

@@ -32,6 +32,19 @@ const char* Util::PPMPath( const char* install_prefix, const char* stem, const c
     return strdup(path.c_str()); 
 }
 
+const char* Util::NPYPath( const char* install_prefix, const char* stem, const char* ext ) // static 
+{
+    std::stringstream ss ; 
+    ss << install_prefix
+       << "/npy/"
+       << stem
+       << ext
+       ;
+    std::string path = ss.str();
+    return strdup(path.c_str()); 
+}
+
+
 // Composition::getEyeUVW and examples/UseGeometryShader:getMVP
 void Util::GetEyeUVW(const glm::vec4& ce, const unsigned width, const unsigned height, glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W ) // static
 {

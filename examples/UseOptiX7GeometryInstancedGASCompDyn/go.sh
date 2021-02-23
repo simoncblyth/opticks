@@ -91,32 +91,13 @@ cmake $sdir \
 
 rm -rf $prefix/ptx
 rm -rf $prefix/bin
-rm -rf $prefix/ppm
-
-mkdir -p $prefix/{ptx,bin,ppm} 
+mkdir -p $prefix/{ptx,bin} 
 
 make
 [ $? -ne 0 ] && echo $0 : make FAIL && exit 1
 make install   
 [ $? -ne 0 ] && echo $0 : install FAIL && exit 2
 
-bin=$(which $name)
-spec=$1
 
-export GEOMETRY=sphere_two
-
-#gdb -ex r --args $bin $spec
-$bin $spec
-
-[ $? -ne 0 ] && echo $0 : run  FAIL && exit 3
-
-ppm=$prefix/ppm/$name.ppm
-
-echo name : $name
-echo bin  : $(which $name)
-echo spec : $spec
-echo ppm  : $ppm
-echo md5  : $(cat $ppm | md5sum)
-
-exit 0
+./run.sh $*
 

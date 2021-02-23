@@ -55,19 +55,25 @@ static __forceinline__ __device__ void trace(
         float3                 ray_direction,
         float                  tmin,
         float                  tmax,
-        float4*                prd, 
-        unsigned*              iidx  
+        float3*                normal, 
+        float*                 t, 
+        unsigned*              iidx,
+        float3*                position  
         )
 {
-    uint32_t p0, p1, p2, p3, p4;
-    p0 = float_as_int( prd->x );
-    p1 = float_as_int( prd->y );
-    p2 = float_as_int( prd->z );
-    p3 = float_as_int( prd->w );
-    p4 = *iidx ;
+    uint32_t p0, p1, p2, p3 ;
+    uint32_t p4, p5, p6, p7 ;
 
-    // think that these are to handle multiple ray types 
-    // eg with 2 ray types would have stride 2 and offsets 0 and 1 
+    p0 = float_as_int( normal->x );
+    p1 = float_as_int( normal->y );
+    p2 = float_as_int( normal->z );
+    p3 = float_as_int( *t );
+
+    p4 = *iidx ;
+    p5 = float_as_int( position->x );
+    p6 = float_as_int( position->y );
+    p7 = float_as_int( position->z );
+ 
     unsigned SBToffset = 0u ; 
     unsigned SBTstride = 1u ; 
     unsigned missSBTIndex = 0u ; 
@@ -84,31 +90,42 @@ static __forceinline__ __device__ void trace(
             SBToffset,
             SBTstride,
             missSBTIndex,
-            p0, p1, p2, p3, p4 );
-    prd->x = int_as_float( p0 );
-    prd->y = int_as_float( p1 );
-    prd->z = int_as_float( p2 );
-    prd->w = int_as_float( p3 );
-    *iidx = p4 ; 
+            p0, p1, p2, p3, 
+            p4, p5, p6, p7
+            );
+
+    normal->x = int_as_float( p0 );
+    normal->y = int_as_float( p1 );
+    normal->z = int_as_float( p2 );
+    *t        = int_as_float( p3 ); 
+    *iidx     = p4 ; 
+    position->x = int_as_float( p5 );
+    position->y = int_as_float( p6 );
+    position->z = int_as_float( p7 );
+ 
 }
 
-static __forceinline__ __device__ void setPayload( float4 p, unsigned instance_idx)
+static __forceinline__ __device__ void setPayload( float3 normal, float t, unsigned instance_idx, float3 position )
 {
-    optixSetPayload_0( float_as_int( p.x ) );
-    optixSetPayload_1( float_as_int( p.y ) );
-    optixSetPayload_2( float_as_int( p.z ) );
-    optixSetPayload_3( float_as_int( p.w ) );
+    optixSetPayload_0( float_as_int( normal.x ) );
+    optixSetPayload_1( float_as_int( normal.y ) );
+    optixSetPayload_2( float_as_int( normal.z ) );
+    optixSetPayload_3( float_as_int( t ) );
+
     optixSetPayload_4( instance_idx );
+    optixSetPayload_5( float_as_int( position.x ) );
+    optixSetPayload_6( float_as_int( position.y ) );
+    optixSetPayload_7( float_as_int( position.z ) );
 }
 
-__forceinline__ __device__ uchar4 make_color( const float4&  c, unsigned iidx )
+__forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned iidx )
 {
     //float scale = iidx % 2u == 0u ? 0.5f : 1.f ; 
     float scale = 1.f ; 
     return make_uchar4(
-            static_cast<uint8_t>( clamp( c.x, 0.0f, 1.0f ) *255.0f )*scale ,
-            static_cast<uint8_t>( clamp( c.y, 0.0f, 1.0f ) *255.0f )*scale ,
-            static_cast<uint8_t>( clamp( c.z, 0.0f, 1.0f ) *255.0f )*scale ,
+            static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f )*scale ,
+            static_cast<uint8_t>( clamp( normal.y, 0.0f, 1.0f ) *255.0f )*scale ,
+            static_cast<uint8_t>( clamp( normal.z, 0.0f, 1.0f ) *255.0f )*scale ,
             255u
             );
 }
@@ -131,19 +148,27 @@ extern "C" __global__ void __raygen__rg()
     const float& tmax = params.tmax ; 
     const float3 direction   = normalize( d.x * U + d.y * V + W );
 
-    float4       isect       = make_float4( 0.5f, 0.5f, 0.5f, 0.f );
+    float3   normal  = make_float3( 0.5f, 0.5f, 0.5f );
+    float    t = 0.f ; 
     unsigned instance_idx = ~0u ; 
-    trace( params.handle,
-            origin,
-            direction,
-            tmin,
-            tmax,
-            &isect, 
-            &instance_idx );
+    float3   position = make_float3( 0.5f, 0.5f, 0.5f );
 
-    uchar4 color = make_color( isect, instance_idx );
-    //uchar4 color = make_uchar4( instance_idx == ~0u ? 0u : 255u , 255u, 255u, 255u ); 
-    params.image[idx.y * params.width + idx.x] = color ; 
+    trace( 
+        params.handle,
+        origin,
+        direction,
+        tmin,
+        tmax,
+        &normal, 
+        &t, 
+        &instance_idx,
+        &position
+    );
+
+    uchar4 color = make_color( normal, instance_idx );
+    unsigned index = idx.y * params.width + idx.x ;
+    params.pixels[index] = color ; 
+    params.isect[index] = make_float4( position.x, position.y, position.z, t ) ; 
 }
 
 extern "C" __global__ void __miss__ms()
@@ -151,20 +176,11 @@ extern "C" __global__ void __miss__ms()
     MissData* rt_data  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
     float3    p = make_float3( 0.f, 0.f, 0.f); 
     unsigned instance_idx = 0 ; 
-    //getPayload(&p, &instance_idx);
-    float t_cand = 0.f ; // should this be tmin ?
-
-    setPayload( make_float4( rt_data->r, rt_data->g, rt_data->b, t_cand), instance_idx );
+    float t_cand = 0.f ; 
+    float3 normal = make_float3( rt_data->r, rt_data->g, rt_data->b );   
+    float3 position = make_float3( 0.f, 0.f, 0.f ); 
+    setPayload( normal,  t_cand, instance_idx, position );
 }
-
-
-/**
-__intersection__is
---------------------
-
-Intersects with back face too.
-
-**/
 
 extern "C" __global__ void __intersection__is()
 {
@@ -192,17 +208,26 @@ extern "C" __global__ void __intersection__is()
 
     if(valid_isect)
     {
+        const float3 position = orig + t_cand*dir ;   
         const float3 shading_normal = ( O + t_cand*D )/radius;
         unsigned p0, p1, p2, p3;
+        unsigned p4, p5, p6, p7;
+
         p0 = float_as_int( shading_normal.x );
         p1 = float_as_int( shading_normal.y );
         p2 = float_as_int( shading_normal.z );
         p3 = float_as_int( t_cand ) ; 
 
+        p4 = float_as_int( position.x );
+        p5 = float_as_int( position.y );
+        p6 = float_as_int( position.z );
+        p7 = float_as_int( t_cand ) ; 
+
         optixReportIntersection(
                 t_cand,      
                 0,          // user hit kind
-                p0, p1, p2, p3
+                p0, p1, p2, p3, 
+                p4, p5, p6, p7
                 );
     }
 }
@@ -216,12 +241,19 @@ extern "C" __global__ void __closesthit__ch()
                 int_as_float( optixGetAttribute_2() )
                 );
 
-    float t_cand = int_as_float( optixGetAttribute_3() ) ; 
+    float t = int_as_float( optixGetAttribute_3() ) ; 
+
+    const float3 position =
+        make_float3(
+                int_as_float( optixGetAttribute_4() ),
+                int_as_float( optixGetAttribute_5() ),
+                int_as_float( optixGetAttribute_6() )
+                );
+
     unsigned instance_idx = optixGetInstanceIndex() ;
 
     float3 normal = normalize( optixTransformNormalFromObjectToWorldSpace( shading_normal ) ) * 0.5f + 0.5f ;  
-    float4 isect = make_float4( normal.x, normal.y, normal.z, t_cand ); 
 
-    setPayload( isect, instance_idx );
+    setPayload( normal, t,  instance_idx, position );
 }
 

@@ -33,6 +33,7 @@ int main(int argc, char** argv)
     const char* cmake_target = name ; 
     const char* ptx_path = Util::PTXPath( prefix, cmake_target, name ) ; 
     const char* ppm_path = Util::PPMPath( prefix, name ); 
+    const char* npy_path = Util::NPYPath( prefix, name ); 
     std::cout << " ptx_path " << ptx_path << std::endl ; 
 
     bool small = false ;  
@@ -68,6 +69,7 @@ int main(int argc, char** argv)
 
     frame.download(); 
     frame.writePPM(ppm_path);  
+    frame.writeNPY(npy_path);
 
     return 0 ; 
 }
