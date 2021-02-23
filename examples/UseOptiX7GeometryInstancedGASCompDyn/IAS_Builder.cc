@@ -75,12 +75,13 @@ IAS IAS_Builder::Build( const float* vals, unsigned num_vals ) // static
         unsigned gasIdx = idv.y ;   
 
         const GAS& gas = geo->getGAS(gasIdx); 
+        unsigned offset_bi = geo->getOffsetBI(gas_idx);
 
         OptixInstance instance = {} ; 
         instance.flags = flags ;
 
         instance.instanceId = instanceId ; 
-        instance.sbtOffset = gasIdx ;           
+        instance.sbtOffset = offset_bi ;           
 
         instance.visibilityMask = 255;
         instance.traversableHandle = gas.handle ; 

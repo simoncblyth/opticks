@@ -20,7 +20,10 @@ struct Geo
     unsigned getNumGAS() const ; 
     unsigned getNumIAS() const ; 
 
-    unsigned getNumHitgroupRec() const ;
+    unsigned getNumBI() const ;
+    unsigned getNumBI(unsigned gas_idx) const ;
+    unsigned getOffsetBI(unsigned gas_idx) const ;
+    void     dumpOffsetBI() const ;
 
     const GAS& getGAS(int gas_idx_) const ; 
     const IAS& getIAS(int ias_idx_) const ; 
@@ -45,5 +48,6 @@ struct Geo
 
     std::vector<GAS> vgas ; 
     std::vector<IAS> vias ; 
+    std::vector<unsigned> nbis ; 
 
 };

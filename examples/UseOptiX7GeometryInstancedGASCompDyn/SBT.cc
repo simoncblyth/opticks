@@ -118,6 +118,7 @@ void SBT::createHitgroup(const Geo* geo)
     for(unsigned i=0 ; i < num_gas ; i++)
     {
         const GAS& gas = geo->getGAS(i) ;    
+        assert( gas.num_sbt_rec == gas.bis.size() ); 
         num_rec += gas.num_sbt_rec ;  
     }
     assert( num_rec > 0 );  

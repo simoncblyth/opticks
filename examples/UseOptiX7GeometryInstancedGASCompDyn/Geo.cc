@@ -17,6 +17,7 @@ Geo::Geo(const char* spec_, const char* geometry_)
 {
    fGeo = this ; 
    init();
+   dumpOffsetBI(); 
 }
 
 void Geo::init()
@@ -134,9 +135,6 @@ void Geo::init_sphere_two(float& tminf, float& tmaxf)
     makeGAS(extents); 
     setTop("g0"); 
 
-    float top_extent = getTopExtent(); 
-    std::cout << "Geo::init_sphere_two top_extent " << top_extent  << std::endl ; 
-
     tminf = 1.50f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
     tmaxf = 10000.f ; 
 }
@@ -253,6 +251,11 @@ void Geo::makeGAS(const std::vector<float>& extents)
     gas.extent0 = extent0 ; 
     gas.extents = extents ; 
     vgas.push_back(gas); 
+
+    unsigned num_bi = gas.bis.size() ;
+
+    assert(gas.num_sbt_rec == num_bi ); 
+    nbis.push_back(num_bi); 
 }
 
 unsigned Geo::getNumGAS() const 
@@ -263,17 +266,49 @@ unsigned Geo::getNumIAS() const
 {
     return vias.size() ; 
 }
-
-unsigned Geo::getNumHitgroupRec() const 
+unsigned Geo::getNumBI() const 
 {
-    unsigned num_rec = 0 ; 
-    for(unsigned i=0 ; i < getNumGAS() ; i++)
-    {
-        const GAS& gas = getGAS(i) ;    
-        num_rec += gas.num_sbt_rec ;  
-    }
-    return num_rec ; 
+    unsigned tot = 0 ; 
+    for(unsigned i=0 ; i < nbis.size() ; i++) tot += nbis[i] ; 
+    return tot ; 
 }
+
+unsigned Geo::getNumBI(unsigned gas_idx) const 
+{
+    assert( gas_idx < nbis.size()); 
+    return nbis[gas_idx] ; 
+}
+
+unsigned Geo::getOffsetBI(unsigned gas_idx) const 
+{
+    assert( gas_idx < nbis.size()); 
+
+    unsigned offset = 0 ; 
+    for(unsigned i=0 ; i < nbis.size() ; i++) 
+    {
+        if( i == gas_idx ) break ; 
+        offset += nbis[i]; 
+    }
+    return offset ;     
+} 
+
+void Geo::dumpOffsetBI() const 
+{
+    unsigned num_gas = getNumGAS(); 
+    std::cout << msg << " num_gas " << num_gas << std::endl ; 
+    for(unsigned gas_idx=0 ; gas_idx < num_gas ; gas_idx++)
+    {
+        unsigned num_bi = getNumBI(gas_idx); 
+        unsigned offset_bi = getOffsetBI(gas_idx); 
+        std::cout 
+            << " gas_idx " << std::setw(6) << gas_idx  
+            << " num_bi " << std::setw(6) << num_bi
+            << " offset_bi " << std::setw(6) << offset_bi
+            << std::endl
+            ;
+    }
+}
+
 
 
 const GAS& Geo::getGAS(int gas_idx_) const
