@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <iomanip>
 #include <cstring>
 
 #include "Util.h"
@@ -295,7 +296,7 @@ unsigned Geo::getOffsetBI(unsigned gas_idx) const
 void Geo::dumpOffsetBI() const 
 {
     unsigned num_gas = getNumGAS(); 
-    std::cout << msg << " num_gas " << num_gas << std::endl ; 
+    std::cout << " num_gas " << num_gas << std::endl ; 
     for(unsigned gas_idx=0 ; gas_idx < num_gas ; gas_idx++)
     {
         unsigned num_bi = getNumBI(gas_idx); 
