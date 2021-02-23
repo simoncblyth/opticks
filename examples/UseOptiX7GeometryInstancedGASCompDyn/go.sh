@@ -102,15 +102,19 @@ make install
 
 bin=$(which $name)
 spec=$1
-gdb -ex r --args $bin $spec
+
+#gdb -ex r --args $bin $spec
+$bin $spec
 
 [ $? -ne 0 ] && echo $0 : run  FAIL && exit 3
 
-#open $prefix/ppm/$name.ppm
+ppm=$prefix/ppm/$name.ppm
 
 echo name : $name
 echo bin  : $(which $name)
 echo spec : $spec
+echo ppm  : $ppm
+echo md5  : $(cat $ppm | md5sum)
 
 exit 0
 

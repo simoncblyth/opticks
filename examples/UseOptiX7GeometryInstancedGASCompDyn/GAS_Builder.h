@@ -2,12 +2,13 @@
 
 #include <vector>
 #include "GAS.h"
+#include "BI.h"
 
 struct GAS_Builder
 {
     static GAS Build(const std::vector<float>& bb); 
-    static GAS Build(OptixBuildInput buildInput); 
-    static GAS Build(const std::vector<OptixBuildInput>& buildInputs);
+    static BI MakeCustomPrimitivesBI(const float* bb, unsigned num_val );
+    static GAS Build(const std::vector<BI>& bis);
 };
 
 

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <optix.h>
+#include "BI.h"
 
 struct AS
 {
@@ -10,6 +11,8 @@ struct AS
     float                   extent0 ; 
     std::vector<float>      extents ; 
     unsigned                num_sbt_rec ; 
+    std::vector<BI>         bis ; 
+
 };
 
 

@@ -85,91 +85,72 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
     unsigned num_bb = num_val / 6 ;  
     unsigned num_bytes = num_val*sizeof(float);  
 
-    CUdeviceptr d_aabb_buffer;
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_aabb_buffer ), num_bytes ) );
-    CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( d_aabb_buffer ),
-                bb.data(),
-                num_bytes,
-                cudaMemcpyHostToDevice
-                ) );
-
-    OptixBuildInput buildInput = {};
-    buildInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
-
-    OptixBuildInputCustomPrimitiveArray& aabbArray = buildInput.aabbArray ;  
-
-    aabbArray.aabbBuffers   = &d_aabb_buffer;
-    aabbArray.numPrimitives = num_bb ;
-    aabbArray.numSbtRecords = num_bb ;   // ? 
-
-
-    //unsigned flag = OPTIX_GEOMETRY_FLAG_NONE ;
-
-    // p18 Each build input also specifies an array of OptixGeometryFlags, one for each SBT record.
-    unsigned flag = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ;
-    unsigned* flags = new unsigned[num_bb];
-    unsigned* sbt_index = new unsigned[num_bb];
+    std::vector<BI> bis ; 
     for(unsigned i=0 ; i < num_bb ; i++)
-    {
-        flags[i] = flag ;
-        sbt_index[i] = i ; 
-    } 
-
-    aabbArray.numSbtRecords = num_bb ; 
-    aabbArray.flags         = flags;
-     
-    // optixWhitted sets up sbtOffsets 
-    // see p18 for setting up offsets 
-
-    if(num_bb > 1)
-    {
-        unsigned sbt_index_size = sizeof(unsigned)*num_bb ; 
-        CUdeviceptr    d_sbt_index ;
-        CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_sbt_index ), sbt_index_size ) ); 
-        CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( d_sbt_index ),
-                       sbt_index, sbt_index_size, 
-                        cudaMemcpyHostToDevice ) ); 
-
-        aabbArray.sbtIndexOffsetBuffer  = d_sbt_index ;
-        aabbArray.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);
-        aabbArray.sbtIndexOffsetStrideInBytes = sizeof(unsigned);
+    { 
+         const float* ptr = bb.data() + i*6u ; 
+         BI bi = MakeCustomPrimitivesBI( ptr, 6u );  
+         bis.push_back(bi); 
     }
 
-    GAS gas = Build(buildInput); 
-
-    delete[] flags ; 
-    CUDA_CHECK( cudaFree( (void*)d_aabb_buffer ) );
-
+    GAS gas = Build(bis); 
     return gas ; 
 }
 
 
-/**
-GAS_Builder::Build
---------------------
-
-TODO: array of buildInput for multi-prim in single GAS
-(what is the priIdx equivalent, to lookup which we intersected ?)
-
-* presumably : unsigned int optixGetPrimitiveIndex()
-* SDK/optixWhitted : 3 prim -> 3 aabb -> 1 OptixBuildInput -> 1 GAS
-
-**/
-
-GAS GAS_Builder::Build(OptixBuildInput buildInput)   // static 
+BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val )
 {
-    std::vector<OptixBuildInput> buildInputs ; 
-    buildInputs.push_back(buildInput); 
-    return Build(buildInputs) ; 
-}
+    assert( num_val == 6 ); 
 
-GAS GAS_Builder::Build(const std::vector<OptixBuildInput>& buildInputs)   // static 
+    BI bi = {} ; 
+    bi.buildInput = {};
+    bi.buildInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    bi.num_sbt_records = 1 ;    //  SBT entries for each build input
+    bi.flags = new unsigned[bi.num_sbt_records];
+    bi.sbt_index = new unsigned[bi.num_sbt_records];
+    bi.flags[0] = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ; // p18: Each build input also specifies an array of OptixGeometryFlags, one for each SBT record.
+    bi.sbt_index[0] = 0 ; 
+
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &bi.d_aabb ), 6*sizeof(float) ) );
+    CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( bi.d_aabb ),
+                            bb, 6*sizeof(float),
+                            cudaMemcpyHostToDevice ));
+
+    OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;  
+    buildInputCPA.aabbBuffers = &bi.d_aabb ;  
+    buildInputCPA.numPrimitives = 1 ;   
+    buildInputCPA.numSbtRecords = bi.num_sbt_records ;  
+    buildInputCPA.flags = bi.flags;
+     
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &bi.d_sbt_index ), sizeof(unsigned)*bi.num_sbt_records ) ); 
+    CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( bi.d_sbt_index ),
+                            bi.sbt_index, sizeof(unsigned)*bi.num_sbt_records, 
+                            cudaMemcpyHostToDevice ) ); 
+
+    buildInputCPA.sbtIndexOffsetBuffer  = bi.d_sbt_index ;
+    buildInputCPA.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);
+    buildInputCPA.sbtIndexOffsetStrideInBytes = sizeof(unsigned);
+    buildInputCPA.primitiveIndexOffset = 0 ;  // Primitive index bias, applied in optixGetPrimitiveIndex()
+
+    return bi ; 
+} 
+
+
+
+GAS GAS_Builder::Build(const std::vector<BI>& bis)   // static 
 { 
     std::cout << "GAS_Builder::Build" << std::endl ;  
 
     GAS out = {} ; 
-    out.num_sbt_rec = buildInputs.size() ;  
+    out.num_sbt_rec = bis.size() ;  
+    out.bis = bis ; 
+
+    std::vector<OptixBuildInput> buildInputs ; 
+    for(unsigned i=0 ; i < bis.size() ; i++)
+    {
+        const BI& bi = bis[i]; 
+        buildInputs.push_back(bi.buildInput); 
+    }
 
     OptixAccelBuildOptions accel_options = {};
     accel_options.buildFlags = 
@@ -245,4 +226,3 @@ GAS GAS_Builder::Build(const std::vector<OptixBuildInput>& buildInputs)   // sta
     }
     return out ; 
 }
-
