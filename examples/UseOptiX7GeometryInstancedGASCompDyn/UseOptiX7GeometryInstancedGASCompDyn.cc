@@ -30,7 +30,7 @@ UseOptiX7GeometryInstancedGASCompDyn
 
 #include "Ctx.h"
 #include "Params.h"
-#include "Engine.h"
+#include "Frame.h"
 #include "Geo.h"
 
 #include <glm/glm.hpp>
@@ -101,38 +101,6 @@ const char* PPMPath( const char* install_prefix, const char* stem, const char* e
     return strdup(path.c_str()); 
 }
 
-void Params_setView(Params& params, const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_)
-{
-    params.eye.x = eye_.x ;
-    params.eye.y = eye_.y ;
-    params.eye.z = eye_.z ;
-
-    params.U.x = U_.x ; 
-    params.U.y = U_.y ; 
-    params.U.z = U_.z ; 
-
-    params.V.x = V_.x ; 
-    params.V.y = V_.y ; 
-    params.V.z = V_.z ; 
-
-    params.W.x = W_.x ; 
-    params.W.y = W_.y ; 
-    params.W.z = W_.z ; 
-
-    params.tmin = tmin_ ; 
-    params.tmax = tmax_ ; 
-}
-
-void Params_setSize(Params& params, unsigned width_, unsigned height_, unsigned depth_ )
-{
-    params.width = width_ ;
-    params.height = height_ ;
-    params.depth = depth_ ;
-
-    params.origin_x = width_ / 2;
-    params.origin_y = height_ / 2;
-}
-
 int main(int argc, char** argv)
 {
     const char* spec = argc > 1 ? argv[1] : "i0" ; 
@@ -144,6 +112,7 @@ int main(int argc, char** argv)
 
     const char* cmake_target = name ; 
     const char* ptx_path = PTXPath( prefix, cmake_target, name ) ; 
+    const char* ppm_path = PPMPath( prefix, name ); 
     std::cout << " ptx_path " << ptx_path << std::endl ; 
 
     unsigned width = 1024u ; 
@@ -151,7 +120,7 @@ int main(int argc, char** argv)
     unsigned depth = 1u ; 
 
     Ctx ctx ; 
-    Geo geo(spec); 
+    Geo geo(spec);   // must be after Ctx creation as creates GAS
 
     float top_extent = geo.getTopExtent() ;  
     glm::vec4 ce(0.f,0.f,0.f, top_extent*1.4f );   // defines the center-extent of the region to view
@@ -161,27 +130,22 @@ int main(int argc, char** argv)
     glm::vec3 W ; 
     getEyeUVW( ce, width, height, eye, U, V, W ); 
 
-    std::cout << "main"
-              << " top_extent " << top_extent 
-              << " tmin " << geo.tmin  
-              << " tmax " << geo.tmax
-              << std::endl 
-              ;  
+    ctx.setView(eye, U, V, W, geo.tmin, geo.tmax ); 
+    ctx.setSize(width, height, depth); 
 
-    Params params ;  
-    Params_setView(params, eye, U, V, W, geo.tmin, geo.tmax ); 
-    Params_setSize(params, width, height, depth); 
+    PIP pip(ptx_path); 
+    SBT sbt(&pip, ctx.params);
+    sbt.setGeo(&geo); 
 
-    Engine engine(ptx_path, &params ) ; 
-    engine.setGeo(&geo); 
+    Frame frame(ctx.params); 
 
-    engine.allocOutputBuffer(); 
-    engine.launch(); 
-    engine.download(); 
+    CUstream stream;
+    CUDA_CHECK( cudaStreamCreate( &stream ) );
+    OPTIX_CHECK( optixLaunch( pip.pipeline, stream, ctx.d_param, sizeof( Params ), &(sbt.sbt), ctx.params->width, ctx.params->height, ctx.params->depth ) );
+    CUDA_SYNC_CHECK();
 
-    const char* ppm_path = PPMPath( prefix, name ); 
-    std::cout << "write ppm_path " << ppm_path << std::endl ; 
-    engine.writePPM(ppm_path);  
+    frame.download(); 
+    frame.writePPM(ppm_path);  
 
     return 0 ; 
 }
