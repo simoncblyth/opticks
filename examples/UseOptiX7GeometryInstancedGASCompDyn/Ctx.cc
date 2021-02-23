@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "Ctx.h"
+#include "AS.h"
 #include "Params.h"
 
 #include <optix.h>
@@ -33,6 +34,11 @@ Ctx::Ctx()
     options.logCallbackFunction       = &Ctx::context_log_cb;
     options.logCallbackLevel          = 4;
     OPTIX_CHECK( optixDeviceContextCreate( cuCtx, &options, &context ) );
+}
+
+void Ctx::setTop(const AS* top)
+{
+    params->handle = top->handle ; 
 }
 
 

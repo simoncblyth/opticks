@@ -2,20 +2,9 @@
 #include <stdint.h>
 #include <vector_types.h>
 
-//#define SBT_VIEW 1
-
 struct RaygenData
 {
-#ifdef SBT_VIEW
-    float3 eye;
-    float3 U;
-    float3 V; 
-    float3 W;
-    float  tmin ; 
-    float  tmax ; 
-#else
     float placeholder ; 
-#endif
 };
 
 struct MissData

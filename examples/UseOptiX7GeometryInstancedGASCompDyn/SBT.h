@@ -5,7 +5,6 @@
 #include <glm/gtx/transform.hpp>
 
 #include "Binding.h"
-struct Params ; 
 
 
 /**
@@ -20,12 +19,10 @@ struct Geo ;
 
 struct SBT 
 {
-    SBT( const PIP* pip_, Params* params_ ); 
+    SBT( const PIP* pip_ ); 
     void setGeo(const Geo* geo); 
 
     const PIP*    pip ; 
-
-    Params*    params ; 
     Raygen*    raygen ;
     Miss*      miss ;
     HitGroup*  hitgroup ;

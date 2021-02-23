@@ -18,10 +18,16 @@
 #include "PIP.h"
 #include "SBT.h"
 
-SBT::SBT(const PIP* pip_, Params* params_)
+/**
+SBT
+====
+
+
+**/
+
+SBT::SBT(const PIP* pip_)
     :
     pip(pip_),
-    params(params_),
     raygen(nullptr),
     miss(nullptr),
     hitgroup(nullptr)
@@ -42,9 +48,6 @@ void SBT::init()
 void SBT::setGeo(const Geo* geo)
 {
     createHitgroup(geo); 
-
-    AS* top = geo->getTop();
-    params->handle = top->handle ; 
 }
 
 
@@ -93,29 +96,7 @@ void SBT::updateRaygen()
     std::cout <<  "SBT::updateRaygen " << std::endl ; 
 
     raygen->data = {};
-
-#ifdef SBT_VIEW
-    raygen->data.eye.x = params->eye.x ;
-    raygen->data.eye.y = params->eye.y ;
-    raygen->data.eye.z = params->eye.z ;
-
-    raygen->data.U.x = params->U.x ; 
-    raygen->data.U.y = params->U.y ; 
-    raygen->data.U.z = params->U.z ; 
-
-    raygen->data.V.x = params->V.x ; 
-    raygen->data.V.y = params->V.y ; 
-    raygen->data.V.z = params->V.z ; 
-
-    raygen->data.W.x = params->W.x ; 
-    raygen->data.W.y = params->W.y ; 
-    raygen->data.W.z = params->W.z ; 
-
-    raygen->data.tmin = params->tmin ; 
-    raygen->data.tmax = params->tmax ; 
-#else
     raygen->data.placeholder = 42.0f ;
-#endif
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( d_raygen ),

@@ -3,15 +3,12 @@ UseOptiX7GeometryInstancedGASCompDyn
 ======================================
 
 **/
-
 #include <iostream>
 #include <cstdlib>
-#include <cstring>
-#include <sstream>
-
 #include <optix.h>
 #include <optix_stubs.h>
 #include <cuda_runtime.h>
+#include <glm/glm.hpp>
 #include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
 #include "Util.h"
@@ -22,7 +19,7 @@ UseOptiX7GeometryInstancedGASCompDyn
 #include "PIP.h"
 #include "SBT.h"
 
-#include <glm/glm.hpp>
+struct AS ; 
 
 int main(int argc, char** argv)
 {
@@ -52,8 +49,11 @@ int main(int argc, char** argv)
     ctx.setView(eye, U, V, W, geo.tmin, geo.tmax ); 
     ctx.setSize(width, height, depth); 
 
+    AS* top = geo.getTop();
+    ctx.setTop(top); 
+
     PIP pip(ptx_path); 
-    SBT sbt(&pip, ctx.params);
+    SBT sbt(&pip);
     sbt.setGeo(&geo); 
 
     Frame frame(ctx.params); 
