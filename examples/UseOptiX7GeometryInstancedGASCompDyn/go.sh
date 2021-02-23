@@ -103,6 +103,8 @@ make install
 bin=$(which $name)
 spec=$1
 
+export GEOMETRY=sphere_two
+
 #gdb -ex r --args $bin $spec
 $bin $spec
 

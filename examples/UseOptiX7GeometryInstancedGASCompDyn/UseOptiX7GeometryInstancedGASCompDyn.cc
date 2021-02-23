@@ -28,18 +28,20 @@ int main(int argc, char** argv)
 
     const char* name = "UseOptiX7GeometryInstancedGASCompDyn" ; 
     const char* prefix = getenv("PREFIX");  assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
+    const char* geometry = getenv("GEOMETRY");  assert( geometry && "expecting GEOMETRY envvar " );
 
     const char* cmake_target = name ; 
     const char* ptx_path = Util::PTXPath( prefix, cmake_target, name ) ; 
     const char* ppm_path = Util::PPMPath( prefix, name ); 
     std::cout << " ptx_path " << ptx_path << std::endl ; 
 
-    unsigned width = 1024u ; 
-    unsigned height = 768u ; 
+    bool small = false ;  
+    unsigned width = small ? 512u : 1024u ; 
+    unsigned height = small ? 384u : 768u ; 
     unsigned depth = 1u ; 
 
     Ctx ctx ; 
-    Geo geo(spec);   // must be after Ctx creation as creates GAS
+    Geo geo(spec, geometry);   // must be after Ctx creation as creates GAS
 
     float top_extent = geo.getTopExtent() ;  
     glm::vec4 ce(0.f,0.f,0.f, top_extent*1.4f );   // defines the center-extent of the region to view

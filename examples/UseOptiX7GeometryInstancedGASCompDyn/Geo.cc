@@ -1,6 +1,8 @@
 
 #include <iostream>
 #include <cstring>
+
+#include "Util.h"
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -8,18 +10,70 @@
 
 Geo* Geo::fGeo = NULL ; 
 
-Geo::Geo(const char* spec_) 
+Geo::Geo(const char* spec_, const char* geometry_) 
    :
-   spec(strdup(spec_))  
+   spec(strdup(spec_)),  
+   geometry(strdup(geometry_))
 {
-    fGeo = this ; 
-
-    init_sphere_containing_grid_of_two_radii_spheres();
-    //init_sphere();
-    //init_sphere_two();
+   fGeo = this ; 
+   init();
 }
 
-void Geo::init_sphere_containing_grid_of_two_radii_spheres()
+void Geo::init()
+{
+    float tminf(0.1) ; 
+    float tmaxf(10000.f) ; 
+
+    if(strcmp(geometry, "sphere_containing_grid_of_two_radii_spheres_compound") == 0)
+    {
+        init_sphere_containing_grid_of_two_radii_spheres_compound(tminf, tmaxf);
+    }
+    else if(strcmp(geometry, "sphere_containing_grid_of_two_radii_spheres") == 0)
+    {
+        init_sphere_containing_grid_of_two_radii_spheres(tminf, tmaxf);
+    }
+    else if(strcmp(geometry, "sphere") == 0 )
+    {
+        init_sphere(tminf, tmaxf);
+    }
+    else if(strcmp(geometry, "sphere_two") == 0 )
+    {
+        init_sphere_two(tminf, tmaxf);
+    }
+    else
+    {
+        init_sphere_containing_grid_of_two_radii_spheres(tminf, tmaxf);
+    }
+
+    float top_extent = getTopExtent(); 
+    tmin = top_extent*tminf ; 
+    tmax = top_extent*tmaxf ; 
+    std::cout 
+        << "Geo::init" 
+        << " top_extent " << top_extent  
+        << " tminf " << tminf 
+        << " tmin " << tmin 
+        << " tmaxf " << tmaxf 
+        << " tmax " << tmax 
+        << std::endl 
+        ; 
+
+    float e_tminf = Util::GetEValue<float>("TMIN", -1.0) ; 
+    if(e_tminf > 0.f )
+    {
+        tmin = top_extent*e_tminf ; 
+        std::cout << "Geo::init e_tminf TMIN " << e_tminf << " override tmin " << tmin << std::endl ; 
+    }
+    
+    float e_tmaxf = Util::GetEValue<float>("TMAX", -1.0) ; 
+    if(e_tmaxf > 0.f )
+    {
+        tmax = top_extent*e_tmaxf ; 
+        std::cout << "Geo::init e_tmaxf TMAX " << e_tmaxf << " override tmax " << tmax << std::endl ; 
+    }
+}
+
+void Geo::init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& tmaxf)
 {
     std::cout << "Geo::init_sphere_containing_grid_of_two_radii_spheres " << spec << std::endl ; 
 
@@ -37,34 +91,54 @@ void Geo::init_sphere_containing_grid_of_two_radii_spheres()
 
     setTop(spec); 
 
-    float top_extent = getTopExtent(); 
-    tmin = top_extent*0.75f ;   // <-- so can see inside the big sphere  
-    tmax = top_extent*10000.f ; 
+    tminf = 0.75f ; 
+    tmaxf = 10000.f ; 
 }
-void Geo::init_sphere()
+
+
+void Geo::init_sphere_containing_grid_of_two_radii_spheres_compound(float& tminf, float& tmaxf)
+{
+    std::cout << "Geo::init_sphere_containing_grid_of_two_radii_spheres_compound " << spec << std::endl ; 
+
+    float ias_extent = 10.f ; 
+    float ias_step = 2.f ; 
+
+    makeGAS(0.7f, 0.35f); 
+    makeGAS(1.0f, 0.5f); 
+    std::vector<unsigned> gas_modulo = {0, 1} ;
+
+    makeGAS(ias_extent*2.0f); 
+    std::vector<unsigned> gas_single = {2} ;
+
+    makeIAS(ias_extent, ias_step, gas_modulo, gas_single ); 
+
+    setTop(spec); 
+
+    tminf = 0.75f ;   // <-- so can see inside the big sphere  
+    tmaxf = 10000.f ; 
+}
+
+void Geo::init_sphere(float& tminf, float& tmaxf)
 {
     std::cout << "Geo::init_sphere" << std::endl ; 
     makeGAS(100.f); 
     setTop("g0"); 
 
-    float top_extent = getTopExtent(); 
-    std::cout << "Geo::init_sphere top_extent " << top_extent  << std::endl ; 
-
-    tmin = top_extent*1.60f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
-    tmax = top_extent*10000.f ; 
+    tminf = 1.60f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
+    tmaxf = 10000.f ; 
 }
-void Geo::init_sphere_two()
+void Geo::init_sphere_two(float& tminf, float& tmaxf)
 {
     std::cout << "Geo::init_sphere_two" << std::endl ; 
-    std::vector<float> extents = {100.f, 99.f, 98.f, 97.f, 96.f } ; 
+    std::vector<float> extents = {100.f, 90.f, 80.f, 70.f, 60.f, 50.f   } ; 
     makeGAS(extents); 
     setTop("g0"); 
 
     float top_extent = getTopExtent(); 
     std::cout << "Geo::init_sphere_two top_extent " << top_extent  << std::endl ; 
 
-    tmin = top_extent*1.50f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
-    tmax = top_extent*10000.f ; 
+    tminf = 1.50f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
+    tmaxf = 10000.f ; 
 }
 
 Geo* Geo::Get()
@@ -138,18 +212,21 @@ void Geo::makeGAS(float extent)
     makeGAS(extents); 
 }
 
-/**
-Geo::makeGAS
---------------
-
-The first extent must be the largest 
-
-**/
+void Geo::makeGAS(float extent0, float extent1)
+{
+    std::cout << "Geo::makeGAS extent0 " << extent0 << " extent1 " << extent1  << std::endl ; 
+    std::vector<float> extents ;
+    extents.push_back(extent0);  
+    extents.push_back(extent1);  
+    makeGAS(extents); 
+}
 void Geo::makeGAS(const std::vector<float>& extents)
 {
-    std::cout << "Geo::makeGAS extents.size() " << extents.size() << std::endl ; 
-    std::vector<float> bb ; 
+    std::cout << "Geo::makeGAS extents.size() " << extents.size() << " : " ; 
+    for(unsigned i=0 ; i < extents.size() ; i++) std::cout << extents[i] << " " ; 
+    std::cout << std::endl ; 
 
+    std::vector<float> bb ; 
     float extent0 = extents[0] ; 
     for(unsigned i=0 ; i < extents.size() ; i++)
     {

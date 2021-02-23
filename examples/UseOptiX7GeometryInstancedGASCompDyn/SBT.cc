@@ -52,6 +52,7 @@ void SBT::init()
 void SBT::setGeo(const Geo* geo)
 {
     createHitgroup(geo); 
+    checkHitgroup(); 
 }
 
 
@@ -110,19 +111,6 @@ void SBT::updateRaygen()
                 ) );
 }
 
-/**
-SBT::createHitgroup
---------------------
-
-This currently very simply has 1 GAS : 1 HG SBT record.
-
-Aiming for 1 GAS : 1 "GMergedVolume" each with multiple CSG sub GParts 
-
-1. need the GAS to know how many subs it has
-
-
-**/
-
 void SBT::createHitgroup(const Geo* geo)
 {
     unsigned num_gas = geo->getNumGAS(); 
@@ -147,6 +135,9 @@ void SBT::createHitgroup(const Geo* geo)
         const GAS& gas = geo->getGAS(i) ;    
         const std::vector<float>& extents = gas.extents ; 
         unsigned num_sub = extents.size(); 
+  
+        std::cout << "SBT::createHitgroup gas_idx " << i << " num_sub " << num_sub << std::endl ; 
+
         for(unsigned j=0 ; j < num_sub ; j++)
         { 
             unsigned num_items = 1 ; 
@@ -176,6 +167,35 @@ void SBT::createHitgroup(const Geo* geo)
 }
 
 
+void SBT::checkHitgroup()
+{
+    std::cout 
+        << "SBT::checkHitgroup" 
+        << " sbt.hitgroupRecordCount " << sbt.hitgroupRecordCount
+        << std::endl 
+        ; 
+
+    check = new HitGroup[sbt.hitgroupRecordCount] ; 
+
+    CUDA_CHECK( cudaMemcpy(   
+                check,
+                reinterpret_cast<void*>( sbt.hitgroupRecordBase ),
+                sizeof( HitGroup )*sbt.hitgroupRecordCount,
+                cudaMemcpyDeviceToHost
+                ) );
+
+    for(unsigned i=0 ; i < sbt.hitgroupRecordCount ; i++)
+    {
+        HitGroup* hg = check + i  ; 
+        unsigned num_items = 1 ; 
+        float* d_values = hg->data.values ; 
+        float* values = DownloadArray<float>(d_values, num_items);  
+
+        std::cout << "SBT::checkHitgroup downloaded array, num_items " << num_items << " : " ; 
+        for(unsigned j=0 ; j < num_items ; j++) std::cout << *(values+j) << " " ; 
+        std::cout << std::endl ; 
+    }
+}
 
 
 template <typename T>
@@ -186,6 +206,11 @@ T* SBT::UploadArray(const T* array, unsigned num_items ) // static
                 reinterpret_cast<void**>( &d_array ),
                 num_items*sizeof(T)
                 ) );
+
+
+    std::cout << "SBT::UploadArray num_items " << num_items << " : " ; 
+    for(unsigned i=0 ; i < num_items ; i++) std::cout << *(array+i) << " " ; 
+    std::cout << std::endl ; 
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( d_array ),
@@ -198,8 +223,27 @@ T* SBT::UploadArray(const T* array, unsigned num_items ) // static
 }
 
 
+template <typename T>
+T* SBT::DownloadArray(const T* d_array, unsigned num_items ) // static
+{
+    std::cout << "SBT::DownloadArray num_items " << num_items << " : " ; 
+
+    T* array = new T[num_items] ;  
+    CUDA_CHECK( cudaMemcpy(
+                array,
+                reinterpret_cast<void*>( d_array ),
+                sizeof(T)*num_items,
+                cudaMemcpyDeviceToHost
+                ) );
+
+    return array ; 
+}
+
+
+
 
 template float* SBT::UploadArray<float>(const float* array, unsigned num_items) ;
+template float* SBT::DownloadArray<float>(const float* d_array, unsigned num_items) ;
 
 
 

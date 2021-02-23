@@ -25,7 +25,7 @@ static void SPPM_write( const char* filename, const uchar4* image, int width, in
     }   
     fwrite(data, sizeof(unsigned char)*size, 1, fp);
     fclose(fp);  
-    std::cout << "Wrote file (uchar4) " << filename << std::endl  ;
+    //std::cout << "Wrote file (uchar4) " << filename << std::endl  ;
     delete[] data;
 }
 

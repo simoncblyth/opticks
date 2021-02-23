@@ -21,6 +21,7 @@ struct SBT
     Raygen*       raygen ;
     Miss*         miss ;
     HitGroup*     hitgroup ;
+    HitGroup*     check ;
  
     CUdeviceptr   d_raygen ;
     CUdeviceptr   d_miss ;
@@ -29,18 +30,20 @@ struct SBT
     OptixShaderBindingTable sbt = {};
 
 
-
     SBT( const PIP* pip_ ); 
     void setGeo(const Geo* geo); 
 
     void init();  
-    void createRaygen();  
-    void createMiss();  
-    void createHitgroup(const Geo* geo);
 
+    void createRaygen();  
     void updateRaygen();  
+
+    void createMiss();  
     void updateMiss();  
-    void updateHitgroup();  
+
+    void createHitgroup(const Geo* geo);
+    void checkHitgroup(); 
+
 
     template <typename T>
     static T* UploadArray(const T* array, unsigned num_items ) ; 

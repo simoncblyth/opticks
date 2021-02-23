@@ -85,6 +85,8 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
     unsigned num_bb = num_val / 6 ;  
     unsigned num_bytes = num_val*sizeof(float);  
 
+    std::cout << "GAS_Builder::Build num_val " << num_val << " num_bb " << num_bb << std::endl ;  
+
     std::vector<BI> bis ; 
     for(unsigned i=0 ; i < num_bb ; i++)
     { 
@@ -92,6 +94,8 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
          BI bi = MakeCustomPrimitivesBI( ptr, 6u );  
          bis.push_back(bi); 
     }
+
+    std::cout << "GAS_Builder::Build bis.size " << bis.size() << std::endl ; 
 
     GAS gas = Build(bis); 
     return gas ; 
@@ -101,6 +105,10 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
 BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val )
 {
     assert( num_val == 6 ); 
+
+    std::cout << "GAS_Builder::MakeCustomPrimitivesBI " ; 
+    for(unsigned i=0 ; i < 6 ; i++) std::cout << *(bb+i) << " "  ; 
+    std::cout << std::endl ;  
 
     BI bi = {} ; 
     bi.buildInput = {};
@@ -151,6 +159,14 @@ GAS GAS_Builder::Build(const std::vector<BI>& bis)   // static
         const BI& bi = bis[i]; 
         buildInputs.push_back(bi.buildInput); 
     }
+
+    std::cout 
+        << "GAS_Builder::Build" 
+        << " bis.size " << bis.size()
+        << " buildInputs.size " << buildInputs.size()
+        << std::endl 
+        ;  
+    
 
     OptixAccelBuildOptions accel_options = {};
     accel_options.buildFlags = 

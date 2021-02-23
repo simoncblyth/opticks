@@ -1,6 +1,7 @@
 #include <sstream>
 #include <string>
 #include <cstring>
+#include <cstdlib>
 #include "Util.h"
 #include <glm/gtx/transform.hpp>
 
@@ -69,4 +70,27 @@ void Util::GetEyeUVW(const glm::vec4& ce, const unsigned width, const unsigned h
     eye = eye_ ; 
 }
 
+
+template <typename T>
+T Util::ato_( const char* a )   // static 
+{
+    std::string s(a);
+    std::istringstream iss(s);
+    T v ; 
+    iss >> v ; 
+    return v ; 
+}
+
+
+template <typename T>
+T Util::GetEValue(const char* key, T fallback) // static 
+{
+    const char* sval = getenv(key); 
+    T val = sval ? ato_<T>(sval) : fallback ;
+    return val ;  
+}
+
+template float    Util::GetEValue<float>(const char* key, float fallback); 
+template int      Util::GetEValue<int>(const char* key,   int  fallback); 
+template unsigned Util::GetEValue<unsigned>(const char* key,   unsigned  fallback); 
 
