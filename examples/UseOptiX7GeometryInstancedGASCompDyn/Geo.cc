@@ -80,7 +80,7 @@ AS* Geo::getTop() const
 float Geo::getTopExtent() const 
 {
     assert(top); 
-    return top ? top->extent : -1.f ;  
+    return top ? top->extent0 : -1.f ;  
 }
 
 void Geo::setTop(const char* spec)
@@ -112,7 +112,7 @@ AS* Geo::getAS(const char* spec) const
 
    if(a)
    {
-       std::cout << "Geo::getAS " << spec << " a->extent " << a->extent << std::endl ; 
+       std::cout << "Geo::getAS " << spec << " a->extent0 " << a->extent0 << std::endl ; 
    } 
    return a ; 
 }
@@ -133,11 +133,9 @@ with symmetric extent about the origin.
 void Geo::makeGAS(float extent)
 {
     std::cout << "Geo::makeGAS extent " << extent << std::endl ; 
-    std::vector<float> bb = { -extent, -extent, -extent, +extent, +extent, +extent } ;  
-
-    GAS gas = GAS::Build(bb); 
-    gas.extent = extent ; 
-    vgas.push_back(gas); 
+    std::vector<float> extents ;
+    extents.push_back(extent);  
+    makeGAS(extents); 
 }
 
 /**
@@ -153,7 +151,6 @@ void Geo::makeGAS(const std::vector<float>& extents)
     std::vector<float> bb ; 
 
     float extent0 = extents[0] ; 
-
     for(unsigned i=0 ; i < extents.size() ; i++)
     {
         float extent = extents[i] ;
@@ -168,7 +165,8 @@ void Geo::makeGAS(const std::vector<float>& extents)
     }
 
     GAS gas = GAS::Build(bb); 
-    gas.extent = extent0 ; 
+    gas.extent0 = extent0 ; 
+    gas.extents = extents ; 
     vgas.push_back(gas); 
 }
 
@@ -180,6 +178,19 @@ unsigned Geo::getNumIAS() const
 {
     return vias.size() ; 
 }
+
+unsigned Geo::getNumHitgroupRec() const 
+{
+    unsigned num_rec = 0 ; 
+    for(unsigned i=0 ; i < getNumGAS() ; i++)
+    {
+        const GAS& gas = getGAS(i) ;    
+        num_rec += gas.num_sbt_rec ;  
+    }
+    return num_rec ; 
+}
+
+
 const GAS& Geo::getGAS(int gas_idx_) const
 {
     unsigned gas_idx = gas_idx_ < 0 ? vgas.size() + gas_idx_ : gas_idx_ ;  
@@ -269,7 +280,7 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
     }
 
     IAS ias = IAS::Build(trs); 
-    ias.extent = extent ; 
+    ias.extent0 = extent ; 
     vias.push_back(ias); 
 }
 

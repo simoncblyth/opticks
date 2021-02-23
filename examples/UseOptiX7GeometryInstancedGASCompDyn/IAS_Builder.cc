@@ -102,6 +102,7 @@ IAS IAS_Builder::Build(const std::vector<OptixInstance>& instances)
     unsigned numBytes = sizeof( OptixInstance )*numInstances ; 
 
     IAS ias ; 
+    ias.num_sbt_rec = 0u ; // not yet used for IAS
 
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &ias.d_instances ), numBytes ) );
     CUDA_CHECK( cudaMemcpy(

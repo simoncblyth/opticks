@@ -18,6 +18,8 @@ struct Geo
     unsigned getNumGAS() const ; 
     unsigned getNumIAS() const ; 
 
+    unsigned getNumHitgroupRec() const ;
+
     const GAS& getGAS(int gas_idx_) const ; 
     const IAS& getIAS(int ias_idx_) const ; 
 

@@ -169,6 +169,7 @@ GAS GAS_Builder::Build(const std::vector<OptixBuildInput>& buildInputs)   // sta
     std::cout << "GAS_Builder::Build" << std::endl ;  
 
     GAS out = {} ; 
+    out.num_sbt_rec = buildInputs.size() ;  
 
     OptixAccelBuildOptions accel_options = {};
     accel_options.buildFlags = 

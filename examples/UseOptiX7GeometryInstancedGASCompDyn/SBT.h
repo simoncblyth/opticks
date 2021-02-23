@@ -8,10 +8,8 @@
 
 
 /**
-SBT
-====
-
-Geometry specifics live here
+SBT : RG,MS,HG program data preparation 
+===========================================
 
 **/
 
@@ -19,19 +17,21 @@ struct Geo ;
 
 struct SBT 
 {
-    SBT( const PIP* pip_ ); 
-    void setGeo(const Geo* geo); 
-
     const PIP*    pip ; 
-    Raygen*    raygen ;
-    Miss*      miss ;
-    HitGroup*  hitgroup ;
+    Raygen*       raygen ;
+    Miss*         miss ;
+    HitGroup*     hitgroup ;
  
-    CUdeviceptr  d_raygen ;
-    CUdeviceptr  d_miss ;
-    CUdeviceptr  d_hitgroup ;
+    CUdeviceptr   d_raygen ;
+    CUdeviceptr   d_miss ;
+    CUdeviceptr   d_hitgroup ;
 
     OptixShaderBindingTable sbt = {};
+
+
+
+    SBT( const PIP* pip_ ); 
+    void setGeo(const Geo* geo); 
 
     void init();  
     void createRaygen();  
@@ -41,5 +41,9 @@ struct SBT
     void updateRaygen();  
     void updateMiss();  
     void updateHitgroup();  
+
+    template <typename T>
+    static T* UploadArray(const T* array, unsigned num_items ) ; 
+
 };
 
