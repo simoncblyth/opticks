@@ -230,7 +230,7 @@ void Geo::makeGAS(const std::vector<float>& extents)
     std::vector<float> bb ; 
 
     // fudge enlarges bbox compared to expectation for the geometry 
-    float fudge = Util::GetEValue("FUDGE", 2.0f)  ; 
+    float fudge = Util::GetEValue("FUDGE", 1.0f)  ; 
     std::cout << "Geo::makeGAS fudge " << fudge << " : " ; 
 
     float extent0 = extents[0]*fudge ; 
@@ -368,11 +368,11 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
 
     for(int i=0 ; i < int(num_gas_single) ; i++)
     {
-        unsigned idx = trs.size(); 
+        unsigned idx = ias.trs.size(); 
         unsigned instance_id = idx ; 
         unsigned gas_idx = gas_single[i] ; 
 
-        glm::mat4 tr(1.f) ;
+        glm::mat4 tr(1.f) ;  // identity transform for the large sphere 
         tr[0][3] = unsigned_as_float(instance_id); 
         tr[1][3] = unsigned_as_float(gas_idx) ;
         tr[2][3] = unsigned_as_float(0) ;   
@@ -389,7 +389,7 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
         glm::mat4 tr(1.f) ;
         tr = glm::translate(tr, tlat );
 
-        unsigned idx = trs.size(); 
+        unsigned idx = ias.trs.size(); 
         unsigned instance_id = idx ; 
         unsigned gas_modulo_idx = idx % num_gas_modulo ; 
         unsigned gas_idx = gas_modulo[gas_modulo_idx] ; 

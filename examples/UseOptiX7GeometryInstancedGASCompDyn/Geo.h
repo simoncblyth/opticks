@@ -59,6 +59,5 @@ struct Geo
     std::vector<GAS> vgas ; 
     std::vector<IAS> vias ; 
     std::vector<unsigned> nbis ; 
-    std::vector<glm::mat4> trs ; 
 
 };

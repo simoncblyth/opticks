@@ -21,11 +21,18 @@ npy_()
    ipython -i posi.py  
 }
 
+all_()
+{
+   echo scp -r P:$OUTDIR/ $OUTDIR/
+   scp -r P:$OUTDIR/ $OUTDIR/
+}
 
 if [ "$1" == "ppm" ]; then
    ppm_
 elif [ "$1" == "npy" ]; then
    npy_
+elif [ "$1" == "all" ]; then
+   all_
 else
    ppm_
    npy_
