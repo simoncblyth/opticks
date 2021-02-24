@@ -227,7 +227,7 @@ extern "C" __global__ void __closesthit__ch()
 
     unsigned instance_idx = optixGetInstanceIndex() ;
     unsigned primitive_idx = optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI 
-    unsigned identity = (( 1u + instance_idx ) << 16) | ((1u + primitive_idx) ;
+    unsigned identity = (( 1u + instance_idx ) << 16) | (1u + primitive_idx) ;
  
     // notice that need to use the instance_idx to look up what the gas_idx is back in the IAS source tranforms
     //unsigned identity = 1 + primitive_idx ;  // 1-based to distinguish from miss
