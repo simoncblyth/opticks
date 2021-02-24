@@ -368,12 +368,11 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
 
     for(int i=0 ; i < int(num_gas_single) ; i++)
     {
-        unsigned idx = ias.trs.size(); 
-        unsigned instance_id = idx ; 
+        unsigned instance_idx = ias.trs.size() ;  // 0-based index
         unsigned gas_idx = gas_single[i] ; 
 
         glm::mat4 tr(1.f) ;  // identity transform for the large sphere 
-        tr[0][3] = unsigned_as_float(instance_id); 
+        tr[0][3] = unsigned_as_float(instance_idx); 
         tr[1][3] = unsigned_as_float(gas_idx) ;
         tr[2][3] = unsigned_as_float(0) ;   
         tr[3][3] = unsigned_as_float(0) ;   
@@ -389,12 +388,11 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
         glm::mat4 tr(1.f) ;
         tr = glm::translate(tr, tlat );
 
-        unsigned idx = ias.trs.size(); 
-        unsigned instance_id = idx ; 
-        unsigned gas_modulo_idx = idx % num_gas_modulo ; 
+        unsigned instance_idx = ias.trs.size();   // 0-based index 
+        unsigned gas_modulo_idx = instance_idx % num_gas_modulo ; 
         unsigned gas_idx = gas_modulo[gas_modulo_idx] ; 
 
-        tr[0][3] = unsigned_as_float(instance_id); 
+        tr[0][3] = unsigned_as_float(instance_idx); 
         tr[1][3] = unsigned_as_float(gas_idx) ;
         tr[2][3] = unsigned_as_float(0) ;   
         tr[3][3] = unsigned_as_float(0) ;   

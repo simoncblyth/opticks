@@ -3,22 +3,7 @@
 #include "Params.h"
 #include "sutil_vec_math.h"
 
-extern "C" {
-__constant__ Params params;
-}
-
-/**
-
-UseOptiX7GeometryInstancedGAS.cu
-
-700p43
-
-    (hitgroup) 
-    sbt-index = sbt-instance-offset + (sbt-GAS-index * sbt-stride-from-trace-call) + sbt-offset-from-trace-call
-
-    sbt-GAS-index : order of GAS creation 
-
-**/
+extern "C" { __constant__ Params params ;  }
 
 static __forceinline__ __device__ void trace(
         OptixTraversableHandle handle,
@@ -158,6 +143,7 @@ extern "C" __global__ void __intersection__is()
 {
     HitGroupData* hg  = reinterpret_cast<HitGroupData*>( optixGetSbtDataPointer() );
     const float  radius = hg->values[0] ;
+    const unsigned bindex = hg->bindex ; 
 
     const float3 orig = optixGetObjectRayOrigin();
     const float3 dir  = optixGetObjectRayDirection();
@@ -196,7 +182,7 @@ extern "C" __global__ void __intersection__is()
         a4 = float_as_int( position.x );
         a5 = float_as_int( position.y );
         a6 = float_as_int( position.z );
-        a7 = float_as_int( 0.f ) ; 
+        a7 = bindex ; 
 
         optixReportIntersection(
                 t_cand,      
@@ -225,15 +211,20 @@ extern "C" __global__ void __closesthit__ch()
                 int_as_float( optixGetAttribute_6() )
                 );
 
-    unsigned instance_idx = optixGetInstanceIndex() ;
-    unsigned primitive_idx = optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI 
-    unsigned identity = (( 1u + instance_idx ) << 16) | (1u + primitive_idx) ;
- 
-    // notice that need to use the instance_idx to look up what the gas_idx is back in the IAS source tranforms
-    //unsigned identity = 1 + primitive_idx ;  // 1-based to distinguish from miss
+    unsigned bindex = optixGetAttribute_7() ;
 
+    unsigned instance_id = 1u + optixGetInstanceIndex() ;
+    unsigned primitive_id = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI 
+    unsigned buildinput_id = 1u + bindex ; 
+
+    unsigned identity = ( instance_id << 16 ) | (primitive_id << 8) | ( buildinput_id << 0 )  ;
+ 
     float3 normal = normalize( optixTransformNormalFromObjectToWorldSpace( shading_normal ) ) * 0.5f + 0.5f ;  
 
-    setPayload( normal, t,  position, identity );
+    const float3 world_origin = optixGetWorldRayOrigin() ; 
+    const float3 world_direction = optixGetWorldRayDirection() ; 
+    const float3 world_position = world_origin + t*world_direction ; 
+
+    setPayload( normal, t,  world_position, identity );
 }
 

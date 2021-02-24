@@ -14,7 +14,8 @@ struct MissData
 
 struct HitGroupData
 {
-    float* values ;
+    unsigned bindex ; 
+    float*   values ;
 };
 
 

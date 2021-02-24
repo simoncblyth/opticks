@@ -146,7 +146,8 @@ void SBT::createHitgroup(const Geo* geo)
             values[0] = extents[j] ;  
             float* d_values = UploadArray<float>(values, num_items) ; 
             delete [] values ; 
-      
+     
+            hg->data.bindex = j ;  
             hg->data.values = d_values ; // set device pointer into CPU struct about to be copied to device
             hg++ ; 
             hg_count++ ; 

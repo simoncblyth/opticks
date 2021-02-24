@@ -9,22 +9,30 @@ npy=$OUTDIR/posi.npy
 
 ppm_()
 {
-   echo scp P:$ppm $ppm
-   scp P:$ppm $ppm
+   local cmd="scp P:$ppm $ppm"
+   echo $cmd
+   eval $cmd
    open $ppm 
 }
 
 npy_()
 {
-   echo scp P:$npy $npy
-   scp P:$npy $npy
+   local cmd="scp P:$npy $npy"
+   echo $cmd
+   eval $cmd
    ipython -i posi.py  
 }
 
 all_()
 {
-   echo scp -r P:$OUTDIR/ $OUTDIR/
-   scp -r P:$OUTDIR/ $OUTDIR/
+   local cmd="rsync -rtz --del --progress P:$OUTDIR/ $OUTDIR/"
+   echo $cmd
+   eval $cmd
+
+   echo $ppm
+   ls -l $ppm
+   open $ppm
+
 }
 
 if [ "$1" == "ppm" ]; then
