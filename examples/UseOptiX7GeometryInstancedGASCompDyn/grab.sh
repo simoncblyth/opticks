@@ -1,20 +1,11 @@
 #!/bin/bash -l 
 
-sdir=$(pwd)
-name=$(basename $sdir)
-prefix=/tmp/$USER/opticks/$name
+source ./env.sh 
 
+[ -z "$OUTDIR" ] && echo OUTDIR not defined && return 1 
 
-#export GEOMETRY=sphere
-#export GEOMETRY=sphere_two
-#export GEOMETRY=sphere_containing_grid_of_two_radii_spheres
-export GEOMETRY=sphere_containing_grid_of_two_radii_spheres_compound
-
-dir=$prefix/$GEOMETRY
-mkdir -p $dir
-
-ppm=$dir/pixels.ppm
-npy=$dir/posi.npy
+ppm=$OUTDIR/pixels.ppm
+npy=$OUTDIR/posi.npy
 
 ppm_()
 {
