@@ -16,41 +16,13 @@
 
 #include "Geo.h"
 
-/**
-**/
-
-
-IAS IAS_Builder::Build( const std::vector<float>& tr ) // static 
+void IAS_Builder::Build(IAS& ias) // static 
 {
-    assert( tr.size() % 16 == 0 ); 
-    unsigned num_tr = tr.size() / 16 ; 
-    return Build( tr.data(), tr.size() ); 
-}
-
-IAS IAS_Builder::Build( const std::vector<glm::mat4>& tr ) // static 
-{
-    unsigned num_tr = tr.size() ; 
+    unsigned num_tr = ias.trs.size() ; 
     std::cout << "IAS_Builder::Build num_tr " << num_tr << std::endl ; 
-    return Build( (float*)tr.data(), num_tr*16 ); 
-}
-
-/**
-
-instance.sbtOffset 
-    SBT record offset.  Will only be used for instances of geometry acceleration structure (GAS) objects.
-    Needs to be set to 0 for instances of instance acceleration structure (IAS) objects. 
-    The maximal SBT offset can be queried using OPTIX_DEVICE_PROPERTY_LIMIT_MAX_INSTANCE_SBT_OFFSET.
-
-    See 700p43  
-
-**/
-
-IAS IAS_Builder::Build( const float* vals, unsigned num_vals ) // static 
-{
-    assert( num_vals % 16 == 0 ); 
-    unsigned num_tr = num_vals / 16 ;  
+    assert( num_tr > 0); 
+    const float* vals =   (float*)ias.trs.data() ;
  
-    //unsigned flags = OPTIX_INSTANCE_FLAG_NONE ;  
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
 
     const Geo* geo = Geo::Get();  
@@ -91,18 +63,17 @@ IAS IAS_Builder::Build( const float* vals, unsigned num_vals ) // static
         instances.push_back(instance); 
     }
 
-    return Build(instances); 
+    Build(ias, instances); 
 }
 
 
-IAS IAS_Builder::Build(const std::vector<OptixInstance>& instances)
+void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
 {
     unsigned numInstances = instances.size() ; 
     std::cout << "IAS_Builder::bBild numInstances " << numInstances << std::endl ; 
 
     unsigned numBytes = sizeof( OptixInstance )*numInstances ; 
 
-    IAS ias ; 
     ias.num_sbt_rec = 0u ; // not yet used for IAS
 
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &ias.d_instances ), numBytes ) );
@@ -194,8 +165,6 @@ IAS IAS_Builder::Build(const std::vector<OptixInstance>& instances)
             << std::endl
             ; 
     }
-
-    return ias ; 
 }
 
 

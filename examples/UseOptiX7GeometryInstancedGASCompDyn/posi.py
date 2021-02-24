@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import os, numpy as np
+import matplotlib.pyplot as plt 
+
 path_ = lambda:os.path.expandvars("/tmp/$USER/opticks/%(name)s/npy/%(name)s.npy") % dict(name=os.path.basename(os.getcwd()))
+
 
 
 def sdf_sphere(p,sz):
@@ -29,13 +32,19 @@ if __name__ == '__main__':
     a = np.load(path_())
     print(a)
 
-    t = a[:,:,3]   
-    w = np.where( t > 0 )      # find pixels with intersects
-    b = a[w]                   # select intersect coordinates
-    lpos = b[:,:3]             # skip the 4th 
-    sz = 100.0                 # known radius
-    d = sdf_sphere(lpos, sz)   # sdf : distances to sphere surface 
+    i = a[:,:,3].view(np.uint32)   
+    w = np.where( i > 0 )         # find pixels with identity info
+    b = a[w]                      # select intersect coordinates
+    lpos = b[:,:3]                # skip the 4th 
+    sz = 100.0                    # known radius
+    d = sdf_sphere(lpos, sz)      # sdf : distances to sphere surface 
 
     print("d.min : ", d.min())
     print("d.max : ", d.max())
+
+
+    fig, axs = plt.subplots(1, 2)
+    axs[0].imshow(i) 
+    fig.show()
+
 

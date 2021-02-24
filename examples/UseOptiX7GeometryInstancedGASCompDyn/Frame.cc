@@ -10,7 +10,6 @@
 #include "Frame.h"
 #include "Params.h"
 #include "SPPM.h"
-#include "NP.hh"
 
 
 Frame::Frame(Params* params_)
@@ -76,39 +75,16 @@ void Frame::download_isect()
 }
 
 
-void Frame::writePPM(const char* path, bool yflip )
+void Frame::writePPM(const char* dir, const char* name, bool yflip )
 {
-    std::cout << "Frame::writePPM " << path << std::endl ; 
-    SPPM_write( path, pixels.data(), params->width, params->height, yflip );
+    std::cout << "Frame::writePPM " << dir << "/" << name << std::endl ; 
+    SPPM_write( dir, name, pixels.data(), params->width, params->height, yflip );
 }
 
-void Frame::writeNPY(const char* path)
+float* Frame::getIntersectData() const
 {
-    int ni = params->height ; 
-    int nj = params->width ;
-    int nk = 4 ;  
-
-    std::cout 
-        << "Frame::writeNPY"
-        << " ni  " << ni
-        << " nj  " << nj
-        << " nk  " << nk
-        << " path " << path
-        << std::endl 
-        ;
-
-    NP a("<f4", ni,nj,nk) ;    
-    float* v = a.values<float>(); 
-    float* isect_data = (float*)isect.data() ;
-
-    for(int i=0 ; i < ni ; i++ ) 
-    for(int j=0 ; j < nj ; j++ )
-    for(int k=0 ; k < nk ; k++ )
-    {
-        int index =  i*nj*nk + j*nk + k ;
-        *(v + index) = *(isect_data + index ) ;
-    }
-    a.save(path); 
+    return (float*)isect.data();
 }
+
 
 

@@ -33,6 +33,18 @@ that need to be manually run in the shell or piped there.
    svn st | perl -ne 'm,\S\s*(\S*), && print "$1\n"' - | xargs md5sum % 
 
 
+
+TODO:
+
+* record digests of put files into some cache, so a repeating put after edits 
+  can put just the updated ? 
+
+* (hmm does cfu do that already ? perhaps do cfu for every put)
+* basically assuming that edits are only done locally, the normal situation, can
+  minimize puts 
+
+
+
 Workflow::
 
    loc> export PATH=$HOME/opticks/bin:$PATH

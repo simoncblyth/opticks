@@ -32,11 +32,8 @@ The a,b,c,d are "spare" slots used to carry unsigned_as_float identity info.
 
 struct IAS : public AS
 {
+    std::vector<glm::mat4>  trs ; 
     CUdeviceptr             d_instances ;   
-
-    static IAS Build(const std::vector<float>& tr );
-    static IAS Build(const std::vector<glm::mat4>& tr ); 
-    static IAS Build(const float* vals, unsigned num_vals); 
 };
 
 

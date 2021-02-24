@@ -30,10 +30,13 @@ int main(int argc, char** argv)
     const char* prefix = getenv("PREFIX");  assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     const char* geometry = getenv("GEOMETRY");  assert( geometry && "expecting GEOMETRY envvar " );
 
+    std::stringstream ss ; 
+    ss << prefix << "/" << geometry ; 
+    std::string s = ss.str();  
+    const char* dir = s.c_str(); 
+
     const char* cmake_target = name ; 
     const char* ptx_path = Util::PTXPath( prefix, cmake_target, name ) ; 
-    const char* ppm_path = Util::PPMPath( prefix, name ); 
-    const char* npy_path = Util::NPYPath( prefix, name ); 
     std::cout << " ptx_path " << ptx_path << std::endl ; 
 
     bool small = false ;  
@@ -43,6 +46,7 @@ int main(int argc, char** argv)
 
     Ctx ctx ; 
     Geo geo(spec, geometry);   // must be after Ctx creation as creates GAS
+    geo.write(dir);  
 
     float top_extent = geo.getTopExtent() ;  
     glm::vec4 ce(0.f,0.f,0.f, top_extent*1.4f );   // defines the center-extent of the region to view
@@ -68,8 +72,8 @@ int main(int argc, char** argv)
     CUDA_SYNC_CHECK();
 
     frame.download(); 
-    frame.writePPM(ppm_path);  
-    frame.writeNPY(npy_path);
+    frame.writePPM(dir, "pixels.ppm");  
+    Geo::WriteNP(  dir, "posi.npy", frame.getIntersectData(), height, width, 4 );
 
     return 0 ; 
 }

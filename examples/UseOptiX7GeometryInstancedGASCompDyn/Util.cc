@@ -20,29 +20,7 @@ const char* Util::PTXPath( const char* install_prefix, const char* cmake_target,
     return strdup(path.c_str()); 
 }
 
-const char* Util::PPMPath( const char* install_prefix, const char* stem, const char* ext ) // static 
-{
-    std::stringstream ss ; 
-    ss << install_prefix
-       << "/ppm/"
-       << stem
-       << ext
-       ;
-    std::string path = ss.str();
-    return strdup(path.c_str()); 
-}
 
-const char* Util::NPYPath( const char* install_prefix, const char* stem, const char* ext ) // static 
-{
-    std::stringstream ss ; 
-    ss << install_prefix
-       << "/npy/"
-       << stem
-       << ext
-       ;
-    std::string path = ss.str();
-    return strdup(path.c_str()); 
-}
 
 
 // Composition::getEyeUVW and examples/UseGeometryShader:getMVP

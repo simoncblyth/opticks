@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -29,6 +31,8 @@ struct NP
     static NP* Load(const char* path); 
     static NP* Load(const char* dir, const char* name); 
     static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
+
+    static void Write(const char* dir, const char* name, const float* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
 
     template<typename T> T*       values() ; 
     template<typename T> const T* values() const  ; 
@@ -104,7 +108,7 @@ Write array into output stream
 
 **/
 
-std::ostream& operator<<(std::ostream &os,  const NP& a) 
+inline std::ostream& operator<<(std::ostream &os,  const NP& a) 
 { 
     os << a.make_prefix() ; 
     os << a.make_header() ; 
@@ -121,7 +125,7 @@ Direct input stream into NP array
 
 **/
 
-std::istream& operator>>(std::istream& is, NP& a)     
+inline std::istream& operator>>(std::istream& is, NP& a)     
 {
     is.read( (char*)a._prefix.data(), net_hdr::LENGTH ) ; 
 
@@ -152,6 +156,35 @@ std::istream& operator>>(std::istream& is, NP& a)
     return is;
 }
 
+
+inline void NP::Write(const char* dir, const char* name, const float* data, int ni, int nj, int nk, int nl, int nm ) // static
+{
+    std::cout 
+        << "NP::Write"
+        << " ni  " << ni
+        << " nj  " << nj
+        << " nk  " << nk
+        << " dir " << dir
+        << " name " << name
+        << std::endl 
+        ;   
+    assert( nl == -1 && nm == -1); 
+
+    NP a("<f4", ni,nj,nk,nl,nm) ;    
+    float* v = a.values<float>(); 
+
+    for(int i=0 ; i < ni ; i++ ) 
+    for(int j=0 ; j < nj ; j++ )
+    for(int k=0 ; k < nk ; k++ )
+    {   
+        int index =  i*nj*nk + j*nk + k ; 
+        *(v + index) = *(data + index ) ; 
+    }   
+    a.save(dir, name); 
+}
+
+
+
 /**
 NP::update_headers
 -------------------
@@ -163,7 +196,7 @@ because are using a struct.  So just have to invoke this before streaming.
 
 **/
 
-void NP::update_headers()
+inline void NP::update_headers()
 {
     std::string net_hdr = make_prefix(); 
     _prefix.assign(net_hdr.data(), net_hdr.length()); 
@@ -174,12 +207,12 @@ void NP::update_headers()
 }
 
 
-std::string NP::make_header() const 
+inline std::string NP::make_header() const 
 {
     std::string hdr =  NPU::_make_header( shape, dtype ) ;
     return hdr ; 
 }
-std::string NP::make_prefix() const 
+inline std::string NP::make_prefix() const 
 {
     std::vector<unsigned> parts ;
     parts.push_back(hdr_bytes());
@@ -190,14 +223,14 @@ std::string NP::make_prefix() const
     std::string net_hdr = net_hdr::pack( parts ); 
     return net_hdr ; 
 }
-std::string NP::make_jsonhdr() const 
+inline std::string NP::make_jsonhdr() const 
 {
     std::string json = NPU::_make_jsonhdr( shape, dtype ) ; 
     return json ; 
 }  
 
 
-NP* NP::MakeDemo(const char* dtype, int ni, int nj, int nk, int nl, int nm )
+inline NP* NP::MakeDemo(const char* dtype, int ni, int nj, int nk, int nl, int nm )
 {
     NP* a = new NP(dtype, ni, nj, nk, nl, nm);
     a->fillIndexFlat(); 
@@ -223,7 +256,7 @@ from file. There is no prefix header in that
 situation.
 
 **/
-bool NP::decode_prefix()  
+inline bool NP::decode_prefix()  
 {
     unsigned hdr_bytes_nh = prefix_size(0); 
     unsigned arr_bytes_nh = prefix_size(1); 
@@ -246,7 +279,7 @@ bool NP::decode_prefix()
     }
     return valid ; 
 }
-unsigned NP::prefix_size(unsigned index) const { return net_hdr::unpack(_prefix, index); }  
+inline unsigned NP::prefix_size(unsigned index) const { return net_hdr::unpack(_prefix, index); }  
 
 /**
 NP::decode_header
@@ -270,7 +303,7 @@ following the header.
 
 **/
 
-bool NP::decode_header()  
+inline bool NP::decode_header()  
 {
     shape.clear(); 
     std::string descr ; 
@@ -295,7 +328,7 @@ change the total number of bytes in the array.
 
 **/
 
-void NP::set_dtype(const char* dtype_)
+inline void NP::set_dtype(const char* dtype_)
 {
     char uifc_ = NPU::_dtype_uifc(dtype_) ; 
     int  ebyte_ = NPU::_dtype_ebyte(dtype_) ; 
@@ -351,16 +384,16 @@ void NP::set_dtype(const char* dtype_)
 
 // former approach assumed data is already sized : but shape comes first 
 
-unsigned NP::hdr_bytes() const { return _hdr.length() ; }
-unsigned NP::num_values() const { return NPS::size(shape) ;  }
-unsigned NP::arr_bytes()  const { return NPS::size(shape)*ebyte ; }
-unsigned NP::meta_bytes() const { return meta.length() ; }
+inline unsigned NP::hdr_bytes() const { return _hdr.length() ; }
+inline unsigned NP::num_values() const { return NPS::size(shape) ;  }
+inline unsigned NP::arr_bytes()  const { return NPS::size(shape)*ebyte ; }
+inline unsigned NP::meta_bytes() const { return meta.length() ; }
 
-char*        NP::bytes() { return (char*)data.data() ;  } 
-const char*  NP::bytes() const { return (char*)data.data() ;  } 
+inline char*        NP::bytes() { return (char*)data.data() ;  } 
+inline const char*  NP::bytes() const { return (char*)data.data() ;  } 
 
 
-NP::NP(const char* dtype_, int ni, int nj, int nk, int nl, int nm )
+inline NP::NP(const char* dtype_, int ni, int nj, int nk, int nl, int nm )
     :
     dtype(strdup(dtype_)),
     uifc(NPU::_dtype_uifc(dtype)),
@@ -377,22 +410,22 @@ NP::NP(const char* dtype_, int ni, int nj, int nk, int nl, int nm )
 
 
 
-template<typename T> T*  NP::values() { return (T*)data.data() ;  } 
+template<typename T> inline T*  NP::values() { return (T*)data.data() ;  } 
 
-template<typename T> void NP::fill(T value)
+template<typename T> inline void NP::fill(T value)
 {
     T* vv = values<T>(); 
     for(unsigned i=0 ; i < size ; i++) *(vv+i) = value ; 
 }
 
-template<typename T> void NP::_fillIndexFlat(T offset)
+template<typename T> inline void NP::_fillIndexFlat(T offset)
 {
     T* vv = values<T>(); 
     for(unsigned i=0 ; i < size ; i++) *(vv+i) = T(i) + offset ; 
 }
 
 
-void NP::sizeof_check() // static 
+inline void NP::sizeof_check() // static 
 {
     assert( sizeof(float) == 4  );  
     assert( sizeof(double) == 8  );  
@@ -404,7 +437,7 @@ void NP::sizeof_check() // static
     assert( sizeof(long long)  == 8 );
 }
 
-void NP::fillIndexFlat()
+inline void NP::fillIndexFlat()
 {
     if(uifc == 'f')
     {   
@@ -437,7 +470,7 @@ void NP::fillIndexFlat()
 }
 
 
-void NP::dump(int i0, int i1) const 
+inline void NP::dump(int i0, int i1) const 
 {
     if(uifc == 'f')
     {   
@@ -469,7 +502,7 @@ void NP::dump(int i0, int i1) const
     }   
 }
 
-std::string NP::desc() const 
+inline std::string NP::desc() const 
 {
     std::stringstream ss ; 
     ss << "NP " 
@@ -485,27 +518,27 @@ std::string NP::desc() const
     return ss.str(); 
 }
 
-NP* NP::Load(const char* path)
+inline NP* NP::Load(const char* path)
 {
     NP* a = new NP() ; 
     int rc = a->load(path) ; 
     return rc == 0 ? a  : NULL ; 
 }
 
-NP* NP::Load(const char* dir, const char* name)
+inline NP* NP::Load(const char* dir, const char* name)
 {
     std::string path = form_path(dir, name); 
     return Load(path.c_str());
 }
 
-std::string NP::form_path(const char* dir, const char* name)
+inline std::string NP::form_path(const char* dir, const char* name)
 {
     std::stringstream ss ; 
     ss << dir << "/" << name ; 
     return ss.str(); 
 }
 
-int NP::load(const char* dir, const char* name)
+inline int NP::load(const char* dir, const char* name)
 {
     std::string path = form_path(dir, name); 
     return load(path.c_str()); 
@@ -523,7 +556,7 @@ newline from the stream without returning it.
 
 **/
 
-int NP::load(const char* path)
+inline int NP::load(const char* path)
 {
     lpath = path ;  // loadpath 
 
@@ -544,14 +577,14 @@ int NP::load(const char* path)
     return 0 ; 
 }
 
-void NP::save_header(const char* path)
+inline void NP::save_header(const char* path)
 {
     update_headers(); 
     std::ofstream stream(path, std::ios::out|std::ios::binary);
     stream << _hdr ; 
 }
 
-void NP::save(const char* path)
+inline void NP::save(const char* path)
 {
     update_headers(); 
     std::ofstream stream(path, std::ios::out|std::ios::binary);
@@ -559,26 +592,26 @@ void NP::save(const char* path)
     stream.write( bytes(), arr_bytes() );
 }
 
-void NP::save(const char* dir, const char* name)
+inline void NP::save(const char* dir, const char* name)
 {
     std::string path = form_path(dir, name); 
     save(path.c_str()); 
 }
 
-void NP::save_jsonhdr(const char* path)
+inline void NP::save_jsonhdr(const char* path)
 {
     std::string json = make_jsonhdr(); 
     std::ofstream stream(path, std::ios::out|std::ios::binary);
     stream << json ; 
 }
 
-void NP::save_jsonhdr(const char* dir, const char* name)
+inline void NP::save_jsonhdr(const char* dir, const char* name)
 {
     std::string path = form_path(dir, name); 
     save_jsonhdr(path.c_str()); 
 }
 
-std::string NP::get_jsonhdr_path() const 
+inline std::string NP::get_jsonhdr_path() const 
 {
     assert( lpath.empty() == false ); 
     assert( U::EndsWith(lpath.c_str(), ".npy" ) ); 
@@ -586,7 +619,7 @@ std::string NP::get_jsonhdr_path() const
     return path ; 
 }
 
-void NP::save_jsonhdr()
+inline void NP::save_jsonhdr()
 {
     std::string path = get_jsonhdr_path() ; 
     std::cout << "NP::save_jsonhdr to " << path << std::endl  ; 
@@ -594,7 +627,7 @@ void NP::save_jsonhdr()
 }
 
 
-template <typename T> std::string NP::_present(T v) const
+template <typename T> inline std::string NP::_present(T v) const
 {
     std::stringstream ss ; 
     ss << " " << std::fixed << std::setw(8) << v  ;      
@@ -602,25 +635,25 @@ template <typename T> std::string NP::_present(T v) const
 }
 
 // needs specialization to _present char as an int rather than a character
-template<>  std::string NP::_present(char v) const
+template<>  inline std::string NP::_present(char v) const
 {
     std::stringstream ss ; 
     ss << " " << std::fixed << std::setw(8) << int(v)  ;      
     return ss.str();
 }
-template<>  std::string NP::_present(unsigned char v) const
+template<>  inline std::string NP::_present(unsigned char v) const
 {
     std::stringstream ss ; 
     ss << " " << std::fixed << std::setw(8) << unsigned(v)  ;      
     return ss.str();
 }
-template<>  std::string NP::_present(float v) const
+template<>  inline std::string NP::_present(float v) const
 {
     std::stringstream ss ; 
     ss << " " << std::setw(10) << std::fixed << std::setprecision(3) << v ;
     return ss.str();
 }
-template<>  std::string NP::_present(double v) const
+template<>  inline std::string NP::_present(double v) const
 {
     std::stringstream ss ; 
     ss << " " << std::setw(10) << std::fixed << std::setprecision(3) << v ;
@@ -628,7 +661,7 @@ template<>  std::string NP::_present(double v) const
 }
 
 
-template <typename T> void NP::_dump(int i0_, int i1_) const 
+template <typename T> inline void NP::_dump(int i0_, int i1_) const 
 {
     int ni = NPS::ni_(shape) ;
     int nj = NPS::nj_(shape) ;
@@ -717,52 +750,54 @@ specialize
 
 
 // template specializations generated by below bash functions
+/**
 
-template<> const float* NP::values<float>() const { return (float*)data.data() ; }
-template<>       float* NP::values<float>()      {  return (float*)data.data() ; }
+template<>  const float* NP::values<float>() const { return (float*)data.data() ; }
+template<>        float* NP::values<float>()      {  return (float*)data.data() ; }
 template       void NP::_fillIndexFlat<float>(float) ;
 
-template<> const double* NP::values<double>() const { return (double*)data.data() ; }
-template<>       double* NP::values<double>()      {  return (double*)data.data() ; }
+template<> inline const double* NP::values<double>() const { return (double*)data.data() ; }
+template<> inline       double* NP::values<double>()      {  return (double*)data.data() ; }
 template       void NP::_fillIndexFlat<double>(double) ;
 
-template<> const char* NP::values<char>() const { return (char*)data.data() ; }
-template<>       char* NP::values<char>()      {  return (char*)data.data() ; }
+template<> inline const char* NP::values<char>() const { return (char*)data.data() ; }
+template<> inline       char* NP::values<char>()      {  return (char*)data.data() ; }
 template       void NP::_fillIndexFlat<char>(char) ;
 
-template<> const short* NP::values<short>() const { return (short*)data.data() ; }
-template<>       short* NP::values<short>()      {  return (short*)data.data() ; }
+template<> inline const short* NP::values<short>() const { return (short*)data.data() ; }
+template<> inline       short* NP::values<short>()      {  return (short*)data.data() ; }
 template       void NP::_fillIndexFlat<short>(short) ;
 
-template<> const int* NP::values<int>() const { return (int*)data.data() ; }
-template<>       int* NP::values<int>()      {  return (int*)data.data() ; }
+template<> inline const int* NP::values<int>() const { return (int*)data.data() ; }
+template<> inline       int* NP::values<int>()      {  return (int*)data.data() ; }
 template       void NP::_fillIndexFlat<int>(int) ;
 
-template<> const long* NP::values<long>() const { return (long*)data.data() ; }
-template<>       long* NP::values<long>()      {  return (long*)data.data() ; }
+template<> inline const long* NP::values<long>() const { return (long*)data.data() ; }
+template<> inline       long* NP::values<long>()      {  return (long*)data.data() ; }
 template       void NP::_fillIndexFlat<long>(long) ;
 
-template<> const long long* NP::values<long long>() const { return (long long*)data.data() ; }
-template<>       long long* NP::values<long long>()      {  return (long long*)data.data() ; }
+template<> inline const long long* NP::values<long long>() const { return (long long*)data.data() ; }
+template<> inline       long long* NP::values<long long>()      {  return (long long*)data.data() ; }
 template       void NP::_fillIndexFlat<long long>(long long) ;
 
-template<> const unsigned char* NP::values<unsigned char>() const { return (unsigned char*)data.data() ; }
-template<>       unsigned char* NP::values<unsigned char>()      {  return (unsigned char*)data.data() ; }
+template<> inline const unsigned char* NP::values<unsigned char>() const { return (unsigned char*)data.data() ; }
+template<> inline       unsigned char* NP::values<unsigned char>()      {  return (unsigned char*)data.data() ; }
 template       void NP::_fillIndexFlat<unsigned char>(unsigned char) ;
 
-template<> const unsigned short* NP::values<unsigned short>() const { return (unsigned short*)data.data() ; }
-template<>       unsigned short* NP::values<unsigned short>()      {  return (unsigned short*)data.data() ; }
+template<> inline const unsigned short* NP::values<unsigned short>() const { return (unsigned short*)data.data() ; }
+template<> inline       unsigned short* NP::values<unsigned short>()      {  return (unsigned short*)data.data() ; }
 template       void NP::_fillIndexFlat<unsigned short>(unsigned short) ;
 
-template<> const unsigned int* NP::values<unsigned int>() const { return (unsigned int*)data.data() ; }
-template<>       unsigned int* NP::values<unsigned int>()      {  return (unsigned int*)data.data() ; }
+template<> inline const unsigned int* NP::values<unsigned int>() const { return (unsigned int*)data.data() ; }
+template<> inline       unsigned int* NP::values<unsigned int>()      {  return (unsigned int*)data.data() ; }
 template       void NP::_fillIndexFlat<unsigned int>(unsigned int) ;
 
-template<> const unsigned long* NP::values<unsigned long>() const { return (unsigned long*)data.data() ; }
-template<>       unsigned long* NP::values<unsigned long>()      {  return (unsigned long*)data.data() ; }
+template<> inline const unsigned long* NP::values<unsigned long>() const { return (unsigned long*)data.data() ; }
+template<> inline       unsigned long* NP::values<unsigned long>()      {  return (unsigned long*)data.data() ; }
 template       void NP::_fillIndexFlat<unsigned long>(unsigned long) ;
 
-template<> const unsigned long long* NP::values<unsigned long long>() const { return (unsigned long long*)data.data() ; }
-template<>       unsigned long long* NP::values<unsigned long long>()      {  return (unsigned long long*)data.data() ; }
+template<> inline const unsigned long long* NP::values<unsigned long long>() const { return (unsigned long long*)data.data() ; }
+template<> inline       unsigned long long* NP::values<unsigned long long>()      {  return (unsigned long long*)data.data() ; }
 template       void NP::_fillIndexFlat<unsigned long long>(unsigned long long) ;
 
+**/

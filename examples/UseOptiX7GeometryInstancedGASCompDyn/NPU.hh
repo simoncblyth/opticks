@@ -1,3 +1,4 @@
+#pragma once
 
 #include <sstream>
 #include <iostream>
@@ -29,7 +30,7 @@ const unsigned Endian::UNITY = 1 ;
 const char Endian::LITTLE = '<' ;  // least-significant byte at the smallest address
 const char Endian::BIG = '>' ;     // most-significant byte at the smallest address
 
-char Endian::detect()
+inline char Endian::detect()
 {
     return (*(char *)&UNITY == 1) ? LITTLE : BIG ; 
 }
@@ -62,7 +63,7 @@ template<> const char Desc<std::complex<float> >::code = 'c' ;
 template<> const char Desc<std::complex<double> >::code = 'c' ; 
 
 template<typename T>
-std::string Desc<T>::descr()
+inline std::string Desc<T>::descr()
 {
     std::stringstream ss ; 
     ss 
@@ -162,13 +163,13 @@ struct U
     static std::string ChangeExt( const char* s, const char* x1, const char* x2) ; 
 };
 
-bool U::EndsWith( const char* s, const char* q)
+inline bool U::EndsWith( const char* s, const char* q)
 {
     int pos = strlen(s) - strlen(q) ;
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ; 
 }
 
-std::string U::ChangeExt( const char* s, const char* x1, const char* x2)
+inline std::string U::ChangeExt( const char* s, const char* x1, const char* x2)
 {
     assert( EndsWith(s, x1) ); 
 
@@ -221,24 +222,25 @@ struct NPU
     static bool is_readable(const char* path);
 };
 
+// inline variables requires -std=c++1z to avoid warning :  inline variables are a C++1z extension [-Wc++1z-extensions]
 const char* NPU::MAGIC = "\x93NUMPY" ; 
 const bool  NPU::FORTRAN_ORDER = false ; 
 
 template<typename T>
-std::string NPU::make_header(const std::vector<int>& shape )
+inline std::string NPU::make_header(const std::vector<int>& shape )
 {
     std::string descr = Desc<T>::descr() ;   
     return _make_header( shape, descr.c_str() ) ; 
 }
 
 template<typename T>
-std::string NPU::make_jsonhdr(const std::vector<int>& shape )
+inline std::string NPU::make_jsonhdr(const std::vector<int>& shape )
 {
     std::string descr = Desc<T>::descr() ; 
     return _make_jsonhdr( shape, descr.c_str() ) ; 
 }
 
-std::string NPU::xxdisplay(const std::string& hdr, int width, char non_printable)
+inline std::string NPU::xxdisplay(const std::string& hdr, int width, char non_printable)
 {
     std::stringstream ss ; 
     for(int i=0 ; i < hdr.size() ; i++) 
@@ -251,7 +253,7 @@ std::string NPU::xxdisplay(const std::string& hdr, int width, char non_printable
    return ss.str(); 
 }
 
-int NPU::_parse_header_length(const std::string& hdr )
+inline int NPU::_parse_header_length(const std::string& hdr )
 {
 /*
 Extract from the NPY format specification
@@ -353,7 +355,7 @@ NumPy np.save / np.load
 }
 
 
-void NPU::parse_header(std::vector<int>& shape, std::string& descr, char& uifc, int& ebyte, const std::string& hdr )
+inline void NPU::parse_header(std::vector<int>& shape, std::string& descr, char& uifc, int& ebyte, const std::string& hdr )
 {
     int hlen = _parse_header_length( hdr ) ; 
 
@@ -409,7 +411,7 @@ void NPU::parse_header(std::vector<int>& shape, std::string& descr, char& uifc, 
 
 }
 
-void NPU::_parse_tuple(std::vector<int>& shape, const std::string& sh )
+inline void NPU::_parse_tuple(std::vector<int>& shape, const std::string& sh )
 {
     std::istringstream f(sh);
     std::string s;
@@ -447,7 +449,7 @@ void NPU::_parse_tuple(std::vector<int>& shape, const std::string& sh )
 }
 
 
-void NPU::_parse_dict(bool& little_endian, char& uifc, int& ebyte, std::string& descr, bool& fortran_order, const char* dict)  // static 
+inline void NPU::_parse_dict(bool& little_endian, char& uifc, int& ebyte, std::string& descr, bool& fortran_order, const char* dict)  // static 
 {
     _parse_dict(descr, fortran_order, dict); 
     _parse_descr(little_endian, uifc, ebyte, descr.c_str() ); 
@@ -466,7 +468,7 @@ NPU::_parse_dict
 
 **/
 
-void NPU::_parse_dict(std::string& descr, bool& fortran_order, const char* dict) // static
+inline void NPU::_parse_dict(std::string& descr, bool& fortran_order, const char* dict) // static
 {
     char q = '\'' ;  
     char x = '\0' ;   // "wildcard" extra delim 
@@ -506,7 +508,7 @@ void NPU::_parse_dict(std::string& descr, bool& fortran_order, const char* dict)
     fortran_order = elem[3].compare("False") == 0 ? false : true ; 
 }
 
-void NPU::_parse_descr(bool& little_endian, char& uifc, int& ebyte, const char* descr)  // static
+inline void NPU::_parse_descr(bool& little_endian, char& uifc, int& ebyte, const char* descr)  // static
 {
     assert( strlen(descr) == 3 ); 
 
@@ -534,7 +536,7 @@ void NPU::_parse_descr(bool& little_endian, char& uifc, int& ebyte, const char* 
     assert( ebyte == 1 || ebyte == 2 || ebyte == 4 || ebyte == 8 ); 
 }
 
-int NPU::_dtype_ebyte(const char* dtype)  // static 
+inline int NPU::_dtype_ebyte(const char* dtype)  // static 
 {
     unsigned len = strlen(dtype) ; 
     assert( len == 2 || len == 3 ); 
@@ -545,7 +547,7 @@ int NPU::_dtype_ebyte(const char* dtype)  // static
     assert( ebyte == 1 || ebyte == 2 || ebyte == 4 || ebyte == 8 ); 
     return ebyte ; 
 } 
-char NPU::_dtype_uifc(const char* dtype) // static
+inline char NPU::_dtype_uifc(const char* dtype) // static
 {
     unsigned len = strlen(dtype) ; 
     assert( len == 2 || len == 3 ); 
@@ -556,7 +558,7 @@ char NPU::_dtype_uifc(const char* dtype) // static
 
 
  
-bool NPU::is_readable(const char* path)  // static 
+inline bool NPU::is_readable(const char* path)  // static 
 {
     std::ifstream fp(path, std::ios::in|std::ios::binary);
     bool readable = !fp.fail(); 
@@ -565,7 +567,7 @@ bool NPU::is_readable(const char* path)  // static
 }
 
 
-std::string NPU::_check(const char* path) 
+inline std::string NPU::_check(const char* path) 
 {
     char* py = getenv("PYTHON"); 
     std::stringstream ss ; 
@@ -578,7 +580,7 @@ std::string NPU::_check(const char* path)
     return ss.str(); 
 }
 
-int NPU::check(const char* path)
+inline int NPU::check(const char* path)
 {
     std::string cmd = _check(path); 
     return system(cmd.c_str()); 
@@ -586,14 +588,14 @@ int NPU::check(const char* path)
 
 
 
-std::string NPU::_make_header(const std::vector<int>& shape, const char* descr )
+inline std::string NPU::_make_header(const std::vector<int>& shape, const char* descr )
 {
     std::string dict = _make_dict( shape, descr ); 
     std::string header = _make_header( dict ); 
     return header ; 
 }
 
-std::string NPU::_make_jsonhdr(const std::vector<int>& shape, const char* descr )
+inline std::string NPU::_make_jsonhdr(const std::vector<int>& shape, const char* descr )
 {
     std::string json = _make_json( shape, descr ); 
     return json ; 
@@ -601,7 +603,7 @@ std::string NPU::_make_jsonhdr(const std::vector<int>& shape, const char* descr 
 
 
 
-std::string NPU::_make_dict(const std::vector<int>& shape, const char* descr )
+inline std::string NPU::_make_dict(const std::vector<int>& shape, const char* descr )
 {
     std::stringstream ss ; 
     ss << "{" ; 
@@ -614,7 +616,7 @@ std::string NPU::_make_dict(const std::vector<int>& shape, const char* descr )
     return ss.str(); 
 } 
 
-std::string NPU::_make_json(const std::vector<int>& shape, const char* descr )
+inline std::string NPU::_make_json(const std::vector<int>& shape, const char* descr )
 {
     std::stringstream ss ; 
     ss << "{" ; 
@@ -630,7 +632,7 @@ std::string NPU::_make_json(const std::vector<int>& shape, const char* descr )
 
 
 
-std::string NPU::_make_tuple( const std::vector<int>& shape, bool json )
+inline std::string NPU::_make_tuple( const std::vector<int>& shape, bool json )
 {
     int ndim = shape.size() ;
     std::stringstream ss ; 
@@ -650,7 +652,7 @@ std::string NPU::_make_tuple( const std::vector<int>& shape, bool json )
 
 
 
-std::string NPU::_little_endian_short_string( uint16_t dlen )
+inline std::string NPU::_little_endian_short_string( uint16_t dlen )
 {
     // https://github.com/numpy/numpy/blob/master/doc/neps/nep-0001-npy-format.rst
     // The next 2 bytes form a little-endian unsigned short int: the length of the header data HEADER_LEN
@@ -674,7 +676,7 @@ std::string NPU::_little_endian_short_string( uint16_t dlen )
 }
 
 
-std::string NPU::_make_preamble( int major, int minor )
+inline std::string NPU::_make_preamble( int major, int minor )
 {
     std::string preamble(MAGIC) ; 
     preamble.push_back((char)major); 
@@ -682,7 +684,7 @@ std::string NPU::_make_preamble( int major, int minor )
     return preamble ; 
 }
 
-std::string NPU::_make_header(const std::string& dict)
+inline std::string NPU::_make_header(const std::string& dict)
 {
     uint16_t dlen = dict.size() ;
     uint16_t padding = 16 - ((10 + dlen ) % 16 ) - 1 ;

@@ -7,7 +7,9 @@
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 
+#include "NP.hh"
 #include "Geo.h"
+#include "IAS_Builder.h"
 
 Geo* Geo::fGeo = NULL ; 
 
@@ -227,7 +229,8 @@ void Geo::makeGAS(const std::vector<float>& extents)
 
     std::vector<float> bb ; 
 
-    float fudge = Util::GetEValue("FUDGE", 1.5f)  ; 
+    // fudge enlarges bbox compared to expectation for the geometry 
+    float fudge = Util::GetEValue("FUDGE", 2.0f)  ; 
     std::cout << "Geo::makeGAS fudge " << fudge << " : " ; 
 
     float extent0 = extents[0]*fudge ; 
@@ -343,6 +346,8 @@ Currently a 3D grid of translate transforms with all available GAS repeated modu
 
 void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single )
 {
+    IAS ias = {}; 
+
     int n=int(extent) ;   // 
     int s=int(step) ; 
 
@@ -360,7 +365,6 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
     for(unsigned i=0 ; i < num_gas_modulo ; i++ ) assert(gas_modulo[i] < num_gas) ; 
     for(unsigned i=0 ; i < num_gas_single ; i++ ) assert(gas_single[i] < num_gas) ; 
 
-    std::vector<glm::mat4> trs ; 
 
     for(int i=0 ; i < int(num_gas_single) ; i++)
     {
@@ -374,7 +378,7 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
         tr[2][3] = unsigned_as_float(0) ;   
         tr[3][3] = unsigned_as_float(0) ;   
 
-        trs.push_back(tr); 
+        ias.trs.push_back(tr); 
     }
 
     for(int i=-n ; i <= n ; i+=s ){
@@ -395,13 +399,70 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
         tr[2][3] = unsigned_as_float(0) ;   
         tr[3][3] = unsigned_as_float(0) ;   
 
-        trs.push_back(tr); 
+        ias.trs.push_back(tr); 
     }
     }
     }
 
-    IAS ias = IAS::Build(trs); 
+    IAS_Builder::Build(ias); 
+
     ias.extent0 = extent ; 
     vias.push_back(ias); 
+}
+
+void Geo::writeIAS(unsigned ias_idx, const char* dir) const 
+{
+    const IAS& ias = getIAS(ias_idx); 
+
+    int ni = ias.trs.size() ; 
+    int nj = 4 ;
+    int nk = 4 ;  
+
+    std::cout 
+        << "Geo::writeIAS"
+        << " ni  " << ni
+        << " nj  " << nj
+        << " nk  " << nk
+        << " dir " << dir
+        << std::endl 
+        ;
+
+    std::stringstream ss ; 
+    ss << "ias_" << ias_idx <<  ".npy" ;
+    std::string s = ss.str(); 
+
+    NP::Write(dir, s.c_str(), (float*)ias.trs.data(), ni, nj, nk ); 
+}
+
+// workaround as NP.hh not yet header-only enabled so need to include NP.hh only once 
+void Geo::WriteNP( const char* dir, const char* name, float* data, int ni, int nj, int nk ) // static
+{
+    NP::Write(dir, name, data, ni, nj, nk ); 
+}
+
+void Geo::writeGAS(unsigned gas_idx, const char* dir) const 
+{
+    const GAS& gas = getGAS(gas_idx); 
+
+    int ni = gas.extents.size() ; 
+    int nj = 1 ; 
+    int nk = 1 ; 
+
+    std::stringstream ss ; 
+    ss << "gas_" << gas_idx <<  ".npy" ;
+    std::string s = ss.str(); 
+
+    NP::Write(dir, s.c_str(), (float*)gas.extents.data(), ni, nj, nk ); 
+}
+
+void Geo::write(const char* dir) const 
+{
+    std::cout << "Geo::write " << dir << std::endl ;  
+
+    unsigned num_gas = getNumGAS(); 
+    for(unsigned i=0 ; i < num_gas ; i++) writeGAS(i, dir) ; 
+
+    unsigned num_ias = getNumIAS(); 
+    for(unsigned i=0 ; i < num_ias ; i++) writeIAS(i, dir) ; 
 }
 

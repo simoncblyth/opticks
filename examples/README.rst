@@ -404,8 +404,9 @@ UseOptiX7GeometryInstancedGASComp
 
     * compound GAS, still not working 
     
- 
-    
+UseOptiX7GeometryInstancedGASCompDyn    
+    SBT mechanics worked out, using vectors of BI structs to keep count 
+    Find that have to fudge the bbox larger to get expected results ?
 
 
 

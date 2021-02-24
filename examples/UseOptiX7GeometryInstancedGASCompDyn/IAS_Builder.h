@@ -15,10 +15,8 @@ IAS_Builder
 
 struct IAS_Builder
 {
-    static IAS Build( const std::vector<float>& tr );
-    static IAS Build( const std::vector<glm::mat4>& tr );
-    static IAS Build( const float* vals, unsigned num_vals );
-    static IAS Build( const std::vector<OptixInstance>& instances);
+    static void Build( IAS& ias );  // must has ias.trs set already 
+    static void Build( IAS& ias, const std::vector<OptixInstance>& instances);
 };
 
 

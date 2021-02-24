@@ -91,7 +91,8 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
     for(unsigned i=0 ; i < num_bb ; i++)
     { 
          const float* ptr = bb.data() + i*6u ; 
-         BI bi = MakeCustomPrimitivesBI( ptr, 6u );  
+         unsigned primitiveIndexOffset = i ; 
+         BI bi = MakeCustomPrimitivesBI( ptr, 6u, primitiveIndexOffset );  
          bis.push_back(bi); 
     }
 
@@ -102,7 +103,7 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
 }
 
 
-BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val )
+BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val, unsigned primitiveIndexOffset )
 {
     assert( num_val == 6 ); 
 
@@ -138,8 +139,18 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val )
     buildInputCPA.sbtIndexOffsetBuffer  = bi.d_sbt_index ;
     buildInputCPA.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);
     buildInputCPA.sbtIndexOffsetStrideInBytes = sizeof(unsigned);
-    buildInputCPA.primitiveIndexOffset = 0 ;  // Primitive index bias, applied in optixGetPrimitiveIndex()
-
+    buildInputCPA.primitiveIndexOffset = primitiveIndexOffset ;  // Primitive index bias, applied in optixGetPrimitiveIndex()
+/**
+    517 /// For a given OptixBuildInputCustomPrimitiveArray the number of primitives is defined as
+    518 /// numAabbs.  The primitive index returns is the index into the corresponding build array
+    519 /// plus the primitiveIndexOffset.
+    520 ///
+    521 /// In Intersection and AH this corresponds to the currently intersected primitive.
+    522 /// In CH this corresponds to the primitive index of the closest intersected primitive.
+    523 /// In EX with exception code OPTIX_EXCEPTION_CODE_TRAVERSAL_INVALID_HIT_SBT corresponds to the active primitive index. Returns zero for all other exceptions.
+    524 static __forceinline__ __device__ unsigned int optixGetPrimitiveIndex();
+    525 
+**/
     return bi ; 
 } 
 

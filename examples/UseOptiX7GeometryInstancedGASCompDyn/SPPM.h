@@ -1,9 +1,15 @@
 #pragma once
 
+#include <sstream>
 #include <iostream>
 
-static void SPPM_write( const char* filename, const uchar4* image, int width, int height, bool yflip )
+static void SPPM_write( const char* dir, const char* name, const uchar4* image, int width, int height, bool yflip )
 {
+    std::stringstream ss ; 
+    ss << dir << "/" << name ; 
+    std::string s = ss.str(); 
+    const char* filename = s.c_str(); 
+
     FILE * fp; 
     fp = fopen(filename, "wb");
 

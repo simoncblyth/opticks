@@ -20,8 +20,7 @@ EOU
 prefix=/tmp/$USER/opticks/$name
 
 rm -rf $prefix/ppm
-rm -rf $prefix/npy
-mkdir -p $prefix/{ppm,npy} 
+mkdir -p $prefix/ppm
 
 export PREFIX=$prefix
 export PATH=$PREFIX/bin:$PATH
@@ -34,6 +33,10 @@ spec=$1
 #export GEOMETRY=sphere_containing_grid_of_two_radii_spheres
 export GEOMETRY=sphere_containing_grid_of_two_radii_spheres_compound
 
+dir=$prefix/$GEOMETRY
+mkdir -p $dir
+
+
 #export FUDGE=2
 #export TMIN=2
 
@@ -42,8 +45,8 @@ $bin $spec
 
 [ $? -ne 0 ] && echo $0 : run  FAIL && exit 3
 
-ppm=$prefix/ppm/$name.ppm
-npy=$prefix/npy/$name.npy
+ppm=$dir/pixels.ppm
+npy=$dir/posi.npy
 
 echo name : $name
 echo bin  : $(which $name)

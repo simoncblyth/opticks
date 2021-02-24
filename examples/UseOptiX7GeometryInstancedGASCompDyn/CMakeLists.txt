@@ -49,6 +49,7 @@ set(SOURCES
     IAS_Builder.cc 
     Geo.cc
     SBT.cc 
+    NP.cc
 )
 
 set(OPTIX_SOURCES
