@@ -42,8 +42,7 @@ elif [ "$1" == "npy" ]; then
 elif [ "$1" == "all" ]; then
    all_
 else
-   ppm_
-   npy_
+   all_
 fi 
 
 

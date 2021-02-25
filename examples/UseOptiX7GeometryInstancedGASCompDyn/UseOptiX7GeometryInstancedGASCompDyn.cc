@@ -29,11 +29,8 @@ int main(int argc, char** argv)
     const char* name = "UseOptiX7GeometryInstancedGASCompDyn" ; 
     const char* prefix = getenv("PREFIX");  assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     const char* geometry = getenv("GEOMETRY");  assert( geometry && "expecting GEOMETRY envvar " );
+    const char* outdir = getenv("OUTDIR");  assert( outdir && "expecting OUTDIR envvar " );
 
-    std::stringstream ss ; 
-    ss << prefix << "/" << geometry ; 
-    std::string s = ss.str();  
-    const char* dir = s.c_str(); 
 
     const char* cmake_target = name ; 
     const char* ptx_path = Util::PTXPath( prefix, cmake_target, name ) ; 
@@ -46,7 +43,7 @@ int main(int argc, char** argv)
 
     Ctx ctx ; 
     Geo geo(spec, geometry);   // must be after Ctx creation as creates GAS
-    geo.write(dir);  
+    geo.write(outdir);  
 
     float top_extent = geo.getTopExtent() ;  
     glm::vec4 ce(0.f,0.f,0.f, top_extent*1.4f );   // defines the center-extent of the region to view
@@ -72,8 +69,8 @@ int main(int argc, char** argv)
     CUDA_SYNC_CHECK();
 
     frame.download(); 
-    frame.writePPM(dir, "pixels.ppm");  
-    Geo::WriteNP(  dir, "posi.npy", frame.getIntersectData(), height, width, 4 );
+    frame.writePPM(outdir, "pixels.ppm");  
+    Geo::WriteNP(  outdir, "posi.npy", frame.getIntersectData(), height, width, 4 );
 
     return 0 ; 
 }

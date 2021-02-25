@@ -11,7 +11,7 @@ pass
 
 def plot3d(pos):
     pl = pv.Plotter()
-    pl.add_points(pos)
+    pl.add_points(pos, color='#FFFFFF', point_size=2.0 )  
     pl.show_grid()
     cp = pl.show()
     return cp
@@ -19,7 +19,7 @@ def plot3d(pos):
 
 np.set_printoptions(suppress=True)
 
-dir_ = lambda:os.path.expandvars("/tmp/$USER/opticks/%(name)s/$GEOMETRY") % dict(name=os.path.basename(os.getcwd()))
+dir_ = lambda:os.environ.get("OUTDIR", os.getcwd())
 path_ = lambda name:os.path.join(dir_(), name)
 load_ = lambda name:np.load(path_(name))
 
@@ -54,27 +54,32 @@ def identity( instance_id, primitive_id ):
     buildinput_id = primitive_id
     return  ( instance_id << 16 ) | (primitive_id << 8) | ( buildinput_id << 0 )
 
+def pick_intersect_pixels( posi, pick_id ):
+    sposi = np.where( posi[:,:,3].view(np.uint32) == pick_id )    
+    pick = np.zeros( (*posi.shape[:2], 1), dtype=np.float32 )  
+    pick[sposi] = 1 
+    #pick_posi = posi[sposi]   
+    return pick 
+
+
+
 if __name__ == '__main__':
 
+    base = dir_()
     posi = load_("posi.npy")
     hposi = posi[posi[:,:,3] != 0 ]  
     iposi = hposi[:,3].view(np.uint32)  
 
     #plot3d( hposi[:,:3] )
-
-
-    pick_id = identity( 500, 1 ) 
-    sposi = np.where( posi[:,:,3].view(np.uint32) == pick_id )    
-    pick = np.zeros( (*posi.shape[:2], 1), dtype=np.float32 )  
-    pick[sposi] = 1 
-    pick_posi = posi[sposi]   
+    #pick_id = identity( 500, 1 ) 
+    #pick = pick_intersect_pixels(posi, pick_id )
 
     ias_ = {}
-    for ias_idx, ias_path in enumerate(sorted(glob.glob("%s/ias_*.npy" % dir_()))):
+    for ias_idx, ias_path in enumerate(sorted(glob.glob("%s/ias_*.npy" % base))):
         ias_[ias_idx] = load_(ias_path)
     pass
     gas_ = {}
-    for gas_idx, gas_path in enumerate(sorted(glob.glob("%s/gas_*.npy" % dir_()))):
+    for gas_idx, gas_path in enumerate(sorted(glob.glob("%s/gas_*.npy" % base))):
         gas_[gas_idx] = load_(gas_path)
     pass
 
@@ -88,9 +93,9 @@ if __name__ == '__main__':
     gtrs[:,3,3] = 1.
     gitrs = np.linalg.inv(gtrs)  ## invert all the IAS transforms at once
 
-    print(posi.shape)
-    print(ias_[0].shape)
-    print(posi.shape)
+    #print(posi.shape)
+    #print(ias_[0].shape)
+    #print(posi.shape)
 
     pxid = posi[:,:,3].view(np.uint32)      # pixel identity 
 
@@ -151,9 +156,9 @@ if __name__ == '__main__':
     print("fres\n", fres) 
     abs_dmax = np.max(np.abs(fres[:,:2]))   
     print("abs_dmax:%s" % abs_dmax)
+    print(dir_())
 
-
-if 1:
+if 0:
     pick_plot = False
     fig, axs = plt.subplots(3 if pick_plot else 2 )
     #axs[0].imshow(instance_id, vmin=0, vmax=10)  # big sphere is there, just not visible as too much range
