@@ -11,9 +11,12 @@ export BIN=$(which $name)
 #export GEOMETRY=sphere
 #export GEOMETRY=sphere_two
 #export GEOMETRY=sphere_containing_grid_of_two_radii_spheres
-export GEOMETRY=sphere_containing_grid_of_two_radii_spheres_compound
-export FUDGE=1
-export TMIN=2
+
+# make sensitive to calling environment
+export GEOMETRY=${GEOMETRY:-sphere_containing_grid_of_two_radii_spheres_compound}
+export FUDGE=${FUDGE:-1}
+export TMIN=${TMIN:-2}
+export CAMERATYPE=${CAMERATYPE:-1}
 
 export OUTDIR=$PREFIX/$GEOMETRY/FUDGE_${FUDGE}_TMIN_${TMIN}
 
@@ -21,6 +24,8 @@ echo name     : $name
 echo BIN      : $BIN
 echo FUDGE    : $FUDGE
 echo TMIN     : $TMIN
+echo CAMERATYPE : $CAMERATYPE
+
 echo PREFIX   : $PREFIX
 echo GEOMETRY : $GEOMETRY
 echo OUTDIR   : $OUTDIR

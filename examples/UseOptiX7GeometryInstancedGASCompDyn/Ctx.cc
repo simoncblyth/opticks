@@ -52,7 +52,7 @@ void Ctx::uploadParams()
                 ) );
 }
 
-void Ctx::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_)
+void Ctx::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_, unsigned cameratype )
 {
     params->eye.x = eye_.x ;
     params->eye.y = eye_.y ;
@@ -72,10 +72,12 @@ void Ctx::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V
 
     params->tmin = tmin_ ; 
     params->tmax = tmax_ ; 
+    params->cameratype = cameratype ; 
 
     std::cout << "Ctx::setView"
               << " tmin " << tmin_  
               << " tmax " << tmax_
+              << " cameratype " << cameratype
               << std::endl 
               ;  
 

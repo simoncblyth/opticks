@@ -16,7 +16,7 @@ struct Ctx
 
     Ctx(); 
 
-    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_);
+    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, float tmin_, float tmax_, unsigned cameratype );
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
     void setTop(const AS* top);
 

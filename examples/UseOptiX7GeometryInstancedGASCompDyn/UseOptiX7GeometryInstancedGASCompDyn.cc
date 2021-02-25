@@ -40,6 +40,7 @@ int main(int argc, char** argv)
     unsigned width = small ? 512u : 1024u ; 
     unsigned height = small ? 384u : 768u ; 
     unsigned depth = 1u ; 
+    unsigned cameratype = Util::GetEValue<unsigned>("CAMERATYPE", 0u ); 
 
     Ctx ctx ; 
     Geo geo(spec, geometry);   // must be after Ctx creation as creates GAS
@@ -50,7 +51,7 @@ int main(int argc, char** argv)
     glm::vec3 eye,U,V,W  ;
     Util::GetEyeUVW( ce, width, height, eye, U, V, W ); 
 
-    ctx.setView(eye, U, V, W, geo.tmin, geo.tmax ); 
+    ctx.setView(eye, U, V, W, geo.tmin, geo.tmax, cameratype ); 
     ctx.setSize(width, height, depth); 
 
     AS* top = geo.getTop();

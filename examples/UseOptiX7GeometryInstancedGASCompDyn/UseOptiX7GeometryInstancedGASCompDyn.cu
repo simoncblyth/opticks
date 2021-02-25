@@ -98,13 +98,12 @@ extern "C" __global__ void __raygen__rg()
             static_cast<float>( idx.y ) / static_cast<float>( dim.y )
             ) - 1.0f;
 
-    const float3& origin = params.eye;
-    const float3& U = params.U ;
-    const float3& V = params.V ;
-    const float3& W = params.W ;
-    const float& tmin = params.tmin ; 
-    const float& tmax = params.tmax ; 
-    const float3 direction = normalize( d.x * U + d.y * V + W );
+
+    const unsigned cameratype = params.cameratype ;  
+    const float3 dxyUV = d.x * params.U + d.y * params.V ; 
+    // cameratype 0u:perspective, 1u:orthographic
+    const float3 origin    = cameratype == 0u ? params.eye                     : params.eye + dxyUV    ;
+    const float3 direction = cameratype == 0u ? normalize( dxyUV + params.W )  : normalize( params.W ) ;
 
     float3   normal  = make_float3( 0.5f, 0.5f, 0.5f );
     float    t = 0.f ; 
@@ -115,8 +114,8 @@ extern "C" __global__ void __raygen__rg()
         params.handle,
         origin,
         direction,
-        tmin,
-        tmax,
+        params.tmin,
+        params.tmax,
         &normal, 
         &t, 
         &position,
