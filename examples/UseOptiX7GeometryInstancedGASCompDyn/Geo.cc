@@ -10,6 +10,7 @@
 #include "NP.hh"
 #include "Geo.h"
 #include "IAS_Builder.h"
+#include "GAS_Builder.h"
 
 Geo* Geo::fGeo = NULL ; 
 
@@ -207,15 +208,12 @@ with symmetric extent about the origin.
 **/
 void Geo::makeGAS(float extent)
 {
-    std::cout << "Geo::makeGAS extent " << extent << std::endl ; 
     std::vector<float> extents ;
     extents.push_back(extent);  
     makeGAS(extents); 
 }
-
 void Geo::makeGAS(float extent0, float extent1)
 {
-    std::cout << "Geo::makeGAS extent0 " << extent0 << " extent1 " << extent1  << std::endl ; 
     std::vector<float> extents ;
     extents.push_back(extent0);  
     extents.push_back(extent1);  
@@ -231,10 +229,9 @@ void Geo::makeGAS(const std::vector<float>& extents)
 
     // fudge enlarges bbox compared to expectation for the geometry 
     float fudge = Util::GetEValue("FUDGE", 1.0f)  ; 
-    std::cout << "Geo::makeGAS fudge " << fudge << " : " ; 
+    std::cout << "Geo::makeGAS fudge " << fudge << "    fudged extents : " ; 
 
     float extent0 = extents[0]*fudge ; 
-
     for(unsigned i=0 ; i < extents.size() ; i++)
     {
         float extent = extents[i]*fudge ;
@@ -251,36 +248,23 @@ void Geo::makeGAS(const std::vector<float>& extents)
     }
     std::cout << std::endl ; 
 
-    GAS gas = GAS::Build(bb); 
+
+    GAS gas = {} ; 
+    GAS_Builder::Build(gas, bb); 
+
+
     gas.extent0 = extent0 ; 
     gas.extents = extents ; 
+
+    addGAS(gas); 
+}
+
+void Geo::addGAS(const GAS& gas)
+{
     vgas.push_back(gas); 
-
     unsigned num_bi = gas.bis.size() ;
-
     assert(gas.num_sbt_rec == num_bi ); 
     nbis.push_back(num_bi); 
-}
-
-unsigned Geo::getNumGAS() const 
-{
-    return vgas.size() ; 
-}
-unsigned Geo::getNumIAS() const 
-{
-    return vias.size() ; 
-}
-unsigned Geo::getNumBI() const 
-{
-    unsigned tot = 0 ; 
-    for(unsigned i=0 ; i < nbis.size() ; i++) tot += nbis[i] ; 
-    return tot ; 
-}
-
-unsigned Geo::getNumBI(unsigned gas_idx) const 
-{
-    assert( gas_idx < nbis.size()); 
-    return nbis[gas_idx] ; 
 }
 
 unsigned Geo::getOffsetBI(unsigned gas_idx) const 
@@ -296,10 +280,53 @@ unsigned Geo::getOffsetBI(unsigned gas_idx) const
     return offset ;     
 } 
 
+
+/**
+Geo::getOffsetBI
+------------------
+
+Example::
+
+    GAS_0            --> 0 
+        BI_0 
+        BI_1
+    GAS_1            --> 2 
+        BI_0 
+        BI_1
+    GAS_2            --> 4 
+        BI_0 
+
+Simply by keeping count of build inputs (BI) used for each GAS.
+
+**/
+
+
+
+
+
+unsigned Geo::getNumGAS() const 
+{
+    return vgas.size() ; 
+}
+unsigned Geo::getNumIAS() const 
+{
+    return vias.size() ; 
+}
+unsigned Geo::getNumBI() const // total 
+{
+    unsigned tot = 0 ; 
+    for(unsigned i=0 ; i < nbis.size() ; i++) tot += nbis[i] ; 
+    return tot ; 
+}
+unsigned Geo::getNumBI(unsigned gas_idx) const 
+{
+    assert( gas_idx < nbis.size()); 
+    return nbis[gas_idx] ; 
+}
 void Geo::dumpOffsetBI() const 
 {
     unsigned num_gas = getNumGAS(); 
-    std::cout << " num_gas " << num_gas << std::endl ; 
+    std::cout << "Geo::dumpOffsetBI  num_gas " << num_gas << std::endl ; 
     for(unsigned gas_idx=0 ; gas_idx < num_gas ; gas_idx++)
     {
         unsigned num_bi = getNumBI(gas_idx); 
@@ -313,11 +340,9 @@ void Geo::dumpOffsetBI() const
     }
 }
 
-
-
 const GAS& Geo::getGAS(int gas_idx_) const
 {
-    unsigned gas_idx = gas_idx_ < 0 ? vgas.size() + gas_idx_ : gas_idx_ ;  
+    unsigned gas_idx = gas_idx_ < 0 ? vgas.size() + gas_idx_ : gas_idx_ ;   // -ve counts from end
     assert( gas_idx < vgas.size() ); 
     return vgas[gas_idx] ; 
 }
@@ -339,40 +364,59 @@ float unsigned_as_float( unsigned u )
 Geo::makeIAS
 -------------
 
+grid_extent
+    half side size of the grid   
+
+grid_step
+    between grid nodes
+
+gas_modulo
+    vector of gas_idx which are modulo cycled in a 3d grid array  
+
+gas_single
+    vector of gas_idx which are singly included into the IAS 
+    with an identity transform
+
+
 Create vector of transfoms and creat IAS from that.
 Currently a 3D grid of translate transforms with all available GAS repeated modulo
 
 **/
 
-void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single )
+void Geo::makeIAS(float grid_extent, float grid_step, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single )
 {
     IAS ias = {}; 
 
-    int n=int(extent) ;   // 
-    int s=int(step) ; 
-
-    unsigned num_gas = getNumGAS(); 
+    int n=int(grid_extent) ;   // 
+    int s=int(grid_step) ; 
     unsigned num_gas_modulo = gas_modulo.size() ; 
     unsigned num_gas_single = gas_single.size() ; 
+    unsigned num_gas = getNumGAS(); 
 
-    std::cout << "Geo::makeIAS"
-              << " num_gas " << num_gas
-              << " num_gas_modulo " << num_gas_modulo
-              << " num_gas_single " << num_gas_single
-              << std::endl
-              ;
+    std::cout 
+        << "Geo::makeIAS"
+        << " grid_extent " << grid_extent
+        << " grid_step " << grid_step
+        << " num_gas_modulo " << num_gas_modulo
+        << " num_gas_single " << num_gas_single
+        << " num_gas " << num_gas
+        << std::endl
+        ;
 
+    // check the input grid_idx are valid 
     for(unsigned i=0 ; i < num_gas_modulo ; i++ ) assert(gas_modulo[i] < num_gas) ; 
     for(unsigned i=0 ; i < num_gas_single ; i++ ) assert(gas_single[i] < num_gas) ; 
 
 
+    // TODO: make an identity bitfield combining transform_idx and gas_idx 
+
     for(int i=0 ; i < int(num_gas_single) ; i++)
     {
-        unsigned instance_idx = ias.trs.size() ;  // 0-based index
+        unsigned transform_idx = ias.trs.size() ;  // 0-based instance index within the IAS
         unsigned gas_idx = gas_single[i] ; 
 
         glm::mat4 tr(1.f) ;  // identity transform for the large sphere 
-        tr[0][3] = unsigned_as_float(instance_idx); 
+        tr[0][3] = unsigned_as_float(transform_idx); 
         tr[1][3] = unsigned_as_float(gas_idx) ;
         tr[2][3] = unsigned_as_float(0) ;   
         tr[3][3] = unsigned_as_float(0) ;   
@@ -384,15 +428,15 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
     for(int j=-n ; j <= n ; j+=s ){
     for(int k=-n ; k <= n ; k+=s ){
 
-        glm::vec3 tlat(i*1.f,j*1.f,k*1.f) ; 
+        glm::vec3 tlat(i*1.f,j*1.f,k*1.f) ;  // grid translation 
         glm::mat4 tr(1.f) ;
         tr = glm::translate(tr, tlat );
 
-        unsigned instance_idx = ias.trs.size();   // 0-based index 
-        unsigned gas_modulo_idx = instance_idx % num_gas_modulo ; 
+        unsigned transform_idx = ias.trs.size();   // 0-based instance index within the IAS
+        unsigned gas_modulo_idx = transform_idx % num_gas_modulo ; 
         unsigned gas_idx = gas_modulo[gas_modulo_idx] ; 
 
-        tr[0][3] = unsigned_as_float(instance_idx); 
+        tr[0][3] = unsigned_as_float(transform_idx); 
         tr[1][3] = unsigned_as_float(gas_idx) ;
         tr[2][3] = unsigned_as_float(0) ;   
         tr[3][3] = unsigned_as_float(0) ;   
@@ -404,7 +448,7 @@ void Geo::makeIAS(float extent, float step, const std::vector<unsigned>& gas_mod
 
     IAS_Builder::Build(ias); 
 
-    ias.extent0 = extent ; 
+    ias.extent0 = grid_extent ; 
     vias.push_back(ias); 
 }
 

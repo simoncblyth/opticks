@@ -2,10 +2,15 @@
 
 #include <vector>
 #include "AS.h"
+#include "BI.h"
 
 struct GAS : public AS
 {
-    static GAS Build(const std::vector<float>& bb ); // must contain a multiple of 6 min/max bbox floats  
+
+    std::vector<float>      extents ; 
+    unsigned                num_sbt_rec ; 
+    std::vector<BI>         bis ; 
+
 };
 
 

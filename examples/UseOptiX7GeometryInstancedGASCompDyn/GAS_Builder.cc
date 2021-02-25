@@ -15,14 +15,13 @@
 #include "GAS_Builder.h"
 
 /**
-GAS_Builder::Build
---------------------
+GAS_Builder::MakeCustomPrimitivesBI
+--------------------------------------
 
-Potentially multiple bb in a single BuildInput.
-Each bb could be with a CSG tree represented 
-inside, so its going to need a collection of buffers.
-Hmm perhaps one sbt entry per bb (or could be more).
-
+Have decided to have 1 bbox correspond to 1 BI (buildInput)
+although multiple are possible.  Doing this 
+because it feels simplest and as need to implement the CSG tree
+within that BI.
 
 700p17
     Acceleration structures over custom primitives are supported by referencing an
@@ -30,10 +29,6 @@ Hmm perhaps one sbt entry per bb (or could be more).
     with one buffer per motion key. The layout of an AABB is defined in the struct
     OptixAabb. Here is an example of how to specify the build input for custom
     primitives:
-
-    * Q:optixWhitted uses 3 bbox in one build and seems not to be doing motion ?
-
-
 
 700p18 
     Each build input maps to one or more consecutive SBT records that control
@@ -43,64 +38,7 @@ Hmm perhaps one sbt entry per bb (or could be more).
     If only a single SBT record is requested, 
     all primitives reference this same unique SBT record. 
 
-
-Consider a set of 3 spheres of different radii, each with 
-different bounds but sharing the same intersect program which 
-uses the radius it reads from the SbtRecord. 
-
-
-
-
-Thoughts 
-
-* one SBT record per bb (ie per CSG solid) or one SBT for all solids within the GAS ?
-
-* GParts is already concatenated with everything in buffers so actually 
-  going with a single SBT record might be closest to OptiX6 geometry  
-
-* how to handle variability (eg the number of nodes, transforms, planes in the trees)
-  actually in the sum of the trees : all examples I havce seen have values for everything 
-  there in the SBT (not pointers)
-
-* sizes are variable for each GAS but they are known CPU side, 
-  perhaps could use a CSGList template type with 4 or 5 integer template arguments 
-  causing a type with appropriately sized arrays ?  For the dimensions
-  of the primBuffer, tranBuffer etc...
-
-
-Perhaps the best would be per-bb records and then a GAS global one
-with the concatenated ?
-
-GParts could be de-concatenated ? Hmm not so trivial probably index offsets 
-to fix up.
-
-
-
 **/
-
-GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
-{
-    unsigned num_val = bb.size() ; 
-    assert( num_val % 6 == 0 );   
-    unsigned num_bb = num_val / 6 ;  
-    unsigned num_bytes = num_val*sizeof(float);  
-
-    std::cout << "GAS_Builder::Build num_val " << num_val << " num_bb " << num_bb << std::endl ;  
-
-    std::vector<BI> bis ; 
-    for(unsigned i=0 ; i < num_bb ; i++)
-    { 
-         const float* ptr = bb.data() + i*6u ; 
-         unsigned primitiveIndexOffset = i ; 
-         BI bi = MakeCustomPrimitivesBI( ptr, 6u, primitiveIndexOffset );  
-         bis.push_back(bi); 
-    }
-
-    std::cout << "GAS_Builder::Build bis.size " << bis.size() << std::endl ; 
-
-    GAS gas = Build(bis); 
-    return gas ; 
-}
 
 
 BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val, unsigned primitiveIndexOffset )
@@ -140,40 +78,52 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val, unsign
     buildInputCPA.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);
     buildInputCPA.sbtIndexOffsetStrideInBytes = sizeof(unsigned);
     buildInputCPA.primitiveIndexOffset = primitiveIndexOffset ;  // Primitive index bias, applied in optixGetPrimitiveIndex()
-/**
-    517 /// For a given OptixBuildInputCustomPrimitiveArray the number of primitives is defined as
-    518 /// numAabbs.  The primitive index returns is the index into the corresponding build array
-    519 /// plus the primitiveIndexOffset.
-    520 ///
-    521 /// In Intersection and AH this corresponds to the currently intersected primitive.
-    522 /// In CH this corresponds to the primitive index of the closest intersected primitive.
-    523 /// In EX with exception code OPTIX_EXCEPTION_CODE_TRAVERSAL_INVALID_HIT_SBT corresponds to the active primitive index. Returns zero for all other exceptions.
-    524 static __forceinline__ __device__ unsigned int optixGetPrimitiveIndex();
-    525 
-**/
     return bi ; 
 } 
 
 
+void GAS_Builder::Build(GAS& gas, const std::vector<float>& bb )  // static
+{
+    unsigned num_val = bb.size() ; 
+    assert( num_val % 6 == 0 );   
+    unsigned num_bb = num_val / 6 ;  
+    unsigned num_bytes = num_val*sizeof(float);  
 
-GAS GAS_Builder::Build(const std::vector<BI>& bis)   // static 
+    std::cout << "GAS_Builder::Build num_val " << num_val << " num_bb " << num_bb << std::endl ;  
+
+    for(unsigned i=0 ; i < num_bb ; i++)
+    { 
+         const float* ptr = bb.data() + i*6u ; 
+         unsigned primitiveIndexOffset = i ; 
+         BI bi = MakeCustomPrimitivesBI( ptr, 6u, primitiveIndexOffset );  
+         gas.bis.push_back(bi); 
+    }
+
+    std::cout << "GAS_Builder::Build bis.size " << gas.bis.size() << std::endl ; 
+
+    Build(gas); 
+}
+
+
+
+
+void GAS_Builder::Build(GAS& gas)   // static 
 { 
     std::cout << "GAS_Builder::Build" << std::endl ;  
 
-    GAS out = {} ; 
-    out.num_sbt_rec = bis.size() ;  
-    out.bis = bis ; 
+    assert( gas.bis.size() > 0 ); 
+    gas.num_sbt_rec = gas.bis.size() ;  
 
     std::vector<OptixBuildInput> buildInputs ; 
-    for(unsigned i=0 ; i < bis.size() ; i++)
+    for(unsigned i=0 ; i < gas.bis.size() ; i++)
     {
-        const BI& bi = bis[i]; 
+        const BI& bi = gas.bis[i]; 
         buildInputs.push_back(bi.buildInput); 
     }
 
     std::cout 
         << "GAS_Builder::Build" 
-        << " bis.size " << bis.size()
+        << " gas.bis.size " << gas.bis.size()
         << " buildInputs.size " << buildInputs.size()
         << std::endl 
         ;  
@@ -222,7 +172,7 @@ GAS GAS_Builder::Build(const std::vector<BI>& bis)   // static
                                   gas_buffer_sizes.tempSizeInBytes,
                                   d_buffer_temp_output_gas_and_compacted_size,
                                   gas_buffer_sizes.outputSizeInBytes,
-                                  &out.handle,
+                                  &gas.handle,
                                   &emitProperty,      // emitted property list
                                   1                   // num emitted properties
                                   ) );
@@ -235,21 +185,20 @@ GAS GAS_Builder::Build(const std::vector<BI>& bis)   // static
 
     if( compacted_gas_size < gas_buffer_sizes.outputSizeInBytes )
     {
-        CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &out.d_buffer ), compacted_gas_size ) );
+        CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &gas.d_buffer ), compacted_gas_size ) );
 
         // use handle as input and output
         OPTIX_CHECK( optixAccelCompact( Ctx::context, 
                                         0, 
-                                        out.handle, 
-                                        out.d_buffer, 
+                                        gas.handle, 
+                                        gas.d_buffer, 
                                         compacted_gas_size, 
-                                        &out.handle ) );
+                                        &gas.handle ) );
 
         CUDA_CHECK( cudaFree( (void*)d_buffer_temp_output_gas_and_compacted_size ) );
     }
     else
     {
-        out.d_buffer = d_buffer_temp_output_gas_and_compacted_size;
+        gas.d_buffer = d_buffer_temp_output_gas_and_compacted_size;
     }
-    return out ; 
 }

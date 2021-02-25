@@ -213,9 +213,10 @@ extern "C" __global__ void __closesthit__ch()
 
     unsigned bindex = optixGetAttribute_7() ;
 
-    unsigned instance_id = 1u + optixGetInstanceIndex() ;
+    //TODO: try optixGetInstanceId() to pass bitfield with gas_idx and transform_idx, NB ~0u for None 
+    unsigned instance_id = 1u + optixGetInstanceIndex() ;    // see IAS_Builder::Build
     unsigned primitive_id = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI 
-    unsigned buildinput_id = 1u + bindex ; 
+    unsigned buildinput_id = 1u + bindex ;   // TODO: get rid of this, its the same as primitive_id
 
     unsigned identity = ( instance_id << 16 ) | (primitive_id << 8) | ( buildinput_id << 0 )  ;
  

@@ -40,24 +40,19 @@ void IAS_Builder::Build(IAS& ias) // static
         
         glm::mat4 imat = glm::transpose(mat);
 
-        glm::uvec4 idv ;
+        glm::uvec4 idv ; // after transposiing the last row contains the identity info 
         memcpy( glm::value_ptr(idv), &imat[3], 4*sizeof(float) ); 
 
         unsigned instanceId = idv.x ;  
         unsigned gasIdx = idv.y ;   
-
         const GAS& gas = geo->getGAS(gasIdx); 
-        unsigned offset_bi = geo->getOffsetBI(gasIdx);
 
         OptixInstance instance = {} ; 
         instance.flags = flags ;
-
-        instance.instanceId = instanceId ; 
-        instance.sbtOffset = offset_bi ;           
-
+        instance.instanceId = instanceId ; // TODO: encode gasIdx into this
+        instance.sbtOffset = geo->getOffsetBI(gasIdx);            
         instance.visibilityMask = 255;
         instance.traversableHandle = gas.handle ; 
-
         memcpy( instance.transform, glm::value_ptr(imat), 12*sizeof( float ) );
     
         instances.push_back(instance); 
@@ -74,7 +69,6 @@ void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
 
     unsigned numBytes = sizeof( OptixInstance )*numInstances ; 
 
-    ias.num_sbt_rec = 0u ; // not yet used for IAS
 
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &ias.d_instances ), numBytes ) );
     CUDA_CHECK( cudaMemcpy(

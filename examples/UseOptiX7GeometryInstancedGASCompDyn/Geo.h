@@ -31,6 +31,8 @@ struct Geo
     const IAS& getIAS(int ias_idx_) const ; 
 
     void makeGAS(float extent);
+    void addGAS(const GAS& gas);
+
     void makeGAS(float extent0, float extent1);
     void makeGAS(const std::vector<float>& extents);
     void makeIAS(float extent, float step, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single );
