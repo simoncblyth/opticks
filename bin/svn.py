@@ -193,7 +193,7 @@ class Path(dict):
         return "%1s %s %s " % (self["st"], dig[:ldig], self["path"])
 
 class WC(object):
-    rstpat = re.compile("^(?P<st>\S)\s*(?P<dig>\S*)\s*(?P<path>\S*)$")
+    fstpat = re.compile("^(?P<st>\S)\s*(?P<dig>\S*)\s*(?P<path>\S*)$")
     lstpat = re.compile("^\s*(?P<st>\S*)\s*(?P<path>\S*)$")
 
     @classmethod
@@ -229,23 +229,29 @@ class WC(object):
             defaults["chdir"] = "~/junotop/offline" 
             defaults["rbase"] = "P:junotop/offline" 
             defaults["rstatpath"] = "~/rstat.txt" 
+            defaults["lstatpath"] = "~/lstat.txt" 
             defaults["rstatcmd"] = "ssh P opticks/bin/svn.py"
+            defaults["lstatcmd"] = "svn.py"
             defaults["statcmd"] = "svn status"
         elif vc == "git":
             defaults["chdir"] = "~/opticks" 
             defaults["rbase"] = "P:opticks" 
             defaults["rstatpath"] = "~/rstat_opticks.txt" 
+            defaults["lstatpath"] = "~/lstat_opticks.txt" 
             defaults["rstatcmd"] = "ssh P opticks/bin/git.py"
+            defaults["lstatcmd"] = "git.py"
             defaults["statcmd"] = "git status --porcelain"
         else:
             pass
         pass
         parser = argparse.ArgumentParser(doc)
-        parser.add_argument( "cmd", default=["st"], nargs="*", choices=["rup","loc","rem","st","get","put","cf","cfu","sync","scp", ["st"]], 
+        parser.add_argument( "cmd", default=["st"], nargs="*", choices=["rup","lup","loc","rem","st","get","put","cf","cfu","sync","scp", ["st"]], 
             help="command specifying what to do with the working copy" ) 
         parser.add_argument( "--chdir", default=defaults["chdir"], help="chdir here" ) 
-        parser.add_argument( "--rstatpath", default=defaults["rstatpath"], help="path to remote status file" ) 
+        parser.add_argument( "--rstatpath", default=defaults["rstatpath"], help="local path to remote status file" ) 
+        parser.add_argument( "--lstatpath", default=defaults["lstatpath"], help="local path to local status file" ) 
         parser.add_argument( "--rstatcmd", default=defaults["rstatcmd"], help="command to invoke the remote version of this script" )
+        parser.add_argument( "--lstatcmd", default=defaults["lstatcmd"], help="command to invoke the local version of this script" )
         parser.add_argument( "--rbase", default=defaults["rbase"], help="remote svn working copy" ) 
         parser.add_argument( "--check", default=False, action="store_true", help="check digest with os alternative md5 or md5sum" ) 
         parser.add_argument( "--ldig", type=int, default=-1, help="length of digest" ) 
@@ -256,27 +262,28 @@ class WC(object):
         logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
         args.chdir = expand_(args.chdir)
         args.rstatpath = expand_(args.rstatpath)
+        args.lstatpath = expand_(args.lstatpath)
 
         args.vc = vc
         args.statcmd = defaults["statcmd"]
         return args
 
     @classmethod
-    def FromRemoteStatusFile(cls, rstatpath, ldig):
+    def FromStatusFile(cls, statpath, ldig):
         """
-        :param rstatpath:
+        :param statpath:
         :param ldig: int length of digest
         :return rem: WC instance
 
         Parse the status output of a remote instance of this script
         """
-        log.debug("reading %s " % rstatpath) 
-        lines = map(str.rstrip, open(rstatpath, "r").readlines())
+        log.debug("reading %s " % statpath) 
+        lines = map(str.rstrip, open(statpath, "r").readlines())
         paths = []
         for line in lines:
             if line.startswith("Warning: Permanently added"): continue
             if len(line) == 3: continue  # skip the rem/loc title
-            m = cls.rstpat.match(line)
+            m = cls.fstpat.match(line)
             assert m, line
             d = m.groupdict()
             d["ldig"] = ldig
@@ -408,25 +415,39 @@ if __name__ == '__main__':
 
     if "rup" in args.cmd or "cfu" in args.cmd:
         log.info("running args.rstatcmd : %s " % args.rstatcmd )
-        rc,out = getstatusoutput(args.rstatcmd)
+        rc,rup_out = getstatusoutput(args.rstatcmd)
         assert rc == 0, (rc, "maybe the ssh tunnel is not running") 
-        #print(out)
-        log.info("writing out to args.rstatpath : %s " % args.rstatpath)
-        open(args.rstatpath,"w").write(out)
+        #print(rup_out)
+        log.info("writing rup_out to args.rstatpath : %s " % args.rstatpath)
+        open(args.rstatpath,"w").write(rup_out)
+    pass
+
+    if "lup" in args.cmd or "cfu" in args.cmd:
+        log.info("running args.lstatcmd : %s " % args.lstatcmd )
+        rc,lup_out = getstatusoutput(args.lstatcmd)
+        assert rc == 0, (rc, "lstatcmd failed") 
+        #print(lup_out)
+        log.info("writing lup_out to args.lstatpath : %s " % args.lstatpath)
+        open(args.lstatpath,"w").write(lup_out)
     pass
 
     if os.path.exists(args.rstatpath):
-        rem = WC.FromRemoteStatusFile(args.rstatpath, args.ldig)
+        rem = WC.FromStatusFile(args.rstatpath, args.ldig)
     else:
         rem = None
+    pass 
+
+    if os.path.exists(args.lstatpath):
+        lup = WC.FromStatusFile(args.lstatpath, args.ldig)
+    else:
+        lup = None
     pass 
 
     os.chdir(args.chdir)
     loc = WC.FromStatus(args)
 
     if loc and rem:
-        cf = WC.FromComparison(loc,rem, args.ldig)
-        #cf = None
+        cf = WC.FromComparison(loc, rem, args.ldig)
     else:
         cf = None
     pass
@@ -470,10 +491,9 @@ if __name__ == '__main__':
                     assert 0, stlr
                 pass
             pass
-        elif cmd == "rup":
+        elif cmd == "rup" or cmd == "lup":
             pass
         else:
             assert 0, cmd
         pass
     pass
-

@@ -6,6 +6,8 @@ source ./env.sh
 
 ppm=$OUTDIR/pixels.ppm
 npy=$OUTDIR/posi.npy
+mkdir -p $OUTDIR 
+
 
 ppm_()
 {
