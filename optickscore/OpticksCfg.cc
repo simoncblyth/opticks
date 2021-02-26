@@ -335,6 +335,7 @@ void OpticksCfg<Listener>::init()
 
 
 
+
    m_desc.add_options()
        ("dumpprofile",   "dump runtime profile, see Opticks::postpropagate") ; 
 

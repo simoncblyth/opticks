@@ -214,6 +214,23 @@ unsigned SPack::uint_from_float(const float f)
     return uif.u ; 
 }
 
+float SPack::unsigned_as_float( const unsigned u ) 
+{
+    union { unsigned u; int i; float f; } uif ;   
+    uif.u = u  ;   
+    return uif.f ; 
+}
+
+unsigned SPack::float_as_unsigned( const float f ) 
+{
+    union { unsigned u; int i; float f; } uif ;   
+    uif.f = f  ;   
+    return uif.u ; 
+}
+
+
+
+
 
 
 /**

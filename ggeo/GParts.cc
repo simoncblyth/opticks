@@ -28,6 +28,7 @@
 
 #include "BStr.hh"
 #include "BFile.hh"
+#include "SPack.hh"
 #include "OpticksCSG.h"
 
 // npy-
@@ -215,7 +216,7 @@ GMergedMesh::mergeVolumeAnalytic
 
 **/
 
-GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt ) // static
+GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
 {
     LOG(LEVEL) << "[  deferred creation from GPts" ; 
 
@@ -253,8 +254,16 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, 
         {
             LOG(error) << " pt " << i << " invert_trs num_mismatch : " << num_mismatch ; 
             mismatch_pt.push_back(i); 
+            if(mismatch_placements)
+            {
+                glm::mat4 placement_(placement);
+                placement_[0][3] = SPack::unsigned_as_float(i);  
+                placement_[1][3] = SPack::unsigned_as_float(lvIdx);  
+                placement_[2][3] = SPack::unsigned_as_float(ndIdx);  
+                placement_[3][3] = SPack::unsigned_as_float(num_mismatch);  
+                mismatch_placements->push_back(placement_); 
+            }
         }
-
         com->add( parts ); 
     }
 

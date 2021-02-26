@@ -59,6 +59,7 @@ struct testGPts
     GPts*   pts ; 
     unsigned verbosity ; 
     unsigned num_mismatch_pt ; 
+    std::vector<glm::mat4> mismatch_placements ; 
     GParts* parts2 ; 
     std::string path ; 
     int rc ; 
@@ -74,11 +75,12 @@ struct testGPts
         pts(mm->getPts()),
         verbosity(1), 
         num_mismatch_pt(0),
-        parts2(GParts::Create( pts, solids, num_mismatch_pt)),
+        parts2(GParts::Create( pts, solids, num_mismatch_pt, &mismatch_placements)),
         path(BFile::FormPath("$TMP/ggeo/GPtsTest",BStr::itoa(imm))),
         rc(0)
     {
         assert( num_mismatch_pt == 0);
+        assert( mismatch_placements.size() == 0);
         init();
         compare(); 
         save(); 

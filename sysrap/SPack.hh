@@ -60,6 +60,10 @@ class SYSRAP_API SPack {
          static float uint_as_float( const unsigned f ); 
          static unsigned uint_from_float( const float f ); 
 
+         static float unsigned_as_float( const unsigned u ) ;
+         static unsigned float_as_unsigned( const float f ) ;
+
+
          template <int NUM_BITS>
          static int unsigned_as_int(unsigned value);
 

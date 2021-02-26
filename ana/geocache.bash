@@ -318,12 +318,14 @@ geocache-tmp(){ echo /tmp/$USER/opticks/$1 ; }
 
 geocache-create-()
 {
+    local msg="=== $FUNCNAME :"
     local iwd=$PWD
     local tmp=$(geocache-tmp $FUNCNAME)
     mkdir -p $tmp && cd $tmp
          
     $(opticks-prefix)/bin/o.sh --okx4test --g4codegen --deletegeocache $*
 
+    echo $msg logs are in tmp:$tmp
     cd $iwd
 }
 
@@ -635,19 +637,17 @@ geocache-dx1-keydir(){ OPTICKS_KEY=$(geocache-dx1-key) geocache-keydir ; }
 
 geocache-j21-env()
 {
-   unset GParts 
-   #export GParts=INFO
+   #unset GParts 
+   #unset GGeo
+   export GParts=INFO
+   export GGeo=INFO
+   export OPTICKS_GGEO_SAVE_MISMATCH_PLACEMENTS=1
 }
 
 geocache-j21-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-j21) --geocenter --noviz $* ; }     
 geocache-j21-comment(){ echo shakedown ; }     
 geocache-j21(){   geocache-j21-env ; geocache-j21- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
-
-
-
-
-
-
+geocache-j21-key(){  echo OKX4Test.X4PhysicalVolume.lWorld0x344f8d0_PV.732a5daf83a7153b316a2013fcfb1fc2 ; }
 
 
 

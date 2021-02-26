@@ -1378,6 +1378,17 @@ NPY<T>* NPY<T>::make(const std::vector<glm::vec4>& vals)
 }
 
 
+/**
+template <typename T>
+NPY<T>* NPY<T>::make(const std::vector<glm::mat4>& mats)
+{
+    NPY<T>* buf = NPY<T>::make(mats.size(), 4, 4);
+    buf->zero();
+    buf->read(glm::value_ptr(mats)); 
+    return buf ; 
+}
+**/
+
 
 
 

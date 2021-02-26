@@ -366,6 +366,9 @@ o-main()
 
    #[ $RC -eq 0 ] && echo $postline && eval $postline 
    echo $postline && eval $postline 
+
+   echo PWD : $PWD 
+   ls -l *.log 
 }
 
 o-main

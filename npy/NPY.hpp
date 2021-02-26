@@ -139,6 +139,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_identity_transforms(unsigned ni);
        static NPY<T>* make_identity_transforms(unsigned ni, unsigned nj);
        static NPY<T>* make(const std::vector<glm::vec4>& vals);
+       //static NPY<T>* make(const std::vector<glm::mat4>& mats);
 
        static NPY<T>* make_from_vec(const std::vector<T>& vals);
        static NPY<T>* make_from_str(const char* s, char delim=',');

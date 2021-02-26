@@ -225,7 +225,8 @@ class GGEO_API GParts {
     public:
       //
         static int     Compare(const GParts* a, const GParts* b, bool dump ); 
-        static GParts* Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt  ); 
+        static GParts* Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements );
+
         static GParts* Make(const npart& pt, const char* spec);
         static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
         static GParts* Make(const NCSG* tree, const char* spec, unsigned ndIdx );

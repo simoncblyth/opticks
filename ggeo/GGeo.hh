@@ -433,7 +433,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         unsigned int                       m_mesh_verbosity ; 
 
     private:
-
+        bool                               m_save_mismatch_placements ;
         int                                m_placeholder_last ; 
 
 };

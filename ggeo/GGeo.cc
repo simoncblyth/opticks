@@ -24,6 +24,7 @@
 #include <csignal>
 
 #include "SSys.hh"
+#include "SStr.hh"
 #include "SLog.hh"
 #include "BStr.hh"
 #include "BMap.hh"
@@ -169,6 +170,7 @@ GGeo::GGeo(Opticks* ok, bool live)
 #ifdef OLD_SCENE
    m_gscene(NULL),
 #endif
+   m_save_mismatch_placements(SSys::getenvbool("OPTICKS_GGEO_SAVE_MISMATCH_PLACEMENTS")),
    m_placeholder_last(0)
 {
    init(); 
@@ -546,10 +548,12 @@ Invoked from GGeo::loadFromCache immediately after loading the libs
 
 void GGeo::postLoadFromCache()
 {
+    LOG(LEVEL) << "[" ; 
     loadCacheMeta();
 
     close();                  // formerly OpticksHub::loadGeometry
     deferredCreateGParts();   // formerly OpticksHub::init   <-- this is needed for live running also  
+    LOG(LEVEL) << "]" ; 
 }
 
 /**
@@ -1327,11 +1331,29 @@ void GGeo::deferredCreateGParts()
 
         LOG(LEVEL) << "[ GParts::Create i/nmm " << i << "/" << nmm ; 
         unsigned num_mismatch_pt = 0 ; 
-        GParts* parts = GParts::Create( pts, solids, num_mismatch_pt ) ; 
+        std::vector<glm::mat4> mismatch_placements ; 
+        GParts* parts = GParts::Create( pts, solids, num_mismatch_pt, &mismatch_placements ) ; 
 
         if(num_mismatch_pt > 0 )
         {
             LOG(error) << "num_mismatch_pt " << num_mismatch_pt << " for GMergedMesh i/nmm " << i << "/" << nmm ; 
+        }
+
+        if(mismatch_placements.size() > 0 )
+        {
+            LOG(error) << "mismatch_placements " << mismatch_placements.size() ; 
+            const char* path = SStr::Concat("$TMP/GGeo__deferredCreateGParts/mm", i, "/mismatch_placements.npy") ;
+            if( m_save_mismatch_placements )
+            {
+                NPY<float>* a = NPY<float>::make(mismatch_placements.size(), 4, 4); 
+                a->read( mismatch_placements.data() );  
+                LOG(error) << "saving " << path ; 
+                a->save(path); 
+            }
+            else
+            {
+                LOG(error) << "save mismatch placements by setting envvar : OPTICKS_GGEO_SAVE_MISMATCH_PLACEMENTS path " << path  ; 
+            } 
         }
 
         LOG(LEVEL) << "] GParts::Create i/nmm " << i << "/" << nmm ; 
