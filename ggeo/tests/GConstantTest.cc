@@ -19,11 +19,11 @@
 
 #include <cassert>
 #include "GConstant.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << "GConstant::meter        " << std::fixed << std::setprecision(6) << GConstant::meter ;
     LOG(info) << "GConstant::second       " << std::fixed << std::setprecision(6) << GConstant::second ;
@@ -37,19 +37,30 @@ int main(int argc, char** argv)
 
     assert(GConstant::meter == 1000.f ); 
 
+/**
 
-    //  g4-cls SystemOfUnits
+g4-cls SystemOfUnits
     //              mm = 1
     //               m = 1e3
     //              ns = nanosecond = 1 
     //               s = second = 1e9
+
+
+  //  
+  // Energy [E]
+  //  
+  static constexpr double megaelectronvolt = 1. ;
+  static constexpr double     electronvolt = 1.e-6*megaelectronvolt;
+
+
+
+
     //            
     //  g4-cls PhysicalConstants
     //  
     //         c_light   = 2.99792458e+8 * m/s;
     //                     2.99792458e+8 * 1e3/1e9  = 299.79245800000001
     //        
-    /*
 
 delta:opticks blyth$ GConstantTest
 2017-11-04 18:52:12.837 INFO  [2903258] [main@9] GConstant::meter        1000.000000
@@ -73,7 +84,27 @@ delta:opticks blyth$ GConstantTest
 (double) $38 = 1239.8418754199977
 
 
-    */
+             1239.8418754199977 eV nm
+   E(eV) =  ---------------------------
+                  lambda (nm)
+
+
+                   1239.8418754199977 eV nm
+   lambda (nm) =  -----------------------------
+                      E(eV) 
+
+
+
+   1.55e-06 MeV -> 1.55 eV -> 1240/1.55 -> 800nm     1239.8418754199977/1.55 -> 799.897984141934
+   15.5e-06 MeV -> 15.5 eV -> 1240/15.5 ->  80nm     1239.8418754199977/15.5 -> 79.9897984141934 
+
+
+
+
+
+
+
+**/
 
 
     return 0 ;
