@@ -24,26 +24,31 @@
 // trying to fwd declare leads to linker errors for static NPY methods with some tests : G4StepNPYTest.cc, HitsNPYTest.cc see tests/CMakeLists.txt
 //template <typename T> class NPY ; 
 #include "NPY.hpp"
-
+#include "plog/Severity.h"
 #include "NGLM.hpp"
 #include "NPY_API_EXPORT.hh"
 
 
 struct NPY_API NGLMCF
 {
+    static const plog::Severity LEVEL ; 
+
     const glm::mat4& A ; 
     const glm::mat4& B ; 
 
-    float epsilon_translation ; 
-    float epsilon ; 
+    static constexpr float epsilon_translation = 1e-3 ; 
+    static constexpr float epsilon = 1e-5 ; 
+
     float diff ; 
     float diff2 ; 
     float diffFractional ;
+    glm::mat4 diffFractionalCheck ; 
     float diffFractionalMax ;
+    float diffMax ;
     bool match ;
  
     NGLMCF( const glm::mat4& A_, const glm::mat4& B_ ) ;
-    std::string desc(const char* msg="NGLMCF::desc"); 
+    std::string desc(const char* msg="NGLMCF::desc", int width=12); 
 
 };
 
@@ -52,19 +57,24 @@ struct NPY_API NGLMCF
 template <typename T>
 struct NPY_API NGLMCF_
 {
+    static const plog::Severity LEVEL ; 
+
     const glm::tmat4x4<T>& A ; 
     const glm::tmat4x4<T>& B ; 
 
-    T epsilon_translation ; 
-    T epsilon ; 
+    static constexpr T epsilon_translation = 1e-3; 
+    static constexpr T epsilon  = 1e-5 ; 
+
     T diff ; 
     T diff2 ; 
     T diffFractional ;
+    glm::tmat4x4<T> diffFractionalCheck ; 
     T diffFractionalMax ;
+    T diffMax ;
     bool match ;
  
     NGLMCF_( const glm::tmat4x4<T>& A_, const glm::tmat4x4<T>& B_ ) ;
-    std::string desc(const char* msg="NGLMCF_::desc"); 
+    std::string desc(const char* msg="NGLMCF_::desc", int width=12); 
 
 };
 

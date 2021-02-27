@@ -24,21 +24,31 @@
 #include "NGLMCF.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
+#include "SSys.hh"
+#include "PLOG.hh"
+
+
+const plog::Severity NGLMCF::LEVEL = PLOG::EnvLevel("NGLMCF", "debug") ; 
 
 
 NGLMCF::NGLMCF( const glm::mat4& A_, const glm::mat4& B_ ) 
     :
     A(A_),
     B(B_),
-    epsilon_translation(1e-3f),
-    epsilon(1e-5), 
     diff(nglmext::compDiff(A,B)),
-    diff2(nglmext::compDiff2(A,B,false,epsilon,epsilon_translation)),
-    diffFractional(nglmext::compDiff2(A,B,true,epsilon,epsilon_translation)),
+    diff2(nglmext::compDiff2(A,B,false)),
+    diffFractional(nglmext::compDiff2(A,B,true)),
+    diffFractionalCheck(nglmext::compDiff2_check(A,B,true)), 
     diffFractionalMax(1e-3),
+    diffMax(epsilon_translation*10.),
     match(diffFractional < diffFractionalMax)
 {
+    if(SSys::getenvbool("NGLMCF")) LOG(LEVEL) << desc("NGLMCF"); 
 }
+
+
+template<typename T>
+const plog::Severity NGLMCF_<T>::LEVEL = PLOG::EnvLevel("NGLMCF_", "debug") ; 
 
 
 template<typename T>
@@ -46,60 +56,86 @@ NGLMCF_<T>::NGLMCF_( const glm::tmat4x4<T>& A_, const glm::tmat4x4<T>& B_ )
     :
     A(A_),
     B(B_),
-    epsilon_translation(T(1e-3)),
-    epsilon(T(1e-5)), 
     diff(nglmext::compDiff_(A,B)),
-    diff2(nglmext::compDiff2_(A,B,false,epsilon,epsilon_translation)),
-    diffFractional(nglmext::compDiff2_(A,B,true,epsilon,epsilon_translation)),
+    diff2(nglmext::compDiff2_(A,B,false)),
+    diffFractional(nglmext::compDiff2_(A,B,true)),
+    diffFractionalCheck(nglmext::compDiff2_check_(A,B,true)),
     diffFractionalMax(T(1e-3)),
+    diffMax(epsilon_translation*10.),
     match(diffFractional < diffFractionalMax)
 {
+    if(SSys::getenvbool("NGLMCF_")) LOG(LEVEL) << desc("NGLMCF_"); 
 }
 
+/**
 
+Issues with elementwise comparison of mat4 are:
 
+1. absolute comparisons of large translation values 
+2. fractional comparisons of values very close to zero  
 
+   * to address this any values under epsilon are set to zero 
+     in the comparison 
 
-std::string NGLMCF::desc( const char* msg )
+**/
+
+std::string NGLMCF::desc( const char* msg, int width )
 {
     std::stringstream ss ; 
     ss <<  msg
        << " epsilon " << epsilon
+       << " epsilon_translation " << epsilon_translation
+       << std::endl 
        << " diff " << diff 
        << " diff2 " << diff2 
-       << " diffFractional " << diffFractional
+       << std::endl 
+       << " diffFractional " << ( match ? "" : "[*" ) << diffFractional << ( match ? "" : "*]" )
        << " diffFractionalMax " << diffFractionalMax
+       << std::endl 
        << std::endl << gpresent("A", A)
        << std::endl << gpresent("B ",B)
+       << std::endl << gpresent("DFC",diffFractionalCheck)
        << std::endl ; 
     
-    for(unsigned i=0 ; i < 4 ; i++)
+
+    for(unsigned mode=0 ; mode < 2 ; mode++)
     {
-        for(unsigned j=0 ; j < 4 ; j++)
+        bool fractional = mode == 0 ? false : true ; 
+        float dmax = fractional ? diffFractionalMax : diffMax ; 
+
+        switch(mode)
         {
-            float a = A[i][j] ;
-            float b = B[i][j] ;
-
-            float da = nglmext::compDiff2(a,b, false, epsilon);
-            float df = nglmext::compDiff2(a,b, true , epsilon);
-
-            bool ijmatch = df < diffFractionalMax ;
-
-            ss << "[" 
-                      << ( ijmatch ? "" : "**" ) 
-                      << std::setw(10) << a
-                      << ":"
-                      << std::setw(10) << b
-                      << ":"
-                      << std::setw(10) << da
-                      << ":"
-                      << std::setw(10) << df
-                      << ( ijmatch ? "" : "**" ) 
-                      << "]"
-                       ;
+            case 0: ss << "mode 0: absolute difference " ; break ; 
+            case 1: ss << "mode 1: fractional : absolute difference/average  " ; break ; 
         }
-        ss << std::endl; 
-    }
+        ss << std::endl ; 
+
+        for(unsigned i=0 ; i < 4 ; i++)
+        {
+            for(unsigned j=0 ; j < 4 ; j++)
+            {
+                float a = A[i][j] ;
+                float b = B[i][j] ;
+                float u_epsilon = i == 3 ? epsilon_translation : epsilon ; 
+                float d  = nglmext::compDiff2(a,b, fractional, u_epsilon); 
+
+                bool ijmatch = d < dmax ;
+
+                ss << "[" 
+                          << std::setw(2) << ( ijmatch ? "" : "**" ) 
+                          << std::setw(width) << a
+                          << ":"
+                          << std::setw(width) << b
+                          << ":"
+                          << std::setw(width) << d
+                          << ":"
+                          << std::setw(2) << ( ijmatch ? "" : "**" ) 
+                          << "]"
+                           ;
+            }
+            ss << std::endl; 
+        }
+    } 
 
     return ss.str();
 }
@@ -107,7 +143,7 @@ std::string NGLMCF::desc( const char* msg )
 
 
 template<typename T>
-std::string NGLMCF_<T>::desc( const char* msg )
+std::string NGLMCF_<T>::desc( const char* msg, int width )
 {
     std::stringstream ss ; 
     ss <<  msg
@@ -134,13 +170,13 @@ std::string NGLMCF_<T>::desc( const char* msg )
 
             ss << "[" 
                       << ( ijmatch ? "" : "**" ) 
-                      << std::setw(10) << a
+                      << std::setw(width) << a
                       << ":"
-                      << std::setw(10) << b
+                      << std::setw(width) << b
                       << ":"
-                      << std::setw(10) << da
+                      << std::setw(width) << da
                       << ":"
-                      << std::setw(10) << df
+                      << std::setw(width) << df
                       << ( ijmatch ? "" : "**" ) 
                       << "]"
                        ;

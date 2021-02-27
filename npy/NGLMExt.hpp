@@ -69,6 +69,9 @@ struct NPY_API nglmext
 { 
     static const plog::Severity LEVEL ; 
 
+    static constexpr double epsilon = 1e-5 ; 
+    static constexpr double epsilon_translation = 1e-3 ; 
+
     static void GetEyeUVW(
           const glm::vec4& ce, 
           const glm::vec3& eye_m, 
@@ -105,8 +108,18 @@ struct NPY_API nglmext
     static glm::mat4 invert_tr( const glm::mat4& tr ); 
     static glm::mat4* invert_tr( const glm::mat4* tr ); 
 
-    static float compDiff2(const glm::mat4& a , const glm::mat4& b, bool fractional=false, float epsilon=1e-5, float epsilon_translation=1e-3);
-    static float compDiff2(const float a_     , const float b_    , bool fractional=false, float epsilon=1e-5);
+    static float compDiff2(const glm::mat4& a , const glm::mat4& b, bool fractional );
+    static float compDiff2(const float a_     , const float b_    , bool fractional, float u_epsilon );
+
+    template<typename T> static T compDiff2_(const glm::tmat4x4<T>& a , const glm::tmat4x4<T>& b, bool fractional );
+    template<typename T> static T compDiff2_(const T a_     , const T b_    , bool fractional, T u_epsilon  );
+
+
+    static glm::mat4 compDiff2_check( const glm::mat4& a_ , const glm::mat4& b_, bool fractional );
+
+    template<typename T>
+    static glm::tmat4x4<T> compDiff2_check_(const glm::tmat4x4<T>& a , const glm::tmat4x4<T>& b, bool fractional );
+
 
     // maximum absolute componentwise difference between a and b 
     static float compDiff(const glm::mat4& a , const glm::mat4& b );
@@ -121,12 +134,6 @@ struct NPY_API nglmext
 
     template<typename T>
     static T abs_(T v) ;
-
-    template<typename T>
-    static T compDiff2_(const glm::tmat4x4<T>& a , const glm::tmat4x4<T>& b, bool fractional=false, T epsilon=1e-5, T epsilon_translation=1e-3 );
-
-    template<typename T>
-    static T compDiff2_(const T a_     , const T b_    , bool fractional=false, T epsilon=1e-5);
 
 
 

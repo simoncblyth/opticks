@@ -406,22 +406,26 @@ void nglmext::polar_decomposition( const glm::mat4& trs, ndeco& d,  bool verbose
     glm::mat4 prev = d.rs ; 
     glm::mat4 next ; 
 
-    float diff, diff2  ; 
-    int count(0) ; 
+    d.epsilon = 0.0001 ;  
+    d.count = 0 ;   
+
+    bool fractional = false ; 
     do {
         next = average_to_inverse_transpose( prev ) ;
-        diff = compDiff(prev, next) ;
-        diff2 = compDiff2(prev, next) ;
+
+        d.diff = compDiff(prev, next) ;   // maximum elementwise difference 
+        d.diff2 = compDiff2(prev, next, fractional) ;  // as above with values within epsilon of zero brought there
+
         prev = next ; 
 
         if(verbose)
         std::cout << "polar_decomposition"
-                  << " diff " << diff 
-                  << " diff2 " << diff2 
-                  << " count " << count 
+                  << " d.diff " << d.diff 
+                  << " d.diff2 " << d.diff2 
+                  << " d.count " << d.count 
                   << std::endl ; 
 
-    } while( ++count < 100 && diff > 0.0001f ); 
+    } while( ++d.count < 100 && d.diff > d.epsilon ); 
 
     d.r = next ;
     d.ir = glm::transpose(d.r) ;
@@ -448,24 +452,23 @@ void nglmext::polar_decomposition_( const glm::tmat4x4<T>& trs, ndeco_<T>& d,  b
     glm::tmat4x4<T> prev = d.rs ; 
     glm::tmat4x4<T> next ; 
 
-    T diff, diff2 ;
-    T epsilon(0.0001);  
- 
-    int count(0) ; 
+    d.epsilon = 0.0001 ;  
+    d.count = 0 ; 
+    bool fractional = false ; 
     do {
         next = average_to_inverse_transpose_( prev ) ;
-        diff = compDiff_(prev, next) ;
-        diff2 = compDiff2_(prev, next) ;
+        d.diff = compDiff_(prev, next) ;    // maximum elementwise difference 
+        d.diff2 = compDiff2_(prev, next, fractional ) ;  // as above with values within epsilon of zero brought there
         prev = next ; 
 
         if(verbose)
-        std::cout << "polar_decomposition"
-                  << " diff " << diff 
-                  << " diff2 " << diff2 
-                  << " count " << count 
+        std::cout << "polar_decomposition_"
+                  << " d.diff " << d.diff 
+                  << " d.diff2 " << d.diff2 
+                  << " d.count " << d.count 
                   << std::endl ; 
 
-    } while( ++count < 100 && diff > epsilon ); 
+    } while( ++d.count < 100 && d.diff > d.epsilon ); 
 
 
     d.r = next ;
@@ -562,18 +565,14 @@ glm::tmat4x4<T> nglmext::invert_trs_( const glm::tmat4x4<T>& trs, bool& match )
 
     if(!cf.match) 
     {
-        LOG(error) << cf.desc("ngmext::invert_trs_ polar_decomposition inverse and straight inverse are mismatched " );
+        LOG(error) << "polar_decomposition inverse and straight inverse are mismatched " ;
+        LOG(error) << cf.desc("ngmlext::invert_trs_");
     }
 
     match = cf.match ; 
 
     return isirit ; 
 }
-
-
-
-
-
 
 glm::mat4 nglmext::invert_trs( const glm::mat4& trs, bool& match )
 {
@@ -587,7 +586,8 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs, bool& match )
 
     if(!cf.match) 
     {
-        LOG(error) << cf.desc("ngmext::invert_trs polar_decomposition inverse and straight inverse are mismatched " );
+        LOG(error) << "polar_decomposition inverse and straight inverse are mismatched " ;
+        LOG(error) << cf.desc("ngmlext::invert_trs");
     }
 
     match = cf.match ; 
@@ -639,6 +639,17 @@ float nglmext::compDiff(const glm::mat3& a , const glm::mat3& b )
     return glm::compMax(colmax) ; 
 }
 
+/**
+nglmext::compDiff
+---------------------
+
+maximum elementwise difference
+
+* problem is that expectations from rotation and translation
+  portions of the matrix are very different 
+
+**/
+
 float nglmext::compDiff(const glm::mat4& a , const glm::mat4& b )
 {
     glm::mat4 amb = a - b ; 
@@ -672,6 +683,48 @@ T nglmext::compDiff_(const glm::tmat4x4<T>& a , const glm::tmat4x4<T>& b )
 
 
 
+template<typename T>
+T nglmext::abs_(T v)
+{
+   return T(0) ; 
+}
+template <> 
+float nglmext::abs_<float>(float v) 
+{ 
+   return std::abs(v) ; 
+} 
+template <> 
+double nglmext::abs_<double>(double v) 
+{ 
+   return std::abs(v) ; 
+} 
+
+
+/**
+nglmext::compDiff2
+---------------------
+
+fractional:false
+    returns absolute difference between a and b where a or b values 
+    within epsilon of zero are set to zero 
+
+fractional:true
+    returns the fractional:false value divided by the average of a and b    
+
+::
+
+     (a - b) 
+    -------
+     (a + b)/2  
+
+
+hmm: if they straddle epsilon, one gets pulled to zero and the other does not, 
+so you get 2 or -2 for the fractional 
+
+**/
+
+
+
 
 /*
 In [1]: a = 2.16489e-17
@@ -690,50 +743,65 @@ Out[6]: 2.0
 
 */
 
-float nglmext::compDiff2(const float a_ , const float b_, bool fractional, float epsilon  )
+/**
+nglmext::compDiff2
+---------------------
+
+fractional:false
+    returns absolute difference between a and b where a or b values 
+    within epsilon of zero are set to zero 
+
+fractional:true
+    returns the fractional:false value divided by the average of a and b    
+
+**/
+
+float nglmext::compDiff2(const float a_ , const float b_, bool fractional, float u_epsilon )
 {
-    float a = fabsf(a_) < epsilon  ? 0.f : a_ ; 
-    float b = fabsf(b_) < epsilon  ? 0.f : b_ ; 
+    float a = fabsf(a_) < u_epsilon  ? 0.f : a_ ; 
+    float b = fabsf(b_) < u_epsilon  ? 0.f : b_ ; 
+    float d = 0.f ; 
 
-    float d = fabsf(a - b);
+    if( fractional )
+    {
+        float avg = (a+b)/2.f ; 
+        bool epsilon_horizon = fabsf(a_) < u_epsilon || fabsf(b_) < u_epsilon  ;  
+        d = epsilon_horizon || avg == 0.f ? 0.f : fabsf(a - b)/avg ;
+    }
+    else
+    {
+        d = fabsf(a - b);
+    }
 
-    float denom = (a+b)/2.f ; 
-    if(fractional && denom != 0.f) d /= denom    ; 
-    return d ; 
-}
-
-
-template<typename T>
-T nglmext::abs_(T v)
-{
-   return T(0) ; 
-}
-template <> 
-float nglmext::abs_<float>(float v) 
-{ 
-   return std::abs(v) ; 
-} 
-template <> 
-double nglmext::abs_<double>(double v) 
-{ 
-   return std::abs(v) ; 
-} 
-
-template<typename T>
-T nglmext::compDiff2_(const T a_ , const T b_, bool fractional, T epsilon  )
-{
-    T a = abs_(a_) < epsilon  ? T(0) : a_ ; 
-    T b = abs_(b_) < epsilon  ? T(0) : b_ ; 
-    T d = abs_(a - b);
-    T denom = (a+b)/T(2) ; 
-    if(fractional && denom != T(0)) d /= denom    ; 
     return d ; 
 }
 
 
 
 
-float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractional, float epsilon, float epsilon_translation )
+
+template<typename T>
+T nglmext::compDiff2_(const T a_ , const T b_, bool fractional, T u_epsilon )
+{
+    T a = abs_(a_) < u_epsilon  ? T(0) : a_ ; 
+    T b = abs_(b_) < u_epsilon  ? T(0) : b_ ; 
+    T d = 0 ;
+
+    if(fractional)
+    {
+        T avg = (a+b)/T(2) ; 
+        bool epsilon_horizon = abs_(a_) < u_epsilon || abs_(b_) < u_epsilon  ;  
+        d = epsilon_horizon || avg == T(0) ? T(0) : abs_(a - b)/avg ;
+    }
+    else
+    {
+        d = abs_(a - b ); 
+    }
+    return d ; 
+}
+
+
+float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractional )
 {
     float a, b, d, maxdiff = 0.f ; 
     for(unsigned i=0 ; i < 4 ; i++){
@@ -748,22 +816,54 @@ float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractio
     return maxdiff ; 
 }
 
+
 template<typename T>
-T nglmext::compDiff2_(const glm::tmat4x4<T>& a_ , const glm::tmat4x4<T>& b_, bool fractional, T  epsilon, T epsilon_translation )
+T nglmext::compDiff2_(const glm::tmat4x4<T>& a_ , const glm::tmat4x4<T>& b_, bool fractional )
 {
-    T a, b, d, maxdiff = T(0.) ; 
+    T maxdiff(0.) ; 
     for(unsigned i=0 ; i < 4 ; i++){
     for(unsigned j=0 ; j < 4 ; j++)
     { 
-        a = a_[i][j] ; 
-        b = b_[i][j] ; 
-        d = compDiff2_(a, b, fractional, i == 3 ? epsilon_translation : epsilon );
+        T a = a_[i][j] ; 
+        T b = b_[i][j] ; 
+        T u_epsilon = i == 3 ? epsilon_translation : epsilon ; 
+        T d = compDiff2_(a, b, fractional, u_epsilon );
         if( d > maxdiff ) maxdiff = d ; 
     }
     }
     return maxdiff ; 
 }
 
+
+
+glm::mat4 nglmext::compDiff2_check( const glm::mat4& a_ , const glm::mat4& b_, bool fractional )
+{
+    glm::mat4 c_(1.f) ;  
+    for(int i=0 ; i < 4 ; i++) 
+    for(int j=0 ; j < 4 ; j++)
+    { 
+        float a = a_[i][j] ; 
+        float b = b_[i][j] ; 
+        c_[i][j] = compDiff2(a, b, fractional, i == 3 ? epsilon_translation : epsilon ) ; 
+    }
+    return c_ ; 
+}
+
+
+template<typename T>
+glm::tmat4x4<T> nglmext::compDiff2_check_( const glm::tmat4x4<T>& a_ , const glm::tmat4x4<T>& b_, bool fractional )
+{
+    glm::tmat4x4<T> c_(T(1.)) ;  
+    for(int i=0 ; i < 4 ; i++) 
+    for(int j=0 ; j < 4 ; j++)
+    { 
+        T a = a_[i][j] ; 
+        T b = b_[i][j] ; 
+        T u_epsilon = i == 3 ? epsilon_translation : epsilon ; 
+        c_[i][j] = compDiff2_(a, b, fractional, u_epsilon ) ; 
+    }
+    return c_ ; 
+}
 
 
 
@@ -1162,6 +1262,13 @@ template NPY_API glm::tmat4x4<double> nglmext::make_transform_(const char* s, ch
 
 template NPY_API float nglmext::compDiff_(const glm::tmat4x4<float>& a , const glm::tmat4x4<float>& b );
 template NPY_API double nglmext::compDiff_(const glm::tmat4x4<double>& a , const glm::tmat4x4<double>& b );
+
+template NPY_API float nglmext::compDiff2_(const glm::tmat4x4<float>& a ,   const glm::tmat4x4<float>&  b,bool );
+template NPY_API double nglmext::compDiff2_(const glm::tmat4x4<double>& a , const glm::tmat4x4<double>& b, bool );
+
+template NPY_API glm::tmat4x4<float> nglmext::compDiff2_check_(const glm::tmat4x4<float>& a , const glm::tmat4x4<float>& b,    bool );
+template NPY_API glm::tmat4x4<double> nglmext::compDiff2_check_(const glm::tmat4x4<double>& a , const glm::tmat4x4<double>& b, bool );
+
 
 template NPY_API glm::tmat4x4<float>  nglmext::invert_trs_( const glm::tmat4x4<float>& trs, bool& match ); 
 template NPY_API glm::tmat4x4<double> nglmext::invert_trs_( const glm::tmat4x4<double>& trs, bool& match ); 

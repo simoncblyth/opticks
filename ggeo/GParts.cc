@@ -249,7 +249,9 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, 
         LOG(LEVEL) << "] GParts::Make i " << i << " lvIdx " << lvIdx << " ndIdx " << ndIdx ; 
 
         unsigned num_mismatch = 0 ; 
+
         parts->applyPlacementTransform( placement, verbosity, num_mismatch ); 
+
         if(num_mismatch > 0 )
         {
             LOG(error) << " pt " << i << " invert_trs num_mismatch : " << num_mismatch ; 

@@ -44,6 +44,8 @@ set(TEST_SOURCES
     GGeoNCSGTest.cc
 
 
+    deferredCreateGPartsTest.cc
+
     BoundariesNPYTest.cc
     GAttrSeqTest.cc
     GBBoxMeshTest.cc

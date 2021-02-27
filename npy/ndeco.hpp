@@ -21,6 +21,11 @@ struct NPY_API ndeco_
     glm::tmat4x4<T> tr ;
     glm::tmat4x4<T> trs ;
     glm::tmat4x4<T> isirit ;
+
+    int count ; 
+    T   diff ; 
+    T   diff2 ; 
+    T   epsilon ; 
 };
 
 
@@ -40,6 +45,11 @@ struct NPY_API ndeco
     glm::mat4 tr ;
     glm::mat4 trs ;
     glm::mat4 isirit ;
+
+    int count ; 
+    float diff ; 
+    float diff2 ; 
+    float epsilon ; 
 };
 
 
