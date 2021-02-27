@@ -71,7 +71,8 @@ int main(int argc, char** argv)
 
     frame.download(); 
     frame.writePPM(outdir, "pixels.ppm");  
-    Geo::WriteNP(  outdir, "posi.npy", frame.getIntersectData(), height, width, 4 );
+    frame.writeNP(  outdir, "posi.npy" );
+    //Geo::WriteNP(  outdir, "posi.npy", frame.getIntersectData(), height, width, 4 );
 
     return 0 ; 
 }

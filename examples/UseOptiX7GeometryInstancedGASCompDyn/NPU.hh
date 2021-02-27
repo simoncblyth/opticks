@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+NPU.hh : Utilities used from NP.hh
+====================================
+
+This is developed in https://github.com/simoncblyth/np/
+but given the header-only nature is often just incorporated into 
+other projects together with NP.hh
+
+**/
+
+
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -11,68 +22,152 @@
 #include <cstdlib>
 #include <cstdint>
 
-
-union u16c2_t 
-{
-   uint16_t u16 ; 
-   char     c[2] ;  
-}; 
-
-struct Endian
-{
-    static const unsigned UNITY ; 
-    static const char LITTLE ; 
-    static const char BIG ; 
-    static char detect(); 
-};
-
-const unsigned Endian::UNITY = 1 ; 
-const char Endian::LITTLE = '<' ;  // least-significant byte at the smallest address
-const char Endian::BIG = '>' ;     // most-significant byte at the smallest address
-
-inline char Endian::detect()
-{
-    return (*(char *)&UNITY == 1) ? LITTLE : BIG ; 
-}
+/**
+desc : type codes and sizes used by descr_
+---------------------------------------------
+**/
 
 template<typename T>
-struct Desc 
+struct desc 
 {
-    static const char code ; 
-    static std::string descr(); 
+    static constexpr char code = '?' ; 
+    static constexpr unsigned size = 0 ; 
 };
 
-// template specializations for code
+template<> struct desc<float>  { static constexpr char code = 'f' ; static constexpr unsigned size = sizeof(float)  ; };
+template<> struct desc<double> { static constexpr char code = 'f' ; static constexpr unsigned size = sizeof(double) ; };
 
-template<> const char Desc<float>::code = 'f' ; 
-template<> const char Desc<double>::code = 'f' ; 
+template<> struct desc<char> {   static constexpr char code = 'i' ; static constexpr unsigned size = sizeof(char)   ; };
+template<> struct desc<short> {  static constexpr char code = 'i' ; static constexpr unsigned size = sizeof(short)  ; };
+template<> struct desc<int> {    static constexpr char code = 'i' ; static constexpr unsigned size = sizeof(int)    ; };
+template<> struct desc<long> {   static constexpr char code = 'i' ; static constexpr unsigned size = sizeof(long)   ; };
+template<> struct desc<long long> {  static constexpr char code = 'i' ; static constexpr unsigned size = sizeof(long long)   ;  };
 
-template<> const char Desc<char>::code = 'i' ; 
-template<> const char Desc<short>::code = 'i' ; 
-template<> const char Desc<int>::code = 'i' ; 
-template<> const char Desc<long>::code = 'i' ; 
-template<> const char Desc<long long>::code = 'i' ; 
+template<> struct desc<unsigned char> {   static constexpr char code = 'u' ; static constexpr unsigned size = sizeof(unsigned char) ;  };
+template<> struct desc<unsigned short> {  static constexpr char code = 'u' ; static constexpr unsigned size = sizeof(unsigned short) ;   };
+template<> struct desc<unsigned int> {    static constexpr char code = 'u' ; static constexpr unsigned size = sizeof(unsigned int) ;  };
+template<> struct desc<unsigned long> {   static constexpr char code = 'u' ; static constexpr unsigned size = sizeof(unsigned long) ;   };
+template<> struct desc<unsigned long long> {  static constexpr char code = 'u' ; static constexpr unsigned size = sizeof(unsigned long long) ;  };
 
-template<> const char Desc<unsigned char>::code = 'u' ; 
-template<> const char Desc<unsigned short>::code = 'u' ; 
-template<> const char Desc<unsigned int>::code = 'u' ; 
-template<> const char Desc<unsigned long>::code = 'u' ; 
-template<> const char Desc<unsigned long long>::code = 'u' ; 
+template<> struct desc<std::complex<float> > {   static constexpr char code = 'c' ; static constexpr unsigned size = sizeof(std::complex<float>)  ; } ; 
+template<> struct desc<std::complex<double> > {  static constexpr char code = 'c' ; static constexpr unsigned size = sizeof(std::complex<double>) ; } ; 
 
-template<> const char Desc<std::complex<float> >::code = 'c' ; 
-template<> const char Desc<std::complex<double> >::code = 'c' ; 
+struct endian
+{
+    static char constexpr LITTLE = '<' ; 
+    static char constexpr BIG = '>' ; 
+    static char detect() { unsigned one = 1u ; return (*(char *)&one == 1) ? LITTLE : BIG ; } ;
+};
 
 template<typename T>
-inline std::string Desc<T>::descr()
+struct descr_
 {
-    std::stringstream ss ; 
-    ss 
-       << Endian::detect()
-       << code 
-       << sizeof(T)        
-       ;
-    return ss.str(); 
+    static std::string dtype()
+    {
+        std::stringstream ss ; 
+        ss << endian::detect() << desc<T>::code << desc<T>::size ;
+        return ss.str(); 
+    }
+};
+
+template struct descr_<float> ;  
+template struct descr_<double> ;
+  
+template struct descr_<char> ;  
+template struct descr_<short> ;  
+template struct descr_<int> ;  
+template struct descr_<long> ;  
+template struct descr_<long long> ;  
+ 
+template struct descr_<unsigned char> ;  
+template struct descr_<unsigned short> ;  
+template struct descr_<unsigned int> ;  
+template struct descr_<unsigned long> ;  
+template struct descr_<unsigned long long> ;  
+
+template struct descr_<std::complex<float> > ;  
+template struct descr_<std::complex<double> > ;  
+
+
+
+
+
+
+/**
+net_hdr
+---------
+
+Packing and unpacking of simple network header
+composed of a small number of 32bit unsigned ints 
+expressed in big endian "network order". 
+
+**/
+
+#include <arpa/inet.h>    // htonl
+
+
+struct net_hdr
+{
+    static constexpr unsigned LENGTH = 4*4 ; 
+
+    union uc4_t {
+        uint32_t          u    ;   
+        char              c[4] ; 
+    };  
+    static std::string pack(const std::vector<unsigned> items);
+    static void unpack(     const std::string& hdr         , std::vector<unsigned>& items );
+    static void unpack( char* data, unsigned num_bytes , std::vector<unsigned>& items );
+
+    static unsigned unpack( const std::string& hdr, unsigned index ); 
+};
+
+
+inline std::string net_hdr::pack(const std::vector<unsigned> items) // static 
+{
+    unsigned ni = items.size(); 
+
+    assert( ni == 4 ); 
+    assert( sizeof(unsigned) == 4); 
+    assert( ni*sizeof(unsigned) == LENGTH ); 
+
+    uc4_t uc4 ; 
+    std::string hdr(LENGTH, '\0' );  
+    for(unsigned i=0 ; i < ni ; i++)
+    {   
+        uc4.u = htonl(items[i]) ;   // to big endian or "network order"
+        memcpy( (void*)(hdr.data() + i*sizeof(unsigned)), &(uc4.c[0]), 4 );  
+    }   
+    return hdr ; 
 }
+
+inline void net_hdr::unpack( const std::string& hdr, std::vector<unsigned>& items ) // static
+{
+    unpack((char*)hdr.data(), hdr.length(), items );
+}
+
+inline unsigned net_hdr::unpack( const std::string& hdr, unsigned index ) // static
+{
+    std::vector<unsigned> items ; 
+    unpack(hdr, items); 
+    return index < items.size() ? items[index] : 0 ; 
+} 
+
+inline void net_hdr::unpack( char* data, unsigned num_bytes, std::vector<unsigned>& items ) // static
+{
+    assert( 4 == sizeof(unsigned)); 
+    unsigned ni = num_bytes/sizeof(unsigned); 
+
+    items.clear(); 
+    items.resize(ni); 
+
+    uc4_t uc4 ; 
+    for(unsigned i=0 ; i < ni ; i++)
+    {   
+        memcpy( &(uc4.c[0]), data + i*4, 4 );  
+        items[i] = ntohl(uc4.u) ;   // from big endian to endian-ness of host  
+    }   
+}
+
 
 
 struct NPS
@@ -186,8 +281,8 @@ inline std::string U::ChangeExt( const char* s, const char* x1, const char* x2)
 
 struct NPU
 {
-    static const char* MAGIC ; 
-    static const bool  FORTRAN_ORDER ;
+    static constexpr char* MAGIC = (char*)"\x93NUMPY" ; 
+    static constexpr bool  FORTRAN_ORDER = false ;
 
     template<typename T>
     static std::string make_header(const std::vector<int>& shape );
@@ -222,21 +317,20 @@ struct NPU
     static bool is_readable(const char* path);
 };
 
-// inline variables requires -std=c++1z to avoid warning :  inline variables are a C++1z extension [-Wc++1z-extensions]
-const char* NPU::MAGIC = "\x93NUMPY" ; 
-const bool  NPU::FORTRAN_ORDER = false ; 
-
 template<typename T>
 inline std::string NPU::make_header(const std::vector<int>& shape )
 {
-    std::string descr = Desc<T>::descr() ;   
+    //std::string descr = Desc<T>::descr() ;   
+    std::string descr = descr_<T>::dtype() ;
+
     return _make_header( shape, descr.c_str() ) ; 
 }
 
 template<typename T>
 inline std::string NPU::make_jsonhdr(const std::vector<int>& shape )
 {
-    std::string descr = Desc<T>::descr() ; 
+    //std::string descr = Desc<T>::descr() ; 
+    std::string descr = descr_<T>::dtype() ;
     return _make_jsonhdr( shape, descr.c_str() ) ; 
 }
 
@@ -651,25 +745,29 @@ inline std::string NPU::_make_tuple( const std::vector<int>& shape, bool json )
 }
 
 
-
 inline std::string NPU::_little_endian_short_string( uint16_t dlen )
 {
     // https://github.com/numpy/numpy/blob/master/doc/neps/nep-0001-npy-format.rst
     // The next 2 bytes form a little-endian unsigned short int: the length of the header data HEADER_LEN
 
+    union u16c2_t { 
+        uint16_t u16 ; 
+        char     c[2] ;  
+    }; 
+
     u16c2_t len ; 
     len.u16 = dlen ; 
 
-    char e = Endian::detect() ; 
+    char e = endian::detect() ; 
     std::string hlen(2, ' ') ;
-    hlen[0] = e == Endian::LITTLE ? len.c[0] : len.c[1] ;  
-    hlen[1] = e == Endian::LITTLE ? len.c[1] : len.c[0] ; 
+    hlen[0] = e == endian::LITTLE ? len.c[0] : len.c[1] ;  
+    hlen[1] = e == endian::LITTLE ? len.c[1] : len.c[0] ; 
 
 #ifdef NPU_DEBUG
     std::cout << " dlen " << dlen << std::endl ; 
     std::cout << " len.c[0] " << len.c[0] << std::endl ; 
     std::cout << " len.c[1] " << len.c[1] << std::endl ; 
-    std::cout << ( e == Endian::LITTLE ? "little_endian" : "big_endian" ) << std::endl ; 
+    std::cout << ( e == endian::LITTLE ? "little_endian" : "big_endian" ) << std::endl ; 
 #endif
 
     return hlen ; 

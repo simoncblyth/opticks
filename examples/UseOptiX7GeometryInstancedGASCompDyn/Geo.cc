@@ -482,6 +482,8 @@ void Geo::WriteNP( const char* dir, const char* name, float* data, int ni, int n
     NP::Write(dir, name, data, ni, nj, nk ); 
 }
 
+
+
 void Geo::writeGAS(unsigned gas_idx, const char* dir) const 
 {
     const GAS& gas = getGAS(gas_idx); 

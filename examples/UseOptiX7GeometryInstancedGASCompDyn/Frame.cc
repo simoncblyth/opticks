@@ -7,6 +7,7 @@
 #include <cuda_runtime.h>
 #include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
+#include "NP.hh"
 #include "Frame.h"
 #include "Params.h"
 #include "SPPM.h"
@@ -75,10 +76,16 @@ void Frame::download_isect()
 }
 
 
-void Frame::writePPM(const char* dir, const char* name, bool yflip )
+void Frame::writePPM(const char* dir, const char* name, bool yflip ) const 
 {
     std::cout << "Frame::writePPM " << dir << "/" << name << std::endl ; 
     SPPM_write( dir, name, pixels.data(), params->width, params->height, yflip );
+}
+
+void Frame::writeNP( const char* dir, const char* name) const 
+{
+    std::cout << "Frame::writeNP " << dir << "/" << name << std::endl ; 
+    NP::Write(dir, name, getIntersectData(), params->height, params->width, 4 );
 }
 
 float* Frame::getIntersectData() const

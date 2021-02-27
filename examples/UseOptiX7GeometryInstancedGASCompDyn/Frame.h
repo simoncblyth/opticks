@@ -23,7 +23,8 @@ struct Frame
     void download_pixels();
     void download_isect();
 
-    void writePPM(const char* dir, const char* name, bool yflip=true ); 
+    void writePPM(const char* dir, const char* name, bool yflip=true ) const ; 
+    void writeNP( const char* dir, const char* name) const ;
     float* getIntersectData() const ;
 
 }; 
