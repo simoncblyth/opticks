@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     geo.write(outdir);  
 
     float top_extent = geo.getTopExtent() ;  
-    glm::vec4 ce(0.f,0.f,0.f, top_extent*1.4f );   // defines the center-extent of the region to view
+    glm::vec4 ce(0.f,0.f,0.f, top_extent );   // defines the center-extent of the region to view
     glm::vec3 eye,U,V,W  ;
     Util::GetEyeUVW( ce, width, height, eye, U, V, W ); 
 

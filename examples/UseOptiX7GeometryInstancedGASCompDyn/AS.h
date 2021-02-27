@@ -6,8 +6,6 @@ struct AS
 {
     CUdeviceptr             d_buffer;  
     OptixTraversableHandle  handle ; 
-    float                   extent0 ; 
-
 };
 
 

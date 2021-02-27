@@ -3,6 +3,7 @@
 
 struct BI
 {
+    float*          aabb ; 
     unsigned        num_sbt_records ; 
     CUdeviceptr     d_aabb ;
     CUdeviceptr     d_sbt_index ;

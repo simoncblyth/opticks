@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <cstring>
 
+
+
 #include "Util.h"
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
@@ -82,18 +84,26 @@ void Geo::init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& 
 {
     std::cout << "Geo::init_sphere_containing_grid_of_two_radii_spheres " << spec << std::endl ; 
 
-    float ias_extent = 10.f ; 
-    float ias_step = 2.f ; 
+    std::string gridspec = Util::GetEValue<std::string>("GRIDSPEC","-10:11,2,-10:11:2,-10:11,2") ; 
+    std::array<int,9> grid ; 
+    Util::ParseGridSpec(grid, gridspec.c_str());     
+
+    int mn(0); 
+    int mx(0); 
+    Util::GridMinMax(grid, mn, mx); 
+    int grid_extent = std::max( std::abs(mn), std::abs(mx) );  // half side
+    float big_radius = float(grid_extent)*2.0f ;
+    std::cout << "grid_extent " << grid_extent << " big_radius " << big_radius << std::endl ; 
 
     makeGAS(0.7f); 
     makeGAS(1.0f); 
+    makeGAS(big_radius); 
+
     std::vector<unsigned> gas_modulo = {0, 1} ;
-
-    makeGAS(ias_extent*2.0f); 
     std::vector<unsigned> gas_single = {2} ;
+    makeIAS_Grid(grid, gas_modulo, gas_single ); 
 
-    makeIAS(ias_extent, ias_step, gas_modulo, gas_single ); 
-
+    setTopExtent(big_radius); 
     setTop(spec); 
 
     tminf = 0.75f ; 
@@ -105,18 +115,26 @@ void Geo::init_sphere_containing_grid_of_two_radii_spheres_compound(float& tminf
 {
     std::cout << "Geo::init_sphere_containing_grid_of_two_radii_spheres_compound " << spec << std::endl ; 
 
-    float ias_extent = 10.f ; 
-    float ias_step = 2.f ; 
+    std::string gridspec = Util::GetEValue<std::string>("GRIDSPEC","-10:11,2,-10:11:2,-10:11,2") ; 
+    std::array<int,9> grid ; 
+    Util::ParseGridSpec(grid, gridspec.c_str() );     
+
+    int mn(0); 
+    int mx(0); 
+    Util::GridMinMax(grid, mn, mx); 
+    int grid_extent = std::max( std::abs(mn), std::abs(mx) );  // half side
+    float big_radius = float(grid_extent)*2.0f ;
+    std::cout << "grid_extent " << grid_extent << " big_radius " << big_radius << std::endl ; 
 
     makeGAS(0.7f, 0.35f); 
     makeGAS(1.0f, 0.5f); 
+    makeGAS(big_radius); 
+
     std::vector<unsigned> gas_modulo = {0, 1} ;
-
-    makeGAS(ias_extent*2.0f); 
     std::vector<unsigned> gas_single = {2} ;
+    makeIAS_Grid(grid, gas_modulo, gas_single ); 
 
-    makeIAS(ias_extent, ias_step, gas_modulo, gas_single ); 
-
+    setTopExtent(big_radius); 
     setTop(spec); 
 
     tminf = 0.75f ;   // <-- so can see inside the big sphere  
@@ -128,6 +146,7 @@ void Geo::init_sphere(float& tminf, float& tmaxf)
     std::cout << "Geo::init_sphere" << std::endl ; 
     makeGAS(100.f); 
     setTop("g0"); 
+    setTopExtent(100.f); 
 
     tminf = 1.60f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
     tmaxf = 10000.f ; 
@@ -153,10 +172,19 @@ AS* Geo::getTop() const
     return top ; 
 }
 
+
+/**
+would need to traverse the ias and transform the bbox of all the
+bi that it references in order to automate this
+**/
+
+void Geo::setTopExtent(float top_extent_)
+{
+    top_extent = top_extent_ ; 
+}
 float Geo::getTopExtent() const 
 {
-    assert(top); 
-    return top ? top->extent0 : -1.f ;  
+    return top_extent ; 
 }
 
 void Geo::setTop(const char* spec)
@@ -188,7 +216,7 @@ AS* Geo::getAS(const char* spec) const
 
    if(a)
    {
-       std::cout << "Geo::getAS " << spec << " a->extent0 " << a->extent0 << std::endl ; 
+       std::cout << "Geo::getAS " << spec << std::endl ; 
    } 
    return a ; 
 }
@@ -252,10 +280,6 @@ void Geo::makeGAS(const std::vector<float>& extents)
     GAS gas = {} ; 
     GAS_Builder::Build(gas, bb); 
 
-
-    gas.extent0 = extent0 ; 
-    gas.extents = extents ; 
-
     addGAS(gas); 
 }
 
@@ -263,7 +287,6 @@ void Geo::addGAS(const GAS& gas)
 {
     vgas.push_back(gas); 
     unsigned num_bi = gas.bis.size() ;
-    assert(gas.num_sbt_rec == num_bi ); 
     nbis.push_back(num_bi); 
 }
 
@@ -364,11 +387,6 @@ float unsigned_as_float( unsigned u )
 Geo::makeIAS
 -------------
 
-grid_extent
-    half side size of the grid   
-
-grid_step
-    between grid nodes
 
 gas_modulo
     vector of gas_idx which are modulo cycled in a 3d grid array  
@@ -383,20 +401,19 @@ Currently a 3D grid of translate transforms with all available GAS repeated modu
 
 **/
 
-void Geo::makeIAS(float grid_extent, float grid_step, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single )
+
+
+
+void Geo::makeIAS_Grid(std::array<int,9>& grid, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single )
 {
     IAS ias = {}; 
 
-    int n=int(grid_extent) ;   // 
-    int s=int(grid_step) ; 
     unsigned num_gas_modulo = gas_modulo.size() ; 
     unsigned num_gas_single = gas_single.size() ; 
     unsigned num_gas = getNumGAS(); 
 
     std::cout 
         << "Geo::makeIAS"
-        << " grid_extent " << grid_extent
-        << " grid_step " << grid_step
         << " num_gas_modulo " << num_gas_modulo
         << " num_gas_single " << num_gas_single
         << " num_gas " << num_gas
@@ -424,9 +441,9 @@ void Geo::makeIAS(float grid_extent, float grid_step, const std::vector<unsigned
         ias.trs.push_back(tr); 
     }
 
-    for(int i=-n ; i <= n ; i+=s ){
-    for(int j=-n ; j <= n ; j+=s ){
-    for(int k=-n ; k <= n ; k+=s ){
+    for(int i=grid[0] ; i < grid[1] ; i+=grid[2] ){
+    for(int j=grid[3] ; j < grid[4] ; j+=grid[5] ){
+    for(int k=grid[6] ; k < grid[7] ; k+=grid[8] ){
 
         glm::vec3 tlat(i*1.f,j*1.f,k*1.f) ;  // grid translation 
         glm::mat4 tr(1.f) ;
@@ -448,7 +465,6 @@ void Geo::makeIAS(float grid_extent, float grid_step, const std::vector<unsigned
 
     IAS_Builder::Build(ias); 
 
-    ias.extent0 = grid_extent ; 
     vias.push_back(ias); 
 }
 
@@ -487,16 +503,24 @@ void Geo::WriteNP( const char* dir, const char* name, float* data, int ni, int n
 void Geo::writeGAS(unsigned gas_idx, const char* dir) const 
 {
     const GAS& gas = getGAS(gas_idx); 
+    unsigned num_bi = gas.bis.size() ;
 
-    int ni = gas.extents.size() ; 
-    int nj = 1 ; 
-    int nk = 1 ; 
+    int ni = num_bi ; 
+    int nj = 2 ; 
+    int nk = 3 ; 
 
     std::stringstream ss ; 
     ss << "gas_" << gas_idx <<  ".npy" ;
     std::string s = ss.str(); 
 
-    NP::Write(dir, s.c_str(), (float*)gas.extents.data(), ni, nj, nk ); 
+    std::vector<float> bb ; 
+    for(unsigned i=0 ; i < num_bi ; i++)
+    {
+        const BI& bi = gas.bis[i]; 
+        for(int j=0 ; j < 6 ; j++) bb.push_back( *(bi.aabb+j) ); 
+    }
+
+    NP::Write(dir, s.c_str(), (float*)bb.data(), ni, nj, nk ); 
 }
 
 void Geo::write(const char* dir) const 

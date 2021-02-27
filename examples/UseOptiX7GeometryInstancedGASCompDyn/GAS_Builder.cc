@@ -1,5 +1,6 @@
 
 #include <cassert>
+#include <cstring>
 #include <iostream>
 
 #include <optix.h>
@@ -50,17 +51,24 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val, unsign
     std::cout << std::endl ;  
 
     BI bi = {} ; 
-    bi.buildInput = {};
-    bi.buildInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    bi.aabb = new float[6] ; 
+    memcpy( bi.aabb,  bb,  6*sizeof(float) ); 
+    std::cout << "GAS_Builder::MakeCustomPrimitivesBI " ; 
+    for(unsigned i=0 ; i < 6 ; i++) std::cout << *(bi.aabb+i) << " "  ; 
+    std::cout << std::endl ;  
     bi.num_sbt_records = 1 ;    //  SBT entries for each build input
     bi.flags = new unsigned[bi.num_sbt_records];
     bi.sbt_index = new unsigned[bi.num_sbt_records];
     bi.flags[0] = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ; // p18: Each build input also specifies an array of OptixGeometryFlags, one for each SBT record.
     bi.sbt_index[0] = 0 ; 
 
+
+    bi.buildInput = {};
+    bi.buildInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &bi.d_aabb ), 6*sizeof(float) ) );
     CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( bi.d_aabb ),
-                            bb, 6*sizeof(float),
+                            bi.aabb, 6*sizeof(float),
                             cudaMemcpyHostToDevice ));
 
     OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;  
@@ -82,12 +90,14 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val, unsign
 } 
 
 
+
+
+
 void GAS_Builder::Build(GAS& gas, const std::vector<float>& bb )  // static
 {
     unsigned num_val = bb.size() ; 
     assert( num_val % 6 == 0 );   
     unsigned num_bb = num_val / 6 ;  
-    unsigned num_bytes = num_val*sizeof(float);  
 
     std::cout << "GAS_Builder::Build num_val " << num_val << " num_bb " << num_bb << std::endl ;  
 
@@ -112,7 +122,6 @@ void GAS_Builder::Build(GAS& gas)   // static
     std::cout << "GAS_Builder::Build" << std::endl ;  
 
     assert( gas.bis.size() > 0 ); 
-    gas.num_sbt_rec = gas.bis.size() ;  
 
     std::vector<OptixBuildInput> buildInputs ; 
     for(unsigned i=0 ; i < gas.bis.size() ; i++)
@@ -127,7 +136,6 @@ void GAS_Builder::Build(GAS& gas)   // static
         << " buildInputs.size " << buildInputs.size()
         << std::endl 
         ;  
-    
 
     OptixAccelBuildOptions accel_options = {};
     accel_options.buildFlags = 

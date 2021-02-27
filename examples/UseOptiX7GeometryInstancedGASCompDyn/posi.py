@@ -62,10 +62,54 @@ def pick_intersect_pixels( posi, pick_id ):
     return pick 
 
 
+class Geo(object):
+    def __init__(self, base):
+        ias = {}
+        for ias_idx, ias_path in enumerate(sorted(glob.glob("%s/ias_*.npy" % base))):
+            ias[ias_idx] = load_(ias_path)
+        pass
+        gas = {}
+        for gas_idx, gas_path in enumerate(sorted(glob.glob("%s/gas_*.npy" % base))):
+            gas[gas_idx] = load_(gas_path)
+        pass
+
+        ias_ins_idx = ias[0][:,0,3].view(np.uint32)  
+        ias_gas_idx = ias[0][:,1,3].view(np.uint32)  
+
+        trs = ias[0].copy()
+        trs[:,0,3] = 0.   # scrub the identity info 
+        trs[:,1,3] = 0.
+        trs[:,2,3] = 0.
+        trs[:,3,3] = 1.
+        itrs = np.linalg.inv(trs)  ## invert all the IAS transforms at once
+
+        self.trs = trs
+        self.itrs = itrs
+        self.ias = ias
+        self.gas = gas
+        self.ias_ins_idx = ias_ins_idx
+        self.ias_gas_idx = ias_gas_idx
+
+    def radius(self, gas_idx, prim_idx):
+        """
+        grabbing radius from bbox : sphere specific
+        """
+        gas = self.gas[gas_idx]
+        bbox = gas[prim_idx] 
+        radius = bbox[1][0]   
+        return radius
+
+    def sdf(self, gas_idx, prim_idx, lpos):
+        radius = self.radius(gas_idx, prim_idx)
+        d = sdf_sphere(lpos[:,:3], radius )  # sdf : distances to sphere surface 
+        return d 
+
 
 if __name__ == '__main__':
-
     base = dir_()
+    print(base)
+    geo = Geo(base)
+
     posi = load_("posi.npy")
     hposi = posi[posi[:,:,3] != 0 ]  
     iposi = hposi[:,3].view(np.uint32)  
@@ -73,25 +117,6 @@ if __name__ == '__main__':
     #plot3d( hposi[:,:3] )
     #pick_id = identity( 500, 1 ) 
     #pick = pick_intersect_pixels(posi, pick_id )
-
-    ias_ = {}
-    for ias_idx, ias_path in enumerate(sorted(glob.glob("%s/ias_*.npy" % base))):
-        ias_[ias_idx] = load_(ias_path)
-    pass
-    gas_ = {}
-    for gas_idx, gas_path in enumerate(sorted(glob.glob("%s/gas_*.npy" % base))):
-        gas_[gas_idx] = load_(gas_path)
-    pass
-
-    ias_ins_idx = ias_[0][:,0,3].view(np.uint32)  
-    ias_gas_idx = ias_[0][:,1,3].view(np.uint32)  
-
-    gtrs = ias_[0].copy()
-    gtrs[:,0,3] = 0.   # scrub the identity info 
-    gtrs[:,1,3] = 0.
-    gtrs[:,2,3] = 0.
-    gtrs[:,3,3] = 1.
-    gitrs = np.linalg.inv(gtrs)  ## invert all the IAS transforms at once
 
     #print(posi.shape)
     #print(ias_[0].shape)
@@ -125,30 +150,26 @@ if __name__ == '__main__':
         zinstance_idx = zinstance_id - 1
         zprimitive_idx = zprimitive_id - 1
 
-        tr = gtrs[zinstance_idx]
-        itr = gitrs[zinstance_idx]
+        tr = geo.trs[zinstance_idx]
+        itr = geo.itrs[zinstance_idx]
 
-        gas_idx = ias_gas_idx[zinstance_idx]   # lookup in the IAS the gas_idx for this instance
-        ins_idx = ias_ins_idx[zinstance_idx]   # lookup in the IAS the ins_idx for this instance  
+        gas_idx = geo.ias_gas_idx[zinstance_idx]   # lookup in the IAS the gas_idx for this instance
+        ins_idx = geo.ias_ins_idx[zinstance_idx]   # lookup in the IAS the ins_idx for this instance  
         assert ins_idx == zinstance_idx  # check  
-
-        gas = gas_[gas_idx]
-        extents = gas.ravel()
-        sz = extents[zprimitive_idx]
 
         z = np.where(pxid == zid)   
 
         zpxid = posi[z][:,3].view(np.uint32).copy()
         zposi = posi[z].copy()  
         zposi[:,3] = 1.      # global 3d coords for intersect pixels, ready for transform
-
         zlpos = np.dot( zposi, itr ) # transform global positions into instance local ones 
 
-        d = sdf_sphere(zlpos[:,:3], sz)  # sdf : distances to sphere surface 
+        radius = geo.radius(gas_idx, zprimitive_idx )  
+        d = geo.sdf(gas_idx, zprimitive_idx, zlpos[:,:3] )  
 
-        print("i:%5d zid:%9d zid_count:%6d gas_idx:%3d sz:%10s d.min:%10s d.max:%10s" % ( i, zid, zid_count, gas_idx, sz, d.min(), d.max() ))
+        print("i:%5d zid:%9d zid_count:%6d ins_idx:%4d gas_idx:%3d  d.min:%10s d.max:%10s radius:%s  "  % ( i, zid, zid_count, ins_idx, gas_idx, d.min(), d.max(), radius ))
         pass
-        fres[i] = (d.min(),d.max(),sz,0. )
+        fres[i] = (d.min(),d.max(), radius,0. )
         ires[i] = ( len(zposi), ins_idx, gas_idx, zprimitive_idx )
     pass
    

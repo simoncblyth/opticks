@@ -114,56 +114,60 @@ void SBT::updateRaygen()
 void SBT::createHitgroup(const Geo* geo)
 {
     unsigned num_gas = geo->getNumGAS(); 
-    unsigned num_rec = 0 ; 
+    unsigned tot_bi = 0 ; 
     for(unsigned i=0 ; i < num_gas ; i++)
     {
         const GAS& gas = geo->getGAS(i) ;    
-        assert( gas.num_sbt_rec == gas.bis.size() ); 
-        num_rec += gas.num_sbt_rec ;  
+        tot_bi += gas.bis.size() ;  
     }
-    assert( num_rec > 0 );  
-    std::cout << "SBT::createHitgroup num_gas " << num_gas << " num_rec " << num_rec << std::endl ; 
+    assert( tot_bi > 0 );  
+    std::cout << "SBT::createHitgroup num_gas " << num_gas << " tot_bi " << tot_bi << std::endl ; 
 
-    hitgroup = new HitGroup[num_rec] ; 
+    hitgroup = new HitGroup[tot_bi] ; 
     HitGroup* hg = hitgroup ; 
-    unsigned  hg_count = 0 ; 
+    unsigned  tot_bi2 = 0 ; 
 
-    for(unsigned i=0 ; i < num_rec ; i++)   // pack headers CPU side
+    for(unsigned i=0 ; i < tot_bi ; i++)   // pack headers CPU side
          OPTIX_CHECK( optixSbtRecordPackHeader( pip->hitgroup_pg, hitgroup + i ) ); 
     
     for(unsigned i=0 ; i < num_gas ; i++)
     {
         const GAS& gas = geo->getGAS(i) ;    
-        const std::vector<float>& extents = gas.extents ; 
-        unsigned num_sub = extents.size(); 
+        unsigned num_bi = gas.bis.size(); 
   
-        std::cout << "SBT::createHitgroup gas_idx " << i << " num_sub " << num_sub << std::endl ; 
+        std::cout << "SBT::createHitgroup gas_idx " << i << " num_bi " << num_bi << std::endl ; 
 
-        for(unsigned j=0 ; j < num_sub ; j++)
+        for(unsigned j=0 ; j < num_bi ; j++)
         { 
+            const BI& bi = gas.bis[j] ; 
+            const float* aabb = bi.aabb ; 
+
+            // how to organize generalization by primitive OR CSG tree type ?
+            float radius = *(aabb+4) ;  
             unsigned num_items = 1 ; 
             float* values = new float[num_items]; 
-            values[0] = extents[j] ;  
+            values[0] = radius  ;  
             float* d_values = UploadArray<float>(values, num_items) ; 
             delete [] values ; 
      
-            hg->data.bindex = j ;  
             hg->data.values = d_values ; // set device pointer into CPU struct about to be copied to device
+            hg->data.bindex = j ;  
+
             hg++ ; 
-            hg_count++ ; 
+            tot_bi2++ ; 
         }
     }
-    assert( num_rec == hg_count );  
+    assert( tot_bi == tot_bi2 );  
 
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_hitgroup ), sizeof(HitGroup)*num_rec ) );
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_hitgroup ), sizeof(HitGroup)*tot_bi ) );
     sbt.hitgroupRecordBase  = d_hitgroup;
     sbt.hitgroupRecordStrideInBytes = sizeof(HitGroup);
-    sbt.hitgroupRecordCount = num_rec ;
+    sbt.hitgroupRecordCount = tot_bi ;
 
     CUDA_CHECK( cudaMemcpy(   
                 reinterpret_cast<void*>( d_hitgroup ),
                 hitgroup,
-                sizeof( HitGroup )*num_rec,
+                sizeof( HitGroup )*tot_bi,
                 cudaMemcpyHostToDevice
                 ) );
 }

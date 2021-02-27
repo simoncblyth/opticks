@@ -6,9 +6,7 @@
 
 struct GAS : public AS
 {
-    std::vector<float>      extents ; 
-    unsigned                num_sbt_rec ; 
-    std::vector<BI>         bis ; 
+    std::vector<BI> bis ; 
 };
 
 

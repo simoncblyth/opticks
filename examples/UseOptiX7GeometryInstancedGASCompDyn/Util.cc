@@ -2,6 +2,10 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
+#include <iostream>
+#include <vector>
+#include <cassert>
+
 #include "Util.h"
 #include <glm/gtx/transform.hpp>
 
@@ -72,6 +76,43 @@ T Util::ato_( const char* a )   // static
     return v ; 
 }
 
+/**
+Util::ParseGridSpec
+----------------------
+
+Parse a python style xyz gridspec eg "-10:11:2,-10:11:2,-10:11:2"
+into a list of 9 ints.
+
+**/
+
+void Util::ParseGridSpec(std::array<int,9>& grid, const char* spec)  // static 
+{
+    int idx = 0 ; 
+    std::stringstream ss(spec); 
+    std::string s;
+    while (std::getline(ss, s, ',')) 
+    {   
+        std::stringstream tt(s); 
+        std::string t;
+        while (std::getline(tt, t, ':')) grid[idx++] = std::atoi(t.c_str()) ; 
+    }   
+
+    std::cout << "Util::ParseGridSpec " << spec << " : " ; 
+    for(int i=0 ; i < 9 ; i++) std::cout << grid[i] << " " ; 
+    std::cout << std::endl ; 
+}
+
+
+void Util::GridMinMax(std::array<int,9>& grid, int&mn, int& mx)  // static 
+{
+    for(int a=0 ; a < 3 ; a++)
+    for(int i=grid[a*3+0] ; i < grid[a*3+1] ; i+=grid[a*3+2] )
+    {
+        if( i > mx ) mx = i ; 
+        if( i < mn ) mn = i ; 
+    }
+    std::cout << "Util::GridMinMax " << mn << " " << mx << std::endl ; 
+}
 
 template <typename T>
 T Util::GetEValue(const char* key, T fallback) // static 
@@ -81,7 +122,8 @@ T Util::GetEValue(const char* key, T fallback) // static
     return val ;  
 }
 
-template float    Util::GetEValue<float>(const char* key, float fallback); 
-template int      Util::GetEValue<int>(const char* key,   int  fallback); 
-template unsigned Util::GetEValue<unsigned>(const char* key,   unsigned  fallback); 
+template float       Util::GetEValue<float>(const char* key, float fallback); 
+template int         Util::GetEValue<int>(const char* key,   int  fallback); 
+template unsigned    Util::GetEValue<unsigned>(const char* key,   unsigned  fallback); 
+template std::string Util::GetEValue<std::string>(const char* key,  std::string  fallback); 
 

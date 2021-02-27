@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <vector>
 #include <optix.h>
 #include <glm/glm.hpp>
@@ -35,7 +36,7 @@ struct Geo
 
     void makeGAS(float extent0, float extent1);
     void makeGAS(const std::vector<float>& extents);
-    void makeIAS(float extent, float step, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single );
+    void makeIAS_Grid( std::array<int,9>& grid, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single );
 
 
     void writeIAS(unsigned ias_idx, const char* dir) const ;
@@ -49,6 +50,8 @@ struct Geo
     void setTop(const char* spec) ; 
     void setTop(AS* top_) ; 
     AS* getTop() const ; 
+
+    void setTopExtent(float top_extent_); 
     float getTopExtent() const ; 
 
     const char* spec = nullptr ; 
@@ -57,6 +60,7 @@ struct Geo
 
     float tmin = 0.f ; 
     float tmax = 1e16f ; 
+    float top_extent = 100.f ; 
 
     std::vector<GAS> vgas ; 
     std::vector<IAS> vias ; 
