@@ -33,11 +33,11 @@ void Geo::init()
 
     if(strcmp(geometry, "sphere_containing_grid_of_two_radii_spheres_compound") == 0)
     {
-        init_sphere_containing_grid_of_two_radii_spheres_compound(tminf, tmaxf);
+        init_sphere_containing_grid_of_two_radii_spheres(tminf, tmaxf, true );
     }
     else if(strcmp(geometry, "sphere_containing_grid_of_two_radii_spheres") == 0)
     {
-        init_sphere_containing_grid_of_two_radii_spheres(tminf, tmaxf);
+        init_sphere_containing_grid_of_two_radii_spheres(tminf, tmaxf, false);
     }
     else if(strcmp(geometry, "sphere") == 0 )
     {
@@ -49,7 +49,7 @@ void Geo::init()
     }
     else
     {
-        init_sphere_containing_grid_of_two_radii_spheres(tminf, tmaxf);
+        assert(0); 
     }
 
     float top_extent = getTopExtent(); 
@@ -80,9 +80,9 @@ void Geo::init()
     }
 }
 
-void Geo::init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& tmaxf)
+void Geo::init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& tmaxf, bool compound )
 {
-    std::cout << "Geo::init_sphere_containing_grid_of_two_radii_spheres " << spec << std::endl ; 
+    std::cout << "Geo::init_sphere_containing_grid_of_two_radii_spheres " << spec << " " << ( compound ? "COMPOUND" : "no-compound" ) << std::endl ; 
 
     std::string gridspec = Util::GetEValue<std::string>("GRIDSPEC","-10:11,2,-10:11:2,-10:11,2") ; 
     std::array<int,9> grid ; 
@@ -92,16 +92,30 @@ void Geo::init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& 
     int mx(0); 
     Util::GridMinMax(grid, mn, mx); 
     int grid_extent = std::max( std::abs(mn), std::abs(mx) );  // half side
-    float big_radius = float(grid_extent)*2.0f ;
+    float big_radius = float(grid_extent)*sqrtf(3.f)/2.f ;
     std::cout << "grid_extent " << grid_extent << " big_radius " << big_radius << std::endl ; 
 
-    makeGAS(0.7f); 
-    makeGAS(1.0f); 
+    if(compound)
+    {
+        makeGAS(0.7f, 0.35f); 
+        makeGAS(1.0f, 0.5f); 
+    }
+    else
+    {
+        makeGAS(0.7f); 
+        makeGAS(1.0f); 
+    }
     makeGAS(big_radius); 
 
-    std::vector<unsigned> gas_modulo = {0, 1} ;
-    std::vector<unsigned> gas_single = {2} ;
-    makeIAS_Grid(grid, gas_modulo, gas_single ); 
+
+    std::vector<unsigned> grid_modulo ;
+    std::vector<unsigned> gas_single ;
+    Util::GetEVector(grid_modulo, "MODULO", "0,1" ); 
+    Util::GetEVector(gas_single, "SINGLE", "2" ); 
+    std::cout << "MODULO " << Util::Present(grid_modulo) << std::endl ; 
+    std::cout << "SINGLE " << Util::Present(gas_single) << std::endl ; 
+
+    makeIAS_Grid(grid, grid_modulo, gas_single ); 
 
     setTopExtent(big_radius); 
     setTop(spec); 
@@ -110,36 +124,6 @@ void Geo::init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& 
     tmaxf = 10000.f ; 
 }
 
-
-void Geo::init_sphere_containing_grid_of_two_radii_spheres_compound(float& tminf, float& tmaxf)
-{
-    std::cout << "Geo::init_sphere_containing_grid_of_two_radii_spheres_compound " << spec << std::endl ; 
-
-    std::string gridspec = Util::GetEValue<std::string>("GRIDSPEC","-10:11,2,-10:11:2,-10:11,2") ; 
-    std::array<int,9> grid ; 
-    Util::ParseGridSpec(grid, gridspec.c_str() );     
-
-    int mn(0); 
-    int mx(0); 
-    Util::GridMinMax(grid, mn, mx); 
-    int grid_extent = std::max( std::abs(mn), std::abs(mx) );  // half side
-    float big_radius = float(grid_extent)*2.0f ;
-    std::cout << "grid_extent " << grid_extent << " big_radius " << big_radius << std::endl ; 
-
-    makeGAS(0.7f, 0.35f); 
-    makeGAS(1.0f, 0.5f); 
-    makeGAS(big_radius); 
-
-    std::vector<unsigned> gas_modulo = {0, 1} ;
-    std::vector<unsigned> gas_single = {2} ;
-    makeIAS_Grid(grid, gas_modulo, gas_single ); 
-
-    setTopExtent(big_radius); 
-    setTop(spec); 
-
-    tminf = 0.75f ;   // <-- so can see inside the big sphere  
-    tmaxf = 10000.f ; 
-}
 
 void Geo::init_sphere(float& tminf, float& tmaxf)
 {
@@ -157,6 +141,7 @@ void Geo::init_sphere_two(float& tminf, float& tmaxf)
     std::vector<float> extents = {100.f, 90.f, 80.f, 70.f, 60.f, 50.f   } ; 
     makeGAS(extents); 
     setTop("g0"); 
+    setTopExtent(100.f); 
 
     tminf = 1.50f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
     tmaxf = 10000.f ; 

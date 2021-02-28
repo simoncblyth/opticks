@@ -101,7 +101,7 @@ extern "C" __global__ void __raygen__rg()
 
     const unsigned cameratype = params.cameratype ;  
     const float3 dxyUV = d.x * params.U + d.y * params.V ; 
-    // cameratype 0u:perspective, 1u:orthographic
+    //                           cameratype 0u:perspective,                    1u:orthographic
     const float3 origin    = cameratype == 0u ? params.eye                     : params.eye + dxyUV    ;
     const float3 direction = cameratype == 0u ? normalize( dxyUV + params.W )  : normalize( params.W ) ;
 

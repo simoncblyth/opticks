@@ -15,8 +15,7 @@ struct Geo
     Geo(const char* spec_, const char* geometry_);
 
     void init();
-    void init_sphere_containing_grid_of_two_radii_spheres_compound(float& tminf, float& tmaxf);
-    void init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& tmaxf);
+    void init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& tmaxf, bool compound);
     void init_sphere(float& tminf, float& tmaxf);
     void init_sphere_two(float& tminf, float& tmaxf);
 

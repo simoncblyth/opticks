@@ -46,10 +46,13 @@ int main(int argc, char** argv)
     Geo geo(spec, geometry);   // must be after Ctx creation as creates GAS
     geo.write(outdir);  
 
+    glm::vec3 eye_model ; 
+    Util::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0"); 
+
     float top_extent = geo.getTopExtent() ;  
-    glm::vec4 ce(0.f,0.f,0.f, top_extent );   // defines the center-extent of the region to view
+    glm::vec4 ce(0.f,0.f,0.f, top_extent*1.4f );   // defines the center-extent of the region to view
     glm::vec3 eye,U,V,W  ;
-    Util::GetEyeUVW( ce, width, height, eye, U, V, W ); 
+    Util::GetEyeUVW( eye_model, ce, width, height, eye, U, V, W ); 
 
     ctx.setView(eye, U, V, W, geo.tmin, geo.tmax, cameratype ); 
     ctx.setSize(width, height, depth); 

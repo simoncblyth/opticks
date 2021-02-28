@@ -28,7 +28,7 @@ const char* Util::PTXPath( const char* install_prefix, const char* cmake_target,
 
 
 // Composition::getEyeUVW and examples/UseGeometryShader:getMVP
-void Util::GetEyeUVW(const glm::vec4& ce, const unsigned width, const unsigned height, glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W ) // static
+void Util::GetEyeUVW(const glm::vec3& em, const glm::vec4& ce, const unsigned width, const unsigned height, glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W ) // static
 {
     glm::vec3 tr(ce.x, ce.y, ce.z);  // ce is center-extent of model
     glm::vec3 sc(ce.w);
@@ -38,7 +38,7 @@ void Util::GetEyeUVW(const glm::vec4& ce, const unsigned width, const unsigned h
     //glm::mat4 world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);
 
    // View::getTransforms
-    glm::vec4 eye_m( -1.f,-1.f,1.f,1.f);  //  viewpoint in unit model frame 
+    glm::vec4 eye_m( em.x,em.y,em.z,1.f);  //  viewpoint in unit model frame 
     glm::vec4 look_m( 0.f, 0.f,0.f,1.f); 
     glm::vec4 up_m(   0.f, 0.f,1.f,1.f); 
     glm::vec4 gze_m( look_m - eye_m ) ; 
@@ -122,8 +122,44 @@ T Util::GetEValue(const char* key, T fallback) // static
     return val ;  
 }
 
+template <typename T>
+void Util::GetEVector(std::vector<T>& vec, const char* key, const char* fallback )
+{
+    const char* sval = getenv(key); 
+    std::stringstream ss(sval ? sval : fallback); 
+    std::string s ; 
+    while(getline(ss, s, ',')) vec.push_back(ato_<T>(s.c_str()));   
+}  
+
+void Util::GetEVec(glm::vec3& v, const char* key, const char* fallback )
+{
+    std::vector<float> vec ; 
+    Util::GetEVector<float>(vec, key, fallback); 
+    std::cout << key << Util::Present(vec) << std::endl ; 
+    assert( vec.size() == 3 ); 
+    for(int i=0 ; i < 3 ; i++) v[i] = vec[i] ; 
+}
+
+template <typename T>
+std::string Util::Present(std::vector<T>& vec)
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < vec.size() ; i++) ss << vec[i] << " " ; 
+    return ss.str();
+}
+
+
 template float       Util::GetEValue<float>(const char* key, float fallback); 
 template int         Util::GetEValue<int>(const char* key,   int  fallback); 
 template unsigned    Util::GetEValue<unsigned>(const char* key,   unsigned  fallback); 
 template std::string Util::GetEValue<std::string>(const char* key,  std::string  fallback); 
+
+
+template void  Util::GetEVector<unsigned>(std::vector<unsigned>& vec, const char* key, const char* fallback  ); 
+template void  Util::GetEVector<float>(std::vector<float>& vec, const char* key, const char* fallback  ); 
+
+template std::string Util::Present<float>(std::vector<float>& ); 
+template std::string Util::Present<unsigned>(std::vector<unsigned>& ); 
+template std::string Util::Present<int>(std::vector<int>& ); 
+
 
