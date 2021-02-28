@@ -31,21 +31,15 @@ void Geo::init()
     float tminf(0.1) ; 
     float tmaxf(10000.f) ; 
 
-    if(strcmp(geometry, "sphere_containing_grid_of_two_radii_spheres_compound") == 0)
+    unsigned layers = Util::GetEValue<unsigned>("LAYERS", 1) ; 
+
+    if(strcmp(geometry, "sphere_containing_grid_of_spheres") == 0)
     {
-        init_sphere_containing_grid_of_two_radii_spheres(tminf, tmaxf, true );
-    }
-    else if(strcmp(geometry, "sphere_containing_grid_of_two_radii_spheres") == 0)
-    {
-        init_sphere_containing_grid_of_two_radii_spheres(tminf, tmaxf, false);
+        init_sphere_containing_grid_of_spheres(tminf, tmaxf, layers );
     }
     else if(strcmp(geometry, "sphere") == 0 )
     {
-        init_sphere(tminf, tmaxf);
-    }
-    else if(strcmp(geometry, "sphere_two") == 0 )
-    {
-        init_sphere_two(tminf, tmaxf);
+        init_sphere(tminf, tmaxf, layers);
     }
     else
     {
@@ -80,9 +74,20 @@ void Geo::init()
     }
 }
 
-void Geo::init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& tmaxf, bool compound )
+
+/**
+Geo::init_sphere_containing_grid_of_spheres
+---------------------------------------------
+
+A cube of side 1 (halfside 0.5) has diagonal sqrt(3):1.7320508075688772 
+that will fit inside a sphere of diameter sqrt(3) (radius sqrt(3)/2 : 0.86602540378443)
+Container sphere "extent" needs to be sqrt(3) larger than the grid extent.
+
+**/
+
+void Geo::init_sphere_containing_grid_of_spheres(float& tminf, float& tmaxf, unsigned layers )
 {
-    std::cout << "Geo::init_sphere_containing_grid_of_two_radii_spheres " << spec << " " << ( compound ? "COMPOUND" : "no-compound" ) << std::endl ; 
+    std::cout << "Geo::init_sphere_containing_grid_of_spheres " << spec << " layers " << layers << std::endl ; 
 
     std::string gridspec = Util::GetEValue<std::string>("GRIDSPEC","-10:11,2,-10:11:2,-10:11,2") ; 
     std::array<int,9> grid ; 
@@ -92,20 +97,12 @@ void Geo::init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& 
     int mx(0); 
     Util::GridMinMax(grid, mn, mx); 
     int grid_extent = std::max( std::abs(mn), std::abs(mx) );  // half side
-    float big_radius = float(grid_extent)*sqrtf(3.f)/2.f ;
+    float big_radius = float(grid_extent)*sqrtf(3.f) ;
     std::cout << "grid_extent " << grid_extent << " big_radius " << big_radius << std::endl ; 
 
-    if(compound)
-    {
-        makeGAS(0.7f, 0.35f); 
-        makeGAS(1.0f, 0.5f); 
-    }
-    else
-    {
-        makeGAS(0.7f); 
-        makeGAS(1.0f); 
-    }
-    makeGAS(big_radius); 
+    makeGAS(0.7f, layers); 
+    makeGAS(1.0f, layers); 
+    makeGAS(big_radius, 1u); 
 
 
     std::vector<unsigned> grid_modulo ;
@@ -125,27 +122,17 @@ void Geo::init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& 
 }
 
 
-void Geo::init_sphere(float& tminf, float& tmaxf)
+void Geo::init_sphere(float& tminf, float& tmaxf, unsigned layers)
 {
     std::cout << "Geo::init_sphere" << std::endl ; 
-    makeGAS(100.f); 
+    makeGAS(100.f, layers); 
     setTop("g0"); 
     setTopExtent(100.f); 
 
     tminf = 1.60f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
     tmaxf = 10000.f ; 
 }
-void Geo::init_sphere_two(float& tminf, float& tmaxf)
-{
-    std::cout << "Geo::init_sphere_two" << std::endl ; 
-    std::vector<float> extents = {100.f, 90.f, 80.f, 70.f, 60.f, 50.f   } ; 
-    makeGAS(extents); 
-    setTop("g0"); 
-    setTopExtent(100.f); 
 
-    tminf = 1.50f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
-    tmaxf = 10000.f ; 
-}
 
 Geo* Geo::Get()
 {
@@ -218,20 +205,26 @@ Geo::makeGAS
 GAS can hold multiple bbox, but for now use just use one each 
 with symmetric extent about the origin.
 
+::
+
+    In [6]: 1./(np.arange(0,1)+1) 
+    Out[6]: array([1.])
+
+    In [7]: 1./(np.arange(0,2)+1) 
+    Out[7]: array([1. , 0.5])
+
+    In [8]: 1./(np.arange(0,3)+1) 
+    Out[8]: array([1.        , 0.5       , 0.33333333])
+
+
 **/
-void Geo::makeGAS(float extent)
+void Geo::makeGAS(float outer_extent, unsigned layers)
 {
     std::vector<float> extents ;
-    extents.push_back(extent);  
+    for(unsigned i=0 ; i < layers ; i++) extents.push_back(outer_extent/float(i+1));  
     makeGAS(extents); 
 }
-void Geo::makeGAS(float extent0, float extent1)
-{
-    std::vector<float> extents ;
-    extents.push_back(extent0);  
-    extents.push_back(extent1);  
-    makeGAS(extents); 
-}
+
 void Geo::makeGAS(const std::vector<float>& extents)
 {
     std::cout << "Geo::makeGAS extents.size() " << extents.size() << " : " ; 
@@ -239,31 +232,38 @@ void Geo::makeGAS(const std::vector<float>& extents)
     std::cout << std::endl ; 
 
     std::vector<float> bb ; 
+    std::vector<float> param ; 
 
     // fudge enlarges bbox compared to expectation for the geometry 
     float fudge = Util::GetEValue("FUDGE", 1.0f)  ; 
     std::cout << "Geo::makeGAS fudge " << fudge << "    fudged extents : " ; 
 
-    float extent0 = extents[0]*fudge ; 
+    for(unsigned i=0 ; i < extents.size() ; i++) assert(extents[i] <= extents[0] ) ; 
+ 
     for(unsigned i=0 ; i < extents.size() ; i++)
     {
-        float extent = extents[i]*fudge ;
-        assert( extent <= extent0 );  
+        float extent = extents[i] ; 
+        float fudged_extent = extent*fudge ;
 
-        std::cout << extent << " " ; 
+        std::cout << fudged_extent << " " ; 
  
-        bb.push_back(-extent); 
-        bb.push_back(-extent); 
-        bb.push_back(-extent); 
-        bb.push_back(+extent); 
-        bb.push_back(+extent); 
-        bb.push_back(+extent); 
+        bb.push_back(-fudged_extent); 
+        bb.push_back(-fudged_extent); 
+        bb.push_back(-fudged_extent); 
+        bb.push_back(+fudged_extent); 
+        bb.push_back(+fudged_extent); 
+        bb.push_back(+fudged_extent);
+
+        param.push_back(extent); 
+        param.push_back(0.f); 
+        param.push_back(0.f); 
+        param.push_back(0.f); 
     }
     std::cout << std::endl ; 
 
 
     GAS gas = {} ; 
-    GAS_Builder::Build(gas, bb); 
+    GAS_Builder::Build(gas, bb, param ); 
 
     addGAS(gas); 
 }

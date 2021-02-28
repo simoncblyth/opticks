@@ -7,10 +7,14 @@
 #include <cuda_runtime.h>
 #include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
+
 #include "NP.hh"
 #include "Frame.h"
 #include "Params.h"
 #include "SPPM.h"
+
+#define SIMG_IMPLEMENTATION 1 
+#include "SIMG.hh"
 
 
 Frame::Frame(Params* params_)
@@ -80,6 +84,18 @@ void Frame::writePPM(const char* dir, const char* name, bool yflip ) const
 {
     std::cout << "Frame::writePPM " << dir << "/" << name << std::endl ; 
     SPPM_write( dir, name, pixels.data(), params->width, params->height, yflip );
+}
+void Frame::writePNG(const char* dir, const char* name) const 
+{
+    int channels = 3 ; 
+    SIMG img(params->width, params->height, channels,  pixels.data() ); 
+    img.writePNG(dir, name); 
+}
+void Frame::writeJPG(const char* dir, const char* name, int quality) const 
+{
+    int channels = 3 ; 
+    SIMG img(params->width, params->height, channels,  pixels.data() ); 
+    img.writeJPG(dir, name, quality); 
 }
 
 void Frame::writeNP( const char* dir, const char* name) const 

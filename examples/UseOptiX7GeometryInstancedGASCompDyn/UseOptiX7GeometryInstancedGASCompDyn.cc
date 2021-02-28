@@ -74,6 +74,8 @@ int main(int argc, char** argv)
 
     frame.download(); 
     frame.writePPM(outdir, "pixels.ppm");  
+    int quality = Util::GetEValue<int>("QUALITY", 50); 
+    frame.writeJPG(outdir, "pixels.jpg", quality);  
     frame.writeNP(  outdir, "posi.npy" );
     //Geo::WriteNP(  outdir, "posi.npy", frame.getIntersectData(), height, width, 4 );
 

@@ -12,27 +12,30 @@ tmin=0.5
 #tmin=0.1
 
 #geometry=sphere
-#geometry=sphere_two
-#geometry=sphere_containing_grid_of_two_radii_spheres
-geometry=sphere_containing_grid_of_two_radii_spheres_compound
+geometry=sphere_containing_grid_of_spheres
 
-#gridspec=-10:11:2,-10:11:2,-10:11:2
+gridspec=-10:11:2,-10:11:2,-10:11:2
 #gridspec=-40:41:4,-40:41:4,-40:41:4
-gridspec=-40:41:10,-40:41:10,-40:41:10
+#gridspec=-40:41:10,-40:41:10,-40:41:10
 #gridspec=-40:41:10,-40:41:10,0:1:1
 
-#eye=-0.5,-0.5,0.5
-eye=-1.0,-1.0,1.0
+eye=-0.5,-0.5,0.5
+#eye=-1.0,-1.0,1.0
 
-fudge=1
-#fudge=2
+#fudge=1
+fudge=2
+#fudge=5
 
 cameratype=0
 
+# number of concentric layers in compound shapes
+#layers=1     
+#layers=2
+layers=3
 
 modulo=0,1
-#single=2
-single=""
+single=2
+#single=""
 
 
 # make sensitive to calling environment
@@ -44,6 +47,7 @@ export GRIDSPEC=${GRIDSPEC:-$gridspec}
 export EYE=${EYE:-$eye} 
 export MODULO=${MODULO:-$modulo}
 export SINGLE=${SINGLE:-$single}
+export LAYERS=${LAYERS:-$layers}
 
 
 export OUTDIR=$PREFIX/$GEOMETRY/FUDGE_${FUDGE}_TMIN_${TMIN}
@@ -54,6 +58,7 @@ echo FUDGE      : $FUDGE
 echo TMIN       : $TMIN
 echo CAMERATYPE : $CAMERATYPE
 echo GRIDSPEC   : $GRIDSPEC
+echo LAYERS     : $LAYERS
 echo EYE        : $EYE
 
 echo PREFIX   : $PREFIX

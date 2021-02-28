@@ -42,20 +42,30 @@ within that BI.
 **/
 
 
-BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val, unsigned primitiveIndexOffset )
+BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_bb_val,  const float* param, unsigned num_param_val, unsigned primitiveIndexOffset )
 {
-    assert( num_val == 6 ); 
-
-    std::cout << "GAS_Builder::MakeCustomPrimitivesBI " ; 
-    for(unsigned i=0 ; i < 6 ; i++) std::cout << *(bb+i) << " "  ; 
-    std::cout << std::endl ;  
+    assert( num_bb_val    == 6 ); 
+    assert( num_param_val == 4 ); 
+    std::cout << "GAS_Builder::MakeCustomPrimitivesBI " << std::endl ; 
 
     BI bi = {} ; 
+
+    bi.param = new float[4] ;
+    memcpy( bi.param, param, 4*sizeof(float) ); 
+
     bi.aabb = new float[6] ; 
     memcpy( bi.aabb,  bb,  6*sizeof(float) ); 
-    std::cout << "GAS_Builder::MakeCustomPrimitivesBI " ; 
+
+
+    std::cout << "bi.param : " ; 
+    for(unsigned i=0 ; i < 4 ; i++) std::cout << *(bi.param+i) << " "  ; 
+    std::cout << std::endl ;  
+
+    std::cout << "bi.aabb : " ; 
     for(unsigned i=0 ; i < 6 ; i++) std::cout << *(bi.aabb+i) << " "  ; 
     std::cout << std::endl ;  
+
+
     bi.num_sbt_records = 1 ;    //  SBT entries for each build input
     bi.flags = new unsigned[bi.num_sbt_records];
     bi.sbt_index = new unsigned[bi.num_sbt_records];
@@ -93,19 +103,27 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_val, unsign
 
 
 
-void GAS_Builder::Build(GAS& gas, const std::vector<float>& bb )  // static
+void GAS_Builder::Build(GAS& gas, const std::vector<float>& bb, const std::vector<float>& param )  // static
 {
-    unsigned num_val = bb.size() ; 
-    assert( num_val % 6 == 0 );   
-    unsigned num_bb = num_val / 6 ;  
+    unsigned num_bb_val = bb.size() ; 
+    assert( num_bb_val % 6 == 0 );   
+    unsigned num_bb = num_bb_val / 6 ;  
 
-    std::cout << "GAS_Builder::Build num_val " << num_val << " num_bb " << num_bb << std::endl ;  
+    unsigned num_par_val = param.size() ; 
+    assert( num_par_val % 4 == 0 );   
+    unsigned num_bb2 = num_par_val / 4 ;  
+    assert( num_bb2 == num_bb ); 
+
+
+    std::cout << "GAS_Builder::Build num_bb_val " << num_bb_val << " num_bb " << num_bb << std::endl ;  
 
     for(unsigned i=0 ; i < num_bb ; i++)
     { 
-         const float* ptr = bb.data() + i*6u ; 
+         const float* bb_ptr = bb.data() + i*6u ; 
+         const float* param_ptr = param.data() + i*4u ; 
+
          unsigned primitiveIndexOffset = i ; 
-         BI bi = MakeCustomPrimitivesBI( ptr, 6u, primitiveIndexOffset );  
+         BI bi = MakeCustomPrimitivesBI( bb_ptr, 6u, param_ptr, 4u,  primitiveIndexOffset );  
          gas.bis.push_back(bi); 
     }
 

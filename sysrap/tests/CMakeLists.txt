@@ -62,6 +62,7 @@ set(TEST_SOURCES
    SRandTest.cc
 
    SRngSpecTest.cc 
+   SIMGTest.cc
 )
 
 set(_TEST_SOURCES

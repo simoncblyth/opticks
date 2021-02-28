@@ -15,9 +15,8 @@ struct Geo
     Geo(const char* spec_, const char* geometry_);
 
     void init();
-    void init_sphere_containing_grid_of_two_radii_spheres(float& tminf, float& tmaxf, bool compound);
-    void init_sphere(float& tminf, float& tmaxf);
-    void init_sphere_two(float& tminf, float& tmaxf);
+    void init_sphere_containing_grid_of_spheres(float& tminf, float& tmaxf, unsigned layers);
+    void init_sphere(float& tminf, float& tmaxf, unsigned layers);
 
     unsigned getNumGAS() const ; 
     unsigned getNumIAS() const ; 
@@ -30,11 +29,11 @@ struct Geo
     const GAS& getGAS(int gas_idx_) const ; 
     const IAS& getIAS(int ias_idx_) const ; 
 
-    void makeGAS(float extent);
+
+    void makeGAS(float outer_extent, unsigned layers);
+    void makeGAS(const std::vector<float>& extents);
     void addGAS(const GAS& gas);
 
-    void makeGAS(float extent0, float extent1);
-    void makeGAS(const std::vector<float>& extents);
     void makeIAS_Grid( std::array<int,9>& grid, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single );
 
 

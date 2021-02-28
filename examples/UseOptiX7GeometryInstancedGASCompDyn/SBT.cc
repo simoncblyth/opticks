@@ -141,9 +141,11 @@ void SBT::createHitgroup(const Geo* geo)
         { 
             const BI& bi = gas.bis[j] ; 
             const float* aabb = bi.aabb ; 
+            const float* param = bi.param ; 
 
             // how to organize generalization by primitive OR CSG tree type ?
-            float radius = *(aabb+4) ;  
+            float radius = *(param+0) ;  
+
             unsigned num_items = 1 ; 
             float* values = new float[num_items]; 
             values[0] = radius  ;  
