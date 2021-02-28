@@ -87,14 +87,16 @@ void Frame::writePPM(const char* dir, const char* name, bool yflip ) const
 }
 void Frame::writePNG(const char* dir, const char* name) const 
 {
-    int channels = 3 ; 
-    SIMG img(params->width, params->height, channels,  pixels.data() ); 
+    int channels = 4 ; 
+    const unsigned char* data = (const unsigned char*)pixels.data();  
+    SIMG img(int(params->width), int(params->height), channels,  data ); 
     img.writePNG(dir, name); 
 }
 void Frame::writeJPG(const char* dir, const char* name, int quality) const 
 {
-    int channels = 3 ; 
-    SIMG img(params->width, params->height, channels,  pixels.data() ); 
+    int channels = 4 ; 
+    const unsigned char* data = (const unsigned char*)pixels.data();  
+    SIMG img(int(params->width), int(params->height), channels,  data ); 
     img.writeJPG(dir, name, quality); 
 }
 

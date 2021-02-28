@@ -23,7 +23,7 @@ struct Frame
     void download_pixels();
     void download_isect();
 
-    void writePPM(const char* dir, const char* name, bool yflip=true ) const ; 
+    void writePPM(const char* dir, const char* name, bool yflip ) const ; 
     void writePNG(const char* dir, const char* name) const ;
     void writeJPG(const char* dir, const char* name, int quality) const ;
 

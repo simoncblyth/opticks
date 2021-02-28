@@ -123,7 +123,9 @@ extern "C" __global__ void __raygen__rg()
     );
 
     uchar4 color = make_color( normal, identity );
-    unsigned index = idx.y * params.width + idx.x ;
+    const bool yflip = true ; 
+    unsigned index = ( yflip ? dim.y - 1 - idx.y : idx.y ) * params.width + idx.x ;
+
     params.pixels[index] = color ; 
     params.isect[index] = make_float4( position.x, position.y, position.z, int_as_float(identity)) ; 
 }

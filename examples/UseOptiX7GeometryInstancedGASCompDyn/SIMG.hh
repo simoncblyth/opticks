@@ -14,9 +14,10 @@ struct SIMG
    const unsigned char* data ; 
    const char* loadpath ; 
    const char* loadext ; 
+   const bool owned ; 
 
    SIMG(const char* path); 
-   SIMG(int width_, int height_, int channels_, const unsigned char* data_); 
+   SIMG(int width_, int height_, int channels_, const unsigned char* data_ ); 
    virtual ~SIMG();  
 
    std::string desc() const ; 
@@ -72,7 +73,8 @@ inline SIMG::SIMG(const char* path)
     channels(0),
     data(stbi_load(path, &width, &height, &channels, 0)),
     loadpath(strdup(path)),
-    loadext(Ext(loadpath))
+    loadext(Ext(loadpath)),
+    owned(true)
 {
 }
 
@@ -83,13 +85,14 @@ inline SIMG::SIMG(int width_, int height_, int channels_, const unsigned char* d
     channels(channels_),
     data(data_),
     loadpath("image.ppm"),
-    loadext(Ext(loadpath))
+    loadext(Ext(loadpath)),
+    owned(false)
 {
 }
 
 inline SIMG::~SIMG()
 {
-    stbi_image_free((void*)data);    
+    if(owned) stbi_image_free((void*)data);    
 }
 
 inline std::string SIMG::desc() const

@@ -9,8 +9,8 @@ rm -rf $OUTDIR
 mkdir -p $OUTDIR
 
 
-#gdb -ex r --args $BIN $spec
-$BIN $spec
+gdb -ex r --args $BIN $spec
+#$BIN $spec
 [ $? -ne 0 ] && echo $0 : run  FAIL && exit 3
 
 ppm=$OUTDIR/pixels.ppm

@@ -73,7 +73,8 @@ int main(int argc, char** argv)
     CUDA_SYNC_CHECK();
 
     frame.download(); 
-    frame.writePPM(outdir, "pixels.ppm");  
+    bool yflip = false ; 
+    frame.writePPM(outdir, "pixels.ppm", yflip );  
     int quality = Util::GetEValue<int>("QUALITY", 50); 
     frame.writeJPG(outdir, "pixels.jpg", quality);  
     frame.writeNP(  outdir, "posi.npy" );
