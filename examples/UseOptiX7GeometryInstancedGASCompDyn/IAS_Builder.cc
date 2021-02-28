@@ -12,30 +12,27 @@
 
 #include "Grid.h"
 #include "Ctx.h"
+
+
+#include "GAS.h"
 #include "IAS.h"
 #include "IAS_Builder.h"
-#include "Geo.h"
+#include "SBT.h"
 
-void IAS_Builder::Build(IAS& ias, const Grid* gr, const std::vector<GAS>& vgas) // static 
+
+void IAS_Builder::Build(IAS& ias, const Grid* gr, const SBT* sbt) // static 
 {
     unsigned num_tr = gr->trs.size() ; 
     std::cout << "IAS_Builder::Build num_tr " << num_tr << std::endl ; 
     assert( num_tr > 0); 
     const float* vals =   (float*)gr->trs.data() ;
- 
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
-
-    unsigned num_gas = vgas.size() ; 
-    std::cout << "IAS_Builder::Build"
-              << " num_gas " << num_gas << std::endl ;   
  
     std::vector<OptixInstance> instances ;  
     for(unsigned i=0 ; i < num_tr ; i++)
     {
-        void* iptr = (void*)(vals + i*16) ;  
-
         glm::mat4 mat(1.0f) ; 
-        memcpy( glm::value_ptr(mat), iptr, 16*sizeof(float));
+        memcpy( glm::value_ptr(mat), (void*)(vals + i*16), 16*sizeof(float));
         
         glm::mat4 imat = glm::transpose(mat);
 
@@ -44,22 +41,18 @@ void IAS_Builder::Build(IAS& ias, const Grid* gr, const std::vector<GAS>& vgas) 
 
         unsigned instanceId = idv.x ;  
         unsigned gasIdx = idv.y ;   
-        assert( gasIdx < num_gas ); 
-        const GAS& gas = vgas[gasIdx]; 
-
-
+        const GAS& gas = sbt->getGAS(gasIdx); 
 
         OptixInstance instance = {} ; 
         instance.flags = flags ;
         instance.instanceId = instanceId ; // TODO: encode gasIdx into this
-        instance.sbtOffset = geo->getOffsetBI(gasIdx);            
+        instance.sbtOffset = sbt->getOffsetBI(gasIdx);            
         instance.visibilityMask = 255;
         instance.traversableHandle = gas.handle ; 
         memcpy( instance.transform, glm::value_ptr(imat), 12*sizeof( float ) );
     
         instances.push_back(instance); 
     }
-
     Build(ias, instances); 
 }
 

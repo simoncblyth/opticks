@@ -16,6 +16,23 @@
 #include "GAS.h"
 #include "GAS_Builder.h"
 
+
+void GAS_Builder::Build(GAS& gas, const Shape* sh )  // static
+{
+    std::cout << "GAS_Builder::Build sh.num " << sh->num << std::endl ;  
+    gas.sh = sh ; 
+
+    for(unsigned i=0 ; i < sh->num ; i++)
+    { 
+         BI bi = MakeCustomPrimitivesBI( sh,  i );  
+         gas.bis.push_back(bi); 
+    }
+    std::cout << "GAS_Builder::Build bis.size " << gas.bis.size() << std::endl ; 
+    Build(gas); 
+}
+
+
+
 /**
 GAS_Builder::MakeCustomPrimitivesBI
 --------------------------------------
@@ -43,14 +60,15 @@ within that BI.
 **/
 
 
-BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_bb_val,  const float* param, unsigned num_param_val, unsigned primitiveIndexOffset )
+BI GAS_Builder::MakeCustomPrimitivesBI(const Shape* sh, unsigned i )
 {
-    assert( num_bb_val    == 6 ); 
-    assert( num_param_val == 4 ); 
+    unsigned primitiveIndexOffset = i ; 
+    const float* aabb = sh->aabb + i*6u ; 
+    //const float* param = sh->param + i*4u ; 
+
     std::cout << "GAS_Builder::MakeCustomPrimitivesBI " << std::endl ; 
 
     BI bi = {} ; 
-
 
     bi.num_sbt_records = 1 ;    //  SBT entries for each build input
     bi.flags = new unsigned[bi.num_sbt_records];
@@ -58,13 +76,12 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_bb_val,  co
     bi.flags[0] = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ; // p18: Each build input also specifies an array of OptixGeometryFlags, one for each SBT record.
     bi.sbt_index[0] = 0 ; 
 
-
     bi.buildInput = {};
     bi.buildInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
 
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &bi.d_aabb ), 6*sizeof(float) ) );
     CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( bi.d_aabb ),
-                            bi.aabb, 6*sizeof(float),
+                            aabb, 6*sizeof(float),
                             cudaMemcpyHostToDevice ));
 
     OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;  
@@ -85,25 +102,6 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_bb_val,  co
     return bi ; 
 } 
 
-
-void GAS_Builder::Build(GAS& gas, const Shape* sh )  // static
-{
-    std::cout << "GAS_Builder::Build sh.num " << sh->num << std::endl ;  
-
-    for(unsigned i=0 ; i < sh->num ; i++)
-    { 
-         const float* bb_ptr = sh->aabb + i*6u ; 
-         const float* param_ptr = sh->param + i*4u ; 
-
-         unsigned primitiveIndexOffset = i ; 
-         BI bi = MakeCustomPrimitivesBI( bb_ptr, 6u, param_ptr, 4u,  primitiveIndexOffset );  
-         gas.bis.push_back(bi); 
-    }
-
-    std::cout << "GAS_Builder::Build bis.size " << gas.bis.size() << std::endl ; 
-
-    Build(gas); 
-}
 
 
 

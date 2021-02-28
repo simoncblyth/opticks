@@ -29,9 +29,9 @@ fudge=2
 cameratype=0
 
 # number of concentric layers in compound shapes
-#layers=1     
+layers=1     
 #layers=2
-layers=3
+#layers=3
 
 modulo=0,1
 single=2

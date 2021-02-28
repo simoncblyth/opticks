@@ -12,11 +12,15 @@
 #include "sutil_Exception.h"   // CUDA_CHECK OPTIX_CHECK
 
 #include "Geo.h"
+#include "Shape.h"
 #include "Binding.h"
 #include "Params.h"
 
 #include "GAS.h"
 #include "GAS_Builder.h"
+
+#include "IAS.h"
+#include "IAS_Builder.h"
 
 #include "PIP.h"
 #include "SBT.h"
@@ -193,10 +197,11 @@ void SBT::createGAS(const Geo* geo)
         GAS gas = {} ;  
         GAS_Builder::Build(gas, sh );
         vgas.push_back(gas);  
-        unsigned num_bi = gas.bi.size() ;
+        unsigned num_bi = gas.bis.size() ;
         nbis.push_back(num_bi); 
     }
 }
+
 void SBT::createIAS(const Geo* geo)
 {
     unsigned num_grid = geo->getNumGrid(); 
@@ -204,10 +209,23 @@ void SBT::createIAS(const Geo* geo)
     {
         const Grid* gr = geo->getGrid(i) ;    
         IAS ias = {} ;  
-        IAS_Builder::Build(ias, gr, vgas );
+        IAS_Builder::Build(ias, gr, this );
         vias.push_back(ias);  
     }
 }
+
+const GAS& SBT::getGAS(unsigned gas_idx) const 
+{
+    assert( gas_idx < vgas.size()); 
+    return vgas[gas_idx]; 
+}
+
+const IAS& SBT::getIAS(unsigned ias_idx) const 
+{
+    assert( ias_idx < vias.size()); 
+    return vias[ias_idx]; 
+}
+
 
 AS* SBT::getTop() const 
 {
@@ -263,7 +281,7 @@ void SBT::createHitgroup(const Geo* geo)
     assert( num_gas == num_shape ); 
 
     unsigned tot_bi = 0 ; 
-    for(unsigned i=0 ; i < num_shape ; i++)
+    for(unsigned i=0 ; i < num_gas ; i++)
     {
         const GAS& gas = vgas[i] ;    
         tot_bi += gas.bis.size() ;  
@@ -288,17 +306,18 @@ void SBT::createHitgroup(const Geo* geo)
     {
         const GAS& gas = vgas[i] ;    
         unsigned num_bi = gas.bis.size(); 
+        const Shape* sh = gas.sh ; 
   
         std::cout << "SBT::createHitgroup gas_idx " << i << " num_bi " << num_bi << std::endl ; 
 
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
             const BI& bi = gas.bis[j] ; 
-            const float* aabb = bi.aabb ; 
-            const float* param = bi.param ; 
 
+            //const float* aabb = sh->get_aabb(j) ; 
+            //const float* param = sh->get_param(j) ; 
             // how to organize generalization by primitive OR CSG tree type ?
-            float radius = *(param+0) ;  
+            float radius = sh->get_size(j); 
 
             unsigned num_items = 1 ; 
             float* values = new float[num_items]; 

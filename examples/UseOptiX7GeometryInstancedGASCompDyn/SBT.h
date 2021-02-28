@@ -11,7 +11,7 @@ SBT : RG,MS,HG program data preparation
 ===========================================
 
 **/
-
+struct PIP ; 
 struct Geo ; 
 
 struct SBT 
@@ -36,7 +36,6 @@ struct SBT
 
     SBT( const PIP* pip_ ); 
     void setGeo(const Geo* geo); 
-    AS* getTop() const ;
 
     AS* getAS(const char* spec) const ;
     void setTop(const char* spec) ;
@@ -53,6 +52,11 @@ struct SBT
 
     void createGAS(const Geo* geo);
     void createIAS(const Geo* geo);
+
+    const GAS& getGAS(unsigned gas_idx) const ;
+    const IAS& getIAS(unsigned ias_idx) const ;
+
+
     void createHitgroup(const Geo* geo);
     void checkHitgroup(); 
 
