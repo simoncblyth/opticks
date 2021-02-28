@@ -12,6 +12,7 @@
 
 
 #include "Ctx.h"
+#include "Shape.h"
 #include "GAS.h"
 #include "GAS_Builder.h"
 
@@ -50,21 +51,6 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_bb_val,  co
 
     BI bi = {} ; 
 
-    bi.param = new float[4] ;
-    memcpy( bi.param, param, 4*sizeof(float) ); 
-
-    bi.aabb = new float[6] ; 
-    memcpy( bi.aabb,  bb,  6*sizeof(float) ); 
-
-
-    std::cout << "bi.param : " ; 
-    for(unsigned i=0 ; i < 4 ; i++) std::cout << *(bi.param+i) << " "  ; 
-    std::cout << std::endl ;  
-
-    std::cout << "bi.aabb : " ; 
-    for(unsigned i=0 ; i < 6 ; i++) std::cout << *(bi.aabb+i) << " "  ; 
-    std::cout << std::endl ;  
-
 
     bi.num_sbt_records = 1 ;    //  SBT entries for each build input
     bi.flags = new unsigned[bi.num_sbt_records];
@@ -100,27 +86,14 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const float* bb, unsigned num_bb_val,  co
 } 
 
 
-
-
-
-void GAS_Builder::Build(GAS& gas, const std::vector<float>& bb, const std::vector<float>& param )  // static
+void GAS_Builder::Build(GAS& gas, const Shape* sh )  // static
 {
-    unsigned num_bb_val = bb.size() ; 
-    assert( num_bb_val % 6 == 0 );   
-    unsigned num_bb = num_bb_val / 6 ;  
+    std::cout << "GAS_Builder::Build sh.num " << sh->num << std::endl ;  
 
-    unsigned num_par_val = param.size() ; 
-    assert( num_par_val % 4 == 0 );   
-    unsigned num_bb2 = num_par_val / 4 ;  
-    assert( num_bb2 == num_bb ); 
-
-
-    std::cout << "GAS_Builder::Build num_bb_val " << num_bb_val << " num_bb " << num_bb << std::endl ;  
-
-    for(unsigned i=0 ; i < num_bb ; i++)
+    for(unsigned i=0 ; i < sh->num ; i++)
     { 
-         const float* bb_ptr = bb.data() + i*6u ; 
-         const float* param_ptr = param.data() + i*4u ; 
+         const float* bb_ptr = sh->aabb + i*6u ; 
+         const float* param_ptr = sh->param + i*4u ; 
 
          unsigned primitiveIndexOffset = i ; 
          BI bi = MakeCustomPrimitivesBI( bb_ptr, 6u, param_ptr, 4u,  primitiveIndexOffset );  
@@ -131,7 +104,6 @@ void GAS_Builder::Build(GAS& gas, const std::vector<float>& bb, const std::vecto
 
     Build(gas); 
 }
-
 
 
 

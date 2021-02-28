@@ -23,14 +23,9 @@ struct AS ;
 
 int main(int argc, char** argv)
 {
-    const char* spec = argc > 1 ? argv[1] : "i0" ; 
-    std::cout << argv[0] << " spec " << spec << std::endl ;  
-
     const char* name = "UseOptiX7GeometryInstancedGASCompDyn" ; 
     const char* prefix = getenv("PREFIX");  assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
-    const char* geometry = getenv("GEOMETRY");  assert( geometry && "expecting GEOMETRY envvar " );
     const char* outdir = getenv("OUTDIR");  assert( outdir && "expecting OUTDIR envvar " );
-
 
     const char* cmake_target = name ; 
     const char* ptx_path = Util::PTXPath( prefix, cmake_target, name ) ; 
@@ -42,10 +37,11 @@ int main(int argc, char** argv)
     unsigned depth = 1u ; 
     unsigned cameratype = Util::GetEValue<unsigned>("CAMERATYPE", 0u ); 
 
-    Ctx ctx ; 
-    Geo geo(spec, geometry);   // must be after Ctx creation as creates GAS
+    Geo geo ;  
     geo.write(outdir);  
 
+
+    // TODO: extracate the view and other params from OptiX/CUDA dependencies
     glm::vec3 eye_model ; 
     Util::GetEVec(eye_model, "EYE", "-1.0,-1.0,1.0"); 
 
@@ -54,15 +50,18 @@ int main(int argc, char** argv)
     glm::vec3 eye,U,V,W  ;
     Util::GetEyeUVW( eye_model, ce, width, height, eye, U, V, W ); 
 
+    Ctx ctx ; 
     ctx.setView(eye, U, V, W, geo.tmin, geo.tmax, cameratype ); 
     ctx.setSize(width, height, depth); 
 
-    AS* top = geo.getTop();
-    ctx.setTop(top); 
+
 
     PIP pip(ptx_path); 
     SBT sbt(&pip);
     sbt.setGeo(&geo); 
+
+    AS* top = sbt.getTop(); 
+    ctx.setTop(top); 
 
     Frame frame(ctx.params); 
 
@@ -73,12 +72,12 @@ int main(int argc, char** argv)
     CUDA_SYNC_CHECK();
 
     frame.download(); 
+
     bool yflip = false ; 
     frame.writePPM(outdir, "pixels.ppm", yflip );  
     int quality = Util::GetEValue<int>("QUALITY", 50); 
     frame.writeJPG(outdir, "pixels.jpg", quality);  
     frame.writeNP(  outdir, "posi.npy" );
-    //Geo::WriteNP(  outdir, "posi.npy", frame.getIntersectData(), height, width, 4 );
 
     return 0 ; 
 }

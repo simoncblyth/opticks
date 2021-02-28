@@ -10,23 +10,22 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Grid.h"
 #include "Ctx.h"
 #include "IAS.h"
 #include "IAS_Builder.h"
-
 #include "Geo.h"
 
-void IAS_Builder::Build(IAS& ias) // static 
+void IAS_Builder::Build(IAS& ias, const Grid* gr, const std::vector<GAS>& vgas) // static 
 {
-    unsigned num_tr = ias.trs.size() ; 
+    unsigned num_tr = gr->trs.size() ; 
     std::cout << "IAS_Builder::Build num_tr " << num_tr << std::endl ; 
     assert( num_tr > 0); 
-    const float* vals =   (float*)ias.trs.data() ;
+    const float* vals =   (float*)gr->trs.data() ;
  
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
 
-    const Geo* geo = Geo::Get();  
-    unsigned num_gas = geo->getNumGAS(); 
+    unsigned num_gas = vgas.size() ; 
     std::cout << "IAS_Builder::Build"
               << " num_gas " << num_gas << std::endl ;   
  
@@ -45,7 +44,10 @@ void IAS_Builder::Build(IAS& ias) // static
 
         unsigned instanceId = idv.x ;  
         unsigned gasIdx = idv.y ;   
-        const GAS& gas = geo->getGAS(gasIdx); 
+        assert( gasIdx < num_gas ); 
+        const GAS& gas = vgas[gasIdx]; 
+
+
 
         OptixInstance instance = {} ; 
         instance.flags = flags ;

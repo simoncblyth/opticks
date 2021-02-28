@@ -386,6 +386,9 @@ glm-nvcc(){
 }
 
 
+glm-prefix(){  echo $(opticks-prefix)/externals/glm/glm ; }
+
+
 glm-pc-(){ cat << EOP
 
 # use --define-prefix to set prefix to the grandparent of the pcfiledir, eg /usr/local/opticks/externals 

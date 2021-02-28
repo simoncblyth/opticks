@@ -1,29 +1,25 @@
-
 #include <iostream>
 #include <iomanip>
 #include <cstring>
 
-
-
+#include "Sys.h"
 #include "Util.h"
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "NP.hh"
 #include "Geo.h"
-#include "IAS_Builder.h"
-#include "GAS_Builder.h"
+#include "Shape.h"
+#include "Grid.h"
 
 Geo* Geo::fGeo = NULL ; 
 
-Geo::Geo(const char* spec_, const char* geometry_) 
-   :
-   spec(strdup(spec_)),  
-   geometry(strdup(geometry_))
+Geo::Geo()
+    :
+    top("i0")
 {
-   fGeo = this ; 
-   init();
-   dumpOffsetBI(); 
+    fGeo = this ; 
+    init();
 }
 
 void Geo::init()
@@ -31,13 +27,15 @@ void Geo::init()
     float tminf(0.1) ; 
     float tmaxf(10000.f) ; 
 
+    std::string geometry = Util::GetEValue<std::string>("GEOMETRY", "sphere_containing_grid_of_spheres" ); 
+
     unsigned layers = Util::GetEValue<unsigned>("LAYERS", 1) ; 
 
-    if(strcmp(geometry, "sphere_containing_grid_of_spheres") == 0)
+    if(strcmp(geometry.c_str(), "sphere_containing_grid_of_spheres") == 0)
     {
         init_sphere_containing_grid_of_spheres(tminf, tmaxf, layers );
     }
-    else if(strcmp(geometry, "sphere") == 0 )
+    else if(strcmp(geometry.c_str(), "sphere") == 0 )
     {
         init_sphere(tminf, tmaxf, layers);
     }
@@ -74,7 +72,6 @@ void Geo::init()
     }
 }
 
-
 /**
 Geo::init_sphere_containing_grid_of_spheres
 ---------------------------------------------
@@ -87,35 +84,21 @@ Container sphere "extent" needs to be sqrt(3) larger than the grid extent.
 
 void Geo::init_sphere_containing_grid_of_spheres(float& tminf, float& tmaxf, unsigned layers )
 {
-    std::cout << "Geo::init_sphere_containing_grid_of_spheres " << spec << " layers " << layers << std::endl ; 
+    std::cout << "Geo::init_sphere_containing_grid_of_spheres : layers " << layers << std::endl ; 
 
-    std::string gridspec = Util::GetEValue<std::string>("GRIDSPEC","-10:11,2,-10:11:2,-10:11,2") ; 
-    std::array<int,9> grid ; 
-    Util::ParseGridSpec(grid, gridspec.c_str());     
+    Grid* grid = new Grid(3) ; 
+    addGrid(grid); 
 
-    int mn(0); 
-    int mx(0); 
-    Util::GridMinMax(grid, mn, mx); 
-    int grid_extent = std::max( std::abs(mn), std::abs(mx) );  // half side
-    float big_radius = float(grid_extent)*sqrtf(3.f) ;
-    std::cout << "grid_extent " << grid_extent << " big_radius " << big_radius << std::endl ; 
+    float big_radius = float(grid->extent())*sqrtf(3.f) ;
+    std::cout << " big_radius " << big_radius << std::endl ; 
 
-    makeGAS(0.7f, layers); 
-    makeGAS(1.0f, layers); 
-    makeGAS(big_radius, 1u); 
+    addShape("S", 0.7f, layers); 
+    addShape("S", 1.0f, layers); 
+    addShape("S", big_radius, 1u); 
 
-
-    std::vector<unsigned> grid_modulo ;
-    std::vector<unsigned> gas_single ;
-    Util::GetEVector(grid_modulo, "MODULO", "0,1" ); 
-    Util::GetEVector(gas_single, "SINGLE", "2" ); 
-    std::cout << "MODULO " << Util::Present(grid_modulo) << std::endl ; 
-    std::cout << "SINGLE " << Util::Present(gas_single) << std::endl ; 
-
-    makeIAS_Grid(grid, grid_modulo, gas_single ); 
+    top = strdup("i0") ; 
 
     setTopExtent(big_radius); 
-    setTop(spec); 
 
     tminf = 0.75f ; 
     tmaxf = 10000.f ; 
@@ -125,31 +108,26 @@ void Geo::init_sphere_containing_grid_of_spheres(float& tminf, float& tmaxf, uns
 void Geo::init_sphere(float& tminf, float& tmaxf, unsigned layers)
 {
     std::cout << "Geo::init_sphere" << std::endl ; 
-    makeGAS(100.f, layers); 
-    setTop("g0"); 
+    addShape("S", 100.f, layers); 
     setTopExtent(100.f); 
+    top = strdup("g0") ; 
 
     tminf = 1.60f ;   //  hmm depends on viewpoint, aiming to cut into the sphere with the tmin
     tmaxf = 10000.f ; 
 }
 
+std::string Geo::desc() const
+{
+    std::stringstream ss ; 
+    ss << "Geo shapes: " << shapes.size() << " grids:" << grids.size() ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 Geo* Geo::Get()
 {
     return fGeo ; 
 }
-
-AS* Geo::getTop() const 
-{
-    return top ; 
-}
-
-
-/**
-would need to traverse the ias and transform the bbox of all the
-bi that it references in order to automate this
-**/
-
 void Geo::setTopExtent(float top_extent_)
 {
     top_extent = top_extent_ ; 
@@ -158,364 +136,57 @@ float Geo::getTopExtent() const
 {
     return top_extent ; 
 }
-
-void Geo::setTop(const char* spec)
-{
-    AS* a = getAS(spec); 
-    setTop(a); 
-}
-
-AS* Geo::getAS(const char* spec) const 
-{
-   assert( strlen(spec) > 1 ); 
-   char c = spec[0]; 
-   assert( c == 'i' || c == 'g' ); 
-   int idx = atoi( spec + 1 ); 
-
-   std::cout << "Geo::getAS " << spec << " c " << c << " idx " << idx << std::endl ; 
-
-   AS* a = nullptr ; 
-   if( c == 'i' )
-   {
-       const IAS& ias = getIAS(idx); 
-       a = (AS*)&ias ; 
-   } 
-   else if( c == 'g' )
-   {
-       const GAS& gas = getGAS(idx); 
-       a = (AS*)&gas ; 
-   }
-
-   if(a)
-   {
-       std::cout << "Geo::getAS " << spec << std::endl ; 
-   } 
-   return a ; 
-}
-
-void Geo::setTop(AS* top_)
-{
-    top = top_ ; 
-}
-
-/**
-Geo::makeGAS
----------------
-
-GAS can hold multiple bbox, but for now use just use one each 
-with symmetric extent about the origin.
-
-::
-
-    In [6]: 1./(np.arange(0,1)+1) 
-    Out[6]: array([1.])
-
-    In [7]: 1./(np.arange(0,2)+1) 
-    Out[7]: array([1. , 0.5])
-
-    In [8]: 1./(np.arange(0,3)+1) 
-    Out[8]: array([1.        , 0.5       , 0.33333333])
-
-
-**/
-void Geo::makeGAS(float outer_extent, unsigned layers)
+void Geo::addShape(const char* typs, float outer_extent, unsigned layers)
 {
     std::vector<float> extents ;
     for(unsigned i=0 ; i < layers ; i++) extents.push_back(outer_extent/float(i+1));  
-    makeGAS(extents); 
+    addShape(typs, extents); 
+}
+void Geo::addShape(const char* typs, const std::vector<float>& extents)
+{
+    Shape* sh = new Shape(typs, extents) ; 
+    shapes.push_back(sh); 
+}
+void Geo::addGrid(const Grid* grid)
+{
+    grids.push_back(grid); 
 }
 
-void Geo::makeGAS(const std::vector<float>& extents)
+unsigned Geo::getNumShape() const 
 {
-    std::cout << "Geo::makeGAS extents.size() " << extents.size() << " : " ; 
-    for(unsigned i=0 ; i < extents.size() ; i++) std::cout << extents[i] << " " ; 
-    std::cout << std::endl ; 
-
-    std::vector<float> bb ; 
-    std::vector<float> param ; 
-
-    // fudge enlarges bbox compared to expectation for the geometry 
-    float fudge = Util::GetEValue("FUDGE", 1.0f)  ; 
-    std::cout << "Geo::makeGAS fudge " << fudge << "    fudged extents : " ; 
-
-    for(unsigned i=0 ; i < extents.size() ; i++) assert(extents[i] <= extents[0] ) ; 
- 
-    for(unsigned i=0 ; i < extents.size() ; i++)
-    {
-        float extent = extents[i] ; 
-        float fudged_extent = extent*fudge ;
-
-        std::cout << fudged_extent << " " ; 
- 
-        bb.push_back(-fudged_extent); 
-        bb.push_back(-fudged_extent); 
-        bb.push_back(-fudged_extent); 
-        bb.push_back(+fudged_extent); 
-        bb.push_back(+fudged_extent); 
-        bb.push_back(+fudged_extent);
-
-        param.push_back(extent); 
-        param.push_back(0.f); 
-        param.push_back(0.f); 
-        param.push_back(0.f); 
-    }
-    std::cout << std::endl ; 
-
-
-    GAS gas = {} ; 
-    GAS_Builder::Build(gas, bb, param ); 
-
-    addGAS(gas); 
+    return shapes.size() ; 
+}
+unsigned Geo::getNumGrid() const 
+{
+    return grids.size() ; 
 }
 
-void Geo::addGAS(const GAS& gas)
+const Shape* Geo::getShape(int shape_idx_) const
 {
-    vgas.push_back(gas); 
-    unsigned num_bi = gas.bis.size() ;
-    nbis.push_back(num_bi); 
+    unsigned shape_idx = shape_idx_ < 0 ? shapes.size() + shape_idx_ : shape_idx_ ;   // -ve counts from end
+    assert( shape_idx < shapes.size() ); 
+    return shapes[shape_idx] ; 
 }
-
-unsigned Geo::getOffsetBI(unsigned gas_idx) const 
+const Grid* Geo::getGrid(int grid_idx_) const
 {
-    assert( gas_idx < nbis.size()); 
-
-    unsigned offset = 0 ; 
-    for(unsigned i=0 ; i < nbis.size() ; i++) 
-    {
-        if( i == gas_idx ) break ; 
-        offset += nbis[i]; 
-    }
-    return offset ;     
-} 
-
-
-/**
-Geo::getOffsetBI
-------------------
-
-Example::
-
-    GAS_0            --> 0 
-        BI_0 
-        BI_1
-    GAS_1            --> 2 
-        BI_0 
-        BI_1
-    GAS_2            --> 4 
-        BI_0 
-
-Simply by keeping count of build inputs (BI) used for each GAS.
-
-**/
-
-
-
-
-
-unsigned Geo::getNumGAS() const 
-{
-    return vgas.size() ; 
-}
-unsigned Geo::getNumIAS() const 
-{
-    return vias.size() ; 
-}
-unsigned Geo::getNumBI() const // total 
-{
-    unsigned tot = 0 ; 
-    for(unsigned i=0 ; i < nbis.size() ; i++) tot += nbis[i] ; 
-    return tot ; 
-}
-unsigned Geo::getNumBI(unsigned gas_idx) const 
-{
-    assert( gas_idx < nbis.size()); 
-    return nbis[gas_idx] ; 
-}
-void Geo::dumpOffsetBI() const 
-{
-    unsigned num_gas = getNumGAS(); 
-    std::cout << "Geo::dumpOffsetBI  num_gas " << num_gas << std::endl ; 
-    for(unsigned gas_idx=0 ; gas_idx < num_gas ; gas_idx++)
-    {
-        unsigned num_bi = getNumBI(gas_idx); 
-        unsigned offset_bi = getOffsetBI(gas_idx); 
-        std::cout 
-            << " gas_idx " << std::setw(6) << gas_idx  
-            << " num_bi " << std::setw(6) << num_bi
-            << " offset_bi " << std::setw(6) << offset_bi
-            << std::endl
-            ;
-    }
-}
-
-const GAS& Geo::getGAS(int gas_idx_) const
-{
-    unsigned gas_idx = gas_idx_ < 0 ? vgas.size() + gas_idx_ : gas_idx_ ;   // -ve counts from end
-    assert( gas_idx < vgas.size() ); 
-    return vgas[gas_idx] ; 
-}
-const IAS& Geo::getIAS(int ias_idx_) const
-{
-    unsigned ias_idx = ias_idx_ < 0 ? vias.size() + ias_idx_ : ias_idx_ ;  
-    assert( ias_idx < vias.size() ); 
-    return vias[ias_idx] ; 
-}
-
-float unsigned_as_float( unsigned u ) 
-{
-    union { unsigned u; int i; float f; } uif ;   
-    uif.u = u  ;   
-    return uif.f ; 
-}
-
-/**
-Geo::makeIAS
--------------
-
-
-gas_modulo
-    vector of gas_idx which are modulo cycled in a 3d grid array  
-
-gas_single
-    vector of gas_idx which are singly included into the IAS 
-    with an identity transform
-
-
-Create vector of transfoms and creat IAS from that.
-Currently a 3D grid of translate transforms with all available GAS repeated modulo
-
-**/
-
-
-
-
-void Geo::makeIAS_Grid(std::array<int,9>& grid, const std::vector<unsigned>& gas_modulo, const std::vector<unsigned>& gas_single )
-{
-    IAS ias = {}; 
-
-    unsigned num_gas_modulo = gas_modulo.size() ; 
-    unsigned num_gas_single = gas_single.size() ; 
-    unsigned num_gas = getNumGAS(); 
-
-    std::cout 
-        << "Geo::makeIAS"
-        << " num_gas_modulo " << num_gas_modulo
-        << " num_gas_single " << num_gas_single
-        << " num_gas " << num_gas
-        << std::endl
-        ;
-
-    // check the input grid_idx are valid 
-    for(unsigned i=0 ; i < num_gas_modulo ; i++ ) assert(gas_modulo[i] < num_gas) ; 
-    for(unsigned i=0 ; i < num_gas_single ; i++ ) assert(gas_single[i] < num_gas) ; 
-
-
-    // TODO: make an identity bitfield combining transform_idx and gas_idx 
-
-    for(int i=0 ; i < int(num_gas_single) ; i++)
-    {
-        unsigned transform_idx = ias.trs.size() ;  // 0-based instance index within the IAS
-        unsigned gas_idx = gas_single[i] ; 
-
-        glm::mat4 tr(1.f) ;  // identity transform for the large sphere 
-        tr[0][3] = unsigned_as_float(transform_idx); 
-        tr[1][3] = unsigned_as_float(gas_idx) ;
-        tr[2][3] = unsigned_as_float(0) ;   
-        tr[3][3] = unsigned_as_float(0) ;   
-
-        ias.trs.push_back(tr); 
-    }
-
-    for(int i=grid[0] ; i < grid[1] ; i+=grid[2] ){
-    for(int j=grid[3] ; j < grid[4] ; j+=grid[5] ){
-    for(int k=grid[6] ; k < grid[7] ; k+=grid[8] ){
-
-        glm::vec3 tlat(i*1.f,j*1.f,k*1.f) ;  // grid translation 
-        glm::mat4 tr(1.f) ;
-        tr = glm::translate(tr, tlat );
-
-        unsigned transform_idx = ias.trs.size();   // 0-based instance index within the IAS
-        unsigned gas_modulo_idx = transform_idx % num_gas_modulo ; 
-        unsigned gas_idx = gas_modulo[gas_modulo_idx] ; 
-
-        tr[0][3] = unsigned_as_float(transform_idx); 
-        tr[1][3] = unsigned_as_float(gas_idx) ;
-        tr[2][3] = unsigned_as_float(0) ;   
-        tr[3][3] = unsigned_as_float(0) ;   
-
-        ias.trs.push_back(tr); 
-    }
-    }
-    }
-
-    IAS_Builder::Build(ias); 
-
-    vias.push_back(ias); 
-}
-
-void Geo::writeIAS(unsigned ias_idx, const char* dir) const 
-{
-    const IAS& ias = getIAS(ias_idx); 
-
-    int ni = ias.trs.size() ; 
-    int nj = 4 ;
-    int nk = 4 ;  
-
-    std::cout 
-        << "Geo::writeIAS"
-        << " ni  " << ni
-        << " nj  " << nj
-        << " nk  " << nk
-        << " dir " << dir
-        << std::endl 
-        ;
-
-    std::stringstream ss ; 
-    ss << "ias_" << ias_idx <<  ".npy" ;
-    std::string s = ss.str(); 
-
-    NP::Write(dir, s.c_str(), (float*)ias.trs.data(), ni, nj, nk ); 
-}
-
-// workaround as NP.hh not yet header-only enabled so need to include NP.hh only once 
-void Geo::WriteNP( const char* dir, const char* name, float* data, int ni, int nj, int nk ) // static
-{
-    NP::Write(dir, name, data, ni, nj, nk ); 
-}
-
-
-
-void Geo::writeGAS(unsigned gas_idx, const char* dir) const 
-{
-    const GAS& gas = getGAS(gas_idx); 
-    unsigned num_bi = gas.bis.size() ;
-
-    int ni = num_bi ; 
-    int nj = 2 ; 
-    int nk = 3 ; 
-
-    std::stringstream ss ; 
-    ss << "gas_" << gas_idx <<  ".npy" ;
-    std::string s = ss.str(); 
-
-    std::vector<float> bb ; 
-    for(unsigned i=0 ; i < num_bi ; i++)
-    {
-        const BI& bi = gas.bis[i]; 
-        for(int j=0 ; j < 6 ; j++) bb.push_back( *(bi.aabb+j) ); 
-    }
-
-    NP::Write(dir, s.c_str(), (float*)bb.data(), ni, nj, nk ); 
+    unsigned grid_idx = grid_idx_ < 0 ? grids.size() + grid_idx_ : grid_idx_ ;  
+    assert( grid_idx < grids.size() ); 
+    return grids[grid_idx] ; 
 }
 
 void Geo::write(const char* dir) const 
 {
     std::cout << "Geo::write " << dir << std::endl ;  
-
-    unsigned num_gas = getNumGAS(); 
-    for(unsigned i=0 ; i < num_gas ; i++) writeGAS(i, dir) ; 
-
-    unsigned num_ias = getNumIAS(); 
-    for(unsigned i=0 ; i < num_ias ; i++) writeIAS(i, dir) ; 
+    unsigned num_shape = getNumShape(); 
+    for(unsigned i=0 ; i < num_shape ; i++) 
+    {
+        const Shape* sh = getShape(i); 
+        sh->write(dir,"shape", i ); 
+    } 
+    unsigned num_grid = getNumGrid(); 
+    for(unsigned i=0 ; i < num_grid ; i++) 
+    {
+        const Grid* gr = getGrid(i); 
+        gr->write(dir,"grid", i); 
+    }
 }
-

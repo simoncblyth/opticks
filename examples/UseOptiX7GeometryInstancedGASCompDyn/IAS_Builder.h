@@ -2,20 +2,16 @@
 
 #include <optix.h>
 #include <vector>
-#include <glm/glm.hpp>
 
+#include "GAS.h"
 #include "IAS.h"
 
-/**
-IAS_Builder
-===========
-
-**/
-
+struct Geo ; 
+struct Grid ; 
 
 struct IAS_Builder
 {
-    static void Build( IAS& ias );  // must has ias.trs set already 
+    static void Build( IAS& ias, const Grid* gr, const std::vector<GAS>& vgas  );  
     static void Build( IAS& ias, const std::vector<OptixInstance>& instances);
 };
 

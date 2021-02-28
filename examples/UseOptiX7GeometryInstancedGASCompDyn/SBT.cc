@@ -15,6 +15,9 @@
 #include "Binding.h"
 #include "Params.h"
 
+#include "GAS.h"
+#include "GAS_Builder.h"
+
 #include "PIP.h"
 #include "SBT.h"
 
@@ -51,6 +54,10 @@ void SBT::init()
 
 void SBT::setGeo(const Geo* geo)
 {
+    createGAS(geo); 
+    createIAS(geo); 
+    setTop(geo->top); 
+
     createHitgroup(geo); 
     checkHitgroup(); 
 }
@@ -111,17 +118,164 @@ void SBT::updateRaygen()
                 ) );
 }
 
+
+
+unsigned SBT::getNumBI() const // total 
+{
+    unsigned tot = 0 ; 
+    for(unsigned i=0 ; i < nbis.size() ; i++) tot += nbis[i] ; 
+    return tot ; 
+}
+unsigned SBT::getNumBI(unsigned shape_idx) const 
+{
+    assert( shape_idx < nbis.size()); 
+    return nbis[shape_idx] ; 
+}
+void SBT::dumpOffsetBI() const 
+{
+    unsigned num_shape = vgas.size() ; 
+    std::cout << "SBT::dumpOffsetBI  num_shape " << num_shape << std::endl ; 
+    for(unsigned shape_idx=0 ; shape_idx < num_shape ; shape_idx++)
+    {
+        unsigned num_bi = getNumBI(shape_idx); 
+        unsigned offset_bi = getOffsetBI(shape_idx); 
+        std::cout 
+            << " shape_idx " << std::setw(6) << shape_idx  
+            << " num_bi " << std::setw(6) << num_bi
+            << " offset_bi " << std::setw(6) << offset_bi
+            << std::endl
+            ;
+    }
+}
+
+
+
+unsigned SBT::getOffsetBI(unsigned shape_idx) const 
+{
+    assert( shape_idx < nbis.size()); 
+    unsigned offset = 0 ; 
+    for(unsigned i=0 ; i < nbis.size() ; i++) 
+    {
+        if( i == shape_idx ) break ; 
+        offset += nbis[i]; 
+    }
+    return offset ;     
+} 
+
+
+/**
+Geo::getOffsetBI
+------------------
+
+Example::
+
+    GAS_0            --> 0 
+        BI_0 
+        BI_1
+    GAS_1            --> 2 
+        BI_0 
+        BI_1
+    GAS_2            --> 4 
+        BI_0 
+
+Simply by keeping count of build inputs (BI) used for each GAS.
+
+**/
+
+
+
+void SBT::createGAS(const Geo* geo)
+{
+    unsigned num_shape = geo->getNumShape(); 
+    for(unsigned i=0 ; i < num_shape ; i++)
+    {
+        const Shape* sh = geo->getShape(i) ;    
+        GAS gas = {} ;  
+        GAS_Builder::Build(gas, sh );
+        vgas.push_back(gas);  
+        unsigned num_bi = gas.bi.size() ;
+        nbis.push_back(num_bi); 
+    }
+}
+void SBT::createIAS(const Geo* geo)
+{
+    unsigned num_grid = geo->getNumGrid(); 
+    for(unsigned i=0 ; i < num_grid ; i++)
+    {
+        const Grid* gr = geo->getGrid(i) ;    
+        IAS ias = {} ;  
+        IAS_Builder::Build(ias, gr, vgas );
+        vias.push_back(ias);  
+    }
+}
+
+AS* SBT::getTop() const 
+{
+    return top ; 
+}
+
+void SBT::setTop(const char* spec)
+{
+    AS* a = getAS(spec); 
+    setTop(a); 
+}
+void SBT::setTop(AS* top_)
+{   
+    top = top_ ;
+}
+
+AS* SBT::getAS(const char* spec) const 
+{
+   assert( strlen(spec) > 1 );  
+   char c = spec[0]; 
+   assert( c == 'i' || c == 'g' );  
+   int idx = atoi( spec + 1 );  
+
+   std::cout << "SBT::getAS " << spec << " c " << c << " idx " << idx << std::endl ; 
+
+   AS* a = nullptr ; 
+   if( c == 'i' )
+   {   
+       const IAS& ias = vias[idx]; 
+       a = (AS*)&ias ; 
+   }   
+   else if( c == 'g' )
+   {   
+       const GAS& gas = vgas[idx]; 
+       a = (AS*)&gas ; 
+   }   
+
+   if(a)
+   {   
+       std::cout << "SBT::getAS " << spec << std::endl ; 
+   }   
+   return a ; 
+}
+
+
+
+
+
 void SBT::createHitgroup(const Geo* geo)
 {
-    unsigned num_gas = geo->getNumGAS(); 
+    unsigned num_shape = geo->getNumShape(); 
+    unsigned num_gas = vgas.size(); 
+    assert( num_gas == num_shape ); 
+
     unsigned tot_bi = 0 ; 
-    for(unsigned i=0 ; i < num_gas ; i++)
+    for(unsigned i=0 ; i < num_shape ; i++)
     {
-        const GAS& gas = geo->getGAS(i) ;    
+        const GAS& gas = vgas[i] ;    
         tot_bi += gas.bis.size() ;  
     }
     assert( tot_bi > 0 );  
-    std::cout << "SBT::createHitgroup num_gas " << num_gas << " tot_bi " << tot_bi << std::endl ; 
+    std::cout 
+        << "SBT::createHitgroup"
+        << " num_shape " << num_shape 
+        << " num_gas " << num_gas 
+        << " tot_bi " << tot_bi 
+        << std::endl 
+        ; 
 
     hitgroup = new HitGroup[tot_bi] ; 
     HitGroup* hg = hitgroup ; 
@@ -132,7 +286,7 @@ void SBT::createHitgroup(const Geo* geo)
     
     for(unsigned i=0 ; i < num_gas ; i++)
     {
-        const GAS& gas = geo->getGAS(i) ;    
+        const GAS& gas = vgas[i] ;    
         unsigned num_bi = gas.bis.size(); 
   
         std::cout << "SBT::createHitgroup gas_idx " << i << " num_bi " << num_bi << std::endl ; 

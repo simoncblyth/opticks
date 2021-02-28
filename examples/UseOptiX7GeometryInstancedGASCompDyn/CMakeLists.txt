@@ -39,6 +39,12 @@ list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 
 set(SOURCES
     ${name}.cc
+
+    Sys.cc
+    Shape.cc
+    Grid.cc
+    Geo.cc
+
     Util.cc 
     Ctx.cc 
     Frame.cc 
@@ -47,7 +53,6 @@ set(SOURCES
     PIP.cc 
     IAS.cc 
     IAS_Builder.cc 
-    Geo.cc
     SBT.cc 
 )
 
@@ -71,5 +76,4 @@ target_link_libraries(${name}
 )
 install(TARGETS ${name}               DESTINATION bin)
 install(FILES ${_generated_PTX_files} DESTINATION ptx)
-
 

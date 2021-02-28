@@ -9,6 +9,8 @@
 #include "Util.h"
 #include <glm/gtx/transform.hpp>
 
+
+
 const char* Util::PTXPath( const char* install_prefix, const char* cmake_target, const char* cu_stem, const char* cu_ext ) // static
 {
     std::stringstream ss ; 
@@ -85,7 +87,7 @@ into a list of 9 ints.
 
 **/
 
-void Util::ParseGridSpec(std::array<int,9>& grid, const char* spec)  // static 
+void Util::ParseGridSpec(  std::array<int,9>& grid, const char* spec)  // static 
 {
     int idx = 0 ; 
     std::stringstream ss(spec); 
@@ -103,7 +105,7 @@ void Util::ParseGridSpec(std::array<int,9>& grid, const char* spec)  // static
 }
 
 
-void Util::GridMinMax(std::array<int,9>& grid, int&mn, int& mx)  // static 
+void Util::GridMinMax(const std::array<int,9>& grid, int&mn, int& mx)  // static 
 {
     for(int a=0 ; a < 3 ; a++)
     for(int i=grid[a*3+0] ; i < grid[a*3+1] ; i+=grid[a*3+2] )
