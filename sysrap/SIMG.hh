@@ -38,10 +38,18 @@ struct SIMG
 };
 
 
+#ifdef __clang__
+
+
+#elif defined(__GNUC__) || defined(__GNUG__)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #pragma GCC diagnostic ignored "-Wsign-compare"
+
+#elif defined(_MSC_VER)
+
+#endif
 
 
 #ifdef SIMG_IMPLEMENTATION
@@ -51,7 +59,20 @@ struct SIMG
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+
+#ifdef __clang__
+#elif defined(__GNUC__) || defined(__GNUG__)
+
 #pragma GCC diagnostic pop
+
+#elif defined(_MSC_VER)
+#endif
+
+
+
+
+
+
 
 
 inline bool SIMG::EndsWith( const char* s, const char* q) // static 
