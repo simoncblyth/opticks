@@ -128,7 +128,7 @@ OpticksCSG_t npart::getTypeCode()
 
 bool npart::isPrimitive()
 {
-    return CSGIsPrimitive(getTypeCode());
+    return CSG::IsPrimitive(getTypeCode());
 }
 
 void npart::traverse( npart* tree, unsigned numNodes, unsigned i )

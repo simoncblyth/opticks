@@ -149,7 +149,7 @@ void NMarchingCubesNPY::march(nnode* node)
 
 
         default:
-            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
+            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSG::Name(node->type) ;  
             assert(0);
     }
 }

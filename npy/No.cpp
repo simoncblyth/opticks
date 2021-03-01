@@ -113,7 +113,7 @@ no* no::make_node(OpticksCSG_t type, no* left, no* right )
 {
     no* n = new no ;   
 
-    std::string tag = CSGTag(type) ;
+    std::string tag = CSG::Tag(type) ;
     n->label = strdup(tag.c_str()) ;    
     n->left = left ; 
     n->right = right ; 

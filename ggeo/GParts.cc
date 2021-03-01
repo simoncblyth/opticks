@@ -588,7 +588,7 @@ GParts* GParts::Make( const NCSG* tree, const char* spec, unsigned ndIdx )
     if(!type_ok)
         LOG(fatal) << "GParts::make"
                    << " bad type " << root->type
-                   << " name " << CSGName(root->type) 
+                   << " name " << CSG::Name(root->type) 
                    << " YOU MAY JUST NEED TO RECOMPILE " 
                    ;
 
@@ -783,7 +783,7 @@ OpticksCSG_t GParts::getPrimFlag() const
 
 const char* GParts::getPrimFlagString() const 
 {
-    return CSGName(m_primflag); 
+    return CSG::Name(m_primflag); 
 }
 
 bool GParts::isPartList() const  // LEGACY ANALYTIC, NOT LONG TO LIVE ? ACTUALLY ITS FASTER SO BETTER TO KEEP ALIVE
@@ -1393,7 +1393,7 @@ void GParts::reconstructPartsPerPrim()
     {
         unsigned int nodeIndex = getNodeIndex(i);
         unsigned typ = getTypeCode(i);
-        std::string  typName = CSGName((OpticksCSG_t)typ);
+        std::string  typName = CSG::Name((OpticksCSG_t)typ);
  
         LOG(info) 
             << " i " << std::setw(3) << i  
@@ -1624,7 +1624,7 @@ void GParts::dumpPrim(unsigned primIdx)
             << " p " << std::setw(3) << p 
             << " partIdx " << std::setw(3) << partIdx
             << " typecode " << typecode
-            << " CSGName " << CSGName((OpticksCSG_t)typecode)
+            << " CSG::Name " << CSG::Name((OpticksCSG_t)typecode)
             ;
 
     }
@@ -1639,7 +1639,7 @@ void GParts::dumpPrim(unsigned primIdx)
         << " num_zeros "   << std::setw(5) << num_zeros
         << " num_nonzeros " << std::setw(5) << num_nonzeros
         << " primFlag "   << std::setw(5) << primFlag 
-        << " CSGName "  << CSGName((OpticksCSG_t)primFlag) 
+        << " CSG::Name "  << CSG::Name((OpticksCSG_t)primFlag) 
         << " prim "       << gformat(prim)
         ;
 }
@@ -1761,7 +1761,7 @@ unsigned GParts::getNumPrim() const
 const char* GParts::getTypeName(unsigned int part_index)
 {
     unsigned int code = getTypeCode(part_index);
-    return CSGName((OpticksCSG_t)code);
+    return CSG::Name((OpticksCSG_t)code);
 }
      
 float* GParts::getValues(unsigned int i, unsigned int j, unsigned int k)
@@ -1972,7 +1972,7 @@ void GParts::dump(const char* msg, unsigned lim)
        unsigned int bnd = getBoundary(i);
        std::string  bn = getBoundaryName(i);
 
-       std::string csg = CSGName((OpticksCSG_t)tc);
+       std::string csg = CSG::Name((OpticksCSG_t)tc);
 
        const char*  tn = getTypeName(i);
 

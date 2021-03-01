@@ -155,7 +155,7 @@ void NNodeDump::dump_prim() const
 
             default:
             {
-                   LOG(fatal) << "nnode::dump_prim unhanded shape type " << p->type << " name " << CSGName(p->type) ;
+                   LOG(fatal) << "nnode::dump_prim unhanded shape type " << p->type << " name " << CSG::Name(p->type) ;
                    assert(0) ;
             }
         }

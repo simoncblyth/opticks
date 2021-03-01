@@ -535,7 +535,7 @@ nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
     LOG(info) << "NCSG::import_operator " 
               << " idx " << idx 
               << " typecode " << typecode 
-              << " csgname " << CSGName(typecode) 
+              << " csgname " << CSG::Name(typecode) 
               ;
     }
 
@@ -564,7 +564,7 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
     LOG(info) << "NCSG::import_primitive  " 
               << " idx " << idx 
               << " typecode " << typecode 
-              << " csgname " << CSGName(typecode) 
+              << " csgname " << CSG::Name(typecode) 
               ;
     }
 
@@ -599,13 +599,13 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
             << " TYPECODE NOT IMPLEMENTED " 
             << " idx " << idx 
             << " typecode " << typecode
-            << " csgname " << CSGName(typecode)
+            << " csgname " << CSG::Name(typecode)
             ;
     } 
 
     assert(node); 
 
-    if(CSGHasPlanes(typecode)) 
+    if(CSG::HasPlanes(typecode)) 
     {
         import_srcplanes( node );
         import_srcvertsfaces( node );
@@ -616,7 +616,7 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
         LOG(info) 
             << " idx " << idx 
             << " typecode " << typecode 
-            << " csgname " << CSGName(typecode) 
+            << " csgname " << CSG::Name(typecode) 
             << " DONE " 
             ;
     } 
@@ -1426,14 +1426,14 @@ std::string NCSG::TestVolumeName(const char* shapename, const char* suffix, int 
 std::string NCSG::getTestPVName() const 
 {
     OpticksCSG_t type = getRootType() ;
-    const char* shapename = CSGName(type); 
+    const char* shapename = CSG::Name(type); 
     unsigned idx = getIndex();
     return TestVolumeName( shapename, "pv", idx);     
 }
 std::string NCSG::getTestLVName() const 
 {
     OpticksCSG_t type = getRootType() ;
-    const char* shapename = CSGName(type); 
+    const char* shapename = CSG::Name(type); 
     unsigned idx = getIndex();
     return TestVolumeName( shapename, "lv", idx);     
 }

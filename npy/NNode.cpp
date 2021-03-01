@@ -64,7 +64,7 @@ void  nnode::decrease_z1(float /*dz*/){ assert(0 && "nnode::decrease_z1 needs ov
 
 bool nnode::has_planes() const 
 {
-    return CSGHasPlanes(type) ;
+    return CSG::HasPlanes(type) ;
 }
  
 unsigned nnode::planeIdx() const 
@@ -113,7 +113,7 @@ std::string nnode::id() const
     std::stringstream ss ; 
 
     //ss << subdepth ; 
-    ss   << ( complement ? "!" : "" ) << CSGTag(type)  ;     
+    ss   << ( complement ? "!" : "" ) << CSG::Tag(type)  ;     
 
     return ss.str();
 }
@@ -223,7 +223,7 @@ void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
     n->parent = NULL ; 
     n->other  = NULL ;   // used by NOpenMesh 
 
-    std::string tag = CSGTag(type) ; // 2-char 
+    std::string tag = CSG::Tag(type) ; // 2-char 
     n->label = strdup(tag.c_str()); 
  
     n->treedir = NULL ; 
@@ -263,7 +263,7 @@ void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
 
 const char* nnode::csgname() const
 {
-   return CSGName(type);
+   return CSG::Name(type);
 }
 unsigned nnode::maxdepth() const 
 {
@@ -725,7 +725,7 @@ std::string nnode::get_mask_string(NNodeType ntyp) const
 {
     unsigned msk = get_mask(ntyp);
     std::stringstream ss ; 
-    for(unsigned i=0 ; i < 32 ; i++) if(msk & (0x1 << i)) ss << CSGName((OpticksCSG_t)i) << " " ;   
+    for(unsigned i=0 ; i < 32 ; i++) if(msk & (0x1 << i)) ss << CSG::Name((OpticksCSG_t)i) << " " ;   
     return ss.str();
 }
 
@@ -1057,7 +1057,7 @@ void nnode::get_primitive_bbox(nbbox& bb) const
     }
     else
     {
-        LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
+        LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSG::Name(node->type) ;  
         assert(0);
     }
 }
@@ -1218,7 +1218,7 @@ nnode* nnode::copy( const nnode* node )  // static
         case CSG_CUBIC:           { ncubic* n        = (ncubic*)node         ; c = new ncubic(*n)        ; } break ; 
         case CSG_HYPERBOLOID:     { nhyperboloid* n  = (nhyperboloid*)node   ; c = new nhyperboloid(*n)  ; } break ; 
         default:
-            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
+            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSG::Name(node->type) ;  
             assert(0);
     }
     return c ;
@@ -1275,7 +1275,7 @@ std::function<float(float,float,float)> nnode::sdf() const
         case CSG_CUBIC:          { ncubic* n = (ncubic*)node ; f = *n ; } break ; 
         case CSG_HYPERBOLOID:    { nhyperboloid* n = (nhyperboloid*)node ; f = *n ; } break ; 
         default:
-            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
+            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSG::Name(node->type) ;  
             assert(0);
     }
     return f ;
@@ -1311,7 +1311,7 @@ float nnode::operator()(const glm::vec3& p) const
         case CSG_CONE:           { ncone* n         = (ncone*)node          ; f = (*n)(p.x,p.y,p.z) ; } break ; 
         case CSG_CONVEXPOLYHEDRON:{ nconvexpolyhedron* n = (nconvexpolyhedron*)node ; f = (*n)(p.x,p.y,p.z) ; } break ; 
         default:
-            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
+            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSG::Name(node->type) ;  
             assert(0);
     }
     return f; 
@@ -1532,7 +1532,7 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
 
         default:
            {
-               LOG(fatal) << "nnode::collect_prim_centers unhanded shape type " << p->type << " name " << CSGName(p->type) ;
+               LOG(fatal) << "nnode::collect_prim_centers unhanded shape type " << p->type << " name " << CSG::Name(p->type) ;
                assert(0) ;
            }
     }
@@ -1565,7 +1565,7 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
            LOG(info) << "nnode::collect_prim_centers"
                      << " i " << i 
                      << " type " << p->type 
-                     << " name " << CSGName(p->type) 
+                     << " name " << CSG::Name(p->type) 
                      ;
         }
 

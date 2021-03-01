@@ -309,7 +309,7 @@ void NGeoTestConfig::dump(const char* msg)
         std::cout
                   << " i " << std::setw(2) << i 
                   << " type " << std::setw(2) << type
-                  << " csgName " << std::setw(15) << CSGName(type)
+                  << " csgName " << std::setw(15) << CSG::Name(type)
                   << " param " << std::setw(50) << gformat(param)
                   << " spec " << std::setw(30) << spec
                   << std::endl 
@@ -495,7 +495,7 @@ char NGeoTestConfig::getNode(unsigned int i)
 OpticksCSG_t NGeoTestConfig::getTypeCode(unsigned int i)
 {
     assert( i < m_nodes.size() );
-    return CSGTypeCode(m_nodes[i].c_str());
+    return CSG::TypeCode(m_nodes[i].c_str());
 }
 
 

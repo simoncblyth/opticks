@@ -287,7 +287,7 @@ void X4Solid::convertBooleanSolid()
 
     LOG(LEVEL) 
         << " _operator " << _operator 
-        << " CSGName " << CSGName(_operator) 
+        << " CSG::Name " << CSG::Name(_operator) 
         ; 
 
     G4VSolid* left  = const_cast<G4VSolid*>(solid->GetConstituentSolid(0));

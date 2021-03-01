@@ -105,7 +105,7 @@ NTreeBuilder<T>::NTreeBuilder( const std::vector<T*>& subs, const std::vector<T*
     m_subs(subs),
     m_otherprim(otherprim),
     m_operator(operator_),
-    m_optag(CSGTag(operator_)),
+    m_optag(CSG::Tag(operator_)),
     m_mode(mode),
     m_num_prim(0),
     m_height(0),
@@ -128,7 +128,7 @@ std::string NTreeBuilder<T>::desc() const
        << " num_prim " << m_num_prim
        << " height " << m_height 
        << " mode " << BuilderMode(m_mode)
-       << " operator " << CSGName(m_operator) 
+       << " operator " << CSG::Name(m_operator) 
        ; 
     return ss.str(); 
 }

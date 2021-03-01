@@ -79,7 +79,7 @@ void NTreePositive<T>::positivize_r(T* node, bool negate, unsigned depth)
         {
             if(negate)
             {                                   //  !( A*B ) ->  !A + !B       !(A+B) ->     !A * !B
-                 node->type = CSG_DeMorganSwap(node->type) ; 
+                 node->type = CSG::DeMorganSwap(node->type) ; 
                  left_negate = true ; 
                  right_negate = true ; 
             }
