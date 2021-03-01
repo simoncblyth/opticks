@@ -6,6 +6,11 @@ struct C4
     unsigned char x, y, z, w ; 
 }; 
 
+struct u2
+{
+    unsigned x, y  ; 
+}; 
+
 union ucccc_t 
 {
     unsigned int u ; 
@@ -214,12 +219,32 @@ unsigned SPack::uint_from_float(const float f)
     return uif.u ; 
 }
 
+
 float SPack::unsigned_as_float( const unsigned u ) 
 {
     union { unsigned u; int i; float f; } uif ;   
     uif.u = u  ;   
     return uif.f ; 
 }
+
+double SPack::unsigned_as_double( const unsigned x, const unsigned y ) 
+{
+    union { u2 uu ; double d ; } uud ;   
+    uud.uu.x = x  ;   
+    uud.uu.y = y  ;   
+    return uud.d ; 
+}
+
+void SPack::double_as_unsigned(unsigned& x, unsigned& y, const double d ) 
+{
+    union { u2 uu ; double d ; } uud ;   
+    uud.d = d ; 
+    x = uud.uu.x ;
+    y = uud.uu.y ;   
+}
+
+
+
 
 unsigned SPack::float_as_unsigned( const float f ) 
 {

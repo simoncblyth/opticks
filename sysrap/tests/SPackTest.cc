@@ -377,6 +377,21 @@ void test_reinterpret_cast_arg()
     assert( uif.u == 142u  );  
 }
 
+void test_unsigned_as_double()
+{
+    unsigned x = 42u ; 
+    unsigned y = 420u ; 
+
+    double d = SPack::unsigned_as_double(x, y ); 
+
+    unsigned x2, y2 ; 
+    SPack::double_as_unsigned(x2, y2, d ); 
+    assert( x2 == x );
+    assert( y2 == y );
+
+    LOG(info) << " d " << d << " x2 " << x2 << " y2 " << y2 ; 
+}
+
 
 
 
@@ -403,7 +418,9 @@ int main(int argc , char** argv )
     //test_Encode22hilo_Decode22hilo(); 
 
     //test_reinterpret_cast(); 
-    test_reinterpret_cast_arg(); 
+    //test_reinterpret_cast_arg(); 
+
+    test_unsigned_as_double(); 
 
     return 0  ; 
 }

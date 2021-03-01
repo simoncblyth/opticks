@@ -19,6 +19,7 @@
  */
 
 #include <cmath>
+#include <algorithm>
 #include "SVec.hh"
 
 #include "OPTICKS_LOG.hh"
@@ -107,7 +108,19 @@ void test_vector_erase_all()
     std::cout << std::endl ; 
 }
 
+void test_unique_strings()
+{
+    std::vector<std::string> v = { "red", "green", "blue", "cyan", "magenta", "yellow", "green" } ; 
+    std::vector<std::string> u ; 
 
+    for(unsigned i=0 ; i < v.size() ; i++)
+    {
+        const std::string& s = v[i] ;  
+        if(std::find(u.begin(), u.end(), s ) == u.end()) u.push_back(s); 
+    }
+
+    for(unsigned i=0 ; i < u.size() ; i++) std::cout << u[i] << std::endl ; 
+}
 
 
 
@@ -119,8 +132,10 @@ int main(int argc, char** argv)
 
     //test_MaxDiff();
     //test_FindIndexOfValue();
-    test_vector_erase_pos(); 
-    test_vector_erase_all(); 
+    //test_vector_erase_pos(); 
+    //test_vector_erase_all(); 
+
+    test_unique_strings(); 
 
     return 0 ;
 }
