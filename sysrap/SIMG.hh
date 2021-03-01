@@ -38,12 +38,20 @@ struct SIMG
 };
 
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
+
 #ifdef SIMG_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #endif
 #include "stb_image.h"
 #include "stb_image_write.h"
+
+#pragma GCC diagnostic pop
 
 
 inline bool SIMG::EndsWith( const char* s, const char* q) // static 
