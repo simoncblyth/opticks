@@ -164,3 +164,41 @@ TODO:
     epsilon:opticks blyth$ 
 
 
+
+
+::
+
+
+    FAILS:  5   / 453   :  Sat Mar  6 05:36:01 2021   
+      56 /56  Test #56 : GGeoTest.GPhoTest                             Child aborted***Exception:     5.24   
+      2  /5   Test #2  : OKTest.OKTest                                 Child aborted***Exception:     15.83  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     18.26  
+      1  /2   Test #1  : G4OKTest.G4OKTest                             Child aborted***Exception:     16.95  
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      19.53  
+    [blyth@localhost opticks]$ 
+
+
+::
+
+    OKTest
+    ...
+
+    2021-03-06 05:48:32.544 INFO  [373213] [OpticksRun::createEvent@115]  tagoffset 0 skipaheadstep 0 skipahead 0
+    2021-03-06 05:48:32.549 INFO  [373213] [OpEngine::close@168]  sensorlib NULL : defaulting it with zero sensors 
+    2021-03-06 05:48:32.549 ERROR [373213] [SensorLib::close@374]  SKIP as m_sensor_num zero 
+    2021-03-06 05:48:32.549 FATAL [373213] [OCtx::create_buffer@300] skip upload_buffer as num_bytes zero key:OSensorLib_sensor_data
+    2021-03-06 05:48:32.549 FATAL [373213] [OCtx::create_buffer@300] skip upload_buffer as num_bytes zero key:OSensorLib_texid
+    2021-03-06 05:48:35.492 INFO  [373213] [OPropagator::prelaunch@208] 0 : (0;0,0) 
+    2021-03-06 05:48:35.492 INFO  [373213] [BTimes::dump@183] OPropagator::prelaunch
+                  validate000                 0.005117
+                   compile000                    6e-06
+                 prelaunch000                  2.91641
+    2021-03-06 05:48:35.492 INFO  [373213] [OPropagator::launch@279]  skipahead 0
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (700): Illegal address)
+    Aborted (core dumped)
+    [blyth@localhost opticks]$ 
+    [blyth@localhost opticks]$ 
+
+
+

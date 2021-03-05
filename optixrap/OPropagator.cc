@@ -139,14 +139,6 @@ void OPropagator::initParameters()
     m_context["time_domain"]->setFloat(   make_float4( td.x, td.y, td.z, td.w ));
 }
 
-void OPropagator::setSkipAhead(unsigned skipahead)
-{
-    m_orng->setSkipAhead(skipahead); 
-}
-unsigned OPropagator::getSkipAhead() const 
-{
-   return m_orng->getSkipAhead();  
-}
 
 
 
@@ -276,9 +268,9 @@ void OPropagator::launch()
     BTimes* launch_times = evt->getLaunchTimes() ;
 
     unsigned skipahead = evt->getSkipAhead(); 
-    LOG(info)  << " skipahead " << skipahead ;  
+    LOG(fatal)  << " skipahead " << skipahead ;  
     LOG(LEVEL) << " skipahead " << skipahead ;  
-    setSkipAhead(skipahead);     
+    m_orng->setSkipAhead(skipahead); 
 
     LOG(LEVEL) << "LAUNCH NOW " << m_ocontext->printDesc() ; 
 

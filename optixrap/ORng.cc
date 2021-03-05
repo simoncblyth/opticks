@@ -139,14 +139,26 @@ void ORng::init()
     }
 
     m_context["rng_states"]->setBuffer(m_rng_states);
-    m_context["rng_skipahead"]->setUint(m_rng_skipahead) ; 
+    setSkipAhead(0); 
 }
+
+
+/**
+ORng::setSkipAhead
+--------------------
+
+**/
 
 void ORng::setSkipAhead( unsigned skipahead )
 {
     LOG(LEVEL) << " skipahead " << skipahead ; 
     m_rng_skipahead = skipahead ; 
+#ifdef WITH_SKIPAHEAD
+    LOG(fatal) << "WITH_SKIPAHEAD skipahead " << skipahead ; 
     m_context["rng_skipahead"]->setUint(m_rng_skipahead) ; 
+#else
+    LOG(fatal) << " skip as as WITH_SKIPAHEAD not enabled " ; 
+#endif
 }
 unsigned ORng::getSkipAhead() const 
 {

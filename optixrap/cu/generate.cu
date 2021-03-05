@@ -568,11 +568,14 @@ RT_PROGRAM void generate()
 #endif 
 
     curandState rng = rng_states[photon_id];
+
+#ifdef WITH_SKIPAHEAD
     unsigned long long rng_skipahead_ = rng_skipahead ;   // see ORng.hh
     if( rng_skipahead_ > 0ull )
     {
         skipahead(rng_skipahead_ , &rng) ;
     }
+#endif
 
     State s ;   
     Photon p ;  
