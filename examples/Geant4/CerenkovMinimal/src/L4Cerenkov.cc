@@ -829,10 +829,12 @@ L4Cerenkov::GetAverageNumberOfPhotons(const G4double charge,
                                   GetValue(Pmin, isOutRange);
 		ge = CAImax - CAImin;
 
+#ifdef WITH_DUMP
 		if (verboseLevel>0) {
 			G4cout << "CAImin = " << CAImin << G4endl;
 			G4cout << "ge = " << ge << G4endl;
 		}
+#endif
 	}
 	
 	// Calculate number of photons 

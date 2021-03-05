@@ -23,6 +23,9 @@
 
 #include "Ctx.hh"
 
+//#define WITH_DUMP 1
+
+
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
 #include "TrackInfo.hh"
@@ -82,6 +85,7 @@ void Ctx::setTrack(const G4Track* track)
         unsigned max_gs = G4Opticks::Get()->getMaxGensteps() ; // default of zero means no limit  
         bool kill = max_gs > 0 && num_gs >= max_gs ;   
 
+#ifdef WITH_DUMP
         G4cout 
             << "Ctx::setTrack"   
             << " _track_particle_name " << _track_particle_name 
@@ -92,6 +96,7 @@ void Ctx::setTrack(const G4Track* track)
             << " kill " << kill
             << G4endl
             ;  
+#endif
 
         if(kill)
         {
@@ -108,6 +113,7 @@ void Ctx::postTrack( const G4Track* track)
     {
         postTrackOptical(track);  
     }
+#ifdef WITH_DUMP
     else
     {
         G4cout 
@@ -116,6 +122,7 @@ void Ctx::postTrack( const G4Track* track)
             << G4endl 
             ; 
     }
+#endif
 }
 
 
@@ -164,7 +171,7 @@ void Ctx::setStep(const G4Step* step)
 
     if(_step_id == 0) _step_origin = pre->GetPosition();
 
-#ifdef WITH_OPTICKS
+#ifdef WITH_DUMP
     if(!_track_optical)
     {
         G4cout
