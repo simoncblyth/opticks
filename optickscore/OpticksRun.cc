@@ -104,10 +104,23 @@ void OpticksRun::createEvent(unsigned tagoffset, bool cfg4evt )
     m_ok->setTagOffset(tagoffset);
     // tagoffset is recorded with Opticks::setTagOffset within the makeEvent, but need it here before that 
 
+
     OK_PROFILE("_OpticksRun::createEvent");
 
 
     m_evt = m_ok->makeEvent(true, tagoffset) ;
+
+    unsigned skipaheadstep = m_ok->getSkipAheadStep() ; 
+    unsigned skipahead =  tagoffset*skipaheadstep ; 
+    LOG(info) 
+        << " tagoffset " << tagoffset 
+        << " skipaheadstep " << skipaheadstep
+        << " skipahead " << skipahead
+        ; 
+
+    m_evt->setSkipAhead( skipahead ); // TODO: make configurable + move to ULL
+
+
     std::string tstamp = m_evt->getTimeStamp();
 
     if( cfg4evt && !nog4propagate )

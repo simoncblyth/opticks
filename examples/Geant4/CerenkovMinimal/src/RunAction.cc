@@ -42,6 +42,9 @@ void RunAction::BeginOfRunAction(const G4Run*)
 
     G4Opticks* g4ok = G4Opticks::Get(); 
     bool standardize_geant4_materials = false ;   
+
+    const char* embedded_commandline_extra = "--skipaheadstep 1000" ; // see ~/opticks/notes/issues/raja_repeated_photons.rst 
+    g4ok->setEmbeddedCommandLineExtra(embedded_commandline_extra);
     g4ok->setGeometry(world, standardize_geant4_materials );    
 
     const std::vector<G4PVPlacement*>& sensor_placements = g4ok->getSensorPlacements() ;

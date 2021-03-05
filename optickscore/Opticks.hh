@@ -410,6 +410,8 @@ class OKCORE_API Opticks {
        const char*          getDbgIndex() const ;
        const char*          getDbgCSGPath();
        unsigned             getSeed() const ; 
+       unsigned             getSkipAheadStep() const ;  // --skipaheadstep 1000
+
        int                  getRTX() const ; 
        int                  getRenderLoopLimit() const ; 
        int                  getLoadVerbosity() const ; 

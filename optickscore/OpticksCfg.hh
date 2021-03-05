@@ -130,6 +130,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getBoundaryStepSigInt() const ; 
 
 
+     unsigned     getSkipAheadStep() const ;
      unsigned     getSeed() const ; 
      int          getRTX() const ; 
      int          getRenderLoopLimit() const ; 
@@ -272,6 +273,7 @@ private:
      int         m_curflatsigint ; 
      int         m_boundarystepsigint ; 
      unsigned    m_seed ; 
+     unsigned    m_skipaheadstep ; 
      int         m_rtx ; 
      int         m_renderlooplimit ; 
 

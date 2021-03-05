@@ -100,7 +100,9 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 rtBuffer<float4>               genstep_buffer;
 rtBuffer<float4>               source_buffer;
 rtBuffer<unsigned>             seed_buffer ; 
-rtBuffer<curandState, 1>       rng_states ;
+
+// rng_states rng_skipahead
+#include "ORng.hh"
 
 // output buffers 
 
@@ -542,6 +544,8 @@ RT_PROGRAM void generate()
 #ifdef WITH_REFLECT_CHEAT_DEBUG
     unsigned long long num_photon = launch_dim.x ;
 #endif
+
+
   
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
 #ifdef WAY_ENABLED
@@ -564,6 +568,11 @@ RT_PROGRAM void generate()
 #endif 
 
     curandState rng = rng_states[photon_id];
+    unsigned long long rng_skipahead_ = rng_skipahead ;   // see ORng.hh
+    if( rng_skipahead_ > 0ull )
+    {
+        skipahead(rng_skipahead_ , &rng) ;
+    }
 
     State s ;   
     Photon p ;  

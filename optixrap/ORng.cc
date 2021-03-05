@@ -35,12 +35,13 @@ using namespace optix ;
 const plog::Severity ORng::LEVEL = PLOG::EnvLevel("ORng", "DEBUG") ; 
 
 ORng::ORng(Opticks* ok, OContext* ocontext) 
-   :
-   m_ok(ok),
-   m_mask(ok->getMask()),
-   m_ocontext(ocontext),
-   m_context(m_ocontext->getContext()),
-   m_rng_wrapper(NULL)
+    :
+    m_ok(ok),
+    m_mask(ok->getMask()),
+    m_ocontext(ocontext),
+    m_context(m_ocontext->getContext()),
+    m_rng_wrapper(NULL),
+    m_rng_skipahead(0)   
 {
    init();
 }
@@ -138,6 +139,17 @@ void ORng::init()
     }
 
     m_context["rng_states"]->setBuffer(m_rng_states);
+    m_context["rng_skipahead"]->setUint(m_rng_skipahead) ; 
 }
 
+void ORng::setSkipAhead( unsigned skipahead )
+{
+    LOG(LEVEL) << " skipahead " << skipahead ; 
+    m_rng_skipahead = skipahead ; 
+    m_context["rng_skipahead"]->setUint(m_rng_skipahead) ; 
+}
+unsigned ORng::getSkipAhead() const 
+{
+    return m_rng_skipahead ; 
+}
 

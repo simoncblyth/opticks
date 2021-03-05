@@ -33,6 +33,7 @@ struct Test
    static void make_polycone_1(); 
    static void make_transform(); 
    static void make_G4GDMLAux();  
+   static void units(); 
 };
 
 
@@ -243,6 +244,38 @@ void Test::make_G4GDMLAux()
 }
 
 
+#include "G4SystemOfUnits.hh"
+
+using CLHEP::twopi ; 
+using CLHEP::hbarc ; 
+using CLHEP::eV ; 
+using CLHEP::MeV ; 
+
+void Test::units()
+{
+    double wavelength = 400.*nm ; 
+    double edep = twopi*hbarc / wavelength ; 
+
+    std::cout 
+        << " wavelength " << wavelength << std::endl
+        << " wavelength/mm " << wavelength/mm  << std::endl
+        << " wavelength/nm " << wavelength/nm  << std::endl
+        << " edep " << edep << std::endl
+        << " edep/eV " << edep/eV << std::endl
+        << " edep/MeV " << edep/MeV << std::endl
+        << " MeV " << MeV << std::endl 
+        << " eV " << eV << std::endl 
+        << " nm " << nm << std::endl 
+        << " twopi*hbarc " << twopi*hbarc << std::endl 
+        << " twopi*hbarc/eV/nm " << twopi*hbarc/eV/nm << std::endl 
+        << " twopi*hbarc/(eV*nm) " << twopi*hbarc/(eV*nm) << std::endl 
+        ;
+
+}
+
+
+
+
 
 int main()
 {
@@ -250,7 +283,9 @@ int main()
     //Test::make_polycone_0(); 
     //Test::make_polycone_1(); 
     //Test::make_transform(); 
-    Test::make_G4GDMLAux(); 
+    //Test::make_G4GDMLAux(); 
+
+    Test::units(); 
 
     return 0 ; 
 }

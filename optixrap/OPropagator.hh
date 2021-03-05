@@ -64,6 +64,10 @@ class OXRAP_API OPropagator {
         void prelaunch();   
         void launch();
         std::string brief();
+
+        void     setSkipAhead(unsigned skipahead);
+        unsigned getSkipAhead() const ;
+
     public:
         void setOverride(unsigned int override);
         void setNoPropagate(bool nopropagate=true );

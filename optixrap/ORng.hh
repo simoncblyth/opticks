@@ -19,6 +19,15 @@
 
 #pragma once
 
+#ifdef __CUDACC__
+
+rtBuffer<curandState, 1>         rng_states ;
+rtDeclareVariable(unsigned int,  rng_skipahead, , );
+// TODO: pack ull into uint2 ? as this number can get real big 
+//rtDeclareVariable(unsigned long long,  rng_skipahead, , );
+
+#else
+
 class Opticks ; 
 class OContext ; 
 
@@ -50,6 +59,8 @@ class OXRAP_API ORng
       static const plog::Severity LEVEL ; 
    public:
       ORng(Opticks* ok, OContext* ocontext);
+      void setSkipAhead(unsigned skipahead); 
+      unsigned getSkipAhead() const ;
    private:
       void init(); 
    private:
@@ -60,6 +71,12 @@ class OXRAP_API ORng
     protected:
       optix::Buffer   m_rng_states ;
       cuRANDWrapper*  m_rng_wrapper ;
+      unsigned        m_rng_skipahead ;   
+      // TODO: change this to unsigned long long, needs some uint2 gymnastics to get that into GPU context 
 
 
 };
+
+#endif
+
+

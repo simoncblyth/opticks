@@ -1282,6 +1282,12 @@ unsigned Opticks::getSeed() const
 {
     return m_cfg->getSeed();
 }
+unsigned Opticks::getSkipAheadStep() const  // --skipaheadstep 1000
+{
+    return m_cfg->getSkipAheadStep();
+}
+
+
 
 int Opticks::getRTX() const 
 {

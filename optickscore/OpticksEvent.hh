@@ -163,6 +163,9 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        BTimes* getPrelaunchTimes();
        BTimes* getLaunchTimes();
    public:
+       void     setSkipAhead(unsigned skipahead);
+       unsigned getSkipAhead() const ;
+   public:
        void postPropagateGeant4(); // called following dynamic photon/record/sequence collection
    public:
        // from parameters set in Opticks::makeEvent
@@ -540,6 +543,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        // unmanaged, not usually present
        NGeoTestConfig* m_geotestconfig ; 
        const char*     m_fake_nopstep_path ; 
+       unsigned        m_skipahead ; 
 
 };
 

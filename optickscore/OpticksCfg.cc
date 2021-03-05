@@ -108,6 +108,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_curflatsigint(-1),
     m_boundarystepsigint(-1),
     m_seed(42),     
+    m_skipaheadstep(0),     
     m_rtx(0),
     m_renderlooplimit(0),
     m_rngmax(3),     
@@ -1077,8 +1078,12 @@ void OpticksCfg<Listener>::init()
        ("seed",  boost::program_options::value<unsigned>(&m_seed), seed );
 
 
-
-
+   char skipaheadstep[128];
+   snprintf(skipaheadstep,128, 
+"Unsigned int skipaheadstep used with ORng"
+"Default %d ", m_skipaheadstep);
+   m_desc.add_options()
+       ("skipaheadstep",  boost::program_options::value<unsigned>(&m_skipaheadstep), skipaheadstep );
 
 
    char rngmax[256];
@@ -1858,7 +1863,11 @@ int OpticksCfg<Listener>::getBoundaryStepSigInt() const
 }
 
 
-
+template <class Listener>
+unsigned OpticksCfg<Listener>::getSkipAheadStep() const 
+{
+    return m_skipaheadstep ; 
+}
 
 
 template <class Listener>
@@ -1866,6 +1875,7 @@ unsigned OpticksCfg<Listener>::getSeed() const
 {
     return m_seed ; 
 }
+
 template <class Listener>
 int OpticksCfg<Listener>::getRTX() const 
 {

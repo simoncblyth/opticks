@@ -67,9 +67,11 @@ void EventAction::EndOfEventAction(const G4Event* event)
            ; 
 
     G4OpticksHit hit ;
+    G4OpticksHitExtra* hit_extra = NULL ;
+
     for(unsigned i=0 ; i < num_hits ; i++)
     {   
-        g4ok->getHit(i, &hit); 
+        g4ok->getHit(i, &hit, hit_extra ); 
         std::cout 
             << std::setw(5) << i 
             << " boundary "           << std::setw(4) << hit.boundary 

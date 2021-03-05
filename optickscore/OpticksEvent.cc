@@ -215,7 +215,8 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
 
     m_sibling(NULL),
     m_geotestconfig(NULL),
-    m_fake_nopstep_path(NULL)
+    m_fake_nopstep_path(NULL),
+    m_skipahead(0)
 {
     init();
 }
@@ -229,6 +230,17 @@ BTimes* OpticksEvent::getLaunchTimes()
 {
     return m_launch_times ; 
 }
+
+void OpticksEvent::setSkipAhead(unsigned skipahead)  // TODO: move to unsigned long long 
+{
+    m_skipahead = skipahead ; 
+}
+unsigned OpticksEvent::getSkipAhead() const 
+{
+    return m_skipahead ; 
+}
+
+
 
 void OpticksEvent::setSibling(OpticksEvent* sibling)
 {
