@@ -2643,3 +2643,20 @@ opticks-tasks(){    opticks-src-open notes/tasks/tasks.rst ; }
 opticks-progress(){ opticks-src-open notes/progress.rst ; }
 opticks-examples(){ opticks-src-open examples/README.rst ; }
 
+
+opticks-u(){
+   : open the bitbucket src url corresponding to the current directory or path argument within the opticks repository 
+   local msg="=== $FUNCNAME :"
+   local arg=${1:-$PWD}
+   local path 
+   if [ "${arg:0:1}" == "/" ]; then 
+       path=$arg
+   else
+       path=$PWD/$arg
+   fi  
+   local rel=${path/$(opticks-home)\/}
+   local url=$(opticks-src)/$rel
+   echo $msg path $path rel $rel url $url
+   open $url 
+}
+
