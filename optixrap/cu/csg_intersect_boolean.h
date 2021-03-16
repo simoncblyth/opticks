@@ -705,7 +705,7 @@ USE_TWIDDLE_POSTORDER
 3**/
 
 static __device__
-void evaluative_csg( const Prim& prim, const int primIdx )
+void evaluative_csg( const Prim& prim, const int primIdx )   // primIdx just used for identity access
 {
     unsigned partOffset = prim.partOffset() ; 
     unsigned numParts   = prim.numParts() ;

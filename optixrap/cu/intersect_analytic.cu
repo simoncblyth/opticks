@@ -424,7 +424,7 @@ A: optix7-pdf p18 : Each build input maps to one or more consecutive SBT records
 
 RT_PROGRAM void intersect(int primIdx)
 {
-    const Prim& prim    = primBuffer[primIdx]; 
+    const Prim& prim    = primBuffer[primIdx];    // Prim wraps int4
 
     unsigned partOffset  = prim.partOffset() ;  
     unsigned numParts    = prim.numParts() ; 
