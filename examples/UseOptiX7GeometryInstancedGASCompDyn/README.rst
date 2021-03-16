@@ -4,11 +4,19 @@ UseOptiX7GeometryInstancedGASComp
 .. contents:: Table Of Contents
 
 
+CAUTION HAVE MOVED TO OptiXTest REPO
+----------------------------------------
+
+This line of development has moved to the **OptiXTest** repository
+
+* https://github.com/simoncblyth/OptiXTest/commits/main
+
 Overview
 ----------
 
 This example is used as a playground for learning/investigating OptiX 7 techniques needed by Opticks.
 Hopefully also some of the OptiX 7 interface classes will subsequenly become part of Opticks. 
+
 
 Standalone Building
 ---------------------

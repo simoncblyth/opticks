@@ -44,10 +44,12 @@ target_link_libraries(${name}
          Opticks::OptiX
          Opticks::OpticksCUDA
          ${CMAKE_DL_LIBS}
-         rt
-         pthread
 )
+
+if(UNIX AND NOT APPLE)
+target_link_libraries(${name} PUBLIC rt pthread)
+endif()
+
 install(TARGETS ${name}  DESTINATION lib)
 
-# to take this further, see /Developer/OptiX/SDK/CMakeLists.txt:OPTIX_add_sample_executable
 

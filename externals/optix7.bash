@@ -34,6 +34,19 @@ See Also
 * owl-;owl-vi  Higher Level Layer on top of OptiX7 including 
 
 
+Forum Links
+--------------
+
+* https://forums.developer.nvidia.com/t/multiple-pipelines-and-shared-instancing/170735/2
+
+
+Property Access
+-----------------
+
+* https://github.com/NVIDIA/OptiX_Apps/tree/master/apps
+* https://github.com/NVIDIA/OptiX_Apps/blob/master/apps/rtigo3/src/Device.cpp
+
+
 DirectX raytracing is using the same SBT
 -------------------------------------------
 
