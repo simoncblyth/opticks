@@ -104,41 +104,46 @@ std::string G4Opticks::EmbeddedCommandLine(const char* extra1, const char* extra
     const char* ecl  = SSys::getenvvar(OPTICKS_EMBEDDED_COMMANDLINE, "pro") ; 
 
     char mode = '?' ; 
+    const char* explanation = "" ; 
     if(strcmp(ecl, "pro") == 0)
     {
         ecl = fEmbeddedCommandLine_pro ; 
         mode = 'P' ; 
+        explanation = "using \"pro\" (production) commandline without event saving " ; 
     }
     else if(strcmp(ecl, "dev") == 0)
     {
         ecl = fEmbeddedCommandLine_dev ; 
         mode = 'D' ; 
+        explanation = "using \"dev\" (development) commandline with full event saving " ; 
     } 
     else
     {
         mode = 'A' ; 
+        explanation = "using custom commandline (for experts only) " ; 
     }
 
     const char* eclx = SSys::getenvvar(OPTICKS_EMBEDDED_COMMANDLINE_EXTRA, "") ; 
 
     std::stringstream ss ; 
     ss << ecl << " " ;
-    LOG(LEVEL) << "Using ecl :[" << ecl << "] " << OPTICKS_EMBEDDED_COMMANDLINE << " mode(Pro/Dev/Asis) " << mode ;    ; 
+    LOG(info) << "Using ecl :[" << ecl << "] " << OPTICKS_EMBEDDED_COMMANDLINE ;
+    LOG(info) << " mode(Pro/Dev/Asis) " << mode << " " << explanation ;    ; 
 
     if(extra1)
     {
         ss << " " << extra1 ; 
-        LOG(LEVEL) << "Using extra1 argument :[" << extra1 << "]" ; 
+        LOG(info) << "Using extra1 argument :[" << extra1 << "]" ; 
     }
     if(extra2)
     {
         ss << " " << extra2 ; 
-        LOG(LEVEL) << "Using extra2 argument :[" << extra2 << "]" ; 
+        LOG(info) << "Using extra2 argument :[" << extra2 << "]" ; 
     }
     if(eclx) 
     {
         ss << " " << eclx ; 
-        LOG(LEVEL) << "Using eclx envvar :[" << eclx << "] "  << OPTICKS_EMBEDDED_COMMANDLINE_EXTRA ; 
+        LOG(info) << "Using eclx envvar :[" << eclx << "] "  << OPTICKS_EMBEDDED_COMMANDLINE_EXTRA ; 
     }
     return ss.str();  
 }
