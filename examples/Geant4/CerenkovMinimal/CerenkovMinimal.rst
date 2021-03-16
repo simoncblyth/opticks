@@ -447,6 +447,173 @@ optixrap/cu/photon.h::
      56
 
 
+Controlling the embedded Opticks
+-------------------------------------
+
+G4Opticks uses an embedded Opticks instance which has its own commandline.
+Some of the first logging output from G4Opticks details the commandline that is in use.
+For example::
+
+    2021-03-16 15:02:01.049 INFO  [33575005] [G4Opticks::EmbeddedCommandLine@130] Using ecl :[ --compute --embedded --xanalytic --production --nosave] OPTICKS_EMBEDDED_COMMANDLINE
+    2021-03-16 15:02:01.049 INFO  [33575005] [G4Opticks::EmbeddedCommandLine@131]  mode(Pro/Dev/Asis) P using "pro" (production) commandline without event saving 
+    2021-03-16 15:02:01.049 INFO  [33575005] [G4Opticks::EmbeddedCommandLine@136] Using extra1 argument :[--skipaheadstep 1000]
+    2021-03-16 15:02:01.049 INFO  [33575005] [G4Opticks::EmbeddedCommandLine@146] Using eclx envvar :[] OPTICKS_EMBEDDED_COMMANDLINE_EXTRA
+    2021-03-16 15:02:01.049 INFO  [33575005] [*G4Opticks::InitOpticks@231] instanciate Opticks using embedded commandline only 
+     --compute --embedded --xanalytic --production --nosave  --skipaheadstep 1000 
+     
+
+Two envvars can be used to control this commandline.
+
+OPTICKS_EMBEDDED_COMMANDLINE
+    Two special values "pro" and "dev" correspond to standard commandlines that are
+    expected to be appropriate for production and development.  Note that the "dev" mode
+    has saving enabled and will save large numbers of event files. The "pro" mode should 
+    save very few files.
+ 
+    The default "pro" mode corresponds to actual commandline "--compute --embedded --xanalytic --production --nosave"
+    The "dev" mode corresponds to " --compute --embedded --xanalytic --save --natural --printenabled --pindex 0"
+
+OPTICKS_EMBEDDED_COMMANDLINE_EXTRA
+    This envvar (for expert use only) can be used to add some additional options to the commandline. 
+    Duplicated commandline options will trip asserts.   
+  
+    
+Typically when you wish to enable full event saving for debugging and analysis simply::
+
+    export OPTICKS_EMBEDDED_COMMANDLINE=dev 
+    CerenkovMinimal 
+
+
+
+Examining Full Event Data
+-----------------------------
+
+When saving is enabled around 20 NumPy arrays are written for every event.::
+
+    epsilon:~ blyth$ ls -l  /tmp/blyth/opticks/source/evt/g4live/natural/1/*.npy
+    -rw-r--r--  1 blyth  wheel    144 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileLisLabels.npy
+    -rw-r--r--  1 blyth  wheel     88 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileLis.npy
+    -rw-r--r--  1 blyth  wheel    144 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileAccLabels.npy
+    -rw-r--r--  1 blyth  wheel     96 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileAcc.npy
+    -rw-r--r--  1 blyth  wheel     80 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfileLabels.npy
+    -rw-r--r--  1 blyth  wheel     80 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/OpticksProfile.npy
+    -rw-r--r--  1 blyth  wheel     96 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/idom.npy
+    -rw-r--r--  1 blyth  wheel    128 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/fdom.npy
+    -rw-r--r--  1 blyth  wheel   2680 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/rs.npy
+    -rw-r--r--  1 blyth  wheel    340 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/ps.npy
+    -rw-r--r--  1 blyth  wheel     80 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/wy.npy
+    -rw-r--r--  1 blyth  wheel     80 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/dg.npy
+    -rw-r--r--  1 blyth  wheel   1120 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/ph.npy
+    -rw-r--r--  1 blyth  wheel  10480 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/rx.npy
+    -rw-r--r--  1 blyth  wheel   4240 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/ox.npy
+    -rw-r--r--  1 blyth  wheel    368 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/gs.npy
+    -rw-r--r--  1 blyth  wheel     80 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/hy.npy
+    -rw-r--r--  1 blyth  wheel    528 Mar 16 15:15 /tmp/blyth/opticks/source/evt/g4live/natural/1/ht.npy
+    epsilon:~ blyth$ 
+
+The np.py script can be used to dump the shapes of the arrays::
+
+    epsilon:~ blyth$ np.py /tmp/blyth/opticks/source/evt/g4live/natural/1/*.npy
+    a :        /tmp/blyth/opticks/source/evt/g4live/natural/1/ox.npy :           (65, 4, 4) : 664a09f7c9df20fd7d7dd2b0f81ba924 : 20210316-1515 
+    b :        /tmp/blyth/opticks/source/evt/g4live/natural/1/ph.npy :           (65, 1, 2) : 34e62cf02f2704c8dfd4416af0669462 : 20210316-1515 
+    c :        /tmp/blyth/opticks/source/evt/g4live/natural/1/ps.npy :           (65, 1, 4) : 9001be6559eaf49850fe8f2f3f327001 : 20210316-1515 
+    d :        /tmp/blyth/opticks/source/evt/g4live/natural/1/rs.npy :       (65, 10, 1, 4) : b97c5cc9f518cfcb77dc0e4d8194fecc : 20210316-1515 
+    e :        /tmp/blyth/opticks/source/evt/g4live/natural/1/rx.npy :       (65, 10, 2, 4) : a4878228712f585f46567e59bde95655 : 20210316-1515 
+    f :        /tmp/blyth/opticks/source/evt/g4live/natural/1/ht.npy :            (7, 4, 4) : be3c6de10d2e706f03a416508cfca316 : 20210316-1515 
+    g :      /tmp/blyth/opticks/source/evt/g4live/natural/1/fdom.npy :            (3, 1, 4) : 098ac4cd701409d36788edcea0d51a31 : 20210316-1515 
+    h :        /tmp/blyth/opticks/source/evt/g4live/natural/1/gs.npy :            (3, 6, 4) : eb7c1b49d19a09e5886b6468a398269f : 20210316-1515 
+
+
+These are persisted OpticksEvent. See optickscore/OpticksEvent.cc to follow the details of what everything is.
+Opticks has many python analysis scripts that use NumPy to interpret these arrays. However initially 
+it is useful to use a manual approach to examine the arrays.
+
+Loading photon arrays for first three events::
+
+    In [1]: import numpy as np ; from glob import glob
+    In [2]: ox_paths = sorted(glob("/tmp/blyth/opticks/source/evt/g4live/natural/?/ox.npy"))
+
+    In [3]: ox_paths
+    Out[3]:
+    ['/tmp/blyth/opticks/source/evt/g4live/natural/1/ox.npy',
+     '/tmp/blyth/opticks/source/evt/g4live/natural/2/ox.npy',
+     '/tmp/blyth/opticks/source/evt/g4live/natural/3/ox.npy']
+
+    In [4]: a = np.load(ox_paths[0])
+
+    In [5]: b = np.load(ox_paths[1])
+
+    In [6]: v = np.load(ox_paths[2])
+
+    In [7]: c = np.load(ox_paths[2])
+
+    In [8]: a.shape
+    Out[8]: (65, 4, 4)
+
+    In [9]: b.shape
+    Out[9]: (71, 4, 4)
+
+    In [10]: c.shape
+    Out[10]: (67, 4, 4)
+
+
+Dumping the first photon from each event::
+
+    In [11]: a[0]
+    Out[11]:
+    array([[127.661, -35.996,  90.   ,   0.728],
+           [  0.796,  -0.225,   0.562,   1.   ],
+           [ -0.571,   0.027,   0.82 ,  79.028],
+           [    nan,   0.   ,   0.   ,   0.   ]], dtype=float32)
+
+    In [12]: b[0]
+    Out[12]:
+    array([[136.877,  -9.657,  90.   ,   0.745],
+           [  0.834,  -0.059,   0.549,   1.   ],
+           [ -0.552,  -0.089,   0.829,  79.028],
+           [    nan,   0.   ,   0.   ,   0.   ]], dtype=float32)
+
+    In [13]: c[0]
+    Out[13]:
+    array([[131.949,  -9.657,  90.   ,   0.727],
+           [  0.824,  -0.06 ,   0.563,   1.   ],
+           [ -0.566,  -0.088,   0.819,  79.028],
+           [    nan,   0.   ,   0.   ,   0.   ]], dtype=float32)
+
+
+Notice that the last lines contains int32 or uint32 so when viewed as float 
+will often appear as nan.  The array can be viewed as a different type to see the values of the flags:: 
+
+    In [14]: a[0].view(np.int32)
+    Out[14]:
+    array([[ 1124029005, -1039139963,  1119092736,  1060782814],
+           [ 1061935996, -1100614914,  1057998924,  1065353216],
+           [-1089327308,  1021211713,  1062341336,  1117654571],
+           [    -196607,           2,           0,         129]], dtype=int32)
+
+
+    In [23]: np.set_printoptions(precision=8, suppress=True)     ## control number fomatting 
+    In [24]: a[0]                                                                                                                                                                                           
+    Out[24]: 
+    array([[127.66074   , -35.995625  ,  90.        ,   0.7275828 ],
+           [  0.7963178 ,  -0.22455975,   0.56165004,   1.        ],
+           [ -0.57103276,   0.02715504,   0.82047796,  79.02767   ],
+           [         nan,   0.        ,   0.        ,   0.        ]], dtype=float32)
+
+    In [25]: a[1]                                                                                                                                                                                           
+    Out[25]: 
+    array([[303.0482    , 116.91953   ,  90.        ,   1.5299634 ],
+           [  0.89899653,   0.34706625,   0.26711446,   1.        ],
+           [ -0.43312532,   0.794904  ,   0.42488822,  64.74065   ],
+           [         nan,   0.        ,   0.        ,   0.        ]], dtype=float32)
+
+
+
+For plotting of the data use matplotlib for 2d histograms or pyvista for GPU 
+accelerated plots of 3d data.
+
+
+
 Examining Hit Data
 ---------------------
 

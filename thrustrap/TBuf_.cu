@@ -80,6 +80,19 @@ unsigned long long TBuf::getItemSize() const
 }
 
 
+/**
+TBuf::download
+---------------
+
+Downloads from GPU buffer into NPY array. Steps:
+
+1. allocates and zeros the NPY array appropriately for the GPU buffer
+2. copies from GPU to CPU  
+
+* TODO: avoid gymnastics by using same itemsizes on GPU and CPU ?
+  can subsequently change the array shape for convenience 
+
+**/
 
 template <typename T>
 void TBuf::download(NPY<T>* npy, bool verbose) const 
@@ -105,6 +118,7 @@ void TBuf::download(NPY<T>* npy, bool verbose) const
         }
         return ; 
     }
+
 
     if(numItems_npy == 0)
     {    
@@ -200,6 +214,23 @@ unsigned TBuf::downloadSelection2x4(const char* name, NPY<float>* npy, unsigned 
 /**
 TBuf::downloadSelection
 ------------------------
+
+Stream-compaction downloads a sub-selection of the GPU buffer
+into the *selection* NPY array. The selection is controlled by 
+the hitmask matching flags in the GPU buffer.
+
+The steps are:
+
+1. use thrust::count_if to get the number of GPU buffer entries with flags that are matches with the hitmask
+2. create temporary d_selected GPU buffer with size appropriate for the selection 
+3. copy the hitmask selected items into d_selected
+4. create temporary TBuf tsel for the d_selected buffer
+5. invokes TBuf::download for the tsel saving into the selection array
+6. on exiting the scope the temporaries are destroyed and the GPU allocations are set free
+
+
+Old Notes
+~~~~~~~~~~~
 
 Initially tried to 
     TBuf* TBuf::make_selection

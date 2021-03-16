@@ -18,7 +18,7 @@ bdir=/tmp/$USER/opticks/examples/$name/build
 
 [ "$1" == "clean" ] && echo $msg removing bdir $bdir && rm -rf $bdir
  
-if [ ! -d "$bdir" ]; then 
+if [ ! -d "$bdir" -o ! -f "$bdir/Makefile" ]; then 
    mkdir -p $bdir && cd $bdir 
    cmake $sdir \
       -DCMAKE_BUILD_TYPE=Debug \
