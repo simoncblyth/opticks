@@ -1454,14 +1454,7 @@ opticks-full()
 {
     local msg="=== $FUNCNAME :"
     opticks-info
-
-    # hmm just a dir check leading to assumption that 
-    #  all externals built OK is far too optimistic 
-    if [ ! -d "$(opticks-prefix)/externals" ]; then
-        opticks-full-externals
-    else
-        echo $msg using preexisting externals from $(opticks-prefix)/externals
-    fi 
+    opticks-full-externals
     opticks-full-make    
 }
 

@@ -34,10 +34,110 @@ See Also
 * owl-;owl-vi  Higher Level Layer on top of OptiX7 including 
 
 
+Driver Versions for each OptiX Release
+------------------------------------------
+
+OptiX 7.2.0 requires that you install a r455+ driver
+
+OptiX 7.1.0 requires that you install a r450+ driver.
+
+OptiX 7.0.0 requires that you install the 435.80 driver on Windows or the 435.12 Driver for linux.. 
+
+OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17 Driver for linux.
+
+
+From Downloads page https://developer.nvidia.com/designworks/optix/download
+------------------------------------------------------------------------------
+
+7.2.0 : Requires NVIDIA R456.71 driver or newer for Windows and 455.28 or newer for Linux..
+
+6.5.0 : NOTE: Requires NVIDIA R435.80 driver or newer. You may need a Beta Driver for certain operating systems.
+
+
+
+Current Driver Versions on different machines
+------------------------------------------------
+
+
+=================  =======================  =====================  ===================
+Machine              GPUs                     Driver                CUDA 
+=================  =======================  =====================  ===================
+Precision Gold       TITAN V, TITAN RTX       435.21                10.1 
+New                  Quadro RTX 8000          460.56                11.2
+Cluster              Tesla V100-SXM2          450.36.06             11.0
+=================  =======================  =====================  ===================
+
+
+
+::
+
+    blyth@localhost ~]$ nvidia-smi
+    Wed Mar 17 17:40:00 2021       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 460.56       Driver Version: 460.56       CUDA Version: 11.2     |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |                               |                      |               MIG M. |
+    |===============================+======================+======================|
+    |   0  Quadro RTX 8000     Off  | 00000000:73:00.0 Off |                  Off |
+    | 33%   30C    P8     9W / 260W |    300MiB / 48592MiB |      2%      Default |
+    |                               |                      |                  N/A |
+    +-------------------------------+----------------------+----------------------+
+
+
+    [blyth@localhost ~]$ df -h 
+    Filesystem               Size  Used Avail Use% Mounted on
+    devtmpfs                  63G     0   63G   0% /dev
+    tmpfs                     63G  111M   63G   1% /dev/shm
+    tmpfs                     63G   12M   63G   1% /run
+    tmpfs                     63G     0   63G   0% /sys/fs/cgroup
+    /dev/mapper/centos-root  944G   17G  928G   2% /
+    /dev/nvme0n1p2           5.0G  161M  4.9G   4% /boot
+    /dev/nvme0n1p1           5.0G   12M  5.0G   1% /boot/efi
+    tmpfs                     13G   28K   13G   1% /run/user/1000
+    cvmfs2                   4.0G  699M  3.3G  18% /cvmfs/juno.ihep.ac.cn
+    /dev/sda                 7.3T   93M  6.9T   1% /data
+    tmpfs                     13G  8.0K   13G   1% /run/user/1001
+    tmpfs                     13G     0   13G   0% /run/user/1003
+    tmpfs                     13G     0   13G   0% /run/user/1002
+    [blyth@localhost ~]$ 
+
+
+
+::
+
+    L7[blyth@lxslc714 ~]$ sr
+    job-head
+    gpu012.ihep.ac.cn
+    Thu Mar 18 03:55:32 2021       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 450.36.06    Driver Version: 450.36.06    CUDA Version: 11.0     |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |                               |                      |               MIG M. |
+    |===============================+======================+======================|
+    |   0  Tesla V100-SXM2...  On   | 00000000:B6:00.0 Off |                    0 |
+    | N/A   37C    P0    45W / 300W |      0MiB / 32510MiB |      0%      Default |
+    |                               |                      |                  N/A |
+    +-------------------------------+----------------------+----------------------+
+                                                                                   
+
 Forum Links
 --------------
 
 * https://forums.developer.nvidia.com/t/multiple-pipelines-and-shared-instancing/170735/2
+* https://forums.developer.nvidia.com/t/optix-7-breaking-changes/156801/2
+* https://forums.developer.nvidia.com/t/best-way-to-turn-entities-on-off-during-ray-tracing-in-optix/165436/5
+
+
+
+
+GPU Mental Model : Chapter 33. Implementing Efficient Parallel Data Structures on GPUs
+---------------------------------------------------------------------------------------------
+
+* https://developer.nvidia.com/gpugems/gpugems2/part-iv-general-purpose-computation-gpus-primer/chapter-33-implementing-efficient
 
 
 Property Access
@@ -575,15 +675,6 @@ Refs
 
 
 https://developer.nvidia.com/designworks/optix/download
-
-
-
-NOTE: Requires NVIDIA R450 driver or newer. You may need a Beta Driver for certain operating systems.
-OptiX 7.1.0 requires that you install a r450+ driver.
-
-
-OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17 Driver for linux.
-
 
 
 

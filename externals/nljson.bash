@@ -14,8 +14,16 @@ nljson-prefix(){ echo $(opticks-prefix)/externals ; }
 nljson-path(){   echo $(opticks-prefix)/externals/include/nljson/json.hpp ; }
 nljson-get()
 {
+   local msg="=== $FUNCNAME :"
    local dir=$(dirname $(nljson-path)) &&  mkdir -p $dir && cd $dir
-   [ ! -f json.hpp ] && curl -L -O $(nljson-url) 
+
+   local url=$(nljson-url)
+   local cmd="curl -L -O $url"
+   local name=$(basename $url)
+
+   [ ! -s "$name" ] && echo $cmd && eval $cmd
+   [ ! -s "$name" ] && echo $msg FAILED TO DOWNLOAD $name
+   [ -s "$name" ]   # set rc 
 }
 
 nljson--(){
