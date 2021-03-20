@@ -17,10 +17,13 @@
  * limitations under the License.
  */
 
+#include "THRAP_HEAD.hh"
 #include "TBufPair.hh"
 #include "TBuf.hh"
 #include "strided_range.h"
 #include "iexpand.h"
+#include "THRAP_TAIL.hh"
+
 
 template <typename T>
 TBufPair<T>::TBufPair(CBufSlice src, CBufSlice dst, bool verbose )

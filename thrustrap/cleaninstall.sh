@@ -1,0 +1,2 @@
+om-clean
+om-install

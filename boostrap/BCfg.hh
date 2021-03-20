@@ -46,6 +46,9 @@ setter method as selected by the name.
 #pragma GCC visibility push(default)
 #endif
 
+// see notes/issues/boost_1_75_warning.rst
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS 1
+
 #include <boost/bind.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>

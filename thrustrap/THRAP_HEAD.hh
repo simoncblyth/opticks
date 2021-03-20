@@ -24,3 +24,7 @@
 #pragma warning( disable : 4251 )
 #endif
 
+#define THRUST_IGNORE_DEPRECATED_CPP_DIALECT 1
+#define CUB_IGNORE_DEPRECATED_CPP_DIALECT 1
+
+

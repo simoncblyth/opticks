@@ -17,8 +17,10 @@
  * limitations under the License.
  */
 
+#include "THRAP_HEAD.hh"
 #include <thrust/for_each.h>
 #include <thrust/device_vector.h>
+#include "THRAP_TAIL.hh"
 
 struct printf_functor_i
 {

@@ -22,6 +22,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include "THRAP_HEAD.hh"
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
 #include <thrust/fill.h>
@@ -30,12 +31,16 @@
 #include "TBuf.hh"
 #include "TUtil.hh"
 #include "TIsHit.hh"
+
+#include "strided_range.h"
+#include "strided_repeated_range.h"
+#include "THRAP_TAIL.hh"
+
+
 #include "OpticksPhoton.h"
 // keep minimal : nvcc is tempramental 
 
 #include "float4x4.h"
-#include "strided_range.h"
-#include "strided_repeated_range.h"
 
 #include "NPY.hpp"
 

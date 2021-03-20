@@ -23,7 +23,7 @@
 #include "SStr.hh"
 #include "NPY.hpp"
 #include "BFile.hh"
-#include "Opticks.hh"
+//#include "Opticks.hh"
 
 #include "TCURAND.hh"
 #include "OPTICKS_LOG.hh"
@@ -81,8 +81,8 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ;
 
-    Opticks ok(argc, argv); 
-    ok.configure(); 
+    //Opticks ok(argc, argv); 
+    //ok.configure(); 
 
     int IBASE = SSys::getenvint("IBASE", -1) ; 
 
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
     }
 
 
-    ok.dumpProfile("TCURANDTest"); 
+    //ok.dumpProfile("TCURANDTest"); 
 
     return 0 ; 
 }

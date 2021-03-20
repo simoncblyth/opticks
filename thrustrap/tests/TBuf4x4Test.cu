@@ -22,16 +22,18 @@
 #include <string>
 #include <sstream>
 
+#include "THRAP_HEAD.hh"
 #include <thrust/for_each.h>
 #include <thrust/device_vector.h>
 #include <thrust/count.h>
 #include <thrust/copy.h>
-
-#include "CBufSpec.hh"
 #include "TBuf.hh"
 #include "TUtil.hh"
-
 #include "TIsHit.hh"
+#include "THRAP_TAIL.hh"
+
+#include "CBufSpec.hh"
+
 #include "float4x4.h"
 
 #include "OpticksPhoton.h"

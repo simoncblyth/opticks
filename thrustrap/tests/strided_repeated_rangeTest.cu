@@ -17,10 +17,13 @@
  * limitations under the License.
  */
 
+#include "THRAP_HEAD.hh"
 #include "strided_repeated_range.h"
 
 #include <thrust/fill.h>
 #include <thrust/copy.h>
+#include "THRAP_TAIL.hh"
+
 #include <ostream>
 
 int main(void)

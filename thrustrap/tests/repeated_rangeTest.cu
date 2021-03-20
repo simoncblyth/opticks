@@ -18,11 +18,14 @@
  */
 
 // /usr/local/env/numerics/thrust/examples/repeated_range.cu
+
+#include "THRAP_HEAD.hh"
 #include "repeated_range.h"
 //#include <thrust/fill.h>
 
 // for printing
 #include <thrust/copy.h>
+#include "THRAP_TAIL.hh"
 #include <ostream>
 
 

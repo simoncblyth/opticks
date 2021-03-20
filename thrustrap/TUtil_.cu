@@ -17,11 +17,13 @@
  * limitations under the License.
  */
 
+#include "THRAP_HEAD.hh"
 #include "TUtil.hh"
 #include <thrust/device_vector.h>
+#include "THRAP_TAIL.hh"
+
 #include "CBufSpec.hh"
 #include "float4x4.h"
-
 
 
 template <typename T>

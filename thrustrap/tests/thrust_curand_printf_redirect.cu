@@ -28,8 +28,12 @@
 #include "SSys.hh"
 #include "SDirect.hh"
 
+#include "THRAP_HEAD.hh"
 #include <thrust/for_each.h>
 #include <thrust/iterator/counting_iterator.h> 
+#include "THRAP_TAIL.hh"
+
+
 #include <curand_kernel.h> 
 #include <iostream> 
 #include <iomanip> 

@@ -20,11 +20,13 @@
 #include <iostream>
 #include <iomanip>
 
-#include <thrust/for_each.h>
-#include <thrust/iterator/counting_iterator.h> 
 #include <curand_kernel.h> 
 
+#include "THRAP_HEAD.hh"
+#include <thrust/for_each.h>
+#include <thrust/iterator/counting_iterator.h> 
 #include "TRngBuf.hh"
+#include "THRAP_TAIL.hh"
 
 #include "NPY.hpp"
 #include "Opticks.hh"

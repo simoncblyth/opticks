@@ -18,10 +18,14 @@
  */
 
 #define DEBUG 1
+
+
+#include "THRAP_HEAD.hh"
 #include "expand.h"
 
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
+#include "THRAP_TAIL.hh"
 
 #include <ostream>
 

@@ -19,9 +19,13 @@
 
 
 #include "NPY.hpp"
+
+#include "THRAP_HEAD.hh"
 #include "TUtil.hh"
 #include "TRngBuf.hh"
 #include "TCURANDImp.hh"
+#include "THRAP_TAIL.hh"
+
 #include "Opticks.hh"
 #include "PLOG.hh"
 

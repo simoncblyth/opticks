@@ -22,15 +22,17 @@
 #include <iomanip> 
 
 
-#include <thrust/device_vector.h>
-//#include <curand_kernel.h> 
 
 #include "SSys.hh"
 #include "SStr.hh"
 #include "BFile.hh"
 #include "NPY.hpp"
+
+#include "THRAP_HEAD.hh"
+#include <thrust/device_vector.h>
 #include "TRngBuf.hh"
 #include "TUtil.hh"
+#include "THRAP_TAIL.hh"
 
 #include "OPTICKS_LOG.hh"
 

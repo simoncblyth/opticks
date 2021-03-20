@@ -49,9 +49,12 @@ struct estimate_pi
 
 
 //#include <cmath>
+
+#include "THRAP_HEAD.hh"
 #include <thrust/iterator/counting_iterator.h> 
 //#include <thrust/functional.h> 
 #include <thrust/transform_reduce.h> 
+#include "THRAP_TAIL.hh"
 #include <iostream> 
 #include <iomanip> 
 

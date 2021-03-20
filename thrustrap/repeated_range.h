@@ -28,12 +28,14 @@
 //   repeated_range([0, 1, 2, 3], 3) -> [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3] 
 //   ...
 
+
+#include "THRAP_HEAD.hh"
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/functional.h>
 #include <thrust/device_vector.h>
-
+#include "THRAP_TAIL.hh"
 
 template <typename Iterator>
 class repeated_range

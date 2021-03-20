@@ -20,10 +20,12 @@
 
 //  https://github.com/thrust/thrust/issues/628
 
+#include "THRAP_HEAD.hh"
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>
 #include <thrust/sequence.h>
 #include <thrust/iterator/discard_iterator.h>
+#include "THRAP_TAIL.hh"
 #include <iostream>
 
 int main(int argc, char ** argv)

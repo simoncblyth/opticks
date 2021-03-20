@@ -26,9 +26,10 @@
 #include "BHex.hh"
 #include "Index.hpp"
 
+
+#include "THRAP_HEAD.hh"
 #include "TSparse.hh"
 #include "TBuf.hh"
-
 
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
@@ -37,6 +38,7 @@
 #include <thrust/iterator/constant_iterator.h>
 
 #include "strided_range.h"
+#include "THRAP_TAIL.hh"
 
 // NB no boost as this is compiled by nvcc
 
