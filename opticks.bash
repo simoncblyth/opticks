@@ -1460,10 +1460,29 @@ opticks-cuda-capable()
 opticks-full()
 {
     local msg="=== $FUNCNAME :"
+    local rc 
+
     opticks-info
+    [ $? -ne 0 ] && echo $msg ERR from opticks-info && return 1
+
     opticks-full-externals
+    [ $? -ne 0 ] && echo $msg ERR from opticks-full-externals && return 2
+
     opticks-full-make    
-    opticks-cuda-capable && opticks-full-prepare
+    [ $? -ne 0 ] && echo $msg ERR from opticks-full-make && return 3
+
+    opticks-cuda-capable
+    rc=$?
+    if [ $rc -eq 0 ]; then
+        echo $msg detected GPU proceed with opticks-full-prepare
+        opticks-full-prepare
+        rc=$?
+        [ $rc -ne 0 ] && echo $msg ERR from opticks-full-prepare && return 4
+    else
+        echo $msg detected no CUDA cabable GPU - skipping opticks-full-prepare
+        rc=0    
+    fi   
+    return 0 
 }
 
 opticks-full-externals()
