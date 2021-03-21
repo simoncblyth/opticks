@@ -1449,6 +1449,14 @@ Boost to use via CMAKE_PREFIX_PATH/PKG_CONFIG_PATH see oc.bash om.bash
 EOI
 }
 
+opticks-cuda-capable()
+{
+   : rc 0 when there is a CUDA capable GPU 
+   case $(uname) in
+      Linux) nvidia-smi 1>/dev/null ;;
+     Darwin) system_profiler SPDisplaysDataType | grep NVIDIA > /dev/null  ;;    
+   esac
+}
 
 opticks-full()
 {
@@ -1456,6 +1464,7 @@ opticks-full()
     opticks-info
     opticks-full-externals
     opticks-full-make    
+    opticks-cuda-capable && opticks-full-prepare
 }
 
 opticks-full-externals()
@@ -1506,13 +1515,23 @@ opticks-full-make()
     rc=$? 
     [ $rc -ne 0 ] && return $rc
 
-    opticks-prepare-installation
-    rc=$? 
-    [ $rc -ne 0 ] && return $rc
-
     echo $msg DONE $(date)
     return 0
 }
+
+opticks-full-prepare()
+{
+    : this needs a CUDA capable GPU 
+    local msg="=== $FUNCNAME :"
+    echo $msg START $(date)
+    local rc
+    opticks-prepare-installation
+    rc=$? 
+    [ $rc -ne 0 ] && return $rc
+    echo $msg DONE $(date)
+    return 0
+}
+
 
 
 
