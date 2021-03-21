@@ -212,8 +212,11 @@ glm-get(){
    local nam=$(glm-name)
    local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
 
-   [ ! -f "$zip" ] && curl -L -O $url
+   local cmd="curl -L -O $url"
+   [ ! -s "$zip" ] && echo $cmd && eval $cmd 
+   [ ! -s "$zip" ] && echo $msg FAILED TO DOWNLOAD FROM $url && return 1
    [ ! -d "$nam" ] && unzip $opt $zip -d $nam
+   [ ! -d "$nam" ] && echo $msg FAILED TO UNZIP $zip && return 2
 
    if [ -d glm -a ! -L glm ]; then
       echo $msg ERROR cannot plant symbolic link as a non-link glm directory exists in PWD $PWD
@@ -222,7 +225,7 @@ glm-get(){
       ln -sfnv $(glm-name)/glm glm 
       echo $msg planting symbolic link for access without version in path
    fi  
-
+   return 0 
 }
 
 glm-get-notes(){ cat << 'EON'

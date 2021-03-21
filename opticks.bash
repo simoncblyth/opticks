@@ -522,7 +522,6 @@ opticks-installer-(){
 
         $pkg-
         $pkg--
-
         rc=$?
         [ $rc -ne 0 ] && echo $msg RC $rc from pkg $pkg : ABORTING && return $rc
     done
