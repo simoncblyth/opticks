@@ -24,9 +24,13 @@
 
 #include "OBuf.hh"
 
+#include "THRAP_HEAD.hh"
 #include "strided_range.h"
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
+#include "THRAP_TAIL.hh"
+
+
 #include <iterator>
 #include <iomanip>
 #include <iostream>

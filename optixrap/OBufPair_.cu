@@ -20,8 +20,10 @@
 #include "OBufPair.hh"
 #include "OBuf.hh"
 
+#include "THRAP_HEAD.hh"
 #include "strided_range.h"
 #include "iexpand.h"
+#include "THRAP_TAIL.hh"
 
 template <typename T>
 OBufPair<T>::OBufPair(CBufSlice src, CBufSlice dst ) 

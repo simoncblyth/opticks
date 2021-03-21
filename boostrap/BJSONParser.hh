@@ -26,6 +26,7 @@
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #endif
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS 1
 #include <boost/property_tree/json_parser.hpp>
 
 #ifdef __clang__

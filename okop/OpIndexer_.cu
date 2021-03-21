@@ -40,13 +40,13 @@
 #include "CBufSpec.hh"
 #include "CBufSlice.hh"
 
-// thrustrap-
+
+#include "THRAP_HEAD.hh"
 #include "TBuf.hh"
 #include "TSparse.hh"
 #include "TUtil.hh"
-
-// thrust 
 #include <thrust/device_vector.h>
+#include "THRAP_TAIL.hh"
 
 
 #ifdef WITH_RECORD
