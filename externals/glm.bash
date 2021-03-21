@@ -298,7 +298,10 @@ glm-test-make(){
 glm--()
 {
    glm-get
+   [ $? -ne 0 ] && return 1
    glm-pc
+   [ $? -ne 0 ] && return 2
+   return 0
 }
 
 glm-test(){
