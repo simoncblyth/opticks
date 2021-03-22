@@ -28,7 +28,7 @@ nljson-get()
 
 nljson--(){
    nljson-get
-   njjson-pc
+   nljson-pc
 }
 
 nljson-r(){ vim -R $(nljson-path) ; }
