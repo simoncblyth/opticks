@@ -1214,9 +1214,11 @@ EOS
 opticks-setup-misc-(){ cat << EOM
 # $FUNCNAME  
 
-export TMP=/tmp/\$USER/opticks   ## too many uses of TMP to change all to OPTICKS_TMP right now
-export OPTICKS_TMP=/tmp/\$USER/opticks  
-export OPTICKS_EVENT_BASE=\$TMP
+export TMP=\${TMP:-/tmp/\$USER/opticks}   ## too many uses of TMP to change all to OPTICKS_TMP right now
+export OPTICKS_TMP=\${OPTICKS_TMP:-/tmp/\$USER/opticks}  
+export OPTICKS_EVENT_BASE=\${OPTICKS_EVENT_BASE:-/tmp/\$USER/opticks} 
+mkdir -p \${OPTICKS_TMP}
+mkdir -p \${OPTICKS_EVENT_BASE}
 
 EOM
 }
