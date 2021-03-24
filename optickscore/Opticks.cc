@@ -1992,6 +1992,7 @@ void Opticks::loadOriginCacheMeta()
 
 void Opticks::loadOriginCacheMeta_() 
 {
+    LOG(LEVEL) << "[" ; 
     const char* cachemetapath = getCacheMetaPath();
     LOG(info) << " cachemetapath " << cachemetapath ; 
     m_origin_cachemeta = BMeta::Load(cachemetapath); 
@@ -2006,7 +2007,7 @@ void Opticks::loadOriginCacheMeta_()
         LOG(fatal) << "cachemetapath " << cachemetapath ; 
         LOG(fatal) << "argline that creates cachemetapath must include \"--gdmlpath /path/to/geometry.gdml\" " ; 
     }
-    assert( m_origin_gdmlpath ); 
+    //assert( m_origin_gdmlpath );  // it is null with OPTICKS_KEY for geocache from live running 
 
     m_origin_geocache_code_version = m_origin_cachemeta->get<int>(GEOCACHE_CODE_VERSION_KEY, "0" );  
 
@@ -2027,6 +2028,7 @@ void Opticks::loadOriginCacheMeta_()
         LOG(info) << "(pass) " << GEOCACHE_CODE_VERSION_KEY << " " << m_origin_geocache_code_version  ; 
     }
     assert( geocache_code_version_pass ); 
+    LOG(LEVEL) << "]" ; 
 }
 
 

@@ -127,6 +127,9 @@ cluster-opticks-t-shakedown
 
 
       2  /43  Test #2  : OpticksCoreTest.IndexerTest                   Subprocess aborted***Exception:   0.22   
+
+
+
       8  /43  Test #8  : OpticksCoreTest.OpticksFlagsTest              Subprocess aborted***Exception:   0.14   
       10 /43  Test #10 : OpticksCoreTest.OpticksColorsTest             Subprocess aborted***Exception:   0.13   
       13 /43  Test #13 : OpticksCoreTest.OpticksCfg2Test               Subprocess aborted***Exception:   0.13   
@@ -264,6 +267,54 @@ Related issue note some direct /tmp writes on GPU node::
 
 
 
+
+Opticks::loadOriginCacheMeta_ asserts when using an OPTICKS_KEY born from live running
+-----------------------------------------------------------------------------------------
+
+::
+
+    .     Start  2: OpticksCoreTest.IndexerTest
+     2/43 Test  #2: OpticksCoreTest.IndexerTest ............................Subprocess aborted***Exception:   0.22 sec
+    2021-03-24 20:00:19.628 INFO  [255811] [BOpticksKey::SetKey@90]  spec DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+    2021-03-24 20:00:19.632 INFO  [255811] [Opticks::init@438] COMPUTE_MODE forced_compute  hostname gpu016.ihep.ac.cn
+    2021-03-24 20:00:19.632 INFO  [255811] [Opticks::init@447]  mandatory keyed access to geometry, opticksaux 
+    2021-03-24 20:00:19.633 INFO  [255811] [Opticks::init@466] OpticksSwitches:WITH_SEED_BUFFER WITH_RECORD WITH_SOURCE WITH_ALIGN_DEV WITH_LOGDOUBLE WITH_KLUDGE_FLAT_ZERO_NOPEEK WITH_SENSORLIB 
+    2021-03-24 20:00:19.633 ERROR [255811] [BOpticksKey::SetKey@78] key is already set, ignoring update with spec (null)
+    2021-03-24 20:00:19.634 INFO  [255811] [BOpticksResource::initViaKey@785] 
+                 BOpticksKey  :  
+          spec (OPTICKS_KEY)  : DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+                     exename  : DetSim0Svc
+             current_exename  : IndexerTest
+                       class  : X4PhysicalVolume
+                     volname  : pWorld
+                      digest  : 85d8514854333c1a7c3fd50cc91507dc
+                      idname  : DetSim0Svc_pWorld_g4live
+                      idfile  : g4ok.gltf
+                      idgdml  : g4ok.gdml
+                      layout  : 1
+
+    2021-03-24 20:00:19.659 INFO  [255811] [Opticks::loadOriginCacheMeta_@1996]  cachemetapath /hpcfs/juno/junogpu/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/cachemeta.json
+    2021-03-24 20:00:19.677 INFO  [255811] [BMeta::dump@199] Opticks::loadOriginCacheMeta_
+    {
+        "GEOCACHE_CODE_VERSION": 9,
+        "argline": "DetSim0Svc ",
+        "cwd": "/hpcfs/juno/junogpu/blyth/tds",
+        "location": "Opticks::updateCacheMeta",
+        "rundate": "20210324_014558",
+        "runfolder": "DetSim0Svc",
+        "runlabel": "R0_cvd_0",
+        "runstamp": 1616521558
+    }
+    2021-03-24 20:00:19.677 FATAL [255811] [Opticks::ExtractCacheMetaGDMLPath@2147]  FAILED TO EXTRACT ORIGIN GDMLPATH FROM METADATA argline 
+     argline DetSim0Svc 
+    2021-03-24 20:00:19.677 INFO  [255811] [Opticks::loadOriginCacheMeta_@2001] ExtractCacheMetaGDMLPath 
+    2021-03-24 20:00:19.677 FATAL [255811] [Opticks::loadOriginCacheMeta_@2006] cachemetapath /hpcfs/juno/junogpu/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/cachemeta.json
+    2021-03-24 20:00:19.677 FATAL [255811] [Opticks::loadOriginCacheMeta_@2007] argline that creates cachemetapath must include "--gdmlpath /path/to/geometry.gdml" 
+    IndexerTest: /hpcfs/juno/junogpu/blyth/junotop/opticks/optickscore/Opticks.cc:2009: void Opticks::loadOriginCacheMeta_(): Assertion `m_origin_gdmlpath' failed.
+
+          Start  3: OpticksCoreTest.CameraTest
+     3/43 Test  #3: OpticksCoreTest.CameraTest .............................   Passed    0.06 sec
+          Start  4: OpticksCoreTest.CameraSwiftTest
 
 
 
