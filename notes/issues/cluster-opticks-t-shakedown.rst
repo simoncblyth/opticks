@@ -217,7 +217,14 @@ cluster-opticks-t-shakedown
 
 
 
-Need to sort out tmp folder.::
+Sort out TMP
+----------------
+
+* added creation of TMP OPTICKS_TMP OPTICKS_EVENT_BASE dirs to opticks-setup 
+  so they get created on sourcing opticks-setup.sh 
+
+
+Errors from lack of TMP dir::
 
 
 
@@ -242,6 +249,21 @@ Need to sort out tmp folder.::
 
             Start  17: NPYTest.NPointTest
      17/116 Test  #17: NPYTest.NPointTest .....................   Passed    0.07 sec
+
+
+
+Related issue note some direct /tmp writes on GPU node::
+
+    drwxr-xr-x 3 blyth       dyw           21 Mar 24 21:50 blyth
+    -rw-r--r-- 1 blyth       dyw       450560 Mar 24 20:00 cuRANDWrapper_10240_0_0.bin           FIXED
+    -rw-r--r-- 1 blyth       dyw        45056 Mar 24 20:00 cuRANDWrapper_1024_0_0.bin            FIXED
+    -rw-r--r-- 1 blyth       dyw         2240 Mar 24 20:01 mapOfMatPropVects_BUG.gdml            FIXED
+    -rw-r--r-- 1 blyth       dyw          179 Mar 24 20:00 S_freopen_redirect_test.log           FIXED 
+    -rw-r--r-- 1 blyth       dyw          570 Mar 24 20:01 simstream.txt                         FIXED
+    -rw-r--r-- 1 blyth       dyw          405 Mar 24 20:00 thrust_curand_printf_redirect2.log    FIXED
+
+
+
 
 
 

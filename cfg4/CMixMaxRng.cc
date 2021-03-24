@@ -19,6 +19,7 @@
 
 #include <fstream>
 
+#include "SPath.hh"
 #include "Randomize.hh"
 #include "CMixMaxRng.hh"
 #include "SBacktrace.hh"
@@ -33,7 +34,9 @@ CMixMaxRng::CMixMaxRng()
     CLHEP::HepRandom::setTheEngine( this );  
 
     //out = new std::ostream(std::cout.rdbuf()) ;
-    out = new std::ofstream("/tmp/simstream.txt") ;
+
+    const char* path = SPath::Resolve("$TMP/simstream.txt"); 
+    out = new std::ofstream(path) ;
 
 }
 

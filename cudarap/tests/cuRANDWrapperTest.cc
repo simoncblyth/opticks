@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include "SPath.hh"
+#include "SSys.hh"
 #include "SSys.hh"
 
 #include "LaunchCommon.hh"
@@ -49,7 +51,8 @@ int main(int argc, char** argv)
     unsigned int max_blocks        = SSys::getenvint("MAX_BLOCKS", 128) ;
     unsigned int threads_per_block = SSys::getenvint("THREADS_PER_BLOCK", 256) ; 
 
-    const char* cachedir = SSys::getenvvar("CUDARAP_RNG_DIR", "/tmp") ;
+    const char* tmp = SPath::Resolve("$TMP"); 
+    const char* cachedir = SSys::getenvvar("CUDARAP_RNG_DIR", tmp) ;
 
     LOG(info) 
           << " work " << work 

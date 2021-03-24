@@ -110,6 +110,12 @@ const char* SPath::Resolve(const char* spec_)
         const char* prefix = pfx ? pfx : UserTmpDir() ; 
         ss << prefix << spec_sep ; 
     }
+    else if( spec[0] == '$' && spec_sep == nullptr )
+    {
+        char* pfx = getenv(spec+1); 
+        const char* prefix = pfx ? pfx : UserTmpDir() ;
+        ss << prefix ; 
+    }
     else
     {
         ss << spec ; 

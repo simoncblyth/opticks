@@ -25,6 +25,7 @@
 #include <cstdlib> 
 #include <sstream> 
 
+#include "SPath.hh"
 #include "SSys.hh"
 #include "S_freopen_redirect.hh"
 
@@ -126,7 +127,7 @@ int main(int argc, char** argv)
 
      char* LOGF = getenv("LOGF") ; 
      bool logf = LOGF != NULL ; 
-     const char* path = "/tmp/thrust_curand_printf_redirect2.log" ;     
+     const char* path = SPath::Resolve("$TMP/thrust_curand_printf_redirect2.log") ;     
 
      std::cout 
          << argv[0]

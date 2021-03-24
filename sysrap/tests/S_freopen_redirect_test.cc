@@ -24,13 +24,14 @@
 
 #include <cassert>
 #include "S_freopen_redirect.hh"
+#include "SPath.hh"
 #include "SSys.hh"
 
 
 
 int main(void)
 {
-    const char* path = "/tmp/S_freopen_redirect_test.log" ;
+    const char* path = SPath::Resolve("$TMP/S_freopen_redirect_test.log") ;
     SSys::Dump(path); 
     {
        S_freopen_redirect fr(stdout, path) ; 

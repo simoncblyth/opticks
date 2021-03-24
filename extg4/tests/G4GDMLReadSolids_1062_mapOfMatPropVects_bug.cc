@@ -82,6 +82,7 @@ const char* GDML = R"LITERAL(<?xml version="1.0" encoding="UTF-8" ?>
 
 )LITERAL";
 
+#include <sstream>
 #include <iostream>
 #include <cstring>
 #include <fstream>
@@ -127,7 +128,13 @@ G4GDMLReadSolids_1062_mapOfMatPropVects_bug.cc
 
 int main(int argc, char** argv)
 {
-    const char* path = argc > 1 ? argv[1] : "/tmp/mapOfMatPropVects_BUG.gdml" ;   
+    const char* tmp = getenv("TMP"); 
+    if(!tmp) tmp = "/tmp" ; 
+    std::stringstream ss ; 
+    ss << tmp << "/" << "mapOfMatPropVects_BUG.gdml" ; 
+    std::string spath = ss.str(); 
+
+    const char* path = argc > 1 ? argv[1] : spath.c_str() ;   
 
     std::cout << "writing gdml to " << path << std::endl ; 
     std::ofstream fp(path, std::ios::out); 

@@ -118,6 +118,9 @@ void test_Resolve()
 {
     LOG(info); 
     const char* lines = R"LIT(
+$TMP
+$OPTICKS_TMP
+$OPTICKS_EVENT_BASE
 $HOME/hello 
 $TMP/somewhere/over/the/rainbow.txt
 $NON_EXISTING_EVAR/elsewhere/sub.txt
