@@ -1991,24 +1991,36 @@ void Opticks::loadOriginCacheMeta()
     }
 }
 
+const char* Opticks::getCacheMetaGDMLPath_(const BMeta* origin_cachemeta ) const 
+{
+    std::string gdmlpath = ExtractCacheMetaGDMLPath(origin_cachemeta); 
+    LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
+
+    const char* cachemeta_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str());
+
+    if(cachemeta_gdmlpath == NULL)
+    {
+        LOG(fatal) << "argline that creates cachemetapath does not include \"--gdmlpath /path/to/geometry.gdml\" " ; 
+        LOG(fatal) << "FAILED to extract gdmlpath from the geocache creating commandline persisted in cachemetapath " ; 
+    }
+    return cachemeta_gdmlpath ; 
+} 
+
+
 void Opticks::loadOriginCacheMeta_() 
 {
     LOG(LEVEL) << "[" ; 
+
     const char* cachemetapath = getCacheMetaPath();
     LOG(info) << " cachemetapath " << cachemetapath ; 
     m_origin_cachemeta = BMeta::Load(cachemetapath); 
     m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta_"); 
 
-    std::string gdmlpath = ExtractCacheMetaGDMLPath(m_origin_cachemeta); 
-    LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
+    const char* cachemeta_gdmlpath = getCacheMetaGDMLPath_( m_origin_cachemeta ); 
+    const char* origin_gdmlpath = OriginGDMLPath() ; 
+    m_origin_gdmlpath = cachemeta_gdmlpath ? cachemeta_gdmlpath : origin_gdmlpath ; 
+    assert( m_origin_gdmlpath );  // it is null with OPTICKS_KEY for geocache from live running 
 
-    m_origin_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str()); 
-    if(m_origin_gdmlpath == NULL)
-    {
-        LOG(fatal) << "cachemetapath " << cachemetapath ; 
-        LOG(fatal) << "argline that creates cachemetapath must include \"--gdmlpath /path/to/geometry.gdml\" " ; 
-    }
-    //assert( m_origin_gdmlpath );  // it is null with OPTICKS_KEY for geocache from live running 
 
     m_origin_geocache_code_version = m_origin_cachemeta->get<int>(GEOCACHE_CODE_VERSION_KEY, "0" );  
 
@@ -3780,9 +3792,7 @@ const char*     Opticks::getOriginGDMLPath() const { return m_origin_gdmlpath ; 
 const char*     Opticks::getCurrentGDMLPath() const 
 {
     bool is_direct   = isDirect() ;   
-    //bool is_embedded = isEmbedded() ;   
     return is_direct ? getOriginGDMLPath() : getSrcGDMLPath() ;
-    // GDML path for embedded Opticks (ie direct from Geant4) is within the geocache directory 
 }
 
 

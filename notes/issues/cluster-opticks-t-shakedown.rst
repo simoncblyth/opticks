@@ -396,7 +396,7 @@ lack of GDML path from live OPTICKS_KEY geocache
     2021-03-24 23:45:10.060 FATAL [158046] [CTorchSource::configure@163] CTorchSource::configure _t 0.1 _radius 0 _pos 0.0000,0.0000,0.0000 _dir 0.0000,0.0000,1.0000 _zeaz 0.0000,1.0000,0.0000,1.0000 _pol 0.0000,0.0000,1.0000
 
 
-Solution is to always save GDML into the geocache : so will always have the GDML even from a live running geocache::
+Solution is to always save origin.gdml into the geocache : so will always have the GDML even from a live running geocache::
 
      914 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
      915 {

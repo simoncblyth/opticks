@@ -328,6 +328,7 @@ class OKCORE_API Opticks {
        void        loadOriginCacheMeta() ; 
        BMeta*      getOriginCacheMeta(const char* obj) const ; 
    private:
+       const char* getCacheMetaGDMLPath_(const BMeta* origin_cachemeta ) const  ; 
        void        loadOriginCacheMeta_() ; 
    public:
        const BMeta* getGDMLAuxMeta() const  ; 

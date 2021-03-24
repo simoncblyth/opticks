@@ -43,7 +43,7 @@ class OpticksQuery ;
 
 #include "PLOG.hh"
 
-const plog::Severity CGeometry::LEVEL = debug ; 
+const plog::Severity CGeometry::LEVEL = PLOG::EnvLevel("CGeometry", "DEBUG") ; 
 
 
 
