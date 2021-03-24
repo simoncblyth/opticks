@@ -83,6 +83,8 @@ void SPPM::save(const char* path, int width, int height, const unsigned char* im
 
     FILE * fp;
     fp = fopen(path, "wb");
+    if(!fp) LOG(fatal) << "FAILED to open for writing " << path ; 
+    assert(fp); 
 
     int ncomp = 4;
     fprintf(fp, "P6\n%d %d\n%d\n", width, height, 255);
@@ -155,8 +157,10 @@ void SPPM::write( const char* filename, const unsigned char* image, int width, i
 {
     FILE * fp;
     fp = fopen(filename, "wb");
-
+    if(!fp) LOG(fatal) << "FAILED to open for writing " << filename ;  
+    assert(fp); 
     fprintf(fp, "P6\n%d %d\n%d\n", width, height, 255);
+
 
     unsigned size = height*width*3 ; 
     unsigned char* data = new unsigned char[size] ; 

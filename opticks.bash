@@ -761,6 +761,10 @@ opticks-paths()
        echo ${!var} | tr ":" "\n"
        echo
    done
+   for var in $vars ; do
+       local num=$(echo ${!var} | tr ":" "\n" | wc -l )
+       printf "%-30s : %d \n" $var $num
+   done
    env | grep OPTICKS | grep PREFIX
 }
 
