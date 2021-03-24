@@ -103,12 +103,27 @@ void X4MaterialLib::init()
     bool match = num_materials == num_m4 ; 
 
     if(!match)
+    {
        LOG(fatal) 
            << " num_materials MISMATCH "
            << " G4Material::GetNumberOfMaterials " << num_m4
            << " m_mlib->getNumMaterials " << num_materials
            ;
 
+       for(unsigned i=0 ; i < num_m4 ; i++)
+       {
+           G4Material* m4 = (*m_mtab)[i] ; 
+           const std::string& m4_name = m4->GetName();  
+           std::cout << "m4 " << std::setw(3) << i << " : " << m4_name ; 
+       }
+       for(unsigned i=0 ; i < num_materials ; i++)
+       {
+           GMaterial*  pmap = m_mlib->getMaterial(i); 
+           const char* pmap_name = pmap->getName(); 
+           std::cout << "mt " << std::setw(3) << i << " : " << pmap_name ; 
+       }
+
+    }
     assert( match ); 
 
     for(unsigned i=0 ; i < num_materials ; i++)

@@ -461,6 +461,133 @@ Solution is to always save origin.gdml into the geocache : so will always have t
 
 
 
+::
+
+    L7[blyth@lxslc713 gpujob]$ BP=CGDMLDetector::init gdb_ CTestDetectorTest
+    gdb -ex "set breakpoint pending on" -ex "break CGDMLDetector::init" -ex "info break" -ex r --args CTestDetectorTest
+    Thu Mar 25 02:37:43 CST 2021
+
+
+
+::
+
+    L7[blyth@lxslc709 opticks]$ CTestDetectorTest
+    2021-03-25 03:15:34.939 INFO  [2447] [main@44] CTestDetectorTest
+    2021-03-25 03:15:34.941 INFO  [2447] [BOpticksKey::SetKey@90]  spec DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+    2021-03-25 03:15:34.943 INFO  [2447] [Opticks::init@439] COMPUTE_MODE forced_compute  hostname lxslc709.ihep.ac.cn
+    ...
+    2021-03-25 03:15:46.415 ERROR [2447] [OpticksGen::makeTorchstep@468]  generateoverride 0 num_photons0 10000 num_photons 10000
+    2021-03-25 03:15:46.417 INFO  [2447] [BOpticksResource::IsGeant4EnvironmentDetected@296]  n 10 detect 1
+    2021-03-25 03:15:46.417 ERROR [2447] [CG4::preinit@136] External Geant4 environment is detected, not changing this. 
+    ...
+    G4GDML: Reading '/hpcfs/juno/junogpu/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml'...
+    G4GDML: Reading definitions...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+    *** G4Exception : InvalidSize
+          issued by : G4GDMLEvaluator::DefineMatrix()
+    Matrix 'PPOABSLENGTH0x61a3280' is not filled correctly!
+    *** Fatal Exception *** core dump ***
+     **** Track information is not available at this moment
+     **** Step information is not available at this moment
+
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+    *** G4Exception: Aborting execution ***
+    Aborted (core dumped)
+    L7[blyth@lxslc709 opticks]$ 
+
+
+
+Manually edit origin.gdml::
+
+
+    G4GDML: Reading '/hpcfs/juno/junogpu/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml'...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+    *** G4Exception : ReadError
+          issued by : G4GDMLReadDefine::getMatrix()
+    Matrix 'SCINTILLATIONYIELD' was not found!
+    *** Fatal Exception *** core dump ***
+     **** Track information is not available at this moment
+     **** Step information is not available at this moment
+
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+::
+
+       188       <property name="bisMSBTIMECONSTANT" ref="bisMSBTIMECONSTANT0x61aa9c0"/>
+       189     <!--
+       190       <property name="SCINTILLATIONYIELD" ref="SCINTILLATIONYIELD"/>
+       191       <property name="RESOLUTIONSCALE" ref="RESOLUTIONSCALE"/>
+       192       <property name="FASTTIMECONSTANT" ref="FASTTIMECONSTANT"/>
+       193       <property name="SLOWTIMECONSTANT" ref="SLOWTIMECONSTANT"/>
+       194       <property name="YIELDRATIO" ref="YIELDRATIO"/>
+       195     -->
+       196       <T unit="K" value="293.15"/>
+
+
+
+
+::
+
+    G4GDML: Reading '/hpcfs/juno/junogpu/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml'...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+    G4GDML: Reading solids...
+    G4GDML: Reading structure...
+    G4GDML: Reading setup...
+    G4GDML: Reading '/hpcfs/juno/junogpu/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml' done!
+    2021-03-25 03:40:51.993 FATAL [18632] [CMaterialSort::sort@83]  sorting G4MaterialTable using order kv 40
+    2021-03-25 03:40:51.993 INFO  [18632] [CDetector::traverse@124] [
+    2021-03-25 03:40:55.825 INFO  [18632] [CDetector::traverse@132] ]
+    2021-03-25 03:40:55.825 FATAL [18632] [CGDMLDetector::addMPTLegacyGDML@192]  UNEXPECTED TO SEE ONLY SOME Geant4 MATERIALS WITHOUT MPT  nmat 17 nmat_without_mpt 5
+    2021-03-25 03:40:55.826 INFO  [18632] [CGDMLDetector::addMPTLegacyGDML@223] CGDMLDetector::addMPT added MPT to 5 g4 materials 
+    2021-03-25 03:40:55.826 INFO  [18632] [CGDMLDetector::standardizeGeant4MaterialProperties@239] [
+    2021-03-25 03:40:55.826 FATAL [18632] [X4MaterialLib::init@106]  num_materials MISMATCH  G4Material::GetNumberOfMaterials 17 m_mlib->getNumMaterials 40
+    CTestDetectorTest: /hpcfs/juno/junogpu/blyth/junotop/opticks/extg4/X4MaterialLib.cc:112: void X4MaterialLib::init(): Assertion `match' failed.
+
+    (gdb) bt
+    #3  0x00007fffe5f7c252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff77dcec8 in X4MaterialLib::init (this=0x7fffffff55c0) at /hpcfs/juno/junogpu/blyth/junotop/opticks/extg4/X4MaterialLib.cc:112
+    #5  0x00007ffff77dcd69 in X4MaterialLib::X4MaterialLib (this=0x7fffffff55c0, mtab=0x7ffff209b070 <G4Material::theMaterialTable>, mlib=0x6c7cc0)
+        at /hpcfs/juno/junogpu/blyth/junotop/opticks/extg4/X4MaterialLib.cc:81
+    #6  0x00007ffff77dcd2f in X4MaterialLib::Standardize (mtab=0x7ffff209b070 <G4Material::theMaterialTable>, mlib=0x6c7cc0) at /hpcfs/juno/junogpu/blyth/junotop/opticks/extg4/X4MaterialLib.cc:72
+    #7  0x00007ffff77dcd05 in X4MaterialLib::Standardize () at /hpcfs/juno/junogpu/blyth/junotop/opticks/extg4/X4MaterialLib.cc:67
+    #8  0x00007ffff7b382ff in CGDMLDetector::standardizeGeant4MaterialProperties (this=0x8d27ad0) at /hpcfs/juno/junogpu/blyth/junotop/opticks/cfg4/CGDMLDetector.cc:240
+    #9  0x00007ffff7b37895 in CGDMLDetector::init (this=0x8d27ad0) at /hpcfs/juno/junogpu/blyth/junotop/opticks/cfg4/CGDMLDetector.cc:106
+    #10 0x00007ffff7b3743b in CGDMLDetector::CGDMLDetector (this=0x8d27ad0, hub=0x7fffffff66b0, query=0x6c14d0, sd=0x8d25470) at /hpcfs/juno/junogpu/blyth/junotop/opticks/cfg4/CGDMLDetector.cc:63
+    #11 0x00007ffff7ae2aec in CGeometry::init (this=0x8d27a20) at /hpcfs/juno/junogpu/blyth/junotop/opticks/cfg4/CGeometry.cc:99
+    #12 0x00007ffff7ae28ea in CGeometry::CGeometry (this=0x8d27a20, hub=0x7fffffff66b0, sd=0x8d25470) at /hpcfs/juno/junogpu/blyth/junotop/opticks/cfg4/CGeometry.cc:82
+    #13 0x00007ffff7b4eb86 in CG4::CG4 (this=0x7fffffff68f0, hub=0x7fffffff66b0) at /hpcfs/juno/junogpu/blyth/junotop/opticks/cfg4/CG4.cc:159
+    #14 0x0000000000403899 in main (argc=1, argv=0x7fffffff7108) at /hpcfs/juno/junogpu/blyth/junotop/opticks/cfg4/tests/CTestDetectorTest.cc:52
+    (gdb) 
+
+
+    228 /**
+    229 CGDMLDetector::standardizeGeant4MaterialProperties
+    230 -----------------------------------------------------
+    231 
+    232 Duplicates G4Opticks::standardizeGeant4MaterialProperties
+    233 
+    234 **/
+    235 
+    236 
+    237 void CGDMLDetector::standardizeGeant4MaterialProperties()
+    238 {
+    239     LOG(info) << "[" ;
+    240     X4MaterialLib::Standardize() ;
+    241     LOG(info) << "]" ;
+    242 }
+    243 
+    244 
+
+
+
+
 
 lack of tboolean-
 --------------------
