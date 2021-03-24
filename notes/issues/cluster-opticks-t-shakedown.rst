@@ -271,6 +271,9 @@ Related issue note some direct /tmp writes on GPU node::
 Opticks::loadOriginCacheMeta_ asserts when using an OPTICKS_KEY born from live running
 -----------------------------------------------------------------------------------------
 
+* comment the assert in Opticks::loadOriginCacheMeta\_ to see what really needs the origin gdml path
+
+
 ::
 
     .     Start  2: OpticksCoreTest.IndexerTest
@@ -318,4 +321,208 @@ Opticks::loadOriginCacheMeta_ asserts when using an OPTICKS_KEY born from live r
 
 
 
+
+
+Removing the origin GDML path assert reduces fails to
+-------------------------------------------------------
+
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      30 /56  Test #30 : GGeoTest.GPtsTest                             Passed                         15.64  
+
+
+    FAILS:  9   / 453   :  Wed Mar 24 23:45:51 2021   
+      22 /32  Test #22 : OptiXRapTest.interpolationTest                ***Failed                      5.77   
+
+      3  /38  Test #3  : CFG4Test.CTestDetectorTest                    ***Exception: SegFault         2.86   
+      5  /38  Test #5  : CFG4Test.CGDMLDetectorTest                    Subprocess aborted***Exception:   2.71   
+      7  /38  Test #7  : CFG4Test.CGeometryTest                        Subprocess aborted***Exception:   2.74   
+      8  /38  Test #8  : CFG4Test.CG4Test                              ***Exception: SegFault         2.79   
+      26 /38  Test #26 : CFG4Test.CInterpolationTest                   ***Exception: SegFault         2.79   
+      32 /38  Test #32 : CFG4Test.CRandomEngineTest                    ***Exception: SegFault         2.82   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             ***Exception: SegFault         2.91   
+
+
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.14   
+    drwxr-xr-x 3 blyth       dyw           21 Mar 24 23:42 blyth
+    gpujob-tail : rc 0
+
+
+
+
+lack of numpy fails
+---------------------
+
+::
+
+      22 /32  Test #22 : OptiXRapTest.interpolationTest                ***Failed                      5.77   
+
+
+
+::
+
+    2021-03-24 23:44:11.285 INFO  [155701] [SSys::RunPythonScript@571]  script interpolationTest_interpol.py script_path /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py python_executable /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/Python/2.7.17/bin/python
+    Traceback (most recent call last):
+      File "/hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py", line 22, in <module>
+        import os,sys, numpy as np, logging
+    ImportError: No module named numpy
+    2021-03-24 23:44:11.368 INFO  [155701] [SSys::run@100] /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/Python/2.7.17/bin/python /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  rc_raw : 256 rc : 1
+    2021-03-24 23:44:11.368 ERROR [155701] [SSys::run@107] FAILED with  cmd /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/Python/2.7.17/bin/python /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  RC 1
+    2021-03-24 23:44:11.368 INFO  [155701] [SSys::RunPythonScript@578]  RC 1
+
+
+
+lack of GDML path from live OPTICKS_KEY geocache
+---------------------------------------------------
+
+::
+
+      3  /38  Test #3  : CFG4Test.CTestDetectorTest                    ***Exception: SegFault         2.86   
+      5  /38  Test #5  : CFG4Test.CGDMLDetectorTest                    Subprocess aborted***Exception:   2.71   
+      7  /38  Test #7  : CFG4Test.CGeometryTest                        Subprocess aborted***Exception:   2.74   
+      8  /38  Test #8  : CFG4Test.CG4Test                              ***Exception: SegFault         2.79   
+      26 /38  Test #26 : CFG4Test.CInterpolationTest                   ***Exception: SegFault         2.79   
+      32 /38  Test #32 : CFG4Test.CRandomEngineTest                    ***Exception: SegFault         2.82   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             ***Exception: SegFault         2.91   
+
+
+::
+
+    2021-03-24 23:45:10.059 ERROR [158046] [BFile::ExistsFile@515] BFile::ExistsFile BAD PATH path NULL sub NULL name NULL
+    2021-03-24 23:45:10.060 ERROR [158046] [CGDMLDetector::init@79] CGDMLDetector::init PATH DOES NOT EXIST  path (null)
+    2021-03-24 23:45:10.060 FATAL [158046] [Opticks::setSpaceDomain@2771]  changing w 60000 -> 0
+    2021-03-24 23:45:10.060 FATAL [158046] [CTorchSource::configure@163] CTorchSource::configure _t 0.1 _radius 0 _pos 0.0000,0.0000,0.0000 _dir 0.0000,0.0000,1.0000 _zeaz 0.0000,1.0000,0.0000,1.0000 _pol 0.0000,0.0000,1.0000
+
+
+Solution is to always save GDML into the geocache : so will always have the GDML even from a live running geocache::
+
+     914 GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
+     915 {
+     916     LOG(verbose) << "( key" ;
+     917     const char* keyspec = X4PhysicalVolume::Key(top) ;
+     918 
+     919     bool parse_argv = false ;
+     920     Opticks* ok = InitOpticks(keyspec, m_embedded_commandline_extra, parse_argv );
+     921 
+     922     const char* dbggdmlpath = ok->getDbgGDMLPath();
+     923     if( dbggdmlpath != NULL )
+     924     {
+     925         LOG(info) << "( CGDML" ;
+     926         CGDML::Export( dbggdmlpath, top );
+     927         LOG(info) << ") CGDML" ;
+     928     }
+
+     ADDED SAVE OF origin.gdml HERE 
+
+     929 
+     930     LOG(info) << "( GGeo instanciate" ;
+     931     bool live = true ;       // <--- for now this ignores preexisting cache in GGeo::init 
+     932     GGeo* gg = new GGeo(ok, live) ;
+     933     LOG(info) << ") GGeo instanciate " ;
+     934 
+     935     LOG(info) << "( GGeo populate" ;
+     936     X4PhysicalVolume xtop(gg, top) ;
+     937     LOG(info) << ") GGeo populate" ;
+     938 
+     939     LOG(info) << "( GGeo::postDirectTranslation " ;
+     940     gg->postDirectTranslation();
+     941     LOG(info) << ") GGeo::postDirectTranslation " ;
+     942 
+     943     return gg ;
+     944 }
+     945 
+
+
+     569 void GGeo::postDirectTranslation()
+     570 {
+     571     LOG(LEVEL) << "[" ;
+     572 
+     573     prepare();     // instances are formed here     
+     574 
+     575     LOG(LEVEL) << "( GBndLib::fillMaterialLineMap " ;
+     576     GBndLib* blib = getBndLib();
+     577     blib->fillMaterialLineMap();
+     578     LOG(LEVEL) << ") GBndLib::fillMaterialLineMap " ;
+     579 
+     580     LOG(LEVEL) << "( GGeo::save " ;
+     581     save();
+     582     LOG(LEVEL) << ") GGeo::save " ;
+     583 
+     584 
+     585     deferredCreateGParts();
+     586 
+     587     postDirectTranslationDump();
+     588 
+     589     LOG(LEVEL) << "]" ;
+     590 }
+
+
+
+
+
+lack of tboolean-
+--------------------
+
+::
+
+    2/2 Test #2: IntegrationTests.tboolean.box ......***Failed    0.14 sec
+    ====== /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/bin/tboolean.sh --generateoverride 10000 ====== PWD /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/build/integration/tests =================
+    /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/bin/tboolean.sh: line 74: tboolean-: command not found
+    tboolean-lv --generateoverride 10000
+    /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/bin/tboolean.sh: line 78: tboolean-lv: command not found
+    ====== /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/bin/tboolean.sh --generateoverride 10000 ====== PWD /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/build/integration/tests ============ RC 127 =======
+
+
+
+
+
+tests that do not need GPU should be able to run on lxslc
+-------------------------------------------------------------
+
+::
+
+    L7[blyth@lxslc713 ~]$ CTestDetectorTest 
+    2021-03-25 00:59:48.073 INFO  [25341] [main@44] CTestDetectorTest
+    2021-03-25 00:59:48.074 INFO  [25341] [BOpticksKey::SetKey@90]  spec DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+    2021-03-25 00:59:48.076 INFO  [25341] [Opticks::init@438] COMPUTE_MODE forced_compute  hostname lxslc713.ihep.ac.cn
+    2021-03-25 00:59:48.076 INFO  [25341] [Opticks::init@447]  mandatory keyed access to geometry, opticksaux 
+    2021-03-25 00:59:48.077 INFO  [25341] [Opticks::init@466] OpticksSwitches:WITH_SEED_BUFFER WITH_RECORD WITH_SOURCE WITH_ALIGN_DEV WITH_LOGDOUBLE WITH_KLUDGE_FLAT_ZERO_NOPEEK WITH_SENSORLIB 
+    2021-03-25 00:59:48.077 ERROR [25341] [OpticksResource::SetupG4Environment@220] inipath /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/externals/config/geant4.ini
+    2021-03-25 00:59:48.078 ERROR [25341] [OpticksResource::SetupG4Environment@229]  MISSING inipath /hpcfs/juno/junogpu/blyth/junotop/ExternalLibs/opticks/head/externals/config/geant4.ini (create it with bash functions: g4-;g4-export-ini ) 
+    2021-03-25 00:59:48.079 ERROR [25341] [BOpticksKey::SetKey@78] key is already set, ignoring update with spec (null)
+    2021-03-25 00:59:48.080 INFO  [25341] [BOpticksResource::initViaKey@785] 
+                 BOpticksKey  :  
+          spec (OPTICKS_KEY)  : DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+                     exename  : DetSim0Svc
+             current_exename  : CTestDetectorTest
+                       class  : X4PhysicalVolume
+                     volname  : pWorld
+                      digest  : 85d8514854333c1a7c3fd50cc91507dc
+                      idname  : DetSim0Svc_pWorld_g4live
+                      idfile  : g4ok.gltf
+                      idgdml  : g4ok.gdml
+                      layout  : 1
+
+    2021-03-25 00:59:48.108 FATAL [25341] [Opticks::getCURANDStatePath@3656]  CURANDStatePath IS NOT READABLE  INVALID RNG config : change options --rngmax/--rngseed/--rngoffset  path /afs/ihep.ac.cn/users/b/blyth/.opticks/rngcache/RNG/cuRANDWrapper_3000000_0_0.bin rngdir /afs/ihep.ac.cn/users/b/blyth/.opticks/rngcache/RNG rngmax 3000000 rngseed 0 rngoffset 0
+    CTestDetectorTest: /hpcfs/juno/junogpu/blyth/junotop/opticks/optickscore/Opticks.cc:3668: const char* Opticks::getCURANDStatePath(bool) const: Assertion `readable' failed.
+    Aborted (core dumped)
+    L7[blyth@lxslc713 ~]$ 
+
+
+    (gdb) bt
+    #0  0x00007fffe5f83387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe5f84a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe5f7c1a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe5f7c252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffefc267e8 in Opticks::getCURANDStatePath (this=0x7fffffff6d10, assert_readable=true) at /hpcfs/juno/junogpu/blyth/junotop/opticks/optickscore/Opticks.cc:3668
+    #5  0x00007fffefc1ba09 in Opticks::initResource (this=0x7fffffff6d10) at /hpcfs/juno/junogpu/blyth/junotop/opticks/optickscore/Opticks.cc:929
+    #6  0x00007fffefc21891 in Opticks::postconfigure (this=0x7fffffff6d10) at /hpcfs/juno/junogpu/blyth/junotop/opticks/optickscore/Opticks.cc:2535
+    #7  0x00007fffefc21417 in Opticks::configure (this=0x7fffffff6d10) at /hpcfs/juno/junogpu/blyth/junotop/opticks/optickscore/Opticks.cc:2500
+    #8  0x00007ffff098a7a1 in OpticksHub::configure (this=0x7fffffff6c80) at /hpcfs/juno/junogpu/blyth/junotop/opticks/opticksgeo/OpticksHub.cc:412
+    #9  0x00007ffff0989984 in OpticksHub::init (this=0x7fffffff6c80) at /hpcfs/juno/junogpu/blyth/junotop/opticks/opticksgeo/OpticksHub.cc:233
+    #10 0x00007ffff09897d2 in OpticksHub::OpticksHub (this=0x7fffffff6c80, ok=0x7fffffff6d10) at /hpcfs/juno/junogpu/blyth/junotop/opticks/opticksgeo/OpticksHub.cc:215
+    #11 0x0000000000403880 in main (argc=1, argv=0x7fffffff76d8) at /hpcfs/juno/junogpu/blyth/junotop/opticks/cfg4/tests/CTestDetectorTest.cc:50
+    (gdb) 
 

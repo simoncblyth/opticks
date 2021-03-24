@@ -86,8 +86,11 @@ void test_IsGeant4EnvironmentDetected()
 
 void test_GetCachePath()
 {
-    const char* path = BOpticksResource::GetCachePath("GNodeLib/all_volume_identity.npy"); 
-    LOG(info) << path ; 
+    const char* path0 = BOpticksResource::GetCachePath("GNodeLib/all_volume_identity.npy"); 
+    LOG(info) << path0 ; 
+
+    const char* path1 = BOpticksResource::GetCachePath("origin.gdml") ; 
+    LOG(info) << path1 ; 
 }
 
 void test_getGDMLAuxTargetLVName()
@@ -128,11 +131,12 @@ int main(int argc, char** argv)
 #endif
 
     //test_IsGeant4EnvironmentDetected(); 
-    //test_GetCachePath(); 
+    test_GetCachePath(); 
     //test_getGDMLAuxTargetLVName(); 
 
-    test_getGDMLAuxUserinfo();
-    test_getGDMLAuxUserinfoGeospecificOptions() ; 
+    //test_getGDMLAuxUserinfo();
+    //test_getGDMLAuxUserinfoGeospecificOptions() ; 
+
 
     return 0 ; 
 }

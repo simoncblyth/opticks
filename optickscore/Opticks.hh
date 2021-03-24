@@ -119,6 +119,7 @@ class OKCORE_API Opticks {
        static bool IsForeignGeant4Enabled(); 
        static bool IsGeant4EnvironmentDetected(); 
 
+       static const char* OriginGDMLPath() ; 
        static const char* OptiXCachePathDefault(); 
    public:
        static BPropNames* G_MATERIAL_NAMES ;

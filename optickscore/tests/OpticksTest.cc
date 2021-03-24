@@ -209,6 +209,11 @@ void test_getGDMLAuxTargetLVName(const Opticks* ok)
     LOG(info) << lvn ; 
 }
 
+void test_OriginGDMLPath()
+{
+    LOG(info) << Opticks::OriginGDMLPath() ; 
+}
+
 
 
 int main(int argc, char** argv)
@@ -242,7 +247,9 @@ int main(int argc, char** argv)
     //test_getEventFold(&ok); 
     //test_findGDMLAuxMetaEntries(&ok); 
     //test_findGDMLAuxValues(&ok); 
-    test_getGDMLAuxTargetLVName(&ok); 
+    //test_getGDMLAuxTargetLVName(&ok); 
+
+    test_OriginGDMLPath(); 
 
     return 0 ;
 }

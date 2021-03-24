@@ -267,9 +267,10 @@ bool Opticks::IsGeant4EnvironmentDetected() // static
 {
     return BOpticksResource::IsGeant4EnvironmentDetected() ;  // returns true when find 10 G4...DATA envvars pointing at existing directories 
 }
-
-
-
+const char* Opticks::OriginGDMLPath()  // static 
+{
+    return BOpticksResource::GetCachePath("origin.gdml");       
+}
 
 
 const char* Opticks::OptiXCachePathDefault()  // static
@@ -925,7 +926,7 @@ void Opticks::initResource()
         LOG(fatal) << " idpath NULL " ; 
     }
 
-    bool assert_readable = true ; 
+    bool assert_readable = false ;  // false: as many tests use Opticks and do not need the RNG  
     const char* curandstatepath = getCURANDStatePath(assert_readable);
 
     if(curandstatepath)

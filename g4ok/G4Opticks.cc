@@ -927,6 +927,11 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
         LOG(info) << ") CGDML" ;
     }
 
+    const char* origin = Opticks::OriginGDMLPath(); 
+    LOG(info) << "( CGDML " << origin  ;
+    CGDML::Export( origin, top ); 
+    LOG(info) << ") CGDML " ;  
+
     LOG(info) << "( GGeo instanciate" ;
     bool live = true ;       // <--- for now this ignores preexisting cache in GGeo::init 
     GGeo* gg = new GGeo(ok, live) ;
