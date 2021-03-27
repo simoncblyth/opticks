@@ -381,18 +381,8 @@ void L4Cerenkov::Write(const char* dir, const char* npy, const char* txt )
     unsigned ni = dbg.size() / itemsize  ; 
 
     NP::Write(dir, npy, dbg.data(), ni, 4, 4 ); 
+    NP::WriteNames(dir, txt, names, itemsize ); 
 
-    std::stringstream ss ; 
-    ss << dir << "/" << txt ; 
-    std::string s = ss.str() ; 
-
-    std::ofstream stream(s.c_str(), std::ios::out|std::ios::binary);
-    for( unsigned i=0 ; i < itemsize ; i++) 
-    {
-        std::cout << " write " << std::setw(3) << i << " : " << names[i] << std::endl ; 
-        stream << names[i] << std::endl ; 
-    }
-    stream.close(); 
 }
 
 
