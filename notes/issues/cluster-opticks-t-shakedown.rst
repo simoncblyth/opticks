@@ -7,6 +7,74 @@ Next
 * :doc:`gdml-export-not-writing-all-materials-causing-mismatch`
 
 
+TODO
+-----
+
+* document getting OPTICKS_KEY from job output and setting it to allow opticks-t using it 
+
+::
+
+    3648 # BOpticksKey::export_
+    3649 export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+    3650 
+
+
+
+Truncation Problem Again : need an automated way to fix this
+---------------------------------------------------------------
+
+::
+
+    Start 1: OKG4Test.OKG4Test
+    1/1 Test #1: OKG4Test.OKG4Test ................Subprocess aborted***Exception:   4.46 sec
+    2021-04-08 23:22:28.596 INFO  [30895] [BOpticksKey::SetKey@90]  spec DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+    ...
+    G4GDML: Reading '/hpcfs/juno/junogpu/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml'...
+    G4GDML: Reading definitions...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+    *** G4Exception : InvalidSize
+          issued by : G4GDMLEvaluator::DefineMatrix()
+    Matrix 'PPOABSLENGTH0x682c6a0' is not filled correctly!
+    *** Fatal Exception *** core dump ***
+     **** Track information is not available at this moment
+     **** Step information is not available at this moment
+
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+
+Try to reproduce with CGDMLTest::
+
+    epsilon:cfg4 blyth$ cd
+    epsilon:~ blyth$ scp L7:/hpcfs/juno/junogpu/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml origin2.gdml
+    Warning: Permanently added 'lxslc7.ihep.ac.cn,202.122.33.200' (ECDSA) to the list of known hosts.
+    origin.gdml                                                                                                                                                                                              100%   20MB 194.7KB/s   01:44    
+    epsilon:~ blyth$ 
+    epsilon:~ blyth$ CGDMLTest $HOME/origin2.gdml
+    2021-04-08 17:17:49.377 INFO  [15212554] [CGDML::read@71]  resolved path_ /Users/blyth/origin2.gdml as path /Users/blyth/origin2.gdml
+    G4GDML: Reading '/Users/blyth/origin2.gdml'...
+    G4GDML: Reading definitions...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : InvalidSize
+          issued by : G4GDMLEvaluator::DefineMatrix()
+    Matrix 'PPOABSLENGTH0x682c6a0' is not filled correctly!
+    *** Fatal Exception ***
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+    *** G4Exception: Aborting execution ***
+    Abort trap: 6
+    epsilon:~ blyth$ 
+
+        
+
+
+
+
 Revist : April 8th
 -----------------------
 
