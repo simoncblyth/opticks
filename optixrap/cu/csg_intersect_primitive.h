@@ -526,7 +526,7 @@ void csg_intersect_cone_test(unsigned long long photon_id)
 {
      /*
 
-
+                    [0,0,0]
       0------1----2----A---3----4----5------           
                       / \
                      /   \
@@ -1697,7 +1697,7 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
 
 
     // formerly used npy/NCylinder.h 
-    enum {  ENDCAP_P,  ENDCAP_Q } ; 
+    enum {  ENDCAP_P=1,  ENDCAP_Q=2 } ;  
 
     // axial ray endcap handling 
     if(fabs(a) < 1e-6f)     
