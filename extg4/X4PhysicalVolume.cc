@@ -229,7 +229,7 @@ Populates the GGeo/GMaterialLib
 
 **/
 
-void X4PhysicalVolume::convertMaterials()
+void X4PhysicalVolume::convertMaterials_old()
 {
     OK_PROFILE("_X4PhysicalVolume::convertMaterials");
     LOG(verbose) << "[" ;
@@ -238,6 +238,7 @@ void X4PhysicalVolume::convertMaterials()
     assert( num_materials0 == 0 );
 
     assert( m_material_with_efficiency.size() == 0 );
+
     X4MaterialTable::Convert(m_mlib, m_material_with_efficiency);
     size_t num_material_with_efficiency = m_material_with_efficiency.size() ;
 
@@ -263,6 +264,55 @@ void X4PhysicalVolume::convertMaterials()
 
     OK_PROFILE("X4PhysicalVolume::convertMaterials");
 }
+
+
+
+void X4PhysicalVolume::convertMaterials()
+{
+    OK_PROFILE("_X4PhysicalVolume::convertMaterials");
+    LOG(LEVEL) << "[" ; 
+
+    const G4VPhysicalVolume* pv = m_top ; 
+    int depth = 0 ;
+    convertMaterials_r(pv, depth);
+
+    unsigned num_mt = m_mtlist.size(); 
+    LOG(info) << " num_mt " << num_mt ;  
+    for(unsigned i=0 ; i < num_mt ; i++)
+    {
+        const G4Material* mt = m_mtlist[i]; 
+        std::cout 
+            << std::setw(4) << i  
+            << " : "
+            << mt->GetName()
+            << std::endl
+            ;
+    }
+
+    LOG(LEVEL) << "]" ;
+    OK_PROFILE("X4PhysicalVolume::convertMaterials");
+}
+
+
+void X4PhysicalVolume::convertMaterials_r(const G4VPhysicalVolume* const pv, int depth)
+{
+    const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ )  // G4LogicalVolume::GetNoDaughters returns 1042:G4int, 1062:size_t
+    {
+        const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);
+        convertMaterials_r( daughter_pv , depth + 1 );
+    }
+
+    G4Material* mt = lv->GetMaterial() ; 
+    if(std::find(m_mtlist.begin(), m_mtlist.end(), mt) == m_mtlist.end()) m_mtlist.push_back(mt);  
+    // collect newly encountered mt in postorder
+}
+
+
+
+
+
 
 /**
 X4PhysicalVolume::convertSurfaces
@@ -468,14 +518,7 @@ void X4PhysicalVolume::convertSolids()
 
     LOG(LEVEL) << "]" ;
     OK_PROFILE("X4PhysicalVolume::convertSolids");
-
 }
-
-
-
-
-
-
 
 /**
 X4PhysicalVolume::convertSolids_r

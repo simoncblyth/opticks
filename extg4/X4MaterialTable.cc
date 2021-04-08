@@ -32,8 +32,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity X4MaterialTable::LEVEL = verbose ; 
-
+const plog::Severity X4MaterialTable::LEVEL = PLOG::EnvLevel("X4MaterialTable", "DEBUG") ; 
 
 
 G4Material* X4MaterialTable::Get(unsigned idx)

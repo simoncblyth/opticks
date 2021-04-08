@@ -2,6 +2,40 @@ cluster-opticks-t-shakedown
 ==============================
 
 
+Revist : April 8th
+-----------------------
+
+::
+
+    epsilon:~ blyth$ ssh L7    # NOPE USE THE L7 FUNCTION TO SET TERM and hence PS1
+
+    -bash-4.2$ sj              # check the what srun will do 
+
+    -bash-4.2$ sr              # srun 
+    === gpujob-setup: blyth
+    ...
+
+
+
+    SLOW: tests taking longer that 15 seconds
+      30 /56  Test #30 : GGeoTest.GPtsTest                             Passed                         36.98  
+
+
+    FAILS:  9   / 453   :  Thu Apr  8 20:41:15 2021   
+      22 /32  Test #22 : OptiXRapTest.interpolationTest                ***Failed                      5.38   
+      3  /38  Test #3  : CFG4Test.CTestDetectorTest                    Subprocess aborted***Exception:   8.76   
+      5  /38  Test #5  : CFG4Test.CGDMLDetectorTest                    Subprocess aborted***Exception:   8.94   
+      7  /38  Test #7  : CFG4Test.CGeometryTest                        Subprocess aborted***Exception:   8.04   
+      8  /38  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:   8.45   
+      26 /38  Test #26 : CFG4Test.CInterpolationTest                   Subprocess aborted***Exception:   8.05   
+      32 /38  Test #32 : CFG4Test.CRandomEngineTest                    Subprocess aborted***Exception:   8.30   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Subprocess aborted***Exception:   9.07   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.23   
+    drwxr-xr-x  3 blyth  dyw          21 Apr  8 20:35 blyth
+    gpujob-tail : rc 0
+    -bash-4.2$ 
+
+
 ::
 
     L7[blyth@lxslc711 gpujob]$ t sr
@@ -584,6 +618,72 @@ Manually edit origin.gdml::
     242 }
     243 
     244 
+
+
+::
+
+    2021-03-25 03:55:35.614 FATAL [28472] [X4MaterialLib::init@107]  num_materials MISMATCH  G4Material::GetNumberOfMaterials 17 m_mlib->getNumMaterials 40
+    m4   0 : Galactic
+    m4   1 : LS
+    m4   2 : Tyvek
+    m4   3 : Acrylic
+    m4   4 : Steel
+    m4   5 : LatticedShellSteel
+    m4   6 : PE_PA
+    m4   7 : Air
+    m4   8 : Vacuum
+    m4   9 : Pyrex
+    m4  10 : Rock
+    m4  11 : vetoWater
+    m4  12 : Water
+    m4  13 : Scintillator
+    m4  14 : Adhesive
+    m4  15 : Aluminium
+    m4  16 : TiO2Coating
+
+    mt   0 : Galactic
+    mt   1 : LS
+                    mt   2 : LAB
+                    mt   3 : ESR
+    mt   4 : Tyvek
+    mt   5 : Acrylic
+                    mt   6 : DummyAcrylic
+                    mt   7 : Teflon
+    mt   8 : Steel
+    mt   9 : LatticedShellSteel
+                    mt  10 : StainlessSteel
+                    mt  11 : Mylar
+                    mt  12 : Copper
+                    mt  13 : ETFE
+                    mt  14 : FEP
+    mt  15 : PE_PA
+                    mt  16 : PA
+    mt  17 : Air
+    mt  18 : Vacuum
+                    mt  19 : VacuumT
+                    mt  20 : photocathode
+                    mt  21 : photocathode_3inch
+                    mt  22 : photocathode_MCP20inch
+                    mt  23 : photocathode_MCP8inch
+                    mt  24 : photocathode_Ham20inch
+                    mt  25 : photocathode_Ham8inch
+                    mt  26 : photocathode_HZC9inch
+                    mt  27 : SiO2
+                    mt  28 : B2O2
+                    mt  29 : Na2O
+    mt  30 : Pyrex
+                    mt  31 : MineralOil
+    mt  32 : Rock
+    mt  33 : vetoWater
+    mt  34 : Water
+    mt  35 : Scintillator
+    mt  36 : Adhesive
+    mt  37 : Aluminium
+                    mt  38 : TiO2
+    mt  39 : TiO2Coating
+    CTestDetectorTest: /hpcfs/juno/junogpu/blyth/junotop/opticks/extg4/X4MaterialLib.cc:127: void X4MaterialLib::init(): Assertion `match' failed.
+    Aborted (core dumped)
+    L7[blyth@lxslc709 extg4]$ 
 
 
 

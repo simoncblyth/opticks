@@ -125,8 +125,9 @@ opticks-tboolean-shortcuts(){
 }
 
 
-opticks-sharedcache-prefix-default(){ echo $HOME/.opticks ; }
-opticks-usercache-prefix-default(){   echo $HOME/.opticks ; }
+opticks-user-home(){ echo ${OPTICKS_USER_HOME:-$HOME} ; }
+opticks-sharedcache-prefix-default(){ echo $(opticks-user-home)/.opticks ; }
+opticks-usercache-prefix-default(){   echo $(opticks-user-home)/.opticks ; }
 
 
 opticks-geocache-prefix(){    echo ${OPTICKS_GEOCACHE_PREFIX:-$(opticks-sharedcache-prefix-default)} ; } 

@@ -114,13 +114,13 @@ void X4MaterialLib::init()
        {
            G4Material* m4 = (*m_mtab)[i] ; 
            const std::string& m4_name = m4->GetName();  
-           std::cout << "m4 " << std::setw(3) << i << " : " << m4_name ; 
+           std::cout << "m4 " << std::setw(3) << i << " : " << m4_name << std::endl ; 
        }
        for(unsigned i=0 ; i < num_materials ; i++)
        {
            GMaterial*  pmap = m_mlib->getMaterial(i); 
            const char* pmap_name = pmap->getName(); 
-           std::cout << "mt " << std::setw(3) << i << " : " << pmap_name ; 
+           std::cout << "mt " << std::setw(3) << i << " : " << pmap_name << std::endl ; 
        }
 
     }

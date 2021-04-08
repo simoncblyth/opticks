@@ -111,6 +111,7 @@ class X4_API X4PhysicalVolume : public X4Named
     private:
         void init();
     private:
+        void convertMaterials_old(); 
         void convertMaterials(); 
         void convertSurfaces(); 
         void convertSensors(); 
@@ -124,6 +125,7 @@ class X4_API X4PhysicalVolume : public X4Named
     private:
         bool hasEfficiency(const G4Material* mat);
     private:
+        void convertMaterials_r(const G4VPhysicalVolume* const pv, int depth) ;
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV() const ;
         void dumpTorusLV() const ;
@@ -180,6 +182,7 @@ class X4_API X4PhysicalVolume : public X4Named
     private:
         std::map<const G4LogicalVolume*, int> m_lvidx ; 
         std::vector<const G4LogicalVolume*>   m_lvlist ; 
+        std::vector<G4Material*>              m_mtlist ;   // non-const to match G4MaterialTable
         std::vector<unsigned>                 m_lv_with_torus ; 
         std::vector<std::string>              m_lvname ; 
         std::vector<std::string>              m_soname ; 
