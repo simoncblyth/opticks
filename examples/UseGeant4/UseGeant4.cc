@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <iomanip>
 #include <iostream>
 #include "G4Version.hh"
 #include "G4Polycone.hh"
@@ -26,7 +27,7 @@
 using CLHEP::deg ; 
 
 
-struct Test 
+struct UseGeant4
 {
    static void dump_version(); 
    static void make_polycone_0(); 
@@ -34,11 +35,12 @@ struct Test
    static void make_transform(); 
    static void make_G4GDMLAux();  
    static void units(); 
+   static void physical_constants(); 
 };
 
 
 
-void Test::dump_version()
+void UseGeant4::dump_version()
 {
     std::cout << "G4VERSION_NUMBER " << G4VERSION_NUMBER << std::endl ; 
     std::cout << "G4VERSION_TAG    " << G4VERSION_TAG << std::endl ; 
@@ -47,7 +49,7 @@ void Test::dump_version()
 }
 
 
-void Test::make_polycone_0()
+void UseGeant4::make_polycone_0()
 {
      G4double phiStart = 0.00*deg ; 
      G4double phiTotal = 360.00*deg ; 
@@ -59,7 +61,7 @@ void Test::make_polycone_0()
      G4cout << *pc << std::endl ; 
 }
 
-void Test::make_polycone_1()
+void UseGeant4::make_polycone_1()
 {
      G4double phiStart = 0.00*deg ; 
      G4double phiTotal = 360.00*deg ; 
@@ -102,7 +104,7 @@ G4RotationMatrix G4GDMLReadDefine__GetRotationMatrix(const G4ThreeVector& angles
 
 
 
-void Test::make_transform()
+void UseGeant4::make_transform()
 {
 
      // numbers grabbed from from debug session
@@ -236,7 +238,7 @@ G4GDMLAuxStructType make_aux(const char* type, const char* value, const char* un
     return aux ; 
 }
 
-void Test::make_G4GDMLAux()
+void UseGeant4::make_G4GDMLAux()
 {
     G4GDMLAuxStructType aux = make_aux( "opticks_embedded_commandline_extra", "--pvname pInnerWater --boundary Water///Acrylic ", "" );
 
@@ -251,41 +253,73 @@ using CLHEP::hbarc ;
 using CLHEP::eV ; 
 using CLHEP::MeV ; 
 
-void Test::units()
+void UseGeant4::units()
 {
+    std::cout << "UseGeant4::units" << std::endl ; 
     double wavelength = 400.*nm ; 
     double edep = twopi*hbarc / wavelength ; 
 
+    int w = 50 ; 
     std::cout 
-        << " wavelength " << wavelength << std::endl
-        << " wavelength/mm " << wavelength/mm  << std::endl
-        << " wavelength/nm " << wavelength/nm  << std::endl
-        << " edep " << edep << std::endl
-        << " edep/eV " << edep/eV << std::endl
-        << " edep/MeV " << edep/MeV << std::endl
-        << " MeV " << MeV << std::endl 
-        << " eV " << eV << std::endl 
-        << " nm " << nm << std::endl 
-        << " twopi*hbarc " << twopi*hbarc << std::endl 
-        << " twopi*hbarc/eV/nm " << twopi*hbarc/eV/nm << std::endl 
-        << " twopi*hbarc/(eV*nm) " << twopi*hbarc/(eV*nm) << std::endl 
+        << std::setw(w) << " wavelength " << wavelength << std::endl
+        << std::setw(w) << " wavelength/mm " << wavelength/mm  << std::endl
+        << std::setw(w) << " wavelength/nm " << wavelength/nm  << std::endl
+        << std::setw(w) << " edep " << edep << std::endl
+        << std::setw(w) << " edep/eV " << edep/eV << std::endl
+        << std::setw(w) << " edep/MeV " << edep/MeV << std::endl
+        << std::setw(w) << " MeV " << MeV << std::endl 
+        << std::setw(w) << " GeV " << GeV << std::endl 
+        << std::setw(w) << " eV " << eV << std::endl 
+        << std::setw(w) << " nm " << nm << std::endl 
+        << std::setw(w) << " twopi*hbarc " << twopi*hbarc << std::endl 
+        << std::setw(w) << " twopi*hbarc/eV/nm " << twopi*hbarc/eV/nm << std::endl 
+        << std::setw(w) << " twopi*hbarc/(eV*nm) " << twopi*hbarc/(eV*nm) << std::endl 
         ;
 
 }
 
+#include "G4PhysicalConstants.hh"
+
+void UseGeant4::physical_constants()
+{
+    std::cout << "UseGeant4::physical_constants" << std::endl ; 
+    double fine_structure_const_over_hbarc = fine_structure_const/hbarc  ; 
+
+    double one_over_fine_structure_const = 1.0/fine_structure_const ; 
+
+    const G4double Rfact = 369.81/(eV * cm);
+
+    int w = 50 ; 
+    int p = 8 ; 
+    std::cout 
+        << std::setw(w) << " eV " << eV << std::endl 
+        << std::setw(w) << " cm " << cm << std::endl 
+        << std::setw(w) << " fine_structure_const " << fine_structure_const << std::endl 
+        << std::setw(w) << " one_over_fine_structure_const " << one_over_fine_structure_const << std::endl 
+        << std::setw(w) << " fine_structure_const_over_hbarc*(eV*cm) " << std::fixed << std::setprecision(5) << fine_structure_const_over_hbarc*(eV*cm) << std::endl 
+        << std::setw(w) << " fine_structure_const_over_hbarc " << std::fixed << std::setprecision(5) << fine_structure_const_over_hbarc << std::endl 
+        << std::setw(w) << " Rfact =  369.81/(eV * cm)  " << std::fixed << std::setprecision(5) << Rfact  << std::endl 
+        << std::setw(w) << " eplus " << std::fixed << std::setprecision(5) << eplus << std::endl 
+        << std::setw(w) << " electron_mass_c2 " << std::fixed << std::setprecision(p) << electron_mass_c2 << std::endl
+        << std::setw(w) << " proton_mass_c2 " << std::fixed << std::setprecision(p) << proton_mass_c2 << std::endl
+        << std::setw(w) << " neutron_mass_c2 " << std::fixed << std::setprecision(p) << neutron_mass_c2 << std::endl
+         ;
+        
+}
 
 
 
 
 int main()
 {
-    Test::dump_version(); 
-    //Test::make_polycone_0(); 
-    //Test::make_polycone_1(); 
-    //Test::make_transform(); 
-    //Test::make_G4GDMLAux(); 
+    UseGeant4::dump_version(); 
+    //UseGeant4::make_polycone_0(); 
+    //UseGeant4::make_polycone_1(); 
+    //UseGeant4::make_transform(); 
+    //UseGeant4::make_G4GDMLAux(); 
 
-    Test::units(); 
+    UseGeant4::units(); 
+    UseGeant4::physical_constants(); 
 
     return 0 ; 
 }
