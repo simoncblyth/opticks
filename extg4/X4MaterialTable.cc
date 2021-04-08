@@ -35,6 +35,23 @@
 const plog::Severity X4MaterialTable::LEVEL = PLOG::EnvLevel("X4MaterialTable", "DEBUG") ; 
 
 
+void X4MaterialTable::CollectAllMaterials(std::vector<G4Material*>& all_materials) // static
+{
+    unsigned nmat = G4Material::GetNumberOfMaterials();
+    G4MaterialTable* mtab = G4Material::GetMaterialTable();
+
+    LOG(LEVEL) << ". G4 nmat " << nmat ;  
+
+    for(unsigned i=0 ; i < nmat ; i++)
+    {   
+        G4Material* material = (*mtab)[i];
+        all_materials.push_back(material); 
+    }
+    LOG(LEVEL) << "collected all_materials.size  " << all_materials.size() ; 
+}
+
+
+/*
 G4Material* X4MaterialTable::Get(unsigned idx)
 {
     unsigned nmat = G4Material::GetNumberOfMaterials();
@@ -48,11 +65,13 @@ G4Material* X4MaterialTable::Get(unsigned idx)
 
     return material ; 
 }
+*/
 
-void X4MaterialTable::Convert(GMaterialLib* mlib, std::vector<G4Material*>& material_with_efficiency)
+
+void X4MaterialTable::Convert(GMaterialLib* mlib, std::vector<G4Material*>& materials_with_efficiency, const std::vector<G4Material*>& input_materials )
 {
     assert( mlib->getNumMaterials() == 0 ); 
-    X4MaterialTable xmt(mlib, material_with_efficiency ) ; 
+    X4MaterialTable xmt(mlib, materials_with_efficiency, input_materials ) ; 
     assert( mlib == xmt.getMaterialLib() );
 }
 
@@ -61,25 +80,36 @@ GMaterialLib* X4MaterialTable::getMaterialLib()
     return m_mlib ;
 }
 
-X4MaterialTable::X4MaterialTable(GMaterialLib* mlib, std::vector<G4Material*>& material_with_efficiency)
+X4MaterialTable::X4MaterialTable(GMaterialLib* mlib, std::vector<G4Material*>& materials_with_efficiency, const std::vector<G4Material*>& input_materials )
     :
-    m_mtab(G4Material::GetMaterialTable()),
+    m_input_materials(input_materials),
     m_mlib(mlib),
-    m_material_with_efficiency(material_with_efficiency)
+    m_materials_with_efficiency(materials_with_efficiency)
 {
     init();
 }
 
 
+/**
+X4MaterialTable::init
+-----------------------
+
+For all materials obtained from G4Material::GetMaterialTable() apply X4Material::Convert
+collecting in standardized and raw forms into m_mlib.
+
+G4Material which have an EFFICIENCY property are collected into m_material_with_efficiency vector.
+
+**/
+
 void X4MaterialTable::init()
 {
-    unsigned nmat = G4Material::GetNumberOfMaterials();
+    unsigned num_input_materials = m_input_materials.size() ;
 
-    LOG(LEVEL) << ". G4 nmat " << nmat ;  
+    LOG(LEVEL) << ". G4 nmat " << num_input_materials ;  
 
-    for(unsigned i=0 ; i < nmat ; i++)
+    for(unsigned i=0 ; i < num_input_materials ; i++)
     {   
-        G4Material* material = Get(i) ; 
+        G4Material* material = m_input_materials[i] ; 
         G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
 
         if( mpt == NULL )
@@ -96,7 +126,7 @@ void X4MaterialTable::init()
         GMaterial* mat = X4Material::Convert( material ); 
         if(mat->hasProperty("EFFICIENCY"))
         {
-             m_material_with_efficiency.push_back(material); 
+             m_materials_with_efficiency.push_back(material); 
         }
 
         //assert( mat->getIndex() == i ); // this is not the lib, no danger of triggering a close

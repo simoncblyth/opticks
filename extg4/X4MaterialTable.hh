@@ -47,15 +47,16 @@ class X4_API X4MaterialTable
 {
     public:
         static const plog::Severity  LEVEL ; 
-        static void Convert(GMaterialLib* mlib, std::vector<G4Material*>& material_with_efficiency) ; 
-        static G4Material* Get(unsigned idx);
+        static void Convert(GMaterialLib* mlib, std::vector<G4Material*>& materials_with_efficiency, const std::vector<G4Material*>& input_materials ) ; 
+        static void CollectAllMaterials(std::vector<G4Material*>& all_materials) ; 
+        //static G4Material* Get(unsigned idx);
     private:
-        X4MaterialTable(GMaterialLib* mlib, std::vector<G4Material*>& material_with_efficiency);
+        X4MaterialTable(GMaterialLib* mlib, std::vector<G4Material*>& materials_with_efficiency, const std::vector<G4Material*>& input_materials );
         GMaterialLib* getMaterialLib();
         void init();
     private:
-        const G4MaterialTable*    m_mtab ; 
-        GMaterialLib*             m_mlib ;         
-        std::vector<G4Material*>& m_material_with_efficiency ; 
+        const std::vector<G4Material*>& m_input_materials ;
+        GMaterialLib*                   m_mlib ;         
+        std::vector<G4Material*>&       m_materials_with_efficiency ; 
 };
 

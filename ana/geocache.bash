@@ -359,6 +359,16 @@ EON
 
 
 
+
+geocache-dbg-key(){ echo OKX4Test.X4PhysicalVolume.lWorld0x61ee3b0_PV.d462ec558d40795c0ba134102c68a8b4 ; }
+geocache-dbg-gdmlpath(){ echo $HOME/origin.gdml ; }
+geocache-dbg(){
+    local msg="=== $FUNCNAME :"
+    local path=$(geocache-dbg-gdmlpath)
+    geocache-create- --gdmlpath $path -D $*
+}
+
+
 geocache-tds-gdmlpath()
 {
    #local label=tds
@@ -367,8 +377,6 @@ geocache-tds-gdmlpath()
    local gdml=$(opticks-prefix)/$label.gdml
    echo $gdml
 }
-
-
 
 geocache-tds(){     
     local msg="=== $FUNCNAME :"

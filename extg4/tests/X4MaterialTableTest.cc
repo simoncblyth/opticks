@@ -38,7 +38,14 @@ int main(int argc, char** argv)
 
     std::vector<G4Material*> material_with_efficiency ; 
 
-    X4MaterialTable::Convert(mlib, material_with_efficiency) ; 
+    std::vector<G4Material*> all_materials ; 
+    X4MaterialTable::CollectAllMaterials( all_materials ); 
+
+    // NB in real usage in X4PhysicalVolume::convertMaterials have moved to 
+    // converting only used materials to match what Geant4 GDML export does
+
+    const std::vector<G4Material*>& input_materials =  all_materials ; 
+    X4MaterialTable::Convert(mlib, material_with_efficiency, input_materials ) ; 
 
     assert( mlib->getNumMaterials() == 2 ); 
 

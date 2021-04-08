@@ -238,10 +238,13 @@ void X4PhysicalVolume::convertMaterials_old()
     assert( num_materials0 == 0 );
 
     assert( m_material_with_efficiency.size() == 0 );
+    
 
-    X4MaterialTable::Convert(m_mlib, m_material_with_efficiency);
+    std::vector<G4Material*> all_materials ; 
+    X4MaterialTable::CollectAllMaterials(all_materials); 
+
+    X4MaterialTable::Convert(m_mlib, m_material_with_efficiency, all_materials );
     size_t num_material_with_efficiency = m_material_with_efficiency.size() ;
-
 
     size_t num_materials = m_mlib->getNumMaterials() ;
     assert( num_materials > 0 );
@@ -289,11 +292,34 @@ void X4PhysicalVolume::convertMaterials()
             ;
     }
 
+    const std::vector<G4Material*>& used_materials = m_mtlist ; 
+    X4MaterialTable::Convert(m_mlib, m_material_with_efficiency, used_materials );
+    size_t num_material_with_efficiency = m_material_with_efficiency.size() ;
+
+    m_mlib->close();   // may change order if prefs dictate
+
+    LOG(verbose) << "]" ;
+    LOG(info)
+          << " used_materials.size " << used_materials.size()
+          << " num_material_with_efficiency " << num_material_with_efficiency
+          ; 
+
+    m_mlib->dumpSensitiveMaterials("X4PhysicalVolume::convertMaterials");
+
+
     LOG(LEVEL) << "]" ;
     OK_PROFILE("X4PhysicalVolume::convertMaterials");
 }
 
 
+/**
+X4PhysicalVolume::convertMaterials_r
+--------------------------------------
+
+Recursive collection of pointers for all materials referenced from active LV 
+into m_mtlist in postorder of first encounter.
+
+**/
 void X4PhysicalVolume::convertMaterials_r(const G4VPhysicalVolume* const pv, int depth)
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
@@ -306,7 +332,6 @@ void X4PhysicalVolume::convertMaterials_r(const G4VPhysicalVolume* const pv, int
 
     G4Material* mt = lv->GetMaterial() ; 
     if(std::find(m_mtlist.begin(), m_mtlist.end(), mt) == m_mtlist.end()) m_mtlist.push_back(mt);  
-    // collect newly encountered mt in postorder
 }
 
 
