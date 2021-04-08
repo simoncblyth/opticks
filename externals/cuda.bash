@@ -36,6 +36,62 @@ See Also
 * env-;cudatex-
 
 
+CUdeviceptr
+------------
+
+* http://www.cudahandbook.com/2013/08/why-does-cuda-cudeviceptr-use-unsigned-int-instead-of-void/
+
+* 
+* uintptr_t is an unsigned integer type that is capable of storing a data pointer.
+
+::
+
+    void *p;
+    CUdeviceptr dptr;
+    p = (void *) (uintptr_t) dptr;
+    dptr = (CUdeviceptr) (uintptr_t) p;
+
+::
+
+     // uintptr_t is an unsigned integer type that is capable of storing a data pointer.
+     // CUdeviceptr is typedef to unsigned long lonh 
+     std::cout << "                          d_psd.aabb " <<                         d_psd.aabb << std::endl ;   
+     std::cout << "               (uintptr_t)d_psd.aabb " <<              (uintptr_t)d_psd.aabb << std::endl ;   
+     std::cout << "  (CUdeviceptr)(uintptr_t)d_psd.aabb " << (CUdeviceptr)(uintptr_t)d_psd.aabb << std::endl ; 
+
+
+
+Alignment
+-----------
+
+* https://stackoverflow.com/questions/12778949/cuda-memory-alignment
+
+::
+
+    #if defined(__CUDACC__) // NVCC
+       #define MY_ALIGN(n) __align__(n)
+    #elif defined(__GNUC__) // GCC
+       #define MY_ALIGN(n) __attribute__((aligned(n)))
+    #elif defined(_MSC_VER) // MSVC
+       #define MY_ALIGN(n) __declspec(align(n))
+    #else
+       #error "Please provide a definition for MY_ALIGN macro for your host compiler!"
+    #endif
+
+    struct MY_ALIGN(16) pt { int i, j, k; }
+
+
+In this case let's say we choose 16-byte alignment. On a 32-bit machine, the
+pointer takes 4 bytes, so the struct takes 20 bytes. 16-byte alignment will
+waste 16 * (ceil(20/16) - 1) = 12 bytes per struct. On a 64-bit machine, it
+will waste only 8 bytes per struct, due to the 8-byte pointer. We can reduce
+the waste by using MY_ALIGN(8) instead. The tradeoff will be that the hardware
+will have to use 3 8-byte loads instead of 2 16-byte loads to load the struct
+from memory. If you are not bottlenecked by the loads, this is probably a
+worthwhile tradeoff. Note that you don't want to align smaller than 4 bytes for
+this struct.
+
+
 
 Samples
 ---------
