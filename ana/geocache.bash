@@ -354,6 +354,9 @@ Five props with name and ref the same, causing parse problem::
       <property name="SLOWTIMECONSTANT" ref="SLOWTIMECONSTANT"/>
       <property name="YIELDRATIO" ref="YIELDRATIO"/>
 
+In opticks/examples/UseXercesC/GDMLKludgeFixMatrixTruncation.cc fix truncations 
+and convert the constant that the above fail to reference into matrix.
+
 EON
 }
 
@@ -361,7 +364,7 @@ EON
 
 
 geocache-dbg-key(){ echo OKX4Test.X4PhysicalVolume.lWorld0x61ee3b0_PV.d462ec558d40795c0ba134102c68a8b4 ; }
-geocache-dbg-gdmlpath(){ echo $HOME/origin2_kludged.gdml ; }
+geocache-dbg-gdmlpath(){ echo $HOME/origin2_GDMLKludgeFix.gdml ; }
 geocache-dbg(){
     local msg="=== $FUNCNAME :"
     local path=$(geocache-dbg-gdmlpath)

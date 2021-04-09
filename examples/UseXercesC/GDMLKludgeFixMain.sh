@@ -1,8 +1,8 @@
 #!/bin/bash -l
 
-name=GDMLKludgeFixMatrixTruncation 
+name=GDMLKludgeFixMain
 bin=/tmp/$name 
-srcs="$name.cc GDMLRead.cc GDMLWrite.cc"
+srcs="$name.cc GDMLKludgeFix.cc GDMLRead.cc GDMLWrite.cc"
 
 build=0
 if [ ! -f "$bin" ]; then
@@ -30,10 +30,12 @@ else
     echo using preexisting binary $bin
 fi
 
-src=$HOME/origin2.gdml 
-dst=$HOME/origin2_kludged.gdml
 
-cmd="/tmp/$name $src $dst"
+srcdefault=$HOME/origin2.gdml
+src=${1:-$srcdefault}
+dst=${src/.gdml}_GDMLKludgeFix.gdml
+
+cmd="/tmp/$name $src"
 echo $cmd
 eval $cmd
 [ $? -ne 0 ] && echo run error && exit 2
@@ -41,7 +43,7 @@ eval $cmd
 
 cmd="diff $src $dst"
 echo $cmd
-#eval $cmd
+eval $cmd
 
 exit 0 
 
