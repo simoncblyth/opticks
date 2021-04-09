@@ -1,8 +1,8 @@
 #!/bin/bash -l
 
-name=GDMLKludgeFixMain
+name=CGDMLKludgeFixMain
 bin=/tmp/$name 
-srcs="$name.cc GDMLKludgeFix.cc GDMLRead.cc GDMLWrite.cc"
+srcs="$name.cc CGDMLKludgeFix.cc CGDMLRead.cc CGDMLWrite.cc"
 
 build=0
 if [ ! -f "$bin" ]; then
@@ -33,7 +33,7 @@ fi
 
 srcdefault=$HOME/origin2.gdml
 src=${1:-$srcdefault}
-dst=${src/.gdml}_GDMLKludgeFix.gdml
+dst=${src/.gdml}_CGDMLKludgeFix.gdml
 
 cmd="/tmp/$name $src"
 echo $cmd

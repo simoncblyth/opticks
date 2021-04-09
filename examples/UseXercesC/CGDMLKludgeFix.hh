@@ -1,25 +1,25 @@
 #pragma once
 
-struct GDMLRead ; 
-struct GDMLWrite ; 
+struct CGDMLRead ; 
+struct CGDMLWrite ; 
 
-struct GDMLKludgeFix
+struct CGDMLKludgeFix
 {
-    GDMLKludgeFix(const char* srcpath) ; 
-    virtual ~GDMLKludgeFix(); 
+    CGDMLKludgeFix(const char* srcpath) ; 
+    virtual ~CGDMLKludgeFix(); 
 
     const char*             srcpath ; 
     const char*             dstpath ; 
 
     bool                    kludge_truncated_matrix ;
-    GDMLRead*               reader ; 
+    CGDMLRead*              reader ; 
     xercesc::DOMDocument*   doc  ; 
     xercesc::DOMElement*    defineElement ; 
 
     unsigned                num_truncated_matrixElement ;  
     unsigned                num_constants ; 
 
-    GDMLWrite*              writer ;  
+    CGDMLWrite*             writer ;  
 
 
     void replaceAllConstantWithMatrix(); 

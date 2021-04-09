@@ -3,9 +3,9 @@
 #include <cstring>
 #include <sstream>
 
-#include "GDMLRead.hh"
-#include "GDMLWrite.hh"
-#include "GDMLKludgeFix.hh"
+#include "CGDMLRead.hh"
+#include "CGDMLWrite.hh"
+#include "CGDMLKludgeFix.hh"
 
 
 /**
@@ -32,17 +32,17 @@ const char* ReplaceEnd( const char* s, const char* q, const char* r  )
 
 
 
-GDMLKludgeFix::GDMLKludgeFix(const char* srcpath_)
+CGDMLKludgeFix::CGDMLKludgeFix(const char* srcpath_)
     :
     srcpath(strdup(srcpath_)),
-    dstpath(ReplaceEnd(srcpath, ".gdml", "_GDMLKludgeFix.gdml")),
+    dstpath(ReplaceEnd(srcpath, ".gdml", "_CGDMLKludgeFix.gdml")),
     kludge_truncated_matrix(true), 
-    reader(new GDMLRead(srcpath, kludge_truncated_matrix)), 
+    reader(new CGDMLRead(srcpath, kludge_truncated_matrix)), 
     doc(const_cast<xercesc::DOMDocument*>(reader->doc)), 
     defineElement(reader->the_defineElement), 
     num_truncated_matrixElement(reader->truncated_matrixElement.size()),
     num_constants(reader->constants.size()), 
-    writer(new GDMLWrite(doc)) 
+    writer(new CGDMLWrite(doc)) 
 {
     std::cout 
         << "num_truncated_matrixElement " << num_truncated_matrixElement 
@@ -67,19 +67,19 @@ GDMLKludgeFix::GDMLKludgeFix(const char* srcpath_)
 }
 
 
-GDMLKludgeFix::~GDMLKludgeFix()
+CGDMLKludgeFix::~CGDMLKludgeFix()
 {
 }
 
 
-void GDMLKludgeFix::replaceAllConstantWithMatrix()
+void CGDMLKludgeFix::replaceAllConstantWithMatrix()
 {
     assert( defineElement );  
     for(unsigned i=0 ; i < num_constants ; i++)
     {
         const Constant& c = reader->constants[i] ; 
         std::cout 
-            << "GDMLKludgeFix::AddMatrixElements" 
+            << "CGDMLKludgeFix::AddMatrixElements" 
             << " c.name " << std::setw(20) << c.name 
             << " c.value " << std::setw(10) << c.value 
             << std::endl

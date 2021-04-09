@@ -17,7 +17,7 @@ struct Constant
 };
 
 
-struct GDMLRead
+struct CGDMLRead
 {
     bool                      validate ; 
     bool                      kludge_truncated_matrix ; 
@@ -35,8 +35,8 @@ struct GDMLRead
 
 
 
-    GDMLRead( const char* path, bool kludge_truncated_matrix_); 
-    virtual ~GDMLRead(); 
+    CGDMLRead( const char* path, bool kludge_truncated_matrix_); 
+    virtual ~CGDMLRead(); 
 
     void DefineRead( const xercesc::DOMElement* const defineElement );
     void MatrixRead( const xercesc::DOMElement* const matrixElement, bool& truncated_values );

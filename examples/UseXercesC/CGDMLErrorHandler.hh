@@ -1,11 +1,11 @@
 #pragma once
 
 
-struct GDMLErrorHandler : public xercesc::ErrorHandler
+struct CGDMLErrorHandler : public xercesc::ErrorHandler
 {
     bool suppress ;
 
-    GDMLErrorHandler( bool suppress_ )
+    CGDMLErrorHandler( bool suppress_ )
        :
        suppress(suppress_)
     {
@@ -16,7 +16,7 @@ struct GDMLErrorHandler : public xercesc::ErrorHandler
         if (suppress)  { return; }
         char* message = xercesc::XMLString::transcode(exception.getMessage());
         std::cout 
-            << "GDML: VALIDATION WARNING! " << message
+            << "CGDMLErrorHandler VALIDATION WARNING! " << message
             << " at line: " << exception.getLineNumber() 
             << std::endl
             ;
@@ -28,7 +28,7 @@ struct GDMLErrorHandler : public xercesc::ErrorHandler
         if (suppress)  { return; }
         char* message = xercesc::XMLString::transcode(exception.getMessage());
         std::cout 
-            << "GDML: VALIDATION ERROR! " << message
+            << "CGDMLErrorHandler VALIDATION ERROR! " << message
             << " at line: " << exception.getLineNumber() 
             << std::endl
             ;

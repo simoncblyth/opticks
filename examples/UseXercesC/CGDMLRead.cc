@@ -1,4 +1,4 @@
-#include "GDMLRead.hh"
+#include "CGDMLRead.hh"
 
 #include <iostream>
 #include <iomanip>
@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "GDMLErrorHandler.hh"
+#include "CGDMLErrorHandler.hh"
 
 
 
@@ -28,11 +28,11 @@ std::string Transcode(const XMLCh* const toTranscode)
 }
 
 
-GDMLRead::GDMLRead( const char* path, bool kludge_truncated_matrix_)
+CGDMLRead::CGDMLRead( const char* path, bool kludge_truncated_matrix_)
     :
     validate(false),
     kludge_truncated_matrix(kludge_truncated_matrix_),
-    handler(new GDMLErrorHandler(!validate)),
+    handler(new CGDMLErrorHandler(!validate)),
     parser(new xercesc::XercesDOMParser),
     doc(nullptr),
     element(nullptr)
@@ -120,7 +120,7 @@ GDMLRead::GDMLRead( const char* path, bool kludge_truncated_matrix_)
 }
 
 
-void GDMLRead::MatrixRead( const xercesc::DOMElement* const matrixElement, bool& truncated_values )
+void CGDMLRead::MatrixRead( const xercesc::DOMElement* const matrixElement, bool& truncated_values )
 {
     std::string name = ""; 
     int coldim  = 0;
@@ -171,7 +171,7 @@ void GDMLRead::MatrixRead( const xercesc::DOMElement* const matrixElement, bool&
     bool dump = false ; 
     if(dump)
     std::cout 
-        << "GDMLRead::MatrixRead"   
+        << "CGDMLRead::MatrixRead"   
         << " " << ( truncated_values ? "**" : "  " )
         << " values.lenth " << std::setw(7) << values.size() 
         << " last50 " << std::setw(50) << values.substr(std::max(0,int(values.length())-50)) 
@@ -182,7 +182,7 @@ void GDMLRead::MatrixRead( const xercesc::DOMElement* const matrixElement, bool&
         ; 
 }
 
-std::string GDMLRead::KludgeFix( const char* values )
+std::string CGDMLRead::KludgeFix( const char* values )
 {
     std::stringstream ss; 
     ss.str(values)  ;
@@ -208,7 +208,7 @@ std::string GDMLRead::KludgeFix( const char* values )
     return kludged ;   
 }
 
-void GDMLRead::KludgeTruncatedMatrix(xercesc::DOMElement* matrixElement )
+void CGDMLRead::KludgeTruncatedMatrix(xercesc::DOMElement* matrixElement )
 {
     xercesc::DOMNamedNodeMap* attributes = matrixElement->getAttributes();
     XMLSize_t attributeCount = attributes->getLength();
@@ -225,7 +225,7 @@ void GDMLRead::KludgeTruncatedMatrix(xercesc::DOMElement* matrixElement )
             const std::string attValueOri = Transcode(attribute->getValue());
             std::string attValueKlu = KludgeFix(attValueOri.c_str());             
             std::cout 
-                << "GDMLRead::KludgeTruncatedMatrix" 
+                << "CGDMLRead::KludgeTruncatedMatrix" 
                 << " attName " << attName 
                 << " attValueOri.length " << attValueOri.length() 
                 << " attValueKlu.length " << attValueKlu.length() 
@@ -233,7 +233,7 @@ void GDMLRead::KludgeTruncatedMatrix(xercesc::DOMElement* matrixElement )
                  ; 
 
             std::cout 
-                << "GDMLRead::KludgeTruncatedMatrix" << std::endl
+                << "CGDMLRead::KludgeTruncatedMatrix" << std::endl
                 << " attValueOri.length " << attValueOri.length() << std::endl
                 << " attValueKlu.length " << attValueKlu.length() << std::endl 
                 << " attValueOri.last50 " << std::setw(50) << attValueOri.substr(std::max(0,int(attValueOri.length())-50)) << std::endl 
@@ -246,7 +246,7 @@ void GDMLRead::KludgeTruncatedMatrix(xercesc::DOMElement* matrixElement )
     }
 }
 
-Constant GDMLRead::ConstantRead( const xercesc::DOMElement* const constantElement )
+Constant CGDMLRead::ConstantRead( const xercesc::DOMElement* const constantElement )
 {
     Constant c = {} ;
     c.name = "" ; 
@@ -270,12 +270,12 @@ Constant GDMLRead::ConstantRead( const xercesc::DOMElement* const constantElemen
     return c ; 
 }
 
-void GDMLRead::DefineRead( const xercesc::DOMElement* const defineElement )
+void CGDMLRead::DefineRead( const xercesc::DOMElement* const defineElement )
 {
     assert( the_defineElement == nullptr ); 
     the_defineElement = const_cast<xercesc::DOMElement*>(defineElement) ; 
 
-    std::cout << "GDMLRead::DefineRead" << std::endl ;  
+    std::cout << "CGDMLRead::DefineRead" << std::endl ;  
 
     xercesc::DOMElement* modifiableDefineElement = const_cast<xercesc::DOMElement*>(defineElement); 
 
@@ -314,7 +314,7 @@ void GDMLRead::DefineRead( const xercesc::DOMElement* const defineElement )
    }   
 
 
-   std::cout << "GDMLRead::DefineRead constants.size " << constants.size() << std::endl ; 
+   std::cout << "CGDMLRead::DefineRead constants.size " << constants.size() << std::endl ; 
    for(unsigned i=0 ; i < constants.size() ; i++)
    {
        const Constant& c = constants[i] ;
@@ -334,7 +334,7 @@ void GDMLRead::DefineRead( const xercesc::DOMElement* const defineElement )
 
 
 
-GDMLRead::~GDMLRead()
+CGDMLRead::~CGDMLRead()
 {
     delete handler ; 
     delete parser ; 

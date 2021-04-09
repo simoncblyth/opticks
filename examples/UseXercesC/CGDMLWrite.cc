@@ -1,25 +1,25 @@
 #include <iostream>
 #include <sstream>
-#include "GDMLWrite.hh"
+#include "CGDMLWrite.hh"
 
-GDMLWrite::GDMLWrite(xercesc::DOMDocument* doc_)
+CGDMLWrite::CGDMLWrite(xercesc::DOMDocument* doc_)
     :
     doc(doc_)
 {
 }
 
-GDMLWrite::~GDMLWrite()
+CGDMLWrite::~CGDMLWrite()
 {
 }
 
-xercesc::DOMElement* GDMLWrite::NewElement(const char* tagname)
+xercesc::DOMElement* CGDMLWrite::NewElement(const char* tagname)
 {
    xercesc::XMLString::transcode(tagname,tempStr,9999);
    return doc->createElement(tempStr);
 }
 
 
-xercesc::DOMAttr* GDMLWrite::NewAttribute(const char* name, const char* value)
+xercesc::DOMAttr* CGDMLWrite::NewAttribute(const char* name, const char* value)
 {
    xercesc::XMLString::transcode(name,tempStr,9999);
    xercesc::DOMAttr* att = doc->createAttribute(tempStr);
@@ -37,7 +37,7 @@ xercesc::DOMAttr* GDMLWrite::NewAttribute(const char* name, const char* value)
     Out[4]: 1.55e-05
 **/
 
-std::string GDMLWrite::ConstantToMatrixValues(double value, double nm_lo, double nm_hi ) 
+std::string CGDMLWrite::ConstantToMatrixValues(double value, double nm_lo, double nm_hi ) 
 {
     double mev_lo = 1240./nm_hi/1e6 ; 
     double mev_hi = 1240./nm_lo/1e6 ; 
@@ -57,7 +57,7 @@ std::string GDMLWrite::ConstantToMatrixValues(double value, double nm_lo, double
    <matrix coldim="2" name="bisMSBTIMECONSTANT0x6833de0" values="-1 1.4 1 1.4"/>
 **/
 
-xercesc::DOMElement* GDMLWrite::ConstantToMatrixElement(const char* name, double value, double nm_lo, double nm_hi )
+xercesc::DOMElement* CGDMLWrite::ConstantToMatrixElement(const char* name, double value, double nm_lo, double nm_hi )
 {
     std::string values = ConstantToMatrixValues(value, nm_lo, nm_hi ); 
     xercesc::DOMElement* matrixElement = NewElement("matrix");
@@ -68,9 +68,9 @@ xercesc::DOMElement* GDMLWrite::ConstantToMatrixElement(const char* name, double
 }
 
 
-void GDMLWrite::write(const char* path)
+void CGDMLWrite::write(const char* path)
 {
-   std::cout << "GDMLWrite::write " << path << std::endl ; 
+   std::cout << "CGDMLWrite::write " << path << std::endl ; 
    
 
    xercesc::XMLString::transcode("LS", tempStr, 9999);
@@ -119,20 +119,20 @@ void GDMLWrite::write(const char* path)
    catch (const xercesc::XMLException& toCatch)
    {
       char* message = xercesc::XMLString::transcode(toCatch.getMessage());
-      std::cout << "GDMLWrite: Exception message is: " << message << std::endl;
+      std::cout << "CGDMLWrite: Exception message is: " << message << std::endl;
       xercesc::XMLString::release(&message);
       return ;
    }
    catch (const xercesc::DOMException& toCatch)
    {
       char* message = xercesc::XMLString::transcode(toCatch.msg);
-      std::cout << "GDMLWrite: Exception message is: " << message << std::endl;
+      std::cout << "CGDMLWrite: Exception message is: " << message << std::endl;
       xercesc::XMLString::release(&message);
       return ;
    }
    catch (...)
    {
-      std::cout << "GDMLWrite: Unexpected Exception!" << std::endl;
+      std::cout << "CGDMLWrite: Unexpected Exception!" << std::endl;
       return ;
    }
 

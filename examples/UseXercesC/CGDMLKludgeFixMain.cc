@@ -4,7 +4,7 @@
 #include <xercesc/util/XMLUni.hpp>
 #include <xercesc/dom/DOM.hpp>
 
-#include "GDMLKludgeFix.hh"
+#include "CGDMLKludgeFix.hh"
 
 int main(int argc, char** argv)
 {
@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 
     xercesc::XMLPlatformUtils::Initialize();
 
-    GDMLKludgeFix kludgefix(srcpath) ; 
+    CGDMLKludgeFix kludgefix(srcpath) ; 
 
     return 0 ; 
 }
