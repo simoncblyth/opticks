@@ -1,6 +1,9 @@
 #include <iostream>
 #include <sstream>
 #include "CGDMLKludgeWrite.hh"
+#include "PLOG.hh"
+
+const plog::Severity CGDMLKludgeWrite::LEVEL = PLOG::EnvLevel("CGDMLKludgeWrite", "DEBUG") ; 
 
 CGDMLKludgeWrite::CGDMLKludgeWrite(xercesc::DOMDocument* doc_)
     :
@@ -70,20 +73,19 @@ xercesc::DOMElement* CGDMLKludgeWrite::ConstantToMatrixElement(const char* name,
 
 void CGDMLKludgeWrite::write(const char* path)
 {
-   std::cout << "CGDMLKludgeWrite::write " << path << std::endl ; 
+    LOG(LEVEL) << path ; 
    
+    xercesc::XMLString::transcode("LS", tempStr, 9999);
+    xercesc::DOMImplementationRegistry::getDOMImplementation(tempStr);
+    xercesc::XMLString::transcode("Range", tempStr, 9999);
+    xercesc::DOMImplementation* impl = xercesc::DOMImplementationRegistry::getDOMImplementation(tempStr);
 
-   xercesc::XMLString::transcode("LS", tempStr, 9999);
-   xercesc::DOMImplementationRegistry::getDOMImplementation(tempStr);
-   xercesc::XMLString::transcode("Range", tempStr, 9999);
-   xercesc::DOMImplementation* impl = xercesc::DOMImplementationRegistry::getDOMImplementation(tempStr);
-
-   if( doc == nullptr )
-   { 
-       xercesc::XMLString::transcode("gdml", tempStr, 9999);
-       doc = impl->createDocument(0,tempStr,0);
-       //xercesc::DOMElement* gdml = doc->getDocumentElement();
-   }
+    if( doc == nullptr )
+    { 
+        xercesc::XMLString::transcode("gdml", tempStr, 9999);
+        doc = impl->createDocument(0,tempStr,0);
+        //xercesc::DOMElement* gdml = doc->getDocumentElement();
+    }
 
 #if XERCES_VERSION_MAJOR >= 3
                                              // DOM L3 as per Xerces 3.0 API

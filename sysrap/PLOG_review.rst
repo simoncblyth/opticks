@@ -396,3 +396,65 @@ be planted in every library.
 
 
 
+Issue : log level not controlled in standalone script build cfg4/tests/CGDMLKludgeTest.sh 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    epsilon:cfg4 blyth$ grep CFG4_LOG *.*
+    CFG4_LOG.cc:#include "CFG4_LOG.hh"
+    CFG4_LOG.cc:void CFG4_LOG::Initialize(int level, void* app1, void* app2 )
+    CFG4_LOG.cc:void CFG4_LOG::Check(const char* msg)
+    CFG4_LOG.hh:#define CFG4_LOG__  {     CFG4_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "CFG4"), plog::get(), NULL );  } 
+    CFG4_LOG.hh:#define CFG4_LOG_ {     CFG4_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); } 
+    CFG4_LOG.hh:class CFG4_API CFG4_LOG {
+    CMakeLists.txt:    CFG4_LOG.cc
+    CMakeLists.txt:    CFG4_LOG.hh
+    epsilon:cfg4 blyth$ 
+
+
+The main does this, CGDMLKludgeTest.cc::
+
+     08 #include "OPTICKS_LOG.hh"
+      9 #include "CGDMLKludge.hh"
+     10 
+     11 int main(int argc, char** argv)
+     12 {
+     13     OPTICKS_LOG(argc, argv);
+     14 
+
+       
+What OPTICKS_LOG does depends on the preprocessor macros such as *-DOPTICKS_CFG4*::
+
+   #define OPTICKS_LOG(argc, argv) {      PLOG_COLOR(argc, argv);     OPTICKS_LOG_::Initialize(PLOG::instance, plog::get(), NULL ); } 
+
+
+
+OPTICKS_LOG.hh::
+
+    108 class SYSRAP_API OPTICKS_LOG_ {
+    109    public:
+    110        // initialize all linked loggers and hookup the main logger
+    111        static void Initialize(PLOG* instance, void* app1, void* /*app2*/ )
+    112        {
+    113            int max_level = instance->parse("info") ;
+    114            // note : can decrease verbosity from the max_level in the subproj, but not increase
+    115 
+    116 #ifdef OPTICKS_SYSRAP
+    117     SYSRAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "SYSRAP"), app1, NULL );
+    118 #endif
+    119 #ifdef OPTICKS_BRAP
+    120     BRAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "BRAP"), app1, NULL );
+    121 #endif
+    ...
+    164 #ifdef OPTICKS_X4
+    165     X4_LOG::Initialize(instance->prefixlevel_parse( max_level, "X4"), app1, NULL );
+    166 #endif
+    167 #ifdef OPTICKS_CFG4
+    168     CFG4_LOG::Initialize(instance->prefixlevel_parse( max_level, "CFG4"), app1, NULL );
+    169 #endif
+
+
+
+
+

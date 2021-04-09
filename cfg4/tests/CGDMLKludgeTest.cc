@@ -5,14 +5,13 @@
 #include <xercesc/util/XMLUni.hpp>
 #include <xercesc/dom/DOM.hpp>
 
-
 #include "OPTICKS_LOG.hh"
 #include "CGDMLKludge.hh"
-
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+    OPTICKS_LOG_::Check();
 
     const char* srcpath = argc > 1 ? argv[1] : nullptr ; 
 
@@ -34,5 +33,4 @@ int main(int argc, char** argv)
 
     return 0 ; 
 }
-
 

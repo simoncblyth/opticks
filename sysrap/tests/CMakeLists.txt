@@ -33,6 +33,7 @@ set(TEST_SOURCES
 
    SYSRAP_OPTICKS_LOG_Test.cc
    SYSRAP_OPTICKS_LOG_NULL_Test.cc 
+   SOPTICKS_LOG_Test.cc 
 
    OPTICKS_LOG_Test.cc
    pLOG_MACRO_Test.cc

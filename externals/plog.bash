@@ -98,6 +98,8 @@ EOU
 }
 plog-env(){      opticks- ;  }
 plog-dir(){  echo $(opticks-prefix)/externals/plog ; }
+plog-prefix(){  echo $(plog-dir) ; }
+
 plog-idir(){ echo $(opticks-prefix)/externals/plog/include/plog ; }
 plog-ifold(){ echo $(opticks-prefix)/externals/plog/include ; }
 plog-pc-path(){ echo $(opticks-prefix)/externals/lib/pkgconfig/PLog.pc ; }

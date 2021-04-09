@@ -59,7 +59,7 @@ CGDMLKludge::CGDMLKludge(const char* srcpath_)
     issues(false) 
 {
     LOG(info)
-        << " num_truncated_matrixElement " << num_truncated_matrixElement 
+        << "num_truncated_matrixElement " << num_truncated_matrixElement 
         << " num_constants " << num_constants
         ; 
     
@@ -93,11 +93,9 @@ void CGDMLKludge::replaceAllConstantWithMatrix()
     for(unsigned i=0 ; i < num_constants ; i++)
     {
         const Constant& c = reader->constants[i] ; 
-        std::cout 
-            << "CGDMLKludge::AddMatrixElements" 
+        LOG(LEVEL)
             << " c.name " << std::setw(20) << c.name 
             << " c.value " << std::setw(10) << c.value 
-            << std::endl
             ; 
 
         double nm_lo = 80. ; 

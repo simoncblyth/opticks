@@ -176,6 +176,20 @@ void CGDMLKludgeRead::MatrixRead( const xercesc::DOMElement* const matrixElement
         ; 
 }
 
+
+
+/**
+CGDMLKludgeRead::KludgeFix
+---------------------------
+
+Splits the input string into elements delimited by a single space 
+and returns a string with one or two of the last elements trimmed
+to make the number of elements even.
+
+Note this should only be used for values that need trimming
+due to truncation.
+**/
+
 std::string CGDMLKludgeRead::KludgeFix( const char* values )
 {
     std::stringstream ss; 
@@ -202,6 +216,12 @@ std::string CGDMLKludgeRead::KludgeFix( const char* values )
     return kludged ;   
 }
 
+/**
+CGDMLKludgeRead::KludgeTruncatedMatrix
+----------------------------------------
+
+**/
+
 void CGDMLKludgeRead::KludgeTruncatedMatrix(xercesc::DOMElement* matrixElement )
 {
     xercesc::DOMNamedNodeMap* attributes = matrixElement->getAttributes();
@@ -218,20 +238,20 @@ void CGDMLKludgeRead::KludgeTruncatedMatrix(xercesc::DOMElement* matrixElement )
         {
             const std::string attValueOri = Transcode(attribute->getValue());
             std::string attValueKlu = KludgeFix(attValueOri.c_str());             
-            std::cout 
-                << "CGDMLKludgeRead::KludgeTruncatedMatrix" 
+
+
+            LOG(LEVEL) 
                 << " attName " << attName 
                 << " attValueOri.length " << attValueOri.length() 
                 << " attValueKlu.length " << attValueKlu.length() 
-                << std::endl
                  ; 
 
-            std::cout 
-                << "CGDMLKludgeRead::KludgeTruncatedMatrix" << std::endl
+            LOG(LEVEL) 
+                << std::endl
                 << " attValueOri.length " << attValueOri.length() << std::endl
                 << " attValueKlu.length " << attValueKlu.length() << std::endl 
                 << " attValueOri.last50 " << std::setw(50) << attValueOri.substr(std::max(0,int(attValueOri.length())-50)) << std::endl 
-                << " attValueKlu.last50 " << std::setw(50) << attValueKlu.substr(std::max(0,int(attValueKlu.length())-50)) << std::endl
+                << " attValueKlu.last50 " << std::setw(50) << attValueKlu.substr(std::max(0,int(attValueKlu.length())-50)) 
                 ; 
 
             xercesc::XMLString::transcode(attValueKlu.c_str() , tempStr, 9999);

@@ -6,8 +6,12 @@
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/framework/LocalFileFormatTarget.hpp>
 
+#include "plog/Severity.h"
+
 struct CGDMLKludgeWrite 
 {
+    static const plog::Severity LEVEL ; 
+
     CGDMLKludgeWrite(xercesc::DOMDocument* doc); 
     virtual ~CGDMLKludgeWrite(); 
 
