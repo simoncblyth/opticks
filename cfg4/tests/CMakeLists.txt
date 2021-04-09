@@ -53,6 +53,8 @@ set(TEST_SOURCES
 
     CDumpTest.cc
 
+    CGDMLKludgeTest.cc
+
 )
 
 # generate targets for these, but dont add_test 

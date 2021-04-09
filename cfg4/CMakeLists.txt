@@ -148,7 +148,14 @@ set(SOURCES
     CStepStatus.cc
 
     CDump.cc
+
+
 )
+
+
+
+
+
 
 set(HEADERS
     CFG4_LOG.hh
@@ -264,6 +271,18 @@ set(HEADERS
     CMixMaxRng.hh
 
     CDump.hh
+)
+
+list(APPEND SOURCES
+	CGDMLKludge.cc
+	CGDMLKludgeRead.cc
+	CGDMLKludgeWrite.cc
+)
+list(APPEND HEADERS
+   	CGDMLKludgeErrorHandler.hh
+	CGDMLKludge.hh
+	CGDMLKludgeRead.hh
+	CGDMLKludgeWrite.hh
 )
 
 add_library(${name} SHARED  ${SOURCES})
