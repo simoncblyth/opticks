@@ -1,7 +1,8 @@
 #pragma once
 
+#include "CFG4_API_EXPORT.hh"
 
-struct CGDMLKludgeErrorHandler : public xercesc::ErrorHandler
+struct CFG4_API CGDMLKludgeErrorHandler : public xercesc::ErrorHandler
 {
     bool suppress ;
 

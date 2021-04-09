@@ -2,6 +2,12 @@
 
 #include "CFG4_API_EXPORT.hh"
 
+#include <xercesc/parsers/XercesDOMParser.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/sax/HandlerBase.hpp>
+#include <xercesc/util/XMLUni.hpp>
+#include <xercesc/dom/DOM.hpp>
+
 #include "plog/Severity.h"
 
 struct CGDMLKludgeRead ; 

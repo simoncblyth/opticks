@@ -197,6 +197,9 @@ void OpticksCfg<Listener>::init()
        ("nogeocache,G",  "inhibit use of the geocache") ;
 
    m_desc.add_options()
+       ("gdmlkludge",  "kludge fix truncated matrix values and replace define/constant with define/matrix in G4Opticks exported origin.gdml, see cfg4/CGDMLKludge.cc g4ok/G4Opticks.cc") ;
+
+   m_desc.add_options()
        ("enable_legacy_g4dae",  "enable use of legacy G4DAE loading") ;
 
 

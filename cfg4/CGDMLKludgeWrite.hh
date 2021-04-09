@@ -7,8 +7,9 @@
 #include <xercesc/framework/LocalFileFormatTarget.hpp>
 
 #include "plog/Severity.h"
+#include "CFG4_API_EXPORT.hh"
 
-struct CGDMLKludgeWrite 
+struct CFG4_API CGDMLKludgeWrite 
 {
     static const plog::Severity LEVEL ; 
 

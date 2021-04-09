@@ -1039,6 +1039,11 @@ bool Opticks::isWayEnabled() const  // --way
 {
     return m_cfg->hasOpt("way") ;
 }
+bool Opticks::isGDMLKludge() const  // --gdmlkludge
+{
+    return m_cfg->hasOpt("gdmlkludge") ;
+}
+
 bool Opticks::isAngularEnabled() const 
 {
     return m_angular_enabled ;  

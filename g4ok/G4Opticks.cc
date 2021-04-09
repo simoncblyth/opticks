@@ -41,6 +41,7 @@
 #include "C4PhotonCollector.hh"
 #include "CAlignEngine.hh"
 #include "CGDML.hh"
+#include "CGDMLKludge.hh"
 #include "C4FPEDetection.hh"
 
 #include "G4OpticksHit.hh"
@@ -931,6 +932,19 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
     LOG(info) << "( CGDML " << origin  ;
     CGDML::Export( origin, top ); 
     LOG(info) << ") CGDML " ;  
+
+    if(ok->isGDMLKludge())
+    {
+        LOG(info) << "( CGDMLKludge " << origin << " --gdmlkludge"  ;
+        const char* kludge_path = CGDMLKludge::Fix( origin );
+        if(kludge_path) LOG(info) << "kludge_path " << kludge_path ;  
+        LOG(info) << ") CGDMLKludge " ;  
+    }
+    else
+    {
+        LOG(info) << "CGDMLKludge not-applied as no option : --gdmlkludge  " ;
+    }
+
 
     LOG(info) << "( GGeo instanciate" ;
     bool live = true ;       // <--- for now this ignores preexisting cache in GGeo::init 

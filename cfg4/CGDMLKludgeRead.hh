@@ -9,6 +9,7 @@
 #include <xercesc/util/XMLUni.hpp>
 #include <xercesc/dom/DOM.hpp>
 
+#include "CFG4_API_EXPORT.hh"
 
 #include "plog/Severity.h"
 
@@ -20,7 +21,7 @@ struct Constant
 };
 
 
-struct CGDMLKludgeRead
+struct CFG4_API CGDMLKludgeRead
 {
     static const plog::Severity LEVEL ; 
 
