@@ -1,7 +1,8 @@
 #include <iostream>
+#include <sstream>
 #include "GDMLWrite.hh"
 
-GDMLWrite::GDMLWrite(const xercesc::DOMDocument* doc_)
+GDMLWrite::GDMLWrite(xercesc::DOMDocument* doc_)
     :
     doc(doc_)
 {
@@ -9,6 +10,61 @@ GDMLWrite::GDMLWrite(const xercesc::DOMDocument* doc_)
 
 GDMLWrite::~GDMLWrite()
 {
+}
+
+xercesc::DOMElement* GDMLWrite::NewElement(const char* tagname)
+{
+   xercesc::XMLString::transcode(tagname,tempStr,9999);
+   return doc->createElement(tempStr);
+}
+
+
+xercesc::DOMAttr* GDMLWrite::NewAttribute(const char* name, const char* value)
+{
+   xercesc::XMLString::transcode(name,tempStr,9999);
+   xercesc::DOMAttr* att = doc->createAttribute(tempStr);
+   xercesc::XMLString::transcode(value,tempStr,9999);
+   att->setValue(tempStr);
+   return att;
+}
+
+
+
+/**
+    In [3]: 1240./800./1e6
+    Out[3]: 1.55e-06
+    In [4]: 1240./80./1e6 
+    Out[4]: 1.55e-05
+**/
+
+std::string GDMLWrite::ConstantToMatrixValues(double value, double nm_lo, double nm_hi ) 
+{
+    double mev_lo = 1240./nm_hi/1e6 ; 
+    double mev_hi = 1240./nm_lo/1e6 ; 
+
+    std::stringstream ss ; 
+    ss 
+       << mev_lo << " " << value 
+       << " "
+       << mev_hi << " " << value 
+       ; 
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+/**
+   <matrix coldim="2" name="bisMSBTIMECONSTANT0x6833de0" values="-1 1.4 1 1.4"/>
+**/
+
+xercesc::DOMElement* GDMLWrite::ConstantToMatrixElement(const char* name, double value, double nm_lo, double nm_hi )
+{
+    std::string values = ConstantToMatrixValues(value, nm_lo, nm_hi ); 
+    xercesc::DOMElement* matrixElement = NewElement("matrix");
+    matrixElement->setAttributeNode(NewAttribute("name", name));
+    matrixElement->setAttributeNode(NewAttribute("coldim", "2"));
+    matrixElement->setAttributeNode(NewAttribute("values", values.c_str()));
+    return matrixElement ; 
 }
 
 

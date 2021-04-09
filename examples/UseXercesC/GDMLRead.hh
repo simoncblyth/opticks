@@ -9,6 +9,14 @@
 #include <xercesc/util/XMLUni.hpp>
 #include <xercesc/dom/DOM.hpp>
 
+struct Constant
+{
+    std::string                name ; 
+    double                     value ;  
+    xercesc::DOMElement*       constantElement ;
+};
+
+
 struct GDMLRead
 {
     bool                      validate ; 
@@ -20,15 +28,19 @@ struct GDMLRead
     xercesc::DOMElement*      element ;
     XMLCh                     tempStr[10000];
 
+    xercesc::DOMElement*      the_defineElement = nullptr ;
 
+    std::vector<Constant> constants ; 
     std::vector<xercesc::DOMElement*>  truncated_matrixElement ; 
+
+
 
     GDMLRead( const char* path, bool kludge_truncated_matrix_); 
     virtual ~GDMLRead(); 
 
     void DefineRead( const xercesc::DOMElement* const defineElement );
     void MatrixRead( const xercesc::DOMElement* const matrixElement, bool& truncated_values );
-    void ConstantRead( const xercesc::DOMElement* const constantElement );
+    Constant ConstantRead( const xercesc::DOMElement* const constantElement );
 
     void KludgeTruncatedMatrix(xercesc::DOMElement* matrixElement );
     std::string KludgeFix( const char* values );

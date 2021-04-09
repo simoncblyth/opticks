@@ -1144,6 +1144,18 @@ g4-cls-(){
 }
 
 
+g4-ccd(){ 
+   : cd to the directory containing the .cc of the cls argument 
+   local name=${1:-G4GDMLWrite}
+   g4-cd 
+   pwd
+   local cc=$(find source -name "$name.cc")
+   local dir=$(dirname $cc)
+   echo dir $dir
+   cd $dir
+   pwd
+}
+
 
 
 g4-look-info(){ cat << EOI

@@ -20,6 +20,66 @@ TODO
 
 
 
+
+
+
+
+DONE : ~/opticks/examples/UseXercesC/GDMLKludgeFixMatrixTruncation.sh
+--------------------------------------------------------------------------------
+
+* this uses XercesC to read the GDML trim fix the truncated values and writes the edited GDML 
+
+::
+
+    2021-04-09 11:07:38.712 INFO  [15619586] [CGDML::read@71]  resolved path_ /Users/blyth/origin2_kludged.gdml as path /Users/blyth/origin2_kludged.gdml
+    G4GDML: Reading '/Users/blyth/origin2_kludged.gdml'...
+    G4GDML: Reading definitions...
+    G4GDML: Reading materials...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : ReadError
+          issued by : G4GDMLReadDefine::getMatrix()
+    Matrix 'SCINTILLATIONYIELD' was not found!
+    *** Fatal Exception ***
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+
+
+Problem is unsatisfied references to constants::
+
+   004   <define>
+    ...
+    33     <constant name="SCINTILLATIONYIELD" value="11522"/>
+    34     <constant name="RESOLUTIONSCALE" value="1"/>
+    35     <constant name="FASTTIMECONSTANT" value="4.93"/>
+    36     <constant name="SLOWTIMECONSTANT" value="20.6"/>
+    37     <constant name="YIELDRATIO" value="0.799"/>
+
+   160     <material name="LS0x681ba00" state="solid">
+   ...
+   189       <property name="SCINTILLATIONYIELD" ref="SCINTILLATIONYIELD"/>
+   190       <property name="RESOLUTIONSCALE" ref="RESOLUTIONSCALE"/>
+   191       <property name="FASTTIMECONSTANT" ref="FASTTIMECONSTANT"/>
+   192       <property name="SLOWTIMECONSTANT" ref="SLOWTIMECONSTANT"/>
+   193       <property name="YIELDRATIO" ref="YIELDRATIO"/>
+
+
+Replacing the constant with matrix would seem the best way::
+
+    In [3]: 1240./800./1e6                                                                                                                                                                                   
+    Out[3]: 1.55e-06
+
+    In [4]: 1240./80./1e6                                                                                                                                                                                    
+    Out[4]: 1.55e-05
+
+
+
+
+
+
 Truncation Problem Again : need an automated way to fix this
 ---------------------------------------------------------------
 

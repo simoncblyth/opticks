@@ -8,6 +8,8 @@
 
 #include "GDMLErrorHandler.hh"
 
+
+
 double atod_( const char* a ) 
 {
     std::string s(a);
@@ -166,6 +168,8 @@ void GDMLRead::MatrixRead( const xercesc::DOMElement* const matrixElement, bool&
        if(kludge_truncated_matrix) KludgeTruncatedMatrix(me); 
    }
 
+    bool dump = false ; 
+    if(dump)
     std::cout 
         << "GDMLRead::MatrixRead"   
         << " " << ( truncated_values ? "**" : "  " )
@@ -242,32 +246,60 @@ void GDMLRead::KludgeTruncatedMatrix(xercesc::DOMElement* matrixElement )
     }
 }
 
-void GDMLRead::ConstantRead( const xercesc::DOMElement* const constantElement )
+Constant GDMLRead::ConstantRead( const xercesc::DOMElement* const constantElement )
 {
-    std::cout << "GDMLRead::ConstantRead" << std::endl ;  
+    Constant c = {} ;
+    c.name = "" ; 
+    c.value = 0.0 ; 
+    c.constantElement = const_cast<xercesc::DOMElement*>(constantElement) ; 
+
+    const xercesc::DOMNamedNodeMap* const attributes = constantElement->getAttributes(); 
+    XMLSize_t attributeCount = attributes->getLength();
+
+    for (XMLSize_t attribute_index=0; attribute_index<attributeCount; attribute_index++) 
+    {   
+        xercesc::DOMNode* node = attributes->item(attribute_index);
+        if (node->getNodeType() != xercesc::DOMNode::ATTRIBUTE_NODE) { continue; }
+        const xercesc::DOMAttr* const attribute = dynamic_cast<xercesc::DOMAttr*>(node);   
+        assert(attribute);
+        const std::string attName = Transcode(attribute->getName());
+        const std::string attValue = Transcode(attribute->getValue());
+        if (attName=="name")  { c.name = attValue; }  else
+        if (attName=="value") { c.value = atod_(attValue.c_str()); }
+   }   
+    return c ; 
 }
 
 void GDMLRead::DefineRead( const xercesc::DOMElement* const defineElement )
 {
+    assert( the_defineElement == nullptr ); 
+    the_defineElement = const_cast<xercesc::DOMElement*>(defineElement) ; 
+
     std::cout << "GDMLRead::DefineRead" << std::endl ;  
 
-  for (xercesc::DOMNode* iter = defineElement->getFirstChild();
-        iter != 0;iter = iter->getNextSibling())
+    xercesc::DOMElement* modifiableDefineElement = const_cast<xercesc::DOMElement*>(defineElement); 
+
+
+   for (xercesc::DOMNode* iter = defineElement->getFirstChild(); iter != 0; iter = iter->getNextSibling())
    {   
       if (iter->getNodeType() != xercesc::DOMNode::ELEMENT_NODE) { continue; }
 
-      const xercesc::DOMElement* const child
-            = dynamic_cast<xercesc::DOMElement*>(iter);
-      if (!child)
-      {   
-        std::cout << "GDMLRead::DefineRead InvalidRead No child found!" << std::endl ; 
-        return;
-      }   
+      const xercesc::DOMElement* const child = dynamic_cast<xercesc::DOMElement*>(iter);
+      assert( child ); 
       const std::string tag = Transcode(child->getTagName());
 
       bool truncated_matrix_values = false ; 
-      if (tag=="constant")   { ConstantRead(child); } else 
-      if (tag=="matrix")     { MatrixRead(child, truncated_matrix_values); }  else 
+
+      if (tag=="constant")
+      { 
+          Constant c = ConstantRead(child); 
+          constants.push_back(c); 
+      } 
+      else if (tag=="matrix")     
+      { 
+          MatrixRead(child, truncated_matrix_values); 
+      }  
+      else 
 /*
       if (tag=="position")   { PositionRead(child); } else 
       if (tag=="rotation")   { RotationRead(child); } else 
@@ -280,6 +312,22 @@ void GDMLRead::DefineRead( const xercesc::DOMElement* const defineElement )
           std::cout << "Unknown tag in define " << tag << std::endl ; 
       }   
    }   
+
+
+   std::cout << "GDMLRead::DefineRead constants.size " << constants.size() << std::endl ; 
+   for(unsigned i=0 ; i < constants.size() ; i++)
+   {
+       const Constant& c = constants[i] ;
+       std::cout 
+           << " c.name " << std::setw(20) << c.name 
+           << " c.value " << std::setw(10) << c.value 
+           << " c.constantElement " << c.constantElement 
+           << std::endl 
+           ;  
+       modifiableDefineElement->removeChild(c.constantElement); 
+   }
+
+
 }
 
 

@@ -7,6 +7,7 @@
 
 **/
 #include <iostream>
+#include <iomanip>
 #include "GDMLRead.hh"
 #include "GDMLWrite.hh"
 
@@ -24,7 +25,31 @@ int main(int argc, char** argv)
     unsigned num_truncated_matrixElement = reader.truncated_matrixElement.size(); 
     std::cout << "num_truncated_matrixElement " << num_truncated_matrixElement << std::endl ; 
 
-    GDMLWrite writer(reader.doc); 
+
+    xercesc::DOMDocument* doc = const_cast<xercesc::DOMDocument*>(reader.doc); 
+
+    GDMLWrite writer(doc); 
+
+
+    xercesc::DOMElement*  defineElement = reader.the_defineElement ; 
+    assert( defineElement );  
+
+    unsigned num_constants = reader.constants.size() ; 
+    for(unsigned i=0 ; i < num_constants ; i++)
+    {
+        const Constant& c = reader.constants[i] ; 
+        std::cout 
+            << " c.name " << std::setw(20) << c.name 
+            << " c.value " << std::setw(10) << c.value 
+            << std::endl
+            ; 
+
+        double nm_lo = 80. ; 
+        double nm_hi = 800. ; 
+        xercesc::DOMElement* matrixElement = writer.ConstantToMatrixElement(c.name.c_str(), c.value, nm_lo, nm_hi ); 
+        defineElement->appendChild(matrixElement);
+    }
+
     writer.write(outpath); 
 
     return 0 ; 
