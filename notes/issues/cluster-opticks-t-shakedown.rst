@@ -12,13 +12,248 @@ TODO
 
 * document getting OPTICKS_KEY from job output and setting it to allow opticks-t using it 
 
+
+
+
+Pin down where the GDML parse failure happens
+-----------------------------------------------
+
+::
+
+    O[blyth@localhost 1]$ gdb CTestDetectorTest 
+    ...
+    G4GDML: Reading '/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml'...
+    G4GDML: Reading definitions...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+    *** G4Exception : InvalidSize
+          issued by : G4GDMLEvaluator::DefineMatrix()
+    Matrix 'PPOABSLENGTH0x3403be0' is not filled correctly!
+    *** Fatal Exception *** core dump ***
+     **** Track information is not available at this moment
+     **** Step information is not available at this moment
+
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+    (gdb) bt
+    #2  0x00007ffff16d0d44 in G4Exception(char const*, char const*, G4ExceptionSeverity, char const*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4global.so
+    #3  0x00007ffff5f646d8 in G4GDMLEvaluator::DefineMatrix(G4String const&, int, std::vector<double, std::allocator<double> >) ()
+       from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4persistency.so
+    #4  0x00007ffff5f76eeb in G4GDMLReadDefine::MatrixRead(xercesc_3_2::DOMElement const*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4persistency.so
+    #5  0x00007ffff5f79e8e in G4GDMLReadDefine::DefineRead(xercesc_3_2::DOMElement const*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4persistency.so
+    #6  0x00007ffff5f731e2 in G4GDMLRead::Read(G4String const&, bool, bool, bool) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4persistency.so
+    #7  0x00007ffff7b2f752 in G4GDMLParser::Read (this=0x7fffffff8200, filename=..., validate=false) at /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/include/Geant4/G4GDMLParser.icc:37
+    #8  0x00007ffff7b2eadb in CGDMLDetector::parseGDML (this=0x8c98a20, path=0x6c5510 "/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml")
+        at /home/blyth/opticks/cfg4/CGDMLDetector.cc:121
+    #9  0x00007ffff7b2e900 in CGDMLDetector::init (this=0x8c98a20) at /home/blyth/opticks/cfg4/CGDMLDetector.cc:91
+    #10 0x00007ffff7b2e59f in CGDMLDetector::CGDMLDetector (this=0x8c98a20, hub=0x7fffffff8fb0, query=0x6c0660, sd=0x8c963c0) at /home/blyth/opticks/cfg4/CGDMLDetector.cc:63
+    #11 0x00007ffff7ad980c in CGeometry::init (this=0x8c98970) at /home/blyth/opticks/cfg4/CGeometry.cc:99
+    #12 0x00007ffff7ad960a in CGeometry::CGeometry (this=0x8c98970, hub=0x7fffffff8fb0, sd=0x8c963c0) at /home/blyth/opticks/cfg4/CGeometry.cc:82
+    #13 0x00007ffff7b45cea in CG4::CG4 (this=0x7fffffff91f0, hub=0x7fffffff8fb0) at /home/blyth/opticks/cfg4/CG4.cc:159
+    #14 0x00000000004037e9 in main (argc=1, argv=0x7fffffff9a08) at /home/blyth/opticks/cfg4/tests/CTestDetectorTest.cc:52
+    (gdb) 
+    (gdb) f 9
+    #9  0x00007ffff7b2e900 in CGDMLDetector::init (this=0x8c98a20) at /home/blyth/opticks/cfg4/CGDMLDetector.cc:91
+    91	    G4VPhysicalVolume* world = parseGDML(path);
+    (gdb) p path
+    $1 = 0x6c5510 "/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml"
+    (gdb) 
+
+
+    072 void CGDMLDetector::init()
+     73 {
+     74     const char* path = m_ok->getCurrentGDMLPath() ;
+     75 
+     76     bool exists = BFile::ExistsFile(path);
+     77     if( !exists )
+     78     {
+     79          LOG(error)
+     80               << "CGDMLDetector::init"
+     81               << " PATH DOES NOT EXIST "
+     82               << " path " << path
+     83               ;
+     84 
+     85          setValid(false);
+     86          return ;
+     87     }
+     88 
+     89     LOG(LEVEL) << "parse " << path ;
+     90 
+     91     G4VPhysicalVolume* world = parseGDML(path);
+     92 
+
+
+    3797 const char*     Opticks::getCurrentGDMLPath() const
+    3798 {
+    3799     bool is_direct   = isDirect() ;
+    3800     return is_direct ? getOriginGDMLPath() : getSrcGDMLPath() ;
+    3801 }
+    3802 
+
+
+
+
+
+WIP : check opticks-t again using the origin.gdml and origin_CGDMLKludge.gdml 
+------------------------------------------------------------------------------------
+
 ::
 
     3648 # BOpticksKey::export_
     3649 export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
     3650 
 
+j.bash add *ok_juno_tds* and use it::
 
+    139 ok_juno(){      export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.e7b204fa62c028f3d23c102bc554dcbb ; }
+    140 ok_juno_tds(){  export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc ; }
+    141 ok_dyb(){       export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c ; export OPTICKS_DEFAULT_TARGET=3154 ; }
+    142 
+    143 #ok_dyb
+    144 #ok_juno
+    145 ok_juno_tds
+
+::
+
+    ini
+    kcd
+
+    O[blyth@localhost 1]$ l *.gdml
+    20296 -rw-rw-r--. 1 blyth blyth 20782944 Apr 10 21:47 origin_CGDMLKludge.gdml
+    20296 -rw-rw-r--. 1 blyth blyth 20782759 Apr 10 21:47 origin.gdml
+
+
+::
+
+    opticks-t 
+
+
+    SLOW: tests taking longer that 15 seconds
+
+
+    FAILS:  8   / 455   :  Sat Apr 10 22:07:44 2021   
+      3  /39  Test #3  : CFG4Test.CTestDetectorTest                    Child aborted***Exception:     4.01   
+      5  /39  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     3.95   
+      7  /39  Test #7  : CFG4Test.CGeometryTest                        Child aborted***Exception:     3.96   
+      8  /39  Test #8  : CFG4Test.CG4Test                              Child aborted***Exception:     4.10   
+      26 /39  Test #26 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     3.95   
+      32 /39  Test #32 : CFG4Test.CRandomEngineTest                    Child aborted***Exception:     3.95   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     4.05   
+
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      11.94  
+    O[blyth@localhost 1]$ 
+
+
+
+The first seven fails are the expected ones from fail to parse the origin.gdml exported into the geocache::
+
+    G4GDML: Reading '/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml'...
+    G4GDML: Reading definitions...
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+    *** G4Exception : InvalidSize
+          issued by : G4GDMLEvaluator::DefineMatrix()
+    Matrix 'PPOABSLENGTH0x3403be0' is not filled correctly!
+    *** Fatal Exception *** core dump ***
+     **** Track information is not available at this moment
+     **** Step information is not available at this moment
+
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+The tboolean.box FAIL is from tag 0 not allowed::
+
+    2021-04-10 22:07:36.264 INFO  [376976] [OGeo::convert@301] [ nmm 10
+    2021-04-10 22:07:37.546 INFO  [376976] [OGeo::convert@314] ] nmm 10
+    2021-04-10 22:07:37.634 ERROR [376976] [cuRANDWrapper::setItems@154] CAUTION : are resizing the launch sequence 
+    2021-04-10 22:07:38.491 FATAL [376976] [ORng::setSkipAhead@160]  skip as as WITH_SKIPAHEAD not enabled 
+    2021-04-10 22:07:38.623 FATAL [376976] [OpticksEventSpec::getOffsetTag@90]  iszero itag  pfx tboolean-box typ torch tag O itag 0 det tboolean-box cat tboolean-box eng NO
+    OKG4Test: /home/blyth/opticks/optickscore/OpticksEventSpec.cc:96: const char* OpticksEventSpec::getOffsetTag(unsigned int) const: Assertion `!iszero && "--tag 0 NOT ALLOWED : AS USING G4 NEGATED CONVENTION "' failed.
+    /home/blyth/local/opticks/bin/o.sh: line 362: 376976 Aborted                 (core dumped) /home/blyth/local/opticks/lib/OKG4Test --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile --generateoverride 10000 --envkey --rendermode +global,+axis --geocenter --stack 2180 --eye 1,0,0 --up 0,0,1 --test --testconfig mode=PyCsgInBox_analytic=1_name=tboolean-box_csgpath=/home/blyth/local/opticks/tmp/tboolean-box_outerfirst=1_autocontainer=Rock//perfectAbsorbSurface/Vacuum_autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_autoemitconfig=photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0_autoseqmap=TO:0,SR:1,SA:0 --torch --torchconfig type=disc_photons=100000_mode=fixpol_polarization=1,1,0_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000_source=0,0,599_target=0,0,0_time=0.0_radius=300_distance=200_zenithazimuth=0,1,0,1_material=Vacuum_wavelength=500 --torchdbg --tag O --anakey tboolean --args --save
+    === o-main : runline PWD /home/blyth/local/opticks/build/integration/tests RC 134 Sat Apr 10 22:07:43 CST 2021
+    /home/blyth/local/opticks/lib/OKG4Test --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile --generateoverride 10000 --envkey --rendermode +global,+axis --geocenter --stack 2180 --eye 1,0,0 --up 0,0,1 --test --testconfig mode=PyCsgInBox_analytic=1_name=tboolean-box_csgpath=/home/blyth/local/opticks/tmp/tboolean-box_outerfirst=1_autocontainer=Rock//perfectAbsorbSurface/Vacuum_autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_autoemitconfig=photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0_autoseqmap=TO:0,SR:1,SA:0 --torch --torchconfig type=disc_photons=100000_mode=fixpol_polarization=1,1,0_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000_source=0,0,599_target=0,0,0_time=0.0_radius=300_distance=200_zenithazimuth=0,1,0,1_material=Vacuum_wavelength=500 --torchdbg --tag O --anakey tboolean --args --save
+    echo o-postline : dummy
+    o-postline : dummy
+    PWD : /home/blyth/local/opticks/build/integration/tests
+    -rw-r--r--. 1 blyth blyth   1677 Apr 10 22:07 IntegrationTest.log
+    -rw-r--r--. 1 blyth blyth 147640 Apr 10 22:07 OKG4Test.log
+    /home/blyth/local/opticks/bin/o.sh : RC : 134
+
+
+
+
+
+
+
+DONE : integrated cfg4/CGDMLKludge with G4Opticks when --gdmlkludge option is enabled
+---------------------------------------------------------------------------------------
+
+* this means that the origin.gdml export GDML is reread and kludge-fixed writing origin_CGDMLKludge.gdml 
+
+Kludge changes:
+
+1. trim trauncated define/matrix values to make them parsable (needs an even number of values)
+2. switch define/constants to become define/matrix  
+
+Example of use with "P;jre;tds"::
+
+    epsilon:~ blyth$ P
+    Last login: Sat Apr 10 21:45:55 2021 from lxslc705.ihep.ac.cn
+    mo .bashrc OPTICKS_MODE:use P : junoenv tests but with non-junoenv opticks identified by OPTICKS_TOP /home/blyth/local/opticks for convenient development CMTEXTRATAGS:opticks
+    P[blyth@localhost ~]$ jre
+    P[blyth@localhost ~]$ tds
+    ...
+    2021-04-10 21:47:43.132 INFO  [341235] [G4Opticks::InitOpticks@212] 
+    # BOpticksKey::export_ 
+    export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+
+    2021-04-10 21:47:43.132 INFO  [341235] [G4Opticks::EmbeddedCommandLine@131] Using ecl :[ --compute --embedded --xanalytic --production --nosave] OPTICKS_EMBEDDED_COMMANDLINE
+    2021-04-10 21:47:43.132 INFO  [341235] [G4Opticks::EmbeddedCommandLine@132]  mode(Pro/Dev/Asis) P using "pro" (production) commandline without event saving 
+    2021-04-10 21:47:43.132 INFO  [341235] [G4Opticks::EmbeddedCommandLine@137] Using extra1 argument :[--way --pvname pAcylic  --boundary Water///Acrylic --waymask 3]
+    2021-04-10 21:47:43.132 INFO  [341235] [G4Opticks::EmbeddedCommandLine@147] Using eclx envvar :[--gdmlkludge] OPTICKS_EMBEDDED_COMMANDLINE_EXTRA
+    2021-04-10 21:47:43.132 INFO  [341235] [G4Opticks::InitOpticks@232] instanciate Opticks using embedded commandline only 
+     --compute --embedded --xanalytic --production --nosave  --way --pvname pAcylic  --boundary Water///Acrylic --waymask 3 --gdmlkludge
+    2021-04-10 21:47:43.133 INFO  [341235] [Opticks::init@439] COMPUTE_MODE compute_requested  forced_compute  hostname localhost.localdomain
+    2021-04-10 21:47:43.133 INFO  [341235] [Opticks::init@448]  mandatory keyed access to geometry, opticksaux 
+    2021-04-10 21:47:43.134 INFO  [341235] [Opticks::init@467] OpticksSwitches:WITH_SEED_BUFFER WITH_RECORD WITH_SOURCE WITH_ALIGN_DEV WITH_LOGDOUBLE WITH_KLUDGE_FLAT_ZERO_NOPEEK WITH_SENSORLIB 
+    2021-04-10 21:47:43.138 INFO  [341235] [G4Opticks::translateGeometry@932] ( CGDML /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml
+    2021-04-10 21:47:43.179 INFO  [341235] [CGDML::write@372] write to /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml
+    G4GDML: Writing '/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml'...
+    G4GDML: Writing definitions...
+    G4GDML: Writing materials...
+    G4GDML: Writing solids...
+    G4GDML: Writing structure...
+    G4GDML: Writing setup...
+    G4GDML: Writing surfaces...
+    G4GDML: Writing '/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml' done !
+    2021-04-10 21:47:45.426 INFO  [341235] [G4Opticks::translateGeometry@934] ) CGDML 
+    2021-04-10 21:47:45.427 INFO  [341235] [G4Opticks::translateGeometry@938] ( CGDMLKludge /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin.gdml --gdmlkludge
+    2021-04-10 21:47:46.521 INFO  [341235] [CGDMLKludge::CGDMLKludge@61] num_truncated_matrixElement 1 num_constants 5
+    2021-04-10 21:47:46.521 INFO  [341235] [CGDMLKludge::CGDMLKludge@75] writing dstpath /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin_CGDMLKludge.gdml
+    2021-04-10 21:47:46.906 INFO  [341235] [G4Opticks::translateGeometry@940] kludge_path /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1/origin_CGDMLKludge.gdml
+    2021-04-10 21:47:46.906 INFO  [341235] [G4Opticks::translateGeometry@941] ) CGDMLKludge 
+    2021-04-10 21:47:46.906 INFO  [341235] [G4Opticks::translateGeometry@949] ( GGeo instanciate
+    2021-04-10 21:47:46.909 INFO  [341235] [G4Opticks::translateGeometry@952] ) GGeo instanciate 
+    2021-04-10 21:47:46.909 INFO  [341235] [G4Opticks::translateGeometry@954] ( GGeo populate
+    2021-04-10 21:47:46.965 INFO  [341235] [X4PhysicalVolume::convertMaterials@283]  num_mt 17
+
+
+    ..
+
+    IdPath : /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/85d8514854333c1a7c3fd50cc91507dc/1
+
+    # BOpticksKey::export_ 
+    export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+
+    2021-04-10 21:51:20.123 FATAL [341235] [G4Opticks::dumpSkipGencode@382] OPTICKS_SKIP_GENCODE m_skip_gencode_count 0
+    2021-04-10 21:51:20.123 INFO  [341235] [G4Opticks::finalizeProfile@431] to set path to save the profile set envvar OPTICKS_PROFILE_PATH or use G4Opticks::setProfilePath  
+    2021-04-10 21:51:20.123 INFO  [341235] [OpticksProfile::Report@526]  num_stamp 10 profile_leak_mb 0
+    Time(s)                   t0 78668.234  t1 78680.055  dt 11.820     dt/(num_stamp-1) 1.313     
+    VmSize(MB)                v0 27151.359  v1 27151.359  dv 0.000      dv/(num_stamp-1) 0.000     
+    RSS(MB)                   r0 7679.300   r1 7679.792   dr 0.492      dr/(num_stamp-1) 0.055     
+    detsimtask:PMTSimParamSvc.finalize  INFO: PMTSimParamSvc is finalizing!
+    detsimtask.finalize             INFO: events processed 10
 
 
 

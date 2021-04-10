@@ -39,6 +39,7 @@
 #include "SArgs.hh"
 #include "STime.hh"
 #include "SSys.hh"
+#include "SStr.hh"
 #include "SPath.hh"
 #include "SRngSpec.hh"
 
@@ -365,6 +366,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_rsc(NULL),
     m_nogdmlpath(m_sargs->hasArg("--nogdmlpath")),
     m_origin_gdmlpath(NULL),
+    m_origin_gdmlpath_kludged(NULL),
     m_origin_geocache_code_version(-1),
     m_state(NULL),
     m_apmtslice(NULL),
@@ -2012,6 +2014,7 @@ const char* Opticks::getCacheMetaGDMLPath_(const BMeta* origin_cachemeta ) const
 } 
 
 
+
 void Opticks::loadOriginCacheMeta_() 
 {
     LOG(LEVEL) << "[" ; 
@@ -2026,6 +2029,11 @@ void Opticks::loadOriginCacheMeta_()
     m_origin_gdmlpath = cachemeta_gdmlpath ? cachemeta_gdmlpath : origin_gdmlpath ; 
     assert( m_origin_gdmlpath );  // it is null with OPTICKS_KEY for geocache from live running 
 
+    m_origin_gdmlpath_kludged = SStr::ReplaceEnd(m_origin_gdmlpath, ".gdml", "_CGDMLKludge.gdml") ; 
+
+    LOG(LEVEL) << " m_origin_gdmlpath " << m_origin_gdmlpath ;  
+    LOG(LEVEL) << " m_origin_gdmlpath_kludged " << m_origin_gdmlpath_kludged ;  
+ 
 
     m_origin_geocache_code_version = m_origin_cachemeta->get<int>(GEOCACHE_CODE_VERSION_KEY, "0" );  
 
@@ -3792,14 +3800,52 @@ const char*      Opticks::getKeySpec() const {       BOpticksKey* key = getKey()
 const char*     Opticks::getSrcGDMLPath() const {  return m_rsc ? m_rsc->getSrcGDMLPath() : NULL ; }
 const char*     Opticks::getGDMLPath()    const {  return m_rsc ? m_rsc->getGDMLPath() : NULL ; }
 
-const char*     Opticks::getOriginGDMLPath() const { return m_origin_gdmlpath ; }
+const char*     Opticks::getOriginGDMLPath() const {        return m_origin_gdmlpath ; }
+const char*     Opticks::getOriginGDMLPathKludged() const { return m_origin_gdmlpath_kludged ; }
 
-const char*     Opticks::getCurrentGDMLPath() const 
+
+/**
+Opticks::getCurrentGDMLPath
+----------------------------
+
+Returns the absolute path to the origin gdml file within the geocache directory.  
+If a kludged gdml file eg origin_CGDMLKludge.gdml exists then the path to the 
+kludged file is returned in preference to any origin.gdml
+
+Too create the kludged file it is necessary to use G4Opticks::translateGeometry
+with the "--gdmlkludge" option enabled.
+
+**/
+
+const char* Opticks::getCurrentGDMLPath() const 
 {
     bool is_direct   = isDirect() ;   
-    return is_direct ? getOriginGDMLPath() : getSrcGDMLPath() ;
-}
+    assert( is_direct ); 
+    //return is_direct ? getOriginGDMLPath() : getSrcGDMLPath() ;
 
+    const char* origin = getOriginGDMLPath(); 
+    const char* kludge = getOriginGDMLPathKludged() ; 
+
+    bool origin_exists = origin ? BFile::ExistsFile(origin) : false ;
+    bool kludge_exists = kludge ? BFile::ExistsFile(kludge) : false ;
+
+    const char* path = nullptr ; 
+    if( kludge_exists )
+    {
+        path = kludge ;
+        LOG(LEVEL) << "returning kludge path " << path ;  
+    }
+    else if( origin_exists )
+    {
+        path = origin ; 
+        LOG(LEVEL) << "returning origin path " << path ;  
+    }
+    else
+    {
+        LOG(fatal) << "RETURNING NULL PATH" ; 
+    }
+    return path ; 
+}
 
 
 void Opticks::setIdPathOverride(const char* idpath_tmp) // used for saves into non-standard locations whilst testing

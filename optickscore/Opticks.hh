@@ -234,6 +234,7 @@ class OKCORE_API Opticks {
        const char* getGDMLPath() const ;
        const char* getSrcGDMLPath() const ;
        const char* getOriginGDMLPath() const ;  // formerly getDirectGDMLPath
+       const char* getOriginGDMLPathKludged() const ;  
        const char* getCurrentGDMLPath() const ;
    public:
        const char* getDbgGDMLPath() const ; // --dbggdmlpath : used for sneaky GDML exports for debugging 
@@ -696,6 +697,8 @@ class OKCORE_API Opticks {
        BOpticksResource*    m_rsc ; 
        bool                 m_nogdmlpath ; // --nogdmlpath
        const char*          m_origin_gdmlpath ; // formerly m_direct_gdmlpath
+       const char*          m_origin_gdmlpath_kludged ; 
+
        int                  m_origin_geocache_code_version ; 
        NState*              m_state ; 
        NSlice*              m_apmtslice ; 
