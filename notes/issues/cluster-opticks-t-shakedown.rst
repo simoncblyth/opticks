@@ -46,32 +46,7 @@ investigating boundary_pos.::
 tboolean.box FAIL : tag 0 NOT ALLOWED issue : have not seen this in a very long time : why now ? smth about the tds JUNO geometry ?
 --------------------------------------------------------------------------------------------------------------------------------------
 
-Reproduce with::
-
-   cd ~/opticks/integration/tests
-   ./tboolean_box.sh 
-
-    ...
-    2021-04-10 23:18:51.735 INFO  [40221] [OGeo::convert@301] [ nmm 10
-    2021-04-10 23:18:53.047 INFO  [40221] [OGeo::convert@314] ] nmm 10
-    2021-04-10 23:18:53.111 ERROR [40221] [cuRANDWrapper::setItems@154] CAUTION : are resizing the launch sequence 
-    2021-04-10 23:18:53.978 FATAL [40221] [ORng::setSkipAhead@160]  skip as as WITH_SKIPAHEAD not enabled 
-    2021-04-10 23:18:54.042 FATAL [40221] [OpticksEventSpec::getOffsetTag@90]  iszero itag  pfx tboolean-box typ torch tag O itag 0 det tboolean-box cat tboolean-box eng NO
-    OKG4Test: /home/blyth/opticks/optickscore/OpticksEventSpec.cc:96: const char* OpticksEventSpec::getOffsetTag(unsigned int) const: Assertion `!iszero && "--tag 0 NOT ALLOWED : AS USING G4 NEGATED CONVENTION "' failed.
-
-    (gdb) bt
-    #3  0x00007fffe5834252 in __assert_fail () from /lib64/libc.so.6
-    #4  0x00007fffecc622b1 in OpticksEventSpec::getOffsetTag (this=0x70c0e0, tagoffset=0) at /home/blyth/opticks/optickscore/OpticksEventSpec.cc:96
-    #5  0x00007fffecc62349 in OpticksEventSpec::clone (this=0x70c0e0, tagoffset=0) at /home/blyth/opticks/optickscore/OpticksEventSpec.cc:106
-    #6  0x00007fffecc69c6d in OpticksEvent::Make (spec=0x70c0e0, tagoffset=0) at /home/blyth/opticks/optickscore/OpticksEvent.cc:125
-    #7  0x00007fffecc96025 in Opticks::makeEvent (this=0x6d3ed0, ok=true, tagoffset=0) at /home/blyth/opticks/optickscore/Opticks.cc:3299
-    #8  0x00007fffecc7ba1d in OpticksRun::createEvent (this=0x6f4ee0, tagoffset=0, cfg4evt=true) at /home/blyth/opticks/optickscore/OpticksRun.cc:111
-    #9  0x00007fffecc7b943 in OpticksRun::createEvent (this=0x6f4ee0, gensteps=0x8b2b800, cfg4evt=true) at /home/blyth/opticks/optickscore/OpticksRun.cc:96
-    #10 0x00007fffecc8e8e9 in Opticks::createEvent (this=0x6d3ed0, gensteps=0x8b2b800, cfg4evt=true) at /home/blyth/opticks/optickscore/Opticks.cc:1330
-    #11 0x00007ffff7bafcbb in OKG4Mgr::propagate_ (this=0x7fffffff3f10) at /home/blyth/opticks/okg4/OKG4Mgr.cc:214
-    #12 0x00007ffff7bafb8d in OKG4Mgr::propagate (this=0x7fffffff3f10) at /home/blyth/opticks/okg4/OKG4Mgr.cc:157
-    #13 0x00000000004038c9 in main (argc=33, argv=0x7fffffff4258) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:28
-    (gdb) 
+* :doc:`tboolean_box_fail_tag_0_not_allowed`
 
 
 Confirm that using the kludged origin gdml avoids 7 test fails

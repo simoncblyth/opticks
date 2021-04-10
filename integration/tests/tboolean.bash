@@ -520,7 +520,8 @@ tboolean-cd(){  cd $(tboolean-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }
 
-tboolean-tag(){  echo ${TAG:-1} ; }
+#tboolean-tag(){  echo ${TAG:-1} ; }
+tboolean-tag(){  echo ${OPTICKS_EVENT_TAG:-1} ; }
 tboolean-det(){  echo boolean ; }
 tboolean-src(){  echo torch ; }
 tboolean-args(){ echo  --det $(tboolean-det) --src $(tboolean-src) ; }
