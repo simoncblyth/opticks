@@ -15,8 +15,98 @@ TODO
 
 
 
+
+GPhoTest FAIL : arising from NPY header only wy.npy
+---------------------------------------------------------
+
+This issue is somewhat related to the boundary_pos zeros in way hits.  So defer till 
+investigating boundary_pos.::
+
+    GPhoTest
+    ...
+    totVertices    116395  totFaces    202152 
+    vtotVertices  63603714 vtotFaces 125348744 (virtual: scaling by transforms)
+    vfacVertices   546.447 vfacFaces   620.072 (virtual to total ratio)
+    2021-04-10 22:54:37.797 INFO  [455199] [main@61]  ox_path $TMP/G4OKTest/evt/g4live/natural/1/ox.npy ox 5000,4,4
+    2021-04-10 22:54:37.797 INFO  [455199] [main@65]  wy_path $TMP/G4OKTest/evt/g4live/natural/1/wy.npy wy 5000,2,4
+    2021-04-10 22:54:37.798 INFO  [455199] [GPho::wayConsistencyCheck@156]  mismatch_flags 5000 mismatch_index 4999
+    2021-04-10 22:54:37.798 ERROR [455199] [GPho::setPhotons@114]  mismatch 9999
+    GPhoTest: /home/blyth/opticks/ggeo/GPho.cc:118: void GPho::setPhotons(const NPY<float>*): Assertion `mismatch == 0' failed.
+
+
+    O[blyth@localhost opticks]$ xxd $TMP/G4OKTest/evt/g4live/natural/1/wy.npy
+    0000000: 934e 554d 5059 0100 4600 7b27 6465 7363  .NUMPY..F.{'desc
+    0000010: 7227 3a20 273c 6634 272c 2027 666f 7274  r': '<f4', 'fort
+    0000020: 7261 6e5f 6f72 6465 7227 3a20 4661 6c73  ran_order': Fals
+    0000030: 652c 2027 7368 6170 6527 3a20 2835 3030  e, 'shape': (500
+    0000040: 302c 2032 2c20 3429 2c20 7d20 2020 200a  0, 2, 4), }    .
+    O[blyth@localhost opticks]$ 
+
+
+tboolean.box FAIL : tag 0 NOT ALLOWED issue : have not seen this in a very long time : why now ? smth about the tds JUNO geometry ?
+--------------------------------------------------------------------------------------------------------------------------------------
+
+Reproduce with::
+
+   cd ~/opticks/integration/tests
+   ./tboolean_box.sh 
+
+    ...
+    2021-04-10 23:18:51.735 INFO  [40221] [OGeo::convert@301] [ nmm 10
+    2021-04-10 23:18:53.047 INFO  [40221] [OGeo::convert@314] ] nmm 10
+    2021-04-10 23:18:53.111 ERROR [40221] [cuRANDWrapper::setItems@154] CAUTION : are resizing the launch sequence 
+    2021-04-10 23:18:53.978 FATAL [40221] [ORng::setSkipAhead@160]  skip as as WITH_SKIPAHEAD not enabled 
+    2021-04-10 23:18:54.042 FATAL [40221] [OpticksEventSpec::getOffsetTag@90]  iszero itag  pfx tboolean-box typ torch tag O itag 0 det tboolean-box cat tboolean-box eng NO
+    OKG4Test: /home/blyth/opticks/optickscore/OpticksEventSpec.cc:96: const char* OpticksEventSpec::getOffsetTag(unsigned int) const: Assertion `!iszero && "--tag 0 NOT ALLOWED : AS USING G4 NEGATED CONVENTION "' failed.
+
+    (gdb) bt
+    #3  0x00007fffe5834252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffecc622b1 in OpticksEventSpec::getOffsetTag (this=0x70c0e0, tagoffset=0) at /home/blyth/opticks/optickscore/OpticksEventSpec.cc:96
+    #5  0x00007fffecc62349 in OpticksEventSpec::clone (this=0x70c0e0, tagoffset=0) at /home/blyth/opticks/optickscore/OpticksEventSpec.cc:106
+    #6  0x00007fffecc69c6d in OpticksEvent::Make (spec=0x70c0e0, tagoffset=0) at /home/blyth/opticks/optickscore/OpticksEvent.cc:125
+    #7  0x00007fffecc96025 in Opticks::makeEvent (this=0x6d3ed0, ok=true, tagoffset=0) at /home/blyth/opticks/optickscore/Opticks.cc:3299
+    #8  0x00007fffecc7ba1d in OpticksRun::createEvent (this=0x6f4ee0, tagoffset=0, cfg4evt=true) at /home/blyth/opticks/optickscore/OpticksRun.cc:111
+    #9  0x00007fffecc7b943 in OpticksRun::createEvent (this=0x6f4ee0, gensteps=0x8b2b800, cfg4evt=true) at /home/blyth/opticks/optickscore/OpticksRun.cc:96
+    #10 0x00007fffecc8e8e9 in Opticks::createEvent (this=0x6d3ed0, gensteps=0x8b2b800, cfg4evt=true) at /home/blyth/opticks/optickscore/Opticks.cc:1330
+    #11 0x00007ffff7bafcbb in OKG4Mgr::propagate_ (this=0x7fffffff3f10) at /home/blyth/opticks/okg4/OKG4Mgr.cc:214
+    #12 0x00007ffff7bafb8d in OKG4Mgr::propagate (this=0x7fffffff3f10) at /home/blyth/opticks/okg4/OKG4Mgr.cc:157
+    #13 0x00000000004038c9 in main (argc=33, argv=0x7fffffff4258) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:28
+    (gdb) 
+
+
+Confirm that using the kludged origin gdml avoids 7 test fails
+---------------------------------------------------------------------
+
+BUT now see very slow CG4Test and OKG4Test : that is probably Geant4 being slow with 
+its voxelizing for this JUNO geometry.  The non-G4 OKTest has no such slowdown.
+Also see two FAILs::
+
+
+    ok_juno_tds () 
+    { 
+        export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.85d8514854333c1a7c3fd50cc91507dc
+    }
+
+    opticks-t 
+
+    SLOW: tests taking longer that 15 seconds
+      8  /39  Test #8  : CFG4Test.CG4Test                              Passed                         126.93 
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         147.28 
+
+
+    FAILS:  2   / 455   :  Sat Apr 10 23:01:44 2021   
+      56 /56  Test #56 : GGeoTest.GPhoTest                             Child aborted***Exception:     1.72   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      11.96  
+    O[blyth@localhost opticks]$ 
+    O[blyth@localhost opticks]$ 
+
+
+
 Pin down where the GDML parse failure happens
 -----------------------------------------------
+
+* DONE : Opticks::getCurrentPath now returns the kludged origin path when it exists
+
 
 ::
 
