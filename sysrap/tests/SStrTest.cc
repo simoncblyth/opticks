@@ -202,7 +202,8 @@ void test_ArrayToString()
 void test_Save()
 {
     std::vector<std::string> v = { "red", "green", "blue", "cyan", "magenta", "yellow", "green" } ; 
-    SStr::Save("/tmp/SStrTest_test_Save.txt", v ); 
+    const char* path = "$TMP/SStrTest_test_Save.txt" ; 
+    SStr::Save(path, v ); 
 }
 
 

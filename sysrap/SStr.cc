@@ -24,6 +24,8 @@
 #include <iostream>
 #include <algorithm>
 #include "SStr.hh"
+#include "SPath.hh"
+#include "PLOG.hh"
 
 /**
 
@@ -46,8 +48,10 @@ Hmm presumably base64 code might do this at a higher level ?
 
 
 
-void SStr::Save(const char* path, const std::vector<std::string>& a, char delim )   // static
+void SStr::Save(const char* path_, const std::vector<std::string>& a, char delim )   // static
 {
+    const char* path = SPath::Resolve(path_); 
+    LOG(info) << "SPath::Resolve " << path_ << " to " << path ; 
     std::ofstream fp(path);
     for(std::vector<std::string>::const_iterator i = a.begin(); i != a.end(); ++i) fp << *i << delim ;
 }
