@@ -15,9 +15,26 @@ TODO
 
 
 
+opticks-t with JUNO tds live geometry now down to 0/455 fails
+-----------------------------------------------------------------
 
-GPhoTest FAIL : arising from NPY header only wy.npy
----------------------------------------------------------
+::
+
+    SLOW: tests taking longer that 15 seconds
+      8  /39  Test #8  : CFG4Test.CG4Test                              Passed                         125.33 
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         145.74 
+
+
+    FAILS:  0   / 455   :  Sun Apr 11 20:07:37 2021   
+    O[blyth@localhost opticks]$ 
+
+
+* two SLOW tests assumed to be slow due to Geant4 voxelization 
+
+
+
+FIXED : GPhoTest FAIL : arising from NPY header only wy.npy
+--------------------------------------------------------------
 
 * :doc:`GPhoTest_FAIL_when_way_not_enabled_in_G4OKTest`
 
@@ -26,8 +43,8 @@ This issue is somewhat related to the boundary_pos zeros in way hits.  So defer 
 investigating boundary_pos.
 
 
-tboolean.box FAIL : tag 0 NOT ALLOWED issue : have not seen this in a very long time : why now ? smth about the tds JUNO geometry ?
---------------------------------------------------------------------------------------------------------------------------------------
+FIXED : tboolean.box FAIL : tag 0 NOT ALLOWED issue : have not seen this in a very long time : why now ? smth about the tds JUNO geometry ?
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 * :doc:`tboolean_box_fail_tag_0_not_allowed`
 

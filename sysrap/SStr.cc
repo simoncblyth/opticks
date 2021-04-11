@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstring>
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include <algorithm>
 #include "SStr.hh"
@@ -41,6 +42,17 @@ Out[41]: 'hello'
 Hmm presumably base64 code might do this at a higher level ?
 
 **/
+
+
+
+
+void SStr::Save(const char* path, const std::vector<std::string>& a, char delim )   // static
+{
+    std::ofstream fp(path);
+    for(std::vector<std::string>::const_iterator i = a.begin(); i != a.end(); ++i) fp << *i << delim ;
+}
+
+
 
 
 void SStr::FillFromULL( char* dest, unsigned long long value, char unprintable)

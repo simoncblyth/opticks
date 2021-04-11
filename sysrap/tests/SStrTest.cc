@@ -197,6 +197,17 @@ void test_ArrayToString()
 
 
 
+
+
+void test_Save()
+{
+    std::vector<std::string> v = { "red", "green", "blue", "cyan", "magenta", "yellow", "green" } ; 
+    SStr::Save("/tmp/SStrTest_test_Save.txt", v ); 
+}
+
+
+
+
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
@@ -212,8 +223,9 @@ int main(int argc , char** argv )
     test_StartsWith();  
     test_Replace();  
     test_ReplaceEnd();  
-    */
     test_ArrayToString();  
+    */
+    test_Save();  
 
     return 0  ; 
 }
