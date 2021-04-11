@@ -24,12 +24,22 @@ Running with extra hit info using the way buffer
    OPTICKS_EMBEDDED_COMMANDLINE_EXTRA=--way G4OKTest
 
 
+Identical Photons from Near Identical Gensteps Issue
+-------------------------------------------------------
+
+Because this test uses artifical and almost identical "torch" gensteps that 
+differ only in the number of photons this will generate duplicated photons 
+for each "event",
+
+In future using curand skipahead WITH_SKIPAHEAD will allow the duplication to be avoided 
+but anyhow it is useful to not randomize by default as it then makes problems 
+of repeated gensteps easier to notice.  
+ 
+
 Leak Checking
 --------------
 
 ::
-
-   
 
    G4OKTEST_PROFILE_LEAK_MB=10 NEVT=100 G4OKTest 
    G4OKTEST_PROFILE_LEAK_MB=20 NEVT=100 G4OKTest 
@@ -161,7 +171,7 @@ G4OKTest::init
 
 Code similar to this is usually within detector simulation frameworks, eg for JUNO:: 
 
-    Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc
+    Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc
 
 The origin G4PVPlacement for sensor volumes are provided by Opticks in order 
 that the corresponding detector specific sensor identifiers can be 
@@ -443,7 +453,7 @@ std::string banner(int ievt, char c)
 
 int main(int argc, char** argv)
 {
-    int nevt = SSys::getenvint("G4OKTEST_NEVT", 10 ); 
+    int nevt = SSys::getenvint("G4OKTEST_NEVT", 4 ); 
 
     G4OKTest t(argc, argv); 
     LOG(info) << "(G4OKTEST_NEVT) nevt " << nevt ; 

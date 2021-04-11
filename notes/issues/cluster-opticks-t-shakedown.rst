@@ -19,28 +19,11 @@ TODO
 GPhoTest FAIL : arising from NPY header only wy.npy
 ---------------------------------------------------------
 
+* :doc:`GPhoTest_FAIL_when_way_not_enabled_in_G4OKTest`
+
+
 This issue is somewhat related to the boundary_pos zeros in way hits.  So defer till 
-investigating boundary_pos.::
-
-    GPhoTest
-    ...
-    totVertices    116395  totFaces    202152 
-    vtotVertices  63603714 vtotFaces 125348744 (virtual: scaling by transforms)
-    vfacVertices   546.447 vfacFaces   620.072 (virtual to total ratio)
-    2021-04-10 22:54:37.797 INFO  [455199] [main@61]  ox_path $TMP/G4OKTest/evt/g4live/natural/1/ox.npy ox 5000,4,4
-    2021-04-10 22:54:37.797 INFO  [455199] [main@65]  wy_path $TMP/G4OKTest/evt/g4live/natural/1/wy.npy wy 5000,2,4
-    2021-04-10 22:54:37.798 INFO  [455199] [GPho::wayConsistencyCheck@156]  mismatch_flags 5000 mismatch_index 4999
-    2021-04-10 22:54:37.798 ERROR [455199] [GPho::setPhotons@114]  mismatch 9999
-    GPhoTest: /home/blyth/opticks/ggeo/GPho.cc:118: void GPho::setPhotons(const NPY<float>*): Assertion `mismatch == 0' failed.
-
-
-    O[blyth@localhost opticks]$ xxd $TMP/G4OKTest/evt/g4live/natural/1/wy.npy
-    0000000: 934e 554d 5059 0100 4600 7b27 6465 7363  .NUMPY..F.{'desc
-    0000010: 7227 3a20 273c 6634 272c 2027 666f 7274  r': '<f4', 'fort
-    0000020: 7261 6e5f 6f72 6465 7227 3a20 4661 6c73  ran_order': Fals
-    0000030: 652c 2027 7368 6170 6527 3a20 2835 3030  e, 'shape': (500
-    0000040: 302c 2032 2c20 3429 2c20 7d20 2020 200a  0, 2, 4), }    .
-    O[blyth@localhost opticks]$ 
+investigating boundary_pos.
 
 
 tboolean.box FAIL : tag 0 NOT ALLOWED issue : have not seen this in a very long time : why now ? smth about the tds JUNO geometry ?

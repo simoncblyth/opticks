@@ -1983,9 +1983,8 @@ void OpticksEvent::saveDebugData()
 void OpticksEvent::saveWayData()
 {
     NPY<float>* wy = getWayData();
-    if(wy) wy->save(m_pfx, "wy", m_typ,  m_tag, m_udet);
+    if(wy && wy->hasData()) wy->save(m_pfx, "wy", m_typ,  m_tag, m_udet);
 }
-
 
 
 void OpticksEvent::saveSeedData()
