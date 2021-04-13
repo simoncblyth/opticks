@@ -15,20 +15,37 @@ specs_ = lambda s:filter(lambda s:s[0] != "#", filter(None,map(str.strip, textwr
 log = logging.getLogger(__name__)
 sys.path.insert(0, os.path.expanduser("~"))  # assumes $HOME/opticks 
 
-from opticks.analytic.gdml import GDML
+from opticks.analytic.GDML import GDML
 from opticks.ana.shape import ellipse_points, circle_points
 from opticks.ana.gplt import GPlot, add_line
 from opticks.ana.gargs import GArgs
 
+from j.PMTEfficiencyCheck_ import PMTEfficiencyCheck_
+
+
 if __name__ == '__main__':
+
+   
 
     args = GArgs.parse(__doc__)
     g = GDML.parse(args.gdmlpath(2))
     g.smry()
 
-    nnvt = 1
-    hama = 2 
-    lvx = args.lvname(nnvt) 
+    NNVT = 1
+    HAMA = 2 
+    #pmt = NNVT 
+    pmt = HAMA 
+
+
+    #pec = None
+    pec = PMTEfficiencyCheck_()
+    if not pec is None:
+        ipec = { HAMA:0,NNVT:1 }
+        pec_sli = 10000
+    pass
+
+
+    lvx = args.lvname(pmt) 
     lv = g.find_one_volume(lvx)
 
     if lv == None:
@@ -45,6 +62,11 @@ if __name__ == '__main__':
     plt.ion()
 
     fig, ax = GPlot.MakeFig(plt, lv, args, recurse=True)  # all volumes together
+    if not pec is None:
+        pec.rz_plot(ax, ipec[pmt], pec_sli )
+    pass
+
+    ax.set_aspect('equal')
     fig.show()
     path = args.figpath("CombinedFig")
     log.info("saving to %s " % path)
@@ -53,6 +75,10 @@ if __name__ == '__main__':
     #axs = GPlot.MultiFig(plt, lvs, args)
 
     fig, axs = GPlot.SubPlotsFig(plt, [lvs], args)
+    if not pec is None:
+        pec.rz_plot(axs, ipec[pmt], pec_sli )
+    pass
+
     fig.show()
     path = args.figpath("SplitFig")
     log.info("saving to %s " % path)

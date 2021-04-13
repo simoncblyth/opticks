@@ -16,7 +16,7 @@ import matplotlib.lines as mlines
 log = logging.getLogger(__name__)
 sys.path.insert(0, os.path.expanduser("~"))  # assumes $HOME/opticks 
 
-from opticks.analytic.gdml import GDML, odict
+from opticks.analytic.GDML import GDML, odict
 from opticks.ana.gargs import GArgs 
 
 
@@ -152,7 +152,7 @@ class GPlot(object):
         if n_lvs == 3:
             ny, nx = 2, 2
         else:
-            ny, nx = 2, n_lvs/2
+            ny, nx = 2, n_lvs//2
         pass        
 
         log.info("SubFig ny:%d nx:%d n_lvs:%d" % (ny,nx,n_lvs) )

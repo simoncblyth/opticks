@@ -7,7 +7,7 @@ from collections import OrderedDict as odict
 log = logging.getLogger(__name__)
 sys.path.insert(0, os.path.expanduser("~"))  # assumes $HOME/opticks 
 
-slist_ = lambda s:map(str.strip,filter(None,s.split("\n")))
+slist_ = lambda s:list(map(str.strip,filter(None,s.split("\n"))))
 
 class GArgs(argparse.Namespace):
     @classmethod

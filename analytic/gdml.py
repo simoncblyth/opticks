@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python)
 #
 # Copyright (c) 2019 Opticks Team. All Rights Reserved.
 #
@@ -1019,10 +1019,10 @@ class Polycone(Primitive):
     @classmethod
     def Plot(cls, ax, zp):
 
-        rmin = map(lambda _:_.rmin, zp)
-        rmax = map(lambda _:_.rmax, zp)
+        rmin = list(map(lambda _:_.rmin, zp))
+        rmax = list(map(lambda _:_.rmax, zp))
 
-        z = map(lambda _:_.z, zp)
+        z = list(map(lambda _:_.z, zp))
         zmax = max(z) 
         zmin = min(z)
         zsiz = zmax - zmin
@@ -1104,9 +1104,9 @@ class Volume(G):
         :return xyz: array of shape (npv, 3) 
         """
         assert sub in ["position", "rotation"]
-        x = map(float,self.elem.xpath("./physvol[starts-with(@name,'%s')]/%s/@x" % (pfx,sub)))
-        y = map(float,self.elem.xpath("./physvol[starts-with(@name,'%s')]/%s/@y" % (pfx,sub)))
-        z = map(float,self.elem.xpath("./physvol[starts-with(@name,'%s')]/%s/@z" % (pfx,sub)))
+        x = list(map(float,self.elem.xpath("./physvol[starts-with(@name,'%s')]/%s/@x" % (pfx,sub))))
+        y = list(map(float,self.elem.xpath("./physvol[starts-with(@name,'%s')]/%s/@y" % (pfx,sub))))
+        z = list(map(float,self.elem.xpath("./physvol[starts-with(@name,'%s')]/%s/@z" % (pfx,sub))))
         assert len(x) == len(y) == len(z)
         xyz = np.zeros( [len(x), 3]) 
         xyz[:,0] = x 
@@ -1117,7 +1117,7 @@ class Volume(G):
 
 
     def filterpv(self, pfx):
-        return filter(lambda pv:pv.name.startswith(pfx), self.physvol) 
+        return list(filter(lambda pv:pv.name.startswith(pfx), self.physvol))
 
     def rdump(self, depth=0):
         print(self)
@@ -1144,7 +1144,7 @@ class Volume(G):
 
     def __repr__(self):
         repr_ = lambda _:"   %r" % _ 
-        pvs = map(repr_, self.physvol) 
+        pvs = list(map(repr_, self.physvol))
         line = "%s %s %s" % (self.gidx, self.typ, self.name )
         return "\n".join([line, "solid", repr(self.solid), "material", repr(self.material), "physvol %d" % len(self.physvol)] + pvs )
 
@@ -1315,7 +1315,7 @@ class GDML(G):
         with a common prefix
 
         """
-        names = map(lambda _:_.name, tvol.values())
+        names = list(map(lambda _:_.name, tvol.values()))
         unref_ = lambda _:_[:_.find("0x")] if _.find("0x") > -1 else _
 
         prefix = os.path.commonprefix(names)
@@ -1331,7 +1331,7 @@ class GDML(G):
         :param prefix: str
         :return sel: list of objects from d with name starting with prefix
         """
-        return filter(lambda v:v.name.startswith(prefix), d.values())
+        return list(filter(lambda v:v.name.startswith(prefix), d.values()))
 
     def find_volumes(self, prefix):
         return self.find_by_prefix(self.volumes, prefix)
