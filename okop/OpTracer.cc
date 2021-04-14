@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#include "SLog.hh"
 #include "SSys.hh"
 #include "SPPM.hh"
 #include "BFile.hh"
@@ -46,11 +45,17 @@
 #include "OpEngine.hh"
 #include "OpTracer.hh"
 
-const plog::Severity OpTracer::LEVEL = debug ; 
+const plog::Severity OpTracer::LEVEL = PLOG::EnvLevel("OpTracer", "DEBUG") ; 
+
+int OpTracer::Preinit()  // static
+{
+    LOG(LEVEL); 
+    return 0 ; 
+}
 
 OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate) 
     :
-    m_log(new SLog("OpTracer::OpTracer","",LEVEL)),
+    m_preinit(Preinit()), 
     m_ope(ope),
     m_hub(hub),
     m_ok(hub->getOpticks()),
@@ -63,11 +68,11 @@ OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate)
     m_count(0)
 {
     init();
-    (*m_log)("DONE");
 }
 
 void OpTracer::init()
 {
+    LOG(LEVEL); 
     if(m_immediate)
     {
         initTracer();
@@ -81,6 +86,7 @@ void OpTracer::initTracer()
     unsigned int height = m_composition->getPixelHeight();
 
     LOG(LEVEL)
+        << "["
         << " width " << width 
         << " height " << height 
         << " immediate " << m_immediate
@@ -95,18 +101,27 @@ void OpTracer::initTracer()
     context["output_buffer"]->set( output_buffer );
 
     m_otracer = new OTracer(m_ocontext, m_composition);
+
+    LOG(LEVEL) << "]" ;
 }
+
+
+void OpTracer::setup_render_target()
+{
+    LOG(LEVEL) << "[" ;
+    m_hub->setupCompositionTargetting();
+    m_otracer->setResolutionScale(1) ;
+    LOG(LEVEL) << "]" ;
+}
+
 
 void OpTracer::render()
 {     
-    if(m_count == 0 )
-    {
-        m_hub->setupCompositionTargetting();
-        m_otracer->setResolutionScale(1) ;
-    }
-
+    LOG(LEVEL) << "[" ;
+    if(m_count == 0 ) setup_render_target(); 
     m_otracer->trace_();
     m_count++ ; 
+    LOG(LEVEL) << "]" ;
 }   
 
 
@@ -199,11 +214,12 @@ void OpTracer::multi_snap(const char* dir, const char* reldir)
 
 void OpTracer::single_snap(const char* path)
 {
+    
     float eyex = m_composition->getEyeX();
     float eyey = m_composition->getEyeY();
     float eyez = m_composition->getEyeZ();
 
-    std::cout 
+    std::cout
         << " count " << std::setw(5) << m_count 
         << " eyex " << std::setw(10) << eyex
         << " eyey " << std::setw(10) << eyey
@@ -215,7 +231,4 @@ void OpTracer::single_snap(const char* path)
 
     m_ocontext->snap(path);
 } 
-
-
- 
 

@@ -367,6 +367,8 @@ class OKCORE_API Opticks {
        int         getDomainTarget() const ;   // --domaintarget
        int         getGenstepTarget() const ;  // --gensteptarget
        int         getTarget() const ;         // --target 
+       const char* getTargetPVN() const  ;     // --targetpvn
+
        int         getAlignLevel() const;
    public:
        int         getDefaultFrame() const ; 

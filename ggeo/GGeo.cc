@@ -984,6 +984,8 @@ void GGeo::getSensorPlacements(std::vector<void*>& placements, bool outer_volume
 }
 
 
+
+
 int GGeo::getFirstNodeIndexForGDMLAuxTargetLVName() const 
 {
     return m_nodelib->getFirstNodeIndexForGDMLAuxTargetLVName() ; 
@@ -1001,9 +1003,11 @@ void GGeo::dumpNodes(const std::vector<unsigned>& nidxs, const char* msg) const
     m_nodelib->dumpNodes(nidxs,msg);
 }
 
-int GGeo::getFirstNodeIndexForPVName(const char* pvname) const 
+int GGeo::getFirstNodeIndexForPVNameStarting(const char* pvname_start) const 
 {
-    return m_nodelib->getFirstNodeIndexForPVName(pvname);
+    std::vector<unsigned> nidxs ; 
+    m_nodelib->getNodeIndicesForPVNameStarting(nidxs, pvname_start) ; 
+    return nidxs.size() > 0 ? nidxs[0] : -1 ; 
 }
 
 /**
@@ -1019,10 +1023,18 @@ in the OptiX GPU context.
 
 **/
 
-int GGeo::getFirstNodeIndexForPVName() const 
+int GGeo::getFirstNodeIndexForPVName() const      // --pvname
 {
     const char* pvname = m_ok->getPVName(); 
-    return getFirstNodeIndexForPVName(pvname); 
+    return getFirstNodeIndexForPVNameStarting(pvname); 
+}
+
+int GGeo::getFirstNodeIndexForTargetPVName() const   // --targetpvn 
+{
+    const char* targetpvn = m_ok->getTargetPVN(); 
+    int nidx = getFirstNodeIndexForPVNameStarting(targetpvn); 
+    LOG(LEVEL) << " targetpvn " << targetpvn << " nidx " << nidx ; 
+    return nidx ; 
 }
 
 

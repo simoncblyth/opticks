@@ -25,7 +25,6 @@
 #include "plog/Severity.h"
 
 class SCtrl ; 
-class SLog ; 
 class BCfg ; 
 
 class Opticks ; 
@@ -130,6 +129,7 @@ class OKGEO_API OpticksHub : public SCtrl {
        // SCtrl
        void command(const char* cmd);  // no longer in chain, moved to OpticksViz
   private:
+       static int Preinit(); 
        void init();
        void setErr(int err);
        void configure();
@@ -228,17 +228,15 @@ class OKGEO_API OpticksHub : public SCtrl {
 
        std::string          desc() const ;
    public:
-       //OpticksRun*          getRun();
        OpticksGen*          getGen();
    public:
        void configureState(NConfigurable* scene);
        void cleanup();
 
    private:
-       SLog*            m_log ; 
+       int              m_preinit ; 
        Opticks*         m_ok ; 
        int              m_gltf ;
-       //OpticksRun*      m_run ; 
        bool             m_immediate ; 
 
        GGeo*            m_ggeo ;  

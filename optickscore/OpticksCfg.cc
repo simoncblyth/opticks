@@ -159,7 +159,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_lod(0),
     m_domaintarget(BOpticksResource::DefaultDomainTarget(0)),     // OPTICKS_DOMAIN_TARGET envvar 
     m_gensteptarget(BOpticksResource::DefaultGenstepTarget(0)),   // OPTICKS_GENSTEP_TARGET envvar
-    m_target(BOpticksResource::DefaultTarget(0)),                 // OPTICKS_TARGET envvar 
+    m_target(BOpticksResource::DefaultTarget(0)),                 // OPTICKS_DEFAULT_TARGET envvar 
+    m_targetpvn(BOpticksResource::DefaultTargetPVN("")),          // OPTICKS_DEFAULT_TARGETPVN envvar 
     m_alignlevel(0),
     m_exename(SAr::Instance ? SAr::Instance->exename() : "OpticksEmbedded" ), 
     m_gpumonpath(BStr::concat("$TMP/",m_exename ? m_exename : "OpticksCfg","_GPUMon.npy")),
@@ -1424,9 +1425,18 @@ void OpticksCfg<Listener>::init()
 
    char target[256];
    snprintf(target,256, "Integer controlling the viewpoint based on the identified node. "
-                        "Default target %d can be defined with envvar OPTICKS_DEFAULT_TARGET.", m_target );
+                        "Default target %d can be defined with envvar OPTICKS_TARGET.", m_target );
    m_desc.add_options()
        ("target",  boost::program_options::value<int>(&m_target), target );
+
+
+   char targetpvn[256];
+   snprintf(targetpvn,256, "String physvol name prefix alternative for the integer target controlling the viewpoint based on the identified node. "
+                        "Default targetpvn %s can be defined with envvar OPTICKS_TARGETPVN.", m_targetpvn.c_str() );
+   m_desc.add_options()
+       ("targetpvn",  boost::program_options::value<std::string>(&m_targetpvn), targetpvn );
+
+
 
 
 
@@ -2259,6 +2269,14 @@ int OpticksCfg<Listener>::getTarget() const
 {
     return m_target ; 
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getTargetPVN() const 
+{
+    return m_targetpvn ;  
+}
+
+
 
 
 template <class Listener>

@@ -40,6 +40,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity GItemList::LEVEL = PLOG::EnvLevel("GItemList", "DEBUG"); 
+
 const char* GItemList::GITEMLIST = "GItemList" ; 
 
 unsigned int GItemList::UNSET = UINT_MAX ; 
@@ -195,6 +197,26 @@ void GItemList::getIndicesWithKey( std::vector<unsigned>& indices, const char* k
     }
 }
 
+
+void GItemList::getIndicesWithKeyStarting( std::vector<unsigned>& indices, const char* key_start ) const 
+{  
+    LOG(LEVEL) << " key_start " << key_start ; 
+    for(unsigned i=0 ; i < m_list.size() ; i++)
+    {
+        const std::string& k = m_list[i] ; 
+
+        bool match = SStr::StartsWith( k.c_str(), key_start ) ;  
+
+        LOG(LEVEL) 
+            << " k [" << k  << "]" 
+            << " ks [" << key_start << "]" 
+            << " strlen(ks) " << strlen(key_start)
+            << " match " << match 
+            ;
+
+        if(match) indices.push_back(i) ; 
+    }
+}
 
 int GItemList::findIndexWithKeyStarting( const char* starting ) const 
 {  

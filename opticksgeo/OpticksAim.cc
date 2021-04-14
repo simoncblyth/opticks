@@ -37,9 +37,15 @@
 
 const plog::Severity OpticksAim::LEVEL = PLOG::EnvLevel("OpticksAim", "DEBUG") ; 
 
+int OpticksAim::Preinit() // static 
+{
+    LOG(LEVEL);
+    return 0 ; 
+}
 
 OpticksAim::OpticksAim(OpticksHub* hub) 
     :
+    m_preinit(Preinit()), 
     m_ok(hub->getOpticks()),
     m_dbgaim(m_ok->isDbgAim()),   // --dbgaim
     m_hub(hub),
@@ -47,8 +53,15 @@ OpticksAim::OpticksAim(OpticksHub* hub)
     m_ggeo(NULL),
     m_target(0),
     m_gdmlaux_target(0),
+    m_cmdline_targetpvn(0),
     m_autocam(true)
 {
+    init(); 
+}
+
+void OpticksAim::init()
+{
+    LOG(LEVEL); 
 }
 
 
@@ -68,6 +81,9 @@ void OpticksAim::registerGeometry(GGeo* ggeo)
     const char* gdmlaux_target_lvname = m_ok->getGDMLAuxTargetLVName() ; 
     m_gdmlaux_target =  m_ggeo->getFirstNodeIndexForGDMLAuxTargetLVName() ; // sensitive to GDML auxilary lvname metadata (label, target)  
 
+    const char* targetpvn = m_ok->getTargetPVN();     // --targetpvn
+    m_cmdline_targetpvn = m_ggeo->getFirstNodeIndexForPVNameStarting(targetpvn) ;   
+
     int cmdline_domaintarget = m_ok->getDomainTarget();    // --domaintarget 
 
     unsigned active_domaintarget = 0 ;  
@@ -82,6 +98,7 @@ void OpticksAim::registerGeometry(GGeo* ggeo)
 
     m_targets["gdmlaux_domain"] = m_gdmlaux_target  ; 
     m_targets["cmdline_domain"] = cmdline_domaintarget  ; 
+    m_targets["cmdline_pvn"] = m_cmdline_targetpvn  ; 
     m_targets["active_domain"] = active_domaintarget  ; 
 
     LOG(LEVEL)
@@ -89,6 +106,8 @@ void OpticksAim::registerGeometry(GGeo* ggeo)
         << " gdmlaux_target " << m_gdmlaux_target
         << " gdmlaux_target_lvname  " << gdmlaux_target_lvname 
         << " active_domaintarget " << active_domaintarget
+        << " targetpvn " << targetpvn 
+        << " cmdline_targetpvn " << m_cmdline_targetpvn  
         ; 
 
     glm::vec4 center_extent = m_ggeo->getCE(active_domaintarget); 
@@ -137,7 +156,11 @@ void OpticksAim::setupCompositionTargetting()
     unsigned cmdline_target = m_ok->getTarget();      // sensitive to OPTICKS_TARGET envvar, fallback 0 
     unsigned active_target = 0 ; 
 
-    if( cmdline_target > 0 )
+    if( m_cmdline_targetpvn > 0 ) 
+    {
+        active_target = m_cmdline_targetpvn ; 
+    } 
+    else if( cmdline_target > 0 )
     {
         active_target = cmdline_target ; 
     } 
@@ -151,6 +174,7 @@ void OpticksAim::setupCompositionTargetting()
     m_targets["active_composition" ] = active_target ; 
 
     LOG(error)
+        << " cmdline_targetpvn " << m_cmdline_targetpvn
         << " cmdline_target " << cmdline_target
         << " gdmlaux_target " << m_gdmlaux_target  
         << " active_target " << active_target 

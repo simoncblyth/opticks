@@ -307,6 +307,12 @@ void GNodeLib::getNodeIndicesForPVName(std::vector<unsigned>& nidx, const char* 
     m_pvlist->getIndicesWithKey(nidx, pvname); 
 }
 
+void GNodeLib::getNodeIndicesForPVNameStarting(std::vector<unsigned>& nidx, const char* pvname_start) const 
+{
+    if( pvname_start == NULL ) return ;  
+    m_pvlist->getIndicesWithKeyStarting(nidx, pvname_start); 
+}
+
 int GNodeLib::getFirstNodeIndexForPVName(const char* pvname) const
 {
     if( pvname == NULL ) return -1 ;  

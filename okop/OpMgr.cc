@@ -24,7 +24,6 @@ class NConfigurable ;
 
 #include "PLOG.hh"
 
-#include "SLog.hh"
 #include "BTimeKeeper.hh"
 #include "NPY.hpp"
 
@@ -46,12 +45,15 @@ class NConfigurable ;
 const plog::Severity OpMgr::LEVEL = PLOG::EnvLevel("OpMgr", "DEBUG") ; 
 
 
-// even though may end up doing the geocache check inside OpticksHub tis 
-// convenient to have the Opticks instance outside OpMgr 
+int OpMgr::Preinit()  // static 
+{
+    LOG(LEVEL) ;  
+    return 0 ; 
+}
 
 OpMgr::OpMgr(Opticks* ok ) 
     :
-    m_log(new SLog("OpMgr::OpMgr","",LEVEL)),
+    m_preinit(Preinit()),
     m_ok(ok ? ok : Opticks::GetInstance()),         
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry OR adopt a preexisting GGeo instance
     m_idx(new OpticksIdx(m_hub)),
@@ -62,7 +64,6 @@ OpMgr::OpMgr(Opticks* ok )
     m_count(0)
 {
     init();
-    (*m_log)("DONE");
 }
 
 OpMgr::~OpMgr()
@@ -72,12 +73,10 @@ OpMgr::~OpMgr()
 
 void OpMgr::init()
 {
+    LOG(LEVEL); 
     bool g4gun = m_ok->getSourceCode() == OpticksGenstep_G4GUN ;
-    if(g4gun)
-         LOG(fatal) << "OpMgr doesnt support G4GUN, other that via loading (TO BE IMPLEMENTED) " ;
+    if(g4gun) LOG(fatal) << "OpMgr doesnt support G4GUN, other that via loading (TO BE IMPLEMENTED) " ;
     assert(!g4gun);
-
-    //m_ok->dumpParameters("OpMgr::init");
 }
 
 

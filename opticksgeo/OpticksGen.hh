@@ -74,6 +74,7 @@ class OKGEO_API OpticksGen
         NPY<float>*          getInputGensteps() const ;
 
     private:
+        static int           Preinit() ; 
         FabStepNPY*          getFabStep() const  ;
         TorchStepNPY*        getTorchstep() const ;
         GenstepNPY*          getGenstepNPY() const ;
@@ -100,6 +101,7 @@ class OKGEO_API OpticksGen
         void                 setLegacyGensteps(NPY<float>* igs);
         void                 setInputPhotons(NPY<float>* iox);
     private:
+        int                   m_preinit ; 
         OpticksHub*           m_hub ; 
         OpticksGun*           m_gun ; 
         Opticks*              m_ok ; 

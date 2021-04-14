@@ -26,7 +26,7 @@
 struct NSlice ;
 #include "NSequence.hpp"
 
-// TODO: rename to GNameList/GKeyList/GStringList  
+#include "plog/Severity.h"
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
@@ -35,6 +35,7 @@ class GGEO_API GItemList : public NSequence {
    public:
        static unsigned int UNSET ; 
        static const char* GITEMLIST ; 
+       static const plog::Severity LEVEL ; 
        static GItemList* Load(const char* idpath, const char* itemtype, const char* reldir=NULL);
        static GItemList* Repeat( const char* itemtype, const char* name, unsigned numRepeats, const char* reldir=NULL );
    public:
@@ -64,6 +65,7 @@ class GGEO_API GItemList : public NSequence {
    public:
        void getIndicesWithKey( std::vector<unsigned>& indices, const char* key ) const ; 
        void getIndicesWithKeyEnding( std::vector<unsigned>& indices, const char* ending ) const ;  
+       void getIndicesWithKeyStarting( std::vector<unsigned>& indices, const char* key_start ) const ; 
        int  findIndexWithKeyStarting( const char* starting ) const ;  // first index is returned, gives -1 if none found
        int  findIndex( const char* key ) const ;  // first index is returned, gives -1 if none found
        unsigned getIndex(const char* key) const ;    // 0-based index of first matching name, OR UINT_MAX if no match

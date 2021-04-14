@@ -132,6 +132,21 @@ void test_getNodeIndicesForPVName(const GNodeLib* nlib)
 }
 
 
+void test_getNodeIndicesForPVNameStarting(const GNodeLib* nlib) 
+{
+    const Opticks* ok = nlib->getOpticks(); 
+    const char* targetpvn = ok->getTargetPVN(); 
+    LOG(info) << " targetpvn " << targetpvn ; 
+    if( targetpvn == NULL ) return ;  
+    std::vector<unsigned> nidxs ; 
+    nlib->getNodeIndicesForPVNameStarting(nidxs, targetpvn ); 
+    LOG(info) 
+       << " targetpvn " << targetpvn 
+       << " nidxs.size " << nidxs.size() 
+       ;  
+
+    nlib->dumpNodes(nidxs, "test_getNodeIndicesForPVNameStarting" ); 
+}
 
 
 int main(int argc, char** argv)
@@ -140,12 +155,14 @@ int main(int argc, char** argv)
    
     Opticks ok(argc, argv);
     ok.configure();
+
+
  
     GNodeLib* nlib = GNodeLib::Load(&ok); 
     assert(nlib);  
     
-    test_transforms(nlib); 
-    test_dump(nlib);
+    //test_transforms(nlib); 
+    //test_dump(nlib);
 
 
     /*
@@ -165,8 +182,8 @@ int main(int argc, char** argv)
     //test_dumpSensorVolumes(nlib); 
 
     //test_getNodeIndicesForLVName(nlib) ;
-
-    test_getNodeIndicesForPVName(nlib) ;
+    //test_getNodeIndicesForPVName(nlib) ;
+    test_getNodeIndicesForPVNameStarting(nlib) ;
 
     return 0 ; 
 }

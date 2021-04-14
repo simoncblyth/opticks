@@ -54,10 +54,15 @@ NPY<float>* OpticksGen::getInputGensteps() const { return m_direct_gensteps ? m_
 NPY<float>* OpticksGen::getInputPhotons() const {   return m_input_photons ; }
 
 
-
+int OpticksGen::Preinit() // static
+{
+   LOG(LEVEL) ;
+   return 0 ; 
+}
 
 OpticksGen::OpticksGen(OpticksHub* hub) 
     :
+    m_preinit(Preinit()),
     m_hub(hub),
     m_gun(new OpticksGun(hub)),
     m_ok(hub->getOpticks()),

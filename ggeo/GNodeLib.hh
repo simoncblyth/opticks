@@ -124,6 +124,7 @@ class GGEO_API GNodeLib
         void dumpNodes(const std::vector<unsigned>& nidxs, const char* msg="GNodeLib::dumpNodes") const ;
 
         void getNodeIndicesForPVName(std::vector<unsigned>& nidx, const char* pvname) const ;
+        void getNodeIndicesForPVNameStarting(std::vector<unsigned>& nidx, const char* pvname_start) const ;
         int  getFirstNodeIndexForPVName(const char* pvname) const ;
     public:
         NPY<float>* getTransforms() const ; 

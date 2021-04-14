@@ -38,9 +38,15 @@
 
 const plog::Severity OpPropagator::LEVEL = PLOG::EnvLevel("OpPropagator", "DEBUG" ) ; 
 
+int OpPropagator::Preinit() // static
+{
+    LOG(LEVEL) ; 
+    return 0 ; 
+}
+
 OpPropagator::OpPropagator(OpticksHub* hub, OpticksIdx* idx) 
     :
-    m_log(new SLog("OpPropagator::OpPropagator", "", LEVEL)),
+    m_preinit(Preinit()),
     m_hub(hub),    
     m_idx(idx),
     m_ok(m_hub->getOpticks()),
@@ -48,7 +54,12 @@ OpPropagator::OpPropagator(OpticksHub* hub, OpticksIdx* idx)
     m_tracer(new OpTracer(m_engine,m_hub, true)),
     m_placeholder(0)
 {
-    (*m_log)("DONE");
+    init(); 
+}
+
+void OpPropagator::init()
+{
+    LOG(LEVEL); 
 }
 
 
@@ -105,9 +116,6 @@ int OpPropagator::downloadEvent()
 void OpPropagator::indexEvent()
 {
     m_idx->indexBoundariesHost();
-
-    //m_idx->indexEvtOld();   // hostside checks, when saving makes sense 
-
     m_idx->indexSeqHost();
 }
 
@@ -118,7 +126,9 @@ void OpPropagator::cleanup()
 
 void OpPropagator::snap(const char* dir, const char* reldir)
 {
+    LOG(LEVEL) << "[" ; 
     LOG(info) << " dir " << dir << " reldir " << reldir  ; 
     m_tracer->snap(dir, reldir);
+    LOG(LEVEL) << "]" ; 
 }
 

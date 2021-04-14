@@ -18,7 +18,6 @@
  */
 
 // sysrap-
-#include "SLog.hh"
 #include "SCtrl.hh"
 
 // brap-
@@ -78,11 +77,10 @@
 #include "OpticksGen.hh"
 #include "OpticksRun.hh"
 #include "OpticksAim.hh"
-//#include "OpticksGeometry.hh"
 
 #include "PLOG.hh"
 
-const plog::Severity OpticksHub::LEVEL = debug ; 
+const plog::Severity OpticksHub::LEVEL = PLOG::EnvLevel("OpticksHub", "DEBUG") ; 
 
 /**
 
@@ -187,13 +185,17 @@ void OpticksHub::command(const char* cmd)
     m_composition->command(cmd); 
 }
 
+int OpticksHub::Preinit()  // static 
+{
+    LOG(LEVEL) ; 
+    return 0 ; 
+}
 
 OpticksHub::OpticksHub(Opticks* ok) 
     :
     SCtrl(),
-    m_log(new SLog("OpticksHub::OpticksHub","", LEVEL)),
+    m_preinit(Preinit()),
     m_ok(ok),
-    //m_run(m_ok->getRun()),
     m_ggeo(GGeo::GetInstance()),   // a pre-existing instance will prevent subsequent loading from cache   
     m_composition(new Composition(m_ok)),
 #ifdef OPTICKS_NPYSERVER
@@ -213,7 +215,6 @@ OpticksHub::OpticksHub(Opticks* ok)
     m_ctrl(this)
 {
     init();
-    (*m_log)("DONE");
 }
 
 
@@ -224,9 +225,9 @@ void OpticksHub::setCtrl(SCtrl* ctrl)
 
 void OpticksHub::init()
 {
-    OK_PROFILE("_OpticksHub::init");  
+    LOG(LEVEL) << "[" ; 
 
-    pLOG(LEVEL,0) << "[" ;   // -1 : one notch more easily seen than LEVEL
+    OK_PROFILE("_OpticksHub::init");  
 
     add(m_fcfg);
 
@@ -260,8 +261,9 @@ void OpticksHub::init()
 
     m_gen = new OpticksGen(this) ;
 
-    pLOG(LEVEL,0) << "]" ; 
     OK_PROFILE("OpticksHub::init");  
+
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -662,7 +664,9 @@ Called for example from:
 
 void OpticksHub::setupCompositionTargetting()
 {
+    LOG(LEVEL) << "[" ; 
     m_aim->setupCompositionTargetting();
+    LOG(LEVEL) << "]" ; 
 }
 void OpticksHub::target()   // point composition at geocenter or the m_evt (last created)
 {

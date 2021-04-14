@@ -92,6 +92,7 @@ class BRAP_API  BOpticksResource {
         static const char* DEFAULT_GENSTEP_TARGET_KEY ; 
         static const char* DEFAULT_DOMAIN_TARGET_KEY ; 
         static const char* DEFAULT_TARGET_KEY ; 
+        static const char* DEFAULT_TARGETPVN_KEY ; 
         static const char* DEFAULT_KEY_KEY ; 
 
         static bool IsLegacyGeometryEnabled() ; 
@@ -101,6 +102,7 @@ class BRAP_API  BOpticksResource {
         static int  DefaultGenstepTarget(int fallback); 
         static int  DefaultDomainTarget(int fallback); 
         static int  DefaultTarget(int fallback); 
+        static const char* DefaultTargetPVN(const char* fallback); 
         static std::string  DefaultKey(); 
 
     protected:

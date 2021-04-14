@@ -2366,6 +2366,13 @@ int  Opticks::getTarget() const   // --target,  default sensitive to OPTICKS_TAR
 {
     return m_cfg->getTarget(); 
 }
+const char* Opticks::getTargetPVN() const  
+{
+    const std::string& targetpvn = m_cfg->getTargetPVN() ;  // --targetpvn   OPTICKS_TARGETPVN
+    return targetpvn.empty() ? NULL : targetpvn.c_str() ;
+}
+
+
 
 
 

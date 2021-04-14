@@ -266,11 +266,11 @@ void test_GGeo_getGDMLAuxTargetNodeIndices(const GGeo* gg)
 }
 
 
-void test_GGeo_getFirstNodeIndexForPVName(const GGeo* gg)
+void test_GGeo_getFirstNodeIndexForPVNameStarting(const GGeo* gg)
 {
     Opticks* ok = gg->getOpticks(); 
     const char* pvname = ok->getPVName() ;
-    int nidx = gg->getFirstNodeIndexForPVName(pvname); 
+    int nidx = gg->getFirstNodeIndexForPVNameStarting(pvname); 
     const char* pvname2 = gg->getPVName(nidx);
 
     LOG(info) 
@@ -331,7 +331,7 @@ int main(int argc, char** argv)
     //test_GGeo_getTransform(gg);
     //test_GGeo_getGDMLAuxTargetNodeIndices(gg);
 
-    test_GGeo_getFirstNodeIndexForPVName(gg);
+    test_GGeo_getFirstNodeIndexForPVNameStarting(gg);
     test_GGeo_getSignedBoundary(gg);
 
     return 0 ;

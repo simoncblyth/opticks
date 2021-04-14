@@ -277,7 +277,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void           getNodeIndicesForLVName(std::vector<unsigned>& nidxs, const char* lvname) const ;
         void           dumpNodes(const std::vector<unsigned>& nidxs, const char* msg="GGeo::dumpNodes") const ; 
         int            getFirstNodeIndexForPVName(const char* pvname) const ;
-        int            getFirstNodeIndexForPVName() const ;
+        int            getFirstNodeIndexForPVNameStarting(const char* pvname_start) const ;
+        int            getFirstNodeIndexForPVName() const ;  // --pvname 
+        int            getFirstNodeIndexForTargetPVName() const ;    // --targetpvn 
     public:
         void add(GMaterial* material);
         void addRaw(GMaterial* material);

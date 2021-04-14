@@ -19,7 +19,6 @@
 
 #pragma once
 
-class SLog ; 
 class Opticks ; 
 class OpticksHub ; 
 class SensorLib ; 
@@ -75,16 +74,14 @@ perhaps factor out into OpKernel ?
 class OKOP_API OpMgr {
    public:
        static const plog::Severity LEVEL ; 
+   private:
+       static int Preinit();
    public:
        OpMgr(Opticks* ok );
        virtual ~OpMgr();
    public:
        void setGensteps(NPY<float>* gensteps); 
-       //void uploadSensorLib(const SensorLib* sensorlib); 
-   public:
        void propagate();
-   public:
-
        OpticksEvent* getEvent() const ; 
        OpticksEvent* getG4Event() const ; 
        void reset();
@@ -94,7 +91,7 @@ class OKOP_API OpMgr {
        void init();
        void cleanup();
    private:
-       SLog*          m_log ; 
+       int            m_preinit ; 
        Opticks*       m_ok ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 

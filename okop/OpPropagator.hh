@@ -19,7 +19,6 @@
 
 #pragma once
 
-class SLog ; 
 template <typename T> class NPY ; 
 
 class SensorLib ; 
@@ -75,6 +74,9 @@ class OKOP_API OpPropagator {
        void snap(const char* dir, const char* reldir=NULL);
 
    private:
+       static int Preinit(); 
+       void init();
+   private:
        // invoked internally by propagate
        int uploadEvent();
        int downloadEvent();
@@ -82,7 +84,7 @@ class OKOP_API OpPropagator {
        // not yet used 
        void indexEvent();
    private:
-       SLog*          m_log ; 
+       int            m_preinit ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
        Opticks*       m_ok ; 

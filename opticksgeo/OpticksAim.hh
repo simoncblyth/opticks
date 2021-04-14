@@ -53,8 +53,11 @@ class OKGEO_API OpticksAim {
        unsigned        getTarget() const ;
        void            setTarget(unsigned target=0, bool aim=true);
     private:
+       static int      Preinit(); 
+       void            init(); 
        void            dumpTarget(const char* msg="OpticksAim::dumpTarget") const ;  
     private:
+       int             m_preinit ; 
        Opticks*        m_ok ; 
        bool            m_dbgaim ;  // --dbgaim
        OpticksHub*     m_hub ; 
@@ -63,6 +66,7 @@ class OKGEO_API OpticksAim {
        GGeo*           m_ggeo ; 
        int             m_target ;
        int             m_gdmlaux_target ; 
+       int             m_cmdline_targetpvn ; 
        bool            m_autocam ; 
 
        std::map<std::string, int> m_targets ; 

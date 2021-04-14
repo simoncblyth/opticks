@@ -57,6 +57,9 @@ see okop-
 
 **/
 
+
+
+
 class OKOP_API OpTracer : public SRenderer {
     public:
        static const plog::Severity LEVEL ;  
@@ -65,13 +68,15 @@ class OKOP_API OpTracer : public SRenderer {
     public:
        void snap(const char* dir, const char* reldir=NULL);
     private:
+       static int Preinit();
        void init();
        void initTracer();
        void multi_snap(const char* dir, const char* reldir=NULL);
        void single_snap(const char* path);
        void render();     // fulfils SRenderer protocol
+       void setup_render_target() ;
     private:
-       SLog*            m_log ; 
+       int              m_preinit ; 
        OpEngine*        m_ope ; 
        OpticksHub*      m_hub ; 
        Opticks*         m_ok ; 

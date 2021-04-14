@@ -241,6 +241,7 @@ bool BOpticksResource::IsForeignGeant4Enabled()
 
 
 const char* BOpticksResource::DEFAULT_TARGET_KEY = "OPTICKS_TARGET" ; 
+const char* BOpticksResource::DEFAULT_TARGETPVN_KEY = "OPTICKS_TARGETPVN" ; 
 const char* BOpticksResource::DEFAULT_GENSTEP_TARGET_KEY = "OPTICKS_GENSTEP_TARGET" ; 
 const char* BOpticksResource::DEFAULT_DOMAIN_TARGET_KEY = "OPTICKS_DOMAIN_TARGET" ; 
 
@@ -248,6 +249,14 @@ int BOpticksResource::DefaultTarget(int fallback) // static
 {
    return SSys::getenvint(DEFAULT_TARGET_KEY, fallback);
 }
+
+const char* BOpticksResource::DefaultTargetPVN(const char* fallback) // static
+{
+   return SSys::getenvvar(DEFAULT_TARGETPVN_KEY, fallback ? strdup(fallback) : nullptr );
+}
+
+
+
 int BOpticksResource::DefaultGenstepTarget(int fallback) // static
 {
    return SSys::getenvint(DEFAULT_GENSTEP_TARGET_KEY, fallback);

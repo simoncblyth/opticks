@@ -188,6 +188,7 @@ public:
      int                getDomainTarget() const ;
      int                getGenstepTarget() const ;
      int                getTarget() const ;
+     const std::string& getTargetPVN() const ;
 public:
      int                getAlignLevel() const ;
 
@@ -332,6 +333,7 @@ private:
      int         m_domaintarget ;  
      int         m_gensteptarget ;  
      int         m_target ;  
+     std::string m_targetpvn ;  
      int         m_alignlevel ;  
 
      const char* m_exename ; 
