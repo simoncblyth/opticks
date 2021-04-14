@@ -30,8 +30,10 @@
 
 #include <boost/math/constants/constants.hpp>
 #include "BStr.hh"
+#include "NSnapConfig.hpp"
 #include "NGLM.hpp"
 #include "SCtrl.hh"
+#include "SSys.hh"
 
 
 // npy-
@@ -2282,8 +2284,35 @@ void Composition::Details(const char* msg)
 
     std::cout << gpresent( "w2e(MV)", m_world2eye ) << std::endl ; 
     std::cout << gpresent( "w2c(MVP)", m_world2clip ) << std::endl ; 
-
 }
+
+
+void Composition::eye_sequence( std::vector<glm::vec3>& eyes, const NSnapConfig* snap_config  )
+{
+    int num_steps = snap_config->steps ; 
+
+    float x0 = snap_config->x0 ; 
+    float y0 = snap_config->y0 ; 
+    float z0 = snap_config->z0 ; 
+
+    float x1 = snap_config->x1 ; 
+    float y1 = snap_config->y1 ; 
+    float z1 = snap_config->z1 ; 
+
+    for(int i=0 ; i < num_steps ; i++)
+    {   
+        float frac = num_steps > 1 ? float(i)/float(num_steps-1) : 0.f ; 
+
+        glm::vec3 eye(0.f, 0.f, 0.f); 
+
+        eye.x = SSys::IsNegativeZero(x0) ? getEyeX() :  x0 + (x1-x0)*frac ;
+        eye.y = SSys::IsNegativeZero(y0) ? getEyeY() :  y0 + (y1-y0)*frac ;
+        eye.z = SSys::IsNegativeZero(z0) ? getEyeZ() :  z0 + (z1-z0)*frac ;
+
+        eyes.push_back(eye); 
+    }   
+}
+
 
 
 

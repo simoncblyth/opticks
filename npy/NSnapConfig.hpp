@@ -50,16 +50,16 @@ struct NPY_API NSnapConfig
     int steps ; 
     int fmtwidth ; 
 
-    float eyestartx ; 
-    float eyestarty ; 
-    float eyestartz ;
+    float x0 ;   // formerly eyestartx
+    float y0 ; 
+    float z0 ;
  
-    float eyestopx ; 
-    float eyestopy ; 
-    float eyestopz ; 
+    float x1 ;   // formerly eyestopx
+    float y1 ; 
+    float z1 ; 
 
     std::string prefix ; 
-    std::string postfix ; 
+    std::string ext ;    // eg .jpg
 
 
     const char* getSnapPath(const char* dir, const char* reldir, int index) const ;

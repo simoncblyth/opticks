@@ -20,7 +20,10 @@
 #include <iomanip>
 #include <cassert>
 
+#include "SSys.hh"
+
 #include "NPY.hpp"
+#include "NSnapConfig.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
@@ -255,13 +258,31 @@ void test_setCenterExtent()
 
 
    }
-
-
-
-
 }
 
 
+/**
+CompositionTest --snapconfig steps=11,x0=-1,x1=-0.5,y0=0,z0=0
+**/
+
+void test_snapconfig(Opticks* ok)
+{
+    Composition* comp = new Composition(ok) ;
+    NSnapConfig* snap_config = ok->getSnapConfig(); 
+
+    std::vector<glm::vec3>    eyes ;
+    comp->eye_sequence(eyes, snap_config );   
+    
+    for(int i=0 ; i < int(eyes.size()) ; i++)
+    {
+        const glm::vec3& eye = eyes[i]; 
+        std::cout 
+            << std::setw(3) << i << " "
+            << gpresent("eye", eye )
+            << std::endl 
+            ;  
+    }
+}
 
 
 int main(int argc, char** argv)
@@ -274,10 +295,11 @@ int main(int argc, char** argv)
 
    //test_rotate();
    //test_center_extent(&ok);
-   test_setCenterExtent();
+   //test_setCenterExtent();
    //test_depth(&ok);
 
-    
+   test_snapconfig(&ok);      
+
    return 0 ;
 }
 

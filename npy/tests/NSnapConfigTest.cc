@@ -19,8 +19,8 @@
 
 /**
 
-NSnapConfigTest --snapconfig "numsteps=10,eyestartz=-1,eyestopz=1" 
-NSnapConfigTest --snapconfig "numsteps=5,eyestartz=-1,eyestopz=-1" 
+NSnapConfigTest --snapconfig "steps=10,eyestartz=-1,eyestopz=1" 
+NSnapConfigTest --snapconfig "steps=5,eyestartz=-1,eyestopz=-1" 
 
 
 **/

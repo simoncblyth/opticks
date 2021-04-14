@@ -168,45 +168,17 @@ void OpTracer::snap(const char* dir, const char* reldir)
 }
 
 
-
 void OpTracer::multi_snap(const char* dir, const char* reldir)
 {
-    int num_steps = m_snap_config->steps ; 
+    std::vector<glm::vec3>    eyes ; 
+    m_composition->eye_sequence(eyes, m_snap_config ); 
 
-    float eyestartx = m_snap_config->eyestartx ; 
-    float eyestarty = m_snap_config->eyestarty ; 
-    float eyestartz = m_snap_config->eyestartz ; 
-
-    float eyestopx = m_snap_config->eyestopx ; 
-    float eyestopy = m_snap_config->eyestopy ; 
-    float eyestopz = m_snap_config->eyestopz ; 
-
-    for(int i=0 ; i < num_steps ; i++)
+    for(int i=0 ; i < int(eyes.size()) ; i++)
     {
-        float frac = num_steps > 1 ? float(i)/float(num_steps-1) : 0.f ; 
-
-        float eyex = m_composition->getEyeX();
-        float eyey = m_composition->getEyeY();
-        float eyez = m_composition->getEyeZ();
-
-        if(!SSys::IsNegativeZero(eyestartx))
-        { 
-            eyex = eyestartx + (eyestopx-eyestartx)*frac ; 
-            m_composition->setEyeX( eyex ); 
-        }
-        if(!SSys::IsNegativeZero(eyestarty))
-        { 
-            eyey = eyestarty + (eyestopy-eyestarty)*frac ; 
-            m_composition->setEyeY( eyey ); 
-        }
-        if(!SSys::IsNegativeZero(eyestartz))
-        { 
-            eyez = eyestartz + (eyestopz-eyestartz)*frac ; 
-            m_composition->setEyeZ( eyez ); 
-        }
-
-        const char* path = m_snap_config->getSnapPath(dir, reldir, i); 
-        single_snap(path);  
+         const glm::vec3& eye = eyes[i] ; 
+         m_composition->setEye( eye.x, eye.y, eye.z ); 
+         const char* path = m_snap_config->getSnapPath(dir, reldir, i); 
+         single_snap(path);  
     }
 }
 
@@ -217,13 +189,10 @@ OpTracer::single_snap
 
 Single snap uses composition targetting 
 
-
 **/
-
 
 void OpTracer::single_snap(const char* path)
 {
-    
     float eyex = m_composition->getEyeX();
     float eyey = m_composition->getEyeY();
     float eyez = m_composition->getEyeZ();

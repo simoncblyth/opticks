@@ -34,14 +34,14 @@ NSnapConfig::NSnapConfig(const char* cfg)
     verbosity(0),
     steps(10),
     fmtwidth(5),
-    eyestartx(NEGATIVE_ZERO),   // -ve zero on startx,y,z indicates leave asis, see OpTracer::snap
-    eyestarty(NEGATIVE_ZERO),
-    eyestartz(0.f),
-    eyestopx(NEGATIVE_ZERO),
-    eyestopy(NEGATIVE_ZERO),
-    eyestopz(1.f),
+    x0(NEGATIVE_ZERO),   // -ve zero on x0,y0,z0 indicates leave asis, see OpTracer::snap
+    y0(NEGATIVE_ZERO),
+    z0(NEGATIVE_ZERO),
+    x1(NEGATIVE_ZERO),
+    y1(NEGATIVE_ZERO),
+    z1(NEGATIVE_ZERO),
     prefix("snap"),
-    postfix(".ppm")
+    ext(".jpg")
 {
     LOG(LEVEL)
               << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
@@ -53,17 +53,17 @@ NSnapConfig::NSnapConfig(const char* cfg)
     bconfig->addInt("steps", &steps );
     bconfig->addInt("fmtwidth", &fmtwidth );
 
-    bconfig->addFloat("eyestartx", &eyestartx );
-    bconfig->addFloat("eyestopx", &eyestopx );
+    bconfig->addFloat("x0", &x0 );
+    bconfig->addFloat("x1", &x1 );
 
-    bconfig->addFloat("eyestarty", &eyestarty );
-    bconfig->addFloat("eyestopy", &eyestopy );
+    bconfig->addFloat("y0", &y0 );
+    bconfig->addFloat("y1", &y1 );
 
-    bconfig->addFloat("eyestartz", &eyestartz );
-    bconfig->addFloat("eyestopz", &eyestopz );
+    bconfig->addFloat("z0", &z0 );
+    bconfig->addFloat("z1", &z1 );
 
     bconfig->addString("prefix", &prefix );
-    bconfig->addString("postfix", &postfix );
+    bconfig->addString("ext",    &ext );     // formerly postfix
 
     bconfig->parse();
 }
@@ -92,7 +92,7 @@ std::string NSnapConfig::getSnapName(int index) const
     ss 
        << prefix 
        << ( index > -1 ? SnapIndex(index, fmtwidth) : blank )
-       << postfix 
+       << ext
        ; 
 
     return ss.str();

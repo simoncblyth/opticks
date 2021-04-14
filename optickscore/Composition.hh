@@ -33,6 +33,7 @@ class BCfg ;
 template<typename T> class NPY ; 
 class MultiViewNPY ; 
 class NState ; 
+struct NSnapConfig ; 
 
 // opticks-
 class Camera ;
@@ -595,6 +596,10 @@ class OKCORE_API Composition : public NConfigurable {
   public: 
       void Summary(const char* msg);
       void Details(const char* msg);
+
+      void eye_sequence( std::vector<glm::vec3>& eyes, const NSnapConfig* snap_config  );
+
+
 
 };      
 #include "OKCORE_TAIL.hh"

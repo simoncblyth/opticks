@@ -73,6 +73,8 @@ class OKOP_API OpTracer : public SRenderer {
        void initTracer();
        void multi_snap(const char* dir, const char* reldir=NULL);
        void single_snap(const char* path);
+
+
        void render();     // fulfils SRenderer protocol
        void setup_render_target() ;
     private:
