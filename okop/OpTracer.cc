@@ -211,6 +211,15 @@ void OpTracer::multi_snap(const char* dir, const char* reldir)
 }
 
 
+/**
+OpTracer::single_snap
+------------------------
+
+Single snap uses composition targetting 
+
+
+**/
+
 
 void OpTracer::single_snap(const char* path)
 {

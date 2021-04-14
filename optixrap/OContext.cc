@@ -1383,7 +1383,7 @@ void OContext::snap(const char* path)
     RTsize width, height, depth ;
     output_buffer->getSize(width, height, depth);
 
-    bool yflip = true ; 
+    bool yflip = false ;  // now doing the yflip in the pinhole_camera.cu kernel for ppm/png/jpg consistency 
     LOG(LEVEL) 
          << " path " << path 
          << " width " << width
