@@ -24,7 +24,7 @@ Hmm need to make connection to the volume traversal index
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.geocache import keydir
+from opticks.ana.key import keydir
 from opticks.ana.prim import Dir
 from opticks.ana.geom2d import Geom2d
 from opticks.ana.flight import Flight
@@ -48,11 +48,13 @@ if __name__ == '__main__':
 
     os.environ["IDPATH"] = kd    ## TODO: avoid having to do this, due to prim internals
 
-    mm0 = Geom2d(kd, ridx=0)
+    mm0 = Geom2d(kd, ridx=0)     ## TODO: renamings/splittings more suited to new all-in-GNodeLib-not-mm0 geometry model 
 
-    target = 352854   # guide tube torus, is convenient frame 
-    sc = mm0.ce[target][3]/1000.   #  torus big radius in meters   17.838   
+    target = mm0.pvfind('pTarget')    ## pick a convenient frame of operation 
+    assert len(target) == 1 
+    target = target[0]
 
+    sc = mm0.ce[target][3]/1000.      ##  big radius in meters 17.760008
 
     import matplotlib.pyplot as plt 
     from mpl_toolkits.mplot3d import Axes3D 
@@ -89,7 +91,7 @@ if __name__ == '__main__':
     uzz[:n9] = [0,0,1] 
     czz[0].view("|S2")[0:8] = ["AA", "C0", "T5", "B2", "Q1", "", "N2", "" ]
     czz[2].view("|S2")[0:8] = ["","","","", "A1","","","" ] 
-    czz[n9/2].view("|S2")[0:8] = ["T6", "", "", "", "", "", "", "" ]
+    czz[n9//2].view("|S2")[0:8] = ["T6", "", "", "", "", "", "", "" ]
     # AA: home the animation as ascii A - 0 is greater than the number of modes 
     # Q1:invis GlobalStyle
 
@@ -147,11 +149,11 @@ if __name__ == '__main__':
 
     cbb[0].view("|S2")[0:8] = ["C0", "","","","T6","","T7","" ] 
     cbb[1].view("|S2")[0:1] = ["T8"] 
-    cbb[n1/2+0].view("|S2")[0:8] = ["E3","","","","","","","" ]
-    cbb[n1/2+1].view("|S2")[0:8] = ["","","","","","","","" ]
-    cbb[n1/2+2].view("|S2")[0:8] = ["","","","","","","","" ]
-    cbb[n1/2+3].view("|S2")[0:8] = ["","","","","","","","" ]
-    cbb[n1/2+4].view("|S2")[0:8] = ["E1","","","","","","","" ]
+    cbb[n1//2+0].view("|S2")[0:8] = ["E3","","","","","","","" ]
+    cbb[n1//2+1].view("|S2")[0:8] = ["","","","","","","","" ]
+    cbb[n1//2+2].view("|S2")[0:8] = ["","","","","","","","" ]
+    cbb[n1//2+3].view("|S2")[0:8] = ["","","","","","","","" ]
+    cbb[n1//2+4].view("|S2")[0:8] = ["E1","","","","","","","" ]
 
     cbb[n1-2].view("|S2")[0:1] = ["T5"] 
 
@@ -181,8 +183,8 @@ if __name__ == '__main__':
     ucc[:,2] = np.ones(n2, dtype=dtype)
 
     ccc[0].view("|S2")[0:8] = ["T7","","","" ,"","","",""]
-    ccc[n2/2].view("|S2")[0:8] = ["","","","" ,"","","",""]
-    ccc[n2/2+2].view("|S2")[0:8] = ["","","","" ,"","","",""]
+    ccc[n2//2].view("|S2")[0:8] = ["","","","" ,"","","",""]
+    ccc[n2//2+2].view("|S2")[0:8] = ["","","","" ,"","","",""]
 
     lcc[:-1] = ecc[1:]
     lcc[-1] = [0,0,1]

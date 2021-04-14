@@ -36,8 +36,9 @@
 #include "FlightPath.hh"
 
 
-
 const char* FlightPath::FILENAME = "flightpath.npy"  ; 
+
+const plog::Severity FlightPath::LEVEL = PLOG::EnvLevel("FlightPath", "DEBUG" ); 
 
 void FlightPath::setCtrl(SCtrl* ctrl)
 {
@@ -53,6 +54,7 @@ FlightPath::FlightPath(const char* dir)
     m_ivperiod(128),
     m_ctrl(NULL)
 {
+    LOG(LEVEL) << " m_flightpathdir " << m_flightpathdir ; 
 }
 
 int* FlightPath::getIVPeriodPtr()

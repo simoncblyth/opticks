@@ -50,13 +50,13 @@ struct NPY_API NSnapConfig
     int steps ; 
     int fmtwidth ; 
 
-    float x0 ;   // formerly eyestartx
-    float y0 ; 
-    float z0 ;
+    float ex0 ;   // formerly eyestartx
+    float ey0 ; 
+    float ez0 ;
  
-    float x1 ;   // formerly eyestopx
-    float y1 ; 
-    float z1 ; 
+    float ex1 ;   // formerly eyestopx
+    float ey1 ; 
+    float ez1 ; 
 
     std::string prefix ; 
     std::string ext ;    // eg .jpg

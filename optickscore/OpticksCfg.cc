@@ -71,7 +71,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_testconfig(""),
     m_state_tag(""),
     m_materialprefix("/dd/Materials/"),
-    m_snapconfig("steps=0,postfix=.jpg"),        // --snapconfig
+    m_snapconfig("steps=0,ext=.jpg"),        // --snapconfig
     m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
     m_meshversion(""),
     m_rendermode(""),
@@ -272,10 +272,17 @@ void OpticksCfg<Listener>::init()
        ("way",     "enable way/hiy point recording at runtime with Opticks::isWayEnabled and WAY_ENABLED preprocessor.py flag in generate.cu ") ;
 
 
+
+
+
    char waymask[128];
    snprintf(waymask,128, "Controls which parts of the way_selection are applied, see OGeo::initWayControl. Default %d", m_waymask );
    m_desc.add_options()
        ("waymask",  boost::program_options::value<unsigned>(&m_waymask), waymask );
+
+
+   m_desc.add_options()
+       ("savegparts",  "save mm composite GParts to tmpdir (as this happens postcache it is not appropiate to save in geocache) after deferred creation in GGeo::deferredCreateGParts") ;
 
 
    m_desc.add_options()

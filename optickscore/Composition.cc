@@ -992,10 +992,10 @@ void Composition::applyViewType() // invoked by nextViewType/setViewType
         InterpolatedView* iv = m_flightpath->getInterpolatedView();     
         if(!iv)
         {
-            LOG(warning) << "Composition::changeView"
-                         << " FAILED "
-                         << " FLIGHTPATH interpolated view requires at least 2 views " 
-                         ;
+            LOG(warning) 
+                << " FAILED "
+                << " FLIGHTPATH interpolated view requires at least 2 views " 
+                ;
             return  ;
         }
 
@@ -2291,13 +2291,13 @@ void Composition::eye_sequence( std::vector<glm::vec3>& eyes, const NSnapConfig*
 {
     int num_steps = snap_config->steps ; 
 
-    float x0 = snap_config->x0 ; 
-    float y0 = snap_config->y0 ; 
-    float z0 = snap_config->z0 ; 
+    float ex0 = snap_config->ex0 ; 
+    float ey0 = snap_config->ey0 ; 
+    float ez0 = snap_config->ez0 ; 
 
-    float x1 = snap_config->x1 ; 
-    float y1 = snap_config->y1 ; 
-    float z1 = snap_config->z1 ; 
+    float ex1 = snap_config->ex1 ; 
+    float ey1 = snap_config->ey1 ; 
+    float ez1 = snap_config->ez1 ; 
 
     for(int i=0 ; i < num_steps ; i++)
     {   
@@ -2305,9 +2305,9 @@ void Composition::eye_sequence( std::vector<glm::vec3>& eyes, const NSnapConfig*
 
         glm::vec3 eye(0.f, 0.f, 0.f); 
 
-        eye.x = SSys::IsNegativeZero(x0) ? getEyeX() :  x0 + (x1-x0)*frac ;
-        eye.y = SSys::IsNegativeZero(y0) ? getEyeY() :  y0 + (y1-y0)*frac ;
-        eye.z = SSys::IsNegativeZero(z0) ? getEyeZ() :  z0 + (z1-z0)*frac ;
+        eye.x = SSys::IsNegativeZero(ex0) ? getEyeX() :  ex0 + (ex1-ex0)*frac ;
+        eye.y = SSys::IsNegativeZero(ey0) ? getEyeY() :  ey0 + (ey1-ey0)*frac ;
+        eye.z = SSys::IsNegativeZero(ez0) ? getEyeZ() :  ez0 + (ez1-ez0)*frac ;
 
         eyes.push_back(eye); 
     }   

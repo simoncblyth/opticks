@@ -231,7 +231,7 @@ class Prim(object):
         self.parts_ = parts_
         self.trans_ = trans_    ## without the python class wrapping
 
-        self.parts = map(lambda _:Part(_,trans_,d), parts_)   ## note that every part gets passed all the trans_ need to use the gt to determine which one to use
+        self.parts = list(map(lambda _:Part(_,trans_,d), parts_))   ## note that every part gets passed all the trans_ need to use the gt to determine which one to use
 
         self.partOffset = partOffset
         self.numParts= numParts
@@ -258,18 +258,16 @@ class Prim(object):
         return "primIdx %3s idx %30s lvIdx %3d lvName %30s partOffset %3s numParts %3s tranOffset %3s numTran %3s planOffset %3s  " % (self.primIdx, str(self.idx), self.lvIdx, self.lvName, self.partOffset, self.numParts, self.tranOffset, self.numTran, self.planOffset )  
 
     def __str__(self):
-        return "\n".join(["",repr(self)] + map(str,filter(lambda pt:pt.tc > 0, self.parts)) + [repr(self.trans_)]) 
+        return "\n".join(["",repr(self)] + list(map(str,list(filter(lambda pt:pt.tc > 0, self.parts)))) + [repr(self.trans_)]) 
 
 
 class Dir(object):
     def __init__(self, base, kd):
         """  
         :param base: directory containing primBuffer.npy etc..
-
-        TODO: reworking following deferred GParts creation, so these buffers are not persisted anymore
         """
         self.base = base
-        self.blib = BLib.make(base)   # auto finds the idpath 
+        self.blib = BLib(kd)  
 
         prim = np.load(os.path.join(base, "primBuffer.npy"))  # "solid" tree level index into part and tran buffers
         part = np.load(os.path.join(base, "partBuffer.npy"))
@@ -326,10 +324,10 @@ class Dir(object):
        
 
 if __name__ == '__main__':
-
     logging.basicConfig(level=logging.INFO)
 
-    ddir = "/usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/103/GPartsAnalytic/5"
+    ridx = 0 
+    ddir = os.path.expandvars(os.path.join("$TMP/GParts",str(ridx)))
     dir_ = sys.argv[1] if len(sys.argv) > 1 else ddir
     sli_ = sys.argv[2] if len(sys.argv) > 2 else "0:10"
     sli = slice(*map(int, sli_.split(":")))
@@ -344,15 +342,10 @@ if __name__ == '__main__':
     d = Dir(dir_, kd)
     print("Dir(dir_)", d)
 
-    
-
     pp = d.prims
-
     print("dump sliced prims from the dir slice %s " % repr(sli))
     for p in pp[sli]:
         print(p)
     pass
     #print(d.tran)
-
-
   

@@ -47,9 +47,12 @@ on headless nodes without OpenGL capability.
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+#include "plog/Severity.h"
+
 class OKCORE_API FlightPath {
 public:
     static const char* FILENAME ; 
+    static const plog::Severity LEVEL ; 
     FlightPath(const char* dir);
     std::string description(const char* msg="FlightPath");
     void Summary(const char* msg="FlightPath::Summary");
@@ -75,7 +78,6 @@ private:
     SCtrl*                               m_ctrl ; 
 
 };
-
 
 #include "OKCORE_TAIL.hh"
 

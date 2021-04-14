@@ -29,9 +29,16 @@ from opticks.ana.prim import Dir
 class Geom2d(object):
     """
     Scratch geometry, for designing flight paths
+
+    Note that the GParts are not standardly saved, need to run 
+    an Opticks executable such as OpSnapTest with option --savegparts::
+
+       OpSnapTest --savegparts 
+
     """
     def __init__(self, kd, ridx=0):
-        meta = json.load(os.path.join(kd, "cachemeta.json"))
+        fp = open(os.path.join(kd, "cachemeta.json"), "r")
+        meta = json.load(fp)
         gcv = meta["GEOCACHE_CODE_VERSION"]
         log.info("GEOCACHE_CODE_VERSION:%s" % gcv)
 
@@ -41,24 +48,38 @@ class Geom2d(object):
 
         self._pv = None
         self._lv = None
-        #self.ce = np.load(os.path.join(self.kd, "GMergedMesh", self.ridx,"center_extent.npy"))
-        self.ce = np.load(os.path.join(self.kd, "GNodeLib", "center_extent.npy"))
+        self.ce = np.load(os.path.join(self.kd, "GNodeLib", "all_volume_center_extent.npy"))
 
-        ## HMM GParts creation is now deferred so these are no longer available 
-        self.d = Dir(os.path.expandvars(os.path.join("$IDPATH/GParts",self.ridx)))     ## mm0 analytic
+        dir_ = os.path.expandvars(os.path.join("$TMP/GParts",self.ridx))
+        self.d = Dir(dir_, kd)     ## mm0 analytic
         self.select_gprim()
     
     def _get_pv(self):
         if self._pv is None:
-            self._pv =  np.loadtxt(os.path.join(self.kd, "GNodeLib/PVNames.txt" ), dtype="|S100" )
+            self._pv =  np.loadtxt(os.path.join(self.kd, "GNodeLib/all_volume_PVNames.txt" ), dtype="|S100" )
         return self._pv
     pv = property(_get_pv)
     
     def _get_lv(self):
         if self._lv is None:
-            self._lv =  np.loadtxt(os.path.join(self.kd, "GNodeLib/LVNames.txt" ), dtype="|S100" )
+            self._lv =  np.loadtxt(os.path.join(self.kd, "GNodeLib/all_volume_LVNames.txt" ), dtype="|S100" )
         return self._lv
     lv = property(_get_lv)
+
+
+    def pvfind(self, pvname_start, encoding='utf-8'):
+        """
+        :param pvname_start: string start of PV name
+        :return indices: array of matching indices in pvname array  
+
+        Examples::
+
+            In [1]: mm0.pvfind("pTarget")
+            Out[1]: array([67843])
+
+        """
+        return np.flatnonzero(np.char.startswith(self.pv, pvname_start.encode(encoding)))  
+
 
     def select_gprim(self, names=False):
         pp = self.d.prims

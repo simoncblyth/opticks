@@ -34,12 +34,12 @@ NSnapConfig::NSnapConfig(const char* cfg)
     verbosity(0),
     steps(10),
     fmtwidth(5),
-    x0(NEGATIVE_ZERO),   // -ve zero on x0,y0,z0 indicates leave asis, see OpTracer::snap
-    y0(NEGATIVE_ZERO),
-    z0(NEGATIVE_ZERO),
-    x1(NEGATIVE_ZERO),
-    y1(NEGATIVE_ZERO),
-    z1(NEGATIVE_ZERO),
+    ex0(NEGATIVE_ZERO),   // -ve zero on ex0,ey0,ez0 indicates leave asis, see OpTracer::snap
+    ey0(NEGATIVE_ZERO),
+    ez0(NEGATIVE_ZERO),
+    ex1(NEGATIVE_ZERO),
+    ey1(NEGATIVE_ZERO),
+    ez1(NEGATIVE_ZERO),
     prefix("snap"),
     ext(".jpg")
 {
@@ -53,14 +53,14 @@ NSnapConfig::NSnapConfig(const char* cfg)
     bconfig->addInt("steps", &steps );
     bconfig->addInt("fmtwidth", &fmtwidth );
 
-    bconfig->addFloat("x0", &x0 );
-    bconfig->addFloat("x1", &x1 );
+    bconfig->addFloat("ex0", &ex0 );
+    bconfig->addFloat("ex1", &ex1 );
 
-    bconfig->addFloat("y0", &y0 );
-    bconfig->addFloat("y1", &y1 );
+    bconfig->addFloat("ey0", &ey0 );
+    bconfig->addFloat("ey1", &ey1 );
 
-    bconfig->addFloat("z0", &z0 );
-    bconfig->addFloat("z1", &z1 );
+    bconfig->addFloat("ez0", &ez0 );
+    bconfig->addFloat("ez1", &ez1 );
 
     bconfig->addString("prefix", &prefix );
     bconfig->addString("ext",    &ext );     // formerly postfix
@@ -87,7 +87,7 @@ std::string NSnapConfig::SnapIndex(int index, unsigned width) // static
 
 std::string NSnapConfig::getSnapName(int index) const 
 {
-    std::string blank(""); 
+    std::string blank("%0.5d"); 
     std::stringstream ss ;
     ss 
        << prefix 

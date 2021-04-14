@@ -523,6 +523,8 @@ OpticksHub should only be for geometry needing things.
 
 void OpticksHub::configureState(NConfigurable* scene)
 {
+    LOG(LEVEL) << "[" ; 
+
     // NState manages the state (in the form of strings) of a collection of NConfigurable objects
     // this needs to happen after configuration and the scene is created
 
@@ -557,6 +559,7 @@ void OpticksHub::configureState(NConfigurable* scene)
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
 
+    LOG(LEVEL) << "]" ; 
 }
 
 /**

@@ -172,15 +172,23 @@ void OpTracer::multi_snap(const char* dir, const char* reldir)
 {
     std::vector<glm::vec3>    eyes ; 
     m_composition->eye_sequence(eyes, m_snap_config ); 
+    const char* path_fmt = m_snap_config->getSnapPath(dir, reldir, -1); 
+    multi_snap(path_fmt, eyes ); 
+}
 
+void OpTracer::multi_snap(const char* path_fmt, const std::vector<glm::vec3>& eyes )
+{
+    char path[128] ; 
     for(int i=0 ; i < int(eyes.size()) ; i++)
     {
          const glm::vec3& eye = eyes[i] ; 
          m_composition->setEye( eye.x, eye.y, eye.z ); 
-         const char* path = m_snap_config->getSnapPath(dir, reldir, i); 
+
+         snprintf(path, 128, path_fmt, i );   
          single_snap(path);  
     }
 }
+
 
 
 /**

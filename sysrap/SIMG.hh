@@ -203,7 +203,7 @@ inline void SIMG::writeJPG(const char* dir, const char* name, int quality) const
 }
 inline void SIMG::writeJPG(const char* path, int quality) const 
 {
-    std::cout << "stbi_write_jpg " << path << " quality " << quality << std::endl ; 
+    //std::cout << "stbi_write_jpg " << path << " quality " << quality << std::endl ; 
     assert( quality > 0 && quality <= 100 ); 
     stbi_write_jpg(path, width, height, channels, data, quality );
 }

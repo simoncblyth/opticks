@@ -293,13 +293,13 @@ int main(int argc, char** argv)
     ok.configure(); 
 
 
-   //test_rotate();
-   //test_center_extent(&ok);
-   //test_setCenterExtent();
-   //test_depth(&ok);
+    //test_rotate();
+    //test_center_extent(&ok);
+    //test_setCenterExtent();
+    //test_depth(&ok);
 
-   test_snapconfig(&ok);      
+    test_snapconfig(&ok);      
 
-   return 0 ;
+    return 0 ;
 }
 

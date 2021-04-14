@@ -30,6 +30,7 @@
 #include "BMap.hh"
 #include "BTxt.hh"
 #include "BMeta.hh"
+#include "BFile.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -1377,6 +1378,14 @@ void GGeo::deferredCreateGParts()
         LOG(LEVEL) << "] parts->close i/nmm " << i << "/" << nmm ; 
 
         mm->setParts( parts ); 
+
+        if(m_ok->isSaveGPartsEnabled())
+        {
+            const char* sidx = BStr::itoa(i) ;
+            std::string sptpath = BFile::FormPath("$TMP", "GParts",sidx );
+            LOG(info) << " --savegparts optionally saving to " << sptpath  ; 
+            parts->save(sptpath.c_str()); 
+        }
     }
 
     LOG(LEVEL) << "]" ; 

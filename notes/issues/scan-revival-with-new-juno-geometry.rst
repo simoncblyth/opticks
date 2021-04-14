@@ -151,6 +151,13 @@ Getting back into the flow::
     OpticksAim=INFO OpSnapTest --targetpvn pAcrylic
 
 
+  
+    OpSnapTest --snapconfig steps=11,x0=-0.4,x1=-0.3,y0=0,z0=0    ## all the interesting views in this range 
+
+
+    OpSnapTest --snapconfig steps=101,x0=-0.4,x1=-0.3,y0=0,z0=0
+
+
 
 Getting --targetpvn to work
 -----------------------------

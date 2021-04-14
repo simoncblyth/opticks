@@ -243,7 +243,11 @@ class Shape(object):
     dtype = np.float64
 
     PRIMITIVE = ["SEllipsoid","STubs","STorus", "SCons", "SHype", "SBox", "SPolycone"]
+    PRIMITIVE2 = ["Box", "Cylinder", "Tubs" ]
+    ALL_PRIMITIVE = PRIMITIVE + PRIMITIVE2
+
     COMPOSITE = ["SUnionSolid", "SSubtractionSolid", "SIntersectionSolid"]
+    ALL = ALL_PRIMITIVE + COMPOSITE 
 
     def __repr__(self):
         return "%s : %20s : %s : %s " % (
@@ -256,8 +260,12 @@ class Shape(object):
 
     def __init__(self, name, param, **kwa ):
         shape = self.__class__.__name__
-        assert shape in self.PRIMITIVE + self.COMPOSITE
-        primitive = shape in self.PRIMITIVE
+
+        if not shape in self.ALL:
+            log.error("shape class name %s is not in the list %s " % ( shape, str(self.ALL))) 
+        pass
+        assert shape in self.ALL
+        primitive = shape in self.ALL_PRIMITIVE
         composite = shape in self.COMPOSITE
 
         d = self.KWA.copy()
@@ -345,7 +353,7 @@ class Shape(object):
         """
         if self.shape == "SEllipsoid":
             return self.make_ellipse( self.xy, self.param, **self.kwa )
-        elif self.shape == "STubs":
+        elif self.shape == "STubs" or self.shape == "Tubs":
             return self.make_rect( self.xy, self.param, **self.kwa)
         elif self.shape == "STorus":
             return self.make_torus( self.xy, self.param, **self.kwa)
@@ -353,11 +361,14 @@ class Shape(object):
             return self.make_cons( self.xy, self.param, **self.kwa)
         elif self.shape == "SHype":
             return self.make_hype( self.xy, self.param, **self.kwa)
-        elif self.shape == "SBox":
+        elif self.shape == "SBox" or self.shape == "Box":
             return self.make_rect( self.xy, self.param, **self.kwa)
         elif self.shape == "SPolycone":
             return self.make_polycone( self.xy, self.param, **self.kwa)
         else:
+            if not self.is_composite:
+                log.error("shape :%s: not handled in patches()" % self.shape )
+            pass
             assert self.is_composite 
             pts = []
             pts.extend( self.left.patches() )

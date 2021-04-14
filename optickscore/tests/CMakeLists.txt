@@ -56,6 +56,8 @@ set(TEST_SOURCES
     OpticksEventTest.cc
     OpticksEventLeakTest.cc
     OpticksRunTest.cc
+
+    FlightPathTest.cc
 )
 
 

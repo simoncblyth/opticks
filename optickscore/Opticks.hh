@@ -391,6 +391,7 @@ class OKCORE_API Opticks {
 
        unsigned             getWayMask() const ;  // --waymask 3 
        bool                 isWayEnabled() const ;   // --way
+       bool                 isSaveGPartsEnabled() const ; // --savegparts
        bool                 isGDMLKludge() const ;   // --gdmlkludge
        bool                 isAngularEnabled() const ;  
        void                 setAngularEnabled(bool angular_enabled); 
