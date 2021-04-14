@@ -53,12 +53,14 @@ struct SIMG
 
 
 #ifdef SIMG_IMPLEMENTATION
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#endif
+
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+#endif
 
 #ifdef __clang__
 #elif defined(__GNUC__) || defined(__GNUG__)
@@ -121,7 +123,8 @@ inline SIMG::SIMG(int width_, int height_, int channels_, const unsigned char* d
 
 inline SIMG::~SIMG()
 {
-    if(owned) stbi_image_free((void*)data);    
+    // getting linker error with the below when using in CMake project, but not in standalone testing 
+    //if(owned) stbi_image_free((void*)data);    
 }
 
 inline std::string SIMG::desc() const

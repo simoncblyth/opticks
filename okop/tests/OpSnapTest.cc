@@ -36,8 +36,15 @@ Loads geometry from cache, creates sequence of ppm raytrace snapshots of geometr
     OPTICKS_RESOURCE_LAYOUT=104 OpSnapTest --gltf 3
         succeeds with the ab- validated geocache : creating analytic raytrace snapshots
 
-**/
+Example commandlines::
 
+    OpSnapTest --snapconfig steps=0,postfix=.jpg 
+    OpSnapTest --snapconfig steps=0,postfix=.png
+    OpSnapTest --snapconfig steps=0,postfix=.ppm
+
+    OpSnapTest --snapconfig steps=0,postfix=.jpg --targetpvn pAcrylic
+
+**/
 
 const char* TMPDIR = "$TMP/okop/OpSnapTest" ; 
 

@@ -30,6 +30,10 @@
 #include "SSys.hh"
 #include "SStr.hh"
 
+#define SIMG_IMPLEMENTATION 1 
+#include "SIMG.hh"
+
+
 // brap-
 #include "BStr.hh"
 #include "BFile.hh"
@@ -1389,9 +1393,23 @@ void OContext::snap(const char* path)
          ;   
 
     void* ptr = output_buffer->map() ; 
-
     int ncomp = 4 ;   
-    SPPM::write(path,  (unsigned char*)ptr , width, height, ncomp, yflip );
+
+    if(SStr::EndsWith(path, ".ppm"))
+    {
+        SPPM::write(path,  (unsigned char*)ptr , width, height, ncomp, yflip );
+    }
+    else if( SStr::EndsWith(path, ".png") )
+    {
+        SIMG img(int(width), int(height), ncomp,  (unsigned char*)ptr ); 
+        img.writePNG(path);
+    }
+    else if( SStr::EndsWith(path, ".jpg") )
+    {
+        int quality = SSys::getenvint("OPTICKS_JPG_QUALITY", 50 ); 
+        SIMG img(int(width), int(height), ncomp,  (unsigned char*)ptr ); 
+        img.writeJPG(path, quality);
+    }
 
     output_buffer->unmap(); 
 }

@@ -122,6 +122,21 @@ set(HEADERS
 )
 
 
+set(WITH_SIMG YES)
+
+if(WITH_SIMG)
+    list(APPEND HEADERS   SIMG.hh  )
+    list(APPEND HEADERS   stb_image.h  stb_image_write.h)   
+    # seems cannot avoid passing around the stb headers ?
+endif()
+
+
+
+
+
+
+
+
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 #set_target_properties( ${name} 
 #                       PROPERTIES 

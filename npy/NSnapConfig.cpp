@@ -109,5 +109,12 @@ const char* NSnapConfig::getSnapPath(const char* dir, const char* reldir, int in
 
 std::string NSnapConfig::desc() const 
 {
-    return bconfig->desc(); 
+    std::stringstream ss ; 
+    ss 
+       << bconfig->desc() 
+       << " [change .cfg with --snapconfig] "
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
 }

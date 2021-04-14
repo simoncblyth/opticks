@@ -178,7 +178,7 @@ std::string BConfig::desc() const
 {
     std::stringstream ss ; 
     ss
-       << " BConfig.initial " << ( cfg ? cfg : "-" )
+       << " BConfig.cfg [" << ( cfg ? cfg : "-" ) << "] " 
        << " ekv " << ekv.size()
        << " eki " << eki.size()
        << " ekf " << ekf.size()

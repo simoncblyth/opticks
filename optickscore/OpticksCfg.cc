@@ -71,7 +71,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_testconfig(""),
     m_state_tag(""),
     m_materialprefix("/dd/Materials/"),
-    m_snapconfig("steps=0"),
+    m_snapconfig("steps=0"),        // --snapconfig
     m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
     m_meshversion(""),
     m_rendermode(""),
