@@ -70,7 +70,7 @@ OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate)
     m_composition(m_hub->getComposition()),
     m_otracer(NULL),
     m_count(0),
-    m_flightpath_snap_limit(10)
+    m_flightpath_snaplimit(SSys::getenvint("OPTICKS_FLIGHTPATH_SNAPLIMIT",3))
 {
     init();
 }
@@ -261,13 +261,13 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
     unsigned count(0); 
     char path[128] ; 
 
-    unsigned i1 = m_flightpath_snap_limit > 0 ? std::min( m_flightpath_snap_limit, tot_period)  : tot_period ; 
+    unsigned i1 = m_flightpath_snaplimit > 0 ? std::min( m_flightpath_snaplimit, tot_period)  : tot_period ; 
 
     LOG(info) 
         << " num_views " << num_views
         << " animator.period " << period
         << " tot_period " << tot_period
-        << " m_flightpath_snap_limit " << m_flightpath_snap_limit
+        << " m_flightpath_snaplimit " << m_flightpath_snaplimit << " (OPTICKS_FLIGHTPATH_SNAPLIMIT) " 
         << " i1 " << i1 
         ;
 
@@ -276,6 +276,13 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
         count = m_composition->tick();
         render(); 
         snprintf(path, 128, fmt.c_str(), i );   
+        std::cout 
+            << "OpTracer::flightpath " 
+            << " count " <<  std::setw(6) << count 
+            << " i " <<  std::setw(6) << i
+            << " path " << path 
+            << std::endl 
+            ;
         m_ocontext->snap(path);
     }
 

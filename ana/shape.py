@@ -26,10 +26,15 @@ import logging, copy
 log = logging.getLogger(__name__)
 
 import numpy as np, math 
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Circle, Ellipse, PathPatch
-import matplotlib.lines as mlines
-import matplotlib.path as mpath
+
+try:
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle, Circle, Ellipse, PathPatch
+    import matplotlib.lines as mlines
+    import matplotlib.path as mpath
+except ImportError:
+    plt = None
+pass
 
 
 def ellipse_closest_approach_to_point( ex, ez, _c ):

@@ -91,7 +91,7 @@ class OKOP_API OpTracer : public SRenderer {
        Composition*     m_composition ; 
        OTracer*         m_otracer ;
        unsigned         m_count ; 
-       unsigned         m_flightpath_snap_limit ; 
+       unsigned         m_flightpath_snaplimit ;   // OPTICKS_FLIGHTPATH_SNAPLIMIT
 
 };
 

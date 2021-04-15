@@ -34,7 +34,13 @@ np.set_printoptions(suppress=True)
 dtype = np.float32
 
 
-
+try:
+    import matplotlib.pyplot as plt 
+    from mpl_toolkits.mplot3d import Axes3D 
+    import mpl_toolkits.mplot3d.art3d as art3d
+except ImportError:
+    plt = None
+pass
 
 
 if __name__ == '__main__':
@@ -56,26 +62,23 @@ if __name__ == '__main__':
 
     sc = mm0.ce[target][3]/1000.      ##  big radius in meters 17.760008
 
-    import matplotlib.pyplot as plt 
-    from mpl_toolkits.mplot3d import Axes3D 
-    import mpl_toolkits.mplot3d.art3d as art3d
+    if plt:
+        plt.ion()
+        fig = plt.figure(figsize=(9,9))
+        ax = fig.add_subplot(111,projection='3d')
+        plt.title("mm0 geom2d")
+        sz = 25
 
-    plt.ion()
-    fig = plt.figure(figsize=(9,9))
-    ax = fig.add_subplot(111,projection='3d')
-    plt.title("mm0 geom2d")
-    sz = 25
+        ax.set_xlim([-sz,sz])
+        ax.set_ylim([-sz,sz])
+        ax.set_zlim([-sz,sz])
 
-    ax.set_xlim([-sz,sz])
-    ax.set_ylim([-sz,sz])
-    ax.set_zlim([-sz,sz])
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
 
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
-
-    mm0.render(ax, art3d=art3d)
-
+        mm0.render(ax, art3d=art3d)
+    pass
 
     ####################
     n9 = 7
@@ -198,7 +201,9 @@ if __name__ == '__main__':
     np.save("/tmp/flightpath.npy", elu ) 
     print(elu[:,3,:4].copy().view("|S2"))
 
-    f.quiver_plot(ax, sc=sc)
+    if plt:  
+        f.quiver_plot(ax, sc=sc)
+        fig.show()
+    pass
 
-    fig.show()
 
