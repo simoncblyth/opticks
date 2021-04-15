@@ -9,6 +9,7 @@ set(TEST_SOURCES
     dirtyBufferTest
     compactionTest
     OpSnapTest.cc
+    OpFlightPathTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

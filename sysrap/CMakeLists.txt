@@ -131,6 +131,12 @@ if(WITH_SIMG)
 endif()
 
 
+set(WITH_NP YES)
+if(WITH_NP)
+    list(APPEND HEADERS   NP.hh  NPU.hh  )
+endif()
+
+
 
 
 

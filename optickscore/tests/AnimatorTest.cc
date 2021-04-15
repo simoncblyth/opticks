@@ -18,10 +18,25 @@
  */
 
 #include "Animator.hh"
+#include "OPTICKS_LOG.hh"
 #include "NPY.hpp"
 
 
-int main()
+
+
+/*
+Aim is for a nice sawtooth with no glitches::
+
+    In [1]: a = np.load("$TMP/optickscore/AnimatorTest/animator.npy")
+
+    In [2]: plt.ion()
+
+    In [3]: plt.plot(a[:,0,0], a[:,0,1])
+    Out[3]: [<matplotlib.lines.Line2D at 0x111587610>]
+
+*/
+
+void test_setMode()
 {
      unsigned int N = 1000 ; 
      NPY<float>* npy = NPY<float>::make(N, 1, 4);
@@ -43,18 +58,32 @@ int main()
      }
 
      npy->save("$TMP/optickscore/AnimatorTest/animator.npy");
-     return 0 ;
 }
 
-/*
-Aim is for a nice sawtooth with no glitches::
 
-    In [1]: a = np.load("$TMP/optickscore/AnimatorTest/animator.npy")
+void test_commandMode()
+{
+     float fraction(-1.f) ;
+     Animator anim(&fraction, 200);
 
-    In [2]: plt.ion()
+     std::vector<const char*> cmds = {"T0","T1","T2","T3","T4","T5","T6","T7","T8","T9","TA","TB","TC","TD" } ; 
 
-    In [3]: plt.plot(a[:,0,0], a[:,0,1])
-    Out[3]: [<matplotlib.lines.Line2D at 0x111587610>]
+     for(int i=0 ; i < int(cmds.size()); i++)
+     {
+         const char* cmd = cmds[i]; 
+         std::cout << cmd << std::endl ; 
+         anim.commandMode(cmd); 
+     }
+}
 
 
-*/
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+
+    test_commandMode(); 
+    return 0 ;
+}
+

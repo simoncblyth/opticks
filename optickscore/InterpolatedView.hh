@@ -51,9 +51,12 @@ template<typename T> class NPY ;
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+#include "plog/Severity.h"
+
 class OKCORE_API InterpolatedView :  public View {
     public:
         static const char* PREFIX ; 
+        static const plog::Severity LEVEL ; 
         virtual const char* getPrefix();
         static InterpolatedView* MakeFromArray(NPY<float>* elu, unsigned period, SCtrl* ctrl );
     public:
@@ -70,6 +73,7 @@ class OKCORE_API InterpolatedView :  public View {
     public:
         void reset();
         void tick();
+        void dump();
         bool isActive();
         bool hasChanged();
         void nextMode(unsigned int modifiers);
@@ -98,6 +102,8 @@ class OKCORE_API InterpolatedView :  public View {
         SCtrl*       m_ctrl ; 
 
         unsigned  m_local_count ;
+        const    glm::mat4 m_identity ; 
+
 };
 
 #include "OKCORE_TAIL.hh"

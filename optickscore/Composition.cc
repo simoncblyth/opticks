@@ -160,8 +160,8 @@ const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style
 Composition::Composition(Opticks* ok)
   :
   m_lodcut(5000.f,10000.f,0.f,0.f),
-  m_model2world(),
-  m_world2model(),
+  m_model2world(1.f),
+  m_world2model(1.f),
   m_extent(1.0f),
   m_center_extent(),
   m_domain_center_extent(),
@@ -861,7 +861,7 @@ void Composition::initAnimator()
     float tmin = animtimerange.x < 0.f ? m_domain_time.x : animtimerange.x ; 
     float tmax = animtimerange.y < 0.f ? m_domain_time.y : animtimerange.y ; 
 
-    m_animator = new Animator(target, m_animator_period, tmin , tmax  ); 
+    m_animator = new Animator(target, m_animator_period, tmin , tmax, "Composition::initAnimator" ); 
 #endif
     m_animator->setModeRestrict(Animator::FAST);
     m_animator->Summary("Composition::gui setup Animation");
@@ -877,7 +877,7 @@ Animator* Composition::getAnimator()
 
 void Composition::initRotator()
 {
-    m_rotator = new Animator(&m_lookphi, 180, -180.f, 180.f ); 
+    m_rotator = new Animator(&m_lookphi, 180, -180.f, 180.f, "Composition::initRotator"); 
     m_rotator->setModeRestrict(Animator::NORM);  // only OFF and SLOW 
     m_rotator->Summary("Composition::initRotator");
 }
@@ -1061,6 +1061,7 @@ void Composition::setView(View* view)
         m_standard_view = m_view ;   // keep track of last standard view
     }
     m_view = view ; 
+    LOG(LEVEL) << m_view->getTypeName() ; 
 }
 
 void Composition::resetView()
@@ -1071,11 +1072,13 @@ void Composition::resetView()
         return ; 
     }
     m_view = m_standard_view ; 
+    LOG(LEVEL) << m_view->getTypeName() ; 
 }
 
 
 unsigned int Composition::tick()
 {
+    LOG(LEVEL) << m_count ; 
     if(m_paused) return m_count ; 
 
     m_count++ ; 

@@ -46,6 +46,10 @@ const char* View::INTERPOLATED_ = "INTERPOLATED" ;   // rename to BOOKMARKS ?
 const char* View::ORBITAL_ = "ORBITAL" ; 
 const char* View::TRACK_ = "TRACK" ; 
 
+const char* View::getTypeName() const
+{
+    return TypeName(m_type); 
+}
 
 const char* View::TypeName( View_t v )
 {
@@ -240,6 +244,11 @@ bool View::isTrack()
 {
     return m_type == TRACK ; 
 }
+bool View::isFlightPath()
+{
+    return m_type == FLIGHTPATH ; 
+}
+
 
 
 
@@ -627,6 +636,7 @@ void View::reset()
 }
 void View::tick()
 {
+    LOG(LEVEL) << " doing nothing " ;  
    // do nothing default, overridden in InterpolatedView
 }
 void View::nextMode(unsigned int)

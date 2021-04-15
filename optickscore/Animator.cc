@@ -40,17 +40,25 @@ const char* Animator::NORM_ = "NORM" ;
 const char* Animator::FAST_ = "FAST" ; 
 const char* Animator::FAST2_ = "FAST2" ; 
 const char* Animator::FAST4_ = "FAST4" ; 
+const char* Animator::FAST8_ = "FAST8" ; 
+const char* Animator::FAST16_ = "FAST16" ; 
+const char* Animator::FAST32_ = "FAST32" ; 
+const char* Animator::FAST64_ = "FAST64" ; 
 
 const int Animator::period_low  = 25 ; 
 const int Animator::period_high = 10000 ; 
 
 
-Animator::Animator(float* target, unsigned int period, float low, float high)
+const plog::Severity Animator::LEVEL = PLOG::EnvLevel("Animator", "DEBUG"); 
+
+
+Animator::Animator(float* target, unsigned int period, float low, float high, const char* label)
     :
     m_mode(OFF),
     m_restrict(NUM_MODE),
     m_low(low),
     m_high(high),
+    m_label(strdup(label)),
     m_count(0),
     m_index(0),
     m_target(target),
@@ -60,16 +68,27 @@ Animator::Animator(float* target, unsigned int period, float low, float high)
     m_cmd_offset(0),
     m_cmd_tranche(0)
 {
+    LOG(LEVEL) 
+        << " label " << label 
+        << " period " << period 
+        << " low " << low 
+        << " high " << high 
+        ;
+
     m_period[OFF]  = 0 ; 
-    m_period[SLOW32] = period*32 ; 
-    m_period[SLOW16] = period*16  ; 
-    m_period[SLOW8] = period*8  ; 
-    m_period[SLOW4] = period*4  ; 
-    m_period[SLOW2] = period*2  ; 
+    m_period[SLOW32] = period << 5 ; 
+    m_period[SLOW16] = period << 4 ; 
+    m_period[SLOW8] = period << 3 ; 
+    m_period[SLOW4] = period << 2 ; 
+    m_period[SLOW2] = period << 1 ; 
     m_period[NORM] = period    ; 
-    m_period[FAST] = period/2  ; 
-    m_period[FAST2] = period/4  ; 
-    m_period[FAST4] = period/8  ; 
+    m_period[FAST] = period >> 1  ; 
+    m_period[FAST2] = period >> 2 ; 
+    m_period[FAST4] = period >> 3 ; 
+    m_period[FAST8] = period >> 4  ; 
+    m_period[FAST16] = period >> 5 ; 
+    m_period[FAST32] = period >> 6 ; 
+    m_period[FAST64] = period >> 7 ;     //  128 >> 7 = 1 : so period must be at least 128 ?
 
     m_fractions[OFF]  = NULL ; 
     m_fractions[SLOW32] = make_fractions(m_period[SLOW32]) ;
@@ -81,6 +100,10 @@ Animator::Animator(float* target, unsigned int period, float low, float high)
     m_fractions[FAST] = make_fractions(m_period[FAST]) ;
     m_fractions[FAST2] = make_fractions(m_period[FAST2]) ;
     m_fractions[FAST4] = make_fractions(m_period[FAST4]) ;
+    m_fractions[FAST8] = make_fractions(m_period[FAST8]) ;
+    m_fractions[FAST16] = make_fractions(m_period[FAST16]) ;
+    m_fractions[FAST32] = make_fractions(m_period[FAST32]) ;
+    m_fractions[FAST64] = make_fractions(m_period[FAST64]) ;
 
     m_cmd[OFF]  = "T0" ; 
     m_cmd[SLOW32] = "T1" ; 
@@ -92,10 +115,16 @@ Animator::Animator(float* target, unsigned int period, float low, float high)
     m_cmd[FAST] = "T7" ; 
     m_cmd[FAST2] = "T8" ; 
     m_cmd[FAST4] = "T9" ; 
+    m_cmd[FAST8] = "TA" ; 
+    m_cmd[FAST16] = "TB" ; 
+    m_cmd[FAST32] = "TC" ; 
+    m_cmd[FAST64] = "TD" ; 
 
 }
 
 /**
+Assuming period 128 
+
     SLOW32 128*32      4096
            128*16      2048
     SLOW8  128*8       1024
@@ -202,7 +231,10 @@ void Animator::commandMode(const char* cmd)
     assert(strlen(cmd) == 2); 
     assert( cmd[0] == 'T' || cmd[0] == 'A' ); 
       
-    int mode = (int)cmd[1] - (int)'0' ; 
+    int mode = ( cmd[1] > '0' && cmd[1] <= '9' ) ? (int)cmd[1] - (int)'0' : (int)cmd[1] - (int)'A' + 10 ; 
+
+    LOG(info) << " cmd " << cmd << " mode " << mode ; 
+
     if( mode > -1 && mode < NUM_MODE ) 
     {
          setMode((Mode_t)mode) ; 
@@ -322,20 +354,32 @@ float Animator::getFractionFromTarget()
     return getFractionForValue(*m_target);
 }
 
+unsigned Animator::getPeriod() const 
+{
+    return m_period[m_mode] ;    // with base period 128 in FAST64 mode this period becomes 1
+}
+
 bool Animator::step(bool& bump, unsigned& cmd_index, unsigned& cmd_offset )
 {
     bool st = step(bump) ; 
     if(!st) return st ; 
 
-    m_cmd_tranche = m_period[m_mode]/m_cmd_slots ; //  NB keep animator_period a suitable power of two, such as 128
-    m_cmd_index = m_index/m_cmd_tranche ;  
-    assert( m_cmd_index < m_cmd_slots ) ;    
-    m_cmd_offset = m_index - m_cmd_index*m_cmd_tranche ;
-    assert( m_cmd_offset < m_cmd_tranche ) ;
-
-    cmd_index = m_cmd_index ; 
-    cmd_offset = m_cmd_offset ;     
-
+    unsigned period = m_period[m_mode] ;    // with period 128 in FAST64 mode this period becomes 1, so no opportunity for "sub-period" cmds
+    if( period > m_cmd_slots )
+    {      
+        m_cmd_tranche = period/m_cmd_slots ; //  NB keep animator_period a suitable power of two, such as 128
+        m_cmd_index = m_index/m_cmd_tranche ;  
+        assert( m_cmd_index < m_cmd_slots ) ;    
+        m_cmd_offset = m_index - m_cmd_index*m_cmd_tranche ;
+        assert( m_cmd_offset < m_cmd_tranche ) ;
+        cmd_index = m_cmd_index ; 
+        cmd_offset = m_cmd_offset ;     
+    }
+    else
+    {
+        cmd_index = 0 ; 
+        cmd_offset = 0 ; 
+    }
 
     return st ; 
 }
@@ -445,6 +489,10 @@ const char* Animator::getModeName() const
         case FAST:mode = FAST_ ; break ; 
         case FAST2:mode = FAST2_ ; break ; 
         case FAST4:mode = FAST4_ ; break ; 
+        case FAST8:mode = FAST8_ ; break ; 
+        case FAST16:mode = FAST16_ ; break ; 
+        case FAST32:mode = FAST32_ ; break ; 
+        case FAST64:mode = FAST64_ ; break ; 
         case NUM_MODE:assert(0) ; break ; 
     }
     return mode ; 

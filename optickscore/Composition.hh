@@ -112,6 +112,7 @@ as controlled by the Renderer (oglrap-)::
 class OKCORE_API Composition : public NConfigurable {
    public:
       friend class GUI ; 
+      friend struct MockRenderer ; 
    public:
       static const plog::Severity LEVEL ; 
       static const char* PREFIX ;

@@ -74,6 +74,8 @@ public:
    bool isInterpolated();
    bool isOrbital();
    bool isTrack();
+   bool isFlightPath();
+   const char* getTypeName() const ;  
 
    void configureF(const char* name, std::vector<float> values);
    void configureI(const char* name, std::vector<int> values);

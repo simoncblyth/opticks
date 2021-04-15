@@ -32,6 +32,8 @@
 #include "InterpolatedView.hh"
 
 
+const plog::Severity InterpolatedView::LEVEL = PLOG::EnvLevel("InterpolatedView", "DEBUG" ); 
+
 const char* InterpolatedView::PREFIX = "interpolatedview" ;
 const char* InterpolatedView::getPrefix()
 {
@@ -42,6 +44,7 @@ const char* InterpolatedView::getPrefix()
 
 InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned period, SCtrl* ctrl )
 {
+    LOG(LEVEL) << "[" ; 
     assert( elu && elu->hasShape(-1,4,4) ); 
 
     if(elu->getNumItems() < 2)
@@ -61,6 +64,7 @@ InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned peri
 
     iv->reset(); 
 
+    LOG(LEVEL) << "]" ; 
     return iv ; 
 }
 
@@ -77,14 +81,16 @@ InterpolatedView::InterpolatedView(unsigned int period, bool verbose)
     m_animator(NULL),
     m_verbose(verbose),
     m_ctrl(NULL),
-    m_local_count(-1)
+    m_local_count(-1),
+    m_identity(1.f)
 {
     init();
 }
 
 void InterpolatedView::init()
 {
-    m_animator = new Animator(&m_fraction, m_period, 0.f, 1.f ); 
+    LOG(LEVEL); 
+    m_animator = new Animator(&m_fraction, m_period, 0.f, 1.f, "InterpolatedView" ); 
     //m_animator->setModeRestrict(Animator::NORM);  // only OFF,SLOW,NORM,FAST, 
     if(m_verbose) m_animator->Summary("InterpolatedView::init");
     //m_animator->setMode(Animator::SLOW4);
@@ -93,6 +99,7 @@ void InterpolatedView::init()
 
 void InterpolatedView::reset()
 {
+    LOG(LEVEL); 
     m_count = 0 ; 
     m_fraction = 0.f ;  // start from entirely currentView 0
     setPair(0,1);  
@@ -103,6 +110,9 @@ Animator* InterpolatedView::getAnimator()
 {
     return m_animator ; 
 }
+
+
+
 
 void InterpolatedView::addView(View* view)
 {
@@ -145,6 +155,7 @@ void InterpolatedView::setCtrl(SCtrl* ctrl)
 
 void InterpolatedView::nextPair()
 {
+    //LOG(LEVEL); 
     unsigned int n = getNumViews();
     unsigned int i = (m_i + 1) % n ;   
     unsigned int j = (m_j + 1) % n ;
@@ -174,6 +185,23 @@ bool InterpolatedView::isActive()
 }
 
 
+void InterpolatedView::dump()
+{
+    glm::vec4 e = getEye(m_identity); 
+    glm::vec4 l = getLook(m_identity); 
+    glm::vec4 u = getUp(m_identity); 
+
+    std::cout 
+        << description("IV.dump") 
+        << " e (" << e.x << "," << e.y << "," << e.z << "," << e.w << ") " 
+        << " l (" << l.x << "," << l.y << "," << l.z << "," << l.w << ") " 
+        << " u (" << u.x << "," << u.y << "," << u.z << "," << u.w << ") " 
+        << std::endl 
+        ; 
+
+}
+
+
 
 /**
 InterpolatedView::tick
@@ -184,9 +212,11 @@ from the high controller, using the SCtrl mechanism.
 
 **/
 
-
 void InterpolatedView::tick()
 {
+    LOG(LEVEL) ; 
+    //dump(); 
+
     m_count++ ; 
     m_local_count++ ; 
 
@@ -225,8 +255,8 @@ void InterpolatedView::tick()
 
     if(bump)
     {
+        //dump(); 
         nextPair();
-        //LOG(info) << description("IV") ; 
         m_local_count = -1 ;  
     }
 }
@@ -236,9 +266,9 @@ std::string InterpolatedView::description(const char* msg)
 {
     std::stringstream ss ; 
     ss << msg << " [" << getNumViews() << "] (" <<  m_i << "," << m_j << ")"
-       << " f:" << m_fraction 
-       << " c:" << m_count 
-       << " lc:" << m_local_count 
+       << " f:" << std::setw(10) << std::fixed << std::setprecision(4) << m_fraction 
+       << " c:" << std::setw(6) << m_count 
+       << " lc:" << std::setw(6) << int(m_local_count)
        ;
     return ss.str();
 }

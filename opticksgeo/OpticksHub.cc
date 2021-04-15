@@ -547,20 +547,23 @@ void OpticksHub::configureState(NConfigurable* scene)
     m_bookmarks->setVerbose();
     m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
 
-
-    m_flightpath = new FlightPath(m_ok->getFlightPathDir()) ; 
-    m_flightpath->setCtrl(m_ctrl) ; 
-
-
     m_composition->setBookmarks(m_bookmarks);
-    m_composition->setFlightPath(m_flightpath); 
-
 
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
 
+    configureFlightPath(); 
+
     LOG(LEVEL) << "]" ; 
 }
+
+void OpticksHub::configureFlightPath()
+{
+    m_flightpath = new FlightPath(m_ok->getFlightPathDir()) ; 
+    m_flightpath->setCtrl(m_ctrl) ; 
+    m_composition->setFlightPath(m_flightpath); 
+}
+
 
 /**
 OpticksHub::configureLookupA

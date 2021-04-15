@@ -393,6 +393,8 @@ NPoint.hpp
 
 
 
+
+
 if(OpenMesh_FOUND)
    list(APPEND SOURCES 
     NOpenMesh.cpp
@@ -423,6 +425,7 @@ endif()
 
 list(APPEND SOURCES   NSceneConfig.cpp  )  
 list(APPEND HEADERS   NSceneConfig.hpp  )
+
 
 
 if(YoctoGL_FOUND)  # this is no-longer optional

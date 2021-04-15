@@ -72,6 +72,7 @@ class OKOP_API OpPropagator {
        void propagate();
        void cleanup();
        void snap(const char* dir, const char* reldir=NULL);
+       void flightpath(const char* dir, const char* reldir=NULL);
 
    private:
        static int Preinit(); 

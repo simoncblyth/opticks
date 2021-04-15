@@ -34,12 +34,14 @@ Changes the value of \*m_target at each Animator::step
 //#define ANIMATOR_DEBUG 1
 
 #include <string>
+#include "plog/Severity.h"
 #include "OKCORE_API_EXPORT.hh"
 
 class OKCORE_API Animator {
     public:
         friend class GUI ; 
     public:
+        static const plog::Severity LEVEL ; 
         static const int period_low ; 
         static const int period_high ; 
 
@@ -53,12 +55,16 @@ class OKCORE_API Animator {
         static const char* FAST_ ; 
         static const char* FAST2_ ; 
         static const char* FAST4_ ; 
+        static const char* FAST8_ ; 
+        static const char* FAST16_ ; 
+        static const char* FAST32_ ; 
+        static const char* FAST64_ ; 
 
-        //              T0     T1     T2     T3     T4      T5    T6    T7     T8    T9
-        typedef enum {  OFF, SLOW32, SLOW16, SLOW8, SLOW4, SLOW2, NORM, FAST, FAST2, FAST4, NUM_MODE } Mode_t ;
+        //              T0     T1     T2     T3     T4      T5    T6    T7     T8    T9      TA     TB      TC     TD
+        typedef enum {  OFF, SLOW32, SLOW16, SLOW8, SLOW4, SLOW2, NORM, FAST, FAST2, FAST4, FAST8, FAST16, FAST32, FAST64, NUM_MODE } Mode_t ;
 
 
-        Animator(float* target, unsigned int period, float low=0.f, float high=1.f);
+        Animator(float* target, unsigned int period, float low=0.f, float high=1.f, const char* label="AnimatorLabel");
 
         void setModeRestrict(Mode_t restrict_);
         bool isModeChanged(Mode_t prior);    
@@ -70,6 +76,8 @@ class OKCORE_API Animator {
 
         void home();
         void reset();
+        unsigned getPeriod() const ;
+
         bool step(bool& bump); 
         bool step(bool& bump, unsigned& cmd_index, unsigned& cmd_offset); 
         void Summary(const char* msg);
@@ -113,9 +121,10 @@ class OKCORE_API Animator {
     private:
         Mode_t       m_mode ; 
         Mode_t       m_restrict ; 
-        unsigned int m_period[NUM_MODE] ; 
+        unsigned     m_period[NUM_MODE] ; 
         float        m_low ; 
         float        m_high ; 
+        const char*  m_label ; 
         float*       m_fractions[NUM_MODE] ; 
         const char*  m_cmd[NUM_MODE] ; 
 

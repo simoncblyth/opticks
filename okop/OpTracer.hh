@@ -63,10 +63,12 @@ see okop-
 class OKOP_API OpTracer : public SRenderer {
     public:
        static const plog::Severity LEVEL ;  
+       static const char* FLIGHTPATH_SNAP ; 
     public:
        OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate);
     public:
        void snap(const char* dir, const char* reldir=NULL);
+       void flightpath(const char* dir, const char* reldir=NULL);
     private:
        static int Preinit();
        void init();
@@ -89,6 +91,7 @@ class OKOP_API OpTracer : public SRenderer {
        Composition*     m_composition ; 
        OTracer*         m_otracer ;
        unsigned         m_count ; 
+       unsigned         m_flightpath_snap_limit ; 
 
 };
 

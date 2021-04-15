@@ -30,6 +30,10 @@
 #include "Opticks.hh"
 #include "Composition.hh"
 
+#include "View.hh"
+#include "InterpolatedView.hh"
+#include "Animator.hh"
+
 
 // okg-
 #include "OpticksHub.hh"
@@ -65,7 +69,8 @@ OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate)
     m_ocontext(NULL),   // defer 
     m_composition(m_hub->getComposition()),
     m_otracer(NULL),
-    m_count(0)
+    m_count(0),
+    m_flightpath_snap_limit(10)
 {
     init();
 }
@@ -217,4 +222,67 @@ void OpTracer::single_snap(const char* path)
 
     m_ocontext->snap(path);
 } 
+
+
+
+
+
+
+const char* OpTracer::FLIGHTPATH_SNAP = "FlightPath%0.5d.jpg" ; 
+
+void OpTracer::flightpath(const char* dir, const char* reldir )   
+{
+    bool create = true ; 
+    std::string fmt = BFile::preparePath(dir ? dir : "$TMP", reldir, FLIGHTPATH_SNAP, create);  
+
+
+    LOG(info) 
+        << " dir " << dir 
+        << " reldir " << reldir 
+        << " fmt " << fmt 
+        ;
+
+    m_hub->configureFlightPath(); 
+    m_composition->setViewType(View::FLIGHTPATH);
+
+    View* view = m_composition->getView(); 
+
+    InterpolatedView* iv = reinterpret_cast<InterpolatedView*>(view); 
+    assert(iv); 
+    iv->commandMode("TB") ;  // FAST16
+    //iv->commandMode("TC") ;  // FAST32
+    // iv->commandMode("TD") ;  // FAST64  loadsa elu nan
+
+    unsigned num_views = iv->getNumViews();  
+    Animator* anim = iv->getAnimator(); 
+    unsigned period = anim->getPeriod();  
+    unsigned tot_period = period*num_views ;
+
+    unsigned count(0); 
+    char path[128] ; 
+
+    unsigned i1 = m_flightpath_snap_limit > 0 ? std::min( m_flightpath_snap_limit, tot_period)  : tot_period ; 
+
+    LOG(info) 
+        << " num_views " << num_views
+        << " animator.period " << period
+        << " tot_period " << tot_period
+        << " m_flightpath_snap_limit " << m_flightpath_snap_limit
+        << " i1 " << i1 
+        ;
+
+    for(unsigned i=0 ; i < i1 ; i++)
+    {
+        count = m_composition->tick();
+        render(); 
+        snprintf(path, 128, fmt.c_str(), i );   
+        m_ocontext->snap(path);
+    }
+
+    LOG(info) << "]" ;
+}
+
+
+
+
 

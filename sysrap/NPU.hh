@@ -668,7 +668,7 @@ inline std::string NPU::_check(const char* path)
     ss << ( py ? py : "python" )
        << " -c \"import numpy as np ; print(np.load('" 
        << path 
-       << "')) \" && xxd -l 128 " 
+       << "')) \" && xxd " 
        << path 
        ; 
     return ss.str(); 

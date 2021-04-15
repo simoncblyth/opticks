@@ -132,3 +132,13 @@ void OpPropagator::snap(const char* dir, const char* reldir)
     LOG(LEVEL) << "]" ; 
 }
 
+void OpPropagator::flightpath(const char* dir, const char* reldir)
+{
+    LOG(LEVEL) << "[" ; 
+    LOG(info) << " dir " << dir << " reldir " << reldir  ; 
+    m_tracer->flightpath(dir, reldir);
+    LOG(LEVEL) << "]" ; 
+}
+
+
+

@@ -231,6 +231,7 @@ class OKGEO_API OpticksHub : public SCtrl {
        OpticksGen*          getGen();
    public:
        void configureState(NConfigurable* scene);
+       void configureFlightPath();
        void cleanup();
 
    private:
