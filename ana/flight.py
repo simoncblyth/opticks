@@ -26,12 +26,15 @@ log = logging.getLogger(__name__)
 dtype = np.float32
 
 class Flight(object):
+
+    DEFAULT_PATH = "/tmp/flightpath.npy"
+
     @classmethod
     def combine(cls, ff):
         na = sum(map(len,ff))
-        e = np.zeros( (na, 3), dtype=dtype )
-        l = np.zeros( (na, 3), dtype=dtype )
-        u = np.zeros( (na, 3), dtype=dtype )
+        e = np.zeros( (na, 4), dtype=dtype )
+        l = np.zeros( (na, 4), dtype=dtype )
+        u = np.zeros( (na, 4), dtype=dtype )
         c = np.zeros( (na, 4), dtype=dtype )
 
         n0 = 0 
@@ -54,12 +57,27 @@ class Flight(object):
 
     def _get_elu(self):
         elu = np.zeros( (len(self),4,4), dtype=np.float32)
-        elu[:,0,:3] = self.e 
-        elu[:,1,:3] = self.l
-        elu[:,2,:3] = self.u
+        elu[:,0,:4] = self.e 
+        elu[:,1,:4] = self.l
+        elu[:,2,:4] = self.u
         elu[:,3,:4] = self.c
         return elu
     elu = property(_get_elu)
+
+    def save(self, path=DEFAULT_PATH):
+        np.save(path, self.elu )
+
+    @classmethod
+    def Load(cls, path=DEFAULT_PATH):
+        a = np.load(path)
+        e = a[:,0,:4]
+        l = a[:,1,:4]
+        u = a[:,2,:4]
+        c = a[:,3,:4]
+        return cls(e, l, u, c )
+
+    def print_cmds(self):
+        print(self.elu[:,3,:4].copy().view("|S2"))
 
     def __len__(self):
         return len(self.e) 
@@ -98,6 +116,19 @@ if __name__ == '__main__':
     pass
     np.set_printoptions(suppress=True)
 
+
+
+
+
+
+    elu = f.elu
+    np.save("/tmp/flightpath.npy", elu ) 
+    print(elu[:,3,:4].copy().view("|S2"))
+
+    if plt:  
+        f.quiver_plot(ax, sc=sc)
+        fig.show()
+    pass
 
 
 

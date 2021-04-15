@@ -26,8 +26,11 @@ tx_load = lambda _:list(map(str.strip, open(_).readlines()))
 js_load = lambda _:json.load(open(_))
 
 class Mesh(object):
+    """
+    Loads the logical volume names from GItemList/GMeshLib.txt
+    """
     def __init__(self, kd):
-        log.info("Mesh for kd : %s " % kd )
+        log.debug("Mesh for kd : %s " % kd )
         lvnames = tx_load(os.path.join(kd, "GItemList/GMeshLib.txt"))
         name2idx = dict(zip( lvnames, range(len(lvnames)) ))
         idx2name = dict(zip( range(len(lvnames)), lvnames ))   

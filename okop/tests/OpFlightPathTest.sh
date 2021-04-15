@@ -3,9 +3,11 @@
 dir=/tmp/$USER/opticks/okop/OpFlightPathTest
 mkdir -p $dir 
 
-cmd="rsync -rtz --del --progress P:$dir/ $dir/"
-echo $cmd
-eval $cmd
+if [ "$1" == "grab" ]; then
+    cmd="rsync -rtz --del --progress P:$dir/ $dir/"
+    echo $cmd
+    eval $cmd
+fi
 
 open $dir
 

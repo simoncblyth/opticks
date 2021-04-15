@@ -50,15 +50,13 @@ class SubtractionSolid(Shape):pass
 class IntersectionSolid(Shape):pass
 
 
-   
-
 class Part(object):
     """
     Parts are CSG constituents, aka nodes of the CSG trees that make up each solid  
     """
     part_idx = 0 
 
-    def __init__(self, part, trans, d):
+    def __init__(self, part, trans, d, prim):
         """
         Part instances are created within the parent Prim instance
         by mapping this Part ctor over elements of the parts (nodes)
@@ -68,10 +66,16 @@ class Part(object):
         :param trans: 1 or more transforms, shape (ntran,4,4)
         :param d: Dir instance 
         """
+
+        sidx = d.sidx
+        self.d = d 
+        self.prim = prim 
+        self.sidx = sidx
+
         assert part.shape == (4,4), part
         assert trans.shape[1:] == (4,4), trans
         assert trans.shape[0] < 16, trans
-        assert d.__class__.__name__ == 'Dir'
+        assert d.__class__.__name__ == 'Solid'   # formerly 'Dir'
         ntran = trans.shape[0]
         assert ntran > 0
 
@@ -104,7 +108,13 @@ class Part(object):
             assert gt == 0, "zeros are not expected to have a gtransform"
         else:
             assert gt > 0, "primitives are expected to have a gtransform "   
-            assert gt <= ntran, ( "1-based gt expected to be <= ntran (local index, not global) ", gt, ntran )
+            
+            #log.info(" sidx:%2d part_idx:%5d ntran:%2d gt:%2d tcn:%s " % ( sidx, self.__class__.part_idx, ntran, gt, tcn )) 
+
+            if not gt <= ntran:
+                log.warn("1-based gt expected to be <= ntran (local index, not global)  gt:%d ntran:%d " % (gt,ntran)) 
+            pass
+            #assert gt <= ntran
             if ntran > 5:
                 pass
                 #log.info(" part_idx:%5d ntran:%2d gt:%2d tcn:%s " % ( self.__class__.part_idx, ntran, gt, tcn )) 
@@ -131,7 +141,6 @@ class Part(object):
         pass
 
         self.tran = tran 
-        self.d = d 
 
         self.idx = self.__class__.part_idx 
         self.__class__.part_idx += 1 
@@ -204,17 +213,36 @@ class Part(object):
 
 
 class Prim(object):
+    """
+
+    In [21]: gp[2].primbuf
+    Out[21]:
+    array([[ 0,  1,  0,  0],
+           [ 1,  7,  1,  0],
+           [ 8,  7,  5,  0],
+           [15,  7,  8,  0],
+           [22,  1, 11,  0],
+           [23,  7, 12,  0]], dtype=int32)
+             |   |   |   | 
+     partOffset  |   |   |
+                 |   |   |
+           numParts  |   |
+                     |   |
+             tranOffset  |
+                         |
+                 planOffset
+    """
     def __init__(self, primIdx, prim, d):
         """
         """
         assert primIdx > -1 and primIdx < 10000, primIdx
         assert prim.shape == (4,), "unexpected prim.shape %s " % repr(prim.shape)
  
-
+        self.sidx = d.sidx
         self.primIdx = primIdx
         self.prim = prim 
 
-        idx = d.idx[primIdx] if d.idx is not None else -np.ones(4,dtype=np.uint32) 
+        idx = d.idxbuf[primIdx] if d.idxbuf is not None else -np.ones(4,dtype=np.uint32) 
         lvIdx = idx[2] 
 
         self.idx = idx
@@ -225,13 +253,13 @@ class Prim(object):
         partOffset, numParts, tranOffset, planOffset = prim
         numTran = d.ntran[primIdx]
 
-        parts_ = d.part[partOffset:partOffset+numParts]
-        trans_ = d.tran[tranOffset:tranOffset+numTran,0]  # eg shape (2, 4, 4)  plucking the first from the t,v,q triplet of transforms
+        parts_ = d.partbuf[partOffset:partOffset+numParts]
+        trans_ = d.tranbuf[tranOffset:tranOffset+numTran,0]  # eg shape (2, 4, 4)  plucking the first from the t,v,q triplet of transforms
 
         self.parts_ = parts_
         self.trans_ = trans_    ## without the python class wrapping
 
-        self.parts = list(map(lambda _:Part(_,trans_,d), parts_))   ## note that every part gets passed all the trans_ need to use the gt to determine which one to use
+        self.parts = list(map(lambda _:Part(_,trans_,d, self), parts_))   ## note that every part gets passed all the trans_ need to use the gt to determine which one to use
 
         self.partOffset = partOffset
         self.numParts= numParts
@@ -255,37 +283,73 @@ class Prim(object):
         return np.max(np.abs(self.trans_ - other.trans_))      
 
     def __repr__(self):
-        return "primIdx %3s idx %30s lvIdx %3d lvName %30s partOffset %3s numParts %3s tranOffset %3s numTran %3s planOffset %3s  " % (self.primIdx, str(self.idx), self.lvIdx, self.lvName, self.partOffset, self.numParts, self.tranOffset, self.numTran, self.planOffset )  
+        fmt = "sidx %2d primIdx %3s idx %30s lvIdx %3d lvName %30s partOffset %3s numParts %3s tranOffset %3s numTran %3s planOffset %3s  " 
+        return fmt % (self.sidx, self.primIdx, str(self.idx), self.lvIdx, self.lvName, self.partOffset, self.numParts, self.tranOffset, self.numTran, self.planOffset )  
 
     def __str__(self):
         return "\n".join(["",repr(self)] + list(map(str,list(filter(lambda pt:pt.tc > 0, self.parts)))) + [repr(self.trans_)]) 
 
 
-class Dir(object):
+class Solid(object):
+    """
+    This is Solid in the Opticks composite sense, formerly poorly named Dir
+
+    Handles the concatenated prims from $TMP/GParts/{0,1,2,...} 
+
+    TODO: rename to "Prims" 
+    """
     def __init__(self, base, kd):
         """  
-        :param base: directory containing primBuffer.npy etc..
+        :param base: directory containing primBuffer.npy etc..  eg $TMP/GParts/0
         """
+        sidx = int(os.path.basename(base))
+        self.sidx = sidx
         self.base = base
         self.blib = BLib(kd)  
 
-        prim = np.load(os.path.join(base, "primBuffer.npy"))  # "solid" tree level index into part and tran buffers
-        part = np.load(os.path.join(base, "partBuffer.npy"))
-        tran = np.load(os.path.join(base, "tranBuffer.npy"))
-        idxpath = os.path.join(base,"idxBuffer.npy")          
-        idx = np.load(idxpath) if os.path.exists(idxpath) else None
+        primbuf = np.load(os.path.join(base, "primBuffer.npy"))  # "solid" tree level index into part and tran buffers
+        idxbuf  = np.load(os.path.join(base, "idxBuffer.npy"))          
+        partbuf = np.load(os.path.join(base, "partBuffer.npy"))
+        tranbuf = np.load(os.path.join(base, "tranBuffer.npy"))
 
-        ma = Mesh(kd)   # uses IDPATH envvar , used to lookup solid/mesh names from lvIdx 
+        assert len(primbuf) == len(idxbuf)
+        assert len(tranbuf) <= len(partbuf)
 
-        ntran = np.zeros( len(prim), dtype=np.uint32)
-        ntran[0:len(prim)-1] = prim[1:,2] - prim[:-1,2]    ## differencing the tranOffsets to give numtran
-        ntran[len(prim)-1] = 1   # arbitrary guess for the number of transforms of the last prim
+        tot_prim = len(primbuf)
+        tot_tran = len(tranbuf)
+        tot_part = len(partbuf)   # aka node
 
-        self.prim = prim
-        self.part = part 
-        self.tran = tran
+        #assert tot_part in [1,3,7,15,31]   nope these are totals for all the prim
+        """
+                            1                        ->  1    
+                 10                  11              ->  3     +2
+           100       101        110       111        ->  7     +4
+        1000 1001 1010 1011  1100 1101 1110  1111    -> 15     +8 
+                                                     -> 31     +16 
+        """
+        self.primbuf = primbuf
+        self.partbuf = partbuf 
+        self.tranbuf = tranbuf
+        self.idxbuf = idxbuf 
+
+        log.info(str(self))
+
+
+        ma = Mesh(kd)   # GItemList/GMeshLib.txt LV name2idx idx2name
+
+        lvidxs = idxbuf[:,1]    
+        lvns = list(map(lambda lvidx:ma.idx2name[lvidx],lvidxs))
+        self.lvns = lvns
+
+        ntran = np.zeros( tot_prim, dtype=np.uint32)
+        ntran[0:tot_prim-1] = primbuf[1:,2] - primbuf[:-1,2]    ## differencing the tranOffsets to give numtran
+
+        ntran_tot_excluding_last = ntran.sum()  
+        ntran_last = tot_tran - ntran_tot_excluding_last
+        ntran[tot_prim-1] = ntran_last           
+
         self.ntran = ntran 
-        self.idx = idx 
+
         self.ma = ma
         self.prims = self.get_prims()
    
@@ -294,8 +358,13 @@ class Dir(object):
         :return pp: python array of Prim instances deserialized from self.prim array
         """ 
         pp = []
-        for primIdx, prim in enumerate(self.prim):
-            p = Prim(primIdx, prim, self)  
+
+        tot_prim = len(self.primbuf)
+        log.debug("get_prims sidx %d tot_prim %d " % (self.sidx, tot_prim))
+
+        for primIdx in range(tot_prim):
+            prim_item = self.primbuf[primIdx]
+            p = Prim(primIdx, prim_item, self)  
             pp.append(p)
         pass
         return pp
@@ -320,7 +389,8 @@ class Dir(object):
         return filter(lambda i_ab:i_ab[1][0].maxdiff(i_ab[1][1]) > cut , enumerate(zip(self.prims, other.prims)) )
 
     def __repr__(self):
-        return "\n".join([self.base,"prim %s part %s tran %s " % ( repr(self.prim.shape), repr(self.part.shape), repr(self.tran.shape))])
+        fmt = "Solid %d : %s : primbuf %s partbuf %s tranbuf %s idxbuf %s "  
+        return fmt % (self.sidx, self.base, repr(self.primbuf.shape), repr(self.partbuf.shape), repr(self.tranbuf.shape), repr(self.idxbuf.shape))
        
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ import os, json, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.key import keydir
-from opticks.ana.prim import Dir
+from opticks.ana.prim import Solid
 
 class Geom2d(object):
     """
@@ -46,25 +46,25 @@ class Geom2d(object):
         self.kd = kd
         self.meta = meta
 
-        self._pv = None
-        self._lv = None
+        self._pvn = None
+        self._lvn = None
         self.ce = np.load(os.path.join(self.kd, "GNodeLib", "all_volume_center_extent.npy"))
 
         dir_ = os.path.expandvars(os.path.join("$TMP/GParts",self.ridx))
-        self.d = Dir(dir_, kd)     ## mm0 analytic
+        self.d = Solid(dir_, kd)     ## mm0 analytic
         self.select_gprim()
     
-    def _get_pv(self):
-        if self._pv is None:
-            self._pv =  np.loadtxt(os.path.join(self.kd, "GNodeLib/all_volume_PVNames.txt" ), dtype="|S100" )
-        return self._pv
-    pv = property(_get_pv)
+    def _get_pvn(self):
+        if self._pvn is None:
+            self._pvn =  np.loadtxt(os.path.join(self.kd, "GNodeLib/all_volume_PVNames.txt" ), dtype="|S100" )
+        return self._pvn
+    pvn = property(_get_pvn)
     
-    def _get_lv(self):
-        if self._lv is None:
-            self._lv =  np.loadtxt(os.path.join(self.kd, "GNodeLib/all_volume_LVNames.txt" ), dtype="|S100" )
-        return self._lv
-    lv = property(_get_lv)
+    def _get_lvn(self):
+        if self._lvn is None:
+            self._lvn =  np.loadtxt(os.path.join(self.kd, "GNodeLib/all_volume_LVNames.txt" ), dtype="|S100" )
+        return self._lvn
+    lvn = property(_get_lvn)
 
 
     def pvfind(self, pvname_start, encoding='utf-8'):
@@ -78,7 +78,7 @@ class Geom2d(object):
             Out[1]: array([67843])
 
         """
-        return np.flatnonzero(np.char.startswith(self.pv, pvname_start.encode(encoding)))  
+        return np.flatnonzero(np.char.startswith(self.pvn, pvname_start.encode(encoding)))  
 
 
     def select_gprim(self, names=False):
@@ -86,19 +86,20 @@ class Geom2d(object):
         sli = slice(0,None)
         gprim = []
         for p in pp[sli]:
-            if p.lvIdx in [11,12]: continue   # expHall and topRock
-            if p.lvIdx in [8,9]: continue   # too many  of these LV
-            if p.numParts > 1: continue     # skip compounds for now
+            if p.lvName.startswith("sPlane"): continue
+            if p.lvName.startswith("sStrut"): continue
+            if p.lvName.startswith("sWall"): continue
+            if p.numParts > 1: continue     # skip compounds
             gprim.append(p)
-            print(repr(p)) 
-            vol = p.idx[0]
-            print(self.ce[vol])
+            log.info(repr(p)) 
+            vol = p.idx[0]     # global volume index
+            log.info(self.ce[vol])
             #print(str(p)) 
             if names:
-                pv = self.pv[vol]
-                lv = self.lv[vol]
-                print(pv)
-                print(lv)
+                pvn = self.pvn[vol]
+                lvn = self.lvn[vol]
+                log.info(pvn)
+                log.info(lvm)
             pass
         pass
         self.gprim = gprim 

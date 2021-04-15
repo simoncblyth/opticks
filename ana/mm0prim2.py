@@ -25,14 +25,12 @@ import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.key import keydir
-from opticks.ana.prim import Dir
+#from opticks.ana.prim import Solid
 from opticks.ana.geom2d import Geom2d
 from opticks.ana.flight import Flight
 
 np.set_printoptions(suppress=True)
-
 dtype = np.float32
-
 
 try:
     import matplotlib.pyplot as plt 
@@ -45,7 +43,9 @@ pass
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.INFO)
+    #fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    fmt = '{%(pathname)s:%(lineno)d} - %(message)s'
+    logging.basicConfig(level=logging.INFO, format=fmt)
 
     ok = os.environ["OPTICKS_KEY"]
     kd = keydir(ok)
@@ -80,49 +80,58 @@ if __name__ == '__main__':
         mm0.render(ax, art3d=art3d)
     pass
 
-    ####################
+
+    cmd = False
+    #################### x-yoyo at (y=0,z=0)
     n9 = 7
-    ezz = np.zeros( (n9,3), dtype=dtype )
-    lzz = np.zeros( (n9,3), dtype=dtype )
-    uzz = np.zeros( (n9,3), dtype=dtype )
+    ezz = np.zeros( (n9,4), dtype=dtype )
+    lzz = np.zeros( (n9,4), dtype=dtype )
+    uzz = np.zeros( (n9,4), dtype=dtype )
     czz = np.zeros( (n9,4), dtype=dtype )
 
     ezz[:,0] = [-3,-2,-1,0,-1,-2,-3] 
     ezz[:,1] = np.zeros( n9, dtype=dtype ) 
     ezz[:,2] = np.zeros( n9, dtype=dtype )
-    lzz[:n9] = [1,0,0]
-    uzz[:n9] = [0,0,1] 
-    czz[0].view("|S2")[0:8] = ["AA", "C0", "T5", "B2", "Q1", "", "N2", "" ]
-    czz[2].view("|S2")[0:8] = ["","","","", "A1","","","" ] 
-    czz[n9//2].view("|S2")[0:8] = ["T6", "", "", "", "", "", "", "" ]
-    # AA: home the animation as ascii A - 0 is greater than the number of modes 
-    # Q1:invis GlobalStyle
+    ezz[:,3] = np.ones(  n9, dtype=dtype )
 
+    lzz[:n9] = [1,0,0,0]
+    uzz[:n9] = [0,0,1,0] 
+
+    if cmd:
+        czz[0].view("|S2")[0:8] = ["AA", "C0", "T5", "B2", "Q1", "", "N2", "" ]
+        czz[2].view("|S2")[0:8] = ["","","","", "A1","","","" ] 
+        czz[n9//2].view("|S2")[0:8] = ["T6", "", "", "", "", "", "", "" ]
+        # AA: home the animation as ascii A - 0 is greater than the number of modes 
+        # Q1:invis GlobalStyle
+    pass
 
     fzz = Flight(ezz,lzz,uzz,czz) 
 
-    ####################
+    ####################  x-scan at (y=0,z=1)
     n0 = 3
-    eaa = np.zeros( (n0,3), dtype=dtype )
-    laa = np.zeros( (n0,3), dtype=dtype )
-    uaa = np.zeros( (n0,3), dtype=dtype )
+    eaa = np.zeros( (n0,4), dtype=dtype )
+    laa = np.zeros( (n0,4), dtype=dtype )
+    uaa = np.zeros( (n0,4), dtype=dtype )
     caa = np.zeros( (n0,4), dtype=dtype )
 
     eaa[:,0] = np.linspace(-n0, -1, n0, dtype=dtype ) 
     eaa[:,1] = np.zeros( n0, dtype=dtype ) 
     eaa[:,2] = np.ones( n0, dtype=dtype )
+    eaa[:,3] = np.ones( n0, dtype=dtype )
 
-    uaa[:n0] = [0,0,1] 
+    uaa[:n0] = [0,0,1,0] 
 
-    caa[0].view("|S2")[0:8] = ["C1", "T6", "B2", "Q0", "A1", "P1", "N1", "" ]
-    caa[2].view("|S2")[0:8] = ["Q1","","","Q0","C0","T5","",""] 
+    if cmd:
+        caa[0].view("|S2")[0:8] = ["C1", "T6", "B2", "Q0", "A1", "P1", "N1", "" ]
+        caa[2].view("|S2")[0:8] = ["Q1","","","Q0","C0","T5","",""] 
+    pass
 
     laa[:-1] = eaa[1:]
-    laa[-1] = [0,0,1]
+    laa[-1] = [0,0,1,0]
 
     faa = Flight(eaa,laa,uaa,caa) 
 
-    #################
+    #################  x-z circle
 
     pz = 1.0
     pr = 1.05
@@ -136,32 +145,35 @@ if __name__ == '__main__':
     st0 = np.sin(t0+phase0)
     ct0 = np.cos(t0+phase0)
 
-    ebb = np.zeros( (n1,3) , dtype=dtype )  # eye position 
-    lbb = np.zeros( (n1,3) , dtype=dtype ) # up direction
-    ubb = np.zeros( (n1,3) , dtype=dtype ) # up direction
-    cbb = np.zeros( (n1,4), dtype=dtype )  # ctrl  
+    ebb = np.zeros( (n1,4) , dtype=dtype )  # eye position 
+    lbb = np.zeros( (n1,4) , dtype=dtype ) # up direction
+    ubb = np.zeros( (n1,4) , dtype=dtype ) # up direction
+    cbb = np.zeros( (n1,4),  dtype=dtype )  # ctrl  
 
     ebb[:,0] = st0
     ebb[:,1] = 0
     ebb[:,2] = ct0
     ebb *= pr
+    ebb[:,3] = np.ones( n1, dtype=dtype )
 
     ubb[:,0] = st0
     ubb[:,1] = 0 
     ubb[:,2] = ct0 
 
-    cbb[0].view("|S2")[0:8] = ["C0", "","","","T6","","T7","" ] 
-    cbb[1].view("|S2")[0:1] = ["T8"] 
-    cbb[n1//2+0].view("|S2")[0:8] = ["E3","","","","","","","" ]
-    cbb[n1//2+1].view("|S2")[0:8] = ["","","","","","","","" ]
-    cbb[n1//2+2].view("|S2")[0:8] = ["","","","","","","","" ]
-    cbb[n1//2+3].view("|S2")[0:8] = ["","","","","","","","" ]
-    cbb[n1//2+4].view("|S2")[0:8] = ["E1","","","","","","","" ]
+    if cmd:
+        cbb[0].view("|S2")[0:8] = ["C0", "","","","T6","","T7","" ] 
+        cbb[1].view("|S2")[0:1] = ["T8"] 
+        cbb[n1//2+0].view("|S2")[0:8] = ["E3","","","","","","","" ]
+        cbb[n1//2+1].view("|S2")[0:8] = ["","","","","","","","" ]
+        cbb[n1//2+2].view("|S2")[0:8] = ["","","","","","","","" ]
+        cbb[n1//2+3].view("|S2")[0:8] = ["","","","","","","","" ]
+        cbb[n1//2+4].view("|S2")[0:8] = ["E1","","","","","","","" ]
 
-    cbb[n1-2].view("|S2")[0:1] = ["T5"] 
+        cbb[n1-2].view("|S2")[0:1] = ["T5"] 
+    pass
 
     lbb[:-1] = ebb[1:]
-    lbb[-1] = [0,0,1]
+    lbb[-1] = [0,0,1,1]
 
     fbb = Flight(ebb,lbb,ubb,cbb) 
 
@@ -172,34 +184,40 @@ if __name__ == '__main__':
     tb = np.linspace( 0, 2*np.pi, 16)[:-1]
     n2 = len(tb)
 
-    ecc = np.zeros( (n2,3), dtype=dtype )
-    lcc = np.zeros( (n2,3), dtype=dtype )
-    ucc = np.zeros( (n2,3), dtype=dtype )
+    ecc = np.zeros( (n2,4), dtype=dtype )
+    lcc = np.zeros( (n2,4), dtype=dtype )
+    ucc = np.zeros( (n2,4), dtype=dtype )
     ccc = np.zeros( (n2,4), dtype=dtype )
 
     ecc[:,0] = r2*np.cos(tb)
     ecc[:,1] = r2*np.sin(tb)
     ecc[:,2] = ebb[-1,2]
+    ecc[:,3] = np.ones( n2, dtype=dtype )
 
     ucc[:,0] = np.zeros(n2, dtype=dtype)
     ucc[:,1] = np.zeros(n2, dtype=dtype)
     ucc[:,2] = np.ones(n2, dtype=dtype)
+    ucc[:,3] = np.zeros(n2, dtype=dtype)
 
-    ccc[0].view("|S2")[0:8] = ["T7","","","" ,"","","",""]
-    ccc[n2//2].view("|S2")[0:8] = ["","","","" ,"","","",""]
-    ccc[n2//2+2].view("|S2")[0:8] = ["","","","" ,"","","",""]
+    if cmd:
+        ccc[0].view("|S2")[0:8] = ["T7","","","" ,"","","",""]
+        ccc[n2//2].view("|S2")[0:8] = ["","","","" ,"","","",""]
+        ccc[n2//2+2].view("|S2")[0:8] = ["","","","" ,"","","",""]
+    pass
 
     lcc[:-1] = ecc[1:]
-    lcc[-1] = [0,0,1]
+    lcc[-1] = [0,0,1,1]
 
     fcc = Flight(ecc,lcc,ucc,ccc) 
 
     ################################################## 
 
     f = Flight.combine( [fzz, faa, fbb, fcc] )
-    elu = f.elu
-    np.save("/tmp/flightpath.npy", elu ) 
-    print(elu[:,3,:4].copy().view("|S2"))
+    f.save()
+    #elu = f.elu
+    #np.save("/tmp/flightpath.npy", elu ) 
+
+    #print(elu[:,3,:4].copy().view("|S2"))
 
     if plt:  
         f.quiver_plot(ax, sc=sc)
