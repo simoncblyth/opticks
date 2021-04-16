@@ -7,9 +7,13 @@ if [ "$1" == "grab" ]; then
     cmd="rsync -rtz --del --progress P:$dir/ $dir/"
     echo $cmd
     eval $cmd
+    open $dir
 fi
 
-open $dir
+
+#OPTICKS_FLIGHTPATH_SNAPLIMIT=1000 OpFlightPathTest
+
+
 
 
 

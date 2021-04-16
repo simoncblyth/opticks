@@ -361,7 +361,7 @@ okop-snap()
     local snapdir=$(okop-snap-dir)
     mkdir -p $snapdir
 
-    local snapconfig="steps=100,eyestartz=0.,eyestopz=0.1,prefix=${snapdir}/,postfix=.ppm"
+    local snapconfig="steps=100,ez0=0.,ez1=0.1,prefix=${snapdir}/,ext=.jpg"
 
     op --snap --j1707 --gltf 3 --tracer --target 12 --eye 0.85,0.85,0. --snapconfig $snapconfig
 }
@@ -372,14 +372,42 @@ okop-snap-mp4()
     local tag=$(basename $PWD)
     local mp4=${tag}.mp4
 
-    ffmpeg-
-    ffmpeg-export
-
-    ffmpeg -i %05d.ppm -pix_fmt yuv420p $mp4
+    okop-ffmpeg-setup
+    ffmpeg -i %05d.jpg -pix_fmt yuv420p $mp4
 
     #scp $mp4 D:
 }
 
+
+okop-ffmpeg-setup()
+{
+    env-
+    ffmpeg-
+    ffmpeg-export
+}
+
+okop-flightpath-mp4()
+{
+    local msg="=== $FUNCNAME:"
+
+    cd $TMP/okop/OpFlightPathTest
+    pwd
+
+    okop-ffmpeg-setup
+
+    local pfx=FlightPath
+    local mp4=$pfx.mp4
+    rm -f $mp4
+   
+    ls -alst ${pfx}?????.jpg
+
+    echo $msg creating mp4 $mp4 from jpg 
+    ffmpeg -i ${pfx}%05d.jpg $mp4 && rm ${pfx}?????.jpg
+
+    ls -l $mp4 
+    du -h $mp4
+
+}
 
 
 okop-propagate()
