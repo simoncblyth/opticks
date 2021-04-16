@@ -162,7 +162,7 @@ void OpTracer::snap(const char* dir, const char* reldir)
 
     if( num_steps == 0)
     {
-        const char* path = m_snap_config->getSnapPath(dir, reldir, -1); 
+        const char* path = m_snap_config->getSnapPath(dir, reldir, 0); 
         single_snap(path);  
     }
     else

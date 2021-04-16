@@ -162,7 +162,8 @@ class GGeo(object):
     def Attn(cls, ridx, name): 
         return "_%s_%d" % (name, ridx) 
 
-    def __init__(self):
+    def __init__(self, args=None):
+        self.args = args
         keydir = self.KEYDIR
         path = os.path.expandvars("{keydir}/GMergedMesh".format(**locals()))
         mmidx = sorted(map(int,os.listdir(path)))
@@ -434,7 +435,12 @@ class GGeo(object):
         else:
             assert 0, "expecting argument of 1/2/3 integers"
         pass
-        self.dump_node(nidx) 
+
+        if self.args.nidx:
+            print(nidx)
+        else: 
+            self.dump_node(nidx) 
+        pass
 
 
     def idsmry(self, nidx):
@@ -515,7 +521,8 @@ class GGeo(object):
 def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
     parser = argparse.ArgumentParser(doc)
-    parser.add_argument(     "idx", nargs="*", help="Node index to dump.")
+    parser.add_argument(     "idx", nargs="*", help="Node index or triplet index of form \"1/0/0\" or \"1/\" to dump.")
+    parser.add_argument(     "--nidx", default=False, action="store_true", help="Dump only the node index, useful when the input is triplet index." ) 
     parser.add_argument(     "--level", default="info", help="logging level" ) 
     parser.add_argument(  "-c","--check", action="store_true", help="Consistency check" ) 
     parser.add_argument(  "-i","--idsmry", action="store_true", help="Slice identity summary interpreting idx as slice range." ) 
@@ -549,7 +556,7 @@ def triplet_(rpo):
 
 if __name__ == '__main__':
     args = parse_args(__doc__)
-    gg = GGeo()
+    gg = GGeo(args)
 
     if args.check:
         gg.consistency_check()

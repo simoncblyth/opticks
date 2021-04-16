@@ -1142,10 +1142,7 @@ $FUNCNAME
 1. arguments after the first are passed to the function, this is typically
    used to switch to analytic with --xanalytic 
 
-2. depends on UseOptiX that needs to be manually built::
-
-   cd examples/UseOptiX
-   ./go.sh
+2. depends on UseOptiX that is now always built in optixrap/tests
 
 3. UseOptiX --uniqrec returns eg Quadro_RTX_8000/0
 

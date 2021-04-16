@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-set(name UseOptiX)
+set(name UseOptiXExample)
 project(${name})
 include(OpticksBuildOptions)
 

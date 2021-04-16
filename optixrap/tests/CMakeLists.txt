@@ -15,6 +15,7 @@ set(TEST_SOURCES
     OFormatTest.cc 
     OCtxTest.cc 
 
+    UseOptiX.cc
 )
 
 

@@ -192,14 +192,14 @@ struct Devices
         num_devices = 0 ; 
         version = 0 ;  
 #if OPTIX_VERSION < 70000
-        std::cout << "Devices::init optix pre7 " << std::endl ; 
+        //std::cout << "Devices::init optix pre7 " << std::endl ; 
 
         // extracts from /Developer/OptiX/SDK/optixDeviceQuery/optixDeviceQuery.cpp
         RT_CHECK_ERROR(rtDeviceGetDeviceCount(&num_devices));
         RT_CHECK_ERROR(rtGetVersion(&version));
         assert( num_devices <= MAX_DEVICES ); 
 #else
-        std::cout << "Devices::init optix7 " << std::endl ; 
+        //std::cout << "Devices::init optix7 " << std::endl ; 
         int num_devices_ = 0 ; 
         CUDA_CHECK(cudaGetDeviceCount(&num_devices_));
         num_devices = num_devices_ ; 
