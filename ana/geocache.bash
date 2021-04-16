@@ -881,6 +881,25 @@ geocache-gui()
                  $*   
 }
 
+
+
+
+geocache-simple-mm(){ ls -1 $(geocache-keydir)/GMergedMesh ; } 
+geocache-simple()
+{
+    local mm
+    local cmd 
+    for mm in $(geocache-simple-mm) ; do  
+        cmd="OpSnapTest --target 304632 --eye -1,-1,-1  --rtx 1 --cvd 1 --enabledmergedmesh $mm"
+        echo $cmd
+        eval $cmd
+    done 
+}
+
+
+
+
+
 geocache-360()
 {
    local dbg
@@ -893,7 +912,6 @@ geocache-360()
 
    $dbg OKTest \
                 --cvd $cvd \
-                --envkey \
                 --xanalytic \
                 --target 62594  \
                 --eye 0,0,0  \

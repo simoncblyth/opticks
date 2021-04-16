@@ -2014,14 +2014,14 @@ void Opticks::loadOriginCacheMeta()
 const char* Opticks::getCacheMetaGDMLPath_(const BMeta* origin_cachemeta ) const 
 {
     std::string gdmlpath = ExtractCacheMetaGDMLPath(origin_cachemeta); 
-    LOG(info) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
+    LOG(LEVEL) << "ExtractCacheMetaGDMLPath " << gdmlpath ; 
 
     const char* cachemeta_gdmlpath = gdmlpath.empty() ? NULL : strdup(gdmlpath.c_str());
 
     if(cachemeta_gdmlpath == NULL)
     {
-        LOG(fatal) << "argline that creates cachemetapath does not include \"--gdmlpath /path/to/geometry.gdml\" " ; 
-        LOG(fatal) << "FAILED to extract gdmlpath from the geocache creating commandline persisted in cachemetapath " ; 
+        LOG(LEVEL) << "argline that creates cachemetapath does not include \"--gdmlpath /path/to/geometry.gdml\" " ; 
+        LOG(LEVEL) << "FAILED to extract gdmlpath from the geocache creating commandline persisted in cachemetapath " ; 
     }
     return cachemeta_gdmlpath ; 
 } 
@@ -2033,9 +2033,9 @@ void Opticks::loadOriginCacheMeta_()
     LOG(LEVEL) << "[" ; 
 
     const char* cachemetapath = getCacheMetaPath();
-    LOG(info) << " cachemetapath " << cachemetapath ; 
+    LOG(LEVEL) << " cachemetapath " << cachemetapath ; 
     m_origin_cachemeta = BMeta::Load(cachemetapath); 
-    m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta_"); 
+    //m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta_"); 
 
     const char* cachemeta_gdmlpath = getCacheMetaGDMLPath_( m_origin_cachemeta ); 
     const char* origin_gdmlpath = OriginGDMLPath() ; 
@@ -2064,7 +2064,7 @@ void Opticks::loadOriginCacheMeta_()
     }
     else
     {
-        LOG(info) << "(pass) " << GEOCACHE_CODE_VERSION_KEY << " " << m_origin_geocache_code_version  ; 
+        LOG(LEVEL) << "(pass) " << GEOCACHE_CODE_VERSION_KEY << " " << m_origin_geocache_code_version  ; 
     }
     assert( geocache_code_version_pass ); 
     LOG(LEVEL) << "]" ; 
@@ -2185,7 +2185,7 @@ std::string Opticks::ExtractCacheMetaGDMLPath(const BMeta* meta)  // static
 
     if(tokpath.empty())
     {
-        LOG(fatal)
+        LOG(LEVEL)
             << " FAILED TO EXTRACT ORIGIN GDMLPATH FROM METADATA argline "  
             << "\n argline " << argline
             ;

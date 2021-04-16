@@ -2,6 +2,11 @@ OpSnapTest_STimes_perplexing
 ================================
 
 
+
+
+2019
+-------
+
 With RTX OFF the prelaunch is taking ages.
 
 Hmm the presentation is misleading

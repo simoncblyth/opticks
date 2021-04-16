@@ -304,7 +304,15 @@ void OGeo::convert()
 
     for(unsigned i=0 ; i < nmm ; i++) 
     {
-        convertMergedMesh(i); 
+        bool enabled = m_ok->isEnabledMergedMesh(i) ; 
+        if( enabled )
+        {
+            convertMergedMesh(i); 
+        }
+        else
+        {
+            LOG(error) << "MergedMesh " << i << " IS NOT ENABLED " ;  
+        }
     }
 
     m_top->setAcceleration( makeAcceleration(m_top_accel, false) );

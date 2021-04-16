@@ -434,7 +434,7 @@ void OpticksHub::configure()
     bool compute = m_ok->isCompute();
     bool compute_opt = hasOpt("compute") ;
     if(compute && !compute_opt)
-        LOG(error) << "FORCED COMPUTE MODE : as remote session detected " ;  
+        LOG(LEVEL) << "FORCED COMPUTE MODE : as remote session detected " ;  
 
 
     if(hasOpt("idpath")) std::cout << m_ok->getIdPath() << std::endl ;
