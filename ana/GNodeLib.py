@@ -3,6 +3,8 @@
 GNodeLib.py
 =============
 
+* see also ggeo.py which provides "triplet" indexing  (repeat_idx, instance_index, prim_index) 
+
 Geocache nodelib to load is controlled by OPTICKS_KEYDIR envvar. Set that in ~/.opticks_config with::
 
     export OPTICKS_KEY=OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.50a18baaf29b18fae8c1642927003ee3  ## example key  
@@ -43,10 +45,16 @@ Info for a node identified by flat index::
     '/dd/Geometry/AD/lvSST0xc234cd00x3f0b5e0'
 
 
-TODO:
 
-* make an equivalent GMergedMesh.py that accesses the same info 
-  with "triplet" indexing  (repeat_idx, instance_index, prim_index) 
+Can also identify nodes using LV names or PV names and control 
+output with slice specification::
+
+    GNodeLib.py --lv HamamatsuR12860_PMT_20inch_body_log --sli 0:2
+
+Dump a list of unique LV names with::
+
+    GNodeLib.py --ulv 
+
 
 
 """
@@ -63,6 +71,8 @@ class Txt(list):
 
 txt_load = lambda _:Txt(map(str.strip, open(_).readlines()))
 
+
+
 class Node(object):
     def __init__(self, nlib, idx):
         self.nlib = nlib
@@ -78,13 +88,13 @@ class GNodeLib(object):
     KEYDIR = KEY.keydir
     RELDIR = "GNodeLib" 
     k2name = {
-      "TR":"volume_transforms.npy",
-      "BB":"volume_bbox.npy",
-      "ID":"volume_identity.npy",
-      "NI":"volume_nodeinfo.npy",
-      "CE":"volume_center_extent.npy",
-      "PV":"volume_PVNames.txt",
-      "LV":"volume_LVNames.txt",
+      "TR":"all_volume_transforms.npy",
+      "BB":"all_volume_bbox.npy",
+      "ID":"all_volume_identity.npy",
+      "NI":"all_volume_nodeinfo.npy",
+      "CE":"all_volume_center_extent.npy",
+      "PV":"all_volume_PVNames.txt",
+      "LV":"all_volume_LVNames.txt",
     }
 
     @classmethod   
@@ -97,7 +107,21 @@ class GNodeLib(object):
     @classmethod   
     def Load(cls, k): 
         path = cls.Path(k)
-        return np.load(path) if path[-4:] == ".npy" else txt_load(path)
+        return np.load(path) if path[-4:] == ".npy" else np.loadtxt(path, dtype="|S100" )
+
+    def pvfind(self, pvname_start, encoding='utf-8'):
+        """
+        :param pvname_start: string start of PV name
+        :return indices: array of matching indices in pv name array (all nodes) 
+        """
+        return np.flatnonzero(np.char.startswith(self.pv, pvname_start.encode(encoding)))  
+
+    def lvfind(self, lvname_start, encoding='utf-8'):
+        """
+        :param lvname_start: string start of LV name
+        :return indices: array of matching indices in lv name array (all nodes: so will be many repeats)  
+        """
+        return np.flatnonzero(np.char.startswith(self.lv, lvname_start.encode(encoding)))  
 
     def __init__(self):
         for k in self.k2name.keys(): 
@@ -111,15 +135,32 @@ class GNodeLib(object):
         return Node(self, idx)
 
 
+def slice_(sli):
+    elem = []
+    for s in sli.split(":"):
+        try:
+            elem.append(int(s))
+        except ValueError:
+            elem.append(None)
+        pass
+    return slice(*elem)
+
+
 def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
     parser = argparse.ArgumentParser(doc)
-    parser.add_argument(     "idx",  type=int, nargs="+", help="Node index to dump.")
+    parser.add_argument(     "idx",  type=int, nargs="*", help="Node index to dump.")
     parser.add_argument(     "--level", default="info", help="logging level" ) 
+    parser.add_argument(     "--pv", default=None, help="PV name to search for" ) 
+    parser.add_argument(     "--lv", default=None, help="LV name to search for" ) 
+    parser.add_argument(     "--ulv", default=False, action="store_true", help="Dump unique LV names" ) 
+    parser.add_argument(     "--sli", default="0:10:1", help="Array slice to control output, 0:None for all" )
+    parser.add_argument(     "--ce", default=False, action="store_true", help="Dump just center_extent" ) 
     parser.add_argument(     "-d","--dump", action="store_true", help="Dump lib repr" ) 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+    args.slice = slice_(args.sli)
     return args  
 
 if __name__ == '__main__':
@@ -133,4 +174,30 @@ if __name__ == '__main__':
         nd = nlib[idx]
         print(nd)
     pass
+
+    idxs = []
+    if args.pv:
+        idxs = nlib.pvfind(args.pv)
+        print("args.pv:%s matched %d nodes " % (args.pv, len(idxs))) 
+    elif args.lv:
+        idxs = nlib.lvfind(args.lv)
+        print("args.lv:%s matched %d nodes " % (args.lv, len(idxs))) 
+    elif args.ulv:
+        lvns = np.unique(nlib.lv) 
+        print("args.ulv found %d unique LV names" % (len(lvns))) 
+        print("\n".join(list(map(lambda _:_.decode('utf-8'),lvns[args.slice]))))
+    pass
+
+    print("slice %s " % args.sli)
+
+    print(idxs[args.slice])
+    for idx in idxs[args.slice]:
+        if args.ce:
+            print(nlib.ce[idx])
+        else:
+            nd = nlib[idx]
+            print(nd)
+        pass
+    pass 
+
 

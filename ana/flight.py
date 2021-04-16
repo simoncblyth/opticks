@@ -19,8 +19,54 @@
 #
 
 """
+flight.py : taking a spin around some geometry
+===============================================
+
+0. get overview of the "Solids" (in Opticks sense of compounded shapes aka GMergedMesh) with GParts.py::
+
+    OpSnapTest --savegparts    
+    # any Opticks executable can do this (necessary as GParts are now postcache so this does not belong in geocache)
+    # the parts are saved into $TMP/GParts
+
+    epsilon:ana blyth$ GParts.py 
+    Solid 0 : /tmp/blyth/opticks/GParts/0 : primbuf (3084, 4) partbuf (17346, 4, 4) tranbuf (7917, 3, 4, 4) idxbuf (3084, 4) 
+    Solid 1 : /tmp/blyth/opticks/GParts/1 : primbuf (5, 4) partbuf (7, 4, 4) tranbuf (5, 3, 4, 4) idxbuf (5, 4) 
+    Solid 2 : /tmp/blyth/opticks/GParts/2 : primbuf (6, 4) partbuf (30, 4, 4) tranbuf (15, 3, 4, 4) idxbuf (6, 4) 
+    Solid 3 : /tmp/blyth/opticks/GParts/3 : primbuf (6, 4) partbuf (54, 4, 4) tranbuf (29, 3, 4, 4) idxbuf (6, 4) 
+    Solid 4 : /tmp/blyth/opticks/GParts/4 : primbuf (6, 4) partbuf (28, 4, 4) tranbuf (15, 3, 4, 4) idxbuf (6, 4) 
+    Solid 5 : /tmp/blyth/opticks/GParts/5 : primbuf (1, 4) partbuf (3, 4, 4) tranbuf (1, 3, 4, 4) idxbuf (1, 4) 
+    Solid 6 : /tmp/blyth/opticks/GParts/6 : primbuf (1, 4) partbuf (31, 4, 4) tranbuf (9, 3, 4, 4) idxbuf (1, 4) 
+    Solid 7 : /tmp/blyth/opticks/GParts/7 : primbuf (1, 4) partbuf (1, 4, 4) tranbuf (1, 3, 4, 4) idxbuf (1, 4) 
+    Solid 8 : /tmp/blyth/opticks/GParts/8 : primbuf (1, 4) partbuf (31, 4, 4) tranbuf (11, 3, 4, 4) idxbuf (1, 4) 
+    Solid 9 : /tmp/blyth/opticks/GParts/9 : primbuf (130, 4) partbuf (130, 4, 4) tranbuf (130, 3, 4, 4) idxbuf (130, 4) 
+    epsilon:ana blyth$ 
+
+    * in above 6 and 8 look interesting : they are single prim with 31 parts(aka nodes) 
+      that is a depth 5 tree and potential performance problem
+
+1. use ggeo.py and triplet indexing to find the corresponding global node index (nidx)::
+
+    epsilon:ok blyth$ ggeo.py 6/
+    nidx:69078 triplet:6000000 sh:5e0014 sidx:    0   nrpo( 69078     6     0     0 )  shape(  94  20                             uni10x34cdcb0                            Water///Steel) 
+
+2. create an eye-look-up flight path, that is saved to /tmp/flightpath.npy 
+
+   flight.py --roundaboutxy
+
+   NB the flightpath is in center-extent "model" frame so it can be reused for any sized object 
+
+3. launch visualization, press U to switch to the animated InterpolatedView created from the flightpath 
+
+   OTracerTest --target 69078
+
+4. for non-interative snaps around the flightpath 
+
+   OpFlightPathTest --target 69078
+
+
+
 """
-import os, logging, numpy as np
+import os, logging, argparse, numpy as np
 log = logging.getLogger(__name__)
 
 dtype = np.float32
@@ -28,6 +74,42 @@ dtype = np.float32
 class Flight(object):
 
     DEFAULT_PATH = "/tmp/flightpath.npy"
+
+
+    @classmethod
+    def RoundaboutXY(cls, scale=1, steps=32):
+        """
+        Move eye in circle in XY plane whilst looking towards the center, up +Z
+
+        
+                 Y
+                3|
+                 |   2  
+                 | 
+                 |      1
+                 |
+                 +--------0----X 
+
+        """
+        ta = np.linspace( 0, 2*np.pi, steps )
+        st = np.sin(ta)
+        ct = np.cos(ta)
+        n = len(ta)
+
+        e = np.zeros( (n,4) , dtype=dtype )  # eye position 
+        l = np.zeros( (n,4) , dtype=dtype )  # look position
+        u = np.zeros( (n,4) , dtype=dtype )  # up direction
+        c = np.zeros( (n,4),  dtype=dtype )  # ctrl  
+
+        e[:,0] = ct*scale           
+        e[:,1] = st*scale
+        e[:,2] = 0
+        e[:,3] = 1
+
+        l[:] = [0,0,0,1]   # always looking at center 
+        u[:] = [0,0,1,0]   # always up +Z
+
+        return cls(e,l,u,c)
 
     @classmethod
     def combine(cls, ff):
@@ -112,24 +194,28 @@ class Flight(object):
         pass
 
 
+
+
+def parse_args(doc, **kwa):
+    np.set_printoptions(suppress=True, precision=3, linewidth=200)
+    parser = argparse.ArgumentParser(doc)
+    parser.add_argument( "--level", default="info", help="logging level" ) 
+    parser.add_argument( "--roundaboutxy", action="store_true", help="" ) 
+    args = parser.parse_args()
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+    return args  
+
+
 if __name__ == '__main__':
     pass
     np.set_printoptions(suppress=True)
-
-
-
-
-
-
-    elu = f.elu
-    np.save("/tmp/flightpath.npy", elu ) 
-    print(elu[:,3,:4].copy().view("|S2"))
-
-    if plt:  
-        f.quiver_plot(ax, sc=sc)
-        fig.show()
+    args = parse_args(__doc__)
+    if args.roundaboutxy:
+        f = Flight.RoundaboutXY()
+        print(f.elu)
+        f.save()
     pass
-
 
 
 

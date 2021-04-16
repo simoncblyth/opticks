@@ -3,6 +3,21 @@
 ggeo.py
 =========
 
+See also GNodeLib.py 
+
+Dumping using single node index and triplet RPO (ridx/pidx/oidx repeat/placement/offset) indexing::
+
+     ggeo.py 0         # world volume 
+     ggeo.py 1/0/0     # first placement of outer volume of first repeat   
+     ggeo.py 1/        # missing elements of the triplet default to 0 
+
+     ggeo.py 2/0/0     # first placement of outer volume of second repeat   
+
+A convenient visualization workflow is to use the above python triple indexing to find 
+flat node indices to target and then use, eg::
+
+    OTracerTest --target 69078
+
 
 Volume idsmry dumping::
 
@@ -500,7 +515,7 @@ class GGeo(object):
 def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
     parser = argparse.ArgumentParser(doc)
-    parser.add_argument(     "idx",  type=int, nargs="*", help="Node index to dump.")
+    parser.add_argument(     "idx", nargs="*", help="Node index to dump.")
     parser.add_argument(     "--level", default="info", help="logging level" ) 
     parser.add_argument(  "-c","--check", action="store_true", help="Consistency check" ) 
     parser.add_argument(  "-i","--idsmry", action="store_true", help="Slice identity summary interpreting idx as slice range." ) 
@@ -520,6 +535,17 @@ def misc(gg):
     t000 = gg.get_transform(0,0,0)
     print("t000\n",t000)
 
+def triplet_(rpo):
+    elem = []
+    for s in rpo.split("/"):
+        try:
+            elem.append(int(s))
+        except ValueError:
+            elem.append(0)
+        pass
+    pass
+    return elem 
+
 
 if __name__ == '__main__':
     args = parse_args(__doc__)
@@ -528,8 +554,9 @@ if __name__ == '__main__':
     if args.check:
         gg.consistency_check()
     elif args.idsmry or args.bbsmry:
-        beg = args.idx[0]
-        end = args.idx[1] if len(args.idx) > 1 else min(gg.num_volumes,args.idx[0]+50) 
+
+        beg = int(args.idx[0])
+        end = int(args.idx[1]) if len(args.idx) > 1 else min(gg.num_volumes,int(args.idx[0])+50) 
         for idx in list(range(beg, end)):
             if args.idsmry:
                 gg.idsmry(idx)
@@ -541,7 +568,11 @@ if __name__ == '__main__':
         pass
     else:
         for idx in args.idx:
-            gg(idx)
+            try:
+                gg(int(idx))
+            except ValueError:
+                gg(*triplet_(idx))
+            pass  
         pass
     pass
 
