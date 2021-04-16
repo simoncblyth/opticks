@@ -791,7 +791,7 @@ void BOpticksResource::initViaKey()
     }
     assert( m_key ) ;
 
-    LOG(info) << std::endl << m_key->desc()  ;  
+    LOG(LEVEL) << std::endl << m_key->desc()  ;  
 
     m_layout = m_key->getLayout(); 
 

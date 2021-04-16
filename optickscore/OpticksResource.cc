@@ -204,7 +204,7 @@ This must come from detector specific config
 
 int OpticksResource::getDefaultFrame() const 
 {
-    LOG(fatal) << " PLACEHOLDER ZERO " ; 
+    LOG(LEVEL) << " PLACEHOLDER ZERO " ; 
     return 0 ; 
 }
 

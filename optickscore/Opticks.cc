@@ -2336,6 +2336,12 @@ const char* Opticks::getSnapConfigString()
     return m_cfg->getSnapConfig().c_str() ; 
 }
 
+const char* Opticks::getSnapOverridePrefix()  // --snapoverrideprefix
+{
+    const std::string& snapoverrideprefix = m_cfg->getSnapOverridePrefix() ; 
+    return snapoverrideprefix.empty() ? nullptr : snapoverrideprefix.c_str() ; 
+}
+
 const char* Opticks::getLODConfigString()
 {
     return m_cfg->getLODConfig().c_str() ; 
@@ -3664,7 +3670,7 @@ TorchStepNPY* Opticks::makeSimpleTorchStep(unsigned gencode)
 
     const char* cfg = config.empty() ? NULL : config.c_str() ;
 
-    LOG(fatal)
+    LOG(LEVEL)
               << " enable : --torch (the default) "
               << " configure : --torchconfig [" << ( cfg ? cfg : "NULL" ) << "]" 
               << " dump details : --torchdbg " 

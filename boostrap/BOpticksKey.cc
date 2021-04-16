@@ -75,7 +75,7 @@ bool BOpticksKey::SetKey(const char* spec)
 {
     if(BOpticksKey::IsSet())
     {
-        LOG(error) << "key is already set, ignoring update with spec " << spec ;
+        LOG(LEVEL) << "key is already set, ignoring update with spec " << spec ;
         return true ;  
     }
 

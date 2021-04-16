@@ -85,12 +85,12 @@ std::string NSnapConfig::SnapIndex(int index, unsigned width) // static
 }
 
 
-std::string NSnapConfig::getSnapName(int index) const 
+std::string NSnapConfig::getSnapName(int index, const char* override_prefix) const 
 {
     std::string blank("%0.5d"); 
     std::stringstream ss ;
     ss 
-       << prefix 
+       << ( override_prefix ? override_prefix : prefix  )
        << ( index > -1 ? SnapIndex(index, fmtwidth) : blank )
        << ext
        ; 
@@ -98,9 +98,9 @@ std::string NSnapConfig::getSnapName(int index) const
     return ss.str();
 }
 
-const char* NSnapConfig::getSnapPath(const char* dir, const char* reldir, int index) const 
+const char* NSnapConfig::getSnapPath(const char* dir, const char* reldir, int index, const char* override_prefix) const 
 {
-    std::string name = getSnapName(index) ; 
+    std::string name = getSnapName(index, override_prefix) ; 
     bool create = true ; 
     std::string path = BFile::preparePath(dir ? dir : "$TMP", reldir, name.c_str(), create);  
     return strdup(path.c_str()); 

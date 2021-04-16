@@ -72,6 +72,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_state_tag(""),
     m_materialprefix("/dd/Materials/"),
     m_snapconfig("steps=0,ext=.jpg"),        // --snapconfig
+    m_snapoverrideprefix(""),
     m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
     m_meshversion(""),
     m_rendermode(""),
@@ -802,7 +803,10 @@ void OpticksCfg<Listener>::init()
        ("snap",  "Enable non-OpenGL rendering to ppm files, use --snapconfig to configure, see npy-/NSnapConfig  ") ;
 
    m_desc.add_options()
-       ("snapconfig",   boost::program_options::value<std::string>(&m_snapconfig), "snap (non-OpenGL rendering to ppm) configuration" );
+       ("snapconfig",   boost::program_options::value<std::string>(&m_snapconfig), "snap (non-OpenGL rendering to ppm/jpg/png) configuration" );
+
+   m_desc.add_options()
+       ("snapoverrideprefix",   boost::program_options::value<std::string>(&m_snapoverrideprefix), "override the snap prefix eg for distinguishing separate invokations " );
 
 
    m_desc.add_options()
@@ -1650,6 +1654,15 @@ const std::string& OpticksCfg<Listener>::getSnapConfig()
 {
     return m_snapconfig ;
 }
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getSnapOverridePrefix()
+{
+    return m_snapoverrideprefix  ;
+}
+
+
+
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getG4SnapConfig()
 {

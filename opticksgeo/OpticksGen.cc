@@ -443,7 +443,7 @@ TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)
             active_target = gdmlaux_target ;  
         }
         
-        LOG(error) 
+        LOG(LEVEL) 
             << " as torchstep isDefault replacing placeholder frame " 
             << " frameIdx : " << frameIdx
             << " detectorDefaultFrame : " << detectorDefaultFrame
@@ -470,7 +470,7 @@ TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)
     }
     unsigned num_photons = torchstep->getNumPhotons(); 
 
-    LOG(error)
+    LOG(LEVEL)
         << " generateoverride " << generateoverride
         << " num_photons0 " << num_photons0
         << " num_photons " << num_photons

@@ -66,6 +66,7 @@ OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate)
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_snap_config(m_ok->getSnapConfig()),
+    m_snapoverrideprefix(m_ok->getSnapOverridePrefix()),  // --snapoverrideprefix
     m_immediate(immediate),
 
     m_ocontext(NULL),   // defer 
@@ -156,13 +157,14 @@ void OpTracer::snap(const char* dir, const char* reldir)
         << "[" << m_snap_config->desc()
         << " dir " << dir 
         << " reldir " << reldir 
+        << " snapoverrideprefix " << m_snapoverrideprefix
         ;
 
     int num_steps = m_snap_config->steps ; 
 
     if( num_steps == 0)
     {
-        const char* path = m_snap_config->getSnapPath(dir, reldir, 0); 
+        const char* path = m_snap_config->getSnapPath(dir, reldir, 0, m_snapoverrideprefix ); 
         single_snap(path);  
     }
     else
@@ -185,7 +187,7 @@ void OpTracer::multi_snap(const char* dir, const char* reldir)
 {
     std::vector<glm::vec3>    eyes ; 
     m_composition->eye_sequence(eyes, m_snap_config ); 
-    const char* path_fmt = m_snap_config->getSnapPath(dir, reldir, -1); 
+    const char* path_fmt = m_snap_config->getSnapPath(dir, reldir, -1, m_snapoverrideprefix); 
     multi_snap(path_fmt, eyes ); 
 }
 

@@ -62,8 +62,8 @@ struct NPY_API NSnapConfig
     std::string ext ;    // eg .jpg
 
 
-    const char* getSnapPath(const char* dir, const char* reldir, int index) const ;
-    std::string getSnapName(int index) const ;
+    const char* getSnapPath(const char* dir, const char* reldir, int index, const char* override_prefix=NULL) const ;
+    std::string getSnapName(int index, const char* override_prefix=NULL) const ;
     static std::string SnapIndex(int index, unsigned width);
     std::string desc() const ; 
 

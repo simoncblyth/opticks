@@ -361,6 +361,8 @@ class OKCORE_API Opticks {
        const char* getG4SnapConfigString() const ;
    public:
        const char* getSnapConfigString();
+       const char* getSnapOverridePrefix();  // --snapoverrideprefix
+
        NSnapConfig* getSnapConfig();
        const char* getLODConfigString();
        NLODConfig* getLODConfig();
