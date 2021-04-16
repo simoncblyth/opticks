@@ -110,7 +110,7 @@ void OTracer::init()
 
 
 
-void OTracer::trace_()
+double OTracer::trace_()
 {
     LOG(debug) << "OTracer::trace_ " << m_trace_count ; 
 
@@ -171,16 +171,19 @@ void OTracer::trace_()
     unsigned int lmode = m_trace_count == 0 ? OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH|OContext::LAUNCH : OContext::LAUNCH ;
 
     //OContext::e_pinhole_camera_entry
-    m_ocontext->launch( lmode,  m_entry_index,  width, height, m_trace_times );
+    double dt = m_ocontext->launch( lmode,  m_entry_index,  width, height, m_trace_times );
 
     double t2 = BTimeStamp::RealTime();
 
+    float trace_time = t2 - t1 ;
+
     m_trace_count += 1 ; 
     m_trace_prep += t1 - t0 ; 
-    m_trace_time += t2 - t1 ; 
+    m_trace_time += trace_time ; 
 
     //LOG(info) << m_trace_times->description("OTracer::trace m_trace_times") ;
 
+    return dt ;  
 }
 
 

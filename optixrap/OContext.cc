@@ -1362,12 +1362,13 @@ RTformat OContext::getFormat(NPYBase::Type_t type, bool is_seed)
 OContext::snap
 ----------------
 
-cu/pinhole_camera.cu::
+Saves the GPU output_buffer pixels into an image file with format 
+corresponding to the ".ppm" ".png" or ".jpg" file extension of the path argument.
+This uses the output_buffer from cu/pinhole_camera.cu::
 
     rtBuffer<uchar4, 2>  output_buffer;
 
 **/
-
 
 void OContext::snap(const char* path)
 {

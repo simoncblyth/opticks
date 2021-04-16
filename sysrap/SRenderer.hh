@@ -30,7 +30,7 @@ Protocol base.
 
 class SRenderer {
    public:
-      virtual void render() = 0 ;
+      virtual double render() = 0 ;
 };
 
 

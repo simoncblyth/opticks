@@ -150,6 +150,12 @@ class Flight(object):
                  |
                  +--------0----X 
 
+
+        Note that the flightpath can be scaled after loading 
+        into Opticks executables using the --flightpathscale option.
+
+        Its generally more flexible to change scale that way, avoiding 
+        the need to recreate flightpath.npy files for simple scale changes.
         """
         log.info("scale %s steps %s " % (scale, steps))
 

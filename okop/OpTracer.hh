@@ -77,7 +77,7 @@ class OKOP_API OpTracer : public SRenderer {
        void multi_snap(const char* path_fmt, const std::vector<glm::vec3>& eyes ) ;
        void single_snap(const char* path);
 
-       void render();     // fulfils SRenderer protocol
+       double render();     // fulfils SRenderer protocol
        void setup_render_target() ;
     private:
        int              m_preinit ; 

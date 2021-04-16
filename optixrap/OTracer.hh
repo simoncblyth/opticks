@@ -77,7 +77,7 @@ class OXRAP_API OTracer {
    public:
        OTracer(OContext* ocontext, Composition* composition);
    public:
-       void trace_();
+       double trace_();
        void report(const char* msg="OTracer::report");
        void setResolutionScale(unsigned int resolution_scale);
        unsigned getResolutionScale() const ;

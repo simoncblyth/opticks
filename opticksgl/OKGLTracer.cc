@@ -175,15 +175,16 @@ two renderers and GPU texture passing with::
 **/
 
 
-void OKGLTracer::render()
+double OKGLTracer::render()
 {     
+    double dt = -1. ; 
     if(m_otracer && m_orenderer)
     { 
         if(m_composition->hasChangedGeometry())
         {
             unsigned int scale = m_interactor->getOptiXResolutionScale() ;
             m_otracer->setResolutionScale(scale) ;
-            m_otracer->trace_();
+            dt = m_otracer->trace_();
             m_oframe->push_PBO_to_Texture();
 
 /*
@@ -200,6 +201,7 @@ void OKGLTracer::render()
             // dont bother tracing when no change in geometry
         }
     }
+    return dt ; 
 }   
 
 

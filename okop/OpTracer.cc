@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+
+
 #include "SSys.hh"
 #include "SPPM.hh"
 #include "BFile.hh"
@@ -120,13 +122,19 @@ void OpTracer::setup_render_target()
 }
 
 
-void OpTracer::render()
+double OpTracer::render()
 {     
     LOG(LEVEL) << "[" ;
+
     if(m_count == 0 ) setup_render_target(); 
-    m_otracer->trace_();
+
+    double dt = m_otracer->trace_();
+
     m_count++ ; 
+
     LOG(LEVEL) << "]" ;
+
+    return dt ; 
 }   
 
 
@@ -210,15 +218,16 @@ void OpTracer::single_snap(const char* path)
     float eyey = m_composition->getEyeY();
     float eyez = m_composition->getEyeZ();
 
+    double dt = render();   // OTracer::trace_
+
     std::cout
         << " count " << std::setw(5) << m_count 
         << " eyex " << std::setw(10) << eyex
         << " eyey " << std::setw(10) << eyey
         << " eyez " << std::setw(10) << eyez
         << " path " << path 
+        << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
         << std::endl ;         
-
-    render();
 
     m_ocontext->snap(path);
 } 
@@ -273,17 +282,21 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
 
     for(unsigned i=0 ; i < i1 ; i++)
     {
-        count = m_composition->tick();
-        render(); 
+        count = m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
+
+        double dt = render();   // calling OTracer::trace_
+
         snprintf(path, 128, fmt.c_str(), i );   
         std::cout 
             << "OpTracer::flightpath " 
             << " count " <<  std::setw(6) << count 
             << " i " <<  std::setw(6) << i
             << " path " << path 
+            << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
             << std::endl 
             ;
-        m_ocontext->snap(path);
+
+        m_ocontext->snap(path);  // downloads GPU output_buffer pixels into image file
     }
 
     LOG(info) << "]" ;

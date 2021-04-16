@@ -559,9 +559,18 @@ void OpticksHub::configureState(NConfigurable* scene)
 
 void OpticksHub::configureFlightPath()
 {
-    m_flightpath = new FlightPath(m_ok->getFlightPathDir()) ; 
+    const char* dir = m_ok->getFlightPathDir() ;
+    float scale = m_ok->getFlightPathScale() ;
+    
+    LOG(LEVEL) 
+         << " Creating flightpath from file and setting into Composition " 
+         << " --flightpathdir " << dir  
+         << " --flightpathscale " << scale 
+         ;  
+
+    m_flightpath = new FlightPath(dir) ; 
     m_flightpath->setCtrl(m_ctrl) ; 
-    m_flightpath->setScale(m_ok->getFlightPathScale()) ; 
+    m_flightpath->setScale(scale) ; 
     m_composition->setFlightPath(m_flightpath); 
 }
 
