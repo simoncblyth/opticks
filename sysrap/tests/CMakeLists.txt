@@ -63,8 +63,19 @@ set(TEST_SOURCES
    SRandTest.cc
 
    SRngSpecTest.cc 
-   SIMGTest.cc
 )
+
+
+if(WITH_SIMG)
+   list(APPEND TEST_SOURCES SIMGTest.cc)
+endif()
+
+if(WITH_STTF)
+   list(APPEND TEST_SOURCES STTFTest.cc)
+endif()
+
+
+
 
 set(_TEST_SOURCES
    UnwindTest.cc

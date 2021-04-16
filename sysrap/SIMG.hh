@@ -11,13 +11,13 @@ struct SIMG
    int width ; 
    int height ; 
    int channels ; 
-   const unsigned char* data ; 
+   unsigned char* data ; 
    const char* loadpath ; 
    const char* loadext ; 
    const bool owned ; 
 
    SIMG(const char* path); 
-   SIMG(int width_, int height_, int channels_, const unsigned char* data_ ); 
+   SIMG(int width_, int height_, int channels_, unsigned char* data_ ); 
    virtual ~SIMG();  
 
    std::string desc() const ; 
@@ -109,7 +109,7 @@ inline SIMG::SIMG(const char* path)
 {
 }
 
-inline SIMG::SIMG(int width_, int height_, int channels_, const unsigned char* data_) 
+inline SIMG::SIMG(int width_, int height_, int channels_, unsigned char* data_) 
     :
     width(width_),
     height(height_),

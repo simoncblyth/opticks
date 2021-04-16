@@ -123,11 +123,16 @@ set(HEADERS
 
 
 set(WITH_SIMG YES)
-
 if(WITH_SIMG)
     list(APPEND HEADERS   SIMG.hh  )
     list(APPEND HEADERS   stb_image.h  stb_image_write.h)   
     # seems cannot avoid passing around the stb headers ?
+endif()
+
+
+set(WITH_STTF YES)
+if(WITH_STTF)
+    list(APPEND HEADERS STTF.hh stb_truetype.h)
 endif()
 
 
