@@ -51,11 +51,11 @@ class NPY_API Counts {
           void addMap( const MST& m);
     public:
           void checkfind(const char* key);
-          typename std::vector<std::pair<std::string, T> >::iterator find(const char* key);
+          typename std::vector<std::pair<std::string, T> >::iterator find(const char* key) ; // cannot const 
     public:
           unsigned int size();
           std::pair<std::string, T>& get(unsigned int index); 
-          T                          getCount(const char* key); 
+          T                          getCount(const char* key) ; // cannot const  
     public:
           void sort(bool ascending=true);
           void dump(const char* msg="Counts::dump", unsigned long nline=32);

@@ -86,9 +86,13 @@ class GGEO_API GInstancer {
         void           traverse();
         void           traverse_r( const GNode* node, unsigned int depth ); 
         void           findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min);
+        void           sortRepeatCandidates();
         bool           isContainedRepeat( const std::string& pdig, unsigned int levels ) const ;
         void           dumpRepeatCandidates(unsigned dmax);
         void           dumpRepeatCandidate(unsigned int index, bool verbose=false);
+
+        void           dumpDigests(const std::vector<std::string>& digs, const char* msg="GInstancer::dumpDigests") ;
+
 
    private: 
         // populate GNodeLib 
@@ -137,6 +141,7 @@ class GGEO_API GInstancer {
        unsigned int              m_labels ;   // count of nodes labelled
        Counts<unsigned int>*     m_digest_count ; 
        std::vector<std::string>  m_repeat_candidates ; 
+       std::vector<GNode*>       m_repeat_firstnode ; 
    
 
        typedef std::set<unsigned> SU ; 

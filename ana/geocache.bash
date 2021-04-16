@@ -368,7 +368,7 @@ geocache-dbg-gdmlpath(){ echo $HOME/origin2_GDMLKludgeFix.gdml ; }
 geocache-dbg(){
     local msg="=== $FUNCNAME :"
     local path=$(geocache-dbg-gdmlpath)
-    geocache-create- --gdmlpath $path -D $*
+    GInstancer=INFO geocache-create- --gdmlpath $path -D --noviz $*
 }
 
 

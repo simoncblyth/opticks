@@ -70,7 +70,7 @@ class FindKey {
 
 
 template<typename T>
-typename std::vector<std::pair<std::string, T> >::iterator Counts<T>::find(const char* key)
+typename std::vector<std::pair<std::string, T> >::iterator Counts<T>::find(const char* key)   // cannot const 
 {
     VSTI it = std::find_if( m_counts.begin(), m_counts.end(), FindKey<T>(key) );
     return it ;
@@ -79,7 +79,7 @@ typename std::vector<std::pair<std::string, T> >::iterator Counts<T>::find(const
 
 
 template<typename T>
-T  Counts<T>::getCount(const char* key)
+T  Counts<T>::getCount(const char* key)    // cannot const 
 {
     T ret(0) ;
     VSTI it = find(key) ;

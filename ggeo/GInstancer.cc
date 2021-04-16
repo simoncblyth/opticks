@@ -340,8 +340,9 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
          m_repeat_candidates.end()
     ); 
 
-    unsigned num_repcan = m_repeat_candidates.size() ; 
+    sortRepeatCandidates(); 
 
+    unsigned num_repcan = m_repeat_candidates.size() ; 
     LOG(info) 
         << " nall " << nall 
         << " repeat_min " << repeat_min 
@@ -369,8 +370,6 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
     }
     LOG(LEVEL) << "]" ; 
 }
-
-
 
 
 bool GInstancer::operator()(const std::string& dig)  
@@ -459,6 +458,99 @@ void GInstancer::dumpRepeatCandidate(unsigned int index, bool verbose)
     }
 }
 
+
+
+
+
+
+
+
+struct SortOrder
+{
+    // cannot const these easily 
+    Counts<unsigned>* digest_count ; 
+    GVolume*          root ; 
+ 
+    SortOrder(Counts<unsigned>* digest_count_, GVolume* root_ ) 
+        :
+        digest_count(digest_count_),
+        root(root_)
+    {
+    }
+
+    bool operator() (const std::string& dig1, const std::string& dig2)
+    {
+        unsigned ndig1 = digest_count->getCount(dig1.c_str()); 
+        unsigned ndig2 = digest_count->getCount(dig2.c_str()); 
+
+        // first node that matches the progeny digest
+        GNode* first1 = root->findProgenyDigest(dig1.c_str()) ;
+        GNode* first2 = root->findProgenyDigest(dig2.c_str()) ;
+      
+        unsigned idx1 = first1->getIndex(); 
+        unsigned idx2 = first2->getIndex(); 
+
+        return ndig1 != ndig2 ? ndig2 < ndig1 : idx1 < idx2 ;    // two-level sort 
+    }
+};
+
+/**
+GInstancer::sortRepeatCandidates
+----------------------------------
+
+The repeat candidates are ordered by descending numbers of placements 
+and within that by ascending node index of the first node for the digest.
+
+Pinning down the ordering is found to be necessary in order for a geometry 
+to give the same repeat ordering (and hence GParts/GMergedMesh ordering) 
+on different machines, see:
+
+* notes/issues/GParts_ordering_difference_on_different_machine.rst 
+
+**/
+
+void GInstancer::sortRepeatCandidates()
+{
+    //std::vector<std::string> repcan(m_repeat_candidates) ;  // copy for some experiments 
+    std::vector<std::string>& repcan = m_repeat_candidates ;  // golive
+
+    unsigned num_repcan = repcan.size() ; 
+    LOG(LEVEL) << " num_repcan " << num_repcan ; 
+
+    dumpDigests(repcan, "before sort"); 
+
+    SortOrder order(m_digest_count, m_root_) ; 
+    std::sort( repcan.begin(), repcan.end(),  order ); 
+
+    dumpDigests(repcan, "after sort"); 
+}
+
+void GInstancer::dumpDigests(const std::vector<std::string>& digs, const char* msg)
+{
+    LOG(info) << msg ; 
+    for(unsigned i=0 ; i < digs.size() ; i++)
+    {
+        const std::string& pdig = digs[i] ; 
+        unsigned ndig = m_digest_count->getCount(pdig.c_str()); 
+        GNode* first = m_root_->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+        unsigned nidx = first->getIndex(); 
+
+        std::cout 
+            << " i " << std::setw(10) << i 
+            << " pdig " << std::setw(40) << pdig 
+            << " ndig " << std::setw(10) << ndig 
+            << " first " << std::setw(10) << first 
+            << " first.nidx " << std::setw(10) << nidx 
+            << std::endl 
+            ;
+    }
+}
+
+
+
+
+
+
 unsigned int GInstancer::getRepeatIndex(const std::string& pdig )
 {
     // repeat index corresponding to a digest
@@ -513,7 +605,8 @@ void GInstancer::labelTree()
          std::vector<const GNode*> placements = m_root_->findAllProgenyDigest(pdig);
           
          unsigned repeat_index = i ; 
-         LOG(LEVEL) 
+
+         LOG(debug) 
                << " repeat_index " << std::setw(2) << repeat_index 
                << " ridx " << std::setw(2) << ridx 
                << " placements " << std::setw(7) << placements.size()
@@ -567,8 +660,7 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned ridx, unsigned pidx, int 
     unsigned triplet_identity = OpticksIdentity::Encode(ridx, pidx, oidx); 
     node->setTripletIdentity( triplet_identity ); 
 
-    LOG(LEVEL) << " triplet_identity " << OpticksIdentity::Desc(triplet_identity) ; 
-
+    LOG(debug) << " triplet_identity " << OpticksIdentity::Desc(triplet_identity) ; 
 
     m_offset_count += 1 ; 
 
