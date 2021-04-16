@@ -149,6 +149,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_verbosity(0),
     m_apmtidx(0),
     m_flightpathdir("/tmp"),
+    m_flightpathscale(1.f),
     m_apmtmedium(""),
     m_srcgltfbase("$TMP/nd"),
     m_srcgltfname("scene.gltf"),
@@ -1213,6 +1214,11 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("flightpathdir",   boost::program_options::value<std::string>(&m_flightpathdir), flightpathdir ) ; 
 
+   char flightpathscale[128];
+   snprintf(flightpathscale,128, 
+"Scaling applied to flight path, see OpticksHub::configureFlightPath . Default %f ", m_flightpathscale);
+   m_desc.add_options()
+       ("flightpathscale",  boost::program_options::value<float>(&m_flightpathscale), flightpathscale );
 
 
    char repeatidx[128];
@@ -1826,6 +1832,12 @@ const std::string& OpticksCfg<Listener>::getFlightPathDir()
 {
     return m_flightpathdir   ;
 }
+template <class Listener>
+float OpticksCfg<Listener>::getFlightPathScale()
+{
+    return m_flightpathscale   ;
+}
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getAnalyticPMTMedium()
 {

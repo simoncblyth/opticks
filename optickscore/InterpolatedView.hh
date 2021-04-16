@@ -58,7 +58,7 @@ class OKCORE_API InterpolatedView :  public View {
         static const char* PREFIX ; 
         static const plog::Severity LEVEL ; 
         virtual const char* getPrefix();
-        static InterpolatedView* MakeFromArray(NPY<float>* elu, unsigned period, SCtrl* ctrl );
+        static InterpolatedView* MakeFromArray(NPY<float>* elu, unsigned period, float scale, SCtrl* ctrl );
     public:
         InterpolatedView(unsigned int period=100, bool verbose=false);
         Animator* getAnimator();

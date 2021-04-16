@@ -561,6 +561,7 @@ void OpticksHub::configureFlightPath()
 {
     m_flightpath = new FlightPath(m_ok->getFlightPathDir()) ; 
     m_flightpath->setCtrl(m_ctrl) ; 
+    m_flightpath->setScale(m_ok->getFlightPathScale()) ; 
     m_composition->setFlightPath(m_flightpath); 
 }
 

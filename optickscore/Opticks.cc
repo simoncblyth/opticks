@@ -882,6 +882,13 @@ const char* Opticks::getFlightPathDir() const
    return dir.empty() ? NULL : dir.c_str() ;
 }
 
+float Opticks::getFlightPathScale() const 
+{
+   return m_cfg->getFlightPathScale();
+}
+
+
+
 
 const char* Opticks::getDbgMesh() const 
 {

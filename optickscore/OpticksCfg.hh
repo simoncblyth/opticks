@@ -123,6 +123,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getAnalyticPMTMedium();
 
      const std::string& getFlightPathDir();
+     float              getFlightPathScale();
 
      float        getEpsilon() const ; 
      float        getPixelTimeScale() const ; 
@@ -319,6 +320,7 @@ private:
      int         m_apmtidx ; 
 
      std::string m_flightpathdir ; 
+     float       m_flightpathscale ; 
      std::string m_apmtmedium ; 
      std::string m_srcgltfbase ; 
      std::string m_srcgltfname ;

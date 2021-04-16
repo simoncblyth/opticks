@@ -141,7 +141,6 @@ class GGEO_API GInstancer {
        unsigned int              m_labels ;   // count of nodes labelled
        Counts<unsigned int>*     m_digest_count ; 
        std::vector<std::string>  m_repeat_candidates ; 
-       std::vector<GNode*>       m_repeat_firstnode ; 
    
 
        typedef std::set<unsigned> SU ; 

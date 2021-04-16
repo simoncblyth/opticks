@@ -72,10 +72,17 @@ int main(int argc, char** argv)
 #endif
 
     glm::vec4 v(1.f, 2.f, 3.f, 4.f); 
-
     for(int i=0 ; i < 4 ; i++ ) std::cout << v[i] << " " ; 
     std::cout << std::endl ; 
     assert( v.w == 4.f ); 
+
+    v.x *= 10 ; 
+    v.y *= 10 ; 
+    v.z *= 10 ; 
+    std::cout << " after xyz scale " ; 
+    for(int i=0 ; i < 4 ; i++ ) std::cout << v[i] << " " ; 
+    std::cout << std::endl ; 
+
 
 
     glm::tmat4x4<double> m(1.); 

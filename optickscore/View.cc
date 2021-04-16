@@ -164,7 +164,7 @@ void View::configureS(const char* name, std::vector<std::string> values)
 
 
 
-View* View::FromArrayItem( NPY<float>* flightpath, unsigned i )
+View* View::FromArrayItem( NPY<float>* flightpath, unsigned i, float scale )
 {
     assert( flightpath->hasShape( -1, 4, 4) ) ; 
 
@@ -172,6 +172,16 @@ View* View::FromArrayItem( NPY<float>* flightpath, unsigned i )
     glm::vec4 look = flightpath->getQuad_(i, 1) ;   
     glm::vec4 up   = flightpath->getQuad_(i, 2) ;   
     glm::vec4 vctrl = flightpath->getQuad_(i, 3) ;   
+
+    eye.x *= scale ;  
+    eye.y *= scale ;  
+    eye.z *= scale ;  
+
+    look.x *= scale ;  
+    look.y *= scale ;  
+    look.z *= scale ;  
+
+    // up is a direction not needing scaling 
 
     View* v = new View ; 
     v->setEye(eye);       

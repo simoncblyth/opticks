@@ -62,6 +62,7 @@ public:
 public:
     void setVerbose(bool verbose=true);
     void setInterpolatedViewPeriod(unsigned int ivperiod); 
+    void setScale(float scale);
     void refreshInterpolatedView();
     InterpolatedView* getInterpolatedView();
 private:
@@ -76,6 +77,7 @@ private:
     bool                                 m_verbose ; 
     int                                  m_ivperiod ; 
     SCtrl*                               m_ctrl ; 
+    float                                m_scale ; 
 
 };
 

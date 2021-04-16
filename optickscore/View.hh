@@ -65,7 +65,7 @@ public:
    static const char* LOOK ; 
    static const char* UP ; 
 
-   static View* FromArrayItem( NPY<float>* flightpath, unsigned i ); 
+   static View* FromArrayItem( NPY<float>* flightpath, unsigned i, float scale ); 
 
    View(View_t type=STANDARD);
    virtual ~View();

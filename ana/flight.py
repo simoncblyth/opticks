@@ -97,6 +97,10 @@ Huh observed an ordering difference, on different node::
 
    OPTICKS_FLIGHTPATH_SNAPLIMIT=1000 OpFlightPathTest --target 69078
 
+   OpFlightPathTest --target 70258 --flightpathscale 2  
+   OPTICKS_FLIGHTPATH_SNAPLIMIT=1000 OpFlightPathTest --target 70258 --flightpathscale 2 
+
+
 5. make an mp4 from the jpg snaps::
 
     okop
@@ -147,6 +151,8 @@ class Flight(object):
                  +--------0----X 
 
         """
+        log.info("scale %s steps %s " % (scale, steps))
+
         ta = np.linspace( 0, 2*np.pi, steps )
         st = np.sin(ta)
         ct = np.cos(ta)
@@ -220,6 +226,9 @@ class Flight(object):
     def __len__(self):
         return len(self.e) 
 
+    def __repr__(self):
+        return "Flight elu.shape %s " % str(self.elu.shape)
+
     def quiver_plot(self, ax, sc):
         e = self.e 
         l = self.l
@@ -257,6 +266,8 @@ def parse_args(doc, **kwa):
     parser = argparse.ArgumentParser(doc)
     parser.add_argument( "--level", default="info", help="logging level" ) 
     parser.add_argument( "--roundaboutxy", action="store_true", help="" ) 
+    parser.add_argument( "--steps", default=32, type=int, help="Number of steps in flightpath that are interpolated between in InterpolatedView " ) 
+    parser.add_argument( "--scale", default=1, type=float, help="scale of the flightpath, for example the radius for circles" ) 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -268,8 +279,8 @@ if __name__ == '__main__':
     np.set_printoptions(suppress=True)
     args = parse_args(__doc__)
     if args.roundaboutxy:
-        f = Flight.RoundaboutXY()
-        print(f.elu)
+        f = Flight.RoundaboutXY(scale=args.scale, steps=args.steps)
+        print(f)
         f.save()
     pass
 

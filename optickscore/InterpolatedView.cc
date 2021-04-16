@@ -42,7 +42,7 @@ const char* InterpolatedView::getPrefix()
 
 
 
-InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned period, SCtrl* ctrl )
+InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned period, float scale, SCtrl* ctrl )
 {
     LOG(LEVEL) << "[" ; 
     assert( elu && elu->hasShape(-1,4,4) ); 
@@ -58,7 +58,7 @@ InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned peri
 
     for(unsigned i=0 ; i < elu->getNumItems() ; i++ )
     {
-        View* v = View::FromArrayItem( elu, i ) ; 
+        View* v = View::FromArrayItem( elu, i, scale ) ; 
         iv->addView(v);
     }
 

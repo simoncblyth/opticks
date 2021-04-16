@@ -52,7 +52,8 @@ FlightPath::FlightPath(const char* dir)
     m_view(NULL),
     m_verbose(false),
     m_ivperiod(128),
-    m_ctrl(NULL)
+    m_ctrl(NULL),
+    m_scale(1.f)
 {
     LOG(LEVEL) << " m_flightpathdir " << m_flightpathdir ; 
 }
@@ -73,6 +74,11 @@ void FlightPath::setInterpolatedViewPeriod(unsigned int ivperiod)
 {
     m_ivperiod = ivperiod ; 
 }
+void FlightPath::setScale(float scale)
+{
+    m_scale = scale ; 
+}
+
 
 void FlightPath::load()
 {
@@ -100,7 +106,7 @@ InterpolatedView* FlightPath::makeInterpolatedView()
 {
     load(); 
     assert( m_flightpath ) ; 
-    return InterpolatedView::MakeFromArray( m_flightpath, m_ivperiod, m_ctrl  ) ; 
+    return InterpolatedView::MakeFromArray( m_flightpath, m_ivperiod, m_scale, m_ctrl  ) ; 
 }
 
 
