@@ -23,6 +23,9 @@ int main(int argc, char** argv)
     ss << "the quick brown fox jumps over the lazy dog " ; 
     ss << value  ;
     ss << std::endl ;   // <-- newline renders as an open rectangle  
+    ss << "the quick brown fox jumps over the lazy dog " ; 
+    ss << value  ;
+
     std::string s = ss.str();  
     const char* text = s.c_str();  
 

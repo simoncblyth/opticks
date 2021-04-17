@@ -159,7 +159,9 @@ inline int STTF::render_text( unsigned char* bitmap, int channels, int width, in
     if(!valid) return 1 ; 
     stbtt_fontinfo* font = (stbtt_fontinfo*)font_ ; 
 
+#ifdef DEBUG
     printf("STTF::render_text channels %d \n", channels ); 
+#endif
 
     float pixels = float(line_height);   
     float scale = stbtt_ScaleForPixelHeight(font, pixels);
@@ -184,9 +186,11 @@ inline int STTF::render_text( unsigned char* bitmap, int channels, int width, in
     descent = roundf(descent * scale);
     
     int x = 0;
-    for (int i = 0; i < int(strlen(text)); ++i)
+
+    // terminating with "x+pixels < width"  prevents overlong text wrapping around ontop of itself
+    while(*text && x + pixels < width)   
     {
-        int codepoint = text[i] ; 
+        int codepoint = *text ; 
 
         int ax;  // advanceWidth is the offset from the current horizontal position to the next horizontal position
 		int lsb; // leftSideBearing is the offset from the current horizontal position to the left edge of the character
@@ -203,9 +207,7 @@ inline int STTF::render_text( unsigned char* bitmap, int channels, int width, in
         // (Note that the bitmap uses y-increases-down, but the shape uses
         // y-increases-up, so CodepointBitmapBox and CodepointBox are inverted.)
 
-        
         int y = ascent + iy0 ;
-        
         int offset = x + lsb + (y * width);
 
         unsigned char* output = bitmap + offset*channels ;
@@ -223,10 +225,13 @@ inline int STTF::render_text( unsigned char* bitmap, int channels, int width, in
         // width and height and positioning info for it first.
         
         int kern;
-        kern = stbtt_GetCodepointKernAdvance(font, text[i], text[i + 1]);
+        kern = stbtt_GetCodepointKernAdvance(font, *text, *(text+1));
         kern = roundf(kern * scale) ; 
 
         x += ax + kern ;
+
+        //printf("[%c]%d\n", *text, x ); 
+        text++ ; 
     }
     return 0 ; 
 }
@@ -240,10 +245,14 @@ inline int STTF::annotate( unsigned char* bitmap, int channels, int width, int h
 
     // black band with text annotation at base of image 
     int black[4] = {0,0,0,0} ;   // any color, so long as its black 
-    int offset = width*(height-line_height-1)*channels ;      
+   
+    int margin_bkg = 0 ; 
+    int margin_txt = 1 ; 
+    int offset_bkg = width*(height-line_height-margin_bkg)*channels ;      
+    int offset_txt = width*(height-line_height-margin_txt)*channels ;      
 
-    rc = render_background( bitmap+offset, channels, width, line_height, black ) ;  
-    rc = render_text(       bitmap+offset, channels, width, line_height, text  ) ;  
+    rc = render_background( bitmap+offset_bkg, channels, width, line_height, black ) ;  
+    rc = render_text(       bitmap+offset_txt, channels, width, line_height, text  ) ;  
     return rc ; 
 }
 

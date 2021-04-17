@@ -123,8 +123,6 @@ class OXRAP_API OContext {
             bool isCompute();
             bool isInterop();
             void snap(const char* path="/tmp/snap.ppm", const char* annotation=nullptr );
-            void annotateImage( unsigned char* data, int width, int height, int channels, const char* annotation ) ;
-
             void save(const char* path="/tmp/snap.npy");
             std::string printDesc() const ; 
      private:
