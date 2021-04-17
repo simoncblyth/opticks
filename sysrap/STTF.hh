@@ -3,7 +3,12 @@
 STTF.hh
 =========
 
-Based on https://github.com/justinmeiners/stb-truetype-example
+Based on:
+
+* https://github.com/justinmeiners/stb-truetype-example
+* https://github.com/nothings/stb
+* https://github.com/nothings/stb/blob/master/stb_truetype.h
+* http://nothings.org/stb/stb_truetype.h 
 
 **/
 
@@ -11,39 +16,36 @@ Based on https://github.com/justinmeiners/stb-truetype-example
 #include <stdlib.h>
 
 #define STB_TRUETYPE_IMPLEMENTATION 
-#include "stb_truetype.h" /* http://nothings.org/stb/stb_truetype.h */
+#include "stb_truetype.h" 
 
 
 struct STTF
 {
     static const char* KEY ; 
+    static unsigned char* Load(const char* path); 
+
     unsigned char* fontBuffer ;
-    stbtt_fontinfo info ;
+    stbtt_fontinfo font ;
 
     STTF() ;   
-    void load_ttf(const char* path); 
     virtual ~STTF(); 
  
-    int write_to_bitmap( unsigned char* bitmap, int line_width, int line_height, const char* text );
+    void init(); 
+    void render_background( unsigned char* bitmap, int channels, int width, int height,      int* color );
+    int  render_text(       unsigned char* bitmap, int channels, int width, int line_height, const char* text );
 };
 
 
 const char* STTF::KEY = "OPTICKS_STTF_PATH" ; 
 
-inline STTF::STTF()
-    :
-    fontBuffer(nullptr)
-{
-    char* path = getenv(KEY) ; 
-    load_ttf(path); 
-}
 
-void STTF::load_ttf(const char* path)
+
+inline unsigned char* STTF::Load(const char* path) // static 
 {
     if(path == nullptr)
     {
-        printf("STTF::load_ttf : Envvar %s with path to ttf font file is required \n", KEY);
-        return ; 
+        printf("STTF::Load : Envvar %s with path to ttf font file is required \n", KEY);
+        return nullptr ; 
     }
 
     long size ;
@@ -52,15 +54,30 @@ void STTF::load_ttf(const char* path)
     size = ftell(fontFile); /* how long is the file ? */
     fseek(fontFile, 0, SEEK_SET); /* reset */
     
-    fontBuffer = (unsigned char*)malloc(size);
+    unsigned char* buffer = (unsigned char*)malloc(size);
     
-    fread(fontBuffer, size, 1, fontFile);
+    fread(buffer, size, 1, fontFile);
     fclose(fontFile);
 
-    /* prepare font */
-    if (!stbtt_InitFont(&info, fontBuffer, 0))
+    return buffer ; 
+}
+
+
+
+inline STTF::STTF()
+    :
+    fontBuffer(Load(getenv(KEY)))
+{
+    init();
+}
+
+
+
+inline void STTF::init()
+{
+    if (!stbtt_InitFont(&font, fontBuffer, 0))
     {
-        printf("STTF::load_ttf failed\n");
+        printf("STTF::init failed : not a TTF font file ? \n");
     }
 }
 
@@ -70,46 +87,93 @@ STTF::~STTF()
     free(fontBuffer);
 }
 
-inline int STTF::write_to_bitmap( unsigned char* bitmap, int line_width, int line_height, const char* text )
+
+inline void STTF::render_background( unsigned char* bitmap, int channels, int width, int line_height, int* color )
+{
+    for(int y=0 ; y < line_height ; y++ ) 
+    {
+        for(int x=0 ; x < width ; x++) 
+        {
+            for(int c = 0 ; c < channels ; c++ )
+            {
+                bitmap[ (y*width + x)*channels + c] = color[c] ; 
+            } 
+        }  
+    }
+}
+
+inline int STTF::render_text( unsigned char* bitmap, int channels, int width, int line_height, const char* text )
 {
     if(fontBuffer == nullptr) return 1 ; 
 
-    float scale = stbtt_ScaleForPixelHeight(&info, line_height );
+    printf("STTF::render_text channels %d \n", channels ); 
+
+    float pixels = float(line_height);   
+    float scale = stbtt_ScaleForPixelHeight(&font, pixels);
+    // computes a scale factor to produce a font whose "height" is 'pixels' tall.
+    // Height is measured as the distance from the highest ascender to the lowest
+    // descender; in other words, it's equivalent to calling stbtt_GetFontVMetrics
+    // and computing:
+    //       scale = pixels / (ascent - descent)
+    // so if you prefer to measure height by the ascent only, use a similar calculation.
     
-    int x = 0;
        
     int ascent, descent, lineGap;
-    stbtt_GetFontVMetrics(&info, &ascent, &descent, &lineGap);
+    stbtt_GetFontVMetrics(&font, &ascent, &descent, &lineGap);
+    // ascent: coordinate above the baseline the font extends; 
+    // descent: coordinate below the baseline the font extends (i.e. it is typically negative)
+    // lineGap: spacing between one row's descent and the next row's ascent...
+    // so you should advance the vertical position by "*ascent - *descent + *lineGap"
+    // these are expressed in unscaled coordinates, so you must multiply by
+    // the scale factor for a given size
     
     ascent = roundf(ascent * scale);
     descent = roundf(descent * scale);
     
-    int i;
-    for (i = 0; i < strlen(text); ++i)
+    int x = 0;
+    for (int i = 0; i < int(strlen(text)); ++i)
     {
-        /* how wide is this character */
-        int ax;
-		int lsb;
-        stbtt_GetCodepointHMetrics(&info, text[i], &ax, &lsb);
+        int codepoint = text[i] ; 
 
-        /* get bounding box for character (may be offset to account for chars that dip above or below the line */
-        int c_x1, c_y1, c_x2, c_y2;
-        stbtt_GetCodepointBitmapBox(&info, text[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
-        
-        /* compute y (different characters have different heights */
-        int y = ascent + c_y1;
-        
-        /* render character (stride and offset is important here) */
-        int byteOffset = x + roundf(lsb * scale) + (y * line_width);
-        stbtt_MakeCodepointBitmap(&info, bitmap + byteOffset, c_x2 - c_x1, c_y2 - c_y1, line_width , scale, scale, text[i]);
+        int ax;  // advanceWidth is the offset from the current horizontal position to the next horizontal position
+		int lsb; // leftSideBearing is the offset from the current horizontal position to the left edge of the character
+        stbtt_GetCodepointHMetrics(&font, codepoint, &ax, &lsb);   // expressed in unscaled coordinates
+        ax  = roundf(ax*scale) ; 
+        lsb = roundf(lsb*scale) ; 
 
-        /* advance x */
-        x += roundf(ax * scale);
+
+        int ix0,  iy0,  ix1,  iy1;
+        stbtt_GetCodepointBitmapBox(&font, codepoint, scale, scale, &ix0, &iy0, &ix1, &iy1);
+        // get the bbox of the bitmap centered around the glyph origin; so the
+        // bitmap width is ix1-ix0, height is iy1-iy0, and location to place
+        // the bitmap top left is (leftSideBearing*scale,iy0).
+        // (Note that the bitmap uses y-increases-down, but the shape uses
+        // y-increases-up, so CodepointBitmapBox and CodepointBox are inverted.)
+
         
-        /* add kerning */
+        int y = ascent + iy0 ;
+        
+        int offset = x + lsb + (y * width);
+
+        unsigned char* output = bitmap + offset*channels ;
+        int out_w = (ix1-ix0)*channels ;        
+        int out_h = (iy1-iy0) ;   // <-- when multiply by channels get black boxes at y positions below the text  
+        int out_stride = width*channels ;  
+
+        float scale_x = scale*channels ;    // adhoc ? why is this needed 
+        float scale_y = scale ;  
+
+        stbtt_MakeCodepointBitmap(&font, output, out_w, out_h, out_stride, scale_x, scale_y, codepoint );
+        // the same as stbtt_GetCodepointBitmap, but you pass in storage for the bitmap
+        // in the form of 'output', with row spacing of 'out_stride' bytes. the bitmap
+        // is clipped to out_w/out_h bytes. Call stbtt_GetCodepointBitmapBox to get the
+        // width and height and positioning info for it first.
+        
         int kern;
-        kern = stbtt_GetCodepointKernAdvance(&info, text[i], text[i + 1]);
-        x += roundf(kern * scale);
+        kern = stbtt_GetCodepointKernAdvance(&font, text[i], text[i + 1]);
+        kern = roundf(kern * scale) ; 
+
+        x += ax + kern ;
     }
     return 0 ; 
 }
