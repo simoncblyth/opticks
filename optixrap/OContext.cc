@@ -33,6 +33,9 @@
 #define SIMG_IMPLEMENTATION 1 
 #include "SIMG.hh"
 
+#define STTF_IMPLEMENTATION 1 
+#include "STTF.hh"
+
 
 // brap-
 #include "BStr.hh"
@@ -372,7 +375,8 @@ OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target
     m_llogpath(NULL),
     m_launch_count(0),
     m_runlabel(m_ok->getRunLabel()),
-    m_runresultsdir(m_ok->getRunResultsDir())
+    m_runresultsdir(m_ok->getRunResultsDir()),
+    m_ttf(new STTF)
 {
     init();
     initPrint();
@@ -1370,7 +1374,7 @@ This uses the output_buffer from cu/pinhole_camera.cu::
 
 **/
 
-void OContext::snap(const char* path)
+void OContext::snap(const char* path, const char* annotation)
 {
     if(m_ok->isNoSavePPM())
     {
@@ -1394,26 +1398,42 @@ void OContext::snap(const char* path)
          ;   
 
     void* ptr = output_buffer->map() ; 
-    int ncomp = 4 ;   
+    int channels = 4 ;   
+
+    if(annotation)
+    {
+        if(m_ttf->valid)
+        {
+            int line_height = 32 ; 
+            assert( line_height < height ); 
+            m_ttf->annotate( (unsigned char*)ptr, channels, width, height, line_height, annotation ); 
+        }
+        else
+        {
+            LOG(LEVEL) << "cannot annote as m_ttf fonts are not valid " ; 
+        }
+    }
 
     if(SStr::EndsWith(path, ".ppm"))
     {
-        SPPM::write(path,  (unsigned char*)ptr , width, height, ncomp, yflip );
+        SPPM::write(path,  (unsigned char*)ptr , width, height, channels, yflip );
     }
     else if( SStr::EndsWith(path, ".png") )
     {
-        SIMG img(int(width), int(height), ncomp,  (unsigned char*)ptr ); 
+        SIMG img(int(width), int(height), channels,  (unsigned char*)ptr ); 
         img.writePNG(path);
     }
     else if( SStr::EndsWith(path, ".jpg") )
     {
         int quality = SSys::getenvint("OPTICKS_JPG_QUALITY", 50 ); 
-        SIMG img(int(width), int(height), ncomp,  (unsigned char*)ptr ); 
+        SIMG img(int(width), int(height), channels,  (unsigned char*)ptr ); 
         img.writeJPG(path, quality);
     }
 
     output_buffer->unmap(); 
 }
+
+
 
 
 void OContext::save(const char* path)

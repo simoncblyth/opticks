@@ -222,6 +222,14 @@ void OpTracer::single_snap(const char* path)
 
     double dt = render();   // OTracer::trace_
 
+    std::stringstream ss ; 
+    ss 
+       << "OpTracer::single_snap"
+       << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
+       ;
+    std::string s = ss.str(); 
+    const char* annotation = s.c_str(); 
+
     std::cout
         << " count " << std::setw(5) << m_count 
         << " eyex " << std::setw(10) << eyex
@@ -231,7 +239,7 @@ void OpTracer::single_snap(const char* path)
         << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
         << std::endl ;         
 
-    m_ocontext->snap(path);
+    m_ocontext->snap(path, annotation );
 } 
 
 

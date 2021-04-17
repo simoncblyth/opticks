@@ -1,5 +1,9 @@
 // ./STTFTest.sh 
 
+#include <string>
+#include <sstream>
+
+#define STTF_IMPLEMENTATION 1 
 #include "STTF.hh"
 
 #define SIMG_IMPLEMENTATION 1 
@@ -11,9 +15,24 @@ const char* TEXT = "STTFTest : the quick brown fox jumps over the lazy dog 0.123
 int main(int argc, char** argv)
 {
     const char* path = argc > 1 ? argv[1] : "/tmp/STTFTest.jpg" ; 
-    const char* text = argc > 2 ? argv[2] : TEXT ; 
+    //const char* text = argc > 2 ? argv[2] : TEXT ; 
+
+
+    double value = 1.23456789 ; 
+    std::stringstream ss ; 
+    ss << "the quick brown fox jumps over the lazy dog " ; 
+    ss << value  ;
+    ss << std::endl ;   // <-- newline renders as an open rectangle  
+    std::string s = ss.str();  
+    const char* text = s.c_str();  
+
 
     STTF sttf ; 
+    if(!sttf.valid) 
+    {
+        printf("STTFTest : failed to initialize font \n"); 
+        return 0 ; 
+    }
     
     int width = 1280;
     int height = 720; 
@@ -34,9 +53,18 @@ int main(int argc, char** argv)
     sttf.render_background( data+offset, channels, width, line_height, black ) ;
     sttf.render_text(       data+offset, channels, width, line_height, text ) ;
 
-    offset = width*(height-line_height-1)*channels ;    // -1 to avoid stepping off the end and segmenting 
-    sttf.render_background( data+offset, channels, width, line_height, black ) ;
-    sttf.render_text(       data+offset, channels, width, line_height, text ) ;
+    bool lowlevel = false ; 
+
+    if( lowlevel )
+    {  
+        offset = width*(height-line_height-1)*channels ;    // -1 to avoid stepping off the end and segmenting 
+        sttf.render_background( data+offset, channels, width, line_height, black ) ;
+        sttf.render_text(       data+offset, channels, width, line_height, text ) ;
+    }    
+    else
+    {
+        sttf.annotate( data , channels, width, height, line_height, text );  
+    }
 
 
     SIMG img(width, height, channels, data ); 

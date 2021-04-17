@@ -49,10 +49,8 @@ class OConfig ;
 class OpticksEntry ; 
 class Opticks ; 
 class BTimes ; 
-//struct STimes ; 
 
-
-
+struct STTF ; 
 
 
 //frm optixMeshViewer/optixMeshViewer.cpp
@@ -124,7 +122,9 @@ class OXRAP_API OContext {
             OContext::Mode_t getMode();
             bool isCompute();
             bool isInterop();
-            void snap(const char* path="/tmp/snap.ppm");
+            void snap(const char* path="/tmp/snap.ppm", const char* annotation=nullptr );
+            void annotateImage( unsigned char* data, int width, int height, int channels, const char* annotation ) ;
+
             void save(const char* path="/tmp/snap.npy");
             std::string printDesc() const ; 
      private:
@@ -207,6 +207,7 @@ class OXRAP_API OContext {
             unsigned          m_launch_count ; 
             const char*       m_runlabel ; 
             const char*       m_runresultsdir ; 
+            STTF*             m_ttf ; 
 
             std::vector<std::string> m_buffer_names ; 
             std::vector<std::string> m_debug_buffer_names ; 

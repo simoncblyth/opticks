@@ -15,29 +15,65 @@ Based on:
 #include <stdio.h>
 #include <stdlib.h>
 
-#define STB_TRUETYPE_IMPLEMENTATION 
-#include "stb_truetype.h" 
-
-
 struct STTF
 {
     static const char* KEY ; 
     static unsigned char* Load(const char* path); 
 
     unsigned char* fontBuffer ;
-    stbtt_fontinfo font ;
+    void* font_ ;   // stbtt_fontinfo*   good to keep foreign types out of definition when easy to do so 
+    bool  valid ; 
 
     STTF() ;   
     virtual ~STTF(); 
  
     void init(); 
-    void render_background( unsigned char* bitmap, int channels, int width, int height,      int* color );
+    int  render_background( unsigned char* bitmap, int channels, int width, int height,      int* color );
     int  render_text(       unsigned char* bitmap, int channels, int width, int line_height, const char* text );
+
+    int   annotate(          unsigned char* bitmap, int channels, int width, int height, int line_height, const char* text );  
+
 };
 
 
-const char* STTF::KEY = "OPTICKS_STTF_PATH" ; 
 
+
+#ifdef __clang__
+
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
+#elif defined(_MSC_VER)
+
+#endif
+
+
+#ifdef STTF_IMPLEMENTATION
+
+#define STB_TRUETYPE_IMPLEMENTATION 
+#include "stb_truetype.h" 
+
+#endif
+
+#ifdef __clang__
+#elif defined(__GNUC__) || defined(__GNUG__)
+
+#pragma GCC diagnostic pop
+
+#elif defined(_MSC_VER)
+#endif
+
+
+
+
+
+
+
+const char* STTF::KEY = "OPTICKS_STTF_PATH" ; 
 
 
 inline unsigned char* STTF::Load(const char* path) // static 
@@ -66,7 +102,9 @@ inline unsigned char* STTF::Load(const char* path) // static
 
 inline STTF::STTF()
     :
-    fontBuffer(Load(getenv(KEY)))
+    fontBuffer(Load(getenv(KEY))),
+    font_(nullptr),
+    valid(false)
 {
     init();
 }
@@ -75,20 +113,33 @@ inline STTF::STTF()
 
 inline void STTF::init()
 {
-    if (!stbtt_InitFont(&font, fontBuffer, 0))
+    if(fontBuffer == nullptr)
     {
-        printf("STTF::init failed : not a TTF font file ? \n");
+        printf("STTF::init failed : no font file has been loaded \n");
+        return ; 
     }
+
+    stbtt_fontinfo* font = new stbtt_fontinfo ; 
+    if (!stbtt_InitFont(font, fontBuffer, 0))
+    {
+        printf("STTF::init failed : loaded font file is not a valid TTF font ? \n");
+        return ; 
+    }
+
+    font_ = (void*)font ; 
+    valid = true ; 
 }
 
 
 STTF::~STTF()
 {
+    stbtt_fontinfo* font = (stbtt_fontinfo*)font_ ; 
+    delete font ; 
     free(fontBuffer);
 }
 
 
-inline void STTF::render_background( unsigned char* bitmap, int channels, int width, int line_height, int* color )
+inline int STTF::render_background( unsigned char* bitmap, int channels, int width, int line_height, int* color )
 {
     for(int y=0 ; y < line_height ; y++ ) 
     {
@@ -100,16 +151,18 @@ inline void STTF::render_background( unsigned char* bitmap, int channels, int wi
             } 
         }  
     }
+    return 0 ; 
 }
 
 inline int STTF::render_text( unsigned char* bitmap, int channels, int width, int line_height, const char* text )
 {
-    if(fontBuffer == nullptr) return 1 ; 
+    if(!valid) return 1 ; 
+    stbtt_fontinfo* font = (stbtt_fontinfo*)font_ ; 
 
     printf("STTF::render_text channels %d \n", channels ); 
 
     float pixels = float(line_height);   
-    float scale = stbtt_ScaleForPixelHeight(&font, pixels);
+    float scale = stbtt_ScaleForPixelHeight(font, pixels);
     // computes a scale factor to produce a font whose "height" is 'pixels' tall.
     // Height is measured as the distance from the highest ascender to the lowest
     // descender; in other words, it's equivalent to calling stbtt_GetFontVMetrics
@@ -119,7 +172,7 @@ inline int STTF::render_text( unsigned char* bitmap, int channels, int width, in
     
        
     int ascent, descent, lineGap;
-    stbtt_GetFontVMetrics(&font, &ascent, &descent, &lineGap);
+    stbtt_GetFontVMetrics(font, &ascent, &descent, &lineGap);
     // ascent: coordinate above the baseline the font extends; 
     // descent: coordinate below the baseline the font extends (i.e. it is typically negative)
     // lineGap: spacing between one row's descent and the next row's ascent...
@@ -137,13 +190,13 @@ inline int STTF::render_text( unsigned char* bitmap, int channels, int width, in
 
         int ax;  // advanceWidth is the offset from the current horizontal position to the next horizontal position
 		int lsb; // leftSideBearing is the offset from the current horizontal position to the left edge of the character
-        stbtt_GetCodepointHMetrics(&font, codepoint, &ax, &lsb);   // expressed in unscaled coordinates
+        stbtt_GetCodepointHMetrics(font, codepoint, &ax, &lsb);   // expressed in unscaled coordinates
         ax  = roundf(ax*scale) ; 
         lsb = roundf(lsb*scale) ; 
 
 
         int ix0,  iy0,  ix1,  iy1;
-        stbtt_GetCodepointBitmapBox(&font, codepoint, scale, scale, &ix0, &iy0, &ix1, &iy1);
+        stbtt_GetCodepointBitmapBox(font, codepoint, scale, scale, &ix0, &iy0, &ix1, &iy1);
         // get the bbox of the bitmap centered around the glyph origin; so the
         // bitmap width is ix1-ix0, height is iy1-iy0, and location to place
         // the bitmap top left is (leftSideBearing*scale,iy0).
@@ -163,14 +216,14 @@ inline int STTF::render_text( unsigned char* bitmap, int channels, int width, in
         float scale_x = scale*channels ;    // adhoc ? why is this needed 
         float scale_y = scale ;  
 
-        stbtt_MakeCodepointBitmap(&font, output, out_w, out_h, out_stride, scale_x, scale_y, codepoint );
+        stbtt_MakeCodepointBitmap(font, output, out_w, out_h, out_stride, scale_x, scale_y, codepoint );
         // the same as stbtt_GetCodepointBitmap, but you pass in storage for the bitmap
         // in the form of 'output', with row spacing of 'out_stride' bytes. the bitmap
         // is clipped to out_w/out_h bytes. Call stbtt_GetCodepointBitmapBox to get the
         // width and height and positioning info for it first.
         
         int kern;
-        kern = stbtt_GetCodepointKernAdvance(&font, text[i], text[i + 1]);
+        kern = stbtt_GetCodepointKernAdvance(font, text[i], text[i + 1]);
         kern = roundf(kern * scale) ; 
 
         x += ax + kern ;
@@ -179,4 +232,18 @@ inline int STTF::render_text( unsigned char* bitmap, int channels, int width, in
 }
 
 
+inline int STTF::annotate( unsigned char* bitmap, int channels, int width, int height, int line_height, const char* text )
+{
+    int rc = 1 ; 
+    if(!valid) return rc ; 
+
+
+    // black band with text annotation at base of image 
+    int black[4] = {0,0,0,0} ;   // any color, so long as its black 
+    int offset = width*(height-line_height-1)*channels ;      
+
+    rc = render_background( bitmap+offset, channels, width, line_height, black ) ;  
+    rc = render_text(       bitmap+offset, channels, width, line_height, text  ) ;  
+    return rc ; 
+}
 
