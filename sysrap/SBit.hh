@@ -22,11 +22,12 @@
 #include "SYSRAP_API_EXPORT.hh"
 #include "SYSRAP_HEAD.hh"
 
+#include <string>
+
 /**
 SBit
 =====
 
-TODO: move to SBit as no boost dependency 
 
 **/
 
@@ -40,6 +41,16 @@ class SYSRAP_API SBit {
 
         static bool HasOneSetBit(int x); 
 
+        template <typename T>
+        static std::string BinString(T v); 
+
+        template <typename T>
+        static std::string HexString(T v); 
+
+        static unsigned long long FromBinString(const char* binstr ) ; 
+        static unsigned long long FromHexString(const char* hexstr ) ; 
+        static unsigned long long FromDecString(const char* decstr ) ; 
+        static unsigned long long FromString(const char* str ) ;   // if first two char are 0x/0b the string is interpreted as hex/binary otherwise decimal  
 
 }; 
 

@@ -19,7 +19,10 @@
 
 #include "SBit.hh"
 
+#include <iostream>
 #include <cstring>
+#include <sstream>
+#include <bitset>
 
 #if defined(_MSC_VER)
 
@@ -98,5 +101,85 @@ bool SBit::HasOneSetBit(int msk0)
     int msk1 = ( 0x1 << idx0 );  
     return msk0 == msk1 ; 
 }
+
+
+template <typename T>
+std::string SBit::BinString(T v)  // static
+{
+    std::string s = std::bitset<sizeof(T)*8>(v).to_string() ;
+    return s ; 
+}
+
+template <typename T>
+std::string SBit::HexString(T v)  // static
+{
+    std::stringstream ss ; 
+    ss << std::hex << v << std::dec ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+unsigned long long SBit::FromBinString(const char* binstr )
+{
+    unsigned long long ull = std::bitset<sizeof(unsigned long long)*8>(binstr).to_ullong() ;
+    return ull ; 
+}
+unsigned long long SBit::FromHexString(const char* hexstr )
+{
+    unsigned long long ull ;   
+    std::stringstream ss;
+    ss << std::hex << hexstr  ;
+    ss >> ull ;
+    return ull ; 
+}
+unsigned long long SBit::FromDecString(const char* decstr )
+{
+    unsigned long long ull ;   
+    std::stringstream ss;
+    ss << std::dec << decstr ;
+    ss >> ull ;
+    return ull ; 
+}
+
+unsigned long long SBit::FromString(const char* str )
+{
+    unsigned long long ull = 0ull ; 
+    if(      strlen(str) > 2 && str[0] == '0' && str[1] == 'x' ) 
+    {
+        ull = FromHexString(str+2) ;
+    }
+    else if( strlen(str) > 2 && str[0] == '0' && str[1] == 'b' ) 
+    {
+        ull = FromBinString(str+2) ; 
+    }
+    else 
+    {
+        ull = FromDecString(str) ;
+    }
+    return ull ; 
+}
+
+
+
+template std::string SBit::BinString(char); 
+template std::string SBit::BinString(int); 
+template std::string SBit::BinString(long); 
+template std::string SBit::BinString(long long); 
+
+template std::string SBit::BinString(unsigned char); 
+template std::string SBit::BinString(unsigned int); 
+template std::string SBit::BinString(unsigned long); 
+template std::string SBit::BinString(unsigned long long); 
+
+
+template std::string SBit::HexString(char); 
+template std::string SBit::HexString(int); 
+template std::string SBit::HexString(long); 
+template std::string SBit::HexString(long long); 
+
+template std::string SBit::HexString(unsigned char); 
+template std::string SBit::HexString(unsigned int); 
+template std::string SBit::HexString(unsigned long); 
+template std::string SBit::HexString(unsigned long long); 
 
 

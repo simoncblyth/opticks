@@ -111,15 +111,107 @@ void test_HasOneSetBit()
 }
 
 
+#define DUMP(l, s) \
+    { \
+    std::string binstr = SBit::BinString((s)) ; \
+    std::string hexstr = SBit::HexString((s)) ; \
+    unsigned long long ull = SBit::FromBinString(binstr.c_str()) ; \
+    unsigned long long v((s)) ; \
+    bool match = ull == v ;  \
+    std::cout \
+        << std::setw(5) << (l) \
+        << std::setw(5) << sizeof((s))   \
+        << std::setw(5) << sizeof((s))*8 \
+        << std::setw(30) << (s) \
+        << " : " \
+        << std::setw(64) \
+        << binstr \
+        << std::setw(32) \
+        << hexstr \
+        << " : " \
+        << std::setw(32) << ull \
+        << ( match ? " Y" : " N" ) \
+        << std::endl \
+        ; \
+    } 
+  
+
+void test_BinString()
+{
+    unsigned char uc = ~0 ; 
+    unsigned int  ui = ~0 ; 
+    unsigned long ul = ~0 ; 
+    unsigned long long ull = ~0 ; 
+
+    char c = ~0 ; 
+    int  i = ~0 ; 
+    long l = ~0 ; 
+    long long ll = ~0 ; 
+
+    DUMP("uc",uc); 
+    DUMP("ui",ui); 
+    DUMP("ul",ul); 
+    DUMP("ull",ull); 
+
+    DUMP("c",c); 
+    DUMP("i",i); 
+    DUMP("l",l); 
+    DUMP("ll",ll); 
+}
+
+
+void test_FromBinString()
+{
+    {
+        unsigned long long ull = ~0 ; 
+        std::string binstr = SBit::BinString(ull); 
+        std::cout 
+             << "ull " << ull 
+             << "0b " << binstr 
+             << std::endl
+             ; 
+        unsigned long long ull2 = SBit::FromBinString(binstr.c_str()) ; 
+        assert( ull == ull2 ); 
+    }
+    {
+        int i = ~0 ; 
+        std::string binstr = SBit::BinString(i); 
+        unsigned long long ull = SBit::FromBinString(binstr.c_str()) ; 
+        std::cout 
+             << "i " << std::setw(10) << i 
+             << "0b " << std::setw(64) << binstr 
+             << "ull " << std::setw(32) << ull 
+             << std::endl
+             ;
+    }
+}
+
+void test_FromString()
+{
+    unsigned long long ull_0 = SBit::FromString("0b11111111") ; 
+    assert( ull_0 == 255 ); 
+    unsigned long long ull_1 = SBit::FromString("0xff") ; 
+    assert( ull_1 == 255 ); 
+    unsigned long long ull_2 = SBit::FromString("255") ; 
+    assert( ull_2 == 255 ); 
+}
+
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+/*
     test_ffs(); 
     test_ffsll(); 
     test_count_nibbles(); 
     test_HasOneSetBit(); 
+    test_BinString(); 
+    test_FromBinString(); 
+*/
+
+    test_FromString(); 
 
     return 0 ; 
 }
