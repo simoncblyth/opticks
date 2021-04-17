@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <cassert>
 #include <sstream>
 #include <bitset>
 
@@ -119,6 +120,39 @@ std::string SBit::HexString(T v)  // static
     return s ; 
 }
 
+template <typename T>
+std::string SBit::DecString(T v)  // static
+{
+    std::stringstream ss ; 
+    ss << std::dec << v  ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+template <typename T>
+std::string SBit::PosString(T v, char delim)  // static
+{
+    std::bitset<64> bs(v) ;  assert( bs.size() == 64 ) ;
+
+    int hi = -1 ;  // find the highest set bit 
+    for(int i=0 ; i < int(bs.size()) ; i++ ) if(bs[i]) hi=i ; 
+
+    std::stringstream ss ; 
+    for(int i=0 ; i < int(bs.size()) ; i++ ) 
+    {
+        if(bs[i]) 
+        {
+            ss << i ; 
+            if(bs.count() == 1 || i < hi ) ss << delim ;   
+            // when a single bit always include the delim 
+            // otherwise skip the delim for the last set bit 
+        }
+    }
+    std::string s = ss.str() ; 
+    return s ; 
+}
+
+
 unsigned long long SBit::FromBinString(const char* binstr )
 {
     unsigned long long ull = std::bitset<sizeof(unsigned long long)*8>(binstr).to_ullong() ;
@@ -141,6 +175,37 @@ unsigned long long SBit::FromDecString(const char* decstr )
     return ull ; 
 }
 
+/**
+SBit::FromPosString
+---------------------
+
+A PosString is a comma delimited list of ints that indicate that 
+those bit positions are set. For example::
+
+
+   "0,"       -> 1     # must include a delim to distinguish from normal int 
+   "0,1"      -> 3
+   "0,1,2"    -> 7
+   "0,1,2,3"  -> 15
+ 
+
+**/
+unsigned long long SBit::FromPosString(const char* posstr, char delim)
+{
+    std::stringstream ss; 
+    ss.str(posstr)  ;
+    std::bitset<sizeof(unsigned long long)*8> bs{0x0} ; 
+    std::string s;
+    while (std::getline(ss, s, delim)) 
+    {
+        int ipos = std::atoi(s.c_str()) ;
+        bs.set(ipos, true); 
+    }
+    unsigned long long ull = bs.to_ullong() ;
+    return ull ; 
+}
+
+
 unsigned long long SBit::FromString(const char* str )
 {
     unsigned long long ull = 0ull ; 
@@ -151,6 +216,10 @@ unsigned long long SBit::FromString(const char* str )
     else if( strlen(str) > 2 && str[0] == '0' && str[1] == 'b' ) 
     {
         ull = FromBinString(str+2) ; 
+    }
+    else if( strchr(str, ',') != nullptr )
+    {
+        ull = FromPosString(str, ',') ;   
     }
     else 
     {
@@ -181,5 +250,30 @@ template std::string SBit::HexString(unsigned char);
 template std::string SBit::HexString(unsigned int); 
 template std::string SBit::HexString(unsigned long); 
 template std::string SBit::HexString(unsigned long long); 
+
+
+template std::string SBit::DecString(char); 
+template std::string SBit::DecString(int); 
+template std::string SBit::DecString(long); 
+template std::string SBit::DecString(long long); 
+
+template std::string SBit::DecString(unsigned char); 
+template std::string SBit::DecString(unsigned int); 
+template std::string SBit::DecString(unsigned long); 
+template std::string SBit::DecString(unsigned long long); 
+
+
+
+template std::string SBit::PosString(char,char); 
+template std::string SBit::PosString(int,char); 
+template std::string SBit::PosString(long,char); 
+template std::string SBit::PosString(long long,char); 
+
+template std::string SBit::PosString(unsigned char,char); 
+template std::string SBit::PosString(unsigned int,char); 
+template std::string SBit::PosString(unsigned long,char); 
+template std::string SBit::PosString(unsigned long long,char); 
+
+
 
 

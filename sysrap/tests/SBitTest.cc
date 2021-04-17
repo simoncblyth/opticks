@@ -189,11 +189,37 @@ void test_FromBinString()
 void test_FromString()
 {
     unsigned long long ull_0 = SBit::FromString("0b11111111") ; 
+    LOG(info) << " ull_0 " << ull_0 ; 
     assert( ull_0 == 255 ); 
     unsigned long long ull_1 = SBit::FromString("0xff") ; 
     assert( ull_1 == 255 ); 
     unsigned long long ull_2 = SBit::FromString("255") ; 
     assert( ull_2 == 255 ); 
+    unsigned long long ull_3 = SBit::FromString("0,1,2,3,4,5,6,7") ; 
+    LOG(info) << " ull_3 " << ull_3 ; 
+    assert( ull_3 == 255 ); 
+}
+
+void test_FromPosString()
+{
+    const char* posstr_0 = "0,1,2,3,4,5,6,7" ; 
+    unsigned long long ull_0 = SBit::FromPosString(posstr_0) ; 
+    LOG(info) << " ull_0 " << ull_0 ; 
+    assert( ull_0 == 255 ); 
+
+    std::string ps = SBit::PosString(ull_0) ; 
+    LOG(info) << " PosString ps:" << ps << " posstr_0:" << posstr_0 ; 
+    assert( strcmp( ps.c_str(), posstr_0  ) == 0 ); 
+
+    const char* posstr_1 = "63," ; 
+    unsigned long long ull_1 = SBit::FromPosString(posstr_1) ; 
+    unsigned long long ull_1x = 1ull << 63 ;  
+    assert( ull_1 == ull_1x ); 
+
+    std::string ps1 = SBit::PosString(ull_1) ; 
+    LOG(info) << " ps1 " << ps1 ; 
+    assert( strcmp( ps1.c_str(), posstr_1  ) == 0 ); 
+
 }
 
 
@@ -212,6 +238,7 @@ int main(int argc, char** argv)
 */
 
     test_FromString(); 
+    test_FromPosString(); 
 
     return 0 ; 
 }
