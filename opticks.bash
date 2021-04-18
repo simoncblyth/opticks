@@ -1221,6 +1221,9 @@ export OPTICKS_EVENT_BASE=\${OPTICKS_EVENT_BASE:-/tmp/\$USER/opticks}
 mkdir -p \${OPTICKS_TMP}
 mkdir -p \${OPTICKS_EVENT_BASE}
 
+## see sysrap/STTF.hh
+export OPTICKS_STTF_PATH=\$OPTICKS_PREFIX/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
+
 EOM
 }
 
