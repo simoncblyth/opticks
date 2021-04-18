@@ -24,6 +24,7 @@
 #include <cassert>
 #include <sstream>
 #include <bitset>
+#include <vector>
 
 #if defined(_MSC_VER)
 
@@ -104,76 +105,233 @@ bool SBit::HasOneSetBit(int msk0)
 }
 
 
-template <typename T>
-std::string SBit::BinString(T v)  // static
+
+struct LengthOrder
 {
-    std::string s = std::bitset<sizeof(T)*8>(v).to_string() ;
-    return s ; 
-}
+    bool operator() (const std::string& s1, const std::string& s2)
+    {
+        size_t n1 = std::count(s1.begin(), s1.end(), ',');
+        size_t n2 = std::count(s2.begin(), s2.end(), ',');
+
+        // if( n1 > 0 ) n1 += 1 ;     // move favor for PosString
+        // if( n2 > 0 ) n2 += 1 ; 
+
+        size_t l1 = s1.length() - n1 ;    // favor PosString by not counting commas
+        size_t l2 = s2.length() - n2 ; 
+
+        return l1 < l2 ;   
+    }
+};
+
 
 template <typename T>
-std::string SBit::HexString(T v)  // static
+std::string SBit::String(T v)  // static
 {
+    std::vector<std::string> str ; 
+    str.push_back( BinString(v) );   // use the default annotation option  
+    str.push_back( HexString(v) ); 
+    str.push_back( DecString(v) ); 
+    str.push_back( PosString(v) ); 
+
+    LengthOrder length_order ; 
+    std::sort( str.begin(), str.end(),  length_order );   
+ 
+    return str[0] ; 
+}
+
+
+template <typename T>
+std::string SBit::BinString(T v, bool anno)  // static
+{
+    std::bitset<sizeof(T)*8> bs(v) ; 
+    bool express_flipped = 2*bs.count() > bs.size() ; // more than half the bits are set 
+    if( express_flipped ) bs.flip(); 
+
     std::stringstream ss ; 
-    ss << std::hex << v << std::dec ; 
+    ss 
+        << ( express_flipped ? "~" : "" )
+        << ( anno ? "0b" : "" )
+        << bs.to_string() ;
+        ;
+
     std::string s = ss.str(); 
     return s ; 
 }
 
 template <typename T>
-std::string SBit::DecString(T v)  // static
+std::string SBit::HexString(T v, bool anno)  // static
 {
+    std::bitset<64> bs(v) ;  assert( bs.size() == 64 ) ;
+    bool express_flipped = 2*bs.count() > bs.size() ; // more than half the bits are set 
+    if( express_flipped ) bs.flip(); 
+    unsigned long long ull = bs.to_ullong() ;
+
     std::stringstream ss ; 
-    ss << std::dec << v  ; 
+    ss 
+        << ( express_flipped ? "~" : "" )
+        << ( anno ? "0x" : "" )
+        << std::hex << ull << std::dec 
+        ;
+
     std::string s = ss.str(); 
     return s ; 
 }
 
 template <typename T>
-std::string SBit::PosString(T v, char delim)  // static
+std::string SBit::DecString(T v, bool anno)  // static
+{
+    std::bitset<64> bs(v) ;  assert( bs.size() == 64 ) ;
+    bool express_flipped = 2*bs.count() > bs.size() ; // more than half the bits are set 
+    if( express_flipped ) bs.flip(); 
+    unsigned long long ull = bs.to_ullong() ;
+
+    std::stringstream ss ; 
+    ss 
+       << ( express_flipped ? "~" : "" )
+       << ( anno ? "0d" : "" )
+       << std::dec << ull 
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+template <typename T>
+std::string SBit::PosString(T v, char delim, bool anno)  // static
 {
     std::bitset<64> bs(v) ;  assert( bs.size() == 64 ) ;
 
     int hi = -1 ;  // find the highest set bit 
     for(int i=0 ; i < int(bs.size()) ; i++ ) if(bs[i]) hi=i ; 
 
+    bool express_flipped = 2*bs.count() > bs.size() ; // more than half the bits are set 
+    if( express_flipped ) bs.flip(); 
+
     std::stringstream ss ; 
+    if(express_flipped) ss << "~" ; 
+    if(anno) ss << "0p" ; 
+
     for(int i=0 ; i < int(bs.size()) ; i++ ) 
     {
         if(bs[i]) 
         {
             ss << i ; 
             if(bs.count() == 1 || i < hi ) ss << delim ;   
-            // when a single bit always include the delim 
+            // when 1 bit set always include the delim 
             // otherwise skip the delim for the last set bit 
         }
     }
+    
+    if(bs.count() == 0) ss << delim ;  // no-bits set : still output delim as blank is too difficult to recognize as a value  
     std::string s = ss.str() ; 
     return s ; 
 }
 
 
-unsigned long long SBit::FromBinString(const char* binstr )
+/**
+SBit::ParseAnnotation
+------------------------
+
+Parses unsigned long long (64 bit) integer annotations 0x 0b 0p 
+prepended to string representations of integers generally expected to 
+be used as bitfields. For example all the below correspond to the same number::
+
+     2
+     0d2
+     0x2
+    ~0b1101   
+     0b0010
+     1,
+     0p1,
+
+**/
+
+const char* SBit::ANNO = "xbdp" ; 
+
+const char* SBit::ParseAnnotation(bool& complement, char& anno, const char* str_ )
 {
-    unsigned long long ull = std::bitset<sizeof(unsigned long long)*8>(binstr).to_ullong() ;
-    return ull ; 
+    complement = strlen(str_) > 0 && str_[0] == '~' ; 
+    int postcomp =  complement ? 1 : 0 ; 
+    anno = strlen(str_+postcomp) > 2 && str_[postcomp] == '0' && strchr(ANNO, str_[postcomp+1]) != nullptr ?  str_[postcomp+1] : '_' ;  
+    return str_ + postcomp + ( anno == '_' ? 0 : 2 ) ; 
 }
-unsigned long long SBit::FromHexString(const char* hexstr )
+
+unsigned long long SBit::FromBinString(const char* str_ )
 {
+    bool complement ; 
+    char anno ; 
+    const char* str = ParseAnnotation(complement, anno, str_ );   
+    assert( anno == 'b' || anno == '_' ); 
+
+    assert( sizeof(unsigned long long)*8 == 64 ) ; 
+    unsigned long long ull = std::bitset<64>(str).to_ullong() ;
+    return complement ? ~ull : ull  ; 
+}
+
+unsigned long long SBit::FromHexString(const char* str_ )
+{
+    bool complement ; 
+    char anno ; 
+    const char* str = ParseAnnotation(complement, anno, str_ );   
+    assert( anno == 'x' || anno == '_' ); 
+
     unsigned long long ull ;   
     std::stringstream ss;
-    ss << std::hex << hexstr  ;
+    ss << std::hex << str  ;
     ss >> ull ;
-    return ull ; 
+    return complement ? ~ull : ull  ; 
 }
-unsigned long long SBit::FromDecString(const char* decstr )
+
+unsigned long long SBit::FromDecString(const char* str_ )
 {
+    bool complement ; 
+    char anno ; 
+    const char* str = ParseAnnotation(complement, anno, str_ );   
+    assert( anno == 'd' || anno == '_' ); 
+
     unsigned long long ull ;   
     std::stringstream ss;
-    ss << std::dec << decstr ;
+    ss << std::dec << str ;
     ss >> ull ;
-    return ull ; 
+    return complement ? ~ull : ull  ; 
 }
+
+unsigned long long SBit::FromPosString(const char* str_, char delim)
+{
+    bool complement ; 
+    char anno ; 
+    const char* str = ParseAnnotation(complement, anno, str_ );   
+    assert( anno == 'p' || anno == '_' ); 
+
+    std::stringstream ss; 
+    ss.str(str)  ;
+
+    assert( sizeof(unsigned long long)*8 == 64 );
+
+    std::bitset<64> bs ; // all bits start zero 
+    std::string s;
+    while (std::getline(ss, s, delim)) 
+    {
+        if(s.empty()) continue ;   // "," should give zero 
+        int ipos = std::atoi(s.c_str()) ;
+        bs.set(ipos, true); 
+    }
+    unsigned long long ull = bs.to_ullong() ;
+
+#ifdef DEBUG    
+    std::cout  
+        << "SBit::FromPosString"
+        << " str_[" << str_ << "]" 
+        << " str[" << str << "]"
+        << " anno " << anno  
+        << " ull " << ull  
+        << std::endl
+        ; 
+#endif
+
+    return complement ? ~ull : ull  ; 
+}
+
 
 /**
 SBit::FromPosString
@@ -188,92 +346,99 @@ those bit positions are set. For example::
    "0,1,2"    -> 7
    "0,1,2,3"  -> 15
  
+   "~0,"      -> all bits set other than first
+
 
 **/
-unsigned long long SBit::FromPosString(const char* posstr, char delim)
-{
-    std::stringstream ss; 
-    ss.str(posstr)  ;
-    std::bitset<sizeof(unsigned long long)*8> bs{0x0} ; 
-    std::string s;
-    while (std::getline(ss, s, delim)) 
-    {
-        int ipos = std::atoi(s.c_str()) ;
-        bs.set(ipos, true); 
-    }
-    unsigned long long ull = bs.to_ullong() ;
-    return ull ; 
-}
+
 
 
 unsigned long long SBit::FromString(const char* str )
 {
+    bool complement ; 
+    char anno ; 
+    ParseAnnotation(complement, anno, str );   
+
+    bool anno_expect = strchr(ANNO, anno ) != nullptr  || anno == '_' ; 
+    if(!anno_expect) std::cout << "SBit::FromString unexpected anno " << anno << " from str " << str  << std::endl ; 
+    assert(anno_expect);  
+
     unsigned long long ull = 0ull ; 
-    if(      strlen(str) > 2 && str[0] == '0' && str[1] == 'x' ) 
-    {
-        ull = FromHexString(str+2) ;
-    }
-    else if( strlen(str) > 2 && str[0] == '0' && str[1] == 'b' ) 
-    {
-        ull = FromBinString(str+2) ; 
-    }
-    else if( strchr(str, ',') != nullptr )
+    if( strchr(str, ',') != nullptr )
     {
         ull = FromPosString(str, ',') ;   
     }
     else 
     {
-        ull = FromDecString(str) ;
+        switch( anno )
+        {
+            case 'x': ull = FromHexString(str) ; break ; 
+            case 'b': ull = FromBinString(str) ; break ; 
+            case 'd': ull = FromDecString(str) ; break ; 
+            case 'p': ull = FromPosString(str) ; break ; 
+            case '_': ull = FromDecString(str) ; break ; 
+            default : assert(0)                ; break ; 
+        }
     }
     return ull ; 
 }
 
 
 
-template std::string SBit::BinString(char); 
-template std::string SBit::BinString(int); 
-template std::string SBit::BinString(long); 
-template std::string SBit::BinString(long long); 
+template std::string SBit::BinString(char,bool); 
+template std::string SBit::BinString(int,bool); 
+template std::string SBit::BinString(long,bool); 
+template std::string SBit::BinString(long long,bool); 
 
-template std::string SBit::BinString(unsigned char); 
-template std::string SBit::BinString(unsigned int); 
-template std::string SBit::BinString(unsigned long); 
-template std::string SBit::BinString(unsigned long long); 
-
-
-template std::string SBit::HexString(char); 
-template std::string SBit::HexString(int); 
-template std::string SBit::HexString(long); 
-template std::string SBit::HexString(long long); 
-
-template std::string SBit::HexString(unsigned char); 
-template std::string SBit::HexString(unsigned int); 
-template std::string SBit::HexString(unsigned long); 
-template std::string SBit::HexString(unsigned long long); 
+template std::string SBit::BinString(unsigned char,bool); 
+template std::string SBit::BinString(unsigned int,bool); 
+template std::string SBit::BinString(unsigned long,bool); 
+template std::string SBit::BinString(unsigned long long,bool); 
 
 
-template std::string SBit::DecString(char); 
-template std::string SBit::DecString(int); 
-template std::string SBit::DecString(long); 
-template std::string SBit::DecString(long long); 
+template std::string SBit::HexString(char,bool); 
+template std::string SBit::HexString(int,bool); 
+template std::string SBit::HexString(long,bool); 
+template std::string SBit::HexString(long long,bool); 
 
-template std::string SBit::DecString(unsigned char); 
-template std::string SBit::DecString(unsigned int); 
-template std::string SBit::DecString(unsigned long); 
-template std::string SBit::DecString(unsigned long long); 
-
-
-
-template std::string SBit::PosString(char,char); 
-template std::string SBit::PosString(int,char); 
-template std::string SBit::PosString(long,char); 
-template std::string SBit::PosString(long long,char); 
-
-template std::string SBit::PosString(unsigned char,char); 
-template std::string SBit::PosString(unsigned int,char); 
-template std::string SBit::PosString(unsigned long,char); 
-template std::string SBit::PosString(unsigned long long,char); 
+template std::string SBit::HexString(unsigned char,bool); 
+template std::string SBit::HexString(unsigned int,bool); 
+template std::string SBit::HexString(unsigned long,bool); 
+template std::string SBit::HexString(unsigned long long,bool); 
 
 
+template std::string SBit::DecString(char,bool); 
+template std::string SBit::DecString(int,bool); 
+template std::string SBit::DecString(long,bool); 
+template std::string SBit::DecString(long long,bool); 
+
+template std::string SBit::DecString(unsigned char,bool); 
+template std::string SBit::DecString(unsigned int,bool); 
+template std::string SBit::DecString(unsigned long,bool); 
+template std::string SBit::DecString(unsigned long long,bool); 
+
+
+
+template std::string SBit::PosString(char,char,bool); 
+template std::string SBit::PosString(int,char,bool); 
+template std::string SBit::PosString(long,char,bool); 
+template std::string SBit::PosString(long long,char,bool); 
+
+template std::string SBit::PosString(unsigned char,char,bool); 
+template std::string SBit::PosString(unsigned int,char,bool); 
+template std::string SBit::PosString(unsigned long,char,bool); 
+template std::string SBit::PosString(unsigned long long,char,bool); 
+
+
+
+template std::string SBit::String(char); 
+template std::string SBit::String(int); 
+template std::string SBit::String(long); 
+template std::string SBit::String(long long); 
+
+template std::string SBit::String(unsigned char); 
+template std::string SBit::String(unsigned int); 
+template std::string SBit::String(unsigned long); 
+template std::string SBit::String(unsigned long long); 
 
 

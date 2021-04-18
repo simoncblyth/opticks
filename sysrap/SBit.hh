@@ -42,17 +42,26 @@ class SYSRAP_API SBit {
         static bool HasOneSetBit(int x); 
 
 
-        template <typename T> static std::string BinString(T v); 
-        template <typename T> static std::string HexString(T v); 
-        template <typename T> static std::string DecString(T v); 
-        template <typename T> static std::string PosString(T v, char delim=','); 
 
-        static unsigned long long FromBinString(const char* binstr ) ; 
-        static unsigned long long FromHexString(const char* hexstr ) ; 
-        static unsigned long long FromDecString(const char* decstr ) ; 
-        static unsigned long long FromPosString(const char* posstr, char delim=',') ; 
 
-        static unsigned long long FromString(const char* str ) ;   // if first two char are 0x/0b the string is interpreted as hex/binary otherwise decimal  
+        template <typename T> static std::string BinString(T v, bool anno=true); 
+        template <typename T> static std::string HexString(T v, bool anno=true); 
+        template <typename T> static std::string DecString(T v, bool anno=false); 
+        template <typename T> static std::string PosString(T v, char delim=',', bool anno=false); 
+
+        template <typename T> static std::string String(T v); 
+
+
+
+        static const char* ANNO ; 
+        static const char* ParseAnnotation(bool& complement, char& anno, const char* str_ );
+
+        static unsigned long long FromBinString(const char* str ) ; 
+        static unsigned long long FromHexString(const char* str ) ; 
+        static unsigned long long FromDecString(const char* str ) ; 
+        static unsigned long long FromPosString(const char* str, char delim=',') ; 
+
+        static unsigned long long FromString(const char* str ) ; 
 
 }; 
 
