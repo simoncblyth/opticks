@@ -667,7 +667,9 @@ void GGeo::save()
         prepare();
     }   
 
-    m_geolib->dump("GGeo::save");
+    std::string s = m_geolib->summary("GGeo::save");
+    LOG(info) << std::endl << s ; 
+
 
     m_geolib->save(); // in here GGeoLib::saveConstituents invokes the save of both triangulated GMergedMesh and analytic GParts 
     m_meshlib->save();

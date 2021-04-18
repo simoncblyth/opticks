@@ -380,9 +380,10 @@ This has been updated for mm0 holding remainder volumes (not all volumes as it u
 
 **/
 
-void GGeoLib::dump(const char* msg)
+std::string GGeoLib::summary(const char* msg)
 {
-    LOG(info) << msg << " " << desc() ; 
+    std::stringstream ss ; 
+    ss << msg << " " << desc() << std::endl ; 
 
     GMergedMesh* mm0 = getMergedMesh(0) ; 
     unsigned num_remainder_volumes = mm0 ?  mm0->getNumVolumes() : -1 ; 
@@ -398,33 +399,38 @@ void GGeoLib::dump(const char* msg)
         unsigned numITransforms = mm ? mm->getNumITransforms() : -1 ;
         unsigned numFaces = mm ? mm->getNumFaces() : -1 ; 
 
-        std::cout << GMergedMesh::Desc(mm) << std::endl ; 
+        ss << GMergedMesh::Desc(mm) << std::endl ; 
         num_instanced_volumes += i > 0 ? numITransforms*numVolumes : 0 ;
         num_total_faces += numFaces ;   
         num_total_faces_woi += numITransforms*numFaces ; 
 
     }
-    std::cout
-                << " num_remainder_volumes " << num_remainder_volumes 
-                << " num_instanced_volumes " << num_instanced_volumes 
-                << " num_remainder_volumes + num_instanced_volumes " << num_remainder_volumes + num_instanced_volumes
-                << " num_total_faces " << num_total_faces
-                << " num_total_faces_woi " << num_total_faces_woi << " (woi:without instancing) " 
-                << std::endl
-                ;
+    ss
+        << " num_remainder_volumes " << num_remainder_volumes 
+        << " num_instanced_volumes " << num_instanced_volumes 
+        << " num_remainder_volumes + num_instanced_volumes " << num_remainder_volumes + num_instanced_volumes
+        << " num_total_faces " << num_total_faces
+        << " num_total_faces_woi " << num_total_faces_woi << " (woi:without instancing) " 
+        << std::endl
+        ;
 
     for(unsigned i=0 ; i < nmm ; i++)
     {   
         GMergedMesh* mm = getMergedMesh(i); 
         GPts* pts = mm->getPts(); 
-        std::cout 
-             << std::setw(4) << i 
-             << " pts " << ( pts ? "Y" : "N" )
-             << " " << ( pts ? pts->brief().c_str() : "" )
-             << std::endl
-             ;
+        ss
+            << std::setw(4) << i 
+            << " pts " << ( pts ? "Y" : "N" )
+            << " " << ( pts ? pts->brief().c_str() : "" )
+            << std::endl
+            ;
     }
+    std::string s = ss.str(); 
+    return s ; 
 }
+
+
+
 
 int GGeoLib::checkMergedMeshes() const 
 {
@@ -461,8 +467,7 @@ kernel panics.
 
 void GGeoLib::dryrun_convert() 
 {
-    LOG(info); 
-    m_geolib->dump("GGeoLib::dryrun_convert");
+    LOG(info) << m_geolib->summary("GGeoLib::dryrun_convert");
 
     unsigned int nmm = m_geolib->getNumMergedMesh();
 

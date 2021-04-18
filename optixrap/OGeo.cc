@@ -294,13 +294,12 @@ to m_top(optix::Group).
 
 void OGeo::convert()
 {
-    m_geolib->dump("OGeo::convert"); 
+    std::string s = m_geolib->summary("OGeo::convert"); 
+    LOG(info) << std::endl << s ;  
 
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
     LOG(info) << "[ nmm " << nmm ;
-
-    if(m_verbosity > 1) m_geolib->dump("OGeo::convert GGeoLib" ); 
 
     for(unsigned i=0 ; i < nmm ; i++) 
     {

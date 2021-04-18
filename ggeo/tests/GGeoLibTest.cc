@@ -156,7 +156,8 @@ int main(int argc, char** argv)
     GBndLib* bndlib = GBndLib::load(&ok, constituents);
 
     GGeoLib* geolib = GGeoLib::Load(&ok, bndlib); 
-    geolib->dump("geolib");
+    std::string s = geolib->summary("geolib");
+    LOG(info) << std::endl << s ; 
     test_GGeoLib(geolib);
 
 
