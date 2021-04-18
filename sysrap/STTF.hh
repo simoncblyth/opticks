@@ -83,7 +83,10 @@ inline unsigned char* STTF::Load(const char* path) // static
         printf("STTF::Load : Envvar %s with path to ttf font file is required \n", KEY);
         return nullptr ; 
     }
+
+#ifdef DEBUG
     printf("STTF::Load font from %s\n", path );  
+#endif
 
     long size ;
     FILE* fontFile = fopen(path, "rb");

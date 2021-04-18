@@ -25,6 +25,7 @@
 #include <sstream>
 #include <bitset>
 #include <vector>
+#include <algorithm>
 
 #if defined(_MSC_VER)
 

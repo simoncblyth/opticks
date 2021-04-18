@@ -1,6 +1,7 @@
 #!/bin/bash -l 
 
 
+
 dir=/tmp/$USER/opticks/okop/OpSnapTest
 mkdir -p $dir 
 

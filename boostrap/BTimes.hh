@@ -82,7 +82,7 @@ class BRAP_API BTimes {
      double getScale(); 
      const char* getLabel();
   public:
-     void dump(const char* msg="BTimes::dump");
+     std::string desc(const char* msg="BTimes::dump");
      unsigned int getSize();
      std::vector<std::pair<std::string, double> >& getTimes();
      std::pair<std::string, double>&  getEntry(unsigned int i);

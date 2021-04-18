@@ -818,7 +818,9 @@ std::string BFile::preparePath(const char* dir_, const char* reldir_, const char
 {
     fs::path fpath(dir_);
     if(reldir_) fpath /= reldir_ ;
-    return preparePath(fpath.string().c_str(), name, create);
+    std::string p = preparePath(fpath.string().c_str(), name, create);
+    LOG(LEVEL) << " dir_ " << dir_ << " reldir_ " << reldir_ << " name " << name << " create " << create << " -> " << p ; 
+    return p ; 
 }
 
 

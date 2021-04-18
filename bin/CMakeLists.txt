@@ -12,6 +12,8 @@ set(SCRIPTS
    tboolean.sh
    env.sh
    env-l.sh
+   snap.sh
+   snap_emm.sh
    scan.bash
    oc.bash
 

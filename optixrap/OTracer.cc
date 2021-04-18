@@ -192,16 +192,15 @@ void OTracer::report(const char* msg)
     LOG(info)<< msg ; 
     if(m_trace_count == 0 ) return ; 
 
-    std::cout 
-          << " trace_count     " << std::setw(10) << m_trace_count  
-          << " trace_prep      " << std::setw(10) << m_trace_prep   << " avg " << std::setw(10) << m_trace_prep/m_trace_count  << std::endl
-          << " trace_time      " << std::setw(10) << m_trace_time   << " avg " << std::setw(10) << m_trace_time/m_trace_count  << std::endl
-          << std::endl 
-           ;
+    LOG(info) 
+       << std::endl 
+       << " trace_count     " << std::setw(10) << m_trace_count  
+       << " trace_prep      " << std::setw(10) << m_trace_prep   << " avg " << std::setw(10) << m_trace_prep/m_trace_count  << std::endl
+       << " trace_time      " << std::setw(10) << m_trace_time   << " avg " << std::setw(10) << m_trace_time/m_trace_count  << std::endl
+       ;
 
     m_trace_times->addAverage("launch"); 
-    m_trace_times->dump("OTracer::report"); 
-
+    LOG(info) << m_trace_times->desc("OTracer::report"); 
 
     if(!m_ok->isProduction())
     {

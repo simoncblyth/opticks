@@ -178,16 +178,20 @@ void BTimes::addAverage(const char* prefix )
 }
 
 
-void BTimes::dump(const char* msg)
+
+std::string BTimes::desc(const char* msg)
 {
-   LOG(info) << msg ; 
+   std::stringstream ss ; 
+   ss << msg << std::endl ; 
    for(VSD::const_iterator it=m_times.begin() ; it != m_times.end() ; it++)
    {
-       std::cout 
+       ss
           <<  std::setw(25) << it->first 
           <<  std::setw(25) << it->second
           <<  std::endl ; 
    } 
+   std::string s = ss.str(); 
+   return s ; 
 }
 
 std::string BTimes::name()

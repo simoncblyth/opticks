@@ -90,7 +90,7 @@ void test_add_average()
     a->add("launch", 4 ,  0.020913 ); 
     a->addAverage("launch"); 
 
-    a->dump(); 
+    LOG(info) << a->desc(); 
 }
 
 

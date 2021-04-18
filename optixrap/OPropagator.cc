@@ -197,8 +197,9 @@ void OPropagator::prelaunch()
 
     m_prelaunch_count += 1 ; 
 
-    LOG(info) << brief()  ;
-    prelaunch_times->dump("OPropagator::prelaunch");
+    std::string s = prelaunch_times->desc("OPropagator::prelaunch");
+
+    LOG(info) << brief() << std::endl << s  ;
 }
 
 

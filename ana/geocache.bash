@@ -890,7 +890,7 @@ geocache-simple()
     local mm
     local cmd 
     for mm in $(geocache-simple-mm) ; do  
-        cmd="OpSnapTest --target 304632 --eye -1,-1,-1  --rtx 1 --cvd 1 --enabledmergedmesh $mm --snapoverrideprefix simple-enabledmergedmesh-$mm-"
+        cmd="OpSnapTest --target 304632 --eye -1,-1,-1  --rtx 1 --cvd 1 --enabledmergedmesh $mm --snapoverrideprefix geocache-simple-enabledmergedmesh-$mm-"
         echo $cmd
         eval $cmd
     done 

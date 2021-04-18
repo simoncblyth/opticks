@@ -558,6 +558,36 @@ void test_UserTmpPath()
     LOG(info) << utp ; 
 }
 
+
+
+const char* test_expandvar_ = R"LITERAL(
+
+$TMP/okop/OpSnapTest
+
+)LITERAL";
+
+
+void test_expandvar()
+{
+    LOG(info); 
+    std::stringstream ss ; 
+    ss.str(test_expandvar_); 
+    std::string s;
+    while (std::getline(ss, s, '\n')) 
+    {   
+        if(!(s.empty() || s.c_str()[0] == '#')) 
+        {   
+            std::string str = BFile::expandvar(s.c_str()) ; 
+            std::cout 
+                << std::setw(30) << s
+                << " : "
+                << std::setw(30) << str
+                << std::endl 
+                ;
+        }
+    }
+}
+
  
 
 int main(int argc, char** argv)
@@ -609,7 +639,8 @@ int main(int argc, char** argv)
    //test_CurrentDirectoryName(); 
    //test_ResolveScript(); 
 
-   test_UserTmpPath();  
+   //test_UserTmpPath();  
+   test_expandvar();  
 
    return 0 ; 
 }
