@@ -294,19 +294,29 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
     {
         count = m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
 
+
         double dt = render();   // calling OTracer::trace_
 
+        std::stringstream ss ; 
+        ss 
+           << "OpTracer::flightpath"
+           << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
+           << " " << std::setw(5) << i 
+           ;
+        std::string s = ss.str(); 
+        const char* annotation = s.c_str(); 
+
+
         snprintf(path, 128, fmt.c_str(), i );   
-        std::cout 
+        LOG(info)
             << "OpTracer::flightpath " 
             << " count " <<  std::setw(6) << count 
             << " i " <<  std::setw(6) << i
             << " path " << path 
             << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
-            << std::endl 
             ;
 
-        m_ocontext->snap(path);  // downloads GPU output_buffer pixels into image file
+        m_ocontext->snap(path, annotation);  // downloads GPU output_buffer pixels into image file
     }
 
     LOG(info) << "]" ;

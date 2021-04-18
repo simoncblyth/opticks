@@ -221,7 +221,7 @@ okop-bdir(){ echo $(opticks-bdir)/$(okop-rel) ; }
 okop-bin(){  echo $(okop-idir)/bin/${1:-OpIndexerTest} ; }
 
 okop-c(){    cd $(okop-sdir); }
-okop-cd(){   cd $(okop-sdir); }
+okop-cd(){   cd $(okop-sdir)/$1 ; }
 okop-scd(){  cd $(okop-sdir); }
 okop-tcd(){  cd $(okop-tdir); }
 okop-icd(){  cd $(okop-idir); }

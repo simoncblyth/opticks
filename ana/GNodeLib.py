@@ -3,6 +3,11 @@
 GNodeLib.py
 =============
 
+::
+
+   ipython -i -- GNodeLib.py --ulv --detail
+
+
 * see also ggeo.py which provides "triplet" indexing  (repeat_idx, instance_index, prim_index) 
 
 Geocache nodelib to load is controlled by OPTICKS_KEYDIR envvar. Set that in ~/.opticks_config with::
@@ -156,6 +161,7 @@ def parse_args(doc, **kwa):
     parser.add_argument(     "--ulv", default=False, action="store_true", help="Dump unique LV names" ) 
     parser.add_argument(     "--sli", default="0:10:1", help="Array slice to control output, 0:None for all" )
     parser.add_argument(     "--ce", default=False, action="store_true", help="Dump just center_extent" ) 
+    parser.add_argument(     "--detail", default=False, action="store_true", help="Dump extra details" )
     parser.add_argument(     "-d","--dump", action="store_true", help="Dump lib repr" ) 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
@@ -183,9 +189,19 @@ if __name__ == '__main__':
         idxs = nlib.lvfind(args.lv)
         print("args.lv:%s matched %d nodes " % (args.lv, len(idxs))) 
     elif args.ulv:
-        lvns = np.unique(nlib.lv) 
-        print("args.ulv found %d unique LV names" % (len(lvns))) 
-        print("\n".join(list(map(lambda _:_.decode('utf-8'),lvns[args.slice]))))
+        ulv, ulv_count = np.unique(nlib.lv, return_counts=True) 
+        print("args.ulv found %d unique LV names" % (len(ulv))) 
+        print("\n".join(list(map(lambda _:_.decode('utf-8'),ulv[args.slice]))))
+        print("unique lv in descending count order, with names of first few corresponding pv ")
+        for i in sorted(range(len(ulv)),key=lambda i:ulv_count[i], reverse=True):
+            detail = "" 
+            if args.detail:
+                w = np.where( nlib.lv == ulv[i] )              
+                pv = nlib.pv[w][:3]
+                detail = " ".join(list(map(lambda _:_.decode("utf-8"), pv )))     
+            pass
+            print("%10d : %50s : %s " % (ulv_count[i], ulv[i].decode("utf-8"), detail ))
+        pass
     pass
 
     print("slice %s " % args.sli)
