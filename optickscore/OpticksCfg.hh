@@ -82,6 +82,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getStateTag();
      const std::string& getMaterialPrefix();
 
+     const std::string& getFlightConfig();
      const std::string& getSnapConfig();
      const std::string& getSnapOverridePrefix();
 
@@ -238,6 +239,7 @@ private:
      std::string m_state_tag ;
      std::string m_materialprefix ;
 
+     std::string m_flightconfig ;
      std::string m_snapconfig ;
      std::string m_snapoverrideprefix ;
      std::string m_g4snapconfig ;

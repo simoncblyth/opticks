@@ -19,32 +19,27 @@
 
 /**
 
-NSnapConfigTest --snapconfig "steps=10,eyestartz=-1,eyestopz=1" 
-NSnapConfigTest --snapconfig "steps=5,eyestartz=-1,eyestopz=-1" 
+NFlightConfigTest --snapconfig "steps=10,eyestartz=-1,eyestopz=1" 
 
 
 **/
 
 #include "OPTICKS_LOG.hh"
-#include "NSnapConfig.hpp"
-
+#include "NFlightConfig.hpp"
 #include "S_get_option.hh"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* fallback = "steps=5,prefix=photo_,ext=.ppm" ; 
-    std::string snapconfig = get_option<std::string>(argc, argv, "--snapconfig", fallback ) ;
+    const char* fallback = "prefix=frame_,ext=.ppm,scale0=1,scale1=10" ; 
+    std::string flightconfig = get_option<std::string>(argc, argv, "--flightconfig", fallback ) ;
+    // need to use this because cannot use Opticks at this level 
 
-    NSnapConfig cfg(snapconfig.c_str());
+    NFlightConfig cfg(flightconfig.c_str());
     cfg.dump();
   
-    for(int i=0 ; i < cfg.steps ; i++)
-    {
-        std::cout << cfg.getSnapName(i) << std::endl ; 
-    }
-
+    std::cout << cfg.getFrameName(0) << std::endl ; 
 
     return 0 ; 
 }

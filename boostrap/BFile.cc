@@ -930,3 +930,40 @@ const char* BFile::ResolveScript(const char* script_name, const char* fallback_d
 
 
 
+std::string BFile::MakeIndex(int index, unsigned width) // static 
+{
+    std::stringstream ss ;
+    ss  
+        << std::setw(width) 
+        << std::setfill('0')
+        << index 
+        ;   
+    return ss.str();
+}
+
+/**
+BFile::MakeName
+-----------------
+
+Using index -1 returns a format string of form "%0.5d" rather than  the index 
+
+**/
+
+std::string BFile::MakeName(int index, unsigned width, const char* prefix, const char* ext ) // static 
+{
+    std::stringstream ff ;
+    ff << "%0." << width << "d" ; 
+    std::string fmt = ff.str(); 
+ 
+    std::stringstream ss ;
+    ss  
+       << prefix 
+       << ( index == -1 ? fmt : MakeIndex(index, width) )
+       << ext 
+       ;   
+
+    return ss.str();
+}
+
+
+

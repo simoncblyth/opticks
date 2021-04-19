@@ -20,6 +20,7 @@
 #pragma once
 
 struct NSnapConfig ; 
+struct NFlightConfig ; 
 
 class SLog ; 
 
@@ -85,6 +86,7 @@ class OKOP_API OpTracer : public SRenderer {
        OpticksHub*      m_hub ; 
        Opticks*         m_ok ; 
        NSnapConfig*     m_snap_config ; 
+       NFlightConfig*   m_flight_config ; 
        const char*      m_snapoverrideprefix ;  // --snapoverrideprefix
        bool             m_immediate ; 
 
@@ -92,7 +94,6 @@ class OKOP_API OpTracer : public SRenderer {
        Composition*     m_composition ; 
        OTracer*         m_otracer ;
        unsigned         m_count ; 
-       unsigned         m_flightpath_snaplimit ;   // OPTICKS_FLIGHTPATH_SNAPLIMIT
 
 };
 

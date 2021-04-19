@@ -27,6 +27,7 @@
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "NSnapConfig.hpp"
+#include "NFlightConfig.hpp"
 
 // okc-
 #include "Opticks.hh"
@@ -66,14 +67,14 @@ OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate)
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_snap_config(m_ok->getSnapConfig()),
+    m_flight_config(m_ok->getFlightConfig()),
     m_snapoverrideprefix(m_ok->getSnapOverridePrefix()),  // --snapoverrideprefix
     m_immediate(immediate),
 
     m_ocontext(NULL),   // defer 
     m_composition(m_hub->getComposition()),
     m_otracer(NULL),
-    m_count(0),
-    m_flightpath_snaplimit(SSys::getenvint("OPTICKS_FLIGHTPATH_SNAPLIMIT",3))
+    m_count(0)
 {
     init();
 }
@@ -196,11 +197,11 @@ void OpTracer::multi_snap(const char* path_fmt, const std::vector<glm::vec3>& ey
     char path[128] ; 
     for(int i=0 ; i < int(eyes.size()) ; i++)
     {
-         const glm::vec3& eye = eyes[i] ; 
-         m_composition->setEye( eye.x, eye.y, eye.z ); 
+        const glm::vec3& eye = eyes[i] ; 
+        m_composition->setEye( eye.x, eye.y, eye.z ); 
 
-         snprintf(path, 128, path_fmt, i );   
-         single_snap(path);  
+        snprintf(path, 128, path_fmt, i );   
+        single_snap(path);  
     }
 }
 
@@ -249,11 +250,17 @@ void OpTracer::single_snap(const char* path)
 
 const char* OpTracer::FLIGHTPATH_SNAP = "FlightPath%0.5d.jpg" ; 
 
+/**
+
+TODO: most of this should not be here 
+
+**/
+
+
 void OpTracer::flightpath(const char* dir, const char* reldir )   
 {
     bool create = true ; 
     std::string fmt = BFile::preparePath(dir ? dir : "$TMP", reldir, FLIGHTPATH_SNAP, create);  
-
 
     LOG(info) 
         << " dir " << dir 
@@ -280,13 +287,13 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
     unsigned count(0); 
     char path[128] ; 
 
-    unsigned i1 = m_flightpath_snaplimit > 0 ? std::min( m_flightpath_snaplimit, tot_period)  : tot_period ; 
+    unsigned i1 = m_flight_config->framelimit > 0 ? std::min( m_flight_config->framelimit, tot_period)  : tot_period ; 
 
     LOG(info) 
         << " num_views " << num_views
         << " animator.period " << period
         << " tot_period " << tot_period
-        << " m_flightpath_snaplimit " << m_flightpath_snaplimit << " (OPTICKS_FLIGHTPATH_SNAPLIMIT) " 
+        << " m_flight_config.framelimit " << m_flight_config->framelimit << " (OPTICKS_FLIGHT_FRAMELIMIT) " 
         << " i1 " << i1 
         ;
 
@@ -294,9 +301,9 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
     {
         count = m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
 
-
         double dt = render();   // calling OTracer::trace_
 
+        
         std::stringstream ss ; 
         ss 
            << "OpTracer::flightpath"
@@ -307,7 +314,10 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
         const char* annotation = s.c_str(); 
 
 
+
         snprintf(path, 128, fmt.c_str(), i );   
+
+
         LOG(info)
             << "OpTracer::flightpath " 
             << " count " <<  std::setw(6) << count 

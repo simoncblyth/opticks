@@ -105,7 +105,6 @@ void BConfig::parse()
             }
         }   
 
-
         if(found != 1)
         {
             LOG(fatal) 
@@ -115,11 +114,7 @@ void BConfig::parse()
                ;
         } 
         assert( found == 1);
-
-
-
     }   
-    //dump("BConfig::parse");
 }
 
 void BConfig::dump(const char* msg) const 
@@ -186,8 +181,4 @@ std::string BConfig::desc() const
        ;
     return ss.str();
 }
-
-
-
-
 

@@ -31,6 +31,10 @@ class BRAP_API BFile {
        static const plog::Severity LEVEL ; 
        static const char* OPTICKS_USER_HOME_KEY ; 
        static const char* OPTICKS_USER_TMP_KEY ; 
+
+    public:
+        static std::string MakeIndex(int index, unsigned width);
+        static std::string MakeName(int index, unsigned width, const char* prefix, const char* ext );
     public:
        static std::size_t FileSize( const char* path ) ; 
        static void SplitPath(std::vector<std::string>& elem, const char* path ) ; 

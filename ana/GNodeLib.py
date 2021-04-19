@@ -128,10 +128,15 @@ class GNodeLib(object):
         """
         return np.flatnonzero(np.char.startswith(self.lv, lvname_start.encode(encoding)))  
 
+
+    
+
     def __init__(self):
         for k in self.k2name.keys(): 
             setattr( self, k.lower(), self.Load(k) )
         pass
+        self.lvidx = (( self.id[:,2] >> 16) & 0xffff )    
+        self.bnidx = (( self.id[:,2] >>  0) & 0xffff ) 
 
     def __str__(self):
         return "\n".join(map(lambda k:"%2s\n%r\n" % (k, getattr(self,k.lower())), self.k2name.keys()))

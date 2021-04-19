@@ -161,6 +161,7 @@ nmat4triple_Test.cc
 NCSGBSPTest.cc
 NuvTest.cc
 NSnapConfigTest.cc
+NFlightConfigTest.cc
 NRngDiffuseTest.cc
 
 

@@ -3,6 +3,130 @@ OpSnapTest_debug_slowdown_with_new_geometry
 
 
 
+The 590s are the problem 
+---------------------------
+
+::
+
+       590 :                                 lAddition0x35ff5f0 : lAddition_phys0x35ff770 lAddition_phys0x35ff870 lAddition_phys0x35ff970 
+       590 :                                lFasteners0x34cdf00 : lFasteners_phys0x34ce040 lFasteners_phys0x34ce140 lFasteners_phys0x35750f0 
+       590 :                                    lSteel0x352c760 : lSteel_phys0x352c890 lSteel_phys0x352a4a0 lSteel_phys0x352a560 
+       590 :                                    lUpper0x35b5a00 : lUpper_phys0x35b5ac0 lUpper_phys0x35b5bb0 lUpper_phys0x35b5ca0 
+
+
+::
+
+    epsilon:~ blyth$  GNodeLib.py --pv lAddition_phys0x --ce
+    Key.v9:OKX4Test.X4PhysicalVolume.lWorld0x344f8d0_PV.732a5daf83a7153b316a2013fcfb1fc2
+    /usr/local/opticks/geocache/OKX4Test_lWorld0x344f8d0_PV_g4live/g4ok_gltf/732a5daf83a7153b316a2013fcfb1fc2/1
+    args.pv:lAddition_phys0x matched 590 nodes 
+    slice 0:10:1 
+    [70258 70259 70260 70261 70262 70263 70264 70265 70266 70267]
+    [ 1021.952  1406.597 17789.584   447.067]
+    [-1021.952  1406.597 17789.584   447.067]
+    [-1653.554  -537.272 17789.584   449.297]
+    [    0.    -1738.649 17789.584   450.   ]
+    [ 1653.554  -537.272 17789.584   449.297]
+    [ 3563.009   374.487 17496.676   447.595]
+    [ 3102.653  1791.318 17496.676   447.989]
+    [ 2105.82   2898.413 17496.676   445.171]
+    [  744.872  3504.346 17496.676   449.008]
+    [ -744.872  3504.346 17496.676   449.008]
+    epsilon:~ blyth$ 
+
+    epsilon:~ blyth$  GNodeLib.py --pv lFasteners_phys0x --ce
+    Key.v9:OKX4Test.X4PhysicalVolume.lWorld0x344f8d0_PV.732a5daf83a7153b316a2013fcfb1fc2
+    /usr/local/opticks/geocache/OKX4Test_lWorld0x344f8d0_PV_g4live/g4ok_gltf/732a5daf83a7153b316a2013fcfb1fc2/1
+    args.pv:lFasteners_phys0x matched 590 nodes 
+    slice 0:10:1 
+    [69078 69079 69080 69081 69082 69083 69084 69085 69086 69087]
+    [ 1023.263  1408.401 17807.176   205.183]
+    [-1023.263  1408.401 17807.176   205.183]
+    [-1655.674  -537.961 17807.176   206.05 ]
+    [    0.    -1740.879 17807.176   206.2  ]
+    [ 1655.674  -537.961 17807.176   206.05 ]
+    [ 3567.579   374.968 17525.584   205.218]
+    [ 3106.632  1793.615 17525.584   205.851]
+    [ 2108.521  2902.13  17525.584   204.66 ]
+    [  745.827  3508.841 17525.584   205.983]
+    [ -745.827  3508.841 17525.584   205.983]
+    epsilon:~ blyth$ 
+
+
+
+    # why 960 ? 
+
+    epsilon:~ blyth$  GNodeLib.py --pv lSteel_phys0x --ce
+    Key.v9:OKX4Test.X4PhysicalVolume.lWorld0x344f8d0_PV.732a5daf83a7153b316a2013fcfb1fc2
+    /usr/local/opticks/geocache/OKX4Test_lWorld0x344f8d0_PV_g4live/g4ok_gltf/732a5daf83a7153b316a2013fcfb1fc2/1
+    args.pv:lSteel_phys0x matched 960 nodes 
+    slice 0:10:1 
+    [67898 67899 67900 67901 67902 67903 67904 67905 67906 67907]
+    [ 1088.691  1498.455 18890.113   903.633]
+    [-1088.691  1498.455 18890.113   903.633]
+    [-1761.539  -572.359 18890.113   903.633]
+    [    0.    -1852.192 18890.113   903.633]
+    [ 1761.539  -572.359 18890.113   903.633]
+    [ 3795.692   398.943 18593.023   893.887]
+    [ 3305.272  1908.3   18593.023   893.887]
+    [ 2243.341  3087.694 18593.023   893.887]
+    [  793.516  3733.198 18593.023   893.887]
+    [ -793.516  3733.198 18593.023   893.887]
+    epsilon:~ blyth$ 
+
+    epsilon:GNodeLib blyth$ grep lSteel_phys0x all_volume_PVNames.txt | wc -l
+         960
+
+    In [3]: nlib.pvfind("lSteel_phys0x").shape
+    Out[3]: (960,)
+
+    In [14]: np.diff(pvi[-590:])    ## two contiguous blocks 
+    Out[14]:
+    array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+
+
+
+
+    epsilon:~ blyth$ GNodeLib.py --pv lUpper_phys0x --ce
+    Key.v9:OKX4Test.X4PhysicalVolume.lWorld0x344f8d0_PV.732a5daf83a7153b316a2013fcfb1fc2
+    /usr/local/opticks/geocache/OKX4Test_lWorld0x344f8d0_PV_g4live/g4ok_gltf/732a5daf83a7153b316a2013fcfb1fc2/1
+    args.pv:lUpper_phys0x matched 590 nodes 
+    slice 0:10:1 
+    [69668 69669 69670 69671 69672 69673 69674 69675 69676 69677]
+    [ 1030.576  1418.466 17918.443   194.088]
+    [-1030.576  1418.466 17918.443   194.088]
+    [-1667.507  -541.806 17918.443   194.884]
+    [    0.    -1753.321 17918.443   195.   ]
+    [ 1667.507  -541.806 17918.443   194.884]
+    [ 3593.076   377.648 17630.072   194.089]
+    [ 3128.835  1806.434 17630.072   194.758]
+    [ 2123.59   2922.871 17630.072   193.648]
+    [  751.157  3533.918 17630.072   194.832]
+    [ -751.157  3533.918 17630.072   194.832]
+    epsilon:~ blyth$ 
+
+
+
+
+
+
+
+
+
+
+
+
+::
+
+
+     PVN=lFasteners_phys EMM=0,1,2,3,4,5,6,7,8,9 flightpath.sh --rtx 1 --cvd 1 --flightpathscale=3
+     mv /tmp/blyth/opticks/okop/OpFlightPathTest/FlightPath.mp4 ~/Movies/all_lFasteners_phys_FlightPath.mp4
+
+
+     PVN=lFasteners_phys EMM=5,6,7,8 flightpath.sh --rtx 1 --cvd 1 --flightpathscale=3
+     mv /tmp/blyth/opticks/okop/OpFlightPathTest/FlightPath.mp4 ~/Movies/all_590_emm_5,6,7,8_FlightPath.mp4
+
+
 ::
 
     O[blyth@localhost OpFlightPathTest]$ PVN=lFasteners_phys EMM=5 flightpath.sh --rtx 1 --cvd 1
@@ -21,9 +145,73 @@ OpSnapTest_debug_slowdown_with_new_geometry
 
 
 
+
 ::
 
-    PVN=lFasteners_phys EMM=5 snap.sh         ## dont include the address in PVN, it keeps changing 
+    In [4]: w = np.where(nlib.lvidx == 96 )
+
+    In [5]: nlib.pv[w]
+    Out[5]:
+    array([b'lAddition_phys0x35ff770', b'lAddition_phys0x35ff870', b'lAddition_phys0x35ff970', b'lAddition_phys0x35ffa70', b'lAddition_phys0x3655ba0', b'lAddition_phys0x3655ca0',
+           b'lAddition_phys0x3655da0', b'lAddition_phys0x3655ea0', b'lAddition_phys0x3655fa0', b'lAddition_phys0x36560a0', b'lAddition_phys0x36561a0', b'lAddition_phys0x36562a0',
+           b'lAddition_phys0x36563a0', b'lAddition_phys0x36564a0', b'lAddition_phys0x36565a0', b'lAddition_phys0x36566a0', b'lAddition_phys0x36567a0', b'lAddition_phys0x36568a0',
+           b'lAddition_phys0x36569a0', b'lAddition_phys0x3656aa0', b'lAddition_phys0x3656ba0', b'lAddition_phys0x3656ca0', b'lAddition_phys0x3656da0', b'lAddition_phys0x3656ea0',
+           b'lAddition_phys0x3656fa0', b'lAddition_phys0x36570a0', b'lAddition_phys0x36571a0', b'lAddition_phys0x36572a0', b'lAddition_phys0x36573a0', b'lAddition_phys0x36574a0',
+
+
+    In [10]: nlib.pv[np.where(nlib.lvidx == 93 )].shape                                                                                                                                      
+    Out[10]: (590,)
+
+    In [11]: nlib.pv[np.where(nlib.lvidx == 94 )].shape                                                                                                                                      
+    Out[11]: (590,)
+
+    In [12]: nlib.pv[np.where(nlib.lvidx == 95 )].shape                                                                                                                                      
+    Out[12]: (590,)
+
+    In [13]: nlib.pv[np.where(nlib.lvidx == 96 )].shape                                                                                                                                      
+    Out[13]: (590,)
+
+
+
+    In [15]: nlib.pv[np.where(nlib.lvidx == 93 )][:3]                                                                                                                                        
+    Out[15]: array([b'lSteel_phys0x352c890', b'lSteel_phys0x352a4a0', b'lSteel_phys0x352a560'], dtype='|S100')
+
+    In [16]: nlib.pv[np.where(nlib.lvidx == 94 )][:3]                                                                                                                                        
+    Out[16]: array([b'lFasteners_phys0x34ce040', b'lFasteners_phys0x34ce140', b'lFasteners_phys0x35750f0'], dtype='|S100')
+
+    In [17]: nlib.pv[np.where(nlib.lvidx == 95 )][:3]                                                                                                                                        
+    Out[17]: array([b'lUpper_phys0x35b5ac0', b'lUpper_phys0x35b5bb0', b'lUpper_phys0x35b5ca0'], dtype='|S100')
+
+    In [18]: nlib.pv[np.where(nlib.lvidx == 96 )][:3]                                                                                                                                        
+    Out[18]: array([b'lAddition_phys0x35ff770', b'lAddition_phys0x35ff870', b'lAddition_phys0x35ff970'], dtype='|S100')
+
+
+    epsilon:GItemList blyth$ cat.py -s 89,90,91,92,93,94,95,96,97,98 GMeshLib.txt 
+    89   90   sTarget0x34fe8a0
+    90   91   sAcrylic0x34fe230
+    91   92   sStrut0x3501680
+    92   93   sStrut0x3559670
+
+    93   94   sStrutBallhead0x352a360
+    94   95   uni10x34cdcb0
+    95   96   base_steel0x360d8f0
+    96   97   uni_acrylic30x35ff3d0
+
+    97   98   solidXJanchor0x363f2f0
+    98   99   NNVTMCPPMTsMask0x3c9fa80
+    epsilon:GItemList blyth$ 
+
+
+
+
+
+
+
+
+
+::
+
+    PVN=lFasteners_phys EMM=5 snap.sh         ## dont include the address in PVN, it keeps changing
 
 
     2021-04-19 05:43:06.682 INFO  [340264] [OGeo::convert@302] [ nmm 10
@@ -105,10 +293,12 @@ OpSnapTest_debug_slowdown_with_new_geometry
           2400 :                       PMT_20inch_veto_log0x3ca5470 : PMT_20inch_veto_log_phys0x3ca5fa0 PMT_20inch_veto_log_phys0x3ca5fa0 PMT_20inch_veto_log_phys0x3ca5fa0 
           2400 :                 mask_PMT_20inch_vetolMask0x3ca1cb0 : mask_PMT_20inch_vetopMask0x3ca1e40 mask_PMT_20inch_vetopMask0x3ca1e40 mask_PMT_20inch_vetopMask0x3ca1e40 
           2400 :          mask_PMT_20inch_vetolMaskVirtual0x3ca10e0 : mask_PMT_20inch_vetolMaskVirtual_phys0x4433460 mask_PMT_20inch_vetolMaskVirtual_phys0x4dd9ec0 mask_PMT_20inch_vetolMaskVirtual_phys0x4dd9fd0 
+
            590 :                                 lAddition0x35ff5f0 : lAddition_phys0x35ff770 lAddition_phys0x35ff870 lAddition_phys0x35ff970 
            590 :                                lFasteners0x34cdf00 : lFasteners_phys0x34ce040 lFasteners_phys0x34ce140 lFasteners_phys0x35750f0 
            590 :                                    lSteel0x352c760 : lSteel_phys0x352c890 lSteel_phys0x352a4a0 lSteel_phys0x352a560 
            590 :                                    lUpper0x35b5a00 : lUpper_phys0x35b5ac0 lUpper_phys0x35b5bb0 lUpper_phys0x35b5ca0 
+
            504 :                                    lPanel0x4ee7120 : pPanel_0_f_0x4ef1b70 pPanel_1_f_0x4ef1c10 pPanel_2_f_0x4ef1cb0 
            504 :                                lPanelTape0x4ee72b0 : pPanelTape0x4ef1e50 pPanelTape0x4ef1e50 pPanelTape0x4ef1e50 
            370 :                                    lSteel0x3501790 : lSteel_phys0x34fd1c0 lSteel_phys0x3501920 lSteel_phys0x3501a40 
@@ -286,10 +476,10 @@ PROBLEM MM 5 (CAUTION UNCONTROLLED MM INDEX IN 5/6/7/8) lvIdx 96
     mm index   4 geocode   A                  numVolumes          6 numFaces        3284 numITransforms        2400 numITransforms*numVolumes       14400 GParts Y GPts Y
 
     mm index   5 geocode   A                  numVolumes          1 numFaces        1272 numITransforms         590 numITransforms*numVolumes         590 GParts Y GPts Y
-
     mm index   6 geocode   A                  numVolumes          1 numFaces         528 numITransforms         590 numITransforms*numVolumes         590 GParts Y GPts Y
     mm index   7 geocode   A                  numVolumes          1 numFaces         960 numITransforms         590 numITransforms*numVolumes         590 GParts Y GPts Y
     mm index   8 geocode   A                  numVolumes          1 numFaces         384 numITransforms         590 numITransforms*numVolumes         590 GParts Y GPts Y
+
     mm index   9 geocode   A                  numVolumes        130 numFaces        1560 numITransforms         504 numITransforms*numVolumes       65520 GParts Y GPts Y
      num_remainder_volumes 3084 num_instanced_volumes 315952 num_remainder_volumes + num_instanced_volumes 319036 num_total_faces 202152 num_total_faces_woi 125348744 (woi:without instancing) 
        0 pts Y  GPts.NumPt  3084 lvIdx ( 130 12 11 3 0 1 2 10 9 8 ... 88 88 88 88 88 118 115 116 117)

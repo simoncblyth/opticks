@@ -193,6 +193,7 @@ set(SOURCES
     BoundarySnappingT.cc
     NLODConfig.cpp
     NSnapConfig.cpp
+    NFlightConfig.cpp
     NEmitConfig.cpp
     NEmitPhotonsNPY.cpp
     NRngDiffuse.cpp
@@ -373,6 +374,7 @@ nmat4triple_.hpp
 NGLMCF.hpp
 
 NSnapConfig.hpp
+NFlightConfig.hpp
 NLODConfig.hpp
 
 Nuv.hpp

@@ -27,44 +27,33 @@ struct BConfig ;
 #include "NPY_API_EXPORT.hh"
 
 /**
-NSnapConfig
-============
+NFlightConfig
+==================
 
-Principal consumer is OpTracer::snap
+Principal consumer is OpTracer::flightpath
 
-An Opticks resident instance is lazily constructed by Opticks::getSnapConfig 
+An Opticks resident instance is lazily constructed by Opticks::getFlightConfig 
 which gets called from OpTracer::OpTracer
 
 **/
 
-
-struct NPY_API NSnapConfig 
+struct NPY_API NFlightConfig 
 {
     static const plog::Severity LEVEL ; 
-    static const float NEGATIVE_ZERO ; 
 
-    NSnapConfig(const char* cfg);
+    NFlightConfig(const char* cfg);
     BConfig* bconfig ;  
-    void dump(const char* msg="NSnapConfig::dump") const ; 
+    void dump(const char* msg="NFlightConfig::dump") const ; 
     std::string desc() const ; 
 
-    int verbosity ; 
-    int steps ; 
     int width ; 
-
-    float ex0 ;   // formerly eyestartx
-    float ey0 ; 
-    float ez0 ;
- 
-    float ex1 ;   // formerly eyestopx
-    float ey1 ; 
-    float ez1 ; 
-
+    float scale0 ;   
+    float scale1 ; 
     std::string prefix ; 
-    std::string ext ;    // eg .jpg
+    std::string ext ;    // typically .jpg due to its compression
+    int  framelimit ;  
 
-    std::string getSnapName(int index, const char* override_prefix=NULL) const ;
-    const char* getSnapPath(const char* dir, const char* reldir, int index, const char* override_prefix) const ;
-
+    std::string getFrameName(int index, const char* override_prefix=NULL) const ;
+    const char* getFramePath(const char* dir, const char* reldir, int index, const char* override_prefix) const ;
 };
 

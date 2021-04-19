@@ -72,6 +72,7 @@
 #include "NSceneConfig.hpp"
 #include "NLODConfig.hpp"
 #include "NSnapConfig.hpp"
+#include "NFlightConfig.hpp"
 
 
 // okc-
@@ -388,6 +389,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_scene_config(NULL),
     m_lod_config(NULL),
     m_snap_config(NULL),
+    m_flight_config(NULL),
     m_detector(NULL),
     m_event_count(0),
     m_domains_configured(false),
@@ -2331,12 +2333,25 @@ const char* Opticks::getG4SnapConfigString()  const
     return m_cfg->getG4SnapConfig().c_str() ; 
 }
 
-const char* Opticks::getSnapConfigString()
+const char* Opticks::getSnapConfigString() const 
 {
     return m_cfg->getSnapConfig().c_str() ; 
 }
 
-const char* Opticks::getSnapOverridePrefix()  // --snapoverrideprefix
+
+NFlightConfig* Opticks::getFlightConfig()   // lazy cannot be const 
+{
+    if(m_flight_config == NULL)
+    {
+        const std::string& flight_config = m_cfg->getFlightConfig() ; 
+        m_flight_config = new NFlightConfig(flight_config.c_str());
+    }
+    return m_flight_config ; 
+}
+
+
+
+const char* Opticks::getSnapOverridePrefix() const   // --snapoverrideprefix
 {
     const std::string& snapoverrideprefix = m_cfg->getSnapOverridePrefix() ; 
     return snapoverrideprefix.empty() ? nullptr : snapoverrideprefix.c_str() ; 
@@ -2361,7 +2376,7 @@ NLODConfig* Opticks::getLODConfig()
 }
 
 
-NSnapConfig* Opticks::getSnapConfig()
+NSnapConfig* Opticks::getSnapConfig() // lazy cannot const 
 {
     if(m_snap_config == NULL)
     {

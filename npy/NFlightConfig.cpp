@@ -19,72 +19,57 @@
 
 #include <sstream>
 
+#include "SSys.hh"
 #include "BFile.hh"
 #include "BConfig.hh"
 #include "PLOG.hh"
-#include "NSnapConfig.hpp"
+#include "NFlightConfig.hpp"
 
-const plog::Severity NSnapConfig::LEVEL = PLOG::EnvLevel("NSnapConfig","DEBUG") ; 
+const plog::Severity NFlightConfig::LEVEL = PLOG::EnvLevel("NFlightConfig","DEBUG") ; 
 
-const float NSnapConfig::NEGATIVE_ZERO = -0.f ; 
-
-NSnapConfig::NSnapConfig(const char* cfg)  
+NFlightConfig::NFlightConfig(const char* cfg)  
     :
     bconfig(new BConfig(cfg)),
-    verbosity(0),
-    steps(10),
     width(5),
-    ex0(NEGATIVE_ZERO),   // -ve zero on ex0,ey0,ez0 indicates leave asis, see OpTracer::snap
-    ey0(NEGATIVE_ZERO),
-    ez0(NEGATIVE_ZERO),
-    ex1(NEGATIVE_ZERO),
-    ey1(NEGATIVE_ZERO),
-    ez1(NEGATIVE_ZERO),
-    prefix("snap"),
-    ext(".jpg")
+    scale0(1.f), 
+    scale1(1.f),
+    prefix("flight"),
+    ext(".jpg"),
+    framelimit(SSys::getenvint("OPTICKS_FLIGHT_FRAMELIMIT",3))
 {
-    LOG(LEVEL)
-              << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
-              ;
+    LOG(LEVEL) << cfg ; 
 
-    bconfig->addInt("verbosity", &verbosity );
-    bconfig->addInt("steps", &steps );
-
-    bconfig->addFloat("ex0", &ex0 );
-    bconfig->addFloat("ex1", &ex1 );
-
-    bconfig->addFloat("ey0", &ey0 );
-    bconfig->addFloat("ey1", &ey1 );
-
-    bconfig->addFloat("ez0", &ez0 );
-    bconfig->addFloat("ez1", &ez1 );
+    bconfig->addInt("width", &width );
+    bconfig->addFloat("scale0", &scale0 );
+    bconfig->addFloat("scale1", &scale1 );
 
     bconfig->addString("prefix", &prefix );
     bconfig->addString("ext",    &ext );   
+    bconfig->addInt("framelimit", &framelimit );
 
     bconfig->parse();
 }
 
-void NSnapConfig::dump(const char* msg) const
+void NFlightConfig::dump(const char* msg) const
 {
     bconfig->dump(msg);
 }
 
-std::string NSnapConfig::getSnapName(int index, const char* override_prefix) const 
+std::string NFlightConfig::getFrameName(int index, const char* override_prefix) const 
 {
     const char* pfx = override_prefix ? override_prefix : prefix.c_str()  ; 
     return BFile::MakeName(index, width, pfx, ext.c_str() ); 
 }
 
-const char* NSnapConfig::getSnapPath(const char* dir, const char* reldir, int index, const char* override_prefix) const 
+const char* NFlightConfig::getFramePath(const char* dir, const char* reldir, int index, const char* override_prefix) const 
 {
-    std::string name = getSnapName(index, override_prefix) ; 
+    std::string name = getFrameName(index, override_prefix) ; 
     bool create = true ; 
     std::string path = BFile::preparePath(dir ? dir : "$TMP", reldir, name.c_str(), create);  
     return strdup(path.c_str()); 
 }
 
-std::string NSnapConfig::desc() const 
+std::string NFlightConfig::desc() const 
 {
     return bconfig->desc() ;
 }

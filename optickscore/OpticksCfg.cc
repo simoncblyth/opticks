@@ -71,6 +71,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_testconfig(""),
     m_state_tag(""),
     m_materialprefix("/dd/Materials/"),
+    m_flightconfig("prefix=frame,ext=.jpg,scale0=1,scale1=1"),  
     m_snapconfig("steps=0,ext=.jpg"),        // --snapconfig
     m_snapoverrideprefix(""),
     m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
@@ -801,6 +802,9 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("snap",  "Enable non-OpenGL rendering to ppm files, use --snapconfig to configure, see npy-/NSnapConfig  ") ;
+
+   m_desc.add_options()
+       ("flightconfig",   boost::program_options::value<std::string>(&m_flightconfig), "flight path configuration, see OpTracer::flightpath " );
 
    m_desc.add_options()
        ("snapconfig",   boost::program_options::value<std::string>(&m_snapconfig), "snap (non-OpenGL rendering to ppm/jpg/png) configuration" );
@@ -1650,10 +1654,17 @@ const std::string& OpticksCfg<Listener>::getExportConfig()
 }
 
 template <class Listener>
+const std::string& OpticksCfg<Listener>::getFlightConfig()
+{
+    return m_flightconfig ;
+}
+
+template <class Listener>
 const std::string& OpticksCfg<Listener>::getSnapConfig()
 {
     return m_snapconfig ;
 }
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getSnapOverridePrefix()
 {

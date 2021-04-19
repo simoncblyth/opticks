@@ -46,6 +46,7 @@ struct NSlice ;
 struct NSceneConfig ; 
 struct NLODConfig ; 
 struct NSnapConfig ; 
+struct NFlightConfig ; 
 
 class Types ;
 class Typ ;
@@ -360,8 +361,10 @@ class OKCORE_API Opticks {
        bool        isG4Snap() const ; 
        const char* getG4SnapConfigString() const ;
    public:
-       const char* getSnapConfigString();
-       const char* getSnapOverridePrefix();  // --snapoverrideprefix
+       NFlightConfig* getFlightConfig() ;
+   public:
+       const char* getSnapConfigString() const ;
+       const char* getSnapOverridePrefix() const ;  // --snapoverrideprefix
 
        NSnapConfig* getSnapConfig();
        const char* getLODConfigString();
@@ -728,6 +731,7 @@ class OKCORE_API Opticks {
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 
        NSnapConfig*         m_snap_config ; 
+       NFlightConfig*       m_flight_config ; 
    private:
        const char*          m_detector ; 
        unsigned             m_event_count ; 
