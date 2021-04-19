@@ -279,15 +279,15 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
     //iv->commandMode("TC") ;  // FAST32
     // iv->commandMode("TD") ;  // FAST64  loadsa elu nan
 
-    unsigned num_views = iv->getNumViews();  
+    int num_views = iv->getNumViews();  
     Animator* anim = iv->getAnimator(); 
-    unsigned period = anim->getPeriod();  
-    unsigned tot_period = period*num_views ;
+    int period = anim->getPeriod();  
+    int tot_period = period*num_views ;
 
     unsigned count(0); 
     char path[128] ; 
 
-    unsigned i1 = m_flight_config->framelimit > 0 ? std::min( m_flight_config->framelimit, tot_period)  : tot_period ; 
+    int i1 = m_flight_config->framelimit > 0 ? std::min( m_flight_config->framelimit, tot_period)  : tot_period ; 
 
     LOG(info) 
         << " num_views " << num_views
@@ -297,7 +297,7 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
         << " i1 " << i1 
         ;
 
-    for(unsigned i=0 ; i < i1 ; i++)
+    for(int i=0 ; i < i1 ; i++)
     {
         count = m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
 
