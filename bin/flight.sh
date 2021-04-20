@@ -4,10 +4,16 @@ usage(){ cat << EOU
 flight.sh
 ===============
 
+Creates sequences of raytrace geometry snapshot images in jpg/png/ppm.
+Using jpg has the advantage of lossy compression with small file sizes.  
+
+
 Whilst first making a flight it is advisable to run with the framelimit envvar 
 defined which overrides the framelimit from the --flightconfig option::
 
-    OPTICKS_FLIGHT_FRAMELIMIT=3 EMM=0,1,2,3,4,5,6,7,8,9 PVN=lFasteners_phys flight.sh 
+    OPTICKS_FLIGHT_FRAMELIMIT=3 EMM=~0 PVN=lFasteners_phys flight.sh 
+
+    PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
 
 
 TODO:

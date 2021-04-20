@@ -13,7 +13,7 @@ set(SCRIPTS
    env.sh
    env-l.sh
    snap.sh
-   flightpath.sh
+   flight.sh
    snap_emm.sh
    scan.bash
    oc.bash
