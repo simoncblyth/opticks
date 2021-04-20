@@ -15,6 +15,7 @@ defined which overrides the framelimit from the --flightconfig option::
 
     PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
 
+    PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 --annolineheight 16
 
 TODO:
 

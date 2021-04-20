@@ -3,6 +3,8 @@
 #include <string>
 #include <sstream>
 
+#include "SSys.hh"
+
 #define STTF_IMPLEMENTATION 1 
 #include "STTF.hh"
 
@@ -16,7 +18,6 @@ int main(int argc, char** argv)
 {
     const char* path = argc > 1 ? argv[1] : "/tmp/STTFTest.jpg" ; 
     //const char* text = argc > 2 ? argv[2] : TEXT ; 
-
 
     double value = 1.23456789 ; 
     std::stringstream ss ; 
@@ -40,13 +41,13 @@ int main(int argc, char** argv)
     int width = 1280;
     int height = 720; 
     int channels = 4 ; 
-    int line_height = 32 ; 
+    int line_height = SSys::getenvint("LINE_HEIGHT", 32 ) ; 
     int offset = 0 ; 
+
+    printf("STTFTest line_height %d \n", line_height ); 
 
     int magenta[4] = {255,0,255,0} ; 
     int black[4] = {0,0,0,0} ; 
-
-
 
     unsigned char* data = (unsigned char*)calloc(width * height * channels, sizeof(unsigned char));
     sttf.render_background( data,        channels, width, height,      magenta ) ;

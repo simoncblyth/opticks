@@ -112,7 +112,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_skipaheadstep(0),     
     m_rtx(0),
     m_renderlooplimit(0),
-    m_annolineheight(32), 
+    m_annolineheight(24), 
     m_rngmax(3),     
     m_rngseed(0ull),     
     m_rngoffset(0ull),     
