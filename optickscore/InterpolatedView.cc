@@ -100,10 +100,26 @@ views is returned by getTotalPeriod.
 unsigned InterpolatedView::getTotalPeriod() const 
 {
     unsigned num_views = getNumViews();  
-    unsigned period0 = m_animator->getPeriod();  
-    assert( m_period == period0 ); 
-    unsigned tot_period = m_period*num_views ;
-    return tot_period ; 
+
+    unsigned base_period = m_period ; 
+    unsigned animator_period = m_animator->getPeriod();  
+
+    //assert( base_period == animator_period );  
+    //
+    //    base_period is typically not the same as the animator_period 
+    //    as that gets scale up and down by factors of two depending on the current 
+    //    animator speed setting 
+    //
+    unsigned total_period = animator_period*num_views ;
+
+    LOG(LEVEL)
+       << " num_views " << num_views 
+       << " base_period " << base_period 
+       << " animator_period " << animator_period
+       << " total_period " << total_period 
+       ;
+
+    return total_period ; 
 }
 
 
