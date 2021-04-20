@@ -343,15 +343,18 @@ glfw-pc(){
    local msg="=== $FUNCNAME :"
    local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/glfw3.pc"
    local path2="$OPTICKS_PREFIX/externals/lib/pkgconfig/OpticksGLFW.pc"
-
+   local rc=0
    if [ -f "$path2" -a ! -f "$path" ]; then  
        echo $msg path2 exists already $path2
    elif [ -f "$path" ]; then  
        $(opticks-home)/bin/pc.py $path --fix
+       rc=$?
        mv $path $path2
    else
        echo $msg no such path $path
+       rc=1 
    fi  
+   return $rc
 }
 
 
@@ -413,7 +416,7 @@ glfw-cmake(){
    
   #local pref=GLVND ;  ## doesnt build : linking problem
   local pref=LEGACY ;
-
+  local rc=0 
 
   local bdir=$(glfw-bdir)
   if [ -d "$bdir" ]; then
@@ -426,9 +429,12 @@ glfw-cmake(){
                    -DOpenGL_GL_PREFERENCE=$pref \
                    -DCMAKE_INSTALL_PREFIX=$(glfw-prefix) \
                    $(glfw-dir)
+
+      rc=$? 
   fi 
 
   cd $iwd
+  return $rc 
 }
 glfw-check(){ echo TEST6 ; }
 
@@ -446,13 +452,15 @@ glfw-config()
 
 glfw-make(){
   local iwd=$PWD
+  local rc 
   glfw-bcd
 
   #make $* 
   cmake --build . --config $(glfw-config) --target ${1:-install}
-
+  rc=$?
 
   cd $iwd
+  return $rc 
 }
 
 

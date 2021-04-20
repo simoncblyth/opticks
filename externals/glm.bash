@@ -214,7 +214,8 @@ glm-get(){
 
    local cmd="curl -L -O $url"
    [ ! -s "$zip" ] && echo $cmd && eval $cmd 
-   [ ! -s "$zip" ] && echo $msg FAILED TO DOWNLOAD FROM $url && return 1
+   [ ! -f "$zip" ] && echo $msg fFAILED TO DOWNLOAD FROM $url && return 1
+   [ ! -s "$zip" ] && echo $msg sFAILED TO DOWNLOAD FROM $url && return 1
    [ ! -d "$nam" ] && unzip $opt $zip -d $nam
    [ ! -d "$nam" ] && echo $msg FAILED TO UNZIP $zip && return 2
 
