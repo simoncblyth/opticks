@@ -15,7 +15,12 @@ defined which overrides the framelimit from the --flightconfig option::
 
     PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
 
-    PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 --annolineheight 16
+    PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
+
+    PERIOD=8 EMM=~5, PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
+
+
+    PERIOD=8 PVN=lLowerChimney_phys flight.sh --rtx 1 --cvd 1 
 
 TODO:
 
@@ -31,13 +36,15 @@ msg="=== $0 :"
 pvn=${PVN:-lLowerChimney_phys}
 emm="${EMM:-~0}"                 # SBit::FromString 
 size=${SIZE:-2560,1440,1}
+period=${PERIOD:-4}
 
 bin=OpFlightPathTest
+
 
 which $bin
 pwd
 
-flight="idir=/tmp,prefix=frame,ext=.jpg,scale0=3,scale1=0.5,framelimit=300,period=4"
+flight="idir=/tmp,prefix=frame,ext=.jpg,scale0=3,scale1=0.5,framelimit=300,period=$period"
 
 flight-cmd(){ cat << EOC
 $bin --targetpvn $pvn --flightconfig $flight -e "$emm"  $*

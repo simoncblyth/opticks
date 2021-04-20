@@ -2,6 +2,47 @@ OpSnapTest_debug_slowdown_with_new_geometry
 =============================================
 
 
+Need to remake geocache with the pinned down ordering 
+---------------------------------------------------------
+
+Before::
+
+    O[blyth@localhost opticks]$ ./ana/GParts.sh 
+    /home/blyth/junotop/ExternalLibs/Opticks/0.0.0-rc1/bashrc: line 4: /home/blyth/junotop/ExternalLibs/Opticks/0.0.0-rc1/bin/opticks-setup.sh: No such file or directory
+    mo .bashrc OPTICKS_MODE:dev O : ordinary opticks dev ontop of juno externals CMTEXTRATAGS:
+    python3 ./ana/GParts.py
+    Solid 0 : /tmp/blyth/opticks/GParts/0 : primbuf (3084, 4) partbuf (17346, 4, 4) tranbuf (7917, 3, 4, 4) idxbuf (3084, 4) 
+    Solid 1 : /tmp/blyth/opticks/GParts/1 : primbuf (5, 4) partbuf (7, 4, 4) tranbuf (5, 3, 4, 4) idxbuf (5, 4) 
+    Solid 2 : /tmp/blyth/opticks/GParts/2 : primbuf (6, 4) partbuf (30, 4, 4) tranbuf (15, 3, 4, 4) idxbuf (6, 4) 
+    Solid 3 : /tmp/blyth/opticks/GParts/3 : primbuf (6, 4) partbuf (54, 4, 4) tranbuf (29, 3, 4, 4) idxbuf (6, 4) 
+    Solid 4 : /tmp/blyth/opticks/GParts/4 : primbuf (6, 4) partbuf (28, 4, 4) tranbuf (15, 3, 4, 4) idxbuf (6, 4) 
+    Solid 5 : /tmp/blyth/opticks/GParts/5 : primbuf (1, 4) partbuf (31, 4, 4) tranbuf (11, 3, 4, 4) idxbuf (1, 4) 
+    Solid 6 : /tmp/blyth/opticks/GParts/6 : primbuf (1, 4) partbuf (1, 4, 4) tranbuf (1, 3, 4, 4) idxbuf (1, 4) 
+    Solid 7 : /tmp/blyth/opticks/GParts/7 : primbuf (1, 4) partbuf (31, 4, 4) tranbuf (9, 3, 4, 4) idxbuf (1, 4) 
+    Solid 8 : /tmp/blyth/opticks/GParts/8 : primbuf (1, 4) partbuf (3, 4, 4) tranbuf (1, 3, 4, 4) idxbuf (1, 4) 
+    Solid 9 : /tmp/blyth/opticks/GParts/9 : primbuf (130, 4) partbuf (130, 4, 4) tranbuf (130, 3, 4, 4) idxbuf (130, 4) 
+
+
+
+
+
+* mv /tmp/blyth/opticks/okop/OpFlightPathTest/FlightPath.mp4 ~/Movies/lFasteners_phys_~5,_256.mp4  : 0.085    # factor 20 from skipping the conical cover 
+* mv /tmp/blyth/opticks/okop/OpFlightPathTest/FlightPath.mp4 ~/Movies/lFasteners_phys_~0_256.mp4   : 1.720    
+
+::
+
+    O[blyth@localhost opticks]$ PERIOD=8 EMM=~5,6 PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
+
+    mv /tmp/blyth/opticks/okop/OpFlightPathTest/FlightPath.mp4 ~/Movies/lFasteners_phys_~5,6_256.mp4
+
+    O[blyth@localhost opticks]$ PERIOD=8 EMM=~5,6,7,8 PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1  
+
+    O[blyth@localhost opticks]$ PERIOD=8 EMM=~5,6,7,8,9 PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
+
+    O[blyth@localhost opticks]$ PERIOD=8 EMM=0, PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
+
+
+
 
 The 590s are the problem 
 ---------------------------
