@@ -451,6 +451,7 @@ class OKCORE_API Composition : public NConfigurable {
       glm::mat4& getEye2Look();
       glm::mat4& getLook2Eye();
    public:
+      glm::vec4   getModelEye() const ;
       std::string getEyeString();
       std::string getLookString();
       std::string getGazeString();

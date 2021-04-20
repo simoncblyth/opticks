@@ -1118,9 +1118,11 @@ void Composition::nextPauseStyle()    // "." PERIOD_KEY
 }
 
 
-
-
-
+glm::vec4 Composition::getModelEye() const 
+{
+    glm::vec4 eye = m_view->getEye();
+    return eye ;
+}
 
 std::string Composition::getEyeString()
 {
@@ -1529,6 +1531,8 @@ float Composition::getEyeZ() const
 {
     return m_view->getEyeZ();
 }
+
+
 
 
 

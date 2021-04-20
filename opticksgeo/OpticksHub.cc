@@ -197,7 +197,7 @@ OpticksHub::OpticksHub(Opticks* ok)
     m_preinit(Preinit()),
     m_ok(ok),
     m_ggeo(GGeo::GetInstance()),   // a pre-existing instance will prevent subsequent loading from cache   
-    m_composition(new Composition(m_ok)),
+    m_composition(m_ok->getComposition()),
 #ifdef OPTICKS_NPYSERVER
     m_delegate(NULL),
     m_server(NULL)

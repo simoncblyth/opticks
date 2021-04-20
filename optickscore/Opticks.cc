@@ -94,6 +94,7 @@
 #include "SensorLib.hh"
 
 #include "FlightPath.hh"
+#include "Composition.hh"
 
 
 
@@ -356,6 +357,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_argv(m_sargs->argv),
     m_lastarg(m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL),
     m_mode(new OpticksMode(this)),
+    m_composition(new Composition(this)),
     m_dumpenv(m_sargs->hasArg("--dumpenv")),
     m_allownokey(m_sargs->hasArg("--allownokey")),
     m_envkey(envkey()),
@@ -511,6 +513,10 @@ const char* Opticks::getFrameRenderer() const
     return m_frame_renderer ; 
 }
 
+Composition* Opticks::getComposition() const 
+{
+    return m_composition ; 
+}
 
 
 
@@ -1319,6 +1325,11 @@ int Opticks::getRenderLoopLimit() const
 {
     return m_cfg->getRenderLoopLimit();
 }
+int Opticks::getAnnoLineHeight() const 
+{
+    return m_cfg->getAnnoLineHeight();
+}
+
 
 
 
@@ -2383,10 +2394,20 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
 
 std::string Opticks::getContextAnnotation() const 
 {
+
     std::stringstream ss ; 
-    ss 
-        << " --flightconfig " << getFlightConfig() ; 
-        ;
+
+    if(hasArg("--flightconfig"))
+    {
+        ss << " --flightconfig " << getFlightConfig() ; 
+    }
+    else
+    {
+        glm::vec4 eye = m_composition->getModelEye(); 
+        std::string s_eye = gformat(eye); 
+        ss << " eye: " ; 
+        ss << s_eye ;  
+    }
     std::string s = ss.str(); 
     return s ; 
 }

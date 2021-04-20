@@ -590,15 +590,15 @@ void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat
 */
 
 
-glm::vec4 View::getEye()
+glm::vec4 View::getEye() const 
 {
     return glm::vec4(m_eye.x, m_eye.y, m_eye.z,1.0f);
 }   
-glm::vec4 View::getLook()
+glm::vec4 View::getLook() const 
 {
     return glm::vec4(m_look.x, m_look.y, m_look.z,1.0f);
 }   
-glm::vec4 View::getUp()
+glm::vec4 View::getUp() const 
 {
     return glm::vec4(m_up.x, m_up.y, m_up.z, 0.0f); // direction, not position so w=0
 }   
@@ -634,7 +634,7 @@ glm::vec4 View::getUp(const glm::mat4& m2w)
     return m2w * getUp(); // direction, not position so w=0
 }   
 
-glm::vec4 View::getGaze()
+glm::vec4 View::getGaze() const 
 {
     return glm::vec4( m_look.x - m_eye.x, m_look.y - m_eye.y , m_look.z - m_eye.z, 0.0f );
 }

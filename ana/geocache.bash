@@ -884,13 +884,24 @@ geocache-gui()
 
 
 
-geocache-simple-mm(){ ls -1 $(geocache-keydir)/GMergedMesh ; } 
+geocache-simple-emm(){ ls -1 $(geocache-keydir)/GMergedMesh ; } 
+
+geocache-simple-cmd(){ 
+   local pvn=${PVN:-lLowerChimney_phys}
+   local eye=${EYE:--1,-1,-1} 
+   local emm=${EMM:-0}
+
+cat << EOC
+OpSnapTest --targetpvn $pvn --eye $eye -e $emm --snapoverrideprefix geocache-simple-$pvn-emm-$mm- $*
+EOC
+}
+
 geocache-simple()
 {
-    local mm
+    local emm
     local cmd 
-    for mm in $(geocache-simple-mm) ; do  
-        cmd="OpSnapTest --target 304632 --eye -1,-1,-1  --rtx 1 --cvd 1 --enabledmergedmesh $mm --snapoverrideprefix geocache-simple-enabledmergedmesh-$mm-"
+    for emm in $(geocache-simple-emm) ; do  
+        cmd=$(EMM=$emm geocache-simple-cmd $*)
         echo $cmd
         eval $cmd
     done 

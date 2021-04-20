@@ -58,7 +58,6 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_event_tag("1"),
     m_integrated_event_tag("100"),
     m_liveline(""),
-
     m_configpath(""),
     m_exportconfig("$TMP"),
     m_torchconfig(""),
@@ -113,6 +112,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_skipaheadstep(0),     
     m_rtx(0),
     m_renderlooplimit(0),
+    m_annolineheight(32), 
     m_rngmax(3),     
     m_rngseed(0ull),     
     m_rngoffset(0ull),     
@@ -247,13 +247,15 @@ void OpticksCfg<Listener>::init()
        ("rtx",  boost::program_options::value<int>(&m_rtx), rtx );
 
 
-
    char renderlooplimit[128];
    snprintf(renderlooplimit,128, "When greater than zero limits the number of turns of the renderloop. Default %d", m_renderlooplimit );
    m_desc.add_options()
        ("renderlooplimit",  boost::program_options::value<int>(&m_renderlooplimit), renderlooplimit );
 
-
+   char annolineheight[128];
+   snprintf(annolineheight,128, "Height of annotation lines in pixels, used in okop/OpTracer. Default %d", m_annolineheight );
+   m_desc.add_options()
+       ("annolineheight",  boost::program_options::value<int>(&m_annolineheight), annolineheight );
 
 
    m_desc.add_options()
@@ -1943,6 +1945,15 @@ int OpticksCfg<Listener>::getRenderLoopLimit() const
 {
     return m_renderlooplimit ; 
 }
+
+template <class Listener>
+int OpticksCfg<Listener>::getAnnoLineHeight() const 
+{
+    return m_annolineheight ; 
+}
+
+
+
 
 
 template <class Listener>

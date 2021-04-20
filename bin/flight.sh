@@ -20,7 +20,6 @@ TODO:
 
 1. output directory and jpg naming control
  
-2. integrated (at script level) mp4 making using script from env : ffmpeg_mp4_from_jpg.sh 
 
 
 EOU

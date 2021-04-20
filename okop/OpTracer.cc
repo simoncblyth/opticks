@@ -216,36 +216,16 @@ Single snap uses composition targetting
 
 void OpTracer::single_snap(const char* path)
 {
-    float eyex = m_composition->getEyeX();
-    float eyey = m_composition->getEyeY();
-    float eyez = m_composition->getEyeZ();
-
     double dt = render();   // OTracer::trace_
 
-    std::stringstream ss ; 
-    ss 
-       << "OpTracer::single_snap"
-       << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
-       ;
-    std::string s = ss.str(); 
-    const char* annotation = s.c_str(); 
+    std::string top_annotation = m_ok->getContextAnnotation(); 
+    std::string bottom_annotation = m_ok->getFrameAnnotation(0, 1, dt ); 
+    unsigned anno_line_height = m_ok->getAnnoLineHeight() ; 
 
-    std::cout
-        << " count " << std::setw(5) << m_count 
-        << " eyex " << std::setw(10) << eyex
-        << " eyey " << std::setw(10) << eyey
-        << " eyez " << std::setw(10) << eyez
-        << " path " << path 
-        << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt 
-        << std::endl ;         
+    LOG(info) << top_annotation << " | " << bottom_annotation << " | " << path << " | " << anno_line_height ; 
 
-    m_ocontext->snap(path, annotation );
+    m_ocontext->snap(path, bottom_annotation.c_str(), top_annotation.c_str(), anno_line_height );
 } 
-
-
-
-
-
 
 
 /**
@@ -253,7 +233,6 @@ void OpTracer::single_snap(const char* path)
 TODO: most of this should not be here as it does not depend on OptiX among other things 
 
 **/
-
 
 
 const char* OpTracer::FLIGHTPATH_SNAP = "FlightPath%0.5d.jpg" ; 
@@ -289,12 +268,14 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
     int i1 = framelimit > 0 ? std::min( framelimit, total_period)  : total_period ; 
 
     std::string top_annotation = m_ok->getContextAnnotation(); 
+    unsigned anno_line_height = m_ok->getAnnoLineHeight() ; 
     LOG(info) 
         << " period " << period
         << " total_period " << total_period
         << " framelimit " << framelimit << " (OPTICKS_FLIGHT_FRAMELIMIT) " 
         << " i1 " << i1 
         << " top_annotation " << top_annotation
+        << " anno_line_height " << anno_line_height
         ;
 
     char path[128] ; 
@@ -310,7 +291,7 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
 
         LOG(info) << bottom_annotation << " path " << path ; 
 
-        m_ocontext->snap(path, bottom_annotation.c_str(), top_annotation.c_str() );  // downloads GPU output_buffer pixels into image file
+        m_ocontext->snap(path, bottom_annotation.c_str(), top_annotation.c_str(), anno_line_height );  // downloads GPU output_buffer pixels into image file
     }
     LOG(info) << "]" ;
 }

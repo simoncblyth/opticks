@@ -51,6 +51,7 @@ class  FlightPath ;
 class Types ;
 class Typ ;
 class Index ; 
+class Composition ; 
 
 template <typename> class OpticksCfg ;
 class Opticks ; 
@@ -430,6 +431,8 @@ class OKCORE_API Opticks {
 
        int                  getRTX() const ; 
        int                  getRenderLoopLimit() const ; 
+       int                  getAnnoLineHeight() const ;
+
        int                  getLoadVerbosity() const ; 
        int                  getImportVerbosity() const ; 
    public:
@@ -676,7 +679,8 @@ class OKCORE_API Opticks {
        // set by OGLRap.Frame 
        static void SetFrameRenderer(const char* renderer); 
        void setFrameRenderer(const char* renderer); 
-       const char* getFrameRenderer() const ; 
+       const char*  getFrameRenderer() const ; 
+       Composition* getComposition() const ;  
    private:
        void setInternal(bool internal=true); 
    public:
@@ -694,6 +698,7 @@ class OKCORE_API Opticks {
        char**               m_argv ; 
        const char*          m_lastarg ; 
        OpticksMode*         m_mode ; 
+       Composition*         m_composition ; 
 
        bool                 m_dumpenv ; 
        bool                 m_allownokey ; 

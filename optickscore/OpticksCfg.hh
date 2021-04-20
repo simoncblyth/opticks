@@ -138,6 +138,8 @@ class OKCORE_API OpticksCfg : public BCfg {
      unsigned     getSeed() const ; 
      int          getRTX() const ; 
      int          getRenderLoopLimit() const ; 
+     int          getAnnoLineHeight() const ;
+
 
      int                getRngMax() const ; 
      unsigned long long getRngSeed() const ; 
@@ -283,6 +285,7 @@ private:
      unsigned    m_skipaheadstep ; 
      int         m_rtx ; 
      int         m_renderlooplimit ; 
+     int         m_annolineheight ;      
 
      typedef unsigned long long ULL_t ; 
      int         m_rngmax ; 

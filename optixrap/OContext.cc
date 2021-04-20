@@ -1374,7 +1374,7 @@ This uses the output_buffer from cu/pinhole_camera.cu::
 
 **/
 
-void OContext::snap(const char* path, const char* bottom_annotation, const char* top_annotation )
+void OContext::snap(const char* path, const char* bottom_annotation, const char* top_annotation, unsigned annotation_line_height )
 {
     if(m_ok->isNoSavePPM())
     {
@@ -1395,6 +1395,7 @@ void OContext::snap(const char* path, const char* bottom_annotation, const char*
          << " height " << height
          << " depth " << depth
          << " yflip " << yflip
+         << " annotation_line_height " << annotation_line_height
          ;   
 
     void* ptr = output_buffer->map() ; 
@@ -1402,14 +1403,13 @@ void OContext::snap(const char* path, const char* bottom_annotation, const char*
 
     if(m_ttf->valid)
     {
-        unsigned line_height = 32 ; 
-        assert( line_height < height ); 
+        assert( annotation_line_height < height ); 
 
         if( bottom_annotation )
-            m_ttf->annotate( (unsigned char*)ptr, channels, width, height, line_height, bottom_annotation, true ); 
+            m_ttf->annotate( (unsigned char*)ptr, channels, width, height, annotation_line_height, bottom_annotation, true ); 
 
         if( top_annotation )
-            m_ttf->annotate( (unsigned char*)ptr, channels, width, height, line_height, top_annotation, false ); 
+            m_ttf->annotate( (unsigned char*)ptr, channels, width, height, annotation_line_height, top_annotation, false ); 
 
     }
     else

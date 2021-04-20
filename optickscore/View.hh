@@ -115,10 +115,10 @@ public:
    void setLook( glm::vec4& look );
    void setUp(  glm::vec4& up);
 
-   glm::vec4 getEye();
-   glm::vec4 getLook();
-   glm::vec4 getUp();
-   glm::vec4 getGaze();
+   glm::vec4 getEye() const ;
+   glm::vec4 getLook() const ;
+   glm::vec4 getUp() const ;
+   glm::vec4 getGaze() const ;
  
    float* getEyePtr();
    float* getLookPtr();
