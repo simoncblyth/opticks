@@ -166,7 +166,7 @@ void OpticksViz::init()
     if(m_immediate)
     {
         
-        m_hub->configureState(getSceneConfigurable()) ;    // loads/creates Bookmarks
+        m_hub->configureVizState(getSceneConfigurable()) ;    // loads/creates Bookmarks
         m_bookmarks = m_hub->getBookmarks();
 
         const char* renderMode = m_ok->getRenderMode();

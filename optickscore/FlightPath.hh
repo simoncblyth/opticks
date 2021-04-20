@@ -34,18 +34,25 @@ class InterpolatedView ;
 FlightPath
 ============
 
-Canonical m_flighpath instance is resident of OpticksHub
-and is instanciated in OpticksHub::configureState following m_bookmarks.
+Canonical m_flighpath instance is resident of Opticks
+and is instanciated by Opticks::getFlightPath
+
+Composition/control hookup is done by OpticksHub::configureFlightPath
+which is invoked from OpticksHub::configureVizState
 
 Note that FlightPath can in principal be used in a pure compute 
 manner with no OpenGL involvement, eg for making pure raytrace movies
 on headless nodes without OpenGL capability.
 
+This is now realised by okop/OpTracer.cc with the OpticksHub::configureFlightPath
+being invoked from OpTracer::flightpath
 
 **/
 
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
+
+struct NFlightConfig ; 
 
 #include "plog/Severity.h"
 
@@ -63,6 +70,10 @@ public:
     void setVerbose(bool verbose=true);
     void setInterpolatedViewPeriod(unsigned int ivperiod); 
     void setScale(float scale);
+    float getScale0() const ;
+    float getScale1() const ;
+    unsigned getFrameLimit() const ; 
+
     void refreshInterpolatedView();
     InterpolatedView* getInterpolatedView();
 private:
@@ -71,8 +82,9 @@ private:
 public:
     int* getIVPeriodPtr();
 private:
+    NFlightConfig*                       m_cfg ; 
     const char*                          m_flightpathdir ; 
-    NPY<float>*                          m_flightpath ;  
+    NPY<float>*                          m_eluc ;  
     InterpolatedView*                    m_view ;  
     bool                                 m_verbose ; 
     int                                  m_ivperiod ; 

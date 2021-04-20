@@ -42,7 +42,7 @@ Instantiating *Bookmarks* reads all the .ini state files within the directory in
 instances held in m_bookmarks std::map<unsigned int, NState*>
 
 Canonical m_bookmarks instance is a resident of OpticksHub and is instanciated
-by OpticksHub::configureState(NConfigurable* scene)
+by OpticksHub::configureVizState(NConfigurable* scene)
 
 The ctor directory argument of the Bookmarks is provided by NState m_state from okc.Opticks
 

@@ -53,9 +53,11 @@ class FlightPath ;
 class Opticks ; 
 class OpticksEvent ; 
 
+class InterpolatedView ; 
+
 
 #include "NConfigurable.hpp"
-#include "View.hh"
+#include "View.hh"             // header needed for enum types 
 
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
@@ -389,9 +391,11 @@ class OKCORE_API Composition : public NConfigurable {
 
       Camera*    getCamera(); 
       Trackball* getTrackball(); 
-      View*      getView(); 
+      View*      getView() const ;
       Light*     getLight(); 
       Clipper*   getClipper(); 
+
+      InterpolatedView* getInterpolatedView() const ;  // returns NULL if current view is not interpolated
      
       void setCameraType(unsigned cameratype);
       void setCamera(Camera* camera);

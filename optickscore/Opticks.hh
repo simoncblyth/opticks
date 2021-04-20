@@ -46,7 +46,7 @@ struct NSlice ;
 struct NSceneConfig ; 
 struct NLODConfig ; 
 struct NSnapConfig ; 
-struct NFlightConfig ; 
+class  FlightPath ; 
 
 class Types ;
 class Typ ;
@@ -292,8 +292,6 @@ class OKCORE_API Opticks {
        int   getUsageReportLevel() const ; 
 
        int getMeshVerbosity() const ;
-       const char* getFlightPathDir() const ;
-       float       getFlightPathScale() const ;
        const char* getAccel() const ;
        const char* getDbgMesh() const ;
        float getFxRe();
@@ -361,7 +359,8 @@ class OKCORE_API Opticks {
        bool        isG4Snap() const ; 
        const char* getG4SnapConfigString() const ;
    public:
-       NFlightConfig* getFlightConfig() ;
+       const char* getFlightPathDir() const ;
+       FlightPath*    getFlightPath();  // lazy cannot be const  
    public:
        const char* getSnapConfigString() const ;
        const char* getSnapOverridePrefix() const ;  // --snapoverrideprefix
@@ -731,7 +730,8 @@ class OKCORE_API Opticks {
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 
        NSnapConfig*         m_snap_config ; 
-       NFlightConfig*       m_flight_config ; 
+
+       FlightPath*          m_flightpath ;  
    private:
        const char*          m_detector ; 
        unsigned             m_event_count ; 

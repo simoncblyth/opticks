@@ -506,8 +506,8 @@ void OpticksHub::configureCompositionSize()
 
 
 /**
-OpticksHub::configureState
-----------------------------
+OpticksHub::configureVizState
+-------------------------------
 
 Invoked from oglrap/OpticksViz.cc
 
@@ -521,7 +521,7 @@ OpticksHub should only be for geometry needing things.
 **/
 
 
-void OpticksHub::configureState(NConfigurable* scene)
+void OpticksHub::configureVizState(NConfigurable* scene)
 {
     LOG(LEVEL) << "[" ; 
 
@@ -552,26 +552,27 @@ void OpticksHub::configureState(NConfigurable* scene)
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
 
-    configureFlightPath(); 
+    setupFlightPath(); 
 
     LOG(LEVEL) << "]" ; 
 }
 
-void OpticksHub::configureFlightPath()
-{
-    const char* dir = m_ok->getFlightPathDir() ;
-    float scale = m_ok->getFlightPathScale() ;
-    
-    LOG(LEVEL) 
-         << " Creating flightpath from file and setting into Composition " 
-         << " --flightpathdir " << dir  
-         << " --flightpathscale " << scale 
-         ;  
 
-    m_flightpath = new FlightPath(dir) ; 
-    m_flightpath->setCtrl(m_ctrl) ; 
-    m_flightpath->setScale(scale) ; 
-    m_composition->setFlightPath(m_flightpath); 
+/**
+OpticksHub::setupFlightPath
+-----------------------------------
+
+**/
+
+void OpticksHub::setupFlightPath()
+{
+    FlightPath* flightpath = m_ok->getFlightPath() ;  // FlightPath instanciated here 
+    flightpath->setCtrl(m_ctrl);  
+    m_composition->setFlightPath(flightpath); 
+
+    LOG(LEVEL) 
+         << " Setting flightpath ctrl to OpticksHub and hooking flightpath into Composition " 
+         ;  
 }
 
 

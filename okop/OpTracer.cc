@@ -27,7 +27,6 @@
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "NSnapConfig.hpp"
-#include "NFlightConfig.hpp"
 
 // okc-
 #include "Opticks.hh"
@@ -36,6 +35,7 @@
 #include "View.hh"
 #include "InterpolatedView.hh"
 #include "Animator.hh"
+#include "FlightPath.hh"
 
 
 // okg-
@@ -67,7 +67,6 @@ OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate)
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_snap_config(m_ok->getSnapConfig()),
-    m_flight_config(m_ok->getFlightConfig()),
     m_snapoverrideprefix(m_ok->getSnapOverridePrefix()),  // --snapoverrideprefix
     m_immediate(immediate),
 
@@ -252,7 +251,7 @@ const char* OpTracer::FLIGHTPATH_SNAP = "FlightPath%0.5d.jpg" ;
 
 /**
 
-TODO: most of this should not be here 
+TODO: most of this should not be here as it does not depend on OptiX among other things 
 
 **/
 
@@ -268,32 +267,31 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
         << " fmt " << fmt 
         ;
 
-    m_hub->configureFlightPath(); 
+    m_hub->setupFlightPath();   // FlightPath instanciated here and held in Opticks
     m_composition->setViewType(View::FLIGHTPATH);
 
-    View* view = m_composition->getView(); 
+    FlightPath* flightpath = m_ok->getFlightPath(); 
 
-    InterpolatedView* iv = reinterpret_cast<InterpolatedView*>(view); 
+
+    InterpolatedView* iv = m_composition->getInterpolatedView() ; 
     assert(iv); 
+
+    // changing animation "speed" changes the number of interpolation steps between views         
     iv->commandMode("TB") ;  // FAST16
     //iv->commandMode("TC") ;  // FAST32
     // iv->commandMode("TD") ;  // FAST64  loadsa elu nan
 
-    int num_views = iv->getNumViews();  
-    Animator* anim = iv->getAnimator(); 
-    int period = anim->getPeriod();  
-    int tot_period = period*num_views ;
+    int framelimit = flightpath->getFrameLimit(); 
+    int total_period = iv->getTotalPeriod(); 
 
     unsigned count(0); 
     char path[128] ; 
 
-    int i1 = m_flight_config->framelimit > 0 ? std::min( m_flight_config->framelimit, tot_period)  : tot_period ; 
+    int i1 = framelimit > 0 ? std::min( framelimit, total_period)  : total_period ; 
 
     LOG(info) 
-        << " num_views " << num_views
-        << " animator.period " << period
-        << " tot_period " << tot_period
-        << " m_flight_config.framelimit " << m_flight_config->framelimit << " (OPTICKS_FLIGHT_FRAMELIMIT) " 
+        << " total_period " << total_period
+        << " framelimit " << framelimit << " (OPTICKS_FLIGHT_FRAMELIMIT) " 
         << " i1 " << i1 
         ;
 

@@ -33,6 +33,7 @@ NFlightConfig::NFlightConfig(const char* cfg)
     width(5),
     scale0(1.f), 
     scale1(1.f),
+    idir("/tmp"),
     prefix("flight"),
     ext(".jpg"),
     framelimit(SSys::getenvint("OPTICKS_FLIGHT_FRAMELIMIT",3))
@@ -43,6 +44,7 @@ NFlightConfig::NFlightConfig(const char* cfg)
     bconfig->addFloat("scale0", &scale0 );
     bconfig->addFloat("scale1", &scale1 );
 
+    bconfig->addString("idir",   &idir );
     bconfig->addString("prefix", &prefix );
     bconfig->addString("ext",    &ext );   
     bconfig->addInt("framelimit", &framelimit );

@@ -53,6 +53,7 @@
 // okc-
 #include "Opticks.hh"
 #include "View.hh"
+#include "InterpolatedView.hh"
 #include "ViewCfg.hh"
 #include "Camera.hh"
 #include "CameraCfg.hh"
@@ -246,10 +247,26 @@ Camera* Composition::getCamera()
     return m_camera ;
 }
 
-View* Composition::getView()
+View* Composition::getView() const 
 {
     return m_view ;
 }
+
+/**
+Composition::getInterpolatedView
+----------------------------------
+
+Returns NULL if current view is not interpolated. 
+
+**/
+
+InterpolatedView* Composition::getInterpolatedView() const 
+{
+    InterpolatedView* iv = reinterpret_cast<InterpolatedView*>(m_view);
+    return iv ; 
+}
+
+
 Light* Composition::getLight()
 {
     return m_light ;

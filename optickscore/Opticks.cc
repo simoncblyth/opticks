@@ -72,7 +72,6 @@
 #include "NSceneConfig.hpp"
 #include "NLODConfig.hpp"
 #include "NSnapConfig.hpp"
-#include "NFlightConfig.hpp"
 
 
 // okc-
@@ -93,6 +92,10 @@
 
 #include "OpticksCfg.hh"
 #include "SensorLib.hh"
+
+#include "FlightPath.hh"
+
+
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
 const int            Opticks::GEOCACHE_CODE_VERSION = 9 ;  // (incremented when code changes invalidate loading old geocache dirs)   
@@ -389,7 +392,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_scene_config(NULL),
     m_lod_config(NULL),
     m_snap_config(NULL),
-    m_flight_config(NULL),
+    m_flightpath(NULL),
     m_detector(NULL),
     m_event_count(0),
     m_domains_configured(false),
@@ -876,17 +879,6 @@ const char* Opticks::getAccel() const
 {
    const std::string& accel = m_cfg->getAccel();
    return accel.empty() ? NULL : accel.c_str() ; 
-}
-
-const char* Opticks::getFlightPathDir() const 
-{
-   const std::string& dir = m_cfg->getFlightPathDir();
-   return dir.empty() ? NULL : dir.c_str() ;
-}
-
-float Opticks::getFlightPathScale() const 
-{
-   return m_cfg->getFlightPathScale();
 }
 
 
@@ -2339,14 +2331,41 @@ const char* Opticks::getSnapConfigString() const
 }
 
 
-NFlightConfig* Opticks::getFlightConfig()   // lazy cannot be const 
+const char* Opticks::getFlightPathDir() const 
 {
-    if(m_flight_config == NULL)
+   const std::string& dir = m_cfg->getFlightPathDir();
+   return dir.empty() ? NULL : dir.c_str() ;
+}
+
+
+
+/**
+Opticks::getFlightPath
+------------------------
+
+NB further flightpath hookup is required hooking it into Composoition and setting m_ctrl, 
+see OpticksHub::::configureFlightPath
+
+**/
+
+FlightPath* Opticks::getFlightPath()   // lazy cannot be const 
+{
+    if(m_flightpath == NULL)
     {
+        const char* dir = getFlightPathDir() ;
+        float scale = m_cfg->getFlightPathScale() ;
         const std::string& flight_config = m_cfg->getFlightConfig() ; 
-        m_flight_config = new NFlightConfig(flight_config.c_str());
+
+        LOG(LEVEL) 
+             << " Creating flightpath from file " 
+             << " --flightpathdir " << dir  
+             << " --flightpathscale " << scale 
+             ;   
+
+        m_flightpath = new FlightPath(flight_config.c_str()) ; 
+        m_flightpath->setScale(scale) ; 
     }
-    return m_flight_config ; 
+    return m_flightpath ; 
 }
 
 

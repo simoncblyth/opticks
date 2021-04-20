@@ -42,7 +42,7 @@ const char* InterpolatedView::getPrefix()
 
 
 
-InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned period, float scale, SCtrl* ctrl )
+InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned period, float scale0, float scale1, SCtrl* ctrl )
 {
     LOG(LEVEL) << "[" ; 
     assert( elu && elu->hasShape(-1,4,4) ); 
@@ -56,8 +56,26 @@ InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned peri
     InterpolatedView* iv = new InterpolatedView(period) ; 
     iv->setCtrl(ctrl); 
 
-    for(unsigned i=0 ; i < elu->getNumItems() ; i++ )
+    unsigned num_view =  elu->getNumItems() ; 
+    LOG(LEVEL) 
+        << " period " << period 
+        << " num_view " << num_view
+        << " elu.shape "  << elu->getShapeString()
+        << " scale0 " << scale0 
+        << " scale1 " << scale1 
+        ;
+
+    for(unsigned i=0 ; i < num_view ; i++ )
     {
+        float frac = float(i)/float(num_view-1) ;       // fraction stepping from 0. to 1. 
+        float scale = scale0*(1.-frac) + scale1*frac ;  // linearly change scale from scale0 to scale1
+
+        LOG(LEVEL) 
+            << " i " << std::setw(3) << i   
+            << " frac " << std::fixed << std::setw(10) << std::setprecision(4) << frac 
+            << " scale " << std::fixed << std::setw(10) << std::setprecision(4) << scale 
+            ;
+
         View* v = View::FromArrayItem( elu, i, scale ) ; 
         iv->addView(v);
     }
@@ -68,6 +86,25 @@ InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned peri
     return iv ; 
 }
 
+
+/**
+InterpolatedView::getTotalPeriod
+----------------------------------
+
+InterpolatedView interpolates period steps between subsequent views.
+The overal number of steps for the entire interpolation across all the
+views is returned by getTotalPeriod.
+
+**/
+
+unsigned InterpolatedView::getTotalPeriod() const 
+{
+    unsigned num_views = getNumViews();  
+    unsigned period0 = m_animator->getPeriod();  
+    assert( m_period == period0 ); 
+    unsigned tot_period = m_period*num_views ;
+    return tot_period ; 
+}
 
 
 InterpolatedView::InterpolatedView(unsigned int period, bool verbose) 
@@ -118,7 +155,7 @@ void InterpolatedView::addView(View* view)
 {
     m_views.push_back(view);
 }
-unsigned int InterpolatedView::getNumViews()
+unsigned InterpolatedView::getNumViews() const 
 {
    return m_views.size();
 }

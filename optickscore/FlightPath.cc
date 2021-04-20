@@ -29,6 +29,7 @@
 // npy-
 #include "NGLM.hpp"
 #include "NPY.hpp"
+#include "NFlightConfig.hpp"
 
 // optickscore-
 #include "OpticksConst.hh"
@@ -45,10 +46,11 @@ void FlightPath::setCtrl(SCtrl* ctrl)
     m_ctrl = ctrl ; 
 }
 
-FlightPath::FlightPath(const char* dir)  
+FlightPath::FlightPath(const char* cfg)  
     :
-    m_flightpathdir(dir ? strdup(dir) : NULL),
-    m_flightpath(NULL),
+    m_cfg(new NFlightConfig(cfg)),
+    m_flightpathdir(m_cfg->idir.c_str()),
+    m_eluc(NULL),
     m_view(NULL),
     m_verbose(false),
     m_ivperiod(128),
@@ -64,7 +66,7 @@ int* FlightPath::getIVPeriodPtr()
 }
 unsigned FlightPath::getNumViews() const 
 {
-    return m_flightpath->getNumItems(); 
+    return m_eluc->getNumItems(); 
 }
 void FlightPath::setVerbose(bool verbose)
 {
@@ -79,14 +81,27 @@ void FlightPath::setScale(float scale)
     m_scale = scale ; 
 }
 
+float FlightPath::getScale0() const
+{
+    return m_cfg->scale0 * m_scale ; 
+}
+float FlightPath::getScale1() const
+{
+    return m_cfg->scale1 * m_scale ; 
+}
+unsigned FlightPath::getFrameLimit() const
+{
+    return m_cfg->framelimit ; 
+}
+
 
 void FlightPath::load()
 {
     std::string path = BFile::FormPath(m_flightpathdir, FILENAME ) ;
     LOG(info) << " path " << path ; 
-    delete m_flightpath ; 
-    m_flightpath = NPY<float>::load(path.c_str()) ; 
-    assert( m_flightpath ) ; 
+    delete m_eluc ; 
+    m_eluc = NPY<float>::load(path.c_str()) ; 
+    assert( m_eluc ) ; 
 }
 
 
@@ -105,8 +120,8 @@ void FlightPath::Summary(const char* msg)
 InterpolatedView* FlightPath::makeInterpolatedView()
 {
     load(); 
-    assert( m_flightpath ) ; 
-    return InterpolatedView::MakeFromArray( m_flightpath, m_ivperiod, m_scale, m_ctrl  ) ; 
+    assert( m_eluc ) ; 
+    return InterpolatedView::MakeFromArray( m_eluc, m_ivperiod, getScale0(), getScale1(), m_ctrl  ) ; 
 }
 
 
