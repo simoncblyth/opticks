@@ -360,7 +360,9 @@ class OKCORE_API Opticks {
        const char* getG4SnapConfigString() const ;
    public:
        const char* getFlightPathDir() const ;
-       FlightPath*    getFlightPath();  // lazy cannot be const  
+       const char* getFlightConfig() const ; 
+       FlightPath* getFlightPath();  // lazy cannot be const  
+       std::string getFrameAnnotation(unsigned frame, unsigned num_frame, double dt ) const ;
    public:
        const char* getSnapConfigString() const ;
        const char* getSnapOverridePrefix() const ;  // --snapoverrideprefix

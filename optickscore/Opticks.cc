@@ -2340,10 +2340,15 @@ const char* Opticks::getSnapConfigString() const
 
 const char* Opticks::getFlightPathDir() const 
 {
-   const std::string& dir = m_cfg->getFlightPathDir();
-   return dir.empty() ? NULL : dir.c_str() ;
+    const std::string& dir = m_cfg->getFlightPathDir();
+    return dir.empty() ? NULL : dir.c_str() ;
 }
 
+const char* Opticks::getFlightConfig() const 
+{
+    const std::string& flight_config = m_cfg->getFlightConfig() ; 
+    return flight_config.empty() ? NULL : flight_config.c_str() ;
+}
 
 
 /**
@@ -2361,7 +2366,7 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
     {
         const char* dir = getFlightPathDir() ;
         float scale = m_cfg->getFlightPathScale() ;
-        const std::string& flight_config = m_cfg->getFlightConfig() ; 
+        const char* flight_config = getFlightConfig(); 
 
         LOG(LEVEL) 
              << " Creating flightpath from file " 
@@ -2369,11 +2374,28 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
              << " --flightpathscale " << scale 
              ;   
 
-        m_flightpath = new FlightPath(flight_config.c_str()) ; 
+        m_flightpath = new FlightPath(flight_config) ; 
         m_flightpath->setScale(scale) ; 
     }
     return m_flightpath ; 
 }
+
+std::string Opticks::getFrameAnnotation(unsigned frame, unsigned num_frame, double dt ) const 
+{
+    const char* targetpvn = getTargetPVN(); 
+    const char* emm = getEnabledMergedMesh() ;  
+    std::stringstream ss ; 
+    ss 
+        << std::setw(5) << frame << "/" << num_frame
+        << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt  
+        << " | "
+        << " --targetpvn " << targetpvn 
+        << " -e " <<  emm
+        ;   
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 
 

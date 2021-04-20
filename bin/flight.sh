@@ -27,6 +27,7 @@ EOU
 }
 
 
+msg="=== $0 :"
 pvn=${PVN:-lLowerChimney_phys}
 emm=${EMM:-~0}                 # SBit::FromString 
 size=${SIZE:-2560,1440,1}
@@ -38,14 +39,14 @@ pwd
 
 flight="idir=/tmp,prefix=frame,ext=.jpg,scale0=3,scale1=1,framelimit=300"
 
-flightpath-cmd(){ cat << EOC
+flight-cmd(){ cat << EOC
 $bin --targetpvn $pvn --flightconfig $flight -e $emm  $*
 EOC
 }
 
 
 log=$bin.log
-cmd=$(flightpath-cmd $*) 
+cmd=$(flight-cmd $*) 
 echo $cmd
 
 printf "\n\n\n$cmd\n\n\n" >> $log 
@@ -56,4 +57,13 @@ printf "\n\n\nRC $rc\n\n\n" >> $log
 echo rc $rc
 
 
+
+jpg2mp4=$HOME/env/bin/ffmpeg_jpg_to_mp4.sh
+[ ! -x "$jpg2mp4" ] && echo $msg no jpg2mp4 $jpg2mp4 script && exit 1
+
+pfx=FlightPath 
+cd $TMP/okop/OpFlightPathTest   
+pwd
+
+$jpg2mp4 $pfx
 
