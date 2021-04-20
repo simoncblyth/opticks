@@ -62,6 +62,8 @@ class OKCORE_API InterpolatedView :  public View {
     public:
         InterpolatedView(unsigned int period=100, bool verbose=false);
         Animator* getAnimator();
+        void setAnimatorModeForPeriod(unsigned period); 
+
         void addView(View* view);
         void Summary(const char* msg="View::Summary");
     public:

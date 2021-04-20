@@ -265,12 +265,15 @@ Delta
 
 
 #include "SAr.hh"
+struct STTF ; 
 
 struct SYSRAP_API PLOG 
 {
     static const int MAXARGC ; 
 
     SAr         args ; 
+    STTF*       ttf ;    // truetypefont
+
     int         level ; 
     const char* filename ; 
     int         maxFileSize ;    // bytes

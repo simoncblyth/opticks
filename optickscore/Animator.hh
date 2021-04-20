@@ -45,6 +45,9 @@ class OKCORE_API Animator {
         static const int period_low ; 
         static const int period_high ; 
 
+        static const int LEVEL_MIN ; 
+        static const int LEVEL_MAX ; 
+
         static const char* OFF_ ; 
         static const char* SLOW32_ ; 
         static const char* SLOW16_ ; 
@@ -60,9 +63,12 @@ class OKCORE_API Animator {
         static const char* FAST32_ ; 
         static const char* FAST64_ ; 
 
+        //                     -5     -4     -3     -2      -1     0     1      2     3       4      5       6      7 
         //              T0     T1     T2     T3     T4      T5    T6    T7     T8    T9      TA     TB      TC     TD
         typedef enum {  OFF, SLOW32, SLOW16, SLOW8, SLOW4, SLOW2, NORM, FAST, FAST2, FAST4, FAST8, FAST16, FAST32, FAST64, NUM_MODE } Mode_t ;
 
+        static Mode_t Mode(int imode); 
+        static Mode_t Mode(const char* name); 
 
         Animator(float* target, unsigned int period, float low=0.f, float high=1.f, const char* label="AnimatorLabel");
 
@@ -76,6 +82,9 @@ class OKCORE_API Animator {
 
         void home();
         void reset();
+
+        void setModeForPeriod(unsigned period); 
+        unsigned getBasePeriod() const ;
         unsigned getPeriod() const ;
 
         bool step(bool& bump); 
@@ -90,10 +99,16 @@ class OKCORE_API Animator {
         float getHigh(); 
         bool isActive();
 
-        Mode_t getMode();
+        Mode_t getMode() const ;
+
+
         int* getModePtr();
         unsigned int getNumMode();
+
+        void setMode( int level );
+        void setMode( const char* name );
         void setMode( Mode_t mode);
+
         void nextMode(unsigned int modifiers);
         void commandMode(const char* cmd);
 
@@ -122,6 +137,7 @@ class OKCORE_API Animator {
         Mode_t       m_mode ; 
         Mode_t       m_restrict ; 
         unsigned     m_period[NUM_MODE] ; 
+        unsigned     m_base_period ; 
         float        m_low ; 
         float        m_high ; 
         const char*  m_label ; 

@@ -31,7 +31,7 @@ struct STTF
     int  render_background( unsigned char* bitmap, int channels, int width, int height,      int* color );
     int  render_text(       unsigned char* bitmap, int channels, int width, int line_height, const char* text );
 
-    int   annotate(          unsigned char* bitmap, int channels, int width, int height, int line_height, const char* text );  
+    int   annotate(          unsigned char* bitmap, int channels, int width, int height, int line_height, const char* text, bool bottom );  
 
 };
 
@@ -241,7 +241,7 @@ inline int STTF::render_text( unsigned char* bitmap, int channels, int width, in
 }
 
 
-inline int STTF::annotate( unsigned char* bitmap, int channels, int width, int height, int line_height, const char* text )
+inline int STTF::annotate( unsigned char* bitmap, int channels, int width, int height, int line_height, const char* text, bool bottom )
 {
     int rc = 1 ; 
     if(!valid) return rc ; 
@@ -252,8 +252,9 @@ inline int STTF::annotate( unsigned char* bitmap, int channels, int width, int h
    
     int margin_bkg = 0 ; 
     int margin_txt = 1 ; 
-    int offset_bkg = width*(height-line_height-margin_bkg)*channels ;      
-    int offset_txt = width*(height-line_height-margin_txt)*channels ;      
+
+    int offset_bkg = bottom ? width*(height-line_height-margin_bkg)*channels : 0 ;      
+    int offset_txt = bottom ? width*(height-line_height-margin_txt)*channels : 0 ;      
 
     rc = render_background( bitmap+offset_bkg, channels, width, line_height, black ) ;  
     rc = render_text(       bitmap+offset_txt, channels, width, line_height, text  ) ;  

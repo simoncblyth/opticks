@@ -45,6 +45,103 @@ const char* Animator::FAST16_ = "FAST16" ;
 const char* Animator::FAST32_ = "FAST32" ; 
 const char* Animator::FAST64_ = "FAST64" ; 
 
+const int Animator::LEVEL_MIN = -5 ; 
+const int Animator::LEVEL_MAX =  7 ; 
+
+
+/**
+Animator::setPeriod
+---------------------
+
+Adjusts speed mode to achieve the target_period  
+
+**/
+void Animator::setModeForPeriod(unsigned target_period) 
+{
+    int target_level = -100 ; 
+    for(int level = LEVEL_MIN ; level <= LEVEL_MAX ; level++)
+    {
+        unsigned period = level == 0 ? m_base_period : ( level < 0 ? m_base_period << -level : m_base_period >> level ) ; 
+        if(period == target_period) target_level = level ; 
+        LOG(LEVEL) 
+            << " level "         << std::setw(3) << level 
+            << " period "        << std::setw(6) << period 
+            << " target_period " << std::setw(6) << target_period 
+            << " target_level "  << std::setw(3) << target_level 
+            ; 
+    } 
+    assert( target_level >= LEVEL_MIN && target_level <= LEVEL_MAX ); 
+
+    LOG(LEVEL)
+        << " base_period " << m_base_period
+        << " target_period " << target_period
+        << " target_level " << target_level
+        << " LEVEL_MIN " << LEVEL_MIN 
+        << " LEVEL_MAX " << LEVEL_MAX 
+        ;
+
+    setMode(target_level); 
+}
+
+
+
+
+
+Animator::Mode_t Animator::Mode(int level)  // static 
+{
+    Mode_t mode = OFF ; 
+    switch(level)
+    {
+        case -5: mode = SLOW32  ; break ; 
+        case -4: mode = SLOW16  ; break ; 
+        case -3: mode = SLOW8   ; break ; 
+        case -2: mode = SLOW4   ; break ; 
+        case -1: mode = SLOW2   ; break ; 
+        case  0: mode = NORM    ; break ; 
+        case  1: mode = FAST    ; break ; 
+        case  2: mode = FAST2   ; break ; 
+        case  3: mode = FAST4   ; break ; 
+        case  4: mode = FAST8   ; break ; 
+        case  5: mode = FAST16  ; break ; 
+        case  6: mode = FAST32  ; break ; 
+        case  7: mode = FAST64  ; break ; 
+        case  8: mode = OFF     ; break ;  
+    } 
+    return mode ; 
+}
+
+Animator::Mode_t Animator::Mode(const char* name)  // static 
+{
+    Mode_t mode = OFF ; 
+    if(     strcmp(name, OFF_) == 0)    mode = OFF ; 
+    else if(strcmp(name, SLOW32_) == 0) mode = SLOW32 ; 
+    else if(strcmp(name, SLOW16_) == 0) mode = SLOW16 ; 
+    else if(strcmp(name, SLOW8_) == 0)  mode = SLOW8 ; 
+    else if(strcmp(name, SLOW4_) == 0)  mode = SLOW4 ; 
+    else if(strcmp(name, SLOW2_) == 0)  mode = SLOW2 ; 
+    else if(strcmp(name, NORM_)  == 0)  mode = NORM ; 
+    else if(strcmp(name, FAST2_) == 0)  mode = FAST2 ; 
+    else if(strcmp(name, FAST4_) == 0)  mode = FAST4 ; 
+    else if(strcmp(name, FAST8_) == 0)  mode = FAST8 ; 
+    else if(strcmp(name, FAST16_) == 0) mode = FAST16 ; 
+    else if(strcmp(name, FAST32_) == 0) mode = FAST32 ; 
+    else if(strcmp(name, FAST64_) == 0) mode = FAST64 ; 
+    return mode ;  
+}
+
+void Animator::setMode(int level)
+{
+    setMode(Mode(level));  
+}
+void Animator::setMode(const char* name)
+{
+    setMode(Mode(name));  
+}
+
+
+
+
+
 const int Animator::period_low  = 25 ; 
 const int Animator::period_high = 10000 ; 
 
@@ -56,6 +153,7 @@ Animator::Animator(float* target, unsigned int period, float low, float high, co
     :
     m_mode(OFF),
     m_restrict(NUM_MODE),
+    m_base_period(period),
     m_low(low),
     m_high(high),
     m_label(strdup(label)),
@@ -123,21 +221,26 @@ Animator::Animator(float* target, unsigned int period, float low, float high, co
 }
 
 /**
-Assuming period 128 
+Assuming base period 128 
 
-    SLOW32 128*32      4096
-           128*16      2048
-    SLOW8  128*8       1024
-           128*4        512
-    SLOW2  128*2        256
-    NORM   128          128
-    FAST   128/2         64
-    FAST2  128/4         32
-    FAST4  128/8         16
+    -5 T1 SLOW32  128*32      4096
+    -4 T2 SLOW16  128*16      2048
+    -3 T3 SLOW8   128*8       1024
+    -2 T4 SLOW4   128*4        512
+    -1 T5 SLOW2   128*2        256
+     0 T6 NORM    128          128
+     1 T7 FAST    128/2         64
+     2 T8 FAST2   128/4         32
+     3 T9 FAST4   128/8         16
+     4 TA FAST8   128/16         8
+     5 TB FAST16  128/32         4
+     6 TC FAST32  128/64         2
+     7 TD FAST64  128/128        1
+
 **/
 
 
-Animator::Mode_t Animator::getMode()
+Animator::Mode_t Animator::getMode() const 
 {
     return m_mode ; 
 }
@@ -354,10 +457,17 @@ float Animator::getFractionFromTarget()
     return getFractionForValue(*m_target);
 }
 
+unsigned Animator::getBasePeriod() const 
+{
+    return m_base_period ; 
+}
 unsigned Animator::getPeriod() const 
 {
     return m_period[m_mode] ;    // with base period 128 in FAST64 mode this period becomes 1
 }
+
+
+
 
 bool Animator::step(bool& bump, unsigned& cmd_index, unsigned& cmd_offset )
 {

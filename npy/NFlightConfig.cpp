@@ -36,6 +36,7 @@ NFlightConfig::NFlightConfig(const char* cfg)
     idir("/tmp"),
     prefix("flight"),
     ext(".jpg"),
+    period(4),
     framelimit(3),
     framelimit_override(SSys::getenvint("OPTICKS_FLIGHT_FRAMELIMIT",0))
 {
@@ -48,6 +49,7 @@ NFlightConfig::NFlightConfig(const char* cfg)
     bconfig->addString("idir",   &idir );
     bconfig->addString("prefix", &prefix );
     bconfig->addString("ext",    &ext );   
+    bconfig->addInt("period",    &period);
     bconfig->addInt("framelimit", &framelimit );
 
     bconfig->parse();

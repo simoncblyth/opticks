@@ -2380,6 +2380,18 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
     return m_flightpath ; 
 }
 
+
+std::string Opticks::getContextAnnotation() const 
+{
+    std::stringstream ss ; 
+    ss 
+        << " --flightconfig " << getFlightConfig() ; 
+        ;
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 std::string Opticks::getFrameAnnotation(unsigned frame, unsigned num_frame, double dt ) const 
 {
     const char* targetpvn = getTargetPVN(); 

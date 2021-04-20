@@ -376,7 +376,7 @@ OContext::OContext(optix::Context context, Opticks* ok, const char* cmake_target
     m_launch_count(0),
     m_runlabel(m_ok->getRunLabel()),
     m_runresultsdir(m_ok->getRunResultsDir()),
-    m_ttf(new STTF)
+    m_ttf(PLOG::instance->ttf)
 {
     init();
     initPrint();
@@ -1374,7 +1374,7 @@ This uses the output_buffer from cu/pinhole_camera.cu::
 
 **/
 
-void OContext::snap(const char* path, const char* annotation)
+void OContext::snap(const char* path, const char* bottom_annotation, const char* top_annotation )
 {
     if(m_ok->isNoSavePPM())
     {
@@ -1400,18 +1400,21 @@ void OContext::snap(const char* path, const char* annotation)
     void* ptr = output_buffer->map() ; 
     int channels = 4 ;   
 
-    if(annotation)
+    if(m_ttf->valid)
     {
-        if(m_ttf->valid)
-        {
-            int line_height = 32 ; 
-            assert( line_height < height ); 
-            m_ttf->annotate( (unsigned char*)ptr, channels, width, height, line_height, annotation ); 
-        }
-        else
-        {
-            LOG(LEVEL) << "cannot annote as m_ttf fonts are not valid " ; 
-        }
+        unsigned line_height = 32 ; 
+        assert( line_height < height ); 
+
+        if( bottom_annotation )
+            m_ttf->annotate( (unsigned char*)ptr, channels, width, height, line_height, bottom_annotation, true ); 
+
+        if( top_annotation )
+            m_ttf->annotate( (unsigned char*)ptr, channels, width, height, line_height, top_annotation, false ); 
+
+    }
+    else
+    {
+        LOG(LEVEL) << "cannot annote as m_ttf fonts are not valid " ; 
     }
 
     if(SStr::EndsWith(path, ".ppm"))

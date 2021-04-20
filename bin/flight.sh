@@ -29,7 +29,7 @@ EOU
 
 msg="=== $0 :"
 pvn=${PVN:-lLowerChimney_phys}
-emm=${EMM:-~0}                 # SBit::FromString 
+emm="${EMM:-~0}"                 # SBit::FromString 
 size=${SIZE:-2560,1440,1}
 
 bin=OpFlightPathTest
@@ -37,10 +37,10 @@ bin=OpFlightPathTest
 which $bin
 pwd
 
-flight="idir=/tmp,prefix=frame,ext=.jpg,scale0=3,scale1=1,framelimit=300"
+flight="idir=/tmp,prefix=frame,ext=.jpg,scale0=3,scale1=0.5,framelimit=300,period=4"
 
 flight-cmd(){ cat << EOC
-$bin --targetpvn $pvn --flightconfig $flight -e $emm  $*
+$bin --targetpvn $pvn --flightconfig $flight -e "$emm"  $*
 EOC
 }
 

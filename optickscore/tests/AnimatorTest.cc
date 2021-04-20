@@ -76,6 +76,14 @@ void test_commandMode()
      }
 }
 
+void test_setModeForPeriod()
+{
+     float fraction(-1.f) ;
+     Animator anim(&fraction, 128);
+
+     anim.commandMode("TB") ;  
+     anim.setModeForPeriod(4); 
+}
 
 
 
@@ -83,7 +91,17 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    test_commandMode(); 
+    //test_commandMode(); 
+    test_setModeForPeriod(); 
     return 0 ;
 }
+
+/**
+
+::
+
+    Animator=INFO AnimatorTest
+
+**/
+
 

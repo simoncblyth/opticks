@@ -73,6 +73,7 @@ public:
     float getScale0() const ;
     float getScale1() const ;
     unsigned getFrameLimit() const ; 
+    unsigned getPeriod() const ;
 
     void refreshInterpolatedView();
     InterpolatedView* getInterpolatedView();

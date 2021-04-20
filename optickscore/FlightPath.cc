@@ -93,6 +93,10 @@ unsigned FlightPath::getFrameLimit() const
 {
     return m_cfg->getFrameLimit() ; 
 }
+unsigned FlightPath::getPeriod() const 
+{
+    return m_cfg->period ; 
+}
 
 
 void FlightPath::load()

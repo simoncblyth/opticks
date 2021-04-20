@@ -122,7 +122,7 @@ class OXRAP_API OContext {
             OContext::Mode_t getMode();
             bool isCompute();
             bool isInterop();
-            void snap(const char* path="/tmp/snap.ppm", const char* annotation=nullptr );
+            void snap(const char* path="/tmp/snap.ppm", const char* bottom_annotation=nullptr, const char* top_annotation=nullptr );
             void save(const char* path="/tmp/snap.npy");
             std::string printDesc() const ; 
      private:

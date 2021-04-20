@@ -46,6 +46,8 @@ int main(int argc, char** argv)
     int magenta[4] = {255,0,255,0} ; 
     int black[4] = {0,0,0,0} ; 
 
+
+
     unsigned char* data = (unsigned char*)calloc(width * height * channels, sizeof(unsigned char));
     sttf.render_background( data,        channels, width, height,      magenta ) ;
 
@@ -66,7 +68,8 @@ int main(int argc, char** argv)
     }    
     else
     {
-        sttf.annotate( data , channels, width, height, line_height, text );  
+        sttf.annotate( data , channels, width, height, line_height, text, true );  
+        sttf.annotate( data , channels, width, height, line_height, text, false );  
     }
 
 

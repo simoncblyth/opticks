@@ -28,6 +28,9 @@
 #include "SSys.hh"
 #include "SProc.hh"
 
+#define STTF_IMPLEMENTATION 1 
+#include "STTF.hh"
+
 PLOG* PLOG::instance = NULL ; 
 
 const int PLOG::MAXARGC = 100 ;  
@@ -331,6 +334,7 @@ bool PLOG::has_arg(const char* arg) const
 PLOG::PLOG(const char* name, const char* fallback, const char* prefix)
     :
     args(name, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
+    ttf(new STTF),
     level(info),
     filename(_logpath()),
     maxFileSize(SSys::getenvint("OPTICKS_LOG_MAXFILESIZE", 5000000)),
@@ -342,6 +346,7 @@ PLOG::PLOG(const char* name, const char* fallback, const char* prefix)
 PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
     args(argc_, argv_, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
+    ttf(new STTF),
     level(info),
     filename(_logpath()),
     maxFileSize(SSys::getenvint("OPTICKS_LOG_MAXFILESIZE", 5000000)),

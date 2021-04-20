@@ -164,8 +164,10 @@ Animator* InterpolatedView::getAnimator()
     return m_animator ; 
 }
 
-
-
+void InterpolatedView::setAnimatorModeForPeriod(unsigned period)
+{
+    m_animator->setModeForPeriod(period); 
+}
 
 void InterpolatedView::addView(View* view)
 {

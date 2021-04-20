@@ -362,6 +362,8 @@ class OKCORE_API Opticks {
        const char* getFlightPathDir() const ;
        const char* getFlightConfig() const ; 
        FlightPath* getFlightPath();  // lazy cannot be const  
+
+       std::string getContextAnnotation() const ;
        std::string getFrameAnnotation(unsigned frame, unsigned num_frame, double dt ) const ;
    public:
        const char* getSnapConfigString() const ;

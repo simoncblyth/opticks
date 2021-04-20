@@ -277,37 +277,40 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
     InterpolatedView* iv = m_composition->getInterpolatedView() ; 
     assert(iv); 
 
-    // changing animation "speed" changes the number of interpolation steps between views         
-    iv->commandMode("TB") ;  // FAST16
-    //iv->commandMode("TC") ;  // FAST32
-    // iv->commandMode("TD") ;  // FAST64  loadsa elu nan
+    unsigned period = flightpath->getPeriod(); 
+
+    // change animation "speed" to give the target number of interpolation steps between views         
+    iv->setAnimatorModeForPeriod(period); 
 
     int framelimit = flightpath->getFrameLimit(); 
-    int total_period = iv->getTotalPeriod(); 
 
-    char path[128] ; 
+    int total_period = iv->getTotalPeriod(); 
 
     int i1 = framelimit > 0 ? std::min( framelimit, total_period)  : total_period ; 
 
+    std::string top_annotation = m_ok->getContextAnnotation(); 
     LOG(info) 
+        << " period " << period
         << " total_period " << total_period
         << " framelimit " << framelimit << " (OPTICKS_FLIGHT_FRAMELIMIT) " 
         << " i1 " << i1 
+        << " top_annotation " << top_annotation
         ;
 
+    char path[128] ; 
     for(int i=0 ; i < i1 ; i++)
     {
         m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
 
         double dt = render();   // calling OTracer::trace_
         
-        std::string annotation = m_ok->getFrameAnnotation(i, i1, dt ); 
+        std::string bottom_annotation = m_ok->getFrameAnnotation(i, i1, dt ); 
 
         snprintf(path, 128, fmt.c_str(), i );   
 
-        LOG(info) << annotation << " path " << path ; 
+        LOG(info) << bottom_annotation << " path " << path ; 
 
-        m_ocontext->snap(path, annotation.c_str());  // downloads GPU output_buffer pixels into image file
+        m_ocontext->snap(path, bottom_annotation.c_str(), top_annotation.c_str() );  // downloads GPU output_buffer pixels into image file
     }
     LOG(info) << "]" ;
 }
