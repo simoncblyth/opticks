@@ -36,7 +36,8 @@ NFlightConfig::NFlightConfig(const char* cfg)
     idir("/tmp"),
     prefix("flight"),
     ext(".jpg"),
-    framelimit(SSys::getenvint("OPTICKS_FLIGHT_FRAMELIMIT",3))
+    framelimit(3),
+    framelimit_override(SSys::getenvint("OPTICKS_FLIGHT_FRAMELIMIT",0))
 {
     LOG(LEVEL) << cfg ; 
 
@@ -56,6 +57,22 @@ void NFlightConfig::dump(const char* msg) const
 {
     bconfig->dump(msg);
 }
+
+/**
+NFlightConfig::getFrameLimit
+------------------------------
+
+Returns value parsed from --flightconfig option unless the 
+overriding envvar OPTICKS_FLIGHT_FRAMELIMIT is defined and greated than zero.
+
+**/
+
+unsigned NFlightConfig::getFrameLimit() const 
+{
+    return framelimit_override > 0 ? framelimit_override : framelimit ; 
+}
+
+
 
 std::string NFlightConfig::getFrameName(int index, const char* override_prefix) const 
 {

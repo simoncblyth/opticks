@@ -53,7 +53,9 @@ struct NPY_API NFlightConfig
     std::string prefix ; 
     std::string ext ;    // typically .jpg due to its compression
     int  framelimit ;  
+    int framelimit_override ;  // from envvar 
 
+    unsigned getFrameLimit() const ;
     std::string getFrameName(int index, const char* override_prefix=NULL) const ;
     const char* getFramePath(const char* dir, const char* reldir, int index, const char* override_prefix) const ;
 };

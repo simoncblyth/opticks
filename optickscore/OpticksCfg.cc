@@ -804,7 +804,7 @@ void OpticksCfg<Listener>::init()
        ("snap",  "Enable non-OpenGL rendering to ppm files, use --snapconfig to configure, see npy-/NSnapConfig  ") ;
 
    m_desc.add_options()
-       ("flightconfig",   boost::program_options::value<std::string>(&m_flightconfig), "flight path configuration, see OpTracer::flightpath " );
+       ("flightconfig",   boost::program_options::value<std::string>(&m_flightconfig), "flight path configuration, see OpTracer::flightpath npy/NFlightConfig okc/FlightPath  " );
 
    m_desc.add_options()
        ("snapconfig",   boost::program_options::value<std::string>(&m_snapconfig), "snap (non-OpenGL rendering to ppm/jpg/png) configuration" );

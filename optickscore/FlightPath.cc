@@ -91,7 +91,7 @@ float FlightPath::getScale1() const
 }
 unsigned FlightPath::getFrameLimit() const
 {
-    return m_cfg->framelimit ; 
+    return m_cfg->getFrameLimit() ; 
 }
 
 
