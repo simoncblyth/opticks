@@ -20,6 +20,9 @@
 #include <cassert>
 #include <sstream>
 #include <algorithm>
+#include <bitset>
+
+#include "SBit.hh"
 
 #include "BFile.hh"
 #include "BStr.hh"
@@ -30,6 +33,8 @@
 #include "OpticksDbg.hh"
 
 #include "PLOG.hh"
+
+const plog::Severity OpticksDbg::LEVEL = PLOG::EnvLevel("OpticksDbg", "DEBUG" ); 
 
 OpticksDbg::OpticksDbg(Opticks* ok) 
    :
@@ -159,10 +164,23 @@ void OpticksDbg::postconfigure()
 }
 
 
+
+
+
 void OpticksDbg::postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs )
 {
     // "1:5,2:10" -> (1,5),(2,10)
     BStr::pair_split( pairs, spec.c_str(), ',', ":" ); 
+}
+
+
+void OpticksDbg::postconfigure(const std::string& spec, unsigned long long& bitfield)
+{
+    bitfield = SBit::FromString(spec.c_str()); 
+    LOG(LEVEL)
+        << " spec " << spec
+        << " SBit::PosString(bitfield,',',true) " << SBit::PosString(bitfield,',',true)
+        ;   
 }
 
 
@@ -195,6 +213,7 @@ unsigned OpticksDbg::getInstanceModulo(unsigned mm) const
     }
     return 0u ; 
 }
+
 
 bool OpticksDbg::IsListed(unsigned idx, const std::vector<unsigned>& ls, bool emptylistdefault )  // static
 {
@@ -229,9 +248,18 @@ bool OpticksDbg::isCSGSkipLV(unsigned lvIdx) const   // --csgskiplv
 }
 bool OpticksDbg::isEnabledMergedMesh(unsigned mm) const 
 {
-    return IsListed(mm, m_enabledmergedmesh, true ); 
+    std::bitset<64> bs(m_enabledmergedmesh); 
+    assert(mm < 64); 
+    bool emptylistdefault = true ;   
+    return bs.count() == 0 ? emptylistdefault : bs[mm] ;  
+    //return IsListed(mm, m_enabledmergedmesh, true ); 
 }
 
+const char* OpticksDbg::getEnabledMergedMesh() const 
+{
+   const std::string& enabledmm = m_cfg->getEnabledMergedMesh() ;
+   return enabledmm.c_str();  
+}
 
 
 std::string OpticksDbg::description()

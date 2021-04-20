@@ -749,10 +749,17 @@ unsigned Opticks::getNumCSGSkipLV() const
 }
 
 
-bool Opticks::isEnabledMergedMesh(unsigned mm) const 
+bool Opticks::isEnabledMergedMesh(unsigned mm) const   // --enabledmergedmesh,e
 {
    return m_dbg->isEnabledMergedMesh(mm);
 }
+
+const char* Opticks::getEnabledMergedMesh() const    // --enabledmergedmesh,e
+{
+   return m_dbg->getEnabledMergedMesh();  
+}
+
+
 
 unsigned Opticks::getInstanceModulo(unsigned mm) const 
 {

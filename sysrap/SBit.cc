@@ -386,6 +386,7 @@ unsigned long long SBit::FromString(const char* str )
 
 
 
+
 template std::string SBit::BinString(char,bool); 
 template std::string SBit::BinString(int,bool); 
 template std::string SBit::BinString(long,bool); 

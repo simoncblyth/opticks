@@ -215,6 +215,20 @@ void test_OriginGDMLPath()
 }
 
 
+void test_isEnabledMergedMesh(const Opticks* ok)
+{
+    LOG(info) << " ok.emm " << ok->getEnabledMergedMesh() ; 
+    for(unsigned i=0 ; i < 16 ; i++)
+    {
+        std::cout 
+            << std::setw(4) << i  
+            << std::setw(4) << ok->isEnabledMergedMesh(i) 
+            << std::endl
+            ;  
+    }
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -249,7 +263,8 @@ int main(int argc, char** argv)
     //test_findGDMLAuxValues(&ok); 
     //test_getGDMLAuxTargetLVName(&ok); 
 
-    test_OriginGDMLPath(); 
+    //test_OriginGDMLPath(); 
+    test_isEnabledMergedMesh(&ok); 
 
     return 0 ;
 }

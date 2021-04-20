@@ -464,6 +464,8 @@ class OKCORE_API Opticks {
        unsigned getNumCSGSkipLV() const ;
 
        bool isEnabledMergedMesh(unsigned mm) const ;
+       const char* getEnabledMergedMesh() const  ; 
+
        unsigned getInstanceModulo(unsigned mm) const ;
 
 

@@ -22,6 +22,8 @@
 #include <vector>
 #include <string>
 
+#include "plog/Severity.h"
+
 class Opticks ; 
 template <typename T> class NPY ;
 template <typename T> class OpticksCfg ;
@@ -47,6 +49,7 @@ class OKCORE_API OpticksDbg
 {
        friend class Opticks ;  
     public:
+       static const plog::Severity LEVEL ; 
        OpticksDbg(Opticks* ok);
 
        unsigned getNumDbgPhoton() const ;
@@ -68,6 +71,7 @@ class OKCORE_API OpticksDbg
        bool isX4PolySkip(unsigned lvIdx) const ;
        bool isCSGSkipLV(unsigned lvIdx) const ;   // --csgskiplv
        bool isEnabledMergedMesh(unsigned mm) const ;
+       const char* getEnabledMergedMesh() const  ; 
     public:
        unsigned getInstanceModulo(unsigned mm) const ; 
     public:
@@ -78,6 +82,7 @@ class OKCORE_API OpticksDbg
        std::string description();
    private:
        void postconfigure();
+       void postconfigure(const std::string& spec, unsigned long long& bitfield);
        void postconfigure(const std::string& spec, std::vector<unsigned>& ls);
        void postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs ) ;
    private:
@@ -90,7 +95,8 @@ class OKCORE_API OpticksDbg
        std::vector<unsigned> m_mask ; 
        std::vector<unsigned> m_x4polyskip ; 
        std::vector<unsigned> m_csgskiplv ; 
-       std::vector<unsigned> m_enabledmergedmesh ; 
+       unsigned long long    m_enabledmergedmesh ;   // limited to 64 
+
        std::vector<std::pair<int,int> > m_instancemodulo ;   // (1,5),(2,10)  modulo scaledown for each mergedmesh index 
 
 };
