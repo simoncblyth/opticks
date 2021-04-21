@@ -125,6 +125,13 @@ const char* SPath::Resolve(const char* spec_)
 }
 
 
+const char* SPath::Resolve(const char* dir, const char* name)
+{
+    std::stringstream ss ; 
+    ss << dir << "/" << name ; 
+    std::string s = ss.str(); 
+    return Resolve(s.c_str()); 
+}
 
 
 

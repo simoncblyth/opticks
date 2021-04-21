@@ -66,6 +66,11 @@ set(TEST_SOURCES
 )
 
 
+if(NLJSON_FOUND)
+   list(APPEND TEST_SOURCES SMetaTest.cc)
+endif()
+
+
 if(WITH_SIMG)
    list(APPEND TEST_SOURCES SIMGTest.cc)
 endif()

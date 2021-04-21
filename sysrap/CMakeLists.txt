@@ -18,6 +18,7 @@ Fortunately thats easy to do by linking with Opticks::OKConf.
 #]=]
 
 find_package(OKConf REQUIRED CONFIG)
+find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
 
 set(SOURCES
@@ -64,6 +65,7 @@ set(SOURCES
 
     SMockViz.cc
     SRngSpec.cc
+
 ) 
 
 set(HEADERS
@@ -122,6 +124,15 @@ set(HEADERS
 )
 
 
+
+if(NLJSON_FOUND)  
+   message(STATUS "SYSRAP.NLJSON_FOUND")
+   list(APPEND SOURCES  SMeta.cc)
+   list(APPEND HEADERS  SMeta.hh)
+endif()
+
+
+
 set(WITH_SIMG YES)
 if(WITH_SIMG)
     list(APPEND HEADERS   SIMG.hh  )
@@ -144,10 +155,6 @@ endif()
 
 
 
-
-
-
-
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 #set_target_properties( ${name} 
 #                       PROPERTIES 
@@ -160,6 +167,12 @@ set_property( TARGET ${name} PROPERTY INTERFACE_DESCRIPTION ${desc} )
 
 
 target_link_libraries( ${name} PUBLIC Opticks::PLog Opticks::OKConf )
+
+if(NLJSON_FOUND)
+target_link_libraries(${name} PUBLIC Opticks::NLJSON)
+endif()
+
+
 if(UNIX AND NOT APPLE)
 message(STATUS "adding ssl crypto for UNIX AND NOT APPLE")
 target_link_libraries( ${name} PUBLIC ssl crypto )

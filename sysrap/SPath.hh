@@ -36,6 +36,7 @@ class SYSRAP_API SPath {
       static const char* Basename(const char* path); 
       static const char* UserTmpDir(const char* pfx="/tmp", const char* user_envvar="USER", const char* sub="opticks", char sep='/'  );
       static const char* Resolve(const char* path); 
+      static const char* Resolve(const char* dir, const char* name);
 };
 
 
