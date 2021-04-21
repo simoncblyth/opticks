@@ -227,17 +227,46 @@ void MockRenderer::save(const char* dir)
 }
 
 
+void test_MockRenderer(Opticks* ok)
+{
+    MockRenderer renderer(ok); 
+    renderer.renderLoop();  
+    renderer.save("/tmp"); 
+}
+
+void test_fillPathFormat(Opticks* ok)
+{
+    LOG(info); 
+
+    FlightPath* fp = ok->getFlightPath(); 
+
+    fp->setPathFormat("$TMP", "FlightPathTest");  
+
+    char path[128]; 
+    for(unsigned index=0 ; index < 10 ; index++)
+    {
+        fp->fillPathFormat(path, 128, index ); 
+        std::cout 
+            << std::setw(4) << index 
+            << " : "
+            << path 
+            << std::endl 
+            ;
+    }
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
 
-    Opticks* m_ok = new Opticks(argc, argv); 
-    m_ok->configure(); 
+    Opticks* ok = new Opticks(argc, argv); 
+    ok->configure(); 
 
-    MockRenderer renderer(m_ok); 
-    renderer.renderLoop();  
-    renderer.save("/tmp"); 
+    //test_MockRenderer(ok) ;
+    
+    test_fillPathFormat(ok); 
 
     return 0 ;
 }

@@ -228,47 +228,41 @@ void OpTracer::single_snap(const char* path)
 } 
 
 
+
 /**
 
-TODO: most of this should not be here as it does not depend on OptiX among other things 
+Hmm its better now, but still most of this belongs elsewhere. 
+Its kinda involved as have to coordinate between several objects.
 
 **/
 
-
-const char* OpTracer::FLIGHTPATH_SNAP = "FlightPath%0.5d.jpg" ; 
-
 void OpTracer::flightpath(const char* dir, const char* reldir )   
 {
-    bool create = true ; 
-    std::string fmt = BFile::preparePath(dir ? dir : "$TMP", reldir, FLIGHTPATH_SNAP, create);  
+    m_hub->setupFlightPath();   // FlightPath instanciated here and held by Opticks
 
-    LOG(info) 
-        << " dir " << dir 
-        << " reldir " << reldir 
-        << " fmt " << fmt 
-        ;
-
-    m_hub->setupFlightPath();   // FlightPath instanciated here and held in Opticks
     m_composition->setViewType(View::FLIGHTPATH);
 
-    FlightPath* flightpath = m_ok->getFlightPath(); 
+    InterpolatedView* iv = m_composition->getInterpolatedView() ; assert(iv); 
 
-    InterpolatedView* iv = m_composition->getInterpolatedView() ; 
-    assert(iv); 
+    FlightPath* fp = m_ok->getFlightPath(); 
 
-    unsigned period = flightpath->getPeriod(); 
+    fp->setPathFormat(dir, reldir); 
 
-    // change animation "speed" to give the target number of interpolation steps between views         
-    iv->setAnimatorModeForPeriod(period); 
+    unsigned period = fp->getPeriod();     // typical values 4,8,16   (1:fails with many nan)
 
-    int framelimit = flightpath->getFrameLimit(); 
+    iv->setAnimatorModeForPeriod(period);  // change animation "speed" to give *period* interpolation steps between views         
+
+    int framelimit = fp->getFrameLimit(); 
 
     int total_period = iv->getTotalPeriod(); 
 
     int i1 = framelimit > 0 ? std::min( framelimit, total_period)  : total_period ; 
 
+
     std::string top_annotation = m_ok->getContextAnnotation(); 
+
     unsigned anno_line_height = m_ok->getAnnoLineHeight() ; 
+
     LOG(info) 
         << " period " << period
         << " total_period " << total_period
@@ -287,7 +281,7 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
         
         std::string bottom_annotation = m_ok->getFrameAnnotation(i, i1, dt ); 
 
-        snprintf(path, 128, fmt.c_str(), i );   
+        fp->fillPathFormat(path, 128, i ); 
 
         LOG(info) << bottom_annotation << " path " << path ; 
 

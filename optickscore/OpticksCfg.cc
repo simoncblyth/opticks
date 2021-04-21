@@ -70,7 +70,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_testconfig(""),
     m_state_tag(""),
     m_materialprefix("/dd/Materials/"),
-    m_flightconfig("dir=/tmp,prefix=frame,ext=.jpg,scale0=1,scale1=1,period=4"),  
+    m_flightconfig("idir=/tmp,prefix=frame,ext=.jpg,scale0=1,scale1=1,period=4"),  
     m_snapconfig("steps=0,ext=.jpg"),        // --snapconfig
     m_snapoverrideprefix(""),
     m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975

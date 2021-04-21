@@ -128,9 +128,6 @@ class GNodeLib(object):
         """
         return np.flatnonzero(np.char.startswith(self.lv, lvname_start.encode(encoding)))  
 
-
-    
-
     def __init__(self):
         for k in self.k2name.keys(): 
             setattr( self, k.lower(), self.Load(k) )

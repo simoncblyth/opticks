@@ -5,18 +5,75 @@ ggeo.py
 
 See also GNodeLib.py 
 
+TODO:
+
+* connection between solids and PV names 
+
+
+
+
+
+
 Dumping using single node index and triplet RPO (ridx/pidx/oidx repeat/placement/offset) indexing::
 
      ggeo.py 0         # world volume 
      ggeo.py 1/0/0     # first placement of outer volume of first repeat   
      ggeo.py 1/        # missing elements of the triplet default to 0 
 
-     ggeo.py 2/0/0     # first placement of outer volume of second repeat   
+     ggeo.py 2/0/0     # first placement of outer volume of second repeat     ridx/pidx/oidx
 
-A convenient visualization workflow is to use the above python triple indexing to find 
-flat node indices to target and then use, eg::
+When using the triplet form of node specification wildcards are 
+accepted in the first ridx slot (eg 5:9) and third oidx slot (eg *), 
+for example dumping all all volumes in ridx 5,6,7,8 with::
 
-    OTracerTest --target 69078
+    epsilon:issues blyth$ ggeo.py 5:9/0/* --brief 
+    nidx: 69668 triplet: 5000000 sh:5f0014 sidx:    0   nrpo( 69668     5     0     0 )  shape(  95  20                       base_steel0x360d8f0                            Water///Steel) 
+    nidx: 69078 triplet: 6000000 sh:5e0014 sidx:    0   nrpo( 69078     6     0     0 )  shape(  94  20                             uni10x34cdcb0                            Water///Steel) 
+    nidx: 68488 triplet: 7000000 sh:5d0014 sidx:    0   nrpo( 68488     7     0     0 )  shape(  93  20                   sStrutBallhead0x352a360                            Water///Steel) 
+    nidx: 70258 triplet: 8000000 sh:600010 sidx:    0   nrpo( 70258     8     0     0 )  shape(  96  16                     uni_acrylic30x35ff3d0                          Water///Acrylic) 
+
+
+The --names option dumps PV and LV names, for example dumping PV, LV names of the first instance placement 
+of all volumes in ridx 1 thru 4::
+
+    epsilon:ana blyth$ ggeo.py 1:5/0/* --names 
+    nrpo( 176632     1     0     0 )                                                       PMT_3inch_log_phys0x4437d00                                                            PMT_3inch_log0x4436df0 
+    nrpo( 176633     1     0     1 )                                                      PMT_3inch_body_phys0x4437230                                                       PMT_3inch_body_log0x4436ce0 
+    nrpo( 176634     1     0     2 )                                                    PMT_3inch_inner1_phys0x44372b0                                                     PMT_3inch_inner1_log0x4436f00 
+    nrpo( 176635     1     0     3 )                                                    PMT_3inch_inner2_phys0x4437360                                                     PMT_3inch_inner2_log0x4437010 
+    nrpo( 176636     1     0     4 )                                                      PMT_3inch_cntr_phys0x4437410                                                       PMT_3inch_cntr_log0x4437120 
+    nrpo(  70960     2     0     0 )                                                        pLPMT_NNVT_MCPPMT0x3cbba60                                                   NNVTMCPPMTlMaskVirtual0x3cb41a0 
+    nrpo(  70961     2     0     1 )                                                          NNVTMCPPMTpMask0x3c9fe00                                                          NNVTMCPPMTlMask0x3c9fc80 
+    nrpo(  70962     2     0     2 )                                           NNVTMCPPMT_PMT_20inch_log_phys0x3c9fe80                                                NNVTMCPPMT_PMT_20inch_log0x3caec40 
+    nrpo(  70963     2     0     3 )                                          NNVTMCPPMT_PMT_20inch_body_phys0x3caefa0                                           NNVTMCPPMT_PMT_20inch_body_log0x3caeb60 
+    nrpo(  70964     2     0     4 )                                        NNVTMCPPMT_PMT_20inch_inner1_phys0x3caf030                                         NNVTMCPPMT_PMT_20inch_inner1_log0x3caed60 
+    nrpo(  70965     2     0     5 )                                        NNVTMCPPMT_PMT_20inch_inner2_phys0x3caf0f0                                         NNVTMCPPMT_PMT_20inch_inner2_log0x3caee80 
+    nrpo(  70966     3     0     0 )                                                   pLPMT_Hamamatsu_R128600x3cbbae0                                              HamamatsuR12860lMaskVirtual0x3c9a5c0 
+    nrpo(  70967     3     0     1 )                                                     HamamatsuR12860pMask0x3c9b320                                                     HamamatsuR12860lMask0x3c9b1a0 
+    nrpo(  70968     3     0     2 )                                      HamamatsuR12860_PMT_20inch_log_phys0x3c9b3b0                                           HamamatsuR12860_PMT_20inch_log0x3c93920 
+    nrpo(  70969     3     0     3 )                                     HamamatsuR12860_PMT_20inch_body_phys0x345b3c0                                      HamamatsuR12860_PMT_20inch_body_log0x3c93830 
+    nrpo(  70970     3     0     4 )                                   HamamatsuR12860_PMT_20inch_inner1_phys0x3c94040                                    HamamatsuR12860_PMT_20inch_inner1_log0x345b160 
+    nrpo(  70971     3     0     5 )                                   HamamatsuR12860_PMT_20inch_inner2_phys0x3c94100                                    HamamatsuR12860_PMT_20inch_inner2_log0x345b290 
+    nrpo( 304636     4     0     0 )                                    mask_PMT_20inch_vetolMaskVirtual_phys0x4433460                                         mask_PMT_20inch_vetolMaskVirtual0x3ca10e0 
+    nrpo( 304637     4     0     1 )                                                mask_PMT_20inch_vetopMask0x3ca1e40                                                mask_PMT_20inch_vetolMask0x3ca1cb0 
+    nrpo( 304638     4     0     2 )                                                 PMT_20inch_veto_log_phys0x3ca5fa0                                                      PMT_20inch_veto_log0x3ca5470 
+    nrpo( 304639     4     0     3 )                                                PMT_20inch_veto_body_phys0x3ca57a0                                                 PMT_20inch_veto_body_log0x3ca5360 
+    nrpo( 304640     4     0     4 )                                              PMT_20inch_veto_inner1_phys0x3ca5820                                               PMT_20inch_veto_inner1_log0x3ca5580 
+    nrpo( 304641     4     0     5 )                                              PMT_20inch_veto_inner2_phys0x3ca58d0                                               PMT_20inch_veto_inner2_log0x3ca5690 
+
+Same for ridx 5 thru 8::
+
+    epsilon:ana blyth$ ggeo.py 5:9/0/* --names 
+    nrpo(  69668     5     0     0 )                                                              lUpper_phys0x35b5ac0                                                                   lUpper0x35b5a00 
+    nrpo(  69078     6     0     0 )                                                          lFasteners_phys0x34ce040                                                               lFasteners0x34cdf00 
+    nrpo(  68488     7     0     0 )                                                              lSteel_phys0x352c890                                                                   lSteel0x352c760 
+    nrpo(  70258     8     0     0 )                                                           lAddition_phys0x35ff770                                                                lAddition0x35ff5f0 
+
+
+A convenient visualization workflow is to use the above python triple indexing to find PV names to target, eg::
+
+    OTracerTest --targetpvn lFasteners_phys   ## do not include the 0x reference in the targetted name, as it will differ between machines/invokations 
+    OTracerTest --target    69078             ## using raw indices is NOT advisable as they go stale very quickly with changed geometry
 
 
 Volume idsmry dumping::
@@ -130,8 +187,14 @@ class GGeo(object):
 
     all_volume_names = list(map(lambda _:"all_volume_%s" % _, "nodeinfo identity center_extent bbox transforms inverse_transforms".split()))
 
+    PV = "{keydir}/GNodeLib/all_volume_PVNames.txt"
+    LV = "{keydir}/GNodeLib/all_volume_LVNames.txt"
+ 
     @classmethod   
     def Path(cls, ridx, name, subdir="GMergedMesh", alldir="GNodeLib"): 
+        """
+        :param ridx: -1 for all volumes from GNodeLib, 0,1,2,3,... for GMergedMesh Composite "Solids"
+        """
         keydir = cls.KEYDIR 
         if ridx == -1:
             fmt = "{keydir}/{alldir}/{name}.npy"
@@ -171,6 +234,8 @@ class GGeo(object):
         self.num_repeats = num_repeats 
         blib = BLib(keydir)
         self.blib = np.array(blib.names().split("\n"))
+        self.pv = np.loadtxt(self.PV.format(**locals()), dtype="|S100")
+        self.lv = np.loadtxt(self.LV.format(**locals()), dtype="|S100")
 
     def get_array(self, ridx, name):
         """
@@ -423,23 +488,60 @@ class GGeo(object):
             gg(11410)      # same volume via node indexing 
 
         """
+        log.debug("args %s len(args) %d " % (str(args), len(args))) 
+
+        nidxs = []
+
         if len(args) == 1: 
             nidx = args[0]
+            nidxs.append(nidx)
         elif len(args) == 2:
             ridx,pidx = args
             oidx = 0 
             nidx = self.get_node_index(ridx,pidx,oidx)
+            nidxs.append(nidx)
         elif len(args) == 3:
-            ridx,pidx,oidx = args
-            nidx = self.get_node_index(ridx,pidx,oidx)
+            a_ridx,a_pidx,a_oidx = args
+            log.debug("a_ridx %s a_pidx %s a_oidx %s" % (a_ridx,a_pidx,a_oidx)) 
+
+            if type(a_ridx) is int:
+                ridxs = [a_ridx]
+            elif ":" in a_ridx:
+                ridxs = range(*map(int,a_ridx.split(":")))
+            else:
+                assert 0, a_ridx
+            pass
+          
+            log.debug("ridxs %s " % str(ridxs))
+ 
+            pidx = int(a_pidx) 
+
+            for ridx in ridxs:
+                if a_oidx == "*":
+                    num_volumes = self.get_num_volumes(ridx)
+                    oidxs = range(num_volumes)
+                else:
+                    oidxs = [a_oidx]
+                pass 
+                for oidx in oidxs:
+                    nidx = self.get_node_index(ridx,pidx,oidx)
+                    nidxs.append(nidx)
+                pass
+            pass
         else:
             assert 0, "expecting argument of 1/2/3 integers"
         pass
 
-        if self.args.nidx:
-            print(nidx)
-        else: 
-            self.dump_node(nidx) 
+        for nidx in nidxs:
+            if self.args.nidx:
+                print(nidx)
+            elif self.args.brief:
+                self.brief(nidx) 
+            elif self.args.names:
+                self.names(nidx) 
+            else: 
+                self.dump_node(nidx) 
+            pass
         pass
 
 
@@ -451,16 +553,22 @@ class GGeo(object):
         nidx2,triplet,shape,_ = iden  
         assert nidx == nidx2
         sidx = iden[-1].view(np.int32)  
-        iden_s = "nidx:{nidx} triplet:{triplet:7x} sh:{sh:x} sidx:{sidx:5d} ".format(nidx=nidx,triplet=triplet,sh=shape,sidx=sidx)
+        iden_s = "nidx:{nidx:6d} triplet:{triplet:8x} sh:{sh:6x} sidx:{sidx:5d} ".format(nidx=nidx,triplet=triplet,sh=shape,sidx=sidx)
 
         nrpo = self.nrpo[nidx]
-        nrpo_s = "nrpo( %5d %5d %5d %5d )" % tuple(nrpo)
+        nrpo_s = "nrpo( %6d %5d %5d %5d )" % tuple(nrpo)
 
         midx = self.midx[nidx] 
         bidx = self.bidx[nidx] 
         shape_s = "shape( %3d %3d  %40s %40s)" % (midx,bidx, self.mlibnames[nidx], self.blibnames[nidx] )
         print( "%s  %s  %s " % (iden_s, nrpo_s, shape_s) )
 
+    def names(self, nidx):
+        pv = self.pv[nidx].decode('utf-8')  
+        lv = self.lv[nidx].decode('utf-8')  
+        nrpo = self.nrpo[nidx]
+        nrpo_s = "nrpo( %6d %5d %5d %5d )" % tuple(nrpo)
+        print( "%s  %80s  %80s " % (nrpo_s, pv, lv) )
 
     def bbsmry(self, nidx):
         gg = self
@@ -468,6 +576,9 @@ class GGeo(object):
         ce = gg.all_volume_center_extent[nidx]
         print(" {nidx:5d} {ce!s:20s} ".format(nidx=nidx,bb=bb,ce=ce))
 
+    def brief(self,nidx):
+        gg = self
+        gg.idsmry(nidx)
 
     def dump_node(self,nidx):
         gg = self
@@ -527,6 +638,8 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "-c","--check", action="store_true", help="Consistency check" ) 
     parser.add_argument(  "-i","--idsmry", action="store_true", help="Slice identity summary interpreting idx as slice range." ) 
     parser.add_argument(  "-b","--bbsmry", action="store_true", help="Slice bbox summary interpreting idx as slice range." ) 
+    parser.add_argument(  "--brief", action="store_true", help="Brief summary of nodes selected by idx." ) 
+    parser.add_argument(  "--names", action="store_true", help="Identity and PV/LV names of  nodes selected by idx." ) 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -545,10 +658,14 @@ def misc(gg):
 def triplet_(rpo):
     elem = []
     for s in rpo.split("/"):
-        try:
-            elem.append(int(s))
-        except ValueError:
-            elem.append(0)
+        if s == "*" or ":" in s:
+            elem.append(s)
+        else:
+            try:
+                elem.append(int(s))
+            except ValueError:
+                elem.append(0)
+            pass
         pass
     pass
     return elem 

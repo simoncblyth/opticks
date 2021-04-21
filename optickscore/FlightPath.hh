@@ -60,6 +60,8 @@ class OKCORE_API FlightPath {
 public:
     static const char* FILENAME ; 
     static const plog::Severity LEVEL ; 
+
+
     FlightPath(const char* dir);
     std::string description(const char* msg="FlightPath");
     void Summary(const char* msg="FlightPath::Summary");
@@ -82,6 +84,11 @@ private:
     InterpolatedView* makeInterpolatedView();
 public:
     int* getIVPeriodPtr();
+public:
+    void setPathFormat(const char* dir, const char* reldir);
+    void fillPathFormat(char* path, unsigned path_size, unsigned index );
+private:
+    void setPathFormat(const char* path_format);
 private:
     NFlightConfig*                       m_cfg ; 
     const char*                          m_flightpathdir ; 
@@ -91,6 +98,7 @@ private:
     int                                  m_ivperiod ; 
     SCtrl*                               m_ctrl ; 
     float                                m_scale ; 
+    const char*                          m_path_format ;  
 
 };
 

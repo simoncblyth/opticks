@@ -2,6 +2,30 @@ OpSnapTest_debug_slowdown_with_new_geometry
 =============================================
 
 
+
+
+
+
+TODO : investigate CSG code of slow geometry
+----------------------------------------------
+
+::
+
+    epsilon:offline blyth$ jgr lAddition
+    ./Simulation/DetSimV2/CentralDetector/src/AdditionAcrylicConstruction.cc:    if(motherName == "lAddition")
+    ./Simulation/DetSimV2/CentralDetector/src/AdditionAcrylicConstruction.cc:            "lAddition",
+    epsilon:offline blyth$ 
+
+
+
+Need to dump PV/LV names within each Opticks "Solid" (aka GMergedMesh)
+-------------------------------------------------------------------------
+
+
+
+
+
+
 Need to remake geocache with the pinned down ordering 
 ---------------------------------------------------------
 

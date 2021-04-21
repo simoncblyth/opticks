@@ -46,6 +46,7 @@ void FlightPath::setCtrl(SCtrl* ctrl)
     m_ctrl = ctrl ; 
 }
 
+
 FlightPath::FlightPath(const char* cfg)  
     :
     m_cfg(new NFlightConfig(cfg)),
@@ -55,7 +56,8 @@ FlightPath::FlightPath(const char* cfg)
     m_verbose(false),
     m_ivperiod(128),
     m_ctrl(NULL),
-    m_scale(1.f)
+    m_scale(1.f),
+    m_path_format(nullptr)
 {
     LOG(LEVEL) << " m_flightpathdir " << m_flightpathdir ; 
 }
@@ -107,6 +109,35 @@ void FlightPath::load()
     m_eluc = NPY<float>::load(path.c_str()) ; 
     assert( m_eluc ) ; 
 }
+
+
+void FlightPath::setPathFormat(const char* dir, const char* reldir)
+{
+    std::string name = m_cfg->getFrameName(-1); 
+    bool create = true ; 
+    std::string fmt = BFile::preparePath(dir ? dir : "$TMP", reldir, name.c_str(), create);  
+
+    LOG(info) 
+        << " dir " << dir 
+        << " reldir " << reldir 
+        << " name " << name
+        << " fmt " << fmt 
+        ;   
+
+    setPathFormat(fmt.c_str());   
+}
+
+void FlightPath::setPathFormat(const char* path_format)
+{
+    m_path_format = strdup(path_format); 
+}
+
+void FlightPath::fillPathFormat(char* path, unsigned path_size, unsigned index )
+{
+    assert( m_path_format && "must setPathFormat before calling fillPathFormat" ); 
+    snprintf(path, path_size, m_path_format, index );
+}
+
 
 
 std::string FlightPath::description(const char* msg)

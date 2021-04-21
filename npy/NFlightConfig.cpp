@@ -74,21 +74,19 @@ unsigned NFlightConfig::getFrameLimit() const
     return framelimit_override > 0 ? framelimit_override : framelimit ; 
 }
 
+/**
+NFlightConfig::getFrameName
+-----------------------------
 
+Index -1 returns a printf format string to be filled with a single integer.
 
-std::string NFlightConfig::getFrameName(int index, const char* override_prefix) const 
+**/
+
+std::string NFlightConfig::getFrameName(int index) const 
 {
-    const char* pfx = override_prefix ? override_prefix : prefix.c_str()  ; 
-    return BFile::MakeName(index, width, pfx, ext.c_str() ); 
+    return BFile::MakeName(index, width, prefix.c_str(), ext.c_str() ); 
 }
 
-const char* NFlightConfig::getFramePath(const char* dir, const char* reldir, int index, const char* override_prefix) const 
-{
-    std::string name = getFrameName(index, override_prefix) ; 
-    bool create = true ; 
-    std::string path = BFile::preparePath(dir ? dir : "$TMP", reldir, name.c_str(), create);  
-    return strdup(path.c_str()); 
-}
 
 std::string NFlightConfig::desc() const 
 {

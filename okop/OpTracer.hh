@@ -63,7 +63,6 @@ see okop-
 class OKOP_API OpTracer : public SRenderer {
     public:
        static const plog::Severity LEVEL ;  
-       static const char* FLIGHTPATH_SNAP ; 
     public:
        OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate);
     public:
