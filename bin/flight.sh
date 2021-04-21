@@ -22,11 +22,12 @@ defined which overrides the framelimit from the --flightconfig option::
 
     PERIOD=8 PVN=lLowerChimney_phys flight.sh --rtx 1 --cvd 1 
 
+
 TODO:
 
 1. output directory and jpg naming control
- 
-
+2. named eye-look-up flightpath input arrays selected by config from .opticks/flightpath input dir 
+3. metadata json output : geocache digest, mean/min/max frame time, full commandline, GPU, RTX setting  etc..
 
 EOU
 }
@@ -37,14 +38,19 @@ pvn=${PVN:-lLowerChimney_phys}
 emm="${EMM:-~0}"                 # SBit::FromString 
 size=${SIZE:-2560,1440,1}
 period=${PERIOD:-4}
+limit=${LIMIT:-300}
+scale0=${SCALE0:-3}
+scale1=${SCALE1:-0.5}
+
 
 bin=OpFlightPathTest
 
+prefix="flight__${pvn}__${emm}__${period}__"
 
 which $bin
 pwd
 
-flight="idir=/tmp,prefix=frame,ext=.jpg,scale0=3,scale1=0.5,framelimit=300,period=$period"
+flight="idir=/tmp,prefix=$prefix,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
 
 flight-cmd(){ cat << EOC
 $bin --targetpvn $pvn --flightconfig $flight -e "$emm"  $*
@@ -68,9 +74,8 @@ echo rc $rc
 jpg2mp4=$HOME/env/bin/ffmpeg_jpg_to_mp4.sh
 [ ! -x "$jpg2mp4" ] && echo $msg no jpg2mp4 $jpg2mp4 script && exit 1
 
-pfx=FlightPath 
 cd $TMP/okop/OpFlightPathTest   
 pwd
 
-$jpg2mp4 $pfx
+$jpg2mp4 $prefix
 
