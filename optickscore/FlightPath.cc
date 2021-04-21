@@ -47,9 +47,10 @@ void FlightPath::setCtrl(SCtrl* ctrl)
 }
 
 
-FlightPath::FlightPath(const char* cfg)  
+FlightPath::FlightPath(const char* cfg, const char* nameprefix)  
     :
     m_cfg(new NFlightConfig(cfg)),
+    m_nameprefix(strdup(nameprefix)), 
     m_flightpathdir(m_cfg->idir.c_str()),
     m_eluc(NULL),
     m_view(NULL),
@@ -113,7 +114,7 @@ void FlightPath::load()
 
 void FlightPath::setPathFormat(const char* dir, const char* reldir)
 {
-    std::string name = m_cfg->getFrameName(-1); 
+    std::string name = m_cfg->getFrameName(m_nameprefix, -1); 
     bool create = true ; 
     std::string fmt = BFile::preparePath(dir ? dir : "$TMP", reldir, name.c_str(), create);  
 

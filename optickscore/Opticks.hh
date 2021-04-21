@@ -361,7 +361,8 @@ class OKCORE_API Opticks {
        const char* getG4SnapConfigString() const ;
    public:
        const char* getFlightPathDir() const ;
-       const char* getFlightConfig() const ; 
+       const char* getFlightConfig() const ;  // --flightconfig  
+       const char* getNamePrefix() const ;    // --nameprefix
        FlightPath* getFlightPath();  // lazy cannot be const  
 
        std::string getContextAnnotation() const ;

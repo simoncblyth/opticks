@@ -2361,12 +2361,17 @@ const char* Opticks::getFlightConfig() const
     return flight_config.empty() ? NULL : flight_config.c_str() ;
 }
 
+const char* Opticks::getNamePrefix() const    // --nameprefix
+{
+    const std::string& nameprefix = m_cfg->getNamePrefix() ; 
+    return nameprefix.empty() ? NULL : nameprefix.c_str() ;
+}
 
 /**
 Opticks::getFlightPath
 ------------------------
 
-NB further flightpath hookup is required hooking it into Composoition and setting m_ctrl, 
+NB further flightpath hookup is required hooking it into Composition and setting m_ctrl, 
 see OpticksHub::::configureFlightPath
 
 **/
@@ -2377,15 +2382,18 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
     {
         const char* dir = getFlightPathDir() ;
         float scale = m_cfg->getFlightPathScale() ;
-        const char* flight_config = getFlightConfig(); 
+        const char* flightconfig = getFlightConfig(); 
+        const char* nameprefix = getNamePrefix(); 
 
         LOG(LEVEL) 
              << " Creating flightpath from file " 
+             << " --flightconfig " << flightconfig 
+             << " --nameprefix " << nameprefix 
              << " --flightpathdir " << dir  
              << " --flightpathscale " << scale 
              ;   
 
-        m_flightpath = new FlightPath(flight_config) ; 
+        m_flightpath = new FlightPath(flightconfig, nameprefix) ; 
         m_flightpath->setScale(scale) ; 
     }
     return m_flightpath ; 

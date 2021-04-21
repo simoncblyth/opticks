@@ -50,10 +50,10 @@ prefix="flight__${pvn}__${emm}__${period}__"
 which $bin
 pwd
 
-flight="idir=/tmp,prefix=$prefix,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
+flight="idir=/tmp,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
 
 flight-cmd(){ cat << EOC
-$bin --targetpvn $pvn --flightconfig $flight -e "$emm"  $*
+$bin --targetpvn $pvn --flightconfig "$flight" --nameprefix "$prefix" -e "$emm"  $*
 EOC
 }
 

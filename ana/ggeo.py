@@ -568,7 +568,7 @@ class GGeo(object):
         lv = self.lv[nidx].decode('utf-8')  
         nrpo = self.nrpo[nidx]
         nrpo_s = "nrpo( %6d %5d %5d %5d )" % tuple(nrpo)
-        print( "%s  %80s  %80s " % (nrpo_s, pv, lv) )
+        print( "%s  %55s  %55s " % (nrpo_s, pv, lv) )
 
     def bbsmry(self, nidx):
         gg = self

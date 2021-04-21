@@ -56,13 +56,21 @@ struct NFlightConfig ;
 
 #include "plog/Severity.h"
 
+/**
+FlightPath
+============
+
+Flightpath is a resident of Opticks that is lazily  
+instanciated by Opticks::getFlightPath 
+
+**/
+
 class OKCORE_API FlightPath {
 public:
     static const char* FILENAME ; 
     static const plog::Severity LEVEL ; 
 
-
-    FlightPath(const char* dir);
+    FlightPath(const char* cfg, const char* nameprefix);
     std::string description(const char* msg="FlightPath");
     void Summary(const char* msg="FlightPath::Summary");
 public:
@@ -91,6 +99,7 @@ private:
     void setPathFormat(const char* path_format);
 private:
     NFlightConfig*                       m_cfg ; 
+    const char*                          m_nameprefix ; 
     const char*                          m_flightpathdir ; 
     NPY<float>*                          m_eluc ;  
     InterpolatedView*                    m_view ;  

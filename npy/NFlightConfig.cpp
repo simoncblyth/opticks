@@ -34,7 +34,6 @@ NFlightConfig::NFlightConfig(const char* cfg)
     scale0(1.f), 
     scale1(1.f),
     idir("/tmp"),
-    prefix("flight"),
     ext(".jpg"),
     period(4),
     framelimit(3),
@@ -47,7 +46,6 @@ NFlightConfig::NFlightConfig(const char* cfg)
     bconfig->addFloat("scale1", &scale1 );
 
     bconfig->addString("idir",   &idir );
-    bconfig->addString("prefix", &prefix );
     bconfig->addString("ext",    &ext );   
     bconfig->addInt("period",    &period);
     bconfig->addInt("framelimit", &framelimit );
@@ -82,9 +80,9 @@ Index -1 returns a printf format string to be filled with a single integer.
 
 **/
 
-std::string NFlightConfig::getFrameName(int index) const 
+std::string NFlightConfig::getFrameName(const char* prefix, int index) const 
 {
-    return BFile::MakeName(index, width, prefix.c_str(), ext.c_str() ); 
+    return BFile::MakeName(index, width, prefix, ext.c_str() ); 
 }
 
 

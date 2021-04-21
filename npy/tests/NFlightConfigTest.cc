@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     NFlightConfig cfg(flightconfig.c_str());
     cfg.dump();
   
-    std::cout << cfg.getFrameName(0) << std::endl ; 
+    std::cout << cfg.getFrameName("prefix", 0) << std::endl ; 
 
     return 0 ; 
 }

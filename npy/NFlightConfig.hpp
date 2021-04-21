@@ -50,13 +50,12 @@ struct NPY_API NFlightConfig
     float       scale0 ;   
     float       scale1 ; 
     std::string idir ; 
-    std::string prefix ; 
     std::string ext ;    // typically .jpg due to its compression
     int         period ;  
     int         framelimit ;  
     int         framelimit_override ;  // from envvar 
 
     unsigned getFrameLimit() const ;
-    std::string getFrameName(int index) const ;
+    std::string getFrameName(const char* prefix, int index) const ;
 };
 

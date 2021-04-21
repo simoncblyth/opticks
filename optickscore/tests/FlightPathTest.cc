@@ -44,16 +44,21 @@ int MockRenderer::Preinit()
 }
 
 
+
+// NB : canonical FlightPath now resides inside Opticks and is instanciated by Opticks::getFlightPath 
+
 MockRenderer::MockRenderer(Opticks* ok)
     :
     m_preinit(Preinit()),
     m_ok(ok), 
     m_limit(0),
     m_composition(new Composition(m_ok)),
-    m_flightpath(new FlightPath(m_ok->getFlightPathDir()))
+    m_flightpath(new FlightPath(m_ok->getFlightConfig(), m_ok->getNamePrefix()))
 {
     init(); 
 }
+
+
 
 
 void  MockRenderer::init()
