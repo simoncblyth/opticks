@@ -53,6 +53,11 @@ NFlightConfig::NFlightConfig(const char* cfg)
     bconfig->parse();
 }
 
+const char*  NFlightConfig::getCfg() const 
+{
+    return bconfig->cfg ; 
+}
+
 void NFlightConfig::dump(const char* msg) const
 {
     bconfig->dump(msg);

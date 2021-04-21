@@ -133,5 +133,16 @@ const char* SPath::Resolve(const char* dir, const char* name)
     return Resolve(s.c_str()); 
 }
 
+const char* SPath::Resolve(const char* dir, const char* reldir, const char* name)
+{
+    std::stringstream ss ; 
+    ss << dir << "/" ; 
+    if(reldir) ss << reldir << "/" ; 
+    ss << name ; 
+
+    std::string s = ss.str(); 
+    return Resolve(s.c_str()); 
+}
+
 
 

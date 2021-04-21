@@ -20,9 +20,10 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
+struct SMeta ; 
 class SCtrl ; 
-
 
 // npy-
 template<typename T> class NPY ; 
@@ -52,6 +53,7 @@ being invoked from OpTracer::flightpath
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+class Opticks ; 
 struct NFlightConfig ; 
 
 #include "plog/Severity.h"
@@ -70,7 +72,10 @@ public:
     static const char* FILENAME ; 
     static const plog::Severity LEVEL ; 
 
-    FlightPath(const char* cfg, const char* nameprefix);
+    FlightPath(const Opticks* ok, const char* cfg, const char* nameprefix);
+private:
+    void init(); 
+public:
     std::string description(const char* msg="FlightPath");
     void Summary(const char* msg="FlightPath::Summary");
 public:
@@ -95,9 +100,15 @@ public:
 public:
     void setPathFormat(const char* dir, const char* reldir);
     void fillPathFormat(char* path, unsigned path_size, unsigned index );
+public:
+    void record(double dt ); 
+    void getMinMaxAvg(double& mn, double& mx, double& av) const ;
+    template<typename T> void setMeta(const char* key, T value); 
+    void save() const ; 
 private:
     void setPathFormat(const char* path_format);
 private:
+    const Opticks*                       m_ok ; 
     NFlightConfig*                       m_cfg ; 
     const char*                          m_nameprefix ; 
     const char*                          m_flightpathdir ; 
@@ -106,8 +117,13 @@ private:
     bool                                 m_verbose ; 
     int                                  m_ivperiod ; 
     SCtrl*                               m_ctrl ; 
+    SMeta*                               m_meta ; 
     float                                m_scale ; 
     const char*                          m_path_format ;  
+    std::vector<double>                  m_frame_times ; 
+
+    const char*                          m_outdir ; 
+    const char*                          m_outreldir ; 
 
 };
 

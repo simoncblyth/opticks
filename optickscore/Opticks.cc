@@ -521,7 +521,7 @@ Composition* Opticks::getComposition() const
 
 
 
-std::string Opticks::getArgLine()
+std::string Opticks::getArgLine() const 
 {
     return m_sargs->getArgLine();
 }
@@ -2393,7 +2393,7 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
              << " --flightpathscale " << scale 
              ;   
 
-        m_flightpath = new FlightPath(flightconfig, nameprefix) ; 
+        m_flightpath = new FlightPath(this, flightconfig, nameprefix) ; 
         m_flightpath->setScale(scale) ; 
     }
     return m_flightpath ; 

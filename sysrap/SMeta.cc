@@ -25,11 +25,18 @@ SMeta* SMeta::Load(const char* dir, const char* name) // static
 }
 
 
-
+void SMeta::save(const char* dir, const char* reldir, const char* name) const
+{
+    const char* path = SPath::Resolve(dir, reldir, name); 
+    save(path); 
+}
 void SMeta::save(const char* dir, const char* name) const
 {
     const char* path = SPath::Resolve(dir, name); 
-
+    save(path); 
+}
+void SMeta::save(const char* path) const 
+{
     std::ofstream out(path, std::ios::out);
     if(!out.is_open())
     {

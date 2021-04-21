@@ -53,7 +53,7 @@ MockRenderer::MockRenderer(Opticks* ok)
     m_ok(ok), 
     m_limit(0),
     m_composition(new Composition(m_ok)),
-    m_flightpath(new FlightPath(m_ok->getFlightConfig(), m_ok->getNamePrefix()))
+    m_flightpath(new FlightPath(m_ok, m_ok->getFlightConfig(), m_ok->getNamePrefix()))
 {
     init(); 
 }
@@ -247,10 +247,21 @@ void test_fillPathFormat(Opticks* ok)
 
     fp->setPathFormat("$TMP", "FlightPathTest");  
 
+    unsigned limit = 10 ; 
+    fp->setMeta("limit", limit ); 
+
+    const char* check_cc = "check_cc" ; 
+    std::string check_s = "check_s" ; 
+
+    fp->setMeta("check_cc", check_cc );
+    fp->setMeta("check_s", check_s );
+
+
     char path[128]; 
-    for(unsigned index=0 ; index < 10 ; index++)
+    for(unsigned index=0 ; index < limit ; index++)
     {
         fp->fillPathFormat(path, 128, index ); 
+        fp->record(double(index)); 
         std::cout 
             << std::setw(4) << index 
             << " : "
@@ -258,6 +269,7 @@ void test_fillPathFormat(Opticks* ok)
             << std::endl 
             ;
     }
+    fp->save(); 
 }
 
 

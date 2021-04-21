@@ -37,44 +37,44 @@ The --names option dumps PV and LV names, for example dumping PV, LV names of th
 of all volumes in ridx 1 thru 4::
 
     epsilon:ana blyth$ ggeo.py 1:5/0/* --names 
-    nrpo( 176632     1     0     0 )                                                       PMT_3inch_log_phys0x4437d00                                                            PMT_3inch_log0x4436df0 
-    nrpo( 176633     1     0     1 )                                                      PMT_3inch_body_phys0x4437230                                                       PMT_3inch_body_log0x4436ce0 
-    nrpo( 176634     1     0     2 )                                                    PMT_3inch_inner1_phys0x44372b0                                                     PMT_3inch_inner1_log0x4436f00 
-    nrpo( 176635     1     0     3 )                                                    PMT_3inch_inner2_phys0x4437360                                                     PMT_3inch_inner2_log0x4437010 
-    nrpo( 176636     1     0     4 )                                                      PMT_3inch_cntr_phys0x4437410                                                       PMT_3inch_cntr_log0x4437120 
-    nrpo(  70960     2     0     0 )                                                        pLPMT_NNVT_MCPPMT0x3cbba60                                                   NNVTMCPPMTlMaskVirtual0x3cb41a0 
-    nrpo(  70961     2     0     1 )                                                          NNVTMCPPMTpMask0x3c9fe00                                                          NNVTMCPPMTlMask0x3c9fc80 
-    nrpo(  70962     2     0     2 )                                           NNVTMCPPMT_PMT_20inch_log_phys0x3c9fe80                                                NNVTMCPPMT_PMT_20inch_log0x3caec40 
-    nrpo(  70963     2     0     3 )                                          NNVTMCPPMT_PMT_20inch_body_phys0x3caefa0                                           NNVTMCPPMT_PMT_20inch_body_log0x3caeb60 
-    nrpo(  70964     2     0     4 )                                        NNVTMCPPMT_PMT_20inch_inner1_phys0x3caf030                                         NNVTMCPPMT_PMT_20inch_inner1_log0x3caed60 
-    nrpo(  70965     2     0     5 )                                        NNVTMCPPMT_PMT_20inch_inner2_phys0x3caf0f0                                         NNVTMCPPMT_PMT_20inch_inner2_log0x3caee80 
-    nrpo(  70966     3     0     0 )                                                   pLPMT_Hamamatsu_R128600x3cbbae0                                              HamamatsuR12860lMaskVirtual0x3c9a5c0 
-    nrpo(  70967     3     0     1 )                                                     HamamatsuR12860pMask0x3c9b320                                                     HamamatsuR12860lMask0x3c9b1a0 
-    nrpo(  70968     3     0     2 )                                      HamamatsuR12860_PMT_20inch_log_phys0x3c9b3b0                                           HamamatsuR12860_PMT_20inch_log0x3c93920 
-    nrpo(  70969     3     0     3 )                                     HamamatsuR12860_PMT_20inch_body_phys0x345b3c0                                      HamamatsuR12860_PMT_20inch_body_log0x3c93830 
-    nrpo(  70970     3     0     4 )                                   HamamatsuR12860_PMT_20inch_inner1_phys0x3c94040                                    HamamatsuR12860_PMT_20inch_inner1_log0x345b160 
-    nrpo(  70971     3     0     5 )                                   HamamatsuR12860_PMT_20inch_inner2_phys0x3c94100                                    HamamatsuR12860_PMT_20inch_inner2_log0x345b290 
-    nrpo( 304636     4     0     0 )                                    mask_PMT_20inch_vetolMaskVirtual_phys0x4433460                                         mask_PMT_20inch_vetolMaskVirtual0x3ca10e0 
-    nrpo( 304637     4     0     1 )                                                mask_PMT_20inch_vetopMask0x3ca1e40                                                mask_PMT_20inch_vetolMask0x3ca1cb0 
-    nrpo( 304638     4     0     2 )                                                 PMT_20inch_veto_log_phys0x3ca5fa0                                                      PMT_20inch_veto_log0x3ca5470 
-    nrpo( 304639     4     0     3 )                                                PMT_20inch_veto_body_phys0x3ca57a0                                                 PMT_20inch_veto_body_log0x3ca5360 
-    nrpo( 304640     4     0     4 )                                              PMT_20inch_veto_inner1_phys0x3ca5820                                               PMT_20inch_veto_inner1_log0x3ca5580 
-    nrpo( 304641     4     0     5 )                                              PMT_20inch_veto_inner2_phys0x3ca58d0                                               PMT_20inch_veto_inner2_log0x3ca5690 
+    nrpo( 176632     1     0     0 )                              PMT_3inch_log_phys0x4437d00                                   PMT_3inch_log0x4436df0 
+    nrpo( 176633     1     0     1 )                             PMT_3inch_body_phys0x4437230                              PMT_3inch_body_log0x4436ce0 
+    nrpo( 176634     1     0     2 )                           PMT_3inch_inner1_phys0x44372b0                            PMT_3inch_inner1_log0x4436f00 
+    nrpo( 176635     1     0     3 )                           PMT_3inch_inner2_phys0x4437360                            PMT_3inch_inner2_log0x4437010 
+    nrpo( 176636     1     0     4 )                             PMT_3inch_cntr_phys0x4437410                              PMT_3inch_cntr_log0x4437120 
+    nrpo(  70960     2     0     0 )                               pLPMT_NNVT_MCPPMT0x3cbba60                          NNVTMCPPMTlMaskVirtual0x3cb41a0 
+    nrpo(  70961     2     0     1 )                                 NNVTMCPPMTpMask0x3c9fe00                                 NNVTMCPPMTlMask0x3c9fc80 
+    nrpo(  70962     2     0     2 )                  NNVTMCPPMT_PMT_20inch_log_phys0x3c9fe80                       NNVTMCPPMT_PMT_20inch_log0x3caec40 
+    nrpo(  70963     2     0     3 )                 NNVTMCPPMT_PMT_20inch_body_phys0x3caefa0                  NNVTMCPPMT_PMT_20inch_body_log0x3caeb60 
+    nrpo(  70964     2     0     4 )               NNVTMCPPMT_PMT_20inch_inner1_phys0x3caf030                NNVTMCPPMT_PMT_20inch_inner1_log0x3caed60 
+    nrpo(  70965     2     0     5 )               NNVTMCPPMT_PMT_20inch_inner2_phys0x3caf0f0                NNVTMCPPMT_PMT_20inch_inner2_log0x3caee80 
+    nrpo(  70966     3     0     0 )                          pLPMT_Hamamatsu_R128600x3cbbae0                     HamamatsuR12860lMaskVirtual0x3c9a5c0 
+    nrpo(  70967     3     0     1 )                            HamamatsuR12860pMask0x3c9b320                            HamamatsuR12860lMask0x3c9b1a0 
+    nrpo(  70968     3     0     2 )             HamamatsuR12860_PMT_20inch_log_phys0x3c9b3b0                  HamamatsuR12860_PMT_20inch_log0x3c93920 
+    nrpo(  70969     3     0     3 )            HamamatsuR12860_PMT_20inch_body_phys0x345b3c0             HamamatsuR12860_PMT_20inch_body_log0x3c93830 
+    nrpo(  70970     3     0     4 )          HamamatsuR12860_PMT_20inch_inner1_phys0x3c94040           HamamatsuR12860_PMT_20inch_inner1_log0x345b160 
+    nrpo(  70971     3     0     5 )          HamamatsuR12860_PMT_20inch_inner2_phys0x3c94100           HamamatsuR12860_PMT_20inch_inner2_log0x345b290 
+    nrpo( 304636     4     0     0 )           mask_PMT_20inch_vetolMaskVirtual_phys0x4433460                mask_PMT_20inch_vetolMaskVirtual0x3ca10e0 
+    nrpo( 304637     4     0     1 )                       mask_PMT_20inch_vetopMask0x3ca1e40                       mask_PMT_20inch_vetolMask0x3ca1cb0 
+    nrpo( 304638     4     0     2 )                        PMT_20inch_veto_log_phys0x3ca5fa0                             PMT_20inch_veto_log0x3ca5470 
+    nrpo( 304639     4     0     3 )                       PMT_20inch_veto_body_phys0x3ca57a0                        PMT_20inch_veto_body_log0x3ca5360 
+    nrpo( 304640     4     0     4 )                     PMT_20inch_veto_inner1_phys0x3ca5820                      PMT_20inch_veto_inner1_log0x3ca5580 
+    nrpo( 304641     4     0     5 )                     PMT_20inch_veto_inner2_phys0x3ca58d0                      PMT_20inch_veto_inner2_log0x3ca5690 
+    epsilon:ana blyth$ 
+
 
 Same for ridx 5 thru 8::
 
-    epsilon:ana blyth$ ggeo.py 5:9/0/* --names 
-    nrpo(  69668     5     0     0 )                                                              lUpper_phys0x35b5ac0                                                                   lUpper0x35b5a00 
-    nrpo(  69078     6     0     0 )                                                          lFasteners_phys0x34ce040                                                               lFasteners0x34cdf00 
-    nrpo(  68488     7     0     0 )                                                              lSteel_phys0x352c890                                                                   lSteel0x352c760 
-    nrpo(  70258     8     0     0 )                                                           lAddition_phys0x35ff770                                                                lAddition0x35ff5f0 
-
+    epsilon:ana blyth$  ggeo.py 5:9/0/* --names 
+    nrpo(  69668     5     0     0 )                                     lUpper_phys0x35b5ac0                                          lUpper0x35b5a00 
+    nrpo(  69078     6     0     0 )                                 lFasteners_phys0x34ce040                                      lFasteners0x34cdf00 
+    nrpo(  68488     7     0     0 )                                     lSteel_phys0x352c890                                          lSteel0x352c760 
+    nrpo(  70258     8     0     0 )                                  lAddition_phys0x35ff770                                       lAddition0x35ff5f0 
 
 A convenient visualization workflow is to use the above python triple indexing to find PV names to target, eg::
 
     OTracerTest --targetpvn lFasteners_phys   ## do not include the 0x reference in the targetted name, as it will differ between machines/invokations 
     OTracerTest --target    69078             ## using raw indices is NOT advisable as they go stale very quickly with changed geometry
-
 
 Volume idsmry dumping::
 

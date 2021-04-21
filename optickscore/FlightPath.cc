@@ -20,6 +20,10 @@
 #include <cstdio>
 #include <cstring>
 #include <sstream>
+#include <algorithm>
+
+#include "SMeta.hh"
+#include "SPath.hh"
 
 // brap-
 #include "BFile.hh"
@@ -31,7 +35,10 @@
 #include "NPY.hpp"
 #include "NFlightConfig.hpp"
 
+#include "NP.hh"
+
 // optickscore-
+#include "Opticks.hh"
 #include "OpticksConst.hh"
 #include "InterpolatedView.hh"
 #include "FlightPath.hh"
@@ -46,9 +53,9 @@ void FlightPath::setCtrl(SCtrl* ctrl)
     m_ctrl = ctrl ; 
 }
 
-
-FlightPath::FlightPath(const char* cfg, const char* nameprefix)  
+FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* nameprefix)  
     :
+    m_ok(ok), 
     m_cfg(new NFlightConfig(cfg)),
     m_nameprefix(strdup(nameprefix)), 
     m_flightpathdir(m_cfg->idir.c_str()),
@@ -57,10 +64,69 @@ FlightPath::FlightPath(const char* cfg, const char* nameprefix)
     m_verbose(false),
     m_ivperiod(128),
     m_ctrl(NULL),
+    m_meta(new SMeta),
     m_scale(1.f),
-    m_path_format(nullptr)
+    m_path_format(nullptr),
+    m_outdir(nullptr),
+    m_outreldir(nullptr)
 {
+    init(); 
     LOG(LEVEL) << " m_flightpathdir " << m_flightpathdir ; 
+}
+
+void FlightPath::init()
+{
+}
+
+
+void FlightPath::getMinMaxAvg(double& mn, double& mx, double& av) const 
+{
+    const std::vector<double>& t = m_frame_times ; 
+
+    typedef std::vector<double>::const_iterator IT ;     
+    IT mn_ = std::min_element( t.begin(), t.end()  ); 
+    IT mx_ = std::max_element( t.begin(), t.end()  ); 
+    double sum = std::accumulate(t.begin(), t.end(), 0. );   
+
+    mn = *mn_ ; 
+    mx = *mx_ ; 
+    av = t.size() > 0 ? sum/double(t.size()) : -1. ;  
+}
+
+template<typename T>
+void FlightPath::setMeta(const char* key, T value)
+{
+    nlohmann::json& js = m_meta->js ; 
+    js[key] = value ; 
+}
+
+void FlightPath::save() const 
+{
+    nlohmann::json& js = m_meta->js ; 
+
+    js["argline"] = m_ok->getArgLine(); 
+    js["cfg"] = m_cfg->getCfg(); 
+    js["nameprefix"] = m_nameprefix ;  
+    js["scale"] = m_scale ;  
+    js["emm"] = m_ok->getEnabledMergedMesh() ;  
+
+    double mn, mx, av ; 
+    getMinMaxAvg(mn, mx, av); 
+
+    js["mn"] = mn ;  
+    js["mx"] = mx ;  
+    js["av"] = av ;  
+
+    std::string js_name = m_nameprefix ; 
+    js_name += ".json" ; 
+    m_meta->save(m_outdir, m_outreldir, js_name.c_str() ); 
+
+    const char* dir = SPath::Resolve(m_outdir, m_outreldir); 
+        
+    std::string np_name = m_nameprefix ; 
+    np_name += ".npy" ;  
+
+    NP::Write(dir, np_name.c_str(), (double*)m_frame_times.data(),  m_frame_times.size() );  
 }
 
 int* FlightPath::getIVPeriodPtr()
@@ -111,9 +177,11 @@ void FlightPath::load()
     assert( m_eluc ) ; 
 }
 
-
 void FlightPath::setPathFormat(const char* dir, const char* reldir)
 {
+    m_outdir = strdup(dir) ; 
+    m_outreldir = reldir ? strdup(reldir) : nullptr ;  
+
     std::string name = m_cfg->getFrameName(m_nameprefix, -1); 
     bool create = true ; 
     std::string fmt = BFile::preparePath(dir ? dir : "$TMP", reldir, name.c_str(), create);  
@@ -139,7 +207,10 @@ void FlightPath::fillPathFormat(char* path, unsigned path_size, unsigned index )
     snprintf(path, path_size, m_path_format, index );
 }
 
-
+void FlightPath::record(double dt)
+{
+    m_frame_times.push_back(dt); 
+}
 
 std::string FlightPath::description(const char* msg)
 {
@@ -173,4 +244,14 @@ InterpolatedView* FlightPath::getInterpolatedView()
     return m_view ;             
 }
 
+
+
+template void FlightPath::setMeta<unsigned long long>(const char*, unsigned long long ) ; 
+template void FlightPath::setMeta<unsigned>(const char*, unsigned ) ; 
+template void FlightPath::setMeta<int>(const char*, int ) ; 
+template void FlightPath::setMeta<float>(const char*, float ) ; 
+
+template void FlightPath::setMeta<std::string>(const char*, std::string ) ; 
+template void FlightPath::setMeta<const char*>(const char*, const char* ) ; 
+template void FlightPath::setMeta<char*>(const char*,  char* ) ; 
 

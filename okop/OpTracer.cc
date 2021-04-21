@@ -234,6 +234,14 @@ void OpTracer::single_snap(const char* path)
 Hmm its better now, but still most of this belongs elsewhere. 
 Its kinda involved as have to coordinate between several objects.
 
+Hmm: would be better to use some protocols so the OpTracer instance 
+can can be effectively passed down to methods that do the below at the lower Opticks level 
+and call back up to OpTracer level to *render* and *snap* 
+
+Then can eliminate this method::
+
+    m_ok->flightpath(this) ; 
+
 **/
 
 void OpTracer::flightpath(const char* dir, const char* reldir )   
@@ -256,8 +264,7 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
 
     int total_period = iv->getTotalPeriod(); 
 
-    int i1 = framelimit > 0 ? std::min( framelimit, total_period)  : total_period ; 
-
+    int imax = framelimit > 0 ? std::min( framelimit, total_period)  : total_period ; 
 
     std::string top_annotation = m_ok->getContextAnnotation(); 
 
@@ -267,26 +274,37 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
         << " period " << period
         << " total_period " << total_period
         << " framelimit " << framelimit << " (OPTICKS_FLIGHT_FRAMELIMIT) " 
-        << " i1 " << i1 
+        << " imax " << imax 
         << " top_annotation " << top_annotation
         << " anno_line_height " << anno_line_height
         ;
 
+    fp->setMeta<int>("framelimit", framelimit); 
+    fp->setMeta<int>("total_period", total_period); 
+    fp->setMeta<int>("imax", imax); 
+    fp->setMeta<std::string>("top_annotation", top_annotation ); 
+
+
     char path[128] ; 
-    for(int i=0 ; i < i1 ; i++)
+    for(int i=0 ; i < imax ; i++)
     {
         m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
 
         double dt = render();   // calling OTracer::trace_
         
-        std::string bottom_annotation = m_ok->getFrameAnnotation(i, i1, dt ); 
+        std::string bottom_annotation = m_ok->getFrameAnnotation(i, imax, dt ); 
 
         fp->fillPathFormat(path, 128, i ); 
+
+        fp->record(dt);  
 
         LOG(info) << bottom_annotation << " path " << path ; 
 
         m_ocontext->snap(path, bottom_annotation.c_str(), top_annotation.c_str(), anno_line_height );  // downloads GPU output_buffer pixels into image file
     }
+
+    fp->save(); 
+
     LOG(info) << "]" ;
 }
 

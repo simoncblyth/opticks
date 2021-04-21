@@ -249,7 +249,7 @@ class OKCORE_API Opticks {
        const char* getLastArg();
        int         getLastArgInt();
        int         getInteractivityLevel() const ;  // from m_mode (OpticksMode)
-       std::string getArgLine();
+       std::string getArgLine() const ;
    public:
        unsigned    getOptiXVersion();
        unsigned    getGeant4Version();

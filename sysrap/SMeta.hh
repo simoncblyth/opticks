@@ -21,7 +21,9 @@ struct SYSRAP_API SMeta
    static const plog::Severity LEVEL ; 
 
    nlohmann::json js ;      
+   void save(const char* dir, const char* reldir, const char* name) const ; 
    void save(const char* dir, const char* name) const ; 
+   void save(const char* path) const ; 
 
 };
 

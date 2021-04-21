@@ -55,6 +55,7 @@ struct NPY_API NFlightConfig
     int         framelimit ;  
     int         framelimit_override ;  // from envvar 
 
+    const char* getCfg() const ; 
     unsigned getFrameLimit() const ;
     std::string getFrameName(const char* prefix, int index) const ;
 };

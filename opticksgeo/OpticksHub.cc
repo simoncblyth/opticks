@@ -562,6 +562,8 @@ void OpticksHub::configureVizState(NConfigurable* scene)
 OpticksHub::setupFlightPath
 -----------------------------------
 
+Hmm now that Composition is Opticks resident can move this apart from m_ctrl ?
+
 **/
 
 void OpticksHub::setupFlightPath()
