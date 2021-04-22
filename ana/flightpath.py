@@ -19,8 +19,11 @@
 #
 
 """
-flightpath.py
-==============
+flightpath.py : NOT IN ACTIVE USE, instead use flight.py flight.sh 
+====================================================================
+
+* TODO: ELIMINATE THIS AFTER INTEGRATING PLOTTING INTO flight_plt.py 
+
 
 FlightPath not in active use, easier to directly create the eye-look-up array, 
 as done in mm0prim2.py  and use quiver plots to debug the path.

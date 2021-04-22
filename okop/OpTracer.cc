@@ -139,6 +139,15 @@ double OpTracer::render()
 }   
 
 
+void OpTracer::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
+{
+    m_ocontext->snap(path, bottom_line, top_line, line_height ); 
+}
+
+
+
+
+
 /**
 OpTracer::snap
 ----------------
@@ -246,6 +255,9 @@ Then can eliminate this method::
 
 void OpTracer::flightpath(const char* dir, const char* reldir )   
 {
+
+    SRenderer* renderer = (SRenderer*)this ; 
+
     m_hub->setupFlightPath();   // FlightPath instanciated here and held by Opticks
 
     m_composition->setViewType(View::FLIGHTPATH);
@@ -290,7 +302,7 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
     {
         m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
 
-        double dt = render();   // calling OTracer::trace_
+        double dt = renderer->render();   // calling OTracer::trace_
         
         std::string bottom_annotation = m_ok->getFrameAnnotation(i, imax, dt ); 
 
@@ -300,11 +312,15 @@ void OpTracer::flightpath(const char* dir, const char* reldir )
 
         LOG(info) << bottom_annotation << " path " << path ; 
 
-        m_ocontext->snap(path, bottom_annotation.c_str(), top_annotation.c_str(), anno_line_height );  // downloads GPU output_buffer pixels into image file
+        renderer->snap(path, bottom_annotation.c_str(), top_annotation.c_str(), anno_line_height );  // downloads GPU output_buffer pixels into image file
     }
 
     fp->save(); 
 
     LOG(info) << "]" ;
 }
+
+
+
+
 

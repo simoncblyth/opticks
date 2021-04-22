@@ -4,6 +4,11 @@ usage(){ cat << EOU
 flight.sh
 ===============
 
+See also 
+
+* docs/misc/making_flightpath_raytrace_movies.rst
+
+
 Creates sequences of raytrace geometry snapshot images in jpg/png/ppm.
 Using jpg has the advantage of lossy compression with small file sizes.  
 
@@ -19,15 +24,21 @@ defined which overrides the framelimit from the --flightconfig option::
 
     PERIOD=8 EMM=~5, PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
 
-
     PERIOD=8 PVN=lLowerChimney_phys flight.sh --rtx 1 --cvd 1 
 
 
 TODO:
 
-1. output directory and jpg naming control
-2. named eye-look-up flightpath input arrays selected by config from .opticks/flightpath input dir 
-3. metadata json output : geocache digest, mean/min/max frame time, full commandline, GPU, RTX setting  etc..
+0. use a nameprefix reldir to keep all the files from a flight.sh organized
+1. named eye-look-up flightpath input arrays selected by config from .opticks/flightpath input dir 
+
+   * use this for some XZ plane rotation
+
+2. things missing from metadata json output 
+
+   * geocache digest, 
+   * GPU name, cvd, RTX setting  etc..
+
 
 EOU
 }

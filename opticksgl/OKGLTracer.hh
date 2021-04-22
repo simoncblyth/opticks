@@ -58,7 +58,7 @@ Establishes OpenGL interop between oxrap.OTracer and oglrap.Scene/Renderer
 Canonical m_tracer instance is a resident of ok.OKPropagator 
 when visualization is enabled (m_viz).
 
-SRenderer protocol base, just: "double render()"
+SRenderer protocol base, a few methods: "double render()" and "void snap(const char* path, ...)"
 **/
 
 
@@ -70,7 +70,10 @@ class OKGL_API OKGLTracer : public SRenderer {
        OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate);
     public:
        void prepareTracer();
-       double render();     // fulfils SRenderer protocol
+    public:
+       // fulfil SRenderer protocol
+       double render();    
+       void snap(const char* path, const char* top_line, const char* bottom_line, unsigned line_height); 
     private:
        void init();
     private:

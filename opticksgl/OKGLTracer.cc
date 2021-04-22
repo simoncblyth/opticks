@@ -205,3 +205,15 @@ double OKGLTracer::render()
 }   
 
 
+void OKGLTracer::snap(const char* path, const char* bottom_line,  const char* top_line, unsigned line_height )
+{
+    LOG(LEVEL)
+        << " SRenderer protocol placeholder "
+        << "  path " << path 
+        << "  bottom_line " << bottom_line 
+        << "  top_line " << top_line 
+        << "  line_height " << line_height 
+        ;
+
+}
+

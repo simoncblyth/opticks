@@ -26,55 +26,36 @@ making_flightpath_raytrace_movies
 
 1. use ggeo.py and triplet indexing to find the corresponding global node index (nidx)::
 
-    epsilon:ok blyth$ ggeo.py 6/
-    nidx:69078 triplet:6000000 sh:5e0014 sidx:    0   nrpo( 69078     6     0     0 )  shape(  94  20                             uni10x34cdcb0                            Water///Steel) 
+    epsilon:opticks blyth$ ggeo.py 5:9/0/* --names
+    nrpo(  69668     5     0     0 )                                     lUpper_phys0x35b5ac0                                          lUpper0x35b5a00 
+    nrpo(  69078     6     0     0 )                                 lFasteners_phys0x34ce040                                      lFasteners0x34cdf00 
+    nrpo(  68488     7     0     0 )                                     lSteel_phys0x352c890                                          lSteel0x352c760 
+    nrpo(  70258     8     0     0 )                                  lAddition_phys0x35ff770                                       lAddition0x35ff5f0 
 
-    epsilon:tests blyth$ ggeo.py 8/
-    nidx:70258 triplet:8000000 sh:600010 sidx:    0   nrpo( 70258     8     0     0 )  shape(  96  16                     uni_acrylic30x35ff3d0                          Water///Acrylic) 
-
-
+    epsilon:ana blyth$ ggeo.py 5:9/0/*  --brief
+    nidx: 69668 triplet: 5000000 sh:5f0014 sidx:    0   nrpo(  69668     5     0     0 )  shape(  95  20                       base_steel0x360d8f0                            Water///Steel) 
+    nidx: 69078 triplet: 6000000 sh:5e0014 sidx:    0   nrpo(  69078     6     0     0 )  shape(  94  20                             uni10x34cdcb0                            Water///Steel) 
+    nidx: 68488 triplet: 7000000 sh:5d0014 sidx:    0   nrpo(  68488     7     0     0 )  shape(  93  20                   sStrutBallhead0x352a360                            Water///Steel) 
+    nidx: 70258 triplet: 8000000 sh:600010 sidx:    0   nrpo(  70258     8     0     0 )  shape(  96  16                     uni_acrylic30x35ff3d0                          Water///Acrylic) 
 
 2. create an eye-look-up flight path, that is saved to /tmp/flightpath.npy::
 
-   flight.py --roundaboutxy
-   python3 ./ana/flight.py --roundaboutxy
    flight.sh --roundaboutxy 
-
-   NB the flightpath is in center-extent "model" frame so it can be reused for any sized object 
 
 3. launch visualization, press U to switch to the animated InterpolatedView created from the flightpath::
 
+   OTracerTest --targetpvn lFasteners_phys
    OTracerTest --target 69078
 
 4. for non-interative raytrace jpg snaps around the flightpath::
 
-   OpFlightPathTest --target 69078
+   PERIOD=8 PVN=lLowerChimney_phys EMM=~5, flight.sh --rtx 1 --cvd 1 
 
-   OPTICKS_FLIGHTPATH_SNAPLIMIT=1000 OpFlightPathTest --target 69078
+5. make an mp4 from the jpg snaps.  flight.sh can automatically 
+   create the mp4 assuming env repo and ffmpeg are installed
 
-   OpFlightPathTest --target 70258 --flightpathscale 2  
-   OPTICKS_FLIGHTPATH_SNAPLIMIT=1000 OpFlightPathTest --target 70258 --flightpathscale 2 
-
-
-5. make an mp4 from the jpg snaps::
-
-    okop
-    okop-flightpath-mp4
-
-    okop-flightpath-mp4()
-    {
-        cd $TMP/okop/OpFlightPathTest
-        okop-ffmpeg-setup
-        ffmpeg -i FlightPath%05d.jpg FlightPath.mp4 && rm FlightPath*.jpg 
-    }
-
-
-
-5. when doing the above snaps on remote ssh node P::
+6. when doing the above snaps on remote ssh node P::
 
    okop ; cd tests
    ./OpFlightPathTest.sh grab 
-
-
-
 
