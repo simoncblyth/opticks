@@ -36,40 +36,51 @@ for example dumping all all volumes in ridx 5,6,7,8 with::
 The --names option dumps PV and LV names, for example dumping PV, LV names of the first instance placement 
 of all volumes in ridx 1 thru 4::
 
-    epsilon:ana blyth$ ggeo.py 1:5/0/* --names 
-    nrpo( 176632     1     0     0 )                              PMT_3inch_log_phys0x4437d00                                   PMT_3inch_log0x4436df0 
-    nrpo( 176633     1     0     1 )                             PMT_3inch_body_phys0x4437230                              PMT_3inch_body_log0x4436ce0 
-    nrpo( 176634     1     0     2 )                           PMT_3inch_inner1_phys0x44372b0                            PMT_3inch_inner1_log0x4436f00 
-    nrpo( 176635     1     0     3 )                           PMT_3inch_inner2_phys0x4437360                            PMT_3inch_inner2_log0x4437010 
-    nrpo( 176636     1     0     4 )                             PMT_3inch_cntr_phys0x4437410                              PMT_3inch_cntr_log0x4437120 
-    nrpo(  70960     2     0     0 )                               pLPMT_NNVT_MCPPMT0x3cbba60                          NNVTMCPPMTlMaskVirtual0x3cb41a0 
-    nrpo(  70961     2     0     1 )                                 NNVTMCPPMTpMask0x3c9fe00                                 NNVTMCPPMTlMask0x3c9fc80 
-    nrpo(  70962     2     0     2 )                  NNVTMCPPMT_PMT_20inch_log_phys0x3c9fe80                       NNVTMCPPMT_PMT_20inch_log0x3caec40 
-    nrpo(  70963     2     0     3 )                 NNVTMCPPMT_PMT_20inch_body_phys0x3caefa0                  NNVTMCPPMT_PMT_20inch_body_log0x3caeb60 
-    nrpo(  70964     2     0     4 )               NNVTMCPPMT_PMT_20inch_inner1_phys0x3caf030                NNVTMCPPMT_PMT_20inch_inner1_log0x3caed60 
-    nrpo(  70965     2     0     5 )               NNVTMCPPMT_PMT_20inch_inner2_phys0x3caf0f0                NNVTMCPPMT_PMT_20inch_inner2_log0x3caee80 
-    nrpo(  70966     3     0     0 )                          pLPMT_Hamamatsu_R128600x3cbbae0                     HamamatsuR12860lMaskVirtual0x3c9a5c0 
-    nrpo(  70967     3     0     1 )                            HamamatsuR12860pMask0x3c9b320                            HamamatsuR12860lMask0x3c9b1a0 
-    nrpo(  70968     3     0     2 )             HamamatsuR12860_PMT_20inch_log_phys0x3c9b3b0                  HamamatsuR12860_PMT_20inch_log0x3c93920 
-    nrpo(  70969     3     0     3 )            HamamatsuR12860_PMT_20inch_body_phys0x345b3c0             HamamatsuR12860_PMT_20inch_body_log0x3c93830 
-    nrpo(  70970     3     0     4 )          HamamatsuR12860_PMT_20inch_inner1_phys0x3c94040           HamamatsuR12860_PMT_20inch_inner1_log0x345b160 
-    nrpo(  70971     3     0     5 )          HamamatsuR12860_PMT_20inch_inner2_phys0x3c94100           HamamatsuR12860_PMT_20inch_inner2_log0x345b290 
-    nrpo( 304636     4     0     0 )           mask_PMT_20inch_vetolMaskVirtual_phys0x4433460                mask_PMT_20inch_vetolMaskVirtual0x3ca10e0 
-    nrpo( 304637     4     0     1 )                       mask_PMT_20inch_vetopMask0x3ca1e40                       mask_PMT_20inch_vetolMask0x3ca1cb0 
-    nrpo( 304638     4     0     2 )                        PMT_20inch_veto_log_phys0x3ca5fa0                             PMT_20inch_veto_log0x3ca5470 
-    nrpo( 304639     4     0     3 )                       PMT_20inch_veto_body_phys0x3ca57a0                        PMT_20inch_veto_body_log0x3ca5360 
-    nrpo( 304640     4     0     4 )                     PMT_20inch_veto_inner1_phys0x3ca5820                      PMT_20inch_veto_inner1_log0x3ca5580 
-    nrpo( 304641     4     0     5 )                     PMT_20inch_veto_inner2_phys0x3ca58d0                      PMT_20inch_veto_inner2_log0x3ca5690 
-    epsilon:ana blyth$ 
-
+    epsilon:GItemList blyth$ ggeo.py 1:5/ --names
+    nrpo( 176632     1     0     0 )                        PMT_3inch_log_phys0x4437d00                             PMT_3inch_log0x4436df0  114 PMT_3inch_pmt_solid0x4436210 
+    nrpo( 176633     1     0     1 )                       PMT_3inch_body_phys0x4437230                        PMT_3inch_body_log0x4436ce0  112 PMT_3inch_body_solid_ell_ell_helper0x44364d0 
+    nrpo( 176634     1     0     2 )                     PMT_3inch_inner1_phys0x44372b0                      PMT_3inch_inner1_log0x4436f00  110 PMT_3inch_inner1_solid_ell_helper0x4436560 
+    nrpo( 176635     1     0     3 )                     PMT_3inch_inner2_phys0x4437360                      PMT_3inch_inner2_log0x4437010  111 PMT_3inch_inner2_solid_ell_helper0x4436640 
+    nrpo( 176636     1     0     4 )                       PMT_3inch_cntr_phys0x4437410                        PMT_3inch_cntr_log0x4437120  113 PMT_3inch_cntr_solid0x44366d0 
+    nrpo(  70960     2     0     0 )                         pLPMT_NNVT_MCPPMT0x3cbba60                    NNVTMCPPMTlMaskVirtual0x3cb41a0  103 NNVTMCPPMTsMask_virtual0x3cb3b40 
+    nrpo(  70961     2     0     1 )                           NNVTMCPPMTpMask0x3c9fe00                           NNVTMCPPMTlMask0x3c9fc80   98 NNVTMCPPMTsMask0x3c9fa80 
+    nrpo(  70962     2     0     2 )            NNVTMCPPMT_PMT_20inch_log_phys0x3c9fe80                 NNVTMCPPMT_PMT_20inch_log0x3caec40  102 NNVTMCPPMT_PMT_20inch_pmt_solid0x3ca9320 
+    nrpo(  70963     2     0     3 )           NNVTMCPPMT_PMT_20inch_body_phys0x3caefa0            NNVTMCPPMT_PMT_20inch_body_log0x3caeb60  101 NNVTMCPPMT_PMT_20inch_body_solid0x3cad240 
+    nrpo(  70964     2     0     4 )         NNVTMCPPMT_PMT_20inch_inner1_phys0x3caf030          NNVTMCPPMT_PMT_20inch_inner1_log0x3caed60   99 NNVTMCPPMT_PMT_20inch_inner1_solid_1_Ellipsoid0x3503950 
+    nrpo(  70965     2     0     5 )         NNVTMCPPMT_PMT_20inch_inner2_phys0x3caf0f0          NNVTMCPPMT_PMT_20inch_inner2_log0x3caee80  100 NNVTMCPPMT_PMT_20inch_inner2_solid0x3cae8f0 
+    nrpo(  70966     3     0     0 )                    pLPMT_Hamamatsu_R128600x3cbbae0               HamamatsuR12860lMaskVirtual0x3c9a5c0  109 HamamatsuR12860sMask_virtual0x3c99fb0 
+    nrpo(  70967     3     0     1 )                      HamamatsuR12860pMask0x3c9b320                      HamamatsuR12860lMask0x3c9b1a0  104 HamamatsuR12860sMask0x3c9afa0 
+    nrpo(  70968     3     0     2 )       HamamatsuR12860_PMT_20inch_log_phys0x3c9b3b0            HamamatsuR12860_PMT_20inch_log0x3c93920  108 HamamatsuR12860_PMT_20inch_pmt_solid_1_90x3cb68e0 
+    nrpo(  70969     3     0     3 )      HamamatsuR12860_PMT_20inch_body_phys0x345b3c0       HamamatsuR12860_PMT_20inch_body_log0x3c93830  107 HamamatsuR12860_PMT_20inch_body_solid_1_90x3ca7680 
+    nrpo(  70970     3     0     4 )    HamamatsuR12860_PMT_20inch_inner1_phys0x3c94040     HamamatsuR12860_PMT_20inch_inner1_log0x345b160  105 HamamatsuR12860_PMT_20inch_inner1_solid_I0x3c96fa0 
+    nrpo(  70971     3     0     5 )    HamamatsuR12860_PMT_20inch_inner2_phys0x3c94100     HamamatsuR12860_PMT_20inch_inner2_log0x345b290  106 HamamatsuR12860_PMT_20inch_inner2_solid_1_90x3c93610 
+    nrpo( 304636     4     0     0 )     mask_PMT_20inch_vetolMaskVirtual_phys0x4433460          mask_PMT_20inch_vetolMaskVirtual0x3ca10e0  126 mask_PMT_20inch_vetosMask_virtual0x3ca0a80 
+    nrpo( 304637     4     0     1 )                 mask_PMT_20inch_vetopMask0x3ca1e40                 mask_PMT_20inch_vetolMask0x3ca1cb0  121 mask_PMT_20inch_vetosMask0x3ca1aa0 
+    nrpo( 304638     4     0     2 )                  PMT_20inch_veto_log_phys0x3ca5fa0                       PMT_20inch_veto_log0x3ca5470  125 PMT_20inch_veto_pmt_solid_1_20x3ca38b0 
+    nrpo( 304639     4     0     3 )                 PMT_20inch_veto_body_phys0x3ca57a0                  PMT_20inch_veto_body_log0x3ca5360  124 PMT_20inch_veto_body_solid_1_20x3ca4230 
+    nrpo( 304640     4     0     4 )               PMT_20inch_veto_inner1_phys0x3ca5820                PMT_20inch_veto_inner1_log0x3ca5580  122 PMT_20inch_veto_inner1_solid0x3ca4f10 
+    nrpo( 304641     4     0     5 )               PMT_20inch_veto_inner2_phys0x3ca58d0                PMT_20inch_veto_inner2_log0x3ca5690  123 PMT_20inch_veto_inner2_solid0x3ca5130 
 
 Same for ridx 5 thru 8::
 
-    epsilon:ana blyth$  ggeo.py 5:9/0/* --names 
-    nrpo(  69668     5     0     0 )                                     lUpper_phys0x35b5ac0                                          lUpper0x35b5a00 
-    nrpo(  69078     6     0     0 )                                 lFasteners_phys0x34ce040                                      lFasteners0x34cdf00 
-    nrpo(  68488     7     0     0 )                                     lSteel_phys0x352c890                                          lSteel0x352c760 
-    nrpo(  70258     8     0     0 )                                  lAddition_phys0x35ff770                                       lAddition0x35ff5f0 
+    epsilon:GItemList blyth$ ggeo.py 5:9/ --names 
+    nrpo(  69668     5     0     0 )                               lUpper_phys0x35b5ac0                                    lUpper0x35b5a00   95 base_steel0x360d8f0 
+    nrpo(  69078     6     0     0 )                           lFasteners_phys0x34ce040                                lFasteners0x34cdf00   94 uni10x34cdcb0 
+    nrpo(  68488     7     0     0 )                               lSteel_phys0x352c890                                    lSteel0x352c760   93 sStrutBallhead0x352a360 
+    nrpo(  70258     8     0     0 )                            lAddition_phys0x35ff770                                 lAddition0x35ff5f0   96 uni_acrylic30x35ff3d0 
+
+Names for first two placements of ridx 5 thru 8::
+
+    epsilon:GItemList blyth$ ggeo.py 5:9/0:2 --names 
+    nrpo(  69668     5     0     0 )                               lUpper_phys0x35b5ac0                                    lUpper0x35b5a00   95 base_steel0x360d8f0 
+    nrpo(  69669     5     1     0 )                               lUpper_phys0x35b5bb0                                    lUpper0x35b5a00   95 base_steel0x360d8f0 
+    nrpo(  69078     6     0     0 )                           lFasteners_phys0x34ce040                                lFasteners0x34cdf00   94 uni10x34cdcb0 
+    nrpo(  69079     6     1     0 )                           lFasteners_phys0x34ce140                                lFasteners0x34cdf00   94 uni10x34cdcb0 
+    nrpo(  68488     7     0     0 )                               lSteel_phys0x352c890                                    lSteel0x352c760   93 sStrutBallhead0x352a360 
+    nrpo(  68489     7     1     0 )                               lSteel_phys0x352a4a0                                    lSteel0x352c760   93 sStrutBallhead0x352a360 
+    nrpo(  70258     8     0     0 )                            lAddition_phys0x35ff770                                 lAddition0x35ff5f0   96 uni_acrylic30x35ff3d0 
+    nrpo(  70259     8     1     0 )                            lAddition_phys0x35ff870                                 lAddition0x35ff5f0   96 uni_acrylic30x35ff3d0 
+
 
 A convenient visualization workflow is to use the above python triple indexing to find PV names to target, eg::
 
@@ -187,8 +198,9 @@ class GGeo(object):
 
     all_volume_names = list(map(lambda _:"all_volume_%s" % _, "nodeinfo identity center_extent bbox transforms inverse_transforms".split()))
 
-    PV = "{keydir}/GNodeLib/all_volume_PVNames.txt"
-    LV = "{keydir}/GNodeLib/all_volume_LVNames.txt"
+    PV = "{keydir}/GNodeLib/all_volume_PVNames.txt"   # full node list of PV names
+    LV = "{keydir}/GNodeLib/all_volume_LVNames.txt"   # full node list of LV names
+    MS = "{keydir}/GItemList/GMeshLib.txt"            # list of unique solid names 
  
     @classmethod   
     def Path(cls, ridx, name, subdir="GMergedMesh", alldir="GNodeLib"): 
@@ -220,6 +232,7 @@ class GGeo(object):
     def Txt(cls, name): 
         path = cls.TxtPath(name) 
         return np.array(tx_load(path)) 
+        #return np.loadtxt(path, dtype="|S100")
 
     @classmethod   
     def Attn(cls, ridx, name): 
@@ -236,6 +249,20 @@ class GGeo(object):
         self.blib = np.array(blib.names().split("\n"))
         self.pv = np.loadtxt(self.PV.format(**locals()), dtype="|S100")
         self.lv = np.loadtxt(self.LV.format(**locals()), dtype="|S100")
+        self.ms = np.loadtxt(self.MS.format(**locals()), dtype="|S100")
+        self.msn = list(map(lambda _:_.decode('utf-8'),self.ms)) 
+
+        self.mlib = self.get_txt("GItemList/GMeshLib.txt", "_mlib") 
+        self.midx = (self.all_volume_identity[:,2] >> 16) & 0xffff  
+        self.bidx = (self.all_volume_identity[:,2] >>  0) & 0xffff  
+        #self.mlibnames = self.mlib[self.midx]   # mesh/lv names
+        #self.blibnames = self.blib[self.bidx]   # boundary names
+
+    #mlib = property(lambda self:self.get_txt("GItemList/GMeshLib.txt", "_mlib")) 
+    #midx = property(lambda self:(self.all_volume_identity[:,2] >> 16) & 0xffff ) 
+    #bidx = property(lambda self:(self.all_volume_identity[:,2] >>  0) & 0xffff ) 
+    #mlibnames = property(lambda self:self.mlib[self.midx])   # mesh/lv names
+    #blibnames = property(lambda self:self.blib[self.bidx])   # boundary names
 
     def get_array(self, ridx, name):
         """
@@ -463,14 +490,6 @@ class GGeo(object):
     placement_iidentity4 = property(lambda self:self.get_array(4,"placement_iidentity"))
     placement_iidentity5 = property(lambda self:self.get_array(5,"placement_iidentity"))
 
-    mlib = property(lambda self:self.get_txt("GItemList/GMeshLib.txt", "_mlib")) 
-
-    midx = property(lambda self:(self.all_volume_identity[:,2] >> 16) & 0xffff ) 
-    bidx = property(lambda self:(self.all_volume_identity[:,2] >>  0) & 0xffff ) 
-
-    mlibnames = property(lambda self:self.mlib[self.midx])   # mesh/lv names
-    blibnames = property(lambda self:self.blib[self.bidx])   # boundary names
-
 
     def __call__(self,*args):
         """
@@ -495,13 +514,15 @@ class GGeo(object):
         if len(args) == 1: 
             nidx = args[0]
             nidxs.append(nidx)
-        elif len(args) == 2:
-            ridx,pidx = args
-            oidx = 0 
-            nidx = self.get_node_index(ridx,pidx,oidx)
-            nidxs.append(nidx)
-        elif len(args) == 3:
-            a_ridx,a_pidx,a_oidx = args
+        elif len(args) == 2 or len(args) == 3:
+            if len(args) == 2:
+                a_ridx,a_pidx = args
+                a_oidx = "*"
+            elif len(args) == 3:
+                a_ridx,a_pidx,a_oidx = args
+            else:
+                assert 0 
+            pass 
             log.debug("a_ridx %s a_pidx %s a_oidx %s" % (a_ridx,a_pidx,a_oidx)) 
 
             if type(a_ridx) is int:
@@ -513,8 +534,15 @@ class GGeo(object):
             pass
           
             log.debug("ridxs %s " % str(ridxs))
+
+            if type(a_pidx) is int:
+                pidxs = [a_pidx]
+            elif ":" in a_pidx:
+                pidxs = range(*map(int,a_pidx.split(":")))
+            else:
+                assert 0, a_pidx
+            pass
  
-            pidx = int(a_pidx) 
 
             for ridx in ridxs:
                 if a_oidx == "*":
@@ -523,9 +551,11 @@ class GGeo(object):
                 else:
                     oidxs = [a_oidx]
                 pass 
-                for oidx in oidxs:
-                    nidx = self.get_node_index(ridx,pidx,oidx)
-                    nidxs.append(nidx)
+                for pidx in pidxs:
+                    for oidx in oidxs:
+                        nidx = self.get_node_index(ridx,pidx,oidx)
+                        nidxs.append(nidx)
+                    pass
                 pass
             pass
         else:
@@ -566,9 +596,11 @@ class GGeo(object):
     def names(self, nidx):
         pv = self.pv[nidx].decode('utf-8')  
         lv = self.lv[nidx].decode('utf-8')  
+        midx = self.midx[nidx] 
         nrpo = self.nrpo[nidx]
         nrpo_s = "nrpo( %6d %5d %5d %5d )" % tuple(nrpo)
-        print( "%s  %55s  %55s " % (nrpo_s, pv, lv) )
+        msn = self.msn[midx]
+        print( "%s %50s %50s  %3d %s " % (nrpo_s, pv, lv, midx, msn) )
 
     def bbsmry(self, nidx):
         gg = self

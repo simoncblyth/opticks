@@ -303,7 +303,7 @@ GMergedMesh* GGeoTest::initCreateCSG()
   
         unsigned num_mismatch_pt = 0 ; 
         std::vector<glm::mat4> mismatch_placements ; 
-        GParts* parts = GParts::Create( pts, solids, num_mismatch_pt, &mismatch_placements ) ; 
+        GParts* parts = GParts::Create( m_ok, pts, solids, num_mismatch_pt, &mismatch_placements ) ; 
         assert( num_mismatch_pt == 0 ); 
         assert( mismatch_placements.size() == 0); 
 

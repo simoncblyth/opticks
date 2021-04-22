@@ -22,9 +22,9 @@ defined which overrides the framelimit from the --flightconfig option::
 
     PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
 
-    PERIOD=8 EMM=~5, PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
+    FLIGHT=RoundaboutXY PERIOD=8 EMM=~5, PVN=lFasteners_phys    flight.sh --rtx 1 --cvd 1 
 
-    FLIGHT=RoundaboutZX PERIOD=8 PVN=lLowerChimney_phys flight.sh --rtx 1 --cvd 1    # XY, ZX, YZ
+    FLIGHT=RoundaboutZX PERIOD=8 EMM=~5, PVN=lLowerChimney_phys flight.sh --rtx 1 --cvd 1    # XY, ZX, YZ
 
 
 TODO:

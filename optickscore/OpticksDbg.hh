@@ -58,6 +58,7 @@ class OKCORE_API OpticksDbg
        unsigned getNumMaskPhoton() const ;
        unsigned getNumX4PolySkip() const ;
        unsigned getNumCSGSkipLV() const ;
+       unsigned getNumDeferredCSGSkipLV() const ;
     public:
        NPY<unsigned>* getMaskBuffer() const ;
        const std::vector<unsigned>&  getMask();
@@ -70,6 +71,7 @@ class OKCORE_API OpticksDbg
        bool isMaskPhoton(unsigned record_id) const ;
        bool isX4PolySkip(unsigned lvIdx) const ;
        bool isCSGSkipLV(unsigned lvIdx) const ;   // --csgskiplv
+       bool isDeferredCSGSkipLV(unsigned lvIdx) const ;   // --deferredcsgskiplv
        bool isEnabledMergedMesh(unsigned mm) const ;
        const char* getEnabledMergedMesh() const  ; 
     public:
@@ -95,6 +97,7 @@ class OKCORE_API OpticksDbg
        std::vector<unsigned> m_mask ; 
        std::vector<unsigned> m_x4polyskip ; 
        std::vector<unsigned> m_csgskiplv ; 
+       std::vector<unsigned> m_deferredcsgskiplv ; 
        unsigned long long    m_enabledmergedmesh ;   // limited to 64 
 
        std::vector<std::pair<int,int> > m_instancemodulo ;   // (1,5),(2,10)  modulo scaledown for each mergedmesh index 

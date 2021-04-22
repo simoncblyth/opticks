@@ -92,6 +92,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     //m_dbghitmask("TO,SC,BT,SA"),  // see OEvent::OEvent
     m_x4polyskip(""),
     m_csgskiplv(""),
+    m_deferredcsgskiplv(""),
     m_accel(""),
     m_seqmap(""),
     m_dbgseqhis("0"),
@@ -1048,6 +1049,13 @@ void OpticksCfg<Listener>::init()
        ("csgskiplv",  boost::program_options::value<std::string>(&m_csgskiplv), csgskiplv );
 
 
+   char deferredcsgskiplv[256];
+   snprintf(deferredcsgskiplv,256, "comma delimited string listing lvIdx indices to skip in GParts::Create which is called deferred (aka postcache). Default %s", m_deferredcsgskiplv.c_str() );
+   m_desc.add_options()
+       ("deferredcsgskiplv",  boost::program_options::value<std::string>(&m_deferredcsgskiplv), deferredcsgskiplv );
+
+
+
    m_desc.add_options()
        ("accel",        boost::program_options::value<std::string>(&m_accel), "OptiX Accel structure builder, comma delimited list. See OGeo. CAUTION case sensitive Bvh/Trbvh/Sbvh/NoAccel  ");
 
@@ -1808,6 +1816,12 @@ template <class Listener>
 const std::string& OpticksCfg<Listener>::getCSGSkipLV() const   // --csgskiplv
 {
     return m_csgskiplv ; 
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getDeferredCSGSkipLV() const   // --deferredcsgskiplv
+{
+    return m_deferredcsgskiplv ; 
 }
 
 

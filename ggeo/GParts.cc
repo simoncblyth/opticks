@@ -55,6 +55,7 @@
 #include "GPt.hh"
 #include "GParts.hh"
 
+#include "Opticks.hh"
 
 #include "PLOG.hh"
 
@@ -216,7 +217,7 @@ GMergedMesh::mergeVolumeAnalytic
 
 **/
 
-GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
+GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
 {
     LOG(LEVEL) << "[  deferred creation from GPts" ; 
 
@@ -234,6 +235,18 @@ GParts* GParts::Create(const GPts* pts, const std::vector<const NCSG*>& solids, 
     {
         const GPt* pt = pts->getPt(i); 
         int   lvIdx = pt->lvIdx ; 
+
+        if(ok->isDeferredCSGSkipLV(lvIdx))  // --deferredcsgskiplv 
+        {
+            LOG(info) 
+                << "isDeferredCSGSkipLV"
+                << " i " << i 
+                << " num_pt " << num_pt 
+                << " lvIdx " << lvIdx 
+                ; 
+            continue ;              
+        }
+
         int   ndIdx = pt->ndIdx ; 
         const std::string& spec = pt->spec ; 
         const glm::mat4& placement = pt->placement ; 

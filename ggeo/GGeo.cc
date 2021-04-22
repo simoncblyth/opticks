@@ -1347,7 +1347,7 @@ void GGeo::deferredCreateGParts()
         LOG(LEVEL) << "[ GParts::Create i/nmm " << i << "/" << nmm ; 
         unsigned num_mismatch_pt = 0 ; 
         std::vector<glm::mat4> mismatch_placements ; 
-        GParts* parts = GParts::Create( pts, solids, num_mismatch_pt, &mismatch_placements ) ; 
+        GParts* parts = GParts::Create( m_ok, pts, solids, num_mismatch_pt, &mismatch_placements ) ; 
 
         if(num_mismatch_pt > 0 )
         {

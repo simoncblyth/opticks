@@ -469,8 +469,13 @@ class OKCORE_API Opticks {
        bool isOtherPhoton(unsigned record_id) const ;
        bool isMaskPhoton(unsigned record_id) const ;
        bool isX4PolySkip(unsigned lvIdx) const ;
-       bool isCSGSkipLV(unsigned lvIdx) const ;
+
+       bool isCSGSkipLV(unsigned lvIdx) const ;          // --csgskiplv
        unsigned getNumCSGSkipLV() const ;
+
+       bool isDeferredCSGSkipLV(unsigned lvIdx) const ;  // --deferredcsgskiplv
+       unsigned getNumDeferredCSGSkipLV() const ;
+
 
        bool isEnabledMergedMesh(unsigned mm) const ;
        const char* getEnabledMergedMesh() const  ; 

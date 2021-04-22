@@ -745,14 +745,26 @@ bool Opticks::isX4PolySkip(unsigned lvIdx) const
 {
    return m_dbg->isX4PolySkip(lvIdx);
 }
+
 bool Opticks::isCSGSkipLV(unsigned lvIdx) const 
 {
    return m_dbg->isCSGSkipLV(lvIdx);
 }
+bool Opticks::isDeferredCSGSkipLV(unsigned lvIdx) const 
+{
+   return m_dbg->isDeferredCSGSkipLV(lvIdx);
+}
+
 unsigned Opticks::getNumCSGSkipLV() const 
 {
    return m_dbg->getNumCSGSkipLV() ; 
 }
+unsigned Opticks::getNumDeferredCSGSkipLV() const 
+{
+   return m_dbg->getNumDeferredCSGSkipLV() ; 
+}
+
+
 
 
 bool Opticks::isEnabledMergedMesh(unsigned mm) const   // --enabledmergedmesh,e

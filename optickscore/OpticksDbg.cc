@@ -71,6 +71,11 @@ unsigned OpticksDbg::getNumCSGSkipLV() const
 {
     return m_csgskiplv.size() ; 
 }
+unsigned OpticksDbg::getNumDeferredCSGSkipLV() const 
+{
+    return m_deferredcsgskiplv.size() ; 
+}
+
 
 
 
@@ -135,6 +140,7 @@ void OpticksDbg::postconfigure()
    const std::string& mask = m_cfg->getMask() ;
    const std::string& x4polyskip = m_cfg->getX4PolySkip() ;
    const std::string& csgskiplv = m_cfg->getCSGSkipLV() ;
+   const std::string& deferredcsgskiplv = m_cfg->getDeferredCSGSkipLV() ;
    const std::string& enabledmm = m_cfg->getEnabledMergedMesh() ;
 
 
@@ -145,10 +151,12 @@ void OpticksDbg::postconfigure()
    postconfigure( mask, m_mask );
    postconfigure( x4polyskip, m_x4polyskip );
    postconfigure( csgskiplv, m_csgskiplv );
+   postconfigure( deferredcsgskiplv, m_deferredcsgskiplv );
    postconfigure( enabledmm, m_enabledmergedmesh );
 
 
    LOG(debug) << " m_csgskiplv  " << m_csgskiplv.size() ; 
+   LOG(debug) << " m_deferredcsgskiplv  " << m_deferredcsgskiplv.size() ; 
    //assert(  m_csgskiplv.size() > 0 );  
 
 
@@ -246,6 +254,12 @@ bool OpticksDbg::isCSGSkipLV(unsigned lvIdx) const   // --csgskiplv
 {
     return IsListed(lvIdx, m_csgskiplv, false); 
 }
+bool OpticksDbg::isDeferredCSGSkipLV(unsigned lvIdx) const   // --deferredcsgskiplv
+{
+    return IsListed(lvIdx, m_deferredcsgskiplv, false); 
+}
+
+
 bool OpticksDbg::isEnabledMergedMesh(unsigned mm) const 
 {
     std::bitset<64> bs(m_enabledmergedmesh); 

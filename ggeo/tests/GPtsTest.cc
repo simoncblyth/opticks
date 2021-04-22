@@ -50,6 +50,7 @@ See notes/issues/x016.rst
 
 struct testGPts
 {
+    const Opticks* ok ; 
     const GMeshLib* meshlib ; 
     GBndLib*  bndlib ; 
     const std::vector<const NCSG*>& solids  ; 
@@ -64,8 +65,9 @@ struct testGPts
     std::string path ; 
     int rc ; 
 
-    testGPts( const GMeshLib* meshlib_, GBndLib* bndlib_, const GMergedMesh* mm_ ) 
+    testGPts( const Opticks* ok_, const GMeshLib* meshlib_, GBndLib* bndlib_, const GMergedMesh* mm_ ) 
         :
+        ok(ok_),
         meshlib(meshlib_),
         bndlib(bndlib_),
         solids(meshlib->getSolids()),
@@ -75,7 +77,7 @@ struct testGPts
         pts(mm->getPts()),
         verbosity(1), 
         num_mismatch_pt(0),
-        parts2(GParts::Create( pts, solids, num_mismatch_pt, &mismatch_placements)),
+        parts2(GParts::Create( ok, pts, solids, num_mismatch_pt, &mismatch_placements)),
         path(BFile::FormPath("$TMP/ggeo/GPtsTest",BStr::itoa(imm))),
         rc(0)
     {
@@ -164,7 +166,7 @@ int main(int argc, char** argv)
     {
         LOG(info) << "testing mm " << i ;    
         GMergedMesh* mm = geolib->getMergedMesh(i);
-        testGPts t(meshlib, bndlib, mm); 
+        testGPts t(&ok, meshlib, bndlib, mm); 
         rc += t.rc ; 
     }
 
