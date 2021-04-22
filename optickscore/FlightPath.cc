@@ -179,7 +179,7 @@ void FlightPath::load()
     if(m_eluc == NULL)
     {
         LOG(fatal) 
-            << " MISSING expected path " << path << " for name "  << m_name
+            << " MISSING expected path " << path << " for flight "  << m_flight
             << " (bad name OR need to run ana/makeflight.sh)"
             ;
     }
