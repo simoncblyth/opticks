@@ -21,14 +21,13 @@
 #include "Opticks.hh"
 #include "OpMgr.hh"
 
-const char* TMPDIR = "$TMP/okop/OpFlightPathTest" ; 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
     Opticks ok(argc, argv, "--tracer");   // tempted to put --embedded here 
     OpMgr op(&ok);
-    op.flightpath(TMPDIR);
+    op.render_flightpath();
     return 0 ; 
 }
 

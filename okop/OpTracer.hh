@@ -67,7 +67,7 @@ class OKOP_API OpTracer : public SRenderer {
        OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate);
     public:
        void snap(const char* dir, const char* reldir=NULL);
-       void flightpath(const char* dir, const char* reldir=NULL);
+       void render_flightpath();
     private:
        static int Preinit();
        void init();

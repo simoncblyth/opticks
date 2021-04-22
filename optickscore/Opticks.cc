@@ -2393,8 +2393,12 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
              << " --flightpathscale " << scale 
              ;   
 
-        m_flightpath = new FlightPath(this, flightconfig, nameprefix) ; 
-        m_flightpath->setScale(scale) ; 
+
+        FlightPath* fp = new FlightPath(this, flightconfig, nameprefix) ;
+        fp->setScale(scale) ; 
+        m_composition->setFlightPath(fp);
+
+        m_flightpath = fp ; 
     }
     return m_flightpath ; 
 }

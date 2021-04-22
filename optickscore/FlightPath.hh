@@ -30,6 +30,7 @@ template<typename T> class NPY ;
 
 // opticks-
 class InterpolatedView ; 
+class Composition ; 
 
 /**
 FlightPath
@@ -53,6 +54,7 @@ being invoked from OpTracer::flightpath
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+class SRenderer ; 
 class Opticks ; 
 struct NFlightConfig ; 
 
@@ -82,6 +84,8 @@ public:
     unsigned getNumViews() const ;
     void setCtrl(SCtrl* ctrl); 
 public:
+    void render(SRenderer* renderer);
+public:
     void setVerbose(bool verbose=true);
     void setInterpolatedViewPeriod(unsigned int ivperiod); 
     void setScale(float scale);
@@ -98,7 +102,7 @@ private:
 public:
     int* getIVPeriodPtr();
 public:
-    void setPathFormat(const char* dir, const char* reldir);
+    void setPathFormat();
     void fillPathFormat(char* path, unsigned path_size, unsigned index );
 public:
     void record(double dt ); 
@@ -109,6 +113,7 @@ private:
     void setPathFormat(const char* path_format);
 private:
     const Opticks*                       m_ok ; 
+    Composition*                         m_composition ; 
     NFlightConfig*                       m_cfg ; 
     const char*                          m_nameprefix ; 
     const char*                          m_flightpathdir ; 
@@ -121,9 +126,7 @@ private:
     float                                m_scale ; 
     const char*                          m_path_format ;  
     std::vector<double>                  m_frame_times ; 
-
     const char*                          m_outdir ; 
-    const char*                          m_outreldir ; 
 
 };
 

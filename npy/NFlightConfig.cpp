@@ -34,6 +34,7 @@ NFlightConfig::NFlightConfig(const char* cfg)
     scale0(1.f), 
     scale1(1.f),
     idir("/tmp"),
+    odir("$TMP"),
     ext(".jpg"),
     period(4),
     framelimit(3),
@@ -46,6 +47,7 @@ NFlightConfig::NFlightConfig(const char* cfg)
     bconfig->addFloat("scale1", &scale1 );
 
     bconfig->addString("idir",   &idir );
+    bconfig->addString("odir",   &odir );
     bconfig->addString("ext",    &ext );   
     bconfig->addInt("period",    &period);
     bconfig->addInt("framelimit", &framelimit );

@@ -24,6 +24,7 @@
 
 #include "SMeta.hh"
 #include "SPath.hh"
+#include "SRenderer.hh"
 
 // brap-
 #include "BFile.hh"
@@ -40,8 +41,10 @@
 // optickscore-
 #include "Opticks.hh"
 #include "OpticksConst.hh"
+#include "View.hh"
 #include "InterpolatedView.hh"
 #include "FlightPath.hh"
+#include "Composition.hh"
 
 
 const char* FlightPath::FILENAME = "flightpath.npy"  ; 
@@ -56,6 +59,7 @@ void FlightPath::setCtrl(SCtrl* ctrl)
 FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* nameprefix)  
     :
     m_ok(ok), 
+    m_composition(ok->getComposition()),
     m_cfg(new NFlightConfig(cfg)),
     m_nameprefix(strdup(nameprefix)), 
     m_flightpathdir(m_cfg->idir.c_str()),
@@ -67,8 +71,7 @@ FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* nameprefi
     m_meta(new SMeta),
     m_scale(1.f),
     m_path_format(nullptr),
-    m_outdir(nullptr),
-    m_outreldir(nullptr)
+    m_outdir(m_cfg->odir.c_str())
 {
     init(); 
     LOG(LEVEL) << " m_flightpathdir " << m_flightpathdir ; 
@@ -76,6 +79,7 @@ FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* nameprefi
 
 void FlightPath::init()
 {
+    setPathFormat(); 
 }
 
 
@@ -119,14 +123,12 @@ void FlightPath::save() const
 
     std::string js_name = m_nameprefix ; 
     js_name += ".json" ; 
-    m_meta->save(m_outdir, m_outreldir, js_name.c_str() ); 
-
-    const char* dir = SPath::Resolve(m_outdir, m_outreldir); 
+    m_meta->save(m_outdir,  js_name.c_str() ); 
         
     std::string np_name = m_nameprefix ; 
     np_name += ".npy" ;  
 
-    NP::Write(dir, np_name.c_str(), (double*)m_frame_times.data(),  m_frame_times.size() );  
+    NP::Write(m_outdir, np_name.c_str(), (double*)m_frame_times.data(),  m_frame_times.size() );  
 }
 
 int* FlightPath::getIVPeriodPtr()
@@ -177,18 +179,13 @@ void FlightPath::load()
     assert( m_eluc ) ; 
 }
 
-void FlightPath::setPathFormat(const char* dir, const char* reldir)
+void FlightPath::setPathFormat()
 {
-    m_outdir = strdup(dir) ; 
-    m_outreldir = reldir ? strdup(reldir) : nullptr ;  
-
     std::string name = m_cfg->getFrameName(m_nameprefix, -1); 
     bool create = true ; 
-    std::string fmt = BFile::preparePath(dir ? dir : "$TMP", reldir, name.c_str(), create);  
-
+    std::string fmt = BFile::preparePath(m_outdir ? m_outdir : "$TMP", nullptr, name.c_str(), create);  
     LOG(info) 
-        << " dir " << dir 
-        << " reldir " << reldir 
+        << " m_outdir " << m_outdir 
         << " name " << name
         << " fmt " << fmt 
         ;   
@@ -242,6 +239,70 @@ InterpolatedView* FlightPath::getInterpolatedView()
 {
     if(!m_view) m_view = makeInterpolatedView();
     return m_view ;             
+}
+
+
+void FlightPath::render( SRenderer* renderer )
+{
+    LOG(LEVEL) << "[" ; 
+ 
+    FlightPath* fp = this ; // m_ok->getFlightPath(); 
+
+    m_composition->setViewType(View::FLIGHTPATH);
+
+    InterpolatedView* iv = m_composition->getInterpolatedView() ; assert(iv); 
+
+    // fp->setPathFormat();  // now done in init
+
+    unsigned period = fp->getPeriod();     // typical values 4,8,16   (1:fails with many nan)
+
+    iv->setAnimatorModeForPeriod(period);  // change animation "speed" to give *period* interpolation steps between views         
+
+    int framelimit = fp->getFrameLimit(); 
+
+    int total_period = iv->getTotalPeriod(); 
+
+    int imax = framelimit > 0 ? std::min( framelimit, total_period)  : total_period ; 
+
+    std::string top_annotation = m_ok->getContextAnnotation(); 
+
+    unsigned anno_line_height = m_ok->getAnnoLineHeight() ; 
+
+    LOG(LEVEL) 
+        << " period " << period
+        << " total_period " << total_period
+        << " framelimit " << framelimit << " (OPTICKS_FLIGHT_FRAMELIMIT) " 
+        << " imax " << imax 
+        << " top_annotation " << top_annotation
+        << " anno_line_height " << anno_line_height
+        ;
+
+    fp->setMeta<int>("framelimit", framelimit); 
+    fp->setMeta<int>("total_period", total_period); 
+    fp->setMeta<int>("imax", imax); 
+    fp->setMeta<std::string>("top_annotation", top_annotation ); 
+
+
+    char path[128] ; 
+    for(int i=0 ; i < imax ; i++)
+    {
+        m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
+
+        double dt = renderer->render();   // calling OTracer::trace_
+        
+        std::string bottom_annotation = m_ok->getFrameAnnotation(i, imax, dt ); 
+
+        fp->fillPathFormat(path, 128, i ); 
+
+        fp->record(dt);  
+
+        LOG(info) << bottom_annotation << " : " << path ; 
+
+        renderer->snap(path, bottom_annotation.c_str(), top_annotation.c_str(), anno_line_height );  // downloads GPU output_buffer pixels into image file
+    }
+
+    fp->save(); 
+    LOG(LEVEL) << "]" ; 
 }
 
 

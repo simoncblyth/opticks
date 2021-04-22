@@ -50,6 +50,7 @@ struct NPY_API NFlightConfig
     float       scale0 ;   
     float       scale1 ; 
     std::string idir ; 
+    std::string odir ; 
     std::string ext ;    // typically .jpg due to its compression
     int         period ;  
     int         framelimit ;  

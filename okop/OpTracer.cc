@@ -239,87 +239,23 @@ void OpTracer::single_snap(const char* path)
 
 
 /**
-
-Hmm its better now, but still most of this belongs elsewhere. 
-Its kinda involved as have to coordinate between several objects.
-
-Hmm: would be better to use some protocols so the OpTracer instance 
-can can be effectively passed down to methods that do the below at the lower Opticks level 
-and call back up to OpTracer level to *render* and *snap* 
-
-Then can eliminate this method::
-
-    m_ok->flightpath(this) ; 
+OpTracer::render_flightpath
+----------------------
 
 **/
 
-void OpTracer::flightpath(const char* dir, const char* reldir )   
+void OpTracer::render_flightpath()   
 {
+    LOG(LEVEL) << "[" ;
 
-    SRenderer* renderer = (SRenderer*)this ; 
+    FlightPath* fp = m_ok->getFlightPath();   // FlightPath lazily instanciated here (held by Opticks)
 
-    m_hub->setupFlightPath();   // FlightPath instanciated here and held by Opticks
+    //m_hub->setupFlightPathCtrl();     // m_ctrl setup currently only needed for interactive flightpath running ?
 
-    m_composition->setViewType(View::FLIGHTPATH);
+    fp->render( (SRenderer*)this  );  
 
-    InterpolatedView* iv = m_composition->getInterpolatedView() ; assert(iv); 
-
-    FlightPath* fp = m_ok->getFlightPath(); 
-
-    fp->setPathFormat(dir, reldir); 
-
-    unsigned period = fp->getPeriod();     // typical values 4,8,16   (1:fails with many nan)
-
-    iv->setAnimatorModeForPeriod(period);  // change animation "speed" to give *period* interpolation steps between views         
-
-    int framelimit = fp->getFrameLimit(); 
-
-    int total_period = iv->getTotalPeriod(); 
-
-    int imax = framelimit > 0 ? std::min( framelimit, total_period)  : total_period ; 
-
-    std::string top_annotation = m_ok->getContextAnnotation(); 
-
-    unsigned anno_line_height = m_ok->getAnnoLineHeight() ; 
-
-    LOG(info) 
-        << " period " << period
-        << " total_period " << total_period
-        << " framelimit " << framelimit << " (OPTICKS_FLIGHT_FRAMELIMIT) " 
-        << " imax " << imax 
-        << " top_annotation " << top_annotation
-        << " anno_line_height " << anno_line_height
-        ;
-
-    fp->setMeta<int>("framelimit", framelimit); 
-    fp->setMeta<int>("total_period", total_period); 
-    fp->setMeta<int>("imax", imax); 
-    fp->setMeta<std::string>("top_annotation", top_annotation ); 
-
-
-    char path[128] ; 
-    for(int i=0 ; i < imax ; i++)
-    {
-        m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
-
-        double dt = renderer->render();   // calling OTracer::trace_
-        
-        std::string bottom_annotation = m_ok->getFrameAnnotation(i, imax, dt ); 
-
-        fp->fillPathFormat(path, 128, i ); 
-
-        fp->record(dt);  
-
-        LOG(info) << bottom_annotation << " path " << path ; 
-
-        renderer->snap(path, bottom_annotation.c_str(), top_annotation.c_str(), anno_line_height );  // downloads GPU output_buffer pixels into image file
-    }
-
-    fp->save(); 
-
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
 }
-
 
 
 

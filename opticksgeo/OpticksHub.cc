@@ -552,7 +552,7 @@ void OpticksHub::configureVizState(NConfigurable* scene)
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
 
-    setupFlightPath(); 
+    setupFlightPathCtrl(); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -566,11 +566,12 @@ Hmm now that Composition is Opticks resident can move this apart from m_ctrl ?
 
 **/
 
-void OpticksHub::setupFlightPath()
+void OpticksHub::setupFlightPathCtrl()
 {
     FlightPath* flightpath = m_ok->getFlightPath() ;  // FlightPath instanciated here 
     flightpath->setCtrl(m_ctrl);  
-    m_composition->setFlightPath(flightpath); 
+   
+    //  m_composition->setFlightPath(flightpath);  // moved to Opticks::getFlightPath at instanc
 
     LOG(LEVEL) 
          << " Setting flightpath ctrl to OpticksHub and hooking flightpath into Composition " 

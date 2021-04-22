@@ -87,7 +87,7 @@ class OKOP_API OpMgr {
        void reset();
 
        void snap(const char* dir, const char* reldir=NULL);
-       void flightpath(const char* dir, const char* reldir=NULL);
+       void render_flightpath();
    private:
        void init();
        void cleanup();

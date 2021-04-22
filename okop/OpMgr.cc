@@ -193,10 +193,10 @@ void OpMgr::snap(const char* dir, const char* reldir)
 }
 
 
-void OpMgr::flightpath(const char* dir, const char* reldir)
+void OpMgr::render_flightpath()
 {
     LOG(LEVEL) << "[" ; 
-    m_propagator->flightpath(dir, reldir); 
+    m_propagator->render_flightpath(); 
     LOG(LEVEL) << "]" ; 
 }
 

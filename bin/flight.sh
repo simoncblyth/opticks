@@ -58,10 +58,15 @@ bin=OpFlightPathTest
 
 prefix="flight__${pvn}__${emm}__${period}__"
 
+odir="$TMP/flight/$prefix"
+echo $msg creating output directory odir: "$odir"
+mkdir -p "$odir" 
+
+
 which $bin
 pwd
 
-flight="idir=/tmp,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
+flight="idir=/tmp,odir=$odir,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
 
 flight-cmd(){ cat << EOC
 $bin --targetpvn $pvn --flightconfig "$flight" --nameprefix "$prefix" -e "$emm"  $*
@@ -81,11 +86,10 @@ printf "\n\n\nRC $rc\n\n\n" >> $log
 echo rc $rc
 
 
-
 jpg2mp4=$HOME/env/bin/ffmpeg_jpg_to_mp4.sh
 [ ! -x "$jpg2mp4" ] && echo $msg no jpg2mp4 $jpg2mp4 script && exit 1
 
-cd $TMP/okop/OpFlightPathTest   
+cd "$odir" 
 pwd
 
 $jpg2mp4 $prefix
