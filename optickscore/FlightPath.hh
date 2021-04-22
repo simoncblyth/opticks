@@ -74,7 +74,7 @@ public:
     static const char* FILENAME ; 
     static const plog::Severity LEVEL ; 
 
-    FlightPath(const Opticks* ok, const char* cfg, const char* nameprefix);
+    FlightPath(const Opticks* ok, const char* cfg, const char* outdir, const char* nameprefix);
 private:
     void init(); 
 public:

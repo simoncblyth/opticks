@@ -362,6 +362,7 @@ class OKCORE_API Opticks {
    public:
        const char* getFlightPathDir() const ;
        const char* getFlightConfig() const ;  // --flightconfig  
+       const char* getFlightOutDir() const ;  // --flightoutdir
        const char* getNamePrefix() const ;    // --nameprefix
        FlightPath* getFlightPath();  // lazy cannot be const  
 

@@ -71,6 +71,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_state_tag(""),
     m_materialprefix("/dd/Materials/"),
     m_flightconfig("idir=/tmp,ext=.jpg,scale0=1,scale1=1,period=4"),  
+    m_flightoutdir("$TMP/flight"),
     m_nameprefix("frame"),
     m_snapconfig("steps=0,ext=.jpg"),        // --snapconfig
     m_snapoverrideprefix(""),
@@ -807,7 +808,10 @@ void OpticksCfg<Listener>::init()
        ("snap",  "Enable non-OpenGL rendering to ppm files, use --snapconfig to configure, see npy-/NSnapConfig  ") ;
 
    m_desc.add_options()
-       ("flightconfig",   boost::program_options::value<std::string>(&m_flightconfig), "flight path configuration, see OpTracer::flightpath npy/NFlightConfig okc/FlightPath  " );
+       ("flightconfig",   boost::program_options::value<std::string>(&m_flightconfig), "flight path configuration, see OpTracer::render_flightpath npy/NFlightConfig okc/FlightPath  " );
+
+   m_desc.add_options()
+       ("flightoutdir",   boost::program_options::value<std::string>(&m_flightoutdir), "flight path output dir, see OpTracer::render_flightpath npy/NFlightConfig okc/FlightPath  " );
 
    m_desc.add_options()
        ("nameprefix",     boost::program_options::value<std::string>(&m_nameprefix), "name prefix for example used for flight jpg naming" );
@@ -1664,6 +1668,11 @@ template <class Listener>
 const std::string& OpticksCfg<Listener>::getFlightConfig()
 {
     return m_flightconfig ;
+}
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getFlightOutDir()
+{
+    return m_flightoutdir ;
 }
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getNamePrefix()

@@ -2361,6 +2361,12 @@ const char* Opticks::getFlightConfig() const
     return flight_config.empty() ? NULL : flight_config.c_str() ;
 }
 
+const char* Opticks::getFlightOutDir() const 
+{
+    const std::string& flightoutdir = m_cfg->getFlightOutDir() ; 
+    return flightoutdir.empty() ? NULL : flightoutdir.c_str() ;
+}
+
 const char* Opticks::getNamePrefix() const    // --nameprefix
 {
     const std::string& nameprefix = m_cfg->getNamePrefix() ; 
@@ -2380,21 +2386,24 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
 {
     if(m_flightpath == NULL)
     {
-        const char* dir = getFlightPathDir() ;
-        float scale = m_cfg->getFlightPathScale() ;
-        const char* flightconfig = getFlightConfig(); 
+        const char* dir = getFlightPathDir() ; // huh not used?
+        const char* config = getFlightConfig(); 
+        const char* outdir = getFlightOutDir() ;
         const char* nameprefix = getNamePrefix(); 
+
+        float scale = m_cfg->getFlightPathScale() ;
 
         LOG(LEVEL) 
              << " Creating flightpath from file " 
-             << " --flightconfig " << flightconfig 
+             << " --flightconfig " << config 
+             << " --flightoutdir " << outdir
              << " --nameprefix " << nameprefix 
              << " --flightpathdir " << dir  
              << " --flightpathscale " << scale 
              ;   
 
 
-        FlightPath* fp = new FlightPath(this, flightconfig, nameprefix) ;
+        FlightPath* fp = new FlightPath(this, config, outdir, nameprefix) ;
         fp->setScale(scale) ; 
         m_composition->setFlightPath(fp);
 

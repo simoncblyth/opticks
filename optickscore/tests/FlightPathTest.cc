@@ -53,7 +53,7 @@ MockRenderer::MockRenderer(Opticks* ok)
     m_ok(ok), 
     m_limit(0),
     m_composition(new Composition(m_ok)),
-    m_flightpath(new FlightPath(m_ok, m_ok->getFlightConfig(), m_ok->getNamePrefix()))
+    m_flightpath(new FlightPath(m_ok, m_ok->getFlightConfig(), m_ok->getFlightOutDir(), m_ok->getNamePrefix()))
 {
     init(); 
 }

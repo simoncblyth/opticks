@@ -56,7 +56,7 @@ void FlightPath::setCtrl(SCtrl* ctrl)
     m_ctrl = ctrl ; 
 }
 
-FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* nameprefix)  
+FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* outdir, const char* nameprefix)  
     :
     m_ok(ok), 
     m_composition(ok->getComposition()),
@@ -71,7 +71,7 @@ FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* nameprefi
     m_meta(new SMeta),
     m_scale(1.f),
     m_path_format(nullptr),
-    m_outdir(m_cfg->odir.c_str())
+    m_outdir(strdup(outdir))
 {
     init(); 
     LOG(LEVEL) << " m_flightpathdir " << m_flightpathdir ; 
