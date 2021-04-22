@@ -24,7 +24,7 @@ defined which overrides the framelimit from the --flightconfig option::
 
     PERIOD=8 EMM=~5, PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
 
-    PERIOD=8 PVN=lLowerChimney_phys flight.sh --rtx 1 --cvd 1 
+    FLIGHT=RoundaboutZX PERIOD=8 PVN=lLowerChimney_phys flight.sh --rtx 1 --cvd 1    # XY, ZX, YZ
 
 
 TODO:
@@ -51,14 +51,14 @@ period=${PERIOD:-4}
 limit=${LIMIT:-300}
 scale0=${SCALE0:-3}
 scale1=${SCALE1:-0.5}
-name=${NAME:RoundaboutXY}
+flight=${FLIGHT:-RoundaboutXY}
 
 outbase="$TMP/flight"
 bin=OpFlightPathTest
 
-prefix="${name}__${pvn}__${emm}__${period}__"
+prefix="${flight}__${pvn}__${emm}__${period}__"
 outdir="$outbase/$prefix"
-config="name=$name,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
+config="flight=$flight,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
 
 flight-cmd(){ cat << EOC
 $bin --targetpvn $pvn --flightconfig "$config" --flightoutdir "$outdir" --nameprefix "$prefix" -e "$emm"  $*

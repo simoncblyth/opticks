@@ -115,7 +115,7 @@ private:
     Composition*                         m_composition ; 
     NFlightConfig*                       m_cfg ; 
     const char*                          m_nameprefix ; 
-    const char*                          m_name ; 
+    const char*                          m_flight ; 
     std::string                          m_inputpath ;
     NPY<float>*                          m_eluc ;  
     InterpolatedView*                    m_view ;  

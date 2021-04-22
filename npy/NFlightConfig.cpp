@@ -33,7 +33,7 @@ NFlightConfig::NFlightConfig(const char* cfg)
     width(5),
     scale0(1.f), 
     scale1(1.f),
-    name("RoundaboutXY"),
+    flight("RoundaboutXY"),
     ext(".jpg"),
     period(4),
     framelimit(3),
@@ -45,7 +45,7 @@ NFlightConfig::NFlightConfig(const char* cfg)
     bconfig->addFloat("scale0", &scale0 );
     bconfig->addFloat("scale1", &scale1 );
 
-    bconfig->addString("name",   &name );
+    bconfig->addString("flight", &flight );
     bconfig->addString("ext",    &ext );   
     bconfig->addInt("period",    &period);
     bconfig->addInt("framelimit", &framelimit );

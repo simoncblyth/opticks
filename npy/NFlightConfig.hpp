@@ -49,7 +49,7 @@ struct NPY_API NFlightConfig
     int         width ; 
     float       scale0 ;   
     float       scale1 ; 
-    std::string name ;   // eg RoundaboutXY
+    std::string flight ; // eg RoundaboutXY
     std::string ext ;    // typically .jpg due to its compression
     int         period ;  
     int         framelimit ;  
