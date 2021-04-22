@@ -43,7 +43,6 @@ TODO:
 EOU
 }
 
-
 msg="=== $0 :"
 pvn=${PVN:-lLowerChimney_phys}
 emm="${EMM:-~0}"                 # SBit::FromString 
@@ -52,45 +51,77 @@ period=${PERIOD:-4}
 limit=${LIMIT:-300}
 scale0=${SCALE0:-3}
 scale1=${SCALE1:-0.5}
+name=${NAME:RoundaboutXY}
 
-
+outbase="$TMP/flight"
 bin=OpFlightPathTest
 
-prefix="flight__${pvn}__${emm}__${period}__"
-
-outdir="$TMP/flight/$prefix"
-echo $msg creating output directory outdir: "$outdir"
-mkdir -p "$outdir" 
-
-
-which $bin
-pwd
-
-flight="idir=/tmp,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
+prefix="${name}__${pvn}__${emm}__${period}__"
+outdir="$outbase/$prefix"
+config="name=$name,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
 
 flight-cmd(){ cat << EOC
-$bin --targetpvn $pvn --flightconfig "$flight" --flightoutdir "$outdir" --nameprefix "$prefix" -e "$emm"  $*
+$bin --targetpvn $pvn --flightconfig "$config" --flightoutdir "$outdir" --nameprefix "$prefix" -e "$emm"  $*
 EOC
 }
 
+flight-render-jpg()
+{
+   local msg="=== $FUNCNAME :"
+   which $bin
+   pwd
 
-log=$bin.log
-cmd=$(flight-cmd $*) 
-echo $cmd
+   echo $msg creating output directory outdir: "$outdir"
+   mkdir -p "$outdir" 
 
-printf "\n\n\n$cmd\n\n\n" >> $log 
-eval $cmd
-rc=$?
-printf "\n\n\nRC $rc\n\n\n" >> $log 
+   local log=$bin.log
+   local cmd=$(flight-cmd $*) 
+   echo $cmd
 
-echo rc $rc
+   printf "\n\n\n$cmd\n\n\n" >> $log 
+   eval $cmd
+   local rc=$?
+   printf "\n\n\nRC $rc\n\n\n" >> $log 
+
+   echo $msg rc $rc
+}
+
+flight-make-mp4()
+{
+    local msg="=== $FUNCNAME :"
+    local jpg2mp4=$HOME/env/bin/ffmpeg_jpg_to_mp4.sh
+    [ ! -x "$jpg2mp4" ] && echo $msg no jpg2mp4 $jpg2mp4 script && return 1 
+
+    cd "$outdir" 
+    pwd
+    $jpg2mp4 "$prefix"
+
+    return 0 
+}
+
+flight-render()
+{
+    flight-render-jpg
+    flight-make-mp4
+}
+
+flight-grab()
+{
+    [ -z "$outbase" ] && echo $msg outbase $outbase not defined && return 1 
+
+    local cmd="rsync -rtz --progress P:$outbase/ $outbase/"
+    echo $cmd
+    eval $cmd
+    open $outbase
+    return 0 
+}
 
 
-jpg2mp4=$HOME/env/bin/ffmpeg_jpg_to_mp4.sh
-[ ! -x "$jpg2mp4" ] && echo $msg no jpg2mp4 $jpg2mp4 script && exit 1
+if [ "$(uname)" == "Darwin" ]; then
+    flight-grab
+else
+    flight-render
+fi 
 
-cd "$outdir" 
-pwd
 
-$jpg2mp4 $prefix
 

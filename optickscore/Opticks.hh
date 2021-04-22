@@ -534,8 +534,9 @@ class OKCORE_API Opticks {
        const char*          getInputUDet() const ;
    private: 
    public:
-       std::string          getPreferenceDir(const char* type, const char* subtype);
-
+       std::string          getPreferenceDir(const char* type, const char* subtype) const ;
+       std::string          getFlightInputDir() const ;  // $HOME/.opticks/flight 
+       std::string          getFlightInputPath(const char* name="RoundaboutXY") const ;  // eg $HOME/.opticks/flight/RoundaboutXY.npy 
    public:
        NPY<float>*          findGensteps(unsigned tagoffset) const ; 
    public:

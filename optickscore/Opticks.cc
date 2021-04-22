@@ -3879,7 +3879,27 @@ const char* Opticks::getG4GunConfig() const
 bool Opticks::isValid() {   return m_resource->isValid(); }
 
 
-std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
+std::string Opticks::getFlightInputDir() const 
+{
+    const char* type = "flight" ; 
+    const char* udet = nullptr ; 
+    const char* subtype = nullptr ; 
+    return m_resource->getPreferenceDir(type, udet, subtype);
+}
+
+std::string Opticks::getFlightInputPath(const char* name) const 
+{
+    std::stringstream ss ; 
+    ss << getFlightInputDir() ; 
+    ss << "/" ; 
+    ss << name ; 
+    ss << ".npy" ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+std::string Opticks::getPreferenceDir(const char* type, const char* subtype) const 
 {
     const char* udet = getEventDet();
     return m_resource->getPreferenceDir(type, udet, subtype);

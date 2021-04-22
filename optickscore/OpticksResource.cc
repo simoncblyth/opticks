@@ -396,9 +396,9 @@ OpticksResource::getPreferenceDir
 
 **/
 
-std::string OpticksResource::getPreferenceDir(const char* type, const char* udet, const char* subtype )
+std::string OpticksResource::getPreferenceDir(const char* type, const char* udet, const char* subtype ) const 
 {
-    const char* prefbase = BOpticksResource::PREFERENCE_BASE ;
+    const char* prefbase = BOpticksResource::PREFERENCE_BASE ;   // $HOME/.opticks
 
     fs::path prefdir(prefbase) ;
     if(udet) prefdir /= udet ;

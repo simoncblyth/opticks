@@ -111,7 +111,7 @@ class OKCORE_API OpticksResource
     public:
        std::string getMergedMeshPath(unsigned int ridx);
     public:
-       std::string getPreferenceDir(const char* type, const char* udet=NULL, const char* subtype=NULL);
+       std::string getPreferenceDir(const char* type, const char* udet=NULL, const char* subtype=NULL) const  ; 
        bool loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name);
        bool loadPreference(std::map<std::string, unsigned int>& msu, const char* type, const char* name);
     public:

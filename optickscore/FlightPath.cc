@@ -47,7 +47,6 @@
 #include "Composition.hh"
 
 
-const char* FlightPath::FILENAME = "flightpath.npy"  ; 
 
 const plog::Severity FlightPath::LEVEL = PLOG::EnvLevel("FlightPath", "DEBUG" ); 
 
@@ -62,7 +61,8 @@ FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* outdir, c
     m_composition(ok->getComposition()),
     m_cfg(new NFlightConfig(cfg)),
     m_nameprefix(strdup(nameprefix)), 
-    m_flightpathdir(m_cfg->idir.c_str()),
+    m_name(m_cfg->name.c_str()),
+    m_inputpath(m_ok->getFlightInputPath(m_name)),
     m_eluc(NULL),
     m_view(NULL),
     m_verbose(false),
@@ -74,7 +74,7 @@ FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* outdir, c
     m_outdir(strdup(outdir))
 {
     init(); 
-    LOG(LEVEL) << " m_flightpathdir " << m_flightpathdir ; 
+    LOG(LEVEL) << " m_inputpath " << m_inputpath ; 
 }
 
 void FlightPath::init()
@@ -169,13 +169,12 @@ unsigned FlightPath::getPeriod() const
     return m_cfg->period ; 
 }
 
-
 void FlightPath::load()
 {
-    std::string path = BFile::FormPath(m_flightpathdir, FILENAME ) ;
+    const char* path = m_inputpath.c_str() ; 
     LOG(info) << " path " << path ; 
     delete m_eluc ; 
-    m_eluc = NPY<float>::load(path.c_str()) ; 
+    m_eluc = NPY<float>::load(path) ; 
     assert( m_eluc ) ; 
 }
 
@@ -212,7 +211,7 @@ void FlightPath::record(double dt)
 std::string FlightPath::description(const char* msg)
 {
     std::stringstream ss ; 
-    ss << msg << " " << ( m_flightpathdir ? m_flightpathdir : "NULL" )  ; 
+    ss << msg << " " << m_inputpath ; 
     return ss.str();
 }
 

@@ -71,7 +71,6 @@ instanciated by Opticks::getFlightPath
 
 class OKCORE_API FlightPath {
 public:
-    static const char* FILENAME ; 
     static const plog::Severity LEVEL ; 
 
     FlightPath(const Opticks* ok, const char* cfg, const char* outdir, const char* nameprefix);
@@ -116,7 +115,8 @@ private:
     Composition*                         m_composition ; 
     NFlightConfig*                       m_cfg ; 
     const char*                          m_nameprefix ; 
-    const char*                          m_flightpathdir ; 
+    const char*                          m_name ; 
+    std::string                          m_inputpath ;
     NPY<float>*                          m_eluc ;  
     InterpolatedView*                    m_view ;  
     bool                                 m_verbose ; 

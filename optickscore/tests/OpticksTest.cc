@@ -228,6 +228,14 @@ void test_isEnabledMergedMesh(const Opticks* ok)
     }
 }
 
+void test_getFlightInputDir(const Opticks* ok)
+{
+    std::string dir = ok->getFlightInputDir(); 
+    LOG(info) << dir ; 
+    std::string path = ok->getFlightInputPath(); 
+    LOG(info) << path  ; 
+}
+
 
 
 int main(int argc, char** argv)
@@ -264,7 +272,8 @@ int main(int argc, char** argv)
     //test_getGDMLAuxTargetLVName(&ok); 
 
     //test_OriginGDMLPath(); 
-    test_isEnabledMergedMesh(&ok); 
+    //test_isEnabledMergedMesh(&ok); 
+    test_getFlightInputDir(&ok); 
 
     return 0 ;
 }
