@@ -175,6 +175,14 @@ void FlightPath::load()
     LOG(info) << " path " << path ; 
     delete m_eluc ; 
     m_eluc = NPY<float>::load(path) ; 
+
+    if(m_eluc == NULL)
+    {
+        LOG(fatal) 
+            << " MISSING expected path " << path << " for name "  << m_name
+            << " (bad name OR need to run ana/makeflight.sh)"
+            ;
+    }
     assert( m_eluc ) ; 
 }
 
