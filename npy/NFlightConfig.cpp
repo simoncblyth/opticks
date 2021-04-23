@@ -27,6 +27,9 @@
 
 const plog::Severity NFlightConfig::LEVEL = PLOG::EnvLevel("NFlightConfig","DEBUG") ; 
 
+const char* NFlightConfig::DEFAULT = "flight=RoundaboutXY,ext=.jpg,scale0=1,scale1=1,period=4" ; 
+
+
 NFlightConfig::NFlightConfig(const char* cfg)  
     :
     bconfig(new BConfig(cfg)),

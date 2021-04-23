@@ -46,6 +46,8 @@ the instance placements lists.
 class GGEO_API GTree {
     public: 
         static const plog::Severity LEVEL ; 
+
+        static void CountNodes( const GNode* base, const std::vector<GNode*>& progeny, unsigned& count, unsigned& skips );
         static NPY<float>*    makeInstanceTransformsBuffer(const std::vector<const GNode*>& placements);
         static NPY<unsigned>* makeInstanceIdentityBuffer(  const std::vector<const GNode*>& placements)  ;         // ?->InstanceVolumeIdentityBuffer
 };

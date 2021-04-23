@@ -371,6 +371,20 @@ geocache-dbg(){
     GInstancer=INFO geocache-create- --gdmlpath $path -D --noviz $*
 }
 
+geocache-apr23-gdmlpath(){ echo $HOME/apr23_origin_CGDMLKludge.gdml ; }
+geocache-apr23(){
+    local msg="=== $FUNCNAME :"
+    local path=$(geocache-apr23-gdmlpath)
+    
+    local skipsolidname="NNVTMCPPMTsMask_virtual,HamamatsuR12860sMask_virtual,mask_PMT_20inch_vetosMask_virtual"
+    local csgskiplv="103,109,126"
+    GTree=INFO OpticksDbg=INFO GInstancer=INFO geocache-create- --gdmlpath $path -D --noviz  --csgskiplv $csgskiplv $*  
+    #--skipsolidname $skipsolidname $*
+}
+
+
+
+
 
 geocache-tds-gdmlpath()
 {

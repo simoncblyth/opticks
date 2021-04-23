@@ -45,6 +45,7 @@
 GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh) 
     :
     m_selfdigest(true),
+    m_csgskip(false),
     m_selected(true),
     m_index(index), 
     m_parent(NULL),
@@ -67,6 +68,16 @@ GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh)
     m_progeny_num_vertices(0)
 {
     init();
+}
+
+
+bool GNode::isCSGSkip() const 
+{
+    return m_csgskip ; 
+}
+void GNode::setCSGSkip(bool csgskip)
+{
+    m_csgskip = csgskip ; 
 }
 
 

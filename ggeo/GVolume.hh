@@ -56,7 +56,6 @@ class GGEO_API GVolume : public GNode {
       GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, void* origin_node );
   public:
       void     setCSGFlag(OpticksCSG_t flag);
-      void     setCSGSkip(bool csgskip);
       void     setBoundary(unsigned boundary);     // also sets BoundaryIndices array
       void     setBoundaryAll(unsigned boundary);  // recursive over tree
 
@@ -76,7 +75,7 @@ class GGEO_API GVolume : public GNode {
       const char* getLVName() const ;
   public:
       OpticksCSG_t getCSGFlag() const ;
-      bool         isCSGSkip() const ;
+
       unsigned     getBoundary() const ;
       unsigned     getShapeIdentity() const ;
       glm::uvec4   getIdentity() const ;
@@ -102,7 +101,6 @@ class GGEO_API GVolume : public GNode {
   private:
       int               m_boundary ; 
       OpticksCSG_t      m_csgflag ; 
-      bool              m_csgskip ; 
       unsigned          m_sensorIndex ; 
 
       const char*       m_pvname ; 

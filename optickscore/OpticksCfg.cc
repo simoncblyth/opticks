@@ -28,6 +28,7 @@
 #include "BStr.hh"
 #include "BOpticksResource.hh"
 #include "NGLM.hpp"
+//#include "NFlightConfig.hh"
 #include "OpticksCfg.hh"
 #include "Opticks.hh"
 
@@ -70,7 +71,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_testconfig(""),
     m_state_tag(""),
     m_materialprefix("/dd/Materials/"),
-    m_flightconfig("idir=/tmp,ext=.jpg,scale0=1,scale1=1,period=4"),  
+    m_flightconfig(""),
     m_flightoutdir("$TMP/flight"),
     m_nameprefix("frame"),
     m_snapconfig("steps=0,ext=.jpg"),        // --snapconfig

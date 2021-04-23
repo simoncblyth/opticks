@@ -46,7 +46,6 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, 
     GNode(index, transform, mesh ),
     m_boundary(-1),
     m_csgflag(CSG_PARTLIST),
-    m_csgskip(false),
     m_sensorIndex(SENSOR_UNSET),
     m_pvname(NULL),
     m_lvname(NULL),
@@ -63,16 +62,6 @@ OpticksCSG_t GVolume::getCSGFlag() const
 {
     return m_csgflag ; 
 }
-
-bool GVolume::isCSGSkip() const 
-{
-    return m_csgskip ; 
-}
-void GVolume::setCSGSkip(bool csgskip)
-{
-    m_csgskip = csgskip ; 
-}
-
 
 unsigned GVolume::getBoundary() const 
 {

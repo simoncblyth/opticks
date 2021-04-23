@@ -40,6 +40,7 @@ which gets called from OpTracer::OpTracer
 struct NPY_API NFlightConfig 
 {
     static const plog::Severity LEVEL ; 
+    static const char* DEFAULT ; 
 
     NFlightConfig(const char* cfg);
     BConfig* bconfig ;  

@@ -43,6 +43,7 @@ for ridx > 0 returns all GNode subtree bases of the ridx repeats.
 
 NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<const GNode*>& placements) // static
 {
+    LOG(LEVEL) << "[" ; 
     unsigned numPlacements = placements.size(); 
     NPY<float>* buf = NPY<float>::make(0, 4, 4);
     for(unsigned i=0 ; i < numPlacements ; i++)
@@ -52,6 +53,7 @@ NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<const GNode*>&
         buf->add(t->getPointer(), 4*4*sizeof(float) );
     } 
     assert(buf->getNumItems() == numPlacements);
+    LOG(LEVEL) << "]" ; 
     return buf ; 
 }
 
@@ -99,6 +101,21 @@ being zero.
 
 **/
 
+
+void GTree::CountNodes( const GNode* base, const std::vector<GNode*>& progeny, unsigned& count, unsigned& skips )
+{
+    count = 0 ; 
+    skips = 0 ;  
+    for(int i=0 ; i < 1 + int(progeny.size()) ; i++)
+    {
+        const GNode* node = i == 0 ? base : progeny[i-1] ; 
+        bool skip = node->isCSGSkip() ; 
+        skips += int(skip) ; 
+        count += int(!skip) ; 
+    }
+}
+
+
 NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNode*>& placements)  // static
 {
     LOG(LEVEL) << "[" ; 
@@ -114,20 +131,34 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
     {
         assert( numPlacements == 1 );  // only one placement (the root node) for the remainder mm 
     }
-
    
     std::vector<GNode*>& progeny0 = is_remainder ? first_base_->getRemainderProgeny()           : first_base_->getProgeny();
     unsigned numProgeny0          = is_remainder ? first_base_->getPriorRemainderProgenyCount() : first_base_->getPriorProgenyCount();
     assert( progeny0.size() == numProgeny0 );
 
-    unsigned numVolumes  = 1 + numProgeny0  ;  // "1 +" as progeny does not include base node
+    unsigned count0, skips0 ; 
+    CountNodes( first_base, progeny0, count0, skips0 );  
+    assert( 1 + progeny0.size() == count0 + skips0 ); 
+
+    unsigned numVolumesAll = count0 + skips0 ; 
+    unsigned numVolumes = count0  ;  // excluding the skips 
     unsigned num = numVolumes*numPlacements ; 
+
+    LOG(LEVEL) 
+        << " progeny0.size " << progeny0.size()
+        << " count0 " << count0
+        << " skips0 " << skips0
+        << " numVolumesAll " << numVolumesAll 
+        << " numVolumes " << numVolumes 
+        << " numPlacements " << numPlacements
+        << " numVolumes*numPlacements (num) " << num 
+        ;
 
     NPY<unsigned>* buf = NPY<unsigned>::make(0, 4);
     NPY<unsigned>* buf2 = NPY<unsigned>::make(numPlacements, numVolumes, 4);
     buf2->zero(); 
 
-    for(unsigned int i=0 ; i < numPlacements ; i++)
+    for(unsigned i=0 ; i < numPlacements ; i++)
     {
         const GNode* base = placements[i] ; // for global only one placement 
         GNode* base_ = const_cast<GNode*>(base);    // due to progeny cache
@@ -142,7 +173,6 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
         // the progeny are nodes in contiguous subtrees.
 
         assert( numProgeny == numProgeny0 && "repeated geometry for the instances, so the progeny counts must match");
-
         bool progeny_match = progeny.size() == numProgeny ;
 
         {
@@ -156,33 +186,44 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
                       << " i " << i 
                       << " ridx " << ridx
                       ;
-
-
             assert( progeny_match );
         }
 
-        for(unsigned s=0 ; s < numVolumes ; s++ )
+        unsigned count, skips ; 
+        CountNodes( base, progeny, count, skips );  
+        assert( 1 + progeny.size() == count + skips ); 
+        assert( count0 == count );  
+        assert( skips0 == skips );  
+
+
+        unsigned s_count = 0 ; 
+        for(unsigned s=0 ; s < numVolumesAll ; s++ ) 
         {
             const GNode* node = s == 0 ? base : progeny[s-1] ; 
             const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
+            bool skip = node->isCSGSkip() ; 
+            if(!skip)
+            { 
+                glm::uvec4 id = volume->getIdentity(); 
+                buf->add(id.x, id.y, id.z, id.w ); 
+                buf2->setQuad( id, i, s_count, 0) ; 
+                s_count += 1 ; 
+            }
+        }      // over volumes 
+    }          // over placements 
 
-            glm::uvec4 id = volume->getIdentity(); 
-            buf->add(id.x, id.y, id.z, id.w ); 
 
-            buf2->setQuad( id, i, s, 0) ; 
-
-#ifdef DEBUG
-            std::cout  
-                  << " i " << i
-                  << " s " << s
-                  << " node/mesh/boundary/sensor " << id.x << "/" << id.y << "/" << id.z << "/" << id.w 
-                  << " nodeName " << node->getName()
-                  << std::endl 
-                  ;
-#endif
-        }
+    unsigned buf_num = buf->getNumItems() ; 
+    if( buf_num != num )
+    {
+        LOG(fatal)
+            << " MISMATCH "
+            << " buf_num " << buf_num
+            << " num " << num
+            ; 
     }
-    assert(buf->getNumItems() == num);
+    assert(buf_num == num);
+
     buf->reshape(-1, numVolumes, 4) ; 
     assert(buf->getNumItems() == numPlacements);
     assert(buf->hasShape(numPlacements,numVolumes, 4));
@@ -191,9 +232,21 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
     unsigned mismatch = NPY<unsigned>::compare( buf, buf2, dump ); 
     if( mismatch > 0 )
     {
-         LOG(fatal) << " buf/buf2 mismatched " << mismatch ; 
-         dump = true ; 
-         NPY<unsigned>::compare( buf, buf2, dump ); 
+         const char* path = "$TMP/GTree/iid.npy" ; 
+         const char* path2 = "$TMP/GTree/iid2.npy" ; 
+
+         LOG(fatal) 
+             << " buf/buf2 mismatched " << mismatch 
+             << " saving to "
+             << " path " << path 
+             << " path2 " << path2
+             ;
+ 
+         buf->save(path); 
+         buf2->save(path2); 
+
+         //dump = true ; 
+         //NPY<unsigned>::compare( buf, buf2, dump ); 
     }
     assert( mismatch == 0 );  
 

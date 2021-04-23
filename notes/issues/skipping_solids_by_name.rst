@@ -373,3 +373,193 @@ That means need to go back to **csgskip**::
      370 
 
 
+
+
+Check tds on Precision, first without the skips
+--------------------------------------------------
+
+1. O: update Opticks
+2. P: jre ; jok-all
+3. P: tds 
+
+New KEY is reported::
+
+    export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.7ca7500a89b9fd1f5e354090a7758692 
+
+::
+
+    144 ok_juno_tds_apr23_2021(){ export OPTICKS_KEY=DetSim0Svc.X4PhysicalVolume.pWorld.7ca7500a89b9fd1f5e354090a7758692  ; }
+    145 
+    146 #ok_dyb
+    147 #ok_juno
+    148 #ok_juno_tds
+    149 ok_juno_tds_apr23_2021
+    150 
+
+
+::    
+
+    O[blyth@localhost opticks]$ ./ana/ggeo.sh 1:9/ --names
+    /home/blyth/junotop/ExternalLibs/Opticks/0.0.0-rc1/bashrc: line 4: /home/blyth/junotop/ExternalLibs/Opticks/0.0.0-rc1/bin/opticks-setup.sh: No such file or directory
+    mo .bashrc OPTICKS_MODE:dev O : ordinary opticks dev ontop of juno externals CMTEXTRATAGS:
+    python3 ./ana/ggeo.py 1:9/ --names
+    nrpo( 176632     1     0     0 )                                 PMT_3inch_log_phys                                      PMT_3inch_log  114 PMT_3inch_pmt_solid 
+    nrpo( 176633     1     0     1 )                                PMT_3inch_body_phys                                 PMT_3inch_body_log  112 PMT_3inch_body_solid_ell_ell_helper 
+    nrpo( 176634     1     0     2 )                              PMT_3inch_inner1_phys                               PMT_3inch_inner1_log  110 PMT_3inch_inner1_solid_ell_helper 
+    nrpo( 176635     1     0     3 )                              PMT_3inch_inner2_phys                               PMT_3inch_inner2_log  111 PMT_3inch_inner2_solid_ell_helper 
+    nrpo( 176636     1     0     4 )                                PMT_3inch_cntr_phys                                 PMT_3inch_cntr_log  113 PMT_3inch_cntr_solid 
+    nrpo(  70960     2     0     0 )                                  pLPMT_NNVT_MCPPMT                             NNVTMCPPMTlMaskVirtual  103 NNVTMCPPMTsMask_virtual 
+    nrpo(  70961     2     0     1 )                                    NNVTMCPPMTpMask                                    NNVTMCPPMTlMask   98 NNVTMCPPMTsMask 
+    nrpo(  70962     2     0     2 )                     NNVTMCPPMT_PMT_20inch_log_phys                          NNVTMCPPMT_PMT_20inch_log  102 NNVTMCPPMT_PMT_20inch_pmt_solid 
+    nrpo(  70963     2     0     3 )                    NNVTMCPPMT_PMT_20inch_body_phys                     NNVTMCPPMT_PMT_20inch_body_log  101 NNVTMCPPMT_PMT_20inch_body_solid 
+    nrpo(  70964     2     0     4 )                  NNVTMCPPMT_PMT_20inch_inner1_phys                   NNVTMCPPMT_PMT_20inch_inner1_log   99 NNVTMCPPMT_PMT_20inch_inner1_solid_1_Ellipsoid 
+    nrpo(  70965     2     0     5 )                  NNVTMCPPMT_PMT_20inch_inner2_phys                   NNVTMCPPMT_PMT_20inch_inner2_log  100 NNVTMCPPMT_PMT_20inch_inner2_solid 
+    nrpo(  70966     3     0     0 )                             pLPMT_Hamamatsu_R12860                        HamamatsuR12860lMaskVirtual  109 HamamatsuR12860sMask_virtual 
+    nrpo(  70967     3     0     1 )                               HamamatsuR12860pMask                               HamamatsuR12860lMask  104 HamamatsuR12860sMask 
+    nrpo(  70968     3     0     2 )                HamamatsuR12860_PMT_20inch_log_phys                     HamamatsuR12860_PMT_20inch_log  108 HamamatsuR12860_PMT_20inch_pmt_solid_1_9 
+    nrpo(  70969     3     0     3 )               HamamatsuR12860_PMT_20inch_body_phys                HamamatsuR12860_PMT_20inch_body_log  107 HamamatsuR12860_PMT_20inch_body_solid_1_9 
+    nrpo(  70970     3     0     4 )             HamamatsuR12860_PMT_20inch_inner1_phys              HamamatsuR12860_PMT_20inch_inner1_log  105 HamamatsuR12860_PMT_20inch_inner1_solid_I 
+    nrpo(  70971     3     0     5 )             HamamatsuR12860_PMT_20inch_inner2_phys              HamamatsuR12860_PMT_20inch_inner2_log  106 HamamatsuR12860_PMT_20inch_inner2_solid_1_9 
+    nrpo( 304636     4     0     0 )              mask_PMT_20inch_vetolMaskVirtual_phys                   mask_PMT_20inch_vetolMaskVirtual  126 mask_PMT_20inch_vetosMask_virtual 
+    nrpo( 304637     4     0     1 )                          mask_PMT_20inch_vetopMask                          mask_PMT_20inch_vetolMask  121 mask_PMT_20inch_vetosMask 
+    nrpo( 304638     4     0     2 )                           PMT_20inch_veto_log_phys                                PMT_20inch_veto_log  125 PMT_20inch_veto_pmt_solid_1_2 
+    nrpo( 304639     4     0     3 )                          PMT_20inch_veto_body_phys                           PMT_20inch_veto_body_log  124 PMT_20inch_veto_body_solid_1_2 
+    nrpo( 304640     4     0     4 )                        PMT_20inch_veto_inner1_phys                         PMT_20inch_veto_inner1_log  122 PMT_20inch_veto_inner1_solid 
+    nrpo( 304641     4     0     5 )                        PMT_20inch_veto_inner2_phys                         PMT_20inch_veto_inner2_log  123 PMT_20inch_veto_inner2_solid 
+    nrpo(  68488     5     0     0 )                                        lSteel_phys                                             lSteel   93 sStrutBallhead 
+    nrpo(  69078     6     0     0 )                                    lFasteners_phys                                         lFasteners   94 uni1 
+    nrpo(  69668     7     0     0 )                                        lUpper_phys                                             lUpper   95 base_steel 
+    nrpo(  70258     8     0     0 )                                     lAddition_phys                                          lAddition   96 uni_acrylic3 
+    O[blyth@localhost opticks]$ 
+    O[blyth@localhost opticks]$ 
+       
+
+
+
+
+Add tds-ectrl::
+
+    epsilon:j blyth$ git diff 
+    diff --git a/j.bash b/j.bash
+    index af214a6..44bfc6d 100644
+    --- a/j.bash
+    +++ b/j.bash
+    @@ -863,7 +863,8 @@ tds-ectrl(){
+        local extra
+        #extra="--dbggssave --dumphit --layout 100 --savesensor"
+        #extra="--dbggdmlpath $dbggdmlpath" 
+    -   extra="--rngmax 100"
+    +   #extra="--rngmax 100"
+    +   extra="--rngmax 100 --skipsolidname NNVTMCPPMTsMask_virtual,HamamatsuR12860sMask_virtual,mask_PMT_20inch_vetosMask_virtual"
+     
+        unset OPTICKS_EMBEDDED_COMMANDLINE_EXTRA
+        if [ -n "$extra" ]; then 
+
+
+    P[blyth@localhost cmt]$ OpticksDbg=INFO tds
+
+
+Hmm still same idBuf inconsistency assert when doing the skips precache ?::
+
+    P[blyth@localhost ~]$ OpticksDbg=INFO tds
+
+    2021-04-24 00:28:47.722 INFO  [69012] [OGeo::makeOGeometry@683] ugeocode [A]
+    2021-04-24 00:28:47.722 INFO  [69012] [OGeo::makeAnalyticGeometry@767]  skip GParts::close 
+    2021-04-24 00:28:47.722 INFO  [69012] [OGeo::makeAnalyticGeometry@770] mm 2 verbosity: 0   pts:  GParts  primflag         flagnodetree numParts   29 numPrim    5
+    2021-04-24 00:28:47.722 INFO  [69012] [OGeo::makeAnalyticGeometry@797]  mmidx 2 numInstances 12612 numPrim 5 idBuf 12612,6,4
+    2021-04-24 00:28:47.722 FATAL [69012] [OGeo::makeAnalyticGeometry@808]  UNEXPECTED  idBuf 12612,6,4 numInstance 12612 numPrim 5 mm.index 2
+    python: /home/blyth/opticks/optixrap/OGeo.cc:816: optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh*): Assertion `expect' failed.
+
+Need to reproduce locally with geocache-create for faster dev cycle::
+
+    scp P:/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/7ca7500a89b9fd1f5e354090a7758692/1/origin_CGDMLKludge.gdml apr23_origin_CGDMLKludge.gdml
+
+    epsilon:opticks blyth$ t geocache-apr23
+    geocache-apr23 () 
+    { 
+        local msg="=== $FUNCNAME :";
+        local path=$(geocache-apr23-gdmlpath);
+        local skipsolidname="NNVTMCPPMTsMask_virtual,HamamatsuR12860sMask_virtual,mask_PMT_20inch_vetosMask_virtual";
+        local csgskiplv="103,109,126";
+        GTree=INFO OpticksDbg=INFO GInstancer=INFO geocache-create- --gdmlpath $path -D --noviz --csgskiplv $csgskiplv $*
+    }
+
+
+
+Adapt GTree::makeInstanceIdentityBuffer to honour the skips
+----------------------------------------------------------------
+
+::
+
+    In [1]: 12612*5
+    Out[1]: 63060
+
+    In [2]: 12612*6
+    Out[2]: 75672
+
+    In [1]: 12612*4
+    Out[1]: 50448
+
+
+
+    2021-04-23 19:31:22.377 INFO  [30107217] [*GTree::makeInstanceIdentityBuffer@146]  progeny0.size 5 count0 5 skips0 1 numVolumes 5 numPlacements 12612 numVolumes*numPlacements (num) 63060
+    2021-04-23 19:31:22.409 FATAL [30107217] [*GTree::makeInstanceIdentityBuffer@214]  MISMATCH  buf_num 50448 num 63060
+    Assertion failed: (buf_num == num), function makeInstanceIdentityBuffer, file /Users/blyth/opticks/ggeo/GTree.cc, line 220.
+
+
+ana/GTree.py::
+
+    import os, numpy as np
+
+    if __name__ == '__main__':
+        a = np.load(os.path.expandvars("$TMP/GTree/iid.npy"))
+        b = np.load(os.path.expandvars("$TMP/GTree/iid2.npy"))
+
+
+
+::
+
+    In [4]: a.shape
+    Out[4]: (12612, 5, 4)
+
+    In [5]: b.shape
+    Out[5]: (12612, 5, 4)
+
+
+
+    In [6]: a[0]
+    Out[6]:
+    array([[   70961, 33554433,  6422544,        0],
+           [   70962, 33554434,  6684695,        0],
+           [   70963, 33554435,  6619160,        0],
+           [   70964, 33554436,  6488089,        1],
+           [   70965, 33554437,  6553626,        0]], dtype=uint32)
+
+    In [7]: b[0]
+    Out[7]:
+    array([[       0,        0,        0,        0],
+           [   70961, 33554433,  6422544,        0],
+           [   70962, 33554434,  6684695,        0],
+           [   70963, 33554435,  6619160,        0],
+           [   70964, 33554436,  6488089,        1]], dtype=uint32)
+
+    In [8]: a[1]
+    Out[8]:
+    array([[   70973, 33554689,  6422544,        0],
+           [   70974, 33554690,  6684695,        0],
+           [   70975, 33554691,  6619160,        0],
+           [   70976, 33554692,  6488089,        3],
+           [   70977, 33554693,  6553626,        0]], dtype=uint32)
+
+    In [9]: b[1]
+    Out[9]:
+    array([[   70965, 33554437,  6553626,        0],
+           [   70973, 33554689,  6422544,        0],
+           [   70974, 33554690,  6684695,        0],
+           [   70975, 33554691,  6619160,        0],
+           [   70976, 33554692,  6488089,        3]], dtype=uint32)
+
+    In [10]:
+
+
+

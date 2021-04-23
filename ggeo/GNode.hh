@@ -70,6 +70,9 @@ class GGEO_API GNode {
       void setIndex(unsigned int index);
       void setSelected(bool selected);
       bool isSelected() const ;
+      void setCSGSkip(bool csgskip);
+      bool isCSGSkip() const ;
+
       virtual ~GNode();
   private:
       void init();
@@ -172,6 +175,7 @@ class GGEO_API GNode {
       void collectAllInstances(    std::vector<const GNode*>& match, unsigned ridx, bool inside, bool honour_selection );
   private:
       bool                m_selfdigest ; // when true getProgenyDigest includes self node 
+      bool                m_csgskip ; 
       bool                m_selected ;
   protected: 
       unsigned int        m_index ; 
