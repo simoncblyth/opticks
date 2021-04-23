@@ -679,9 +679,21 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned ridx, unsigned pidx, int 
     unsigned lvidx = node->getMeshIndex();  
     m_meshset[ridx].insert( lvidx ) ; 
 
-    if( m_ok->isCSGSkipLV(lvidx) )   // --csgskiplv
+    bool csgskiplv = m_ok->isCSGSkipLV(lvidx) ; // --csgskiplv
+    bool skipsolidname = m_ok->isSkipSolidIdx(lvidx); //   --skipsolidname 
+    bool skip = csgskiplv || skipsolidname ;
+    if(skip)
     {
-        vol->setCSGSkip(true);      
+        LOG(LEVEL)
+            << " lvidx " << lvidx 
+            << " csgskiplv " << csgskiplv
+            << " skipsolidname " << skipsolidname
+            ;
+    }
+
+    if(skip)  
+    {
+        vol->setCSGSkip(true);  // this setting changes the selection used in GMergedMesh::traverse_r 
 
         m_csgskiplv[lvidx].push_back( node->getIndex() ); 
         m_csgskiplv_count += 1 ; 

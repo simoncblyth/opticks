@@ -803,7 +803,17 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
            
     if( mm->getIndex() > 0 )  // volume level buffers do not honour selection unless using globalinstance
     {
-        assert(idBuf->hasShape(numInstances,numPrim,4)); 
+        bool expect = idBuf->hasShape(numInstances,numPrim,4) ;
+        if(!expect)
+            LOG(fatal) 
+                << " UNEXPECTED "
+                << " idBuf " << idBuf->getShapeString()
+                << " numInstance " << numInstances 
+                << " numPrim " << numPrim
+                << " mm.index " << mm->getIndex()
+                ;
+
+        assert(expect); 
     }
 
 

@@ -236,6 +236,11 @@ GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<con
         const GPt* pt = pts->getPt(i); 
         int   lvIdx = pt->lvIdx ; 
 
+
+/**
+     // have concluded that skipping postcache is too complicated to implement
+     // see notes/issues/skipping_solids_by_name.rst 
+
         bool deferredcsgskiplv = ok->isDeferredCSGSkipLV(lvIdx); //  --deferredcsgskiplv 
         bool skipsolidname     = ok->isSkipSolidIdx(lvIdx);      //   --skipsolidname 
 
@@ -251,6 +256,7 @@ GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<con
                 ; 
             continue ;              
         }
+**/
 
         int   ndIdx = pt->ndIdx ; 
         const std::string& spec = pt->spec ; 

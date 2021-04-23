@@ -183,7 +183,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void prepareVolumes();   
         void prepareVertexColors();
     private:
-
+        void prepareOpticks(); 
         void deferred(); 
         void deferredCreateGParts(); 
     public:

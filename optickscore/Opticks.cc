@@ -4064,6 +4064,20 @@ void Opticks::configureF(const char* name, std::vector<float> values)
      }   
 }
 
+
+/**
+Opticks::setGeo
+------------------
+
+*precache*
+    Invoked from GGeo::prepare after base objects have been 
+    collected but before instances are formed.
+
+*postcache*
+     
+
+
+**/
 void Opticks::setGeo(const SGeo* geo)
 {
     LOG(LEVEL) ; 

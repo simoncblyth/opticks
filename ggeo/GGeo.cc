@@ -594,7 +594,8 @@ void GGeo::postDirectTranslation()
 
 void GGeo::deferred()
 {
-    m_ok->setGeo((SGeo*)this);   //  for access to limited geometry info from lower levels 
+    if(!m_prepared) prepareOpticks();  // useful post-cache as well as pre-cache
+
     deferredCreateGParts();  
 }
 
@@ -643,7 +644,8 @@ void GGeo::prepare()
     assert( m_prepared == false && "have prepared already" ); 
     m_prepared = true ; 
 
-    //TODO: implement prepareSensorSurfaces() and invoke from here 
+    LOG(LEVEL) << "prepareOpticks" ; 
+    prepareOpticks(); 
 
     LOG(LEVEL) << "prepareScintillatorLib" ;  
     prepareScintillatorLib();
@@ -661,7 +663,10 @@ void GGeo::prepare()
 }
 
 
-
+void GGeo::prepareOpticks()
+{
+    m_ok->setGeo((SGeo*)this);   //  for access to limited geometry info from lower levels 
+}
 
 
 void GGeo::save()

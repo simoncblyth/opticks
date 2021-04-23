@@ -26,6 +26,9 @@ defined which overrides the framelimit from the --flightconfig option::
 
     FLIGHT=RoundaboutZX PERIOD=8 EMM=~5, PVN=lLowerChimney_phys flight.sh --rtx 1 --cvd 1    # XY, ZX, YZ
 
+    FLIGHT=RoundaboutZX PERIOD=8 EMM=~5, PVN=lLowerChimney_phys flight.sh --rtx 1 --cvd 1 --skipsolidname NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x
+     
+
 
 TODO:
 
@@ -101,7 +104,7 @@ flight-make-mp4()
 
 flight-render()
 {
-    flight-render-jpg
+    flight-render-jpg $*
     flight-make-mp4
 }
 
@@ -120,7 +123,7 @@ flight-grab()
 if [ "$(uname)" == "Darwin" ]; then
     flight-grab
 else
-    flight-render
+    flight-render $*
 fi 
 
 

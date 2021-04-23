@@ -71,7 +71,7 @@ Collects identity quads from the GVolume(GNode) tree into an array,
 Repeating identity guint4 for all volumes of an instance (typically ~5 volumes for 1 instance)
 into all the instances (typically large 500-36k).
 
-Instances need to know the sensor they correspond 
+Instances need to know the sensor they correspond to 
 even though their geometry is duplicated. 
 
 For analytic geometry this is needed at the volume level 
@@ -82,9 +82,6 @@ ie need buffer of size: num_transforms * num_triangles-per-instance
 
 The triangulated version can be created from the analytic one
 by duplication according to the number of triangles.
-
-
-
 
 
 Prior to Aug 2020 this returned an iidentity buffer with all nodes 
@@ -104,6 +101,8 @@ being zero.
 
 NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNode*>& placements)  // static
 {
+    LOG(LEVEL) << "[" ; 
+
     unsigned numPlacements = placements.size() ;
     const GNode* first_base = placements[0] ;
     GNode* first_base_ = const_cast<GNode*>(first_base); 
@@ -198,6 +197,7 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNo
     }
     assert( mismatch == 0 );  
 
+    LOG(LEVEL) << "]" ; 
 
     return buf ;  
 }
