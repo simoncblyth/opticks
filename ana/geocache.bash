@@ -371,6 +371,8 @@ geocache-dbg(){
     GInstancer=INFO geocache-create- --gdmlpath $path -D --noviz $*
 }
 
+
+geocache-apr23-key(){ echo OKX4Test.X4PhysicalVolume.lWorld0x33e33d0_PV.e33b2270395532f5661fde4c61889844 ;  }
 geocache-apr23-gdmlpath(){ echo $HOME/apr23_origin_CGDMLKludge.gdml ; }
 geocache-apr23(){
     local msg="=== $FUNCNAME :"

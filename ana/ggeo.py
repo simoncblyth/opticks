@@ -255,8 +255,8 @@ class GGeo(object):
         self.mlib = self.get_txt("GItemList/GMeshLib.txt", "_mlib") 
         self.midx = (self.all_volume_identity[:,2] >> 16) & 0xffff  
         self.bidx = (self.all_volume_identity[:,2] >>  0) & 0xffff  
-        #self.mlibnames = self.mlib[self.midx]   # mesh/lv names
-        #self.blibnames = self.blib[self.bidx]   # boundary names
+        self.mlibnames = self.mlib[self.midx]   # mesh/lv names
+        self.blibnames = self.blib[self.bidx]   # boundary names
 
     #mlib = property(lambda self:self.get_txt("GItemList/GMeshLib.txt", "_mlib")) 
     #midx = property(lambda self:(self.all_volume_identity[:,2] >> 16) & 0xffff ) 
@@ -433,8 +433,11 @@ class GGeo(object):
         assert nidx2 == nidx 
         assert ridx2 == ridx 
         assert pidx2 == pidx 
-        assert oidx2 == oidx 
 
+        if oidx2 != oidx:
+            log.info("mismatch oidx2:%d(from nrpo/iid)  oidx:%d(from range(num_volumes)) " % (oidx2, oidx)) 
+        pass
+        #assert oidx2 == oidx 
         return nidx 
 
     def make_nrpo(self):
@@ -726,9 +729,9 @@ def triplet_(rpo):
         if s == "*" or ":" in s:
             elem.append(s)
         else:
-            try:
+            if s.isnumeric():
                 elem.append(int(s))
-            except ValueError:
+            else:
                 elem.append(0)
             pass
         pass
@@ -757,9 +760,9 @@ if __name__ == '__main__':
         pass
     else:
         for idx in args.idx:
-            try:
+            if idx.isnumeric():    
                 gg(int(idx))
-            except ValueError:
+            else:
                 gg(*triplet_(idx))
             pass  
         pass

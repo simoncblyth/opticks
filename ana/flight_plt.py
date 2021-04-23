@@ -1,35 +1,38 @@
 #!/usr/bin/env python
+"""
 
-import os, numpy as np
-from opticks.ana.flight import Flight
+::
 
-import matplotlib.pyplot as plt 
-from mpl_toolkits.mplot3d import Axes3D 
-import mpl_toolkits.mplot3d.art3d as art3d
+    ipython -i flight_plt.py RoundaboutXY 
+    ipython -i flight_plt.py RoundaboutXZ
+    ipython -i flight_plt.py RoundaboutXY_XZ 
+
+"""
+import os, sys, numpy as np
+from opticks.ana.makeflight import Flight
+
+try:
+    import pyvista as pv
+except ImportError:
+    pv = None
+pass
+
+
+def plot3d_arrows(pos, nrm, mag=1, grid=False):
+    """ 
+    """
+    pl = pv.Plotter()
+    pl.add_arrows(pos, nrm, mag=mag, color='#FFFFFF', point_size=2.0 )   
+    if grid:
+        pl.show_grid()
+    pass
+    cp = pl.show()
+    return cp
+
 
 if __name__ == '__main__':
-
-    plt.ion()
-    fig = plt.figure(figsize=(9,9))
-    ax = fig.add_subplot(111,projection='3d')
-    plt.title("flight_plt")
-    sz = 25
-
-    ax.set_xlim([-sz,sz])
-    ax.set_ylim([-sz,sz])
-    ax.set_zlim([-sz,sz])
-
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
-
-    f = Flight.Load()
-    elu = f.elu
-    #print(elu[:,3,:4].copy().view("|S2"))
-
-    sc = 10 
-
-    f.quiver_plot(ax, sc=sc)
-    fig.show()
+    name = sys.argv[1]
+    f = Flight.Load(name)
+    plot3d_arrows( f.e[:,:3], f.g[:,:3], mag=0.5, grid=True )   
 pass
 

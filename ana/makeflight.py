@@ -24,6 +24,11 @@ makeflight.py : creates eye-look-up input NumPy arrays used by okc/FlightPath.cc
 
 See docs/misc/making_flightpath_raytrace_movies.rst 
 
+::
+
+    ipython -i -- makeflight.py
+
+
 """
 import os, inspect, logging, argparse, numpy as np
 log = logging.getLogger(__name__)
@@ -37,36 +42,22 @@ class Flight(object):
     def Roundabout(cls, plane='XY', scale=1, steps=32):
         """
 
-        Move eye in circle in XY/ZX/YZ plane whilst looking towards the center, up +Z/+Y/+X
+        Move eye in circle in XY/XZ plane whilst looking towards the center, up +Z/+Y
 
-        **plane XY, +Z up**                          **plane ZX, +Y up**                  
+        **plane XY, +Z up**                          **plane XZ, +Y up**                  
                                                                           
-                                                      X
-                 Y                                   3|
-                3|                                    |   2  
+                                                      Y
+                 Y                                    |
+                3|                                    |      
                  |   2                                | 
-                 |                                    |      1
+                 |                                    |       
                  |      1                             |
-                 |                                    O--------0----Z
+                 |                                    O--------0----X
                  O--------0----X                     /
-                /                                   /
-               /                                   /
-              /                                   Y                      
+                /                                   /       1
+               /                                       2
+              /                                   Z                      
              Z                       
-
-         **plane YZ, +X up**
-
-                 Z
-                3|
-                 |   2  
-                 | 
-                 |      1
-                 |
-                 O--------0----Y
-                /
-               /
-              /
-             X                      
 
         Note that the flightpath can be scaled after loading 
         into Opticks executables using the --flightpathscale option.
@@ -86,7 +77,7 @@ class Flight(object):
         ct = np.cos(ta)
         n = len(ta)
 
-        if plane == 'XY':  
+        if plane == 'XY':        # starts at  (scale, 0, 0) -> (0, scale, 0) 
             f.e[:,0] = ct*scale  # X         
             f.e[:,1] = st*scale  # Y
             f.e[:,2] = 0
@@ -95,25 +86,16 @@ class Flight(object):
             f.l[:] = [0,0,0,1]   # always looking at center 
             f.u[:] = [0,0,1,0]   # always up +Z
 
-        elif plane == 'ZX':
+        elif plane == 'XZ':       # starts at  (scale, 0, 0) -> (0, 0, scale)
            
-            f.e[:,0] = st*scale  # X         
+            f.e[:,0] = ct*scale  # X         
             f.e[:,1] = 0
-            f.e[:,2] = ct*scale  # Z
+            f.e[:,2] = st*scale  # Z
             f.e[:,3] = 1
 
             f.l[:] = [0,0,0,1]   # always looking at center 
             f.u[:] = [0,1,0,0]   # always up +Y
 
-        elif plane == 'YZ':
-
-            f.e[:,0] = 0         
-            f.e[:,1] = ct*scale  # Y
-            f.e[:,2] = st*scale  # Z 
-            f.e[:,3] = 1
-
-            f.l[:] = [0,0,0,1]   # always looking at center 
-            f.u[:] = [1,0,0,0]   # always up +X
         else:
             pass
         pass
@@ -156,6 +138,7 @@ class Flight(object):
 
     e = property(lambda self:self.eluc[:,0,:4] ) 
     l = property(lambda self:self.eluc[:,1,:4] ) 
+    g = property(lambda self:self.l - self.e)
     u = property(lambda self:self.eluc[:,2,:4] ) 
     c = property(lambda self:self.eluc[:,3,:4] ) 
 
@@ -225,17 +208,17 @@ if __name__ == '__main__':
     np.set_printoptions(suppress=True)
     args = parse_args(__doc__)
 
-
-    f = {}
-    for p in ['XY', 'ZX', 'YZ' ]:
-        f[p] = Flight.Roundabout(plane=p, scale=args.scale, steps=args.steps)
+    ff = {}
+    for p in ['XY', 'XZ' ]:
+        ff[p] = Flight.Roundabout(plane=p, scale=args.scale, steps=args.steps)
     pass
 
-    p = 'XY_ZX_YZ'
-    f[p] = Flight.CombineArrays([f['XY'].eluc, f['ZX'].eluc,f['YZ'].eluc], 'Roundabout_%s' % p )
+    p = 'XY_XZ'
+    ff[p] = Flight.CombineArrays( [ff['XY'].eluc, ff['XZ'].eluc], 'Roundabout%s' % p )
 
-    for p in f.keys():
-        print(f[p])
-        f[p].save()
+    for p in ff.keys():
+        f = ff[p]
+        print(f)
+        f.save()
     pass
 

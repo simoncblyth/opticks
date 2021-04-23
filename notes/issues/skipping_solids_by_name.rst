@@ -563,3 +563,85 @@ ana/GTree.py::
 
 
 
+
+With skips done precache
+--------------------------
+
+::
+
+    epsilon:opticks blyth$ ggeo.sh 1:9/ --names
+    python3 /Users/blyth/opticks/ana/ggeo.py 1:9/ --names
+    [2021-04-23 20:59:13,530] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 1 oidx 0 
+    [2021-04-23 20:59:13,530] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 2 oidx 1 
+    [2021-04-23 20:59:13,530] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 3 oidx 2 
+    [2021-04-23 20:59:13,530] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 4 oidx 3 
+    [2021-04-23 20:59:13,530] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 5 oidx 4 
+    [2021-04-23 20:59:13,531] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 1 oidx 0 
+    [2021-04-23 20:59:13,531] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 2 oidx 1 
+    [2021-04-23 20:59:13,531] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 3 oidx 2 
+    [2021-04-23 20:59:13,531] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 4 oidx 3 
+    [2021-04-23 20:59:13,532] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 5 oidx 4 
+    [2021-04-23 20:59:13,532] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 1 oidx 0 
+    [2021-04-23 20:59:13,532] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 2 oidx 1 
+    [2021-04-23 20:59:13,532] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 3 oidx 2 
+    [2021-04-23 20:59:13,532] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 4 oidx 3 
+    [2021-04-23 20:59:13,533] p75142 {/Users/blyth/opticks/ana/ggeo.py:438} INFO - oidx mismatch oidx2 5 oidx 4 
+    nrpo( 176632     1     0     0 )                        PMT_3inch_log_phys0x43c2530                             PMT_3inch_log0x43c1620  114 PMT_3inch_pmt_solid0x43c0a40 
+    nrpo( 176633     1     0     1 )                       PMT_3inch_body_phys0x43c1a60                        PMT_3inch_body_log0x43c1510  112 PMT_3inch_body_solid_ell_ell_helper0x43c0d00 
+    nrpo( 176634     1     0     2 )                     PMT_3inch_inner1_phys0x43c1ae0                      PMT_3inch_inner1_log0x43c1730  110 PMT_3inch_inner1_solid_ell_helper0x43c0d90 
+    nrpo( 176635     1     0     3 )                     PMT_3inch_inner2_phys0x43c1b90                      PMT_3inch_inner2_log0x43c1840  111 PMT_3inch_inner2_solid_ell_helper0x43c0e70 
+    nrpo( 176636     1     0     4 )                       PMT_3inch_cntr_phys0x43c1c40                        PMT_3inch_cntr_log0x43c1950  113 PMT_3inch_cntr_solid0x43c0f00 
+    nrpo(  70961     2     0     1 )                           NNVTMCPPMTpMask0x3c2cad0                           NNVTMCPPMTlMask0x3c2c950   98 NNVTMCPPMTsMask0x3c2c750 
+    nrpo(  70962     2     0     2 )            NNVTMCPPMT_PMT_20inch_log_phys0x3c2cb50                 NNVTMCPPMT_PMT_20inch_log0x3c2a6b0  102 NNVTMCPPMT_PMT_20inch_pmt_solid0x3c21980 
+    nrpo(  70963     2     0     3 )           NNVTMCPPMT_PMT_20inch_body_phys0x3c2aa10            NNVTMCPPMT_PMT_20inch_body_log0x3c2a5d0  101 NNVTMCPPMT_PMT_20inch_body_solid0x3c258a0 
+    nrpo(  70964     2     0     4 )         NNVTMCPPMT_PMT_20inch_inner1_phys0x3c2aaa0          NNVTMCPPMT_PMT_20inch_inner1_log0x3c2a7d0   99 NNVTMCPPMT_PMT_20inch_inner1_solid_1_Ellipsoid0x3497520 
+    nrpo(  70965     2     0     5 )         NNVTMCPPMT_PMT_20inch_inner2_phys0x3c2ab60          NNVTMCPPMT_PMT_20inch_inner2_log0x3c2a8f0  100 NNVTMCPPMT_PMT_20inch_inner2_solid0x3c2a360 
+    nrpo(  70967     3     0     1 )                      HamamatsuR12860pMask0x3c394b0                      HamamatsuR12860lMask0x3c39330  104 HamamatsuR12860sMask0x3c39130 
+    nrpo(  70968     3     0     2 )       HamamatsuR12860_PMT_20inch_log_phys0x3c39540            HamamatsuR12860_PMT_20inch_log0x3c36c90  108 HamamatsuR12860_PMT_20inch_pmt_solid_1_90x3c4a970 
+    nrpo(  70969     3     0     3 )      HamamatsuR12860_PMT_20inch_body_phys0x33eeec0       HamamatsuR12860_PMT_20inch_body_log0x3c36ba0  107 HamamatsuR12860_PMT_20inch_body_solid_1_90x3c28080 
+    nrpo(  70970     3     0     4 )    HamamatsuR12860_PMT_20inch_inner1_phys0x3c373b0     HamamatsuR12860_PMT_20inch_inner1_log0x33eec60  105 HamamatsuR12860_PMT_20inch_inner1_solid_I0x3c32bc0 
+    nrpo(  70971     3     0     5 )    HamamatsuR12860_PMT_20inch_inner2_phys0x3c37470     HamamatsuR12860_PMT_20inch_inner2_log0x33eed90  106 HamamatsuR12860_PMT_20inch_inner2_solid_1_90x3c36980 
+    nrpo( 304637     4     0     1 )                 mask_PMT_20inch_vetopMask0x3c2eb60                 mask_PMT_20inch_vetolMask0x3c2e9d0  121 mask_PMT_20inch_vetosMask0x3c2e7c0 
+    nrpo( 304638     4     0     2 )                  PMT_20inch_veto_log_phys0x3c3e950                       PMT_20inch_veto_log0x3c3de20  125 PMT_20inch_veto_pmt_solid_1_20x3c305d0 
+    nrpo( 304639     4     0     3 )                 PMT_20inch_veto_body_phys0x3c3e150                  PMT_20inch_veto_body_log0x3c3dd10  124 PMT_20inch_veto_body_solid_1_20x3c3cc50 
+    nrpo( 304640     4     0     4 )               PMT_20inch_veto_inner1_phys0x3c3e1d0                PMT_20inch_veto_inner1_log0x3c3df30  122 PMT_20inch_veto_inner1_solid0x3c3d8c0 
+    nrpo( 304641     4     0     5 )               PMT_20inch_veto_inner2_phys0x3c3e280                PMT_20inch_veto_inner2_log0x3c3e040  123 PMT_20inch_veto_inner2_solid0x3c3dae0 
+    nrpo(  68488     5     0     0 )                               lSteel_phys0x34c07b0                                    lSteel0x34c0680   93 sStrutBallhead0x34be280 
+    nrpo(  69078     6     0     0 )                           lFasteners_phys0x3461f60                                lFasteners0x3461e20   94 uni10x3461bd0 
+    nrpo(  69668     7     0     0 )                               lUpper_phys0x35499e0                                    lUpper0x3549920   95 base_steel0x35a1810 
+    nrpo(  70258     8     0     0 )                            lAddition_phys0x3593690                                 lAddition0x3593510   96 uni_acrylic30x35932f0 
+    epsilon:opticks blyth$ 
+
+
+::
+
+    416     def get_node_index(self, ridx, pidx, oidx):
+    417         """
+    418         :param ridx: repeat index, 0 for remainder
+    419         :param pidx: placement index of the instance, 0 for remainder
+    420         :param oidx: offset index, within the instance or among the remainder
+    421         :return nidx: all_volume node index 
+    422 
+    423         The node index obtained from the placement_identity is used
+    424         to do a reverse conversion check using nrpo, looking up 
+    425         the triplet identity from the node index. These indices
+    426         are consistency checked with the inputs.
+    427         """
+    428         placement_iidentity = self.get_array(ridx, "placement_iidentity")  # eg shape  (672, 5, 4)
+    429         iid = placement_iidentity[pidx, oidx]
+    430         nidx = iid[0]
+    431 
+    432         nidx2,ridx2,pidx2,oidx2 = self.nrpo[nidx]
+    433         assert nidx2 == nidx
+    434         assert ridx2 == ridx
+    435         assert pidx2 == pidx
+    436 
+    437         if oidx2 != oidx:
+    438             log.info("oidx mismatch oidx2 %d oidx %d " % (oidx2, oidx))
+    439         pass
+    440         #assert oidx2 == oidx 
+    441         return nidx
+
+
+
+
