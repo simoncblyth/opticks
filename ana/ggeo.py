@@ -148,7 +148,7 @@ Volume idsmry dumping::
 
 
 """
-import os, logging, argparse
+import os, sys, logging, argparse
 log = logging.getLogger(__name__)
 import numpy as np
 from opticks.ana.blib import BLib
@@ -569,6 +569,10 @@ class GGeo(object):
                 self.brief(nidx) 
             elif self.args.names:
                 self.names(nidx) 
+            elif self.args.sonames:
+                self.sonames(nidx) 
+            elif self.args.soidx:
+                self.soidx(nidx) 
             else: 
                 self.dump_node(nidx) 
             pass
@@ -601,6 +605,31 @@ class GGeo(object):
         nrpo_s = "nrpo( %6d %5d %5d %5d )" % tuple(nrpo)
         msn = self.msn[midx]
         print( "%s %50s %50s  %3d %s " % (nrpo_s, pv, lv, midx, msn) )
+
+    def sonames(self, nidx):
+        midx = self.midx[nidx] 
+        msn = self.msn[midx]
+        if args.terse:
+            print(msn)
+        elif args.errout:
+            print(midx,file=sys.stdout)
+            print(msn, file=sys.stderr)
+        else:
+            print( "%3d %s " % (midx, msn) )
+        pass
+
+    def soidx(self, nidx):
+        midx = self.midx[nidx] 
+        msn = self.msn[midx]
+        if args.terse:
+            print(midx)
+        elif args.errout:
+            print(midx,file=sys.stdout)
+            print(msn, file=sys.stderr)
+        else:
+            print( "%3d %s " % (midx, msn) )
+        pass
+
 
     def bbsmry(self, nidx):
         gg = self
@@ -671,7 +700,11 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "-i","--idsmry", action="store_true", help="Slice identity summary interpreting idx as slice range." ) 
     parser.add_argument(  "-b","--bbsmry", action="store_true", help="Slice bbox summary interpreting idx as slice range." ) 
     parser.add_argument(  "--brief", action="store_true", help="Brief summary of nodes selected by idx." ) 
-    parser.add_argument(  "--names", action="store_true", help="Identity and PV/LV names of  nodes selected by idx." ) 
+    parser.add_argument(  "--names", action="store_true", help="Identity and PV/LV/SO names of  nodes selected by idx." ) 
+    parser.add_argument(  "--sonames", action="store_true", help="Dump solid names for the nodes selected by idx." ) 
+    parser.add_argument(  "--soidx", action="store_true", help="Dump solid_idx (aka: lvidx or meshidx/midx) for the nodes selected by node or triplet idx." ) 
+    parser.add_argument(  "-t","--terse", action="store_true", help="Terse output" ) 
+    parser.add_argument(  "-s","--errout", action="store_true", help="Split output writing to both stderr and stdout" ) 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)

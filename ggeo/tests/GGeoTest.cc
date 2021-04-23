@@ -21,6 +21,7 @@
 #include <string>
 
 #include "SStr.hh"
+#include "SGeo.hh"
 #include "NPY.hpp"
 #include "NGLM.hpp"
 
@@ -316,6 +317,20 @@ void test_GGeo_getSignedBoundary(const GGeo* gg)
 
 } 
 
+void test_getNumMeshes(const GGeo* ggeo)
+{
+    unsigned num_meshes_ggeo = ggeo->getNumMeshes(); 
+    SGeo* sgeo = (SGeo*)ggeo ; 
+    unsigned num_meshes_sgeo = sgeo->getNumMeshes(); 
+
+    LOG(info) 
+       << " num_meshes_ggeo " << num_meshes_ggeo
+       << " num_meshes_sgeo " << num_meshes_sgeo
+       ;
+
+    assert( num_meshes_ggeo == num_meshes_sgeo ); 
+}
+
 
 
 int main(int argc, char** argv)
@@ -331,8 +346,11 @@ int main(int argc, char** argv)
     //test_GGeo_getTransform(gg);
     //test_GGeo_getGDMLAuxTargetNodeIndices(gg);
 
-    test_GGeo_getFirstNodeIndexForPVNameStarting(gg);
-    test_GGeo_getSignedBoundary(gg);
+    //test_GGeo_getFirstNodeIndexForPVNameStarting(gg);
+    //test_GGeo_getSignedBoundary(gg);
+
+    test_getNumMeshes(gg);  
+
 
     return 0 ;
 }

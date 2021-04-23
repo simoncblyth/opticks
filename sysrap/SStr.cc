@@ -320,4 +320,14 @@ const char* SStr::ReplaceEnd( const char* s, const char* q, const char* r  )
 
 
 
+void SStr::Split( const char* str, char delim,   std::vector<std::string>& elem )
+{
+    std::stringstream ss; 
+    ss.str(str)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) elem.push_back(s) ; 
+}
+
+
+
 

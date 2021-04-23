@@ -206,8 +206,14 @@ void test_Save()
     SStr::Save(path, v ); 
 }
 
-
-
+void test_Split()
+{
+    std::vector<std::string> elem ; 
+    const char* str = "red,green,blue,cyan,magenta,yellow" ; 
+    SStr::Split(str, ',', elem ); 
+    assert( elem.size() == 6 ); 
+    for(int i=0 ; i < int(elem.size()) ; i++) std::cout << elem[i] << std::endl ; 
+}
 
 int main(int argc , char** argv )
 {
@@ -225,8 +231,9 @@ int main(int argc , char** argv )
     test_Replace();  
     test_ReplaceEnd();  
     test_ArrayToString();  
-    */
     test_Save();  
+    */
+    test_Split();  
 
     return 0  ; 
 }

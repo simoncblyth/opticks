@@ -63,6 +63,7 @@ class GGEO_API GMeshLib
         void add(const GMesh* mesh, bool alt=false );
         void replace(unsigned index, GMesh* replacement ); 
     public:
+        std::string operator()( const char* arg ) const  ;
         void dump(const char* msg="GMeshLib::dump") const;
     public:
         // methods working from the index, so work prior to loading meshes

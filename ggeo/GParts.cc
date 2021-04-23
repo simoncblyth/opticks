@@ -236,13 +236,18 @@ GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<con
         const GPt* pt = pts->getPt(i); 
         int   lvIdx = pt->lvIdx ; 
 
-        if(ok->isDeferredCSGSkipLV(lvIdx))  // --deferredcsgskiplv 
+        bool deferredcsgskiplv = ok->isDeferredCSGSkipLV(lvIdx); //  --deferredcsgskiplv 
+        bool skipsolidname     = ok->isSkipSolidIdx(lvIdx);      //   --skipsolidname 
+
+        if(deferredcsgskiplv || skipsolidname) 
         {
             LOG(info) 
-                << "isDeferredCSGSkipLV"
+                << " SKIPPING SOLID FROM ANALYTIC GEOMETRY VIA COMMANDLINE OPTION "
                 << " i " << i 
                 << " num_pt " << num_pt 
                 << " lvIdx " << lvIdx 
+                << " deferredcsgskiplv " << deferredcsgskiplv
+                << " skipsolidname " << skipsolidname
                 ; 
             continue ;              
         }

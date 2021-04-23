@@ -78,6 +78,7 @@ class GItemList ;
 class GMergedMesh ;
 
 
+#include "SGeo.hh"
 #include "GGeoBase.hh"
 
 #include "GGEO_API_EXPORT.hh"
@@ -89,7 +90,7 @@ GGeo
 
 **/
 
-class GGEO_API GGeo : public GGeoBase, public NConfigurable {
+class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
     public:
         friend class  X4PhysicalVolume ;  // X4PhysicalVolume::init needs afterConvertMaterial 
         friend class  AssimpGGeo ; 
@@ -183,6 +184,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void prepareVertexColors();
     private:
 
+        void deferred(); 
         void deferredCreateGParts(); 
     public:
         GParts* getCompositeParts(unsigned index) const ;
@@ -211,7 +213,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void dumpTree(const char* msg="GGeo::dumpTree");  
         void dumpVolume(unsigned int index, const char* msg="GGeo::dumpVolume");  
         void dumpNodeInfo(unsigned int mmindex, const char* msg="GGeo::dumpNodeInfo" );
-        void dumpStats(const char* msg="GGeo::dumpStats");
+        std::string dumpStats(const char* msg="GGeo::dumpStats");
 
         // merged mesh buffer offsets and counts
         //
@@ -289,6 +291,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         // via meshlib
         GMeshLib*          getMeshLib();  // unplaced meshes
         unsigned           getNumMeshes() const ;
+        const char*        getMeshName(unsigned midx) const ;
+        int                getMeshIndexWithName(const char* name, bool startswith=true) const ;
+
 #ifdef OLD_INDEX
         GItemIndex*        getMeshIndex(); 
 #endif

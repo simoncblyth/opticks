@@ -120,7 +120,8 @@ GGeo* GGeo::Load(Opticks* ok) // static
     bool live = false ; 
     GGeo* ggeo = new GGeo(ok, live);
     ggeo->loadFromCache();
-    ggeo->dumpStats("GGeo::Load");
+    std::string st = ggeo->dumpStats("GGeo::Load");
+    LOG(LEVEL) << st ;  
     return ggeo ;  
 }
 
@@ -553,7 +554,7 @@ void GGeo::postLoadFromCache()
     loadCacheMeta();
 
     close();                  // formerly OpticksHub::loadGeometry
-    deferredCreateGParts();   // formerly OpticksHub::init   <-- this is needed for live running also  
+    deferred();              // formerly OpticksHub::init   <-- this is needed for live running also  
     LOG(LEVEL) << "]" ; 
 }
 
@@ -583,12 +584,20 @@ void GGeo::postDirectTranslation()
     LOG(LEVEL) << ") GGeo::save " ; 
 
 
-    deferredCreateGParts();  
+    deferred();  
 
     postDirectTranslationDump(); 
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+void GGeo::deferred()
+{
+    m_ok->setGeo((SGeo*)this);   //  for access to limited geometry info from lower levels 
+    deferredCreateGParts();  
+}
+
 
 
 
@@ -880,6 +889,15 @@ unsigned GGeo::getNumMeshes() const
 {
     return m_meshlib->getNumMeshes(); 
 }
+const char* GGeo::getMeshName(unsigned midx) const 
+{
+    return m_meshlib->getMeshName(midx); 
+}
+int GGeo::getMeshIndexWithName(const char* name, bool startswith) const 
+{
+    return m_meshlib->getMeshIndexWithName(name, startswith); 
+}
+
 
 const GMesh* GGeo::getMesh(unsigned aindex) const 
 {
@@ -1473,9 +1491,10 @@ GMaterial* GGeo::getCathodeMaterial(unsigned int index)
 
 
 
-void GGeo::dumpStats(const char* msg)
+std::string GGeo::dumpStats(const char* msg)
 {
-    LOG(info) << msg ; 
+    std::stringstream ss ;  
+    ss << msg << std::endl ; 
 
     unsigned int nmm = getNumMergedMesh();
 
@@ -1483,6 +1502,10 @@ void GGeo::dumpStats(const char* msg)
     unsigned int totFaces(0);
     unsigned int vtotVertices(0);
     unsigned int vtotFaces(0);
+
+
+    char line[256] ;  
+    const char* fmt = " mm %2d : vertices %7d faces %7d transforms %7d itransforms %7d \n" ; 
 
     for(unsigned int i=0 ; i < nmm ; i++)
     {
@@ -1516,13 +1539,19 @@ void GGeo::dumpStats(const char* msg)
             vtotFaces    += numFaces*numITransforms  ;
         }
 
-        printf(" mm %2d : vertices %7d faces %7d transforms %7d itransforms %7d \n", i, numVertices, numFaces, numTransforms, numITransforms );
- 
+        snprintf(line, 256, fmt, i, numVertices, numFaces, numTransforms, numITransforms );
+        ss << line ; 
     } 
 
-    printf("   totVertices %9d  totFaces %9d \n", totVertices, totFaces );
-    printf("  vtotVertices %9d vtotFaces %9d (virtual: scaling by transforms)\n", vtotVertices, vtotFaces );
-    printf("  vfacVertices %9.3f vfacFaces %9.3f (virtual to total ratio)\n", float(vtotVertices)/float(totVertices), float(vtotFaces)/float(totFaces) );
+    snprintf(line, 256, "   totVertices %9d  totFaces %9d \n", totVertices, totFaces );
+    ss << line ; 
+    snprintf(line, 256, "  vtotVertices %9d vtotFaces %9d (virtual: scaling by transforms)\n", vtotVertices, vtotFaces );
+    ss << line ; 
+    snprintf(line, 256, "  vfacVertices %9.3f vfacFaces %9.3f (virtual to total ratio)\n", float(vtotVertices)/float(totVertices), float(vtotFaces)/float(totFaces) );
+    ss << line ; 
+
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 

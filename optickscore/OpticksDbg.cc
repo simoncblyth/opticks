@@ -23,6 +23,8 @@
 #include <bitset>
 
 #include "SBit.hh"
+#include "SStr.hh"
+#include "SGeo.hh"
 
 #include "BFile.hh"
 #include "BStr.hh"
@@ -40,6 +42,7 @@ OpticksDbg::OpticksDbg(Opticks* ok)
    :
    m_ok(ok),
    m_cfg(NULL),
+   m_geo(NULL),
    m_mask_buffer(NULL)
 {
 }
@@ -171,8 +174,46 @@ void OpticksDbg::postconfigure()
    LOG(debug) << "OpticksDbg::postconfigure" << description() ; 
 }
 
+void OpticksDbg::postgeometry()
+{
+    LOG(LEVEL) << "[" ; 
+    assert(m_cfg); 
+    m_geo = m_ok->getGeo(); 
+    assert(m_geo); 
+
+    const std::string& skipsolidname = m_cfg->getSkipSolidName() ;
+
+    std::vector<std::string> solidname ; 
+    SStr::Split(skipsolidname.c_str(), ',', solidname ); 
+
+    std::vector<unsigned>& soidx = m_skipsolididx ; 
+
+    for(int i=0 ; i < int(solidname.size()) ; i++)
+    {
+        const std::string& sn = solidname[i];  
+        bool startswith = true ; 
+        int midx = m_geo->getMeshIndexWithName(sn.c_str(), startswith) ; 
+
+        LOG(LEVEL) 
+            << " midx "  << std::setw(4) << midx 
+            << " sn [" << sn << "]" 
+            ;
+
+        assert( midx > 0 );   // world solid is verboten 
 
 
+        soidx.push_back(midx); 
+    }
+
+    LOG(LEVEL) 
+        << " --skipsolidname " << skipsolidname 
+        << " solidname.size " << solidname.size() 
+        << " soidx.size " << soidx.size()
+        ;
+
+
+    LOG(LEVEL) << "]" ; 
+}
 
 
 void OpticksDbg::postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs )
@@ -258,6 +299,11 @@ bool OpticksDbg::isDeferredCSGSkipLV(unsigned lvIdx) const   // --deferredcsgski
 {
     return IsListed(lvIdx, m_deferredcsgskiplv, false); 
 }
+bool OpticksDbg::isSkipSolidIdx(unsigned lvIdx) const   // --skipsolidname
+{
+    return IsListed(lvIdx, m_skipsolididx, false); 
+}
+
 
 
 bool OpticksDbg::isEnabledMergedMesh(unsigned mm) const 

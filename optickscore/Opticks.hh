@@ -30,6 +30,7 @@
 class SLog ; 
 class SRngSpec ; 
 struct SArgs ; 
+class SGeo ; 
 
 class BDynamicDefine ; 
 class BMeta ; 
@@ -476,6 +477,8 @@ class OKCORE_API Opticks {
        bool isDeferredCSGSkipLV(unsigned lvIdx) const ;  // --deferredcsgskiplv
        unsigned getNumDeferredCSGSkipLV() const ;
 
+       bool isSkipSolidIdx(unsigned lvIdx) const ;   // --skipsolidname
+
 
        bool isEnabledMergedMesh(unsigned mm) const ;
        const char* getEnabledMergedMesh() const  ; 
@@ -689,6 +692,9 @@ class OKCORE_API Opticks {
        void setFrameRenderer(const char* renderer); 
        const char*  getFrameRenderer() const ; 
        Composition* getComposition() const ;  
+   public:
+       void        setGeo( const SGeo* geo ); 
+       const SGeo* getGeo() const ; 
    private:
        void setInternal(bool internal=true); 
    public:
@@ -702,6 +708,7 @@ class OKCORE_API Opticks {
        SLog*                m_log ;
        Opticks*             m_ok ;   // for OK_PROFILE 
        SArgs*               m_sargs ; 
+       const SGeo*          m_geo ; 
        int                  m_argc ; 
        char**               m_argv ; 
        const char*          m_lastarg ; 

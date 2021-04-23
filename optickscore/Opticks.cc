@@ -353,6 +353,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_log(new SLog("Opticks::Opticks","",debug)),
     m_ok(this),
     m_sargs(new SArgs(argc, argv, argforced)),  
+    m_geo(nullptr),
     m_argc(m_sargs->argc),
     m_argv(m_sargs->argv),
     m_lastarg(m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL),
@@ -445,7 +446,7 @@ OKTest without options defaults to writing the below::
 void Opticks::init()
 {
     LOG(LEVEL) << "[" ; 
-    LOG(info) << m_mode->desc() << " hostname " << SSys::hostname() ; 
+    LOG(LEVEL) << m_mode->desc() << " hostname " << SSys::hostname() ; 
     if(IsLegacyGeometryEnabled())
     {
         LOG(fatal) << "OPTICKS_LEGACY_GEOMETRY_ENABLED mode is active " 
@@ -454,7 +455,7 @@ void Opticks::init()
     }
     else
     {
-        LOG(info) << " mandatory keyed access to geometry, opticksaux " ; 
+        LOG(LEVEL) << " mandatory keyed access to geometry, opticksaux " ; 
     } 
 
     m_parameters->add<int>("OptiXVersion",  OKConf::OptiXVersionInteger() );
@@ -473,7 +474,7 @@ void Opticks::init()
 
     std::string switches = OpticksSwitches() ; 
     m_parameters->add<std::string>("OpticksSwitches", switches ); 
-    LOG(info) << "OpticksSwitches:" << switches ; 
+    LOG(LEVEL) << "OpticksSwitches:" << switches ; 
 
     //std::raise(SIGINT); 
 
@@ -754,6 +755,11 @@ bool Opticks::isDeferredCSGSkipLV(unsigned lvIdx) const
 {
    return m_dbg->isDeferredCSGSkipLV(lvIdx);
 }
+bool Opticks::isSkipSolidIdx(unsigned lvIdx) const  // --skipsolidname
+{
+    return m_dbg->isSkipSolidIdx(lvIdx); 
+}
+
 
 unsigned Opticks::getNumCSGSkipLV() const 
 {
@@ -4057,7 +4063,18 @@ void Opticks::configureF(const char* name, std::vector<float> values)
          //configure(name, vlast);  
      }   
 }
- 
+
+void Opticks::setGeo(const SGeo* geo)
+{
+    LOG(LEVEL) ; 
+    m_geo = geo ; 
+    m_dbg->postgeometry(); 
+
+}
+const SGeo* Opticks::getGeo() const 
+{
+    return m_geo ; 
+} 
 
 
 template <typename T>

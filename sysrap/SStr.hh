@@ -71,6 +71,8 @@ class SYSRAP_API SStr {
       static const char* Replace( const char* s,  char a, char b ); 
       static const char* ReplaceEnd( const char* s, const char* q, const char* r  ); 
 
+      static void Split( const char* str, char delim,   std::vector<std::string>& elem ) ;
+
 };
 
 

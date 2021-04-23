@@ -1054,6 +1054,11 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("deferredcsgskiplv",  boost::program_options::value<std::string>(&m_deferredcsgskiplv), deferredcsgskiplv );
 
+   char skipsolidname[256];
+   snprintf(skipsolidname,256, "comma delimited string listing solid names to skip in GParts::Create which is called deferred (aka postcache). Default %s", m_skipsolidname.c_str() );
+   m_desc.add_options()
+       ("skipsolidname",  boost::program_options::value<std::string>(&m_skipsolidname), skipsolidname );
+
 
 
    m_desc.add_options()
@@ -1822,6 +1827,12 @@ template <class Listener>
 const std::string& OpticksCfg<Listener>::getDeferredCSGSkipLV() const   // --deferredcsgskiplv
 {
     return m_deferredcsgskiplv ; 
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getSkipSolidName() const   // --skipsolidname
+{
+    return m_skipsolidname ; 
 }
 
 

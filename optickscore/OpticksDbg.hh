@@ -25,6 +25,7 @@
 #include "plog/Severity.h"
 
 class Opticks ; 
+class SGeo ; 
 template <typename T> class NPY ;
 template <typename T> class OpticksCfg ;
 
@@ -72,6 +73,8 @@ class OKCORE_API OpticksDbg
        bool isX4PolySkip(unsigned lvIdx) const ;
        bool isCSGSkipLV(unsigned lvIdx) const ;   // --csgskiplv
        bool isDeferredCSGSkipLV(unsigned lvIdx) const ;   // --deferredcsgskiplv
+       bool isSkipSolidIdx(unsigned lvIdx) const ;  // --skipsolidname 
+
        bool isEnabledMergedMesh(unsigned mm) const ;
        const char* getEnabledMergedMesh() const  ; 
     public:
@@ -88,8 +91,12 @@ class OKCORE_API OpticksDbg
        void postconfigure(const std::string& spec, std::vector<unsigned>& ls);
        void postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs ) ;
    private:
+       void postgeometry();
+
+   private:
        Opticks*              m_ok ; 
        OpticksCfg<Opticks>*  m_cfg ; 
+       const SGeo*           m_geo ; 
        NPY<unsigned>*        m_mask_buffer ; 
        std::vector<unsigned> m_debug_photon ; 
        std::vector<unsigned> m_other_photon ; 
@@ -98,6 +105,7 @@ class OKCORE_API OpticksDbg
        std::vector<unsigned> m_x4polyskip ; 
        std::vector<unsigned> m_csgskiplv ; 
        std::vector<unsigned> m_deferredcsgskiplv ; 
+       std::vector<unsigned> m_skipsolididx ;        // from --skipsolidname 
        unsigned long long    m_enabledmergedmesh ;   // limited to 64 
 
        std::vector<std::pair<int,int> > m_instancemodulo ;   // (1,5),(2,10)  modulo scaledown for each mergedmesh index 

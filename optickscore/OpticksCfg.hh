@@ -110,6 +110,8 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getX4PolySkip() const ;
      const std::string& getCSGSkipLV() const ;            // --csgskiplv
      const std::string& getDeferredCSGSkipLV() const ;    // --deferredcsgskiplv
+     const std::string& getSkipSolidName() const ;        // --skipsolidname
+   
      const std::string& getAccel();
 
      const std::string& getSeqMap() const ;
@@ -267,6 +269,7 @@ private:
      std::string m_x4polyskip ;
      std::string m_csgskiplv ; 
      std::string m_deferredcsgskiplv ; 
+     std::string m_skipsolidname ; 
      std::string m_accel ;
      std::string m_seqmap ;
      std::string m_dbgseqhis ;

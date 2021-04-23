@@ -18,9 +18,12 @@
  */
 
 #include <csignal>
+#include <cstdlib>
 #include <ostream>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 #include "BStr.hh"
 #include "BFile.hh"
@@ -293,7 +296,6 @@ const GMesh* GMeshLib::getMeshWithIndex(unsigned aindex) const // gets the mesh 
     }
     return mesh ;
 }  
-
 
 const GMesh* GMeshLib::getMeshWithName(const char* name, bool startswith) const 
 {
@@ -645,5 +647,42 @@ void GMeshLib::saveMeshUsage(const char* idpath) const
     std::string path = BFile::FormPath(idpath, m_reldir, "MeshUsage.txt") ; 
     writeMeshUsage(path.c_str()); 
 }
+
+
+std::string GMeshLib::operator()( const char* arg ) const 
+{
+    char* end ;   
+    char** endptr = &end ; 
+    int base = 10 ;   
+    unsigned long int uli = strtoul(arg, endptr, base); 
+    bool end_points_to_terminator = end == arg + strlen(arg) ;   
+
+    std::stringstream ss ;  
+        
+    if( end_points_to_terminator )  // succeeded to parse entire string as an integer
+    {   
+        const char* soname = getMeshName(uli);  
+
+        if( soname )
+        {
+            ss << soname ; 
+        }
+        else
+        {
+            ss << arg << "-" << uli << "-" << "GMeshLib_operator_FAIL" ; 
+
+        }
+    }   
+    else
+    {
+        bool startswith = true ;
+        int midx =  getMeshIndexWithName( arg, startswith );
+        ss << midx ;
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 

@@ -42,9 +42,12 @@ set(SOURCES
     SDigest.cc
     SDirect.cc
     SArrayDigest.cc
+
     SLauncher.cc
     SRenderer.cc
     SCtrl.cc
+    SGeo.cc
+
     STimes.cc
     SLog.cc
     SBase36.cc
@@ -65,6 +68,8 @@ set(SOURCES
 
     SMockViz.cc
     SRngSpec.cc
+
+    CheckGeo.cc
 
 ) 
 
@@ -92,9 +97,12 @@ set(HEADERS
     SDigest.hh
     SDirect.hh
     SArrayDigest.hh
+
     SLauncher.hh
     SRenderer.hh
     SCtrl.hh
+    SGeo.hh
+
     STimes.hh
     SLog.hh
     SBase36.hh
@@ -121,6 +129,9 @@ set(HEADERS
 
     SMockViz.hh
     SRngSpec.hh
+
+    CheckGeo.hh
+
 )
 
 

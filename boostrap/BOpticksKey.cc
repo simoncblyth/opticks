@@ -87,7 +87,7 @@ bool BOpticksKey::SetKey(const char* spec)
         LOG(LEVEL) << "from OPTICKS_KEY envvar " << spec ; 
     } 
 
-    LOG(info) << " spec " << spec ; 
+    LOG(LEVEL) << " spec " << spec ; 
 
     fKey = spec ? new BOpticksKey(spec) : NULL  ; 
 
