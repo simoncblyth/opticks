@@ -245,13 +245,18 @@ be used as bitfields. For example all the below correspond to the same number::
      1,
      0p1,
 
+    t0b1101
+
+    t1,
+    t0p1
+
 **/
 
 const char* SBit::ANNO = "xbdp" ; 
 
 const char* SBit::ParseAnnotation(bool& complement, char& anno, const char* str_ )
 {
-    complement = strlen(str_) > 0 && str_[0] == '~' ; 
+    complement = strlen(str_) > 0 && ( str_[0] == '~' || str_[0] == 't' ) ;   
     int postcomp =  complement ? 1 : 0 ; 
     anno = strlen(str_+postcomp) > 2 && str_[postcomp] == '0' && strchr(ANNO, str_[postcomp+1]) != nullptr ?  str_[postcomp+1] : '_' ;  
     return str_ + postcomp + ( anno == '_' ? 0 : 2 ) ; 

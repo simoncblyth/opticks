@@ -372,7 +372,7 @@ void G4OKTest::propagate(int eventID)
 
     if( m_snap && eventID == 0 )
     {       
-        m_g4ok->snap(m_tmpdir, "snap");
+        m_g4ok->render_snap();
     }
 
     LOG(LEVEL) << "]" ; 

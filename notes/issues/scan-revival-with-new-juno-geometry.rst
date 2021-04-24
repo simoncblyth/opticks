@@ -42,8 +42,61 @@ Informal scan : OKTest --targetpvn pPoolLining --generateoverride -3 --rngmax 3 
       what():  Memory allocation failed (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Out of memory)
 
 
-100M runs into OOM on TITAN RTX
-        
+100M runs into OOM on TITAN RTX::
+
+    O[blyth@localhost opticks]$ CDeviceTest 
+    2021-04-24 22:28:45.543 INFO  [236793] [CDevice::Dump@262] visible devices[0:TITAN_V 1:TITAN_RTX]
+    2021-04-24 22:28:45.543 INFO  [236793] [CDevice::Dump@266] idx/ord/mpc/cc:0/0/80/70  11.784 GB  TITAN V
+    2021-04-24 22:28:45.543 INFO  [236793] [CDevice::Dump@266] idx/ord/mpc/cc:1/1/72/75  23.652 GB  TITAN RTX
+
+Scan a little to find the photon limit with TITAN RTX:: 
+
+    O[blyth@localhost opticks]$ OContext=INFO OKTest --targetpvn pPoolLining --generateoverride -50 --rngmax 100 --cvd 1 --rtx 1 -e ~8, 
+    2021-04-24 22:33:08.138 INFO  [241410] [OPropagator::launch@287] 0 : (0;50000000,1)  launch time 49.2484
+
+Timings in "--production" mode are very simular, howver maybe less memory use (indexing is skipped in production?)::
+
+    O[blyth@localhost opticks]$ OContext=INFO OKTest --targetpvn pPoolLining --generateoverride -50 --rngmax 100 --cvd 1 --rtx 1 -e ~8, --production
+    2021-04-24 22:42:18.897 INFO  [255345] [OPropagator::launch@287] 0 : (0;50000000,1)  launch time 51.2637
+
+
+75M completes the propagation but meets OOM in indexing::
+
+    O[blyth@localhost opticks]$ OContext=INFO OKTest --targetpvn pPoolLining --generateoverride -75 --rngmax 100 --cvd 1 --rtx 1 -e ~8, 
+
+    2021-04-24 22:36:21.684 INFO  [247597] [OContext::launch@820]  entry 0 width 75000000 height 1   printLaunchIndex ( -1 -1 -1) -
+    2021-04-24 22:37:36.314 INFO  [247597] [OContext::launch@854] LAUNCH time: 74.6296
+    2021-04-24 22:37:36.314 INFO  [247597] [OPropagator::launch@287] 0 : (0;75000000,1)  launch time 74.6296
+    2021-04-24 22:37:36.315 INFO  [247597] [OpIndexer::indexSequenceCompute@237] OpIndexer::indexSequenceCompute
+    terminate called after throwing an instance of 'thrust::system::detail::bad_alloc'
+      what():  std::bad_alloc: cudaErrorMemoryAllocation: out of memory
+
+
+* OOM at 75M is a bit surprising as managed to get to 400M with Quadro RTX 8000 : which has 48G VRAM (double the TITAN RTX 24G VRAM), 
+* so expecting to be able to get to 200M with TITAN RTX
+* this suggests that indexing or something else in non-production running more than doubles VRAM usage
+
+  * actually the indexing is of 64-bit "unsigned long long" : so that might cause "double" trouble  
+
+
+Using production mode allows 75M to complete on TITAN RTX::
+
+    O[blyth@localhost opticks]$ OContext=INFO OKTest --targetpvn pPoolLining --generateoverride -75 --rngmax 100 --cvd 1 --rtx 1 -e ~8, --production
+    2021-04-24 22:46:28.332 INFO  [261093] [OPropagator::launch@287] 0 : (0;75000000,1)  launch time 76.6231
+
+Also 100M and 200M::
+
+    O[blyth@localhost opticks]$ OContext=INFO OKTest --targetpvn pPoolLining --generateoverride -100 --rngmax 100 --cvd 1 --rtx 1 -e ~8, --production
+    2021-04-24 22:52:26.213 INFO  [269495] [OPropagator::launch@287] 0 : (0;100000000,1)  launch time 102.25
+
+    O[blyth@localhost opticks]$ OContext=INFO OKTest --targetpvn pPoolLining --generateoverride -200 --rngmax 200 --cvd 1 --rtx 1 -e ~8, --production
+    2021-04-24 23:12:18.474 INFO  [296907] [OPropagator::launch@287] 0 : (0;200000000,1)  launch time 191.351
+
+
+
+
+
+
 
 
 

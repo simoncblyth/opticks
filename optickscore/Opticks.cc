@@ -94,6 +94,7 @@
 #include "SensorLib.hh"
 
 #include "FlightPath.hh"
+#include "Snap.hh"
 #include "Composition.hh"
 
 
@@ -394,8 +395,9 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
 
     m_scene_config(NULL),
     m_lod_config(NULL),
-    m_snap_config(NULL),
+    m_snapconfig(NULL),
     m_flightpath(NULL),
+    m_snap(NULL),
     m_detector(NULL),
     m_event_count(0),
     m_domains_configured(false),
@@ -2379,10 +2381,16 @@ const char* Opticks::getFlightConfig() const
     return flight_config.empty() ? NULL : flight_config.c_str() ;
 }
 
-const char* Opticks::getFlightOutDir() const 
+const char* Opticks::getFlightOutDir() const   // --flightoutdir
 {
     const std::string& flightoutdir = m_cfg->getFlightOutDir() ; 
     return flightoutdir.empty() ? NULL : flightoutdir.c_str() ;
+}
+
+const char* Opticks::getSnapOutDir() const    // --snapoutdir
+{
+    const std::string& snapoutdir = m_cfg->getSnapOutDir() ; 
+    return snapoutdir.empty() ? NULL : snapoutdir.c_str() ;
 }
 
 const char* Opticks::getNamePrefix() const    // --nameprefix
@@ -2390,6 +2398,50 @@ const char* Opticks::getNamePrefix() const    // --nameprefix
     const std::string& nameprefix = m_cfg->getNamePrefix() ; 
     return nameprefix.empty() ? NULL : nameprefix.c_str() ;
 }
+
+
+NSnapConfig* Opticks::getSnapConfig() // lazy cannot const 
+{
+    if(m_snapconfig == NULL)
+    {
+        m_snapconfig = new NSnapConfig(getSnapConfigString());
+    }
+    return m_snapconfig ; 
+}
+
+unsigned Opticks::getSnapSteps() 
+{
+    NSnapConfig* snapconfig = getSnapConfig() ;  
+    return snapconfig->steps ; 
+}
+
+void Opticks::getSnapEyes(std::vector<glm::vec3>& eyes)
+{
+    NSnapConfig* snapconfig = getSnapConfig() ;  
+    m_composition->eye_sequence(eyes, snapconfig );
+}
+
+const char* Opticks::getSnapPath(int index) 
+{
+    const char* snapoutdir = m_ok->getSnapOutDir() ;   // --snapoutdir
+    const char* nameprefix = m_ok->getNamePrefix() ;   // --nameprefix
+    NSnapConfig* snapconfig = getSnapConfig() ;  
+    const char* path = snapconfig->getSnapPath(snapoutdir, index, nameprefix );      
+    return path ; 
+}
+
+Snap* Opticks::getSnap(SRenderer* renderer)
+{
+    if(m_snap == nullptr)
+    {
+        NSnapConfig* config = getSnapConfig() ;  
+        m_snap = new Snap(this, renderer, config ); 
+    }
+    return m_snap ; 
+}
+
+
+
 
 /**
 Opticks::getFlightPath
@@ -2429,6 +2481,7 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
     }
     return m_flightpath ; 
 }
+
 
 
 std::string Opticks::getContextAnnotation() const 
@@ -2493,16 +2546,6 @@ NLODConfig* Opticks::getLODConfig()
         m_lod_config = new NLODConfig(getLODConfigString());
     }
     return m_lod_config ; 
-}
-
-
-NSnapConfig* Opticks::getSnapConfig() // lazy cannot const 
-{
-    if(m_snap_config == NULL)
-    {
-        m_snap_config = new NSnapConfig(getSnapConfigString());
-    }
-    return m_snap_config ; 
 }
 
 

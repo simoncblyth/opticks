@@ -905,10 +905,10 @@ geocache-simple-emm(){ ls -1 $(geocache-keydir)/GMergedMesh ; }
 geocache-simple-cmd(){ 
    local pvn=${PVN:-lLowerChimney_phys}
    local eye=${EYE:--1,-1,-1} 
-   local emm=${EMM:-0}
+   local emm="${EMM:-~0}"
 
 cat << EOC
-OpSnapTest --targetpvn $pvn --eye $eye -e $emm --snapoverrideprefix geocache-simple-$pvn-emm-$mm- $*
+OpSnapTest --targetpvn $pvn --eye $eye -e "$emm" --snapoverrideprefix geocache-simple-$pvn-emm-$mm- $*
 EOC
 }
 

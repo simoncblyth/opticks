@@ -36,6 +36,7 @@
 #include "InterpolatedView.hh"
 #include "Animator.hh"
 #include "FlightPath.hh"
+#include "Snap.hh"
 
 
 // okg-
@@ -66,8 +67,6 @@ OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate)
     m_ope(ope),
     m_hub(hub),
     m_ok(hub->getOpticks()),
-    m_snap_config(m_ok->getSnapConfig()),
-    m_snapoverrideprefix(m_ok->getSnapOverridePrefix()),  // --snapoverrideprefix
     m_immediate(immediate),
 
     m_ocontext(NULL),   // defer 
@@ -138,19 +137,15 @@ double OpTracer::render()
     return dt ; 
 }   
 
-
 void OpTracer::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
 {
     m_ocontext->snap(path, bottom_line, top_line, line_height ); 
 }
 
 
-
-
-
 /**
-OpTracer::snap
-----------------
+OpTracer::render_snap
+----------------------
 
 Takes one or more GPU raytrace snapshots of geometry
 at various positions configured via --snapconfig
@@ -160,87 +155,21 @@ for example::
 
 **/
 
-void OpTracer::snap(const char* dir, const char* reldir)   
+void OpTracer::render_snap()   
 {
-    LOG(info) 
-        << "[" << m_snap_config->desc()
-        << " dir " << dir 
-        << " reldir " << reldir 
-        << " snapoverrideprefix " << m_snapoverrideprefix
-        ;
+    LOG(LEVEL) << "[" ;
 
-    int num_steps = m_snap_config->steps ; 
+    Snap* snap = m_ok->getSnap((SRenderer*)this);
+    snap->render(); 
 
-    if( num_steps == 0)
-    {
-        const char* path = m_snap_config->getSnapPath(dir, reldir, 0, m_snapoverrideprefix ); 
-        single_snap(path);  
-    }
-    else
-    {
-        multi_snap(dir, reldir); 
-    }
+    m_otracer->report("OpTracer::render_snap");   // saves for runresultsdir
 
-    m_otracer->report("OpTracer::snap");   // saves for runresultsdir
-
-    if(!m_ok->isProduction())
-    {
-        m_ok->saveParameters(); 
-    }
-
-    LOG(info) << "]" ;
+    LOG(LEVEL) << "]" ;
 }
-
-
-void OpTracer::multi_snap(const char* dir, const char* reldir)
-{
-    std::vector<glm::vec3>    eyes ; 
-    m_composition->eye_sequence(eyes, m_snap_config ); 
-    const char* path_fmt = m_snap_config->getSnapPath(dir, reldir, -1, m_snapoverrideprefix); 
-    multi_snap(path_fmt, eyes ); 
-}
-
-void OpTracer::multi_snap(const char* path_fmt, const std::vector<glm::vec3>& eyes )
-{
-    char path[128] ; 
-    for(int i=0 ; i < int(eyes.size()) ; i++)
-    {
-        const glm::vec3& eye = eyes[i] ; 
-        m_composition->setEye( eye.x, eye.y, eye.z ); 
-
-        snprintf(path, 128, path_fmt, i );   
-        single_snap(path);  
-    }
-}
-
-
-
-/**
-OpTracer::single_snap
-------------------------
-
-Single snap uses composition targetting 
-
-**/
-
-void OpTracer::single_snap(const char* path)
-{
-    double dt = render();   // OTracer::trace_
-
-    std::string top_annotation = m_ok->getContextAnnotation(); 
-    std::string bottom_annotation = m_ok->getFrameAnnotation(0, 1, dt ); 
-    unsigned anno_line_height = m_ok->getAnnoLineHeight() ; 
-
-    LOG(info) << top_annotation << " | " << bottom_annotation << " | " << path << " | " << anno_line_height ; 
-
-    m_ocontext->snap(path, bottom_annotation.c_str(), top_annotation.c_str(), anno_line_height );
-} 
-
-
 
 /**
 OpTracer::render_flightpath
-----------------------
+-----------------------------
 
 **/
 
@@ -256,7 +185,4 @@ void OpTracer::render_flightpath()
 
     LOG(LEVEL) << "]" ;
 }
-
-
-
 

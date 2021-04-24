@@ -31,6 +31,7 @@ class SLog ;
 class SRngSpec ; 
 struct SArgs ; 
 class SGeo ; 
+class SRenderer ; 
 
 class BDynamicDefine ; 
 class BMeta ; 
@@ -48,6 +49,7 @@ struct NSceneConfig ;
 struct NLODConfig ; 
 struct NSnapConfig ; 
 class  FlightPath ; 
+class  Snap ; 
 
 class Types ;
 class Typ ;
@@ -364,6 +366,7 @@ class OKCORE_API Opticks {
        const char* getFlightPathDir() const ;
        const char* getFlightConfig() const ;  // --flightconfig  
        const char* getFlightOutDir() const ;  // --flightoutdir
+       const char* getSnapOutDir() const ;    // --snapoutdir
        const char* getNamePrefix() const ;    // --nameprefix
        FlightPath* getFlightPath();  // lazy cannot be const  
 
@@ -374,6 +377,12 @@ class OKCORE_API Opticks {
        const char* getSnapOverridePrefix() const ;  // --snapoverrideprefix
 
        NSnapConfig* getSnapConfig();
+       const char*  getSnapPath(int index) ;
+       unsigned     getSnapSteps() ;
+       void         getSnapEyes(std::vector<glm::vec3>& eyes); 
+       Snap*        getSnap(SRenderer* renderer);
+
+
        const char* getLODConfigString();
        NLODConfig* getLODConfig();
        int         getLOD();
@@ -755,9 +764,10 @@ class OKCORE_API Opticks {
        BMeta*               m_origin_cachemeta ;  
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 
-       NSnapConfig*         m_snap_config ; 
+       NSnapConfig*         m_snapconfig ; 
 
        FlightPath*          m_flightpath ;  
+       Snap*                m_snap ; 
    private:
        const char*          m_detector ; 
        unsigned             m_event_count ; 

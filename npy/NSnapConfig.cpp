@@ -70,17 +70,17 @@ void NSnapConfig::dump(const char* msg) const
     bconfig->dump(msg);
 }
 
-std::string NSnapConfig::getSnapName(int index, const char* override_prefix) const 
+std::string NSnapConfig::getSnapName(int index, const char* nameprefix) const 
 {
-    const char* pfx = override_prefix ? override_prefix : prefix.c_str()  ; 
+    const char* pfx = nameprefix ? nameprefix : prefix.c_str()  ; 
     return BFile::MakeName(index, width, pfx, ext.c_str() ); 
 }
 
-const char* NSnapConfig::getSnapPath(const char* dir, const char* reldir, int index, const char* override_prefix) const 
+const char* NSnapConfig::getSnapPath(const char* outdir, int index, const char* nameprefix) const 
 {
-    std::string name = getSnapName(index, override_prefix) ; 
+    std::string name = getSnapName(index, nameprefix) ; 
     bool create = true ; 
-    std::string path = BFile::preparePath(dir ? dir : "$TMP", reldir, name.c_str(), create);  
+    std::string path = BFile::preparePath(outdir, nullptr, name.c_str(), create);  
     return strdup(path.c_str()); 
 }
 

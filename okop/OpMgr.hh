@@ -86,7 +86,7 @@ class OKOP_API OpMgr {
        OpticksEvent* getG4Event() const ; 
        void reset();
 
-       void snap(const char* dir, const char* reldir=NULL);
+       void render_snap();
        void render_flightpath();
    private:
        void init();

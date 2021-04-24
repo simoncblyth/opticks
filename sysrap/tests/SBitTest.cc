@@ -297,6 +297,25 @@ const char* EXAMPLES  = R"LITERAL(
 ~15,
 
 
+# alt tilde avoiding shell escaping
+
+t0,
+t1,
+
+2
+0d2
+0x2
+~0b1101
+0b0010
+1,
+0p1,
+
+t0b1101
+
+t1,
+t0p1
+
+
 
 )LITERAL";
 

@@ -19,9 +19,6 @@
 
 #pragma once
 
-struct NSnapConfig ; 
-
-class SLog ; 
 
 // okc-
 class Composition ; 
@@ -38,7 +35,6 @@ class OpEngine ;
 
 template <typename T> class NPY ;
 
-
 #include "plog/Severity.h"
 #include "OKOP_API_EXPORT.hh"
 #include "SRenderer.hh"
@@ -54,10 +50,7 @@ snap() takes a sequence of ppm geomtry snapshots
 configured via --snapconfig and switched on via --snap
 see okop-
 
-
 **/
-
-
 
 
 class OKOP_API OpTracer : public SRenderer {
@@ -66,29 +59,22 @@ class OKOP_API OpTracer : public SRenderer {
     public:
        OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate);
     public:
-       void snap(const char* dir, const char* reldir=NULL);
+       void render_snap();
        void render_flightpath();
     private:
        static int Preinit();
        void init();
        void initTracer();
-       void multi_snap(const char* dir, const char* reldir=NULL);
-       void multi_snap(const char* path_fmt, const std::vector<glm::vec3>& eyes ) ;
-       void single_snap(const char* path);
-
+       void setup_render_target() ;
     private:
        // fulfils SRenderer protocol
        double render();     
        void snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height); 
     private:
-       void setup_render_target() ;
-    private:
        int              m_preinit ; 
        OpEngine*        m_ope ; 
        OpticksHub*      m_hub ; 
        Opticks*         m_ok ; 
-       NSnapConfig*     m_snap_config ; 
-       const char*      m_snapoverrideprefix ;  // --snapoverrideprefix
        bool             m_immediate ; 
 
        OContext*        m_ocontext ; 
