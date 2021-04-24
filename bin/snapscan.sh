@@ -13,9 +13,10 @@ EOU
 
 scan-ee()
 {
-    echo "~0"
-    for e in $(seq 0 $nmm) ; do echo  "$e," ; done
-    for e in $(seq 0 $nmm) ; do echo "~$e," ; done
+    #echo "~0"
+    #for e in $(seq 0 $nmm) ; do echo  "$e," ; done
+    #for e in $(seq 0 $nmm) ; do echo "~$e," ; done
+    for e in $(seq 0 $nmm) ; do echo "~8,$e" ; done
 }
 
 for e in $(scan-ee) 

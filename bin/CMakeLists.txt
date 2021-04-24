@@ -16,6 +16,7 @@ set(SCRIPTS
    flight.sh
    jflight.sh
    snap_emm.sh
+   snapscan.sh
    scan.bash
    oc.bash
 
