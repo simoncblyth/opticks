@@ -94,7 +94,11 @@ class Flight(object):
             f.e[:,3] = 1
 
             f.l[:] = [0,0,0,1]   # always looking at center 
-            f.u[:] = [0,1,0,0]   # always up +Y
+
+            f.u[:,0] = -st*scale 
+            f.u[:,1] = 0
+            f.u[:,2] = ct*scale 
+            f.u[:,3] = 0
 
         else:
             pass
@@ -141,6 +145,11 @@ class Flight(object):
     g = property(lambda self:self.l - self.e)
     u = property(lambda self:self.eluc[:,2,:4] ) 
     c = property(lambda self:self.eluc[:,3,:4] ) 
+
+    e3 = property(lambda self:self.eluc[:,0,:3] ) 
+    g3 = property(lambda self:self.eluc[:,1,:3] - self.eluc[:,0,:3] ) 
+    u3 = property(lambda self:self.eluc[:,2,:3] ) 
+    r3 = property(lambda self:np.cross( self.g3, self.u3 ))
 
     def save(self):
         path = self.Path(self.name)
