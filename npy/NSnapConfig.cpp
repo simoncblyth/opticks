@@ -65,6 +65,11 @@ NSnapConfig::NSnapConfig(const char* cfg)
     bconfig->parse();
 }
 
+const char* NSnapConfig::getCfg() const 
+{
+    return bconfig->cfg ; 
+}
+
 void NSnapConfig::dump(const char* msg) const
 {
     bconfig->dump(msg);

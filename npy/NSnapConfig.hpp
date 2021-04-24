@@ -45,6 +45,8 @@ struct NPY_API NSnapConfig
 
     NSnapConfig(const char* cfg);
     BConfig* bconfig ;  
+
+    const char* getCfg() const ;
     void dump(const char* msg="NSnapConfig::dump") const ; 
     std::string desc() const ; 
 
