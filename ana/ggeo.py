@@ -82,6 +82,64 @@ Names for first two placements of ridx 5 thru 8::
     nrpo(  70259     8     1     0 )                            lAddition_phys0x35ff870                                 lAddition0x35ff5f0   96 uni_acrylic30x35ff3d0 
 
 
+Using suppression of some prolific names can dump all interesting names at once:: 
+
+    epsilon:ana blyth$ ggeo.sh 0:10/ --names --suppress
+    python3 /Users/blyth/opticks/ana/ggeo.py 0:10/ --names --suppress
+    [2021-04-24 13:57:42,444] p41483 {/Users/blyth/opticks/ana/ggeo.py:777} INFO - using suppression (HBeam|ixture|anchor|Steel2|Plane|Wall|Receiver|Strut0x|sBar0x) specificed by envvar OPTICKS_GGEO_SUPPRESS 
+      nrpo(      0     0     0     0 )                                 lWorld0x33e33d0_PV                                    lWorld0x33e33d0  130 sWorld0x33e3370 
+      nrpo(      1     0     0     1 )                                  pTopRock0x33f3c00                                  lTopRock0x33f3b30   12 sTopRock0x33f3aa0 
+      nrpo(      2     0     0     2 )                                  pExpHall0x33f40b0                                  lExpHall0x33f3fb0   11 sExpHall0x33f3f20 
+      nrpo(      3     0     0     3 )                        lUpperChimney_phys0x4e6e210                             lUpperChimney0x4e6c7a0    3 Upper_Chimney0x4e6c340 
+      nrpo(      4     0     0     4 )                           pUpperChimneyLS0x4e6cbc0                           lUpperChimneyLS0x4e6c8a0    0 Upper_LS_tube0x4e6c450 
+      nrpo(      5     0     0     5 )                        pUpperChimneySteel0x4e6cc90                        lUpperChimneySteel0x4e6c9b0    1 Upper_Steel_tube0x4e6c570 
+      nrpo(      6     0     0     6 )                        pUpperChimneyTyvek0x4e6cd60                        lUpperChimneyTyvek0x4e6cac0    2 Upper_Tyvek_tube0x4e6c690 
+      nrpo(      7     0     0     7 )                               pTopTracker0x4e7f260                                    lAirTT0x4e713c0   10 sAirTT0x4e71260 
+      nrpo(  65717     0     0   197 )                                  pBtmRock0x33f9200                                  lBtmRock0x33f89c0  129 sBottomRock0x33f4390 
+      nrpo(  65718     0     0   198 )                               pPoolLining0x33f9160                               lPoolLining0x33f90a0  128 sPoolLining0x33f8a80 
+      nrpo(  65719     0     0   199 )                           pOuterWaterPool0x3490fa0                           lOuterWaterPool0x33f9470  127 sOuterWaterPool0x33f9360 
+      nrpo(  67840     0     0  2320 )                          pCentralDetector0x3492d70                            lReflectorInCD0x34916c0  120 sReflectorInCD0x3491470 
+      nrpo(  67841     0     0  2321 )                               pInnerWater0x3492b80                               lInnerWater0x3491d30  119 sInnerWater0x3491ae0 
+      nrpo(  67842     0     0  2322 )                                  pAcrylic0x3492c20                                  lAcrylic0x34923a0   90 sAcrylic0x3492150 
+      nrpo(  67843     0     0  2323 )                                   pTarget0x3492cc0                                   lTarget0x3492a10   89 sTarget0x34927c0 
+      nrpo( 304632     0     0  3080 )                        lLowerChimney_phys0x4e706b0                             lLowerChimney0x4e6eac0  118 sWaterTube0x4e6e9b0 
+      nrpo( 304633     0     0  3081 )                      pLowerChimneyAcrylic0x4e6f220                      lLowerChimneyAcrylic0x4e6ece0  115 sChimneyAcrylic0x4e6ebc0 
+      nrpo( 304634     0     0  3082 )                           pLowerChimneyLS0x4e6f2e0                           lLowerChimneyLS0x4e6eef0  116 sChimneyLS0x4e6ede0 
+      nrpo( 304635     0     0  3083 )                        pLowerChimneySteel0x4e6f3b0                        lLowerChimneySteel0x4e6f110  117 sChimneySteel0x4e6eff0 
+      nrpo( 176632     1     0     0 )                        PMT_3inch_log_phys0x43c2530                             PMT_3inch_log0x43c1620  114 PMT_3inch_pmt_solid0x43c0a40 
+      nrpo( 176633     1     0     1 )                       PMT_3inch_body_phys0x43c1a60                        PMT_3inch_body_log0x43c1510  112 PMT_3inch_body_solid_ell_ell_helper0x43c0d00 
+      nrpo( 176634     1     0     2 )                     PMT_3inch_inner1_phys0x43c1ae0                      PMT_3inch_inner1_log0x43c1730  110 PMT_3inch_inner1_solid_ell_helper0x43c0d90 
+      nrpo( 176635     1     0     3 )                     PMT_3inch_inner2_phys0x43c1b90                      PMT_3inch_inner2_log0x43c1840  111 PMT_3inch_inner2_solid_ell_helper0x43c0e70 
+      nrpo( 176636     1     0     4 )                       PMT_3inch_cntr_phys0x43c1c40                        PMT_3inch_cntr_log0x43c1950  113 PMT_3inch_cntr_solid0x43c0f00 
+      nrpo(  70961     2     0     1 )                           NNVTMCPPMTpMask0x3c2cad0                           NNVTMCPPMTlMask0x3c2c950   98 NNVTMCPPMTsMask0x3c2c750 
+      nrpo(  70962     2     0     2 )            NNVTMCPPMT_PMT_20inch_log_phys0x3c2cb50                 NNVTMCPPMT_PMT_20inch_log0x3c2a6b0  102 NNVTMCPPMT_PMT_20inch_pmt_solid0x3c21980 
+      nrpo(  70963     2     0     3 )           NNVTMCPPMT_PMT_20inch_body_phys0x3c2aa10            NNVTMCPPMT_PMT_20inch_body_log0x3c2a5d0  101 NNVTMCPPMT_PMT_20inch_body_solid0x3c258a0 
+      nrpo(  70964     2     0     4 )         NNVTMCPPMT_PMT_20inch_inner1_phys0x3c2aaa0          NNVTMCPPMT_PMT_20inch_inner1_log0x3c2a7d0   99 NNVTMCPPMT_PMT_20inch_inner1_solid_1_Ellipsoid0x3497520 
+      nrpo(  70965     2     0     5 )         NNVTMCPPMT_PMT_20inch_inner2_phys0x3c2ab60          NNVTMCPPMT_PMT_20inch_inner2_log0x3c2a8f0  100 NNVTMCPPMT_PMT_20inch_inner2_solid0x3c2a360 
+      nrpo(  70967     3     0     1 )                      HamamatsuR12860pMask0x3c394b0                      HamamatsuR12860lMask0x3c39330  104 HamamatsuR12860sMask0x3c39130 
+      nrpo(  70968     3     0     2 )       HamamatsuR12860_PMT_20inch_log_phys0x3c39540            HamamatsuR12860_PMT_20inch_log0x3c36c90  108 HamamatsuR12860_PMT_20inch_pmt_solid_1_90x3c4a970 
+      nrpo(  70969     3     0     3 )      HamamatsuR12860_PMT_20inch_body_phys0x33eeec0       HamamatsuR12860_PMT_20inch_body_log0x3c36ba0  107 HamamatsuR12860_PMT_20inch_body_solid_1_90x3c28080 
+      nrpo(  70970     3     0     4 )    HamamatsuR12860_PMT_20inch_inner1_phys0x3c373b0     HamamatsuR12860_PMT_20inch_inner1_log0x33eec60  105 HamamatsuR12860_PMT_20inch_inner1_solid_I0x3c32bc0 
+      nrpo(  70971     3     0     5 )    HamamatsuR12860_PMT_20inch_inner2_phys0x3c37470     HamamatsuR12860_PMT_20inch_inner2_log0x33eed90  106 HamamatsuR12860_PMT_20inch_inner2_solid_1_90x3c36980 
+      nrpo( 304637     4     0     1 )                 mask_PMT_20inch_vetopMask0x3c2eb60                 mask_PMT_20inch_vetolMask0x3c2e9d0  121 mask_PMT_20inch_vetosMask0x3c2e7c0 
+      nrpo( 304638     4     0     2 )                  PMT_20inch_veto_log_phys0x3c3e950                       PMT_20inch_veto_log0x3c3de20  125 PMT_20inch_veto_pmt_solid_1_20x3c305d0 
+      nrpo( 304639     4     0     3 )                 PMT_20inch_veto_body_phys0x3c3e150                  PMT_20inch_veto_body_log0x3c3dd10  124 PMT_20inch_veto_body_solid_1_20x3c3cc50 
+      nrpo( 304640     4     0     4 )               PMT_20inch_veto_inner1_phys0x3c3e1d0                PMT_20inch_veto_inner1_log0x3c3df30  122 PMT_20inch_veto_inner1_solid0x3c3d8c0 
+      nrpo( 304641     4     0     5 )               PMT_20inch_veto_inner2_phys0x3c3e280                PMT_20inch_veto_inner2_log0x3c3e040  123 PMT_20inch_veto_inner2_solid0x3c3dae0 
+      nrpo(  68488     5     0     0 )                               lSteel_phys0x34c07b0                                    lSteel0x34c0680   93 sStrutBallhead0x34be280 
+      nrpo(  69078     6     0     0 )                           lFasteners_phys0x3461f60                                lFasteners0x3461e20   94 uni10x3461bd0 
+      nrpo(  69668     7     0     0 )                               lUpper_phys0x35499e0                                    lUpper0x3549920   95 base_steel0x35a1810 
+      nrpo(  70258     8     0     0 )                            lAddition_phys0x3593690                                 lAddition0x3593510   96 uni_acrylic30x35932f0 
+      nrpo(     10     9     0     0 )                               pPanel_0_f_0x4e7c3c0                                    lPanel0x4e71970    7 sPanel0x4e71750 
+      nrpo(     11     9     0     1 )                                pPanelTape0x4e7c6a0                                lPanelTape0x4e71b00    6 sPanelTape0x4e71a70 
+    [2021-04-24 13:57:42,496] p41483 {/Users/blyth/opticks/ana/ggeo.py:601} INFO - supressed 3193 volumes 
+    epsilon:ana blyth$ 
+
+
+
+
+
+
 A convenient visualization workflow is to use the above python triple indexing to find PV names to target, eg::
 
     OTracerTest --targetpvn lFasteners_phys   ## do not include the 0x reference in the targetted name, as it will differ between machines/invokations 
@@ -148,7 +206,7 @@ Volume idsmry dumping::
 
 
 """
-import os, sys, logging, argparse
+import os, re, sys, logging, argparse
 log = logging.getLogger(__name__)
 import numpy as np
 from opticks.ana.blib import BLib
@@ -189,6 +247,21 @@ class GGeo(object):
     KEY = key_(os.environ["OPTICKS_KEY"])
     KEYDIR = KEY.keydir
     VERSION = KEY.version
+    SUPPRESS_ = os.environ.get("OPTICKS_GGEO_SUPPRESS", "") 
+    SUPPRESS_PTN = "("+SUPPRESS_.replace(",","|")+")" 
+    SUPPRESS = None if SUPPRESS_PTN == "()" else re.compile(SUPPRESS_PTN) 
+
+    @classmethod
+    def Suppress(cls, name):
+        """
+        :param name: 
+        :return bool: True when the name contains one of the suppressed strings provided by envvar OPTICKS_GGEO_SUPPRESS
+        """
+        if cls.SUPPRESS is None:
+            return False
+        else:
+            return not cls.SUPPRESS.search(name) is None 
+        pass
 
     volume_names    = list(map(lambda _:"volume_%s" % _, "transforms center_extent bbox meshes nodeinfo identity".split()))
     placement_names = list(map(lambda _:"placement_%s"%_, "itransforms iidentity".split()))
@@ -240,6 +313,7 @@ class GGeo(object):
 
     def __init__(self, args=None):
         self.args = args
+        self.suppress_count = 0 
         keydir = self.KEYDIR
         path = os.path.expandvars("{keydir}/GMergedMesh".format(**locals()))
         mmidx = sorted(map(int,os.listdir(path)))
@@ -435,7 +509,7 @@ class GGeo(object):
         assert pidx2 == pidx 
 
         if oidx2 != oidx:
-            log.info("mismatch oidx2:%d(from nrpo/iid)  oidx:%d(from range(num_volumes)) " % (oidx2, oidx)) 
+            log.debug("mismatch oidx2:%d(from nrpo/iid)  oidx:%d(from range(num_volumes)) " % (oidx2, oidx)) 
         pass
         #assert oidx2 == oidx 
         return nidx 
@@ -581,6 +655,10 @@ class GGeo(object):
             pass
         pass
 
+        if self.suppress_count > 0:
+            log.info("supressed %d volumes " % self.suppress_count )
+        pass
+
 
     def idsmry(self, nidx):
         """
@@ -602,12 +680,21 @@ class GGeo(object):
 
     def names(self, nidx):
         pv = self.pv[nidx].decode('utf-8')  
+
         lv = self.lv[nidx].decode('utf-8')  
         midx = self.midx[nidx] 
         nrpo = self.nrpo[nidx]
-        nrpo_s = "nrpo( %6d %5d %5d %5d )" % tuple(nrpo)
         msn = self.msn[midx]
-        print( "%s %50s %50s  %3d %s " % (nrpo_s, pv, lv, midx, msn) )
+
+        would_suppress = self.Suppress(pv) or self.Suppress(lv) or self.Suppress(msn)
+        suppress = self.args.suppress and would_suppress
+        sup = "S" if would_suppress else " "
+        if suppress:
+            self.suppress_count += 1 
+        else: 
+            nrpo_s = "nrpo( %6d %5d %5d %5d )" % tuple(nrpo)
+            print( "%1s %s %50s %50s  %3d %s " % (sup, nrpo_s, pv, lv, midx, msn) )
+        pass  
 
     def sonames(self, nidx):
         midx = self.midx[nidx] 
@@ -706,6 +793,7 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--names", action="store_true", help="Identity and PV/LV/SO names of  nodes selected by idx." ) 
     parser.add_argument(  "--sonames", action="store_true", help="Dump solid names for the nodes selected by idx." ) 
     parser.add_argument(  "--soidx", action="store_true", help="Dump solid_idx (aka: lvidx or meshidx/midx) for the nodes selected by node or triplet idx." ) 
+    parser.add_argument(  "--suppress", action="store_true", help="Suppress dumping/listing volumes with names including a list of suppressed strings provided by envvar OPTICKS_GGEO_SUPPRESS")
     parser.add_argument(  "-t","--terse", action="store_true", help="Terse output" ) 
     parser.add_argument(  "-s","--errout", action="store_true", help="Split output writing to both stderr and stdout" ) 
     args = parser.parse_args()
@@ -742,6 +830,12 @@ def triplet_(rpo):
 if __name__ == '__main__':
     args = parse_args(__doc__)
     gg = GGeo(args)
+
+    if args.suppress:
+        log.info("using suppression %s specificed by envvar OPTICKS_GGEO_SUPPRESS " % gg.SUPPRESS_PTN ) 
+    else:
+        log.info("suppression %s specificed by envvar OPTICKS_GGEO_SUPPRESS can be enabled with --suppression option " % gg.SUPPRESS_PTN ) 
+    pass
 
     if args.check:
         gg.consistency_check()

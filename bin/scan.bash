@@ -517,23 +517,46 @@ scan-px-cmd(){
 }
 
 
+scan-target(){    echo 62590 ; }
+scan-targetpvn(){ echo pPoolLining ; } 
+
+scan-generate-override-notes(){ cat << EON
+
+--generateoverride
+    Override photons to generate for debugging, eg 1 for a single photon. 
+    Values of zero disables any override, 
+    Negative values are assumed to be in millions.
+
+EON
+}
+
 scan-pf-cmd(){
    local num_photons=$1
    local cat=$2
    local num_abbrev=$(scan-num $num_photons)
-   local cmd="OKTest --target 62590  --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --save --production --savehit --dbghitmask TO,BT,RE,SC,SA --multievent 10 --xanalytic " 
+   local cmd="OKTest --targetpvn $(scan-targetpvn)  --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --save --production --savehit --dbghitmask TO,BT,RE,SC,SA --multievent 10 --xanalytic " 
    cmd="$cmd $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
    echo $cmd
 }
 
-scan-pf-check(){  OKTest --target 62590 --generateoverride -10 --rngmax 10 --cvd 1 --rtx 1 --xanalytic ; }
+scan-pf-check-(){ cat << EOC
+ OKTest --targetpvn $(scan-targetpvn) --generateoverride -3 --rngmax 3 --cvd 1 --rtx 1 
+EOC
+}
+scan-pf-check(){  
+   local cmd=$($FUNCNAME- $*)
+   echo $cmd
+   #eval $cmd
+   rc=$?
+   echo rc $rc
+}
 
 
 scan-pt-cmd(){
    local num_photons=$1
    local cat=$2
    local num_abbrev=$(scan-num $num_photons)
-   local cmd="OKTest --target 62590  --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --save --production --savehit --dbghitmask TO,BT,RE,SC,SA --multievent 10  " 
+   local cmd="OKTest --targetpvn $(scan-targetpvn)  --pfx $(scan-pfx) --cat ${cat}_${num_abbrev} --generateoverride ${num_photons} --compute --save --production --savehit --dbghitmask TO,BT,RE,SC,SA --multievent 10  " 
    cmd="$cmd $(scan-rngmax-opt $num_photons) $(scan-cat $cat)"
    echo $cmd
 }

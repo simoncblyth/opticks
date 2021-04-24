@@ -4,6 +4,8 @@
 CDevice
 ============
 
+This is used from OContext::initDevices
+
 CDevice instance persists summary details about a single device.
 Static methods with std::vector arguments used to handle multiple
 devices.  
@@ -11,9 +13,6 @@ devices.
 By persisting CDevice for all attached devices when the CUDA_VISIBLE_DEVICES
 envvar is not defined it becomes possible to get the "absolute" ordinal 
 when the envvar is used and only a subset of all devices are visible.
-
-This is used from OContext::initDevices
-
 
 **/
 
@@ -39,9 +38,12 @@ struct CUDARAP_API CDevice {
     int multiProcessorCount ; 
     size_t totalGlobalMem ; 
 
+    float totalGlobalMem_GB() const ;
     void read( std::istream& in ); 
     void write( std::ostream& out ) const ; 
     bool matches(const CDevice& other) const ; 
+
+    const char* brief() const ;
     const char* desc() const ; 
 
     static const char* CVD ; 

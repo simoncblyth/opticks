@@ -18,6 +18,34 @@ Observe that target is using a hardcoded volume index that is inevitably outdate
 
 
 
+Informal scan : OKTest --targetpvn pPoolLining --generateoverride -3 --rngmax 3 --cvd 1 --rtx 1 
+-----------------------------------------------------------------------------------------------------
+
+* informal scan suggests about 1 second per 1 million photons with the killer geometry removed "-e ~8,"
+
+::
+
+    O[blyth@localhost ~]$ OKTest --targetpvn pPoolLining --generateoverride -3 --rngmax 3 --cvd 1 --rtx 1 
+    2021-04-24 21:43:36.255 INFO  [160939] [OPropagator::launch@287] 0 : (0;3000000,1)  launch time 28.3312
+
+    O[blyth@localhost ~]$ OKTest --targetpvn pPoolLining --generateoverride -3 --rngmax 3 --cvd 1 --rtx 1 -e ~8,  
+    2021-04-24 21:47:59.108 INFO  [168270] [OPropagator::launch@287] 0 : (0;3000000,1)  launch time 3.09744
+
+    O[blyth@localhost ~]$ OKTest --targetpvn pPoolLining --generateoverride -10 --rngmax 10 --cvd 1 --rtx 1 -e ~8, 
+    2021-04-24 21:49:58.268 INFO  [171050] [OPropagator::launch@287] 0 : (0;10000000,1)  launch time 9.59775
+
+    O[blyth@localhost ~]$ OKTest --targetpvn pPoolLining --generateoverride -100 --rngmax 100 --cvd 1 --rtx 1 -e ~8, 
+
+    2021-04-24 21:54:52.943 FATAL [178337] [OCtx::create_buffer@300] skip upload_buffer as num_bytes zero key:OSensorLib_sensor_data
+    2021-04-24 21:54:52.943 FATAL [178337] [OCtx::create_buffer@300] skip upload_buffer as num_bytes zero key:OSensorLib_texid
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Memory allocation failed (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Out of memory)
+
+
+100M runs into OOM on TITAN RTX
+        
+
+
 
 Try to find what the name volume 62590 was at that time : its probably pTarget or smth ?
 -------------------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 
 #include <sstream>
+#include <iomanip>
 #include <string>
 #include <cstring>
 #include <cstdlib>
@@ -17,20 +18,31 @@ const plog::Severity CDevice::LEVEL = PLOG::EnvLevel("CDevice", "DEBUG");
 
 const char* CDevice::CVD = "CUDA_VISIBLE_DEVICES" ; 
 
+const char* CDevice::brief() const 
+{
+    std::stringstream ss ; 
+    ss << "idx/ord/mpc/cc:" 
+       << index 
+       << "/" 
+       << ordinal 
+       << "/" 
+       << multiProcessorCount 
+       << "/" 
+       << compute_capability 
+       << std::setw(8) << std::fixed << std::setprecision(3) <<  totalGlobalMem_GB() << " GB "
+       ;  
+    std::string s = ss.str(); 
+    return strdup(s.c_str());  
+}
+
 const char* CDevice::desc() const 
 {
     std::stringstream ss ; 
-    // uuid is not printable
-    ss << "CDevice"
-       << " index " << index
-       << " ordinal " << ordinal
-       << " name " << name
-       << " major " << major 
-       << " minor " << minor 
-       << " compute_capability " << compute_capability 
-       << " multiProcessorCount " << multiProcessorCount
-       << " totalGlobalMem " << totalGlobalMem
-       ; 
+    ss 
+        << std::setw(30) << brief() 
+        << " "
+        << name 
+        ; 
     std::string s = ss.str(); 
     return strdup(s.c_str());  
 } 
@@ -38,6 +50,11 @@ const char* CDevice::desc() const
 bool CDevice::matches(const CDevice& other) const 
 {
    return strncmp(other.uuid, uuid, sizeof(uuid)) == 0 && strncmp(other.name, name, sizeof(name)) == 0;   
+}
+
+float CDevice::totalGlobalMem_GB() const 
+{
+    return float(totalGlobalMem)/float(1024*1024*1024)  ;  
 }
 
 

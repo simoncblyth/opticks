@@ -504,6 +504,7 @@ OKTest without options defaults to writing the below::
 void OContext::initDevices()
 {
     const char* dirpath = m_ok->getRuncacheDir(); 
+    LOG(LEVEL) << "[" << " runcachedir " << dirpath  ;
     bool nosave = false ; 
     CDevice::Visible(m_visible_devices, dirpath, nosave ); 
     CDevice::Load(   m_all_devices, dirpath); 
@@ -517,6 +518,7 @@ void OContext::initDevices()
  
     parameters->add<std::string>("CDeviceBriefAll", cdb_all  ) ; 
     parameters->add<std::string>("CDeviceBriefVis", cdb_vis  ) ;
+    LOG(LEVEL) << "]" ;
 }
 
 
