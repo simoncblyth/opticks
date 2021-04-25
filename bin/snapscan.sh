@@ -16,7 +16,9 @@ scan-ee()
     #echo "~0"
     #for e in $(seq 0 $nmm) ; do echo  "$e," ; done
     #for e in $(seq 0 $nmm) ; do echo "~$e," ; done
-    for e in $(seq 0 $nmm) ; do echo "~8,$e" ; done
+    #for e in $(seq 0 $nmm) ; do echo "~8,$e" ; done
+
+    echo "1,2,3,4"   # ONLY PMTs
 }
 
 for e in $(scan-ee) 

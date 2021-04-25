@@ -4,6 +4,46 @@ OpSnapTest_debug_slowdown_with_new_geometry
 
 
 
+snap.py results from snapscan.sh
+-------------------------------------
+
+::
+
+    epsilon:ana blyth$ snap.py 
+    [ 0]   5,     0.0020 :     1.0000     0.0011 : ONLY: 1:sStrutBallhead0x34be280 
+    [ 1]   7,     0.0030 :     1.5198     0.0017 : ONLY: 1:base_steel0x35a1810 
+    [ 2]   9,     0.0038 :     1.9211     0.0022 : ONLY: 130:sPanel0x4e71750 
+    [ 3]   4,     0.0044 :     2.2180     0.0025 : ONLY: 5:mask_PMT_20inch_vetosMask0x3c2e7c0 
+    [ 4]   6,     0.0056 :     2.7961     0.0032 : ONLY: 1:uni10x3461bd0 
+    [ 5]   3,     0.0068 :     3.4043     0.0039 : ONLY: 5:HamamatsuR12860sMask0x3c39130 
+    [ 6]   1,     0.0073 :     3.6891     0.0042 : ONLY: 5:PMT_3inch_pmt_solid0x43c0a40 
+    [ 7]   2,     0.0074 :     3.7383     0.0043 : ONLY: 5:NNVTMCPPMTsMask0x3c2c750 
+    [ 8] ~8,0     0.0318 :    15.9774     0.0182 : EXCL: 1:uni_acrylic30x35932f0 3084:sWorld0x33e3370 
+    [ 9]   0,     0.0511 :    25.6640     0.0293 : ONLY: 3084:sWorld0x33e3370 
+    [10] ~8,2     0.0742 :    37.2627     0.0425 : EXCL: 1:uni_acrylic30x35932f0 5:NNVTMCPPMTsMask0x3c2c750 
+    [11] ~8,9     0.0747 :    37.4947     0.0428 : EXCL: 1:uni_acrylic30x35932f0 130:sPanel0x4e71750 
+    [12] ~8,4     0.0750 :    37.6846     0.0430 : EXCL: 1:uni_acrylic30x35932f0 5:mask_PMT_20inch_vetosMask0x3c2e7c0 
+    [13] ~8,1     0.0754 :    37.8503     0.0432 : EXCL: 1:uni_acrylic30x35932f0 5:PMT_3inch_pmt_solid0x43c0a40 
+    [14] ~8,6     0.0759 :    38.1170     0.0435 : EXCL: 1:uni_acrylic30x35932f0 1:uni10x3461bd0 
+    [15] ~8,7     0.0760 :    38.1693     0.0435 : EXCL: 1:uni_acrylic30x35932f0 1:base_steel0x35a1810 
+    [16] ~8,5     0.0762 :    38.2808     0.0437 : EXCL: 1:uni_acrylic30x35932f0 1:sStrutBallhead0x34be280 
+    [17] ~8,8     0.0762 :    38.2963     0.0437 : EXCL: 1:uni_acrylic30x35932f0 1:uni_acrylic30x35932f0 
+    [18] ~8,3     0.0775 :    38.9021     0.0444 : EXCL: 1:uni_acrylic30x35932f0 5:HamamatsuR12860sMask0x3c39130 
+    [19]  ~8,     0.0882 :    44.2823     0.0505 : EXCL: 1:uni_acrylic30x35932f0 
+    [20]   8,     1.1154 :   560.2320     0.6390 : ONLY: 1:uni_acrylic30x35932f0 
+    [21]  ~0,     1.3928 :   699.5284     0.7978 : EXCL: 3084:sWorld0x33e3370 
+    [22]  ~5,     1.6898 :   848.7197     0.9680 : EXCL: 1:sStrutBallhead0x34be280 
+    [23]  ~6,     1.6900 :   848.8232     0.9681 : EXCL: 1:uni10x3461bd0 
+    [24]  ~7,     1.6942 :   850.9307     0.9705 : EXCL: 1:base_steel0x35a1810 
+    [25]  ~4,     1.6949 :   851.2808     0.9709 : EXCL: 5:mask_PMT_20inch_vetosMask0x3c2e7c0 
+    [26]   ~0     1.7078 :   857.7765     0.9783 : ALL 
+    [27]  ~3,     1.7103 :   859.0206     0.9797 : EXCL: 5:HamamatsuR12860sMask0x3c39130 
+    [28]  ~9,     1.7157 :   861.7418     0.9828 : EXCL: 130:sPanel0x4e71750 
+    [29]  ~2,     1.7285 :   868.1602     0.9902 : EXCL: 5:NNVTMCPPMTsMask0x3c2c750 
+    [30]  ~1,     1.7457 :   876.7865     1.0000 : EXCL: 5:PMT_3inch_pmt_solid0x43c0a40 
+    epsilon:ana blyth$ 
+
+
 
 
 TODO : investigate CSG code of slow geometry
@@ -21,7 +61,9 @@ TODO : investigate CSG code of slow geometry
 Need to dump PV/LV names within each Opticks "Solid" (aka GMergedMesh)
 -------------------------------------------------------------------------
 
+::
 
+    ggeo.sh 0:9/ --names --suppress
 
 
 
