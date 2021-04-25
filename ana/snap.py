@@ -12,6 +12,8 @@
 """
 import os, logging, glob, json, re, argparse 
 import numpy as np
+from opticks.ana.rsttable import RSTTable
+
 
 class MM(object):
     PTN = re.compile("\d+") 
@@ -33,6 +35,8 @@ class MM(object):
 
         if emm == "~0":
             return "ALL"
+        elif imm == [1,2,3,4]:
+            return "ONLY PMT"
         elif "," in emm:
             return ( "EXCL: " if tilde else "ONLY: " ) +  lab 
         else:
@@ -58,49 +62,108 @@ class Snap(object):
         self.path = path 
         self.js = js 
         self.jpg = jpg 
+        self.argline = js['argline']
 
         # below are set by SnapScan after sorting
         self.sc = None   
         self.idx = None
 
+    def jpg_(self):
+        """
+        tilde ~ and __t0__ causing RST problems : so replace tham 
+        """
+        fold = os.path.dirname(self.jpg)
+        tname = self.jpg_tname()
+        return os.path.join(fold, tname)
+
+    def jpg_tname(self): 
+        name = os.path.basename(self.jpg)
+        tname = name.replace("~","t")
+        tname = tname.replace("__t0__", "_ALL_")  # some RST meaning causing problem 
+        return tname 
+
+    def mvjpg(self):
+        name = os.path.basename(self.jpg)
+        tname = self.jpg_tname()
+        return None if name == tname else "mv %s %s" % (name, tname)
+
+    def refjpg(self, pfx, afx="1280px_720px", indent="    "): 
+        """
+        For inclusion into s5_background_image.txt 
+        """
+        name = os.path.basename(self.jpg_())
+        return "\n".join([indent+self.title(), indent+pfx+"/"+name+" "+afx, ""])
+
+    def title(self):
+        name = os.path.basename(self.jpg_())
+        stem = name.replace(".jpg","") 
+        return "[%d]%s" % (self.idx, stem)
+ 
+    def pagetitle(self,kls="blue"):
+        return ":%s:`%s`" % (kls,self.title())
+ 
+    def pagejpg(self):
+        title = self.pagetitle()
+        return "\n".join([title, "-" * len(title), ""])
+
+
     over_fast = property(lambda self:float(self.av)/float(self.sc.fast.av))
     over_slow = property(lambda self:float(self.av)/float(self.sc.slow.av))
+    over_candle = property(lambda self:float(self.av)/float(self.sc.candle.av))
+
     label = property(lambda self:self.sc.mm.label(self.emm))
     imm = property(lambda self:self.sc.mm.imm(self.emm))
 
-    COLS = 6 
     def row(self):
-        return  (int(self.idx), self.emm, self.av, self.over_fast, self.over_slow, self.label )
+        return  (int(self.idx), self.emm, self.av, self.over_candle, self.label )
+
+    LABELS = ["idx", "-e", "time(s)", "relative", "enabled geometry description" ] 
+    WIDS = [     3,     10,     10,        10,       70 ] 
+    HFMT = [  "%3s",  "%10s", "%10s",   "%10s",   "%-70s" ]  
+    RFMT = [  "%3d", "%10s", "%10.4f", "%10.4f",  "%-70s" ]  
+    PRE =  [  ""   , ""    , ""      , ""      ,  "    " ]    ## spacer for legibility 
 
     def __repr__(self):
-        return "[%2d] %4s %10.4f : %10.4f %10.4f : %s " % self.row()
+        RFMT = [self.PRE[i] + self.RFMT[i] for i in range(len(self.RFMT))]
+        rfmt = " ".join(RFMT)
+        return rfmt % self.row()
+
+    @classmethod
+    def Hdr(cls):
+        HFMT = [cls.PRE[i] + cls.HFMT[i] for i in range(len(cls.HFMT))]
+        hfmt = " ".join(HFMT)
+        return hfmt % tuple(cls.LABELS)
 
 
 class SnapScan(object):
     BASE = os.path.expandvars("$TMP/snap")
-    def __init__(self, reldir, mm=None):
+    def __init__(self, reldir, mm=None, candle_emm="1,2,3,4"):
         self.mm = mm
         snapdir = os.path.join(self.BASE, reldir)
         paths = glob.glob("%s/*.json" % snapdir) 
 
         snaps = list(map(Snap,paths))
         snaps = sorted(snaps, key=lambda s:s.av)
+        candle = None
 
         for s in snaps:
             s.sc = self
+            if s.emm == candle_emm:
+                candle = s
+            pass  
         pass
 
         # filter out the double emm
-        snaps = list(filter(lambda s:len(s.imm) == 1, snaps))
+        snaps = list(filter(lambda s:len(s.imm) != 2, snaps))
 
         for idx, s in enumerate(snaps):
             s.idx = idx
         pass
-
         self.snaps = snaps
+        self.candle = candle 
 
     def table(self):
-        table = np.empty([len(self.snaps),Snap.COLS], dtype=np.object ) 
+        table = np.empty([len(self.snaps),len(Snap.LABELS)], dtype=np.object ) 
         for idx, snap in enumerate(self.snaps):
             table[idx] = snap.row()
         pass
@@ -110,55 +173,22 @@ class SnapScan(object):
     slow = property(lambda self:self.snaps[-1])
 
     def __repr__(self):
-        return "\n".join(list(map(repr,self.snaps)))
+        return "\n".join( [Snap.Hdr()] + list(map(repr,self.snaps)) + [Snap.Hdr()] )
 
     def jpg(self):
         return "\n".join(list(map(lambda s:s.jpg,self.snaps)))
 
+    def mvjpg(self):
+        return "\n".join(list(filter(None,map(lambda s:s.mvjpg(),self.snaps))))
 
-class RSTTable(object):
-     """
-     Base class relying on subclasses to define labels and formats
-     appropriate for the input table  
-     """
-     def divider(self, widths, char="-"):
-         """
-         +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
-         """
-         return "+".join([""]+list(map(lambda j:char*widths[j], range(len(widths))))+[""]) 
+    def argline(self):
+        return "\n".join(list(map(lambda s:s.argline,self.snaps)))
 
-     def __init__(self, t):
-         self.t = t  
+    def refjpg(self, pfx): 
+        return "\n".join(list(map(lambda s:s.refjpg(pfx),self.snaps)))
 
-     def __str__(self):
-
-         nrow = self.t.shape[0]
-         ncol = self.t.shape[1]    
-
-         assert len(self.hfmt) == ncol
-         assert len(self.rfmt) == ncol
-         assert len(self.labels) == ncol
-         assert len(self.wids) == ncol
-         
-         hfmt = "|".join( [""]+self.hfmt+[""])
-         rfmt = "|".join( [""]+self.rfmt+[""])
-
-         lines = []
-         lines.append(self.divider(self.wids, "-")) 
-         lines.append(hfmt % tuple(self.labels))
-         lines.append(self.divider(self.wids, "="))
-         for i in range(nrow):
-             lines.append(rfmt % tuple(t[i]))
-             lines.append(self.divider(self.wids,"-"))   
-         pass
-         return "\n".join(lines)    
-
-
-class SnapTable(RSTTable):
-    labels = ["idx", "emm", "time", "vslow", "vfast", "emm desc" ] 
-    wids = [ 3, 10, 10, 10, 10, 70 ] 
-    hfmt = [  "%3s", "%10s", "%10s",   "%10s",   "%10s",   "%-70s" ]  
-    rfmt = [  "%3d", "%10s", "%10.4f", "%10.4f", "%10.4f", "%-70s" ]  
+    def pagejpg(self): 
+        return "\n".join(list(map(lambda s:s.pagejpg(),self.snaps)))
 
         
 
@@ -168,6 +198,12 @@ def parse_args(doc, **kwa):
     parser.add_argument(     "--level", default="info", help="logging level" ) 
     parser.add_argument(  "--reldir", default="lLowerChimney_phys", help="Relative dir beneath $TMP/snap from which to load snap .json" ) 
     parser.add_argument(  "--jpg", action="store_true", help="List jpg paths in speed order" ) 
+    parser.add_argument(  "--refjpgpfx", default="/env/presentation/snap/lLowerChimney_phys", help="List jpg paths s5 background image presentation format" ) 
+    parser.add_argument(  "--refjpg", action="store_true", help="List jpg paths s5 background image presentation format" ) 
+    parser.add_argument(  "--pagejpg", action="store_true", help="List jpg for inclusion into s5 presentation" ) 
+    parser.add_argument(  "--mvjpg", action="store_true", help="List jpg for inclusion into s5 presentation" ) 
+    parser.add_argument(  "--argline", action="store_true", help="List argline in speed order" ) 
+    parser.add_argument(  "--rst", action="store_true", help="Dump table in RST format" ) 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -182,13 +218,21 @@ if __name__ == '__main__':
     ss = SnapScan(args.reldir, mm) 
     if args.jpg:
         print(ss.jpg())
+    elif args.refjpg:
+        print(ss.refjpg(args.refjpgpfx))
+    elif args.pagejpg:
+        print(ss.pagejpg())
+    elif args.mvjpg:
+        print(ss.mvjpg())
+    elif args.argline:
+        print(ss.argline())
+    elif args.rst:
+        t = ss.table()
+        rst = RSTTable.Render(t, Snap.LABELS, Snap.WIDS, Snap.HFMT, Snap.RFMT, Snap.PRE )
+        print(rst)
     else:
         print(ss) 
     pass
 
-    t = ss.table()
-
-    st = SnapTable(t)
-    print(st)
 
 

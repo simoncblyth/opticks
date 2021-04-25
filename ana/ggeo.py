@@ -212,6 +212,7 @@ import numpy as np
 from opticks.ana.blib import BLib
 from opticks.ana.key import key_
 from opticks.ana.OpticksIdentity import OpticksIdentity
+from opticks.ana.rsttable import RSTTable
 
 tx_load = lambda _:list(map(str.strip, open(_).readlines()))
 
@@ -804,6 +805,7 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--brief", action="store_true", help="Brief summary of nodes selected by idx." ) 
     parser.add_argument(  "--names", action="store_true", help="Identity and PV/LV/SO names of  nodes selected by idx." ) 
     parser.add_argument(  "--mm",   action="store_true", help="MM Names" ) 
+    parser.add_argument(  "--mmsmry",   action="store_true", help="MM Names" ) 
     parser.add_argument(  "--sonames", action="store_true", help="Dump solid names for the nodes selected by idx." ) 
     parser.add_argument(  "--soidx", action="store_true", help="Dump solid_idx (aka: lvidx or meshidx/midx) for the nodes selected by node or triplet idx." ) 
     parser.add_argument(  "--suppress", action="store_true", help="Suppress dumping/listing volumes with names including a list of suppressed strings provided by envvar OPTICKS_GGEO_SUPPRESS")
@@ -856,9 +858,41 @@ if __name__ == '__main__':
         for ridx in gg.mmidx:
             pidx = 0 
             oidx = 0 
-            num = gg.get_num_volumes(ridx) 
+            num_vol = gg.get_num_volumes(ridx) 
             msn = gg.get_soname(ridx, pidx, oidx)
-            print("%d:%s" % (num, msn))
+            mm_name = "%d:%s" % (num_vol, msn)
+            print(mm_name)
+        pass
+    elif args.mmsmry:
+
+
+        labels = ["ridx","plc","vol", "component name", "note"]
+        hfmt = ["%4s", "%6s", "%5s", "%-40s", "%-25s" ]
+        rfmt = ["%4d", "%6d", "%5d", "%-40s", "%-25s" ]
+        wids = [4,  6, 5, 40 , 25 ]
+        pre  =  ["",  "",   "", "   ", "  " ]
+
+        mm_notes = {}
+        mm_notes[0] = "non-repeated remainder"
+        mm_notes[9] = "repeated parts of TT"
+
+        t = np.empty( [len(gg.mmidx), len(labels)], dtype=np.object ) 
+
+        for i, ridx in enumerate(gg.mmidx):
+            pidx = 0 
+            oidx = 0 
+            num_vol = gg.get_num_volumes(ridx) 
+            num_plc = gg.get_num_placements(ridx) 
+            msn = gg.get_soname(ridx, pidx, oidx)
+            mm_name = "%d:%s" % (num_vol, msn)
+            mm_note = mm_notes.get(i, "")
+            row = tuple([ridx, num_plc, num_vol, mm_name, mm_note])
+            line = " ".join(rfmt) % row
+            print(line)
+            t[i] = row 
+        pass
+        rst = RSTTable.Render(t, labels, wids, hfmt, rfmt, pre )
+        print(rst) 
         pass
     elif args.idsmry or args.bbsmry:
 
