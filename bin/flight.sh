@@ -16,7 +16,7 @@ Using jpg has the advantage of lossy compression with small file sizes.
 Whilst first making a flight it is advisable to run with the framelimit envvar 
 defined which overrides the framelimit from the --flightconfig option::
 
-    OPTICKS_FLIGHT_FRAMELIMIT=3 EMM=~0 PVN=lFasteners_phys flight.sh 
+    LIMIT=3 EMM=~0 PVN=lFasteners_phys flight.sh 
 
     PVN=lFasteners_phys flight.sh --rtx 1 --cvd 1 
 
@@ -32,12 +32,7 @@ defined which overrides the framelimit from the --flightconfig option::
 
 TODO:
 
-0. use a nameprefix reldir to keep all the files from a flight.sh organized
-1. named eye-look-up flightpath input arrays selected by config from .opticks/flightpath input dir 
-
-   * use this for some XZ plane rotation
-
-2. things missing from metadata json output 
+1. things missing from metadata json output and bitmap top/bottom annotations
 
    * geocache digest, 
    * GPU name, cvd, RTX setting  etc..
@@ -49,7 +44,7 @@ EOU
 msg="=== $0 :"
 pvn=${PVN:-lLowerChimney_phys}
 emm="${EMM:-~0}"                 # SBit::FromString 
-size=${SIZE:-2560,1440,1}
+size=${SIZE:-2560,1440,1}  # currently ignored
 period=${PERIOD:-4}
 limit=${LIMIT:-600}
 scale0=${SCALE0:-3}

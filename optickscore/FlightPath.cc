@@ -272,16 +272,24 @@ int FlightPath::render( SRenderer* renderer )
  
     FlightPath* fp = this ; 
 
-    m_composition->setViewType(View::FLIGHTPATH);
+    int rc = m_composition->setViewType(View::FLIGHTPATH);
+
+    if( rc != 0 )
+    {
+        LOG(fatal) 
+            << "Composition::setViewType FAILED , probably input eye-look-up-ctrl .npy file is missing, see ana/makeflight.py " ;  
+            ;
+        return 1 ; 
+    } 
 
     InterpolatedView* iv = m_composition->getInterpolatedView() ; 
 
     if(iv == nullptr)
     {
         LOG(fatal) 
-            << "FAILED to create InterpolatedView, probably input eye-look-up-ctrl .npy file is missing, see ana/makeflight.py " ;  
+            << "Composition::getInterpolatedView FAILED " ;  
             ;
-        return 1 ; 
+        return 2 ; 
     }
 
     unsigned period = fp->getPeriod();     // typical values 4,8,16   (1:fails with many nan)

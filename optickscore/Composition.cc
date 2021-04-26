@@ -630,10 +630,11 @@ void Composition::nextViewType(unsigned int /*modifiers*/)
     setViewType( (View::View_t)next ) ; 
 }
 
-void Composition::setViewType(View::View_t type)
+int Composition::setViewType(View::View_t type)
 {
     m_viewtype = type ;
-    applyViewType();
+    int rc = applyViewType();
+    return rc ; 
 }
 
 View::View_t Composition::getViewType()
@@ -993,9 +994,9 @@ TrackView* Composition::makeTrackView()
 
 
 
-void Composition::applyViewType() // invoked by nextViewType/setViewType
+int Composition::applyViewType() // invoked by nextViewType/setViewType
 {
-    LOG(warning) << "Composition::applyViewType(KEY_U) switching " << View::TypeName(m_viewtype) ; 
+    LOG(LEVEL) << "(KEY_U) switching " << View::TypeName(m_viewtype) ; 
     if(m_viewtype == View::STANDARD)
     {
         resetView();
@@ -1009,11 +1010,11 @@ void Composition::applyViewType() // invoked by nextViewType/setViewType
         InterpolatedView* iv = m_flightpath->getInterpolatedView();     
         if(!iv)
         {
-            LOG(warning) 
+            LOG(error) 
                 << " FAILED "
                 << " FLIGHTPATH interpolated view requires at least 2 views " 
                 ;
-            return  ;
+            return 1 ;
         }
 
         iv->Summary("Composition::changeView(KEY_U)");
@@ -1029,11 +1030,11 @@ void Composition::applyViewType() // invoked by nextViewType/setViewType
         InterpolatedView* iv = m_bookmarks->getInterpolatedView();     
         if(!iv)
         {
-            LOG(warning) << "Composition::changeView"
-                         << " FAILED "
-                         << " interpolated view requires at least 2 bookmarks " 
-                         ;
-            return  ;
+            LOG(error) 
+                << " FAILED "
+                << " interpolated view requires at least 2 bookmarks " 
+                ;
+            return 2 ;
         }
 
         iv->Summary("Composition::changeView(KEY_U)");
@@ -1051,8 +1052,8 @@ void Composition::applyViewType() // invoked by nextViewType/setViewType
         TrackView* tv = makeTrackView();
         if(tv == NULL)
         {
-            LOG(warning) << "Composition::applyViewType(KEY_U) requires track information ";
-            return ;
+            LOG(error) << "Composition::applyViewType(KEY_U) requires track information ";
+            return 3 ;
         }
 
         //bool external = false ; 
@@ -1068,7 +1069,7 @@ void Composition::applyViewType() // invoked by nextViewType/setViewType
         setView(tv);
     } 
 
-
+    return 0 ; 
 }
 
 void Composition::setView(View* view)

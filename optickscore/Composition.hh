@@ -189,10 +189,10 @@ class OKCORE_API Composition : public NConfigurable {
    public:
       // U_KEY 
       void nextViewType(unsigned int modifiers);
-      void setViewType(View::View_t type);
+      int setViewType(View::View_t type);
       View::View_t getViewType();
    private:
-       void applyViewType();
+       int applyViewType();
    public:
        // M_KEY
        typedef enum { WHITE, MAT1, MAT2, FLAG1, FLAG2, POL1, POL2, NUM_COLOR_STYLE } ColorStyle_t ;
