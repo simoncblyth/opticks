@@ -2,8 +2,32 @@ opticks-t-april-26-test-fails-4-of-462
 =========================================
 
 
-Precision, CentOS7 Linux
-----------------------------
+
+AFTER FIXES : down to 1 FAIL, same 3 SLOW : the 1 FAIL from an CUDA/OptiX launch fail : Illegal Address
+------------------------------------------------------------------------------------------------------------
+
+
+All the SLOW ones are using Geant4 : hence as are using the full JUNO tds geometry 
+the slowness is not surprising, coming from Geant4 voxelisation.
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      8  /39  Test #8  : CFG4Test.CG4Test                              Passed                         124.48 
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Passed                         145.47 
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      15.62  
+
+
+    FAILS:  1   / 462   :  Mon Apr 26 21:52:13 2021   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      15.62  
+    O[blyth@localhost opticks]$ 
+
+
+
+
+
+Issue 4/462 FAILS on Precision, CentOS7 Linux
+-------------------------------------------------
 
 With tds (lastest JUNO) geocache selected via OPTICKS_KEY::
 
