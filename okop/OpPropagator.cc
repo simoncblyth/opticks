@@ -124,18 +124,14 @@ void OpPropagator::cleanup()
     m_engine->cleanup();
 }
 
-void OpPropagator::render_snap()
+int OpPropagator::render_snap()
 {
-    LOG(LEVEL) << "[" ; 
-    m_tracer->render_snap();
-    LOG(LEVEL) << "]" ; 
+    return m_tracer->render_snap();
 }
 
-void OpPropagator::render_flightpath()
+int  OpPropagator::render_flightpath()
 {
-    LOG(LEVEL) << "[" ; 
-    m_tracer->render_flightpath();
-    LOG(LEVEL) << "]" ; 
+    return m_tracer->render_flightpath();
 }
 
 

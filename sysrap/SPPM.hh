@@ -28,6 +28,16 @@ Implementation of the minimal(and uncompressed) PPM image file format.
 * PPM uses 24 bits per pixel: 8 for red, 8 for green, 8 for blue.
 * https://en.wikipedia.org/wiki/Netpbm_format
 
+* SPPM is used as the base class of oglrap/Pix and used by oglra/Frame::snap 
+
+
+Deficiencies
+-------------
+
+Much of SPPM is general image manipulation unrelated to the PPM image format. 
+
+* TODO : integrate image manipulation into SIMG or perhspa SIMGExtra
+
 
 DevNotes
 ----------

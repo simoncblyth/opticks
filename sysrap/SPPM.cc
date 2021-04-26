@@ -109,6 +109,14 @@ void SPPM::save(const char* path, int width, int height, const unsigned char* im
 }
 
 
+/**
+SPPM::snap
+------------
+
+Invokes download from subclass, eg oglrap/Pix
+and then saves.
+
+**/
 
 
 void SPPM::snap(const char* path)

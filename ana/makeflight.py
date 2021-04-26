@@ -24,9 +24,13 @@ makeflight.py : creates eye-look-up input NumPy arrays used by okc/FlightPath.cc
 
 See docs/misc/making_flightpath_raytrace_movies.rst 
 
+This creates input eye-look-up-ctrl .npy files read by optickscore/FlightPath 
+
 ::
 
     ipython -i -- makeflight.py
+
+    ana/makeflight.sh  
 
 
 """

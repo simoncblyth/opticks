@@ -24,9 +24,10 @@ Snap::Snap(Opticks* ok, SRenderer* renderer, NSnapConfig* config)
 {
 }
  
-void Snap::render()
+int Snap::render()
 {
     LOG(info)  << "[" << m_config->desc() ; 
+    int rc = 0 ; 
 
     if( m_numsteps == 0)
     {   
@@ -46,7 +47,8 @@ void Snap::render()
         save(); 
     }
     
-    LOG(info) << "]" ;
+    LOG(info) << "] " << rc  ;
+    return rc ; 
 }
 
 

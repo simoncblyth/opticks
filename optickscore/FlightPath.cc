@@ -189,7 +189,6 @@ void FlightPath::load()
             << " (bad name OR need to run ana/makeflight.sh)"
             ;
     }
-    assert( m_eluc ) ; 
 }
 
 void FlightPath::setPathFormat()
@@ -234,11 +233,15 @@ void FlightPath::Summary(const char* msg)
     LOG(info) << description(msg);
 }
 
+bool FlightPath::isValid() const 
+{
+    return m_eluc != nullptr ; 
+}
+
 InterpolatedView* FlightPath::makeInterpolatedView()
 {
     load(); 
-    assert( m_eluc ) ; 
-    return InterpolatedView::MakeFromArray( m_eluc, m_ivperiod, getScale0(), getScale1(), m_ctrl  ) ; 
+    return m_eluc ? InterpolatedView::MakeFromArray( m_eluc, m_ivperiod, getScale0(), getScale1(), m_ctrl  ) : nullptr ; 
 }
 
 
@@ -255,17 +258,31 @@ InterpolatedView* FlightPath::getInterpolatedView()
 }
 
 
-void FlightPath::render( SRenderer* renderer )
+/**
+FlightPath::render
+--------------------
+
+Invoked for example from OpTracer::render_flightpath
+
+**/
+
+int FlightPath::render( SRenderer* renderer )
 {
     LOG(LEVEL) << "[" ; 
  
-    FlightPath* fp = this ; // m_ok->getFlightPath(); 
+    FlightPath* fp = this ; 
 
     m_composition->setViewType(View::FLIGHTPATH);
 
-    InterpolatedView* iv = m_composition->getInterpolatedView() ; assert(iv); 
+    InterpolatedView* iv = m_composition->getInterpolatedView() ; 
 
-    // fp->setPathFormat();  // now done in init
+    if(iv == nullptr)
+    {
+        LOG(fatal) 
+            << "FAILED to create InterpolatedView, probably input eye-look-up-ctrl .npy file is missing, see ana/makeflight.py " ;  
+            ;
+        return 1 ; 
+    }
 
     unsigned period = fp->getPeriod();     // typical values 4,8,16   (1:fails with many nan)
 
@@ -316,6 +333,8 @@ void FlightPath::render( SRenderer* renderer )
 
     fp->save(); 
     LOG(LEVEL) << "]" ; 
+
+    return 0 ; 
 }
 
 

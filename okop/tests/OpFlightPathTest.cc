@@ -27,7 +27,8 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
     Opticks ok(argc, argv, "--tracer");   // tempted to put --embedded here 
     OpMgr op(&ok);
-    op.render_flightpath();
+    int rc = op.render_flightpath();
+    if(rc) LOG(fatal) << " rc " << rc ; 
     return 0 ; 
 }
 

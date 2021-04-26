@@ -83,7 +83,7 @@ public:
     unsigned getNumViews() const ;
     void setCtrl(SCtrl* ctrl); 
 public:
-    void render(SRenderer* renderer);
+    int render(SRenderer* renderer);
 public:
     void setVerbose(bool verbose=true);
     void setInterpolatedViewPeriod(unsigned int ivperiod); 
@@ -95,6 +95,7 @@ public:
 
     void refreshInterpolatedView();
     InterpolatedView* getInterpolatedView();
+    bool isValid() const  ;
 private:
     void load();
     InterpolatedView* makeInterpolatedView();

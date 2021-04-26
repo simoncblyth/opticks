@@ -22,6 +22,12 @@
 #include "SPPM.hh"
 #include "OGLRAP_API_EXPORT.hh"
 
+/**
+Pix(SPPM) : image pixels
+============================
+
+**/
+
 struct OGLRAP_API Pix : SPPM 
 {
     void download(); 

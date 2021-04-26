@@ -3,6 +3,82 @@ opticks-t-april-26-test-fails-4-of-462
 
 
 
+Notice the FAIL reported by Zike is from lack of the NumPy input file 
+------------------------------------------------------------------------
+
+Reproduce that::
+
+    O[blyth@localhost opticks]$ rm $HOME/.opticks/flight/RoundaboutXY.npy
+    O[blyth@localhost opticks]$ gdb OpFlightPathTest 
+
+::
+
+    2021-04-26 22:21:30.674 INFO  [4100] [OGeo::convert@302] [ nmm 10
+    2021-04-26 22:21:32.008 INFO  [4100] [OGeo::convert@321] ] nmm 10
+    2021-04-26 22:21:32.155 INFO  [4100] [FlightPath::setPathFormat@200]  m_outdir $TMP/flight name frame%0.5d.jpg fmt /tmp/blyth/opticks/flight/frame%0.5d.jpg
+    2021-04-26 22:21:32.155 WARN  [4100] [Composition::applyViewType@998] Composition::applyViewType(KEY_U) switching FLIGHTPATH
+    2021-04-26 22:21:32.155 INFO  [4100] [FlightPath::load@181]  path $HOME/.opticks/flight/RoundaboutXY.npy
+    2021-04-26 22:21:32.155 ERROR [4100] [NPY<T>::load@1011] NPY<T>::load failed for path [/home/blyth/.opticks/flight/RoundaboutXY.npy] use debugload with NPYLoadTest to investigate (problems are usually from dtype mismatches) 
+    2021-04-26 22:21:32.156 FATAL [4100] [FlightPath::load@187]  MISSING expected path $HOME/.opticks/flight/RoundaboutXY.npy for flight RoundaboutXY (bad name OR need to run ana/makeflight.sh)
+    OpFlightPathTest: /home/blyth/opticks/optickscore/FlightPath.cc:192: void FlightPath::load(): Assertion `m_eluc' failed.
+
+    Program received signal SIGABRT, Aborted.
+    0x00007fffeddf4387 in raise () from /lib64/libc.so.6
+    Missing separate debuginfos, use: debuginfo-install glibc-2.17-307.el7.1.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libcom_err-1.42.9-13.el7.x86_64 libgcc-4.8.5-39.el7.x86_64 libselinux-2.5-14.1.el7.x86_64 libstdc++-4.8.5-39.el7.x86_64 openssl-libs-1.0.2k-19.el7.x86_64 pcre-8.32-17.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007fffeddf4387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffeddf5a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffedded1a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffedded252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff5273282 in FlightPath::load (this=0x23671110) at /home/blyth/opticks/optickscore/FlightPath.cc:192
+    #5  0x00007ffff52737bb in FlightPath::makeInterpolatedView (this=0x23671110) at /home/blyth/opticks/optickscore/FlightPath.cc:239
+    #6  0x00007ffff52738b7 in FlightPath::getInterpolatedView (this=0x23671110) at /home/blyth/opticks/optickscore/FlightPath.cc:253
+    #7  0x00007ffff53054b2 in Composition::applyViewType (this=0x661a20) at /home/blyth/opticks/optickscore/Composition.cc:1009
+    #8  0x00007ffff5303c9e in Composition::setViewType (this=0x661a20, type=View::FLIGHTPATH) at /home/blyth/opticks/optickscore/Composition.cc:636
+    #9  0x00007ffff52739aa in FlightPath::render (this=0x23671110, renderer=0x2366f6a0) at /home/blyth/opticks/optickscore/FlightPath.cc:264
+    #10 0x00007ffff7b598b7 in OpTracer::render_flightpath (this=0x2366f6a0) at /home/blyth/opticks/okop/OpTracer.cc:184
+    #11 0x00007ffff7b589b5 in OpPropagator::render_flightpath (this=0x8a2fd90) at /home/blyth/opticks/okop/OpPropagator.cc:137
+    #12 0x00007ffff7b57ad1 in OpMgr::render_flightpath (this=0x7fffffffae00) at /home/blyth/opticks/okop/OpMgr.cc:199
+    #13 0x0000000000402b35 in main (argc=1, argv=0x7fffffffb148) at /home/blyth/opticks/okop/tests/OpFlightPathTest.cc:30
+    (gdb) 
+
+    (gdb) f 13
+    #13 0x0000000000402b35 in main (argc=1, argv=0x7fffffffb148) at /home/blyth/opticks/okop/tests/OpFlightPathTest.cc:30
+    30	    op.render_flightpath();
+    (gdb) f 12
+    #12 0x00007ffff7b57ad1 in OpMgr::render_flightpath (this=0x7fffffffae00) at /home/blyth/opticks/okop/OpMgr.cc:199
+    199	    m_propagator->render_flightpath(); 
+    (gdb) f 11
+    #11 0x00007ffff7b589b5 in OpPropagator::render_flightpath (this=0x8a2fd90) at /home/blyth/opticks/okop/OpPropagator.cc:137
+    137	    m_tracer->render_flightpath();
+    (gdb) f 10
+    #10 0x00007ffff7b598b7 in OpTracer::render_flightpath (this=0x2366f6a0) at /home/blyth/opticks/okop/OpTracer.cc:184
+    184	    fp->render( (SRenderer*)this  );  
+    (gdb) f 9
+    #9  0x00007ffff52739aa in FlightPath::render (this=0x23671110, renderer=0x2366f6a0) at /home/blyth/opticks/optickscore/FlightPath.cc:264
+    264	    m_composition->setViewType(View::FLIGHTPATH);
+    (gdb) f 8
+    #8  0x00007ffff5303c9e in Composition::setViewType (this=0x661a20, type=View::FLIGHTPATH) at /home/blyth/opticks/optickscore/Composition.cc:636
+    636	    applyViewType();
+    (gdb) f 7
+    #7  0x00007ffff53054b2 in Composition::applyViewType (this=0x661a20) at /home/blyth/opticks/optickscore/Composition.cc:1009
+    1009	        InterpolatedView* iv = m_flightpath->getInterpolatedView();     
+    (gdb) f 6
+    #6  0x00007ffff52738b7 in FlightPath::getInterpolatedView (this=0x23671110) at /home/blyth/opticks/optickscore/FlightPath.cc:253
+    253	    if(!m_view) m_view = makeInterpolatedView();
+    (gdb) f 5
+    #5  0x00007ffff52737bb in FlightPath::makeInterpolatedView (this=0x23671110) at /home/blyth/opticks/optickscore/FlightPath.cc:239
+    239	    load(); 
+    (gdb) f 4
+    #4  0x00007ffff5273282 in FlightPath::load (this=0x23671110) at /home/blyth/opticks/optickscore/FlightPath.cc:192
+    192	    assert( m_eluc ) ; 
+    (gdb) 
+
+
+
+
+
+
 AFTER FIXES : down to 1 FAIL, same 3 SLOW : the 1 FAIL from an CUDA/OptiX launch fail : Illegal Address
 ------------------------------------------------------------------------------------------------------------
 

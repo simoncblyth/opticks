@@ -185,19 +185,15 @@ see notes/issues/G4OKTest-snap-fails-with-invalid-context.rst
 
 **/
 
-void OpMgr::render_snap()
+int  OpMgr::render_snap()
 {
-    LOG(LEVEL) << "[" ; 
-    m_propagator->render_snap(); 
-    LOG(LEVEL) << "]" ; 
+    return m_propagator->render_snap(); 
 }
 
 
-void OpMgr::render_flightpath()
+int OpMgr::render_flightpath()
 {
-    LOG(LEVEL) << "[" ; 
-    m_propagator->render_flightpath(); 
-    LOG(LEVEL) << "]" ; 
+    return m_propagator->render_flightpath(); 
 }
 
 

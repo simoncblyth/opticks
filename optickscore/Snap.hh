@@ -19,7 +19,7 @@ class OKCORE_API Snap
         static const plog::Severity LEVEL ;     
     public:
         Snap( Opticks* ok, SRenderer* renderer, NSnapConfig* config)  ;
-        void render(); 
+        int render(); 
     private:
         void render_one(const char* path);
         void render_many();

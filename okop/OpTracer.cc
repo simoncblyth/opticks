@@ -155,16 +155,18 @@ for example::
 
 **/
 
-void OpTracer::render_snap()   
+int OpTracer::render_snap()   
 {
     LOG(LEVEL) << "[" ;
 
     Snap* snap = m_ok->getSnap((SRenderer*)this);
-    snap->render(); 
+    int rc = snap->render(); 
 
     m_otracer->report("OpTracer::render_snap");   // saves for runresultsdir
 
-    LOG(LEVEL) << "]" ;
+    LOG(LEVEL) << "] " << rc  ;
+
+    return rc ; 
 }
 
 /**
@@ -173,7 +175,7 @@ OpTracer::render_flightpath
 
 **/
 
-void OpTracer::render_flightpath()   
+int OpTracer::render_flightpath()   
 {
     LOG(LEVEL) << "[" ;
 
@@ -181,8 +183,10 @@ void OpTracer::render_flightpath()
 
     //m_hub->setupFlightPathCtrl();     // m_ctrl setup currently only needed for interactive flightpath running ?
 
-    fp->render( (SRenderer*)this  );  
+    int rc = fp->render( (SRenderer*)this  );  
 
-    LOG(LEVEL) << "]" ;
+    LOG(LEVEL) << "] " << rc  ;
+
+    return rc ;  
 }
 

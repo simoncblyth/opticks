@@ -69,8 +69,8 @@ class OKOP_API OpPropagator {
    public:
        void propagate();
        void cleanup();
-       void render_snap();
-       void render_flightpath();
+       int  render_snap();
+       int  render_flightpath();
 
    private:
        static int Preinit(); 
