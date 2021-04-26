@@ -1149,12 +1149,12 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
         {
             m_hiys = event->getHiyData()->clone() ; 
             m_num_hiys = m_hits->getNumItems() ; 
-            LOG(fatal) << " m_way_enabled num_hiys " << m_num_hiys ;
+            LOG(LEVEL) << " m_way_enabled num_hiys " << m_num_hiys ;
             m_hits->setAux(m_hiys);   // associate the extra hiy selected from way buffer with hits array 
         }
         else
         {
-            LOG(fatal) << " NOT-m_way_enabled " ;  
+            LOG(LEVEL) << " NOT-m_way_enabled " ;  
         }
 
         m_hits_wrapper->setPhotons( m_hits );  // (GPho)

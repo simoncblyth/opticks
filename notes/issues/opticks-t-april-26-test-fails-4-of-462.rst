@@ -3,8 +3,10 @@ opticks-t-april-26-test-fails-4-of-462
 
 
 
-Notice the FAIL reported by Zike is from lack of the NumPy input file 
-------------------------------------------------------------------------
+
+
+FIXED : Notice the FAIL reported by Zike is from lack of the NumPy input file 
+--------------------------------------------------------------------------------
 
 Reproduce that::
 

@@ -269,11 +269,9 @@ void OPropagator::launch()
     BTimes* launch_times = evt->getLaunchTimes() ;
 
     unsigned skipahead = evt->getSkipAhead(); 
-    LOG(fatal)  << " skipahead " << skipahead ;  
-    LOG(LEVEL) << " skipahead " << skipahead ;  
     m_orng->setSkipAhead(skipahead); 
 
-    LOG(LEVEL) << "LAUNCH NOW " << m_ocontext->printDesc() ; 
+    LOG(LEVEL) << "LAUNCH NOW " << m_ocontext->printDesc() << " skipahead " << skipahead ; 
 
     OK_PROFILE("_OPropagator::launch");
     double dt = m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
