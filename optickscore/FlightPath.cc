@@ -109,10 +109,16 @@ void FlightPath::save() const
     nlohmann::json& js = m_meta->js ; 
 
     js["argline"] = m_ok->getArgLine(); 
-    js["cfg"] = m_cfg->getCfg(); 
+
+    const char* cfg = m_cfg->getCfg() ; 
+    const char* emm = m_ok->getEnabledMergedMesh() ; 
+
+    assert( m_nameprefix ) ; // defaults to "frame"
+
+    js["cfg"] = cfg ? cfg : "" ; 
+    js["emm"] = emm ? emm : ""  ;  
     js["nameprefix"] = m_nameprefix ;  
     js["scale"] = m_scale ;  
-    js["emm"] = m_ok->getEnabledMergedMesh() ;  
 
     double mn, mx, av ; 
     getMinMaxAvg(mn, mx, av); 

@@ -2483,6 +2483,13 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
 }
 
 
+/**
+Opticks::getContextAnnotation
+------------------------------
+
+Context annotation appears at the top line of rendered images.
+
+**/
 
 std::string Opticks::getContextAnnotation() const 
 {
@@ -2505,6 +2512,14 @@ std::string Opticks::getContextAnnotation() const
 }
 
 
+/**
+Opticks::getFrameAnnotation
+------------------------------
+
+Frame annotation appears at the bottom line of rendered images.
+
+**/
+
 std::string Opticks::getFrameAnnotation(unsigned frame, unsigned num_frame, double dt ) const 
 {
     const char* targetpvn = getTargetPVN(); 
@@ -2514,9 +2529,10 @@ std::string Opticks::getFrameAnnotation(unsigned frame, unsigned num_frame, doub
         << std::setw(5) << frame << "/" << num_frame
         << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt  
         << " | "
-        << " --targetpvn " << targetpvn 
-        << " -e " <<  emm
-        ;   
+        ;
+
+    if(targetpvn) ss << " --targetpvn " << targetpvn ;
+    if(emm)       ss << " -e " <<  emm ; 
     std::string s = ss.str(); 
     return s ; 
 }

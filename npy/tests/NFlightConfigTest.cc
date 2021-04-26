@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    const char* fallback = "prefix=frame_,ext=.ppm,scale0=1,scale1=10" ; 
+    const char* fallback = NFlightConfig::DEFAULT  ; 
     std::string flightconfig = get_option<std::string>(argc, argv, "--flightconfig", fallback ) ;
     // need to use this because cannot use Opticks at this level 
 

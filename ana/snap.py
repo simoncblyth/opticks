@@ -77,9 +77,20 @@ class Snap(object):
         return os.path.join(fold, tname)
 
     def jpg_tname(self): 
+        """
+        This is a workaround for problems with s5 machinery for names 
+        containing strings like the below, presumably due to some RST meaning 
+        the names get mangled preventing the association between presentation pages and 
+        background image definition causes the images to not appear::
+
+            __~0__
+            __t0__
+            _ALL_
+
+        """
         name = os.path.basename(self.jpg)
         tname = name.replace("~","t")
-        tname = tname.replace("__t0__", "_ALL_")  # some RST meaning causing problem 
+        tname = tname.replace("__t0__", "_all_") 
         return tname 
 
     def mvjpg(self):
