@@ -783,36 +783,24 @@ void BFile::RemoveDir(const char* path, const char* sub, const char* name)
 
 std::string BFile::CreateDir(const char* base, const char* asub, const char* bsub)
 {
-
-#ifdef DEBUG    
-    LOG(debug) << "BFile::CreateDir"
-              << " base " << ( base ? base : "NULL" ) 
-              << " asub " << ( asub ? asub : "NULL" ) 
-              << " bsub " << ( bsub ? bsub : "NULL" ) 
-              ;
-#endif
-
     std::string ppath = FormPath(base, asub, bsub) ;
-    assert(!ppath.empty());
 
-    fs::path dir(ppath);
+    LOG(LEVEL)
+        << " base " << ( base ? base : "NULL" ) 
+        << " asub " << ( asub ? asub : "NULL" ) 
+        << " bsub " << ( bsub ? bsub : "NULL" ) 
+        << " ppath [" << ppath << "]" 
+        ;
 
-    bool exists = fs::exists(dir) ;
-
-#ifdef DEBUG    
-    LOG(debug) << "BFile::CreateDir"
-              << " ppath" << ppath
-              << " exists " << exists 
-              ;
-#endif
-
-    if(!exists && fs::create_directories(dir))
-    {    
-       LOG(debug) << "BFile::CreateDir"
-                 << " created " << ppath
-                 ;
-    }    
-
+    if(!ppath.empty())
+    {
+        fs::path dir(ppath);
+        bool exists = fs::exists(dir) ;
+        if(!exists && fs::create_directories(dir))
+        {    
+            LOG(LEVEL) << " created ppath [" << ppath << "]" ;
+        }    
+    } 
     return ppath ; 
 }
 

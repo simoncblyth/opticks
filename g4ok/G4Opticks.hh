@@ -125,8 +125,13 @@ class G4OK_API G4Opticks
         NPY<float>* getHits() const ; 
         void saveHits(const char* path) const ; 
         void saveHits(const char* dir, const char* name) const ; 
-        void saveHits(const char* dir=nullptr, const char* name_prefix="hits_", int name_index=1, const char* ext=".npy") const ; 
+        void saveHits(const char* dir=nullptr, const char* name_prefix="ht_", int name_index=1, const char* ext=".npy") const ; 
         void dumpHits(const char* msg="G4Opticks::dumpHits") const ;
+    public:
+        NPY<float>* getGensteps() const ; 
+        void saveGensteps(const char* path) const ; 
+        void saveGensteps(const char* dir, const char* name) const ; 
+        void saveGensteps(const char* dir=nullptr, const char* name_prefix="gs_", int name_index=1, const char* ext=".npy") const ; 
     public:
         void reset(); 
         void setAlignIndex(int align_idx) const ; 

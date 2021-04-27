@@ -1202,17 +1202,40 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
     return m_num_hits ;   
 }
 
+
+
+
+NPY<float>* G4Opticks::getGensteps() const 
+{
+    return m_gensteps ; 
+}
+void G4Opticks::saveGensteps(const char* path) const 
+{
+    m_gensteps->save(path); 
+}
+void G4Opticks::saveGensteps(const char* dir, const char* name) const 
+{
+    m_gensteps->save(dir, name ); 
+}
+void G4Opticks::saveGensteps(const char* dir, const char* name_prefix, int name_index, const char* ext) const 
+{
+    const char* name = SStr::Concat_<int>(name_prefix, name_index, ext ); 
+    m_gensteps->save(dir, name ); 
+    free((void*)name); 
+}
+
+
 NPY<float>* G4Opticks::getHits() const 
 {
     return m_hits ; 
 }
-void G4Opticks::saveHits(const char* dir, const char* name) const 
-{
-    m_hits->save(dir, name ); 
-}
 void G4Opticks::saveHits(const char* path) const 
 {
     m_hits->save(path); 
+}
+void G4Opticks::saveHits(const char* dir, const char* name) const 
+{
+    m_hits->save(dir, name ); 
 }
 void G4Opticks::saveHits(const char* dir, const char* name_prefix, int name_index, const char* ext) const 
 {
