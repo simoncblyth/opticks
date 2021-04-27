@@ -1,32 +1,90 @@
 #!/usr/bin/env python
 
 import os, re, datetime, argparse
+COLUMNS = os.environ.get("COLUMNS", 200)
+
 
 def dt_parse(s):
-    return datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S.%f")  
+    try:
+        t = datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S.%f")  
+    except ValueError:
+        t = None
+    pass   
+    return t 
 
 class Line(object):
     ptn = re.compile("\((?P<a>\d);(?P<n>\d+),(?P<d>\d+)\)\s*launch time\s*(\S*)\s*$")
 
+    @classmethod
+    def ParseTime(cls, txt):
+        t = dt_parse(txt[:23])
+        if t is None:
+            print("unexpected time format [%s]" % txt)
+            s = None
+        else:
+            s = t.timestamp()       # includes the sub-seconds, needs py3.3+
+            #s = t.strftime("%s"))   # just seconds
+        pass
+        return t, s
+
+
     def __init__(self, txt):
-        self.t = dt_parse(txt[:23])
+
+        t, s = self.ParseTime(txt)
+        self.t = t 
+        self.s = s 
+
+        typ = self.Type(txt)
+        self.typ = typ
+
+        self.desc = ""
+        if typ == "launch":
+            self.parse_launch_time(txt)
+        else:
+            pass
+        pass
+
+        self.txt = txt 
         self.c = txt[23:] 
-
-        a,n,d,lt = self.ptn.findall(txt)[0]  
-
-        self.a = int(a) 
-        self.n = int(n) 
-        self.fn = float(self.n)/1e6
-        self.d = int(d) 
-        self.lt = float(lt) 
-        #self.s = float(self.t.strftime("%s"))   # just seconds
-        self.s = self.t.timestamp()   # includes the sub-seconds, needs py3.3+
         self.prev = None
 
-    dt = property(lambda self:self.s - self.prev.s if not self.prev is None else 0.)
+    def parse_launch_time(self, txt):
+        a,n,d,lt = self.ptn.findall(txt)[0]  
+        a = int(a) 
+        n = int(n) 
+        fn = float(n)/1e6
+        d = int(d) 
+        lt = float(lt) 
+        self.desc = "%6.2f/%6.2f " % ( fn, lt ) 
+
+    dt = property(lambda self:self.s - self.prev.s if not (self.prev is None or self.s is None or self.prev.s is None) else 0.)
+
+    @classmethod
+    def Type(cls, l):
+        if l.find("launch time") > -1:
+            typ = "launch"
+        elif l.find("[[") > -1:
+            typ = "open"
+        elif l.find("]]") > -1:
+            typ = "close"
+        else:
+            typ = None
+        pass 
+        return typ
+ 
+    @classmethod
+    def Select(cls, l):
+        return not cls.Type(l) is None
+
+    @classmethod
+    def ShowTime(cls, t):
+        #tfmt = "%c %f
+        tfmt = "%H:%M:%S"
+        return t.strftime(tfmt) if not t is None else "-"*8 
 
     def __str__(self):
-        return "%s : n:%8d fn:%6.2f lt:%10.4f  dt:%10.4f " % ( self.t.strftime("%c %f"), self.n, self.fn, self.lt, self.dt  )    
+        fline = "%s : %10.4f : %10s : %20ss : %s " % ( self.ShowTime(self.t), self.dt, self.typ, self.desc, self.txt )
+        return fline[:COLUMNS]
 
 
 class TDSLog(object):
@@ -36,8 +94,7 @@ class TDSLog(object):
     def __init__(self, path="/tmp/$USER/opticks/tds/python2.7.log"):
         path = os.path.expandvars(path)
         lines = open(path,"r").read().splitlines()
-        lines = filter(lambda l:l.find("launch time") > -1, lines)
-
+        #lines = filter(Line.Select, lines)
         lines = list(map(Line, lines)) 
         for i in range(len(lines)):
             lines[i].prev = lines[i-1] if i > 0 else None

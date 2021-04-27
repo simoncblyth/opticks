@@ -1433,6 +1433,8 @@ void G4Opticks::collectGenstep_DsG4Scintillation_r3971(
      G4double ScintillationTime
     )
 {
+    LOG(LEVEL) ; 
+
     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
 
@@ -1585,6 +1587,8 @@ void G4Opticks::collectGenstep_G4Cerenkov_1042(
      G4double    meanNumberOfPhotons2
     )
 {
+    LOG(LEVEL) ; 
+
     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
 
