@@ -25,6 +25,7 @@
 #include "G4PVPlacement.hh"
 
 #include "SSys.hh"
+#include "SStr.hh"
 #include "BOpticksResource.hh"
 #include "BOpticksKey.hh"
 #include "NLookup.hpp"
@@ -1205,6 +1206,21 @@ NPY<float>* G4Opticks::getHits() const
 {
     return m_hits ; 
 }
+void G4Opticks::saveHits(const char* dir, const char* name) const 
+{
+    m_hits->save(dir, name ); 
+}
+void G4Opticks::saveHits(const char* path) const 
+{
+    m_hits->save(path); 
+}
+void G4Opticks::saveHits(const char* dir, const char* name_prefix, int name_index, const char* ext) const 
+{
+    const char* name = SStr::Concat_<int>(name_prefix, name_index, ext ); 
+    m_hits->save(dir, name ); 
+    free((void*)name); 
+}
+
 
 void G4Opticks::dumpHits(const char* msg) const 
 {

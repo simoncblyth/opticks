@@ -121,9 +121,13 @@ class G4OK_API G4Opticks
     public:
         // workflow methods
         int propagateOpticalPhotons(G4int eventID);
+    public:
         NPY<float>* getHits() const ; 
+        void saveHits(const char* path) const ; 
+        void saveHits(const char* dir, const char* name) const ; 
+        void saveHits(const char* dir=nullptr, const char* name_prefix="hits_", int name_index=1, const char* ext=".npy") const ; 
         void dumpHits(const char* msg="G4Opticks::dumpHits") const ;
-
+    public:
         void reset(); 
         void setAlignIndex(int align_idx) const ; 
 

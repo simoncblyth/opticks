@@ -602,6 +602,8 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name,
        ;   
 
 
+
+/*
    std::string empty ; 
    if(!path)
    {
@@ -624,6 +626,7 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name,
                   ;
        return empty ; 
    }
+*/
 
 
 
@@ -639,33 +642,34 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name,
    fs::path p ; 
 
    bool dbg(false);
-
-
    std::string xpath ; 
 
-   if(path[0] == '$')
+   if(path != nullptr)
    {
-       LOG(LEVEL) << "expandvar for dollar " << path ; 
-       xpath.assign(expandvar(path));
-   } 
-   else if(path[0] == '~')
-   {
-       xpath.assign(expandhome(path));
-   }
-   else if(OPTICKS_PATH_PREFIX)
-   { 
-       //  eg windows prefix C:\msys64
-       if(strlen(path) > 1 && path[1] == ':') 
-       { 
-           if(dbg) std::cerr << "BFile::FormPath path is already prefixed " << path << std::endl ; 
-       } 
-       else
+       if(path[0] == '$')
        {
-           p /= OPTICKS_PATH_PREFIX ;
+           LOG(LEVEL) << "expandvar for dollar " << path ; 
+           xpath.assign(expandvar(path));
        } 
-   } 
+       else if(path[0] == '~')
+       {
+           xpath.assign(expandhome(path));
+       }
+       else if(OPTICKS_PATH_PREFIX)
+       { 
+           //  eg windows prefix C:\msys64
+           if(strlen(path) > 1 && path[1] == ':') 
+           { 
+               if(dbg) std::cerr << "BFile::FormPath path is already prefixed " << path << std::endl ; 
+           } 
+           else
+           {
+               p /= OPTICKS_PATH_PREFIX ;
+           } 
+       } 
+       p /= xpath.empty() ? path : xpath ; 
+   }
 
-   p /= xpath.empty() ? path : xpath ; 
 
    if(sub)   p /= sub ;    
    if(name)  p /= name ;    

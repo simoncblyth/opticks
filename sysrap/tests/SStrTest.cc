@@ -215,6 +215,13 @@ void test_Split()
     for(int i=0 ; i < int(elem.size()) ; i++) std::cout << elem[i] << std::endl ; 
 }
 
+
+void test_Concat_()
+{
+    std::cout << SStr::Concat_("hello/", 1, ".npy" ) << std::endl ; 
+}
+
+
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
@@ -232,8 +239,9 @@ int main(int argc , char** argv )
     test_ReplaceEnd();  
     test_ArrayToString();  
     test_Save();  
-    */
     test_Split();  
+    */
+    test_Concat_(); 
 
     return 0  ; 
 }

@@ -280,6 +280,16 @@ const char* SStr::Concat( const char* a, unsigned b, const char* c, unsigned d, 
 }
 
 
+template<typename T>
+const char* SStr::Concat_( const char* a, T b, const char* c  )
+{
+    std::stringstream ss ; 
+    if(a) ss << a ; 
+    ss << b ; 
+    if(c) ss << c ; 
+    std::string s = ss.str();
+    return strdup(s.c_str());
+}
 
 
 
@@ -330,4 +340,9 @@ void SStr::Split( const char* str, char delim,   std::vector<std::string>& elem 
 
 
 
+
+template const char* SStr::Concat_<unsigned>(           const char* , unsigned           , const char*  );
+template const char* SStr::Concat_<unsigned long long>( const char* , unsigned long long , const char*  );
+template const char* SStr::Concat_<int>(                const char* , int                , const char*  );
+template const char* SStr::Concat_<long>(               const char* , long               , const char*  );
 

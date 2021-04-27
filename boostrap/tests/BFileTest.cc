@@ -183,6 +183,19 @@ void test_FormPath_reldir()
 
 }
 
+
+void test_FormPath_nulldir()
+{
+    std::string x = BFile::FormPath(nullptr, "name.txt");
+    LOG(info) << "test_FormPath_nulldir"
+              << " [" << x  << "]"
+              ;
+
+}
+
+
+
+
 void test_FormPath_edge()
 {
     std::string x = BFile::FormPath("", "g4ok.gltf");
@@ -640,7 +653,8 @@ int main(int argc, char** argv)
    //test_ResolveScript(); 
 
    //test_UserTmpPath();  
-   test_expandvar();  
+   //test_expandvar();  
+   test_FormPath_nulldir();  
 
    return 0 ; 
 }
