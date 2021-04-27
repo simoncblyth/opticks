@@ -1047,6 +1047,7 @@ template <typename T>
 void NPY<T>::save(const char* dir, const char* name) const 
 {
     std::string path_ = BFile::FormPath(dir, name);
+    LOG(LEVEL) << "path:[" << path_ << "]" ; 
     save(path_.c_str());
 }
 
@@ -1114,32 +1115,25 @@ void NPY<T>::save(const char* raw) const
 {
     std::string native = BFile::FormPath(raw);   // potentially with prefixing/windozing 
 
-    if(m_verbose || GLOBAL_VERBOSE) 
-    {
-        LOG(info) << "NPY::save raw    np.load(\"" << raw << "\") " ; 
-        LOG(info) << "NPY::save native np.load(\"" << native << "\") " ; 
-    }
-
     // TODO: replace below with BFile::preparePath do this ???
 
     fs::path _path(native);
     fs::path dir = _path.parent_path();
 
-    if(!fs::exists(dir))
+    if(dir.string().size() > 0 && !fs::exists(dir))
     {   
-        LOG(debug)<< "NPYBase::save creating directories [" << dir.string() << "]" << raw ;
+        LOG(LEVEL)
+            << " raw [" << raw << "]" 
+            << " native [" << native << "]" 
+            << " _path [" << _path.string() << "]" 
+            << " dir [" << dir.string() << "]" 
+            << "creating directories " 
+            ;
         if (fs::create_directories(dir))
         {   
-            LOG(debug)<< "NPYBase::save created directories [" << dir.string() << "]" ;
+            LOG(LEVEL)<< "NPYBase::save created directories [" << dir.string() << "]" ;
         }   
     }   
-    else
-    {
-        if(m_verbose || GLOBAL_VERBOSE) 
-        {
-            LOG(info) << "NPY::save dir exists \"" << _path.string() << "\" " ; 
-        }
-    }
 
 
     NPYBase::saveMeta( native.c_str(), ".json" ) ; 

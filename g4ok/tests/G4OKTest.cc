@@ -128,6 +128,8 @@ class G4OKTest
     private:
         int          m_log ; 
         const char*  m_gdmlpath ; 
+        const char*  m_opticksCtrl ; // after junoSD_PMT_v2_Opticks
+        bool         m_savehits ; 
         int          m_torchtarget ; 
         G4Opticks*   m_g4ok ; 
         bool         m_debug ; 
@@ -143,6 +145,8 @@ G4OKTest::G4OKTest(int argc, char** argv)
     :
     m_log(initLog(argc, argv)),
     m_gdmlpath(PLOG::instance->get_arg_after("--gdmlpath", NULL)),
+    m_opticksCtrl(getenv("OPTICKS_CTRL")),
+    m_savehits(m_opticksCtrl && strstr(m_opticksCtrl, "savehits") != nullptr),
     m_torchtarget(PLOG::instance->get_int_after("--torchtarget", "-1")),
     m_g4ok(new G4Opticks),
     m_debug(true),
@@ -391,7 +395,16 @@ void G4OKTest::checkHits(int eventID) const
         << " num_photons " << num_photons
         << " num_hit " << num_hit
         << " way_enabled " << way_enabled 
+        << " m_savehits " << m_savehits
+        << " m_opticksCtrl " << m_opticksCtrl
         ; 
+
+
+    if(m_savehits)
+    {
+        const char* dir = nullptr ; 
+        m_g4ok->saveHits(dir, "hits_", eventID, ".npy" ); 
+    }
 
     G4OpticksHit hit ; 
     G4OpticksHitExtra hit_extra ;
