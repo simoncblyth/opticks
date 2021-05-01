@@ -377,8 +377,59 @@ any-hit programs.
 
 
 
+optix-pdf p81 OptiX CUDA Interop
+----------------------------------
+
+An OptiX buffer internally maintains a CUDA device pointer for each device used
+by the OptiX context. 
+A buffer device pointer can be retrieved by calling *rtBufferGetDevicePointer*. 
+
+An application can also provide a device pointer for the buffer to use with *rtBufferSetDevicePointer*. 
+A buffer device pointer can be used by CUDA to update the contents of an OptiX 
+input buffer before launch or to read the contents of an OptiX output 
+buffer after launch. The following example shows how a CUDA kernel 
+can write data to the device pointer retrieved from a buffer:
+
+::
+
+    3925   inline void BufferObj::getDevicePointer(int optix_device_ordinal, void** device_pointer)
+    3926   {
+    3927     checkError( rtBufferGetDevicePointer( m_buffer, optix_device_ordinal, device_pointer ) );
+    3928   }
+    3929 
+    3930   inline void* BufferObj::getDevicePointer(int optix_device_ordinal)
+    3931   {
+    3932     void* dptr;
+    3933     getDevicePointer( optix_device_ordinal, &dptr );
+    3934     return dptr;
+    3935   }
+    3936 
+    3937   inline void BufferObj::setDevicePointer(int optix_device_ordinal, void* device_pointer)
+    3938   {
+    3939     checkError( rtBufferSetDevicePointer( m_buffer, optix_device_ordinal, device_pointer ) );
+    3940   }
+
+OContext::upload populates an OptiX6 buffer using cudaMemcpy::
+
+     959     else if(ctrl("UPLOAD_WITH_CUDA"))
+     960     {
+     961         if(verbose) LOG(LEVEL) << npy->description("UPLOAD_WITH_CUDA markDirty") ;
+     962 
+     963         void* d_ptr = NULL;
+     964         rtBufferGetDevicePointer(buffer->get(), 0, &d_ptr);
+     965         cudaMemcpy(d_ptr, npy->getBytes(), numBytes, cudaMemcpyHostToDevice);
+     966         buffer->markDirty();
+     967         if(verbose) LOG(LEVEL) << npy->description("UPLOAD_WITH_CUDA markDirty DONE") ;
+     968     }
 
 
+Using foundry style geometry (great big buffers of nodes, prim, transforms) with pre-7
+may be possible using::
+
+    BufferObj::setDevicePointer
+ 
+Then can offset appropriately for each pre-7 geometry buffer by providing the 
+requisite device pointer.  So pre-7 code can operate off foundry buffers.
 
 
 

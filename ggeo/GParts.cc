@@ -1728,6 +1728,9 @@ void GParts::dumpPrimInfo(const char* msg, unsigned lim )
 }
 
 
+
+
+
 void GParts::Summary(const char* msg, unsigned lim)
 {
     LOG(info) 
@@ -1801,14 +1804,38 @@ gfloat3 GParts::getGfloat3(unsigned int i, unsigned int j, unsigned int k)
     return gfloat3( *ptr, *(ptr+1), *(ptr+2) ); 
 }
 
-nivec4 GParts::getPrimInfo(unsigned int iprim)
+nivec4 GParts::getPrimInfo(unsigned int iprim) const 
 {
-    int* data = m_prim_buffer->getValues();
-    int* ptr = data + iprim*SK  ;
+    const int* data = m_prim_buffer->getValues();
+    const int* ptr = data + iprim*SK  ;   // SK is 4
 
     nivec4 pri = make_nivec4( *ptr, *(ptr+1), *(ptr+2), *(ptr+3) );
     return pri ;  
 }
+
+
+int GParts::getPartOffset(unsigned primIdx) const
+{
+    nivec4 primInfo = getPrimInfo(primIdx);
+    return primInfo.x ;  
+}
+int GParts::getNumParts(unsigned primIdx) const 
+{
+    nivec4 primInfo = getPrimInfo(primIdx);
+    return primInfo.y ;  
+}
+int GParts::getTranOffset(unsigned primIdx) const 
+{
+    nivec4 primInfo = getPrimInfo(primIdx);
+    return primInfo.z ;  
+}
+int GParts::getPlanOffset(unsigned primIdx) const 
+{
+    nivec4 primInfo = getPrimInfo(primIdx);
+    return primInfo.w ;  
+}
+
+
 
 /**
 GParts::getBBox
@@ -1983,55 +2010,61 @@ void GParts::dump(const char* msg, unsigned lim)
     assert( nj == NJ );
     assert( nk == NK );
 
-    float* data = buf->getValues();
-
-    uif_t uif ; 
-
     for(unsigned i=0; i < ni; i++)
     {   
        if( ulim != 0 &&  i > ulim && i < ni - ulim ) continue ;    
-
-       unsigned int tc = getTypeCode(i);
-       unsigned int id = getIndex(i);
-       unsigned int bnd = getBoundary(i);
-       std::string  bn = getBoundaryName(i);
-
-       std::string csg = CSG::Name((OpticksCSG_t)tc);
-
-       const char*  tn = getTypeName(i);
-
-       for(unsigned int j=0 ; j < NJ ; j++)
-       {   
-          for(unsigned int k=0 ; k < NK ; k++) 
-          {   
-              uif.f = data[i*NJ*NK+j*NJ+k] ;
-              if( j == TYPECODE_J && k == TYPECODE_K )
-              {
-                  assert( uif.u == tc );
-                  printf(" %10u (%s) TYPECODE ", uif.u, tn );
-              } 
-              else if( j == INDEX_J && k == INDEX_K)
-              {
-                  assert( uif.u == id );
-                  printf(" %6u <-INDEX   " , uif.u );
-              }
-              else if( j == BOUNDARY_J && k == BOUNDARY_K)
-              {
-                  assert( uif.u == bnd );
-                  printf(" %6u <-bnd  ", uif.u );
-              }
-              else if( j == NODEINDEX_J && k == NODEINDEX_K)
-                  printf(" %10d (nodeIndex) ", uif.i );
-              else
-                  printf(" %10.4f ", uif.f );
-          }   
-
-          if( j == BOUNDARY_J ) printf(" bn %s ", bn.c_str() );
-          printf("\n");
-       }   
-       printf("\n");
+       dumpPart(i); 
     }   
 }
+
+
+void GParts::dumpPart(unsigned partIdx)
+{
+    uif_t uif ; 
+
+    unsigned tc = getTypeCode(partIdx);
+    unsigned id = getIndex(partIdx);
+    unsigned bnd = getBoundary(partIdx);
+    std::string  bn = getBoundaryName(partIdx);
+    const char*  tn = getTypeName(partIdx);
+    std::string csg = CSG::Name((OpticksCSG_t)tc);
+
+    unsigned i = partIdx ; 
+    NPY<float>* buf = m_part_buffer ; 
+    float* data = buf->getValues();
+
+    for(unsigned int j=0 ; j < NJ ; j++)
+    {   
+        for(unsigned int k=0 ; k < NK ; k++) 
+        {   
+            uif.f = data[i*NJ*NK+j*NJ+k] ;
+            if( j == TYPECODE_J && k == TYPECODE_K )
+            {
+                assert( uif.u == tc );
+                printf(" %10u (%s) TYPECODE ", uif.u, tn );
+            } 
+            else if( j == INDEX_J && k == INDEX_K)
+            {
+                assert( uif.u == id );
+                printf(" %6u <-INDEX   " , uif.u );
+            }
+            else if( j == BOUNDARY_J && k == BOUNDARY_K)
+            {
+                assert( uif.u == bnd );
+                printf(" %6u <-bnd  ", uif.u );
+            }
+            else if( j == NODEINDEX_J && k == NODEINDEX_K)
+                printf(" %10d (nodeIndex) ", uif.i );
+            else
+                printf(" %10.4f ", uif.f );
+        }   
+        if( j == BOUNDARY_J ) printf(" bn %s ", bn.c_str() );
+        printf("\n");
+    }   
+    printf("\n");
+}
+
+
 
 
 

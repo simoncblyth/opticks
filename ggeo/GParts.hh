@@ -191,6 +191,7 @@ class GGEO_API GParts {
        // users of setPrimFlag
        friend class GGeoTest ;
        friend class GPmt ; 
+       friend struct CSGOptiXGGeo ;  
     public:
 
 #ifdef GPARTS_DEBUG
@@ -284,7 +285,11 @@ class GGEO_API GParts {
         gfloat3      getGfloat3(unsigned i, unsigned j, unsigned k);
         float*       getValues(unsigned i, unsigned j, unsigned k);
     public:
-        nivec4       getPrimInfo(unsigned iprim);
+        nivec4       getPrimInfo(unsigned iprim) const ;
+        int          getPartOffset(unsigned primIdx) const ;
+        int          getNumParts(unsigned primIdx) const ;
+        int          getTranOffset(unsigned primIdx) const ; 
+        int          getPlanOffset(unsigned primIdx) const ;
    public:
         void setIndex(unsigned part, unsigned index);
         void setTypeCode(unsigned part, unsigned typecode);
@@ -312,12 +317,14 @@ class GGEO_API GParts {
         NPYBase*       getBufferBase(const char* tag) const ; 
     public:
         void fulldump(const char* msg="GParts::fulldump", unsigned lim=10 );
-        void dump(const char* msg="GParts::dump", unsigned lim=10 );
         void dumpPrimInfo(const char* msg="GParts::dumpPrimInfo", unsigned lim=10 );
         void dumpPrimBuffer(const char* msg="GParts::dumpPrimBuffer");
         void Summary(const char* msg="GParts::Summary", unsigned lim=10 );
-    private:
+
+        void dump(const char* msg="GParts::dump", unsigned lim=10 );
         void dumpPrim(unsigned primIdx);
+        void dumpPart(unsigned partIdx);
+
     public:
         void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
         void setContainingMaterial(const char* material="MineralOil");

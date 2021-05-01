@@ -44,6 +44,37 @@ See also
 * env/cmake/Modules/FindGLM.cmake
 
 
+GLM CMake
+----------
+
+* https://github.com/g-truc/glm/commit/62a7daddcf082f754000fc5e42d7bcdf93c895f7
+
+::
+
+    epsilon:sysrap blyth$ find /usr/local/csg/externals/glm/glm-0.9.9.8 | grep cmake
+    /usr/local/csg/externals/glm/glm-0.9.9.8/glm/test/cmake
+    /usr/local/csg/externals/glm/glm-0.9.9.8/glm/test/cmake/CMakeLists.txt
+    /usr/local/csg/externals/glm/glm-0.9.9.8/glm/test/cmake/test_find_glm.cpp
+    /usr/local/csg/externals/glm/glm-0.9.9.8/glm/cmake
+    /usr/local/csg/externals/glm/glm-0.9.9.8/glm/cmake/glm
+    /usr/local/csg/externals/glm/glm-0.9.9.8/glm/cmake/glm/glmConfig.cmake
+    /usr/local/csg/externals/glm/glm-0.9.9.8/glm/cmake/glm/glmConfig-version.cmake
+
+
+Using glm_DIR succeeds to find::
+
+    glm_cmake_dir=/usr/local/csg/externals/glm/glm-0.9.9.8/glm/cmake/glm
+
+    cmake $sdir \
+         -DCMAKE_BUILD_TYPE=Debug \
+         -DCMAKE_INSTALL_PREFIX=${USECSG_PREFIX} \
+         -Dglm_DIR=${glm_cmake_dir}
+
+But have not succeeded with CMAKE_PREFIX_PATH.
+
+
+
+
 Compare glm::frustum and glm::ortho sources
 --------------------------------------------
 
@@ -471,4 +502,42 @@ glm-nvcc-test(){
 
 }
 
+
+glm-latest-clone(){
+
+   cd 
+   git clone  https://github.com/g-truc/glm.git
+}
+
+glm-latest-pack(){
+
+   local prefix=/tmp/$FUNCNAME
+   cd $HOME/glm
+   cmake . -DCMAKE_INSTALL_PREFIX=$prefix  
+   ## yuck: CMakeLists.txt requires an in-source build to generate the installation package
+   make 
+   make install
+
+   local cmd="git clean -fx -n"
+   echo $cmd
+   eval $cmd    
+   echo $cmd
+   echo $msg run the above command without the "-n" to do the deletions
+
+}
+
+
+glm-latest-pack-notes(){ cat << EON
+
+Looks like the problems of GLM layout for CMake finding 
+are fixed in the latest GLM but not the last release 0.9.9.8  (April 2020)
+
+epsilon:cmake blyth$ find /tmp/glm-latest-pack -name 'glmConfig.cmake' -o -name 'glm.hpp'
+/tmp/glm-latest-pack/include/glm/glm.hpp
+/tmp/glm-latest-pack/lib/cmake/glm/glmConfig.cmake
+epsilon:cmake blyth$ 
+
+
+EON
+}
 
