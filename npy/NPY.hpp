@@ -208,14 +208,15 @@ class NPY_API NPY : public NPYBase {
        bool equals(const NPY<T>* other, bool dump=false) const ;
        T maxdiff(const NPY<T>* other, bool dump=false) const ;
    public:
+       //unsigned int getNumValues(); tis in base class
        T* getValues();
        const T* getValuesConst() const ;
-       //unsigned int getNumValues(); tis in base class
        T* begin();
        T* end();
+       T*       getValues(unsigned i, unsigned j=0, unsigned k=0);
+       const T* getValuesConst(unsigned i, unsigned j=0, unsigned k=0) const ;
 
-       T* getValues(unsigned int i, unsigned int j=0);
-       const T* getValuesConst(unsigned int i, unsigned int j=0) const ;
+
        void* getBytes() const ;
        void* getPointer();   // aping GBuffer for easier migration
        BBufSpec* getBufSpec();

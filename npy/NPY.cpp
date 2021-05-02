@@ -2579,25 +2579,18 @@ T* NPY<T>::end()
 
 
 
-//template <typename T> 
-// unsigned int NPY<T>::getNumValues()
-//{
-//    return m_data.size();
-//}
-
-
 template <typename T> 
-T* NPY<T>::getValues(unsigned int i, unsigned int j)
+T* NPY<T>::getValues(unsigned i, unsigned j, unsigned k)
 {
-    unsigned int idx = getValueIndex(i,j,0);
+    unsigned idx = getValueIndex(i,j,k);
     return m_data.data() + idx ;
 }
 
 
 template <typename T> 
-const T* NPY<T>::getValuesConst(unsigned int i, unsigned int j) const 
+const T* NPY<T>::getValuesConst(unsigned i, unsigned j, unsigned k) const 
 {
-    unsigned int idx = getValueIndex(i,j,0);
+    unsigned idx = getValueIndex(i,j,k);
     return m_data.data() + idx ;
 }
 

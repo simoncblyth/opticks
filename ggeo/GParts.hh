@@ -272,8 +272,10 @@ class GGEO_API GParts {
         unsigned getTypeCode(unsigned partIdx) const ;
         unsigned getNodeIndex(unsigned partIdx) const ;
         unsigned getGTransform(unsigned partIdx) const ; 
+        bool     getComplement(unsigned partIdx) const ; 
         unsigned getBoundary(unsigned partIdx) const ;
 
+        unsigned  getNumTran() const ; 
         glm::mat4 getTran(unsigned tranIdx, unsigned j) const ; 
 
         unsigned getAnalyticVersion();
@@ -281,8 +283,9 @@ class GGEO_API GParts {
     private: 
         void setLoaded(bool loaded=true);
     public: 
-        std::string  getBoundaryName(unsigned part);
-        const char*  getTypeName(unsigned part);
+        std::string  getBoundaryName(unsigned partIdx) const ;
+        std::string  getTag(unsigned partIdx) const ;
+        const char*  getTypeName(unsigned partIdx) const ;
    private:
         nbbox        getBBox(unsigned i);
         gfloat3      getGfloat3(unsigned i, unsigned j, unsigned k);
@@ -362,7 +365,8 @@ class GGEO_API GParts {
         void setPartList();
         void setNodeTree();
 
-
+    public:
+        const float* getPartValues(unsigned i, unsigned j, unsigned k) const ;
     private:
        unsigned int getUInt(unsigned part, unsigned j, unsigned k) const ;
        void         setUInt(unsigned part, unsigned j, unsigned k, unsigned value);

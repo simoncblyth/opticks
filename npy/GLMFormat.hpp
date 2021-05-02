@@ -123,7 +123,7 @@ template<typename T>
 NPY_API std::string gfromstring_(const glm::tmat4x4<T>& m, bool flip=false) ; 
 
 
-NPY_API std::string gpresent(const char* label, const glm::mat4& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10, bool flip=false );
+NPY_API std::string gpresent(const char* label, const glm::mat4& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10, bool flip=false, bool suppress_identity=true );
 NPY_API std::string gpresent(const char* label, const glm::mat3& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10, bool flip=false );
 
 NPY_API std::string gpresent(const char* label, const glm::ivec4& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10 );

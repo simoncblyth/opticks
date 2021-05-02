@@ -1037,11 +1037,24 @@ NPY<float>*    GParts::getPlanBuffer() const {  return m_plan_buffer ; }
 
 
 
+unsigned GParts::getNumTran() const 
+{
+    return  m_tran_buffer ? m_tran_buffer->getShape(0) : 0u ; 
+}
 
 glm::mat4 GParts::getTran(unsigned tranIdx, unsigned j) const 
 {
-    LOG(info) << " m_tran_buffer " << m_tran_buffer->getShapeString(); 
-    assert( tranIdx < m_tran_buffer->getShape(0) ); 
+    bool inrange = tranIdx < m_tran_buffer->getShape(0)  ; 
+    if(!inrange)
+    {
+         LOG(error) 
+            << " OUT OF RANGE "
+            << " m_tran_buffer " << m_tran_buffer->getShapeString()
+            << " tranIdx " << tranIdx
+            << " j " << j 
+            ; 
+    }
+    assert(inrange); 
     return m_tran_buffer->getMat4_(tranIdx, j); 
 }
 
@@ -1802,10 +1815,15 @@ unsigned GParts::getNumPrim() const
 {
     return m_prim_buffer ? m_prim_buffer->getShape(0) : 0 ; 
 }
-const char* GParts::getTypeName(unsigned int part_index)
+const char* GParts::getTypeName(unsigned partIdx) const 
 {
-    unsigned int code = getTypeCode(part_index);
-    return CSG::Name((OpticksCSG_t)code);
+    unsigned tc = getTypeCode(partIdx);
+    return CSG::Name((OpticksCSG_t)tc);
+}
+std::string GParts::getTag(unsigned partIdx) const 
+{
+    unsigned tc = getTypeCode(partIdx);
+    return CSG::Tag((OpticksCSG_t)tc);
 }
      
 float* GParts::getValues(unsigned int i, unsigned int j, unsigned int k)
@@ -1868,8 +1886,6 @@ nbbox GParts::getBBox(unsigned int i)
 {
    gfloat3 min = getGfloat3(i, BBMIN_J, BBMIN_K );  
    gfloat3 max = getGfloat3(i, BBMAX_J, BBMAX_K );  
-   //gbbox bb(min, max) ; 
-
    nbbox bb = make_bbox(min.x, min.y, min.z, max.x, max.y, max.z);  
    return bb ; 
 }
@@ -1904,6 +1920,11 @@ void GParts::enlargeBBox(unsigned int part, float epsilon)
 
 }
 
+const float* GParts::getPartValues(unsigned i, unsigned j, unsigned k) const 
+{
+    assert(i < getNumParts() );
+    return m_part_buffer->getValuesConst(i, j, k);     
+}
 
 unsigned int GParts::getUInt(unsigned int i, unsigned int j, unsigned int k) const 
 {
@@ -1925,10 +1946,19 @@ unsigned GParts::getNodeIndex(unsigned partIdx) const
 {
     return getUInt(partIdx, NODEINDEX_J, NODEINDEX_K);  // hmm NODEINDEX slot is used for GTRANSFORM 
 }
+
 unsigned GParts::getGTransform(unsigned partIdx) const 
 {
-    return getUInt(partIdx, GTRANSFORM_J, GTRANSFORM_K);
+    unsigned q3_u_w = getUInt(partIdx, GTRANSFORM_J, GTRANSFORM_K);
+    return q3_u_w & 0x7fffffff ; 
 }
+bool GParts::getComplement(unsigned partIdx) const 
+{
+    unsigned q3_u_w = getUInt(partIdx, GTRANSFORM_J, GTRANSFORM_K);
+    return q3_u_w & 0x80000000  ; 
+}
+
+
 unsigned GParts::getTypeCode(unsigned partIdx) const 
 {
     return getUInt(partIdx, TYPECODE_J, TYPECODE_K);
@@ -1977,9 +2007,9 @@ void GParts::setNodeIndexAll(unsigned int nodeindex)
 }
 
 
-std::string GParts::getBoundaryName(unsigned int part)
+std::string GParts::getBoundaryName(unsigned partIdx) const 
 {
-    unsigned int boundary = getBoundary(part);
+    unsigned boundary = getBoundary(partIdx);
     std::string name = m_bndlib ? m_bndlib->shortname(boundary) : "" ;
     return name ;
 }
@@ -2098,11 +2128,11 @@ void GParts::dumpPart(unsigned partIdx)
     if( gt > 0 )
     {
         glm::mat4 t = getTran(gt-1,0) ; 
-        glm::mat4 v = getTran(gt-1,1) ; 
-        glm::mat4 q = getTran(gt-1,2) ; 
         std::cout << gpresent( "t", t ) << std::endl ; 
-        std::cout << gpresent( "v", v ) << std::endl ; 
-        std::cout << gpresent( "q", q ) << std::endl ; 
+        //glm::mat4 v = getTran(gt-1,1) ; 
+        //std::cout << gpresent( "v", v ) << std::endl ; 
+        //glm::mat4 q = getTran(gt-1,2) ; 
+        //std::cout << gpresent( "q", q ) << std::endl ; 
     }
 
 }

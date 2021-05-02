@@ -518,16 +518,24 @@ std::string gfromstring_(const glm::tmat4x4<T>& m, bool flip)
 
 
 
-std::string gpresent(const char* label, const glm::mat4& m, unsigned prec, unsigned wid, unsigned lwid, bool flip )
+std::string gpresent(const char* label, const glm::mat4& m, unsigned prec, unsigned wid, unsigned lwid, bool flip, bool suppress_identity  )
 {
     std::stringstream ss ; 
-    for(int i=0 ; i < 4 ; i++)
+    bool identity = nglmext::is_identity(m, 1e-6 ); 
+    if(identity && suppress_identity )
     {
-        ss << std::setw(lwid) << ( i == 0 && label ? label  : " " ) ; 
-        for(int j=0 ; j < 4 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[j][i] : m[i][j] ) << " " ; 
-        ss << std::endl ; 
+        ss << std::setw(lwid) << ( label ? label  : " " ) << " identity " << std::endl ; 
+    } 
+    else
+    {
+        for(int i=0 ; i < 4 ; i++)
+        {
+            ss << std::setw(lwid) << ( i == 0 && label ? label  : " " ) ; 
+            for(int j=0 ; j < 4 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[j][i] : m[i][j] ) << " " ; 
+            ss << std::endl ; 
+        }
+        //ss << gfromstring(m, flip) <<  std::endl ; 
     }
-    ss << gfromstring(m, flip) <<  std::endl ; 
     return ss.str();
 }
 
