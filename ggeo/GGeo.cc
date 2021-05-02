@@ -95,6 +95,7 @@
 #include "GItemIndex.hh"
 #include "GItemList.hh"
 
+#include "GGeoDump.hh"
 #include "GGeo.hh"
 
 #include "GGEO_BODY.hh"
@@ -173,6 +174,7 @@ GGeo::GGeo(Opticks* ok, bool live)
    m_gscene(NULL),
 #endif
    m_save_mismatch_placements(SSys::getenvbool("OPTICKS_GGEO_SAVE_MISMATCH_PLACEMENTS")),
+   m_dump(NULL),
    m_placeholder_last(0)
 {
    init(); 
@@ -597,6 +599,7 @@ void GGeo::deferred()
     if(!m_prepared) prepareOpticks();  // useful post-cache as well as pre-cache
 
     deferredCreateGParts();  
+    deferredCreateGGeoDump(); 
 }
 
 
@@ -1416,17 +1419,30 @@ void GGeo::deferredCreateGParts()
     LOG(LEVEL) << "]" ; 
 }
 
+
+
+
+
 GParts* GGeo::getCompositeParts(unsigned index) const
 {
     GGeoLib* geolib = getGeoLib() ;
     return geolib->getCompositeParts(index) ; 
 }
 
-void GGeo::dumpParts(const char* msg) const 
+
+
+void GGeo::deferredCreateGGeoDump()
 {
-    GGeoLib* geolib = getGeoLib() ;
-    geolib->dumpParts(msg) ; 
+    m_dump = new GGeoDump(this); 
 }
+void GGeo::dumpParts(const char* msg, int repeatIdx, int primIdx, int partIdxRel) const 
+{
+    LOG(info) << msg ; 
+    m_dump->dump(repeatIdx, primIdx, partIdxRel ); 
+}
+
+
+
 
 
 GMergedMesh* GGeo::makeMergedMesh(unsigned int index, const GNode* base, const GNode* root)

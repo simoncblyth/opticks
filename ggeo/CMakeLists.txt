@@ -89,6 +89,7 @@ set(SOURCES
 
     GPropertyMap.cc
     GPho.cc
+    GGeoDump.cc
 
 )
 
@@ -176,6 +177,7 @@ set(HEADERS
 
     GPropertyMap.hh
     GPho.hh
+    GGeoDump.hh
 )
 
 if(YoctoGLRap_FOUND)

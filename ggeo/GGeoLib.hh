@@ -101,7 +101,7 @@ class GGEO_API GGeoLib {
         glm::uvec4   getIdentity( unsigned ridx, unsigned pidx, unsigned oidx) const ;
         unsigned     getNodeIndex(unsigned ridx, unsigned pidx, unsigned oidx) const ;
     public:
-        std::string summary(const char* msg="GGeoLib::summary");
+        std::string summary(const char* msg="GGeoLib::summary") const ;
 
         unsigned     getNumMergedMesh() const ;
         GMergedMesh* getMergedMesh(unsigned index) const ;

@@ -77,6 +77,8 @@ class GItemIndex ;
 class GItemList ; 
 class GMergedMesh ;
 
+struct GGeoDump ; 
+
 
 #include "SGeo.hh"
 #include "GGeoBase.hh"
@@ -186,9 +188,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void prepareOpticks(); 
         void deferred(); 
         void deferredCreateGParts(); 
+        void deferredCreateGGeoDump();
     public:
         GParts* getCompositeParts(unsigned index) const ;
-        void dumpParts(const char* msg="GGeo::dumpParts") const ;
+        void dumpParts(const char* msg, int repeatIdx, int primIdx, int partIdxRel) const ;
     public:
         // via m_bndlib
         unsigned int getMaterialLine(const char* shortname);
@@ -441,6 +444,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
 
     private:
         bool                               m_save_mismatch_placements ;
+        GGeoDump*                          m_dump ; 
         int                                m_placeholder_last ; 
 
 };

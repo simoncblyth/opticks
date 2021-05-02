@@ -380,7 +380,7 @@ This has been updated for mm0 holding remainder volumes (not all volumes as it u
 
 **/
 
-std::string GGeoLib::summary(const char* msg)
+std::string GGeoLib::summary(const char* msg) const 
 {
     std::stringstream ss ; 
     ss << msg << " " << desc() << std::endl ; 

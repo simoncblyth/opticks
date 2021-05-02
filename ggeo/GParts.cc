@@ -1035,6 +1035,23 @@ NPY<float>*    GParts::getPartBuffer() const {  return m_part_buffer ; }
 NPY<float>*    GParts::getTranBuffer() const {  return m_tran_buffer ; } 
 NPY<float>*    GParts::getPlanBuffer() const {  return m_plan_buffer ; } 
 
+
+
+
+glm::mat4 GParts::getTran(unsigned tranIdx, unsigned j) const 
+{
+    LOG(info) << " m_tran_buffer " << m_tran_buffer->getShapeString(); 
+    assert( tranIdx < m_tran_buffer->getShape(0) ); 
+    return m_tran_buffer->getMat4_(tranIdx, j); 
+}
+
+
+
+
+
+
+
+
 NPYBase* GParts::getBufferBase(const char* tag) const 
 {
     if(strcmp(tag,"prim")==0) return m_prim_buffer ; 
@@ -1888,7 +1905,7 @@ void GParts::enlargeBBox(unsigned int part, float epsilon)
 }
 
 
-unsigned int GParts::getUInt(unsigned int i, unsigned int j, unsigned int k)
+unsigned int GParts::getUInt(unsigned int i, unsigned int j, unsigned int k) const 
 {
     assert(i < getNumParts() );
     unsigned int l=0u ; 
@@ -1904,22 +1921,27 @@ void GParts::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned in
 
 
 
-unsigned int GParts::getNodeIndex(unsigned int part)   
+unsigned GParts::getNodeIndex(unsigned partIdx) const    
 {
-    return getUInt(part, NODEINDEX_J, NODEINDEX_K);  // hmm NODEINDEX slot is used for GTRANSFORM 
+    return getUInt(partIdx, NODEINDEX_J, NODEINDEX_K);  // hmm NODEINDEX slot is used for GTRANSFORM 
 }
-unsigned int GParts::getTypeCode(unsigned int part)
+unsigned GParts::getGTransform(unsigned partIdx) const 
 {
-    return getUInt(part, TYPECODE_J, TYPECODE_K);
+    return getUInt(partIdx, GTRANSFORM_J, GTRANSFORM_K);
 }
-unsigned int GParts::getIndex(unsigned int part)
+unsigned GParts::getTypeCode(unsigned partIdx) const 
 {
-    return getUInt(part, INDEX_J, INDEX_K);
+    return getUInt(partIdx, TYPECODE_J, TYPECODE_K);
 }
-unsigned int GParts::getBoundary(unsigned int part)
+unsigned GParts::getIndex(unsigned partIdx) const 
 {
-    return getUInt(part, BOUNDARY_J, BOUNDARY_K);
+    return getUInt(partIdx, INDEX_J, INDEX_K);
 }
+unsigned GParts::getBoundary(unsigned partIdx) const 
+{
+    return getUInt(partIdx, BOUNDARY_J, BOUNDARY_K);
+}
+
 
 
 
@@ -2017,6 +2039,14 @@ void GParts::dump(const char* msg, unsigned lim)
     }   
 }
 
+/**
+GParts::dumpPart
+-----------------
+
+partIdx is absolute index of the part(aka CSG constituent node) amongst 
+all prim within the composite GParts
+
+**/
 
 void GParts::dumpPart(unsigned partIdx)
 {
@@ -2024,10 +2054,13 @@ void GParts::dumpPart(unsigned partIdx)
 
     unsigned tc = getTypeCode(partIdx);
     unsigned id = getIndex(partIdx);
+    unsigned gt = getGTransform(partIdx);
     unsigned bnd = getBoundary(partIdx);
     std::string  bn = getBoundaryName(partIdx);
     const char*  tn = getTypeName(partIdx);
     std::string csg = CSG::Name((OpticksCSG_t)tc);
+
+
 
     unsigned i = partIdx ; 
     NPY<float>* buf = m_part_buffer ; 
@@ -2058,10 +2091,20 @@ void GParts::dumpPart(unsigned partIdx)
             else
                 printf(" %10.4f ", uif.f );
         }   
-        if( j == BOUNDARY_J ) printf(" bn %s ", bn.c_str() );
         printf("\n");
     }   
-    printf("\n");
+    printf("bn %s \n", bn.c_str() );
+
+    if( gt > 0 )
+    {
+        glm::mat4 t = getTran(gt-1,0) ; 
+        glm::mat4 v = getTran(gt-1,1) ; 
+        glm::mat4 q = getTran(gt-1,2) ; 
+        std::cout << gpresent( "t", t ) << std::endl ; 
+        std::cout << gpresent( "v", v ) << std::endl ; 
+        std::cout << gpresent( "q", q ) << std::endl ; 
+    }
+
 }
 
 

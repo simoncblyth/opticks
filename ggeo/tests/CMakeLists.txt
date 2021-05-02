@@ -78,6 +78,7 @@ set(TEST_SOURCES
     GNodeLibTest.cc
     GPhoTest.cc
 
+    GGeoDumpTest.cc
 )
 
 
