@@ -215,6 +215,27 @@ GMergedMesh::mergeVolumeAnalytic
 
 * testing this with GPtsTest, using GParts::Compare 
 
+::
+
+     // have concluded that skipping postcache is too complicated to implement
+     // see notes/issues/skipping_solids_by_name.rst 
+
+        bool deferredcsgskiplv = ok->isDeferredCSGSkipLV(lvIdx); //  --deferredcsgskiplv 
+        bool skipsolidname     = ok->isSkipSolidIdx(lvIdx);      //   --skipsolidname 
+
+        if(deferredcsgskiplv || skipsolidname) 
+        {
+            LOG(info) 
+                << " SKIPPING SOLID FROM ANALYTIC GEOMETRY VIA COMMANDLINE OPTION "
+                << " i " << i 
+                << " num_pt " << num_pt 
+                << " lvIdx " << lvIdx 
+                << " deferredcsgskiplv " << deferredcsgskiplv
+                << " skipsolidname " << skipsolidname
+                ; 
+            continue ;              
+        }
+
 **/
 
 GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
@@ -235,28 +256,6 @@ GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<con
     {
         const GPt* pt = pts->getPt(i); 
         int   lvIdx = pt->lvIdx ; 
-
-
-/**
-     // have concluded that skipping postcache is too complicated to implement
-     // see notes/issues/skipping_solids_by_name.rst 
-
-        bool deferredcsgskiplv = ok->isDeferredCSGSkipLV(lvIdx); //  --deferredcsgskiplv 
-        bool skipsolidname     = ok->isSkipSolidIdx(lvIdx);      //   --skipsolidname 
-
-        if(deferredcsgskiplv || skipsolidname) 
-        {
-            LOG(info) 
-                << " SKIPPING SOLID FROM ANALYTIC GEOMETRY VIA COMMANDLINE OPTION "
-                << " i " << i 
-                << " num_pt " << num_pt 
-                << " lvIdx " << lvIdx 
-                << " deferredcsgskiplv " << deferredcsgskiplv
-                << " skipsolidname " << skipsolidname
-                ; 
-            continue ;              
-        }
-**/
 
         int   ndIdx = pt->ndIdx ; 
         const std::string& spec = pt->spec ; 
