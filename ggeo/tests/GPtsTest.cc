@@ -77,7 +77,7 @@ struct testGPts
         pts(mm->getPts()),
         verbosity(1), 
         num_mismatch_pt(0),
-        parts2(GParts::Create( ok, pts, solids, num_mismatch_pt, &mismatch_placements)),
+        parts2(GParts::Create( ok, pts, solids, &num_mismatch_pt, &mismatch_placements)),
         path(BFile::FormPath("$TMP/ggeo/GPtsTest",BStr::itoa(imm))),
         rc(0)
     {

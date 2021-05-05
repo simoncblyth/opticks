@@ -29,6 +29,11 @@
 class NPY_API GLMFormat {
 
    public:
+       static std::string Format(float f           , int wid=4, int prec=3); 
+       static std::string Format(const glm::vec4& v, int wid=4, int prec=3); 
+       static std::string Format(const glm::mat4& m, int wid=4, int prec=3); 
+
+   public:
        GLMFormat(const char* delim="," , unsigned int precision=4);
     
    public:

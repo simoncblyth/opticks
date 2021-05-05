@@ -1200,6 +1200,16 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     // A: by GMergedMesh::mergeVolume/GMergedMesh::mergeVolumeAnalytic 
     //    using a base relative or global transform depending on ridx
     //
+    // WHY: because before analysis and resulting "factorization" 
+    //      of the geometry cannot know the appropriate placement transform to assign to he GPt
+    //       
+    // Local and global transform triples are collected below into GVolume with::
+    //       
+    //     GVolume::setLocalTransform(ltriple)
+    //     GVolume::setGlobalTransform(gtriple)
+    //
+    //  Those are the ingredients that later are used to get the appropriate 
+    //  combination of transforms.
 
 
     glm::mat4 xf_local_t = X4Transform3D::GetObjectTransform(pv);  
@@ -1252,9 +1262,9 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     float t15 = BTimeStamp::RealTime(); 
 #endif
 
-    X4Nd* nd = new X4Nd { parent_nd, ltriple } ;        
+    X4Nd* nd = new X4Nd { parent_nd, ltriple } ;         // X4Nd just struct { parent, transform }
 
-    const nmat4triple* gtriple = nxform<X4Nd>::make_global_transform(nd) ; 
+    const nmat4triple* gtriple = nxform<X4Nd>::make_global_transform(nd) ;  // product of transforms up the tree
     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #ifdef X4_PROFILE

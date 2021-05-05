@@ -456,6 +456,7 @@ void NPY<T>::add(const NPY<T>* other)
 
 
 
+
 /**
 NPY<T>::nasty_old_concat
 --------------------------
@@ -922,6 +923,12 @@ bool NPY<T>::isUnsetItem(unsigned int i, unsigned int j)
     unsigned int nbytes = getNumBytes(1); // bytes in an item  
     return memcmp(unset, item, nbytes ) == 0 ;  // memcmp 0 for match
 }
+
+
+
+
+
+
 
 
 template <typename T>
@@ -1545,14 +1552,41 @@ unsigned NPY<T>::_copy_masked(NPY<T>* dst, NPY<T>* src, NPY<unsigned>* msk )
 
 
 
+template<typename T>
+void NPY<T>::addOffset( int j, int k, unsigned offset, bool preserve_zero, bool preserve_signbit )
+{
+    unsigned nd = getNumDimensions() ; 
+    assert( nd == 3 );  
+    unsigned ni = getShape(0); 
+    unsigned nj = getShape(1); 
+    unsigned nk = getShape(2); 
 
+    unsigned jj = j < 0 ? nj + j : j ; 
+    unsigned kk = k < 0 ? nk + k : k ;
+    unsigned l = 0 ;  
 
-
-
-
-
-
-
+    if(preserve_signbit)
+    {
+        for(unsigned i=0 ; i < ni ; i++)
+        { 
+            unsigned u = getUInt(i,jj,kk) ; 
+            unsigned idx0 = u & NOTSIGNBIT ;
+            unsigned bit0 = u & SIGNBIT ; 
+            unsigned val1 = idx0 == 0 && preserve_zero ? u  : ( bit0 | (idx0 + offset) ) ; 
+            setUInt( i, jj, kk, l,  val1 );  
+        }
+    }   
+    else
+    { 
+        for(unsigned i=0 ; i < ni ; i++)
+        { 
+            unsigned u = getUInt(i,jj,kk) ; 
+            unsigned val0 = u ;
+            unsigned val1 = val0 == 0 && preserve_zero ? val0 : val0 + offset ; 
+            setUInt( i, jj, kk, l,  val1 );  
+        }
+    }
+}
 
 
 
@@ -3222,6 +3256,24 @@ unsigned NPY<T>::getUInt( int i,  int j,  int k,  int l) const
     }
     return uif.u ;
 }
+
+
+template <typename T> 
+void NPY<T>::setUSign(int i, int j, int k, int l, bool value)
+{
+    unsigned u = getUInt(i, j, k, l ); 
+    if( value ) u |= SIGNBIT ; 
+    setUInt(i, j, k, l, u ); 
+}
+
+template <typename T> 
+bool NPY<T>::getUSign(int i, int j, int k, int l) const 
+{
+    unsigned u = getUInt(i, j, k, l ); 
+    bool value = (u & SIGNBIT) != 0 ; 
+    return value ;
+}
+
 
 template <typename T> 
 void NPY<T>::setUInt(int i, int j, int k, int l, unsigned value)

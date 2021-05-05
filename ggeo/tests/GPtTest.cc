@@ -20,14 +20,13 @@
 // TEST=GPtTest om-t
 
 #include "OPTICKS_LOG.hh"
+#include "Opticks.hh"
 #include "GPt.hh"
 #include "GPts.hh"
 
 
-int main(int argc, char** argv)
+void test_make()
 {
-    OPTICKS_LOG(argc, argv);
-
     GPts* pts = GPts::Make() ; 
 
     pts->add( new GPt( 101, 10001, 42,  "red" ) );
@@ -41,7 +40,35 @@ int main(int argc, char** argv)
 
     GPts* pts2 = GPts::Load(dir); 
     pts2->dump(); 
+}
 
+
+
+
+
+int main(int argc, char** argv)
+{
+    unsigned ridx = argc > 1 ? std::atoi(argv[1]) : 0 ; 
+
+    OPTICKS_LOG(argc, argv);
+
+    //test_make(); 
+
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
+    const char* idpath = ok.getIdPath() ;
+    assert(idpath);  
+
+    std::string objpath = ok.getObjectPath("GPts", ridx ); 
+    LOG(info) 
+        << std::endl 
+        << " idpath  " << idpath << std::endl 
+        << " objpath " << objpath << std::endl 
+        ; 
+
+    GPts* pts = GPts::Load(objpath.c_str()); 
+    pts->dump(); 
 
     return 0 ;
 }

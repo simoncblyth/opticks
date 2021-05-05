@@ -50,6 +50,8 @@ class NPY_API NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
    public:
+       static const unsigned SIGNBIT ; 
+       static const unsigned NOTSIGNBIT ; 
        static const plog::Severity LEVEL ; 
        static const char* ArrayContentVersion ; 
        static const char* ArrayContentIndex ; 

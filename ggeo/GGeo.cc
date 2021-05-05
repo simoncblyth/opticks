@@ -594,6 +594,14 @@ void GGeo::postDirectTranslation()
 }
 
 
+/**
+GGeo::deferred
+----------------
+
+Invoked from GGeo::postDirectTranslation and GGeo::postLoadFromCache
+
+**/
+
 void GGeo::deferred()
 {
     if(!m_prepared) prepareOpticks();  // useful post-cache as well as pre-cache
@@ -1344,9 +1352,12 @@ void GGeo::deferredCreateGParts()
 
     unsigned nmm = m_geolib->getNumMergedMesh(); 
 
+    int gparts_debug = SSys::getenvint("GPARTS_DEBUG", ~0u ); 
+
     LOG(LEVEL) 
         << " geolib.nmm " << nmm 
         << " meshlib.solids " << solids.size()
+        << " gparts_debug " << gparts_debug
         ; 
 
     for(unsigned i=0 ; i < nmm ; i++)
@@ -1373,7 +1384,11 @@ void GGeo::deferredCreateGParts()
         LOG(LEVEL) << "[ GParts::Create i/nmm " << i << "/" << nmm ; 
         unsigned num_mismatch_pt = 0 ; 
         std::vector<glm::mat4> mismatch_placements ; 
-        GParts* parts = GParts::Create( m_ok, pts, solids, num_mismatch_pt, &mismatch_placements ) ; 
+
+
+        GParts::SetDEBUG( i == gparts_debug ? 1 : 0 ); 
+        GParts* parts = GParts::Create( m_ok, pts, solids, &num_mismatch_pt, &mismatch_placements ) ; 
+        parts->setRepeatIndex(i); 
 
         if(num_mismatch_pt > 0 )
         {

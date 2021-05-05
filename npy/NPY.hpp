@@ -243,6 +243,8 @@ class NPY_API NPY : public NPYBase {
        void reset();   //  clears data, setHasData to false and setNumItems to zero
        unsigned capacity() const ; 
     public:
+       void addOffset(int j, int k, unsigned offset, bool preserve_zero=true, bool preserve_signbit=true ); 
+    public:
        void updateDigests();
        void addItem(NPY<T>* other, unsigned item);   // add single item from another buffer, it must have same itemsize (ie size after 1st dimension)
        unsigned addItemUnique(NPY<T>* other, unsigned item ); 
@@ -305,8 +307,9 @@ class NPY_API NPY : public NPYBase {
        float        getFloat( int i,  int j,  int k,  int l=0) const ;
 
         // -ve indices are relative to ni, nj, nk, nl  
-       unsigned     getUInt(  int i,  int j,  int k,  int l=0) const ;
-       int          getInt(   int i,  int j,  int k,  int l=0) const ;
+       bool         getUSign(   int i,  int j,  int k,  int l=0) const ;
+       unsigned     getUInt(    int i,  int j,  int k,  int l=0) const ;
+       int          getInt(     int i,  int j,  int k,  int l=0) const ;
 
        void         getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
 
@@ -319,8 +322,9 @@ class NPY_API NPY : public NPYBase {
 
 
         // -ve indices are relative to ni, nj, nk, nl  
-       void         setUInt(  int i,  int j,  int k,  int l,  unsigned  value);
-       void         setInt(   int i,  int j,  int k,  int l,  int       value);
+       void         setUSign(int i,  int j,  int k,  int l,  bool      value);
+       void         setUInt( int i,  int j,  int k,  int l,  unsigned  value);
+       void         setInt(  int i,  int j,  int k,  int l,  int       value);
 
 
        void         bitwiseOrUInt( unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value);

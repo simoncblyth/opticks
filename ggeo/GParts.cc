@@ -203,9 +203,8 @@ and the requisite GParts arguments (spec, placement transforms) persisted by GPt
 together with the GGeoLib merged meshes.  
 
 Note that GParts::applyPlacementTransform is applied to each individual 
-GParts prior to combination into a composite GParts using the placement 
+GParts object prior to combination into a composite GParts using the placement 
 transform collected into the GPt objects transported via GPts.
-
 
 GMergedMesh::mergeVolume
 GMergedMesh::mergeVolumeAnalytic
@@ -215,51 +214,52 @@ GMergedMesh::mergeVolumeAnalytic
 
 * testing this with GPtsTest, using GParts::Compare 
 
-::
-
-     // have concluded that skipping postcache is too complicated to implement
-     // see notes/issues/skipping_solids_by_name.rst 
-
-        bool deferredcsgskiplv = ok->isDeferredCSGSkipLV(lvIdx); //  --deferredcsgskiplv 
-        bool skipsolidname     = ok->isSkipSolidIdx(lvIdx);      //   --skipsolidname 
-
-        if(deferredcsgskiplv || skipsolidname) 
-        {
-            LOG(info) 
-                << " SKIPPING SOLID FROM ANALYTIC GEOMETRY VIA COMMANDLINE OPTION "
-                << " i " << i 
-                << " num_pt " << num_pt 
-                << " lvIdx " << lvIdx 
-                << " deferredcsgskiplv " << deferredcsgskiplv
-                << " skipsolidname " << skipsolidname
-                ; 
-            continue ;              
-        }
-
 **/
 
-GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
-{
-    LOG(LEVEL) << "[  deferred creation from GPts" ; 
 
-    GParts* com = new GParts() ; 
+int GParts::DEBUG = -1 ; 
+void GParts::SetDEBUG(int dbg)
+{
+    DEBUG = dbg ; 
+}
+
+
+
+GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned* num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
+{
+    plog::Severity level = DEBUG == 0 ? LEVEL : info ;  
 
     unsigned num_pt = pts->getNumPt(); 
 
-    LOG(LEVEL) << " num_pt " << num_pt ; 
+    LOG(level) 
+         << "[  deferred creation from GPts" 
+         << " DEBUG " << DEBUG
+         << " level " << level << " " << PLOG::_name(level)
+         << " LEVEL " << LEVEL << " " << PLOG::_name(LEVEL)
+         << " num_pt " << num_pt 
+         ; 
+
+    GParts* com = new GParts() ; 
 
     unsigned verbosity = 0 ; 
-
     std::vector<unsigned> mismatch_pt ; 
 
     for(unsigned i=0 ; i < num_pt ; i++)
     {
         const GPt* pt = pts->getPt(i); 
         int   lvIdx = pt->lvIdx ; 
-
         int   ndIdx = pt->ndIdx ; 
-        const std::string& spec = pt->spec ; 
-        const glm::mat4& placement = pt->placement ; 
+        const std::string& spec = pt->getSpec() ; 
+        const glm::mat4& placement = pt->getPlacement() ; 
+
+        LOG(level) 
+            << " pt " << std::setw(4) 
+            << " lv " << std::setw(4) << lvIdx 
+            << " nd " << std::setw(6) << ndIdx 
+            << " pl " << GLMFormat::Format(placement)
+            << " bn " << spec
+            ;
+
         assert( lvIdx > -1 ); 
 
         const NCSG* csg = unsigned(lvIdx) < solids.size() ? solids[lvIdx] : NULL ; 
@@ -267,13 +267,11 @@ GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<con
 
         //  X4PhysicalVolume::convertNode
 
-        LOG(LEVEL) << "[ GParts::Make i " << i << " lvIdx " << lvIdx << " ndIdx " << ndIdx ; 
         GParts* parts = GParts::Make( csg, spec.c_str(), ndIdx ); 
-        LOG(LEVEL) << "] GParts::Make i " << i << " lvIdx " << lvIdx << " ndIdx " << ndIdx ; 
 
         unsigned num_mismatch = 0 ; 
 
-        parts->applyPlacementTransform( placement, verbosity, num_mismatch ); 
+        parts->applyPlacementTransform( placement, verbosity, num_mismatch );   // this changes parts:m_tran_buffer
 
         if(num_mismatch > 0 )
         {
@@ -289,19 +287,26 @@ GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<con
                 mismatch_placements->push_back(placement_); 
             }
         }
+
+        parts->dumpTran("parts"); 
         com->add( parts ); 
     }
 
-    num_mismatch_pt = mismatch_pt.size(); 
-    if(num_mismatch_pt > 0)
+    com->dumpTran("com");
+
+    if(num_mismatch_pt) 
     {
-        LOG(error) << "num_mismatch_pt : " << num_mismatch_pt ; 
-        std::cout << " mismatch_pt indices : " ; 
-        for(unsigned i=0 ; i < num_mismatch_pt ; i++) std::cout << mismatch_pt[i] << " " ; 
-        std::cout << std::endl ; 
+        *num_mismatch_pt = mismatch_pt.size(); 
+        if(*num_mismatch_pt > 0)
+        {
+            LOG(error) << "num_mismatch_pt : " << *num_mismatch_pt ; 
+            std::cout << " mismatch_pt indices : " ; 
+            for(unsigned i=0 ; i < *num_mismatch_pt ; i++) std::cout << mismatch_pt[i] << " " ; 
+            std::cout << std::endl ; 
+        }
     }
 
-    LOG(LEVEL) << "]" ; 
+    LOG(level) << "]" ; 
     return com ; 
 }
 
@@ -319,6 +324,18 @@ GParts* GParts::getSub(unsigned i) const
     assert( i < m_subs.size() ); 
     return m_subs[i] ; 
 }
+
+void GParts::setRepeatIndex(unsigned ridx) 
+{
+    m_ridx = ridx ; 
+}  
+unsigned GParts::getRepeatIndex() const 
+{
+    return m_ridx ; 
+}
+
+
+
 
 
 
@@ -685,7 +702,8 @@ GParts::GParts(GBndLib* bndlib)
     m_analytic_version(0),
     m_primflag(CSG_FLAGNODETREE),
     m_medium(NULL),
-    m_csg(NULL)
+    m_csg(NULL),
+    m_ridx(~0u)
 {
     m_idx_buffer->zero();
     m_part_buffer->zero();
@@ -712,7 +730,8 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_analytic_version(0),
     m_primflag(CSG_FLAGNODETREE),
     m_medium(NULL),
-    m_csg(NULL)
+    m_csg(NULL),
+    m_ridx(~0u)
 {
     m_bndspec->add(spec);
 
@@ -734,7 +753,8 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_analytic_version(0),
     m_primflag(CSG_FLAGNODETREE),
     m_medium(NULL),
-    m_csg(NULL)
+    m_csg(NULL),
+    m_ridx(~0u)
 {
     checkSpec(spec); 
     init() ; 
@@ -1111,7 +1131,8 @@ GParts::applyPlacementTransform
    to avoid leaving behind constituents this means that every constituent
    must have an associated transform, **even if its the identity transform**
 
-This gets invoked from GGeo::prepare...GMergedMesh::mergeVolumeAnalytic
+* This was formerly invoked from GGeo::prepare...GMergedMesh::mergeVolumeAnalytic
+* Now it is invoked by GParts::Create 
 
 **/
 
@@ -1140,7 +1161,9 @@ whilst testing small subsets of geometry
 
 void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbosity, unsigned& num_mismatch )
 {
-    LOG(LEVEL) << "[ placement " << glm::to_string( placement ) ; 
+    plog::Severity level = DEBUG ? info : LEVEL ;  
+
+    LOG(level) << "[ placement " << glm::to_string( placement ) ; 
 
     //std::raise(SIGINT); 
 
@@ -1148,16 +1171,15 @@ void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbos
 
     unsigned ni = m_tran_buffer->getNumItems();
 
-    if(verbosity > 2)
-    LOG(info) << "GParts::applyPlacementTransform"
-              << " tran_buffer " << m_tran_buffer->getShapeString()
-              << " ni " << ni
-              ;
+    LOG(level) 
+        << " tran_buffer " << m_tran_buffer->getShapeString()
+        << " ni " << ni
+        ;
 
 
     bool reversed = true ; // means apply transform at root end, not leaf end 
 
-    if(verbosity > 2)
+    if(verbosity > 2 || DEBUG > 0)
     nmat4triple::dump(m_tran_buffer,"GParts::applyPlacementTransform before");
 
 
@@ -1179,7 +1201,7 @@ void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbos
    
     num_mismatch = mismatch.size(); 
 
-    if(num_mismatch > 0 || verbosity > 2)
+    if(num_mismatch > 0 || verbosity > 2 || DEBUG > 0)
     {
         nmat4triple::dump(m_tran_buffer,"GParts::applyPlacementTransform after");
 
@@ -1254,10 +1276,20 @@ void GParts::add(GParts* other)
 
     m_bndspec->add(other->getBndSpec());
 
+
+    // count the tran and plan collected so far into this GParts
+    unsigned tranOffset = m_tran_buffer->getNumItems(); 
+    //unsigned planOffset = m_plan_buffer->getNumItems(); 
+
     NPY<unsigned>* other_idx_buffer = other->getIdxBuffer() ;
-    NPY<float>* other_part_buffer = other->getPartBuffer() ;
+    NPY<float>* other_part_buffer = other->getPartBuffer()->clone() ;
     NPY<float>* other_tran_buffer = other->getTranBuffer() ;
     NPY<float>* other_plan_buffer = other->getPlanBuffer() ;
+
+    bool preserve_zero = true ; 
+    bool preserve_signbit = true ; 
+    other_part_buffer->addOffset(GTRANSFORM_J, GTRANSFORM_K, tranOffset, preserve_zero, preserve_signbit );  
+    // hmm offsetting of planes needs to be done only for parts of type CSG_CONVEXPOLYHEDRON 
 
     m_idx_buffer->add(other_idx_buffer);
     m_part_buffer->add(other_part_buffer);
@@ -1298,6 +1330,12 @@ void GParts::add(GParts* other)
     {
         setIndex(p, p);
     }
+
+    // TODO: 
+    //    Transform (and plane) references in m_part_buffer 
+    //    need to be offset on combination : so they can stay valid
+    //    against the combined transform (and plane) buffers
+    //
 
 
 
@@ -1958,6 +1996,11 @@ bool GParts::getComplement(unsigned partIdx) const
 }
 
 
+
+
+
+
+
 unsigned GParts::getTypeCode(unsigned partIdx) const 
 {
     return getUInt(partIdx, TYPECODE_J, TYPECODE_K);
@@ -2083,7 +2126,7 @@ void GParts::dumpPart(unsigned partIdx)
 
     unsigned tc = getTypeCode(partIdx);
     unsigned id = getIndex(partIdx);
-    unsigned gt = getGTransform(partIdx);
+    unsigned gtran = getGTransform(partIdx);
     unsigned bnd = getBoundary(partIdx);
     std::string  bn = getBoundaryName(partIdx);
     const char*  tn = getTypeName(partIdx);
@@ -2124,17 +2167,74 @@ void GParts::dumpPart(unsigned partIdx)
     }   
     printf("bn %s \n", bn.c_str() );
 
-    if( gt > 0 )
+    if( gtran > 0 )
     {
-        glm::mat4 t = getTran(gt-1,0) ; 
+        glm::mat4 t = getTran(gtran-1,0) ; 
         std::cout << gpresent( "t", t ) << std::endl ; 
-        //glm::mat4 v = getTran(gt-1,1) ; 
+        //glm::mat4 v = getTran(gtran-1,1) ; 
         //std::cout << gpresent( "v", v ) << std::endl ; 
-        //glm::mat4 q = getTran(gt-1,2) ; 
+        //glm::mat4 q = getTran(gtran-1,2) ; 
         //std::cout << gpresent( "q", q ) << std::endl ; 
+    }
+    else
+    {
+        std::cout << " gtran:" << gtran << std::endl ;  
     }
 
 }
+
+
+
+void GParts::dumpTran(const char* msg) const 
+{
+    plog::Severity level = DEBUG == 0 ? LEVEL : info ;  
+    unsigned numTran = getNumTran(); 
+    unsigned numParts = getNumParts(); 
+
+    LOG(level) 
+        <<  msg 
+        << " numTran " << numTran
+        << " numParts " << numParts
+        ;
+
+    for(int t=0 ; t < numTran ; t++)
+    {
+        const glm::mat4& tr = getTran(t, 0); 
+        LOG(level) 
+            << std::setw(4)  << t
+            << " " << GLMFormat::Format(tr) 
+            ; 
+    } 
+
+    LOG(level) 
+        << " numParts " << numParts
+        ;
+
+    for(unsigned p=0 ; p < numParts ; p++)
+    {
+        unsigned partIdx = p ; 
+        unsigned gtran = getGTransform(partIdx);
+        std::string tag = getTag(partIdx);
+        std::stringstream ss ; 
+        ss 
+            << " partIdx " << std::setw(4) << partIdx  
+            << " tag " << std::setw(3) << tag 
+            << " gtran " << std::setw(4) << gtran 
+            << " numTran " << std::setw(4) << numTran 
+            ;
+
+        if(gtran > 0  )
+        {
+             const glm::mat4& tr = getTran(gtran-1, 0); 
+             ss << " " << GLMFormat::Format(tr)  ; 
+        }
+ 
+        std::string s = ss.str(); 
+        LOG(level) << s ; 
+    } 
+}
+
+
 
 
 

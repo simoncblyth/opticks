@@ -41,6 +41,10 @@
 #include "PLOG.hh"
 
 
+const unsigned NPYBase::SIGNBIT    = 0x80000000 ; 
+const unsigned NPYBase::NOTSIGNBIT = 0x7fffffff ; 
+
+
 bool NPYBase::GLOBAL_VERBOSE = false ; 
 
 bool  NPYBase::NPDump = false ; 

@@ -605,7 +605,7 @@ void GMergedMesh::mergeVolume( const GVolume* volume, bool selected)
         mergeVolumeFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  ); // m_faces, m_nodes, m_boundaries, m_sensors
    
         GPt* pt = volume->getPt();  // analytic 
-        mergeVolumeAnalytic( pt, transform);
+        mergeVolumeAnalytic( pt, transform);     // relative or global transform as appropriate becoming the GPt placement, and collects into GMergedMesh::m_pts 
 
         // offsets with the flat arrays
         m_cur_vertices += num_vert ;  
@@ -905,8 +905,10 @@ void GMergedMesh::mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* nod
 Canonically invoked from ``GMergedMesh::mergeVolume``
 
 ``GPt`` instance from the volume are instanciated within ``X4PhysicalVolume::convertNode``.
-Here the placement transform is set into the GPt and it is collected into the GPts m_pts, 
-which is able to persist into the geocache. 
+
+Only here does it become possible to set the placement transform into the GPt.
+This collects the GPt with its placement into GPts::m_pts, 
+which is then persisted into the geocache. 
 
 With repeated geometry one GPt instance for each GVolume is collected into GPts m_pts. 
 

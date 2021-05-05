@@ -45,22 +45,33 @@ GPt::GPt( int lvIdx_, int ndIdx_, int csgIdx_, const char* spec_ )
 {
 } 
 
+const std::string& GPt::getSpec() const
+{
+    return spec ;  
+} 
+const glm::mat4& GPt::getPlacement() const 
+{
+    return placement ; 
+}
 void GPt::setPlacement( const glm::mat4& placement_ )
 {
     placement = placement_ ;  
 }
 
 
+
+
+
 std::string GPt::desc() const 
 {
     std::stringstream ss ; 
     ss 
-       << " lvIdx " << std::setw(4) << lvIdx
-       << " ndIdx " << std::setw(7) << ndIdx
-       << " csgIdx " << std::setw(7) << csgIdx
-       << " spec " << std::setw(30) << spec
-       << " placement " << gformat( placement )   
-       ; 
+        << " lv " << std::setw(3) << lvIdx
+        << " cs " << std::setw(3) << csgIdx
+        << " nd " << std::setw(7) << ndIdx
+        << " bn " << std::setw(30) << spec
+        << " pl " << GLMFormat::Format( placement )   
+        ; 
 
     return ss.str(); 
 }

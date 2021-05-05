@@ -62,8 +62,9 @@ struct GGEO_API GPt
     GPt( int lvIdx_, int ndIdx_, int csgIdx_, const char* spec_, const glm::mat4& placement_ ); 
     GPt( int lvIdx_, int ndIdx_, int csgIdx_, const char* spec_ ); 
 
+    const std::string& getSpec() const ; 
+    const glm::mat4&   getPlacement() const ; 
     void setPlacement( const glm::mat4& placement_ ); 
-
     std::string desc() const ; 
 
 }; 

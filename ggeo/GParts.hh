@@ -202,6 +202,9 @@ class GGEO_API GParts {
        std::vector<unsigned> m_aix ;
 #endif
 
+       static int DEBUG ; 
+       static void SetDEBUG(int dbg); 
+
        static const plog::Severity LEVEL ; 
        // conventional names for interfacing
        static const char* CONTAINING_MATERIAL ; 
@@ -226,7 +229,7 @@ class GGEO_API GParts {
     public:
       //
         static int     Compare(const GParts* a, const GParts* b, bool dump ); 
-        static GParts* Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned& num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements );
+        static GParts* Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned* num_mismatch_pt=nullptr, std::vector<glm::mat4>* mismatch_placements=nullptr );
 
         static GParts* Make(const npart& pt, const char* spec);
         static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
@@ -271,9 +274,14 @@ class GGEO_API GParts {
         unsigned getIndex(unsigned partIdx) const ;
         unsigned getTypeCode(unsigned partIdx) const ;
         unsigned getNodeIndex(unsigned partIdx) const ;
+
         unsigned getGTransform(unsigned partIdx) const ; 
         bool     getComplement(unsigned partIdx) const ; 
+
         unsigned getBoundary(unsigned partIdx) const ;
+
+
+
 
         unsigned  getNumTran() const ; 
         glm::mat4 getTran(unsigned tranIdx, unsigned j) const ; 
@@ -297,6 +305,11 @@ class GGEO_API GParts {
         int          getTranOffset(unsigned primIdx) const ; 
         int          getPlanOffset(unsigned primIdx) const ;
    public:
+        // late addition to assist with debugging CSGOptiXGGeo:Converter
+        void setRepeatIndex(unsigned ridx); 
+        unsigned getRepeatIndex() const ; 
+   public:
+
         void setIndex(unsigned part, unsigned index);
         void setTypeCode(unsigned part, unsigned typecode);
         void setNodeIndex(unsigned part, unsigned nodeindex);  // caution slot is used for GTRANFORM index GPU side
@@ -330,6 +343,7 @@ class GGEO_API GParts {
         void dump(const char* msg="GParts::dump", unsigned lim=10 );
         void dumpPrim(unsigned primIdx);
         void dumpPart(unsigned partIdx);
+        void dumpTran(const char* msg="GParts::dumpTran") const ; 
 
     public:
         void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
@@ -410,6 +424,7 @@ class GGEO_API GParts {
         const NCSG*        m_csg ; 
 
         std::vector<GParts*> m_subs ; 
+        unsigned           m_ridx ; 
 
 
 };

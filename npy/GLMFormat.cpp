@@ -64,6 +64,34 @@ std::string GLMFormat::format(float f)
     m_ss << f ; 
     return m_ss.str();
 }
+
+std::string GLMFormat::Format(float f, int wid, int prec)  // static
+{
+    std::stringstream ss ; 
+    ss << std::fixed << std::setprecision(prec) << std::setw(wid) << f ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+std::string GLMFormat::Format(const glm::vec4& v, int wid, int prec) // static
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < 4 ; i++) ss << Format(v[i], wid, prec) << " " ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+std::string GLMFormat::Format(const glm::mat4& m, int wid, int prec) // static
+{
+    std::stringstream ss ; 
+    ss << Format(m[0], wid/2, prec/2) << " " ; 
+    ss << Format(m[1], wid/2, prec/2) << " " ; 
+    ss << Format(m[2], wid/2, prec/2) << " " ; 
+    ss << Format(m[3], wid  , prec  ) << " " ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
 std::string GLMFormat::format(int i)
 {
     m_ss.str(""); // clear buffer

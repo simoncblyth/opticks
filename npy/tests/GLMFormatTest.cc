@@ -27,7 +27,7 @@
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_gmat4()
@@ -75,14 +75,23 @@ void test_misc()
     assert( q == qq );
 }
 
+void test_Format()
+{
+    LOG(info) ; 
+    glm::mat4 m(1.f); 
+    std::cout << GLMFormat::Format(m) << std::endl ;  
+}
+
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
-    test_gmat4();
-    test_ivec4();
-    test_misc();
+    //test_gmat4();
+    //test_ivec4();
+    //test_misc();
+
+    test_Format(); 
 
     return 0 ; 
 }

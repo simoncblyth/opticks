@@ -136,6 +136,15 @@ void test_load_ncsg_make()
 }
 
 
+void test_add()
+{
+
+
+
+}
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -150,9 +159,11 @@ int main(int argc, char** argv)
 
     test_save_empty(bndlib);
     test_save_load(bndlib);
+    test_load_ncsg_make();
 */
 
-    test_load_ncsg_make();
+    test_add(); 
+
 
     return 0 ;
 }
