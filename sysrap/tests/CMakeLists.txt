@@ -65,6 +65,8 @@ set(TEST_SOURCES
    SRngSpecTest.cc 
 
    CheckGeoTest.cc
+
+   SGLMTest.cc
 )
 
 

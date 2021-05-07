@@ -123,7 +123,10 @@ public:
    float* getEyePtr();
    float* getLookPtr();
    float* getUpPtr();
-
+public:
+   std::string desc() const ;  
+   static std::string Desc( const char* label, const glm::vec4& v ); 
+   static std::string Desc( const char* label, const glm::vec3& v ); 
 public:
    // methods overridden in InterpolatedView
    virtual glm::vec4 getEye(const glm::mat4& m2w);
@@ -149,11 +152,11 @@ public:
    void setChanged(bool changed); 
 
 private:
-   View_t    m_type ; 
-   glm::vec3 m_eye ; 
-   glm::vec3 m_look ; 
-   glm::vec3 m_up ; 
-   bool      m_changed ; 
+   View_t       m_type ; 
+   glm::vec3    m_eye ; 
+   glm::vec3    m_look ; 
+   glm::vec3    m_up ; 
+   bool         m_changed ; 
    std::vector<glm::vec4> m_axes ; 
    unsigned    m_num_cmds ; 
    std::array<std::string, 8> m_cmds ; 

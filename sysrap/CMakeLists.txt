@@ -71,6 +71,7 @@ set(SOURCES
 
     CheckGeo.cc
 
+    SGLM.cc
 ) 
 
 set(HEADERS
@@ -131,7 +132,7 @@ set(HEADERS
     SRngSpec.hh
 
     CheckGeo.hh
-
+    SGLM.hh
 )
 
 
@@ -197,6 +198,7 @@ endif()
 
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+   ${OPTICKS_PREFIX}/externals/glm/glm
 )
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
 

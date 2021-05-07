@@ -326,8 +326,11 @@ int FlightPath::render( SRenderer* renderer )
     {
         m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
 
-        double dt = renderer->render();   // calling OTracer::trace_
-        
+        double dt = renderer->render();   // eg calling OTracer::trace_  
+        // Q: where does OTracer pay heed to the changed Composition view position ?
+        // A: in OTracer::trace_ where the eye-look-up are accessed from Composition and 
+        //    the OptiX context updated accordingly          
+
         std::string bottom_annotation = m_ok->getFrameAnnotation(i, imax, dt ); 
 
         fp->fillPathFormat(path, 128, i ); 

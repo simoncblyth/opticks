@@ -20,13 +20,24 @@
 #pragma once
 
 /**
-SRenderer
-===========
+SRenderer : Protocol base
+============================
 
-Protocol base.
+Duties of the *render* method
+--------------------------------
+
+1. access eye-look-up and camera parameters from Composition and update GPU context accordingly 
+2. do the launch, recording the time
+3. return the launch time    
+
+Duties of the *snap* method
+-----------------------------
+
+1. download the frame buffer into CPU side pixels buffer
+2. annotate pixels buffer with top/bottom lines 
+3. save pixels buffer to to file at the path provided
 
 **/
-
 
 class SRenderer {
    public:

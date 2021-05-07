@@ -23,6 +23,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
 
+#include "SSys.hh"
+
 // npy-
 #include "NGLM.hpp"
 #include "GLMPrint.hpp"
@@ -169,7 +171,7 @@ void Camera::configureF(const char* name, std::vector<float> values)
 Camera::Camera(int width, int height, float basis ) 
     :
     m_zoom(1.0f),
-    m_type(0u),
+    m_type(SSys::getenvint("CAMERATYPE",0)),
     m_changed(true)
 {
     bool internal = true ; 

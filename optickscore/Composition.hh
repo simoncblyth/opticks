@@ -408,9 +408,10 @@ class OKCORE_API Composition : public NConfigurable {
       const glm::vec4& getLODCut() const ;
       glm::mat4& getModelToWorld();
       glm::mat4& getWorldToModel();
-      float getExtent();
-      float getNear();
-      float getFar();
+
+      float getExtent() const ;
+      float getNear() const ;
+      float getFar() const ;
   public:
       // position of the observer "Viewpoint" and the observed "Lookpoint" using m_eye_to_world/m_world_to_eye
       glm::vec4 transformWorldToEye(const glm::vec4& world) const ;
@@ -602,10 +603,12 @@ class OKCORE_API Composition : public NConfigurable {
   public: 
       void Summary(const char* msg);
       void Details(const char* msg);
-
       void eye_sequence( std::vector<glm::vec3>& eyes, const NSnapConfig* snap_config  );
 
-
+  public: 
+      std::string desc() ;
+      static std::string Desc( const char* label, const glm::vec3& v ); 
+      static std::string Desc( const char* label, const glm::vec4& v ); 
 
 };      
 #include "OKCORE_TAIL.hh"

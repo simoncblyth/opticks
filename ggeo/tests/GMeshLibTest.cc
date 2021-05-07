@@ -280,7 +280,7 @@ void test_getMeshName_getMeshIndexWithName( const GMeshLib* mlib, int argc, char
 void test_operator( const GMeshLib* mlib, int argc, char** argv )
 {
     const char* dump_arg = "--dump" ; 
-
+    bool dump = false ; 
     for(int i=1 ; i < argc ; i++ )
     {
         const char* arg = argv[i] ; 
@@ -289,9 +289,7 @@ void test_operator( const GMeshLib* mlib, int argc, char** argv )
  
         std::string s = (*mlib)(arg) ; 
         std::cerr << s << std::endl ;  
-
     }
-
 }
 
 

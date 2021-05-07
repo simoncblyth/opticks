@@ -497,7 +497,7 @@ const glm::vec4& Composition::getLODCut() const
 
 
 
-float Composition::getExtent()
+float Composition::getExtent() const 
 {
     return m_extent ; 
 }
@@ -1583,14 +1583,11 @@ unsigned Composition::getCameraType() const
 {
     return m_camera->getType();
 }
-
-
-
-float Composition::getNear()
+float Composition::getNear() const 
 {
     return m_camera->getNear();
 }
-float Composition::getFar()
+float Composition::getFar() const 
 {
     return m_camera->getFar();
 }
@@ -2211,8 +2208,27 @@ void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec
     float u_half_width  = v_half_height * aspect ; 
     float w_depth       = m_gazelength ; 
 
-    //  Eye frame axes and origin 
-    //  transformed into world frame
+   
+    /*
+    //  Eye frame axes and origin transformed into world frame
+
+
+          top        
+                   gaze
+            +Y    -Z 
+             |    /
+             |   /
+             |  /
+             | /
+             |/
+             O--------- +X   right
+            /
+           /
+          /
+         /
+       +Z
+
+    */
 
     glm::vec4 right( 1., 0., 0., 0.);
     glm::vec4   top( 0., 1., 0., 0.);
@@ -2338,6 +2354,59 @@ void Composition::eye_sequence( std::vector<glm::vec3>& eyes, const NSnapConfig*
     }   
 }
 
+
+
+std::string Composition::desc()   // calls update, so cannot be const 
+{
+    glm::vec3 eye ;
+    glm::vec3 U ; 
+    glm::vec3 V ; 
+    glm::vec3 W ; 
+    glm::vec4 ZProj ;
+
+    getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
+
+    std::stringstream ss ; 
+    ss << m_view->desc() << std::endl << std::endl ; 
+    ss << Desc("eye",  eye ) << std::endl; 
+    ss << Desc("U",    U ) << std::endl; 
+    ss << Desc("V",    V ) << std::endl; 
+    ss << Desc("W",    W ) << std::endl; 
+    ss << Desc("ZProj", ZProj ) << std::endl; 
+    std::string s = ss.str();
+    return s ;
+}
+
+std::string Composition::Desc( const char* label, const glm::vec3& v ) // static
+{
+    std::stringstream ss ; 
+    ss  
+       << std::setw(20) << label 
+       << " ( "
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.x    
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.y 
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.z
+       << " ) "
+       ;
+    std::string s = ss.str();
+    return s ;
+}
+
+std::string Composition::Desc( const char* label, const glm::vec4& v ) // static
+{
+    std::stringstream ss ; 
+    ss  
+       << std::setw(20) << label 
+       << " ( "
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.x    
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.y 
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.z
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.w
+       << " ) "
+       ;
+    std::string s = ss.str();
+    return s ;
+}
 
 
 

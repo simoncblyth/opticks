@@ -25,6 +25,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "SGLM.hh"
+
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
@@ -279,17 +281,21 @@ void View::setChanged(bool changed)
 void View::home()
 {
     m_changed = true ; 
+    
     m_eye.x = -1.f ; 
     m_eye.y = -1.f ; 
     m_eye.z =  0.f ;
+    m_eye = SGLM::EVec3("EYE", "-1,-1,0" ); 
 
     m_look.x =  0.f ; 
     m_look.y =  0.f ; 
     m_look.z =  0.f ;
+    m_look = SGLM::EVec3("LOOK", "0,0,0" ); 
 
     m_up.x =  0.f ; 
     m_up.y =  0.f ; 
     m_up.z =  1.f ;
+    m_up = SGLM::EVec3("UP", "0,0,1" ); 
 }
 
 void View::setEye( float _x, float _y, float _z)
@@ -683,4 +689,44 @@ glm::vec4 View::getGaze(const glm::mat4& m2w, bool debug)
 }
 
 
+std::string View::desc() const 
+{
+    std::stringstream ss ; 
+    ss << Desc("m_eye",  m_eye ) << std::endl; 
+    ss << Desc("m_look", m_look ) << std::endl; 
+    ss << Desc("m_up",   m_up ) << std::endl; 
+    std::string s = ss.str();
+    return s ;
+}
+
+std::string View::Desc( const char* label, const glm::vec3& v ) // static
+{
+    std::stringstream ss ; 
+    ss  
+       << std::setw(20) << label 
+       << " ( "
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.x    
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.y 
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.z
+       << " ) "
+       ;
+    std::string s = ss.str();
+    return s ;
+}
+
+std::string View::Desc( const char* label, const glm::vec4& v ) // static
+{
+    std::stringstream ss ; 
+    ss  
+       << std::setw(20) << label 
+       << " ( "
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.x    
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.y 
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.z
+       << std::setw(10) << std::fixed << std::setprecision(3) << v.w
+       << " ) "
+       ;
+    std::string s = ss.str();
+    return s ;
+}
 
