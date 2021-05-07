@@ -63,7 +63,7 @@ glm::vec4 SGLM::EVec4(const char* key, const char* fallback) // static
     std::vector<float> vec ; 
     SGLM::GetEVector<float>(vec, key, fallback); 
     glm::vec4 v ; 
-    for(int i=0 ; i < 4 ; i++) v[i] = i < vec.size() ? vec[i] : 0.f  ; 
+    for(int i=0 ; i < 4 ; i++) v[i] = i < int(vec.size()) ? vec[i] : 0.f  ; 
     return v ; 
 }
 
@@ -72,7 +72,7 @@ glm::vec3 SGLM::EVec3(const char* key, const char* fallback) // static
     std::vector<float> vec ; 
     SGLM::GetEVector<float>(vec, key, fallback); 
     glm::vec3 v ; 
-    for(int i=0 ; i < 3 ; i++) v[i] = i < vec.size() ? vec[i] : 0.f  ; 
+    for(int i=0 ; i < 3 ; i++) v[i] = i < int(vec.size()) ? vec[i] : 0.f  ; 
     return v ; 
 }
 

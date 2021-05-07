@@ -609,6 +609,8 @@ class OKCORE_API Composition : public NConfigurable {
       std::string desc() ;
       static std::string Desc( const char* label, const glm::vec3& v ); 
       static std::string Desc( const char* label, const glm::vec4& v ); 
+  public: 
+      void setNear(float near);
 
 };      
 #include "OKCORE_TAIL.hh"

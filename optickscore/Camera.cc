@@ -522,6 +522,57 @@ void Camera::Print(const char* msg)
 
 void Camera::Summary(const char* msg)
 {
+    std::stringstream ss ; 
+    ss 
+        <<  msg 
+        << " type " << m_type 
+        << std::endl  
+        << " width " << std::setw(5) << m_size[0]
+        << " height " << std::setw(5) << m_size[1]
+        << " aspect " 
+        << std::setw(10) << std::fixed << std::setprecision(3) << getAspect() 
+        << std::endl 
+        << " near " 
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_near
+        << " clip " 
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_nearclip[0]
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_nearclip[1]
+        << std::endl 
+        << " far " 
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_far
+        << " clip " 
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_farclip[0]
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_farclip[1]
+        << std::endl 
+        << " scale "
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_scale
+        << " clip " 
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_scaleclip[0]
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_scaleclip[1]
+        << std::endl 
+        << " zoom "
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_zoom
+        << " clip " 
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_zoomclip[0]
+        << std::setw(10) << std::fixed << std::setprecision(3) << m_zoomclip[1]
+        << std::endl 
+        << " top "
+        << std::setw(10) << std::fixed << std::setprecision(3) << getTop()
+        << " bot "
+        << std::setw(10) << std::fixed << std::setprecision(3) << getBottom()
+        << " left "
+        << std::setw(10) << std::fixed << std::setprecision(3) << getLeft()
+        << " right "
+        << std::setw(10) << std::fixed << std::setprecision(3) << getRight()
+        << " tanYfov "
+        << std::setw(10) << std::fixed << std::setprecision(3) << getTanYfov()
+        << std::endl 
+        ;
+
+    std::string s = ss.str(); 
+    LOG(info) << std::endl << s ; 
+
+
     printf("%s  type %d \n", msg, m_type );
     printf(" width %5d height %5d  aspect %10.3f \n", m_size[0], m_size[1], getAspect() );
     printf(" near %10.3f  clip %10.3f %10.3f \n", m_near, m_nearclip[0], m_nearclip[1] );

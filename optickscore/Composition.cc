@@ -2408,5 +2408,13 @@ std::string Composition::Desc( const char* label, const glm::vec4& v ) // static
     return s ;
 }
 
+void Composition::setNear(float near)
+{
+    m_camera->setNear(near); 
+    LOG(info) 
+        << " intended " << near 
+        << " result " << m_camera->getNear()
+         ; 
+}
 
 
