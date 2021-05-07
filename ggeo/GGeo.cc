@@ -1386,7 +1386,7 @@ void GGeo::deferredCreateGParts()
         std::vector<glm::mat4> mismatch_placements ; 
 
 
-        GParts::SetDEBUG( i == gparts_debug ? 1 : 0 ); 
+        GParts::SetDEBUG( i == unsigned(gparts_debug) ? 1 : 0 ); 
         GParts* parts = GParts::Create( m_ok, pts, solids, &num_mismatch_pt, &mismatch_placements ) ; 
         parts->setRepeatIndex(i); 
 

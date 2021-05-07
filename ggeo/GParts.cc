@@ -2197,7 +2197,7 @@ void GParts::dumpTran(const char* msg) const
         << " numParts " << numParts
         ;
 
-    for(int t=0 ; t < numTran ; t++)
+    for(int t=0 ; t < int(numTran) ; t++)
     {
         const glm::mat4& tr = getTran(t, 0); 
         LOG(level) 
