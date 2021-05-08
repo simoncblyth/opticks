@@ -6,13 +6,15 @@
 #include <iostream>
 #include <cassert>
 
+#include <plog/Severity.h>
 #include "PLOG.hh"
 
 
-struct STTF ; 
 
 struct SIMG 
 {
+   static const plog::Severity LEVEL ; 
+
    int width ; 
    int height ; 
    int channels ; 
@@ -20,8 +22,6 @@ struct SIMG
    const char* loadpath ; 
    const char* loadext ; 
    const bool owned ; 
-   STTF*      ttf ; 
-
 
    SIMG(const char* path); 
    SIMG(int width_, int height_, int channels_, unsigned char* data_ ); 
@@ -88,6 +88,7 @@ struct SIMG
 
 
 
+const plog::Severity SIMG::LEVEL = PLOG::EnvLevel("SIMG", "DEBUG"); 
 
 
 
@@ -119,8 +120,7 @@ inline SIMG::SIMG(const char* path)
     data(stbi_load(path, &width, &height, &channels, 0)),
     loadpath(strdup(path)),
     loadext(Ext(loadpath)),
-    owned(true),
-    ttf(PLOG::instance ? PLOG::instance->ttf : nullptr)
+    owned(true)
 {
 }
 
@@ -132,8 +132,7 @@ inline SIMG::SIMG(int width_, int height_, int channels_, unsigned char* data_)
     data(data_),
     loadpath("image.ppm"),
     loadext(Ext(loadpath)),
-    owned(false),
-    ttf(PLOG::instance ? PLOG::instance->ttf : nullptr)
+    owned(false)
 {
 }
 
@@ -177,7 +176,7 @@ inline void SIMG::writePNG() const
     const char* pngpath = ChangeExt(loadpath, loadext, ".png" ); 
     if(strcmp(pngpath, loadpath)==0)
     {
-        std::cout << "SIMG::writePNG ERROR cannot overwrite loadpath " << loadpath << std::endl ; 
+        LOG(error) << "ERROR cannot overwrite loadpath " << loadpath ; 
     } 
     else
     {
@@ -197,7 +196,7 @@ inline void SIMG::writeJPG(int quality) const
 
     if(strcmp(jpgpath, loadpath)==0)
     {
-        std::cout << "SIMG::writeJPG ERROR cannot overwrite loadpath " << loadpath << std::endl ; 
+        LOG(error) << "ERROR cannot overwrite loadpath " << loadpath ; 
     } 
     else
     {
@@ -213,7 +212,7 @@ inline void SIMG::writePNG(const char* dir, const char* name) const
 }
 inline void SIMG::writePNG(const char* path) const 
 {
-    std::cout << "stbi_write_png " << path << std::endl ; 
+    LOG(LEVEL) << "stbi_write_png " << path ; 
     stbi_write_png(path, width, height, channels, data, width * channels);
 }
 
@@ -225,7 +224,7 @@ inline void SIMG::writeJPG(const char* dir, const char* name, int quality) const
 }
 inline void SIMG::writeJPG(const char* path, int quality) const 
 {
-    //std::cout << "stbi_write_jpg " << path << " quality " << quality << std::endl ; 
+    LOG(LEVEL) << "stbi_write_jpg " << path << " quality " << quality  ; 
     assert( quality > 0 && quality <= 100 ); 
     stbi_write_jpg(path, width, height, channels, data, quality );
 }
@@ -244,6 +243,11 @@ inline const char* SIMG::Ext(const char* path)
 
 void SIMG::annotate( const char* bottom_line, const char* top_line, int line_height )
 {
+    // Accessing ttf in the ctor rather than doing it here at point of use turns out to be flakey somehow ?
+    // Possibly related to this being implemented in the header ?
+
+    STTF* ttf = PLOG::instance ? PLOG::instance->ttf : nullptr ; 
+
     if( ttf == nullptr )
     {
         LOG(error) << "ttf NULL : cannot annotate  " ; 
