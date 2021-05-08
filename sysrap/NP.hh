@@ -35,6 +35,7 @@ struct NP
 
     template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
     template<typename T> static void Write(const char* dir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
+    template<typename T> static void Write(const char* path                 , const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
     static void WriteNames(const char* dir, const char* name, const std::vector<std::string>& names, unsigned num_names=0 ); 
 
 
@@ -43,11 +44,13 @@ struct NP
     template<typename T> void fill(T value); 
     template<typename T> void _fillIndexFlat(T offset=0); 
     template<typename T> void _dump(int i0=-1, int i1=-1) const ;   
+
+    template<typename T> void read(const T* data);
+
     template<typename T> std::string _present(T v) const ; 
 
     void fillIndexFlat(); 
     void dump(int i0=-1, int i1=-1) const ; 
-
 
     int load(const char* path);   
     int load(const char* dir, const char* name);   
@@ -511,7 +514,8 @@ inline NP* NP::Load(const char* dir, const char* name)
 inline std::string NP::form_path(const char* dir, const char* name)
 {
     std::stringstream ss ; 
-    ss << dir << "/" << name ; 
+    ss << dir ; 
+    if(name) ss << "/" << name ; 
     return ss.str(); 
 }
 
@@ -777,7 +781,21 @@ template<> inline       unsigned long long* NP::values<unsigned long long>()    
 template   void NP::_fillIndexFlat<unsigned long long>(unsigned long long) ;
 
 
+template <typename T> void NP::read(const T* data) 
+{
+    T* v = values<T>(); 
 
+    NPS sh(shape); 
+    for(int i=0 ; i < sh.ni_() ; i++ ) 
+    for(int j=0 ; j < sh.nj_() ; j++ )
+    for(int k=0 ; k < sh.nk_() ; k++ )
+    for(int l=0 ; l < sh.nl_() ; l++ )
+    for(int m=0 ; m < sh.nm_() ; m++ )
+    {  
+        int index = sh.idx(i,j,k,l,m); 
+        *(v + index) = *(data + index ) ; 
+    }   
+}
 
 template <typename T> void NP::Write(const char* dir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_ ) // static
 {
@@ -797,26 +815,31 @@ template <typename T> void NP::Write(const char* dir, const char* name, const T*
         ;   
 
     NP a(dtype.c_str(), ni_,nj_,nk_,nl_,nm_) ;    
-
-    T* v = a.values<T>(); 
-
-    int ni = std::max(1,ni_); 
-    int nj = std::max(1,nj_); 
-    int nk = std::max(1,nk_); 
-    int nl = std::max(1,nl_); 
-    int nm = std::max(1,nm_); 
-
-    for(int i=0 ; i < ni ; i++ ) 
-    for(int j=0 ; j < nj ; j++ )
-    for(int k=0 ; k < nk ; k++ )
-    for(int l=0 ; l < nl ; l++ )
-    for(int m=0 ; m < nm ; m++ )
-    {   
-        int index = i*nj*nk*nl*nm + j*nk*nl*nm + k*nl*nm + l*nm + m  ;
-        *(v + index) = *(data + index ) ; 
-    }   
+    a.read(data); 
     a.save(dir, name); 
 }
+
+template <typename T> void NP::Write(const char* path, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_ ) // static
+{
+    std::string dtype = descr_<T>::dtype() ; 
+    std::cout 
+        << "xNP::Write"
+        << " dtype " << dtype
+        << " ni  " << std::setw(7) << ni_
+        << " nj  " << nj_
+        << " nk  " << nk_
+        << " nl  " << nl_
+        << " nm  " << nm_
+        << " path " << path
+        << std::endl 
+        ;   
+
+    NP a(dtype.c_str(), ni_,nj_,nk_,nl_,nm_) ;    
+    a.read(data); 
+    a.save(path); 
+}
+
+
 
 
 template void NP::Write<float>(   const char*, const char*, const float*,        int, int, int, int, int ); 

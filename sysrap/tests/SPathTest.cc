@@ -145,6 +145,16 @@ $
 }
 
 
+void test_ChangeName()
+{
+    const char* srcpath = "/some/long/path/ending/with/pixels.jpg" ;  
+    const char* path = SPath::ChangeName(srcpath, "posi.npy" ); 
+    const char* xpath = "/some/long/path/ending/with/posi.npy" ;  
+    LOG(info) << path ; 
+    assert( 0 == strcmp( path, xpath ) ) ;
+}
+
+
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
@@ -156,6 +166,7 @@ int main(int argc , char** argv )
     test_Basename(); 
     test_UserTmpDir(); 
     test_Resolve(); 
+    test_ChangeName(); 
 
     return 0  ; 
 }

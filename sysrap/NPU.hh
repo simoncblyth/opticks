@@ -215,7 +215,7 @@ struct NPS
     static int size(const std::vector<int>& shape)
     {
         int sz = 1;
-        for(int i=0; i<shape.size(); ++i) sz *= shape[i] ;
+        for(int i=0; i<int(shape.size()); ++i) sz *= shape[i] ;
         return sz ;  
     }
 

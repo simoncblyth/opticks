@@ -60,6 +60,17 @@ const char* SPath::Dirname(const char* path)
     return strdup( dir.c_str() ) ; 
 }
 
+const char* SPath::ChangeName(const char* srcpath, const char* name)
+{
+    const char* dir = Dirname(srcpath); 
+    std::stringstream ss ; 
+    ss << dir << "/" << name ; 
+    free((void*)dir) ; 
+    std::string path = ss.str(); 
+    return strdup( path.c_str() );   
+}
+
+
 const char* SPath::Basename(const char* path)
 {
     std::string p = path ; 

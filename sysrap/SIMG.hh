@@ -6,6 +6,8 @@
 #include <iostream>
 #include <cassert>
 
+struct STTF ; 
+
 struct SIMG 
 {
    int width ; 
@@ -15,12 +17,17 @@ struct SIMG
    const char* loadpath ; 
    const char* loadext ; 
    const bool owned ; 
+   STTF*      ttf ; 
+
 
    SIMG(const char* path); 
    SIMG(int width_, int height_, int channels_, unsigned char* data_ ); 
+   void setData(unsigned char* data_) ; 
    virtual ~SIMG();  
 
    std::string desc() const ; 
+
+   void annotate( const char* bottom_line=nullptr, const char* top_line=nullptr, int line_height=24 ) ;
 
    void writePNG() const ; 
    void writeJPG(int quality) const ; 
@@ -73,6 +80,11 @@ struct SIMG
 
 
 
+#define STTF_IMPLEMENTATION 1 
+#include "STTF.hh"
+
+
+#include "PLOG.hh"
 
 
 
@@ -105,7 +117,8 @@ inline SIMG::SIMG(const char* path)
     data(stbi_load(path, &width, &height, &channels, 0)),
     loadpath(strdup(path)),
     loadext(Ext(loadpath)),
-    owned(true)
+    owned(true),
+    ttf(PLOG::instance->ttf)
 {
 }
 
@@ -120,6 +133,12 @@ inline SIMG::SIMG(int width_, int height_, int channels_, unsigned char* data_)
     owned(false)
 {
 }
+
+inline void SIMG::setData(unsigned char* data_)
+{
+    data = data_ ; 
+}
+
 
 inline SIMG::~SIMG()
 {
@@ -215,6 +234,28 @@ inline const char* SIMG::Ext(const char* path)
     std::string ext = s.substr(pos) ;  
     return strdup(ext.c_str()); 
 }
+
+
+
+
+
+void SIMG::annotate( const char* bottom_line, const char* top_line, int line_height )
+{
+    if(!ttf->valid || line_height > int(height)) 
+    {
+        LOG(error) << "ttf invalid OR line_height too large " ; 
+        return ; 
+    } 
+
+    if( top_line )
+        ttf->annotate( data, int(channels), int(width), int(height), line_height, top_line, false );  
+
+    if( bottom_line )
+        ttf->annotate( data, int(channels), int(width), int(height), line_height, bottom_line, true );  
+}
+
+
+
 
 
 
