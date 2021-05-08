@@ -130,7 +130,8 @@ inline SIMG::SIMG(int width_, int height_, int channels_, unsigned char* data_)
     data(data_),
     loadpath("image.ppm"),
     loadext(Ext(loadpath)),
-    owned(false)
+    owned(false),
+    ttf(PLOG::instance->ttf)
 {
 }
 
