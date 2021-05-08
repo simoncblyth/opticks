@@ -28,6 +28,32 @@ int main(int argc, char** argv)
     GParts* com = GParts::Create(&ok, pts, solids); 
     assert(com); 
 
+    unsigned num_idx = com->getNumIdx() ; 
+
+    LOG(info) 
+        << " ridx " << ridx 
+        << " num_idx " << num_idx 
+        ; 
+      
+
+    for(unsigned i=0 ; i < num_idx ; i++)
+    {
+        std::cout << std::setw(4) << i << " : " ; 
+        for(unsigned j=0 ; j < 4 ; j++)  std::cout << std::setw(6) << com->getUIntIdx(i,j) << " " ; 
+
+        unsigned nidx = com->getVolumeIndex(i); 
+        unsigned midx = com->getMeshIndex(i) ; 
+        const char* mname = mlib->getMeshName(midx); 
+
+        std::cout 
+            << " : "
+            << " nidx " << std::setw(6) << nidx 
+            << " midx " << std::setw(6) << midx 
+            << " mname " << ( mname ? mname : "-" ) 
+            << std::endl
+            ;
+    }
+
 
     return 0 ; 
 }

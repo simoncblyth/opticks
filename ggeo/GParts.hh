@@ -390,11 +390,13 @@ class GGEO_API GParts {
         //     for global pieces of geometry its useful to keep
         //      reference to the volume index at analytic level 
         static const unsigned VOL_IDX ; 
-        void setVolumeIndex(unsigned idx); 
+        static const unsigned MESH_IDX ; 
         unsigned getVolumeIndex(unsigned i) const ; 
-    private:
-        void     setUIntIdx( unsigned i, unsigned j, unsigned idx) ; 
+        unsigned getMeshIndex(unsigned i) const ; 
         unsigned getUIntIdx( unsigned i, unsigned j ) const ; 
+    private:
+        void     setVolumeIndex(unsigned idx); 
+        void     setUIntIdx( unsigned i, unsigned j, unsigned idx) ; 
 
     private:
         // almost no state other than buffers, just icing on top of them

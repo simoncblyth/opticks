@@ -2254,6 +2254,7 @@ the NCSG tree via GParts::Make
 **/
 
 const unsigned GParts::VOL_IDX = 0 ; 
+const unsigned GParts::MESH_IDX = 1 ; 
 
 void GParts::setVolumeIndex(unsigned idx)
 {
@@ -2270,10 +2271,18 @@ void GParts::setVolumeIndex(unsigned idx)
     assert( 1 == getNumIdx() ) ;  
     setUIntIdx( 0, VOL_IDX, idx ) ; 
 }
+
+
+
 unsigned GParts::getVolumeIndex(unsigned i) const
 {
     return getUIntIdx(i, VOL_IDX ) ;  
 }
+unsigned GParts::getMeshIndex(unsigned i) const
+{
+    return getUIntIdx(i, MESH_IDX ) ;  
+}
+
 
 void GParts::setUIntIdx(unsigned i, unsigned j, unsigned idx)
 {
@@ -2290,6 +2299,7 @@ unsigned GParts::getUIntIdx(unsigned i, unsigned j ) const
     unsigned idx = m_idx_buffer->getUInt( i, j, k, l); 
     return idx ; 
 }
+
 
 
 
