@@ -114,6 +114,19 @@ static const char* CSG_FLAGINVISIBLE_ = "flaginvisible" ;
 
 struct CSG
 {
+    static OpticksCSG_t BooleanOperator(char op) 
+    {   
+        OpticksCSG_t typecode = CSG_ZERO ;   
+        switch(op)
+        {   
+           case 'U':  typecode = CSG_UNION         ; break ; 
+           case 'I':  typecode = CSG_INTERSECTION  ; break ; 
+           case 'D':  typecode = CSG_DIFFERENCE    ; break ; 
+        }   
+        assert( typecode != CSG_ZERO );  
+        return typecode ;   
+    }   
+
     static OpticksCSG_t TypeCode(const char* nodename)
     {
         OpticksCSG_t tc = CSG_UNDEFINED ;
