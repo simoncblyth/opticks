@@ -6,6 +6,9 @@
 #include <iostream>
 #include <cassert>
 
+#include "PLOG.hh"
+
+
 struct STTF ; 
 
 struct SIMG 
@@ -84,7 +87,6 @@ struct SIMG
 #include "STTF.hh"
 
 
-#include "PLOG.hh"
 
 
 
@@ -118,7 +120,7 @@ inline SIMG::SIMG(const char* path)
     loadpath(strdup(path)),
     loadext(Ext(loadpath)),
     owned(true),
-    ttf(PLOG::instance->ttf)
+    ttf(PLOG::instance ? PLOG::instance->ttf : nullptr)
 {
 }
 
@@ -131,7 +133,7 @@ inline SIMG::SIMG(int width_, int height_, int channels_, unsigned char* data_)
     loadpath("image.ppm"),
     loadext(Ext(loadpath)),
     owned(false),
-    ttf(PLOG::instance->ttf)
+    ttf(PLOG::instance ? PLOG::instance->ttf : nullptr)
 {
 }
 
@@ -242,6 +244,12 @@ inline const char* SIMG::Ext(const char* path)
 
 void SIMG::annotate( const char* bottom_line, const char* top_line, int line_height )
 {
+    if( ttf == nullptr )
+    {
+        LOG(error) << "ttf NULL : cannot annotate  " ; 
+        return ; 
+ 
+    }
     if(!ttf->valid || line_height > int(height)) 
     {
         LOG(error) << "ttf invalid OR line_height too large " ; 
