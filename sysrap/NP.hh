@@ -36,7 +36,12 @@ struct NP
     template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
     template<typename T> static void Write(const char* dir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
     template<typename T> static void Write(const char* path                 , const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
+
     static void WriteNames(const char* dir, const char* name, const std::vector<std::string>& names, unsigned num_names=0 ); 
+    static void WriteNames(const char* path,                  const std::vector<std::string>& names, unsigned num_names=0 ); 
+
+    static void ReadNames(const char* dir, const char* name, std::vector<std::string>& names ) ;
+    static void ReadNames(const char* path,                  std::vector<std::string>& names ) ;
 
 
     template<typename T> T*       values() ; 
@@ -860,14 +865,32 @@ template void NP::Write<unsigned>(const char*, const char*, const std::vector<un
 
 inline void NP::WriteNames(const char* dir, const char* name, const std::vector<std::string>& names, unsigned num_names_ )
 {
-    unsigned num_names = num_names_ == 0 ? names.size() : num_names_ ; 
     std::stringstream ss ; 
     ss << dir << "/" << name ; 
     std::string path = ss.str() ; 
-    std::ofstream stream(path.c_str(), std::ios::out|std::ios::binary);
+    WriteNames(path.c_str(), names, num_names_ ); 
+}
+inline void NP::WriteNames(const char* path, const std::vector<std::string>& names, unsigned num_names_ )
+{
+    unsigned num_names = num_names_ == 0 ? names.size() : num_names_ ; 
     assert( num_names <= names.size() ); 
+    std::ofstream stream(path, std::ios::out|std::ios::binary);
     for( unsigned i=0 ; i < num_names ; i++) stream << names[i] << std::endl ; 
     stream.close(); 
+}
+
+inline void NP::ReadNames(const char* dir, const char* name, std::vector<std::string>& names )
+{
+    std::stringstream ss ; 
+    ss << dir << "/" << name ; 
+    std::string path = ss.str() ; 
+    ReadNames(path.c_str(), names); 
+}
+inline void NP::ReadNames(const char* path, std::vector<std::string>& names )
+{
+    std::ifstream ifs(path);
+    std::string line;
+    while(std::getline(ifs, line)) names.push_back(line) ; 
 }
 
 
