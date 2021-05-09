@@ -22,5 +22,7 @@ elif [ "$arg" == "cp" ]; then
 fi 
 
 
+echo $msg suggested commit message : update NP.hh from https://github.com/simoncblyth/np 
+
 exit 0 
 
