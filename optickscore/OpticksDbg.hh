@@ -77,6 +77,7 @@ class OKCORE_API OpticksDbg
 
        bool isEnabledMergedMesh(unsigned mm) const ;
        const char* getEnabledMergedMesh() const  ; 
+       unsigned long long getEMM() const ; 
     public:
        unsigned getInstanceModulo(unsigned mm) const ; 
     public:

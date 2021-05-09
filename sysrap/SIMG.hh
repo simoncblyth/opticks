@@ -212,7 +212,7 @@ inline void SIMG::writePNG(const char* dir, const char* name) const
 }
 inline void SIMG::writePNG(const char* path) const 
 {
-    LOG(LEVEL) << "stbi_write_png " << path ; 
+    //LOG(LEVEL) << "stbi_write_png " << path ; 
     stbi_write_png(path, width, height, channels, data, width * channels);
 }
 
@@ -224,7 +224,7 @@ inline void SIMG::writeJPG(const char* dir, const char* name, int quality) const
 }
 inline void SIMG::writeJPG(const char* path, int quality) const 
 {
-    LOG(LEVEL) << "stbi_write_jpg " << path << " quality " << quality  ; 
+    //LOG(LEVEL) << "stbi_write_jpg " << path << " quality " << quality  ; 
     assert( quality > 0 && quality <= 100 ); 
     stbi_write_jpg(path, width, height, channels, data, quality );
 }

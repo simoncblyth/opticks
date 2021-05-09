@@ -337,6 +337,13 @@ bool OpticksDbg::isEnabledMergedMesh(unsigned mm) const
     //return IsListed(mm, m_enabledmergedmesh, true ); 
 }
 
+unsigned long long OpticksDbg::getEMM() const 
+{
+    return m_enabledmergedmesh ; 
+}
+
+
+
 const char* OpticksDbg::getEnabledMergedMesh() const 
 {
    const std::string& enabledmm = m_cfg->getEnabledMergedMesh() ;

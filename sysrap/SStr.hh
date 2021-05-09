@@ -33,6 +33,9 @@ Static string utilities.
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <array>
+#include <glm/fwd.hpp>
+
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -76,6 +79,33 @@ class SYSRAP_API SStr {
       static const char* ReplaceEnd( const char* s, const char* q, const char* r  ); 
 
       static void Split( const char* str, char delim,   std::vector<std::string>& elem ) ;
+
+      static void ParseGridSpec(  std::array<int,9>& grid, const char* spec); 
+      static void DumpGrid(      const std::array<int,9>& grid ) ;
+
+
+      static void GetEVec(glm::vec3& v, const char* key, const char* fallback );
+      static void GetEVec(glm::vec4& v, const char* key, const char* fallback );
+    
+      template <typename T>
+      static void GetEVector(std::vector<T>& vec, const char* key, const char* fallback );
+
+      template <typename T>
+      static std::string Present(std::vector<T>& vec);
+
+
+      static const char* PTXPath( const char* install_prefix, const char* cmake_target, const char* cu_stem, const char* cu_ext=".cu" );
+
+      static void GridMinMax( const std::array<int,9>& grid, int& mn, int& mx ) ;
+      static void GridMinMax( const std::array<int,9>& grid, glm::ivec3& mn, glm::ivec3& mx) ;
+
+      static unsigned Encode4(const char* s); 
+
+      template <typename T>
+      static T ato_( const char* a );
+ 
+      template <typename T>
+      static T GetEValue(const char* key, T fallback);  
 
 };
 

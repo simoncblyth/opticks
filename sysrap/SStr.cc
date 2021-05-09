@@ -23,6 +23,10 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+
+#include <glm/glm.hpp>
+
+
 #include "SStr.hh"
 #include "SPath.hh"
 #include "PLOG.hh"
@@ -345,4 +349,178 @@ template const char* SStr::Concat_<unsigned>(           const char* , unsigned  
 template const char* SStr::Concat_<unsigned long long>( const char* , unsigned long long , const char*  );
 template const char* SStr::Concat_<int>(                const char* , int                , const char*  );
 template const char* SStr::Concat_<long>(               const char* , long               , const char*  );
+
+
+
+
+void SStr::ParseGridSpec(  std::array<int,9>& grid, const char* spec)  // static 
+{
+    int idx = 0 ; 
+    std::stringstream ss(spec); 
+    std::string s;
+    while (std::getline(ss, s, ',')) 
+    {   
+        std::stringstream tt(s); 
+        std::string t;
+        while (std::getline(tt, t, ':')) grid[idx++] = std::atoi(t.c_str()) ; 
+    }   
+
+    std::stringstream uu ; 
+    uu << spec << " : " ;
+    for(int i=0 ; i < 9 ; i++) uu << grid[i] << " " ; 
+    uu << std::endl ; 
+
+    std::string u = ss.str(); 
+    LOG(info) << u ;  
+}
+
+
+void SStr::DumpGrid(const std::array<int,9>& cl)
+{   
+    int i0 = cl[0] ;
+    int i1 = cl[1] ;
+    int is = cl[2] ;
+    int j0 = cl[3] ;
+    int j1 = cl[4] ;
+    int js = cl[5] ;
+    int k0 = cl[6] ;
+    int k1 = cl[7] ;
+    int ks = cl[8] ; 
+
+    unsigned num = 0 ; 
+    for(int i=i0 ; i < i1 ; i+=is ) 
+    for(int j=j0 ; j < j1 ; j+=js ) 
+    for(int k=k0 ; k < k1 ; k+=ks ) 
+    {
+        std::cout << std::setw(2) << num << " (i,j,k) " << "(" << i << "," << j << "," << k << ") " << std::endl ; 
+        num += 1 ; 
+    }
+}
+
+
+
+
+
+
+template <typename T>
+void SStr::GetEVector(std::vector<T>& vec, const char* key, const char* fallback )
+{
+    const char* sval = getenv(key); 
+    std::stringstream ss(sval ? sval : fallback); 
+    std::string s ; 
+    while(getline(ss, s, ',')) vec.push_back(ato_<T>(s.c_str()));   
+}  
+
+template void  SStr::GetEVector<unsigned>(std::vector<unsigned>& vec, const char* key, const char* fallback  );
+template void  SStr::GetEVector<float>(std::vector<float>& vec, const char* key, const char* fallback  );
+
+void SStr::GetEVec(glm::vec3& v, const char* key, const char* fallback )
+{   
+    std::vector<float> vec ; 
+    SStr::GetEVector<float>(vec, key, fallback);
+    std::cout << key << SStr::Present(vec) << std::endl ; 
+    assert( vec.size() == 3 ); 
+    for(int i=0 ; i < 3 ; i++) v[i] = vec[i] ;
+}   
+    
+void SStr::GetEVec(glm::vec4& v, const char* key, const char* fallback )
+{   
+    std::vector<float> vec ;
+    SStr::GetEVector<float>(vec, key, fallback);
+    std::cout << key << SStr::Present(vec) << std::endl ;
+    assert( vec.size() == 4 );
+    for(int i=0 ; i < 4 ; i++) v[i] = vec[i] ; 
+}
+
+
+
+
+template <typename T>
+std::string SStr::Present(std::vector<T>& vec)
+{   
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < vec.size() ; i++) ss << vec[i] << " " ;
+    return ss.str();
+}
+
+
+template std::string SStr::Present<float>(std::vector<float>& );
+template std::string SStr::Present<unsigned>(std::vector<unsigned>& );
+template std::string SStr::Present<int>(std::vector<int>& );
+
+
+
+template <typename T>
+T SStr::GetEValue(const char* key, T fallback) // static 
+{   
+    const char* sval = getenv(key); 
+    T val = sval ? ato_<T>(sval) : fallback ;
+    return val ;
+}
+
+
+
+unsigned SStr::Encode4(const char* s) // static 
+{
+    unsigned u4 = 0u ; 
+    for(unsigned i=0 ; i < std::min(4ul, strlen(s)) ; i++ )
+    {
+        unsigned u = unsigned(s[i]) ;
+        u4 |= ( u << (i*8) ) ;
+    }
+    return u4 ;
+}
+
+
+template float       SStr::GetEValue<float>(const char* key, float fallback);
+template int         SStr::GetEValue<int>(const char* key,   int  fallback);
+template unsigned    SStr::GetEValue<unsigned>(const char* key,   unsigned  fallback);
+template std::string SStr::GetEValue<std::string>(const char* key,  std::string  fallback);
+template bool        SStr::GetEValue<bool>(const char* key,  bool  fallback);
+
+
+const char* SStr::PTXPath( const char* install_prefix, const char* cmake_target, const char* cu_stem, const char* cu_ext ) // static
+{   
+    std::stringstream ss ;
+    ss << install_prefix
+       << "/ptx/"
+       << cmake_target
+       << "_generated_"
+       << cu_stem
+       << cu_ext
+       << ".ptx"
+       ;
+    std::string path = ss.str();
+    return strdup(path.c_str());
+}
+
+
+template <typename T>
+T SStr::ato_( const char* a )   // static 
+{   
+    std::string s(a);
+    std::istringstream iss(s);
+    T v ;  
+    iss >> v ;
+    return v ;
+}
+
+void SStr::GridMinMax(const std::array<int,9>& grid, glm::ivec3&mn, glm::ivec3& mx)  // static 
+{   
+    mn.x = grid[0] ; mx.x = grid[1] ;
+    mn.y = grid[3] ; mx.y = grid[4] ;
+    mn.z = grid[6] ; mx.z = grid[7] ;
+}
+
+void SStr::GridMinMax(const std::array<int,9>& grid, int&mn, int& mx)  // static 
+{   
+    for(int a=0 ; a < 3 ; a++)
+    for(int i=grid[a*3+0] ; i < grid[a*3+1] ; i+=grid[a*3+2] )
+    {   
+        if( i > mx ) mx = i ;
+        if( i < mn ) mn = i ;
+    }
+    std::cout << "SStr::GridMinMax " << mn << " " << mx << std::endl ;
+}
+
 

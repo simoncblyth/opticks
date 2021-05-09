@@ -773,8 +773,10 @@ unsigned Opticks::getNumDeferredCSGSkipLV() const
 }
 
 
-
-
+unsigned long long Opticks::getEMM() const 
+{
+   return m_dbg->getEMM();  
+}
 bool Opticks::isEnabledMergedMesh(unsigned mm) const   // --enabledmergedmesh,e
 {
    return m_dbg->isEnabledMergedMesh(mm);
