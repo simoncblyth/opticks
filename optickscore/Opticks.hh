@@ -573,6 +573,8 @@ class OKCORE_API Opticks {
        const char*          getMaterial() const ; // --material
        bool                 isLarge() const ; // --large 
        bool                 isMedium() const ; // --medium 
+   public:
+       const std::vector<std::string>&  getArgList() const ; // --arglist
    private:
        bool                 existsDirectGenstepPath(unsigned tagoffset) const ;
        bool                 existsDebugGenstepPath(unsigned tagoffset) const ;

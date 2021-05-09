@@ -855,6 +855,15 @@ const std::vector<unsigned>&  Opticks::getGenIndex()
     return m_dbg->getGenIndex();
 }
 
+const std::vector<std::string>& Opticks::getArgList() const 
+{
+    return m_dbg->getArgList() ;  // --arglist
+}
+
+
+
+
+
 
 
 
@@ -2305,6 +2314,8 @@ const char* Opticks::getMaterial() const
     const std::string& material = m_cfg->getMaterial() ;  // --material
     return material.empty() ? NULL : material.c_str() ;
 }
+
+
 bool Opticks::isLarge() const 
 {
     return m_cfg->hasOpt("large") ;  // --large

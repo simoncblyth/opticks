@@ -180,7 +180,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_dbggsdir("$TMP/dbggs"),
     m_pvname(""),
     m_boundary(""),
-    m_material("Water")
+    m_material("Water"),
+    m_arglist("")
 {   
    init();  
    m_listener->setCfg(this); 
@@ -631,6 +632,10 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("material", boost::program_options::value<std::string>(&m_material), "name of material used for some purpose" );   
+
+   m_desc.add_options()
+       ("arglist", boost::program_options::value<std::string>(&m_arglist), "path to arglist used for some purpose" );   
+
 
    m_desc.add_options()
        ("large",  "large geometry flag switching off some expensive visualizations, see oglrap/OpticksViz ") ;
@@ -2316,6 +2321,12 @@ const std::string& OpticksCfg<Listener>::getMaterial() const
 {
     return m_material ;  
 }
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getArgList() const 
+{
+    return m_arglist ;  
+}
+
 
 
 

@@ -156,4 +156,14 @@ const char* SPath::Resolve(const char* dir, const char* reldir, const char* name
 }
 
 
+bool SPath::LooksLikePath(const char* path)
+{
+    if(!path) return false ;
+    if(strlen(path) < 2) return false ; 
+    return path[0] == '/' || path[0] == '$' ; 
+}
+
+
+
+
 

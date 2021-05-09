@@ -25,6 +25,7 @@
 #include "SBit.hh"
 #include "SStr.hh"
 #include "SGeo.hh"
+#include "SPath.hh"
 
 #include "BFile.hh"
 #include "BStr.hh"
@@ -171,6 +172,11 @@ void OpticksDbg::postconfigure()
        m_mask_buffer = NPY<unsigned>::make_from_vec(m_mask); 
    } 
 
+
+   const std::string& arglist  = m_cfg->getArgList();    // --arglist 
+   postconfigure( arglist, m_arglist ); 
+
+
    LOG(debug) << "OpticksDbg::postconfigure" << description() ; 
 }
 
@@ -215,6 +221,22 @@ void OpticksDbg::postgeometry()
     LOG(LEVEL) << "]" ; 
 }
 
+
+void OpticksDbg::postconfigure(const std::string&  path, std::vector<std::string>& lines )
+{
+    if(path.empty()) return ; 
+
+    if(SPath::LooksLikePath(path.c_str()))
+    {
+        std::ifstream ifs(path.c_str());
+        std::string line;
+        while(std::getline(ifs, line)) lines.push_back(line) ; 
+    }
+    else
+    {
+        lines.push_back(path.c_str());
+    }
+}
 
 void OpticksDbg::postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs )
 {
@@ -352,6 +374,7 @@ const std::vector<unsigned>&  OpticksDbg::getGenIndex()
 {
    return m_gen_photon ;
 }
-
-
-
+const std::vector<std::string>& OpticksDbg::getArgList() const // --arglist
+{
+   return m_arglist ; 
+}

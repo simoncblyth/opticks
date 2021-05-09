@@ -40,6 +40,9 @@ class SYSRAP_API SPath {
       static const char* Resolve(const char* path); 
       static const char* Resolve(const char* dir, const char* name);
       static const char* Resolve(const char* dir, const char* reldir, const char* name);
+
+      static bool LooksLikePath(const char* path);
+
 };
 
 

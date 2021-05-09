@@ -215,6 +215,7 @@ public:
      const std::string& getPVName() const ;
      const std::string& getBoundary() const ;
      const std::string& getMaterial() const ;
+     const std::string& getArgList() const ;
 
 private:
      void init();
@@ -370,6 +371,7 @@ private:
      std::string  m_pvname ; 
      std::string  m_boundary ; 
      std::string  m_material ; 
+     std::string  m_arglist ; 
 
 };
 

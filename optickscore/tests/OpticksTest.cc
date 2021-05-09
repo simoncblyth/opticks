@@ -238,6 +238,15 @@ void test_getFlightInputDir(const Opticks* ok)
 
 
 
+void test_getArgList(const Opticks* ok)
+{
+    const std::vector<std::string>& arglist = ok->getArgList();   // --arglist /path/to/arglist.txt
+
+    LOG(info) << " arglist.size " << arglist.size(); 
+    for(unsigned i=0 ; i < arglist.size() ; i++) LOG(info) << "[" << arglist[i] << "]" ; 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc,argv);
@@ -273,7 +282,9 @@ int main(int argc, char** argv)
 
     //test_OriginGDMLPath(); 
     //test_isEnabledMergedMesh(&ok); 
-    test_getFlightInputDir(&ok); 
+    //test_getFlightInputDir(&ok); 
+
+    test_getArgList(&ok); 
 
     return 0 ;
 }

@@ -84,9 +84,11 @@ class OKCORE_API OpticksDbg
        const std::vector<unsigned>&  getDbgIndex();
        const std::vector<unsigned>&  getOtherIndex();
        const std::vector<unsigned>&  getGenIndex();
+       const std::vector<std::string>& getArgList() const ; // --arglist
        std::string description();
    private:
        void postconfigure();
+       void postconfigure(const std::string& path, std::vector<std::string>& lines ); 
        void postconfigure(const std::string& spec, unsigned long long& bitfield);
        void postconfigure(const std::string& spec, std::vector<unsigned>& ls);
        void postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs ) ;
@@ -107,9 +109,10 @@ class OKCORE_API OpticksDbg
        std::vector<unsigned> m_deferredcsgskiplv ; 
        std::vector<unsigned> m_skipsolididx ;        // from --skipsolidname 
        unsigned long long    m_enabledmergedmesh ;   // limited to 64 
-
        std::vector<std::pair<int,int> > m_instancemodulo ;   // (1,5),(2,10)  modulo scaledown for each mergedmesh index 
 
+   private:
+       std::vector<std::string> m_arglist ;     // read from --arglist path  
 };
 
 #include "OKCORE_HEAD.hh"
