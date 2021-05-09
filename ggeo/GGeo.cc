@@ -909,10 +909,25 @@ const char* GGeo::getMeshName(unsigned midx) const
 {
     return m_meshlib->getMeshName(midx); 
 }
+void GGeo::getMeshNames(std::vector<std::string>& meshNames) const 
+{
+     m_meshlib->getMeshNames(meshNames); 
+}
+
+
 int GGeo::getMeshIndexWithName(const char* name, bool startswith) const 
 {
     return m_meshlib->getMeshIndexWithName(name, startswith); 
 }
+
+std::string GGeo::descMesh() const 
+{
+    return m_meshlib->desc() ; 
+}
+
+
+
+
 
 
 const GMesh* GGeo::getMesh(unsigned aindex) const 

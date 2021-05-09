@@ -295,7 +295,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         GMeshLib*          getMeshLib();  // unplaced meshes
         unsigned           getNumMeshes() const ;
         const char*        getMeshName(unsigned midx) const ;
+        void               getMeshNames(std::vector<std::string>& meshNames) const ;
         int                getMeshIndexWithName(const char* name, bool startswith=true) const ;
+        std::string        descMesh() const ;
+
 
 #ifdef OLD_INDEX
         GItemIndex*        getMeshIndex(); 

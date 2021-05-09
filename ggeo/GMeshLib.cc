@@ -219,6 +219,11 @@ int GMeshLib::findSolidIndex( const NCSG* solid ) const
 }
 
 
+
+
+
+
+
 const char* GMeshLib::getMeshName(unsigned aindex) const 
 {
     return m_meshnames->getKey(aindex); 
@@ -649,6 +654,17 @@ void GMeshLib::saveMeshUsage(const char* idpath) const
 }
 
 
+/**
+GMeshLib::operator
+--------------------
+
+When the argument string can be interpreted as an integer 
+use it find and return the corresponding meshName otherwise
+assume the argument is the meshName and use it to lookup 
+the corresponding meshIndex. 
+
+**/
+
 std::string GMeshLib::operator()( const char* arg ) const 
 {
     char* end ;   
@@ -683,6 +699,38 @@ std::string GMeshLib::operator()( const char* arg ) const
     return s ; 
 }
 
+
+
+
+std::string GMeshLib::desc() const 
+{
+    unsigned numMeshes = getNumMeshes(); 
+    std::stringstream ss ; 
+    for(unsigned midx=0 ; midx < numMeshes ; midx++)
+    {   
+        const char* mname = getMeshName(midx); 
+        ss  
+            << std::setw(4) << midx 
+            << ":" 
+            << "[" << mname << "]" 
+            << std::endl 
+            ;   
+    }   
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+void GMeshLib::getMeshNames(std::vector<std::string>& meshNames) const 
+{
+    meshNames.clear(); 
+    unsigned numMeshes = getNumMeshes(); 
+    for(unsigned midx=0 ; midx < numMeshes ; midx++)
+    {   
+        const char* mname = getMeshName(midx); 
+        meshNames.push_back(mname);   
+    }   
+}
 
 
 
