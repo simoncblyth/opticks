@@ -2814,8 +2814,6 @@ void Opticks::postconfigure()
 
     postconfigurePosition(); 
 
-    postconfigureState(); 
-
     initResource();  
 
     updateCacheMeta(); 
@@ -2826,6 +2824,8 @@ void Opticks::postconfigure()
     }
 
     defineEventSpec();  
+
+    postconfigureState();   // must be after defineEventSpec
 
     postconfigureGeometryHandling();
 
