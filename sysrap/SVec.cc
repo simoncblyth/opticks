@@ -22,6 +22,7 @@
 #include <iostream>
 #include <iomanip>
 #include <iterator>
+#include <algorithm>
 #include <numeric>
 
 #include "SVec.hh"
