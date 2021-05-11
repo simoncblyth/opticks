@@ -17,6 +17,9 @@
  * limitations under the License.
  */
 
+
+
+#include "G4Version.hh"
 #include "X4GDMLWriteStructure.hh"
 #include "X4GDMLParser.hh"
 #include "BFile.hh"
@@ -59,6 +62,15 @@ void X4GDMLWriteStructure::init(bool refs)
 
    SchemaLocation = "SchemaLocation";
    addPointerToName = refs ;
+
+
+#if ( G4VERSION_NUMBER >= 1074 ) 
+   XMLCh* tempStr;     
+   // need for this is Geant4 version dependent, due to changes in the long inheritance chain presumably 
+#else
+   // this tempStr leads to a used uninitialized error in older Geant4 
+   // because it is shadowing the tempStr from the G4GDMLWrite.hh base class
+#endif
 
    xercesc::XMLString::transcode("LS", tempStr, 9999);
    xercesc::DOMImplementationRegistry::getDOMImplementation(tempStr);

@@ -25,10 +25,15 @@
 #include "G4EmPenelopePhysics.hh"
 #include "G4Version.hh"
 
-#if G4VERSION_NUMBER >= 1070
+#if ( G4VERSION_NUMBER >= 1070 )
 #else
 #include "G4OpticalProcessIndex.hh"
 #endif
+
+#if ( G4VERSION_NUMBER >= 1074 )
+#include "G4OpticalParameters.hh"
+#endif
+
 
 #include "G4SystemOfUnits.hh"
 
@@ -51,16 +56,30 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList()
 
   G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
   RegisterPhysics( opticalPhysics );
-
   //opticalPhysics->SetWLSTimeProfile("delta");
   //opticalPhysics->SetScintillationYieldFactor(1.0);
   //opticalPhysics->SetScintillationExcitationRatio(0.0);
 
-  opticalPhysics->SetMaxNumPhotonsPerStep(100);
-  opticalPhysics->SetMaxBetaChangePerStep(10.0);
 
-  opticalPhysics->SetTrackSecondariesFirst(kCerenkov,true);
-  opticalPhysics->SetTrackSecondariesFirst(kScintillation,true);
+#if ( G4VERSION_NUMBER >= 1074 )
+
+ G4OpticalParameters* opParams = G4OpticalParameters::Instance();
+ opParams->SetScintTrackSecondariesFirst(true);
+ opParams->SetCerenkovTrackSecondariesFirst(true);
+ opParams->SetCerenkovMaxPhotonsPerStep(100);
+ opParams->SetCerenkovMaxBetaChange(10.0);
+
+#else
+
+ opticalPhysics->SetMaxNumPhotonsPerStep(100);
+ opticalPhysics->SetMaxBetaChangePerStep(10.0);
+
+ opticalPhysics->SetTrackSecondariesFirst(kCerenkov,true);
+ opticalPhysics->SetTrackSecondariesFirst(kScintillation,true);
+ 
+#endif 
+
+
 
 }
 

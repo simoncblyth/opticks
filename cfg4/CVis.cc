@@ -18,6 +18,7 @@
  */
 
 
+#include "G4Version.hh"
 #include "G4Colour.hh"
 #include "G4VisAttributes.hh"
 #include "CVis.hh"
@@ -25,7 +26,11 @@
 
 G4VisAttributes* CVis::MakeInvisible()
 {
+#if ( G4VERSION_NUMBER >= 1074 )
+    return new G4VisAttributes(false) ;  // hjw
+#else
     return new G4VisAttributes(G4VisAttributes::Invisible) ;
+#endif
 }
 
 G4VisAttributes* CVis::MakeAtt(float r, float g, float b, bool wire)
