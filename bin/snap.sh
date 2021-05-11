@@ -1,8 +1,22 @@
 #!/bin/bash -l
 
+usage(){ cat << EOU
+
+Usage::
+
+   snap.sh --rtx 1 --cvd 1 
+
+See also snapscan.sh for varying -e option::
+
+   snapscan.sh --rtx 1 --cvd 1 
+
+EOU
+}
+
+
 pvn=${PVN:-lLowerChimney_phys}
 eye=${EYE:--1,-1,-1}
-emm="${EMM:-~8,}"
+emm="${EMM:-t8,}"
 
 #config=${SNAP_CFG:-steps=10,ez0=-1,ez1=5}
 #size=${SNAP_SIZE:-2560,1440,1}
@@ -15,7 +29,7 @@ outdir=$outbase/$reldir
 
 
 snap-cmd(){ cat << EOC
-$bin --targetpvn $pvn --eye $eye -e "$emm" --snapoutdir $outdir --nameprefix $nameprefix $*
+$bin --targetpvn $pvn --eye $eye -e $emm --snapoutdir $outdir --nameprefix $nameprefix $*
 EOC
 }
 
@@ -33,17 +47,31 @@ snap-render()
     printf "\n\n\nRC $rc\n\n\n" >> $log 
 }
 
+snap-grab-cmd(){ 
+    local tmpdir=$1
+    [ ! -d "$tmpdir" ] && echo $msg no tmpdir && return 1 
+    local from=P:${tmpdir}/
+    local to=${tmpdir}/
+    cat << EOC
+rsync -rtz --progress $from $to
+EOC
+#rsync -zarv --progress --include="*/" --include="*.jpg" --include="*.mp4" --exclude="*" "$from" "$to" "
+}
+
+
 snap-grab()
 {
-    [ -z "$outbase" ] && echo $msg outbase $outbase not defined && return 1 
-    local cmd="rsync -rtz --progress P:$outbase/ $outbase/"
+    mkdir -p $outbase
+    [ $? -ne 0 ] && echo $msg failed to create outbase $outbase && return 1 
+    local cmd=$(snap-grab-cmd $outbase)
     echo $cmd
     eval $cmd
     open $outbase
     return 0 
 }
 
-if [ "$(uname)" == "Darwin" ]; then
+
+if [ "$(uname)" == "Darwin" -o "$1" == "grab" ]; then
     snap-grab
 else
     snap-render $*

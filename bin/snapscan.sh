@@ -13,18 +13,17 @@ EOU
 
 scan-ee()
 {
-    #echo "~0"
-    #for e in $(seq 0 $nmm) ; do echo  "$e," ; done
-    #for e in $(seq 0 $nmm) ; do echo "~$e," ; done
-    #for e in $(seq 0 $nmm) ; do echo "~8,$e" ; done
-
+    echo "t0"
+    for e in $(seq 0 $nmm) ; do echo  "$e," ; done
+    for e in $(seq 0 $nmm) ; do echo "t$e," ; done
+    for e in $(seq 0 $nmm) ; do echo "t8,$e" ; done
     echo "1,2,3,4"   # ONLY PMTs
 }
 
 for e in $(scan-ee) 
 do 
     echo $e 
-    EMM="$e" snap.sh $*
+    EMM=$e snap.sh $*
 done 
 
 
