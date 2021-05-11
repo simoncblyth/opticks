@@ -909,7 +909,7 @@ if __name__ == '__main__':
         pass
     else:
         for idx in args.idx:
-            if idx.isnumeric():    
+            if str(idx).isnumeric():    
                 gg(int(idx))
             else:
                 gg(*triplet_(idx))

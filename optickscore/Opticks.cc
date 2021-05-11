@@ -1748,10 +1748,7 @@ const glm::ivec4& Opticks::getSettings() const
 }
 
 
-const glm::uvec4& Opticks::getSize()
-{
-    return m_size ; 
-}
+
 const glm::uvec4& Opticks::getPosition()
 {
     return m_position ; 
@@ -2911,6 +2908,21 @@ void Opticks::postconfigureSize()
 #endif
     }
 }
+
+const glm::uvec4& Opticks::getSize() const 
+{
+    return m_size ; 
+}
+unsigned Opticks::getWidth() const 
+{
+    return m_size.x ; 
+}
+unsigned Opticks::getHeight() const 
+{
+    return m_size.y ; 
+}
+
+
 
 void Opticks::postconfigurePosition()
 {

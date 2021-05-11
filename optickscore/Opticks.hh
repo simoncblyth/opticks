@@ -624,7 +624,10 @@ class OKCORE_API Opticks {
        float getAnimTimeMax() const ; // --animtimemax
    public:
        // screen frame 
-       const glm::uvec4& getSize();
+       const glm::uvec4& getSize() const ;
+       unsigned          getWidth() const ;
+       unsigned          getHeight() const ;
+   public:
        const glm::uvec4& getPosition();
    public:
        void setSpaceDomain(float x, float y, float z, float w);  // triggers postgeometry setting time and wavelength domains too

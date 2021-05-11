@@ -1,13 +1,18 @@
 snapscan-varying-enabledmergedmesh-option
 ============================================
 
+
+
+Classical GGeo OptiX 6 Geometry
+------------------------------------
+
 To identify performance problems with geometry it is useful to 
 make render snapshots that vary the included geometry. See:
 
 * https://simoncblyth.bitbucket.io/env/presentation/juno_opticks_20210426.html
 
-This page describes how the renders and tables were created using 
-Opticks executables and scripts.
+This section describes how the renders and tables in the above 
+presentation were created using Opticks executables and scripts.
 
 On GPU Workstation::
  
@@ -106,4 +111,37 @@ To view the renders use "--jpg" option::
     ...
     epsilon:lLowerChimney_phys blyth$ open $(snap.py --jpg)   
     epsilon:lLowerChimney_phys blyth$ 
+
+
+
+
+OptiX 7 CSGOptiX Experimental Geometry
+----------------------------------------
+
+Currently the CSGFoundry geometry needs the --gparts-transform-offset option which
+messes up the classical geometry.  But that is only needed during the conversion::
+
+    cd ~/CSG_GGeo
+    ./run.sh --gparts_transform_offset    
+     ## CSGFoundry geometry is written to tmpdir
+
+On GPU workstation::
+
+    cd ~/CSGOptiX
+
+    ./build.sh     # OptiX 6  
+    ./build7.sh    # OptiX 7
+
+    ./cxr.sh       # CSGOptiXRender at default inputs for EMM MOI EYE LOOK UP
+                   # creating /tmp/blyth/opticks/CSGOptiX/CSGOptiXRender/70000/render/CSG_GGeo/1/cxr_t8,_sStrut.jpg
+
+    MOI=ALL ./cxr.sh   # creates renders for each line of the arglist from a single geometry load 
+
+
+On laptop::
+
+    cd ~/CSGOptiX
+    ./grab.sh 
+      
+
 
