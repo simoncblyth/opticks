@@ -2763,144 +2763,6 @@ void Opticks::configure()
 
 
 
-void Opticks::postconfigure()
-{
-    LOG(LEVEL) << "[" ; 
-
-    checkOptionValidity();
-
-    postconfigureCVD(); 
-
-    initResource();  
-
-    updateCacheMeta(); 
-
-    if(isDirect())
-    {
-        loadOriginCacheMeta();  // sets m_origin_gdmlpath
-    }
-
-
-    defineEventSpec();  
-
-
-    const std::string& ssize = m_cfg->getSize();
-
-    if(!ssize.empty()) 
-    {
-        m_size = guvec4(ssize);
-    }
-    else if(m_cfg->hasOpt("fullscreen"))
-    {
-#ifdef __APPLE__
-        //m_size = glm::uvec4(2880,1800,2,0) ;
-        m_size = glm::uvec4(1440,900,2,0) ;
-#else
-        m_size = glm::uvec4(2560,1440,1,0) ;
-#endif
-    } 
-    else
-    {
-#ifdef __APPLE__
-        m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
-#else
-        m_size = glm::uvec4(1920,1080,1,0) ;
-#endif
-    }
-
-
-    const std::string& sposition = m_cfg->getPosition();
-    if(!sposition.empty()) 
-    {
-        m_position = guvec4(sposition);
-    }
-    else
-    {
-#ifdef __APPLE__
-        m_position = glm::uvec4(200,200,0,0) ;  // top left
-#else
-        m_position = glm::uvec4(100,100,0,0) ;  // top left
-#endif
-    }
-
-
-
-    const char* type = "State" ; 
-    const std::string& stag = m_cfg->getStateTag();
-    const char* subtype = stag.empty() ? NULL : stag.c_str() ; 
-
-    std::string prefdir = getPreferenceDir(type, subtype);  
-
-    LOG(LEVEL) 
-          << " m_size " << gformat(m_size)
-          << " m_position " << gformat(m_position)
-          << " prefdir " << prefdir
-          ;
- 
-
-    // Below "state" is a placeholder name of the current state that never gets persisted, 
-    // names like 001 002 are used for persisted states : ie the .ini files within the prefdir
-
-    m_state = new NState(prefdir.c_str(), "state")  ;
-
-    m_photons_per_g4event = m_cfg->getNumPhotonsPerG4Event();
-    m_dbg->postconfigure();
-
-
-    m_verbosity = m_cfg->getVerbosity(); 
-
-    //configureCheckGeometryFiles();
-
-    configureGeometryHandling();
-
-
-    if(hasOpt("dumpenv")) 
-         BEnv::dumpEnvironment("Opticks::configure --dumpenv", "G4,OPTICKS,DAE,IDPATH") ; 
-
-
-    LOG(debug) << "Opticks::configure DONE " 
-              << " verbosity " << m_verbosity 
-              ;
-
-    LOG(LEVEL) << "]" ; 
-}
-
-
-
-
-
-
-
-
-/**
-Opticks::postconfigureCVD
----------------------------
-
-When "--cvd" option is on the commandline this internally sets 
-the CUDA_VISIBLE_DEVICES envvar to the string argument provided.
-For example::
- 
-   --cvd 0 
-   --cvd 1
-   --cvd 0,1,2,3
-
-In interop mode on multi-GPU workstations it is often necessary 
-to set the --cvd to match the GPU that is driving the monitor
-to avoid failures. To automate that the envvar OPTICKS_DEFAULT_INTEROP_CVD 
-is consulted when no --cvd option is provides, acting as a default value.
-
-**/
-
-void Opticks::postconfigureCVD()
-{
-    const char* ucvd = getUsedCVD() ;  
-    if(ucvd)
-    { 
-        const char* ek = "CUDA_VISIBLE_DEVICES" ; 
-        LOG(error) << " setting " << ek << " envvar internally to " << ucvd ; 
-        SSys::setenvvar(ek, ucvd, true );    // Opticks::configure setting CUDA_VISIBLE_DEVICES
-    }
-}
 
 const char* Opticks::getCVD() const 
 {
@@ -2940,10 +2802,153 @@ const char* Opticks::getUsedCVD() const
 
 
 
+void Opticks::postconfigure()
+{
+    LOG(LEVEL) << "[" ; 
+
+    checkOptionValidity();
+
+    postconfigureCVD(); 
+
+    postconfigureSize(); 
+
+    postconfigurePosition(); 
+
+    postconfigureState(); 
+
+    initResource();  
+
+    updateCacheMeta(); 
+
+    if(isDirect())
+    {
+        loadOriginCacheMeta();  // sets m_origin_gdmlpath
+    }
+
+    defineEventSpec();  
+
+    postconfigureGeometryHandling();
+
+
+    m_photons_per_g4event = m_cfg->getNumPhotonsPerG4Event();
+
+    m_dbg->postconfigure();
+
+    m_verbosity = m_cfg->getVerbosity(); 
+
+    if(hasOpt("dumpenv")) BEnv::dumpEnvironment("Opticks::postconfigure --dumpenv", "G4,OPTICKS,DAE,IDPATH") ; 
+    LOG(LEVEL) << "]" ; 
+}
 
 
 
-void Opticks::configureGeometryHandling()
+
+
+/**
+Opticks::postconfigureCVD
+---------------------------
+
+When "--cvd" option is on the commandline this internally sets 
+the CUDA_VISIBLE_DEVICES envvar to the string argument provided.
+For example::
+ 
+   --cvd 0 
+   --cvd 1
+   --cvd 0,1,2,3
+
+In interop mode on multi-GPU workstations it is often necessary 
+to set the --cvd to match the GPU that is driving the monitor
+to avoid failures. To automate that the envvar OPTICKS_DEFAULT_INTEROP_CVD 
+is consulted when no --cvd option is provides, acting as a default value.
+
+**/
+
+void Opticks::postconfigureCVD()
+{
+    const char* ucvd = getUsedCVD() ;  
+    if(ucvd)
+    { 
+        const char* ek = "CUDA_VISIBLE_DEVICES" ; 
+        LOG(error) << " setting " << ek << " envvar internally to " << ucvd ; 
+        SSys::setenvvar(ek, ucvd, true );    // Opticks::configure setting CUDA_VISIBLE_DEVICES
+    }
+}
+
+
+/**
+Opticks::postconfigureSize
+----------------------------
+
+OpticksCfg default is "" so without options m_size becomes::
+
+   Linux: 1920,1080,1,0
+   Apple: 2880,1704,2,0    # ,2 relates to apple retina pixels-dots   
+
+**/
+
+void Opticks::postconfigureSize()
+{
+    const std::string& ssize = m_cfg->getSize();
+    if(!ssize.empty()) 
+    {
+        m_size = guvec4(ssize);
+    }
+    else if(m_cfg->hasOpt("fullscreen"))
+    {
+#ifdef __APPLE__
+        //m_size = glm::uvec4(2880,1800,2,0) ;
+        m_size = glm::uvec4(1440,900,2,0) ;
+#else
+        m_size = glm::uvec4(2560,1440,1,0) ;
+#endif
+    } 
+    else
+    {
+#ifdef __APPLE__
+        m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
+#else
+        m_size = glm::uvec4(1920,1080,1,0) ;
+#endif
+    }
+}
+
+void Opticks::postconfigurePosition()
+{
+    const std::string& sposition = m_cfg->getPosition();
+    if(!sposition.empty()) 
+    {
+        m_position = guvec4(sposition);
+    }
+    else
+    {
+#ifdef __APPLE__
+        m_position = glm::uvec4(200,200,0,0) ;  // top left
+#else
+        m_position = glm::uvec4(100,100,0,0) ;  // top left
+#endif
+    }
+}
+
+
+void Opticks::postconfigureState()
+{
+    const char* type = "State" ; 
+    const std::string& stag = m_cfg->getStateTag();
+    const char* subtype = stag.empty() ? NULL : stag.c_str() ; 
+
+    std::string prefdir = getPreferenceDir(type, subtype);  
+
+    LOG(LEVEL) << " prefdir " << prefdir ; 
+
+    // Below "state" is a placeholder name of the current state that never gets persisted, 
+    // names like 001 002 are used for persisted states : ie the .ini files within the prefdir
+
+    m_state = new NState(prefdir.c_str(), "state")  ;
+
+}
+
+
+void Opticks::postconfigureGeometryHandling()
 {
     bool geocache = !m_cfg->hasOpt("nogeocache") ;
     bool instanced = !m_cfg->hasOpt("noinstanced") ; // find repeated geometry 

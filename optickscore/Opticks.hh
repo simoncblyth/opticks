@@ -172,7 +172,10 @@ class OKCORE_API Opticks {
    private:
        void postconfigure(); 
        void postconfigureCVD() ;
-       void configureGeometryHandling() ; 
+       void postconfigureSize() ;
+       void postconfigurePosition() ;
+       void postconfigureState() ;
+       void postconfigureGeometryHandling();
    public:
        std::string brief();
        void dump(const char* msg="Opticks::dump") ;
