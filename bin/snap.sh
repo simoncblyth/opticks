@@ -2,6 +2,10 @@
 
 usage(){ cat << EOU
 
+CAUTION : this gets installed by opticks/bin/CMakeLists.txt 
+so remember to do so to see updates
+
+
 Usage::
 
    snap.sh --rtx 1 --cvd 1 
