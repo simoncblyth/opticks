@@ -143,6 +143,8 @@ class OKCORE_API OpticksCfg : public BCfg {
      unsigned     getSkipAheadStep() const ;
      unsigned     getSeed() const ; 
      int          getRTX() const ; 
+     int          getOneGASIAS() const ;  // --one_gas_ias 
+
      int          getRenderLoopLimit() const ; 
      int          getAnnoLineHeight() const ;
 
@@ -296,6 +298,7 @@ private:
      unsigned    m_seed ; 
      unsigned    m_skipaheadstep ; 
      int         m_rtx ; 
+     int         m_one_gas_ias ; 
      int         m_renderlooplimit ; 
      int         m_annolineheight ;      
 

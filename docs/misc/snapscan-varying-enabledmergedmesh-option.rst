@@ -145,6 +145,58 @@ On laptop::
 
     cd ~/CSGOptiX
     ./grab.sh 
-      
+
+
+::      
+
+    epsilon:opticks blyth$ snap.py --basedir /tmp/blyth/opticks/CSGOptiX/CSGOptiXRender/70000/render/CSG_GGeo --reldir 1
+    idx         -e    time(s)   relative     enabled geometry description                                          
+      0         7,     0.0017     0.1465     ONLY: 1:base_steel0x35a1810                                           
+      1         1,     0.0022     0.1905     ONLY: 5:PMT_3inch_pmt_solid0x43c0a40                                  
+      2         5,     0.0027     0.2351     ONLY: 1:sStrutBallhead0x34be280                                       
+      3         6,     0.0029     0.2503     ONLY: 1:uni10x3461bd0                                                 
+      4         4,     0.0031     0.2667     ONLY: 5:mask_PMT_20inch_vetosMask0x3c2e7c0                            
+      5         2,     0.0057     0.4926     ONLY: 5:NNVTMCPPMTsMask0x3c2c750                                      
+      6         9,     0.0088     0.7610     ONLY: 130:sPanel0x4e71750                                             
+      7         3,     0.0106     0.9133     ONLY: 5:HamamatsuR12860sMask0x3c39130                                 
+      8    1,2,3,4     0.0116     1.0000     ONLY PMT                                                              
+      9         0,     0.0980     8.4559     ONLY: 3084:sWorld0x33e3370                                            
+     10        t8,     0.1060     9.1475     EXCL: 1:uni_acrylic30x35932f0                                         
+     11         8,     0.7618    65.7446     ONLY: 1:uni_acrylic30x35932f0                                         
+     12        t0,     0.7921    68.3553     EXCL: 3084:sWorld0x33e3370                                            
+     13         t0     0.8366    72.1918     3084:sWorld0x33e3370                                                  
+     14        t6,     0.8426    72.7138     EXCL: 1:uni10x3461bd0                                                 
+     15        t3,     0.8466    73.0597     EXCL: 5:HamamatsuR12860sMask0x3c39130                                 
+     16        t7,     0.8505    73.3939     EXCL: 1:base_steel0x35a1810                                           
+     17        t2,     0.8565    73.9137     EXCL: 5:NNVTMCPPMTsMask0x3c2c750                                      
+     18        t4,     0.8584    74.0729     EXCL: 5:mask_PMT_20inch_vetosMask0x3c2e7c0                            
+     19        t1,     0.8604    74.2459     EXCL: 5:PMT_3inch_pmt_solid0x43c0a40                                  
+     20        t5,     0.8635    74.5202     EXCL: 1:sStrutBallhead0x34be280                                       
+     21        t9,     0.8793    75.8828     EXCL: 130:sPanel0x4e71750                                             
+    idx         -e    time(s)   relative     enabled geometry description                                          
+    epsilon:opticks blyth$ 
+
+
+
+
+Comparing
+---------------
+
+::
+
+    #!/bin/bash -l 
+
+    adir=/tmp/$USER/opticks/snap 
+    bdir=/tmp/$USER/opticks/CSGOptiX/CSGOptiXRender/70000/render/CSG_GGeo/1
+
+    q=${1:-t8,}
+
+    find $adir -name "lLowerChimney_phys__*${q}__00000.jpg" 
+    find $bdir -name "*${q}_sWaterTube.jpg" 
+
+
+
+
+
 
 

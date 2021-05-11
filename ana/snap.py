@@ -57,7 +57,16 @@ class Snap(object):
     def __init__(self, path):
         path = path 
         js = json.load(open(path,"r"))
-        jpg = path.replace(".json","00000.jpg")
+
+        # set jpg to the first that exists  
+        jps = [path.replace(".json","00000.jpg"),path.replace(".json",".jpg")]
+        jpg = None
+        for jp in jps: 
+           if os.path.exists(jp):
+               jpg = jp
+               break 
+           pass
+        pass
 
         emm = js['emm']
 
@@ -152,11 +161,10 @@ class Snap(object):
 
 
 class SnapScan(object):
-    BASE = os.path.expandvars("$TMP/snap")
-    def __init__(self, reldir, mm=None, candle_emm="1,2,3,4"):
+    def __init__(self, basedir, reldir, mm=None, candle_emm="1,2,3,4"):
         self.mm = mm
-        snapdir = os.path.join(self.BASE, reldir)
-        paths = glob.glob("%s/*.json" % snapdir) 
+        jsondir = os.path.join(basedir, reldir)
+        paths = glob.glob("%s/*.json" % jsondir) 
 
         snaps = list(map(Snap,paths))
         snaps = sorted(snaps, key=lambda s:s.av)
@@ -212,6 +220,7 @@ def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
     parser = argparse.ArgumentParser(doc)
     parser.add_argument(     "--level", default="info", help="logging level" ) 
+    parser.add_argument(  "--basedir", default="$TMP/snap", help="base" ) 
     parser.add_argument(  "--reldir", default="lLowerChimney_phys", help="Relative dir beneath $TMP/snap from which to load snap .json" ) 
     parser.add_argument(  "--jpg", action="store_true", help="List jpg paths in speed order" ) 
     parser.add_argument(  "--refjpgpfx", default="/env/presentation/snap/lLowerChimney_phys", help="List jpg paths s5 background image presentation format" ) 
@@ -231,7 +240,7 @@ if __name__ == '__main__':
     args = parse_args(__doc__)
     mm = MM("$TMP/mm.txt")
 
-    ss = SnapScan(args.reldir, mm) 
+    ss = SnapScan(args.basedir, args.reldir, mm) 
     if args.jpg:
         print(ss.jpg())
     elif args.refjpg:

@@ -116,6 +116,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_seed(42),     
     m_skipaheadstep(0),     
     m_rtx(0),
+    m_one_gas_ias(-1),
     m_renderlooplimit(0),
     m_annolineheight(24), 
     m_rngmax(3),     
@@ -255,6 +256,15 @@ void OpticksCfg<Listener>::init()
    snprintf(rtx,128, "OptiX RTX execution mode, -1:ASIS 0:OFF 1:ON 2:ON with GeometryTriangles. Default %d", m_rtx );
    m_desc.add_options()
        ("rtx",  boost::program_options::value<int>(&m_rtx), rtx );
+
+
+
+   char one_gas_ias[128];
+   snprintf(one_gas_ias,128, "Enable CSGOptiX dummy IAS with a single gas identified by the provided gas_idx. Default %d is -ve indicating not enabled.", m_one_gas_ias );
+   m_desc.add_options()
+       ("one_gas_ias",  boost::program_options::value<int>(&m_one_gas_ias), one_gas_ias );
+
+
 
 
    char renderlooplimit[128];
@@ -2004,6 +2014,15 @@ int OpticksCfg<Listener>::getRTX() const
 {
     return m_rtx ; 
 }
+
+template <class Listener>
+int OpticksCfg<Listener>::getOneGASIAS() const  // --one_gas_ias 
+{
+    return m_one_gas_ias ; 
+}
+
+
+
 
 template <class Listener>
 int OpticksCfg<Listener>::getRenderLoopLimit() const 

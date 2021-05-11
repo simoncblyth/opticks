@@ -1352,6 +1352,12 @@ int Opticks::getRTX() const
 {
     return m_cfg->getRTX();
 }
+int Opticks::getOneGASIAS() const 
+{
+    return m_cfg->getOneGASIAS() ; 
+}  
+
+
 int Opticks::getRenderLoopLimit() const 
 {
     return m_cfg->getRenderLoopLimit();

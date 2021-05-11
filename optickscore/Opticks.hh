@@ -451,6 +451,8 @@ class OKCORE_API Opticks {
        unsigned             getSkipAheadStep() const ;  // --skipaheadstep 1000
 
        int                  getRTX() const ; 
+       int                  getOneGASIAS() const ;
+
        int                  getRenderLoopLimit() const ; 
        int                  getAnnoLineHeight() const ;
 
