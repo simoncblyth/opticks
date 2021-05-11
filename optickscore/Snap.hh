@@ -26,8 +26,6 @@ class OKCORE_API Snap
         void render_many(const std::vector<glm::vec3>& eyes );
         void save() const ;
     private:
-        void getMinMaxAvg(double& mn, double& mx, double& av) const ;
-    private:
         Opticks*       m_ok ; 
         Composition*   m_composition ; 
         unsigned       m_numsteps ; 

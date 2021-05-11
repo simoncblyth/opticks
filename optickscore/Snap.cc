@@ -1,7 +1,10 @@
 #include "Opticks.hh"
 #include "Composition.hh"
+
 #include "SRenderer.hh"
 #include "SMeta.hh"
+#include "SVec.hh"
+
 #include "NP.hh"
 #include "NSnapConfig.hpp"
 
@@ -88,32 +91,17 @@ void Snap::render_many(const std::vector<glm::vec3>& eyes )
     }
 }
 
-void Snap::getMinMaxAvg(double& mn, double& mx, double& av) const 
-{
-    const std::vector<double>& t = m_frame_times ; 
-
-    typedef std::vector<double>::const_iterator IT ;     
-    IT mn_ = std::min_element( t.begin(), t.end()  ); 
-    IT mx_ = std::max_element( t.begin(), t.end()  ); 
-    double sum = std::accumulate(t.begin(), t.end(), 0. );   
-
-    mn = *mn_ ; 
-    mx = *mx_ ; 
-    av = t.size() > 0 ? sum/double(t.size()) : -1. ;  
-}
-
 void Snap::save() const 
 {
-    nlohmann::json& js = m_meta->js ; 
+    const std::vector<double>& t = m_frame_times ; 
+    double mn, mx, av ; 
+    SVec<double>::MinMaxAvg(t,mn,mx,av); 
 
+    nlohmann::json& js = m_meta->js ; 
     js["argline"] = m_ok->getArgLine(); 
     js["cfg"] = m_config->getCfg(); 
     js["nameprefix"] = m_nameprefix  ;  
     js["emm"] = m_ok->getEnabledMergedMesh() ;  
-
-    double mn, mx, av ; 
-    getMinMaxAvg(mn, mx, av); 
-
     js["mn"] = mn ;  
     js["mx"] = mx ;  
     js["av"] = av ;  
@@ -121,11 +109,10 @@ void Snap::save() const
     std::string js_name = m_nameprefix ; 
     js_name += ".json" ; 
     m_meta->save(m_outdir,  js_name.c_str() ); 
-        
+
     std::string np_name = m_nameprefix ; 
     np_name += ".npy" ;  
-
-    NP::Write(m_outdir, np_name.c_str(), (double*)m_frame_times.data(),  m_frame_times.size() );  
+    NP::Write(m_outdir, np_name.c_str(), (double*)t.data(),  t.size() );  
 }
 
 

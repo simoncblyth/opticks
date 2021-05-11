@@ -137,6 +137,9 @@ On GPU workstation::
 
     MOI=ALL ./cxr.sh   # creates renders for each line of the arglist from a single geometry load 
 
+Scan the included geometry::
+
+    ./cxrscan.sh 
 
 On laptop::
 

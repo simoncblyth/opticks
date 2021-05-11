@@ -123,6 +123,21 @@ void test_unique_strings()
 }
 
 
+void test_MinMaxAvg()
+{
+    std::vector<float> v = {1.f, 10.f, 100.f, 2.f, 1000.f } ;  
+    float mn, mx, av ; 
+    SVec<float>::MinMaxAvg(v,mn,mx,av);
+
+    LOG(info) 
+        << " mn " << mn 
+        << " mx " << mx 
+        << " av " << av 
+        ;
+
+}
+
+
 
 
 
@@ -134,8 +149,9 @@ int main(int argc, char** argv)
     //test_FindIndexOfValue();
     //test_vector_erase_pos(); 
     //test_vector_erase_all(); 
+    //test_unique_strings(); 
 
-    test_unique_strings(); 
+    test_MinMaxAvg(); 
 
     return 0 ;
 }

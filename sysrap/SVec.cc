@@ -22,6 +22,7 @@
 #include <iostream>
 #include <iomanip>
 #include <iterator>
+#include <numeric>
 
 #include "SVec.hh"
 
@@ -83,6 +84,22 @@ int SVec<T>::FindIndexOfValue(const std::vector<T>& a, T value, T tolerance)
     return idx ; 
 }
  
+
+
+template <typename T>
+void SVec<T>::MinMaxAvg(const std::vector<T>& t, T& mn, T& mx, T& av) 
+{
+    typedef typename std::vector<T>::const_iterator IT ;    
+    IT mn_ = std::min_element( t.begin(), t.end()  );  
+    IT mx_ = std::max_element( t.begin(), t.end()  );  
+    double sum = std::accumulate(t.begin(), t.end(), T(0.) );   
+
+    mn = *mn_ ; 
+    mx = *mx_ ; 
+    av = t.size() > 0 ? sum/T(t.size()) : T(-1.) ;   
+}
+
+
 
 
 
