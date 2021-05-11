@@ -2762,34 +2762,14 @@ void Opticks::configure()
 }
 
 
+
 void Opticks::postconfigure()
 {
     LOG(LEVEL) << "[" ; 
 
     checkOptionValidity();
 
-    const std::string& cvdcfg = m_cfg->getCVD();
-    const char* cvd = cvdcfg.empty() ? NULL : cvdcfg.c_str() ; 
-
-    // Instead of just failing in interop mode with no cvd argument offer a reprieve :  
-    // set envvar OPTICKS_DEFAULT_INTEROP_CVD when using multi-gpu workstations, 
-    // it should point to the GPU driving the monitor.
-
-    const char* dk = "OPTICKS_DEFAULT_INTEROP_CVD" ; 
-    const char* dcvd = SSys::getenvvar(dk) ;  
-    if( cvd == NULL && isInterop() && dcvd != NULL )
-    {
-        LOG(LEVEL) << " --interop mode with no cvd specified, adopting OPTICKS_DEFAULT_INTEROP_CVD hinted by envvar [" << dcvd << "]" ;   
-        cvd = strdup(dcvd);   
-    }
-
-    if(cvd)
-    { 
-        const char* ek = "CUDA_VISIBLE_DEVICES" ; 
-        LOG(info) << " setting " << ek << " envvar internally to " << cvd ; 
-        SSys::setenvvar(ek, cvd, true );    // Opticks::configure setting CUDA_VISIBLE_DEVICES
-    }
-
+    postconfigureCVD(); 
 
     initResource();  
 
@@ -2884,6 +2864,84 @@ void Opticks::postconfigure()
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+
+
+
+
+
+
+/**
+Opticks::postconfigureCVD
+---------------------------
+
+When "--cvd" option is on the commandline this internally sets 
+the CUDA_VISIBLE_DEVICES envvar to the string argument provided.
+For example::
+ 
+   --cvd 0 
+   --cvd 1
+   --cvd 0,1,2,3
+
+In interop mode on multi-GPU workstations it is often necessary 
+to set the --cvd to match the GPU that is driving the monitor
+to avoid failures. To automate that the envvar OPTICKS_DEFAULT_INTEROP_CVD 
+is consulted when no --cvd option is provides, acting as a default value.
+
+**/
+
+void Opticks::postconfigureCVD()
+{
+    const char* ucvd = getUsedCVD() ;  
+    if(ucvd)
+    { 
+        const char* ek = "CUDA_VISIBLE_DEVICES" ; 
+        LOG(error) << " setting " << ek << " envvar internally to " << ucvd ; 
+        SSys::setenvvar(ek, ucvd, true );    // Opticks::configure setting CUDA_VISIBLE_DEVICES
+    }
+}
+
+const char* Opticks::getCVD() const 
+{
+    const std::string& cvdcfg = m_cfg->getCVD();
+    const char* cvd = cvdcfg.empty() ? NULL : cvdcfg.c_str() ; 
+    return cvd ; 
+}
+
+const char* Opticks::getDefaultCVD() const 
+{
+    const char* dk = "OPTICKS_DEFAULT_INTEROP_CVD" ; 
+    const char* dcvd = SSys::getenvvar(dk) ;  
+    return dcvd ; 
+}
+
+const char* Opticks::getUsedCVD() const 
+{
+    const char* cvd = getCVD(); 
+    const char* dcvd = getDefaultCVD(); 
+    // note they are both getenv envvars so no need to strdup
+    const char* ucvd =  cvd == NULL && isInterop() && dcvd != NULL ? dcvd : cvd ; 
+
+    LOG(error) 
+        << " cvd " << cvd
+        << " dcvd " << dcvd
+        << " isInterop " << isInterop()
+        << " ucvd " << ucvd
+        ;
+
+    if( cvd == NULL && isInterop() && dcvd != NULL )
+    {
+        LOG(error) << " --interop mode with no cvd specified, adopting OPTICKS_DEFAULT_INTEROP_CVD hinted by envvar [" << dcvd << "]" ;   
+        ucvd = dcvd ;   
+    }
+    return ucvd ; 
+}
+
+
+
+
+
 
 void Opticks::configureGeometryHandling()
 {

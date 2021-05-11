@@ -166,8 +166,12 @@ class OKCORE_API Opticks {
    public:
        void configure();  // invoked after commandline parsed
        bool isConfigured() const ;  
+       const char* getCVD() const ;
+       const char* getDefaultCVD() const ;
+       const char* getUsedCVD() const ;
    private:
        void postconfigure(); 
+       void postconfigureCVD() ;
        void configureGeometryHandling() ; 
    public:
        std::string brief();
