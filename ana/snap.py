@@ -16,11 +16,16 @@ from opticks.ana.rsttable import RSTTable
 
 
 class MM(object):
+    """
+    """
     PTN = re.compile("\d+") 
     def __init__(self, path="$TMP/mm.txt"):
         mm = os.path.expandvars(path)
         mm = open(mm, "r").read().splitlines() if os.path.exists(mm) else None
         self.mm = mm
+        if mm is None:
+            print("missing mm.txt, create it with : ggeo.py --mm > $TMP/mm.txt  " ) 
+        pass
 
     def imm(self, emm):
         return list(map(int, self.PTN.findall(emm))) 
