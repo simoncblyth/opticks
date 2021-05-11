@@ -226,6 +226,10 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
+       ("gparts_transform_offset",  "see GParts::add") ;
+
+
+   m_desc.add_options()
        ("nopropagate,P",  "inhibit generation/propagation") ;
 
    m_desc.add_options()

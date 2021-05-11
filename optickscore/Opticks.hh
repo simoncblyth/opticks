@@ -223,6 +223,8 @@ class OKCORE_API Opticks {
        bool isValid();
 
        bool isEnabledLegacyG4DAE() const ;  // --enabled_legacy_g4dae 
+       bool isGPartsTransformOffset() const ; // --gparts_transform_offset
+
        //bool isLocalG4() const ; // --localg4 
    public:
        int  rc() const ;

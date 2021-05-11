@@ -240,6 +240,8 @@ GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<con
          ; 
 
     GParts* com = new GParts() ; 
+    com->setOpticks(ok); 
+
 
     unsigned verbosity = 0 ; 
     std::vector<unsigned> mismatch_pt ; 
@@ -703,7 +705,8 @@ GParts::GParts(GBndLib* bndlib)
     m_primflag(CSG_FLAGNODETREE),
     m_medium(NULL),
     m_csg(NULL),
-    m_ridx(~0u)
+    m_ridx(~0u),
+    m_ok(bndlib->getOpticks())
 {
     m_idx_buffer->zero();
     m_part_buffer->zero();
@@ -731,7 +734,8 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_primflag(CSG_FLAGNODETREE),
     m_medium(NULL),
     m_csg(NULL),
-    m_ridx(~0u)
+    m_ridx(~0u),
+    m_ok(bndlib->getOpticks())
 {
     m_bndspec->add(spec);
 
@@ -754,7 +758,8 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_primflag(CSG_FLAGNODETREE),
     m_medium(NULL),
     m_csg(NULL),
-    m_ridx(~0u)
+    m_ridx(~0u),
+    m_ok(bndlib->getOpticks())
 {
     checkSpec(spec); 
     init() ; 
@@ -855,8 +860,10 @@ void GParts::setNodeTree()
 {
     setPrimFlag(CSG_FLAGNODETREE);
 }
-
-
+void GParts::setOpticks(const Opticks* ok)
+{
+    m_ok = ok ; 
+}
 
 
 
@@ -1286,10 +1293,19 @@ void GParts::add(GParts* other)
     NPY<float>* other_tran_buffer = other->getTranBuffer() ;
     NPY<float>* other_plan_buffer = other->getPlanBuffer() ;
 
-    bool preserve_zero = true ; 
-    bool preserve_signbit = true ; 
-    other_part_buffer->addOffset(GTRANSFORM_J, GTRANSFORM_K, tranOffset, preserve_zero, preserve_signbit );  
-    // hmm offsetting of planes needs to be done only for parts of type CSG_CONVEXPOLYHEDRON 
+
+    if(m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
+    {
+        LOG(error) << " --gparts_transform_offset " ; 
+        bool preserve_zero = true ; 
+        bool preserve_signbit = true ; 
+        other_part_buffer->addOffset(GTRANSFORM_J, GTRANSFORM_K, tranOffset, preserve_zero, preserve_signbit );  
+        // hmm offsetting of planes needs to be done only for parts of type CSG_CONVEXPOLYHEDRON 
+    }
+    else
+    {
+        LOG(info) << " NOT --gparts_transform_offset " ; 
+    }
 
     m_idx_buffer->add(other_idx_buffer);
     m_part_buffer->add(other_part_buffer);

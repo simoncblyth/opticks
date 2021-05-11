@@ -3011,6 +3011,14 @@ bool Opticks::isEnabledLegacyG4DAE() const
     return m_cfg->hasOpt("enabled_legacy_g4dae") ;  
 }
 
+bool Opticks::isGPartsTransformOffset() const 
+{
+    return m_cfg->hasOpt("gparts_transform_offset") ;  
+}
+
+
+
+
 
 //bool Opticks::isLocalG4() const { return m_cfg->hasOpt("localg4") ;  }
 

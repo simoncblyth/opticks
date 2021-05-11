@@ -379,6 +379,8 @@ class GGEO_API GParts {
         void setPartList();
         void setNodeTree();
 
+        void setOpticks(const Opticks* ok);  // for access to options in combination 
+
     public:
         const float* getPartValues(unsigned i, unsigned j, unsigned k) const ;
     private:
@@ -427,6 +429,7 @@ class GGEO_API GParts {
 
         std::vector<GParts*> m_subs ; 
         unsigned           m_ridx ; 
+        const Opticks*     m_ok ; 
 
 
 };
