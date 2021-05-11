@@ -706,7 +706,7 @@ GParts::GParts(GBndLib* bndlib)
     m_medium(NULL),
     m_csg(NULL),
     m_ridx(~0u),
-    m_ok(bndlib->getOpticks())
+    m_ok(bndlib ? bndlib->getOpticks(): nullptr)
 {
     m_idx_buffer->zero();
     m_part_buffer->zero();
@@ -735,7 +735,7 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_medium(NULL),
     m_csg(NULL),
     m_ridx(~0u),
-    m_ok(bndlib->getOpticks())
+    m_ok(bndlib ? bndlib->getOpticks() : nullptr)
 {
     m_bndspec->add(spec);
 
@@ -759,7 +759,7 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_medium(NULL),
     m_csg(NULL),
     m_ridx(~0u),
-    m_ok(bndlib->getOpticks())
+    m_ok(bndlib ? bndlib->getOpticks() : nullptr)
 {
     checkSpec(spec); 
     init() ; 

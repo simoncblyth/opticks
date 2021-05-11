@@ -33,7 +33,7 @@ outdir=$outbase/$reldir
 
 
 snap-cmd(){ cat << EOC
-$bin --targetpvn $pvn --eye $eye -e $emm --snapoutdir $outdir --nameprefix $nameprefix $*
+$GDB $bin --targetpvn $pvn --eye $eye -e $emm --snapoutdir $outdir --nameprefix $nameprefix $*
 EOC
 }
 
