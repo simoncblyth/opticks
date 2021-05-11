@@ -731,6 +731,14 @@ Projects Using OptiX to look into
 * https://github.com/BlueBrain/Brayns
 
 
+OptiX 7.3 (April 2021) 
+----------------------------------------------------------
+
+* Requires NVIDIA R465.84 driver or newer. You may need a Beta Driver for certain operating systems.
+* ~/opticks_refs/OptiX_Release_Notes_7.3.pdf
+
+
+
 OptiX 7.1.0 Release Notes (June 2020)
 -----------------------------------------
 
