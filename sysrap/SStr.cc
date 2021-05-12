@@ -157,7 +157,6 @@ bool SStr::EndsWith( const char* s, const char* q)
 
 
 
-
 bool SStr::StartsWith( const char* s, const char* q)
 {
     return strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
@@ -521,6 +520,30 @@ void SStr::GridMinMax(const std::array<int,9>& grid, int&mn, int& mx)  // static
         if( i < mn ) mn = i ;
     }
     std::cout << "SStr::GridMinMax " << mn << " " << mx << std::endl ;
+}
+
+
+
+int SStr::AsInt(const char* arg, int fallback )
+{
+    char* end ;   
+    char** endptr = &end ; 
+    int base = 10 ;   
+    unsigned long ul = strtoul(arg, endptr, base); 
+    bool end_points_to_terminator = end == arg + strlen(arg) ;   
+    return end_points_to_terminator ? int(ul) : fallback ;  
+}
+
+
+int SStr::ExtractInt(const char* arg, int start, unsigned num, int fallback)
+{
+    unsigned pos = start < 0 ? strlen(arg) + start : start  ; 
+    unsigned len = strlen(arg) ; 
+    if(pos > len) return fallback ; 
+    if(pos + num > len) return fallback ; 
+
+    std::string s(arg+pos,num) ; 
+    return SStr::AsInt(s.c_str(), fallback);
 }
 
 

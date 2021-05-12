@@ -222,6 +222,23 @@ void test_Concat_()
 }
 
 
+void test_AsInt()
+{
+    const char* arg = "00000" ; 
+    int i = SStr::AsInt(arg); 
+    assert( i == 0 ); 
+}
+
+
+void test_ExtractInt()
+{
+    const char* path = "/some/long/path/with_00000.jpg" ; 
+    int i = SStr::ExtractInt(path, -9, 5 ); 
+    std::cout << "path " << path << " i " << i << std::endl ;  
+    assert( i == 0 ); 
+}
+
+
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
@@ -240,8 +257,10 @@ int main(int argc , char** argv )
     test_ArrayToString();  
     test_Save();  
     test_Split();  
-    */
     test_Concat_(); 
+    */
+    test_AsInt(); 
+    test_ExtractInt(); 
 
     return 0  ; 
 }

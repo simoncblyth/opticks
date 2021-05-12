@@ -107,6 +107,11 @@ class SYSRAP_API SStr {
       template <typename T>
       static T GetEValue(const char* key, T fallback);  
 
+
+      static int AsInt(const char* arg, int fallback=-1 ) ; 
+      static int ExtractInt(const char* arg, int start, unsigned num, int fallback=-1) ;
+
+
 };
 
 
