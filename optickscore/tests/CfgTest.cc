@@ -31,7 +31,7 @@
 
 void test_configure_one(int argc, char** argv)
 {
-    Camera camera ; 
+    Camera camera(1920,1080) ; 
     camera.Print("initial default camera");
 
     bool live = true ;  

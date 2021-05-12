@@ -174,6 +174,7 @@ class OKCORE_API Opticks {
        void postconfigureCVD() ;
        void postconfigureSize() ;
        void postconfigurePosition() ;
+       void postconfigureComposition() ;
        void postconfigureState() ;
        void postconfigureGeometryHandling();
    public:
@@ -394,7 +395,9 @@ class OKCORE_API Opticks {
        Snap*        getSnap(SRenderer* renderer);
 
 
-       const char* getOutPath(const char* namestem="namestem", const char* ext=".jpg", int index=-1) ; 
+       const char* getOutPath(const char* namestem="namestem", const char* ext=".jpg", int index=-1) const ; 
+       static int  ExtractIndex(const char* path); 
+
 
 
 

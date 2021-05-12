@@ -137,7 +137,7 @@ Camera
 =========
 
 Canonical m_camera instance is ctor resident of Composition m_composition
-which in turn is a ctor resident of the top level OpticksHub m_hub. 
+which in turn is a ctor resident of Opticks. 
 
 
 **/
@@ -157,7 +157,7 @@ class OKCORE_API Camera : public NConfigurable  {
 
      static const char* TYPE ; 
 
-     Camera(int width=1024, int height=768, float basis=1000.f ) ;
+     Camera(int width, int height, float basis=1000.f ) ;
 
      glm::mat4 getProjection();
      glm::mat4 getPerspective();
@@ -214,11 +214,13 @@ class OKCORE_API Camera : public NConfigurable  {
      void setSize(int width, int height, bool internal=false);
      void setPixelFactor(unsigned int factor);
   public:
-     unsigned int getWidth();
-     unsigned int getHeight();
-     unsigned int getPixelWidth();
-     unsigned int getPixelHeight();
-     unsigned int getPixelFactor();
+     unsigned getWidth() const ;
+     unsigned getHeight() const ;
+     float    getAspect() const ; // width/height (> 1 for landscape)
+  public:
+     unsigned getPixelWidth() const ;  // this is for Apple retina screens
+     unsigned getPixelHeight() const ;
+     unsigned getPixelFactor() const ;
   public:
      void setNearClip(float _min, float _max);
      void setFarClip(float _min, float _max);
@@ -226,7 +228,6 @@ class OKCORE_API Camera : public NConfigurable  {
      void setScaleClip(float _min, float _max);
   public:
      unsigned getType() const ;
-     float getAspect(); // width/height (> 1 for landscape)
   public:
      // sets near, far and the ortho scale 
      void aim(float basis);
@@ -281,7 +282,6 @@ class OKCORE_API Camera : public NConfigurable  {
    private:
      int   m_size[2] ;
      int   m_pixel_factor ; 
-     float m_aspect ; 
 
      float m_nearclip[2] ;
      float m_farclip[2] ;

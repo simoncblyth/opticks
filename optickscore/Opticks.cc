@@ -524,6 +524,16 @@ Composition* Opticks::getComposition() const
 
 
 
+
+
+
+
+
+
+
+
+
+
 std::string Opticks::getArgLine() const 
 {
     return m_sargs->getArgLine();
@@ -2415,8 +2425,6 @@ const char* Opticks::getOutDir() const    // --outdir
     return outdir.empty() ? NULL : outdir.c_str() ;
 }
 
-
-
 const char* Opticks::getNamePrefix() const    // --nameprefix
 {
     const std::string& nameprefix = m_cfg->getNamePrefix() ; 
@@ -2492,7 +2500,7 @@ after use if there are lots of them.
 
 **/
 
-const char* Opticks::getOutPath(const char* namestem, const char* ext, int index)
+const char* Opticks::getOutPath(const char* namestem, const char* ext, int index) const 
 {
     const char* outdir = getOutDir(); 
     const char* nameprefix = getNamePrefix(); 
@@ -2508,6 +2516,12 @@ const char* Opticks::getOutPath(const char* namestem, const char* ext, int index
     std::string s = ss.str(); 
     return strdup(s.c_str()) ;
 }
+
+int Opticks::ExtractIndex(const char* path)  // static 
+{
+    return SStr::ExtractInt(path, -9, 5, -1 );
+}
+
 
 
 /**
@@ -2865,8 +2879,9 @@ void Opticks::postconfigure()
     postconfigureCVD(); 
 
     postconfigureSize(); 
-
     postconfigurePosition(); 
+    postconfigureComposition(); 
+
 
     initResource();  
 
@@ -2965,6 +2980,11 @@ void Opticks::postconfigureSize()
         m_size = glm::uvec4(1920,1080,1,0) ;
 #endif
     }
+
+
+    
+
+
 }
 
 const glm::uvec4& Opticks::getSize() const 
@@ -2998,6 +3018,32 @@ void Opticks::postconfigurePosition()
 #endif
     }
 }
+
+
+void Opticks::postconfigureComposition()
+{
+    assert( isConfigured() );  
+
+    glm::uvec4 size = getSize();
+    glm::uvec4 position = getPosition() ;
+
+    LOG(error) 
+        << " size " << gformat(size)
+        << " position " << gformat(position)
+        ;   
+
+    m_composition->setSize( size );
+    m_composition->setFramePosition( position );
+
+    unsigned cameratype = getCameraType(); 
+    m_composition->setCameraType( cameratype );  
+}
+
+
+
+
+
+
 
 
 void Opticks::postconfigureState()

@@ -420,11 +420,12 @@ class OKCORE_API Composition : public NConfigurable {
       glm::vec4 getViewpoint();
       glm::vec4 getUpdir();
   public: 
-      unsigned int getWidth();
-      unsigned int getHeight();
-      unsigned int getPixelWidth(); // width*pixel_factor
-      unsigned int getPixelHeight();
-      unsigned int getPixelFactor();
+      unsigned getWidth() const ;
+      unsigned getHeight() const ;
+      unsigned getPixelWidth() const ; // width*pixel_factor
+      unsigned getPixelHeight() const ;
+      unsigned getPixelFactor() const ;
+  public: 
       void setSize(unsigned int width, unsigned int height, unsigned int pixelfactor=1);
       void setSize(const glm::uvec4& size); // x, y will be scaled down by the pixelfactor
       void setFramePosition(const glm::uvec4& position);

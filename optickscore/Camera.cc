@@ -307,7 +307,6 @@ void Camera::setSize(int width, int height, bool internal )
     // externally invoked by OpticksHub::configureCompositionSize/Composition::setSize
     m_size[0] = width ;
     m_size[1] = height ;
-    m_aspect  = (float)width/(float)height ;   // (> 1 for landscape) 
     m_changed = true ; 
 }
 void Camera::setPixelFactor(unsigned int factor)
@@ -316,13 +315,13 @@ void Camera::setPixelFactor(unsigned int factor)
     m_changed = true ; 
 }
 
-unsigned int Camera::getWidth(){  return m_size[0]; }
-unsigned int Camera::getHeight(){ return m_size[1]; }
-float        Camera::getAspect(){ return m_aspect ; }
+unsigned int Camera::getWidth() const {  return m_size[0]; }
+unsigned int Camera::getHeight() const { return m_size[1]; }
+float        Camera::getAspect() const { return float(m_size[0])/float(m_size[1]) ; }   // (> 1 for landscape) 
 
-unsigned int Camera::getPixelWidth(){  return m_size[0]*m_pixel_factor; }
-unsigned int Camera::getPixelHeight(){ return m_size[1]*m_pixel_factor; }
-unsigned int Camera::getPixelFactor(){ return m_pixel_factor ; }
+unsigned int Camera::getPixelWidth() const {  return m_size[0]*m_pixel_factor; }
+unsigned int Camera::getPixelHeight() const { return m_size[1]*m_pixel_factor; }
+unsigned int Camera::getPixelFactor() const { return m_pixel_factor ; }
 
 
 
@@ -395,8 +394,8 @@ float Camera::getTanYfov() const { return 1.f/m_zoom ; }  // actually tan(Yfov/2
 
 float Camera::getTop() const {    return getScale() / m_zoom ; }
 float Camera::getBottom() const { return -getScale() / m_zoom ; }
-float Camera::getLeft() const {   return -m_aspect * getScale() / m_zoom ; } 
-float Camera::getRight() const {  return  m_aspect * getScale() / m_zoom ; } 
+float Camera::getLeft() const {   return -getAspect() * getScale() / m_zoom ; } 
+float Camera::getRight() const {  return  getAspect() * getScale() / m_zoom ; } 
 
 void Camera::setYfov(float yfov)
 {

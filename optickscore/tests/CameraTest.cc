@@ -26,7 +26,7 @@
 
 int main()
 {
-    Camera* c = new Camera  ;
+    Camera* c = new Camera(1920,1080)  ;
 
     float n(100.);
     float f(1000.);

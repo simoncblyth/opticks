@@ -133,7 +133,6 @@ class OKGEO_API OpticksHub : public SCtrl {
        void init();
        void setErr(int err);
        void configure();
-       void configureCompositionSize();
 
        void loadGeometry();
        void adoptGeometry();

@@ -233,7 +233,6 @@ void OpticksHub::init()
 
     configure();
     configureServer();
-    configureCompositionSize();
 
 
 #ifdef LEGACY
@@ -483,27 +482,6 @@ void OpticksHub::configureServer()
     }
 #endif
 }
-
-void OpticksHub::configureCompositionSize()
-{
-    assert( m_ok->isConfigured() ); 
-
-    glm::uvec4 size = m_ok->getSize();
-    glm::uvec4 position = m_ok->getPosition() ;
-
-    LOG(debug) << "OpticksHub::configureCompositionSize"
-              << " size " << gformat(size)
-              << " position " << gformat(position)
-              ;
-
-    m_composition->setSize( size );
-    m_composition->setFramePosition( position );
-
-    unsigned cameratype = m_ok->getCameraType(); 
-    m_composition->setCameraType( cameratype ); 
-
-}
-
 
 /**
 OpticksHub::configureVizState

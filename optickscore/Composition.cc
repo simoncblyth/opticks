@@ -227,6 +227,29 @@ Composition::Composition(Opticks* ok)
 }
 
 
+void Composition::init()
+{
+    m_camera = new Camera(1920,1080) ; 
+   // TODO: avoid need to set and then change Camera size : maybe lazy Camera or later Composition ctor
+   //       as this needs to be after config see Opticks::postconfigureCompsition 
+   //
+    m_view   = new View() ;
+    m_trackball = new Trackball() ;
+    m_clipper = new Clipper() ;
+
+    m_light = new Light() ;
+    m_command.resize(m_command_length);
+
+    initAxis();
+}
+
+
+
+
+
+
+
+
 Opticks* Composition::getOpticks() const 
 {
    return m_ok ;  
@@ -698,22 +721,6 @@ float* Composition::getLookAnglePtr()
 
 
 
-
-void Composition::init()
-{
-   // hmm state is very different, maybe keep in the App not here 
-
-    m_camera = new Camera() ;
-    m_view   = new View() ;
-    m_trackball = new Trackball() ;
-    m_clipper = new Clipper() ;
-
-    m_light = new Light() ;
-    m_command.resize(m_command_length);
-
-    initAxis();
-}
-
 void Composition::addConstituentConfigurables(NState* state)
 {
     state->addConfigurable(m_trackball);
@@ -1145,27 +1152,30 @@ std::string Composition::getGazeString()
 
 
 
-unsigned int Composition::getWidth()
+unsigned Composition::getWidth() const 
 {
    return m_camera->getWidth();
 }
-unsigned int Composition::getHeight()
+unsigned Composition::getHeight() const 
 {
    return m_camera->getHeight();
 }
 
-unsigned int Composition::getPixelWidth()
+unsigned int Composition::getPixelWidth() const
 {
    return m_camera->getPixelWidth();
 }
-unsigned int Composition::getPixelHeight()
+unsigned int Composition::getPixelHeight() const 
 {
    return m_camera->getPixelHeight();
 }
-unsigned int Composition::getPixelFactor()
+unsigned int Composition::getPixelFactor() const 
 {
    return m_camera->getPixelFactor();
 }
+
+
+
 
 void Composition::setSize(const glm::uvec4& size)
 {
