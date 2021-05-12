@@ -2523,7 +2523,7 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
 {
     if(m_flightpath == NULL)
     {
-        //const char* dir = getFlightPathDir() ; // huh not used?
+        const char* dir = getFlightPathDir() ; // huh not used?
         const char* config = getFlightConfig(); 
         const char* outdir = getOutDir() ;
         const char* nameprefix = getNamePrefix(); 
