@@ -170,7 +170,7 @@ void Camera::configureF(const char* name, std::vector<float> values)
 
 Camera::Camera(int width, int height, float basis ) 
     :
-    m_zoom(1.0f),
+    m_zoom(SSys::getenvfloat("ZOOM",1.0f)),
     m_type(SSys::getenvint("CAMERATYPE",0)),
     m_changed(true)
 {
