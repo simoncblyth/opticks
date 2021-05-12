@@ -2409,6 +2409,14 @@ const char* Opticks::getSnapOutDir() const    // --snapoutdir
     return snapoutdir.empty() ? NULL : snapoutdir.c_str() ;
 }
 
+const char* Opticks::getOutDir() const    // --outdir
+{
+    const std::string& outdir = m_cfg->getOutDir() ; 
+    return outdir.empty() ? NULL : outdir.c_str() ;
+}
+
+
+
 const char* Opticks::getNamePrefix() const    // --nameprefix
 {
     const std::string& nameprefix = m_cfg->getNamePrefix() ; 
@@ -2457,6 +2465,49 @@ Snap* Opticks::getSnap(SRenderer* renderer)
 }
 
 
+/**
+Opticks::getOutPath namestem ext index 
+------------------------------------------
+
+::
+ 
+    <outdir>/<nameprefix><namestem><index><ext>
+
+outdir 
+    default evar:OUTDIR that is overridden by --outdir option 
+nameprefix
+    --nameprefix option
+namestem
+    method argument defauting to "output"
+index 
+    method argument with -1 default
+    when the index is negative the field is skipped 
+    otherwise the integer is %0.5d formatted, eg 00000, 00001
+ext
+    file extension eg .jpg .npy 
+
+
+The returned string is strdup-ed so it should be free((void*)str) 
+after use if there are lots of them.
+
+**/
+
+const char* Opticks::getOutPath(const char* namestem, const char* ext, int index)
+{
+    const char* outdir = getOutDir(); 
+    const char* nameprefix = getNamePrefix(); 
+
+    std::stringstream ss ; 
+
+    if(outdir)     ss << outdir << "/" ; 
+    if(nameprefix) ss << nameprefix ; 
+    if(namestem)   ss << namestem ; 
+    if( index > -1 ) ss << std::setfill('0') << std::setw(5) << index ; 
+    if(ext)        ss << ext ; 
+
+    std::string s = ss.str(); 
+    return strdup(s.c_str()) ;
+}
 
 
 /**
@@ -2472,9 +2523,9 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
 {
     if(m_flightpath == NULL)
     {
-        const char* dir = getFlightPathDir() ; // huh not used?
+        //const char* dir = getFlightPathDir() ; // huh not used?
         const char* config = getFlightConfig(); 
-        const char* outdir = getFlightOutDir() ;
+        const char* outdir = getOutDir() ;
         const char* nameprefix = getNamePrefix(); 
 
         float scale = m_cfg->getFlightPathScale() ;
@@ -2482,7 +2533,7 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
         LOG(LEVEL) 
              << " Creating flightpath from file " 
              << " --flightconfig " << config 
-             << " --flightoutdir " << outdir
+             << " --outdir " << outdir
              << " --nameprefix " << nameprefix 
              << " --flightpathdir " << dir  
              << " --flightpathscale " << scale 

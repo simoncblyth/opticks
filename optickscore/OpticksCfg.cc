@@ -74,6 +74,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_flightconfig(""),
     m_flightoutdir("$TMP/flight"),
     m_snapoutdir("$TMP/snap"),
+    m_outdir(SSys::getenvvar("OUTDIR","$TMP/outdir")),
     m_nameprefix("frame"),
     m_snapconfig("steps=0,ext=.jpg"),        // --snapconfig
     m_snapoverrideprefix(""),
@@ -837,6 +838,11 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("snapoutdir",   boost::program_options::value<std::string>(&m_snapoutdir), "snap path output dir, see OpTracer::snap npy/NSnapConfig " );
+
+   m_desc.add_options()
+       ("outdir",   boost::program_options::value<std::string>(&m_outdir), "output dir, aiming to unify other outdirs to use this one" );
+
+
 
    m_desc.add_options()
        ("nameprefix",     boost::program_options::value<std::string>(&m_nameprefix), "name prefix for example used for flight jpg naming" );
@@ -1706,11 +1712,19 @@ const std::string& OpticksCfg<Listener>::getFlightConfig()
 {
     return m_flightconfig ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getOutDir()
+{
+    return m_outdir ;
+}
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getFlightOutDir()
 {
     return m_flightoutdir ;
 }
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getSnapOutDir()
 {

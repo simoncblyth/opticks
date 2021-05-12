@@ -376,6 +376,8 @@ class OKCORE_API Opticks {
        const char* getFlightConfig() const ;  // --flightconfig  
        const char* getFlightOutDir() const ;  // --flightoutdir
        const char* getSnapOutDir() const ;    // --snapoutdir
+       const char* getOutDir() const ;        // --outdir
+
        const char* getNamePrefix() const ;    // --nameprefix
        FlightPath* getFlightPath();  // lazy cannot be const  
 
@@ -390,6 +392,10 @@ class OKCORE_API Opticks {
        unsigned     getSnapSteps() ;
        void         getSnapEyes(std::vector<glm::vec3>& eyes); 
        Snap*        getSnap(SRenderer* renderer);
+
+
+       const char* getOutPath(const char* namestem="namestem", const char* ext=".jpg", int index=-1) ; 
+
 
 
        const char* getLODConfigString();

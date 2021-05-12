@@ -58,6 +58,7 @@ set(TEST_SOURCES
     OpticksRunTest.cc
 
     FlightPathTest.cc
+    Opticks_getOutPathTest.cc
 )
 
 
