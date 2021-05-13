@@ -458,10 +458,14 @@ class OKCORE_API Opticks {
        const char*          getDbgCSGPath();
        unsigned             getSeed() const ; 
        unsigned             getSkipAheadStep() const ;  // --skipaheadstep 1000
-
        int                  getRTX() const ; 
-       int                  getOneGASIAS() const ;
-
+   public:
+       int                     getOneGASIAS() const ;   // --one_gas_ias
+       void                    setOneGASIAS(int one_gas_ias) ; 
+       const char*             getSolidLabel() const ;  // --solid_label    
+       std::vector<unsigned>&  getSolidSelection() ; 
+       const std::vector<unsigned>& getSolidSelection() const ;
+   public:
        int                  getRenderLoopLimit() const ; 
        int                  getAnnoLineHeight() const ;
 
@@ -822,6 +826,9 @@ class OKCORE_API Opticks {
        const char*          m_frame_renderer ; 
        SRngSpec*            m_rngspec ; 
        SensorLib*           m_sensorlib ; 
+       int                  m_one_gas_ias ; 
+       std::vector<unsigned>  m_solid_selection ; 
+
 };
 
 #include "OKCORE_TAIL.hh"

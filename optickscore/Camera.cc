@@ -19,6 +19,7 @@
 
 #include <cmath> 
 #include <cstdio>
+#include <csignal>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
@@ -171,9 +172,10 @@ void Camera::configureF(const char* name, std::vector<float> values)
 Camera::Camera(int width, int height, float basis ) 
     :
     m_zoom(SSys::getenvfloat("ZOOM",1.0f)),
-    m_type(SSys::getenvint("CAMERATYPE",0)),
+    m_type(0),   // gets overridden from OpticksCfg default either CAMERATYPE envvar or --cameratype option
     m_changed(true)
 {
+    LOG(info) << "m_type (CAMERATYPE) " << m_type ;  
     bool internal = true ; 
     setSize(width, height, internal);
     setPixelFactor(1); 
@@ -288,11 +290,24 @@ Camera::Style_t Camera::getStyle() const
 {
     return (Style_t)(m_type) ;
 }
+
+/**
+Camera::setType
+-----------------
+
+This is called by Opticks initialization, overriding the above ctor default, 
+from Composition::setCameraType, Opticks::postconfigureComposition/Composition::setCameraType
+Hence the default in OpticksCfg is what matters. 
+
+OpticksCfg default is set via CAMERTYPE envvar or --cameratype option to override.
+
+**/
 void Camera::setType(unsigned type)
 {
     m_type = type  ;
     m_changed = true ; 
-    LOG(debug) << " type " << m_type ; 
+    LOG(error) << " type " << m_type ; 
+    //std::raise(SIGINT);   
 }
 
 void Camera::setPerspective(){  setStyle(PERSPECTIVE_CAMERA) ; }
@@ -300,7 +315,10 @@ void Camera::setOrthographic(){ setStyle(ORTHOGRAPHIC_CAMERA) ; }
 void Camera::setEquirectangular(){ setStyle(EQUIRECTANGULAR_CAMERA) ; }
 
 
-unsigned Camera::getType() const { return m_type ; }
+unsigned Camera::getType() const { 
+    LOG(error) << " type " << m_type ; 
+    return m_type ; 
+}
 
 void Camera::setSize(int width, int height, bool internal )
 {

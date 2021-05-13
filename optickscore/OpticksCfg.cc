@@ -138,7 +138,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_multievent(1),
     m_enabledmergedmesh("~0"),
     m_analyticmesh(-1),
-    m_cameratype(0),
+    m_cameratype(SSys::getenvint("CAMERATYPE",0)),   // this overrides the Camera::Camera ctor
     m_modulo(-1),
     m_generateoverride(0),
     m_propagateoverride(0),
@@ -1455,6 +1455,13 @@ void OpticksCfg<Listener>::init()
        ("gpumon", "Switch on GPU buffer usage recording. ");   
 
 
+   char solid_label[128];
+   snprintf(solid_label,128, "Default %s ", m_solid_label.c_str() );
+   m_desc.add_options()
+       ("solid_label",   boost::program_options::value<std::string>(&m_solid_label), solid_label );
+
+
+
    char runcomment[128];
    snprintf(runcomment,128, "Informational comment used for run intent identification. Default %s ", m_runcomment.c_str() );
    m_desc.add_options()
@@ -2035,6 +2042,11 @@ int OpticksCfg<Listener>::getOneGASIAS() const  // --one_gas_ias
     return m_one_gas_ias ; 
 }
 
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getSolidLabel() const 
+{
+    return m_solid_label  ;
+}
 
 
 

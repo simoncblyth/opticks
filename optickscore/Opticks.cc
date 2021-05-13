@@ -415,7 +415,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_internal(false),
     m_frame_renderer(NULL),
     m_rngspec(NULL),
-    m_sensorlib(NULL)
+    m_sensorlib(NULL),
+    m_one_gas_ias(-1)
 {
 
     m_profile->setStamp(m_sargs->hasArg("--stamp"));
@@ -1362,10 +1363,31 @@ int Opticks::getRTX() const
 {
     return m_cfg->getRTX();
 }
-int Opticks::getOneGASIAS() const 
+int Opticks::getOneGASIAS() const    // returns value from commandline option --one_gas_ias but may be overriden by setOneGASIAS
 {
-    return m_cfg->getOneGASIAS() ; 
+    return m_one_gas_ias == -1 ? m_cfg->getOneGASIAS() : m_one_gas_ias ; 
 }  
+void Opticks::setOneGASIAS(int one_gas_ias)
+{
+    m_one_gas_ias = one_gas_ias ; 
+}
+std::vector<unsigned>& Opticks::getSolidSelection()
+{
+    return m_solid_selection ; 
+}
+const std::vector<unsigned>& Opticks::getSolidSelection() const 
+{
+    return m_solid_selection ; 
+}
+
+
+
+const char* Opticks::getSolidLabel() const 
+{
+    const std::string& solid_label = m_cfg->getSolidLabel(); 
+    return solid_label.empty() ? nullptr :  solid_label.c_str() ; 
+}
+
 
 
 int Opticks::getRenderLoopLimit() const 

@@ -137,44 +137,74 @@ On GPU workstation::
 
     MOI=ALL ./cxr.sh   # creates renders for each line of the arglist from a single geometry load 
 
+
 Scan the included geometry::
 
-    ./cxrscan.sh 
+    ./cxr_scan.sh 
 
 On laptop::
 
     cd ~/CSGOptiX
     ./grab.sh 
 
-
-::      
-
-    epsilon:opticks blyth$ snap.py --basedir /tmp/blyth/opticks/CSGOptiX/CSGOptiXRender/70000/render/CSG_GGeo --reldir 1
+    epsilon:CSGOptiX blyth$ ./cxr_table.sh 
     idx         -e    time(s)   relative     enabled geometry description                                          
-      0         7,     0.0017     0.1465     ONLY: 1:base_steel0x35a1810                                           
-      1         1,     0.0022     0.1905     ONLY: 5:PMT_3inch_pmt_solid0x43c0a40                                  
-      2         5,     0.0027     0.2351     ONLY: 1:sStrutBallhead0x34be280                                       
-      3         6,     0.0029     0.2503     ONLY: 1:uni10x3461bd0                                                 
-      4         4,     0.0031     0.2667     ONLY: 5:mask_PMT_20inch_vetosMask0x3c2e7c0                            
-      5         2,     0.0057     0.4926     ONLY: 5:NNVTMCPPMTsMask0x3c2c750                                      
-      6         9,     0.0088     0.7610     ONLY: 130:sPanel0x4e71750                                             
-      7         3,     0.0106     0.9133     ONLY: 5:HamamatsuR12860sMask0x3c39130                                 
-      8    1,2,3,4     0.0116     1.0000     ONLY PMT                                                              
-      9         0,     0.0980     8.4559     ONLY: 3084:sWorld0x33e3370                                            
-     10        t8,     0.1060     9.1475     EXCL: 1:uni_acrylic30x35932f0                                         
-     11         8,     0.7618    65.7446     ONLY: 1:uni_acrylic30x35932f0                                         
-     12        t0,     0.7921    68.3553     EXCL: 3084:sWorld0x33e3370                                            
-     13         t0     0.8366    72.1918     3084:sWorld0x33e3370                                                  
-     14        t6,     0.8426    72.7138     EXCL: 1:uni10x3461bd0                                                 
-     15        t3,     0.8466    73.0597     EXCL: 5:HamamatsuR12860sMask0x3c39130                                 
-     16        t7,     0.8505    73.3939     EXCL: 1:base_steel0x35a1810                                           
-     17        t2,     0.8565    73.9137     EXCL: 5:NNVTMCPPMTsMask0x3c2c750                                      
-     18        t4,     0.8584    74.0729     EXCL: 5:mask_PMT_20inch_vetosMask0x3c2e7c0                            
-     19        t1,     0.8604    74.2459     EXCL: 5:PMT_3inch_pmt_solid0x43c0a40                                  
-     20        t5,     0.8635    74.5202     EXCL: 1:sStrutBallhead0x34be280                                       
-     21        t9,     0.8793    75.8828     EXCL: 130:sPanel0x4e71750                                             
+      0         7,     0.0017     0.1042     ONLY: 1:base_steel0x35a1810                                           
+      1         5,     0.0017     0.1049     ONLY: 1:sStrutBallhead0x34be280                                       
+      2         9,     0.0018     0.1135     ONLY: 130:sPanel0x4e71750                                             
+      3         1,     0.0021     0.1292     ONLY: 5:PMT_3inch_pmt_solid0x43c0a40                                  
+      4         6,     0.0029     0.1824     ONLY: 1:uni10x3461bd0                                                 
+      5         3,     0.0082     0.5075     ONLY: 5:HamamatsuR12860sMask0x3c39130                                 
+      6         4,     0.0082     0.5084     ONLY: 5:mask_PMT_20inch_vetosMask0x3c2e7c0                            
+      7         2,     0.0104     0.6408     ONLY: 5:NNVTMCPPMTsMask0x3c2c750                                      
+      8    1,2,3,4     0.0162     1.0000     ONLY PMT                                                              
+      9         0,     0.1163     7.1935     ONLY: 3084:sWorld0x33e3370                                            
+     10        t8,     0.1203     7.4401     EXCL: 1:uni_acrylic30x35932f0                                         
+     11         8,     0.5373    33.2399     ONLY: 1:uni_acrylic30x35932f0                                         
+     12        t0,     0.5530    34.2133     EXCL: 3084:sWorld0x33e3370                                            
+     13        t1,     0.6060    37.4915     EXCL: 5:PMT_3inch_pmt_solid0x43c0a40                                  
+     14        t7,     0.6151    38.0565     EXCL: 1:base_steel0x35a1810                                           
+     15        t2,     0.6168    38.1601     EXCL: 5:NNVTMCPPMTsMask0x3c2c750                                      
+     16        t6,     0.6253    38.6862     EXCL: 1:uni10x3461bd0                                                 
+     17        t3,     0.6279    38.8472     EXCL: 5:HamamatsuR12860sMask0x3c39130                                 
+     18         t0     0.6334    39.1866     3084:sWorld0x33e3370                                                  
+     19        t4,     0.6371    39.4137     EXCL: 5:mask_PMT_20inch_vetosMask0x3c2e7c0                            
+     20        t5,     0.6470    40.0268     EXCL: 1:sStrutBallhead0x34be280                                       
+     21        t9,     0.6471    40.0361     EXCL: 130:sPanel0x4e71750                                             
     idx         -e    time(s)   relative     enabled geometry description                                          
-    epsilon:opticks blyth$ 
+    epsilon:CSGOptiX blyth$ 
+
+
+    epsilon:CSGOptiX blyth$ ./cxr_table.sh -h
+    usage: 
+    ::
+
+        ggeo.py --mm > $TMP/mm.txt    # create list of mm names used for labels
+
+        snap.py       # list the snaps in speed order with labels 
+
+        open $(snap.py --jpg)         # open the jpg ordered by render speed
+
+           [-h] [--level LEVEL] [--basedir BASEDIR] [--reldir RELDIR] [--jpg]
+           [--refjpgpfx REFJPGPFX] [--s5base S5BASE] [--refjpg] [--pagejpg]
+           [--mvjpg] [--cpjpg] [--argline] [--rst]
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --level LEVEL         logging level
+      --basedir BASEDIR     base
+      --reldir RELDIR       Relative dir beneath $TMP/snap from which to load snap
+                            .json
+      --jpg                 List jpg paths in speed order
+      --refjpgpfx REFJPGPFX
+                            List jpg paths s5 background image presentation format
+      --s5base S5BASE       Presentation repo base
+      --refjpg              List jpg paths s5 background image presentation format
+      --pagejpg             List jpg for inclusion into s5 presentation
+      --mvjpg               List jpg for inclusion into s5 presentation
+      --cpjpg               List cp commands to place into presentation repo
+      --argline             List argline in speed order
+      --rst                 Dump table in RST format
 
 
 

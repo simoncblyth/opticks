@@ -11,6 +11,7 @@
 
 """
 import os, logging, glob, json, re, argparse 
+log = logging.getLogger(__name__)
 import numpy as np
 from opticks.ana.rsttable import RSTTable
 
@@ -53,29 +54,45 @@ class MM(object):
 
 
 class Snap(object):
+    @classmethod
+    def is_valid(cls, jpg_path):
+        #json_path = cls.find_json(jpg_path) 
+        json_path = jpg_path.replace(".jpg", ".json")
+        valid = (not json_path is None) and json_path[-5:] == ".json"
+        log.debug("is_valid %r %r %r " % (jpg_path, json_path, valid ) ) 
+        return valid 
 
-    def __init__(self, path):
-        path = path 
-        js = json.load(open(path,"r"))
-
-        # set jpg to the first that exists  
-        jps = [path.replace(".json","00000.jpg"),path.replace(".json",".jpg")]
-        jpg = None
-        for jp in jps: 
-           if os.path.exists(jp):
-               jpg = jp
+    @classmethod
+    def find_json(cls, path):
+        """
+        :param path: to jpg 
+        :return jsp: first json path guessed from the jpg path that exists  
+        """
+        assert path[-4:] == ".jpg"
+        jsp = None
+        paths = [path.replace("00000.jpg", ".json"), path.replace(".jpg",".json")]
+        for js in paths:
+           if os.path.exists(js) and js[:-5] == ".json" :
+               jsp = js
                break 
            pass
         pass
+        return jsp
+
+    def __init__(self, jpg_path):
+        json_path = jpg_path.replace(".jpg", ".json")
+        #json_path = self.find_json(jpg_path) 
+        log.debug("jpg_path %s json_path %s " % (jpg_path, json_path))          
+        js = json.load(open(json_path,"r"))
 
         emm = js['emm']
 
         self.av = js['av'] 
         self.emm = emm
 
-        self.path = path 
+        self.path = json_path 
         self.js = js 
-        self.jpg = jpg 
+        self.jpg = jpg_path
         self.argline = js['argline']
 
         # below are set by SnapScan after sorting
@@ -111,6 +128,17 @@ class Snap(object):
         name = os.path.basename(self.jpg)
         tname = self.jpg_tname()
         return None if name == tname else "mv %s %s" % (name, tname)
+
+    def cpjpg(self, pfx, s5base):
+        s5base = os.path.expandvars(s5base)
+        name = os.path.basename(self.jpg)
+        ppath = "%s%s/%s"%(s5base,pfx,name)
+        if os.path.exists(ppath):
+            ret = None   
+        else:
+            ret = "cp %s %s" % (self.jpg, ppath)
+        return ret 
+ 
 
     def refjpg(self, pfx, afx="1280px_720px", indent="    "): 
         """
@@ -163,9 +191,9 @@ class Snap(object):
 class SnapScan(object):
     def __init__(self, basedir, reldir, mm=None, candle_emm="1,2,3,4"):
         self.mm = mm
-        jsondir = os.path.join(basedir, reldir)
-        paths = glob.glob("%s/*.json" % jsondir) 
-
+        outdir = os.path.join(basedir, reldir)
+        raw_paths = glob.glob("%s/*.jpg" % outdir) 
+        paths = filter(lambda p:Snap.is_valid(p), raw_paths)
         snaps = list(map(Snap,paths))
         snaps = sorted(snaps, key=lambda s:s.av)
         candle = None
@@ -205,6 +233,9 @@ class SnapScan(object):
     def mvjpg(self):
         return "\n".join(list(filter(None,map(lambda s:s.mvjpg(),self.snaps))))
 
+    def cpjpg(self, pfx, s5base):
+        return "\n".join(list(filter(None,map(lambda s:s.cpjpg(pfx, s5base),self.snaps))))
+
     def argline(self):
         return "\n".join(list(map(lambda s:s.argline,self.snaps)))
 
@@ -224,9 +255,11 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--reldir", default="lLowerChimney_phys", help="Relative dir beneath $TMP/snap from which to load snap .json" ) 
     parser.add_argument(  "--jpg", action="store_true", help="List jpg paths in speed order" ) 
     parser.add_argument(  "--refjpgpfx", default="/env/presentation/snap/lLowerChimney_phys", help="List jpg paths s5 background image presentation format" ) 
+    parser.add_argument(  "--s5base", default="$HOME/simoncblyth.bitbucket.io", help="Presentation repo base" )
     parser.add_argument(  "--refjpg", action="store_true", help="List jpg paths s5 background image presentation format" ) 
     parser.add_argument(  "--pagejpg", action="store_true", help="List jpg for inclusion into s5 presentation" ) 
     parser.add_argument(  "--mvjpg", action="store_true", help="List jpg for inclusion into s5 presentation" ) 
+    parser.add_argument(  "--cpjpg", action="store_true", help="List cp commands to place into presentation repo" ) 
     parser.add_argument(  "--argline", action="store_true", help="List argline in speed order" ) 
     parser.add_argument(  "--rst", action="store_true", help="Dump table in RST format" ) 
     args = parser.parse_args()
@@ -249,6 +282,8 @@ if __name__ == '__main__':
         print(ss.pagejpg())
     elif args.mvjpg:
         print(ss.mvjpg())
+    elif args.cpjpg:
+        print(ss.cpjpg(args.refjpgpfx, args.s5base))
     elif args.argline:
         print(ss.argline())
     elif args.rst:
