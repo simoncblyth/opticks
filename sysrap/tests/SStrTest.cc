@@ -238,6 +238,57 @@ void test_ExtractInt()
     assert( i == 0 ); 
 }
 
+void test_SimpleMatch()
+{
+    std::vector<std::string> labels = {
+        "r0",
+        "r1",
+        "r2",
+        "r3",
+        "r1p0","r1p1","r1p2","r1p3",
+        "r2p0","r2p1","r2p2","r2p3",
+        "R3P0N0",
+        "R3P0N1",
+        "R3P0N2",
+        "R3P1N0",
+        "R3P1N1",
+        "R3P1N2",
+        "R3P1N3",
+    }; 
+   
+    std::vector<std::string> querys = { "r2", "r2$", "r2p", "r2p$", "r2p2$", "R3P1", "R3P1N", "R3P1N2$" } ; 
+
+    for(int i=0 ; i < int(querys.size()) ; i++)
+    {
+        const char* q = querys[i].c_str() ;   
+        unsigned lq = strlen(q); 
+        bool qed = q[lq-1] == '$' ;
+
+        std::cout 
+            << " q " << q 
+            << " lq " << lq 
+            << " qed: " << ( qed ? "Y" : "N" )
+            << std::endl 
+            ;
+
+
+        for(int j=0 ; j < int(labels.size()) ; j++)
+        {
+            const char* s = labels[j].c_str(); 
+            bool sm = SStr::SimpleMatch(s,q); 
+            std::cout 
+                << " SStr::SimpleMatch(" 
+                << std::setw(5) << s 
+                << " , "
+                << std::setw(5) << q 
+                << " )  : "
+                << ( sm ? "Y" : " " )
+                << std::endl
+                ;
+        }
+    }
+}
+
 
 int main(int argc , char** argv )
 {
@@ -258,9 +309,11 @@ int main(int argc , char** argv )
     test_Save();  
     test_Split();  
     test_Concat_(); 
-    */
     test_AsInt(); 
     test_ExtractInt(); 
+    */
+
+    test_SimpleMatch(); 
 
     return 0  ; 
 }

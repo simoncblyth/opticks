@@ -162,6 +162,29 @@ bool SStr::StartsWith( const char* s, const char* q)
     return strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
 }
 
+/**
+SStr::SimpleMatch
+---------------------
+
+Return if the argument string s matches the query string q 
+If q ends with '$' require a full match otherwise allow
+StartsWith match.
+
+**/
+bool SStr::SimpleMatch(const char* s, const char* q )
+{
+    unsigned ls = strlen(s); 
+    unsigned lq = strlen(q); 
+
+    if(ls == 0 ) return false ; 
+    if(lq == 0 ) return false ; 
+
+    bool qed = q[lq-1] == '$' ; 
+    bool qed_match = 0 == strncmp(s, q, lq - 1) && ls == lq - 1 ;   // exact match up to the dollar 
+    return qed ? qed_match : StartsWith(s, q) ;
+}
+
+
 
 
 /**
