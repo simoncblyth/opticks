@@ -186,6 +186,40 @@ bool SStr::SimpleMatch(const char* s, const char* q )
 
 
 
+/** 
+SStr::Match
+-------------
+
+Based on https://www.geeksforgeeks.org/wildcard-character-matching/
+
+See tests/match.cc
+
+
+The second argument string can contain wildcard tokens:
+    
+`*` 
+     matches with 0 or more of any char (NB '**' not supported)
+`?`   
+     matches any one character.
+`$`
+     when appearing at end of q requires the end of s to match  
+   
+**/ 
+    
+bool SStr::Match(const char* s, const char* q) 
+{
+    if (*q == '\0' && *s == '\0') return true;
+
+    if (*q == '*' && *(q+1) != '\0' && *s == '\0') return false;  // reached end of s but still q chars coming 
+
+    if (*q == '$' && *(q+1) == '\0' && *s == '\0' ) return true ; 
+    
+    if (*q == '?' || *q == *s) return SStr::Match(s+1, q+1);  // on to next char
+
+    if (*q == '*') return SStr::Match(s, q+1) || SStr::Match(s+1, q);   // '*' can match nothing or anything in s, including literal '*'
+          
+    return false;
+}         
 
 /**
 

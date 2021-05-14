@@ -63,6 +63,7 @@ class SYSRAP_API SStr {
       static bool EndsWith( const char* s, const char* q);
       static bool StartsWith( const char* s, const char* q);
       static bool SimpleMatch(const char* s, const char* q );
+      static bool Match(const char* s, const char* q);    // q may contain wildcard chars '?' for 1 character and '*' for several  
 
 
       static bool HasPointerSuffix( const char* name, unsigned hexdigits ) ;   // 12 typically, 9 with Geant4 ???
