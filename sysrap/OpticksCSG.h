@@ -231,6 +231,19 @@ struct CSG
         return !(type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
     }
 
+    static bool IsOperator(OpticksCSG_t type)
+    {
+        return  (type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
+    }
+
+    static bool IsZero(OpticksCSG_t type)
+    {
+        return  type == CSG_ZERO ; 
+    }
+
+
+
+
     static bool HasPlanes(OpticksCSG_t type)
     {
         return (type == CSG_TRAPEZOID || type == CSG_CONVEXPOLYHEDRON || type == CSG_SEGMENT ) ; 
