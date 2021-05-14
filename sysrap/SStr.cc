@@ -179,7 +179,7 @@ bool SStr::SimpleMatch(const char* s, const char* q )
     if(ls == 0 ) return false ; 
     if(lq == 0 ) return false ; 
 
-    bool qed = q[lq-1] == '$' ; 
+    bool qed = q[lq-1] == '$' || q[lq-1] == '@' ; 
     bool qed_match = 0 == strncmp(s, q, lq - 1) && ls == lq - 1 ;   // exact match up to the dollar 
     return qed ? qed_match : StartsWith(s, q) ;
 }
@@ -201,7 +201,7 @@ The second argument string can contain wildcard tokens:
      matches with 0 or more of any char (NB '**' not supported)
 `?`   
      matches any one character.
-`$`
+`$` or '@'
      when appearing at end of q requires the end of s to match  
    
 **/ 
@@ -212,7 +212,7 @@ bool SStr::Match(const char* s, const char* q)
 
     if (*q == '*' && *(q+1) != '\0' && *s == '\0') return false;  // reached end of s but still q chars coming 
 
-    if (*q == '$' && *(q+1) == '\0' && *s == '\0' ) return true ; 
+    if ( (*q == '$' || *q == '@') && *(q+1) == '\0' && *s == '\0' ) return true ; 
     
     if (*q == '?' || *q == *s) return SStr::Match(s+1, q+1);  // on to next char
 
