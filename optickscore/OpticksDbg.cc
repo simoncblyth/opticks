@@ -330,10 +330,14 @@ bool OpticksDbg::isSkipSolidIdx(unsigned lvIdx) const   // --skipsolidname
 
 bool OpticksDbg::isEnabledMergedMesh(unsigned mm) const 
 {
-    std::bitset<64> bs(m_enabledmergedmesh); 
-    assert(mm < 64); 
     bool emptylistdefault = true ;   
-    return bs.count() == 0 ? emptylistdefault : bs[mm] ;  
+    bool emm = true ;  
+    if(mm < 64)
+    {
+        std::bitset<64> bs(m_enabledmergedmesh); 
+        emm = bs.count() == 0 ? emptylistdefault : bs[mm] ;  
+    }
+    return emm ; 
     //return IsListed(mm, m_enabledmergedmesh, true ); 
 }
 
