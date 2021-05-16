@@ -805,6 +805,7 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--brief", action="store_true", help="Brief summary of nodes selected by idx." ) 
     parser.add_argument(  "--names", action="store_true", help="Identity and PV/LV/SO names of  nodes selected by idx." ) 
     parser.add_argument(  "--mm",   action="store_true", help="MM Names" ) 
+    parser.add_argument(  "--mmtrim",   action="store_true", help="MM Names with 0x addr trimmed" ) 
     parser.add_argument(  "--mmsmry",   action="store_true", help="MM Names" ) 
     parser.add_argument(  "--sonames", action="store_true", help="Dump solid names for the nodes selected by idx." ) 
     parser.add_argument(  "--soidx", action="store_true", help="Dump solid_idx (aka: lvidx or meshidx/midx) for the nodes selected by node or triplet idx." ) 
@@ -854,13 +855,16 @@ if __name__ == '__main__':
 
     if args.check:
         gg.consistency_check()
-    elif args.mm:
+    elif args.mm or args.mmtrim:
         for ridx in gg.mmidx:
             pidx = 0 
             oidx = 0 
             num_vol = gg.get_num_volumes(ridx) 
             msn = gg.get_soname(ridx, pidx, oidx)
             mm_name = "%d:%s" % (num_vol, msn)
+            if args.mmtrim:
+                mm_name = mm_name.split("0x")[0] 
+            pass
             print(mm_name)
         pass
     elif args.mmsmry:

@@ -25,7 +25,7 @@ class MM(object):
         mm = open(mm, "r").read().splitlines() if os.path.exists(mm) else None
         self.mm = mm
         if mm is None:
-            print("missing mm.txt, create it with : ggeo.py --mm > $TMP/mm.txt  " ) 
+            print("missing mm.txt/mmtrim.txt, create with : ggeo.py --mmtrim > $TMP/mm.txt  " ) 
         pass
 
     def imm(self, emm):
@@ -62,37 +62,16 @@ class Snap(object):
         log.debug("is_valid %r %r %r " % (jpg_path, json_path, valid ) ) 
         return valid 
 
-    @classmethod
-    def find_json(cls, path):
-        """
-        :param path: to jpg 
-        :return jsp: first json path guessed from the jpg path that exists  
-        """
-        assert path[-4:] == ".jpg"
-        jsp = None
-        paths = [path.replace("00000.jpg", ".json"), path.replace(".jpg",".json")]
-        for js in paths:
-           if os.path.exists(js) and js[:-5] == ".json" :
-               jsp = js
-               break 
-           pass
-        pass
-        return jsp
-
     def __init__(self, jpg_path):
         json_path = jpg_path.replace(".jpg", ".json")
-        #json_path = self.find_json(jpg_path) 
         log.debug("jpg_path %s json_path %s " % (jpg_path, json_path))          
         js = json.load(open(json_path,"r"))
 
-        emm = js['emm']
-
-        self.av = js['av'] 
-        self.emm = emm
-
-        self.path = json_path 
         self.js = js 
         self.jpg = jpg_path
+        self.path = json_path 
+        self.av = js['av'] 
+        self.emm = js['emm']
         self.argline = js['argline']
 
         # below are set by SnapScan after sorting
@@ -170,35 +149,63 @@ class Snap(object):
     def row(self):
         return  (int(self.idx), self.emm, self.av, self.over_candle, self.label )
 
+
+    SPACER = "    "
     LABELS = ["idx", "-e", "time(s)", "relative", "enabled geometry description" ] 
     WIDS = [     3,     10,     10,        10,       70 ] 
     HFMT = [  "%3s",  "%10s", "%10s",   "%10s",   "%-70s" ]  
     RFMT = [  "%3d", "%10s", "%10.4f", "%10.4f",  "%-70s" ]  
-    PRE =  [  ""   , ""    , ""      , ""      ,  "    " ]    ## spacer for legibility 
+    PRE  =  [  ""   , ""    , SPACER , SPACER  ,  SPACER ] 
+    POST =  [  ""   , ""    , SPACER , SPACER  ,  SPACER ]  
+
 
     def __repr__(self):
-        RFMT = [self.PRE[i] + self.RFMT[i] for i in range(len(self.RFMT))]
+        RFMT = [ self.PRE[i] + self.RFMT[i] +self.POST[i] for i in range(len(self.RFMT))]
         rfmt = " ".join(RFMT)
+        #print(rfmt)
         return rfmt % self.row()
 
     @classmethod
     def Hdr(cls):
-        HFMT = [cls.PRE[i] + cls.HFMT[i] for i in range(len(cls.HFMT))]
+        HFMT = [cls.PRE[i] + cls.HFMT[i] + cls.POST[i] for i in range(len(cls.HFMT))]
         hfmt = " ".join(HFMT)
         return hfmt % tuple(cls.LABELS)
 
 
+
+
 class SnapScan(object):
-    def __init__(self, basedir, reldir, mm=None, candle_emm="1,2,3,4"):
-        self.mm = mm
-        outdir = os.path.join(basedir, reldir)
-        raw_paths = glob.glob("%s/*.jpg" % outdir) 
+
+    @classmethod
+    def MakeSnaps(cls, globptn):
+        raw_paths = glob.glob(globptn) 
+        log.debug("raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
         paths = filter(lambda p:Snap.is_valid(p), raw_paths)
         snaps = list(map(Snap,paths))
         snaps = sorted(snaps, key=lambda s:s.av)
-        candle = None
+        return snaps
 
-        for s in snaps:
+    @classmethod
+    def SelectSnaps(cls, all_snaps ):
+        snaps = []
+        for s in all_snaps:  
+            #print(s.imm)
+            if len(s.imm) == 1 or s.imm == [8, 0] or s.imm == [1,2,3,4]:
+                snaps.append(s)
+            else:
+                log.debug("skip %s " % str(s.imm))
+            pass   
+        pass
+        return snaps
+
+    def __init__(self, globptn, mm=None, candle_emm="1,2,3,4"):
+        """
+        :param globptn: eg /tmp/blyth/opticks/CSGOptiX/CSGOptiXRender/CSG_GGeo/cvd1/70000/cxr_overview/cam_0_emm_*/*.jpg
+        """
+        self.mm = mm
+        all_snaps = self.MakeSnaps(globptn)
+        candle = None
+        for s in all_snaps:
             s.sc = self
             if s.emm == candle_emm:
                 candle = s
@@ -206,13 +213,16 @@ class SnapScan(object):
         pass
 
         # filter out the double emm
-        snaps = list(filter(lambda s:len(s.imm) != 2, snaps))
+        #snaps = list(filter(lambda s:len(s.imm) != 2, snaps))
+        snaps = self.SelectSnaps(all_snaps)
 
         for idx, s in enumerate(snaps):
             s.idx = idx
         pass
         self.snaps = snaps
         self.candle = candle 
+
+
 
     def table(self):
         table = np.empty([len(self.snaps),len(Snap.LABELS)], dtype=np.object ) 
@@ -251,8 +261,7 @@ def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
     parser = argparse.ArgumentParser(doc)
     parser.add_argument(     "--level", default="info", help="logging level" ) 
-    parser.add_argument(  "--basedir", default="$TMP/snap", help="base" ) 
-    parser.add_argument(  "--reldir", default="lLowerChimney_phys", help="Relative dir beneath $TMP/snap from which to load snap .json" ) 
+    parser.add_argument(  "--globptn", default="$TMP/snap/*.jpg", help="base" ) 
     parser.add_argument(  "--jpg", action="store_true", help="List jpg paths in speed order" ) 
     parser.add_argument(  "--refjpgpfx", default="/env/presentation/snap/lLowerChimney_phys", help="List jpg paths s5 background image presentation format" ) 
     parser.add_argument(  "--s5base", default="$HOME/simoncblyth.bitbucket.io", help="Presentation repo base" )
@@ -262,6 +271,7 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--cpjpg", action="store_true", help="List cp commands to place into presentation repo" ) 
     parser.add_argument(  "--argline", action="store_true", help="List argline in speed order" ) 
     parser.add_argument(  "--rst", action="store_true", help="Dump table in RST format" ) 
+    parser.add_argument(  "--snaps", action="store_true", help="Debug: just create SnapScan " ) 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -269,11 +279,11 @@ def parse_args(doc, **kwa):
 
 
 if __name__ == '__main__':
-
     args = parse_args(__doc__)
+    log.debug(" args %s " % str(args))
     mm = MM("$TMP/mm.txt")
 
-    ss = SnapScan(args.basedir, args.reldir, mm) 
+    ss = SnapScan(args.globptn, mm) 
     if args.jpg:
         print(ss.jpg())
     elif args.refjpg:
@@ -286,9 +296,11 @@ if __name__ == '__main__':
         print(ss.cpjpg(args.refjpgpfx, args.s5base))
     elif args.argline:
         print(ss.argline())
+    elif args.snaps:
+        snaps = ss.snaps
     elif args.rst:
         t = ss.table()
-        rst = RSTTable.Render(t, Snap.LABELS, Snap.WIDS, Snap.HFMT, Snap.RFMT, Snap.PRE )
+        rst = RSTTable.Render(t, Snap.LABELS, Snap.WIDS, Snap.HFMT, Snap.RFMT, Snap.PRE, Snap.POST )
         print(rst)
     else:
         print(ss) 

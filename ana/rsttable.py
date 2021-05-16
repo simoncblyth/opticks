@@ -8,14 +8,16 @@ class RSTTable(object):
          return "+".join([""]+list(map(lambda j:char*widths[j], range(len(widths))))+[""]) 
 
      @classmethod
-     def Render(cls, t, labels, wids, hfmt, rfmt, pre):
+     def Render(cls, t, labels, wids, hfmt, rfmt, pre, post):
          tab = RSTTable(t)  
          tab.labels = labels
          tab.pre  = np.array( list(map(len,pre)), dtype=np.int32 )
+         tab.post = np.array( list(map(len,post)), dtype=np.int32 )
          tab.wids = np.array( list(map(int,wids)), dtype=np.int32 )
-         tab.hfmt = [ pre[i]+hfmt[i] for i in range(len(hfmt)) ]
-         tab.rfmt = [ pre[i]+rfmt[i] for i in range(len(rfmt)) ]
+         tab.hfmt = [ pre[i]+hfmt[i]+post[i] for i in range(len(hfmt)) ]
+         tab.rfmt = [ pre[i]+rfmt[i]+post[i] for i in range(len(rfmt)) ]
          tab.wids += tab.pre 
+         tab.wids += tab.post 
          return str(tab)
 
      def __init__(self, t):
