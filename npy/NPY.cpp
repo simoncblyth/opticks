@@ -1572,7 +1572,7 @@ void NPY<T>::addOffset( int j, int k, unsigned offset, bool preserve_zero, bool 
             unsigned u = getUInt(i,jj,kk) ; 
             unsigned idx0 = u & NOTSIGNBIT ;
             unsigned bit0 = u & SIGNBIT ; 
-            unsigned val1 = idx0 == 0 && preserve_zero ? u  : ( bit0 | (idx0 + offset) ) ; 
+            unsigned val1 = idx0 == 0 && preserve_zero ? u  : ( bit0 | (idx0 + offset) ) ;   // hmm looses signbit for idx0
             setUInt( i, jj, kk, l,  val1 );  
         }
     }   

@@ -21,6 +21,8 @@ find_package(OKConf REQUIRED CONFIG)
 find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
 
+set(WITH_PLOG YES)
+
 set(SOURCES
     SYSRAP_LOG.cc 
     PLOG.cc 
@@ -201,6 +203,14 @@ target_include_directories( ${name} PUBLIC
    ${OPTICKS_PREFIX}/externals/glm/glm
 )
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
+
+if(WITH_STTF)
+target_compile_definitions( ${name} PUBLIC WITH_STTF)
+endif()
+if(WITH_PLOG)
+target_compile_definitions( ${name} PUBLIC WITH_PLOG)
+endif()
+
 
 
 # <findname>_targets is my convention

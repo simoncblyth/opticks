@@ -6,14 +6,19 @@
 #include <iostream>
 #include <cassert>
 
+#ifdef WITH_PLOG
 #include <plog/Severity.h>
 #include "PLOG.hh"
-
+#else
+#define LOG(severity) if(false) std::cout    // just kill the logging when no PLOG
+#endif
 
 
 struct SIMG 
 {
+#ifdef WITH_PLOG
    static const plog::Severity LEVEL ; 
+#endif
 
    int width ; 
    int height ; 
@@ -23,7 +28,7 @@ struct SIMG
    const char* loadext ; 
    const bool owned ; 
 
-   SIMG(const char* path); 
+   SIMG(const char* path, int desired_channels=0);   // 0:asis channels 
    SIMG(int width_, int height_, int channels_, unsigned char* data_ ); 
    void setData(unsigned char* data_) ; 
    virtual ~SIMG();  
@@ -87,9 +92,9 @@ struct SIMG
 #include "STTF.hh"
 
 
-
+#ifdef WITH_PLOG
 const plog::Severity SIMG::LEVEL = PLOG::EnvLevel("SIMG", "DEBUG"); 
-
+#endif
 
 
 inline bool SIMG::EndsWith( const char* s, const char* q) // static 
@@ -112,12 +117,12 @@ inline const char* SIMG::ChangeExt( const char* s, const char* x1, const char* x
 }
 
 
-inline SIMG::SIMG(const char* path) 
+inline SIMG::SIMG(const char* path, int desired_channels) 
     :
     width(0),
     height(0),
     channels(0),
-    data(stbi_load(path, &width, &height, &channels, 0)),
+    data(stbi_load(path, &width, &height, &channels, desired_channels)),    
     loadpath(strdup(path)),
     loadext(Ext(loadpath)),
     owned(true)
@@ -229,6 +234,7 @@ inline void SIMG::writeJPG(const char* path, int quality) const
     stbi_write_jpg(path, width, height, channels, data, quality );
 }
 
+
 inline const char* SIMG::Ext(const char* path)
 {
     std::string s = path ; 
@@ -246,7 +252,11 @@ void SIMG::annotate( const char* bottom_line, const char* top_line, int line_hei
     // Accessing ttf in the ctor rather than doing it here at point of use turns out to be flakey somehow ?
     // Possibly related to this being implemented in the header ?
 
+#ifdef WITH_PLOG
     STTF* ttf = PLOG::instance ? PLOG::instance->ttf : nullptr ; 
+#else
+    STTF* ttf = nullptr ; 
+#endif
 
     if( ttf == nullptr )
     {
