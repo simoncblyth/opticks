@@ -1294,7 +1294,7 @@ void GParts::add(GParts* other)
     NPY<float>* other_plan_buffer = other->getPlanBuffer() ;
 
 
-    if(m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
+    if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
     {
         LOG(LEVEL) << " --gparts_transform_offset " ; 
         bool preserve_zero = true ; 
