@@ -520,9 +520,12 @@ void G4Opticks::reset()
 {
     resetCollectors(); 
 
-    m_hits->reset();   // the cloned hits (and hiys) are owned by G4Opticks, so they must be reset here  
+    if(m_hits)
+    {
+        m_hits->reset();   // the cloned hits (and hiys) are owned by G4Opticks, so they must be reset here  
+    }
 
-    if(m_way_enabled)
+    if(m_way_enabled && m_hiys)
     {
         LOG(fatal) << " m_way_enabled reset m_hiys " ; 
         m_hiys->reset(); 
