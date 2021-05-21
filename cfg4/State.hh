@@ -29,6 +29,14 @@
 class G4Step ; 
 class G4StepPoint ; 
 
+/**
+State 
+-------
+
+Holds G4Step, G4OpBoundaryProcessStatus, premat, postmat, CStage::CStage_t 
+
+
+**/
 
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API State 

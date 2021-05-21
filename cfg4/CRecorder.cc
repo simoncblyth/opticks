@@ -599,6 +599,8 @@ CRecorder::WriteStepPoint
 
 NB the last argumnent is only relevant to --recpoi mode
 
+Passes thru to m_writer CWriter::writeStepPoint 
+
 **/
 
 

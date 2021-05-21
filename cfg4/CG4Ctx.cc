@@ -186,6 +186,16 @@ std::string CG4Ctx::desc_stats() const
     return ss.str();
 }
 
+/**
+CG4Ctx::initEvent
+--------------------
+
+Collect the parameters of the OpticksEvent which 
+dictate what needs to be collected.
+
+
+**/
+
 void CG4Ctx::initEvent(const OpticksEvent* evt)
 {
     _ok_event_init = true ;

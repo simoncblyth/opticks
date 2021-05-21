@@ -158,9 +158,6 @@ and recording truncation
 
 * hard_truncate is only expected the 2nd time adding into top slot 
 
-
-
-
 * *last* argument is only used in --recpoi mode where it prevents 
    truncated photons from never being "done" and giving seqhis zeros
 

@@ -5,6 +5,14 @@
 
 class G4MaterialPropertiesTable ; 
 
+/**
+CDump
+=======
+
+Dumps Geant4 materials and surfaces
+
+**/
+
 class CFG4_API CDump {
     public:
         static const unsigned EDGEITEMS ; 

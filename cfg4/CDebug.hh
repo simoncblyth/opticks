@@ -52,6 +52,9 @@ only when CG4Ctx::is_dbg returns true, which requires a debug option such as::
      --dbgseqhis 0xbbbbbbbbcd
 
 
+This looks like it might be trying to debug in an expensive way what CPhoton
+does in a cheap way.
+
 **/
 
 class CFG4_API CDebug {
