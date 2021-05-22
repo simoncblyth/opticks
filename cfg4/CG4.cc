@@ -52,6 +52,8 @@
 #include "G4GeometryManager.hh"
 
 //cfg4-
+#include "CG4Ctx.hh"
+#include "CManager.hh"
 #include "CRandomEngine.hh"
 #include "CMixMaxRng.hh"
 
@@ -91,11 +93,15 @@ Opticks*    CG4::getOpticks() const { return m_ok ; }
 OpticksHub* CG4::getHub() const { return m_hub ; }
 OpticksRun* CG4::getRun() const { return m_run ; } 
 
-CRandomEngine*     CG4::getRandomEngine() const { return m_engine ; }
+CManager*          CG4::getManager() const { return m_manager ; }
+CRandomEngine*     CG4::getRandomEngine() const { return m_manager->getRandomEngine() ; }
+
+
 CGenerator*        CG4::getGenerator() const { return m_generator ; }
-CRecorder*         CG4::getRecorder() const { return m_recorder ; }
-unsigned long long CG4::getSeqHis() const { return m_recorder->getSeqHis() ; }
-unsigned long long CG4::getSeqMat() const { return m_recorder->getSeqMat() ; }
+CRecorder*         CG4::getRecorder() const { return m_manager->getRecorder() ; }
+unsigned long long CG4::getSeqHis() const { return getRecorder()->getSeqHis() ; }
+unsigned long long CG4::getSeqMat() const { return getRecorder()->getSeqMat() ; }
+
 CStepRec*          CG4::getStepRec() const { return m_steprec ; }
 CGeometry*         CG4::getGeometry() const { return m_geometry ; }
 CMaterialBridge*   CG4::getMaterialBridge() const { return m_geometry->getMaterialBridge() ; }
@@ -109,20 +115,23 @@ CTrackingAction*   CG4::getTrackingAction() const { return m_ta ;    }
 CSensitiveDetector* CG4::getSensitiveDetector() const { return m_sd ;    }
 CSteppingAction*   CG4::getSteppingAction() const { return m_sa ;    } 
 
-double             CG4::getCtxRecordFraction() const { return m_ctx._record_fraction ; }
+double             CG4::getCtxRecordFraction() const { return getCtx()._record_fraction ; }
 NPY<float>*        CG4::getGensteps() const { return m_collector->getGensteps(); } 
 
 const std::map<std::string, unsigned>& CG4::getMaterialMap() const 
 {
     return m_geometry->getMaterialMap();
 }
+
+
+
 double CG4::flat_instrumented(const char* file, int line)
 {
-    return m_engine ? m_engine->flat_instrumented(file, line) : G4UniformRand() ; 
+    return m_manager->flat_instrumented(file, line); 
 }
-CG4Ctx& CG4::getCtx()
+CG4Ctx& CG4::getCtx() const 
 {
-    return m_ctx ; 
+    return m_manager->getCtx() ; 
 }
 
 
@@ -151,8 +160,6 @@ CG4::CG4(OpticksHub* hub)
     m_preinit(preinit()),
     m_run(m_ok->getRun()),
     m_cfg(m_ok->getCfg()),
-    m_ctx(m_ok),
-    m_engine(m_ok->isAlign() ? new CRandomEngine(this) : NULL  ),   // --align
     m_physics(new CPhysics(this)),
     m_runManager(m_physics->getRunManager()),
     m_sd(new CSensitiveDetector("SD0")),
@@ -162,10 +169,10 @@ CG4::CG4(OpticksHub* hub)
     m_detector(m_geometry->getDetector()),
     m_generator(new CGenerator(m_hub->getGen(), this)),
     m_dynamic(m_generator->isDynamic()),
+    m_manager(new CManager(m_ok, m_dynamic)),
     m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
     m_primary_collector(new CPrimaryCollector),
-    m_recorder(new CRecorder(this, m_geometry, m_dynamic)), 
-    m_steprec(new CStepRec(m_ok, m_dynamic)),  
+    m_steprec(new CStepRec(m_ok, m_dynamic)),                     // used for non-opticals
     m_visManager(NULL),
     m_uiManager(NULL),
     m_ui(NULL),
@@ -185,7 +192,7 @@ CG4::CG4(OpticksHub* hub)
 
 void CG4::init()
 {
-    LOG(LEVEL) << " ctx " << m_ctx.desc() ; 
+    LOG(LEVEL) << " ctx " << getCtx().desc() ; 
 
     initialize();
 }
@@ -242,7 +249,13 @@ void CG4::postinitialize()
     // postinitialize order matters, creates/shares m_material_bridge instance
 
     m_geometry->postinitialize();
-    m_recorder->postinitialize();  
+
+
+
+    CMaterialBridge* material_bridge = getMaterialBridge(); 
+    m_manager->setMaterialBridge(material_bridge); 
+
+
     //m_rec->postinitialize();
 
     m_ea->postinitialize();
@@ -303,36 +316,25 @@ void CG4::snap()
     m_rt->snap();
 }
 
+
 // invoked from CTrackingAction::PreUserTrackingAction immediately after CG4Ctx::setTrack
 void CG4::preTrack()
 {
-    if(m_engine)
-    {
-        m_engine->preTrack();
-    }
+    m_manager->preTrack(); 
 }
 
 // invoked from CTrackingAction::PostUserTrackingAction for optical photons only 
 void CG4::postTrack()
 {
-    if(m_ctx._optical)
-    {
-        m_recorder->postTrack();
-    } 
-    if(m_engine)
-    {
-        m_engine->postTrack();
-    }
+    m_manager->postTrack(); 
 }
-
 // invoked from CSteppingAction::UserSteppingAction
 void CG4::postStep()
 {
-    if(m_engine)
-    {
-        m_engine->postStep();
-    }
+    m_manager->postStep(); 
 }
+
+
 
 void CG4::interactive()
 {
@@ -346,14 +348,20 @@ void CG4::interactive()
     m_ui->SessionStart();
 }
 
+/**
+CG4::initEvent
+----------------
+
+Invoked by CG4::propagate with the G4 OpticksEvent 
+
+**/
+
 void CG4::initEvent(OpticksEvent* evt)
 {
     LOG(LEVEL) << "[" ;
     m_generator->configureEvent(evt);
 
-    m_ctx.initEvent(evt);
-
-    m_recorder->initEvent(evt);
+    m_manager->initEvent(evt); 
 
     NPY<float>* nopstep = evt->getNopstepData();
     if(!nopstep) LOG(fatal) << " nopstep NULL " << " evt " << evt->getShapeString() ; 
@@ -422,7 +430,7 @@ void CG4::postpropagate()
     LOG(info) 
          << "[" 
          << " (" << m_ok->getTagOffset() << ")"
-         << " ctx " << m_ctx.desc_stats() 
+         << " ctx " << getCtx().desc_stats() 
          ;
 
     std::string finmac = m_cfg->getG4FinMac();
@@ -439,7 +447,7 @@ void CG4::postpropagate()
 
     dynamic_cast<CSteppingAction*>(m_sa)->report("CG4::postpropagate");
 
-    if(m_engine) m_engine->postpropagate();  
+    m_manager->postpropagate();
 
     LOG(info) << "]" 
               << " (" <<  m_ok->getTagOffset() << ")"  
@@ -456,14 +464,12 @@ The note is associated with the index of the last random consumption, see boostr
 
 void CG4::addRandomNote(const char* note, int value)
 {
-    assert( m_engine ); 
-    m_engine->addNote(note, value); 
+    m_manager->addRandomNote(note, value); 
 }
 
 void CG4::addRandomCut(const char* ckey, double cvalue)
 {
-    assert( m_engine ); 
-    m_engine->addCut(ckey, cvalue); 
+    m_manager->addRandomCut(ckey, cvalue); 
 }
 
 

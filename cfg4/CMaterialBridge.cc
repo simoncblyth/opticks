@@ -34,7 +34,7 @@
 const plog::Severity CMaterialBridge::LEVEL = PLOG::EnvLevel("CMaterialBridge", "DEBUG") ; 
 
 
-CMaterialBridge::CMaterialBridge( GMaterialLib* mlib) 
+CMaterialBridge::CMaterialBridge(const GMaterialLib* mlib) 
     :
     m_mlib(mlib)
 {
@@ -91,7 +91,7 @@ void CMaterialBridge::initMap()
 
 
 
-void CMaterialBridge::dumpMap(const char* msg)
+void CMaterialBridge::dumpMap(const char* msg) const 
 {
     LOG(info) << msg << " g4toix.size " << m_g4toix.size() ;
 
@@ -111,7 +111,7 @@ void CMaterialBridge::dumpMap(const char* msg)
 }
 
 
-void CMaterialBridge::dump(const char* msg)
+void CMaterialBridge::dump(const char* msg) const 
 {
     LOG(info) << msg << " g4toix.size " << m_g4toix.size() ;
 
@@ -177,13 +177,13 @@ unsigned int CMaterialBridge::getMaterialIndex(const G4Material* material) const
     // used from CSteppingAction::UserSteppingActionOptical to CRecorder::setBoundaryStatus
     return m_g4toix.at(material) ;
 }
-const char* CMaterialBridge::getMaterialName(unsigned int index, bool abbrev)
+const char* CMaterialBridge::getMaterialName(unsigned index, bool abbrev) const 
 {
-    return abbrev ? m_ixtoabbr[index].c_str() : m_ixtoname[index].c_str() ;
+    return abbrev ? m_ixtoabbr.at(index).c_str() : m_ixtoname.at(index).c_str() ;
 }
 
 
-const G4Material* CMaterialBridge::getG4Material(unsigned int qindex) // 0-based Opticks material index to G4Material
+const G4Material* CMaterialBridge::getG4Material(unsigned int qindex) const // 0-based Opticks material index to G4Material
 {
     typedef std::map<const G4Material*, unsigned> MU ; 
     const G4Material* mat = NULL ; 
@@ -216,7 +216,7 @@ const G4Material* CMaterialBridge::getG4Material(unsigned int qindex) // 0-based
 }
 
 
-std::string CMaterialBridge::MaterialSequence(unsigned long long seqmat, bool abbrev)
+std::string CMaterialBridge::MaterialSequence(unsigned long long seqmat, bool abbrev) const 
 {
     std::stringstream ss ;
     assert(sizeof(unsigned long long)*8 == 16*4);

@@ -35,7 +35,6 @@
 #include "CG4Ctx.hh"
 #include "CPhoton.hh"
 #include "Opticks.hh"
-#include "CG4.hh"
 
 #include "NGLM.hpp"
 #include "NPY.hpp"
@@ -49,13 +48,12 @@
 const plog::Severity CWriter::LEVEL = PLOG::EnvLevel("CWriter", "DEBUG") ; 
 
 
-CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
+CWriter::CWriter(CG4Ctx& ctx, CPhoton& photon, bool dynamic)
     :
-    m_g4(g4),
     m_photon(photon),
     m_dynamic(dynamic),
-    m_ctx(g4->getCtx()),
-    m_ok(g4->getOpticks()),
+    m_ctx(ctx),
+    m_ok(m_ctx.getOpticks()),
     m_enabled(true),
 
     m_evt(NULL),
@@ -341,8 +339,9 @@ void CWriter::writePhoton(const G4StepPoint* point )
 
     if( m_ok->isUTailDebug() )     // --utaildebug
     { 
-        G4double u = CG4UniformRand("taildebug",-1) ; 
-        target->setValue(target_record_id, 3, 0, 1, u );
+        assert(0); 
+        //G4double u = CG4UniformRand("taildebug",-1) ; 
+        //target->setValue(target_record_id, 3, 0, 1, u );
     }
     else
     {

@@ -32,7 +32,7 @@ class OpticksRun ;
 class OpticksEvent ; 
 
 class BLog ; 
-class CG4 ; 
+struct CManager ; 
 struct CG4Ctx ; 
 template <typename T> class NPY ; 
 
@@ -88,7 +88,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         static std::string FormLocation(const char* file, int line);
         static const char* PindexLogPath(unsigned mask_index);
     public:
-        CRandomEngine(CG4* g4);
+        CRandomEngine(CManager* manager);
         void dumpDouble(const char* msg, double* v, unsigned width ) const  ; 
         bool hasSequence() const ; 
 
@@ -97,7 +97,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         const char* getPath() const ; 
 #endif
     protected:
-        friend class CG4 ; 
+        friend struct CManager ; 
         friend struct CRandomEngineTest ; 
 
         // CRandomListener
@@ -144,7 +144,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         double _flat(); 
         double _peek(int offset) const  ; // does not increment anything, just looks around
     private:
-        CG4*                          m_g4 ; 
+        CManager*                     m_manager ; 
         CG4Ctx&                       m_ctx ; 
         Opticks*                      m_ok ; 
         bool                          m_dbgflat ;   

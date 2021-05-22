@@ -28,9 +28,7 @@
 #include "plog/Severity.h"
 
 #ifdef USE_CUSTOM_BOUNDARY
-//#include "DsG4OpBoundaryProcess.h"
 #include "DsG4OpBoundaryProcessStatus.h"
-
 #else
 #include "G4OpBoundaryProcess.hh"
 #endif
@@ -141,6 +139,8 @@ struct CFG4_API CG4Ctx
 
     void init();
     void initEvent(const OpticksEvent* evt);
+
+    Opticks* getOpticks() const ; 
 
     void setEvent(const G4Event* event);
     void setTrack(const G4Track* track);

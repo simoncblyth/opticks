@@ -45,6 +45,7 @@ C4Cerenkov1042 *default*
 **/
 
 #include "CFG4_API_EXPORT.hh"
+#include "G4Types.hh"
 
 class CG4 ; 
 class Opticks ; 

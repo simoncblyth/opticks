@@ -39,8 +39,6 @@ struct CG4Ctx ;
 
 class CDebug ; 
 class CRec ; 
-class CGeometry ; 
-class CRandomEngine ; 
 class CMaterialBridge ; 
 class CWriter ; 
 class CStp ; 
@@ -115,8 +113,6 @@ Debugging
 --dbgrec
     machinery debugging, only useful for dumping machinery actions with small of photons
 
-
-
 **/
 
 #include "CFG4_API_EXPORT.hh"
@@ -135,8 +131,11 @@ class CFG4_API CRecorder {
         unsigned long long getSeqMat() const ;
 
    public:
-        CRecorder(CG4* g4, CGeometry* geometry, bool dynamic); // CG4::CG4
-        void postinitialize();               // called after G4 geometry constructed in CG4::postinitialize
+        CRecorder(CG4Ctx& ctx, bool dynamic); // CG4::CG4
+
+        //void postinitialize();  // called after G4 geometry constructed in CG4::postinitialize
+        void setMaterialBridge(const CMaterialBridge* material_bridge);
+
         void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
         void postTrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
 #ifdef USE_CUSTOM_BOUNDARY
@@ -168,8 +167,6 @@ class CFG4_API CRecorder {
         std::string desc() const ; 
         std::string brief() const ; 
    private:
-        CG4*               m_g4; 
-        CRandomEngine*     m_engine ; 
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
         bool               m_recpoi ; 
@@ -181,7 +178,7 @@ class CFG4_API CRecorder {
 
         OpticksEvent*      m_evt ; 
         CGeometry*         m_geometry ; 
-        CMaterialBridge*   m_material_bridge ; 
+        const CMaterialBridge*   m_material_bridge ; 
         bool               m_dynamic ;
         bool               m_live ;   
         CWriter*           m_writer ; 
@@ -192,4 +189,3 @@ class CFG4_API CRecorder {
 
 };
 #include "CFG4_TAIL.hh"
-

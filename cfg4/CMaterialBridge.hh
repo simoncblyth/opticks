@@ -39,31 +39,34 @@ Provides a mapping between G4 and Opticks materials,
 the Opticks material lib needs to be closed before 
 instanciation of CMaterialBridge.
 
+The mapping is based in matching matial shortnames 
+between the two models.
+
 **/
 
 class CFG4_API CMaterialBridge 
 {
         static const plog::Severity LEVEL ; 
     public:
-        CMaterialBridge( GMaterialLib* mlib );
+        CMaterialBridge(const GMaterialLib* mlib );
 
         unsigned getPointMaterial(const G4StepPoint* point) const ;
         unsigned getPreMaterial(const G4Step* step) const ;
         unsigned getPostMaterial(const G4Step* step) const ;
 
         unsigned getMaterialIndex(const G4Material* mat) const ; // G4Material instance to 0-based Opticks material index
-        const char* getMaterialName(unsigned int index, bool abbrev=true);  // 0-based Opticks material index to shortname
-        const G4Material* getG4Material(unsigned int index); // 0-based Opticks material index to G4Material
+        const char* getMaterialName(unsigned int index, bool abbrev=true) const ;  // 0-based Opticks material index to shortname
+        const G4Material* getG4Material(unsigned int index) const ; // 0-based Opticks material index to G4Material
 
-        std::string MaterialSequence(unsigned long long seqmat, bool abbrev=true );
+        std::string MaterialSequence(unsigned long long seqmat, bool abbrev=true ) const ;
 
-        void dump(const char* msg="CMaterialBridge::dump");
-        void dumpMap(const char* msg="CMaterialBridge::dumpMap");
+        void dump(const char* msg="CMaterialBridge::dump") const ;
+        void dumpMap(const char* msg="CMaterialBridge::dumpMap") const ;
         bool operator()(const G4Material* a, const G4Material* b);
     private:
         void initMap();
     private:
-        GMaterialLib*   m_mlib ; 
+        const GMaterialLib*   m_mlib ; 
 
         std::map<const G4Material*, unsigned> m_g4toix ; 
         std::map<unsigned int, std::string>   m_ixtoname ; 

@@ -26,8 +26,6 @@
 #include "OpticksPhoton.h"
 #include "OpStatus.hh"
 
-
-#include "CG4.hh"
 #include "CG4Ctx.hh"
 
 #include "CStp.hh"
@@ -44,18 +42,16 @@
 const plog::Severity CRec::LEVEL = PLOG::EnvLevel("CRec", "DEBUG") ; 
 
 
-CRec::CRec(CG4* g4, CRecState& state)
+CRec::CRec(CG4Ctx& ctx , CRecState& state)
    :
-    m_g4(g4),
     m_state(state),
-    m_ctx(g4->getCtx()),
-    m_ok(g4->getOpticks()),
+    m_ctx(ctx),
+    m_ok(ctx.getOpticks()),
     m_recpoi(m_ok->isRecPoi()),             // --recpoi
     m_recpoialign(m_ok->isRecPoiAlign()),   // --recpoialign
     m_step_limited(false),
     m_point_done(false),
     m_material_bridge(NULL),
-    //m_add_acc(m_ok->accumulateAdd("CRec::add")),
 #ifdef USE_CUSTOM_BOUNDARY
     m_prior_boundary_status(Ds::Undefined),
     m_boundary_status(Ds::Undefined)
@@ -113,7 +109,7 @@ void CRec::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::
 
 
 
-void CRec::setMaterialBridge(CMaterialBridge* material_bridge) 
+void CRec::setMaterialBridge(const CMaterialBridge* material_bridge) 
 {
     m_material_bridge = material_bridge ; 
 }

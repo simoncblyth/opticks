@@ -24,7 +24,6 @@
 #include "OpticksFlags.hh"
 #include "Opticks.hh"
 
-#include "CG4.hh"
 #include "CG4Ctx.hh"
 #include "CPhoton.hh"
 #include "CRecorder.hh"
@@ -36,11 +35,10 @@
 #include "PLOG.hh"
 
 
-CDebug::CDebug(CG4* g4, const CPhoton& photon, CRecorder* recorder)
+CDebug::CDebug(CG4Ctx& ctx, const CPhoton& photon, CRecorder* recorder)
     :
-    m_g4(g4),
-    m_ctx(g4->getCtx()),
-    m_ok(g4->getOpticks()),
+    m_ctx(ctx),
+    m_ok(m_ctx.getOpticks()),
     m_verbosity(m_ok->getVerbosity()),
     m_recorder(recorder),
     m_crec(recorder->getCRec()),
@@ -58,7 +56,7 @@ CDebug::CDebug(CG4* g4, const CPhoton& photon, CRecorder* recorder)
 {
 }
 
-void CDebug::setMaterialBridge(CMaterialBridge* material_bridge) 
+void CDebug::setMaterialBridge(const CMaterialBridge* material_bridge) 
 {
     m_material_bridge = material_bridge ; 
 }

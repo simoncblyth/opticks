@@ -30,7 +30,6 @@ class Opticks ;
 class OpticksEvent ; 
 class CStp ; 
 class CPoi ; 
-class CG4 ; 
 class CMaterialBridge ; 
 
 struct CRecState ; 
@@ -51,7 +50,7 @@ class CFG4_API CRec
 {
         static const plog::Severity LEVEL ;  
     public:
-        CRec(CG4* g4, CRecState& state);
+        CRec(CG4Ctx& ctx, CRecState& state);
         void initEvent(OpticksEvent* evt);
 
         bool is_step_limited() const ; 
@@ -64,7 +63,7 @@ class CFG4_API CRec
 
         void setOrigin(const G4ThreeVector& origin);
         void clear();
-        void setMaterialBridge(CMaterialBridge* material_bridge) ;
+        void setMaterialBridge(const CMaterialBridge* material_bridge) ;
 
         void dump(const char* msg="CRec::dump");
 
@@ -100,7 +99,6 @@ class CFG4_API CRec
         void add(G4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, int action);
 #endif
     private:
-        CG4*                        m_g4 ; 
         CRecState&                  m_state ; 
         CG4Ctx&                     m_ctx ; 
 
@@ -111,7 +109,7 @@ class CFG4_API CRec
         bool                        m_step_limited ; 
         bool                        m_point_done ; 
 
-        CMaterialBridge*            m_material_bridge ; 
+        const CMaterialBridge*      m_material_bridge ; 
     private:
         G4ThreeVector               m_origin ; 
         std::vector<CStp*>          m_stp ; 

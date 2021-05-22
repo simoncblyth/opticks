@@ -44,7 +44,8 @@
 
 #include "NPY.hpp"
 
-#include "CG4.hh"
+#include "CManager.hh"
+#include "CG4Ctx.hh"
 #include "CProcess.hh"
 #include "CProcessManager.hh"
 #include "CStepStatus.hh"
@@ -71,16 +72,17 @@ int CRandomEngine::preinit()
     return 0 ; 
 }
 
-CRandomEngine::CRandomEngine(CG4* g4)
+CRandomEngine::CRandomEngine(CManager* manager)
     :
-    m_g4(g4),
-    m_ctx(g4->getCtx()),
-    m_ok(g4->getOpticks()),
+    m_manager(manager),
+    m_ctx(manager->getCtx()),
+    m_ok(m_ctx.getOpticks()),
     m_dbgflat(m_ok->isDbgFlat()),    // --dbgflat
     m_curflatsigint(m_ok->getCurFlatSigInt()), // --curflatsigint N
     m_preinit(preinit()),
     m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()),    // --dbgkludgeflatzero
-    m_run(g4->getRun()),
+    //m_run(g4->getRun()),
+    m_run(nullptr),
     m_okevt(NULL),
     m_okevt_seqhis(0),
     m_okevt_pt(NULL),
@@ -821,6 +823,7 @@ going first, which is only the case in align mode.
 
 void CRandomEngine::run_ucf_script(unsigned mask_index) 
 {
+    assert(m_run); 
     if(!m_okevt) m_okevt = m_run->getEvent();  // is the defer needed ?
     m_okevt_seqhis  = m_okevt ? m_okevt->getSeqHis(m_ctx._record_id ) : 0ull ;
 
@@ -850,7 +853,7 @@ void CRandomEngine::postTrack()
 
     if(m_locseq)   // (*lldb*) postTrack
     {
-        unsigned long long seqhis = m_g4->getSeqHis()  ;
+        unsigned long long seqhis = m_manager->getSeqHis()  ;
         m_locseq->mark(seqhis);
         LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ; 
     }

@@ -33,7 +33,6 @@ template <typename T> class NPY ;
 class Opticks ; 
 class OpticksEvent ; 
 
-class CG4 ; 
 struct CG4Ctx ; 
 struct CPhoton ; 
 
@@ -62,7 +61,7 @@ class CFG4_API CWriter
          static unsigned char my__float2uint_rn( float f );
 
     public:
-        CWriter(CG4* g4, CPhoton& photon, bool dynamic);        
+        CWriter(CG4Ctx& ctx, CPhoton& photon, bool dynamic);        
 
         void setEnabled(bool enabled);
         bool writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material, bool last );
@@ -73,7 +72,6 @@ class CFG4_API CWriter
         void initEvent(OpticksEvent* evt);
     private:
 
-        CG4*               m_g4 ; 
         CPhoton&           m_photon ; 
         bool               m_dynamic ; 
         CG4Ctx&            m_ctx ; 
@@ -95,8 +93,6 @@ class CFG4_API CWriter
         NPY<short>*               m_target_records ; 
 
         unsigned           m_verbosity ; 
-
-
 
 
 };

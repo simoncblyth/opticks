@@ -48,10 +48,14 @@ class CGenerator ;
 
 class CGenstepCollector ; 
 class CPrimaryCollector ; 
+
+struct CG4Ctx ; 
+
 class CRecorder ; 
 class CStepRec ; 
 class CRandomEngine ; 
-class CRandomListener ; 
+
+struct CManager ; 
 
 class CRunAction ; 
 class CEventAction ; 
@@ -115,14 +119,15 @@ photon counts ahead of time.
 #define CG4UniformRand(file, line) CG4::INSTANCE->flat_instrumented((file), (line))
 
 #include "plog/Severity.h"
-#include "CG4Ctx.hh"
+//#include "CG4Ctx.hh"
+
+
+
 
 #include "CFG4_API_EXPORT.hh"
 
 class CFG4_API CG4 
 {
-
-
         friend class CGeometry ;  // for setUserInitialization
    public:
         static const plog::Severity LEVEL ; 
@@ -164,6 +169,7 @@ class CFG4_API CG4
         Opticks*         getOpticks() const ;
         OpticksHub*      getHub() const ;
         OpticksRun*      getRun() const;
+        CManager*        getManager() const ; 
         CRandomEngine*   getRandomEngine() const ; 
         CGenerator*      getGenerator() const ;
         CRecorder*       getRecorder() const ;
@@ -183,7 +189,7 @@ class CFG4_API CG4
         NPY<float>*      getGensteps() const ;
    public:
         double           flat_instrumented(const char* file, int line); 
-        CG4Ctx&          getCtx();
+        CG4Ctx&          getCtx() const ;
 
    private:
         SLog*                 m_log ; 
@@ -193,10 +199,6 @@ class CFG4_API CG4
         OpticksRun*           m_run ; 
         OpticksCfg<Opticks>*  m_cfg ; 
 
-        CG4Ctx                m_ctx ;       
-
-        CRandomEngine*        m_engine ; 
-        //CRandomListener*        m_engine ; 
 
         CPhysics*             m_physics ; 
         G4RunManager*         m_runManager ; 
@@ -207,10 +209,10 @@ class CFG4_API CG4
         CDetector*            m_detector ; 
         CGenerator*           m_generator ; 
         bool                  m_dynamic ; 
+        CManager*             m_manager ; 
    private:
         CGenstepCollector*           m_collector ; 
         CPrimaryCollector*    m_primary_collector ; 
-        CRecorder*            m_recorder ; 
         CStepRec*             m_steprec ; 
    private:
         G4VisManager*         m_visManager ; 

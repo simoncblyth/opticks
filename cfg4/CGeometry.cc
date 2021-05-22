@@ -122,6 +122,16 @@ bool CGeometry::hookup(CG4* g4)
 }
 
 
+/**
+CGeometry::postinitialize
+--------------------------
+
+Invoked from CG4::postinitialize
+
+
+
+**/
+
 void CGeometry::postinitialize()
 {
     // both these are deferred til here as needs G4 materials table to have been constructed 

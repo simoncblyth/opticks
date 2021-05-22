@@ -29,16 +29,18 @@
 #include "Randomize.hh"
 
 #include "CG4.hh"
+#include "CG4Ctx.hh"
+#include "CManager.hh"
 #include "OPTICKS_LOG.hh"
 #include "CRandomEngine.hh"
 
 
 struct CRandomEngineTest
 {
-    CRandomEngineTest(CG4* g4)
+    CRandomEngineTest(CManager* manager)
        :
-       _ctx(g4->getCtx()),
-       _engine(g4)
+       _ctx(manager->getCtx()),
+       _engine(manager)
     {
     }
 
@@ -105,7 +107,9 @@ int main(int argc, char** argv)
     
     CG4* g4 = new CG4(&hub) ; 
 
-    CRandomEngineTest ret(g4) ; 
+    CManager* manager = g4->getManager(); 
+
+    CRandomEngineTest ret(manager) ; 
 
     for(int pindex=pindex1 ; pindex < pindex2 ; pindex+=pstep )
     {

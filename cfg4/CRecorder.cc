@@ -26,11 +26,10 @@
 #include "OpticksEvent.hh"
 #include "OpticksFlags.hh"
 
-// cfg4-
-#include "CG4.hh"
+
 #include "OpStatus.hh"
 
-#include "CGeometry.hh"
+#include "CG4Ctx.hh"
 #include "CMaterialBridge.hh"
 #include "CRec.hh"
 
@@ -40,13 +39,13 @@
 #include "CStep.hh"
 #include "CAction.hh"
 
-#include "CRandomEngine.hh"
 #include "CBoundaryProcess.hh"
 #include "CRecorder.h"
 
 #include "CDebug.hh"
 #include "CWriter.hh"
 #include "CRecorder.hh"
+
 
 #include "PLOG.hh"
 
@@ -75,29 +74,30 @@ unsigned long long CRecorder::getSeqMat() const
     return m_photon._seqmat ; 
 }
 
-CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic) 
+/**
+
+only gun source sets dynamic true 
+
+**/
+
+CRecorder::CRecorder(CG4Ctx& ctx, bool dynamic) 
     :
-    m_g4(g4),
-    m_engine(g4->getRandomEngine()),
-    m_ctx(g4->getCtx()),
-    m_ok(g4->getOpticks()),
+    m_ctx(ctx),
+    m_ok(m_ctx.getOpticks()),
     m_recpoi(m_ok->isRecPoi()),   // --recpoi
     m_reccf(m_ok->isRecCf()),     // --reccf
     m_state(m_ctx),
     m_photon(m_ctx, m_state),
 
-    m_crec(new CRec(m_g4, m_state)),
-    m_dbg(m_ctx.is_dbg() ? new CDebug(g4, m_photon, this) : NULL),
+    m_crec(new CRec(m_ctx, m_state)),
+    m_dbg(m_ctx.is_dbg() ? new CDebug(m_ctx, m_photon, this) : NULL),
 
     m_evt(NULL),
-    m_geometry(geometry),
     m_material_bridge(NULL),
     m_dynamic(dynamic),
     m_live(false),
-    m_writer(new CWriter(g4, m_photon, m_dynamic)),
+    m_writer(new CWriter(m_ctx, m_photon, m_dynamic)),
     m_not_done_count(0)
-
-    //m_postTrack_acc(m_ok->accumulateAdd("CRecorder::postTrack"))
 {   
     LOG(LEVEL) << brief() ;
 }
@@ -117,16 +117,30 @@ std::string CRecorder::brief() const
 }
 
 
+/**
+CRecorder::postinitialize
+----------------------------
+
+Gets CMaterialBridge:m_material_bridge from CGeometry:m_geometry and passes this to m_crec
 
 
 void CRecorder::postinitialize()
 {
-    m_material_bridge = m_geometry->getMaterialBridge();
-    assert(m_material_bridge);
+    CMaterialBridge* material_bridge = m_geometry->getMaterialBridge();
+    setMaterialBridge(material_bridge); 
+}
+**/
 
+
+void CRecorder::setMaterialBridge(const CMaterialBridge* material_bridge)
+{
+    assert( material_bridge ); 
+    m_material_bridge = material_bridge ; 
     m_crec->setMaterialBridge( m_material_bridge );
     if(m_dbg) m_dbg->setMaterialBridge( m_material_bridge );
 }
+
+
 
 /**
 CRecorder::initEvent

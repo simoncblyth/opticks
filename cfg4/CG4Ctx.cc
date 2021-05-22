@@ -53,6 +53,13 @@ CG4Ctx::CG4Ctx(Opticks* ok)
     _dbgzero = ok->isDbgZero() ; 
 }
 
+
+Opticks*  CG4Ctx::getOpticks() const
+{
+    return _ok ; 
+}
+
+
 bool CG4Ctx::is_dbg() const 
 {
     return _dbgrec || _dbgseq || _dbgzero ;

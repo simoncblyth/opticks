@@ -31,7 +31,6 @@ struct CPhoton ;
 struct CG4Ctx ; 
 class CRecorder ; 
 class CRec ; 
-class CG4 ; 
 
 #include "CFG4_API_EXPORT.hh"
 
@@ -59,18 +58,15 @@ does in a cheap way.
 
 class CFG4_API CDebug {
     public:
-        CDebug(CG4* g4, const CPhoton& photon, CRecorder* recorder);
+        CDebug(CG4Ctx& ctx, const CPhoton& photon, CRecorder* recorder);
 
-        void setMaterialBridge(CMaterialBridge* material_bridge) ;
+        void setMaterialBridge(const CMaterialBridge* material_bridge) ;
         void postTrack();
         bool hasIssue();
 
         bool isSelected(); 
         bool isHistorySelected(); 
         bool isMaterialSelected(); 
-
-
-
     public:
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -99,14 +95,13 @@ class CFG4_API CDebug {
          std::string desc() const ;
 
     private:
-        CG4*     m_g4 ; 
         CG4Ctx&  m_ctx ;  
 
         Opticks*         m_ok ; 
         int              m_verbosity ; 
         CRecorder*       m_recorder ; 
         CRec*            m_crec ; 
-        CMaterialBridge* m_material_bridge  ; 
+        const CMaterialBridge* m_material_bridge  ; 
         const CPhoton&   m_photon ; 
 
 
@@ -142,9 +137,6 @@ class CFG4_API CDebug {
 #else
         std::vector<G4OpBoundaryProcessStatus>  m_bndstats ; 
 #endif
-
-
-
 
 };
 
