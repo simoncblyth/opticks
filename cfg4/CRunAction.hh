@@ -22,19 +22,19 @@
 #include "G4UserRunAction.hh"
 #include "plog/Severity.h"
 
-class OpticksHub ; 
+struct CManager ; 
 
 class CRunAction : public G4UserRunAction
 {
         static const plog::Severity LEVEL ; 
     public:
-        CRunAction(OpticksHub* hub);
+        CRunAction(CManager* manager);
         virtual ~CRunAction();
     public:
         void BeginOfRunAction(const G4Run*);
         void   EndOfRunAction(const G4Run*); 
     private:
-        OpticksHub*  m_hub ; 
+        CManager*    m_manager ; 
         unsigned     m_count ; 
 
 };

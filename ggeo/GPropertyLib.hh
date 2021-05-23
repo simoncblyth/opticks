@@ -230,7 +230,7 @@ class GGEO_API GPropertyLib {
         void saveNames(const char* idpath, const char* reldir, const char* txtname) const ; 
 
         OpticksAttrSeq*    getAttrNames();
-        std::string getAbbr(const char* key);
+        std::string getAbbr(const char* key) const ;
     public:
        void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
        void saveNames(const char* dir=NULL) const ; // defaults to IDPATH

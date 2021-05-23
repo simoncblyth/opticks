@@ -72,13 +72,15 @@ struct CFG4_API CG4Ctx
     unsigned  _steps_per_photon  ;
     unsigned  _record_max ; 
     unsigned  _bounce_max ; 
+    bool  _ok_event_init ;   // indicates that CG4Ctx::initEvent has been called configuring OpticksEvent recording 
 
     // CG4Ctx::setEvent
-    bool  _ok_event_init ; 
     G4Event* _event ; 
     int  _event_id ;
     int  _event_total ; 
     int  _event_track_count ; 
+
+    // CG4Ctx::setGen
     unsigned  _gen  ;
     unsigned  _genflag  ;
 
@@ -143,6 +145,8 @@ struct CFG4_API CG4Ctx
     Opticks* getOpticks() const ; 
 
     void setEvent(const G4Event* event);
+    void setGen(unsigned gen);
+
     void setTrack(const G4Track* track);
     void setTrackOptical();
     void setStep(const G4Step* step, int noZeroSteps);

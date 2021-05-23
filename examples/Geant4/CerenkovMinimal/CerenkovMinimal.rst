@@ -864,3 +864,17 @@ flags see *docs/opticks_event_data.rst*
 
 
 
+
+
+ckm G4OpticksRecorder experiments
+--------------------------------------
+
+Expt with bringing in the monster (CFG4 OpticksEvent recording) by 
+using G4OptickRecorder called from ckm: Run, Event, Track and Step actions eg:: 
+
+   EventAction::BeginOfEventAction
+   EventAction::EndOfEventAction
+
+
+
+

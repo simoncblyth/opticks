@@ -26,16 +26,23 @@ Follow pattern of CG4Ctx
 #include <string>
 #include "G4ThreeVector.hh"
 
+class G4Run ; 
 class G4Event ;
 class G4Track ;
 class G4Step ;
 class G4StepPoint ;
+
+struct G4OpticksRecorder ; 
 
 struct Ctx 
 {
     static std::string Format(const G4Step* step, const char* msg );
     static std::string Format(const G4StepPoint* point, const char* msg );
     static std::string Format(const G4ThreeVector& vec, const char* msg, unsigned int fwid);
+
+    Ctx();
+
+    G4OpticksRecorder* _recorder ; 
 
     const G4Event*  _event ; 
     int             _event_id ; 

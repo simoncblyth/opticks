@@ -18,16 +18,16 @@
  */
 
 #include "CRunAction.hh"
+#include "CManager.hh"
 #include "Opticks.hh"
 #include "PLOG.hh"
 
 const plog::Severity CRunAction::LEVEL = PLOG::EnvLevel("CRunAction", "DEBUG"); 
 
-
-CRunAction::CRunAction(OpticksHub* hub) 
+CRunAction::CRunAction(CManager* manager) 
    :
      G4UserRunAction(),
-     m_hub(hub),
+     m_manager(manager),
      m_count(0)
 {
     LOG(LEVEL) << "count " << m_count   ;
@@ -36,15 +36,17 @@ CRunAction::~CRunAction()
 {
     LOG(LEVEL) << "count " << m_count  ;
 }
-void CRunAction::BeginOfRunAction(const G4Run*)
+void CRunAction::BeginOfRunAction(const G4Run* run)
 {
     OKI_PROFILE("CRunAction::BeginOfRunAction");
     m_count += 1 ; 
+    m_manager->BeginOfRunAction(run); 
     LOG(LEVEL) << "count " << m_count  ;
 }
-void CRunAction::EndOfRunAction(const G4Run*)
+void CRunAction::EndOfRunAction(const G4Run* run)
 {
     OKI_PROFILE("CRunAction::EndOfRunAction"); 
+    m_manager->EndOfRunAction(run); 
     LOG(LEVEL) << "count " << m_count  ;
 }
 

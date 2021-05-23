@@ -22,6 +22,11 @@
 #include "G4Step.hh"
 #include "Ctx.hh"
 
+#ifdef WITH_OPTICKS
+#include "G4OpticksRecorder.hh"
+#endif
+
+
 SteppingAction::SteppingAction(Ctx* ctx_)
     :
     ctx(ctx_)
@@ -30,8 +35,9 @@ SteppingAction::SteppingAction(Ctx* ctx_)
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
+#ifdef WITH_OPTICKS
+    ctx->_recorder->UserSteppingAction(step); 
+#endif
     ctx->setStep(step); 
 }
-
-
 

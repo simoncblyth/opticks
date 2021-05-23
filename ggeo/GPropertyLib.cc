@@ -243,7 +243,7 @@ OpticksAttrSeq* GPropertyLib::getAttrNames()
     return m_attrnames ;
 }
 
-std::string GPropertyLib::getAbbr(const char* key)
+std::string GPropertyLib::getAbbr(const char* key) const 
 {
     assert(m_attrnames);
     return m_attrnames->getAbbr(key);

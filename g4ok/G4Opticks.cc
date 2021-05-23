@@ -47,6 +47,7 @@
 
 #include "G4OpticksHit.hh"
 #include "G4Opticks.hh"
+#include "G4OpticksRecorder.hh"
 
 #include "OpticksPhoton.h"
 #include "OpticksGenstep.h"
@@ -665,6 +666,13 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     LOG(LEVEL) << "( OpMgr " ; 
     m_opmgr = new OpMgr(m_ok) ;   
     LOG(LEVEL) << ") OpMgr " ; 
+
+
+    G4OpticksRecorder* recorder = G4OpticksRecorder::Get() ;  
+    if(recorder) 
+    {
+        recorder->setGeometry(ggeo);  
+    }
 }
 
 bool G4Opticks::isWayEnabled() const 

@@ -30,6 +30,7 @@
 
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
+#include "G4OpticksRecorder.hh"
 #include "G4OpticksHit.hh"
 #include "OpticksFlags.hh"
 #endif
@@ -42,9 +43,12 @@ EventAction::EventAction(Ctx* ctx_)
 {
 }
 
-void EventAction::BeginOfEventAction(const G4Event* anEvent)
+void EventAction::BeginOfEventAction(const G4Event* event)
 {
-    ctx->setEvent(anEvent); 
+#ifdef WITH_OPTICKS
+    ctx->_recorder->BeginOfEventAction(event); 
+#endif
+    ctx->setEvent(event); 
 }
 
 void EventAction::EndOfEventAction(const G4Event* event)
@@ -54,6 +58,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
 #ifdef WITH_OPTICKS
     G4cout << "\n###[ EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons\n" << G4endl ; 
+
+    ctx->_recorder->EndOfEventAction(event); 
 
     G4Opticks* g4ok = G4Opticks::Get() ;
     G4int eventID = event->GetEventID() ; 

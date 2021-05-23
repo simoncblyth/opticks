@@ -4,5 +4,10 @@
 [ $? -ne 0 ] && echo check failed && exit 1
 
 which CerenkovMinimal
-CerenkovMinimal 
+
+if [ "$(uname)" == "Darwin" ]; then 
+    lldb_ CerenkovMinimal 
+else
+    CerenkovMinimal 
+fi
 

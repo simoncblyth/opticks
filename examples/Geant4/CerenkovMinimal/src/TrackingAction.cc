@@ -20,6 +20,12 @@
 #include "TrackingAction.hh"
 #include "Ctx.hh"
 
+#ifdef WITH_OPTICKS
+#include "G4OpticksRecorder.hh"
+#endif
+
+
+
 TrackingAction::TrackingAction(Ctx* ctx_)
     :
     ctx(ctx_)
@@ -28,10 +34,17 @@ TrackingAction::TrackingAction(Ctx* ctx_)
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track)
 {
+#ifdef WITH_OPTICKS
+    ctx->_recorder->PreUserTrackingAction(track); 
+#endif
     ctx->setTrack(track); 
 }
+
 void TrackingAction::PostUserTrackingAction(const G4Track* track)
 {
+#ifdef WITH_OPTICKS
+    ctx->_recorder->PostUserTrackingAction(track); 
+#endif
     ctx->postTrack(track);     
 }
 

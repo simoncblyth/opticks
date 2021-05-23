@@ -35,33 +35,13 @@ CSteppingAction
 ================
 
 Canonical instance (m_sa) is ctor resident of CG4.
-CSteppingAction accepts steps from Geant4, routing them to either:
 
-1. m_recorder(CRecorder) for optical photon steps
-2. m_steprec(CStepRec) for non-optical photon steps
-
-The setStep method returns a boolean "done" which
-dictates whether to fStopAndKill the track.
-The mechanism is used to stop tracking when reach truncation (bouncemax)
-as well as absorption.
 
 **/
 
 class Opticks ; 
 
-struct CG4Ctx ; 
-
-class CG4 ; 
-class CRandomEngine ; 
-class CMaterialLib ; 
-class CRecorder ; 
-class CGeometry ; 
-class CMaterialBridge ; 
-class CStepRec ; 
-
-class G4Navigator ; 
-class G4TransportationManager ; 
-
+struct CManager ; 
 
 #include "plog/Severity.h"
 
@@ -74,36 +54,13 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
    friend class CTrackingAction ; 
 
   public:
-    CSteppingAction(CG4* g4, bool dynamic);
-    void postinitialize();
-    void report(const char* msg="CSteppingAction::report");
+    CSteppingAction(CManager* manager);
     virtual ~CSteppingAction();
-
   public:
     virtual void UserSteppingAction(const G4Step*);
   private:
-    bool setStep( const G4Step* step);
-    void prepareForNextStep( const G4Step* step);
+    CManager* m_manager ;  
 
-  private:
-    CG4*              m_g4 ; 
-    CRandomEngine*    m_engine ; 
-    CG4Ctx&           m_ctx ; 
-    Opticks*          m_ok ; 
-    bool              m_dbgflat ; 
-    bool              m_dbgrec ; 
-    bool              m_dynamic ; 
-    CGeometry*        m_geometry ; 
-    CMaterialBridge*  m_material_bridge ; 
-    CMaterialLib*     m_mlib ; 
-    CRecorder*        m_recorder   ; 
-    CStepRec*         m_steprec   ; 
-
-    G4TransportationManager* m_trman ; 
-    G4Navigator*             m_nav ; 
-
-    unsigned int m_steprec_store_count ;
-    int          m_cursor_at_clear ;
 
 };
 

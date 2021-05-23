@@ -81,19 +81,6 @@ with it for non "--load" option running.
 Prime method CG4::propagate is invoked from OKG4Mgr::propagate
 
 
-Whats the difference between CRecorder/m_recorder and CStepRec/m_steprec ?
--------------------------------------------------------------------------------
-
-CStepRec 
-   records non-optical particle steps into the m_nopstep buffer of the
-   OpticksEvent set by CStepRec::initEvent
-    
-CRecorder
-   records optical photon steps and photon tracks
-
-CStepRec is beautifully simple, CRecorder is horribly complicated in comparison
-
-
 Workflow overview
 -------------------
 
@@ -119,10 +106,6 @@ photon counts ahead of time.
 #define CG4UniformRand(file, line) CG4::INSTANCE->flat_instrumented((file), (line))
 
 #include "plog/Severity.h"
-//#include "CG4Ctx.hh"
-
-
-
 
 #include "CFG4_API_EXPORT.hh"
 
@@ -148,9 +131,9 @@ class CFG4_API CG4
         void addRandomNote(const char* note, int value=-1); 
         void addRandomCut( const char* ckey, double cvalue); 
 
-        void postStep();
-        void preTrack();
-        void postTrack();
+        //void postStep();
+        //void preTrack();
+        //void postTrack();
    public:
         const std::map<std::string, unsigned>& getMaterialMap() const ;        
    private:
@@ -213,7 +196,6 @@ class CFG4_API CG4
    private:
         CGenstepCollector*           m_collector ; 
         CPrimaryCollector*    m_primary_collector ; 
-        CStepRec*             m_steprec ; 
    private:
         G4VisManager*         m_visManager ; 
         G4UImanager*          m_uiManager ; 

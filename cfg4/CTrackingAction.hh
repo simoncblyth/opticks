@@ -36,10 +36,7 @@ CTrackingAction : G4 to CG4 interface for tracks
 
 class G4Event ; 
 
-struct CG4Ctx ; 
-
-class Opticks ; 
-class CG4 ; 
+struct CManager ; 
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -51,21 +48,12 @@ class CFG4_API CTrackingAction : public G4UserTrackingAction
   public:
     virtual ~CTrackingAction();
   private:
-    CTrackingAction(CG4* g4);
-    void postinitialize();
-  public:
-    std::string brief(); 
+    CTrackingAction(CManager* manager);
  public:
     virtual void  PreUserTrackingAction(const G4Track* track);
     virtual void PostUserTrackingAction(const G4Track* track);
   private:
-    void setTrack(const G4Track* track);
-    void dump(const char* msg );
-  private:
-    CG4*                  m_g4 ; 
-    CG4Ctx&               m_ctx ; 
-    Opticks*              m_ok ; 
-
+    CManager*             m_manager ; 
 };
 
 #include "CFG4_TAIL.hh"

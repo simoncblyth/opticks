@@ -200,7 +200,6 @@ CG4Ctx::initEvent
 Collect the parameters of the OpticksEvent which 
 dictate what needs to be collected.
 
-
 **/
 
 void CG4Ctx::initEvent(const OpticksEvent* evt)
@@ -263,9 +262,28 @@ void CG4Ctx::setEvent(const G4Event* event)
 
 
     CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
-    assert(eui && "expecting event UserInfo set by eg CGenstepSource "); 
 
-    _gen = eui->gencode ;
+    //assert(eui && "expecting event UserInfo set by eg CGenstepSource "); 
+    if(eui)
+    {
+        unsigned gen = eui->gencode ;
+        setGen(gen); 
+    }
+}
+
+/**
+CG4Ctx::setGen
+----------------
+
+HMM: in general cannot set this at event level, 
+it can only be set by checking on the generating process of first photon 
+So using this setGen from setEvent only makes sense with artifical gensteps  
+
+**/
+
+void CG4Ctx::setGen(unsigned gen)
+{
+    _gen = gen ;
     _genflag = OpticksGenstep::GenstepToPhotonFlag(_gen); 
 
     bool valid = OpticksGenstep::IsValid(_gen) ; 
@@ -280,6 +298,7 @@ void CG4Ctx::setEvent(const G4Event* event)
 
     assert( valid );
 }
+
 
 
 /**

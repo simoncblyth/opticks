@@ -23,11 +23,9 @@
 
 #include "Ctx.hh"
 
-//#define WITH_DUMP 1
-
-
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
+#include "G4OpticksRecorder.hh"
 #include "TrackInfo.hh"
 #endif
 
@@ -41,6 +39,17 @@
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 
+
+
+Ctx::Ctx()
+    :
+#ifdef WITH_OPTICKS
+    _recorder(new G4OpticksRecorder)
+#else
+    _recorder(nullptr)
+#endif
+{
+}
 
 
 void Ctx::setEvent(const G4Event* event)

@@ -23,8 +23,10 @@
 #ifdef WITH_OPTICKS
 #include "G4TransportationManager.hh"
 #include "G4Opticks.hh"
+#include "G4OpticksRecorder.hh"
 #endif
 
+#include "Ctx.hh"
 #include "RunAction.hh"
 
 RunAction::RunAction(Ctx* ctx_) 
@@ -33,7 +35,7 @@ RunAction::RunAction(Ctx* ctx_)
     ctx(ctx_)
 {
 }
-void RunAction::BeginOfRunAction(const G4Run*)
+void RunAction::BeginOfRunAction(const G4Run* run)
 {
 #ifdef WITH_OPTICKS
     G4cout << "\n\n###[ RunAction::BeginOfRunAction G4Opticks.setGeometry\n\n" << G4endl ; 
@@ -59,11 +61,15 @@ void RunAction::BeginOfRunAction(const G4Run*)
     }
 
     G4cout << "\n\n###] RunAction::BeginOfRunAction G4Opticks.setGeometry\n\n" << G4endl ; 
+
+    ctx->_recorder->BeginOfRunAction(run); 
 #endif
 }
-void RunAction::EndOfRunAction(const G4Run*)
+void RunAction::EndOfRunAction(const G4Run* run)
 {
 #ifdef WITH_OPTICKS
+    ctx->_recorder->EndOfRunAction(run); 
+
     G4cout << "\n\n###[ RunAction::EndOfRunAction G4Opticks.Finalize\n\n" << G4endl ; 
     G4Opticks::Finalize();
     G4cout << "\n\n###] RunAction::EndOfRunAction G4Opticks.Finalize\n\n" << G4endl ; 

@@ -102,7 +102,7 @@ CRecorder*         CG4::getRecorder() const { return m_manager->getRecorder() ; 
 unsigned long long CG4::getSeqHis() const { return getRecorder()->getSeqHis() ; }
 unsigned long long CG4::getSeqMat() const { return getRecorder()->getSeqMat() ; }
 
-CStepRec*          CG4::getStepRec() const { return m_steprec ; }
+CStepRec*          CG4::getStepRec() const { return m_manager->getStepRec() ; }
 CGeometry*         CG4::getGeometry() const { return m_geometry ; }
 CMaterialBridge*   CG4::getMaterialBridge() const { return m_geometry->getMaterialBridge() ; }
 
@@ -172,15 +172,14 @@ CG4::CG4(OpticksHub* hub)
     m_manager(new CManager(m_ok, m_dynamic)),
     m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
     m_primary_collector(new CPrimaryCollector),
-    m_steprec(new CStepRec(m_ok, m_dynamic)),                     // used for non-opticals
     m_visManager(NULL),
     m_uiManager(NULL),
     m_ui(NULL),
     m_pga(new CPrimaryGeneratorAction(m_generator->getSource())),
-    m_sa(new CSteppingAction(this, m_generator->isDynamic())),
-    m_ta(new CTrackingAction(this)),
-    m_ra(new CRunAction(m_hub)),
-    m_ea(new CEventAction(this)),
+    m_sa(new CSteppingAction(m_manager)),
+    m_ta(new CTrackingAction(m_manager)),
+    m_ra(new CRunAction(m_manager)),
+    m_ea(new CEventAction(m_manager)),
     m_rt(new CRayTracer(this)),
     m_initialized(false)
 {
@@ -258,9 +257,9 @@ void CG4::postinitialize()
 
     //m_rec->postinitialize();
 
-    m_ea->postinitialize();
-    m_ta->postinitialize();
-    m_sa->postinitialize();
+    //m_ea->postinitialize();
+    //m_ta->postinitialize();
+    //m_sa->postinitialize();
 
     LOG(LEVEL) << "]" ;
 }
@@ -317,6 +316,8 @@ void CG4::snap()
 }
 
 
+/*
+
 // invoked from CTrackingAction::PreUserTrackingAction immediately after CG4Ctx::setTrack
 void CG4::preTrack()
 {
@@ -333,6 +334,10 @@ void CG4::postStep()
 {
     m_manager->postStep(); 
 }
+
+*/
+
+
 
 
 
@@ -363,13 +368,16 @@ void CG4::initEvent(OpticksEvent* evt)
 
     m_manager->initEvent(evt); 
 
-    NPY<float>* nopstep = evt->getNopstepData();
-    if(!nopstep) LOG(fatal) << " nopstep NULL " << " evt " << evt->getShapeString() ; 
-    assert(nopstep); 
-    m_steprec->initEvent(nopstep);
     LOG(LEVEL) << "]" ;
 }
 
+
+
+/**
+CG4::propagate
+-----------------
+
+**/
 
 NPY<float>* CG4::propagate()
 {
@@ -445,7 +453,7 @@ void CG4::postpropagate()
 
     evt->postPropagateGeant4();
 
-    dynamic_cast<CSteppingAction*>(m_sa)->report("CG4::postpropagate");
+    m_manager->report("CG4::postpropagate");
 
     m_manager->postpropagate();
 
@@ -471,9 +479,6 @@ void CG4::addRandomCut(const char* ckey, double cvalue)
 {
     m_manager->addRandomCut(ckey, cvalue); 
 }
-
-
-
 
 void CG4::cleanup()
 {

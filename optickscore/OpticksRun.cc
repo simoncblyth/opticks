@@ -65,9 +65,10 @@ std::string OpticksRun::brief() const
 
 
 
+
 /**
-OpticksRun::createEvent
--------------------------
+OpticksRun::createEvent with gensteps (static running)
+------------------------------------------------------------
 
 OpticksRun::createEvent is canonically invoked by the propagate methods 
 of the high level managers, which happens long after geometry has been loaded.  
@@ -76,17 +77,12 @@ Specifically:
 * OKG4Mgr::propagate
 * OKMgr::propagate
 
-This 
+As gensteps are available the sizing of the event is 
+entirely known ahread of time and buffers are sized accordingly.
 
-1. creates separate OpticksEvent instances for G4 and OK propagations, 
-   associates them as siblings and adopts a common timestamp 
-
-2. invokes annotateEvent
-
-
+* event is created and gensteps are set 
 
 **/
-
 
 
 void OpticksRun::createEvent(NPY<float>* gensteps, bool cfg4evt ) 
@@ -96,6 +92,23 @@ void OpticksRun::createEvent(NPY<float>* gensteps, bool cfg4evt )
     createEvent(tagoffset, cfg4evt ); 
     setGensteps(gensteps); 
 }
+
+
+
+
+/**
+OpticksRun::createEvent without gensteps (dynamic running)
+--------------------------------------------------------------
+
+1. creates separate OpticksEvent instances for G4 and OK propagations, 
+   associates them as siblings and adopts a common timestamp 
+
+2. invokes annotateEvent
+
+With cfg4evt:true a sibling m_g4evt in OpticksEvent format is created
+in addition to m_evt. 
+
+**/
 
 void OpticksRun::createEvent(unsigned tagoffset, bool cfg4evt )
 {
@@ -107,8 +120,8 @@ void OpticksRun::createEvent(unsigned tagoffset, bool cfg4evt )
 
     OK_PROFILE("_OpticksRun::createEvent");
 
-
-    m_evt = m_ok->makeEvent(true, tagoffset) ;
+    bool is_ok_event = true ; 
+    m_evt = m_ok->makeEvent(is_ok_event, tagoffset) ;
 
     unsigned skipaheadstep = m_ok->getSkipAheadStep() ; 
     unsigned skipahead =  tagoffset*skipaheadstep ; 
@@ -125,7 +138,8 @@ void OpticksRun::createEvent(unsigned tagoffset, bool cfg4evt )
 
     if( cfg4evt && !nog4propagate )
     {  
-        m_g4evt = m_ok->makeEvent(false, tagoffset) ;
+        is_ok_event = false ;  
+        m_g4evt = m_ok->makeEvent(is_ok_event, tagoffset) ;
         m_g4evt->setSibling(m_evt);
         m_g4evt->setTimeStamp( tstamp.c_str() );   // align timestamps
         m_evt->setSibling(m_g4evt);
