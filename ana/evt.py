@@ -2111,24 +2111,10 @@ def deviation_plt(evt):
 
 if __name__ == '__main__':
     from opticks.ana.main import opticks_main
-    #ok = opticks_main(tag="1", src="torch", det="tboolean-box", smry=False)
     ok = opticks_main()
 
     a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, pfx=ok.pfx, args=ok)
     print(a.seqhis_ana.table[0:20])
-
-    # b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
-
-    # print b.his[:20]
-
-    # #b.selflg = "TO|BT|DR|SC|RE"
-
-
-    # sel = "PFLAGS_DEBUG"  
-    # b.sel = sel
-    # log.info("sel %s nsel %d " % (sel, b.nsel))
-    # if b.nsel > 0:
-    #     print b.his, b.mat, b.flg, b.psel_dindex()
 
 
 

@@ -1280,11 +1280,16 @@ void OpticksEvent::resize()
     m_debug_data->setNumItems(num_photons);
     m_way_data->setNumItems(num_photons);
 
+}
+
+void OpticksEvent::setMetadataNum()
+{
     m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
     m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
     m_parameters->add<unsigned int>("NumRecords",  getNumRecords());
-
 }
+
+
 
 
 void OpticksEvent::zero()
@@ -1817,6 +1822,10 @@ void OpticksEvent::save()
 {
     //std::raise(SIGINT); 
     //const char* dir =  m_event_spec->getDir() ; 
+
+    setMetadataNum(); 
+
+
     const char* dir =  getDir() ; 
     LOG(info) << dir ; 
 

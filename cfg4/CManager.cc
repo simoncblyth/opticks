@@ -14,53 +14,6 @@
 #include "CG4Ctx.hh"
 #include "CManager.hh"
 
-
-/*
-
-// cg4-
-#include "CBoundaryProcess.hh"
-
-#include "G4Event.hh"
-
-#include "G4Step.hh"
-#include "G4Track.hh"
-#include "G4OpticalPhoton.hh"
-#include "G4Event.hh"
-#include "G4UnitsTable.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4PhysicalConstants.hh"
-
-#include "G4TransportationManager.hh"
-#include "G4Navigator.hh"
-
-
-#include "DsG4CompositeTrackInfo.h"
-#include "DsPhotonTrackInfo.h"
-
-#include "CStage.hh"
-#include "CGeometry.hh"
-#include "CMaterialBridge.hh"
-#include "CRecorder.hh"
-#include "Format.hh"
-#include "CPropLib.hh"
-#include "CStp.hh"
-#include "CSteppingAction.hh"
-#include "CTrack.hh"
-#include "CG4Ctx.hh"
-#include "CG4.hh"
-
-#include "CFG4_POP.hh"
-
-
-// optickscore-
-#include "Opticks.hh"
-#include "OpticksFlags.hh"
-
-*/
-
-
-
-
 #include "PLOG.hh"
 
 const plog::Severity CManager::LEVEL = PLOG::EnvLevel("CManager", "INFO"); 
@@ -173,23 +126,41 @@ to create the pre-sized OpticksEvent.
 
 void CManager::BeginOfEventAction(const G4Event* event)
 {
-    LOG(LEVEL); 
+    m_ctx->setEvent(event);
 
-
-    NPY<float>* gs = nullptr ;  // liable to take a while to get this to work 
+    unsigned tagoffset = m_ctx->_event_id  ; 
     bool cfg4evt = true ; 
-    m_ok->createEvent(gs, cfg4evt); 
+
+    LOG(LEVEL) << " tagoffset " << tagoffset ; 
+    m_ok->createEvent(tagoffset, cfg4evt); 
 
     OpticksEvent* evt = m_ok->getG4Event();
     assert(evt); 
     initEvent(evt);    // configure event recording 
 
-    m_ctx->setEvent(event);
 }
 
 void CManager::EndOfEventAction(const G4Event*)
 {
     LOG(LEVEL); 
+
+    if(m_ok->isSave())
+    {
+        LOG(info) << " --save " ; 
+
+        unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
+        OpticksEvent* g4evt = m_ok->getG4Event() ; 
+        bool resize = false ; 
+        g4evt->setNumPhotons( numPhotons, resize ); 
+
+
+        m_ok->saveEvent();
+        m_ok->resetEvent();
+    }
+    else
+    {
+        LOG(info) << " NOT saving as no --save " ; 
+    }
 }
 
 void CManager::PreUserTrackingAction(const G4Track* track)

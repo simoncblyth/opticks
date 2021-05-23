@@ -554,6 +554,7 @@ class OKCORE_API Opticks {
        bool                 isFabricatedGensteps() const ;       // TORCH or MACHINERY source
        bool                 isNoInputGensteps() const ;          // eg when loading a prior propagation
        bool                 isLiveGensteps() const ;             // --live option indicating get gensteps from G4 directly
+       bool                 isNoPropagate() const ;          //  --nopropagate
    public:
        bool                 isEmbedded() const ;    // --embedded option indicating get gensteps via OpMgr API 
        bool                 hasKey() const ;       // distinguishes direct from legacy mode
@@ -619,6 +620,7 @@ class OKCORE_API Opticks {
    public:
        // via m_run
        void createEvent(NPY<float>* gensteps, bool cfg4evt) ;
+       void createEvent(unsigned tagoffset, bool cfg4evt) ;
        void saveEvent() ;
        void resetEvent() ;
        OpticksEvent*        getEvent() const ;   

@@ -146,16 +146,18 @@ class Profile(object):
         self.fmt = "%Y%m%d-%H%M"
 
         if os.path.exists(self.pdir):
-            self.valid = True
             self.init()
             self.initLaunch()
         else:
-            self.valid = False
-            self.tim = -1 
             self.prfmt = "INVALID" 
             self.acfmt = "INVALID" 
             log.fatal("pdir %s DOES NOT EXIST " % self.pdir) 
         pass  
+
+    def _get_valid(self):
+        return hasattr(self, 'tim')        
+    valid = property(_get_valid)
+
 
     def init(self):
         log.info("[")
@@ -163,6 +165,14 @@ class Profile(object):
         self.loadAcc()    ## Accumulated timings 
         self.loadMeta()
 
+        if len(self) > 0: 
+            self.initTime()
+        else:
+            self.tim = -1 
+            log.info("didnt load any entries")
+        pass
+
+    def initTime(self):
         if self.g4:  
             g4r, g40, g41 = self.deltaT(*self.G4DT)   ## CG4::propagate includes significant initialization
             stt = self.setupTrancheTime()
@@ -177,7 +187,6 @@ class Profile(object):
         self.idx = idx
         self.sli = slice(idx[0],idx[1]+1)
         log.info("]")
-
 
     def pfmt(self, path1, path2, path3=None):
         """
@@ -264,6 +273,8 @@ class Profile(object):
         l = np.load(lpath)
         assert l.ndim == 2 and l.shape[1] == 64
         assert len(a) == len(l) 
+        num = len(a)
+
         log.info("lpath:%s l.shape:%r" % (lpath,l.shape)) 
 
         ll = list(l.view("|S64")[:,0])
@@ -275,7 +286,7 @@ class Profile(object):
         q = np.load(qpath) if os.path.exists(qpath) else None
         log.info("qpath:%s q.shape:%r" % (qpath,q.shape)) 
 
-     
+    
         self.l = lll 
         self.a = a 
 

@@ -261,6 +261,7 @@ void CG4Ctx::setEvent(const G4Event* event)
 
     _event_total += 1 ; 
     _event_track_count = 0 ; 
+    _photon_count = 0 ; 
 
 
     CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
@@ -386,6 +387,7 @@ void CG4Ctx::setTrackOptical()
     _primary_id = CTrack::PrimaryPhotonID(_track) ;    // layed down in trackinfo by custom Scintillation process
     _photon_id = _primary_id >= 0 ? _primary_id : _track_id ; 
     _reemtrack = _primary_id >= 0 ? true        : false ; 
+    _photon_count += 1 ; 
 
      // retaining original photon_id from prior to reemission effects the continuation
     _record_id = _photons_per_g4event*_event_id + _photon_id ; 
@@ -412,6 +414,10 @@ void CG4Ctx::setTrackOptical()
     _primarystep_count = 0 ; 
 }
 
+unsigned CG4Ctx::getNumTrackOptical() const 
+{
+    return _photon_count ; 
+}
 
 
 

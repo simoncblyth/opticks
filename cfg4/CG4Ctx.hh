@@ -99,6 +99,7 @@ struct CFG4_API CG4Ctx
     // CG4Ctx::setTrackOptical
     int  _primary_id ; // used for reem continuation 
     int  _photon_id ;
+    int  _photon_count ; 
     bool _reemtrack ; 
     int  _record_id ;
     double _record_fraction ; // used with --reflectcheat
@@ -152,6 +153,8 @@ struct CFG4_API CG4Ctx
 
     void setTrack(const G4Track* track);
     void setTrackOptical();
+    unsigned getNumTrackOptical() const ; 
+
     void setStep(const G4Step* step, int noZeroSteps);
     void setStepOptical();
     unsigned  step_limit() const ; 

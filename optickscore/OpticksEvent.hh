@@ -110,6 +110,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
       friend class OpticksRun ; 
       // saveIndex
       friend class OpIndexerApp ; 
+      // setNumPhotons
+      friend struct CManager ; 
    public:
       static const char* PRELAUNCH_LABEL ;  
       static const char* LAUNCH_LABEL ;  
@@ -432,6 +434,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        // set by setGenstepData based on summation over Cerenkov/Scintillation photons to generate
        void setNumPhotons(unsigned int num_photons, bool resize=true);
        void resize();
+       void setMetadataNum();
    public:
        void Summary(const char* msg="OpticksEvent::Summary");
        std::string  brief() ;  // cannot be const 

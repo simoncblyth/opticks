@@ -20,19 +20,20 @@ from opticks.ana.profile_ import Profile
 
 
 class ABProfile(object):
-    def __init__(self, adir, bdir=None):
-        log.info("adir %s" % adir) 
-        log.info("bdir %s" % bdir) 
-        if bdir is None:  
-            # assume OK vs G4 mode : ie profiles from a bi-simulation
-            pdir = adir       
-            self.ap = Profile(pdir, "ab.pro.ap", g4=False) 
-            self.bp = Profile(pdir, "ab.pro.bp", g4=True ) 
-        else:
-            # treat arguments as two profile directories, assumed to be OK (not G4)
-            self.ap = Profile(adir, "ab.pro.ap", g4=False) 
-            self.bp = Profile(bdir, "ab.pro.bp", g4=False) 
-        pass 
+    def __init__(self, adir, bdir ):
+        assert not bdir is None
+
+        anam = os.path.basename(adir)
+        bnam = os.path.basename(bdir)
+        ag4 = anam[0] == "-"
+        bg4 = bnam[0] == "-"
+
+        log.info("adir %s anam %s ag4 %s" % (adir, anam, ag4)) 
+        log.info("bdir %s bnam %s bg4 %s" % (bdir, bnam, bg4)) 
+
+        self.ap = Profile(adir, "ab.pro.ap", g4=ag4) 
+        self.bp = Profile(bdir, "ab.pro.bp", g4=bg4) 
+
         valid = self.ap.valid and self.bp.valid 
         if valid:
             boa = self.bp.tim/self.ap.tim if self.ap.tim > 0 else -1  
@@ -51,8 +52,6 @@ class ABProfile(object):
 
 
 
-
-
 if __name__ == '__main__':
     from opticks.ana.main import opticks_main
     from opticks.ana.plot import init_rcParams
@@ -61,7 +60,6 @@ if __name__ == '__main__':
 
     ok = opticks_main(doc=__doc__)  
     log.info(ok.brief)
-
 
     op = ABProfile(ok.tagdir) 
     print(op)
@@ -81,10 +79,5 @@ if __name__ == '__main__':
     plt.ion()
     plt.show()
 
-
-
-
-
     log.info("tagdir: %s " % ok.tagdir)
-
 

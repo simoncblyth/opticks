@@ -161,7 +161,7 @@ class CompareMetadata(object):
 
     def __repr__(self):
 
-        dfmt_ = lambda d:" ".join(["%s:%s" % (kv[0],kv[1]) for kv in sorted(d.items(),key=lambda kv:kv[0])])   
+        dfmt_ = lambda d:"-" if d is None else " ".join(["%s:%s" % (kv[0],kv[1]) for kv in sorted(d.items(),key=lambda kv:kv[0])])   
 
         return "\n".join([
               "ab.cfm",

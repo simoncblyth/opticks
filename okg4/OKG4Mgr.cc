@@ -145,7 +145,7 @@ void OKG4Mgr::propagate()
              m_viz->indexPresentationPrep();
          }   
     }   
-    else if(ok("nopropagate"))
+    else if(m_ok->isNoPropagate())
     {   
         LOG(info) << "--nopropagate/-P" ;
     }   
@@ -156,12 +156,12 @@ void OKG4Mgr::propagate()
 
             propagate_();
 
-            if(ok("save"))
+            if(m_ok->isSave())
             {
-                m_run->saveEvent();
+                m_ok->saveEvent();
                 if(!m_production)  m_hub->anaEvent();
             }
-            m_run->resetEvent();
+            m_ok->resetEvent();
 
         }
         m_ok->postpropagate();

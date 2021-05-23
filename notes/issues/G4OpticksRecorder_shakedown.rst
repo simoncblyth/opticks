@@ -2,6 +2,77 @@ G4OpticksRecorder_shakedown
 ===============================
 
 
+
+
+
+ab.sh
+--------
+
+G4 metadata misses the below three::  
+
+   js.py /tmp/blyth/opticks/source/evt/g4live/natural/1/parameters.json 
+   js.py /tmp/blyth/opticks/source/evt/g4live/natural/-1/parameters.json 
+
+
+::
+
+     'NumGensteps': 3,
+     'NumPhotons': 25,
+     'NumRecords': 250,
+
+
+Below not called for m_g4evt::
+
+    1240 void OpticksEvent::resize()
+    1241 {
+    ...
+    1283     m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
+    1284     m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
+    1285     m_parameters->add<unsigned int>("NumRecords",  getNumRecords());
+    1286 
+    1287 }
+
+
+Collect these into *setMetadataNum* and call that from *save* that 
+still works for m_evt but m_g4evt values are zero::
+
+     'NumGensteps': 0,
+     'NumPhotons': 0,
+     'NumRecords': 0,
+
+
+saving from CManager only writing 1st G4 evt 
+-----------------------------------------------
+
+Missing some tag offsets ? So probably keep overwriting -1 ?
+
+::
+
+    epsilon:CerenkovMinimal blyth$ l /tmp/blyth/opticks/source/evt/g4live/natural/
+    total 0
+    0 drwxr-xr-x  33 blyth  wheel  1056 May 23 17:22 3
+    0 drwxr-xr-x  33 blyth  wheel  1056 May 23 17:22 2
+    0 drwxr-xr-x  34 blyth  wheel  1088 May 23 17:22 1
+    0 drwxr-xr-x  25 blyth  wheel   800 May 23 17:22 -1
+    0 drwxr-xr-x   7 blyth  wheel   224 May 23 17:22 .
+    0 drwxr-xr-x   3 blyth  wheel    96 May 23 17:04 0
+    0 drwxr-xr-x   3 blyth  wheel    96 May 23 17:04 ..
+
+
+
+
+getting zero boundaryies with ckm fixed by not define-ing USE_CUSTOM_BOUNDARY
+-------------------------------------------------------------------------------
+
+Having to recompile cfg4 like this not convenient.
+
+
+lack of genflag in dynamic running (with no gensteps ahead of time) 
+---------------------------------------------------------------------
+
+Currently fixed with a kludge CG4Ctx::setGenCK as did not 
+manage to find a general way.
+
 ::
 
     2021-05-23 15:52:02.790 INFO  [342221] [G4OpticksRecorder::PostUserTrackingAction@103] 

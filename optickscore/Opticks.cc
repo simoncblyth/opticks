@@ -1423,6 +1423,14 @@ void Opticks::createEvent(NPY<float>* gensteps, bool cfg4evt)
 {
     m_run->createEvent(gensteps, cfg4evt );
 }
+void Opticks::createEvent(unsigned tagoffset, bool cfg4evt)
+{
+    m_run->createEvent(tagoffset, cfg4evt );
+}
+
+
+
+
 void Opticks::saveEvent()
 {
     m_run->saveEvent(); 
@@ -3566,8 +3574,7 @@ std::string Opticks::getLegacyDesc() const
 
 bool Opticks::isLiveGensteps() const {  return hasOpt("live"); }
 bool Opticks::isNoInputGensteps() const { return hasOpt("load|nopropagate") ; } 
-
-
+bool Opticks::isNoPropagate() const { return hasOpt("nopropagate") ; } 
 
 
 char Opticks::getEntryCode() const  // debug switching of OptiX launch program  
