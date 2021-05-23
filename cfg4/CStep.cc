@@ -22,6 +22,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4StepPoint.hh"
 #include "G4Step.hh"
+#include "G4VProcess.hh"
 
 #include "OpticksQuadrant.h"
 #include "CStep.hh"
@@ -77,6 +78,26 @@ const G4Material* CStep::PostMaterial( const G4Step* step) // static
     const G4Material* postMat  = post->GetMaterial() ;
     return postMat ; 
 }
+
+
+int CStep::ProcessSubType(const G4StepPoint* point ) // static
+{
+    const G4VProcess* proc = point->GetProcessDefinedStep();
+    int subtype = proc ? proc->GetProcessSubType() : -1 ; 
+    return subtype ; 
+}
+int CStep::PreProcessSubType(const G4Step* step ) // static
+{
+    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+    return ProcessSubType(pre); 
+}
+int CStep::PostProcessSubType(const G4Step* step ) // static
+{
+    const G4StepPoint* post  = step->GetPostStepPoint() ; 
+    return ProcessSubType(post); 
+}
+
+
 
 
 

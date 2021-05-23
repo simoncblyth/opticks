@@ -39,6 +39,8 @@
 
 const plog::Severity CG4Ctx::LEVEL = PLOG::EnvLevel("CG4Ctx", "DEBUG") ; 
 
+const unsigned CG4Ctx::CK = OpticksGenstep::SourceCode("G4Cerenkov_1042");   // :w
+
 
 CG4Ctx::CG4Ctx(Opticks* ok)
     :
@@ -269,7 +271,28 @@ void CG4Ctx::setEvent(const G4Event* event)
         unsigned gen = eui->gencode ;
         setGen(gen); 
     }
+    else
+    {
+        setGenCK(); // kludge
+    }
 }
+
+
+
+/**
+CG4Ctx::setGenCK
+------------------
+
+Kludge as have not found a general way to get this yet.
+
+**/
+
+void CG4Ctx::setGenCK()
+{
+    setGen(CK) ; 
+}
+
+
 
 /**
 CG4Ctx::setGen
@@ -278,6 +301,12 @@ CG4Ctx::setGen
 HMM: in general cannot set this at event level, 
 it can only be set by checking on the generating process of first photon 
 So using this setGen from setEvent only makes sense with artifical gensteps  
+
+Perhaps the ProcessSubType can help with doing this more generally:: 
+
+   104   SetProcessSubType(fCerenkov);
+
+
 
 **/
 
@@ -318,6 +347,8 @@ void CG4Ctx::setTrack(const G4Track* track)
 
     _process_manager = CProcessManager::Current(_track);
 
+    LOG(info) << " _process_manager " << CProcessManager::Desc(_process_manager)  ;
+
     _track_step_count = 0 ; 
     _event_track_count += 1 ; 
     _track_total += 1 ;
@@ -346,10 +377,6 @@ Invoked by CG4Ctx::setTrack
 void CG4Ctx::setTrackOptical() 
 {
     LOG(debug) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
-
-
-
-
 
     _track->UseGivenVelocity(true);
 

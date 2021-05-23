@@ -5,6 +5,9 @@
 #include "CTrack.hh"
 #include "CRandomEngine.hh"
 #include "CRecorder.hh"
+#include "CStep.hh"
+#include "CProcessSubType.hh"
+
 #include "CStepRec.hh"
 #include "CStepStatus.hh"
 #include "CProcessManager.hh"
@@ -343,6 +346,13 @@ For a look into Geant4 ZeroStepping see notes/issues/review_alignment.rst
 
 bool CManager::setStep(const G4Step* step)
 {
+    int preSubType = CStep::PreProcessSubType(step); 
+    int postSubType = CStep::PostProcessSubType(step); 
+    LOG(info)
+        << " preSubType " << preSubType << " CProcessSubType::Name(preSubType) " << CProcessSubType::Name(preSubType)
+        << " postSubType " << postSubType << " CProcessSubType::Name(postSubType) " << CProcessSubType::Name(postSubType)
+        ;
+
     int noZeroSteps = -1 ;
     int severity = m_nav->SeverityOfZeroStepping( &noZeroSteps );
 

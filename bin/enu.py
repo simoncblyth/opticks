@@ -27,12 +27,31 @@ Extracts the strings and enumeration constants from headers
 
 ::
 
-    g4- ; ./bin/enu.py $(g4-dir)/source/processes/optical/include/G4OpBoundaryProcess.hh 
+
+    g4-
+    enu.py --hdr $(g4-dir)/source/processes/optical/include/G4OpBoundaryProcess.hh  --kls CBoundaryProcess
+
+    enu.py --hdr $(g4-dir)/source/processes/electromagnetic/utils/include/G4EmProcessSubType.hh --kls CEmProcessSubType
+
 
 
 """
-import os, re, logging, sys
+import os, re, logging, sys, argparse
+from collections import OrderedDict as odict 
 log = logging.getLogger(__name__)
+
+
+
+class KV(odict):
+   def __init__(self, ls):
+       odict.__init__(self)
+       for item in ls:
+           kv = list(map(str.strip, item.split("=")))
+           assert len(kv) == 2 
+           k, v = kv
+           self[k] = v 
+       pass
+
 
 class Enu(list):
     #begin = "{" 
@@ -47,6 +66,7 @@ class Enu(list):
         self.state = -1
         self.last = False
         self.parse(path)
+        self.kv = KV(self)
 
     def parse(self, path):
         lines = list(map(str.strip,open(path).readlines()))
@@ -102,35 +122,46 @@ class Enu(list):
     """)
 
 
-    id = property(lambda self:"// enu.py %s " % self.path) 
+    id = property(lambda self:"// enu.py --hdr %s " % self.path) 
 
     def labels(self, kls):
-        return "\n".join([self.id]+ list(map(lambda _:self.labels_tmpl % dict(kls=kls,token=_,qtoken="\"%s\""%_, utoken="%s_"% _), self)) )
+        return "\n".join([self.id]+ list(map(lambda _:self.labels_tmpl % dict(kls=kls,token=_,qtoken="\"%s\""%_, utoken="%s_"% _), self.kv.keys())) )
 
     def case(self, pfx):
-        return "\n".join([self.id]+ list(map(lambda _:self.case_tmpl % dict(pfx=pfx,token=_, token_="%s_" % _), self)) )
+        return "\n".join([self.id]+ list(map(lambda _:self.case_tmpl % dict(pfx=pfx,token=_, token_="%s_" % _), self.kv.keys())) )
 
     def scc(self):
-        return "\n".join([self.id]+ list(map(lambda _:self.scc_tmpl % dict(token=_), self)) )
+        return "\n".join([self.id]+ list(map(lambda _:self.scc_tmpl % dict(token=_), self.kv.keys())) )
 
 
+
+       
 
 
 
 if __name__ == '__main__':
-     logging.basicConfig(level=logging.INFO)  
 
-     path = sys.argv[1] if len(sys.argv) > 1 else "DsG4OpBoundaryProcessStatus.h"
+    parser = argparse.ArgumentParser(__doc__)
+    parser.add_argument( "--hdr",  default=None )
+    parser.add_argument( "--kls",  default="CBoundaryProcess" )
+    parser.add_argument( "--ns",  default="Ds::" )
+    parser.add_argument( "--level", default="info", help="logging level" ) 
+    args = parser.parse_args()
 
-     l = Enu(path)
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+
+    path = args.hdr
+
+    l = Enu(path)
      
-     print(l)
-     print("\n")
-     print(l.labels(kls="CBoundaryProcess"))
-     print("\n")
-     print(l.case(pfx="Ds::"))
-     print("\n")
-     print(l.case(pfx=""))
-     print("\n")
-     print(l.scc())
+    print(l)
+    print("\nlabels\n")
+    print(l.labels(kls=args.kls))
+    print("\ncase\n")
+    print(l.case(pfx=args.ns))
+    print("\ncase\n")
+    print(l.case(pfx=""))
+    print("\nscc\n")
+    print(l.scc())
 

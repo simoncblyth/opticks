@@ -420,10 +420,12 @@ void CRecorder::postTrackWriteSteps()
     assert(!m_live) ;
 
 #ifdef USE_CUSTOM_BOUNDARY
+    LOG(info) << " USE_CUSTOM_BOUNDARY " ; 
     Ds::DsG4OpBoundaryProcessStatus prior_boundary_status = Ds::Undefined ;
     Ds::DsG4OpBoundaryProcessStatus boundary_status = Ds::Undefined ;
     Ds::DsG4OpBoundaryProcessStatus next_boundary_status = Ds::Undefined ;
 #else
+    LOG(info) << " NOT USE_CUSTOM_BOUNDARY " ; 
     G4OpBoundaryProcessStatus prior_boundary_status = Undefined ;
     G4OpBoundaryProcessStatus boundary_status = Undefined ;
     G4OpBoundaryProcessStatus next_boundary_status = Undefined ;

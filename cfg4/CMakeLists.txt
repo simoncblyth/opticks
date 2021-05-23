@@ -143,15 +143,15 @@ set(SOURCES
     CAlignEngine.cc
     CMixMaxRng.cc
 
-    CProcess.cc
-    CProcessManager.cc
     CStepping.cc
     CSteppingState.cc
     CStepStatus.cc
 
     CDump.cc
 
-
+    CProcess.cc
+    CProcessManager.cc
+    CProcessSubType.cc
 )
 
 
@@ -276,6 +276,12 @@ set(HEADERS
     CMixMaxRng.hh
 
     CDump.hh
+
+    CProcess.hh
+    CProcessManager.hh
+    CProcessSubType.hh
+
+
 )
 
 list(APPEND SOURCES

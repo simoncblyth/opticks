@@ -5,8 +5,11 @@
 
 which CerenkovMinimal
 
+export CKM_OPTICKS_EXTRA="--dbgrec"
+
+
 if [ "$(uname)" == "Darwin" ]; then 
-    lldb_ CerenkovMinimal 
+    lldb__ CerenkovMinimal 
 else
     CerenkovMinimal 
 fi

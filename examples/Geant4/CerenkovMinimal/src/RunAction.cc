@@ -21,6 +21,8 @@
 #include <cassert>
 
 #ifdef WITH_OPTICKS
+#include "PLOG.hh"
+#include "SSys.hh"
 #include "G4TransportationManager.hh"
 #include "G4Opticks.hh"
 #include "G4OpticksRecorder.hh"
@@ -45,7 +47,12 @@ void RunAction::BeginOfRunAction(const G4Run* run)
     G4Opticks* g4ok = G4Opticks::Get(); 
     bool standardize_geant4_materials = false ;   
 
-    const char* embedded_commandline_extra = "--skipaheadstep 1000" ; // see ~/opticks/notes/issues/raja_repeated_photons.rst 
+    //const char* embedded_commandline_extra = "--skipaheadstep 1000" ; // see ~/opticks/notes/issues/raja_repeated_photons.rst 
+
+    const char* embedded_commandline_extra = SSys::getenvvar("CKM_OPTICKS_EXTRA", "" );   
+
+    LOG(info) << "embedded_commandline_extra (CKM_OPTICKS_EXTRA)" << embedded_commandline_extra ; 
+
     g4ok->setEmbeddedCommandLineExtra(embedded_commandline_extra);
     g4ok->setGeometry(world, standardize_geant4_materials );    
 
