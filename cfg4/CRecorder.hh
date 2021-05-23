@@ -42,6 +42,7 @@ class CRec ;
 class CMaterialBridge ; 
 class CWriter ; 
 class CStp ; 
+class CGeometry ; 
 
 /**
 CRecorder

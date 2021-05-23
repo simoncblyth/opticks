@@ -359,10 +359,18 @@ unsigned int OpStatus::OpPointFlag(const G4StepPoint* point, const G4OpBoundaryP
     else if(transportation && status == fGeomBoundary )
     {
         flag = OpStatus::OpBoundaryFlag(bst) ; // BOUNDARY_TRANSMIT/BOUNDARY_REFLECT/NAN_ABORT/SURFACE_ABSORB/SURFACE_DETECT/SURFACE_DREFLECT/SURFACE_SREFLECT
+
+        if(flag == 0)
+        {
+            LOG(fatal)
+                << " boundary flag zero "
+                << " bst " << bst 
+                ;
+        }
+
     } 
     else if(transportation && status == fWorldBoundary )
     {
-        //flag = SURFACE_ABSORB ;   // former kludge for fWorldBoundary - no surface handling yet 
         flag = MISS ; 
     }
     else
@@ -374,6 +382,12 @@ unsigned int OpStatus::OpPointFlag(const G4StepPoint* point, const G4OpBoundaryP
                      ;
         assert(0);
     }
+
+    LOG(info) 
+        << " flag " << flag 
+        << " processName " << processName 
+        ;
+
     return flag ; 
 }
 

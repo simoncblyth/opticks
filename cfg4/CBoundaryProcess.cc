@@ -19,6 +19,8 @@
 
 #include "G4ProcessManager.hh"
 #include "CBoundaryProcess.hh"
+#include "PLOG.hh"
+
 
 #ifdef USE_CUSTOM_BOUNDARY
 Ds::DsG4OpBoundaryProcessStatus CBoundaryProcess::GetOpBoundaryProcessStatus()
@@ -40,6 +42,7 @@ Ds::DsG4OpBoundaryProcessStatus CBoundaryProcess::GetOpBoundaryProcessStatus()
                 status = opProc->GetStatus(); 
                 break;
             }
+            // NULL casts expected, that is the way of finding the wanted boundary process
         }
     }
     return status ; 
@@ -63,6 +66,7 @@ G4OpBoundaryProcessStatus CBoundaryProcess::GetOpBoundaryProcessStatus()
                 status = opProc->GetStatus(); 
                 break;
             }
+            // NULL casts expected, that is the way of finding the wanted boundary process
         }
     }
     return status ; 

@@ -315,6 +315,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 
     if(m_ctx._dbgrec)
         LOG(info) << "crec.add "
+                  << " boundary_status " << boundary_status
                   << m_crec->desc()
                   << std::setw(10) << CStage::Label(m_ctx._stage)
                   << " " << m_ctx.desc_step() 
@@ -418,6 +419,7 @@ appropriate step points are to be saved with WriteStepPoint.
 void CRecorder::postTrackWriteSteps()
 {
     assert(!m_live) ;
+    LOG(info) << "[" ; 
 
 #ifdef USE_CUSTOM_BOUNDARY
     LOG(info) << " USE_CUSTOM_BOUNDARY " ; 
@@ -490,6 +492,22 @@ void CRecorder::postTrackWriteSteps()
 
         unsigned postFlag = OpStatus::OpPointFlag(post, boundary_status, postStage);
 
+        if(postFlag == 0 )
+        {
+            LOG(fatal)
+                << " num " << num
+                << " i " << i 
+                << " postFlag zero "
+                << " prior_boundary_status " << prior_boundary_status
+                << " boundary_status " << boundary_status
+                << " next_boundary_status " << next_boundary_status
+                << " postStage " << postStage
+                << " premat " << premat
+                << " postmat " << postmat
+                ;
+        }
+
+
         bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
 
         bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
@@ -537,6 +555,17 @@ void CRecorder::postTrackWriteSteps()
 
         //unsigned preFlag = first ? m_ctx._gen : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
         unsigned preFlag = first ? m_ctx._genflag : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
+
+
+        if(preFlag == 0 )
+        {
+            LOG(fatal) 
+                << " preFlag zero " 
+                << " first " << first 
+                << "  m_ctx._genflag  " <<  m_ctx._genflag 
+                ;          
+        }
+
 
         if(i == 0)
         {
@@ -601,6 +630,7 @@ void CRecorder::postTrackWriteSteps()
                    << " num " << num 
                    ; 
     } 
+    LOG(info) << "]" ; 
 }
 
 

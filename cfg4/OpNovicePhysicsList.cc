@@ -353,9 +353,12 @@ void OpNovicePhysicsList::ConstructOpDYB()
     OpRayleigh* rayleigh = m_useRayleigh  ? new OpRayleigh(m_g4) : NULL ; 
 #endif
 
-    //G4OpBoundaryProcess* boundproc = new G4OpBoundaryProcess();
+#ifdef USE_CUSTOM_BOUNDARY
     DsG4OpBoundaryProcess* boundproc = new DsG4OpBoundaryProcess(m_g4);
     boundproc->SetModel(unified);
+#else
+    G4OpBoundaryProcess* boundproc = new G4OpBoundaryProcess();
+#endif
 
     //G4FastSimulationManagerProcess* fast_sim_man = new G4FastSimulationManagerProcess("fast_sim_man");
 

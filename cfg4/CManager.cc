@@ -376,6 +376,13 @@ bool CManager::setStep(const G4Step* step)
  
     if(m_ctx->_optical)
     {
+
+        if(m_ctx->_boundary_status == 0 )
+        {
+            LOG(fatal)
+                << " boundary_status zero "
+                ; 
+        } 
         done = m_recorder->Record(m_ctx->_boundary_status);  
     }
     else

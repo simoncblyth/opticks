@@ -475,7 +475,7 @@ void CG4Ctx::setStepOptical()
     _prior_boundary_status = _boundary_status ; 
     _boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;
 
-    LOG(verbose) 
+    LOG(info) 
         <<  " _prior_boundary_status " << std::setw(35) << CBoundaryProcess::OpBoundaryString(_prior_boundary_status)
         <<  " _boundary_status " << std::setw(35) << CBoundaryProcess::OpBoundaryString(_boundary_status)
         ;
