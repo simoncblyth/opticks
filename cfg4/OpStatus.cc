@@ -30,6 +30,8 @@
 #include "PLOG.hh"
 
 
+const plog::Severity OpStatus::LEVEL = PLOG::EnvLevel("OpStatus", "DEBUG") ; 
+
 std::string OpStatus::OpStepString(const G4StepStatus status)
 {
     std::stringstream ss ;
@@ -394,10 +396,7 @@ unsigned int OpStatus::OpPointFlag(const G4StepPoint* point, const G4OpBoundaryP
         assert(0);
     }
 
-    LOG(info) 
-        << " flag " << flag 
-        << " processName " << processName 
-        ;
+    LOG(LEVEL) << " flag " << flag << " processName " << processName ; 
 
     return flag ; 
 }

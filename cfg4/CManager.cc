@@ -16,7 +16,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity CManager::LEVEL = PLOG::EnvLevel("CManager", "INFO"); 
+const plog::Severity CManager::LEVEL = PLOG::EnvLevel("CManager", "DEBUG"); 
 
 
 CRecorder* CManager::getRecorder() const 
@@ -64,17 +64,6 @@ CManager::CManager(Opticks* ok, bool dynamic )
     m_cursor_at_clear(-1)
 {
 }
-
-
-
-/*
-   m_geometry(g4->getGeometry()),
-   m_material_bridge(NULL),
-   m_mlib(g4->getMaterialLib()),
-   m_steprec(g4->getStepRec()),
-
-*/
-
 
 
 void CManager::setMaterialBridge(const CMaterialBridge* material_bridge)
@@ -128,16 +117,24 @@ void CManager::BeginOfEventAction(const G4Event* event)
 {
     m_ctx->setEvent(event);
 
-    unsigned tagoffset = m_ctx->_event_id  ; 
-    bool cfg4evt = true ; 
+    if(m_ok->isSave())
+    {
+        LOG(LEVEL) << " --save creating OpticksEvent  " ; 
 
-    LOG(LEVEL) << " tagoffset " << tagoffset ; 
-    m_ok->createEvent(tagoffset, cfg4evt); 
+        unsigned tagoffset = m_ctx->_event_id  ; 
+        bool cfg4evt = true ; 
 
-    OpticksEvent* evt = m_ok->getG4Event();
-    assert(evt); 
-    initEvent(evt);    // configure event recording 
+        LOG(LEVEL) << " tagoffset " << tagoffset ; 
+        m_ok->createEvent(tagoffset, cfg4evt); 
 
+        OpticksEvent* evt = m_ok->getG4Event();
+        assert(evt); 
+        initEvent(evt);    // configure event recording 
+    }
+    else
+    {
+        LOG(LEVEL) << " NOT creating OpticksEvent as no --save " ; 
+    }
 }
 
 void CManager::EndOfEventAction(const G4Event*)
@@ -146,10 +143,13 @@ void CManager::EndOfEventAction(const G4Event*)
 
     if(m_ok->isSave())
     {
-        LOG(info) << " --save " ; 
+        LOG(LEVEL) << " --save " ; 
 
         unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
         OpticksEvent* g4evt = m_ok->getG4Event() ; 
+
+        assert(g4evt);  
+
         bool resize = false ; 
         g4evt->setNumPhotons( numPhotons, resize ); 
 
@@ -159,7 +159,7 @@ void CManager::EndOfEventAction(const G4Event*)
     }
     else
     {
-        LOG(info) << " NOT saving as no --save " ; 
+        LOG(LEVEL) << " NOT saving as no --save " ; 
     }
 }
 
@@ -319,7 +319,7 @@ bool CManager::setStep(const G4Step* step)
 {
     int preSubType = CStep::PreProcessSubType(step); 
     int postSubType = CStep::PostProcessSubType(step); 
-    LOG(info)
+    LOG(LEVEL)
         << " preSubType " << preSubType << " CProcessSubType::Name(preSubType) " << CProcessSubType::Name(preSubType)
         << " postSubType " << postSubType << " CProcessSubType::Name(postSubType) " << CProcessSubType::Name(postSubType)
         ;

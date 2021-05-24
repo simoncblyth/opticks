@@ -24,6 +24,7 @@
 #include "CBoundaryProcess.hh"
 #include "CStage.hh"
 #include "CFG4_POP.hh"
+#include "plog/Severity.h"
 
 #include "CFG4_API_EXPORT.hh"
 
@@ -35,6 +36,7 @@ class G4StepPoint ;
 class CFG4_API OpStatus 
 {
     public:
+        static const plog::Severity LEVEL ; 
         static std::string OpStepString(const G4StepStatus status);
 #ifdef USE_CUSTOM_BOUNDARY
        static std::string  OpBoundaryString(const Ds::DsG4OpBoundaryProcessStatus status);

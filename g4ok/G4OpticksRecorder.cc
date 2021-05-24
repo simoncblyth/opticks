@@ -31,7 +31,7 @@ high level instances like CG4 with their constituents that are really needed.
 
 G4OpticksRecorder* G4OpticksRecorder::fInstance = NULL ;
 G4OpticksRecorder* G4OpticksRecorder::Get(){ return fInstance ;  }  // static
-const plog::Severity G4OpticksRecorder::LEVEL = PLOG::EnvLevel("G4OpticksRecorder", "INFO")  ;
+const plog::Severity G4OpticksRecorder::LEVEL = PLOG::EnvLevel("G4OpticksRecorder", "DEBUG")  ;
 
 G4OpticksRecorder::~G4OpticksRecorder(){ LOG(LEVEL);  }
 G4OpticksRecorder::G4OpticksRecorder()
@@ -69,46 +69,36 @@ void G4OpticksRecorder::setGeometry(const GGeo* ggeo_)
 
 void G4OpticksRecorder::BeginOfRunAction(const G4Run* run)
 {
-    LOG(LEVEL); 
     m_manager->BeginOfRunAction(run); 
-
 }
 void G4OpticksRecorder::EndOfRunAction(const G4Run* run)
 {
-    LOG(LEVEL); 
     m_manager->EndOfRunAction(run); 
 }
 
 
-
 void G4OpticksRecorder::BeginOfEventAction(const G4Event* event)
 {
-    LOG(LEVEL); 
     m_manager->BeginOfEventAction(event); 
 }
 void G4OpticksRecorder::EndOfEventAction(const G4Event* event)
 {
-    LOG(LEVEL); 
     m_manager->EndOfEventAction(event); 
 }
 
 
 void G4OpticksRecorder::PreUserTrackingAction(const G4Track* track)
 {
-    LOG(LEVEL); 
     m_manager->PreUserTrackingAction(track); 
 }
 void G4OpticksRecorder::PostUserTrackingAction(const G4Track* track)
 {
-    LOG(LEVEL); 
     m_manager->PostUserTrackingAction(track); 
 }
 
 
 void G4OpticksRecorder::UserSteppingAction(const G4Step* step)
 {
-    LOG(LEVEL); 
     m_manager->UserSteppingAction(step); 
 }
-
 
