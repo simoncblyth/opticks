@@ -47,7 +47,7 @@ const char* GItemList::GITEMLIST = "GItemList" ;
 unsigned int GItemList::UNSET = UINT_MAX ; 
 
 
-bool GItemList::isUnset(unsigned int index)
+bool GItemList::IsUnset(unsigned int index)  // static 
 {
     return index == UNSET ; 
 }

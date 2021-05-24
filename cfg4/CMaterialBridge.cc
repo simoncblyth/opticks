@@ -48,7 +48,13 @@ void CMaterialBridge::initMap()
 {
     const G4MaterialTable* mtab = G4Material::GetMaterialTable();
     unsigned nmat = G4Material::GetNumberOfMaterials();
-    LOG(LEVEL) << " nmat (G4Material::GetNumberOfMaterials) " << nmat ; 
+    unsigned nmat_mlib = m_mlib->getNumMaterials(); 
+
+    LOG(LEVEL) 
+        << " nmat (G4Material::GetNumberOfMaterials) " << nmat
+        << " nmat_mlib (GMaterialLib::getNumMaterials) materials used by geometry " << nmat_mlib
+        ; 
+
 
     for(unsigned i=0 ; i < nmat ; i++)
     {
@@ -61,13 +67,14 @@ void CMaterialBridge::initMap()
         std::string abbr = shortname ; //  
 
         unsigned index =  m_mlib->getIndex( shortname );
+        bool mlib_unset = GMaterialLib::IsUnset(index) ; 
 
-        m_g4toix[material] = index ; 
-
-        m_ixtoname[index] = shortname ;
-
-        m_ixtoabbr[index] = m_mlib->getAbbr(shortname) ;
-
+        if(!mlib_unset)
+        {
+            m_g4toix[material] = index ; 
+            m_ixtoname[index] = shortname ;
+            m_ixtoabbr[index] = m_mlib->getAbbr(shortname) ;
+        }
 
         LOG(LEVEL) 
             << " i " << std::setw(3) << i 
@@ -75,6 +82,7 @@ void CMaterialBridge::initMap()
             << " shortname " << std::setw(35) << shortname 
             << " abbr " << std::setw(35) << abbr 
             << " index " << std::setw(5)  << index
+            << " mlib_unset " << std::setw(5)  << mlib_unset
             ; 
     }
 
@@ -85,9 +93,14 @@ void CMaterialBridge::initMap()
         ; 
 
 
-    assert( m_g4toix.size() == nmat );
-    assert( m_ixtoname.size() == nmat && "there is probably a duplicated material name");
-    assert( m_ixtoabbr.size() == nmat && "there is probably a duplicated material name");
+
+    // for matching with GDML exports the GMaterialLib has changed to handling only the 
+    // materials that are used, not all G4 materials that are present 
+    // so the below constraints now use nmat_mlib rather than nmat
+    //  
+    assert( m_g4toix.size() == nmat_mlib );
+    assert( m_ixtoname.size() == nmat_mlib && "there is probably a duplicated material name");
+    assert( m_ixtoabbr.size() == nmat_mlib && "there is probably a duplicated material name");
 }
 
 

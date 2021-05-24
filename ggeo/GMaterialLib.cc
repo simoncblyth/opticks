@@ -44,7 +44,7 @@ const plog::Severity GMaterialLib::LEVEL = PLOG::EnvLevel("GMaterialLib", "DEBUG
 
 const GMaterialLib* GMaterialLib::INSTANCE = NULL ; 
 const GMaterialLib* GMaterialLib::GetInstance(){ return INSTANCE ; }
-
+bool GMaterialLib::IsUnset(unsigned index){ return GItemList::IsUnset(index) ; } // static 
 
 const float GMaterialLib::MATERIAL_UNSET   = 0.0f  ;
 
