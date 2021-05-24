@@ -130,8 +130,6 @@ OKG4Mgr::~OKG4Mgr()
 
 void OKG4Mgr::propagate()
 {
-    const Opticks& ok = *m_ok ;
-
     if(m_load)
     {   
          m_run->loadEvent(); 
