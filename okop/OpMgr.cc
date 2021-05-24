@@ -128,20 +128,20 @@ void OpMgr::propagate()
 
     bool compute = true ; 
 
-    bool cfg4evt = false ; 
+    char ctrl = '+' ; 
 
     m_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(compute));
 
-    m_run->createEvent(m_gensteps, cfg4evt ); 
+    m_run->createEvent(m_gensteps, ctrl ); 
 
     LOG(LEVEL) << "[ m_propagator->propagate " ; 
     m_propagator->propagate();
     LOG(LEVEL) << "] m_propagator->propagate " ; 
 
-    if(ok("save")) 
+    if(m_ok->isSave()) 
     {
         LOG(LEVEL) << "( save " ;  
-        m_run->saveEvent();
+        m_run->saveEvent(ctrl);
         LOG(LEVEL) << ") save " ;  
 
         LOG(LEVEL) << "( ana " ;  
@@ -163,8 +163,9 @@ void OpMgr::propagate()
 
 void OpMgr::reset()
 {  
+    char ctrl = '+' ; 
     LOG(LEVEL) << "[" ;  
-    m_run->resetEvent();
+    m_run->resetEvent(ctrl);
     LOG(LEVEL) << "]" ;  
 }
 
@@ -190,13 +191,10 @@ int  OpMgr::render_snap()
     return m_propagator->render_snap(); 
 }
 
-
 int OpMgr::render_flightpath()
 {
     return m_propagator->render_flightpath(); 
 }
-
-
 
 
 

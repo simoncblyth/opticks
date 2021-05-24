@@ -124,7 +124,9 @@ void OKPropagator::propagate()
 
 int OKPropagator::uploadEvent()
 {
-    if(m_viz) m_viz->uploadEvent();
+    char ctrl = '+' ; 
+
+    if(m_viz) m_viz->uploadEvent(ctrl);
 
     int npho = -1 ; 
 #ifdef OPTICKS_OPTIX

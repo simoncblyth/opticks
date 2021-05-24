@@ -93,6 +93,7 @@ void OKMgr::propagate()
     bool production = ok.isProduction();
     bool load = ok.isLoad(); 
     bool save = ok.isSave(); 
+    char ctrl = '+' ; 
 
     LOG(LEVEL) 
         << "[ " 
@@ -103,13 +104,15 @@ void OKMgr::propagate()
 
     if(load)
     {
-         m_run->loadEvent(); 
+         char load_ctrl = m_ok->hasOpt("vizg4|evtg4") ? '-' : '+' ; 
+
+         m_run->loadEvent(load_ctrl); 
 
          if(m_viz) 
          {
              m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
 
-             m_viz->uploadEvent();
+             m_viz->uploadEvent(load_ctrl);
 
              m_viz->indexPresentationPrep();
          }
@@ -118,16 +121,14 @@ void OKMgr::propagate()
     {
         for(int i=0 ; i < m_num_event ; i++) 
         {
-            bool cfg4evt = false ; 
-
-            m_ok->createEvent(m_gen->getInputGensteps(), cfg4evt);
+            m_ok->createEvent(m_gen->getInputGensteps(), ctrl);
 
             m_propagator->propagate();
 
             if(save) 
             {
                 LOG(LEVEL) << "(" ; 
-                m_ok->saveEvent();
+                m_ok->saveEvent(ctrl);
                 if(!production) m_hub->anaEvent();
                 LOG(LEVEL) << ")" ; 
             }
@@ -136,7 +137,7 @@ void OKMgr::propagate()
                 LOG(warning) << " not saving " ; 
             }
 
-            m_ok->resetEvent();
+            m_ok->resetEvent(ctrl);
         }
 
         m_ok->postpropagate();

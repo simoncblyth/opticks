@@ -38,6 +38,17 @@ OpticksRun
 Dual G4/Opticks event handling with batton passing 
 between g4evt and evt regarding the gensteps. 
 
+The char ctrl argument to many methods selects between Opticks and Geant4 events:
+
+ctrl='+'
+     Opticks m_evt
+
+ctrl='-'
+     Geant4 m_g4evt
+
+ctrl='='
+     both, where that makes sense
+
 **/
 
 
@@ -50,6 +61,7 @@ class OKCORE_API OpticksRun
     private:
         void importGensteps();
     public:
+        OpticksEvent* getEvent(char ctrl) const ;
         OpticksEvent* getEvent() const ;
         OpticksEvent* getG4Event() const ;
         OpticksEvent* getCurrentEvent(); // returns OK evt unless G4 option specified : --vizg4 or --evtg4 
@@ -59,17 +71,17 @@ class OKCORE_API OpticksRun
         void setGensteps(NPY<float>* gs);
         bool hasGensteps() const ;
 
-        void createEvent(NPY<float>* gensteps, bool g4_evt);
-        void createEvent(unsigned tagoffset, bool g4_evt );  
+        void createEvent(NPY<float>* gensteps, char ctrl);
+        void createEvent(unsigned tagoffset, char ctrl );  
     private:
         OpticksEvent* createOKEvent(unsigned tagoffset) ;
         OpticksEvent* createG4Event(unsigned tagoffset) ;
         void EstablishPairing(OpticksEvent* first, OpticksEvent* second, unsigned tagoffset) ;
         void annotateEvent(OpticksEvent* evt);
      public:
-        void resetEvent();  
-        void loadEvent();
-        void saveEvent(); 
+        void resetEvent(char ctrl);  
+        void loadEvent(char ctrl);
+        void saveEvent(char ctrl); 
         void anaEvent(); // analysis based on saved evts 
     private:
         void annotateEvent(); 

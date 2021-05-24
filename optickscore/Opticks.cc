@@ -1419,26 +1419,32 @@ OpticksRun* Opticks::getRun()
 {
     return m_run ;  
 }
-void Opticks::createEvent(NPY<float>* gensteps, bool cfg4evt)
+void Opticks::createEvent(NPY<float>* gensteps, char ctrl)
 {
-    m_run->createEvent(gensteps, cfg4evt );
+    m_run->createEvent(gensteps, ctrl );
 }
-void Opticks::createEvent(unsigned tagoffset, bool cfg4evt)
+void Opticks::createEvent(unsigned tagoffset, char ctrl)
 {
-    m_run->createEvent(tagoffset, cfg4evt );
+    m_run->createEvent(tagoffset, ctrl );
 }
 
 
 
 
-void Opticks::saveEvent()
+void Opticks::saveEvent(char ctrl)
 {
-    m_run->saveEvent(); 
+    m_run->saveEvent(ctrl); 
 }
-void Opticks::resetEvent()
+void Opticks::resetEvent(char ctrl)
 {
-    m_run->resetEvent();
+    m_run->resetEvent(ctrl);
 }
+
+OpticksEvent* Opticks::getEvent(char ctrl) const 
+{
+    return m_run->getEvent(ctrl)  ; 
+}
+
 OpticksEvent* Opticks::getEvent() const 
 {
     return m_run->getEvent()  ; 

@@ -619,10 +619,11 @@ class OKCORE_API Opticks {
        BDynamicDefine*      makeDynamicDefine();
    public:
        // via m_run
-       void createEvent(NPY<float>* gensteps, bool cfg4evt) ;
-       void createEvent(unsigned tagoffset, bool cfg4evt) ;
-       void saveEvent() ;
-       void resetEvent() ;
+       void createEvent(NPY<float>* gensteps, char ctrl) ;
+       void createEvent(unsigned tagoffset, char ctrl) ;
+       void saveEvent(char ctrl) ;
+       void resetEvent(char ctrl) ;
+       OpticksEvent*        getEvent(char ctrl) const ;   
        OpticksEvent*        getEvent() const ;   
        OpticksEvent*        getG4Event() const ; 
    public:

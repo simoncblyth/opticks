@@ -14,7 +14,7 @@
 #include "OpticksGenstep.hh"
 
 
-NPY<float>* test_resetEvent(Opticks* ok, unsigned nevt, bool cfg4evt)
+NPY<float>* test_resetEvent(Opticks* ok, unsigned nevt, char ctrl)
 {
     unsigned num_photons = 10000 ; 
     unsigned tagoffset = 0 ; 
@@ -30,8 +30,8 @@ NPY<float>* test_resetEvent(Opticks* ok, unsigned nevt, bool cfg4evt)
 
     for(unsigned i=0 ; i < nevt ; i++)
     {
-        ok->createEvent(gs, cfg4evt); 
-        ok->resetEvent(); 
+        ok->createEvent(gs, ctrl); 
+        ok->resetEvent(ctrl); 
         glm::vec4 stamp = OpticksProfile::Stamp() ; 
 #ifdef USE_VEC4
         stamps.push_back(stamp);  
@@ -68,7 +68,8 @@ int main(int argc, char** argv)
     glm::vec4 space_domain(0.f,0.f,0.f,1000.f); 
     ok.setSpaceDomain(space_domain); 
 
-    NPY<float>* a = test_resetEvent(&ok, nevt, false); 
+    char ctrl = '+' ; 
+    NPY<float>* a = test_resetEvent(&ok, nevt, ctrl); 
     const char* path = "$TMP/optickscore/tests/OpticksEventLeakTest.npy" ; 
     LOG(info) << " save to path " << path ; 
     LOG(info) << " make plot with: ipython -i ~/opticks/optickscore/tests/OpticksEventLeakTest.py "  ;

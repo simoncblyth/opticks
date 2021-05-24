@@ -389,13 +389,13 @@ int OpticksViz::getTarget()
 }
 
 
-void OpticksViz::uploadEvent()
+void OpticksViz::uploadEvent(char ctrl)
 {
     if(m_hub->hasOpt("nooptix|noevent")) return ; 
  
     m_composition->update();
 
-    OpticksEvent* evt = m_run->getCurrentEvent() ;
+    OpticksEvent* evt = m_run->getEvent(ctrl) ;
 
     uploadEvent(evt);
 }

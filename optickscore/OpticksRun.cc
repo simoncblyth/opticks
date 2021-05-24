@@ -85,11 +85,11 @@ entirely known ahread of time and buffers are sized accordingly.
 **/
 
 
-void OpticksRun::createEvent(NPY<float>* gensteps, bool cfg4evt ) 
+void OpticksRun::createEvent(NPY<float>* gensteps, char ctrl) 
 {
     unsigned tagoffset = gensteps ? gensteps->getArrayContentIndex() : 0 ;  // eg eventID
     LOG(LEVEL) << " tagoffset " << tagoffset ; 
-    createEvent(tagoffset, cfg4evt ); 
+    createEvent(tagoffset, ctrl ); 
     setGensteps(gensteps); 
 }
 
@@ -113,17 +113,19 @@ This allows creation of OK and G4 events in either order.
 
 **/
 
-void OpticksRun::createEvent(unsigned tagoffset, bool g4_evt )
+void OpticksRun::createEvent(unsigned tagoffset, char ctrl )
 {
+    assert( ctrl == '+' || ctrl == '-' || ctrl == '='); 
     m_ok->setTagOffset(tagoffset);  // tagoffset is recorded with Opticks::setTagOffset within the makeEvent, but need it here before that 
 
-    if(!g4_evt )
+    if(ctrl == '+' || ctrl == '=' )
     {
         m_evt = createOKEvent(tagoffset) ; 
         EstablishPairing( m_g4evt, m_evt, tagoffset ); 
         annotateEvent(m_evt);
     }
-    else
+
+    if(ctrl == '-' || ctrl == '=' )
     {
         m_g4evt = createG4Event(tagoffset) ; 
         EstablishPairing( m_evt, m_g4evt, tagoffset ); 
@@ -135,6 +137,7 @@ void OpticksRun::createEvent(unsigned tagoffset, bool g4_evt )
         << tagoffset 
         << ") " 
         << "[ "
+        << " ctrl: [" << ctrl << "]" 
         << " ok:" << ( m_evt ?   m_evt->brief()   : "-" )
         << " g4:" << ( m_g4evt ? m_g4evt->brief() : "-" )
         << "] DONE "
@@ -229,19 +232,20 @@ void OpticksRun::annotateEvent(OpticksEvent* evt)
 
 
 
-void OpticksRun::resetEvent()
+void OpticksRun::resetEvent(char ctrl)
 {
+    assert( ctrl == '+' || ctrl == '-' || ctrl == '='); 
     LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OpticksRun::resetEvent");
 
-    if( m_evt)
+    if( m_evt && (ctrl == '+' || ctrl == '='))
     {
         m_evt->reset();
         delete m_evt ; 
         m_evt = NULL  ; 
     }
 
-    if(m_g4evt) 
+    if(m_g4evt && (ctrl == '-' || ctrl == '=')) 
     {
         m_g4evt->reset(); 
         delete m_g4evt ; 
@@ -253,6 +257,19 @@ void OpticksRun::resetEvent()
 }
 
 
+
+OpticksEvent* OpticksRun::getEvent(char ctrl) const 
+{
+    assert( ctrl == '+' || ctrl == '-' ); 
+    OpticksEvent* evt = nullptr ; 
+    switch(ctrl) 
+    {
+        case '+': evt = m_evt   ; break ; 
+        case '-': evt = m_g4evt ; break ; 
+    }
+    return evt ; 
+}
+
 OpticksEvent* OpticksRun::getG4Event() const 
 {
     return m_g4evt ; 
@@ -261,11 +278,13 @@ OpticksEvent* OpticksRun::getEvent() const
 {
     return m_evt ; 
 }
+
 OpticksEvent* OpticksRun::getCurrentEvent()
 {
-    bool g4 = m_ok->hasOpt("vizg4|evtg4") ;
-    return g4 ? m_g4evt : m_evt ;
+    char ctrl = m_ok->hasOpt("vizg4|evtg4") ? '-' : '+' ;
+    return getEvent(ctrl) ; 
 }
+
 
 
 /**
@@ -339,8 +358,10 @@ void OpticksRun::importGensteps()
         m_g4evt->setGenstepData(m_gensteps, m_resize, m_clone );
     }
 
-    m_evt->setGenstepData(m_gensteps, m_resize, m_clone );
-
+    if(m_evt)
+    {
+        m_evt->setGenstepData(m_gensteps, m_resize, m_clone );
+    }
 
     if(hasActionControl(m_gensteps, "GS_EMITSOURCE"))
     {
@@ -349,7 +370,7 @@ void OpticksRun::importGensteps()
         NPY<float>* emitsource = (NPY<float>*)aux ; 
 
         if(m_g4evt) m_g4evt->setSourceData( emitsource, m_clone ); 
-        m_evt->setSourceData( emitsource, m_clone );
+        if(m_evt)   m_evt->setSourceData( emitsource, m_clone );
 
         LOG(LEVEL) 
             << "GS_EMITSOURCE"
@@ -374,15 +395,16 @@ bool OpticksRun::hasGensteps() const
 }
 
 
-void OpticksRun::saveEvent()
+void OpticksRun::saveEvent(char ctrl)
 {
+    assert( ctrl == '+' || ctrl == '-' || ctrl == '='); 
     OK_PROFILE("_OpticksRun::saveEvent");
     // they skip if no photon data
-    if(m_g4evt)
+    if(m_g4evt && ( ctrl == '-' || ctrl == '=') )
     {
         m_g4evt->save();
     } 
-    if(m_evt)
+    if(m_evt && ( ctrl == '+' || ctrl == '=') )
     {
         m_evt->save();
     } 
@@ -400,33 +422,36 @@ void OpticksRun::anaEvent()
 }
 
 
-void OpticksRun::loadEvent()
+/**
+
+Formerly loaded m_g4evt when m_ok->hasOpt("vizg4"))
+**/
+
+void OpticksRun::loadEvent(char ctrl)
 {
-    unsigned tagoffset = 0 ; 
-    bool cfg4evt = false ; 
-    createEvent(tagoffset, cfg4evt);
-
-    bool verbose ; 
-    m_evt->loadBuffers(verbose=false);
-
-    if(m_evt->isNoLoad())
+    assert( ctrl == '+' || ctrl == '-' || ctrl == '='); 
+    if( ctrl == '=')
     {
-        LOG(fatal) << "OpticksRun::loadEvent LOAD FAILED " ;
-        m_ok->setExit(true);
+        loadEvent('+'); 
+        loadEvent('-'); 
     }
-
-    if(m_ok->isExit()) exit(EXIT_FAILURE) ;
-
-
-    // hmm when g4 evt is selected, perhaps skip loading OK evt ?
-    if(m_ok->hasOpt("vizg4"))
+    else
     {
-        m_g4evt->loadBuffers(verbose=false);
-        if(m_g4evt->isNoLoad())
+        unsigned tagoffset = 0 ; 
+        createEvent(tagoffset, ctrl);
+
+        OpticksEvent* evt = getEvent(ctrl); 
+     
+        bool verbose = false ; 
+        evt->loadBuffers(verbose);
+
+        if(evt->isNoLoad())
         {
-            LOG(fatal) << "OpticksRun::loadEvent LOAD g4evt FAILED " ;
-            exit(EXIT_FAILURE);
+            LOG(fatal) << "LOAD FAILED " ;
+            m_ok->setExit(true);
         }
+
+        if(m_ok->isExit()) exit(EXIT_FAILURE) ;
     }
 }
 

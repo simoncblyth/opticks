@@ -85,7 +85,7 @@ void test_appendNote()
 
 }
 
-void test_resetEvent(Opticks* ok, unsigned nevt, bool cfg4evt)
+void test_resetEvent(Opticks* ok, unsigned nevt, char ctrl)
 {
     unsigned num_photons = 10000 ; 
     unsigned tagoffset = 0 ; 
@@ -96,8 +96,8 @@ void test_resetEvent(Opticks* ok, unsigned nevt, bool cfg4evt)
 
     for(unsigned i=0 ; i < nevt ; i++)
     {
-        ok->createEvent(gs, cfg4evt); 
-        ok->resetEvent(); 
+        ok->createEvent(gs, ctrl); 
+        ok->resetEvent(ctrl); 
     }
 
     float vm1 = SProc::VirtualMemoryUsageMB() ; 
@@ -110,7 +110,7 @@ void test_resetEvent(Opticks* ok, unsigned nevt, bool cfg4evt)
        << " dvm " << dvm
        << " nevt " << nevt 
        << " leak_per_evt (MB) " << leak_per_evt 
-       << " cfg4evt " << cfg4evt
+       << " ctrl [" << ctrl << "]"
        ;
 
     delete gs ; 
@@ -132,8 +132,8 @@ int main(int argc, char** argv)
     glm::vec4 space_domain(0.f,0.f,0.f,1000.f); 
     ok.setSpaceDomain(space_domain); 
 
-    test_resetEvent(&ok, nevt, false); 
-    //test_resetEvent(&ok, nevt, true); 
+    test_resetEvent(&ok, nevt, '+'); 
+    //test_resetEvent(&ok, nevt, '-'); 
 
     return 0 ;
 }

@@ -132,13 +132,15 @@ void OKG4Mgr::propagate()
 {
     if(m_load)
     {   
-         m_run->loadEvent(); 
+         char load_ctrl = m_ok->hasOpt("vizg4|evtg4") ? '-' : '+' ;
+
+         m_run->loadEvent(load_ctrl); 
 
          if(m_viz) 
          {   
              m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
 
-             m_viz->uploadEvent();      // not needed when propagating as event is created directly on GPU
+             m_viz->uploadEvent(load_ctrl);      // not needed when propagating as event is created directly on GPU
 
              m_viz->indexPresentationPrep();
          }   
@@ -149,17 +151,18 @@ void OKG4Mgr::propagate()
     }   
     else if(m_num_event > 0)
     {
+        char ctrl = '=' ;  
+
         for(int i=0 ; i < m_num_event ; i++) 
         {   
-
             propagate_();
 
             if(m_ok->isSave())
             {
-                m_ok->saveEvent();
+                m_ok->saveEvent(ctrl);
                 if(!m_production)  m_hub->anaEvent();
             }
-            m_ok->resetEvent();
+            m_ok->resetEvent(ctrl);
 
         }
         m_ok->postpropagate();

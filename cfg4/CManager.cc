@@ -143,20 +143,22 @@ void CManager::EndOfEventAction(const G4Event*)
 {
     LOG(LEVEL); 
 
+    char ctrl = '-' ; 
     plog::Severity level = info ; 
     if(m_ok->isSave())
     {
         unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
-        OpticksEvent* g4evt = m_ok->getG4Event() ; 
+        OpticksEvent* g4evt = m_ok->getEvent(ctrl) ; 
 
-        assert(g4evt);  
+        if(g4evt)
+        {
+            LOG(level) << " --save g4evt numPhotons " << numPhotons ; 
+            bool resize = false ; 
+            g4evt->setNumPhotons( numPhotons, resize ); 
 
-        LOG(level) << " --save g4evt numPhotons " << numPhotons ; 
-        bool resize = false ; 
-        g4evt->setNumPhotons( numPhotons, resize ); 
-
-        m_ok->saveEvent();
-        m_ok->resetEvent();
+            m_ok->saveEvent(ctrl);
+            m_ok->resetEvent(ctrl);
+        }
     }
     else
     {

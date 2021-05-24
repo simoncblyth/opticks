@@ -60,9 +60,10 @@ void OpIndexerApp::loadEvtFromFile()
 {
     m_ok->setSpaceDomain(0.f,0.f,0.f,1000.f);  // this is required before can create an evt 
 
-    m_run->loadEvent();
+    char ctrl = '+' ;
+    m_run->loadEvent(ctrl);
 
-    OpticksEvent* evt = m_run->getEvent();
+    OpticksEvent* evt = m_run->getEvent(ctrl);
     evt->Summary("OpIndexerApp::configure");
  
     if(evt->isNoLoad())
@@ -75,7 +76,8 @@ void OpIndexerApp::loadEvtFromFile()
 
 void OpIndexerApp::makeIndex()
 {
-    OpticksEvent* evt = m_run->getEvent();
+    char ctrl = '+' ;
+    OpticksEvent* evt = m_run->getEvent(ctrl);
     if(evt->isIndexed())
     {
         bool forceindex = m_ok->hasOpt("forceindex");

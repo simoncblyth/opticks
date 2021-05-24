@@ -22,7 +22,7 @@
 
 **/
 
-void test_OpticksRun_reset(Opticks* ok, unsigned nevt, bool cfg4evt)
+void test_OpticksRun_reset(Opticks* ok, unsigned nevt, char ctrl)
 {
     unsigned num_photons = 10000 ; 
     NPY<float>* gs0 = OpticksGenstep::MakeCandle(num_photons, 0); 
@@ -33,8 +33,8 @@ void test_OpticksRun_reset(Opticks* ok, unsigned nevt, bool cfg4evt)
     {
         LOG(info) << i ; 
         gs0->setArrayContentIndex(i); 
-        ok->createEvent(gs0, cfg4evt);   // input argument gensteps are cloned by OpticksEvent 
-        ok->resetEvent(); 
+        ok->createEvent(gs0, ctrl);   // input argument gensteps are cloned by OpticksEvent 
+        ok->resetEvent(ctrl); 
     }
 
     float vm1 = SProc::VirtualMemoryUsageMB() ; 
@@ -47,7 +47,7 @@ void test_OpticksRun_reset(Opticks* ok, unsigned nevt, bool cfg4evt)
        << " dvm " << dvm
        << " nevt " << nevt 
        << " leak_per_evt (MB) " << leak_per_evt 
-       << " cfg4evt " << cfg4evt
+       << " ctrl [" << ctrl << "]" 
        ;
 
     ok->saveProfile(); 
@@ -64,10 +64,8 @@ int main(int argc, char** argv)
     glm::vec4 space_domain(0.f,0.f,0.f,1000.f); 
     ok.setSpaceDomain(space_domain); 
 
-    //bool cfg4evt = true ; 
-    bool cfg4evt = false ; 
-
-    test_OpticksRun_reset(&ok, nevt, cfg4evt ); 
+    char ctrl = '-' ; 
+    test_OpticksRun_reset(&ok, nevt, ctrl ); 
 
     return 0 ;
 }
