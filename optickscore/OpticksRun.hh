@@ -59,9 +59,14 @@ class OKCORE_API OpticksRun
         void setGensteps(NPY<float>* gs);
         bool hasGensteps() const ;
 
-        void createEvent(NPY<float>* gensteps, bool cfg4evt);
-        void createEvent(unsigned tagoffset, bool cfg4evt );  
-
+        void createEvent(NPY<float>* gensteps, bool g4_evt);
+        void createEvent(unsigned tagoffset, bool g4_evt );  
+    private:
+        OpticksEvent* createOKEvent(unsigned tagoffset) ;
+        OpticksEvent* createG4Event(unsigned tagoffset) ;
+        void EstablishPairing(OpticksEvent* first, OpticksEvent* second, unsigned tagoffset) ;
+        void annotateEvent(OpticksEvent* evt);
+     public:
         void resetEvent();  
         void loadEvent();
         void saveEvent(); 

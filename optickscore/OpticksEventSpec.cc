@@ -81,7 +81,36 @@ OpticksEventSpec::~OpticksEventSpec()
     free((char*)m_fold);
 }
 
+/**
+OpticksEventSpec::getOffsetTag
+-------------------------------
+
+**/
+
 const char* OpticksEventSpec::getOffsetTag(unsigned tagoffset) const
+{
+    int ntag = getOffsetTagInteger(tagoffset); 
+    const char* tag = BStr::itoa( ntag );
+    return tag ; 
+}
+
+/**
+OpticksEventSpec::getOffsetTagInteger
+---------------------------------------
+
+The ITag of the event is constrained to being a non-zero integer.
+
+ITag +ve (Opticks events)
+    tag integer returned is itag+tagoffet
+
+ITag -ve (Geant4 events)
+    tag integer returned is itag-tagoffet
+
+This system is used to manage and identify paired events 
+
+**/
+
+int OpticksEventSpec::getOffsetTagInteger(unsigned tagoffset) const
 {
     int itag = getITag();
     bool iszero = itag == 0 ; 
@@ -95,9 +124,10 @@ const char* OpticksEventSpec::getOffsetTag(unsigned tagoffset) const
 
     assert( !iszero && "--tag 0 NOT ALLOWED : AS USING G4 NEGATED CONVENTION " );
     int ntag = itag > 0 ? itag + tagoffset : itag - tagoffset ; 
-    const char* tag = BStr::itoa( ntag );
-    return tag ; 
+    return ntag ; 
 }
+
+
 
 
 

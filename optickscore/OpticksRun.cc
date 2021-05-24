@@ -100,28 +100,54 @@ void OpticksRun::createEvent(NPY<float>* gensteps, bool cfg4evt )
 OpticksRun::createEvent without gensteps (dynamic running)
 --------------------------------------------------------------
 
-1. creates separate OpticksEvent instances for G4 and OK propagations, 
-   associates them as siblings and adopts a common timestamp 
+1. creates separate OpticksEvent instances for recording of OK OR G4 
+   propagations according to the g4_evt bool argument
+
+2. when a prior event exists already with a negated tag it is 
+   regarded as paired and the pair of events are associated as siblings 
+   and the first event timestamp is adopted
 
 2. invokes annotateEvent
 
-With cfg4evt:true a sibling m_g4evt in OpticksEvent format is created
-in addition to m_evt. 
+This allows creation of OK and G4 events in either order. 
 
 **/
 
-void OpticksRun::createEvent(unsigned tagoffset, bool cfg4evt )
+void OpticksRun::createEvent(unsigned tagoffset, bool g4_evt )
 {
-    bool nog4propagate = m_ok->isNoG4Propagate() ;   // --nog4propagate
+    m_ok->setTagOffset(tagoffset);  // tagoffset is recorded with Opticks::setTagOffset within the makeEvent, but need it here before that 
 
-    m_ok->setTagOffset(tagoffset);
-    // tagoffset is recorded with Opticks::setTagOffset within the makeEvent, but need it here before that 
+    if(!g4_evt )
+    {
+        m_evt = createOKEvent(tagoffset) ; 
+        EstablishPairing( m_g4evt, m_evt, tagoffset ); 
+        annotateEvent(m_evt);
+    }
+    else
+    {
+        m_g4evt = createG4Event(tagoffset) ; 
+        EstablishPairing( m_evt, m_g4evt, tagoffset ); 
+        annotateEvent(m_g4evt);
+    }
+
+    LOG(LEVEL)
+        << "(" 
+        << tagoffset 
+        << ") " 
+        << "[ "
+        << " ok:" << ( m_evt ?   m_evt->brief()   : "-" )
+        << " g4:" << ( m_g4evt ? m_g4evt->brief() : "-" )
+        << "] DONE "
+        ; 
+
+}
 
 
-    OK_PROFILE("_OpticksRun::createEvent");
 
-    bool is_ok_event = true ; 
-    m_evt = m_ok->makeEvent(is_ok_event, tagoffset) ;
+OpticksEvent* OpticksRun::createOKEvent(unsigned tagoffset)
+{
+    bool is_ok_event = true ;  
+    OpticksEvent* evt = m_ok->makeEvent(is_ok_event, tagoffset) ;
 
     unsigned skipaheadstep = m_ok->getSkipAheadStep() ; 
     unsigned skipahead =  tagoffset*skipaheadstep ; 
@@ -131,41 +157,43 @@ void OpticksRun::createEvent(unsigned tagoffset, bool cfg4evt )
         << " skipahead " << skipahead
         ; 
 
-    m_evt->setSkipAhead( skipahead ); // TODO: make configurable + move to ULL
-
-
-    std::string tstamp = m_evt->getTimeStamp();
-
-    if( cfg4evt && !nog4propagate )
-    {  
-        is_ok_event = false ;  
-        m_g4evt = m_ok->makeEvent(is_ok_event, tagoffset) ;
-        m_g4evt->setSibling(m_evt);
-        m_g4evt->setTimeStamp( tstamp.c_str() );   // align timestamps
-        m_evt->setSibling(m_g4evt);
-    }
-    else
-    {
-        m_g4evt = NULL ;   
-    }
-
-    LOG(LEVEL)
-        << "(" 
-        << tagoffset 
-        << ") " 
-        << tstamp 
-        << "[ "
-        << " ok:" << m_evt->brief() 
-        << " g4:" << ( m_g4evt ? m_g4evt->brief() : "-" )
-        << "] DONE "
-        ; 
-
-    annotateEvent();
-
-    OK_PROFILE("OpticksRun::createEvent");
+    evt->setSkipAhead( skipahead ); // TODO: make configurable + move to ULL
+    return evt ;  
 }
 
+OpticksEvent* OpticksRun::createG4Event(unsigned tagoffset)
+{
+    bool is_ok_event = false ;  
+    OpticksEvent* g4evt = m_ok->makeEvent(is_ok_event, tagoffset) ;
+    return g4evt ; 
+}
 
+/**
+OpticksRun::EstablishPairing
+------------------------------
+
+When first and second events are paired, as idenified by their tags, then
+certain properties from the first event are adopted by the second and 
+sibling links are setup. 
+
+**/
+
+void OpticksRun::EstablishPairing(OpticksEvent* first, OpticksEvent* second, unsigned tagoffset)
+{
+    int first_tag  = first  ? first->getOffsetTagInteger(tagoffset) : 0 ; 
+    int second_tag = second ? second->getOffsetTagInteger(tagoffset) : 0 ; 
+
+    bool paired = first_tag != 0 && second_tag != 0 && first_tag + second_tag == 0 ; 
+
+    if(paired)
+    {
+        std::string tstamp = first->getTimeStamp();
+        second->setTimeStamp( tstamp.c_str() );   // align timestamps
+
+        first->setSibling(second); 
+        second->setSibling(first); 
+    } 
+}
 
 
 
@@ -178,7 +206,7 @@ OpticksRun::annotateEvent
 **/
 
 
-void OpticksRun::annotateEvent()
+void OpticksRun::annotateEvent(OpticksEvent* evt)
 {
     // these are set into resource by GGeoTest::initCreateCSG during geometry loading
     OpticksResource* resource = m_ok->getResource();
@@ -194,23 +222,24 @@ void OpticksRun::annotateEvent()
     {  
          assert( geotestconfig ); 
 
-         m_evt->setTestCSGPath(testcsgpath);
-         m_evt->setTestConfigString(geotestconfig);
-
-         if(m_g4evt)          
-         { 
-             m_g4evt->setTestCSGPath(testcsgpath);
-             m_g4evt->setTestConfigString(geotestconfig);
-         }
+         evt->setTestCSGPath(testcsgpath);
+         evt->setTestConfigString(geotestconfig);
     }
 }
+
+
+
 void OpticksRun::resetEvent()
 {
     LOG(LEVEL) << "[" ; 
     OK_PROFILE("_OpticksRun::resetEvent");
-    m_evt->reset();
-    delete m_evt ; 
-    m_evt = NULL  ; 
+
+    if( m_evt)
+    {
+        m_evt->reset();
+        delete m_evt ; 
+        m_evt = NULL  ; 
+    }
 
     if(m_g4evt) 
     {
