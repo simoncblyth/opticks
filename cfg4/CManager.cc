@@ -124,12 +124,12 @@ void CManager::BeginOfEventAction(const G4Event* event)
         LOG(level) << " --save creating OpticksEvent  " ; 
 
         unsigned tagoffset = m_ctx->_event_id  ; 
-        bool g4_evt = true ; 
+        char ctrl = '-' ; 
 
         LOG(level) << " tagoffset " << tagoffset ; 
-        m_ok->createEvent(tagoffset, g4_evt); 
+        m_ok->createEvent(tagoffset, ctrl); 
 
-        OpticksEvent* evt = m_ok->getG4Event();
+        OpticksEvent* evt = m_ok->getEvent(ctrl);
         assert(evt); 
         initEvent(evt);    // configure event recording 
     }
