@@ -216,6 +216,13 @@ bool OpStatus::IsTerminalFlag(unsigned flag)
 }
 
 
+/**
+OpStatus::OpBoundaryFlag
+----------------------------
+
+Crucial conversion of boundaryProcessStatus into photon flag 
+
+**/
 
 #ifdef USE_CUSTOM_BOUNDARY
 unsigned int OpStatus::OpBoundaryFlag(const Ds::DsG4OpBoundaryProcessStatus status)
@@ -247,12 +254,14 @@ unsigned int OpStatus::OpBoundaryFlag(const Ds::DsG4OpBoundaryProcessStatus stat
         case Ds::LambertianReflection:
                                flag=SURFACE_DREFLECT ; 
                                break;
+        case Ds::NoRINDEX:
+                               flag=NAN_ABORT;
+                               break;
         case Ds::Undefined:
         case Ds::BackScattering:
         case Ds::NotAtBoundary:
-        case Ds::NoRINDEX:
-                      flag=0;
-                      break;
+                               flag=0;   // leads to bad flag asserts
+                               break;
     }
     return flag ; 
 }
@@ -286,10 +295,12 @@ unsigned int OpStatus::OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case LambertianReflection:
                                flag=SURFACE_DREFLECT ; 
                                break;
+        case NoRINDEX:
+                               flag=NAN_ABORT;
+                               break;
         case Undefined:
         case BackScattering:
         case NotAtBoundary:
-        case NoRINDEX:
         case Transmission:
         case PolishedLumirrorAirReflection:
         case PolishedLumirrorGlueReflection:
@@ -316,8 +327,8 @@ unsigned int OpStatus::OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case GroundVM2000AirReflection:
         case GroundVM2000GlueReflection:
         case Dichroic:
-                      flag=0;
-                      break;
+                               flag=0;   // leads to bad flag asserts
+                               break;
     }
     return flag ; 
 }
