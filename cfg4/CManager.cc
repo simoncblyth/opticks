@@ -117,14 +117,16 @@ void CManager::BeginOfEventAction(const G4Event* event)
 {
     m_ctx->setEvent(event);
 
+    plog::Severity level = info ; 
+
     if(m_ok->isSave())
     {
-        LOG(LEVEL) << " --save creating OpticksEvent  " ; 
+        LOG(level) << " --save creating OpticksEvent  " ; 
 
         unsigned tagoffset = m_ctx->_event_id  ; 
         bool cfg4evt = true ; 
 
-        LOG(LEVEL) << " tagoffset " << tagoffset ; 
+        LOG(level) << " tagoffset " << tagoffset ; 
         m_ok->createEvent(tagoffset, cfg4evt); 
 
         OpticksEvent* evt = m_ok->getG4Event();
@@ -133,7 +135,7 @@ void CManager::BeginOfEventAction(const G4Event* event)
     }
     else
     {
-        LOG(LEVEL) << " NOT creating OpticksEvent as no --save " ; 
+        LOG(level) << " NOT creating OpticksEvent as no --save " ; 
     }
 }
 
@@ -141,25 +143,24 @@ void CManager::EndOfEventAction(const G4Event*)
 {
     LOG(LEVEL); 
 
+    plog::Severity level = info ; 
     if(m_ok->isSave())
     {
-        LOG(LEVEL) << " --save " ; 
-
         unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
         OpticksEvent* g4evt = m_ok->getG4Event() ; 
 
         assert(g4evt);  
 
+        LOG(level) << " --save g4evt numPhotons " << numPhotons ; 
         bool resize = false ; 
         g4evt->setNumPhotons( numPhotons, resize ); 
-
 
         m_ok->saveEvent();
         m_ok->resetEvent();
     }
     else
     {
-        LOG(LEVEL) << " NOT saving as no --save " ; 
+        LOG(level) << " NOT saving as no --save " ; 
     }
 }
 

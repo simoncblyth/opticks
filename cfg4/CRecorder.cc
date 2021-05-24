@@ -622,7 +622,7 @@ void CRecorder::postTrackWriteSteps()
     if(!done)
     {
         m_not_done_count++ ; 
-        LOG(fatal) << "postTrackWriteSteps  not-done " 
+        LOG(LEVEL) << "postTrackWriteSteps  not-done " 
                    << m_not_done_count
                    << " photon " << m_photon.desc()
                    << " action " << getStepActionString()
