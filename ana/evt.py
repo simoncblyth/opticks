@@ -401,21 +401,34 @@ class Evt(object):
         loaded_photons = None
         load_slice = None 
 
-        for stem in self.PhotonArrayStems.split():
+        oshape_mismatch = []
+        shape_mismatch = []
+
+        stems = self.PhotonArrayStems.split()
+        log.info("stems : %s " % str(stems))
+        for stem in stems:
+
+            if stem == "so": continue 
             if not hasattr(self, stem): continue
             a = getattr(self, stem)
             if a.missing: continue    
 
+            log.info("stem %s a.shape %s a.oshape %s  " % (stem, str(a.shape), str(a.oshape)))
+
             if file_photons is None:
                 file_photons = a.oshape[0] 
             else:
-                assert a.oshape[0] == file_photons
+                if a.oshape[0] != file_photons:
+                    oshape_mismatch.append(stem)
+                pass
             pass  
 
             if loaded_photons is None:
                 loaded_photons = a.shape[0] 
             else:
-                assert a.shape[0] == loaded_photons
+                if a.shape[0] != loaded_photons:
+                    shape_mismatch.append(stem)
+                pass
             pass  
 
             if load_slice is None:
@@ -425,6 +438,18 @@ class Evt(object):
             pass  
             log.debug(" %s  %15s  %15s  %15s " % (stem, Num.String(a.oshape), _slice(a.msli), Num.String(a.shape)))
         pass
+
+
+
+        if len(oshape_mismatch) > 0:
+            log.fatal("oshape_mismatch : %s  file_photons %s " % (str(oshape_mismatch), file_photons))
+        pass
+        assert len(oshape_mismatch) == 0          
+
+        if len(shape_mismatch) > 0:
+            log.fatal("shape_mismatch : %s loaded_photons %s " % (str(shape_mismatch), loaded_photons))
+        pass
+        assert len(shape_mismatch) == 0          
 
         self.file_photons = file_photons
         self.loaded_photons = loaded_photons
