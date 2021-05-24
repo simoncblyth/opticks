@@ -181,7 +181,7 @@ void CRecorder::postTrack()
 
     assert(!m_live);
 
-    if(m_ctx._dbgrec) LOG(info) << "CRecorder::postTrack" ; 
+    if(m_ctx._dbgrec) LOG(LEVEL) << "CRecorder::postTrack" ; 
 
     if(m_recpoi)  // --recpoi 
     {
@@ -198,7 +198,7 @@ void CRecorder::postTrack()
 
     if(m_ctx._dump) // --dindex
     {
-        LOG(info) << "[--dindex] " 
+        LOG(LEVEL) << "[--dindex] " 
                   << " ctx " << m_ctx.brief()  
                   << " pho " << m_photon.brief() 
                   ; 
@@ -419,15 +419,15 @@ appropriate step points are to be saved with WriteStepPoint.
 void CRecorder::postTrackWriteSteps()
 {
     assert(!m_live) ;
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
 
 #ifdef USE_CUSTOM_BOUNDARY
-    LOG(info) << " USE_CUSTOM_BOUNDARY " ; 
+    LOG(LEVEL) << " USE_CUSTOM_BOUNDARY " ; 
     Ds::DsG4OpBoundaryProcessStatus prior_boundary_status = Ds::Undefined ;
     Ds::DsG4OpBoundaryProcessStatus boundary_status = Ds::Undefined ;
     Ds::DsG4OpBoundaryProcessStatus next_boundary_status = Ds::Undefined ;
 #else
-    LOG(info) << " NOT USE_CUSTOM_BOUNDARY " ; 
+    LOG(LEVEL) << " NOT USE_CUSTOM_BOUNDARY " ; 
     G4OpBoundaryProcessStatus prior_boundary_status = Undefined ;
     G4OpBoundaryProcessStatus boundary_status = Undefined ;
     G4OpBoundaryProcessStatus next_boundary_status = Undefined ;
@@ -630,7 +630,7 @@ void CRecorder::postTrackWriteSteps()
                    << " num " << num 
                    ; 
     } 
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 

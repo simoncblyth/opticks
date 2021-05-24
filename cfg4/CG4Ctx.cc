@@ -348,7 +348,7 @@ void CG4Ctx::setTrack(const G4Track* track)
 
     _process_manager = CProcessManager::Current(_track);
 
-    LOG(info) << " _process_manager " << CProcessManager::Desc(_process_manager)  ;
+    LOG(LEVEL) << " _process_manager " << CProcessManager::Desc(_process_manager)  ;
 
     _track_step_count = 0 ; 
     _event_track_count += 1 ; 
@@ -481,7 +481,7 @@ void CG4Ctx::setStepOptical()
     _prior_boundary_status = _boundary_status ; 
     _boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;
 
-    LOG(info) 
+    LOG(LEVEL) 
         <<  " _prior_boundary_status " << std::setw(35) << CBoundaryProcess::OpBoundaryString(_prior_boundary_status)
         <<  " _boundary_status " << std::setw(35) << CBoundaryProcess::OpBoundaryString(_boundary_status)
         ;
