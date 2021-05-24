@@ -69,12 +69,13 @@ void CMaterialBridge::initMap()
         m_ixtoabbr[index] = m_mlib->getAbbr(shortname) ;
 
 
-        pLOG(LEVEL,+1) << " i " << std::setw(3) << i 
-                  << " name " << std::setw(35) << name 
-                  << " shortname " << std::setw(35) << shortname 
-                  << " abbr " << std::setw(35) << abbr 
-                  << " index " << std::setw(5)  << index
-                  ; 
+        LOG(LEVEL) 
+            << " i " << std::setw(3) << i 
+            << " name " << std::setw(35) << name 
+            << " shortname " << std::setw(35) << shortname 
+            << " abbr " << std::setw(35) << abbr 
+            << " index " << std::setw(5)  << index
+            ; 
     }
 
     LOG(LEVEL)
