@@ -67,6 +67,8 @@ set(TEST_SOURCES
    CheckGeoTest.cc
 
    SGLMTest.cc
+
+   CastTest.cc
 )
 
 

@@ -552,10 +552,16 @@ class Evt(object):
 
         log.debug("ox shape %s " % str(ox.shape))
 
+
+        post = ox[:,0]
+        posr = np.sqrt(np.sum(post[:,:3]*post[:,:3], axis=1))
+
         self.wl = wl
-        self.post = ox[:,0] 
+        self.post = post 
+        self.posr = posr
         self.dirw = ox[:,1]
         self.polw = ox[:,2]
+
 
         allpflags = ox.view(np.uint32)[:,3,3]
         self.allpflags = allpflags 
@@ -2139,7 +2145,11 @@ if __name__ == '__main__':
     ok = opticks_main()
 
     a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, pfx=ok.pfx, args=ok)
-    print(a.seqhis_ana.table[0:20])
+    if hasattr(a, 'seqhis_ana'):
+        expr="a.seqhis_ana.table[0:20]"
+        print(expr)
+        print(eval(expr))
+    pass
 
 
 

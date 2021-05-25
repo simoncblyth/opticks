@@ -405,8 +405,8 @@ void CG4Ctx::setTrackOptical()
     _record_id = _photons_per_g4event*_event_id + _photon_id ; 
     _record_fraction = double(_record_id)/double(_record_max) ;  
 
-
-    CTrackInfo* tkui =dynamic_cast<CTrackInfo*>(_track->GetUserInformation());
+    // dynamic_cast gives NULL when using the wrong type for the pointer
+    CTrackInfo* tkui = dynamic_cast<CTrackInfo*>(_track->GetUserInformation()); 
     _tk_record_id = tkui ? tkui->record_id() : -1 ;
     char tk_gentype = tkui ? tkui->gentype() : '?' ;
 

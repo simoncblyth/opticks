@@ -647,6 +647,8 @@ class SeqAna(object):
     SeqAna and its contained SeqTable exist within a particular selection, 
     ie changing selection entails recreation of SeqAna and its contained SeqTable
 
+    Hmm: when searching for nibbles (eg RE) it would be convenient to view seqhis as an 
+    np.int4/np.uint4 dtype, but there is no such thing.
     """
     @classmethod 
     def for_evt(cls, af, tag="1", src="torch", det="dayabay", pfx="source", offset=0):
@@ -700,12 +702,16 @@ class SeqAna(object):
         :return psel: selection boolean array of photon length
 
         Selection of photons with any of the sequence arguments
-
         """
-        af = self.table.af 
-        bseq = map(lambda _:self.aseq == af.code(_), sseq)
+        #af = self.table.af 
+        af = self.af 
+        bseq = map(lambda _:self.aseq == af.code(_), sseq)  # full length boolean array
         psel = np.logical_or.reduce(bseq)      
         return psel 
+
+    def seq_or_count(self, sseq):
+        psel = self.seq_or(sseq)
+        return np.count_nonzero(psel)
 
     def seq_startswith(self, prefix):
         """
@@ -718,6 +724,45 @@ class SeqAna(object):
         pfx = af.code(prefix)
         psel = self.aseq & pfx == pfx 
         return psel 
+
+    def seq_startswith_count(self, prefix):
+        psel = self.seq_startswith(prefix)
+        return np.count_nonzero(psel)
+
+    def seq_any_(self, co="RE"):
+        code = self.af.code(co)
+        aseq = self.aseq
+        wk = np.zeros( (len(aseq), 16), dtype=np.bool )
+        for n in range(16): wk[:, n] = ( aseq & ( 0xf << (n*4) ) == ( code << (n*4) ))
+        return wk 
+
+    def seq_any(self, co="RE" ):
+        """
+        :param co: string label for seqhis nibble
+        :return psel: selection boolean array of photon length 
+ 
+        Selects photons with the co nibble in any of the 16 slots 
+        """
+        wk = self.seq_any_(co)
+        psel = np.any(wk, axis=1)
+        return psel 
+
+    def seq_any_count(self, co="RE" ):
+        """
+        :param co: string label for seqhis nibble
+        :return count: count_nonzero of psel result of seq_any 
+
+        The count is of photons with the co in any slot (this is not the count of nibbles)
+        """
+        psel = self.seq_any(co)
+        return np.count_nonzero(psel)
+
+    def seq_any_count_nibble(self, co="RE"):
+        """
+        Like seq_any_count but instead of counting photons count nibbles
+        """
+        wk = self.seq_any_(co)
+        return np.count_nonzero(wk.ravel())
 
 
 def test_simple_table():

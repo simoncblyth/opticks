@@ -12,8 +12,8 @@ export CManager=INFO
 
 
 if [ "$(uname)" == "Darwin" ]; then 
-    lldb__ CerenkovMinimal 
+    lldb__ CerenkovMinimal $* 
 else
-    CerenkovMinimal 
+    CerenkovMinimal $*
 fi
 

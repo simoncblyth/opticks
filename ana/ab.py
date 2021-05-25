@@ -341,12 +341,12 @@ class AB(object):
         self.load()
         self.load_u()
 
-        self.is_comparable = self.valid and not self.a.ph.missing and not self.b.ph.missing
+        self.is_comparable = self.valid and not self.a.ph.missing and not self.b.ph.missing 
         log.info("[ABProfile")
         self.pro = ABProfile(self.a.tagdir, self.b.tagdir)
         log.info("]ABProfile")
 
-        if self.is_comparable: 
+        if self.is_comparable and ok.compare: 
             self.cfm = self.compare_meta()
             self.mal = self.check_alignment()
             self.compare_shapes()
@@ -1517,7 +1517,14 @@ class AB(object):
 if __name__ == '__main__':
     from opticks.ana.main import opticks_main
     ok = opticks_main()
-    ab = AB(ok)
-    ab.dump()
+    ab = AB(ok)  
+    if ok.compare:
+        ab.dump()
+    pass
+    a = ab.a
+    b = ab.b
+
+
+
 
     

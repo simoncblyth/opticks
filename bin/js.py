@@ -19,11 +19,29 @@
 #
 
 
-import sys, json, os, logging, pprint
+import sys, json, os, logging, pprint, argparse
+
 log = logging.getLogger(__name__)
 
-js = json.load(open(sys.argv[1]))
 
-pprint.pprint(js) 
+parser = argparse.ArgumentParser(__doc__)
+parser.add_argument( "paths", nargs="*" )
+parser.add_argument( "--keys", default=None )
+
+if __name__ == '__main__':
+    args = parser.parse_args() 
+    for path in args.paths:
+        js = json.load(open(path, "r"))
+        print(path)
+        if args.keys is None:
+            pprint.pprint(js)
+        else:
+            for key in args.keys.split(","):
+                print("%-20s : %s" % (key, js.get(key,"-"))) 
+            pass
+        pass
+    pass
+
+
 
 
