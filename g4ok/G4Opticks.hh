@@ -204,6 +204,12 @@ class G4OK_API G4Opticks
              G4double    meanNumberOfPhotons2
             );
 
+        void collectGenstep_G4Cerenkov_1042_bookend(  
+             const G4Track*  aTrack, 
+             const G4Step*   aStep, 
+             G4int       numPhotons
+            ); 
+
 
         /**
         2018/9/8 Geant4.1042 requires both velocities so:
@@ -263,6 +269,13 @@ class G4OK_API G4Opticks
              G4double slowTimeConstant,
              G4double slowerTimeConstant,
              G4double ScintillationTime
+            );
+
+        void collectGenstep_DsG4Scintillation_r3971_bookend(  
+             const G4Track* aTrack, 
+             const G4Step* aStep, 
+             G4int    numPhotons, 
+             G4int    scnt           //  1:fast 2:slow
             );
 
 

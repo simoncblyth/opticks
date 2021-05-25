@@ -1953,7 +1953,7 @@ void OpticksEvent::saveNopstepData()
         unsigned num_nop = no->getNumItems(); 
         if(num_nop > 0)  no->save(m_pfx, "no", m_typ,  m_tag, m_udet);
         if(num_nop == 0) LOG(debug) << "saveNopstepData zero nop " ;
-        if(num_nop > 0) no->dump("OpticksEvent::save (nopstep)");
+        //if(num_nop > 0) no->dump("OpticksEvent::save (nopstep)");
     
         NPY<int>* idom = getIDomain();
         assert(idom && "OpticksEvent::save non-null nopstep BUT HAS NULL IDOM ");

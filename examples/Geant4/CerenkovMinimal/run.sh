@@ -5,7 +5,10 @@
 
 which CerenkovMinimal
 
-export CKM_OPTICKS_EXTRA="--dbgrec"
+#export CKM_OPTICKS_EXTRA="--dbgrec"
+
+export G4Opticks=INFO
+export CManager=INFO
 
 
 if [ "$(uname)" == "Darwin" ]; then 

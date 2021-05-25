@@ -28,6 +28,7 @@ struct EventAction : public G4UserEventAction
     virtual void BeginOfEventAction(const G4Event* anEvent);
     virtual void EndOfEventAction(const G4Event* anEvent);
 
+    void dumpHits(int eventID, int num_hits);
     void addDummyHits(G4HCofThisEvent* HCE);
 
     Ctx*  ctx ; 

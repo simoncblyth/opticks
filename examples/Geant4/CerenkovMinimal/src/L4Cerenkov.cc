@@ -68,6 +68,7 @@
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
 #include "TrackInfo.hh"    
+#include "PLOG.hh"
 // TrackInfo is a simple struct holding the photon_record_id integer
 #endif
 
@@ -438,25 +439,30 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef WITH_OPTICKS
-        aSecondaryTrack->SetUserInformation(new TrackInfo( record_id ) );
+        LOG(info)  << " g4 genloop record_id " << record_id ;  
+        aSecondaryTrack->SetUserInformation(new TrackInfo( record_id, 'C' ) );
         G4Opticks::Get()->setAlignIndex(-1); 
 #endif
 
 
 	}  // CPU photon generation loop 
 
-	if (verboseLevel>0) {
-	   G4cout <<"L4Cerenkov::PostStepDoIt DONE -- NumberOfSecondaries = "
-	          << aParticleChange.GetNumberOfSecondaries() << G4endl;
-	}
+
 
 
 #ifdef WITH_OPTICKS
-       G4cout 
-           << "L4Cerenkov::PostStepDoIt G4Opticks.collectSecondaryPhotons"
-           << G4endl 
-           ;
- 
+    G4Opticks::Get()->collectGenstep_G4Cerenkov_1042_bookend(
+         &aTrack, 
+         &aStep, 
+         NumPhotons
+    );
+#endif
+
+
+	//if (verboseLevel>0) { G4cout <<"L4Cerenkov::PostStepDoIt DONE -- NumberOfSecondaries = " << aParticleChange.GetNumberOfSecondaries() << G4endl; } 
+
+#ifdef WITH_OPTICKS
+        //G4cout << "L4Cerenkov::PostStepDoIt G4Opticks.collectSecondaryPhotons" << G4endl ; 
         G4Opticks::Get()->collectSecondaryPhotons(pParticleChange) ; 
 #endif
 

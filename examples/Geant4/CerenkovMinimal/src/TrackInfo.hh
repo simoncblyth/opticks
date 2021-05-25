@@ -30,12 +30,17 @@ TrackInfo
 
 struct TrackInfo : public G4VUserTrackInformation
 {
-    TrackInfo( int photon_record_id_ )
-        :
-        photon_record_id(photon_record_id_)
-    {
-    }
+    TrackInfo( unsigned record_id_ , char gentype_ )  // gentype_ 'C' or 'S' 
+        :   
+        packed((record_id_ & 0x7fffffff) | unsigned(gentype_ == 'C') << 31 )   
+    {   
+    }   
+    unsigned packed  ;   
 
-    int photon_record_id ;  
+    char gentype() const       { return ( packed & 0x80000000 ) ? 'C' : 'S' ;  }
+    unsigned record_id() const { return ( packed & 0x7fffffff ) ; } 
 };
+
+
+
 

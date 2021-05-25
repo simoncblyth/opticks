@@ -62,16 +62,45 @@ void EventAction::EndOfEventAction(const G4Event* event)
     ctx->_recorder->EndOfEventAction(event); 
 
     G4Opticks* g4ok = G4Opticks::Get() ;
-    G4int eventID = event->GetEventID() ; 
-    int num_hits = g4ok->propagateOpticalPhotons(eventID) ;  
 
+    if(ctx->gpu_propagate())
+    {
+        G4int eventID = event->GetEventID() ; 
+        int num_hits = g4ok->propagateOpticalPhotons(eventID) ;  
+        dumpHits(eventID, num_hits); 
+    }
+    else
+    {
+        G4cout << " not gpu_propagate " << G4endl ;  
+    }
+
+    g4ok->reset();  // necessary to prevent gensteps keeping to accumulate
+
+    G4cout << "\n###] EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons\n" << G4endl ; 
+#endif
+
+    //addDummyHits(HCE);
     G4cout 
-           << "EventAction::EndOfEventAction"
+         << "EventAction::EndOfEventAction"
+         << " DumpHitCollections "
+         << G4endl 
+         ; 
+    SensitiveDetector::DumpHitCollections(HCE);
+
+    // A possible alternative location to invoke the GPU propagation
+    // and add hits in bulk to hit collections would be SensitiveDetector::EndOfEvent  
+}
+
+void EventAction::dumpHits(int eventID, int num_hits)
+{
+    G4cout 
+           << "EventAction::dumpHits"
            << " eventID " << eventID
            << " num_hits " << num_hits 
            << G4endl 
            ; 
 
+    G4Opticks* g4ok = G4Opticks::Get() ;
     G4OpticksHit hit ;
     G4OpticksHitExtra* hit_extra = NULL ;
 
@@ -93,23 +122,9 @@ void EventAction::EndOfEventAction(const G4Event* event)
             << std::endl 
             ;
     }
-
-    g4ok->reset();  // necessary to prevent gensteps keeping to accumulate
-
-    G4cout << "\n###] EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons\n" << G4endl ; 
-#endif
-
-    //addDummyHits(HCE);
-    G4cout 
-         << "EventAction::EndOfEventAction"
-         << " DumpHitCollections "
-         << G4endl 
-         ; 
-    SensitiveDetector::DumpHitCollections(HCE);
-
-    // A possible alternative location to invoke the GPU propagation
-    // and add hits in bulk to hit collections would be SensitiveDetector::EndOfEvent  
 }
+
+
 
 void EventAction::addDummyHits(G4HCofThisEvent* HCE)
 {

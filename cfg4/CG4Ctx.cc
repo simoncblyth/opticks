@@ -39,7 +39,8 @@
 
 const plog::Severity CG4Ctx::LEVEL = PLOG::EnvLevel("CG4Ctx", "DEBUG") ; 
 
-const unsigned CG4Ctx::CK = OpticksGenstep::SourceCode("G4Cerenkov_1042");   // :w
+const unsigned CG4Ctx::CK = OpticksGenstep::SourceCode("G4Cerenkov_1042");   
+const unsigned CG4Ctx::SI = OpticksGenstep::SourceCode("G4Scintillation_1042"); 
 
 
 CG4Ctx::CG4Ctx(Opticks* ok)
@@ -286,12 +287,17 @@ CG4Ctx::setGenCK
 
 Kludge as have not found a general way to get this yet.
 
+BUT: Opticks (with suitable opticksMode to do both G4 and OK) 
+is active at genstep collection in viscinity of photon generation.
+So can consult G4Opticks to know what genstep is currently active.
+Will need to bookend the photon generation corresponding 
+to the genstep collected.  So can plant a genstep index. 
+
 **/
 
-void CG4Ctx::setGenCK()
-{
-    setGen(CK) ; 
-}
+void CG4Ctx::setGenCK(){ setGen(CK) ;  }
+void CG4Ctx::setGenSI(){ setGen(SI) ;  }
+
 
 
 

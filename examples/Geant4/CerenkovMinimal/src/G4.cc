@@ -35,9 +35,9 @@
 #include "TrackingAction.hh"
 #include "SteppingAction.hh"
 
-G4::G4(int nev)
+G4::G4(int nev, unsigned opticksMode)
     :
-    ctx(new Ctx),
+    ctx(new Ctx(opticksMode)),
     rm(new G4RunManager),
     sdn("SD0"),
     sd(new SensitiveDetector(sdn)),

@@ -27,6 +27,7 @@
 #include "G4Opticks.hh"
 #include "G4OpticksRecorder.hh"
 #include "TrackInfo.hh"
+#include "PLOG.hh"
 #endif
 
 
@@ -41,8 +42,9 @@
 
 
 
-Ctx::Ctx()
+Ctx::Ctx(unsigned opticks_mode)
     :
+    _opticks_mode(opticks_mode),   
 #ifdef WITH_OPTICKS
     _recorder(new G4OpticksRecorder)
 #else
@@ -50,6 +52,20 @@ Ctx::Ctx()
 #endif
 {
 }
+
+bool Ctx::gpu_propagate() const 
+{
+    return _opticks_mode & 1 ; 
+} 
+bool Ctx::cpu_propagate() const 
+{
+    return _opticks_mode & 2 ; 
+} 
+
+
+
+
+
 
 
 void Ctx::setEvent(const G4Event* event)
@@ -140,10 +156,11 @@ void Ctx::setTrackOptical(const G4Track* track)
     const_cast<G4Track*>(track)->UseGivenVelocity(true);
 
 #ifdef WITH_OPTICKS
-    TrackInfo* info=dynamic_cast<TrackInfo*>(track->GetUserInformation()); 
-    assert(info) ; 
-    _record_id = info->photon_record_id ;  
-    //std::cout << "Ctx::setTrackOptical.setAlignIndex " << _record_id << std::endl ;
+    TrackInfo* tkinfo=dynamic_cast<TrackInfo*>(track->GetUserInformation()); 
+    assert(tkinfo) ; 
+    _record_id = tkinfo->record_id() ;
+    char tk_gentype = tkinfo->gentype() ;  
+    LOG(info) << " _record_id " << _record_id << " tk_gentype " << tk_gentype ;  
     G4Opticks::Get()->setAlignIndex(_record_id);
 #endif
 }
@@ -151,10 +168,10 @@ void Ctx::setTrackOptical(const G4Track* track)
 void Ctx::postTrackOptical(const G4Track* track)
 {
 #ifdef WITH_OPTICKS
-    TrackInfo* info=dynamic_cast<TrackInfo*>(track->GetUserInformation()); 
-    assert(info) ; 
-    assert( _record_id == info->photon_record_id ) ;  
-    //std::cout << "Ctx::postTrackOptical " << _record_id << std::endl ;
+    TrackInfo* tkinfo=dynamic_cast<TrackInfo*>(track->GetUserInformation()); 
+    assert(tkinfo) ; 
+    LOG(info) << " _record_id " << _record_id << " tk_gentype " << tkinfo->gentype() ;  
+    assert( _record_id == tkinfo->record_id() ) ;  
     G4Opticks::Get()->setAlignIndex(-1);
 #endif
 }

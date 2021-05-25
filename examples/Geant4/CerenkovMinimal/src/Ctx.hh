@@ -40,8 +40,13 @@ struct Ctx
     static std::string Format(const G4StepPoint* point, const char* msg );
     static std::string Format(const G4ThreeVector& vec, const char* msg, unsigned int fwid);
 
-    Ctx();
+    bool gpu_propagate() const ;
+    bool cpu_propagate() const ;
 
+
+    Ctx(unsigned opticks_mode);
+     
+    unsigned           _opticks_mode ;           
     G4OpticksRecorder* _recorder ; 
 
     const G4Event*  _event ; 

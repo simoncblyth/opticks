@@ -58,6 +58,7 @@ struct CFG4_API CG4Ctx
 {
     static const plog::Severity LEVEL ; 
     static const unsigned CK ; 
+    static const unsigned SI ; 
 
     Opticks* _ok ; 
     int   _pindex ; 
@@ -148,7 +149,8 @@ struct CFG4_API CG4Ctx
 
     void setEvent(const G4Event* event);
     void setGen(unsigned gen);
-    void setGenCK() ;  // kludge
+    void setGenCK() ;  
+    void setGenSI() ;  
 
 
     void setTrack(const G4Track* track);

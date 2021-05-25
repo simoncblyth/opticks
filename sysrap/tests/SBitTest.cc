@@ -381,7 +381,57 @@ void test_FromPosString()
 
 }
 
+void test_signbit()
+{
+    int a = 0 ; 
+    a |= 0x80000000 ; 
 
+    int i = a & 0x7fffffff ; 
+    int j = ( a & 0x80000000 ) >> 31 ; 
+
+    LOG(info) 
+         << " a " << a 
+         << " i " << i 
+         << " j " << j 
+         ; 
+
+
+}
+
+struct TrackInfo 
+{
+    TrackInfo( unsigned record_id_ , char gentype_  )
+        :   
+        packed((record_id_ & 0x7fffffff) | unsigned(gentype_ == 'C') << 31 )   
+    {   
+    }   
+    unsigned packed  ;   
+
+    char gentype() const       { return ( packed & 0x80000000 ) ? 'C' : 'S' ;  }
+    unsigned record_id() const { return ( packed & 0x7fffffff ) ; }
+};
+
+void test_TrackInfo()
+{
+     std::vector<std::string> checks = { "C0", "S0", "C10", "S10", "S100000", "C1000000" } ; 
+
+     for(unsigned i=0 ; i < checks.size() ; i++)
+     {
+         const char* chk = checks[i].c_str(); 
+         char gt = chk[0] ;
+         unsigned ri = std::atoi(chk+1) ; 
+
+         TrackInfo a(ri, gt) ;
+
+         LOG(info) << " chk " << chk << " gt " << gt << " ri " << ri ; 
+
+
+         assert( a.record_id() == ri ); 
+         assert( a.gentype() == gt ); 
+
+
+     }
+}
 
 
 
@@ -396,12 +446,13 @@ int main(int argc, char** argv)
     test_HasOneSetBit(); 
     test_BinString(); 
     test_FromBinString(); 
-*/
-
     test_FromString_0(); 
     test_FromString(); 
-    //test_FromPosString(); 
-
+    test_FromPosString(); 
+    test_signbit(); 
+*/
+    test_TrackInfo();   
+ 
     return 0 ; 
 }
 

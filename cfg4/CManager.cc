@@ -126,7 +126,7 @@ void CManager::BeginOfEventAction(const G4Event* event)
         unsigned tagoffset = m_ctx->_event_id  ; 
         char ctrl = '-' ; 
 
-        LOG(level) << " tagoffset " << tagoffset ; 
+        LOG(level) << " tagoffset " << tagoffset << " ctrl [" << ctrl << "]" ; 
         m_ok->createEvent(tagoffset, ctrl); 
 
         OpticksEvent* evt = m_ok->getEvent(ctrl);

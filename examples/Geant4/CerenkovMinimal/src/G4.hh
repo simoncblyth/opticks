@@ -35,7 +35,7 @@ struct SteppingAction ;
 
 struct G4
 {
-    G4(int nev); 
+    G4(int nev, unsigned opticksMode); 
     ~G4();
     void beamOn(int nev);
 
