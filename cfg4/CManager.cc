@@ -320,12 +320,17 @@ For a look into Geant4 ZeroStepping see notes/issues/review_alignment.rst
 
 bool CManager::setStep(const G4Step* step)
 {
+   /*
+    // difficult to identify 'C' or 'S' from these tealeaves
+
     int preSubType = CStep::PreProcessSubType(step); 
     int postSubType = CStep::PostProcessSubType(step); 
     LOG(LEVEL)
         << " preSubType " << preSubType << " CProcessSubType::Name(preSubType) " << CProcessSubType::Name(preSubType)
         << " postSubType " << postSubType << " CProcessSubType::Name(postSubType) " << CProcessSubType::Name(postSubType)
         ;
+
+    */
 
     int noZeroSteps = -1 ;
     int severity = m_nav->SeverityOfZeroStepping( &noZeroSteps );

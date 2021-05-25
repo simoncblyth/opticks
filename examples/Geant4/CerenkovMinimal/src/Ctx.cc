@@ -26,7 +26,7 @@
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
 #include "G4OpticksRecorder.hh"
-#include "TrackInfo.hh"
+#include "G4OpticksUserTrackInfo.hh"
 #include "PLOG.hh"
 #endif
 
@@ -156,7 +156,7 @@ void Ctx::setTrackOptical(const G4Track* track)
     const_cast<G4Track*>(track)->UseGivenVelocity(true);
 
 #ifdef WITH_OPTICKS
-    TrackInfo* tkinfo=dynamic_cast<TrackInfo*>(track->GetUserInformation()); 
+    G4OpticksUserTrackInfo* tkinfo=dynamic_cast<G4OpticksUserTrackInfo*>(track->GetUserInformation()); 
     assert(tkinfo) ; 
     _record_id = tkinfo->record_id() ;
     char tk_gentype = tkinfo->gentype() ;  
@@ -168,7 +168,7 @@ void Ctx::setTrackOptical(const G4Track* track)
 void Ctx::postTrackOptical(const G4Track* track)
 {
 #ifdef WITH_OPTICKS
-    TrackInfo* tkinfo=dynamic_cast<TrackInfo*>(track->GetUserInformation()); 
+    G4OpticksUserTrackInfo* tkinfo=dynamic_cast<G4OpticksUserTrackInfo*>(track->GetUserInformation()); 
     assert(tkinfo) ; 
     LOG(info) << " _record_id " << _record_id << " tk_gentype " << tkinfo->gentype() ;  
     assert( _record_id == int(tkinfo->record_id()) ) ;  

@@ -21,6 +21,13 @@ from opticks.ana.PDGCodeEnum import PDGCodeEnum
 from opticks.ana.nbase import count_unique_sorted
 X,Y,Z,T = 0,1,2,3
 
+
+def is_int(s):
+    s = str(s)
+    if s[0] in ('-', '+'):
+        return s[1:].isdigit()
+    return s.isdigit()    
+
 class GS(object):
     etyp = OpticksGenstepEnum()
     epdg = PDGCodeEnum()
@@ -29,7 +36,7 @@ class GS(object):
     def parse_args(cls, doc, **kwa):
         np.set_printoptions(suppress=True, precision=3 )
         parser = argparse.ArgumentParser(doc)
-        parser.add_argument(     "pathtmpl",  help="Path template of genstep file", default=kwa.get("pathtmpl",None) )
+        parser.add_argument(     "--pathtmpl",  help="Path template of genstep file", default=kwa.get("pathtmpl",None) )
         parser.add_argument(     "paths", nargs="*",  help="Paths of genstep files" )
         parser.add_argument(     "--level", default="info", help="logging level" ) 
         args = parser.parse_args()
@@ -37,7 +44,10 @@ class GS(object):
         logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
         return args  
 
-    def __init__(self, path):
+    def __init__(self, path, pathtmpl):
+        if is_int(path):
+            path = pathtmpl % int(path)       
+        pass
         f = np.load(os.path.expandvars(path))
         i = f.view(np.int32)
  
@@ -122,10 +132,11 @@ class GS(object):
 
 
 if __name__ == '__main__':
-    pathtmpl = "$TMP/evt/g4live/natural/%d/gs.npy"
+    pathtmpl = "$TMP/source/evt/g4live/natural/%d/gs.npy"
     args = GS.parse_args(__doc__, pathtmpl=pathtmpl)
+    log.info(args)
     for path in args.paths:
-        gs = GS(path)
+        gs = GS(path, args.pathtmpl)
     pass
 
 

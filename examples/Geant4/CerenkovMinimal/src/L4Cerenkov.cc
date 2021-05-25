@@ -67,9 +67,9 @@
 
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
-#include "TrackInfo.hh"    
+#include "G4OpticksUserTrackInfo.hh"    
 #include "PLOG.hh"
-// TrackInfo is a simple struct holding the photon_record_id integer
+// G4OpticksUserTrackInfo is a simple struct holding the photon_record_id integer
 #endif
 
 
@@ -440,7 +440,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 #ifdef WITH_OPTICKS
         LOG(info)  << " g4 genloop record_id " << record_id ;  
-        aSecondaryTrack->SetUserInformation(new TrackInfo( record_id, 'C' ) );
+        aSecondaryTrack->SetUserInformation(new G4OpticksUserTrackInfo( record_id, 'C' ) );
         G4Opticks::Get()->setAlignIndex(-1); 
 #endif
 
