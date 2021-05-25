@@ -410,6 +410,11 @@ void CG4Ctx::setTrackOptical()
     _tk_record_id = tkui ? tkui->record_id() : -1 ;
     char tk_gentype = tkui ? tkui->gentype() : '?' ;
 
+    LOG(LEVEL) 
+        << " _record_id " << _record_id 
+        << " _tk_record_id " << _tk_record_id 
+        << " tk_gentype " << tk_gentype
+        ;
     setGen(tk_gentype); 
 
     _mask_index = _ok->hasMask() ?_ok->getMaskIndex( _record_id ) : -1 ;   // "original" index 
