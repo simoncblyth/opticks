@@ -104,7 +104,7 @@ void EventAction::dumpHits(int eventID, int num_hits)
     G4OpticksHit hit ;
     G4OpticksHitExtra* hit_extra = NULL ;
 
-    for(unsigned i=0 ; i < num_hits ; i++)
+    for(int i=0 ; i < num_hits ; i++)
     {   
         g4ok->getHit(i, &hit, hit_extra ); 
         std::cout 

@@ -171,7 +171,7 @@ void Ctx::postTrackOptical(const G4Track* track)
     TrackInfo* tkinfo=dynamic_cast<TrackInfo*>(track->GetUserInformation()); 
     assert(tkinfo) ; 
     LOG(info) << " _record_id " << _record_id << " tk_gentype " << tkinfo->gentype() ;  
-    assert( _record_id == tkinfo->record_id() ) ;  
+    assert( _record_id == int(tkinfo->record_id()) ) ;  
     G4Opticks::Get()->setAlignIndex(-1);
 #endif
 }
