@@ -32,13 +32,16 @@ CTrackInfo
 
 struct CFG4_API CTrackInfo : public G4VUserTrackInformation
 {
-    CTrackInfo( int photon_record_id_ )
-        :
-        photon_record_id(photon_record_id_)
-    {
-    }
+    CTrackInfo( unsigned record_id_ , char gentype_  )
+        :   
+        packed((record_id_ & 0x7fffffff) | unsigned(gentype_ == 'C') << 31 )   
+    {   
+    }   
+    unsigned packed  ;   
 
-    int photon_record_id ;  
+    char gentype() const       { return ( packed & 0x80000000 ) ? 'C' : 'S' ;  }
+    unsigned record_id() const { return ( packed & 0x7fffffff ) ; } 
 };
+
 
 #include "CFG4_TAIL.hh"

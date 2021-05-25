@@ -21,14 +21,12 @@ set(SOURCES
     G4Opticks.cc
     G4OpticksHit.cc
     G4OpticksRecorder.cc
-    G4OpticksUserTrackInfo.cc
     G4OK_LOG.cc
 )
 set(HEADERS
     G4Opticks.hh
     G4OpticksHit.hh
     G4OpticksRecorder.hh
-    G4OpticksUserTrackInfo.hh
 
     G4OpticksScintillationStep.hh
     G4OpticksCerenkovStep.hh

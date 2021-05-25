@@ -59,6 +59,7 @@ struct CFG4_API CG4Ctx
     static const plog::Severity LEVEL ; 
     static const unsigned CK ; 
     static const unsigned SI ; 
+    static const unsigned UK ; 
 
     Opticks* _ok ; 
     int   _pindex ; 
@@ -103,6 +104,7 @@ struct CFG4_API CG4Ctx
     int  _photon_count ; 
     bool _reemtrack ; 
     int  _record_id ;
+    int  _tk_record_id ;   // from CTrackInfo 
     double _record_fraction ; // used with --reflectcheat
     int  _mask_index ;        // original _record_id when using mask  
 
@@ -151,6 +153,7 @@ struct CFG4_API CG4Ctx
     void setGen(unsigned gen);
     void setGenCK() ;  
     void setGenSI() ;  
+    void setGen(char tk_gentype);
 
 
     void setTrack(const G4Track* track);

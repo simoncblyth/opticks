@@ -33,6 +33,7 @@
 #include "CTrack.hh"
 #include "CG4Ctx.hh"
 #include "CEventInfo.hh"
+#include "CTrackInfo.hh"
 
 #include "PLOG.hh"
 
@@ -41,6 +42,7 @@ const plog::Severity CG4Ctx::LEVEL = PLOG::EnvLevel("CG4Ctx", "DEBUG") ;
 
 const unsigned CG4Ctx::CK = OpticksGenstep::SourceCode("G4Cerenkov_1042");   
 const unsigned CG4Ctx::SI = OpticksGenstep::SourceCode("G4Scintillation_1042"); 
+const unsigned CG4Ctx::UK = OpticksGenstep::SourceCode("fabricated");   // placeholder
 
 
 CG4Ctx::CG4Ctx(Opticks* ok)
@@ -273,10 +275,6 @@ void CG4Ctx::setEvent(const G4Event* event)
         unsigned gen = eui->gencode ;
         setGen(gen); 
     }
-    else
-    {
-        setGenCK(); // kludge
-    }
 }
 
 
@@ -298,7 +296,15 @@ to the genstep collected.  So can plant a genstep index.
 void CG4Ctx::setGenCK(){ setGen(CK) ;  }
 void CG4Ctx::setGenSI(){ setGen(SI) ;  }
 
-
+void CG4Ctx::setGen(char tk_gentype)
+{
+    switch(tk_gentype)
+    {
+        case 'S':setGen(SI) ; break ; 
+        case 'C':setGen(CK) ; break ; 
+        case '?':setGen(UK) ; break ; 
+    } 
+}
 
 
 /**
@@ -398,6 +404,13 @@ void CG4Ctx::setTrackOptical()
      // retaining original photon_id from prior to reemission effects the continuation
     _record_id = _photons_per_g4event*_event_id + _photon_id ; 
     _record_fraction = double(_record_id)/double(_record_max) ;  
+
+
+    CTrackInfo* tkui =dynamic_cast<CTrackInfo*>(_track->GetUserInformation());
+    _tk_record_id = tkui ? tkui->record_id() : -1 ;
+    char tk_gentype = tkui ? tkui->gentype() : '?' ;
+
+    setGen(tk_gentype); 
 
     _mask_index = _ok->hasMask() ?_ok->getMaskIndex( _record_id ) : -1 ;   // "original" index 
 
