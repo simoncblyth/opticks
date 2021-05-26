@@ -385,6 +385,23 @@ CG4Ctx::setTrackOptical
 
 Invoked by CG4Ctx::setTrack
 
+Hmm: seems natural to adopt CTrackInfo::opticks_photon_id() to keep track 
+of photon lineage thru RE-emission generations as it has direct correspondence
+to the GPU photon index and to gensteps.
+
+But the opticks_photon_id should always be available and >= 0, so 
+it cannot be used to give _reemtrack ?
+
+So, what exactly was the old::
+
+    CTrack::PrimaryPhotonID(_track) 
+    DsPhotonTrackInfo::GetPrimaryPhotonID()  (aka as this)
+
+Think the old way was to rely on the UserTrackInfo being set only 
+for reemitted scintillation photons, hence presence of it was 
+used to identify _reemtrack with the default fPrimaryPhotonID(-1) signally 
+not reemission.  That seems an obtuse way of yielding _reemtrack
+
 **/
 
 void CG4Ctx::setTrackOptical() 
@@ -396,26 +413,37 @@ void CG4Ctx::setTrackOptical()
     // NB without this BoundaryProcess proposed velocity to get correct GROUPVEL for material after refraction 
     //    are trumpled by G4Track::CalculateVelocity 
 
-    _primary_id = CTrack::PrimaryPhotonID(_track) ;    // layed down in trackinfo by custom Scintillation process
-    _photon_id = _primary_id >= 0 ? _primary_id : _track_id ; 
-    _reemtrack = _primary_id >= 0 ? true        : false ; 
+    // _primary_id = CTrack::PrimaryPhotonID(_track) ;    // layed down in trackinfo by custom Scintillation process
+    // _photon_id = _primary_id >= 0 ? _primary_id : _track_id ; 
+    // _reemtrack = _primary_id >= 0 ? true : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
+
+    // dynamic_cast gives NULL when using the wrong type for the pointer
+    CTrackInfo* tkui = dynamic_cast<CTrackInfo*>(_track->GetUserInformation());   // NEW ADDITION : NEEDS INTEGRATING 
+    assert( tkui ); 
+
+    _primary_id = tkui->photon_id() ; 
+    char tkui_gentype = tkui->gentype()  ;
+
+    assert( _primary_id >= 0 && tkui_gentype != '?' );   // require all optical tracks to have been annotated with CTrackInfo 
+    _photon_id = _primary_id  ; 
+    _reemtrack = tkui->reemission() ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
+
     _photon_count += 1 ; 
+
 
      // retaining original photon_id from prior to reemission effects the continuation
     _record_id = _photons_per_g4event*_event_id + _photon_id ; 
     _record_fraction = double(_record_id)/double(_record_max) ;  
 
-    // dynamic_cast gives NULL when using the wrong type for the pointer
-    CTrackInfo* tkui = dynamic_cast<CTrackInfo*>(_track->GetUserInformation()); 
-    _tk_record_id = tkui ? tkui->record_id() : -1 ;
-    char tk_gentype = tkui ? tkui->gentype() : '?' ;
-
     LOG(LEVEL) 
         << " _record_id " << _record_id 
-        << " _tk_record_id " << _tk_record_id 
-        << " tk_gentype " << tk_gentype
+        << " _primary_id " << _primary_id 
+        << " tkui_gentype " << tkui_gentype
         ;
-    setGen(tk_gentype); 
+    setGen(tkui_gentype); 
+
+
+
 
     _mask_index = _ok->hasMask() ?_ok->getMaskIndex( _record_id ) : -1 ;   // "original" index 
 
@@ -483,10 +511,12 @@ void CG4Ctx::setStep(const G4Step* step, int noZeroSteps)
 CG4Ctx::setStepOptical
 -----------------------
 
-Invoked by CG4Ctx::setStep
+Invoked by CG4Ctx::setStep 
+
+1. sets _stage to START/COLLECT/REJOIN/RECOLL depending on _reemtrack and prior step counts
+2. sets _boundary_status
 
 **/
-
 
 void CG4Ctx::setStepOptical() 
 {

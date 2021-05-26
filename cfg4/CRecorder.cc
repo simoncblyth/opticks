@@ -75,9 +75,7 @@ unsigned long long CRecorder::getSeqMat() const
 }
 
 /**
-
-only gun source sets dynamic true 
-
+dynamic:false is for when gensteps are available ahead of time
 **/
 
 CRecorder::CRecorder(CG4Ctx& ctx, bool dynamic) 
@@ -146,7 +144,7 @@ void CRecorder::setMaterialBridge(const CMaterialBridge* material_bridge)
 CRecorder::initEvent
 ----------------------
 
-Invoked by CG4::initEvent
+Invoked by CG4::initEvent, configures and prepares for recording.
 
 **/
 
@@ -172,7 +170,11 @@ Invoked by CTrackingAction::PostUserTrackingAction
 --recstp 
      default
      unavoidably stores loads of StepTooSmall steps which are subsequently chucked
-    
+   
+
+NB all this machinery is for validation purposes only, so should
+not be concerned about operating efficiently.
+ 
 **/
 
 void CRecorder::postTrack() 

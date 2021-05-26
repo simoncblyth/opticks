@@ -54,6 +54,7 @@ set(TEST_SOURCES
     CDumpTest.cc
 
     CGDMLKludgeTest.cc
+    CTrackInfoTest.cc 
 
 )
 

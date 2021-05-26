@@ -207,6 +207,9 @@ CWriter::writeStepPoint_
 Writes compressed step records if Geant4 CG4 instrumented events 
 in format to match that written on GPU by oxrap.
 
+Q: how does this work with REJOIN and dynamic running ?
+
+
 **/
 
 void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
@@ -315,6 +318,22 @@ generate.cu
 (z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
 (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
 
+
+Q: Does RE-joining of reemission work with dynamic running ?
+
+A: Hmm, not sure : but suspect that is could be made to work by using 
+   SetTrackSecondariesFirst::
+
+       cerenkov->SetTrackSecondariesFirst(true);
+       scint->SetTrackSecondariesFirst(true);    
+
+   With reemission there is only one secondary, so deferring writePhoton 
+   until get a new one that is not a REjoinder means that do not need to 
+   have random access to the full photon/record buffers.
+
+   That could work with multiple RE in the history, so long as the SetTrackSecondariesFirst 
+   worked to simulate the generations one after the other.      
+
 **/
 
 void CWriter::writePhoton(const G4StepPoint* point )
@@ -331,11 +350,14 @@ void CWriter::writePhoton(const G4StepPoint* point )
     NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons_buffer ; 
     unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
 
+    // emulating the Opticks GPU written photons 
     target->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
     target->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
     target->setQuad(target_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
-
     target->setUInt(target_record_id, 3, 0, 0, m_photon._slot_constrained );
+    target->setUInt(target_record_id, 3, 0, 1, 0u );
+    target->setUInt(target_record_id, 3, 0, 2, m_photon._c4.u );
+    target->setUInt(target_record_id, 3, 0, 3, m_photon._mskhis );
 
     if( m_ok->isUTailDebug() )     // --utaildebug
     { 
@@ -343,18 +365,13 @@ void CWriter::writePhoton(const G4StepPoint* point )
         //G4double u = CG4UniformRand("taildebug",-1) ; 
         //target->setValue(target_record_id, 3, 0, 1, u );
     }
-    else
-    {
-        target->setUInt(target_record_id, 3, 0, 1, 0u );
-    }     
-
-    target->setUInt(target_record_id, 3, 0, 2, m_photon._c4.u );
-    target->setUInt(target_record_id, 3, 0, 3, m_photon._mskhis );
 
     if(m_dynamic)
     {
         m_photons_buffer->add(m_dynamic_photons);
     }
+
+    // emulating GPU seqhis/seqmat writing 
 
     NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history_buffer ; 
 

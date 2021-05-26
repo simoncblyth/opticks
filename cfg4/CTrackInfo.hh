@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <string>
 #include "G4VUserTrackInformation.hh"
 
 #include "CFG4_API_EXPORT.hh"
@@ -28,19 +29,31 @@
 CTrackInfo
 ============
 
+   0001   1
+   0011   3
+   0100   4
+   0111   7  
+   1000   8
+   1111   f  
+
+
 **/
 
 struct CFG4_API CTrackInfo : public G4VUserTrackInformation
 {
-    CTrackInfo( unsigned record_id_ , char gentype_  )
+    CTrackInfo( unsigned photon_id_ , char gentype_, bool reemission_ )
         :   
-        packed((record_id_ & 0x7fffffff) | unsigned(gentype_ == 'C') << 31 )   
+        packed((photon_id_ & 0x3fffffff) | unsigned(gentype_ == 'C') << 31 | unsigned(reemission_) << 30 )   
     {   
     }   
     unsigned packed  ;   
 
-    char gentype() const       { return ( packed & 0x80000000 ) ? 'C' : 'S' ;  }
-    unsigned record_id() const { return ( packed & 0x7fffffff ) ; } 
+    unsigned   photon_id()  const { return ( packed & 0x3fffffff ) ; } 
+    char       gentype()    const { return ( packed & (0x1 << 31) ) ? 'C' : 'S' ;  }
+    bool       reemission() const { return ( packed & (0x1 << 30) ) ;  }
+
+    std::string desc() const ; 
+
 };
 
 

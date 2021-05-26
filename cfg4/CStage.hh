@@ -22,6 +22,24 @@
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
+/**
+CStage
+========
+
+The stage is set by CG4Ctx::setStepOptical 
+
+CStage::START
+     first step of primary photon 
+     (primary photon are direct from Cerenkov/Scintillation and have not yet undergone reemission)
+CStage::COLLECT
+     subsequent steps of primary photon 
+CStage::REJOIN
+     first step of reemitted photon
+CStage::RECOLL
+     subsequent steps of reemitted photon
+     
+**/
+
 class CFG4_API CStage 
 {
     public:

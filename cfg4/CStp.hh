@@ -29,6 +29,14 @@ class G4Step ;
 
 #include "CFG4_API_EXPORT.hh"
 
+/**
+CStp
+======
+
+ctor copies the G4Step
+
+**/
+
 class CFG4_API CStp 
 {
    public:

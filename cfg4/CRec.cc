@@ -43,7 +43,7 @@ const plog::Severity CRec::LEVEL = PLOG::EnvLevel("CRec", "DEBUG") ;
 
 
 CRec::CRec(CG4Ctx& ctx , CRecState& state)
-   :
+    :
     m_state(state),
     m_ctx(ctx),
     m_ok(ctx.getOpticks()),
@@ -242,6 +242,7 @@ CRec::add
 
 CRec::add is step-by-step invoked from CRecorder::Record
 returning true kills the track, as needed for truncation of big bouncers
+This copies the current step from context.
 
 m_step_limited
     becomes true when collected steps reaches CG4Ctx::step_limit() which is 

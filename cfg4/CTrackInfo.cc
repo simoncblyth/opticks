@@ -17,5 +17,21 @@
  * limitations under the License.
  */
 
+
+#include <sstream>
 #include "CTrackInfo.hh"
+
+
+std::string CTrackInfo::desc() const 
+{ 
+    std::stringstream ss ; 
+    ss << "CTrackInfo"
+       << " gentype " << gentype()
+       << " photon_id " << photon_id()
+       << " reemission " << reemission() 
+       ;  
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 

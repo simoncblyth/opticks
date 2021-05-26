@@ -45,8 +45,8 @@ Canonical m_writer instance is resident of CRecorder and is instanciated with it
 Writes step records, final photons and sequence(aka history) entries 
 collected from Geant4 into buffers in the "g4evt" OpticksEvent.
 
-In static mode the number of photons is known in advance, in dynamic
-mode the buffers are grown as new photons are added.
+In static mode (when gensteps are available ahead of time) the number of photons is known in advance, 
+in dynamic mode the buffers are grown as new photons are added.
 
 **/
 
@@ -62,14 +62,31 @@ class CFG4_API CWriter
 
     public:
         CWriter(CG4Ctx& ctx, CPhoton& photon, bool dynamic);        
-
         void setEnabled(bool enabled);
-        bool writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material, bool last );
-        void writePhoton(const G4StepPoint* point );
-        // *writePhoton* overwrites prior entries for REJOIN updating target_record_id 
-   private:
-        void writeStepPoint_(const G4StepPoint* point, const CPhoton& photon );
+    public:
+        // *initEvent*
+        //     configures recording and prepares buffer pointers
+        //
         void initEvent(OpticksEvent* evt);
+        //
+        // *writeStepPoint* 
+        //     writes the ox,ph,rx buffers emulating Opticks on GPU
+        //     invoked by CRecorder::WriteStepPoint
+        //
+        bool writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material, bool last );
+
+   private:
+        // *writeStepPoint_* 
+        //     writes the compressed records buffer (rx) 
+        //
+        void writeStepPoint_(const G4StepPoint* point, const CPhoton& photon );
+
+        // *writePhoton* 
+        //     writes the photon buffer (ox) and history buffer (ph) aka:seqhis/seqmat
+        //     this overwrites prior entries for REJOIN updating target_record_id 
+        //     with dynamic running this means MUST SetTrackSecondariesFirst IN C+S processes (TODO: verify this)
+        //
+        void writePhoton(const G4StepPoint* point );
     private:
 
         CPhoton&           m_photon ; 

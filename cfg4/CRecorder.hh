@@ -112,7 +112,8 @@ Debugging
     switch on debug output for photons with a particular material history
 
 --dbgrec
-    machinery debugging, only useful for dumping machinery actions with small of photons
+    machinery debugging, only useful for dumping machinery actions with 
+    a small number of photons
 
 **/
 
@@ -147,7 +148,7 @@ class CFG4_API CRecorder {
    private:
         void compareModes(); 
         void zeroPhoton();
-        void decrementSlot(); // for reemission continuation
+        void decrementSlot(); // for reemission continuation, which changes terminating AB into RE 
 
         void postTrackWriteSteps();  // using CStp 
         void postTrackWritePoints();  // experimental alternative using CPoi
