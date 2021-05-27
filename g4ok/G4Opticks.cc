@@ -686,6 +686,7 @@ unsigned G4Opticks::getWayMask() const
 
 
 
+
 void G4Opticks::setStandardizeGeant4Materials(bool standardize_geant4_materials)
 {
     m_standardize_geant4_materials = standardize_geant4_materials ; 
@@ -1933,8 +1934,23 @@ void G4Opticks::collectHit
 }
  
 
+void G4Opticks::setInputPhotons(const char* dir, const char* name)
+{
+    const NPY<float>* input_photons = NPY<float>::load(dir, name) ; 
+    setInputPhotons(input_photons); 
+}
+void G4Opticks::setInputPhotons(const char* path)
+{
+    const NPY<float>* input_photons = NPY<float>::load(path) ; 
+    setInputPhotons(input_photons); 
+}
+void G4Opticks::setInputPhotons(const NPY<float>* input_photons)
+{
+    LOG(info) 
+        << " input_photons " << ( input_photons ? input_photons->getShapeString() : "-" )
+        ;
 
-
+}
 
 
 

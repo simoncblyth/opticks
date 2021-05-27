@@ -344,6 +344,12 @@ class G4OK_API G4Opticks
         void initSkipGencode() ;
         void dumpSkipGencode() const ;
         bool isSkipGencode(unsigned gencode) const ;
+
+     public:
+        // for debugging  
+        void setInputPhotons(const char* dir, const char* name) ;
+        void setInputPhotons(const char* path) ;
+        void setInputPhotons(const NPY<float>* input_photons) ;
        
      private:
         bool                       m_standardize_geant4_materials ; 
