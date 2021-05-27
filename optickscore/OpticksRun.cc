@@ -363,6 +363,24 @@ void OpticksRun::importGensteps()
         m_evt->setGenstepData(m_gensteps, m_resize, m_clone );
     }
 
+    setupSourceData(); 
+
+    m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL, m_clone );  
+    OK_PROFILE("OpticksRun::importGensteps");
+}
+
+
+/**
+OpticksRun::setupSourceData
+-----------------------------
+
+This is invoked from OpticksRun::importGensteps, it is an 
+important part of how input source photons are provisioned
+to both simulations.
+
+**/
+void OpticksRun::setupSourceData()
+{
     if(hasActionControl(m_gensteps, "GS_EMITSOURCE"))
     {
         void* aux = m_gensteps->getAux();
@@ -379,12 +397,12 @@ void OpticksRun::importGensteps()
     }
     else
     {
-        m_evt->setSourceData( m_g4evt ? m_g4evt->getSourceData() : NULL, m_clone ) ;   
+        NPY<float>* g4source = m_g4evt ? m_g4evt->getSourceData() : NULL ; 
+        m_evt->setSourceData( g4source, m_clone ) ;   
     }
-
-    m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL, m_clone );  
-    OK_PROFILE("OpticksRun::importGensteps");
 }
+
+
 
 
 

@@ -86,6 +86,7 @@ class OKCORE_API OpticksRun
     private:
         void annotateEvent(); 
         G4StepNPY* importGenstepData(NPY<float>* gs, const char* oac_label=NULL);
+        void setupSourceData(); 
         void translateLegacyGensteps(G4StepNPY* g4step);
         bool hasActionControl(NPYBase* npy, const char* label);
 
