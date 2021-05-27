@@ -1523,6 +1523,15 @@ if __name__ == '__main__':
     pass
     a = ab.a
     b = ab.b
+    als = ab.a.make_seqhis_ls()  # opticks.ana.seq.SeqList
+    bls = ab.b.make_seqhis_ls() 
+
+    qq="als[:10] bls[:10]"
+    for q in qq.split():
+        print(q)
+        print(eval(q))
+    pass 
+
 
 
 

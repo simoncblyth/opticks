@@ -57,16 +57,25 @@ const plog::Severity CInputPhotonSource::LEVEL = PLOG::EnvLevel("CInputPhotonSou
 unsigned CInputPhotonSource::getNumG4Event() const { return m_tranche->num_tranche ; }
 unsigned CInputPhotonSource::getNumPhotonsPerG4Event() const { return m_numPhotonsPerG4Event ; }
 
-CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy )  
+/**
+CInputPhotonSource::CInputPhotonSource
+----------------------------------------
+
+Looks like GenstepNPY only used for m_numPhotonsPerG4Event
+this is for splitting large numbets of photons into multiple Geant events.
+
+
+**/
+
+CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, unsigned numPhotonsPerG4Event )  
     :
     CSource(ok),
     m_sourcedbg(ok->isDbgSource()),
     m_pho(NPho::Make(input_photons)),
-    m_gsnpy(gsnpy), 
-    m_numPhotonsPerG4Event(m_gsnpy->getNumPhotonsPerG4Event()),
+    m_numPhotonsPerG4Event(numPhotonsPerG4Event),
     m_numPhotons(m_pho->getNumPhotons()),
     m_tranche(new STranche(m_numPhotons,m_numPhotonsPerG4Event)),
-    m_gpv_count(0)
+    m_gpv_count(0)  // generate primary vertext count 
 {
 }
 

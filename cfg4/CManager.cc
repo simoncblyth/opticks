@@ -148,6 +148,8 @@ void CManager::EndOfEventAction(const G4Event*)
     if(m_ok->isSave())
     {
         unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
+        //   this doesnt account for reemission REJOIN, so it will be too high 
+
         OpticksEvent* g4evt = m_ok->getEvent(ctrl) ; 
 
         if(g4evt)

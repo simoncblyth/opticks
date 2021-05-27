@@ -210,7 +210,8 @@ CSource* CGenerator::initInputPhotonSource()
     setGensteps(inputGensteps);
     setDynamic(false);
 
-    CInputPhotonSource* cips = new CInputPhotonSource( m_ok, inputPhotons, gsnpy ) ;
+    unsigned numPhotonsPerG4Event = gsnpy->getNumPhotonsPerG4Event() ; 
+    CInputPhotonSource* cips = new CInputPhotonSource( m_ok, inputPhotons, numPhotonsPerG4Event ) ;
 
     setNumG4Event( cips->getNumG4Event() );
     setNumPhotonsPerG4Event( cips->getNumPhotonsPerG4Event() );

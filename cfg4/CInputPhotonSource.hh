@@ -50,7 +50,7 @@ class CFG4_API CInputPhotonSource: public CSource
 {
         static const plog::Severity LEVEL ; 
     public:
-        CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy );
+        CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, unsigned numPhotonsPerG4Event );
         void reset(); 
     public:
         virtual ~CInputPhotonSource();
@@ -66,7 +66,6 @@ class CFG4_API CInputPhotonSource: public CSource
     private:
         bool                  m_sourcedbg ; 
         NPho*                 m_pho ;
-        GenstepNPY*           m_gsnpy ; 
     private:
         unsigned              m_numPhotonsPerG4Event ;
         unsigned              m_numPhotons ;
