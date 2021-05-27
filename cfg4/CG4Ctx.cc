@@ -356,7 +356,7 @@ void CG4Ctx::setTrack(const G4Track* track)
     G4ParticleDefinition* particle = track->GetDefinition();
 
     _track = const_cast<G4Track*>(track) ; 
-    _track_id = CTrack::Id(track) ;
+    _track_id = CTrack::Id(track) ;    // 0-based id 
 
     _process_manager = CProcessManager::Current(_track);
 
@@ -419,17 +419,18 @@ void CG4Ctx::setTrackOptical()
 
     // dynamic_cast gives NULL when using the wrong type for the pointer
     CTrackInfo* tkui = dynamic_cast<CTrackInfo*>(_track->GetUserInformation());   // NEW ADDITION : NEEDS INTEGRATING 
-    assert( tkui ); 
 
-    _primary_id = tkui->photon_id() ; 
-    char tkui_gentype = tkui->gentype()  ;
+    // lack of tkui should be only with artifically input/generated photons 
+    // as both C+S photons should be always be labelled
 
-    assert( _primary_id >= 0 && tkui_gentype != '?' );   // require all optical tracks to have been annotated with CTrackInfo 
+    _primary_id = tkui ? tkui->photon_id() : _track_id ; 
+    char tkui_gentype = tkui ? tkui->gentype() : '?'  ;
+
+    // assert( _primary_id >= 0 && tkui_gentype != '?' );   // require all optical tracks to have been annotated with CTrackInfo 
     _photon_id = _primary_id  ; 
-    _reemtrack = tkui->reemission() ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
+    _reemtrack = tkui ? tkui->reemission() : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
 
-    _photon_count += 1 ; 
-
+    _photon_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
 
      // retaining original photon_id from prior to reemission effects the continuation
     _record_id = _photons_per_g4event*_event_id + _photon_id ; 

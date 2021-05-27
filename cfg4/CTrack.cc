@@ -66,7 +66,8 @@ const char* CTrack::getTrackStatusString()
 
 int CTrack::Id(const G4Track* track)
 {
-    return track->GetTrackID() - 1 ;
+    return track->GetTrackID() - 1 ;   
+    // 0-based Id (unlike original G4Track::GetTrackID which is 1-based)
 }
 int CTrack::ParentId(const G4Track* track)
 {

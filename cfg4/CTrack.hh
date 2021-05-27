@@ -33,7 +33,7 @@ class CFG4_API CTrack {
     static const char* fSuspend_ ;
     static const char* fPostponeToNextEvent_ ;
    public:
-      static int Id(const G4Track* track);
+      static int Id(const G4Track* track); // 0-based Id (unlike original G4Track::GetTrackID which is 1-based)
       static int ParentId(const G4Track* track);
       static int StepId(const G4Track* track);
       static int PrimaryPhotonID(const G4Track* track);
