@@ -81,6 +81,28 @@ collectSecondaryPhotons
    invoked for example from L4Cerenkov::PostStepDoIt 
 
 
+Overview
+----------
+
+1. Collect methods such as G4Opticks::collectGenstep_G4Cerenkov_1042  are invoked 
+   to collect gensteps from within the G4Cerenkov/G4Scintillation processes 
+
+2. When G4Opticks::propagateOpticalPhotons is called it passes the gensteps collected 
+   to the underlying OpMgr which uploads them to the GPU and runs the propagation
+
+3. Hits are then copied from GPU to CPU  
+
+4. Once finished with accessing the hits and copying then into hit collections 
+   G4Opticks::reset must be called to clear the OpticksEvents including the gensteps.
+
+   * it is essential to call G4Opticks::reset to avoid duplicating the
+     simulation of the same photons over and over, and also to avoid leaking 
+     memory drastically 
+
+5. At this stage after G4Opticks::reset you can continue with collecting Gens
+
+
+
 Notes
 -------
 
