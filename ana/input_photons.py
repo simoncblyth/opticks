@@ -6,6 +6,7 @@
 import argparse, logging, os, json
 log = logging.getLogger(__name__)
 import numpy as np
+np.set_printoptions(linewidth=200, suppress=True, precision=3)
 from opticks.ana.sample import sample_trig, sample_normals, sample_reject
 
 def vnorm(v):

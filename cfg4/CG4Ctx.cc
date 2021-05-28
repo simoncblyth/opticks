@@ -360,8 +360,6 @@ void CG4Ctx::setTrack(const G4Track* track)
 
     _process_manager = CProcessManager::Current(_track);
 
-    LOG(LEVEL) << " _process_manager " << CProcessManager::Desc(_process_manager)  ;
-
     _track_step_count = 0 ; 
     _event_track_count += 1 ; 
     _track_total += 1 ;
@@ -370,10 +368,17 @@ void CG4Ctx::setTrack(const G4Track* track)
     _optical = particle == G4OpticalPhoton::OpticalPhotonDefinition() ;
     _pdg_encoding = particle->GetPDGEncoding();
 
-
     _step = NULL ; 
     _step_id = -1 ; 
     _step_id_valid = -1 ; 
+
+    LOG(LEVEL) 
+        << " _track_id " << _track_id
+        << " _parent_id " << _parent_id
+        << " _pdg_encoding " << _pdg_encoding
+        << " _optical " << _optical 
+        << " _process_manager " << CProcessManager::Desc(_process_manager)
+        ;
 
     if(_optical) setTrackOptical();
 }
