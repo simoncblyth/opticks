@@ -57,8 +57,9 @@ class InputPhotons(object):
         polarization = vnorm(np.cross(direction, cls.Y))
     
         p = np.zeros( (8, 4, 4), dtype=cls.DTYPE )
-        p[:,0,:3] = cls.POSITION
-        p[:,0, 3] = cls.TIME
+        n = len(p)
+        p[:,0,:3] = cls.POSITION + direction  # offset start position by direction vector for easy identification purposes
+        p[:,0, 3] = cls.TIME*(1. + np.arange(n))  
         p[:,1,:3] = direction 
         p[:,1, 3] = cls.WEIGHT
         p[:,2,:3] = polarization
@@ -75,8 +76,8 @@ class InputPhotons(object):
         polarization = vnorm(np.cross(direction,cls.Y))
 
         p = np.zeros( (n, 4, 4), dtype=cls.DTYPE )
-        p[:,0,:3] = cls.POSITION
-        p[:,0, 3] = cls.TIME
+        p[:,0,:3] = cls.POSITION + direction  # offset start position by direction vector for easy identification purposes
+        p[:,0, 3] = cls.TIME*(1. + np.arange(n))  
         p[:,1,:3] = direction 
         p[:,1, 3] = cls.WEIGHT 
         p[:,2,:3] = polarization
