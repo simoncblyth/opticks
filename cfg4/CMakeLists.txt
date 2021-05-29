@@ -66,6 +66,9 @@ set(SOURCES
     CStp.cc
     CPoi.cc
     CRec.cc
+
+    CThreeVector.cc
+    CEvent.cc
     CTrack.cc
     CPropLib.cc
     CMaterialSort.cc
@@ -209,6 +212,10 @@ set(HEADERS
     CStep.hh
     CStp.hh
     CRec.hh
+
+
+    CThreeVector.hh
+    CEvent.hh
     CTrack.hh
 
     CPropLib.hh

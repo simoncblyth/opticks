@@ -30,6 +30,7 @@
 
 #include "CBoundaryProcess.hh"
 #include "CProcessManager.hh"
+#include "CEvent.hh"
 #include "CTrack.hh"
 #include "CG4Ctx.hh"
 #include "CEventInfo.hh"
@@ -259,6 +260,9 @@ void CG4Ctx::setEvent(const G4Event* event)
 {
      //OKI_PROFILE("CG4Ctx::setEvent") ; 
 
+    LOG(LEVEL) << CEvent::DescPrimary(event) ; 
+
+
     _event = const_cast<G4Event*>(event) ; 
     _event_id = event->GetEventID() ;
 
@@ -374,6 +378,7 @@ void CG4Ctx::setTrack(const G4Track* track)
 
     LOG(LEVEL) 
         << " _track_id " << _track_id
+        << " track.GetGlobalTime " << track->GetGlobalTime()
         << " _parent_id " << _parent_id
         << " _pdg_encoding " << _pdg_encoding
         << " _optical " << _optical 
@@ -445,6 +450,7 @@ void CG4Ctx::setTrackOptical()
         << " _record_id " << _record_id 
         << " _primary_id " << _primary_id 
         << " tkui_gentype " << tkui_gentype
+        << " _track.GetGlobalTime " << _track->GetGlobalTime()
         ;
     setGen(tkui_gentype); 
 
