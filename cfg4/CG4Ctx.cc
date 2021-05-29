@@ -321,8 +321,26 @@ void CG4Ctx::setGenstep(char gentype, int num_photons)
 void CG4Ctx::setGenstepEnd(char gentype, int num_photons)
 {
     // TODO: check have met all the photons by this stage 
-    assert( _gentype == gentype ); 
-    assert( _genstep_num_photons == num_photons ); 
+
+    bool gentype_match = _gentype == gentype ; 
+    bool genstep_num_photons_match = _genstep_num_photons == unsigned(num_photons) ; 
+
+    if(!gentype_match)
+        LOG(fatal) 
+            << " gentype_match FAIL " 
+            << " gentype [" << gentype << "]"
+            << " _gentype [" << _gentype << "]"
+            ;
+
+    if(!genstep_num_photons_match)
+        LOG(fatal) 
+            << " genstep_num_photons_match FAIL " 
+            << " num_photons " << num_photons
+            << " _genstep_num_photons " << _genstep_num_photons
+            ;
+
+    assert( gentype_match  ); 
+    assert( genstep_num_photons_match ); 
 }
 
 
