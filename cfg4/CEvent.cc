@@ -16,10 +16,16 @@ in LSExpPrimaryGeneratorAction::GeneratePrimaries for example.
 
 **/
 
-
-unsigned CEvent::GetNumberOfPrimaryOpticalPhotons(const G4Event* event)   // static 
+unsigned CEvent::NumberOfInputPhotons(const G4Event* event)   // static 
 {
-    return 0u ; 
+    G4int numPrim = event->GetNumberOfPrimaryVertex(); 
+    unsigned numberOfInputPhotons = 0u ; 
+    for(int i=0 ; i < numPrim ; i++)
+    {
+        G4PrimaryVertex* vtx = event->GetPrimaryVertex(i) ; 
+        if(CPrimaryVertex::IsInputPhoton(vtx))  numberOfInputPhotons += 1 ; 
+    }
+    return numberOfInputPhotons ; 
 }
 
 
@@ -27,16 +33,19 @@ std::string CEvent::DescPrimary(const G4Event* event)   // static
 {
     std::stringstream ss ; 
     G4int numPrim = event->GetNumberOfPrimaryVertex(); 
+    unsigned numberOfInputPhotons = NumberOfInputPhotons(event); 
     ss 
         << "CEvent::DescPrimary"
         << " numPrim " << numPrim 
+        << " numberOfInputPhotons " << numberOfInputPhotons
+        << std::endl 
         ;
 
     for(int i=0 ; i < numPrim ; i++)
     {
         G4PrimaryVertex* vtx = event->GetPrimaryVertex(i) ; 
         ss 
-            << std::setw(2) << i 
+            << std::setw(2) << i << " "  
             << CPrimaryVertex::Desc(vtx) 
             << std::endl
             ; 

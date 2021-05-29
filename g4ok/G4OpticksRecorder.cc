@@ -66,6 +66,17 @@ void G4OpticksRecorder::setGeometry(const GGeo* ggeo_)
     LOG(LEVEL); 
 } 
 
+void G4OpticksRecorder::BeginOfGenstep(char gentype, int num_photons)
+{
+    m_manager->BeginOfGenstep(gentype, num_photons); 
+}
+void G4OpticksRecorder::EndOfGenstep(char gentype, int num_photons)
+{
+    m_manager->EndOfGenstep(gentype, num_photons); 
+}
+
+
+
 
 void G4OpticksRecorder::BeginOfRunAction(const G4Run* run)
 {

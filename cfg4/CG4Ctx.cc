@@ -43,7 +43,7 @@ const plog::Severity CG4Ctx::LEVEL = PLOG::EnvLevel("CG4Ctx", "DEBUG") ;
 
 const unsigned CG4Ctx::CK = OpticksGenstep::SourceCode("G4Cerenkov_1042");   
 const unsigned CG4Ctx::SI = OpticksGenstep::SourceCode("G4Scintillation_1042"); 
-const unsigned CG4Ctx::UK = OpticksGenstep::SourceCode("fabricated");   // placeholder
+const unsigned CG4Ctx::TO = OpticksGenstep::SourceCode("fabricated");   
 
 
 CG4Ctx::CG4Ctx(Opticks* ok)
@@ -252,16 +252,13 @@ std::string CG4Ctx::desc_event() const
 CG4Ctx::setEvent
 -----------------
 
-Invoked by CEventAction::setEvent
+Invoked by CManager::BeginOfEventAction
 
 **/
 
 void CG4Ctx::setEvent(const G4Event* event) 
 {
      //OKI_PROFILE("CG4Ctx::setEvent") ; 
-
-    LOG(LEVEL) << CEvent::DescPrimary(event) ; 
-
 
     _event = const_cast<G4Event*>(event) ; 
     _event_id = event->GetEventID() ;
@@ -272,48 +269,25 @@ void CG4Ctx::setEvent(const G4Event* event)
 
 
     CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
-
     //assert(eui && "expecting event UserInfo set by eg CGenstepSource "); 
     if(eui)
     {
+        //assert(0) ; // doesnt really make sense to do this at event level 
         unsigned gen = eui->gencode ;
         setGen(gen); 
     }
-}
 
+    _number_of_input_photons = CEvent::NumberOfInputPhotons(event); 
 
-
-/**
-CG4Ctx::setGenCK
-------------------
-
-Kludge as have not found a general way to get this yet.
-
-BUT: Opticks (with suitable opticksMode to do both G4 and OK) 
-is active at genstep collection in viscinity of photon generation.
-So can consult G4Opticks to know what genstep is currently active.
-Will need to bookend the photon generation corresponding 
-to the genstep collected.  So can plant a genstep index. 
-
-**/
-
-void CG4Ctx::setGenCK(){ setGen(CK) ;  }
-void CG4Ctx::setGenSI(){ setGen(SI) ;  }
-
-void CG4Ctx::setGen(char tk_gentype)
-{
-    switch(tk_gentype)
-    {
-        case 'S':setGen(SI) ; break ; 
-        case 'C':setGen(CK) ; break ; 
-        case '?':setGen(UK) ; break ; 
-    } 
+    // when _number_of_input_photons is greater than 0 
+    // CManager "mocks" a genstep by calling CG4Ctx::setGenstep
+    // in normal running that gets called from CManager::BeginOfGenstep
 }
 
 
 /**
-CG4Ctx::setGen
-----------------
+CG4Ctx::setGenstep
+--------------------
 
 HMM: in general cannot set this at event level, 
 it can only be set by checking on the generating process of first photon 
@@ -323,6 +297,46 @@ Perhaps the ProcessSubType can help with doing this more generally::
 
    104   SetProcessSubType(fCerenkov);
 
+
+BUT: Opticks (with suitable opticksMode to do both G4 and OK) 
+is active at genstep collection in viscinity of photon generation.
+So can consult G4Opticks to know what genstep is currently active.
+Will need to bookend the photon generation corresponding 
+to the genstep collected.  So can plant a genstep index. 
+
+
+
+HMM: where to invoke this with normal G4Opticks S+C running ?
+
+**/
+
+
+void CG4Ctx::setGenstep(char gentype, int num_photons)
+{
+    switch(gentype)
+    {
+        case 'S':setGen(SI) ; break ; 
+        case 'C':setGen(CK) ; break ; 
+        case 'T':setGen(TO) ; break ; 
+        default: assert(0)  ; break ; 
+    } 
+    _gentype = gentype ; 
+    _genstep_num_photons = num_photons ; 
+}
+
+void CG4Ctx::setGenstepEnd(char gentype, int num_photons)
+{
+    // TODO: check have met all the photons by this stage 
+    assert( _gentype == gentype ); 
+    assert( _genstep_num_photons == num_photons ); 
+}
+
+
+
+
+/**
+CG4Ctx::setGen
+----------------
 
 
 **/

@@ -55,6 +55,7 @@ class G4PVPlacement ;
 
 struct G4OpticksHit ; 
 struct G4OpticksHitExtra ; 
+struct G4OpticksRecorder ; 
 
 
 #include "G4Types.hh"
@@ -210,6 +211,13 @@ class G4OK_API G4Opticks
 
         void setGenstepReservation(int max_gensteps_expected);
         int  getGenstepReservation() const ;
+
+        // lifecycle reporting used by the optional G4OpticksRecorder
+        // call these from S + C processes before and after the 
+        // photon generation loop when doing Opticks/Geant4 matching 
+        void BeginOfGenstep(char gentype, int numPhotons);
+        void EndOfGenstep(char gentype, int numPhotons);
+
 
         void collectGenstep_G4Cerenkov_1042(  
              const G4Track*  aTrack, 
@@ -380,6 +388,7 @@ class G4OK_API G4Opticks
         const GGeo*                m_ggeo ; 
         const GBndLib*             m_blib ; 
         GPho*                      m_hits_wrapper ; // geometry aware hits wrapper
+        G4OpticksRecorder*         m_recorder ; 
         
         const char*                m_embedded_commandline_extra ; 
         Opticks*                   m_ok ;

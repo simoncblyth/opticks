@@ -668,10 +668,10 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     LOG(LEVEL) << ") OpMgr " ; 
 
 
-    G4OpticksRecorder* recorder = G4OpticksRecorder::Get() ;  
-    if(recorder) 
+    m_recorder = G4OpticksRecorder::Get() ;  
+    if(m_recorder) 
     {
-        recorder->setGeometry(ggeo);  
+        m_recorder->setGeometry(ggeo);  
     }
 }
 
@@ -1388,6 +1388,22 @@ int  G4Opticks::getGenstepReservation() const
     return m_genstep_collector->getReservation() ;  
 }
 
+void G4Opticks::BeginOfGenstep(char gentype, int numPhotons)
+{
+    if(m_recorder) 
+    {
+        m_recorder->BeginOfGenstep(gentype, numPhotons);  
+    }
+}
+void G4Opticks::EndOfGenstep(char gentype, int numPhotons)
+{
+    if(m_recorder) 
+    {
+        m_recorder->EndOfGenstep(gentype, numPhotons);  
+    }
+}
+
+
 
 
 void G4Opticks::collectGenstep_G4Scintillation_1042(  
@@ -1400,6 +1416,9 @@ void G4Opticks::collectGenstep_G4Scintillation_1042(
 )
 {
     LOG(LEVEL) << " numPhotons " << numPhotons ; 
+
+
+
     // CAUTION : UNTESTED CODE
     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
@@ -1474,6 +1493,7 @@ scnt
 
 
 
+
 void G4Opticks::collectGenstep_DsG4Scintillation_r3971(  
      const G4Track* aTrack, 
      const G4Step* aStep, 
@@ -1486,6 +1506,7 @@ void G4Opticks::collectGenstep_DsG4Scintillation_r3971(
     )
 {
     LOG(LEVEL) << " numPhotons " << numPhotons ; 
+
 
     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
@@ -1533,18 +1554,6 @@ void G4Opticks::collectGenstep_DsG4Scintillation_r3971(
     ) ;
 
 }
-
-
-void G4Opticks::collectGenstep_DsG4Scintillation_r3971_bookend(  
-     const G4Track* aTrack, 
-     const G4Step* aStep, 
-     G4int    numPhotons, 
-     G4int    scnt           //  1:fast 2:slow
-)
-{
-    LOG(LEVEL) << " numPhotons " << numPhotons ; 
-}
- 
 
 
 
@@ -1704,15 +1713,6 @@ void G4Opticks::collectGenstep_G4Cerenkov_1042(
     ) ;
 }
 
-
-void G4Opticks::collectGenstep_G4Cerenkov_1042_bookend(  
-     const G4Track*  aTrack, 
-     const G4Step*   aStep, 
-     G4int       numPhotons
-)
-{
-    LOG(LEVEL) << " numPhotons " << numPhotons ; 
-}
 
 
 

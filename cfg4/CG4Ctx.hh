@@ -48,9 +48,12 @@ class Opticks ;
 CG4Ctx
 =======
 
-Context shared between the CEventAction, CTrackingAction, CSteppingAction
-and CRecorder
-
+Canonical m_ctx instance is ctor resident of CManager, this context is shared with::
+ 
+    CEventAction
+    CTrackingAction
+    CSteppingAction 
+    CRecorder
 
 **/
 
@@ -59,7 +62,7 @@ struct CFG4_API CG4Ctx
     static const plog::Severity LEVEL ; 
     static const unsigned CK ; 
     static const unsigned SI ; 
-    static const unsigned UK ; 
+    static const unsigned TO ; 
 
     Opticks* _ok ; 
     int   _pindex ; 
@@ -82,6 +85,12 @@ struct CFG4_API CG4Ctx
     int  _event_id ;
     int  _event_total ; 
     int  _event_track_count ; 
+    int  _number_of_input_photons ; 
+
+    // CG4Ctx::setGenstep
+    // CG4Ctx::setGenstepEnd
+    char     _gentype ;   // 'C' 'S' 'T'
+    unsigned _genstep_num_photons ; 
 
     // CG4Ctx::setGen
     unsigned  _gen  ;
@@ -150,11 +159,9 @@ struct CFG4_API CG4Ctx
     Opticks* getOpticks() const ; 
 
     void setEvent(const G4Event* event);
+    void setGenstep(char gentype, int num_photons);
+    void setGenstepEnd(char gentype, int num_photons);
     void setGen(unsigned gen);
-    void setGenCK() ;  
-    void setGenSI() ;  
-    void setGen(char tk_gentype);
-
 
     void setTrack(const G4Track* track);
     void setTrackOptical();

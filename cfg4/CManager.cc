@@ -2,6 +2,7 @@
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 
+#include "CEvent.hh"
 #include "CTrack.hh"
 #include "CRandomEngine.hh"
 #include "CRecorder.hh"
@@ -75,24 +76,7 @@ void CManager::setMaterialBridge(const CMaterialBridge* material_bridge)
 }
 
 
-/**
-CManager::initEvent
----------------------
 
-Configure event recording, limits/shapes etc.. 
-
-**/
-
-void CManager::initEvent(OpticksEvent* evt)
-{
-    m_ctx->initEvent(evt);
-    m_recorder->initEvent(evt);
-
-    NPY<float>* nopstep = evt->getNopstepData();
-    if(!nopstep) LOG(fatal) << " nopstep NULL " << " evt " << evt->getShapeString() ; 
-    assert(nopstep); 
-    m_steprec->initEvent(nopstep);
-}
 
 void CManager::BeginOfRunAction(const G4Run*)
 {
@@ -117,56 +101,103 @@ void CManager::BeginOfEventAction(const G4Event* event)
 {
     m_ctx->setEvent(event);
 
-    plog::Severity level = info ; 
+    if(m_ok->isSave()) presave(); 
 
-    if(m_ok->isSave())
-    {
-        LOG(level) << " --save creating OpticksEvent  " ; 
-
-        unsigned tagoffset = m_ctx->_event_id  ; 
-        char ctrl = '-' ; 
-
-        LOG(level) << " tagoffset " << tagoffset << " ctrl [" << ctrl << "]" ; 
-        m_ok->createEvent(tagoffset, ctrl); 
-
-        OpticksEvent* evt = m_ok->getEvent(ctrl);
-        assert(evt); 
-        initEvent(evt);    // configure event recording 
-    }
-    else
-    {
-        LOG(level) << " NOT creating OpticksEvent as no --save " ; 
-    }
+    if( m_ctx->_number_of_input_photons  > 0 ) 
+    {   
+        LOG(LEVEL) 
+            << " mocking BeginOfGenstep as have input photon primaries " 
+            << CEvent::DescPrimary(event) 
+            ; 
+        BeginOfGenstep('T', m_ctx->_number_of_input_photons);   
+    }   
 }
 
 void CManager::EndOfEventAction(const G4Event*)
 {
     LOG(LEVEL); 
+    if(m_ok->isSave()) save() ; 
 
+    if( m_ctx->_number_of_input_photons  > 0 ) 
+    {   
+        LOG(LEVEL) 
+            << " mocking EndOfGenstep as have input photon primaries " 
+            ; 
+        EndOfGenstep('T', m_ctx->_number_of_input_photons);   
+    }  
+}
+
+
+void CManager::BeginOfGenstep(char gentype, int num_photons)
+{
+    m_ctx->setGenstep(gentype, num_photons);  
+}
+void CManager::EndOfGenstep(char gentype, int num_photons)
+{
+    m_ctx->setGenstepEnd(gentype, num_photons);  
+}
+
+
+
+void CManager::presave()
+{
+    plog::Severity level = info ; 
+    LOG(level) << " --save creating OpticksEvent  " ; 
+
+    unsigned tagoffset = m_ctx->_event_id  ; 
+    char ctrl = '-' ; 
+
+    LOG(level) << " tagoffset " << tagoffset << " ctrl [" << ctrl << "]" ; 
+    m_ok->createEvent(tagoffset, ctrl); 
+
+    OpticksEvent* evt = m_ok->getEvent(ctrl);
+    assert(evt); 
+    initEvent(evt);    // configure event recording 
+}
+
+/**
+CManager::initEvent
+---------------------
+
+Configure event recording, limits/shapes etc.. 
+
+**/
+
+void CManager::initEvent(OpticksEvent* evt)
+{
+    m_ctx->initEvent(evt);
+    m_recorder->initEvent(evt);
+
+    NPY<float>* nopstep = evt->getNopstepData();
+    if(!nopstep) LOG(fatal) << " nopstep NULL " << " evt " << evt->getShapeString() ; 
+    assert(nopstep); 
+    m_steprec->initEvent(nopstep);
+}
+
+
+void CManager::save()
+{
     char ctrl = '-' ; 
     plog::Severity level = info ; 
-    if(m_ok->isSave())
+
+    unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
+    //   this doesnt account for reemission REJOIN, so it will be too high 
+
+    OpticksEvent* g4evt = m_ok->getEvent(ctrl) ; 
+
+    if(g4evt)
     {
-        unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
-        //   this doesnt account for reemission REJOIN, so it will be too high 
+        LOG(level) << " --save g4evt numPhotons " << numPhotons ; 
+        bool resize = false ; 
+        g4evt->setNumPhotons( numPhotons, resize ); 
 
-        OpticksEvent* g4evt = m_ok->getEvent(ctrl) ; 
-
-        if(g4evt)
-        {
-            LOG(level) << " --save g4evt numPhotons " << numPhotons ; 
-            bool resize = false ; 
-            g4evt->setNumPhotons( numPhotons, resize ); 
-
-            m_ok->saveEvent(ctrl);
-            m_ok->resetEvent(ctrl);
-        }
-    }
-    else
-    {
-        LOG(level) << " NOT saving as no --save " ; 
+        m_ok->saveEvent(ctrl);
+        m_ok->resetEvent(ctrl);
     }
 }
+
+
+
 
 void CManager::PreUserTrackingAction(const G4Track* track)
 {

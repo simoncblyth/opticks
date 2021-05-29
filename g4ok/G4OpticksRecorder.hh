@@ -20,8 +20,15 @@ struct CManager ;
 G4OpticksRecorder 
 ====================
 
+This is used from JUNO code G4OpticksAnaMgr
+
 Objective : write Geant4 propagations into OpticksEvent format arrays, 
 reusing classes from CFG4/CRecorder machinery where possible.  
+
+
+Note that the setGeometry and setGenstep, endGenstep methods
+are invoked from G4Opticks via G4OpticksRecorder::Get() 
+only when there is G4OpticksRecorder instance. 
 
 **/
 
@@ -38,7 +45,12 @@ struct G4OK_API G4OpticksRecorder
 
     G4OpticksRecorder(); 
     virtual ~G4OpticksRecorder(); 
+
     void setGeometry(const GGeo* ggeo); 
+    void BeginOfGenstep(char gentype, int num_photons);
+    void EndOfGenstep(  char gentype, int num_photons);
+
+
 
     virtual void BeginOfRunAction(const G4Run*);
     virtual void EndOfRunAction(const G4Run*);

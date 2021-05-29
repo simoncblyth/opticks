@@ -111,6 +111,11 @@ struct CFG4_API CManager
     CManager(Opticks* ok, bool dynamic ); 
 
 
+    // inputs from G4Opticks/G4OpticksRecorder
+
+    void BeginOfGenstep(char gentype, int num_photons);
+    void EndOfGenstep(char gentype, int num_photons);
+
 
     // inputs from Geant4
 
@@ -126,9 +131,15 @@ struct CFG4_API CManager
     void UserSteppingAction(const G4Step*);
 
 
-    // called 
 
+
+    // actions
+    void presave(); 
     void initEvent(OpticksEvent* evt);
+    void save(); 
+
+
+
 
     void preTrack(); 
     void postTrack(); 

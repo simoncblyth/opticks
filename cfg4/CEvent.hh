@@ -25,6 +25,7 @@ class G4Event ;
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API CEvent {
     public:
+        static unsigned    NumberOfInputPhotons(const G4Event* event); 
         static unsigned    GetNumberOfPrimaryOpticalPhotons(const G4Event* event); 
         static std::string DescPrimary(const G4Event* event); 
 };
