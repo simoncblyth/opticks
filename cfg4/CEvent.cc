@@ -5,6 +5,7 @@
 #include "G4PrimaryVertex.hh"
 #include "G4ThreeVector.hh"
 
+#include "CPrimaryVertex.hh"
 #include "CThreeVector.hh"
 #include "CEvent.hh"
 
@@ -34,12 +35,11 @@ std::string CEvent::DescPrimary(const G4Event* event)   // static
     for(int i=0 ; i < numPrim ; i++)
     {
         G4PrimaryVertex* vtx = event->GetPrimaryVertex(i) ; 
-        G4ThreeVector pos = vtx->GetPosition();
         ss 
-            << " primaryVertex " << std::setw(2)  << i 
-            << " pos " << CThreeVector::Format(pos)         
-            ;
-
+            << std::setw(2) << i 
+            << CPrimaryVertex::Desc(vtx) 
+            << std::endl
+            ; 
     }
     std::string s = ss.str(); 
     return s ; 

@@ -67,6 +67,7 @@ set(SOURCES
     CPoi.cc
     CRec.cc
 
+    CPrimaryVertex.cc
     CThreeVector.cc
     CEvent.cc
     CTrack.cc
@@ -214,6 +215,7 @@ set(HEADERS
     CRec.hh
 
 
+    CPrimaryVertex.hh
     CThreeVector.hh
     CEvent.hh
     CTrack.hh
