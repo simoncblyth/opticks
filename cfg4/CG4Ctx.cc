@@ -313,17 +313,10 @@ HMM: where to invoke this with normal G4Opticks S+C running ?
 
 void CG4Ctx::setGenstep(char gentype, int num_photons)
 {
-    switch(gentype)
-    {
-        case 'S':setGen(SI) ; break ; 
-        case 'C':setGen(CK) ; break ; 
-        case 'T':setGen(TO) ; break ; 
-        case '?':setGen(TO) ; break ; 
-        default: assert(0)  ; break ; 
-    } 
-    _gentype = gentype ; 
+    setGentype(gentype); 
     _genstep_num_photons = num_photons ; 
 }
+
 
 void CG4Ctx::setGenstepEnd(char gentype, int num_photons)
 {
@@ -335,10 +328,24 @@ void CG4Ctx::setGenstepEnd(char gentype, int num_photons)
 
 
 
+
+void CG4Ctx::setGentype(char gentype)
+{
+    switch(gentype)
+    {
+        case 'S':setGen(SI) ; break ; 
+        case 'C':setGen(CK) ; break ; 
+        case 'T':setGen(TO) ; break ; 
+        case '?':setGen(TO) ; break ; 
+        default: assert(0)  ; break ; 
+    } 
+    _gentype = gentype ; 
+}
+
+
 /**
 CG4Ctx::setGen
 ----------------
-
 
 **/
 
@@ -467,7 +474,7 @@ void CG4Ctx::setTrackOptical()
         << " tkui_gentype " << tkui_gentype
         << " _track.GetGlobalTime " << _track->GetGlobalTime()
         ;
-    setGen(tkui_gentype);     // TODO: maybe not needed, following addition of setGensteps ?
+    setGentype(tkui_gentype);     // TODO: maybe not needed, following addition of setGensteps ?
 
 
 
