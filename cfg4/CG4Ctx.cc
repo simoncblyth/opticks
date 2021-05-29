@@ -354,8 +354,7 @@ void CG4Ctx::setGentype(char gentype)
         case 'S':setGen(SI) ; break ; 
         case 'C':setGen(CK) ; break ; 
         case 'T':setGen(TO) ; break ; 
-        case '?':setGen(TO) ; break ; 
-        default: assert(0)  ; break ; 
+        default: { LOG(fatal) << " gentype invalid [" << gentype << "]" ; assert(0) ; }   ;
     } 
     _gentype = gentype ; 
 }
@@ -474,7 +473,7 @@ void CG4Ctx::setTrackOptical()
     // as both C+S photons should be always be labelled
 
     _primary_id = tkui ? tkui->photon_id() : _track_id ; 
-    char tkui_gentype = tkui ? tkui->gentype() : '?'  ;   // TODO: maybe not needed, following addition of setGensteps ?
+    char tkui_gentype = tkui ? tkui->gentype() : 'T'  ;   // TODO: maybe not needed, following addition of setGensteps ?
 
     // assert( _primary_id >= 0 && tkui_gentype != '?' );   // require all optical tracks to have been annotated with CTrackInfo 
     _photon_id = _primary_id  ; 
