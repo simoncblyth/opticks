@@ -61,7 +61,7 @@ class CFG4_API CWriter
          static unsigned char my__float2uint_rn( float f );
 
     public:
-        CWriter(CG4Ctx& ctx, CPhoton& photon, bool dynamic);        
+        CWriter(CG4Ctx& ctx, CPhoton& photon, bool onestep);        
         void setEnabled(bool enabled);
     public:
         // *initEvent*
@@ -87,10 +87,16 @@ class CFG4_API CWriter
         //     with dynamic running this means MUST SetTrackSecondariesFirst IN C+S processes (TODO: verify this)
         //
         void writePhoton(const G4StepPoint* point );
+
+   private:
+        void initGenstep( char gentype, int num_onestep_photons );
+        void writeGenstep( char gentype, int num_onestep_photons );
+        void clearOnestep();
+
     private:
 
         CPhoton&           m_photon ; 
-        bool               m_dynamic ; 
+        bool               m_onestep ; 
         CG4Ctx&            m_ctx ; 
         Opticks*           m_ok ; 
         bool               m_enabled ; 
@@ -103,11 +109,13 @@ class CFG4_API CWriter
         NPY<float>*               m_photons_buffer ; 
         NPY<unsigned long long>*  m_history_buffer ; 
 
-        NPY<short>*               m_dynamic_records ; 
-        NPY<float>*               m_dynamic_photons ; 
-        NPY<unsigned long long>*  m_dynamic_history ; 
+        NPY<short>*               m_onestep_records ; 
+        NPY<float>*               m_onestep_photons ; 
+        NPY<unsigned long long>*  m_onestep_history ; 
 
         NPY<short>*               m_target_records ; 
+        NPY<float>*               m_target_photons ; 
+        NPY<unsigned long long>*  m_target_history ; 
 
         unsigned           m_verbosity ; 
 

@@ -28,25 +28,16 @@ const plog::Severity CSteppingAction::LEVEL = PLOG::EnvLevel("CSteppingAction", 
 
 
 CSteppingAction::CSteppingAction(CManager* manager)
-   : 
-   G4UserSteppingAction(),
-   m_manager(manager)
+    : 
+    G4UserSteppingAction(),
+    m_manager(manager)
 { 
 }
 
-CSteppingAction::~CSteppingAction()
-{ 
-}
-
+CSteppingAction::~CSteppingAction(){ }
 
 void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
     m_manager->UserSteppingAction(step);     
 }
-
-
-
-
-
-
 

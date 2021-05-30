@@ -47,11 +47,10 @@
 
 const plog::Severity CWriter::LEVEL = PLOG::EnvLevel("CWriter", "DEBUG") ; 
 
-
-CWriter::CWriter(CG4Ctx& ctx, CPhoton& photon, bool dynamic)
+CWriter::CWriter(CG4Ctx& ctx, CPhoton& photon, bool onestep)
     :
     m_photon(photon),
-    m_dynamic(dynamic),
+    m_onestep(onestep),
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),
     m_enabled(true),
@@ -64,11 +63,15 @@ CWriter::CWriter(CG4Ctx& ctx, CPhoton& photon, bool dynamic)
     m_photons_buffer(NULL),
     m_history_buffer(NULL),
 
-    m_dynamic_records(NULL),
-    m_dynamic_photons(NULL),
-    m_dynamic_history(NULL)
+    m_onestep_records(NULL),
+    m_onestep_photons(NULL),
+    m_onestep_history(NULL),
+
+    m_target_records(NULL),
+    m_target_photons(NULL),
+    m_target_history(NULL)
 {
-    LOG(LEVEL) << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) ;
+    LOG(LEVEL) << " " << ( m_onestep ? "ONESTEP" : "STATIC/ALLSTEP" ) ;
 }
 
 void CWriter::setEnabled(bool enabled)
@@ -84,6 +87,8 @@ Gets refs to the history, photons and records buffers from the event.
 When dynamic the records target is single item dynamic_records otherwise
 goes direct to the records_buffer.
 
+TODO: buffer setup needs to move to setGenstep/setGenstepEnd level, not setEvent level 
+
 **/
 
 void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::initEvent
@@ -91,47 +96,80 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     m_evt = evt ; 
     assert(m_evt && m_evt->isG4());
 
-    m_evt->setDynamic( m_dynamic ? 1 : 0 ) ;  
+    m_evt->setDynamic( m_onestep ? 1 : 0 ) ;  
 
     LOG(LEVEL) 
-        << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
+        << ( m_onestep ? "ONESTEP(CPU style)" : "STATIC(GPU style)" )
         << " _record_max " << m_ctx._record_max
         << " _bounce_max  " << m_ctx._bounce_max 
         << " _steps_per_photon " << m_ctx._steps_per_photon 
         << " num_g4event " << m_evt->getNumG4Event() 
         ;
 
-    if(m_dynamic)
-    {
-        assert(m_ctx._record_max == 0 );
-
-        // shapes must match OpticksEvent::createBuffers
-        // TODO: avoid this duplicity using the spec
-
-        m_dynamic_records = NPY<short>::make(1, m_ctx._steps_per_photon, 2, 4) ;
-        m_dynamic_records->zero();
-
-        m_dynamic_photons = NPY<float>::make(1, 4, 4) ;
-        m_dynamic_photons->zero();
-
-        m_dynamic_history = NPY<unsigned long long>::make(1, 1, 2) ;
-        m_dynamic_history->zero();
-    } 
-    else
-    {
-        assert(m_ctx._record_max > 0 );
-    }
-
     m_history_buffer = m_evt->getSequenceData();
     m_photons_buffer = m_evt->getPhotonData();
     m_records_buffer = m_evt->getRecordData();
 
-    m_target_records = m_dynamic ? m_dynamic_records : m_records_buffer ; 
-
     assert( m_history_buffer && "CRecorder requires history buffer" );
     assert( m_photons_buffer && "CRecorder requires photons buffer" );
     assert( m_records_buffer && "CRecorder requires records buffer" );
+
+    // targets overridden by CWriter::initGenstep in onestep running 
+    m_target_history = m_history_buffer ; 
+    m_target_photons = m_photons_buffer ; 
+    m_target_records = m_records_buffer ;  
 }
+
+void CWriter::initGenstep( char gentype, int num_onestep_photons )
+{
+    LOG(LEVEL) << " gentype [" <<  gentype << "] num_onestep_photons " << num_onestep_photons ; 
+
+    assert( m_onestep ); 
+    assert( m_ctx._gentype == gentype  ); 
+    assert( m_ctx._genstep_num_photons == num_onestep_photons  ); 
+
+    m_onestep_records = NPY<short>::make(num_onestep_photons, m_ctx._steps_per_photon, 2, 4) ;
+    m_onestep_records->zero();
+
+    m_onestep_photons = NPY<float>::make(num_onestep_photons, 4, 4) ;
+    m_onestep_photons->zero();
+
+    m_onestep_history = NPY<unsigned long long>::make(num_onestep_photons, 1, 2) ;
+    m_onestep_history->zero();
+
+    m_target_records = m_onestep_records ; 
+    m_target_photons = m_onestep_photons ; 
+    m_target_history = m_onestep_history ; 
+}
+
+void CWriter::writeGenstep( char gentype, int num_onestep_photons )
+{
+    LOG(LEVEL) << " gentype [" <<  gentype << "] num_onestep_photons " << num_onestep_photons ; 
+    assert( m_onestep ); 
+
+    m_records_buffer->add(m_onestep_records);
+    m_photons_buffer->add(m_onestep_photons);
+    m_history_buffer->add(m_onestep_history);
+
+    clearOnestep(); 
+}
+
+void CWriter::clearOnestep()
+{
+    m_onestep_records->reset(); 
+    m_onestep_photons->reset(); 
+    m_onestep_history->reset(); 
+
+    delete m_onestep_records ; 
+    delete m_onestep_photons ; 
+    delete m_onestep_history ; 
+
+    m_onestep_records = nullptr ; 
+    m_onestep_photons = nullptr ; 
+    m_onestep_history = nullptr ; 
+}
+
+
 
 
 /**
@@ -186,7 +224,6 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
         if( (done || last) && m_enabled )
         {
             writePhoton(point);
-            if(m_dynamic) m_records_buffer->add(m_dynamic_records);
         }
     }        
 
@@ -208,7 +245,13 @@ Writes compressed step records if Geant4 CG4 instrumented events
 in format to match that written on GPU by oxrap.
 
 Q: how does this work with REJOIN and dynamic running ?
+A: I think it doesnt work correctly yet ... need to make random 
+   access to total number of photons of the genstep.
 
+NB the use of m_ctx._record_id rather than using some stored copy 
+of that is what is restricting this to strictly seeing all the steps for 
+one photon sequentially. That including steps after one or more generations of reemission.
+This is why Geant4 process must be configured to track secondaries first.
 
 **/
 
@@ -216,13 +259,14 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
 {
     // write compressed record quads into buffer at location for the m_record_id 
 
-    unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
+    unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ;   
+    // hmm maybe separate id for onestep handling and all genstep handling 
+
     unsigned slot = photon._slot_constrained ;
     unsigned flag = photon._flag ; 
     unsigned material = photon._mat ; 
 
-
-    if(!m_dynamic) assert( target_record_id < m_ctx._record_max );
+    if(!m_onestep) assert( target_record_id < m_ctx._record_max );
 
     if(m_ctx._dbgrec)
     {
@@ -347,41 +391,20 @@ void CWriter::writePhoton(const G4StepPoint* point )
     G4double wavelength = h_Planck*c_light/energy ;
     G4double weight = 1.0 ;  
 
-    NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons_buffer ; 
-    unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
+    unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ; 
 
     // emulating the Opticks GPU written photons 
-    target->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
-    target->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
-    target->setQuad(target_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
-    target->setUInt(target_record_id, 3, 0, 0, m_photon._slot_constrained );
-    target->setUInt(target_record_id, 3, 0, 1, 0u );
-    target->setUInt(target_record_id, 3, 0, 2, m_photon._c4.u );
-    target->setUInt(target_record_id, 3, 0, 3, m_photon._mskhis );
-
-    if( m_ok->isUTailDebug() )     // --utaildebug
-    { 
-        assert(0); 
-        //G4double u = CG4UniformRand("taildebug",-1) ; 
-        //target->setValue(target_record_id, 3, 0, 1, u );
-    }
-
-    if(m_dynamic)
-    {
-        m_photons_buffer->add(m_dynamic_photons);
-    }
+    m_target_photons->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
+    m_target_photons->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
+    m_target_photons->setQuad(target_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+    m_target_photons->setUInt(target_record_id, 3, 0, 0, m_photon._slot_constrained );
+    m_target_photons->setUInt(target_record_id, 3, 0, 1, 0u );
+    m_target_photons->setUInt(target_record_id, 3, 0, 2, m_photon._c4.u );
+    m_target_photons->setUInt(target_record_id, 3, 0, 3, m_photon._mskhis );
 
     // emulating GPU seqhis/seqmat writing 
-
-    NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history_buffer ; 
-
-    unsigned long long* history = h_target->getValues() + 2*target_record_id ;
+    unsigned long long* history = m_target_history->getValues() + 2*target_record_id ;
     *(history+0) = m_photon._seqhis ; 
     *(history+1) = m_photon._seqmat ; 
-
-    if(m_dynamic)
-    {
-        m_history_buffer->add(m_dynamic_history);
-    }
 }
 

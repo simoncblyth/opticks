@@ -35,7 +35,7 @@ CSteppingAction
 ================
 
 Canonical instance (m_sa) is ctor resident of CG4.
-
+This is not used with embedded running.
 
 **/
 

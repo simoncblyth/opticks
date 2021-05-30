@@ -157,6 +157,17 @@ void CRecorder::initEvent(OpticksEvent* evt)
 }
 
 
+void CRecorder::BeginOfGenstep(char gentype, int num_photons)
+{
+    m_writer->initGenstep(gentype, num_photons); 
+}
+
+void CRecorder::EndOfGenstep(char gentype, int num_photons)
+{
+    m_writer->writeGenstep(gentype, num_photons); 
+}
+
+
 /**
 CRecorder::postTrack
 ------------------------
@@ -249,8 +260,8 @@ void CRecorder::compareModes()
 CRecorder::Record
 --------------------
 
-Invoked by CSteppingAction::setStep
-stage is set by CG4Ctx::setStepOptical from CSteppingAction::setStep
+Invoked by CManager::setStep
+stage is set by CG4Ctx::setStepOptical
 
 The "done" bool returned, when true causes the track to be killed, 
 which is how truncation is effected.

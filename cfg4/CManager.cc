@@ -130,15 +130,33 @@ void CManager::EndOfEventAction(const G4Event*)
 
 void CManager::BeginOfGenstep(char gentype, int num_photons)
 {
+    LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
+
     m_ctx->setGenstep(gentype, num_photons);  
+
+    m_recorder->BeginOfGenstep(gentype, num_photons);  
+
 }
 void CManager::EndOfGenstep(char gentype, int num_photons)
 {
+    LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
+
     m_ctx->setGenstepEnd(gentype, num_photons);  
+
+    m_recorder->EndOfGenstep(gentype, num_photons);  
 }
 
 
+/**
+CManager::presave
+-------------------
 
+Invoked from CManager::BeginOfEventAction, prepares for saving:
+
+1. OpticksRun::m_g4evt OpticksEvent is created 
+2. event recording is configured.
+
+**/
 void CManager::presave()
 {
     plog::Severity level = info ; 
@@ -174,6 +192,13 @@ void CManager::initEvent(OpticksEvent* evt)
     m_steprec->initEvent(nopstep);
 }
 
+/**
+CManager::save
+-----------------
+
+Invoked from CManager::EndOfEventAction
+
+**/
 
 void CManager::save()
 {
@@ -182,6 +207,7 @@ void CManager::save()
 
     unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
     //   this doesnt account for reemission REJOIN, so it will be too high 
+    //   TODO: this should be the sum of the numbers for each genstep  
 
     OpticksEvent* g4evt = m_ok->getEvent(ctrl) ; 
 
@@ -316,6 +342,7 @@ See :doc:`stepping_process_review`
 void CManager::UserSteppingAction(const G4Step* step)
 {
     LOG(LEVEL); 
+
     bool done = setStep(step);
 
     postStep();

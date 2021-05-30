@@ -476,8 +476,8 @@ void CG4Ctx::setTrackOptical()
     // lack of tkui should be only with artifically input/generated photons 
     // as both C+S photons should be always be labelled
 
-    _primary_id = tkui ? tkui->photon_id() : _track_id ; 
-    char tkui_gentype = tkui ? tkui->gentype() : 'T'  ;   // TODO: maybe not needed, following addition of setGensteps ?
+    _primary_id = tkui ? tkui->photon_id() : _track_id ;   // 0-based
+    char tkui_gentype = tkui ? tkui->gentype() : 'T'  ;    // TODO: maybe not needed, following addition of setGensteps ?
 
     // assert( _primary_id >= 0 && tkui_gentype != '?' );   // require all optical tracks to have been annotated with CTrackInfo 
     _photon_id = _primary_id  ; 
@@ -486,12 +486,16 @@ void CG4Ctx::setTrackOptical()
     _photon_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
 
      // retaining original photon_id from prior to reemission effects the continuation
-    _record_id = _photons_per_g4event*_event_id + _photon_id ; 
+    _record_id = _photons_per_g4event*_event_id + _photon_id ;   
+     //  THIS WAS TO WORKAROUND Geant4 PROBLEM WITH MILLIONS OF PHOTONS IN ONE EVENT
+     //  BY SPLITTING INTO MULTIPLE EVENTS 
+     //
     _record_fraction = double(_record_id)/double(_record_max) ;  
 
     LOG(LEVEL) 
         << " _record_id " << _record_id 
         << " _primary_id " << _primary_id 
+        << " _reemtrack " << _reemtrack
         << " tkui_gentype " << tkui_gentype
         << " _track.GetGlobalTime " << _track->GetGlobalTime()
         ;

@@ -45,13 +45,22 @@ class CStp ;
 class CGeometry ; 
 
 /**
-CRecorder
-=============
+CRecorder : records Geant4 optical photons into OpticksEvent arrays
+=====================================================================
 
-Canonical m_recorder instance is resident of CG4 and is
-instanciated with it.
-CRecorder should really be called "OpticalPhotonCRecorder".
-It is mainly used from CSteppingAction, via the *Record* method. 
+Canonical m_recorder instance is ctor resident of CManager.
+Steps are supplied to CRecorder via two different routes.
+
+With OKG4 (non-embedded Opticks+Geant4 running) from::
+
+    CSteppingAction::UserSteppingAction
+    CManager::UserSteppingAction
+
+With embedded running::
+
+    G4OpticksRecorder::UserSteppingAction
+    CManager::UserSteppingAction
+    
 
 The objective of *CRecorder* is to collect Geant4 photon 
 steps in a format that precisely matches the Opticks GPU 
@@ -68,6 +77,20 @@ CRecorder uses canned recording style, where steps are
 collected with *Record* and then only written out to 
 OpticksEvent at *posttrackWriteSteps*.
 Note that CRecorderLive (currently dead) uses step-by-step writing.
+
+
+Principal CRecorder call routes
+-----------------------------------
+
+CManager::BeginOfEventAction -> CManager::presave -> CManager::initEvent -> CRecorder::initEvent
+    prepares m_writer CWriter::initEvent m_crec CRec::initEvent
+
+CManager::setStep   -> CRecorder::Record
+    prime driver 
+
+CManager::PostUserTrackingAction -> CManager::postTrack -> CRecorder::postTrack
+    In default --recstp mode CRecorder::postTrackWriteSteps
+    passes the m_crec stp collected by CRec to CWriter with CRecorder::WriteStepPoint  
 
 
 Example
@@ -121,31 +144,32 @@ Debugging
 #include "CFG4_HEAD.hh"
 
 class CFG4_API CRecorder {
-        friend class CSteppingAction ;
-   public:
+    public:
         static const plog::Severity LEVEL ; 
         static const char* PRE ; 
         static const char* POST ; 
-   public:
+    public:
         std::string        getStepActionString();
         CRec*              getCRec() const ; 
         unsigned long long getSeqHis() const ;
         unsigned long long getSeqMat() const ;
 
-   public:
+    public:
         CRecorder(CG4Ctx& ctx, bool dynamic); // CG4::CG4
 
-        //void postinitialize();  // called after G4 geometry constructed in CG4::postinitialize
         void setMaterialBridge(const CMaterialBridge* material_bridge);
 
         void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
+        void BeginOfGenstep(char gentype, int num_photons);
+        void EndOfGenstep(char gentype, int num_photons);
+
         void postTrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
 #ifdef USE_CUSTOM_BOUNDARY
         bool Record(Ds::DsG4OpBoundaryProcessStatus boundary_status);
 #else
         bool Record(G4OpBoundaryProcessStatus boundary_status);
 #endif
-   private:
+    private:
         void compareModes(); 
         void zeroPhoton();
         void decrementSlot(); // for reemission continuation, which changes terminating AB into RE 
@@ -160,15 +184,15 @@ class CFG4_API CRecorder {
 #endif
         void checkTopSlotRewrite(unsigned flag);
 
-   private:
+    private:
          // debugging 
         void pointDump( const char* msg, const G4StepPoint* point ) const ; 
-  public:
+    public:
         void Summary(const char* msg);
         void dump(const char* msg="CRecorder::dump");
         std::string desc() const ; 
         std::string brief() const ; 
-   private:
+    private:
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
         bool               m_recpoi ; 

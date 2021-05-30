@@ -56,6 +56,7 @@
 #include "CManager.hh"
 #include "CRandomEngine.hh"
 #include "CMixMaxRng.hh"
+#include "CRecorder.hh"
 
 #include "CPhysics.hh"
 #include "CGeometry.hh"
@@ -64,7 +65,6 @@
 #include "CGenerator.hh"
 #include "CGenstepCollector.hh"
 #include "CPrimaryCollector.hh"
-#include "CRecorder.hh"
 #include "CStepRec.hh"
 
 #include "CPrimaryGeneratorAction.hh"
