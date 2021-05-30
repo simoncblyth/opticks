@@ -1913,6 +1913,16 @@ class Evt(object):
         r = np.sqrt(pp.sum(axis=2)) 
         return r
 
+    def rpostt(self, recs=slice(None)):
+        """
+        :param recs: record index within the photon eg 0..9 or a slice range 
+        :return t: time at each point along the photon path 
+        """
+        p = self.rpost_(recs)
+        t = p[:,:,3]
+        return t 
+
+
     def _get_rposta(self):
         """
         all record array, using slice(None) with rpost_ 

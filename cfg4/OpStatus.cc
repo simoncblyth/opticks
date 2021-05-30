@@ -257,7 +257,8 @@ unsigned int OpStatus::OpBoundaryFlag(const Ds::DsG4OpBoundaryProcessStatus stat
                                flag=SURFACE_DREFLECT ; 
                                break;
         case Ds::NoRINDEX:
-                               flag=NAN_ABORT;
+                               //flag=NAN_ABORT;
+                               flag=SURFACE_ABSORB ;  // expt 
                                break;
         case Ds::Undefined:
         case Ds::BackScattering:
@@ -298,7 +299,8 @@ unsigned int OpStatus::OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
                                flag=SURFACE_DREFLECT ; 
                                break;
         case NoRINDEX:
-                               flag=NAN_ABORT;
+                               //flag=NAN_ABORT;
+                               flag=SURFACE_ABSORB ;  // expt 
                                break;
         case Undefined:
         case BackScattering:
