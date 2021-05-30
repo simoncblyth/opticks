@@ -25,6 +25,7 @@
 
 #include "SBit.hh"
 
+#include "Opticks.hh"
 #include "OpticksFlags.hh"
 
 #include "CG4Ctx.hh"
@@ -292,7 +293,9 @@ std::string CPhoton::desc() const
     ss << "CPhoton"
        << " slot_constrained " << _slot_constrained
        << " seqhis " << std::setw(20) << std::hex << _seqhis << std::dec 
+       << " [" << OpticksFlags::FlagSequence(_seqhis) << "] "
        << " seqmat " << std::setw(20) << std::hex << _seqmat << std::dec 
+       << " [" << Opticks::MaterialSequence(_seqmat) << "] "
        << " is_flag_done " << ( is_flag_done() ? "Y" : "N" )
        << " is_done " << ( is_done() ? "Y" : "N" )
        ;

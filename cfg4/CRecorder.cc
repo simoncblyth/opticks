@@ -307,6 +307,7 @@ bool CRecorder::Record(Ds::DsG4OpBoundaryProcessStatus boundary_status)
 bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 #endif
 {    
+
     m_state._step_action = 0 ; 
 
     assert(!m_live);
@@ -340,7 +341,8 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 
 
 void CRecorder::zeroPhoton()
-{  
+{ 
+    LOG(LEVEL) << m_photon.desc() ; 
     const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
     const G4ThreeVector& pos = pre->GetPosition();
     m_crec->setOrigin(pos);   // hmm maybe in CG4Ctx already ?
