@@ -1876,7 +1876,7 @@ class Evt(object):
         pass
         return dir_
 
-    def rpost_(self, recs):
+    def rpost_(self, recs=slice(None)):
         """
         :param recs: record index 0 to 9 (or 0 to 15 for higher bouncemax) or slice therof  
 
@@ -1897,9 +1897,21 @@ class Evt(object):
         domain of the compression, need to find that binning then throw
         away unused edge bins according to the plotted range. 
         """
+        pass 
         center, extent = self.post_center_extent()  # center and extent are quads 
         p = self.rx[:,recs,0].astype(np.float32)*extent/32767.0 + center 
         return p 
+
+    def rpostr(self, recs=slice(None)):
+        """
+        :param recs: record index within the photon eg 0..9 or a slice range 
+        :return r: radius of each point along the photon path 
+        """
+        p = self.rpost_(recs)
+        pos = p[:,:,:3]
+        pp = pos*pos
+        r = np.sqrt(pp.sum(axis=2)) 
+        return r
 
     def _get_rposta(self):
         """
