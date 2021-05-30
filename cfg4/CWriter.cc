@@ -110,6 +110,11 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     m_photons_buffer = m_evt->getPhotonData();
     m_records_buffer = m_evt->getRecordData();
 
+    LOG(LEVEL) << " m_history_buffer " << m_history_buffer->getShapeString() ; 
+    LOG(LEVEL) << " m_history_buffer " << m_history_buffer->getShapeString() ; 
+    LOG(LEVEL) << " m_history_buffer " << m_history_buffer->getShapeString() ; 
+
+
     assert( m_history_buffer && "CRecorder requires history buffer" );
     assert( m_photons_buffer && "CRecorder requires photons buffer" );
     assert( m_records_buffer && "CRecorder requires records buffer" );
@@ -126,7 +131,7 @@ void CWriter::initGenstep( char gentype, int num_onestep_photons )
 
     assert( m_onestep ); 
     assert( m_ctx._gentype == gentype  ); 
-    assert( m_ctx._genstep_num_photons == num_onestep_photons  ); 
+    assert( m_ctx._genstep_num_photons == unsigned(num_onestep_photons)  ); 
 
     m_onestep_records = NPY<short>::make(num_onestep_photons, m_ctx._steps_per_photon, 2, 4) ;
     m_onestep_records->zero();

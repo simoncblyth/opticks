@@ -21,6 +21,7 @@
 #include <iostream>
 
 
+#include "SSys.hh"
 #include "SProc.hh"
 
 // npy-
@@ -117,9 +118,44 @@ void test_resetEvent(Opticks* ok, unsigned nevt, char ctrl)
 
 }
 
+void test_addNumPhotons(Opticks* ok, unsigned num_onestep_photons, unsigned num_gs )
+{
+    LOG(info) << " num_onestep_photons " << num_onestep_photons << " num_gs " << num_gs ; 
+    char ctrl = '-' ; 
+    unsigned tagoffset = 0 ; 
+    ok->createEvent(tagoffset, ctrl); 
+    OpticksEvent* evt = ok->getEvent(ctrl); 
+
+    NPY<float>* photons = evt->getPhotonData(); 
+    NPY<float>* onestep = nullptr ; 
+
+    for(unsigned i=0 ; i < num_gs ; i++)
+    {
+        assert( photons == evt->getPhotonData() ); 
+
+        onestep = NPY<float>::make(num_onestep_photons, 4, 4) ;
+        onestep->zero(); 
+        onestep->fill(float(i)); 
+
+        //evt->addNumPhotons(num_onestep_photons); // makes little sense as the NPY::add increments anyhow
+
+        photons->add(onestep) ; 
+         
+        evt->updateNumPhotonsFromPhotonArraySize();    
+
+        std::cout << evt->description("") << std::endl ; 
+    }
+
+    const char* path = "$TMP/okc/test_addNumPhotons.npy" ; 
+    LOG(info) << " save to " << path ; 
+    photons->save(path); 
+    SSys::npdump(path, "np.float32" ); 
+}
+
+
 int main(int argc, char** argv)
 {
-    int nevt = argc > 1 ? atoi(argv[1]) : 1000 ; 
+    //int nevt = argc > 1 ? atoi(argv[1]) : 1000 ; 
 
     OPTICKS_LOG(argc, argv);
     //test_genstep_derivative();
@@ -132,8 +168,12 @@ int main(int argc, char** argv)
     glm::vec4 space_domain(0.f,0.f,0.f,1000.f); 
     ok.setSpaceDomain(space_domain); 
 
-    test_resetEvent(&ok, nevt, '+'); 
+    //test_resetEvent(&ok, nevt, '+'); 
     //test_resetEvent(&ok, nevt, '-'); 
+
+
+    test_addNumPhotons(&ok, 100, 10) ; 
+
 
     return 0 ;
 }

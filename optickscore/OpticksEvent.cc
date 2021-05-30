@@ -290,6 +290,21 @@ void OpticksEvent::resizeToZero()
     setNumPhotons(0, resize_);
 }
 
+
+/*
+void OpticksEvent::addNumPhotons(unsigned add_photons, bool resize_)  // resize_ default true 
+{
+    unsigned num0 = getNumPhotons(); 
+    unsigned num1 = num0 + add_photons ; 
+    LOG(LEVEL) 
+        << " increase from " << num0 << " to " << num1 << " adding " << add_photons << " resize_ " << resize_ ; 
+        ;
+    setNumPhotons(num1, resize_ ); 
+}
+*/
+
+
+
 void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)  // resize_ default true 
 {
     m_num_photons = num_photons ; 
@@ -302,6 +317,26 @@ void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)  // res
     {
         LOG(verbose) << "OpticksEvent::setNumPhotons NOT RESIZING " << num_photons ;  
     }
+}
+
+
+/**
+OpticksEvent::getNumPhotonsFromPhotonArraySize
+-----------------------------------------------
+
+Hmm why the m_num_photons ? Maybe because can declare a number without paying memory for them. 
+But that happens (lazy allocation) at NPY level anyhow.
+
+**/
+
+unsigned int OpticksEvent::getNumPhotonsFromPhotonArraySize() const 
+{
+    return m_photon_data ? m_photon_data->getNumItems() : 0  ; 
+}
+
+void OpticksEvent::updateNumPhotonsFromPhotonArraySize() 
+{
+    m_num_photons = getNumPhotonsFromPhotonArraySize() ; 
 }
 unsigned int OpticksEvent::getNumPhotons() const 
 {

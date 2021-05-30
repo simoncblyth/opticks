@@ -430,6 +430,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
 
    public:
        void resizeToZero();  // used by OpticksHub::setupZeroEvent
+       //void addNumPhotons(unsigned add_photons, bool resize_=true) ; 
+
+       unsigned getNumPhotonsFromPhotonArraySize() const ;
+       void  updateNumPhotonsFromPhotonArraySize() ; 
+
    private:
        // set by setGenstepData based on summation over Cerenkov/Scintillation photons to generate
        void setNumPhotons(unsigned int num_photons, bool resize=true);
