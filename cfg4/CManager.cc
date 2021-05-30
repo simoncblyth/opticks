@@ -101,7 +101,7 @@ void CManager::BeginOfEventAction(const G4Event* event)
 {
     m_ctx->setEvent(event);
 
-    if(m_ok->isSave()) presave(); 
+    if(m_ok->isSave()) presave();   // creates the OpticksEvent
 
     if( m_ctx->_number_of_input_photons  > 0 ) 
     {   
@@ -116,15 +116,16 @@ void CManager::BeginOfEventAction(const G4Event* event)
 void CManager::EndOfEventAction(const G4Event*)
 {
     LOG(LEVEL); 
-    if(m_ok->isSave()) save() ; 
 
     if( m_ctx->_number_of_input_photons  > 0 ) 
     {   
         LOG(LEVEL) 
             << " mocking EndOfGenstep as have input photon primaries " 
             ; 
-        EndOfGenstep('T', m_ctx->_number_of_input_photons);   
+        EndOfGenstep('T', m_ctx->_number_of_input_photons);   // appends to OpticksEvent, so must be before save
     }  
+
+    if(m_ok->isSave()) save() ; 
 }
 
 
