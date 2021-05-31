@@ -305,7 +305,8 @@ void OpticksRun::setGensteps(NPY<float>* gensteps)   // TODO: make this const : 
     if(!gensteps) LOG(fatal) << "NULL gensteps" ; 
     //assert(gensteps); 
 
-    LOG(LEVEL) << "gensteps " << ( gensteps ? gensteps->getShapeString() : "NULL" )  ;  
+    LOG(LEVEL) 
+         << "gensteps " << ( gensteps ? gensteps->getShapeString() : "NULL" )  ;  
 
     m_gensteps = gensteps ;   
 
@@ -347,6 +348,13 @@ void OpticksRun::importGensteps()
 {
     OK_PROFILE("_OpticksRun::importGensteps");
 
+    OpticksActionControl oac(m_gensteps->getActionControlPtr());
+
+    LOG(LEVEL) 
+        << " m_gensteps " << m_gensteps
+        << " oac.desc " << oac.desc("gs0") 
+        << " oac.numSet " << oac.numSet() 
+        ;
 
     const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ;   // TODO: bad assumption with input_photons
 
@@ -369,6 +377,14 @@ void OpticksRun::importGensteps()
     setupSourceData(); 
 
     m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL, m_clone );  
+
+
+
+    LOG(LEVEL) 
+        << " oac.desc " << oac.desc("gs1") 
+        << " oac.numSet " << oac.numSet() 
+        ;
+
 
     OK_PROFILE("OpticksRun::importGensteps");
 }

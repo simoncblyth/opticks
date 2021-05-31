@@ -2174,6 +2174,13 @@ if __name__ == '__main__':
     pass
 
 
+    als = a.make_seqhis_ls()  # opticks.ana.seq.SeqList
+    qq="als[:10]"
+    for q in qq.split():
+        print(q)
+        print(eval(q))
+    pass 
+
 
 
   

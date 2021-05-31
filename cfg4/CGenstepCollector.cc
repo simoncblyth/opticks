@@ -27,7 +27,7 @@
 
 #include "OpticksHub.hh"
 #include "OpticksGenstep.hh"
-
+#include "OpticksActionControl.hh"
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
@@ -54,6 +54,7 @@ CGenstepCollector::CGenstepCollector(const NLookup* lookup)
     m_scintillation_count(0),
     m_cerenkov_count(0),
     m_torch_count(0),
+    m_torch_emitsource_count(0),
     m_machinery_count(0)
 {
     assert( m_genstep_itemsize == 6*4 );
@@ -74,6 +75,7 @@ void CGenstepCollector::reset()
     m_scintillation_count = 0 ; 
     m_cerenkov_count = 0 ; 
     m_torch_count = 0 ; 
+    m_torch_emitsource_count = 0 ; 
     m_machinery_count = 0 ; 
     m_genstep->reset(); 
     m_gs_photons.clear(); 
@@ -465,9 +467,11 @@ void CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
     const NPY<float>* src = gs->getGensteps(); 
     float* dst_values = m_genstep_values ; 
 
+
     LOG(LEVEL) 
         << " num_gensteps " << num_gensteps 
         << " src.shape " << src->getShapeString()
+        << " src_oac.desc " << OpticksActionControl::Desc(src->getActionControl())
         ;
 
     for(unsigned idx=0 ; idx < num_gensteps ; idx++)
@@ -491,6 +495,10 @@ void CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
         else if( OpticksGenstep::IsTorchLike(gentype) )
         {
             m_torch_count += 1 ;  
+
+            bool emitsource = OpticksGenstep::IsEmitSource(gentype) ; 
+            m_torch_emitsource_count += int(emitsource) ;  
+
             const float* src_values = src->getValuesConst(idx);  
             for(unsigned j=0 ; j < m_genstep_itemsize ; j++) dst_values[j] = src_values[j] ; 
             m_genstep->add(dst_values, m_genstep_itemsize);
@@ -505,6 +513,30 @@ void CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
             assert(0); 
         }
     } 
+
+   
+    if(m_torch_emitsource_count > 0 )
+    {
+        LOG(LEVEL) 
+            << " num_gensteps " << num_gensteps
+            << " m_torch_count " << m_torch_count
+            << " m_torch_emitsource_count " << m_torch_emitsource_count
+            ;         
+
+        assert( m_torch_count == m_torch_emitsource_count ); 
+        assert( 1 == m_torch_emitsource_count ); 
+        assert( num_gensteps == m_torch_emitsource_count );
+
+        m_genstep->setActionControl(src->getActionControl());   
+        m_genstep->setAux(src->getAux()); 
+        LOG(LEVEL) 
+           << " torch_emitsource pass along " 
+           << " oac " << OpticksActionControl::Desc(m_genstep->getActionControl()) 
+           << " aux " << m_genstep->getAux() 
+           ; 
+    }
+
+
 }
 
  

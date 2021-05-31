@@ -137,7 +137,7 @@ std::string OpticksActionControl::desc(const char* msg) const
 {
    std::stringstream ss ;
    if(msg) ss << msg << " : " ;
-   ss << Desc(*m_ctrl) ;
+   ss << Desc(*m_ctrl) << " numSet:" << numSet() ;
    return ss.str();
 }
 

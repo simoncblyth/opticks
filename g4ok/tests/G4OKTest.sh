@@ -9,8 +9,9 @@ if [ -f "$path" ]; then
     echo $evar ${!evar}
 fi 
 
-export OpticksGenstep=INFO  # OpticksGenstep::MakeInputPhotonCarrier
-export OpticksRun=INFO      # check oac OpticksActionContrl handling of carrier gensteps
+export OpticksGenstep=INFO      # OpticksGenstep::MakeInputPhotonCarrier
+export OpticksRun=INFO          # check oac OpticksActionContrl handling of carrier gensteps
+export CGenstepCollector=INFO   # the carrier genstep is added in the collector, so have to pass along the label  
 
 bin=$(which G4OKTest)
 echo $BASH_SOURCE : bin $bin  

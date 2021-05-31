@@ -176,6 +176,7 @@ class CFG4_API CGenstepCollector
          unsigned          m_scintillation_count ; 
          unsigned          m_cerenkov_count ; 
          unsigned          m_torch_count ; 
+         unsigned          m_torch_emitsource_count ;   // subset of m_torch_count 
          unsigned          m_machinery_count ; 
 
          std::vector<unsigned> m_gs_photons ; 

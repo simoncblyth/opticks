@@ -140,6 +140,10 @@ bool OpticksGenstep::IsTorchLike(int gentype)   // static
 {
    return gentype == OpticksGenstep_TORCH || gentype == OpticksGenstep_FABRICATED || gentype == OpticksGenstep_EMITSOURCE ; 
 }  
+bool OpticksGenstep::IsEmitSource(int gentype)   // static
+{
+   return gentype == OpticksGenstep_EMITSOURCE ; 
+}  
 bool OpticksGenstep::IsMachinery(int gentype)  // static
 {
    return gentype == OpticksGenstep_MACHINERY ; 
@@ -395,7 +399,11 @@ OpticksGenstep* OpticksGenstep::MakeInputPhotonCarrier(NPY<float>* ip, unsigned 
 
     OpticksActionControl oac(gs->getActionControlPtr());     
     oac.add(OpticksActionControl::GS_EMITSOURCE_);       // needed ?
-    LOG(LEVEL) << " oac.desc " << oac.desc("gs") ; 
+    LOG(LEVEL) 
+        << " gs " << gs 
+        << " oac.desc " << oac.desc("gs") 
+        << " oac.numSet " << oac.numSet() 
+        ; 
 
     gs->setAux((void*)ip);  // under-radar association of input photons with the fabricated genstep 
 

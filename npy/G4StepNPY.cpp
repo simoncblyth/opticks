@@ -219,8 +219,8 @@ std::string G4StepNPY::description()
         int numPhotons = it->second ; 
         total += numPhotons ; 
         ss   << " [ "
-             << std::setw(10) << label 
-             << std::setw(10) << numPhotons
+             << " label " << std::setw(10) << label 
+             << " num_photons " << std::setw(10) << numPhotons
              << " ] "
              ;
     }

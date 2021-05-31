@@ -62,6 +62,7 @@ class OKCORE_API OpticksGenstep {
        static bool IsCerenkov(int gentype);
        static bool IsScintillation(int gentype);
        static bool IsTorchLike(int gentype);
+       static bool IsEmitSource(int gentype);
        static bool IsMachinery(int gentype);
     public:
        static NPY<float>* MakeCandle(unsigned num_photons, unsigned tagoffset );
