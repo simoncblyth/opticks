@@ -237,7 +237,7 @@ def opticks_args(**kwa):
 
     parser.add_argument(     "--noshow",  dest="show", default=show, action="store_false", help="switch off dumping commandline "  )
     parser.add_argument(     "--noplot",  dest="plot", default=plot, action="store_false", help="switch off plotting"  )
-    parser.add_argument(     "--nocompare",  dest="compare", default=compare, action="store_false", help="switch off comparison for early stage debugging"  )
+    parser.add_argument(     "-C,--nocompare",  dest="compare", default=compare, action="store_false", help="switch off comparison for early stage debugging"  )
     parser.add_argument(     "--show",  default=show, action="store_true", help="dump invoking commandline "  )
     parser.add_argument(     "--loglevel", default=llv, help=" set logging level : DEBUG/INFO/WARNING/ERROR/CRITICAL. Default %(default)s." )
     parser.add_argument(     "--log-level", default=llv2, help=" mirror ipython level option to avoid complications with splitting options. Default %(default)s." )

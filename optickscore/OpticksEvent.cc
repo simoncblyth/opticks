@@ -291,18 +291,6 @@ void OpticksEvent::resizeToZero()
 }
 
 
-/*
-void OpticksEvent::addNumPhotons(unsigned add_photons, bool resize_)  // resize_ default true 
-{
-    unsigned num0 = getNumPhotons(); 
-    unsigned num1 = num0 + add_photons ; 
-    LOG(LEVEL) 
-        << " increase from " << num0 << " to " << num1 << " adding " << add_photons << " resize_ " << resize_ ; 
-        ;
-    setNumPhotons(num1, resize_ ); 
-}
-*/
-
 
 
 void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)  // resize_ default true 
@@ -310,12 +298,12 @@ void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)  // res
     m_num_photons = num_photons ; 
     if(resize_)
     {
-        LOG(verbose) << "OpticksEvent::setNumPhotons RESIZING " << num_photons ;  
+        LOG(LEVEL) << "RESIZING " << num_photons ;  
         resize();
     }
     else
     {
-        LOG(verbose) << "OpticksEvent::setNumPhotons NOT RESIZING " << num_photons ;  
+        LOG(LEVEL) << "NOT RESIZING " << num_photons ;  
     }
 }
 
@@ -327,6 +315,8 @@ OpticksEvent::getNumPhotonsFromPhotonArraySize
 Hmm why the m_num_photons ? Maybe because can declare a number without paying memory for them. 
 But that happens (lazy allocation) at NPY level anyhow.
 
+TODO: try to eliminate m_num_photons 
+
 **/
 
 unsigned int OpticksEvent::getNumPhotonsFromPhotonArraySize() const 
@@ -336,7 +326,9 @@ unsigned int OpticksEvent::getNumPhotonsFromPhotonArraySize() const
 
 void OpticksEvent::updateNumPhotonsFromPhotonArraySize() 
 {
+    unsigned num_photons = m_num_photons ; 
     m_num_photons = getNumPhotonsFromPhotonArraySize() ; 
+    LOG(LEVEL) << " num_photons update " << num_photons << " -> " << m_num_photons ; 
 }
 unsigned int OpticksEvent::getNumPhotons() const 
 {
@@ -1763,7 +1755,7 @@ that is derived from the sequence data by indexing is used::
 
 void OpticksEvent::Summary(const char* msg)
 {
-    LOG(info) << description(msg) ; 
+    LOG(info) << desc(msg) ; 
 }
 
 std::string OpticksEvent::brief()   // cannot be const, due to OpticksEventSpec::formDir
@@ -1777,10 +1769,12 @@ std::string OpticksEvent::brief()   // cannot be const, due to OpticksEventSpec:
     return ss.str();
 }
 
-std::string OpticksEvent::description(const char* msg)
+std::string OpticksEvent::desc(const char* msg)
 {
     std::stringstream ss ; 
-    ss << msg << " " 
+    if(msg) ss << msg << " " ; 
+
+    ss 
        << " id: " << getId()
        << " typ: " << m_typ 
        << " tag: " << m_tag 
@@ -1868,7 +1862,7 @@ void OpticksEvent::save()
 
 
     LOG(LEVEL) 
-        << description("") << getShapeString() 
+        << desc() << " " << getShapeString() 
         << " dir " << dir
         ;    
 

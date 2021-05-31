@@ -118,7 +118,7 @@ int main(int argc, char** argv)
 
          evt->save();
 
-         LOG(info) <<  evt->description() ;
+         LOG(info) <<  evt->desc() ;
     }
 
     delete ctx ; 

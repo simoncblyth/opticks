@@ -443,7 +443,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        void Summary(const char* msg="OpticksEvent::Summary");
        std::string  brief() ;  // cannot be const 
-       std::string  description(const char* msg="OpticksEvent::description");
+       std::string  desc(const char* msg=nullptr);
 
        bool         isInterop();
        bool         isCompute();

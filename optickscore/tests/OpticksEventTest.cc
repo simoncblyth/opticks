@@ -143,7 +143,7 @@ void test_addNumPhotons(Opticks* ok, unsigned num_onestep_photons, unsigned num_
          
         evt->updateNumPhotonsFromPhotonArraySize();    
 
-        std::cout << evt->description("") << std::endl ; 
+        std::cout << evt->desc() << std::endl ; 
     }
 
     const char* path = "$TMP/okc/test_addNumPhotons.npy" ; 
