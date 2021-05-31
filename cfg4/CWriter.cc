@@ -153,11 +153,10 @@ void CWriter::initGenstep( char gentype, int num_onestep_photons )
     assert( m_ctx._gentype == gentype  ); 
     assert( m_ctx._genstep_num_photons == unsigned(num_onestep_photons)  ); 
 
-    assert( m_target_records->getNumItems() == unsigned(num_onestep_photons) ); 
-    assert( m_target_photons->getNumItems() == unsigned(num_onestep_photons) ); 
-    assert( m_target_history->getNumItems() == unsigned(num_onestep_photons) ); 
+    //assert( m_target_records->getNumItems() == unsigned(num_onestep_photons) ); 
+    //assert( m_target_photons->getNumItems() == unsigned(num_onestep_photons) ); 
+    //assert( m_target_history->getNumItems() == unsigned(num_onestep_photons) ); 
 
-/*
     m_onestep_records = NPY<short>::make(num_onestep_photons, m_ctx._steps_per_photon, 2, 4) ;
     m_onestep_records->zero();
 
@@ -170,8 +169,6 @@ void CWriter::initGenstep( char gentype, int num_onestep_photons )
     m_target_records = m_onestep_records ; 
     m_target_photons = m_onestep_photons ; 
     m_target_history = m_onestep_history ; 
-*/
-
 
 }
 
@@ -198,10 +195,11 @@ void CWriter::writeGenstep( char gentype, int num_onestep_photons )
     LOG(LEVEL) << " gentype [" <<  gentype << "] num_onestep_photons " << num_onestep_photons ; 
     assert( m_onestep ); 
 
-    /*
     // currently are going direct to the buffer, not into m_onestep_* first
 
     LOG(LEVEL) << desc("bef.add") ; 
+
+    assert( m_records_buffer->getNumItems() == 0 );
 
     m_records_buffer->add(m_onestep_records);
     m_photons_buffer->add(m_onestep_photons);
@@ -210,7 +208,6 @@ void CWriter::writeGenstep( char gentype, int num_onestep_photons )
     LOG(LEVEL) << desc("aft.add") ; 
 
     clearOnestep(); 
-    */
 }
 
 void CWriter::clearOnestep()
