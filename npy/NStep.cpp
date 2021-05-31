@@ -267,7 +267,7 @@ std::string NStep::desc(const char* msg) const
     int prec = 3 ; 
 
     ss << msg << std::endl ; 
-    ss << GLMFormat::Format(m_ctrl, wid, 0)    << "m_ctrl : id/pid/MaterialLine/NumPhotons" << std::endl; 
+    ss << GLMFormat::Format(m_ctrl, wid)    << "m_ctrl : id/pid/MaterialLine/NumPhotons" << std::endl; 
     ss << GLMFormat::Format(m_post, wid, prec) << "m_post : position, time "  << std::endl ; 
     ss << GLMFormat::Format(m_dirw, wid, prec) << "m_dirw : direction, weight" << std::endl ; 
     ss << GLMFormat::Format(m_polw, wid, prec) << "m_polw : polarization, wavelength" << std::endl ; 

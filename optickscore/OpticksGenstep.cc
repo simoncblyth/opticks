@@ -26,6 +26,7 @@
 #include "GLMPrint.hpp"
 #include "NPY.hpp"
 #include "NSlice.hpp"
+#include "NStep.hpp"
 #include "TorchStepNPY.hpp"
 
 #include "OpticksPhoton.h"
@@ -241,51 +242,6 @@ unsigned OpticksGenstep::getGencode(unsigned idx) const
     return gencode ; 
 }
 
-/*
-unsigned OpticksGenstep::getGencode(unsigned idx) const 
-{
-    int gs00 = m_gs->getInt(idx,0u,0u) ;
- 
-    int content_version = getContentVersion() ; 
-    LOG(LEVEL) << " idx " << idx << " gs00 " << gs00 << " content_version " << content_version ;  
-
-    int gencode = -1 ; 
-
-    if( content_version == 0 )  // old style unversioned gensteps , this is fallback when no metadata 
-    {
-        gencode = gs00 < 0 ? CERENKOV : SCINTILLATION ;  
-        // ^^^^^^^^^^^^^^^ this was happening 
-    }
-    else if( content_version >= 1042 )   // G4 version starting point 
-    {
-        gencode = gs00 ; 
-    }
-    else if( content_version <= -10 )   // OK version starting point 
-    {
-        gencode = gs00 ; 
-    }
-    else
-    { 
-        LOG(fatal) << " unexpected gensteps content_version " << content_version ; 
-        assert(0); 
-    }
-
-
-    bool expected = gencode == CERENKOV || gencode == SCINTILLATION  ;   // huh should not be photon codes here ?
-
-    if(!expected)
-         LOG(fatal) << "unexpected gencode " 
-                    << " gencode " << gencode
-                    << " content_version " << content_version
-                    << " flag " << OpticksFlags::Flag(gencode) 
-                    ;
-
-    assert(expected) ; 
-    return gencode ; 
-}
-*/
-
-
 
 
 glm::ivec4 OpticksGenstep::getHdr(unsigned i) const 
@@ -376,7 +332,7 @@ void OpticksGenstep::dump(unsigned modulo, unsigned margin, const char* msg) con
 
 
 
-NPY<float>* OpticksGenstep::MakeCandle(unsigned num_photons, unsigned tagoffset )
+NPY<float>* OpticksGenstep::MakeCandle(unsigned num_photons, unsigned tagoffset ) // static
 {
     unsigned gentype = OpticksGenstep_TORCH  ;
     unsigned num_step = 1 ; 
@@ -400,5 +356,49 @@ NPY<float>* OpticksGenstep::MakeCandle(unsigned num_photons, unsigned tagoffset 
     return gs ; 
 }
 
+/**
+OpticksGenstep::MakeInputPhotonCarrier
+----------------------------------------
+
+Invoked from G4Opticks::setInputPhotons 
+
+Fabricates OpticksGenstep_EMITSOURCE genstep and arranges for the GPU 
+source_buffer to get filled with the input photons similar to::
+
+    okg/OpticksGen::initFromEmitterGensteps (need the setAux ref to input photons)
+    okc/OpticksGenstep::MakeCandle 
+
+**/
+
+OpticksGenstep* OpticksGenstep::MakeInputPhotonCarrier(NPY<float>* ip, unsigned tagoffset ) // static
+{
+    unsigned num_photons = ip->getNumItems(); 
+    LOG(LEVEL) 
+        << " num_photons " << num_photons
+        << " input_photons " << ip->getShapeString()
+        << " tagoffset " << tagoffset
+        ; 
+    
+    NStep onestep ; 
+    onestep.setGenstepType( OpticksGenstep_EMITSOURCE );  
+    onestep.setNumPhotons(  num_photons ); 
+    onestep.fillArray(); 
+    NPY<float>* gs = onestep.getArray(); 
 
 
+    bool compute = true ; 
+    ip->setBufferSpec(OpticksEvent::SourceSpec(compute));
+    ip->setArrayContentIndex( tagoffset ); 
+
+    gs->setBufferSpec(OpticksEvent::GenstepSpec(compute));
+    gs->setArrayContentIndex( tagoffset ); 
+
+    OpticksActionControl oac(gs->getActionControlPtr());     
+    oac.add(OpticksActionControl::GS_EMITSOURCE_);       // needed ?
+
+    gs->setAux((void*)ip);  // under-radar association of input photons with the fabricated genstep 
+
+    OpticksGenstep* ogs = new OpticksGenstep(gs);
+    return ogs ; 
+}
+ 

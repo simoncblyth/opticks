@@ -7,14 +7,14 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    NStep one ; 
-    one.setGenstepType(42); 
-    one.setNumPhotons(101); 
-    one.fillArray(); 
+    NStep onestep ; 
+    onestep.setGenstepType(42); 
+    onestep.setNumPhotons(101); 
+    onestep.fillArray(); 
 
-    LOG(info) << one.desc() ; 
+    LOG(info) << onestep.desc() ; 
 
-    NPY<float>* ary = one.getArray(); 
+    NPY<float>* ary = onestep.getArray(); 
 
     const char* path = "$TMP/NStepTest.npy" ; 
     ary->save(path); 

@@ -1823,26 +1823,9 @@ void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index, un
     TorchStepNPY* ts = new TorchStepNPY(gentype, num_step, config);
     ts->setOriginTrackID(originTrackID); 
 
-
     if(node_index == -1)
     {
-
         node_index = m_ggeo->getFirstNodeIndexForGDMLAuxTargetLVName()  ;
-
-        /**
-        const char* target_lvname = m_ok->getGDMLAuxTargetLVName() ; 
-        std::vector<unsigned> nidxs ; 
-        m_ggeo->getNodeIndicesForLVName(nidxs, target_lvname); 
-        unsigned num_nodes = nidxs.size() ; 
-        node_index = num_nodes > 0 ? nidxs[0] : 0 ; 
-
-        LOG(info)
-            << "G4GDMLAux" 
-            << " target_lvname " << target_lvname
-            << " num_nodes " << num_nodes 
-            << " node_index " << node_index
-            ;
-        **/
     }
 
     if(node_index == -1)
@@ -1867,7 +1850,6 @@ void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index, un
     //arr->save("$TMP/debugging/collectDefaultTorchStep/gs.npy");  
 
     const OpticksGenstep* gs = new OpticksGenstep(arr); 
-    
     assert( m_genstep_collector ); 
     m_genstep_collector->collectOpticksGenstep(gs);  
 } 
@@ -1936,27 +1918,24 @@ void G4Opticks::collectHit
 
 void G4Opticks::setInputPhotons(const char* dir, const char* name)
 {
-    const NPY<float>* input_photons = NPY<float>::load(dir, name) ; 
+    NPY<float>* input_photons = NPY<float>::load(dir, name) ; 
     setInputPhotons(input_photons); 
 }
 void G4Opticks::setInputPhotons(const char* path)
 {
-    const NPY<float>* input_photons = NPY<float>::load(path) ; 
+    NPY<float>* input_photons = NPY<float>::load(path) ; 
     setInputPhotons(input_photons); 
 }
-void G4Opticks::setInputPhotons(const NPY<float>* input_photons)
+void G4Opticks::setInputPhotons(NPY<float>* input_photons)
 {
     LOG(info) 
         << " input_photons " << ( input_photons ? input_photons->getShapeString() : "-" )
         ;
 
-    //  need to fabricate a genstep with gencode OpticksGenstep_EMITSOURCE 
-    //  and need to arrange the source_buffer to get filled with the input photons  
-    //  similar to:
-    //          OpticksGen::initFromEmitterGensteps (need the setAux ref to input photons)
-    //          OpticksGenstep::MakeCandle (looks a better place to add the new method)
-    //
-
+    unsigned tagoffset = 0 ;   
+    const OpticksGenstep* gs = OpticksGenstep::MakeInputPhotonCarrier(input_photons, tagoffset );
+    assert( m_genstep_collector ); 
+    m_genstep_collector->collectOpticksGenstep(gs);  
 }
 
 
