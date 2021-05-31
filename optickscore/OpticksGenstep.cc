@@ -395,6 +395,7 @@ OpticksGenstep* OpticksGenstep::MakeInputPhotonCarrier(NPY<float>* ip, unsigned 
 
     OpticksActionControl oac(gs->getActionControlPtr());     
     oac.add(OpticksActionControl::GS_EMITSOURCE_);       // needed ?
+    LOG(LEVEL) << " oac.desc " << oac.desc("gs") ; 
 
     gs->setAux((void*)ip);  // under-radar association of input photons with the fabricated genstep 
 
