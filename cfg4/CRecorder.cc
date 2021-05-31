@@ -144,7 +144,7 @@ void CRecorder::setMaterialBridge(const CMaterialBridge* material_bridge)
 CRecorder::initEvent
 ----------------------
 
-Invoked by CG4::initEvent, configures and prepares for recording.
+Invoked by CManager::initEvent, configures and prepares for recording.
 
 **/
 
@@ -157,11 +157,25 @@ void CRecorder::initEvent(OpticksEvent* evt)
 }
 
 
+/**
+CRecorder::BeginOfGenstep
+----------------------------
+
+When have input photons this is invoked by CManager::BeginOfEventAction
+
+**/
 void CRecorder::BeginOfGenstep(char gentype, int num_photons)
 {
     m_writer->initGenstep(gentype, num_photons); 
 }
 
+/**
+CRecorder::EndOfGenstep
+------------------------
+
+When have input photons this is invoked by CManager::EndOfEventAction
+
+**/
 void CRecorder::EndOfGenstep(char gentype, int num_photons)
 {
     m_writer->writeGenstep(gentype, num_photons); 

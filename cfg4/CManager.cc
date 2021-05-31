@@ -157,6 +157,11 @@ Invoked from CManager::BeginOfEventAction, prepares for saving:
 1. OpticksRun::m_g4evt OpticksEvent is created 
 2. event recording is configured.
 
+Hmm when using input_photons could use the carrier gensteps
+to size the event and operate just like the OK event. 
+But in ordinary Geant4 running only have genstep counts 
+one by one. So need to find a workable way to extend the G4 event.
+
 **/
 void CManager::presave()
 {
@@ -167,7 +172,8 @@ void CManager::presave()
     char ctrl = '-' ; 
 
     LOG(level) << " tagoffset " << tagoffset << " ctrl [" << ctrl << "]" ; 
-    m_ok->createEvent(tagoffset, ctrl); 
+
+    m_ok->createEvent(tagoffset, ctrl);   
 
     OpticksEvent* evt = m_ok->getEvent(ctrl);
     assert(evt); 
@@ -184,6 +190,7 @@ Configure event recording, limits/shapes etc..
 
 void CManager::initEvent(OpticksEvent* evt)
 {
+    LOG(LEVEL); 
     m_ctx->initEvent(evt);
     m_recorder->initEvent(evt);
 

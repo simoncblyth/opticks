@@ -131,9 +131,23 @@ std::string CWriter::desc(const char* msg) const
 }
 
 
+/**
+CWriter::initGenstep
+----------------------
+
+Invoked from CRecorder::initEvent
+
+**/
+
 void CWriter::initGenstep( char gentype, int num_onestep_photons )
 {
-    LOG(LEVEL) << " gentype [" <<  gentype << "] num_onestep_photons " << num_onestep_photons ; 
+    LOG(LEVEL) 
+        << " gentype [" <<  gentype << "]" 
+        << " num_onestep_photons " << num_onestep_photons 
+        << " m_target_records " << m_target_records->getShapeString()
+        << " m_target_photons " << m_target_photons->getShapeString()
+        << " m_target_history " << m_target_history->getShapeString()
+        ; 
 
     assert( m_onestep ); 
     assert( m_ctx._gentype == gentype  ); 
@@ -171,6 +185,11 @@ CWriter::writeGenstep
  
   * at least this is the case with input photons that leads to 
     a single carrier genstep in the event   
+
+  * in general G4 running (not input photon) do not have the carrier genstep, 
+    but do have genstep counts genstep-by-genstep
+
+    
 
 **/
 
@@ -244,7 +263,6 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
 {
     m_photon.add(flag, material);  // sets seqhis/seqmat nibbles in current constrained slot  
 
-
     bool hard_truncate = m_photon.is_hard_truncate();    
 
     bool done = false ;   
@@ -266,7 +284,6 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
             writePhoton(point);
         }
     }        
-
 
     if( flag == BULK_ABSORB )
     {

@@ -1423,11 +1423,13 @@ void Opticks::createEvent(NPY<float>* gensteps, char ctrl)
 {
     m_run->createEvent(gensteps, ctrl );
 }
+
+
+// better to phase out this alternative to the above from gensteps 
 void Opticks::createEvent(unsigned tagoffset, char ctrl)
 {
     m_run->createEvent(tagoffset, ctrl );
 }
-
 
 
 

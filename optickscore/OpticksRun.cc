@@ -76,6 +76,7 @@ Specifically:
 
 * OKG4Mgr::propagate
 * OKMgr::propagate
+* OpMgr::propagate
 
 As gensteps are available the sizing of the event is 
 entirely known ahread of time and buffers are sized accordingly.

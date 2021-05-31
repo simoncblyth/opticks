@@ -1926,6 +1926,14 @@ void G4Opticks::setInputPhotons(const char* path)
     NPY<float>* input_photons = NPY<float>::load(path) ; 
     setInputPhotons(input_photons); 
 }
+
+
+/**
+G4Opticks::setInputPhotons
+---------------------------
+
+**/
+
 void G4Opticks::setInputPhotons(NPY<float>* input_photons)
 {
     LOG(info) 
@@ -1937,5 +1945,4 @@ void G4Opticks::setInputPhotons(NPY<float>* input_photons)
     assert( m_genstep_collector ); 
     m_genstep_collector->collectOpticksGenstep(gs);  
 }
-
 
