@@ -279,6 +279,7 @@ void CG4Ctx::setEvent(const G4Event* event)
     }
 
     _number_of_input_photons = CEvent::NumberOfInputPhotons(event); 
+    LOG(LEVEL) << "_number_of_input_photons " << _number_of_input_photons ; 
 
     // when _number_of_input_photons is greater than 0 
     // CManager "mocks" a genstep by calling CG4Ctx::setGenstep

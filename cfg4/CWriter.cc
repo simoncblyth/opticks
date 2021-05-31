@@ -18,7 +18,7 @@
  */
 
 #include <cassert>
-
+#include <sstream>
 
 #include "G4StepPoint.hh"
 #include "G4StepStatus.hh"
@@ -54,10 +54,7 @@ CWriter::CWriter(CG4Ctx& ctx, CPhoton& photon, bool onestep)
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),
     m_enabled(true),
-
     m_evt(NULL),
-
-    m_primary(NULL),
 
     m_records_buffer(NULL),
     m_photons_buffer(NULL),
@@ -110,10 +107,7 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     m_photons_buffer = m_evt->getPhotonData();
     m_records_buffer = m_evt->getRecordData();
 
-    LOG(LEVEL) << " m_history_buffer " << m_history_buffer->getShapeString() ; 
-    LOG(LEVEL) << " m_history_buffer " << m_history_buffer->getShapeString() ; 
-    LOG(LEVEL) << " m_history_buffer " << m_history_buffer->getShapeString() ; 
-
+    LOG(LEVEL) << desc() ; 
 
     assert( m_history_buffer && "CRecorder requires history buffer" );
     assert( m_photons_buffer && "CRecorder requires photons buffer" );
@@ -124,6 +118,20 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     m_target_photons = m_photons_buffer ; 
     m_target_records = m_records_buffer ;  
 }
+
+
+std::string CWriter::desc(const char* msg) const 
+{
+    std::stringstream ss ; 
+    if(msg) ss << msg << " " ; 
+    ss << ( m_onestep ? "ONESTEP(CPU style)" : "STATIC(GPU style)" ) ; 
+    ss << " m_history_buffer " << m_history_buffer->getShapeString() ; 
+    ss << " m_photons_buffer " << m_photons_buffer->getShapeString() ; 
+    ss << " m_records_buffer " << m_records_buffer->getShapeString() ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 void CWriter::initGenstep( char gentype, int num_onestep_photons )
 {
@@ -152,9 +160,13 @@ void CWriter::writeGenstep( char gentype, int num_onestep_photons )
     LOG(LEVEL) << " gentype [" <<  gentype << "] num_onestep_photons " << num_onestep_photons ; 
     assert( m_onestep ); 
 
+    LOG(LEVEL) << desc("bef.add") ; 
+
     m_records_buffer->add(m_onestep_records);
     m_photons_buffer->add(m_onestep_photons);
     m_history_buffer->add(m_onestep_history);
+
+    LOG(LEVEL) << desc("aft.add") ; 
 
     clearOnestep(); 
 }
@@ -266,6 +278,8 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
 
     unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ;   
     // hmm maybe separate id for onestep handling and all genstep handling 
+
+    LOG(LEVEL)  << " target_record_id " << target_record_id ; 
 
     unsigned slot = photon._slot_constrained ;
     unsigned flag = photon._flag ; 
@@ -387,6 +401,11 @@ A: Hmm, not sure : but suspect that is could be made to work by using
 
 void CWriter::writePhoton(const G4StepPoint* point )
 {
+    unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ; 
+    writeHistory(target_record_id);  
+
+    LOG(LEVEL)  << " target_record_id " << target_record_id ; 
+
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
     const G4ThreeVector& pol = point->GetPolarization();
@@ -396,8 +415,6 @@ void CWriter::writePhoton(const G4StepPoint* point )
     G4double wavelength = h_Planck*c_light/energy ;
     G4double weight = 1.0 ;  
 
-    unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ; 
-
     // emulating the Opticks GPU written photons 
     m_target_photons->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
     m_target_photons->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
@@ -406,8 +423,18 @@ void CWriter::writePhoton(const G4StepPoint* point )
     m_target_photons->setUInt(target_record_id, 3, 0, 1, 0u );
     m_target_photons->setUInt(target_record_id, 3, 0, 2, m_photon._c4.u );
     m_target_photons->setUInt(target_record_id, 3, 0, 3, m_photon._mskhis );
+}
 
-    // emulating GPU seqhis/seqmat writing 
+/**
+CWriter::writeHistory
+-----------------------
+
+Emulating GPU seqhis/seqmat writing 
+
+**/
+
+void CWriter::writeHistory(unsigned target_record_id)
+{
     unsigned long long* history = m_target_history->getValues() + 2*target_record_id ;
     *(history+0) = m_photon._seqhis ; 
     *(history+1) = m_photon._seqmat ; 

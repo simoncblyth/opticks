@@ -19,12 +19,12 @@
 
 #pragma once
 
+#include <string>
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 #include "plog/Severity.h"
 
 class G4StepPoint ;
-
 
 // npy-
 template <typename T> class NPY ;
@@ -63,6 +63,8 @@ class CFG4_API CWriter
     public:
         CWriter(CG4Ctx& ctx, CPhoton& photon, bool onestep);        
         void setEnabled(bool enabled);
+        std::string desc(const char* msg=nullptr) const ; 
+
     public:
         // *initEvent*
         //     configures recording and prepares buffer pointers
@@ -87,6 +89,7 @@ class CFG4_API CWriter
         //     with dynamic running this means MUST SetTrackSecondariesFirst IN C+S processes (TODO: verify this)
         //
         void writePhoton(const G4StepPoint* point );
+        void writeHistory(unsigned target_record_id) ;
 
    private:
         void initGenstep( char gentype, int num_onestep_photons );
@@ -100,10 +103,8 @@ class CFG4_API CWriter
         CG4Ctx&            m_ctx ; 
         Opticks*           m_ok ; 
         bool               m_enabled ; 
-
         OpticksEvent*      m_evt ; 
 
-        NPY<float>*               m_primary ; 
 
         NPY<short>*               m_records_buffer ; 
         NPY<float>*               m_photons_buffer ; 
@@ -116,9 +117,6 @@ class CFG4_API CWriter
         NPY<short>*               m_target_records ; 
         NPY<float>*               m_target_photons ; 
         NPY<unsigned long long>*  m_target_history ; 
-
-        unsigned           m_verbosity ; 
-
 
 };
 
