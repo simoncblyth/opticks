@@ -21,6 +21,8 @@
 #include "BStr.hh"
 
 // npy-
+
+#include "NStep.hpp"
 #include "GenstepNPY.hpp"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
@@ -35,6 +37,7 @@ const plog::Severity GenstepNPY::LEVEL = PLOG::EnvLevel("GenstepNPY", "DEBUG") ;
 
 GenstepNPY::GenstepNPY(unsigned gentype, unsigned num_step, const char* config, bool is_default ) 
     :  
+    m_onestep(new NStep),
     m_gentype(gentype),
     m_num_step(num_step),
     m_config(config ? strdup(config) : NULL),
@@ -42,12 +45,6 @@ GenstepNPY::GenstepNPY(unsigned gentype, unsigned num_step, const char* config, 
     m_material(NULL),
     m_npy(NPY<float>::make(num_step, 6, 4)),
     m_step_index(0),
-    m_ctrl(0,0,0,0),
-    m_post(0,0,0,0),
-    m_dirw(0,0,0,0),
-    m_polw(0,0,0,0),
-    m_zeaz(0,0,0,0),
-    m_beam(0,0,0,0),
     m_frame(-1,0,0,0),
     m_frame_transform(1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f),
     m_frame_targetted(false),
@@ -88,6 +85,28 @@ unsigned int GenstepNPY::getNumG4Event() const
 
 
 
+NStep* GenstepNPY::getOneStep() const 
+{
+    return m_onestep ; 
+}
+unsigned GenstepNPY::getNumPhotons() const 
+{
+    return m_onestep->getNumPhotons(); 
+}
+void GenstepNPY::setNumPhotons(unsigned num_photons)
+{
+    m_onestep->setNumPhotons(num_photons); 
+}
+// used from okg/OpticksGen
+void GenstepNPY::setMaterialLine(unsigned ml)
+{
+    m_onestep->setMaterialLine(ml); 
+}
+// used from g4ok/G4Opticks::collectDefaultTorchStep
+void GenstepNPY::setOriginTrackID(unsigned id)
+{
+    m_onestep->setOriginTrackID(id); 
+}
 
 
 
@@ -157,20 +176,15 @@ void GenstepNPY::addStep(bool verbose)
 
     assert(m_npy && m_npy->hasData());
 
-    unsigned int i = m_step_index ; 
+    //unsigned int i = m_step_index ; 
 
-    setGenstepType( m_gentype ) ;    
+    m_onestep->setGenstepType( m_gentype ) ;    
 
-    // update();   moved this to updateAfterSetFrameTransform
+    m_onestep->fillArray(); 
 
-    if(verbose) dump("GenstepNPY::addStep");
+    NPY<float>* one = m_onestep->getArray(); 
 
-    m_npy->setQuadI(m_ctrl, i, 0 );
-    m_npy->setQuad( m_post, i, 1);
-    m_npy->setQuad( m_dirw, i, 2);
-    m_npy->setQuad( m_polw, i, 3);
-    m_npy->setQuad( m_zeaz, i, 4);
-    m_npy->setQuad( m_beam, i, 5);
+    m_npy->add(one); 
 
     m_step_index++ ; 
 }
@@ -180,230 +194,6 @@ NPY<float>* GenstepNPY::getNPY() const
     assert( m_step_index == m_num_step && "GenstepNPY is incomplete, must addStep according to declared num_step");
     return m_npy ; 
 }
-
-
-
-
-
-
-
-// m_ctrl
-
-void GenstepNPY::setGenstepType(unsigned gentype)
-{
-    m_ctrl.x = gentype ;  // eg OpticksGenstep_TORCH
-}
-unsigned GenstepNPY::getGenstepType() const 
-{
-    return m_ctrl.x ; 
-}
-
-/**
-GenstepNPY::setOriginTrackID
-------------------------------
-
-m_ctrl.y seems to be unused by torch gensteps, 
-but it is used for OriginTrackID for "real" gensteps
-hence for debugging with for example with g4ok/tests/G4OKTest.cc
-it is handy to be able to set this.
-
-**/
-
-void GenstepNPY::setOriginTrackID(unsigned trackID)
-{
-    m_ctrl.y = trackID ;  // eg OpticksGenstep_TORCH
-}
-unsigned GenstepNPY::getOriginTrackID() const 
-{
-    return m_ctrl.y ; 
-}
-
-
-
-
-
-
-
-
-void GenstepNPY::setMaterialLine(unsigned int ml)
-{
-    m_ctrl.z = ml ; 
-}
-
-
-
-
-void GenstepNPY::setNumPhotons(const char* s)
-{
-    setNumPhotons(BStr::LexicalCast<unsigned int>(s)) ; 
-}
-void GenstepNPY::setNumPhotons(unsigned int num_photons)
-{
-    m_ctrl.w = num_photons ; 
-}
-unsigned int GenstepNPY::getNumPhotons() const 
-{
-    return m_ctrl.w ; 
-}
-
-
-
-// m_post
-
-void GenstepNPY::setPosition(const glm::vec4& pos)
-{
-    m_post.x = pos.x ; 
-    m_post.y = pos.y ; 
-    m_post.z = pos.z ; 
-}
-
-void GenstepNPY::setTime(const char* s)
-{
-    m_post.w = BStr::LexicalCast<float>(s) ;
-}
-float GenstepNPY::getTime() const
-{
-    return m_post.w ; 
-}
-
-glm::vec3 GenstepNPY::getPosition() const 
-{
-    return glm::vec3(m_post);
-}
-
-
-
-
-// m_dirw
-
-void GenstepNPY::setDirection(const char* s)
-{
-    std::string ss(s);
-    glm::vec3 dir = gvec3(ss) ;
-    setDirection(dir);
-}
-
-void GenstepNPY::setDirection(const glm::vec3& dir)
-{
-    m_dirw.x = dir.x ; 
-    m_dirw.y = dir.y ; 
-    m_dirw.z = dir.z ; 
-}
-
-glm::vec3 GenstepNPY::getDirection() const 
-{
-    return glm::vec3(m_dirw);
-}
-
-void GenstepNPY::setWeight(const char* s)
-{
-    m_dirw.w = BStr::LexicalCast<float>(s) ;
-}
-
-
-// m_polw
-
-void GenstepNPY::setPolarization(const glm::vec4& pol)
-{
-    glm::vec4 npol = glm::normalize(pol);
-
-    m_polw.x = npol.x ; 
-    m_polw.y = npol.y ; 
-    m_polw.z = npol.z ; 
-
-    LOG(LEVEL)
-        << " pol " << gformat(pol)
-        << " npol " << gformat(npol)
-        << " m_polw " << gformat(m_polw)
-        ;
-
-    //assert(0); 
-}
-void GenstepNPY::setWavelength(const char* s)
-{
-    m_polw.w = BStr::LexicalCast<float>(s) ;
-}
-float GenstepNPY::getWavelength() const 
-{
-    return m_polw.w ; 
-}
-glm::vec3 GenstepNPY::getPolarization() const 
-{
-    return glm::vec3(m_polw);
-}
-
-
-
-
-
-// m_zeaz
-
-void GenstepNPY::setZenithAzimuth(const char* s)
-{
-    std::string ss(s);
-    m_zeaz = gvec4(ss) ;
-}
-glm::vec4 GenstepNPY::getZenithAzimuth() const
-{
-    return m_zeaz ; 
-}
-
-
-
-/// m_beam
-
-void GenstepNPY::setRadius(const char* s)
-{
-    setRadius(BStr::LexicalCast<float>(s)) ;
-}
-void GenstepNPY::setRadius(float radius)
-{
-    m_beam.x = radius ;
-}
-float GenstepNPY::getRadius() const 
-{
-    return m_beam.x ; 
-}
-
-void GenstepNPY::setDistance(const char* s)
-{
-    setDistance(BStr::LexicalCast<float>(s)) ;
-}
-void GenstepNPY::setDistance(float distance)
-{
-    m_beam.y = distance ;
-}
-
-void GenstepNPY::setBaseMode(unsigned umode)
-{
-    uif_t uif ; 
-    uif.u = umode ; 
-    m_beam.z = uif.f ;
-}
-unsigned GenstepNPY::getBaseMode() const
-{
-    uif_t uif ;
-    uif.f = m_beam.z ; 
-    return uif.u ; 
-}
-
-
-void GenstepNPY::setBaseType(unsigned utype)
-{
-    uif_t uif ; 
-    uif.u = utype ; 
-    m_beam.w = uif.f ;
-}
-unsigned GenstepNPY::getBaseType() const 
-{
-    uif_t uif ;
-    uif.f = m_beam.w ; 
-    return uif.u ; 
-}
-
-
-
-
 
 
 
@@ -465,6 +255,11 @@ int GenstepNPY::getFrameIndex() const
     return m_frame.x ; 
 }
 
+bool GenstepNPY::isDummyFrame() const 
+{
+    return m_frame.x == -1 ; 
+}
+
 std::string GenstepNPY::brief() const 
 {
     std::stringstream ss ; 
@@ -477,35 +272,4 @@ std::string GenstepNPY::brief() const
 
     return ss.str();
 }
-
-
-bool GenstepNPY::isDummyFrame() const 
-{
-    return m_frame.x == -1 ; 
-}
-
-
-
-void GenstepNPY::dump(const char* msg) const 
-{
-    dumpBase(msg);
-}
-
-void GenstepNPY::dumpBase(const char* msg) const 
-{
-    LOG(info) << msg  
-              << " config " << m_config 
-              << " material " << m_material
-              ; 
-
-    print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );
-    print(m_post, "m_post : position, time " ); 
-    print(m_dirw, "m_dirw : direction, weight" ); 
-    print(m_polw, "m_polw : polarization, wavelength" ); 
-    print(m_zeaz, "m_zeaz: zenith, azimuth " ); 
-    print(m_beam, "m_beam: radius,... " ); 
-
-    print(m_frame, "m_frame ");
-}
-
 

@@ -31,6 +31,7 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "uif.h"
+#include "NStep.hpp"
 #include "GenstepNPY.hpp"
 #include "TorchStepNPY.hpp"
 #include "PLOG.hh"
@@ -95,7 +96,7 @@ Torch_t TorchStepNPY::ParseType(const char* k)  // static
 
 ::Torch_t TorchStepNPY::getType() const 
 {
-    unsigned utype = getBaseType();
+    unsigned utype = m_onestep->getBaseType();
     Torch_t type = T_UNDEF ;
     switch(utype)
     {
@@ -145,7 +146,7 @@ void TorchStepNPY::setType(const char* s)
 {
     ::Torch_t type = ParseType(s) ;
     unsigned utype = unsigned(type);
-    setBaseType(utype);
+    m_onestep->setBaseType(utype);
 }
 
 
@@ -175,7 +176,7 @@ Mode_t TorchStepNPY::ParseMode(const char* k)  // static
 
 ::Mode_t TorchStepNPY::getMode() const 
 {
-    ::Mode_t mode = (::Mode_t)getBaseMode() ;
+    ::Mode_t mode = (::Mode_t)m_onestep->getBaseMode() ;
     return mode ; 
 }
 
@@ -199,9 +200,13 @@ std::string TorchStepNPY::getModeString() const
 
 std::string TorchStepNPY::description() const 
 {
-    glm::vec3 pos = getPosition() ;
-    glm::vec3 dir = getDirection() ;
-    glm::vec3 pol = getPolarization() ;
+    glm::vec3 pos = m_onestep->getPosition() ;
+    glm::vec3 dir = m_onestep->getDirection() ;
+    glm::vec3 pol = m_onestep->getPolarization() ;
+
+    float radius = m_onestep->getRadius(); 
+    float wavelength = m_onestep->getWavelength(); 
+    float time = m_onestep->getTime();
 
     std::stringstream ss ; 
     ss
@@ -210,9 +215,9 @@ std::string TorchStepNPY::description() const
         << " position " << gformat(pos)
         << " direction " << gformat(dir)
         << " polarization " << gformat(pol)
-        << " radius " << getRadius()
-        << " wavelength " << getWavelength()
-        << " time " << getTime()
+        << " radius " << radius
+        << " wavelength " << wavelength
+        << " time " << time
         ; 
 
     return ss.str();
@@ -272,14 +277,14 @@ void TorchStepNPY::set(Param_t p, const char* s)
         case POLARIZATION   : setPolarizationLocal(s) ;break;
         case SOURCE         : setSourceLocal(s)    ;break;
         case TARGET         : setTargetLocal(s)    ;break;
-        case PHOTONS        : setNumPhotons(s)     ;break;
         case MATERIAL       : setMaterial(s)       ;break;
-        case ZENITHAZIMUTH  : setZenithAzimuth(s)  ;break;
-        case WAVELENGTH     : setWavelength(s)     ;break;
-        case WEIGHT         : setWeight(s)         ;break;
-        case TIME           : setTime(s)           ;break;
-        case RADIUS         : setRadius(s)         ;break;
-        case DISTANCE       : setDistance(s)       ;break;
+        case PHOTONS        : m_onestep->setNumPhotons(s)     ;break;
+        case ZENITHAZIMUTH  : m_onestep->setZenithAzimuth(s)  ;break;
+        case WAVELENGTH     : m_onestep->setWavelength(s)     ;break;
+        case WEIGHT         : m_onestep->setWeight(s)         ;break;
+        case TIME           : m_onestep->setTime(s)           ;break;
+        case RADIUS         : m_onestep->setRadius(s)         ;break;
+        case DISTANCE       : m_onestep->setDistance(s)       ;break;
         case UNRECOGNIZED   : ignore=true ;  
     }
 
@@ -498,9 +503,9 @@ void TorchStepNPY::updateAfterSetFrameTransform()
 
     glm::vec3 dir = glm::normalize( m_dir );
 
-    setPosition(m_src);
-    setDirection(dir);
-    setPolarization(pol); 
+    m_onestep->setPosition(m_src);
+    m_onestep->setDirection(dir);
+    m_onestep->setPolarization(pol); 
 }
 
 
@@ -524,20 +529,38 @@ void TorchStepNPY::setMode(const char* s)
                   ; 
     }
 
-    setBaseMode(mode);
+    m_onestep->setBaseMode(mode);
+}
+
+std::string TorchStepNPY::desc(const char* msg) const 
+{
+    int wid = 10 ; 
+    int prec = 3 ; 
+
+    std::stringstream ss ; 
+    ss
+        << msg << std::endl  
+        << GLMFormat::Format(m_source_local, wid, prec) << "m_source_local      " 
+        << GLMFormat::Format(m_src,          wid, prec) << "m_src"
+        << std::endl  
+        << GLMFormat::Format(m_target_local, wid, prec) << "m_target_local      " 
+        << GLMFormat::Format(m_tgt,          wid, prec) << "m_tgt" 
+        << std::endl  
+        << GLMFormat::Format(m_polarization_local, wid, prec) << "m_polarization_local"
+        << GLMFormat::Format(m_pol,          wid, prec) << "m_pol" 
+        << std::endl  
+        << GLMFormat::Format3(m_dir, wid, prec) << "m_dir  nrm(m_tgt - m_src)" 
+        << std::endl  
+        ;
+ 
+    ss << m_onestep->desc("TorchStepNPY::desc") ; 
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 void TorchStepNPY::dump(const char* msg) const 
 {
-    LOG(info) << msg  ;
-
-    print(m_source_local,       "m_source_local       ", m_src, "m_src");
-    print(m_target_local,       "m_target_local       ", m_tgt, "m_tgt");
-    print(m_polarization_local, "m_polarization_local ", m_pol, "m_pol");
-
-    print(m_dir, "m_dir [normalize(m_tgt - m_src)] ");
-
-    GenstepNPY::dumpBase(msg);
+    LOG(info) << desc(msg) ; 
 }
 
 

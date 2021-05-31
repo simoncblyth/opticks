@@ -44,12 +44,12 @@ currently the only other GenstepNPY subclass is TorchStepNPY
 
 class NPY_API FabStepNPY : public GenstepNPY 
 {
-   public:
+    public:
         FabStepNPY(unsigned code, unsigned num_step, unsigned num_photons_per_step);
         void updateAfterSetFrameTransform();
-   private: 
+    private: 
         void init();
-   private:
+    private:
         unsigned m_num_photons_per_step ;
 
 };

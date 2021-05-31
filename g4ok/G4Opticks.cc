@@ -1950,7 +1950,13 @@ void G4Opticks::setInputPhotons(const NPY<float>* input_photons)
         << " input_photons " << ( input_photons ? input_photons->getShapeString() : "-" )
         ;
 
-}
+    //  need to fabricate a genstep with gencode OpticksGenstep_EMITSOURCE 
+    //  and need to arrange the source_buffer to get filled with the input photons  
+    //  similar to:
+    //          OpticksGen::initFromEmitterGensteps (need the setAux ref to input photons)
+    //          OpticksGenstep::MakeCandle (looks a better place to add the new method)
+    //
 
+}
 
 

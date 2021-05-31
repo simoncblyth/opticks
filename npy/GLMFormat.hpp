@@ -31,6 +31,8 @@ class NPY_API GLMFormat {
    public:
        static std::string Format(float f           , int wid=4, int prec=3); 
        static std::string Format(const glm::vec4& v, int wid=4, int prec=3); 
+       static std::string Format(const glm::ivec4& v, int wid=4 ); 
+       static std::string Format3(const glm::vec3& v, int wid=4, int prec=3); // Format3 name avoids ambiguous with above  
        static std::string Format(const glm::mat4& m, int wid=4, int prec=3); 
 
    public:

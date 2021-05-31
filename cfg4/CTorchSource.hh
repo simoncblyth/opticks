@@ -21,6 +21,7 @@
 
 #include <string>
 template <typename T> class NPY ; 
+struct NStep ; 
 class TorchStepNPY ; 
 
 class G4SPSPosDistribution ;
@@ -56,6 +57,7 @@ class CFG4_API CTorchSource: public CSource
         std::string desc() const ;
     private:
         TorchStepNPY*         m_torch ;
+        NStep*                m_onestep ; 
         bool                  m_torchdbg ; 
         int                   m_verbosity ; 
         unsigned              m_num_photons_total ; 

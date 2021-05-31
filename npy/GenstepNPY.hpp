@@ -24,6 +24,7 @@
 #include "plog/Severity.h"
 #include "NGLM.hpp"
 
+struct NStep ; 
 template<typename T> class NPY ; 
 
 #include "NPY_API_EXPORT.hh"
@@ -68,32 +69,16 @@ class NPY_API GenstepNPY {
        unsigned int getNumPhotonsPerG4Event() const ; 
        void setNumPhotonsPerG4Event(unsigned int n);
    public:
-
-
        NPY<float>* getNPY() const ;
        void         addActionControl(unsigned long long  action_control);
 
-
-       virtual void dump(const char* msg="GenstepNPY::dump") const ;
-       void dumpBase(const char* msg="GenstepNPY::dumpBase") const ;
    public:  
-       void setNumPhotons(const char* s );
-       void setNumPhotons(unsigned int num_photons );
-       void setMaterialLine(unsigned int ml);
+       // thru to m_onestep 
+       NStep*   getOneStep() const ;
        unsigned getNumPhotons() const ;
-       unsigned getMaterialLine() const ;
-       unsigned getGenstepType() const ;
-   public:  
-       // sets into m_ctrl
-       void setOriginTrackID(unsigned trackID);
-       unsigned getOriginTrackID() const ; 
-   private:
-       void setGenstepType(unsigned gentype);  
-       // invoked by addStep using the ctor argument type 
-       // genstep types identify what to generate eg: TORCH, CERENKOV, SCINTILLATION
-       // currently limited to all gensteps within a GenstepNPY instance having same type
-       //   ^^^^^^^^^^^^^^^  Suspect that is no longer the case and can mix types ?
-         
+       void     setNumPhotons(unsigned num_photons);
+       void     setMaterialLine(unsigned ml);
+       void     setOriginTrackID(unsigned id);
    public:  
        // target setting needs external info regarding geometry 
        void setFrame(const char* s );
@@ -115,41 +100,16 @@ class NPY_API GenstepNPY {
        void setFrameTargetted(bool targetted=true);
    public:  
         // methods invoked by update after frame transform is available
-       void setPosition(const glm::vec4& pos );
-       void setDirection(const glm::vec3& dir );
-       void setPolarization(const glm::vec4& pol );
-
-       void setDirection(const char* s );
-       void setZenithAzimuth(const char* s );
-       void setWavelength(const char* s );
-       void setWeight(const char* s );
-       void setTime(const char* s );
-       void setRadius(const char* s );
-       void setDistance(const char* s );
-
-       void setRadius(float radius );
-       void setDistance(float distance);
-       void setBaseMode(unsigned umode);
-       void setBaseType(unsigned utype);
-   public:  
-       glm::vec3 getPosition() const ;
-       glm::vec3 getDirection() const ;
-       glm::vec3 getPolarization() const ;
-       glm::vec4 getZenithAzimuth() const ;
-
-       float getTime() const ;
-       float getRadius() const ;
-       float getWavelength() const ;
-
-
-       unsigned getBaseMode() const ;
-       unsigned getBaseType() const ;
    public:  
        // need external help to set the MaterialLine
        void setMaterial(const char* s );
        const char* getConfig() const ;
        const char* getMaterial() const ;
        bool isDefault() const ; 
+
+   protected: 
+       NStep*       m_onestep ; 
+
   private:
        unsigned int m_gentype ; 
        unsigned int m_num_step ; 
@@ -159,14 +119,6 @@ class NPY_API GenstepNPY {
        const char*  m_material ;
        NPY<float>*  m_npy ; 
        unsigned int m_step_index ; 
-  private:
-       // 6 transport quads that are copied into the genstep buffer by addStep
-       glm::ivec4   m_ctrl ;
-       glm::vec4    m_post ;
-       glm::vec4    m_dirw ;
-       glm::vec4    m_polw ;
-       glm::vec4    m_zeaz ;
-       glm::vec4    m_beam ; 
   private:
        glm::ivec4   m_frame ;
        glm::mat4    m_frame_transform ; 

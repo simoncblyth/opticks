@@ -133,6 +133,7 @@ set(SOURCES
     TorchStepNPY.cpp
     FabStepNPY.cpp
     GenstepNPY.cpp
+    NStep.cpp 
     AxisNPY.cpp
     TrivialCheckNPY.cpp
 
@@ -245,6 +246,7 @@ G4StepNPY.hpp
 TorchStepNPY.hpp
 FabStepNPY.hpp
 GenstepNPY.hpp
+NStep.hpp
 NGunConfig.hpp
 PhotonsNPY.hpp
 

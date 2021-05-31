@@ -162,7 +162,9 @@ class NPY_API TorchStepNPY : public GenstepNPY {
 
        std::string description() const ;
        void Summary(const char* msg="TorchStepNPY::Summary") const ;
+       std::string desc(const char* msg="TorchStepNPY::desc") const ;
        void dump(const char* msg="TorchStepNPY::dump") const ;
+
    public:
        // local positions/vectors, frame transform is applied in *update* yielding world frame m_post m_dirw 
        void setSourceLocal(const char* s );

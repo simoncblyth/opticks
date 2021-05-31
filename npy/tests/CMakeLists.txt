@@ -101,8 +101,14 @@ NPYreshapeTest.cc
 NLoadTest.cc
 
 
+
+
+
 DummyPhotonsNPYTest.cc
 DummyGenstepsNPYTest.cc
+
+NStepTest.cc
+
 
 NMarchingCubesNPYTest.cc
 NCSGDataTest.cc

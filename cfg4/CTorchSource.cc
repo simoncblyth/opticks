@@ -24,6 +24,7 @@
 
 // npy-
 #include "NPY.hpp"
+#include "NStep.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 
@@ -69,6 +70,7 @@ CTorchSource::CTorchSource(Opticks* ok, TorchStepNPY* torch, unsigned verbosity)
     :
     CSource(ok),
     m_torch(torch),
+    m_onestep(torch->getOneStep()),
     m_torchdbg(ok->isDbgTorch()),
     m_verbosity(verbosity),
     m_num_photons_total(m_torch->getNumPhotons()),
@@ -139,7 +141,8 @@ void CTorchSource::configure()
         LOG(info) << desc() ; 
     }
 
-    float w = m_torch->getWavelength() ; 
+
+    float w = m_onestep->getWavelength() ; 
     if(w > 0.f)
     {
         G4double wavelength = w*nm ; 
@@ -153,12 +156,12 @@ void CTorchSource::configure()
     }
 
 
-    float _t       = m_torch->getTime();
-    glm::vec3 _pos = m_torch->getPosition();
-    glm::vec3 _dir = m_torch->getDirection();
-    glm::vec3 _pol = m_torch->getPolarization() ; 
-    float _radius  = m_torch->getRadius();
-    glm::vec4 _zeaz = m_torch->getZenithAzimuth();
+    float _t       = m_onestep->getTime();
+    glm::vec3 _pos = m_onestep->getPosition();
+    glm::vec3 _dir = m_onestep->getDirection();
+    glm::vec3 _pol = m_onestep->getPolarization() ; 
+    float _radius  = m_onestep->getRadius();
+    glm::vec4 _zeaz = m_onestep->getZenithAzimuth();
 
     LOG(fatal) << "CTorchSource::configure"
                << " _t " << _t 
@@ -293,10 +296,10 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *event)
         ; 
 
 
-    float _t = m_torch->getTime();
+    float _t = m_onestep->getTime();
     G4double time = _t*ns ; 
 
-    glm::vec3 pol = m_torch->getPolarization() ;
+    glm::vec3 pol = m_onestep->getPolarization() ;
     G4ThreeVector fixpol(pol.x, pol.y, pol.z);   
 
     G4ParticleDefinition* definition = G4OpticalPhoton::Definition() ;  

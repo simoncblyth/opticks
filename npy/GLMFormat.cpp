@@ -79,6 +79,23 @@ std::string GLMFormat::Format(const glm::vec4& v, int wid, int prec) // static
     std::string s = ss.str(); 
     return s ; 
 }
+
+std::string GLMFormat::Format(const glm::ivec4& v, int wid ) // static
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < 4 ; i++) ss << std::setw(wid) << v[i]  << " " ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string GLMFormat::Format3(const glm::vec3& v, int wid, int prec) // static
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < 3 ; i++) ss << Format(v[i], wid, prec) << " " ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 std::string GLMFormat::Format(const glm::mat4& m, int wid, int prec) // static
 {
     std::stringstream ss ; 

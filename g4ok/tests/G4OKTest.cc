@@ -122,6 +122,7 @@ class G4OKTest
     public: 
         unsigned getNumGenstepPhotons(int eventID) const ;
         void     collectGensteps(int eventID); 
+        void     collectInputPhotons(int eventID, const char* path);
         void     propagate(int eventID); 
         void     checkHits(int eventID) const ; 
         int      rc() const ; 
@@ -344,6 +345,16 @@ unsigned G4OKTest::getNumGenstepPhotons(int eventID) const
 }
 
 
+void G4OKTest::collectInputPhotons(int eventID, const char* path)
+{
+    LOG(error) 
+        << " eventID " << eventID
+        << " path " << path 
+        ;
+
+    m_g4ok->setInputPhotons(path); 
+}
+
 void G4OKTest::collectGensteps(int eventID)
 {
     unsigned num_genstep_photons = getNumGenstepPhotons(eventID); 
@@ -476,6 +487,7 @@ std::string banner(int ievt, char c)
 int main(int argc, char** argv)
 {
     int nevt = SSys::getenvint("G4OKTEST_NEVT", 4 ); 
+    const char* input_photons_path = SSys::getenvvar("G4OKTEST_INPUT_PHOTONS_PATH", nullptr) ; 
 
     G4OKTest t(argc, argv); 
     LOG(info) << "(G4OKTEST_NEVT) nevt " << nevt ; 
@@ -483,9 +495,18 @@ int main(int argc, char** argv)
     for(int ievt=0 ; ievt < nevt ; ievt++)
     {
        std::cout << banner(ievt,'['); 
-       t.collectGensteps(ievt);
+
+       if(input_photons_path)
+       {
+           t.collectInputPhotons(ievt, input_photons_path);
+       }
+       else
+       {
+           t.collectGensteps(ievt);
+       }
+
        t.propagate(ievt);
-       std::cout << banner(ievt,']'); 
+       //std::cout << banner(ievt,']'); 
     }
 
     return t.rc() ;
