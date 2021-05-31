@@ -89,9 +89,9 @@ entirely known ahread of time and buffers are sized accordingly.
 void OpticksRun::createEvent(NPY<float>* gensteps, char ctrl) 
 {
     unsigned tagoffset = gensteps ? gensteps->getArrayContentIndex() : 0 ;  // eg eventID
-    LOG(LEVEL) << " tagoffset " << tagoffset ; 
+    LOG(LEVEL) << " tagoffset " << tagoffset << " ctrl [" << ctrl << "]" ; 
     createEvent(tagoffset, ctrl ); 
-    setGensteps(gensteps); 
+    setGensteps(gensteps, ctrl ); 
 }
 
 
@@ -298,7 +298,7 @@ gensteps and maybe source photon data (via aux association) are lodged into m_g4
 before passing baton (sharing pointers) with m_evt
 
 **/
-void OpticksRun::setGensteps(NPY<float>* gensteps)   // TODO: make this const : as gensteps are not owned by OpticksRun or OpticksEvent
+void OpticksRun::setGensteps(NPY<float>* gensteps, char ctrl)   // TODO: make this const : as gensteps are not owned by OpticksRun or OpticksEvent
 {
     OK_PROFILE("_OpticksRun::setGensteps");
     assert(m_evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
@@ -311,7 +311,7 @@ void OpticksRun::setGensteps(NPY<float>* gensteps)   // TODO: make this const : 
 
     m_gensteps = gensteps ;   
 
-    if(m_gensteps) importGensteps();
+    if(m_gensteps) importGensteps(ctrl);
 
     OK_PROFILE("OpticksRun::setGensteps");
 }
@@ -345,7 +345,7 @@ makes ownership too complicated when considering the varo
 **/
 
 
-void OpticksRun::importGensteps()
+void OpticksRun::importGensteps(char ctrl)
 {
     OK_PROFILE("_OpticksRun::importGensteps");
 
@@ -353,6 +353,7 @@ void OpticksRun::importGensteps()
 
     LOG(LEVEL) 
         << " m_gensteps " << m_gensteps
+        << " ctrl " << ctrl 
         << " oac.desc " << oac.desc("gs0") 
         << " oac.numSet " << oac.numSet() 
         ;
@@ -361,21 +362,19 @@ void OpticksRun::importGensteps()
 
     LOG(LEVEL) << " oac_label " << oac_label ; 
 
- 
     m_g4step = importGenstepData(m_gensteps, oac_label) ;
 
-
-    if(m_g4evt)
+    if(m_g4evt && ( ctrl == '-' || ctrl == '=' ))
     { 
         m_g4evt->setGenstepData(m_gensteps, m_resize, m_clone );
     }
 
-    if(m_evt)
+    if(m_evt && ( ctrl == '+' || ctrl == '=' ))
     {
         m_evt->setGenstepData(m_gensteps, m_resize, m_clone );
     }
 
-    setupSourceData(); 
+    setupSourceData(ctrl); 
 
     m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL, m_clone );  
 
@@ -400,7 +399,7 @@ important part of how input source photons are provisioned
 to both simulations.
 
 **/
-void OpticksRun::setupSourceData()
+void OpticksRun::setupSourceData(char ctrl)
 {
     if(hasActionControl(m_gensteps, "GS_EMITSOURCE"))
     {
@@ -408,18 +407,24 @@ void OpticksRun::setupSourceData()
         assert( aux );
         NPY<float>* emitsource = (NPY<float>*)aux ; 
 
-        if(m_g4evt) m_g4evt->setSourceData( emitsource, m_clone ); 
-        if(m_evt)   m_evt->setSourceData( emitsource, m_clone );
+        if(m_g4evt && (ctrl == '-' || ctrl == '=')) m_g4evt->setSourceData( emitsource, m_clone ); 
+        if(m_evt   && (ctrl == '+' || ctrl == '=')) m_evt->setSourceData( emitsource, m_clone );
 
         LOG(LEVEL) 
             << "GS_EMITSOURCE"
+            << " ctrl " << ctrl 
             << " emitsource " << emitsource->getShapeString()
             ;
     }
     else
     {
         NPY<float>* g4source = m_g4evt ? m_g4evt->getSourceData() : NULL ; 
-        m_evt->setSourceData( g4source, m_clone ) ;   
+
+        if( ctrl == '+' || ctrl == '=' )
+        {
+            m_evt->setSourceData( g4source, m_clone ) ;   
+        }
+
     }
 }
 

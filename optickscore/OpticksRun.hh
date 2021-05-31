@@ -59,7 +59,7 @@ class OKCORE_API OpticksRun
     public:
         OpticksRun(Opticks* ok);
     private:
-        void importGensteps();
+        void importGensteps(char ctrl);
     public:
         OpticksEvent* getEvent(char ctrl) const ;
         OpticksEvent* getEvent() const ;
@@ -68,7 +68,7 @@ class OKCORE_API OpticksRun
         G4StepNPY*    getG4Step(); 
         std::string brief() const ;
 
-        void setGensteps(NPY<float>* gs);
+        void setGensteps(NPY<float>* gs, char ctrl);
         bool hasGensteps() const ;
 
         void createEvent(NPY<float>* gensteps, char ctrl);
@@ -86,7 +86,7 @@ class OKCORE_API OpticksRun
     private:
         void annotateEvent(); 
         G4StepNPY* importGenstepData(NPY<float>* gs, const char* oac_label=NULL);
-        void setupSourceData(); 
+        void setupSourceData(char ctrl); 
         void translateLegacyGensteps(G4StepNPY* g4step);
         bool hasActionControl(NPYBase* npy, const char* label);
 
