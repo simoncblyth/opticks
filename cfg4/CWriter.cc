@@ -84,8 +84,6 @@ Gets refs to the history, photons and records buffers from the event.
 When dynamic the records target is single item dynamic_records otherwise
 goes direct to the records_buffer.
 
-TODO: buffer setup needs to move to setGenstep/setGenstepEnd level, not setEvent level 
-
 **/
 
 void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::initEvent
@@ -141,6 +139,11 @@ void CWriter::initGenstep( char gentype, int num_onestep_photons )
     assert( m_ctx._gentype == gentype  ); 
     assert( m_ctx._genstep_num_photons == unsigned(num_onestep_photons)  ); 
 
+    assert( m_target_records->getNumItems() == unsigned(num_onestep_photons) ); 
+    assert( m_target_photons->getNumItems() == unsigned(num_onestep_photons) ); 
+    assert( m_target_history->getNumItems() == unsigned(num_onestep_photons) ); 
+
+/*
     m_onestep_records = NPY<short>::make(num_onestep_photons, m_ctx._steps_per_photon, 2, 4) ;
     m_onestep_records->zero();
 
@@ -153,12 +156,31 @@ void CWriter::initGenstep( char gentype, int num_onestep_photons )
     m_target_records = m_onestep_records ; 
     m_target_photons = m_onestep_photons ; 
     m_target_history = m_onestep_history ; 
+*/
+
+
 }
+
+/**
+CWriter::writeGenstep
+-----------------------
+
+* setting the carrier genstep causes OpticksEvent::resize up to 8
+* then this will bump that to 16 ... twice needed
+* seems do not need the m_onestep_* ?
+ 
+  * at least this is the case with input photons that leads to 
+    a single carrier genstep in the event   
+
+**/
 
 void CWriter::writeGenstep( char gentype, int num_onestep_photons )
 {
     LOG(LEVEL) << " gentype [" <<  gentype << "] num_onestep_photons " << num_onestep_photons ; 
     assert( m_onestep ); 
+
+    /*
+    // currently are going direct to the buffer, not into m_onestep_* first
 
     LOG(LEVEL) << desc("bef.add") ; 
 
@@ -169,6 +191,7 @@ void CWriter::writeGenstep( char gentype, int num_onestep_photons )
     LOG(LEVEL) << desc("aft.add") ; 
 
     clearOnestep(); 
+    */
 }
 
 void CWriter::clearOnestep()
