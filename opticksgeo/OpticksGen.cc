@@ -176,7 +176,7 @@ void OpticksGen::initFromEmitterGensteps()
         << "getting input photons and shim genstep "
         << " --dbgemit " << m_dbgemit
         << " input_photons " << m_input_photons->getNumItems()
-        << " oac : " << oac.description("oac") 
+        << " oac : " << oac.desc("oac") 
         ; 
 }
 

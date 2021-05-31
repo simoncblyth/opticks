@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
      std::cout << " ctrl " << ctrl_ 
                << " mask " << mask 
-               << " desc " << OpticksActionControl::Description(mask)
+               << " desc " << OpticksActionControl::Desc(mask)
                << std::endl ; 
 
 

@@ -315,7 +315,8 @@ void G4StepNPY::checkGencodes()
     {
          LOG(fatal)<<"G4StepNPY::checklabel FAIL" 
                    << " numStep " << numStep
-                   << " mismatch " << mismatch ; 
+                   << " mismatch " << mismatch
+                   << " (run OpticksGenstepTest to list codes and labels ) "
                    ;
     }
     assert(mismatch == 0 );

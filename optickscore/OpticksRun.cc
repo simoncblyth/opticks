@@ -347,8 +347,11 @@ void OpticksRun::importGensteps()
 {
     OK_PROFILE("_OpticksRun::importGensteps");
 
-    const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ; 
+
+    const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ;   // TODO: bad assumption with input_photons
+
     LOG(LEVEL) << " oac_label " << oac_label ; 
+
  
     m_g4step = importGenstepData(m_gensteps, oac_label) ;
 
@@ -366,6 +369,7 @@ void OpticksRun::importGensteps()
     setupSourceData(); 
 
     m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL, m_clone );  
+
     OK_PROFILE("OpticksRun::importGensteps");
 }
 
@@ -480,6 +484,8 @@ OpticksRun::importGenstepData
 --------------------------------
 
 Invoked by OpticksRun::importGensteps
+The oac_label is only added if there is no prior label. 
+
 
 The NPY<float> genstep buffer is wrapped in a G4StepNPY 
 and metadata and labelling checks are done  and any material
@@ -519,19 +525,26 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 
     if(oac_label)
     {
-        LOG(LEVEL) 
-            << "adding oac_label " << oac_label ; 
-        oac.add(oac_label);
+        if(oac.numSet() > 0 )
+        {
+            LOG(LEVEL) 
+                << "NOT adding oac_label " << oac_label 
+                << " as preexisting labels present: " << oac.desc()  
+                ;
+        }
+        else
+        {
+            LOG(LEVEL) << "adding oac_label " << oac_label ; 
+            oac.add(oac_label);
+        }
+
     }
 
     LOG(LEVEL) 
         << brief()
         << " shape " << gs->getShapeString()
-        << " " << oac.description("oac")
+        << " " << oac.desc("oac")
         ;
-
-
-    
 
 
     if(oac("GS_LEGACY"))
@@ -544,12 +557,12 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
         g4step->addAllowedGencodes( OpticksGenstep_DsG4Cerenkov_r3971, OpticksGenstep_DsG4Scintillation_r3971 ) ; 
         g4step->addAllowedGencodes( OpticksGenstep_TORCH);
 
-        LOG(LEVEL) << " GS_EMBEDDED collected direct gensteps assumed translated at collection  " << oac.description("oac") ; 
+        LOG(LEVEL) << " GS_EMBEDDED collected direct gensteps assumed translated at collection  " << oac.desc("oac") ; 
     }
     else if(oac("GS_TORCH"))
     {
         g4step->addAllowedGencodes(OpticksGenstep_TORCH); 
-        LOG(LEVEL) << " checklabel of torch steps  " << oac.description("oac") ; 
+        LOG(LEVEL) << " checklabel of torch steps  " << oac.desc("oac") ; 
     }
     else if(oac("GS_FABRICATED"))
     {
@@ -561,7 +574,7 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
     }
     else
     {
-        LOG(LEVEL) << " checklabel of non-legacy (collected direct) gensteps  " << oac.description("oac") ; 
+        LOG(LEVEL) << " checklabel of non-legacy (collected direct) gensteps  " << oac.desc("oac") ; 
         g4step->addAllowedGencodes( OpticksGenstep_G4Cerenkov_1042, OpticksGenstep_G4Scintillation_1042) ; 
         g4step->addAllowedGencodes( OpticksGenstep_DsG4Cerenkov_r3971, OpticksGenstep_DsG4Scintillation_r3971 ) ; 
         g4step->addAllowedGencodes( OpticksGenstep_EMITSOURCE ); 

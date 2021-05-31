@@ -62,17 +62,20 @@ class OKCORE_API OpticksActionControl {
         static const char* GS_EMBEDDED_;
         static const char* GS_EMITSOURCE_;
     public:
-        static std::string Description(unsigned long long ctrl);
+        static std::string Desc(unsigned long long ctrl);
         static unsigned long long Parse(const char* ctrl, char delim=',');
         static unsigned long long ParseTag(const char* ctrl);
         static bool isSet(unsigned long long ctrl, const char* mask);
+        static unsigned NumSet(unsigned long long ctrl); 
+
         static std::vector<const char*> Tags();
     public:
         OpticksActionControl(unsigned long long* ctrl); 
         void add(const char* mask);
+        unsigned numSet() const ;  
         bool isSet(const char* mask) const;
         bool operator()(const char* mask) const;
-        std::string description(const char* msg="OpticksActionControl::description") const;
+        std::string desc(const char* msg=nullptr) const;
     private:
          unsigned long long* m_ctrl ; 
 

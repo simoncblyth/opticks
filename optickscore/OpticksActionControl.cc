@@ -19,6 +19,7 @@
 
 #include "OpticksActionControl.hh"
 #include <sstream>
+#include <bitset>
 #include "BStr.hh"
 #include "PLOG.hh"
 
@@ -43,7 +44,7 @@ std::vector<const char*> OpticksActionControl::Tags()
     return tags  ;
 }
 
-std::string OpticksActionControl::Description(unsigned long long ctrl)
+std::string OpticksActionControl::Desc(unsigned long long ctrl)
 {
    std::stringstream ss ;
    if( ctrl & GS_LOADED )      ss << GS_LOADED_ << " "; 
@@ -96,6 +97,13 @@ bool OpticksActionControl::isSet(unsigned long long ctrl, const char* mask_)
     return match ; 
 }
 
+unsigned OpticksActionControl::NumSet(unsigned long long ctrl)  // static
+{
+    std::bitset<64> bs(ctrl); 
+    return bs.count(); 
+}
+
+
 OpticksActionControl::OpticksActionControl(unsigned long long* ctrl)
     :
     m_ctrl(ctrl)
@@ -106,6 +114,11 @@ OpticksActionControl::OpticksActionControl(unsigned long long* ctrl)
 void OpticksActionControl::add(const char* ctrl)
 {
     *m_ctrl |= Parse(ctrl) ;
+}
+
+unsigned OpticksActionControl::numSet() const
+{
+    return NumSet(*m_ctrl); 
 }
 
 bool OpticksActionControl::isSet(const char* mask) const 
@@ -120,11 +133,11 @@ bool OpticksActionControl::operator()(const char* mask) const
 
 
 
-std::string OpticksActionControl::description(const char* msg) const
+std::string OpticksActionControl::desc(const char* msg) const
 {
    std::stringstream ss ;
-   ss << msg << " : " ;
-   ss << Description(*m_ctrl) ;
+   if(msg) ss << msg << " : " ;
+   ss << Desc(*m_ctrl) ;
    return ss.str();
 }
 
