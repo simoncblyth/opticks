@@ -37,7 +37,6 @@ CTrackInfo
 
 const plog::Severity CTrackInfo::LEVEL = PLOG::EnvLevel("CTrackInfo", "DEBUG") ; 
 
-
 CTrackInfo::CTrackInfo( unsigned photon_id_ , char gentype_, bool reemission_ )
     :   
     G4VUserTrackInformation("CTrackInfo"),
@@ -48,7 +47,6 @@ CTrackInfo::CTrackInfo( unsigned photon_id_ , char gentype_, bool reemission_ )
 
 CTrackInfo::~CTrackInfo()
 {
-    LOG(LEVEL) ; 
 }
 G4String* CTrackInfo::type() const { return pType ; }
 
