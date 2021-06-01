@@ -71,10 +71,10 @@ void G4OpticksRecorder::BeginOfGenstep(char gentype, int num_photons)
     LOG(LEVEL); 
     m_manager->BeginOfGenstep(gentype, num_photons); 
 }
-void G4OpticksRecorder::EndOfGenstep(char gentype, int num_photons)
+void G4OpticksRecorder::EndOfGenstep()
 {
     LOG(LEVEL); 
-    m_manager->EndOfGenstep(gentype, num_photons); 
+    m_manager->EndOfGenstep(); 
 }
 
 

@@ -161,7 +161,7 @@ struct CFG4_API CG4Ctx
 
     void setEvent(const G4Event* event);
     void BeginOfGenstep(char gentype, int num_photons);
-    void EndOfGenstep(char gentype, int num_photons);
+    void EndOfGenstep();
     void setGentype(char gentype);
     void setGen(unsigned gen);
 

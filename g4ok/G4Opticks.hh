@@ -216,7 +216,7 @@ class G4OK_API G4Opticks
         // call these from S + C processes before and after the 
         // photon generation loop when doing Opticks/Geant4 matching 
         void BeginOfGenstep(char gentype, int numPhotons);
-        void EndOfGenstep(char gentype, int numPhotons);
+        void EndOfGenstep();
 
 
         void collectGenstep_G4Cerenkov_1042(  

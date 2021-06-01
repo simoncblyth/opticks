@@ -175,9 +175,9 @@ Invoked by CRecorder::EndOfGenstep
 
 **/
 
-void CWriter::EndOfGenstep( char gentype, int num_onestep_photons )
+void CWriter::EndOfGenstep()
 {
-    LOG(LEVEL) << " gentype [" <<  gentype << "] num_onestep_photons " << num_onestep_photons ; 
+    LOG(LEVEL);
     assert( m_onestep ); 
 
     LOG(LEVEL) << desc("bef.add") ; 

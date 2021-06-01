@@ -1395,11 +1395,11 @@ void G4Opticks::BeginOfGenstep(char gentype, int numPhotons)
         m_recorder->BeginOfGenstep(gentype, numPhotons);  
     }
 }
-void G4Opticks::EndOfGenstep(char gentype, int numPhotons)
+void G4Opticks::EndOfGenstep()
 {
     if(m_recorder) 
     {
-        m_recorder->EndOfGenstep(gentype, numPhotons);  
+        m_recorder->EndOfGenstep();  
     }
 }
 
@@ -1505,6 +1505,7 @@ void G4Opticks::collectGenstep_DsG4Scintillation_r3971(
      G4double ScintillationTime
     )
 {
+    std::cout << "+++" << std::endl ;    // marker
     LOG(LEVEL) << " numPhotons " << numPhotons ; 
 
 

@@ -161,7 +161,7 @@ class CFG4_API CRecorder {
 
         void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
         void BeginOfGenstep(char gentype, int num_photons);
-        void EndOfGenstep(char gentype, int num_photons);
+        void EndOfGenstep();
 
         void postTrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
 #ifdef USE_CUSTOM_BOUNDARY

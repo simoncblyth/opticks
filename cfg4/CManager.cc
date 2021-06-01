@@ -113,17 +113,24 @@ void CManager::BeginOfEventAction(const G4Event* event)
     }   
 }
 
+
+/**
+CManager::EndOfEventAction
+----------------------------
+
+EndOfGenstep appends the just completed Genstep 
+records to the OpticksEvent, so it must be before save. 
+
+**/
+
 void CManager::EndOfEventAction(const G4Event*)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) 
+        << " _number_of_input_photons " << m_ctx->_number_of_input_photons  
+        << " finalize the last Genstep in the event  " 
+        ; 
 
-    if( m_ctx->_number_of_input_photons  > 0 ) 
-    {   
-        LOG(LEVEL) 
-            << " mocking EndOfGenstep as have input photon primaries " 
-            ; 
-        EndOfGenstep('T', m_ctx->_number_of_input_photons);   // appends to OpticksEvent, so must be before save
-    }  
+    EndOfGenstep();   
 
     if(m_ok->isSave()) save() ; 
 }
@@ -136,10 +143,15 @@ CManager::BeginOfGenstep
 Invoked by G4OpticksRecorder::BeginOfGenstep which is canonically placed 
 just prior to the C/S generation loop
 
+1. EndOfGenstep finalizes prior genstep on reaching a new one, 
+   this also called from EndOfEvent to handle the last Genstep 
+
 **/
 
 void CManager::BeginOfGenstep(char gentype, int num_photons)
 {
+    EndOfGenstep();  
+
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
 
     m_ctx->BeginOfGenstep(gentype, num_photons);  
@@ -153,18 +165,19 @@ void CManager::BeginOfGenstep(char gentype, int num_photons)
 CManager::EndOfGenstep
 -------------------------
 
-Invoked by G4OpticksRecorder::EndOfGenstep which is canonically placed
-just after the C/S generation loop
+Invoked by G4OpticksRecorder::EndOfGenstep was initially placed
+just after the C/S generation loop.
+BUT : thats far too soon. 
 
 **/
 
-void CManager::EndOfGenstep(char gentype, int num_photons)
+void CManager::EndOfGenstep()
 {
-    LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
+    LOG(LEVEL) ;
 
-    m_ctx->EndOfGenstep(gentype, num_photons);  
+    m_ctx->EndOfGenstep();  
 
-    m_recorder->EndOfGenstep(gentype, num_photons);  
+    m_recorder->EndOfGenstep();  
 }
 
 

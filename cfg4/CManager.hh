@@ -114,7 +114,7 @@ struct CFG4_API CManager
     // inputs from G4Opticks/G4OpticksRecorder
 
     void BeginOfGenstep(char gentype, int num_photons);
-    void EndOfGenstep(char gentype, int num_photons);
+    void EndOfGenstep();
 
 
     // inputs from Geant4

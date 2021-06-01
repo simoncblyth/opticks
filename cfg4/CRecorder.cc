@@ -177,11 +177,18 @@ CRecorder::EndOfGenstep
 
 When have input photons this is invoked by CManager::EndOfEventAction
 
+Formerly this was invoked from after the generation loop in C+S, 
+but thats far too soon. Needs to be after all the tracks from that 
+genstep and their secondaries(recursively) are done. 
+
+Simplest approach is to call this from the next BeginOfGenstep
+or from EndOfEvent  
+
 **/
-void CRecorder::EndOfGenstep(char gentype, int num_photons)
+void CRecorder::EndOfGenstep()
 {
     LOG(LEVEL); 
-    m_writer->EndOfGenstep(gentype, num_photons); 
+    m_writer->EndOfGenstep(); 
 }
 
 
