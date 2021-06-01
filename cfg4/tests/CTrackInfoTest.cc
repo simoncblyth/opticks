@@ -17,6 +17,7 @@ void test_CTrackInfo()
          bool reemission = re == 'R' ;  
 
          CTrackInfo tkui(photon_id, gentype, reemission) ;
+         const CTrk& trk = tkui.trk ; 
 
          LOG(info) 
              << " chk " << std::setw(20) << chk 
@@ -24,13 +25,13 @@ void test_CTrackInfo()
              << " gentype " << std::setw(2) << gentype 
              << " photon_id " << std::setw(8) << photon_id 
              << " reemission  " << reemission 
-             << " packed " << std::hex << std::setw(16) << tkui.packed() << std::dec  
+             << " packed " << std::hex << std::setw(16) << trk.packed() << std::dec  
              << " tkui.GetType " << tkui.GetType()
              ;
 
-         assert( tkui.photon_id() == photon_id );  
-         assert( tkui.gentype() == gentype);  
-         assert( tkui.reemission() == reemission );  
+         assert( trk.photon_id() == photon_id );  
+         assert( trk.gentype() == gentype);  
+         assert( trk.reemission() == reemission );  
      }   
 }
 

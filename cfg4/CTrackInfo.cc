@@ -37,10 +37,11 @@ CTrackInfo
 
 const plog::Severity CTrackInfo::LEVEL = PLOG::EnvLevel("CTrackInfo", "DEBUG") ; 
 
+
 CTrackInfo::CTrackInfo( unsigned photon_id_ , char gentype_, bool reemission_ )
     :   
     G4VUserTrackInformation("CTrackInfo"),
-    m_packed((photon_id_ & 0x3fffffff) | unsigned(gentype_ == 'C') << 31 | unsigned(reemission_) << 30 )   
+    trk(photon_id_, gentype_, reemission_ )
 {   
     LOG(LEVEL) ; 
 }   
@@ -49,24 +50,11 @@ CTrackInfo::~CTrackInfo()
 {
     LOG(LEVEL) ; 
 }
-
-unsigned  CTrackInfo::packed()     const { return m_packed ; }
-unsigned  CTrackInfo::photon_id()  const { return ( m_packed & 0x3fffffff ) ; } 
-char      CTrackInfo::gentype()    const { return ( m_packed & (0x1 << 31) ) ? 'C' : 'S' ;  }
-bool      CTrackInfo::reemission() const { return ( m_packed & (0x1 << 30) ) ;  }
-G4String* CTrackInfo::type()       const { return pType ; }
-
+G4String* CTrackInfo::type() const { return pType ; }
 
 std::string CTrackInfo::desc() const 
 { 
-    std::stringstream ss ; 
-    ss << "CTrackInfo"
-       << " gentype " << gentype()
-       << " photon_id " << photon_id()
-       << " reemission " << reemission() 
-       << " packed " << packed()
-       ;  
-    std::string s = ss.str(); 
-    return s ; 
+    return trk.desc(); 
 }
+
 

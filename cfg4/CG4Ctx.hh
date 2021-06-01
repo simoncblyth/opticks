@@ -41,6 +41,7 @@ class G4Track ;
 class G4ProcessManager ; 
 class G4Step ; 
 
+struct CTrk ; 
 class OpticksEvent ; 
 class Opticks ; 
 
@@ -116,6 +117,7 @@ struct CFG4_API CG4Ctx
     int  _pdg_encoding ;
 
     // CG4Ctx::setTrackOptical
+    CTrk* _trk ;  
     int  _primary_id ; // used for reem continuation 
     int  _photon_id ;
     int  _photon_count ; 

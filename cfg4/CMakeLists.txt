@@ -35,6 +35,7 @@ set(SOURCES
 
     DsPhotonTrackInfo.cc
     DsG4CompositeTrackInfo.cc
+    CTrk.cc
     CTrackInfo.cc
     CEventInfo.cc
 
@@ -183,6 +184,8 @@ set(HEADERS
 
     DsPhotonTrackInfo.h
     DsG4CompositeTrackInfo.h
+
+    CTrk.hh
     CTrackInfo.hh
     CEventInfo.hh
 

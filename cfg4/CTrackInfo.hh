@@ -25,6 +25,8 @@
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
+#include "CTrk.hh"
+
 
 class CFG4_API CTrackInfo : public G4VUserTrackInformation
 {
@@ -32,15 +34,11 @@ class CFG4_API CTrackInfo : public G4VUserTrackInformation
     public:
         CTrackInfo( unsigned photon_id_ , char gentype_, bool reemission_ );
         virtual ~CTrackInfo(); 
-
-        unsigned    packed()     const ; 
-        unsigned    photon_id()  const ;
-        char        gentype()    const ;
-        bool        reemission() const ;
-        G4String*   type()       const ; 
-        std::string desc()       const ; 
-    private:
-        unsigned m_packed  ;   
+    public:
+        G4String*   type() const ; 
+        std::string desc() const ;
+    public:
+        CTrk trk   ;   
 
 };
 

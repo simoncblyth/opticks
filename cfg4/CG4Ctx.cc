@@ -396,6 +396,8 @@ void CG4Ctx::setTrack(const G4Track* track)
     _track = const_cast<G4Track*>(track) ; 
     _track_id = CTrack::Id(track) ;    // 0-based id 
 
+
+
     _process_manager = CProcessManager::Current(_track);
 
     _track_step_count = 0 ; 
@@ -469,30 +471,25 @@ void CG4Ctx::setTrackOptical()
         << " ui " << ui 
         ;
 
-    if(ui)
-    {
-        const G4String& uit = ui->GetType() ; 
-        LOG(LEVEL) << " ui.GetType() " << uit ; 
-    }
-
     CTrackInfo* tkui = ui ? dynamic_cast<CTrackInfo*>(ui) : nullptr ;
+
+    _trk = tkui ? new CTrk(tkui->trk) : nullptr  ;  
 
     // lack of tkui should be only with artifically input/generated photons 
     // as both C+S photons should be always be labelled
 
-    _primary_id = tkui ? tkui->photon_id() : _track_id ;   // 0-based
-    char tkui_gentype = tkui ? tkui->gentype() : 'T'  ;    // TODO: maybe not needed, following addition of setGensteps ?
+
+    LOG(LEVEL) << " _trk " << ( _trk ? _trk->desc() : "-" ) ;
+    _primary_id = _trk ? _trk->photon_id() : _track_id ;   // 0-based
+    char trk_gentype = _trk ? _trk->gentype() : 'T'  ;    // TODO: maybe not needed, following addition of setGensteps ?
 
     LOG(LEVEL) 
-         << " tkui " << tkui 
-         << " tkui.desc " << ( tkui ? tkui->desc() : "-" ) 
          << "  _primary_id  " <<  _primary_id 
-         << " tkui_gentype " << tkui_gentype
+         << " trk_gentype " << trk_gentype
          ;
 
-    // assert( _primary_id >= 0 && tkui_gentype != '?' );   // require all optical tracks to have been annotated with CTrackInfo 
     _photon_id = _primary_id  ; 
-    _reemtrack = tkui ? tkui->reemission() : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
+    _reemtrack = _trk ? _trk->reemission() : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
 
     _photon_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
 
@@ -507,11 +504,10 @@ void CG4Ctx::setTrackOptical()
         << " _record_id " << _record_id 
         << " _primary_id " << _primary_id 
         << " _reemtrack " << _reemtrack
-        << " tkui_gentype " << tkui_gentype
+        << " trk_gentype " << trk_gentype
         << " _track.GetGlobalTime " << _track->GetGlobalTime()
         ;
-    setGentype(tkui_gentype);     // TODO: maybe not needed, following addition of setGensteps ?
-
+    setGentype(trk_gentype);  // TODO: maybe not needed, following addition of setGensteps ?
 
 
 
