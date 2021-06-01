@@ -12,9 +12,11 @@ to=${OPTICKS_EVENT_BASE}/$RELDIR
 
 echo from $from to $to
 
-if [ "$1" == "rm" ]; then 
+if [ "$1" == "rm" -a -d "$to" ]; then 
    rm -rf $to   
 fi
+
+
 mkdir -p $to 
 
 if [ "$1" != "ls" ]; then

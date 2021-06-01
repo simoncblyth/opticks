@@ -1940,6 +1940,12 @@ void G4Opticks::setInputPhotons(NPY<float>* input_photons)
         << " input_photons " << ( input_photons ? input_photons->getShapeString() : "-" )
         ;
 
+    if( input_photons == nullptr )
+    {
+        LOG(error) << " null input_photons, ignore " ; 
+        return ; 
+    }
+
     unsigned tagoffset = 0 ;   
     const OpticksGenstep* gs = OpticksGenstep::MakeInputPhotonCarrier(input_photons, tagoffset );
     assert( m_genstep_collector ); 
