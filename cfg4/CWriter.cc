@@ -111,7 +111,7 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     assert( m_photons_buffer && "CRecorder requires photons buffer" );
     assert( m_records_buffer && "CRecorder requires records buffer" );
 
-    // these targets get set by CWriter::initGenstep in onestep running 
+    // these targets get set by CWriter::BeginOfGenstep in onestep running 
     m_target_history = nullptr ; 
     m_target_photons = nullptr ; 
     m_target_records = nullptr ;  

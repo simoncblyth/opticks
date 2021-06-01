@@ -462,13 +462,27 @@ void CG4Ctx::setTrackOptical()
     // _reemtrack = _primary_id >= 0 ? true : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
 
     // dynamic_cast gives NULL when using the wrong type for the pointer
-    CTrackInfo* tkui = dynamic_cast<CTrackInfo*>(_track->GetUserInformation());   // NEW ADDITION : NEEDS INTEGRATING 
+
+    G4VUserTrackInformation* ui = _track->GetUserInformation() ; 
+    LOG(LEVEL) 
+        << " _track " << _track
+        << " ui " << ui 
+        ; 
+
+    CTrackInfo* tkui = dynamic_cast<CTrackInfo*>(ui);
 
     // lack of tkui should be only with artifically input/generated photons 
     // as both C+S photons should be always be labelled
 
     _primary_id = tkui ? tkui->photon_id() : _track_id ;   // 0-based
     char tkui_gentype = tkui ? tkui->gentype() : 'T'  ;    // TODO: maybe not needed, following addition of setGensteps ?
+
+    LOG(LEVEL) 
+         << " tkui " << tkui 
+         << " tkui.desc " << ( tkui ? tkui->desc() : "-" ) 
+         << "  _primary_id  " <<  _primary_id 
+         << " tkui_gentype " << tkui_gentype
+         ;
 
     // assert( _primary_id >= 0 && tkui_gentype != '?' );   // require all optical tracks to have been annotated with CTrackInfo 
     _photon_id = _primary_id  ; 
