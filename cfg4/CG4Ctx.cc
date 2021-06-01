@@ -467,9 +467,10 @@ void CG4Ctx::setTrackOptical()
     LOG(LEVEL) 
         << " _track " << _track
         << " ui " << ui 
+        << " ui.GetType() " << ( ui ? ui->GetType() : "ui-NULL" )    
         ; 
 
-    CTrackInfo* tkui = dynamic_cast<CTrackInfo*>(ui);
+    CTrackInfo* tkui = ui ? dynamic_cast<CTrackInfo*>(ui) : nullptr ;
 
     // lack of tkui should be only with artifically input/generated photons 
     // as both C+S photons should be always be labelled

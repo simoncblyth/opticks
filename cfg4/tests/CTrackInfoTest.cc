@@ -25,6 +25,7 @@ void test_CTrackInfo()
              << " photon_id " << std::setw(8) << photon_id 
              << " reemission  " << reemission 
              << " packed " << std::hex << std::setw(16) << tkui.packed << std::dec  
+             << " tkui.GetType " << tkui.GetType()
              ;
 
          assert( tkui.photon_id() == photon_id );  

@@ -43,6 +43,7 @@ struct CFG4_API CTrackInfo : public G4VUserTrackInformation
 {
     CTrackInfo( unsigned photon_id_ , char gentype_, bool reemission_ )
         :   
+        G4VUserTrackInformation("CTrackInfo"),
         packed((photon_id_ & 0x3fffffff) | unsigned(gentype_ == 'C') << 31 | unsigned(reemission_) << 30 )   
     {   
     }   
@@ -56,5 +57,18 @@ struct CFG4_API CTrackInfo : public G4VUserTrackInformation
 
 };
 
+
+#include <sstream>
+inline std::string CTrackInfo::desc() const 
+{ 
+    std::stringstream ss ; 
+    ss << "CTrackInfo"
+       << " gentype " << gentype()
+       << " photon_id " << photon_id()
+       << " reemission " << reemission() 
+       ;  
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 #include "CFG4_TAIL.hh"
