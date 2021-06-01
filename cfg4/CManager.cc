@@ -152,6 +152,7 @@ void CManager::BeginOfGenstep(char gentype, int num_photons)
 {
     if(m_ctx->_genstep_index > -1 )
     {
+        LOG(LEVEL) << " CALLING EndOfGenstep for prior m_ctx->_genstep_index " << m_ctx->_genstep_index ; 
         EndOfGenstep();  
     }
 
