@@ -208,10 +208,6 @@ void CWriter::clearOnestep()
     m_onestep_photons->reset(); 
     m_onestep_history->reset(); 
 
-    delete m_onestep_records ; 
-    delete m_onestep_photons ; 
-    delete m_onestep_history ; 
-
     m_onestep_records = nullptr ; 
     m_onestep_photons = nullptr ; 
     m_onestep_history = nullptr ; 
