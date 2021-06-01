@@ -82,11 +82,11 @@ struct OpSeederTest
         int multi = ok.getMultiEvent();
         char entryCode = ok.getEntryCode();
 
-        bool cfg4evt = false ; 
+        char ctrl = '+' ; 
 
         for(int i=0 ; i < multi ; i++)
         {
-            ok.createEvent(gs, cfg4evt);
+            ok.createEvent(gs, ctrl);
 
             OpticksEvent* evt = ok.getEvent();
             assert(evt->isMachineryType() && "--machinery type is forced as this writes non-standardOpticksEvents which would otherwise cause test failures for event reading tests" ); 
