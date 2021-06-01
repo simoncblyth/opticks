@@ -467,8 +467,13 @@ void CG4Ctx::setTrackOptical()
     LOG(LEVEL) 
         << " _track " << _track
         << " ui " << ui 
-        << " ui.GetType() " << ( ui ? ui->GetType() : "ui-NULL" )    
-        ; 
+        ;
+
+    if(ui)
+    {
+        const G4String& uit = ui->GetType() ; 
+        LOG(LEVEL) << " ui.GetType() " << uit ; 
+    }
 
     CTrackInfo* tkui = ui ? dynamic_cast<CTrackInfo*>(ui) : nullptr ;
 
