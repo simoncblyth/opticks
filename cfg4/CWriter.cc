@@ -182,8 +182,6 @@ void CWriter::writeGenstep( char gentype, int num_onestep_photons )
 
     LOG(LEVEL) << desc("bef.add") ; 
 
-    assert( m_records_buffer->getNumItems() == 0 );
-
     m_records_buffer->add(m_onestep_records);
     m_photons_buffer->add(m_onestep_photons);
     m_history_buffer->add(m_onestep_history);
