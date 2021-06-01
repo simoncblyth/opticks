@@ -300,18 +300,25 @@ before passing baton (sharing pointers) with m_evt
 **/
 void OpticksRun::setGensteps(NPY<float>* gensteps, char ctrl)   // TODO: make this const : as gensteps are not owned by OpticksRun or OpticksEvent
 {
-    OK_PROFILE("_OpticksRun::setGensteps");
-    assert(m_evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
-
     if(!gensteps) LOG(fatal) << "NULL gensteps" ; 
-    //assert(gensteps); 
-
     LOG(LEVEL) 
          << "gensteps " << ( gensteps ? gensteps->getShapeString() : "NULL" )  ;  
 
     m_gensteps = gensteps ;   
 
-    if(m_gensteps) importGensteps(ctrl);
+    OK_PROFILE("_OpticksRun::setGensteps");
+
+    if( ctrl == '+' || ctrl == '=' )
+    {
+        assert(m_evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
+    }
+
+    if( ctrl == '-' || ctrl == '=' )
+    {
+        assert(m_g4evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
+    }
+
+    importGensteps(ctrl);
 
     OK_PROFILE("OpticksRun::setGensteps");
 }
@@ -376,9 +383,10 @@ void OpticksRun::importGensteps(char ctrl)
 
     setupSourceData(ctrl); 
 
-    m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL, m_clone );  
-
-
+    if( m_g4evt && m_evt && ( ctrl == '='))
+    {
+        m_evt->setNopstepData( m_g4evt ? m_g4evt->getNopstepData() : NULL, m_clone );  
+    }
 
     LOG(LEVEL) 
         << " oac.desc " << oac.desc("gs1") 
