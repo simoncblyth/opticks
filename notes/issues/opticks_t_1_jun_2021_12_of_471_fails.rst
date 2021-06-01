@@ -21,7 +21,14 @@ opticks_t_1_jun_2021_12_of_471_fails
           FIXED
 
       22 /33  Test #22 : OptiXRapTest.eventTest                        Child aborted***Exception:     4.44   
+
+          FIXED has old boolean ctrl, not the new char 
+
       23 /33  Test #23 : OptiXRapTest.interpolationTest                ***Failed                      5.10   
+
+          
+
+
       2  /6   Test #2  : OKOPTest.OpSeederTest                         Child aborted***Exception:     9.55   
       2  /5   Test #2  : OKTest.OKTest                                 Child aborted***Exception:     9.73   
       8  /41  Test #8  : CFG4Test.CG4Test                              Child aborted***Exception:     9.19   
@@ -42,6 +49,7 @@ opticks_t_1_jun_2021_12_of_471_fails
       1  /3   Test #1  : OpticksGeoTest.OpticksGeoTest                 Child aborted***Exception:     2.22   
       2  /3   Test #2  : OpticksGeoTest.OpticksHubTest                 Child aborted***Exception:     2.19   
 
+          FIXED WAS LACK OF SETTING TARGET  
 
       17 /33  Test #17 : OptiXRapTest.rayleighTest                     Child aborted***Exception:     2.30   
       22 /33  Test #22 : OptiXRapTest.eventTest                        Child aborted***Exception:     3.97   

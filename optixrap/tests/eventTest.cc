@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     OEvent* oevt = new OEvent(&ok, ctx);   
  
     bool prelaunch = false ; 
-    bool cfg4evt = false ; 
+    char ctrl = '+' ; 
 
     for(unsigned i=0 ; i < 10 ; i++)
     {
@@ -78,10 +78,9 @@ int main(int argc, char** argv)
 
          gs->setArrayContentIndex(i); 
 
-         run->createEvent(gs, cfg4evt); 
+         run->createEvent(gs, ctrl); 
 
-         //run->createEvent(i);
-         OpticksEvent* evt = run->getEvent();
+         OpticksEvent* evt = run->getEvent(ctrl);
 
          assert(evt->isMachineryType() && "--machinery type is forced as this writes incomplete OpticksEvents which would otherwise cause test failures for event reading tests" );
 
