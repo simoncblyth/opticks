@@ -71,10 +71,8 @@ struct B : public Base
 
 
 
-int main(int argc, char** argv)
+void test_cast()
 {
-    OPTICKS_LOG(argc, argv); 
-  
     Base* x = new A(42) ; 
 
 
@@ -97,7 +95,38 @@ int main(int argc, char** argv)
 
     B* b_sc = static_cast<B*>(x) ;   
     Base::Dump(b_sc, "b_sc");  
+}
 
+
+
+void test_cast_2()
+{
+     int a,b,c,d;
+     char h = 1;
+     short s = 1;
+     void* p = nullptr;
+     int i = 1;
+
+     assert( sizeof(long) == 8 ); 
+
+     std::cout << "a is at: " << reinterpret_cast<long>(&a) << std::endl;
+     std::cout << "b is at: " << reinterpret_cast<long>(&b) << std::endl;
+     std::cout << "c is at: " << reinterpret_cast<long>(&c) << std::endl;
+     std::cout << "d is at: " << reinterpret_cast<long>(&d) << std::endl;
+     std::cout << "Char is at: " << reinterpret_cast<long>(&h) << std::endl;
+     std::cout << "Short is at: " << reinterpret_cast<long>(&s) << std::endl;
+     std::cout << "Pointer is at: " << reinterpret_cast<long>(p) << std::endl;
+     std::cout << "Int is at: " << reinterpret_cast<long>(&i) << std::endl;
+}
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+
+    //test_cast(); 
+  
+    test_cast_2(); 
 
     return 0 ;
 }
