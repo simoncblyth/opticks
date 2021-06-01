@@ -87,10 +87,11 @@ struct CFG4_API CG4Ctx
     int  _event_track_count ; 
     int  _number_of_input_photons ; 
 
-    // CG4Ctx::setGenstep
-    // CG4Ctx::setGenstepEnd
+    // CG4Ctx::BeginOfGenstep
+    // CG4Ctx::EndOfGenstep
     char     _gentype ;   // 'C' 'S' 'T'
     unsigned _genstep_num_photons ; 
+    int      _genstep_index ;  // incremented at tail of CG4Ctx::BeginOfGenstep 
 
     // CG4Ctx::setGen
     unsigned  _gen  ;
@@ -159,8 +160,8 @@ struct CFG4_API CG4Ctx
     Opticks* getOpticks() const ; 
 
     void setEvent(const G4Event* event);
-    void setGenstep(char gentype, int num_photons);
-    void setGenstepEnd(char gentype, int num_photons);
+    void BeginOfGenstep(char gentype, int num_photons);
+    void EndOfGenstep(char gentype, int num_photons);
     void setGentype(char gentype);
     void setGen(unsigned gen);
 

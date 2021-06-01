@@ -168,7 +168,7 @@ When have input photons this is invoked by CManager::BeginOfEventAction
 void CRecorder::BeginOfGenstep(char gentype, int num_photons)
 {
     LOG(LEVEL); 
-    m_writer->initGenstep(gentype, num_photons); 
+    m_writer->BeginOfGenstep(gentype, num_photons); 
 }
 
 /**
@@ -181,7 +181,7 @@ When have input photons this is invoked by CManager::EndOfEventAction
 void CRecorder::EndOfGenstep(char gentype, int num_photons)
 {
     LOG(LEVEL); 
-    m_writer->writeGenstep(gentype, num_photons); 
+    m_writer->EndOfGenstep(gentype, num_photons); 
 }
 
 

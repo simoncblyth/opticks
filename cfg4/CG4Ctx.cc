@@ -51,7 +51,8 @@ CG4Ctx::CG4Ctx(Opticks* ok)
     _ok(ok),
     _pindex(ok->getPrintIndex(0)),
     _print(false),
-    _genstep_num_photons(0)
+    _genstep_num_photons(0),
+    _genstep_index(0)
 {
     init();
 
@@ -313,18 +314,20 @@ HMM: where to invoke this with normal G4Opticks S+C running ?
 **/
 
 
-void CG4Ctx::setGenstep(char gentype, int num_photons)
+void CG4Ctx::BeginOfGenstep(char gentype, int num_photons)
 {
-    LOG(fatal) << "gentype [" << gentype << "] num_photons " << num_photons ; 
     setGentype(gentype); 
     _genstep_num_photons = num_photons ; 
+
+    LOG(fatal) 
+        << " _gentype [" << _gentype << "]"
+        << " _genstep_num_photons " << _genstep_num_photons 
+        << " _genstep_index " << _genstep_index 
+        ;
 }
 
-
-void CG4Ctx::setGenstepEnd(char gentype, int num_photons)
+void CG4Ctx::EndOfGenstep(char gentype, int num_photons)
 {
-    LOG(fatal) << "gentype [" << gentype << "] num_photons " << num_photons ; 
-
     // TODO: check have met all the photons by this stage 
 
     bool gentype_match = _gentype == gentype ; 
@@ -346,9 +349,16 @@ void CG4Ctx::setGenstepEnd(char gentype, int num_photons)
 
     assert( gentype_match  ); 
     assert( genstep_num_photons_match ); 
+
+
+    LOG(fatal) 
+        << " _gentype [" << _gentype << "]"
+        << " _genstep_num_photons " << _genstep_num_photons 
+        << " _genstep_index " << _genstep_index 
+        ;
+
+    _genstep_index += 1 ; 
 }
-
-
 
 
 

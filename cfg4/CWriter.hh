@@ -92,8 +92,8 @@ class CFG4_API CWriter
         void writeHistory(unsigned target_record_id) ;
 
    private:
-        void initGenstep( char gentype, int num_onestep_photons );
-        void writeGenstep( char gentype, int num_onestep_photons );
+        void BeginOfGenstep( char gentype, int num_onestep_photons );
+        void EndOfGenstep(   char gentype, int num_onestep_photons );
         void clearOnestep();
 
     private:

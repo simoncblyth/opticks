@@ -129,20 +129,40 @@ void CManager::EndOfEventAction(const G4Event*)
 }
 
 
+/**
+CManager::BeginOfGenstep
+-------------------------
+
+Invoked by G4OpticksRecorder::BeginOfGenstep which is canonically placed 
+just prior to the C/S generation loop
+
+**/
+
 void CManager::BeginOfGenstep(char gentype, int num_photons)
 {
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
 
-    m_ctx->setGenstep(gentype, num_photons);  
+    m_ctx->BeginOfGenstep(gentype, num_photons);  
 
     m_recorder->BeginOfGenstep(gentype, num_photons);  
 
 }
+
+
+/**
+CManager::EndOfGenstep
+-------------------------
+
+Invoked by G4OpticksRecorder::EndOfGenstep which is canonically placed
+just after the C/S generation loop
+
+**/
+
 void CManager::EndOfGenstep(char gentype, int num_photons)
 {
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
 
-    m_ctx->setGenstepEnd(gentype, num_photons);  
+    m_ctx->EndOfGenstep(gentype, num_photons);  
 
     m_recorder->EndOfGenstep(gentype, num_photons);  
 }

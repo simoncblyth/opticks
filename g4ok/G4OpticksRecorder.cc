@@ -68,10 +68,12 @@ void G4OpticksRecorder::setGeometry(const GGeo* ggeo_)
 
 void G4OpticksRecorder::BeginOfGenstep(char gentype, int num_photons)
 {
+    LOG(LEVEL); 
     m_manager->BeginOfGenstep(gentype, num_photons); 
 }
 void G4OpticksRecorder::EndOfGenstep(char gentype, int num_photons)
 {
+    LOG(LEVEL); 
     m_manager->EndOfGenstep(gentype, num_photons); 
 }
 
@@ -80,36 +82,42 @@ void G4OpticksRecorder::EndOfGenstep(char gentype, int num_photons)
 
 void G4OpticksRecorder::BeginOfRunAction(const G4Run* run)
 {
+    LOG(LEVEL); 
     m_manager->BeginOfRunAction(run); 
 }
 void G4OpticksRecorder::EndOfRunAction(const G4Run* run)
 {
+    LOG(LEVEL); 
     m_manager->EndOfRunAction(run); 
 }
 
 
 void G4OpticksRecorder::BeginOfEventAction(const G4Event* event)
 {
+    LOG(LEVEL); 
     m_manager->BeginOfEventAction(event); 
 }
 void G4OpticksRecorder::EndOfEventAction(const G4Event* event)
 {
+    LOG(LEVEL); 
     m_manager->EndOfEventAction(event); 
 }
 
 
 void G4OpticksRecorder::PreUserTrackingAction(const G4Track* track)
 {
+    LOG(LEVEL); 
     m_manager->PreUserTrackingAction(track); 
 }
 void G4OpticksRecorder::PostUserTrackingAction(const G4Track* track)
 {
+    LOG(LEVEL); 
     m_manager->PostUserTrackingAction(track); 
 }
 
-
 void G4OpticksRecorder::UserSteppingAction(const G4Step* step)
 {
+    LOG(LEVEL); 
     m_manager->UserSteppingAction(step); 
 }
 

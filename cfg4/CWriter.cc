@@ -142,7 +142,7 @@ Invoked from CRecorder::BeginOfGenstep
 
 **/
 
-void CWriter::initGenstep( char gentype, int num_onestep_photons )
+void CWriter::BeginOfGenstep( char gentype, int num_onestep_photons )
 {
     LOG(LEVEL) 
         << " gentype [" <<  gentype << "]" 
@@ -168,14 +168,14 @@ void CWriter::initGenstep( char gentype, int num_onestep_photons )
 }
 
 /**
-CWriter::writeGenstep
+CWriter::EndOfGenstep
 -----------------------
 
 Invoked by CRecorder::EndOfGenstep
 
 **/
 
-void CWriter::writeGenstep( char gentype, int num_onestep_photons )
+void CWriter::EndOfGenstep( char gentype, int num_onestep_photons )
 {
     LOG(LEVEL) << " gentype [" <<  gentype << "] num_onestep_photons " << num_onestep_photons ; 
     assert( m_onestep ); 
