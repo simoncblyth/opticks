@@ -135,7 +135,7 @@ std::string CWriter::desc(const char* msg) const
 CWriter::initGenstep
 ----------------------
 
-Invoked from CRecorder::initEvent.
+Invoked from CRecorder::BeginOfGenstep
 
 1. creates small onestep buffers 
 2. change target to point at them 
@@ -171,14 +171,14 @@ void CWriter::initGenstep( char gentype, int num_onestep_photons )
 CWriter::writeGenstep
 -----------------------
 
+Invoked by CRecorder::EndOfGenstep
+
 **/
 
 void CWriter::writeGenstep( char gentype, int num_onestep_photons )
 {
     LOG(LEVEL) << " gentype [" <<  gentype << "] num_onestep_photons " << num_onestep_photons ; 
     assert( m_onestep ); 
-
-    // currently are going direct to the buffer, not into m_onestep_* first
 
     LOG(LEVEL) << desc("bef.add") ; 
 
@@ -193,6 +193,8 @@ void CWriter::writeGenstep( char gentype, int num_onestep_photons )
 
 void CWriter::clearOnestep()
 {
+    LOG(LEVEL); 
+
     m_onestep_records->reset(); 
     m_onestep_photons->reset(); 
     m_onestep_history->reset(); 
@@ -208,17 +210,14 @@ void CWriter::clearOnestep()
     m_target_records = nullptr ; 
     m_target_photons = nullptr ; 
     m_target_history = nullptr ; 
-
 }
-
-
 
 
 /**
 CWriter::writeStepPoint
 ------------------------
    
-Invoked by CRecorder::WriteStepPoint
+Invoked by CRecorder::postTrackWriteSteps/CRecorder::WriteStepPoint
 
 * writes into the target record, photon and history buffers
 
@@ -232,7 +231,6 @@ Invoked by CRecorder::WriteStepPoint
 
 * hmm: suspect its causing seqhis zeros ?
 
-
 HMM : LOOKS LIKE SOME CONFLATION BETWEEN REAL bounce_max truncation 
 and recording truncation 
 
@@ -240,7 +238,6 @@ and recording truncation
 
 * *last* argument is only used in --recpoi mode where it prevents 
    truncated photons from never being "done" and giving seqhis zeros
-
 
 **/     
 

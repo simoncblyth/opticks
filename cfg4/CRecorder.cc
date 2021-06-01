@@ -151,6 +151,7 @@ Invoked by CManager::initEvent, configures and prepares for recording.
 
 void CRecorder::initEvent(OpticksEvent* evt)
 {
+    LOG(LEVEL); 
     assert(evt);
     m_writer->initEvent(evt);
     m_crec->initEvent(evt);
@@ -166,6 +167,7 @@ When have input photons this is invoked by CManager::BeginOfEventAction
 **/
 void CRecorder::BeginOfGenstep(char gentype, int num_photons)
 {
+    LOG(LEVEL); 
     m_writer->initGenstep(gentype, num_photons); 
 }
 
@@ -178,6 +180,7 @@ When have input photons this is invoked by CManager::EndOfEventAction
 **/
 void CRecorder::EndOfGenstep(char gentype, int num_photons)
 {
+    LOG(LEVEL); 
     m_writer->writeGenstep(gentype, num_photons); 
 }
 
@@ -204,6 +207,8 @@ not be concerned about operating efficiently.
 
 void CRecorder::postTrack() 
 {
+    LOG(LEVEL); 
+
     //m_ok->accumulateStart(m_postTrack_acc);  
 
     assert(!m_live);
@@ -321,6 +326,7 @@ bool CRecorder::Record(Ds::DsG4OpBoundaryProcessStatus boundary_status)
 bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 #endif
 {    
+    LOG(LEVEL); 
 
     m_state._step_action = 0 ; 
 
@@ -758,6 +764,5 @@ std::string CRecorder::desc() const
 
    return ss.str();
 }
-
 
 
