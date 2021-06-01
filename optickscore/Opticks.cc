@@ -4113,6 +4113,14 @@ TorchStepNPY* Opticks::makeSimpleTorchStep(unsigned gencode)
 
     ts->setNumPhotonsPerG4Event(photons_per_g4event);
 
+    int frameIdx = ts->getFrameIndex(); 
+    assert( frameIdx == 0 );  
+    
+    glm::mat4 identity(1.f); 
+    LOG(info) << "[ts.setFrameTransform" ; 
+
+    ts->setFrameTransform(identity);
+
     ts->addStep();     
 
     return ts ; 

@@ -60,7 +60,7 @@ class NPY_API GenstepNPY {
        static const plog::Severity LEVEL ; 
    public:  
        GenstepNPY(unsigned gentype, const char* config=NULL, bool is_default=false); 
-       void addStep(bool verbose=false); // increments m_step_index
+       void addStep(); // increments m_step_index
        unsigned getNumStep() const ;
 
    public:

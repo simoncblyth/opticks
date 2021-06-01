@@ -17,6 +17,9 @@ opticks_t_1_jun_2021_12_of_471_fails
 
       42 /45  Test #42 : OpticksCoreTest.OpticksEventLeakTest          Child aborted***Exception:     0.07   
       43 /45  Test #43 : OpticksCoreTest.OpticksRunTest                Child aborted***Exception:     0.08   
+
+          FIXED
+
       22 /33  Test #22 : OptiXRapTest.eventTest                        Child aborted***Exception:     4.44   
       23 /33  Test #23 : OptiXRapTest.interpolationTest                ***Failed                      5.10   
       2  /6   Test #2  : OKOPTest.OpSeederTest                         Child aborted***Exception:     9.55   
@@ -33,8 +36,13 @@ opticks_t_1_jun_2021_12_of_471_fails
 
     FAILS:  25  / 471   :  Wed Jun  2 05:21:29 2021   
       43 /45  Test #43 : OpticksCoreTest.OpticksRunTest                Child aborted***Exception:     0.09   
+
+           FIXED
+
       1  /3   Test #1  : OpticksGeoTest.OpticksGeoTest                 Child aborted***Exception:     2.22   
       2  /3   Test #2  : OpticksGeoTest.OpticksHubTest                 Child aborted***Exception:     2.19   
+
+
       17 /33  Test #17 : OptiXRapTest.rayleighTest                     Child aborted***Exception:     2.30   
       22 /33  Test #22 : OptiXRapTest.eventTest                        Child aborted***Exception:     3.97   
       23 /33  Test #23 : OptiXRapTest.interpolationTest                Child aborted***Exception:     2.64   

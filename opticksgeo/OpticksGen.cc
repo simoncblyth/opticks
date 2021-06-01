@@ -423,11 +423,11 @@ TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)
 {
     assert( gencode == OpticksGenstep_TORCH ); 
 
-    TorchStepNPY* torchstep = m_ok->makeSimpleTorchStep(gencode);
+    TorchStepNPY* ts = m_ok->makeSimpleTorchStep(gencode);
 
-    if(torchstep->isDefault())
+    if(ts->isDefault())
     {
-        int frameIdx = torchstep->getFrameIndex(); 
+        int frameIdx = ts->getFrameIndex(); 
         int detectorDefaultFrame = m_ok->getDefaultFrame() ; 
         int gdmlaux_target =  m_ggeo ? m_ggeo->getFirstNodeIndexForGDMLAuxTargetLVName() : -1 ;  // sensitive to GDML auxilary lvname metadata (label, target) 
         int cmdline_target = m_ok->getGenstepTarget() ;   // --gensteptarget
@@ -452,23 +452,23 @@ TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)
             << " active_target : " << active_target
             ; 
 
-        torchstep->setFrame(active_target); 
+        ts->setFrame(active_target); 
     }
 
 
-    targetGenstep(torchstep);  // sets frame transform
-    setMaterialLine(torchstep);
-    torchstep->addActionControl(OpticksActionControl::Parse("GS_TORCH"));
+    targetGenstep(ts);  // sets frame transform
+    setMaterialLine(ts);
+    ts->addActionControl(OpticksActionControl::Parse("GS_TORCH"));
 
-    unsigned num_photons0 = torchstep->getNumPhotons(); 
+    unsigned num_photons0 = ts->getNumPhotons(); 
     int generateoverride = m_ok->getGenerateOverride(); 
 
     if( generateoverride > 0)
     { 
         LOG(error) << " overriding number of photons with --generateoverride " ; 
-        torchstep->setNumPhotons( generateoverride ); 
+        ts->setNumPhotons( generateoverride ); 
     }
-    unsigned num_photons = torchstep->getNumPhotons(); 
+    unsigned num_photons = ts->getNumPhotons(); 
 
     LOG(LEVEL)
         << " generateoverride " << generateoverride
@@ -476,16 +476,14 @@ TorchStepNPY* OpticksGen::makeTorchstep(unsigned gencode)
         << " num_photons " << num_photons
         ; 
 
+    ts->addStep();  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
 
-    bool torchdbg = m_ok->hasOpt("torchdbg");
-    torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
-
-    NPY<float>* gs = torchstep->getNPY();
+    NPY<float>* gs = ts->getNPY();
     gs->setArrayContentVersion(-OPTICKS_VERSION_NUMBER) ; 
 
-    if(torchdbg) gs->save("$TMP/torchdbg.npy");
+    //gs->save("$TMP/torchdbg.npy");
 
-    return torchstep ; 
+    return ts ; 
 }
 
 NPY<float>* OpticksGen::loadLegacyGenstepFile(const char* label)

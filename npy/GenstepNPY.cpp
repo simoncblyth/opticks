@@ -145,17 +145,18 @@ is called from OpticksGen::makeTorchstep
 
 **/
 
-void GenstepNPY::addStep(bool verbose)
+void GenstepNPY::addStep()
 {
     bool dummy_frame = isDummyFrame(); // m_frame.x == -1 
     bool target_acquired = dummy_frame ? true : m_frame_targetted ;
     if(!target_acquired) 
     {
-         LOG(fatal) << "GenstepNPY::addStep target MUST be set for non-dummy frame " 
-                    << " dummy_frame " << dummy_frame
-                    << " m_frame_targetted " << m_frame_targetted
-                    << brief()
-                    ;
+        LOG(fatal) 
+            << "target MUST be set for non-dummy frame " 
+            << " dummy_frame " << dummy_frame
+            << " m_frame_targetted " << m_frame_targetted
+            << brief()
+            ;
     }
 
     assert(target_acquired);

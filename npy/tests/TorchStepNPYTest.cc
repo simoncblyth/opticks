@@ -38,44 +38,42 @@ int main(int argc, char** argv )
     //const char* config = "target=3153;photons=10000;dir=0,1,0" ;
     const char* config = NULL ;
 
-    LOG(info) << "[gs" ; 
-    TorchStepNPY* gs = new TorchStepNPY(gentype, config);
-    LOG(info) << "]gs" ; 
+    LOG(info) << "[ts" ; 
+    TorchStepNPY* ts = new TorchStepNPY(gentype, config);
+    LOG(info) << "]ts" ; 
 
     // Normally frame targetting is done by okg/OpticksGen::targetGenstep 
     // with help of GGeo::getTransform but there is no geometry at this level : so set to identity. 
 
-    int frameIdx = gs->getFrameIndex(); 
+    int frameIdx = ts->getFrameIndex(); 
     assert( frameIdx == 0 ); 
      
     glm::mat4 identity(1.f); 
-    LOG(info) << "[gs.setFrameTransform" ; 
-    gs->setFrameTransform(identity);
-    LOG(info) << "]gs.setFrameTransform" ; 
+    LOG(info) << "[ts.setFrameTransform" ; 
+    ts->setFrameTransform(identity);
+    LOG(info) << "]ts.setFrameTransform" ; 
 
     for(unsigned i=0 ; i < num_step ; i++) 
     {
-        LOG(info) << "[gs.addStep" ; 
+        LOG(info) << "[ts.addStep" ; 
 
-        NStep* st = gs->getOneStep(); 
+        NStep* st = ts->getOneStep(); 
 
         st->setTime( 0.1*float(i+1) ); 
-        gs->addStep();
+        ts->addStep();
 
 
-        LOG(info) << "]gs.addStep" ; 
+        LOG(info) << "]ts.addStep" ; 
     }
  
 
-    LOG(info) << "[gs.dump" ; 
-    gs->dump();
-    LOG(info) << "]gs.dump" ; 
-
-
+    LOG(info) << "[ts.dump" ; 
+    ts->dump();
+    LOG(info) << "]ts.dump" ; 
 
 
     const char* path = "$TMP/torchstep.npy" ;
-    NPY<float>* arr = gs->getNPY();
+    NPY<float>* arr = ts->getNPY();
     arr->save(path);
 
     unsigned arr_items = arr->getNumItems() ; 
