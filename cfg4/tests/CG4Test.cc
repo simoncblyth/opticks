@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     { 
         NPY<float>* gs = gen->getInputGensteps() ;
         LOG(error) << " setting gensteps " << gs ; 
-        bool ctrl = '=' ; 
+        char ctrl = '=' ; 
         ok.createEvent(gs, ctrl);
     }
     else

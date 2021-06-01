@@ -36,6 +36,13 @@ opticks_t_1_jun_2021_12_of_471_fails
 
 
 
+::
+
+    FAILS:  3   / 471   :  Wed Jun  2 06:39:01 2021   
+      8  /41  Test #8  : CFG4Test.CG4Test                              Child aborted***Exception:     9.39   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     148.35 
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      7.01   
+    O[blyth@localhost opticks]$ 
 
 
 ::
