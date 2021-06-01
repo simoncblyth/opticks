@@ -111,10 +111,11 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     assert( m_photons_buffer && "CRecorder requires photons buffer" );
     assert( m_records_buffer && "CRecorder requires records buffer" );
 
-    // targets overridden by CWriter::initGenstep in onestep running 
-    m_target_history = m_history_buffer ; 
-    m_target_photons = m_photons_buffer ; 
-    m_target_records = m_records_buffer ;  
+    // these targets get set by CWriter::initGenstep in onestep running 
+    m_target_history = nullptr ; 
+    m_target_photons = nullptr ; 
+    m_target_records = nullptr ;  
+
 }
 
 
@@ -130,12 +131,14 @@ std::string CWriter::desc(const char* msg) const
     return s ; 
 }
 
-
 /**
 CWriter::initGenstep
 ----------------------
 
-Invoked from CRecorder::initEvent
+Invoked from CRecorder::initEvent.
+
+1. creates small onestep buffers 
+2. change target to point at them 
 
 **/
 
@@ -144,18 +147,11 @@ void CWriter::initGenstep( char gentype, int num_onestep_photons )
     LOG(LEVEL) 
         << " gentype [" <<  gentype << "]" 
         << " num_onestep_photons " << num_onestep_photons 
-        << " m_target_records " << m_target_records->getShapeString()
-        << " m_target_photons " << m_target_photons->getShapeString()
-        << " m_target_history " << m_target_history->getShapeString()
         ; 
 
     assert( m_onestep ); 
     assert( m_ctx._gentype == gentype  ); 
     assert( m_ctx._genstep_num_photons == unsigned(num_onestep_photons)  ); 
-
-    //assert( m_target_records->getNumItems() == unsigned(num_onestep_photons) ); 
-    //assert( m_target_photons->getNumItems() == unsigned(num_onestep_photons) ); 
-    //assert( m_target_history->getNumItems() == unsigned(num_onestep_photons) ); 
 
     m_onestep_records = NPY<short>::make(num_onestep_photons, m_ctx._steps_per_photon, 2, 4) ;
     m_onestep_records->zero();
@@ -169,24 +165,11 @@ void CWriter::initGenstep( char gentype, int num_onestep_photons )
     m_target_records = m_onestep_records ; 
     m_target_photons = m_onestep_photons ; 
     m_target_history = m_onestep_history ; 
-
 }
 
 /**
 CWriter::writeGenstep
 -----------------------
-
-* setting the carrier genstep causes OpticksEvent::resize up to 8
-* then this will bump that to 16 ... twice needed
-* seems do not need the m_onestep_* ?
- 
-  * at least this is the case with input photons that leads to 
-    a single carrier genstep in the event   
-
-  * in general G4 running (not input photon) do not have the carrier genstep, 
-    but do have genstep counts genstep-by-genstep
-
-    
 
 **/
 
@@ -223,6 +206,11 @@ void CWriter::clearOnestep()
     m_onestep_records = nullptr ; 
     m_onestep_photons = nullptr ; 
     m_onestep_history = nullptr ; 
+
+    m_target_records = nullptr ; 
+    m_target_photons = nullptr ; 
+    m_target_history = nullptr ; 
+
 }
 
 
@@ -233,6 +221,8 @@ CWriter::writeStepPoint
 ------------------------
    
 Invoked by CRecorder::WriteStepPoint
+
+* writes into the target record, photon and history buffers
 
 * writes point-by-point records
 * when done writes final photons
@@ -317,6 +307,7 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
     // hmm maybe separate id for onestep handling and all genstep handling 
 
     LOG(LEVEL)  << " target_record_id " << target_record_id ; 
+    assert( m_target_records ); 
 
     unsigned slot = photon._slot_constrained ;
     unsigned flag = photon._flag ; 
@@ -361,16 +352,6 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
     unsigned char poly = BConverter::my__float2uint_rn( (pol.y()+1.f)*127.f );
     unsigned char polz = BConverter::my__float2uint_rn( (pol.z()+1.f)*127.f );
     unsigned char wavl = BConverter::my__float2uint_rn( wfrac*255.f );
-
-/*
-    LOG(info) << "CWriter::RecordStepPoint"
-              << " wavelength/nm " << wavelength/nm 
-              << " wd.x " << wd.x
-              << " wd.w " << wd.w
-              << " wfrac " << wfrac 
-              << " wavl " << unsigned(wavl) 
-              ;
-*/
 
     qquad qaux ; 
     qaux.uchar_.x = material ; 
@@ -439,9 +420,10 @@ A: Hmm, not sure : but suspect that is could be made to work by using
 void CWriter::writePhoton(const G4StepPoint* point )
 {
     unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ; 
+    LOG(LEVEL)  << " target_record_id " << target_record_id ; 
+    assert( m_target_photons ); 
     writeHistory(target_record_id);  
 
-    LOG(LEVEL)  << " target_record_id " << target_record_id ; 
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -472,6 +454,7 @@ Emulating GPU seqhis/seqmat writing
 
 void CWriter::writeHistory(unsigned target_record_id)
 {
+    assert( m_target_history ); 
     unsigned long long* history = m_target_history->getValues() + 2*target_record_id ;
     *(history+0) = m_photon._seqhis ; 
     *(history+1) = m_photon._seqmat ; 
