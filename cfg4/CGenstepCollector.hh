@@ -80,6 +80,7 @@ class CFG4_API CGenstepCollector
         unsigned getArrayContentIndex() const ; 
         unsigned getNumGensteps() const ; 
         unsigned getNumPhotons() const ;  // total 
+        unsigned getNumPhotons2() const ;  // m_photon_count
         unsigned getNumPhotons( unsigned gs_idx) const ; 
     public:
         NPY<float>*  getGensteps() const ;
@@ -166,6 +167,7 @@ class CFG4_API CGenstepCollector
          void collectMachineryStep(unsigned code);
          void collectOpticksGenstep(const OpticksGenstep* gs);
    private:
+         void addPhotons(unsigned numPhotons);
          static CGenstepCollector* INSTANCE ;      
    private:
          const NLookup*    m_lookup ; 
@@ -178,6 +180,7 @@ class CFG4_API CGenstepCollector
          unsigned          m_torch_count ; 
          unsigned          m_torch_emitsource_count ;   // subset of m_torch_count 
          unsigned          m_machinery_count ; 
+         unsigned          m_photon_count ; 
 
          std::vector<unsigned> m_gs_photons ; 
 
