@@ -341,7 +341,8 @@ NPY<float>* OpticksGenstep::MakeCandle(unsigned num_photons, unsigned tagoffset 
     unsigned gentype = OpticksGenstep_TORCH  ;
     unsigned num_step = 1 ; 
     const char* config = NULL ; 
-    TorchStepNPY* ts = new TorchStepNPY(gentype, num_step, config);
+    TorchStepNPY* ts = new TorchStepNPY(gentype, config);
+
     glm::mat4 frame_transform(1.0); 
     ts->setFrameTransform(frame_transform);
     for(unsigned i=0 ; i < num_step ; i++) 

@@ -24,16 +24,15 @@
 
 FabStepNPY::FabStepNPY(unsigned genstep_type, unsigned num_step, unsigned num_photons_per_step) 
     :  
-    GenstepNPY(genstep_type, num_step, NULL, false ),
+    GenstepNPY(genstep_type, NULL, false ),
     m_num_photons_per_step(num_photons_per_step)
 {
-    init();
+    addSteps(num_step); 
 }
 
-void FabStepNPY::init()
+void FabStepNPY::addSteps(unsigned num)
 {
-    unsigned num_step = getNumStep();
-    for(unsigned i=0 ; i < num_step ; i++)
+    for(unsigned i=0 ; i < num ; i++)
     {   
         m_onestep->setMaterialLine(i*10);   
         m_onestep->setNumPhotons(m_num_photons_per_step); 

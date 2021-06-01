@@ -35,23 +35,22 @@
 const plog::Severity GenstepNPY::LEVEL = PLOG::EnvLevel("GenstepNPY", "DEBUG") ; 
 
 
-GenstepNPY::GenstepNPY(unsigned gentype, unsigned num_step, const char* config, bool is_default ) 
+GenstepNPY::GenstepNPY(unsigned gentype, const char* config, bool is_default ) 
     :  
     m_onestep(new NStep),
     m_gentype(gentype),
-    m_num_step(num_step),
     m_config(config ? strdup(config) : NULL),
     m_is_default(is_default),
     m_material(NULL),
-    m_npy(NPY<float>::make(num_step, 6, 4)),
+    m_arr(NPY<float>::make(0, 6, 4)),
     m_step_index(0),
     m_frame(-1,0,0,0),
     m_frame_transform(1.f,0.f,0.f,0.f, 0.f,1.f,0.f,0.f, 0.f,0.f,1.f,0.f, 0.f,0.f,0.f,1.f),
     m_frame_targetted(false),
     m_num_photons_per_g4event(10000)
 {
-    //assert( m_config ) ;   FabStep have NULL config   
-    m_npy->zero();
+    m_arr->zero();
+    LOG(LEVEL) << m_arr->getShapeString(); 
 }
 
 
@@ -114,7 +113,7 @@ void GenstepNPY::setOriginTrackID(unsigned id)
 
 void GenstepNPY::addActionControl(unsigned long long  action_control)
 {
-    m_npy->addActionControl(action_control);
+    m_arr->addActionControl(action_control);
 }
 
 const char* GenstepNPY::getMaterial() const 
@@ -133,22 +132,9 @@ void GenstepNPY::setMaterial(const char* s)
 
 unsigned GenstepNPY::getNumStep() const 
 {
-   return m_num_step ;  
+   return m_arr->getNumItems() ;  
 }
 
-
-/*
-frame #4: 0x00000001007ce6d9 libNPY.dylib`GenstepNPY::addStep(this=0x0000000108667020, verbose=false) + 57 at GenstepNPY.cpp:56
-frame #5: 0x0000000101e2a7d6 libOpticksGeometry.dylib`OpticksGen::makeTorchstep(this=0x0000000108664f50) + 150 at OpticksGen.cc:182
-frame #6: 0x0000000101e2a32e libOpticksGeometry.dylib`OpticksGen::initInputGensteps(this=0x0000000108664f50) + 606 at OpticksGen.cc:74
-frame #7: 0x0000000101e2a095 libOpticksGeometry.dylib`OpticksGen::init(this=0x0000000108664f50) + 21 at OpticksGen.cc:37
-frame #8: 0x0000000101e2a073 libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x0000000108664f50, hub=0x0000000105609f20) + 131 at OpticksGen.cc:32
-frame #9: 0x0000000101e2a0bd libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x0000000108664f50, hub=0x0000000105609f20) + 29 at OpticksGen.cc:33
-frame #10: 0x0000000101e27706 libOpticksGeometry.dylib`OpticksHub::init(this=0x0000000105609f20) + 118 at OpticksHub.cc:96
-frame #11: 0x0000000101e27610 libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105609f20, ok=0x0000000105421710) + 416 at OpticksHub.cc:81
-frame #12: 0x0000000101e277ad libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105609f20, ok=0x0000000105421710) + 29 at OpticksHub.cc:83
-frame #13: 0x0000000103790294 libOK.dylib`OKMgr::OKMgr(this=0x00007fff5fbfedd8, argc=1, argv=0x00007fff5fbfeeb8) + 260 at OKMgr.cc:46
-*/
 
 /**
 GenstepNPY::addStep
@@ -174,7 +160,7 @@ void GenstepNPY::addStep(bool verbose)
 
     assert(target_acquired);
 
-    assert(m_npy && m_npy->hasData());
+    assert(m_arr && m_arr->hasData());
 
     //unsigned int i = m_step_index ; 
 
@@ -184,15 +170,15 @@ void GenstepNPY::addStep(bool verbose)
 
     NPY<float>* one = m_onestep->getArray(); 
 
-    m_npy->add(one); 
+    m_arr->add(one); 
 
     m_step_index++ ; 
 }
 
 NPY<float>* GenstepNPY::getNPY() const 
 {
-    assert( m_step_index == m_num_step && "GenstepNPY is incomplete, must addStep according to declared num_step");
-    return m_npy ; 
+    //assert( m_step_index == m_num_step && "GenstepNPY is incomplete, must addStep according to declared num_step");
+    return m_arr ; 
 }
 
 

@@ -76,6 +76,7 @@ struct NPY_API NStep
        void setRadius(const char* s );
        void setDistance(const char* s );
 
+       void setTime(float t );
        void setRadius(float radius );
        void setDistance(float distance);
        void setBaseMode(unsigned umode);

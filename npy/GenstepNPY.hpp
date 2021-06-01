@@ -59,7 +59,7 @@ class NPY_API GenstepNPY {
    public:  
        static const plog::Severity LEVEL ; 
    public:  
-       GenstepNPY(unsigned gentype, unsigned num_step=1, const char* config=NULL, bool is_default=false); 
+       GenstepNPY(unsigned gentype, const char* config=NULL, bool is_default=false); 
        void addStep(bool verbose=false); // increments m_step_index
        unsigned getNumStep() const ;
 
@@ -112,12 +112,11 @@ class NPY_API GenstepNPY {
 
   private:
        unsigned int m_gentype ; 
-       unsigned int m_num_step ; 
        const char*  m_config ;
        bool         m_is_default ; 
   private:
        const char*  m_material ;
-       NPY<float>*  m_npy ; 
+       NPY<float>*  m_arr ; 
        unsigned int m_step_index ; 
   private:
        glm::ivec4   m_frame ;

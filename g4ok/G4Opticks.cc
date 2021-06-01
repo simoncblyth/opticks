@@ -1821,7 +1821,7 @@ void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index, un
 
     LOG(LEVEL) << " gentype " << gentype ; 
 
-    TorchStepNPY* ts = new TorchStepNPY(gentype, num_step, config);
+    TorchStepNPY* ts = new TorchStepNPY(gentype, config);
     ts->setOriginTrackID(originTrackID); 
 
     if(node_index == -1)

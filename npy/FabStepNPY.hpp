@@ -47,8 +47,8 @@ class NPY_API FabStepNPY : public GenstepNPY
     public:
         FabStepNPY(unsigned code, unsigned num_step, unsigned num_photons_per_step);
         void updateAfterSetFrameTransform();
-    private: 
-        void init();
+    private:
+        void addSteps(unsigned num_step); 
     private:
         unsigned m_num_photons_per_step ;
 

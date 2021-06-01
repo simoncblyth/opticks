@@ -111,8 +111,14 @@ void NStep::setPosition(const glm::vec4& pos)
 
 void NStep::setTime(const char* s)
 {
-    m_post.w = BStr::LexicalCast<float>(s) ;
+    float t  = BStr::LexicalCast<float>(s) ;
+    setTime(t); 
 }
+void NStep::setTime(float t)
+{
+    m_post.w = t ;
+}
+
 float NStep::getTime() const
 {
     return m_post.w ; 

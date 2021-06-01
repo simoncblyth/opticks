@@ -37,10 +37,8 @@
 #include "PLOG.hh"
 
 
-// frame=3153,      DYB NEAR AD center
-// frame=62593      j1808 lAcrylic0x4bd3f20         ce  0.000   0.000   0.009 17820.008
-//    "frame=3153_"
-//    "frame=62593_"
+
+const plog::Severity TorchStepNPY::LEVEL = PLOG::EnvLevel("TorchStepNPY", "DEBUG" ); 
 
 const char* TorchStepNPY::DEFAULT_CONFIG = 
     "type=sphere_"
@@ -301,17 +299,16 @@ void TorchStepNPY::set(Param_t p, const char* s)
 
 // set the below defaults to avoid a messy undefined polarization with OpSnapTest
 
-TorchStepNPY::TorchStepNPY(unsigned gentype, unsigned int num_step, const char* config) 
+TorchStepNPY::TorchStepNPY(unsigned gentype, const char* config) 
     :  
-    GenstepNPY(gentype,  num_step, config ? strdup(config) : DEFAULT_CONFIG, config == NULL ),
+    GenstepNPY(gentype, config ? strdup(config) : DEFAULT_CONFIG, config == NULL ),
     m_source_local(0,0,0,1),
     m_target_local(0,0,0,1),
     m_polarization_local(0,0,1,0),
     m_src(0,0,1,1),
     m_tgt(0,0,0,1),
     m_pol(0,0,1,1),
-    m_dir(0,0,1),
-    m_level(debug)
+    m_dir(0,0,1)
 {
     init();
 }
@@ -322,14 +319,14 @@ void TorchStepNPY::init()
 {
     const char* config = getConfig(); 
 
-    LOG(m_level) 
+    LOG(LEVEL) 
         << " config " <<  config 
         ;
 
     typedef std::pair<std::string,std::string> KV ; 
     std::vector<KV> ekv = BStr::ekv_split(config,'_',"=");
 
-    LOG(m_level) 
+    LOG(LEVEL) 
         << " config " <<  config 
         << " ekv " << ekv.size() 
         ;
@@ -342,7 +339,7 @@ void TorchStepNPY::init()
 
         Param_t p = ParseParam(k) ;
 
-        LOG(m_level) << std::setw(20) << k << ":" << v  ; 
+        LOG(LEVEL) << std::setw(20) << k << ":" << v  ; 
 
         if(p == UNRECOGNIZED)
         {

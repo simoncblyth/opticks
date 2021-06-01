@@ -67,7 +67,7 @@ void test_torchstep()
 
     LOG(info) << " gentype " << gentype ; 
 
-    TorchStepNPY* ts = new TorchStepNPY(gentype, num_step, config);
+    TorchStepNPY* ts = new TorchStepNPY(gentype, config);
 
     glm::mat4 frame_transform(1.f);
     ts->setFrameTransform(frame_transform);

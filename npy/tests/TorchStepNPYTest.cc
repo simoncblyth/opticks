@@ -24,6 +24,7 @@
 
 #include "NGLM.hpp"
 #include "NPY.hpp"
+#include "NStep.hpp"
 #include "TorchStepNPY.hpp"
 
 
@@ -38,7 +39,7 @@ int main(int argc, char** argv )
     const char* config = NULL ;
 
     LOG(info) << "[gs" ; 
-    TorchStepNPY* gs = new TorchStepNPY(gentype, num_step, config);
+    TorchStepNPY* gs = new TorchStepNPY(gentype, config);
     LOG(info) << "]gs" ; 
 
     // Normally frame targetting is done by okg/OpticksGen::targetGenstep 
@@ -55,7 +56,13 @@ int main(int argc, char** argv )
     for(unsigned i=0 ; i < num_step ; i++) 
     {
         LOG(info) << "[gs.addStep" ; 
+
+        NStep* st = gs->getOneStep(); 
+
+        st->setTime( 0.1*float(i+1) ); 
         gs->addStep();
+
+
         LOG(info) << "]gs.addStep" ; 
     }
  
@@ -70,7 +77,15 @@ int main(int argc, char** argv )
     const char* path = "$TMP/torchstep.npy" ;
     NPY<float>* arr = gs->getNPY();
     arr->save(path);
-    assert(arr->getNumItems() == num_step);
+
+    unsigned arr_items = arr->getNumItems() ; 
+    LOG(info)
+        << " arr " << arr->getShapeString()
+        << " arr_items " << arr_items
+        << " num_step " << num_step
+        ;
+
+    assert(arr_items == num_step);
 
     const char* cmd = SStr::Concat("python -c 'import os, numpy as np ; print(np.load(os.path.expandvars(\"", path, "\")).view(np.int32))' ");  
     system(cmd);

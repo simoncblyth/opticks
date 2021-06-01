@@ -4107,13 +4107,15 @@ TorchStepNPY* Opticks::makeSimpleTorchStep(unsigned gencode)
               << " dump details : --torchdbg " 
               ;
 
-    TorchStepNPY* torchstep = new TorchStepNPY(OpticksGenstep_TORCH, 1, cfg ); // see notes/issues/G4StepNPY_gencode_assert.rst
+    TorchStepNPY* ts = new TorchStepNPY(OpticksGenstep_TORCH, cfg ); // see notes/issues/G4StepNPY_gencode_assert.rst
 
     unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;  // only used for cfg4-
 
-    torchstep->setNumPhotonsPerG4Event(photons_per_g4event);
+    ts->setNumPhotonsPerG4Event(photons_per_g4event);
 
-    return torchstep ; 
+    ts->addStep();     
+
+    return ts ; 
 }
 
 

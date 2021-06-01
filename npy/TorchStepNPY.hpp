@@ -91,6 +91,8 @@ class NPY_API TorchStepNPY : public GenstepNPY {
                       DISTANCE, 
                       UNRECOGNIZED } Param_t ;
 
+
+       static const plog::Severity LEVEL ; 
        static const char* DEFAULT_CONFIG ; 
 
        static const char* TYPE_; 
@@ -136,7 +138,7 @@ class NPY_API TorchStepNPY : public GenstepNPY {
        static ::Mode_t  ParseMode(const char* k);
        static ::Torch_t ParseType(const char* k);
    public:  
-       TorchStepNPY(unsigned genstep_type, unsigned num_step=1, const char* config=NULL); 
+       TorchStepNPY(unsigned genstep_type, const char* config=NULL); 
        void updateAfterSetFrameTransform();  
    private:
        void init();
@@ -190,8 +192,6 @@ class NPY_API TorchStepNPY : public GenstepNPY {
        glm::vec4    m_tgt ;
        glm::vec4    m_pol ;
        glm::vec3    m_dir ;
-
-       plog::Severity m_level ; 
 
 };
 
