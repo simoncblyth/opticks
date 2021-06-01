@@ -52,7 +52,7 @@ CG4Ctx::CG4Ctx(Opticks* ok)
     _pindex(ok->getPrintIndex(0)),
     _print(false),
     _genstep_num_photons(0),
-    _genstep_index(0)
+    _genstep_index(-1)
 {
     init();
 
@@ -145,6 +145,7 @@ void CG4Ctx::init()
     _event_track_count = 0 ; 
     _gen = 0 ; 
     _genflag = 0 ; 
+    
 
     _track = NULL ; 
     _process_manager = NULL ; 
@@ -269,6 +270,8 @@ void CG4Ctx::setEvent(const G4Event* event)
     _event_track_count = 0 ; 
     _photon_count = 0 ; 
 
+    _genstep_index = -1 ; 
+
 
     CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
     //assert(eui && "expecting event UserInfo set by eg CGenstepSource "); 
@@ -318,6 +321,7 @@ void CG4Ctx::BeginOfGenstep(char gentype, int num_photons)
 {
     setGentype(gentype); 
     _genstep_num_photons = num_photons ; 
+    _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CG4Ctx::setEvent, so it becomes a zero based event local index
 
     LOG(fatal) 
         << " _gentype [" << _gentype << "]"
@@ -334,7 +338,6 @@ void CG4Ctx::EndOfGenstep()
         << " _genstep_index " << _genstep_index 
         ;
 
-    _genstep_index += 1 ; 
 }
 
 

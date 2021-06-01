@@ -91,7 +91,14 @@ struct CFG4_API CG4Ctx
     // CG4Ctx::EndOfGenstep
     char     _gentype ;   // 'C' 'S' 'T'
     unsigned _genstep_num_photons ; 
-    int      _genstep_index ;  // incremented at tail of CG4Ctx::BeginOfGenstep 
+
+    // *_genstep_index* 
+    //     starts at -1 and is reset to -1 by CG4Ctx::setEvent, incremented by CG4Ctx::BeginOfGenstep 
+    //     giving a zero based local index of genstep within the event
+    //     this is used from CManager::BeginOfGenstep to determine whether to call CManager::EndOfGenstep
+    //     avoiding calling that until _genstep_index > -1
+    // 
+    int      _genstep_index ;  
 
     // CG4Ctx::setGen
     unsigned  _gen  ;

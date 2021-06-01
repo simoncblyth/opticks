@@ -179,6 +179,9 @@ void CWriter::EndOfGenstep()
 {
     LOG(LEVEL);
     assert( m_onestep ); 
+    assert( m_onestep_records );  // must call CWriter::BeginOfGenstep before CWriter::EndOfGenstep
+    assert( m_onestep_photons ); 
+    assert( m_onestep_history ); 
 
     LOG(LEVEL) << desc("bef.add") ; 
 

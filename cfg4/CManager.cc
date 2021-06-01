@@ -150,7 +150,10 @@ just prior to the C/S generation loop
 
 void CManager::BeginOfGenstep(char gentype, int num_photons)
 {
-    EndOfGenstep();  
+    if(m_ctx->_genstep_index > -1 )
+    {
+        EndOfGenstep();  
+    }
 
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
 
