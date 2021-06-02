@@ -455,8 +455,6 @@ not reemission.  That seems an obtuse way of yielding _reemtrack
 
 void CG4Ctx::setTrackOptical(G4Track* mtrack) 
 {
-    LOG(debug) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
-
     mtrack->UseGivenVelocity(true);
 
     // NB without this BoundaryProcess proposed velocity to get correct GROUPVEL for material after refraction 
@@ -469,59 +467,33 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
     // dynamic_cast gives NULL when using the wrong type for the pointer
 
     G4VUserTrackInformation* ui = mtrack->GetUserInformation() ; 
-    LOG(LEVEL) 
-        << " mtrack " << mtrack
-        << " ui " << ui 
-        ;
-
     CTrackInfo* tkui = ui ? dynamic_cast<CTrackInfo*>(ui) : nullptr ;
-
     _trk = tkui ? new CTrk(tkui->trk) : nullptr  ;  
 
     // lack of tkui should be only with artifically input/generated photons 
     // as both C+S photons should be always be labelled
 
-
-    LOG(LEVEL) << " _trk " << ( _trk ? _trk->desc() : "-" ) ;
     _primary_id = _trk ? _trk->photon_id() : _track_id ;   // 0-based
-
-    char trk_gentype = _trk ? _trk->gentype() : 'T'  ;    // TODO: maybe not needed, following addition of setGensteps ?
-
-    LOG(LEVEL) 
-         << "  _primary_id  " <<  _primary_id 
-         << " trk_gentype " << trk_gentype
-         ;
+    _reemtrack = _trk ? _trk->reemission() : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
 
     _photon_id = _primary_id  ; 
-    _reemtrack = _trk ? _trk->reemission() : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
+
+    _record_id = _primary_id - _genstep_offset ; 
+    _record_fraction = double(_record_id)/double(_record_max) ;  
 
     _photon_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
 
-     // retaining original photon_id from prior to reemission effects the continuation
-     //_record_id = _photons_per_g4event*_event_id + _photon_id ;   
-     //  THIS WAS TO WORKAROUND Geant4 PROBLEM WITH MILLIONS OF PHOTONS IN ONE EVENT
-     //  BY SPLITTING INTO MULTIPLE EVENTS 
-     //
-
-    _record_id = _primary_id - _genstep_offset ; 
-
-    _record_fraction = double(_record_id)/double(_record_max) ;  
-
     LOG(LEVEL) 
-        << " _primary_id " << _primary_id 
-        << " _genstep_offset " << _genstep_offset 
-        << " _record_id " << _record_id 
-        << " _reemtrack " << _reemtrack
-        << " trk_gentype " << trk_gentype
-        << " mtrack.GetGlobalTime " << mtrack->GetGlobalTime()
-        ;
-    setGentype(trk_gentype);  // TODO: maybe not needed, following addition of setGensteps ?
+         << " _trk " << ( _trk ? _trk->desc() : "-" ) 
+         << " _primary_id  " <<  _primary_id 
+         << " _genstep_offset " << _genstep_offset
+         << " _record_id " << _record_id  
+         << " _reemtrack " << _reemtrack
+         << " mtrack.GetGlobalTime " << mtrack->GetGlobalTime()
+         ;
 
     _mask_index = _ok->hasMask() ?_ok->getMaskIndex( _primary_id ) : -1 ;   // "original" index 
 
-    //if(_record_id % 1000 == 0) OKI_PROFILE("CG4Ctx::setTrackOptical_1k"); 
-
-    // moved from CTrackingAction::setTrack
     _debug = _ok->isDbgPhoton(_primary_id) ; // from option: --dindex=1,100,1000,10000 
     _other = _ok->isOtherPhoton(_primary_id) ; // from option: --oindex=1,100,1000,10000 
     _dump = _debug || _other ; 
@@ -530,8 +502,6 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
 
     if(_dump) _dump_count += 1 ; 
 
-    // moved from  CSteppingAction::setPhotonId
-    // essential for clearing counts otherwise, photon steps never cleared 
     _rejoin_count = 0 ; 
     _primarystep_count = 0 ; 
 }
