@@ -69,13 +69,20 @@ void RunAction::BeginOfRunAction(const G4Run* run)
 
     G4cout << "\n\n###] RunAction::BeginOfRunAction G4Opticks.setGeometry\n\n" << G4endl ; 
 
-    ctx->_recorder->BeginOfRunAction(run); 
+    if( ctx->_recorder )
+    {
+        ctx->_recorder->BeginOfRunAction(run); 
+    }
 #endif
 }
 void RunAction::EndOfRunAction(const G4Run* run)
 {
 #ifdef WITH_OPTICKS
-    ctx->_recorder->EndOfRunAction(run); 
+
+    if( ctx->_recorder )
+    {
+        ctx->_recorder->EndOfRunAction(run); 
+    }
 
     G4cout << "\n\n###[ RunAction::EndOfRunAction G4Opticks.Finalize\n\n" << G4endl ; 
     G4Opticks::Finalize();

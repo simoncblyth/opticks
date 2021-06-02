@@ -161,6 +161,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      float        getTimeMax() const ; 
      const std::string& getAnimTimeRange() const ;
      float        getAnimTimeMax() const ;  
+     int          getManagerMode() const ; 
      int          getInterpolatedViewPeriod(); 
      int          getOrbitalViewPeriod(); 
      int          getTrackViewPeriod(); 
@@ -319,6 +320,7 @@ private:
      std::string m_animtimerange ;
      float       m_animtimemax ; 
      int         m_animator_period ; 
+     int         m_managermode ; 
      int         m_ivperiod ; 
      int         m_ovperiod ; 
      int         m_tvperiod ; 

@@ -131,6 +131,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_animtimerange("-1,-1"),
     m_animtimemax(-1.f),
     m_animator_period(200),
+    m_managermode(0),
     m_ivperiod(100),
     m_ovperiod(180),
     m_tvperiod(100),
@@ -1251,6 +1252,14 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("evperiod",  boost::program_options::value<int>(&m_animator_period), animator_period);
 
+
+   char managermode[128];
+   snprintf(managermode,128, "CManager mode. Default %d ", m_managermode);
+   m_desc.add_options()
+       ("managermode",  boost::program_options::value<int>(&m_managermode), managermode);
+
+
+
    char ivperiod[128];
    snprintf(ivperiod,128, "Interpolated View Period, typically in range 50 to 400 controlling the number of steps of the animation. Default %d ", m_ivperiod);
    m_desc.add_options()
@@ -2117,6 +2126,13 @@ const std::string& OpticksCfg<Listener>::getAnimTimeRange() const
 {
     return m_animtimerange  ;
 }
+
+template <class Listener>
+int OpticksCfg<Listener>::getManagerMode() const   // --managermode
+{
+    return m_managermode ; 
+}
+
 
 template <class Listener>
 float OpticksCfg<Listener>::getAnimTimeMax() const   // --animtimemax

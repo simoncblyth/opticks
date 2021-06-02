@@ -341,10 +341,13 @@ DsG4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     if(valid_opticks_genstep)
     {
+
+        unsigned opticks_photon_offset = CGenstepCollector::Get()->getNumPhotons();
+
         const G4ParticleDefinition* definition = aParticle->GetDefinition();
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
-        CGenstepCollector::Instance()->collectCerenkovStep(
+        CGenstepCollector::Get()->collectCerenkovStep(
 
                0,                  // 0     id:zero means use cerenkov step count 
                aTrack.GetTrackID(),
@@ -377,7 +380,7 @@ DsG4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                0
         );
 
-        CManager::Get()->BeginOfGenstep('C', NumPhotons ); 
+        CManager::Get()->BeginOfGenstep('C', NumPhotons, opticks_photon_offset ); 
 
     }
 

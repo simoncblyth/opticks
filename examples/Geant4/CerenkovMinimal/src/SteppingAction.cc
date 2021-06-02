@@ -36,7 +36,10 @@ SteppingAction::SteppingAction(Ctx* ctx_)
 void SteppingAction::UserSteppingAction(const G4Step* step)
 {
 #ifdef WITH_OPTICKS
-    ctx->_recorder->UserSteppingAction(step); 
+    if(ctx->_recorder)
+    {
+        ctx->_recorder->UserSteppingAction(step); 
+    }
 #endif
     ctx->setStep(step); 
 }

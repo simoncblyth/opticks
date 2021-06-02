@@ -35,7 +35,10 @@ TrackingAction::TrackingAction(Ctx* ctx_)
 void TrackingAction::PreUserTrackingAction(const G4Track* track)
 {
 #ifdef WITH_OPTICKS
-    ctx->_recorder->PreUserTrackingAction(track); 
+    if(ctx->_recorder)
+    {
+        ctx->_recorder->PreUserTrackingAction(track); 
+    }
 #endif
     ctx->setTrack(track); 
 }
@@ -43,7 +46,10 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track)
 void TrackingAction::PostUserTrackingAction(const G4Track* track)
 {
 #ifdef WITH_OPTICKS
-    ctx->_recorder->PostUserTrackingAction(track); 
+    if(ctx->_recorder)
+    {
+        ctx->_recorder->PostUserTrackingAction(track); 
+    }
 #endif
     ctx->postTrack(track);     
 }

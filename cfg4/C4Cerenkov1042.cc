@@ -278,7 +278,7 @@ C4Cerenkov1042::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
 
-        CGenstepCollector::Instance()->collectCerenkovStep(
+        CGenstepCollector::Get()->collectCerenkovStep(
                0,                  // 0     id:zero means use cerenkov step count 
                aTrack.GetTrackID(),
                materialIndex, 

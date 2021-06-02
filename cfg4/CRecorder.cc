@@ -82,6 +82,7 @@ CRecorder::CRecorder(CG4Ctx& ctx, bool onestep)
     :
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),
+    m_mode(m_ok->getManagerMode()),   // --managermode
     m_recpoi(m_ok->isRecPoi()),   // --recpoi
     m_reccf(m_ok->isRecCf()),     // --reccf
     m_state(m_ctx),
@@ -98,6 +99,12 @@ CRecorder::CRecorder(CG4Ctx& ctx, bool onestep)
     m_not_done_count(0)
 {   
     LOG(LEVEL) << brief() ;
+}
+
+
+bool CRecorder::isOneStep() const 
+{
+   return m_onestep ; 
 }
 
 
@@ -165,10 +172,10 @@ CRecorder::BeginOfGenstep
 When have input photons this is invoked by CManager::BeginOfEventAction
 
 **/
-void CRecorder::BeginOfGenstep(char gentype, int num_photons)
+void CRecorder::BeginOfGenstep(char gentype, int num_photons, int offset)
 {
     LOG(LEVEL); 
-    m_writer->BeginOfGenstep(gentype, num_photons); 
+    m_writer->BeginOfGenstep(gentype, num_photons, offset); 
 }
 
 /**
@@ -330,7 +337,8 @@ bool CRecorder::Record(Ds::DsG4OpBoundaryProcessStatus boundary_status)
 bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 #endif
 {    
-    LOG(LEVEL); 
+    LOG(LEVEL) << " m_mode " << m_mode ; 
+
 
     m_state._step_action = 0 ; 
 
@@ -367,8 +375,10 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 void CRecorder::zeroPhoton()
 { 
     LOG(LEVEL) << m_photon.desc() ; 
+
     const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
     const G4ThreeVector& pos = pre->GetPosition();
+
     m_crec->setOrigin(pos);   // hmm maybe in CG4Ctx already ?
     m_crec->clear();
 
@@ -479,16 +489,13 @@ void CRecorder::postTrackWriteSteps()
 
     if(m_ctx._dbgrec)
     {
-        LOG(info) 
+        LOG(LEVEL) 
                   << " [--dbgrec] "
                   << " num " << num
                   << " m_slot " << m_state._slot
                   << " is_step_limited " << ( limited ? "Y" : "N" )
+                  << " m_crec.descStages " << m_crec->descStages()
                    ;
-
-        std::cout << "CRecorder::postTrackWriteSteps stages:"  ;
-        for(unsigned i=0 ; i < num ; i++) std::cout << CStage::Label(m_crec->getStp(i)->getStage()) << " " ; 
-        std::cout << std::endl ;  
     }
 
 

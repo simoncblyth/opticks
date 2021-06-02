@@ -49,6 +49,7 @@ const unsigned CG4Ctx::TO = OpticksGenstep::SourceCode("fabricated");
 CG4Ctx::CG4Ctx(Opticks* ok)
     :
     _ok(ok),
+    _mode(ok->getManagerMode()),
     _pindex(ok->getPrintIndex(0)),
     _print(false),
     _genstep_num_photons(0),
@@ -147,7 +148,7 @@ void CG4Ctx::init()
     _genflag = 0 ; 
     
 
-    _track = NULL ; 
+    //_track = NULL ; 
     _process_manager = NULL ; 
     _track_id = -1 ; 
     _track_total = 0 ;
@@ -317,13 +318,14 @@ HMM: where to invoke this with normal G4Opticks S+C running ?
 **/
 
 
-void CG4Ctx::BeginOfGenstep(char gentype, int num_photons)
+void CG4Ctx::BeginOfGenstep(char gentype, int num_photons, int offset )
 {
     setGentype(gentype); 
     _genstep_num_photons = num_photons ; 
+    _genstep_offset = offset ; 
     _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CG4Ctx::setEvent, so it becomes a zero based event local index
 
-    LOG(fatal) 
+    LOG(LEVEL) 
         << " _gentype [" << _gentype << "]"
         << " _genstep_num_photons " << _genstep_num_photons 
         << " _genstep_index " << _genstep_index 
@@ -332,7 +334,7 @@ void CG4Ctx::BeginOfGenstep(char gentype, int num_photons)
 
 void CG4Ctx::EndOfGenstep()
 {
-    LOG(fatal) 
+    LOG(LEVEL) 
         << " _gentype [" << _gentype << "]"
         << " _genstep_num_photons " << _genstep_num_photons 
         << " _genstep_index " << _genstep_index 
@@ -393,12 +395,13 @@ void CG4Ctx::setTrack(const G4Track* track)
 {
     G4ParticleDefinition* particle = track->GetDefinition();
 
-    _track = const_cast<G4Track*>(track) ; 
+    _track = track ; 
+
+    G4Track* mtrack = const_cast<G4Track*>(track) ; 
+    _process_manager = CProcessManager::Current(mtrack);
+
+    _track_status = track->GetTrackStatus(); 
     _track_id = CTrack::Id(track) ;    // 0-based id 
-
-
-
-    _process_manager = CProcessManager::Current(_track);
 
     _track_step_count = 0 ; 
     _event_track_count += 1 ; 
@@ -421,7 +424,7 @@ void CG4Ctx::setTrack(const G4Track* track)
         << " _process_manager " << CProcessManager::Desc(_process_manager)
         ;
 
-    if(_optical) setTrackOptical();
+    if(_optical) setTrackOptical(mtrack);
 }
 
 
@@ -450,11 +453,11 @@ not reemission.  That seems an obtuse way of yielding _reemtrack
 
 **/
 
-void CG4Ctx::setTrackOptical() 
+void CG4Ctx::setTrackOptical(G4Track* mtrack) 
 {
     LOG(debug) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
 
-    _track->UseGivenVelocity(true);
+    mtrack->UseGivenVelocity(true);
 
     // NB without this BoundaryProcess proposed velocity to get correct GROUPVEL for material after refraction 
     //    are trumpled by G4Track::CalculateVelocity 
@@ -465,9 +468,9 @@ void CG4Ctx::setTrackOptical()
 
     // dynamic_cast gives NULL when using the wrong type for the pointer
 
-    G4VUserTrackInformation* ui = _track->GetUserInformation() ; 
+    G4VUserTrackInformation* ui = mtrack->GetUserInformation() ; 
     LOG(LEVEL) 
-        << " _track " << _track
+        << " mtrack " << mtrack
         << " ui " << ui 
         ;
 
@@ -505,7 +508,7 @@ void CG4Ctx::setTrackOptical()
         << " _primary_id " << _primary_id 
         << " _reemtrack " << _reemtrack
         << " trk_gentype " << trk_gentype
-        << " _track.GetGlobalTime " << _track->GetGlobalTime()
+        << " mtrack.GetGlobalTime " << mtrack->GetGlobalTime()
         ;
     setGentype(trk_gentype);  // TODO: maybe not needed, following addition of setGensteps ?
 

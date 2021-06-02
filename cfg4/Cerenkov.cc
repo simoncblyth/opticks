@@ -93,6 +93,7 @@
 #include "G4ParticleDefinition.hh"
 
 #include "CGenstepCollector.hh"
+#include "CManager.hh"
 #include "Cerenkov.hh"
 
 #include "CFG4_POP.hh"
@@ -248,12 +249,14 @@ Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     G4double MeanNumberOfPhotons2 = GetAverageNumberOfPhotons(charge,beta2,aMaterial,Rindex);
 
 
-    // OPTICKS STEP COLLECTION : STEALING THE STACK
+    if(NumPhotons > 0)
     {
         const G4ParticleDefinition* definition = aParticle->GetDefinition();
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
-        CGenstepCollector::Instance()->collectCerenkovStep(
+
+        unsigned opticks_photon_offset = CGenstepCollector::Get()->getNumPhotons(); 
+        CGenstepCollector::Get()->collectCerenkovStep(
 
                0,                  // 0     id:zero means use cerenkov step count 
                aTrack.GetTrackID(),
@@ -285,6 +288,8 @@ Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                MeanNumberOfPhotons2,
                0
         );
+
+        CManager::Get()->BeginOfGenstep('C', NumPhotons, opticks_photon_offset); 
     }
 
 	

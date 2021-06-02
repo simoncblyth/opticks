@@ -659,7 +659,8 @@ class OKCORE_API Opticks {
        void defineEventSpec();
        void configureDomains();
    public:
-       unsigned getNumPhotonsPerG4Event();
+       unsigned getNumPhotonsPerG4Event() const ;
+       unsigned getManagerMode() const ;
    public:
        const char*        getRNGDir() const ;
        unsigned           getRngMax()   const ; 

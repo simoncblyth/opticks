@@ -59,8 +59,8 @@ void G4OpticksRecorder::setGeometry(const GGeo* ggeo_)
     m_ggeo = ggeo_ ; 
     m_ok = m_ggeo->getOpticks(); 
     m_material_bridge = new CMaterialBridge(m_ggeo->getMaterialLib()) ; 
-    bool dynamic = true ;   // trying to operate without gensteps ahead of time  
-    m_manager = new CManager(m_ok, dynamic);
+    bool onestep = true ;   // trying to operate without gensteps ahead of time  
+    m_manager = new CManager(m_ok, onestep);
     m_manager->setMaterialBridge(m_material_bridge); 
   
     LOG(LEVEL); 

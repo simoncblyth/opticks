@@ -20,7 +20,7 @@ CTrk::CTrk( unsigned packed )
 
 CTrk::CTrk( unsigned photon_id_ , char gentype_, bool reemission_ )
     :
-    m_packed((photon_id_ & 0x3fffffff) | unsigned(gentype_ == 'C') << 31 | unsigned(reemission_) << 30 )   
+    m_packed((photon_id_ & 0x3fffffff) | unsigned(gentype_ == 'C') << 31 | unsigned(reemission_) << 30 )
 {
 }
 

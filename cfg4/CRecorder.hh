@@ -156,11 +156,12 @@ class CFG4_API CRecorder {
 
     public:
         CRecorder(CG4Ctx& ctx, bool onestep); // CG4::CG4
+        bool isOneStep() const ; 
 
         void setMaterialBridge(const CMaterialBridge* material_bridge);
 
         void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
-        void BeginOfGenstep(char gentype, int num_photons);
+        void BeginOfGenstep(char gentype, int num_photons, int offset);
         void EndOfGenstep();
 
         void postTrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
@@ -195,6 +196,7 @@ class CFG4_API CRecorder {
     private:
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
+        unsigned           m_mode ; 
         bool               m_recpoi ; 
         bool               m_reccf ;
         CRecState          m_state ;  

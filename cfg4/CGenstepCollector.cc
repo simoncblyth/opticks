@@ -39,7 +39,7 @@ const plog::Severity CGenstepCollector::LEVEL = PLOG::EnvLevel("CGenstepCollecto
 
 CGenstepCollector* CGenstepCollector::INSTANCE = NULL ;
 
-CGenstepCollector* CGenstepCollector::Instance()
+CGenstepCollector* CGenstepCollector::Get()
 {
    assert(INSTANCE && "CGenstepCollector has not been instanciated");
    return INSTANCE ;

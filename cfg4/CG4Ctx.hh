@@ -66,6 +66,7 @@ struct CFG4_API CG4Ctx
     static const unsigned TO ; 
 
     Opticks* _ok ; 
+    unsigned _mode ; 
     int   _pindex ; 
     bool  _print ; 
 
@@ -91,6 +92,7 @@ struct CFG4_API CG4Ctx
     // CG4Ctx::BeginOfGenstep
     // CG4Ctx::EndOfGenstep
     char     _gentype ;   // 'C' 'S' 'T'
+    unsigned _genstep_offset ; 
     unsigned _genstep_num_photons ; 
 
     // *_genstep_index* 
@@ -106,7 +108,8 @@ struct CFG4_API CG4Ctx
     unsigned  _genflag  ;
 
     // CG4Ctx::setTrack
-    G4Track* _track ; 
+    const G4Track*  _track ; 
+    G4TrackStatus   _track_status ;  
     G4ProcessManager* _process_manager ; 
 
     int  _track_id ;
@@ -169,13 +172,13 @@ struct CFG4_API CG4Ctx
     Opticks* getOpticks() const ; 
 
     void setEvent(const G4Event* event);
-    void BeginOfGenstep(char gentype, int num_photons);
+    void BeginOfGenstep(char gentype, int num_photons, int offset);
     void EndOfGenstep();
     void setGentype(char gentype);
     void setGen(unsigned gen);
 
     void setTrack(const G4Track* track);
-    void setTrackOptical();
+    void setTrackOptical(G4Track* mtrack);
     unsigned getNumTrackOptical() const ; 
 
     void setStep(const G4Step* step, int noZeroSteps);

@@ -101,12 +101,12 @@ int main(int argc, char** argv)
     {
         unsigned num_steps = mock_numsteps(evt, scale); 
         unsigned gentype = OpticksGenstep_MACHINERY ; 
-        for(unsigned i=0 ; i < num_steps ; i++) CGenstepCollector::Instance()->collectMachineryStep(gentype);
+        for(unsigned i=0 ; i < num_steps ; i++) CGenstepCollector::Get()->collectMachineryStep(gentype);
 
         const char* path = genstep_path(evt); 
-        CGenstepCollector::Instance()->setArrayContentIndex(evt); 
-        CGenstepCollector::Instance()->save(path); 
-        CGenstepCollector::Instance()->reset(); 
+        CGenstepCollector::Get()->setArrayContentIndex(evt); 
+        CGenstepCollector::Get()->save(path); 
+        CGenstepCollector::Get()->reset(); 
 
         //SSys::npdump(path, "np.uint32" );
         //ok.profile(SStr::Concat(NULL, evt)) ; 

@@ -72,7 +72,7 @@ class CFG4_API CGenstepCollector
 {
     public:
         static const plog::Severity LEVEL ; 
-        static CGenstepCollector* Instance();
+        static CGenstepCollector* Get();
     public:
         CGenstepCollector(const NLookup* lookup);  
     public:

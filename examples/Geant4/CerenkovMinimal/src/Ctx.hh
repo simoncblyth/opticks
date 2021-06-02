@@ -44,7 +44,7 @@ struct Ctx
     bool cpu_propagate() const ;
 
 
-    Ctx(unsigned opticks_mode);
+    Ctx(unsigned opticks_mod);
      
     unsigned           _opticks_mode ;           
     G4OpticksRecorder* _recorder ; 

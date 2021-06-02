@@ -649,7 +649,9 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             {
                 const G4ParticleDefinition* definition = aParticle->GetDefinition();
                 G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
-                CGenstepCollector::Instance()->collectScintillationStep(
+
+                unsigned opticks_photon_offset = CGenstepCollector::Get()->getNumPhotons(); 
+                CGenstepCollector::Get()->collectScintillationStep(
 
                        0,                  // 0     id:zero means use scintillation step count 
                        aTrack.GetTrackID(),
@@ -683,7 +685,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 );
 
 
-                CManager::Get()->BeginOfGenstep('S', Num );  
+                CManager::Get()->BeginOfGenstep('S', Num, opticks_photon_offset );  
             }
 
 

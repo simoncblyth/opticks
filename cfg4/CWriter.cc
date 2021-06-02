@@ -71,6 +71,11 @@ CWriter::CWriter(CG4Ctx& ctx, CPhoton& photon, bool onestep)
     LOG(LEVEL) << " " << ( m_onestep ? "ONESTEP" : "STATIC/ALLSTEP" ) ;
 }
 
+bool CWriter::isOneStep() const
+{
+   return m_onestep ;  
+}
+
 void CWriter::setEnabled(bool enabled)
 {
     m_enabled = enabled ; 
@@ -142,17 +147,19 @@ Invoked from CRecorder::BeginOfGenstep
 
 **/
 
-void CWriter::BeginOfGenstep( char gentype, int num_onestep_photons )
+void CWriter::BeginOfGenstep( char gentype, int num_onestep_photons, int offset )
 {
     LOG(LEVEL) 
         << " m_ctx._gentype [" <<  m_ctx._gentype << "]" 
         << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons 
         << " m_ctx._genstep_index " << m_ctx._genstep_index
+        << " m_ctx._genstep_offset " << m_ctx._genstep_offset
         ;
 
     assert( m_onestep == true ); 
     assert( m_ctx._gentype == gentype  ); 
     assert( m_ctx._genstep_num_photons == unsigned(num_onestep_photons)  ); 
+    assert( m_ctx._genstep_offset == unsigned(offset)  ); 
 
     m_onestep_records = NPY<short>::make(num_onestep_photons, m_ctx._steps_per_photon, 2, 4) ;
     m_onestep_records->zero();
@@ -300,8 +307,13 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
     unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ;   
     // hmm maybe separate id for onestep handling and all genstep handling 
 
-    LOG(LEVEL)  << " target_record_id " << target_record_id ; 
+    LOG(LEVEL)  
+        << " m_ctx._record_id(target_record_id) " << m_ctx._record_id 
+        << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons
+        ;
+  
     assert( m_target_records ); 
+    assert( target_record_id < m_ctx._genstep_num_photons ); 
 
     unsigned slot = photon._slot_constrained ;
     unsigned flag = photon._flag ; 
@@ -414,10 +426,15 @@ A: Hmm, not sure : but suspect that is could be made to work by using
 void CWriter::writePhoton(const G4StepPoint* point )
 {
     unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ; 
-    LOG(LEVEL)  << " target_record_id " << target_record_id ; 
+    LOG(LEVEL)  
+        << " m_ctx._record_id(target_record_id) " << m_ctx._record_id 
+        << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons
+        ;
+  
     assert( m_target_photons ); 
-    writeHistory(target_record_id);  
+    assert( target_record_id < m_ctx._genstep_num_photons ); 
 
+    writeHistory(target_record_id);  
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();

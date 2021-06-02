@@ -42,7 +42,7 @@ CWriter
 
 Canonical m_writer instance is resident of CRecorder and is instanciated with it.
 
-Writes step records, final photons and sequence(aka history) entries 
+Writes G4StepPoint to buffer, ie writes step records, final photons and sequence(aka history) entries 
 collected from Geant4 into buffers in the "g4evt" OpticksEvent.
 
 In static mode (when gensteps are available ahead of time) the number of photons is known in advance, 
@@ -64,7 +64,7 @@ class CFG4_API CWriter
         CWriter(CG4Ctx& ctx, CPhoton& photon, bool onestep);        
         void setEnabled(bool enabled);
         std::string desc(const char* msg=nullptr) const ; 
-
+        bool isOneStep() const ; 
     public:
         // *initEvent*
         //     configures recording and prepares buffer pointers
@@ -92,7 +92,7 @@ class CFG4_API CWriter
         void writeHistory(unsigned target_record_id) ;
 
    private:
-        void BeginOfGenstep( char gentype, int num_onestep_photons );
+        void BeginOfGenstep( char gentype, int num_onestep_photons, int offset  );
         void EndOfGenstep();
 
     private:

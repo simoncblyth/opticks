@@ -4127,7 +4127,8 @@ TorchStepNPY* Opticks::makeSimpleTorchStep(unsigned gencode)
 }
 
 
-unsigned Opticks::getNumPhotonsPerG4Event(){ return m_cfg->getNumPhotonsPerG4Event() ; }
+unsigned Opticks::getNumPhotonsPerG4Event() const { return m_cfg->getNumPhotonsPerG4Event() ; }
+unsigned Opticks::getManagerMode() const {          return m_cfg->getManagerMode() ; }
 
 
 

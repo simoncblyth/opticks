@@ -72,8 +72,6 @@ void Ctx::setEvent(const G4Event* event)
 {
     _event = event ; 
     _event_id = event->GetEventID() ; 
-    //_event_total += 1 ;
-    //_event_track_count = 0 ; 
 
     _track = NULL ; 
     _track_id = -1 ; 
@@ -158,8 +156,8 @@ void Ctx::setTrackOptical(const G4Track* track)
 #ifdef WITH_OPTICKS
     CTrackInfo* tkinfo=dynamic_cast<CTrackInfo*>(track->GetUserInformation()); 
     assert(tkinfo) ; 
-    _record_id = tkinfo->record_id() ;
-    char tk_gentype = tkinfo->gentype() ;  
+    _record_id = tkinfo->trk.photon_id() ;
+    char tk_gentype = tkinfo->trk.gentype() ;  
     LOG(info) << " _record_id " << _record_id << " tk_gentype " << tk_gentype ;  
     G4Opticks::Get()->setAlignIndex(_record_id);
 #endif
@@ -170,8 +168,8 @@ void Ctx::postTrackOptical(const G4Track* track)
 #ifdef WITH_OPTICKS
     CTrackInfo* tkinfo=dynamic_cast<CTrackInfo*>(track->GetUserInformation()); 
     assert(tkinfo) ; 
-    LOG(info) << " _record_id " << _record_id << " tk_gentype " << tkinfo->gentype() ;  
-    assert( _record_id == int(tkinfo->record_id()) ) ;  
+    LOG(info) << " _record_id " << _record_id << " tk_gentype " << tkinfo->trk.gentype() ;  
+    assert( _record_id == int(tkinfo->trk.photon_id()) ) ;  
     G4Opticks::Get()->setAlignIndex(-1);
 #endif
 }

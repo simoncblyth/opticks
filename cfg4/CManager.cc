@@ -29,7 +29,7 @@ CRecorder* CManager::getRecorder() const
 }
 CStepRec*  CManager::getStepRec() const 
 {
-    return m_steprec ; 
+    return m_noprec ; 
 }
 
 
@@ -50,21 +50,39 @@ double CManager::flat_instrumented(const char* file, int line)
 
 unsigned long long CManager::getSeqHis() const { return m_recorder->getSeqHis() ; }
 
+/**
+CManager::CManager
+--------------------
+
+--managermode
+
+0
+   return immediately from lifecycle calls doing nothing but logging
+1 
+   keep the CG4Ctx updated to follow the propagation, but take no actions 
+
+   * do not create OpticksEvent 
+   * make no changes to the propagation 
+   * do no recording
 
 
-CManager::CManager(Opticks* ok, bool dynamic )
+
+**/
+
+CManager::CManager(Opticks* ok, bool onestep)
     :
     m_ok(ok),
-    m_dynamic(dynamic),
+    m_onestep(onestep),
+    m_mode(ok->getManagerMode()),
     m_ctx(new CG4Ctx(m_ok)),
     m_engine(m_ok->isAlign() ? new CRandomEngine(this) : NULL  ),   // --align
-    m_recorder(new CRecorder(*m_ctx, m_dynamic)),  // optical recording 
-    m_steprec(new CStepRec(m_ok, m_dynamic)),      // non-optical recording 
+    m_recorder(new CRecorder(*m_ctx, m_onestep)),  // optical recording 
+    m_noprec(new CStepRec(m_ok, m_onestep)),      // non-optical recording 
     m_dbgflat(m_ok->isDbgFlat()), 
     m_dbgrec(m_ok->isDbgRec()),
     m_trman(NULL),
     m_nav(NULL),
-    m_steprec_store_count(0), 
+    m_noprec_store_count(0), 
     m_cursor_at_clear(-1)
 {
     fINSTANCE = this ; 
@@ -73,6 +91,7 @@ CManager::CManager(Opticks* ok, bool dynamic )
 
 void CManager::setMaterialBridge(const CMaterialBridge* material_bridge)
 {
+    LOG(LEVEL) << " m_mode " << m_mode ;
     m_recorder->setMaterialBridge(material_bridge); 
 
     m_trman = G4TransportationManager::GetTransportationManager(); 
@@ -80,15 +99,13 @@ void CManager::setMaterialBridge(const CMaterialBridge* material_bridge)
 }
 
 
-
-
 void CManager::BeginOfRunAction(const G4Run*)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << " m_mode " << m_mode ;
 }
 void CManager::EndOfRunAction(const G4Run*)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << " m_mode " << m_mode ;
 }
 
 
@@ -103,6 +120,9 @@ to create the pre-sized OpticksEvent.
 
 void CManager::BeginOfEventAction(const G4Event* event)
 {
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
+
     m_ctx->setEvent(event);
 
     if(m_ok->isSave()) presave();   // creates the OpticksEvent
@@ -113,7 +133,7 @@ void CManager::BeginOfEventAction(const G4Event* event)
             << " mocking BeginOfGenstep as have input photon primaries " 
             << CEvent::DescPrimary(event) 
             ; 
-        BeginOfGenstep('T', m_ctx->_number_of_input_photons);   
+        BeginOfGenstep('T', m_ctx->_number_of_input_photons, 0 );   
     }   
 }
 
@@ -129,12 +149,16 @@ records to the OpticksEvent, so it must be before save.
 
 void CManager::EndOfEventAction(const G4Event*)
 {
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
+
     LOG(LEVEL) 
         << " _number_of_input_photons " << m_ctx->_number_of_input_photons  
         << " finalize the last Genstep in the event  " 
         ; 
 
-    EndOfGenstep();   
+
+    if(m_onestep) EndOfGenstep();   
 
     if(m_ok->isSave()) save() ; 
 }
@@ -152,8 +176,13 @@ just prior to the C/S generation loop
 
 **/
 
-void CManager::BeginOfGenstep(char gentype, int num_photons)
+void CManager::BeginOfGenstep(char gentype, int num_photons, int offset )
 {
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
+
+    assert( m_onestep );  
+
     if(m_ctx->_genstep_index > -1 )
     {
         LOG(LEVEL) << " CALLING EndOfGenstep for prior m_ctx->_genstep_index " << m_ctx->_genstep_index ; 
@@ -162,9 +191,10 @@ void CManager::BeginOfGenstep(char gentype, int num_photons)
 
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
 
-    m_ctx->BeginOfGenstep(gentype, num_photons);  
+    m_ctx->BeginOfGenstep(gentype, num_photons, offset);  
 
-    m_recorder->BeginOfGenstep(gentype, num_photons);  
+    if(m_mode == 1 ) return ; 
+    m_recorder->BeginOfGenstep(gentype, num_photons, offset);  
 
 }
 
@@ -181,10 +211,12 @@ BUT : thats far too soon.
 
 void CManager::EndOfGenstep()
 {
-    LOG(LEVEL) ;
+    LOG(LEVEL) << " mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
 
     m_ctx->EndOfGenstep();  
 
+    if(m_mode == 1 ) return ; 
     m_recorder->EndOfGenstep();  
 }
 
@@ -206,14 +238,20 @@ one by one. So need to find a workable way to extend the G4 event.
 **/
 void CManager::presave()
 {
-    plog::Severity level = info ; 
-    LOG(level) << " --save creating OpticksEvent  " ; 
+    LOG(LEVEL) << " mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
 
     unsigned tagoffset = m_ctx->_event_id  ; 
     char ctrl = '-' ; 
 
-    LOG(level) << " tagoffset " << tagoffset << " ctrl [" << ctrl << "]" ; 
+    LOG(LEVEL) 
+        << " [--save] creating OpticksEvent  " 
+        << " m_ctx->_event_id(tagoffset) " << tagoffset 
+        << " ctrl [" << ctrl << "]" 
+        ; 
 
+
+    if(m_mode == 1 ) return ; 
     m_ok->createEvent(tagoffset, ctrl);   
 
     OpticksEvent* evt = m_ok->getEvent(ctrl);
@@ -231,14 +269,16 @@ Configure event recording, limits/shapes etc..
 
 void CManager::initEvent(OpticksEvent* evt)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    assert( m_mode > 1 ); 
+
     m_ctx->initEvent(evt);
     m_recorder->initEvent(evt);
 
     NPY<float>* nopstep = evt->getNopstepData();
     if(!nopstep) LOG(fatal) << " nopstep NULL " << " evt " << evt->getShapeString() ; 
     assert(nopstep); 
-    m_steprec->initEvent(nopstep);
+    m_noprec->initEvent(nopstep);
 }
 
 /**
@@ -251,18 +291,22 @@ Invoked from CManager::EndOfEventAction
 
 void CManager::save()
 {
-    char ctrl = '-' ; 
-    plog::Severity level = info ; 
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
 
     unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
     //   this doesnt account for reemission REJOIN, so it will be too high 
     //   TODO: this should be the sum of the numbers for each genstep  
 
+    LOG(LEVEL) << " m_mode " << m_mode << " numPhotons(TOFIX) " << numPhotons ; 
+
+    if(m_mode == 1 ) return ; 
+    char ctrl = '-' ; 
     OpticksEvent* g4evt = m_ok->getEvent(ctrl) ; 
 
     if(g4evt)
     {
-        LOG(level) << " --save g4evt numPhotons " << numPhotons ; 
+        LOG(LEVEL) << " --save g4evt numPhotons " << numPhotons ; 
         bool resize = false ; 
         g4evt->setNumPhotons( numPhotons, resize ); 
 
@@ -276,9 +320,10 @@ void CManager::save()
 
 void CManager::PreUserTrackingAction(const G4Track* track)
 {
-    LOG(LEVEL); 
-    m_ctx->setTrack(track);
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
 
+    m_ctx->setTrack(track);
 
     if(m_ctx->_optical)
     {   
@@ -288,12 +333,11 @@ void CManager::PreUserTrackingAction(const G4Track* track)
 
 void CManager::PostUserTrackingAction(const G4Track* track)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
 
     int track_id = CTrack::Id(track) ;
     assert( track_id == m_ctx->_track_id );
-    assert( track == m_ctx->_track );
-
 
     if(m_ctx->_optical)
     {   
@@ -304,6 +348,9 @@ void CManager::PostUserTrackingAction(const G4Track* track)
 
 void CManager::CManager::preTrack()
 {
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
+
     if(m_engine)
     {
         m_engine->preTrack();
@@ -312,6 +359,9 @@ void CManager::CManager::preTrack()
 
 void CManager::postTrack()
 {
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
+
 
     if(m_ctx->_optical)
     {
@@ -331,6 +381,9 @@ void CManager::postTrack()
 
 void CManager::postpropagate()
 {
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
+
     if(m_engine) m_engine->postpropagate();  
 }
 
@@ -390,20 +443,24 @@ See :doc:`stepping_process_review`
 
 void CManager::UserSteppingAction(const G4Step* step)
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
+
 
     bool done = setStep(step);
 
     postStep();
 
+
+    G4Track* track = step->GetTrack();    // m_track is const qualified
+
     if(done)
     { 
-        G4Track* track = step->GetTrack();    // m_track is const qualified
         track->SetTrackStatus(fStopAndKill);
     }
     else
     {
-        prepareForNextStep(step);
+        prepareForNextStep(step, track);
     } 
 }
 
@@ -411,6 +468,9 @@ void CManager::UserSteppingAction(const G4Step* step)
 
 void CManager::postStep()
 {
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    if(m_mode == 0 ) return ; 
+
     if(m_engine)
     {
         m_engine->postStep();
@@ -429,17 +489,8 @@ For a look into Geant4 ZeroStepping see notes/issues/review_alignment.rst
 
 bool CManager::setStep(const G4Step* step)
 {
-   /*
-    // difficult to identify 'C' or 'S' from these tealeaves
-
-    int preSubType = CStep::PreProcessSubType(step); 
-    int postSubType = CStep::PostProcessSubType(step); 
-    LOG(LEVEL)
-        << " preSubType " << preSubType << " CProcessSubType::Name(preSubType) " << CProcessSubType::Name(preSubType)
-        << " postSubType " << postSubType << " CProcessSubType::Name(postSubType) " << CProcessSubType::Name(postSubType)
-        ;
-
-    */
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    assert(m_mode > 0 ); 
 
     int noZeroSteps = -1 ;
     int severity = m_nav->SeverityOfZeroStepping( &noZeroSteps );
@@ -458,34 +509,35 @@ bool CManager::setStep(const G4Step* step)
     }
 
 
+    m_ctx->setStep(step, noZeroSteps);
+
+
     bool done = false ; 
 
-    m_ctx->setStep(step, noZeroSteps);
- 
-    if(m_ctx->_optical)
+    if(m_mode == 1)
     {
-
-        if(m_ctx->_boundary_status == 0 )
-        {
-            LOG(fatal)
-                << " boundary_status zero "
-                ; 
-        } 
-        done = m_recorder->Record(m_ctx->_boundary_status);  
+         done = m_ctx->_track_status == fStopAndKill ; 
     }
     else
     {
-        m_steprec->collectStep(step, m_ctx->_step_id);
-    
-        G4TrackStatus track_status = m_ctx->_track->GetTrackStatus(); 
-
-        if(track_status == fStopAndKill)
+        if(m_ctx->_optical)
         {
-            done = true ;  
-            m_steprec->storeStepsCollected(m_ctx->_event_id, m_ctx->_track_id, m_ctx->_pdg_encoding);
-            m_steprec_store_count = m_steprec->getStoreCount(); 
+            if(m_ctx->_boundary_status == 0 ) LOG(fatal) << " boundary_status zero " ; 
+            done = m_recorder->Record(m_ctx->_boundary_status);  
+        }
+        else
+        {
+            m_noprec->collectStep(step, m_ctx->_step_id);
+
+            if(m_ctx->_track_status == fStopAndKill)
+            {
+                done = true ;  
+                m_noprec->storeStepsCollected(m_ctx->_event_id, m_ctx->_track_id, m_ctx->_pdg_encoding);
+                m_noprec_store_count = m_noprec->getStoreCount(); 
+            }
         }
     }
+
 
    if(m_ctx->_step_total % 10000 == 0) 
        LOG(debug) << "CSA (totals%10k)"
@@ -507,8 +559,12 @@ See notes/issues/ts19-100.rst
 
 **/
 
-void CManager::prepareForNextStep(const G4Step* step)
+void CManager::prepareForNextStep(const G4Step* step, G4Track* mtrack)
 {
+    LOG(LEVEL) << " m_mode " << m_mode ;
+    assert( m_mode > 0 );  
+
+
     bool zeroStep = m_ctx->_noZeroSteps > 0 ;   // usually means there was a jump back 
     bool skipClear0 = zeroStep && m_ok->isDbgSkipClearZero()  ;  // --dbgskipclearzero
     bool skipClear = skipClear0 ; 
@@ -553,7 +609,7 @@ void CManager::prepareForNextStep(const G4Step* step)
 
     if(!skipClear)
     {  
-        CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx->_process_manager, *m_ctx->_track, *m_ctx->_step );
+        CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx->_process_manager, *mtrack, *m_ctx->_step );
         m_cursor_at_clear = cursor ; 
     }
 }
@@ -570,8 +626,6 @@ void CManager::report(const char* msg)
            ;
     //m_recorder->report(msg);
 }
-
-
 
 
 

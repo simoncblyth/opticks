@@ -36,7 +36,7 @@ rather than CG4 which is too high level for reusabliity.
 CManager accepts steps from Geant4, routing them to either:
 
 1. m_recorder(CRecorder) for optical photon steps
-2. m_steprec(CStepRec) for non-optical photon steps
+2. m_noprec(CStepRec) for non-optical photon steps
 
 The setStep method returns a boolean "done" which
 dictates whether to fStopAndKill the track.
@@ -58,7 +58,7 @@ common to run without knowing the gensteps ahead of time.
 See CWriter::initEvent for the split between dynamic and static 
 
 
-Whats the difference between CRecorder/m_recorder and CStepRec/m_steprec ?
+Whats the difference between CRecorder/m_recorder and CStepRec/m_noprec ?
 -------------------------------------------------------------------------------
 
 CStepRec 
@@ -82,11 +82,12 @@ struct CFG4_API CManager
     static CManager* Get(); 
 
     Opticks*          m_ok ; 
-    bool              m_dynamic ; 
+    bool              m_onestep ; 
+    unsigned          m_mode ;     // --managermode 
     CG4Ctx*           m_ctx ; 
     CRandomEngine*    m_engine ; 
     CRecorder*        m_recorder   ; 
-    CStepRec*         m_steprec   ; 
+    CStepRec*         m_noprec   ; 
 
     bool              m_dbgflat ; 
     bool              m_dbgrec ; 
@@ -94,7 +95,7 @@ struct CFG4_API CManager
     G4Navigator*             m_nav ; 
 
 
-    unsigned int m_steprec_store_count ;
+    unsigned int m_noprec_store_count ;
     int          m_cursor_at_clear ;
 
 
@@ -110,12 +111,12 @@ struct CFG4_API CManager
     void report(const char* msg="CManager::report");
 
 
-    CManager(Opticks* ok, bool dynamic ); 
+    CManager(Opticks* ok, bool onestep); 
 
 
     // inputs from G4Opticks/G4OpticksRecorder
 
-    void BeginOfGenstep(char gentype, int num_photons);
+    void BeginOfGenstep(char gentype, int num_photons, int offset);
     void EndOfGenstep();
 
 
@@ -147,7 +148,7 @@ struct CFG4_API CManager
     void postTrack(); 
 
     bool setStep( const G4Step* step);
-    void prepareForNextStep( const G4Step* step);
+    void prepareForNextStep( const G4Step* step, G4Track* mtrack);
     void postStep(); 
 
     void postpropagate();

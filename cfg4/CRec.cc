@@ -86,6 +86,16 @@ std::string CRec::desc() const
     return ss.str();
 }
 
+std::string CRec::descStages(const char* msg) const
+{
+    unsigned num = getNumStp(); 
+    std::stringstream ss ; 
+    if(msg) ss << msg << " " ; 
+    for(unsigned i=0 ; i < num ; i++) ss << CStage::Label(getStp(i)->getStage()) << " " ; 
+    std::string s = ss.str();  
+    return s ; 
+}
+
 
 void CRec::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::initEvent
 {
@@ -271,8 +281,6 @@ bool CRec::add(Ds::DsG4OpBoundaryProcessStatus boundary_status )
 bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
 #endif
 {
-    //m_ok->accumulateStart(m_add_acc); 
-
     setBoundaryStatus(boundary_status);
 
     m_step_limited = m_stp.size() >= m_ctx.step_limit() ;    
@@ -292,9 +300,11 @@ bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
 
     bool done = ( m_recpoialign || !m_recpoi ) ? m_step_limited : m_point_done  ;
 
-    //m_ok->accumulateStop(m_add_acc); 
     return done ;  // (*lldb*) add
 }
+
+
+
 
 
 /**

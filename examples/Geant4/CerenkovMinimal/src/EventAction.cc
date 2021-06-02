@@ -46,7 +46,10 @@ EventAction::EventAction(Ctx* ctx_)
 void EventAction::BeginOfEventAction(const G4Event* event)
 {
 #ifdef WITH_OPTICKS
-    ctx->_recorder->BeginOfEventAction(event); 
+    if(ctx->_recorder)
+    {
+        ctx->_recorder->BeginOfEventAction(event); 
+    }
 #endif
     ctx->setEvent(event); 
 }
@@ -59,7 +62,10 @@ void EventAction::EndOfEventAction(const G4Event* event)
 #ifdef WITH_OPTICKS
     G4cout << "\n###[ EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons\n" << G4endl ; 
 
-    ctx->_recorder->EndOfEventAction(event); 
+    if(ctx->_recorder)
+    {
+        ctx->_recorder->EndOfEventAction(event); 
+    }
 
     G4Opticks* g4ok = G4Opticks::Get() ;
 

@@ -37,6 +37,7 @@ struct G4OK_API G4OpticksRecorder
     static const plog::Severity LEVEL ; 
     static G4OpticksRecorder* Get() ; 
 
+
     const GGeo*      m_ggeo ; 
     Opticks*         m_ok ; 
     CMaterialBridge* m_material_bridge ; 
