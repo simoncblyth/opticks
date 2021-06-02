@@ -442,6 +442,12 @@ void G4Opticks::setPlacementOuterVolume(bool outer_volume)  // TODO: eliminate t
     m_placement_outer_volume = outer_volume ;  
 }
 
+/**
+G4Opticks::createCollectors
+-----------------------------
+
+**/
+
 void G4Opticks::createCollectors()
 {
     LOG(LEVEL) << "[" ; 

@@ -1,3 +1,17 @@
+
+#SteppingAction.cc
+#TrackingAction.cc
+#EventAction.cc
+#RunAction.cc
+#Ctx.cc
+
+#SteppingAction.hh
+#TrackingAction.hh
+#EventAction.hh
+#RunAction.hh
+#Ctx.hh
+
+
 target_sources(${name}
     PRIVATE
         DetectorConstruction.cc
@@ -5,12 +19,14 @@ target_sources(${name}
         L4Cerenkov.cc
         CKMScintillation.cc
         PrimaryGeneratorAction.cc
-        SteppingAction.cc
-        TrackingAction.cc
-        EventAction.cc
-        RunAction.cc
-        Ctx.cc
-        G4.cc
+
+        RAction.cc
+        EAction.cc
+        TAction.cc
+        SAction.cc
+
+        AManager.cc
+        CKM.cc
         SensitiveDetector.cc
         OpHit.cc
     PUBLIC
@@ -19,12 +35,14 @@ target_sources(${name}
         L4Cerenkov.hh
         CKMScintillation.h
         PrimaryGeneratorAction.hh
-        SteppingAction.hh
-        TrackingAction.hh
-        EventAction.hh
-        RunAction.hh
-        Ctx.hh
-        G4.hh
+        AManager.hh
+
+        RAction.hh
+        EAction.hh
+        TAction.hh
+        SAction.hh
+
+        CKM.hh
         SensitiveDetector.hh
         OpHit.hh
 )

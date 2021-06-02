@@ -122,16 +122,16 @@ struct CFG4_API CManager
 
     // inputs from Geant4
 
-    void BeginOfRunAction(const G4Run*);
-    void EndOfRunAction(const G4Run*);
+    virtual void BeginOfRunAction(const G4Run*);
+    virtual void EndOfRunAction(const G4Run*);
 
-    void BeginOfEventAction(const G4Event*);
-    void EndOfEventAction(const G4Event*);
+    virtual void BeginOfEventAction(const G4Event*);
+    virtual void EndOfEventAction(const G4Event*);
 
-    void PreUserTrackingAction(const G4Track*);
-    void PostUserTrackingAction(const G4Track*);
+    virtual void PreUserTrackingAction(const G4Track*);
+    virtual void PostUserTrackingAction(const G4Track*);
 
-    void UserSteppingAction(const G4Step*);
+    virtual void UserSteppingAction(const G4Step*);
 
 
 

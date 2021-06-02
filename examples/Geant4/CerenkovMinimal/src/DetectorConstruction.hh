@@ -41,5 +41,11 @@ struct DetectorConstruction : public G4VUserDetectorConstruction
     const char* sdname ;     
 
     virtual G4VPhysicalVolume* Construct();
+
+    void               setWorld(G4VPhysicalVolume* world); 
+    G4VPhysicalVolume* getWorld() const;
+    
+    G4VPhysicalVolume* _world ; 
+
 };
 

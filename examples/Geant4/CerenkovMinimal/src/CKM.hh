@@ -20,39 +20,48 @@
 #pragma once
 
 class G4RunManager ;
+class G4VPhysicalVolume ; 
 
-struct Ctx ; 
+class  G4Opticks ; 
+struct G4OpticksRecorder ; 
+
+struct RAction ; 
+struct EAction ; 
+struct TAction ; 
+struct SAction ; 
+
 struct SensitiveDetector ;
 struct DetectorConstruction ;
 class L4Cerenkov ; 
-//class G4Scintillation ; 
 class CKMScintillation ; 
 
 template <typename C, typename S> struct PhysicsList ; 
 struct PrimaryGeneratorAction ;
 
-struct RunAction ; 
-struct EventAction ; 
-struct TrackingAction ; 
-struct SteppingAction ; 
 
-struct G4
+struct CKM
 {
-    G4(int nev, unsigned opticksMode); 
-    ~G4();
-    void beamOn(int nev);
+    CKM(); 
+    ~CKM();
 
-    Ctx*                    ctx ; 
+    void init(); 
+    void beamOn(int nev);
+    void setup_G4Opticks(const G4VPhysicalVolume* world );
+
+    G4Opticks*               g4ok ; 
+    G4OpticksRecorder*       okr ; 
     G4RunManager*            rm ; 
     const char*             sdn ; 
     SensitiveDetector*       sd ; 
     DetectorConstruction*    dc ; 
     PhysicsList<L4Cerenkov,CKMScintillation>* pl ;
     PrimaryGeneratorAction*  ga ; 
-    RunAction*               ra ; 
-    EventAction*             ea ; 
-    TrackingAction*          ta ; 
-    SteppingAction*          sa ; 
+
+    RAction* ra ; 
+    EAction* ea ; 
+    TAction* ta ; 
+    SAction* sa ; 
+
 }; 
 
 

@@ -252,7 +252,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     G4cout << "] DetectorConstruction::Construct " << G4endl ; 
 
+    setWorld(pv_0); 
     return pv_0 ; 
 }
+
+
+void DetectorConstruction::setWorld(G4VPhysicalVolume* world)
+{
+    _world = world ; 
+}
+G4VPhysicalVolume* DetectorConstruction::getWorld() const
+{
+    return _world ; 
+}
+
+
 
 
