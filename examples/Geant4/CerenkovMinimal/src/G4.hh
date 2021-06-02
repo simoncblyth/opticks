@@ -25,7 +25,10 @@ struct Ctx ;
 struct SensitiveDetector ;
 struct DetectorConstruction ;
 class L4Cerenkov ; 
-template <typename T> struct PhysicsList ; 
+//class G4Scintillation ; 
+class CKMScintillation ; 
+
+template <typename C, typename S> struct PhysicsList ; 
 struct PrimaryGeneratorAction ;
 
 struct RunAction ; 
@@ -44,7 +47,7 @@ struct G4
     const char*             sdn ; 
     SensitiveDetector*       sd ; 
     DetectorConstruction*    dc ; 
-    PhysicsList<L4Cerenkov>* pl ;
+    PhysicsList<L4Cerenkov,CKMScintillation>* pl ;
     PrimaryGeneratorAction*  ga ; 
     RunAction*               ra ; 
     EventAction*             ea ; 

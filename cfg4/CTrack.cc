@@ -24,11 +24,15 @@
 #include "G4SystemOfUnits.hh"
 
 
+#include "CTrackInfo.hh"
+
 #include "DsG4CompositeTrackInfo.h"
 #include "DsPhotonTrackInfo.h"
 
 #include "PLOG.hh"
 
+
+const plog::Severity CTrack::LEVEL = PLOG::EnvLevel("CTrack", "DEBUG") ; 
 
 const char* CTrack::fAlive_                    = "fAlive" ;
 const char* CTrack::fStopButAlive_             = "fStopButAlive" ;
@@ -89,6 +93,23 @@ int CTrack::StepId(const G4Track* track)
 {
     return track->GetCurrentStepNumber() - 1 ;
 }
+
+int CTrack::AncestralId(const G4Track* track, bool dump)
+{
+    G4VUserTrackInformation* ui = track->GetUserInformation() ;
+    CTrackInfo* tkui = ui ? dynamic_cast<CTrackInfo*>(ui) : nullptr ; 
+    int ancestral_id = tkui != nullptr ?  tkui->trk.photon_id() : -1 ;  
+    if(dump)
+    {
+        LOG(LEVEL) 
+            << " ancestral_id " << ancestral_id
+            << "tkui.desc" << ( tkui ? tkui->desc() : "-" )  
+            ;
+    }
+    return ancestral_id ; 
+}
+
+
 
 int CTrack::PrimaryPhotonID(const G4Track* track)
 {

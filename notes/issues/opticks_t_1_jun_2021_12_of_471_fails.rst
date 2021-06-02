@@ -3,6 +3,14 @@ opticks_t_1_jun_2021_12_of_471_fails
 
 
 
+
+
+::
+
+    gdb --args OKG4Test --managermode 3 
+
+
+
 This one is lack of calling CManager::BeginOfGenstep from S+C following move to genstep chunking
 ---------------------------------------------------------------------------------------------------
 

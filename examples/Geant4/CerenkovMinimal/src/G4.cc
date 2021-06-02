@@ -27,6 +27,8 @@
 #include "SensitiveDetector.hh"
 #include "DetectorConstruction.hh"
 #include "L4Cerenkov.hh"
+//#include "G4Scintillation.hh"
+#include "CKMScintillation.h"
 #include "PhysicsList.hh"
 #include "PrimaryGeneratorAction.hh"
 
@@ -42,7 +44,7 @@ G4::G4(int nev, unsigned opticksMode)
     sdn("SD0"),
     sd(new SensitiveDetector(sdn)),
     dc(new DetectorConstruction(sdn)),
-    pl(new PhysicsList<L4Cerenkov>()),
+    pl(new PhysicsList<L4Cerenkov,CKMScintillation>()),
     ga(NULL),
     ra(NULL),
     ea(NULL),

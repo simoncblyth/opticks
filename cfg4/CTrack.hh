@@ -21,11 +21,14 @@
 
 // Simple G4Track wrapper providing getTrackStatusString()
 
+#include "plog/Severity.h"
+
 class G4Track ;
 #include "G4TrackStatus.hh"  
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API CTrack {
    public:
+    static const plog::Severity LEVEL ; 
     static const char* fAlive_ ;
     static const char* fStopButAlive_ ;
     static const char* fStopAndKill_ ;
@@ -36,6 +39,7 @@ class CFG4_API CTrack {
       static int Id(const G4Track* track); // 0-based Id (unlike original G4Track::GetTrackID which is 1-based)
       static int ParentId(const G4Track* track);
       static int StepId(const G4Track* track);
+      static int AncestralId(const G4Track* track, bool dump);
       static int PrimaryPhotonID(const G4Track* track);
       static float Wavelength(const G4Track* track);
       static float Wavelength(double thePhotonMomentum);

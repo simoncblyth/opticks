@@ -31,8 +31,8 @@
 #include "G4OpBoundaryProcess.hh"
 
 
-template <typename T>
-PhysicsList<T>::PhysicsList()
+template <typename C, typename S>
+PhysicsList<C,S>::PhysicsList()
     :
     fMaxNumPhotonStep(1000),
     fVerboseLevel(1),
@@ -52,8 +52,8 @@ PhysicsList<T>::PhysicsList()
 #include "G4ShortLivedConstructor.hh"
 
 
-template <typename T>
-void PhysicsList<T>::ConstructParticle()
+template <typename C, typename S>
+void PhysicsList<C,S>::ConstructParticle()
 {
     G4BosonConstructor::ConstructParticle(); 
     G4LeptonConstructor::ConstructParticle(); 
@@ -62,8 +62,8 @@ void PhysicsList<T>::ConstructParticle()
     G4IonConstructor::ConstructParticle();
 }
 
-template <typename T>
-void PhysicsList<T>::ConstructProcess()
+template <typename C, typename S>
+void PhysicsList<C,S>::ConstructProcess()
 {
     AddTransportation();
     ConstructEM();
@@ -93,8 +93,8 @@ void PhysicsList<T>::ConstructProcess()
 #include "G4hIonisation.hh"
 
 
-template <typename T>
-void PhysicsList<T>::ConstructEM()
+template <typename C, typename S>
+void PhysicsList<C,S>::ConstructEM()
 {
     G4int em_verbosity = 0 ; 
     G4EmParameters* empar = G4EmParameters::Instance() ;
@@ -164,14 +164,17 @@ void PhysicsList<T>::ConstructEM()
 
 
 
-template <typename T>
-void PhysicsList<T>::ConstructOp()
+template <typename C, typename S>
+void PhysicsList<C,S>::ConstructOp()
 {
-    fCerenkovProcess = new T("Cerenkov");
+    fCerenkovProcess = new C("Cerenkov");
     fCerenkovProcess->SetMaxNumPhotonsPerStep(fMaxNumPhotonStep);
     fCerenkovProcess->SetMaxBetaChangePerStep(10.0);
     fCerenkovProcess->SetTrackSecondariesFirst(true);   
     fCerenkovProcess->SetVerboseLevel(fVerboseLevel);
+
+    fScintillationProcess = new S("Scintillation"); 
+    fScintillationProcess->SetTrackSecondariesFirst(true);
 
     fAbsorptionProcess = new G4OpAbsorption();
     fRayleighProcess = new G4OpRayleigh();
@@ -220,9 +223,12 @@ void PhysicsList<T>::ConstructOp()
 
 
 //#include "G4Cerenkov.hh"
-#include "L4Cerenkov.hh"
 //#include "Cerenkov.hh"
+#include "L4Cerenkov.hh"
 
-template struct PhysicsList<L4Cerenkov> ; 
+//#include "G4Scintillation.hh"
+#include "CKMScintillation.h"
+
+template struct PhysicsList<L4Cerenkov, CKMScintillation> ; 
 
 

@@ -479,6 +479,8 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
     _photon_id = _primary_id  ; 
 
     _record_id = _primary_id - _genstep_offset ; 
+
+
     _record_fraction = double(_record_id)/double(_record_max) ;  
 
     _photon_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
@@ -491,6 +493,7 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
          << " _reemtrack " << _reemtrack
          << " mtrack.GetGlobalTime " << mtrack->GetGlobalTime()
          ;
+    assert( _record_id > -1 ); 
 
     _mask_index = _ok->hasMask() ?_ok->getMaskIndex( _primary_id ) : -1 ;   // "original" index 
 

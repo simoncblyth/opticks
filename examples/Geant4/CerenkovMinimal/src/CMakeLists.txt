@@ -3,6 +3,7 @@ target_sources(${name}
         DetectorConstruction.cc
         PhysicsList.cc
         L4Cerenkov.cc
+        CKMScintillation.cc
         PrimaryGeneratorAction.cc
         SteppingAction.cc
         TrackingAction.cc
@@ -16,6 +17,7 @@ target_sources(${name}
         DetectorConstruction.hh
         PhysicsList.hh
         L4Cerenkov.hh
+        CKMScintillation.h
         PrimaryGeneratorAction.hh
         SteppingAction.hh
         TrackingAction.hh

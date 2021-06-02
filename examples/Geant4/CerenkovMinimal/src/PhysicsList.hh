@@ -26,7 +26,7 @@ class G4OpBoundaryProcess ;
 class G4OpAbsorption ;
 class G4OpRayleigh ;
 
-template <typename T>
+template <typename C, typename S>
 struct PhysicsList : public G4VUserPhysicsList
 {
     PhysicsList();
@@ -39,8 +39,8 @@ struct PhysicsList : public G4VUserPhysicsList
 
     G4int                fMaxNumPhotonStep ; 
     G4int                fVerboseLevel ;  
-    T*                   fCerenkovProcess ; 
-    G4Scintillation*     fScintillationProcess ; 
+    C*                   fCerenkovProcess ; 
+    S*                   fScintillationProcess ; 
     G4OpAbsorption*      fAbsorptionProcess;
     G4OpRayleigh*        fRayleighProcess;
     G4OpBoundaryProcess* fBoundaryProcess ; 
