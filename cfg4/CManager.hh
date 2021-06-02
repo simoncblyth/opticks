@@ -78,6 +78,8 @@ CStepRec is beautifully simple, CRecorder is horribly complicated in comparison
 struct CFG4_API CManager
 {
     static const plog::Severity LEVEL ; 
+    static CManager* fINSTANCE ; 
+    static CManager* Get(); 
 
     Opticks*          m_ok ; 
     bool              m_dynamic ; 

@@ -125,6 +125,7 @@
 using namespace std;
 
 #include "CGenstepCollector.hh"
+#include "CManager.hh"
 #include "PLOG.hh"
 
 using CLHEP::twopi ; 
@@ -336,8 +337,9 @@ DsG4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 
+    bool valid_opticks_genstep = NumPhotons > 0 ; 
 
-    // OPTICKS STEP COLLECTION : STEALING THE STACK
+    if(valid_opticks_genstep)
     {
         const G4ParticleDefinition* definition = aParticle->GetDefinition();
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
@@ -374,6 +376,9 @@ DsG4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                MeanNumberOfPhotons2,
                0
         );
+
+        CManager::Get()->BeginOfGenstep('C', NumPhotons ); 
+
     }
 
 

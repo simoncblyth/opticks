@@ -99,6 +99,7 @@
 #include "DsG4CompositeTrackInfo.h"
 
 #include "CGenstepCollector.hh"
+#include "CManager.hh"
 #include "PLOG.hh"
 
 
@@ -640,9 +641,11 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	}
 
         if (!ScintillationIntegral) continue;
-	
+
             // OPTICKS STEP COLLECTION : STEALING THE STACK
-            if(Num > 0)
+             bool valid_opticks_genstep = Num > 0 && !flagReemission ;
+
+            if(valid_opticks_genstep)
             {
                 const G4ParticleDefinition* definition = aParticle->GetDefinition();
                 G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
@@ -678,6 +681,9 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                        0,
                        0
                 );
+
+
+                CManager::Get()->BeginOfGenstep('S', Num );  
             }
 
 

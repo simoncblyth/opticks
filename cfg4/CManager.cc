@@ -19,6 +19,9 @@
 
 const plog::Severity CManager::LEVEL = PLOG::EnvLevel("CManager", "DEBUG"); 
 
+CManager* CManager::fINSTANCE = nullptr ; 
+CManager* CManager::Get(){  return fINSTANCE ; } 
+
 
 CRecorder* CManager::getRecorder() const 
 { 
@@ -64,6 +67,7 @@ CManager::CManager(Opticks* ok, bool dynamic )
     m_steprec_store_count(0), 
     m_cursor_at_clear(-1)
 {
+    fINSTANCE = this ; 
 }
 
 

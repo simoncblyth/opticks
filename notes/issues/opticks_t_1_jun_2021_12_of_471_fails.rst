@@ -35,6 +35,39 @@ opticks_t_1_jun_2021_12_of_471_fails
 
 
 
+::
+
+    13PMT_20inch_veto_photocathode_logsurf2                Photocathode_opsurf pv1 PMT_20inch_veto_body_phys0x3c3e550 #0 pv2 PMT_20inch_veto_inner1_phys0x3c3e5d0 #0
+       14                     CDTyvekSurface              CDTyvekOpticalSurface pv1 pOuterWaterPool0x3491360 #0 pv2 pCentralDetector0x3493130 #0
+    2021-06-02 06:42:40.321 WARN  [104477] [main@50]  post CG4 
+    2021-06-02 06:42:40.321 WARN  [104477] [main@54]   post CG4::interactive
+    2021-06-02 06:42:40.321 ERROR [104477] [main@59]  setting gensteps 0x8e92af0
+    2021-06-02 06:42:40.322 INFO  [104477] [OpticksRun::createOKEvent@158]  tagoffset 0 skipaheadstep 0 skipahead 0
+    2021-06-02 06:42:40.324 INFO  [104477] [CG4::propagate@411]  calling BeamOn numG4Evt 1
+    2021-06-02 06:44:39.018 INFO  [104477] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 5 : BAD_FLAG
+    CG4Test: /home/blyth/opticks/cfg4/CWriter.cc:310: void CWriter::writeStepPoint_(const G4StepPoint*, const CPhoton&): Assertion `m_target_records' failed.
+
+    (gdb) bt
+    #3  0x00007fffe8787252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7b23998 in CWriter::writeStepPoint_ (this=0x9082e60, point=0x9028790, photon=...) at /home/blyth/opticks/cfg4/CWriter.cc:310
+    #5  0x00007ffff7b23801 in CWriter::writeStepPoint (this=0x9082e60, point=0x9028790, flag=4096, material=1, last=false) at /home/blyth/opticks/cfg4/CWriter.cc:263
+    #6  0x00007ffff7b1a2dc in CRecorder::WriteStepPoint (this=0x9099b70, point=0x9028790, flag=4096, material=1, boundary_status=Undefined, last=false) at /home/blyth/opticks/cfg4/CRecorder.cc:713
+    #7  0x00007ffff7b19af4 in CRecorder::postTrackWriteSteps (this=0x9099b70) at /home/blyth/opticks/cfg4/CRecorder.cc:615
+    #8  0x00007ffff7b17faf in CRecorder::postTrack (this=0x9099b70) at /home/blyth/opticks/cfg4/CRecorder.cc:230
+    #9  0x00007ffff7b43064 in CManager::postTrack (this=0x1be31800) at /home/blyth/opticks/cfg4/CManager.cc:314
+    #10 0x00007ffff7b42fd8 in CManager::PostUserTrackingAction (this=0x1be31800, track=0x23fa8640) at /home/blyth/opticks/cfg4/CManager.cc:296
+    #11 0x00007ffff7b3befb in CTrackingAction::PostUserTrackingAction (this=0x8ea0a90, track=0x23fa8640) at /home/blyth/opticks/cfg4/CTrackingAction.cc:79
+    #12 0x00007ffff495114d in G4TrackingManager::ProcessOneTrack(G4Track*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4tracking.so
+    #13 0x00007ffff4b88b53 in G4EventManager::DoProcessing(G4Event*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4event.so
+    #14 0x00007ffff4e25b27 in G4RunManager::ProcessOneEvent(int) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #15 0x00007ffff4e1ebd3 in G4RunManager::DoEventLoop(int, char const*, int) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #16 0x00007ffff4e1e99e in G4RunManager::BeamOn(int, char const*, int) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #17 0x00007ffff7b40a75 in CG4::propagate (this=0x8e93090) at /home/blyth/opticks/cfg4/CG4.cc:414
+    #18 0x000000000040427e in main (argc=1, argv=0x7fffffffade8) at /home/blyth/opticks/cfg4/tests/CG4Test.cc:68
+
+
+
+
 
 ::
 

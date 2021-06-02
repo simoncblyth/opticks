@@ -194,7 +194,7 @@ void CRecorder::EndOfGenstep()
 CRecorder::postTrack
 ------------------------
 
-Invoked by CTrackingAction::PostUserTrackingAction
+Invoked by CTrackingAction::PostUserTrackingAction/CManager::PostUserTrackingAction
 
 --recpoi
      not the default, has some truncation differences with --recstp  
@@ -204,7 +204,6 @@ Invoked by CTrackingAction::PostUserTrackingAction
      default
      unavoidably stores loads of StepTooSmall steps which are subsequently chucked
    
-
 NB all this machinery is for validation purposes only, so should
 not be concerned about operating efficiently.
  
