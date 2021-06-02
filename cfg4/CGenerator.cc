@@ -179,7 +179,9 @@ CSource* CGenerator::initTorchSource()
     setGensteps( gs );  
     // triggers the event init 
 
-    setOneStep(true);   // formerly used setDynamic(false)
+    bool onestep = false ; 
+    setOneStep(onestep);   // formerly used setDynamic(false)
+    
 
     setNumG4Event( torch->getNumG4Event()); 
     setNumPhotonsPerG4Event( torch->getNumPhotonsPerG4Event()); 
@@ -209,7 +211,9 @@ CSource* CGenerator::initInputPhotonSource()
     assert( gsnpy );
 
     setGensteps(inputGensteps);
-    setOneStep(true);   // formerly used setDynamic(false)
+
+    bool onestep = false ;  
+    setOneStep(onestep);   // formerly used setDynamic(false)
 
     unsigned numPhotonsPerG4Event = gsnpy->getNumPhotonsPerG4Event() ; 
     CInputPhotonSource* cips = new CInputPhotonSource( m_ok, inputPhotons, numPhotonsPerG4Event ) ;
@@ -240,7 +244,9 @@ CSource* CGenerator::initInputGenstepSource()
     assert( dgs );
 
     setGensteps(dgs);  //why ?
-    setOneStep(true);   // formerly used setDynamic(false)
+
+    bool onestep = false ; 
+    setOneStep(onestep);   // formerly used setDynamic(false)
 
     CGenstepSource* gsrc = new CGenstepSource( m_ok, dgs ) ;
 

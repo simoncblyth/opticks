@@ -112,9 +112,9 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     assert( m_records_buffer && "CRecorder requires records buffer" );
 
     // these targets get set by CWriter::BeginOfGenstep in onestep running 
-    m_target_history = nullptr ; 
-    m_target_photons = nullptr ; 
-    m_target_records = nullptr ;  
+    m_target_history = m_history_buffer ; 
+    m_target_photons = m_photons_buffer ; 
+    m_target_records = m_records_buffer ;  
 
 }
 
@@ -150,7 +150,7 @@ void CWriter::BeginOfGenstep( char gentype, int num_onestep_photons )
         << " m_ctx._genstep_index " << m_ctx._genstep_index
         ;
 
-    assert( m_onestep ); 
+    assert( m_onestep == true ); 
     assert( m_ctx._gentype == gentype  ); 
     assert( m_ctx._genstep_num_photons == unsigned(num_onestep_photons)  ); 
 
@@ -184,7 +184,7 @@ void CWriter::EndOfGenstep()
         << " m_ctx._genstep_index " << m_ctx._genstep_index
         ;
 
-    assert( m_onestep ); 
+    assert( m_onestep == true ); 
     assert( m_onestep_records );  // must call CWriter::BeginOfGenstep before CWriter::EndOfGenstep
     assert( m_onestep_photons ); 
     assert( m_onestep_history ); 
@@ -197,12 +197,6 @@ void CWriter::EndOfGenstep()
 
     LOG(LEVEL) << desc("aft.add") ; 
 
-    clearOnestep(); 
-}
-
-void CWriter::clearOnestep()
-{
-    LOG(LEVEL); 
 
     m_onestep_records->reset(); 
     m_onestep_photons->reset(); 

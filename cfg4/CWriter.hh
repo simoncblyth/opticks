@@ -94,7 +94,6 @@ class CFG4_API CWriter
    private:
         void BeginOfGenstep( char gentype, int num_onestep_photons );
         void EndOfGenstep();
-        void clearOnestep();
 
     private:
 
