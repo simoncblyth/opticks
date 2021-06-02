@@ -48,7 +48,7 @@ struct G4OK_API G4OpticksRecorder
     virtual ~G4OpticksRecorder(); 
 
     void setGeometry(const GGeo* ggeo); 
-    void BeginOfGenstep(char gentype, int num_photons);
+    void BeginOfGenstep(char gentype, int num_photons, int offset);
     void EndOfGenstep();
 
 

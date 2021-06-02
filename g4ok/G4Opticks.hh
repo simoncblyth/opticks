@@ -215,7 +215,7 @@ class G4OK_API G4Opticks
         // lifecycle reporting used by the optional G4OpticksRecorder
         // call these from S + C processes before and after the 
         // photon generation loop when doing Opticks/Geant4 matching 
-        void BeginOfGenstep(char gentype, int numPhotons);
+        void BeginOfGenstep(char gentype, int numPhotons, int offset );
         void EndOfGenstep();
 
 

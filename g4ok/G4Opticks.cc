@@ -1388,11 +1388,11 @@ int  G4Opticks::getGenstepReservation() const
     return m_genstep_collector->getReservation() ;  
 }
 
-void G4Opticks::BeginOfGenstep(char gentype, int numPhotons)
+void G4Opticks::BeginOfGenstep(char gentype, int numPhotons, int offset)
 {
     if(m_recorder) 
     {
-        m_recorder->BeginOfGenstep(gentype, numPhotons);  
+        m_recorder->BeginOfGenstep(gentype, numPhotons, offset);  
     }
 }
 void G4Opticks::EndOfGenstep()
