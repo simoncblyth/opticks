@@ -73,7 +73,7 @@ class CFG4_API CGenerator
        unsigned    getSourceCode() const ;
        const char* getSourceType() const ;
        CSource*    getSource() const ;
-       bool        isDynamic() const ;
+       bool        isOneStep() const ;
        unsigned    getNumG4Event() const ;
        unsigned    getNumPhotonsPerG4Event() const ;
        NPY<float>* getGensteps() const ;
@@ -87,7 +87,7 @@ class CFG4_API CGenerator
        CSource* initTorchSource();
        CSource* initG4GunSource();
     private:
-       void setDynamic(bool dynamic);
+       void setOneStep(bool onestep);
        void setNumG4Event(unsigned num);
        void setNumPhotonsPerG4Event(unsigned num);
        void setNumGenstepsPerG4Event(unsigned num);
@@ -101,7 +101,7 @@ class CFG4_API CGenerator
        unsigned              m_source_code ; 
        const char*           m_source_type ; 
        NPY<float>*           m_gensteps ; 
-       bool                  m_dynamic ; 
+       bool                  m_onestep ; 
        unsigned              m_num_g4evt ; 
        unsigned              m_photons_per_g4evt ;           
        unsigned              m_gensteps_per_g4evt ;

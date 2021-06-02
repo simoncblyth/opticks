@@ -191,7 +191,7 @@ class CFG4_API CG4
         CMaterialLib*         m_mlib ; 
         CDetector*            m_detector ; 
         CGenerator*           m_generator ; 
-        bool                  m_dynamic ; 
+        bool                  m_onestep ; 
         CManager*             m_manager ; 
    private:
         CGenstepCollector*           m_collector ; 

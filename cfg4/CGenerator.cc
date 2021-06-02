@@ -55,12 +55,12 @@ CGenerator::CGenerator(OpticksGen* gen, CG4* g4)
     m_source_code(m_gen->getSourceCode()),
     m_source_type(OpticksFlags::SourceType(m_source_code)),
     m_gensteps(NULL),
-    m_dynamic(true),
+    m_onestep(true),
     m_num_g4evt(1),
     m_photons_per_g4evt(0),
     m_gensteps_per_g4evt(0),
     m_source(initSource(m_source_code))
-    // m_source must be last as initSource will change m_gensteps, m_dynamic, ...
+    // m_source must be last as initSource will change m_gensteps, m_onestep, ...
 {
     init();
 }
@@ -101,7 +101,7 @@ CSource* CGenerator::initSource(unsigned code)
     LOG(LEVEL) 
         << " code " << code
         << " type " << m_source_type
-        << " " << ( m_dynamic ? "DYNAMIC" : "STATIC" ) 
+        << " " << ( m_onestep ? "ONESTEP/DYNAMIC" : "ALLSTEP/STATIC" ) 
         ; 
 
     return source ; 
@@ -113,7 +113,7 @@ const char* CGenerator::getSourceType() const { return m_source_type ; }
 CSource* CGenerator::getSource() const { return m_source ; }
 unsigned CGenerator::getNumG4Event() const { return m_num_g4evt ;  }
 unsigned CGenerator::getNumPhotonsPerG4Event() const { return m_photons_per_g4evt ;  }
-bool CGenerator::isDynamic() const { return m_dynamic ; }
+bool CGenerator::isOneStep() const { return m_onestep ; } // formerly m_dynamic
 bool CGenerator::hasGensteps() const { return m_gensteps != NULL ; }
 
 NPY<float>* CGenerator::getGensteps() const { return m_gensteps ; }
@@ -124,7 +124,7 @@ void CGenerator::setNumG4Event(unsigned num) { m_num_g4evt = num ; }
 void CGenerator::setNumPhotonsPerG4Event(unsigned num) { m_photons_per_g4evt = num ; }
 void CGenerator::setNumGenstepsPerG4Event(unsigned num) { m_gensteps_per_g4evt = num ; }
 void CGenerator::setGensteps(NPY<float>* gensteps) { m_gensteps = gensteps ; }
-void CGenerator::setDynamic(bool dynamic) { m_dynamic = dynamic ; }
+void CGenerator::setOneStep(bool onestep) { m_onestep = onestep ; }
 
 
 /**
@@ -179,7 +179,8 @@ CSource* CGenerator::initTorchSource()
     setGensteps( gs );  
     // triggers the event init 
 
-    setDynamic(false);
+    setOneStep(true);   // formerly used setDynamic(false)
+
     setNumG4Event( torch->getNumG4Event()); 
     setNumPhotonsPerG4Event( torch->getNumPhotonsPerG4Event()); 
 
@@ -208,7 +209,7 @@ CSource* CGenerator::initInputPhotonSource()
     assert( gsnpy );
 
     setGensteps(inputGensteps);
-    setDynamic(false);
+    setOneStep(true);   // formerly used setDynamic(false)
 
     unsigned numPhotonsPerG4Event = gsnpy->getNumPhotonsPerG4Event() ; 
     CInputPhotonSource* cips = new CInputPhotonSource( m_ok, inputPhotons, numPhotonsPerG4Event ) ;
@@ -239,7 +240,7 @@ CSource* CGenerator::initInputGenstepSource()
     assert( dgs );
 
     setGensteps(dgs);  //why ?
-    setDynamic(false);
+    setOneStep(true);   // formerly used setDynamic(false)
 
     CGenstepSource* gsrc = new CGenstepSource( m_ok, dgs ) ;
 
@@ -300,7 +301,9 @@ CSource* CGenerator::initG4GunSource()
     }  
 
     setGensteps(NULL);  // gensteps must be collected from G4, they cannot be fabricated
-    setDynamic(true);
+
+    setOneStep(true);   // formerly used setDynamic(true) , so no change 
+
     setNumG4Event(gc->getNumber()); 
     setNumPhotonsPerG4Event(0); 
 

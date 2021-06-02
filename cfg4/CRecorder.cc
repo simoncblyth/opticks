@@ -78,7 +78,7 @@ unsigned long long CRecorder::getSeqMat() const
 dynamic:false is for when gensteps are available ahead of time
 **/
 
-CRecorder::CRecorder(CG4Ctx& ctx, bool dynamic) 
+CRecorder::CRecorder(CG4Ctx& ctx, bool onestep) 
     :
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),
@@ -92,9 +92,9 @@ CRecorder::CRecorder(CG4Ctx& ctx, bool dynamic)
 
     m_evt(NULL),
     m_material_bridge(NULL),
-    m_dynamic(dynamic),
+    m_onestep(onestep),
     m_live(false),
-    m_writer(new CWriter(m_ctx, m_photon, m_dynamic)),
+    m_writer(new CWriter(m_ctx, m_photon, m_onestep)),
     m_not_done_count(0)
 {   
     LOG(LEVEL) << brief() ;
@@ -109,7 +109,7 @@ std::string CRecorder::brief() const
        << " m_recpoi " << m_recpoi
        << " m_reccf " << m_reccf
        << " m_dbg " << ( m_dbg ? "Y" : "N" ) 
-       << ( m_dynamic ? " DYNAMIC " : " STATIC " )
+       << ( m_onestep ? " ONESTEP/DYNAMIC " : " ALLSTEP/STATIC " )
        ;
    return ss.str();
 }
@@ -763,7 +763,7 @@ std::string CRecorder::desc() const
        << " slt " << std::setw(4) << m_state._slot
        << " pre " << std::setw(7) << CStep::PreGlobalTime(m_ctx._step)
        << " pst " << std::setw(7) << CStep::PostGlobalTime(m_ctx._step)
-       << ( m_dynamic ? " DYNAMIC " : " STATIC " )
+       << ( m_onestep ? " ONESTEP/DYNAMIC " : " ALLSTEP/STATIC " )
        ;
 
    return ss.str();

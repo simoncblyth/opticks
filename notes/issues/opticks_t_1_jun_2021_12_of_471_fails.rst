@@ -3,6 +3,9 @@ opticks_t_1_jun_2021_12_of_471_fails
 
 
 
+This one is lack of calling CManager::BeginOfGenstep from S+C following move to genstep chunking
+---------------------------------------------------------------------------------------------------
+
 ::
 
     O[blyth@localhost cfg4]$ gdb OKG4Test 

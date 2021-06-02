@@ -155,7 +155,7 @@ class CFG4_API CRecorder {
         unsigned long long getSeqMat() const ;
 
     public:
-        CRecorder(CG4Ctx& ctx, bool dynamic); // CG4::CG4
+        CRecorder(CG4Ctx& ctx, bool onestep); // CG4::CG4
 
         void setMaterialBridge(const CMaterialBridge* material_bridge);
 
@@ -205,7 +205,7 @@ class CFG4_API CRecorder {
         OpticksEvent*      m_evt ; 
         CGeometry*         m_geometry ; 
         const CMaterialBridge*   m_material_bridge ; 
-        bool               m_dynamic ;
+        bool               m_onestep ;
         bool               m_live ;   
         CWriter*           m_writer ; 
         unsigned           m_not_done_count ; 
