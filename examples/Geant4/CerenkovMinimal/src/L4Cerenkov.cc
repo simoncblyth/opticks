@@ -318,7 +318,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
              MeanNumberOfPhotons2
             );  
 
-        G4Opticks::Get()->BeginOfGenstep('C', NumPhotons );
+        G4Opticks::Get()->BeginOfGenstep('C', NumPhotons, opticks_photon_offset);
     }    
 #endif
 
