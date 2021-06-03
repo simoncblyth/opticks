@@ -5,22 +5,20 @@
 
 struct CFG4_API CGenstep
 {
-    unsigned index ; 
-    unsigned photons ; 
-    unsigned offset ; 
-    char     gentype ; 
+    unsigned index ;    // 0-based index of genstep
+    unsigned photons ;  // number of photons 
+    unsigned offset ;   // photon offset in the sequence of gensteps 
+    char     gentype ;  // 'C' 'S' 'T'
 
     boost::dynamic_bitset<>* mask ;
 
+    CGenstep();
     CGenstep( unsigned index_ , unsigned photons_, unsigned offset_, char gentype_ );
     virtual ~CGenstep(); 
 
-    unsigned getRecordId(unsigned index_, unsigned photon_id) const ;
-    void     markRecordId(unsigned index_, unsigned photon_id) ; 
+    void set(unsigned ix);   // ix: 0-based index within the genstep less than photons  
 
-    void set(unsigned i);  
-
-    std::string desc(const char* msg="CGenstep::desc") const ; 
+    std::string desc(const char* msg=nullptr) const ; 
     bool all() const ; 
     bool any() const ; 
     unsigned count() const ; 

@@ -106,12 +106,16 @@
 #include "G4Opticks.hh"
 #include "CGenstepCollector.hh"
 #include "CTrack.hh"
-#include "CTrackInfo.hh"
+#include "CPhotonInfo.hh"
 #include "CManager.hh"
 #include "PLOG.hh"
 
 #define KLUDGE 1 
 
+
+
+//const plog::Severity CKMScintillation::LEVEL = PLOG::EnvLevel("CKMScintillation", "DEBUG"); 
+const plog::Severity CKMScintillation::LEVEL = debug ; 
 
 ///////////////////////////////////////////////////////////////////
 
@@ -403,7 +407,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 {
     m_psdi_index++ ; // SCB  0-based index
-    LOG(info) << " psdi " << m_psdi_index ; 
+    //LOG(LEVEL) << " psdi " << m_psdi_index ; 
 
     aParticleChange.Initialize(aTrack);
 
@@ -451,7 +455,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         }
     }
 
-    LOG(info) << " psdi " << m_psdi_index << " flagReemission " << flagReemission  ; 
+    //LOG(LEVEL) << " psdi " << m_psdi_index << " flagReemission " << flagReemission  ; 
 
 
 
@@ -518,7 +522,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     if (!Fast_Intensity && !Slow_Intensity )
     {
 #ifdef KLUDGE
-        LOG(info) << " psdi " << m_psdi_index << " flagReemission " << flagReemission << " KLUDGE skip no Intensity exit " ; 
+        //LOG(LEVEL) << " psdi " << m_psdi_index << " flagReemission " << flagReemission << " KLUDGE skip no Intensity exit " ; 
 #else
         return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
 #endif
@@ -570,7 +574,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         weight= aTrack.GetWeight();
 	    if (verboseLevel > 0 ) G4cout << " flagReemission " << flagReemission << " weight " << weight << G4endl;
 
-        LOG(info) << " psdi " << m_psdi_index << " flagReemission " << flagReemission << " p_reemission " << p_reemission  ; 
+        //LOG(info) << " psdi " << m_psdi_index << " flagReemission " << flagReemission << " p_reemission " << p_reemission  ; 
     }
     else 
     {
@@ -603,12 +607,16 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     ////////////////////////////////////////////////////////////////
 
+    /*
     LOG(info) 
         << " psdi " << m_psdi_index 
         << " flagReemission " << flagReemission 
         << " NumTracks " << NumTracks << " SetNumberOfSecondaries " 
         << " fTrackSecondariesFirst " << fTrackSecondariesFirst
         ;  
+    */
+
+
     aParticleChange.SetNumberOfSecondaries(NumTracks);
 
     if (fTrackSecondariesFirst) {
@@ -634,7 +642,8 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     G4double slowTimeConstant = GetConstant(aTrack, aStep, SlowTimeConstant.c_str(), "SLOWTIMECONSTANT" ); 
     G4double YieldRatio       = GetConstant(aTrack, aStep, strYieldRatio.c_str(),    "YIELDRATIO" ); 
 
-    LOG(info)
+    /*
+    LOG(LEVEL)
         << " psdi " << m_psdi_index 
         << " Num " << Num
         << " fastTimeConstant " << fastTimeConstant
@@ -642,6 +651,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         << " YieldRatio " << YieldRatio 
         << " materialIndex " << materialIndex
         ;
+    */
 
 
     //loop over fast/slow scintillations
@@ -701,26 +711,27 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         if (!ScintillationIntegral) continue;
 #endif
 
-            unsigned opticks_photon_offset = 0 ;  // <-- not relevant to reemission secondaries
             bool valid_opticks_genstep = Num > 0 && !flagReemission ;
             int ancestral_id = CTrack::AncestralId(&aTrack, true);  // reemission lineage
 
-            LOG(info)
+            /*
+            LOG(LEVEL)
                << " psdi " << m_psdi_index 
                << " valid_opticks_genstep " << valid_opticks_genstep
                << " ancestral_id " << ancestral_id 
                << " Num " << Num
                << " flagReemission " << flagReemission
                ;
+            */
 
+
+            CGenstep gs ; 
 
             if(valid_opticks_genstep)
             {
                 G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
 
-                opticks_photon_offset = CGenstepCollector::Get()->getNumPhotons(); 
-
-                G4Opticks::Get()->collectGenstep_DsG4Scintillation_r3971(
+                gs = G4Opticks::Get()->collectGenstep_DsG4Scintillation_r3971(
                     &aTrack,
                     &aStep,
                     Num, 
@@ -732,35 +743,37 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 );   
 
 
-                LOG(info)
-                   << " psdi " << m_psdi_index 
-                   << " valid_opticks_genstep " << valid_opticks_genstep
-                   << " ancestral_id " << ancestral_id 
-                   << " Num " << Num
-                   << " flagReemission " << flagReemission
-                   << " opticks_photon_offset " << opticks_photon_offset
-                   ;
+               
+                LOG(error)
+                    << " psdi " << m_psdi_index 
+                    << " valid_opticks_genstep " << valid_opticks_genstep
+                    << " gs.desc " << gs.desc()
+                    << " ancestral_id " << ancestral_id 
+                    << " Num " << Num
+                    << " flagReemission " << flagReemission
+                    ;
 
-                CManager::Get()->BeginOfGenstep('S', Num, opticks_photon_offset );  
             }
 
 	
         for (G4int i = 0; i < Num; i++) { //Num is # of 2ndary tracks now
 	    // Determine photon energy
 
-        unsigned opticks_photon_id = ancestral_id > -1 ?  ancestral_id : opticks_photon_offset + i ;  
 
+        /*
+        unsigned opticks_photon_id = ancestral_id > -1 && Num == 1 && i == 0 ?  ancestral_id : gs.offset + i ;  
         LOG(info)
             << " psdi " << m_psdi_index 
             << " GENLOOP "
             << " opticks_photon_id " << opticks_photon_id 
             << " ancestral_id " << ancestral_id
-            << " opticks_photon_offset " << opticks_photon_offset
+            << " gs.desc " << gs.desc()
             << "  i " << i 
             << " Num " << Num
             << " scnt " << scnt 
             ;
-
+        */
+ 
 
 #ifdef KLUDGE
 #else
@@ -930,8 +943,8 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             //comp->SetPhotonTrackInfo(trackinf);
             //aSecondaryTrack->SetUserInformation(comp);
 
-            CTrackInfo* s_tkui = new CTrackInfo( opticks_photon_id, 'S', flagReemission ) ;
-            aSecondaryTrack->SetUserInformation(s_tkui);
+            CPhotonInfo* cpui = new CPhotonInfo( gs, i, flagReemission ) ;
+            aSecondaryTrack->SetUserInformation(cpui);
 
 		
             aSecondaryTrack->SetParentID(aTrack.GetTrackID()) ;

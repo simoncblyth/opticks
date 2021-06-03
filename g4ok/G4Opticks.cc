@@ -1378,6 +1378,7 @@ int  G4Opticks::getGenstepReservation() const
     return m_genstep_collector->getReservation() ;  
 }
 
+/*
 void G4Opticks::BeginOfGenstep(char gentype, int numPhotons, int offset)
 {
     if(m_recorder) 
@@ -1392,11 +1393,11 @@ void G4Opticks::EndOfGenstep()
         m_recorder->EndOfGenstep();  
     }
 }
+*/
 
 
 
-
-void G4Opticks::collectGenstep_G4Scintillation_1042(  
+CGenstep G4Opticks::collectGenstep_G4Scintillation_1042(  
      const G4Track* aTrack, 
      const G4Step* aStep, 
      G4int    numPhotons, 
@@ -1405,10 +1406,6 @@ void G4Opticks::collectGenstep_G4Scintillation_1042(
      G4double ScintillationRiseTime
 )
 {
-    LOG(LEVEL) << " numPhotons " << numPhotons ; 
-
-
-
     // CAUTION : UNTESTED CODE
     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
@@ -1423,7 +1420,7 @@ void G4Opticks::collectGenstep_G4Scintillation_1042(
     G4double preVelocity  = pPreStepPoint->GetVelocity() ; 
     G4double postVelocity = pPostStepPoint->GetVelocity() ; 
  
-    collectScintillationStep(
+    CGenstep gs  = collectScintillationStep(
 
          OpticksGenstep_G4Scintillation_1042,           // (int)gentype       (0) 
          aTrack->GetTrackID(),                          // (int)ParenttId     
@@ -1456,6 +1453,8 @@ void G4Opticks::collectGenstep_G4Scintillation_1042(
          0                                              //  Other2
     ) ;
 
+    LOG(LEVEL) << gs.desc() ; 
+    return gs ; 
 }
  
 
@@ -1484,7 +1483,7 @@ scnt
 
 
 
-void G4Opticks::collectGenstep_DsG4Scintillation_r3971(  
+CGenstep G4Opticks::collectGenstep_DsG4Scintillation_r3971(  
      const G4Track* aTrack, 
      const G4Step* aStep, 
      G4int    numPhotons, 
@@ -1495,10 +1494,6 @@ void G4Opticks::collectGenstep_DsG4Scintillation_r3971(
      G4double ScintillationTime
     )
 {
-    std::cout << "+++" << std::endl ;    // marker
-    LOG(LEVEL) << " numPhotons " << numPhotons ; 
-
-
     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
 
@@ -1511,7 +1506,7 @@ void G4Opticks::collectGenstep_DsG4Scintillation_r3971(
 
     G4double meanVelocity = (pPreStepPoint->GetVelocity()+pPostStepPoint->GetVelocity())/2. ; 
  
-    collectScintillationStep(
+    CGenstep gs = collectScintillationStep(
 
          OpticksGenstep_DsG4Scintillation_r3971,        // (int)gentype       (0) 
          aTrack->GetTrackID(),                          // (int)ParenttId     
@@ -1544,13 +1539,16 @@ void G4Opticks::collectGenstep_DsG4Scintillation_r3971(
          0                                              //  Other2
     ) ;
 
+    std::cout << "+++" << std::endl ;    // marker
+    LOG(LEVEL)  << gs.desc() ; 
+    return gs ; 
 }
 
 
 
 
 
-void G4Opticks::collectScintillationStep
+CGenstep G4Opticks::collectScintillationStep
 (
         G4int gentype,
         G4int parentId,
@@ -1589,7 +1587,7 @@ void G4Opticks::collectScintillationStep
     if(skip)
     {
         m_skip_gencode_totals[gentype] += 1 ; 
-        return ;    
+        assert(0); 
     }
 
 
@@ -1599,7 +1597,7 @@ void G4Opticks::collectScintillationStep
     } 
 
     assert( m_genstep_collector ); 
-    m_genstep_collector->collectScintillationStep(
+    CGenstep gs = m_genstep_collector->collectScintillationStep(
              gentype,
              parentId,
              materialId,
@@ -1631,6 +1629,7 @@ void G4Opticks::collectScintillationStep
              spare2
             );
     LOG(debug) << "]";
+    return gs ; 
 }
 
 
@@ -1640,7 +1639,7 @@ void G4Opticks::collectScintillationStep
 
 
 
-void G4Opticks::collectGenstep_G4Cerenkov_1042(  
+CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(  
      const G4Track*  aTrack, 
      const G4Step*   aStep, 
      G4int       numPhotons,
@@ -1655,7 +1654,6 @@ void G4Opticks::collectGenstep_G4Cerenkov_1042(
      G4double    meanNumberOfPhotons2
     )
 {
-    LOG(LEVEL) << " numPhotons " << numPhotons ; 
 
     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
@@ -1670,7 +1668,7 @@ void G4Opticks::collectGenstep_G4Cerenkov_1042(
     G4double preVelocity = pPreStepPoint->GetVelocity() ;
     G4double postVelocity = pPostStepPoint->GetVelocity() ; 
  
-    collectCerenkovStep(
+    CGenstep gs = collectCerenkovStep(
 
          OpticksGenstep_G4Cerenkov_1042,                // (int)gentype       (0)
          aTrack->GetTrackID(),                          // (int)ParenttId     
@@ -1702,12 +1700,15 @@ void G4Opticks::collectGenstep_G4Cerenkov_1042(
          meanNumberOfPhotons2,
          postVelocity
     ) ;
+
+    LOG(LEVEL)  << gs.desc() ;  
+    return gs ; 
 }
 
 
 
 
-void G4Opticks::collectCerenkovStep
+CGenstep G4Opticks::collectCerenkovStep
     (
         G4int                gentype, 
         G4int                parentId,
@@ -1745,7 +1746,7 @@ void G4Opticks::collectCerenkovStep
     if(skip)
     {
         m_skip_gencode_totals[gentype] += 1 ; 
-        return ;    
+        assert(0); 
     }
 
 
@@ -1756,7 +1757,7 @@ void G4Opticks::collectCerenkovStep
     } 
 
     assert( m_genstep_collector ); 
-    m_genstep_collector->collectCerenkovStep(
+    CGenstep gs = m_genstep_collector->collectCerenkovStep(
                        gentype, 
                        parentId,
                        materialId,
@@ -1788,6 +1789,8 @@ void G4Opticks::collectCerenkovStep
                        postVelocity
                        ) ;
     LOG(debug) << "]" ; 
+
+    return gs ; 
 }
   
 
@@ -1799,7 +1802,7 @@ Used from G4OKTest for debugging only.
 
 **/
 
-void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID )
+CGenstep G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID )
 {
     unsigned gentype = OpticksGenstep_TORCH  ; 
     unsigned num_step = 1 ; 
@@ -1840,9 +1843,10 @@ void G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index, un
 
     //arr->save("$TMP/debugging/collectDefaultTorchStep/gs.npy");  
 
-    const OpticksGenstep* gs = new OpticksGenstep(arr); 
+    const OpticksGenstep* ogs = new OpticksGenstep(arr); 
     assert( m_genstep_collector ); 
-    m_genstep_collector->collectOpticksGenstep(gs);  
+    CGenstep gs = m_genstep_collector->collectOpticksGenstep(ogs);  
+    return gs ; 
 } 
 
 

@@ -456,13 +456,12 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             G4double CIImax = ScintillationIntegral->GetMaxValue();
 
 
-            // OPTICKS STEP COLLECTION : STEALING THE STACK
+            CGenstep gs ; 
             {
                 const G4ParticleDefinition* definition = aParticle->GetDefinition();
                 G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
 
-                unsigned opticks_photon_offset = CGenstepCollector::Get()->getNumPhotons(); 
-                CGenstepCollector::Get()->collectScintillationStep(
+                gs = CGenstepCollector::Get()->collectScintillationStep(
 
                        0,                  // 0     id:zero means use scintillation step count 
                        aTrack.GetTrackID(),
@@ -494,8 +493,6 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                        0,
                        0
                 );
-
-                CManager::Get()->BeginOfGenstep( 'S', Num, opticks_photon_offset ); 
             }
 
             for (G4int i = 0; i < Num; i++) {

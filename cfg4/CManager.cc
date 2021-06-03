@@ -136,8 +136,10 @@ void CManager::BeginOfEventAction(const G4Event* event)
         LOG(LEVEL) 
             << " mocking BeginOfGenstep as have input photon primaries " 
             << CEvent::DescPrimary(event) 
-            ; 
-        BeginOfGenstep('T', m_ctx->_number_of_input_photons, 0 );   
+            ;
+
+        unsigned genstep_index = 0 ;  
+        BeginOfGenstep(genstep_index, 'T', m_ctx->_number_of_input_photons, 0 );   
     }   
 }
 
@@ -180,14 +182,14 @@ just prior to the C/S generation loop
 
 **/
 
-void CManager::BeginOfGenstep(char gentype, int num_photons, int offset )
+void CManager::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
 {
     LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
     assert( m_onestep );  
 
-    if(m_ctx->_genstep_index > -1 )
+    if(m_ctx->_genstep_index > -1 && m_ctx->_gentype == gentype  )
     {
         LOG(LEVEL) << " CALLING EndOfGenstep for prior m_ctx->_genstep_index " << m_ctx->_genstep_index ; 
         EndOfGenstep();  
@@ -195,7 +197,7 @@ void CManager::BeginOfGenstep(char gentype, int num_photons, int offset )
 
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
 
-    m_ctx->BeginOfGenstep(gentype, num_photons, offset);  
+    m_ctx->BeginOfGenstep(genstep_index, gentype, num_photons, offset);  
 
     if(m_mode == 1 ) return ; 
     m_recorder->BeginOfGenstep();  

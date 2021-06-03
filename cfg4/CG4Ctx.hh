@@ -41,7 +41,9 @@ class G4Track ;
 class G4ProcessManager ; 
 class G4Step ; 
 
-struct CTrk ; 
+
+class CGenstepCollector ; 
+struct CPhotonInfo ; 
 struct CGenstep ; 
 class OpticksEvent ; 
 class Opticks ; 
@@ -67,6 +69,8 @@ struct CFG4_API CG4Ctx
     static const unsigned TO ; 
 
     Opticks* _ok ; 
+    const CGenstepCollector* _gsc ; 
+
     unsigned _mode ; 
     int   _pindex ; 
     bool  _print ; 
@@ -96,7 +100,7 @@ struct CFG4_API CG4Ctx
     CGenstep*  _genstep_s ; 
     CGenstep*  _genstep_t ; 
 
-    void      setGenstep(char gentype, int num_photons, int offset);
+    void      setGenstep(unsigned genstep_index, char gentype, int num_photons, int offset);
     CGenstep* getGenstep(char gentype='?') const;
 
     // *_genstep_index* 
@@ -124,7 +128,7 @@ struct CFG4_API CG4Ctx
     int  _pdg_encoding ;
 
     // CG4Ctx::setTrackOptical
-    CTrk* _trk ;  
+    CPhotonInfo* _cpui ;  
     int  _primary_id ; // used for reem continuation 
     int  _photon_id ;
     int  _photon_count ; 
@@ -176,7 +180,7 @@ struct CFG4_API CG4Ctx
     Opticks* getOpticks() const ; 
 
     void setEvent(const G4Event* event);
-    void BeginOfGenstep(char gentype, int num_photons, int offset);
+    void BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset);
     void EndOfGenstep();
     void setGentype(char gentype);
     void setGen(unsigned gen);

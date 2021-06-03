@@ -52,6 +52,7 @@
 // Includes
 /////////////
 
+#include "plog/Severity.h"
 #include <CLHEP/Units/SystemOfUnits.h>
 
 #include "globals.hh"
@@ -81,6 +82,7 @@
 class L4Cerenkov : public G4VProcess
 {
 
+     static const plog::Severity LEVEL ; 
 public:
 
 	////////////////////////////////

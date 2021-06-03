@@ -67,7 +67,7 @@
 
 #ifdef WITH_OPTICKS
 #include "G4Opticks.hh"
-#include "CTrackInfo.hh"    
+#include "CPhotonInfo.hh"    
 #include "PLOG.hh"
 // G4OpticksUserTrackInfo is a simple struct holding the photon_record_id integer
 #endif
@@ -85,29 +85,9 @@
 
 #include "L4Cerenkov.hh"
 
-/////////////////////////
-// Class Implementation  
-/////////////////////////
+const plog::Severity L4Cerenkov::LEVEL = PLOG::EnvLevel("L4Cerenkov", "DEBUG"); 
 
-        //////////////////////
-        // static data members
-        //////////////////////
 
-//G4bool L4Cerenkov::fTrackSecondariesFirst = false;
-//G4double L4Cerenkov::fMaxBetaChange = 0.;
-//G4int L4Cerenkov::fMaxPhotons = 0;
-
-        //////////////
-        // Operators
-        //////////////
-
-// L4Cerenkov::operator=(const L4Cerenkov &right)
-// {
-// }
-
-        /////////////////
-        // Constructors
-        /////////////////
 
 L4Cerenkov::L4Cerenkov(const G4String& processName, G4ProcessType type)
            : G4VProcess(processName, type) ,
@@ -295,15 +275,11 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef WITH_OPTICKS
-    unsigned opticks_photon_offset = 0 ; 
+    CGenstep gs ; 
     bool valid_opticks_genstep = NumPhotons > 0 ; 
     if(valid_opticks_genstep) 
     {
-        opticks_photon_offset = G4Opticks::Get()->getNumPhotons(); 
-        // total number of photons for all gensteps collected before this one
-        // within this OpticksEvent (potentially crossing multiple G4Event) 
-          
-        G4Opticks::Get()->collectGenstep_G4Cerenkov_1042(
+        gs = G4Opticks::Get()->collectGenstep_G4Cerenkov_1042(
              &aTrack, 
              &aStep, 
              NumPhotons,
@@ -317,8 +293,6 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
              MeanNumberOfPhotons1,
              MeanNumberOfPhotons2
             );  
-
-        G4Opticks::Get()->BeginOfGenstep('C', NumPhotons, opticks_photon_offset);
     }    
 #endif
 
@@ -330,9 +304,9 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 		// Determine photon energy
 #ifdef WITH_OPTICKS
-        unsigned record_id = opticks_photon_offset+i ; 
+        unsigned photon_id = gs.offset+i ; 
         //std::cout << "(photon gen loop) " << record_id << std::endl ;
-        G4Opticks::Get()->setAlignIndex(record_id); 
+        G4Opticks::Get()->setAlignIndex(photon_id); 
 #endif
 
 		G4double rand;
@@ -443,9 +417,9 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef WITH_OPTICKS
-        LOG(info)  << " g4 genloop record_id " << record_id << " opticks_photon_offset " << opticks_photon_offset << " i " << i ;  
-        CTrackInfo* c_tkui = new CTrackInfo( record_id, 'C', false );
-        aSecondaryTrack->SetUserInformation(c_tkui);
+        CPhotonInfo* cpui = new CPhotonInfo( gs, i, false );
+        //LOG(error) << " gs " << gs.desc() << " cpui " << cpui->desc(); 
+        aSecondaryTrack->SetUserInformation(cpui);
         G4Opticks::Get()->setAlignIndex(-1); 
 #endif
 

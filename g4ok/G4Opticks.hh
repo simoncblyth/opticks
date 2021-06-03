@@ -27,6 +27,8 @@
 
 #include "G4OK_API_EXPORT.hh"
 
+#include "CGenstep.hh"
+
 template <typename T> class NPY ; 
 class NLookup ; 
 class Opticks;
@@ -216,11 +218,13 @@ class G4OK_API G4Opticks
         // lifecycle reporting used by the optional G4OpticksRecorder
         // call these from S + C processes before and after the 
         // photon generation loop when doing Opticks/Geant4 matching 
-        void BeginOfGenstep(char gentype, int numPhotons, int offset );
-        void EndOfGenstep();
+        //
+        // try moving to automate these calls from CGenstepCollector
+        //void BeginOfGenstep(char gentype, int numPhotons, int offset );
+        //void EndOfGenstep();
 
 
-        void collectGenstep_G4Cerenkov_1042(  
+        CGenstep collectGenstep_G4Cerenkov_1042(  
              const G4Track*  aTrack, 
              const G4Step*   aStep, 
              G4int       numPhotons,
@@ -235,12 +239,6 @@ class G4OK_API G4Opticks
              G4double    meanNumberOfPhotons2
             );
 
-        void collectGenstep_G4Cerenkov_1042_bookend(  
-             const G4Track*  aTrack, 
-             const G4Step*   aStep, 
-             G4int       numPhotons
-            ); 
-
 
         /**
         2018/9/8 Geant4.1042 requires both velocities so:
@@ -248,7 +246,7 @@ class G4OK_API G4Opticks
              spare1->postVelocity 
              see notes/issues/ckm_cerenkov_generation_align_small_quantized_deviation_g4_g4.rst
         **/
-        void collectCerenkovStep(
+        CGenstep collectCerenkovStep(
             G4int                id, 
             G4int                parentId,
             G4int                materialId,
@@ -282,7 +280,7 @@ class G4OK_API G4Opticks
 
 
 
-        void collectGenstep_G4Scintillation_1042(  
+        CGenstep collectGenstep_G4Scintillation_1042(  
              const G4Track* aTrack, 
              const G4Step* aStep, 
              G4int    numPhotons, 
@@ -291,7 +289,7 @@ class G4OK_API G4Opticks
              G4double ScintillationRiseTime
              );
 
-        void collectGenstep_DsG4Scintillation_r3971(  
+        CGenstep collectGenstep_DsG4Scintillation_r3971(  
              const G4Track* aTrack, 
              const G4Step* aStep, 
              G4int    numPhotons, 
@@ -302,15 +300,8 @@ class G4OK_API G4Opticks
              G4double ScintillationTime
             );
 
-        void collectGenstep_DsG4Scintillation_r3971_bookend(  
-             const G4Track* aTrack, 
-             const G4Step* aStep, 
-             G4int    numPhotons, 
-             G4int    scnt           //  1:fast 2:slow
-            );
 
-
-	   void collectScintillationStep(
+	   CGenstep collectScintillationStep(
             G4int id,
             G4int parentId,
             G4int materialId,
@@ -343,7 +334,7 @@ class G4OK_API G4Opticks
             );
 
     private:
-        void collectDefaultTorchStep(unsigned num_photons=0, int node_index=-1, unsigned originTrackID=44 );  // zero -> default num_photons
+        CGenstep collectDefaultTorchStep(unsigned num_photons=0, int node_index=-1, unsigned originTrackID=44 );  // zero -> default num_photons
     public:
         void collectSecondaryPhotons(const G4VParticleChange* pc);
     public:

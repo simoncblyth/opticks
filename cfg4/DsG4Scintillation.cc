@@ -643,15 +643,15 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         if (!ScintillationIntegral) continue;
 
             // OPTICKS STEP COLLECTION : STEALING THE STACK
-             bool valid_opticks_genstep = Num > 0 && !flagReemission ;
+            bool valid_opticks_genstep = Num > 0 && !flagReemission ;
+            CGenstep gs ; 
 
             if(valid_opticks_genstep)
             {
                 const G4ParticleDefinition* definition = aParticle->GetDefinition();
                 G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
 
-                unsigned opticks_photon_offset = CGenstepCollector::Get()->getNumPhotons(); 
-                CGenstepCollector::Get()->collectScintillationStep(
+                gs = CGenstepCollector::Get()->collectScintillationStep(
 
                        0,                  // 0     id:zero means use scintillation step count 
                        aTrack.GetTrackID(),
@@ -684,8 +684,6 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                        0
                 );
 
-
-                CManager::Get()->BeginOfGenstep('S', Num, opticks_photon_offset );  
             }
 
 

@@ -11,13 +11,13 @@ export CKM_OPTICKS_EXTRA="--managermode 2 --nogpu"
 
 # logging evar control 
 log_(){ cat << EOV
-G4Opticks
+#G4Opticks
 #G4OpticksRecorder
 #CManager
 #CRecorder
-CWriter
+#CWriter
 #CTrackInfo
-CG4Ctx
+#CG4Ctx
 #OpticksRun
 #OpticksEvent
 #CG4

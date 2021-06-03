@@ -89,6 +89,7 @@
 #define CKMScintillation_h 1
 
 #include <vector>
+#include "plog/Severity.h"
 
 #include "globals.hh"
 #include "templates.hh"
@@ -137,6 +138,8 @@ public: // Without description
 	////////////////////////////////
 	// Constructors and Destructor
 	////////////////////////////////
+
+    static const plog::Severity LEVEL ; 
 
 	CKMScintillation(const G4String& processName = "Scintillation",
                           G4ProcessType type = fElectromagnetic);

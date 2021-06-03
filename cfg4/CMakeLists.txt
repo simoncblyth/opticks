@@ -37,6 +37,8 @@ set(SOURCES
     DsG4CompositeTrackInfo.cc
     CTrk.cc
     CTrackInfo.cc
+    CPho.cc 
+    CPhotonInfo.cc
     CEventInfo.cc
 
     CCerenkov.cc
@@ -188,6 +190,9 @@ set(HEADERS
 
     CTrk.hh
     CTrackInfo.hh
+    CPho.hh
+    CPhotonInfo.hh
+
     CEventInfo.hh
 
     CCerenkov.hh

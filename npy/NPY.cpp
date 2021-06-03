@@ -606,6 +606,8 @@ void NPY<T>::add(const T* values, unsigned int nvals)
     }
 
     unsigned int itemsize = getNumValues(1) ;
+    //LOG(info) << " orig " << orig << " nvals " << nvals << " itemsize " << itemsize ; 
+
     assert( nvals % itemsize == 0 && "values adding is restricted to integral multiples of the item size");
     unsigned int extra = nvals/itemsize ; 
     memcpy( grow(extra), values, nvals*sizeof(T) );

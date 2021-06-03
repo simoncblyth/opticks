@@ -35,6 +35,7 @@ set(TEST_SOURCES
     G4BoxTest.cc
     G4ThreeVectorTest.cc
     CGenstepCollectorTest.cc
+    CGenstepCollector2Test.cc
     CGenstepCollectorLeakTest.cc
     CGenstepCollectorLeak2Test.cc
     CInterpolationTest.cc

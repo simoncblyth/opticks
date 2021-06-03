@@ -23,6 +23,8 @@
 
 #include "NLookup.hpp"
 #include "NPY.hpp"
+
+#include "CManager.hh"
 #include "CGenstepCollector.hh"
 
 #include "OpticksHub.hh"
@@ -176,9 +178,22 @@ unsigned CGenstepCollector::getNumPhotons(unsigned gs_idx) const
 {
     assert( gs_idx < m_gs_photons.size() ); 
     return m_gs_photons[gs_idx] ; 
+}
+unsigned CGenstepCollector::getPhotonOffset(unsigned gs_idx) const 
+{
+    assert( gs_idx < m_gs_photons.size() ); 
+    return m_gs_offset[gs_idx] ; 
+}
+char CGenstepCollector::getGentype(unsigned gs_idx) const 
+{
+    assert( gs_idx < m_gs_photons.size() ); 
+    return m_gs_type[gs_idx] ; 
 } 
-
-
+const CGenstep& CGenstepCollector::getGenstep(unsigned gs_idx) const 
+{
+    assert( gs_idx < m_gs.size() ); 
+    return m_gs[gs_idx] ; 
+}
 
 
 NPY<float>*  CGenstepCollector::getGensteps() const 
@@ -245,14 +260,31 @@ int CGenstepCollector::getReservation() const
 }
 
 
-void CGenstepCollector::addPhotons(unsigned numPhotons)
+CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
 {
-     m_gs_photons.push_back(numPhotons); 
-     m_photon_count += numPhotons ; 
+    unsigned genstep_index = getNumGensteps(); 
+    unsigned photon_offset = getNumPhotons(); 
+
+    CGenstep gs(genstep_index, numPhotons, photon_offset, gentype) ; 
+
+    m_gs.push_back(gs); 
+    m_gs_photons.push_back(numPhotons); 
+    m_gs_offset.push_back(photon_offset); 
+    m_gs_type.push_back(gentype); 
+
+    m_photon_count += numPhotons ; 
+
+    CManager* mgr = CManager::Get(); 
+    if(mgr)
+    {
+        mgr->BeginOfGenstep(genstep_index, gentype, numPhotons, photon_offset); 
+    }
+
+    return gs  ; 
 }
 
 
-void CGenstepCollector::collectScintillationStep
+CGenstep CGenstepCollector::collectScintillationStep
 (
             G4int                gentype, 
             G4int                parentId,
@@ -285,8 +317,9 @@ void CGenstepCollector::collectScintillationStep
             G4double             spare2
 ) 
 {
+     CGenstep gs = addGenstep(numPhotons, 'S');
+
      m_scintillation_count += 1 ;   // 1-based index
-     addPhotons(numPhotons);
 
      LOG(LEVEL)
           << " gentype " << gentype
@@ -345,10 +378,12 @@ void CGenstepCollector::collectScintillationStep
      ss[5*4+3] = spare2 ;
 
      m_genstep->add(ss, m_genstep_itemsize);
+
+     return gs ; 
 }
 
 
-void CGenstepCollector::collectCerenkovStep
+CGenstep CGenstepCollector::collectCerenkovStep
 (
             G4int                gentype, 
             G4int                parentId,
@@ -381,8 +416,8 @@ void CGenstepCollector::collectCerenkovStep
             G4double             postVelocity
 )
 {
+     CGenstep gs = addGenstep(numPhotons, 'C');
      m_cerenkov_count += 1 ;   
-     addPhotons(numPhotons);
 
      LOG(LEVEL)
           << " gentype " << gentype
@@ -441,6 +476,7 @@ void CGenstepCollector::collectCerenkovStep
      cs[5*4+3] = postVelocity ;
 
      m_genstep->add(cs, m_genstep_itemsize);
+     return gs ; 
 }
 
 /**
@@ -451,22 +487,26 @@ Duplicates the gentype as a float into normal genstep itemsize.
 
 **/
 
-void CGenstepCollector::collectMachineryStep(unsigned gentype)
+CGenstep CGenstepCollector::collectMachineryStep(unsigned gentype)
 {
-     assert( OpticksGenstep::IsMachinery(gentype) ); 
+    assert( OpticksGenstep::IsMachinery(gentype) ); 
 
-     m_machinery_count += 1 ;  
-     LOG(debug) 
+    CGenstep gs = addGenstep(0, 'M');
+
+    m_machinery_count += 1 ;  
+    LOG(debug) 
            << " machinery_count " << m_machinery_count ;
 
 
-     float* ms = m_genstep_values ; 
+    float* ms = m_genstep_values ; 
 
-     uif_t uif ; 
-     uif.u = gentype ; 
-     for(unsigned i=0 ; i < m_genstep_itemsize ; i++) ms[i] = uif.f ;  
+    uif_t uif ; 
+    uif.u = gentype ; 
+    for(unsigned i=0 ; i < m_genstep_itemsize ; i++) ms[i] = uif.f ;  
 
-     m_genstep->add(ms, m_genstep_itemsize);
+    m_genstep->add(ms, m_genstep_itemsize);
+
+    return gs ;           
 }
 
 
@@ -479,8 +519,9 @@ Currently expects only torchsteps.
 
 **/
 
-void CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
+CGenstep CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
 {
+    CGenstep cgs = addGenstep(0, 'T');
     unsigned num_gensteps = gs->getNumGensteps(); 
     const NPY<float>* src = gs->getGensteps(); 
     float* dst_values = m_genstep_values ; 
@@ -553,6 +594,8 @@ void CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
            << " aux " << m_genstep->getAux() 
            ; 
     }
+
+    return cgs ; 
 }
 
  

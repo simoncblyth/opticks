@@ -29,13 +29,14 @@
 #include "Opticks.hh"
 
 #include "CGenstep.hh"
+#include "CGenstepCollector.hh"
 #include "CBoundaryProcess.hh"
 #include "CProcessManager.hh"
 #include "CEvent.hh"
 #include "CTrack.hh"
 #include "CG4Ctx.hh"
 #include "CEventInfo.hh"
-#include "CTrackInfo.hh"
+#include "CPhotonInfo.hh"
 
 #include "PLOG.hh"
 
@@ -50,6 +51,7 @@ const unsigned CG4Ctx::TO = OpticksGenstep::SourceCode("fabricated");
 CG4Ctx::CG4Ctx(Opticks* ok)
     :
     _ok(ok),
+    _gsc(CGenstepCollector::Get()),
     _mode(ok->getManagerMode()),
     _pindex(ok->getPrintIndex(0)),
     _print(false),
@@ -354,9 +356,10 @@ or the last added Genstep if the argumnet is '?'
 **/
 
 
-void CG4Ctx::setGenstep(char gentype, int num_photons, int offset)
+void CG4Ctx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int offset)
 {
     _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CG4Ctx::setEvent, so it becomes a zero based event local index
+    assert( genstep_index == _genstep_index ); 
 
     CGenstep* prior = getGenstep(gentype); 
     if(prior)
@@ -380,9 +383,9 @@ void CG4Ctx::setGenstep(char gentype, int num_photons, int offset)
 }
 
 
-void CG4Ctx::BeginOfGenstep(char gentype, int num_photons, int offset )
+void CG4Ctx::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
 {
-    setGenstep(gentype, num_photons, offset); 
+    setGenstep(genstep_index, gentype, num_photons, offset); 
     CGenstep* gs = getGenstep(_gentype) ; 
     LOG(fatal) << " _genstep " << gs->desc() ;
 }
@@ -523,37 +526,52 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
     // dynamic_cast gives NULL when using the wrong type for the pointer
 
     G4VUserTrackInformation* ui = mtrack->GetUserInformation() ; 
-    CTrackInfo* tkui = ui ? dynamic_cast<CTrackInfo*>(ui) : nullptr ;
-    _trk = tkui ? new CTrk(tkui->trk) : nullptr  ;  
+    CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ;
+    _cpui = cpui ;  
+    // lack of _cpui should be only with artifically input/generated photons as both C+S photons should always be labelled
 
-    // lack of tkui should be only with artifically input/generated photons 
-    // as both C+S photons should be always be labelled
+    int pho_gs = _cpui ? _cpui->pho.gs : -1 ; 
+    int pho_ix = _cpui ? _cpui->pho.ix : -1 ;
+    _record_id = pho_ix > -1 ? _cpui->pho.ix : _track_id ;   // 0-based, local to the genstep
 
-    char gentype = _trk ? _trk->gentype() : 'T' ; 
+    bool pho_re = _cpui ? _cpui->pho.re : false ; 
+ 
 
-    _primary_id = _trk ? _trk->photon_id() : _track_id ;   // 0-based
-    _reemtrack = _trk ? _trk->reemission() : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
+    _reemtrack  = pho_re  ;                                   // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
 
-    //TODO: pass the genstep index along and assert it matches
-    unsigned gs_index = 0 ; 
+    const CGenstep& gs = _gsc->getGenstep(pho_gs) ;   // TODO: ensure 'T' steps handled somehow
+    assert( gs.index == pho_gs ); 
 
-    CGenstep* gs = getGenstep(gentype);  
+    _photon_id = gs.offset + _record_id   ;   // 0-based, absolute photon index within the event 
 
-    _photon_id = _primary_id  ; 
-    _record_id = gs->getRecordId( gs_index, _photon_id ); 
-    gs->markRecordId(gs_index, _photon_id ); 
+    CGenstep* cgs = getGenstep(gs.gentype);  
+    assert(cgs); 
+    bool gs_index_match = cgs->index == gs.index ;
+    if(!gs_index_match)
+    {
+        LOG(fatal)
+           << " FAIL gs_index_match " << gs_index_match
+           << std::endl
+           << " cgs " << cgs->desc()
+           << std::endl
+           << " gs  " << gs.desc()
+           ;
+    }
+
+    assert(gs_index_match); 
+    cgs->set(_record_id); 
 
     LOG(LEVEL) 
-        << " gs " << gs->desc()
+        << " gs " << gs.desc()
+        << " cgs " << cgs->desc()
         ;
-
 
     _record_fraction = double(_record_id)/double(_record_max) ;  
 
     _photon_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
 
     LOG(LEVEL) 
-         << " _trk " << ( _trk ? _trk->desc() : "-" ) 
+         << " _cpui " << ( _cpui ? _cpui->desc() : "-" ) 
          << " _primary_id  " <<  _primary_id 
          << " _record_id " << _record_id  
          << " _reemtrack " << _reemtrack

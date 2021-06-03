@@ -248,15 +248,14 @@ Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     G4double MeanNumberOfPhotons1 = GetAverageNumberOfPhotons(charge,beta1,aMaterial,Rindex);
     G4double MeanNumberOfPhotons2 = GetAverageNumberOfPhotons(charge,beta2,aMaterial,Rindex);
 
-
+    CGenstep gs ; 
     if(NumPhotons > 0)
     {
         const G4ParticleDefinition* definition = aParticle->GetDefinition();
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
 
-        unsigned opticks_photon_offset = CGenstepCollector::Get()->getNumPhotons(); 
-        CGenstepCollector::Get()->collectCerenkovStep(
+        gs = CGenstepCollector::Get()->collectCerenkovStep(
 
                0,                  // 0     id:zero means use cerenkov step count 
                aTrack.GetTrackID(),
@@ -288,8 +287,6 @@ Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                MeanNumberOfPhotons2,
                0
         );
-
-        CManager::Get()->BeginOfGenstep('C', NumPhotons, opticks_photon_offset); 
     }
 
 	

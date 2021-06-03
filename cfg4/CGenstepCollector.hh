@@ -25,6 +25,7 @@
 #include <string>
 #include "plog/Severity.h"
 #include "G4Types.hh"
+#include "CGenstep.hh"
 
 class OpticksGenstep ; 
 class NLookup ; 
@@ -70,6 +71,7 @@ prior to the photon generation loop.
 
 class CFG4_API CGenstepCollector 
 {
+        friend struct CGenstepCollector2Test ; 
     public:
         static const plog::Severity LEVEL ; 
         static CGenstepCollector* Get();
@@ -79,9 +81,16 @@ class CFG4_API CGenstepCollector
         void setArrayContentIndex(unsigned eventId); 
         unsigned getArrayContentIndex() const ; 
         unsigned getNumGensteps() const ; 
+
         unsigned getNumPhotons() const ;  // total 
         unsigned getNumPhotons2() const ;  // m_photon_count
+
+    public:
         unsigned getNumPhotons( unsigned gs_idx) const ; 
+        char     getGentype(unsigned gs_idx) const ;
+        unsigned getPhotonOffset(unsigned gs_idx) const ;
+        const CGenstep& getGenstep(unsigned gs_idx) const ; 
+
     public:
         NPY<float>*  getGensteps() const ;
     public:
@@ -100,7 +109,7 @@ class CFG4_API CGenstepCollector
         void setReservation(int items);
         int getReservation() const ; 
     public:
-        void collectScintillationStep(
+        CGenstep collectScintillationStep(
             G4int                gentype, 
             G4int                parentId,
             G4int                materialId,
@@ -132,7 +141,7 @@ class CFG4_API CGenstepCollector
             G4double             spare2=0
         );
    public:
-        void collectCerenkovStep(
+        CGenstep collectCerenkovStep(
             G4int                gentype, 
             G4int                parentId,
             G4int                materialId,
@@ -164,10 +173,10 @@ class CFG4_API CGenstepCollector
             G4double             postVelocity
         );
    public:
-         void collectMachineryStep(unsigned code);
-         void collectOpticksGenstep(const OpticksGenstep* gs);
+         CGenstep collectMachineryStep(unsigned code);
+         CGenstep collectOpticksGenstep(const OpticksGenstep* gs);
    private:
-         void addPhotons(unsigned numPhotons);
+         CGenstep addGenstep(unsigned numPhotons, char gentype);
          static CGenstepCollector* INSTANCE ;      
    private:
          const NLookup*    m_lookup ; 
@@ -183,5 +192,8 @@ class CFG4_API CGenstepCollector
          unsigned          m_photon_count ; 
 
          std::vector<unsigned> m_gs_photons ; 
+         std::vector<unsigned> m_gs_offset ; 
+         std::vector<char>     m_gs_type ; 
+         std::vector<CGenstep> m_gs ; 
 
 };

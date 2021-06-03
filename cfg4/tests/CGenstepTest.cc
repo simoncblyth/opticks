@@ -4,19 +4,43 @@
 #include "OPTICKS_LOG.hh"
 #include "CGenstep.hh"
 
-int main(int argc, char** argv)
+
+void test_mask()
 {
-    OPTICKS_LOG(argc, argv); 
- 
     unsigned index = 0 ; 
     unsigned photons = 100 ; 
     unsigned offset = 1000 ; 
     char gentype = 'C' ; 
 
-    CGenstep cg(index, photons, offset, gentype); 
-    for(int i=0 ; i < int(photons) ; i++) if(i % 10 == 0 ) cg.set(i) ; 
+    CGenstep gs(index, photons, offset, gentype); 
+    for(int i=0 ; i < int(photons) ; i++) if(i % 10 == 0 ) gs.set(i) ; 
 
-    LOG(info) << cg.desc() ;
+    LOG(info) << gs.desc() ;
+}
+
+void test_assign()
+{
+    CGenstep gs ; 
+
+    LOG(info) << gs.desc(); 
+
+    const char* s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" ; 
+    for(unsigned i=0 ; i < strlen(s) ; i++)
+    {
+        gs = {i,i*10,i,s[i] } ; 
+        LOG(info) << gs.desc(); 
+    }
+
+}
+
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+ 
+    test_mask(); 
+    test_assign(); 
 
     return 0 ; 
 }
