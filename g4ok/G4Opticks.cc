@@ -1034,6 +1034,15 @@ unsigned G4Opticks::getNumPhotons() const
 {
     return m_genstep_collector->getNumPhotons()  ; 
 }
+unsigned G4Opticks::getNumPhotons2() const 
+{
+    return m_genstep_collector->getNumPhotons2()  ; 
+}
+
+
+
+
+
 unsigned G4Opticks::getNumGensteps() const 
 {
     return m_genstep_collector->getNumGensteps()  ; 
