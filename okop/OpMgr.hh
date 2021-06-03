@@ -94,6 +94,7 @@ class OKOP_API OpMgr {
    private:
        int            m_preinit ; 
        Opticks*       m_ok ; 
+       bool           m_nogpu ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
        int            m_num_event ;  

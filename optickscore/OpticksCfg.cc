@@ -365,6 +365,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("nosaveppm",   "skip the saving of PPM files from compute snaps") ; 
 
+   m_desc.add_options()
+       ("nogpu",   "skip anything using GPU") ; 
+
 
    m_desc.add_options()
        ("dumphit",   "dump hits, see OKPropagator") ; 
@@ -2132,6 +2135,8 @@ int OpticksCfg<Listener>::getManagerMode() const   // --managermode
 {
     return m_managermode ; 
 }
+
+
 
 
 template <class Listener>

@@ -6,29 +6,35 @@
 which CerenkovMinimal
 
 #export CKM_OPTICKS_EXTRA="--dbgrec"
-export CKM_OPTICKS_EXTRA="--managermode 2"
+export CKM_OPTICKS_EXTRA="--managermode 2 --nogpu"
 
-log(){ cat << EOV | grep -v ^#
+
+# logging evar control 
+log_(){ cat << EOV
 G4Opticks
 #G4OpticksRecorder
 #CManager
 #CRecorder
 CWriter
 #CTrackInfo
-#CG4Ctx
+CG4Ctx
 #OpticksRun
 #OpticksEvent
 #CG4
 EOV
 }
 
+log_on(){  log_ |  grep  -v ^#  ; }
+log_off(){ log_ |  grep  ^#  | tr "#" " " ;  }
+log_all(){ log_on ; log_off ; }
 
-# evar control 
-log_ls(){     for var in $(${VNAME:-log}) ; do printf "%20s : [%s] \n"  $var ${!var} ; done ; }
-log_export(){ for var in $(${VNAME:-log}) ; do export $var=INFO                      ; done ; log_ls ; }  
-log_unset(){  for var in $(${VNAME:-log}) ; do unset $var                            ; done ; log_ls ; }
+log_ls(){     for var in $(${VNAME:-log_all}) ; do printf "%20s : [%s] \n"  $var ${!var} ; done ; }
+log_export(){ for var in $(${VNAME:-log_on})  ; do export $var=INFO                      ; done ; }  
+log_unset(){  for var in $(${VNAME:-log_off}) ; do unset $var                            ; done ; }
+log_up(){     log_export ; log_unset ; log_ls ; }  
 
-log_export
+log_up
+
 
 
 if [ "$(uname)" == "Darwin" ]; then 

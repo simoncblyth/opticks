@@ -1136,6 +1136,14 @@ bool Opticks::isNoSavePPM() const  // --nosaveppm
 {
     return m_cfg->hasOpt("nosaveppm") ;
 }
+bool Opticks::isNoGPU() const  // --nogpu
+{
+    return m_cfg->hasOpt("nogpu") ;
+}
+
+
+
+
 bool Opticks::isNoG4Propagate() const  // --nog4propagate
 {
     return m_cfg->hasOpt("nog4propagate") ;

@@ -28,6 +28,7 @@
 #include "OpticksEvent.hh"
 #include "Opticks.hh"
 
+#include "CGenstep.hh"
 #include "CBoundaryProcess.hh"
 #include "CProcessManager.hh"
 #include "CEvent.hh"
@@ -52,7 +53,9 @@ CG4Ctx::CG4Ctx(Opticks* ok)
     _mode(ok->getManagerMode()),
     _pindex(ok->getPrintIndex(0)),
     _print(false),
-    _genstep_num_photons(0),
+    _genstep_c(nullptr),
+    _genstep_s(nullptr),
+    _genstep_t(nullptr),
     _genstep_index(-1)
 {
     init();
@@ -293,8 +296,8 @@ void CG4Ctx::setEvent(const G4Event* event)
 
 
 /**
-CG4Ctx::setGenstep
---------------------
+CG4Ctx::BeginOfGenstep
+------------------------
 
 HMM: in general cannot set this at event level, 
 it can only be set by checking on the generating process of first photon 
@@ -318,28 +321,81 @@ HMM: where to invoke this with normal G4Opticks S+C running ?
 **/
 
 
-void CG4Ctx::BeginOfGenstep(char gentype, int num_photons, int offset )
+/**
+CG4Ctx::getGenstep
+-------------------
+
+returns the last Genstep of gentype 'S' 'C' or 'T' specified by argument 
+or the last added Genstep if the argumnet is '?' 
+
+**/
+
+CGenstep* CG4Ctx::getGenstep(char gentype) const
 {
-    setGentype(gentype); 
-    _genstep_num_photons = num_photons ; 
-    _genstep_offset = offset ; 
+    CGenstep* gs = nullptr ; 
+    char gt = gentype == '?' ? _gentype : gentype ; 
+    switch(gt)
+    {
+       case 'S': gs = _genstep_s ; break ; 
+       case 'C': gs = _genstep_c ; break ; 
+       case 'T': gs = _genstep_t ; break ; 
+    }
+    return gs ; 
+}
+
+
+/**
+CG4Ctx::getGenstep
+-------------------
+
+returns the last Genstep of gentype 'S' 'C' or 'T' specified by argument 
+or the last added Genstep if the argumnet is '?' 
+
+**/
+
+
+void CG4Ctx::setGenstep(char gentype, int num_photons, int offset)
+{
     _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CG4Ctx::setEvent, so it becomes a zero based event local index
 
-    LOG(LEVEL) 
-        << " _gentype [" << _gentype << "]"
-        << " _genstep_num_photons " << _genstep_num_photons 
-        << " _genstep_index " << _genstep_index 
-        ;
+    CGenstep* prior = getGenstep(gentype); 
+    if(prior)
+    {
+        bool complete = prior->all(); 
+        LOG(error)
+           << " prior genstep " << prior->desc()
+           << " prior complete " << complete
+           ;
+        assert( complete ); 
+        delete prior ;  
+    }
+
+    switch(gentype)
+    {
+       case 'S': _genstep_s = new CGenstep(_genstep_index, num_photons, offset, gentype ); break ; 
+       case 'C': _genstep_c = new CGenstep(_genstep_index, num_photons, offset, gentype ); break ; 
+       case 'T': _genstep_t = new CGenstep(_genstep_index, num_photons, offset, gentype ); break ; 
+    }
+    setGentype(gentype); 
+}
+
+
+void CG4Ctx::BeginOfGenstep(char gentype, int num_photons, int offset )
+{
+    setGenstep(gentype, num_photons, offset); 
+    CGenstep* gs = getGenstep(_gentype) ; 
+    LOG(fatal) << " _genstep " << gs->desc() ;
 }
 
 void CG4Ctx::EndOfGenstep()
 {
-    LOG(LEVEL) 
-        << " _gentype [" << _gentype << "]"
-        << " _genstep_num_photons " << _genstep_num_photons 
-        << " _genstep_index " << _genstep_index 
+    CGenstep* gs = getGenstep(_gentype) ;
+    bool complete =  gs->all() ;
+    LOG(fatal) 
+        << " complete " << complete
+        << " gs " << gs->desc() 
         ;
-
+    assert(complete);
 }
 
 
@@ -473,12 +529,23 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
     // lack of tkui should be only with artifically input/generated photons 
     // as both C+S photons should be always be labelled
 
+    char gentype = _trk ? _trk->gentype() : 'T' ; 
+
     _primary_id = _trk ? _trk->photon_id() : _track_id ;   // 0-based
     _reemtrack = _trk ? _trk->reemission() : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
 
-    _photon_id = _primary_id  ; 
+    //TODO: pass the genstep index along and assert it matches
+    unsigned gs_index = 0 ; 
 
-    _record_id = _primary_id - _genstep_offset ; 
+    CGenstep* gs = getGenstep(gentype);  
+
+    _photon_id = _primary_id  ; 
+    _record_id = gs->getRecordId( gs_index, _photon_id ); 
+    gs->markRecordId(gs_index, _photon_id ); 
+
+    LOG(LEVEL) 
+        << " gs " << gs->desc()
+        ;
 
 
     _record_fraction = double(_record_id)/double(_record_max) ;  
@@ -488,7 +555,6 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
     LOG(LEVEL) 
          << " _trk " << ( _trk ? _trk->desc() : "-" ) 
          << " _primary_id  " <<  _primary_id 
-         << " _genstep_offset " << _genstep_offset
          << " _record_id " << _record_id  
          << " _reemtrack " << _reemtrack
          << " mtrack.GetGlobalTime " << mtrack->GetGlobalTime()

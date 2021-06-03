@@ -172,10 +172,10 @@ CRecorder::BeginOfGenstep
 When have input photons this is invoked by CManager::BeginOfEventAction
 
 **/
-void CRecorder::BeginOfGenstep(char gentype, int num_photons, int offset)
+void CRecorder::BeginOfGenstep()
 {
     LOG(LEVEL); 
-    m_writer->BeginOfGenstep(gentype, num_photons, offset); 
+    m_writer->BeginOfGenstep(); 
 }
 
 /**

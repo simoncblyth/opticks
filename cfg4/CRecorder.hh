@@ -161,7 +161,7 @@ class CFG4_API CRecorder {
         void setMaterialBridge(const CMaterialBridge* material_bridge);
 
         void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
-        void BeginOfGenstep(char gentype, int num_photons, int offset);
+        void BeginOfGenstep();
         void EndOfGenstep();
 
         void postTrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons

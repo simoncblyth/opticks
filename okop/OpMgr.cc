@@ -55,12 +55,13 @@ OpMgr::OpMgr(Opticks* ok )
     :
     m_preinit(Preinit()),
     m_ok(ok ? ok : Opticks::GetInstance()),         
+    m_nogpu(m_ok->isNoGPU()),
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry OR adopt a preexisting GGeo instance
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks
     m_gen(m_hub->getGen()),
     m_run(m_ok->getRun()),
-    m_propagator(new OpPropagator(m_hub, m_idx)),
+    m_propagator(m_nogpu ? nullptr : new OpPropagator(m_hub, m_idx)),
     m_count(0)
 {
     init();
@@ -84,11 +85,6 @@ void OpMgr::setGensteps(NPY<float>* gensteps)
 {
     m_gensteps = gensteps ; 
 }
-
-//void OpMgr::uploadSensorLib(const SensorLib* sensorlib)
-//{
-//    m_propagator->uploadSensorLib(sensorlib);  
-//}
 
 
 
@@ -134,9 +130,13 @@ void OpMgr::propagate()
 
     m_run->createEvent(m_gensteps, ctrl ); 
 
-    LOG(LEVEL) << "[ m_propagator->propagate " ; 
-    m_propagator->propagate();
-    LOG(LEVEL) << "] m_propagator->propagate " ; 
+
+    if(m_propagator)
+    {
+        LOG(LEVEL) << "[ m_propagator->propagate " ; 
+        m_propagator->propagate();
+        LOG(LEVEL) << "] m_propagator->propagate " ; 
+    }
 
     if(m_ok->isSave()) 
     {
@@ -188,13 +188,12 @@ see notes/issues/G4OKTest-snap-fails-with-invalid-context.rst
 
 int  OpMgr::render_snap()
 {
-    return m_propagator->render_snap(); 
+    return m_propagator ? m_propagator->render_snap() : 0 ; 
 }
 
 int OpMgr::render_flightpath()
 {
-    return m_propagator->render_flightpath(); 
+    return m_propagator ? m_propagator->render_flightpath() : 0 ; 
 }
-
 
 

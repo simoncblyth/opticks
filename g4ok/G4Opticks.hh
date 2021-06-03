@@ -417,7 +417,6 @@ class G4OK_API G4Opticks
     private:
         OpticksEvent*              m_g4evt ; 
         NPY<float>*                m_g4hit ; 
-        bool                       m_gpu_propagate ;  
     private:
         std::vector<G4PVPlacement*> m_sensor_placements ;
         SensorLib*                  m_sensorlib ; 

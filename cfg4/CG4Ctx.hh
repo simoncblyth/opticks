@@ -42,6 +42,7 @@ class G4ProcessManager ;
 class G4Step ; 
 
 struct CTrk ; 
+struct CGenstep ; 
 class OpticksEvent ; 
 class Opticks ; 
 
@@ -89,11 +90,14 @@ struct CFG4_API CG4Ctx
     int  _event_track_count ; 
     int  _number_of_input_photons ; 
 
-    // CG4Ctx::BeginOfGenstep
-    // CG4Ctx::EndOfGenstep
-    char     _gentype ;   // 'C' 'S' 'T'
-    unsigned _genstep_offset ; 
-    unsigned _genstep_num_photons ; 
+    // CG4Ctx::setGenstep
+    char       _gentype ;   // 'C' 'S' 'T'
+    CGenstep*  _genstep_c ; 
+    CGenstep*  _genstep_s ; 
+    CGenstep*  _genstep_t ; 
+
+    void      setGenstep(char gentype, int num_photons, int offset);
+    CGenstep* getGenstep(char gentype='?') const;
 
     // *_genstep_index* 
     //     starts at -1 and is reset to -1 by CG4Ctx::setEvent, incremented by CG4Ctx::BeginOfGenstep 

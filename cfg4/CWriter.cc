@@ -32,6 +32,7 @@
 #include "SBit.hh"
 
 #include "CRecorder.h"
+#include "CGenstep.hh"
 #include "CG4Ctx.hh"
 #include "CPhoton.hh"
 #include "Opticks.hh"
@@ -145,29 +146,41 @@ Invoked from CRecorder::BeginOfGenstep
 1. creates small onestep buffers 
 2. change target to point at them 
 
+
+It is looking like need to keep three gensteps alive 
+as G4 handles C+S intertwined. 
+
+Could easily manage these three buffers in triplicate for 'S' 'C' 'T'
+
+   m_records_c
+   m_records_s   
+   m_records_t 
+
+will need to use the offsets to control the order with which them need
+to be written to the full buffer
+
 **/
 
-void CWriter::BeginOfGenstep( char gentype, int num_onestep_photons, int offset )
+void CWriter::BeginOfGenstep()
 {
-    LOG(LEVEL) 
+    assert( m_onestep == true ); 
+
+    CGenstep* gs = m_ctx.getGenstep('?') ;  // of the last type
+    unsigned gs_photons =  gs->photons ; 
+    LOG(LEVEL)
         << " m_ctx._gentype [" <<  m_ctx._gentype << "]" 
-        << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons 
         << " m_ctx._genstep_index " << m_ctx._genstep_index
-        << " m_ctx._genstep_offset " << m_ctx._genstep_offset
+        << " gs_photons " << gs_photons
+        << " gs " << gs->desc()
         ;
 
-    assert( m_onestep == true ); 
-    assert( m_ctx._gentype == gentype  ); 
-    assert( m_ctx._genstep_num_photons == unsigned(num_onestep_photons)  ); 
-    assert( m_ctx._genstep_offset == unsigned(offset)  ); 
-
-    m_onestep_records = NPY<short>::make(num_onestep_photons, m_ctx._steps_per_photon, 2, 4) ;
+    m_onestep_records = NPY<short>::make(gs_photons, m_ctx._steps_per_photon, 2, 4) ;
     m_onestep_records->zero();
 
-    m_onestep_photons = NPY<float>::make(num_onestep_photons, 4, 4) ;
+    m_onestep_photons = NPY<float>::make(gs_photons, 4, 4) ;
     m_onestep_photons->zero();
 
-    m_onestep_history = NPY<unsigned long long>::make(num_onestep_photons, 1, 2) ;
+    m_onestep_history = NPY<unsigned long long>::make(gs_photons, 1, 2) ;
     m_onestep_history->zero();
 
     m_target_records = m_onestep_records ; 
@@ -185,10 +198,11 @@ Invoked by CRecorder::EndOfGenstep
 
 void CWriter::EndOfGenstep()
 {
+    CGenstep* gs = m_ctx.getGenstep('?') ;  // of the last type
     LOG(LEVEL) 
         << " m_ctx._gentype [" <<  m_ctx._gentype << "]" 
-        << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons 
         << " m_ctx._genstep_index " << m_ctx._genstep_index
+        << " gs " << gs->desc()
         ;
 
     assert( m_onestep == true ); 
@@ -249,6 +263,23 @@ and recording truncation
 
 bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material, bool last )
 {
+    unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ;   // currently focussing on onestep mode
+
+    CGenstep* gs = m_ctx.getGenstep(); // last type 
+    unsigned gs_photons = gs->photons ; 
+
+    LOG(LEVEL)  
+        << " m_ctx._photon_id " << m_ctx._photon_id 
+        << " gs_photons " << gs_photons
+        << " m_ctx._record_id(target_record_id) " << m_ctx._record_id 
+        ;
+  
+    assert( m_target_records ); 
+    assert( target_record_id < gs_photons ); 
+
+
+
+
     m_photon.add(flag, material);  // sets seqhis/seqmat nibbles in current constrained slot  
 
     bool hard_truncate = m_photon.is_hard_truncate();    
@@ -261,7 +292,7 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
     }
     else
     {
-        if(m_enabled) writeStepPoint_(point, m_photon );
+        if(m_enabled) writeStepPoint_(point, m_photon, target_record_id  );
 
         m_photon.increment_slot() ; 
 
@@ -269,7 +300,7 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
 
         if( (done || last) && m_enabled )
         {
-            writePhoton(point);
+            writePhoton_(point, target_record_id );
         }
     }        
 
@@ -300,20 +331,9 @@ This is why Geant4 process must be configured to track secondaries first.
 
 **/
 
-void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
+void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, unsigned target_record_id  )
 {
     // write compressed record quads into buffer at location for the m_record_id 
-
-    unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ;   
-    // hmm maybe separate id for onestep handling and all genstep handling 
-
-    LOG(LEVEL)  
-        << " m_ctx._record_id(target_record_id) " << m_ctx._record_id 
-        << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons
-        ;
-  
-    assert( m_target_records ); 
-    assert( target_record_id < m_ctx._genstep_num_photons ); 
 
     unsigned slot = photon._slot_constrained ;
     unsigned flag = photon._flag ; 
@@ -423,18 +443,10 @@ A: Hmm, not sure : but suspect that is could be made to work by using
 
 **/
 
-void CWriter::writePhoton(const G4StepPoint* point )
+void CWriter::writePhoton_(const G4StepPoint* point, unsigned target_record_id  )
 {
-    unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ; 
-    LOG(LEVEL)  
-        << " m_ctx._record_id(target_record_id) " << m_ctx._record_id 
-        << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons
-        ;
-  
     assert( m_target_photons ); 
-    assert( target_record_id < m_ctx._genstep_num_photons ); 
-
-    writeHistory(target_record_id);  
+    writeHistory_(target_record_id);  
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -456,14 +468,14 @@ void CWriter::writePhoton(const G4StepPoint* point )
 }
 
 /**
-CWriter::writeHistory
+CWriter::writeHistory_
 -----------------------
 
 Emulating GPU seqhis/seqmat writing 
 
 **/
 
-void CWriter::writeHistory(unsigned target_record_id)
+void CWriter::writeHistory_(unsigned target_record_id)
 {
     assert( m_target_history ); 
     unsigned long long* history = m_target_history->getValues() + 2*target_record_id ;

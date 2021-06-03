@@ -107,6 +107,7 @@ set(SOURCES
     CPhoton.cc
     CAction.cc
     CWriter.cc
+    CGenstep.cc
 
     CDetector.cc
     CGDMLDetector.cc
@@ -217,6 +218,8 @@ set(HEADERS
     CStp.hh
     CRec.hh
 
+    CWriter.hh
+    CGenstep.hh
 
     CPrimaryVertex.hh
     CThreeVector.hh

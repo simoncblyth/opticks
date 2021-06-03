@@ -57,6 +57,8 @@ set(TEST_SOURCES
     CGDMLKludgeTest.cc
     CTrackInfoTest.cc 
 
+    CGenstepTest.cc
+
 )
 
 # generate targets for these, but dont add_test 

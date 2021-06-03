@@ -439,6 +439,7 @@ class OKCORE_API Opticks {
 
        bool                 isG4CodeGen() const ;  // --g4codegen
        bool                 isNoSavePPM() const ; // --nosaveppm
+       bool                 isNoGPU() const ; // --nogpu
        bool                 isNoG4Propagate() const ;     // --nog4propagate
        bool                 isSaveProfile() const ; // --saveprofile
 

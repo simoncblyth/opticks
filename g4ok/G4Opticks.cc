@@ -253,8 +253,10 @@ std::string G4Opticks::desc() const
     std::stringstream ss ; 
     ss << "G4Opticks.desc"
        << " ok " << m_ok 
-       << " opmgr " << m_opmgr
-       << std::endl 
+       ; 
+   if(m_opmgr) ss << " opmgr " << m_opmgr << " " ;
+
+   ss << std::endl 
        << ( m_ok ? m_ok->desc() : "-" ) 
        << std::endl 
        << ( m_ok ? m_ok->export_() : "-" ) 
@@ -332,7 +334,6 @@ G4Opticks::G4Opticks()
     m_genstep_idx(0),
     m_g4evt(NULL),
     m_g4hit(NULL),
-    m_gpu_propagate(true),
     m_sensorlib(NULL),
     m_skip_gencode(),
     m_skip_gencode_count(SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ',')),
@@ -491,7 +492,6 @@ std::string G4Opticks::dbgdesc_() const
        << std::setw(32) << " m_genstep_collector "            << std::setw(12) << m_genstep_collector << std::endl
        << std::setw(32) << " m_primary_collector "            << std::setw(12) << m_primary_collector << std::endl
        << std::setw(32) << " m_lookup "                       << std::setw(12) << m_lookup << std::endl
-       << std::setw(32) << " m_opmgr "                        << std::setw(12) << m_opmgr  << std::endl
        << std::setw(32) << " m_gensteps "                     << std::setw(12) << m_gensteps << std::endl
        << std::setw(32) << " m_genphotons "                   << std::setw(12) << m_genphotons << std::endl
        << std::setw(32) << " m_hits "                         << std::setw(12) << m_hits << std::endl 
@@ -502,7 +502,6 @@ std::string G4Opticks::dbgdesc_() const
        << std::setw(32) << " m_genstep_idx "                  << std::setw(12) << m_genstep_idx << std::endl
        << std::setw(32) << " m_g4evt "                        << std::setw(12) << m_g4evt << std::endl 
        << std::setw(32) << " m_g4hit "                        << std::setw(12) << m_g4hit << std::endl 
-       << std::setw(32) << " m_gpu_propagate "                << std::setw(12) << m_gpu_propagate << std::endl  
        << std::setw(32) << " m_sensorlib "                    << std::setw(12) << m_sensorlib << std::endl  
        ;
     std::string s = ss.str(); 
@@ -672,7 +671,6 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     LOG(LEVEL) << "( OpMgr " ; 
     m_opmgr = new OpMgr(m_ok) ;   
     LOG(LEVEL) << ") OpMgr " ; 
-
 
     m_recorder = G4OpticksRecorder::Get() ;  
     if(m_recorder) 
@@ -877,33 +875,10 @@ void G4Opticks::saveSensorLib(const char* dir, const char* reldir) const
     m_sensorlib->save(dir, reldir ); 
 }
 
-/**
-G4Opticks::uploadSensorLib
-----------------------------
-
-Invoked from G4OKTest::init
-
-Upload sensorData array and angular efficiency tables to GPU with OSensorLib.  
-
-TODO: this needs to move somewhere more general 
-
-
-void G4Opticks::uploadSensorLib() 
-{
-    LOG(info) ;  
-    assert( m_opmgr && "must setGeometry and set sensor info before uploadSensorLib" ); 
-    assert( m_sensorlib ); 
-    m_sensorlib->close(); 
-    assert( m_sensorlib->isClosed() ); 
-
-    m_opmgr->uploadSensorLib(m_sensorlib); 
-}
-**/
-
 
 void G4Opticks::render_snap() 
 {
-    assert( m_opmgr && "must setGeometry first" ); 
+    if(!m_opmgr) return ; 
     m_opmgr->render_snap(); 
 }
 
@@ -1161,7 +1136,7 @@ int G4Opticks::propagateOpticalPhotons(G4int eventID)
     //m_genphotons->save(phpath); 
 
    
-    if(m_gpu_propagate)
+    if(m_opmgr)
     {
         m_opmgr->setGensteps(m_gensteps);      
 

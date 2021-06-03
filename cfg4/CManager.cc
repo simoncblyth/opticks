@@ -198,7 +198,7 @@ void CManager::BeginOfGenstep(char gentype, int num_photons, int offset )
     m_ctx->BeginOfGenstep(gentype, num_photons, offset);  
 
     if(m_mode == 1 ) return ; 
-    m_recorder->BeginOfGenstep(gentype, num_photons, offset);  
+    m_recorder->BeginOfGenstep();  
 
 }
 

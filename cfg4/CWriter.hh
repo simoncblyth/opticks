@@ -81,18 +81,18 @@ class CFG4_API CWriter
         // *writeStepPoint_* 
         //     writes the compressed records buffer (rx) 
         //
-        void writeStepPoint_(const G4StepPoint* point, const CPhoton& photon );
+        void writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, unsigned target_record_id );
 
         // *writePhoton* 
         //     writes the photon buffer (ox) and history buffer (ph) aka:seqhis/seqmat
         //     this overwrites prior entries for REJOIN updating target_record_id 
         //     with dynamic running this means MUST SetTrackSecondariesFirst IN C+S processes (TODO: verify this)
         //
-        void writePhoton(const G4StepPoint* point );
-        void writeHistory(unsigned target_record_id) ;
+        void writePhoton_(const G4StepPoint* point, unsigned target_record_id );
+        void writeHistory_(unsigned target_record_id) ;
 
    private:
-        void BeginOfGenstep( char gentype, int num_onestep_photons, int offset  );
+        void BeginOfGenstep();
         void EndOfGenstep();
 
     private:
