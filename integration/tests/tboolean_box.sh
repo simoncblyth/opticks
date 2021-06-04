@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 
 which tboolean.sh
-cmd="LV=box tboolean.sh --generateoverride 10000 -D"
+cmd="LV=box CMaterialBridge=INFO tboolean.sh --generateoverride 10000 -D"
 
 echo $cmd
 eval $cmd

@@ -18,6 +18,7 @@
  */
 
 #include "BStr.hh"
+#include <sstream>
 #include <iomanip>
 
 #include "G4StepPoint.hh"
@@ -50,9 +51,12 @@ void CMaterialBridge::initMap()
     unsigned nmat = G4Material::GetNumberOfMaterials();
     unsigned nmat_mlib = m_mlib->getNumMaterials(); 
 
-    LOG(LEVEL) 
+
+    std::stringstream ss ; 
+    ss
         << " nmat (G4Material::GetNumberOfMaterials) " << nmat
         << " nmat_mlib (GMaterialLib::getNumMaterials) materials used by geometry " << nmat_mlib
+        << std::endl
         ; 
 
 
@@ -76,23 +80,30 @@ void CMaterialBridge::initMap()
             m_ixtoabbr[index] = m_mlib->getAbbr(shortname) ;
         }
 
-        LOG(LEVEL) 
+        ss
             << " i " << std::setw(3) << i 
             << " name " << std::setw(35) << name 
             << " shortname " << std::setw(35) << shortname 
             << " abbr " << std::setw(35) << abbr 
             << " index " << std::setw(5)  << index
             << " mlib_unset " << std::setw(5)  << mlib_unset
+            << std::endl
             ; 
     }
 
-    LOG(LEVEL)
+    ss
         << " nmat " << nmat 
+        << " nmat_mlib " << nmat_mlib 
         << " m_g4toix.size() "   << m_g4toix.size() 
         << " m_ixtoname.size() " << m_ixtoname.size() 
+        << " m_ixtoabbr.size() " << m_ixtoabbr.size() 
+        << std::endl
         ; 
 
 
+    std::string s = ss.str(); 
+
+    LOG(LEVEL) << std::endl << s  ; 
 
     // for matching with GDML exports the GMaterialLib has changed to handling only the 
     // materials that are used, not all G4 materials that are present 
