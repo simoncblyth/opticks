@@ -102,7 +102,7 @@ class CFG4_API CRecorderLive {
         void dump(const char* msg="CRecorder::dump");
    private:
         CG4*               m_g4; 
-        CG4Ctx&            m_ctx; 
+        CCtx&            m_ctx; 
         Opticks*           m_ok; 
         CPhoton            m_photon ;  
         CRecState          m_state ;  

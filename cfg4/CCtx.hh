@@ -49,7 +49,7 @@ class OpticksEvent ;
 class Opticks ; 
 
 /**
-CG4Ctx
+CCtx
 =======
 
 Canonical m_ctx instance is ctor resident of CManager, this context is shared with::
@@ -61,7 +61,7 @@ Canonical m_ctx instance is ctor resident of CManager, this context is shared wi
 
 **/
 
-struct CFG4_API CG4Ctx
+struct CFG4_API CCtx
 {
     static const plog::Severity LEVEL ; 
     static const unsigned CK ; 
@@ -85,16 +85,16 @@ struct CFG4_API CG4Ctx
     unsigned  _steps_per_photon  ;
     unsigned  _record_max ; 
     unsigned  _bounce_max ; 
-    bool  _ok_event_init ;   // indicates that CG4Ctx::initEvent has been called configuring OpticksEvent recording 
+    bool  _ok_event_init ;   // indicates that CCtx::initEvent has been called configuring OpticksEvent recording 
 
-    // CG4Ctx::setEvent
+    // CCtx::setEvent
     G4Event* _event ; 
     int  _event_id ;
     int  _event_total ; 
     int  _event_track_count ; 
     int  _number_of_input_photons ; 
 
-    // CG4Ctx::setGenstep
+    // CCtx::setGenstep
     char       _gentype ;   // 'C' 'S' 'T'
     CGenstep*  _genstep_c ; 
     CGenstep*  _genstep_s ; 
@@ -104,18 +104,18 @@ struct CFG4_API CG4Ctx
     CGenstep* getGenstep(char gentype='?') const;
 
     // *_genstep_index* 
-    //     starts at -1 and is reset to -1 by CG4Ctx::setEvent, incremented by CG4Ctx::BeginOfGenstep 
+    //     starts at -1 and is reset to -1 by CCtx::setEvent, incremented by CCtx::BeginOfGenstep 
     //     giving a zero based local index of genstep within the event
     //     this is used from CManager::BeginOfGenstep to determine whether to call CManager::EndOfGenstep
     //     avoiding calling that until _genstep_index > -1
     // 
     int      _genstep_index ;  
 
-    // CG4Ctx::setGen
+    // CCtx::setGen
     unsigned  _gen  ;
     unsigned  _genflag  ;
 
-    // CG4Ctx::setTrack
+    // CCtx::setTrack
     const G4Track*  _track ; 
     G4TrackStatus   _track_status ;  
     G4ProcessManager* _process_manager ; 
@@ -127,7 +127,7 @@ struct CFG4_API CG4Ctx
     bool _optical ; 
     int  _pdg_encoding ;
 
-    // CG4Ctx::setTrackOptical
+    // CCtx::setTrackOptical
     CPhotonInfo* _cpui ;  
     int  _primary_id ; // used for reem continuation 
     int  _photon_id ;
@@ -138,7 +138,7 @@ struct CFG4_API CG4Ctx
     double _record_fraction ; // used with --reflectcheat
     int  _mask_index ;        // original _record_id when using mask  
 
-    // zeroed in CG4Ctx::setTrackOptical incremented in CG4Ctx::setStep
+    // zeroed in CCtx::setTrackOptical incremented in CCtx::setStep
     int  _rejoin_count ; 
     int  _primarystep_count ; 
     CStage::CStage_t  _stage ; 
@@ -172,7 +172,7 @@ struct CFG4_API CG4Ctx
 
 
 
-    CG4Ctx(Opticks* ok);
+    CCtx(Opticks* ok);
 
     void init();
     void initEvent(const OpticksEvent* evt);

@@ -26,7 +26,7 @@
 #include "OpticksPhoton.h"
 #include "OpStatus.hh"
 
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 
 #include "CStp.hh"
 #include "CPoi.hh"
@@ -42,7 +42,7 @@
 const plog::Severity CRec::LEVEL = PLOG::EnvLevel("CRec", "DEBUG") ; 
 
 
-CRec::CRec(CG4Ctx& ctx , CRecState& state)
+CRec::CRec(CCtx& ctx , CRecState& state)
     :
     m_state(state),
     m_ctx(ctx),
@@ -255,13 +255,13 @@ returning true kills the track, as needed for truncation of big bouncers
 This copies the current step from context.
 
 m_step_limited
-    becomes true when collected steps reaches CG4Ctx::step_limit() which is 
+    becomes true when collected steps reaches CCtx::step_limit() which is 
     about twice the size you might expect because of StepTooSmall turnarounds : 
     this means that a photon will typically reach m_point_limited long before 
     it reaches m_step_limited 
     
 m_point_limited
-    becomes true when collected points reaches CG4Ctx::point_limit() which 
+    becomes true when collected points reaches CCtx::point_limit() which 
     is what you would expect : the larger of bouncemax and points to record
 
 m_recpoialign

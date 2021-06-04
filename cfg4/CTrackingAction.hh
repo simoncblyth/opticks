@@ -23,7 +23,7 @@
 CTrackingAction : G4 to CG4 interface for tracks
 ==================================================
 
-* CG4Ctx::setTrack at pre 
+* CCtx::setTrack at pre 
 * CG4::preTrack CG4::postTrack for optical 
 
 **/

@@ -21,7 +21,7 @@
 
 #include <string>
 
-struct CG4Ctx ; 
+struct CCtx ; 
 struct CRecState ; 
 
 #include "CRecorder.h"
@@ -44,7 +44,7 @@ Builds seqhis, seqmat nibble by nibble just like GPU side generate.cu
 
 struct CFG4_API CPhoton
 {
-    const CG4Ctx& _ctx ; 
+    const CCtx& _ctx ; 
     CRecState&    _state ; 
 
     unsigned _badflag ; 
@@ -65,7 +65,7 @@ struct CFG4_API CPhoton
     unsigned long long _flag_prior ; 
 
 
-    CPhoton(const CG4Ctx& ctx, CRecState& state);
+    CPhoton(const CCtx& ctx, CRecState& state);
 
     void clear();
 

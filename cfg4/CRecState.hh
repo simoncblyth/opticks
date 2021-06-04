@@ -19,7 +19,7 @@
 
 #pragma once
 
-struct CG4Ctx ; 
+struct CCtx ; 
 #include <string>
 #include "CFG4_API_EXPORT.hh"
 
@@ -35,7 +35,7 @@ m_state member of CRecorder
 
 struct CFG4_API CRecState
 {
-    const CG4Ctx& _ctx ; 
+    const CCtx& _ctx ; 
 
     unsigned _decrement_request ; 
     unsigned _decrement_denied ; 
@@ -47,7 +47,7 @@ struct CFG4_API CRecState
     unsigned _slot ; 
     unsigned _step_action ; 
 
-    CRecState(const CG4Ctx& ctx);
+    CRecState(const CCtx& ctx);
     void clear();
     std::string desc() const ; 
 

@@ -49,7 +49,7 @@ class CGenerator ;
 class CGenstepCollector ; 
 class CPrimaryCollector ; 
 
-struct CG4Ctx ; 
+struct CCtx ; 
 
 class CRecorder ; 
 class CStepRec ; 
@@ -172,7 +172,7 @@ class CFG4_API CG4
         NPY<float>*      getGensteps() const ;
    public:
         double           flat_instrumented(const char* file, int line); 
-        CG4Ctx&          getCtx() const ;
+        CCtx&          getCtx() const ;
 
    private:
         SLog*                 m_log ; 

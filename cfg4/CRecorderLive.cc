@@ -87,7 +87,7 @@ bool CRecorderLive::Record(G4OpBoundaryProcessStatus boundary_status)
               << " stage " << CStage::Label(m_ctx._stage)
               ;
 
-    // stage is set by CG4Ctx::setStepOptical from CSteppingAction::setStep
+    // stage is set by CCtx::setStepOptical from CSteppingAction::setStep
     if(m_ctx._stage == CStage::START)
     { 
         zeroPhoton();       // MUST be invoked prior to setBoundaryStatus, resetting photon history state 

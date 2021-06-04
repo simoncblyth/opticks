@@ -28,7 +28,7 @@ class G4StepPoint ;
 class Opticks ; 
 
 struct CPhoton ; 
-struct CG4Ctx ; 
+struct CCtx ; 
 class CRecorder ; 
 class CRec ; 
 
@@ -46,7 +46,7 @@ CDebug
 =========
 
 Canonical instance m_dbg is resident of CRecorder and is instanciated with it 
-only when CG4Ctx::is_dbg returns true, which requires a debug option such as::
+only when CCtx::is_dbg returns true, which requires a debug option such as::
 
      --dbgseqhis 0xbbbbbbbbcd
 
@@ -58,7 +58,7 @@ does in a cheap way.
 
 class CFG4_API CDebug {
     public:
-        CDebug(CG4Ctx& ctx, const CPhoton& photon, CRecorder* recorder);
+        CDebug(CCtx& ctx, const CPhoton& photon, CRecorder* recorder);
 
         void setMaterialBridge(const CMaterialBridge* material_bridge) ;
         void postTrack();
@@ -95,7 +95,7 @@ class CFG4_API CDebug {
          std::string desc() const ;
 
     private:
-        CG4Ctx&  m_ctx ;  
+        CCtx&  m_ctx ;  
 
         Opticks*         m_ok ; 
         int              m_verbosity ; 

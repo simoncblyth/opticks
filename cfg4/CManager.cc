@@ -16,7 +16,7 @@
 #include "CStepRec.hh"
 #include "CStepStatus.hh"
 #include "CProcessManager.hh"
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CManager.hh"
 
 #include "PLOG.hh"
@@ -42,7 +42,7 @@ CRandomEngine* CManager::getRandomEngine() const
 { 
     return m_engine ; 
 }
-CG4Ctx& CManager::getCtx()
+CCtx& CManager::getCtx()
 {
     return *m_ctx ; 
 }
@@ -63,7 +63,7 @@ CManager::CManager
 0
    return immediately from lifecycle calls doing nothing but logging
 1 
-   keep the CG4Ctx updated to follow the propagation, but take no actions 
+   keep the CCtx updated to follow the propagation, but take no actions 
 
    * do not create OpticksEvent 
    * make no changes to the propagation 
@@ -78,7 +78,7 @@ CManager::CManager(Opticks* ok, bool onestep)
     m_ok(ok),
     m_onestep(onestep),
     m_mode(ok->getManagerMode()),
-    m_ctx(new CG4Ctx(m_ok)),
+    m_ctx(new CCtx(m_ok)),
     m_engine(m_ok->isAlign() ? new CRandomEngine(this) : NULL  ),   // --align
     m_recorder(new CRecorder(*m_ctx, m_onestep)),  // optical recording 
     m_noprec(new CStepRec(m_ok, m_onestep)),      // non-optical recording 

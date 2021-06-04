@@ -103,7 +103,7 @@
 
 #include "CFG4_POP.hh"
 #include "CG4.hh"
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 
 #include "PLOG.hh"
 

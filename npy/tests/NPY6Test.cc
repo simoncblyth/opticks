@@ -118,7 +118,7 @@ struct test_grow_leak
         unsigned numsteps = get_numsteps(i) ;
         for(unsigned j=0 ; j < numsteps ; j++) a->add(gs, itemsize) ;  // mimic collecting gensteps        
         stamp(i); 
-        a->reset();  
+        a->reset();  // huh: why reset ? 
     }
 
     void dump(int i)

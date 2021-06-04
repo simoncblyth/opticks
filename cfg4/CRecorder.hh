@@ -32,7 +32,7 @@ class Opticks ; // okc-
 class OpticksEvent ; 
 
 // cfg4-
-struct CG4Ctx ; 
+struct CCtx ; 
 #include "CPhoton.hh"
 #include "CRecState.hh"
 #include "plog/Severity.h"
@@ -155,7 +155,7 @@ class CFG4_API CRecorder {
         unsigned long long getSeqMat() const ;
 
     public:
-        CRecorder(CG4Ctx& ctx, bool onestep); // CG4::CG4
+        CRecorder(CCtx& ctx, bool onestep); // CG4::CG4
         bool isOneStep() const ; 
 
         void setMaterialBridge(const CMaterialBridge* material_bridge);
@@ -194,7 +194,7 @@ class CFG4_API CRecorder {
         std::string desc() const ; 
         std::string brief() const ; 
     private:
-        CG4Ctx&            m_ctx; 
+        CCtx&            m_ctx; 
         Opticks*           m_ok; 
         unsigned           m_mode ; 
         bool               m_recpoi ; 

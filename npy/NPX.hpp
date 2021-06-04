@@ -6,6 +6,14 @@
 #include "NGLM.hpp"
 #include "NPYBase.hpp"
 
+/**
+NPX
+=====
+
+This is a stripped down version of NPY with only essentials, useful for debugging.
+
+**/
+
 template <class T>
 struct NPY_API NPX : public NPYBase {
 

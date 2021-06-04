@@ -19,12 +19,20 @@
 
 
 #include <sstream>
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CRecState.hh"
 #include "CAction.hh"
 #include "PLOG.hh"
 
-CRecState::CRecState(const CG4Ctx& ctx)
+/**
+CRecState::CRecState
+----------------------
+
+CCtx only used for "constant" parameters of the recording 
+
+**/
+
+CRecState::CRecState(const CCtx& ctx)
     :
     _ctx(ctx)
 {
@@ -90,7 +98,7 @@ So the returned slot is constrained to inclusive range (0,_steps_per_photon-1)
 
 Side effects:
 
-* _record_truncate is set when the slot returned is the top one
+* _record_truncate and CAction::RECORD_TRUNCATE is set when the slot returned is the top one
 
 **/
 
@@ -113,7 +121,9 @@ Canonically invoked by CPhoton::increment_slot which is done by CWriter::writeSt
 
 * _slot is incremented regardless of truncation, only the local (and returned) *slot* is constrained to recording range
 
-TODO: can constrained_slot and 
+Side effects:
+
+* _bounce_truncate and CAction::BOUNCE_TRUNCATE  is set when constraints apply
 
 
 **/

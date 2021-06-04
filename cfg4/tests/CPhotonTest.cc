@@ -20,11 +20,11 @@
 
 #include <vector>
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpticksFlags.hh"
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CRecState.hh"
 #include "CPhoton.hh"
 
@@ -57,7 +57,7 @@ void test_CPhoton_copy( CPhoton& p )
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv );
     ok.configure();
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
     OpticksEvent* evt = ok.makeEvent(false, 0u);
 
-    CG4Ctx ctx(&ok);
+    CCtx ctx(&ok);
     ctx.initEvent(evt);
 
     CRecState s(ctx);

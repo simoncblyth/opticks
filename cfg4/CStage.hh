@@ -26,7 +26,7 @@
 CStage
 ========
 
-The stage is set by CG4Ctx::setStepOptical 
+The stage is set by CCtx::setStepOptical 
 
 CStage::START
      first step of primary photon 

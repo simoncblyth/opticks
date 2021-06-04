@@ -29,7 +29,7 @@
 
 #include "OpStatus.hh"
 
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CMaterialBridge.hh"
 #include "CRec.hh"
 
@@ -78,7 +78,7 @@ unsigned long long CRecorder::getSeqMat() const
 dynamic:false is for when gensteps are available ahead of time
 **/
 
-CRecorder::CRecorder(CG4Ctx& ctx, bool onestep) 
+CRecorder::CRecorder(CCtx& ctx, bool onestep) 
     :
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),
@@ -291,7 +291,7 @@ CRecorder::Record
 --------------------
 
 Invoked by CManager::setStep
-stage is set by CG4Ctx::setStepOptical
+stage is set by CCtx::setStepOptical
 
 The "done" bool returned, when true causes the track to be killed, 
 which is how truncation is effected.
@@ -379,7 +379,7 @@ void CRecorder::zeroPhoton()
     const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
     const G4ThreeVector& pos = pre->GetPosition();
 
-    m_crec->setOrigin(pos);   // hmm maybe in CG4Ctx already ?
+    m_crec->setOrigin(pos);   // hmm maybe in CCtx already ?
     m_crec->clear();
 
     m_photon.clear();

@@ -128,14 +128,14 @@ void NPX<T>::add(const T* values, unsigned int nvals)
 }
 
 template <typename T>
-T* NPX<T>::grow(unsigned int nitems)
+T* NPX<T>::grow(unsigned nitems)
 {
     //LOG(LEVEL) ; 
     setHasData(true);
 
-    unsigned int origvals = m_data->size() ; 
-    unsigned int itemvals = getNumValues(1); 
-    unsigned int growvals = nitems*itemvals ; 
+    unsigned origvals = m_data->size() ; 
+    unsigned itemvals = getNumValues(1); 
+    unsigned growvals = nitems*itemvals ; 
 
     unsigned new_size = origvals + growvals ; 
     m_data->resize(new_size);  // <--- CAUTION this can cause a change to the base ptr, as might need to be relocated to be contiguous
@@ -157,6 +157,34 @@ T* NPX<T>::grow(unsigned int nitems)
 
     return m_data->data() + origvals ;
 }
+
+
+/**
+
+reserve
+-----------
+
+About std::vector reserve which this invokes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Increase the capacity of the vector to a value that's greater or equal to new_cap. 
+  If new_cap is greater than the current capacity(), new storage is allocated, 
+  otherwise the method does nothing. 
+
+* reserve() does not change the size of the vector.  
+
+* If new_cap is greater than capacity(), all iterators, including the past-the-end iterator, 
+  and all references to the elements are invalidated. 
+  Otherwise, no iterators or references are invalidated.
+
+Thoughts
+~~~~~~~~~~
+
+This can improve performance by avoiding the need to reallocate 
+so often as the vector grows.
+
+
+**/
 
 template <typename T>
 void NPX<T>::reserve(unsigned items)

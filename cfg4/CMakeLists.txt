@@ -129,7 +129,7 @@ set(SOURCES
     CTrackingAction.cc
     CStage.cc
     CProcessSwitches.cc
-    CG4Ctx.cc
+    CCtx.cc
     CG4.cc
     CManager.cc
 
@@ -274,7 +274,7 @@ set(HEADERS
     CTrackingAction.hh
     CStage.hh
     CProcessSwitches.hh
-    CG4Ctx.hh
+    CCtx.hh
     CG4.hh
     CManager.hh
 

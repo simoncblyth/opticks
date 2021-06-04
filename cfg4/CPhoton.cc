@@ -28,7 +28,7 @@
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
 
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CRecState.hh"
 
 #include "CAction.hh"
@@ -38,7 +38,15 @@
 #include "PLOG.hh"
 
 
-CPhoton::CPhoton(const CG4Ctx& ctx, CRecState& state)
+/**
+CPhoton::CPhoton
+-------------------
+
+CCtx is minimally used for _c4 
+
+**/
+
+CPhoton::CPhoton(const CCtx& ctx, CRecState& state)
     :
     _ctx(ctx),
     _state(state)
@@ -59,7 +67,6 @@ void CPhoton::clear()
     _c4.uchar_.y = 2u ; 
     _c4.uchar_.z = 3u ; 
     _c4.uchar_.w = 4u ; 
-
 
     _seqhis = 0 ; 
     _seqmat = 0 ; 
@@ -85,11 +92,6 @@ seqhis and seqmat nibbles of the current constrained slot.
 * updates priors to hold what will be overwritten
 * DOES NOT update the slot 
 * via CRecState::constrained_slot sets _state._record_truncate when at top slot 
-
-HMM: this assumes old (0x1 << n) OpticksPhoton flags
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 
 **/
@@ -178,6 +180,10 @@ void CPhoton::increment_slot()
 /**
 CPhoton::scrub_mskhis
 ------------------------
+
+Used from CPhoton::add with::
+
+    if(flag == BULK_REEMIT) scrub_mskhis(BULK_ABSORB)  ;
 
 Decrementing slot and running again does not scrub the AB from the mask
 so need to scrub the AB (BULK_ABSORB) when a RE (BULK_REEMIT) from rejoining
@@ -302,7 +308,6 @@ std::string CPhoton::desc() const
 
     return ss.str();
 }
-
 
 std::string CPhoton::brief() const 
 {

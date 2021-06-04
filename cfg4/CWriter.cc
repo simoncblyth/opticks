@@ -33,7 +33,7 @@
 
 #include "CRecorder.h"
 #include "CGenstep.hh"
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CPhoton.hh"
 #include "Opticks.hh"
 
@@ -48,7 +48,7 @@
 
 const plog::Severity CWriter::LEVEL = PLOG::EnvLevel("CWriter", "DEBUG") ; 
 
-CWriter::CWriter(CG4Ctx& ctx, CPhoton& photon, bool onestep)
+CWriter::CWriter(CCtx& ctx, CPhoton& photon, bool onestep)
     :
     m_photon(photon),
     m_onestep(onestep),
@@ -263,7 +263,7 @@ and recording truncation
 
 bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material, bool last )
 {
-    unsigned target_record_id = m_onestep ? m_ctx._record_id : m_ctx._record_id ;   // currently focussing on onestep mode
+    unsigned target_record_id = m_ctx._record_id ;  
 
     CGenstep* gs = m_ctx.getGenstep(); // last type 
     unsigned gs_photons = gs->photons ; 

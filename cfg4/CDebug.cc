@@ -24,7 +24,7 @@
 #include "OpticksFlags.hh"
 #include "Opticks.hh"
 
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CPhoton.hh"
 #include "CRecorder.hh"
 #include "CRec.hh"
@@ -35,7 +35,7 @@
 #include "PLOG.hh"
 
 
-CDebug::CDebug(CG4Ctx& ctx, const CPhoton& photon, CRecorder* recorder)
+CDebug::CDebug(CCtx& ctx, const CPhoton& photon, CRecorder* recorder)
     :
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),

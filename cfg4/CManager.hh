@@ -19,7 +19,7 @@ class CMaterialLib ;
 class CRecorder ; 
 class CStepRec ; 
 
-struct CG4Ctx ; 
+struct CCtx ; 
 
 
 /**
@@ -84,7 +84,7 @@ struct CFG4_API CManager
     Opticks*          m_ok ; 
     bool              m_onestep ; 
     unsigned          m_mode ;     // --managermode 
-    CG4Ctx*           m_ctx ; 
+    CCtx*           m_ctx ; 
     CRandomEngine*    m_engine ; 
     CRecorder*        m_recorder   ; 
     CStepRec*         m_noprec   ; 
@@ -106,7 +106,7 @@ struct CFG4_API CManager
     CRandomEngine*     getRandomEngine() const ; 
     CStepRec*          getStepRec() const ;
     CRecorder*         getRecorder() const ;
-    CG4Ctx&            getCtx() ;
+    CCtx&            getCtx() ;
     unsigned long long getSeqHis() const ;
     void report(const char* msg="CManager::report");
 

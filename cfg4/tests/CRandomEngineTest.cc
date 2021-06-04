@@ -29,7 +29,7 @@
 #include "Randomize.hh"
 
 #include "CG4.hh"
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CManager.hh"
 #include "OPTICKS_LOG.hh"
 #include "CRandomEngine.hh"
@@ -80,7 +80,7 @@ struct CRandomEngineTest
  
     }
 
-    CG4Ctx&       _ctx  ; 
+    CCtx&       _ctx  ; 
     CRandomEngine _engine ; 
 };
 

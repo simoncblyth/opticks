@@ -34,21 +34,21 @@
 #include "CProcessManager.hh"
 #include "CEvent.hh"
 #include "CTrack.hh"
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CEventInfo.hh"
 #include "CPhotonInfo.hh"
 
 #include "PLOG.hh"
 
 
-const plog::Severity CG4Ctx::LEVEL = PLOG::EnvLevel("CG4Ctx", "DEBUG") ; 
+const plog::Severity CCtx::LEVEL = PLOG::EnvLevel("CCtx", "DEBUG") ; 
 
-const unsigned CG4Ctx::CK = OpticksGenstep::SourceCode("G4Cerenkov_1042");   
-const unsigned CG4Ctx::SI = OpticksGenstep::SourceCode("G4Scintillation_1042"); 
-const unsigned CG4Ctx::TO = OpticksGenstep::SourceCode("fabricated");   
+const unsigned CCtx::CK = OpticksGenstep::SourceCode("G4Cerenkov_1042");   
+const unsigned CCtx::SI = OpticksGenstep::SourceCode("G4Scintillation_1042"); 
+const unsigned CCtx::TO = OpticksGenstep::SourceCode("fabricated");   
 
 
-CG4Ctx::CG4Ctx(Opticks* ok)
+CCtx::CCtx(Opticks* ok)
     :
     _ok(ok),
     _gsc(CGenstepCollector::Get()),
@@ -68,20 +68,20 @@ CG4Ctx::CG4Ctx(Opticks* ok)
 }
 
 
-Opticks*  CG4Ctx::getOpticks() const
+Opticks*  CCtx::getOpticks() const
 {
     return _ok ; 
 }
 
 
-bool CG4Ctx::is_dbg() const 
+bool CCtx::is_dbg() const 
 {
     return _dbgrec || _dbgseq || _dbgzero ;
 }
 
 
 /**
-CG4Ctx::step_limit
+CCtx::step_limit
 -------------------
 
 *step_limit* is used by CRec::addStp (recstp) the "canned" step collection approach, 
@@ -98,14 +98,14 @@ does not match between Opticks and Geant4, see
 
 **/
 
-unsigned CG4Ctx::step_limit() const 
+unsigned CCtx::step_limit() const 
 {
     assert( _ok_event_init ); 
     return 1 + 2*( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
 }
 
 /**
-CG4Ctx::point_limit
+CCtx::point_limit
 ---------------------
 
 Returns the larger of the below:
@@ -124,7 +124,7 @@ see notes/issues/cfg4-point-recording.rst
 
 **/
 
-unsigned CG4Ctx::point_limit() const 
+unsigned CCtx::point_limit() const 
 {
     assert( _ok_event_init ); 
     return ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
@@ -133,7 +133,7 @@ unsigned CG4Ctx::point_limit() const
 
 
 
-void CG4Ctx::init()
+void CCtx::init()
 {
     _dbgrec = false ; 
     _dbgseq = false ; 
@@ -197,10 +197,10 @@ void CG4Ctx::init()
 }
 
 
-std::string CG4Ctx::desc_stats() const 
+std::string CCtx::desc_stats() const 
 {
     std::stringstream ss ; 
-    ss << "CG4Ctx::desc_stats"
+    ss << "CCtx::desc_stats"
        << " dump_count " << _dump_count  
        << " event_total " << _event_total 
        << " event_track_count " << _event_track_count
@@ -209,7 +209,7 @@ std::string CG4Ctx::desc_stats() const
 }
 
 /**
-CG4Ctx::initEvent
+CCtx::initEvent
 --------------------
 
 Collect the parameters of the OpticksEvent which 
@@ -217,7 +217,7 @@ dictate what needs to be collected.
 
 **/
 
-void CG4Ctx::initEvent(const OpticksEvent* evt)
+void CCtx::initEvent(const OpticksEvent* evt)
 {
     _ok_event_init = true ;
     _photons_per_g4event = evt->getNumPhotonsPerG4Event() ; 
@@ -242,10 +242,10 @@ void CG4Ctx::initEvent(const OpticksEvent* evt)
 
 }
 
-std::string CG4Ctx::desc_event() const 
+std::string CCtx::desc_event() const 
 {
     std::stringstream ss ; 
-    ss << "CG4Ctx::desc_event" 
+    ss << "CCtx::desc_event" 
        << " photons_per_g4event " << _photons_per_g4event
        << " steps_per_photon " << _steps_per_photon
        << " record_max " << _record_max
@@ -258,16 +258,16 @@ std::string CG4Ctx::desc_event() const
 
 
 /**
-CG4Ctx::setEvent
+CCtx::setEvent
 -----------------
 
 Invoked by CManager::BeginOfEventAction
 
 **/
 
-void CG4Ctx::setEvent(const G4Event* event) 
+void CCtx::setEvent(const G4Event* event) 
 {
-     //OKI_PROFILE("CG4Ctx::setEvent") ; 
+     //OKI_PROFILE("CCtx::setEvent") ; 
 
     _event = const_cast<G4Event*>(event) ; 
     _event_id = event->GetEventID() ;
@@ -292,13 +292,13 @@ void CG4Ctx::setEvent(const G4Event* event)
     LOG(LEVEL) << "_number_of_input_photons " << _number_of_input_photons ; 
 
     // when _number_of_input_photons is greater than 0 
-    // CManager "mocks" a genstep by calling CG4Ctx::setGenstep
+    // CManager "mocks" a genstep by calling CCtx::setGenstep
     // in normal running that gets called from CManager::BeginOfGenstep
 }
 
 
 /**
-CG4Ctx::BeginOfGenstep
+CCtx::BeginOfGenstep
 ------------------------
 
 HMM: in general cannot set this at event level, 
@@ -324,7 +324,7 @@ HMM: where to invoke this with normal G4Opticks S+C running ?
 
 
 /**
-CG4Ctx::getGenstep
+CCtx::getGenstep
 -------------------
 
 returns the last Genstep of gentype 'S' 'C' or 'T' specified by argument 
@@ -332,7 +332,7 @@ or the last added Genstep if the argumnet is '?'
 
 **/
 
-CGenstep* CG4Ctx::getGenstep(char gentype) const
+CGenstep* CCtx::getGenstep(char gentype) const
 {
     CGenstep* gs = nullptr ; 
     char gt = gentype == '?' ? _gentype : gentype ; 
@@ -347,7 +347,7 @@ CGenstep* CG4Ctx::getGenstep(char gentype) const
 
 
 /**
-CG4Ctx::getGenstep
+CCtx::getGenstep
 -------------------
 
 returns the last Genstep of gentype 'S' 'C' or 'T' specified by argument 
@@ -356,9 +356,9 @@ or the last added Genstep if the argumnet is '?'
 **/
 
 
-void CG4Ctx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int offset)
+void CCtx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int offset)
 {
-    _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CG4Ctx::setEvent, so it becomes a zero based event local index
+    _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CCtx::setEvent, so it becomes a zero based event local index
     assert( genstep_index == _genstep_index ); 
 
     CGenstep* prior = getGenstep(gentype); 
@@ -383,14 +383,14 @@ void CG4Ctx::setGenstep(unsigned genstep_index, char gentype, int num_photons, i
 }
 
 
-void CG4Ctx::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
+void CCtx::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
 {
     setGenstep(genstep_index, gentype, num_photons, offset); 
     CGenstep* gs = getGenstep(_gentype) ; 
     LOG(fatal) << " _genstep " << gs->desc() ;
 }
 
-void CG4Ctx::EndOfGenstep()
+void CCtx::EndOfGenstep()
 {
     CGenstep* gs = getGenstep(_gentype) ;
     bool complete =  gs->all() ;
@@ -403,7 +403,7 @@ void CG4Ctx::EndOfGenstep()
 
 
 
-void CG4Ctx::setGentype(char gentype)
+void CCtx::setGentype(char gentype)
 {
     switch(gentype)
     {
@@ -417,12 +417,12 @@ void CG4Ctx::setGentype(char gentype)
 
 
 /**
-CG4Ctx::setGen
+CCtx::setGen
 ----------------
 
 **/
 
-void CG4Ctx::setGen(unsigned gen)
+void CCtx::setGen(unsigned gen)
 {
     _gen = gen ;
     _genflag = OpticksGenstep::GenstepToPhotonFlag(_gen); 
@@ -443,14 +443,14 @@ void CG4Ctx::setGen(unsigned gen)
 
 
 /**
-CG4Ctx::setTrack
+CCtx::setTrack
 ------------------
 
 Invoked by CTrackingAction::setTrack
 
 **/
 
-void CG4Ctx::setTrack(const G4Track* track) 
+void CCtx::setTrack(const G4Track* track) 
 {
     G4ParticleDefinition* particle = track->GetDefinition();
 
@@ -488,10 +488,10 @@ void CG4Ctx::setTrack(const G4Track* track)
 
 
 /**
-CG4Ctx::setTrackOptical
+CCtx::setTrackOptical
 --------------------------
 
-Invoked by CG4Ctx::setTrack
+Invoked by CCtx::setTrack
 
 Hmm: seems natural to adopt CTrackInfo::opticks_photon_id() to keep track 
 of photon lineage thru RE-emission generations as it has direct correspondence
@@ -512,7 +512,7 @@ not reemission.  That seems an obtuse way of yielding _reemtrack
 
 **/
 
-void CG4Ctx::setTrackOptical(G4Track* mtrack) 
+void CCtx::setTrackOptical(G4Track* mtrack) 
 {
     mtrack->UseGivenVelocity(true);
 
@@ -521,7 +521,7 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
 
     // _primary_id = CTrack::PrimaryPhotonID(_track) ;    // layed down in trackinfo by custom Scintillation process
     // _photon_id = _primary_id >= 0 ? _primary_id : _track_id ; 
-    // _reemtrack = _primary_id >= 0 ? true : false ; // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
+    // _reemtrack = _primary_id >= 0 ? true : false ; // <-- critical input to _stage set by subsequent CCtx::setStepOptical 
 
     // dynamic_cast gives NULL when using the wrong type for the pointer
 
@@ -537,7 +537,7 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
     bool pho_re = _cpui ? _cpui->pho.re : false ; 
  
 
-    _reemtrack  = pho_re  ;                                   // <-- critical input to _stage set by subsequent CG4Ctx::setStepOptical 
+    _reemtrack  = pho_re  ;                                   // <-- critical input to _stage set by subsequent CCtx::setStepOptical 
 
     const CGenstep& gs = _gsc->getGenstep(pho_gs) ;   // TODO: ensure 'T' steps handled somehow
     assert( gs.index == pho_gs ); 
@@ -593,7 +593,7 @@ void CG4Ctx::setTrackOptical(G4Track* mtrack)
     _primarystep_count = 0 ; 
 }
 
-unsigned CG4Ctx::getNumTrackOptical() const 
+unsigned CCtx::getNumTrackOptical() const 
 {
     return _photon_count ; 
 }
@@ -602,14 +602,14 @@ unsigned CG4Ctx::getNumTrackOptical() const
 
 
 /**
-CG4Ctx::setStep
+CCtx::setStep
 ----------------
 
 Invoked by CSteppingAction::setStep
 
 **/
 
-void CG4Ctx::setStep(const G4Step* step, int noZeroSteps) 
+void CCtx::setStep(const G4Step* step, int noZeroSteps) 
 {
     _step = const_cast<G4Step*>(step) ; 
     _noZeroSteps = noZeroSteps ;  
@@ -635,17 +635,17 @@ void CG4Ctx::setStep(const G4Step* step, int noZeroSteps)
 
 
 /**
-CG4Ctx::setStepOptical
+CCtx::setStepOptical
 -----------------------
 
-Invoked by CG4Ctx::setStep 
+Invoked by CCtx::setStep 
 
 1. sets _stage to START/COLLECT/REJOIN/RECOLL depending on _reemtrack and prior step counts
 2. sets _boundary_status
 
 **/
 
-void CG4Ctx::setStepOptical() 
+void CCtx::setStepOptical() 
 {
     if( !_reemtrack )     // primary photon, ie not downstream from reemission 
     {
@@ -671,12 +671,12 @@ void CG4Ctx::setStepOptical()
 
 
 
-std::string CG4Ctx::desc_step() const 
+std::string CCtx::desc_step() const 
 {
     G4TrackStatus track_status = _track->GetTrackStatus(); 
 
     std::stringstream ss ; 
-    ss << "CG4Ctx::desc_step" 
+    ss << "CCtx::desc_step" 
        << " step_total " << _step_total
        << " event_id " << _event_id
        << " track_id " << _track_id
@@ -689,7 +689,7 @@ std::string CG4Ctx::desc_step() const
 }
 
 
-std::string CG4Ctx::brief() const 
+std::string CCtx::brief() const 
 {
     std::stringstream ss ; 
     ss 
@@ -700,7 +700,7 @@ std::string CG4Ctx::brief() const
 }
  
 
-std::string CG4Ctx::desc() const 
+std::string CCtx::desc() const 
 {
     std::stringstream ss ; 
     ss 

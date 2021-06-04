@@ -78,7 +78,7 @@
 /////////////////////
 
 class CG4 ; 
-struct CG4Ctx ; 
+struct CCtx ; 
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -167,7 +167,7 @@ protected:
 
 private:
          CG4*          m_g4 ;
-         const CG4Ctx& m_ctx ;
+         const CCtx& m_ctx ;
           
 };
 

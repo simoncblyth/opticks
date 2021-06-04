@@ -33,7 +33,7 @@ template <typename T> class NPY ;
 class Opticks ; 
 class OpticksEvent ; 
 
-struct CG4Ctx ; 
+struct CCtx ; 
 struct CPhoton ; 
 
 /**
@@ -61,7 +61,7 @@ class CFG4_API CWriter
          static unsigned char my__float2uint_rn( float f );
 
     public:
-        CWriter(CG4Ctx& ctx, CPhoton& photon, bool onestep);        
+        CWriter(CCtx& ctx, CPhoton& photon, bool onestep);        
         void setEnabled(bool enabled);
         std::string desc(const char* msg=nullptr) const ; 
         bool isOneStep() const ; 
@@ -99,7 +99,7 @@ class CFG4_API CWriter
 
         CPhoton&           m_photon ; 
         bool               m_onestep ; 
-        CG4Ctx&            m_ctx ; 
+        CCtx&            m_ctx ; 
         Opticks*           m_ok ; 
         bool               m_enabled ; 
         OpticksEvent*      m_evt ; 

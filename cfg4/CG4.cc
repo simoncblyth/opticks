@@ -52,7 +52,7 @@
 #include "G4GeometryManager.hh"
 
 //cfg4-
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CManager.hh"
 #include "CRandomEngine.hh"
 #include "CMixMaxRng.hh"
@@ -129,7 +129,7 @@ double CG4::flat_instrumented(const char* file, int line)
 {
     return m_manager->flat_instrumented(file, line); 
 }
-CG4Ctx& CG4::getCtx() const 
+CCtx& CG4::getCtx() const 
 {
     return m_manager->getCtx() ; 
 }
@@ -318,7 +318,7 @@ void CG4::snap()
 
 /*
 
-// invoked from CTrackingAction::PreUserTrackingAction immediately after CG4Ctx::setTrack
+// invoked from CTrackingAction::PreUserTrackingAction immediately after CCtx::setTrack
 void CG4::preTrack()
 {
     m_manager->preTrack(); 

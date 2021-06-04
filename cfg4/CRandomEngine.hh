@@ -33,7 +33,7 @@ class OpticksEvent ;
 
 class BLog ; 
 struct CManager ; 
-struct CG4Ctx ; 
+struct CCtx ; 
 template <typename T> class NPY ; 
 
 /**
@@ -145,7 +145,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         double _peek(int offset) const  ; // does not increment anything, just looks around
     private:
         CManager*                     m_manager ; 
-        CG4Ctx&                       m_ctx ; 
+        CCtx&                       m_ctx ; 
         Opticks*                      m_ok ; 
         bool                          m_dbgflat ;   
         int                           m_curflatsigint ; 

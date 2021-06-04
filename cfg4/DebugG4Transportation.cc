@@ -19,7 +19,7 @@
 
 #include "DebugG4Transportation.hh"
 #include "CG4.hh"
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CTrack.hh"
 #include "CMaterialLib.hh"
 #include "Format.hh"

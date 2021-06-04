@@ -33,7 +33,7 @@ class CPoi ;
 class CMaterialBridge ; 
 
 struct CRecState ; 
-struct CG4Ctx ; 
+struct CCtx ; 
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -50,7 +50,7 @@ class CFG4_API CRec
 {
         static const plog::Severity LEVEL ;  
     public:
-        CRec(CG4Ctx& ctx, CRecState& state);
+        CRec(CCtx& ctx, CRecState& state);
         void initEvent(OpticksEvent* evt);
 
         bool is_step_limited() const ; 
@@ -102,7 +102,7 @@ class CFG4_API CRec
 #endif
     private:
         CRecState&                  m_state ; 
-        CG4Ctx&                     m_ctx ; 
+        CCtx&                     m_ctx ; 
 
         Opticks*                    m_ok ; 
         bool                        m_recpoi ; 

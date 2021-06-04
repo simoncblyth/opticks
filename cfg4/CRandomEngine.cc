@@ -45,7 +45,7 @@
 #include "NPY.hpp"
 
 #include "CManager.hh"
-#include "CG4Ctx.hh"
+#include "CCtx.hh"
 #include "CProcess.hh"
 #include "CProcessManager.hh"
 #include "CStepStatus.hh"
@@ -710,7 +710,7 @@ void CRandomEngine::postStep()
 CRandomEngine::preTrack
 -------------------------
 
-Invoked from CG4::preTrack following CG4Ctx::setTrack
+Invoked from CG4::preTrack following CCtx::setTrack
 
 
 Masked Running 
