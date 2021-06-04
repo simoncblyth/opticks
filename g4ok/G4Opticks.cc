@@ -1009,9 +1009,9 @@ unsigned G4Opticks::getNumPhotons() const
 {
     return m_genstep_collector->getNumPhotons()  ; 
 }
-unsigned G4Opticks::getNumPhotons2() const 
+unsigned G4Opticks::getNumPhotonsSum() const 
 {
-    return m_genstep_collector->getNumPhotons2()  ; 
+    return m_genstep_collector->getNumPhotonsSum()  ; 
 }
 
 

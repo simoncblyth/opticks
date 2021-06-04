@@ -82,8 +82,8 @@ class CFG4_API CGenstepCollector
         unsigned getArrayContentIndex() const ; 
         unsigned getNumGensteps() const ; 
 
-        unsigned getNumPhotons() const ;  // total 
-        unsigned getNumPhotons2() const ;  // m_photon_count
+        unsigned getNumPhotonsSum() const ; // result should be the same as getNumPhotons, but more slowly with large numbers of gensteps
+        unsigned getNumPhotons() const ;    // m_photon_count
 
     public:
         unsigned getNumPhotons( unsigned gs_idx) const ; 

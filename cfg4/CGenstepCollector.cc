@@ -163,11 +163,11 @@ unsigned CGenstepCollector::getNumGensteps() const
 {
     return m_gs_photons.size(); 
 }
-unsigned CGenstepCollector::getNumPhotons() const 
+unsigned CGenstepCollector::getNumPhotonsSum() const 
 {
     return std::accumulate(m_gs_photons.begin(), m_gs_photons.end(), 0u );
 } 
-unsigned CGenstepCollector::getNumPhotons2() const 
+unsigned CGenstepCollector::getNumPhotons() const 
 {
     return m_photon_count ; 
 } 

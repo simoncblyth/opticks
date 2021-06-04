@@ -208,7 +208,7 @@ class G4OK_API G4Opticks
         void setupMaterialLookup();
     public:
         unsigned getNumPhotons() const ;
-        unsigned getNumPhotons2() const ;
+        unsigned getNumPhotonsSum() const ;
         unsigned getNumGensteps() const ;
         unsigned getMaxGensteps() const ; // default of zero, means no limit
 
