@@ -310,7 +310,7 @@ void CCtx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int
     _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CCtx::setEvent, so it becomes a zero based event local index
     _genstep_num_photons = num_photons ; 
 
-    bool genstep_index_match = genstep_index == _genstep_index ;
+    bool genstep_index_match = int(genstep_index) == _genstep_index ;
     if(!genstep_index_match) 
         LOG(fatal)
             << " genstep_index " << genstep_index
@@ -457,7 +457,7 @@ void CCtx::setTrackOptical(G4Track* mtrack)
     _pho_re = _cpui ? _cpui->pho.re : false ; 
 
     const CGenstep& gs = _gsc->getGenstep(_pho_gs) ;   // TODO: ensure 'T' steps handled somehow
-    assert( gs.index == _pho_gs ); 
+    assert( int(gs.index) == _pho_gs ); 
 
     _reemtrack  = _pho_re  ;                                   // <-- critical input to _stage set by subsequent CCtx::setStepOptical 
     _photon_id = gs.offset + _pho_ix ; // 0-based, absolute photon index within the event 
