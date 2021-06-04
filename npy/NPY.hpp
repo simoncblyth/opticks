@@ -107,6 +107,7 @@ class NPY_API NPY : public NPYBase {
    //friend class HitsNPY ; 
    friend class G4StepNPY ; 
    friend class MaterialLibNPY ; 
+   friend struct test_dynamic_random ;  
 
    public:
        static const plog::Severity LEVEL ; 
@@ -229,6 +230,7 @@ class NPY_API NPY : public NPYBase {
    public:
        void reserve(unsigned items);  // set capacity to hold items  -> private ?
     public:
+       unsigned expand(unsigned extra_items);  // expand buffer size to hold additional extra_items, returns new total   
        void add(const NPY<T>* other);   // add another buffer, it must have same itemsize (ie size after 1st dimension)
        void add(const T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  
        void addString(const char* s );   // add string, assumes a char array, strings truncated to size of last dimension  

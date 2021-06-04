@@ -168,6 +168,15 @@ void NPY<T>::deallocate()
     setNumItems( 0 );
 }
 
+
+/**
+NPY::reset
+-----------
+
+* clears data reducing NumItems to zero 
+
+**/
+
 template <typename T>
 void NPY<T>::reset()
 {
@@ -233,10 +242,30 @@ void NPY<T>::writeItem(void* dst, unsigned item)
     memcpy( dst, m_data.data() + itemValsOffset , itemBytes ); 
 }
 
+/**
+NPY::grow
+------------
 
+* CAUTION this often causes a change to the base ptr after reallocation
+
+
+About std::vector resize which this invokes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Resizes the container to contain count elements.
+If the current size is greater than count, the container is reduced to its first count elements.
+
+If the current size is less than count,
+1) additional default-inserted elements are appended
+2) additional copies of value are appended.
+
+
+
+
+**/
 
 template <typename T>
-T* NPY<T>::grow(unsigned int nitems)
+T* NPY<T>::grow(unsigned nitems)
 {
     setHasData(true);
 
@@ -244,15 +273,15 @@ T* NPY<T>::grow(unsigned int nitems)
     unsigned int itemvals = getNumValues(1); 
     unsigned int growvals = nitems*itemvals ; 
 
-    LOG(verbose)
-              << "with space for"
-              << " nitems " << nitems
-              << " itemvals " << itemvals
-              << " origvals " << origvals   
-              << " growvals " << growvals
-              ;
+    LOG(debug)
+        << "with space for"
+        << " nitems " << nitems
+        << " itemvals " << itemvals
+        << " origvals " << origvals   
+        << " growvals " << growvals
+        ;
 
-    m_data.resize(origvals + growvals);  // <--- CAUTION this can cause a change to the base ptr, as might need to be relocated to be contiguous
+    m_data.resize(origvals + growvals);  
 
     //void* old_base_ptr  = getBasePtr();   
     void* new_base_ptr = (void*)m_data.data() ; 
@@ -263,7 +292,30 @@ T* NPY<T>::grow(unsigned int nitems)
     return m_data.data() + origvals ;
 }
 
+/**
+NPY::reserve
+--------------
 
+About std::vector reserve which this invokes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Increase the capacity of the vector to a value that's greater or equal to new_cap. 
+  If new_cap is greater than the current capacity(), new storage is allocated, 
+  otherwise the method does nothing. 
+
+* reserve() does not change the size of the vector.  
+
+* If new_cap is greater than capacity(), all iterators, including the past-the-end iterator, 
+  and all references to the elements are invalidated. 
+  Otherwise, no iterators or references are invalidated.
+
+Thoughts
+~~~~~~~~~~
+
+This can improve performance by avoiding the need to reallocate 
+so often as the vector grows.
+
+**/
 
 template <typename T>
 void NPY<T>::reserve(unsigned items)
@@ -424,6 +476,27 @@ void NPY<T>::addItem(NPY<T>* other, unsigned item)
 
     setNumItems( orig + extra );
 }
+
+/**
+NPY::expand
+------------
+
+Grow the array to hold additional extra_items, 
+returns the new total number of array items. 
+
+**/
+
+template <typename T>
+unsigned NPY<T>::expand(unsigned extra_items)    
+{
+    unsigned orig = getNumItems();
+    grow(extra_items); 
+    setNumItems( orig + extra_items );
+
+    unsigned ni = getNumItems(); 
+    return ni ; 
+}
+
  
 /**
 NPY<T>::add
@@ -2755,6 +2828,9 @@ charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k, unsi
 template <typename T> 
 void NPY<T>::setValue(int i, int j, int k, int l, T value)
 {
+    bool in_range = i < m_ni ; 
+    if(!in_range) LOG(fatal) << " i " << i <<  " m_ni " << m_ni ;     
+    assert( in_range ); 
     unsigned int idx = getValueIndex(i,j,k,l);
     setValueFlat(idx, value); 
 }

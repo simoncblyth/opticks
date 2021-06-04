@@ -95,6 +95,8 @@ NPY4Test.cc
 NPY5Test.cc
 NPY6Test.cc
 NPY7Test.cc
+NPY8DynamicRandomTest.cc
+
 NPYminmaxTest.cc
 NPYreshapeTest.cc
 
