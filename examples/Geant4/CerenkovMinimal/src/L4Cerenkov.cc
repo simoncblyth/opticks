@@ -416,7 +416,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef WITH_OPTICKS
-        CPhotonInfo* cpui = new CPhotonInfo( gs, i, false );
+        CPhotonInfo* cpui = new CPhotonInfo( gs, i, false, -1 );  // id_:-1 means used default id of gs.offset+i 
         //LOG(error) << " gs " << gs.desc() << " cpui " << cpui->desc(); 
         aSecondaryTrack->SetUserInformation(cpui);
         G4Opticks::Get()->setAlignIndex(-1); 
