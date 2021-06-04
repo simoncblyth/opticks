@@ -7,6 +7,28 @@ opticks_t_1_jun_2021_12_of_471_fails
 Jun 4 
 -------
 
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     15.38  
+
+
+    FAILS:  3   / 474   :  Fri Jun  4 23:42:27 2021   
+      8  /43  Test #8  : CFG4Test.CG4Test                              Child aborted***Exception:     9.32   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     15.38  
+
+           CManager m_mode asserts
+
+
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      6.19   
+    O[blyth@localhost opticks]$ 
+
+
+
+Jun 4 
+-------
+
 ::
 
     FAILS:  7   / 474   :  Fri Jun  4 23:00:50 2021   

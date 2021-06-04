@@ -315,29 +315,6 @@ void CG4::snap()
 }
 
 
-/*
-
-// invoked from CTrackingAction::PreUserTrackingAction immediately after CCtx::setTrack
-void CG4::preTrack()
-{
-    m_manager->preTrack(); 
-}
-
-// invoked from CTrackingAction::PostUserTrackingAction for optical photons only 
-void CG4::postTrack()
-{
-    m_manager->postTrack(); 
-}
-// invoked from CSteppingAction::UserSteppingAction
-void CG4::postStep()
-{
-    m_manager->postStep(); 
-}
-
-*/
-
-
-
 
 
 void CG4::interactive()
@@ -365,7 +342,8 @@ void CG4::initEvent(OpticksEvent* evt)
     LOG(LEVEL) << "[" ;
     m_generator->configureEvent(evt);
 
-    m_manager->initEvent(evt); 
+    // this should happen from CEventAction::BeginOfEventAction
+    //m_manager->initEvent(evt); 
 
     LOG(LEVEL) << "]" ;
 }

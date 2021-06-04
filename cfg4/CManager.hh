@@ -131,16 +131,18 @@ struct CFG4_API CManager
 
     virtual void UserSteppingAction(const G4Step*);
 
+public:
+    // from CG4, thru to m_engine:CRandomEngine
+    void postpropagate();
+    void addRandomNote(const char* note, int value);
+    void addRandomCut(const char* ckey, double cvalue);
 
-
+private:
 
     // actions
     void presave(); 
     void initEvent(OpticksEvent* evt);
     void save(); 
-
-
-
 
     void preTrack(); 
     void postTrack(); 
@@ -148,10 +150,6 @@ struct CFG4_API CManager
     bool setStep( const G4Step* step);
     void prepareForNextStep( const G4Step* step, G4Track* mtrack);
     void postStep(); 
-
-    void postpropagate();
-    void addRandomNote(const char* note, int value);
-    void addRandomCut(const char* ckey, double cvalue);
 
 };
 

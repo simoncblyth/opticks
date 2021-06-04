@@ -228,10 +228,10 @@ void CManager::presave()
 }
 
 /**
-CManager::initEvent
----------------------
+CManager::initEvent : configure event recording, limits/shapes etc.. 
+------------------------------------------------------------------------
 
-Configure event recording, limits/shapes etc.. 
+Invoked from CManager::BeginOfEventAction/CManager::presave
 
 **/
 
