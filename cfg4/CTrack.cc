@@ -94,37 +94,6 @@ int CTrack::StepId(const G4Track* track)
     return track->GetCurrentStepNumber() - 1 ;
 }
 
-int CTrack::AncestralId(const G4Track* track, bool dump)
-{
-    G4VUserTrackInformation* ui = track->GetUserInformation() ;
-    CTrackInfo* tkui = ui ? dynamic_cast<CTrackInfo*>(ui) : nullptr ; 
-    int ancestral_id = tkui != nullptr ?  tkui->trk.photon_id() : -1 ;  
-    if(dump)
-    {
-        LOG(LEVEL) 
-            << " ancestral_id " << ancestral_id
-            << "tkui.desc" << ( tkui ? tkui->desc() : "-" )  
-            ;
-    }
-    return ancestral_id ; 
-}
-
-
-
-int CTrack::PrimaryPhotonID(const G4Track* track)
-{
-    int primary_id = -2 ; 
-    DsG4CompositeTrackInfo* cti = dynamic_cast<DsG4CompositeTrackInfo*>(track->GetUserInformation());
-    if(cti)
-    {
-        DsPhotonTrackInfo* pti = dynamic_cast<DsPhotonTrackInfo*>(cti->GetPhotonTrackInfo());
-        if(pti)
-        {
-            primary_id = pti->GetPrimaryPhotonID() ; 
-        }
-    }
-    return primary_id ; 
-}
 
 
 float CTrack::Wavelength(const G4Track* track)

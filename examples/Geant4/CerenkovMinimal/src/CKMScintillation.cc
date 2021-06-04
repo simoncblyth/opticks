@@ -712,9 +712,9 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
             bool valid_opticks_genstep = Num > 0 && !flagReemission ;
+            int ancestral_id = CPhotonInfo::AncestralId(&aTrack, true);  // reemission lineage
 
-            /*
-            int ancestral_id = CTrack::AncestralId(&aTrack, true);  // reemission lineage
+           /*
             LOG(LEVEL)
                << " psdi " << m_psdi_index 
                << " valid_opticks_genstep " << valid_opticks_genstep
@@ -741,8 +741,6 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                     slowerTimeConstant,
                     ScintillationTime
                 );   
-
-
               
                 /* 
                 LOG(error)
@@ -928,24 +926,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 new G4Track(aScintillationPhoton,aSecondaryTime,aSecondaryPosition);
 
 
-
-            //DsG4CompositeTrackInfo* comp=new DsG4CompositeTrackInfo();
-            //DsPhotonTrackInfo* trackinf=new DsPhotonTrackInfo();
-            //if ( flagReemission )
-            //{
-            //    if ( reemittedTI ) *trackinf = *reemittedTI;
-            //    trackinf->SetReemitted();
-            //    int primary_id = getReemissionPrimaryPhotonID(aTrack, aSecondaryTime); 
-            //    trackinf->SetPrimaryPhotonID( primary_id ); // SCB for reemission continuation recording 
-            //}
-            //else if ( fApplyPreQE ) {
-            //    trackinf->SetMode(DsPhotonTrackInfo::kQEPreScale);
-            //    trackinf->SetQE(fPreQE);
-            //}
-            //comp->SetPhotonTrackInfo(trackinf);
-            //aSecondaryTrack->SetUserInformation(comp);
-
-            CPhotonInfo* cpui = new CPhotonInfo( gs, i, flagReemission ) ;
+            CPhotonInfo* cpui = new CPhotonInfo( gs, i, flagReemission, ancestral_id ) ;
             aSecondaryTrack->SetUserInformation(cpui);
 
 		

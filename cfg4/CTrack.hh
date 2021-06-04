@@ -39,8 +39,6 @@ class CFG4_API CTrack {
       static int Id(const G4Track* track); // 0-based Id (unlike original G4Track::GetTrackID which is 1-based)
       static int ParentId(const G4Track* track);
       static int StepId(const G4Track* track);
-      static int AncestralId(const G4Track* track, bool dump);
-      static int PrimaryPhotonID(const G4Track* track);
       static float Wavelength(const G4Track* track);
       static float Wavelength(double thePhotonMomentum);
    public:
