@@ -712,9 +712,9 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
             bool valid_opticks_genstep = Num > 0 && !flagReemission ;
-            int ancestral_id = CTrack::AncestralId(&aTrack, true);  // reemission lineage
 
             /*
+            int ancestral_id = CTrack::AncestralId(&aTrack, true);  // reemission lineage
             LOG(LEVEL)
                << " psdi " << m_psdi_index 
                << " valid_opticks_genstep " << valid_opticks_genstep
@@ -743,7 +743,8 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 );   
 
 
-               
+              
+                /* 
                 LOG(error)
                     << " psdi " << m_psdi_index 
                     << " valid_opticks_genstep " << valid_opticks_genstep
@@ -753,6 +754,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                     << " flagReemission " << flagReemission
                     ;
 
+                */
             }
 
 	

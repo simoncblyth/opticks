@@ -47,6 +47,12 @@ CGenstepCollector* CGenstepCollector::Get()
    return INSTANCE ;
 }
 
+/**
+
+
+
+**/
+
 CGenstepCollector::CGenstepCollector(const NLookup* lookup)    
     :
     m_lookup(lookup),
@@ -73,6 +79,13 @@ CGenstepCollector::CGenstepCollector(const NLookup* lookup)
 }
 
 
+/**
+CGenstepCollector::reset
+-------------------------
+
+This is called by G4Opticks::reset/G4Opticks::resetCollectors 
+
+**/
 void CGenstepCollector::reset()
 {
     m_scintillation_count = 0 ; 
@@ -83,6 +96,14 @@ void CGenstepCollector::reset()
     m_photon_count = 0 ; 
     m_genstep->reset(); 
     m_gs_photons.clear(); 
+    m_gs_offset.clear(); 
+    m_gs_type.clear(); 
+    m_gs.clear(); 
+
+    unsigned num_gs = getNumGensteps() ; 
+    bool zero_gs = num_gs == 0 ; 
+    LOG(fatal) << " num_gs " << num_gs ; 
+    assert(zero_gs); 
 
 }
 void CGenstepCollector::save(const char* path)
@@ -266,6 +287,8 @@ CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
     unsigned photon_offset = getNumPhotons(); 
 
     CGenstep gs(genstep_index, numPhotons, photon_offset, gentype) ; 
+
+    LOG(LEVEL) << " gs.desc " << gs.desc() ; 
 
     m_gs.push_back(gs); 
     m_gs_photons.push_back(numPhotons); 

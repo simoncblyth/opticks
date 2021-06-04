@@ -1539,7 +1539,7 @@ CGenstep G4Opticks::collectGenstep_DsG4Scintillation_r3971(
          0                                              //  Other2
     ) ;
 
-    std::cout << "+++" << std::endl ;    // marker
+    //std::cout << "g4ok+++" << std::endl ;    // marker
     LOG(LEVEL)  << gs.desc() ; 
     return gs ; 
 }

@@ -36,7 +36,7 @@ CGenstepCollector : methods for collection of gensteps
 =================================================================
 
 Canonical CG4.m_collector is instanciated at postinitialize, 
-and G4Opticks.m_collector instance is instanciated at setGeometry
+and G4Opticks.m_genstep_collector instance is instanciated at G4Opticks::setGeometry/G4Opticks::createCollectors
 
 
 G4 Independency 

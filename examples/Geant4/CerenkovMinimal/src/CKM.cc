@@ -58,6 +58,7 @@ CKM::CKM()
     ta(nullptr),
     sa(nullptr)
 {
+    init();
 }
 
 void CKM::init()
@@ -101,9 +102,7 @@ void CKM::setup_G4Opticks(const G4VPhysicalVolume* world )
 {
     assert( world ) ; 
 
-    G4Opticks* g4ok = G4Opticks::Get(); 
     bool standardize_geant4_materials = false ;   
-
     const char* embedded_commandline_extra = SSys::getenvvar("CKM_OPTICKS_EXTRA", "" );   
 
     LOG(info) << "embedded_commandline_extra (CKM_OPTICKS_EXTRA)" << embedded_commandline_extra ; 

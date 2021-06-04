@@ -15,9 +15,10 @@ log_(){ cat << EOV
 #G4OpticksRecorder
 #CManager
 #CRecorder
+CGenstepCollector
 #CWriter
 #CTrackInfo
-#CG4Ctx
+#CCtx
 #OpticksRun
 #OpticksEvent
 #CG4

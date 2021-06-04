@@ -75,6 +75,7 @@ void G4OpticksRecorder::EndOfRunAction(const G4Run* run)
 {
     LOG(LEVEL); 
     m_manager->EndOfRunAction(run); 
+
 }
 
 
@@ -87,6 +88,16 @@ void G4OpticksRecorder::EndOfEventAction(const G4Event* event)
 {
     LOG(LEVEL); 
     m_manager->EndOfEventAction(event); 
+
+    // *G4Opticks::reset* needs to happen at end of event, but it should 
+    // be done from user code at higher level as it dictates when things 
+    // the user will need to access like hits
+    // get reset
+    //
+    //   G4Opticks* g4ok = G4Opticks::Get(); 
+    //   g4ok->reset();   
+    //
+
 }
 
 
