@@ -59,26 +59,11 @@ void G4OpticksRecorder::setGeometry(const GGeo* ggeo_)
     m_ggeo = ggeo_ ; 
     m_ok = m_ggeo->getOpticks(); 
     m_material_bridge = new CMaterialBridge(m_ggeo->getMaterialLib()) ; 
-    bool onestep = true ;   // trying to operate without gensteps ahead of time  
-    m_manager = new CManager(m_ok, onestep);
+    m_manager = new CManager(m_ok);
     m_manager->setMaterialBridge(m_material_bridge); 
   
     LOG(LEVEL); 
 } 
-
-/*
-void G4OpticksRecorder::BeginOfGenstep(char gentype, int num_photons, int offset)
-{
-    LOG(LEVEL); 
-    m_manager->BeginOfGenstep(gentype, num_photons, offset); 
-}
-void G4OpticksRecorder::EndOfGenstep()
-{
-    LOG(LEVEL); 
-    m_manager->EndOfGenstep(); 
-}
-*/
-
 
 
 void G4OpticksRecorder::BeginOfRunAction(const G4Run* run)

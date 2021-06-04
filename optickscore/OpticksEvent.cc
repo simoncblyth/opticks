@@ -416,7 +416,7 @@ NPY<unsigned char>* OpticksEvent::getRecselData() const
 { 
     return m_recsel_data ; 
 }
-NPY<unsigned long long>* OpticksEvent::getSequenceData() const 
+NPY<unsigned long long>* OpticksEvent::getSequenceData() const  // aka History Buffer with seqhis/seqmat
 { 
     return m_sequence_data ;
 }

@@ -155,14 +155,12 @@ class CFG4_API CRecorder {
         unsigned long long getSeqMat() const ;
 
     public:
-        CRecorder(CCtx& ctx, bool onestep); // CG4::CG4
-        bool isOneStep() const ; 
+        CRecorder(CCtx& ctx); // CG4::CG4
 
         void setMaterialBridge(const CMaterialBridge* material_bridge);
 
         void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
         void BeginOfGenstep();
-        void EndOfGenstep();
 
         void postTrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
 #ifdef USE_CUSTOM_BOUNDARY
@@ -207,7 +205,6 @@ class CFG4_API CRecorder {
         OpticksEvent*      m_evt ; 
         CGeometry*         m_geometry ; 
         const CMaterialBridge*   m_material_bridge ; 
-        bool               m_onestep ;
         bool               m_live ;   
         CWriter*           m_writer ; 
         unsigned           m_not_done_count ; 

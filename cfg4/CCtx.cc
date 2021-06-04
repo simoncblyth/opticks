@@ -55,9 +55,6 @@ CCtx::CCtx(Opticks* ok)
     _mode(ok->getManagerMode()),
     _pindex(ok->getPrintIndex(0)),
     _print(false),
-    _genstep_c(nullptr),
-    _genstep_s(nullptr),
-    _genstep_t(nullptr),
     _genstep_index(-1)
 {
     init();
@@ -301,107 +298,31 @@ void CCtx::setEvent(const G4Event* event)
 CCtx::BeginOfGenstep
 ------------------------
 
-HMM: in general cannot set this at event level, 
-it can only be set by checking on the generating process of first photon 
-So using this setGen from setEvent only makes sense with artifical gensteps  
-
-Perhaps the ProcessSubType can help with doing this more generally:: 
-
-   104   SetProcessSubType(fCerenkov);
-
-
-BUT: Opticks (with suitable opticksMode to do both G4 and OK) 
-is active at genstep collection in viscinity of photon generation.
-So can consult G4Opticks to know what genstep is currently active.
-Will need to bookend the photon generation corresponding 
-to the genstep collected.  So can plant a genstep index. 
-
-
-
-HMM: where to invoke this with normal G4Opticks S+C running ?
-
 **/
-
-
-/**
-CCtx::getGenstep
--------------------
-
-returns the last Genstep of gentype 'S' 'C' or 'T' specified by argument 
-or the last added Genstep if the argumnet is '?' 
-
-**/
-
-CGenstep* CCtx::getGenstep(char gentype) const
-{
-    CGenstep* gs = nullptr ; 
-    char gt = gentype == '?' ? _gentype : gentype ; 
-    switch(gt)
-    {
-       case 'S': gs = _genstep_s ; break ; 
-       case 'C': gs = _genstep_c ; break ; 
-       case 'T': gs = _genstep_t ; break ; 
-    }
-    return gs ; 
-}
-
-
-/**
-CCtx::getGenstep
--------------------
-
-returns the last Genstep of gentype 'S' 'C' or 'T' specified by argument 
-or the last added Genstep if the argumnet is '?' 
-
-**/
-
-
-void CCtx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int offset)
-{
-    _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CCtx::setEvent, so it becomes a zero based event local index
-    assert( genstep_index == _genstep_index ); 
-
-    CGenstep* prior = getGenstep(gentype); 
-    if(prior)
-    {
-        bool complete = prior->all(); 
-        LOG(error)
-           << " prior genstep " << prior->desc()
-           << " prior complete " << complete
-           ;
-        assert( complete ); 
-        delete prior ;  
-    }
-
-    switch(gentype)
-    {
-       case 'S': _genstep_s = new CGenstep(_genstep_index, num_photons, offset, gentype ); break ; 
-       case 'C': _genstep_c = new CGenstep(_genstep_index, num_photons, offset, gentype ); break ; 
-       case 'T': _genstep_t = new CGenstep(_genstep_index, num_photons, offset, gentype ); break ; 
-    }
-    setGentype(gentype); 
-}
-
 
 void CCtx::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
 {
     setGenstep(genstep_index, gentype, num_photons, offset); 
-    CGenstep* gs = getGenstep(_gentype) ; 
-    LOG(fatal) << " _genstep " << gs->desc() ;
 }
 
-void CCtx::EndOfGenstep()
+void CCtx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int offset)
 {
-    CGenstep* gs = getGenstep(_gentype) ;
-    bool complete =  gs->all() ;
-    LOG(fatal) 
-        << " complete " << complete
-        << " gs " << gs->desc() 
-        ;
-    assert(complete);
+    _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CCtx::setEvent, so it becomes a zero based event local index
+    _genstep_num_photons = num_photons ; 
+
+    bool genstep_index_match = genstep_index == _genstep_index ;
+    if(!genstep_index_match) 
+        LOG(fatal)
+            << " genstep_index " << genstep_index
+            << " _genstep_index " << _genstep_index
+            << " gentype " << gentype
+            << " _gentype " << _gentype
+            ;
+        
+    assert( genstep_index_match ); 
+
+    setGentype(gentype); 
 }
-
-
 
 void CCtx::setGentype(char gentype)
 {
@@ -510,61 +431,38 @@ for reemitted scintillation photons, hence presence of it was
 used to identify _reemtrack with the default fPrimaryPhotonID(-1) signally 
 not reemission.  That seems an obtuse way of yielding _reemtrack
 
+
+
+UseGivenVelocity(true)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+NB without this BoundaryProcess proposed velocity to get correct GROUPVEL for material after refraction 
+are trumpled by G4Track::CalculateVelocity 
+
 **/
 
 void CCtx::setTrackOptical(G4Track* mtrack) 
 {
     mtrack->UseGivenVelocity(true);
 
-    // NB without this BoundaryProcess proposed velocity to get correct GROUPVEL for material after refraction 
-    //    are trumpled by G4Track::CalculateVelocity 
-
-    // _primary_id = CTrack::PrimaryPhotonID(_track) ;    // layed down in trackinfo by custom Scintillation process
-    // _photon_id = _primary_id >= 0 ? _primary_id : _track_id ; 
-    // _reemtrack = _primary_id >= 0 ? true : false ; // <-- critical input to _stage set by subsequent CCtx::setStepOptical 
-
-    // dynamic_cast gives NULL when using the wrong type for the pointer
-
     G4VUserTrackInformation* ui = mtrack->GetUserInformation() ; 
-    CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ;
+    CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ;  // dynamic_cast gives null for wrong type
     _cpui = cpui ;  
-    // lack of _cpui should be only with artifically input/generated photons as both C+S photons should always be labelled
+  
+    // C+S photons should always be labelled with _cpui 
+    // only artificial primary opticals such as input/torch photons will lack labelling
 
-    int pho_gs = _cpui ? _cpui->pho.gs : -1 ; 
-    int pho_ix = _cpui ? _cpui->pho.ix : -1 ;
-    _record_id = pho_ix > -1 ? _cpui->pho.ix : _track_id ;   // 0-based, local to the genstep
+    _pho_gs = _cpui ? _cpui->pho.gs : -1 ; 
+    _pho_ix = _cpui ? _cpui->pho.ix : _track_id  ;  // 0-based, local to the genstep
+    _pho_re = _cpui ? _cpui->pho.re : false ; 
 
-    bool pho_re = _cpui ? _cpui->pho.re : false ; 
- 
+    const CGenstep& gs = _gsc->getGenstep(_pho_gs) ;   // TODO: ensure 'T' steps handled somehow
+    assert( gs.index == _pho_gs ); 
 
-    _reemtrack  = pho_re  ;                                   // <-- critical input to _stage set by subsequent CCtx::setStepOptical 
+    _reemtrack  = _pho_re  ;                                   // <-- critical input to _stage set by subsequent CCtx::setStepOptical 
+    _photon_id = gs.offset + _pho_ix ; // 0-based, absolute photon index within the event 
+    _record_id = gs.offset + _pho_ix ; // now that abandoned onestep mode, _record_id which is used by CRecorder/CWriter becomes absolute  
 
-    const CGenstep& gs = _gsc->getGenstep(pho_gs) ;   // TODO: ensure 'T' steps handled somehow
-    assert( gs.index == pho_gs ); 
-
-    _photon_id = gs.offset + _record_id   ;   // 0-based, absolute photon index within the event 
-
-    CGenstep* cgs = getGenstep(gs.gentype);  
-    assert(cgs); 
-    bool gs_index_match = cgs->index == gs.index ;
-    if(!gs_index_match)
-    {
-        LOG(fatal)
-           << " FAIL gs_index_match " << gs_index_match
-           << std::endl
-           << " cgs " << cgs->desc()
-           << std::endl
-           << " gs  " << gs.desc()
-           ;
-    }
-
-    assert(gs_index_match); 
-    cgs->set(_record_id); 
-
-    LOG(LEVEL) 
-        << " gs " << gs.desc()
-        << " cgs " << cgs->desc()
-        ;
 
     _record_fraction = double(_record_id)/double(_record_max) ;  
 

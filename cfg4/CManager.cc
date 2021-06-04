@@ -73,15 +73,14 @@ CManager::CManager
 
 **/
 
-CManager::CManager(Opticks* ok, bool onestep)
+CManager::CManager(Opticks* ok)
     :
     m_ok(ok),
-    m_onestep(onestep),
     m_mode(ok->getManagerMode()),
     m_ctx(new CCtx(m_ok)),
     m_engine(m_ok->isAlign() ? new CRandomEngine(this) : NULL  ),   // --align
-    m_recorder(new CRecorder(*m_ctx, m_onestep)),  // optical recording 
-    m_noprec(new CStepRec(m_ok, m_onestep)),      // non-optical recording 
+    m_recorder(new CRecorder(*m_ctx)),  // optical recording 
+    m_noprec(new CStepRec(m_ok)),      // non-optical recording 
     m_dbgflat(m_ok->isDbgFlat()), 
     m_dbgrec(m_ok->isDbgRec()),
     m_trman(NULL),
@@ -148,9 +147,6 @@ void CManager::BeginOfEventAction(const G4Event* event)
 CManager::EndOfEventAction
 ----------------------------
 
-EndOfGenstep appends the just completed Genstep 
-records to the OpticksEvent, so it must be before save. 
-
 **/
 
 void CManager::EndOfEventAction(const G4Event*)
@@ -160,11 +156,7 @@ void CManager::EndOfEventAction(const G4Event*)
 
     LOG(LEVEL) 
         << " _number_of_input_photons " << m_ctx->_number_of_input_photons  
-        << " finalize the last Genstep in the event  " 
         ; 
-
-
-    if(m_onestep) EndOfGenstep();   
 
     if(m_ok->isSave()) save() ; 
 }
@@ -177,9 +169,6 @@ CManager::BeginOfGenstep
 Invoked by G4OpticksRecorder::BeginOfGenstep which is canonically placed 
 just prior to the C/S generation loop
 
-1. EndOfGenstep finalizes prior genstep on reaching a new one, 
-   this also called from EndOfEvent to handle the last Genstep 
-
 **/
 
 void CManager::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
@@ -187,44 +176,14 @@ void CManager::BeginOfGenstep(unsigned genstep_index, char gentype, int num_phot
     LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
-    assert( m_onestep );  
-
-    if(m_ctx->_genstep_index > -1 && m_ctx->_gentype == gentype  )
-    {
-        LOG(LEVEL) << " CALLING EndOfGenstep for prior m_ctx->_genstep_index " << m_ctx->_genstep_index ; 
-        EndOfGenstep();  
-    }
-
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
 
     m_ctx->BeginOfGenstep(genstep_index, gentype, num_photons, offset);  
 
     if(m_mode == 1 ) return ; 
     m_recorder->BeginOfGenstep();  
-
 }
 
-
-/**
-CManager::EndOfGenstep
--------------------------
-
-Invoked by G4OpticksRecorder::EndOfGenstep was initially placed
-just after the C/S generation loop.
-BUT : thats far too soon. 
-
-**/
-
-void CManager::EndOfGenstep()
-{
-    LOG(LEVEL) << " mode " << m_mode ;
-    if(m_mode == 0 ) return ; 
-
-    m_ctx->EndOfGenstep();  
-
-    if(m_mode == 1 ) return ; 
-    m_recorder->EndOfGenstep();  
-}
 
 
 /**

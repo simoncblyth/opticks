@@ -82,9 +82,8 @@ struct CFG4_API CManager
     static CManager* Get(); 
 
     Opticks*          m_ok ; 
-    bool              m_onestep ; 
     unsigned          m_mode ;     // --managermode 
-    CCtx*           m_ctx ; 
+    CCtx*             m_ctx ; 
     CRandomEngine*    m_engine ; 
     CRecorder*        m_recorder   ; 
     CStepRec*         m_noprec   ; 
@@ -111,13 +110,12 @@ struct CFG4_API CManager
     void report(const char* msg="CManager::report");
 
 
-    CManager(Opticks* ok, bool onestep); 
+    CManager(Opticks* ok); 
 
 
     // inputs from G4Opticks/G4OpticksRecorder
 
     void BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset);
-    void EndOfGenstep();
 
 
     // inputs from Geant4

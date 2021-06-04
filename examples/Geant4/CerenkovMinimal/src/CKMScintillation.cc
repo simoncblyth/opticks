@@ -627,7 +627,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	
     ////////////////////////////////////////////////////////////////
 
-    G4int materialIndex = aMaterial->GetIndex();
+    //G4int materialIndex = aMaterial->GetIndex();
 
     //G4PhysicsOrderedFreeVector* ReemissionIntegral = NULL;
     //ReemissionIntegral =
@@ -638,9 +638,9 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     G4int Num = NumTracks; //# tracks is now the loop control
 	
-    G4double fastTimeConstant = GetConstant(aTrack, aStep, FastTimeConstant.c_str(), "FASTTIMECONSTANT" ); 
+    //G4double fastTimeConstant = GetConstant(aTrack, aStep, FastTimeConstant.c_str(), "FASTTIMECONSTANT" ); 
     G4double slowTimeConstant = GetConstant(aTrack, aStep, SlowTimeConstant.c_str(), "SLOWTIMECONSTANT" ); 
-    G4double YieldRatio       = GetConstant(aTrack, aStep, strYieldRatio.c_str(),    "YIELDRATIO" ); 
+    //G4double YieldRatio       = GetConstant(aTrack, aStep, strYieldRatio.c_str(),    "YIELDRATIO" ); 
 
     /*
     LOG(LEVEL)

@@ -78,7 +78,7 @@ unsigned long long CRecorder::getSeqMat() const
 dynamic:false is for when gensteps are available ahead of time
 **/
 
-CRecorder::CRecorder(CCtx& ctx, bool onestep) 
+CRecorder::CRecorder(CCtx& ctx) 
     :
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),
@@ -93,20 +93,12 @@ CRecorder::CRecorder(CCtx& ctx, bool onestep)
 
     m_evt(NULL),
     m_material_bridge(NULL),
-    m_onestep(onestep),
     m_live(false),
-    m_writer(new CWriter(m_ctx, m_photon, m_onestep)),
+    m_writer(new CWriter(m_ctx, m_photon)),
     m_not_done_count(0)
 {   
     LOG(LEVEL) << brief() ;
 }
-
-
-bool CRecorder::isOneStep() const 
-{
-   return m_onestep ; 
-}
-
 
 
 std::string CRecorder::brief() const 
@@ -116,7 +108,6 @@ std::string CRecorder::brief() const
        << " m_recpoi " << m_recpoi
        << " m_reccf " << m_reccf
        << " m_dbg " << ( m_dbg ? "Y" : "N" ) 
-       << ( m_onestep ? " ONESTEP/DYNAMIC " : " ALLSTEP/STATIC " )
        ;
    return ss.str();
 }
@@ -176,24 +167,6 @@ void CRecorder::BeginOfGenstep()
 {
     LOG(LEVEL); 
     m_writer->BeginOfGenstep(); 
-}
-
-/**
-CRecorder::EndOfGenstep
-------------------------
-
-Formerly this was invoked from after the generation loop in C+S, 
-but thats far too soon. Needs to be after all the tracks from that 
-genstep and their secondaries(recursively) are done. 
-
-Simplest approach is to call this from the next BeginOfGenstep
-and from EndOfEvent to handle the last Genstep.
-
-**/
-void CRecorder::EndOfGenstep()
-{
-    LOG(LEVEL); 
-    m_writer->EndOfGenstep(); 
 }
 
 
@@ -770,7 +743,6 @@ std::string CRecorder::desc() const
        << " slt " << std::setw(4) << m_state._slot
        << " pre " << std::setw(7) << CStep::PreGlobalTime(m_ctx._step)
        << " pst " << std::setw(7) << CStep::PostGlobalTime(m_ctx._step)
-       << ( m_onestep ? " ONESTEP/DYNAMIC " : " ALLSTEP/STATIC " )
        ;
 
    return ss.str();

@@ -96,20 +96,14 @@ struct CFG4_API CCtx
 
     // CCtx::setGenstep
     char       _gentype ;   // 'C' 'S' 'T'
-    CGenstep*  _genstep_c ; 
-    CGenstep*  _genstep_s ; 
-    CGenstep*  _genstep_t ; 
-
     void      setGenstep(unsigned genstep_index, char gentype, int num_photons, int offset);
-    CGenstep* getGenstep(char gentype='?') const;
 
     // *_genstep_index* 
     //     starts at -1 and is reset to -1 by CCtx::setEvent, incremented by CCtx::BeginOfGenstep 
     //     giving a zero based local index of genstep within the event
-    //     this is used from CManager::BeginOfGenstep to determine whether to call CManager::EndOfGenstep
-    //     avoiding calling that until _genstep_index > -1
     // 
     int      _genstep_index ;  
+    int      _genstep_num_photons ; 
 
     // CCtx::setGen
     unsigned  _gen  ;
@@ -129,6 +123,11 @@ struct CFG4_API CCtx
 
     // CCtx::setTrackOptical
     CPhotonInfo* _cpui ;  
+    int _pho_gs ; 
+    int _pho_ix ; 
+    int _pho_re ; 
+ 
+
     int  _primary_id ; // used for reem continuation 
     int  _photon_id ;
     int  _photon_count ; 
@@ -181,7 +180,6 @@ struct CFG4_API CCtx
 
     void setEvent(const G4Event* event);
     void BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset);
-    void EndOfGenstep();
     void setGentype(char gentype);
     void setGen(unsigned gen);
 

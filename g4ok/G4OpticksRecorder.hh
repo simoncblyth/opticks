@@ -49,11 +49,6 @@ struct G4OK_API G4OpticksRecorder
 
     void setGeometry(const GGeo* ggeo); 
 
-    // moved to automated call in CGenstepCollector
-    //void BeginOfGenstep(char gentype, int num_photons, int offset);
-    //void EndOfGenstep();
-
-
 
     virtual void BeginOfRunAction(const G4Run*);
     virtual void EndOfRunAction(const G4Run*);

@@ -168,8 +168,7 @@ CG4::CG4(OpticksHub* hub)
     m_mlib(m_geometry->getMaterialLib()),
     m_detector(m_geometry->getDetector()),
     m_generator(new CGenerator(m_hub->getGen(), this)),
-    m_onestep(m_generator->isOneStep()),
-    m_manager(new CManager(m_ok, m_onestep)),
+    m_manager(new CManager(m_ok)),
     m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
     m_primary_collector(new CPrimaryCollector),
     m_visManager(NULL),

@@ -53,7 +53,7 @@ buffer in which to store the data
 
 class CFG4_API CStepRec {
    public:
-       CStepRec(Opticks* ok, bool dynamic);
+       CStepRec(Opticks* ok);
        void initEvent(NPY<float>* nopstep);    
    private:
        void setNopstep(NPY<float>* nopstep);
@@ -66,7 +66,6 @@ class CFG4_API CStepRec {
        void storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point);
    private:
        Opticks*                    m_ok ; 
-       bool                        m_dynamic ; 
        std::vector<const CStep*>   m_steps ; 
        unsigned                    m_store_count ; 
        unsigned                    m_num_vals ; 

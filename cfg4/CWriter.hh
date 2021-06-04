@@ -61,10 +61,9 @@ class CFG4_API CWriter
          static unsigned char my__float2uint_rn( float f );
 
     public:
-        CWriter(CCtx& ctx, CPhoton& photon, bool onestep);        
+        CWriter(CCtx& ctx, CPhoton& photon);        
         void setEnabled(bool enabled);
         std::string desc(const char* msg=nullptr) const ; 
-        bool isOneStep() const ; 
     public:
         // *initEvent*
         //     configures recording and prepares buffer pointers
@@ -78,45 +77,37 @@ class CFG4_API CWriter
         bool writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material, bool last );
 
    private:
+        // expand arrays to hold extra gs_photons 
+        unsigned expand(unsigned gs_photons);
+
         // *writeStepPoint_* 
         //     writes the compressed records buffer (rx) 
         //
-        void writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, unsigned target_record_id );
+        void writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, unsigned record_id );
 
         // *writePhoton* 
         //     writes the photon buffer (ox) and history buffer (ph) aka:seqhis/seqmat
-        //     this overwrites prior entries for REJOIN updating target_record_id 
+        //     this overwrites prior entries for REJOIN updating record_id 
         //     with dynamic running this means MUST SetTrackSecondariesFirst IN C+S processes (TODO: verify this)
         //
-        void writePhoton_(const G4StepPoint* point, unsigned target_record_id );
-        void writeHistory_(unsigned target_record_id) ;
+        void writePhoton_(const G4StepPoint* point, unsigned record_id );
+        void writeHistory_(unsigned record_id) ;
 
    private:
         void BeginOfGenstep();
-        void EndOfGenstep();
 
     private:
 
         CPhoton&           m_photon ; 
-        bool               m_onestep ; 
-        CCtx&            m_ctx ; 
+        CCtx&              m_ctx ; 
         Opticks*           m_ok ; 
         bool               m_enabled ; 
         OpticksEvent*      m_evt ; 
-
+        unsigned           m_ni ; 
 
         NPY<short>*               m_records_buffer ; 
         NPY<float>*               m_photons_buffer ; 
         NPY<unsigned long long>*  m_history_buffer ; 
-
-        NPY<short>*               m_onestep_records ; 
-        NPY<float>*               m_onestep_photons ; 
-        NPY<unsigned long long>*  m_onestep_history ; 
-
-        NPY<short>*               m_target_records ; 
-        NPY<float>*               m_target_photons ; 
-        NPY<unsigned long long>*  m_target_history ; 
-
 };
 
 #include "CFG4_TAIL.hh"

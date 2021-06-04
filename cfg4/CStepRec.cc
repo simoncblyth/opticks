@@ -42,10 +42,9 @@
 #include "PLOG.hh"
 
 
-CStepRec::CStepRec( Opticks* ok, bool dynamic)
+CStepRec::CStepRec( Opticks* ok)
    :
    m_ok(ok),
-   m_dynamic(dynamic),
    m_store_count(0),
    m_num_vals(16), 
    m_vals(new float[m_num_vals]),

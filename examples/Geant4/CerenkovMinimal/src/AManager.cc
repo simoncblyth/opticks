@@ -2,7 +2,7 @@
 
 AManager::AManager(Opticks* ok)
     :
-    CManager(ok, true )
+    CManager(ok)
 {
 }
 

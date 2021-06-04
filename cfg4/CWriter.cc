@@ -48,10 +48,9 @@
 
 const plog::Severity CWriter::LEVEL = PLOG::EnvLevel("CWriter", "DEBUG") ; 
 
-CWriter::CWriter(CCtx& ctx, CPhoton& photon, bool onestep)
+CWriter::CWriter(CCtx& ctx, CPhoton& photon)
     :
     m_photon(photon),
-    m_onestep(onestep),
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),
     m_enabled(true),
@@ -59,22 +58,8 @@ CWriter::CWriter(CCtx& ctx, CPhoton& photon, bool onestep)
 
     m_records_buffer(NULL),
     m_photons_buffer(NULL),
-    m_history_buffer(NULL),
-
-    m_onestep_records(NULL),
-    m_onestep_photons(NULL),
-    m_onestep_history(NULL),
-
-    m_target_records(NULL),
-    m_target_photons(NULL),
-    m_target_history(NULL)
+    m_history_buffer(NULL)
 {
-    LOG(LEVEL) << " " << ( m_onestep ? "ONESTEP" : "STATIC/ALLSTEP" ) ;
-}
-
-bool CWriter::isOneStep() const
-{
-   return m_onestep ;  
 }
 
 void CWriter::setEnabled(bool enabled)
@@ -97,39 +82,27 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     m_evt = evt ; 
     assert(m_evt && m_evt->isG4());
 
-    m_evt->setDynamic( m_onestep ? 1 : 0 ) ;  
+    m_evt->setDynamic(1) ;  
 
     LOG(LEVEL) 
-        << ( m_onestep ? "ONESTEP(CPU style)" : "STATIC(GPU style)" )
         << " _record_max " << m_ctx._record_max
         << " _bounce_max  " << m_ctx._bounce_max 
         << " _steps_per_photon " << m_ctx._steps_per_photon 
         << " num_g4event " << m_evt->getNumG4Event() 
         ;
 
-    m_history_buffer = m_evt->getSequenceData();
-    m_photons_buffer = m_evt->getPhotonData();
-    m_records_buffer = m_evt->getRecordData();
+    m_history_buffer = m_evt->getSequenceData();  // ph : seqhis/seqmat
+    m_photons_buffer = m_evt->getPhotonData();    // ox : final photon
+    m_records_buffer = m_evt->getRecordData();    // rx :  step records
 
     LOG(LEVEL) << desc() ; 
-
-    assert( m_history_buffer && "CRecorder requires history buffer" );
-    assert( m_photons_buffer && "CRecorder requires photons buffer" );
-    assert( m_records_buffer && "CRecorder requires records buffer" );
-
-    // these targets get set by CWriter::BeginOfGenstep in onestep running 
-    m_target_history = m_history_buffer ; 
-    m_target_photons = m_photons_buffer ; 
-    m_target_records = m_records_buffer ;  
-
 }
-
 
 std::string CWriter::desc(const char* msg) const 
 {
+    assert( m_history_buffer ); 
     std::stringstream ss ; 
     if(msg) ss << msg << " " ; 
-    ss << ( m_onestep ? "ONESTEP(CPU style)" : "STATIC(GPU style)" ) ; 
     ss << " m_history_buffer " << m_history_buffer->getShapeString() ; 
     ss << " m_photons_buffer " << m_photons_buffer->getShapeString() ; 
     ss << " m_records_buffer " << m_records_buffer->getShapeString() ; 
@@ -137,99 +110,39 @@ std::string CWriter::desc(const char* msg) const
     return s ; 
 }
 
+
+unsigned CWriter::expand(unsigned gs_photons)
+{
+    unsigned ni, ni1, ni2 ; 
+    ni = m_history_buffer->expand(gs_photons); 
+    ni1 = m_photons_buffer->expand(gs_photons); 
+    ni2 = m_records_buffer->expand(gs_photons); 
+    assert( ni1 == ni && ni2 == ni ); 
+    return ni ; 
+}
+
+
 /**
-CWriter::initGenstep
-----------------------
+CWriter::BeginOfGenstep
+-------------------------
 
-Invoked from CRecorder::BeginOfGenstep
-
-1. creates small onestep buffers 
-2. change target to point at them 
-
-
-It is looking like need to keep three gensteps alive 
-as G4 handles C+S intertwined. 
-
-Could easily manage these three buffers in triplicate for 'S' 'C' 'T'
-
-   m_records_c
-   m_records_s   
-   m_records_t 
-
-will need to use the offsets to control the order with which them need
-to be written to the full buffer
+Invoked from CRecorder::BeginOfGenstep, expands the buffers to accomodate the photons of this genstep.
 
 **/
 
 void CWriter::BeginOfGenstep()
 {
-    assert( m_onestep == true ); 
+    unsigned genstep_num_photons =  m_ctx._genstep_num_photons ; 
+    m_ni = expand(genstep_num_photons);  
 
-    CGenstep* gs = m_ctx.getGenstep('?') ;  // of the last type
-    unsigned gs_photons =  gs->photons ; 
     LOG(LEVEL)
         << " m_ctx._gentype [" <<  m_ctx._gentype << "]" 
         << " m_ctx._genstep_index " << m_ctx._genstep_index
-        << " gs_photons " << gs_photons
-        << " gs " << gs->desc()
+        << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons
+        << " m_ni " << m_ni 
         ;
 
-    m_onestep_records = NPY<short>::make(gs_photons, m_ctx._steps_per_photon, 2, 4) ;
-    m_onestep_records->zero();
 
-    m_onestep_photons = NPY<float>::make(gs_photons, 4, 4) ;
-    m_onestep_photons->zero();
-
-    m_onestep_history = NPY<unsigned long long>::make(gs_photons, 1, 2) ;
-    m_onestep_history->zero();
-
-    m_target_records = m_onestep_records ; 
-    m_target_photons = m_onestep_photons ; 
-    m_target_history = m_onestep_history ; 
-}
-
-/**
-CWriter::EndOfGenstep
------------------------
-
-Invoked by CRecorder::EndOfGenstep
-
-**/
-
-void CWriter::EndOfGenstep()
-{
-    CGenstep* gs = m_ctx.getGenstep('?') ;  // of the last type
-    LOG(LEVEL) 
-        << " m_ctx._gentype [" <<  m_ctx._gentype << "]" 
-        << " m_ctx._genstep_index " << m_ctx._genstep_index
-        << " gs " << gs->desc()
-        ;
-
-    assert( m_onestep == true ); 
-    assert( m_onestep_records );  // must call CWriter::BeginOfGenstep before CWriter::EndOfGenstep
-    assert( m_onestep_photons ); 
-    assert( m_onestep_history ); 
-
-    LOG(LEVEL) << desc("bef.add") ; 
-
-    m_records_buffer->add(m_onestep_records);
-    m_photons_buffer->add(m_onestep_photons);
-    m_history_buffer->add(m_onestep_history);
-
-    LOG(LEVEL) << desc("aft.add") ; 
-
-
-    m_onestep_records->reset(); 
-    m_onestep_photons->reset(); 
-    m_onestep_history->reset(); 
-
-    m_onestep_records = nullptr ; 
-    m_onestep_photons = nullptr ; 
-    m_onestep_history = nullptr ; 
-
-    m_target_records = nullptr ; 
-    m_target_photons = nullptr ; 
-    m_target_history = nullptr ; 
 }
 
 
@@ -263,21 +176,16 @@ and recording truncation
 
 bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material, bool last )
 {
-    unsigned target_record_id = m_ctx._record_id ;  
-
-    CGenstep* gs = m_ctx.getGenstep(); // last type 
-    unsigned gs_photons = gs->photons ; 
+    unsigned record_id = m_ctx._record_id ;  
 
     LOG(LEVEL)  
         << " m_ctx._photon_id " << m_ctx._photon_id 
-        << " gs_photons " << gs_photons
-        << " m_ctx._record_id(target_record_id) " << m_ctx._record_id 
+        << " m_ctx._record_id " << m_ctx._record_id 
+        << " m_ni " << m_ni 
         ;
   
-    assert( m_target_records ); 
-    assert( target_record_id < gs_photons ); 
-
-
+    assert( record_id < m_ni ); 
+    assert( m_records_buffer ); 
 
 
     m_photon.add(flag, material);  // sets seqhis/seqmat nibbles in current constrained slot  
@@ -292,7 +200,7 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
     }
     else
     {
-        if(m_enabled) writeStepPoint_(point, m_photon, target_record_id  );
+        if(m_enabled) writeStepPoint_(point, m_photon, record_id  );
 
         m_photon.increment_slot() ; 
 
@@ -300,7 +208,7 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
 
         if( (done || last) && m_enabled )
         {
-            writePhoton_(point, target_record_id );
+            writePhoton_(point, record_id );
         }
     }        
 
@@ -331,7 +239,7 @@ This is why Geant4 process must be configured to track secondaries first.
 
 **/
 
-void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, unsigned target_record_id  )
+void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, unsigned record_id  )
 {
     // write compressed record quads into buffer at location for the m_record_id 
 
@@ -339,12 +247,12 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, u
     unsigned flag = photon._flag ; 
     unsigned material = photon._mat ; 
 
-    if(!m_onestep) assert( target_record_id < m_ctx._record_max );
+    //assert(  record_id < m_ctx._record_max );
 
     if(m_ctx._dbgrec)
     {
         LOG(info) << "[--dbgrec]"
-                  << " target_record_id " << target_record_id
+                  << " record_id " << record_id
                   << " slot " << slot 
                   << " flag " << flag 
                   << " material " << material 
@@ -393,8 +301,8 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, u
 
     //unsigned int target_record_id = m_dynamic ? 0 : m_record_id ; 
 
-    m_target_records->setQuad(target_record_id, slot, 0, posx, posy, posz, time_ );
-    m_target_records->setQuad(target_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
+    m_records_buffer->setQuad(record_id, slot, 0, posx, posy, posz, time_ );
+    m_records_buffer->setQuad(record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
 
     // dynamic mode : fills in slots into single photon dynamic_records structure 
     // static mode  : fills directly into a large fixed dimension records structure
@@ -443,10 +351,10 @@ A: Hmm, not sure : but suspect that is could be made to work by using
 
 **/
 
-void CWriter::writePhoton_(const G4StepPoint* point, unsigned target_record_id  )
+void CWriter::writePhoton_(const G4StepPoint* point, unsigned record_id  )
 {
-    assert( m_target_photons ); 
-    writeHistory_(target_record_id);  
+    assert( m_photons_buffer ); 
+    writeHistory_(record_id);  
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -458,13 +366,13 @@ void CWriter::writePhoton_(const G4StepPoint* point, unsigned target_record_id  
     G4double weight = 1.0 ;  
 
     // emulating the Opticks GPU written photons 
-    m_target_photons->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
-    m_target_photons->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
-    m_target_photons->setQuad(target_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
-    m_target_photons->setUInt(target_record_id, 3, 0, 0, m_photon._slot_constrained );
-    m_target_photons->setUInt(target_record_id, 3, 0, 1, 0u );
-    m_target_photons->setUInt(target_record_id, 3, 0, 2, m_photon._c4.u );
-    m_target_photons->setUInt(target_record_id, 3, 0, 3, m_photon._mskhis );
+    m_photons_buffer->setQuad(record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
+    m_photons_buffer->setQuad(record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
+    m_photons_buffer->setQuad(record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+    m_photons_buffer->setUInt(record_id, 3, 0, 0, m_photon._slot_constrained );
+    m_photons_buffer->setUInt(record_id, 3, 0, 1, 0u );
+    m_photons_buffer->setUInt(record_id, 3, 0, 2, m_photon._c4.u );
+    m_photons_buffer->setUInt(record_id, 3, 0, 3, m_photon._mskhis );
 }
 
 /**
@@ -473,12 +381,16 @@ CWriter::writeHistory_
 
 Emulating GPU seqhis/seqmat writing 
 
+NB although pointers into the buffer are used here, crucially the pointers are 
+not held and they are accessed fresh everytime as they will move around  
+as data gets reallocated with array expansion.
+
 **/
 
-void CWriter::writeHistory_(unsigned target_record_id)
+void CWriter::writeHistory_(unsigned record_id)
 {
-    assert( m_target_history ); 
-    unsigned long long* history = m_target_history->getValues() + 2*target_record_id ;
+    assert( m_history_buffer ); 
+    unsigned long long* history = m_history_buffer->getValues() + 2*record_id ; 
     *(history+0) = m_photon._seqhis ; 
     *(history+1) = m_photon._seqmat ; 
 }
