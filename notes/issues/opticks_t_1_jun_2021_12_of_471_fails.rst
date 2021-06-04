@@ -4,6 +4,47 @@ opticks_t_1_jun_2021_12_of_471_fails
 
 
 
+Jun 4 
+-------
+
+::
+
+    FAILS:  7   / 474   :  Fri Jun  4 23:00:50 2021   
+      3  /43  Test #3  : CFG4Test.CTestDetectorTest                    Child aborted***Exception:     9.30   
+      8  /43  Test #8  : CFG4Test.CG4Test                              Child aborted***Exception:     9.27   
+      28 /43  Test #28 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     9.32   
+      33 /43  Test #33 : CFG4Test.CPhotonTest                          Child aborted***Exception:     0.22   
+      34 /43  Test #34 : CFG4Test.CRandomEngineTest                    Child aborted***Exception:     9.38   
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     9.29   
+
+            CCtx ctor is too soon for CGenstepCollector::Get() causing assert
+
+
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      4.89   
+    O[blyth@localhost cfg4]$ 
+
+
+
+CTestDetectorTest/... : CCtx ctor is too soon for CGenstepCollector::Get() causing assert
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    (gdb) bt
+    #0  0x00007fffe877f387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe8780a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe87781a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe8778252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7b3f4e4 in CGenstepCollector::Get () at /home/blyth/opticks/cfg4/CGenstepCollector.cc:46
+    #5  0x00007ffff7b3675f in CCtx::CCtx (this=0x1bea9020, ok=0x7fffffffa750) at /home/blyth/opticks/cfg4/CCtx.cc:54
+    #6  0x00007ffff7b3bf86 in CManager::CManager (this=0x1be31810, ok=0x7fffffffa750) at /home/blyth/opticks/cfg4/CManager.cc:80
+    #7  0x00007ffff7b3942d in CG4::CG4 (this=0x7fffffffa670, hub=0x7fffffffa5e0) at /home/blyth/opticks/cfg4/CG4.cc:171
+    #8  0x0000000000403c09 in main (argc=1, argv=0x7fffffffaf88) at /home/blyth/opticks/cfg4/tests/CTestDetectorTest.cc:52
+    (gdb) 
+
+
+
+
 
 ::
 

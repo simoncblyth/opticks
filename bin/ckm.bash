@@ -68,7 +68,8 @@ As intermediate step:
 EOU
 }
 ckm-dir(){ echo $(dirname $(dirname $(ckm-source)))/examples/Geant4/CerenkovMinimal  ; }
-ckm-cd(){  cd $(ckm-dir) ; }
+ckm-cd(){  cd $(ckm-dir)/$1 ; }
+ckms(){ ckm-cd src ; }
 ckm-c(){  cd $(ckm-dir) ; }
 
 

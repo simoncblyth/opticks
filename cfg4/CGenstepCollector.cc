@@ -50,7 +50,6 @@ CGenstepCollector* CGenstepCollector::Get()
 /**
 
 
-
 **/
 
 CGenstepCollector::CGenstepCollector(const NLookup* lookup)    

@@ -51,7 +51,7 @@ const unsigned CCtx::TO = OpticksGenstep::SourceCode("fabricated");
 CCtx::CCtx(Opticks* ok)
     :
     _ok(ok),
-    _gsc(CGenstepCollector::Get()),
+    _gsc(nullptr),  // defer to setEvent
     _mode(ok->getManagerMode()),
     _pindex(ok->getPrintIndex(0)),
     _print(false),
@@ -265,6 +265,8 @@ Invoked by CManager::BeginOfEventAction
 void CCtx::setEvent(const G4Event* event) 
 {
      //OKI_PROFILE("CCtx::setEvent") ; 
+
+    _gsc = CGenstepCollector::Get() ; 
 
     _event = const_cast<G4Event*>(event) ; 
     _event_id = event->GetEventID() ;
