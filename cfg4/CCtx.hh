@@ -125,7 +125,7 @@ struct CFG4_API CCtx
     CPhotonInfo* _cpui ;  
     int _pho_gs ; 
     int _pho_ix ; 
-    int _pho_re ; 
+    int _pho_gn ;  // 0-based generation index incremented at reemission 
  
 
     int  _primary_id ; // used for reem continuation 

@@ -434,7 +434,6 @@ used to identify _reemtrack with the default fPrimaryPhotonID(-1) signally
 not reemission.  That seems an obtuse way of yielding _reemtrack
 
 
-
 UseGivenVelocity(true)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -456,12 +455,12 @@ void CCtx::setTrackOptical(G4Track* mtrack)
 
     _pho_gs = _cpui ? _cpui->pho.gs : -1 ; 
     _pho_ix = _cpui ? _cpui->pho.ix : _track_id  ;  // 0-based, local to the genstep
-    _pho_re = _cpui ? _cpui->pho.re : false ; 
+    _pho_gn = _cpui ? _cpui->pho.gn : -1 ;          // 0-based reemission generation 
 
     const CGenstep& gs = _gsc->getGenstep(_pho_gs) ;   // TODO: ensure 'T' steps handled somehow
     assert( int(gs.index) == _pho_gs ); 
 
-    _reemtrack  = _pho_re  ;                                   // <-- critical input to _stage set by subsequent CCtx::setStepOptical 
+    _reemtrack  = _pho_gn > 0  ;  // <-- critical input to _stage set by subsequent CCtx::setStepOptical 
     _photon_id = gs.offset + _pho_ix ; // 0-based, absolute photon index within the event 
     _record_id = gs.offset + _pho_ix ; // now that abandoned onestep mode, _record_id which is used by CRecorder/CWriter becomes absolute  
 

@@ -45,6 +45,7 @@ set(TEST_SOURCES
     CMakerTest.cc
     CTreeJUNOTest.cc
 
+    CPhoTest.cc
     CPhotonTest.cc
     CRandomEngineTest.cc
     CAlignEngineTest.cc
