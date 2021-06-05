@@ -26,10 +26,14 @@ id_>-1
 struct CFG4_API CPhotonInfo : public G4VUserTrackInformation
 {
     static const plog::Severity LEVEL ; 
-    static CPho Get(const G4Track* optical_photon_track); 
+
+    static CPho         Get(const G4Track* optical_photon_track); 
+    static CPhotonInfo* MakeScintillation(const CGenstep& gs, unsigned i, const CPho& ancestor ); 
+    static CPhotonInfo* MakeCerenkov(     const CGenstep& gs, unsigned i ) ; 
 
     CPho pho ;   
 
+    CPhotonInfo(const CPho& _pho );
     CPhotonInfo(const CGenstep& gs, unsigned ix_ , unsigned gn_, int id_ );
     virtual ~CPhotonInfo(); 
 
