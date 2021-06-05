@@ -165,8 +165,6 @@ void CCtx::init()
     _record_id = -1 ; 
     _mask_index = -1 ; 
 
-    _reemtrack = false ; 
-
     _rejoin_count = 0 ; 
     _primarystep_count = 0 ; 
     _stage = CStage::UNKNOWN ; 
@@ -416,23 +414,6 @@ CCtx::setTrackOptical
 
 Invoked by CCtx::setTrack
 
-Hmm: seems natural to adopt CTrackInfo::opticks_photon_id() to keep track 
-of photon lineage thru RE-emission generations as it has direct correspondence
-to the GPU photon index and to gensteps.
-
-But the opticks_photon_id should always be available and >= 0, so 
-it cannot be used to give _reemtrack ?
-
-So, what exactly was the old::
-
-    CTrack::PrimaryPhotonID(_track) 
-    DsPhotonTrackInfo::GetPrimaryPhotonID()  (aka as this)
-
-Think the old way was to rely on the UserTrackInfo being set only 
-for reemitted scintillation photons, hence presence of it was 
-used to identify _reemtrack with the default fPrimaryPhotonID(-1) signally 
-not reemission.  That seems an obtuse way of yielding _reemtrack
-
 
 UseGivenVelocity(true)
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -446,45 +427,44 @@ void CCtx::setTrackOptical(G4Track* mtrack)
 {
     mtrack->UseGivenVelocity(true);
 
-    G4VUserTrackInformation* ui = mtrack->GetUserInformation() ; 
-    CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ;  // dynamic_cast gives null for wrong type
-    _cpui = cpui ;  
-  
-    // C+S photons should always be labelled with _cpui 
-    // only artificial primary opticals such as input/torch photons will lack labelling
+    _pho = CPhotonInfo::Get(mtrack); 
 
-    _pho_gs = _cpui ? _cpui->pho.gs : -1 ; 
-    _pho_ix = _cpui ? _cpui->pho.ix : _track_id  ;  // 0-based, local to the genstep
-    _pho_gn = _cpui ? _cpui->pho.gn : -1 ;          // 0-based reemission generation 
+    int pho_id = _pho.get_id();
+    if(pho_id < 0)
+    {
+         LOG(fatal) << " missing photon_id : C+S photons should always be labelled  " ; 
+         LOG(fatal) << " fallback to track_id " ; 
+         LOG(fatal) << " only artificial primary opticals such as input/torch photons will lack labelling " ; 
+         pho_id = _track_id ; 
+    } 
+    else
+    {
+        const CGenstep& gs = _gsc->getGenstep(_pho.gs) ; // hmm will fail for input photons
+        assert( int(gs.index) == _pho.gs ); 
+    }
 
-    const CGenstep& gs = _gsc->getGenstep(_pho_gs) ;   // TODO: ensure 'T' steps handled somehow
-    assert( int(gs.index) == _pho_gs ); 
-
-    _reemtrack  = _pho_gn > 0  ;  // <-- critical input to _stage set by subsequent CCtx::setStepOptical 
-    _photon_id = gs.offset + _pho_ix ; // 0-based, absolute photon index within the event 
-    _record_id = gs.offset + _pho_ix ; // now that abandoned onestep mode, _record_id which is used by CRecorder/CWriter becomes absolute  
-
-
+    _photon_id = pho_id ; // 0-based, absolute photon index within the event 
+    _record_id = pho_id ; // used by CRecorder/CWriter is now absolute, following abandoning onestep mode  
     _record_fraction = double(_record_id)/double(_record_max) ;  
 
     _photon_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
 
     LOG(LEVEL) 
-         << " _cpui " << ( _cpui ? _cpui->desc() : "-" ) 
-         << " _primary_id  " <<  _primary_id 
+         << " _pho " << _pho.desc()  
+         << " _photon_id " << _photon_id  
          << " _record_id " << _record_id  
-         << " _reemtrack " << _reemtrack
+         << " _pho.gn " << _pho.gn
          << " mtrack.GetGlobalTime " << mtrack->GetGlobalTime()
          ;
     assert( _record_id > -1 ); 
 
     _mask_index = _ok->hasMask() ?_ok->getMaskIndex( _primary_id ) : -1 ;   // "original" index 
 
-    _debug = _ok->isDbgPhoton(_primary_id) ; // from option: --dindex=1,100,1000,10000 
-    _other = _ok->isOtherPhoton(_primary_id) ; // from option: --oindex=1,100,1000,10000 
+    _debug = _ok->isDbgPhoton(_photon_id) ; // from option: --dindex=1,100,1000,10000 
+    _other = _ok->isOtherPhoton(_photon_id) ; // from option: --oindex=1,100,1000,10000 
     _dump = _debug || _other ; 
 
-    _print = _pindex > -1 && _primary_id == _pindex ; 
+    _print = _pindex > -1 && _photon_id == _pindex ; 
 
     if(_dump) _dump_count += 1 ; 
 
@@ -537,26 +517,33 @@ void CCtx::setStep(const G4Step* step, int noZeroSteps)
 CCtx::setStepOptical
 -----------------------
 
-Invoked by CCtx::setStep 
+Invoked by CCtx::setStep , sets:
 
-1. sets _stage to START/COLLECT/REJOIN/RECOLL depending on _reemtrack and prior step counts
-2. sets _boundary_status
+1. _stage to START/COLLECT/REJOIN/RECOLL depending on _pho.gn "photon generation index" and prior step counts
+2. _boundary_status
 
 **/
 
 void CCtx::setStepOptical() 
 {
-    if( !_reemtrack )     // primary photon, ie not downstream from reemission 
+    if( _pho.gn == 0 ) // primary photon, ie not downstream from reemission 
     {
         _stage = _primarystep_count == 0  ? CStage::START : CStage::COLLECT ;
         _primarystep_count++ ; 
     } 
-    else 
+    else   // (unsigned)_pho_gn 1,2,3,...  
     {
         _stage = _rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;   
         _rejoin_count++ ; 
         // rejoin count is zeroed in setTrackOptical, so each remission generation trk will result in REJOIN 
     }
+
+    LOG(LEVEL) 
+        << " _pho.gn " << _pho.gn
+        << " _stage " << CStage::Label(_stage)
+        << " _primarystep_count " << _primarystep_count
+        << " _rejoin_count " << _rejoin_count
+        ;
 
     _prior_boundary_status = _boundary_status ; 
     _boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;

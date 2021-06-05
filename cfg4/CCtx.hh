@@ -35,6 +35,7 @@
 
 
 #include <string>
+#include "CPho.hh"
 
 class G4Event ; 
 class G4Track ; 
@@ -123,9 +124,7 @@ struct CFG4_API CCtx
 
     // CCtx::setTrackOptical
     CPhotonInfo* _cpui ;  
-    int _pho_gs ; 
-    int _pho_ix ; 
-    int _pho_gn ;  // 0-based generation index incremented at reemission 
+    CPho _pho ; 
  
 
     int  _primary_id ; // used for reem continuation 

@@ -710,15 +710,41 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
         if (!ScintillationIntegral) continue;
 #endif
+        bool valid_opticks_genstep = Num > 0 && !flagReemission ;
 
-            bool valid_opticks_genstep = Num > 0 && !flagReemission ;
-            int ancestral_id = CPhotonInfo::AncestralId(&aTrack, true);  // reemission lineage
+        CPho ancestor = CPhotonInfo::Get(&aTrack);
+        int ancestor_id = ancestor.get_id() ;
+        //
+        // ancestor_id:-1 
+        //    normal case, meaning that aTrack was not a photon
+        //    so the generation loop will yield "primary" photons 
+        //    with id : gs.offset + i  
+        //
+        // ancestor_id>-1
+        //    aTrack is a photon, and ancestor_id is the absolute id of the 
+        //    primary parent photon, this id is retained thru any subsequent 
+        //    remission secondary generations
+        //      
+
+        if(ancestor_id > -1 )
+        {   
+            LOG(info)
+                << " ancestor_id " << ancestor_id
+                << " Num " << Num
+                << " flagReemission " << flagReemission
+                << " valid_opticks_genstep " << valid_opticks_genstep
+                ;
+
+            assert( Num == 0 || Num == 1);  
+            // ancestror_id>-1  should only happen with reemission photons
+            // which can only yield 0 or 1 secondaries
+        }
 
            /*
             LOG(LEVEL)
                << " psdi " << m_psdi_index 
                << " valid_opticks_genstep " << valid_opticks_genstep
-               << " ancestral_id " << ancestral_id 
+               << " ancestor_id " << ancestor_id 
                << " Num " << Num
                << " flagReemission " << flagReemission
                ;
@@ -747,7 +773,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                     << " psdi " << m_psdi_index 
                     << " valid_opticks_genstep " << valid_opticks_genstep
                     << " gs.desc " << gs.desc()
-                    << " ancestral_id " << ancestral_id 
+                    << " ancestor_id " << ancestor_id 
                     << " Num " << Num
                     << " flagReemission " << flagReemission
                     ;
@@ -761,12 +787,12 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
         /*
-        unsigned opticks_photon_id = ancestral_id > -1 && Num == 1 && i == 0 ?  ancestral_id : gs.offset + i ;  
+        unsigned photon_id = ancestor_id > -1 ?  ancestor_id : gs.offset + i ;  
         LOG(info)
             << " psdi " << m_psdi_index 
             << " GENLOOP "
-            << " opticks_photon_id " << opticks_photon_id 
-            << " ancestral_id " << ancestral_id
+            << " photon_id " << photon_id 
+            << " ancestor_id " << ancestor_id
             << " gs.desc " << gs.desc()
             << "  i " << i 
             << " Num " << Num
@@ -926,8 +952,9 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 new G4Track(aScintillationPhoton,aSecondaryTime,aSecondaryPosition);
 
 
-            CPhotonInfo* cpui = new CPhotonInfo( gs, i, flagReemission, ancestral_id ) ;
-            aSecondaryTrack->SetUserInformation(cpui);
+            CPhotonInfo* spi = CPhotonInfo::MakeScintillation( gs, i, ancestor ) ;
+            LOG(info) << " spi " << spi->desc() ; 
+            aSecondaryTrack->SetUserInformation(spi);
 
 		
             aSecondaryTrack->SetParentID(aTrack.GetTrackID()) ;

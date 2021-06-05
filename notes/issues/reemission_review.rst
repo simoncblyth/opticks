@@ -2,6 +2,46 @@ reemission review
 =====================
 
 
+
+DsG4Scintillation:flagReemission set for bulk absorbed photon tracks (actually fStopAndKill)
+----------------------------------------------------------------------------------------------
+
+* hmm Opticks uses fStopAndKill to try to match truncation behaviour : potential problem ?
+
+::
+
+     223     if (aTrack.GetDefinition() == G4OpticalPhoton::OpticalPhoton()) {
+     224         G4Track *track=aStep.GetTrack();
+     225         //G4CompositeTrackInfo* composite=dynamic_cast<G4CompositeTrackInfo*>(track->GetUserInformation());
+     226         //reemittedTI = composite?dynamic_cast<DsPhotonTrackInfo*>( composite->GetPhotonTrackInfo() ):0;
+     227 
+     228         const G4VProcess* process = track->GetCreatorProcess();
+     229         if(process) pname = process->GetProcessName();
+     230 
+     231         if (verboseLevel > 0) {
+     232           G4cout<<"Optical photon. Process name is " << pname<<G4endl;
+     233         }
+     234         if(doBothProcess) {
+     235             flagReemission= doReemission
+     236                 && aTrack.GetTrackStatus() == fStopAndKill
+     237                 && aStep.GetPostStepPoint()->GetStepStatus() != fGeomBoundary;
+     238         }
+     239         else{
+     240             flagReemission= doReemission
+     241                 && aTrack.GetTrackStatus() == fStopAndKill
+     242                 && aStep.GetPostStepPoint()->GetStepStatus() != fGeomBoundary
+     243                 && pname=="Cerenkov";
+     244         }
+     245         if(verboseLevel > 0) {
+     246             G4cout<<"flag of Reemission is "<<flagReemission<<"!!"<<G4endl;
+     247         }
+     248         if (!flagReemission) {
+     249             return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
+     250         }
+     251     }
+
+
+
 CRecorder::Record assuming reemission "secondary"  tracks immediately after the AB tracks
 ------------------------------------------------------------------------------------------
 
@@ -32,6 +72,12 @@ CRecorder::Record assuming reemission "secondary"  tracks immediately after the 
     112      SetTrackSecondariesFirst(true)
     113   
     114 If not so, this will "join" unrelated tracks ?
+
+
+    NOT TRUE : CWriter WRITES TO THE CORRECT PHOTON record_id IN THE OUTPUT BUFFERS 
+
+
+
     115 
     116 Does this mean the local photon state is just for live mode ?
     117 

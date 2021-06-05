@@ -293,13 +293,17 @@ If not so, this will "join" unrelated tracks ?
 (Really? remember it has random access into record buffer
 using record_id)
 
-TODO: find how to check this is the case and assert on it
+NOT TRUE : CWriter WRITES TO THE CORRECT PHOTON record_id IN THE OUTPUT BUFFERS 
 
 
 
 Caution the recording and the writing are split
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+
+Setting m_ctx._stage 
+~~~~~~~~~~~~~~~~~~~~~~~
 
 
 **/
