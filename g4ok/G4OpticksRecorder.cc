@@ -1,4 +1,5 @@
 #include "PLOG.hh"
+#include "G4Opticks.hh"
 #include "G4OpticksRecorder.hh"
 
 /**
@@ -84,21 +85,36 @@ void G4OpticksRecorder::BeginOfEventAction(const G4Event* event)
     LOG(LEVEL); 
     m_manager->BeginOfEventAction(event); 
 }
+
+
 void G4OpticksRecorder::EndOfEventAction(const G4Event* event)
 {
     LOG(LEVEL); 
     m_manager->EndOfEventAction(event); 
 
-    // *G4Opticks::reset* needs to happen at end of event, but it should 
-    // be done from user code at higher level as it dictates when things 
-    // the user will need to access like hits
-    // get reset
-    //
-    //   G4Opticks* g4ok = G4Opticks::Get(); 
-    //   g4ok->reset();   
-    //
-
+    TerminateEvent(); 
 }
+
+
+/**
+G4OpticksRecorder::TerminateEvent
+----------------------------------
+
+Invoked from G4OpticksRecorder::EndOfEventAction 
+
+*G4Opticks::reset* needs to happen at end of event.
+When this entirely optional G4OpticksRecorder is not active 
+the reset should be done by for example junoSD_PMT_v2_Opticks::TerminateEvent
+
+**/
+
+void G4OpticksRecorder::TerminateEvent()
+{
+    LOG(LEVEL) << " invoking G4Opticks::reset " ; 
+    G4Opticks* g4ok = G4Opticks::Get(); 
+    g4ok->reset();   
+}
+
 
 
 void G4OpticksRecorder::PreUserTrackingAction(const G4Track* track)
