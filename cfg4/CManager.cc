@@ -408,7 +408,7 @@ See :doc:`stepping_process_review`
 
 void CManager::UserSteppingAction(const G4Step* step)
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
 
@@ -433,7 +433,7 @@ void CManager::UserSteppingAction(const G4Step* step)
 
 void CManager::postStep()
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
     if(m_engine)
@@ -454,7 +454,7 @@ For a look into Geant4 ZeroStepping see notes/issues/review_alignment.rst
 
 bool CManager::setStep(const G4Step* step)
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     assert(m_mode > 0 ); 
 
     int noZeroSteps = -1 ;
@@ -526,7 +526,7 @@ See notes/issues/ts19-100.rst
 
 void CManager::prepareForNextStep(const G4Step* step, G4Track* mtrack)
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     assert( m_mode > 0 );  
 
 

@@ -1309,6 +1309,16 @@ void OpticksEvent::resize()
 
 }
 
+
+/**
+OpticksEvent::setMetadataNum
+------------------------------
+
+Invoked by OpticksEvent::save, sets metadata m_parameters : NumGensteps, NumPhotons, NumRecords 
+from corresponding getters.
+
+**/
+
 void OpticksEvent::setMetadataNum()
 {
     m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());

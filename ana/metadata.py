@@ -153,8 +153,8 @@ class CompareMetadata(object):
                 log.info(bv)
             else: 
                 log.fatal("expected_common mismatch for key %s " % key )
-                log.fatal(av)
-                log.fatal(bv)
+                log.fatal("av:%s"%av)
+                log.fatal("bv:%s"%bv)
                 assert match, key           
             pass
         return av 
