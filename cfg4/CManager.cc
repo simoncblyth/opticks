@@ -262,11 +262,8 @@ void CManager::save()
     LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
-    unsigned numPhotons = m_ctx->getNumTrackOptical() ; 
-    //   this doesnt account for reemission REJOIN, so it will be too high 
-    //   TODO: this should be the sum of the numbers for each genstep  
-
-    LOG(LEVEL) << " m_mode " << m_mode << " numPhotons(TOFIX) " << numPhotons ; 
+    unsigned numPhotons = m_ctx->getNumPhotons() ;  // from CGenstepCollector
+    LOG(LEVEL) << " m_mode " << m_mode << " numPhotons " << numPhotons ; 
 
     if(m_mode == 1 ) return ; 
     char ctrl = '-' ; 
@@ -276,7 +273,7 @@ void CManager::save()
     {
         LOG(LEVEL) << " --save g4evt numPhotons " << numPhotons ; 
         bool resize = false ; 
-        g4evt->setNumPhotons( numPhotons, resize ); 
+        g4evt->setNumPhotons( numPhotons, resize );  // hmm: probably not needed any more 
 
         m_ok->saveEvent(ctrl);
         m_ok->resetEvent(ctrl);

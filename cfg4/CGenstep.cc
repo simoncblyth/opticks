@@ -2,7 +2,7 @@
 #include <sstream>
 #include <boost/dynamic_bitset.hpp> 
 #include "CGenstep.hh"
-
+#include "OpticksGenstep.hh"
 
 CGenstep::CGenstep()
     :
@@ -23,6 +23,13 @@ CGenstep::CGenstep( unsigned index_ , unsigned photons_, unsigned offset_, char 
     mask(nullptr)
 {
 }
+
+
+unsigned CGenstep::getGenflag() const
+{
+    return OpticksGenstep::GentypeToPhotonFlag(gentype); 
+}
+
 
 
 CGenstep::~CGenstep()

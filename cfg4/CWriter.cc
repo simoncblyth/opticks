@@ -229,20 +229,21 @@ Writes compressed step records if Geant4 CG4 instrumented events
 in format to match that written on GPU by oxrap.
 
 Q: how does this work with REJOIN and dynamic running ?
-A: I think it doesnt work correctly yet ... need to make random 
-   access to total number of photons of the genstep.
+A: the arrays are extended at BeginOfGenstep allowing 
+   random access writes into the dynamically growing arrays 
 
-NB the use of m_ctx._record_id rather than using some stored copy 
-of that is what is restricting this to strictly seeing all the steps for 
-one photon sequentially. That including steps after one or more generations of reemission.
-This is why Geant4 process must be configured to track secondaries first.
+The current implementation was adapted to remove the need
+to track secondaries first.  Any order of tracks should now work 
+just fine, assuming that secondaries always come after their parents.
+Which should always the case (?)
+
+Reemission RE-joining of tracks are handled by resuming the 
+writing onto ncestor photon records lined up using the record_id.
 
 **/
 
 void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, unsigned record_id  )
 {
-    // write compressed record quads into buffer at location for the m_record_id 
-
     unsigned slot = photon._slot_constrained ;
     unsigned flag = photon._flag ; 
     unsigned material = photon._mat ; 

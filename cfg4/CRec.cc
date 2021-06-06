@@ -348,7 +348,7 @@ bool CRec::addPoi(CStp* stp )
     CStage::CStage_t stage = m_ctx._stage == CStage::REJOIN ? CStage::RECOLL : m_ctx._stage  ; // avoid duping the RE 
 
     unsigned preFlag = stage == CStage::START ? 
-                                                 m_ctx._gen
+                                                 m_ctx._gs.getGenflag()
                                               : 
                                                  OpStatus::OpPointFlag(pre, m_prior_boundary_status, stage )
                                               ;

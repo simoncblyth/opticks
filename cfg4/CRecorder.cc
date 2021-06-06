@@ -440,6 +440,11 @@ The steps recorded into m_crec(CRec) are used to determine
 flags and the m_state(CRecState) is updated enabling 
 appropriate step points are to be saved with WriteStepPoint.
 
+
+Q: Where does the first flag "SI" "CK" or "TO" come from ?
+
+
+
 **/
 
 void CRecorder::postTrackWriteSteps()
@@ -577,15 +582,23 @@ void CRecorder::postTrackWriteSteps()
        // as clearStp for each track, REJOIN will always be i=0
 
         //unsigned preFlag = first ? m_ctx._gen : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
-        unsigned preFlag = first ? m_ctx._genflag : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
 
+         
+        unsigned preFlag = first ? m_ctx._gs.getGenflag() : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
+
+        //  preFlag 
+        //      former use of m_ctx._genflag was smoking gun cause of lack of CK bug 
+        //      m_ctx._genflag was from the last start of genstep which will 
+        //      often not be correct at the end of this track 
+        //      
+        //
 
         if(preFlag == 0 )
         {
             LOG(fatal) 
                 << " preFlag zero " 
                 << " first " << first 
-                << "  m_ctx._genflag  " <<  m_ctx._genflag 
+                << "  m_ctx._gs.desc  " <<  m_ctx._gs.desc()
                 ;          
         }
 

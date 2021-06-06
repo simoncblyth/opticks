@@ -188,7 +188,26 @@ unsigned OpticksGenstep::GenstepToPhotonFlag(int gentype)  // static
     return phcode ;   
 }
 
+unsigned OpticksGenstep::GentypeToPhotonFlag(char gentype)  // static
+{
+    unsigned phcode = 0 ;  
+    switch(gentype)
+    {
+        case 'C': phcode = CERENKOV          ; break ; 
+        case 'S': phcode = SCINTILLATION     ; break ; 
+        case 'T': phcode = TORCH             ; break ;  
+        default:  phcode = NAN_ABORT         ; break ; 
+    }
 
+    if( phcode == NAN_ABORT) 
+    {
+        LOG(fatal) 
+           << "unexpected gentype " << gentype 
+           << " phcode " << phcode
+           ;
+    }
+    return phcode ;   
+}
 
 
 

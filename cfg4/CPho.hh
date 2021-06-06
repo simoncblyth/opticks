@@ -21,6 +21,7 @@ struct CFG4_API CPho
     int get_id() const ; // -1 when missing, otherwise : 0-based photon identity index within the event  
     int get_gn() const ; // -1 when missing, otherwise : 0-based generation index incremented at each reemission  
 
+    static CPho FabricateTrackIdPhoton(unsigned track_id); 
 
     CPho make_reemit() const ; 
     std::string desc() const ;

@@ -22,6 +22,26 @@ CPho::CPho( unsigned gs_, unsigned ix_, unsigned id_, unsigned gn_ )
 {
 }
 
+/**
+CPho::FabricateTrackIdPhoton
+------------------------------
+
+This is used from CPhotonInfo::Get for optical photon tracks that 
+are not labelled.  As S+C photon tracks should always be labelled 
+this should only be relevant to input "primary" photons.
+The input photons are artificially contructed torch 'T' photons 
+used for debugging.
+
+**/
+
+CPho CPho::FabricateTrackIdPhoton(unsigned track_id) // static
+{
+    CPho fab(0, track_id, track_id, 0) ; 
+    return fab ; 
+}
+
+
+
 bool CPho::is_missing() const { return gs == MISSING ; }
 
 int CPho::get_gs() const { return gs == MISSING ? -1 : gs ; }

@@ -51,10 +51,10 @@ const unsigned CCtx::TO = OpticksGenstep::SourceCode("fabricated");
 CCtx::CCtx(Opticks* ok)
     :
     _ok(ok),
-    _gsc(nullptr),  // defer to setEvent
     _mode(ok->getManagerMode()),
     _pindex(ok->getPrintIndex(0)),
     _print(false),
+    _gsc(nullptr),       // defer to setEvent
     _genstep_index(-1)
 {
     init();
@@ -146,9 +146,11 @@ void CCtx::init()
     _event_id = -1 ; 
     _event_total = 0 ; 
     _event_track_count = 0 ; 
+
+    /*
     _gen = 0 ; 
     _genflag = 0 ; 
-    
+    */  
 
     //_track = NULL ; 
     _process_manager = NULL ; 
@@ -217,12 +219,11 @@ void CCtx::initEvent(const OpticksEvent* evt)
     _ok_event_init = true ;
     _photons_per_g4event = evt->getNumPhotonsPerG4Event() ; 
     _steps_per_photon = evt->getMaxRec() ;   // number of points to be recorded into record buffer   
-    _record_max = evt->getNumPhotons();      // from the genstep summation
+    _record_max = evt->getNumPhotons();      // from the genstep summation, hmm with dynamic running this will start as zero 
 
     _bounce_max = evt->getBounceMax();       // maximum bounce allowed before truncation will often be 1 less than _steps_per_photon but need not be 
     unsigned bounce_max_2 = evt->getMaxBounce();    
     assert( _bounce_max == bounce_max_2 ) ; // TODO: eliminate or rename one of those
-
 
     const char* typ = evt->getTyp();
     //  _gen = OpticksFlags::SourceCode(typ);   MOVED TO FINER LEVEL OF BELOW setEvent 
@@ -245,8 +246,7 @@ std::string CCtx::desc_event() const
        << " steps_per_photon " << _steps_per_photon
        << " record_max " << _record_max
        << " bounce_max " << _bounce_max
-       << " _gen " << _gen
-       << " _genflag " << _genflag
+       << " _gs.desc " << _gs.desc()
        ;
     return ss.str();
 }
@@ -271,19 +271,12 @@ void CCtx::setEvent(const G4Event* event)
 
     _event_total += 1 ; 
     _event_track_count = 0 ; 
-    _photon_count = 0 ; 
+    _track_optical_count = 0 ; 
 
     _genstep_index = -1 ; 
 
-
-    CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
-    //assert(eui && "expecting event UserInfo set by eg CGenstepSource "); 
-    if(eui)
-    {
-        //assert(0) ; // doesnt really make sense to do this at event level 
-        unsigned gen = eui->gencode ;
-        setGen(gen); 
-    }
+    // CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
+    // former use of event level gencode not useful 
 
     _number_of_input_photons = CEvent::NumberOfInputPhotons(event); 
     LOG(LEVEL) << "_number_of_input_photons " << _number_of_input_photons ; 
@@ -291,6 +284,13 @@ void CCtx::setEvent(const G4Event* event)
     // when _number_of_input_photons is greater than 0 
     // CManager "mocks" a genstep by calling CCtx::setGenstep
     // in normal running that gets called from CManager::BeginOfGenstep
+}
+
+
+unsigned CCtx::getNumPhotons() const
+{
+    return _gsc ? _gsc->getNumPhotons() : 0 ; 
+
 }
 
 
@@ -328,6 +328,8 @@ void CCtx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int
 
 void CCtx::setGentype(char gentype)
 {
+
+/*
     switch(gentype)
     {
         case 'S':setGen(SI) ; break ; 
@@ -335,15 +337,19 @@ void CCtx::setGentype(char gentype)
         case 'T':setGen(TO) ; break ; 
         default: { LOG(fatal) << " gentype invalid [" << gentype << "]" ; assert(0) ; }   ;
     } 
+*/
+
     _gentype = gentype ; 
+}
+
+unsigned CCtx::getGenflag() const
+{
+    return OpticksGenstep::GentypeToPhotonFlag(_gentype); 
 }
 
 
 /**
 CCtx::setGen
-----------------
-
-**/
 
 void CCtx::setGen(unsigned gen)
 {
@@ -362,6 +368,7 @@ void CCtx::setGen(unsigned gen)
 
     assert( valid );
 }
+**/
 
 
 
@@ -432,24 +439,20 @@ void CCtx::setTrackOptical(G4Track* mtrack)
     _pho = CPhotonInfo::Get(mtrack); 
 
     int pho_id = _pho.get_id();
-    if(pho_id < 0)
-    {
-         LOG(fatal) << " missing photon_id : C+S photons should always be labelled  " ; 
-         LOG(fatal) << " fallback to track_id " ; 
-         LOG(fatal) << " only artificial primary opticals such as input/torch photons will lack labelling " ; 
-         pho_id = _track_id ; 
-    } 
-    else
-    {
-        const CGenstep& gs = _gsc->getGenstep(_pho.gs) ; // hmm will fail for input photons
-        assert( int(gs.index) == _pho.gs ); 
-    }
+    assert( pho_id > -1 ); 
+
+    _gs = _gsc->getGenstep(_pho.gs) ; 
+    // TODO: make thus not fail for input photons
+    assert( int(_gs.index) == _pho.gs ); 
+
+    
+
 
     _photon_id = pho_id ; // 0-based, absolute photon index within the event 
     _record_id = pho_id ; // used by CRecorder/CWriter is now absolute, following abandoning onestep mode  
     _record_fraction = double(_record_id)/double(_record_max) ;  
 
-    _photon_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
+    _track_optical_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
 
     LOG(LEVEL) 
          << " _pho " << _pho.desc()  
@@ -473,12 +476,6 @@ void CCtx::setTrackOptical(G4Track* mtrack)
     _rejoin_count = 0 ; 
     _primarystep_count = 0 ; 
 }
-
-unsigned CCtx::getNumTrackOptical() const 
-{
-    return _photon_count ; 
-}
-
 
 
 

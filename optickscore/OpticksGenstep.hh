@@ -68,7 +68,8 @@ class OKCORE_API OpticksGenstep {
        static NPY<float>* MakeCandle(unsigned num_photons, unsigned tagoffset );
        static OpticksGenstep* MakeInputPhotonCarrier(NPY<float>* input_photons, unsigned tagoffset ); 
     public:
-       static unsigned GenstepToPhotonFlag(int gentype);
+       static unsigned GenstepToPhotonFlag(int gentype);   
+       static unsigned GentypeToPhotonFlag(char gentype); // 'C' 'S' 'T' -> CK, SI, TO
     public:
        static std::string Dump();  
     public:

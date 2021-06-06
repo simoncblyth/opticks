@@ -1,5 +1,6 @@
 #include "PLOG.hh"
 #include "G4Track.hh"
+#include "CTrack.hh"
 #include "CPhotonInfo.hh"
 
 const plog::Severity CPhotonInfo::LEVEL = PLOG::EnvLevel("CPhotonInfo", "DEBUG") ; 
@@ -30,16 +31,23 @@ unsigned CPhotonInfo::id() const { return pho.id ; } // 0-based absolute photon 
 unsigned CPhotonInfo::gn() const { return pho.gn ; } // 0-based generation index incremented at each reemission  
 
 
+/**
+CPhotonInfo::Get
+------------------
+
+As S+C photon tracks should always be labelled 
+the CPho::FabricateTrackIdPhoton should only be relevant for 
+input "primary" photons. The input photons are artificially contructed 
+torch 'T' photons used for debugging.
+
+**/
 
 CPho CPhotonInfo::Get(const G4Track* optical_photon_track)   // static 
 {
     G4VUserTrackInformation* ui = optical_photon_track->GetUserInformation() ;
     CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ; 
-    CPho pho ; 
-    if(cpui)
-    {
-        pho = cpui->pho ; 
-    }
+    unsigned track_id = CTrack::Id(optical_photon_track) ; 
+    CPho pho = cpui ? cpui->pho : CPho::FabricateTrackIdPhoton(track_id) ;  
     return pho  ; 
 }
 
