@@ -436,7 +436,8 @@ void CCtx::setTrackOptical(G4Track* mtrack)
 {
     mtrack->UseGivenVelocity(true);
 
-    _pho = CPhotonInfo::Get(mtrack); 
+    bool fabricate_unlabelled = true ; 
+    _pho = CPhotonInfo::Get(mtrack, fabricate_unlabelled); 
 
     int pho_id = _pho.get_id();
     assert( pho_id > -1 ); 
