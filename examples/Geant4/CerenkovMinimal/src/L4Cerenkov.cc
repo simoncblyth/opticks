@@ -417,7 +417,7 @@ L4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 #ifdef WITH_OPTICKS
         CPhotonInfo* cpi = CPhotonInfo::MakeCerenkov( gs, i ); 
-        LOG(error) << " cpi " << cpi->desc() ;
+        //LOG(error) << " cpi " << cpi->desc() ;
         aSecondaryTrack->SetUserInformation(cpi);
         G4Opticks::Get()->setAlignIndex(-1); 
 #endif

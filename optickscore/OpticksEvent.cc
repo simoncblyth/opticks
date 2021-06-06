@@ -1195,7 +1195,7 @@ void OpticksEvent::reset()
 
 void OpticksEvent::resetBuffers()
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "[ itag " << getITag() ; 
     if(m_genstep_data)  m_genstep_data->reset();    
     if(m_nopstep_data)  m_nopstep_data->reset();    
     if(m_photon_data)   m_photon_data->reset();    

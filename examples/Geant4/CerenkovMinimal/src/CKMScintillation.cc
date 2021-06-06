@@ -712,7 +712,8 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
         bool valid_opticks_genstep = Num > 0 && !flagReemission ;
 
-        CPho ancestor = CPhotonInfo::Get(&aTrack);
+        bool fabricate_unlabelled = false ; 
+        CPho ancestor = CPhotonInfo::Get(&aTrack, fabricate_unlabelled);
         int ancestor_id = ancestor.get_id() ;
         //
         // ancestor_id:-1 
@@ -728,13 +729,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
         if(ancestor_id > -1 )
         {   
-            LOG(info)
-                << " ancestor_id " << ancestor_id
-                << " Num " << Num
-                << " flagReemission " << flagReemission
-                << " valid_opticks_genstep " << valid_opticks_genstep
-                ;
-
+            //LOG(info) << " ancestor_id " << ancestor_id << " Num " << Num << " flagReemission " << flagReemission << " valid_opticks_genstep " << valid_opticks_genstep ; 
             assert( Num == 0 || Num == 1);  
             // ancestror_id>-1  should only happen with reemission photons
             // which can only yield 0 or 1 secondaries
@@ -953,7 +948,7 @@ CKMScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
             CPhotonInfo* spi = CPhotonInfo::MakeScintillation( gs, i, ancestor ) ;
-            LOG(info) << " spi " << spi->desc() ; 
+            //LOG(info) << " spi " << spi->desc() ; 
             aSecondaryTrack->SetUserInformation(spi);
 
 		

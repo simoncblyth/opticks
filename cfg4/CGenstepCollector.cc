@@ -343,6 +343,7 @@ CGenstep CGenstepCollector::collectScintillationStep
 
      m_scintillation_count += 1 ;   // 1-based index
 
+     /*
      LOG(LEVEL)
           << " gentype " << gentype
           << " gentype " << OpticksGenstep::Gentype(gentype)
@@ -350,6 +351,7 @@ CGenstep CGenstepCollector::collectScintillationStep
           << " numPhotons " << std::setw(4) << numPhotons 
           << desc()
           ;
+     */
 
      assert( OpticksGenstep::IsScintillation(gentype) ); 
 

@@ -176,7 +176,7 @@ just prior to the C/S generation loop
 
 void CManager::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 

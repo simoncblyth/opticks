@@ -236,7 +236,7 @@ void OpticksRun::annotateEvent(OpticksEvent* evt)
 void OpticksRun::resetEvent(char ctrl)
 {
     assert( ctrl == '+' || ctrl == '-' || ctrl == '='); 
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "[ ctrl " << ctrl  ; 
     OK_PROFILE("_OpticksRun::resetEvent");
 
     if( m_evt && (ctrl == '+' || ctrl == '='))
