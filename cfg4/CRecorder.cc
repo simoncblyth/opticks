@@ -149,7 +149,7 @@ Invoked by CManager::initEvent, configures and prepares for recording.
 
 void CRecorder::initEvent(OpticksEvent* evt)
 {
-    LOG(LEVEL); 
+    //LOG(LEVEL); 
     assert(evt);
     m_writer->initEvent(evt);
     m_crec->initEvent(evt);
@@ -165,7 +165,7 @@ When have input photons this is invoked by CManager::BeginOfEventAction
 **/
 void CRecorder::BeginOfGenstep()
 {
-    LOG(LEVEL); 
+    //LOG(LEVEL); 
     m_writer->BeginOfGenstep(); 
 }
 
@@ -314,7 +314,7 @@ bool CRecorder::Record(Ds::DsG4OpBoundaryProcessStatus boundary_status)
 bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 #endif
 {    
-    LOG(LEVEL) << " m_mode " << m_mode ; 
+    //LOG(LEVEL) << " m_mode " << m_mode ; 
 
 
     m_state._step_action = 0 ; 

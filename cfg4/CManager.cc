@@ -288,7 +288,7 @@ void CManager::save()
 
 void CManager::PreUserTrackingAction(const G4Track* track)
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
     m_ctx->setTrack(track);
@@ -301,7 +301,7 @@ void CManager::PreUserTrackingAction(const G4Track* track)
 
 void CManager::PostUserTrackingAction(const G4Track* track)
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
     int track_id = CTrack::Id(track) ;
@@ -316,7 +316,7 @@ void CManager::PostUserTrackingAction(const G4Track* track)
 
 void CManager::CManager::preTrack()
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
     if(m_engine)
@@ -327,7 +327,7 @@ void CManager::CManager::preTrack()
 
 void CManager::postTrack()
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
 
@@ -349,7 +349,7 @@ void CManager::postTrack()
 
 void CManager::postpropagate()
 {
-    LOG(LEVEL) << " m_mode " << m_mode ;
+    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
     if(m_engine) m_engine->postpropagate();  

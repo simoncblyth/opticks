@@ -298,6 +298,8 @@ void CCtx::setEvent(const G4Event* event)
 CCtx::BeginOfGenstep
 ------------------------
 
+Invoked by CGenstepCollector::addGenstep from the CGenstepCollector::collect methods 
+
 **/
 
 void CCtx::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
