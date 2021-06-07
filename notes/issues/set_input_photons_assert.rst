@@ -1,5 +1,10 @@
-set_input_photons_assert
-===========================
+FIXED set_input_photons_assert
+================================
+
+FIXED by not auto-calling BeginOfGenstep with input photon torch gensteps from CGenstepCollector
+as that happens much too soon. Instead input photons are auto-detected in CCtx::setEvent
+resulting in the special cased input photons  BeginOfGenstep call from CManger::BeginOfEventAction.
+
 
 
 ::
@@ -160,7 +165,7 @@ for input photons in CManager::BeginOfEventAction::
     143 }
 
 
-::
+Fixing the passing of numPhotons with input photon torch gensteps doesnt avoid the assert::
 
     #0  0x00007fffedd83ff8 in std::vector<int, std::allocator<int> >::size() const () from /home/blyth/junotop/offline/InstallArea/Linux-x86_64/lib/libEDMUtil.so
     #1  0x00007fffd6067962 in NPYBase::getNumItems (this=0x0, ifr=0, ito=1) at /home/blyth/opticks/npy/NPYBase.cpp:538

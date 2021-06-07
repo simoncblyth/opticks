@@ -441,10 +441,7 @@ void CCtx::setTrackOptical(G4Track* mtrack)
     assert( pho_id > -1 ); 
 
     _gs = _gsc->getGenstep(_pho.gs) ; 
-    // TODO: make thus not fail for input photons
-    assert( int(_gs.index) == _pho.gs ); 
-
-    
+    assert( _gs.index == _pho.gs ); 
 
 
     _photon_id = pho_id ; // 0-based, absolute photon index within the event 
