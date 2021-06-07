@@ -280,6 +280,19 @@ int CGenstepCollector::getReservation() const
 }
 
 
+/**
+CGenstepCollector::addGenstep
+-------------------------------
+
+The automatic invokation of BeginOfGenstep from CGenstepCollector 
+is convenient for C+S gensteps but it is too early with input_photon 
+torch gensteps as the OpticksEvent is not yet created.  
+Instead the BeginOfGenstep for input photons is special case called 
+from CManager::BeginOfEventAction when input photons are detected 
+in CCtx::setEvent 
+
+**/
+
 CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
 {
     unsigned genstep_index = getNumGensteps(); 
@@ -297,7 +310,7 @@ CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
     m_photon_count += numPhotons ; 
 
     CManager* mgr = CManager::Get(); 
-    if(mgr)
+    if(mgr && (gentype == 'C' || gentype == 'S'))
     {
         mgr->BeginOfGenstep(genstep_index, gentype, numPhotons, photon_offset); 
     }

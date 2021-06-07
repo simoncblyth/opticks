@@ -258,12 +258,17 @@ CCtx::setEvent
 
 Invoked by CManager::BeginOfEventAction
 
+The G4Event primaries are examined to check for input photons 
+which result in setting _number_of_input_photons 
+
+When _number_of_input_photons is greater than 0 
+CManager "mocks" a genstep by calling CCtx::setGenstep
+in normal running that gets called from CManager::BeginOfGenstep
+
 **/
 
 void CCtx::setEvent(const G4Event* event) 
 {
-     //OKI_PROFILE("CCtx::setEvent") ; 
-
     _gsc = CGenstepCollector::Get() ; 
 
     _event = const_cast<G4Event*>(event) ; 
@@ -275,15 +280,8 @@ void CCtx::setEvent(const G4Event* event)
 
     _genstep_index = -1 ; 
 
-    // CEventInfo* eui = (CEventInfo*)event->GetUserInformation(); 
-    // former use of event level gencode not useful 
-
     _number_of_input_photons = CEvent::NumberOfInputPhotons(event); 
     LOG(LEVEL) << "_number_of_input_photons " << _number_of_input_photons ; 
-
-    // when _number_of_input_photons is greater than 0 
-    // CManager "mocks" a genstep by calling CCtx::setGenstep
-    // in normal running that gets called from CManager::BeginOfGenstep
 }
 
 
