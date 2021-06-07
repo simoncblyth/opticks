@@ -449,7 +449,7 @@ void SSys::split(std::vector<std::string>& elem, const char* str, char delim )
 SSys::getenvvar
 ------------------
 
-When the argument contains ',' it is split with this delimited 
+When the argument contains ',' it is split with this delimiter
 into separate keys which are checked in order.
 The first with non-null value is returned.
 

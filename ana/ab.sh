@@ -11,6 +11,7 @@ ab.sh
    ab.sh 1 
    ab.sh 2
 
+   PFX=tds3ip ab.sh 1 
 
 
 EOU
@@ -20,7 +21,7 @@ EOU
 cat="g4live"
 det="det"
 src="natural"
-pfx="source"
+pfx=${PFX:-source}
 
 tag=${1:-1}
 shift 

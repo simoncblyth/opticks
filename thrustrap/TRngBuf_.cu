@@ -180,6 +180,9 @@ uoffset
     incorporating m_ibase 
 
 
+WHY NOT USE THE STANDARD OPTICKS curandState ?
+THAT WOULD AVOID THE INIT 
+
 **/
 
 
