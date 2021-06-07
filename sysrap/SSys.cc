@@ -430,18 +430,42 @@ float SSys::atof_( const char* a )
     return f ;
 }
 
+void SSys::split(std::vector<std::string>& elem, const char* str, char delim )
+{
+    if(strchr(str, delim) == nullptr )
+    {
+        elem.push_back(str); 
+    } 
+    else
+    {
+        std::stringstream ss; 
+        ss.str(str)  ;
+        std::string s;
+        while (std::getline(ss, s, delim)) elem.push_back(s) ; 
+    } 
+}
 
+/**
+SSys::getenvvar
+------------------
 
+When the argument contains ',' it is split with this delimited 
+into separate keys which are checked in order.
+The first with non-null value is returned.
 
-
+**/
 
 const char* SSys::getenvvar( const char* envvar )
 {
-    const char* evalue = getenv(envvar);
-    LOG(debug) << "SSys::getenvvar"
-              << " envvar " << envvar
-              << " evalue " << evalue
-              ;
+    std::vector<std::string> evars ; 
+    split(evars, envvar, ','); 
+    const char* evalue = nullptr ; 
+    for(unsigned i=0 ; i < evars.size() ; i++)
+    {
+        const char* ekey = evars[i].c_str(); 
+        evalue = getenv(ekey);
+        if(evalue) break ; 
+    }
     return evalue ; 
 }
 

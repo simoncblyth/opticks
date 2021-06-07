@@ -69,6 +69,9 @@ class SYSRAP_API SSys {
 
      static int   atoi_( const char* a );
      static float atof_( const char* a );
+
+     static void split(std::vector<std::string>& elem, const char* str, char delim );
+
      static const char* getenvvar( const char* envkey, const char* fallback );
      static const char* getenvvar( const char* envkey );
      static const char* username(); 

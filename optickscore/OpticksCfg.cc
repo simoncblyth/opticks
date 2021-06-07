@@ -1621,16 +1621,35 @@ const char* OpticksCfg<Listener>::getEventTag() const
 {
     return m_event_tag.empty() ? NULL : m_event_tag.c_str() ;
 }
+
+/**
+
+**/
+
 template <class Listener>
 const char* OpticksCfg<Listener>::getEventCat() const 
 {
-    const char* cat_envvar_default = SSys::getenvvar("TESTNAME" , NULL ); 
+    const char* cat_envvar_default = SSys::getenvvar("OPTICKS_EVENT_CAT,TESTNAME" , NULL ); 
     return m_event_cat.empty() ? cat_envvar_default : m_event_cat.c_str() ;
 }
+
+/**
+OpticksCfg::getEventPfx
+-------------------------
+
+Canonically used from Opticks::defineEventSpec to create Opticks::m_spec and m_nspec
+that are the blueprints for all OpticksEvent.
+
+The envvars OPTICKS_EVENT_PFX and TESTNAME are checked in order, the first that
+is found to be set defines the default pfx.  
+This default is overridden by the commandline --pfx argument.
+
+**/
+
 template <class Listener>
 const char* OpticksCfg<Listener>::getEventPfx() const 
 {
-    const char* pfx_envvar_default = SSys::getenvvar("TESTNAME" , NULL ); 
+    const char* pfx_envvar_default = SSys::getenvvar("OPTICKS_EVENT_PFX,TESTNAME" , NULL ); 
     return m_event_pfx.empty() ? pfx_envvar_default : m_event_pfx.c_str() ;
 }
 

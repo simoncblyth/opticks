@@ -2754,7 +2754,7 @@ const char* Opticks::getInputUDet() const
 Opticks::defineEventSpec
 -------------------------
 
-Invoked from Opticks::configure after commandline parse and initResource.
+Invoked from Opticks::postconfigure after commandline parse and initResource.
 The components of the spec determine file system paths of event files.
 
 

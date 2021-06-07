@@ -697,8 +697,8 @@ void OpticksEvent::init()
     m_abbrev[recsel_] = "rs" ;     // record selection index
     m_abbrev[sequence_] = "ph" ;   // (unsigned long long) photon seqhis/seqmat
     m_abbrev[seed_] = "se" ;   //   (short) genstep id used for photon seeding 
-    m_abbrev[hit_] = "ht" ;  
-    m_abbrev[hiy_] = "hy" ;  
+    m_abbrev[hit_] = "ht" ;     // hits, subset of ox with photons flags fullfilling the hit mask
+    m_abbrev[hiy_] = "hy" ;     // hiys, subset of wy with photons flags fullfilling the hit mask 
 }
 
 void OpticksEvent::deleteMeta()
@@ -920,6 +920,17 @@ int OpticksEvent::getDynamic() const
 {
     return m_parameters->get<int>("Dynamic", "-1");
 }
+
+
+void OpticksEvent::setAligned(int aligned)
+{
+    m_parameters->add<int>("Aligned", aligned );
+}
+int OpticksEvent::getAligned() const 
+{
+    return m_parameters->get<int>("Aligned", "-1");
+}
+
 
 
 
