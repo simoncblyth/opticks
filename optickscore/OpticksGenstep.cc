@@ -253,8 +253,6 @@ std::string OpticksGenstep::desc() const
 OpticksGenstep::getGencode
 ----------------------------
 
-SUSPECT confusion between genstep codes and photon flags.
-
 **/
 
 unsigned OpticksGenstep::getGencode(unsigned idx) const 
@@ -264,6 +262,15 @@ unsigned OpticksGenstep::getGencode(unsigned idx) const
     unsigned gencode = gs00 ; 
     return gencode ; 
 }
+
+unsigned OpticksGenstep::getNumPhotons(unsigned idx) const 
+{
+    unsigned gs03 = m_gs->getUInt(idx,0u,3u) ;
+    assert( gs03 > 0 );  
+    unsigned numPhotons = gs03 ; 
+    return numPhotons ; 
+}
+
 
 
 

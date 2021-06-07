@@ -100,6 +100,7 @@ class OKCORE_API OpticksGenstep {
         float                 getAvgPhotonsPerGenstep() const ;
     public:  
         unsigned              getGencode(unsigned idx) const ; 
+        unsigned              getNumPhotons(unsigned idx) const ; 
     public:  
         glm::ivec4            getHdr(unsigned i) const ;
         glm::vec4             getPositionTime(unsigned i) const ; 

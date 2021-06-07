@@ -174,7 +174,7 @@ class CFG4_API CGenstepCollector
         );
    public:
          CGenstep collectMachineryStep(unsigned code);
-         CGenstep collectOpticksGenstep(const OpticksGenstep* gs);
+         CGenstep collectTorchGenstep(const OpticksGenstep* gs);
    private:
          CGenstep addGenstep(unsigned numPhotons, char gentype);
          static CGenstepCollector* INSTANCE ;      

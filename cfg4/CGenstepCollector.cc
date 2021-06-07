@@ -535,7 +535,7 @@ CGenstep CGenstepCollector::collectMachineryStep(unsigned gentype)
 
 
 /**
-CGenstepCollector::collectOpticksGenstep
+CGenstepCollector::collectTorchGenstep
 ------------------------------------------
 
 Experimental for debugging only. Used by g4ok/G4OKTest 
@@ -543,9 +543,8 @@ Currently expects only torchsteps.
 
 **/
 
-CGenstep CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
+CGenstep CGenstepCollector::collectTorchGenstep(const OpticksGenstep* gs)
 {
-    CGenstep cgs = addGenstep(0, 'T');
     unsigned num_gensteps = gs->getNumGensteps(); 
     const NPY<float>* src = gs->getGensteps(); 
     float* dst_values = m_genstep_values ; 
@@ -557,25 +556,20 @@ CGenstep CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
         << " src_oac.desc " << OpticksActionControl::Desc(src->getActionControl())
         ;
 
-    for(unsigned idx=0 ; idx < num_gensteps ; idx++)
+    CGenstep cgs ; 
+
+    assert( num_gensteps == 1 ); 
+    unsigned idx = 0 ; 
     {
         unsigned gentype = gs->getGencode(idx); 
+        unsigned numPhotons = gs->getNumPhotons(idx); 
         LOG(LEVEL) 
             << " idx " << idx
             << " gentype " << gentype
+            << " numPhotons " << numPhotons
             ;
 
-        if( OpticksGenstep::IsCerenkov(gentype) )
-        {
-            assert(0); 
-            m_cerenkov_count += 1 ;  
-        }
-        else if( OpticksGenstep::IsScintillation(gentype) )
-        {
-            assert(0); 
-            m_scintillation_count += 1 ;  
-        }
-        else if( OpticksGenstep::IsTorchLike(gentype) )
+        if( OpticksGenstep::IsTorchLike(gentype) )
         {
             m_torch_count += 1 ;  
 
@@ -585,11 +579,9 @@ CGenstep CGenstepCollector::collectOpticksGenstep(const OpticksGenstep* gs)
             const float* src_values = src->getValuesConst(idx);  
             for(unsigned j=0 ; j < m_genstep_itemsize ; j++) dst_values[j] = src_values[j] ; 
             m_genstep->add(dst_values, m_genstep_itemsize);
-        }
-        else if( OpticksGenstep::IsMachinery(gentype) )
-        {
-            assert(0); 
-            m_machinery_count += 1 ;  
+
+            cgs = addGenstep(numPhotons, 'T');
+            assert( cgs.photons == numPhotons ); 
         }
         else
         {
