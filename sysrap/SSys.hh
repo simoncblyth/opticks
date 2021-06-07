@@ -77,8 +77,7 @@ class SYSRAP_API SSys {
      static const char* username(); 
      static const char* hostname(); 
 
-     //static int setenvvar( const char* envprefix, const char* key, const char* value, bool overwrite=true );
-     static int setenvvar( const char* ekey, const char* value, bool overwrite=true );
+     static int setenvvar( const char* ekey, const char* value, bool overwrite=true, char special_empty_token='\0' );
      static bool IsRemoteSession();
      static bool IsVERBOSE();
      static bool IsHARIKARI();

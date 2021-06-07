@@ -14,6 +14,7 @@ find_package(SysRap REQUIRED CONFIG)
 set(OpticksCUDA_VERBOSE ON)
 find_package(OpticksCUDA REQUIRED MODULE)
 ## NB **NO BOOST** or pkgs with Boost ancestry : as nvcc barfs on it
+##  this may be no longer the case 
 
 #set(CUDARap_VERBOSE OFF)
 set(CUDARap_VERBOSE ON)

@@ -515,15 +515,33 @@ const char* SSys::hostname()
 #endif
 
 
+/**
+SSys::setenvvar
+-----------------
 
-int SSys::setenvvar( const char* ekey, const char* value, bool overwrite)
+As shell handling of empty strings is inconvenient the special_empty_token char 
+allows a single char to represent the empty string, eg '-' 
+
+**/
+
+int SSys::setenvvar( const char* ekey, const char* value, bool overwrite, char special_empty_token)
 {
     std::stringstream ss ;
     ss << ekey << "=" ;
-    if(value) ss << value ; 
+
+    if(value)
+    {
+        if(special_empty_token != '\0' && strlen(value) == 1 && value[0] == special_empty_token)
+        {
+            ss << "" ; 
+        }
+        else
+        {
+            ss << value ; 
+        }
+    }
 
     std::string ekv = ss.str();
-
     const char* prior = getenv(ekey) ;
 
     char* ekv_ = const_cast<char*>(strdup(ekv.c_str()));

@@ -34,13 +34,23 @@
 #include "OPTICKS_LOG.hh"
 #include "CRandomEngine.hh"
 
+/**
+CRandomEngineTest
+==================
+
+Note that the CRandomEngine m_engine that a normal resident of CManager 
+is only instanciated with "--align" option.
+So this test should be run without using that option otherwise two engines
+would be instanciated.
+
+**/
 
 struct CRandomEngineTest
 {
     CRandomEngineTest(CManager* manager)
-       :
-       _ctx(manager->getCtx()),
-       _engine(manager)
+        :
+        _ctx(manager->getCtx()),
+        _engine(manager)
     {
     }
 
@@ -48,10 +58,11 @@ struct CRandomEngineTest
     {
         if(!_engine.hasSequence())
         {
-             LOG(error) << " engine has no RNG sequences loaded " 
-                        << " create STATIC_CURAND input file " 
-                        << " with TRngBufTest " 
-                        ; 
+             LOG(error) 
+                 << " engine has no RNG sequences loaded " 
+                 << " create STATIC_CURAND input file " 
+                 << " with TRngBufTest " 
+                 ; 
              return ; 
         }
 
@@ -80,7 +91,7 @@ struct CRandomEngineTest
  
     }
 
-    CCtx&       _ctx  ; 
+    CCtx&         _ctx  ; 
     CRandomEngine _engine ; 
 };
 
@@ -91,27 +102,32 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ; 
 
-    int pindex1 = argc > 1 ? atoi(argv[1]) : 0 ; 
-    int pindex2 = argc > 2 ? atoi(argv[2]) : pindex1 + 1 ; 
+    int pindex0 = argc > 1 ? atoi(argv[1]) : 0 ; 
+    int pindex1 = argc > 2 ? atoi(argv[2]) : pindex0 + 1 ; 
     int pstep   = argc > 3 ? atoi(argv[3]) : 1 ; 
 
     LOG(info) 
-        << " pindex1 " << pindex1 
-        << " pindex2 " << pindex2  
+        << " pindex0 " << pindex0 
+        << " pindex1 " << pindex1  
         << " pstep " << pstep 
         ; 
 
     Opticks ok(argc, argv );
+    ok.configure(); 
 
+/*
+    // huh, why does this test need the geometry, resulting in slow cycle ?
     OpticksHub hub(&ok) ; 
-    
     CG4* g4 = new CG4(&hub) ; 
-
     CManager* manager = g4->getManager(); 
+*/
+
+    CManager* manager = new CManager(&ok) ;  
+    // with --align instanciates CRandomEngine inside, but dont do that 
 
     CRandomEngineTest ret(manager) ; 
 
-    for(int pindex=pindex1 ; pindex < pindex2 ; pindex+=pstep )
+    for(int pindex=pindex0 ; pindex < pindex1 ; pindex+=pstep )
     {
         ret.print(pindex); 
     }
@@ -119,5 +135,4 @@ int main(int argc, char** argv)
 
     return 0 ; 
 }
-
 

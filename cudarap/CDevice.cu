@@ -14,6 +14,7 @@
 #include "PLOG.hh"
 
 const plog::Severity CDevice::LEVEL = PLOG::EnvLevel("CDevice", "DEBUG"); 
+int CDevice::VISIBLE_COUNT = 0 ; 
 
 
 const char* CDevice::CVD = "CUDA_VISIBLE_DEVICES" ; 
@@ -203,6 +204,8 @@ void CDevice::Visible(std::vector<CDevice>& visible, const char* dirpath, bool n
 
     bool ordinal_from_index = no_cvd  ; 
     Collect(visible, ordinal_from_index); 
+
+    VISIBLE_COUNT = visible.size() ; 
 
     if( no_cvd )
     {

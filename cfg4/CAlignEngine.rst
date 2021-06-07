@@ -14,8 +14,16 @@ Usage
     ./g4ok/G4Opticks.cc   // from G4Opticks::setAlignIndex
 
 
-G4Opticks::setAlignIndex
---------------------------
+G4Opticks::setAlignIndex/CAlignEngine::SetSequenceIndex 
+-----------------------------------------------------------
+
+::
+
+    1046 void G4Opticks::setAlignIndex(int align_idx) const
+    1047 {
+    1048     CAlignEngine::SetSequenceIndex(align_idx);
+    1049 }
+
 
 
 ::

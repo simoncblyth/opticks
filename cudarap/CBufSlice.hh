@@ -22,6 +22,15 @@
 
 #include "CUDARAP_API_EXPORT.hh"
 
+/**
+CBufSlice 
+==========
+
+Simple struct representing a strided slice of a device buffer.
+Typically created by the CBufSpec::slice method.
+
+**/
+
 struct CUDARAP_API CBufSlice 
 {
    void*              dev_ptr ;

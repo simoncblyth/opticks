@@ -2876,11 +2876,17 @@ void Opticks::configure()
 }
 
 
+/**
+Opticks::getCVD
+-----------------
 
+Default cvdcfg is a blank string
+
+**/
 
 const char* Opticks::getCVD() const 
 {
-    const std::string& cvdcfg = m_cfg->getCVD();
+    const std::string& cvdcfg = m_cfg->getCVD();  
     const char* cvd = cvdcfg.empty() ? NULL : cvdcfg.c_str() ; 
     return cvd ; 
 }
@@ -2896,10 +2902,9 @@ const char* Opticks::getUsedCVD() const
 {
     const char* cvd = getCVD(); 
     const char* dcvd = getDefaultCVD(); 
-    // note they are both getenv envvars so no need to strdup
     const char* ucvd =  cvd == NULL && isInterop() && dcvd != NULL ? dcvd : cvd ; 
 
-    LOG(error) 
+    LOG(LEVEL) 
         << " cvd " << cvd
         << " dcvd " << dcvd
         << " isInterop " << isInterop()
@@ -2971,6 +2976,9 @@ For example::
    --cvd 1
    --cvd 0,1,2,3
 
+   --cvd -   # '-' is treated as a special token representing an empty string 
+             # which easier to handle than an actual empty string 
+
 In interop mode on multi-GPU workstations it is often necessary 
 to set the --cvd to match the GPU that is driving the monitor
 to avoid failures. To automate that the envvar OPTICKS_DEFAULT_INTEROP_CVD 
@@ -2984,8 +2992,12 @@ void Opticks::postconfigureCVD()
     if(ucvd)
     { 
         const char* ek = "CUDA_VISIBLE_DEVICES" ; 
-        LOG(error) << " setting " << ek << " envvar internally to " << ucvd ; 
-        SSys::setenvvar(ek, ucvd, true );    // Opticks::configure setting CUDA_VISIBLE_DEVICES
+        LOG(LEVEL) << " setting " << ek << " envvar internally to " << ucvd ; 
+        char special_empty_token = '-' ;   // when ucvd is "-" this will replace it with an empty string
+        SSys::setenvvar(ek, ucvd, true, special_empty_token );    // Opticks::configure setting CUDA_VISIBLE_DEVICES
+
+        const char* chk = SSys::getenvvar(ek); 
+        LOG(error) << " --cvd [" << ucvd << "] option internally sets " << ek << " [" << chk << "]" ; 
     }
 }
 
@@ -3073,7 +3085,7 @@ void Opticks::postconfigureComposition()
     glm::uvec4 size = getSize();
     glm::uvec4 position = getPosition() ;
 
-    LOG(error) 
+    LOG(LEVEL) 
         << " size " << gformat(size)
         << " position " << gformat(position)
         ;   
@@ -3223,7 +3235,7 @@ void Opticks::Summary(const char* msg)
         << std::endl
         ;
 
-    LOG(info) << msg << "DONE" ; 
+    LOG(info) << msg << " DONE" ; 
 }
 
 

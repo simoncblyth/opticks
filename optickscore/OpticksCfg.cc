@@ -48,7 +48,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     BCfg(name, live),
     m_listener(listener),
     m_key(BOpticksResource::DefaultKey()),
-    m_cvd(""),
+    m_cvd(SSys::getenvvar("CVD","")),
     m_size(""),
     m_position(""),
     m_dbgcsgpath(""),

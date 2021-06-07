@@ -81,7 +81,6 @@ CRandomEngine::CRandomEngine(CManager* manager)
     m_curflatsigint(m_ok->getCurFlatSigInt()), // --curflatsigint N
     m_preinit(preinit()),
     m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()),    // --dbgkludgeflatzero
-    //m_run(g4->getRun()),
     m_run(nullptr),
     m_okevt(NULL),
     m_okevt_seqhis(0),
@@ -227,6 +226,9 @@ which is not within the current tranche.
 
 HMM potential for very inefficient if G4 photon record_id 
 jumps around between tranches
+
+HMM i dont like the hidden nature of this GPU launch 
+
 
 **/
 

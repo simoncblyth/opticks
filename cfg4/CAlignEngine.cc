@@ -86,7 +86,7 @@ CAlignEngine::CAlignEngine(const char* ssdir)
     m_seq_values(m_seq ? m_seq->getValues() : NULL),
     m_seq_ni(m_seq ? m_seq->getShape(0) : 0 ),
     m_seq_nv(m_seq ? m_seq->getNumValues(1) : 0 ),  // itemvalues
-    m_cur(NPY<int>::make(m_seq_ni)),
+    m_cur(NPY<int>::make(m_seq_ni)),   // cursor positions for each item line
     m_cur_values(m_cur->fill(0)),
     m_seq_index(-1),
     m_recycle(false),

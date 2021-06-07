@@ -175,7 +175,7 @@ Camera::Camera(int width, int height, float basis )
     m_type(0),   // gets overridden from OpticksCfg default either CAMERATYPE envvar or --cameratype option
     m_changed(true)
 {
-    LOG(info) << "m_type (CAMERATYPE) " << m_type ;  
+    LOG(LEVEL) << "m_type (CAMERATYPE) " << m_type ;  
     bool internal = true ; 
     setSize(width, height, internal);
     setPixelFactor(1); 
@@ -306,7 +306,7 @@ void Camera::setType(unsigned type)
 {
     m_type = type  ;
     m_changed = true ; 
-    LOG(error) << " type " << m_type ; 
+    LOG(LEVEL) << " type " << m_type ; 
     //std::raise(SIGINT);   
 }
 

@@ -59,9 +59,9 @@ std::string CProcess::Desc( G4VProcess* proc )
 G4VProcess* CProcess::CurrentProcess()
 {
     G4EventManager* evtMgr = G4EventManager::GetEventManager() ;
-    G4TrackingManager* trkMgr = evtMgr->GetTrackingManager() ; 
-    G4SteppingManager* stepMgr = trkMgr->GetSteppingManager() ; 
-    return stepMgr->GetfCurrentProcess() ; 
+    G4TrackingManager* trkMgr = evtMgr ? evtMgr->GetTrackingManager() : nullptr ; 
+    G4SteppingManager* stepMgr = trkMgr ? trkMgr->GetSteppingManager() : nullptr ; 
+    return stepMgr ? stepMgr->GetfCurrentProcess() : nullptr ; 
 }
 
 

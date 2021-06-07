@@ -31,11 +31,14 @@
 CAlignEngineTest
 ==================
 
+* NB: the more dynamic TCURAND based CRandomEngine is in the process of replacing CAlignEngine
+
 CAlignEngine loads from $TMP/TRngBufTest_0.npy requiring 
 TRngBufTest to have been run previously.
 
 The buffer sizes at creation need to match those
 asserted on below, see thrustrap/tests/TRngBufTest.cu
+
 
 **/
 
@@ -43,8 +46,9 @@ asserted on below, see thrustrap/tests/TRngBufTest.cu
 struct CAlignEngineTest
 {
     CAlignEngineTest();  
-    void spin(unsigned n, bool dump);
+    void burn(unsigned n, bool dump);
     void check( int v0 , int v1, int i0, int i1, bool dump );
+    void brief(int v0, int v1);
 
 
     bool ready ; 
@@ -58,11 +62,11 @@ struct CAlignEngineTest
 
 CAlignEngineTest::CAlignEngineTest()
     :
-    ready(CAlignEngine::Initialize("$TMP/cfg4/CAlignEngineTest")),
+    ready(CAlignEngine::Initialize("$TMP/cfg4/CAlignEngineTest")),  // logfile is written to this dir
     ae(CAlignEngine::INSTANCE),
-    seq(ae->m_seq),
-    ni(ae->m_seq_ni), 
-    nv(ae->m_seq_nv)  
+    seq(ae->m_seq),        // pre-cooked randoms
+    ni(ae->m_seq_ni),      // number of record lines 
+    nv(ae->m_seq_nv)       // number of values for each record line
 {
     LOG(info) 
         << " ni " << ni 
@@ -72,19 +76,29 @@ CAlignEngineTest::CAlignEngineTest()
     assert( seq ); 
     assert( nv == 256 );      
     assert( ni == 10000 );      
+}
 
-
-    spin(10, true) ; 
-
-    check( 0, 16, 0, 10, true ); 
-    //check(  0,  nv, 0, 10, true );     
-
-    check( 0, 16, ni-10, ni, true ); 
+void CAlignEngineTest::brief(int v0, int v1)
+{
+    LOG(info) << " v0 " << v0 << " v1 " << v1 ; 
+    burn(10, true) ; 
+    check( v0, v1, 0, 10, true ); 
+    burn(10, true) ; 
+    check( v0, v1, ni-10, ni, true ); 
 }
 
 
 
-void CAlignEngineTest::spin(unsigned n, bool dump)
+
+/**
+CAlignEngineTest::burn
+-------------------------
+
+Calls G4UniformRand n times
+
+**/
+
+void CAlignEngineTest::burn(unsigned n, bool dump)
 {
     for(unsigned i=0 ; i < n ; i++)
     {
@@ -98,19 +112,29 @@ void CAlignEngineTest::spin(unsigned n, bool dump)
                ;
 
     }
-
 }
 
 
+/**
+CAlignEngineTest::check
+-------------------------
+
+For each value in the sequence v0:v1 hop between stream lines i0:i1, 
+ie the outer loop is over positions into the sequence and
+the inner one is over sequence lines (as used by different
+photon record_id). 
+
+This works by calling CAlignEngine::SetSequenceIndex(i) 
+to hop between streams and checks the results from G4UniformRand() 
+matches against expectations from the pre-cooked buffer of randoms.
+
+
+**/
 
 void CAlignEngineTest::check( int v0 , int v1, int i0, int i1, bool dump )
 {
-    // for each value in the sequence hop between streams
 
-    assert( v0 == 0 && " have to start from value zero for the check to match "); 
-
-    // are not accessing something with an index, 
-    // are making a sequence of calls to G4UniformRand()
+    //assert( v0 == 0 && " have to start from value zero for the check to match "); 
 
     if(dump)
     {
@@ -135,7 +159,6 @@ void CAlignEngineTest::check( int v0 , int v1, int i0, int i1, bool dump )
 
         for(int i=i0 ; i < i1 ; i++)
         {
-
             CAlignEngine::SetSequenceIndex(i); 
 
             double u = G4UniformRand() ; 
@@ -158,6 +181,10 @@ void CAlignEngineTest::check( int v0 , int v1, int i0, int i1, bool dump )
 
                 assert(match); 
             }
+
+            CAlignEngine::SetSequenceIndex(-1);   
+            //   essential otherwise subsequent burns will consume from the last set SequenceIndex that will 
+            //   cause subsequent checks to mismatch 
         }
         if(dump) std::cout << std::endl  ;
     } 
@@ -169,6 +196,9 @@ int main( int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     CAlignEngineTest aet ; 
+    aet.brief(0, 16); 
+    aet.brief(16,32); 
+
 
     return 0 ; 
 }

@@ -5,6 +5,7 @@ include(OpticksBuildOptions)
 
 set(TEST_CC_SRCS
     TCURANDTest.cc
+    TDeviceDumpTest.cc
 )
 
 foreach(TEST_CC_SRC ${TEST_CC_SRCS})

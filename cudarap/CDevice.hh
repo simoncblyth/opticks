@@ -26,6 +26,7 @@ when the envvar is used and only a subset of all devices are visible.
 struct CUDARAP_API CDevice {
 
     static const plog::Severity LEVEL ; 
+    static int VISIBLE_COUNT ; 
 
     int ordinal ; 
     int index ; 
