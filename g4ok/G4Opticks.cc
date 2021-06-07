@@ -1845,7 +1845,7 @@ CGenstep G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index
 
     const OpticksGenstep* ogs = new OpticksGenstep(arr); 
     assert( m_genstep_collector ); 
-    CGenstep gs = m_genstep_collector->collectOpticksGenstep(ogs);  
+    CGenstep gs = m_genstep_collector->collectTorchGenstep(ogs);  
     return gs ; 
 } 
 
@@ -1944,6 +1944,6 @@ void G4Opticks::setInputPhotons(NPY<float>* input_photons)
     unsigned tagoffset = 0 ;   
     const OpticksGenstep* gs = OpticksGenstep::MakeInputPhotonCarrier(input_photons, tagoffset );
     assert( m_genstep_collector ); 
-    m_genstep_collector->collectOpticksGenstep(gs);  
+    m_genstep_collector->collectTorchGenstep(gs);  
 }
 
