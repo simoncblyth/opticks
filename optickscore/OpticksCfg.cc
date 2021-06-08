@@ -131,7 +131,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_animtimerange("-1,-1"),
     m_animtimemax(-1.f),
     m_animator_period(200),
-    m_managermode(0),
+    m_managermode(3),
     m_ivperiod(100),
     m_ovperiod(180),
     m_tvperiod(100),
@@ -1257,7 +1257,7 @@ void OpticksCfg<Listener>::init()
 
 
    char managermode[128];
-   snprintf(managermode,128, "CManager mode. Default %d ", m_managermode);
+   snprintf(managermode,128, "CManager mode. Was used to debug corruption by reducing functionality in mode levels. Default %d ", m_managermode);
    m_desc.add_options()
        ("managermode",  boost::program_options::value<int>(&m_managermode), managermode);
 
