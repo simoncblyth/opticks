@@ -128,7 +128,16 @@ void CManager::BeginOfEventAction(const G4Event* event)
 
     m_ctx->setEvent(event);
 
-    if(m_ok->isSave()) presave();   // creates the OpticksEvent
+    if(m_ok->isSave()) 
+    {
+        LOG(LEVEL) << " calling presave to create OpticksEvent " ;  
+        presave();   // creates the OpticksEvent
+    }
+    else
+    {
+        LOG(LEVEL) << " not calling presave, creating OpticksEvent " ;  
+    }
+
 
     if( m_ctx->_number_of_input_photons  > 0 ) 
     {   

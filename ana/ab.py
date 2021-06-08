@@ -295,8 +295,8 @@ class AB(object):
 
     def dump(self):
         log.info("[")
-        self.print_(self.pro)  
         if self.is_comparable: 
+            self.print_(self.pro)  
             self.print_("#ab.cfm")  
             self.print_(self.cfm)  
             self.print_("#ab.mal")  
@@ -1518,20 +1518,32 @@ if __name__ == '__main__':
     from opticks.ana.main import opticks_main
     ok = opticks_main()
     ab = AB(ok)  
+
+    a = ab.a
+    b = ab.b
+    print("a.valid:%s" % a.valid)
+    print("b.valid:%s" % b.valid)
+    print("ab.valid:%s" % ab.valid)
+
     if ok.compare:
         ab.dump()
     pass
-    a = ab.a
-    b = ab.b
-    als = ab.a.make_seqhis_ls()  # opticks.ana.seq.SeqList
-    bls = ab.b.make_seqhis_ls() 
+ 
+    als = ab.a.make_seqhis_ls() if ab.a.valid else None
+    bls = ab.b.make_seqhis_ls() if ab.b.valid else None
 
-    qq="als[:10] bls[:10]"
-    for q in qq.split():
-        print(q)
-        print(eval(q))
-    pass 
-
+    qq={}
+    qq["a"]="als[:10]"
+    qq["b"]="bls[:10]"
+    for x in ["a","b"]:
+        e = getattr(ab,x)
+        if e.valid:
+            for q in qq[x].split():
+                print(q)
+                print(eval(q))
+            pass
+        pass 
+    pass
 
 
 

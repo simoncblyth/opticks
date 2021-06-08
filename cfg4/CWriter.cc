@@ -110,9 +110,22 @@ std::string CWriter::desc(const char* msg) const
     return s ; 
 }
 
+/**
+CWriter::expand
+----------------
 
+Invoked by CWriter::BeginOfGenstep
+
+
+**/
 unsigned CWriter::expand(unsigned gs_photons)
 {
+    if(!m_history_buffer) 
+    {
+        LOG(fatal) << " Cannot expand as CWriter::initEvent has not been called, check CManager logging " ;
+        return 0 ;  
+    } 
+    assert( m_history_buffer );  
     unsigned ni, ni1, ni2 ; 
     ni = m_history_buffer->expand(gs_photons); 
     ni1 = m_photons_buffer->expand(gs_photons); 

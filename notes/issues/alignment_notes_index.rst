@@ -9,7 +9,7 @@ Theres a wealth of experience in the notes, and reading some of them is the best
 jump back into context. But it's difficult to find the useful notes as there are so many of them.
 
 
-searcges
+searches
 -----------------------------
 
 
