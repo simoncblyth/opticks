@@ -115,6 +115,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         void dumpPindexLog(const char* msg);
 
         void checkTranche(); 
+        void saveTranche(); 
         void dumpTranche(); 
 #ifdef DYNAMIC_CURAND
         void setupTranche(int tranche_id); 
@@ -145,7 +146,7 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
         double _peek(int offset) const  ; // does not increment anything, just looks around
     private:
         CManager*                     m_manager ; 
-        CCtx&                       m_ctx ; 
+        CCtx&                         m_ctx ; 
         Opticks*                      m_ok ; 
         bool                          m_dbgflat ;   
         int                           m_curflatsigint ; 
@@ -181,9 +182,9 @@ class CFG4_API CRandomEngine : public CRandomListener, public CLHEP::HepRandomEn
 #else
         const char*              m_path ; 
 #endif
-        NPY<double>*             m_curand ; 
-        int                      m_curand_ni ; 
-        int                      m_curand_nv ; 
+        NPY<double>*             m_seq ; 
+        int                      m_seq_ni ; 
+        int                      m_seq_nv ; 
         int                      m_current_record_flat_count ; 
         int                      m_current_step_flat_count ; 
         int                      m_jump ;

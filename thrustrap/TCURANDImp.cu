@@ -25,6 +25,7 @@
 #include "TRngBuf.hh"
 #include "TCURANDImp.hh"
 #include "THRAP_TAIL.hh"
+#include "CDevice.hh"
 
 #include "Opticks.hh"
 #include "PLOG.hh"
@@ -36,6 +37,12 @@ const plog::Severity TCURANDImp<T>::LEVEL = PLOG::EnvLevel("TCURANDImp", "DEBUG"
 template <typename T>
 int TCURANDImp<T>::preinit() 
 {
+    const char* dirpath = nullptr ; 
+    bool nosave = true ; 
+
+    CDevice::Visible(m_visible_device, dirpath, nosave );  
+    CDevice::Dump(m_visible_device , "visible devices"); 
+
     OKI_PROFILE("_TCURANDImp::TCURANDImp"); 
     return 0 ; 
 }
@@ -71,6 +78,7 @@ void TCURANDImp<T>::init()
 template <typename T>
 int TCURANDImp<T>::predox() 
 {
+    LOG(LEVEL); 
     OKI_PROFILE("_dvec_dox"); 
     return 0 ; 
 }
@@ -78,6 +86,7 @@ int TCURANDImp<T>::predox()
 template <typename T>
 int TCURANDImp<T>::postdox() 
 {
+    LOG(LEVEL); 
     OKI_PROFILE("dvec_dox"); 
     return 0 ; 
 }

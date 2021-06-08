@@ -66,7 +66,7 @@ masked running
 ~~~~~~~~~~~~~~~~~
 
 For masked running the LoadIntoHostBufferMasked fabricates an OptiX buffer
-with just the curandStates needes for the mask list of photon indices.
+with just the curandStates needed for the mask list of photon indices.
 
 
 **/

@@ -50,13 +50,13 @@ struct CRandomEngineTest
     CRandomEngineTest(CManager* manager)
         :
         _ctx(manager->getCtx()),
-        _engine(manager)
+        _engine(manager->getRandomEngine())
     {
     }
 
     void print(unsigned record_id)
     {
-        if(!_engine.hasSequence())
+        if(!_engine->hasSequence())
         {
              LOG(error) 
                  << " engine has no RNG sequences loaded " 
@@ -67,18 +67,20 @@ struct CRandomEngineTest
         }
 
         _ctx._record_id = record_id ;   
-        _engine.preTrack();     // <-- required to setup the curandSequence
+        _engine->preTrack();     // <-- required to setup the curandSequence
+
+        _engine->saveTranche(); 
 
         LOG(info) << "record_id " << record_id ; 
  
         for(int i=0 ; i < 29 ; i++)
         {
             double u = G4UniformRand() ;
-            int idxf = _engine.findIndexOfValue(u); 
+            int idxf = _engine->findIndexOfValue(u); 
 
             std::cout 
                 << " i "    << std::setw(5) << i 
-                << " idxf " << std::setw(5) << idxf 
+                << " _engine->findIndexOfValue(u) " << std::setw(5) << idxf 
                 << " u "    << std::setw(10) << u 
                 << std::endl 
                 ;  
@@ -86,13 +88,13 @@ struct CRandomEngineTest
 
         }
 
-        //_engine.jump(-5) ;
+        //_engine->jump(-5) ;
 
  
     }
 
-    CCtx&         _ctx  ; 
-    CRandomEngine _engine ; 
+    CCtx&          _ctx  ; 
+    CRandomEngine* _engine ; 
 };
 
 
@@ -112,18 +114,10 @@ int main(int argc, char** argv)
         << " pstep " << pstep 
         ; 
 
-    Opticks ok(argc, argv );
+    Opticks ok(argc, argv, "--align" );
     ok.configure(); 
 
-/*
-    // huh, why does this test need the geometry, resulting in slow cycle ?
-    OpticksHub hub(&ok) ; 
-    CG4* g4 = new CG4(&hub) ; 
-    CManager* manager = g4->getManager(); 
-*/
-
     CManager* manager = new CManager(&ok) ;  
-    // with --align instanciates CRandomEngine inside, but dont do that 
 
     CRandomEngineTest ret(manager) ; 
 

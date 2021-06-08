@@ -19,6 +19,7 @@
 
 #include "TCURAND.hh"
 #include "TCURANDImp.hh"
+#include "NPY.hpp"
 #include "PLOG.hh"
 
 template <typename T>
@@ -56,6 +57,35 @@ NPY<T>* TCURAND<T>::getArray() const
 {
     return m_imp->getArray() ; 
 }
+
+
+template <typename T>
+std::string TCURAND<T>::getRuncacheName() const
+{
+    unsigned ibase = getIBase();  
+    std::stringstream ss ; 
+    ss << "TCURAND_" << ibase << ".npy" ;
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+template <typename T>
+std::string TCURAND<T>::getRuncachePath(const char* dir) const
+{
+    std::string name = getRuncacheName(); 
+    std::stringstream ss ; 
+    ss << dir << "/" << name ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+template <typename T>
+void TCURAND<T>::save(const char* path) const 
+{
+     NPY<T>* ary = m_imp->getArray() ; 
+     ary->save(path); 
+}
+
 
 
 template class TCURAND<float>;

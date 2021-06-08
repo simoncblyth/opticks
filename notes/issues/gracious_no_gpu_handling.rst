@@ -38,3 +38,10 @@ gracious_no_gpu_handling
         frame #18: 0x00007fff642e8015 libdyld.dylib`start + 1
     (lldb) 
 
+
+
+    epsilon:cfg4 blyth$ CVD=- TCURANDImp=INFO lldb__ CRandomEngineTest 
+
+
+
+

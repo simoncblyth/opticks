@@ -1921,6 +1921,9 @@ const char* Opticks::getOptiXCacheDirDefault() const
 
 
 
+
+
+
 const char* Opticks::getGLTFPath() const { return m_rsc->getGLTFPath() ; }
 const char* Opticks::getG4CodeGenDir() const { return m_rsc->getG4CodeGenDir() ; }
 const char* Opticks::getCacheMetaPath() const { return m_rsc->getCacheMetaPath() ; } 

@@ -26,8 +26,17 @@ TCURAND
 High level interface for dynamic GPU generation of curand 
 random numbers, exposing functionality from TRngBuf  
 
+
+Observations:
+
+1. looks overly complicated with no apparent benefit
+2. does the curand_init when could use the persisted curandState files
+3. should move anything that doesnt need nvcc compilation out of the TCURANDImp, 
+   for example the array fits better at this level  
+
 **/
 
+#include <string>
 #include "THRAP_API_EXPORT.hh" 
 #include "plog/Severity.h"
 
@@ -43,6 +52,11 @@ class THRAP_API TCURAND
         void     setIBase(unsigned ibase); 
         unsigned getIBase() const ; 
         NPY<T>*  getArray() const ; 
+
+
+        std::string getRuncacheName() const ;
+        std::string getRuncachePath(const char* dirpath) const ;
+        void        save(const char* path) const ; 
     private:
         void     generate();       // called by setIBase, updates contents of array 
     private:

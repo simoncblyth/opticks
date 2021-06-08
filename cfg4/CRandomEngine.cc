@@ -104,13 +104,13 @@ CRandomEngine::CRandomEngine(CManager* manager)
     m_precurand(precurand()),
     m_tcurand(new TCURAND<double>(m_tranche_size,16,16)),
     m_postcurand(postcurand()),
-    m_curand(m_tcurand->getArray()),
+    m_seq(m_tcurand->getArray()),
 #else
     m_path("$TMP/TRngBufTest_0.npy"),
-    m_curand(NPY<double>::load(m_path)),
+    m_seq(NPY<double>::load(m_path)),
 #endif
-    m_curand_ni(m_curand ? m_curand->getShape(0) : 0 ),
-    m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),  // itemvalues
+    m_seq_ni(m_seq ? m_seq->getShape(0) : 0 ),
+    m_seq_nv(m_seq ? m_seq->getNumValues(1) : 0 ),  // itemvalues
     m_current_record_flat_count(0),
     m_current_step_flat_count(0),
     m_jump(0),
@@ -149,7 +149,7 @@ int CRandomEngine::postcurand()
 
 bool CRandomEngine::hasSequence() const 
 {
-    return m_curand && m_curand_ni > 0 && m_curand_nv > 0 ; 
+    return m_seq && m_seq_ni > 0 && m_seq_nv > 0 ; 
 }
 
 #ifdef DYNAMIC_CURAND
@@ -164,7 +164,7 @@ const char* CRandomEngine::getPath() const
 void CRandomEngine::dumpDouble(const char* msg, double* v, unsigned width ) const 
 {
     LOG(info) << msg ; 
-    assert( m_curand_nv > 15 );
+    assert( m_seq_nv > 15 );
     for(int i=0 ; i < 16 ; i++)  
     {
         std::cout << std::fixed << std::setw(10) << std::setprecision(10) << v[i] << " " ; 
@@ -181,9 +181,9 @@ void CRandomEngine::initCurand()
 #else
         << " STATIC_CURAND path " << m_path  
 #endif
-        << ( m_curand ? m_curand->getShapeString() : "-" ) 
-        << " curand_ni " << m_curand_ni
-        << " curand_nv " << m_curand_nv
+        << ( m_seq ? m_seq->getShapeString() : "-" ) 
+        << " curand_ni " << m_seq_ni
+        << " curand_nv " << m_seq_nv
         ; 
 
 #ifdef DYNAMIC_CURAND
@@ -194,25 +194,34 @@ void CRandomEngine::initCurand()
 
 void CRandomEngine::checkTranche()
 {
-    if(!m_curand) return ; 
-    assert( m_curand->hasShape(m_tranche_size,16,16)) ; 
+    if(!m_seq) return ; 
+    assert( m_seq->hasShape(m_tranche_size,16,16)) ; 
 }
+
+void CRandomEngine::saveTranche()
+{
+    std::string path  = m_tcurand->getRuncachePath(m_ok->getRuncacheDir());
+    LOG(LEVEL) << " save to " << path ; 
+    m_tcurand->save(path.c_str()); 
+}
+
+
 
 void CRandomEngine::dumpTranche()
 {
-    if(!m_curand) return ; 
+    if(!m_seq) return ; 
 
-    assert( m_curand->hasShape(m_tranche_size,16,16)) ; 
+    assert( m_seq->hasShape(m_tranche_size,16,16)) ; 
         
     unsigned w = 4 ; 
-    if( m_curand_ni > 0 )
-         dumpDouble( "v0" , m_curand->getValues(0), w ) ; 
+    if( m_seq_ni > 0 )
+         dumpDouble( "v0" , m_seq->getValues(0), w ) ; 
 
-    if( m_curand_ni > 1 )
-         dumpDouble( "v1" , m_curand->getValues(1), w ) ; 
+    if( m_seq_ni > 1 )
+         dumpDouble( "v1" , m_seq->getValues(1), w ) ; 
 
-    if( m_curand_ni > m_tranche_size - 1  )
-        dumpDouble( "v-1" , m_curand->getValues(m_tranche_size - 1), w ) ; 
+    if( m_seq_ni > m_tranche_size - 1  )
+        dumpDouble( "v-1" , m_seq->getValues(m_tranche_size - 1), w ) ; 
 }
 
 
@@ -227,8 +236,11 @@ which is not within the current tranche.
 HMM potential for very inefficient if G4 photon record_id 
 jumps around between tranches
 
-HMM i dont like the hidden nature of this GPU launch 
+Actually aligned running needs to use input photons
+anyhow, so could restrict the number of input photons
+to fit within one tranche.
 
+HMM i dont like the hidden nature of this GPU launch 
 
 **/
 
@@ -282,19 +294,19 @@ void CRandomEngine::setupCurandSequence(int record_id)
 {
 #ifdef DYNAMIC_CURAND
     int tranche_id = record_id/m_tranche_size ; 
-    if( tranche_id != m_tranche_id ) // <-- TODO: check do not get flip-flip between tranches 
+    if( tranche_id != m_tranche_id ) // <-- TODO: check do not get flip-flop between tranches 
     {
         setupTranche(tranche_id); 
     }
     m_tranche_index = record_id - m_tranche_ibase ; 
     // dynamically generates the randoms in this tranche, so will always be in range 
 #else
-    assert( m_curand_ni > 0 && " no precooked RNG loaded see : TRngBufTest " );
-    bool in_range = record_id > -1 && record_id < m_curand_ni ; 
-    if(!in_range) LOG(fatal) << " OUT OF RANGE " << " record_id " << record_id << " m_curand_ni " << m_curand_ni ; 
+    assert( m_seq_ni > 0 && " no precooked RNG loaded see : TRngBufTest " );
+    bool in_range = record_id > -1 && record_id < m_seq_ni ; 
+    if(!in_range) LOG(fatal) << " OUT OF RANGE " << " record_id " << record_id << " m_seq_ni " << m_seq_ni ; 
 
     assert( in_range ); 
-    assert( m_curand_nv > 0 ) ;
+    assert( m_seq_nv > 0 ) ;
 
     m_tranche_index = record_id ; 
 #endif
@@ -304,13 +316,13 @@ void CRandomEngine::setupCurandSequence(int record_id)
         << " m_tranche_id " << m_tranche_id
         << " m_tranche_size " << m_tranche_size
         << " m_tranche_index " << m_tranche_index
-        << " m_curand_ni " << m_curand_ni
-        << " m_curand_nv " << m_curand_nv
+        << " m_seq_ni " << m_seq_ni
+        << " m_seq_nv " << m_seq_nv
         ; 
 
-    double* seq = m_curand->getValues(m_tranche_index) ; 
+    double* seq = m_seq->getValues(m_tranche_index) ; 
 
-    setRandomSequence( seq, m_curand_nv ) ; 
+    setRandomSequence( seq, m_seq_nv ) ; 
 
     m_current_record_flat_count = 0 ; 
     m_current_step_flat_count = 0 ; 
@@ -346,8 +358,9 @@ Name of current Geant4 process
 std::string CRandomEngine::CurrentGeant4ProcessName()  // static 
 {
     G4VProcess* proc = CProcess::CurrentProcess() ; 
-    LOG(LEVEL) << "[ " << proc ; 
     if(proc == NULL) return "NoProc" ; 
+     
+    LOG(LEVEL) << "[ " << proc ; 
     const G4String& procname = proc->GetProcessName() ;  
     std::string name = procname ; 
     LOG(LEVEL) << "] (" << name << ")" ; 
@@ -426,7 +439,7 @@ it is still important to avoid call _flat() and misaligning the sequences.
 double CRandomEngine::flat() 
 { 
     if(!m_internal) m_location = CurrentGeant4ProcessName();
-    assert( m_current_record_flat_count < m_curand_nv ); 
+    assert( m_current_record_flat_count < m_seq_nv ); 
 
 
    // adding TotalInternalReflection changes history 
@@ -720,8 +733,8 @@ Masked Running
 
 Use of the maskIndex allows a partial run on a selection of  
 photons to use the same RNG sequence as a full run 
-over many photons, buy jumping forwards to the appropriate 
-place in RNG sequence.
+over many photons, buy jumping to the appropriate item line 
+RNG sequence.
 
 
 Masked Running Currently Limited to input photons 

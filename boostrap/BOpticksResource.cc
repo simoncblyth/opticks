@@ -647,6 +647,10 @@ const char* BOpticksResource::getOptiXCacheDirDefault() const { return m_optixca
 const char* BOpticksResource::getTmpUserDir() const {   return m_tmpuser_dir ; } 
 
 
+
+
+
+
 const char* BOpticksResource::getDebuggingIDPATH() {    return m_debugging_idpath ; } 
 const char* BOpticksResource::getDebuggingIDFOLD() {    return m_debugging_idfold ; } 
 

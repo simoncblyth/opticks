@@ -53,8 +53,11 @@
 allocate_rng_wrapper
 ---------------------
 
-Allocates curandState device buffer sized to hold the number
+Allocates curandState device buffer sized to hold the total number
 of items from LaunchSequence (aka rngmax) and returns pointer to it. 
+
+HUH: why entangle with LaunchSequence ? this is just creating the device buffer
+it just needs templated type and item count 
 
 **/
 
