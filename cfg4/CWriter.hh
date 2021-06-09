@@ -106,6 +106,7 @@ class CFG4_API CWriter
         unsigned           m_ni ; 
 
         NPY<short>*               m_records_buffer ; 
+        NPY<double>*              m_doubles_buffer ; 
         NPY<float>*               m_photons_buffer ; 
         NPY<unsigned long long>*  m_history_buffer ; 
 };

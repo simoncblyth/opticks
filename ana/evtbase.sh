@@ -14,12 +14,14 @@ EOU
 
 
 REMOTE=${REMOTE:-P}
-OPTICKS_EVENT_BASE_REMOTE=${OPTICKS_EVENT_BASE_REMOTE:-/home/$USER/local/opticks/evtbase}
+#OPTICKS_EVENT_BASE_REMOTE=${OPTICKS_EVENT_BASE_REMOTE:-/home/$USER/local/opticks/evtbase}
+OPTICKS_EVENT_BASE_REMOTE=${OPTICKS_EVENT_BASE_REMOTE:-/tmp/$USER/opticks}
 OPTICKS_EVENT_BASE=${OPTICKS_EVENT_BASE:-/tmp/$USER/opticks}
 
-reldirs_(){ cat << EOR
-source/evt/g4live/natural
+reldirs_(){ cat << EOR | grep -v ^\#
+#source/evt/g4live/natural
 tds3ip/evt/g4live/natural
+tds3gun/evt/g4live/natural
 EOR
 }
 

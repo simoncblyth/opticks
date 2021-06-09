@@ -112,6 +112,7 @@ const char* OpticksEvent::debug_   = "debug" ;
 const char* OpticksEvent::way_     = "way" ; 
 const char* OpticksEvent::source_  = "source" ; 
 const char* OpticksEvent::record_  = "record" ; 
+const char* OpticksEvent::double_  = "double" ;  // double precision version of the record buffer used for g4evt 
 const char* OpticksEvent::phosel_ = "phosel" ; 
 const char* OpticksEvent::recsel_  = "recsel" ; 
 const char* OpticksEvent::sequence_  = "sequence" ; 
@@ -159,6 +160,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_way_data(NULL),
     m_source_data(NULL),
     m_record_data(NULL),
+    m_double_data(NULL),
     m_phosel_data(NULL),
     m_recsel_data(NULL),
     m_sequence_data(NULL),
@@ -176,6 +178,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_photon_attr(NULL),
     m_source_attr(NULL),
     m_record_attr(NULL),
+    m_double_attr(NULL),
     m_phosel_attr(NULL),
     m_recsel_attr(NULL),
     m_sequence_attr(NULL),
@@ -206,6 +209,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_way_spec(NULL),
     m_source_spec(NULL),
     m_record_spec(NULL),
+    m_double_spec(NULL),
     m_phosel_spec(NULL),
     m_recsel_spec(NULL),
     m_sequence_spec(NULL),
@@ -349,6 +353,11 @@ unsigned int OpticksEvent::getNumRecords() const
     return m_num_photons * maxrec ; 
 }
 
+unsigned int OpticksEvent::getNumDoubles() const 
+{
+    return getNumRecords(); 
+}
+
 
 
 
@@ -376,6 +385,11 @@ bool OpticksEvent::hasRecordData() const
 {
     return m_record_data && m_record_data->hasData() ; 
 }
+bool OpticksEvent::hasDoubleData() const
+{
+    return m_double_data && m_double_data->hasData() ; 
+}
+
 
 
 
@@ -408,6 +422,11 @@ NPY<short>* OpticksEvent::getRecordData() const
 { 
     return m_record_data ; 
 }
+NPY<double>* OpticksEvent::getDoubleData() const  
+{ 
+    return m_double_data ; 
+}
+
 NPY<unsigned char>* OpticksEvent::getPhoselData() const 
 { 
     return m_phosel_data ;
@@ -440,6 +459,7 @@ MultiViewNPY* OpticksEvent::getNopstepAttr(){ return m_nopstep_attr ; }
 MultiViewNPY* OpticksEvent::getPhotonAttr(){ return m_photon_attr ; }
 MultiViewNPY* OpticksEvent::getSourceAttr(){ return m_source_attr ; }
 MultiViewNPY* OpticksEvent::getRecordAttr(){ return m_record_attr ; }
+MultiViewNPY* OpticksEvent::getDoubleAttr(){ return m_double_attr ; }
 MultiViewNPY* OpticksEvent::getPhoselAttr(){ return m_phosel_attr ; }
 MultiViewNPY* OpticksEvent::getRecselAttr(){ return m_recsel_attr ; }
 MultiViewNPY* OpticksEvent::getSequenceAttr(){ return m_sequence_attr ; }
@@ -630,6 +650,7 @@ void OpticksEvent::pushNames(std::vector<std::string>& names)
     names.push_back(way_);
     names.push_back(source_);
     names.push_back(record_);
+    names.push_back(double_);
     names.push_back(phosel_);
     names.push_back(recsel_);
     names.push_back(sequence_);
@@ -693,6 +714,7 @@ void OpticksEvent::init()
     m_abbrev[way_] = "wy" ;       // extra photon level info analogous to JUNO NormalAnaMgr info recording configurable points and times from photon history    
     m_abbrev[source_] = "so" ;     // input photon  
     m_abbrev[record_] = "rx" ;     // photon step compressed record
+    m_abbrev[double_] = "dx" ;     // double precision photon step record
     m_abbrev[phosel_] = "ps" ;     // photon selection index
     m_abbrev[recsel_] = "rs" ;     // record selection index
     m_abbrev[sequence_] = "ph" ;   // (unsigned long long) photon seqhis/seqmat
@@ -738,6 +760,7 @@ NPYBase* OpticksEvent::getData(const char* name)
     else if(strcmp(name, way_)==0)     data = static_cast<NPYBase*>(m_way_data) ;
     else if(strcmp(name, source_)==0)  data = static_cast<NPYBase*>(m_source_data) ;
     else if(strcmp(name, record_)==0)  data = static_cast<NPYBase*>(m_record_data) ;
+    else if(strcmp(name, double_)==0)  data = static_cast<NPYBase*>(m_double_data) ;
     else if(strcmp(name, phosel_)==0)  data = static_cast<NPYBase*>(m_phosel_data) ;
     else if(strcmp(name, recsel_)==0)  data = static_cast<NPYBase*>(m_recsel_data) ;
     else if(strcmp(name, sequence_)==0) data = static_cast<NPYBase*>(m_sequence_data) ;
@@ -756,6 +779,7 @@ NPYSpec* OpticksEvent::getSpec(const char* name)
     else if(strcmp(name, way_)==0)     spec = static_cast<NPYSpec*>(m_way_spec) ;
     else if(strcmp(name, source_)==0)  spec = static_cast<NPYSpec*>(m_source_spec) ;
     else if(strcmp(name, record_)==0)  spec = static_cast<NPYSpec*>(m_record_spec) ;
+    else if(strcmp(name, double_)==0)  spec = static_cast<NPYSpec*>(m_double_spec) ;
     else if(strcmp(name, phosel_)==0)  spec = static_cast<NPYSpec*>(m_phosel_spec) ;
     else if(strcmp(name, recsel_)==0)  spec = static_cast<NPYSpec*>(m_recsel_spec) ;
     else if(strcmp(name, sequence_)==0) spec = static_cast<NPYSpec*>(m_sequence_spec) ;
@@ -973,6 +997,7 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
     else if(elem[0] == photon_)   mvn = m_photon_attr ;
     else if(elem[0] == source_)   mvn = m_source_attr ;
     else if(elem[0] == record_)   mvn = m_record_attr ;
+    else if(elem[0] == double_)   mvn = m_double_attr ;
     else if(elem[0] == phosel_)   mvn = m_phosel_attr ;
     else if(elem[0] == recsel_)   mvn = m_recsel_attr ;
     else if(elem[0] == sequence_) mvn = m_sequence_attr ;
@@ -1017,6 +1042,7 @@ void OpticksEvent::createSpec()
     m_way_spec      = new NPYSpec(way_      ,  0,2,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(way_, compute)) ;
     m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4,0, NPYBase::SHORT     ,  OpticksBufferSpec::Get(record_, compute)) ;
     //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
+    m_double_spec   = new NPYSpec(double_   ,  0,maxrec,2,4,0, NPYBase::DOUBLE    ,  OpticksBufferSpec::Get(double_, compute)) ;
 
     m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,0,      NPYBase::ULONGLONG ,  OpticksBufferSpec::Get(sequence_, compute)) ;
     //    ULONGLONG -> RT_FORMAT_USER  and size set to ni*nj*nk = num_photons*1*2
@@ -1041,6 +1067,7 @@ void OpticksEvent::dumpSpec()
     LOG(info) << "m_debug_spec " << m_debug_spec ;
     LOG(info) << "m_way_spec " << m_way_spec ;
     LOG(info) << "m_record_spec " << m_record_spec ;
+    LOG(info) << "m_double_spec " << m_double_spec ;
     LOG(info) << "m_sequence_spec " << m_sequence_spec ;
     LOG(info) << "m_nopstep_spec " << m_nopstep_spec ;
     LOG(info) << "m_phosel_spec " << m_phosel_spec ;
@@ -1062,6 +1089,7 @@ void OpticksEvent::deleteSpec()
     delete m_debug_spec ; 
     delete m_way_spec ; 
     delete m_record_spec ; 
+    delete m_double_spec ; 
     delete m_sequence_spec ; 
     delete m_nopstep_spec ; 
     delete m_phosel_spec ; 
@@ -1190,6 +1218,11 @@ void OpticksEvent::createBuffers()
     NPY<short>* rec = NPY<short>::make(m_record_spec); 
     setRecordData(rec);   
 
+    NPY<double>* dx = NPY<double>::make(m_double_spec); 
+    setDoubleData(dx);   
+
+
+
     NPY<float>* fdom = NPY<float>::make(m_fdom_spec);
     fdom->zero();   // allocate small buffer immediately 
     setFDomain(fdom);
@@ -1214,6 +1247,7 @@ void OpticksEvent::resetBuffers()
     if(m_way_data)      m_way_data->reset();    
     if(m_source_data)   m_source_data->reset();    
     if(m_record_data)   m_record_data->reset();    
+    if(m_double_data)   m_double_data->reset();    
     if(m_phosel_data)   m_phosel_data->reset();    
     if(m_recsel_data)   m_recsel_data->reset();    
     if(m_sequence_data) m_sequence_data->reset();    
@@ -1232,6 +1266,7 @@ void OpticksEvent::deleteBuffers()
     delete m_way_data      ; m_way_data = NULL ; 
     delete m_source_data   ; m_source_data = NULL ; 
     delete m_record_data   ; m_record_data = NULL ; 
+    delete m_double_data   ; m_double_data = NULL ; 
     delete m_phosel_data   ; m_phosel_data = NULL ; 
     delete m_recsel_data   ; m_recsel_data = NULL ; 
     delete m_sequence_data ; m_sequence_data = NULL ; 
@@ -1250,6 +1285,7 @@ void OpticksEvent::deleteAttr()
     delete m_source_attr   ; m_source_attr = NULL ; 
     delete m_nopstep_attr  ; m_nopstep_attr = NULL ; 
     delete m_record_attr   ; m_record_attr = NULL ; 
+    delete m_double_attr   ; m_double_attr = NULL ; 
     delete m_phosel_attr   ; m_phosel_attr = NULL ; 
     delete m_recsel_attr   ; m_recsel_attr = NULL ; 
     delete m_sequence_attr ; m_sequence_attr = NULL ; 
@@ -1282,6 +1318,7 @@ void OpticksEvent::resize()
     assert(m_phosel_data);
     assert(m_recsel_data);
     assert(m_record_data);
+    assert(m_double_data);
     assert(m_seed_data);
     assert(m_debug_data);
     assert(m_way_data);
@@ -1311,6 +1348,7 @@ void OpticksEvent::resize()
     m_photon_data->setNumItems(num_photons);
     m_sequence_data->setNumItems(num_photons);
     m_record_data->setNumItems(num_photons);
+    m_double_data->setNumItems(num_photons);
 
     m_seed_data->setNumItems(num_photons);
     m_phosel_data->setNumItems(num_photons);
@@ -1345,6 +1383,7 @@ void OpticksEvent::zero()
     if(m_photon_data)   m_photon_data->zero();
     if(m_sequence_data) m_sequence_data->zero();
     if(m_record_data)   m_record_data->zero();
+    if(m_double_data)   m_double_data->zero();
     if(m_debug_data)    m_debug_data->zero();
 
     // when operating CPU side phosel and recsel are derived from sequence data
@@ -1696,6 +1735,13 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
     m_record_attr->add(rflq);
 }
 
+void OpticksEvent::setDoubleData(NPY<double>* double_data)
+{
+    setBufferControl(double_data);
+    m_double_data = double_data  ;
+    m_double_attr = new MultiViewNPY("double_attr");
+}
+
 
 void OpticksEvent::setPhoselData(NPY<unsigned char>* phosel_data)
 {
@@ -1823,6 +1869,10 @@ void OpticksEvent::recordDigests()
     if(rx && rx->hasData())
         m_parameters->add<std::string>("recordData",   rx->getDigestString()  );
 
+    NPY<double>* dx = getDoubleData() ;
+    if(dx && dx->hasData())
+        m_parameters->add<std::string>("doubleData",   dx->getDigestString()  );
+
     NPY<unsigned long long>* ph = getSequenceData() ;
     if(ph && ph->hasData())
         m_parameters->add<std::string>("sequenceData", ph->getDigestString()  );
@@ -1903,6 +1953,7 @@ void OpticksEvent::save()
         savePhotonData();
         saveSourceData();
         saveRecordData();
+        saveDoubleData();
         saveSequenceData();
         saveDebugData();
         saveWayData();
@@ -2029,6 +2080,13 @@ void OpticksEvent::saveRecordData()
     NPY<short>* rx = getRecordData();    
     if(rx) rx->save(m_pfx, "rx", m_typ,  m_tag, m_udet);
 }
+
+void OpticksEvent::saveDoubleData()
+{
+    NPY<double>* dx = getDoubleData();    
+    if(dx) dx->save(m_pfx, "dx", m_typ,  m_tag, m_udet);
+}
+
 void OpticksEvent::saveSequenceData()
 {
     NPY<unsigned long long>* ph = getSequenceData();
@@ -2068,7 +2126,6 @@ void OpticksEvent::saveSourceData(NPY<float>* so) const
 {
     if(so)
     {
-        //unsigned num_so = so->getNumItems(); 
         so->save(m_pfx, "so", m_typ,  m_tag, m_udet);  
         //if(num_so == 0) LOG(info) << "saveSourceData zero source " ; 
     }
@@ -2380,6 +2437,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<float>*              gs = NPY<float>::load(m_pfx, "gs", m_typ,  m_tag, udet, qload);
     NPY<float>*              ox = NPY<float>::load(m_pfx, "ox", m_typ,  m_tag, udet, qload);
     NPY<short>*              rx = NPY<short>::load(m_pfx, "rx", m_typ,  m_tag, udet, qload);
+    NPY<double>*             dx = NPY<double>::load(m_pfx, "dx", m_typ,  m_tag, udet, qload);
 
     NPY<unsigned long long>* ph = NPY<unsigned long long>::load(m_pfx, "ph", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      ps = NPY<unsigned char>::load(m_pfx, "ps", m_typ,  m_tag, udet, qload );
@@ -2400,6 +2458,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     if(gs) loadBuffersImportSpec(gs,m_genstep_spec) ;
     if(ox) loadBuffersImportSpec(ox,m_photon_spec) ;
     if(rx) loadBuffersImportSpec(rx,m_record_spec) ;
+    if(dx) loadBuffersImportSpec(dx,m_double_spec) ;
     if(ph) loadBuffersImportSpec(ph,m_sequence_spec) ;
     if(ps) loadBuffersImportSpec(ps,m_phosel_spec) ;
     if(rs) loadBuffersImportSpec(rs,m_recsel_spec) ;
@@ -2423,9 +2482,11 @@ void OpticksEvent::loadBuffers(bool verbose)
     
 
     unsigned int num_records = rx ? rx->getShape(0) : 0 ;
+    unsigned int num_doubles = dx ? dx->getShape(0) : 0 ;
     unsigned int num_recsel  = rs ? rs->getShape(0) : 0 ;
 
     assert(num_recsel == 0 || num_records == num_recsel );
+    assert(num_doubles == 0 || num_records == num_doubles );
 
 
     LOG(debug) << "OpticksEvent::load shape(0) before reshaping "
@@ -2440,6 +2501,7 @@ void OpticksEvent::loadBuffers(bool verbose)
               << " ] "
               << " [ "
               << " num_records " << num_records
+              << " num_doubles " << num_doubles
               << " num_recsel " << num_recsel
               << " ] "
               ; 
@@ -2456,6 +2518,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     setPhotonData(ox);
     setSequenceData(ph);
     setRecordData(rx);
+    setDoubleData(dx);
 
     setPhoselData(ps);
     setRecselData(rs);
@@ -2474,6 +2537,7 @@ void OpticksEvent::loadBuffers(bool verbose)
         if(no) no->Summary("no");
         if(ox) ox->Summary("ox");
         if(rx) rx->Summary("rx");
+        if(dx) dx->Summary("dx");
         if(ph) ph->Summary("ph");
         if(ps) ps->Summary("ps");
         if(rs) rs->Summary("rs");
@@ -2544,6 +2608,11 @@ unsigned int OpticksEvent::getNumPhotonsPerG4Event() const
 OpticksEvent::postPropagateGeant4
 ----------------------------------
 
+Canonical invokations from::
+
+   CG4::postpropagate
+
+
 For dynamically recorded g4evt the photon, sequence and record 
 buffers are grown during the instrumented Geant4 stepping, a
 subsequent resize from setNumPhotons makes no difference to those buffers 
@@ -2580,6 +2649,15 @@ void OpticksEvent::postPropagateGeant4()
     collectPhotonHitsCPU();
 }
 
+/**
+OpticksEvent::collectPhotonHitsCPU
+-------------------------------------
+
+Invoked by OpticksEvent::postPropagateGeant4
+
+See notes/issues/geant4_opticks_integration/missing_cfg4_surface_detect.rst
+
+**/
 void OpticksEvent::collectPhotonHitsCPU()
 {
     OK_PROFILE("_OpticksEvent::collectPhotonHitsCPU");
@@ -2587,14 +2665,12 @@ void OpticksEvent::collectPhotonHitsCPU()
     NPY<float>* ox = getPhotonData();
     NPY<float>* ht = getHitData();
 
-    unsigned hitmask = SURFACE_DETECT ;  
-    // see notes/issues/geant4_opticks_integration/missing_cfg4_surface_detect.rst
-
+    unsigned hitmask = SURFACE_DETECT ;   // TODO: this is an input, not a constant 
     unsigned numHits = ox->write_selection(ht, 3,3, hitmask );
-
-    LOG(info) << "OpticksEvent::collectPhotonHitsCPU"
-              << " numHits " << numHits 
-              ;
+    LOG(info) 
+        << " hitmask " << hitmask 
+        << " numHits " << numHits 
+        ;
 
     OK_PROFILE("OpticksEvent::collectPhotonHitsCPU");
 }

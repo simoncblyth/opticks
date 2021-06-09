@@ -354,6 +354,8 @@ void CG4::initEvent(OpticksEvent* evt)
 CG4::propagate
 -----------------
 
+Note that this is assuming more Geant4 events than Opticks ones
+
 **/
 
 NPY<float>* CG4::propagate()
@@ -409,6 +411,15 @@ NPY<float>* CG4::propagate()
     LOG(LEVEL) << "]" ;
     return gs ; 
 }
+
+/**
+CG4::postpropagate
+--------------------
+
+Called from CG4::propagate
+
+
+**/
 
 void CG4::postpropagate()
 {

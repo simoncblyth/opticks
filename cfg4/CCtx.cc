@@ -443,21 +443,13 @@ void CCtx::setTrackOptical(G4Track* mtrack)
     _gs = _gsc->getGenstep(_pho.gs) ; 
     assert( _gs.index == _pho.gs ); 
 
-
     _photon_id = pho_id ; // 0-based, absolute photon index within the event 
-    _record_id = pho_id ; // used by CRecorder/CWriter is now absolute, following abandoning onestep mode  
+    _record_id = pho_id ; // used by CRecorder/CWriter is now absolute, following abandonment of onestep mode  
     _record_fraction = double(_record_id)/double(_record_max) ;  
 
     _track_optical_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
 
-    LOG(LEVEL) 
-         << " _pho " << _pho.desc()  
-         << " _photon_id " << _photon_id  
-         << " _record_id " << _record_id  
-         << " _pho.gn " << _pho.gn
-         << " mtrack.GetGlobalTime " << mtrack->GetGlobalTime()
-         ;
-    assert( _record_id > -1 ); 
+   assert( _record_id > -1 ); 
 
     _mask_index = _ok->hasMask() ?_ok->getMaskIndex( _primary_id ) : -1 ;   // "original" index 
 
@@ -468,6 +460,19 @@ void CCtx::setTrackOptical(G4Track* mtrack)
     _print = _pindex > -1 && _photon_id == _pindex ; 
 
     if(_dump) _dump_count += 1 ; 
+
+    LOG(LEVEL) 
+         << " _pho " << _pho.desc()  
+         << " _photon_id " << _photon_id  
+         << " _record_id " << _record_id  
+         << " _pho.gn " << _pho.gn
+         << " mtrack.GetGlobalTime " << mtrack->GetGlobalTime()
+         << " _debug " << _debug
+         << " _other " << _other
+         << " _dump " << _dump
+         << " _print " << _print
+         << " _dump_count " << _dump_count
+         ;
 
     _rejoin_count = 0 ; 
     _primarystep_count = 0 ; 

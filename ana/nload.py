@@ -273,7 +273,7 @@ class A(np.ndarray):
             st = os.stat(path)
             sz = st.st_size 
 
-            log.info(" path %s size %s " % (path, sz) )
+            log.debug(" path %s size %s " % (path, sz) )
 
             log.debug("loading %s " % path )
             if dbg: 

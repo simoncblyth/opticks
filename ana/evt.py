@@ -413,7 +413,7 @@ class Evt(object):
             a = getattr(self, stem)
             if a.missing: continue    
 
-            log.info("stem %s a.shape %s a.oshape %s  " % (stem, str(a.shape), str(a.oshape)))
+            log.debug("stem %s a.shape %s a.oshape %s  " % (stem, str(a.shape), str(a.oshape)))
 
             if file_photons is None:
                 file_photons = a.oshape[0] 
@@ -1211,10 +1211,9 @@ class Evt(object):
           line by line selections 
 
         """
-
-        if self.ox.missing:
-             return
-        pass
+        #if self.ox.missing:
+        #     return
+        #pass
 
         # for first _init_selection hold on to the originals
         if self._psel is None:
@@ -1249,7 +1248,7 @@ class Evt(object):
         self.wl = self.wl_[psel]
         self.rx = self.rx_[psel]
 
-        if not self.so_.missing:
+        if not self.so_.missing and len(self.so_)>0:
             self.so = self.so_[psel]
         pass
 
@@ -1556,15 +1555,17 @@ class Evt(object):
         :param a: evt A
         :param b: evt B
         :param ana_: string name eg "seqhis_ana"
+
+        Comparison of history tables, tables are count_unique_sorted summaries of the full sequence arrays 
         """
         if not (a.valid and b.valid):
             log.fatal("need two valid events to compare ")
             sys.exit(1)
         pass
 
-        a_ana = getattr(a, ana_, None)
-        b_ana = getattr(b, ana_, None)
-        log.debug("a_ana type %s " % type(a_ana))  # SeqAna
+        a_ana = getattr(a, ana_, None)   # opticks.ana.seq.SeqAna
+        b_ana = getattr(b, ana_, None)   # opticks.ana.seq.SeqAna
+        log.debug("a_ana type %s " % type(a_ana)) 
         log.debug("b_ana type %s " % type(b_ana))
 
 

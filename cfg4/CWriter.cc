@@ -57,6 +57,7 @@ CWriter::CWriter(CCtx& ctx, CPhoton& photon)
     m_evt(NULL),
 
     m_records_buffer(NULL),
+    m_doubles_buffer(NULL),
     m_photons_buffer(NULL),
     m_history_buffer(NULL)
 {
@@ -94,6 +95,7 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     m_history_buffer = m_evt->getSequenceData();  // ph : seqhis/seqmat
     m_photons_buffer = m_evt->getPhotonData();    // ox : final photon
     m_records_buffer = m_evt->getRecordData();    // rx :  step records
+    m_doubles_buffer = m_evt->getDoubleData();    // dx :  step records
 
     LOG(LEVEL) << desc() ; 
 }
@@ -106,6 +108,7 @@ std::string CWriter::desc(const char* msg) const
     ss << " m_history_buffer " << m_history_buffer->getShapeString() ; 
     ss << " m_photons_buffer " << m_photons_buffer->getShapeString() ; 
     ss << " m_records_buffer " << m_records_buffer->getShapeString() ; 
+    ss << " m_doubles_buffer " << m_doubles_buffer->getShapeString() ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -126,11 +129,12 @@ unsigned CWriter::expand(unsigned gs_photons)
         return 0 ;  
     } 
     assert( m_history_buffer );  
-    unsigned ni, ni1, ni2 ; 
+    unsigned ni, ni1, ni2, ni3 ; 
     ni = m_history_buffer->expand(gs_photons); 
     ni1 = m_photons_buffer->expand(gs_photons); 
     ni2 = m_records_buffer->expand(gs_photons); 
-    assert( ni1 == ni && ni2 == ni ); 
+    ni3 = m_doubles_buffer->expand(gs_photons); 
+    assert( ni1 == ni && ni2 == ni && ni3 == ni ); 
     return ni ; 
 }
 
@@ -280,6 +284,11 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, u
     G4double time = point->GetGlobalTime();
     G4double energy = point->GetKineticEnergy();
     G4double wavelength = h_Planck*c_light/energy ;
+
+
+    m_doubles_buffer->setQuad(record_id, slot, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns );
+    m_doubles_buffer->setQuad(record_id, slot, 1, pol.x()   , pol.y()   , pol.z()   , wavelength/nm );
+
 
     const glm::vec4& sd = m_evt->getSpaceDomain() ; 
     const glm::vec4& td = m_evt->getTimeDomain() ; 

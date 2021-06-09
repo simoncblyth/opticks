@@ -316,7 +316,10 @@ class SeqList(object):
 
  
 class SeqTable(object):
+    """
+    Based on count_unique_sorted applied to a photon length array of sequence history codes
 
+    """
     ptn_ = "^(?P<idx>\d{4})\s*(?P<code>[0-9a-f]+)\s*(?P<a>\d+)\s*(?P<b>\d+)\s*(?P<cf>\S*).*$" 
     ptn = re.compile(ptn_)
 
@@ -350,7 +353,7 @@ class SeqTable(object):
         ncol = cu.shape[1] - 1 
 
         log.debug("SeqTable.__init__ dbgseq %x" % dbgseq)
-        log.info("shortname %s cu.shape %s ncol: %s" % (shortname,repr(cu.shape), ncol))
+        log.debug("shortname %s cu.shape %s ncol: %s" % (shortname,repr(cu.shape), ncol))
         assert shortname != "noshortname"  
 
         if sys.version_info.major in (2,3):
@@ -658,8 +661,8 @@ class SeqAna(object):
     
     def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, smry=False, table_shortname="no_table_shortname"):
         """
-        :param aseq: photon length sequence array 
-        :param af: instance of SeqType subclass, which knows what the codes mean 
+        :param aseq: photon length sequence array, eg a.seqhis or a.seqmat 
+        :param af: instance of SeqType subclass, which knows what the nibble codes mean 
 
         ::
 
@@ -705,7 +708,7 @@ class SeqAna(object):
         """
         #af = self.table.af 
         af = self.af 
-        bseq = map(lambda _:self.aseq == af.code(_), sseq)  # full length boolean array
+        bseq = list(map(lambda _:self.aseq == af.code(_), sseq))  # full length boolean array
         psel = np.logical_or.reduce(bseq)      
         return psel 
 
