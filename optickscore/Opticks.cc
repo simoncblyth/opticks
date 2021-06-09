@@ -347,7 +347,10 @@ bool Opticks::envkey()
     return key_is_set ; 
 }
 
-
+std::string Opticks::getArgLine() const
+{
+    return m_sargs->getArgLine(); 
+}
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
     :
@@ -461,6 +464,8 @@ void Opticks::init()
         LOG(LEVEL) << " mandatory keyed access to geometry, opticksaux " ; 
     } 
 
+
+   
     m_parameters->add<int>("OptiXVersion",  OKConf::OptiXVersionInteger() );
     m_parameters->add<int>("CUDAVersion",   OKConf::CUDAVersionInteger() );
     m_parameters->add<int>("ComputeVersion", OKConf::ComputeCapabilityInteger() );
@@ -473,7 +478,7 @@ void Opticks::init()
 
     m_parameters->add<std::string>("HOSTNAME", SSys::hostname() ); 
     m_parameters->add<std::string>("USERNAME", SSys::username() ); 
-
+    m_parameters->add<std::string>("ArgLine", getArgLine() ); 
 
     std::string switches = OpticksSwitches() ; 
     m_parameters->add<std::string>("OpticksSwitches", switches ); 
@@ -532,13 +537,6 @@ Composition* Opticks::getComposition() const
 
 
 
-
-
-
-std::string Opticks::getArgLine() const 
-{
-    return m_sargs->getArgLine();
-}
 
 
 
@@ -1661,16 +1659,16 @@ bool Opticks::isReflectCheat() const  // --reflectcheat
    return m_cfg->hasOpt("reflectcheat");
 }
 
+
+
+
+
 bool Opticks::getSaveDefault() const  // --save is trumped by --nosave 
 {
     bool is_nosave = m_cfg->hasOpt("nosave");  
     bool is_save = m_cfg->hasOpt("save");  
     return is_nosave ? false : is_save  ;   
 }
-
-
-
-
 void Opticks::setSave(bool save)  // override the default from config 
 {
     m_save = save ; 
@@ -3862,6 +3860,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 
     parameters->add<std::string>("mode", m_mode->desc());
     parameters->add<std::string>("cmdline", m_cfg->getCommandLine() );
+    parameters->add<std::string>("ArgLine", getArgLine() ); 
 
     parameters->add<std::string>("EntryCode", BStr::ctoa(getEntryCode()) );
     parameters->add<std::string>("EntryName", getEntryName() );
