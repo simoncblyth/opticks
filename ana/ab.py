@@ -98,7 +98,9 @@ class Maligned(object):
         return d 
 
     def migtab(self):
-        tab = "\n".join([" %4d   %s  %s " % ( kv[1], self.label(kv[0][0]), self.label(kv[0][1]) )  for kv in sorted(self.migs.items(), key=lambda kv:kv[1], reverse=True)])
+        sitems = sorted(self.migs.items(), key=lambda kv:kv[1], reverse=True)
+        sitems = sitems[self.sli]
+        tab = "\n".join([" %4d   %s  %s " % ( kv[1], self.label(kv[0][0]), self.label(kv[0][1]) )  for kv in sitems])
         return tab
 
     def __repr__(self):

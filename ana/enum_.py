@@ -42,9 +42,9 @@ class Enum(dict):
         :param simple: when True means plain int enum, ie not bitshifted 0x1 << 1 etc..
         """
         dict.__init__(self)
-        log.info("parsing %s " % path )
+        log.debug("parsing %s " % path )
         path = os.path.expandvars(path)
-        log.info("path expands to %s " % path )
+        log.debug("path expands to %s " % path )
 
         if simple:
             self.parse_simple(path)

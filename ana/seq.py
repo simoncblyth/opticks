@@ -626,7 +626,7 @@ class SeqTable(object):
 
         cfordering_key = list(map(ordering_, u)) 
         log.info("cfordering_key for %s" % shortname)
-        log.info(cfordering_key)
+        #log.info(cfordering_key)
   
         cftab.cfordering_key = cfordering_key 
         log.debug("SeqTable.compare DONE")

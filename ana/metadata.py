@@ -60,7 +60,7 @@ class DeltaTime(object):
 
     def __init__(self, base, tag):
         path = os.path.join(base, self.NAME)
-        log.info("path %s " % path)
+        log.debug("path %s " % path)
         ini = ini_(path) 
         itag = int(tag)        
         key = self.PROPAGATE_OK if itag > 0 else self.PROPAGATE_G4

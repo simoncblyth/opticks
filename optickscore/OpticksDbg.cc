@@ -192,29 +192,44 @@ void OpticksDbg::postgeometry()
     std::vector<std::string> solidname ; 
     SStr::Split(skipsolidname.c_str(), ',', solidname ); 
 
+    LOG(LEVEL) 
+        << " skipsolidname " << skipsolidname 
+        << " solidname.size " << solidname.size()
+        ;
+
     std::vector<unsigned>& soidx = m_skipsolididx ; 
+
+    unsigned notfound = 0 ; 
 
     for(int i=0 ; i < int(solidname.size()) ; i++)
     {
         const std::string& sn = solidname[i];  
         bool startswith = true ; 
         int midx = m_geo->getMeshIndexWithName(sn.c_str(), startswith) ; 
+        bool found = midx > 0 ; 
 
-        LOG(LEVEL) 
-            << " midx "  << std::setw(4) << midx 
-            << " sn [" << sn << "]" 
-            ;
-
-        assert( midx > 0 );   // world solid is verboten 
-
-
-        soidx.push_back(midx); 
+        if(!found)
+        {
+            notfound += 1 ; 
+            LOG(fatal) 
+                << " failed to find solid with name starting [" << sn << "]" ; 
+                ; 
+        }
+        else
+        {
+            LOG(LEVEL) 
+                << " found sn [" << sn << "]" 
+                << " midx "  << std::setw(4) << midx 
+                ;
+            soidx.push_back(midx); 
+        }
     }
 
     LOG(LEVEL) 
         << " --skipsolidname " << skipsolidname 
         << " solidname.size " << solidname.size() 
         << " soidx.size " << soidx.size()
+        << " notfound " << notfound 
         ;
 
 
