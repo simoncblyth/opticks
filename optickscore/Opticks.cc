@@ -1656,20 +1656,31 @@ bool Opticks::isDbgGeoTest() const  // --dbggeotest
 
 
 
-
-
-
-
 bool Opticks::isReflectCheat() const  // --reflectcheat
 {
    return m_cfg->hasOpt("reflectcheat");
 }
-bool Opticks::isSave() const   // --save is trumped by --nosave 
+
+bool Opticks::getSaveDefault() const  // --save is trumped by --nosave 
 {
     bool is_nosave = m_cfg->hasOpt("nosave");  
     bool is_save = m_cfg->hasOpt("save");  
     return is_nosave ? false : is_save  ;   
 }
+
+
+
+
+void Opticks::setSave(bool save)  // override the default from config 
+{
+    m_save = save ; 
+}
+bool Opticks::isSave() const   
+{
+    return m_save ; 
+}
+
+
 bool Opticks::isLoad() const
 {
    // --noload trumps --load
@@ -2932,6 +2943,7 @@ void Opticks::postconfigure()
 
     postconfigureCVD(); 
 
+    postconfigureSave(); 
     postconfigureSize(); 
     postconfigurePosition(); 
     postconfigureComposition(); 
@@ -3002,6 +3014,13 @@ void Opticks::postconfigureCVD()
         const char* chk = SSys::getenvvar(ek); 
         LOG(error) << " --cvd [" << ucvd << "] option internally sets " << ek << " [" << chk << "]" ; 
     }
+}
+
+
+void Opticks::postconfigureSave()
+{
+    bool save_default = getSaveDefault(); 
+    setSave(save_default); 
 }
 
 

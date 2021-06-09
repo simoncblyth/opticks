@@ -27,6 +27,7 @@ high level instances like CG4 with their constituents that are really needed.
 
 
 #include "GGeo.hh"
+#include "Opticks.hh"
 #include "CMaterialBridge.hh"
 #include "CManager.hh"
 
@@ -62,7 +63,8 @@ void G4OpticksRecorder::setGeometry(const GGeo* ggeo_)
     m_material_bridge = new CMaterialBridge(m_ggeo->getMaterialLib()) ; 
     m_manager = new CManager(m_ok);
     m_manager->setMaterialBridge(m_material_bridge); 
-  
+
+    m_ok->setSave(true);  // override embedded commandline default 
     LOG(LEVEL); 
 } 
 

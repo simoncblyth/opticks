@@ -710,7 +710,12 @@ class OKCORE_API Opticks {
        bool isDbgGeoTest() const ; // --dbggeotest
 
        bool isReflectCheat() const ;
-       bool isSave() const ;
+    public:
+        bool getSaveDefault() const ;   // --save is trumped by --nosave 
+        void postconfigureSave(); 
+        void setSave(bool save);        // code level override of the above default from commandline config 
+        bool isSave() const ;
+    public:
        bool isLoad() const;
        bool isTracer() const;
        bool isRayLOD() const ; // raytrace LOD via OptiX selector based on ray origin wrt instance position 
@@ -833,6 +838,7 @@ class OKCORE_API Opticks {
        SensorLib*           m_sensorlib ; 
        int                  m_one_gas_ias ; 
        std::vector<unsigned>  m_solid_selection ; 
+       bool                 m_save ; 
 
 };
 

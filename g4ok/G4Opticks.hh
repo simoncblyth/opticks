@@ -372,6 +372,8 @@ class G4OK_API G4Opticks
         void setInputPhotons(const char* dir, const char* name) ;
         void setInputPhotons(const char* path) ;
         void setInputPhotons(NPY<float>* input_photons) ;
+     public:
+        void setSave(bool save=true);
        
      private:
         bool                       m_standardize_geant4_materials ; 

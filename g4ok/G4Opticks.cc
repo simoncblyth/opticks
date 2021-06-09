@@ -1947,3 +1947,25 @@ void G4Opticks::setInputPhotons(NPY<float>* input_photons)
     m_genstep_collector->collectTorchGenstep(gs);  
 }
 
+
+
+/**
+G4Opticks::setSave
+---------------------
+
+Override the embedded commandline default, used with G4OpticksRecorder
+where saving is the entire point of the exercise.
+
+**/
+void G4Opticks::setSave(bool save)
+{
+    if(m_ok)
+    {
+        m_ok->setSave(save); 
+    }
+    else
+    {
+       LOG(error) << "cannot setSave until after setGeometry " ; 
+    }
+}
+
