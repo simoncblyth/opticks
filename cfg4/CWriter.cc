@@ -392,6 +392,7 @@ void CWriter::writePhoton_(const G4StepPoint* point, unsigned record_id  )
     m_photons_buffer->setQuad(record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
     m_photons_buffer->setQuad(record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
     m_photons_buffer->setQuad(record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+
     m_photons_buffer->setUInt(record_id, 3, 0, 0, m_photon._slot_constrained );
     m_photons_buffer->setUInt(record_id, 3, 0, 1, 0u );
     m_photons_buffer->setUInt(record_id, 3, 0, 2, m_photon._c4.u );

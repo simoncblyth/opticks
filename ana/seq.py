@@ -350,7 +350,7 @@ class SeqTable(object):
         """
 
         assert len(cu.shape) == 2 and cu.shape[1] >= 2 
-        ncol = cu.shape[1] - 1 
+        ncol = cu.shape[1] - 1    # excluding column 0 which is the seq code  
 
         log.debug("SeqTable.__init__ dbgseq %x" % dbgseq)
         log.debug("shortname %s cu.shape %s ncol: %s" % (shortname,repr(cu.shape), ncol))

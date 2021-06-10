@@ -74,6 +74,16 @@ std::string OpticksPhotonFlags::brief() const
     return ss.str(); 
 }
 
+/**
+OpticksPhotonFlags::Boundary OpticksPhotonFlags::SensorIndex OpticksPhotonFlags::NodeIndex OpticksPhotonFlags::PhotonIndex OpticksPhotonFlags::FlagMask
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+The somewhat curious implementation of these accessors is to allow the underlying layout and compression etc.. of the 
+photon flags to be changed without changing the accessing code.  Basically the only assumption 
+that cannot easily be changed and hidden in the implementation  is that the last of the four quads of the 
+photon item is used for the photon flags. 
+**/
+
 
 int OpticksPhotonFlags::Boundary(const float& x, const float& , const float& , const float& ) // static
 {

@@ -66,6 +66,112 @@ class InputPhotons(object):
         p[:,2, 3] = cls.WAVELENGTH  
         return p 
 
+
+    @classmethod
+    def Axes(cls):
+        """
+
+               Z   -X
+               |  .
+               | . 
+               |. 
+       -Y......O------ Y  1
+              /.
+             / .
+            /  .
+           X   -Z
+          0
+        """
+        v = np.zeros((6, 3), dtype=cls.DTYPE)
+        v[0] = [1,0,0]
+        v[1] = [0,1,0]
+        v[2] = [0,0,1]
+        v[3] = [-1,0,0]
+        v[4] = [0,-1,0]
+        v[5] = [0,0,-1]
+        return v
+
+
+    @classmethod
+    def GenerateAxes(cls):
+        direction = cls.Axes()
+        polarization = np.zeros((6, 3), dtype=cls.DTYPE)
+        polarization[:-1] = direction[1:]
+        polarization[-1] = direction[0]
+    
+        p = np.zeros( (6, 4, 4), dtype=cls.DTYPE )
+        n = len(p)
+        p[:,0,:3] = cls.POSITION 
+        p[:,0, 3] = cls.TIME*(1. + np.arange(n))  
+        p[:,1,:3] = direction 
+        p[:,1, 3] = cls.WEIGHT
+        p[:,2,:3] = polarization
+        p[:,2, 3] = cls.WAVELENGTH  
+        return p 
+
+
+    @classmethod
+    def Parallelize1D(cls, p, r, offset=True):
+        """
+        :param p: photons array of shape (num, 4, 4)
+        :param r: repetition number
+        :return pp:  photons array of shape (r*num, 4, 4)
+
+        See parallel_input_photons.py for tests/plotting
+        """
+        if r == 0:
+            return p 
+        pass
+        o = len(p)          # original number of photons  
+        pp = np.repeat(p, r, axis=0).reshape(-1,r,4,4)  # shape (8,10,4,4)
+
+        if offset:
+            for i in range(o):
+                dir = p[i,1,:3]
+                pol = p[i,2,:3]   # original polarization, a transverse offset direction vector
+                oth = np.cross(pol, dir)
+                for j in range(r):
+                    jj = j - r//2
+                    pp[i,j,0,:3] = jj*oth 
+                pass
+            pass
+        pass
+        return pp.reshape(-1,4,4) 
+
+
+    @classmethod
+    def Parallelize2D(cls, p, rr, offset=True):
+        """
+        :param p: original photons, shaped (o,4,4)
+        :param [rj,rk]: 2d repeat dimension list 
+        :return pp: shaped (o*rj*rk,4,4)  
+
+        See parallel_input_photons.py for tests/plotting
+        """
+        if len(rr) != 2:
+            return p 
+        pass
+        rj, rk = rr[0],rr[1]
+        o = len(p)          # original number of photons  
+        pp = np.repeat(p, rj*rk, axis=0).reshape(-1,rj,rk,4,4) 
+
+        if offset:
+            for i in range(o):
+                dir = p[i,1,:3]
+                pol = p[i,2,:3]           # original polarization, a transverse offset direction vector
+                oth = np.cross(pol, dir)  # other transverse direction perpendicular to pol 
+                for j in range(rj):
+                    jj = j - rj//2
+                    for k in range(rk):
+                        kk = k - rk//2
+                        pp[i,j,k,0,:3] = jj*oth + kk*pol
+                    pass
+                pass
+            pass
+        pass
+        return pp.reshape(-1,4,4) 
+
+
     @classmethod
     def GenerateRandomSpherical(cls, n):
         """
@@ -100,25 +206,38 @@ class InputPhotons(object):
 
     CC = "CubeCorners" 
     RS = "RandomSpherical" 
-    NAMES = [CC, RS]
+    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10"]
 
     def generate(self, name, args):
         if args.seed > -1:
             log.info("seeding with %d " % args.seed)
             np.random.seed(args.seed)
         pass
+        meta = dict(seed=args.seed, name=name, creator="input_photons.py")
         log.info("generate %s " % name)
         if name.startswith(self.RS):  
             num = int(name[len(self.RS):])
             p = self.GenerateRandomSpherical(num)    
         elif name == self.CC:
             p = self.GenerateCubeCorners()    
+        elif name.startswith(self.CC):
+            o = self.GenerateCubeCorners()    
+            sdim = name[len(self.CC):]
+            if sdim.find("x") > -1:
+                rr = list(map(int, sdim.split("x")))
+                p = self.Parallelize2D(o, rr)
+                meta["Parallelize2D_rr"] = rr 
+            else:
+                r = int(sdim)
+                p = self.Parallelize1D(o, r)
+                meta["Parallelize1D_r"] = r 
+            pass 
         else:
             log.fatal("no generate method for name %s " %  name)
             assert 0
         pass     
         self.Check(p)
-        meta = dict(seed=args.seed, name=name, num=len(p), creator="input_photons.py")
+        meta.update(num=len(p))
         return p, meta 
 
 
@@ -175,8 +294,7 @@ class InputPhotonDefaults(object):
     level = "info"
 
 if __name__ == '__main__':
-    names = ["RandomSpherical10","CubeCorners"]
-    args = InputPhotons.parse_args(__doc__, names)
+    args = InputPhotons.parse_args(__doc__, InputPhotons.NAMES)
 
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)

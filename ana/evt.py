@@ -1581,7 +1581,7 @@ class Evt(object):
         c_tab = None
 
         if cf:
-            c_tab = a_tab.compare(b_tab, ordering=ordering, shortname=shortname)
+            c_tab = a_tab.compare(b_tab, ordering=ordering, shortname=shortname)   # see seq.py SeqTable.compare 
             c_tab.title = ana_
 
             if len(list(c_tab.lines)) > lmx:

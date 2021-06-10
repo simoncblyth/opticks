@@ -294,6 +294,16 @@ glm::uvec4 GPho::getLastIntersectNRPO(unsigned i) const
     return nrpo ; 
 }
 
+/**
+GPho::getLastIntersectTransform
+--------------------------------
+
+This uses GPho::getLastIntersectNodeIndex to access the photon flags 
+that provide the nodeIndex allowing the inverse transform to 
+be accessed.
+
+**/
+
 glm::mat4 GPho::getLastIntersectTransform(unsigned i) const 
 {
     unsigned nidx = getLastIntersectNodeIndex(i);

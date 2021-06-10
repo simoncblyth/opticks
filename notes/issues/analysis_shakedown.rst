@@ -6,8 +6,201 @@ analysis_shakedown
    PFX=tds3gun ab.sh 1 
 
 
+
+would be good to see the double step data in local frame : need nodeIndex for that to access the transform
+-------------------------------------------------------------------------------------------------------------
+
+tds3ip.sh::
+
+    In [3]: a.ox[:,3].view(np.uint32)                                                                                                                                                                  
+    Out[3]: 
+    A([[4293394432,     126601,          0,       6152],
+       [4293342850,     126774,          1,      22592],
+       [4293342937,     127122,          2,       6272],
+       [4293394432,     126949,          3,       6152],
+       [4293332465,      85234,          4,      38976],
+       [4293332509,      85410,          5,      22592],
+       [4293201524,      85758,          6,       6272],
+       [   1179648,      67843,          7,       4104]], dtype=uint32)
+
+From okc/OpticksPhotonFlags::
+
+    x: bit packed : Boundary and SensorIndex 
+    y: NodeIndex of last intersect 
+    z: photon index
+    w: flag mask (derivable from the seqhis)  
+
+
+oxrap/cu/photon.h::
+
+    152 __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int photon_offset)
+    153 {
+    154     pbuffer[photon_offset+0] = make_float4( p.position.x,    p.position.y,    p.position.z,     p.time );
+    155     pbuffer[photon_offset+1] = make_float4( p.direction.x,   p.direction.y,   p.direction.z,    p.weight );
+    156     pbuffer[photon_offset+2] = make_float4( p.polarization.x,p.polarization.y,p.polarization.z, p.wavelength );
+    157     pbuffer[photon_offset+3] = make_float4( p.flags.f.x,     p.flags.f.y,     p.flags.f.z,      p.flags.f.w);
+    158 }
+    159 
+
+oxrap/cu/generate.cu::
+
+    842 
+    843     // setting p.flags for things like boundary, history flags  
+    844     FLAGS(p, s, prd);
+    845 
+    846     p.flags.u.z = photon_id ;  // formerly behind IDENTITY_DEBUG macro, but has become indispensable
+    847 
+
+
+    211 /**2
+    212 FLAGS Macro 
+    213 ------------
+    214 
+    215 Sets the photon flags p.flags using values from state s and per-ray-data prd
+    216 
+    217 p.flags.u.x 
+    218    packed signed int boundary and unsigned sensorIndex which are 
+    219    assumed to fit in 16 bits into 32 bits, see SPack::unsigned_as_int 
+    220 
+    221 p.flags.u.y
+    222    now getting s.identity.x (nodeIndex) thanks to the packing 
+    223 
+    224 s.identity.x
+    225     node index 
+    226 
+    227 s.identity.w 
+    228     sensor index arriving from GVolume::getIdentity.w
+    229 
+    230 ::
+    231 
+    232     256 glm::uvec4 GVolume::getIdentity() const
+    233     257 {
+    234     258     glm::uvec4 id(getIndex(), getTripletIdentity(), getShapeIdentity(), getSensorIndex()) ;
+    235     259     return id ;
+    236     260 }
+    237 
+    238 NumPy array access::
+    239 
+    240     boundary    = (( flags[:,0].view(np.uint32) & 0xffff0000 ) >> 16 ).view(np.int16)[1::2] 
+    241     sensorIndex = (( flags[:,0].view(np.uint32) & 0x0000ffff ) >>  0 ).view(np.int16)[0::2] 
+    242 
+    243 
+    244 Formerly::
+    245 
+    246     p.flags.i.x = prd.boundary ;  \
+    247     p.flags.u.y = s.identity.w ;  \
+    248     p.flags.u.w |= s.flag ; \
+    249 
+    250 2**/
+    251 
+    252 #define FLAGS(p, s, prd) \
+    253 { \
+    254     p.flags.u.x = ( ((prd.boundary & 0xffff) << 16) | (s.identity.w & 0xffff) )  ;  \
+    255     p.flags.u.y = s.identity.x ;  \
+    256     p.flags.u.w |= s.flag ; \
+    257 } \
+    258 
+    259 
+
+
+
+
+
+
+But other than w the G4 pflags are very different. Whats going on ?::
+
+    In [4]: b.ox[:,3].view(np.uint32)                                                                                                                                                                  
+    Out[4]: 
+    A([[       5,        0, 67305984,     6272],
+       [       5,        0, 67305985,     6304],
+       [       5,        0, 67305986,     6208],
+       [       1,        0, 67305987,     4104],
+       [       7,        0, 67305988,     6240],
+       [       5,        0, 67305989,     6272],
+       [       3,        0, 67305990,     6152],
+       [       5,        0, 67305991,     7328]], dtype=uint32)
+
+
+
+    377 void CWriter::writePhoton_(const G4StepPoint* point, unsigned record_id  )
+    378 {
+    ...
+    396     m_photons_buffer->setUInt(record_id, 3, 0, 0, m_photon._slot_constrained );
+    397     m_photons_buffer->setUInt(record_id, 3, 0, 1, 0u );
+    398     m_photons_buffer->setUInt(record_id, 3, 0, 2, m_photon._c4.u );
+    399     m_photons_buffer->setUInt(record_id, 3, 0, 3, m_photon._mskhis );
+    400 }
+
+
+Whats the G4 way to get the nodeIndex ? Would be useful to label all the volumes.
+Some JUNO volumes use the CopyNo.
+
+g4-cls G4PVPlacement::
+
+    125     inline G4int GetCopyNo() const  { return fcopyNo; }
+    126 
+    127     void  SetCopyNo(G4int CopyNo);
+    128       // Gets and sets the copy number of the volume.
+
+
+Vague recollection that GGeo geometry conversion holds onto void* of source volumes::
+
+    152 /**
+    153 GVolume::getOriginNode
+    154 ------------------------
+    155 
+    156 *OriginNode* set in ctor is used to record the G4VPhysicalVolume from whence the GVolume 
+    157 was converted, see X4PhysicalVolume::convertNode
+    158 
+    159 **/
+    160 
+    161 void* GVolume::getOriginNode() const
+    162 {
+    163     return m_origin_node ;
+    164 }
+    165 
+
+    epsilon:ggeo blyth$ opticks-f getOriginNode 
+    ./extg4/X4PhysicalVolume.cc:        const void* const sensorOrigin = sensor->getOriginNode(); 
+    ./extg4/X4PhysicalVolume.cc:        const void* const outerOrigin = outer->getOriginNode(); 
+    ./ggeo/GNodeLib.cc:            const void* const sensorOrigin = sensor->getOriginNode() ;
+    ./ggeo/GNodeLib.cc:            const void* const outerOrigin = outer->getOriginNode() ;  
+    ./ggeo/GNodeLib.cc:            origin = outer->getOriginNode() ;  
+    ./ggeo/GNodeLib.cc:            origin = sensor->getOriginNode() ;  
+    ./ggeo/GVolume.cc:GVolume::getOriginNode
+    ./ggeo/GVolume.cc:void* GVolume::getOriginNode() const 
+    ./ggeo/GVolume.hh:      void*        getOriginNode() const ;
+    epsilon:opticks blyth$ 
+
+
+Can create a mapping to get from an originNode to the GVolume. GNodeLib is the place to do this.
+This kinda think might be expensive (std::map of 300k items) 
+but its only for debugging/validation so no worries. 
+
+But having local positions in general frames is not so useful, the local position
+in the instance frame is what is useful.
+
+
+From jsd, can get the transform::
+
+     370     std::string volname = track->GetVolume()->GetName(); // physical volume
+     371     // == position
+     372     const G4AffineTransform& trans = track->GetTouchable()->GetHistory()->GetTopTransform();
+     373     const G4ThreeVector& global_pos = postStepPoint->GetPosition();
+     374     G4ThreeVector local_pos = trans.TransformPoint(global_pos);
+     375 
+
+
+
+
+
+
+
+
 overall shapes : G4 ht and gs arrays not populated
 -----------------------------------------------------
+
+* are missing the postPropagate call 
 
 so.npy is missing for a:OK and empty for b:G4::
 
@@ -338,7 +531,63 @@ Best way to investigate the BT difference is with tds3ip input photons
   for this problem the most useful thing would be an double precision version of the 
   m_records_buffer -> m_double_buffer 
 
-  * WIP: adding dx "deluxe double precision" buffer to OpticksEvent 
+  * added dx.npy "deluxe double precision" buffer to OpticksEvent 
+
+
+
+
+dx.npy
+--------
+
+
+::
+
+    In [17]: a[2]                                                                                                                                                                                            
+    Out[17]: 
+    array([[[    -0.577,      0.577,     -0.577,      0.3  ],
+            [     0.707,      0.   ,     -0.707,    440.   ]],
+
+           [[-10219.1  ,  10219.1  , -10219.1  ,     90.955],
+            [     0.707,      0.   ,     -0.707,    440.   ]],
+
+           [[-10288.382,  10288.382, -10288.382,     91.575],
+            [     0.707,      0.   ,     -0.707,    440.   ]],
+
+           [[-11126.93 ,  11126.93 , -11126.93 ,     98.271],
+            [     0.822,      0.424,     -0.382,    440.   ]],
+
+           [[-11126.93 ,  11126.93 , -11126.93 ,     98.271],
+            [     0.822,      0.424,     -0.382,    440.   ]],
+
+           [[-11129.938,  11130.117, -11129.867,     98.297],
+            [     0.822,      0.424,     -0.382,    440.   ]],
+
+           [[     0.   ,      0.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      0.   ,      0.   ]],
+
+           [[     0.   ,      0.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      0.   ,      0.   ]],
+
+           [[     0.   ,      0.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      0.   ,      0.   ]],
+
+           [[     0.   ,      0.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      0.   ,      0.   ]]])
+
+
+Positions of those points 3 and 4 really are exactly the same to double precision, but the time is slightly different::
+
+    In [27]: for i in range(4):print("3:%20.10f 4:%20.10f  4-3:%20.10f" % (a[2,3,0,i], a[2,4,0,i],a[2,4,0,i]-a[2,3,0,i]   ))                                                                                 
+    3:   -11126.9296875000 4:   -11126.9296875000  4-3:        0.0000000000
+    3:    11126.9296875000 4:    11126.9296875000  4-3:        0.0000000000
+    3:   -11126.9296875000 4:   -11126.9296875000  4-3:        0.0000000000
+    3:       98.2705612183 4:       98.2705688477  4-3:        0.0000076294
+
+
+
+
+To see whats going on here, can shoot parallel input photons in 1 mm increments around the prime direction.
+Then can plot the points. 
 
 
 
