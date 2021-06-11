@@ -66,9 +66,14 @@ void test_count_nibbles()
     typedef unsigned long long ULL ; 
 
     ULL msk = 0ull ;  
-    for(ULL i=0 ; i < 64ull ; i++ )
+    for(int i=-1 ; i < 64 ; i++ )
     {
-        msk |= 0x1ull << i ;  
+        if( i > -1 )
+        {
+            ULL u = i ; 
+            msk |= 0x1ull << u ;  
+        }
+
         ULL nn = SBit::count_nibbles(msk); 
         std::cout 
              << " msk 0x " << std::hex << std::setw(16) << msk  
@@ -442,7 +447,10 @@ int main(int argc, char** argv)
 /*
     test_ffs(); 
     test_ffsll(); 
+*/
     test_count_nibbles(); 
+
+/*
     test_HasOneSetBit(); 
     test_BinString(); 
     test_FromBinString(); 
@@ -450,8 +458,8 @@ int main(int argc, char** argv)
     test_FromString(); 
     test_FromPosString(); 
     test_signbit(); 
-*/
     test_TrackInfo();   
+*/
  
     return 0 ; 
 }

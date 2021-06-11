@@ -187,7 +187,6 @@ struct CFG4_API CCtx
     void setEvent(const G4Event* event);
     void BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset);
     void setGentype(char gentype);
-    //void setGen(unsigned gen);
 
     void setTrack(const G4Track* track);
     void setTrackOptical(G4Track* mtrack);
@@ -196,7 +195,8 @@ struct CFG4_API CCtx
     void setStepOptical();
     unsigned  step_limit() const ; 
     unsigned  point_limit() const ; 
-    bool      is_dbg() const ; 
+    bool      is_dbg() const ;  // commandline includes one of  : --dbgrec --dbgseqhis 0x.. --dbgseqmat 0x..  --dbgzero
+
 
     std::string desc_event() const ;
     std::string desc_step() const ;

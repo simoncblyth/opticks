@@ -50,7 +50,6 @@ only when CCtx::is_dbg returns true, which requires a debug option such as::
 
      --dbgseqhis 0xbbbbbbbbcd
 
-
 This looks like it might be trying to debug in an expensive way what CPhoton
 does in a cheap way.
 
@@ -62,36 +61,33 @@ class CFG4_API CDebug {
 
         void setMaterialBridge(const CMaterialBridge* material_bridge) ;
         void postTrack();
-        bool hasIssue();
 
-        bool isSelected(); 
-        bool isHistorySelected(); 
-        bool isMaterialSelected(); 
+        bool hasIssue() const ;
+        bool isSelected() const ; 
+        bool isHistorySelected() const ; 
+        bool isMaterialSelected() const ; 
     public:
 
 #ifdef USE_CUSTOM_BOUNDARY
         void Collect(const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, const CPhoton& photon );
-        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
+        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname ) const ;
 #else
         void Collect(const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const CPhoton& photon );
-        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
+        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname ) const ;
 #endif
         void Clear();
 
-
-        // reporting
-        void report(const char* msg="CDebug::report");
         void addSeqhisMismatch(unsigned long long rdr, unsigned long long rec);
         void addSeqmatMismatch(unsigned long long rdr, unsigned long long rec);
         void addDebugPhoton(int photon_id);
 
-        void dump(const char* msg="CDebug::dump");
-        void dump_brief(const char* msg="CDebug::dump_brief");
-        void dump_sequence(const char* msg="CDebug::dump_sequence");
-        void dump_points(const char* msg="CDebug::dump_points");
-        void dumpStepVelocity(const char* msg="CDebug::dumpStepVelocity");
-
-
+        // reporting
+        void report(const char* msg="CDebug::report") const ;
+        void dump(const char* msg="CDebug::dump") const ;
+        void dump_brief(const char* msg="CDebug::dump_brief") const ;
+        void dump_sequence(const char* msg="CDebug::dump_sequence") const ;
+        void dump_points(const char* msg="CDebug::dump_points") const ;
+        void dumpStepVelocity(const char* msg="CDebug::dumpStepVelocity") const ; 
          std::string desc() const ;
 
     private:

@@ -57,7 +57,7 @@ CWriter::CWriter(CCtx& ctx, CPhoton& photon)
     m_evt(NULL),
 
     m_records_buffer(NULL),
-    m_doubles_buffer(NULL),
+    m_deluxe_buffer(NULL),
     m_photons_buffer(NULL),
     m_history_buffer(NULL)
 {
@@ -95,7 +95,7 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
     m_history_buffer = m_evt->getSequenceData();  // ph : seqhis/seqmat
     m_photons_buffer = m_evt->getPhotonData();    // ox : final photon
     m_records_buffer = m_evt->getRecordData();    // rx :  step records
-    m_doubles_buffer = m_evt->getDoubleData();    // dx :  step records
+    m_deluxe_buffer  = m_evt->getDeluxeData();    // dx :  step records
 
     LOG(LEVEL) << desc() ; 
 }
@@ -108,7 +108,7 @@ std::string CWriter::desc(const char* msg) const
     ss << " m_history_buffer " << m_history_buffer->getShapeString() ; 
     ss << " m_photons_buffer " << m_photons_buffer->getShapeString() ; 
     ss << " m_records_buffer " << m_records_buffer->getShapeString() ; 
-    ss << " m_doubles_buffer " << m_doubles_buffer->getShapeString() ; 
+    ss << " m_deluxe_buffer " << m_deluxe_buffer->getShapeString() ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -133,7 +133,7 @@ unsigned CWriter::expand(unsigned gs_photons)
     ni = m_history_buffer->expand(gs_photons); 
     ni1 = m_photons_buffer->expand(gs_photons); 
     ni2 = m_records_buffer->expand(gs_photons); 
-    ni3 = m_doubles_buffer->expand(gs_photons); 
+    ni3 = m_deluxe_buffer->expand(gs_photons); 
     assert( ni1 == ni && ni2 == ni && ni3 == ni ); 
     return ni ; 
 }
@@ -242,20 +242,20 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
 CWriter::writeStepPoint_
 --------------------------
 
-Writes compressed step records if Geant4 CG4 instrumented events 
+Writes compressed step records into  Geant4 OpticksEvent buffers
 in format to match that written on GPU by oxrap.
 
 Q: how does this work with REJOIN and dynamic running ?
 A: the arrays are extended at BeginOfGenstep allowing 
    random access writes into the dynamically growing arrays 
 
-The current implementation was adapted to remove the need
-to track secondaries first.  Any order of tracks should now work 
+The current implementation was adapted (using CPhotonInfo) to remove the need
+to track reemission secondaries first.  Any order of tracks should now work 
 just fine, assuming that secondaries always come after their parents.
 Which should always the case (?)
 
 Reemission RE-joining of tracks are handled by resuming the 
-writing onto ncestor photon records lined up using the record_id.
+writing onto ancestor photon records lined up using the record_id.
 
 **/
 
@@ -286,8 +286,8 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, u
     G4double wavelength = h_Planck*c_light/energy ;
 
 
-    m_doubles_buffer->setQuad(record_id, slot, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns );
-    m_doubles_buffer->setQuad(record_id, slot, 1, pol.x()   , pol.y()   , pol.z()   , wavelength/nm );
+    m_deluxe_buffer->setQuad(record_id, slot, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns );
+    m_deluxe_buffer->setQuad(record_id, slot, 1, pol.x()   , pol.y()   , pol.z()   , wavelength/nm );
 
 
     const glm::vec4& sd = m_evt->getSpaceDomain() ; 
@@ -322,17 +322,8 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, u
     polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8  ;
     polw.ushort_.w = qaux.uchar_.z | qaux.uchar_.w << 8  ;
 
-    //unsigned int target_record_id = m_dynamic ? 0 : m_record_id ; 
-
     m_records_buffer->setQuad(record_id, slot, 0, posx, posy, posz, time_ );
     m_records_buffer->setQuad(record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
-
-    // dynamic mode : fills in slots into single photon dynamic_records structure 
-    // static mode  : fills directly into a large fixed dimension records structure
-
-    // looks like static mode will succeed to scrub the AB and replace with RE 
-    // just by decrementing m_slot and running again
-    // but dynamic mode will have an extra record
 }
 
 
@@ -341,36 +332,43 @@ CWriter::writePhoton
 --------------------
 
 Gets called at last step (eg absorption) or when truncated,
-for reemission have to rely on downstream overwrites
-via rerunning with a target_record_id to scrub old values.
+for with reemission this intentionally overwrites former AB terminated
+photons that were RE-born.
 
-In static case (where the number of photons is known ahead of time) 
-directly populates the pre-sized photon buffer in dynamic case populates 
-the single item m_dynamic_photons buffer first and then adds that to 
-the m_photons_buffer
 
-generate.cu
+Q: Does RE-joining of reemission work with dynamic running ?
+
+A: Yes, using CPhotonInfo to yield the same record_id across multiple
+   reemission generations allows the continuation writing without 
+   requiring seqential handling of secondaries.   
+
+   The destination arrays are dynamically expanded at BeginOfGenstep, 
+   so the final number of photons is not know at the start with dynamic running.
+   Due to this dynamic expansion, must not hold on to pointers into arrays : as they
+   will become stale due to reallocations as the arrays grow.
+
+Q: How is the "slot-so-far" obtained to prevent overwriting ?
+A: Photon overwriting is necessary for the RE-joined : are changing 
+   a some photons that previously ended with an "AB" BULK_ABSORB to ones with 
+   an long extended life replacing the "AB" with "RE" and preceeding with further steps, 
+   some even leading to "SD" and becoming hits
+ 
+Q: OK, I see what you mean for extending photon records, but what about the step records and the seqhis/seqmat ? 
+   The recorded steps and seqhis/seqmat slots from before the RE-join must not be overwritten. 
+   How is that achieved when RE-joining ?
+
+
+TODO: Emulate Photon Flags 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Emulate the photon flags to some extent.. currently the photon flags are nothing 
+like those from oxrap/generate.cu
 
 (x)  p.flags.i.x = prd.boundary ;   // last boundary
 (y)  p.flags.u.y = s.identity.w ;   // sensorIndex  >0 only for cathode hits
 (z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
 (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
 
-
-Q: Does RE-joining of reemission work with dynamic running ?
-
-A: Hmm, not sure : but suspect that is could be made to work by using 
-   SetTrackSecondariesFirst::
-
-       cerenkov->SetTrackSecondariesFirst(true);
-       scint->SetTrackSecondariesFirst(true);    
-
-   With reemission there is only one secondary, so deferring writePhoton 
-   until get a new one that is not a REjoinder means that do not need to 
-   have random access to the full photon/record buffers.
-
-   That could work with multiple RE in the history, so long as the SetTrackSecondariesFirst 
-   worked to simulate the generations one after the other.      
 
 **/
 

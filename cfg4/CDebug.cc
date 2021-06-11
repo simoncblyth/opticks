@@ -62,15 +62,15 @@ void CDebug::setMaterialBridge(const CMaterialBridge* material_bridge)
 }
 
 
-bool CDebug::isHistorySelected()
+bool CDebug::isHistorySelected() const 
 {
    return m_seqhis_select == m_photon._seqhis ; 
 }
-bool CDebug::isMaterialSelected()
+bool CDebug::isMaterialSelected() const 
 {
    return m_seqmat_select == m_photon._seqmat ; 
 }
-bool CDebug::isSelected()
+bool CDebug::isSelected() const 
 {
    return isHistorySelected() || isMaterialSelected() ;
 }
@@ -117,8 +117,13 @@ void CDebug::postTrack()
 
 
 
+/**
+CDebug::Collect
+-----------------
 
+Collects the expanding history sequences at each step. 
 
+**/
 
 #ifdef USE_CUSTOM_BOUNDARY
 void CDebug::Collect(const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, const CPhoton& photon )
@@ -153,8 +158,15 @@ void CDebug::Clear()
 }
 
 
+/**
+CDebug::hasIssue
+-------------------
 
-bool CDebug::hasIssue()
+Bad flags seen in history.
+
+**/
+
+bool CDebug::hasIssue() const 
 {
     unsigned int npoints = m_points.size() ;
     assert(m_flags.size() == npoints);
@@ -171,7 +183,7 @@ bool CDebug::hasIssue()
 
 
 
-void CDebug::dump(const char* msg)
+void CDebug::dump(const char* msg) const 
 {
     LOG(info) << msg ; 
 
@@ -187,8 +199,7 @@ void CDebug::dump(const char* msg)
 }
 
 
-
-void CDebug::dump_brief(const char* msg)
+void CDebug::dump_brief(const char* msg) const 
 {
     LOG(info) << msg 
               << " m_ctx._record_id " << std::setw(8) << m_ctx._record_id 
@@ -215,7 +226,7 @@ void CDebug::dump_brief(const char* msg)
               ;
 }
 
-void CDebug::dump_sequence(const char* msg)
+void CDebug::dump_sequence(const char* msg) const 
 {
     LOG(info) << msg ; 
     unsigned npoints = m_points.size() ;
@@ -241,7 +252,7 @@ void CDebug::dump_sequence(const char* msg)
                   ;
 }
 
-void CDebug::dump_points(const char* msg)
+void CDebug::dump_points(const char* msg) const 
 {
     LOG(info) << msg ; 
     G4ThreeVector origin ;
@@ -258,9 +269,9 @@ void CDebug::dump_points(const char* msg)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
+void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname ) const
 #else
-void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
+void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname ) const 
 #endif
 {
     std::string bs = OpStatus::OpBoundaryAbbrevString(boundary_status) ;
@@ -270,7 +281,7 @@ void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4Ste
 
 
 
-void CDebug::dumpStepVelocity(const char* msg )
+void CDebug::dumpStepVelocity(const char* msg ) const 
 {
     // try to understand GlobalTime calc from G4Transportation::AlongStepDoIt by duping attempt
     // issue is what velocity it gets to use, and the updating of that 
@@ -327,7 +338,7 @@ void CDebug::addDebugPhoton(int record_id)
 
 
 
-void CDebug::report(const char* msg)
+void CDebug::report(const char* msg) const 
 {
      LOG(info) << msg ;
      unsigned cut = 50 ; 

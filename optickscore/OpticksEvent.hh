@@ -208,7 +208,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        static const char* way_ ;
        static const char* source_ ;
        static const char* record_  ;
-       static const char* double_  ;
+       static const char* deluxe_  ;
        static const char* phosel_ ;
        static const char* recsel_  ;
        static const char* sequence_  ;
@@ -311,7 +311,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void saveGenstepData(); 
        void savePhotonData(); 
        void saveRecordData(); 
-       void saveDoubleData(); 
+       void saveDeluxeData(); 
        void saveSequenceData(); 
        void saveSeedData(); 
        void saveDebugData(); 
@@ -343,7 +343,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setDebugData(NPY<float>* debug_data);
        void setWayData(NPY<float>* way_data);
        void setRecordData(NPY<short>* record_data);
-       void setDoubleData(NPY<double>* double_data);
+       void setDeluxeData(NPY<double>* deluxe_data);
        void setRecselData(NPY<unsigned char>* recsel_data);
        void setPhoselData(NPY<unsigned char>* phosel_data);
    private:
@@ -370,7 +370,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool                 hasDebugData() const ;
        bool                 hasWayData() const ;
        bool                 hasRecordData() const ;
-       bool                 hasDoubleData() const ;
+       bool                 hasDeluxeData() const ;
    public:
        const glm::vec4&     getGenstepCenterExtent();
    public:
@@ -381,7 +381,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<float>*          getWayData() const ;
        NPY<float>*          getSourceData() const ;
        NPY<short>*          getRecordData() const ;
-       NPY<double>*         getDoubleData() const ;
+       NPY<double>*         getDeluxeData() const ;
        NPY<unsigned char>*  getPhoselData() const ;
        NPY<unsigned char>*  getRecselData() const ;
        NPY<unsigned long long>*  getSequenceData() const ;
@@ -419,7 +419,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        MultiViewNPY* getPhotonAttr();
        MultiViewNPY* getSourceAttr();
        MultiViewNPY* getRecordAttr();
-       MultiViewNPY* getDoubleAttr();
+       MultiViewNPY* getDeluxeAttr();
        MultiViewNPY* getPhoselAttr();
        MultiViewNPY* getRecselAttr();
        MultiViewNPY* getSequenceAttr();
@@ -435,7 +435,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        unsigned int getNumPhotons() const ;
        unsigned int getNumSource() const ;
        unsigned int getNumRecords() const ;
-       unsigned int getNumDoubles() const ;
+       unsigned int getNumDeluxe() const ;
 
    public:
        void resizeToZero();  // used by OpticksHub::setupZeroEvent
@@ -483,7 +483,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<float>*               m_way_data ;
        NPY<float>*               m_source_data ;
        NPY<short>*               m_record_data ;
-       NPY<double>*              m_double_data ;
+       NPY<double>*              m_deluxe_data ;
        NPY<unsigned char>*       m_phosel_data ;
        NPY<unsigned char>*       m_recsel_data ;
        NPY<unsigned long long>*  m_sequence_data ;
@@ -506,7 +506,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        MultiViewNPY*   m_photon_attr  ;
        MultiViewNPY*   m_source_attr  ;
        MultiViewNPY*   m_record_attr  ;
-       MultiViewNPY*   m_double_attr  ;
+       MultiViewNPY*   m_deluxe_attr  ;
        MultiViewNPY*   m_phosel_attr  ;
        MultiViewNPY*   m_recsel_attr  ;
        MultiViewNPY*   m_sequence_attr  ;
@@ -548,7 +548,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPYSpec* m_way_spec ;  
        NPYSpec* m_source_spec ;  
        NPYSpec* m_record_spec ;  
-       NPYSpec* m_double_spec ;  
+       NPYSpec* m_deluxe_spec ;  
        NPYSpec* m_phosel_spec ;  
        NPYSpec* m_recsel_spec ;  
        NPYSpec* m_sequence_spec ;  

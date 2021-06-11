@@ -1713,11 +1713,11 @@ bool Opticks::isDbgBnd() const
     return m_cfg->hasOpt("dbgbnd") ;
 }
 
-bool Opticks::isDbgRec() const
+bool Opticks::isDbgRec() const  // --dbgrec 
 {
     return m_cfg->hasOpt("dbgrec") ;
 }
-bool Opticks::isDbgZero() const
+bool Opticks::isDbgZero() const  // --dbgzero
 {
     return m_cfg->hasOpt("dbgzero") ;
 }
@@ -1857,12 +1857,12 @@ void Opticks::setExit(bool exit_)
 }
 
 
-unsigned long long Opticks::getDbgSeqmat()
+unsigned long long Opticks::getDbgSeqmat()  // --dbgseqmat 0x...
 {
     const std::string& seqmat = m_cfg->getDbgSeqmat();
     return BHex<unsigned long long>::hex_lexical_cast( seqmat.c_str() );
 }
-unsigned long long Opticks::getDbgSeqhis()  // --dbgseqhis
+unsigned long long Opticks::getDbgSeqhis()  // --dbgseqhis 0x...
 {
     const std::string& seqhis = m_cfg->getDbgSeqhis();
     return BHex<unsigned long long>::hex_lexical_cast( seqhis.c_str() );

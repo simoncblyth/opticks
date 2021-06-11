@@ -62,8 +62,8 @@ class BRAP_API BStr {
      static std::string firstChars( const char* orig, unsigned n );
 
      static std::string patternPickField(std::string str, std::string ptn, int num );
-     static std::string ijoin( std::vector<int>& elem, char delim);
-     static std::string ujoin( std::vector<unsigned>& elem, char delim);
+     static std::string ijoin( const std::vector<int>& elem, char delim);
+     static std::string ujoin( const std::vector<unsigned>& elem, char delim);
      static std::string join( const char* a, const char* b, const char* c, const char* d, char delim);
 
      static int index_first(                                 const std::vector<std::string>& elem, const char* item );

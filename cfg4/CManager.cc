@@ -178,16 +178,13 @@ void CManager::EndOfEventAction(const G4Event*)
 CManager::BeginOfGenstep
 -------------------------
 
-Invoked by G4OpticksRecorder::BeginOfGenstep which is canonically placed 
-just prior to the C/S generation loop
+Invoked by CGenstepCollector::addGenstep for 'S' and 'C' gensteps.
 
 **/
 
 void CManager::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
 {
-    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
-
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
 
     m_ctx->BeginOfGenstep(genstep_index, gentype, num_photons, offset);  
@@ -195,8 +192,6 @@ void CManager::BeginOfGenstep(unsigned genstep_index, char gentype, int num_phot
     if(m_mode == 1 ) return ; 
     m_recorder->BeginOfGenstep();  
 }
-
-
 
 /**
 CManager::presave
@@ -395,7 +390,7 @@ CSteppingAction::UserSteppingAction
 Invoked from tail of G4SteppingManager::Stepping (g4-cls G4SteppingManager), 
 after InvokePostStepDoItProcs (g4-cls G4SteppingManager2).
 
-Action depends on the boolean "done" result of CSteppingAction::setStep.
+Action depends on the boolean "done" result of CManager::setStep.
 When done=true this stops tracking, which happens for absorption and truncation.
 
 When not done the CProcessManager::ClearNumberOfInteractionLengthLeft is normally
@@ -417,14 +412,11 @@ See :doc:`stepping_process_review`
 
 void CManager::UserSteppingAction(const G4Step* step)
 {
-    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
-
 
     bool done = setStep(step);
 
     postStep();
-
 
     G4Track* track = step->GetTrack();    // m_track is const qualified
 
@@ -442,7 +434,6 @@ void CManager::UserSteppingAction(const G4Step* step)
 
 void CManager::postStep()
 {
-    //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
     if(m_engine)
@@ -463,18 +454,17 @@ For a look into Geant4 ZeroStepping see notes/issues/review_alignment.rst
 
 bool CManager::setStep(const G4Step* step)
 {
-    //LOG(LEVEL) << " m_mode " << m_mode ;
     assert(m_mode > 0 ); 
 
     int noZeroSteps = -1 ;
     int severity = m_nav->SeverityOfZeroStepping( &noZeroSteps );
 
     if(noZeroSteps > 0)
-    LOG(debug) 
-              << " noZeroSteps " << noZeroSteps
-              << " severity " << severity
-              << " ctx " << m_ctx->desc()
-              ;
+    LOG(LEVEL) 
+        << " noZeroSteps " << noZeroSteps
+        << " severity " << severity
+        << " ctx " << m_ctx->desc()
+        ;
 
 
     if(m_dbgflat)
@@ -588,8 +578,6 @@ void CManager::prepareForNextStep(const G4Step* step, G4Track* mtrack)
     }
 }
 
-
-
 void CManager::report(const char* msg)
 {
     LOG(info) << msg ;
@@ -600,6 +588,4 @@ void CManager::report(const char* msg)
            ;
     //m_recorder->report(msg);
 }
-
-
 

@@ -574,7 +574,7 @@ void BStr::fsplitEnv( std::vector<float>& elem, const char* envvar, const char* 
 
 
 
-std::string BStr::ijoin( std::vector<int>& elem, char delim)
+std::string BStr::ijoin( const std::vector<int>& elem, char delim)
 {
     char delimiter[2] ;
     delimiter[0] = delim ;
@@ -588,7 +588,7 @@ std::string BStr::ijoin( std::vector<int>& elem, char delim)
 }
 
 
-std::string BStr::ujoin( std::vector<unsigned>& elem, char delim)
+std::string BStr::ujoin( const std::vector<unsigned>& elem, char delim)
 {
     char delimiter[2] ;
     delimiter[0] = delim ;

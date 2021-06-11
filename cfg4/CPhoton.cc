@@ -87,7 +87,6 @@ CPhoton::add
 
 Invoked from CWriter::writeStepPoint
 
-
 Inserts the argument flag and material into the 
 seqhis and seqmat nibbles of the current constrained slot. 
 

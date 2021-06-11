@@ -59,9 +59,9 @@ CCtx::CCtx(Opticks* ok)
 {
     init();
 
-    _dbgrec = ok->isDbgRec() ;   // machinery debugging 
-    _dbgseq = ok->getDbgSeqhis() || ok->getDbgSeqmat() ;  // content debugging 
-    _dbgzero = ok->isDbgZero() ; 
+    _dbgrec = ok->isDbgRec() ;   // machinery debugging   --dbgrec 
+    _dbgseq = ok->getDbgSeqhis() || ok->getDbgSeqmat() ;  // history sequence debugging   --dbgseqhis 0x...  --dbgseqmat 0x...
+    _dbgzero = ok->isDbgZero() ;   // --dbgzero 
 }
 
 
@@ -71,9 +71,9 @@ Opticks*  CCtx::getOpticks() const
 }
 
 
-bool CCtx::is_dbg() const 
+bool CCtx::is_dbg() const   // commandline includes : --dbgrec --dbgseqhis 0x.. --dbgseqmat 0x..  --dbgzero
 {
-    return _dbgrec || _dbgseq || _dbgzero ;
+    return _dbgrec || _dbgseq || _dbgzero ;   
 }
 
 
@@ -147,12 +147,6 @@ void CCtx::init()
     _event_total = 0 ; 
     _event_track_count = 0 ; 
 
-    /*
-    _gen = 0 ; 
-    _genflag = 0 ; 
-    */  
-
-    //_track = NULL ; 
     _process_manager = NULL ; 
     _track_id = -1 ; 
     _track_total = 0 ;
@@ -226,7 +220,6 @@ void CCtx::initEvent(const OpticksEvent* evt)
     assert( _bounce_max == bounce_max_2 ) ; // TODO: eliminate or rename one of those
 
     const char* typ = evt->getTyp();
-    //  _gen = OpticksFlags::SourceCode(typ);   MOVED TO FINER LEVEL OF BELOW setEvent 
 
     LOG(LEVEL)
         << " _record_max (numPhotons from genstep summation) " << _record_max 
@@ -326,17 +319,6 @@ void CCtx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int
 
 void CCtx::setGentype(char gentype)
 {
-
-/*
-    switch(gentype)
-    {
-        case 'S':setGen(SI) ; break ; 
-        case 'C':setGen(CK) ; break ; 
-        case 'T':setGen(TO) ; break ; 
-        default: { LOG(fatal) << " gentype invalid [" << gentype << "]" ; assert(0) ; }   ;
-    } 
-*/
-
     _gentype = gentype ; 
 }
 
@@ -347,34 +329,10 @@ unsigned CCtx::getGenflag() const
 
 
 /**
-CCtx::setGen
-
-void CCtx::setGen(unsigned gen)
-{
-    _gen = gen ;
-    _genflag = OpticksGenstep::GenstepToPhotonFlag(_gen); 
-
-    bool valid = OpticksGenstep::IsValid(_gen) ; 
-
-    LOG(LEVEL) 
-        << " gen " << _gen
-        << " OpticksGenstep::GenType " << OpticksGenstep::Gentype(_gen) 
-        << " OpticksFlags::SourceType " << OpticksFlags::SourceType(_gen)
-        << " OpticksFlags::Flag " << OpticksFlags::Flag(_genflag)
-        << " valid " << valid 
-        ;
-
-    assert( valid );
-}
-**/
-
-
-
-/**
 CCtx::setTrack
 ------------------
 
-Invoked by CTrackingAction::setTrack
+Invoked by CManager::PreUserTrackingAction
 
 **/
 
@@ -484,7 +442,7 @@ void CCtx::setTrackOptical(G4Track* mtrack)
 CCtx::setStep
 ----------------
 
-Invoked by CSteppingAction::setStep
+Invoked by CManager::UserSteppingAction
 
 **/
 
@@ -526,7 +484,7 @@ Invoked by CCtx::setStep , sets:
 
 void CCtx::setStepOptical() 
 {
-    if( _pho.gn == 0 ) // primary photon, ie not downstream from reemission 
+    if( _pho.gn == 0 ) // photon generation zero is the primary photon, ie not downstream from reemission 
     {
         _stage = _primarystep_count == 0  ? CStage::START : CStage::COLLECT ;
         _primarystep_count++ ; 

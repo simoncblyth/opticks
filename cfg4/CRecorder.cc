@@ -149,7 +149,6 @@ Invoked by CManager::initEvent, configures and prepares for recording.
 
 void CRecorder::initEvent(OpticksEvent* evt)
 {
-    //LOG(LEVEL); 
     assert(evt);
     m_writer->initEvent(evt);
     m_crec->initEvent(evt);
@@ -161,11 +160,11 @@ CRecorder::BeginOfGenstep
 ----------------------------
 
 When have input photons this is invoked by CManager::BeginOfEventAction
+otherwise called by CManager::BeginOfGenstep
 
 **/
 void CRecorder::BeginOfGenstep()
 {
-    //LOG(LEVEL); 
     m_writer->BeginOfGenstep(); 
 }
 
@@ -204,7 +203,7 @@ void CRecorder::postTrack()
         postTrackWritePoints();  
         if(m_reccf) compareModes() ; 
     }
-    else
+    else        // default: --recstp
     {
         postTrackWriteSteps();
     } 
@@ -257,54 +256,59 @@ void CRecorder::compareModes()
     assert( ps._seqmat == pp._seqmat );
 }
 
-
-
 /**
 CRecorder::Record
 --------------------
 
-Invoked by CManager::setStep
-stage is set by CCtx::setStepOptical
+Invoked by CManager::setStep for steps of optical G4Track after CCtx::setStep/CCtx::setStepOptical
+This returns the "done" bool, which when true causes the track to be killed
+enabling truncation behaviour to be matched between simulations. 
 
-The "done" bool returned, when true causes the track to be killed, 
-which is how truncation is effected.
+* recording and the writing are split
 
 Not-zeroing m_slot for REJOINders 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * see notes/issues/reemission_review.rst
 
+
+RE-joining : reunites reemission secondaries with their parents across all RE-generations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Rejoining happens on output side not in the crec CStp list.
 
 The rejoins of AB(actually RE) tracks with reborn secondaries 
 are done by writing two (or more) sequences of track steps  
-into the same record_id in the record buffer at the 
-appropriate non-zeroed slot.
+into the same record_id in the record buffer 
+at the **appropriate non-zeroed slot**.
 
-WAS a bit confused by this ...
- 
-This assumes that the REJOINing track will
-be the one immediately after the original AB. 
-By virtue of the Cerenkov/Scintillation process setting:
+Notice that CWriter writes onto the photon record_id in the output arrays 
+for REjoined tracks so from the point of view of record_id there is 
+no requirement for reemission secondaries to be handled in sequence. 
+BUT, as described below there is such a requirement for rejoin slots to be correct.
 
-     SetTrackSecondariesFirst(true)
-  
-If not so, this will "join" unrelated tracks ?
-(Really? remember it has random access into record buffer
-using record_id)
+Q: How is the slot obtained for RE-join adding to the records ? 
+   Can imagine it could be done by looking at the seqhis but do not find this code. 
+   Makes me think that RE-joined step points will be overwriting : the lower slots ?
+   But that would be very obvious. 
 
-NOT TRUE : CWriter WRITES TO THE CORRECT PHOTON record_id IN THE OUTPUT BUFFERS 
+A: Explanation is that because CRecorder::Record does not call zeroPhoton for REJOIN 
+   the slot stays elevated and the step records and photon history nibbles get written 
+   into the appropriate slots.
+   This means that contrary to some other notes there REALLY IS AN IMPLICIT ASSUMPTION:
 
+   *  **RE-EMISSION SECONDARY G4Track MUST BE SUPPLIED TO CManager/CRecorder IN CORRECT GENERATIONAL SEQUENCE**.
 
+   It seems that this sequential assumption must be being satisfied otherwise the step records 
+   should be messed up rather obviously. 
+   The sequential assumption is only for the continuation of the slots, not for the record_id which is random write
+   into the dynamically growing buffer.
 
-Caution the recording and the writing are split
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TODO: 
 
-
-
-Setting m_ctx._stage 
-~~~~~~~~~~~~~~~~~~~~~~~
-
+1. take a careful look at the RE steps, to make sure of the above answer
+2. avoid the sequential assumption by extracting the slot-so-far from 
+   the the seqhis history, eg with SBit::count_nibbles
 
 **/
 
@@ -314,20 +318,19 @@ bool CRecorder::Record(Ds::DsG4OpBoundaryProcessStatus boundary_status)
 bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 #endif
 {    
-    //LOG(LEVEL) << " m_mode " << m_mode ; 
-
-
     m_state._step_action = 0 ; 
 
     assert(!m_live);
 
-    if(m_ctx._stage == CStage::START)
+    if(m_ctx._stage == CStage::START)  // first step of primary photon 
     { 
         zeroPhoton();
     }
-    else if(m_ctx._stage == CStage::REJOIN )
+    else if(m_ctx._stage == CStage::REJOIN ) // first step of RE-join photon
     {
-        m_crec->clear(); // NB Not-zeroing m_slot for REJOINders, see above note
+        m_crec->clear(); 
+        // NB Not-zeroing m_slot for REJOINders, see above notes
+        // **CAUTION : SLOT CONTINUATION BY NOT-ZEROING IS RELYING ON THE SEQUENTIAL RE-EMISSION TRACK ASSUMPTION**
     }
     else if(m_ctx._stage == CStage::RECOLL )
     {
@@ -337,17 +340,26 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     bool done = m_crec->add(boundary_status) ; // collecting steps (recstp) or points (recpoi)
 
     if(m_ctx._dbgrec)
-        LOG(info) << "crec.add "
-                  << " boundary_status " << boundary_status
-                  << m_crec->desc()
-                  << std::setw(10) << CStage::Label(m_ctx._stage)
-                  << " " << m_ctx.desc_step() 
-                  << " " << ( done ? "DONE" : "-" )
-                  ; 
+        LOG(info) 
+            << "crec.add "
+            << " boundary_status " << boundary_status
+            << m_crec->desc()
+            << std::setw(10) << CStage::Label(m_ctx._stage)
+            << " " << m_ctx.desc_step() 
+            << " " << ( done ? "DONE" : "-" )
+            ; 
 
     return done ;  // (*lldb*) record
 }
 
+/**
+CRecorder::zeroPhoton
+-----------------------
+
+Invoked from CRecorder::Record at the first step of primary photons,
+clears: m_crec, m_photon, m_state
+
+**/
 
 void CRecorder::zeroPhoton()
 { 
