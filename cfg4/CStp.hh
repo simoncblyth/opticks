@@ -41,23 +41,24 @@ class CFG4_API CStp
 {
    public:
 #ifdef USE_CUSTOM_BOUNDARY
-       Ds::DsG4OpBoundaryProcessStatus getBoundaryStatus() ;
+       Ds::DsG4OpBoundaryProcessStatus getBoundaryStatus() const ;
        CStp(const G4Step* step, int step_id, Ds::DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin);
        CStp(const G4Step* step, int step_id, Ds::DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin);
 #else
-       G4OpBoundaryProcessStatus   getBoundaryStatus() ;
+       G4OpBoundaryProcessStatus   getBoundaryStatus() const ;
        CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage, const G4ThreeVector& origin);
        CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin); 
 #endif
        ~CStp();  
 
-        std::string description();
-        std::string origin();
+        std::string description_key() const ;
+        std::string description() const ;
+        std::string origin() const ;
 
     public:
-         const G4Step*    getStep();
-         int              getStepId(); 
-         CStage::CStage_t getStage();
+         const G4Step*    getStep() const ;
+         int              getStepId() const ; 
+         CStage::CStage_t getStage() const ;
 
          void   setMat(  unsigned premat, unsigned postmat);
          void   setFlag( unsigned preflag, unsigned postflag );

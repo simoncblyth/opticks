@@ -249,13 +249,12 @@ Q: how does this work with REJOIN and dynamic running ?
 A: the arrays are extended at BeginOfGenstep allowing 
    random access writes into the dynamically growing arrays 
 
-The current implementation was adapted (using CPhotonInfo) to remove the need
-to track reemission secondaries first.  Any order of tracks should now work 
-just fine, assuming that secondaries always come after their parents.
-Which should always the case (?)
-
 Reemission RE-joining of tracks are handled by resuming the 
-writing onto ancestor photon records lined up using the record_id.
+writing onto ancestor photon records lined up using the record_id
+which is passed between generations using CPhotonInfo.
+
+BUT crucially **sequential reemission track supply IS STILL NEEDED**
+for RE-emission slot continuation to be correct. 
 
 **/
 

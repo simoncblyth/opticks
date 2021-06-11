@@ -80,23 +80,23 @@ CStp::~CStp()
 
 
 
-const G4Step* CStp::getStep()
+const G4Step* CStp::getStep() const 
 {
    return m_step ; 
 }
-int CStp::getStepId()
+int CStp::getStepId() const 
 {
    return m_step_id ; 
 }
 #ifdef USE_CUSTOM_BOUNDARY
-Ds::DsG4OpBoundaryProcessStatus CStp::getBoundaryStatus() 
+Ds::DsG4OpBoundaryProcessStatus CStp::getBoundaryStatus() const 
 #else
-G4OpBoundaryProcessStatus   CStp::getBoundaryStatus() 
+G4OpBoundaryProcessStatus   CStp::getBoundaryStatus() const 
 #endif
 {
    return m_boundary_status ;  
 }
-CStage::CStage_t CStp::getStage()
+CStage::CStage_t CStp::getStage() const 
 {
    return m_stage ; 
 }
@@ -104,7 +104,7 @@ CStage::CStage_t CStp::getStage()
 
 
 
-std::string CStp::origin()
+std::string CStp::origin() const 
 {
     std::stringstream ss ; 
     ss 
@@ -132,7 +132,23 @@ void CStp::setAction(int action)
 }
 
 
-std::string CStp::description()
+std::string CStp::description_key() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << " "   << "m_preflag/m_postflag"
+       << "   " << "m_boundary_status"
+       << "   " << std::setw(50) << "m_action"
+       << std::endl
+       << "["
+       << std::setw(4) << "m_step_id"
+       << "]"       
+       << " ::Format(m_step,m_origin, \"Stp\" ) "
+       ; 
+    return ss.str(); 
+}
+
+std::string CStp::description() const 
 {
     std::stringstream ss ; 
     ss 

@@ -162,6 +162,40 @@ std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const 
 }
 
 
+std::string Format(const G4StepPoint* pre, const G4StepPoint* post, double epsilon, const char* msg )
+{
+    const G4ThreeVector& pre_pos = pre->GetPosition();
+    const G4ThreeVector& pre_dir = pre->GetMomentumDirection();
+    const G4ThreeVector& pre_pol = pre->GetPolarization();
+
+    const G4ThreeVector& post_pos = post->GetPosition();
+    const G4ThreeVector& post_dir = post->GetMomentumDirection();
+    const G4ThreeVector& post_pol = post->GetPolarization();
+
+    bool same_pos = pre_pos == post_pos ; 
+    bool same_dir = pre_dir == post_dir ; 
+    bool same_pol = pre_pol == post_pol ; 
+
+    bool near_pos = pre_pos.isNear(post_pos, epsilon) ; 
+    bool near_dir = pre_dir.isNear(post_dir, epsilon) ; 
+    bool near_pol = pre_pol.isNear(post_pol, epsilon) ; 
+
+    std::stringstream ss ; 
+    ss << " " << std::setw(4)  << msg  
+       << " " << ( same_pos ? "same_pos" : "" ) 
+       << " " << ( same_dir ? "same_dir" : "" ) 
+       << " " << ( same_pol ? "same_pol" : "" ) 
+       << " " << ( near_pos ? "near_pos" : "" ) 
+       << " " << ( near_dir ? "near_dir" : "" ) 
+       << " " << ( near_pol ? "near_pol" : "" ) 
+       << " " << " near_epsilon " << epsilon 
+       ;
+
+    return ss.str();
+}
+
+
+
 std::string Format(const G4Step* step, const G4ThreeVector& origin, const char* msg, bool op )
 {
     G4Track* track = step->GetTrack();
@@ -179,6 +213,7 @@ std::string Format(const G4Step* step, const G4ThreeVector& origin, const char* 
        << Format(track, origin,  "tk", op) << "\n"
        << Format(pre,  origin, "pre", op) << "\n"
        << Format(post, origin, "post", op) << "\n"
+       << Format(pre, post ) << "\n"
        << " )"
        ;
 

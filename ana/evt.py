@@ -297,6 +297,7 @@ class Evt(object):
 
         if self.rec:
             self.init_records()
+            self.init_deluxe()
             self.init_sequence()
             #self.init_index()
             self.init_npoint()
@@ -380,7 +381,7 @@ class Evt(object):
     seqhis_labels = property(_get_seqhis_labels)
 
 
-    PhotonArrayStems = "ox rx ph so ps rs"
+    PhotonArrayStems = "ox rx dx ph so ps rs"
 
     @classmethod
     def IsPhotonArray(cls, stem):
@@ -663,6 +664,33 @@ class Evt(object):
         if rx.missing:return 
        
         log.debug("rx shape %s " % str(rx.shape))
+
+
+    def init_deluxe(self):
+        """
+        Hmm OpticksEvent is writing header only with disceptive shape for the +ve tag::
+      
+            epsilon:1 blyth$ xxd dx.npy
+            00000000: 934e 554d 5059 0100 4600 7b27 6465 7363  .NUMPY..F.{'desc
+            00000010: 7227 3a20 273c 6638 272c 2027 666f 7274  r': '<f8', 'fort
+            00000020: 7261 6e5f 6f72 6465 7227 3a20 4661 6c73  ran_order': Fals
+            00000030: 652c 2027 7368 6170 6527 3a20 2838 2c20  e, 'shape': (8, 
+            00000040: 3130 2c20 322c 2034 292c 207d 2020 200a  10, 2, 4), }   .
+
+        Workaround::
+
+           epsilon:1 blyth$ mv dx.npy dx0.npy
+
+        """
+        log.debug("init_deluxe")
+        
+        dx = self.aload("dx",optional=True)
+        self.dx = dx
+        self.desc['dx'] = "(deluxe) photon step records"
+
+        if dx.missing:return 
+        log.debug("dx shape %s " % str(dx.shape))
+
 
     def init_source(self):
         """
