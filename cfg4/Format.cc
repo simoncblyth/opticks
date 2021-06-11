@@ -181,16 +181,36 @@ std::string Format(const G4StepPoint* pre, const G4StepPoint* post, double epsil
     bool near_pol = pre_pol.isNear(post_pol, epsilon) ; 
 
     std::stringstream ss ; 
-    ss << " " << std::setw(4)  << msg  
-       << " " << ( same_pos ? "same_pos" : "" ) 
-       << " " << ( same_dir ? "same_dir" : "" ) 
-       << " " << ( same_pol ? "same_pol" : "" ) 
-       << " " << ( near_pos ? "near_pos" : "" ) 
-       << " " << ( near_dir ? "near_dir" : "" ) 
-       << " " << ( near_pol ? "near_pol" : "" ) 
-       << " " << " near_epsilon " << epsilon 
-       ;
+    ss << " " << std::setw(4)  << msg ;
 
+    if( same_pos )
+    {
+       ss << " " << "same_pos"  ;
+    }
+    else if( near_pos )
+    {
+       ss << " " << "near_pos" ; 
+    }
+
+    if( same_dir )
+    {
+       ss << " " << "same_dir"  ;
+    }
+    else if( near_dir )
+    {
+       ss << " " << "near_dir" ; 
+    }
+
+    if( same_pol )
+    {
+       ss << " " << "same_pol"  ;
+    }
+    else if( near_pol )
+    {
+       ss << " " << "near_pol" ; 
+    }
+
+    ss << "       epsilon " << epsilon ; 
     return ss.str();
 }
 
