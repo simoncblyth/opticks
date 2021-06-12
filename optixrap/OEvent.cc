@@ -87,6 +87,7 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
 #ifdef WITH_RECORD
     m_record_buf(NULL),
     m_sequence_buf(NULL),
+    m_boundary_buf(NULL),
 #endif
 #ifdef WITH_DEBUG_BUFFER
     m_debug_buf(NULL),
@@ -246,12 +247,14 @@ void OEvent::createBuffers(OpticksEvent* evt)
 #ifdef WITH_RECORD
     NPY<short>* rx = evt->getRecordData() ;
     assert(rx);
+    LOG(LEVEL) << " rx " << rx->getShapeString() ;  
     m_record_buffer = m_ocontext->createBuffer<short>( rx, "record");
     m_context["record_buffer"]->set( m_record_buffer );
     m_record_buf = new OBuf("record", m_record_buffer);
 
     NPY<unsigned long long>* sq = evt->getSequenceData() ;
     assert(sq);
+    LOG(LEVEL) << " sq " << sq->getShapeString() ;  
     m_sequence_buffer = m_ocontext->createBuffer<unsigned long long>( sq, "sequence"); 
     m_context["sequence_buffer"]->set( m_sequence_buffer );
     m_sequence_buf = new OBuf("sequence", m_sequence_buffer);
@@ -260,6 +263,7 @@ void OEvent::createBuffers(OpticksEvent* evt)
 
     NPY<unsigned>* bn = evt->getBoundaryData() ;
     assert(bn); 
+    LOG(LEVEL) << " bn " << bn->getShapeString() ;  
     m_boundary_buffer = m_ocontext->createBuffer<unsigned>( bn, "boundary"); 
     m_context["boundary_buffer"]->set( m_boundary_buffer );
 

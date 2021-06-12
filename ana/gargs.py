@@ -48,7 +48,19 @@ class GArgs(argparse.Namespace):
 
     @classmethod
     def lvname(cls, idx):
+        """
+        When names change yet again, use to update these:: 
+
+            print("\n".join(g.volumes.keys()))     
+
+        """
         lvxs = slist_(r"""
+        PMT_3inch_log
+        NNVTMCPPMT_log 
+        HamamatsuR12860_log
+        """)
+
+        old_lvxs = slist_(r"""
         PMT_3inch_log
         NNVTMCPPMTlMaskVirtual
         HamamatsuR12860lMaskVirtual

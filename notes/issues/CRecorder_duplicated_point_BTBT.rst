@@ -168,4 +168,8 @@ Need to rerun GDML plots as geometry has changed::
 
    scp P:/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/fe48b4d359786b95505117280fb5aac1/1/origin_CGDMLKludge.gdml /usr/local/opticks/
  
+Also updates lvnames as no more virtual masks.
+
+
+
 
