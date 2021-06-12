@@ -257,6 +257,16 @@ void OEvent::createBuffers(OpticksEvent* evt)
     m_sequence_buf = new OBuf("sequence", m_sequence_buffer);
     m_sequence_buf->setMultiplicity(1u);
     m_sequence_buf->setHexDump(true);
+
+    NPY<unsigned>* bn = evt->getBoundaryData() ;
+    assert(bn); 
+    m_boundary_buffer = m_ocontext->createBuffer<unsigned>( bn, "boundary"); 
+    m_context["boundary_buffer"]->set( m_boundary_buffer );
+
+    m_boundary_buf = new OBuf("boundary", m_boundary_buffer);
+    m_boundary_buf->setMultiplicity(1u);  // ?
+
+
 #endif
 
 }

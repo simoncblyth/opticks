@@ -36,6 +36,8 @@ CFG4_API std::string Format(const G4Step* step,    const G4ThreeVector& origin, 
 CFG4_API std::string Format(const G4StepPoint* sp, const G4ThreeVector& origin, const char* msg="Pt",    bool op=true );
 CFG4_API std::string Format(const G4StepPoint* pre, const G4StepPoint* post, double epsilon=1e-6, const char* msg="Cfsp" );
 
+
+CFG4_API std::string Format(const G4double v, const char* msg, unsigned int fwid ) ; 
 CFG4_API std::string Format(const G4ThreeVector& vec, const char* msg="Vec", unsigned int fwid=4);
 CFG4_API std::string Format(std::vector<const CStep*>& steps, const char* msg, bool op=true );
 

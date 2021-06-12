@@ -36,6 +36,14 @@ See Also
 * env-;cudatex-
 
 
+
+128bit uint ?
+----------------
+
+* https://stackoverflow.com/questions/6162140/128-bit-integer-on-cuda
+* https://github.com/curtisseizert/CUDA-uint128
+
+
 CUdeviceptr
 ------------
 

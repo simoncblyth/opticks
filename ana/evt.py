@@ -237,6 +237,7 @@ class Evt(object):
         log.debug("pfx:%s" % pfx)
 
         self.tag = str(tag)
+        self.itag = int(self.tag)
         self.src = src
         self.det = det
         self.pfx = pfx 
@@ -391,9 +392,9 @@ class Evt(object):
         """ 
         return stem in cls.PhotonArrayStems
 
-    def aload(self, stem, optional=False):
+    def aload(self, stem, optional=False, g4only=False):
         msli = self.msli if self.IsPhotonArray(stem) else None
-        a = A.load_(stem, self.src, self.tag, self.det, optional=optional, dbg=self.dbg, pfx=self.pfx, msli=msli ) 
+        a = A.load_(stem, self.src, self.tag, self.det, optional=optional, dbg=self.dbg, pfx=self.pfx, msli=msli, g4only=g4only ) 
         return a 
 
     def check_shapes(self):
@@ -681,10 +682,11 @@ class Evt(object):
 
            epsilon:1 blyth$ mv dx.npy dx0.npy
 
+        Have seen this before with other unfilled arrays. 
         """
         log.debug("init_deluxe")
         
-        dx = self.aload("dx",optional=True)
+        dx = self.aload("dx",optional=True, g4only=True)
         self.dx = dx
         self.desc['dx'] = "(deluxe) photon step records"
 

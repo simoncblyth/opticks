@@ -237,8 +237,27 @@ def gspath_(typ, tag, det, gsbase=None):
     return gspath 
 
 class A(np.ndarray):
+
     @classmethod
-    def load_(cls, stem, typ, tag, det="dayabay", pfx="source", dbg=False, optional=False, msli=None):
+    def path_(cls, stem, typ, tag, det="dayabay", pfx="source"):
+        """
+        :param stem: gs,ox,ht,rs,so,ph,fdom,idom
+        :param typ: natural
+        :param tag: 1,-1
+        :param det: g4live 
+        :param pfx: source for 1st executable, the name of the executable for subsequent ones eg OKG4Test 
+        :return path:
+        """
+        if stem == "gensteps":
+            path = gspath_(typ, tag, det)
+            assert 0, "suspect these paths are now wrong"
+        else:
+            path = path_(typ,tag, det, name="%s.npy" % stem, pfx=pfx)
+        pass
+        return path
+
+    @classmethod
+    def load_(cls, stem, typ, tag, det="dayabay", pfx="source", dbg=False, optional=False, msli=None, g4only=False):
         """
         :param stem: gs,ox,ht,rs,so,ph,fdom,idom
         :param typ: natural
@@ -256,19 +275,19 @@ class A(np.ndarray):
         if dbg:
             print("stem:%s typ:%s tag:%s det:%s pfx:%s dbg:%s optional:%s" % (stem, typ, tag, det, pfx, dbg, optional))
         pass
-
-        if stem == "gensteps":
-            path = gspath_(typ, tag, det)
-            assert 0, "suspect these paths are now wrong"
-        else:
-            path = path_(typ,tag, det, name="%s.npy" % stem, pfx=pfx)
-        pass
-
+        path = cls.path_(stem, typ, tag, det, pfx)
         a = None
         missing = False  
         oshape = None
-        
-        if os.path.exists(path):
+        itag = int(tag)
+
+        exists = os.path.exists(path)
+
+        fake_missing = exists and g4only and itag > 0 and stem == "dx"     
+        if fake_missing:
+            print("fake_missing %s " % path)
+        pass  
+        if exists and not fake_missing:
 
             st = os.stat(path)
             sz = st.st_size 

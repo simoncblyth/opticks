@@ -41,7 +41,17 @@
 #include "OpStatus.hh"
 
 
-
+std::string Format(const G4double v, const char* msg, unsigned int fwid)
+{
+    std::stringstream ss ; 
+    ss << " " << msg << "[ "
+       << std::fixed
+       << std::setprecision(3)  
+       << std::setw(fwid)
+       << v 
+       ;
+    return ss.str();
+}
 
 std::string Format(const G4ThreeVector& vec, const char* msg, unsigned int fwid)
 {
@@ -52,6 +62,8 @@ std::string Format(const G4ThreeVector& vec, const char* msg, unsigned int fwid)
        << std::setw(fwid) << vec.x()
        << std::setw(fwid) << vec.y() 
        << std::setw(fwid) << vec.z() 
+       << " ; "
+       << std::setw(fwid) << vec.mag() 
        << "] "
        ;
     return ss.str();
@@ -167,22 +179,33 @@ std::string Format(const G4StepPoint* pre, const G4StepPoint* post, double epsil
     const G4ThreeVector& pre_pos = pre->GetPosition();
     const G4ThreeVector& pre_dir = pre->GetMomentumDirection();
     const G4ThreeVector& pre_pol = pre->GetPolarization();
+    G4double pre_time = pre->GetGlobalTime();
 
     const G4ThreeVector& post_pos = post->GetPosition();
     const G4ThreeVector& post_dir = post->GetMomentumDirection();
     const G4ThreeVector& post_pol = post->GetPolarization();
+    G4double post_time = post->GetGlobalTime();
 
     bool same_pos = pre_pos == post_pos ; 
     bool same_dir = pre_dir == post_dir ; 
     bool same_pol = pre_pol == post_pol ; 
+    bool same_time = pre_time == post_time ; 
 
     bool near_pos = pre_pos.isNear(post_pos, epsilon) ; 
     bool near_dir = pre_dir.isNear(post_dir, epsilon) ; 
     bool near_pol = pre_pol.isNear(post_pol, epsilon) ; 
+    bool near_time = std::abs( pre_time - post_time ) < epsilon ; 
+
+    G4ThreeVector dpos = post_pos - pre_pos ; 
+    G4ThreeVector ddir = post_dir - pre_dir ; 
+    G4ThreeVector dpol = post_pol - pre_pol ; 
+    double dtim = post_time - pre_time ; 
 
     std::stringstream ss ; 
-    ss << " " << std::setw(4)  << msg ;
+    ss << " " << std::setw(4)  << msg  ;
 
+
+    ss << Format(dpos, "dpos", 8) ; 
     if( same_pos )
     {
        ss << " " << "same_pos"  ;
@@ -192,6 +215,8 @@ std::string Format(const G4StepPoint* pre, const G4StepPoint* post, double epsil
        ss << " " << "near_pos" ; 
     }
 
+
+    ss << Format(ddir, "ddir", 8) ; 
     if( same_dir )
     {
        ss << " " << "same_dir"  ;
@@ -201,6 +226,8 @@ std::string Format(const G4StepPoint* pre, const G4StepPoint* post, double epsil
        ss << " " << "near_dir" ; 
     }
 
+
+    ss << Format(dpol, "dpol", 8) ;
     if( same_pol )
     {
        ss << " " << "same_pol"  ;
@@ -209,6 +236,19 @@ std::string Format(const G4StepPoint* pre, const G4StepPoint* post, double epsil
     {
        ss << " " << "near_pol" ; 
     }
+
+
+    ss << Format(dtim, "dtim", 8) ;
+    if( same_time )
+    {
+       ss << " " << "same_time"  ;
+    }
+    else if( near_time )
+    {
+       ss << " " << "near_time" ; 
+    }
+
+
 
     ss << "       epsilon " << epsilon ; 
     return ss.str();

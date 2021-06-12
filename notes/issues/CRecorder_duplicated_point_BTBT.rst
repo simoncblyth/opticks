@@ -21,12 +21,12 @@ issue
     TO AB
 
     bls[:10]
-    TO BT BT BT BT SA
-    TO SC BT BT BT SA
-    TO BT BT BT BT SD
+    TO BT BT BT *BT* SA
+    TO SC BT BT *BT* SA
+    TO BT BT BT *BT* SD
     TO AB
-    TO SC SC BT BT BT BT SD
-    TO BT BT BT BT SA
+    TO SC SC BT BT BT *BT* SD
+    TO BT BT BT *BT* SA
     TO BT BT AB
     TO SC BT BT BR SA
 
@@ -84,9 +84,39 @@ tds3ip using --dbgseqhis
     2021-06-11 22:06:36.140 INFO  [446353] [CDebug::dump_points@257] CDeug::dump_points
 
 
+
+Hmm why not exactly matching the above ? Must be going thru a float ? YEP::
+
+    In [3]: b.dx[5]                                                                                                                                                                                          
+    Out[3]: 
+    A([[[     0.5774,     -0.5774,      0.5774,      0.6   ],
+        [    -0.7071,      0.    ,      0.7071,    440.    ]],
+
+       [[ 10219.0996, -10219.0996,  10219.0996,     91.2555],
+        [    -0.7071,      0.    ,      0.7071,    440.    ]],
+
+       [[ 10288.3818, -10288.3818,  10288.3818,     91.8747],
+        [    -0.7071,      0.    ,      0.7071,    440.    ]],
+
+       [[ 11140.5127, -11140.5127,  11140.5127,     98.679 ],
+        [     0.6946,      0.7168,     -0.0615,    440.    ]],
+
+       [[ 11140.5127, -11140.5127,  11140.5127,     98.679 ],
+        [     0.6946,      0.7168,     -0.0615,    440.    ]],
+
+       [[ 11144.0537, -11143.6738,  11143.6641,     98.708 ],
+        [     0.6946,      0.7168,     -0.0615,    440.    ]],
+
+       [[     0.    ,      0.    ,      0.    ,      0.    ],
+        [     0.    ,      0.    ,      0.    ,      0.    ]],
+
+
+
+
 Notice for m_stp index 3 
 
 * pre and post points are at same position, BUT are in different volumes : pLPMT_NNVT_MCPPMT, NNVTMCPPMT_body_phys
+* same-ness was because of accidently getting narrowed to float precision on the way into deluxe buffer
 * G4OpBoundaryProcessStatus SAM is abbrev for SameMaterial
 
 

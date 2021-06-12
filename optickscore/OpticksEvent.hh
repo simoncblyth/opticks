@@ -212,6 +212,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        static const char* phosel_ ;
        static const char* recsel_  ;
        static const char* sequence_  ;
+       static const char* boundary_  ;
        static const char* seed_  ;
        static const char* hit_  ;
        static const char* hiy_  ;
@@ -313,6 +314,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void saveRecordData(); 
        void saveDeluxeData(); 
        void saveSequenceData(); 
+       void saveBoundaryData(); 
        void saveSeedData(); 
        void saveDebugData(); 
        void saveWayData(); 
@@ -337,6 +339,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    private:
        void setPhotonData(NPY<float>* photon_data);
        void setSequenceData(NPY<unsigned long long>* history_data);
+       void setBoundaryData(NPY<unsigned>* boundary_data);
        void setSeedData(NPY<unsigned>* seed_data);
        void setHitData(NPY<float>* hit_data);
        void setHiyData(NPY<float>* hiy_data);
@@ -385,6 +388,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<unsigned char>*  getPhoselData() const ;
        NPY<unsigned char>*  getRecselData() const ;
        NPY<unsigned long long>*  getSequenceData() const ;
+       NPY<unsigned>*            getBoundaryData() const ;
        NPY<unsigned>*          getSeedData() const ;
        NPY<float>*             getHitData() const ;
        NPY<float>*             getHiyData() const ;
@@ -423,6 +427,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        MultiViewNPY* getPhoselAttr();
        MultiViewNPY* getRecselAttr();
        MultiViewNPY* getSequenceAttr();
+       MultiViewNPY* getBoundaryAttr();
        MultiViewNPY* getSeedAttr();
        MultiViewNPY* getHitAttr();
        MultiViewNPY* getHiyAttr();
@@ -487,6 +492,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<unsigned char>*       m_phosel_data ;
        NPY<unsigned char>*       m_recsel_data ;
        NPY<unsigned long long>*  m_sequence_data ;
+       NPY<unsigned>*            m_boundary_data ;
        NPY<unsigned>*            m_seed_data ;
        NPY<float>*               m_hit_data ;
        NPY<float>*               m_hiy_data ;
@@ -510,6 +516,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        MultiViewNPY*   m_phosel_attr  ;
        MultiViewNPY*   m_recsel_attr  ;
        MultiViewNPY*   m_sequence_attr  ;
+       MultiViewNPY*   m_boundary_attr  ;
        MultiViewNPY*   m_seed_attr  ;
        MultiViewNPY*   m_hit_attr  ;
        MultiViewNPY*   m_hiy_attr  ;
@@ -552,6 +559,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPYSpec* m_phosel_spec ;  
        NPYSpec* m_recsel_spec ;  
        NPYSpec* m_sequence_spec ;  
+       NPYSpec* m_boundary_spec ;  
        NPYSpec* m_seed_spec ;  
        NPYSpec* m_hit_spec ;  
        NPYSpec* m_hiy_spec ;  

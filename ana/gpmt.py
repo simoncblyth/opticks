@@ -33,12 +33,12 @@ if __name__ == '__main__':
 
     NNVT = 1
     HAMA = 2 
-    #pmt = NNVT 
-    pmt = HAMA 
+    pmt = NNVT 
+    #pmt = HAMA 
 
 
-    #pec = None
-    pec = PMTEfficiencyCheck_()
+    pec = None
+    #pec = PMTEfficiencyCheck_()
     if not pec is None:
         ipec = { HAMA:0,NNVT:1 }
         pec_sli = 10000

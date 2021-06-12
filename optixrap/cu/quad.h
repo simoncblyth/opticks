@@ -62,6 +62,20 @@ union uif
 };
 
 
+// up to 16 signed char into 128bits of the uint4 
+union uint4c16 
+{
+    uint4 u ; 
+    signed char c[16] ; 
+};
+
+
+
+
+
+
+
+
 #ifdef __CUDACC__
 
 static __device__

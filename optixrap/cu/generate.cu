@@ -110,6 +110,7 @@ rtBuffer<float4>               photon_buffer;
 #ifdef WITH_RECORD
 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
+rtBuffer<uint4>                boundary_buffer ;    // 128bits : 16*8bits of signed char boundary 
 #endif
 
 #ifdef WITH_DEBUG_BUFFER
@@ -679,6 +680,10 @@ analogous to *photon* to *hit* selexction.
 #ifdef WITH_RECORD
     unsigned long long seqhis(0) ;
     unsigned long long seqmat(0) ;
+
+    uint4c16 bnd16 ; 
+    bnd16.u = make_uint4(0,0,0,0) ; 
+
     unsigned int MAXREC = record_max ; 
     int slot_min = photon_id*MAXREC ; 
     int slot_max = slot_min + MAXREC - 1 ; 
@@ -765,6 +770,8 @@ analogous to *photon* to *hit* selexction.
         {
             slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
             RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
+
+            bnd16.c[slot] = prd.boundary ; 
         } 
 #endif
 
@@ -845,6 +852,8 @@ analogous to *photon* to *hit* selexction.
 
     p.flags.u.z = photon_id ;  // formerly behind IDENTITY_DEBUG macro, but has become indispensable
 
+
+
     if( utaildebug )   // --utaildebug    see notes/issues/ts-box-utaildebug-decouple-maligned-from-deviant.rst
     {
         float u_taildebug = curand_uniform(&rng) ;
@@ -895,6 +904,7 @@ analogous to *photon* to *hit* selexction.
 
         sequence_buffer[photon_id*2 + 0] = seqhis ; 
         sequence_buffer[photon_id*2 + 1] = seqmat ;  
+        boundary_buffer[photon_id] = bnd16.u ; 
     }
 #endif
 

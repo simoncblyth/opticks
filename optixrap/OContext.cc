@@ -1336,9 +1336,14 @@ void OContext::resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name
 }
 
 
+/**
+OContext::getFormat
+----------------------
 
+NB assumes the buffer type is quad of the NPY template type, 
+except for seed buffer and ULONGLONG and DOUBLE types. 
 
-
+**/
 RTformat OContext::getFormat(NPYBase::Type_t type, bool is_seed)
 {
     RTformat format ; 

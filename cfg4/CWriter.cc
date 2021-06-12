@@ -284,9 +284,11 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon, u
     G4double energy = point->GetKineticEnergy();
     G4double wavelength = h_Planck*c_light/energy ;
 
+    glm::tvec4<double> dx_post(pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns) ; 
+    glm::tvec4<double> dx_polw(pol.x()   , pol.y()   , pol.z()   , wavelength/nm ); 
 
-    m_deluxe_buffer->setQuad(record_id, slot, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns );
-    m_deluxe_buffer->setQuad(record_id, slot, 1, pol.x()   , pol.y()   , pol.z()   , wavelength/nm );
+    m_deluxe_buffer->setQuad_(dx_post, record_id, slot, 0 );
+    m_deluxe_buffer->setQuad_(dx_polw, record_id, slot, 1 ); 
 
 
     const glm::vec4& sd = m_evt->getSpaceDomain() ; 

@@ -100,7 +100,10 @@ Buffers During Debugging
     (n_photon, 1, 2) uint64 (unsigned long long) : flag and material sequence (64 bits = 16*4 bits )
 
 *record*
-    (n_photon, 16, 2, 4) int16 (shorts)
+    (n_photon, 16, 2, 4) int16 (shorts) : highly domain compressed photon step records 
+
+*boundary*
+    (n_photon, 1, 4)  unsigned : uint4 packing of 16 signed char boundary indices, aka bndseq
 
 
 
@@ -200,6 +203,7 @@ class OXRAP_API OEvent
 #ifdef WITH_RECORD
         optix::Buffer   m_record_buffer ; 
         optix::Buffer   m_sequence_buffer ; 
+        optix::Buffer   m_boundary_buffer ; 
 #endif
         optix::Buffer   m_seed_buffer ; 
     private:
@@ -211,6 +215,7 @@ class OXRAP_API OEvent
 #ifdef WITH_RECORD
         OBuf*           m_record_buf ;
         OBuf*           m_sequence_buf ;
+        OBuf*           m_boundary_buf ;
 #endif
         OBuf*           m_seed_buf ;
 

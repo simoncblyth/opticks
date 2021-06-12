@@ -116,6 +116,7 @@ const char* OpticksEvent::deluxe_  = "deluxe" ;  // double precision version of 
 const char* OpticksEvent::phosel_ = "phosel" ; 
 const char* OpticksEvent::recsel_  = "recsel" ; 
 const char* OpticksEvent::sequence_  = "sequence" ; 
+const char* OpticksEvent::boundary_  = "boundary" ; 
 const char* OpticksEvent::seed_  = "seed" ; 
 const char* OpticksEvent::hit_  = "hit" ; 
 const char* OpticksEvent::hiy_  = "hiy" ; 
@@ -164,6 +165,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_phosel_data(NULL),
     m_recsel_data(NULL),
     m_sequence_data(NULL),
+    m_boundary_data(NULL),
     m_seed_data(NULL),
     m_hit_data(NULL),
     m_hiy_data(NULL),
@@ -182,6 +184,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_phosel_attr(NULL),
     m_recsel_attr(NULL),
     m_sequence_attr(NULL),
+    m_boundary_attr(NULL),
     m_seed_attr(NULL),
     m_hit_attr(NULL),
     m_hiy_attr(NULL),
@@ -213,6 +216,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
     m_phosel_spec(NULL),
     m_recsel_spec(NULL),
     m_sequence_spec(NULL),
+    m_boundary_spec(NULL),
     m_seed_spec(NULL),
     m_hit_spec(NULL),
     m_hiy_spec(NULL),
@@ -439,6 +443,14 @@ NPY<unsigned long long>* OpticksEvent::getSequenceData() const  // aka History B
 { 
     return m_sequence_data ;
 }
+NPY<unsigned>* OpticksEvent::getBoundaryData() const  // aka seqbnd
+{ 
+    return m_boundary_data ;
+}
+
+
+
+
 NPY<unsigned>* OpticksEvent::getSeedData() const 
 { 
     return m_seed_data ;
@@ -463,6 +475,7 @@ MultiViewNPY* OpticksEvent::getDeluxeAttr(){ return m_deluxe_attr ; }
 MultiViewNPY* OpticksEvent::getPhoselAttr(){ return m_phosel_attr ; }
 MultiViewNPY* OpticksEvent::getRecselAttr(){ return m_recsel_attr ; }
 MultiViewNPY* OpticksEvent::getSequenceAttr(){ return m_sequence_attr ; }
+MultiViewNPY* OpticksEvent::getBoundaryAttr(){ return m_boundary_attr ; }
 MultiViewNPY* OpticksEvent::getSeedAttr(){   return m_seed_attr ; }
 MultiViewNPY* OpticksEvent::getHitAttr(){    return m_hit_attr ; }
 MultiViewNPY* OpticksEvent::getHiyAttr(){    return m_hiy_attr ; }
@@ -654,6 +667,7 @@ void OpticksEvent::pushNames(std::vector<std::string>& names)
     names.push_back(phosel_);
     names.push_back(recsel_);
     names.push_back(sequence_);
+    names.push_back(boundary_);
     names.push_back(seed_);
     names.push_back(hit_);
 } 
@@ -718,6 +732,7 @@ void OpticksEvent::init()
     m_abbrev[phosel_] = "ps" ;     // photon selection index
     m_abbrev[recsel_] = "rs" ;     // record selection index
     m_abbrev[sequence_] = "ph" ;   // (unsigned long long) photon seqhis/seqmat
+    m_abbrev[boundary_] = "bn" ;   // (unsigned) uint4 encoding of 16 signed char boundary, aka seqbnd
     m_abbrev[seed_] = "se" ;   //   (short) genstep id used for photon seeding 
     m_abbrev[hit_] = "ht" ;     // hits, subset of ox with photons flags fullfilling the hit mask
     m_abbrev[hiy_] = "hy" ;     // hiys, subset of wy with photons flags fullfilling the hit mask 
@@ -764,6 +779,7 @@ NPYBase* OpticksEvent::getData(const char* name)
     else if(strcmp(name, phosel_)==0)  data = static_cast<NPYBase*>(m_phosel_data) ;
     else if(strcmp(name, recsel_)==0)  data = static_cast<NPYBase*>(m_recsel_data) ;
     else if(strcmp(name, sequence_)==0) data = static_cast<NPYBase*>(m_sequence_data) ;
+    else if(strcmp(name, boundary_)==0) data = static_cast<NPYBase*>(m_boundary_data) ;
     else if(strcmp(name, seed_)==0) data = static_cast<NPYBase*>(m_seed_data) ;
     else if(strcmp(name, hit_)==0) data = static_cast<NPYBase*>(m_hit_data) ;
     return data ; 
@@ -783,6 +799,7 @@ NPYSpec* OpticksEvent::getSpec(const char* name)
     else if(strcmp(name, phosel_)==0)  spec = static_cast<NPYSpec*>(m_phosel_spec) ;
     else if(strcmp(name, recsel_)==0)  spec = static_cast<NPYSpec*>(m_recsel_spec) ;
     else if(strcmp(name, sequence_)==0) spec = static_cast<NPYSpec*>(m_sequence_spec) ;
+    else if(strcmp(name, boundary_)==0) spec = static_cast<NPYSpec*>(m_boundary_spec) ;
     else if(strcmp(name, seed_)==0)     spec = static_cast<NPYSpec*>(m_seed_spec) ;
     else if(strcmp(name, hit_)==0)     spec = static_cast<NPYSpec*>(m_hit_spec) ;
     else if(strcmp(name, fdom_)==0)     spec = static_cast<NPYSpec*>(m_fdom_spec) ;
@@ -1001,6 +1018,7 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
     else if(elem[0] == phosel_)   mvn = m_phosel_attr ;
     else if(elem[0] == recsel_)   mvn = m_recsel_attr ;
     else if(elem[0] == sequence_) mvn = m_sequence_attr ;
+    else if(elem[0] == boundary_) mvn = m_boundary_attr ;
     else if(elem[0] == seed_)     mvn = m_seed_attr ;
     else if(elem[0] == hit_)      mvn = m_hit_attr ;
 
@@ -1044,6 +1062,7 @@ void OpticksEvent::createSpec()
     //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
     m_deluxe_spec   = new NPYSpec(deluxe_   ,  0,maxrec,2,4,0, NPYBase::DOUBLE    ,  OpticksBufferSpec::Get(deluxe_, compute)) ;
 
+    m_boundary_spec = new NPYSpec(boundary_ ,  0,1,4,0,0,      NPYBase::UINT      ,  OpticksBufferSpec::Get(boundary_, compute)) ;
     m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,0,      NPYBase::ULONGLONG ,  OpticksBufferSpec::Get(sequence_, compute)) ;
     //    ULONGLONG -> RT_FORMAT_USER  and size set to ni*nj*nk = num_photons*1*2
 
@@ -1069,6 +1088,7 @@ void OpticksEvent::dumpSpec()
     LOG(info) << "m_record_spec " << m_record_spec ;
     LOG(info) << "m_deluxe_spec " << m_deluxe_spec ;
     LOG(info) << "m_sequence_spec " << m_sequence_spec ;
+    LOG(info) << "m_boundary_spec " << m_boundary_spec ;
     LOG(info) << "m_nopstep_spec " << m_nopstep_spec ;
     LOG(info) << "m_phosel_spec " << m_phosel_spec ;
     LOG(info) << "m_recsel_spec " << m_recsel_spec ;
@@ -1091,6 +1111,7 @@ void OpticksEvent::deleteSpec()
     delete m_record_spec ; 
     delete m_deluxe_spec ; 
     delete m_sequence_spec ; 
+    delete m_boundary_spec ; 
     delete m_nopstep_spec ; 
     delete m_phosel_spec ; 
     delete m_recsel_spec ; 
@@ -1199,6 +1220,9 @@ void OpticksEvent::createBuffers()
 
     NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_sequence_spec); 
     setSequenceData(seq);   
+
+    NPY<unsigned>* bnd = NPY<unsigned>::make(m_boundary_spec); 
+    setBoundaryData(bnd);   
 
     NPY<unsigned>* seed = NPY<unsigned>::make(m_seed_spec); 
     setSeedData(seed);   
@@ -1785,6 +1809,16 @@ delta:gl blyth$ find . -type f -exec grep -H rsel {} \;
 
 
 
+
+void OpticksEvent::setBoundaryData(NPY<unsigned>* boundary_data)
+{
+    setBufferControl(boundary_data);
+    m_boundary_data = boundary_data  ;
+    m_boundary_attr = new MultiViewNPY("boundary_attr");
+}
+
+
+
 void OpticksEvent::setSequenceData(NPY<unsigned long long>* sequence_data)
 {
     setBufferControl(sequence_data);
@@ -1955,6 +1989,7 @@ void OpticksEvent::save()
         saveRecordData();
         saveDeluxeData();
         saveSequenceData();
+        saveBoundaryData();
         saveDebugData();
         saveWayData();
 
@@ -2092,6 +2127,15 @@ void OpticksEvent::saveSequenceData()
     NPY<unsigned long long>* ph = getSequenceData();
     if(ph) ph->save(m_pfx, "ph", m_typ,  m_tag, m_udet);
 }
+
+void OpticksEvent::saveBoundaryData()
+{
+    NPY<unsigned>* bn = getBoundaryData();
+    if(bn) bn->save(m_pfx, "bn", m_typ,  m_tag, m_udet);
+}
+
+
+
 void OpticksEvent::saveDebugData()
 {
     NPY<float>* dg = getDebugData();
