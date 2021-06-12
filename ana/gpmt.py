@@ -61,6 +61,11 @@ if __name__ == '__main__':
 
     lvs = g.get_traversed_volumes( lv, maxdepth=args.maxdepth )
 
+
+    log.info( "lvs %r" % lvs )
+
+
+
     plt.ion()
 
     fig, ax = GPlot.MakeFig(plt, lv, args, recurse=True)  # all volumes together
