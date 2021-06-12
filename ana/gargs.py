@@ -64,6 +64,7 @@ class GArgs(argparse.Namespace):
         tds_ngt
         tds_ngt_pcnk
         tds_ngt_pcnk_sycg
+        origin_CGDMLKludge
         """)
         return labels[idx] 
 

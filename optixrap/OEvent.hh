@@ -124,7 +124,8 @@ class OXRAP_API OEvent
             SEED     = 0x1 << 5,
             SOURCE   = 0x1 << 6,
             DEBUG    = 0x1 << 7,
-            WAY      = 0x1 << 8
+            WAY      = 0x1 << 8,
+            BOUNDARY = 0x1 << 9
             };
     public:
 

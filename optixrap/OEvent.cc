@@ -101,7 +101,7 @@ OEvent::OEvent(Opticks* ok, OContext* ocontext)
 
 unsigned OEvent::initDownloadMask() const 
 {
-    unsigned mask =  PHOTON | RECORD | SEQUENCE ; 
+    unsigned mask =  PHOTON | RECORD | SEQUENCE | BOUNDARY ; 
     if(m_way_enabled) mask |= WAY ; 
 #ifdef WITH_DEBUG_BUFFER 
     mask |= DEBUG ;       
@@ -387,6 +387,12 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
     NPY<unsigned long long>* sq = evt->getSequenceData() ; 
     assert(sq);
     m_ocontext->resizeBuffer<unsigned long long>(m_sequence_buffer, sq , "sequence");
+
+    NPY<unsigned>* bn = evt->getBoundaryData() ; 
+    assert(bn);
+    m_ocontext->resizeBuffer<unsigned>(m_boundary_buffer, bn , "boundary");
+
+
 #endif
 }
 
@@ -625,6 +631,13 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
         OContext::download<unsigned long long>( m_sequence_buffer, sq );
         if(m_dbgdownload) LOG(info) << "sq " << sq->getShapeString() ;   
     }
+    if(mask & BOUNDARY)   // bndseq
+    {
+        NPY<unsigned>* bn = evt->getBoundaryData();
+        OContext::download<unsigned>( m_boundary_buffer, bn );
+        if(m_dbgdownload) LOG(info) << "bn " << bn->getShapeString() ;   
+    }
+
 #endif
 
 #ifdef WITH_DEBUG_BUFFER

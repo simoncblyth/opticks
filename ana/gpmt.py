@@ -28,7 +28,9 @@ if __name__ == '__main__':
    
 
     args = GArgs.parse(__doc__)
-    g = GDML.parse(args.gdmlpath(2))
+
+
+    g = GDML.parse(args.gdmlpath(3))  # origin_CGDMLKludge.gdml
     g.smry()
 
     NNVT = 1
