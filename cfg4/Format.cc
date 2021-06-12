@@ -142,6 +142,21 @@ std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const 
     G4VPhysicalVolume* pv  = point->GetPhysicalVolume();
     G4String pvName = pv ? pv->GetName() : "" ;   
 
+    G4LogicalVolume* lv = pv ? pv->GetLogicalVolume() : nullptr ; 
+    G4LogicalVolume* mlv = pv ? pv->GetMotherLogical() : nullptr ; 
+
+    assert( lv ); 
+    assert( mlv ); 
+    const G4String& lvName = lv->GetName(); 
+    const G4String& mlvName = mlv->GetName(); 
+
+    G4VSolid* so = lv->GetSolid() ; 
+    G4VSolid* mso = mlv->GetSolid() ; 
+
+    G4String soName = so->GetName() ; 
+    G4String msoName = mso->GetName() ; 
+
+
     G4double time = point->GetGlobalTime();
     G4double energy = point->GetKineticEnergy();
     G4double wavelength = h_Planck*c_light/energy ;
@@ -154,8 +169,17 @@ std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const 
     G4StepStatus status = point->GetStepStatus()  ;
 
     std::stringstream ss ; 
+
     ss << " " << std::setw(4)  << msg  
-       << " " << std::setw(25) << Tail(pvName, 25)  
+       << " pv " << std::setw(25) << Tail(pvName, 25)  
+       << " lv " << std::setw(25) << Tail(lvName, 25)  
+       << " so " << std::setw(25) << Tail(soName, 25)  
+       << " mlv " << std::setw(25) << Tail(mlvName, 25)  
+       << " mso " << std::setw(25) << Tail(msoName, 25)  
+       << std::endl 
+       ;
+
+    ss << " " << std::setw(4)  << msg  
        << " " << std::setw(15) << Tail(matName, 15) 
        << " " << std::setw(15) << Tail(processName, 15) 
        << std::setw(20) << OpStatus::OpStepString(status)
