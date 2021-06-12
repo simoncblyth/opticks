@@ -85,7 +85,7 @@ tds3ip using --dbgseqhis
 
 
 
-Hmm why not exactly matching the above ? Must be going thru a float ? YEP::
+Hmm why not exactly matching the above ? Must be going thru a float ? YEP move to `setQuad_`::
 
     In [3]: b.dx[5]                                                                                                                                                                                          
     Out[3]: 

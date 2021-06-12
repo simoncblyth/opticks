@@ -1098,6 +1098,13 @@ necessary for the OpticksBufferSpec/OpticksBufferControl tag of
 OPTIX_NON_INTEROP to be set to avoid assertions when running interactively.
 See notes/issues/OKTest_CANNOT_createBufferFromGLBO_as_not_uploaded_name_debug.rst 
 
+
+When adding new buffers it is necessary to 
+
+1. add the buffer name, eg "boundary", to the allowed list
+2. define the buffer control string in okc/OpticksBufferSpec.cc
+
+
 **/
 
 template <typename T>

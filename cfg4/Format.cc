@@ -49,6 +49,7 @@ std::string Format(const G4double v, const char* msg, unsigned int fwid)
        << std::setprecision(3)  
        << std::setw(fwid)
        << v 
+       << "] "
        ;
     return ss.str();
 }
@@ -228,50 +229,46 @@ std::string Format(const G4StepPoint* pre, const G4StepPoint* post, double epsil
     std::stringstream ss ; 
     ss << " " << std::setw(4)  << msg  ;
 
-
-    ss << Format(dpos, "dpos", 8) ; 
     if( same_pos )
     {
        ss << " " << "same_pos"  ;
     }
-    else if( near_pos )
+    else 
     {
-       ss << " " << "near_pos" ; 
+       ss << Format(dpos, "dpos", 8) ; 
+       if( near_pos ) ss << " " << "near_pos" ; 
     }
 
-
-    ss << Format(ddir, "ddir", 8) ; 
     if( same_dir )
     {
        ss << " " << "same_dir"  ;
     }
-    else if( near_dir )
+    else 
     {
-       ss << " " << "near_dir" ; 
+       ss << Format(ddir, "ddir", 8) ; 
+       if( near_dir ) ss << " " << "near_dir" ; 
     }
 
-
-    ss << Format(dpol, "dpol", 8) ;
     if( same_pol )
     {
        ss << " " << "same_pol"  ;
     }
-    else if( near_pol )
+    else
     {
-       ss << " " << "near_pol" ; 
+       ss << Format(dpol, "dpol", 8) ;
+       if(near_pol) ss << " " << "near_pol" ; 
     }
 
 
-    ss << Format(dtim, "dtim", 8) ;
     if( same_time )
     {
        ss << " " << "same_time"  ;
     }
-    else if( near_time )
+    else
     {
-       ss << " " << "near_time" ; 
+       ss << Format(dtim, "dtim", 8) ;
+       if( near_time) ss << " " << "near_time" ; 
     }
-
 
 
     ss << "       epsilon " << epsilon ; 

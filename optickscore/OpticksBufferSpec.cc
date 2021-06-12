@@ -169,6 +169,14 @@ const char* OpticksBufferSpec::record_interop_ = "OPTIX_OUTPUT_ONLY"  ;
 const char* OpticksBufferSpec::sequence_compute_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY" ;
 const char* OpticksBufferSpec::sequence_interop_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY" ;
 
+const char* OpticksBufferSpec::boundary_compute_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY" ;
+const char* OpticksBufferSpec::boundary_interop_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY" ;
+
+const char* OpticksBufferSpec::deluxe_compute_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY" ;
+const char* OpticksBufferSpec::deluxe_interop_ = "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY" ;
+
+
+
 const char* OpticksBufferSpec::seed_compute_    = "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY"  ;
 const char* OpticksBufferSpec::seed_interop_    = "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY"  ;
 
@@ -209,6 +217,8 @@ const char* OpticksBufferSpec::Get(const char* name, bool compute )
     else if(strcmp(name, OpticksEvent::phosel_)==0)   bspc = compute ? phosel_compute_  : phosel_interop_ ;
     else if(strcmp(name, OpticksEvent::recsel_)==0)   bspc = compute ? recsel_compute_  : recsel_interop_ ;
     else if(strcmp(name, OpticksEvent::sequence_)==0) bspc = compute ? sequence_compute_  : sequence_interop_ ;
+    else if(strcmp(name, OpticksEvent::deluxe_)==0)   bspc = compute ? deluxe_compute_  : deluxe_interop_ ;
+    else if(strcmp(name, OpticksEvent::boundary_)==0) bspc = compute ? boundary_compute_  : boundary_interop_ ;
     else if(strcmp(name, OpticksEvent::seed_)==0)     bspc = compute ? seed_compute_  : seed_interop_ ;
     else if(strcmp(name, OpticksEvent::hit_)==0)      bspc = compute ? hit_compute_  : hit_interop_ ;
     return bspc ; 

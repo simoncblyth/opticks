@@ -52,6 +52,8 @@ class OKCORE_API OpticksBufferSpec
         static const char*  phosel_compute_ ; 
         static const char*  recsel_compute_ ; 
         static const char*  sequence_compute_ ; 
+        static const char*  deluxe_compute_ ; 
+        static const char*  boundary_compute_ ; 
         static const char*  seed_compute_ ; 
         static const char*  hit_compute_ ; 
 
@@ -65,6 +67,8 @@ class OKCORE_API OpticksBufferSpec
         static const char*  phosel_interop_ ; 
         static const char*  recsel_interop_ ; 
         static const char*  sequence_interop_ ; 
+        static const char*  deluxe_interop_ ; 
+        static const char*  boundary_interop_ ; 
         static const char*  seed_interop_ ; 
         static const char*  hit_interop_ ; 
 };
