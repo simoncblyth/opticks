@@ -306,6 +306,21 @@ bn.npy
 
 
 
+* compare with final boundary from pflags
+
+    In [8]: boundary    = (( a.ox[:,3,0].view(np.uint32) & 0xffff0000 ) >> 16 ).view(np.int16)[0::2]
+
+    In [9]: boundary
+    Out[9]: A([-24, -25, -25, -24, -25, -25, -27,  18], dtype=int16)
+
+    In [10]: sensorIdx = (( a.ox[:,3,0].view(np.uint32) & 0x0000ffff ) >> 0 )
+
+    In [11]: sensorIdx
+    Out[11]: A([    0, 13954, 14041,     0,  3569,  3613,  3700,     0], dtype=uint32)
+
+
+
+
 * need to up the stats : getting -25:Pyrex///Pyrex gives SD
 
 * whats different about photon index 6, what that ones gets -27:Pyrex//NNVTMCPPMT_PMT_20inch_mirror_logsurf1/Vacuum

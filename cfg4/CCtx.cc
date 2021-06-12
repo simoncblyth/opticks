@@ -73,7 +73,9 @@ Opticks*  CCtx::getOpticks() const
 
 bool CCtx::is_dbg() const   // commandline includes : --dbgrec --dbgseqhis 0x.. --dbgseqmat 0x..  --dbgzero
 {
-    return _dbgrec || _dbgseq || _dbgzero ;   
+    unsigned numDbgPhoton = _ok->getNumDbgPhoton() ;       // --dindex 1,2,3
+    unsigned numOtherPhoton = _ok->getNumOtherPhoton() ;   // --oindex 4,5,6
+    return _dbgrec || _dbgseq || _dbgzero || ( numDbgPhoton > 0 ) || ( numOtherPhoton > 0 ) ;   
 }
 
 

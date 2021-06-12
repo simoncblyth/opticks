@@ -564,6 +564,8 @@ class Evt(object):
         self.dirw = ox[:,1]
         self.polw = ox[:,2]
 
+        self.boundary = (( ox[:,3,0].view(np.uint32) & 0xffff0000 ) >> 16 ).view(np.int16)[0::2]  
+        self.sensor   = (( ox[:,3,0].view(np.uint32) & 0x0000ffff ) >> 0 ) 
 
         allpflags = ox.view(np.uint32)[:,3,3]
         self.allpflags = allpflags 
