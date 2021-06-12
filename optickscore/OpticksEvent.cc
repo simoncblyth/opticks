@@ -1275,6 +1275,7 @@ void OpticksEvent::resetBuffers()
     if(m_phosel_data)   m_phosel_data->reset();    
     if(m_recsel_data)   m_recsel_data->reset();    
     if(m_sequence_data) m_sequence_data->reset();    
+    if(m_boundary_data) m_boundary_data->reset();    
     if(m_seed_data)     m_seed_data->reset();    
     if(m_hit_data)      m_hit_data->reset();    
     if(m_hiy_data)      m_hiy_data->reset();    
@@ -1294,6 +1295,7 @@ void OpticksEvent::deleteBuffers()
     delete m_phosel_data   ; m_phosel_data = NULL ; 
     delete m_recsel_data   ; m_recsel_data = NULL ; 
     delete m_sequence_data ; m_sequence_data = NULL ; 
+    delete m_boundary_data ; m_boundary_data = NULL ; 
     delete m_seed_data     ; m_seed_data = NULL ; 
     delete m_hit_data      ; m_hit_data = NULL ; 
     delete m_hiy_data      ; m_hiy_data = NULL ; 
@@ -1313,6 +1315,7 @@ void OpticksEvent::deleteAttr()
     delete m_phosel_attr   ; m_phosel_attr = NULL ; 
     delete m_recsel_attr   ; m_recsel_attr = NULL ; 
     delete m_sequence_attr ; m_sequence_attr = NULL ; 
+    delete m_boundary_attr ; m_boundary_attr = NULL ; 
 }
 
 
@@ -1339,6 +1342,7 @@ void OpticksEvent::resize()
 {
     assert(m_photon_data);
     assert(m_sequence_data);
+    assert(m_boundary_data);
     assert(m_phosel_data);
     assert(m_recsel_data);
     assert(m_record_data);
@@ -1371,6 +1375,7 @@ void OpticksEvent::resize()
 
     m_photon_data->setNumItems(num_photons);
     m_sequence_data->setNumItems(num_photons);
+    m_boundary_data->setNumItems(num_photons);
     m_record_data->setNumItems(num_photons);
     m_deluxe_data->setNumItems(num_photons);
 
@@ -1406,6 +1411,7 @@ void OpticksEvent::zero()
 {
     if(m_photon_data)   m_photon_data->zero();
     if(m_sequence_data) m_sequence_data->zero();
+    if(m_boundary_data) m_boundary_data->zero();
     if(m_record_data)   m_record_data->zero();
     if(m_deluxe_data)   m_deluxe_data->zero();
     if(m_debug_data)    m_debug_data->zero();
@@ -2484,6 +2490,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<double>*             dx = NPY<double>::load(m_pfx, "dx", m_typ,  m_tag, udet, qload);
 
     NPY<unsigned long long>* ph = NPY<unsigned long long>::load(m_pfx, "ph", m_typ,  m_tag, udet, qload );
+    NPY<unsigned>*           bn = NPY<unsigned>::load(m_pfx, "bn", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      ps = NPY<unsigned char>::load(m_pfx, "ps", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      rs = NPY<unsigned char>::load(m_pfx, "rs", m_typ,  m_tag, udet, qload );
     NPY<unsigned>*           se = NPY<unsigned>::load(     m_pfx, "se", m_typ,  m_tag, udet, qload );
@@ -2504,6 +2511,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     if(rx) loadBuffersImportSpec(rx,m_record_spec) ;
     if(dx) loadBuffersImportSpec(dx,m_deluxe_spec) ;
     if(ph) loadBuffersImportSpec(ph,m_sequence_spec) ;
+    if(bn) loadBuffersImportSpec(bn,m_boundary_spec) ;
     if(ps) loadBuffersImportSpec(ps,m_phosel_spec) ;
     if(rs) loadBuffersImportSpec(rs,m_recsel_spec) ;
     if(se) loadBuffersImportSpec(se,m_seed_spec) ;
@@ -2527,28 +2535,32 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     unsigned int num_records = rx ? rx->getShape(0) : 0 ;
     unsigned int num_deluxe = dx ? dx->getShape(0) : 0 ;
+    unsigned int num_boundary = bn ? bn->getShape(0) : 0 ;
     unsigned int num_recsel  = rs ? rs->getShape(0) : 0 ;
 
     assert(num_recsel == 0 || num_records == num_recsel );
     assert(num_deluxe == 0 || num_records == num_deluxe );
+    assert(num_boundary == 0 || num_records == num_boundary );
 
 
-    LOG(debug) << "OpticksEvent::load shape(0) before reshaping "
-              << " num_genstep " << num_genstep
-              << " num_nopstep " << num_nopstep
-              << " [ "
-              << " num_photons " << num_photons
-              << " num_history " << num_history
-              << " num_phosel " << num_phosel 
-              << " num_seed " << num_seed 
-              << " num_hit " << num_hit
-              << " ] "
-              << " [ "
-              << " num_records " << num_records
-              << " num_deluxe " << num_deluxe
-              << " num_recsel " << num_recsel
-              << " ] "
-              ; 
+    LOG(LEVEL) 
+        << "before reshaping "
+        << " num_genstep " << num_genstep
+        << " num_nopstep " << num_nopstep
+        << " [ "
+        << " num_photons " << num_photons
+        << " num_history " << num_history
+        << " num_phosel " << num_phosel 
+        << " num_seed " << num_seed 
+        << " num_hit " << num_hit
+        << " ] "
+        << " [ "
+        << " num_records " << num_records
+        << " num_boundary " << num_boundary
+        << " num_deluxe " << num_deluxe
+        << " num_recsel " << num_recsel
+        << " ] "
+        ; 
 
 
     // treat "persisted for posterity" gensteps just like all other buffers
@@ -2561,6 +2573,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     setPhotonData(ox);
     setSequenceData(ph);
+    setBoundaryData(bn);
     setRecordData(rx);
     setDeluxeData(dx);
 
@@ -2583,6 +2596,7 @@ void OpticksEvent::loadBuffers(bool verbose)
         if(rx) rx->Summary("rx");
         if(dx) dx->Summary("dx");
         if(ph) ph->Summary("ph");
+        if(bn) bn->Summary("bn");
         if(ps) ps->Summary("ps");
         if(rs) rs->Summary("rs");
         if(se) se->Summary("se");
