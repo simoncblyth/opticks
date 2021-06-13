@@ -73,6 +73,7 @@ from opticks.ana.hismask import HisMask
 from opticks.ana.mattype import MatType 
 from opticks.ana.metadata import Metadata
 from opticks.ana.nibble import msk_, nib_, make_msk, make_nib
+from opticks.ana.blib import BLib
 
 msk = make_msk(16)
 NIB = make_nib(16)
@@ -93,6 +94,9 @@ norm_ = lambda a:a/np.repeat(vnorm(a), 3).reshape(-1,3)
 deg = np.pi/180.
 
 log = logging.getLogger(__name__)
+blib = BLib()
+
+
 
 X,Y,Z,W,T = 0,1,2,3,3
 
@@ -299,6 +303,7 @@ class Evt(object):
         if self.rec:
             self.init_records()
             self.init_deluxe()
+            self.init_boundary()
             self.init_sequence()
             #self.init_index()
             self.init_npoint()
@@ -382,7 +387,7 @@ class Evt(object):
     seqhis_labels = property(_get_seqhis_labels)
 
 
-    PhotonArrayStems = "ox rx dx ph so ps rs"
+    PhotonArrayStems = "ox rx dx bn ph so ps rs"
 
     @classmethod
     def IsPhotonArray(cls, stem):
@@ -392,9 +397,9 @@ class Evt(object):
         """ 
         return stem in cls.PhotonArrayStems
 
-    def aload(self, stem, optional=False, g4only=False):
+    def aload(self, stem, optional=False, g4only=False, okonly=False):
         msli = self.msli if self.IsPhotonArray(stem) else None
-        a = A.load_(stem, self.src, self.tag, self.det, optional=optional, dbg=self.dbg, pfx=self.pfx, msli=msli, g4only=g4only ) 
+        a = A.load_(stem, self.src, self.tag, self.det, optional=optional, dbg=self.dbg, pfx=self.pfx, msli=msli, g4only=g4only, okonly=okonly ) 
         return a 
 
     def check_shapes(self):
@@ -695,6 +700,11 @@ class Evt(object):
         if dx.missing:return 
         log.debug("dx shape %s " % str(dx.shape))
 
+
+    def init_boundary(self):
+        bn = self.aload("bn",optional=True, okonly=True)
+        self.bn = bn
+        self.desc['bn'] = "(boundary)  step records"
 
     def init_source(self):
         """
@@ -1032,6 +1042,12 @@ class Evt(object):
         psel = flvana.seq_or(labs)
         return psel
 
+    def make_psel_any(self, lab):
+        flvana = self.flvana 
+        psel = flvana.seq_any(lab)
+        return psel
+
+
     def make_selection_(self, labels):
         """
         :param labels: usually seqhis line label strings such at "TO BT BT SA"
@@ -1043,10 +1059,14 @@ class Evt(object):
    
         log.debug("%s.make_selection_ labels %s " % (self.nom,repr(labels)))
         self._labels = labels
+
         if len(labels) == 1 and labels[0][-3:] == ' ..':
             log.debug("make_selection_ wildcard startswith %s " % labels[0] ) 
             lab = labels[0][:-3]  # exclude the " .."
             psel = self.make_psel_startswith(lab)
+        elif len(labels) == 1 and labels[0][0] == '*' and labels[0][-1] == '*' :
+            lab = labels[0][1:-1] 
+            psel = self.make_psel_any(lab)
         elif len(labels) == 1 and labels[0] == 'PFLAGS_DEBUG':
             psel = self.pflags2 != self.pflags
         elif len(labels) == 1 and labels[0] == 'ALIGN':

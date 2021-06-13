@@ -111,6 +111,12 @@ class BLib(object):
     def names(self):
         return "\n".join(map(lambda _:self.bname(_) , self.selection ))
 
+    def format(self, bn):
+        """
+        :param bn: array of 1-based boundary indices, as obtained from eg a.bn[0] 
+        """
+        return "\n".join(["%3d : %s" % (b, self.bname(abs(b)-1)) for b in list(filter(lambda b:b != 0, bn))])
+
 
 
 if __name__ == '__main__':

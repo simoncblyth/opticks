@@ -340,6 +340,54 @@ void X4PhysicalVolume::convertMaterials_r(const G4VPhysicalVolume* const pv, int
 
 
 /**
+X4PhysicalVolume::convertImplicitSurfaces_r
+---------------------------------------------
+
+Recursively look for "implicit" surfaces, eg from the mis-use of Geant4 NoRINDEX 
+behaviour to effectively mimic surface absorption without actually setting an 100% absorption 
+property. See::
+
+   g4-cls G4OpBoundaryProcess
+
+Photons at the border from a transparent material with RINDEX (eg Water) 
+to a NoRINDEX material (eg Tyvek) get fStopAndKill-ed by 
+G4OpBoundaryProcess::PostStepDoIt
+
+**/
+
+void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const pv, int depth)
+{
+    const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+    const G4Material* mt = lv->GetMaterial() ; 
+    const G4String& mtName = mt->GetName(); 
+
+    G4MaterialPropertiesTable* mpt = mt->GetMaterialPropertiesTable();
+    const G4MaterialPropertyVector* rindex = mpt->GetProperty(kRINDEX);     // WHAT: cannot do this with const mpt 
+
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ )  // G4LogicalVolume::GetNoDaughters returns 1042:G4int, 1062:size_t
+    {
+        const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);
+        const G4LogicalVolume* daughter_lv = daughter_pv->GetLogicalVolume() ;
+        const G4Material* daughter_mt = daughter_lv->GetMaterial() ; 
+        G4MaterialPropertiesTable* daughter_mpt = daughter_mt->GetMaterialPropertiesTable();  
+        const G4MaterialPropertyVector* daughter_rindex = daughter_mpt->GetProperty(kRINDEX); // WHAT: cannot do this with const mpt 
+        const G4String& daughter_mtName = daughter_mt->GetName(); 
+
+        if(rindex == nullptr && daughter_rindex != nullptr)
+        {
+            LOG(info)
+               << " mtName " << std::setw(30) << mtName 
+               << " daughter_mtName " << std::setw(30) << daughter_mtName 
+               ;
+        } 
+        convertImplicitSurfaces_r( daughter_pv , depth + 1 );
+    }
+}
+
+
+
+
+/**
 X4PhysicalVolume::convertSurfaces
 -------------------------------------
 
@@ -364,6 +412,13 @@ void X4PhysicalVolume::convertSurfaces()
     X4LogicalSkinSurfaceTable::Convert(m_slib);
     size_t num_sks = m_slib->getNumSurfaces() - num_lbs ; 
 
+
+    const G4VPhysicalVolume* pv = m_top ; 
+    int depth = 0 ;
+    convertImplicitSurfaces_r(pv, depth);
+
+
+
     m_slib->addPerfectSurfaces();
     m_slib->dumpSurfaces("X4PhysicalVolume::convertSurfaces");
 
@@ -377,6 +432,10 @@ void X4PhysicalVolume::convertSurfaces()
         ;
 
 }
+
+
+
+
 
 void X4PhysicalVolume::closeSurfaces()
 {

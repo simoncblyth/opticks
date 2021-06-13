@@ -223,8 +223,9 @@ def opticks_args(**kwa):
     gidx = kwa.get("gidx", 0 ) 
     gmaxnode = kwa.get("gmaxnode", 0 ) 
     gmaxdepth = kwa.get("gmaxdepth", 0 ) 
-    cfordering = kwa.get("cfordering", "sum_code" ) 
+    #cfordering = kwa.get("cfordering", "sum_code" ) 
     #cfordering = kwa.get("cfordering", "code" ) 
+    cfordering = kwa.get("cfordering", "sum" ) 
     dumpenv = kwa.get("dumpenv", False) 
 
     parser = argparse.ArgumentParser(doc)

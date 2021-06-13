@@ -257,7 +257,7 @@ class A(np.ndarray):
         return path
 
     @classmethod
-    def load_(cls, stem, typ, tag, det="dayabay", pfx="source", dbg=False, optional=False, msli=None, g4only=False):
+    def load_(cls, stem, typ, tag, det="dayabay", pfx="source", dbg=False, optional=False, msli=None, g4only=False, okonly=False):
         """
         :param stem: gs,ox,ht,rs,so,ph,fdom,idom
         :param typ: natural
@@ -283,7 +283,7 @@ class A(np.ndarray):
 
         exists = os.path.exists(path)
 
-        fake_missing = exists and g4only and itag > 0 and stem == "dx"     
+        fake_missing = exists and ( ( g4only and itag > 0 and stem == "dx" ) or ( okonly and itag < 0 and stem == "bn" ))     
         if fake_missing:
             print("fake_missing %s " % path)
         pass  

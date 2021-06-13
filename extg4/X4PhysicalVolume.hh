@@ -114,6 +114,8 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertMaterials_old(); 
         void convertMaterials(); 
         void convertSurfaces(); 
+
+
         void convertSensors(); 
         void closeSurfaces(); 
         void convertSolids(); 
@@ -126,6 +128,7 @@ class X4_API X4PhysicalVolume : public X4Named
         bool hasEfficiency(const G4Material* mat);
     private:
         void convertMaterials_r(const G4VPhysicalVolume* const pv, int depth) ;
+        void convertImplicitSurfaces_r(const G4VPhysicalVolume* const pv, int depth) ; 
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV() const ;
         void dumpTorusLV() const ;

@@ -1,6 +1,55 @@
 CRecorder_duplicated_point_BTBT
 ===================================
 
+tds3gun after suppress microStep : allows comparison to start
+-----------------------------------------------------------------
+
+::
+
+    In [3]: ab.b.seqhis_ana.table[:15]                                                                                                                                                                                                      
+    Out[3]: 
+    all_seqhis_ana
+    .                     cfo:-  -1:g4live:tds3gun 
+    .                              11278         1.00 
+    0000               42        0.148        1665        [2 ] SI AB
+    0001            7ccc2        0.109        1230        [5 ] SI BT BT BT SD
+    0002            8ccc2        0.060         674        [5 ] SI BT BT BT SA
+    0003           7ccc62        0.049         552        [6 ] SI SC BT BT BT SD
+    0004              452        0.047         534        [3 ] SI RE AB
+    0005             8cc2        0.041         464        [4 ] SI BT BT SA
+    0006           7ccc52        0.035         397        [6 ] SI RE BT BT BT SD
+    0007              462        0.033         367        [3 ] SI SC AB
+    0008           8ccc62        0.024         267        [6 ] SI SC BT BT BT SA
+    0009          7ccc662        0.019         213        [7 ] SI SC SC BT BT BT SD
+    0010           8ccc52        0.017         188        [6 ] SI RE BT BT BT SA
+    0011            8cc62        0.016         186        [5 ] SI SC BT BT SA
+    0012          7ccc652        0.014         159        [7 ] SI RE SC BT BT BT SD
+    0013           7cccc2        0.014         154        [6 ] SI BT BT BT BT SD
+    0014               41        0.013         144        [2 ] CK AB
+    .                              11278         1.00 
+
+    In [4]: ab.a.seqhis_ana.table[:15]                                                                                                                                                                                                      
+    Out[4]: 
+    all_seqhis_ana
+    .                     cfo:-  1:g4live:tds3gun 
+    .                              11278         1.00 
+    0000               42        0.147        1653        [2 ] SI AB
+    0001            7ccc2        0.115        1292        [5 ] SI BT BT BT SD
+    0002            8ccc2        0.052         590        [5 ] SI BT BT BT SA
+    0003           7ccc62        0.052         581        [6 ] SI SC BT BT BT SD
+    0004              452        0.037         422        [3 ] SI RE AB
+    0005              462        0.035         392        [3 ] SI SC AB
+    0006           7ccc52        0.034         380        [6 ] SI RE BT BT BT SD
+    0007             4cc2        0.025         278        [4 ] SI BT BT AB
+    0008           8ccc62        0.022         251        [6 ] SI SC BT BT BT SA
+    0009          7ccc662        0.019         219        [7 ] SI SC SC BT BT BT SD
+    0010            4cc62        0.017         197        [5 ] SI SC BT BT AB
+    0011          7ccc652        0.014         157        [7 ] SI RE SC BT BT BT SD
+    0012           8ccc52        0.014         154        [6 ] SI RE BT BT BT SA
+    0013               41        0.013         142        [2 ] CK AB
+    0014             4662        0.012         137        [4 ] SI SC SC AB
+    .                              11278         1.00 
+
 
 issue
 -------

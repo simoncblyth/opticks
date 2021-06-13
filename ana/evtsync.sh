@@ -1,16 +1,22 @@
 #!/bin/bash -l 
 
 CMD=$1
-
 usage(){ cat << EOU
-evtbase.sh 
+evtsync.sh 
 ===========
 
-rsyncs persisted OpticksEvent between machines 
+rsyncs OpticksEvent .npy arrays and .json metadata between machines 
 
+::
+
+   PFX=tds3ip evtsync.sh  
+   PFX=tds3gun evtsync.sh  
+
+   PFX=tds3gun evtsync.sh rm     # deletes the destination dir before sync, for cleanliness
+   PFX=tds3gun evtsync.sh ls     # skips the rsync, justs lists
+  
 EOU
 }
-
 
 
 REMOTE=${REMOTE:-P}
@@ -18,14 +24,7 @@ REMOTE=${REMOTE:-P}
 OPTICKS_EVENT_BASE_REMOTE=${OPTICKS_EVENT_BASE_REMOTE:-/tmp/$USER/opticks}
 OPTICKS_EVENT_BASE=${OPTICKS_EVENT_BASE:-/tmp/$USER/opticks}
 
-reldirs_(){ cat << EOR | grep -v ^\#
-#source/evt/g4live/natural
-tds3ip/evt/g4live/natural
-tds3gun/evt/g4live/natural
-EOR
-}
-
-sync()
+evtsync()
 {
    local msg="=== $FUNCNAME :"
    local reldir=${1}
@@ -51,8 +50,10 @@ sync()
 }
 
 
-for reldir in $(reldirs_) ; do echo $reldir ; done 
-for reldir in $(reldirs_) ; do sync $reldir ; done 
 
+PFX=${PFX:-tds3gun}
+reldir=${PFX}/evt/g4live/natural 
+
+evtsync ${reldir}
 
 
