@@ -372,12 +372,19 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
         G4MaterialPropertiesTable* daughter_mpt = daughter_mt->GetMaterialPropertiesTable();  
         const G4MaterialPropertyVector* daughter_rindex = daughter_mpt->GetProperty(kRINDEX); // WHAT: cannot do this with const mpt 
         const G4String& daughter_mtName = daughter_mt->GetName(); 
+   
+        bool RINDEX_NoRINDEX = rindex != nullptr && daughter_rindex == nullptr ; 
+        bool NoRINDEX_RINDEX = rindex == nullptr && daughter_rindex != nullptr ; 
 
-        if(rindex == nullptr && daughter_rindex != nullptr)
+        if(RINDEX_NoRINDEX || NoRINDEX_RINDEX)
         {
             LOG(info)
+               << " RINDEX_NoRINDEX " << RINDEX_NoRINDEX 
+               << " NoRINDEX_RINDEX " << NoRINDEX_RINDEX
                << " mtName " << std::setw(30) << mtName 
+               << " rindex " << std::setw(10) << rindex 
                << " daughter_mtName " << std::setw(30) << daughter_mtName 
+               << " daughter_rindex " << std::setw(10) << daughter_rindex 
                ;
         } 
         convertImplicitSurfaces_r( daughter_pv , depth + 1 );
