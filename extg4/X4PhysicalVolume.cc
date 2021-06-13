@@ -362,7 +362,7 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
     const G4String& mtName = mt->GetName(); 
 
     G4MaterialPropertiesTable* mpt = mt->GetMaterialPropertiesTable();
-    const G4MaterialPropertyVector* rindex = mpt->GetProperty(kRINDEX);     // WHAT: cannot do this with const mpt 
+    const G4MaterialPropertyVector* rindex = mpt ? mpt->GetProperty(kRINDEX) : nullptr ;     // WHAT: cannot do this with const mpt 
 
     for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ )  // G4LogicalVolume::GetNoDaughters returns 1042:G4int, 1062:size_t
     {
@@ -370,7 +370,7 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
         const G4LogicalVolume* daughter_lv = daughter_pv->GetLogicalVolume() ;
         const G4Material* daughter_mt = daughter_lv->GetMaterial() ; 
         G4MaterialPropertiesTable* daughter_mpt = daughter_mt->GetMaterialPropertiesTable();  
-        const G4MaterialPropertyVector* daughter_rindex = daughter_mpt->GetProperty(kRINDEX); // WHAT: cannot do this with const mpt 
+        const G4MaterialPropertyVector* daughter_rindex = daughter_mpt ? daughter_mpt->GetProperty(kRINDEX) : nullptr ; // WHAT: cannot do this with const mpt 
         const G4String& daughter_mtName = daughter_mt->GetName(); 
    
         bool RINDEX_NoRINDEX = rindex != nullptr && daughter_rindex == nullptr ; 
@@ -382,8 +382,10 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
                << " RINDEX_NoRINDEX " << RINDEX_NoRINDEX 
                << " NoRINDEX_RINDEX " << NoRINDEX_RINDEX
                << " mtName " << std::setw(30) << mtName 
+               << " mpt " << std::setw(10) << mpt 
                << " rindex " << std::setw(10) << rindex 
                << " daughter_mtName " << std::setw(30) << daughter_mtName 
+               << " daughter_mpt " << std::setw(10) << daughter_mpt 
                << " daughter_rindex " << std::setw(10) << daughter_rindex 
                ;
         } 
