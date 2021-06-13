@@ -76,3 +76,37 @@ int X4LogicalBorderSurface::GetItemIndex( const G4LogicalBorderSurface* src )
 }
 
 
+std::string X4LogicalBorderSurface::DescCandidateImplicitBorderSurface( const std::vector<std::pair<const void*, const void*>>& v_pvpv )
+{
+    unsigned num_cand = v_pvpv.size(); 
+
+    std::stringstream ss ; 
+    ss << " num_cand " << num_cand << std::endl ; 
+
+    typedef std::pair<const void*, const void*> PVPV ;
+
+    for(unsigned i=0 ; i < num_cand ; i++) 
+    {    
+        const PVPV& pp = v_pvpv[i] ;    
+
+        const G4VPhysicalVolume* parent = (const G4VPhysicalVolume*)pp.first ; 
+        const G4VPhysicalVolume* daughter = (const G4VPhysicalVolume*)pp.second ; 
+  
+        const G4String& parentName = parent->GetName() ; 
+        const G4String& daughterName = daughter->GetName() ; 
+
+        ss   
+           << " i " << std::setw(4) << i 
+           << " parent " << std::setw(30) <<  parentName 
+           << " daughter " << std::setw(30) <<  daughterName 
+           << std::endl 
+           ;    
+
+    }    
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+

@@ -36,6 +36,7 @@
 #include "X4PhysicalVolume.hh"
 #include "X4Material.hh"
 #include "X4MaterialTable.hh"
+#include "X4LogicalBorderSurface.hh"
 #include "X4LogicalBorderSurfaceTable.hh"
 #include "X4LogicalSkinSurfaceTable.hh"
 #include "X4Solid.hh"
@@ -344,14 +345,23 @@ X4PhysicalVolume::convertImplicitSurfaces_r
 ---------------------------------------------
 
 Recursively look for "implicit" surfaces, eg from the mis-use of Geant4 NoRINDEX 
-behaviour to effectively mimic surface absorption without actually setting an 100% absorption 
-property. See::
+behaviour to effectively mimic surface absorption without actually setting an 100% 
+absorption property. See::
 
    g4-cls G4OpBoundaryProcess
 
 Photons at the border from a transparent material with RINDEX (eg Water) 
-to a NoRINDEX material (eg Tyvek) get fStopAndKill-ed by 
-G4OpBoundaryProcess::PostStepDoIt
+to a NoRINDEX material (eg Tyvek) get fStopAndKill-ed by G4OpBoundaryProcess::PostStepDoIt
+
+RINDEX_NoRINDEX
+    parent with RINDEX but daughter without, 
+    there tend to be large numbers of these 
+    eg from every piece of metal in Air or Water etc..
+
+NoRINDEX_RINDEX
+    parent without RINDEX and daughter with,
+    there tend to be only a few of these : but they are optically important as "containers" 
+    eg Tyvek or Rock containing Water   
 
 **/
 
@@ -373,10 +383,11 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
         const G4MaterialPropertyVector* daughter_rindex = daughter_mpt ? daughter_mpt->GetProperty(kRINDEX) : nullptr ; // WHAT: cannot do this with const mpt 
         const G4String& daughter_mtName = daughter_mt->GetName(); 
    
-        bool RINDEX_NoRINDEX = rindex != nullptr && daughter_rindex == nullptr ; 
+        bool RINDEX_NoRINDEX = rindex != nullptr && daughter_rindex == nullptr ;   
         bool NoRINDEX_RINDEX = rindex == nullptr && daughter_rindex != nullptr ; 
 
-        if(RINDEX_NoRINDEX || NoRINDEX_RINDEX)
+        //if(RINDEX_NoRINDEX || NoRINDEX_RINDEX)
+        if(NoRINDEX_RINDEX)
         {
             LOG(info)
                << " RINDEX_NoRINDEX " << RINDEX_NoRINDEX 
@@ -388,6 +399,8 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
                << " daughter_mpt " << std::setw(10) << daughter_mpt 
                << " daughter_rindex " << std::setw(10) << daughter_rindex 
                ;
+
+            m_slib->addCandidateImplicitBorderSurface((const void*)pv, (const void*)daughter_pv); 
         } 
         convertImplicitSurfaces_r( daughter_pv , depth + 1 );
     }
@@ -426,6 +439,10 @@ void X4PhysicalVolume::convertSurfaces()
     int depth = 0 ;
     convertImplicitSurfaces_r(pv, depth);
 
+    const std::vector<std::pair<const void*, const void*>>& v_pvpv = m_slib->getCandidateImplicitBorderSurface(); 
+    std::string desc = X4LogicalBorderSurface::DescCandidateImplicitBorderSurface(v_pvpv);  
+    LOG(info) << desc ; 
+     
 
 
     m_slib->addPerfectSurfaces();

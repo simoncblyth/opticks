@@ -200,6 +200,9 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void dumpRawSkinSurface(const char* name) const ;
        void dumpRawBorderSurface(const char* name) const ;
 
+       void addCandidateImplicitBorderSurface(const void* parent, const void* daughter); 
+       const std::vector<std::pair<const void*, const void*>>& getCandidateImplicitBorderSurface() const ;
+
    private:
        std::vector<GPropertyMap<float>*>       m_surfaces ; 
        float                                   m_fake_efficiency ; 
@@ -216,6 +219,9 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        std::vector<GSkinSurface*>    m_skin_surfaces_raw ; 
        std::vector<GBorderSurface*>  m_border_surfaces_raw ; 
 
+   private:
+       typedef std::pair<const void*, const void*> PVPV ;
+       std::vector<PVPV>  m_candidate_implicit_border_surface ;  
 
 };
 

@@ -1491,3 +1491,14 @@ void GSurfaceLib::dumpRawBorderSurface(const char* name) const
 }
 
 
+void GSurfaceLib::addCandidateImplicitBorderSurface(const void* parent, const void* daughter)
+{
+    m_candidate_implicit_border_surface.push_back(std::make_pair(parent, daughter)); 
+}
+
+const std::vector<std::pair<const void*, const void*>>& GSurfaceLib::getCandidateImplicitBorderSurface() const 
+{
+   return m_candidate_implicit_border_surface ;  
+}
+
+
