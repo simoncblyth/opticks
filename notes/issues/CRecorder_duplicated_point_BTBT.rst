@@ -295,14 +295,14 @@ bn.npy
 
 
     als[:10]
-    TO BT BT AB
-    TO BT BT BT SD
-    TO BT BT BT SA
-    TO BT BT AB
-    TO BT BT BT SD
-    TO BT BT BT SD
-    TO BT BT BT SA
-    TO AB
+    0: TO BT BT AB
+    1: TO BT BT BT SD
+    2: TO BT BT BT SA
+    3: TO BT BT AB
+    4: TO BT BT BT SD
+    5: TO BT BT BT SD
+    6: TO BT BT BT SA
+    7: TO AB
 
 
 
@@ -382,5 +382,95 @@ bn.npy
      33 :  34 : vetoWater///Water 
      34 :  35 : Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum 
      35 :  36 : Pyrex//PMT_20inch_veto_mirror_logsurf1/Vacuum 
+
+
+
+
+
+removing the 1e-3 onion ?
+-----------------------------
+
+Notice use of the bizarre placement ctor : its really dumb using a PV to specify a LV.
+in NNVTMCPPMTManager::helper_make_physical_volume
+
+::
+
+    // 1st ctor : makes most sense
+
+    055     G4PVPlacement(G4RotationMatrix *pRot,
+     56             const G4ThreeVector &tlate,
+     57                   G4LogicalVolume *pCurrentLogical,
+     58             const G4String& pName,
+     59                   G4LogicalVolume *pMotherLogical,
+     60                   G4bool pMany,
+     61                   G4int  pCopyNo,
+     62                   G4bool pSurfChk=false);
+
+
+    // abhorrent ctor : using a PV to specify an LV : also bizarre, why move the pName ! 
+
+    098     G4PVPlacement(G4RotationMatrix *pRot,
+     99             const G4ThreeVector &tlate,
+    100             const G4String &pName,
+    101                   G4LogicalVolume *pLogical,
+    102                   G4VPhysicalVolume *pMother,
+    103                   G4bool pMany,
+    104                   G4int pCopyNo,
+    105                   G4bool pSurfChk=false);
+    106       // A simple variation of the 1st constructor, only specifying the
+    107       // mother volume as a pointer to its physical volume instead of its
+    108       // logical volume. The effect is exactly the same.
+
+
+    043 G4PVPlacement::G4PVPlacement( G4RotationMatrix *pRot,
+     44                         const G4ThreeVector &tlate,
+     45                         const G4String& pName,
+     46                               G4LogicalVolume *pLogical,
+     47                               G4VPhysicalVolume *pMother,
+     48                               G4bool pMany,
+     49                               G4int pCopyNo,
+     50                               G4bool pSurfChk )
+     51   : G4VPhysicalVolume(pRot,tlate,pName,pLogical,pMother),
+     52     fmany(pMany), fallocatedRotM(false), fcopyNo(pCopyNo)
+     53 {                       
+     54   if (pMother)
+     55   {
+     56     G4LogicalVolume* motherLogical = pMother->GetLogicalVolume();
+     57     if (pLogical == motherLogical)
+     58     {
+     59       G4Exception("G4PVPlacement::G4PVPlacement()", "GeomVol0002",
+     60                   FatalException, "Cannot place a volume inside itself!");
+     61     }
+     62     SetMotherLogical(motherLogical);
+     63     motherLogical->AddDaughter(this);
+     64     if (pSurfChk) { CheckOverlaps(); }
+     65   }
+     66 }
+
+
+
+
+hmm maybe the reason for the near degenerates is to "contain" the optical surface ?
+--------------------------------------------------------------------------------------
+
+
+::
+
+    656 void
+    657 NNVTMCPPMTManager::helper_make_optical_surface()
+    658 {
+    659     new G4LogicalBorderSurface(GetName()+"_photocathode_logsurf1",
+    660             inner1_phys, body_phys,
+    661             Photocathode_opsurf);
+    662     new G4LogicalBorderSurface(GetName()+"_photocathode_logsurf2",
+    663             body_phys, inner1_phys,
+    664             Photocathode_opsurf);
+    665     new G4LogicalBorderSurface(GetName()+"_mirror_logsurf1",
+    666             inner2_phys, body_phys,
+    667             m_mirror_opsurf);
+    668     new G4LogicalBorderSurface(GetName()+"_mirror_logsurf2",
+    669             body_phys, inner2_phys,
+    670             m_mirror_opsurf);
+    671 }
 
 

@@ -19,6 +19,7 @@
 
 #include <sstream>
 
+#include "G4SystemOfUnits.hh"
 #include "CFG4_BODY.hh"
 
 // okc-
@@ -45,6 +46,7 @@
 #include "CDebug.hh"
 #include "CWriter.hh"
 #include "CRecorder.hh"
+#include "Format.hh"
 
 
 #include "PLOG.hh"
@@ -82,6 +84,8 @@ CRecorder::CRecorder(CCtx& ctx)
     :
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),
+    m_microStep_mm(0.002), 
+    m_suppress_same_material_microStep(true), 
     m_mode(m_ok->getManagerMode()),   // --managermode
     m_recpoi(m_ok->isRecPoi()),   // --recpoi
     m_reccf(m_ok->isRecCf()),     // --reccf
@@ -506,6 +510,10 @@ void CRecorder::postTrackWriteSteps()
         const G4StepPoint* pre  = step->GetPreStepPoint() ; 
         const G4StepPoint* post = step->GetPostStepPoint() ; 
 
+        G4ThreeVector delta = step->GetDeltaPosition(); 
+        double        step_mm = delta.mag()/mm  ; 
+        bool microStep = step_mm <= m_microStep_mm ; 
+
         //pointDump("CRecorder::postTrackWriteSteps.pre",  pre ); 
         //pointDump("CRecorder::postTrackWriteSteps.post", post ); 
 
@@ -528,11 +536,15 @@ void CRecorder::postTrackWriteSteps()
 
         unsigned postmat = m_material_bridge->getPostMaterial(step) ; 
 
+        bool same_material_microStep = premat == postmat && microStep ; 
+
+        bool suppress_microStep = m_suppress_same_material_microStep && same_material_microStep ; 
+
         CStage::CStage_t postStage = stage == CStage::REJOIN ? CStage::RECOLL : stage  ; // avoid duping the RE 
 
         unsigned postFlag = OpStatus::OpPointFlag(post, boundary_status, postStage);
 
-        if(postFlag == 0 )
+        if(postFlag == 0 || suppress_microStep )
         {
             LOG(fatal)
                 << " num " << num
@@ -544,6 +556,10 @@ void CRecorder::postTrackWriteSteps()
                 << " postStage " << postStage
                 << " premat " << premat
                 << " postmat " << postmat
+                << " suppress_microStep " << ( suppress_microStep ? "YES" : "n" )
+                << " step_mm " << step_mm
+                << " m_microStep_mm " << m_microStep_mm 
+                << Format(delta, "delta", 5 )
                 ;
         }
 
@@ -552,11 +568,12 @@ void CRecorder::postTrackWriteSteps()
 
         bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
+
 #ifdef USE_CUSTOM_BOUNDARY
-        bool postSkip = boundary_status == Ds::StepTooSmall && !lastPost  ;  
+        bool postSkip = ( boundary_status == Ds::StepTooSmall || suppress_microStep ) && !lastPost  ;  
         bool matSwap = next_boundary_status == Ds::StepTooSmall ; 
 #else
-        bool postSkip = boundary_status == StepTooSmall && !lastPost  ;  
+        bool postSkip = ( boundary_status == StepTooSmall || suppress_microStep ) && !lastPost  ;  
         bool matSwap = next_boundary_status == StepTooSmall ; 
 #endif
 
