@@ -40,6 +40,9 @@ struct nnode ;
 
 
 template <typename T> struct nxform ; 
+template <typename T> class GPropertyMap ; 
+class GBorderSurface ; 
+class GSkinSurface ; 
 
 class GGeo ; 
 class GMesh ; 
@@ -140,7 +143,13 @@ class X4_API X4PhysicalVolume : public X4Named
         GVolume* convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         unsigned addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p );
 
-        G4LogicalSurface* findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority );
+    private:
+        G4LogicalSurface*    findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const ;
+    private:
+        // aims to near reproduce surface access in GGeo model 
+        GPropertyMap<float>* findSurfaceOK(const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const ; 
+        GBorderSurface*      findBorderSurfaceOK( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b) const ; 
+        GSkinSurface*        findSkinSurfaceOK( const G4LogicalVolume* const lv) const ;
     private:
         GGeo*                        m_ggeo ; 
         const G4VPhysicalVolume*     m_top ;  

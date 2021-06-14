@@ -215,6 +215,8 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        unsigned            getNumRawBorderSurfaces() const ;
        unsigned            getNumRawSkinSurfaces() const ;
 
+
+
        GSkinSurface*       findSkinSurface(const char* lv) const ;
        void                dumpSkinSurface(const char* msg="GSurfaceLib::dumpSkinSurface") const ;
 

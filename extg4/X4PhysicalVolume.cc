@@ -77,6 +77,7 @@ template struct nxform<X4Nd> ;
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
+#include "GBorderSurface.hh"
 #include "GSkinSurface.hh"
 #include "GBndLib.hh"
 #include "GMeshLib.hh"
@@ -584,12 +585,12 @@ X4PhysicalVolume::findSurface
 
 **/
 
-G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority )
+G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const 
 {
      G4LogicalSurface* surf = G4LogicalBorderSurface::GetSurface(a, b) ;
 
-     const G4VPhysicalVolume* const first  = first_priority ? a : b ; 
-     const G4VPhysicalVolume* const second = first_priority ? b : a ; 
+     const G4VPhysicalVolume* const first  = first_skin_priority ? a : b ; 
+     const G4VPhysicalVolume* const second = first_skin_priority ? b : a ; 
 
      if(surf == NULL)
          surf = G4LogicalSkinSurface::GetSurface(first ? first->GetLogicalVolume() : NULL );
@@ -599,6 +600,56 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
 
      return surf ; 
 }
+
+
+
+
+
+GPropertyMap<float>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const 
+{
+     GPropertyMap<float>* surf = nullptr ; 
+
+     GBorderSurface* bs = findBorderSurfaceOK( a, b ); 
+     surf = dynamic_cast<GPropertyMap<float>*>(bs); 
+
+     const G4VPhysicalVolume* const first  = first_skin_priority ? a : b ; 
+     const G4VPhysicalVolume* const second = first_skin_priority ? b : a ; 
+
+     if(surf == NULL)
+     {
+         GSkinSurface* sk = findSkinSurfaceOK( first ? first->GetLogicalVolume() : NULL );
+         surf = dynamic_cast<GPropertyMap<float>*>(sk); 
+     }
+
+     if(surf == NULL)
+     {
+         GSkinSurface* sk = findSkinSurfaceOK( second ? second->GetLogicalVolume() : NULL );
+         surf = dynamic_cast<GPropertyMap<float>*>(sk); 
+     }
+     return surf ; 
+}
+
+
+GBorderSurface* X4PhysicalVolume::findBorderSurfaceOK( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b) const 
+{
+    const char* pv1 = a ? X4::Name( a ) : nullptr  ; 
+    const char* pv2 = b ? X4::Name( b ) : nullptr ; 
+    GBorderSurface* bs =  pv1 == nullptr || pv2 == nullptr ? nullptr : m_slib->findBorderSurface(pv1, pv2) ;  
+    return bs ; 
+}
+
+GSkinSurface* X4PhysicalVolume::findSkinSurfaceOK( const G4LogicalVolume* const lv) const 
+{
+    const char* _lv = X4::Name( lv ) ; 
+    GSkinSurface* sk = _lv ? m_slib->findSkinSurface(_lv) : nullptr ;  
+    return sk ; 
+}
+
+
+
+
+
+
 
 
 
@@ -1077,38 +1128,58 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
     const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
 
+    // GDMLName adds pointer suffix to the object name, returns null when object is null : eg parent of world 
+
+    const char* _pv = X4::GDMLName(pv) ;   
+    const char* _pv_p = X4::GDMLName(pv_p) ; 
+
+
     const G4Material* const imat_ = lv->GetMaterial() ;
     const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
 
     const char* omat = X4::BaseName(omat_) ; 
     const char* imat = X4::BaseName(imat_) ; 
 
-    // Why do boundaries with this material pair have surface finding problem for the old route ?
-    bool problem_pair  = strcmp(omat, "UnstStainlessSteel") == 0 && strcmp(imat, "BPE") == 0 ; 
-
     // look for a border surface defined between this and the parent volume, in either direction
-    bool first_priority = true ;  
-    const G4LogicalSurface* const isur_ = findSurface( pv  , pv_p , first_priority );
-    const G4LogicalSurface* const osur_ = findSurface( pv_p, pv   , first_priority );  
-
+    bool first_skin_priority = true ;   // controls fallback skin lv order when bordersurface a->b not found 
+    const G4LogicalSurface* const isur_ = findSurface( pv  , pv_p , first_skin_priority );
+    const G4LogicalSurface* const osur_ = findSurface( pv_p, pv   , first_skin_priority );  
     // doubtful of findSurface priority with double skin surfaces, see g4op-
 
-    // the above will not find Opticks SensorSurfaces ... so look for those with GGeo
+    const GPropertyMap<float>* const isur2_ = findSurfaceOK(  pv  , pv_p, first_skin_priority ); 
+    const GPropertyMap<float>* const osur2_ = findSurfaceOK(  pv_p, pv  , first_skin_priority ); 
 
-    /*
-    const char* _lv = X4::BaseNameAsis(lv) ;  
-    const char* _lv_p = X4::BaseNameAsis(lv_p) ;   // NULL when no lv_p   
 
-    const char* this_name = X4::GDMLName(this) ;
-    assert( SStr::HasPointerSuffix(this_name, 12) == true ) ;
+    static const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX" ; 
+    if( isur2_ != nullptr && isur_ == nullptr )  // find from OK but not G4  : only implicits should do this 
+    {
+        const char* isur2_name = isur2_->getName(); 
+        assert( SStr::StartsWith(isur2_name,  IMPLICIT_PREFIX )); 
+    }
+    if( osur2_ != nullptr && osur_ == nullptr )  // find from OK but not G4 : only implicits should do this 
+    {
+        const char* osur2_name = osur2_->getName(); 
+        assert( SStr::StartsWith(osur2_name,  IMPLICIT_PREFIX )); 
+    }
 
-    // is Geant4 allocator using placement new into some defined location
-    // somehow ?  https://isocpp.org/wiki/faq/dtors#placement-new 
-    */
 
-    const char* _lv = X4::GDMLName(lv) ; 
+    if( isur2_ == nullptr && isur_ != nullptr )  // find from G4 but not from OK : should not happen 
+    {
+        LOG(fatal) << " isur_ : find from G4 but not from OK " ; 
+        assert(0); 
+    }
+    if( osur2_ == nullptr && osur_ != nullptr )  // find from G4 but not from OK : should not happen 
+    {
+        LOG(fatal) << " osur_ : find from G4 but not from OK " ; 
+        assert(0); 
+    }
+
+
+
+
+
+    const char* _lv = X4::GDMLName(lv) ;    
     const char* _lv_p = X4::GDMLName(lv_p) ; 
-
 
     bool ps = SStr::HasPointerSuffix(_lv, 6, 12) ;  // 9,12 on macOS 
     if(!ps) LOG(fatal) << " unexpected pointer suffix _lv " << _lv ;  
@@ -1122,15 +1193,17 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     }
 
     LOG(debug)
-        << " lv names to look for skinsurfaces with "
         << " lv " << lv 
         << " _lv " << _lv
+        << " lv_p " << lv_p 
+        << " _lv_p " << _lv_p
         ;
 
     LOG(debug)
-        << " lv names to look for skinsurfaces with "
-        << " lv_p " << lv_p 
-        << " _lv_p " << _lv_p
+        << " pv " << pv 
+        << " _pv " << _pv
+        << " pv_p " << pv_p 
+        << " _pv_p " << _pv_p
         ;
 
 
@@ -1144,32 +1217,18 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
                    ; 
 
 
-    /*
-    int clv = m_ggeo->findCathodeLVIndex( _lv ) ;   // > -1 when found
-    int clv_p = m_ggeo->findCathodeLVIndex( _lv_p ) ; 
-    assert( clv_p == -1 && "not expecting non-leaf cathode LV " ); 
-    bool is_cathode = clv > -1 ; 
-    */
-
-    if( problem_pair ) 
-        LOG(debug) 
-            << " problem_pair "
-            << " node_count " << m_node_count 
-            << " isur_ " << isur_
-            << " osur_ " << osur_
-            << " _lv " << _lv 
-            << " _lv_p " << _lv_p
-            << " g_sslv " << g_sslv
-            << " g_sslv_p " << g_sslv_p
-            ;
-
-
 
     LOG(debug) 
          << " addBoundary "
          << " omat " << omat 
          << " imat " << imat 
          ;
+
+    /**
+    Why does skin surface consult the GGeo model but border surface hark back to the Geant4 model ?
+
+    Notice that the non-directional skin surface are translated by the osur and isur being the same in the 2nd and 3rd branches.
+    **/
  
     unsigned boundary = 0 ; 
     if( g_sslv == NULL && g_sslv_p == NULL  )   // no skin surface on this or parent volume, just use bordersurface if there are any

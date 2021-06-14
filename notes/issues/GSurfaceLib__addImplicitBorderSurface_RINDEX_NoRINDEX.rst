@@ -7,6 +7,36 @@ between OK and G4 for photons reaching the Tyvek.
 * :doc:`tds3gun_nonaligned_comparison`
 
 
+Hmm not doing anything to tds3ip, why ?
+-------------------------------------------
+
+
+X4PhysicalVolume::addBoundary only looking for G4 boundaries not the Opticks implicits::
+
+
+    1075 unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
+    1076 {
+    1077     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
+    1078     const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
+    1079 
+    1080     const G4Material* const imat_ = lv->GetMaterial() ;
+    1081     const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
+    1082 
+    1083     const char* omat = X4::BaseName(omat_) ;
+    1084     const char* imat = X4::BaseName(imat_) ;
+    1085 
+    1086     // Why do boundaries with this material pair have surface finding problem for the old route ?
+    1087     bool problem_pair  = strcmp(omat, "UnstStainlessSteel") == 0 && strcmp(imat, "BPE") == 0 ;
+    1088 
+    1089     // look for a border surface defined between this and the parent volume, in either direction
+    1090     bool first_priority = true ;
+    1091     const G4LogicalSurface* const isur_ = findSurface( pv  , pv_p , first_priority );
+    1092     const G4LogicalSurface* const osur_ = findSurface( pv_p, pv   , first_priority );
+    1093 
+
+
+
+
 geocache-jun15
 ------------------
 
