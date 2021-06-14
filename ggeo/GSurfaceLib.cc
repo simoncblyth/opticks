@@ -102,7 +102,6 @@ void GSurfaceLib::save()
 }
 GSurfaceLib* GSurfaceLib::load(Opticks* ok)
 {
-
     GSurfaceLib* lib = new GSurfaceLib(ok);
     lib->loadFromCache();
     lib->loadOpticalBuffer();
@@ -111,7 +110,6 @@ GSurfaceLib* GSurfaceLib::load(Opticks* ok)
 
 void GSurfaceLib::loadOpticalBuffer()
 {
-
     std::string dir = getCacheDir(); 
     std::string name = getBufferName("Optical");
 
@@ -316,30 +314,18 @@ const char* GSurfaceLib::AssignSurfaceType( BMeta* surfmeta ) // static
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
 GSurfaceLib::add(GBorderSurface* raw)
 -------------------------------------
 
-1. setMetaKV keys "bpv1" "bpv2" onto the GPropertyMap 
-2. collect the GPropertyMap object o 
+Adds the input border surface to m_border_surfaces and 
+a standardized version of it to m_surfaces. 
+The metadata keys "bpv1" and "bpv2" are used to retain border 
+surface specific infomation within the common structure.
 
 **/
 
-
-void GSurfaceLib::add(GBorderSurface* raw)
+void GSurfaceLib::add(GBorderSurface* raw, bool implicit)
 {
     bool has_EFFICIENCY = raw->hasProperty("EFFICIENCY"); 
     LOG(LEVEL) 
@@ -351,13 +337,29 @@ void GSurfaceLib::add(GBorderSurface* raw)
         << " has_EFFICIENCY " << has_EFFICIENCY
         ; 
 
-    m_border_surfaces.push_back(raw);
+
+    if(!implicit)
+    {
+        m_border_surfaces.push_back(raw);
+    }
+    else
+    {
+        m_implicit_border_surfaces.push_back(raw);
+    }
 
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
     bool direct = false  ;  // not standardized 
     addBorderSurface(surf, raw->getPV1(), raw->getPV2(), direct );
 }
 
+/**
+GSurfaceLib::addBorderSurface
+------------------------------
+
+Invoked by `GSurfaceLib::add(GBorderSurface* raw)`
+sets MetaKV keys "bpv1" "bpv2" onto the GPropertyMap 
+
+**/
 
 void GSurfaceLib::addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2, bool direct)
 {
@@ -369,47 +371,29 @@ void GSurfaceLib::addBorderSurface(GPropertyMap<float>* surf, const char* pv1, c
     surf->setBorderSurface();
 
     if(direct)
+    {
         addDirect(surf);
+    }
     else
-        add(surf);   // TODO: rename this to addStandardized as confusingly makes look like a loop
+    {
+        addStandardized(surf); 
+    }
 }
-
-
-GPropertyMap<float>* GSurfaceLib::getBasisSurface(const char* name) const 
-{
-    return m_basis ? m_basis->getSurface(name) : NULL ; 
-}
-
-
-void GSurfaceLib::relocateBasisBorderSurface(const char* name, const char* bpv1, const char* bpv2)
-{
-    GPropertyMap<float>* surf = getBasisSurface(name);
-    if(!surf) LOG(fatal) << "relocateBasisBorderSurface requires basis library to be present and to contain the surface  " ; 
-    assert( surf );        
-
-    bool direct = true ;  // already standardized 
-    addBorderSurface( surf, bpv1, bpv2, direct ); 
-}
-
-
 
 
 /**
 GSurfaceLib::add(GSkinSurface* raw)
 -------------------------------------
 
-1. collect the object as a GPropertyMap 
-2. setMetaKV key "sslv" onto the GPropertyMap 
-
-DYB sensors surfaces did not enter thru front door, 
-they came via Bialkali material.
-With modern G4 and GDML perhaps can now do so though.
+Adds the input skin surface to m_skin_surfaces and 
+a standardized version of it to m_surfaces. 
+The metadata key "sslv" is used to retain skin surface specific 
+information within the common structure.
 
 **/
 
 void GSurfaceLib::add(GSkinSurface* raw)
 {
-
     bool has_EFFICIENCY = raw->hasProperty("EFFICIENCY"); 
 
     LOG(LEVEL) 
@@ -418,24 +402,6 @@ void GSurfaceLib::add(GSkinSurface* raw)
         << " keys " << raw->getKeysString()     
         << " has_EFFICIENCY " << has_EFFICIENCY
         ;
-
- 
-    /*
-    // this dont work : the sensors dont enter thru the front door
-
-    const char* name = raw->getName();
-    bool iss = NameEndsWithSensorSurface(name) ;     
-    if(iss)
-    {
-        LOG(error) 
-           <<  " SensorSurface " 
-           <<  " num " << m_sensor_skin_surfaces.size() 
-           <<  " name " << name 
-           ;
-
-        m_sensor_skin_surfaces.push_back(raw) ; 
-    } 
-    */
 
     m_skin_surfaces.push_back(raw);
 
@@ -453,25 +419,20 @@ void GSurfaceLib::addSkinSurface(GPropertyMap<float>* surf, const char* sslv_, b
     surf->setSkinSurface();
 
     if(direct)
+    {
         addDirect(surf);
+    }
     else
-        add(surf);  // TODO: addStandardized
-}
-void GSurfaceLib::relocateBasisSkinSurface(const char* name, const char* sslv)
-{
-    GPropertyMap<float>* surf = getBasisSurface(name);
-    if(!surf) LOG(fatal) << "relocateBasisSkinSurface requires basis library to be present and to contain the surface  " ; 
-    assert( surf );           
-  
-    bool direct = true ;  // already standardized 
-    addSkinSurface( surf, sslv, direct ); 
+    {
+        addStandardized(surf); 
+    }
 }
 
 
 
 /**
-GSurfaceLib::add(GPropertyMap<float>* surf)
------------------------------------------------
+GSurfaceLib::addStandardized(GPropertyMap<float>* surf)
+------------------------------------------------------------
 
 Common to both surface types:
 
@@ -480,7 +441,7 @@ Common to both surface types:
 
 **/
 
-void GSurfaceLib::add(GPropertyMap<float>* surf)
+void GSurfaceLib::addStandardized(GPropertyMap<float>* surf)
 {
     assert(!isClosed());
     GPropertyMap<float>* ssurf = createStandardSurface(surf) ;
@@ -495,56 +456,19 @@ void GSurfaceLib::addDirect(GPropertyMap<float>* surf)
 
 
 
+/**
+GSurfaceLib::createStandardSurface
+------------------------------------
 
-bool GSurfaceLib::operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_)
-{
-    const char* a = a_->getShortName();
-    const char* b = b_->getShortName();
+Invoked by GSurfaceLib::addStandardized arranges that all collected surfaces
+have the standard set of properties.
 
-    typedef std::map<std::string, unsigned int> MSU ;
-    MSU& order = getOrder();   
-    MSU::const_iterator end = order.end() ; 
- 
-    unsigned int ia = order.find(a) == end ? UINT_MAX :  order[a] ; 
-    unsigned int ib = order.find(b) == end ? UINT_MAX :  order[b] ; 
-    return ia < ib ; 
-}
+1. detect
+2. absorb 
+3. reflect_specular
+4. reflect_diffuse
 
-void GSurfaceLib::sort()
-{
-    bool asis = true ; 
-    if(asis)
-    {
-        LOG(LEVEL) << " not sorting ";
-        return  ;
-    } 
-
-    typedef std::map<std::string, unsigned int> MSU ;
-    MSU& order = getOrder();  
-
-    if(order.size() == 0) return ; 
-    std::stable_sort( m_surfaces.begin(), m_surfaces.end(), *this );
-
-}
-
-
-guint4 GSurfaceLib::createOpticalSurface(GPropertyMap<float>* src)
-{
-   assert(src->isSkinSurface() || src->isBorderSurface() || src->isTestSurface());
-   GOpticalSurface* os = src->getOpticalSurface();
-   assert(os && "all skin/boundary surface expected to have associated OpticalSurface");
-   guint4 optical = os->getOptical();
-   return optical ; 
-}
-
-guint4 GSurfaceLib::getOpticalSurface(unsigned int i)
-{
-    GPropertyMap<float>* surf = getSurface(i);    
-    guint4 os = createOpticalSurface(surf);
-    os.x = i ;
-    return os ; 
-}
-
+**/
 
 GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src)
 {
@@ -639,14 +563,120 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
     return dst ; 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+GSurfaceLib::getBasisSurface
+------------------------------
+
+Basis surfaces are used with test geometry, methods to relocate 
+surfaces requires changes to the volume names associated with the 
+surfaces.
+
+**/
+
+
+GPropertyMap<float>* GSurfaceLib::getBasisSurface(const char* name) const 
+{
+    return m_basis ? m_basis->getSurface(name) : NULL ; 
+}
+
+
+void GSurfaceLib::relocateBasisBorderSurface(const char* name, const char* bpv1, const char* bpv2)
+{
+    GPropertyMap<float>* surf = getBasisSurface(name);
+    if(!surf) LOG(fatal) << "relocateBasisBorderSurface requires basis library to be present and to contain the surface  " ; 
+    assert( surf );        
+
+    bool direct = true ;  // already standardized 
+    addBorderSurface( surf, bpv1, bpv2, direct ); 
+}
+
+void GSurfaceLib::relocateBasisSkinSurface(const char* name, const char* sslv)
+{
+    GPropertyMap<float>* surf = getBasisSurface(name);
+    if(!surf) LOG(fatal) << "relocateBasisSkinSurface requires basis library to be present and to contain the surface  " ; 
+    assert( surf );           
+  
+    bool direct = true ;  // already standardized 
+    addSkinSurface( surf, sslv, direct ); 
+}
+
+
+
+
+
+bool GSurfaceLib::operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_)
+{
+    const char* a = a_->getShortName();
+    const char* b = b_->getShortName();
+
+    typedef std::map<std::string, unsigned int> MSU ;
+    MSU& order = getOrder();   
+    MSU::const_iterator end = order.end() ; 
+ 
+    unsigned int ia = order.find(a) == end ? UINT_MAX :  order[a] ; 
+    unsigned int ib = order.find(b) == end ? UINT_MAX :  order[b] ; 
+    return ia < ib ; 
+}
+
+/**
+GSurfaceLib::sort
+-------------------
+
+Sorts m_surfaces
+
+
+**/
+
+void GSurfaceLib::sort()
+{
+    bool asis = true ; 
+    if(asis)
+    {
+        LOG(LEVEL) << " not sorting ";
+        return  ;
+    } 
+
+    typedef std::map<std::string, unsigned int> MSU ;
+    MSU& order = getOrder();  
+
+    if(order.size() == 0) return ; 
+    std::stable_sort( m_surfaces.begin(), m_surfaces.end(), *this );
+
+}
+
+
+guint4 GSurfaceLib::createOpticalSurface(GPropertyMap<float>* src)
+{
+   assert(src->isSkinSurface() || src->isBorderSurface() || src->isTestSurface());
+   GOpticalSurface* os = src->getOpticalSurface();
+   assert(os && "all skin/boundary surface expected to have associated OpticalSurface");
+   guint4 optical = os->getOptical();
+   return optical ; 
+}
+
+guint4 GSurfaceLib::getOpticalSurface(unsigned int i)
+{
+    GPropertyMap<float>* surf = getSurface(i);    
+    guint4 os = createOpticalSurface(surf);
+    os.x = i ;
+    return os ; 
+}
+
+
 GPropertyMap<float>* GSurfaceLib::makePerfect(const char* name, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_)
 {
-    GProperty<float>* _detect           = makeConstantProperty(detect_) ;    
-    GProperty<float>* _absorb           = makeConstantProperty(absorb_) ;    
-    GProperty<float>* _reflect_specular = makeConstantProperty(reflect_specular_) ;    
-    GProperty<float>* _reflect_diffuse  = makeConstantProperty(reflect_diffuse_) ;    
-
-
     // placeholders
     const char* type = "1" ; 
     const char* model = "1" ; 
@@ -658,12 +688,89 @@ GPropertyMap<float>* GSurfaceLib::makePerfect(const char* name, float detect_, f
     GPropertyMap<float>* dst = new GPropertyMap<float>(name, index, TESTSURFACE, os);
     dst->setStandardDomain(getStandardDomain());
 
+    addPerfectProperties(dst, detect_, absorb_, reflect_specular_, reflect_diffuse_ );  
+    return dst ;  
+}
+
+void GSurfaceLib::addPerfectProperties( GPropertyMap<float>* dst, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_ )
+{
+    GProperty<float>* _detect           = makeConstantProperty(detect_) ;    
+    GProperty<float>* _absorb           = makeConstantProperty(absorb_) ;    
+    GProperty<float>* _reflect_specular = makeConstantProperty(reflect_specular_) ;    
+    GProperty<float>* _reflect_diffuse  = makeConstantProperty(reflect_diffuse_) ;    
+
     dst->addProperty( detect          , _detect          );
     dst->addProperty( absorb          , _absorb          );
     dst->addProperty( reflect_specular, _reflect_specular);
     dst->addProperty( reflect_diffuse , _reflect_diffuse );
-    return dst ;  
 }
+
+
+
+void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, const char* pv2 )
+{
+    GBorderSurface* prior_bs = findBorderSurface(pv1, pv2);
+    if( prior_bs != nullptr )
+    {
+        LOG(fatal) 
+            << " pv1 " << pv1 
+            << " pv2 " << pv2 
+            << " prior_bs " << prior_bs
+            << " there is a prior GBorderSurface from pv1->pv2 "
+            ;
+        assert(0); 
+    } 
+
+    std::stringstream ss ; 
+    ss << "Implicit_RINDEX_NoRINDEX_" << pv1 << "_" << pv2 ;  
+    std::string s = ss.str(); 
+    const char* name = s.c_str(); 
+
+    // placeholders
+    const char* type = "1" ; 
+    const char* model = "1" ; 
+    const char* finish = "1" ; 
+    const char* value = "1" ; 
+    GOpticalSurface* os = new GOpticalSurface(name, type, model, finish, value);
+
+    unsigned index = 2000 ; // TODO: eliminate this index, or automate it 
+    GBorderSurface* bs = new GBorderSurface( name, index, os ); 
+
+    float detect_ = 0.f ; 
+    float absorb_ = 1.f ;     // <--- perfect absorber just like G4OpBoundaryProcess RINDEX->NoRINDEX
+    float reflect_specular_ = 0.f ; 
+    float reflect_diffuse_ = 0.f ; 
+
+    addPerfectProperties(bs, detect_, absorb_, reflect_specular_ , reflect_diffuse_ ); 
+
+    bool implicit = true ; 
+    add(bs, implicit);     
+}
+
+
+
+void GSurfaceLib::dumpImplicitBorderSurfaces(const char* msg) const 
+{
+    LOG(info) << msg << std::endl << descImplicitBorderSurfaces() ; 
+}
+
+std::string GSurfaceLib::descImplicitBorderSurfaces() const 
+{
+    unsigned num_implicit_border_surfaces = m_implicit_border_surfaces.size() ; 
+
+    std::stringstream ss ; 
+    ss 
+        << " num_implicit_border_surfaces " << num_implicit_border_surfaces  << std::endl ; 
+
+    for(unsigned i=0 ; i < num_implicit_border_surfaces ; i++)
+    {
+        const  GBorderSurface* bs = m_implicit_border_surfaces[i] ; 
+        ss << bs->getName() << std::endl ; 
+    }
+    return ss.str(); 
+}
+
+
 
 
 void GSurfaceLib::addPerfectSurfaces()
@@ -678,6 +785,11 @@ void GSurfaceLib::addPerfectSurfaces()
     addDirect(_specular);
     addDirect(_diffuse);
 }
+
+
+
+
+
 
 
 
@@ -1383,8 +1495,13 @@ GBorderSurface* GSurfaceLib::getBorderSurface(unsigned index) const
 }
 
 
+/**
+GSurfaceLib::findSkinSurface
+------------------------------
 
+Returns skin surface associated with the named logical volume or nullptr.
 
+**/
 
 GSkinSurface* GSurfaceLib::findSkinSurface(const char* lv) const 
 {
@@ -1420,9 +1537,13 @@ void GSurfaceLib::dumpSkinSurface(const char* msg) const
 }
 
 
+/**
+GSurfaceLib::findBorderSurface
+--------------------------------
 
+Returns border surface between the named physical volumes or nullptr if not found.
 
-
+**/
 
 GBorderSurface* GSurfaceLib::findBorderSurface(const char* pv1, const char* pv2) const 
 {
@@ -1443,9 +1564,22 @@ GBorderSurface* GSurfaceLib::findBorderSurface(const char* pv1, const char* pv2)
 
 
 
+/**
+GSurfaceLib::addRaw : USED FOR DEBUG ONLY 
+--------------------------------------------
+
+Adds into separate m_border_surfaces_raw m_skin_surfaces_raw vectors
+
+TODO: 
+
+SUSPECT CAN ELIMINATE THE _raw ?  AS SEEMS THAT m_border_surfaces and m_skin_surfaces do the same thing 
 
 
 
+
+
+
+**/
 
 void GSurfaceLib::addRaw(GBorderSurface* surface)
 {
@@ -1491,14 +1625,5 @@ void GSurfaceLib::dumpRawBorderSurface(const char* name) const
 }
 
 
-void GSurfaceLib::addCandidateImplicitBorderSurface(const void* parent, const void* daughter)
-{
-    m_candidate_implicit_border_surface.push_back(std::make_pair(parent, daughter)); 
-}
-
-const std::vector<std::pair<const void*, const void*>>& GSurfaceLib::getCandidateImplicitBorderSurface() const 
-{
-   return m_candidate_implicit_border_surface ;  
-}
 
 

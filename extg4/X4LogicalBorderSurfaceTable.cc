@@ -128,9 +128,3 @@ void X4LogicalBorderSurfaceTable::init()
     }
 }
 
-
-
-
-
-
-

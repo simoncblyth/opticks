@@ -365,42 +365,55 @@ NoRINDEX_RINDEX
 
 **/
 
-void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const pv, int depth)
+void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const parent_pv, int depth)
 {
-    const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-    const G4Material* mt = lv->GetMaterial() ; 
-    const G4String& mtName = mt->GetName(); 
+    const G4LogicalVolume* parent_lv = parent_pv->GetLogicalVolume() ;
+    const G4Material* parent_mt = parent_lv->GetMaterial() ; 
+    const G4String& parent_mtName = parent_mt->GetName(); 
 
-    G4MaterialPropertiesTable* mpt = mt->GetMaterialPropertiesTable();
-    const G4MaterialPropertyVector* rindex = mpt ? mpt->GetProperty(kRINDEX) : nullptr ;     // WHAT: cannot do this with const mpt 
+    G4MaterialPropertiesTable* parent_mpt = parent_mt->GetMaterialPropertiesTable();
+    const G4MaterialPropertyVector* parent_rindex = parent_mpt ? parent_mpt->GetProperty(kRINDEX) : nullptr ;     // WHAT: cannot do this with const mpt 
 
-    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ )  // G4LogicalVolume::GetNoDaughters returns 1042:G4int, 1062:size_t
+    for (size_t i=0 ; i < size_t(parent_lv->GetNoDaughters()) ;i++ )  // G4LogicalVolume::GetNoDaughters returns 1042:G4int, 1062:size_t
     {
-        const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);
+        const G4VPhysicalVolume* const daughter_pv = parent_lv->GetDaughter(i);
         const G4LogicalVolume* daughter_lv = daughter_pv->GetLogicalVolume() ;
         const G4Material* daughter_mt = daughter_lv->GetMaterial() ; 
         G4MaterialPropertiesTable* daughter_mpt = daughter_mt->GetMaterialPropertiesTable();  
         const G4MaterialPropertyVector* daughter_rindex = daughter_mpt ? daughter_mpt->GetProperty(kRINDEX) : nullptr ; // WHAT: cannot do this with const mpt 
         const G4String& daughter_mtName = daughter_mt->GetName(); 
-   
-        bool RINDEX_NoRINDEX = rindex != nullptr && daughter_rindex == nullptr ;   
-        bool NoRINDEX_RINDEX = rindex == nullptr && daughter_rindex != nullptr ; 
+  
+        // naming order for outgoing photons, not ingoing volume traversal  
+        bool RINDEX_NoRINDEX = daughter_rindex != nullptr && parent_rindex == nullptr ;   
+        bool NoRINDEX_RINDEX = daughter_rindex == nullptr && parent_rindex != nullptr ; 
 
         //if(RINDEX_NoRINDEX || NoRINDEX_RINDEX)
-        if(NoRINDEX_RINDEX)
+        if(RINDEX_NoRINDEX)
         {
-            LOG(info)
-               << " RINDEX_NoRINDEX " << RINDEX_NoRINDEX 
-               << " NoRINDEX_RINDEX " << NoRINDEX_RINDEX
-               << " mtName " << std::setw(30) << mtName 
-               << " mpt " << std::setw(10) << mpt 
-               << " rindex " << std::setw(10) << rindex 
-               << " daughter_mtName " << std::setw(30) << daughter_mtName 
-               << " daughter_mpt " << std::setw(10) << daughter_mpt 
-               << " daughter_rindex " << std::setw(10) << daughter_rindex 
+            const char* pv1 = X4::Name( daughter_pv ) ; 
+            const char* pv2 = X4::Name( parent_pv ) ; 
+            GBorderSurface* bs = m_slib->findBorderSurface(pv1, pv2);  
+
+            LOG(info) 
+               << " parent_mtName " << parent_mtName
+               << " daughter_mtName " << daughter_mtName
                ;
 
-            m_slib->addCandidateImplicitBorderSurface((const void*)pv, (const void*)daughter_pv); 
+            LOG(info)
+                << " RINDEX_NoRINDEX " << RINDEX_NoRINDEX 
+                << " NoRINDEX_RINDEX " << NoRINDEX_RINDEX
+                << " pv1 " << std::setw(30) << pv1
+                << " pv2 " << std::setw(30) << pv2
+                << " bs " << bs 
+                <<  ( bs ? " preexisting-border-surface-NOT-adding-implicit " : " no-prior-border-surface-adding-implicit " )
+                ;
+
+
+            if( bs == nullptr )
+            {
+                m_slib->addImplicitBorderSurface_RINDEX_NoRINDEX(pv1, pv2); 
+            }
+           
         } 
         convertImplicitSurfaces_r( daughter_pv , depth + 1 );
     }
@@ -434,16 +447,12 @@ void X4PhysicalVolume::convertSurfaces()
     X4LogicalSkinSurfaceTable::Convert(m_slib);
     size_t num_sks = m_slib->getNumSurfaces() - num_lbs ; 
 
-
     const G4VPhysicalVolume* pv = m_top ; 
     int depth = 0 ;
     convertImplicitSurfaces_r(pv, depth);
+    size_t num_ibs = m_slib->getNumSurfaces() - num_sks ;
 
-    const std::vector<std::pair<const void*, const void*>>& v_pvpv = m_slib->getCandidateImplicitBorderSurface(); 
-    std::string desc = X4LogicalBorderSurface::DescCandidateImplicitBorderSurface(v_pvpv);  
-    LOG(info) << desc ; 
-     
-
+    m_slib->dumpImplicitBorderSurfaces("X4PhysicalVolume::convertSurfaces");  
 
     m_slib->addPerfectSurfaces();
     m_slib->dumpSurfaces("X4PhysicalVolume::convertSurfaces");
@@ -455,6 +464,7 @@ void X4PhysicalVolume::convertSurfaces()
         << "]" 
         << " num_lbs " << num_lbs
         << " num_sks " << num_sks
+        << " num_ibs " << num_ibs
         ;
 
 }

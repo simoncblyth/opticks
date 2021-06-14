@@ -42,8 +42,6 @@ class X4_API X4LogicalBorderSurface
     public:
         static GBorderSurface* Convert(const G4LogicalBorderSurface* src);
         static int GetItemIndex( const G4LogicalBorderSurface* item ) ;
-        static std::string DescCandidateImplicitBorderSurface( const std::vector<std::pair<const void*, const void*>>& v_pvpv ) ; 
-
 
 };
 

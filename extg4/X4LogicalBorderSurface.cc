@@ -64,7 +64,19 @@ GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* sr
     return dst ; 
 }
 
-int X4LogicalBorderSurface::GetItemIndex( const G4LogicalBorderSurface* src )
+
+/**
+X4LogicalBorderSurface::GetItemIndex
+-------------------------------------
+
+Returns index of the border surface within the Geant4 vector of all border surfaces
+obtained from the border surface table.
+As a border surface only index this does not seem very useful.  
+Perhaps thats why it appears not to be used in anger.
+
+**/
+
+int X4LogicalBorderSurface::GetItemIndex( const G4LogicalBorderSurface* src )  // static 
 {
     const G4LogicalBorderSurfaceTable* tab = G4LogicalBorderSurface::GetSurfaceTable() ; 
 
@@ -75,38 +87,6 @@ int X4LogicalBorderSurface::GetItemIndex( const G4LogicalBorderSurface* src )
     return X4::GetItemIndex<G4LogicalBorderSurface>( vec, src ); 
 }
 
-
-std::string X4LogicalBorderSurface::DescCandidateImplicitBorderSurface( const std::vector<std::pair<const void*, const void*>>& v_pvpv )
-{
-    unsigned num_cand = v_pvpv.size(); 
-
-    std::stringstream ss ; 
-    ss << " num_cand " << num_cand << std::endl ; 
-
-    typedef std::pair<const void*, const void*> PVPV ;
-
-    for(unsigned i=0 ; i < num_cand ; i++) 
-    {    
-        const PVPV& pp = v_pvpv[i] ;    
-
-        const G4VPhysicalVolume* parent = (const G4VPhysicalVolume*)pp.first ; 
-        const G4VPhysicalVolume* daughter = (const G4VPhysicalVolume*)pp.second ; 
-  
-        const G4String& parentName = parent->GetName() ; 
-        const G4String& daughterName = daughter->GetName() ; 
-
-        ss   
-           << " i " << std::setw(4) << i 
-           << " parent " << std::setw(30) <<  parentName 
-           << " daughter " << std::setw(30) <<  daughterName 
-           << std::endl 
-           ;    
-
-    }    
-
-    std::string s = ss.str(); 
-    return s ; 
-}
 
 
 
