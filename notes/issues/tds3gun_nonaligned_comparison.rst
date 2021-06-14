@@ -1,6 +1,18 @@
-tds3gun_nonaligned_comparison
-================================
+WIP tds3gun_nonaligned_comparison
+================================================
 
+
+Possible Fix : add Implicit BorderSurface for RINDEX_NoRINDEX borders
+--------------------------------------------------------------------------
+
+This is adding explicit Opticks/GGeo border surfaces to emulate implicit 
+Geant4 SURFACE_ABSORB behaviour for photons going from material with RINDEX to material without.
+
+* :doc:`GSurfaceLib__addImplicitBorderSurface_RINDEX_NoRINDEX`
+
+
+Issue : G4/OK divergence for photons hitting the Tyvek, lack of "SI BT BT SA" with OK
+----------------------------------------------------------------------------------------
 
 After suppressing G4 microStep in CRecorder can compare histories.
 
@@ -750,6 +762,7 @@ BP=G4OpBoundaryProcess::PostStepDoIt tds3ip
     (gdb) list
     21	}
     (gdb) 
+
 
 
 

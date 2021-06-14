@@ -325,7 +325,7 @@ surface specific infomation within the common structure.
 
 **/
 
-void GSurfaceLib::add(GBorderSurface* raw, bool implicit)
+void GSurfaceLib::add(GBorderSurface* raw, bool implicit, bool direct)
 {
     bool has_EFFICIENCY = raw->hasProperty("EFFICIENCY"); 
     LOG(LEVEL) 
@@ -348,7 +348,6 @@ void GSurfaceLib::add(GBorderSurface* raw, bool implicit)
     }
 
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
-    bool direct = false  ;  // not standardized 
     addBorderSurface(surf, raw->getPV1(), raw->getPV2(), direct );
 }
 
@@ -706,6 +705,18 @@ void GSurfaceLib::addPerfectProperties( GPropertyMap<float>* dst, float detect_,
 }
 
 
+/**
+GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX
+---------------------------------------------------------
+
+Invoked from X4PhysicalVolume::convertImplicitSurfaces_r
+
+This is adding explicit Opticks/GGeo border surfaces to emulate implicit Geant4 
+SURFACE_ABSORB behaviour for photons going from material with RINDEX to material without RINDEX.
+
+See notes/issues/GSurfaceLib__addImplicitBorderSurface_RINDEX_NoRINDEX.rst
+
+**/
 
 void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, const char* pv2 )
 {
@@ -735,6 +746,7 @@ void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, con
 
     unsigned index = 2000 ; // TODO: eliminate this index, or automate it 
     GBorderSurface* bs = new GBorderSurface( name, index, os ); 
+    bs->setBorderSurface(pv1, pv2);   
 
     float detect_ = 0.f ; 
     float absorb_ = 1.f ;     // <--- perfect absorber just like G4OpBoundaryProcess RINDEX->NoRINDEX
@@ -744,7 +756,8 @@ void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, con
     addPerfectProperties(bs, detect_, absorb_, reflect_specular_ , reflect_diffuse_ ); 
 
     bool implicit = true ; 
-    add(bs, implicit);     
+    bool direct = true ; 
+    add(bs, implicit, direct );     
 }
 
 
@@ -765,7 +778,8 @@ std::string GSurfaceLib::descImplicitBorderSurfaces() const
     for(unsigned i=0 ; i < num_implicit_border_surfaces ; i++)
     {
         const  GBorderSurface* bs = m_implicit_border_surfaces[i] ; 
-        ss << bs->getName() << std::endl ; 
+        const char* name = bs->getName() ; 
+        ss << ( name ? name : "-" )  << std::endl ; 
     }
     return ss.str(); 
 }

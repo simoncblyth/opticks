@@ -106,7 +106,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
         //  Primary API for populating GSurfaceLib
         //
         void     add(GSkinSurface* ss);
-        void     add(GBorderSurface* bs, bool implicit=false );
+        void     add(GBorderSurface* bs, bool implicit=false, bool direct=false );
 
    private:
         // methods to assist with de-conflation of surface props and location

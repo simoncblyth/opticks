@@ -385,6 +385,17 @@ geocache-apr23(){
 }
 
 
+geocache-jun15-gdmlpath(){ echo /usr/local/opticks/origin_CGDMLKludge.gdml ; }
+geocache-jun15(){
+    local msg="=== $FUNCNAME :"
+    local path=$(geocache-jun15-gdmlpath)
+    
+    local skipsolidname="NNVTMCPPMTsMask_virtual,HamamatsuR12860sMask_virtual,mask_PMT_20inch_vetosMask_virtual"
+    local csgskiplv="103,109,126"
+    GTree=INFO OpticksDbg=INFO GInstancer=INFO geocache-create- --gdmlpath $path -D --noviz  --csgskiplv $csgskiplv $*  
+    #--skipsolidname $skipsolidname $*
+}
+
 
 
 
