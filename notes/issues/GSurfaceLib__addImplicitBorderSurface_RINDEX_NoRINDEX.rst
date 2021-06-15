@@ -88,3 +88,25 @@ geocache-jun15
     2021-06-14 14:32:14.514 INFO  [5497401] [BFile::preparePath@836] created directory /usr/local/opticks/geocache/OKX4Test_lWorld0x32a96e0_PV_g4live/g4ok_gltf/a3cbac8189a032341f76682cdb4f47b6/1/g4codegen/tests
 
 
+
+
+Failing to find::
+
+
+    .i   124 idx   124 lvname                               lPoolLining0x32bef90 soname                               sPoolLining0x32be970
+     i   125 idx   125 lvname                                  lBtmRock0x32be8b0 soname                               sBottomRock0x32ba280
+     i   126 idx   126 lvname                                    lWorld0x32a96e0 soname                                    sWorld0x32a9680
+    2021-06-15 12:40:57.121 INFO  [6097286] [X4PhysicalVolume::convertSolids@716] ]
+    2021-06-15 12:40:57.121 INFO  [6097286] [X4PhysicalVolume::convertStructure@1036] [ creating large tree of GVolume instances
+    2021-06-15 12:41:00.392 INFO  [6097286] [*X4PhysicalVolume::findBorderSurfaceOK@656]  pv1                pCentralDetector0x3358c60 pv2                 pOuterWaterPool0x3356e90 bs 0x0
+    2021-06-15 12:41:00.392 INFO  [6097286] [*X4PhysicalVolume::findBorderSurfaceOK@656]  pv1                 pOuterWaterPool0x3356e90 pv2                pCentralDetector0x3358c60 bs 0x114569150
+    2021-06-15 12:41:00.392 INFO  [6097286] [*X4PhysicalVolume::findBorderSurfaceOK@656]  pv1                     pInnerWater0x3358a70 pv2                pCentralDetector0x3358c60 bs 0x0
+    2021-06-15 12:41:00.392 INFO  [6097286] [*X4PhysicalVolume::findBorderSurfaceOK@656]  pv1                pCentralDetector0x3358c60 pv2                     pInnerWater0x3358a70 bs 0x0
+    2021-06-15 12:41:00.392 INFO  [6097286] [*X4PhysicalVolume::findBorderSurfaceOK@656]  pv1                        pAcrylic0x3358b10 pv2                     pInnerWater0x3358a70 bs 0x0
+    2021-06-15 12:41:00.392 INFO  [6097286] [*X4PhysicalVolume::findBorderSurfaceOK@656]  pv1                     pInnerWater0x3358a70 pv2                        pAcrylic0x3358b10 bs 0x0
+    2021-06-15 12:41:00.395 INFO  [6097286] [*X4PhysicalVolume::findBorderSurfaceOK@656]  pv1                     lSteel_phys0x3356fd0 pv2                     pInnerWater0x3358a70 bs 0x0
+    2021-06-15 12:41:00.395 INFO  [6097286] [*X4PhysicalVolume::findBorderSurfaceOK@656]  pv1                     pInnerWater0x3358a70 pv2                     lSteel_phys0x3356fd0 bs 0x0
+    2021-06-15 12:41:00.395 INFO  [6097286] [*X4PhysicalVolume::findBorderSurfaceOK@656]  pv1                     lSteel_phys0x335b730 pv2                     pInnerWater0x3358a70 bs 0x0
+
+
+

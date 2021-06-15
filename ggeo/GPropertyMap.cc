@@ -560,6 +560,23 @@ void GPropertyMap<T>::setBorderSurface()
     m_type = GSurfaceLib::BORDERSURFACE ;
 }
 
+
+
+template <typename T>
+void GPropertyMap<T>::setImplicit(bool implicit)  
+{
+    setMetaKV<int>("implicit", 1); 
+}
+template <typename T>
+bool GPropertyMap<T>::isImplicit() const  
+{
+    return getMetaKV<int>("implicit","0") ; 
+}
+
+
+
+
+
 template <typename T>
 void GPropertyMap<T>::setSkinSurface()  
 {

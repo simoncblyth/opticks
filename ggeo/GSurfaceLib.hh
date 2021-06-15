@@ -225,6 +225,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void                dumpRawBorderSurface(const char* name) const ;
 
        void                addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, const char* pv2 ); 
+       unsigned            getNumImplicitBorderSurface() const ; 
 
    private:
        // primary vector of standardized surfaces, info from which is destined for the GPU texture
@@ -235,7 +236,6 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        std::vector<GSkinSurface*>              m_skin_surfaces ; 
        std::vector<GSkinSurface*>              m_sensor_skin_surfaces ; 
        std::vector<GBorderSurface*>            m_border_surfaces ; 
-       std::vector<GBorderSurface*>            m_implicit_border_surfaces ; 
 
    private:
        // _raw mainly for debug

@@ -34,11 +34,32 @@ void test_GenerateName()
 }
 
 
+
 void test_Strip()
 {
-    std::string name = "hello0xworld0xcruel" ; 
-    name = SGDML::Strip(name) ; 
-    LOG(info) << name ; 
+    LOG(info) ; 
+    std::vector<std::string> names  = { "hell0xc0ffee" , "world0xdeadbeef", "hello0xworld0xcruel", "0xhello", "name_without_0X_lowercase",  } ; 
+    std::vector<std::string> xnames = { "hell" ,         "world",           "hello",               ""       , "name_without_0X_lowercase"} ; 
+    
+    for(int i=0 ; i < int(names.size()) ; i++)
+    {
+       const std::string& xname = xnames[i] ; 
+       const std::string& name = names[i] ; 
+       std::string sname = SGDML::Strip(name) ; 
+       std::string sname2 = SGDML::Strip(name.c_str()) ; 
+
+       std::cout 
+           << std::setw(3) << i 
+           << " : "
+           << std::setw(50) << name
+           << " : "
+           << std::setw(50) << sname
+           << std::endl
+           ;
+
+        assert( strcmp(xname.c_str(), sname.c_str()) == 0 );  
+        assert( strcmp(sname.c_str(), sname2.c_str()) == 0 );  
+    }
 }
 
 
@@ -52,4 +73,6 @@ int main(int argc, char** argv)
  
     return 0 ;
 }   
+
+// om-;TEST=SGDMLTest om-t 
 

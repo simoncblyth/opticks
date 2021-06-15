@@ -51,3 +51,15 @@ std::string SGDML::Strip(const std::string& name)  // static
 }
 
 
+std::string SGDML::Strip(const char* name_)  // static 
+{
+    std::string name(name_); 
+    std::string sname = name.substr(0, name.find("0x")) ;
+    return sname ;
+}
+
+
+
+
+
+

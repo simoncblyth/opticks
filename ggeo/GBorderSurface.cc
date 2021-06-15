@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iomanip>
 #include <sstream>
 
 #include "GBorderSurface.hh"
@@ -59,11 +60,11 @@ void GBorderSurface::setBorderSurface(const char* pv1, const char* pv2)
 }
 
 
-char* GBorderSurface::getPV1()
+char* GBorderSurface::getPV1() const 
 {
     return m_bordersurface_pv1 ; 
 }
-char* GBorderSurface::getPV2()
+char* GBorderSurface::getPV2() const 
 {
     return m_bordersurface_pv2 ; 
 }
@@ -121,3 +122,19 @@ std::string GBorderSurface::description()
     ss << "GBS:: " << GPropertyMap<float>::description() ; 
     return ss.str();
 }
+
+
+std::string GBorderSurface::desc() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << "GBS:: " 
+       << " " << std::setw(90) << getName()
+       << " pv1: " << std::setw(40) << getPV1()
+       << " pv2: " << std::setw(40) << getPV2()
+       ;
+    return ss.str();
+}
+
+
+

@@ -209,6 +209,9 @@ void X4PhysicalVolume::postConvert() const
         << m_ggeo->getSensorBoundaryReport()
         ;
 
+
+    LOG(info) << m_blib->getAddBoundaryReport() ;
+
     // too soon for sensor dumping as instances not yet formed, see GGeo::postDirectTranslationDump 
     //m_ggeo->dumpSensorVolumes("X4PhysicalVolume::postConvert"); 
 
@@ -439,19 +442,28 @@ void X4PhysicalVolume::convertSurfaces()
 {
     LOG(LEVEL) << "[" ;
 
-    size_t num_surf0 = m_slib->getNumSurfaces() ; 
+    size_t num_surf0, num_surf1 ; 
+    num_surf0 = m_slib->getNumSurfaces() ; 
     assert( num_surf0 == 0 );
 
+
     X4LogicalBorderSurfaceTable::Convert(m_slib);
-    size_t num_lbs = m_slib->getNumSurfaces() ; 
+    num_surf1 = m_slib->getNumSurfaces() ; 
+
+    size_t num_lbs = num_surf1 - num_surf0 ; num_surf0 = num_surf1 ;   
 
     X4LogicalSkinSurfaceTable::Convert(m_slib);
-    size_t num_sks = m_slib->getNumSurfaces() - num_lbs ; 
+    num_surf1 = m_slib->getNumSurfaces() ; 
+
+    size_t num_sks = num_surf1 - num_surf0 ; num_surf0 = num_surf1 ;  
 
     const G4VPhysicalVolume* pv = m_top ; 
     int depth = 0 ;
     convertImplicitSurfaces_r(pv, depth);
-    size_t num_ibs = m_slib->getNumSurfaces() - num_sks ;
+    num_surf1 = m_slib->getNumSurfaces() ; 
+
+    size_t num_ibs = num_surf1 - num_surf0 ; num_surf0 = num_surf1 ;  
+
 
     m_slib->dumpImplicitBorderSurfaces("X4PhysicalVolume::convertSurfaces");  
 
@@ -634,7 +646,27 @@ GBorderSurface* X4PhysicalVolume::findBorderSurfaceOK( const G4VPhysicalVolume* 
 {
     const char* pv1 = a ? X4::Name( a ) : nullptr  ; 
     const char* pv2 = b ? X4::Name( b ) : nullptr ; 
-    GBorderSurface* bs =  pv1 == nullptr || pv2 == nullptr ? nullptr : m_slib->findBorderSurface(pv1, pv2) ;  
+    GBorderSurface* bs =  nullptr ; 
+    if( pv1 != nullptr && pv2 != nullptr)
+    {
+        bs = m_slib->findBorderSurface(pv1, pv2) ;  
+
+        //bool pInnerWater = SStr::StartsWith(pv1, "pInnerWater") || SStr::StartsWith(pv2, "pInnerWater") ; 
+        //bool pCentralDetector = SStr::StartsWith(pv1, "pCentralDetector") || SStr::StartsWith(pv2, "pCentralDetector") ; 
+        //bool dump = pInnerWater || pCentralDetector ;   
+        //bool dump = bs != nullptr ;  
+        bool dump = false ; 
+    
+        if(dump)
+        {
+            LOG(LEVEL) 
+                << " pv1 " << std::setw(40) << pv1 
+                << " pv2 " << std::setw(40) << pv2
+                << " bs " << bs 
+                ; 
+        }
+
+    }
     return bs ; 
 }
 
@@ -1121,6 +1153,15 @@ A boundary is a quadruplet of omat/osur/isur/imat indices.
 
 See notes/issues/ab-blib.rst on getting A-B comparisons to match for boundaries.
 
+
+
+OLD_ADD_BOUNDARY 
+   skin surface consults the GGeo model but border surface hark back to the Geant4 model ?
+   In the new variant, remove this legacy consulting GGeo model for both  
+
+
+Notice that the non-directional skin surface are translated by the osur and isur being the same in the 2nd and 3rd branches.
+ 
 **/
 
 unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
@@ -1140,6 +1181,10 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const char* omat = X4::BaseName(omat_) ; 
     const char* imat = X4::BaseName(imat_) ; 
 
+
+#ifdef OLD_ADD_BOUNDARY
+
+    static const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX" ; 
     // look for a border surface defined between this and the parent volume, in either direction
     bool first_skin_priority = true ;   // controls fallback skin lv order when bordersurface a->b not found 
     const G4LogicalSurface* const isur_ = findSurface( pv  , pv_p , first_skin_priority );
@@ -1149,16 +1194,16 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const GPropertyMap<float>* const isur2_ = findSurfaceOK(  pv  , pv_p, first_skin_priority ); 
     const GPropertyMap<float>* const osur2_ = findSurfaceOK(  pv_p, pv  , first_skin_priority ); 
 
-
-    static const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX" ; 
     if( isur2_ != nullptr && isur_ == nullptr )  // find from OK but not G4  : only implicits should do this 
     {
         const char* isur2_name = isur2_->getName(); 
+        LOG(LEVEL) << " isur2_name " << isur2_name ; 
         assert( SStr::StartsWith(isur2_name,  IMPLICIT_PREFIX )); 
     }
     if( osur2_ != nullptr && osur_ == nullptr )  // find from OK but not G4 : only implicits should do this 
     {
         const char* osur2_name = osur2_->getName(); 
+        LOG(LEVEL) << " osur2_name " << osur2_name ; 
         assert( SStr::StartsWith(osur2_name,  IMPLICIT_PREFIX )); 
     }
 
@@ -1175,8 +1220,28 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     }
 
 
+    if( isur_ != nullptr && isur2_ != nullptr )
+    {
+        const G4String& isur_name = isur_->GetName() ; 
+        const char* isur2_name = isur2_->getName(); 
+        //LOG(LEVEL) << " isur2_name " << isur2_name ; 
+        assert( strcmp( isur_name.c_str(), isur2_name ) == 0 ); 
+    }
 
+    if( osur_ != nullptr && osur2_ != nullptr )
+    {
+        const G4String& osur_name = osur_->GetName() ; 
+        const char* osur2_name = osur2_->getName(); 
+        //LOG(LEVEL) << " osur2_name " << osur2_name ; 
+        assert( strcmp( osur_name.c_str(), osur2_name ) == 0 ); 
+    }
 
+#else
+    // look for a border surface defined between this and the parent volume, in either direction
+    bool first_skin_priority = true ;   // controls fallback skin lv order when bordersurface a->b not found 
+    const GPropertyMap<float>* const isur_ = findSurfaceOK(  pv  , pv_p, first_skin_priority ); 
+    const GPropertyMap<float>* const osur_ = findSurfaceOK(  pv_p, pv  , first_skin_priority ); 
+#endif
 
     const char* _lv = X4::GDMLName(lv) ;    
     const char* _lv_p = X4::GDMLName(lv_p) ; 
@@ -1224,17 +1289,21 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
          << " imat " << imat 
          ;
 
-    /**
-    Why does skin surface consult the GGeo model but border surface hark back to the Geant4 model ?
 
-    Notice that the non-directional skin surface are translated by the osur and isur being the same in the 2nd and 3rd branches.
-    **/
- 
+
+     // CURIOUS : WHY CHECK FOR NON-EXISTANCE OF SKIN SURFACE, BEFORE TRYING BORDER SURFACE ?
+
     unsigned boundary = 0 ; 
     if( g_sslv == NULL && g_sslv_p == NULL  )   // no skin surface on this or parent volume, just use bordersurface if there are any
     {
+
+#ifdef OLD_ADD_BOUNDARY
         const char* osur = X4::BaseName( osur_ ); 
         const char* isur = X4::BaseName( isur_ ); 
+#else
+        const char* osur = osur_ ? osur_->getName() : nullptr ; 
+        const char* isur = isur_ ? isur_->getName() : nullptr ; 
+#endif
         boundary = m_blib->addBoundary( omat, osur, isur, imat ); 
     }
     else if( g_sslv && !g_sslv_p )   // skin surface on this volume but not parent : set both osur and isur to this 

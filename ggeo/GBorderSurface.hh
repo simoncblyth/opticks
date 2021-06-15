@@ -40,12 +40,13 @@ class GGEO_API GBorderSurface : public GPropertyMap<float> {
       virtual ~GBorderSurface();
       void Summary(const char* msg="GBorderSurface::Summary", unsigned int imod=1);
       std::string description();
+      std::string desc() const ;
   private:
       void init();
   public:
       void setBorderSurface(const char* pv1, const char* pv2);
-      char* getPV1();
-      char* getPV2();
+      char* getPV1() const ;
+      char* getPV2() const ;
 
   public:
       bool matches(const char* pv1, const char* pv2);

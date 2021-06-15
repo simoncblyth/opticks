@@ -39,6 +39,7 @@ class SYSRAP_API SGDML {
       static std::string GenerateName(const char* name, const void* const ptr, bool addPointerToName=true );
 
       static std::string Strip(const std::string& name ); 
+      static std::string Strip(const char* name_ ); 
 
 };
 

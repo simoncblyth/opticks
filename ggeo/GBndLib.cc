@@ -439,19 +439,29 @@ unsigned GBndLib::addBoundary( const char* spec, bool flip)
     }
     return boundary ; 
 }
+
+/**
+GBndLib::addBoundary
+-----------------------
+
+The names of materials and surfaces given as arguments are used to lookup the corresponding 
+material and surface indices in their libs allowing the formation of the uint4 bnd.
+Only unique bnd are collected and the index of the bnd is returned.
+
+**/
 unsigned GBndLib::addBoundary( const char* omat, const char* osur, const char* isur, const char* imat)
 {
-   /*
-    LOG(error) 
-           << " omat " << ( omat ? omat : "-" )  
-           << " osur " << ( osur ? osur : "-" ) 
-           << " isur " << ( isur ? isur : "-" ) 
-           << " imat " << ( imat ? imat : "-" )  
-           ;
-    */
+    LOG(LEVEL) 
+        << " omat " << ( omat ? omat : "-" )  
+        << " osur " << ( osur ? osur : "-" ) 
+        << " isur " << ( isur ? isur : "-" ) 
+        << " imat " << ( imat ? imat : "-" )  
+        ;
 
     guint4 bnd = add(omat, osur, isur, imat);
-    return index(bnd) ; 
+    unsigned boundary = index(bnd) ; 
+    m_boundary_add_count[boundary] += 1 ; 
+    return boundary ; 
 }
 
 guint4 GBndLib::add( const char* spec, bool flip)
@@ -627,6 +637,42 @@ std::string GBndLib::getSensorBoundaryReport() const
 
     return ss.str(); 
 }
+
+
+
+
+std::string GBndLib::getAddBoundaryReport(const char* msg) const 
+{
+    std::stringstream ss ; 
+    ss << msg << std::endl ; 
+
+    typedef std::map<unsigned, unsigned>::const_iterator IT ; 
+
+    unsigned add_total = 0 ; 
+    for(IT it=m_boundary_add_count.begin() ; it != m_boundary_add_count.end() ; it++)
+    {
+        unsigned boundary = it->first ; 
+        unsigned add_count = it->second ; 
+        ss 
+            << " boundary " << std::setw(3) << boundary
+            << " b+1 " << std::setw(3) << boundary+1
+            << " add_count " << std::setw(6) << add_count
+            << " " << shortname(boundary)
+            << std::endl 
+            ;
+        add_total += add_count ; 
+    }
+
+    ss 
+        << "          " << "   "
+        << "     " << "   "
+        << " add_total " << std::setw(6) << add_total
+        << std::endl 
+        ;
+
+    return ss.str(); 
+}
+
 
 
 

@@ -142,6 +142,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        // char* adders convert names to indices using m_mlib, m_slib 
        unsigned int addBoundary( const char* spec, bool flip=false ) ;
        unsigned int addBoundary( const char* omat, const char* osur, const char* isur, const char* imat) ;
+       std::string  getAddBoundaryReport(const char* msg="GBndLib::getAddBoundaryReport") const ;
   public:
        unsigned getBoundary( const char* spec) const ;       // 0-based, 0xffffffff UNSET
        int      getSignedBoundary( const char* spec) const ; // 1-based, 0:None
@@ -219,6 +220,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        NPY<unsigned int>*   m_optical_buffer ;  
        std::map<std::string, unsigned int> m_materialLineMap ;
        std::map<unsigned, unsigned>        m_boundary_sensor_count ;
+       std::map<unsigned, unsigned>        m_boundary_add_count ;
        unsigned                            m_sensor_count ; 
 
 

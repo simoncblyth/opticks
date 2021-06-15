@@ -19,6 +19,7 @@
 
 #include <iomanip>
 
+#include "SGDML.hh"
 #include "SStr.hh"
 
 #include "BStr.hh"
@@ -337,17 +338,11 @@ void GSurfaceLib::add(GBorderSurface* raw, bool implicit, bool direct)
         << " has_EFFICIENCY " << has_EFFICIENCY
         ; 
 
-
-    if(!implicit)
-    {
-        m_border_surfaces.push_back(raw);
-    }
-    else
-    {
-        m_implicit_border_surfaces.push_back(raw);
-    }
+    m_border_surfaces.push_back(raw);
 
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
+    if(implicit) surf->setImplicit(true); 
+
     addBorderSurface(surf, raw->getPV1(), raw->getPV2(), direct );
 }
 
@@ -732,8 +727,11 @@ void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, con
         assert(0); 
     } 
 
+
+    std::string spv1 = SGDML::Strip(pv1); 
+    std::string spv2 = SGDML::Strip(pv2); 
     std::stringstream ss ; 
-    ss << "Implicit_RINDEX_NoRINDEX_" << pv1 << "_" << pv2 ;  
+    ss << "Implicit_RINDEX_NoRINDEX_" << spv1 << "_" << spv2 ;  
     std::string s = ss.str(); 
     const char* name = s.c_str(); 
 
@@ -767,19 +765,32 @@ void GSurfaceLib::dumpImplicitBorderSurfaces(const char* msg) const
     LOG(info) << msg << std::endl << descImplicitBorderSurfaces() ; 
 }
 
+unsigned GSurfaceLib::getNumImplicitBorderSurface() const
+{
+    unsigned count = 0 ; 
+
+    for(unsigned i=0 ; i < int(m_border_surfaces.size()) ; i++)
+    {
+        const  GBorderSurface* bs = m_border_surfaces[i] ; 
+        bool implicit = bs->isImplicit(); 
+        count += int(implicit); 
+    }
+    return count ; 
+}
+
+
+
 std::string GSurfaceLib::descImplicitBorderSurfaces() const 
 {
-    unsigned num_implicit_border_surfaces = m_implicit_border_surfaces.size() ; 
-
     std::stringstream ss ; 
     ss 
-        << " num_implicit_border_surfaces " << num_implicit_border_surfaces  << std::endl ; 
+        << " num_implicit_border_surfaces " << getNumImplicitBorderSurface()  << std::endl ; 
 
-    for(unsigned i=0 ; i < num_implicit_border_surfaces ; i++)
+    for(unsigned i=0 ; i < int(m_border_surfaces.size()) ; i++)
     {
-        const  GBorderSurface* bs = m_implicit_border_surfaces[i] ; 
-        const char* name = bs->getName() ; 
-        ss << ( name ? name : "-" )  << std::endl ; 
+        const  GBorderSurface* bs = m_border_surfaces[i] ; 
+        bool implicit = bs->isImplicit(); 
+        if( implicit ) ss << bs->desc() << std::endl ; 
     }
     return ss.str(); 
 }
@@ -1564,12 +1575,12 @@ GBorderSurface* GSurfaceLib::findBorderSurface(const char* pv1, const char* pv2)
     GBorderSurface* bs = NULL ; 
     for(unsigned int i=0 ; i < m_border_surfaces.size() ; i++ )
     {
-         GBorderSurface* s = m_border_surfaces[i];
-         if(s->matches(pv1,pv2))   
-         {
+        GBorderSurface* s = m_border_surfaces[i];
+        if(s->matches(pv1,pv2))   
+        {
             bs = s ; 
             break ; 
-         } 
+        } 
     }
     return bs ;
 }

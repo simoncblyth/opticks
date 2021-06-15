@@ -118,11 +118,14 @@ class GGEO_API GPropertyMap {
       void setSkinSurface(); 
       void setBorderSurface(); 
 
+      void setImplicit(bool implicit); 
+      bool isImplicit() const ; 
 
       bool isSurface() const ;
       bool isTestSurface() const ;
       bool isSkinSurface() const ;
       bool isBorderSurface() const ;
+
       bool isMaterial() const ;
       bool hasNonZeroProperty(const char* pname) ;
      

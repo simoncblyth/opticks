@@ -37,6 +37,17 @@ install and you should be sure to understand what they are doing before running 
 because they do not get run often and are liable to become stale for new optix releases.
 
 
+Ray tracing torus
+-------------------
+
+* http://blog.marcinchwedczuk.pl/ray-tracing-torus
+* https://github.com/marcin-chwedczuk/ray_tracing_torus_js
+* https://github.com/erich666/GraphicsGems/blob/master/gems/Roots3And4.c
+* http://www.nrbook.com/a/bookcpdf.php
+
+
+
+
 Old Paper that describes OptiX execution model and fine-grained scheduling 
 -----------------------------------------------------------------------------
 
