@@ -327,6 +327,14 @@ void CManager::CManager::preTrack()
     }
 }
 
+/**
+CManager::postTrack
+----------------------
+
+Invoked from CManager::PostUserTrackingAction 
+
+**/
+
 void CManager::postTrack()
 {
     //LOG(LEVEL) << " m_mode " << m_mode ;

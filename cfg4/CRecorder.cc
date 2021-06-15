@@ -480,6 +480,8 @@ void CRecorder::postTrackWriteSteps()
     G4OpBoundaryProcessStatus next_boundary_status = Undefined ;
 #endif
     bool     done = false  ;  
+    bool      SD = false ; 
+
 
     unsigned num = m_crec->getNumStp(); 
 
@@ -568,6 +570,7 @@ void CRecorder::postTrackWriteSteps()
         bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
 
         bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+        SD = (postFlag & SURFACE_DETECT) != 0 ;
 
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -683,7 +686,19 @@ void CRecorder::postTrackWriteSteps()
     }   // stp loop
 
 
-    //if(m_photon._slot_constrained < 9 ) LOG(info) << m_photon.desc() ; 
+
+
+    if(SD)
+    {
+        LOG(LEVEL) 
+            << " SD " << SD 
+            << " done " << done  
+            << " m_ctx._pho.desc " << m_ctx._pho.desc() 
+            << " m_photon.desc " << m_photon.desc() 
+            ;
+    }
+
+
 
     if(!done)
     {

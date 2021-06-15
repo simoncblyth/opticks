@@ -51,7 +51,7 @@ jsd::
 
 
 
-After temporarily scrubbing "EX|EC" from pflags, remove the zeros::
+After temporarily scrubbing "EX|EC" from pflags, remove the zeros. But looks to be more water AB from OK::
 
     In [1]: ab.flg                                                                                                                                                                                          
     Out[1]: 
@@ -79,9 +79,6 @@ After temporarily scrubbing "EX|EC" from pflags, remove the zeros::
     0018              c32        54        47      7             0.49        1.149 +- 0.156        0.870 +- 0.127  [5 ] BT|BR|SC|RE|SI
     0019              c22        39        45     -6             0.43        0.867 +- 0.139        1.154 +- 0.172  [4 ] BT|BR|SC|SI
     .                              11278     11278       374.49/29 = 12.91  (pval:0.000 prob:1.000)  
-
-    In [2]:                                                                                           
-
 
 
 
