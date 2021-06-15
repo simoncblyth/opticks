@@ -1,5 +1,110 @@
-WIP tds3gun_nonaligned_comparison
-================================================
+FIXED OK not absorbing on Tyvek tds3gun_nonaligned_comparison
+================================================================
+
+
+Confirmed Fix by point-blank shooting the Tyvek
+---------------------------------------------------
+
+::
+
+    P[blyth@localhost ~]$ t tds3ip
+    tds3ip () 
+    { 
+        local path=/tmp/b_ox_Tyvek_minus_10mm.npy;
+        export OPTICKS_EVENT_PFX=tds3ip;
+        export INPUT_PHOTON_PATH=$path;
+        tds3 --dindex 0,1,2,3,4,5,6,7
+    }
+
+
+
+That makes for a perfect match, tds3ip.sh::
+
+    als[:10]
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    bls[:10]
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+
+    In [1]: a.his                                                                                                                                                                                           
+    Out[1]: 
+    all_seqhis_ana
+    .                     cfo:-  1:g4live:tds3ip 
+    .                                451         1.00 
+    0000               8d        1.000         451        [2 ] TO SA
+    .                                451         1.00 
+
+    In [2]: b.his                                                                                                                                                                                           
+    Out[2]: 
+    all_seqhis_ana
+    .                     cfo:-  -1:g4live:tds3ip 
+    .                                451         1.00 
+    0000               8d        1.000         451        [2 ] TO SA
+    .                                451         1.00 
+
+    In [3]: ab.his                                                                                                                                                                                          
+    Out[3]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3ip   -1:g4live:tds3ip        c2        ab        ba 
+    .                                451       451         0.00/0 =  0.00  (pval:nan prob:nan)  
+    0000               8d       451       451      0             0.00        1.000 +- 0.047        1.000 +- 0.047  [2 ] TO SA
+    .                                451       451         0.00/0 =  0.00  (pval:nan prob:nan)  
+
+    In [4]:                                                                                              
+
+
+
+
+And with tds3gun have removed the zeros, next issue looks to be excess AB in the water with OK::
+
+    In [6]: ab.his                                                                                                                                                                                          
+    Out[6]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3gun   -1:g4live:tds3gun        c2        ab        ba 
+    .                              11278     11278       513.94/67 =  7.67  (pval:0.000 prob:1.000)  
+    0000               42      1653      1665    -12             0.04        0.993 +- 0.024        1.007 +- 0.025  [2 ] SI AB
+    0001            7ccc2      1292      1230     62             1.52        1.050 +- 0.029        0.952 +- 0.027  [5 ] SI BT BT BT SD
+    0002            8ccc2       590       674    -84             5.58        0.875 +- 0.036        1.142 +- 0.044  [5 ] SI BT BT BT SA
+    0003           7ccc62       581       552     29             0.74        1.053 +- 0.044        0.950 +- 0.040  [6 ] SI SC BT BT BT SD
+    0004             8cc2       564       464    100             9.73        1.216 +- 0.051        0.823 +- 0.038  [4 ] SI BT BT SA
+    0005              452       422       534   -112            13.12        0.790 +- 0.038        1.265 +- 0.055  [3 ] SI RE AB
+    0006           7ccc52       380       397    -17             0.37        0.957 +- 0.049        1.045 +- 0.052  [6 ] SI RE BT BT BT SD
+    0007              462       392       367     25             0.82        1.068 +- 0.054        0.936 +- 0.049  [3 ] SI SC AB
+    0008           8ccc62       251       267    -16             0.49        0.940 +- 0.059        1.064 +- 0.065  [6 ] SI SC BT BT BT SA
+    0009          7ccc662       219       213      6             0.08        1.028 +- 0.069        0.973 +- 0.067  [7 ] SI SC SC BT BT BT SD
+    0010             4cc2       278       127    151            56.30        2.189 +- 0.131        0.457 +- 0.041  [4 ] SI BT BT AB
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+    0011            8cc62       206       186     20             1.02        1.108 +- 0.077        0.903 +- 0.066  [5 ] SI SC BT BT SA
+    0012           8ccc52       154       188    -34             3.38        0.819 +- 0.066        1.221 +- 0.089  [6 ] SI RE BT BT BT SA
+    0013          7ccc652       157       159     -2             0.01        0.987 +- 0.079        1.013 +- 0.080  [7 ] SI RE SC BT BT BT SD
+    0014               41       142       144     -2             0.01        0.986 +- 0.083        1.014 +- 0.085  [2 ] CK AB
+    0015            4cc62       197        71    126            59.24        2.775 +- 0.198        0.360 +- 0.043  [5 ] SI SC BT BT AB
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+    0016             4552       124       142    -18             1.22        0.873 +- 0.078        1.145 +- 0.096  [4 ] SI RE RE AB
+    0017            8cc52       126       138    -12             0.55        0.913 +- 0.081        1.095 +- 0.093  [5 ] SI RE BT BT SA
+    0018             4662       137       121     16             0.99        1.132 +- 0.097        0.883 +- 0.080  [4 ] SI SC SC AB
+    0019             4652       121       112      9             0.35        1.080 +- 0.098        0.926 +- 0.087  [4 ] SI RE SC AB
+    .                              11278     11278       513.94/67 =  7.67  (pval:0.000 prob:1.000)  
+
+
+
 
 
 Possible Fix : add Implicit BorderSurface for RINDEX_NoRINDEX borders
@@ -237,12 +342,12 @@ Lack of OK "BT BT SA" issue looks to be of the same size as photons reaching the
 
 ::
 
-    In [5]: b.selmat = "*Ty*"                                                                                                                                                                                                               
-    In [6]: b.mat[:30]                                                                                                                                                                                                                      
-    Out[6]: 
+    In [5]: b.selmat = "*Ty*"
+    In [6]: b.mat[:30]
+    Out[6]:
     seqmat_ana
-    .                     cfo:-  -1:g4live:tds3gun 
-    .                               1363         1.00 
+    .                     cfo:-  -1:g4live:tds3gun
+    .                               1363         1.00
     0000             3fb1        0.331         451        [4 ] LS Ac Wa Ty
     0001            3fb11        0.230         313        [5 ] LS LS Ac Wa Ty
     0002           3fb111        0.131         179        [6 ] LS LS LS Ac Wa Ty
@@ -273,17 +378,17 @@ Lack of OK "BT BT SA" issue looks to be of the same size as photons reaching the
     0027           3ffbb1        0.001           1        [6 ] LS Ac Ac Wa Wa Ty
     0028           3fffb1        0.001           1        [6 ] LS Ac Wa Wa Wa Ty
     0029          3fffb11        0.001           1        [7 ] LS LS Ac Wa Wa Wa Ty
-    .                               1363         1.00 
+    .                               1363         1.00
 
 
 
 With G4 all the Tyvek reachers get SA, that was an artifical kludge from NoRINDEX yielding NAN_ABORT::
-       
-    In [6]: b.mat[:30]                                                                                                                                                                                                                      
-    Out[6]: 
+
+    In [6]: b.mat[:30]
+    Out[6]:
     seqmat_ana
-    .                     cfo:-  -1:g4live:tds3gun 
-    .                               1363         1.00 
+    .                     cfo:-  -1:g4live:tds3gun
+    .                               1363         1.00
     0000             3fb1        0.331         451        [4 ] LS Ac Wa Ty
     0001            3fb11        0.230         313        [5 ] LS LS Ac Wa Ty
     0002           3fb111        0.131         179        [6 ] LS LS LS Ac Wa Ty
@@ -314,15 +419,15 @@ With G4 all the Tyvek reachers get SA, that was an artifical kludge from NoRINDE
     0027           3ffbb1        0.001           1        [6 ] LS Ac Ac Wa Wa Ty
     0028           3fffb1        0.001           1        [6 ] LS Ac Wa Wa Wa Ty
     0029          3fffb11        0.001           1        [7 ] LS LS Ac Wa Wa Wa Ty
-    .                               1363         1.00 
+    .                               1363         1.00
 
 
 
-    In [9]: b.his                                                                                                                                                                                                                           
-    Out[9]: 
+    In [9]: b.his
+    Out[9]:
     seqhis_ana
-    .                     cfo:-  -1:g4live:tds3gun 
-    .                               1363         1.00 
+    .                     cfo:-  -1:g4live:tds3gun
+    .                               1363         1.00
     0000             8cc2        0.329         448        [4 ] SI BT BT SA
     0001            8cc62        0.129         176        [5 ] SI SC BT BT SA
     0002            8cc52        0.098         133        [5 ] SI RE BT BT SA
@@ -350,13 +455,13 @@ With G4 all the Tyvek reachers get SA, that was an artifical kludge from NoRINDE
 
 
 
-    In [7]: a.selmat = "*Ty*"                                                                                                                                                                                                               
+    In [7]: a.selmat = "*Ty*"   ## select photons with Tyvek anywhere in their seqmat histories 
 
-    In [8]: a.mat[:30]                                                                                                                                                                                                                      
-    Out[8]: 
+    In [8]: a.mat[:30]    ## OK:1 shows lots of life beyond the Tyvek, so are missing some absorption
+    Out[8]:
     seqmat_ana
-    .                     cfo:-  1:g4live:tds3gun 
-    .                               1320         1.00 
+    .                     cfo:-  1:g4live:tds3gun
+    .                               1320         1.00
     0000          aaf3fb1        0.048          64        [7 ] LS Ac Wa Ty Wa Ll Ll
     0001         aaf3fb11        0.042          55        [8 ] LS LS Ac Wa Ty Wa Ll Ll
     0002         aaff3fb1        0.040          53        [8 ] LS Ac Wa Ty Wa Wa Ll Ll
@@ -387,10 +492,10 @@ With G4 all the Tyvek reachers get SA, that was an artifical kludge from NoRINDE
     0027       defbff3fb1        0.010          13        [10] LS Ac Wa Ty Wa Wa Ac Wa Py Va
     0028       aaff3fb111        0.010          13        [10] LS LS LS Ac Wa Ty Wa Wa Ll Ll
     0029       aaffff3fb1        0.009          12        [10] LS Ac Wa Ty Wa Wa Wa Wa Ll Ll
-    .                               1320         1.00 
+    .                               1320         1.00
 
-    In [9]:                                                         
-  
+    In [9]:
+
 
 
 
@@ -428,7 +533,7 @@ Hmm, I recall handling NoRINDEX but slapping down a SURFACE_ABSORB::
     300                                break;
     301         case NoRINDEX:
     302                                //flag=NAN_ABORT;
-    303                                flag=SURFACE_ABSORB ;  // expt 
+    303                                flag=SURFACE_ABSORB ;  // expt
     304                                break;
     305         case Undefined:
 
@@ -437,20 +542,20 @@ Hmm, I recall handling NoRINDEX but slapping down a SURFACE_ABSORB::
 
 TODO:
 
-* study unmodified Geant4 handling of photons reaching the Tyvek 
+* study unmodified Geant4 handling of photons reaching the Tyvek
 
 
 
-g4-cls G4OpBoundaryProcess : does fStopAndKill at NoRINDEX : so its a terminal problem 
+g4-cls G4OpBoundaryProcess : does fStopAndKill at NoRINDEX : so its a terminal problem
 -----------------------------------------------------------------------------------------
 
 ::
 
      276         }
-     277 
+     277
      278     G4MaterialPropertiesTable* aMaterialPropertiesTable;
      279         G4MaterialPropertyVector* Rindex;
-     280 
+     280
      281     aMaterialPropertiesTable = Material1->GetMaterialPropertiesTable();
      282         if (aMaterialPropertiesTable) {
      283         Rindex = aMaterialPropertiesTable->GetProperty(kRINDEX);
@@ -462,7 +567,7 @@ g4-cls G4OpBoundaryProcess : does fStopAndKill at NoRINDEX : so its a terminal p
      289                 aParticleChange.ProposeTrackStatus(fStopAndKill);
      290                 return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
      291     }
-     292 
+     292
      293         if (Rindex) {
      294            Rindex1 = Rindex->Value(thePhotonMomentum);
      295         }
@@ -480,16 +585,16 @@ Want to get the params of photon hitting the Tyvek so can rerun under debugger
 and to try and see exactly which NoRINDEX is being tickled.
 Select on material sequence and look at history of those::
 
-    In [10]: b.selmat = "LS Ac Wa Ty"                                                                                                                                                                                                       
+    In [10]: b.selmat = "LS Ac Wa Ty"
 
-    In [11]: b.his                                                                                                                                                                                                                          
-    Out[11]: 
+    In [11]: b.his
+    Out[11]:
     seqhis_ana
-    .                     cfo:-  -1:g4live:tds3gun 
-    .                                451         1.00 
+    .                     cfo:-  -1:g4live:tds3gun
+    .                                451         1.00
     0000             8cc2        0.993         448        [4 ] SI BT BT SA
     0001             8cc1        0.007           3        [4 ] CK BT BT SA
-    .                                451         1.00 
+    .                                451         1.00
 
     In [12]: b.ox.shape
     Out[12]: (451, 4, 4)
@@ -528,7 +633,7 @@ Select on material sequence and look at history of those::
        20050.   , 20050.   , 20050.   , 20050.   , 20050.   , 20050.002, 20050.   , 20050.   , 20050.   ], dtype=float32)
 
 
-    In [20]: np.save("/tmp/b_ox_Tyvek.npy", b.ox)  
+    In [20]: np.save("/tmp/b_ox_Tyvek.npy", b.ox)
 
 
     In [5]: dir = a[:,1,:3]
@@ -540,7 +645,7 @@ Select on material sequence and look at history of those::
 
 Direction is normalized, so back up the final photons offseting the position by a negative multiple of the direction vector.::
 
-    In [7]: a[:,0,:3] +=  -10.*a[:,1,:3]  
+    In [7]: a[:,0,:3] +=  -10.*a[:,1,:3]
 
 
     In [8]: pos = a[:,0,:3]
@@ -551,7 +656,7 @@ Direction is normalized, so back up the final photons offseting the position by 
            20040.002, 20040.   , 20040.   , 20040.   , 20039.998, 20040.   , 20040.002, 20040.   , 20040.   , 20040.   , 20040.002, 20040.002, 20040.   , 20040.   , 20040.002, 20040.   , 20040.002,
            20040.   , 20040.   , 20040.   , 20040.002, 20040.   , 20040.   , 20040.   , 20040.   , 20040.   , 20040.002, 20040.002, 20040.   , 20040.002, 20040.   , 20040.002, 20040.   , 20040.   ,
 
-    In [10]: np.save("/tmp/b_ox_Tyvek_minus_10mm.npy", a )      
+    In [10]: np.save("/tmp/b_ox_Tyvek_minus_10mm.npy", a )
 
     epsilon:~ blyth$ scp /tmp/b_ox_Tyvek_minus_10mm.npy P:/tmp/
 
@@ -559,11 +664,11 @@ Direction is normalized, so back up the final photons offseting the position by 
 ::
 
     P[blyth@localhost ~]$ jvi
-    P[blyth@localhost ~]$ 
+    P[blyth@localhost ~]$
     P[blyth@localhost ~]$ jfu
     P[blyth@localhost ~]$ t tds3ip
-    tds3ip () 
-    { 
+    tds3ip ()
+    {
         local path=/tmp/b_ox_Tyvek_minus_10mm.npy;
         export OPTICKS_EVENT_PFX=tds3ip;
         export INPUT_PHOTON_PATH=$path;
@@ -580,14 +685,14 @@ tds3ip.sh get
 tds3ip.sh 1::
 
 
-    AB(1,natural,g4live)  None 0     file_photons 451   load_slice 0:100k:   loaded_photons 451  
-    A tds3ip/g4live/natural/  1 :  20210613-1458 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/tds3ip/evt/g4live/natural/1/fdom.npy () 
-    B tds3ip/g4live/natural/ -1 :  20210613-1458 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/tds3ip/evt/g4live/natural/-1/fdom.npy (recstp) 
+    AB(1,natural,g4live)  None 0     file_photons 451   load_slice 0:100k:   loaded_photons 451
+    A tds3ip/g4live/natural/  1 :  20210613-1458 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/tds3ip/evt/g4live/natural/1/fdom.npy ()
+    B tds3ip/g4live/natural/ -1 :  20210613-1458 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/tds3ip/evt/g4live/natural/-1/fdom.npy (recstp)
     .
     '#ab.__str__.ahis'
     ab.ahis
-    .    all_seqhis_ana  cfo:sum  1:g4live:tds3ip   -1:g4live:tds3ip        c2        ab        ba 
-    .                                451       451       646.00/4 = 161.50  (pval:0.000 prob:1.000)  
+    .    all_seqhis_ana  cfo:sum  1:g4live:tds3ip   -1:g4live:tds3ip        c2        ab        ba
+    .                                451       451       646.00/4 = 161.50  (pval:0.000 prob:1.000)
     0000               8d         0       451   -451           451.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] TO SA
     0001             4ccd        56         0     56            56.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO BT BT AB
     0002            4cccd        53         0     53            53.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO BT BT BT AB
@@ -608,13 +713,13 @@ tds3ip.sh 1::
     0017           899ccd         4         0      4             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO BT BT DR DR SA
     0018         4ccccccd         4         0      4             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] TO BT BT BT BT BT BT AB
     0019         49999ccd         4         0      4             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] TO BT BT DR DR DR DR AB
-    .                                451       451       646.00/4 = 161.50  (pval:0.000 prob:1.000)  
+    .                                451       451       646.00/4 = 161.50  (pval:0.000 prob:1.000)
     '#ab.__str__.flg'
 
 
 
-    In [6]: a.rpostr()[:20]                                                                                                                                                                                                                 
-    Out[6]: 
+    In [6]: a.rpostr()[:20]
+    Out[6]:
     A([[20039.3388, 20050.2861, 20051.5839, 23193.1158,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ],
        [20039.1986, 20049.9672, 20052.4707, 20575.8718, 20585.2071, 20589.536 , 20595.9762, 20590.9699, 20586.6409, 20574.8025],
        [20041.0468, 20049.3645, 20051.8257, 24537.2156, 24391.3566,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ],
@@ -636,8 +741,8 @@ tds3ip.sh 1::
        [20039.0745, 20049.8542, 20052.3332, 24818.4814, 20053.1513, 25730.236 , 20597.4118, 20597.4118,     0.    ,     0.    ],
        [20040.0603, 20049.5478, 20051.3264, 20070.6791, 20070.6791,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ]])
 
-    In [7]: b.rpostr()[:20]                                                                                                                                                                                                                 
-    Out[7]: 
+    In [7]: b.rpostr()[:20]
+    Out[7]:
     A([[20039.3388, 20050.2861,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ],
        [20039.1986, 20049.9672,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ],
        [20041.0468, 20049.3645,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ],
@@ -659,16 +764,16 @@ tds3ip.sh 1::
        [20039.0745, 20049.8542,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ],
        [20040.0603, 20049.5478,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ,     0.    ]])
 
-    In [8]:                                           
+    In [8]:
 
 
 
 TODO some python that makes sense of the bndseq::
 
 
-    In [6]: np.set_printoptions(edgeitems=10)                                                                                                                                                                                               
-    In [7]: a.bn.view(np.int8).reshape(-1,16)                                                                                                                                                                                               
-    Out[7]: 
+    In [6]: np.set_printoptions(edgeitems=10)
+    In [7]: a.bn.view(np.int8).reshape(-1,16)
+    Out[7]:
     A([[ 16,  15,  13,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
        [ 16,  15, -17,  17, -23, -36,  24, -17,  17,   0,   0,   0,   0,   0,   0,   0],
        [ 16,  15,  13, -14,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
@@ -694,13 +799,13 @@ TODO some python that makes sense of the bndseq::
 
 ::
 
-    In [1]: from opticks.ana.blib import BLib                                                                                                                                                                                               
+    In [1]: from opticks.ana.blib import BLib
 
-    In [2]: blib = BLib()                                                                                                                                                                                                                   
+    In [2]: blib = BLib()
 
-    In [3]: bn = [ 16,  15, -17,  17, -23, -36,  24, -17,  17,   0,   0,   0,   0,   0,   0,   0]                                                                                                                                           
+    In [3]: bn = [ 16,  15, -17,  17, -23, -36,  24, -17,  17,   0,   0,   0,   0,   0,   0,   0]
 
-    In [4]: print(blib.format(bn))                                                                                                                                                                                                          
+    In [4]: print(blib.format(bn))
      16 : Tyvek///Water
      15 : vetoWater/CDTyvekSurface//Tyvek
     -17 : Water///Acrylic
@@ -717,7 +822,7 @@ TODO some python that makes sense of the bndseq::
 BP=G4OpBoundaryProcess::PostStepDoIt tds3ip
 ----------------------------------------------
 
-* hmm, will probably need to rebuild Geant4 with debug symbols 
+* hmm, will probably need to rebuild Geant4 with debug symbols
 
 ::
 
@@ -761,7 +866,7 @@ BP=G4OpBoundaryProcess::PostStepDoIt tds3ip
     #1  0x00007fffd04ad379 in G4SteppingManager::InvokePSDIP(unsigned long) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4tracking.so
     (gdb) list
     21	}
-    (gdb) 
+    (gdb)
 
 
 

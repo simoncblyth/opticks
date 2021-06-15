@@ -769,7 +769,7 @@ unsigned GSurfaceLib::getNumImplicitBorderSurface() const
 {
     unsigned count = 0 ; 
 
-    for(unsigned i=0 ; i < int(m_border_surfaces.size()) ; i++)
+    for(unsigned i=0 ; i < m_border_surfaces.size() ; i++)
     {
         const  GBorderSurface* bs = m_border_surfaces[i] ; 
         bool implicit = bs->isImplicit(); 
@@ -786,7 +786,7 @@ std::string GSurfaceLib::descImplicitBorderSurfaces() const
     ss 
         << " num_implicit_border_surfaces " << getNumImplicitBorderSurface()  << std::endl ; 
 
-    for(unsigned i=0 ; i < int(m_border_surfaces.size()) ; i++)
+    for(unsigned i=0 ; i < m_border_surfaces.size() ; i++)
     {
         const  GBorderSurface* bs = m_border_surfaces[i] ; 
         bool implicit = bs->isImplicit(); 

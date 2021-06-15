@@ -544,7 +544,8 @@ void CRecorder::postTrackWriteSteps()
 
         unsigned postFlag = OpStatus::OpPointFlag(post, boundary_status, postStage);
 
-        if(postFlag == 0 || suppress_microStep )
+        //if(postFlag == 0 || suppress_microStep )
+        if(postFlag == 0)
         {
             LOG(fatal)
                 << " num " << num

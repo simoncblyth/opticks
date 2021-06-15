@@ -405,8 +405,9 @@ class EnumFlags(object):
    
 class PhotonMaskFlags(EnumFlags):
     """
-    Note this is partially duplicating optickscore/OpticksFlags.cc 
+    This is used by hismask.py for pflags_ana
 
+    Note this is partially duplicating optickscore/OpticksFlags.cc 
     Former positions of Abbrev : $OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json
     """
     def __init__(self):
@@ -416,6 +417,7 @@ class PhotonMaskFlags(EnumFlags):
 
 class PhotonCodeFlags(EnumFlags):
     """
+    This is used by histype.py for seqhis_ana
     """
     def __init__(self):
         EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/OpticksCore/OpticksPhoton.h", mask2int=True) 

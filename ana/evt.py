@@ -68,8 +68,8 @@ from opticks.ana.ctx import Ctx
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
 from opticks.ana.seq import SeqAna, seq2msk, SeqList
-from opticks.ana.histype import HisType
-from opticks.ana.hismask import HisMask
+from opticks.ana.histype import HisType    # for use with seqhis
+from opticks.ana.hismask import HisMask    # for use with pflags   
 from opticks.ana.mattype import MatType 
 from opticks.ana.metadata import Metadata
 from opticks.ana.nibble import msk_, nib_, make_msk, make_nib
@@ -577,7 +577,9 @@ class Evt(object):
 
         self.c4 = c4
 
-        all_pflags_ana = self.make_pflags_ana( self.pflags, "all_pflags_ana" )
+
+        ecex = self.hismask.code("EC|EX")  
+        all_pflags_ana = self.make_pflags_ana( self.pflags & ~ecex , "all_pflags_ana" )  # SCRUB "EC|EX" **TEMPORARILY**
 
         self.all_pflags_ana = all_pflags_ana
         self.pflags_ana = all_pflags_ana
@@ -1606,7 +1608,7 @@ class Evt(object):
         """
         :param a: evt A
         :param b: evt B
-        :param ana_: string name eg "seqhis_ana"
+        :param ana_: string name eg "seqhis_ana", "pflags_ana"
 
         Comparison of history tables, tables are count_unique_sorted summaries of the full sequence arrays 
         """
