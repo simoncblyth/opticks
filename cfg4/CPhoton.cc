@@ -204,6 +204,12 @@ void CPhoton::scrub_mskhis( unsigned flag )
     _mskhis = _mskhis & (~flag)  ;
 }
 
+void CPhoton::add_mskhis( unsigned flags_ )
+{
+    unsigned long long flags = flags_ ; 
+    _mskhis |=  flags   ;
+}
+
 
 /**
 CPhoton::is_rewrite_slot

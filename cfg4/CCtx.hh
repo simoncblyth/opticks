@@ -174,7 +174,9 @@ struct CFG4_API CCtx
     G4OpBoundaryProcessStatus   _prior_boundary_status ;
 #endif
   
-
+   
+    // CCtx::setTrack zeros and CCtx::ProcessHits sets
+    unsigned _hitflags ; 
 
 
     CCtx(Opticks* ok);
@@ -190,6 +192,7 @@ struct CFG4_API CCtx
 
     void setTrack(const G4Track* track);
     void setTrackOptical(G4Track* mtrack);
+    void ProcessHits(const G4Step* step, bool efficiency_collect); 
 
     void setStep(const G4Step* step, int noZeroSteps);
     void setStepOptical();

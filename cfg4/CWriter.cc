@@ -395,7 +395,11 @@ void CWriter::writePhoton_(const G4StepPoint* point, unsigned record_id  )
     m_photons_buffer->setUInt(record_id, 3, 0, 0, m_photon._slot_constrained );
     m_photons_buffer->setUInt(record_id, 3, 0, 1, 0u );
     m_photons_buffer->setUInt(record_id, 3, 0, 2, m_photon._c4.u );
-    m_photons_buffer->setUInt(record_id, 3, 0, 3, m_photon._mskhis );
+
+
+    unsigned mskhis = m_photon._mskhis ; // narrowing from "unsigned long long" but 32-bits is enough   
+    unsigned pflags = mskhis | m_ctx._hitflags ; 
+    m_photons_buffer->setUInt(record_id, 3, 0, 3, pflags );
 }
 
 /**

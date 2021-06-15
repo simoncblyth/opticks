@@ -14,6 +14,8 @@ struct CFG4_API CPho
 
     CPho(); 
     CPho(unsigned gs, unsigned ix, unsigned id, unsigned gn);
+    bool isEqual(const CPho& other) const ;  
+
     bool is_missing() const ; 
 
     int get_gs() const ; // -1 when missing, otherwise : 0-based genstep index within the event

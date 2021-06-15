@@ -39,6 +39,8 @@ is held by CWriter and CDebug.
 Builds seqhis, seqmat nibble by nibble just like GPU side generate.cu
 
 
+TODO: relocate the home of CPhoton to inside CCtx and get refs from there to everywhere needed, then 
+
 **/
 
 
@@ -77,6 +79,8 @@ struct CFG4_API CPhoton
     bool is_done() const ;
     bool is_hard_truncate() ;
     void scrub_mskhis( unsigned flag );
+
+    void add_mskhis( unsigned flags ) ; 
 
     std::string desc() const ; 
     std::string brief() const ; 

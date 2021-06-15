@@ -599,13 +599,24 @@ void CManager::report(const char* msg)
 }
 
 
+/**
+CManager::ProcessHits
+----------------------
+
+This in invoked for example from the chain::
+
+    junoSD_PMT_v2::ProcessHits(G4Step* step)
+    G4OpticksRecorder::ProcessHits(const G4Step* step, bool efficiency_collect)
+
+which happens prior to the call with the same step::
+
+    CManager::UserSteppingAction( G4Step* step )    
+      
+**/
+
 void CManager::ProcessHits( const G4Step* step, bool efficiency_collect )
 {
-    const G4Track* track = step->GetTrack();    
-    bool fabricate_unlabelled = false ;
-    CPho chit = CPhotonInfo::Get(track, fabricate_unlabelled); 
-    LOG(LEVEL) << " chit " << chit.desc() << " efficiency_collect " << efficiency_collect ; 
-
+    m_ctx->ProcessHits(step, efficiency_collect); 
 }
 
 

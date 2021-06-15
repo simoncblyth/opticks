@@ -40,6 +40,18 @@ CPho CPho::FabricateTrackIdPhoton(unsigned track_id) // static
     return fab ; 
 }
 
+/**
+CPho::isEqual
+--------------
+
+Note that equality does not require the same reemission generation, merely the same photon lineage.
+
+**/
+
+bool CPho::isEqual(const CPho& other) const 
+{
+    return gs == other.gs && ix == other.ix && id == other.id ;     
+}
 
 
 bool CPho::is_missing() const { return gs == MISSING ; }

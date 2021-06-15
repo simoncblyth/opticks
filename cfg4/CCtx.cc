@@ -362,6 +362,9 @@ void CCtx::setTrack(const G4Track* track)
     _step_id = -1 ; 
     _step_id_valid = -1 ; 
 
+    _hitflags = 0 ; 
+
+
     LOG(LEVEL) 
         << " _track_id " << _track_id
         << " track.GetGlobalTime " << track->GetGlobalTime()
@@ -565,5 +568,51 @@ std::string CCtx::desc() const
     return ss.str();
 }
 
+/**
+CCtx::ProcessHits
+---------------------
+
+Invoked by the chain::
+
+    G4OpticksRecorder::ProcessHits
+    CManager::ProcessHits
+
+Adds EFFICIENCY_COLLECT or EFFICIENCY_CULL to the _hitflags, 
+these _hitflags are zeroed in CCtx::setTrack 
+
+**/
+void CCtx::ProcessHits( const G4Step* step, bool efficiency_collect )
+{
+    const G4Track* track = step->GetTrack();    
+    bool fabricate_unlabelled = false ;
+    CPho hit = CPhotonInfo::Get(track, fabricate_unlabelled); 
+
+    if(!_pho.isEqual(hit))
+    {
+        LOG(fatal)
+            << " _pho not equal to hit "
+            << "  _pho.desc " << _pho.desc()
+            << " hit.desc " << hit.desc()
+            ;
+        assert(0); 
+    }
+
+    if( efficiency_collect )
+    {
+        _hitflags |= EFFICIENCY_COLLECT ; 
+    }
+    else
+    {
+        _hitflags |= EFFICIENCY_CULL ; 
+    }
+
+
+    LOG(LEVEL) 
+        << " hit " << hit.desc() 
+        << " efficiency_collect " << efficiency_collect
+        << " _hitflags " << OpticksFlags::FlagMask( _hitflags, false )
+        ; 
+
+}
 
 

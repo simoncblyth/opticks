@@ -288,6 +288,8 @@ change cfordering to sum as it gives a better overview
     0001              882       654      1224   -570           173.00        0.534 +- 0.021        1.872 +- 0.053  [3 ] BT|SA|SI
     0002              842         0      1389   -1389          1389.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] BT|SD|SI
     ^^^^^^^^^^^^^^^^ pflags looking  inconsistent with seqhis ?
+    ^^^^^^^^^^^^^^^^^ THIS IS CONFIRMED TO BE DUR TO EC|EX BEING ONLY FROM OK 
+ 
 
     0003               1a       586       742   -156            18.33        0.790 +- 0.033        1.266 +- 0.046  [3 ] RE|AB|SI
     0004              8a2       387       766   -379           124.58        0.505 +- 0.026        1.979 +- 0.072  [4 ] BT|SA|SC|SI
