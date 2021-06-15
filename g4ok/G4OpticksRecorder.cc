@@ -106,7 +106,11 @@ Invoked from G4OpticksRecorder::EndOfEventAction
 
 *G4Opticks::reset* needs to happen at end of event.
 When this entirely optional G4OpticksRecorder is not active 
-the reset should be done by for example junoSD_PMT_v2_Opticks::TerminateEvent
+the reset should be done for example from the below call sequence::
+
+    junoSD_PMT_v2::EndOfEvent
+    junoSD_PMT_v2_Opticks::EndOfEvent
+    junoSD_PMT_v2_Opticks::TerminateEvent
 
 **/
 
@@ -134,5 +138,19 @@ void G4OpticksRecorder::UserSteppingAction(const G4Step* step)
 {
     LOG(LEVEL); 
     m_manager->UserSteppingAction(step); 
+}
+
+/**
+G4OpticksRecorder::ProcessHits
+-------------------------------
+
+Invoked from eg junoSD_PMT_v2::ProcessHits just before the 
+efficiency culling decision is acted upon.
+
+**/
+
+void G4OpticksRecorder::ProcessHits( const G4Step* step, bool efficiency_collect )
+{
+    m_manager->ProcessHits(step, efficiency_collect); 
 }
 

@@ -131,6 +131,9 @@ struct CFG4_API CManager
 
     virtual void UserSteppingAction(const G4Step*);
 
+
+    void ProcessHits( const G4Step* step, bool efficiency_collect );
+
 public:
     // from CG4, thru to m_engine:CRandomEngine
     void postpropagate();

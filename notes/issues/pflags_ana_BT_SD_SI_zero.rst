@@ -5,7 +5,50 @@ pflags_ana_BT_SD_SI_zero
 * excluding EC|EX from pflags verifies that
 
 * HMM: is it possible to communicate the SD/G4 cull decision from ProcessHits 
-  into CRecorder to set the EC|EX pflags so can then do a fair comparison without scrubbing 
+  into CRecorder to set the EC|EX pflags so can then do a fair comparison without pflags scrubbing 
+
+
+jsd::
+
+     265 G4bool junoSD_PMT_v2::ProcessHits(G4Step * step,G4TouchableHistory*)
+     266 {
+     ...
+     453     bool de_cull = G4UniformRand() > de ;
+     454 
+     455 #ifdef WITH_G4OPTICKS
+     456     {
+     457         if(m_ce_mode == "20inch") m_PMTEfficiencyCheck->addHitRecord( pmtID, global_pos, local_pos, qe, ce, de, volname, ce_cat);
+     458         // default PMTSDMgr:CollEffiMode is None, but tut_detsim.py defaullt args.ce_mode --ce-mode is 20inch
+     459 
+     460         G4OpticksRecorder* recorder = G4OpticksRecorder::Get();
+     461         if(recorder)
+     462         {
+     463             recorder->ProcessHits( step, !de_cull );
+     464         }
+     465     }
+     466 #endif
+     467 
+     468     if (de_cull) {
+     469         return false;
+     470     }   
+
+
+
+::
+
+    +
+    +void CManager::ProcessHits( const G4Step* step, bool efficiency_collect )
+    +{
+    +    const G4Track* track = step->GetTrack();    
+    +    bool fabricate_unlabelled = false ;
+    +    CPho chit = CPhotonInfo::Get(track, fabricate_unlabelled); 
+    +    LOG(LEVEL) << " chit " << chit.desc() << " efficiency_collect " << efficiency_collect ; 
+    +
+    +}
+
+
+
+
 
 
 After temporarily scrubbing "EX|EC" from pflags, remove the zeros::

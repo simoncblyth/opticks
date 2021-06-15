@@ -11,6 +11,7 @@
 #include "CRandomEngine.hh"
 #include "CRecorder.hh"
 #include "CStep.hh"
+#include "CPhotonInfo.hh"
 #include "CProcessSubType.hh"
 
 #include "CStepRec.hh"
@@ -588,4 +589,15 @@ void CManager::report(const char* msg)
            ;
     //m_recorder->report(msg);
 }
+
+
+void CManager::ProcessHits( const G4Step* step, bool efficiency_collect )
+{
+    const G4Track* track = step->GetTrack();    
+    bool fabricate_unlabelled = false ;
+    CPho chit = CPhotonInfo::Get(track, fabricate_unlabelled); 
+    LOG(LEVEL) << " chit " << chit.desc() << " efficiency_collect " << efficiency_collect ; 
+
+}
+
 

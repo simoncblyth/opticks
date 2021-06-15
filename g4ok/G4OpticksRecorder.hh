@@ -60,6 +60,8 @@ public:
 
     virtual void UserSteppingAction(const G4Step*);
 
+    void ProcessHits( const G4Step* step, bool efficiency_collect );
+
     static G4OpticksRecorder*  fInstance;
 
 private:
