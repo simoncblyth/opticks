@@ -343,10 +343,16 @@ void X4PhysicalVolume::convertWater()
     G4OpticalPhoton* op = G4OpticalPhoton::Definition();  
     G4ParticleDefinition* particle = dynamic_cast<G4ParticleDefinition*>(op); 
     G4ProcessManager* pmanager = particle->GetProcessManager(); 
-    pmanager->DumpInfo(); 
-
-    G4int num_proc = pmanager->GetProcessListLength();   
-    LOG(info) << " num_proc " << num_proc ; 
+    if( pmanager )
+    {
+        pmanager->DumpInfo(); 
+        G4int num_proc = pmanager->GetProcessListLength();   
+        LOG(info) << " num_proc " << num_proc ; 
+    }
+    else
+    {
+        LOG(info) << " pmanager NULL " ; 
+    }
 }
 
 
