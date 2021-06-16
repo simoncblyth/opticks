@@ -32,6 +32,10 @@
 #include "G4VSensitiveDetector.hh"
 #include "G4PVPlacement.hh"
 
+#include "G4OpticalPhoton.hh"
+#include "G4ProcessManager.hh"
+
+
 #include "X4.hh"
 #include "X4PhysicalVolume.hh"
 #include "X4Material.hh"
@@ -184,7 +188,9 @@ void X4PhysicalVolume::init()
     LOG(LEVEL) << " query : " << m_query->desc() ; 
 
 
+    convertWater();       // special casing in Geant4 forces special casing here
     convertMaterials();   // populate GMaterialLib
+
     convertSurfaces();    // populate GSurfaceLib
     closeSurfaces();
     convertSolids();      // populate GMeshLib with GMesh converted from each G4VSolid (postorder traverse processing first occurrence of G4LogicalVolume)  
@@ -274,6 +280,13 @@ void X4PhysicalVolume::convertMaterials_old()
 }
 
 
+/**
+X4PhysicalVolume::convertMaterials
+-----------------------------------
+
+1. recursive traverse collecting actively used material pointers into m_mtlist 
+
+**/
 
 void X4PhysicalVolume::convertMaterials()
 {
@@ -315,6 +328,27 @@ void X4PhysicalVolume::convertMaterials()
     LOG(LEVEL) << "]" ;
     OK_PROFILE("X4PhysicalVolume::convertMaterials");
 }
+
+
+/**
+X4PhysicalVolume::convertWater
+--------------------------------
+
+Geant4 special casing of Water makes it necessary to handle it separately.
+
+**/
+
+void X4PhysicalVolume::convertWater()
+{
+    G4OpticalPhoton* op = G4OpticalPhoton::Definition();  
+    G4ParticleDefinition* particle = dynamic_cast<G4ParticleDefinition*>(op); 
+    G4ProcessManager* pmanager = particle->GetProcessManager(); 
+    pmanager->DumpInfo(); 
+
+    G4int num_proc = pmanager->GetProcessListLength();   
+    LOG(info) << " num_proc " << num_proc ; 
+}
+
 
 
 /**

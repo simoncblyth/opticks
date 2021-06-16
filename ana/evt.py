@@ -1311,8 +1311,10 @@ class Evt(object):
         self.c4 = self.c4_[psel]
         self.wl = self.wl_[psel]
         self.rx = self.rx_[psel]
-        self.dx = self.dx_[psel]
 
+        if not self.dx_.missing:
+            self.dx = self.dx_[psel]
+        pass
         if not self.so_.missing and len(self.so_)>0:
             self.so = self.so_[psel]
         pass

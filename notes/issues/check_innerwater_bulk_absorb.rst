@@ -521,3 +521,725 @@ Unsure how, but for now exclude comparison for missings::
     600         }   
     601     }   
 
+
+
+
+
+* comparison does not show much of an AB difference
+* but does show lots more SC in G4 that in OK
+
+  * OK has "TO SA" sail to boundary excess of 989/100,000 (1%) 
+  * for G4 these are spread across various "TO SC .." histories  
+
+
+tds3ip.sh::
+
+    In [2]: ab.his[:30]                                                                                                                                                                                 
+    Out[2]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3ip   -1:g4live:tds3ip        c2        ab        ba 
+    .                             100000    100000       739.41/9 = 82.16  (pval:0.000 prob:1.000)  
+    0000               8d     93766     92777    989             5.24        1.011 +- 0.003        0.989 +- 0.003  [2 ] TO SA
+    0001               4d      6031      5918    113             1.07        1.019 +- 0.013        0.981 +- 0.013  [2 ] TO AB
+    0002             7c6d        38       311   -273           213.55        0.122 +- 0.020        8.184 +- 0.464  [4 ] TO SC BT SD
+    0003              86d        33       236   -203           153.19        0.140 +- 0.024        7.152 +- 0.466  [3 ] TO SC SA
+    0004            4cc6d        10       212   -202           183.80        0.047 +- 0.015       21.200 +- 1.456  [5 ] TO SC BT BT AB
+    0005             8c6d        13        80    -67            48.27        0.163 +- 0.045        6.154 +- 0.688  [4 ] TO SC BT SA
+    0006              46d        20        63    -43            22.28        0.317 +- 0.071        3.150 +- 0.397  [3 ] TO SC AB
+    0007          8ccac6d         0        72    -72            72.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO SC BT SR BT BT SA
+    0008           46cc6d         1        39    -38            36.10        0.026 +- 0.026       39.000 +- 6.245  [6 ] TO SC BT BT SC AB
+    0009             4c6d        10        21    -11             3.90        0.476 +- 0.151        2.100 +- 0.458  [4 ] TO SC BT AB
+    0010            7cc6d         2        27    -25             0.00        0.074 +- 0.052       13.500 +- 2.598  [5 ] TO SC BT BT SD
+    0011       ccacccac6d         0        26    -26             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO SC BT SR BT BT BT SR BT BT
+    0012           4ccc6d         0        19    -19             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO SC BT BT BT AB
+    0013         7ccccc6d         9         9      0             0.00        1.000 +- 0.333        1.000 +- 0.333  [8 ] TO SC BT BT BT BT BT SD
+    0014          466cc6d         1        17    -16             0.00        0.059 +- 0.059       17.000 +- 4.123  [7 ] TO SC BT BT SC SC AB
+    0015            8cc6d         0        16    -16             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO SC BT BT SA
+    0016        7ccc6cc6d         5        10     -5             0.00        0.500 +- 0.224        2.000 +- 0.632  [9 ] TO SC BT BT SC BT BT BT SD
+    0017           8cac6d        13         0     13             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO SC BT SR BT SA
+    0018            7cb6d         0        10    -10             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO SC BR BT SD
+    0019          46ccc6d         0         9     -9             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO SC BT BT BT SC AB
+    0020       7ccc66cc6d         3         4     -1             0.00        0.750 +- 0.433        1.333 +- 0.667  [10] TO SC BT BT SC SC BT BT BT SD
+    0021        8ccc6cc6d         2         5     -3             0.00        0.400 +- 0.283        2.500 +- 1.118  [9 ] TO SC BT BT SC BT BT BT SA
+    0022         466ccc6d         0         6     -6             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] TO SC BT BT BT SC SC AB
+    0023         4cc6cc6d         1         4     -3             0.00        0.250 +- 0.250        4.000 +- 2.000  [8 ] TO SC BT BT SC BT BT AB
+    0024             866d         0         5     -5             0.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO SC SC SA
+    0025         4666cc6d         1         4     -3             0.00        0.250 +- 0.250        4.000 +- 2.000  [8 ] TO SC BT BT SC SC SC AB
+    0026       7cccc6cc6d         0         5     -5             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO SC BT BT SC BT BT BT BT SD
+    0027            7c66d         0         4     -4             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO SC SC BT SD
+    0028          4cccc6d         2         2      0             0.00        1.000 +- 0.707        1.000 +- 0.707  [7 ] TO SC BT BT BT BT AB
+    0029          4ccac6d         0         4     -4             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO SC BT SR BT BT AB
+    .                             100000    100000       739.41/9 = 82.16  (pval:0.000 prob:1.000)  
+
+
+
+
+Wildcard selection fails for a from dx::
+
+    In [3]: a.sel = "*SC*"                                                                                                                                                                              
+    ---------------------------------------------------------------------------
+    IndexError                                Traceback (most recent call last)
+    <ipython-input-3-5f83b3fe4981> in <module>
+    ----> 1 a.sel = "*SC*"
+
+    ~/opticks/ana/evt.py in _set_sel(self, arg)
+       1409 
+       1410         psel = self.make_selection(sel, False)
+    -> 1411         self._init_selection(psel)
+       1412     sel = property(_get_sel, _set_sel)
+       1413 
+
+    ~/opticks/ana/evt.py in _init_selection(self, psel)
+       1312         self.wl = self.wl_[psel]
+       1313         self.rx = self.rx_[psel]
+    -> 1314         self.dx = self.dx_[psel]
+       1315 
+       1316         if not self.so_.missing and len(self.so_)>0:
+
+    IndexError: too many indices for array: array is 0-dimensional, but 1 were indexed
+    > /Users/blyth/opticks/ana/evt.py(1314)_init_selection()
+       1312         self.wl = self.wl_[psel]
+       1313         self.rx = self.rx_[psel]
+    -> 1314         self.dx = self.dx_[psel]
+       1315 
+       1316         if not self.so_.missing and len(self.so_)>0:
+
+    ipdb>                                                                                                                                                                                               
+
+
+
+
+    In [1]: a.sel = "*SC*"                                                                                                                                                                              
+
+    In [2]: a.his[:30]                                                                                                                                                                                  
+    Out[2]: 
+    seqhis_ana
+    .                     cfo:-  1:g4live:tds3ip 
+    .                                203         1.00 
+    0000             7c6d        0.187          38        [4 ] TO SC BT SD
+    0001              86d        0.163          33        [3 ] TO SC SA
+    0002              46d        0.099          20        [3 ] TO SC AB
+    0003           8cac6d        0.064          13        [6 ] TO SC BT SR BT SA
+    0004             8c6d        0.064          13        [4 ] TO SC BT SA
+    0005             4c6d        0.049          10        [4 ] TO SC BT AB
+    0006            4cc6d        0.049          10        [5 ] TO SC BT BT AB
+    0007         7ccccc6d        0.044           9        [8 ] TO SC BT BT BT BT BT SD
+    0008        7ccc6cc6d        0.025           5        [9 ] TO SC BT BT SC BT BT BT SD
+    0009           45cc6d        0.015           3        [6 ] TO SC BT BT RE AB
+    0010       7ccc66cc6d        0.015           3        [10] TO SC BT BT SC SC BT BT BT SD
+    0011          4cccc6d        0.010           2        [7 ] TO SC BT BT BT BT AB
+    0012        7ccc5cc6d        0.010           2        [9 ] TO SC BT BT RE BT BT BT SD
+    0013        8ccc6cc6d        0.010           2        [9 ] TO SC BT BT SC BT BT BT SA
+    0014            7cc6d        0.010           2        [5 ] TO SC BT BT SD
+    0015       8ccc65cc6d        0.010           2        [10] TO SC BT BT RE SC BT BT BT SA
+    0016          7cccb6d        0.005           1        [7 ] TO SC BR BT BT BT SD
+    0017           46cc6d        0.005           1        [6 ] TO SC BT BT SC AB
+    0018           4cac6d        0.005           1        [6 ] TO SC BT SR BT AB
+    0019           4ccb6d        0.005           1        [6 ] TO SC BR BT BT AB
+    0020            4cb6d        0.005           1        [5 ] TO SC BR BT AB
+    0021           7ccc6d        0.005           1        [6 ] TO SC BT BT BT SD
+    0022             8b6d        0.005           1        [4 ] TO SC BR SA
+    0023          465cc6d        0.005           1        [7 ] TO SC BT BT RE SC AB
+    0024          466cc6d        0.005           1        [7 ] TO SC BT BT SC SC AB
+    0025          4bcac6d        0.005           1        [7 ] TO SC BT SR BT BR AB
+    0026          4c5cc6d        0.005           1        [7 ] TO SC BT BT RE BT AB
+    0027             4b6d        0.005           1        [4 ] TO SC BR AB
+    0028          7ccac6d        0.005           1        [7 ] TO SC BT SR BT BT SD
+    0029       cc5566cc6d        0.005           1        [10] TO SC BT BT SC SC RE RE BT BT
+    .                                203         1.00 
+
+
+
+
+    In [4]: b.sel = "*SC*"                                       
+
+    In [7]: b.his[:30]                                                                                                                                                                                  
+    Out[7]: 
+    seqhis_ana
+    .                     cfo:-  -1:g4live:tds3ip 
+    .                               1305         1.00 
+    0000             7c6d        0.238         311        [4 ] TO SC BT SD
+    0001              86d        0.181         236        [3 ] TO SC SA
+    0002            4cc6d        0.162         212        [5 ] TO SC BT BT AB
+    0003             8c6d        0.061          80        [4 ] TO SC BT SA
+    0004          8ccac6d        0.055          72        [7 ] TO SC BT SR BT BT SA
+    0005              46d        0.048          63        [3 ] TO SC AB
+    0006           46cc6d        0.030          39        [6 ] TO SC BT BT SC AB
+    0007            7cc6d        0.021          27        [5 ] TO SC BT BT SD
+    0008       ccacccac6d        0.020          26        [10] TO SC BT SR BT BT BT SR BT BT
+    0009             4c6d        0.016          21        [4 ] TO SC BT AB
+    0010           4ccc6d        0.015          19        [6 ] TO SC BT BT BT AB
+    0011          466cc6d        0.013          17        [7 ] TO SC BT BT SC SC AB
+    0012            8cc6d        0.012          16        [5 ] TO SC BT BT SA
+    0013        7ccc6cc6d        0.008          10        [9 ] TO SC BT BT SC BT BT BT SD
+    0014            7cb6d        0.008          10        [5 ] TO SC BR BT SD
+    0015         7ccccc6d        0.007           9        [8 ] TO SC BT BT BT BT BT SD
+    0016          46ccc6d        0.007           9        [7 ] TO SC BT BT BT SC AB
+    0017         466ccc6d        0.005           6        [8 ] TO SC BT BT BT SC SC AB
+    0018       7cccc6cc6d        0.004           5        [10] TO SC BT BT SC BT BT BT BT SD
+    0019        8ccc6cc6d        0.004           5        [9 ] TO SC BT BT SC BT BT BT SA
+    0020             866d        0.004           5        [4 ] TO SC SC SA
+    0021         4666cc6d        0.003           4        [8 ] TO SC BT BT SC SC SC AB
+    0022       caccccac6d        0.003           4        [10] TO SC BT SR BT BT BT BT SR BT
+    0023         4cc6cc6d        0.003           4        [8 ] TO SC BT BT SC BT BT AB
+    0024          4ccac6d        0.003           4        [7 ] TO SC BT SR BT BT AB
+    0025       7ccc66cc6d        0.003           4        [10] TO SC BT BT SC SC BT BT BT SD
+    0026            7c66d        0.003           4        [5 ] TO SC SC BT SD
+    0027           7c6b6d        0.002           3        [6 ] TO SC BR SC BT SD
+    0028         8ccacc6d        0.002           3        [8 ] TO SC BT BT SR BT BT SA
+    0029             8b6d        0.002           3        [4 ] TO SC BR SA
+    .                               1305         1.00 
+
+
+
+Wow, drastically more water SC in G4:1305 than OK:203 ?
+---------------------------------------------------------
+
+
+::
+
+    087 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
+     88 {           
+     89     //float speed = SPEED_OF_LIGHT/s.material1.x ;    // .x:refractive_index    (phase velocity of light in medium)
+     90     float speed = s.m1group2.x ;  // .x:group_velocity  (group velocity of light in the material) see: opticks-find GROUPVEL
+     91 
+     92 #ifdef WITH_ALIGN_DEV
+     93 #ifdef WITH_LOGDOUBLE
+     94             
+     95     float u_boundary_burn = curand_uniform(&rng) ;
+     96     float u_scattering = curand_uniform(&rng) ;   
+     97     float u_absorption = curand_uniform(&rng) ;
+     98         
+     99     //  these two doubles brings about 100 lines of PTX with .f64
+    100     //  see notes/issues/AB_SC_Position_Time_mismatch.rst      
+    101     float scattering_distance = -s.material1.z*log(double(u_scattering)) ;   // .z:scattering_length
+    102     float absorption_distance = -s.material1.y*log(double(u_absorption)) ;   // .y:absorption_length 
+    103 
+
+
+::
+
+      63 const char* GMaterialLib::keyspec =
+      64 "refractive_index:RINDEX,"
+      65 "absorption_length:ABSLENGTH,"
+      66 "scattering_length:RAYLEIGH,"
+      67 "reemission_prob:REEMISSIONPROB,"
+      68 "group_velocity:GROUPVEL,"
+      69 "extra_y:EXTRA_Y,"
+      70 "extra_z:EXTRA_Z,"
+      71 "extra_w:EXTRA_W,"
+      72 "detect:EFFICIENCY,"
+      73 ;
+
+
+
+
+Check the boundary array::
+
+    In [5]: a.bn.view(np.int8)                                                                                                                                                                          
+    Out[5]: 
+    A([[[16,  0,  0, ...,  0,  0,  0]],
+
+       [[16,  0,  0, ...,  0,  0,  0]],
+
+       [[16,  0,  0, ...,  0,  0,  0]],
+
+       ...,
+
+       [[16,  0,  0, ...,  0,  0,  0]],
+
+       [[16,  0,  0, ...,  0,  0,  0]],
+
+       [[16,  0,  0, ...,  0,  0,  0]]], dtype=int8)
+
+
+    In [17]: blib.format([16])                                                                                                                                                                          
+    Out[17]: ' 16 : Tyvek//Implicit_RINDEX_NoRINDEX_pInnerWater_pCentralDetector/Water'
+
+
+
+::
+
+
+     25 enum {  
+     26     OMAT,
+     27     OSUR,
+     28     ISUR, 
+     29     IMAT  
+     30 };
+
+
+     32 __device__ void fill_state( State& s, int boundary, uint4 identity, float wavelength )
+     33 {   
+     34     // boundary : 1 based code, signed by cos_theta of photon direction to outward geometric normal
+     35     // >0 outward going photon
+     36     // <0 inward going photon 
+     37     //
+     38     // NB the line is above the details of the payload (ie how many float4 per matsur) 
+     39     //    it is just 
+     40     //                boundaryIndex*4  + 0/1/2/3     for OMAT/OSUR/ISUR/IMAT 
+     41     //
+     42     
+     43     int line = boundary > 0 ? (boundary - 1)*BOUNDARY_NUM_MATSUR : (-boundary - 1)*BOUNDARY_NUM_MATSUR  ;
+
+     ///
+     /// for boundary 16   ' 16 : Tyvek//Implicit_RINDEX_NoRINDEX_pInnerWater_pCentralDetector/Water'
+     /// 
+     ///          line = (16-1)*4 = 60
+     ///          m1_line = 60 + IMAT = 63 
+     ///          m2_line = 60 + OMAT = 60 
+     ///
+     ///  +ve boundary means photons are travelling in same direction as the outward going normal to the geometry 
+     ///   so IMAT comes first and is m1 and OMAT is m2 
+     ///
+
+     44     
+     45     // pick relevant lines depening on boundary sign, ie photon direction relative to normal
+     46     // 
+     47     int m1_line = boundary > 0 ? line + IMAT : line + OMAT ;
+     48     int m2_line = boundary > 0 ? line + OMAT : line + IMAT ;   
+     49     int su_line = boundary > 0 ? line + ISUR : line + OSUR ;   
+     50 
+     51     //  consider photons arriving at PMT cathode surface
+     52     //  geometry normals are expected to be out of the PMT 
+     53     //
+     54     //  boundary sign will be -ve : so line+3 outer-surface is the relevant one
+     55 
+     56     s.material1 = boundary_lookup( wavelength, m1_line, 0);
+     57     s.m1group2  = boundary_lookup( wavelength, m1_line, 1);
+     58 
+     59     s.material2 = boundary_lookup( wavelength, m2_line, 0);
+     60     s.surface   = boundary_lookup( wavelength, su_line, 0);
+     61 
+     62     s.optical = optical_buffer[su_line] ;   // index/type/finish/value
+     63 
+     64     s.index.x = optical_buffer[m1_line].x ; // m1 index
+     65     s.index.y = optical_buffer[m2_line].x ; // m2 index 
+     66     s.index.z = optical_buffer[su_line].x ; // su index
+     67     s.index.w = identity.w   ;
+     68 
+     69     s.identity = identity ;
+     70 
+     71 }
+
+
+::
+
+    epsilon:optickscore blyth$ opticks-f BOUNDARY_NUM_MATSUR
+    ./ggeo/GPropertyLib.cc:unsigned int GPropertyLib::NUM_MATSUR = BOUNDARY_NUM_MATSUR  ;    // 4 material/surfaces that comprise a boundary om-os-is-im 
+    ./ggeo/GPropertyLib.hh:#define BOUNDARY_NUM_MATSUR 4
+    ./optixrap/cu/wavelength_lookup.h:     unsigned int line = ibnd*BOUNDARY_NUM_MATSUR + jqwn ; 
+    ./optixrap/cu/boundary_lookup.h:    unsigned nj = BOUNDARY_NUM_MATSUR ;     
+    ./optixrap/cu/state.h:    int line = boundary > 0 ? (boundary - 1)*BOUNDARY_NUM_MATSUR : (-boundary - 1)*BOUNDARY_NUM_MATSUR  ; 
+    ./optixrap/tests/boundaryLookupTest.cc:    unsigned eight = BOUNDARY_NUM_MATSUR*BOUNDARY_NUM_FLOAT4 ; 
+    ./optixrap/tests/cu/boundaryLookupTest.cu:    for(unsigned j=0 ; j < BOUNDARY_NUM_MATSUR ; j++){
+    ./optixrap/tests/cu/boundaryLookupTest.cu:    unsigned nj = BOUNDARY_NUM_MATSUR ;
+    ./optixrap/tests/cu/interpolationTest.cu:    unsigned nj = BOUNDARY_NUM_MATSUR ;
+    ./optixrap/tests/cu/interpolationTest.cu:    unsigned nj = BOUNDARY_NUM_MATSUR ;
+    epsilon:opticks blyth$ 
+
+
+
+
+::
+
+    epsilon:ggeo blyth$ jgr RAYLEIGH
+    ./Simulation/DetSimV2/PhysiSim/src/DsG4OpRayleigh.cc:                            aMaterialPropertiesTable->GetProperty("RAYLEIGH");
+    ./Simulation/DetSimV2/PhysiSim/src/DsG4OpRayleigh.cc:                   aMaterialPropertyTable->GetProperty("RAYLEIGH");
+    ./Simulation/DetSimV2/MCParamsSvc/share/filldb.C:        " FASTCOMPONENT, REEMISSIONPROB, RAYLEIGH, "
+    ./Simulation/DetSimV2/MCParamsSvc/share/filldb.C:        " '%s', '%s', '%s', " // FASTCOMPONENT, REEMISSIONPROB, RAYLEIGH,
+    ./Simulation/DetSimV2/MCParamsSvc/share/filldb.C:    TString rayleigh = load("Material.LS.RAYLEIGH");
+    ./Simulation/DetSimV2/MCParamsSvc/share/filldb.C:           fastc.Data(), reem.Data(), rayleigh.Data(), // FASTCOMPONENT, REEMISSIONPROB, RAYLEIGH,
+    ./Simulation/DetSimV2/MCParamsSvc/share/gen_all.py:    ("Material.LS.RAYLEIGH", "vec_d2d"),
+    ./Simulation/DetSimV2/MCParamsSvc/share/mc.json:    "objectType": "Material.LS.RAYLEIGH",
+    ./Simulation/DetSimV2/MCParamsSvc/share/create.sql:  `RAYLEIGH` longblob COMMENT '',
+    ./Simulation/DetSimV2/MCParamsSvc/src/MCParamsDBSvc.cc:    {"Material.LS.RAYLEIGH", "vec_d2d"},
+    ./Simulation/DetSimV2/MCParamsSvc/src/test/TestAlg.cc:    st = m_params_svc->Get("Material.LS.RAYLEIGH", LS_rayleigh);
+    ./Simulation/DetSimV2/MCParamsSvc/src/test/TestAlg.cc:    if (st) { LogInfo << "LS.RAYLEIGH: " << LS_rayleigh.size() << std::endl; }
+    ./Simulation/DetSimV2/MCParamsSvc/src/test/TestAlg.cc:    save_it("LS_RAYLEIGH", LS_rayleigh);
+    ./Simulation/DetSimV2/CalibUnit/share/LS.gdml:    <matrix coldim="2" name="RAYLEIGH0x252d220" values="1.55e-06 357143 
+    ./Simulation/DetSimV2/CalibUnit/share/LS.gdml:      <property name="RAYLEIGH" ref="RAYLEIGH0x252d220"/>
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:        LSMPT->AddProperty("RAYLEIGH", GdLSRayEnergy, GdLSRayLength, 11);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:                G4cout << "Scale RAYLEIGH from " << LS_scales_map["RayleighLenBefore"]
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:            helper_mpt(LSMPT, "RAYLEIGH",                   mcgt.data(), "Material.LS.RAYLEIGH", scale_rayleigh);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:        LABMPT->AddProperty("RAYLEIGH", GdLSRayEnergy, GdLSRayLength, 11);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:       // AcrylicMPT->AddProperty("RAYLEIGH", AcrylicRayEnergy, AcrylicRayLength, 11);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:       // AcrylicMaskMPT->AddProperty("RAYLEIGH", AcrylicRayEnergy, AcrylicRayLength, 11);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:        MylarMPT->AddProperty("RAYLEIGH",AcrylicRayEnergy,RayleighLengthMylar,11);
+    ./Simulation/DetSimV2/AnalysisCode/src/OpticalParameterAnaMgr.cc:        // RAYLEIGH
+    ./Simulation/DetSimV2/AnalysisCode/src/OpticalParameterAnaMgr.cc:        get_matprop(tbl_LS, "RAYLEIGH", LS_Rayleigh_n, LS_Rayleigh_energy, LS_Rayleigh_len);
+    epsilon:offline blyth$ jcv DsG4OpRayleigh
+    2 files to edit
+    ./Simulation/DetSimV2/PhysiSim/include/DsG4OpRayleigh.h
+    ./Simulation/DetSimV2/PhysiSim/src/DsG4OpRayleigh.cc
+    epsilon:offline blyth$ 
+
+
+
+
+Notice special casing of material named "Water", that smells a bit fishy. Because it is on-the-fly 
+changing properties without changing the material.::
+
+    223 void DsG4OpRayleigh::BuildThePhysicsTable()
+    224 {
+    225 //      Builds a table of scattering lengths for each material
+    226         
+    227         if (thePhysicsTable) return;
+    228         
+    229         const G4MaterialTable* theMaterialTable=
+    230                                G4Material::GetMaterialTable();
+    231         G4int numOfMaterials = G4Material::GetNumberOfMaterials();
+    232         
+    233         // create a new physics table
+    234         
+    235         thePhysicsTable = new G4PhysicsTable(numOfMaterials);
+    236         
+    237         // loop for materials
+    238         
+    239         for (G4int i=0 ; i < numOfMaterials; i++)
+    240         {   
+    241             G4PhysicsOrderedFreeVector* ScatteringLengths = NULL;
+    242             
+    243             G4MaterialPropertiesTable *aMaterialPropertiesTable =
+    244                          (*theMaterialTable)[i]->GetMaterialPropertiesTable();
+    245                                          
+    246             if(aMaterialPropertiesTable){
+    247               
+    248               G4MaterialPropertyVector* AttenuationLengthVector =
+    249                             aMaterialPropertiesTable->GetProperty("RAYLEIGH");
+    250               
+    251               if(!AttenuationLengthVector){
+    252                 
+    253                 if ((*theMaterialTable)[i]->GetName() == "Water")
+    254                 {  
+    255                    // Call utility routine to Generate
+    256                    // Rayleigh Scattering Lengths
+    257                    
+    258                    DefaultWater = true;
+    259                    
+    260                    ScatteringLengths =
+    261                    RayleighAttenuationLengthGenerator(aMaterialPropertiesTable);
+    262                 }
+    263               }
+    264             }
+    265             
+    266             thePhysicsTable->insertAt(i,ScatteringLengths);
+    267         }
+    268 }
+    269 
+
+
+This looks most odd on several counts:
+
+1. AttenuationLengthVector from RAYLEIGH property not used, other than existance
+2. ScatteringLengths is repeatedly used across multiple materials
+3. what you get will depend on the ordering of the Water material wrt to the others
+
+
+More water special casing::
+
+    273 G4double DsG4OpRayleigh::GetMeanFreePath(const G4Track& aTrack,
+    274                                      G4double ,
+    275                                      G4ForceCondition* )
+    276 {
+    277         const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+    278         const G4Material* aMaterial = aTrack.GetMaterial();
+    279 
+    280         G4double thePhotonEnergy = aParticle->GetTotalEnergy();
+    281 
+    282         G4double AttenuationLength = DBL_MAX;
+    283 
+    284         if ((strcmp(aMaterial->GetName(), "Water") == 0 )
+    285             && DefaultWater){
+    286 
+    287            G4bool isOutRange;
+    288 
+    289            AttenuationLength =
+    290                 (*thePhysicsTable)(aMaterial->GetIndex())->
+    291                            GetValue(thePhotonEnergy, isOutRange);
+
+    ////    for "Water" get AttenuationLength from thePhysicsTable 
+    ////    otherwise do the more standard lookup from material properties
+
+    292         }
+    293         else {
+    294 
+    295            G4MaterialPropertiesTable* aMaterialPropertyTable =
+    296                            aMaterial->GetMaterialPropertiesTable();
+    297 
+    298            if(aMaterialPropertyTable){
+    299              G4MaterialPropertyVector* AttenuationLengthVector =
+    300                    aMaterialPropertyTable->GetProperty("RAYLEIGH");
+    301              if(AttenuationLengthVector){
+    302                AttenuationLength = AttenuationLengthVector ->
+    303                                     GetProperty(thePhotonEnergy);
+    304              }
+    305              else{
+    306 //               G4cout << "No Rayleigh scattering length specified" << G4endl;
+    307              }
+    308            }
+    309            else{
+    310 //             G4cout << "No Rayleigh scattering length specified" << G4endl; 
+    311            }
+    312         }
+    313 
+    314         return AttenuationLength;
+    315 }
+
+
+
+But above not used, are using standard G4::
+
+    jcv DsPhysConsOptical
+
+    221     G4OpRayleigh* rayleigh = 0;
+    222     if (m_useRayleigh) {
+    223         rayleigh = new G4OpRayleigh();
+    224     //        rayleigh->SetVerboseLevel(2);
+    225     }
+    226 
+
+
+g4-cls G4OpRayleigh::
+
+
+    215 // BuildPhysicsTable for the Rayleigh Scattering process
+    216 // --------------------------------------------------------
+    217 void G4OpRayleigh::BuildPhysicsTable(const G4ParticleDefinition&)
+    218 {
+    219   if (thePhysicsTable) {
+    220      thePhysicsTable->clearAndDestroy();
+    221      delete thePhysicsTable;
+    222      thePhysicsTable = NULL;
+    223   }
+    224 
+    225   const G4MaterialTable* theMaterialTable = G4Material::GetMaterialTable();
+    226   const G4int numOfMaterials = G4Material::GetNumberOfMaterials();
+    227 
+    228   thePhysicsTable = new G4PhysicsTable( numOfMaterials );
+    229 
+    230   for( G4int iMaterial = 0; iMaterial < numOfMaterials; iMaterial++ )
+    231   {
+    232       G4Material* material = (*theMaterialTable)[iMaterial];
+    233       G4MaterialPropertiesTable* materialProperties =
+    234                                        material->GetMaterialPropertiesTable();
+    235       G4PhysicsOrderedFreeVector* rayleigh = NULL;
+    236       if ( materialProperties != NULL ) {
+    237          rayleigh = materialProperties->GetProperty( kRAYLEIGH );
+    238          if ( rayleigh == NULL ) rayleigh =
+    239                                    CalculateRayleighMeanFreePaths( material );
+    240       }
+    241       thePhysicsTable->insertAt( iMaterial, rayleigh );
+    242   }
+    243 }
+
+::
+
+    epsilon:offline blyth$ g4-hh kRAYLEIGH
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/materials/include/G4MaterialPropertiesIndex.hh:  kRAYLEIGH,                   // Rayleigh scattering attenuation length
+    epsilon:offline blyth$ g4-cc kRAYLEIGH
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/processes/optical/src/G4OpRayleigh.cc:         rayleigh = materialProperties->GetProperty( kRAYLEIGH );
+    epsilon:offline blyth$ 
+
+    epsilon:offline blyth$ g4-cc RAYLEIGH
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/materials/src/G4MaterialPropertiesTable.cc:  G4MaterialPropertyName.push_back(G4String("RAYLEIGH"));
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/processes/optical/src/G4OpRayleigh.cc:         rayleigh = materialProperties->GetProperty( kRAYLEIGH );
+
+
+
+
+::
+
+     39 
+     40 enum G4MaterialPropertyIndex   {
+     41   kNullPropertyIndex = -1,     // the number of G4MaterialPropertyIndex
+     42   kRINDEX,                     // index of refraction                  
+     43   kREFLECTIVITY,               // reflectivity         
+     44   kREALRINDEX,                 // real part of the refractive index
+     45   kIMAGINARYRINDEX,            // imaginary part of the refractive index
+     46   kEFFICIENCY,                 // efficiency 
+     47   kTRANSMITTANCE,              // transmittance of a dielectric surface
+     48   kSPECULARLOBECONSTANT,       // reflection probability about the normal of a micro facet. 
+     49   kSPECULARSPIKECONSTANT,      // reflection probability about the average surface normal
+     50   kBACKSCATTERCONSTANT,        // for the case of several reflections within a deep groove
+     51   kGROUPVEL,                   // group velocity
+     52   kMIEHG,                      // Mie scattering length
+     53   kRAYLEIGH,                   // Rayleigh scattering attenuation length
+     54   kWLSCOMPONENT,               // the relative emission spectrum of the material as a function of the photon's momentum
+     55   kWLSABSLENGTH,               // the absorption length of the material as a function of the photon's momentum
+     56   kABSLENGTH,                  // the absorption length
+     57   kFASTCOMPONENT,              // fast component of scintillation
+     58   kSLOWCOMPONENT,              // slow component of scintillation
+     59   kPROTONSCINTILLATIONYIELD,   // scintillation light yield by protons  
+     60   kDEUTERONSCINTILLATIONYIELD, // scintillation light yield by deuterons
+     61   kTRITONSCINTILLATIONYIELD,   // scintillation light yield by tritons
+     62   kALPHASCINTILLATIONYIELD,    // scintillation light yield by alphas
+     63   kIONSCINTILLATIONYIELD,      // scintillation light yield by ions
+     64   kELECTRONSCINTILLATIONYIELD, // scintillation light yield by electrons
+     65   kNumberOfPropertyIndex       // the number of G4MaterialPropertyIndex
+     66 } ;
+
+
+     60 G4MaterialPropertiesTable::G4MaterialPropertiesTable()
+     61 {
+     62   // elements of these 2 vectors must be in same order as
+     63   // the corresponding enums in G4MaterialPropertiesIndex.hh
+     64   G4MaterialPropertyName.push_back(G4String("RINDEX"));
+     65   G4MaterialPropertyName.push_back(G4String("REFLECTIVITY"));
+     66   G4MaterialPropertyName.push_back(G4String("REALRINDEX"));
+     67   G4MaterialPropertyName.push_back(G4String("IMAGINARYRINDEX"));
+     68   G4MaterialPropertyName.push_back(G4String("EFFICIENCY"));
+     69   G4MaterialPropertyName.push_back(G4String("TRANSMITTANCE"));
+     70   G4MaterialPropertyName.push_back(G4String("SPECULARLOBECONSTANT"));
+     71   G4MaterialPropertyName.push_back(G4String("SPECULARSPIKECONSTANT"));
+     72   G4MaterialPropertyName.push_back(G4String("BACKSCATTERCONSTANT"));
+     73   G4MaterialPropertyName.push_back(G4String("GROUPVEL"));
+     74   G4MaterialPropertyName.push_back(G4String("MIEHG"));
+     75   G4MaterialPropertyName.push_back(G4String("RAYLEIGH"));
+     76   G4MaterialPropertyName.push_back(G4String("WLSCOMPONENT"));
+     77   G4MaterialPropertyName.push_back(G4String("WLSABSLENGTH"));
+     78   G4MaterialPropertyName.push_back(G4String("ABSLENGTH"));
+     79   G4MaterialPropertyName.push_back(G4String("FASTCOMPONENT"));
+     80   G4MaterialPropertyName.push_back(G4String("SLOWCOMPONENT"));
+     81   G4MaterialPropertyName.push_back(G4String("PROTONSCINTILLATIONYIELD"));
+     82   G4MaterialPropertyName.push_back(G4String("DEUTERONSCINTILLATIONYIELD"));
+     83   G4MaterialPropertyName.push_back(G4String("TRITONSCINTILLATIONYIELD"));
+     84   G4MaterialPropertyName.push_back(G4String("ALPHASCINTILLATIONYIELD"));
+     85   G4MaterialPropertyName.push_back(G4String("IONSCINTILLATIONYIELD"));
+     86   G4MaterialPropertyName.push_back(G4String("ELECTRONSCINTILLATIONYIELD"));
+
+::
+
+    223 G4MaterialPropertyVector*
+    224 G4MaterialPropertiesTable::GetProperty(const char *key, G4bool warning)
+    225 {
+    226   // Returns a Material Property Vector corresponding to a key
+    227   const G4int index = GetPropertyIndex(G4String(key), warning);
+    228   return GetProperty(index);
+    229 }
+
+
+
+::
+
+    epsilon:offline blyth$ jgr RAYLEIGH
+    ./Simulation/DetSimV2/PhysiSim/src/DsG4OpRayleigh.cc:                            aMaterialPropertiesTable->GetProperty("RAYLEIGH");
+    ./Simulation/DetSimV2/PhysiSim/src/DsG4OpRayleigh.cc:                   aMaterialPropertyTable->GetProperty("RAYLEIGH");
+    These are not used currently it seems  
+
+    ./Simulation/DetSimV2/MCParamsSvc/share/filldb.C:        " FASTCOMPONENT, REEMISSIONPROB, RAYLEIGH, "
+    ./Simulation/DetSimV2/MCParamsSvc/share/filldb.C:        " '%s', '%s', '%s', " // FASTCOMPONENT, REEMISSIONPROB, RAYLEIGH,
+    ./Simulation/DetSimV2/MCParamsSvc/share/filldb.C:    TString rayleigh = load("Material.LS.RAYLEIGH");
+    ./Simulation/DetSimV2/MCParamsSvc/share/filldb.C:           fastc.Data(), reem.Data(), rayleigh.Data(), // FASTCOMPONENT, REEMISSIONPROB, RAYLEIGH,
+    ./Simulation/DetSimV2/MCParamsSvc/share/gen_all.py:    ("Material.LS.RAYLEIGH", "vec_d2d"),
+    ./Simulation/DetSimV2/MCParamsSvc/share/mc.json:    "objectType": "Material.LS.RAYLEIGH",
+    ./Simulation/DetSimV2/MCParamsSvc/share/create.sql:  `RAYLEIGH` longblob COMMENT '',
+    ./Simulation/DetSimV2/MCParamsSvc/src/MCParamsDBSvc.cc:    {"Material.LS.RAYLEIGH", "vec_d2d"},
+    ./Simulation/DetSimV2/MCParamsSvc/src/test/TestAlg.cc:    st = m_params_svc->Get("Material.LS.RAYLEIGH", LS_rayleigh);
+    ./Simulation/DetSimV2/MCParamsSvc/src/test/TestAlg.cc:    if (st) { LogInfo << "LS.RAYLEIGH: " << LS_rayleigh.size() << std::endl; }
+    ./Simulation/DetSimV2/MCParamsSvc/src/test/TestAlg.cc:    save_it("LS_RAYLEIGH", LS_rayleigh);
+    ./Simulation/DetSimV2/CalibUnit/share/LS.gdml:    <matrix coldim="2" name="RAYLEIGH0x252d220" values="1.55e-06 357143 
+    ./Simulation/DetSimV2/CalibUnit/share/LS.gdml:      <property name="RAYLEIGH" ref="RAYLEIGH0x252d220"/>
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:        LSMPT->AddProperty("RAYLEIGH", GdLSRayEnergy, GdLSRayLength, 11);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:                G4cout << "Scale RAYLEIGH from " << LS_scales_map["RayleighLenBefore"]
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:            helper_mpt(LSMPT, "RAYLEIGH",                   mcgt.data(), "Material.LS.RAYLEIGH", scale_rayleigh);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:        LABMPT->AddProperty("RAYLEIGH", GdLSRayEnergy, GdLSRayLength, 11);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:       // AcrylicMPT->AddProperty("RAYLEIGH", AcrylicRayEnergy, AcrylicRayLength, 11);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:       // AcrylicMaskMPT->AddProperty("RAYLEIGH", AcrylicRayEnergy, AcrylicRayLength, 11);
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:        MylarMPT->AddProperty("RAYLEIGH",AcrylicRayEnergy,RayleighLengthMylar,11);
+    ./Simulation/DetSimV2/AnalysisCode/src/OpticalParameterAnaMgr.cc:        // RAYLEIGH
+    ./Simulation/DetSimV2/AnalysisCode/src/OpticalParameterAnaMgr.cc:        get_matprop(tbl_LS, "RAYLEIGH", LS_Rayleigh_n, LS_Rayleigh_energy, LS_Rayleigh_len);
+    epsilon:offline blyth$ 
+
+
+Looks like water RAYLEIGH never gets set::
+
+    epsilon:offline blyth$ grep RAYLEIGH Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc
+            LSMPT->AddProperty("RAYLEIGH", GdLSRayEnergy, GdLSRayLength, 11);
+                    G4cout << "Scale RAYLEIGH from " << LS_scales_map["RayleighLenBefore"]
+                helper_mpt(LSMPT, "RAYLEIGH",                   mcgt.data(), "Material.LS.RAYLEIGH", scale_rayleigh);
+            LABMPT->AddProperty("RAYLEIGH", GdLSRayEnergy, GdLSRayLength, 11);
+           // AcrylicMPT->AddProperty("RAYLEIGH", AcrylicRayEnergy, AcrylicRayLength, 11);
+           // AcrylicMaskMPT->AddProperty("RAYLEIGH", AcrylicRayEnergy, AcrylicRayLength, 11);
+            MylarMPT->AddProperty("RAYLEIGH",AcrylicRayEnergy,RayleighLengthMylar,11);
+    epsilon:offline blyth$ 
+
+
+
+::
+
+    104 void X4MaterialTable::init()
+    105 {
+    106     unsigned num_input_materials = m_input_materials.size() ;
+    107 
+    108     LOG(LEVEL) << ". G4 nmat " << num_input_materials ;
+    109 
+    110     for(unsigned i=0 ; i < num_input_materials ; i++)
+    111     {
+    112         G4Material* material = m_input_materials[i] ;
+    113         G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
+    114 
+    115         if( mpt == NULL )
+    116         {
+    117             LOG(error) << "PROCEEDING TO convert material with no mpt " << material->GetName() ;
+    118             // continue ;  
+    119         }
+    120         else
+    121         {
+    122             LOG(LEVEL) << " converting material with mpt " <<  material->GetName() ;
+    123         }
+    124 
+    125 
+    126         GMaterial* mat = X4Material::Convert( material );
+    127         if(mat->hasProperty("EFFICIENCY"))
+    128         {
+    129              m_materials_with_efficiency.push_back(material);
+    130         }
+    131 
+    132         //assert( mat->getIndex() == i ); // this is not the lib, no danger of triggering a close
+    133 
+    134         m_mlib->add(mat) ;    // creates standardized material
+    135         m_mlib->addRaw(mat) ; // stores as-is
+    136     }
+    137 }
+
+
+
+Suspect that lack of RAYLEIGH property for "Water" means that 
+G4 is using a calculation from the RINDEX and some constants and 
+OK is using an arbitrary and very small default.::
+
+    268 G4PhysicsOrderedFreeVector*
+    269 G4OpRayleigh::CalculateRayleighMeanFreePaths( const G4Material* material ) const
+    270 {
+    271   G4MaterialPropertiesTable* materialProperties =
+    272                                        material->GetMaterialPropertiesTable();
+    273 
+    274   // Retrieve the beta_T or isothermal compressibility value. For backwards
+    275   // compatibility use a constant if the material is "Water". If the material
+    276   // doesn't have an ISOTHERMAL_COMPRESSIBILITY constant then return
+    277   G4double betat;
+    278   if ( material->GetName() == "Water" )
+    279     betat = 7.658e-23*m3/MeV;
+    280   else if(materialProperties->ConstPropertyExists("ISOTHERMAL_COMPRESSIBILITY"))
+    281     betat = materialProperties->GetConstProperty(kISOTHERMAL_COMPRESSIBILITY);
+    282   else
+    283     return NULL;
+    284         
+
+
+TODO:
+
+1. confirm these by introspecting GMaterialLib "Water" properties and doing some G4 dumping 
+2. try to grab the result of the G4 calculation and get it into GMaterialLib for use on GPU  
+
+Note that other materials that lack properties can have similar problems.::
+
+    077 class G4OpRayleigh : public G4VDiscreteProcess
+    ...
+    122         G4PhysicsTable* GetPhysicsTable() const;
+
+
+
+
+

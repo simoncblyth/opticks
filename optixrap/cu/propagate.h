@@ -117,7 +117,7 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
     float absorption_distance = -s.material1.y*logf(u_absorption) ;   // .y:absorption_length 
 #endif
 
-#else
+#else    // not-WITH_ALIGN_DEV
     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
     float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
 #endif

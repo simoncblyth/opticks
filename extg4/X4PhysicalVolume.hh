@@ -115,6 +115,7 @@ class X4_API X4PhysicalVolume : public X4Named
         void init();
     private:
         void convertMaterials_old(); 
+        void convertWater(); 
         void convertMaterials(); 
         void convertSurfaces(); 
 
