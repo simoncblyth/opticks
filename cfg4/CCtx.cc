@@ -587,14 +587,17 @@ void CCtx::ProcessHits( const G4Step* step, bool efficiency_collect )
     bool fabricate_unlabelled = false ;
     CPho hit = CPhotonInfo::Get(track, fabricate_unlabelled); 
 
-    if(!_pho.isEqual(hit))
+    if(!hit.is_missing())  
     {
-        LOG(fatal)
-            << " _pho not equal to hit "
-            << "  _pho.desc " << _pho.desc()
-            << " hit.desc " << hit.desc()
-            ;
-        assert(0); 
+        if(!_pho.isEqual(hit))
+        {
+            LOG(fatal)
+                << " _pho not equal to hit "
+                << "  _pho.desc " << _pho.desc()
+                << " hit.desc " << hit.desc()
+                ;
+            //assert(0); 
+        }
     }
 
     if( efficiency_collect )

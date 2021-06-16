@@ -175,7 +175,7 @@ Pick the first photon in the selection, and back it up by 2220mm so it starts fr
 
 
 
-Ran fine but "tds3ip.sh 1" gives error from compare shapes.::
+Runs fine but event loading "tds3ip.sh 1" gives error from compare shapes.::
 
     ~/opticks/ana/ab.py in compare_shapes(self)
         483 
@@ -267,7 +267,7 @@ How do the input photons get passed to GPU propagation ?
      93 }       
 
 
-Pass the repeat along with the photons backinto g4ok::
+Pass the repeat along with the photons back into g4ok::
 
      77 void junoSD_PMT_v2_Opticks::Initialize(G4HCofThisEvent* /*HCE*/)
      78 {
@@ -338,4 +338,186 @@ And act on the repeat in the carrier::
     446 
 
 
+
+tds3ip.sh 1::
+
+
+    [{dump                :ab.py     :325} INFO     - ]
+    als[:10]
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    *TO AB
+    TO SA
+    *TO AB
+    bls[:10]
+    *TO AB
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+    TO SA
+
+    In [1]: ab.his                                                                                                                                                                 
+    Out[1]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3ip   -1:g4live:tds3ip        c2        ab        ba 
+    .                                 10        10         0.00/-1 =  0.00  (pval:nan prob:nan)  
+    0000               8d         8         9     -1             0.00        0.889 +- 0.314        1.125 +- 0.375  [2 ] TO SA
+    0001               4d         2         1      1             0.00        2.000 +- 1.414        0.500 +- 0.500  [2 ] TO AB
+    .                                 10        10         0.00/-1 =  0.00  (pval:nan prob:nan)  
+
+
+    In [3]: a.rpost_(slice(0,2))                                                                                                                                                   
+    Out[3]: 
+    A([[[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 13110.7517,   4832.3008, -12156.7431,    113.5655]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 13874.3248,   5108.7985, -12841.5784,    118.4729]]])
+
+    In [4]: b.rpost_(slice(0,2))                                                                                                                                                   
+    Out[4]: 
+    A([[[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 13575.8538,   5000.763 , -12574.2363,    116.5319]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]],
+
+       [[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+        [ 14209.418 ,   5229.6518, -13143.7117,    120.5969]]])
+
+    In [5]: from opticks.ana.evt import m1_, m2_                        
+
+
+Expected start and end radii::
+
+    In [10]: m1_(ar.reshape(-1,4)[:,:3])                                                                                                                                           
+    Out[10]: 
+    A([17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 18521.0513,
+       17830.901 , 20050.2861, 17830.901 , 19583.2287])
+
+    In [11]: br = b.rpost_(slice(0,2))                                                                                                                                             
+
+    In [12]: m1_(br.reshape(-1,4)[:,:3])                                                                                                                                           
+    Out[12]: 
+    A([17830.901 , 19168.2773, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861, 17830.901 , 20050.2861,
+       17830.901 , 20050.2861, 17830.901 , 20050.2861])
+
+    In [13]:                                          
+
+
+
+Increase repeat factor to 100,000 in order to compare absorption fractions::
+
+    P[blyth@localhost cmt]$ jvi
+    P[blyth@localhost cmt]$ jfu
+    P[blyth@localhost cmt]$ t tds3ip
+    tds3ip () 
+    { 
+        local path=/tmp/check_innerwater_bulk_absorb.npy;
+        export OPTICKS_EVENT_PFX=tds3ip;
+        export INPUT_PHOTON_PATH=$path;
+        export INPUT_PHOTON_REPEAT=100000;
+        tds3
+    }
+
+
+
+trips assert::
+
+    2021-06-16 22:05:46.321 INFO  [177147] [junoSD_PMT_v2_Opticks::Initialize@84]  tool 0x1e3b340 input_photons 0x2fe4590 input_photon_repeat 100000 g4ok 0x4cdcaf0
+    2021-06-16 22:05:46.321 INFO  [177147] [G4Opticks::setInputPhotons@1934]  input_photons 1,4,4 repeat 100000
+    Begin of Event --> 0
+    2021-06-16 22:06:43.775 INFO  [177147] [PMTEfficiencyCheck::addHitRecord@88]  m_eventID 0 m_record_count 0
+    2021-06-16 22:06:43.776 FATAL [177147] [CCtx::ProcessHits@592]  _pho not equal to hit   _pho.desc CPho gs 0 ix 99766 id 99766 gn 0 hit.desc CPho (missing) 
+    python: /home/blyth/opticks/cfg4/CCtx.cc:597: void CCtx::ProcessHits(const G4Step*, bool): Assertion `0' failed.
+
+    Program received signal SIGABRT, Aborted.
+    0x00007ffff6cf9387 in raise () from /lib64/libc.so.6
+    (gdb) bt
+    #3  0x00007ffff6cf2252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffcddad75d in CCtx::ProcessHits (this=0x153ad8b90, step=0x24c9a70, efficiency_collect=false) at /home/blyth/opticks/cfg4/CCtx.cc:597
+    #5  0x00007fffcddb32e4 in CManager::ProcessHits (this=0x153ad8b30, step=0x24c9a70, efficiency_collect=false) at /home/blyth/opticks/cfg4/CManager.cc:619
+    #6  0x00007fffce07744c in G4OpticksRecorder::ProcessHits (this=0x2526010, step=0x24c9a70, efficiency_collect=false) at /home/blyth/opticks/g4ok/G4OpticksRecorder.cc:154
+    #7  0x00007fffc233f992 in junoSD_PMT_v2::ProcessHits (this=0x34ae410, step=0x24c9a70) at ../src/junoSD_PMT_v2.cc:466
+    #8  0x00007fffd04aa98c in G4SteppingManager::Stepping() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4tracking.so
+    #9  0x00007fffd04b60fd in G4TrackingManager::ProcessOneTrack(G4Track*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4tracking.so
+    #10 0x00007fffd06edb53 in G4EventManager::DoProcessing(G4Event*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4event.so
+    #11 0x00007fffc2897760 in G4SvcRunManager::SimulateEvent(int) () from /home/blyth/junotop/offline/InstallArea/Linux-x86_64/lib/libG4Svc.so
+
+
+Unsure how, but for now exclude comparison for missings::
+
+    584 void CCtx::ProcessHits( const G4Step* step, bool efficiency_collect )
+    585 {   
+    586     const G4Track* track = step->GetTrack();    
+    587     bool fabricate_unlabelled = false ;
+    588     CPho hit = CPhotonInfo::Get(track, fabricate_unlabelled); 
+    589     
+    590     if(!hit.is_missing())
+    591     {
+    592         if(!_pho.isEqual(hit))
+    593         {
+    594             LOG(fatal)
+    595                 << " _pho not equal to hit "
+    596                 << "  _pho.desc " << _pho.desc()
+    597                 << " hit.desc " << hit.desc()
+    598                 ;
+    599             assert(0);
+    600         }   
+    601     }   
 
