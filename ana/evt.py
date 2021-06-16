@@ -34,6 +34,10 @@
 import os, logging, stat, datetime
 import numpy as np
 
+m0_ = lambda p:np.sqrt(np.sum(p*p, axis=0))  # magnitude axis 0 
+m1_ = lambda p:np.sqrt(np.sum(p*p, axis=1))  # magnitude axis 1 
+m2_ = lambda p:np.sqrt(np.sum(p*p, axis=2))  # magnitude axis 2
+
 
 #from opticks.ana.debug import MyPdb
 """
@@ -578,8 +582,13 @@ class Evt(object):
         self.c4 = c4
 
 
-        ecex = self.hismask.code("EC|EX")  
-        all_pflags_ana = self.make_pflags_ana( self.pflags & ~ecex , "all_pflags_ana" )  # SCRUB "EC|EX" **TEMPORARILY**
+        exclude_ecex = False
+        if exclude_ecex: 
+            ecex = self.hismask.code("EC|EX")  
+            all_pflags_ana = self.make_pflags_ana( self.pflags & ~ecex , "all_pflags_ana" )  # SCRUB "EC|EX" **TEMPORARILY**
+        else:
+            all_pflags_ana = self.make_pflags_ana( self.pflags, "all_pflags_ana" )  
+        pass 
 
         self.all_pflags_ana = all_pflags_ana
         self.pflags_ana = all_pflags_ana
@@ -1277,6 +1286,7 @@ class Evt(object):
             self.wl_ = self.wl
             self.rx_ = self.rx
             self.so_ = self.so
+            self.dx_ = self.dx
         pass
         if psel is None: 
             self._reset_selection()
@@ -1301,6 +1311,7 @@ class Evt(object):
         self.c4 = self.c4_[psel]
         self.wl = self.wl_[psel]
         self.rx = self.rx_[psel]
+        self.dx = self.dx_[psel]
 
         if not self.so_.missing and len(self.so_)>0:
             self.so = self.so_[psel]
@@ -1967,6 +1978,21 @@ class Evt(object):
         pp = pos*pos
         r = np.sqrt(pp.sum(axis=2)) 
         return r
+
+    def rpostd01(self, recs=slice(None)):
+        """
+        :param recs: record index within the photon eg 0..9 or a slice range 
+        :return d01: distance 0th to 1st point 
+
+        TODO: do this for all points 
+        """
+        p = self.rpost_(recs)
+        pos = p[:,:,:3]
+        dpos = pos[:, 1] - pos[:, 0]
+
+        d01 = np.sqrt(np.sum(dpos*dpos, axis=1))   
+        return d01
+
 
     def rpostt(self, recs=slice(None)):
         """

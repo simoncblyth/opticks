@@ -401,25 +401,31 @@ source_buffer to get filled with the input photons similar to::
 
 **/
 
-OpticksGenstep* OpticksGenstep::MakeInputPhotonCarrier(NPY<float>* ip, unsigned tagoffset ) // static
+OpticksGenstep* OpticksGenstep::MakeInputPhotonCarrier(NPY<float>* ip, unsigned tagoffset, int repeat ) // static
 {
-    unsigned num_photons = ip->getNumItems(); 
+    unsigned ip_num = ip->getNumItems(); 
+    NPY<float>* ipr = repeat == 0 ? ip : NPY<float>::make_repeat( ip, repeat );     
+    unsigned ipr_num = ipr->getNumItems(); 
+
     LOG(LEVEL) 
-        << " num_photons " << num_photons
-        << " input_photons " << ip->getShapeString()
         << " tagoffset " << tagoffset
+        << " repeat " << repeat 
+        << " ip_num " << ip_num
+        << " ip " << ip->getShapeString()
+        << " ipr_num " << ipr_num
+        << " ipr " << ipr->getShapeString()
         ; 
-    
+   
     NStep onestep ; 
     onestep.setGenstepType( OpticksGenstep_EMITSOURCE );  
-    onestep.setNumPhotons(  num_photons ); 
+    onestep.setNumPhotons(  ipr_num ); 
     onestep.fillArray(); 
     NPY<float>* gs = onestep.getArray(); 
 
 
     bool compute = true ; 
-    ip->setBufferSpec(OpticksEvent::SourceSpec(compute));
-    ip->setArrayContentIndex( tagoffset ); 
+    ipr->setBufferSpec(OpticksEvent::SourceSpec(compute));
+    ipr->setArrayContentIndex( tagoffset ); 
 
     gs->setBufferSpec(OpticksEvent::GenstepSpec(compute));
     gs->setArrayContentIndex( tagoffset ); 
@@ -432,7 +438,7 @@ OpticksGenstep* OpticksGenstep::MakeInputPhotonCarrier(NPY<float>* ip, unsigned 
         << " oac.numSet " << oac.numSet() 
         ; 
 
-    gs->setAux((void*)ip);  // under-radar association of input photons with the fabricated genstep 
+    gs->setAux((void*)ipr);  // under-radar association of input photons with the fabricated genstep 
 
     OpticksGenstep* ogs = new OpticksGenstep(gs);
     return ogs ; 

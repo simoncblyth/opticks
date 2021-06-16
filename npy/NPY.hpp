@@ -133,7 +133,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* concat(const std::vector<const NPYBase*>& comps); 
 
        static NPY<T>* make_modulo(NPY<T>* src, unsigned int scaledown);
-       static NPY<T>* make_repeat(NPY<T>* src, unsigned int n);
+       static NPY<T>* make_repeat(NPY<T>* src, int n);
        static NPY<T>* make_inverted_transforms(NPY<T>* src, bool transpose=false);
        static NPY<T>* make_paired_transforms(NPY<T>* src, bool transpose=false);
        static NPY<T>* make_triple_transforms(NPY<T>* src);

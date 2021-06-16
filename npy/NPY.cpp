@@ -1411,18 +1411,30 @@ NPY<T>* NPY<T>::make(const std::vector<int>& shape)
 }
 
 
+/**
+NPY<T>::make_repeat
+----------------------
+
+n>0
+    "outer" repeat the entire array 
+n<0
+    "inner" repeat each item of the array 
+
+**/
+
 template <typename T>
-NPY<T>* NPY<T>::make_repeat(NPY<T>* src, unsigned int n)
+NPY<T>* NPY<T>::make_repeat(NPY<T>* src, int n)
 {
+    if(n == 0) n = 1 ; 
+
     unsigned int ni = src->getShape(0);
     assert( ni > 0);
 
     std::vector<int> dshape(src->getShapeVector());
-    dshape[0] *= n ;          // bump up first dimension
+    dshape[0] *= std::abs(n) ;      // bump up first dimension
 
     NPY<T>* dst = NPY<T>::make(dshape) ;
     dst->zero();
-
 
     unsigned int size = src->getNumBytes(1);  // item size in bytes (from dimension 1)  
 
@@ -1430,14 +1442,19 @@ NPY<T>* NPY<T>::make_repeat(NPY<T>* src, unsigned int n)
     char* dbytes = (char*)dst->getBytes();
 
     assert(size == dst->getNumBytes(1)) ;
-   
-    for(unsigned int i=0 ; i < ni ; i++){
-    for(unsigned int r=0 ; r < n ;  r++){
 
-        memcpy( (void*)(dbytes + i*n*size + r*size ),(void*)(sbytes + size*i), size ) ; 
-
+    if( n < 0 ) //  "inner" repeat each item of the array 
+    {
+        for(unsigned i=0 ; i < ni ; i++)
+        for(unsigned r=0 ; r < -n ;  r++)
+        memcpy( (void*)(dbytes + i*(-n)*size + r*size ),(void*)(sbytes + size*i), size ) ; 
     }
-    }   
+    else if( n > 0 )  //  "outer" repeat the entire array 
+    {
+        for(unsigned r=0 ; r < n ;  r++)
+        for(unsigned i=0 ; i < ni ; i++)
+        memcpy( (void*)(dbytes + i*n*size + r*size ),(void*)(sbytes + size*i), size ) ; 
+    }
     return dst ; 
 }
 

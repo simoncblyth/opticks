@@ -1911,15 +1911,15 @@ void G4Opticks::collectHit
 }
  
 
-void G4Opticks::setInputPhotons(const char* dir, const char* name)
+void G4Opticks::setInputPhotons(const char* dir, const char* name, int repeat )
 {
     NPY<float>* input_photons = NPY<float>::load(dir, name) ; 
-    setInputPhotons(input_photons); 
+    setInputPhotons(input_photons, repeat); 
 }
-void G4Opticks::setInputPhotons(const char* path)
+void G4Opticks::setInputPhotons(const char* path, int repeat )
 {
     NPY<float>* input_photons = NPY<float>::load(path) ; 
-    setInputPhotons(input_photons); 
+    setInputPhotons(input_photons, repeat ); 
 }
 
 
@@ -1929,10 +1929,11 @@ G4Opticks::setInputPhotons
 
 **/
 
-void G4Opticks::setInputPhotons(NPY<float>* input_photons)
+void G4Opticks::setInputPhotons(NPY<float>* input_photons, int repeat )
 {
     LOG(info) 
         << " input_photons " << ( input_photons ? input_photons->getShapeString() : "-" )
+        << " repeat " << repeat 
         ;
 
     if( input_photons == nullptr )
@@ -1942,7 +1943,7 @@ void G4Opticks::setInputPhotons(NPY<float>* input_photons)
     }
 
     unsigned tagoffset = 0 ;   
-    const OpticksGenstep* gs = OpticksGenstep::MakeInputPhotonCarrier(input_photons, tagoffset );
+    const OpticksGenstep* gs = OpticksGenstep::MakeInputPhotonCarrier(input_photons, tagoffset, repeat );
     assert( m_genstep_collector ); 
     m_genstep_collector->collectTorchGenstep(gs);  
 }
