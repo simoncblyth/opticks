@@ -14,13 +14,46 @@
 
 const plog::Severity X4MaterialWater::LEVEL = PLOG::EnvLevel("X4MaterialWater", "DEBUG" ); 
 
+/**
+X4MaterialWater::IsApplicable
+------------------------------
+
+**/
+
+bool X4MaterialWater::IsApplicable()  // static 
+{
+    G4PhysicsOrderedFreeVector* RAYLEIGH = GetRAYLEIGH();
+    G4PhysicsOrderedFreeVector* RINDEX = GetRINDEX();
+    bool applicable = RAYLEIGH == nullptr && RINDEX != nullptr ; 
+
+    LOG(LEVEL)
+        << " RAYLEIGH " << RAYLEIGH 
+        << " RINDEX " << RINDEX 
+        << " applicable " << applicable 
+        ;
+
+    return applicable ; 
+}
+
+G4PhysicsOrderedFreeVector* X4MaterialWater::GetRAYLEIGH(){ return GetProperty(kRAYLEIGH) ; }
+G4PhysicsOrderedFreeVector* X4MaterialWater::GetRINDEX(){  return GetProperty(kRINDEX) ; }
+
+G4PhysicsOrderedFreeVector* X4MaterialWater::GetProperty(const G4int index)
+{
+    G4Material* Water = G4Material::GetMaterial("Water");
+    if(Water == nullptr) return nullptr ; 
+    G4MaterialPropertiesTable* WaterMPT = Water->GetMaterialPropertiesTable() ; 
+    if(WaterMPT == nullptr) return nullptr ; 
+    G4PhysicsOrderedFreeVector* PROP = WaterMPT->GetProperty(index) ;
+    return PROP ;     
+}
+
 X4MaterialWater::X4MaterialWater()
     :
     Water(G4Material::GetMaterial("Water")),
     WaterMPT(Water ? Water->GetMaterialPropertiesTable() : nullptr),
     rayleigh0(WaterMPT ? static_cast<G4PhysicsOrderedFreeVector*>(WaterMPT->GetProperty(kRAYLEIGH)) : nullptr ),
-    rayleigh(rayleigh0 ? rayleigh0 : X4OpRayleigh::WaterScatteringLength() ),
-    rayleighx(new X4PhysicsOrderedFreeVector(rayleigh))
+    rayleigh(rayleigh0 ? rayleigh0 : X4OpRayleigh::WaterScatteringLength() )
 {
     init(); 
 }
@@ -71,7 +104,6 @@ has measurements in the same ballpark
 
 G4PhysicsOrderedFreeVector isa G4PhysicsVector
 
- 
 **/
 
 void X4MaterialWater::rayleigh_scan() const 
@@ -95,11 +127,13 @@ void X4MaterialWater::rayleigh_scan() const
 
 void X4MaterialWater::rayleigh_scan2() const
 {
-    LOG(info) << rayleighx->desc() ; 
+    X4PhysicsOrderedFreeVector rayleighx(rayleigh); 
+    LOG(info) << rayleighx.desc() ; 
 } 
 void X4MaterialWater::changeRayleighToMidBin()
 {
-    rayleighx->changeAllToMidBinValue() ;     
+    X4PhysicsOrderedFreeVector rayleighx(rayleigh); 
+    rayleighx.changeAllToMidBinValue() ;     
 }
 
 

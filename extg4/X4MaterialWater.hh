@@ -42,17 +42,19 @@ Note annoying typedef::
 class G4Material ; 
 class G4MaterialPropertiesTable ; 
 class G4PhysicsOrderedFreeVector ; 
-struct X4PhysicsOrderedFreeVector ; 
 
 struct X4_API X4MaterialWater
 {
     static const plog::Severity  LEVEL ; 
- 
+    static bool IsApplicable();   // returns true when "Water" G4Material has RINDEX but not RAYLEIGH
+    static G4PhysicsOrderedFreeVector* GetRAYLEIGH(); 
+    static G4PhysicsOrderedFreeVector* GetRINDEX(); 
+    static G4PhysicsOrderedFreeVector* GetProperty(const G4int index); 
+
     G4Material*                  Water ; 
     G4MaterialPropertiesTable*   WaterMPT ;  
     G4PhysicsOrderedFreeVector*  rayleigh0 ; // from the material, possibly null         
     G4PhysicsOrderedFreeVector*  rayleigh ;  // from the material if present otherwise calculated from RINDEX     
-    X4PhysicsOrderedFreeVector*  rayleighx ;  
     
     X4MaterialWater(); 
     void init(); 

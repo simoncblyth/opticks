@@ -39,6 +39,7 @@
 #include "X4.hh"
 #include "X4PhysicalVolume.hh"
 #include "X4Material.hh"
+#include "X4MaterialWater.hh"
 #include "X4MaterialTable.hh"
 #include "X4LogicalBorderSurface.hh"
 #include "X4LogicalBorderSurfaceTable.hh"
@@ -334,25 +335,34 @@ void X4PhysicalVolume::convertMaterials()
 X4PhysicalVolume::convertWater
 --------------------------------
 
-Geant4 special casing of Water makes it necessary to handle it separately.
+Geant4 special casing of G4Material with name "Water" in G4OpRayleigh 
+that do not have a "RAYLEIGH" property but do have a "RINDEX" property
+makes it necessary for this separate X4PhysicalVolume::convertWater.
+
+The instanciation of X4MaterialWater in this method uses a G4OpRayleigh 
+process instance internally to calculate the RAYLEIGH scattering length 
+from the RINDEX and adds that new property to the properties of the "Water" G4Material. 
+
+This is needed as this Opticks convert is based on materials and does not look 
+inside G4OpRayleigh::thePhysicsTable. In any case standard process setup 
+happens much later that the Opticks geometry conversion is typically done.
 
 **/
 
 void X4PhysicalVolume::convertWater()
 {
-    G4OpticalPhoton* op = G4OpticalPhoton::Definition();  
-    G4ParticleDefinition* particle = dynamic_cast<G4ParticleDefinition*>(op); 
-    G4ProcessManager* pmanager = particle->GetProcessManager(); 
-    if( pmanager )
+    bool applicable = X4MaterialWater::IsApplicable(); 
+    if(!applicable)
     {
-        pmanager->DumpInfo(); 
-        G4int num_proc = pmanager->GetProcessListLength();   
-        LOG(info) << " num_proc " << num_proc ; 
+        LOG(LEVEL) << "X4MaterialWater::IsApplicable returned false, so cannot calculate \"RAYLEIGH\" using G4OpRayleigh " ;  
+        return ; 
     }
-    else
-    {
-        LOG(info) << " pmanager NULL " ; 
-    }
+
+    X4MaterialWater Water ;  
+    assert(Water.rayleigh);  
+
+    G4PhysicsOrderedFreeVector* RAYLEIGH = X4MaterialWater::GetRAYLEIGH() ; 
+    assert( RAYLEIGH == Water.rayleigh ); 
 }
 
 
