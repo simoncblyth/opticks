@@ -572,42 +572,57 @@ tds3ip.sh::
     .                             100000    100000       739.41/9 = 82.16  (pval:0.000 prob:1.000)  
 
 
+After special case handling "Water" with X4MaterialWater from X4PhysicalVolume::convertWater
+
+* sail thru "TO SA" now matching 
+* bulk absorb on route "TO AB" now matching 
+
+::
+
+    In [2]:  ab.his[:30]                                                                                                                                                                         
+    Out[2]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3ip   -1:g4live:tds3ip        c2        ab        ba 
+    .                             100000    100000       324.15/12 = 27.01  (pval:0.000 prob:1.000)  
+    0000               8d     92759     92777    -18             0.00        1.000 +- 0.003        1.000 +- 0.003  [2 ] TO SA
+    0001               4d      5997      5918     79             0.52        1.013 +- 0.013        0.987 +- 0.013  [2 ] TO AB
+    0002             7c6d       253       311    -58             5.96        0.814 +- 0.051        1.229 +- 0.070  [4 ] TO SC BT SD
+    0003              86d       200       236    -36             2.97        0.847 +- 0.060        1.180 +- 0.077  [3 ] TO SC SA
+    0004            4cc6d        56       212   -156            90.81        0.264 +- 0.035        3.786 +- 0.260  [5 ] TO SC BT BT AB
+    ^^^^^^^^^^  G4 has excess of scatters that get back into LS presumably ? ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    0005              46d       144        63     81            31.70        2.286 +- 0.190        0.438 +- 0.055  [3 ] TO SC AB
+    0006             8c6d        80        80      0             0.00        1.000 +- 0.112        1.000 +- 0.112  [4 ] TO SC BT SA
+
+    0007           8cac6d        81         0     81            81.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO SC BT SR BT SA
+    0008          8ccac6d         0        72    -72            72.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO SC BT SR BT BT SA
+    ^^^^^^^^^^^ probably paired zero to look into ^^^^^^^^^
+
+    0009             4c6d        40        21     19             5.92        1.905 +- 0.301        0.525 +- 0.115  [4 ] TO SC BT AB
+    0010           46cc6d        16        39    -23             9.62        0.410 +- 0.103        2.438 +- 0.390  [6 ] TO SC BT BT SC AB
+    0011        7ccc6cc6d        28        10     18             8.53        2.800 +- 0.529        0.357 +- 0.113  [9 ] TO SC BT BT SC BT BT BT SD
+    0012            7cc6d         5        27    -22            15.12        0.185 +- 0.083        5.400 +- 1.039  [5 ] TO SC BT BT SD
+    0013         7ccccc6d        21         9     12             0.00        2.333 +- 0.509        0.429 +- 0.143  [8 ] TO SC BT BT BT BT BT SD
+    0014          466cc6d        11        17     -6             0.00        0.647 +- 0.195        1.545 +- 0.375  [7 ] TO SC BT BT SC SC AB
+    0015       ccacccac6d         0        26    -26             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO SC BT SR BT BT BT SR BT BT
+    0016           4ccc6d         7        19    -12             0.00        0.368 +- 0.139        2.714 +- 0.623  [6 ] TO SC BT BT BT AB
+    0017            8cc6d        10        16     -6             0.00        0.625 +- 0.198        1.600 +- 0.400  [5 ] TO SC BT BT SA
+    0018            7cb6d        10        10      0             0.00        1.000 +- 0.316        1.000 +- 0.316  [5 ] TO SC BR BT SD
+    0019         4cc6cc6d        12         4      8             0.00        3.000 +- 0.866        0.333 +- 0.167  [8 ] TO SC BT BT SC BT BT AB
+    0020          4cccc6d        12         2     10             0.00        6.000 +- 1.732        0.167 +- 0.118  [7 ] TO SC BT BT BT BT AB
+    0021             4b6d        12         0     12             0.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO SC BR AB
+    0022        8ccc6cc6d         7         5      2             0.00        1.400 +- 0.529        0.714 +- 0.319  [9 ] TO SC BT BT SC BT BT BT SA
+    0023        7ccc5cc6d        12         0     12             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO SC BT BT RE BT BT BT SD
+    0024       accaccac6d        11         0     11             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO SC BT SR BT BT SR BT BT SR
+    0025           45cc6d        11         0     11             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO SC BT BT RE AB
+    0026        8caccac6d        10         0     10             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO SC BT SR BT BT SR BT SA
+    0027       7ccc66cc6d         6         4      2             0.00        1.500 +- 0.612        0.667 +- 0.333  [10] TO SC BT BT SC SC BT BT BT SD
+    0028             8b6d         7         3      4             0.00        2.333 +- 0.882        0.429 +- 0.247  [4 ] TO SC BR SA
+    0029          46ccc6d         0         9     -9             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO SC BT BT BT SC AB
+    .                             100000    100000       324.15/12 = 27.01  (pval:0.000 prob:1.000)  
 
 
-Wildcard selection fails for a from dx::
 
-    In [3]: a.sel = "*SC*"                                                                                                                                                                              
-    ---------------------------------------------------------------------------
-    IndexError                                Traceback (most recent call last)
-    <ipython-input-3-5f83b3fe4981> in <module>
-    ----> 1 a.sel = "*SC*"
-
-    ~/opticks/ana/evt.py in _set_sel(self, arg)
-       1409 
-       1410         psel = self.make_selection(sel, False)
-    -> 1411         self._init_selection(psel)
-       1412     sel = property(_get_sel, _set_sel)
-       1413 
-
-    ~/opticks/ana/evt.py in _init_selection(self, psel)
-       1312         self.wl = self.wl_[psel]
-       1313         self.rx = self.rx_[psel]
-    -> 1314         self.dx = self.dx_[psel]
-       1315 
-       1316         if not self.so_.missing and len(self.so_)>0:
-
-    IndexError: too many indices for array: array is 0-dimensional, but 1 were indexed
-    > /Users/blyth/opticks/ana/evt.py(1314)_init_selection()
-       1312         self.wl = self.wl_[psel]
-       1313         self.rx = self.rx_[psel]
-    -> 1314         self.dx = self.dx_[psel]
-       1315 
-       1316         if not self.so_.missing and len(self.so_)>0:
-
-    ipdb>                                                                                                                                                                                               
-
-
-
+Wildcard selection::
 
     In [1]: a.sel = "*SC*"                                                                                                                                                                              
 
@@ -648,7 +663,44 @@ Wildcard selection fails for a from dx::
     0029       cc5566cc6d        0.005           1        [10] TO SC BT BT SC SC RE RE BT BT
     .                                203         1.00 
 
+After X4MaterialWater fix::
 
+    In [10]: a.his[:30]                                                                                                                                                                                       
+    Out[10]: 
+    seqhis_ana
+    .                     cfo:-  1:g4live:tds3ip 
+    .                               1244         1.00 
+    0000             7c6d        0.203         253        [4 ] TO SC BT SD
+    0001              86d        0.161         200        [3 ] TO SC SA
+    0002              46d        0.116         144        [3 ] TO SC AB
+    0003           8cac6d        0.065          81        [6 ] TO SC BT SR BT SA
+    0004             8c6d        0.064          80        [4 ] TO SC BT SA
+    0005            4cc6d        0.045          56        [5 ] TO SC BT BT AB
+    0006             4c6d        0.032          40        [4 ] TO SC BT AB
+    0007        7ccc6cc6d        0.023          28        [9 ] TO SC BT BT SC BT BT BT SD
+    0008         7ccccc6d        0.017          21        [8 ] TO SC BT BT BT BT BT SD
+    0009           46cc6d        0.013          16        [6 ] TO SC BT BT SC AB
+    0010          4cccc6d        0.010          12        [7 ] TO SC BT BT BT BT AB
+    0011        7ccc5cc6d        0.010          12        [9 ] TO SC BT BT RE BT BT BT SD
+    0012         4cc6cc6d        0.010          12        [8 ] TO SC BT BT SC BT BT AB
+    0013             4b6d        0.010          12        [4 ] TO SC BR AB
+    0014          466cc6d        0.009          11        [7 ] TO SC BT BT SC SC AB
+    0015       accaccac6d        0.009          11        [10] TO SC BT SR BT BT SR BT BT SR
+    0016           45cc6d        0.009          11        [6 ] TO SC BT BT RE AB
+    0017            8cc6d        0.008          10        [5 ] TO SC BT BT SA
+    0018            7cb6d        0.008          10        [5 ] TO SC BR BT SD
+    0019        8caccac6d        0.008          10        [9 ] TO SC BT SR BT BT SR BT SA
+    0020             8b6d        0.006           7        [4 ] TO SC BR SA
+    0021        8ccc6cc6d        0.006           7        [9 ] TO SC BT BT SC BT BT BT SA
+    0022           4ccc6d        0.006           7        [6 ] TO SC BT BT BT AB
+    0023       7ccc66cc6d        0.005           6        [10] TO SC BT BT SC SC BT BT BT SD
+    0024            7cc6d        0.004           5        [5 ] TO SC BT BT SD
+    0025         8cc6cc6d        0.004           5        [8 ] TO SC BT BT SC BT BT SA
+    0026       7ccc56cc6d        0.004           5        [10] TO SC BT BT SC RE BT BT BT SD
+    0027          7ccac6d        0.004           5        [7 ] TO SC BT SR BT BT SD
+    0028         4cc5cc6d        0.003           4        [8 ] TO SC BT BT RE BT BT AB
+    0029         8cc5cc6d        0.003           4        [8 ] TO SC BT BT RE BT BT SA
+    .                               1244         1.00 
 
 
     In [4]: b.sel = "*SC*"                                       
@@ -689,6 +741,50 @@ Wildcard selection fails for a from dx::
     0028         8ccacc6d        0.002           3        [8 ] TO SC BT BT SR BT BT SA
     0029             8b6d        0.002           3        [4 ] TO SC BR SA
     .                               1305         1.00 
+
+
+After X4MaterialWater fix, no change in G4 as expected::
+
+    In [12]: b.his[:30]                                                                                                                                                                                       
+    Out[12]: 
+    seqhis_ana
+    .                     cfo:-  -1:g4live:tds3ip 
+    .                               1305         1.00 
+    0000             7c6d        0.238         311        [4 ] TO SC BT SD
+    0001              86d        0.181         236        [3 ] TO SC SA
+    0002            4cc6d        0.162         212        [5 ] TO SC BT BT AB
+    0003             8c6d        0.061          80        [4 ] TO SC BT SA
+    0004          8ccac6d        0.055          72        [7 ] TO SC BT SR BT BT SA
+    0005              46d        0.048          63        [3 ] TO SC AB
+    0006           46cc6d        0.030          39        [6 ] TO SC BT BT SC AB
+    0007            7cc6d        0.021          27        [5 ] TO SC BT BT SD
+    0008       ccacccac6d        0.020          26        [10] TO SC BT SR BT BT BT SR BT BT
+    0009             4c6d        0.016          21        [4 ] TO SC BT AB
+    0010           4ccc6d        0.015          19        [6 ] TO SC BT BT BT AB
+    0011          466cc6d        0.013          17        [7 ] TO SC BT BT SC SC AB
+    0012            8cc6d        0.012          16        [5 ] TO SC BT BT SA
+    0013        7ccc6cc6d        0.008          10        [9 ] TO SC BT BT SC BT BT BT SD
+    0014            7cb6d        0.008          10        [5 ] TO SC BR BT SD
+    0015         7ccccc6d        0.007           9        [8 ] TO SC BT BT BT BT BT SD
+    0016          46ccc6d        0.007           9        [7 ] TO SC BT BT BT SC AB
+    0017         466ccc6d        0.005           6        [8 ] TO SC BT BT BT SC SC AB
+    0018       7cccc6cc6d        0.004           5        [10] TO SC BT BT SC BT BT BT BT SD
+    0019        8ccc6cc6d        0.004           5        [9 ] TO SC BT BT SC BT BT BT SA
+    0020             866d        0.004           5        [4 ] TO SC SC SA
+    0021         4666cc6d        0.003           4        [8 ] TO SC BT BT SC SC SC AB
+    0022       caccccac6d        0.003           4        [10] TO SC BT SR BT BT BT BT SR BT
+    0023         4cc6cc6d        0.003           4        [8 ] TO SC BT BT SC BT BT AB
+    0024          4ccac6d        0.003           4        [7 ] TO SC BT SR BT BT AB
+    0025       7ccc66cc6d        0.003           4        [10] TO SC BT BT SC SC BT BT BT SD
+    0026            7c66d        0.003           4        [5 ] TO SC SC BT SD
+    0027           7c6b6d        0.002           3        [6 ] TO SC BR SC BT SD
+    0028         8ccacc6d        0.002           3        [8 ] TO SC BT BT SR BT BT SA
+    0029             8b6d        0.002           3        [4 ] TO SC BR SA
+    .                               1305         1.00 
+
+
+
+
 
 
 

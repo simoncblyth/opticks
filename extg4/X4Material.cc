@@ -157,7 +157,8 @@ std::string X4Material::Desc(const std::vector<G4Material*>& mtlist)
         for(size_t j=0 ; j < num_prop ; j++)
         {
             const G4String& name = propNames[j]; 
-            ss << " " << std::setw(20) << name << " " ;  
+            G4MaterialPropertyVector* prop = mpt->GetProperty(name.c_str());  
+            if( prop != nullptr ) ss << " " << std::setw(20) << name << " " ;  
         }
         ss << std::endl ; 
     }
