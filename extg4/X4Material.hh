@@ -41,6 +41,7 @@ class X4_API X4Material
         static std::string Digest();
         static std::string Digest(const std::vector<G4Material*>& materials);
         static std::string Digest(const G4Material* material);
+        static std::string Desc(const std::vector<G4Material*>& mtlist) ; 
     public:
         static GMaterial* Convert(const G4Material* material);
         static bool HasEfficiencyProperty(const G4MaterialPropertiesTable* mpt) ; 

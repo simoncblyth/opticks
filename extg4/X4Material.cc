@@ -134,3 +134,36 @@ void X4Material::init()
 
 
 
+std::string X4Material::Desc(const std::vector<G4Material*>& mtlist)
+{
+    size_t num_mt = mtlist.size() ; 
+
+    std::stringstream ss ; 
+    ss << " num_mt " <<  num_mt ; 
+    for(size_t i=0 ; i < num_mt ; i++)
+    {
+        const G4Material* mt = mtlist[i];
+        ss  
+            << std::setw(4) << i  
+            << " : "
+            << std::setw(30) << mt->GetName()
+            << " : "
+            ;    
+        G4MaterialPropertiesTable* mpt = mt->GetMaterialPropertiesTable() ; 
+        if(mpt == nullptr) continue ; 
+        std::vector<G4String> propNames = mpt->GetMaterialPropertyNames() ; 
+        size_t num_prop = propNames.size() ;  
+        ss << " num_prop " << std::setw(3) << num_prop ;        
+        for(size_t j=0 ; j < num_prop ; j++)
+        {
+            const G4String& name = propNames[j]; 
+            ss << " " << std::setw(20) << name << " " ;  
+        }
+        ss << std::endl ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+

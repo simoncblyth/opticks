@@ -298,18 +298,7 @@ void X4PhysicalVolume::convertMaterials()
     int depth = 0 ;
     convertMaterials_r(pv, depth);
 
-    unsigned num_mt = m_mtlist.size(); 
-    LOG(info) << " num_mt " << num_mt ;  
-    for(unsigned i=0 ; i < num_mt ; i++)
-    {
-        const G4Material* mt = m_mtlist[i]; 
-        std::cout 
-            << std::setw(4) << i  
-            << " : "
-            << mt->GetName()
-            << std::endl
-            ;
-    }
+    LOG(info) << X4Material::Desc(m_mtlist); 
 
     const std::vector<G4Material*>& used_materials = m_mtlist ; 
     X4MaterialTable::Convert(m_mlib, m_material_with_efficiency, used_materials );
