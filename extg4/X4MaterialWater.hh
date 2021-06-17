@@ -37,7 +37,7 @@ Note annoying typedef::
 
 #include "X4_API_EXPORT.hh"
 #include "plog/Severity.h"
-#include "G4types.hh"
+#include "G4Types.hh"
 
 class G4Material ; 
 class G4MaterialPropertiesTable ; 

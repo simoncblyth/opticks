@@ -4,7 +4,7 @@
 #include <array>
 #include "plog/Severity.h"
 
-#include "G4types.hh"
+#include "G4Types.hh"
 
 class G4Material ; 
 class G4MaterialPropertiesTable ; 
