@@ -1,15 +1,5 @@
 #pragma once
 
-#include "X4_API_EXPORT.hh"
-#include <vector>
-#include <string>
-#include "plog/Severity.h"
-
-class G4Material ; 
-class G4ParticleDefinition ; 
-class G4OpRayleigh ; 
-class G4PhysicsTable ; 
-class G4PhysicsOrderedFreeVector ; 
 
 /**
 X4MaterialWater : special case fallback handling of "Water" G4Material without a RAYLEIGH scattering length property
@@ -38,22 +28,39 @@ process to perform the fallback calculation when there is no RAYLEIGH property i
 and add the resulting scattering lengths to the Water G4Material in order to enable the 
 Opticks conversion to benefit from the same fallback calculation as Geant4.
 
+
+Note annoying typedef::
+
+   typedef G4PhysicsOrderedFreeVector G4MaterialPropertyVector
+
 **/
+
+#include "X4_API_EXPORT.hh"
+#include "plog/Severity.h"
+#include "G4types.hh"
+
+class G4Material ; 
+class G4MaterialPropertiesTable ; 
+class G4PhysicsOrderedFreeVector ; 
+struct X4PhysicsOrderedFreeVector ; 
 
 struct X4_API X4MaterialWater
 {
+    static const plog::Severity  LEVEL ; 
+ 
     G4Material*                  Water ; 
-    size_t                       WaterIndex ; 
-    G4ParticleDefinition*        OpticalPhoton ; 
-    G4OpRayleigh*                RayleighProcess ; 
-    G4PhysicsTable*              thePhysicsTable; 
-    G4PhysicsOrderedFreeVector*  rayleigh ; 
-
+    G4MaterialPropertiesTable*   WaterMPT ;  
+    G4PhysicsOrderedFreeVector*  rayleigh0 ; // from the material, possibly null         
+    G4PhysicsOrderedFreeVector*  rayleigh ;  // from the material if present otherwise calculated from RINDEX     
+    X4PhysicsOrderedFreeVector*  rayleighx ;  
+    
     X4MaterialWater(); 
-
     void init(); 
+
     void dump() const ; 
     void rayleigh_scan() const ; 
+    void rayleigh_scan2() const ; 
+    void changeRayleighToMidBin(); // just used for X4MaterialWaterTest
 
     G4double GetMeanFreePath( G4double energy ) const ; 
 }; 

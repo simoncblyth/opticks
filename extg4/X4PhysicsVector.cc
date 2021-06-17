@@ -176,6 +176,33 @@ T* X4PhysicsVector<T>::getWavelengths(bool reverse) const
     return a ; 
 }
 
+
+template <typename T>
+std::string X4PhysicsVector<T>::Scan(const G4PhysicsVector* vec )
+{
+    std::stringstream ss ; 
+    
+    size_t num_val = vec->GetVectorLength() ; 
+    ss << " num_val " << num_val << std::endl ; 
+    for(size_t i=0 ; i < num_val ; i++)
+    {
+        G4double energy = vec->Energy(i); 
+        G4double wavelength = h_Planck*c_light/energy ;
+        G4double value  = (*vec)[i];
+        ss 
+            << "    " << std::setw(3) << i 
+            << "    " << std::setw(10) << std::fixed << std::setprecision(3) << wavelength/nm  << " nm "
+            << "    " << std::setw(10) << std::fixed << std::setprecision(3) << energy/eV << " eV "
+            << "    " << std::setw(10) << std::fixed << std::setprecision(3) << value/mm << " mm "
+            << "    " << std::setw(10) << std::fixed << std::setprecision(3) << value/m << " m  "
+            << std::endl 
+            ; 
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
 template class X4PhysicsVector<float>;
 template class X4PhysicsVector<double>;
 

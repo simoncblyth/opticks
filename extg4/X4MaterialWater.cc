@@ -6,38 +6,54 @@
 
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4OpticalPhoton.hh"
-#include "G4OpRayleigh.hh"
+#include "G4Material.hh"
 
+#include "X4OpRayleigh.hh"
+#include "X4PhysicsOrderedFreeVector.hh"
 #include "X4MaterialWater.hh"
+
+const plog::Severity X4MaterialWater::LEVEL = PLOG::EnvLevel("X4MaterialWater", "DEBUG" ); 
 
 X4MaterialWater::X4MaterialWater()
     :
     Water(G4Material::GetMaterial("Water")),
-    WaterIndex(Water ? Water->GetIndex() : 0),
-    OpticalPhoton(G4OpticalPhoton::Definition()),
-    RayleighProcess(new G4OpRayleigh),
-    thePhysicsTable(nullptr) 
+    WaterMPT(Water ? Water->GetMaterialPropertiesTable() : nullptr),
+    rayleigh0(WaterMPT ? static_cast<G4PhysicsOrderedFreeVector*>(WaterMPT->GetProperty(kRAYLEIGH)) : nullptr ),
+    rayleigh(rayleigh0 ? rayleigh0 : X4OpRayleigh::WaterScatteringLength() ),
+    rayleighx(new X4PhysicsOrderedFreeVector(rayleigh))
 {
-    init();
+    init(); 
 }
 
+/**
+X4MaterialWater::init
+----------------------
+
+When the G4Material named "Water" does not have a RAYLEIGH property vector this adds the one calculated 
+from the RINDEX by G4OpRayleigh and fished out of the process physics table.
+
+Note that GetMaterialPropertiesTable::AddProperty just inserts the reference into the property map
+of the material with no content copying. So any subsequent changes to the vector will change the 
+properties of the material.
+
+**/
 void X4MaterialWater::init()
 {
-    assert(Water); 
-    RayleighProcess->BuildPhysicsTable(*OpticalPhoton);  
-    thePhysicsTable = RayleighProcess->GetPhysicsTable()  ; 
-    rayleigh = static_cast<G4PhysicsOrderedFreeVector*>((*thePhysicsTable)(WaterIndex));
+    if( rayleigh0 == nullptr ) 
+    {
+        LOG(LEVEL) << " adding RAYLEIGH property to \"Water\" G4Material " ; 
+        WaterMPT->AddProperty("RAYLEIGH", static_cast<G4MaterialPropertyVector*>(rayleigh) ); 
+    }
+    else
+    {
+        LOG(LEVEL) << " nothing to do as the \"Water\" G4Material already has RAYLEIGH property " ; 
+    }
 }
 
 void X4MaterialWater::dump() const 
 {
-    LOG(info) << " [ WaterIndex " << WaterIndex  ; 
+    LOG(info) << " [ Water " ; 
     G4cout << *Water << G4endl ; 
-    LOG(info) << " ] " ;
-
-    LOG(info) << " [ G4OpRayleigh::DumpPhysicsTable " ; 
-    RayleighProcess->DumpPhysicsTable(); 
     LOG(info) << " ] " ;
 }
 
@@ -52,6 +68,9 @@ X4MaterialWater::rayleigh_scan
 
 p104 of https://www.qmul.ac.uk/spa/media/pprc/research/Thesis_0.pdf
 has measurements in the same ballpark 
+
+G4PhysicsOrderedFreeVector isa G4PhysicsVector
+
  
 **/
 
@@ -74,4 +93,13 @@ void X4MaterialWater::rayleigh_scan() const
     }
 }
 
- 
+void X4MaterialWater::rayleigh_scan2() const
+{
+    LOG(info) << rayleighx->desc() ; 
+} 
+void X4MaterialWater::changeRayleighToMidBin()
+{
+    rayleighx->changeAllToMidBinValue() ;     
+}
+
+

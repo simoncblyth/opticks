@@ -73,6 +73,7 @@ set(SOURCES
     X4Material.cc
     X4MaterialWaterStandalone.cc
     X4MaterialWater.cc
+    X4OpRayleigh.cc
     X4MaterialTable.cc
     X4MaterialPropertiesTable.cc
 
@@ -88,7 +89,9 @@ set(SOURCES
     X4LogicalSurface.cc
     X4OpticalSurface.cc
 
+    X4PhysicsOrderedFreeVector.cc
     X4PhysicsVector.cc
+
     X4RotationMatrix.cc
     X4Transform3D.cc
     X4AffineTransform.cc
@@ -133,6 +136,8 @@ set(HEADERS
     X4Material.hh
     X4MaterialWaterStandalone.hh
     X4MaterialWater.hh
+    X4OpRayleigh.hh
+
     X4MaterialTable.hh
     X4MaterialPropertiesTable.hh
 
@@ -148,7 +153,9 @@ set(HEADERS
     X4LogicalSurface.hh
     X4OpticalSurface.hh
 
+    X4PhysicsOrderedFreeVector.hh
     X4PhysicsVector.hh
+
     X4Transform3D.hh
     X4AffineTransform.hh
     X4ThreeVector.hh

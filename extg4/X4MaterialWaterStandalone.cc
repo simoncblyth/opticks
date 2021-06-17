@@ -117,5 +117,3 @@ void X4MaterialWaterStandalone::initData()   // jcv LSExpDetectorConstructionMat
   }};
 }
 
-
-
