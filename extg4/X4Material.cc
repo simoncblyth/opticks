@@ -133,34 +133,56 @@ void X4Material::init()
 }
 
 
+size_t X4Material::NumProp(G4MaterialPropertiesTable* mpt)
+{
+    std::vector<G4String> propNames = mpt->GetMaterialPropertyNames() ; 
+    size_t num_prop = 0 ; 
+    for(size_t j=0 ; j < propNames.size()  ; j++)
+    {
+        const G4String& name = propNames[j]; 
+        G4MaterialPropertyVector* prop = mpt->GetProperty(name.c_str());  
+        if( prop != nullptr )  num_prop += 1 ; 
+    }
+    return num_prop ; 
+}
+
+
+std::string X4Material::DescProps(G4MaterialPropertiesTable* mpt, int wid)
+{
+    size_t num_prop = NumProp(mpt); 
+    std::stringstream ss ; 
+    ss << " num_prop " << std::setw(3) << num_prop ; 
+    std::vector<G4String> propNames = mpt->GetMaterialPropertyNames() ; 
+    for(size_t j=0 ; j < propNames.size()  ; j++)
+    {
+        const G4String& name = propNames[j]; 
+        G4MaterialPropertyVector* prop = mpt->GetProperty(name.c_str());  
+        if( prop != nullptr ) ss << " " << std::setw(wid) << name << " " ;  
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 std::string X4Material::Desc(const std::vector<G4Material*>& mtlist)
 {
     size_t num_mt = mtlist.size() ; 
 
     std::stringstream ss ; 
-    ss << " num_mt " <<  num_mt ; 
+    ss << " num_mt " <<  num_mt << std::endl ; 
+
     for(size_t i=0 ; i < num_mt ; i++)
     {
         const G4Material* mt = mtlist[i];
+        G4MaterialPropertiesTable* mpt = mt->GetMaterialPropertiesTable() ; 
         ss  
             << std::setw(4) << i  
             << " : "
             << std::setw(30) << mt->GetName()
             << " : "
-            ;    
-        G4MaterialPropertiesTable* mpt = mt->GetMaterialPropertiesTable() ; 
-        if(mpt == nullptr) continue ; 
-        std::vector<G4String> propNames = mpt->GetMaterialPropertyNames() ; 
-        size_t num_prop = propNames.size() ;  
-        ss << " num_prop " << std::setw(3) << num_prop ;        
-        for(size_t j=0 ; j < num_prop ; j++)
-        {
-            const G4String& name = propNames[j]; 
-            G4MaterialPropertyVector* prop = mpt->GetProperty(name.c_str());  
-            if( prop != nullptr ) ss << " " << std::setw(20) << name << " " ;  
-        }
-        ss << std::endl ; 
+            << ( mpt == nullptr ? "" : DescProps(mpt, 20) ) 
+            << std::endl
+            ; 
     }
     std::string str = ss.str(); 
     return str ; 
