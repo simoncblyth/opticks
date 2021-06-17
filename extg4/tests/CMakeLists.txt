@@ -15,6 +15,8 @@ set(TEST_SOURCES
     X4SolidListTest.cc
     X4PhysicsVectorTest.cc
     X4MaterialTest.cc
+    X4MaterialWaterStandaloneTest.cc
+    X4MaterialWaterTest.cc
     X4MaterialTableTest.cc
     X4PhysicalVolumeTest.cc
     X4PhysicalVolume2Test.cc

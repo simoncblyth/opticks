@@ -71,6 +71,8 @@ set(SOURCES
     X4SolidStore.cc
 
     X4Material.cc
+    X4MaterialWaterStandalone.cc
+    X4MaterialWater.cc
     X4MaterialTable.cc
     X4MaterialPropertiesTable.cc
 
@@ -129,6 +131,8 @@ set(HEADERS
     X4SolidStore.hh
 
     X4Material.hh
+    X4MaterialWaterStandalone.hh
+    X4MaterialWater.hh
     X4MaterialTable.hh
     X4MaterialPropertiesTable.hh
 

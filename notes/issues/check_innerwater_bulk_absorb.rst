@@ -1241,5 +1241,28 @@ Note that other materials that lack properties can have similar problems.::
 
 
 
+::
+
+   BP=DsPhysConsOptical::ConstructProcess tds3ip
+
+
+Process setup happens late, after the geometry has been passed to G4Opticks and translated.:: 
+
+    Breakpoint 1, DsPhysConsOptical::ConstructProcess (this=0x2575cc0) at ../src/DsPhysConsOptical.cc:93
+    93	    G4VProcess* cerenkov_ = 0;
+    (gdb) bt
+    #0  DsPhysConsOptical::ConstructProcess (this=0x2575cc0) at ../src/DsPhysConsOptical.cc:93
+    #1  0x00007fffc2647cdf in LSExpPhysicsList::ConstructProcess (this=0x2fe31c0) at ../src/LSExpPhysicsList.cc:246
+    #2  0x00007fffce2da031 in G4RunManagerKernel::InitializePhysics() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #3  0x00007fffce2c4ac1 in G4RunManager::InitializePhysics() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #4  0x00007fffce2c4fca in G4RunManager::Initialize() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #5  0x00007fffc1df7826 in DetSimAlg::initialize (this=0x250d960) at ../src/DetSimAlg.cc:80
+    #6  0x00007fffef12d5e0 in DleSupervisor::initialize() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperKernel.so
+    #7  0x00007fffef13801e in Task::initialize() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperKernel.so
+    #8  0x00007fffef141832 in TopTask::initialize() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperKernel.so
+    #9  0x00007fffef13d26a in TaskWatchDog::initialize() () from /home/blyth/junotop/sniper/InstallArea/Linux-x86_64/lib/libSniperKernel.so
+
+
+
 
 

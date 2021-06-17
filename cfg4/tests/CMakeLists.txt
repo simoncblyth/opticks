@@ -61,6 +61,8 @@ set(TEST_SOURCES
 
     CGenstepTest.cc
 
+    WaterTest.cc 
+
 )
 
 # generate targets for these, but dont add_test 
