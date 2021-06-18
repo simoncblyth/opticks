@@ -208,7 +208,7 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
             << " unexpected record_id " << record_id
             << " m_ni " << m_ni 
             ;   
-        return ; 
+        return true ; 
     }  
     //assert( record_id < m_ni ); 
 
