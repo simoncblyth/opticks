@@ -411,7 +411,23 @@ void CCtx::setTrackOptical(G4Track* mtrack)
 
     _track_optical_count += 1 ;   // CAREFUL : DOES NOT ACCOUNT FOR RE-JOIN 
 
-   assert( _record_id > -1 ); 
+    assert( _record_id > -1 ); 
+
+
+    if(_number_of_input_photons > 0 && _record_id > _number_of_input_photons)
+    {
+        LOG(info)
+            << " _number_of_input_photons " << _number_of_input_photons
+            << " _photon_id " << _photon_id
+            << " _record_id " << _record_id
+            << " _parent_id " << _parent_id
+            << " _pho " << _pho.desc()
+            << " _gs " << _gs.desc()
+            << " _track_optical_count " << _track_optical_count 
+            ;
+    }
+
+
 
     _mask_index = _ok->hasMask() ?_ok->getMaskIndex( _primary_id ) : -1 ;   // "original" index 
 
