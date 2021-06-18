@@ -62,6 +62,7 @@ set(TEST_SOURCES
     CGenstepTest.cc
 
     WaterTest.cc 
+    ScintTest.cc
 
 )
 

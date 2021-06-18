@@ -436,7 +436,7 @@ class AB(object):
         if len(self.mat.lines) > lmx:
             self.mat.sli = slice(0,lmx)
         pass
-        return "\n".join(map(repr, [self,"#ab.__str__.ahis",self.ahis,"#ab.__str__.flg",self.flg,self.mat]))
+        return "\n".join([repr(self),"#ab.ahis",repr(self.ahis),"#ab.flg",repr(self.flg),"#ab.mat",repr(self.mat)])
 
 
     def load_u(self):
