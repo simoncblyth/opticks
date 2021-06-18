@@ -83,7 +83,7 @@ void ScintTest::getSplits(std::vector<int>& splits, G4int NumTracks, const G4Str
     for(G4int i = 0 ; i < NumTracks ; i++){
        G4double p = G4UniformRand();
        G4double p_count = 0;
-       for(G4int j = 0 ; j < nscnt; j++)
+       for(unsigned j = 0 ; j < nscnt; j++)
        {   
             p_count += (*Ratio_timeconstant)[j] ;
             if( p < p_count ){
@@ -113,7 +113,7 @@ std::string ScintTest::desc( const std::vector<int>& splits, G4int NumTracks,  c
 
     G4int tot = 0 ; 
     G4double sum_rat = 0 ; 
-    for(G4int j = 0 ; j < nscnt; j++)
+    for(unsigned j = 0 ; j < nscnt; j++)
     {
        G4double rat = (*Ratio_timeconstant)[j] ; 
 

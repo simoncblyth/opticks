@@ -1818,6 +1818,7 @@ delta:gl blyth$ find . -type f -exec grep -H rsel {} \;
 
 void OpticksEvent::setBoundaryData(NPY<unsigned>* boundary_data)
 {
+    if(boundary_data == nullptr) return ; 
     setBufferControl(boundary_data);
     m_boundary_data = boundary_data  ;
     m_boundary_attr = new MultiViewNPY("boundary_attr");
