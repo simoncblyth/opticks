@@ -1,12 +1,11 @@
 tds3ip_pflags_inconsistency
 ==============================
 
-
 ::
 
     ab.ahis
-    .    all_seqhis_ana  cfo:sum  2:g4live:tds3ip   -2:g4live:tds3ip        c2        ab        ba 
-    .                             100000    100000       355.26/14 = 25.38  (pval:0.000 prob:1.000)  
+    .    all_seqhis_ana  cfo:sum  2:g4live:tds3ip   -2:g4live:tds3ip        c2        ab        ba
+    .                             100000    100000       355.26/14 = 25.38  (pval:0.000 prob:1.000)
        n             iseq         a         b    a-b               c2          a/b                   b/a           [ns] label
     0000               8d     92759     92705     54             0.02        1.001 +- 0.003        0.999 +- 0.003  [2 ] TO SA
     0001               4d      5997      5980     17             0.02        1.003 +- 0.013        0.997 +- 0.013  [2 ] TO AB
@@ -27,17 +26,17 @@ tds3ip_pflags_inconsistency
     0016         7ccccc6d        21         3     18             0.00        7.000 +- 1.528        0.143 +- 0.082  [8 ] TO SC BT BT BT BT BT SD
     0017          466cc6d        11        11      0             0.00        1.000 +- 0.302        1.000 +- 0.302  [7 ] TO SC BT BT SC SC AB
     0018            7cb6d        10        12     -2             0.00        0.833 +- 0.264        1.200 +- 0.346  [5 ] TO SC BR BT SD
-    .                             100000    100000       355.26/14 = 25.38  (pval:0.000 prob:1.000)  
+    .                             100000    100000       355.26/14 = 25.38  (pval:0.000 prob:1.000)
     ab.flg
-    .       pflags_ana  cfo:sum  2:g4live:tds3ip   -2:g4live:tds3ip        c2        ab        ba 
-    .                             100000    100000    199766.00/17 = 11750.94  (pval:0.000 prob:1.000)  
+    .       pflags_ana  cfo:sum  2:g4live:tds3ip   -2:g4live:tds3ip        c2        ab        ba
+    .                             100000    100000    199766.00/17 = 11750.94  (pval:0.000 prob:1.000)
        n             iseq         a         b    a-b               c2          a/b                   b/a           [ns] label
     0000             1882     92759         0   92759         92759.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO|BT|SA|SI
     0001             1080         0     92705   -92705         92705.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] TO|SA
     0002             188a      5997         0   5997          5997.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO|BT|SA|AB|SI
     0003             1008         0      5980   -5980          5980.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] TO|AB
 
-    ^^^^^^^^^^^^^^^^^^^^^ messy : zeros here points to a bug ? but why with input photons only ? ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^ messy : zeros here points to a:OK bug which is happening with input photons only ? ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     0004             18a2       319         0    319           319.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO|BT|SA|SC|SI
     0005             18aa       314         0    314           314.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO|BT|SA|SC|AB|SI
@@ -54,62 +53,100 @@ tds3ip_pflags_inconsistency
     0016             1a20         0        42    -42            42.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO|BT|SR|SC
     0017             18ba        41         0     41            41.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO|BT|SA|SC|RE|AB|SI
     0018             18b2        28         0     28             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO|BT|SA|SC|RE|SI
-    .                             100000    100000    199766.00/17 = 11750.94  (pval:0.000 prob:1.000)  
+    .                             100000    100000    199766.00/17 = 11750.94  (pval:0.000 prob:1.000)
 
 
 
-::
+Crazyness even apparent with a single photon::
 
-    In [1]: a.pflags                                                                                                                                                                                          
+    In [1]: a.pflags
     Out[1]: A([6274, 6274, 6274, ..., 6274, 6274, 6282], dtype=uint32)
 
-    In [2]: b.pflags                                                                                                                                                                                          
+    In [2]: b.pflags
     Out[2]: A([4224, 4104, 4224, ..., 4224, 4224, 4224], dtype=uint32)
 
 
-    In [4]: hm = a.hismask                                                                                                                                                                                    
+    In [4]: hm = a.hismask
 
-    In [5]: hm.label(6274)                                                                                                                                                                                    
+    In [5]: hm.label(6274)
     Out[5]: 'TO|BT|SA|SI'
 
-    In [6]: hm.label(4224)                                                                                                                                                                                    
+    In [6]: hm.label(4224)
     Out[6]: 'TO|SA'
 
 
-    In [9]: ht.label(a.seqhis[0])                                                                                                                                                                             
+    In [9]: ht.label(a.seqhis[0])
     Out[9]: 'TO SA'
 
-    In [10]: hm.label(a.pflags[0])                                                                                                                                                                            
-    Out[10]: 'TO|BT|SA|SI'
+    In [10]: hm.label(a.pflags[0])
+    Out[10]: 'TO|BT|SA|SI'             ## THATS AN OBVIOUS BUG : SHOULD NEVER HAVE TO|SI TOGETHER 
 
-    In [11]: hm.label(b.pflags[0])                                                                                                                                                                            
+    In [11]: hm.label(b.pflags[0])
     Out[11]: 'TO|SA'
 
 
 
-AHHA.  The input photons were repeated 100k times from a particular photon, 
+AHHA.  The input photons were repeated 100k times from a particular photon,
 and I did not scrub the initial flags. Clearly it is necessary to do so.
 
 oxrap/cu/generate.cu::
 
     628     else if(gencode == OpticksGenstep_EMITSOURCE)
     629     {
-    630         // source_buffer is input only, photon_buffer output only, 
+    630         // source_buffer is input only, photon_buffer output only,
     631         // photon_offset is same for both these buffers
     632         pload(p, source_buffer, photon_offset );
-    633         
-    634         p.flags.u.x = 0u ;   // scrub any initial flags, eg when running from an input photon  
+    633
+    634         p.flags.u.x = 0u ;   // scrub any initial flags, eg when running from an input photon
     635         p.flags.u.y = 0u ;
     636         p.flags.u.z = 0u ;
     637         p.flags.u.w = 0u ;
-    638         
+    638
     639         s.flag = TORCH ;
     640 #ifdef WITH_REFLECT_CHEAT_DEBUG
     641         s.ureflectcheat = debug_control.w > 0u ? float(photon_id)/float(num_photon) : -1.f ;
-    642 #endif  
+    642 #endif
     643     }
 
 
+
+
+Why didnt seq2msk checks get fired ?
+---------------------------------------
+
+
+::
+
+    epsilon:ana blyth$ grep seq2msk *.py 
+    evt.py:from opticks.ana.seq import SeqAna, seq2msk, SeqList
+    evt.py:        jpsc = jp[np.where( seq2msk(self.seqhis[jp]) & co )]
+    evt.py:        self.pflags2 = seq2msk(allseqhis)          # 16 seq nibbles OR-ed into mask 
+    evt.py:            log.debug("pflags2(=seq2msk(seqhis)) and pflags  match")
+    evt.py:            log.info("pflags2(=seq2msk(seqhis)) and pflags  MISMATCH    num_msk_mismatch: %d " % self.num_msk_mismatch )
+    seq.py:def seq2msk_procedural(isq):
+    seq.py:def seq2msk(isq):
+    seq.py:        msks = seq2msk(seqs)
+    tboolean.py:from opticks.ana.seq import seq2msk
+    tokg4.py:from opticks.ana.seq import seq2msk
+    epsilon:ana blyth$ 
+
+
+::
+
+    In [1]: a.pflags                                                                                                                                                                                          
+    Out[1]: A([18498,    26,    10, ...,    10,    10,  2594], dtype=uint32)
+
+    In [2]: a.pflags2                                                                                                                                                                                         
+    Out[2]: A([2114,   26,   10, ...,   10,   10, 2594], dtype=uint64)
+
+    In [3]: a.pflags - a.pflags2                                                                                                                                                                              
+    Out[3]: A([16384,     0,     0, ...,     0,     0,     0], dtype=uint64)
+
+    In [4]: np.count_nonzero( a.pflags - a.pflags2  )                                                                                                                                                         
+    Out[4]: 3402
+
+    In [5]: a.pflags.shape                                                                                                                                                                                    
+    Out[5]: (11278,)
 
 
 

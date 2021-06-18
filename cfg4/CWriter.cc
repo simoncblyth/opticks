@@ -201,7 +201,17 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
         << " m_ni " << m_ni 
         ;
   
-    assert( record_id < m_ni ); 
+    if( record_id >= m_ni )
+    {
+        LOG(fatal) 
+            << " SKIP "
+            << " unexpected record_id " << record_id
+            << " m_ni " << m_ni 
+            ;   
+        return ; 
+    }  
+    //assert( record_id < m_ni ); 
+
     assert( m_records_buffer ); 
 
 

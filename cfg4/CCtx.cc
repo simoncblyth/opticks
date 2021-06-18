@@ -167,7 +167,6 @@ void CCtx::init()
     _primarystep_count = 0 ; 
     _stage = CStage::UNKNOWN ; 
 
-    _record_id = -1 ; 
     _debug = false ; 
     _other = false ; 
     _dump = false ; 
