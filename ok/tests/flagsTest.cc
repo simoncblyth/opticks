@@ -40,7 +40,7 @@
 } \
 
 
-#include "cu/photon.h"
+#include "OpticksPhoton.h"
 
 void dumpflags()
 {

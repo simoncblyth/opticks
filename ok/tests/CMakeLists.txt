@@ -8,7 +8,6 @@ set(_TESTS
 )
 
 set(TESTS
-
     flagsTest.cc
     OKTest.cc
     OTracerTest.cc
