@@ -46,7 +46,8 @@ rtDeclareVariable(unsigned int,  WNUMQUAD, , );
 
 #include "quad.h"
 #include "boundary_lookup.h"
-#include "wavelength_lookup.h"
+#include "reemission_lookup.h"
+#include "source_lookup.h"
 
 rtBuffer<uint4>                optical_buffer; 
 
@@ -191,7 +192,7 @@ seqmat
     unsigned long long mat = (s).index.x < 0xF ? (s).index.x : 0xF ; \
     seqhis |= his << shift ; \
     seqmat |= mat << shift ; \
-    rsave((p), (s).flag, (s).index, record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
+    rsave((p), (s).flag, (s).index, _record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain, boundary_domain );  \
 }   \
 
 
@@ -547,6 +548,8 @@ RT_PROGRAM void generate()
 #endif
 
 
+    short4* _record_buffer = &record_buffer[0] ; 
+
   
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
 #ifdef WAY_ENABLED
@@ -629,7 +632,10 @@ RT_PROGRAM void generate()
     {
         // source_buffer is input only, photon_buffer output only, 
         // photon_offset is same for both these buffers
-        pload(p, source_buffer, photon_offset ); 
+
+        const float4* _source_buffer = &source_buffer[0] ; 
+
+        pload(p, _source_buffer, photon_offset ); 
 
         p.flags.u.x = 0u ;   // scrub any initial flags, eg when running from an input photon  
         p.flags.u.y = 0u ; 
@@ -883,7 +889,9 @@ analogous to *photon* to *hit* selexction.
     //  s.identity.w : sensorIndex   (already in flags)
     //
     // breakers and maxers saved here
-    psave(p, photon_buffer, photon_offset ); 
+
+    float4* _photon_buffer = &photon_buffer[0] ; 
+    psave(p, _photon_buffer, photon_offset ); 
 
 #ifdef WITH_ALIGN_DEV_DEBUG
     rtPrintf(" WITH_ALIGN_DEV_DEBUG psave (%.9g %.9g %.9g %.9g) ( %d, %d, %d, %d ) \n",

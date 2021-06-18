@@ -17,30 +17,34 @@
  * limitations under the License.
  */
 
-#pragma once
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-   #define RANDOM_METHOD __device__
-#else
-   #define RANDOM_METHOD 
-#endif 
+#include <curand_kernel.h>
+#include <optix_world.h>
 
+using namespace optix;
 
+//  rng_states rng_skipahead
+#include "ORng.hh"
+#include "reemission_lookup.h"
 
-RANDOM_METHOD float
-uniform(curandState *s, const float &low, const float &high)
+rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
+rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
+
+rtBuffer<float>  out_buffer;
+
+RT_PROGRAM void reemissionTest()
 {
-    return low + curand_uniform(s)*(high-low);
+    unsigned long long photon_id = launch_index.x ;
+    curandState rng = rng_states[photon_id];
+    float u = curand_uniform(&rng);  
+    float wavelength = reemission_lookup(u);   
+    out_buffer[photon_id] = wavelength ; 
 }
 
-RANDOM_METHOD float3
-uniform_sphere(curandState *s) 
+RT_PROGRAM void exception()
 {
-    float theta = uniform(s, 0.0f, 2.f*M_PIf);
-    float u = uniform(s, -1.0f, 1.0f);
-    float c = sqrtf(1.0f-u*u);
-
-    return make_float3(c*cosf(theta), c*sinf(theta), u); 
+    rtPrintExceptionDetails();
 }
+
 
 

@@ -27,6 +27,9 @@ endif()
 set(SOURCES
     CUDARAP_LOG.cc
 
+    CRng.cc
+    CUt.cc
+
     cuRANDWrapper.cc
     cuRANDWrapper_kernel.cu
     LaunchSequence.cc
@@ -42,6 +45,9 @@ SET(HEADERS
     CUDARAP_API_EXPORT.hh
     CUDARAP_HEAD.hh
     CUDARAP_TAIL.hh
+
+    CRng.hh
+    CUt.hh
 
     LaunchCommon.hh
     LaunchSequence.hh

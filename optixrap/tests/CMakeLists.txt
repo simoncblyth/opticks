@@ -24,6 +24,8 @@ set(PAIRED_TEST_SOURCES  # tests with paired cc and cu
     bufferTest.cc
     textureTest.cc
     boundaryTest.cc
+    reemissionTest.cc
+    rngTest.cc
     boundaryLookupTest.cc
     texTest.cc
     tex0Test.cc

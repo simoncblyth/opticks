@@ -46,8 +46,6 @@ int main(int argc, char** argv)
     OContext* ctx = OContext::Create(&ok, cmake_target, ptxrel);
     optix::Context context = ctx->getContext();
  
-
-
     OScintillatorLib* oscin ;  
     oscin = new OScintillatorLib(context, slib );
 

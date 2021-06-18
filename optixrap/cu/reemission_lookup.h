@@ -19,28 +19,23 @@
 
 #pragma once
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-   #define RANDOM_METHOD __device__
-#else
-   #define RANDOM_METHOD 
-#endif 
+rtTextureSampler<float, 2>  reemission_texture ;
+rtDeclareVariable(float4, reemission_domain, , );
 
-
-
-RANDOM_METHOD float
-uniform(curandState *s, const float &low, const float &high)
+static __device__ __inline__ float reemission_lookup(float u)
 {
-    return low + curand_uniform(s)*(high-low);
+    float ui = u/reemission_domain.z + 0.5f ;   
+    return tex2D(reemission_texture, ui, 0.5f );  // line 0
 }
 
-RANDOM_METHOD float3
-uniform_sphere(curandState *s) 
+static __device__ __inline__ void reemission_check()
 {
-    float theta = uniform(s, 0.0f, 2.f*M_PIf);
-    float u = uniform(s, -1.0f, 1.0f);
-    float c = sqrtf(1.0f-u*u);
-
-    return make_float3(c*cosf(theta), c*sinf(theta), u); 
+#ifdef WITH_PRINT
+    float nm_a = reemission_lookup(0.0f); 
+    float nm_b = reemission_lookup(0.5f); 
+    float nm_c = reemission_lookup(1.0f); 
+    rtPrintf("reemission_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
+#endif
 }
 
 

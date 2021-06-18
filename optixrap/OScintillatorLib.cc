@@ -26,7 +26,7 @@
 // trace/debug/info/warning/error/fatal
 
 
-const plog::Severity OScintillatorLib::LEVEL = debug ; 
+const plog::Severity OScintillatorLib::LEVEL = PLOG::EnvLevel("OScintillatorLib", "DEBUG") ; 
 
 
 OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
@@ -84,8 +84,6 @@ void OScintillatorLib::convert(const char* slice)
 }
 
 
-
-
 void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
 {
     if(!buf)
@@ -108,15 +106,16 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     float step = 1.f/float(nx) ;
     optix::float4 domain = optix::make_float4(0.f , 1.f, step, 0.f );
 
-    LOG(LEVEL) << "OScintillatorLib::makeReemissionTexture "
-              << " nx " << nx
-              << " ny " << ny  
-              << " ni " << ni  
-              << " nj " << nj  
-              << " nk " << nk
-              << " step " << step
-              << " empty " << empty
-              ;
+    LOG(LEVEL) 
+        << "["
+        << " nx " << nx
+        << " ny " << ny  
+        << " ni " << ni  
+        << " nj " << nj  
+        << " nk " << nk
+        << " step " << step
+        << " empty " << empty
+        ;
 
     if(empty)
     {
@@ -125,7 +124,6 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     }
  
     optix::Buffer buffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny );
-
     upload(buffer, buf);
 
     optix::TextureSampler tex = m_context->createTextureSampler();
@@ -134,7 +132,7 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     m_context["reemission_texture"]->setTextureSampler(tex);
     m_context["reemission_domain"]->setFloat(domain);
 
-    LOG(verbose) << "OScintillatorLib::makeReemissionTexture DONE " ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 

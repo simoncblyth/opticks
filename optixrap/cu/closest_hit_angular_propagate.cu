@@ -1,7 +1,8 @@
 
 #include <optix.h>
 #include "PerRayData_angular_propagate.h"
-#include "wavelength_lookup.h"
+#include "reemission_lookup.h"
+#include "source_lookup.h"
 
 rtDeclareVariable(float3,  geometricNormal, attribute geometric_normal, );
 rtDeclareVariable(uint4,  instanceIdentity, attribute instance_identity, );

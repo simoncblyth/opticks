@@ -102,7 +102,8 @@ TODO
 
     ## texture accessors
 
-    wavelength_lookup.h
+    reemission_lookup.h
+    source_lookup.h
     boundary_lookup.h
 
     ## optical simulation 
