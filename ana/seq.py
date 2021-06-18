@@ -348,6 +348,7 @@ class SeqTable(object):
         :param cnames: column names 
 
         """
+        log.info("cnames %s " % repr(cnames))
 
         assert len(cu.shape) == 2 and cu.shape[1] >= 2 
         ncol = cu.shape[1] - 1    # excluding column 0 which is the seq code  
@@ -450,11 +451,13 @@ class SeqTable(object):
         self.label2nstep = dict(zip(labels, nstep))
         self.labels = labels
 
+
+        k_line = self.line(0, key=True) if len(cu) > 0 else ""
         lines = list(filter(None, list(map(lambda n:self.line(n), range(len(cu))))))
 
         self.codes = codes  
         self.counts = counts
-        self.lines = lines
+        self.lines = [k_line] + lines + [k_line]
 
         self.label2count = dict(zip(labels, counts))
         self.label2line = dict(zip(labels, lines))
@@ -484,7 +487,7 @@ class SeqTable(object):
         return cfo_debug
  
 
-    def line(self, n):
+    def line(self, n, key=False):
         iseq = int(self.cu[n,0]) 
         imsk = int(self.msks[n])
 
@@ -499,24 +502,33 @@ class SeqTable(object):
 
         if self.smry == False:
             xs = "%0.4d %16s" % (n, ihex_(iseq))        
+            k_xs = "%4s %16s" % ("n","iseq")
         else:
             xs = "%0.4d " % (n)        
+            k_xs = "%4s " % ("n")
         pass
 
         #cfo_debug = self.cfo_line(n)
         cfo_debug = ""
+        k_cfo_debug = ""
 
         vals = list(map(lambda _:" %7s " % _, self.cu[n,1:] ))
+        keys = "abcdefghijklmnopqrstuvwxyz" 
+        k_vals = list(map(lambda _:" %7s " % keys[_], range(len(self.cu[n,1:])) ))
 
         idif = self.idif[n] if len(vals) == 2 else None
         idif = " %4d " % idif if idif is not None else " " 
-
+        k_idif = " %4s " % "a-b" if idif is not None else " "
 
         label = self.labels[n]
+        k_label = "label"
+
         if self.smry == False:
             nstep = "[%-2d]" % self.label2nstep[label]
+            k_nstep = "[ns]"
         else:
             nstep = "" 
+            k_nstep = ""
         pass
 
         # show only lines with chi2 contrib greater than cmx
@@ -535,31 +547,41 @@ class SeqTable(object):
 
         if self.c2 is not None:
             sc2 = " %10.2f " % (self.c2[n])
+            k_sc2 = " %10s " % "c2" 
         else:
             sc2 = ""
+            k_sc2 = ""
         pass
 
         if self.ab is not None and self.smry == False:
-            sab = " %10.3f +- %4.3f " % ( self.ab[n,0], self.ab[n,1] )
+            sab = " %10.3f +- %5.3f " % ( self.ab[n,0], self.ab[n,1] )
+            k_sab = " %10s    %5s " % ( "a/b", "" )
         else:
             sab = ""
+            k_sab = ""
         pass
 
         if self.ba is not None and self.smry == False:
-            sba = " %10.3f +- %4.3f " % ( self.ba[n,0], self.ba[n,1] )
+            sba = " %10.3f +- %5.3f " % ( self.ba[n,0], self.ba[n,1] )
+            k_sba = " %10s    %5s " % ( "b/a", "" )
         else:
             sba = ""
+            k_sba = ""
         pass
 
 
         if self.total is not None:
              frac = float(self.cu[n,1])/float(self.total)
              frac = " %10.3f   " % frac
+             k_frac = " %10s   " % "frac" 
         else:
              frac = ""
+             k_frac = ""
         pass
         cols = [cfo_debug] + [xs+" "] + [frac] + vals + [idif] + ["   "]+ [sc2, sab, sba, nstep, label]
-        return " ".join(filter(lambda _:_ != "", cols)) 
+        k_cols = [k_cfo_debug] + [k_xs+" "] + [k_frac] + k_vals + [k_idif] + ["   "]+ [k_sc2, k_sab, k_sba, k_nstep, k_label]
+        u_cols = k_cols if key==True else cols  
+        return " ".join(filter(lambda _:_ != "", u_cols)) 
 
     def __call__(self, labels):
         ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 

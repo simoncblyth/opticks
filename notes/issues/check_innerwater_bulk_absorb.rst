@@ -1,10 +1,10 @@
 check_innerwater_bulk_absorb
 ===============================
 
-
-
 Issue : looks to be substantially more bulk absorption in the water in OK than in G4, investigating why
 ---------------------------------------------------------------------------------------------------------
+
+* when photon starts in the Water, seeing agreement in AB/SC
 
 ::
 
@@ -38,6 +38,56 @@ Issue : looks to be substantially more bulk absorption in the water in OK than i
     0018             4662       137       121     16             0.99        1.132 +- 0.097        0.883 +- 0.080  [4 ] SI SC SC AB
     0019             4652       121       112      9             0.35        1.080 +- 0.098        0.926 +- 0.087  [4 ] SI RE SC AB
     .                              11278     11278       513.94/67 =  7.67  (pval:0.000 prob:1.000)
+
+
+After X4MaterialWater fix see very little change here (because LS dominated?) but tds3ip.sh shows that the fix
+succeeds to bring "Water" scattering and absorption into line when the photon path is entirely in the Water.
+
+* TODO: compare ABSLENGTH in use in G4 and OK 
+* TODO: check the boundaries for "SI BT BT AB" "SI SC BT BT AB"
+* TODO: shoot 100k photons from LS edge just inside the Acrylic aimed at Tyvek, missing PMTs  
+
+  * aims to see if high stats proportions of "SI BT BT AB" and "SI BT BT SA" are in agreement, 
+    because they are in agreement when the photon path is entirely in the Water so could be 
+    some bug be preventing use of appropriate values after crossing the acrylic
+
+
+   
+
+::
+
+    tds3gun.sh get
+    tds3gun.sh 1
+
+    In [1]: ab.his                                                                                                                                                                                            
+    Out[1]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3gun   -1:g4live:tds3gun        c2        ab        ba 
+    .                              11278     11278       518.40/67 =  7.74  (pval:0.000 prob:1.000)  
+    0000               42      1653      1665    -12             0.04        0.993 +- 0.024        1.007 +- 0.025  [2 ] SI AB
+    0001            7ccc2      1288      1230     58             1.34        1.047 +- 0.029        0.955 +- 0.027  [5 ] SI BT BT BT SD
+    0002            8ccc2       588       674    -86             5.86        0.872 +- 0.036        1.146 +- 0.044  [5 ] SI BT BT BT SA
+    0003           7ccc62       579       552     27             0.64        1.049 +- 0.044        0.953 +- 0.041  [6 ] SI SC BT BT BT SD
+    0004             8cc2       559       464     95             8.82        1.205 +- 0.051        0.830 +- 0.039  [4 ] SI BT BT SA
+    0005              452       422       534   -112            13.12        0.790 +- 0.038        1.265 +- 0.055  [3 ] SI RE AB
+    0006           7ccc52       379       397    -18             0.42        0.955 +- 0.049        1.047 +- 0.053  [6 ] SI RE BT BT BT SD
+    0007              462       392       367     25             0.82        1.068 +- 0.054        0.936 +- 0.049  [3 ] SI SC AB
+    0008           8ccc62       251       267    -16             0.49        0.940 +- 0.059        1.064 +- 0.065  [6 ] SI SC BT BT BT SA
+    0009          7ccc662       216       213      3             0.02        1.014 +- 0.069        0.986 +- 0.068  [7 ] SI SC SC BT BT BT SD
+    0010             4cc2       278       127    151            56.30        2.189 +- 0.131        0.457 +- 0.041  [4 ] SI BT BT AB
+    0011            8cc62       204       186     18             0.83        1.097 +- 0.077        0.912 +- 0.067  [5 ] SI SC BT BT SA
+    0012           8ccc52       153       188    -35             3.59        0.814 +- 0.066        1.229 +- 0.090  [6 ] SI RE BT BT BT SA
+    0013          7ccc652       156       159     -3             0.03        0.981 +- 0.079        1.019 +- 0.081  [7 ] SI RE SC BT BT BT SD
+    0014               41       142       144     -2             0.01        0.986 +- 0.083        1.014 +- 0.085  [2 ] CK AB
+    0015            4cc62       197        71    126            59.24        2.775 +- 0.198        0.360 +- 0.043  [5 ] SI SC BT BT AB
+    0016             4552       124       142    -18             1.22        0.873 +- 0.078        1.145 +- 0.096  [4 ] SI RE RE AB
+    0017            8cc52       126       138    -12             0.55        0.913 +- 0.081        1.095 +- 0.093  [5 ] SI RE BT BT SA
+    0018             4662       137       121     16             0.99        1.132 +- 0.097        0.883 +- 0.080  [4 ] SI SC SC AB
+    0019             4652       121       112      9             0.35        1.080 +- 0.098        0.926 +- 0.087  [4 ] SI RE SC AB
+    .                              11278     11278       518.40/67 =  7.74  (pval:0.000 prob:1.000)  
+
+
+
 
 
 
@@ -589,7 +639,7 @@ After special case handling "Water" with X4MaterialWater from X4PhysicalVolume::
     0002             7c6d       253       311    -58             5.96        0.814 +- 0.051        1.229 +- 0.070  [4 ] TO SC BT SD
     0003              86d       200       236    -36             2.97        0.847 +- 0.060        1.180 +- 0.077  [3 ] TO SC SA
     0004            4cc6d        56       212   -156            90.81        0.264 +- 0.035        3.786 +- 0.260  [5 ] TO SC BT BT AB
-    ^^^^^^^^^^  G4 has excess of scatters that get back into LS presumably ? ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^  G4 has excess of scatters that get back into LS ? ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     0005              46d       144        63     81            31.70        2.286 +- 0.190        0.438 +- 0.055  [3 ] TO SC AB
     0006             8c6d        80        80      0             0.00        1.000 +- 0.112        1.000 +- 0.112  [4 ] TO SC BT SA
 
@@ -619,6 +669,133 @@ After special case handling "Water" with X4MaterialWater from X4PhysicalVolume::
     0028             8b6d         7         3      4             0.00        2.333 +- 0.882        0.429 +- 0.247  [4 ] TO SC BR SA
     0029          46ccc6d         0         9     -9             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO SC BT BT BT SC AB
     .                             100000    100000       324.15/12 = 27.01  (pval:0.000 prob:1.000)  
+
+
+
+look into a:"TO SC BT SR BT SA" b:"TO SC BT SR BT BT SA" is this a paired zero : why is G4 microstep not suppressed ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* those are selected from 100k photons on the same path thru the Water  
+
+::
+    
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3ip   -1:g4live:tds3ip        c2        ab        ba 
+    .                             100000    100000       324.15/12 = 27.01  (pval:0.000 prob:1.000) 
+    ..
+    0007           8cac6d        81         0     81            81.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO SC BT SR BT SA
+    0008          8ccac6d         0        72    -72            72.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO SC BT SR BT BT SA
+
+
+    In [2]: b.sel = "TO SC BT SR BT BT SA"                                                                                                                                                                    
+    In [3]: b.mat                                                                                                                                                                                             
+    Out[3]: 
+    seqmat_ana
+    .                     cfo:-  -1:g4live:tds3ip 
+    .                                 72         1.00 
+    0000          3feeeff        0.972          70        [7 ] Wa Wa Py Py Py Wa Ty
+    0001          2feeeff        0.028           2        [7 ] Wa Wa Py Py Py Wa St
+    .                                 72         1.00 
+
+
+    In [4]: b.rpostr()                                                                                                                                                                                        
+    Out[4]: 
+    A([[17830.901 , 19685.0353, 19566.872 , 19561.9875, 19565.6773, 19565.6773, 20049.4792,     0.    ,     0.    ,     0.    ],
+       [17830.901 , 19664.8186, 19758.4623, 19758.4203, 19758.3836, 19758.3836, 20049.3592,     0.    ,     0.    ,     0.    ],
+       [17830.901 , 19239.3968, 19445.6594, 19450.2603, 19456.6134, 19456.6134, 20050.5034,     0.    ,     0.    ,     0.    ],
+       [17830.901 , 19526.8517, 19683.6273, 19688.3319, 19692.983 , 19692.983 , 20050.1322,     0.    ,     0.    ,     0.    ],
+       [17830.901 , 19985.4597, 19576.7553, 19573.067 , 19575.7855, 19575.7855, 20049.2708,     0.    ,     0.    ,     0.    ],
+       [17830.901 , 19713.2238, 19766.7532, 19768.9657, 19770.737 , 19770.737 , 20050.7686,     0.    ,     0.    ,     0.    ],
+       [17830.901 , 19733.4406, 19572.3943, 19570.258 , 19575.8017, 19575.8017, 20049.9405,     0.    ,     0.    ,     0.    ],
+       [17830.901 , 19812.5325, 19566.1742, 19563.726 , 19568.8462, 19568.8462, 20050.6625,     0.    ,     0.    ,     0.    ],
+       [17830.901 , 19530.5506, 19799.7019, 19805.5897, 19811.62  , 19811.62  , 20050.0344,     0.    ,     0.    ,     0.    ],
+
+    In [6]: b.rpost()[0]                                                                                                                                                                                      
+    Out[6]: 
+    A([[ 12614.5207,   4652.852 , -11711.7832,    110.416 ],
+       [ 13947.5692,   5134.434 , -12907.4984,    118.9123],
+       [ 13898.1292,   5169.2251, -12766.5029,    119.6081],
+       [ 13896.2981,   5169.2251, -12761.0096,    119.6448],
+       [ 13898.1292,   5169.2251, -12764.6718,    119.6814],
+       [ 13898.1292,   5169.2251, -12764.6718,    119.6814],
+       [ 14266.1824,   5002.5941, -13169.3472,    122.2816]])
+
+
+    In [8]: b.dx.shape                                                                                                                                                                                        
+    Out[8]: (72, 10, 2, 4)
+
+    In [12]: dx45 = b.dx[:,5,0,:3] - b.dx[:,4,0,:3]                                                                                                                                                           
+
+    In [13]: dx45.shape                                                                                                                                                                                       
+    Out[13]: (72, 3)
+
+    In [14]: np.sqrt(np.sum(dx45*dx45, axis=1))                                                                                                                                                               
+    Out[14]: 
+    A([0.001 , 0.0011, 0.0015, 0.0018, 0.001 , 0.0016, 0.0011, 0.0012, 0.0018, 0.0013, 0.0012, 0.0011, 0.0012, 0.0013, 0.001 , 0.0017, 0.0011, 0.001 , 0.001 , 0.0012, 0.0015, 0.0018, 0.0015, 0.0013,
+       0.0011, 0.0013, 0.0012, 0.0019, 0.0013, 0.0012, 0.0012, 0.001 , 0.0012, 0.0011, 0.001 , 0.001 , 0.0019, 0.0011, 0.0017, 0.0014, 0.0011, 0.0013, 0.0011, 0.001 , 0.0011, 0.0014, 0.0011, 0.0016,
+       0.0015, 0.0011, 0.0014, 0.0014, 0.0015, 0.001 , 0.0017, 0.0012, 0.0013, 0.002 , 0.001 , 0.0013, 0.0013, 0.0016, 0.0011, 0.0011, 0.0012, 0.0018, 0.0013, 0.001 , 0.0013, 0.0011, 0.0013, 0.0014])
+
+    In [15]: dx45                                                                                                                                                                                             
+    Out[15]: 
+    A([[ 0.0006, -0.0003, -0.0007],
+       [-0.0002,  0.0011, -0.    ],
+       [ 0.0015,  0.0002, -0.0003],
+       [ 0.0017,  0.0001,  0.0006],
+       [ 0.0005, -0.0004, -0.0008],
+       [-0.0005,  0.0015, -0.0005],
+       [ 0.0008,  0.0003, -0.0006],
+       [ 0.0012, -0.0001, -0.0004],
+       [ 0.0017, -0.0004, -0.0001],
+       [ 0.0006, -0.0007, -0.0009],
+       [ 0.001 ,  0.0003, -0.0006],
+       [ 0.0008, -0.0006, -0.0005],
+
+
+* final G4 "BT BT" look to be a microstep from the Pyrex +0.001mm ? Why was the microstep not suppressed ?
+
+* TODO: tds3ip with --dbgseqhis 0x8ccac6d  to see why microstep suppression did not kick in 
+* TODO: pyvista visualize these 71 photon dx paths to follow whats going on 
+
+::
+
+    466 void CRecorder::postTrackWriteSteps()
+    ...
+    503     for(i=0 ; i < num ; i++)
+    504     {
+    505         m_state._step_action = 0 ;
+    506 
+    507         CStp* stp  = m_crec->getStp(i);
+    508         CStp* next_stp = m_crec->getStp(i+1) ;   // NULL for i = num - 1 
+    509 
+    510         CStage::CStage_t stage = stp->getStage();
+    511         const G4Step* step = stp->getStep();
+    512         const G4StepPoint* pre  = step->GetPreStepPoint() ;
+    513         const G4StepPoint* post = step->GetPostStepPoint() ;
+    514 
+    515         G4ThreeVector delta = step->GetDeltaPosition();
+    516         double        step_mm = delta.mag()/mm  ;
+    517         bool microStep = step_mm <= m_microStep_mm ;
+    ...
+    537         unsigned premat = m_material_bridge->getPreMaterial(step) ;
+    538 
+    539         unsigned postmat = m_material_bridge->getPostMaterial(step) ;
+    540 
+    541         bool same_material_microStep = premat == postmat && microStep ;
+    542 
+    543         bool suppress_microStep = m_suppress_same_material_microStep && same_material_microStep ;
+
+
+
+
+td3ip.sh Water path that scatter back into L3 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+
+
 
 
 
@@ -788,8 +965,8 @@ After X4MaterialWater fix, no change in G4 as expected::
 
 
 
-Wow, drastically more water SC in G4:1305 than OK:203 ?
----------------------------------------------------------
+Wow, drastically more water SC in G4:1305 than OK:203 ? AFTER X4MaterialWater FIX BRINGS UP INTO AGREEMENT OK:1244 
+----------------------------------------------------------------------------------------------------------------------
 
 
 ::
@@ -974,7 +1151,11 @@ Check the boundary array::
 
 
 Notice special casing of material named "Water", that smells a bit fishy. Because it is on-the-fly 
-changing properties without changing the material.::
+changing properties without changing the material.
+
+* actually the below code is not in use, BUT standard G4OpRayleigh has a related issue
+
+::
 
     223 void DsG4OpRayleigh::BuildThePhysicsTable()
     224 {
@@ -1328,6 +1509,9 @@ TODO:
 
 1. confirm these by introspecting GMaterialLib "Water" properties and doing some G4 dumping 
 2. try to grab the result of the G4 calculation and get it into GMaterialLib for use on GPU  
+
+   DONE 
+
 
 Note that other materials that lack properties can have similar problems.::
 

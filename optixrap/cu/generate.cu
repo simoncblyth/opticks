@@ -630,6 +630,12 @@ RT_PROGRAM void generate()
         // source_buffer is input only, photon_buffer output only, 
         // photon_offset is same for both these buffers
         pload(p, source_buffer, photon_offset ); 
+
+        p.flags.u.x = 0u ;   // scrub any initial flags, eg when running from an input photon  
+        p.flags.u.y = 0u ; 
+        p.flags.u.z = 0u ; 
+        p.flags.u.w = 0u ; 
+
         s.flag = TORCH ;  
 #ifdef WITH_REFLECT_CHEAT_DEBUG
         s.ureflectcheat = debug_control.w > 0u ? float(photon_id)/float(num_photon) : -1.f ;
