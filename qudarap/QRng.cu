@@ -5,7 +5,7 @@ See /Developer/NVIDIA/CUDA-9.1/samples/0_Simple/cppIntegration/cppIntegration.cu
 #include "curand_kernel.h"
 
 
-__global__ void CRng_generate_kernel(int threads_per_launch, curandState* rng_states, float* d_out )
+__global__ void QRng_generate_kernel(int threads_per_launch, curandState* rng_states, float* d_out )
 {
     int id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= threads_per_launch) return;
@@ -15,10 +15,10 @@ __global__ void CRng_generate_kernel(int threads_per_launch, curandState* rng_st
 }
 
 
-extern "C" void CRng_generate(int threads_per_launch, curandState* rng_states, float* d_out )
+extern "C" void QRng_generate(int threads_per_launch, curandState* rng_states, float* d_out )
 {
     dim3 grid(1, 1, 1);
     dim3 threads(threads_per_launch, 1, 1); 
 
-    CRng_generate_kernel<<< grid, threads >>>( threads_per_launch, rng_states, d_out  );
+    QRng_generate_kernel<<< grid, threads >>>( threads_per_launch, rng_states, d_out  );
 } 

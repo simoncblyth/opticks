@@ -1,13 +1,13 @@
 #include <cstring>
 #include "PLOG.hh"
-#include "CRng.hh"
-#include "CUt.hh"
+#include "QRng.hh"
+#include "QU.hh"
 
-#include "CUDA_CHECK.h"
+#include "QUDA_CHECK.h"
 
-const plog::Severity CRng::LEVEL = PLOG::EnvLevel("CRng", "DEBUG"); 
+const plog::Severity QRng::LEVEL = PLOG::EnvLevel("QRng", "DEBUG"); 
 
-CRng::CRng(const char* path_)
+QRng::QRng(const char* path_)
     :
     path(strdup(path_)),
     num_items(0),
@@ -20,7 +20,7 @@ CRng::CRng(const char* path_)
     init(); 
 }
 
-void CRng::init()
+void QRng::init()
 {
     load(); 
     upload(); 
@@ -30,7 +30,7 @@ void CRng::init()
 
 
 /**
-CRng::load
+QRng::load
 ------------
 
 Find that file_size is not a mutiple of item content. 
@@ -39,7 +39,7 @@ in the curandState which is typedef to curandStateXORWOW.
 
 **/
 
-void CRng::load()
+void QRng::load()
 {
     FILE *fp = fopen(path,"rb");
     if(fp == NULL) {
@@ -80,31 +80,31 @@ void CRng::load()
     fclose(fp);
 }
 
-void CRng::upload()
+void QRng::upload()
 {
     LOG(LEVEL) << "[" ; 
-    d_rng_states = CUt::UploadArray<curandState>(rng_states, num_items ) ;   
+    d_rng_states = QU::UploadArray<curandState>(rng_states, num_items ) ;   
     LOG(LEVEL) << "]" ; 
 }
 
 
-extern "C" void CRng_generate(int threads_per_launch, curandState* d_rng_states, float* d_gen ) ; 
+extern "C" void QRng_generate(int threads_per_launch, curandState* d_rng_states, float* d_gen ) ; 
 
-void CRng::generate()
+void QRng::generate()
 {
     LOG(LEVEL) << "[" ; 
 
-    CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_gen ), num_gen*sizeof(float) )); 
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_gen ), num_gen*sizeof(float) )); 
 
-    CRng_generate(num_gen, d_rng_states, d_gen );  
+    QRng_generate(num_gen, d_rng_states, d_gen );  
 
     gen = (float*)malloc(sizeof(float)*num_gen); 
-    CUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( gen ), d_gen, sizeof(float)*num_gen, cudaMemcpyDeviceToHost )); 
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( gen ), d_gen, sizeof(float)*num_gen, cudaMemcpyDeviceToHost )); 
 
     LOG(LEVEL) << "]" ; 
 }
 
-void CRng::dump()
+void QRng::dump()
 {
     if( gen == nullptr ) return ; 
     for(int i=0 ; i < num_gen ; i++ ) 

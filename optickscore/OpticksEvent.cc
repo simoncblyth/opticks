@@ -1767,8 +1767,9 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
 
 void OpticksEvent::setDeluxeData(NPY<double>* deluxe_data)
 {
-    setBufferControl(deluxe_data);
     m_deluxe_data = deluxe_data  ;
+    if(!deluxe_data) return ; 
+    setBufferControl(deluxe_data);
     m_deluxe_attr = new MultiViewNPY("deluxe_attr");
 }
 
@@ -1818,9 +1819,9 @@ delta:gl blyth$ find . -type f -exec grep -H rsel {} \;
 
 void OpticksEvent::setBoundaryData(NPY<unsigned>* boundary_data)
 {
-    if(boundary_data == nullptr) return ; 
-    setBufferControl(boundary_data);
     m_boundary_data = boundary_data  ;
+    if(boundary_data == nullptr) return ; 
+    setBufferControl(m_boundary_data);
     m_boundary_attr = new MultiViewNPY("boundary_attr");
 }
 

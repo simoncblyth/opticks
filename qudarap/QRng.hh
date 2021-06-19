@@ -1,7 +1,7 @@
 #pragma once
 
 /**
-CRng
+QRng
 ====
 
 Aiming for a pure CUDA struct providing the essential features 
@@ -9,11 +9,11 @@ of optixrap/ORng but without any OptiX
 
 **/
 
-#include "CUDARAP_API_EXPORT.hh"
+#include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
 #include "curand_kernel.h"
 
-struct CUDARAP_API CRng 
+struct QUDARAP_API QRng 
 {
     static const plog::Severity LEVEL ; 
 
@@ -27,7 +27,7 @@ struct CUDARAP_API CRng
     float*        gen ; 
 
 
-    CRng(const char* path); 
+    QRng(const char* path); 
 
     void init(); 
     void load(); 
