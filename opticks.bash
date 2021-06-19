@@ -2338,6 +2338,7 @@ okg-(){             . $(opticks-home)/opticksgeo/okg.bash && okg-env $* ; }
 
 oglrap-(){          . $(opticks-home)/oglrap/oglrap.bash && oglrap-env $* ; }
 cudarap-(){         . $(opticks-home)/cudarap/cudarap.bash && cudarap-env $* ; }
+qudarap-(){         . $(opticks-home)/qudarap/qudarap.bash && qudarap-env $* ; }
 thrap-(){           . $(opticks-home)/thrustrap/thrap.bash && thrap-env $* ; }
 oxrap-(){           . $(opticks-home)/optixrap/oxrap.bash && oxrap-env $* ; }
 
@@ -2370,6 +2371,7 @@ okg(){         okg-;         okg-cd $* ; }
 
 oglrap(){   oglrap-  ; oglrap-cd $* ; }
 cudarap(){  cudarap- ; cudarap-cd $* ; }
+qudarap(){  qudarap- ; qudarap-cd $* ; }
 thrap(){    thrap-   ; thrap-cd $* ; }
 oxrap(){    oxrap-   ; oxrap-cd $* ; }
 

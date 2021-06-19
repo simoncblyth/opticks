@@ -10,7 +10,7 @@ endif()
 
 set(FLAGS_VERBOSE ON)
 
-find_package(OpticksCore REQUIRED CONFIG)
+find_package(GGeo REQUIRED CONFIG)
 
 set(OpticksCUDA_VERBOSE ON)
 find_package(OpticksCUDA REQUIRED MODULE)
@@ -18,28 +18,36 @@ find_package(OpticksCUDA REQUIRED MODULE)
 
 set(SOURCES
     QUDARAP_LOG.cc
-    QRng.cc
+
+    QRng.cc  
     QRng.cu
     QU.cc
+    QTex2D.cc
+    QTex2Duc4.cc
+    QTex2D.cu
 )
 
 SET(HEADERS
-
     QUDARAP_LOG.hh
     QUDARAP_API_EXPORT.hh
 
     QRng.hh
     QU.hh
-
+    QTex2D.hh
+    QTex2Duc4.hh
 )
 
-set(LIBRARIES
+set(_LIBS
    Opticks::SysRap
    Opticks::OpticksCUDA
    Opticks::OKConf
 )
+
+set(LIBS
+    Opticks::GGeo
+)
 if(UNIX AND NOT APPLE)
-  set(LIBRARIES ${LIBRARIES} ssl )  
+  set(LIBS ${LIBS} ssl )  
 endif()
 
 
@@ -48,16 +56,14 @@ CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 get_target_property(ILL ${name} INTERFACE_LINK_LIBRARIES)
 message(STATUS "${name} INTERFACE_LINK_LIBRARIES:${ILL} " )
 
-target_link_libraries( ${name} ${LIBRARIES})
+target_link_libraries( ${name} ${LIBS})
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
-
 
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
 add_subdirectory(tests)
-
 
 

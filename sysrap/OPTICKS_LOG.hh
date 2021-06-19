@@ -35,7 +35,11 @@ To regenerate the sysrap/OPTICKS_LOG.hh header use commandline::
 
 
 TODO: rearrange OPTICKS_LOG such that it can be used in an initializer list 
- 
+
+Note that although the below looks at first glance like it is breaking package
+dependency rules, it is of course not doing so because this header is included
+into the main (or point-of-use library) and the pre-processor macros 
+ensure that only the active package tree of headers gets included.
 
 **/
 
@@ -56,6 +60,9 @@ TODO: rearrange OPTICKS_LOG such that it can be used in an initializer list
 #endif
 #ifdef OPTICKS_GGEO
 #include "GGEO_LOG.hh"
+#endif
+#ifdef OPTICKS_QUDARAP
+#include "QUDARAP_LOG.hh"
 #endif
 #ifdef OPTICKS_ASIRAP
 #include "ASIRAP_LOG.hh"
@@ -102,8 +109,25 @@ TODO: rearrange OPTICKS_LOG such that it can be used in an initializer list
 
 #include "SYSRAP_API_EXPORT.hh"
 
+
+/**
+OPTICKS_LOG NB
+================
+
+* must implement logging stuff in header as this code is required by plog to live in the main, not in a lib
+* to get logging to work need:
+
+0. package must implement the PKGNAME_LOG.hh based on others
+1. package CMakeLists.txt must define the OPTICKS_PKGNAME compile definition
+2. include the preprocessor protected header above
+3. add initialize call to OPTICKS_LOG_::Initialize
+4. add check call to OPTICKS_LOG_::Check  
+
+**/
+
+
+
 #include "PLOG.hh"
-// NB must implement in header as this code is required to live in the main, not in a lib
 
 class SYSRAP_API OPTICKS_LOG_ {
    public:
@@ -130,6 +154,9 @@ class SYSRAP_API OPTICKS_LOG_ {
 #endif
 #ifdef OPTICKS_GGEO
     GGEO_LOG::Initialize(instance->prefixlevel_parse( max_level, "GGEO"), app1, NULL );
+#endif
+#ifdef OPTICKS_QUDARAP
+    QUDARAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "QUDARAP"), app1, NULL );
 #endif
 #ifdef OPTICKS_ASIRAP
     ASIRAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "ASIRAP"), app1, NULL );
@@ -194,6 +221,9 @@ class SYSRAP_API OPTICKS_LOG_ {
 #endif
 #ifdef OPTICKS_GGEO
     GGEO_LOG::Check("GGEO");
+#endif
+#ifdef OPTICKS_QUDARAP
+    QUDARAP_LOG::Check("QUDARAP");
 #endif
 #ifdef OPTICKS_ASIRAP
     ASIRAP_LOG::Check("ASIRAP");
