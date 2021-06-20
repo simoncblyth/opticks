@@ -219,7 +219,7 @@ void GPropertyLib::setBuffer(NPY<float>* buf)
 {
     m_buffer = buf ;
 }
-NPY<float>* GPropertyLib::getBuffer()
+NPY<float>* GPropertyLib::getBuffer() const 
 {
     return m_buffer ;
 }

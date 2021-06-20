@@ -1,5 +1,4 @@
 #include "QTex2D.hh"
-template struct QTex2D<uchar4> ; 
 
 #include <vector_types.h>
 #include <vector_functions.h>
@@ -27,15 +26,14 @@ int main(int argc, char** argv)
 
     QTex2D<uchar4> qtex(img.width, img.height, img.data);
 
-    float theta = 1.f ;
+    float theta = 1.f ; // radian
     qtex.rotate(theta); 
+    cudaDeviceSynchronize();
 
     std::cout << "writing to " << opath << std::endl ;
 
     SIMG img2(img.width, img.height, img.channels, (unsigned char*)qtex.dst );
     img2.writePNG(opath);
-
-    cudaDeviceSynchronize();
 
     return 0;
 }

@@ -79,19 +79,35 @@ void QTex2D<T>::createTextureObject()
 }
 
 
-extern "C" void transformKernel(dim3 dimGrid, dim3 dimBlock, uchar4* d_output, cudaTextureObject_t texObj,  size_t width, size_t height, float theta ); 
-//extern "C" void transformKernel(dim3 dimGrid, dim3 dimBlock,  float* d_output, cudaTextureObject_t texObj,  size_t width, size_t height, float theta ); 
+extern "C" void QTex2D_uchar4_rotate_kernel(dim3 dimGrid, dim3 dimBlock, uchar4* d_output, cudaTextureObject_t texObj,  size_t width, size_t height, float theta );
 
+/**
+https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
+
+A group of threads is called a CUDA block. 
+Each CUDA block is executed by one streaming multiprocessor.
+CUDA architecture limits the numbers of threads per block (1024 threads per block limit).
+
+CUDA blocks are grouped into a grid. 
+A kernel is executed as a grid of blocks of threads::
+
+    unsigned x = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned y = blockIdx.y * blockDim.y + threadIdx.y;
+
+The below *numBlocks* divides by the *threadsPerBlock* to give sufficient threads to cover the workspace, 
+potentially with some spare threads at edge when workspace is not an exact multiple of threadsPerBlock size.
+
+**/
 
 template<typename T>
 void QTex2D<T>::rotate(float theta)
 {
     cudaMalloc(&d_dst, width*height*sizeof(T));
 
-    dim3 dimBlock(16, 16);
-    dim3 dimGrid((width + dimBlock.x - 1) / dimBlock.x, (height + dimBlock.y - 1) / dimBlock.y);
+    dim3 threadsPerBlock(16, 16);
+    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
-    transformKernel( dimGrid, dimBlock, d_dst, texObj, width, height, theta );
+    QTex2D_uchar4_rotate_kernel( numBlocks, threadsPerBlock, d_dst, texObj, width, height, theta );
 
     cudaDeviceSynchronize();
     cudaCheckErrors("cudaDeviceSynchronize");
@@ -101,7 +117,16 @@ void QTex2D<T>::rotate(float theta)
 }
 
 
-//template struct QTex2D<float>;
-template struct QTex2D<uchar4>;
+/**
+Do nothing template specialization for float textures, rotation is only relevant to uchar4 2d images
+**/
+template<>  void QTex2D<float>::rotate(float theta)
+{
+}
+
+
+// API export is essential on this template struct, otherwise get all symbols missing 
+template struct QUDARAP_API QTex2D<uchar4>;
+template struct QUDARAP_API QTex2D<float>;
 
 

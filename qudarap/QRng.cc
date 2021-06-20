@@ -1,31 +1,35 @@
+#include <sstream>
 #include <cstring>
 #include "PLOG.hh"
+#include "SPath.hh"
 #include "QRng.hh"
 #include "QU.hh"
 
 #include "QUDA_CHECK.h"
 
-const plog::Severity QRng::LEVEL = PLOG::EnvLevel("QRng", "DEBUG"); 
+const plog::Severity QRng::LEVEL = PLOG::EnvLevel("QRng", "INFO"); 
+const QRng*          QRng::INSTANCE = nullptr ; 
+
+const QRng* QRng::Get()
+{
+    return INSTANCE ;  
+}
+
+const char* QRng::DEFAULT_PATH = SPath::Resolve("$HOME/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin") ; 
 
 QRng::QRng(const char* path_)
     :
-    path(strdup(path_)),
-    num_items(0),
-    d_rng_states(nullptr),    
-    rng_states(nullptr),
-    num_gen(100),
-    d_gen(nullptr),
-    gen(nullptr)
+    path(path_ ? strdup(path_) : DEFAULT_PATH),
+    rngmax(0),
+    d_rng_states(nullptr)
 {
-    init(); 
+    INSTANCE = this ; 
+    load_and_upload(); 
 }
 
-void QRng::init()
+QRng::~QRng()
 {
-    load(); 
-    upload(); 
-    generate(); 
-    dump(); 
+    QUDA_CHECK(cudaFree(d_rng_states)); 
 }
 
 
@@ -39,7 +43,7 @@ in the curandState which is typedef to curandStateXORWOW.
 
 **/
 
-void QRng::load()
+void QRng::load_and_upload()
 {
     FILE *fp = fopen(path,"rb");
     if(fp == NULL) {
@@ -54,20 +58,21 @@ void QRng::load()
     long type_size = sizeof(curandState) ;  
     long content_size = 44 ; 
 
-    num_items = file_size/content_size ; 
+    rngmax = file_size/content_size ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " path " << path 
         << " file_size " << file_size 
         << " type_size " << type_size 
         << " content_size " << content_size 
-        << " num_items " << num_items
+        << " rngmax " << rngmax
         ; 
 
     assert( file_size % content_size == 0 );  
-    rng_states = (curandState*)malloc(sizeof(curandState)*num_items);
 
-    for(long i = 0 ; i < num_items ; ++i )
+    curandState* rng_states = (curandState*)malloc(sizeof(curandState)*rngmax);
+
+    for(long i = 0 ; i < rngmax ; ++i )
     {   
         curandState& rng = rng_states[i] ;
         fread(&rng.d,                     sizeof(unsigned int),1,fp);   //  1
@@ -78,44 +83,23 @@ void QRng::load()
         fread(&rng.boxmuller_extra_double,sizeof(double)      ,1,fp);   //  2    11*4 = 44 
     }   
     fclose(fp);
+
+    d_rng_states = QU::UploadArray<curandState>(rng_states, rngmax ) ;   
+
+    free(rng_states); 
 }
 
-void QRng::upload()
+
+std::string QRng::desc() const
 {
-    LOG(LEVEL) << "[" ; 
-    d_rng_states = QU::UploadArray<curandState>(rng_states, num_items ) ;   
-    LOG(LEVEL) << "]" ; 
+    std::stringstream ss ; 
+    ss << "QRng"
+       << " path " << path 
+       << " rngmax " << rngmax 
+       << " d_rng_states " << d_rng_states
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
 }
-
-
-extern "C" void QRng_generate(int threads_per_launch, curandState* d_rng_states, float* d_gen ) ; 
-
-void QRng::generate()
-{
-    LOG(LEVEL) << "[" ; 
-
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_gen ), num_gen*sizeof(float) )); 
-
-    QRng_generate(num_gen, d_rng_states, d_gen );  
-
-    gen = (float*)malloc(sizeof(float)*num_gen); 
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( gen ), d_gen, sizeof(float)*num_gen, cudaMemcpyDeviceToHost )); 
-
-    LOG(LEVEL) << "]" ; 
-}
-
-void QRng::dump()
-{
-    if( gen == nullptr ) return ; 
-    for(int i=0 ; i < num_gen ; i++ ) 
-    {
-        std::cout 
-            << std::setw(4) << i 
-            << " : "
-            << std::setw(10) << std::fixed << std::setprecision(7) << gen[i] 
-            << std::endl
-            ; 
-    }
-}
-
 

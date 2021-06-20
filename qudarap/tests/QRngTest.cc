@@ -1,3 +1,4 @@
+#include "SPath.hh"
 #include "QRng.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -5,11 +6,10 @@ int main(int argc, char** argv)
 {   
     OPTICKS_LOG(argc, argv); 
 
-    std::cout << "argv[0]" << argv[0] << std::endl ;  
+    QRng rng ;   // loads and uploads curandState 
 
-    const char* path = "/Users/blyth/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin" ; 
-    QRng rng(path);   // loads, uploads, generates and dumps 
-    rng.dump(); 
+    LOG(info) << rng.desc() ; 
+
 
     return 0 ; 
 }

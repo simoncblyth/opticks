@@ -19,12 +19,17 @@ find_package(OpticksCUDA REQUIRED MODULE)
 set(SOURCES
     QUDARAP_LOG.cc
 
-    QRng.cc  
-    QRng.cu
     QU.cc
+    QRng.cc  
+
+    QGen.cc  
+    QGen.cu
+
     QTex2D.cc
-    QTex2Duc4.cc
     QTex2D.cu
+
+    QScint.cc
+    QScint.cu
 )
 
 SET(HEADERS
@@ -32,9 +37,10 @@ SET(HEADERS
     QUDARAP_API_EXPORT.hh
 
     QRng.hh
+    QGen.hh
     QU.hh
     QTex2D.hh
-    QTex2Duc4.hh
+    QScint.hh
 )
 
 set(_LIBS

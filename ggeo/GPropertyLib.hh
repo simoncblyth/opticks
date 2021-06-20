@@ -224,7 +224,7 @@ class GGEO_API GPropertyLib {
 
 
         std::string  getBufferName(const char* suffix=NULL);
-        NPY<float>*  getBuffer();
+        NPY<float>*  getBuffer() const ;
         BMeta*       getMeta() const  ;
         GItemList*   getNames() const ;
         void saveNames(const char* idpath, const char* reldir, const char* txtname) const ; 

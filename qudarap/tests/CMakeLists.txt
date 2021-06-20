@@ -6,9 +6,10 @@ include(OpticksBuildOptions)
 
 set(TEST_SOURCES
    QRngTest.cc
-   QScintillatorLibTest.cc
-   QTex2Duc4RotateTest.cc
-   #QTex2DRotateTest.cc
+   QGenTest.cc
+   QScintTest.cc
+   QTex2DRotateTest.cc
+
 )
 
 foreach(SRC ${TEST_SOURCES})

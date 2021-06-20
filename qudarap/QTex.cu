@@ -1,6 +1,5 @@
 
-
-__global__ void QRng_transformKernel_(uchar4* output, cudaTextureObject_t texObj, size_t width, size_t height, float theta) 
+__global__ void _QTex2D_uchar4_rotate_kernel(uchar4* output, cudaTextureObject_t texObj, size_t width, size_t height, float theta) 
 {
     unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -26,11 +25,9 @@ __global__ void QRng_transformKernel_(uchar4* output, cudaTextureObject_t texObj
     output[y * width + x] = c ;
 }
 
-
-extern "C" void transformKernel(dim3 dimGrid, dim3 dimBlock, uchar4* d_output, cudaTextureObject_t texObj,  size_t width, size_t height, float theta )
+extern "C" void QTex2D_uchar4_rotate_kernel(dim3 dimGrid, dim3 dimBlock, uchar4* d_output, cudaTextureObject_t texObj,  size_t width, size_t height, float theta )
 {
-    QRng_transformKernel_<<<dimGrid,dimBlock>>>(d_output, texObj, width, height, theta);
+    _QTex2D_uchar4_rotate_kernel<<<dimGrid,dimBlock>>>(d_output, texObj, width, height, theta);
 }
-
 
 
