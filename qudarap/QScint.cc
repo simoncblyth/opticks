@@ -6,7 +6,7 @@
 #include "QUDA_CHECK.h"
 #include "QRng.hh"
 #include "QScint.hh"
-#include "QTex2D.hh"
+#include "QTex.hh"
 
 const plog::Severity QScint::LEVEL = PLOG::EnvLevel("QScint", "INFO"); 
 
@@ -17,7 +17,7 @@ QScint::QScint(const GScintillatorLib* lib_)
     ni(buf->getShape(0)),
     nj(buf->getShape(1)),
     nk(buf->getShape(2)),
-    tex(new QTex2D<float>(nj, 1, buf->getValues())),
+    tex(new QTex<float>(nj, 1, buf->getValues())),
     rng(QRng::Get())
 {
     init(); 

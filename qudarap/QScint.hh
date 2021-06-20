@@ -4,7 +4,7 @@
 #include "plog/Severity.h"
 class GScintillatorLib ; 
 template <typename T> class NPY ; 
-template <typename T> struct QTex2D ; 
+template <typename T> struct QTex ; 
 struct QRng ; 
 
 struct QUDARAP_API QScint
@@ -16,7 +16,7 @@ struct QUDARAP_API QScint
     unsigned                ni ; 
     unsigned                nj ; 
     unsigned                nk ; 
-    QTex2D<float>*          tex ; 
+    QTex<float>*            tex ; 
     const QRng*             rng ; 
 
     QScint(const GScintillatorLib* lib_); 

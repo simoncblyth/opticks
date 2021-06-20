@@ -1,4 +1,4 @@
-#include "QTex2D.hh"
+#include "QTex.hh"
 
 #include <vector_types.h>
 #include <vector_functions.h>
@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     std::cout << img.desc() << std::endl ;
     assert( img.channels == 4 );
 
-    QTex2D<uchar4> qtex(img.width, img.height, img.data);
+    QTex<uchar4> qtex(img.width, img.height, img.data);
 
     float theta = 1.f ; // radian
     qtex.rotate(theta); 

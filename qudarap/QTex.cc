@@ -1,10 +1,10 @@
 #include <cuda_runtime.h>
 #include <iostream>
 #include "cudaCheckErrors.h"
-#include "QTex2D.hh"
+#include "QTex.hh"
 
 template<typename T>
-QTex2D<T>::QTex2D(size_t width_, size_t height_ , const void* src_)
+QTex<T>::QTex(size_t width_, size_t height_ , const void* src_)
     :   
     width(width_),
     height(height_),
@@ -19,7 +19,7 @@ QTex2D<T>::QTex2D(size_t width_, size_t height_ , const void* src_)
 }
 
 template<typename T>
-QTex2D<T>::~QTex2D()
+QTex<T>::~QTex()
 {
     cudaDestroyTextureObject(texObj);
     cudaFreeArray(cuArray);
@@ -28,7 +28,7 @@ QTex2D<T>::~QTex2D()
 }
 
 template<typename T>
-void QTex2D<T>::init()
+void QTex<T>::init()
 {
     createArray();
     uploadToArray();
@@ -36,14 +36,14 @@ void QTex2D<T>::init()
 }
 
 template<typename T>
-void QTex2D<T>::createArray()
+void QTex<T>::createArray()
 {
     cudaMallocArray(&cuArray, &channelDesc, width, height );
     cudaCheckErrors("cudaMallocArray");
 }
 
 template<typename T>
-void QTex2D<T>::uploadToArray()
+void QTex<T>::uploadToArray()
 {
     cudaArray_t dst = cuArray ;
     size_t wOffset = 0 ;
@@ -55,7 +55,7 @@ void QTex2D<T>::uploadToArray()
 }
 
 template<typename T>
-void QTex2D<T>::createTextureObject()
+void QTex<T>::createTextureObject()
 {
     struct cudaResourceDesc resDesc;
     memset(&resDesc, 0, sizeof(resDesc));
@@ -79,7 +79,7 @@ void QTex2D<T>::createTextureObject()
 }
 
 
-extern "C" void QTex2D_uchar4_rotate_kernel(dim3 dimGrid, dim3 dimBlock, uchar4* d_output, cudaTextureObject_t texObj,  size_t width, size_t height, float theta );
+extern "C" void QTex_uchar4_rotate_kernel(dim3 dimGrid, dim3 dimBlock, uchar4* d_output, cudaTextureObject_t texObj,  size_t width, size_t height, float theta );
 
 /**
 https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
@@ -100,14 +100,14 @@ potentially with some spare threads at edge when workspace is not an exact multi
 **/
 
 template<typename T>
-void QTex2D<T>::rotate(float theta)
+void QTex<T>::rotate(float theta)
 {
     cudaMalloc(&d_dst, width*height*sizeof(T));
 
     dim3 threadsPerBlock(16, 16);
     dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
-    QTex2D_uchar4_rotate_kernel( numBlocks, threadsPerBlock, d_dst, texObj, width, height, theta );
+    QTex_uchar4_rotate_kernel( numBlocks, threadsPerBlock, d_dst, texObj, width, height, theta );
 
     cudaDeviceSynchronize();
     cudaCheckErrors("cudaDeviceSynchronize");
@@ -120,13 +120,13 @@ void QTex2D<T>::rotate(float theta)
 /**
 Do nothing template specialization for float textures, rotation is only relevant to uchar4 2d images
 **/
-template<>  void QTex2D<float>::rotate(float theta)
+template<>  void QTex<float>::rotate(float theta)
 {
 }
 
 
 // API export is essential on this template struct, otherwise get all symbols missing 
-template struct QUDARAP_API QTex2D<uchar4>;
-template struct QUDARAP_API QTex2D<float>;
+template struct QUDARAP_API QTex<uchar4>;
+template struct QUDARAP_API QTex<float>;
 
 

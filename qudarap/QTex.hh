@@ -5,7 +5,7 @@
 
 
 template<typename T>
-struct QUDARAP_API QTex2D
+struct QUDARAP_API QTex
 {
     size_t       width ; 
     size_t       height ; 
@@ -18,8 +18,8 @@ struct QUDARAP_API QTex2D
     cudaTextureObject_t texObj ;
 
 
-    QTex2D( size_t width, size_t height, const void* src );
-    virtual ~QTex2D();  
+    QTex( size_t width, size_t height, const void* src );
+    virtual ~QTex();  
 
     void init(); 
     void createArray(); 

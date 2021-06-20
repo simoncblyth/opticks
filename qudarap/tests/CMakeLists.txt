@@ -8,7 +8,7 @@ set(TEST_SOURCES
    QRngTest.cc
    QGenTest.cc
    QScintTest.cc
-   QTex2DRotateTest.cc
+   QTexRotateTest.cc
 
 )
 
