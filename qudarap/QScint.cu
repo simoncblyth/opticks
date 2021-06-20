@@ -19,7 +19,9 @@ __global__ void _QScint_generate_wavelength(curandState* rng_states, cudaTexture
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
 
-    qscint_wavelength( wavelength, id, rng_states + id, texObj ); 
+    qscint qs ; 
+    qs.init( nullptr, 0, rng_states+id, texObj ); 
+    wavelength[id] = qs.wavelength(); 
 }
 
 extern "C" void QScint_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength ) 
@@ -33,7 +35,11 @@ __global__ void _QScint_generate_photon(curandState* rng_states, cudaTextureObje
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_photon) return;
 
-    qscint_photon( photon, id, rng_states + id, texObj ); 
+    qscint qs ; 
+    qs.init( nullptr, 0, rng_states+id, texObj ); 
+    qs.fabricate(); 
+    qs.photon( photon, id, false  ); 
+
 }
 
 extern "C" void QScint_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, quad4* photon, unsigned num_photon ) 
