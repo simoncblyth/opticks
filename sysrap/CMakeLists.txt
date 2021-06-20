@@ -135,6 +135,7 @@ set(HEADERS
 
     CheckGeo.hh
     SGLM.hh
+    scuda.h
 )
 
 

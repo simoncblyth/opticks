@@ -1,5 +1,7 @@
 
 #include "PLOG.hh"
+#include "scuda.h"
+
 #include "NPY.hpp"
 #include "GScintillatorLib.hh"
 
@@ -7,6 +9,9 @@
 #include "QRng.hh"
 #include "QScint.hh"
 #include "QTex.hh"
+
+
+
 
 const plog::Severity QScint::LEVEL = PLOG::EnvLevel("QScint", "INFO"); 
 
@@ -36,26 +41,37 @@ void QScint::init()
 }
 
 
-extern "C" void QScint_generate_kernel(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength ); 
+extern "C" void QScint_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength ); 
+extern "C" void QScint_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, quad4* photon    , unsigned num_photon ); 
+
+
+
+
+
+void QScint::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
+{
+    threadsPerBlock.x = 512 ; 
+    threadsPerBlock.y = 1 ; 
+    threadsPerBlock.z = 1 ; 
+ 
+    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
+    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
+    numBlocks.z = 1 ; 
+}
 
 
 void QScint::generate( float* wavelength, unsigned num_wavelength )
 {
-    float* d_wavelength ;  
+    LOG(LEVEL) << "[" ; 
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, num_wavelength, 1 ); 
 
+    float* d_wavelength ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_wavelength ), num_wavelength*sizeof(float) )); 
 
-    unsigned width = num_wavelength  ; 
-    unsigned height = 1 ; 
-
-    dim3 threadsPerBlock(512, 1);
-
-    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
-
-    QScint_generate_kernel(numBlocks, threadsPerBlock, rng->d_rng_states, tex->texObj, d_wavelength, num_wavelength );  
-
+    QScint_generate_wavelength(numBlocks, threadsPerBlock, rng->d_rng_states, tex->texObj, d_wavelength, num_wavelength );  
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( wavelength ), d_wavelength, sizeof(float)*num_wavelength, cudaMemcpyDeviceToHost )); 
-
     QUDA_CHECK( cudaFree(d_wavelength) ); 
 
     LOG(LEVEL) << "]" ; 
@@ -69,6 +85,48 @@ void QScint::dump( float* wavelength, unsigned num_wavelength )
         std::cout 
             << std::setw(3) << i 
             << std::setw(10) << std::fixed << std::setprecision(3) << wavelength[i] 
+            << std::endl 
+            ; 
+    }
+}
+
+
+
+
+
+void QScint::generate( quad4* photon, unsigned num_photon )
+{
+    LOG(LEVEL) << "[" ; 
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, num_photon, 1 ); 
+
+    quad4* d_photon ;  
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_photon ), num_photon*sizeof(quad4) )); 
+
+    QScint_generate_photon(numBlocks, threadsPerBlock, rng->d_rng_states, tex->texObj, d_photon, num_photon );  
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( photon ), d_photon, sizeof(quad4)*num_photon, cudaMemcpyDeviceToHost )); 
+    QUDA_CHECK( cudaFree(d_photon) ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+void QScint::dump( quad4* photon, unsigned num_photon )
+{
+    LOG(LEVEL); 
+    for(unsigned i=0 ; i < num_photon ; i++)
+    {
+        const quad4& p = photon[i] ;  
+        std::cout 
+            << std::setw(3) << i 
+            << " q1.f.xyz " 
+            << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.x  
+            << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.y
+            << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.z  
+            << " q2.f.xyz " 
+            << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.x  
+            << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.y
+            << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.z  
             << std::endl 
             ; 
     }
