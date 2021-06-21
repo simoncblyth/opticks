@@ -78,6 +78,7 @@ class OKCORE_API OpticksGenstep {
        static const char* G4Scintillation_1042_ ;
        static const char* DsG4Cerenkov_r3971_ ;
        static const char* DsG4Scintillation_r3971_ ;
+       static const char* DsG4Scintillation_r4695_ ;
        static const char* TORCH_ ;
        static const char* FABRICATED_ ;
        static const char* EMITSOURCE_ ;

@@ -321,50 +321,40 @@ CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
 
 CGenstep CGenstepCollector::collectScintillationStep
 (
-            G4int                gentype, 
+            G4int                gentype,              //  (0)
             G4int                parentId,
             G4int                materialId,
             G4int                numPhotons,
             
-            G4double             x0_x,  
+            G4double             x0_x,                 //  (1)
             G4double             x0_y,  
             G4double             x0_z,  
             G4double             t0, 
 
-            G4double             deltaPosition_x, 
+            G4double             deltaPosition_x,      //  (2) 
             G4double             deltaPosition_y, 
             G4double             deltaPosition_z, 
             G4double             stepLength, 
 
-            G4int                pdgCode, 
+            G4int                pdgCode,              //  (3)
             G4double             pdgCharge, 
             G4double             weight, 
             G4double             meanVelocity, 
 
-            G4int                scntId,      
-            G4double             slowerRatio,
-            G4double             slowTimeConstant,
-            G4double             slowerTimeConstant,
+            G4int                i40_scntId,                // (4)   // CAUTION : MEANINGS OF LAST 8 VARY WITH IMPLEMENTATION/gentype
+            G4double             d41_slowerRatio,
+            G4double             d42_slowTimeConstant,
+            G4double             d43_slowerTimeConstant,
 
-            G4double             scintillationTime,
-            G4double             scintillationIntegralMax,
-            G4double             spare1,
-            G4double             spare2
+            G4double             d50_scintillationTime,     //  (5)
+            G4double             d51_scintillationIntegralMax,
+            G4double             d52_spare1,
+            G4double             d53_spare2
 ) 
 {
      CGenstep gs = addGenstep(numPhotons, 'S');
 
      m_scintillation_count += 1 ;   // 1-based index
-
-     /*
-     LOG(LEVEL)
-          << " gentype " << gentype
-          << " gentype " << OpticksGenstep::Gentype(gentype)
-          << " pdgCode " << pdgCode
-          << " numPhotons " << std::setw(4) << numPhotons 
-          << desc()
-          ;
-     */
 
      assert( OpticksGenstep::IsScintillation(gentype) ); 
 
@@ -376,7 +366,7 @@ CGenstep CGenstepCollector::collectScintillationStep
 
      uif_t uifb[4] ;
      uifb[0].i = pdgCode ;
-     uifb[1].i = scntId ;
+     uifb[1].i = i40_scntId ;
      uifb[2].i = 0 ;
      uifb[3].i = 0 ;
 
@@ -404,15 +394,15 @@ CGenstep CGenstepCollector::collectScintillationStep
      ss[3*4+2] = weight ;
      ss[3*4+3] = meanVelocity ;
 
-     ss[4*4+0] = uifb[1].f ;  // scntId
-     ss[4*4+1] = slowerRatio ;
-     ss[4*4+2] = slowTimeConstant ;
-     ss[4*4+3] = slowerTimeConstant ;
+     ss[4*4+0] = uifb[1].f ;  // i40_scntId
+     ss[4*4+1] = d41_slowerRatio ;
+     ss[4*4+2] = d42_slowTimeConstant ;
+     ss[4*4+3] = d43_slowerTimeConstant ;
 
-     ss[5*4+0] = scintillationTime ;
-     ss[5*4+1] = scintillationIntegralMax ;
-     ss[5*4+2] = spare1 ;
-     ss[5*4+3] = spare2 ;
+     ss[5*4+0] = d50_scintillationTime ;
+     ss[5*4+1] = d51_scintillationIntegralMax ;
+     ss[5*4+2] = d52_spare1 ;
+     ss[5*4+3] = d53_spare2 ;
 
      m_genstep->add(ss, m_genstep_itemsize);
 

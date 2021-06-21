@@ -23,15 +23,16 @@ enum
     OpticksGenstep_G4Scintillation_1042     = 2,    
     OpticksGenstep_DsG4Cerenkov_r3971       = 3,    
     OpticksGenstep_DsG4Scintillation_r3971  = 4, 
-    OpticksGenstep_TORCH                    = 5, 
-    OpticksGenstep_FABRICATED               = 6, 
-    OpticksGenstep_EMITSOURCE               = 7, 
-    OpticksGenstep_NATURAL                  = 8, 
-    OpticksGenstep_MACHINERY                = 9, 
-    OpticksGenstep_G4GUN                    = 10, 
-    OpticksGenstep_PRIMARYSOURCE            = 11, 
-    OpticksGenstep_GENSTEPSOURCE            = 12, 
-    OpticksGenstep_NumType                  = 13 
+    OpticksGenstep_DsG4Scintillation_r4695  = 5, 
+    OpticksGenstep_TORCH                    = 6, 
+    OpticksGenstep_FABRICATED               = 7, 
+    OpticksGenstep_EMITSOURCE               = 8, 
+    OpticksGenstep_NATURAL                  = 9, 
+    OpticksGenstep_MACHINERY                = 10, 
+    OpticksGenstep_G4GUN                    = 11, 
+    OpticksGenstep_PRIMARYSOURCE            = 12, 
+    OpticksGenstep_GENSTEPSOURCE            = 13, 
+    OpticksGenstep_NumType                  = 14 
 };
     
   

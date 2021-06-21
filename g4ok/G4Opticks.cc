@@ -1378,24 +1378,6 @@ int  G4Opticks::getGenstepReservation() const
     return m_genstep_collector->getReservation() ;  
 }
 
-/*
-void G4Opticks::BeginOfGenstep(char gentype, int numPhotons, int offset)
-{
-    if(m_recorder) 
-    {
-        m_recorder->BeginOfGenstep(gentype, numPhotons, offset);  
-    }
-}
-void G4Opticks::EndOfGenstep()
-{
-    if(m_recorder) 
-    {
-        m_recorder->EndOfGenstep();  
-    }
-}
-*/
-
-
 
 CGenstep G4Opticks::collectGenstep_G4Scintillation_1042(  
      const G4Track* aTrack, 
@@ -1420,7 +1402,8 @@ CGenstep G4Opticks::collectGenstep_G4Scintillation_1042(
     G4double preVelocity  = pPreStepPoint->GetVelocity() ; 
     G4double postVelocity = pPostStepPoint->GetVelocity() ; 
  
-    CGenstep gs  = collectScintillationStep(
+    assert( m_genstep_collector ); 
+    CGenstep gs = m_genstep_collector->collectScintillationStep(
 
          OpticksGenstep_G4Scintillation_1042,           // (int)gentype       (0) 
          aTrack->GetTrackID(),                          // (int)ParenttId     
@@ -1456,18 +1439,20 @@ CGenstep G4Opticks::collectGenstep_G4Scintillation_1042(
     LOG(LEVEL) << gs.desc() ; 
     return gs ; 
 }
- 
-
 
 
 /**
-G4Opticks::collectScintillationStep
--------------------------------------
+G4Opticks::collectGenstep_DsG4Scintillation_r3971
+-----------------------------------------------------
 
-This method is tied to a particular implementation of 
-scintillation and uses parameter names from that implementation.
-The GPU generation in optixrap/cu/scintillationstep.h 
-is tightly tied to this.
+Gensteps are have the size of 6 quads, eg 6*float4.
+The meaning of the content of the genstep, particularly 
+the last two quads depend on the particular implementation 
+of scintillation and uses parameter names from that implementation.
+
+Separate scintillation structs to handle different versions
+of scintillation implementation are used to interpret the 
+gensteps, see eg optixrap/cu/scintillationstep.h 
 
 slowerRatio
 slowTimeConstant
@@ -1479,9 +1464,6 @@ scnt
      loop index, 1:fast 2:slow
 
 **/
-
-
-
 
 CGenstep G4Opticks::collectGenstep_DsG4Scintillation_r3971(  
      const G4Track* aTrack, 
@@ -1500,144 +1482,117 @@ CGenstep G4Opticks::collectGenstep_DsG4Scintillation_r3971(
     G4ThreeVector x0 = pPreStepPoint->GetPosition();
     G4double      t0 = pPreStepPoint->GetGlobalTime();
     G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
+    G4double meanVelocity = (pPreStepPoint->GetVelocity()+pPostStepPoint->GetVelocity())/2. ; 
 
     const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
     const G4Material* aMaterial = aTrack->GetMaterial();
 
-    G4double meanVelocity = (pPreStepPoint->GetVelocity()+pPostStepPoint->GetVelocity())/2. ; 
- 
-    CGenstep gs = collectScintillationStep(
+    assert( m_genstep_collector ); 
+    CGenstep gs = m_genstep_collector->collectScintillationStep(
 
-         OpticksGenstep_DsG4Scintillation_r3971,        // (int)gentype       (0) 
-         aTrack->GetTrackID(),                          // (int)ParenttId     
-         aMaterial->GetIndex(),                         // (int)MaterialIndex
-         numPhotons,                                    // (int)NumPhotons
+        OpticksGenstep_DsG4Scintillation_r3971,         // (int)gentype                   (0)
+        aTrack->GetTrackID(),                           // (int)parentId                                        
+        aMaterial->GetIndex(),                          // (int)currently_not_used                        
+        numPhotons,
 
-         x0.x(),                                        // x0.x               (1)
-         x0.y(),                                        // x0.y
-         x0.z(),                                        // x0.z
-         t0,                                            // t0 
+        x0.x(),                                         // (double) preStep position      (1)
+        x0.y(),
+        x0.z(),
+        t0,                                             // (double) preStep global time
 
-         deltaPosition.x(),                             // DeltaPosition.x    (2)
-         deltaPosition.y(),                             // DeltaPosition.y    
-         deltaPosition.z(),                             // DeltaPosition.z    
-         aStep->GetStepLength(),                        // step_length 
+        deltaPosition.x(),                              // DeltaPosition.x                (2)
+        deltaPosition.y(),                              // DeltaPosition.y    
+        deltaPosition.z(),                              // DeltaPosition.z    
+        aStep->GetStepLength(),                         // step_length 
 
-         aParticle->GetDefinition()->GetPDGEncoding(),  // (int)code          (3) 
-         aParticle->GetDefinition()->GetPDGCharge(),    // charge
-         aTrack->GetWeight(),                           // weight 
-         meanVelocity,                                  // MeanVelocity 
+        aParticle->GetDefinition()->GetPDGEncoding(),  // (int)code                       (3) 
+        aParticle->GetDefinition()->GetPDGCharge(),    // charge
+        aTrack->GetWeight(),                           // weight 
+        meanVelocity,                                  // MeanVelocity 
 
-         scnt,                                          // (int) scnt    fast/slow loop index  (4)
-         slowerRatio,                                   // slowerRatio
-         slowTimeConstant,                              // slowTimeConstant
-         slowerTimeConstant,                            // slowerTimeConstant
+        scnt,                                          // (int) fast/slow scnt index      (4)
+        slowerRatio,                                   // slowerRatio
+        slowTimeConstant,                              // slowTimeConstant
+        slowerTimeConstant,                            // slowerTimeConstant
 
-         ScintillationTime,                             //  ScintillationTime         (5)
-         0,                                             //  formerly ScintillationIntegralMax : BUT THAT IS BAKED INTO REEMISSION TEXTURE
-         0,                                             //  Other1
-         0                                              //  Other2
-    ) ;
+        ScintillationTime,                             //  ScintillationTime              (5)
+        0,                                             //  
+        0,                                             // 
+        0                                              // 
+    );
 
-    //std::cout << "g4ok+++" << std::endl ;    // marker
     LOG(LEVEL)  << gs.desc() ; 
     return gs ; 
 }
 
 
+CGenstep G4Opticks::collectGenstep_DsG4Scintillation_r4695(  
+     const G4Track* aTrack, 
+     const G4Step* aStep, 
+     G4int    numPhotons, 
+     G4int    scnt,          //  1:fast 2:slow
+     G4double ScintillationTime
+    )
+{
+    G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
+    G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
 
+    G4ThreeVector x0 = pPreStepPoint->GetPosition();
+    G4double      t0 = pPreStepPoint->GetGlobalTime();
+    G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
+    G4double meanVelocity = (pPreStepPoint->GetVelocity()+pPostStepPoint->GetVelocity())/2. ; 
 
-
-CGenstep G4Opticks::collectScintillationStep
-(
-        G4int gentype,
-        G4int parentId,
-        G4int materialId,
-        G4int numPhotons,
-
-        G4double x0_x,
-        G4double x0_y,
-        G4double x0_z,
-        G4double t0,
-
-        G4double deltaPosition_x,
-        G4double deltaPosition_y,
-        G4double deltaPosition_z,
-        G4double stepLength,
-
-        G4int pdgCode,
-        G4double pdgCharge,
-        G4double weight,
-        G4double meanVelocity,
-
-        G4int scntId,
-        G4double slowerRatio,
-        G4double slowTimeConstant,
-        G4double slowerTimeConstant,
-
-        G4double scintillationTime,
-        G4double scintillationIntegrationMax,
-        G4double spare1 = 0,
-        G4double spare2 = 0
-        ) {
-    LOG(debug) << "[";
-
-
-    bool skip = isSkipGencode(gentype); 
-    if(skip)
-    {
-        m_skip_gencode_totals[gentype] += 1 ; 
-        assert(0); 
-    }
-
-
-    if( !m_genstep_collector ) 
-    {
-        LOG(fatal) << " m_genstep_collector NULL " << std::endl << dbgdesc() ; 
-    } 
+    const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
+    const G4Material* aMaterial = aTrack->GetMaterial();
 
     assert( m_genstep_collector ); 
     CGenstep gs = m_genstep_collector->collectScintillationStep(
-             gentype,
-             parentId,
-             materialId,
-             numPhotons,
 
-             x0_x,
-             x0_y,
-             x0_z,
-             t0,
+        OpticksGenstep_DsG4Scintillation_r4695,         // (int)gentype                   (0)
+        aTrack->GetTrackID(),                           // (int)parentId                                        
+        aMaterial->GetIndex(),                          // (int)currently_not_used                        
+        numPhotons,
 
-             deltaPosition_x,
-             deltaPosition_y,
-             deltaPosition_z,
-             stepLength,
+        x0.x(),                                         // (double) preStep position      (1)
+        x0.y(),
+        x0.z(),
+        t0,                                             // (double) preStep global time
 
-             pdgCode,
-             pdgCharge,
-             weight,
-             meanVelocity,
+        deltaPosition.x(),                              // DeltaPosition.x                (2)
+        deltaPosition.y(),                              // DeltaPosition.y    
+        deltaPosition.z(),                              // DeltaPosition.z    
+        aStep->GetStepLength(),                         // step_length 
 
-             scntId,
-             slowerRatio,
-             slowTimeConstant,
-             slowerTimeConstant,
+        aParticle->GetDefinition()->GetPDGEncoding(),  // (int)code                       (3) 
+        aParticle->GetDefinition()->GetPDGCharge(),    // charge
+        aTrack->GetWeight(),                           // weight 
+        meanVelocity,                                  // MeanVelocity 
 
-             scintillationTime,
-             scintillationIntegrationMax,
-             spare1,
-             spare2
-            );
-    LOG(debug) << "]";
+        scnt,                                          // (int) fast/slow scnt index      (4)
+        0,                                             // 
+        0,                                             // 
+        0,                                             // 
+
+        ScintillationTime,                             // (double)ScintillationTime       (5)
+        0,                                             //  
+        0,                                             // 
+        0                                              // 
+    );
+
+    LOG(LEVEL)  << gs.desc() ; 
     return gs ; 
 }
 
 
+/**
+G4Opticks::collectGenstep_G4Cerenkov_1042
+--------------------------------------------
 
-
-
-
-
+2018/9/8 Geant4.1042 requires both velocities so:
+     meanVelocity->preVelocity
+     spare1->postVelocity 
+     see notes/issues/ckm_cerenkov_generation_align_small_quantized_deviation_g4_g4.rst
+**/
 
 CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(  
      const G4Track*  aTrack, 
@@ -1654,7 +1609,6 @@ CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(
      G4double    meanNumberOfPhotons2
     )
 {
-
     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
 
@@ -1668,7 +1622,8 @@ CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(
     G4double preVelocity = pPreStepPoint->GetVelocity() ;
     G4double postVelocity = pPostStepPoint->GetVelocity() ; 
  
-    CGenstep gs = collectCerenkovStep(
+    assert( m_genstep_collector ); 
+    CGenstep gs = m_genstep_collector->collectCerenkovStep(
 
          OpticksGenstep_G4Cerenkov_1042,                // (int)gentype       (0)
          aTrack->GetTrackID(),                          // (int)ParenttId     
@@ -1690,16 +1645,16 @@ CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(
          aTrack->GetWeight(),                           // weight 
          preVelocity,                                   // preVelocity 
 
-         betaInverse,
+         betaInverse,                                   //                    (4) 
          pmin,
          pmax,
          maxCos,
 
-         maxSin2,
+         maxSin2,                                       //                    (5)
          meanNumberOfPhotons1,
          meanNumberOfPhotons2,
          postVelocity
-    ) ;
+    );
 
     LOG(LEVEL)  << gs.desc() ;  
     return gs ; 
@@ -1707,92 +1662,7 @@ CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(
 
 
 
-
-CGenstep G4Opticks::collectCerenkovStep
-    (
-        G4int                gentype, 
-        G4int                parentId,
-        G4int                materialId,
-        G4int                numPhotons,
-    
-        G4double             x0_x,  
-        G4double             x0_y,  
-        G4double             x0_z,  
-        G4double             t0, 
-
-        G4double             deltaPosition_x, 
-        G4double             deltaPosition_y, 
-        G4double             deltaPosition_z, 
-        G4double             stepLength, 
-
-        G4int                pdgCode, 
-        G4double             pdgCharge, 
-        G4double             weight, 
-        G4double             preVelocity,     
-
-        G4double             betaInverse,
-        G4double             pmin,
-        G4double             pmax,
-        G4double             maxCos,
-
-        G4double             maxSin2,
-        G4double             meanNumberOfPhotons1,
-        G4double             meanNumberOfPhotons2,
-        G4double             postVelocity
-    )
-{
-    LOG(debug) << "[" ; 
-    bool skip = isSkipGencode(gentype); 
-    if(skip)
-    {
-        m_skip_gencode_totals[gentype] += 1 ; 
-        assert(0); 
-    }
-
-
-
-    if( !m_genstep_collector ) 
-    {
-        LOG(fatal) << " m_genstep_collector NULL " << std::endl << dbgdesc() ; 
-    } 
-
-    assert( m_genstep_collector ); 
-    CGenstep gs = m_genstep_collector->collectCerenkovStep(
-                       gentype, 
-                       parentId,
-                       materialId,
-                       numPhotons,
-
-                       x0_x,
-                       x0_y,
-                       x0_z,
-                       t0,
-
-                       deltaPosition_x,
-                       deltaPosition_y,
-                       deltaPosition_z,
-                       stepLength,
  
-                       pdgCode,
-                       pdgCharge,
-                       weight,
-                       preVelocity,
-
-                       betaInverse,
-                       pmin,
-                       pmax,
-                       maxCos,
-
-                       maxSin2,
-                       meanNumberOfPhotons1,
-                       meanNumberOfPhotons2,
-                       postVelocity
-                       ) ;
-    LOG(debug) << "]" ; 
-
-    return gs ; 
-}
-  
 
 /**
 G4Opticks::collectDefaultTorchStep

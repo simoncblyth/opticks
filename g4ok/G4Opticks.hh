@@ -215,15 +215,7 @@ class G4OK_API G4Opticks
         void setGenstepReservation(int max_gensteps_expected);
         int  getGenstepReservation() const ;
 
-        // lifecycle reporting used by the optional G4OpticksRecorder
-        // call these from S + C processes before and after the 
-        // photon generation loop when doing Opticks/Geant4 matching 
-        //
-        // try moving to automate these calls from CGenstepCollector
-        //void BeginOfGenstep(char gentype, int numPhotons, int offset );
-        //void EndOfGenstep();
-
-
+    public:
         CGenstep collectGenstep_G4Cerenkov_1042(  
              const G4Track*  aTrack, 
              const G4Step*   aStep, 
@@ -238,47 +230,6 @@ class G4OK_API G4Opticks
              G4double    meanNumberOfPhotons1,
              G4double    meanNumberOfPhotons2
             );
-
-
-        /**
-        2018/9/8 Geant4.1042 requires both velocities so:
-             meanVelocity->preVelocity
-             spare1->postVelocity 
-             see notes/issues/ckm_cerenkov_generation_align_small_quantized_deviation_g4_g4.rst
-        **/
-        CGenstep collectCerenkovStep(
-            G4int                id, 
-            G4int                parentId,
-            G4int                materialId,
-            G4int                numPhotons,
-    
-            G4double             x0_x,  
-            G4double             x0_y,  
-            G4double             x0_z,  
-            G4double             t0, 
-
-            G4double             deltaPosition_x, 
-            G4double             deltaPosition_y, 
-            G4double             deltaPosition_z, 
-            G4double             stepLength, 
-
-            G4int                pdgCode, 
-            G4double             pdgCharge, 
-            G4double             weight, 
-            G4double             preVelocity, 
-
-            G4double             betaInverse,
-            G4double             pmin,
-            G4double             pmax,
-            G4double             maxCos,
-
-            G4double             maxSin2,
-            G4double             meanNumberOfPhotons1,
-            G4double             meanNumberOfPhotons2,
-            G4double             postVelocity
-        );
-
-
 
         CGenstep collectGenstep_G4Scintillation_1042(  
              const G4Track* aTrack, 
@@ -300,38 +251,14 @@ class G4OK_API G4Opticks
              G4double ScintillationTime
             );
 
-
-	   CGenstep collectScintillationStep(
-            G4int id,
-            G4int parentId,
-            G4int materialId,
-            G4int numPhotons,
-
-            G4double x0_x,
-            G4double x0_y,
-            G4double x0_z,
-            G4double t0,
-
-            G4double deltaPosition_x,
-            G4double deltaPosition_y,
-            G4double deltaPosition_z,
-            G4double stepLength,
-
-            G4int pdgCode,
-            G4double pdgCharge,
-            G4double weight,
-            G4double meanVelocity,
-
-            G4int scntId,
-            G4double slowerRatio,
-            G4double slowTimeConstant,
-            G4double slowerTimeConstant,
-
-            G4double scintillationTime,
-            G4double scintillationIntegrationMax,
-            G4double spare1,
-            G4double spare2
+        CGenstep collectGenstep_DsG4Scintillation_r4695(  
+             const G4Track* aTrack, 
+             const G4Step* aStep, 
+             G4int    numPhotons, 
+             G4int    scnt,         
+             G4double ScintillationTime
             );
+
 
     private:
         CGenstep collectDefaultTorchStep(unsigned num_photons=0, int node_index=-1, unsigned originTrackID=44 );  // zero -> default num_photons

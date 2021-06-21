@@ -74,6 +74,7 @@ class CFG4_API CGenstepCollector
         friend struct CGenstepCollector2Test ; 
     public:
         static const plog::Severity LEVEL ; 
+        static CGenstepCollector* INSTANCE ;      
         static CGenstepCollector* Get();
     public:
         CGenstepCollector(const NLookup* lookup);  
@@ -130,15 +131,15 @@ class CFG4_API CGenstepCollector
             G4double             weight, 
             G4double             meanVelocity, 
 
-            G4int                scntId,
-            G4double             slowerRatio,
-            G4double             slowTimeConstant,
-            G4double             slowerTimeConstant,
+            G4int                i40_scntId,  //  CAUTION: THE MEANINGS OF THESE LAST 8 VARY WITH IMPLEMENTATION/gentype
+            G4double             d41_slowerRatio,
+            G4double             d42_slowTimeConstant,
+            G4double             d43_slowerTimeConstant,
 
-            G4double             scintillationTime,
-            G4double             scintillationIntegrationMax,
-            G4double             spare1=0,
-            G4double             spare2=0
+            G4double             d50_scintillationTime,
+            G4double             d51_scintillationIntegrationMax,
+            G4double             d52_spare1,
+            G4double             d53_spare2
         );
    public:
         CGenstep collectCerenkovStep(
@@ -177,7 +178,6 @@ class CFG4_API CGenstepCollector
          CGenstep collectTorchGenstep(const OpticksGenstep* gs);
    private:
          CGenstep addGenstep(unsigned numPhotons, char gentype);
-         static CGenstepCollector* INSTANCE ;      
    private:
          const NLookup*    m_lookup ; 
          NPY<float>*       m_genstep ;
@@ -195,5 +195,4 @@ class CFG4_API CGenstepCollector
          std::vector<unsigned> m_gs_offset ; 
          std::vector<char>     m_gs_type ; 
          std::vector<CGenstep> m_gs ; 
-
 };
