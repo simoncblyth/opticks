@@ -7,13 +7,13 @@
 
 #include "QUDA_CHECK.h"
 #include "QRng.hh"
-#include "QScint.hh"
+#include "QCtx.hh"
 #include "QTex.hh"
 
 
-const plog::Severity QScint::LEVEL = PLOG::EnvLevel("QScint", "INFO"); 
+const plog::Severity QCtx::LEVEL = PLOG::EnvLevel("QCtx", "INFO"); 
 
-QScint::QScint(const GScintillatorLib* lib_)
+QCtx::QCtx(const GScintillatorLib* lib_)
     :
     lib(lib_),
     buf(lib->getBuffer()),
@@ -26,7 +26,7 @@ QScint::QScint(const GScintillatorLib* lib_)
     init(); 
 }
 
-void QScint::init()
+void QCtx::init()
 {
     LOG(LEVEL) 
         << " buf " << ( buf ? buf->getShapeString() : "-" ) 
@@ -39,12 +39,11 @@ void QScint::init()
 }
 
 
-extern "C" void QScint_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength ); 
-extern "C" void QScint_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, quad4* photon    , unsigned num_photon ); 
+extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength ); 
+extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, quad4* photon    , unsigned num_photon ); 
 
 
-
-void QScint::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
+void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
 {
     threadsPerBlock.x = 512 ; 
     threadsPerBlock.y = 1 ; 
@@ -55,8 +54,7 @@ void QScint::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned w
     numBlocks.z = 1 ; 
 }
 
-
-void QScint::generate( float* wavelength, unsigned num_wavelength )
+void QCtx::generate( float* wavelength, unsigned num_wavelength )
 {
     LOG(LEVEL) << "[" ; 
     dim3 numBlocks ; 
@@ -66,14 +64,14 @@ void QScint::generate( float* wavelength, unsigned num_wavelength )
     float* d_wavelength ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_wavelength ), num_wavelength*sizeof(float) )); 
 
-    QScint_generate_wavelength(numBlocks, threadsPerBlock, rng->d_rng_states, tex->texObj, d_wavelength, num_wavelength );  
+    QCtx_generate_wavelength(numBlocks, threadsPerBlock, rng->d_rng_states, tex->texObj, d_wavelength, num_wavelength );  
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( wavelength ), d_wavelength, sizeof(float)*num_wavelength, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d_wavelength) ); 
 
     LOG(LEVEL) << "]" ; 
 }
 
-void QScint::dump( float* wavelength, unsigned num_wavelength )
+void QCtx::dump( float* wavelength, unsigned num_wavelength )
 {
     LOG(LEVEL); 
     for(unsigned i=0 ; i < num_wavelength ; i++)
@@ -86,8 +84,7 @@ void QScint::dump( float* wavelength, unsigned num_wavelength )
     }
 }
 
-
-void QScint::generate( quad4* photon, unsigned num_photon )
+void QCtx::generate( quad4* photon, unsigned num_photon )
 {
     LOG(LEVEL) << "[" ; 
     dim3 numBlocks ; 
@@ -97,14 +94,14 @@ void QScint::generate( quad4* photon, unsigned num_photon )
     quad4* d_photon ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_photon ), num_photon*sizeof(quad4) )); 
 
-    QScint_generate_photon(numBlocks, threadsPerBlock, rng->d_rng_states, tex->texObj, d_photon, num_photon );  
+    QCtx_generate_photon(numBlocks, threadsPerBlock, rng->d_rng_states, tex->texObj, d_photon, num_photon );  
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( photon ), d_photon, sizeof(quad4)*num_photon, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d_photon) ); 
 
     LOG(LEVEL) << "]" ; 
 }
 
-void QScint::dump( quad4* photon, unsigned num_photon )
+void QCtx::dump( quad4* photon, unsigned num_photon )
 {
     LOG(LEVEL); 
     for(unsigned i=0 ; i < num_photon ; i++)

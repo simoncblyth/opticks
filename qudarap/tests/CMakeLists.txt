@@ -5,10 +5,13 @@ include(OpticksBuildOptions)
 
 
 set(TEST_SOURCES
+
+   QTexRotateTest.cc
    QRngTest.cc
    QGenTest.cc
-   QScintTest.cc
-   QTexRotateTest.cc
+   #QScintTest.cc
+   QPolyTest.cc
+   QCtxTest.cc
 
 )
 

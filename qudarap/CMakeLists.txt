@@ -28,8 +28,14 @@ set(SOURCES
     QTex.cc
     QTex.cu
 
-    QScint.cc
-    QScint.cu
+   # QScint.cc
+   # QScint.cu
+
+    QPoly.cc
+    QPoly.cu
+
+    QCtx.cc
+    QCtx.cu
 )
 
 SET(HEADERS
@@ -40,7 +46,9 @@ SET(HEADERS
     QGen.hh
     QU.hh
     QTex.hh
-    QScint.hh
+  #  QScint.hh
+    QPoly.hh
+    QCtx.hh
 )
 
 set(_LIBS
