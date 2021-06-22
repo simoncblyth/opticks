@@ -28,6 +28,9 @@ set(SOURCES
     QTex.cc
     QTex.cu
 
+    QBnd.cc
+    QBnd.cu
+
    # QScint.cc
    # QScint.cu
 
@@ -46,15 +49,12 @@ SET(HEADERS
     QGen.hh
     QU.hh
     QTex.hh
+
+    QBnd.hh
+
   #  QScint.hh
     QPoly.hh
     QCtx.hh
-)
-
-set(_LIBS
-   Opticks::SysRap
-   Opticks::OpticksCUDA
-   Opticks::OKConf
 )
 
 set(LIBS

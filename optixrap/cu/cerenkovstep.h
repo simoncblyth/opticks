@@ -52,7 +52,6 @@ struct CerenkovStep
     float MeanNumberOfPhotons1 ; 
     float MeanNumberOfPhotons2 ; 
     float postVelocity ; 
-    //int   BialkaliMaterialIndex  ;
 
     // above are loaded parameters, below are derived from them
 
@@ -68,7 +67,7 @@ __device__ void csload( CerenkovStep& cs, optix::buffer<float4>& cerenkov, unsig
  
     ipmn.f = cerenkov[offset+0];     
     //cs.Id = ipmn.i.x ; 
-    cs.Id = genstep_id ; 
+    cs.Id = genstep_id ;     // <-- overwriting the gencode
     cs.ParentId = ipmn.i.y ; 
     cs.MaterialIndex = ipmn.i.z ; 
     cs.NumPhotons = ipmn.i.w ; 
@@ -217,6 +216,10 @@ __device__ void csdebug( CerenkovStep& cs )
 
 //#define ALIGN_DEBUG 1 
 
+/**
+using boundary_lookup funcs, which require a handful of globals
+**/
+
 __device__ void
 generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 {
@@ -257,7 +260,7 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
         wavelength = boundary_sample_reciprocal_domain_v3(u);   
 
-        float4 props = boundary_lookup(wavelength, cs.MaterialIndex, 0);
+        float4 props = boundary_lookup(wavelength, cs.MaterialIndex, 0);  // USING cs.MaterialIndex not using geometry 
 
         sampledRI = props.x ; 
 

@@ -8,6 +8,14 @@
 
 #include "qgs.h"
 
+/**
+qctx
+=====
+
+This is aiming to replace the OptiX 6 context in a CUDA-centric way.
+
+**/
+
 struct qctx
 {
     curandState*        r ; 
@@ -26,13 +34,13 @@ struct qctx
 }; 
 
 
-QCTX_METHOD float qctx::scint_wavelength() 
+inline QCTX_METHOD float qctx::scint_wavelength() 
 {
     float u0 = curand_uniform(r); 
     return tex2D<float>(scint_tex, u0, 0.f);    
 }
 
-QCTX_METHOD void qctx::scint_dirpol(quad4& p)
+inline QCTX_METHOD void qctx::scint_dirpol(quad4& p)
 {
     float u0 = curand_uniform(r) ; 
     float u1 = curand_uniform(r) ; 
@@ -71,14 +79,14 @@ QCTX_METHOD void qctx::scint_dirpol(quad4& p)
     p.q2.f.w = wavelength ; 
 }
 
-QCTX_METHOD void qctx::reemit_photon(quad4& p, float scintillationTime)
+inline QCTX_METHOD void qctx::reemit_photon(quad4& p, float scintillationTime)
 {
     scint_dirpol(p); 
     float u4 = curand_uniform(r) ; 
     p.q0.f.w += -scintillationTime*logf(u4) ;
 }
 
-QCTX_METHOD void qctx::scint_photon(quad4& p, GS& g)
+inline QCTX_METHOD void qctx::scint_photon(quad4& p, GS& g)
 {
     p.zero(); 
     scint_dirpol(p); 

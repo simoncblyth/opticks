@@ -23,6 +23,8 @@ class Preprocessor(object):
             print(self.fmt % (-1,",".join(flags),""))
         pass
         rlines = open(path,"r").read().splitlines()
+
+        ## setup the line numbers to parse
         if len(lines) == 0:
             lines = list(range(len(rlines)))
         elif len(lines) == 2:
@@ -64,6 +66,9 @@ class Preprocessor(object):
 
     def parse_line(self, line):
         """
+        :param line: input code line
+        :return tag: 
+
         1. #ifdef TAG -> [+TAG] 
         2. #else      -> [%TAG]     
         3. #endif     -> [@TAG]
@@ -88,6 +93,11 @@ class Preprocessor(object):
 
     def add_tag(self, tag):
         """
+        :param tag:
+
+        Removes related tags according to the below rules, adds the 
+        tag only when not present already.
+
         1. -TAG evicts corresponding +TAG
         2. %TAG evicts corresponding +TAG
         2. @TAG evicts corresponding +TAG or -TAG 

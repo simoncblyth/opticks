@@ -35,9 +35,11 @@ unsigned CPhotonInfo::gn() const { return pho.gn ; } // 0-based generation index
 CPhotonInfo::Get
 ------------------
 
+Extract the CPho label from the G4VUserTrackInformation
+
 As S+C photon tracks should always be labelled 
 the CPho::FabricateTrackIdPhoton should only be relevant for 
-input "primary" photons. The input photons are artificially contructed 
+input "primary" photons. The input photons are artificially constructed 
 torch 'T' photons used for debugging.
 
 **/

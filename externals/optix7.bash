@@ -34,6 +34,24 @@ See Also
 * owl-;owl-vi  Higher Level Layer on top of OptiX7 including 
 
 
+
+From OptiX 7.2 Release Notes : **Specialization**
+-----------------------------------------------------
+
+What's New in 7.2.0 
+
+Specialization is a powerful new feature that allows
+renderers to maintain generality while increasing performance on specific use
+cases. A single version of the PTX can be supplied to OptiX and specialized to
+toggle specific features on and off. The OptiX compiler is leveraged to fold
+constant values and elide complex code that is not required by a particular
+scene setup. Specialized values are supplied during module creation with
+OptixModuleCompileOptions::boundValues. See the Programming Guide section
+6.3.1, “Parameter specialization”, and the optixBoundValues sample.
+
+* https://raytracing-docs.nvidia.com/optix7/guide/index.html#program_pipeline_creation#parameter-specialization
+
+
 Driver Versions for each OptiX Release
 ------------------------------------------
 

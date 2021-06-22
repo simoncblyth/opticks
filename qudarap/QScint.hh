@@ -17,9 +17,11 @@ struct QUDARAP_API QScint
 
     const GScintillatorLib* lib ; 
     NPY<float>*             buf ; 
+
     unsigned                ni ; 
     unsigned                nj ; 
     unsigned                nk ; 
+
     QTex<float>*            tex ; 
     const QRng*             rng ; 
 

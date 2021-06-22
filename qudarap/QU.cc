@@ -1,3 +1,4 @@
+#include "scuda.h"
 #include "QUDA_CHECK.h"
 #include "QU.hh"
 #include "curand_kernel.h"
@@ -42,6 +43,9 @@ template float* QU::DownloadArray<float>(const float* d_array, unsigned num_item
 
 template unsigned* QU::UploadArray<unsigned>(const unsigned* array, unsigned num_items) ;
 template unsigned* QU::DownloadArray<unsigned>(const unsigned* d_array, unsigned num_items) ;
+
+template quad4* QU::UploadArray<quad4>(const quad4* array, unsigned num_items) ;
+template quad4* QU::DownloadArray<quad4>(const quad4* d_array, unsigned num_items) ;
 
 template curandState* QU::UploadArray<curandState>(const curandState* array, unsigned num_items) ;
 template curandState* QU::DownloadArray<curandState>(const curandState* d_array, unsigned num_items) ;

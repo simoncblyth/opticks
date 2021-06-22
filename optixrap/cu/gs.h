@@ -1,13 +1,11 @@
 #pragma once
+/**
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-   #define QGS_METHOD __device__
-#else
-   #define QGS_METHOD 
-#endif 
 
 
+
+**/
 struct ST
 {
     int Id    ;
@@ -21,15 +19,14 @@ struct ST
     float3 DeltaPosition ;
     float  step_length ;
 
+    int code; 
+    float charge ;
+    float weight ;
+    float preVelocity ; 
 }; 
 
 struct CK
 {
-    int   code; 
-    float charge ;
-    float weight ;
-    float preVelocity ; 
-
     float BetaInverse ; 
     float Pmin ; 
     float Pmax ; 
@@ -43,12 +40,7 @@ struct CK
 
 struct SC0
 {
-    int   code; 
-    float charge ;
-    float weight ;
-    float preVelocity ; 
-
-    int   scnt ;
+    int scnt ;
     float slowerRatio ;   
     float slowTimeConstant ;    
     float slowerTimeConstant ;
@@ -61,12 +53,7 @@ struct SC0
 
 struct SC1
 {
-    int   code; 
-    float charge ;
-    float weight ;
-    float midVelocity ; 
-
-    int   scnt ;
+    int scnt ;
     float f41 ;   
     float f42 ; 
     float f43 ;
@@ -82,11 +69,12 @@ struct GS
     ST st ; 
     union
     {
-        CK  ck ; 
+        CK ck ; 
         SC0 sc0 ; 
         SC1 sc1 ; 
     };
 };
+
 
 
 struct QG
@@ -95,25 +83,21 @@ struct QG
     {
         quad6 q ; 
         GS    g ;  
+        //TS    t ; 
     };
 
-    QGS_METHOD void load(const quad6* src, unsigned id);
-    QGS_METHOD void zero(); 
+    void load(const quad6* src, unsigned id);  
 }; 
 
-inline QGS_METHOD void QG::zero()
-{ 
-    q.zero();    
+void QG::load(const quad6* src, unsigned id)
+{
+    const quad6& s = *(src+id) ; 
+    q.q0.f = s.q0.f ; 
+    q.q1.f = s.q1.f ; 
+    q.q2.f = s.q2.f ; 
+    q.q3.f = s.q3.f ; 
+    q.q4.f = s.q4.f ; 
+    q.q5.f = s.q5.f ; 
 }
 
-inline QGS_METHOD void QG::load(const quad6* src, unsigned id)
-{
-    const quad6& sgs = *(src+id) ; 
-    q.q0.f = sgs.q0.f ; 
-    q.q1.f = sgs.q1.f ; 
-    q.q2.f = sgs.q2.f ; 
-    q.q3.f = sgs.q3.f ; 
-    q.q4.f = sgs.q4.f ; 
-    q.q5.f = sgs.q5.f ; 
-}
 

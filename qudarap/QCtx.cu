@@ -22,6 +22,10 @@ extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, c
     _QCtx_generate_wavelength<<<numBlocks,threadsPerBlock>>>( rng_states, texObj, wavelength, num_wavelength );
 } 
 
+/**
+TODO: qctx other than offsetting can be made the same for all photons, so makes sense to construct it once CPU side  
+and pass in reference argument 
+**/
 
 __global__ void _QCtx_generate_photon(curandState* rng_states, cudaTextureObject_t texObj, quad4* photon, unsigned num_photon )
 {

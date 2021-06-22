@@ -1,6 +1,8 @@
+#include "scuda.h"
 #include <cuda_runtime.h>
 #include <iostream>
 #include "cudaCheckErrors.h"
+#include "QU.hh"
 #include "QTex.hh"
 
 template<typename T>
@@ -13,7 +15,8 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_)
     d_dst(nullptr),
     cuArray(nullptr),
     channelDesc(cudaCreateChannelDesc<T>()),
-    texObj(0)
+    texObj(0),
+    meta(new quad4)
 {
     init(); 
 }
@@ -33,6 +36,11 @@ void QTex<T>::init()
     createArray();
     uploadToArray();
     createTextureObject();
+
+    meta->q0.u.x = width ; 
+    meta->q0.u.y = height ; 
+    meta->q0.u.z = 0 ; 
+    meta->q0.u.w = 0 ; 
 }
 
 template<typename T>
@@ -52,6 +60,13 @@ void QTex<T>::uploadToArray()
     cudaMemcpyKind kind = cudaMemcpyHostToDevice ;
     cudaMemcpyToArray(dst, wOffset, hOffset, src, count, kind );
     cudaCheckErrors("cudaMemcpyToArray");
+}
+
+template<typename T>
+void QTex<T>::uploadMeta()
+{
+    // not doing this automatically as will need to add some more meta 
+    d_meta = QU::UploadArray<quad4>(meta, 1 );  
 }
 
 template<typename T>
@@ -118,15 +133,16 @@ void QTex<T>::rotate(float theta)
 
 
 /**
-Do nothing template specialization for float textures, rotation is only relevant to uchar4 2d images
+Do nothing template specialization for float and float4 textures, rotation is only relevant to uchar4 2d images
 **/
-template<>  void QTex<float>::rotate(float theta)
-{
-}
+template<>  void QTex<float>::rotate(float theta){}
+template<>  void QTex<float4>::rotate(float theta){}
+
 
 
 // API export is essential on this template struct, otherwise get all symbols missing 
 template struct QUDARAP_API QTex<uchar4>;
 template struct QUDARAP_API QTex<float>;
+template struct QUDARAP_API QTex<float4>;
 
 

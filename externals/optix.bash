@@ -47,6 +47,11 @@ Ray tracing torus
 
 
 
+* https://resy-server.inf.uni-bayreuth.de/resypub/files/werner2011a.Integration.of.an.Interactive.RaytracingBased.Visualization.Component.into.an.Existing.Simulation.Kernel.pdf
+* ~/opticks_refs/werner2011a.Integration.of.an.Interactive.RaytracingBased.Visualization.Component.into.an.Existing.Simulation.Kernel.pdf
+
+
+
 
 Old Paper that describes OptiX execution model and fine-grained scheduling 
 -----------------------------------------------------------------------------

@@ -2629,6 +2629,10 @@ union quad
    uint4  u ; 
 };
 
+
+
+
+
 struct quad4 
 { 
     quad q0 ; 

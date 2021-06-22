@@ -12,6 +12,7 @@ set(TEST_SOURCES
    #QScintTest.cc
    QPolyTest.cc
    QCtxTest.cc
+   QBndTest.cc 
 
 )
 
