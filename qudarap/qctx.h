@@ -16,36 +16,63 @@ This is aiming to replace the OptiX 6 context in a CUDA-centric way.
 
 **/
 
+struct curandStateXORWOW ; 
+
 struct qctx
 {
-    curandState*        r ; 
+    curandStateXORWOW*  r ; 
+
     cudaTextureObject_t scint_tex ; 
+    quad4*              scint_meta ;
+
     cudaTextureObject_t boundary_tex ; 
+    quad4*              boundary_meta ; 
+
     quad6*              genstep ; 
     unsigned            genstep_id ; 
 
     quad4*              photon ; 
     unsigned            photon_id ; 
 
-    QCTX_METHOD float   scint_wavelength();  
-    QCTX_METHOD void    scint_dirpol(quad4& p); 
-    QCTX_METHOD void    reemit_photon(quad4& p, float scintillationTime);
-    QCTX_METHOD void    scint_photon( quad4& p, GS& g);
+#if defined(__CUDACC__) || defined(__CUDABE__)
+    QCTX_METHOD float   scint_wavelength(curandStateXORWOW& rng);  
+    QCTX_METHOD void    scint_dirpol(quad4& p, curandStateXORWOW& rng); 
+    QCTX_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
+    QCTX_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
+#else
+    qctx()
+        :
+        r(nullptr),
+        scint_tex(0),
+        scint_meta(nullptr),
+        boundary_tex(0),
+        boundary_meta(nullptr),
+        genstep(nullptr),
+        genstep_id(~0u),
+        photon(nullptr),
+        photon_id(~0u)
+    {
+    }
+#endif
+
 }; 
 
 
-inline QCTX_METHOD float qctx::scint_wavelength() 
+// TODO: get the below to work on CPU with mocked curand and tex2D
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+inline QCTX_METHOD float qctx::scint_wavelength(curandStateXORWOW& rng) 
 {
-    float u0 = curand_uniform(r); 
+    float u0 = curand_uniform(&rng); 
     return tex2D<float>(scint_tex, u0, 0.f);    
 }
 
-inline QCTX_METHOD void qctx::scint_dirpol(quad4& p)
+inline QCTX_METHOD void qctx::scint_dirpol(quad4& p, curandStateXORWOW& rng)
 {
-    float u0 = curand_uniform(r) ; 
-    float u1 = curand_uniform(r) ; 
-    float u2 = curand_uniform(r) ;   
-    float u3 = curand_uniform(r) ;   
+    float u0 = curand_uniform(&rng) ; 
+    float u1 = curand_uniform(&rng) ; 
+    float u2 = curand_uniform(&rng) ;   
+    float u3 = curand_uniform(&rng) ;   
 
     float wavelength = tex2D<float>(scint_tex, u0, 0.f);
     float weight = 1.f ; 
@@ -79,24 +106,25 @@ inline QCTX_METHOD void qctx::scint_dirpol(quad4& p)
     p.q2.f.w = wavelength ; 
 }
 
-inline QCTX_METHOD void qctx::reemit_photon(quad4& p, float scintillationTime)
+inline QCTX_METHOD void qctx::reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng)
 {
-    scint_dirpol(p); 
-    float u4 = curand_uniform(r) ; 
+    scint_dirpol(p, rng); 
+    float u4 = curand_uniform(&rng) ; 
     p.q0.f.w += -scintillationTime*logf(u4) ;
 }
 
-inline QCTX_METHOD void qctx::scint_photon(quad4& p, GS& g)
+inline QCTX_METHOD void qctx::scint_photon(quad4& p, GS& g, curandStateXORWOW& rng)
 {
     p.zero(); 
-    scint_dirpol(p); 
+    scint_dirpol(p, rng); 
 
-    float fraction = g.sc1.charge == 0.f  ? 1.f : curand_uniform(r) ;   
-    float u4 = curand_uniform(r) ; 
+    float fraction = g.sc1.charge == 0.f  ? 1.f : curand_uniform(&rng) ;   
+    float u4 = curand_uniform(&rng) ; 
 
     p.q0.f.x = g.st.x0.x + fraction*g.st.DeltaPosition.x ; 
     p.q0.f.y = g.st.x0.y + fraction*g.st.DeltaPosition.y ; 
     p.q0.f.z = g.st.x0.z + fraction*g.st.DeltaPosition.z ; 
     p.q0.f.w = g.st.t0   + fraction*g.st.step_length/g.sc1.midVelocity - g.sc1.ScintillationTime*logf(u4) ;
 }
+#endif
 

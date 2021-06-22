@@ -3,6 +3,7 @@
 #include "curand_kernel.h"
 #include "scuda.h"
 #include "qscint.h"
+#include "stdio.h"
 
 /**
 Minimize the code here, as this "junction" code cannot be easily tested/mocked for use from multiple contexts.
@@ -14,37 +15,43 @@ TODO
 
 **/
 
-__global__ void _QScint_generate_wavelength(curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength )
+__global__ void _QScint_check(unsigned width, unsigned height)
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_wavelength) return;
-
-    qscint qs ; 
-    qs.init( nullptr, 0, rng_states+id, texObj ); 
-    wavelength[id] = qs.wavelength(); 
+    unsigned ix = blockIdx.x*blockDim.x + threadIdx.x;
+    unsigned iy = blockIdx.y*blockDim.y + threadIdx.y;
+    printf( "//_QScint_check  ix %d iy %d width %d height %d \n", ix, iy, width, height ); 
 }
 
-extern "C" void QScint_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength ) 
+__global__ void _QScint_lookup(cudaTextureObject_t tex, quad4* d_meta, float* lookup, unsigned num_lookup, unsigned width, unsigned height )
 {
-    _QScint_generate_wavelength<<<numBlocks,threadsPerBlock>>>( rng_states, texObj, wavelength, num_wavelength );
+    unsigned ix = blockIdx.x*blockDim.x + threadIdx.x;
+    unsigned iy = blockIdx.y*blockDim.y + threadIdx.y;
+    if (ix >= width || iy >= height) return;
+
+    unsigned index = iy * width + ix ;
+
+    unsigned nx = d_meta ? d_meta->q0.u.x : 0 ; 
+    unsigned ny = d_meta ? d_meta->q0.u.y : 0 ; 
+
+    float x = (float(ix)+0.5f)/float(nx) ;
+    float y = (float(iy)+0.5f)/float(ny) ;
+
+    float v = tex2D<float>( tex, x, y );     
+
+    if( ix % 100 == 0 ) printf( "//_QScint_lookup  ix %d iy %d width %d height %d index %d nx %d ny %d x %10.4f y %10.4f v %10.4f \n", ix, iy, width, height, index, nx, ny, x, y, v ); 
+    lookup[index] = v ;  
+}
+
+extern "C" void QScint_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t tex, quad4* meta, float* lookup, unsigned num_lookup, unsigned width, unsigned height ) 
+{
+    printf("//QScint_lookup num_lookup %d width %d height %d \n", num_lookup, width, height );  
+    _QScint_lookup<<<numBlocks,threadsPerBlock>>>( tex, meta, lookup, num_lookup, width, height  );
 } 
 
-
-__global__ void _QScint_generate_photon(curandState* rng_states, cudaTextureObject_t texObj, quad4* photon, unsigned num_photon )
+extern "C" void QScint_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height ) 
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_photon) return;
-
-    qscint qs ; 
-    qs.init( nullptr, 0, rng_states+id, texObj ); 
-    qs.fabricate(); 
-    qs.photon( photon, id, false  ); 
-
-}
-
-extern "C" void QScint_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, quad4* photon, unsigned num_photon ) 
-{
-    _QScint_generate_photon<<<numBlocks,threadsPerBlock>>>( rng_states, texObj, photon, num_photon );
+    printf("//QScint_check width %d height %d \n", width, height );  
+    _QScint_check<<<numBlocks,threadsPerBlock>>>( width, height  );
 } 
 
 

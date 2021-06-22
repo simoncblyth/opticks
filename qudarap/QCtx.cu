@@ -1,41 +1,39 @@
 
-
+#include "stdio.h"
 #include "curand_kernel.h"
 #include "scuda.h"
 #include "qgs.h"
 #include "qctx.h"
 
-
-__global__ void _QCtx_generate_wavelength(curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength )
+__global__ void _QCtx_generate_wavelength(qctx* ctx, float* wavelength, unsigned num_wavelength )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
 
-    qctx ctx ; 
-    ctx.r         = rng_states+id ; 
-    ctx.scint_tex = texObj ;  
-    wavelength[id] = ctx.scint_wavelength(); 
+    curandState rng = *(ctx->r + id) ; 
+
+    float wl = ctx->scint_wavelength(rng) ;  
+    if(id % 100 == 0) printf("//_QCtx_generate_wavelength id %d wl %10.4f \n", id, wl  ); 
+
+    wavelength[id] = wl ; 
 }
 
-extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength ) 
+extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* wavelength, unsigned num_wavelength ) 
 {
-    _QCtx_generate_wavelength<<<numBlocks,threadsPerBlock>>>( rng_states, texObj, wavelength, num_wavelength );
+    printf("//QCtx_generate_wavelength num_wavelength %d \n", num_wavelength ); 
+    _QCtx_generate_wavelength<<<numBlocks,threadsPerBlock>>>( ctx, wavelength, num_wavelength );
 } 
 
-/**
-TODO: qctx other than offsetting can be made the same for all photons, so makes sense to construct it once CPU side  
-and pass in reference argument 
-**/
-
-__global__ void _QCtx_generate_photon(curandState* rng_states, cudaTextureObject_t texObj, quad4* photon, unsigned num_photon )
+__global__ void _QCtx_generate_photon(qctx* ctx, quad4* photon, unsigned num_photon )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_photon) return;
+    
+    //ctx->r += id ;   
+    //  could be problematic, do not want to change the the rng_states in global mem and get interference between threads
 
-    qctx ctx ; 
-    ctx.r         = rng_states+id ; 
-    ctx.scint_tex = texObj ;  
- 
+    curandState rng = *(ctx->r + id) ; 
+
     QG qg ;      
     qg.zero();  
 
@@ -54,16 +52,14 @@ __global__ void _QCtx_generate_photon(curandState* rng_states, cudaTextureObject
     g.sc1.ScintillationTime = 10.f ; 
 
     quad4 p ;   
-    ctx.scint_photon(p, g); 
+    ctx->scint_photon(p, g, rng); 
 
     photon[id] = p ; 
 }
 
-extern "C" void QCtx_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, quad4* photon, unsigned num_photon ) 
+extern "C" void QCtx_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad4* photon, unsigned num_photon ) 
 {
-    _QCtx_generate_photon<<<numBlocks,threadsPerBlock>>>( rng_states, texObj, photon, num_photon );
+    printf("//QCtx_generate_photon num_photon %d \n", num_photon ); 
+    _QCtx_generate_photon<<<numBlocks,threadsPerBlock>>>( ctx, photon, num_photon );
 } 
-
-
-
 

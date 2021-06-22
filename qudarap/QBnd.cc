@@ -11,12 +11,17 @@
 
 const plog::Severity QBnd::LEVEL = PLOG::EnvLevel("QBnd", "INFO"); 
 
+const QBnd* QBnd::INSTANCE = nullptr ; 
+const QBnd* QBnd::Get(){ return INSTANCE ; }
+
+
 QBnd::QBnd(const GBndLib* blib_ )
     :
     blib(blib_),
     src(blib->getBuffer()),
     tex(nullptr)
 {
+    INSTANCE = this ; 
     init();
 } 
 
@@ -62,11 +67,17 @@ void QBnd::makeBoundaryTex(const NPY<float>* buf )
     tex->uploadMeta(); 
 }
 
-/**
-
-
-
-**/
+std::string QBnd::desc() const
+{
+    std::stringstream ss ; 
+    ss << "QBnd"
+       << " src " << ( src ? src->getShapeString() : "-" )
+       << " tex " << ( tex ? tex->desc() : "-" )
+       << " tex " << tex 
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 void QBnd::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
 {

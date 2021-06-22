@@ -2,6 +2,7 @@
 #include "QUDA_CHECK.h"
 #include "QU.hh"
 #include "curand_kernel.h"
+#include "qctx.h"
 
 
 /**
@@ -50,5 +51,7 @@ template quad4* QU::DownloadArray<quad4>(const quad4* d_array, unsigned num_item
 template curandState* QU::UploadArray<curandState>(const curandState* array, unsigned num_items) ;
 template curandState* QU::DownloadArray<curandState>(const curandState* d_array, unsigned num_items) ;
 
+template qctx* QU::UploadArray<qctx>(const qctx* array, unsigned num_items) ;
+template qctx* QU::DownloadArray<qctx>(const qctx* d_array, unsigned num_items) ;
 
 

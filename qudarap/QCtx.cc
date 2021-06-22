@@ -8,64 +8,114 @@
 #include "GScintillatorLib.hh"
 
 #include "QUDA_CHECK.h"
+#include "QU.hh"
+
+#include "qctx.h"
+
 #include "QRng.hh"
-#include "QCtx.hh"
 #include "QTex.hh"
+#include "QScint.hh"
+#include "QBnd.hh"
+#include "QCtx.hh"
 
 
 const plog::Severity QCtx::LEVEL = PLOG::EnvLevel("QCtx", "INFO"); 
+const QCtx* QCtx::INSTANCE = nullptr ; 
+const QCtx* QCtx::Get(){ return INSTANCE ; }
 
-QCtx::QCtx()
-    :
-    rng(QRng::Get()),
-    scint_tex(nullptr),
-    boundary_tex(nullptr)
-{
-}
-
-
-/**
-
-hmm : there is no strong reason to tie together uploading of scint_tex and boundary_tex
-so better to QScint QBnd handle them separately ?  And then bring them 
-together into qctx as a final step for convenient acces from one place to the 
-device refs and handles 
-
-The advantage of keeping them separate is simpler development and testing.
-
-**/
-
-void QCtx::upload(const GGeo* ggeo)
+void QCtx::Init(const GGeo* ggeo)
 {
     GScintillatorLib* slib = ggeo->getScintillatorLib(); 
     slib->dump();
 
     GBndLib* blib = ggeo->getBndLib(); 
+    blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
     blib->dump(); 
 
-    uploadScintTex(slib); 
-    uploadBoundaryTex(blib); 
+    // on heap, to avoid dtors
+
+    QRng* qrng = new QRng ;  // loads and uploads curandState 
+    LOG(LEVEL) << qrng->desc(); 
+
+    QScint* qscint = new QScint(slib); 
+    LOG(LEVEL) << qscint->desc(); 
+
+    QBnd* qbnd = new QBnd(blib); 
+    LOG(LEVEL) << qbnd->desc(); 
 }
 
-void QCtx::uploadScintTex(const GScintillatorLib* slib)
+
+QCtx::QCtx()
+    :
+    rng(QRng::Get()),
+    scint(QScint::Get()),
+    bnd(QBnd::Get()),
+    ctx(new qctx),
+    d_ctx(nullptr)
 {
-    NPY<float>* buf = slib->getBuffer(); 
-    LOG(LEVEL) << " buf " << ( buf ? buf->getShapeString() : "-" ) ; 
-    assert( buf->hasShape(1,4096,1) ); 
-    unsigned nj = buf->getShape(1) ;  
-    scint_tex = new QTex<float>(nj, 1, buf->getValues()) ; 
+    INSTANCE = this ; 
+    init(); 
 }
 
-void QCtx::uploadBoundaryTex(const GBndLib* blib)
+/**
+QCtx::init
+------------
+
+Collect device side refs/handles into qctx(ctx) and upload it to d_ctx
+
+**/
+void QCtx::init()
 {
-    NPY<float>* buf = blib->getBuffer(); 
-    LOG(LEVEL) << " buf " << ( buf ? buf->getShapeString() : "-" ) ; 
-    //boundary_tex = new QTex<float>(nj, 1, buf->getValues()) ; 
+    LOG(LEVEL) 
+        << " rng " << rng 
+        << " scint " << scint
+        << " bnd " << bnd
+        << " ctx " << ctx 
+        << " d_ctx " << d_ctx 
+        ;  
+
+    if(rng)
+    {
+        LOG(LEVEL) << " rng " << rng->desc() ; 
+        ctx->r = rng->d_rng_states ; 
+    } 
+    if(scint)
+    {
+        LOG(LEVEL) << " scint " << scint->desc() ; 
+        ctx->scint_tex = scint->tex->texObj ; 
+        ctx->scint_meta = scint->tex->d_meta ; 
+    } 
+    if(bnd)
+    {
+        LOG(LEVEL) << " bnd " << bnd->desc() ; 
+        ctx->boundary_tex = bnd->tex->texObj ; 
+        ctx->boundary_meta = bnd->tex->d_meta ; 
+    } 
+
+    d_ctx = QU::UploadArray<qctx>(ctx, 1 );  
+
+    LOG(LEVEL) << desc() ; 
 }
 
 
-extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength ); 
-extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, quad4* photon    , unsigned num_photon ); 
+std::string QCtx::desc() const
+{
+    std::stringstream ss ; 
+    ss << "QCtx"
+       << " ctx->r " << ctx->r 
+       << " ctx->scint_tex " << ctx->scint_tex 
+       << " ctx->scint_meta " << ctx->scint_meta
+       << " ctx->boundary_tex " << ctx->boundary_tex 
+       << " ctx->boundary_meta " << ctx->boundary_meta
+       << " d_ctx " << d_ctx 
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength ); 
+extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon    , unsigned num_photon ); 
 
 
 void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
@@ -86,13 +136,15 @@ void QCtx::generate( float* wavelength, unsigned num_wavelength )
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, num_wavelength, 1 ); 
 
+    size_t size = num_wavelength*sizeof(float) ; 
+
     float* d_wavelength ;  
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_wavelength ), num_wavelength*sizeof(float) )); 
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_wavelength ), size )); 
 
-    QCtx_generate_wavelength(numBlocks, threadsPerBlock, rng->d_rng_states, scint_tex->texObj, d_wavelength, num_wavelength );  
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( wavelength ), d_wavelength, sizeof(float)*num_wavelength, cudaMemcpyDeviceToHost )); 
+    QCtx_generate_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength );  
+
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( wavelength ), d_wavelength, size, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d_wavelength) ); 
-
     LOG(LEVEL) << "]" ; 
 }
 
@@ -118,14 +170,13 @@ void QCtx::generate( quad4* photon, unsigned num_photon )
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, num_photon, 1 ); 
-
     quad4* d_photon ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_photon ), num_photon*sizeof(quad4) )); 
 
-    QCtx_generate_photon(numBlocks, threadsPerBlock, rng->d_rng_states, scint_tex->texObj, d_photon, num_photon );  
+    QCtx_generate_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon );  
+
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( photon ), d_photon, sizeof(quad4)*num_photon, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d_photon) ); 
-
     LOG(LEVEL) << "]" ; 
 }
 
@@ -152,5 +203,4 @@ void QCtx::dump( quad4* photon, unsigned num_photon, unsigned edgeitems )
         }
     }
 }
-
 

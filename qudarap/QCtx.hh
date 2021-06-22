@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
 
@@ -13,27 +14,37 @@ TODO:
 
 **/
 
+class GGeo ; 
 class GScintillatorLib ; 
 class GBndLib ; 
 
 template <typename T> class NPY ; 
 template <typename T> struct QTex ; 
+
 struct QRng ; 
+struct QScint ;
+struct QBnd ; 
+
+struct qctx ; 
 struct quad4 ; 
 
 struct QUDARAP_API QCtx
 {
     static const plog::Severity LEVEL ; 
+    static const QCtx* INSTANCE ; 
+    static const QCtx* Get(); 
 
-    const QRng*             rng ; 
-    QTex<float>*            scint_tex ; 
-    QTex<float>*            boundary_tex ; 
+    static void Init(const GGeo* ggeo); 
+
+    const QRng*    rng ; 
+    const QScint*  scint ; 
+    const QBnd*    bnd ; 
+    qctx*          ctx ;  
+    qctx*          d_ctx ;  
 
     QCtx();
-
-    void upload(const GGeo* ggeo); 
-    void uploadScintTex(const GScintillatorLib* slib); 
-    void uploadBoundaryTex(const GBndLib* blib); 
+    void init(); 
+    std::string desc() const ; 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
 

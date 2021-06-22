@@ -8,12 +8,8 @@
 #include "QUDA_CHECK.h"
 
 const plog::Severity QRng::LEVEL = PLOG::EnvLevel("QRng", "INFO"); 
-const QRng*          QRng::INSTANCE = nullptr ; 
-
-const QRng* QRng::Get()
-{
-    return INSTANCE ;  
-}
+const QRng* QRng::INSTANCE = nullptr ; 
+const QRng* QRng::Get(){ return INSTANCE ;  }
 
 const char* QRng::DEFAULT_PATH = SPath::Resolve("$HOME/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin") ; 
 

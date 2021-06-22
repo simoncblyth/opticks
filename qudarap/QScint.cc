@@ -2,6 +2,7 @@
 #include "PLOG.hh"
 #include "scuda.h"
 
+#include <sstream>
 #include "NPY.hpp"
 #include "GScintillatorLib.hh"
 
@@ -10,39 +11,50 @@
 #include "QScint.hh"
 #include "QTex.hh"
 
-
 const plog::Severity QScint::LEVEL = PLOG::EnvLevel("QScint", "INFO"); 
 
-QScint::QScint(const GScintillatorLib* lib_)
+const QScint* QScint::INSTANCE = nullptr ; 
+const QScint* QScint::Get(){ return INSTANCE ;  }
+
+QScint::QScint(const GScintillatorLib* slib_)
     :
-    lib(lib_),
-    buf(lib->getBuffer()),
-    ni(buf->getShape(0)),
-    nj(buf->getShape(1)),
-    nk(buf->getShape(2)),
-    tex(new QTex<float>(nj, 1, buf->getValues())),
-    rng(QRng::Get())
+    slib(slib_),
+    src(slib->getBuffer()),
+    tex(nullptr)
 {
+    INSTANCE = this ; 
     init(); 
 }
 
 void QScint::init()
 {
-    LOG(LEVEL) 
-        << " buf " << ( buf ? buf->getShapeString() : "-" ) 
-        << " tex " << tex 
-        ;  
-
-    assert( ni == 1 ); 
-    assert( nj == 4096 ); 
-    assert( nk == 1 ); 
+    makeScintTex(src) ;   
 }
 
+std::string QScint::desc() const
+{
+    std::stringstream ss ; 
+    ss << "QScint"
+       << " src " << ( src ? src->getShapeString() : "-" )
+       << " tex " << ( tex ? tex->desc() : "-" )
+       << " tex " << tex 
+       ; 
 
-extern "C" void QScint_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, float* wavelength, unsigned num_wavelength ); 
-extern "C" void QScint_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, curandState* rng_states, cudaTextureObject_t texObj, quad4* photon    , unsigned num_photon ); 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
+void QScint::makeScintTex(const NPY<float>* src)
+{
+    LOG(LEVEL) << desc() ; 
+    assert( src->hasShape(1,4096,1) ); 
+    unsigned nj = src->getShape(1) ;  
+    tex = new QTex<float>(nj, 1, src->getValuesConst()) ; 
+    tex->uploadMeta(); 
+}
 
+extern "C" void QScint_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height  ); 
+extern "C" void QScint_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, float* lookup, unsigned num_lookup, unsigned width, unsigned height  ); 
 
 void QScint::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
 {
@@ -53,76 +65,109 @@ void QScint::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned w
     numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
     numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
     numBlocks.z = 1 ; 
+
+    LOG(LEVEL) 
+        << " width " << std::setw(7) << width 
+        << " height " << std::setw(7) << height 
+        << " width*height " << std::setw(7) << width*height 
+        << " threadsPerBlock"
+        << "(" 
+        << std::setw(3) << threadsPerBlock.x << " " 
+        << std::setw(3) << threadsPerBlock.y << " " 
+        << std::setw(3) << threadsPerBlock.z << " "
+        << ")" 
+        << " numBlocks "
+        << "(" 
+        << std::setw(3) << numBlocks.x << " " 
+        << std::setw(3) << numBlocks.y << " " 
+        << std::setw(3) << numBlocks.z << " "
+        << ")" 
+        ;
+}
+
+void QScint::check()
+{
+    unsigned width = tex->width ; 
+    unsigned height = tex->height ; 
+
+    LOG(LEVEL)
+        << " width " << width
+        << " height " << height
+        ;
+
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, width, height ); 
+    QScint_check(numBlocks, threadsPerBlock, width, height );  
+
+    cudaDeviceSynchronize();
 }
 
 
-void QScint::generate( float* wavelength, unsigned num_wavelength )
+NPY<float>* QScint::lookup()
+{
+    unsigned width = tex->width ; 
+    unsigned height = tex->height ; 
+    unsigned num_lookup = width*height ; 
+
+    LOG(LEVEL)
+        << " width " << width
+        << " height " << height
+        << " lookup " << num_lookup
+        ;
+
+    NPY<float>* out = NPY<float>::make(height, width ); 
+    out->zero();  
+
+    float* out_ = out->getValues(); 
+    lookup( out_ , num_lookup, width, height ); 
+
+    return out ; 
+}
+
+void QScint::lookup( float* lookup, unsigned num_lookup, unsigned width, unsigned height  )
 {
     LOG(LEVEL) << "[" ; 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, num_wavelength, 1 ); 
+    configureLaunch( numBlocks, threadsPerBlock, width, height ); 
+    
+    size_t size = width*height*sizeof(float) ; 
+  
+    LOG(LEVEL) 
+        << " num_lookup " << num_lookup
+        << " width " << width 
+        << " height " << height
+        << " size " << size 
+        << " tex->texObj " << tex->texObj
+        << " tex->meta " << tex->meta
+        << " tex->d_meta " << tex->d_meta
+        ; 
 
-    float* d_wavelength ;  
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_wavelength ), num_wavelength*sizeof(float) )); 
+    float* d_lookup = nullptr ;  
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_lookup ), size )); 
 
-    QScint_generate_wavelength(numBlocks, threadsPerBlock, rng->d_rng_states, tex->texObj, d_wavelength, num_wavelength );  
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( wavelength ), d_wavelength, sizeof(float)*num_wavelength, cudaMemcpyDeviceToHost )); 
-    QUDA_CHECK( cudaFree(d_wavelength) ); 
+    QScint_lookup(numBlocks, threadsPerBlock, tex->texObj, tex->d_meta, d_lookup, num_lookup, width, height );  
 
-    LOG(LEVEL) << "]" ; 
-}
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( lookup ), d_lookup, size, cudaMemcpyDeviceToHost )); 
+    QUDA_CHECK( cudaFree(d_lookup) ); 
 
-void QScint::dump( float* wavelength, unsigned num_wavelength )
-{
-    LOG(LEVEL); 
-    for(unsigned i=0 ; i < num_wavelength ; i++)
-    {
-        std::cout 
-            << std::setw(3) << i 
-            << std::setw(10) << std::fixed << std::setprecision(3) << wavelength[i] 
-            << std::endl 
-            ; 
-    }
-}
-
-
-void QScint::generate( quad4* photon, unsigned num_photon )
-{
-    LOG(LEVEL) << "[" ; 
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, num_photon, 1 ); 
-
-    quad4* d_photon ;  
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_photon ), num_photon*sizeof(quad4) )); 
-
-    QScint_generate_photon(numBlocks, threadsPerBlock, rng->d_rng_states, tex->texObj, d_photon, num_photon );  
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( photon ), d_photon, sizeof(quad4)*num_photon, cudaMemcpyDeviceToHost )); 
-    QUDA_CHECK( cudaFree(d_photon) ); 
+    cudaDeviceSynchronize();
 
     LOG(LEVEL) << "]" ; 
 }
 
-void QScint::dump( quad4* photon, unsigned num_photon )
+void QScint::dump( float* lookup, unsigned num_lookup, unsigned edgeitems  )
 {
     LOG(LEVEL); 
-    for(unsigned i=0 ; i < num_photon ; i++)
+    for(unsigned i=0 ; i < num_lookup ; i++)
     {
-        const quad4& p = photon[i] ;  
+        if( i < edgeitems || i > num_lookup - edgeitems )
         std::cout 
-            << std::setw(3) << i 
-            << " q1.f.xyz " 
-            << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.x  
-            << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.y
-            << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.z  
-            << " q2.f.xyz " 
-            << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.x  
-            << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.y
-            << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.z  
+            << std::setw(6) << i 
+            << std::setw(10) << std::fixed << std::setprecision(3) << lookup[i] 
             << std::endl 
             ; 
     }
 }
-
 

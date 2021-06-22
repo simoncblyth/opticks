@@ -1,3 +1,5 @@
+
+#include <sstream>
 #include "scuda.h"
 #include <cuda_runtime.h>
 #include <iostream>
@@ -16,7 +18,8 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_)
     cuArray(nullptr),
     channelDesc(cudaCreateChannelDesc<T>()),
     texObj(0),
-    meta(new quad4)
+    meta(new quad4),
+    d_meta(nullptr)
 {
     init(); 
 }
@@ -41,6 +44,23 @@ void QTex<T>::init()
     meta->q0.u.y = height ; 
     meta->q0.u.z = 0 ; 
     meta->q0.u.w = 0 ; 
+}
+
+template<typename T>
+std::string QTex<T>::desc() const
+{
+    std::stringstream ss ; 
+
+    ss << "QTex"
+       << " width " << width 
+       << " height " << height 
+       << " texObj " << texObj
+       << " meta " << meta
+       << " d_meta " << d_meta
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 template<typename T>

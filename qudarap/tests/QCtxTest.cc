@@ -13,7 +13,10 @@
 
 void test_wavelength(QCtx& qc)
 {
+    LOG(info); 
+
     unsigned num_wavelength = 100000 ; 
+
     std::vector<float> wavelength ; 
     wavelength.resize(num_wavelength, 0.f); 
 
@@ -24,6 +27,7 @@ void test_wavelength(QCtx& qc)
 
 void test_photon(QCtx& qc)
 {
+    LOG(info); 
     unsigned num_photon = 100 ; 
     std::vector<quad4> photon ; 
     photon.resize(num_photon); 
@@ -42,14 +46,11 @@ int main(int argc, char** argv)
 
     GGeo* gg = GGeo::Load(&ok); 
 
-    QRng rng ;  // loads and uploads curandState 
-    LOG(info) << rng.desc(); 
-
+    QCtx::Init(gg); 
     QCtx qc ;  
-    qc.upload(gg); 
 
     test_wavelength(qc); 
-    test_photon(qc); 
+    //test_photon(qc); 
 
     return 0 ; 
 }

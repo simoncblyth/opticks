@@ -1,42 +1,35 @@
 #pragma once
 
+#include <string>
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
-
-
 
 class GScintillatorLib ; 
 template <typename T> class NPY ; 
 template <typename T> struct QTex ; 
-struct QRng ; 
-struct quad4 ; 
+struct dim3 ; 
 
 struct QUDARAP_API QScint
 {
     static const plog::Severity LEVEL ; 
+    static const QScint*        INSTANCE ; 
+    static const QScint*        Get(); 
 
-    const GScintillatorLib* lib ; 
-    NPY<float>*             buf ; 
-
-    unsigned                ni ; 
-    unsigned                nj ; 
-    unsigned                nk ; 
-
+    const GScintillatorLib* slib ; 
+    NPY<float>*             src ; 
     QTex<float>*            tex ; 
-    const QRng*             rng ; 
 
-    QScint(const GScintillatorLib* lib_); 
+    QScint(const GScintillatorLib* slib_); 
     void init(); 
+    void makeScintTex(const NPY<float>* src);
+    std::string desc() const ; 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
 
-    void generate( float* wavelength, unsigned num_wavelength ); 
-    void dump(     float* wavelength, unsigned num_wavelength ); 
-
-    void generate( quad4* photon,     unsigned num_photon ); 
-    void dump(     quad4* photon,     unsigned num_photon ); 
-
-
+    void check();
+    NPY<float>* lookup();
+    void lookup( float* lookup, unsigned num_lookup, unsigned width, unsigned height ); 
+    void dump(   float* lookup, unsigned num_lookup, unsigned edgeitems=10 ); 
 
 };
 

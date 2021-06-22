@@ -31,8 +31,8 @@ set(SOURCES
     QBnd.cc
     QBnd.cu
 
-   # QScint.cc
-   # QScint.cu
+    QScint.cc
+    QScint.cu
 
     QPoly.cc
     QPoly.cu
@@ -45,14 +45,13 @@ SET(HEADERS
     QUDARAP_LOG.hh
     QUDARAP_API_EXPORT.hh
 
-    QRng.hh
-    QGen.hh
     QU.hh
+    QRng.hh
+
+    QGen.hh
     QTex.hh
-
     QBnd.hh
-
-  #  QScint.hh
+    QScint.hh
     QPoly.hh
     QCtx.hh
 )
