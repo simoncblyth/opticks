@@ -1558,7 +1558,7 @@ CGenstep G4Opticks::collectGenstep_DsG4Scintillation_r4695(
 
         OpticksGenstep_DsG4Scintillation_r4695,         // (int)gentype                   (0)
         aTrack->GetTrackID(),                           // (int)parentId                                        
-        aMaterial->GetIndex(),                          // (int)currently_not_used                        
+        aMaterial->GetIndex(),                          // (int) not used for scintillation, but is for cerenkov                        
         numPhotons,
 
         x0.x(),                                         // (double) preStep position      (1)

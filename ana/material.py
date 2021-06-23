@@ -124,14 +124,16 @@ Geocache materials are accessible by name, usage example:
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.ana.proplib import PropLib
+   
+mlib = PropLib("GMaterialLib")
 
 
 class Material(object):
     def __init__(self, name):
         self.name = name
-        self.mlib = PropLib("GMaterialLib")
+        self.mlib = mlib
 
     def lookup(self, prop, wavelength):
         return self.mlib.interp(self.name,wavelength,prop)
@@ -151,7 +153,33 @@ class Material(object):
     def reemission_prob(self, wavelength):
         return self.lookup(PropLib.M_REEMISSION_PROB, wavelength)
 
+    def group_velocity(self, wavelength):
+        return self.lookup(PropLib.L_GROUP_VELOCITY, wavelength)
 
+    def table(self, wl):
+        ri = self.refractive_index(wl)
+        al = self.absorption_length(wl)
+        sl = self.scattering_length(wl)
+        rp = self.reemission_prob(wl)
+        gv = self.group_velocity(wl)
+        tab = np.dstack([wl,ri,al,sl,rp,gv])
+        return tab 
+
+    def dump(self):
+        w = self.mlib.domain
+        a = self.data()
+        aa = np.dstack([w, a[0,:,0], a[0,:,1],a[0,:,2],a[0,:,3],a[1,:,0]])
+        print("aa")
+        print(aa)
+
+    @classmethod
+    def Hdr(cls):
+        labels = "wavelen rindex abslen scatlen reemprob groupvel" 
+        hdr = "   " + "".join(list(map(lambda _:"%12s" % _, labels.split())))
+        return hdr 
+
+    def hdr(self):
+        return self.Hdr() + " " + self.name 
 
 
 
@@ -160,7 +188,6 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
 
-    #dmat = "GdDopedLS"
     dmat = "Water"
 
     args = opticks_main(mat=dmat)    
@@ -168,38 +195,22 @@ if __name__ == '__main__':
     log.info("mat %s " % args.mat)
 
 
+    wl = np.linspace(300.,600.,4)
+    for name in mlib._names:
+        mat = Material(name)
+        tab = mat.table(wl)
+        print(mat.hdr())
+        print(tab)
+    pass        
+
+
+
+if 0:
     import matplotlib.pyplot as plt 
-
     plt.ion()
-
-    mat = Material(args.mat)
-
-    #wl = np.linspace(100.,730.,10)
-    wl = np.linspace(300.,600.,31)
-
-    ri = mat.refractive_index(wl)
-
-    al = mat.absorption_length(wl)
-
-    sl = mat.scattering_length(wl)
-
-    rp = mat.reemission_prob(wl)
-
-    print np.dstack([wl,ri,al,sl,rp])
- 
-    
-    w = mat.mlib.domain
-    a = mat.data()
-    
-    aa = np.dstack([w, a[0,:,0], a[0,:,1],a[0,:,2],a[0,:,3],a[1,:,0]])
-    print "aa\n", aa
-
     plt.plot( wl, al, "*", label="Absorption Length")
     plt.plot( wl, sl, "+", label="Scattering Length")
-
     plt.show()
-
-
 
 
 

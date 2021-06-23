@@ -55,17 +55,16 @@ Example data shapes::
 """
 import os, logging, numpy as np
 import sys, codecs
-b_ = lambda _:codecs.latin_1_encode(_)[0] if sys.version_info.major > 2 else lambda _:_
+b_ = lambda _:codecs.latin_1_encode(_)[0] if sys.version_info.major > 2 else _
 log = logging.getLogger(__name__)
 
 
 from opticks.ana.base import stamp_
 from opticks.ana.dat import Dat
 from opticks.ana.nload import np_load
+from opticks.ana.key import keydir
 
-idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
-
-
+KEYDIR = keydir()
 
 
 class Bnd(object):
@@ -92,22 +91,22 @@ class Bnd(object):
 class PropLib(object):
 
     # 1st set of 4 [0] 
-    M_REFRACTIVE_INDEX = 0
-    M_ABSORPTION_LENGTH = 1
-    M_SCATTERING_LENGTH = 2
-    M_REEMISSION_PROB = 3
+    M_REFRACTIVE_INDEX = 0,0
+    M_ABSORPTION_LENGTH = 0,1
+    M_SCATTERING_LENGTH = 0,2
+    M_REEMISSION_PROB = 0,3
 
-    L_GROUP_VELOCITY = 0
+    L_GROUP_VELOCITY = 1,0
 
     M_LABELS = "RINDEX ABSLEN RAYLEIGH REEMPROB GROUPVEL".split()
 
 
     # 2nd set of 4 [0] startswith GROUPVEL, currently not used
 
-    S_DETECT = 0 
-    S_ABSORB = 1 
-    S_REFLECT_SPECULAR = 2 
-    S_REFLECT_DIFFUSE = 3 
+    S_DETECT = 0,0 
+    S_ABSORB = 0,1 
+    S_REFLECT_SPECULAR = 0,2 
+    S_REFLECT_DIFFUSE = 0,3 
 
     B_OMAT = 0
     B_OSUR = 1
@@ -151,7 +150,7 @@ class PropLib(object):
         log.info("names : %s " % names)
 
         if names is None:
-            npath=idp_("GItemList/%(kls)s.txt" % locals())
+            npath=os.path.join(KEYDIR, "GItemList/%(kls)s.txt" % locals())
         elif type(names) is str:
             npath = os.path.expandvars(names)
         elif type(names) is np.ndarray or type(names) is list:
@@ -169,7 +168,7 @@ class PropLib(object):
         self.names = names
 
         if data is None:
-            dpath=idp_("%(kls)s/%(kls)s.npy" % locals())
+            dpath=os.path.join(KEYDIR, "%(kls)s/%(kls)s.npy" % locals())
         elif type(data) is str:
             dpath = data
         elif type(data) is np.ndarray:
@@ -217,7 +216,6 @@ class PropLib(object):
         """
         ndarray has advantage of easy grabbing masks and index lists
         """
-        
         self._names = np.zeros( (len(names)), dtype="|S128")   # 64 truncates
         self._names[:] = names
     def _get_names(self):
@@ -229,20 +227,34 @@ class PropLib(object):
         return "\n".join([self.brief] + self.paths + map(stamp_, self.paths)) 
 
     def index(self, name):
-        #return self.names.index(name)
         return np.where( self._names == b_(name) )[0][0]
 
+    def interp(self, name, wavelengths, jl):
+        """
+        :param name: eg material name "Water"
+        :param wavelengths: values or array
+        :param jl: (j,l) tuple  
 
-    def interp(self, name, wavelengths, k=0):
+                           i  j   k  l 
+        data shape is eg (17, 2, 39, 4) 
+               
+        i: material index 0:16
+        j: 0:1 property group 
+        k: 0:38 wavelenth samples
+        l: 0:3 property from the "float4" 
+
+        """
+        j,l = jl
+
         bname = b_(name)
         if not bname in self.names:
             log.fatal("bname %s is not in list %s " % (bname, self.names))
         pass
         idx = list(self.names).index(bname)
-        return np.interp( wavelengths, self.domain, self.data[idx][0][:,k] ) 
+        return np.interp( wavelengths, self.domain, self.data[idx,j,:,l] ) 
  
     def __call__(self, name):
-        idx = self.names.index(name)
+        idx = self.index(name)
         return self.data[idx]
 
     def as_mlib(self, order=None):

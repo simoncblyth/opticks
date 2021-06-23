@@ -54,7 +54,7 @@ rtBuffer<uint4>                optical_buffer;
 // state.h struct embodied here as preprocessor.py switch control applies to .cu, not the .h included 
 struct State 
 {
-   unsigned int flag ; 
+   unsigned flag ; 
    float4 material1 ;    // refractive_index/absorption_length/scattering_length/reemission_prob
    float4 m1group2  ;    // group_velocity/spare1/spare2/spare3
    float4 material2 ;  

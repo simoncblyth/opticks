@@ -196,6 +196,7 @@ class Evt(object):
 
 
     """
+    blib = blib 
     RPOST = {"X":X,"Y":Y,"Z":Z,"W":W,"T":T} 
     RPOL = {"A":X,"B":Y,"C":Z} 
 
@@ -419,10 +420,10 @@ class Evt(object):
         log.info("stems : %s " % str(stems))
         for stem in stems:
 
-            if stem == "so": continue 
+            if stem == "so" or stem == "bn": continue 
             if not hasattr(self, stem): continue
             a = getattr(self, stem)
-            if a.missing: continue    
+            if hasattr(a,"missing"): continue    
 
             log.debug("stem %s a.shape %s a.oshape %s  " % (stem, str(a.shape), str(a.oshape)))
 
@@ -713,9 +714,18 @@ class Evt(object):
 
 
     def init_boundary(self):
+        """
+
+        """
         bn = self.aload("bn",optional=True, okonly=True)
-        self.bn = bn
+        # suspect doing this looses the A type
+        #self.bn = bn.reshape(-1,4).view(np.int8) if not bn.missing else bn
+        self.bn = bn 
         self.desc['bn'] = "(boundary)  step records"
+
+
+    def bnd(self):
+        return self.bn.reshape(-1,4).view(np.int8)
 
     def init_source(self):
         """
@@ -1287,6 +1297,7 @@ class Evt(object):
             self.rx_ = self.rx
             self.so_ = self.so
             self.dx_ = self.dx
+            self.bn_ = self.bn
         pass
         if psel is None: 
             self._reset_selection()
@@ -1317,6 +1328,9 @@ class Evt(object):
         pass
         if not self.so_.missing and len(self.so_)>0:
             self.so = self.so_[psel]
+        pass
+        if not self.bn_.missing and len(self.bn_)>0:
+            self.bn = self.bn_[psel]
         pass
 
         self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel], "seqhis_ana" )   # sequence history with selection applied

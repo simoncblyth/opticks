@@ -29,6 +29,8 @@ enum {
     IMAT 
 };
 
+// State struct is defined in generate.cu 
+
 __device__ void fill_state( State& s, int boundary, uint4 identity, float wavelength )
 {
     // boundary : 1 based code, signed by cos_theta of photon direction to outward geometric normal

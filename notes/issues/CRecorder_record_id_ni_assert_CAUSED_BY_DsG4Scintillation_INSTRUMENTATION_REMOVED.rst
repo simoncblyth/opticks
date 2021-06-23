@@ -1,6 +1,17 @@
 CRecorder_record_id_ni_assert_CAUSED_BY_DsG4Scintillation_INSTRUMENTATION_REMOVED
 =====================================================================================
 
+FIXED by putting back the instrumentation, and updating to handle new *Genstep_DsG4Scintillation_r4695*::
+
+    epsilon:offline blyth$ svn ci -m "add back the Opticks scintillation generation control, genstep collection and instrumentation that was removed in r4690 "
+    Sending        Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
+    Transmitting file data .done
+    Committing transaction...
+    Committed revision 4698.
+    epsilon:offline blyth$ 
+
+
+
 * unexpected extra photons (~250 in 100k) cause record_id asserts, switched to just logging them 
 * non-instrumented reemission (ie reemission that does not pass along the CPhotonInfo lineage) could yield extras
 * YEP : THATS THE CAUSE : MY INSTRUMENTATION HAS BEEN REMOVED
