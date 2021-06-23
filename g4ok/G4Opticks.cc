@@ -1525,6 +1525,14 @@ CGenstep G4Opticks::collectGenstep_DsG4Scintillation_r3971(
     return gs ; 
 }
 
+/**
+G4Opticks::collectGenstep_DsG4Scintillation_r4695
+--------------------------------------------------
+
+Genstep slots filled here must correspond to their loading 
+and usage in oxrap/cu/Genstep_DsG4Scintillation_r4695.h
+
+**/
 
 CGenstep G4Opticks::collectGenstep_DsG4Scintillation_r4695(  
      const G4Track* aTrack, 

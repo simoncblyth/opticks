@@ -585,6 +585,7 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
     {
         g4step->addAllowedGencodes( OpticksGenstep_G4Cerenkov_1042, OpticksGenstep_G4Scintillation_1042) ; 
         g4step->addAllowedGencodes( OpticksGenstep_DsG4Cerenkov_r3971, OpticksGenstep_DsG4Scintillation_r3971 ) ; 
+        g4step->addAllowedGencodes( OpticksGenstep_DsG4Scintillation_r4695 ) ; 
         g4step->addAllowedGencodes( OpticksGenstep_TORCH);
 
         LOG(LEVEL) << " GS_EMBEDDED collected direct gensteps assumed translated at collection  " << oac.desc("oac") ; 

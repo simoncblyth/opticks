@@ -24,10 +24,10 @@ struct Genstep_DsG4Scintillation_r4695
     float3 DeltaPosition ;    //  (2)
     float  step_length ;
 
-    int code;                 // (3)
+    int   code;                 // (3)
     float charge ;
     float weight ;
-    float preVelocity ; 
+    float meanVelocity ; 
 
     /// the above first 4 quads are common to both CerenkovStep and ScintillationStep 
 
@@ -37,9 +37,9 @@ struct Genstep_DsG4Scintillation_r4695
     float f43_spare ;
 
     float ScintillationTime ;    // (5)
-    float ScintillationRiseTime ;
-    float postVelocity ;
-    float Other2 ;
+    float f51_spare ;
+    float f52_spare ;
+    float f53_spare ;
 
     // above are loaded parameters, below are derived from them
     float3 p0 ;
@@ -68,7 +68,7 @@ struct Genstep_DsG4Scintillation_r4695
         code = ccwv.i.x ;
         charge = ccwv.f.y ;
         weight = ccwv.f.z ;
-        preVelocity = ccwv.f.w ;
+        meanVelocity = ccwv.f.w ;
 
         ssss.f = scintillation[offset+4] ;
         ScintillationType = ssss.i.x ; 
@@ -78,9 +78,9 @@ struct Genstep_DsG4Scintillation_r4695
 
         float4 ssoo = scintillation[offset+5] ;
         ScintillationTime = ssoo.x ; 
-        ScintillationRiseTime = ssoo.y ; 
-        postVelocity = ssoo.z ; 
-        Other2 = ssoo.w ; 
+        f51_spare = ssoo.y ; 
+        f52_spare = ssoo.z ; 
+        f53_spare = ssoo.w ; 
 
         // derived qtys 
         p0 = normalize(DeltaPosition);
@@ -115,7 +115,7 @@ struct Genstep_DsG4Scintillation_r4695
            code,
            charge,
            weight,
-           preVelocity
+           meanVelocity
           );
 
         rtPrintf("ScintillationType %d f41_spare %f f42_spare %f f43_spare %f \n", 
@@ -125,11 +125,11 @@ struct Genstep_DsG4Scintillation_r4695
            f43_spare
           );
 
-        rtPrintf("ScintillationTime %f  ScintillationRiseTime %f postVelocity %f Other2 %f \n", 
+        rtPrintf("ScintillationTime %f  f51_spare %f f52_spare %f f53_spare %f \n", 
            ScintillationTime,
-           ScintillationRiseTime,
-           postVelocity,
-           Other2
+           f51_spare,
+           f52_spare,
+           f53_spare
           );
 
         rtPrintf("p0 %f %f %f  \n", 
@@ -160,26 +160,17 @@ struct Genstep_DsG4Scintillation_r4695
 
     GENSTEP_METHOD void generate_photon(Photon& p, curandState& rng)
     {
-        // TODO: need fast and slow versions of this texture, plus potentially handling multiple scintillator materials
         p.wavelength = reemission_lookup(curand_uniform(&rng));
 
         p.direction = uniform_sphere(&rng);
 
         p.polarization = normalize(cross(uniform_sphere(&rng), p.direction));  // pol is random vector orthogonal to dir
 
-
-        float fraction = (charge != 0.f )?  curand_uniform(&rng) : 1.f ;    
+        float fraction = charge == 0.f ? 1.f : curand_uniform(&rng) ;    
 
         float delta = fraction * step_length ;  
 
-        float midVelocity = preVelocity + fraction*(postVelocity-preVelocity)*0.5f ;  
-
-        float deltaTime = ScintillationRiseTime == 0.f ?
-                               delta/midVelocity - ScintillationTime*logf(curand_uniform(&rng)) 
-                               :
-                               0.f     // TODO: port sample_time(ScintillationRiseTime, ScintillationTime)/single_exp/bi_exp
-                               ;
-
+        float deltaTime = delta/meanVelocity - ScintillationTime*logf(curand_uniform(&rng)) ;  
 
         p.time = t0 + deltaTime ; 
 
@@ -187,7 +178,7 @@ struct Genstep_DsG4Scintillation_r4695
 
         p.weight = weight ;
 
-        p.flags.u.x = ScintillationType ;   // TODO: check probably will be overwritten, need to bitsqueeze it too   
+        p.flags.u.x = ScintillationType ;   // scnt:overwritten later
         p.flags.u.y = 0 ;
         p.flags.u.z = 0 ;
         p.flags.u.w = 0 ;
