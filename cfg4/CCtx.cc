@@ -414,9 +414,9 @@ void CCtx::setTrackOptical(G4Track* mtrack)
     assert( _record_id > -1 ); 
 
 
-    //if(_number_of_input_photons > 0 && _record_id > _number_of_input_photons)
+    if(_number_of_input_photons > 0 && _record_id > _number_of_input_photons)
     {
-        LOG(info)
+        LOG(fatal)
             << " _number_of_input_photons " << _number_of_input_photons
             << " _photon_id " << _photon_id
             << " _record_id " << _record_id

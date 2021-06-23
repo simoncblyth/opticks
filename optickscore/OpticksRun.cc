@@ -607,6 +607,7 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
         LOG(LEVEL) << " checklabel of non-legacy (collected direct) gensteps  " << oac.desc("oac") ; 
         g4step->addAllowedGencodes( OpticksGenstep_G4Cerenkov_1042, OpticksGenstep_G4Scintillation_1042) ; 
         g4step->addAllowedGencodes( OpticksGenstep_DsG4Cerenkov_r3971, OpticksGenstep_DsG4Scintillation_r3971 ) ; 
+        g4step->addAllowedGencodes( OpticksGenstep_DsG4Scintillation_r4695 ) ; 
         g4step->addAllowedGencodes( OpticksGenstep_EMITSOURCE ); 
     }
     g4step->checkGencodes();
@@ -620,6 +621,7 @@ G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
          << " OpticksGenstep_G4Scintillation_1042: " << OpticksGenstep_G4Scintillation_1042
          << " OpticksGenstep_DsG4Cerenkov_r3971: " << OpticksGenstep_DsG4Cerenkov_r3971
          << " OpticksGenstep_DsG4Scintillation_r3971: " << OpticksGenstep_DsG4Scintillation_r3971
+         << " OpticksGenstep_DsG4Scintillation_r4695: " << OpticksGenstep_DsG4Scintillation_r4695
          << " OpticksGenstep_G4GUN: " << OpticksGenstep_G4GUN  
          ;
 
