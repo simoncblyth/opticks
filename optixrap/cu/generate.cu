@@ -87,9 +87,13 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 #include "cerenkovstep.h"
 
+#ifdef OLD_SCINT
 #include "scintillationstep.h"
-#include "Genstep_G4Scintillation_1042.h"
+#else
+#include "Genstep_DsG4Scintillation_r4695.h"
+#endif
 
+#include "Genstep_G4Scintillation_1042.h"
 #include "torchstep.h"
 
 #include "rayleigh.h"
@@ -588,6 +592,11 @@ RT_PROGRAM void generate()
     s.ureflectcheat = 0.f ; 
 #endif
 
+/**
+NB the below entire approach to gensteps is destined to 
+be replaced real soon, following the approach in preparation in qudarap
+**/
+
     if(gencode == OpticksGenstep_G4Cerenkov_1042 ) 
     {
         CerenkovStep cs ;
@@ -598,16 +607,24 @@ RT_PROGRAM void generate()
         generate_cerenkov_photon(p, cs, rng );         
         s.flag = CERENKOV ;  
     }
+#ifdef OLD_SCINT
     else if(gencode == OpticksGenstep_DsG4Scintillation_r3971 )
     {
         ScintillationStep ss ;
         ssload(ss, genstep_buffer, genstep_offset, genstep_id);
-#ifdef DEBUG
-        if(dbg) ssdebug(ss);
-#endif
+        //if(dbg) ssdebug(ss);
         generate_scintillation_photon(p, ss, rng );  // maybe split on gencode ?
         s.flag = SCINTILLATION ;  
     }
+#else
+    else if(gencode == OpticksGenstep_DsG4Scintillation_r4695 )
+    {
+        Genstep_DsG4Scintillation_r4695 ss ; 
+        ss.load(&genstep_buffer[0], genstep_offset, genstep_id);
+        ss.generate_photon(p, rng ); 
+        s.flag = SCINTILLATION ;  
+    }
+#endif
     else if(gencode == OpticksGenstep_G4Scintillation_1042 )
     {
         Genstep_G4Scintillation_1042 ss ;

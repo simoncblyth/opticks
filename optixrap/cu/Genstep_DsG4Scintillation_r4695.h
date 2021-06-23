@@ -11,32 +11,32 @@
 
 
 
-struct Genstep_DsG4Scintillation_r4693
+struct Genstep_DsG4Scintillation_r4695
 {
-    int Id    ;
+    int Id    ;               // (0)
     int ParentId ;
     int MaterialIndex  ;
     int NumPhotons ;
 
-    float3 x0 ;
+    float3 x0 ;               // (1)
     float  t0 ;
 
-    float3 DeltaPosition ;
+    float3 DeltaPosition ;    //  (2)
     float  step_length ;
 
-    int code; 
+    int code;                 // (3)
     float charge ;
     float weight ;
     float preVelocity ; 
 
     /// the above first 4 quads are common to both CerenkovStep and ScintillationStep 
 
-    int   ScintillationType ;   
-    float spare1 ;    
-    float spare2 ;    
-    float spare3 ;
+    int   ScintillationType ;   // (4) 
+    float f41_spare ;    
+    float f42_spare ;    
+    float f43_spare ;
 
-    float ScintillationTime ;
+    float ScintillationTime ;    // (5)
     float ScintillationRiseTime ;
     float postVelocity ;
     float Other2 ;
@@ -72,9 +72,9 @@ struct Genstep_DsG4Scintillation_r4693
 
         ssss.f = scintillation[offset+4] ;
         ScintillationType = ssss.i.x ; 
-        spare1 = ssss.f.y ; 
-        spare2 = ssss.f.z ; 
-        spare3 = ssss.f.w ; 
+        f41_spare = ssss.f.y ; 
+        f42_spare = ssss.f.z ; 
+        f43_spare = ssss.f.w ; 
 
         float4 ssoo = scintillation[offset+5] ;
         ScintillationTime = ssoo.x ; 
@@ -118,11 +118,11 @@ struct Genstep_DsG4Scintillation_r4693
            preVelocity
           );
 
-        rtPrintf("ScintillationType %d spare1 %f spare2 %f spare3 %f \n", 
+        rtPrintf("ScintillationType %d f41_spare %f f42_spare %f f43_spare %f \n", 
            ScintillationType,
-           spare1,
-           spare2,
-           spare3
+           f41_spare,
+           f42_spare,
+           f43_spare
           );
 
         rtPrintf("ScintillationTime %f  ScintillationRiseTime %f postVelocity %f Other2 %f \n", 
