@@ -30,6 +30,69 @@ Hmm how to proceed.
      the GPU geometry to avoid the degeneracy and its problems
        
 
+After Skipping Degenerate Pyrex///Pyrex
+-------------------------------------------
+
+* excess OK AB seems fixed
+* looks like 3BT to 4BT mismatch, CRecorder G4 microStep skipping perhaps not always working would explain 3 vs 4 mismatch 
+
+  * this issue was there previously, just now it becomes the most prominent one  
+
+
+::
+
+    In [3]: ab.his[:40]
+    Out[3]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3gun   -1:g4live:tds3gun        c2        ab        ba 
+    .                              11142     11142       310.47/62 =  5.01  (pval:1.000 prob:0.000)  
+       n             iseq         a         b    a-b               c2          a/b                   b/a           [ns] label
+    0000               42      1666      1621     45             0.62        1.028 +- 0.025        0.973 +- 0.024  [2 ] SI AB
+    0001            7ccc2      1367      1258    109             4.53        1.087 +- 0.029        0.920 +- 0.026  [5 ] SI BT BT BT SD       ## OK EXCESS SI-3BT-SD
+    0002            8ccc2       624       766   -142            14.51        0.815 +- 0.033        1.228 +- 0.044  [5 ] SI BT BT BT SA       ## OK LACKS SI-3BT-SA 
+    0003           7ccc62       680       543    137            15.35        1.252 +- 0.048        0.799 +- 0.034  [6 ] SI SC BT BT BT SD    ## OK EXCESS SI-SC-3BT-SD    
+    0004             8cc2       570       496     74             5.14        1.149 +- 0.048        0.870 +- 0.039  [4 ] SI BT BT SA
+    0005              452       408       495    -87             8.38        0.824 +- 0.041        1.213 +- 0.055  [3 ] SI RE AB
+    0006           7ccc52       405       385     20             0.51        1.052 +- 0.052        0.951 +- 0.048  [6 ] SI RE BT BT BT SD
+    0007              462       399       351     48             3.07        1.137 +- 0.057        0.880 +- 0.047  [3 ] SI SC AB
+    0008           8ccc62       270       258     12             0.27        1.047 +- 0.064        0.956 +- 0.059  [6 ] SI SC BT BT BT SA
+    0009          7ccc662       255       195     60             8.00        1.308 +- 0.082        0.765 +- 0.055  [7 ] SI SC SC BT BT BT SD
+    0010            8cc62       195       180     15             0.60        1.083 +- 0.078        0.923 +- 0.069  [5 ] SI SC BT BT SA
+    0011           8ccc52       176       191    -15             0.61        0.921 +- 0.069        1.085 +- 0.079  [6 ] SI RE BT BT BT SA
+    0012          7ccc652       186       165     21             1.26        1.127 +- 0.083        0.887 +- 0.069  [7 ] SI RE SC BT BT BT SD
+    0013               41       156       160     -4             0.05        0.975 +- 0.078        1.026 +- 0.081  [2 ] CK AB
+    0014             4552       118       152    -34             4.28        0.776 +- 0.071        1.288 +- 0.104  [4 ] SI RE RE AB
+    0015            8cc52       136       133      3             0.03        1.023 +- 0.088        0.978 +- 0.085  [5 ] SI RE BT BT SA
+    0016          7ccc552       123       120      3             0.04        1.025 +- 0.092        0.976 +- 0.089  [7 ] SI RE RE BT BT BT SD
+    0017             4662       125       114     11             0.51        1.096 +- 0.098        0.912 +- 0.085  [4 ] SI SC SC AB
+    0018             4652       118       108     10             0.44        1.093 +- 0.101        0.915 +- 0.088  [4 ] SI RE SC AB
+    0019             4cc2       121       104     17             1.28        1.163 +- 0.106        0.860 +- 0.084  [4 ] SI BT BT AB                  ## NOW CONSISTENT
+    0020           7cccc2        50       151   -101            50.75        0.331 +- 0.047        3.020 +- 0.246  [6 ] SI BT BT BT BT SD            ## OK LACKS SI-4BT-SD 
+    0021          8ccc662        78        99    -21             2.49        0.788 +- 0.089        1.269 +- 0.128  [7 ] SI SC SC BT BT BT SA
+    0022         7ccc6662        76        82     -6             0.23        0.927 +- 0.106        1.079 +- 0.119  [8 ] SI SC SC SC BT BT BT SD
+    0023          8ccc652        72        72      0             0.00        1.000 +- 0.118        1.000 +- 0.118  [7 ] SI RE SC BT BT BT SA
+    0024          8ccc552        62        69     -7             0.37        0.899 +- 0.114        1.113 +- 0.134  [7 ] SI RE RE BT BT BT SA
+    0025           8cc662        57        65     -8             0.52        0.877 +- 0.116        1.140 +- 0.141  [6 ] SI SC SC BT BT SA
+    0026         7ccc6652        57        63     -6             0.30        0.905 +- 0.120        1.105 +- 0.139  [8 ] SI RE SC SC BT BT BT SD
+    0027             4562        51        57     -6             0.33        0.895 +- 0.125        1.118 +- 0.148  [4 ] SI SC RE AB
+    0028         7ccc6552        50        57     -7             0.46        0.877 +- 0.124        1.140 +- 0.151  [8 ] SI RE RE SC BT BT BT SD
+    0029          7ccc562        68        38     30             8.49        1.789 +- 0.217        0.559 +- 0.091  [7 ] SI SC RE BT BT BT SD
+    0030              4c2        58        46     12             1.38        1.261 +- 0.166        0.793 +- 0.117  [3 ] SI BT AB
+    0031           8cc652        48        54     -6             0.35        0.889 +- 0.128        1.125 +- 0.153  [6 ] SI RE SC BT BT SA
+    0032          7cccc62        19        77    -58            35.04        0.247 +- 0.057        4.053 +- 0.462  [7 ] SI SC BT BT BT BT SD       ## OK LACKS SI-SC-4BT-SD
+    0033           8cccc2        28        67    -39            16.01        0.418 +- 0.079        2.393 +- 0.292  [6 ] SI BT BT BT BT SA          ## OK LACKS SI-4BT-SA
+    0034            4cc62        50        40     10             1.11        1.250 +- 0.177        0.800 +- 0.126  [5 ] SI SC BT BT AB
+    0035            46662        40        43     -3             0.11        0.930 +- 0.147        1.075 +- 0.164  [5 ] SI SC SC SC AB
+    0036           8cc552        30        50    -20             5.00        0.600 +- 0.110        1.667 +- 0.236  [6 ] SI RE RE BT BT SA
+    0037            4ccc2        56        17     39            20.84        3.294 +- 0.440        0.304 +- 0.074  [5 ] SI BT BT BT AB
+    0038         7ccc5552        33        40     -7             0.67        0.825 +- 0.144        1.212 +- 0.192  [8 ] SI RE RE RE BT BT BT SD
+    .                              11142     11142       310.47/62 =  5.01  (pval:1.000 prob:0.000)  
+
+    In [4]: 
+
+
+
+
 Are there any other same material boundaries ?
 -------------------------------------------------
 
@@ -76,7 +139,7 @@ Are there any other same material boundaries ?
     epsilon:ana blyth$ 
 
 
-How the find the geometry with those borders ?
+How to find the geometry with those borders ?
 --------------------------------------------------
 
 Trace backwards. boundary comes from instanceIdentity.z::
@@ -277,8 +340,8 @@ ipython -i ggeo.py::
 
 
 
-How difficult to remove the Pyrex +0.001mm : epidermis ?
-------------------------------------------------------------
+How difficult to remove the Pyrex +0.001mm : epidermis ? VERY 
+----------------------------------------------------------------
 
 * that layer has one benefit of making the PMT border surface implementation self contained
 * without it will need to feed in the containing water PV to form the border surface 
@@ -340,6 +403,7 @@ Looking again after the DsG4Scintillation update
     0019          7ccc552       109       120    -11             0.53        0.908 +- 0.087        1.101 +- 0.100  [7 ] SI RE RE BT BT BT SD
     0020             4652       118       108     10             0.44        1.093 +- 0.101        0.915 +- 0.088  [4 ] SI RE SC AB
     0021           7cccc2        50       151   -101            50.75        0.331 +- 0.047        3.020 +- 0.246  [6 ] SI BT BT BT BT SD
+                                                ^^^^^^^ OK lacks SI-3BT-SD 
     0022          8ccc662        63        99    -36             8.00        0.636 +- 0.080        1.571 +- 0.158  [7 ] SI SC SC BT BT BT SA
     0023         7ccc6662        60        82    -22             3.41        0.732 +- 0.094        1.367 +- 0.151  [8 ] SI SC SC SC BT BT BT SD
     0024          8ccc652        65        72     -7             0.36        0.903 +- 0.112        1.108 +- 0.131  [7 ] SI RE SC BT BT BT SA
