@@ -259,10 +259,11 @@ This info is used GPU side by::
 
 ::
 
+    geocache-kcd GNodeLib
     id = np.load("all_volume_identity.npy")
 
-    bidx = ( id[:,2] >>  0)  & 0xffff ) 
-    midx = ( id[:,2] >> 16)  & 0xffff ) 
+    bidx = ( id[:,2] >>  0)  & 0xffff 
+    midx = ( id[:,2] >> 16)  & 0xffff  
 
 
 **/

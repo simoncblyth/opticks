@@ -13,13 +13,268 @@ are the (or at least one) source of this discrepancy.
 
 Hmm how to proceed.
 
-1. avoid the Pyrex/Pyrex degenerate +0.001mm by fixing this geometry problem
-2. workaround by trying to notice the inconsistency in the boundaries and make some assumption about which is correct
+1. avoid the Pyrex/Pyrex degenerate +0.001mm by fixing the source geometry problem
+2. runtime workaround by trying to notice the inconsistency in the boundaries and make some assumption about which is correct
+3. notice the near degeneracy in the GPU geometry translation and skip the problematic and pointless Pyrex/Pyrex boundary 
 
-* 1 is the "correct" way, but more disruptive and difficult as need to change geometry 
-* 2 is probably quicker to do in the short term, but liable to bringing its own problems
 
-This degenerate has already forced doing microstep skipping the the G4 emulation.
+* 1: is the "correct" way, but more disruptive and difficult as need to change source geometry 
+
+  * the degenerate has already forced doing microstep skipping the the G4 emulation, but that 
+    is just a bookkeeping issue 
+  * overall the pointless boundary seems not to cause a problem for Geant4 and it would be difficult to remove
+    from JUNO offline because it simplifies the surfaces 
+
+* 2: is probably quicker to do in the short term, but liable to bringing its own problems
+* 3: **BEST APPROACH** because it avoids complicating kernels and is the most honest way, simplifying 
+     the GPU geometry to avoid the degeneracy and its problems
+       
+
+Are there any other same material boundaries ?
+-------------------------------------------------
+
+::
+
+    epsilon:ana blyth$ ipython blib.py
+     nbnd  36 nmat  17 nsur  23 
+      0 :   1 : **Galactic///Galactic** 
+      1 :   2 : Galactic///Rock 
+      2 :   3 : Rock//Implicit_RINDEX_NoRINDEX_pExpHall_pTopRock/Air 
+      3 :   4 : **Air///Air** 
+      4 :   5 : Air///LS 
+      5 :   6 : Air///Steel 
+      6 :   7 : Air///Tyvek 
+      7 :   8 : Air///Aluminium 
+      8 :   9 : Aluminium///Adhesive 
+      9 :  10 : Adhesive///TiO2Coating 
+     10 :  11 : TiO2Coating///Scintillator 
+     11 :  12 : Rock///Tyvek 
+     12 :  13 : Tyvek//Implicit_RINDEX_NoRINDEX_pOuterWaterPool_pPoolLining/vetoWater 
+     13 :  14 : vetoWater///LatticedShellSteel 
+     14 :  15 : vetoWater/CDTyvekSurface//Tyvek 
+     15 :  16 : Tyvek//Implicit_RINDEX_NoRINDEX_pInnerWater_pCentralDetector/Water 
+     16 :  17 : Water///Acrylic 
+     17 :  18 : Acrylic///LS 
+     18 :  19 : LS///Acrylic 
+     19 :  20 : LS///PE_PA 
+     20 :  21 : Water///Steel 
+     21 :  22 : Water///PE_PA 
+     22 :  23 : Water///Pyrex 
+     23 :  24 : **Pyrex///Pyrex** 
+     24 :  25 : Pyrex/NNVTMCPPMT_photocathode_logsurf2/NNVTMCPPMT_photocathode_logsurf1/Vacuum 
+     25 :  26 : Pyrex//NNVTMCPPMT_mirror_logsurf1/Vacuum 
+     26 :  27 : Pyrex/HamamatsuR12860_photocathode_logsurf2/HamamatsuR12860_photocathode_logsurf1/Vacuum 
+     27 :  28 : Pyrex//HamamatsuR12860_mirror_logsurf1/Vacuum 
+     28 :  29 : **Water///Water** 
+     29 :  30 : Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum 
+     30 :  31 : Pyrex//PMT_3inch_absorb_logsurf1/Vacuum 
+     31 :  32 : Water///LS 
+     32 :  33 : Water/Steel_surface/Steel_surface/Steel 
+     33 :  34 : vetoWater///Water 
+     34 :  35 : Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum 
+     35 :  36 : Pyrex//PMT_20inch_veto_mirror_logsurf1/Vacuum 
+    epsilon:ana blyth$ 
+
+
+How the find the geometry with those borders ?
+--------------------------------------------------
+
+Trace backwards. boundary comes from instanceIdentity.z::
+
+     32 RT_PROGRAM void closest_hit_propagate()
+     33 {
+     34      const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ;
+     35      float cos_theta = dot(n,ray.direction);
+     36 
+     37      prd.distance_to_boundary = t ;   // standard semantic attrib for this not available in raygen, so must pass it
+     38 
+     39      unsigned boundaryIndex = ( instanceIdentity.z & 0xffff ) ;
+     40      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;
+     41      prd.identity = instanceIdentity ;
+     42      prd.surface_normal = cos_theta > 0.f ? -n : n ;
+     43 }
+
+
+::
+
+    245 glm::uvec4 GVolume::getIdentity() const
+    246 {
+    247     glm::uvec4 id(getIndex(), getTripletIdentity(), getShapeIdentity(), getSensorIndex()) ;
+    248     return id ;
+    249 }
+    250 
+    251 /**
+    252 GVolumne::getShapeIdentity
+    253 ----------------------------
+    254 
+    255 The shape identity packs mesh index and boundary index together.
+    256 This info is used GPU side by::
+    257 
+    258    oxrap/cu/material1_propagate.cu:closest_hit_propagate
+    259 
+    260 ::
+    261 
+    262     id = np.load("all_volume_identity.npy")
+    263 
+    264     bidx = ( id[:,2] >>  0)  & 0xffff ) 
+    265     midx = ( id[:,2] >> 16)  & 0xffff ) 
+    266 
+    267 
+    268 **/
+    269 
+    270 unsigned GVolume::getShapeIdentity() const
+    271 {
+    272     return OpticksShape::Encode( getMeshIndex(), getBoundary() );
+    273 }
+
+
+
+Occurrence of each boundary::
+
+    #!/usr/bin/env python
+
+    import numpy as np
+    from opticks.ana.key import keydir
+    from opticks.ana.blib import BLib
+    KEYDIR=keydir()
+    blib = BLib()
+
+    if __name__ == '__main__':
+        avi = np.load(os.path.join(KEYDIR, "GNodeLib/all_volume_identity.npy"))
+
+        bidx = ( avi[:,2] >>  0)  & 0xffff 
+        midx = ( avi[:,2] >> 16)  & 0xffff 
+
+        b,n = np.unique( bidx, return_counts=True)
+
+        for i in range(len(b)): 
+            print("%3d : %7d : %s " % (b[i],n[i],blib.bname(b[i])))
+        pass
+
+
+::
+        
+    epsilon:ana blyth$ ipython bidx.py 
+      0 :       1 : Galactic///Galactic 
+      1 :       2 : Galactic///Rock 
+      2 :       1 : Rock//Implicit_RINDEX_NoRINDEX_pExpHall_pTopRock/Air 
+      3 :     191 : Air///Air 
+      4 :       1 : Air///LS 
+      5 :       1 : Air///Steel 
+      6 :       1 : Air///Tyvek 
+      7 :     504 : Air///Aluminium 
+      8 :     504 : Aluminium///Adhesive 
+      9 :   32256 : Adhesive///TiO2Coating 
+     10 :   32256 : TiO2Coating///Scintillator 
+                                                 top-tracker related
+     11 :       1 : Rock///Tyvek 
+     12 :       1 : Tyvek//Implicit_RINDEX_NoRINDEX_pOuterWaterPool_pPoolLining/vetoWater 
+     13 :    2120 : vetoWater///LatticedShellSteel 
+     14 :       1 : vetoWater/CDTyvekSurface//Tyvek 
+     15 :       1 : Tyvek//Implicit_RINDEX_NoRINDEX_pInnerWater_pCentralDetector/Water 
+     16 :    3048 : Water///Acrylic 
+     17 :       1 : Acrylic///LS 
+
+     18 :      46 : LS///Acrylic 
+     19 :       8 : LS///PE_PA 
+                      small number of items inside LS?
+
+     20 :   27960 : Water///Steel 
+     21 :      56 : Water///PE_PA 
+
+     22 :   45612 : Water///Pyrex 
+
+            12612+5000+25600+2400 = 45612    all PMTs including veto 
+
+     23 :   20012 : Pyrex///Pyrex 
+
+            12612+5000+2400 = 20012         all PMTs excluding veto
+
+
+     24 :   12612 : Pyrex/NNVTMCPPMT_photocathode_logsurf2/NNVTMCPPMT_photocathode_logsurf1/Vacuum 
+     25 :   12612 : Pyrex//NNVTMCPPMT_mirror_logsurf1/Vacuum 
+
+     26 :    5000 : Pyrex/HamamatsuR12860_photocathode_logsurf2/HamamatsuR12860_photocathode_logsurf1/Vacuum 
+     27 :    5000 : Pyrex//HamamatsuR12860_mirror_logsurf1/Vacuum 
+
+     28 :   25601 : Water///Water 
+                               3inch envelope + 1  ?
+
+     29 :   25600 : Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum 
+     30 :   25600 : Pyrex//PMT_3inch_absorb_logsurf1/Vacuum 
+
+     31 :       1 : Water///LS 
+     32 :       1 : Water/Steel_surface/Steel_surface/Steel 
+
+     33 :    2400 : vetoWater///Water 
+     34 :    2400 : Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum 
+     35 :    2400 : Pyrex//PMT_20inch_veto_mirror_logsurf1/Vacuum 
+
+
+    epsilon:ana blyth$ 
+
+
+How to skip the 20012 degenerates ? All named *body_solid*
+--------------------------------------------------------------
+
+
+ipython -i ggeo.py::
+
+    In [8]: nn = np.where( gg.bidx == 23 )[0]
+
+    In [10]: gg.midx
+    Out[10]: array([126,  12,  11, ..., 120, 118, 119], dtype=uint32)
+
+    In [11]: gg.midx[np.where(gg.bidx == 23)]
+    Out[11]: array([100, 104, 100, ..., 120, 120, 120], dtype=uint32)
+
+    In [12]: mm = gg.midx[np.where(gg.bidx == 23)]
+
+    In [13]: mm.shape
+    Out[13]: (20012,)
+
+    In [14]: np.unique(mm, return_counts=True)
+    Out[14]: (array([100, 104, 120], dtype=uint32), array([12612,  5000,  2400]))
+
+    In [17]: gg.msn[100]
+    Out[17]: u'NNVTMCPPMT_body_solid0x3a905c0'
+
+    In [18]: gg.msn[104]
+    Out[18]: u'HamamatsuR12860_body_solid_1_90x3a992f0'
+
+    In [19]: gg.msn[120]
+    Out[19]: u'PMT_20inch_veto_body_solid_1_20x3a8b930'
+
+
+::
+
+    In [38]: w = np.where(np.char.find( a, "body_solid") != -1)
+
+    In [39]: a[w]
+    Out[39]: 
+    array([u'NNVTMCPPMT_body_solid0x3a905c0', u'HamamatsuR12860_body_solid_1_90x3a992f0', u'PMT_3inch_body_solid_ell_ell_helper0x421dec0', u'PMT_20inch_veto_body_solid_1_20x3a8b930',
+           u'HamamatsuR12860_body_solid_1_90x3a992f0'], dtype='<U44')
+
+
+
+::
+
+    --skipsolidname NNVTMCPPMT_body_solid,HamamatsuR12860_body_solid_1_9,PMT_20inch_veto_body_solid_1_2
+
+::
+
+    tds-skipsolidname(){ echo $(tds-skipsolidname-) | tr " " "," ; }
+    tds-skipsolidname-(){ cat << EON | grep -v ^#
+    #NNVTMCPPMTsMask_virtual
+    #HamamatsuR12860sMask_virtual
+    mask_PMT_20inch_vetosMask_virtual
+    NNVTMCPPMT_body_solid
+    HamamatsuR12860_body_solid_1_9
+    PMT_20inch_veto_body_solid_1_2
+    EON
+    }
+
+
 
 
 How difficult to remove the Pyrex +0.001mm : epidermis ?

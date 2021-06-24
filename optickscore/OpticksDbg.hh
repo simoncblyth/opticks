@@ -95,6 +95,7 @@ class OKCORE_API OpticksDbg
        void postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs ) ;
    private:
        void postgeometry();
+       void postgeometrySkipSolidName();
 
    private:
        Opticks*              m_ok ; 

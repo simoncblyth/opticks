@@ -206,6 +206,7 @@ Volume idsmry dumping::
 
 
 """
+from __future__ import print_function
 import os, re, sys, logging, argparse
 log = logging.getLogger(__name__)
 import numpy as np
@@ -833,7 +834,7 @@ def triplet_(rpo):
         if s == "*" or ":" in s:
             elem.append(s)
         else:
-            if s.isnumeric():
+            if s.isdigit():         # isnumeric is py3 only, so use isdigit as seems -ve not used here ?
                 elem.append(int(s))
             else:
                 elem.append(0)
@@ -913,7 +914,7 @@ if __name__ == '__main__':
         pass
     else:
         for idx in args.idx:
-            if str(idx).isnumeric():    
+            if str(idx).isdigit():     # isnumeric is py3 only, as here dont need -ve ? switch to isdigit
                 gg(int(idx))
             else:
                 gg(*triplet_(idx))

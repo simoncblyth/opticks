@@ -197,6 +197,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         unsigned int getMaterialLine(const char* shortname);
         std::string  getSensorBoundaryReport() const ; 
 
+        std::string getBoundaryName(unsigned boundary) const ; // 0-based boundary index argument
+        bool     isSameMaterialBoundary(unsigned boundary) const ; 
         unsigned getBoundary(const char* spec) const ; // 0-based, 0xffffffff UNSET
         int      getSignedBoundary(const char* spec) const ; // 1-based, 0 UNSET    
         int      getSignedBoundary() const ; 

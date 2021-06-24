@@ -98,7 +98,7 @@ class GGEO_API GBndLib : public GPropertyLib {
   private:
        void init(); 
   public:
-       unsigned int getNumBnd() const ;
+       unsigned getNumBnd() const ;
        void closeConstituents();
   public:
        std::string description(const guint4& bnd) const ;
@@ -111,6 +111,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        // boundary index lookups
        guint4 getBnd(unsigned int boundary) const ;
        void   getBnd(int& omat, int& osur, int& isur, int& imat, unsigned boundary) const ;
+       bool isSameMaterialBoundary(unsigned boundary) const ;
   public:
        bool isSensorBoundary(unsigned boundary) const ;
        void countSensorBoundary(unsigned boundary);

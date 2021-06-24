@@ -85,7 +85,24 @@ void test_getSignedBoundary(const GBndLib* blib)
         ;  
 }
 
-
+void test_isSameMaterialBoundary(const GBndLib* blib)
+{
+    unsigned num_bnd = blib->getNumBnd(); 
+    LOG(info) << " num_bnd " << num_bnd ; 
+    for(int i=0 ; i < int(num_bnd) ; i++)
+    {
+        unsigned boundary = i ; 
+        bool sameMaterial = blib->isSameMaterialBoundary(boundary); 
+        if(!sameMaterial) continue ; 
+        std::string sname = blib->shortname(boundary) ; 
+        std::cout 
+             << " boundary " << std::setw(3) << boundary
+             << " sameMaterial " << std::setw(2) << ( sameMaterial ? "Y" : "N" )
+             << " shortname " << std::setw(100) << sname
+             << std::endl 
+             ;
+    }
+}
 
 
 
@@ -133,7 +150,7 @@ int main(int argc, char** argv)
 
     test_getBoundary(blib); 
     test_getSignedBoundary(blib); 
-
+    test_isSameMaterialBoundary(blib); 
  
     return 0 ; 
 }

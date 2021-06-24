@@ -648,6 +648,8 @@ void GInstancer::labelTree()
 GInstancer::labelRepeats_r
 ----------------------------
 
+Note that the --skipsolidname and --csgskiplv options 
+result in calling GVolume::setCSGSkip 
 
 **/
 
@@ -880,20 +882,13 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     unsigned numRepeats = getNumRepeats();
     unsigned numRidx = 1 + numRepeats ;
 
-    LOG(info) 
-        << " numRepeats " << numRepeats
-        << " numRidx " << numRidx
-        ;
+    LOG(LEVEL) << " numRepeats " << numRepeats << " numRidx " << numRidx ; 
 
     for(unsigned ridx=1 ; ridx < numRidx ; ridx++)  // 1-based index
     {
          const GNode*   rbase  = last ? getLastRepeatExample(ridx)  : getRepeatExample(ridx) ;  
 
-         if(m_verbosity > 2)
-         LOG(info) 
-             << " ridx " << ridx 
-             << " rbase " << rbase
-             ;
+         LOG(LEVEL) << " ridx " << ridx << " rbase " << rbase ; 
 
          GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, m_root ); 
 
@@ -901,7 +896,11 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
          mm->addInstancedBuffers(placements_);
      
-         //mm->reportMeshUsage( ggeo, "GInstancer::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
+         std::string dmesh = mm->descMeshUsage( m_ggeo, "GInstancer::makeMergedMeshAndInstancedBuffers.descMeshUsage" ); 
+         LOG(LEVEL) << dmesh ; 
+
+         std::string dskip = mm->descBoundarySkip(m_ggeo, "GInstancer::makeMergedMeshAndInstancedBuffers.descBoundarySkip" ); 
+         LOG(LEVEL) << dskip ; 
     }
 
 

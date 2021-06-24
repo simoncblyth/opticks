@@ -19,7 +19,6 @@
 
 #pragma once
 #include <map>
-#include <vector>
 #include <string>
 #include "plog/Severity.h"
 
@@ -128,6 +127,9 @@ public:
 
     // TODO: below is only usage of GGeo here, move this elsewhere... into GGeo ?
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");
+    std::string descMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::descMeshUsage");
+    std::string descBoundarySkip(GGeo* ggeo, const char* msg="GMergedMesh::descBoundarySkip");
+
 public:
     void dumpVolumesSelected(const char* msg="GMergedMesh::dumpVolumesSelected") const ;
     void dumpVolumes(const char* msg="GMergedMesh::dumpVolumes") const ;
@@ -157,7 +159,8 @@ private:
     unsigned     m_cur_mergedmesh ; // for composite mergedmesh recording 
     unsigned     m_num_csgskip ; 
     const GNode* m_cur_base ;  
-    std::map<unsigned int, unsigned int> m_mesh_usage ; 
+    std::map<unsigned, unsigned> m_mesh_usage ; 
+    std::map<unsigned, unsigned> m_boundary_csgskip ; 
 
     GPts*        m_pts ; 
     Opticks*     m_ok ; 

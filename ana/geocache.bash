@@ -295,18 +295,25 @@ geocache-cd(){ cd $(geocache-dir) ; }
 geocache-tstdir(){ echo $(geocache-keydir)/g4codegen/tests ; }
 geocache-kcd(){ 
    local msg="=== $FUNCNAME :"
+   local rel=$1
+
    if [ -z "$OPTICKS_KEY" ] ; then 
       echo $msg OPTICKS_KEY is not defined  
    else
       echo $msg OPTICKS_KEY $OPTICKS_KEY 
       local keydir=$(geocache-keydir)
-
       if [ -d "$keydir" ]; then  
-          cd $keydir 
+          cd $keydir
           pwd 
           cat runcomment.txt 
+          if [ -d "$rel" ]; then 
+              cd $rel 
+              pwd
+          else
+              echo $msg rel $rel does not exist in keydir $keydir
+          fi 
       else
-          echo $msg keydir $keydir does not exist 
+          echo $msg keydir $keydir does not exist
       fi 
    fi 
 

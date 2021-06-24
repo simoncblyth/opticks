@@ -20,6 +20,7 @@
 #include <csignal>
 #include <vector>
 #include <climits>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 
@@ -158,6 +159,7 @@ std::string GMergedMesh::brief() const
 
     return ss.str();
 }
+
 
 
 
@@ -349,6 +351,16 @@ PASS_MERGE
     using base relative transforms for the first example of repeated geometry instances
 
 
+Note that volumes which have been marked as CSGSkip for example via the --skipsolidname
+and --csgskiplv options are excluded from the volume selection making those
+volumes being excluded from the GPU geometry.  
+
+Because skipping of volumes and hence boundaries can cause material inconsistencies in the 
+simulation doing so should normally be only for debugging. However there are some 
+circumstances with "technical" volumes such as virtual container volumes which 
+have the same materials on either side of the boundary that skipping of volumes from 
+the GPU geometry can be permissable and in some circumstances useful.
+
 **/
 
 void GMergedMesh::traverse_r( const GNode* node, unsigned depth, unsigned pass )
@@ -363,14 +375,21 @@ void GMergedMesh::traverse_r( const GNode* node, unsigned depth, unsigned pass )
     unsigned ridx = volume->getRepeatIndex() ;
 
     bool repeat_selection =  ridx == uidx ;                       // repeatIndex of volume same as index of mm (or 0 for globalinstance)
-    bool csgskip = volume->isCSGSkip() ;                          // --csgskiplv : for DEBUG usage only 
+    bool csgskip = volume->isCSGSkip() ;                          // --csgskiplv --skipsolidname
+
+
     bool selected_ =  volume->isSelected() && repeat_selection ;  // volume selection defaults to true and appears unused
     bool selected = selected_ && !csgskip ;                       // selection honoured by both triangulated and analytic 
 
 
     if(pass == PASS_COUNT)
     {
-        if(selected_ && csgskip) m_num_csgskip++ ; 
+        if(selected_ && csgskip) 
+        { 
+            m_num_csgskip++ ; 
+            unsigned boundary = volume->getBoundary(); 
+            m_boundary_csgskip[boundary] += 1 ; 
+        }
     }
     
     if(m_verbosity > 1)
@@ -928,10 +947,17 @@ void GMergedMesh::mergeVolumeAnalytic( GPt* pt, GMatrixF* transform)
 }
 
 
-
-void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
+void  GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
 {
-     LOG(info) << msg ; 
+    std::string desc = descMeshUsage(ggeo, msg); 
+    LOG(info) << desc ; 
+}
+
+std::string GMergedMesh::descMeshUsage(GGeo* ggeo, const char* msg)
+{
+     std::stringstream ss ; 
+     ss << msg << std::endl ; 
+
      typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
 
      unsigned int tv(0) ; 
@@ -945,11 +971,59 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
          unsigned int nv = mesh->getNumVertices() ; 
          unsigned int nf = mesh->getNumFaces() ; 
 
-         printf("  %4d (v%5d f%5d) : %6d : %7d : %s \n", meshIndex, nv, nf, nodeCount, nodeCount*nv, meshName);
+         ss 
+             << "  " 
+             << std::setw(4) << meshIndex 
+             << " (v" 
+             << std::setw(5) << nv 
+             << " f" 
+             << std::setw(5) << nf 
+             << ") : " 
+             << std::setw(6) << nodeCount 
+             << " : "
+             << std::setw(7) << nodeCount*nv
+             << " : "
+             << meshName
+             << std::endl
+             ;
+
+         //printf("  %4d (v%5d f%5d) : %6d : %7d : %s \n", meshIndex, nv, nf, nodeCount, nodeCount*nv, meshName);
 
          tv += nodeCount*nv ; 
      }
-     printf(" tv : %7d \n", tv);
+     ss << " tv : " << std::setw(7) << tv << std::endl ; 
+     //printf(" tv : %7d \n", tv);
+     return ss.str(); 
+}
+
+
+std::string GMergedMesh::descBoundarySkip(GGeo* ggeo, const char* msg)
+{
+    std::stringstream ss ; 
+    ss << msg << std::endl ; 
+    typedef std::map<unsigned, unsigned>::const_iterator MUUI ; 
+    unsigned tot_csgskip(0) ; 
+    for(MUUI it=m_boundary_csgskip.begin() ; it != m_boundary_csgskip.end() ; it++)
+    {
+        unsigned boundary = it->first ; 
+        unsigned csgskip = it->second ; 
+        bool sameMaterialBoundary = ggeo->isSameMaterialBoundary(boundary); 
+        std::string bname = ggeo->getBoundaryName(boundary);  
+        ss 
+            << " boundary " << std::setw(4) << boundary 
+            << " csgskip " << std::setw(6) << csgskip
+            << " sameMaterialBoundary " << std::setw(2) << ( sameMaterialBoundary ? "Y" : "N" )
+            << " bname " << std::setw(100) << bname 
+            << std::endl
+            ;
+        tot_csgskip += csgskip ; 
+    }
+    ss 
+        << " tot_csgskip " << tot_csgskip 
+        << " m_num_csgskip " << m_num_csgskip 
+        << std::endl
+        ; 
+    return ss.str(); 
 }
 
 

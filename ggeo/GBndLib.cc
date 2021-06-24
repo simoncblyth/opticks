@@ -573,6 +573,14 @@ void GBndLib::getBnd(int& omat, int& osur, int& isur, int& imat, unsigned bounda
     imat = bnd[IMAT] ;  
 }
 
+bool GBndLib::isSameMaterialBoundary(unsigned boundary) const 
+{
+    int omat, osur, isur, imat ; 
+    getBnd(omat, osur, isur, imat, boundary); 
+    return omat == imat ; 
+}
+
+
 
 /**
 GBndLib::isSensorBoundary

@@ -182,6 +182,36 @@ void OpticksDbg::postconfigure()
 
 void OpticksDbg::postgeometry()
 {
+    postgeometrySkipSolidName();  
+}
+
+
+/**
+OpticksDbg::isSkipSolidIdx
+---------------------------
+
+Canonical usage via Opticks::isSkipSolidIdx is from GInstancer::labelRepeats_r 
+which 
+
+**/
+bool OpticksDbg::isSkipSolidIdx(unsigned lvIdx) const   // --skipsolidname
+{
+    return IsListed(lvIdx, m_skipsolididx, false); 
+}
+
+/**
+OpticksDbg::postgeometrySkipSolidName
+-----------------------------------------
+
+Looks for solids within the geometry with names starting with the 
+comma delimited names from the --skipsolidname argument and adds 
+the midx (mesh indices) of them to m_skipsolididx
+for later querying with OpticksDbg::isSkipSolidIdx.
+
+**/
+
+void OpticksDbg::postgeometrySkipSolidName()
+{
     LOG(LEVEL) << "[" ; 
     assert(m_cfg); 
     m_geo = m_ok->getGeo(); 
@@ -206,7 +236,7 @@ void OpticksDbg::postgeometry()
         const std::string& sn = solidname[i];  
         bool startswith = true ; 
         int midx = m_geo->getMeshIndexWithName(sn.c_str(), startswith) ; 
-        bool found = midx > 0 ; 
+        bool found = midx > 0 ;    // looks like cannot find first 
 
         if(!found)
         {
@@ -336,11 +366,6 @@ bool OpticksDbg::isDeferredCSGSkipLV(unsigned lvIdx) const   // --deferredcsgski
 {
     return IsListed(lvIdx, m_deferredcsgskiplv, false); 
 }
-bool OpticksDbg::isSkipSolidIdx(unsigned lvIdx) const   // --skipsolidname
-{
-    return IsListed(lvIdx, m_skipsolididx, false); 
-}
-
 
 
 bool OpticksDbg::isEnabledMergedMesh(unsigned mm) const 

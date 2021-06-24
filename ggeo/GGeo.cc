@@ -441,7 +441,9 @@ unsigned GGeo::getNumRawMaterials() const { return m_materiallib->getNumRawMater
 unsigned int GGeo::getMaterialLine(const char* shortname) { return m_bndlib->getMaterialLine(shortname); }
 std::string  GGeo::getSensorBoundaryReport() const { return m_bndlib->getSensorBoundaryReport() ; }
 unsigned     GGeo::getBoundary(const char* spec) const { return m_bndlib->getBoundary(spec) ; }
+std::string  GGeo::getBoundaryName(unsigned boundary) const { return m_bndlib->shortname(boundary) ; }
 int          GGeo::getSignedBoundary(const char* spec) const { return m_bndlib->getSignedBoundary(spec) ; }  
+bool         GGeo::isSameMaterialBoundary(unsigned boundary) const { return m_bndlib->isSameMaterialBoundary(boundary) ; }
 
 
 /**
