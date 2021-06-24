@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     GGeo* ggeo = X4PhysicalVolume::Convert(top, "--printenabled --nogdmlpath" ) ;   
     assert(ggeo);  
 
-    Opticks* ok = Opticks::GetInstance();
+    Opticks* ok = Opticks::Get();
     ok->Summary();
 
     return 0 ; 

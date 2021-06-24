@@ -302,7 +302,7 @@ Opticks* Opticks::Instance()
 {
     return fInstance ;  
 }
-Opticks* Opticks::GetInstance()
+Opticks* Opticks::Get()
 {
      if(fInstance == NULL )
      {

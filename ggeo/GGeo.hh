@@ -99,7 +99,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         friend struct GSceneTest ; 
     public:
         static const plog::Severity LEVEL ; 
-        static GGeo* GetInstance();  // statically provides the last instanciated GGeo instance
+        static GGeo* Get();  // statically provides the last instanciated GGeo instance
         static GGeo* Load(Opticks* ok); 
     public:
         // see GGeoCfg.hh

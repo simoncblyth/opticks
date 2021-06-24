@@ -246,6 +246,10 @@ NumPy array access::
     boundary    = (( flags[:,0].view(np.uint32) & 0xffff0000 ) >> 16 ).view(np.int16)[1::2] 
     sensorIndex = (( flags[:,0].view(np.uint32) & 0x0000ffff ) >>  0 ).view(np.int16)[0::2] 
 
+    In [2]: nidx = a.ox[:,3,1].view(np.uint32) ; nidx 
+    Out[2]: A([106122,  67843, 129818, ...,  94170,  67843, 125090], dtype=uint32)
+
+
 
 Formerly::
 

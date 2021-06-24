@@ -110,10 +110,11 @@ const char* GGeo::PICKFACE = "pickface" ;
 
 GGeo* GGeo::fInstance = NULL ; 
 
-GGeo* GGeo::GetInstance() // static
+GGeo* GGeo::Get() // static
 {
     return fInstance ;    
 }
+
 
 GGeo* GGeo::Load(Opticks* ok) // static
 {

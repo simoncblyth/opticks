@@ -54,7 +54,7 @@ int OpMgr::Preinit()  // static
 OpMgr::OpMgr(Opticks* ok ) 
     :
     m_preinit(Preinit()),
-    m_ok(ok ? ok : Opticks::GetInstance()),         
+    m_ok(ok ? ok : Opticks::Get()),         
     m_nogpu(m_ok->isNoGPU()),
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry OR adopt a preexisting GGeo instance
     m_idx(new OpticksIdx(m_hub)),

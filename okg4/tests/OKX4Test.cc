@@ -120,7 +120,7 @@ int main(int argc, char** argv)
     }
 
     m_ok->profile("_OKX4Test:OKMgr"); 
-    assert( GGeo::GetInstance() == m_ggeo );
+    assert( GGeo::Get() == m_ggeo );
 
     // not OKG4Mgr as no need for CG4 
     OKMgr mgr(argc, argv);  // OpticksHub inside here picks up the gg (last GGeo instanciated) via GGeo::GetInstance 
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
     //mgr.propagate();
     mgr.visualize();   
 
-    Opticks* oki = Opticks::GetInstance() ; 
+    Opticks* oki = Opticks::Get() ; 
     assert( oki == m_ok ) ; 
 
     m_ok->saveProfile();

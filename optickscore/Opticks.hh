@@ -152,7 +152,7 @@ class OKCORE_API Opticks {
        static Opticks*     fInstance ;  
    public:
        static Opticks* Instance();
-       static Opticks* GetInstance();  // creates if not existing 
+       static Opticks* Get();  // creates if not existing 
        static bool     HasInstance();
        static bool     HasKey();
 

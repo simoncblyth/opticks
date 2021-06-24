@@ -35,7 +35,7 @@ void X4SolidStore::Dump() // static
     unsigned num_solid = store->size(); 
     LOG(info) << " num_solid " << num_solid ; 
 
-    Opticks* ok = Opticks::GetInstance(); 
+    Opticks* ok = Opticks::Get(); 
 
     for(unsigned i=0 ; i < num_solid ; i++)
     {

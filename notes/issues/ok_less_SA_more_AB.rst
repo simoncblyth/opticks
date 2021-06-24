@@ -33,10 +33,13 @@ Hmm how to proceed.
 After Skipping Degenerate Pyrex///Pyrex
 -------------------------------------------
 
+* proceed to :doc:`ok_lacks_SI-4BT-SD` 
+
 * excess OK AB seems fixed
 * looks like 3BT to 4BT mismatch, CRecorder G4 microStep skipping perhaps not always working would explain 3 vs 4 mismatch 
 
   * this issue was there previously, just now it becomes the most prominent one  
+  * hmm could angular efficiency be an issue too 
 
 
 ::
