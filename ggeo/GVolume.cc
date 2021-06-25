@@ -41,7 +41,7 @@
 
 const unsigned GVolume::SENSOR_UNSET = 0u ; 
 
-GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, void* origin_node )
+GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, void* origin_node, int origin_copyNumber )
     : 
     GNode(index, transform, mesh ),
     m_boundary(-1),
@@ -54,6 +54,7 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, 
     m_parallel_node(NULL), 
     m_copyNumber(-1),
     m_origin_node(origin_node),
+    m_origin_copyNumber(origin_copyNumber),
     m_outer_volume(NULL)
 {
 }
@@ -162,6 +163,12 @@ void* GVolume::getOriginNode() const
 {
     return m_origin_node ; 
 }
+
+int GVolume::getOriginCopyNumber() const 
+{
+    return m_origin_copyNumber ; 
+}
+
 
 
 /**

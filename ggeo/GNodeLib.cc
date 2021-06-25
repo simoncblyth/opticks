@@ -20,6 +20,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <utility>
 
 #include "PLOG.hh"
 #include "NPY.hpp"
@@ -464,9 +465,14 @@ void GNodeLib::addVolume(const GVolume* volume)
         m_num_sensors += 1 ; 
     }
 
-    void* origin = volume->getOriginNode() ; 
+
+
+    const void* origin = volume->getOriginNode() ; 
+    int origin_copyNumber = volume->getOriginCopyNumber() ; 
+ 
+
     assert( origin ); 
-    m_origin2index[origin] = index ; 
+    m_origin2index[std::make_pair(origin, origin_copyNumber)] = index ; 
 }
 
 /**
@@ -477,13 +483,13 @@ Find the node index corresponding to an origin node or -1 if not found.
 
 **/
 
-int GNodeLib::findNodeIndex( const void* origin ) const 
+int GNodeLib::findNodeIndex( const void* origin, int origin_copyNumber) const 
 {
-    typedef const std::map<const void*, unsigned> VU ; 
-    typedef VU::const_iterator VUI ; 
-    VU& m = m_origin2index ; 
-    VUI e = m.end(); 
-    VUI i = m.find(origin) ; 
+    typedef const std::map<std::pair<const void*, int>, unsigned> M ; 
+    typedef M::const_iterator MI ; 
+    M& m = m_origin2index ; 
+    MI e = m.end(); 
+    MI i = m.find(std::make_pair(origin, origin_copyNumber)) ; 
     return i == e ? -1 : int(i->second) ; 
 }
 

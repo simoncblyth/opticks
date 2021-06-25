@@ -200,7 +200,7 @@ GVolume* GMaker::makeVolumeFromMesh( unsigned ndIdx, const GMesh* mesh, const gl
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GVolume* volume = new GVolume( ndIdx, transform, mesh, NULL );     
+    GVolume* volume = new GVolume( ndIdx, transform, mesh, NULL, -1 );     
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
     OpticksCSG_t type = csg->getRootType() ;
@@ -278,7 +278,7 @@ GVolume* GMaker::makeBox(gbbox& bbox)
     // TODO: tranform hookup with NTrianglesNPY 
     GMatrixF* transform = new GMatrix<float>();
 
-    GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL, -1 );     
 
     volume->setBoundary(0);     // unlike ctor these create arrays
 
@@ -301,7 +301,7 @@ GVolume* GMaker::makePrism(glm::vec4& param, const char* spec)
     glm::mat4 txf = tris->getTransform(); 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL, -1 );     
     volume->setBoundary(0);     // these setters create arrays
     nprism prism(param.x, param.y, param.z, param.w);
     npart  pprism = prism.part();
@@ -505,7 +505,7 @@ GVolume* GMaker::makeSphere(NTrianglesNPY* tris)
 
     //transform->Summary("GMaker::makeSphere");
 
-    GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh, NULL, -1 );     
 
     volume->setBoundary(0);     // these setters create arrays
 

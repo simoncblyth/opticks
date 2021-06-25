@@ -464,6 +464,10 @@ very different number of unique nidx between G4 and OK ?
     Out[4]: 5208
 
 
+Huh after using getting nidx in CCtx::postTrack see less uniques::
+
+    In [3]: np.unique(b.ox[:,3,1].view(np.uint32)).shape
+    Out[3]: (101,)
 
 ::
 
@@ -520,8 +524,8 @@ very different number of unique nidx between G4 and OK ?
 
 
 
-Plough on regardless
------------------------
+nidx within the G4 4BT selection shows only 3 uniques 
+---------------------------------------------------------
 
 ::
 
@@ -558,7 +562,23 @@ Plough on regardless
     Out[18]: 'PMT_3inch_inner1_phys0x421eca0'
 
 
-They are well spread in position, why getting repeated nidx ?::
+
+Change to setting nidx in CCtx::postTrack::
+
+    In [11]: np.unique(nb)
+    Out[11]: A([141401, 141405, 269404], dtype=uint32)
+
+    In [12]: gg.pv[141401]
+    Out[12]: 'HamamatsuR12860_body_phys0x3aa0b80'
+
+    In [13]: gg.pv[141405]
+    Out[13]: 'NNVTMCPPMT_body_phys0x3a93320'
+
+    In [14]: gg.pv[269404]
+    Out[14]: 'PMT_3inch_body_phys0x421ec20'
+
+
+They are well spread in position::
 
     In [21]: pos[:,0].min()
     Out[21]: A(-19343.75, dtype=float32)
@@ -585,6 +605,9 @@ They are well spread in position, why getting repeated nidx ?::
 
     In [30]: np.sqrt(np.sum(pos*pos, axis=1)).max()
     Out[30]: A(19435.08, dtype=float32)
+
+
+
 
 
 
@@ -722,6 +745,48 @@ Then the writer can just grab from ctx::
     417     
     418     // TODO: make these match OK flags better 
     419 }
+
+
+
+
+
+
+
+Why not ~300k origin node ? Only 51k ? NEED TO USE (pv,copyNo) as the key ?
+--------------------------------------------------------------------------------
+
+::
+
+    2021-06-25 19:15:26.568 INFO  [170343] [GGeo::prepareVolumes@1346] GNodeLib::descOriginMap m_origin2index.size 51017
+
+
+::
+
+    1409 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
+    1410 {
+    1411 #ifdef X4_PROFILE
+    1412     float t00 = BTimeStamp::RealTime();
+    1413 #endif
+    1414 
+    1415     // record copynumber in GVolume, as thats one way to handle pmtid
+    1416     const G4PVPlacement* placement = dynamic_cast<const G4PVPlacement*>(pv);
+    1417     assert(placement);
+    1418     G4int copyNumber = placement->GetCopyNo() ;
+    ...
+    1564     G4PVPlacement* _placement = const_cast<G4PVPlacement*>(placement) ;
+    1565     void* origin_node = static_cast<void*>(_placement) ;
+    1566     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node );
+
+
+g4-cls G4PVPlacement::
+
+     51 class G4PVPlacement : public G4VPhysicalVolume
+
+g4-cls G4VPhysicalVolume::
+
+    82 class G4VPhysicalVolume
+
+
 
 
 

@@ -53,7 +53,7 @@ class GGEO_API GVolume : public GNode {
   public:
       static void Dump( const std::vector<GVolume*>& solids, const char* msg="GVolume::Dump" );
   public:
-      GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, void* origin_node );
+      GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, void* origin_node, int origin_copyNumber );
   public:
       void     setCSGFlag(OpticksCSG_t flag);
       void     setBoundary(unsigned boundary);     // also sets BoundaryIndices array
@@ -92,6 +92,7 @@ class GGEO_API GVolume : public GNode {
   public:
       // OriginNode records the G4VPhysicalVolume from whence the GVolume was converted, see X4PhysicalVolume::convertNode
       void*        getOriginNode() const ;
+      int          getOriginCopyNumber() const ; 
   public:
       void         setOuterVolume(const GVolume* outer_volume); 
       const GVolume*   getOuterVolume() const ; 
@@ -112,6 +113,8 @@ class GGEO_API GVolume : public GNode {
       int               m_copyNumber ; 
 
       void*             m_origin_node ; 
+      int               m_origin_copyNumber ; 
+
       const GVolume*    m_outer_volume ; 
 
 

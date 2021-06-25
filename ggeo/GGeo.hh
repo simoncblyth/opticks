@@ -265,7 +265,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         glm::mat4 getInverseTransform(unsigned nidx) const ;  
         void dumpVolumes(const std::map<std::string, int>& targets, const char* msg="GGeo::dumpVolumes", float extent_cut_mm=5000., int cursor=-1 ) const ;
         glm::vec4 getCE(unsigned index) const ; 
-        int findNodeIndex(const void* origin) const ; 
+        int findNodeIndex(const void* origin, int origin_copyNumber) const ; 
     public:
         void dumpNode(unsigned nidx); 
         void dumpNode(unsigned ridx, unsigned pidx, unsigned oidx); 

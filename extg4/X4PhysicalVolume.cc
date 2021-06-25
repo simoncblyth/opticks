@@ -1563,7 +1563,9 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
     G4PVPlacement* _placement = const_cast<G4PVPlacement*>(placement) ;  
     void* origin_node = static_cast<void*>(_placement) ; 
-    GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node );
+    int origin_copyNumber = copyNumber ; 
+    
+    GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node, origin_copyNumber );
     volume->setBoundary( boundary );   // must setBoundary before adding sensor volume 
     volume->setCopyNumber(copyNumber);  // NB within instances this is changed by GInstancer::labelRepeats_r when m_duplicate_outernode_copynumber is true
 

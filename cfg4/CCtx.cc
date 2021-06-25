@@ -388,8 +388,10 @@ CCtx::postTrack
 void CCtx::postTrack()
 {
     const G4VPhysicalVolume* pv = _track->GetVolume() ; 
+    int origin_copyNumber = pv->GetCopyNo() ;   // from G4PVPlacement subclass
     const void* origin = (void*)pv ; 
-    _nidx = GGeo::Get()->findNodeIndex(origin); 
+
+    _nidx = GGeo::Get()->findNodeIndex(origin, origin_copyNumber); 
 } 
 
 
