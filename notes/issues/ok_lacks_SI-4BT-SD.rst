@@ -78,6 +78,120 @@ Local frame dx of the 3BT and 4BT may be informative
 
 
 
+what about skipping and the all_volume arrays, does that mean the indices will be non-contiguous ?  
+------------------------------------------------------------------------------------------------------
+
+NO, the skipping changes what is in the GMergedMesh it does not change the **all_volume** arrays.
+
+
+::
+
+    epsilon:GNodeLib blyth$ ipython -i $(which np.py) *.npy
+    a :                                          all_volume_bbox.npy :       (283812, 2, 4) : 91346e2be89bf2562e00f46025cf6d3a : 20210615-1403 
+    b :                                 all_volume_center_extent.npy :          (283812, 4) : 339773b74d10be3ea97c1e34fc99e6a0 : 20210615-1403 
+    c :                                      all_volume_identity.npy :          (283812, 4) : 6d9254dc39abca7829416d89198a82a5 : 20210615-1403 
+    d :                            all_volume_inverse_transforms.npy :       (283812, 4, 4) : 1e936a997a5a200dc83cf0539f812530 : 20210615-1403 
+    e :                                      all_volume_nodeinfo.npy :          (283812, 4) : 546376acb0ba68d868799f2d83eaa698 : 20210615-1403 
+    f :                                    all_volume_transforms.npy :       (283812, 4, 4) : 93680ce18d4ed44c55d39d3489f38941 : 20210615-1403 
+
+
+    In [1]: c      ## no gaps in all_volume_identity
+    Out[1]: 
+    array([[       0,        0,  8257536,        0],
+           [       1,        1,   786433,        0],
+           [       2,        2,   720898,        0],
+           ...,
+           [  283809, 67723011,  7864343,        0],
+           [  283810, 67723012,  7733282,    45612],
+           [  283811, 67723013,  7798819,        0]], dtype=uint32)
+
+    In [4]: c0 = np.arange(len(c), dtype=np.uint32)
+
+    In [5]: c0
+    Out[5]: array([     0,      1,      2, ..., 283809, 283810, 283811], dtype=uint32)
+
+    In [6]: np.all( c[:,0] == c0 )
+    Out[6]: True
+
+
+These arrays are collected in GNodeLib::addVolume::
+
+    403 /**
+    404 GNodeLib::addVolume (precache)
+    405 --------------------------------
+    406 
+    407 Collects all volume information.
+    408 
+    409 The triplet identity is only available on the volumes after 
+    410 GInstancer does the recursive labelling. So volume collection
+    411 is now done by GInstancer::collectNodes_r rather than the former 
+    412 X4PhysicalVolume::convertStructure.
+    413 
+    414 **/
+    415 
+    416 void GNodeLib::addVolume(const GVolume* volume)
+    417 {   
+    418     unsigned index = volume->getIndex();
+    419     m_volumes.push_back(volume); 
+    420     assert( m_volumes.size() - 1 == index && "indices of the geometry volumes added to GNodeLib must follow the sequence : 0,1,2,... " ); // formerly only for m_test
+    421     m_volumemap[index] = volume ;
+    422     
+    423     glm::mat4 transform = volume->getTransformMat4();
+    424     m_transforms->add(transform);
+    425     
+    426     glm::mat4 inverse_transform = volume->getInverseTransformMat4();
+    427     m_inverse_transforms->add(inverse_transform);
+    428 
+    429     
+    430     nbbox* bb = volume->getVerticesBBox();
+    431     glm::vec4 min(bb->min, 1.f);
+    432     glm::vec4 max(bb->max, 1.f); 
+    433     m_bounding_box->add( min, max);
+    434     
+    435     glm::vec4 ce = bb->ce(); 
+    436     m_center_extent->add(ce);
+    437     
+    438     m_lvlist->add(volume->getLVName());
+    439     m_pvlist->add(volume->getPVName()); 
+    440     // NB added in tandem, so same counts and same index as the volumes  
+    441     
+    442     glm::uvec4 id = volume->getIdentity();
+    443     m_identity->add(id);
+    444     
+    445     glm::uvec4 ni = volume->getNodeInfo();
+    446     m_nodeinfo->add(ni);
+    447     
+    448     const GVolume* check = getVolume(index);
+    449     assert(check == volume);
+
+
+    764 /**
+    765 GInstancer::collectNodes
+    766 ------------------------
+    767 
+    768 Populates GNodeLib. Invoked from GInstancer::createInstancedMergedMeshes immediately 
+    769 after tree labelling and merged mesh creation.  
+    770 The node collection needs to be after this labelling to capture the triplet identity. 
+    771 
+    772 **/
+    773 
+    774 void GInstancer::collectNodes()
+    775 {
+    776     assert(m_root);
+    777     collectNodes_r(m_root, 0);
+    778 }
+    779 void GInstancer::collectNodes_r(const GNode* node, unsigned depth )
+    780 {
+    781     const GVolume* volume = dynamic_cast<const GVolume*>(node);
+    782     m_nodelib->addVolume(volume);
+    783     for(unsigned i = 0; i < node->getNumChildren(); i++) collectNodes_r(node->getChild(i), depth + 1 );
+    784 }
+
+
+
+
+
+
 identity info to allow getting local frame coords
 --------------------------------------------------- 
 

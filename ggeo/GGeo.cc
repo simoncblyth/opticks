@@ -1784,6 +1784,12 @@ glm::mat4 GGeo::getInverseTransform(unsigned index) const
 {
     return m_nodelib->getInverseTransform(index); 
 }
+int GGeo::findNodeIndex(const void* origin) const 
+{
+    return m_nodelib->findNodeIndex(origin); 
+}
+
+
 
 
 

@@ -410,11 +410,12 @@ void CWriter::writePhoton_(const G4StepPoint* point, unsigned record_id  )
     unsigned pflags = mskhis | m_ctx._hitflags ; 
 
     const G4VPhysicalVolume* pv = point->GetPhysicalVolume() ; 
-    const G4String& pvname = pv->GetName(); 
-    int nidx = GGeo::Get()->getFirstNodeIndexForPVNameStarting(pvname.c_str()) ;    
+    const void* origin = (void*)pv ; 
+    int nidx = GGeo::Get()->findNodeIndex(origin); 
+
     LOG(LEVEL)
         << " pv " << pv
-        << " pvname " << pvname 
+        << " origin " << origin 
         << " nidx " << nidx
         ;
 

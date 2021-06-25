@@ -404,7 +404,13 @@ const GVolume* GNodeLib::getRootVolume() const
 GNodeLib::addVolume (precache)
 --------------------------------
 
-Collects all volume information.
+Canonically invoked from the recursive GInstancer::collectNodes_r under GInstancer::collectNodes
+which is called from GInstancer::createInstancedMergedMeshes which is called from GGeo::prepareVolumes.
+
+Note that any skips eg from "--skipsolidname" change the volumes included into the GMergedMesh 
+they DO NOT prevent info on the volume being included into this all volume information.
+
+Collects **all volume information**.
 
 The triplet identity is only available on the volumes after 
 GInstancer does the recursive labelling. So volume collection
@@ -457,7 +463,31 @@ void GNodeLib::addVolume(const GVolume* volume)
         m_sensor_identity.push_back(id); 
         m_num_sensors += 1 ; 
     }
+
+    void* origin = volume->getOriginNode() ; 
+    assert( origin ); 
+    m_origin2index[origin] = index ; 
+
 }
+
+/**
+GNodeLib::findNodeIndex
+------------------------
+
+Find the node index corresponding to an origin node or -1 if not found.
+
+**/
+
+int GNodeLib::findNodeIndex( const void* origin ) const 
+{
+    typedef const std::map<const void*, unsigned> VU ; 
+    typedef VU::const_iterator VUI ; 
+    VU& m = m_origin2index ; 
+    VUI e = m.end(); 
+    VUI i = m.find(origin) ; 
+    return i == e ? -1 : int(i->second) ; 
+}
+
 
 /**
 GNodeLib::getNumSensorVolumes (precache and postcache)
