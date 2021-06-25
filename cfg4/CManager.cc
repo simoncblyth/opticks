@@ -340,9 +340,9 @@ void CManager::postTrack()
     //LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 
-
     if(m_ctx->_optical)
     {
+        m_ctx->postTrack(); 
         m_recorder->postTrack();
     } 
     if(m_engine)

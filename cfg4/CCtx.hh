@@ -115,6 +115,8 @@ struct CFG4_API CCtx
     int      _genstep_num_photons ; 
 
 
+   // CCtx::postTrack
+    int _nidx ; 
 
     // CCtx::setTrack
     const G4Track*  _track ; 
@@ -191,6 +193,7 @@ struct CFG4_API CCtx
     void setGentype(char gentype);
 
     void setTrack(const G4Track* track);
+    void postTrack();  
     void setTrackOptical(G4Track* mtrack);
     void ProcessHits(const G4Step* step, bool efficiency_collect); 
 

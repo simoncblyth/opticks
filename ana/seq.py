@@ -348,7 +348,7 @@ class SeqTable(object):
         :param cnames: column names 
 
         """
-        log.info("cnames %s " % repr(cnames))
+        log.debug("cnames %s " % repr(cnames))
 
         assert len(cu.shape) == 2 and cu.shape[1] >= 2 
         ncol = cu.shape[1] - 1    # excluding column 0 which is the seq code  
@@ -546,8 +546,8 @@ class SeqTable(object):
         pass
 
         if self.c2 is not None:
-            sc2 = " %10.2f " % (self.c2[n])
-            k_sc2 = " %10s " % "c2" 
+            sc2 = "  %10.2f  " % (self.c2[n])
+            k_sc2 = "%14s" % "(a-b)^2/(a+b)" 
         else:
             sc2 = ""
             k_sc2 = ""

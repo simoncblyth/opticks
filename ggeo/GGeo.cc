@@ -1343,6 +1343,7 @@ void GGeo::prepareVolumes()
     }
 
     m_instancer->dump("GGeo::prepareVolumes") ; 
+    LOG(info) << m_nodelib->descOriginMap() ; 
     LOG(info) << "]" ;
 }
 

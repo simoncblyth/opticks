@@ -75,7 +75,9 @@ Local frame dx of the 3BT and 4BT may be informative
 --------------------------------------------------------
 
 * potentially an angle of incidence effect
-
+* dx with double precision step points is G4 only 
+* need nidx in G4 pflags in order to get the transform corresponding to final photon positions
+  so can then see local positions within various psel 
 
 
 what about skipping and the all_volume arrays, does that mean the indices will be non-contiguous ?  
@@ -446,6 +448,281 @@ ggeo::
     312     if( pvname_start == NULL ) return ;
     313     m_pvlist->getIndicesWithKeyStarting(nidx, pvname_start);
     314 }
+
+
+
+
+very different number of unique nidx between G4 and OK ?
+------------------------------------------------------------
+
+::
+
+    In [3]: len(np.unique(b.ox[:,3,1].view(np.uint32)))
+    Out[3]: 298
+
+    In [4]: len(np.unique(a.ox[:,3,1].view(np.uint32)))
+    Out[4]: 5208
+
+
+
+::
+
+    In [11]: als
+    Out[11]: 
+    SI BT BT BT SD
+    SI RE AB
+    SI BT BT BT SD
+    SI BT BT SA
+    SI RE BT AB
+    SI RE RE SC AB
+    SI RE AB
+    SI SC SC RE BT BT BT SD
+    SI SC SC AB
+    SI AB
+
+    In [12]: for i in range(10): print(gg.pv[an[i]])
+    HamamatsuR12860_inner1_phys0x3aa0c00
+    pTarget0x3358bb0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    pInnerWater0x3358a70
+    pAcrylic0x3358b10
+    pTarget0x3358bb0
+    pTarget0x3358bb0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    pTarget0x3358bb0
+    pTarget0x3358bb0
+
+    In [13]: bls
+    Out[13]: 
+    SI RE BT BT BT SD
+    SI BT BT BT SD
+    SI SC SC SC SC SC BT BT BT SA
+    SI RE AB
+    SI AB
+    SI SC BT BT BT SD
+    SI BT BT BT SA
+    SI SC BT BT SA
+    SI BT BT BT SD
+    SI AB
+
+    In [14]: for i in range(10): print(gg.pv[bn[i]])
+    HamamatsuR12860_inner1_phys0x3aa0c00
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    lFasteners_phys0x33d0700
+    pTarget0x3358bb0
+    pTarget0x3358bb0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    pCentralDetector0x3358c60
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    pTarget0x3358bb0
+
+
+
+
+Plough on regardless
+-----------------------
+
+::
+
+
+    In [6]: b.sel = "SI BT BT BT BT SD"
+
+    In [7]: b.ox.shape
+    Out[7]: (151, 4, 4)
+
+    In [8]: b.ox[:,3,1].view(np.uint32)
+    Out[8]: 
+    A([141402, 141406, 141406, 141402, 269405, 269405, 141402, 141402, 141406, 141406, 141406, 141406, 141406, 141406, 141406, 141406, 141402, 141406, 141406, 141406, 141402, 141402, 141402, 269405,
+       141406, 269405, 269405, 269405, 269405, 269405, 141402, 269405, 141406, 141406, 269405, 141406, 141406, 141402, 141406, 141406, 269405, 141406, 141406, 141406, 141406, 269405, 141402, 141402,
+       141406, 269405, 269405, 141406, 141406, 269405, 141402, 269405, 141406, 141402, 269405, 269405, 269405, 269405, 269405, 141406, 269405, 141406, 141406, 141406, 269405, 141402, 141406, 141402,
+       141406, 141406, 269405, 141406, 141406, 269405, 141406, 141402, 141402, 141406, 269405, 141402, 269405, 141406, 141402, 141406, 269405, 269405, 269405, 141406, 141406, 141406, 141406, 269405,
+       269405, 269405, 141406, 141406, 141406, 269405, 269405, 141406, 141406, 141406, 141402, 141406, 141406, 269405, 269405, 269405, 141406, 141402, 141406, 141406, 141406, 141406, 269405, 141406,
+       269405, 141406, 141406, 141402, 141402, 269405, 141406, 141402, 141406, 141406, 141402, 141402, 141406, 141402, 141406, 269405, 141406, 141402, 141406, 269405, 141402, 141406, 269405, 141406,
+       141406, 141406, 141406, 141406, 269405, 141406, 141406], dtype=uint32)
+
+
+    In [9]: nb = b.ox[:,3,1].view(np.uint32)
+
+    In [10]: np.unique(nb)
+    Out[10]: A([141402, 141406, 269405], dtype=uint32)
+
+
+    In [15]: gg.pv[141402]
+    Out[15]: 'HamamatsuR12860_inner1_phys0x3aa0c00'
+
+    In [16]: gg.pv[141406]
+    Out[16]: 'NNVTMCPPMT_inner1_phys0x3a933a0'
+
+    In [18]: gg.pv[269405]
+    Out[18]: 'PMT_3inch_inner1_phys0x421eca0'
+
+
+They are well spread in position, why getting repeated nidx ?::
+
+    In [21]: pos[:,0].min()
+    Out[21]: A(-19343.75, dtype=float32)
+
+    In [22]: pos[:,0].max()
+    Out[22]: A(18575.697, dtype=float32)
+
+    In [23]: pos[:,1].min()
+    Out[23]: A(-19078.795, dtype=float32)
+
+    In [24]: pos[:,1].max()
+    Out[24]: A(19100.252, dtype=float32)
+
+    In [25]: pos[:,2].min()
+    Out[25]: A(-19166.809, dtype=float32)
+
+    In [26]: pos[:,2].max()
+    Out[26]: A(19353.016, dtype=float32)
+
+
+
+    In [29]: np.sqrt(np.sum(pos*pos, axis=1)).min()
+    Out[29]: A(19250.707, dtype=float32)
+
+    In [30]: np.sqrt(np.sum(pos*pos, axis=1)).max()
+    Out[30]: A(19435.08, dtype=float32)
+
+
+
+OK 3BT
+---------
+
+::
+
+
+    In [32]: a.sel = "SI BT BT BT SD"
+
+    In [33]: a.ox.shape
+    Out[33]: (1367, 4, 4)
+
+
+    In [34]: pos = a.ox[:, 0, :3]
+
+    In [35]: pos
+    Out[35]: 
+    A([[-17866.793,   7413.646,    244.02 ],
+       [    41.153,  14882.913, -12431.25 ],
+       [-15591.934,  -8364.082,  -7656.699],
+       ...,
+       [-16284.078,  -2305.71 , -10127.313],
+       [-14134.6  ,  13035.886,   1194.539],
+       [ -6101.833,  17138.096,   6436.572]], dtype=float32)
+
+    In [36]: np.sqrt(np.sum(pos*pos, axis=1))
+    Out[36]: A([19345.387, 19391.719, 19279.299, ..., 19314.502, 19265.205, 19297.049], dtype=float32)
+
+    In [37]: np.sqrt(np.sum(pos*pos, axis=1)).min()
+    Out[37]: A(19232.432, dtype=float32)
+
+    In [38]: np.sqrt(np.sum(pos*pos, axis=1)).max()
+    Out[38]: A(19435.096, dtype=float32)
+
+    In [39]: pos[:,0].min(), pos[:,0].max(), pos[:,1].min(), pos[:,1].max(), pos[:,2].min(), pos[:,2].max()
+    Out[39]: 
+    (A(-19231.441, dtype=float32),
+     A(19302.283, dtype=float32),
+     A(-19332.838, dtype=float32),
+     A(19350.223, dtype=float32),
+     A(-19277.975, dtype=float32),
+     A(19346.82, dtype=float32))
+
+    In [41]: an
+    Out[41]: A([106122, 129818, 120550, ..., 125134, 104414,  94170], dtype=uint32)
+
+    In [42]: an.shape
+    Out[42]: (1367,)
+
+    In [45]: np.unique(an).shape
+    Out[45]: (1316,)
+
+
+
+    In [47]: for i in range(100): print(gg.pv[an[i]])
+    HamamatsuR12860_inner1_phys0x3aa0c00
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    HamamatsuR12860_inner1_phys0x3aa0c00
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    HamamatsuR12860_inner1_phys0x3aa0c00
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    HamamatsuR12860_inner1_phys0x3aa0c00
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    HamamatsuR12860_inner1_phys0x3aa0c00
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+    NNVTMCPPMT_inner1_phys0x3a933a0
+
+
+
+
+Hmm the writer is writing from collected points, I suspect the 
+collection G4StepPoint::GetPhysicalVolume is relying on something 
+outside the point that aint persisted. Causing the lack of unique nidx::
+
+    389 void CWriter::writePhoton_(const G4StepPoint* point, unsigned record_id  )
+    390 {   
+    391     assert( m_photons_buffer );
+    392     writeHistory_(record_id);
+    393     
+    394     const G4ThreeVector& pos = point->GetPosition();
+    395     const G4ThreeVector& dir = point->GetMomentumDirection();
+    396     const G4ThreeVector& pol = point->GetPolarization();
+    397     
+    398     G4double time = point->GetGlobalTime();
+    399     G4double energy = point->GetKineticEnergy();
+    400     G4double wavelength = h_Planck*c_light/energy ;
+    401     G4double weight = 1.0 ;
+    402     
+    403     // emulating the Opticks GPU written photons 
+    404     m_photons_buffer->setQuad(record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
+    405     m_photons_buffer->setQuad(record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
+    406     m_photons_buffer->setQuad(record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+    407 
+    408     
+    409     unsigned mskhis = m_photon._mskhis ; // narrowing from "unsigned long long" but 32-bits is enough   
+    410     unsigned pflags = mskhis | m_ctx._hitflags ;
+    411     
+    412     const G4VPhysicalVolume* pv = point->GetPhysicalVolume() ;
+    413     const void* origin = (void*)pv ; 
+    414     int nidx = GGeo::Get()->findNodeIndex(origin);
+    415     
+
+
+
+Trying getting the nidx at postTrack then there is no persisting involved its direct from G4Track::
+
+    388 void CCtx::postTrack()
+    389 {
+    390     const G4VPhysicalVolume* pv = _track->GetVolume() ;
+    391     const void* origin = (void*)pv ;
+    392     _nidx = GGeo::Get()->findNodeIndex(origin);
+    393 }
+    394 
+
+Then the writer can just grab from ctx::
+
+    411     unsigned nidx = m_ctx._nidx > -1 ? unsigned(m_ctx._nidx) : ~0u ;
+    412     
+    413     m_photons_buffer->setUInt(record_id, 3, 0, 0, m_photon._slot_constrained );
+    414     m_photons_buffer->setUInt(record_id, 3, 0, 1, nidx );
+    415     m_photons_buffer->setUInt(record_id, 3, 0, 2, m_photon._c4.u );
+    416     m_photons_buffer->setUInt(record_id, 3, 0, 3, pflags );
+    417     
+    418     // TODO: make these match OK flags better 
+    419 }
+
 
 
 

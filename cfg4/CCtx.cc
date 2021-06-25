@@ -28,6 +28,8 @@
 #include "OpticksEvent.hh"
 #include "Opticks.hh"
 
+#include "GGeo.hh"
+
 #include "CGenstep.hh"
 #include "CGenstepCollector.hh"
 #include "CBoundaryProcess.hh"
@@ -341,6 +343,7 @@ void CCtx::setTrack(const G4Track* track)
 {
     G4ParticleDefinition* particle = track->GetDefinition();
 
+    _nidx = -1 ;   // gets set at postTrack
     _track = track ; 
 
     G4Track* mtrack = const_cast<G4Track*>(track) ; 
@@ -375,6 +378,20 @@ void CCtx::setTrack(const G4Track* track)
 
     if(_optical) setTrackOptical(mtrack);
 }
+
+/**
+CCtx::postTrack
+-----------------
+
+**/
+
+void CCtx::postTrack()
+{
+    const G4VPhysicalVolume* pv = _track->GetVolume() ; 
+    const void* origin = (void*)pv ; 
+    _nidx = GGeo::Get()->findNodeIndex(origin); 
+} 
+
 
 
 /**

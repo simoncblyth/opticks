@@ -148,6 +148,7 @@ class GGEO_API GNodeLib
         void dumpVolumes(const std::map<std::string, int>& targets, const char* msg="GNodeLib::dumpVolumes", float extent_cut_mm=5000.f, int cursor=-1 ) const ; 
     public:
         int findNodeIndex( const void* origin ) const ; 
+        std::string descOriginMap() const  ;
     public:
         unsigned         getNumSensorVolumes() const ;
         const GVolume*   getSensorVolume(unsigned sensorIndex) const ;

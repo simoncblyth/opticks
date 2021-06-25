@@ -467,7 +467,6 @@ void GNodeLib::addVolume(const GVolume* volume)
     void* origin = volume->getOriginNode() ; 
     assert( origin ); 
     m_origin2index[origin] = index ; 
-
 }
 
 /**
@@ -487,6 +486,17 @@ int GNodeLib::findNodeIndex( const void* origin ) const
     VUI i = m.find(origin) ; 
     return i == e ? -1 : int(i->second) ; 
 }
+
+std::string GNodeLib::descOriginMap() const 
+{
+    std::stringstream ss ; 
+    ss << "GNodeLib::descOriginMap"
+       << " m_origin2index.size " << m_origin2index.size()
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 
 /**

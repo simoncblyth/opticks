@@ -44,8 +44,6 @@
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 
-#include "GGeo.hh" 
-
 #include "CWriter.hh"
 #include "PLOG.hh"
 
@@ -408,22 +406,14 @@ void CWriter::writePhoton_(const G4StepPoint* point, unsigned record_id  )
 
     unsigned mskhis = m_photon._mskhis ; // narrowing from "unsigned long long" but 32-bits is enough   
     unsigned pflags = mskhis | m_ctx._hitflags ; 
-
-    const G4VPhysicalVolume* pv = point->GetPhysicalVolume() ; 
-    const void* origin = (void*)pv ; 
-    int nidx = GGeo::Get()->findNodeIndex(origin); 
-
-    LOG(LEVEL)
-        << " pv " << pv
-        << " origin " << origin 
-        << " nidx " << nidx
-        ;
-
-    // TODO: these dont match the OK flags 
+    unsigned nidx = m_ctx._nidx > -1 ? unsigned(m_ctx._nidx) : ~0u ; 
+ 
     m_photons_buffer->setUInt(record_id, 3, 0, 0, m_photon._slot_constrained );
-    m_photons_buffer->setUInt(record_id, 3, 0, 1, nidx > -1 ? unsigned(nidx) : ~0u );
+    m_photons_buffer->setUInt(record_id, 3, 0, 1, nidx );
     m_photons_buffer->setUInt(record_id, 3, 0, 2, m_photon._c4.u );
     m_photons_buffer->setUInt(record_id, 3, 0, 3, pflags );
+
+    // TODO: make these match OK flags better 
 }
 
 /**
