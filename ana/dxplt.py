@@ -45,7 +45,11 @@ def lines_from_points(points):
 
 if __name__ == '__main__':
     from opticks.ana.main import opticks_main
-    ok = opticks_main(pfx="tds3ip", src="natural")
+
+    #pfx = "tds3ip"
+    pfx = "tds3gun"
+
+    ok = opticks_main(pfx=pfx, src="natural")
     ab = AB(ok)  
     a = ab.a    # dx only filled for G4:b 
     b = ab.b 
@@ -53,15 +57,18 @@ if __name__ == '__main__':
     #a_sel = "TO SC BT SR BT SA"     # 0x8cac6d
     #b_sel = "TO SC BT SR BT BT SA"  # 0x8ccac6d
 
-    sel = "TO SC BT BT AB"   # scatters that get back into the LS from the Water
+    #sel = "TO SC BT BT AB"   # scatters that get back into the LS from the Water
+
+    sel = "SI BT BT BT BT SD"
+
     n = len(sel.split())   
 
     a.sel = sel 
     b.sel = sel
 
-    #pos = b.dx[:,:n,0,:3]      ## deluxe double buffer is G4 only 
+    pos = b.dx[:,:n,0,:3]      ## deluxe double buffer is G4 only 
     #pos = b.rpost()[:,:,:3]    ## rpost from rx buffer has same info with domain compression   
-    pos = a.rpost()[:,:,:3]      
+    #pos = a.rpost()[:,:,:3]      
 
     pl = pv.Plotter()
 

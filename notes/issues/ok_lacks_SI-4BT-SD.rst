@@ -778,6 +778,9 @@ Why not ~300k origin node ? Only 51k ? NEED TO USE (pv,copyNo) as the key ?
     1566     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node );
 
 
+Single inheritance so casting should not change the pointer value ?
+
+
 g4-cls G4PVPlacement::
 
      51 class G4PVPlacement : public G4VPhysicalVolume
@@ -787,8 +790,385 @@ g4-cls G4VPhysicalVolume::
     82 class G4VPhysicalVolume
 
 
+* https://stackoverflow.com/questions/56706847/when-does-a-cast-return-a-different-pointer-in-case-of-single-inheritance
 
 
+
+
+
+Geant4 makes it difficult to establish node/volume identity 
+----------------------------------------------------------------
+
+With Opticks you just read off the nidx label present on every volume, 
+but not with Geant4.
+
+* a pv pointer by itself does not identify a node 
+* its seems even with copyNo it not enough
+* the placement of that pv/copyNo in the full heirarcy of lv and pv/copyNo 
+  is by definition unique, so creating a digest that traverses up the tree
+  and includes copyNo should work 
+
+  * but would it be usable from what G4Track provides
+
+
+g4-cls G4Track::
+
+    158    const G4VTouchable*      GetTouchable() const;
+    159    const G4TouchableHandle& GetTouchableHandle() const;
+    160    void SetTouchableHandle( const G4TouchableHandle& apValue);
+    161 
+    162    const G4VTouchable*      GetNextTouchable() const;
+    163    const G4TouchableHandle& GetNextTouchableHandle() const;
+    164    void SetNextTouchableHandle( const G4TouchableHandle& apValue);
+    165 
+    166    const G4VTouchable*      GetOriginTouchable() const;
+    167    const G4TouchableHandle& GetOriginTouchableHandle() const;
+    168    void SetOriginTouchableHandle( const G4TouchableHandle& apValue);
+    169 
+
+g4-cls G4PhysicalVolumeModel
+g4-cls G4TouchableHistory
+
+
+
+G4 nidx would be useful, but its not essential for debugging the current 3BT 4BT issue
+------------------------------------------------------------------------------------------
+
+::
+
+    In [7]: b.sel = "SI BT BT BT BT SD"
+
+    In [8]: b.dx.shape
+    Out[8]: (151, 10, 2, 4)
+
+    In [10]: b.dx[0]
+    Out[10]: 
+    A([[[   63.8113,   -79.8528,  -230.8417,     7.6382],          SI 
+        [   -0.9492,     0.3023,    -0.0875,   479.4415]],
+
+       [[-1803.5128,  -782.7069, 17590.4722,    99.2858],          BT   in Ac
+        [   -0.411 ,    -0.9082,    -0.0789,   479.4415]],
+
+       [[-1816.0073,  -787.4131, 17709.7289,    99.8992],          BT   Ac->Wa
+        [   -0.411 ,    -0.9082,    -0.0789,   479.4415]],
+
+       [[-1824.9983,  -790.7997, 17795.5455,   100.3407],          BT   Wa->Py
+        [   -0.4165,    -0.9089,    -0.0191,   479.4415]],
+
+       [[-1927.5772,  -773.954 , 19227.2446,   106.9218],
+        [   -0.3278,    -0.9446,    -0.0174,   479.4415]],
+
+       [[-1927.3906,  -774.1523, 19234.4925,   106.9584],
+        [   -0.3278,    -0.9446,    -0.0174,   479.4415]],
+
+       [[    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ]],
+
+       [[    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ]],
+
+       [[    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ]],
+
+       [[    0.    ,     0.    ,     0.    ,     0.    ],
+        [    0.    ,     0.    ,     0.    ,     0.    ]]])
+
+
+::
+
+    In [26]: for j in range(5): print(" i%2d : j%2d : %10.4f %10.4f %10.4f %10.4f  " % tuple([i,j] + list(map(float,b.dx[i,j+1,0] - b.dx[i,j,0])))) 
+     i 0 : j 0 : -1867.3241  -702.8541 17821.3139    91.6476  
+     i 0 : j 1 :   -12.4945    -4.7062   119.2567     0.6134      Crossing acrylic
+     i 0 : j 2 :    -8.9910    -3.3866    85.8166     0.4414      Whats this ? 
+     i 0 : j 3 :  -102.5789    16.8457  1431.6991     6.5811      Crossing water 
+     i 0 : j 4 :     0.1865    -0.1983     7.2480     0.0366       
+
+    In [27]: 
+
+
+
+
+
+Look at OK boundaries for the 4BT, reveals -29:Water///Water prior to landing on 3inch PMTs
+----------------------------------------------------------------------------------------------------
+
+* hmm it would be nice to have boundary histories with G4 , but do have seqmat 
+
+::
+
+    In [32]: a.sel = "SI BT BT BT BT SD"
+
+    In [35]: a.rpost()
+    Out[35]: 
+    A([[[    64.0889,    -80.5689,   -230.7199,      1.2818],
+        [ 15465.5599,  -2662.4348,   8188.7265,     91.9584],
+        [ 15569.9332,  -2678.9148,   8245.4909,     92.581 ],
+        [ 16895.6572,  -2900.4791,   8972.4418,     99.6124],
+        [ 16908.475 ,  -2902.3103,   8979.7662,     99.6857],
+        [ 16908.475 ,  -2902.3103,   8979.7662,     99.6857]],
+
+       [[    64.0889,    -80.5689,   -230.7199,     20.3619],
+        [-13777.2759,  -9999.6948,   4845.1186,    111.4048],
+        [-13872.4937, -10065.6148,   4879.9097,    112.0273],
+        [-15064.5466, -10918.9123,   5319.3762,    119.0588],
+        [-15075.5333, -10926.2368,   5323.0384,    119.0954],
+        [-15077.3644, -10928.0679,   5323.0384,    119.1321]],
+
+       [[    65.92  ,    -69.5822,   -217.9022,      8.3132],
+        [ 12065.1875, -12942.2895,    450.4532,     98.8433],
+        [ 12147.5875, -13030.1828,    454.1154,     99.4659],
+        [ 13196.8139, -14158.1469,    514.5421,    106.534 ],
+        [ 13204.1383, -14163.6402,    514.5421,    106.5706],
+        [ 13205.9694, -14165.4714,    514.5421,    106.6073]],
+
+       ...,
+
+
+Boundaries all the same::
+
+    In [39]: a.bn.view(np.int8).reshape(-1,16)
+    Out[39]: 
+    A([[ 18,  17, -29, -23, -30,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+       [ 18,  17, -29, -23, -30,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+       [ 18,  17, -29, -23, -30,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+       [ 18,  17, -29, -23, -30,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+       [ 18,  17, -29, -23, -30,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0],
+
+::
+
+    In [41]: print(a.blib.format( a.bn.view(np.int8).reshape(-1,16)[0] ))
+     18 : Acrylic///LS
+     17 : Water///Acrylic
+    -29 : Water///Water
+    -23 : Water///Pyrex
+    -30 : Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum
+
+
+::
+
+    In [42]: a.seqmat_ana.table
+    Out[42]: 
+    seqmat_ana
+    .                     cfo:-  1:g4live:tds3gun 
+    .                                 50         1.00 
+       n             iseq         frac           a    a-b      [ns] label
+    0000           deffb1        1.000          50        [6 ] LS Ac Wa Wa Py Va
+       n             iseq         frac           a    a-b      [ns] label
+    .                                 50         1.00 
+
+
+    In [43]: b.seqmat_ana.table
+    Out[43]: 
+    seqmat_ana
+    .                     cfo:-  -1:g4live:tds3gun 
+    .                                151         1.00 
+       n             iseq         frac           a    a-b      [ns] label
+    0000           defbb1        0.351          53        [6 ] LS Ac Ac Wa Py Va
+    0001           deefb1        0.351          53        [6 ] LS Ac Wa Py Py Va
+    0002           deffb1        0.298          45        [6 ] LS Ac Wa Wa Py Va
+       n             iseq         frac           a    a-b      [ns] label
+    .                                151         1.00 
+
+    In [44]: b.sel
+    Out[44]: 'SI BT BT BT BT SD'
+
+    In [45]: a.sel
+    Out[45]: 'SI BT BT BT BT SD'
+
+
+What causes G4: double Ac ? inconclusive : not microsteps
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [46]: b.selmat = "LS Ac Ac Wa Py Va"
+
+    In [47]: b.seqhis
+    Out[47]: A([     8178770,       511170, 604724684386, ...,    147613010,         1122,        36034], dtype=uint64)
+
+    In [48]: b.seqhis_ana.table
+    Out[48]: 
+    seqhis_ana
+    .                     cfo:-  -1:g4live:tds3gun 
+    .                                 78         1.00 
+       n             iseq         frac           a    a-b      [ns] label
+    0000           7cccc2        0.679          53        [6 ] SI BT BT BT BT SD
+    0001           8cccc2        0.321          25        [6 ] SI BT BT BT BT SA
+       n             iseq         frac           a    a-b      [ns] label
+    .                                 78         1.00 
+
+    In [49]: 
+
+
+
+These are not microsteps::
+
+    In [56]: i = 0 
+
+    In [57]: for j in range(5): print(" i%2d : j%2d : %10.4f %10.4f %10.4f %10.4f  " % tuple([i,j] + list(map(float,b.dx[i,j+1,0] - b.dx[i,j,0])))) 
+     i 0 : j 0 : -1867.3241  -702.8541 17821.3139    91.6476  
+     i 0 : j 1 :   -12.4945    -4.7062   119.2567     0.6134  
+     i 0 : j 2 :    -8.9910    -3.3866    85.8166     0.4414  
+     i 0 : j 3 :  -102.5789    16.8457  1431.6991     6.5811  
+     i 0 : j 4 :     0.1865    -0.1983     7.2480     0.0366  
+
+    In [58]: i = 1
+
+    In [59]: for j in range(5): print(" i%2d : j%2d : %10.4f %10.4f %10.4f %10.4f  " % tuple([i,j] + list(map(float,b.dx[i,j+1,0] - b.dx[i,j,0])))) 
+     i 1 : j 0 : -10152.3894  5739.6408 -13166.0754    89.7826  
+     i 1 : j 1 :   -69.2672    39.1588   -89.8386     0.6140  
+     i 1 : j 2 :   -68.4883    38.7184   -88.8284     0.6071  
+     i 1 : j 3 :  -719.3436   463.0135 -1061.3044     6.2678  
+     i 1 : j 4 :    -3.4529     1.9782    -4.4161     0.0301  
+
+
+
+What about G4 Py Py ? They all look to be microsteps that evaded the suppression cut at 0.002 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* increasing microstep suppression cut to 0.004 will migrate those "Py Py" to "Py", 4BT -> 3BT 
+
+
+::
+
+    In [2]: b.sel                                                                                                                                                                                   
+    Out[2]: 'SI BT BT BT BT SD'
+
+    In [3]: b.seqmat_ana.table                                                                                                                                                                      
+    Out[3]: 
+    seqmat_ana
+    .                     cfo:-  -1:g4live:tds3gun 
+    .                                151         1.00 
+       n             iseq         frac           a    a-b      [ns] label
+    0000           defbb1        0.351          53        [6 ] LS Ac Ac Wa Py Va
+    0001           deefb1        0.351          53        [6 ] LS Ac Wa Py Py Va     
+    0002           deffb1        0.298          45        [6 ] LS Ac Wa Wa Py Va     
+       n             iseq         frac           a    a-b      [ns] label
+    .                                151         1.00 
+
+
+    In [4]: b.selmat = "LS Ac Wa Py Py Va"                                                                                                                                                          
+    In [6]: b.seqhis_ana.table                                                                                                                                                                      
+    Out[6]: 
+    seqhis_ana
+    .                     cfo:-  -1:g4live:tds3gun 
+    .                                 80         1.00 
+       n             iseq         frac           a    a-b      [ns] label
+    0000           7cccc2        0.662          53        [6 ] SI BT BT BT BT SD
+    0001           8cccc2        0.338          27        [6 ] SI BT BT BT BT SA
+       n             iseq         frac           a    a-b      [ns] label
+    .                                 80         1.00 
+
+
+    In [23]: for i in range(10): 
+        ...:     for j in range(5): print(" i%2d : j%2d : %10.4f %10.4f %10.4f %10.4f  " % tuple([i,j] + list(map(float,b.dx[i,j+1,0] - b.dx[i,j,0])))) 
+        ...:                                                                                                                                                                                        
+     i 0 : j 0 : 16858.1159  -235.7075 -4949.7780    90.0824  
+     i 0 : j 1 :   115.1360    -1.6122   -33.8120     0.6206  
+     i 0 : j 2 :  1526.9241   -20.6078  -446.3348     7.3022  
+     i 0 : j 3 :     0.0021    -0.0007    -0.0005     0.0000  
+     i 0 : j 4 :    11.7091    -3.7085    -2.8257     0.0640  
+     i 1 : j 0 :  -176.5541 -11884.9110 13270.3232    91.4891  
+     i 1 : j 1 :    -1.1873   -80.0644    89.3881     0.6233  
+     i 1 : j 2 :   -16.3651 -1059.0165  1185.2411     7.2901  
+     i 1 : j 3 :    -0.0006    -0.0015     0.0016     0.0000  
+     i 1 : j 4 :    -3.4381    -7.9642     8.7771     0.0628  
+     i 2 : j 0 : -7631.3413 -10013.3366 -12208.0008    89.6300  
+     i 2 : j 1 :   -52.2175   -68.5213   -83.5436     0.6134  
+     i 2 : j 2 :  -697.5267  -913.7778 -1112.8038     7.3352  
+     i 2 : j 3 :    -0.0003    -0.0017    -0.0016     0.0000  
+     i 2 : j 4 :    -1.8518    -9.5419    -9.1234     0.0672  
+     i 3 : j 0 :  4914.2048 -5987.1817 -15650.6330    89.2742  
+     i 3 : j 1 :    33.7698   -41.1428  -107.5494     0.6162  
+     i 3 : j 2 :   443.8378  -540.8515 -1413.4618     7.2474  
+     i 3 : j 3 :     0.0007    -0.0011    -0.0016     0.0000  
+     i 3 : j 4 :     3.9101    -5.8275    -8.7300     0.0568  
+     i 4 : j 0 :  2770.0218 -11759.6495 -12639.9983    89.4047  
+     i 4 : j 1 :    19.0118   -80.7049   -86.7510     0.6165  
+     i 4 : j 2 :   251.4560 -1069.4992 -1148.2234     7.3111  
+     i 4 : j 3 :     0.0001    -0.0019    -0.0012     0.0000  
+     i 4 : j 4 :     0.2926   -10.3600    -6.7676     0.0627  
+     i 5 : j 0 : -1495.4270 -16960.7678  4824.2390    90.3386  
+     i 5 : j 1 :   -10.1391  -115.0213    32.7087     0.6138  
+     i 5 : j 2 :  -133.9105 -1511.1629   432.0303     7.2762  
+     i 5 : j 3 :    -0.0006    -0.0018     0.0007     0.0000  
+     i 5 : j 4 :    -3.0705    -9.9140     3.9653     0.0562  
+     i 6 : j 0 :  5560.8245 12877.5752 11060.9744    91.3700  
+     i 6 : j 1 :    37.3613    86.5128    74.3035     0.6132  
+     i 6 : j 2 :   497.0163  1153.0651   991.8883     7.4046  
+     i 6 : j 3 :     0.0001     0.0020     0.0013     0.0000  
+     i 6 : j 4 :     0.3035    11.1964     7.1022     0.0668  
+     i 7 : j 0 :  5223.0564  5595.8546 16179.2256    92.3290  
+     i 7 : j 1 :    35.0227    37.5177   108.4740     0.6271  
+     i 7 : j 2 :   459.8151   493.9536  1428.3212     7.2454  
+     i 7 : j 3 :     0.0002     0.0009     0.0019     0.0000  
+     i 7 : j 4 :     1.0335     4.8504    10.1970     0.0579  
+     i 8 : j 0 : -1465.4378   734.4137 17849.7344    91.5695  
+     i 8 : j 1 :    -9.8092     4.9148   119.4985     0.6151  
+     i 8 : j 2 :  -130.9457    65.9646  1589.4416     7.2958  
+     i 8 : j 3 :    -0.0006     0.0007     0.0022     0.0000  
+     i 8 : j 4 :    -3.1173     3.7515    11.9969     0.0656  
+     i 9 : j 0 :  3547.6569 -15963.7957  6787.7508    90.8713  
+     i 9 : j 1 :    24.0480  -108.2045    46.0005     0.6223  
+     i 9 : j 2 :   320.3511 -1443.6873   616.1915     7.3481  
+     i 9 : j 3 :    -0.0001    -0.0019     0.0014     0.0000  
+     i 9 : j 4 :    -0.6177   -10.6526     7.7870     0.0672  
+
+    In [24]:                                                          
+
+
+
+All the G4 Py Py are microsteps with zero time difference::
+
+    In [37]: b.dx[:,4,0]-b.dx[:,3,0]                                                                                                                                                                
+    Out[37]: 
+    A([[ 0.0021, -0.0007, -0.0005,  0.    ],
+       [-0.0006, -0.0015,  0.0016,  0.    ],
+       [-0.0003, -0.0017, -0.0016,  0.    ],
+       [ 0.0007, -0.0011, -0.0016,  0.    ],
+       [ 0.0001, -0.0019, -0.0012,  0.    ],
+       ...
+       [ 0.0006, -0.0019,  0.0005,  0.    ],
+       [ 0.0019, -0.    , -0.0013,  0.    ],
+       [-0.0001,  0.0001,  0.002 ,  0.    ],
+       [ 0.0013, -0.0015, -0.001 ,  0.    ]])
+
+    In [38]:                                 
+
+::
+
+
+    In [39]: mst = b.dx[:,4,0,:3]-b.dx[:,3,0,:3]                                                                                                                                                    
+
+    In [40]: np.sqrt(np.sum(mst*mst, axis=1))                                                                                                                                                       
+    Out[40]: 
+    A([0.0023, 0.0023, 0.0024, 0.0021, 0.0023, 0.0021, 0.0024, 0.0021, 0.0023, 0.0024, 0.002 , 0.0023, 0.002 , 0.0024, 0.002 , 0.0023, 0.0022, 0.0023, 0.0022, 0.002 , 0.0021, 0.0022, 0.0024, 0.0021,
+       0.0024, 0.0022, 0.002 , 0.002 , 0.0023, 0.0021, 0.0022, 0.0021, 0.002 , 0.0021, 0.0021, 0.0021, 0.002 , 0.0022, 0.0024, 0.0022, 0.0024, 0.0024, 0.0024, 0.0023, 0.002 , 0.002 , 0.002 , 0.0023,
+       0.0021, 0.0021, 0.002 , 0.0022, 0.0021, 0.0024, 0.0021, 0.0022, 0.0022, 0.0021, 0.0022, 0.0022, 0.0022, 0.0021, 0.0022, 0.002 , 0.0023, 0.0021, 0.0022, 0.002 , 0.0021, 0.0021, 0.0021, 0.002 ,
+       0.0023, 0.0023, 0.0024, 0.0023, 0.002 , 0.0023, 0.002 , 0.0022])
+
+    In [41]:                                                                   
+
+    In [42]: d_mst.min()                                                                                                                                                                            
+    Out[42]: A(0.002)
+
+    In [43]: d_mst.max()                                                                                                                                                                            
+    Out[43]: A(0.0024)
+
+
+
+Increase suppression cut::
+
+
+     83 CRecorder::CRecorder(CCtx& ctx)
+     84     :
+     85     m_ctx(ctx),
+     86     m_ok(m_ctx.getOpticks()),
+     87     m_microStep_mm(0.004),
+     88     m_suppress_same_material_microStep(true),
+     89     m_mode(m_ok->getManagerMode()),   // --managermode
+     90     m_recpoi(m_ok->isRecPoi()),   // --recpoi
+     91     m_reccf(m_ok->isRecCf()),     // --reccf
 
 
 

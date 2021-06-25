@@ -470,6 +470,10 @@ void GNodeLib::addVolume(const GVolume* volume)
     const void* origin = volume->getOriginNode() ; 
     int origin_copyNumber = volume->getOriginCopyNumber() ; 
  
+    LOG(LEVEL) 
+        << " origin " << origin
+        << " origin_copyNumber " << origin_copyNumber 
+        ;
 
     assert( origin ); 
     m_origin2index[std::make_pair(origin, origin_copyNumber)] = index ; 
@@ -480,6 +484,16 @@ GNodeLib::findNodeIndex
 ------------------------
 
 Find the node index corresponding to an origin node or -1 if not found.
+
+Hmm:Geant4 makes it difficult to establish volume identity 
+
+* a pv pointer by itself does not identify a node 
+* its seems even with copyNo it not enough
+* the placement of that pv/copyNo in the full heirarcy of lv and pv/copyNo 
+  is by construction unique, so creating a digest that traverses up the tree
+  and includes copyNo might work 
+
+  * but is that usable with what you get from a G4Track ?
 
 **/
 

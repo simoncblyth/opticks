@@ -84,7 +84,7 @@ CRecorder::CRecorder(CCtx& ctx)
     :
     m_ctx(ctx),
     m_ok(m_ctx.getOpticks()),
-    m_microStep_mm(0.002), 
+    m_microStep_mm(0.004),              //  see notes/issues/ok_lacks_SI-4BT-SD.rst
     m_suppress_same_material_microStep(true), 
     m_mode(m_ok->getManagerMode()),   // --managermode
     m_recpoi(m_ok->isRecPoi()),   // --recpoi
