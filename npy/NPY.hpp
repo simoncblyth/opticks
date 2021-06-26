@@ -322,6 +322,9 @@ class NPY_API NPY : public NPYBase {
        void         setValue( int i,  int j,  int k,  int l, T value);
        void         setFloat( int i,  int j,  int k,  int l, float value);
 
+       void         setAllValue( int j,  int k,  int l, T value);
+
+
 
         // -ve indices are relative to ni, nj, nk, nl  
        void         setUSign(int i,  int j,  int k,  int l,  bool      value);

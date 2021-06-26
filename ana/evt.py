@@ -1043,7 +1043,7 @@ class Evt(object):
                 assert 0, flv
             pass
         elif type(sel) is list:
-            labels = map(lambda _:self.flvtype.label(_), sel )
+            labels =list( map(lambda _:self.flvtype.label(_), sel ))
         elif type(sel) is str or type(sel) is int or type(sel) is np.uint64:
            labels = [self.flvtype.label(sel)]
         else:
@@ -1394,7 +1394,7 @@ class Evt(object):
         cause a jump to seqhis flv selections
         """
         sel = arg 
-        if arg.find("[") > -1:
+        if not type(arg) is list and arg.find("[") > -1:
             ctx = Ctx.reclab2ctx_(arg)
             log.debug("_parse_sel with reclab converted arg %s into ctx %r " % (arg, ctx)) 
             sel = ctx["seq0"]

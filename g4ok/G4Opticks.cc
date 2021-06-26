@@ -1789,15 +1789,15 @@ void G4Opticks::collectHit
 }
  
 
-void G4Opticks::setInputPhotons(const char* dir, const char* name, int repeat )
+void G4Opticks::setInputPhotons(const char* dir, const char* name, int repeat, const char* wavelength, int eventID )
 {
     NPY<float>* input_photons = NPY<float>::load(dir, name) ; 
-    setInputPhotons(input_photons, repeat); 
+    setInputPhotons(input_photons, repeat, wavelength, eventID); 
 }
-void G4Opticks::setInputPhotons(const char* path, int repeat )
+void G4Opticks::setInputPhotons(const char* path, int repeat, const char* wavelength, int eventID )
 {
     NPY<float>* input_photons = NPY<float>::load(path) ; 
-    setInputPhotons(input_photons, repeat ); 
+    setInputPhotons(input_photons, repeat, wavelength, eventID); 
 }
 
 
@@ -1807,11 +1807,13 @@ G4Opticks::setInputPhotons
 
 **/
 
-void G4Opticks::setInputPhotons(NPY<float>* input_photons, int repeat )
+void G4Opticks::setInputPhotons(NPY<float>* input_photons, int repeat, const char* wavelength, int eventID )
 {
     LOG(info) 
         << " input_photons " << ( input_photons ? input_photons->getShapeString() : "-" )
         << " repeat " << repeat 
+        << " wavelength " << wavelength
+        << " eventID " << eventID
         ;
 
     if( input_photons == nullptr )
@@ -1821,7 +1823,7 @@ void G4Opticks::setInputPhotons(NPY<float>* input_photons, int repeat )
     }
 
     unsigned tagoffset = 0 ;   
-    const OpticksGenstep* gs = OpticksGenstep::MakeInputPhotonCarrier(input_photons, tagoffset, repeat );
+    const OpticksGenstep* gs = OpticksGenstep::MakeInputPhotonCarrier(input_photons, tagoffset, repeat, wavelength, eventID );
     assert( m_genstep_collector ); 
     m_genstep_collector->collectTorchGenstep(gs);  
 }

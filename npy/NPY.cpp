@@ -2852,6 +2852,15 @@ void NPY<T>::setValue(int i, int j, int k, int l, T value)
     setValueFlat(idx, value); 
 }
 
+
+template <typename T> 
+void NPY<T>::setAllValue(int j, int k, int l, T value)
+{
+    for(int i=0 ; i < m_ni ; i++) setValue(i, j, k, l, value); 
+}
+
+
+
 template <typename T> 
 void NPY<T>::setValueFlat(unsigned idx, T value)
 {

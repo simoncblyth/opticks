@@ -21,6 +21,9 @@
 #include <iostream>
 #include <iomanip>
 
+#include "SStr.hh"
+#include "SVec.hh"
+
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
@@ -404,11 +407,34 @@ source_buffer to get filled with the input photons similar to::
 
 **/
 
-OpticksGenstep* OpticksGenstep::MakeInputPhotonCarrier(NPY<float>* ip, unsigned tagoffset, int repeat ) // static
+OpticksGenstep* OpticksGenstep::MakeInputPhotonCarrier(NPY<float>* ip, unsigned tagoffset, int repeat, const char* wavelength, int eventID ) // static
 {
+
+    // this needs to follow GtOpticksTool::mutate
+    std::vector<int> wnm ; 
+    if( wavelength ) SStr::ISplit(wavelength, wnm, ',' );  
+    int event_number = eventID ; // is this 0-based ? 
+    unsigned override_wavelength_nm = wnm.size() == 0 ? 0 : wnm[event_number % wnm.size()] ; 
+
     unsigned ip_num = ip->getNumItems(); 
     NPY<float>* ipr = repeat == 0 ? ip : NPY<float>::make_repeat( ip, repeat );     
     unsigned ipr_num = ipr->getNumItems(); 
+
+    LOG(LEVEL) 
+        << " wavelength " << wavelength
+        << " wnm.size " << wnm.size()
+        << " " << SVec<int>::Desc("wnm", wnm )
+        << " eventID " << eventID
+        << " override_wavelength_nm " << override_wavelength_nm
+        ;
+
+    if( override_wavelength_nm > 0 )
+    {
+        int j = 2 ; 
+        int k = 3 ; 
+        int l = 0 ; 
+        ipr->setAllValue(j, k, l, float(override_wavelength_nm) );
+    } 
 
     LOG(LEVEL) 
         << " tagoffset " << tagoffset

@@ -399,6 +399,23 @@ void SStr::Split( const char* str, char delim,   std::vector<std::string>& elem 
 }
 
 
+int SStr::ISplit( const char* line, std::vector<int>& ivec, char delim )
+{
+    std::stringstream ss; 
+    ss.str(line)  ;
+
+    std::string s;
+    while (std::getline(ss, s, delim)) ivec.push_back(std::atoi(s.c_str())) ; 
+    
+    return ivec.size(); 
+}
+
+
+
+
+
+
+
 
 
 template const char* SStr::Concat_<unsigned>(           const char* , unsigned           , const char*  );

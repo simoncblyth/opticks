@@ -318,7 +318,37 @@ void test_SimpleMatch_WildMatch()
 }
 
 
+void test_ISplit()
+{
+    LOG(info); 
 
+    {
+        const char* wavelength = "380,400,420,440,460" ; 
+        std::vector<int> inm ; 
+        SStr::ISplit(wavelength, inm, ',' ); 
+        assert( inm.size() == 5 ); 
+        assert( inm[0] == 380 ); 
+        assert( inm[1] == 400 ); 
+        assert( inm[2] == 420 ); 
+        assert( inm[3] == 440 ); 
+        assert( inm[4] == 460 ); 
+    }
+    {
+        const char* wavelength = "0" ; 
+        std::vector<int> inm ; 
+        SStr::ISplit(wavelength, inm, ',' ); 
+        assert( inm.size() == 1 ); 
+        assert( inm[0] == 0 ); 
+    }
+    {
+        const char* wavelength = "440" ; 
+        std::vector<int> inm ; 
+        SStr::ISplit(wavelength, inm, ',' ); 
+        assert( inm.size() == 1 ); 
+        assert( inm[0] == 440 ); 
+    }
+
+}
 
 
 
@@ -343,9 +373,10 @@ int main(int argc , char** argv )
     test_Concat_(); 
     test_AsInt(); 
     test_ExtractInt(); 
-    */
-
     test_SimpleMatch_WildMatch(); 
+    */
+    test_ISplit(); 
+
 
     return 0  ; 
 }

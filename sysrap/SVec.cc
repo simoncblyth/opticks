@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
@@ -35,6 +36,19 @@ void SVec<T>::Dump( const char* label, const std::vector<T>& a  )
     for(unsigned i=0 ; i < a.size() ; i++) std::cout << std::setw(10) << a[i] << " " ; 
     std::cout << std::endl ; 
 } 
+
+template <typename T>
+std::string SVec<T>::Desc( const char* label, const std::vector<T>& a, int width  )
+{
+    std::stringstream ss ; 
+    ss << std::setw(10) << label  ;
+    for(unsigned i=0 ; i < a.size() ; i++) ss << std::setw(width) << a[i] << " " ; 
+    return ss.str(); 
+} 
+
+
+
+
 
 
 template <typename T>
@@ -104,6 +118,7 @@ void SVec<T>::MinMaxAvg(const std::vector<T>& t, T& mn, T& mx, T& av)
 
 
 
+template struct SVec<int>;
 template struct SVec<float>;
 template struct SVec<double>;
 

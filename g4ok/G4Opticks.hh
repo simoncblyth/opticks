@@ -296,9 +296,9 @@ class G4OK_API G4Opticks
 
      public:
         // for debugging  
-        void setInputPhotons(const char* dir, const char* name, int repeat=0) ;
-        void setInputPhotons(const char* path, int repeat=0) ;
-        void setInputPhotons(NPY<float>* input_photons, int repeat=0 ) ;
+        void setInputPhotons(const char* dir, const char* name, int repeat=0, const char* wavelength=nullptr, int eventID=0) ;
+        void setInputPhotons(const char* path, int repeat=0, const char* wavelength=nullptr, int eventID=0) ;
+        void setInputPhotons(NPY<float>* input_photons, int repeat=0, const char* wavelength=nullptr, int eventID=0 ) ;
      public:
         void setSave(bool save=true);
        

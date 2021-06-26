@@ -138,6 +138,12 @@ void test_MinMaxAvg()
 }
 
 
+void test_Desc()
+{
+     std::vector<int> v = { 380, 400, 420, 440, 460 } ; 
+     LOG(info) << SVec<int>::Desc("v", v); 
+}
+
 
 
 
@@ -150,8 +156,9 @@ int main(int argc, char** argv)
     //test_vector_erase_pos(); 
     //test_vector_erase_all(); 
     //test_unique_strings(); 
+    //test_MinMaxAvg(); 
 
-    test_MinMaxAvg(); 
+    test_Desc();  
 
     return 0 ;
 }

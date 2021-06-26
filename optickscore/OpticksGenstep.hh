@@ -66,7 +66,7 @@ class OKCORE_API OpticksGenstep {
        static bool IsMachinery(int gentype);
     public:
        static NPY<float>* MakeCandle(unsigned num_photons, unsigned tagoffset );
-       static OpticksGenstep* MakeInputPhotonCarrier(NPY<float>* input_photons, unsigned tagoffset, int repeat=0 ); 
+       static OpticksGenstep* MakeInputPhotonCarrier(NPY<float>* input_photons, unsigned tagoffset, int repeat=0, const char* wavelength=nullptr, int eventID=0 ); 
     public:
        static unsigned GenstepToPhotonFlag(int gentype);   
        static unsigned GentypeToPhotonFlag(char gentype); // 'C' 'S' 'T' -> CK, SI, TO

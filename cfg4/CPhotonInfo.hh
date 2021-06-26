@@ -27,7 +27,7 @@ struct CFG4_API CPhotonInfo : public G4VUserTrackInformation
 {
     static const plog::Severity LEVEL ; 
 
-    static CPho         Get(const G4Track* optical_photon_track, bool fabricate_unlabelled ); 
+    static CPho         Get(const G4Track* optical_photon_track, bool when_unlabelled_fabricate_trackid_photon ); 
     static CPhotonInfo* MakeScintillation(const CGenstep& gs, unsigned i, const CPho& ancestor ); 
     static CPhotonInfo* MakeCerenkov(     const CGenstep& gs, unsigned i ) ; 
 

@@ -44,7 +44,7 @@ torch 'T' photons used for debugging.
 
 **/
 
-CPho CPhotonInfo::Get(const G4Track* optical_photon_track, bool fabricate_unlabelled)   // static 
+CPho CPhotonInfo::Get(const G4Track* optical_photon_track, bool when_unlabelled_fabricate_trackid_photon)   // static 
 {
     G4VUserTrackInformation* ui = optical_photon_track->GetUserInformation() ;
     CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ; 
@@ -57,7 +57,7 @@ CPho CPhotonInfo::Get(const G4Track* optical_photon_track, bool fabricate_unlabe
     }
     else
     {
-        if(fabricate_unlabelled)
+        if(when_unlabelled_fabricate_trackid_photon)
         {
             pho = CPho::FabricateTrackIdPhoton(track_id) ;  
         }

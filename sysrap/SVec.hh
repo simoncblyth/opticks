@@ -27,6 +27,7 @@ static vector<T> utilities
 
 **/
 
+#include <string>
 #include <vector>
 
 #include "SYSRAP_API_EXPORT.hh"
@@ -34,6 +35,7 @@ static vector<T> utilities
 template <typename T>
 struct SYSRAP_API SVec
 {
+    static std::string Desc(const char* label, const std::vector<T>& a, int width=7);    
     static void Dump(const char* label, const std::vector<T>& a );    
     static void Dump2(const char* label, const std::vector<T>& a );    
     static T MaxDiff(const std::vector<T>& a, const std::vector<T>& b, bool dump);    

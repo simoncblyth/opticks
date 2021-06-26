@@ -27,12 +27,32 @@ void test_save_nulldir(const NPY<float>* a )
 }
 
 
+void test_setAllValue()
+{
+   LOG(info) ; 
+
+   NPY<float>* ip = NPY<float>::load("$HOME/.opticks/InputPhotons/InwardsCubeCorners1.npy"); 
+   if( ip == nullptr ) return ; 
+ 
+   float wavelength_nm = 444.f ; 
+   int j = 2 ; 
+   int k = 3 ; 
+   int l = 0 ; 
+   ip->setAllValue(j, k, l, wavelength_nm );  
+   ip->dump(); 
+
+   ip->save("$TMP/test_setAllValue.npy"); 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    NPY<float>* a = test_make(); 
-    test_save_nulldir(a); 
+    //NPY<float>* a = test_make(); 
+    //test_save_nulldir(a); 
+
+    test_setAllValue(); 
 
     return 0 ; 
 }

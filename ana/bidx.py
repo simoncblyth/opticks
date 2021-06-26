@@ -2,7 +2,7 @@
 """
 Hmm this duplicates ana/boundary_counts.py 
 """
-import numpy as np
+import numpy as np, os
 from opticks.ana.key import keydir
 from opticks.ana.blib import BLib
 
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     b,n = np.unique( bidx, return_counts=True)
 
     for i in range(len(b)): 
-        print("%3d : %7d : %s " % (b[i],n[i],blib.bname(b[i])))
+        print("%3d : %3d : %7d : %s " % (b[i],b[i]+1, n[i],blib.bname(b[i])))
     pass
 
     
