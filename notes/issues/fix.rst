@@ -6,7 +6,7 @@ fix : Brief Summaries of Recent Fixes/Additions
 
 * CPhotonInfo overhaul for cross reemission generation recording 
 
-* suppress PMT Pyrex G4 0.001 mm "microsteps"
+* suppress PMT Pyrex G4 0.001 mm "microsteps" 
 
 * handle RINDEX-NoRINDEX "ImplicitSurface" transitions like Water->Tyvek by adding corresponding Opticks perfect absorber surfaces
 
@@ -14,8 +14,9 @@ fix : Brief Summaries of Recent Fixes/Additions
   by grabbing the calulated RAYLEIGH and adding to material (Geant4 only changes G4OpRayleigh process physics table) 
   see X4MaterialWater
 
-* suppress degenerate Pyrex///Pyrex +0.001mm boundary in GPU geometry that caused material inconsistencies 
+* suppress degenerate Pyrex///Pyrex +0.001mm boundary in GPU geometry that causes material inconsistencies 
 
+* avoid 3BT/4BT discrepancy by skipping the sticks 
 
 
 

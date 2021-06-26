@@ -37,6 +37,8 @@ class InputPhotons(object):
     @classmethod
     def CubeCorners(cls):
         """
+        :return dir: (8,3) array of normalized direction vectors  
+
         000  0   (-1,-1,-1)/sqrt(3)
         001  1
         010  2 
@@ -66,6 +68,41 @@ class InputPhotons(object):
         p[:,2, 3] = cls.WAVELENGTH  
         return p 
 
+    @classmethod
+    def OutwardsCubeCorners(cls):
+        direction = cls.CubeCorners()
+        polarization = vnorm(np.cross(direction, cls.Y))
+    
+        p = np.zeros( (8, 4, 4), dtype=cls.DTYPE )
+        n = len(p)
+        p[:,0,:3] = cls.POSITION + direction  # offset start position by direction vector for easy identification purposes
+        p[:,0, 3] = cls.TIME*(1. + np.arange(n))  
+        p[:,1,:3] = direction 
+        p[:,1, 3] = cls.WEIGHT
+        p[:,2,:3] = polarization
+        p[:,2, 3] = cls.WAVELENGTH  
+        return p 
+
+
+    @classmethod
+    def InwardsCubeCorners(cls, radius):
+        """
+        :param radius: of start position
+        :return p: (8,4,4) array of photons
+        """
+        log.info(" radius %s " % radius )
+        direction = cls.CubeCorners()
+        polarization = vnorm(np.cross(-direction, cls.Y))
+    
+        p = np.zeros( (8, 4, 4), dtype=cls.DTYPE )
+        n = len(p)
+        p[:,0,:3] = radius*direction 
+        p[:,0, 3] = cls.TIME*(1. + np.arange(n))  
+        p[:,1,:3] = -direction 
+        p[:,1, 3] = cls.WEIGHT
+        p[:,2,:3] = polarization
+        p[:,2, 3] = cls.WAVELENGTH  
+        return p 
 
     @classmethod
     def Axes(cls):
@@ -205,8 +242,9 @@ class InputPhotons(object):
         cls.CheckTransverse( direction, polarization, 1e-6 )
 
     CC = "CubeCorners" 
+    ICC = "InwardsCubeCorners" 
     RS = "RandomSpherical" 
-    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10"]
+    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", ICC+"17699", ICC+"1"]
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -221,7 +259,7 @@ class InputPhotons(object):
         elif name == self.CC:
             p = self.GenerateCubeCorners()    
         elif name.startswith(self.CC):
-            o = self.GenerateCubeCorners()    
+            o = self.OutwardsCubeCorners()    
             sdim = name[len(self.CC):]
             if sdim.find("x") > -1:
                 rr = list(map(int, sdim.split("x")))
@@ -232,6 +270,10 @@ class InputPhotons(object):
                 p = self.Parallelize1D(o, r)
                 meta["Parallelize1D_r"] = r 
             pass 
+        elif name.startswith(self.ICC):
+            sradius = name[len(self.ICC):]
+            radius = float(sradius)
+            p = self.InwardsCubeCorners(radius)             
         else:
             log.fatal("no generate method for name %s " %  name)
             assert 0
@@ -304,5 +346,14 @@ if __name__ == '__main__':
         ip[name] = InputPhotons(name, args)
         print(ip[name])
     pass
+
+    sel = "InwardsCubeCorners17699"
+    ip0 = ip[sel] 
+    p = ip0.p 
+    m = ip0.meta
+    r = np.sqrt(np.sum(p[:,0,:3]*p[:,0,:3], axis=1 ))  # radii of start positions
+
+
+
 
 

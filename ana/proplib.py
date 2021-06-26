@@ -227,7 +227,9 @@ class PropLib(object):
         return "\n".join([self.brief] + self.paths + map(stamp_, self.paths)) 
 
     def index(self, name):
-        return np.where( self._names == b_(name) )[0][0]
+        names = list(map(lambda _:_.decode("utf-8"), self.names ))  
+        return names.index(name)
+        #return np.where( self._names == b_(name) )[0][0]
 
     def interp(self, name, wavelengths, jl):
         """
@@ -246,11 +248,12 @@ class PropLib(object):
         """
         j,l = jl
 
-        bname = b_(name)
-        if not bname in self.names:
-            log.fatal("bname %s is not in list %s " % (bname, self.names))
-        pass
-        idx = list(self.names).index(bname)
+        #bname = b_(name)
+        #if not bname in self.names:
+        #    log.fatal("bname %s is not in list %s " % (bname, self.names))
+        #pass
+        #idx = list(self.names).index(bname)
+        idx = self.index(name)
         return np.interp( wavelengths, self.domain, self.data[idx,j,:,l] ) 
  
     def __call__(self, name):

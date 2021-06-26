@@ -186,17 +186,12 @@ class Material(object):
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
-
-
     dmat = "Water"
-
     args = opticks_main(mat=dmat)    
-
     log.info("mat %s " % args.mat)
 
-
     wl = np.linspace(300.,600.,4)
-    for name in mlib._names:
+    for name in list(map(lambda _:_.decode("utf-8"),mlib._names)):
         mat = Material(name)
         tab = mat.table(wl)
         print(mat.hdr())
