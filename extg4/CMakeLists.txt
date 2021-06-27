@@ -90,6 +90,7 @@ set(SOURCES
     X4OpticalSurface.cc
 
     X4PhysicsOrderedFreeVector.cc
+    X4MaterialPropertyVector.cc
     X4PhysicsVector.cc
 
     X4RotationMatrix.cc
@@ -154,6 +155,7 @@ set(HEADERS
     X4OpticalSurface.hh
 
     X4PhysicsOrderedFreeVector.hh
+    X4MaterialPropertyVector.hh
     X4PhysicsVector.hh
 
     X4Transform3D.hh

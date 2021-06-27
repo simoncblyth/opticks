@@ -38,6 +38,7 @@ set(TEST_SOURCES
     X4NameOrderTest.cc
 
     X4PhysicsOrderedFreeVectorTest.cc
+    X4MaterialPropertyVectorTest.cc
 )
 
 

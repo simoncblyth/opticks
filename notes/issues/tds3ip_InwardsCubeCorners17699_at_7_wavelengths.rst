@@ -325,9 +325,9 @@ Compare to those from texture in qudarap/tests/QCtxTest.py
 GScintillatorLibTest 
 ---------------------------
 
+::
 
-
-
+    epsilon:offline blyth$ scp P:/tmp/G4OpticksAnaMgr/ScintillationIntegral.npy /tmp/G4OpticksAnaMgr/ScintillationIntegral.npy 
 
 
 
