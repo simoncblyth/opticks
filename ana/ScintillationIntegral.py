@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import os, numpy as np
 import matplotlib.pyplot as plt
-
-from opticks.ana.nload import np_load
 from opticks.ana.key import keydir
 
 def wavelengthSample(icdf, num_sample=1000000):
@@ -10,27 +8,49 @@ def wavelengthSample(icdf, num_sample=1000000):
     w = np.interp( u, icdf.si, icdf.nm )
     return w  
 
+
 class ScintillationIntegral(object):
+    """
+    aa,fc,sc 
+        obtained from horses mouth DsG4Scintillation by G4OpticksAnaMgr
+        at BeginOfRun and grabbed with ana/G4OpticksAnaMgr.sh 
+    bb 
+        integrated from fc by extg4/tests/X4ScintillationIntegralTest.cc
+
+    """
     LABEL = "G4.ScintillationIntegral"
-    PATH = "/tmp/G4OpticksAnaMgr/ScintillationIntegral.npy"
+    FOLD = "/tmp/G4OpticksAnaMgr"
+
     def __init__(self):
-        a = np.load(self.PATH)  
-        eV = a[:,0]*1e6
+        aa = np.load(os.path.join(self.FOLD,"ScintillationIntegral.npy"))  
+        fc = np.load(os.path.join(self.FOLD,"FASTCOMPONENT.npy"))  
+        sc = np.load(os.path.join(self.FOLD,"SLOWCOMPONENT.npy"))  
+        assert np.all(fc == sc)   
+
+        bb = np.load(os.path.join(self.FOLD,"X4ScintillationIntegralTest.npy")) 
+        assert np.all(aa == bb)
+
+        eV = aa[:,0]*1e6
+        si = aa[:,1]/aa[:,1].max()
+
         nm = 1240./eV
-        si = a[:,1]/a[:,1].max()
- 
-        self.a = a 
+
+        self.aa = aa
+        self.bb = bb
+        self.fc = fc
+        self.sc = sc
         self.eV = eV
         self.nm = nm
         self.si = si 
         self.wl = wavelengthSample(self)
 
+
 class GScintillator(object):
     LABEL = "OK.GScint"
     def __init__(self, kd):
-        aa = np_load(os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy"))
-        fc = np_load(os.path.join(kd,"GScintillatorLib/LS/FASTCOMPONENT.npy"))
-        sc = np_load(os.path.join(kd,"GScintillatorLib/LS/SLOWCOMPONENT.npy"))
+        aa = np.load(os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy"))
+        fc = np.load(os.path.join(kd,"GScintillatorLib/LS/FASTCOMPONENT.npy"))
+        sc = np.load(os.path.join(kd,"GScintillatorLib/LS/SLOWCOMPONENT.npy"))
 
         a = aa[0,:,0]
         b = np.linspace(0,1,len(a))
@@ -38,7 +58,6 @@ class GScintillator(object):
         self.nm = a 
         self.si = b 
         self.wl = wavelengthSample(self)
-
 
 
 def compare_icdf(gs, si):
@@ -69,6 +88,36 @@ def compare_samples(gs, si):
     fig.show()
 
 
+
+def integral(sc):
+    out = np.zeros((len(sc),2)) 
+     
+    currentIN = sc[0,1] 
+    assert currentIN >= 0.0
+
+    currentPM = sc[0,0]
+    currentCII = 0.0; 
+
+    out[0] = [currentPM, currentCII]
+
+    prevPM  = currentPM
+    prevCII = currentCII
+    prevIN  = currentIN
+
+    for ii in range(1,len(sc)):
+        currentPM = sc[ii,0]
+        currentIN = sc[ii,1]
+        currentCII = 0.5 * (prevIN + currentIN)
+        currentCII = prevCII + (currentPM - prevPM) * currentCII
+        out[ii] = [currentPM, currentCII]
+        prevPM  = currentPM
+        prevCII = currentCII
+    pass
+    return out 
+
+
+
+
 if __name__ == '__main__':
     
     ok = os.environ["OPTICKS_KEY"]
@@ -77,6 +126,9 @@ if __name__ == '__main__':
     gs = GScintillator(kd)
     si = ScintillationIntegral()
 
-    compare_icdf(gs, si)
+    #compare_icdf(gs, si)
     #compare_samples(gs, si)
+
+    ff = integral(si.sc)
+
 

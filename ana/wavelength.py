@@ -29,7 +29,7 @@ if __name__ == '__main__':
     fold = "/tmp/QCtxTest"
     w0 = np.load(os.path.join(fold, "wavelength.npy"))
 
-    path1 = "/tmp/G4OpticksAnaMgr/wavelength.npy"
+    path1 = "/tmp/G4OpticksAnaMgr/WavelengthSamples.npy"
     w1 = np.load(path1) if os.path.exists(path1) else None
 
     ok = os.environ["OPTICKS_KEY"]

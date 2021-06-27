@@ -39,6 +39,8 @@ set(TEST_SOURCES
 
     X4PhysicsOrderedFreeVectorTest.cc
     X4MaterialPropertyVectorTest.cc
+
+    X4ScintillationIntegralTest.cc
 )
 
 

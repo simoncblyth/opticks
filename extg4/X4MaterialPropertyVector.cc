@@ -2,11 +2,34 @@
 #include "X4MaterialPropertyVector.hh"
 #include "NPY.hpp"
 
+
+G4MaterialPropertyVector* X4MaterialPropertyVector::FromArray(const NPY<double>* arr)
+{
+    size_t ni = arr->getShape(0); 
+    size_t nj = arr->getShape(1); 
+    assert( nj == 2 ); 
+
+    G4double* energy = new G4double[ni] ;
+    G4double* value = new G4double[ni] ;
+ 
+    for(int i=0 ; i < int(ni) ; i++)
+    {
+        energy[i] = arr->getValue(i, 0, 0 ); 
+        value[i] = arr->getValue(i, 1, 0); 
+    }
+
+    G4MaterialPropertyVector* vec = new G4MaterialPropertyVector(energy, value, ni);  
+    return vec ; 
+}
+
+
+
 X4MaterialPropertyVector::X4MaterialPropertyVector(const G4MaterialPropertyVector* vec_ )
     :
     vec(vec_)
 {
 }
+
 
 template <typename T> NPY<T>* X4MaterialPropertyVector::convert() 
 {
