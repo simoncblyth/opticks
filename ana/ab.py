@@ -34,6 +34,7 @@ from opticks.ana.decompression import decompression_bins
 from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
 from opticks.ana.evt import Evt
+from opticks.ana.evt import nb_
 from opticks.ana.abstat import ABStat
 #from opticks.ana.dv import Dv, DvTab
 from opticks.ana.qdv import QDV, QDVTab

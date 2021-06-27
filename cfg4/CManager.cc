@@ -20,6 +20,8 @@
 #include "CCtx.hh"
 #include "CManager.hh"
 
+#include "CScint.hh"
+
 #include "PLOG.hh"
 
 const plog::Severity CManager::LEVEL = PLOG::EnvLevel("CManager", "DEBUG"); 
@@ -106,6 +108,7 @@ void CManager::setMaterialBridge(const CMaterialBridge* material_bridge)
 void CManager::BeginOfRunAction(const G4Run*)
 {
     LOG(LEVEL) << " m_mode " << m_mode ;
+    CScint::Check(); 
 }
 void CManager::EndOfRunAction(const G4Run*)
 {

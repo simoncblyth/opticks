@@ -57,3 +57,9 @@ if __name__ == '__main__':
     ax.set_xlabel("Probability")
     fig.show()
 
+
+    
+
+
+
+

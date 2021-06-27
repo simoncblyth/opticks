@@ -15,7 +15,7 @@ void test_wavelength(QCtx& qc)
 {
     LOG(info); 
 
-    unsigned num_wavelength = 100000 ; 
+    unsigned num_wavelength = 1000000 ; 
 
     std::vector<float> wavelength ; 
     wavelength.resize(num_wavelength, 0.f); 

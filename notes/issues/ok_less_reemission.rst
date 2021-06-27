@@ -2,6 +2,8 @@ ok_less_reemission
 =====================
 
 * prior :doc:`ok_lacks_SI-4BT-SD`
+* next :doc:`tds3ip_InwardsCubeCorners17699_at_7_wavelengths`
+
 
 
 After remove the sticks : the poppy becomes somewhat less OK reemission 
@@ -1190,6 +1192,7 @@ jsc : flagReemission requires fStopAndKill track status not at fGeomBoundary ste
      236                 && aTrack.GetTrackStatus() == fStopAndKill
      237                 && aStep.GetPostStepPoint()->GetStepStatus() != fGeomBoundary;
      238         }
+
 
 
 

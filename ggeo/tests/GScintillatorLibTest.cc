@@ -144,7 +144,8 @@ int main(int argc, char** argv)
     GScintillatorLib* slib = GScintillatorLib::load(ok);
     slib->dump();
 
-    const char* name = "LiquidScintillator" ;
+    //const char* name = "LiquidScintillator" ;
+    const char* name = "LS" ;
 
     GPropertyMap<float>* ls = slib->getRaw(name);
     LOG(info) << " ls " << ls ; 

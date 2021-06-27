@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
     pk = Planck(w, K=6500)
 
-    u = np.random.rand(1e6)
+    u = np.random.rand(1000000)
 
     gen = pk(u)    
  

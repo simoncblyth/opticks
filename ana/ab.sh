@@ -32,6 +32,8 @@ export OPTICKS_ANA_DEFAULTS="src=$src,cat=$cat,det=$det,tag=$tag,pfx=$pfx"
 script=ab.py 
 #script=profile_.py 
 
+cd ~/opticks/ana
+
 ipython -i --pdb $(which $script) -- $*
 
 

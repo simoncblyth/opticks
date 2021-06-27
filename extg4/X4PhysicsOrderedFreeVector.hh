@@ -5,6 +5,9 @@
 #include "plog/Severity.h"
 #include "G4Types.hh"
 
+
+template <typename T> class NPY ; 
+
 class G4PhysicsOrderedFreeVector ; 
 
 /**
@@ -28,6 +31,8 @@ struct X4_API X4PhysicsOrderedFreeVector
     G4double getMidBinValue() const ;
     void changeAllToMidBinValue();
     void putValues( G4double value ); 
+
+    template<typename T> NPY<T>* convert() ;
 
 };
 

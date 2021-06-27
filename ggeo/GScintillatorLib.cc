@@ -122,6 +122,15 @@ BMeta* GScintillatorLib::createMeta()
 }
 
 
+/**
+GScintillatorLib::createBuffer
+--------------------------------
+
+This gets called from the base in GPropertyLib::close after 
+which GPropertyLib::setBuffer is used. 
+
+**/
+
 NPY<float>* GScintillatorLib::createBuffer()
 {
     unsigned int ni = getNumRaw();

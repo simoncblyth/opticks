@@ -42,6 +42,8 @@ the CPho::FabricateTrackIdPhoton should only be relevant for
 input "primary" photons. The input photons are artificially constructed 
 torch 'T' photons used for debugging.
 
+BUT: this gets called with non-opticals too
+
 **/
 
 CPho CPhotonInfo::Get(const G4Track* optical_photon_track, bool when_unlabelled_fabricate_trackid_photon)   // static 

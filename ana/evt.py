@@ -39,6 +39,9 @@ m1_ = lambda p:np.sqrt(np.sum(p*p, axis=1))  # magnitude axis 1
 m2_ = lambda p:np.sqrt(np.sum(p*p, axis=2))  # magnitude axis 2
 
 
+nb_ = lambda a,s:( a & ( 0xf << 4*s )) >> (4*s)   # nibble slot s in array a 
+
+
 #from opticks.ana.debug import MyPdb
 """
 # not working with py3

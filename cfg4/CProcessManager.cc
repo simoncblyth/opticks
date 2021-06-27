@@ -50,6 +50,15 @@ std::string CProcessManager::Desc( G4ProcessManager* proMgr )
     return ss.str();
 }
 
+/*
+T* CProcessManger::GetProcess<T>( G4ProcessManager* proMgr, const char* processName_ )
+{
+    G4String processName = processName_ ; 
+    G4VProcess* proc = proMgr->GetProcess(processName); 
+    return proc ?  dynamic_cast<T*>(proc) : nullptr ; 
+}
+*/
+
 
 G4ProcessManager* CProcessManager::Current(G4Track* trk) 
 {
@@ -178,7 +187,5 @@ void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMg
     dp->G4VDiscreteProcess::PostStepDoIt( aTrack, aStep );
     //   devious way to invoke the protected ClearNumberOfInteractionLengthLeft 
 }
-
-
 
 

@@ -36,6 +36,8 @@ set(TEST_SOURCES
     G4GDMLReadSolids_1062_mapOfMatPropVects_bug.cc
 
     X4NameOrderTest.cc
+
+    X4PhysicsOrderedFreeVectorTest.cc
 )
 
 

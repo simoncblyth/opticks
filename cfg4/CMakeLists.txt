@@ -160,6 +160,8 @@ set(SOURCES
     CProcess.cc
     CProcessManager.cc
     CProcessSubType.cc
+
+    CScint.cc
 )
 
 
@@ -301,6 +303,7 @@ set(HEADERS
     CProcessManager.hh
     CProcessSubType.hh
 
+    CScint.hh
 
 )
 

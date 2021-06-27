@@ -262,6 +262,9 @@ class SeqType(BaseType):
             Out[7]: 'TO BT BT ..'
 
         """
+        if type(arg) is list or issubclass( arg.__class__, np.ndarray ): 
+            return list(map(lambda _:self.label(_), arg))
+        pass
 
         i = None
         wildcard = type(arg) == str and arg[0] == "." 
