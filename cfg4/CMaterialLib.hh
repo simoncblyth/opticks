@@ -80,16 +80,16 @@ class CFG4_API CMaterialLib : public CPropLib
        const CMPT*       getG4MPT(const char* shortname) const ;
 
 
-       void dumpGroupvelMaterial(const char* msg, float wavelength, float groupvel, float tdiff, int step_id, const char* qwn="" );
-       std::string firstMaterialWithGroupvelAt430nm(float groupvel, float delta=0.0001f);
+       void dumpGroupvelMaterial(const char* msg, double wavelength, double groupvel, double tdiff, int step_id, const char* qwn="" );
+       std::string firstMaterialWithGroupvelAt430nm(double groupvel, double delta=0.0001f);
        void fillMaterialValueMap(const char* matnames);
-       void fillMaterialValueMap(std::map<std::string,float>& vmp,  const char* matnames, const char* key, float nm);
-       static void dumpMaterialValueMap(const char* msg, std::map<std::string,float>& vmp);
-       static std::string firstKeyForValue(float val, std::map<std::string,float>& vmp, float delta=0.0001f );
+       void fillMaterialValueMap(std::map<std::string,double>& vmp,  const char* matnames, const char* key, double nm);
+       static void dumpMaterialValueMap(const char* msg, std::map<std::string,double>& vmp);
+       static std::string firstKeyForValue(double val, std::map<std::string,double>& vmp, double delta=0.0001f );
        
 
        const G4Material* getG4Material(unsigned index);
-       NPY<float>* makeArray(const char* name, const char* keys, bool reverse=true);
+       NPY<double>* makeArray(const char* name, const char* keys, bool reverse=true);
    private:
        void dump(const GMaterial* mat, const char* msg="CMaterialLib::dump");
        void dumpMaterials(const char* msg="CMaterialLib::dumpMaterials");
@@ -104,7 +104,7 @@ class CFG4_API CMaterialLib : public CPropLib
        std::map<const GMaterial*, const G4Material*>   m_ggtog4 ; 
        std::map<std::string, const G4Material*>        m_g4mat ; 
    private:
-       std::map<std::string, float>                    m_groupvel_430nm ; 
+       std::map<std::string, double>                    m_groupvel_430nm ; 
 
 
 };

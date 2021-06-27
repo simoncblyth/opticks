@@ -96,13 +96,13 @@ void GScintillatorLib::init()
     defineDefaults(getDefaults());
 }
 
-void GScintillatorLib::add(GPropertyMap<float>* scint)
+void GScintillatorLib::add(GPropertyMap<double>* scint)
 {
     assert(!isClosed());
     addRaw(scint);
 }
 
-void GScintillatorLib::defineDefaults(GPropertyMap<float>* /*defaults*/)
+void GScintillatorLib::defineDefaults(GPropertyMap<double>* /*defaults*/)
 {
     LOG(debug) << "GScintillatorLib::defineDefaults"  ; 
 }
@@ -131,7 +131,7 @@ which GPropertyLib::setBuffer is used.
 
 **/
 
-NPY<float>* GScintillatorLib::createBuffer()
+NPY<double>* GScintillatorLib::createBuffer()
 {
     unsigned int ni = getNumRaw();
     unsigned int nj = m_icdf_length ;
@@ -143,17 +143,17 @@ NPY<float>* GScintillatorLib::createBuffer()
           << " nk " << nk 
           ;  
 
-    NPY<float>* buf = NPY<float>::make(ni, nj, nk); 
+    NPY<double>* buf = NPY<double>::make(ni, nj, nk); 
     buf->zero();
-    float* data = buf->getValues();
+    double* data = buf->getValues();
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* scint = getRaw(i) ;
-        GProperty<float>* cdf = constructReemissionCDF(scint);
+        GPropertyMap<double>* scint = getRaw(i) ;
+        GProperty<double>* cdf = constructReemissionCDF(scint);
         assert(cdf);
 
-        GProperty<float>* icdf = constructInvertedReemissionCDF(scint);
+        GProperty<double>* icdf = constructInvertedReemissionCDF(scint);
         assert(icdf);
         assert(icdf->getLength() == nj);
 
@@ -173,7 +173,7 @@ GItemList*  GScintillatorLib::createNames()
     GItemList* names = new GItemList(getType());
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* scint = getRaw(i) ;
+        GPropertyMap<double>* scint = getRaw(i) ;
         names->add(scint->getShortName());
     }
     return names ; 
@@ -201,18 +201,18 @@ results than standard sampling ?
 
 **/
 
-GProperty<float>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap<float>* pmap)
+GProperty<double>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap<double>* pmap)
 {
     std::string name = pmap->getShortNameString();
 
-    typedef GProperty<float> P ; 
+    typedef GProperty<double> P ; 
 
     P* slow = getProperty(pmap, slow_component);
     P* fast = getProperty(pmap, fast_component);
     assert(slow != NULL && fast != NULL );
 
 
-    float mxdiff = GProperty<float>::maxdiff(slow, fast);
+    double mxdiff = GProperty<double>::maxdiff(slow, fast);
     assert(mxdiff < 1e-6 );
 
     P* rrd = slow->createReversedReciprocalDomain();    // have to used reciprocal "energywise" domain for G4/NuWa agreement
@@ -241,20 +241,20 @@ GProperty<float>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap<
     return icdf ; 
 }
 
-GProperty<float>* GScintillatorLib::constructReemissionCDF(GPropertyMap<float>* pmap)
+GProperty<double>* GScintillatorLib::constructReemissionCDF(GPropertyMap<double>* pmap)
 {
     std::string name = pmap->getShortNameString();
 
-    GProperty<float>* slow = getProperty(pmap, slow_component);
-    GProperty<float>* fast = getProperty(pmap, fast_component);
+    GProperty<double>* slow = getProperty(pmap, slow_component);
+    GProperty<double>* fast = getProperty(pmap, fast_component);
     assert(slow != NULL && fast != NULL );
 
-    float mxdiff = GProperty<float>::maxdiff(slow, fast);
+    double mxdiff = GProperty<double>::maxdiff(slow, fast);
     //printf("mxdiff pslow-pfast *1e6 %10.4f \n", mxdiff*1e6 );
     assert(mxdiff < 1e-6 );
 
-    GProperty<float>* rrd = slow->createReversedReciprocalDomain();
-    GProperty<float>* cdf = rrd->createCDF();
+    GProperty<double>* rrd = slow->createReversedReciprocalDomain();
+    GProperty<double>* cdf = rrd->createCDF();
     delete rrd ; 
     return cdf ;
 }

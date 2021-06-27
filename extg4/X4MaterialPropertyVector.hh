@@ -11,6 +11,10 @@ struct X4_API X4MaterialPropertyVector
 
     static G4MaterialPropertyVector* FromArray(const NPY<double>* arr) ;
 
+    template <typename T> static NPY<T>* Convert(const G4MaterialPropertyVector* vec) ; 
+
+
+
     X4MaterialPropertyVector(const G4MaterialPropertyVector* vec_ );     
 
     template <typename T> NPY<T>* convert(); 

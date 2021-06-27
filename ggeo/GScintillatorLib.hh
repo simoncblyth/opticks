@@ -47,21 +47,21 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
         GScintillatorLib(Opticks* cache, unsigned int icdf_length=4096);
         void Summary(const char* msg="GScintillatorLib::Summary");
     public:
-        void add(GPropertyMap<float>* scint);
+        void add(GPropertyMap<double>* scint);
         unsigned int getNumScintillators();
     public:
        // concretization of GPropertyLib
-       void defineDefaults(GPropertyMap<float>* defaults); 
+       void defineDefaults(GPropertyMap<double>* defaults); 
        void import();
        void sort();
-       NPY<float>* createBuffer();
+       NPY<double>* createBuffer();
        BMeta*      createMeta();
        GItemList*  createNames();
     private:
         void init();
     public:
-        GProperty<float>* constructReemissionCDF(GPropertyMap<float>* pmap);
-        GProperty<float>* constructInvertedReemissionCDF(GPropertyMap<float>* pmap);
+        GProperty<double>* constructReemissionCDF(GPropertyMap<double>* pmap);
+        GProperty<double>* constructInvertedReemissionCDF(GPropertyMap<double>* pmap);
     private:
         unsigned int m_icdf_length ; 
 

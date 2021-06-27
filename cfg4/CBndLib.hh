@@ -50,17 +50,14 @@ class CFG4_API CBndLib
     public:
         GMaterial*        getOuterMaterial(unsigned boundary);
         GMaterial*        getInnerMaterial(unsigned boundary);
-        GPropertyMap<float>* getOuterSurface(unsigned boundary);
-        GPropertyMap<float>* getInnerSurface(unsigned boundary);
+        GPropertyMap<double>* getOuterSurface(unsigned boundary);
+        GPropertyMap<double>* getInnerSurface(unsigned boundary);
 
-        //GSur*             getOuterSurface(unsigned boundary);
-        //GSur*             getInnerSurface(unsigned boundary);
     private:
         OpticksHub*      m_hub ; 
         GBndLib*         m_blib ; 
         GMaterialLib*    m_mlib ; 
         GSurfaceLib*     m_slib ; 
-        //GSurLib*         m_slib ; 
 
 };
 

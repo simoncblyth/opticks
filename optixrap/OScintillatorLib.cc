@@ -50,7 +50,10 @@ From OKTest running off a DYB geocache with scintillators::
 
 void OScintillatorLib::convert(const char* slice)
 {
-    NPY<float>* buf = m_lib->getBuffer();
+    NPY<double>* d_buf = m_lib->getBuffer();
+
+    NPY<float>* buf = NPY<double>::MakeFloat(d_buf) ; 
+
     unsigned ni = buf ? buf->getShape(0) : 0 ; 
 
     LOG(verbose) << "OScintillatorLib::convert" 

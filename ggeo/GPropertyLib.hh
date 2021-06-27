@@ -137,7 +137,7 @@ class GGEO_API GPropertyLib {
     public:
         void getIndicesWithNameEnding( std::vector<unsigned>& indices, const char* ending ) const ; 
     public:
-        GPropertyLib(GPropertyLib* other, GDomain<float>* domain=NULL, bool optional=false);
+        GPropertyLib(GPropertyLib* other, GDomain<double>* domain=NULL, bool optional=false);
         GPropertyLib(Opticks* ok, const char* type, bool optional=false);
         virtual ~GPropertyLib();
     public:
@@ -149,10 +149,10 @@ class GGEO_API GPropertyLib {
         std::string getPreferenceDir();
     public:
         void dumpRaw(const char* msg="GPropertyLib::dumpRaw");
-        void addRaw(GPropertyMap<float>* pmap);
+        void addRaw(GPropertyMap<double>* pmap);
         unsigned int getNumRaw();
-        GPropertyMap<float>* getRaw(unsigned int index);
-        GPropertyMap<float>* getRaw(const char* shortname);
+        GPropertyMap<double>* getRaw(unsigned int index);
+        GPropertyMap<double>* getRaw(const char* shortname);
         void saveRaw();
         void loadRaw();
     public:
@@ -165,34 +165,34 @@ class GGEO_API GPropertyLib {
         void initOrder();
     public:
         // other classes need access to "shape" of the standardization
-        static GDomain<float>* getDefaultDomain();
+        static GDomain<double>* getDefaultDomain();
         static glm::vec4      getDefaultDomainSpec();
     public:
-        void                 setStandardDomain(GDomain<float>* domain );
-        GDomain<float>*      getStandardDomain();
+        void                 setStandardDomain(GDomain<double>* domain );
+        GDomain<double>*      getStandardDomain();
         unsigned int         getStandardDomainLength();
         void                 dumpDomain(const char* msg="GPropertyLib::dumpDomain");
         void                 dumpNames(const char* msg="GPropertyLib::dumpNames") const  ; 
     public:
-        GPropertyMap<float>* getDefaults();
-        GProperty<float>*    getDefaultProperty(const char* name);
+        GPropertyMap<double>* getDefaults();
+        GProperty<double>*    getDefaultProperty(const char* name);
     public:
         // pure virtuals that need to be implemented in concrete subclasses
-        virtual void defineDefaults(GPropertyMap<float>* defaults) = 0 ; 
+        virtual void defineDefaults(GPropertyMap<double>* defaults) = 0 ; 
         virtual void import() = 0 ; 
         virtual void sort() = 0 ; 
-        virtual NPY<float>* createBuffer() = 0;
+        virtual NPY<double>* createBuffer() = 0;
         virtual BMeta*      createMeta() = 0;
         virtual GItemList*  createNames() = 0;
     public:
         virtual void beforeClose() ;   // dont force an implemnetation, using empty dummy, but allow override 
     public:
-        //GProperty<float>*    getItemProperty(const char* item, const char* pname) const ;
+        //GProperty<double>*    getItemProperty(const char* item, const char* pname) const ;
     public:
-        GProperty<float>*    getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
-        GProperty<float>*    getProperty(GPropertyMap<float>* pmap, const char* dkey);
-        GProperty<float>*    makeConstantProperty(float value);
-        GProperty<float>*    makeRampProperty();
+        GProperty<double>*    getPropertyOrDefault(GPropertyMap<double>* pmap, const char* pname);
+        GProperty<double>*    getProperty(GPropertyMap<double>* pmap, const char* dkey);
+        GProperty<double>*    makeConstantProperty(double value);
+        GProperty<double>*    makeRampProperty();
     public:
         void setKeyMap(const char* spec);
         const char* getLocalKey(const char* dkey) const ; // map standard -> local keys 
@@ -222,11 +222,10 @@ class GGEO_API GPropertyLib {
 
         bool isOptional() const ;
 
-
         std::string  getBufferName(const char* suffix=NULL);
-        NPY<float>*  getBuffer() const ;
-        BMeta*       getMeta() const  ;
-        GItemList*   getNames() const ;
+        NPY<double>*  getBuffer() const ;
+        BMeta*        getMeta() const  ;
+        GItemList*    getNames() const ;
         void saveNames(const char* idpath, const char* reldir, const char* txtname) const ; 
 
         OpticksAttrSeq*    getAttrNames();
@@ -237,7 +236,7 @@ class GGEO_API GPropertyLib {
        void saveToCache();
        void loadFromCache();
     public:
-        void setBuffer(NPY<float>* buf);
+        void setBuffer(NPY<double>* buf);
         void setMeta(BMeta* meta);
         void setNames(GItemList* names);
     protected:
@@ -245,23 +244,23 @@ class GGEO_API GPropertyLib {
         Opticks*                             m_ok ; 
         OpticksResource*                     m_resource ; 
     protected:
-        NPY<float>*                          m_buffer ; 
+        NPY<double>*                         m_buffer ; 
         BMeta*                               m_meta ; 
         OpticksAttrSeq*                      m_attrnames ; // attributed name list 
         GItemList*                           m_names ;     // simple name list 
     protected:
         const char*                          m_type ; 
         const char*                          m_comptype ; 
-        GDomain<float>*                      m_standard_domain ;  
+        GDomain<double>*                      m_standard_domain ;  
         bool                                 m_optional ; 
     private:
-        GPropertyMap<float>*                 m_defaults ;  
+        GPropertyMap<double>*                 m_defaults ;  
         std::map<std::string, std::string>   m_keymap ;   
         bool                                 m_closed ;  
         bool                                 m_valid ;  
         bool                                 m_noload ;  
     private:
-        std::vector<GPropertyMap<float>*>    m_raw ; 
+        std::vector<GPropertyMap<double>*>    m_raw ; 
         std::vector<unsigned>                m_sensor_indices ; 
 
 

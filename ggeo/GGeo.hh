@@ -364,9 +364,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         GMaterial* getScintillatorMaterial(unsigned int index);
     public:
     public:
-        GPropertyMap<float>* findMaterial(const char* shortname) const ;
-        GPropertyMap<float>* findRawMaterial(const char* shortname) const ;
-        GProperty<float>*    findRawMaterialProperty(const char* shortname, const char* propname) const ;
+        GPropertyMap<double>* findMaterial(const char* shortname) const ;
+        GPropertyMap<double>* findRawMaterial(const char* shortname) const ;
+        GProperty<double>*    findRawMaterialProperty(const char* shortname, const char* propname) const ;
         void dumpRawMaterialProperties(const char* msg="GGeo::dumpRawMaterialProperties") const ;
         std::vector<GMaterial*> getRawMaterialsWithProperties(const char* props, char delim) const ;
     public:

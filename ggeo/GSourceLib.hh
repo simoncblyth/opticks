@@ -74,19 +74,19 @@ class GGEO_API GSourceLib : public GPropertyLib {
         void generateBlackBodySample(unsigned int n=500000);
     public:
        // concretization of GPropertyLib
-       void defineDefaults(GPropertyMap<float>* defaults); 
+       void defineDefaults(GPropertyMap<double>* defaults); 
        void import();
        void sort();
-       NPY<float>* createBuffer();
+       NPY<double>* createBuffer();
        BMeta*      createMeta();
        GItemList*  createNames();
     private:
         void init();
     public:
-        GProperty<float>* constructSourceCDF(GPropertyMap<float>* pmap);
-        GProperty<float>* constructInvertedSourceCDF(GPropertyMap<float>* pmap);
+        GProperty<double>* constructSourceCDF(GPropertyMap<double>* pmap);
+        GProperty<double>* constructInvertedSourceCDF(GPropertyMap<double>* pmap);
     private:
-        std::vector<GPropertyMap<float>*> m_source ; 
+        std::vector<GPropertyMap<double>*> m_source ; 
 
 };
 

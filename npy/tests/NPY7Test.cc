@@ -45,6 +45,39 @@ void test_setAllValue()
 }
 
 
+void test_MakeFloat()
+{
+    unsigned ni = 10 ; 
+    unsigned nj = 4  ; 
+    unsigned nk = 2  ; 
+    unsigned nl = 2  ; 
+    unsigned nm = 4  ; 
+
+    NPY<double>* src = NPY<double>::make( ni, nj, nk, nl, nm ); 
+    src->fillIndexFlat(); 
+    src->dump("src"); 
+
+    NPY<float>* dst = NPY<double>::MakeFloat(src); 
+    dst->dump("dst"); 
+
+    for(unsigned i=0 ; i < ni ; i++){
+    for(unsigned j=0 ; j < nj ; j++){
+    for(unsigned k=0 ; k < nk ; k++){
+    for(unsigned l=0 ; l < nl ; l++){
+    for(unsigned m=0 ; m < nm ; m++){
+
+        double s = src->getValue(i,j,k,l,m) ;    
+        float  d = dst->getValue(i,j,k,l,m) ;    
+        assert( float(s) == d ); 
+
+    }
+    }
+    }
+    }
+    }
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -52,7 +85,9 @@ int main(int argc, char** argv)
     //NPY<float>* a = test_make(); 
     //test_save_nulldir(a); 
 
-    test_setAllValue(); 
+    //test_setAllValue(); 
+
+    test_MakeFloat(); 
 
     return 0 ; 
 }

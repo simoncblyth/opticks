@@ -93,7 +93,7 @@ const char* GSurfaceLib::keyspec =
 "reflect_diffuse:REFLECTIVITY," 
 ;
 
-float GSurfaceLib::SURFACE_UNSET = -1.f ; 
+double GSurfaceLib::SURFACE_UNSET = -1.f ; 
 
 void GSurfaceLib::save()
 {
@@ -174,7 +174,7 @@ GSurfaceLib::GSurfaceLib(Opticks* ok, GSurfaceLib* basis)
     init();
 }
 
-GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<float>* domain, GSurfaceLib* basis) 
+GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<double>* domain, GSurfaceLib* basis) 
     :
     GPropertyLib(src, domain),
     m_fake_efficiency(-1.f),
@@ -187,13 +187,13 @@ GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<float>* domain, GSurfaceLib* 
     initInterpolatingCopy(src, domain);
 }
  
-void GSurfaceLib::initInterpolatingCopy(GSurfaceLib* src, GDomain<float>* domain)
+void GSurfaceLib::initInterpolatingCopy(GSurfaceLib* src, GDomain<double>* domain)
 {
     unsigned nsur = src->getNumSurfaces();
 
     for(unsigned i=0 ; i < nsur ; i++)
     {
-        GPropertyMap<float>* ssur = src->getSurface(i);
+        GPropertyMap<double>* ssur = src->getSurface(i);
 
         if(!ssur->hasStandardDomain())
         {
@@ -201,14 +201,14 @@ void GSurfaceLib::initInterpolatingCopy(GSurfaceLib* src, GDomain<float>* domain
              ssur->setStandardDomain(src->getStandardDomain());
         }
 
-        GPropertyMap<float>* dsur = new GPropertyMap<float>(ssur, domain );   // interpolating "copy" ctor
+        GPropertyMap<double>* dsur = new GPropertyMap<double>(ssur, domain );   // interpolating "copy" ctor
 
         addDirect(dsur);
     }
 }
  
 
-void GSurfaceLib::setFakeEfficiency(float fake_efficiency)
+void GSurfaceLib::setFakeEfficiency(double fake_efficiency)
 {
     m_fake_efficiency = fake_efficiency ; 
 }
@@ -254,7 +254,7 @@ void GSurfaceLib::Summary(const char* msg)
               ;
 }
 
-void GSurfaceLib::defineDefaults(GPropertyMap<float>* defaults)
+void GSurfaceLib::defineDefaults(GPropertyMap<double>* defaults)
 {
     defaults->addConstantProperty( detect          ,      SURFACE_UNSET );
     defaults->addConstantProperty( absorb          ,      SURFACE_UNSET );
@@ -340,7 +340,7 @@ void GSurfaceLib::add(GBorderSurface* raw, bool implicit, bool direct)
 
     m_border_surfaces.push_back(raw);
 
-    GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
+    GPropertyMap<double>* surf = dynamic_cast<GPropertyMap<double>* >(raw);
     if(implicit) surf->setImplicit(true); 
 
     addBorderSurface(surf, raw->getPV1(), raw->getPV2(), direct );
@@ -355,7 +355,7 @@ sets MetaKV keys "bpv1" "bpv2" onto the GPropertyMap
 
 **/
 
-void GSurfaceLib::addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2, bool direct)
+void GSurfaceLib::addBorderSurface(GPropertyMap<double>* surf, const char* pv1, const char* pv2, bool direct)
 {
    // method to help with de-conflation of surface props and location
     std::string bpv1 = pv1 ;
@@ -401,11 +401,11 @@ void GSurfaceLib::add(GSkinSurface* raw)
 
     LOG(verbose) << ( raw ? raw->getName() : "NULL" ) ;
 
-    GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
+    GPropertyMap<double>* surf = dynamic_cast<GPropertyMap<double>* >(raw);
     bool direct = false  ;  // not standardized 
     addSkinSurface( surf, raw->getSkinSurfaceVol(), direct );
 }
-void GSurfaceLib::addSkinSurface(GPropertyMap<float>* surf, const char* sslv_, bool direct )
+void GSurfaceLib::addSkinSurface(GPropertyMap<double>* surf, const char* sslv_, bool direct )
 {
    // method to help with de-conflation of surface props and location
     std::string sslv = sslv_ ;
@@ -425,7 +425,7 @@ void GSurfaceLib::addSkinSurface(GPropertyMap<float>* surf, const char* sslv_, b
 
 
 /**
-GSurfaceLib::addStandardized(GPropertyMap<float>* surf)
+GSurfaceLib::addStandardized(GPropertyMap<double>* surf)
 ------------------------------------------------------------
 
 Common to both surface types:
@@ -435,14 +435,14 @@ Common to both surface types:
 
 **/
 
-void GSurfaceLib::addStandardized(GPropertyMap<float>* surf)
+void GSurfaceLib::addStandardized(GPropertyMap<double>* surf)
 {
     assert(!isClosed());
-    GPropertyMap<float>* ssurf = createStandardSurface(surf) ;
+    GPropertyMap<double>* ssurf = createStandardSurface(surf) ;
     addDirect(ssurf);
 }
 
-void GSurfaceLib::addDirect(GPropertyMap<float>* surf)
+void GSurfaceLib::addDirect(GPropertyMap<double>* surf)
 {
     assert(!isClosed());
     m_surfaces.push_back(surf); 
@@ -464,12 +464,12 @@ have the standard set of properties.
 
 **/
 
-GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src)
+GPropertyMap<double>* GSurfaceLib::createStandardSurface(GPropertyMap<double>* src)
 {
-    GProperty<float>* _detect           = NULL ; 
-    GProperty<float>* _absorb           = NULL ; 
-    GProperty<float>* _reflect_specular = NULL ; 
-    GProperty<float>* _reflect_diffuse  = NULL ; 
+    GProperty<double>* _detect           = NULL ; 
+    GProperty<double>* _absorb           = NULL ; 
+    GProperty<double>* _reflect_specular = NULL ; 
+    GProperty<double>* _reflect_diffuse  = NULL ; 
 
     bool is_sensor = src->isSensor() ; 
 
@@ -491,7 +491,7 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
 
         if(is_sensor)  // this means it has non-zero EFFICIENCY or detect property
         {
-            GProperty<float>* _EFFICIENCY = src->getProperty(EFFICIENCY); 
+            GProperty<double>* _EFFICIENCY = src->getProperty(EFFICIENCY); 
             assert(_EFFICIENCY && os && "sensor surfaces must have an efficiency" );
 
             if(m_fake_efficiency >= 0.f && m_fake_efficiency <= 1.0f)
@@ -504,14 +504,14 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
             else
             {
                 _detect = _EFFICIENCY ;      
-                _absorb = GProperty<float>::make_one_minus( _detect );
+                _absorb = GProperty<double>::make_one_minus( _detect );
                 _reflect_specular = makeConstantProperty(0.0);
                 _reflect_diffuse  = makeConstantProperty(0.0);
             }
         }
         else
         {
-            GProperty<float>* _REFLECTIVITY = src->getProperty(REFLECTIVITY); 
+            GProperty<double>* _REFLECTIVITY = src->getProperty(REFLECTIVITY); 
             if(_REFLECTIVITY == NULL)
             {
                 LOG(fatal) << "ABORT : non-sensor surfaces must have a reflectivity" ; 
@@ -526,14 +526,14 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
                 _detect  = makeConstantProperty(0.0) ;    
                 _reflect_specular = _REFLECTIVITY ;
                 _reflect_diffuse  = makeConstantProperty(0.0) ;    
-                _absorb  = GProperty<float>::make_one_minus(_reflect_specular);
+                _absorb  = GProperty<double>::make_one_minus(_reflect_specular);
             }
             else
             {
                 _detect  = makeConstantProperty(0.0) ;    
                 _reflect_specular = makeConstantProperty(0.0) ;    
                 _reflect_diffuse  = _REFLECTIVITY ;
-                _absorb  = GProperty<float>::make_one_minus(_reflect_diffuse);
+                _absorb  = GProperty<double>::make_one_minus(_reflect_diffuse);
             } 
         }
     }
@@ -543,7 +543,7 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
     assert(_reflect_specular);
     assert(_reflect_diffuse);
 
-    GPropertyMap<float>* dst = new GPropertyMap<float>(src);
+    GPropertyMap<double>* dst = new GPropertyMap<double>(src);
 
     dst->addProperty( detect          , _detect          );
     dst->addProperty( absorb          , _absorb          );
@@ -580,7 +580,7 @@ surfaces.
 **/
 
 
-GPropertyMap<float>* GSurfaceLib::getBasisSurface(const char* name) const 
+GPropertyMap<double>* GSurfaceLib::getBasisSurface(const char* name) const 
 {
     return m_basis ? m_basis->getSurface(name) : NULL ; 
 }
@@ -588,7 +588,7 @@ GPropertyMap<float>* GSurfaceLib::getBasisSurface(const char* name) const
 
 void GSurfaceLib::relocateBasisBorderSurface(const char* name, const char* bpv1, const char* bpv2)
 {
-    GPropertyMap<float>* surf = getBasisSurface(name);
+    GPropertyMap<double>* surf = getBasisSurface(name);
     if(!surf) LOG(fatal) << "relocateBasisBorderSurface requires basis library to be present and to contain the surface  " ; 
     assert( surf );        
 
@@ -598,7 +598,7 @@ void GSurfaceLib::relocateBasisBorderSurface(const char* name, const char* bpv1,
 
 void GSurfaceLib::relocateBasisSkinSurface(const char* name, const char* sslv)
 {
-    GPropertyMap<float>* surf = getBasisSurface(name);
+    GPropertyMap<double>* surf = getBasisSurface(name);
     if(!surf) LOG(fatal) << "relocateBasisSkinSurface requires basis library to be present and to contain the surface  " ; 
     assert( surf );           
   
@@ -610,7 +610,7 @@ void GSurfaceLib::relocateBasisSkinSurface(const char* name, const char* sslv)
 
 
 
-bool GSurfaceLib::operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_)
+bool GSurfaceLib::operator()(const GPropertyMap<double>* a_, const GPropertyMap<double>* b_)
 {
     const char* a = a_->getShortName();
     const char* b = b_->getShortName();
@@ -651,7 +651,7 @@ void GSurfaceLib::sort()
 }
 
 
-guint4 GSurfaceLib::createOpticalSurface(GPropertyMap<float>* src)
+guint4 GSurfaceLib::createOpticalSurface(GPropertyMap<double>* src)
 {
    assert(src->isSkinSurface() || src->isBorderSurface() || src->isTestSurface());
    GOpticalSurface* os = src->getOpticalSurface();
@@ -662,14 +662,14 @@ guint4 GSurfaceLib::createOpticalSurface(GPropertyMap<float>* src)
 
 guint4 GSurfaceLib::getOpticalSurface(unsigned int i)
 {
-    GPropertyMap<float>* surf = getSurface(i);    
+    GPropertyMap<double>* surf = getSurface(i);    
     guint4 os = createOpticalSurface(surf);
     os.x = i ;
     return os ; 
 }
 
 
-GPropertyMap<float>* GSurfaceLib::makePerfect(const char* name, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_)
+GPropertyMap<double>* GSurfaceLib::makePerfect(const char* name, double detect_, double absorb_, double reflect_specular_, double reflect_diffuse_)
 {
     // placeholders
     const char* type = "1" ; 
@@ -679,19 +679,19 @@ GPropertyMap<float>* GSurfaceLib::makePerfect(const char* name, float detect_, f
     GOpticalSurface* os = new GOpticalSurface(name, type, model, finish, value);
 
     unsigned int index = 1000 ;   // does this matter ? 
-    GPropertyMap<float>* dst = new GPropertyMap<float>(name, index, TESTSURFACE, os);
+    GPropertyMap<double>* dst = new GPropertyMap<double>(name, index, TESTSURFACE, os);
     dst->setStandardDomain(getStandardDomain());
 
     addPerfectProperties(dst, detect_, absorb_, reflect_specular_, reflect_diffuse_ );  
     return dst ;  
 }
 
-void GSurfaceLib::addPerfectProperties( GPropertyMap<float>* dst, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_ )
+void GSurfaceLib::addPerfectProperties( GPropertyMap<double>* dst, double detect_, double absorb_, double reflect_specular_, double reflect_diffuse_ )
 {
-    GProperty<float>* _detect           = makeConstantProperty(detect_) ;    
-    GProperty<float>* _absorb           = makeConstantProperty(absorb_) ;    
-    GProperty<float>* _reflect_specular = makeConstantProperty(reflect_specular_) ;    
-    GProperty<float>* _reflect_diffuse  = makeConstantProperty(reflect_diffuse_) ;    
+    GProperty<double>* _detect           = makeConstantProperty(detect_) ;    
+    GProperty<double>* _absorb           = makeConstantProperty(absorb_) ;    
+    GProperty<double>* _reflect_specular = makeConstantProperty(reflect_specular_) ;    
+    GProperty<double>* _reflect_diffuse  = makeConstantProperty(reflect_diffuse_) ;    
 
     dst->addProperty( detect          , _detect          );
     dst->addProperty( absorb          , _absorb          );
@@ -746,10 +746,10 @@ void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, con
     GBorderSurface* bs = new GBorderSurface( name, index, os ); 
     bs->setBorderSurface(pv1, pv2);   
 
-    float detect_ = 0.f ; 
-    float absorb_ = 1.f ;     // <--- perfect absorber just like G4OpBoundaryProcess RINDEX->NoRINDEX
-    float reflect_specular_ = 0.f ; 
-    float reflect_diffuse_ = 0.f ; 
+    double detect_ = 0.f ; 
+    double absorb_ = 1.f ;     // <--- perfect absorber just like G4OpBoundaryProcess RINDEX->NoRINDEX
+    double reflect_specular_ = 0.f ; 
+    double reflect_diffuse_ = 0.f ; 
 
     addPerfectProperties(bs, detect_, absorb_, reflect_specular_ , reflect_diffuse_ ); 
 
@@ -800,10 +800,10 @@ std::string GSurfaceLib::descImplicitBorderSurfaces() const
 
 void GSurfaceLib::addPerfectSurfaces()
 {
-    GPropertyMap<float>* _detect = makePerfect("perfectDetectSurface"    , 1.f, 0.f, 0.f, 0.f );
-    GPropertyMap<float>* _absorb = makePerfect("perfectAbsorbSurface"    , 0.f, 1.f, 0.f, 0.f );
-    GPropertyMap<float>* _specular = makePerfect("perfectSpecularSurface", 0.f, 0.f, 1.f, 0.f );
-    GPropertyMap<float>* _diffuse  = makePerfect("perfectDiffuseSurface" , 0.f, 0.f, 0.f, 1.f );
+    GPropertyMap<double>* _detect = makePerfect("perfectDetectSurface"    , 1.f, 0.f, 0.f, 0.f );
+    GPropertyMap<double>* _absorb = makePerfect("perfectAbsorbSurface"    , 0.f, 1.f, 0.f, 0.f );
+    GPropertyMap<double>* _specular = makePerfect("perfectSpecularSurface", 0.f, 0.f, 1.f, 0.f );
+    GPropertyMap<double>* _diffuse  = makePerfect("perfectDiffuseSurface" , 0.f, 0.f, 0.f, 1.f );
 
     addDirect(_detect);
     addDirect(_absorb);
@@ -819,16 +819,16 @@ void GSurfaceLib::addPerfectSurfaces()
 
 
 
-bool GSurfaceLib::checkSurface( GPropertyMap<float>* surf)
+bool GSurfaceLib::checkSurface( GPropertyMap<double>* surf)
 {
     // After standardization in GBoundaryLib surfaces must have four properties
     // that correspond to the probabilities of what happens at an intersection
     // with the surface.  These need to add to one across the wavelength domain.
 
-    GProperty<float>* _detect = surf->getProperty(detect);
-    GProperty<float>* _absorb = surf->getProperty(absorb);
-    GProperty<float>* _reflect_specular = surf->getProperty(reflect_specular);
-    GProperty<float>* _reflect_diffuse  = surf->getProperty(reflect_diffuse);
+    GProperty<double>* _detect = surf->getProperty(detect);
+    GProperty<double>* _absorb = surf->getProperty(absorb);
+    GProperty<double>* _reflect_specular = surf->getProperty(reflect_specular);
+    GProperty<double>* _reflect_diffuse  = surf->getProperty(reflect_diffuse);
 
     if(!_detect) return false ; 
     if(!_absorb) return false ; 
@@ -836,10 +836,10 @@ bool GSurfaceLib::checkSurface( GPropertyMap<float>* surf)
     if(!_reflect_diffuse) return false ; 
 
 
-    GProperty<float>* sum = GProperty<float>::make_addition( _detect, _absorb, _reflect_specular, _reflect_diffuse );
-    GAry<float>* vals = sum->getValues();
-    GAry<float>* ones = GAry<float>::ones(sum->getLength());
-    float diff = GAry<float>::maxdiff( vals, ones );
+    GProperty<double>* sum = GProperty<double>::make_addition( _detect, _absorb, _reflect_specular, _reflect_diffuse );
+    GAry<double>* vals = sum->getValues();
+    GAry<double>* ones = GAry<double>::ones(sum->getLength());
+    double diff = GAry<double>::maxdiff( vals, ones );
     bool valid = diff < 1e-6 ; 
 
     if(!valid && surf->hasDefinedName())
@@ -856,7 +856,7 @@ GItemList* GSurfaceLib::createNames()
     unsigned int ni = getNumSurfaces();
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* surf = m_surfaces[i] ;
+        GPropertyMap<double>* surf = m_surfaces[i] ;
         names->add(surf->getShortName());
     }
     return names ; 
@@ -878,7 +878,7 @@ void GSurfaceLib::collectSensorIndices()
     unsigned ni = getNumSurfaces();
     for(unsigned i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* surf = m_surfaces[i] ;
+        GPropertyMap<double>* surf = m_surfaces[i] ;
         bool is_sensor = surf->isSensor() ; 
         if(is_sensor)
         {
@@ -896,7 +896,7 @@ void GSurfaceLib::dumpSurfaces(const char* msg)
 
     for(unsigned i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* surf = m_surfaces[i] ;
+        GPropertyMap<double>* surf = m_surfaces[i] ;
         const char* name = surf->getShortName() ;
         const char* type = surf->getType() ; 
         bool is_sensor = surf->isSensor() ; 
@@ -943,7 +943,7 @@ BMeta* GSurfaceLib::createMeta()
     unsigned int ni = getNumSurfaces();
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* surf = getSurface(i) ;
+        GPropertyMap<double>* surf = getSurface(i) ;
         const char* key = surf->getShortName() ;
         BMeta* surfmeta = surf->getMeta();
         assert( surfmeta );
@@ -955,13 +955,14 @@ BMeta* GSurfaceLib::createMeta()
 
 
 
-NPY<float>* GSurfaceLib::createBuffer()
+NPY<double>* GSurfaceLib::createBuffer()
 {
-    return createBufferForTex2d() ; 
+    return createBufferForTex2d<double>() ; 
 }
 
 
-NPY<float>* GSurfaceLib::createBufferForTex2d()
+template <typename T>
+NPY<T>* GSurfaceLib::createBufferForTex2d()
 {
     // memory layout of this buffer is constrained by 
     // need to match the requirements of tex2d<float4>
@@ -982,14 +983,14 @@ NPY<float>* GSurfaceLib::createBufferForTex2d()
     }  
 
 
-    NPY<float>* buf = NPY<float>::make(ni, nj, nk, nl);  // surfaces/payload-group/wavelength-samples/4prop
+    NPY<T>* buf = NPY<T>::make(ni, nj, nk, nl);  // surfaces/payload-group/wavelength-samples/4prop
     buf->zero();
-    float* data = buf->getValues();
+    T* data = buf->getValues();
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* surf = m_surfaces[i] ;
-        GProperty<float> *p0,*p1,*p2,*p3 ; 
+        GPropertyMap<double>* surf = m_surfaces[i] ;
+        GProperty<double> *p0,*p1,*p2,*p3 ; 
 
         for(unsigned int j=0 ; j < nj ; j++)
         {
@@ -1002,10 +1003,10 @@ NPY<float>* GSurfaceLib::createBufferForTex2d()
             {  
                 unsigned int offset = i*nj*nk*nl + j*nk*nl + k*nl ;  
 
-                data[offset+0] = p0 ? p0->getValue(k) : SURFACE_UNSET ;
-                data[offset+1] = p1 ? p1->getValue(k) : SURFACE_UNSET ;
-                data[offset+2] = p2 ? p2->getValue(k) : SURFACE_UNSET ;
-                data[offset+3] = p3 ? p3->getValue(k) : SURFACE_UNSET ;
+                data[offset+0] = p0 ? T(p0->getValue(k)) : T(SURFACE_UNSET) ;
+                data[offset+1] = p1 ? T(p1->getValue(k)) : T(SURFACE_UNSET) ;
+                data[offset+2] = p2 ? T(p2->getValue(k)) : T(SURFACE_UNSET) ;
+                data[offset+3] = p3 ? T(p3->getValue(k)) : T(SURFACE_UNSET) ;
             }
         }
     }
@@ -1014,59 +1015,6 @@ NPY<float>* GSurfaceLib::createBufferForTex2d()
 
 
 
-NPY<float>* GSurfaceLib::createBufferOld()
-{
-    unsigned int ni = getNumSurfaces();
-    unsigned int nj = getStandardDomain()->getLength();
-    unsigned int nk = NUM_PROP  ;  // 4 or 8  
-    assert( nk == 4 || nk == 8 ); 
-    assert(ni > 0 && nj > 0);
-
-    NPY<float>* buf = NPY<float>::make(ni, nj, nk); 
-    buf->zero();
-
-    float* data = buf->getValues();
-
-    GProperty<float> *p0,*p1,*p2,*p3 ; 
-    GProperty<float>* p4(NULL);
-    GProperty<float>* p5(NULL);
-    GProperty<float>* p6(NULL);
-    GProperty<float>* p7(NULL);
-
-    for(unsigned int i=0 ; i < ni ; i++)
-    {
-        GPropertyMap<float>* surf = m_surfaces[i] ;
-        p0 = surf->getPropertyByIndex(0);
-        p1 = surf->getPropertyByIndex(1);
-        p2 = surf->getPropertyByIndex(2);
-        p3 = surf->getPropertyByIndex(3);
-        if(nk > 4)
-        {
-            p4 = surf->getPropertyByIndex(4);
-            p5 = surf->getPropertyByIndex(5);
-            p6 = surf->getPropertyByIndex(6);
-            p7 = surf->getPropertyByIndex(7);
-        }
-
-        for( unsigned int j = 0; j < nj; j++ ) // interleave 4/8 properties into the buffer
-        {   
-            unsigned int offset = i*nj*nk + j*nk ;  
-            data[offset+0] = p0->getValue(j) ;
-            data[offset+1] = p1->getValue(j) ;
-            data[offset+2] = p2->getValue(j) ;
-            data[offset+3] = p3->getValue(j) ;
-
-            if(nk > 4)
-            {
-                data[offset+4] = p4 ? p4->getValue(j) : SURFACE_UNSET ;
-                data[offset+5] = p5 ? p5->getValue(j) : SURFACE_UNSET ;
-                data[offset+6] = p6 ? p6->getValue(j) : SURFACE_UNSET ;
-                data[offset+7] = p7 ? p7->getValue(j) : SURFACE_UNSET ;
-            }
-        } 
-    }
-    return buf ; 
-}
 
 void GSurfaceLib::import()
 {
@@ -1113,7 +1061,7 @@ void GSurfaceLib::importForTex2d()
 
     assert(m_standard_domain->getLength() == nk );
 
-    float* data = m_buffer->getValues();
+    double* data = m_buffer->getValues();
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
@@ -1147,7 +1095,7 @@ void GSurfaceLib::importForTex2d()
                      ;
 
 
-        GPropertyMap<float>* surf = new GPropertyMap<float>(key,i, surftype, os, surfmeta );
+        GPropertyMap<double>* surf = new GPropertyMap<double>(key,i, surftype, os, surfmeta );
 
         for(unsigned int j=0 ; j < nj ; j++)
         {
@@ -1179,7 +1127,7 @@ void GSurfaceLib::dumpMeta(const char* msg) const
     LOG(info) << msg << " num_surf " << num_surf ; 
     for( unsigned i=0 ; i < num_surf ; i++)
     {
-         GPropertyMap<float>* surf = m_surfaces[i]; 
+         GPropertyMap<double>* surf = m_surfaces[i]; 
          std::cout << " i " << std::setw(3) << i
                    << " surf.desc " << surf->desc() 
                    << std::endl 
@@ -1191,41 +1139,15 @@ void GSurfaceLib::dumpMeta(const char* msg) const
 
 
 
-
-void GSurfaceLib::importOld()
+void GSurfaceLib::import( GPropertyMap<double>* surf, double* data, unsigned int nj, unsigned int nk, unsigned int jcat )
 {
-    unsigned int ni = m_buffer->getShape(0);
-    unsigned int nj = m_buffer->getShape(1);
-    unsigned int nk = m_buffer->getShape(2);
-
-    checkBufferCompatibility(nk, "GSurfaceLib::import");
-
-   assert(m_standard_domain->getLength() == nj );
-   float* data = m_buffer->getValues();
-
-   for(unsigned int i=0 ; i < ni ; i++)
-   {
-       const char* key = m_names->getKey(i);
-       LOG(debug) << std::setw(3) << i 
-                 << " " << key ;
-
-       GOpticalSurface* os = NULL ;
-       GPropertyMap<float>* surf = new GPropertyMap<float>(key,i,"surface", os);
-       import(surf, data + i*nj*nk, nj, nk );
-
-       m_surfaces.push_back(surf);
-   }  
-}
-
-void GSurfaceLib::import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk, unsigned int jcat )
-{
-    float* domain = m_standard_domain->getValues();
+    double* domain = m_standard_domain->getValues();
 
     for(unsigned int k = 0 ; k < nk ; k++)
     {
-        float* values = new float[nj] ; 
+        double* values = new double[nj] ; 
         for(unsigned int j = 0 ; j < nj ; j++) values[j] = data[j*nk+k]; 
-        GProperty<float>* prop = new GProperty<float>( values, domain, nj );
+        GProperty<double>* prop = new GProperty<double>( values, domain, nj );
 
         surf->addProperty(propertyName(k+4*jcat), prop);
     } 
@@ -1239,7 +1161,7 @@ void GSurfaceLib::importOpticalBuffer(NPY<unsigned int>* ibuf)
     std::vector<guint4> optical ; 
     importUint4Buffer(optical, ibuf);  
 
-    // thence can revivify GOpticalSurface and associate them to the GPropertyMap<float>*
+    // thence can revivify GOpticalSurface and associate them to the GPropertyMap<double>*
     
     unsigned int ni = optical.size();
     assert(ni == getNumSurfaces());
@@ -1248,7 +1170,7 @@ void GSurfaceLib::importOpticalBuffer(NPY<unsigned int>* ibuf)
     for(unsigned int i=0 ; i < ni ; i++)
     {
        const char* key = m_names->getKey(i);
-       GPropertyMap<float>* surf = getSurface(i);
+       GPropertyMap<double>* surf = getSurface(i);
        GOpticalSurface* os = GOpticalSurface::create( key, optical[i] );
        surf->setOpticalSurface(os);
     }
@@ -1278,7 +1200,7 @@ void GSurfaceLib::dump(const char* msg)
     for(unsigned int i=0 ; i < ni ; i++)
     {
         guint4 optical = getOpticalSurface(i);
-        GPropertyMap<float>* surf = getSurface(i);
+        GPropertyMap<double>* surf = getSurface(i);
 
         LOG(warning) << std::setw(35) << surf->getName() 
                   <<  GOpticalSurface::brief(optical) 
@@ -1301,7 +1223,7 @@ void GSurfaceLib::dump(const char* msg)
 void GSurfaceLib::dump( unsigned int index )
 {
     guint4 optical = getOpticalSurface(index);
-    GPropertyMap<float>* surf = getSurface(index);
+    GPropertyMap<double>* surf = getSurface(index);
     assert(surf->getIndex() == index ); 
     std::string desc = optical.description() + surf->description() ; 
     dump(surf, desc.c_str());
@@ -1310,7 +1232,7 @@ void GSurfaceLib::dump( unsigned int index )
 
 }
 
-void GSurfaceLib::dump(GPropertyMap<float>* surf)
+void GSurfaceLib::dump(GPropertyMap<double>* surf)
 {
     unsigned int index = surf->getIndex();
     guint4 optical = getOpticalSurface(index);
@@ -1318,23 +1240,23 @@ void GSurfaceLib::dump(GPropertyMap<float>* surf)
     dump(surf, desc.c_str());
 }
 
-void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
+void GSurfaceLib::dump( GPropertyMap<double>* surf, const char* msg)
 {
-    GProperty<float>* _detect = surf->getProperty(detect);
-    GProperty<float>* _absorb = surf->getProperty(absorb);
-    GProperty<float>* _reflect_specular = surf->getProperty(reflect_specular);
-    GProperty<float>* _reflect_diffuse  = surf->getProperty(reflect_diffuse);
-    GProperty<float>* _extra_x  = surf->getProperty(extra_x);
+    GProperty<double>* _detect = surf->getProperty(detect);
+    GProperty<double>* _absorb = surf->getProperty(absorb);
+    GProperty<double>* _reflect_specular = surf->getProperty(reflect_specular);
+    GProperty<double>* _reflect_diffuse  = surf->getProperty(reflect_diffuse);
+    GProperty<double>* _extra_x  = surf->getProperty(extra_x);
 
     assert(_detect);
     assert(_absorb);
     assert(_reflect_specular);
     assert(_reflect_diffuse);
 
-    float dscale = 1.f ; 
+    double dscale = 1.f ; 
     bool dreciprocal = false ; 
 
-    std::string table = GProperty<float>::make_table( 20, dscale, dreciprocal,
+    std::string table = GProperty<double>::make_table( 20, dscale, dreciprocal,
                             _detect, "detect", 
                             _absorb, "absorb",  
                             _reflect_specular, "reflect_specular",
@@ -1371,9 +1293,9 @@ unsigned GSurfaceLib::getNumSensorSurface() const
 }
 
 
-GPropertyMap<float>* GSurfaceLib::getSensorSurface(unsigned int offset)
+GPropertyMap<double>* GSurfaceLib::getSensorSurface(unsigned int offset)
 {
-    GPropertyMap<float>* ss = NULL ; 
+    GPropertyMap<double>* ss = NULL ; 
 
 
     unsigned int count = 0 ; 
@@ -1437,7 +1359,7 @@ bool GSurfaceLib::hasSurface(unsigned int index) const
     return getSurface(index) != NULL ; 
 }
 
-GPropertyMap<float>* GSurfaceLib::getSurface(unsigned int i) const 
+GPropertyMap<double>* GSurfaceLib::getSurface(unsigned int i) const 
 {
     return i < m_surfaces.size() ? m_surfaces[i] : NULL ;
 }
@@ -1445,14 +1367,14 @@ GPropertyMap<float>* GSurfaceLib::getSurface(unsigned int i) const
 
 
 
-GPropertyMap<float>* GSurfaceLib::getSurface(const char* name) const 
+GPropertyMap<double>* GSurfaceLib::getSurface(const char* name) const 
 {
     if(!name) return NULL ; 
 
-    GPropertyMap<float>* surf = NULL ; 
+    GPropertyMap<double>* surf = NULL ; 
     for(unsigned i=0 ; i < m_surfaces.size() ; i++)
     {
-        GPropertyMap<float>* s = m_surfaces[i] ; 
+        GPropertyMap<double>* s = m_surfaces[i] ; 
         const char* sname = s->getName() ; 
         assert( sname ) ; 
         if( strcmp( sname, name ) == 0 )
@@ -1464,11 +1386,11 @@ GPropertyMap<float>* GSurfaceLib::getSurface(const char* name) const
     return surf ; 
 }
 
-GProperty<float>* GSurfaceLib::getSurfaceProperty(const char* name, const char* prop) const
+GProperty<double>* GSurfaceLib::getSurfaceProperty(const char* name, const char* prop) const
 {
-    GPropertyMap<float>* surf = getSurface(name) ; 
+    GPropertyMap<double>* surf = getSurface(name) ; 
     assert(surf); 
-    GProperty<float>* p = surf->getProperty(prop); 
+    GProperty<double>* p = surf->getProperty(prop); 
     return p ; 
 } 
 
@@ -1479,10 +1401,10 @@ GProperty<float>* GSurfaceLib::getSurfaceProperty(const char* name, const char* 
 // this way only works after closing the lib, or for loaded libs 
 // as it uses the names buffer
 // 
-GPropertyMap<float>* GSurfaceLib::getSurface(const char* name)
+GPropertyMap<double>* GSurfaceLib::getSurface(const char* name)
 {
     unsigned int index = m_names->getIndex(name);
-    GPropertyMap<float>* surf = getSurface(index);
+    GPropertyMap<double>* surf = getSurface(index);
     return surf ; 
 }
 */

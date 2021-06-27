@@ -34,7 +34,7 @@ GBorderSurface
 
 **/
 
-class GGEO_API GBorderSurface : public GPropertyMap<float> {
+class GGEO_API GBorderSurface : public GPropertyMap<double> {
   public:
       GBorderSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface );
       virtual ~GBorderSurface();

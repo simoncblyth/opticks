@@ -38,7 +38,7 @@ GBndLib
 =========
 
 *GBndLib* differs from *GMaterialLib* and *GSurfaceLib* in that 
-creation of its float buffer is deferred post cache 
+creation of its double buffer is deferred post cache 
 to allow dynamic addition of boundaries for eg analytic
 geometry inside-outs and for test boxes 
 
@@ -193,14 +193,13 @@ class GGEO_API GBndLib : public GPropertyLib {
        void createDynamicBuffers();
    public:
        // memcpy zip of materials and surfaces for each boundary from the mlib and slib buffers
-       NPY<float>* createBufferForTex2d();  
-       NPY<float>* createBufferOld();
+       NPY<double>* createBufferForTex2d();  
   public:
        GItemList* createNames(); // spec shortnames
-       NPY<float>* createBuffer();  // invokes createBufferForTex2d
+       NPY<double>* createBuffer();  // invokes createBufferForTex2d
        void import();
        void sort();
-       void defineDefaults(GPropertyMap<float>* defaults);
+       void defineDefaults(GPropertyMap<double>* defaults);
   public:
        void Summary(const char* msg="GBndLib::Summary");
        void dump(const char* msg="GBndLib::dump");

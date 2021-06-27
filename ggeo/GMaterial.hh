@@ -39,9 +39,9 @@ G4DAE Workflow
 
 **/
 
-class GGEO_API GMaterial : public GPropertyMap<float> {
+class GGEO_API GMaterial : public GPropertyMap<double> {
   public:
-      GMaterial(GMaterial* other, GDomain<float>* domain = NULL);  // non-NULL domain interpolates
+      GMaterial(GMaterial* other, GDomain<double>* domain = NULL);  // non-NULL domain interpolates
       GMaterial(const char* name, unsigned int index);
       virtual ~GMaterial();
   private:

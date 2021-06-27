@@ -46,7 +46,7 @@ const GMaterialLib* GMaterialLib::INSTANCE = NULL ;
 const GMaterialLib* GMaterialLib::GetInstance(){ return INSTANCE ; }
 bool GMaterialLib::IsUnset(unsigned index){ return GItemList::IsUnset(index) ; } // static 
 
-const float GMaterialLib::MATERIAL_UNSET   = 0.0f  ;
+const double GMaterialLib::MATERIAL_UNSET   = 0.f  ;
 
 const char* GMaterialLib::refractive_index  = "refractive_index" ;
 const char* GMaterialLib::absorption_length = "absorption_length" ;
@@ -135,9 +135,9 @@ void GMaterialLib::postLoadFromCache()
 
     if(nore || xxre || fxre)
     {    
-        float reemission_prob = 0.f ; 
-        if(nore) reemission_prob = 0.f ;
-        if(xxre) reemission_prob = 0.5f ;  // not 1.0 in order to leave some AB, otherwise too unphysical 
+        double reemission_prob = 0. ; 
+        if(nore) reemission_prob = 0. ;
+        if(xxre) reemission_prob = 0.5 ;  // not 1.0 in order to leave some AB, otherwise too unphysical 
         if(fxre) reemission_prob = m_ok->getFxRe();
 
         LOG(fatal) << "GMaterialLib::postLoadFromCache --nore/--xxre/--fxre option postCache modifying reemission_prob " ; 
@@ -147,9 +147,9 @@ void GMaterialLib::postLoadFromCache()
 
     if(noab || xxab || fxab)
     {
-        float absorption_length = 0.f ; 
-        if(noab) absorption_length = std::numeric_limits<float>::max() ;
-        if(xxab) absorption_length = 100.f ;
+        double absorption_length = 0. ; 
+        if(noab) absorption_length = std::numeric_limits<double>::max() ;
+        if(xxab) absorption_length = 100. ;
         if(fxab) absorption_length = m_ok->getFxAb();
 
         LOG(fatal) << "GMaterialLib::postLoadFromCache --noab/--xxab/--fxab option postCache modifying absorption_length: " << absorption_length ; 
@@ -158,8 +158,8 @@ void GMaterialLib::postLoadFromCache()
 
     if(nosc || xxsc || fxsc)
     {
-        float scattering_length = 0.f ; 
-        if(nosc) scattering_length = std::numeric_limits<float>::max() ;
+        double scattering_length = 0. ; 
+        if(nosc) scattering_length = std::numeric_limits<double>::max() ;
         if(xxsc) scattering_length = 100.f ;
         if(fxsc) scattering_length = m_ok->getFxSc();
 
@@ -185,7 +185,7 @@ void GMaterialLib::postLoadFromCache()
     if(nore || noab || nosc || xxre || xxab || xxsc || fxre || fxsc || fxab )
     {
         // need to replace the loaded buffer with a new one with the changes for Opticks to see it 
-        NPY<float>* mbuf = createBuffer();
+        NPY<double>* mbuf = createBuffer();
         setBuffer(mbuf);
     }
 
@@ -209,23 +209,15 @@ GMaterialLib::GMaterialLib(Opticks* ok, GMaterialLib* basis)
     :
     GPropertyLib(ok, "GMaterialLib"),
     m_basis(basis),
-#ifdef OLD_CATHODE
-    m_cathode(NULL),
-    m_cathode_material_name(NULL),
-#endif
     m_material_order(ORDER_BY_PREFERENCE)
 {
     init();
 }
 
-GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain, GMaterialLib* basis)  // hmm think basis never used with this ctor ?
+GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<double>* domain, GMaterialLib* basis)  // hmm think basis never used with this ctor ?
     :
     GPropertyLib(src, domain),
     m_basis(basis),
-#ifdef OLD_CATHODE
-    m_cathode(NULL),
-    m_cathode_material_name(NULL),
-#endif
     m_material_order(ORDER_BY_PREFERENCE)
 {
     init();
@@ -240,7 +232,7 @@ void GMaterialLib::init()
     defineDefaults(getDefaults());
 }
 
-void GMaterialLib::initInterpolatingCopy(GMaterialLib* src, GDomain<float>* domain)
+void GMaterialLib::initInterpolatingCopy(GMaterialLib* src, GDomain<double>* domain)
 {
     unsigned nmat = src->getNumMaterials();
 
@@ -255,16 +247,16 @@ void GMaterialLib::initInterpolatingCopy(GMaterialLib* src, GDomain<float>* doma
 }
 
 
-void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
+void GMaterialLib::defineDefaults(GPropertyMap<double>* defaults)
 {
-    defaults->addConstantProperty( refractive_index,      1.f  );
+    defaults->addConstantProperty( refractive_index,      1.  );
     defaults->addConstantProperty( absorption_length,     1e6  );
     defaults->addConstantProperty( scattering_length,     1e6  );
-    defaults->addConstantProperty( reemission_prob,       0.f  );
+    defaults->addConstantProperty( reemission_prob,       0.  );
 
     if(NUM_FLOAT4 > 1)
     {
-        defaults->addConstantProperty( group_velocity,   300.f  );
+        defaults->addConstantProperty( group_velocity,   300.  );
         defaults->addConstantProperty( extra_y,          MATERIAL_UNSET  );
         defaults->addConstantProperty( extra_z,          MATERIAL_UNSET  );
         defaults->addConstantProperty( extra_w,          MATERIAL_UNSET  );
@@ -559,9 +551,9 @@ BMeta* GMaterialLib::createMeta()
 
 
 
-NPY<float>* GMaterialLib::createBuffer()
+NPY<double>* GMaterialLib::createBuffer()
 {
-    return createBufferForTex2d() ; 
+    return createBufferForTex2d<double>() ; 
 }
 
 /**
@@ -569,7 +561,7 @@ GMaterialLib::createBufferForTex2d
 ------------------------------------
 
 1. buffer is created of shape like (38, 2, 39, 4) where 38 is the number of materials
-2. GProperty<float>  values from the m_materials vector of GMaterial
+2. GProperty<double>  values from the m_materials vector of GMaterial
    are copied into the buffer 
 
 Memory layout of this buffer is constrained at one end by 
@@ -578,7 +570,9 @@ materials making it only possible to change in the middle number of groups.
 
 **/
 
-NPY<float>* GMaterialLib::createBufferForTex2d()
+
+template <typename T>
+NPY<T>* GMaterialLib::createBufferForTex2d()
 {
     unsigned int ni = getNumMaterials();
     unsigned int nj = NUM_FLOAT4 ; 
@@ -597,14 +591,14 @@ NPY<float>* GMaterialLib::createBufferForTex2d()
         return NULL ;  
     } 
 
-    NPY<float>* mbuf = NPY<float>::make(ni, nj, nk, nl);  // materials/payload-category/wavelength-samples/4prop
+    NPY<T>* mbuf = NPY<T>::make(ni, nj, nk, nl);  // materials/payload-category/wavelength-samples/4prop
     mbuf->zero();
-    float* data = mbuf->getValues();
+    T* data = mbuf->getValues();
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
         GMaterial* mat = m_materials[i] ;
-        GProperty<float> *p0,*p1,*p2,*p3 ; 
+        GProperty<double> *p0,*p1,*p2,*p3 ; 
 
         for(unsigned int j=0 ; j < nj ; j++)
         {
@@ -617,10 +611,10 @@ NPY<float>* GMaterialLib::createBufferForTex2d()
             {  
                 unsigned int offset = i*nj*nk*nl + j*nk*nl + k*nl ;  
 
-                data[offset+0] = p0 ? p0->getValue(k) : MATERIAL_UNSET ;
-                data[offset+1] = p1 ? p1->getValue(k) : MATERIAL_UNSET ;
-                data[offset+2] = p2 ? p2->getValue(k) : MATERIAL_UNSET ;
-                data[offset+3] = p3 ? p3->getValue(k) : MATERIAL_UNSET ;
+                data[offset+0] = p0 ? T(p0->getValue(k)) : T(MATERIAL_UNSET) ;
+                data[offset+1] = p1 ? T(p1->getValue(k)) : T(MATERIAL_UNSET) ;
+                data[offset+2] = p2 ? T(p2->getValue(k)) : T(MATERIAL_UNSET) ;
+                data[offset+3] = p3 ? T(p3->getValue(k)) : T(MATERIAL_UNSET) ;
             }
         }
     }
@@ -692,7 +686,7 @@ void GMaterialLib::importForTex2d()
 
     assert(expected);
 
-    float* data = m_buffer->getValues();
+    double* data = m_buffer->getValues();
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
@@ -712,16 +706,16 @@ void GMaterialLib::importForTex2d()
 
 
 
-void GMaterialLib::import( GMaterial* mat, float* data, unsigned nj, unsigned nk, unsigned jcat )
+void GMaterialLib::import( GMaterial* mat, double* data, unsigned nj, unsigned nk, unsigned jcat )
 {
-    float* domain = m_standard_domain->getValues();
+    double* domain = m_standard_domain->getValues();
 
     for(unsigned k = 0 ; k < nk ; k++)  // over 4 props of the float4 
     {
-        float* values = new float[nj] ; 
+        double* values = new double[nj] ; 
         for(unsigned j = 0 ; j < nj ; j++) values[j] = data[j*nk+k];   // un-interleaving 
        
-        GProperty<float>* prop = new GProperty<float>( values, domain, nj );  
+        GProperty<double>* prop = new GProperty<double>( values, domain, nj );  
         mat->addProperty(propertyName(k+4*jcat), prop);
     } 
 }
@@ -783,12 +777,12 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
 
         const char* key = mat->getName() ; 
 
-        GProperty<float>* vg = mat->getProperty(group_velocity);
-        GProperty<float>* ri = mat->getProperty(refractive_index);
+        GProperty<double>* vg = mat->getProperty(group_velocity);
+        GProperty<double>* ri = mat->getProperty(refractive_index);
         assert(vg);
         assert(ri);
 
-        GProperty<float>* vg_calc = GProperty<float>::make_GROUPVEL(ri);
+        GProperty<double>* vg_calc = GProperty<double>::make_GROUPVEL(ri);
         assert(vg_calc);
 
         LOG(verbose)
@@ -801,7 +795,7 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
             << " k " << key
             ; 
 
-        float wldelta = 1e-4 ; 
+        double wldelta = 1e-4 ; 
         vg->copyValuesFrom(vg_calc, wldelta);         // <-- replacing the property inside the GMaterial instance
 
         if(debug)
@@ -822,7 +816,7 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
 }
 
 
-bool GMaterialLib::setMaterialPropertyValues(const char* matname, const char* propname, float val)
+bool GMaterialLib::setMaterialPropertyValues(const char* matname, const char* propname, double val)
 {
     bool ret = true ; 
 
@@ -905,22 +899,22 @@ void GMaterialLib::dump(GMaterial* mat)
 // static 
 void GMaterialLib::dump( GMaterial* mat, const char* msg)
 {
-    GProperty<float>* _refractive_index = mat->getProperty(refractive_index);
-    GProperty<float>* _absorption_length = mat->getProperty(absorption_length);
-    GProperty<float>* _scattering_length = mat->getProperty(scattering_length);
-    GProperty<float>* _reemission_prob = mat->getProperty(reemission_prob);
-    GProperty<float>* _group_velocity = mat->getProperty(group_velocity);
+    GProperty<double>* _refractive_index = mat->getProperty(refractive_index);
+    GProperty<double>* _absorption_length = mat->getProperty(absorption_length);
+    GProperty<double>* _scattering_length = mat->getProperty(scattering_length);
+    GProperty<double>* _reemission_prob = mat->getProperty(reemission_prob);
+    GProperty<double>* _group_velocity = mat->getProperty(group_velocity);
 
 
     unsigned int fw = 20 ;
-    float dscale = 1.0f ;
+    double dscale = 1.0f ;
     bool dreciprocal = false  ; 
 
     //f loat(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
     // no need for scaling or taking reciprocal, as GMaterial domains 
     // are already  in nm
 
-    std::string table = GProperty<float>::make_table( 
+    std::string table = GProperty<double>::make_table( 
                             fw,  dscale, dreciprocal,  
                             _refractive_index, refractive_index, 
                             _absorption_length, absorption_length,  
@@ -1020,7 +1014,7 @@ GMaterial* GMaterialLib::getMaterialWithIndex(unsigned aindex) const
 
 
 
-GPropertyMap<float>* GMaterialLib::findMaterial(const char* shortname) const 
+GPropertyMap<double>* GMaterialLib::findMaterial(const char* shortname) const 
 {
     GMaterial* mat = NULL ; 
     for(unsigned int i=0 ; i < m_materials.size() ; i++ )
@@ -1032,13 +1026,13 @@ GPropertyMap<float>* GMaterialLib::findMaterial(const char* shortname) const
             break ; 
         }
     }
-    return (GPropertyMap<float>*)mat ;
+    return (GPropertyMap<double>*)mat ;
 }
 
 
 
 
-GPropertyMap<float>* GMaterialLib::findRawMaterial(const char* shortname) const 
+GPropertyMap<double>* GMaterialLib::findRawMaterial(const char* shortname) const 
 {
     GMaterial* mat = NULL ; 
     for(unsigned int i=0 ; i < m_materials_raw.size() ; i++ )
@@ -1051,14 +1045,14 @@ GPropertyMap<float>* GMaterialLib::findRawMaterial(const char* shortname) const
             break ; 
         }
     }
-    return (GPropertyMap<float>*)mat ;
+    return (GPropertyMap<double>*)mat ;
 }
 
-GProperty<float>* GMaterialLib::findRawMaterialProperty(const char* shortname, const char* propname) const
+GProperty<double>* GMaterialLib::findRawMaterialProperty(const char* shortname, const char* propname) const
 {
-    GPropertyMap<float>* mat = findRawMaterial(shortname);
+    GPropertyMap<double>* mat = findRawMaterial(shortname);
 
-    GProperty<float>* prop = mat->getProperty(propname);
+    GProperty<double>* prop = mat->getProperty(propname);
 
     prop->Summary();
 
@@ -1178,7 +1172,7 @@ void GMaterialLib::addTestMaterials()
                   << " path " << path 
                   ;
 
-        GProperty<float>* rif = GProperty<float>::load(path.c_str());
+        GProperty<double>* rif = GProperty<double>::load(path.c_str());
         if(!rif) continue ; 
 
         GMaterial* raw = makeRaw(name.c_str());

@@ -147,7 +147,7 @@ int main(int argc, char** argv)
     //const char* name = "LiquidScintillator" ;
     const char* name = "LS" ;
 
-    GPropertyMap<float>* ls = slib->getRaw(name);
+    GPropertyMap<double>* ls = slib->getRaw(name);
     LOG(info) << " ls " << ls ; 
     if(ls)
     {
@@ -161,7 +161,7 @@ int main(int argc, char** argv)
 
 
 
-    NPY<float>* buf = slib->getBuffer();
+    NPY<double>* buf = slib->getBuffer();
     buf->Summary();
     const char* name_ = "GScintillatorLib.npy" ;
 
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
     buf->save(TMPDIR, name_);
 
 
-    NPY<float>* buf0 = buf->make_slice("0:1") ;
+    NPY<double>* buf0 = buf->make_slice("0:1") ;
     const char* name0 = "GScintillatorLib0.npy" ;
 
     LOG(info) << " save GScintillatorLib buf0  "

@@ -37,14 +37,14 @@ Convert Opticks GGeo property map into Geant4 material properties table
 class X4_API X4PropertyMap
 {
     public:
-        static G4MaterialPropertiesTable* Convert( const GPropertyMap<float>* pmap );
+        static G4MaterialPropertiesTable* Convert( const GPropertyMap<double>* pmap );
     public:
-        X4PropertyMap(const GPropertyMap<float>* pmap) ; 
+        X4PropertyMap(const GPropertyMap<double>* pmap) ; 
         G4MaterialPropertiesTable* getMPT() const ;
     private:
         void init(); 
     private:
-        const GPropertyMap<float>*   m_pmap ; 
+        const GPropertyMap<double>*   m_pmap ; 
         G4MaterialPropertiesTable*   m_mpt ;   
         const GMaterialLib*          m_mlib ; 
 };

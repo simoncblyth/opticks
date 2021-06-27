@@ -87,7 +87,7 @@ GBndLib* GBndLib::load(Opticks* ok, bool constituents)
     {
         GMaterialLib* mlib = GMaterialLib::load(ok);
         GSurfaceLib* slib = GSurfaceLib::load(ok);
-        GDomain<float>* finedom = ok->hasOpt("finebndtex") 
+        GDomain<double>* finedom = ok->hasOpt("finebndtex") 
                             ?
                                 mlib->getStandardDomain()->makeInterpolationDomain(Opticks::FINE_DOMAIN_STEP) 
                             :
@@ -200,7 +200,7 @@ void GBndLib::createDynamicBuffers()
     GItemList* names = createNames();     // added Aug 21, 2018
     setNames(names); 
 
-    NPY<float>* buf = createBuffer();
+    NPY<double>* buf = createBuffer();
     setBuffer(buf);
 
     NPY<unsigned int>* optical_buffer = createOpticalBuffer();
@@ -927,15 +927,15 @@ unsigned GBndLib::getMaterialIndexFromLine(unsigned line) const
 
 
 
-NPY<float>* GBndLib::createBuffer()
+NPY<double>* GBndLib::createBuffer()
 {
     return createBufferForTex2d() ;
 }
 
-NPY<float>* GBndLib::createBufferForTex2d()
+NPY<double>* GBndLib::createBufferForTex2d()
 {
     /*
-    GBndLib float buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
+    GBndLib double buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
     pulling together data based on the indices for the materials and surfaces 
     from the m_bnd guint4 buffer
 
@@ -945,7 +945,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
                  4 : mat-or-sur for each boundary  
                  2 : payload-categories corresponding to NUM_FLOAT4
                 39 : wavelength samples
-                 4 : float4-values
+                 4 : double4-values
 
      The only dimension that can easily be extended is the middle payload-categories one, 
      the low side is constrained by layout needed to OptiX tex2d<float4> as this 
@@ -961,8 +961,8 @@ NPY<float>* GBndLib::createBufferForTex2d()
 
     LOG(verbose) << "GBndLib::createBufferForTex2d" ;
 
-    NPY<float>* mat = m_mlib->getBuffer();
-    NPY<float>* sur = m_slib->getBuffer();
+    NPY<double>* mat = m_mlib->getBuffer();
+    NPY<double>* sur = m_slib->getBuffer();
 
     LOG(LEVEL) << "GBndLib::createBufferForTex2d" 
                << " mat " << mat 
@@ -1001,7 +1001,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
     }
 
 
-    NPY<float>* wav = NPY<float>::make( ni, nj, nk, nl, nm) ;
+    NPY<double>* wav = NPY<double>::make( ni, nj, nk, nl, nm) ;
     wav->fill( GSurfaceLib::SURFACE_UNSET ); 
 
     LOG(debug) << "GBndLib::createBufferForTex2d"
@@ -1010,9 +1010,9 @@ NPY<float>* GBndLib::createBufferForTex2d()
                << " wav " << wav->getShapeString()
                ; 
 
-    float* mdat = mat ? mat->getValues() : NULL ;
-    float* sdat = sur ? sur->getValues() : NULL ;
-    float* wdat = wav->getValues(); // destination
+    double* mdat = mat ? mat->getValues() : NULL ;
+    double* sdat = sur ? sur->getValues() : NULL ;
+    double* wdat = wav->getValues(); // destination
 
     for(unsigned int i=0 ; i < ni ; i++)      // over bnd
     {
@@ -1027,7 +1027,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
                 if(midx != UNSET)
                 { 
                     unsigned mof = nk*nl*nm*midx ; 
-                    memcpy( wdat+wof, mdat+mof, sizeof(float)*nk*nl*nm );  
+                    memcpy( wdat+wof, mdat+mof, sizeof(double)*nk*nl*nm );  
                 }
                 else
                 {
@@ -1046,7 +1046,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
                 {
                     assert( sdat && sur );
                     unsigned sof = nk*nl*nm*sidx ;  
-                    memcpy( wdat+wof, sdat+sof, sizeof(float)*nk*nl*nm );  
+                    memcpy( wdat+wof, sdat+sof, sizeof(double)*nk*nl*nm );  
                 }
             }
 
@@ -1165,7 +1165,7 @@ void GBndLib::sort()
 {
     LOG(debug) << "GBndLib::sort" ; 
 }
-void GBndLib::defineDefaults(GPropertyMap<float>* /*defaults*/)
+void GBndLib::defineDefaults(GPropertyMap<double>* /*defaults*/)
 {
     LOG(debug) << "GBndLib::defineDefaults" ; 
 }
@@ -1219,7 +1219,7 @@ void GBndLib::saveAllOverride(const char* dir)
     m_ok->setIdPathOverride(dir);
 
     save();             // only saves the guint4 bnd index
-    saveToCache();      // save float buffer too for comparison with wavelength.npy from GBoundaryLib with GBndLibTest.npy 
+    saveToCache();      // save double buffer too for comparison with wavelength.npy from GBoundaryLib with GBndLibTest.npy 
     saveOpticalBuffer();
 
     m_ok->setIdPathOverride(NULL);

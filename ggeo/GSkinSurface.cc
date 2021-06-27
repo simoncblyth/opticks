@@ -36,7 +36,7 @@
 
 GSkinSurface::GSkinSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface) 
    : 
-    GPropertyMap<float>(name, index, "skinsurface", optical_surface ),
+    GPropertyMap<double>(name, index, "skinsurface", optical_surface ),
     m_skinsurface_vol(NULL)
 {
     init();
@@ -44,7 +44,7 @@ GSkinSurface::GSkinSurface(const char* name, unsigned int index, GOpticalSurface
 
 void GSkinSurface::init()
 {
-    setStandardDomain( GDomain<float>::GetDefaultDomain()) ;   
+    setStandardDomain( GDomain<double>::GetDefaultDomain()) ;   
     // ensure the domain is set before adding properties, like AssimpGGeo 
 }
 
@@ -90,7 +90,7 @@ void GSkinSurface::Summary(const char* msg, unsigned int imod) const
     {
         printf("%s INCOMPLETE \n", msg );
     }
-    GPropertyMap<float>::Summary(msg, imod);
+    GPropertyMap<double>::Summary(msg, imod);
 
 
 }
@@ -101,7 +101,7 @@ void GSkinSurface::Summary(const char* msg, unsigned int imod) const
 std::string GSkinSurface::description() const 
 {
     std::stringstream ss ; 
-    ss << "GSS:: " << GPropertyMap<float>::description() ; 
+    ss << "GSS:: " << GPropertyMap<double>::description() ; 
     return ss.str();
 }
 

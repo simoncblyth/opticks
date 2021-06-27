@@ -78,11 +78,11 @@ class CFG4_API CSurfaceLib
     protected:
          void convert(CDetector* detector, bool exclude_sensors);
     private:
-         G4OpticalSurface*       makeOpticalSurface(GPropertyMap<float>* surf);
-         G4LogicalBorderSurface* makeBorderSurface( GPropertyMap<float>* surf, G4OpticalSurface* os);
-         G4LogicalSkinSurface*   makeSkinSurface(   GPropertyMap<float>* surf, G4OpticalSurface* os);
+         G4OpticalSurface*       makeOpticalSurface(GPropertyMap<double>* surf);
+         G4LogicalBorderSurface* makeBorderSurface( GPropertyMap<double>* surf, G4OpticalSurface* os);
+         G4LogicalSkinSurface*   makeSkinSurface(   GPropertyMap<double>* surf, G4OpticalSurface* os);
 
-         void addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>* pmap);
+         void addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<double>* pmap);
          void setDetector(CDetector* detector);
     private:
          GSurfaceLib*   m_surfacelib ; 

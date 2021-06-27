@@ -33,7 +33,7 @@
 
 
 GBorderSurface::GBorderSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface ) : 
-    GPropertyMap<float>(name, index, "bordersurface", optical_surface ),
+    GPropertyMap<double>(name, index, "bordersurface", optical_surface ),
     m_bordersurface_pv1(NULL),
     m_bordersurface_pv2(NULL)
 {
@@ -42,7 +42,7 @@ GBorderSurface::GBorderSurface(const char* name, unsigned int index, GOpticalSur
 
 void GBorderSurface::init()
 {
-    setStandardDomain( GDomain<float>::GetDefaultDomain()) ;   
+    setStandardDomain( GDomain<double>::GetDefaultDomain()) ;   
     // ensure the domain is set before adding properties, like AssimpGGeo 
 }
 
@@ -111,7 +111,7 @@ void GBorderSurface::Summary(const char* msg, unsigned int imod)
     {
         printf("%s INCOMPLETE %s \n", msg, getName() );
     }
-    GPropertyMap<float>::Summary(msg, imod);
+    GPropertyMap<double>::Summary(msg, imod);
 }
 
 
@@ -119,7 +119,7 @@ void GBorderSurface::Summary(const char* msg, unsigned int imod)
 std::string GBorderSurface::description()
 {
     std::stringstream ss ; 
-    ss << "GBS:: " << GPropertyMap<float>::description() ; 
+    ss << "GBS:: " << GPropertyMap<double>::description() ; 
     return ss.str();
 }
 

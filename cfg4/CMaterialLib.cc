@@ -51,7 +51,7 @@ CMaterialLib::CMaterialLib(OpticksHub* hub)
 {
 }
 
-void CMaterialLib::dumpGroupvelMaterial(const char* msg, float wavelength, float groupvel, float tdiff, int step_id, const char* qwn)
+void CMaterialLib::dumpGroupvelMaterial(const char* msg, double wavelength, double groupvel, double tdiff, int step_id, const char* qwn)
 {
     if(std::abs(wavelength - 430.f) < 0.01 )
     {
@@ -103,7 +103,7 @@ See ana/bnd.py::
 */
 
 
-std::string CMaterialLib::firstMaterialWithGroupvelAt430nm(float groupvel, float delta)
+std::string CMaterialLib::firstMaterialWithGroupvelAt430nm(double groupvel, double delta)
 {
     return CMaterialLib::firstKeyForValue( groupvel , m_groupvel_430nm, delta); 
 }
@@ -192,7 +192,7 @@ void CMaterialLib::saveGROUPVEL(const char* base)
     {
         const GMaterial* ggmat = getMaterial(i);
         const char* name = ggmat->getShortName() ;
-        NPY<float>* pa = makeArray(name,"RINDEX,GROUPVEL");
+        NPY<double>* pa = makeArray(name,"RINDEX,GROUPVEL");
         pa->save(base, name, "saveGROUPVEL.npy");
     }
 }
@@ -404,7 +404,7 @@ void CMaterialLib::dumpMaterial(const G4Material* mat, const char* msg)
     G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
     //mpt->DumpTable();
 
-    GPropertyMap<float>* pmap = convertTable( mpt , name );  // back into GGeo language for dumping purpose only
+    GPropertyMap<double>* pmap = convertTable( mpt , name );  // back into GGeo language for dumping purpose only
 
     unsigned int fw = 20 ;  
     bool dreciprocal = true ; 
@@ -418,7 +418,7 @@ void CMaterialLib::dumpMaterial(const G4Material* mat, const char* msg)
 }
 
 
-NPY<float>* CMaterialLib::makeArray(const char* name, const char* keys, bool reverse)
+NPY<double>* CMaterialLib::makeArray(const char* name, const char* keys, bool reverse)
 {
     const G4Material* mat = getG4Material(name);
     G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
@@ -433,7 +433,7 @@ NPY<float>* CMaterialLib::makeArray(const char* name, const char* keys, bool rev
    keys="GROUPVEL"
 */
 
-void CMaterialLib::fillMaterialValueMap(std::map<std::string,float>& vmp,  const char* _matnames, const char* key, float nm)
+void CMaterialLib::fillMaterialValueMap(std::map<std::string,double>& vmp,  const char* _matnames, const char* key, double nm)
 {
     std::vector<std::string> matnames ; 
     BStr::split(matnames, _matnames, ',' );
@@ -461,11 +461,11 @@ void CMaterialLib::fillMaterialValueMap(std::map<std::string,float>& vmp,  const
 }
 
 
-void CMaterialLib::dumpMaterialValueMap(const char* msg, std::map<std::string,float>& vmp)
+void CMaterialLib::dumpMaterialValueMap(const char* msg, std::map<std::string,double>& vmp)
 {
 
     LOG(info) << msg ;
-    typedef std::map<std::string, float> SF ; 
+    typedef std::map<std::string, double> SF ; 
     for(SF::iterator it=vmp.begin() ; it != vmp.end() ; it++)
     {
          std::cout
@@ -475,14 +475,14 @@ void CMaterialLib::dumpMaterialValueMap(const char* msg, std::map<std::string,fl
     } 
 }
 
-std::string CMaterialLib::firstKeyForValue(float val, std::map<std::string,float>& vmp, float delta)
+std::string CMaterialLib::firstKeyForValue(double val, std::map<std::string,double>& vmp, double delta)
 {
     std::string empty ; 
-    typedef std::map<std::string, float> SF ; 
+    typedef std::map<std::string, double> SF ; 
     for(SF::iterator it=vmp.begin() ; it != vmp.end() ; it++)
     {
         std::string key = it->first ; 
-        float kval = it->second ; 
+        double kval = it->second ; 
         if( std::abs(kval-val) < delta ) return key ;
     }
     return empty ;

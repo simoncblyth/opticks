@@ -31,7 +31,7 @@
 const plog::Severity X4MaterialPropertiesTable::LEVEL = PLOG::EnvLevel("X4MaterialPropertiesTable", "DEBUG"); 
 
 
-void X4MaterialPropertiesTable::Convert( GPropertyMap<float>* pmap,  const G4MaterialPropertiesTable* const mpt )
+void X4MaterialPropertiesTable::Convert( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt )
 {
     if(mpt == NULL) 
       LOG(fatal) << "cannot convert a null G4MaterialPropertiesTable : this usually means you have omitted to setup any properties for a surface or material" ;  
@@ -39,7 +39,7 @@ void X4MaterialPropertiesTable::Convert( GPropertyMap<float>* pmap,  const G4Mat
     X4MaterialPropertiesTable xtab(pmap, mpt);
 }
 
-X4MaterialPropertiesTable::X4MaterialPropertiesTable( GPropertyMap<float>* pmap,  const G4MaterialPropertiesTable* const mpt )
+X4MaterialPropertiesTable::X4MaterialPropertiesTable( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt )
     :
     m_pmap(pmap),
     m_mpt(mpt)
@@ -53,7 +53,7 @@ void X4MaterialPropertiesTable::init()
 }
 
 
-void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G4MaterialPropertiesTable* const mpt)   // static
+void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt)   // static
 {
     typedef G4MaterialPropertyVector MPV ; 
     G4bool warning ; 
@@ -83,7 +83,7 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<float>* pmap, const G
             continue ; 
         }
 
-        GProperty<float>* prop = X4PhysicsVector<float>::Convert(pvec) ; 
+        GProperty<double>* prop = X4PhysicsVector<double>::Convert(pvec) ; 
 
         if(strcmp(pname.c_str(), "EFFICIENCY") == 0)
         {
@@ -160,7 +160,7 @@ std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* m
         MPV* v = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
         if(v == NULL) continue ; 
 
-        std::string vs = X4PhysicsVector<float>::Digest(v) ; 
+        std::string vs = X4PhysicsVector<double>::Digest(v) ; 
         dig.update( const_cast<char*>(n.data()),  n.size() );  
         dig.update( const_cast<char*>(vs.data()), vs.size() );  
     }
@@ -186,7 +186,7 @@ std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* m
 
 
 
-void X4MaterialPropertiesTable::AddProperties_OLD(GPropertyMap<float>* pmap, const G4MaterialPropertiesTable* const mpt_)   // static
+void X4MaterialPropertiesTable::AddProperties_OLD(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt_)   // static
 {
     G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // needed with 10.4.2
 
@@ -200,7 +200,7 @@ void X4MaterialPropertiesTable::AddProperties_OLD(GPropertyMap<float>* pmap, con
         G4MaterialPropertyVector* pvec = it->second ;  
         // G4MaterialPropertyVector is typedef to G4PhysicsOrderedFreeVector with most of imp in G4PhysicsVector
 
-        GProperty<float>* prop = X4PhysicsVector<float>::Convert(pvec) ; 
+        GProperty<double>* prop = X4PhysicsVector<double>::Convert(pvec) ; 
 
 
       //   pmap->addProperty( pname.c_str(), prop );  // non-interpolating collection
@@ -214,7 +214,7 @@ void X4MaterialPropertiesTable::AddProperties_OLD(GPropertyMap<float>* pmap, con
     {   
         G4String pname = it->first ;
         G4double pvalue = it->second ;  
-        float value = pvalue ; 
+        double value = pvalue ; 
 
         pmap->addConstantProperty( pname.c_str(), value );   // asserts without standard domain
     }     
@@ -236,7 +236,7 @@ std::string X4MaterialPropertiesTable::Digest_OLD(const G4MaterialPropertiesTabl
         const std::string&  n = it->first ;
         G4MaterialPropertyVector* v = it->second ; 
 
-        std::string vs = X4PhysicsVector<float>::Digest(v) ; 
+        std::string vs = X4PhysicsVector<double>::Digest(v) ; 
         dig.update( const_cast<char*>(n.data()),  n.size() );  
         dig.update( const_cast<char*>(vs.data()), vs.size() );  
     }   

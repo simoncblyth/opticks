@@ -34,7 +34,11 @@ OSourceLib::OSourceLib(optix::Context& ctx, GSourceLib* lib)
 void OSourceLib::convert()
 {
     LOG(debug) << "OSourceLib::convert" ;
-    NPY<float>* buf = m_lib->getBuffer();
+
+    NPY<double>* d_buf = m_lib->getBuffer();
+
+    NPY<float>* buf = NPY<double>::MakeFloat(d_buf); 
+
     makeSourceTexture(buf);
 }
 

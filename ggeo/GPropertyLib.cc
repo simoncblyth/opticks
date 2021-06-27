@@ -88,11 +88,11 @@ void GPropertyLib::checkBufferCompatibility(unsigned int nk, const char* msg)
 }
 
 
-GDomain<float>* GPropertyLib::getDefaultDomain()    // static 
+GDomain<double>* GPropertyLib::getDefaultDomain()    // static 
 {
    // this is normal domain, only with --finebndtex does the finedomain interpolation get load within GBndLib::load
-   //return new GDomain<float>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
-    return GDomain<float>::GetDefaultDomain(); 
+   //return new GDomain<double>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
+    return GDomain<double>::GetDefaultDomain(); 
 }
 
 
@@ -103,7 +103,7 @@ const char* GPropertyLib::bnd_     = "bnd" ;
 
 
 // this ctor is used from GBndLib::load for interpolating to finedom
-GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain, bool optional )
+GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<double>* domain, bool optional )
     :
      m_log(new SLog("GPropertyLib::GPropertyLib.interpolating-ctor")),
      m_ok(other->getOpticks()),
@@ -170,24 +170,24 @@ GPropertyLib::~GPropertyLib()
 {
 }
 
-GDomain<float>* GPropertyLib::getStandardDomain()
+GDomain<double>* GPropertyLib::getStandardDomain()
 {
     return m_standard_domain ;
 }
 
-void GPropertyLib::setStandardDomain(GDomain<float>* domain)
+void GPropertyLib::setStandardDomain(GDomain<double>* domain)
 {
     m_standard_domain = domain ;
 }
 
 void  GPropertyLib::dumpDomain(const char* msg)
 {
-    GDomain<float>* dom = getStandardDomain() ;    
+    GDomain<double>* dom = getStandardDomain() ;    
 
-    float low = dom->getLow() ;
-    float high = dom->getHigh() ;
-    float step = dom->getStep() ;
-    float dscale = float(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
+    double low = dom->getLow() ;
+    double high = dom->getHigh() ;
+    double step = dom->getStep() ;
+    double dscale = double(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
  
     LOG(info) << msg  ;
 
@@ -210,16 +210,16 @@ void  GPropertyLib::dumpDomain(const char* msg)
 }
 
 
-GPropertyMap<float>* GPropertyLib::getDefaults()
+GPropertyMap<double>* GPropertyLib::getDefaults()
 {
     return m_defaults ;
 }
 
-void GPropertyLib::setBuffer(NPY<float>* buf)
+void GPropertyLib::setBuffer(NPY<double>* buf)
 {
     m_buffer = buf ;
 }
-NPY<float>* GPropertyLib::getBuffer() const 
+NPY<double>* GPropertyLib::getBuffer() const 
 {
     return m_buffer ;
 }
@@ -318,7 +318,7 @@ void GPropertyLib::init()
     if(m_standard_domain == NULL)
     {
         //m_standard_domain = getDefaultDomain(); 
-        m_standard_domain = GDomain<float>::GetDefaultDomain(); 
+        m_standard_domain = GDomain<double>::GetDefaultDomain(); 
 
         unsigned int len = getStandardDomainLength() ;
 
@@ -343,7 +343,7 @@ void GPropertyLib::init()
     }
 
 
-    m_defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
+    m_defaults = new GPropertyMap<double>("defaults", UINT_MAX, "defaults");
     m_defaults->setStandardDomain(m_standard_domain);
 
 
@@ -457,7 +457,7 @@ void GPropertyLib::close()
 
     // create methods from sub-class specializations
     GItemList* names = createNames();  
-    NPY<float>* buf = createBuffer() ;  
+    NPY<double>* buf = createBuffer() ;  
     BMeta* meta = createMeta();
 
     LOG(LEVEL)
@@ -567,7 +567,7 @@ void GPropertyLib::loadFromCache()
                ;
 
   
-    NPY<float>* buf = NPY<float>::load(dir.c_str(), name.c_str()); 
+    NPY<double>* buf = NPY<double>::load(dir.c_str(), name.c_str()); 
 
 
     if(!buf && isOptional())
@@ -617,31 +617,31 @@ unsigned int GPropertyLib::getStandardDomainLength()
     return m_standard_domain ? m_standard_domain->getLength() : 0 ;
 }
 
-GProperty<float>* GPropertyLib::getDefaultProperty(const char* name)
+GProperty<double>* GPropertyLib::getDefaultProperty(const char* name)
 {
     return m_defaults ? m_defaults->getProperty(name) : NULL ;
 }
 
 
-GProperty<float>* GPropertyLib::makeConstantProperty(float value)
+GProperty<double>* GPropertyLib::makeConstantProperty(double value)
 {
-    GProperty<float>* prop = GProperty<float>::from_constant( value, m_standard_domain->getValues(), m_standard_domain->getLength() );
+    GProperty<double>* prop = GProperty<double>::from_constant( value, m_standard_domain->getValues(), m_standard_domain->getLength() );
     return prop ; 
 }
 
-GProperty<float>* GPropertyLib::makeRampProperty()
+GProperty<double>* GPropertyLib::makeRampProperty()
 {
-   return GProperty<float>::ramp( m_standard_domain->getLow(), m_standard_domain->getStep(), m_standard_domain->getValues(), m_standard_domain->getLength() );
+   return GProperty<double>::ramp( m_standard_domain->getLow(), m_standard_domain->getStep(), m_standard_domain->getValues(), m_standard_domain->getLength() );
 }
 
 
-GProperty<float>* GPropertyLib::getProperty(GPropertyMap<float>* pmap, const char* dkey)
+GProperty<double>* GPropertyLib::getProperty(GPropertyMap<double>* pmap, const char* dkey)
 {
     assert(pmap);
 
     const char* lkey = getLocalKey(dkey); assert(lkey);  // missing local key mapping 
 
-    GProperty<float>* prop = pmap->getProperty(lkey) ;
+    GProperty<double>* prop = pmap->getProperty(lkey) ;
 
     //assert(prop);
     //if(!prop) LOG(warning) << "GPropertyLib::getProperty failed to find property " << dkey << "/" << lkey ;
@@ -673,17 +673,17 @@ SOLUTION IS TO MAKE A COPY OF EVERY PROPERTY COLLECTED INTO EACH MATERIAL,
 SO THE MATERIAL "OWNS" ITS PROPERTIES WHICH CAN THEN BE CHANGED AS NEEDED.
 **/
 
-GProperty<float>* GPropertyLib::getPropertyOrDefault(GPropertyMap<float>* pmap, const char* dkey)
+GProperty<double>* GPropertyLib::getPropertyOrDefault(GPropertyMap<double>* pmap, const char* dkey)
 {
     // convert destination key such as "detect" into local key "EFFICIENCY" 
 
     const char* lkey = getLocalKey(dkey); assert(lkey);  // missing local key mapping 
 
-    GProperty<float>* fallback = getDefaultProperty(dkey);  assert(fallback);
+    GProperty<double>* fallback = getDefaultProperty(dkey);  assert(fallback);
 
-    GProperty<float>* prop = pmap ? pmap->getProperty(lkey) : NULL ;
+    GProperty<double>* prop = pmap ? pmap->getProperty(lkey) : NULL ;
 
-    GProperty<float>* uprop = prop ? prop : fallback ; 
+    GProperty<double>* uprop = prop ? prop : fallback ; 
 
     return uprop ;
 }
@@ -771,22 +771,22 @@ void GPropertyLib::importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>
 
 
 
-void GPropertyLib::addRaw(GPropertyMap<float>* pmap)
+void GPropertyLib::addRaw(GPropertyMap<double>* pmap)
 {
     m_raw.push_back(pmap);
 }
 
-GPropertyMap<float>* GPropertyLib::getRaw(unsigned int index)
+GPropertyMap<double>* GPropertyLib::getRaw(unsigned int index)
 {
     return index < m_raw.size() ? m_raw[index] : NULL ;
 }
 
-GPropertyMap<float>* GPropertyLib::getRaw(const char* shortname)
+GPropertyMap<double>* GPropertyLib::getRaw(const char* shortname)
 {
     unsigned int nraw = m_raw.size();
     for(unsigned int i=0 ; i < nraw ; i++)
     {  
-        GPropertyMap<float>* pmap = m_raw[i];
+        GPropertyMap<double>* pmap = m_raw[i];
         const char* name = pmap->getShortName();
         if(strcmp(shortname, name) == 0) return pmap ;         
     }
@@ -807,7 +807,7 @@ void GPropertyLib::loadRaw()
         std::string name = *it ; 
         LOG(debug) << "GPropertyLib::loadRaw " << name << " " << m_comptype ; 
 
-        GPropertyMap<float>* pmap = GPropertyMap<float>::load( dir.c_str(), name.c_str(), m_comptype );
+        GPropertyMap<double>* pmap = GPropertyMap<double>::load( dir.c_str(), name.c_str(), m_comptype );
         if(pmap)
         {
             LOG(debug) << "GPropertyLib::loadRaw " << name << " " << m_comptype << " num properties:" << pmap->getNumProperties() ; 
@@ -823,7 +823,7 @@ void GPropertyLib::dumpRaw(const char* msg)
     unsigned int nraw = m_raw.size();
     for(unsigned int i=0 ; i < nraw ; i++)
     {
-        GPropertyMap<float>* pmap = m_raw[i] ;
+        GPropertyMap<double>* pmap = m_raw[i] ;
         LOG(info) << " component " << pmap->getName() ;
         LOG(info) << " table " << pmap->make_table() ;
     }
@@ -837,7 +837,7 @@ void GPropertyLib::saveRaw()
     unsigned int nraw = m_raw.size();
     for(unsigned int i=0 ; i < nraw ; i++)
     {
-        GPropertyMap<float>* pmap = m_raw[i] ;
+        GPropertyMap<double>* pmap = m_raw[i] ;
         pmap->save(dir.c_str());
     }
 }

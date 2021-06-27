@@ -57,12 +57,12 @@ GMaterial* CBndLib::getInnerMaterial(unsigned boundary)
 }
 
 
-GPropertyMap<float>* CBndLib::getOuterSurface(unsigned boundary)
+GPropertyMap<double>* CBndLib::getOuterSurface(unsigned boundary)
 {
     unsigned osur_ = m_blib->getOuterSurface(boundary);
     return m_slib->getSurface(osur_);
 }
-GPropertyMap<float>* CBndLib::getInnerSurface(unsigned boundary)
+GPropertyMap<double>* CBndLib::getInnerSurface(unsigned boundary)
 {
     unsigned isur_ = m_blib->getInnerSurface(boundary);
     return m_slib->getSurface(isur_);

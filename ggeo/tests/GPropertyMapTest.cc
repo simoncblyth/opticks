@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     assert(rsc); 
 
     const char* path = "$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy";
-    GProperty<float>* f2 = GProperty<float>::load(path);
+    GProperty<double>* f2 = GProperty<double>::load(path);
     if(!f2)
     {
         LOG(error) << " failed to load " << path ; 
@@ -53,11 +53,11 @@ int main(int argc, char** argv)
 
     f2->Summary("F2 ri", 100);
 
-    GDomain<float>* sd = GPropertyLib::getDefaultDomain();
+    GDomain<double>* sd = GPropertyLib::getDefaultDomain();
 
     const char* matname = "FlintGlass" ;
 
-    GPropertyMap<float>* pmap = new GPropertyMap<float>(matname);
+    GPropertyMap<double>* pmap = new GPropertyMap<double>(matname);
 
     pmap->setStandardDomain(sd);
 
@@ -65,14 +65,14 @@ int main(int argc, char** argv)
 
     pmap->addPropertyStandardized(ri, f2 );
    
-    GProperty<float>* rip = pmap->getProperty(ri);
+    GProperty<double>* rip = pmap->getProperty(ri);
     rip->save(TMPDIR, NULL, "f2.npy");
 
 
 
 
     std::string idir = BFile::CreateDir(TMPDIR, "GPropertyMapTest_Interpolated"); 
-    GPropertyMap<float>* imap = pmap->spawn_interpolated(1.f);
+    GPropertyMap<double>* imap = pmap->spawn_interpolated(1.f);
     imap->save(idir.c_str());
 
 
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     const char* matdir = mdir.c_str() ;
     pmap->save(matdir);
 
-    GPropertyMap<float>* qmap = GPropertyMap<float>::load(matdir, matname, "material");
+    GPropertyMap<double>* qmap = GPropertyMap<double>::load(matdir, matname, "material");
     assert(qmap);
     qmap->dump("qmap", 10);
 

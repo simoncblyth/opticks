@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     GSource* source = GSource::make_blackbody_source("D65", 0, 6500.f );    
     sl->add(source);
 
-    NPY<float>* buf = sl->createBuffer();
+    NPY<double>* buf = sl->createBuffer();
 
     buf->save("$TMP/ggeo/GSourceLibTest/gsrclib.npy");  // read by ana/planck.py 
 

@@ -105,7 +105,7 @@ void CPropLib::init()
         m_sensor_surface->Summary("CPropLib::init cathode_surface");
     }
 
-    m_dscale = float(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
+    m_dscale = double(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
 
     initCheckConstants(); 
 
@@ -118,12 +118,12 @@ void CPropLib::init()
 
 void CPropLib::initSetupOverrides()
 {
-    float yield = 10.f ; 
+    double yield = 10.f ; 
 
-    std::map<std::string, float>  gdls ; 
+    std::map<std::string, double>  gdls ; 
     gdls["SCINTILLATIONYIELD"] = yield ;  
 
-    std::map<std::string, float>  ls ; 
+    std::map<std::string, double>  ls ; 
     ls["SCINTILLATIONYIELD"] = yield ;  
 
     m_const_override["GdDopedLS"] = gdls ; 
@@ -189,12 +189,12 @@ G4OpticalSurface* CPropLib::makeOpticalSurface(const char* name)
     return os ; 
 }
 
-G4LogicalBorderSurface* CPropLib::makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, float effi, float refl)
+G4LogicalBorderSurface* CPropLib::makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, double effi, double refl)
 {
     G4OpticalSurface* os = makeOpticalSurface(name);
 
-    GProperty<float>* efficiency = m_mlib->makeConstantProperty(effi);
-    GProperty<float>* reflectivity = m_mlib->makeConstantProperty(refl);
+    GProperty<double>* efficiency = m_mlib->makeConstantProperty(effi);
+    GProperty<double>* reflectivity = m_mlib->makeConstantProperty(refl);
  
     G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
     addProperty(mpt, name, "EFFICIENCY" , efficiency );
@@ -218,8 +218,8 @@ G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysic
     G4OpticalSurface* os = makeOpticalSurface(name);
     os->SetType(dielectric_metal);
  
-    GProperty<float>* detect = m_sensor_surface->getProperty("detect"); assert(detect);
-    GProperty<float>* reflectivity = m_mlib->makeConstantProperty(0.f);
+    GProperty<double>* detect = m_sensor_surface->getProperty("detect"); assert(detect);
+    GProperty<double>* reflectivity = m_mlib->makeConstantProperty(0.f);
 
     G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
     addProperty(mpt, name, "EFFICIENCY" , detect );
@@ -305,7 +305,7 @@ Relevant discussion in:
 
 void CPropLib::addSensorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name )
 {
-    GPropertyMap<float>* surf = m_sensor_surface ; 
+    GPropertyMap<double>* surf = m_sensor_surface ; 
 
     if(!surf)
     {
@@ -328,7 +328,7 @@ void CPropLib::addSensorMaterialProperties( G4MaterialPropertiesTable* mpt, cons
 
     //surf->dump("transfer detect to EFFICIENCY");
 
-    GProperty<float>* detect = surf->getProperty("detect"); 
+    GProperty<double>* detect = surf->getProperty("detect"); 
     assert( detect ); 
 
     //addProperties(mpt, surf, "EFFICIENCY");
@@ -350,7 +350,7 @@ CPropLib::addScintillatorMaterialProperties
 
 void CPropLib::addScintillatorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name )
 {
-    GPropertyMap<float>* scintillator = m_sclib->getRaw(name);
+    GPropertyMap<double>* scintillator = m_sclib->getRaw(name);
     assert(scintillator && "non-zero reemission prob materials should has an associated raw scintillator");
     LOG(LEVEL) 
         << " found corresponding scintillator from sclib " 
@@ -378,7 +378,7 @@ identified by the _keys comma delimited list of local keys (eg EFFICIENCY)
 
 **/
 
-void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal, bool constant)
+void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<double>* pmap, const char* _keys, bool keylocal, bool constant)
 {
    
     std::vector<std::string> keys ; 
@@ -425,7 +425,7 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
         bool select = all ? true : std::find(keys.begin(), keys.end(), ukey) != keys.end() ;
         if(select)
         {
-            GProperty<float>* prop = pmap->getPropertyByIndex(i);
+            GProperty<double>* prop = pmap->getPropertyByIndex(i);
             if(constant)
                 addConstProperty(mpt, matname, ukey , prop );
             else
@@ -445,7 +445,7 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
 }
 
 
-void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop )
+void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<double>* prop )
 {
     if(!prop->isConstant())
     { 
@@ -453,11 +453,11 @@ void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matn
         return  ;
     }
 
-    float value = prop->getConstant();
+    double value = prop->getConstant();
 
     bool has_const_override = m_const_override.count(matname)==1 && m_const_override[matname].count(lkey) == 1 ; 
 
-    float uvalue =  has_const_override ? m_const_override[matname][lkey] : value ;  
+    double uvalue =  has_const_override ? m_const_override[matname][lkey] : value ;  
           
     if( value != uvalue )
     {
@@ -472,7 +472,7 @@ void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matn
     mpt->AddConstProperty(lkey, uvalue); 
 }
 
-void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop )
+void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<double>* prop )
 {
     // matname only used for debug dumping 
 
@@ -502,8 +502,8 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
 
     for(unsigned int j=0 ; j < nval ; j++)
     {
-        float fnm = prop->getDomain(j) ;
-        float fval = prop->getValue(j) ; 
+        double fnm = prop->getDomain(j) ;
+        double fval = prop->getValue(j) ; 
 
         G4double wavelength = G4double(fnm)*nm ; 
         G4double energy = h_Planck*c_light/wavelength ;
@@ -592,9 +592,9 @@ std::string CPropLib::getMaterialKeys_OLD(const G4Material* mat)
 
 
 
-GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, const char* name)
+GPropertyMap<double>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, const char* name)
 {    
-    GPropertyMap<float>* pmap = new GPropertyMap<float>(name);
+    GPropertyMap<double>* pmap = new GPropertyMap<double>(name);
 
     typedef G4MaterialPropertyVector MPV ; 
     bool warning ; 
@@ -608,7 +608,7 @@ GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, cons
         MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
         if(pvec == NULL) continue ; 
 
-        GProperty<float>* prop = convertVector(pvec);        
+        GProperty<double>* prop = convertVector(pvec);        
         pmap->addProperty( pname.c_str(), prop );  
     }   
 
@@ -627,8 +627,8 @@ GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, cons
         G4double pvalue = mpt->GetConstProperty(pidx);  
 
         // express standard Opticks nm range in MeV, and swap order
-        float dlow  = m_dscale/m_domain->getHigh() ; 
-        float dhigh = m_dscale/m_domain->getLow() ;  
+        double dlow  = m_dscale/m_domain->getHigh() ; 
+        double dhigh = m_dscale/m_domain->getLow() ;  
     
         LOG(info) << "CPropLib::convertTable" 
                   << " domlow (nm) "  << m_domain->getLow()  
@@ -639,7 +639,7 @@ GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, cons
                   ;
 
 
-        GProperty<float>* prop = GProperty<float>::from_constant(pvalue, dlow, dhigh );        
+        GProperty<double>* prop = GProperty<double>::from_constant(pvalue, dlow, dhigh );        
         pmap->addProperty( n.c_str(), prop );  
    }
    return pmap ;    
@@ -648,9 +648,9 @@ GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, cons
 
 
 
-GPropertyMap<float>* CPropLib::convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name)
+GPropertyMap<double>* CPropLib::convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name)
 {    
-    GPropertyMap<float>* pmap = new GPropertyMap<float>(name);
+    GPropertyMap<double>* pmap = new GPropertyMap<double>(name);
     
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ; 
     MKP* pm = mpt->GetPropertiesMap() ;
@@ -658,7 +658,7 @@ GPropertyMap<float>* CPropLib::convertTable_OLD(G4MaterialPropertiesTable* mpt, 
     {
         G4String k = it->first ; 
         G4MaterialPropertyVector* pvec = it->second ; 
-        GProperty<float>* prop = convertVector(pvec);        
+        GProperty<double>* prop = convertVector(pvec);        
         pmap->addProperty( k.c_str(), prop );  
    }
 
@@ -667,11 +667,11 @@ GPropertyMap<float>* CPropLib::convertTable_OLD(G4MaterialPropertiesTable* mpt, 
    for(MKC::const_iterator it=cmap->begin() ; it != cmap->end() ; it++)
    {
         G4String k = it->first ; 
-        float v = float(it->second) ;
+        double v = double(it->second) ;
 
         // express standard Opticks nm range in MeV, and swap order
-        float dlow  = m_dscale/m_domain->getHigh() ; 
-        float dhigh = m_dscale/m_domain->getLow() ;  
+        double dlow  = m_dscale/m_domain->getHigh() ; 
+        double dhigh = m_dscale/m_domain->getLow() ;  
 
         LOG(info) << "CPropLib::convertTable" 
                   << " domlow (nm) "  << m_domain->getLow()  
@@ -682,23 +682,23 @@ GPropertyMap<float>* CPropLib::convertTable_OLD(G4MaterialPropertiesTable* mpt, 
                   ;
 
 
-        GProperty<float>* prop = GProperty<float>::from_constant(v, dlow, dhigh );        
+        GProperty<double>* prop = GProperty<double>::from_constant(v, dlow, dhigh );        
         pmap->addProperty( k.c_str(), prop );  
    }
    return pmap ;    
 }
 
-GProperty<float>* CPropLib::convertVector(G4PhysicsVector* pvec)
+GProperty<double>* CPropLib::convertVector(G4PhysicsVector* pvec)
 {
     unsigned int length = pvec->GetVectorLength() ;
-    float* domain = new float[length] ;
-    float* values = new float[length] ;
+    double* domain = new double[length] ;
+    double* values = new double[length] ;
     for(unsigned int i=0 ; i < length ; i++)
     {
-         domain[i] = float(pvec->Energy(i)) ;
-         values[i] = float((*pvec)[i]) ;
+         domain[i] = double(pvec->Energy(i)) ;
+         values[i] = double((*pvec)[i]) ;
     }
-    GProperty<float>* prop = new GProperty<float>(values, domain, length );    
+    GProperty<double>* prop = new GProperty<double>(values, domain, length );    
 
     LOG(debug) << "CPropLib::convertVector" 
               << " raw domain  (MeV) " << domain[0] << " : " << domain[length-1] 

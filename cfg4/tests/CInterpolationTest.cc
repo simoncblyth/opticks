@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 
 
     // PROBABLY NOT NEEDED ANYMORE : DONE IN GBndLib::load 
-    NPY<float>* tex = blib->createBuffer();   // zipping together the dynamic buffer from materials and surfaces
+    NPY<double>* tex = blib->createBuffer();   // zipping together the dynamic buffer from materials and surfaces
     unsigned ndim = tex->getDimensions() ;
     assert( ndim == 5 );
 
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 
 
 
-    NPY<float>* out = NPY<float>::make(ni,nj,nk,nl,nm);
+    NPY<double>* out = NPY<double>::make(ni,nj,nk,nl,nm);
     out->fill(-1.f);  // align unset to -1.f
 
     LOG(info) 
@@ -126,8 +126,8 @@ int main(int argc, char** argv)
 
     glm::vec4 boundary_domain = Opticks::getDefaultDomainSpec() ;
 
-    float wlow = boundary_domain.x ; 
-    float wstep = interpolate ? 1.0f : boundary_domain.z ;   // 1.0f OR 20.0f  (nanometer)
+    double wlow = boundary_domain.x ; 
+    double wstep = interpolate ? 1.0f : boundary_domain.z ;   // 1.0f OR 20.0f  (nanometer)
 
     LOG(info) << " wlow " << wlow 
               << " wstep " << wstep 

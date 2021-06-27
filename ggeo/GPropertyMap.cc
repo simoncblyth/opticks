@@ -1130,8 +1130,14 @@ template class GPropertyMap<double>;
 
 template GGEO_API void GPropertyMap<float>::setMetaKV(const char* name, int value);
 template GGEO_API void GPropertyMap<float>::setMetaKV(const char* name, std::string value);
-//template GGEO_API void GPropertyMap<float>::setMetaKV(const char* name, const char* value);
+
+template GGEO_API void GPropertyMap<double>::setMetaKV(const char* name, int value);
+template GGEO_API void GPropertyMap<double>::setMetaKV(const char* name, std::string value);
 
 template GGEO_API int         GPropertyMap<float>::getMetaKV(const char* name, const char* fallback) const ;
 template GGEO_API std::string GPropertyMap<float>::getMetaKV(const char* name, const char* fallback) const ;
+
+template GGEO_API int         GPropertyMap<double>::getMetaKV(const char* name, const char* fallback) const ;
+template GGEO_API std::string GPropertyMap<double>::getMetaKV(const char* name, const char* fallback) const ;
+
 

@@ -87,7 +87,7 @@ void test_addTestMaterial(GMaterialLib* mlib)
 {
     // see GGeo::addTestMaterials
 
-    GProperty<float>* f2 = GProperty<float>::load("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
+    GProperty<double>* f2 = GProperty<double>::load("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
     if(f2)
     {
         f2->Summary("F2 ri", 100);
@@ -111,7 +111,7 @@ void test_setMaterialPropertyValues(GMaterialLib* mlib)
 
 void test_interpolatingCopyCtor(GMaterialLib* mlib)
 {
-    GDomain<float>* idom = mlib->getStandardDomain()->makeInterpolationDomain(1.f);
+    GDomain<double>* idom = mlib->getStandardDomain()->makeInterpolationDomain(1.f);
     GMaterialLib* ilib = new GMaterialLib(mlib, idom);
 
     ilib->dump("test_interpolatingCopyCtor (ilib)");

@@ -75,7 +75,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        friend class X4PhysicalVolume ; 
    public:
        // 4 standard material property names : interleaved into float4 wavelength texture
-       static const float MATERIAL_UNSET ; 
+       static const double MATERIAL_UNSET ; 
        static const char* propertyName(unsigned int k);
    public:
        static const char* refractive_index ; 
@@ -103,7 +103,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
    public:
        GMaterialLib(Opticks* ok, GMaterialLib* basis=NULL); 
    public:
-       GMaterialLib(GMaterialLib* other, GDomain<float>* domain=NULL, GMaterialLib* basis=NULL);  // interpolating copy ctor
+       GMaterialLib(GMaterialLib* other, GDomain<double>* domain=NULL, GMaterialLib* basis=NULL);  // interpolating copy ctor
    public:
        static void dump(GMaterial* mat, const char* msg);
        static void dump(GMaterial* mat);
@@ -113,22 +113,22 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        void dump(unsigned int index);
    private:
        void init();
-       void initInterpolatingCopy(GMaterialLib* src, GDomain<float>* domain);
+       void initInterpolatingCopy(GMaterialLib* src, GDomain<double>* domain);
    public:
        // concretization of GPropertyLib
-       void defineDefaults(GPropertyMap<float>* defaults); 
+       void defineDefaults(GPropertyMap<double>* defaults); 
        void import();
        void beforeClose(); 
        void postLoadFromCache();
-       bool setMaterialPropertyValues(const char* matname, const char* propname, float val); // post-import modification
+       bool setMaterialPropertyValues(const char* matname, const char* propname, double val); // post-import modification
 
-       NPY<float>* createBuffer();
+       NPY<double>* createBuffer();
        BMeta*      createMeta();
        GItemList*  createNames();
    private:
        void replaceGROUPVEL(bool debug=false);  // triggered in postLoadFromCache with --groupvel option
        void importForTex2d();
-       NPY<float>* createBufferForTex2d();
+       template <typename T> NPY<T>* createBufferForTex2d();
    public:
        // lifecycle
        void add(GMaterial* material);
@@ -138,12 +138,6 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        bool order_by_preference(const GMaterial& a_, const GMaterial& b_);
        bool order_by_srcidx(    const GMaterial& a_, const GMaterial& b_);
        bool operator()(const GMaterial& a_, const GMaterial& b_);
-#ifdef OLD_CATHODE
-    public:
-        void setCathode(GMaterial* cathode);
-        GMaterial* getCathode() const ;  
-        const char* getCathodeMaterialName() const ;
-#endif
     private:
         void addSensitiveMaterial(GMaterial* cathode);
     public:
@@ -167,9 +161,9 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        GMaterial* getMaterial(unsigned i) const ; // zero based index
        GMaterial* getMaterialWithIndex(unsigned aindex) const ;  
        unsigned  getMaterialIndex(const char* name) const ;    // without triggering a close
-       GPropertyMap<float>* findMaterial(const char* shortname) const ; 
-       GPropertyMap<float>* findRawMaterial(const char* shortname) const ; 
-       GProperty<float>* findRawMaterialProperty(const char* shortname, const char* propname) const ;
+       GPropertyMap<double>* findMaterial(const char* shortname) const ; 
+       GPropertyMap<double>* findRawMaterial(const char* shortname) const ; 
+       GProperty<double>* findRawMaterialProperty(const char* shortname, const char* propname) const ;
        void dumpRawMaterialProperties(const char* msg) const ;
        std::vector<GMaterial*> getRawMaterialsWithProperties(const char* props, char delim) const ;
    public:
@@ -183,20 +177,14 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        GMaterial*  makeRaw(const char* name);
    private:
        // post-cache
-       void import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
+       void import( GMaterial* mat, double* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
    private:
        std::vector<GMaterial*>       m_materials ; 
        std::vector<GMaterial*>       m_materials_raw ; 
 
        GMaterialLib*   m_basis ; 
 
-#ifdef OLD_CATHODE
-       GMaterial*      m_cathode ; 
-       const char*     m_cathode_material_name ; 
-#endif
-
        std::vector<GMaterial*> m_sensitive_materials ;
-
 
        MaterialOrder_t m_material_order ; 
 

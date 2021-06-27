@@ -108,7 +108,9 @@ void OBndLib::convert()
 
     m_blib->createDynamicBuffers();
 
-    NPY<float>* orig = m_blib->getBuffer() ;  // (123, 4, 2, 39, 4)
+    NPY<double>* orig_d = m_blib->getBuffer() ;  // (123, 4, 2, 39, 4)
+
+    NPY<float>* orig = NPY<double>::MakeFloat(orig_d ); 
 
     assert(orig && "OBndLib::convert orig buffer NULL");
 

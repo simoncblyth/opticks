@@ -27,11 +27,11 @@
 #include "GSource.hh"
 
 
-GSource::GSource(GSource* other) : GPropertyMap<float>(other)
+GSource::GSource(GSource* other) : GPropertyMap<double>(other)
 {
 }
 
-GSource::GSource(const char* name, unsigned int index) : GPropertyMap<float>(name, index, "source")
+GSource::GSource(const char* name, unsigned int index) : GPropertyMap<double>(name, index, "source")
 {
    init();
 }
@@ -42,22 +42,22 @@ GSource::~GSource()
 
 void GSource::Summary(const char* msg )
 {
-    GPropertyMap<float>::Summary(msg);
+    GPropertyMap<double>::Summary(msg);
 }
 
 
 void GSource::init()
 {
-    GDomain<float>* sd = GPropertyLib::getDefaultDomain();
+    GDomain<double>* sd = GPropertyLib::getDefaultDomain();
     setStandardDomain(sd);
 }
 
 
-GSource* GSource::make_blackbody_source(const char* name, unsigned int index, float /*kelvin*/)
+GSource* GSource::make_blackbody_source(const char* name, unsigned int index, double /*kelvin*/)
 {
     GSource* source = new GSource(name, index);
 
-    GProperty<float>* radiance = GProperty<float>::planck_spectral_radiance( source->getStandardDomain(), 6500.f );
+    GProperty<double>* radiance = GProperty<double>::planck_spectral_radiance( source->getStandardDomain(), 6500. );
 
     assert(radiance) ;
 

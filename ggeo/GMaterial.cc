@@ -21,22 +21,22 @@
 #include "GDomain.hh"
 #include "GPropertyLib.hh"
 
-GMaterial::GMaterial(GMaterial* other, GDomain<float>* domain ) 
+GMaterial::GMaterial(GMaterial* other, GDomain<double>* domain ) 
     : 
-    GPropertyMap<float>(other, domain)
+    GPropertyMap<double>(other, domain)
 {
 }
 
 GMaterial::GMaterial(const char* name, unsigned int index) 
     : 
-    GPropertyMap<float>(name, index, "material")
+    GPropertyMap<double>(name, index, "material")
 {
     init();
 }
 
 void GMaterial::init()
 {
-    setStandardDomain( GDomain<float>::GetDefaultDomain()) ;   
+    setStandardDomain( GDomain<double>::GetDefaultDomain()) ;   
 }
 
 GMaterial::~GMaterial()
@@ -45,7 +45,7 @@ GMaterial::~GMaterial()
 
 void GMaterial::Summary(const char* msg )
 {
-    GPropertyMap<float>::Summary(msg);
+    GPropertyMap<double>::Summary(msg);
 }
 
 

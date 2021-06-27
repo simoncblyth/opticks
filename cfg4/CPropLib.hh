@@ -87,7 +87,7 @@ class CFG4_API CPropLib {
        std::string getMaterialKeys(const G4Material* mat);
        std::string getMaterialKeys_OLD(const G4Material* mat);
    public:
-       G4LogicalBorderSurface* makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, float effi=0.f, float refl=0.f);
+       G4LogicalBorderSurface* makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, double effi=0.f, double refl=0.f);
        G4LogicalBorderSurface* makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2);
    private:
        G4OpticalSurface* makeOpticalSurface(const char* name);
@@ -97,12 +97,12 @@ class CFG4_API CPropLib {
        G4MaterialPropertiesTable* makeMaterialPropertiesTable(const GMaterial* kmat);
 
    protected:
-       void addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal=true, bool constant=false);
-       void addProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop );
-       void addConstProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop );
-       GProperty<float>* convertVector(G4PhysicsVector* pvec);
-       GPropertyMap<float>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
-       GPropertyMap<float>* convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name);
+       void addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<double>* pmap, const char* _keys, bool keylocal=true, bool constant=false);
+       void addProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<double>* prop );
+       void addConstProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<double>* prop );
+       GProperty<double>* convertVector(G4PhysicsVector* pvec);
+       GPropertyMap<double>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
+       GPropertyMap<double>* convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name);
    private:
        void addSensorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name ); 
        void addScintillatorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name ); 
@@ -115,12 +115,12 @@ class CFG4_API CPropLib {
        GMaterialLib*      m_mlib ; 
        GSurfaceLib*       m_slib ; 
        GScintillatorLib*  m_sclib ; 
-       GDomain<float>*    m_domain ; 
-       float              m_dscale ;  
+       GDomain<double>*    m_domain ; 
+       double              m_dscale ;  
        plog::Severity     m_level ; 
-       GPropertyMap<float>* m_sensor_surface ; 
+       GPropertyMap<double>* m_sensor_surface ; 
    private:
-       std::map<std::string, std::map<std::string, float> > m_const_override ; 
+       std::map<std::string, std::map<std::string, double> > m_const_override ; 
 
 };
 #include "CFG4_TAIL.hh"

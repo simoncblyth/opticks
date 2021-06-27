@@ -118,7 +118,7 @@ void CSurfaceLib::convert(CDetector* detector, bool exclude_sensors)
 
     for(unsigned i=0 ; i < num_surf ; i++)
     {   
-        GPropertyMap<float>* surf = m_surfacelib->getSurface(i);
+        GPropertyMap<double>* surf = m_surfacelib->getSurface(i);
         const char* name = surf->getName(); 
         bool is_sensor_surface = GSurfaceLib::NameEndsWithSensorSurface( name ) ; 
 
@@ -156,7 +156,7 @@ void CSurfaceLib::convert(CDetector* detector, bool exclude_sensors)
 }
 
 
-G4OpticalSurface* CSurfaceLib::makeOpticalSurface(GPropertyMap<float>* surf )
+G4OpticalSurface* CSurfaceLib::makeOpticalSurface(GPropertyMap<double>* surf )
 {
     GOpticalSurface* os_ = surf->getOpticalSurface();
 
@@ -177,7 +177,7 @@ G4OpticalSurface* CSurfaceLib::makeOpticalSurface(GPropertyMap<float>* surf )
 
     // fixed value omission : see notes/issues/ab-surf1.rst
     unsigned upercent = optical.w ; 
-    float value = float(upercent)/100.f ; 
+    double value = double(upercent)/100.f ; 
 
     LOG(verbose) 
         << " upercent (optical.w) " << upercent
@@ -209,7 +209,7 @@ G4OpticalSurface* CSurfaceLib::makeOpticalSurface(GPropertyMap<float>* surf )
 
 
 // lookup G4 pv1,pv2 from volume indices recorded in pairs
-G4LogicalBorderSurface* CSurfaceLib::makeBorderSurface(GPropertyMap<float>* surf, G4OpticalSurface* os)
+G4LogicalBorderSurface* CSurfaceLib::makeBorderSurface(GPropertyMap<double>* surf, G4OpticalSurface* os)
 {
     const char* name = surf->getName() ;
 
@@ -249,7 +249,7 @@ G4LogicalBorderSurface* CSurfaceLib::makeBorderSurface(GPropertyMap<float>* surf
 
 
 // lookup G4 lv via name 
-G4LogicalSkinSurface* CSurfaceLib::makeSkinSurface(GPropertyMap<float>* surf, G4OpticalSurface* os)
+G4LogicalSkinSurface* CSurfaceLib::makeSkinSurface(GPropertyMap<double>* surf, G4OpticalSurface* os)
 {
     const char* name = surf->getName() ;
     std::string sslv = surf->getSSLV() ;
@@ -273,7 +273,7 @@ G4LogicalSkinSurface* CSurfaceLib::makeSkinSurface(GPropertyMap<float>* surf, G4
 
 
 
-void CSurfaceLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>* pmap)
+void CSurfaceLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<double>* pmap)
 {
     /**
     Property values hail from GSurfaceLib::createStandardSurface  
@@ -290,10 +290,10 @@ void CSurfaceLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<fl
     //const char* name = pmap->getShortName();
     //LOG(info) << "CSurfaceLib::addProperties " << name ;  
 
-    GProperty<float>* detect = pmap->getProperty(GSurfaceLib::detect);
-    GProperty<float>* absorb = pmap->getProperty(GSurfaceLib::absorb);
-    GProperty<float>* specular = pmap->getProperty(GSurfaceLib::reflect_specular);
-    GProperty<float>* diffuse = pmap->getProperty(GSurfaceLib::reflect_diffuse);
+    GProperty<double>* detect = pmap->getProperty(GSurfaceLib::detect);
+    GProperty<double>* absorb = pmap->getProperty(GSurfaceLib::absorb);
+    GProperty<double>* specular = pmap->getProperty(GSurfaceLib::reflect_specular);
+    GProperty<double>* diffuse = pmap->getProperty(GSurfaceLib::reflect_diffuse);
 
     bool is_sensor = pmap->isSensor();   // ?? always false 
     bool is_specular = os_->isSpecular();

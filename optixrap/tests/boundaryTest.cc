@@ -76,7 +76,10 @@ int main(int argc, char** argv)
     blib->createDynamicBuffers();
 
 
-    NPY<float>* ori = blib->getBuffer() ; 
+    NPY<double>* d_ori = blib->getBuffer() ; 
+
+    NPY<float>* ori = NPY<double>::MakeFloat(d_ori ); 
+
     ori->save(TMPDIR, "ori.npy");
 
     //bool use_debug_buffer = true ;  

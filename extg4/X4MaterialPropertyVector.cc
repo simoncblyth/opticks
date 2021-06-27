@@ -2,7 +2,6 @@
 #include "X4MaterialPropertyVector.hh"
 #include "NPY.hpp"
 
-
 G4MaterialPropertyVector* X4MaterialPropertyVector::FromArray(const NPY<double>* arr)
 {
     size_t ni = arr->getShape(0); 
@@ -30,8 +29,12 @@ X4MaterialPropertyVector::X4MaterialPropertyVector(const G4MaterialPropertyVecto
 {
 }
 
-
 template <typename T> NPY<T>* X4MaterialPropertyVector::convert() 
+{
+    return Convert<T>(vec); 
+}
+
+template <typename T> NPY<T>* X4MaterialPropertyVector::Convert(const G4MaterialPropertyVector* vec) 
 {
     size_t num_val = vec->GetVectorLength() ; 
     NPY<T>* a = NPY<T>::make( num_val, 2 );  
@@ -48,10 +51,9 @@ template <typename T> NPY<T>* X4MaterialPropertyVector::convert()
     return a ;   
 }
 
-
 template NPY<float>*  X4MaterialPropertyVector::convert() ; 
 template NPY<double>* X4MaterialPropertyVector::convert() ; 
 
-
-
+template NPY<float>*  X4MaterialPropertyVector::Convert(const G4MaterialPropertyVector* vec) ; 
+template NPY<double>* X4MaterialPropertyVector::Convert(const G4MaterialPropertyVector* vec) ; 
 

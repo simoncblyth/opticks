@@ -47,10 +47,10 @@ void test_CMPT(CMaterialLib* clib)
 void test_MaterialValueMap(CMaterialLib* clib)
 {
 
-    std::map<std::string, float> vmp ; 
+    std::map<std::string, double> vmp ; 
     const char* matnames = "GdDopedLS,Acrylic,LiquidScintillator,Acrylic,MineralOil" ; 
     const char* lkey = "GROUPVEL" ; 
-    float nm = 430.f ; 
+    double nm = 430.f ; 
 
    //  now done standardly in postconvert
 
@@ -82,7 +82,7 @@ void test_GroupvelLookup_failing(CMaterialLib* clib)
     // this functionality was only used for debugging, i recall ??
     // now failing due to change to finer sampling ?
 
-    float groupvel =  197.149f ;
+    double groupvel =  197.149f ;
     std::string mat = clib->firstMaterialWithGroupvelAt430nm( groupvel, 0.001f );
     LOG(info) << "lookup by groupvel value " << groupvel << " yields mat " << mat ; 
 

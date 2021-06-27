@@ -89,17 +89,17 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        static const char* NameWithoutSensorSurface(const char* name);
 
        static const char*  SENSOR_SURFACE ;
-       static float        SURFACE_UNSET ; 
+       static double        SURFACE_UNSET ; 
        static const char* keyspec ;
    public:
        void save();
        static GSurfaceLib* load(Opticks* ok);
    public:
        GSurfaceLib(Opticks* ok, GSurfaceLib* basis=NULL); 
-       GSurfaceLib(GSurfaceLib* other, GDomain<float>* domain=NULL, GSurfaceLib* basis=NULL );  // interpolating copy ctor
+       GSurfaceLib(GSurfaceLib* other, GDomain<double>* domain=NULL, GSurfaceLib* basis=NULL );  // interpolating copy ctor
    private:
        void init();
-       void initInterpolatingCopy(GSurfaceLib* src, GDomain<float>* domain);
+       void initInterpolatingCopy(GSurfaceLib* src, GDomain<double>* domain);
 
     public:
         //  
@@ -110,15 +110,15 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
 
    private:
         // methods to assist with de-conflation of surface props and location
-        void                  addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2, bool direct );
-        void                  addSkinSurface(  GPropertyMap<float>* surf, const char* sslv_, bool direct );
+        void                  addBorderSurface(GPropertyMap<double>* surf, const char* pv1, const char* pv2, bool direct );
+        void                  addSkinSurface(  GPropertyMap<double>* surf, const char* sslv_, bool direct );
 
-        void                  addStandardized(GPropertyMap<float>* surf);
-        GPropertyMap<float>*  createStandardSurface(GPropertyMap<float>* src);
-        void                  addDirect(GPropertyMap<float>* surf);
+        void                  addStandardized(GPropertyMap<double>* surf);
+        GPropertyMap<double>*  createStandardSurface(GPropertyMap<double>* src);
+        void                  addDirect(GPropertyMap<double>* surf);
 
-        guint4                createOpticalSurface(GPropertyMap<float>* src);
-        bool                  checkSurface( GPropertyMap<float>* surf);
+        guint4                createOpticalSurface(GPropertyMap<double>* src);
+        bool                  checkSurface( GPropertyMap<double>* surf);
 
 
    public:
@@ -130,58 +130,57 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        std::string descImplicitBorderSurfaces() const ; 
 
 
-       void dump(GPropertyMap<float>* surf);
-       void dump(GPropertyMap<float>* surf, const char* msg);
+       void dump(GPropertyMap<double>* surf);
+       void dump(GPropertyMap<double>* surf, const char* msg);
        void dump(unsigned int index);
        std::string desc() const ; 
    public:
        void collectSensorIndices();
    public:
        // concretization of GPropertyLib
-       void        defineDefaults(GPropertyMap<float>* defaults); 
-       NPY<float>* createBuffer();
+       void        defineDefaults(GPropertyMap<double>* defaults); 
+       NPY<double>* createBuffer();
        BMeta*      createMeta();
        GItemList*  createNames();
    public:
-       NPY<float>* createBufferForTex2d();
-       NPY<float>* createBufferOld();
+       template<typename T> NPY<T>* createBufferForTex2d();
    public:
       // methods for debug
-       void setFakeEfficiency(float fake_efficiency);
+       void setFakeEfficiency(double fake_efficiency);
        void addPerfectSurfaces();
 
-       GPropertyMap<float>* makePerfect(const char* name, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_);
+       GPropertyMap<double>* makePerfect(const char* name, double detect_, double absorb_, double reflect_specular_, double reflect_diffuse_);
     private: 
-       void                 addPerfectProperties( GPropertyMap<float>* dst, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_ );
+       void                 addPerfectProperties( GPropertyMap<double>* dst, double detect_, double absorb_, double reflect_specular_, double reflect_diffuse_ );
 
    public:
-       GPropertyMap<float>* makeImplicitBorderSurface_RINDEX_NoRINDEX(const char* name, const char* pv1, const char* pv2 ) ;
+       GPropertyMap<double>* makeImplicitBorderSurface_RINDEX_NoRINDEX(const char* name, const char* pv1, const char* pv2 ) ;
 
    public:
         GSurfaceLib* getBasis() const ;
         void         setBasis(GSurfaceLib* basis);
 
         // used from GGeoTest 
-        GPropertyMap<float>* getBasisSurface(const char* name) const ; 
+        GPropertyMap<double>* getBasisSurface(const char* name) const ; 
         void relocateBasisBorderSurface(const char* name, const char* bpv1, const char* bpv2);
         void relocateBasisSkinSurface(const char* name, const char* sslv);
 
    public:
        void sort();
-       bool operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_);
+       bool operator()(const GPropertyMap<double>* a_, const GPropertyMap<double>* b_);
    public:
        guint4               getOpticalSurface(unsigned int index);  // zero based index
-       GPropertyMap<float>* getSensorSurface(unsigned int offset=0);  // 0: first, 1:second 
+       GPropertyMap<double>* getSensorSurface(unsigned int offset=0);  // 0: first, 1:second 
        unsigned             getNumSensorSurface() const ; 
    public:
        // Check for a surface of specified name of index in m_surfaces vector
        // NB: changed behaviour, formerly named access only worked after closing
        // the lib as used the names buffer     
-       GPropertyMap<float>* getSurface(unsigned int index) const ;         // zero based index
-       GPropertyMap<float>* getSurface(const char* name) const ;        
+       GPropertyMap<double>* getSurface(unsigned int index) const ;         // zero based index
+       GPropertyMap<double>* getSurface(const char* name) const ;        
        bool                 hasSurface(unsigned int index) const ; 
        bool                 hasSurface(const char* name) const ; 
-       GProperty<float>*    getSurfaceProperty(const char* name, const char* prop) const ;
+       GProperty<double>*    getSurfaceProperty(const char* name, const char* prop) const ;
 
 
    public:
@@ -200,7 +199,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void dumpMeta(const char* msg="GSurfaceLib::dumpMeta") const ;
        void importOld();
        void importForTex2d();
-       void import( GPropertyMap<float>* surf, float* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
+       void import( GPropertyMap<double>* surf, double* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
 
    public:
        unsigned            getNumSurfaces() const ;  // m_surfaces
@@ -229,7 +228,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
 
    private:
        // primary vector of standardized surfaces, info from which is destined for the GPU texture
-       std::vector<GPropertyMap<float>*>       m_surfaces ; 
+       std::vector<GPropertyMap<double>*>       m_surfaces ; 
 
    private:
        // vectors of non-standardized "input" differentiated surfaces
@@ -243,7 +242,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        std::vector<GBorderSurface*>            m_border_surfaces_raw ; 
 
    private:
-       float                                   m_fake_efficiency ; 
+       double                                   m_fake_efficiency ; 
        NPY<unsigned int>*                      m_optical_buffer ; 
        GSurfaceLib*                            m_basis ; 
        bool                                    m_dbgsurf ; 

@@ -60,7 +60,7 @@ class CFG4_API CMPT {
        // adds domain and value of prop, assumes prop domain is in ascending nm 
        // (as typically used for optical properties) and thus the order is  
        // reversed to yield energy ascending order and domain is converted to eV 
-       void addProperty(const char* lkey,  GProperty<float>* prop, bool spline);
+       void addProperty(const char* lkey,  GProperty<double>* prop, bool spline);
    public:
        void dumpRaw(const char* lkey);
    public:
@@ -68,16 +68,16 @@ class CFG4_API CMPT {
        static void Dump_OLD(G4MaterialPropertiesTable* mpt, const char* msg="CMPT::Dump"); 
        void dump(const char* msg="CMPT::dump") const; 
        void dumpProperty(const char* lkey);
-       void sample(NPY<float>* a, unsigned offset, const char* _keys, float low, float step, unsigned nstep );
-       void sampleSurf(NPY<float>* a, unsigned offset, float low, float step, unsigned nstep, bool specular );
+       void sample(NPY<double>* a, unsigned offset, const char* _keys, double low, double step, unsigned nstep );
+       void sampleSurf(NPY<double>* a, unsigned offset, double low, double step, unsigned nstep, bool specular );
 
-       GProperty<double>* makeProperty(const char* key, float low, float step, unsigned nstep);
+       GProperty<double>* makeProperty(const char* key, double low, double step, unsigned nstep);
        G4PhysicsOrderedFreeVector* getVec(const char* lkey) const ;
        CVec* getCVec(const char* lkey) const ;
 
        unsigned splitKeys(std::vector<std::string>& keys, const char* _keys);
        unsigned getVecLength(const char* _keys);
-       NPY<float>* makeArray(const char* _keys, bool reverse=true);
+       NPY<double>* makeArray(const char* _keys, bool reverse=true);
 
 
        std::string description(const char* msg);

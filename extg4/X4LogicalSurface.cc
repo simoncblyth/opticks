@@ -31,7 +31,7 @@
 
 const plog::Severity X4LogicalSurface::LEVEL = PLOG::EnvLevel("X4LogicalSurface","DEBUG") ; 
 
-void X4LogicalSurface::Convert(GPropertyMap<float>* dst,  const G4LogicalSurface* src)
+void X4LogicalSurface::Convert(GPropertyMap<double>* dst,  const G4LogicalSurface* src)
 {
     LOG(LEVEL) << "[" ; 
     const G4SurfaceProperty*  psurf = src->GetSurfaceProperty() ;   

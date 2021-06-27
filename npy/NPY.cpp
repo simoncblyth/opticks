@@ -1321,16 +1321,15 @@ template <typename T>
 NPY<T>* NPY<T>::make(const NPYSpec* argspec)
 {
     std::vector<int> shape ; 
-    for(unsigned int x=0 ; x < 4 ; x++)
+    // i j k l m n
+    for(unsigned d=0 ; d < NPYSpec::MAX_DIM ; d++)
     {
-        unsigned int nx = argspec->getDimension(x) ;
-        if(x == 0 || nx > 0) shape.push_back(nx) ;
-        // only 1st dimension zero is admissable
+        unsigned nd = argspec->getDimension(d) ;
+        if(d == 0 || nd > 0) shape.push_back(nd) ;  // only 1st dimension zero is admissable
     }
 
     NPY<T>* npy = make(shape);
     const NPYSpec* npyspec = npy->getShapeSpec(); 
-
     bool spec_match = npyspec->isEqualTo(argspec) ;
 
     if(!spec_match)
@@ -1989,6 +1988,48 @@ NPY<T>* NPY<T>::make_dbg_like(NPY<T>* src, int label_)
 
     return dst ; 
 }
+
+
+
+
+
+template <typename T>
+NPY<float>* NPY<T>::MakeFloat(const NPY<T>* src )
+{
+    const NPYSpec* argspec = src->getShapeSpec()->cloneAsFloat() ; 
+    NPY<float>* dst = NPY<float>::make(argspec); 
+    dst->zero(); 
+    unsigned nv = src->getNumValues(0) ; 
+    LOG(info) << " nv " << nv ; 
+    for(unsigned idx=0 ; idx < nv ; idx++) 
+    {
+        T value = src->getValueFlat(idx); 
+        dst->setValueFlat(idx, float(value));
+    }
+    return dst ; 
+} 
+
+
+template <typename T>
+NPY<double>* NPY<T>::MakeDouble(const NPY<T>* src )
+{
+    const NPYSpec* argspec = src->getShapeSpec()->cloneAsDouble() ; 
+    NPY<double>* dst = NPY<double>::make(argspec); 
+    dst->zero(); 
+    unsigned nv = src->getNumValues(0) ; 
+    LOG(info) << " nv " << nv ; 
+    for(unsigned idx=0 ; idx < nv ; idx++) 
+    {
+        T value = src->getValueFlat(idx); 
+        dst->setValueFlat(idx, double(value));
+    }
+    return dst ; 
+} 
+
+
+
+
+
 
 
 /**
@@ -2752,9 +2793,9 @@ BBufSpec* NPY<T>::getBufSpec()
 }
 
 template <typename T> 
-T NPY<T>::getValue( int i,  int j,  int k,  int l) const 
+T NPY<T>::getValue( int i,  int j,  int k,  int l, int m) const 
 {
-    unsigned int idx = getValueIndex(i,j,k,l);
+    unsigned idx = getValueIndex(i,j,k,l,m);
     return getValueFlat(idx); 
 }
 
@@ -3081,16 +3122,16 @@ setQuad : same type quad setters
 **/
 
 template <typename T> 
-void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, float z, float w )
+void NPY<T>::setQuad(unsigned i, unsigned j, T x, T y, T z, T w )
 {
-    glm::vec4 vec(x,y,z,w); 
-    setQuad(vec, i, j);
+    glm::tvec4<T> vec(x,y,z,w); 
+    setQuad_(vec, i, j);
 }
 template <typename T> 
- void NPY<T>::setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y, float z, float w )
+ void NPY<T>::setQuad(unsigned i, unsigned j, unsigned k, T x, T y, T z, T w )
 {
-    glm::vec4 vec(x,y,z,w); 
-    setQuad(vec, i, j, k);
+    glm::tvec4<T> vec(x,y,z,w); 
+    setQuad_(vec, i, j, k);
 }
 
 template <typename T> 

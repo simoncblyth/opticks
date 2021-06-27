@@ -53,6 +53,18 @@ NPYSpec* NPYSpec::clone() const
 {
     return new NPYSpec(m_name, m_ni, m_nj, m_nk, m_nl, m_nm, m_type, m_ctrl, m_optional );
 }
+
+NPYSpec* NPYSpec::cloneAsFloat() const 
+{
+    return new NPYSpec(m_name, m_ni, m_nj, m_nk, m_nl, m_nm, NPYBase::FLOAT, m_ctrl, m_optional );
+}
+
+NPYSpec* NPYSpec::cloneAsDouble() const 
+{
+    return new NPYSpec(m_name, m_ni, m_nj, m_nk, m_nl, m_nm, NPYBase::DOUBLE, m_ctrl, m_optional );
+}
+
+
 void NPYSpec::setNumItems(unsigned ni)
 {
     m_ni = ni ; 
@@ -62,6 +74,17 @@ NPYBase::Type_t NPYSpec::getType() const
 { 
     return m_type ;
 }
+
+void NPYSpec::setType(NPYBase::Type_t type) 
+{
+    m_type = type ;   
+}
+
+void NPYSpec::setFLOAT()
+{
+    setType(NPYBase::FLOAT);
+}
+
 
 const char* NPYSpec::getCtrl() const 
 {
@@ -111,8 +134,11 @@ const char* NPYSpec::getTypeName() const
     return NPYBase::TypeName(m_type);
 }
 
+const unsigned NPYSpec::MAX_DIM = 5 ; 
+
 unsigned int NPYSpec::getDimension(unsigned int i) const 
 {
+    assert( i < MAX_DIM ); 
     switch(i)
     {
         case 0:return m_ni; break;

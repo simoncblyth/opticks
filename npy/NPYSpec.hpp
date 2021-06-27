@@ -28,12 +28,20 @@
 
 class NPY_API NPYSpec {
    public:
+        static const unsigned MAX_DIM ; 
+   public:
         NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm, NPYBase::Type_t type, const char* ctrl, bool optional=false, int verbosity=0);
         void setNumItems(unsigned ni) ; 
         virtual ~NPYSpec(); 
 
         NPYSpec* clone() const ; 
+        NPYSpec* cloneAsFloat() const ; 
+        NPYSpec* cloneAsDouble() const ; 
+
         NPYBase::Type_t getType() const ;
+
+        void setType(NPYBase::Type_t type) ;
+        void setFLOAT(); 
 
         const char*     getName() const ;
         const char*     getTypeName() const ;

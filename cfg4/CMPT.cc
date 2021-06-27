@@ -436,7 +436,7 @@ wavelength to energy swap.
 
 **/
 
-void CMPT::addProperty(const char* lkey,  GProperty<float>* prop, bool spline)
+void CMPT::addProperty(const char* lkey,  GProperty<double>* prop, bool spline)
 {
     unsigned int nval  = prop->getLength();
 
@@ -450,8 +450,8 @@ void CMPT::addProperty(const char* lkey,  GProperty<float>* prop, bool spline)
 
     for(unsigned int j=0 ; j < nval ; j++)
     {
-        float fnm = prop->getDomain(j) ;
-        float fval = prop->getValue(j) ; 
+        double fnm = prop->getDomain(j) ;
+        double fval = prop->getValue(j) ; 
 
         // cf CInputPhotonSource::convertPhoton
 
@@ -549,13 +549,13 @@ unsigned CMPT::splitKeys(std::vector<std::string>& keys, const char* _keys)
 }
 
 
-NPY<float>* CMPT::makeArray(const char* _keys, bool reverse)
+NPY<double>* CMPT::makeArray(const char* _keys, bool reverse)
 {
     unsigned vlen = getVecLength(_keys);
     std::vector<std::string> keys ; 
     unsigned nkey = splitKeys(keys, _keys);
  
-    NPY<float>* vals = NPY<float>::make(nkey, vlen, 4);
+    NPY<double>* vals = NPY<double>::make(nkey, vlen, 4);
     vals->zero();
 
     for(unsigned i=0 ; i < nkey ; i++ )
@@ -571,10 +571,10 @@ NPY<float>* CMPT::makeArray(const char* _keys, bool reverse)
             G4double wl = h_Planck*c_light/en ;
             G4double vl =  (*v)[jj] ;
 
-            float x = en/eV ; 
-            float y = wl/nm ;
-            float z = vl ; 
-            float w = 0.f ; 
+            double x = en/eV ; 
+            double y = wl/nm ;
+            double z = vl ; 
+            double w = 0.f ; 
 
             vals->setQuad(i, j, x, y, z, w );
         }
@@ -653,7 +653,7 @@ CVec* CMPT::getCVec(const char* lkey) const
 
 
 
-void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, float step, unsigned nstep )
+void CMPT::sample(NPY<double>* a, unsigned offset, const char* _keys, double low, double step, unsigned nstep )
 {
    // CAUTION: used by cfg4/tests/CInterpolationTest.cc 
 
@@ -665,9 +665,9 @@ void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, 
     unsigned ndim = a->getDimensions() ;
     assert(ndim == 5);
     unsigned nl = a->getShape(3);
-    unsigned nm_ = a->getShape(4);  // 4 corresponding to float4 of props used in tex 
+    unsigned nm_ = a->getShape(4);  // 4 corresponding to double4 of props used in tex 
 
-    float* values = a->getValues() + offset ;
+    double* values = a->getValues() + offset ;
 
 
     assert( nl == nstep );
@@ -702,7 +702,7 @@ void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, 
  Mapping from G4 props to Opticks detect/absorb/reflect_specular/reflect_diffuse is non-trivial
 **/
 
-GProperty<double>* CMPT::makeProperty(const char* key, float low, float step, unsigned nstep)
+GProperty<double>* CMPT::makeProperty(const char* key, double low, double step, unsigned nstep)
 {
     G4PhysicsOrderedFreeVector* vec = key == NULL ? NULL : getVec(key);
 
@@ -721,7 +721,7 @@ GProperty<double>* CMPT::makeProperty(const char* key, float low, float step, un
 
 
 
-void CMPT::sampleSurf(NPY<float>* a, unsigned offset, float low, float step, unsigned nstep, bool specular)
+void CMPT::sampleSurf(NPY<double>* a, unsigned offset, double low, double step, unsigned nstep, bool specular)
 {
    // used from cfg4/tests/CInterpolationTest.cc
 
@@ -736,10 +736,10 @@ void CMPT::sampleSurf(NPY<float>* a, unsigned offset, float low, float step, uns
 
     unsigned ndim = a->getDimensions() ;
     assert(ndim == 5);
-    float* values = a->getValues() + offset ;
+    double* values = a->getValues() + offset ;
 
     unsigned nl = a->getShape(3);
-    unsigned nm_ = a->getShape(4);  // 4 corresponding to float4 of props used in tex 
+    unsigned nm_ = a->getShape(4);  // 4 corresponding to double4 of props used in tex 
     assert( nl == nstep );
     assert( nm_ == 4 );
 
@@ -787,7 +787,7 @@ void CMPT::sampleSurf(NPY<float>* a, unsigned offset, float low, float step, uns
     {
         for(unsigned m=0 ; m < nm_ ; m++)
         {
-            float value = 0 ; 
+            double value = 0 ; 
             switch(m)
             { 
                 case 0:  value = _detect   ? _detect->getValue(l) : 0.f ; break ; 

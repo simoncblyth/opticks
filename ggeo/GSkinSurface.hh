@@ -28,7 +28,7 @@ class GOpticalSurface ;
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
-class GGEO_API GSkinSurface : public GPropertyMap<float> {
+class GGEO_API GSkinSurface : public GPropertyMap<double> {
   public:
       GSkinSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface);
       virtual ~GSkinSurface();

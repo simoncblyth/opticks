@@ -529,7 +529,7 @@ void GGeo::loadFromCache()
     bool constituents = true ; 
     m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
 
-    // GBndLib is persisted via index buffer, not float buffer
+    // GBndLib is persisted via index buffer, not double buffer
     m_materiallib = m_bndlib->getMaterialLib();
     m_surfacelib = m_bndlib->getSurfaceLib();
 
@@ -1103,15 +1103,15 @@ GMaterial* GGeo::getMaterial(unsigned aindex) const
 {
     return m_materiallib->getMaterialWithIndex(aindex);
 }
-GPropertyMap<float>* GGeo::findMaterial(const char* shortname) const 
+GPropertyMap<double>* GGeo::findMaterial(const char* shortname) const 
 {
     return m_materiallib->findMaterial(shortname) ; 
 }
-GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname) const 
+GPropertyMap<double>* GGeo::findRawMaterial(const char* shortname) const 
 {
     return m_materiallib->findRawMaterial(shortname) ; 
 }
-GProperty<float>* GGeo::findRawMaterialProperty(const char* shortname, const char* propname) const 
+GProperty<double>* GGeo::findRawMaterialProperty(const char* shortname, const char* propname) const 
 {
    return m_materiallib->findRawMaterialProperty(shortname, propname) ;   
 }
@@ -1229,7 +1229,13 @@ void GGeo::close()
 }
 
 
-//////////////////////  TODO : MOVE SCINT HANDLING INTO THE LIB
+/**
+GGeo::prepareScintillatorLib
+------------------------------
+
+TODO : MOVE SCINT HANDLING INTO THE LIB
+
+**/
 
 void GGeo::prepareScintillatorLib()
 {
@@ -1251,7 +1257,7 @@ void GGeo::prepareScintillatorLib()
 
         for(unsigned int i=0 ; i < nscint ; i++)
         {
-            GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(getScintillatorMaterial(i));  
+            GPropertyMap<double>* scint = dynamic_cast<GPropertyMap<double>*>(getScintillatorMaterial(i));  
             sclib->add(scint);
         }
 

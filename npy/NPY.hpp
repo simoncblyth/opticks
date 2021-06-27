@@ -121,6 +121,8 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make(unsigned int ni, const NPYSpec* argspec);   // argspec ni is ignored and is replaced by ni 
        static NPY<T>* make(const NPYSpec* argspec);
 
+
+
        static NPY<T>* make(const std::vector<int>& shape);
        static NPY<T>* make(unsigned int ni);
        static NPY<T>* make(unsigned int ni, unsigned int nj );
@@ -131,6 +133,9 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* nasty_old_concat(const std::vector<const NPYBase*>& comps); 
        static NPY<T>* old_concat(const std::vector<const NPYBase*>& comps); 
        static NPY<T>* concat(const std::vector<const NPYBase*>& comps); 
+
+       static NPY<float>*  MakeFloat(  const NPY<T>* src ); 
+       static NPY<double>* MakeDouble( const NPY<T>* src ); 
 
        static NPY<T>* make_modulo(NPY<T>* src, unsigned int scaledown);
        static NPY<T>* make_repeat(NPY<T>* src, int n);
@@ -305,8 +310,8 @@ class NPY_API NPY : public NPYBase {
        unsigned getUSum(unsigned int j, unsigned int k) const ;
 
        T            getValueFlat(unsigned idx) const ;
-       T            getValue( int i,  int j,  int k,  int l=0) const ;
-       float        getFloat( int i,  int j,  int k,  int l=0) const ;
+       T            getValue( int i,  int j,  int k,  int l=0, int m=0) const ;
+       float        getFloat( int i,  int j,  int k,  int l=0 ) const ;
 
         // -ve indices are relative to ni, nj, nk, nl  
        bool         getUSign(   int i,  int j,  int k,  int l=0) const ;
@@ -337,8 +342,8 @@ class NPY_API NPY : public NPYBase {
 
        ///  quad setters 
 
-       void         setQuad(unsigned int i, unsigned int j,                 float x, float y=0.f, float z=0.f, float w=0.f );
-       void         setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y=0.f, float z=0.f, float w=0.f );
+       void         setQuad(unsigned i, unsigned j,             T x, T y=0., T z=0., T w=0. );
+       void         setQuad(unsigned i, unsigned j, unsigned k, T x, T y=0., T z=0., T w=0. );
 
        void         setQuad(      const nvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuad(const   glm::vec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
