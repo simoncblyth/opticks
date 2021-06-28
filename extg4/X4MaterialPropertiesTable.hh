@@ -30,10 +30,7 @@ X4MaterialPropertiesTable
 ===========================
 
 Converts properties from G4MaterialPropertiesTable into the
-GPropertyMap<float> base of GMaterial, GSkinSurface or GBorderSurface.
-
-The _OLD methods give runtime warnings with 10.4.2 threatening that 
-map accessors will be removed in 11
+GPropertyMap<double> base of GMaterial, GSkinSurface or GBorderSurface.
 
 **/
 

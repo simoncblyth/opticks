@@ -1,8 +1,16 @@
-raw_scintillator_material_props
-=================================
+raw_scintillator_material_props FIXED
+=======================================
 
 ana/ScintillatorLib.py shows 20nm bin effect on generated wavelength samples
 -------------------------------------------------------------------------------
+
+* FIXED by avoiding raw material standardizing, also moved
+  to double precision surface and material props only narrowed to 
+  float immediately prior to texture creation
+
+* BUT: subsequently looks like OK surfaces messed up
+
+* next :doc:`OK_lacking_SD_SA_following_prop_shift`
 
 
 Inputs to GScintillatorLib need to be raw materials without standardization

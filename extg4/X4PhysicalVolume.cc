@@ -656,12 +656,12 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
 
 
 
-GPropertyMap<float>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const 
+GPropertyMap<double>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const 
 {
-     GPropertyMap<float>* surf = nullptr ; 
+     GPropertyMap<double>* surf = nullptr ; 
 
      GBorderSurface* bs = findBorderSurfaceOK( a, b ); 
-     surf = dynamic_cast<GPropertyMap<float>*>(bs); 
+     surf = dynamic_cast<GPropertyMap<double>*>(bs); 
 
      const G4VPhysicalVolume* const first  = first_skin_priority ? a : b ; 
      const G4VPhysicalVolume* const second = first_skin_priority ? b : a ; 
@@ -669,13 +669,13 @@ GPropertyMap<float>* X4PhysicalVolume::findSurfaceOK(const G4VPhysicalVolume* co
      if(surf == NULL)
      {
          GSkinSurface* sk = findSkinSurfaceOK( first ? first->GetLogicalVolume() : NULL );
-         surf = dynamic_cast<GPropertyMap<float>*>(sk); 
+         surf = dynamic_cast<GPropertyMap<double>*>(sk); 
      }
 
      if(surf == NULL)
      {
          GSkinSurface* sk = findSkinSurfaceOK( second ? second->GetLogicalVolume() : NULL );
-         surf = dynamic_cast<GPropertyMap<float>*>(sk); 
+         surf = dynamic_cast<GPropertyMap<double>*>(sk); 
      }
      return surf ; 
 }
@@ -1230,8 +1230,8 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const G4LogicalSurface* const osur_ = findSurface( pv_p, pv   , first_skin_priority );  
     // doubtful of findSurface priority with double skin surfaces, see g4op-
 
-    const GPropertyMap<float>* const isur2_ = findSurfaceOK(  pv  , pv_p, first_skin_priority ); 
-    const GPropertyMap<float>* const osur2_ = findSurfaceOK(  pv_p, pv  , first_skin_priority ); 
+    const GPropertyMap<double>* const isur2_ = findSurfaceOK(  pv  , pv_p, first_skin_priority ); 
+    const GPropertyMap<double>* const osur2_ = findSurfaceOK(  pv_p, pv  , first_skin_priority ); 
 
     if( isur2_ != nullptr && isur_ == nullptr )  // find from OK but not G4  : only implicits should do this 
     {
@@ -1278,8 +1278,8 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
 #else
     // look for a border surface defined between this and the parent volume, in either direction
     bool first_skin_priority = true ;   // controls fallback skin lv order when bordersurface a->b not found 
-    const GPropertyMap<float>* const isur_ = findSurfaceOK(  pv  , pv_p, first_skin_priority ); 
-    const GPropertyMap<float>* const osur_ = findSurfaceOK(  pv_p, pv  , first_skin_priority ); 
+    const GPropertyMap<double>* const isur_ = findSurfaceOK(  pv  , pv_p, first_skin_priority ); 
+    const GPropertyMap<double>* const osur_ = findSurfaceOK(  pv_p, pv  , first_skin_priority ); 
 #endif
 
     const char* _lv = X4::GDMLName(lv) ;    

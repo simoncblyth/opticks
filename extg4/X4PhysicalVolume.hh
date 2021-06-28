@@ -148,7 +148,7 @@ class X4_API X4PhysicalVolume : public X4Named
         G4LogicalSurface*    findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const ;
     private:
         // aims to near reproduce surface access in GGeo model 
-        GPropertyMap<float>* findSurfaceOK(const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const ; 
+        GPropertyMap<double>* findSurfaceOK(const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_skin_priority ) const ; 
         GBorderSurface*      findBorderSurfaceOK( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b) const ; 
         GSkinSurface*        findSkinSurfaceOK( const G4LogicalVolume* const lv) const ;
     private:

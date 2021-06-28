@@ -27,15 +27,7 @@
 GMaterial
 ===========
 
-1. thin layer over base GPropertyMap<float> 
-
-
-G4DAE Workflow
-----------------
-
-1. GMaterial instances created by AssimpGGeo::convertMaterials 
-2. populated by AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material )
-   where G4 property vectors are pulled out of the assimp materials 
+1. thin layer over base GPropertyMap<double> 
 
 **/
 
