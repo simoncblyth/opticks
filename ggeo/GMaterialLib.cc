@@ -385,17 +385,17 @@ GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
         dst->setStandardDomain(src->getStandardDomain());
     }
 
-    dst->addProperty(refractive_index, getPropertyOrDefault( src, refractive_index ));
-    dst->addProperty(absorption_length,getPropertyOrDefault( src, absorption_length ));
-    dst->addProperty(scattering_length,getPropertyOrDefault( src, scattering_length ));
-    dst->addProperty(reemission_prob  ,getPropertyOrDefault( src, reemission_prob ));
+    dst->addPropertyStandardized(refractive_index, getPropertyOrDefault( src, refractive_index ));
+    dst->addPropertyStandardized(absorption_length,getPropertyOrDefault( src, absorption_length ));
+    dst->addPropertyStandardized(scattering_length,getPropertyOrDefault( src, scattering_length ));
+    dst->addPropertyStandardized(reemission_prob  ,getPropertyOrDefault( src, reemission_prob ));
 
     if(NUM_FLOAT4 > 1)
     {
-        dst->addProperty(group_velocity, getPropertyOrDefault( src, group_velocity));
-        dst->addProperty(extra_y       , getPropertyOrDefault( src, extra_y));
-        dst->addProperty(extra_z       , getPropertyOrDefault( src, extra_z));
-        dst->addProperty(extra_w       , getPropertyOrDefault( src, extra_w));
+        dst->addPropertyStandardized(group_velocity, getPropertyOrDefault( src, group_velocity));
+        dst->addPropertyStandardized(extra_y       , getPropertyOrDefault( src, extra_y));
+        dst->addPropertyStandardized(extra_z       , getPropertyOrDefault( src, extra_z));
+        dst->addPropertyStandardized(extra_w       , getPropertyOrDefault( src, extra_w));
     }
 
     return dst ; 
@@ -716,7 +716,7 @@ void GMaterialLib::import( GMaterial* mat, double* data, unsigned nj, unsigned n
         for(unsigned j = 0 ; j < nj ; j++) values[j] = data[j*nk+k];   // un-interleaving 
        
         GProperty<double>* prop = new GProperty<double>( values, domain, nj );  
-        mat->addProperty(propertyName(k+4*jcat), prop);
+        mat->addPropertyAsis(propertyName(k+4*jcat), prop);    // not-standardizing as importing previously standardized (?)
     } 
 }
 

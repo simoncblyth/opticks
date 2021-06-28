@@ -37,13 +37,14 @@ class X4_API X4LogicalSkinSurfaceTable
 {
         static const plog::Severity LEVEL ; 
     public:
-        static void Convert(GSurfaceLib* dst);
+        static void Convert(GSurfaceLib* dst, bool standardized);
     private:
-        X4LogicalSkinSurfaceTable(GSurfaceLib* dst);
+        X4LogicalSkinSurfaceTable(GSurfaceLib* dst, bool standardized);
         void init();
     private:
         const G4LogicalSkinSurfaceTable*  m_src ; 
-        GSurfaceLib*                        m_dst ; 
+        GSurfaceLib*                      m_dst ; 
+        bool                              m_standardized ;   
         
 
 };

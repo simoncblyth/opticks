@@ -61,7 +61,7 @@ GSource* GSource::make_blackbody_source(const char* name, unsigned int index, do
 
     assert(radiance) ;
 
-    source->addProperty("radiance", radiance );
+    source->addPropertyAsis("radiance", radiance );
 
     return source ; 
 }

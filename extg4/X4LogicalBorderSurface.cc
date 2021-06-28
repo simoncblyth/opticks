@@ -38,7 +38,7 @@
 const plog::Severity X4LogicalBorderSurface::LEVEL = PLOG::EnvLevel("X4LogicalBorderSurface", "DEBUG"); 
 
 
-GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* src)
+GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* src, bool standardized)
 {
     const char* name = X4::Name( src ); 
     size_t index = X4::GetOpticksIndex( src ) ;  
@@ -51,7 +51,7 @@ GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* sr
     GBorderSurface* dst = new GBorderSurface( name, index, optical_surface) ;  
     // standard domain is set by GBorderSurface::init
 
-    X4LogicalSurface::Convert( dst, src);
+    X4LogicalSurface::Convert( dst, src, standardized);
 
     const G4VPhysicalVolume* pv1 = src->GetVolume1(); 
     const G4VPhysicalVolume* pv2 = src->GetVolume2(); 

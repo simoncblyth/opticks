@@ -609,7 +609,7 @@ GPropertyMap<double>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, con
         if(pvec == NULL) continue ; 
 
         GProperty<double>* prop = convertVector(pvec);        
-        pmap->addProperty( pname.c_str(), prop );  
+        pmap->addPropertyAsis( pname.c_str(), prop );  
     }   
 
 
@@ -640,7 +640,7 @@ GPropertyMap<double>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, con
 
 
         GProperty<double>* prop = GProperty<double>::from_constant(pvalue, dlow, dhigh );        
-        pmap->addProperty( n.c_str(), prop );  
+        pmap->addPropertyAsis( n.c_str(), prop );  
    }
    return pmap ;    
 }
@@ -659,7 +659,7 @@ GPropertyMap<double>* CPropLib::convertTable_OLD(G4MaterialPropertiesTable* mpt,
         G4String k = it->first ; 
         G4MaterialPropertyVector* pvec = it->second ; 
         GProperty<double>* prop = convertVector(pvec);        
-        pmap->addProperty( k.c_str(), prop );  
+        pmap->addPropertyAsis( k.c_str(), prop );  
    }
 
    typedef const std::map< G4String, G4double, std::less<G4String> > MKC ; 
@@ -683,7 +683,7 @@ GPropertyMap<double>* CPropLib::convertTable_OLD(G4MaterialPropertiesTable* mpt,
 
 
         GProperty<double>* prop = GProperty<double>::from_constant(v, dlow, dhigh );        
-        pmap->addProperty( k.c_str(), prop );  
+        pmap->addPropertyAsis( k.c_str(), prop );  
    }
    return pmap ;    
 }

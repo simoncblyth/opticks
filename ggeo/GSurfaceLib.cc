@@ -545,10 +545,10 @@ GPropertyMap<double>* GSurfaceLib::createStandardSurface(GPropertyMap<double>* s
 
     GPropertyMap<double>* dst = new GPropertyMap<double>(src);
 
-    dst->addProperty( detect          , _detect          );
-    dst->addProperty( absorb          , _absorb          );
-    dst->addProperty( reflect_specular, _reflect_specular);
-    dst->addProperty( reflect_diffuse , _reflect_diffuse );
+    dst->addPropertyStandardized( detect          , _detect          );
+    dst->addPropertyStandardized( absorb          , _absorb          );
+    dst->addPropertyStandardized( reflect_specular, _reflect_specular);
+    dst->addPropertyStandardized( reflect_diffuse , _reflect_diffuse );
 
 
     bool valid = checkSurface(dst);
@@ -693,10 +693,10 @@ void GSurfaceLib::addPerfectProperties( GPropertyMap<double>* dst, double detect
     GProperty<double>* _reflect_specular = makeConstantProperty(reflect_specular_) ;    
     GProperty<double>* _reflect_diffuse  = makeConstantProperty(reflect_diffuse_) ;    
 
-    dst->addProperty( detect          , _detect          );
-    dst->addProperty( absorb          , _absorb          );
-    dst->addProperty( reflect_specular, _reflect_specular);
-    dst->addProperty( reflect_diffuse , _reflect_diffuse );
+    dst->addPropertyStandardized( detect          , _detect          );
+    dst->addPropertyStandardized( absorb          , _absorb          );
+    dst->addPropertyStandardized( reflect_specular, _reflect_specular);
+    dst->addPropertyStandardized( reflect_diffuse , _reflect_diffuse );
 }
 
 
@@ -1149,7 +1149,7 @@ void GSurfaceLib::import( GPropertyMap<double>* surf, double* data, unsigned int
         for(unsigned int j = 0 ; j < nj ; j++) values[j] = data[j*nk+k]; 
         GProperty<double>* prop = new GProperty<double>( values, domain, nj );
 
-        surf->addProperty(propertyName(k+4*jcat), prop);
+        surf->addPropertyAsis(propertyName(k+4*jcat), prop);
     } 
 }
 

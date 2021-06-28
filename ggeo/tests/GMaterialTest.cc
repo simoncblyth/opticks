@@ -37,7 +37,7 @@ void test_addProperty()
     double domain[]={1.f,2.f,3.f,4.f,5.f,6.f,7.f};
     double vals[]  ={10.f,20.f,30.f,40.f,50.f,60.f,70.f};
 
-    mat->addProperty("pname", vals, domain, sizeof(domain)/sizeof(domain[0]) );
+    mat->addPropertyStandardized("pname", vals, domain, sizeof(domain)/sizeof(domain[0]) );
 
     GProperty<double>* prop = mat->getProperty("pname");
     prop->Summary("prop dump");

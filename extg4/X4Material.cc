@@ -63,21 +63,26 @@ std::string X4Material::Digest( const G4Material* material )
     return dig.finalize();
 }
 
-GMaterial* X4Material::Convert( const G4Material* material )
+
+GMaterial* X4Material::Convert( const G4Material* material, bool standardized )
 {
-    X4Material xmat(material);
+    X4Material xmat(material, standardized);
     GMaterial* mat = xmat.getMaterial(); 
     return mat ; 
 }
+
+
+
 
 GMaterial* X4Material::getMaterial()
 {
     return m_mat ; 
 }
 
-X4Material::X4Material( const G4Material* material ) 
+X4Material::X4Material( const G4Material* material, bool standardized ) 
    :
    m_material(material),
+   m_standardized(standardized),
    m_mpt(material->GetMaterialPropertiesTable()),
    m_has_efficiency(m_mpt ? HasEfficiencyProperty(m_mpt) : false),
    m_mat(NULL)
@@ -110,6 +115,14 @@ bool X4Material::HasEfficiencyProperty(const G4MaterialPropertiesTable* mpt_) //
 }
 
 
+/**
+X4Material::init
+-------------------
+
+FORMERLY set the index on collecting into GMaterialLib, 
+now are just passing the creation index along  
+
+**/
 void X4Material::init()
 {
     const std::string& matname_ = m_material->GetName() ;
@@ -118,17 +131,10 @@ void X4Material::init()
     std::string name = BFile::Name( matname ); 
     unsigned index = m_material->GetIndex() ;
 
-    //LOG(error) << "name " << name ; 
-
-
-    // FORMERLY set the index on collecting into GMaterialLib, 
-    // now are just passing the creation index along  
-
     m_mat = new GMaterial(name.c_str(), index) ; 
-    //assert( m_mpt );
     if( m_mpt )
     {
-        X4MaterialPropertiesTable::Convert( m_mat, m_mpt );
+        X4MaterialPropertiesTable::Convert( m_mat, m_mpt, m_standardized );
     }
 }
 

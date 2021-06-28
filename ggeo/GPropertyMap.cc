@@ -146,7 +146,7 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain)
               << " dst step " << this->getDomainStep()
               ;
 
-        addStandardized(other);  // interpolation done here 
+        addMapStandardized(other);  // interpolation done here 
     }
 }
 
@@ -644,16 +644,14 @@ void GPropertyMap<T>::addConstantProperty(const char* pname, T value, const char
 {
    assert(m_standard_domain);
    GProperty<T>* prop = GProperty<T>::from_constant( value, m_standard_domain->getValues(), m_standard_domain->getLength() );
-   addProperty(pname, prop, prefix);
+   addPropertyAsis(pname, prop, prefix);
 }
 
 template <typename T>
-void GPropertyMap<T>::addProperty(const char* pname, T* values, T* domain, unsigned int length, const char* prefix)
+void GPropertyMap<T>::addPropertyStandardized(const char* pname, T* values, T* domain, unsigned int length, const char* prefix)
 {
-   // TODO: change name of this to addPropertyStandardized too ??
-
-   //printf("GPropertyMap<T>::addProperty name %s pname %s length %u \n", getName(), pname, length );
-   assert(length < 1000);
+   assert(0) ; // checking where this gets used
+   assert(length < 10000);
 
    GAry<T>* vals = new GAry<T>( length, values );
    GAry<T>* doms  = new GAry<T>( length, domain );
@@ -675,22 +673,18 @@ void GPropertyMap<T>::addPropertyStandardized(const char* pname,  GProperty<T>* 
    if(m_standard_domain)
    {
        GProperty<T>* ipol = orig->createInterpolatedProperty(m_standard_domain); 
-   
-       //orig->Summary("orig", 10 );
-       //ipol->Summary("ipol", 10 );
-
-       addProperty(pname, ipol, prefix) ;  
+       addPropertyAsis(pname, ipol, prefix) ;  
    } 
    else
    {
-       addProperty(pname, orig, prefix);
+       addPropertyAsis(pname, orig, prefix);
    }
 }
  
 
 /**
-GPropertyMap<T>::addProperty
------------------------------
+GPropertyMap<T>::addPropertyAsis
+---------------------------------
 
 NB this method makes a copy of the property being added 
 prior to inclusion into the collection.  This is necessary 
@@ -703,7 +697,7 @@ For more on why this is needed see GPropertyLib::getPropertyOrDefault
 **/
 
 template <typename T>
-void GPropertyMap<T>::addProperty(const char* pname,  GProperty<T>* prop, const char* _prefix)
+void GPropertyMap<T>::addPropertyAsis(const char* pname,  GProperty<T>* prop, const char* _prefix)
 {
     if(!prop)
     {
@@ -1036,7 +1030,7 @@ std::string GPropertyMap<T>::getKeysString() const
 }
 
 template <typename T>
-void GPropertyMap<T>::add(GPropertyMap<T>* other, const char* prefix)
+void GPropertyMap<T>::addMapAsis(GPropertyMap<T>* other, const char* prefix)
 {
     unsigned int n = other->getNumProperties();
     for(unsigned int i=0 ; i<n ; i++)
@@ -1044,14 +1038,14 @@ void GPropertyMap<T>::add(GPropertyMap<T>* other, const char* prefix)
          const char* name  = other->getPropertyNameByIndex(i); 
          GProperty<T>* prop = other->getPropertyByIndex(i); 
 
-         addProperty( name, prop, prefix );
+         addPropertyAsis( name, prop, prefix );
     }
 }
 
 
 
 template <typename T>
-void GPropertyMap<T>::addStandardized(GPropertyMap<T>* other, const char* prefix)
+void GPropertyMap<T>::addMapStandardized(GPropertyMap<T>* other, const char* prefix)
 {
     unsigned int n = other->getNumProperties();
     for(unsigned int i=0 ; i<n ; i++)
@@ -1108,7 +1102,7 @@ GPropertyMap<T>* GPropertyMap<T>::load(const char* path, const char* name, const
                  LOG(debug) << "GPropertyMap<T>::load prop " << propname << " pp " << pp.string() ; 
 
                  GProperty<T>* prop = GProperty<T>::load( pp.string().c_str() );
-                 pmap->addProperty( propname.c_str(), prop );    
+                 pmap->addPropertyAsis( propname.c_str(), prop );    
             } 
         }
     }

@@ -485,13 +485,13 @@ void X4PhysicalVolume::convertSurfaces()
     num_surf0 = m_slib->getNumSurfaces() ; 
     assert( num_surf0 == 0 );
 
-
-    X4LogicalBorderSurfaceTable::Convert(m_slib);
+    bool standardized = true ; 
+    X4LogicalBorderSurfaceTable::Convert(m_slib, standardized);
     num_surf1 = m_slib->getNumSurfaces() ; 
 
     size_t num_lbs = num_surf1 - num_surf0 ; num_surf0 = num_surf1 ;   
 
-    X4LogicalSkinSurfaceTable::Convert(m_slib);
+    X4LogicalSkinSurfaceTable::Convert(m_slib, standardized);
     num_surf1 = m_slib->getNumSurfaces() ; 
 
     size_t num_sks = num_surf1 - num_surf0 ; num_surf0 = num_surf1 ;  

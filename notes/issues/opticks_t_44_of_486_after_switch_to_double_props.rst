@@ -1,7 +1,111 @@
 opticks_t_44_of_486_after_switch_to_double_props
 ==================================================
 
+Old G4 tests need adjustments for CManager
+----------------------------------------------
 
+::
+
+    FAILS:  3   / 486   :  Mon Jun 28 17:27:52 2021   
+      8  /46  Test #8  : CFG4Test.CG4Test                              Child aborted***Exception:     40.34  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Child aborted***Exception:     52.23  
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      5.48   
+
+
+Some CCtx::step_limit requires CCtx::initEvent to have been called
+-----------------------------------------------------------------------
+
+
+
+
+::
+
+    102	unsigned CCtx::step_limit() const 
+    103	{
+    104	    assert( _ok_event_init ); 
+    105	    return 1 + 2*( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+    106	}
+
+
+    205 /**
+    206 CCtx::initEvent
+    207 --------------------
+    208 
+    209 Collect the parameters of the OpticksEvent which 
+    210 dictate what needs to be collected.
+    211 
+    212 **/
+    213 
+    214 void CCtx::initEvent(const OpticksEvent* evt)
+    215 {
+    216     _ok_event_init = true ;
+    217     _photons_per_g4event = evt->getNumPhotonsPerG4Event() ;
+    218     _steps_per_photon = evt->getMaxRec() ;   // number of points to be recorded into record buffer   
+    219     _record_max = evt->getNumPhotons();      // from the genstep summation, hmm with dynamic running this will start as zero 
+    220 
+    221     _bounce_max = evt->getBounceMax();       // maximum bounce allowed before truncation will often be 1 less than _steps_per_photon but need not be 
+    222     unsigned bounce_max_2 = evt->getMaxBounce();
+    223     assert( _bounce_max == bounce_max_2 ) ; // TODO: eliminate or rename one of those
+    224 
+    225     const char* typ = evt->getTyp();
+    226 
+    227     LOG(LEVEL)
+    228         << " _record_max (numPhotons from genstep summation) " << _record_max
+    229         << " photons_per_g4event " << _photons_per_g4event
+    230         << " _steps_per_photon (maxrec) " << _steps_per_photon
+    231         << " _bounce_max " << _bounce_max
+    232         << " typ " << typ
+    233         ;
+    234 
+    235 }
+
+
+
+
+
+::
+
+    2021-06-28 17:35:39.648 ERROR [28420] [main@63]  setting gensteps 0x731ddb0 numPhotons 20000
+    2021-06-28 17:35:39.649 INFO  [28420] [OpticksRun::createOKEvent@158]  tagoffset 0 skipaheadstep 0 skipahead 0
+    2021-06-28 17:35:39.649 INFO  [28420] [main@68]  cgs T  idx   0 pho20000 off      0
+    2021-06-28 17:35:39.653 INFO  [28420] [CG4::propagate@396]  calling BeamOn numG4Evt 1
+    2021-06-28 17:36:11.397 INFO  [28420] [CScint::Check@16]  pmanager 0x7539510 proc 0
+    2021-06-28 17:36:11.397 INFO  [28420] [CScint::Check@21] CProMgr n:[4] (0) name Transportation left -1 (1) name OpAbsorption left -1 (2) name OpRayleigh left -1 (3) name OpBoundary left -1
+    2021-06-28 17:36:11.397 INFO  [28420] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 6 : BAD_FLAG
+    CG4Test: /home/blyth/opticks/cfg4/CCtx.cc:104: unsigned int CCtx::step_limit() const: Assertion `_ok_event_init' failed.
+
+    Program received signal SIGABRT, Aborted.
+    (gdb) bt
+    #0  0x00007fffe8738387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe8739a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe87311a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe8731252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7b3580d in CCtx::step_limit (this=0x7516b40) at /home/blyth/opticks/cfg4/CCtx.cc:104
+    #5  0x00007ffff7acaf9c in CRec::add (this=0x75170d0, boundary_status=FresnelRefraction) at /home/blyth/opticks/cfg4/CRec.cc:286
+    #6  0x00007ffff7b0ff58 in CRecorder::Record (this=0x190a1210, boundary_status=FresnelRefraction) at /home/blyth/opticks/cfg4/CRecorder.cc:344
+    #7  0x00007ffff7b3cef4 in CManager::setStep (this=0x1901b980, step=0x74a4970) at /home/blyth/opticks/cfg4/CManager.cc:502
+    #8  0x00007ffff7b3cb48 in CManager::UserSteppingAction (this=0x1901b980, step=0x74a4970) at /home/blyth/opticks/cfg4/CManager.cc:429
+    #9  0x00007ffff7b34a42 in CSteppingAction::UserSteppingAction (this=0x19bbc510, step=0x74a4970) at /home/blyth/opticks/cfg4/CSteppingAction.cc:41
+    #10 0x00007ffff492a9a2 in G4SteppingManager::Stepping() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4tracking.so
+    #11 0x00007ffff49360fd in G4TrackingManager::ProcessOneTrack(G4Track*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4tracking.so
+    #12 0x00007ffff4b6db53 in G4EventManager::DoProcessing(G4Event*) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4event.so
+    #13 0x00007ffff4e0ab27 in G4RunManager::ProcessOneEvent(int) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #14 0x00007ffff4e03bd3 in G4RunManager::DoEventLoop(int, char const*, int) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #15 0x00007ffff4e0399e in G4RunManager::BeamOn(int, char const*, int) () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02/lib64/libG4run.so
+    #16 0x00007ffff7b39fc9 in CG4::propagate (this=0x731e350) at /home/blyth/opticks/cfg4/CG4.cc:399
+    #17 0x0000000000404526 in main (argc=1, argv=0x7fffffff9188) at /home/blyth/opticks/cfg4/tests/CG4Test.cc:76
+    (gdb) 
+
+
+
+
+CGenstep bookkeeping
+-----------------------
+
+::
+
+    epsilon:opticks blyth$ git commit -m "add new CGenstep bookkeeping to old tests CG4Test OKG4Test "
+    [master 36976ea1f] add new CGenstep bookkeeping to old tests CG4Test OKG4Test
 
 
 

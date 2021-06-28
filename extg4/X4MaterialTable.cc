@@ -123,16 +123,16 @@ void X4MaterialTable::init()
         }
 
 
-        GMaterial* mat = X4Material::Convert( material ); 
+        GMaterial* mat = X4Material::Convert( material, true );    // standardized
         if(mat->hasProperty("EFFICIENCY"))
         {
              m_materials_with_efficiency.push_back(material); 
         }
+        m_mlib->add(mat) ;    
 
-        //assert( mat->getIndex() == i ); // this is not the lib, no danger of triggering a close
 
-        m_mlib->add(mat) ;    // creates standardized material
-        m_mlib->addRaw(mat) ; // stores as-is
+        GMaterial* rawmat = X4Material::Convert( material, false );   // not-standardized
+        m_mlib->addRaw(rawmat) ;
     }
 }
 

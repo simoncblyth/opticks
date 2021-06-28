@@ -156,33 +156,33 @@ class GGEO_API GPropertyMap {
       T getDomainLow();
       T getDomainHigh();
       T getDomainStep();
+
   public:
-      void add(GPropertyMap<T>* other, const char* prefix=NULL);
-      void addStandardized(GPropertyMap<T>* other, const char* prefix=NULL);
-      void addConstantProperty(const char* pname, T value, const char* prefix=NULL);
       bool setPropertyValues(const char* pname, T val); 
+  public:
+      void addConstantProperty(const char* pname, T value, const char* prefix=NULL);
 
       // when a standard domain is defined these methods interpolates the values provided onto that domain
-      void addProperty(const char* pname, T* values, T* domain, unsigned int length, const char* prefix=NULL);
+      void addPropertyStandardized(const char* pname, T* values, T* domain, unsigned int length, const char* prefix=NULL);
       void addPropertyStandardized(const char* pname,  GProperty<T>* orig, const char* prefix=NULL);
 
        // this one does not interpolate  
-      void addProperty(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
-      //void replaceProperty(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
-
-      unsigned int getNumProperties() const ;
-
-
+      void addPropertyAsis(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
   public:
-      GProperty<T>* getPropertyByIndex(int index) const ;
-      const char* getPropertyNameByIndex(int index) const ;
-      GProperty<T>* getProperty(const char* pname) const ;
-      const GProperty<T>* getPropertyConst(const char* pname) const  ;
-      GProperty<T>* getProperty(const char* pname, const char* prefix);
-      bool hasProperty(const char* pname) const ;
+      // adding other map of properties
+      void addMapStandardized(GPropertyMap<T>* other, const char* prefix=NULL);
+      void addMapAsis(        GPropertyMap<T>* other, const char* prefix=NULL);
+  public:
+      unsigned                  getNumProperties() const ;
+      GProperty<T>*             getPropertyByIndex(int index) const ;
+      const char*               getPropertyNameByIndex(int index) const ;
+      GProperty<T>*             getProperty(const char* pname) const ;
+      const GProperty<T>*       getPropertyConst(const char* pname) const  ;
+      GProperty<T>*             getProperty(const char* pname, const char* prefix);
+      bool                      hasProperty(const char* pname) const ;
       std::vector<std::string>& getKeys() ;
-      unsigned size() const ; 
-      std::string dump_ptr() const ; 
+      unsigned                  size() const ; 
+      std::string                dump_ptr() const ; 
   private:
       std::string m_name ;
       const char* m_shortname ; 

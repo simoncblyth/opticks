@@ -35,7 +35,9 @@ int main(int argc, char** argv)
 
     G4Material* water = opnov.water ;
 
-    GMaterial* wine = X4Material::Convert(water) ; 
+    bool standardized = true ; 
+
+    GMaterial* wine = X4Material::Convert(water, standardized ) ; 
 
     wine->Summary();
 

@@ -31,29 +31,38 @@
 const plog::Severity X4MaterialPropertiesTable::LEVEL = PLOG::EnvLevel("X4MaterialPropertiesTable", "DEBUG"); 
 
 
-void X4MaterialPropertiesTable::Convert( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt )
+void X4MaterialPropertiesTable::Convert( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, bool standardized )
 {
     if(mpt == NULL) 
       LOG(fatal) << "cannot convert a null G4MaterialPropertiesTable : this usually means you have omitted to setup any properties for a surface or material" ;  
     assert( mpt ); 
-    X4MaterialPropertiesTable xtab(pmap, mpt);
+    X4MaterialPropertiesTable xtab(pmap, mpt, standardized);
 }
 
-X4MaterialPropertiesTable::X4MaterialPropertiesTable( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt )
+X4MaterialPropertiesTable::X4MaterialPropertiesTable( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, bool standardized )
     :
     m_pmap(pmap),
-    m_mpt(mpt)
+    m_mpt(mpt),
+    m_standardized(standardized)
 {
     init();
 }
 
 void X4MaterialPropertiesTable::init()
 { 
-    AddProperties( m_pmap, m_mpt );    
+    AddProperties( m_pmap, m_mpt, m_standardized );    
 }
 
+/**
+X4MaterialPropertiesTable::AddProperties
+-------------------------------------------
 
-void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt)   // static
+Used from X4Material::Convert/X4Material::init
+
+
+**/
+
+void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt, bool standardized )   // static
 {
     typedef G4MaterialPropertyVector MPV ; 
     G4bool warning ; 
@@ -90,8 +99,15 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
             LOG(LEVEL) << prop->brief("X4MaterialPropertiesTable::AddProperties.EFFICIENCY"); 
         }
 
+        if( standardized )
+        {
+            pmap->addPropertyStandardized( pname.c_str(), prop );  // interpolates onto standard domain 
+        }
+        else
+        {
+            pmap->addPropertyAsis( pname.c_str(), prop );     // for raw materials, needed for scintillator props
+        }
 
-        pmap->addPropertyStandardized( pname.c_str(), prop );  // interpolates onto standard domain 
     }
     LOG(LEVEL) 
         << " pns " << pns.size()
@@ -184,75 +200,5 @@ std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* m
     return dig.finalize();
 }
 
-
-
-void X4MaterialPropertiesTable::AddProperties_OLD(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt_)   // static
-{
-    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // needed with 10.4.2
-
-    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
-    MKP* pm = mpt->GetPropertiesMap() ;
-
-    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)
-    {   
-        G4String pname = it->first ;
-
-        G4MaterialPropertyVector* pvec = it->second ;  
-        // G4MaterialPropertyVector is typedef to G4PhysicsOrderedFreeVector with most of imp in G4PhysicsVector
-
-        GProperty<double>* prop = X4PhysicsVector<double>::Convert(pvec) ; 
-
-
-      //   pmap->addProperty( pname.c_str(), prop );  // non-interpolating collection
-        pmap->addPropertyStandardized( pname.c_str(), prop );  // interpolates onto standard domain 
-    }  
-
-    typedef const std::map< G4String, G4double, std::less<G4String> > CKP ; 
-    CKP* cm = mpt->GetPropertiesCMap();
-
-    for(CKP::const_iterator it=cm->begin() ; it != cm->end() ; it++)
-    {   
-        G4String pname = it->first ;
-        G4double pvalue = it->second ;  
-        double value = pvalue ; 
-
-        pmap->addConstantProperty( pname.c_str(), value );   // asserts without standard domain
-    }     
-}
-
-
-
-std::string X4MaterialPropertiesTable::Digest_OLD(const G4MaterialPropertiesTable* mpt_)  // static
-{
-    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // needed with 10.4.2
-    if(!mpt) return "" ; 
-
-    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
-    MKP* pm = mpt->GetPropertiesMap() ;
-
-    SDigest dig ;
-    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  
-    {   
-        const std::string&  n = it->first ;
-        G4MaterialPropertyVector* v = it->second ; 
-
-        std::string vs = X4PhysicsVector<double>::Digest(v) ; 
-        dig.update( const_cast<char*>(n.data()),  n.size() );  
-        dig.update( const_cast<char*>(vs.data()), vs.size() );  
-    }   
-
-    typedef const std::map< G4String, G4double, std::less<G4String> > CKP ; 
-    CKP* cm = mpt->GetPropertiesCMap();
-
-    for(CKP::const_iterator it=cm->begin() ; it != cm->end() ; it++)
-    {   
-        const std::string& n = it->first ;
-        double pvalue = it->second ;  
-
-        dig.update( const_cast<char*>(n.data()), n.size() );  
-        dig.update( reinterpret_cast<char*>(&pvalue), sizeof(double) );  
-    }  
-    return dig.finalize();
-}
 
 

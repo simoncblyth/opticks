@@ -1,11 +1,11 @@
 tds3ip_InwardsCubeCorners17699_at_7_wavelengths
 ==================================================
 
-Prior
+Related
 -------
 
-* :doc:`ok_less_reemission`
-
+* prior :doc:`ok_less_reemission`
+* next :doc:`raw_scintillator_material_props`
 
 tds3ip
 ----------
@@ -309,7 +309,6 @@ jsc::
      602                     ScintillationIntegral->GetEnergy(CIIvalue);
 
 
-
 Add::
 
     186 #ifdef WITH_G4OPTICKS
@@ -322,12 +321,9 @@ Use these from G4OpticksAnaMgr to save 1M wavelength samples direct from DsG4Sci
 Compare to those from texture in qudarap/tests/QCtxTest.py 
 
 
-GScintillatorLibTest 
----------------------------
 
-::
 
-    epsilon:offline blyth$ scp P:/tmp/G4OpticksAnaMgr/ScintillationIntegral.npy /tmp/G4OpticksAnaMgr/ScintillationIntegral.npy 
 
+ 
 
 

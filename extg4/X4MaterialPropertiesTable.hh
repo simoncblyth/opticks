@@ -41,17 +41,16 @@ class X4_API X4MaterialPropertiesTable
 {
         static const plog::Severity LEVEL ; 
     public:
-        static void Convert(GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt);
+        static void Convert(GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, bool standardized );
         static std::string Digest(const G4MaterialPropertiesTable* mpt);
-        static std::string Digest_OLD(const G4MaterialPropertiesTable* mpt);
     private:
-        X4MaterialPropertiesTable(GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt);
+        X4MaterialPropertiesTable(GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, bool standardized );
         void init();
     private:
-        static void AddProperties(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt);
-        static void AddProperties_OLD(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt);
+        static void AddProperties(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt, bool standardized );
     private:
-        GPropertyMap<double>*                   m_pmap ; 
+        GPropertyMap<double>*                  m_pmap ; 
         const G4MaterialPropertiesTable* const m_mpt ;
+        bool                                   m_standardized ; 
 
 };

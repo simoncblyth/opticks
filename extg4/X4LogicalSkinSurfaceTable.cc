@@ -31,15 +31,16 @@
 const plog::Severity X4LogicalSkinSurfaceTable::LEVEL = PLOG::EnvLevel("X4LogicalSkinSurfaceTable","DEBUG"); 
 
 
-void X4LogicalSkinSurfaceTable::Convert( GSurfaceLib* dst )
+void X4LogicalSkinSurfaceTable::Convert( GSurfaceLib* dst, bool standardized )
 {
-    X4LogicalSkinSurfaceTable x(dst); 
+    X4LogicalSkinSurfaceTable x(dst, standardized); 
 }
 
-X4LogicalSkinSurfaceTable::X4LogicalSkinSurfaceTable(GSurfaceLib* dst )
+X4LogicalSkinSurfaceTable::X4LogicalSkinSurfaceTable(GSurfaceLib* dst, bool standardized )
     :
     m_src(G4LogicalSkinSurface::GetSurfaceTable()),
-    m_dst(dst)
+    m_dst(dst),
+    m_standardized(standardized)
 {
     init();
 }
@@ -58,7 +59,7 @@ void X4LogicalSkinSurfaceTable::init()
 
         LOG(LEVEL) << src->GetName() ; 
 
-        GSkinSurface* dst = X4LogicalSkinSurface::Convert( src );
+        GSkinSurface* dst = X4LogicalSkinSurface::Convert( src, m_standardized );
 
         assert( dst ); 
 

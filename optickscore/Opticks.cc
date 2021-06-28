@@ -100,7 +100,7 @@
 
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
-const int            Opticks::GEOCACHE_CODE_VERSION = 10 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+const int            Opticks::GEOCACHE_CODE_VERSION = 11 ;  // (incremented when code changes invalidate loading old geocache dirs)   
 
 /**
 3: starting point 
@@ -114,6 +114,8 @@ const int            Opticks::GEOCACHE_CODE_VERSION = 10 ;  // (incremented when
 9: GDMLAux metadata now arranged with lvmeta and usermeta top objects  
 10: moved to double precision material and surface properties, with narrowing to float only done at last moment 
     prior to creation of GPU textures 
+
+11: following fix of the inadvertent standardization of raw materials causing GScintillatorLib generated wavelength binning artifacts
 
 **/
 
