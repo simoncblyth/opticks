@@ -18,7 +18,8 @@ const QBnd* QBnd::Get(){ return INSTANCE ; }
 QBnd::QBnd(const GBndLib* blib_ )
     :
     blib(blib_),
-    src(blib->getBuffer()),
+    dsrc(blib->getBuffer()),
+    src(NPY<double>::MakeFloat(dsrc)),
     tex(nullptr)
 {
     INSTANCE = this ; 

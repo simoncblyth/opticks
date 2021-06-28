@@ -27,6 +27,7 @@ struct QUDARAP_API QBnd
     static const QBnd*          Get(); 
 
     const GBndLib*    blib ; 
+    const NPY<double>* dsrc ;  
     const NPY<float>* src ;  
     QTex<float4>*     tex ; 
 

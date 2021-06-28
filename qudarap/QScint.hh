@@ -16,6 +16,7 @@ struct QUDARAP_API QScint
     static const QScint*        Get(); 
 
     const GScintillatorLib* slib ; 
+    NPY<double>*            dsrc ; 
     NPY<float>*             src ; 
     QTex<float>*            tex ; 
 

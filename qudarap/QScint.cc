@@ -19,7 +19,8 @@ const QScint* QScint::Get(){ return INSTANCE ;  }
 QScint::QScint(const GScintillatorLib* slib_)
     :
     slib(slib_),
-    src(slib->getBuffer()),
+    dsrc(slib->getBuffer()),
+    src(NPY<double>::MakeFloat(dsrc)),
     tex(nullptr)
 {
     INSTANCE = this ; 
@@ -35,6 +36,7 @@ std::string QScint::desc() const
 {
     std::stringstream ss ; 
     ss << "QScint"
+       << " dsrc " << ( dsrc ? dsrc->getShapeString() : "-" )
        << " src " << ( src ? src->getShapeString() : "-" )
        << " tex " << ( tex ? tex->desc() : "-" )
        << " tex " << tex 
