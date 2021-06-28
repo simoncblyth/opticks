@@ -393,8 +393,26 @@ geocache-apr23(){
 
 
 
+geocache-gdml-scp(){ 
+   local digest=${1:-fe48b4d359786b95505117280fb5aac1}
+   local label=${2:-jun28}
+   local cmd="scp P:.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/$digest/1/origin_CGDMLKludge.gdml  $(opticks-prefix)/origin_CGDMLKludge_$label.gdml"
+   echo $cmd
+   eval $cmd
+}
+
+geocache-jun28-gdmlpath(){ echo $(opticks-prefix)/origin_CGDMLKludge_jun28.gdml ; }
+geocache-jun28(){
+    local msg="=== $FUNCNAME :"
+    local path=$(geocache-jun28-gdmlpath)
+    # get skips from current tds3
+    local skipsolidname="mask_PMT_20inch_vetosMask_virtual,NNVTMCPPMT_body_solid,HamamatsuR12860_body_solid_1_9,PMT_20inch_veto_body_solid_1_2"
+    GTree=INFO OpticksDbg=INFO GInstancer=INFO geocache-create- --gdmlpath $path -D --noviz  --skipsolidname $skipsolidname $*  
+}
+
+
 geocache-jun15-key(){ echo OKX4Test.X4PhysicalVolume.lWorld0x32a96e0_PV.a3cbac8189a032341f76682cdb4f47b6 ; }
-geocache-jun15-gdmlpath(){ echo /usr/local/opticks/origin_CGDMLKludge.gdml ; }
+geocache-jun15-gdmlpath(){ echo /usr/local/opticks/origin_CGDMLKludge_jun15.gdml ; }
 geocache-jun15(){
     local msg="=== $FUNCNAME :"
     local path=$(geocache-jun15-gdmlpath)

@@ -100,7 +100,7 @@
 
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
-const int            Opticks::GEOCACHE_CODE_VERSION = 9 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+const int            Opticks::GEOCACHE_CODE_VERSION = 10 ;  // (incremented when code changes invalidate loading old geocache dirs)   
 
 /**
 3: starting point 
@@ -112,6 +112,8 @@ const int            Opticks::GEOCACHE_CODE_VERSION = 9 ;  // (incremented when 
 8: GGeo/GNodeLib/BMeta/CGDML/Opticks get G4GDMLAux info thru geocache for default genstep targetting configured 
    from within the GDML, opticksaux-dx1 modified with added auxiliary element for lvADE. Used for example by g4ok/G4OKTest   
 9: GDMLAux metadata now arranged with lvmeta and usermeta top objects  
+10: moved to double precision material and surface properties, with narrowing to float only done at last moment 
+    prior to creation of GPU textures 
 
 **/
 
