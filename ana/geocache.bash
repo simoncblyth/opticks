@@ -401,6 +401,7 @@ geocache-gdml-scp(){
    eval $cmd
 }
 
+geocache-jun28-key(){ echo OKX4Test.X4PhysicalVolume.lWorld0x32a9d10_PV.5be60660c4368a7f59ce05cc3aa827df ; }
 geocache-jun28-gdmlpath(){ echo $(opticks-prefix)/origin_CGDMLKludge_jun28.gdml ; }
 geocache-jun28(){
     local msg="=== $FUNCNAME :"

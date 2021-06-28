@@ -292,6 +292,12 @@ void CG4::postinitializeMaterialLookup()
     m_collector = new CGenstepCollector(lookup) ; 
 }
 
+CGenstep CG4::addGenstep( unsigned num_photons, char gentype )
+{
+    assert( m_collector ); 
+    return m_collector->addGenstep( num_photons, gentype );  
+}
+
 
 void CG4::execute(const char* path)
 {

@@ -72,6 +72,8 @@ prior to the photon generation loop.
 class CFG4_API CGenstepCollector 
 {
         friend struct CGenstepCollector2Test ; 
+        friend class  CG4 ;      // for addGenstep 
+        friend class  OKG4Mgr ;  // for addGenstep 
     public:
         static const plog::Severity LEVEL ; 
         static CGenstepCollector* INSTANCE ;      

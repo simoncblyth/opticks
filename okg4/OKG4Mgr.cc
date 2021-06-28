@@ -24,6 +24,8 @@ class NConfigurable ;
 #include "SLog.hh"
 #include "BTimeKeeper.hh"
 
+#include "G4StepNPY.hpp"
+
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
 #include "OpticksRun.hh"    
@@ -38,6 +40,7 @@ class NConfigurable ;
 #include "OpticksViz.hh"
 
 #include "CG4.hh"
+#include "CGenstep.hh"
 #include "CGenerator.hh"
 
 #include "PLOG.hh"
@@ -212,6 +215,15 @@ void OKG4Mgr::propagate_()
     {
          NPY<float>* gs = m_generator->getGensteps() ;
          m_ok->createEvent(gs, '=');
+
+         unsigned numPhotons = G4StepNPY::CountPhotons(gs); 
+         CGenstep cgs = m_g4->addGenstep( numPhotons, 'T' ); 
+
+         LOG(info)
+             << " numPhotons " << numPhotons 
+             << " cgs " << cgs.desc()
+             ;           
+
 
          if(align)
              m_propagator->propagate();

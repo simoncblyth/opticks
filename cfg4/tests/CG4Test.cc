@@ -27,6 +27,8 @@
 #include "OpticksGen.hh"
 
 #include "CG4.hh"
+#include "G4StepNPY.hpp"
+#include "CGenstep.hh"
 
 #include "OPTICKS_LOG.hh"
 
@@ -56,9 +58,15 @@ int main(int argc, char** argv)
     if(ok.isFabricatedGensteps())  // eg TORCH running
     { 
         NPY<float>* gs = gen->getInputGensteps() ;
-        LOG(error) << " setting gensteps " << gs ; 
+        unsigned numPhotons = G4StepNPY::CountPhotons(gs); 
+
+        LOG(error) << " setting gensteps " << gs << " numPhotons " << numPhotons ; 
         char ctrl = '=' ; 
         ok.createEvent(gs, ctrl);
+
+        CGenstep cgs = g4->addGenstep(numPhotons, 'T' ); 
+        LOG(info) << " cgs " << cgs.desc() ; 
+
     }
     else
     {

@@ -106,7 +106,7 @@ photon counts ahead of time.
 #define CG4UniformRand(file, line) CG4::INSTANCE->flat_instrumented((file), (line))
 
 #include "plog/Severity.h"
-
+#include "CGenstep.hh"
 #include "CFG4_API_EXPORT.hh"
 
 class CFG4_API CG4 
@@ -127,6 +127,7 @@ class CFG4_API CG4
         void postinitializeMaterialLookup(); 
         void postpropagate();
    public:
+        CGenstep addGenstep( unsigned num_photons, char gentype );
         int getPrintIndex() const ;
         void addRandomNote(const char* note, int value=-1); 
         void addRandomCut( const char* ckey, double cvalue); 

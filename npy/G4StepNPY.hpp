@@ -70,6 +70,7 @@ class NPY_API G4StepNPY {
        unsigned getNumPhotonsTotal();
        unsigned* makePhotonSeedArray();  // genstep id for each photon
    public:  
+       static unsigned CountPhotons( const NPY<float>* gs ); 
        void countPhotons();
        int getNumPhotonsCounted(int label);
        int getNumPhotonsCounted();

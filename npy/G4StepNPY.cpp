@@ -158,9 +158,24 @@ void G4StepNPY::dump(const char* msg)
     }
 }
 
+
+unsigned G4StepNPY::CountPhotons( const NPY<float>* gs ) // static
+{
+    unsigned totPhotons = 0 ; 
+    unsigned ni = gs->getNumItems(); 
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        int numPhotons = gs->getInt(i,0u,3u);
+        totPhotons += numPhotons ;  
+    }
+    return totPhotons ; 
+}
+
+
 void G4StepNPY::countPhotons()
 {
-    for(unsigned int i=0 ; i<m_npy->m_ni ; i++ )
+    unsigned ni = m_npy->m_ni ; 
+    for(unsigned i=0 ; i<ni ; i++ )
     {
         int label      = m_npy->getInt(i,0u,0u);
         int numPhotons = m_npy->getInt(i,0u,3u);
