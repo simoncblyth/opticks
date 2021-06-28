@@ -132,6 +132,8 @@ class OKCORE_API Opticks {
        static std::string MaterialSequence(const unsigned long long seqmat);
    public:
        // wavelength domain
+       static unsigned     DomainLength() ; 
+       static const char   DOMAIN_TYPE ; // 'F' or 'C' 
        static unsigned     DOMAIN_LENGTH ; 
        static unsigned     FINE_DOMAIN_LENGTH ; 
        static float        DOMAIN_LOW ; 
@@ -433,6 +435,7 @@ class OKCORE_API Opticks {
        bool                 isWayEnabled() const ;   // --way
        bool                 isSaveGPartsEnabled() const ; // --savegparts
        bool                 isGDMLKludge() const ;   // --gdmlkludge
+       bool                 isFineDomain() const ;   // --finedomain
        bool                 isAngularEnabled() const ;  
        void                 setAngularEnabled(bool angular_enabled); 
 

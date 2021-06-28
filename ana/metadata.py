@@ -78,7 +78,7 @@ class LaunchTimes(object):
         if not os.path.exists(path):
             ini = None
             propagate = -99.
-            log.info("path %s does not exist " % path )
+            log.debug("path %s does not exist " % path )
         else:  
             ini = ini_(path) 
             itag = int(tag)        

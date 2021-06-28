@@ -25,32 +25,33 @@
 
 #include "SDigest.hh"
 #include "GPropertyMap.hh"
+#include "GDomain.hh"
 #include "GProperty.hh"
 #include "PLOG.hh"
 
 const plog::Severity X4MaterialPropertiesTable::LEVEL = PLOG::EnvLevel("X4MaterialPropertiesTable", "DEBUG"); 
 
 
-void X4MaterialPropertiesTable::Convert( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, bool standardized )
+void X4MaterialPropertiesTable::Convert( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, char mode )
 {
     if(mpt == NULL) 
       LOG(fatal) << "cannot convert a null G4MaterialPropertiesTable : this usually means you have omitted to setup any properties for a surface or material" ;  
     assert( mpt ); 
-    X4MaterialPropertiesTable xtab(pmap, mpt, standardized);
+    X4MaterialPropertiesTable xtab(pmap, mpt, mode);
 }
 
-X4MaterialPropertiesTable::X4MaterialPropertiesTable( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, bool standardized )
+X4MaterialPropertiesTable::X4MaterialPropertiesTable( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, char mode )
     :
     m_pmap(pmap),
     m_mpt(mpt),
-    m_standardized(standardized)
+    m_mode(mode)
 {
     init();
 }
 
 void X4MaterialPropertiesTable::init()
 { 
-    AddProperties( m_pmap, m_mpt, m_standardized );    
+    AddProperties( m_pmap, m_mpt, m_mode );    
 }
 
 /**
@@ -62,13 +63,14 @@ Used from X4Material::Convert/X4Material::init
 
 **/
 
-void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt, bool standardized )   // static
+void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt, char mode )   //  static
 {
     typedef G4MaterialPropertyVector MPV ; 
     G4bool warning ; 
 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
 
+    GDomain<double>* dom = GDomain<double>::GetDefaultDomain(); 
     unsigned pns_null = 0 ; 
 
     for( unsigned i=0 ; i < pns.size() ; i++)
@@ -92,21 +94,34 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
             continue ; 
         }
 
-        GProperty<double>* prop = X4PhysicsVector<double>::Convert(pvec) ; 
+        GProperty<double>* prop = nullptr ;        
+
+        if( mode == 'G' )           // Geant4 src interpolation onto the domain 
+        {
+            prop = X4PhysicsVector<double>::Interpolate(pvec, dom) ; 
+            pmap->addPropertyAsis( pname.c_str(), prop );     
+        }
+        else if( mode == 'S' )      // Opticks pmap interpolation onto standard domain   
+        {
+            prop = X4PhysicsVector<double>::Convert(pvec) ; 
+            pmap->addPropertyStandardized( pname.c_str(), prop );  
+        }
+        else if( mode == 'A' )      //  asis : no interpolation 
+        {
+            prop = X4PhysicsVector<double>::Convert(pvec) ; 
+            pmap->addPropertyAsis( pname.c_str(), prop );     
+        }
+        else
+        {
+            LOG(fatal) << " mode must be one of G/S/A " ; 
+            assert(0); 
+        }
 
         if(strcmp(pname.c_str(), "EFFICIENCY") == 0)
         {
             LOG(LEVEL) << prop->brief("X4MaterialPropertiesTable::AddProperties.EFFICIENCY"); 
         }
 
-        if( standardized )
-        {
-            pmap->addPropertyStandardized( pname.c_str(), prop );  // interpolates onto standard domain 
-        }
-        else
-        {
-            pmap->addPropertyAsis( pname.c_str(), prop );     // for raw materials, needed for scintillator props
-        }
 
     }
     LOG(LEVEL) 

@@ -38,9 +38,9 @@
 
 const plog::Severity X4LogicalBorderSurfaceTable::LEVEL = PLOG::EnvLevel("X4LogicalBorderSurfaceTable","DEBUG"); 
 
-void X4LogicalBorderSurfaceTable::Convert( GSurfaceLib* dst, bool standardized )
+void X4LogicalBorderSurfaceTable::Convert( GSurfaceLib* dst, char mode )
 {
-    X4LogicalBorderSurfaceTable xtab(dst, standardized); 
+    X4LogicalBorderSurfaceTable xtab(dst, mode ); 
 }
 
 /**
@@ -98,11 +98,11 @@ const std::vector<G4LogicalBorderSurface*>* X4LogicalBorderSurfaceTable::Prepare
     return vec ; 
 }
 
-X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(GSurfaceLib* dst, bool standardized )
+X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(GSurfaceLib* dst, char mode )
     :
     m_src(PrepareVector(G4LogicalBorderSurface::GetSurfaceTable())),
     m_dst(dst),
-    m_standardized(standardized)
+    m_mode(mode)
 {
     init();
 }
@@ -121,7 +121,7 @@ void X4LogicalBorderSurfaceTable::init()
 
         LOG(LEVEL) << src->GetName() ; 
 
-        GBorderSurface* dst = X4LogicalBorderSurface::Convert( src, m_standardized );
+        GBorderSurface* dst = X4LogicalBorderSurface::Convert( src, m_mode );
 
         assert( dst ); 
 

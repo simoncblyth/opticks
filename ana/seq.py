@@ -169,11 +169,11 @@ class MaskType(BaseType):
         :param s: abbreviation string eg "TO|BT|SD"  or hexstring 8ccccd (without 0x prefix)
         :return: integer bitmask 
         """
-        #log.info(" s [%s] " % s)
+        #log.debug(" s [%s] " % s)
         if self.hexstr.match(s):
             c = int(s,16) 
             cs = "%x" % c 
-            log.info("converted hexstr %s to hexint %x and back %s " % (s,c,cs)) 
+            log.debug("converted hexstr %s to hexint %x and back %s " % (s,c,cs)) 
             assert s == cs
         else:
             f = self.abbr2code
@@ -188,6 +188,9 @@ class MaskType(BaseType):
         :param i: integer bitmask
         :return: abbreviation mask string 
         """
+        if type(arg) is list or issubclass( arg.__class__, np.ndarray ): 
+            return list(map(lambda _:self.label(_), arg))
+        pass
 
         if type(arg) is int:
             i = arg
@@ -224,7 +227,7 @@ class SeqType(BaseType):
         if self.hexstr.match(s):
             c = int(s,16) 
             cs = "%x" % c 
-            log.info("converted hexstr %s to hexint %x and back %s " % (s,c,cs)) 
+            log.debug("converted hexstr %s to hexint %x and back %s " % (s,c,cs)) 
             assert s == cs
         else:
             f = self.abbr2code
@@ -481,7 +484,7 @@ class SeqTable(object):
             if len(cfo_key) > 0:
                 cfo_debug = " %10.5f " % self.cfordering_key[n]
             else:
-                #log.info("no cfo_key ") 
+                #log.debug("no cfo_key ") 
                 cfo_debug = " no cfo_key"
             pass
         else:
@@ -653,8 +656,8 @@ class SeqTable(object):
         cftab.cfordering = ordering 
 
         cfordering_key = list(map(ordering_, u)) 
-        log.info("cfordering_key for %s" % shortname)
-        #log.info(cfordering_key)
+        log.debug("cfordering_key for %s" % shortname)
+        #log.debug(cfordering_key)
   
         cftab.cfordering_key = cfordering_key 
         log.debug("SeqTable.compare DONE")

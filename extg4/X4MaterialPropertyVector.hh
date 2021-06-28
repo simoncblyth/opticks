@@ -5,6 +5,17 @@
 
 template <typename T> class NPY ; 
 
+/**
+X4MaterialPropertyVector
+=========================
+
+Simple direct convert:
+
+1. no interpolation
+2. no mapping of energy to wavelength.
+
+**/
+
 struct X4_API X4MaterialPropertyVector
 {
     const G4MaterialPropertyVector*  vec ; 
@@ -12,8 +23,6 @@ struct X4_API X4MaterialPropertyVector
     static G4MaterialPropertyVector* FromArray(const NPY<double>* arr) ;
 
     template <typename T> static NPY<T>* Convert(const G4MaterialPropertyVector* vec) ; 
-
-
 
     X4MaterialPropertyVector(const G4MaterialPropertyVector* vec_ );     
 

@@ -28,16 +28,20 @@ class ABProfile(object):
         ag4 = anam[0] == "-"
         bg4 = bnam[0] == "-"
 
-        log.info("adir %s anam %s ag4 %s" % (adir, anam, ag4)) 
-        log.info("bdir %s bnam %s bg4 %s" % (bdir, bnam, bg4)) 
+        log.debug("adir %s anam %s ag4 %s" % (adir, anam, ag4)) 
+        log.debug("bdir %s bnam %s bg4 %s" % (bdir, bnam, bg4)) 
 
+        log.debug("[ ab.pro.ap")
         self.ap = Profile(adir, "ab.pro.ap", g4=ag4) 
+        log.debug("]")
+        log.debug("[ ab.pro.bp")
         self.bp = Profile(bdir, "ab.pro.bp", g4=bg4) 
+        log.debug("]")
 
         valid = self.ap.valid and self.bp.valid 
         if valid:
             boa = self.bp.tim/self.ap.tim if self.ap.tim > 0 else -1  
-            log.info("self.bp.tim %s self.ap.tim %s boa %s" % (self.bp.tim, self.ap.tim, boa))
+            log.debug("self.bp.tim %s self.ap.tim %s boa %s" % (self.bp.tim, self.ap.tim, boa))
         else:
             boa = -2 
         pass 

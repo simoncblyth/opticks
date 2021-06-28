@@ -38,15 +38,15 @@ class X4_API X4LogicalBorderSurfaceTable
 {
         static const plog::Severity LEVEL ; 
     public:
-        static void Convert(GSurfaceLib* dst, bool standardized);
+        static void Convert(GSurfaceLib* dst, char mode);
         static const std::vector<G4LogicalBorderSurface*>* PrepareVector(const G4LogicalBorderSurfaceTable* tab) ; 
     private:
-        X4LogicalBorderSurfaceTable(GSurfaceLib* dst, bool standardized);
+        X4LogicalBorderSurfaceTable(GSurfaceLib* dst, char mode);
         void init();
     private:
         const std::vector<G4LogicalBorderSurface*>* m_src ;  
         GSurfaceLib*                                m_dst ; 
-        bool                                        m_standardized ; 
+        char                                        m_mode ; 
         
 
 };

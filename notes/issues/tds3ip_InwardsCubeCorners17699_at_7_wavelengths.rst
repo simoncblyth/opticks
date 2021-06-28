@@ -37,6 +37,138 @@ tds3ip
     }
 
 
+findbndtex
+------------
+
+::
+
+    epsilon:opticks blyth$ opticks-f finebnd
+    ./integration/tests/tconcentric.bash:    tconcentric-t --bouncemax 15 --recordmax 16 --groupvel --finebndtex $* 
+    ./ggeo/GBndLib.cc:        GDomain<double>* finedom = ok->hasOpt("finebndtex") 
+    ./ggeo/GBndLib.cc:            LOG(warning) << "--finebndtex option triggers interpolation of material and surface props "  ;
+    ./ggeo/GPropertyLib.cc:   // this is normal domain, only with --finebndtex does the finedomain interpolation get load within GBndLib::load
+    ./ggeo/GBndLib.hh:When using --finebndtex option GBndLib::load with constituents true
+    ./optickscore/OpticksCfg.cc:       ("finebndtex",  "Use 1nm pitch wavelength domain for boundary buffer (ie material and surface properties) obtained by interpolation postcache, see GGeo::loadFromCache");
+    epsilon:opticks blyth$ 
+
+::
+
+     073 /**
+      74 GBndLib::load
+      75 ---------------
+      76 
+      77 Hmm, finebndtex appears to be done here postcache ?
+      78 It surely makes more sense to define a finer domain to use precache.
+      79 
+      80 **/
+      81 
+      82 GBndLib* GBndLib::load(Opticks* ok, bool constituents)
+      83 {
+      84     LOG(LEVEL) << "[" ;
+      85     GBndLib* blib = new GBndLib(ok);
+      86     
+      87     LOG(verbose) ;
+      88     
+      89     blib->loadIndexBuffer();
+      90     
+      91     LOG(verbose) << "indexBuffer loaded" ;
+      92     blib->importIndexBuffer();
+      93     
+      94     
+      95     if(constituents)
+      96     {
+      97         GMaterialLib* mlib = GMaterialLib::load(ok);
+      98         GSurfaceLib* slib = GSurfaceLib::load(ok);
+      99         GDomain<double>* finedom = ok->hasOpt("finebndtex")
+     100                             ?
+     101                                 mlib->getStandardDomain()->makeInterpolationDomain(Opticks::FINE_DOMAIN_STEP)
+     102                             :   
+     103                                 NULL
+     104                             ;   
+     105                             
+     106         //assert(0); 
+     107         
+     108         if(finedom)
+     109         {
+     110             LOG(warning) << "--finebndtex option triggers interpolation of material and surface props "  ;
+     111             GMaterialLib* mlib2 = new GMaterialLib(mlib, finedom );    
+     112             GSurfaceLib* slib2 = new GSurfaceLib(slib, finedom );  
+     113             
+     114             mlib2->setBuffer(mlib2->createBuffer());
+     115             slib2->setBuffer(slib2->createBuffer());
+     116             
+     117             blib->setStandardDomain(finedom);
+     118             blib->setMaterialLib(mlib2);
+
+
+
+
+
+::
+
+     318    m_desc.add_options()
+     319        ("finebndtex",  "Use 1nm pitch wavelength domain for boundary buffer (ie material and surface properties) obtained by interpolation postcache, see GGeo::loadFromCache");
+     320 
+
+
+
+
+
+
+compare first slot splits at 7 wavelengths
+---------------------------------------------------
+
+* more deviation in the middle where abslen changing rapidly
+* reemission wavlength peaks in that region so thats consistent with more discrepancy after reemission
+
+::
+
+    epsilon:ana blyth$ tds3ip.sh 1      ## with abs.py for loading/presenting multiple events 
+    PFX=tds3ip ab.sh 1
+     input_photon start wavelength 360 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 1 b.itag -1 
+     0x4 AB   16038       0.200       16012       0.200      26           0.021 
+     0x5 RE   63926       0.799       63966       0.800     -40           0.013 
+     0x6 SC      36       0.000          22       0.000      14           3.379 
+     input_photon start wavelength 380 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 2 b.itag -2 
+     0x4 AB   16020       0.200       16055       0.201     -35           0.038 
+     0x5 RE   63918       0.799       63885       0.799      33           0.009 
+     0x6 SC      62       0.001          60       0.001       2           0.033 
+     input_photon start wavelength 400 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 3 b.itag -3 
+     0x4 AB   15839       0.198       15917       0.199     -78           0.192 
+     0x5 RE   63232       0.790       63167       0.790      65           0.033 
+     0x6 SC     929       0.012         916       0.011      13           0.092 
+     input_photon start wavelength 420 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 4 b.itag -4 
+     0x4 AB   13193       0.165       13268       0.166     -75           0.213 
+     0x5 RE   12945       0.162       12948       0.162      -3           0.000 
+     0x6 SC   46562       0.582       46507       0.581      55           0.033 
+     0xc BT    7300       0.091        7277       0.091      23           0.036 
+     input_photon start wavelength 440 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 5 b.itag -5 
+     0x4 AB   12832       0.160       13027       0.163    -195           1.470 
+     0x5 RE    3628       0.045        3709       0.046     -81           0.894 
+     0x6 SC   48022       0.600       47669       0.596     353           1.302 
+     0xc BT   15518       0.194       15595       0.195     -77           0.191 
+     input_photon start wavelength 460 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 6 b.itag -6 
+     0x4 AB   15474       0.193       15417       0.193      57           0.105 
+     0x5 RE    3147       0.039        3278       0.041    -131           2.671 
+     0x6 SC   43913       0.549       43348       0.542     565           3.658 
+     0xc BT   17466       0.218       17957       0.224    -491           6.806 
+     input_photon start wavelength 480 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 7 b.itag -7 
+     0x4 AB   14653       0.183       14695       0.184     -42           0.060 
+     0x5 RE    2314       0.029        2264       0.028      50           0.546 
+     0x6 SC   41920       0.524       41777       0.522     143           0.244 
+     0xc BT   21113       0.264       21264       0.266    -151           0.538 
+
+    In [1]:                                                           
+
+
+
 
 Very rapid change in abslen could explain differences arising from too coarse domain binning
 ---------------------------------------------------------------------------------------------------
@@ -133,6 +265,42 @@ Estimate proportions of AB/SC/RE/BT at different wavelengths in G4 and OK
     .                              80000     80000      2051.47/239 =  8.58  (pval:0.000 prob:1.000)  
 
 
+After fixing reemission wavelength distrib, but still with coarse domain binning::
+
+    In [1]: ab.his                                                                                                                                                                                    
+    Out[1]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3ip   -1:g4live:tds3ip        c2        ab        ba 
+    .                              80000     80000      2272.58/238 =  9.55  (pval:0.000 prob:1.000)  
+       n             iseq         a         b    a-b       (a-b)^2/(a+b)         a/b                   b/a           [ns] label
+    0000               4d     16038     16012     26              0.02         1.002 +- 0.008        0.998 +- 0.008  [2 ] TO AB
+    0001           7ccc5d     10797     10358    439              9.11         1.042 +- 0.010        0.959 +- 0.009  [6 ] TO RE BT BT BT SD    ## MAKES WORSE !
+    0002              45d      4547      5026   -479             23.97         0.905 +- 0.013        1.105 +- 0.016  [3 ] TO RE AB             ## MAKES WORSE :
+
+    Problems with wavelength distrib and coarse binning must have beeen counteracting each other ?
+
+    0003             4c5d      4360      4026    334             13.30         1.083 +- 0.016        0.923 +- 0.015  [4 ] TO RE BT AB
+    0004       bccbccbc5d      4123      4133    -10              0.01         0.998 +- 0.016        1.002 +- 0.016  [10] TO RE BT BR BT BT BR BT BT BR
+    0005           8ccc5d      3914      3960    -46              0.27         0.988 +- 0.016        1.012 +- 0.016  [6 ] TO RE BT BT BT SA
+    0006            4bc5d      2042      1853    189              9.17         1.102 +- 0.024        0.907 +- 0.021  [5 ] TO RE BT BR AB
+    0007          7ccc65d      2047      1839    208             11.13         1.113 +- 0.025        0.898 +- 0.021  [7 ] TO RE SC BT BT BT SD
+    0008            8cc5d      1820      1707    113              3.62         1.066 +- 0.025        0.938 +- 0.023  [5 ] TO RE BT BT SA
+    0009          7ccc55d      1394      1722   -328             34.53         0.810 +- 0.022        1.235 +- 0.030  [7 ] TO RE RE BT BT BT SD
+    0010            4cc5d      1417      1354     63              1.43         1.047 +- 0.028        0.956 +- 0.026  [5 ] TO RE BT BT AB
+    0011           4cbc5d      1114      1132    -18              0.14         0.984 +- 0.029        1.016 +- 0.030  [6 ] TO RE BT BR BT AB
+    0012       c6cbccbc5d       940       940      0              0.00         1.000 +- 0.033        1.000 +- 0.033  [10] TO RE BT BR BT BT BR BT SC BT
+    0013             455d       720      1050   -330             61.53         0.686 +- 0.026        1.458 +- 0.045  [4 ] TO RE RE AB
+
+    0014          8ccc65d       795       757     38              0.93         1.050 +- 0.037        0.952 +- 0.035  [7 ] TO RE SC BT BT BT SA
+    0015             465d       794       716     78              4.03         1.109 +- 0.039        0.902 +- 0.034  [4 ] TO RE SC AB
+    0016          4ccbc5d       778       656    122             10.38         1.186 +- 0.043        0.843 +- 0.033  [7 ] TO RE BT BR BT BT AB
+    0017         4bccbc5d       643       546     97              7.91         1.178 +- 0.046        0.849 +- 0.036  [8 ] TO RE BT BR BT BT BR AB
+    0018          8ccc55d       513       675   -162             22.09         0.760 +- 0.034        1.316 +- 0.051  [7 ] TO RE RE BT BT BT SA
+    .                              80000     80000      2272.58/238 =  9.55  (pval:0.000 prob:1.000)  
+
+
+
+
 
 
 
@@ -158,7 +326,10 @@ The first decision in the history starting from 360nm seems in agreement, ie the
 
 Behaviour after RE goes off-kilter.
 
-* could be the reemission wavelength distrib, OR not fine enough properties as function of wavelength
+* could be the reemission wavelength distrib, OR not fine enough properties as function of wavelength OR both those
+
+* found and fixed binning artifacts in wavelength distrib
+
 
 
 Compare wavelength distribution after reemission

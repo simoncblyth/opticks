@@ -115,7 +115,7 @@ class Key(object):
         except ValueError:
             ppos = -1 
         pass
-        log.info("ppos %d" % ppos)
+        log.debug("ppos %d" % ppos)
         path = None
         if ppos == -1:
             pass

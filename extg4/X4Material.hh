@@ -47,19 +47,16 @@ class X4_API X4Material
         static std::string DescProps(G4MaterialPropertiesTable* mpt, int wid);
 
     public:
-        static GMaterial* Convert( const G4Material* material, bool standardized );
-
+        static GMaterial* Convert( const G4Material* material, char mode );
         static bool HasEfficiencyProperty(const G4MaterialPropertiesTable* mpt) ; 
-       // static void       AddProperties(GMaterial* mat, const G4MaterialPropertiesTable* mpt);
-
     public:
-        X4Material(const G4Material* material, bool standardized); 
+        X4Material(const G4Material* material, char mode); 
         GMaterial* getMaterial();
     private:
         void init();
     private: 
         const G4Material*                m_material ;  
-        bool                             m_standardized ; 
+        char                             m_mode ; 
         const G4MaterialPropertiesTable* m_mpt ; 
         bool                             m_has_efficiency ; 
         GMaterial*                       m_mat ; 

@@ -33,7 +33,7 @@ X4LogicalSkinSurface
 class X4_API X4LogicalSkinSurface
 {
     public:
-        static GSkinSurface* Convert(const G4LogicalSkinSurface* src, bool standardized);
+        static GSkinSurface* Convert(const G4LogicalSkinSurface* src, char mode );
         static int GetItemIndex( const G4LogicalSkinSurface* src ) ;
 };
 

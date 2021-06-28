@@ -28,7 +28,7 @@ from collections import OrderedDict as odict
 from opticks.ana.ctx import Ctx
 from opticks.ana.cfh import CFH
 from opticks.ana.base import json_save_
-from opticks.ana.nbase import chi2, vnorm
+from opticks.ana.nbase import chi2, chi2one, vnorm
 from opticks.ana.nload import np_load
 from opticks.ana.decompression import decompression_bins
 from opticks.ana.histype import HisType
@@ -104,6 +104,10 @@ class Maligned(object):
         tab = "\n".join([" %4d   %s  %s " % ( kv[1], self.label(kv[0][0]), self.label(kv[0][1]) )  for kv in sitems])
         return tab
 
+
+
+
+
     def __repr__(self):
         return "\n".join( ["ab.mal"] + self.lines() + [repr(self.sli)]
                    + lmap(lambda iq:self.ab.recline(iq), enumerate(self.maligned[self.sli])) + ["ab.mal.migtab"]
@@ -117,17 +121,17 @@ class RC(object):
 
     def __init__(self, ab):
         rc = {}
-        log.info("[ rpost_dv ")
+        log.debug("[ rpost_dv ")
         rc["rpost_dv"] = ab.rpost_dv.RC
-        log.info("]")
+        log.debug("]")
         
-        log.info("[ rpol_dv ")
+        log.debug("[ rpol_dv ")
         rc["rpol_dv"] = ab.rpol_dv.RC 
-        log.info("]")
+        log.debug("]")
 
-        log.info("[ ox_dv ")
+        log.debug("[ ox_dv ")
         rc["ox_dv"] = ab.ox_dv.RC 
-        log.info("]")
+        log.debug("]")
 
 
         assert max(rc.values()) <= 1 
@@ -268,7 +272,7 @@ class AB(object):
         """
 
         if self.cfm.utaildebug == 0:
-            log.info("requires both A and B to have been run with --utaildebug option")
+            log.debug("requires both A and B to have been run with --utaildebug option")
             return 
         pass 
 
@@ -282,7 +286,7 @@ class AB(object):
 
         u = self.u 
         w = np.where(np.logical_and( self.a.utail != self.b.utail, self.a.seqhis == self.b.seqhis ))[0]
-        log.info("utail mismatch but seqhis matched u.shape:%r w.shape: %r " % (u.shape, w.shape) )
+        log.debug("utail mismatch but seqhis matched u.shape:%r w.shape: %r " % (u.shape, w.shape) )
         for i,q in enumerate(w):
             q_ = q if qmask is None else qmask[q]            
             uu = u[q_].ravel()        # randoms for photon record_id q 
@@ -297,7 +301,7 @@ class AB(object):
 
 
     def dump(self):
-        log.info("[")
+        log.debug("[")
         if self.is_comparable: 
             self.print_(self.pro)  
             self.print_("#ab.cfm")  
@@ -323,13 +327,13 @@ class AB(object):
             self.print_("#ab.cfm")  
             self.print_(self.cfm)  
         pass
-        log.info("]")
+        log.debug("]")
 
 
-    def __init__(self, ok, overridetag=0):
+    def __init__(self, ok, overridetag="0"):
         """
         :param ok: arguments instance from opticks_main
-        :param overridetag: when non-zero overrides the tags of events to be loaded NOT YET IMPLEMENTED
+        :param overridetag: when not "0" overrides the tags of events to be loaded NOT YET IMPLEMENTED
         """
         log.debug("[")
         self.ok = ok
@@ -345,9 +349,9 @@ class AB(object):
         self.load_u()
 
         self.is_comparable = self.valid and not self.a.ph.missing and not self.b.ph.missing 
-        log.info("[ABProfile")
+        log.debug("[ABProfile")
         self.pro = ABProfile(self.a.tagdir, self.b.tagdir)
-        log.info("]ABProfile")
+        log.debug("]ABProfile")
 
         if self.is_comparable and ok.compare: 
             self.cfm = self.compare_meta()
@@ -357,7 +361,7 @@ class AB(object):
             self.compare()
             self.init_point()
 
-            log.info("ABSmry.Make self.level : %s " % self.level)  
+            log.debug("ABSmry.Make self.level : %s " % self.level)  
 
             self.smry = ABSmry.Make(self)
             self.smry.save()  
@@ -370,10 +374,13 @@ class AB(object):
         So avoid needing to duplicate that.
         """
         pyver = "{major}.{minor}.{micro}".format(major=sys.version_info.major,minor=sys.version_info.minor,micro=sys.version_info.micro)  
-        log.info("[ smry:%s np.__version__ %s py%s" % (self.ok.smry, np.__version__, pyver) )
+        log.debug("[ smry:%s np.__version__ %s py%s" % (self.ok.smry, np.__version__, pyver) )
         args = self.ok
- 
-        if args.utag is None:
+
+        if self.overridetag != "0":
+            atag = "%s" % self.overridetag
+            btag = "-%s" % self.overridetag
+        elif args.utag is None:
             assert len(args.utags) == 2, ( "expecting 2 utags ", args.utags )
             atag = "%s" % args.utags[0]
             btag = "%s" % args.utags[1]
@@ -381,6 +388,9 @@ class AB(object):
             atag = "%s" % args.utag
             btag = "-%s" % args.utag
         pass
+
+
+        log.debug( "overridetag %s  atag %s btag %s  " % (self.overridetag, atag, btag) )
 
         a = Evt(tag=atag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="A", smry=args.smry)
         b = Evt(tag=btag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="B", smry=args.smry)
@@ -404,7 +414,7 @@ class AB(object):
             self.irec = 0
             self.qwn = "X"
         pass
-        log.info("] ")
+        log.debug("] ")
 
 
     def _get_brief(self):
@@ -458,20 +468,20 @@ class AB(object):
             -rw-rw-r--. 1 blyth blyth 2048000096 Jul 28 12:02 /home/blyth/local/opticks/tmp/TRngBufTest_0_1000000.npy
 
         """
-        log.info("[")
+        log.debug("[")
         upath0 = "$TMP/TRngBufTest_0.npy"
         upath1 = "$TMP/TRngBufTest_0_1000000.npy"
 
         if os.path.exists(os.path.expandvars(upath1)):
             upath = upath1 
-            log.info("using the extra large random array %s " % upath ) 
+            log.debug("using the extra large random array %s " % upath ) 
         else: 
             upath = upath0
         pass
         u = np_load(upath)
         u = None if u is None else u.astype(np.float32)
         self.u = u 
-        log.info("]")
+        log.debug("]")
 
 
     def compare_domains(self):
@@ -513,7 +523,7 @@ class AB(object):
         * Taking around 5s for 1M events, all in RC 
         * prohis and promat are progressively masked tables, not enabled by default
         """
-        log.info("[")
+        log.debug("[")
 
         self.ahis = self._get_cf("all_seqhis_ana", "ab.ahis")
         self.amat = self._get_cf("all_seqmat_ana", "ab.amat")
@@ -523,7 +533,7 @@ class AB(object):
 
         self.rc_ = RC(self) 
 
-        log.info("]")
+        log.debug("]")
 
     def _get_RC(self):
         return self.rc_.rc if self.is_comparable else 255
@@ -631,17 +641,17 @@ class AB(object):
 
 
     def prohis(self, rng=range(1,8)):
-        log.info("[")
+        log.debug("[")
         for imsk in rng:
             setattr(self, "his_%d" % imsk, self.cf("seqhis_ana_%d" % imsk)) 
         pass
-        log.info("]")
+        log.debug("]")
     def promat(self, rng=range(1,8)):
-        log.info("[")
+        log.debug("[")
         for imsk in rng:
             setattr(self, "mat_%d" % imsk, self.cf("seqmat_ana_%d" % imsk)) 
         pass
-        log.info("]")
+        log.debug("]")
 
     def tabname(self, ana):
         if ana.endswith("_dv"):
@@ -684,7 +694,7 @@ class AB(object):
         #dv_tab = DvTab(ana, seqtab, self, skips=self.dvskips, selbase="ALIGN" ) 
 
         use_utaildebug = self.cfm.utaildebug   
-        log.info("_make_dv ana %s use_utaildebug %s " % (ana, use_utaildebug)) 
+        log.debug("_make_dv ana %s use_utaildebug %s " % (ana, use_utaildebug)) 
         dv_tab = QDVTab(ana, self, use_utaildebug=use_utaildebug ) 
         self.dvtabs.append(dv_tab)
 
@@ -1026,7 +1036,7 @@ class AB(object):
         else:
             ifl = None
         pass
-        log.info(" a_ifl:%s b_ifl:%s ifl:%s " % (a_ifl, b_ifl, ifl) )
+        log.debug(" a_ifl:%s b_ifl:%s ifl:%s " % (a_ifl, b_ifl, ifl) )
         return ifl 
 
     def nrecs(self, start=0, stop=None, step=1):
@@ -1146,7 +1156,7 @@ class AB(object):
         nrs = self.nrecs(start, stop)
         trs = nrs.sum()
 
-        log.info("AB.stats : %s :  trs %d nrs %s " % ( qwns, trs, repr(nrs)) )
+        log.debug("AB.stats : %s :  trs %d nrs %s " % ( qwns, trs, repr(nrs)) )
         
         stat = np.recarray((trs,), dtype=dtype)
         ival = 0
@@ -1189,7 +1199,7 @@ class AB(object):
                 ival += 1
             pass
         pass
-        log.info("AB.stats histogramming done")
+        log.debug("AB.stats histogramming done")
         assert ival == trs, (ival, trs )
 
         st = ABStat(self.ok, stat) 
@@ -1396,7 +1406,7 @@ class AB(object):
         hh = []
         for seq0 in seq0s:
             sel = seq0.replace("_", " ")
-            log.info("AB.rhist_ setting sel to \"%s\" rehist %d  " % (sel, rehist) )
+            log.debug("AB.rhist_ setting sel to \"%s\" rehist %d  " % (sel, rehist) )
 
             self.sel = sel   # adjust selection 
 
@@ -1514,6 +1524,57 @@ class AB(object):
             raise Exception("no bins")
 
         return bins, aval, bval, labels
+
+
+
+    def seqhis_splits(self, slot=1):
+
+        a = self.a
+        b = self.b
+
+        dump = False
+        a_uss = a.seqhis_splits(slot, dump) 
+        b_uss = b.seqhis_splits(slot, dump) 
+
+        codes = list(set( a_uss[0] )|set( b_uss[0] ))    
+
+        a_total = a_uss[1].sum()
+        b_total = b_uss[1].sum()
+        assert a_total == b_total 
+        total = a_total 
+
+        cols = ["cod", "la","a", "af", "b", "bf", "a-b", "(a-b)^2/(a+b)" ] 
+
+        cols_fmt = " %3s %2s  %6s  %10s     %6s  %10s  %6s   %13s " 
+        line_fmt = " 0x%x %2s  %6d  %10.3f      %6d  %10.3f  %6d   %13.3f "
+
+        cols_hdr = cols_fmt % tuple(cols) 
+        print( cols_hdr + " slot %d  (seqhis_splits)  a.itag %d b.itag %d " % (slot, a.itag, b.itag) )
+
+        for i in range(len(codes)):
+            code = codes[i]
+            label = self.histype.label(code) 
+
+            a_codes = list(a_uss[0])
+            b_codes = list(b_uss[0])
+
+            a_index = a_codes.index(code) if code in a_codes else -1 
+            b_index = b_codes.index(code) if code in b_codes else -1 
+
+            a_count = a_uss[1][a_index] if a_index > -1 else 0  
+            b_count = b_uss[1][b_index] if b_index > -1 else 0  
+
+            ab_count = a_count - b_count 
+            c2 = chi2one(a_count, b_count)
+
+            a_frac = float(a_count)/float(total)
+            b_frac = float(b_count)/float(total)
+
+            print( line_fmt  % ( code, label, a_count, a_frac, b_count, b_frac, ab_count, c2 ))  
+        pass
+
+
+
 
 
 

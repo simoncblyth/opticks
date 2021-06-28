@@ -22,6 +22,7 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "GDomain.hh"
 #include "GProperty.hh"
 
 #include "X4PhysicsVector.hh"
@@ -30,14 +31,22 @@
 
 struct X4PhysicsVectorTest 
 {
+    const char* dir ; 
     size_t    veclen ; 
     G4double* energies ; 
     G4double* values   ;
+    G4PhysicsOrderedFreeVector*  pof ; 
 
     X4PhysicsVectorTest();
 
     void visibleSpectrum();
     void opNovice();
+
+    void test_units(); 
+    void test_digest(); 
+    void test_convert(); 
+    void test_g4interpolate(); 
+
 
     G4PhysicsOrderedFreeVector* make_pof()
     {
@@ -46,16 +55,17 @@ struct X4PhysicsVectorTest
 };
 
 
-
-
 X4PhysicsVectorTest::X4PhysicsVectorTest()
     :
+    dir("$TMP/X4PhysicsVectorTest"),
     veclen(0),
-    energies(NULL),
-    values(NULL)
+    energies(nullptr),
+    values(nullptr),
+    pof(nullptr)
 {
     //visibleSpectrum();
     opNovice();
+    pof = make_pof(); 
 }
 
 
@@ -121,7 +131,7 @@ void X4PhysicsVectorTest::opNovice()
 }
 
 
-void test_units()
+void X4PhysicsVectorTest::test_units()
 {
     double en_eV = 1.65 ; 
     double en = 1.65*eV ; 
@@ -138,25 +148,31 @@ void test_units()
               ;
 }
 
-void test_convert()
+void X4PhysicsVectorTest::test_convert()
 {
-    X4PhysicsVectorTest pvt  ; 
-
-    G4PhysicsOrderedFreeVector* pof = pvt.make_pof(); 
-
-    GProperty<float>* prop = X4PhysicsVector<float>::Convert(pof) ; 
+    GProperty<double>* prop = X4PhysicsVector<double>::Convert(pof) ; 
 
     prop->SummaryV("prop", 50);
 
-    prop->save("/tmp/prop.npy");
+    prop->save(dir, "convert.npy");
 }
 
-void test_digest()
+void X4PhysicsVectorTest::test_g4interpolate()
 {
-    X4PhysicsVectorTest pvt  ; 
+    GDomain<double>* dom = GDomain<double>::GetDefaultDomain() ; 
 
-    G4PhysicsOrderedFreeVector* pof = pvt.make_pof(); 
+    GProperty<double>* prop = X4PhysicsVector<double>::Interpolate(pof, dom ) ; 
 
+    prop->SummaryV("prop", 50);
+
+    prop->save(dir, "g4interpolate.npy");
+
+    LOG(info) << "X4PhysicsVector<double>::_hc_eVnm " << X4PhysicsVector<double>::_hc_eVnm() ; 
+
+}
+
+void X4PhysicsVectorTest::test_digest()
+{
     std::string dig = X4PhysicsVector<float>::Digest(pof) ; 
 
     LOG(info) << " dig " << dig ; 
@@ -167,12 +183,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    /*    
-    test_units();
-    test_convert();
-    */
-    test_digest();
+    X4PhysicsVectorTest pvt  ; 
+    pvt.test_units();
+    pvt.test_digest(); 
+    pvt.test_convert(); 
+    pvt.test_g4interpolate(); 
 
-
-   return 0 ; 
+    return 0 ; 
 }

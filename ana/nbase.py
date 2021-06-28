@@ -242,6 +242,8 @@ def chi2_pvalue( c2obs, ndf ):
     return p_value
 
 
+def chi2one(a, b):
+    return (a-b)*(a-b)/(a+b)
 
 def chi2(a, b, cut=30):
     """

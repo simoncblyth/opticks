@@ -64,9 +64,9 @@ std::string X4Material::Digest( const G4Material* material )
 }
 
 
-GMaterial* X4Material::Convert( const G4Material* material, bool standardized )
+GMaterial* X4Material::Convert( const G4Material* material, char mode )
 {
-    X4Material xmat(material, standardized);
+    X4Material xmat(material, mode);
     GMaterial* mat = xmat.getMaterial(); 
     return mat ; 
 }
@@ -79,10 +79,10 @@ GMaterial* X4Material::getMaterial()
     return m_mat ; 
 }
 
-X4Material::X4Material( const G4Material* material, bool standardized ) 
+X4Material::X4Material( const G4Material* material, char mode ) 
    :
    m_material(material),
-   m_standardized(standardized),
+   m_mode(mode),
    m_mpt(material->GetMaterialPropertiesTable()),
    m_has_efficiency(m_mpt ? HasEfficiencyProperty(m_mpt) : false),
    m_mat(NULL)
@@ -134,7 +134,7 @@ void X4Material::init()
     m_mat = new GMaterial(name.c_str(), index) ; 
     if( m_mpt )
     {
-        X4MaterialPropertiesTable::Convert( m_mat, m_mpt, m_standardized );
+        X4MaterialPropertiesTable::Convert( m_mat, m_mpt, m_mode );
     }
 }
 

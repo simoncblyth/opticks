@@ -232,7 +232,7 @@ class Evt(object):
         pass
 
     def __init__(self, tag="1", src="natural", det="g4live", pfx=".", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?", smry=False):
-        log.info("[ %s " % nom)
+        log.debug("[ %s " % nom)
         self.nom = nom
         self.smry = smry
         self._psel = None
@@ -293,7 +293,7 @@ class Evt(object):
             self.valid = False  ## load failures signalled by setting False
             log.fatal("FAILED TO LOAD EVT : tagdir %s DOES NOT EXIST " % self.tagdir)
         pass
-        log.info("] %s " % nom)
+        log.debug("] %s " % nom)
 
 
     def init(self):
@@ -394,6 +394,23 @@ class Evt(object):
         return "\n".join(map(lambda _:af.label(_), self.seqhis[:100] ))
     seqhis_labels = property(_get_seqhis_labels)
 
+    def seqhis_splits(self, slot=1, dump=True ):
+        """
+        """
+        ss = nb_(self.seqhis, slot )
+        uss = np.unique(ss, return_counts=True)
+        tot = uss[1].sum()
+        for i in range(len(uss[0])):
+            code =  uss[0][i]
+            label = self.histype.label(code)
+            count = uss[1][i]
+            frac  = float(count)/float(tot)
+            if dump:
+                print( " 0x%x %2s %6d %10.3f   " % (code, label, count, frac ) ) 
+            pass
+        pass
+        return uss
+
 
     PhotonArrayStems = "ox rx dx bn ph so ps rs"
 
@@ -420,7 +437,7 @@ class Evt(object):
         shape_mismatch = []
 
         stems = self.PhotonArrayStems.split()
-        log.info("stems : %s " % str(stems))
+        log.debug("stems : %s " % str(stems))
         for stem in stems:
 
             if stem == "so" or stem == "bn": continue 
@@ -827,7 +844,18 @@ class Evt(object):
         self.seqhis_ls = self.make_seqhis_ls()
         self.pflags2 = seq2msk(allseqhis)          # 16 seq nibbles OR-ed into mask 
 
-        self.msk_mismatch = self.pflags != self.pflags2
+
+        # see notes/issues/tds3ip_OK_pflags_mismatch_warning.rst
+        exclude_ecex = True 
+        if exclude_ecex:
+            ecex = self.hismask.code("EC|EX")  
+            pflags_without_ecex = self.pflags & ~ecex 
+            pflags = pflags_without_ecex
+        else:
+            pflags = self.pflags
+        pass  
+
+        self.msk_mismatch = pflags != self.pflags2
         self.num_msk_mismatch = np.count_nonzero(self.msk_mismatch)
 
         if self.num_msk_mismatch == 0:
@@ -1568,15 +1596,18 @@ class Evt(object):
             a = getattr(self, name, None)
             if a is None:continue
             p = getattr(a,"path",None)
-            t = stamp_(p)
+
+            #fmt = "%Y%m%d-%H%M"
+            fmt = "%Y%m%d-%H"
+            t = stamp_(p, fmt)
             if t is not None:   # ht are often missing 
                 sst.add(t)
             pass
             lines.append("%10s  %s  %s " % (name, p, t ))
-
+        pass
         nstamp = len(sst)
         if nstamp > 1:
-            log.warning("MIXED TIMESTAMP EVENT DETECTED")
+            log.warning("MIXED TIMESTAMP EVENT DETECTED %s " % repr(sst) )
             print("\n".join(lines))
         pass 
         return nstamp

@@ -40,7 +40,7 @@ class X4_API X4LogicalBorderSurface
 {
         static const plog::Severity LEVEL ; 
     public:
-        static GBorderSurface* Convert(const G4LogicalBorderSurface* src, bool standardized );
+        static GBorderSurface* Convert(const G4LogicalBorderSurface* src, char mode );
         static int GetItemIndex( const G4LogicalBorderSurface* item ) ;
 
 };

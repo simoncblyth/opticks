@@ -29,7 +29,8 @@ shift
 export OPTICKS_ANA_DEFAULTS="src=$src,cat=$cat,det=$det,tag=$tag,pfx=$pfx"
 
 #script=evt.py
-script=ab.py 
+#script=ab.py 
+script=abs.py 
 #script=profile_.py 
 
 cd ~/opticks/ana

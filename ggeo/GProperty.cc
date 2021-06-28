@@ -631,7 +631,16 @@ void GProperty<T>::save(const char* dir, const char* reldir, const char* name)
 {
     bool create = true ; 
     std::string path = BFile::preparePath(dir, reldir, name, create);
-    LOG(debug) << "GProperty<T>::save to " << path ; 
+    LOG(debug) << path ; 
+    save(path.c_str());
+}
+
+template <typename T>
+void GProperty<T>::save(const char* dir, const char* name)
+{
+    bool create = true ; 
+    std::string path = BFile::preparePath(dir, nullptr, name, create);
+    LOG(debug) << path ; 
     save(path.c_str());
 }
 

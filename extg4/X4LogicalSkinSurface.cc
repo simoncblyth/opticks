@@ -33,7 +33,7 @@
 #include "PLOG.hh"
 
 
-GSkinSurface* X4LogicalSkinSurface::Convert(const G4LogicalSkinSurface* src, bool standardized )
+GSkinSurface* X4LogicalSkinSurface::Convert(const G4LogicalSkinSurface* src, char mode )
 {
     const char* name = X4::Name( src ); 
     size_t index = X4::GetOpticksIndex( src ) ;  
@@ -46,7 +46,7 @@ GSkinSurface* X4LogicalSkinSurface::Convert(const G4LogicalSkinSurface* src, boo
     GSkinSurface* dst = new GSkinSurface( name, index, optical_surface) ;  
     // standard domain is set by GSkinSurface::init
 
-    X4LogicalSurface::Convert( dst, src, standardized );
+    X4LogicalSurface::Convert( dst, src, mode );
 
     const G4LogicalVolume* lv = src->GetLogicalVolume();
 

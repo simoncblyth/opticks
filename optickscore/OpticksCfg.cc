@@ -319,6 +319,10 @@ void OpticksCfg<Listener>::init()
        ("finebndtex",  "Use 1nm pitch wavelength domain for boundary buffer (ie material and surface properties) obtained by interpolation postcache, see GGeo::loadFromCache");
 
    m_desc.add_options()
+       ("finedomain",  "Use 1nm pitch wavelength domain for material and surface properties and hence boundaries obtained by interpolation precache");
+
+
+   m_desc.add_options()
        ("nogroupvel",  "inhibit group_velocity property calculated from refractive_index in GMaterialLib::postLoadFromCache ");
 
    m_desc.add_options()

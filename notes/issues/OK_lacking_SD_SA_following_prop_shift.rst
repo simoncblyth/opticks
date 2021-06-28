@@ -1,6 +1,42 @@
 OK_lacking_SD_SA_following_prop_shift
 ========================================
 
+FIXED by changed in X4PhysicalVolume to work with GPropertyMap<double>
+---------------------------------------------------------------------------
+
+* also GBndLibTest showing the expected surfaces
+
+::
+
+    In [1]: ab.his                                                                                                                                                                                    
+    Out[1]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  1:g4live:tds3gun   -1:g4live:tds3gun        c2        ab        ba 
+    .                              11684     11684       163.44/57 =  2.87  (pval:0.000 prob:1.000)  
+       n             iseq         a         b    a-b       (a-b)^2/(a+b)         a/b                   b/a           [ns] label
+    0000               42      1724      1721      3              0.00         1.002 +- 0.024        0.998 +- 0.024  [2 ] SI AB
+    0001            7ccc2      1562      1406    156              8.20         1.111 +- 0.028        0.900 +- 0.024  [5 ] SI BT BT BT SD
+    0002           7ccc62       761       666     95              6.32         1.143 +- 0.041        0.875 +- 0.034  [6 ] SI SC BT BT BT SD
+    0003            8ccc2       670       597     73              4.21         1.122 +- 0.043        0.891 +- 0.036  [5 ] SI BT BT BT SA
+    0004             8cc2       652       615     37              1.08         1.060 +- 0.042        0.943 +- 0.038  [4 ] SI BT BT SA
+    0005              452       396       536   -140             21.03         0.739 +- 0.037        1.354 +- 0.058  [3 ] SI RE AB
+    0006              462       447       405     42              2.07         1.104 +- 0.052        0.906 +- 0.045  [3 ] SI SC AB
+    0007           7ccc52       378       438    -60              4.41         0.863 +- 0.044        1.159 +- 0.055  [6 ] SI RE BT BT BT SD
+    0008           8ccc62       286       262     24              1.05         1.092 +- 0.065        0.916 +- 0.057  [6 ] SI SC BT BT BT SA
+    0009          7ccc662       281       222     59              6.92         1.266 +- 0.076        0.790 +- 0.053  [7 ] SI SC SC BT BT BT SD
+    0010            8cc62       228       212     16              0.58         1.075 +- 0.071        0.930 +- 0.064  [5 ] SI SC BT BT SA
+    0011          7ccc652       189       205    -16              0.65         0.922 +- 0.067        1.085 +- 0.076  [7 ] SI RE SC BT BT BT SD
+    0012           8ccc52       188       201    -13              0.43         0.935 +- 0.068        1.069 +- 0.075  [6 ] SI RE BT BT BT SA
+    0013            8cc52       154       192    -38              4.17         0.802 +- 0.065        1.247 +- 0.090  [5 ] SI RE BT BT SA
+    0014               41       162       145     17              0.94         1.117 +- 0.088        0.895 +- 0.074  [2 ] CK AB
+    0015             4552       108       165    -57             11.90         0.655 +- 0.063        1.528 +- 0.119  [4 ] SI RE RE AB
+    0016          7ccc552       100       160    -60             13.85         0.625 +- 0.062        1.600 +- 0.126  [7 ] SI RE RE BT BT BT SD
+    0017             4cc2       137       115     22              1.92         1.191 +- 0.102        0.839 +- 0.078  [4 ] SI BT BT AB
+    0018             4662       139       110     29              3.38         1.264 +- 0.107        0.791 +- 0.075  [4 ] SI SC SC AB
+    .                              11684     11684       163.44/57 =  2.87  (pval:0.000 prob:1.000)  
+
+
+
 Surfaces or Bnd messed up ?
 ---------------------------------------------
 
@@ -180,8 +216,6 @@ Recipe for loss of all surfaces::
                
 
     ./ggeo/tests/GSurfaceLibTest.cc:    GPropertyMap<float>* m_sensor_surface = NULL ; 
-    ./ggeo/old/GGeoSensor.cc:        //GPropertyMap<float>* mt_props = gg->findMaterial(mt);
-    ./ggeo/old/GGeoSensor.cc:        GPropertyMap<float>* mt_props = gg->findRawMaterial(mt);
 
 
     ./ggeo/GPropertyMap.cc:template class GPropertyMap<float>;

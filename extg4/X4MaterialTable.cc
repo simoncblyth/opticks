@@ -123,7 +123,11 @@ void X4MaterialTable::init()
         }
 
 
-        GMaterial* mat = X4Material::Convert( material, true );    // standardized
+        char mode_g4interpolated = 'G' ;
+        //char mode_oldstandardized = 'S' ;
+        char mode_asis = 'A' ;
+
+        GMaterial* mat = X4Material::Convert( material, mode_g4interpolated );   
         if(mat->hasProperty("EFFICIENCY"))
         {
              m_materials_with_efficiency.push_back(material); 
@@ -131,7 +135,7 @@ void X4MaterialTable::init()
         m_mlib->add(mat) ;    
 
 
-        GMaterial* rawmat = X4Material::Convert( material, false );   // not-standardized
+        GMaterial* rawmat = X4Material::Convert( material, mode_asis );   
         m_mlib->addRaw(rawmat) ;
     }
 }

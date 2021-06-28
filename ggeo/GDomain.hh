@@ -27,7 +27,10 @@ template <class T>
 class GGEO_API GDomain {
   public: 
      static GDomain<T>* GetDefaultDomain() ; 
-     static unsigned Length(T low, T high, T step);
+     static GDomain<T>* MakeDefaultDomain() ; 
+     static GDomain<T>* MakeCoarseDomain() ; 
+     static GDomain<T>* MakeFineDomain() ; 
+     static size_t Length(T low, T high, T step);
   private: 
      static GDomain<T>* fDefaultDomain ; 
   public: 
@@ -39,18 +42,18 @@ class GGEO_API GDomain {
      T getLow() const {  return m_low ; }   
      T getHigh() const { return m_high ; }   
      T getStep() const { return m_step ; }
-     unsigned getLength() const { return m_length ; }
+     size_t getLength() const { return m_length ; }
   public: 
      std::string desc() const ; 
      void Summary(const char* msg="GDomain::Summary") const ;
      bool isEqual(GDomain<T>* other) const ; 
      T* getValues() const ;   
-
+     T getValue(unsigned i) const ; 
   private:
      T m_low ; 
      T m_high ; 
      T m_step ; 
-     unsigned m_length ; 
+     size_t m_length ; 
 
 
 };

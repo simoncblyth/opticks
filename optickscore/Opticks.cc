@@ -133,14 +133,15 @@ const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
 float        Opticks::DOMAIN_LOW  = 60.f ;
 float        Opticks::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
 float        Opticks::DOMAIN_STEP = 20.f ; 
-unsigned int Opticks::DOMAIN_LENGTH = 39  ;
+unsigned     Opticks::DOMAIN_LENGTH = 39  ;
+
+
+//const char   Opticks::DOMAIN_TYPE = 'C' ; 
+const char   Opticks::DOMAIN_TYPE = 'F' ; 
 
 float        Opticks::FINE_DOMAIN_STEP = 1.f ; 
-unsigned int Opticks::FINE_DOMAIN_LENGTH = 761  ;
-
-
-
-
+unsigned     Opticks::FINE_DOMAIN_LENGTH = 761  ;
+unsigned     Opticks::DomainLength(){ return DOMAIN_TYPE == 'F' ? FINE_DOMAIN_LENGTH : DOMAIN_LENGTH ; }
 
 
 /*
@@ -1109,6 +1110,15 @@ bool Opticks::isGDMLKludge() const  // --gdmlkludge
 {
     return m_cfg->hasOpt("gdmlkludge") ;
 }
+
+bool Opticks::isFineDomain() const  // --finedomain
+{
+    return m_cfg->hasOpt("finedomain") ;
+}
+
+
+
+
 
 bool Opticks::isAngularEnabled() const 
 {

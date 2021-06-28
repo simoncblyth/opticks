@@ -31,26 +31,55 @@
 #include "PLOG.hh"
 
 
-template <typename T>
-GDomain<T>* GDomain<T>::fDefaultDomain = NULL  ;
+template <typename T> GDomain<T>* GDomain<T>::fDefaultDomain = NULL  ;
+
 
 template <typename T>
 GDomain<T>* GDomain<T>::GetDefaultDomain()  // static
 {
     if(fDefaultDomain == NULL)
     {
-        fDefaultDomain = new GDomain<T>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
+        fDefaultDomain = MakeDefaultDomain(); 
     }
     return fDefaultDomain ;
 }
 
+template <typename T>
+GDomain<T>* GDomain<T>::MakeDefaultDomain()  // static
+{
+    GDomain<T>* domain = nullptr ; 
+    switch(Opticks::DOMAIN_TYPE)
+    {
+        case 'F': domain = MakeFineDomain() ; break ; 
+        case 'C': domain = MakeCoarseDomain() ; break ; 
+    }
+    return domain ; 
+}
 
 template <typename T>
-unsigned GDomain<T>::Length(T low, T high, T step) // static
+GDomain<T>* GDomain<T>::MakeCoarseDomain()  // static
+{
+    return  new GDomain<T>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
+}
+
+template <typename T>
+GDomain<T>* GDomain<T>::MakeFineDomain()  // static
+{
+    return new GDomain<T>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::FINE_DOMAIN_STEP ); 
+}
+
+
+
+
+
+
+
+template <typename T>
+size_t GDomain<T>::Length(T low, T high, T step) // static
 {
    T x = low ; 
 
-   unsigned int n = 0 ;
+   size_t n = 0 ;
    while( x <= high )
    {
       x += step ;
@@ -140,6 +169,15 @@ T* GDomain<T>::getValues() const
    }
    return domain ;
 }
+
+template <typename T>
+T GDomain<T>::getValue(unsigned i) const
+{
+    T dom = m_low + i*m_step ; 
+    return dom ; 
+}
+
+
 
 /*
 * :google:`move templated class implementation out of header`

@@ -112,7 +112,9 @@ class PropLib(object):
     B_OSUR = 1
     B_ISUR = 2
     B_IMAT = 3
-
+     
+    COARSE_DOMAIN = np.linspace(60.,820., 39)
+    FINE_DOMAIN = np.linspace(60., 820., 761) 
 
     @classmethod
     def load_GBndLib(cls, base):
@@ -191,8 +193,8 @@ class PropLib(object):
             data = data_
         pass 
         self.data = data
-        #self.domain = np.linspace(60.,810., 39)
-        self.domain = np.linspace(60.,820., 39)
+        #self.domain = self.COARSE_DOMAIN
+        self.domain = self.FINE_DOMAIN
 
         assert len(self.names) == self.data.shape[0]
         pass

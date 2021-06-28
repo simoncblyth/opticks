@@ -85,6 +85,7 @@ public:
 
 public:
    void save(const char* path);
+   void save(const char* dir, const char* name);
    void save(const char* dir, const char* reldir, const char* name);
    T getValue(unsigned index) const ;
    T getDomain(unsigned index) const ;

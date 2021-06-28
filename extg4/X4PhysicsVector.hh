@@ -25,6 +25,7 @@
 
 class G4PhysicsVector ; 
 template <typename T> class GProperty ; 
+template <typename T> class GDomain ; 
 
 /**
 X4PhysicsVector
@@ -48,23 +49,27 @@ class X4_API X4PhysicsVector
         static std::string    Digest0(const G4PhysicsVector* vec ) ; 
         static std::string    Digest(const G4PhysicsVector* vec ) ; 
         static std::string    Scan(const G4PhysicsVector* vec ) ; 
-
-        static GProperty<T>* Convert(const G4PhysicsVector* vec ) ; 
     public:
-        X4PhysicsVector( const G4PhysicsVector* vec );
-
-        size_t getVectorLength() const ;
-        T* getValues(bool reverse) const ;
-        T* getEnergies(bool reverse) const ;
-        T* getWavelengths(bool reverse) const ;
-
-
-        GProperty<T>* getProperty() const ;
-
+        static T _hc_eVnm() ; 
+        static GProperty<T>* Convert(const G4PhysicsVector* vec ) ; 
+        static GProperty<T>* Interpolate(const G4PhysicsVector* vec,  const GDomain<T>* dom ) ; 
     private:
+        X4PhysicsVector( const G4PhysicsVector* vec, const GDomain<T>* dom  );
         void init(); 
     private:
+        GProperty<T>* makeDirect() const ; 
+        size_t getSrcVectorLength() const ;
+        T* getSrcValues(bool reverse) const ;
+        T* getSrcEnergies(bool reverse) const ;
+        T* getSrcWavelengths(bool reverse) const ;
+    private:
+        GProperty<T>* makeInterpolated() const ; 
+        T* getInterpolatedValues(T* wavelength_nm, size_t n, T hc_eVnm=0. ) const ;   // set hc_eVnm to 1240. to use that instead of more precise one
+    private:
+        GProperty<T>* getProperty() const ;
+    private:
         const G4PhysicsVector* m_vec ; 
+        const GDomain<T>*      m_dom ; 
         GProperty<T>*          m_prop ; 
 
 };

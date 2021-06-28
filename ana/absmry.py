@@ -40,7 +40,7 @@ class ABSmryTab(object):
     def __init__(self, base="$TMP"):
         base = os.path.expandvars(base)
         LV=os.environ.get("LV", None)
-        log.info("base %s LV %s " % (base, LV))
+        log.debug("base %s LV %s " % (base, LV))
         relp = findfile(base, ABSmry.NAME )
         self.base = base
         s = odict() 
@@ -110,7 +110,7 @@ class ABSmry(odict):
     def Make(cls, ab):
         s = cls()
         s.dir_ = ab.a.tagdir
-        log.info("s.dir_ %s " % s.dir_)  
+        log.debug("s.dir_ %s " % s.dir_)  
         for q in list(filter(None, list(map(str.strip,cls.KEYS.split("\n"))))):
             v = eval(q)
             log.debug("eval(%s) -> %s  %r " % (q, v, type(v)) )
@@ -169,8 +169,8 @@ class ABSmry(odict):
             dir_ = self.dir_
         pass
         path = self.Path(dir_) 
-        log.info("saving to %s " % path)
-        log.info("self %s " % self)
+        log.debug("saving to %s " % path)
+        log.debug("self %s " % self)
         json_save_(path, self )
 
 

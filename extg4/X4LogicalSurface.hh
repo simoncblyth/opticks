@@ -37,7 +37,7 @@ class X4_API X4LogicalSurface
 {
         static const plog::Severity LEVEL ; 
     public:
-        static void Convert(GPropertyMap<double>* dst,  const G4LogicalSurface* src, bool standardized );
+        static void Convert(GPropertyMap<double>* dst,  const G4LogicalSurface* src, char mode );
 };
 
 

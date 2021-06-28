@@ -24,6 +24,7 @@
 
 #include "X4PhysicsVector.hh"
 
+#include "GDomain.hh"
 #include "GProperty.hh"
 #include "SDigest.hh"
 #include "SDirect.hh"
@@ -69,19 +70,24 @@ std::string X4PhysicsVector<T>::Digest0(const G4PhysicsVector* vec)  // see cfg4
 template <typename T>
 GProperty<T>* X4PhysicsVector<T>::Convert(const G4PhysicsVector* vec ) 
 {
-    X4PhysicsVector<T> xvec(vec); 
+    X4PhysicsVector<T> xvec(vec, nullptr); 
     GProperty<T>* prop = xvec.getProperty();
     return prop ; 
 }
 
 template <typename T>
-X4PhysicsVector<T>::X4PhysicsVector( const G4PhysicsVector* vec )
-    :
-    m_vec(vec),
-    m_prop(NULL)
+GProperty<T>* X4PhysicsVector<T>::Interpolate(const G4PhysicsVector* vec, const GDomain<T>* dom) 
 {
-    init();
+    X4PhysicsVector<T> xvec(vec, dom); 
+    GProperty<T>* prop = xvec.getProperty();
+    return prop ; 
 }
+
+
+
+
+
+
 
 template <typename T>
 GProperty<T>* X4PhysicsVector<T>::getProperty() const
@@ -90,36 +96,109 @@ GProperty<T>* X4PhysicsVector<T>::getProperty() const
 }
 
 template <typename T>
-void X4PhysicsVector<T>::init()
+X4PhysicsVector<T>::X4PhysicsVector( const G4PhysicsVector* vec, const GDomain<T>* dom )
+    :
+    m_vec(vec),
+    m_dom(dom),
+    m_prop(m_dom == nullptr ? makeDirect() : makeInterpolated())
 {
-    size_t len = getVectorLength() ; 
+}
 
-    LOG(LEVEL) << " len " << len ; 
 
-    // converting assumed ascending energies domain to ascending wavelengths 
-    // so must reverse ordering
+/**
+X4PhysicsVector::makeDirect
+-----------------------------
+
+Converting assumed ascending energies domain to ascending wavelengths 
+so must reverse ordering.
+
+**/
+
+template <typename T>
+GProperty<T>* X4PhysicsVector<T>::makeDirect() const
+{
     bool reverse = true ;   
-    T* values  = getValues(reverse); 
-    T* domain = getWavelengths(reverse); 
-
-    m_prop = new GProperty<T>( values, domain, len );   
+    size_t len = getSrcVectorLength() ; 
+    LOG(LEVEL) << " src.len " << len ; 
+    T* values = getSrcValues(reverse); 
+    T* domain = getSrcWavelengths(reverse); 
+    GProperty<T>* prop = new GProperty<T>( values, domain, len );   
 
     // GProperty ctor copies inputs, so cleanup 
     delete[] values ;
     delete[] domain ;
 
+    return prop ; 
 }
 
 template <typename T>
-size_t X4PhysicsVector<T>::getVectorLength() const 
+GProperty<T>* X4PhysicsVector<T>::makeInterpolated() const
+{
+    size_t len = m_dom->getLength() ; 
+    LOG(LEVEL) << " dom.len " << len ; 
+
+    T* domain = m_dom->getValues() ; 
+    T* values = getInterpolatedValues(domain, len); 
+
+    GProperty<T>* prop = new GProperty<T>( values, domain, len );   
+
+    // GProperty ctor copies inputs, so cleanup 
+    delete[] values ;
+    delete[] domain ;
+
+    return prop ; 
+}
+
+
+template <typename T>
+T X4PhysicsVector<T>::_hc_eVnm()  // 1239.84...
+{
+    return h_Planck*c_light/(eV*nm) ; 
+}
+
+
+template <typename T>
+T* X4PhysicsVector<T>::getInterpolatedValues(T* wavelength_nm, size_t n, T hc_eVnm_ ) const
+{
+    T* a = new T[n] ; 
+
+    T hc_eVnm = hc_eVnm_ > 1239. && hc_eVnm_ < 1241. ? hc_eVnm_ : _hc_eVnm()  ; 
+
+    for (size_t i=0; i<n; i++) 
+    {
+        T wl_nm = wavelength_nm[i] ; 
+        T en_eV = hc_eVnm/wl_nm ; 
+        T value = m_vec->Value(en_eV*eV); 
+        a[i] = value ;
+
+        /*
+        std::cout
+            << " i " << std::setw(4) << i 
+            << " wl_nm " << std::setw(10) << std::fixed << std::setprecision(3) << wl_nm
+            << " en_eV " << std::setw(10) << std::fixed << std::setprecision(3) << en_eV
+            << " value " << std::setw(10) << value 
+            << " hc_eVnm " << std::setw(10) << std::fixed << std::setprecision(3) << hc_eVnm 
+            << " _hc_eVnm " << std::setw(10) << std::fixed << std::setprecision(3) << _hc_eVnm() 
+            << std::endl 
+            ;  
+        */
+    }
+    return a ; 
+}
+
+
+
+template <typename T>
+size_t X4PhysicsVector<T>::getSrcVectorLength() const 
 {
     return m_vec->GetVectorLength() ; 
 }
  
+
 template <typename T>
-T* X4PhysicsVector<T>::getValues(bool reverse) const
+T* X4PhysicsVector<T>::getSrcValues(bool reverse) const
 {
-    size_t n = getVectorLength() ; 
+    size_t n = getSrcVectorLength() ; 
     T* a = new T[n] ; 
     for (size_t i=0; i<n; i++) 
     {
@@ -133,10 +212,18 @@ T* X4PhysicsVector<T>::getValues(bool reverse) const
     return a ; 
 }
 
+/**
+X4PhysicsVector::getSrcEnergies
+--------------------------------
+
+Allocate array of T and fills asis from source vector.
+
+**/
+
 template <typename T>
-T* X4PhysicsVector<T>::getEnergies(bool reverse) const
+T* X4PhysicsVector<T>::getSrcEnergies(bool reverse) const
 {
-    size_t n = getVectorLength() ; 
+    size_t n = getSrcVectorLength() ; 
     T* a = new T[n] ; 
     for (size_t i=0; i<n; i++) 
     {
@@ -152,26 +239,35 @@ T* X4PhysicsVector<T>::getEnergies(bool reverse) const
     return a ; 
 }
 
+/**
+X4PhysicsVector::getSrcWavelengths
+-------------------------------------
+
+Allocate array of T and fills asis from source vector.
+
+**/
+
+
 template <typename T>
-T* X4PhysicsVector<T>::getWavelengths(bool reverse) const 
+T* X4PhysicsVector<T>::getSrcWavelengths(bool reverse) const 
 {
-    size_t n = getVectorLength() ; 
+    size_t n = getSrcVectorLength() ; 
     T* a = new T[n] ; 
 
-    double hc = h_Planck*c_light/(nm*eV) ;  // ~1240 nm.eV 
+    double hc_eVnm = h_Planck*c_light/(nm*eV) ;  // ~1240 nm.eV 
 
     for (size_t i=0; i<n; i++) 
     {
-        T energy = m_vec->Energy(i)/eV ;  // convert into eV   (assumes input in G4 standard energy unit (MeV))
-        T wavelength = hc/energy ;        // wavelength in nm
+        T energy_eV = m_vec->Energy(i)/eV ;     // convert into eV   (assumes input in G4 standard energy unit (MeV))
+        T wavelength_nm = hc_eVnm/energy_eV ;   // wavelength in nm
 
         LOG(LEVEL) 
             << " i " << std::setw(4) << i 
-            << " energy " << std::setw(10) << energy   
-            << " wavelength " << std::setw(10) << wavelength   
+            << " energy_eV " << std::setw(10) << std::fixed << std::setprecision(3) << energy_eV  
+            << " wavelength_nm " << std::setw(10) << std::fixed << std::setprecision(3) << wavelength_nm
             ;
 
-        a[reverse ? n-1-i : i] = wavelength ; 
+        a[reverse ? n-1-i : i] = wavelength_nm ; 
     }
     return a ; 
 }

@@ -70,6 +70,15 @@ void GBndLib::save()
     saveIndexBuffer();  
 }
 
+/**
+GBndLib::load
+---------------
+
+Hmm, finebndtex appears to be done here postcache ?
+It surely makes for sense to define a finer domain to use precache.
+
+**/
+
 GBndLib* GBndLib::load(Opticks* ok, bool constituents)
 {
     LOG(LEVEL) << "[" ; 

@@ -31,14 +31,14 @@
 
 const plog::Severity X4LogicalSurface::LEVEL = PLOG::EnvLevel("X4LogicalSurface","DEBUG") ; 
 
-void X4LogicalSurface::Convert(GPropertyMap<double>* dst,  const G4LogicalSurface* src, bool standardized )
+void X4LogicalSurface::Convert(GPropertyMap<double>* dst,  const G4LogicalSurface* src, char mode )
 {
     LOG(LEVEL) << "[" ; 
     const G4SurfaceProperty*  psurf = src->GetSurfaceProperty() ;   
     const G4OpticalSurface* opsurf = dynamic_cast<const G4OpticalSurface*>(psurf);
     assert( opsurf );   
     G4MaterialPropertiesTable* mpt = opsurf->GetMaterialPropertiesTable() ;
-    X4MaterialPropertiesTable::Convert( dst, mpt, standardized );
+    X4MaterialPropertiesTable::Convert( dst, mpt, mode );
 
     LOG(LEVEL) << "]" ; 
 }

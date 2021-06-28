@@ -320,26 +320,26 @@ void GPropertyLib::init()
         //m_standard_domain = getDefaultDomain(); 
         m_standard_domain = GDomain<double>::GetDefaultDomain(); 
 
-        unsigned int len = getStandardDomainLength() ;
-
-        if(len != Opticks::DOMAIN_LENGTH)
+        unsigned len = getStandardDomainLength() ;
+        unsigned len2 =  Opticks::DomainLength() ;
+        if(len != len2)
         { 
             m_standard_domain->Summary("GPropertyLib::m_standard_domain");
-            LOG(fatal) << "GPropertyLib::init"
-                       << " mismatch "
-                       << " DOMAIN_LENGTH " << Opticks::DOMAIN_LENGTH
-                       << " len " << len 
-                       ;
+            LOG(fatal) 
+                << " domain length MISMATCH "
+                << " len2 " << len2
+                << " len " << len 
+                ;
         }
+        assert( len == len2 );   
 
-        assert(len == Opticks::DOMAIN_LENGTH );
     }
     else
     {
-        LOG(warning) << "GPropertyLib::init"
-                     << " using non-default domain " 
-                     << " step " << m_standard_domain->getStep()
-                     ; 
+        LOG(warning) 
+           << " using non-default domain " 
+           << " step " << m_standard_domain->getStep()
+           ; 
     }
 
 

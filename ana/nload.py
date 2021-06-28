@@ -92,7 +92,7 @@ def np_load(base,sub=None,rel=None):
     if os.path.exists(path):
         a = np.load(path)
     else: 
-        log.warning("np_load path_:%s path:%s DOES NOT EXIST " % ( path_, path ))
+        log.debug("np_load path_:%s path:%s DOES NOT EXIST " % ( path_, path ))
         a = None 
     pass
     return a
@@ -285,7 +285,7 @@ class A(np.ndarray):
 
         fake_missing = exists and ( ( g4only and itag > 0 and stem == "dx" ) or ( okonly and itag < 0 and stem == "bn" ))     
         if fake_missing:
-            print("fake_missing %s " % path)
+            log.debug("fake_missing %s " % path)
         pass  
         if exists and not fake_missing:
 

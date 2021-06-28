@@ -160,7 +160,7 @@ class Profile(object):
 
 
     def init(self):
-        log.info("[")
+        log.debug("[")
         self.loadProfile() 
         self.loadAcc()    ## Accumulated timings 
         self.loadMeta()
@@ -169,8 +169,9 @@ class Profile(object):
             self.initTime()
         else:
             self.tim = -1 
-            log.info("didnt load any entries")
+            log.debug("didnt load any entries")
         pass
+        log.debug("]")
 
     def initTime(self):
         if self.g4:  
@@ -186,7 +187,7 @@ class Profile(object):
         self.tim = tim
         self.idx = idx
         self.sli = slice(idx[0],idx[1]+1)
-        log.info("]")
+        log.debug("]")
 
     def pfmt(self, path1, path2, path3=None):
         """
@@ -260,7 +261,7 @@ class Profile(object):
                    b'GMergedMesh::Create::Allocate', b'GMergedMesh::Create::Merge', b'GMergedMesh::Create::Bounds'], dtype='|S45')
 
         """
-        log.info("[")
+        log.debug("[")
         path = self.path("")
         lpath = self.path("Labels")
         qpath = self.path("Lis")
@@ -268,14 +269,14 @@ class Profile(object):
         self.prfmt = self.pfmt(path, lpath)
         a = np.load(path)
         assert a.ndim == 2
-        log.info("path:%s a.shape:%r" % (path,a.shape)) 
+        log.debug("path:%s a.shape:%r" % (path,a.shape)) 
 
         l = np.load(lpath)
         assert l.ndim == 2 and l.shape[1] == 64
         assert len(a) == len(l) 
         num = len(a)
 
-        log.info("lpath:%s l.shape:%r" % (lpath,l.shape)) 
+        log.debug("lpath:%s l.shape:%r" % (lpath,l.shape)) 
 
         ll = list(l.view("|S64")[:,0])
         lll = np.array(ll)
@@ -284,7 +285,7 @@ class Profile(object):
 
 
         q = np.load(qpath) if os.path.exists(qpath) else None
-        log.info("qpath:%s q.shape:%r" % (qpath,q.shape)) 
+        log.debug("qpath:%s q.shape:%r" % (qpath,q.shape)) 
 
     
         self.l = lll 
@@ -301,7 +302,7 @@ class Profile(object):
         self.apath = path
         self.lpath = lpath
 
-        log.info("]")
+        log.debug("]")
 
 
     def __len__(self):
@@ -311,7 +312,7 @@ class Profile(object):
         """
         Acc are accumulated timings 
         """
-        log.info("[")
+        log.debug("[")
         path = self.path("")
         acpath = self.path("Acc")
         lacpath = self.path("AccLabels")
@@ -327,7 +328,7 @@ class Profile(object):
 
         self.ac = ac
         self.lac = np.array( lac.view("|S64")[:,0] )
-        log.info("]")
+        log.debug("]")
 
 
     def acc(self, label):
@@ -397,7 +398,11 @@ class Profile(object):
         :return array of all times matching the label:
         """ 
         pr = self
-        tt = pr.t[np.where(pr.l == b_(l0) )] 
+        if len(pr.l) > 0:
+            tt = pr.t[np.where(pr.l == b_(l0) )] 
+        else:
+            tt = np.ndarray(0)   # empty array
+        pass
         return tt 
 
     def plt_axvline(self, ax):
@@ -444,7 +449,7 @@ class Profile(object):
 
     launch_start = property(lambda self:self.times(self.OKDT[0]))
     launch_stop = property(lambda self:self.times(self.OKDT[1]))
-    launch = property(lambda self:self.launch_stop - self.launch_start)
+    launch = property(lambda self:self.launch_stop - self.launch_start )
 
     start_interval = property(lambda self:np.diff(self.launch_start))
     stop_interval = property(lambda self:np.diff(self.launch_stop))
@@ -453,8 +458,14 @@ class Profile(object):
         """
         intervals only defined with "--multievent 2+" running 
         """
-        log.info("[ %r" % self.launch)
-        self.avg_launch = np.average(self.launch)
+        log.debug("[ %r" % self.launch)
+
+        if len(self.launch) > 0:
+            avg_launch = np.average(self.launch)
+        else:
+            avg_launch = 0 
+        pass 
+        self.avg_launch = avg_launch
         nsta = len(self.start_interval)  
         nsto = len(self.stop_interval)
         assert nsta == nsto
@@ -470,7 +481,7 @@ class Profile(object):
             self.multievent = False
         pass
         #ipdb.set_trace()       
-        log.info("]")
+        log.debug("]")
 
     def overheads(self):
 
