@@ -196,6 +196,7 @@ class CFG4_API CRecorder {
         Opticks*           m_ok; 
         double             m_microStep_mm ; 
         bool               m_suppress_same_material_microStep ; 
+        bool               m_suppress_all_microStep ; 
         unsigned           m_mode ; 
         bool               m_recpoi ; 
         bool               m_reccf ;

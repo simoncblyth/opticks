@@ -1,5 +1,5 @@
-OK_lacking_SD_SA_following_prop_shift
-========================================
+OK_lacking_SD_SA_following_prop_shift : all surfaces disappeared ! FIXED
+===========================================================================
 
 FIXED by changed in X4PhysicalVolume to work with GPropertyMap<double>
 ---------------------------------------------------------------------------

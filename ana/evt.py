@@ -396,6 +396,9 @@ class Evt(object):
 
     def seqhis_splits(self, slot=1, dump=True ):
         """
+        :param slot: nibble index
+        :param dump: 
+        :return uss: codes and counts of whatever is in the slot  
         """
         ss = nb_(self.seqhis, slot )
         uss = np.unique(ss, return_counts=True)
@@ -410,6 +413,29 @@ class Evt(object):
             pass
         pass
         return uss
+
+    def seqhis_counts(self, slot=1, labs="AB RE SC BT"):
+        """
+        :param slot: nibble index
+        :param labs: string with space delimited list of 2 character history flag labels
+        :param dump: 
+        :return counts: seqhis counts for each requested label being in the slot   
+        """
+        ss = nb_(self.seqhis, slot )
+        uss = np.unique(ss, return_counts=True)
+        tot = uss[1].sum()
+        
+        codes = self.histype.code(labs.split())
+        counts = np.zeros(len(codes), dtype=np.int32)
+        for i in range(len(uss[0])):
+            code =  uss[0][i]
+            count = uss[1][i]
+            if code in codes:
+                counts[codes.index(code)] = count 
+            pass 
+        pass
+        return counts
+
 
 
     PhotonArrayStems = "ox rx dx bn ph so ps rs"

@@ -234,6 +234,10 @@ def chi2_pvalue( c2obs, ndf ):
         Out[57]: array([ 0.95  ,  0.8997,  0.7999,  0.6997,  0.5002,  0.3001,  0.2001,  0.0999,  0.05  ,  0.01  ,  0.001 ])
 
 
+    * ~/opticks_refs/PoissonConsistency.pdf
+    * http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf 
+
+
     """
     if _chi2 is None:
         return 1

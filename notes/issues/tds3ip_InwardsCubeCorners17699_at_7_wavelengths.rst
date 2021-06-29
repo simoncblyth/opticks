@@ -6,6 +6,7 @@ Related
 
 * prior :doc:`ok_less_reemission`
 * next :doc:`raw_scintillator_material_props`
+* next :doc:`tds3ip_InwardsCubeCorners17699_paired_zeros_in_tail_G4:SR_BT_BT_SA_OK:SR_BT_SA`
 
 tds3ip
 ----------
@@ -37,8 +38,13 @@ tds3ip
     }
 
 
-findbndtex
-------------
+
+switched to 1 nm fine domain default using G4 Value interpolation
+-----------------------------------------------------------------------
+
+
+findbndtex was to old way, which was compromised by difficulty of geocache recreation
+---------------------------------------------------------------------------------------
 
 ::
 
@@ -115,8 +121,8 @@ findbndtex
 
 
 
-compare first slot splits at 7 wavelengths
----------------------------------------------------
+compare first slot splits at 7 wavelengths : using the old coarse domain props
+----------------------------------------------------------------------------------
 
 * more deviation in the middle where abslen changing rapidly
 * reemission wavlength peaks in that region so thats consistent with more discrepancy after reemission
@@ -166,6 +172,83 @@ compare first slot splits at 7 wavelengths
      0xc BT   21113       0.264       21264       0.266    -151           0.538 
 
     In [1]:                                                           
+
+
+
+with fine 1nm domain steps the match is better, but there zeros problems
+-------------------------------------------------------------------------------
+
+::
+
+    epsilon:ana blyth$ tds3ip_abs.sh 
+    PFX=tds3ip ab.sh 1
+     input_photon start wavelength 360 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 1 b.itag -1 
+     0x4 AB   16040       0.201       16012       0.200      28           0.024 
+     0x5 RE   63928       0.799       63966       0.800     -38           0.011 
+     0x6 SC      32       0.000          22       0.000      10           1.852 
+     input_photon start wavelength 380 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 2 b.itag -2 
+     0x4 AB   16019       0.200       16055       0.201     -36           0.040 
+     0x5 RE   63919       0.799       63885       0.799      34           0.009 
+     0x6 SC      62       0.001          60       0.001       2           0.033 
+     input_photon start wavelength 400 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 3 b.itag -3 
+     0x4 AB   15843       0.198       15917       0.199     -74           0.172 
+     0x5 RE   63243       0.791       63167       0.790      76           0.046 
+     0x6 SC     914       0.011         916       0.011      -2           0.002 
+     input_photon start wavelength 420 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 4 b.itag -4 
+     0x4 AB   13237       0.165       13268       0.166     -31           0.036 
+     0x5 RE   12934       0.162       12948       0.162     -14           0.008 
+     0x6 SC   46479       0.581       46507       0.581     -28           0.008 
+     0xc BT    7350       0.092        7277       0.091      73           0.364 
+     input_photon start wavelength 440 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 5 b.itag -5 
+     0x4 AB   12882       0.161       13027       0.163    -145           0.811 
+     0x5 RE    3636       0.045        3709       0.046     -73           0.726 
+     0x6 SC   47795       0.597       47669       0.596     126           0.166 
+     0xc BT   15687       0.196       15595       0.195      92           0.271 
+     input_photon start wavelength 460 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 6 b.itag -6 
+     0x4 AB   15538       0.194       15417       0.193     121           0.473 
+     0x5 RE    3168       0.040        3278       0.041    -110           1.877 
+     0x6 SC   43614       0.545       43348       0.542     266           0.814 
+     0xc BT   17680       0.221       17957       0.224    -277           2.153 
+     input_photon start wavelength 480 
+     cod la       a          af          b          bf     a-b   (a-b)^2/(a+b)  slot 1  (seqhis_splits)  a.itag 7 b.itag -7 
+     0x4 AB   14691       0.184       14695       0.184      -4           0.001 
+     0x5 RE    2319       0.029        2264       0.028      55           0.660 
+     0x6 SC   41745       0.522       41777       0.522     -32           0.012 
+     0xc BT   21245       0.266       21264       0.266     -19           0.008 
+
+    In [1]:                            
+
+
+        ## slot 1 counts using input photons at 7 wavelengths in OK and G4, for diametric diagonal paths (InwardsCubeCorners17999?)  
+        ##
+        ##      AB     RE      SC     BT    
+
+        In [3]: counts.reshape(-1,4)                                                                                                                                                                      
+        Out[3]: 
+        array([[16040, 63928,    32,     0],
+               [16012, 63966,    22,     0],
+               [16019, 63919,    62,     0],
+               [16055, 63885,    60,     0],
+               [15843, 63243,   914,     0],
+               [15917, 63167,   916,     0],
+               [13237, 12934, 46479,  7350],
+               [13268, 12948, 46507,  7277],
+               [12882,  3636, 47795, 15687],
+               [13027,  3709, 47669, 15595],
+               [15538,  3168, 43614, 17680],
+               [15417,  3278, 43348, 17957],
+               [14691,  2319, 41745, 21245],
+               [14695,  2264, 41777, 21264]], dtype=int32)
+
+        In [4]: np.sum( counts.reshape(-1,4), axis=1 )                                                                                                                                                    
+        Out[4]: array([80000, 80000, 80000, 80000, 80000, 80000, 80000, 80000, 80000, 80000, 80000, 80000, 80000, 80000])
+
 
 
 

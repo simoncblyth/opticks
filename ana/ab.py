@@ -1525,10 +1525,21 @@ class AB(object):
 
         return bins, aval, bval, labels
 
-
+    def seqhis_counts(self, slot=1, labs="AB RE SC BT"):
+        ab = self
+        a = self.a
+        b = self.b
+        ac = a.seqhis_counts(slot, labs) 
+        bc = b.seqhis_counts(slot, labs) 
+        assert ac.shape == bc.shape
+        abc = np.zeros( (2,)+ac.shape , dtype=np.int32 )
+        abc[0] = ac 
+        abc[1] = bc 
+        return abc
 
     def seqhis_splits(self, slot=1):
 
+        ab = self
         a = self.a
         b = self.b
 
@@ -1551,6 +1562,7 @@ class AB(object):
         cols_hdr = cols_fmt % tuple(cols) 
         print( cols_hdr + " slot %d  (seqhis_splits)  a.itag %d b.itag %d " % (slot, a.itag, b.itag) )
 
+
         for i in range(len(codes)):
             code = codes[i]
             label = self.histype.label(code) 
@@ -1572,7 +1584,6 @@ class AB(object):
 
             print( line_fmt  % ( code, label, a_count, a_frac, b_count, b_frac, ab_count, c2 ))  
         pass
-
 
 
 

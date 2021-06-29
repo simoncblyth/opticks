@@ -86,6 +86,7 @@ CRecorder::CRecorder(CCtx& ctx)
     m_ok(m_ctx.getOpticks()),
     m_microStep_mm(0.004),              //  see notes/issues/ok_lacks_SI-4BT-SD.rst
     m_suppress_same_material_microStep(true), 
+    m_suppress_all_microStep(true), 
     m_mode(m_ok->getManagerMode()),   // --managermode
     m_recpoi(m_ok->isRecPoi()),   // --recpoi
     m_reccf(m_ok->isRecCf()),     // --reccf
@@ -505,7 +506,7 @@ void CRecorder::postTrackWriteSteps()
         m_state._step_action = 0 ; 
 
         CStp* stp  = m_crec->getStp(i);
-        CStp* next_stp = m_crec->getStp(i+1) ;   // NULL for i = num - 1 
+        CStp* next_stp = m_crec->getStp(i+1) ;   // NULL for i = num - 1   
 
         CStage::CStage_t stage = stp->getStage();
         const G4Step* step = stp->getStep();
@@ -538,9 +539,10 @@ void CRecorder::postTrackWriteSteps()
 
         unsigned postmat = m_material_bridge->getPostMaterial(step) ; 
 
-        bool same_material_microStep = premat == postmat && microStep ; 
-
-        bool suppress_microStep = m_suppress_same_material_microStep && same_material_microStep ; 
+        bool suppress_microStep = false ; 
+        if(m_suppress_same_material_microStep ) suppress_microStep = premat == postmat && microStep ;
+        if(m_suppress_all_microStep )           suppress_microStep = microStep ;       
+        // suppress_all_microStep trumps suppress_same_material_microStep
 
         CStage::CStage_t postStage = stage == CStage::REJOIN ? CStage::RECOLL : stage  ; // avoid duping the RE 
 
@@ -583,10 +585,10 @@ void CRecorder::postTrackWriteSteps()
 
         // see notes/issues/geant4_opticks_integration/tconcentric_post_recording_has_seqmat_zeros.rst
 
-        if(lastPost)      m_state._step_action |= CAction::LAST_POST ; 
-        if(surfaceAbsorb) m_state._step_action |= CAction::SURF_ABS ;  
-        if(postSkip)      m_state._step_action |= CAction::POST_SKIP ; 
-        if(matSwap)       m_state._step_action |= CAction::MAT_SWAP ; 
+        if(lastPost)      m_state._step_action |= CAction::LAST_POST ;    // postFlag is AB|SA|SD|MI  (terminal)
+        if(surfaceAbsorb) m_state._step_action |= CAction::SURF_ABS ;     // postFlag is SA|SD 
+        if(postSkip)      m_state._step_action |= CAction::POST_SKIP ;    // StepTooSmall or microStep being suppressed
+        if(matSwap)       m_state._step_action |= CAction::MAT_SWAP ;     // for material bookkeeping after StepTooSmall
 
         switch(stage)
         {
@@ -602,8 +604,7 @@ void CRecorder::postTrackWriteSteps()
         unsigned u_premat  = matSwap ? postmat : premat ;
         unsigned u_postmat = ( matSwap || postmat == 0 )  ? premat  : postmat ;
 
-        if(first)            u_premat = premat ;   
-        // dont allow any matswap for 1st material : see notes/issues/tboolean-box-okg4-seqmat-mismatch.rst
+        if(first)            u_premat = premat ;    // dont allow any matswap for 1st material : see notes/issues/tboolean-box-okg4-seqmat-mismatch.rst
         if(surfaceAbsorb)    u_postmat = postmat ; 
 
 
@@ -636,7 +637,7 @@ void CRecorder::postTrackWriteSteps()
         }
 
 
-        if(i == 0)
+        if(i == 0) // for 1st step PRE_SAVE and POST_SAVE  
         {
 
             m_state._step_action |= CAction::PRE_SAVE ; 
@@ -654,7 +655,7 @@ void CRecorder::postTrackWriteSteps()
                  if(done) m_state._step_action |= CAction::POST_DONE ; 
             }
         }
-        else
+        else     // after 1st step just POST_SAVE 
         {
             if(!postSkip && !done)
             {

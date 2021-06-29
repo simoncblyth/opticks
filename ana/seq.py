@@ -169,6 +169,7 @@ class MaskType(BaseType):
         :param s: abbreviation string eg "TO|BT|SD"  or hexstring 8ccccd (without 0x prefix)
         :return: integer bitmask 
         """
+
         #log.debug(" s [%s] " % s)
         if self.hexstr.match(s):
             c = int(s,16) 
@@ -224,6 +225,11 @@ class SeqType(BaseType):
         :param s: abbreviation sequence string eg "TO BT BR BR BR BT SA"
         :return: integer code eg 0x8cbbbcd
         """
+        if type(s) is list or issubclass( s.__class__, np.ndarray ): 
+            return list(map(lambda _:self.code(_), s))
+        pass
+
+
         if self.hexstr.match(s):
             c = int(s,16) 
             cs = "%x" % c 
@@ -409,7 +415,8 @@ class SeqTable(object):
             log.debug(" c2sum %10.4f ndf %d c2p %10.4f c2_pval %10.4f " % (c2sum,ndf,c2p, c2_pval ))
 
             cnames += ["c2"]
-            tots += ["%10.2f/%d = %5.2f  (pval:%0.3f prob:%0.3f) " % (c2sum,ndf,c2p,c2_pval,1-c2_pval) ]
+            #tots += ["%10.2f/%d = %5.2f   P[c2>%.2f]:%0.3f  P[c2<%.2f]:%0.3f " % (c2sum,ndf,c2p,c2sum,c2_pval,c2sum,1-c2_pval) ]
+            tots += ["%10.2f/%d = %5.2f   pvalue:P[c2>]:%0.3f  1-pvalue:P[c2<]:%0.3f " % (c2sum,ndf,c2p,c2_pval,1-c2_pval) ]
             cfcount = cu[:,1:]
 
             ab, ba = ratio(a, b)
