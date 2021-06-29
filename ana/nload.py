@@ -242,7 +242,7 @@ class A(np.ndarray):
     def path_(cls, stem, typ, tag, det="dayabay", pfx="source"):
         """
         :param stem: gs,ox,ht,rs,so,ph,fdom,idom
-        :param typ: natural
+        :param typ: natural ok.src
         :param tag: 1,-1
         :param det: g4live 
         :param pfx: source for 1st executable, the name of the executable for subsequent ones eg OKG4Test 

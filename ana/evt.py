@@ -22,6 +22,10 @@
 
 ::
 
+   
+    ipython --pdb -i evt.py -- --pfx tds3gun --src natural --tag 100
+
+
     #export OPTICKS_ANA_DEFAULTS="det=tboolean-box,src=torch,tag=1,pfx=tboolean-box"
     #export OPTICKS_EVENT_BASE=/tmp       # <-- set this to the test invokation directory 
 
@@ -607,18 +611,24 @@ class Evt(object):
 
         wl = ox[:,2,W] 
         c4 = ox[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
+        pos = ox[:,0,:3]
+        r = np.sqrt(np.sum(pos*pos, axis=1))
 
         log.debug("ox shape %s " % str(ox.shape))
+
+
 
 
         post = ox[:,0]
         posr = np.sqrt(np.sum(post[:,:3]*post[:,:3], axis=1))
 
         self.wl = wl
+ 
         self.post = post 
         self.posr = posr
         self.dirw = ox[:,1]
         self.polw = ox[:,2]
+        self.r = r 
 
         self.boundary = (( ox[:,3,0].view(np.uint32) & 0xffff0000 ) >> 16 ).view(np.int16)[0::2]  
         self.sensor   = (( ox[:,3,0].view(np.uint32) & 0x0000ffff ) >> 0 ) 
@@ -725,6 +735,7 @@ class Evt(object):
         
         rx = self.aload("rx",optional=True)
         self.rx = rx
+        self.w0 = self.recwavelength(0)
         self.desc['rx'] = "(records) photon step records"
 
         if rx.missing:return 
@@ -1813,7 +1824,6 @@ class Evt(object):
         boundary_domain = self.fdom[2,0]
         return nwavelength.astype(np.float32)*boundary_domain[W]/255.0 + boundary_domain[X]
 
-
     def rpol(self):
         recs = self.recs
         if recs is None:
@@ -1995,8 +2005,6 @@ class Evt(object):
             log.warning("this only works on evt with single line seqs")
             return None
         return self.rpost_(recs)
-
-
 
     def rdir(self, fr=0, to=1, nrm=True):
         """

@@ -10,6 +10,10 @@ Related
 
 
 
+
+
+
+
 G4 HAS EXTRA BT FROM A Pyrex/Water MICROSTEP GETTING BACK OUT THE PMT FOLLOWING A REFLECTION 
 -----------------------------------------------------------------------------------------------
 
@@ -29,6 +33,11 @@ G4 HAS EXTRA BT FROM A Pyrex/Water MICROSTEP GETTING BACK OUT THE PMT FOLLOWING 
 
 ATTEMPT FIX with m_suppress_all_microStep 
 ----------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ git commit -m "attempt to align CRecorder::postTrackWriteSteps bookkeeping with m_suppress_all_microStep for G4 reflected photons getting back out the PMT across the microStep in CPU geometry that is not in GPU geometry, see notes/issues/tds3ip_InwardsCubeCorners17699_paired_zeros_in_tail_G4:SR_BT_BT_SA_OK:SR_BT_SA.rst "
+
 
 * trying to match bookkeeping with despite slightly different geometry (the +0.001mm skin is not in GPU geometry)
 
@@ -54,6 +63,78 @@ ATTEMPT FIX with m_suppress_all_microStep
     544         if(m_suppress_all_microStep )           suppress_microStep = microStep ;
     545         // suppress_all_microStep trumps suppress_same_material_microStep
     546 
+
+
+
+After CRecorder m_suppress_all_microStep the bookkeeping matches better
+-------------------------------------------------------------------------
+
+::
+
+    In [1]: ab.his[:100]                                                                                                                                                                                
+    Out[1]: 
+    ab.his
+    .       seqhis_ana  cfo:sum  4:g4live:tds3ip   -4:g4live:tds3ip        c2        ab        ba 
+    .                              80000     80000       297.89/243 =  1.23   pvalue:P[c2>]:0.009  1-pvalue:P[c2<]:0.991  
+       n             iseq         a         b    a-b       (a-b)^2/(a+b)         a/b                   b/a           [ns] label
+    0000               4d     13237     13268    -31              0.04         0.998 +- 0.009        1.002 +- 0.009  [2 ] TO AB
+    0001           7ccc6d      9959      9940     19              0.02         1.002 +- 0.010        0.998 +- 0.010  [6 ] TO SC BT BT BT SD
+    0002            7cccd      5345      5374    -29              0.08         0.995 +- 0.014        1.005 +- 0.014  [5 ] TO BT BT BT SD
+    0003              46d      4974      4974      0              0.00         1.000 +- 0.014        1.000 +- 0.014  [3 ] TO SC AB
+    0004          7ccc66d      3803      3815    -12              0.02         0.997 +- 0.016        1.003 +- 0.016  [7 ] TO SC SC BT BT BT SD
+    0005           8ccc6d      2432      2572   -140              3.92         0.946 +- 0.019        1.058 +- 0.021  [6 ] TO SC BT BT BT SA
+    0006            8cc6d      2448      2329    119              2.96         1.051 +- 0.021        0.951 +- 0.020  [5 ] TO SC BT BT SA
+    0007           7ccc5d      1912      1950    -38              0.37         0.981 +- 0.022        1.020 +- 0.023  [6 ] TO RE BT BT BT SD
+    0008             466d      1836      1899    -63              1.06         0.967 +- 0.023        1.034 +- 0.024  [4 ] TO SC SC AB
+    0009              45d      1771      1817    -46              0.59         0.975 +- 0.023        1.026 +- 0.024  [3 ] TO RE AB
+    0010         7ccc666d      1507      1497     10              0.03         1.007 +- 0.026        0.993 +- 0.026  [8 ] TO SC SC SC BT BT BT SD
+    0011            8cccd      1386      1294     92              3.16         1.071 +- 0.029        0.934 +- 0.026  [5 ] TO BT BT BT SA
+    0012          8ccc66d       976       991    -15              0.11         0.985 +- 0.032        1.015 +- 0.032  [7 ] TO SC SC BT BT BT SA
+    0013            4cc6d       895       911    -16              0.14         0.982 +- 0.033        1.018 +- 0.034  [5 ] TO SC BT BT AB
+    0014           8cc66d       901       890     11              0.07         1.012 +- 0.034        0.988 +- 0.033  [6 ] TO SC SC BT BT SA
+    0015           8ccc5d       823       825     -2              0.00         0.998 +- 0.035        1.002 +- 0.035  [6 ] TO RE BT BT BT SA
+    0016          7ccc56d       758       781    -23              0.34         0.971 +- 0.035        1.030 +- 0.037  [7 ] TO SC RE BT BT BT SD
+    0017             4c6d       735       747    -12              0.10         0.984 +- 0.036        1.016 +- 0.037  [4 ] TO SC BT AB
+    0018            4666d       747       691     56              2.18         1.081 +- 0.040        0.925 +- 0.035  [5 ] TO SC SC SC AB
+    0019          7ccc65d       708       678     30              0.65         1.044 +- 0.039        0.958 +- 0.037  [7 ] TO RE SC BT BT BT SD
+    0020             456d       711       668     43              1.34         1.064 +- 0.040        0.940 +- 0.036  [4 ] TO SC RE AB
+    0021          7ccc55d       600       546     54              2.54         1.099 +- 0.045        0.910 +- 0.039  [7 ] TO RE RE BT BT BT SD
+    0022             455d       557       546     11              0.11         1.020 +- 0.043        0.980 +- 0.042  [4 ] TO RE RE AB
+    0023        7ccc6666d       543       549     -6              0.03         0.989 +- 0.042        1.011 +- 0.043  [9 ] TO SC SC SC SC BT BT BT SD
+    0024            8cc5d       563       498     65              3.98         1.131 +- 0.048        0.885 +- 0.040  [5 ] TO RE BT BT SA
+    0025         8ccc666d       358       400    -42              2.33         0.895 +- 0.047        1.117 +- 0.056  [8 ] TO SC SC SC BT BT BT SA
+    0026          8cc666d       368       349     19              0.50         1.054 +- 0.055        0.948 +- 0.051  [7 ] TO SC SC SC BT BT SA
+    0027           4cc66d       335       346    -11              0.18         0.968 +- 0.053        1.033 +- 0.056  [6 ] TO SC SC BT BT AB
+    0028             465d       304       363    -59              5.22         0.837 +- 0.048        1.194 +- 0.063  [4 ] TO RE SC AB
+
+
+
+Listing largest c2 contributors after the bookeeping fix
+--------------------------------------------------------------
+
+::
+
+    In [11]: c2 = ab.his.c2                                                                                                                                                                             
+    In [14]: ll = np.array(ab.his.lines[1:-1])                                                                                                                                                          
+    In [15]: ll[c2 > 10]                                                                                                                                                                                
+    Out[15]: 
+    array(['0033         8caccc6d       232       320    -88             14.03         0.725 +- 0.048        1.379 +- 0.077  [8 ] TO SC BT BT BT SR BT SA',
+           '0080           4ccc6d       108        58     50             15.06         1.862 +- 0.179        0.537 +- 0.071  [6 ] TO SC BT BT BT AB'], dtype='<U147')
+
+    In [16]: ll[c2 > 5]                                                                                                                                                                                 
+    Out[16]: 
+    array(['0028             465d       304       363    -59              5.22         0.837 +- 0.048        1.194 +- 0.063  [4 ] TO RE SC AB',
+           '0033         8caccc6d       232       320    -88             14.03         0.725 +- 0.048        1.379 +- 0.077  [8 ] TO SC BT BT BT SR BT SA',
+           '0055        8caccc66d       111       147    -36              5.02         0.755 +- 0.072        1.324 +- 0.109  [9 ] TO SC SC BT BT BT SR BT SA',
+           '0080           4ccc6d       108        58     50             15.06         1.862 +- 0.179        0.537 +- 0.071  [6 ] TO SC BT BT BT AB',
+           '0110       8caccc666d        36        62    -26              6.90         0.581 +- 0.097        1.722 +- 0.219  [10] TO SC SC SC BT BT BT SR BT SA',
+           '0129          8cc555d        50        29     21              5.58         1.724 +- 0.244        0.580 +- 0.108  [7 ] TO RE RE RE BT BT SA',
+           '0172       7ccc55556d        32        15     17              6.15         2.133 +- 0.377        0.469 +- 0.121  [10] TO SC RE RE RE RE BT BT BT SD',
+           '0175           4ccc5d        33        12     21              9.80         2.750 +- 0.479        0.364 +- 0.105  [6 ] TO RE BT BT BT AB',
+           '0176           4cbc5d        14        31    -17              6.42         0.452 +- 0.121        2.214 +- 0.398  [6 ] TO RE BT BR BT AB',
+           '0238          8cc565d        22         9     13              5.45         2.444 +- 0.521        0.409 +- 0.136  [7 ] TO RE SC RE BT BT SA'], dtype='<U147')
+
+    In [17]:                  
 
 
 
@@ -213,6 +294,55 @@ Distintive paired "zeros" out in the tail, differing in the G4:"SR BT BT SA" OK:
     :.,$s/\s*$//g
 
 
+geocache PE_PA inconsistency 
+-------------------------------
+
+* HMM : dont see any "PE_PA" in --dbgseqhis output 
+* perhaps the epsilon geocache is out of sync with the precision one : which could mess up material names among other things 
+
+* that means the "PE_PA" actually means "Vacuum"
+
+::
+
+    O[blyth@localhost GItemList]$ cat GMaterialLib.txt
+    LS
+    Steel
+    Tyvek
+    Air
+    Scintillator
+    TiO2Coating
+    Adhesive
+    Aluminium
+    Rock
+    LatticedShellSteel
+    Acrylic
+    Vacuum
+    Pyrex
+    Water
+    vetoWater
+    Galactic
+    O[blyth@localhost GItemList]$ 
+
+
+    epsilon:GItemList blyth$ cat GMaterialLib.txt 
+    LS
+    Steel
+    Tyvek
+    Air
+    Scintillator
+    TiO2Coating
+    Adhesive
+    Aluminium
+    Rock
+    LatticedShellSteel
+    Acrylic
+    **PE_PA**
+    Vacuum
+    Pyrex
+    Water
+    vetoWater
+    Galactic
+    epsilon:GItemList blyth$ 
 
 
 

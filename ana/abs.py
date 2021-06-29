@@ -31,7 +31,6 @@
 """
 import os, sys, logging, numpy as np
 from opticks.ana.ab import AB 
-
 log = logging.getLogger(__name__)
 
 if __name__ == '__main__':

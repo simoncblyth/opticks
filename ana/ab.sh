@@ -36,6 +36,8 @@ script=${SCRIPT:-$dscript}
 
 cd ~/opticks/ana
 
-ipython -i --pdb $(which $script) -- $*
+cmd="ipython -i --pdb $(which $script) -- $*"
+echo $cmd
+eval $cmd
 
 

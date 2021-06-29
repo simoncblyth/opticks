@@ -484,6 +484,8 @@ class SeqTable(object):
         self.af = af
         self.sli = slice(None)
 
+        ## hmm applying numpy psel style selection on the table eg c2>10 
+        ## would be much more flexible than simple python slicing 
 
     def cfo_line(self, n):
         if self.ncol == 2:
@@ -599,6 +601,10 @@ class SeqTable(object):
     def __call__(self, labels):
         ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 
         return "\n".join(map(lambda _:self.label2line.get(_,None), ll )) 
+
+    def _get_ll(self):
+        return np.array(self.lines[1:-1])  # skip the label lines
+    ll = property(_get_ll)
 
     def __repr__(self):
         """
