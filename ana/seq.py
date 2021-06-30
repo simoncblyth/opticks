@@ -353,7 +353,7 @@ class SeqTable(object):
         return cls(cu, af, **kwa)
 
 
-    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, smry=False, shortname="noshortname"): 
+    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, shortname="noshortname"): 
         """
         :param cu: count unique array, typically shaped (n, 2) or (n,3) for comparisons
         :param af: instance of SeqType subclass such as HisType
@@ -375,7 +375,7 @@ class SeqTable(object):
         pass
 
 
-        self.smry = smry
+        # self.smry = smry     ## more convenient as method argument, not ctor argument 
         self.dirty = False
         self.cu = cu 
 
@@ -414,14 +414,16 @@ class SeqTable(object):
 
             log.debug(" c2sum %10.4f ndf %d c2p %10.4f c2_pval %10.4f " % (c2sum,ndf,c2p, c2_pval ))
 
-            cnames += ["c2"]
-            #tots += ["%10.2f/%d = %5.2f   P[c2>%.2f]:%0.3f  P[c2<%.2f]:%0.3f " % (c2sum,ndf,c2p,c2sum,c2_pval,c2sum,1-c2_pval) ]
-            tots += ["%10.2f/%d = %5.2f   pvalue:P[c2>]:%0.3f  1-pvalue:P[c2<]:%0.3f " % (c2sum,ndf,c2p,c2_pval,1-c2_pval) ]
+            #cnames += ["c2"]
+            #tots += ["%10.2f" % c2sum ]
+
+            stats = "%.2f/%d = %5.2f   pvalue:P[C2>]:%0.3f  1-pvalue:P[C2<]:%0.3f " % (c2sum,ndf,c2p,c2_pval,1-c2_pval) 
+
             cfcount = cu[:,1:]
 
             ab, ba = ratio(a, b)
-            cnames += ["ab"]
-            cnames += ["ba"]
+            #cnames += ["ab"]
+            #cnames += ["ba"]
 
         else:
             c2 = None
@@ -431,6 +433,8 @@ class SeqTable(object):
             ab = None
             ba = None
             idif = None
+            stats = None
+            c2sum = None
         pass
         self.idif = idif
 
@@ -449,6 +453,7 @@ class SeqTable(object):
         self.ab = ab  
         self.ba = ba  
 
+        self.stats = stats
         self.seqs = seqs
         self.msks = msks
 
@@ -463,24 +468,32 @@ class SeqTable(object):
 
         self.label2nstep = dict(zip(labels, nstep))
         self.labels = labels
-
-
-        k_line = self.line(0, key=True) if len(cu) > 0 else ""
-        lines = list(filter(None, list(map(lambda n:self.line(n), range(len(cu))))))
-
         self.codes = codes  
         self.counts = counts
+
+        k_line = self.line(0, key=True, smry=False) if len(cu) > 0 else ""
+        k_sine = self.line(-1, key=True, smry=True) if len(cu) > 0 else ""
+
+        lines = list(filter(None, list(map(lambda n:self.line(n,smry=False), range(len(cu))))))
+        sines = list(filter(None, list(map(lambda n:self.line(n,smry=True ), range(len(cu))))))
+
         self.lines = [k_line] + lines + [k_line]
+        self.sines = [k_sine] + sines + [k_sine]
 
         self.label2count = dict(zip(labels, counts))
         self.label2line = dict(zip(labels, lines))
+        self.label2sine = dict(zip(labels, sines))
         self.label2code = dict(zip(labels, seqs))
 
         if cfcount is not None:
             self.label2cfcount = dict(zip(labels, cfcount))
+        pass
 
         self.cnames = cnames
         self.tots = tots
+        self.c2sum = c2sum
+        log.info(" tots %s " % repr(tots))
+
         self.af = af
         self.sli = slice(None)
 
@@ -500,45 +513,80 @@ class SeqTable(object):
             cfo_debug = ""
         pass 
         return cfo_debug
- 
 
-    def line(self, n, key=False):
+
+    k_xn_dot = ".%4s"
+    k_xn_fmt = "%4s "
+    xn_fmt = "%0.4d "
+
+    k_xs_fmt = "%16s "
+    k_xv_fmt = " %7s "
+
+    idif_fmt = " %4d "
+    k_idif_fmt = " %4s "
+
+    sc2_fmt = "  %10.2f  " 
+    k_sc2_fmt = "%14s" 
+    div1 = "   "
+    div2 = "   "
+    div3 = "   "
+
+    k_label_fmt = "%s" 
+
+
+    def line(self, n, key=False, smry=False):
+        """
+        :param n: 0-based line number
+        :param key: when True returns column labels, ignoring n
+        :param smry: when True presents less columns 
+        :return str: formatted line of sequence table 
+        """
         iseq = int(self.cu[n,0]) 
         imsk = int(self.msks[n])
 
         if self.dbgseq > 0 and ( self.dbgseq & iseq ) != self.dbgseq:
-           return None 
+            return None 
         pass
     
         if self.dbgmsk > 0:
-           pick = (self.dbgmsk & imsk) == self.dbgmsk   # 
-           if not pick: 
-               return None 
+            pick = (self.dbgmsk & imsk) == self.dbgmsk   # 
+            if not pick: 
+                return None 
+            pass
+        pass
 
-        if self.smry == False:
-            xs = "%0.4d %16s" % (n, ihex_(iseq))        
-            k_xs = "%4s %16s" % ("n","iseq")
+        if smry == False:
+            xn = self.xn_fmt % (n)        
+            k_xn = self.k_xn_fmt  % ("n")
         else:
-            xs = "%0.4d " % (n)        
-            k_xs = "%4s " % ("n")
+            xn = self.xn_fmt % (n)        
+            k_xn = self.k_xn_fmt  % ("n")
+        pass
+
+        if smry == False:
+            xs = self.k_xs_fmt % (ihex_(iseq))        
+            k_xs = self.k_xs_fmt % ("iseq")
+        else:
+            xs = self.k_xs_fmt % (ihex_(iseq))        
+            k_xs = self.k_xs_fmt % ("iseq")
         pass
 
         #cfo_debug = self.cfo_line(n)
         cfo_debug = ""
         k_cfo_debug = ""
 
-        vals = list(map(lambda _:" %7s " % _, self.cu[n,1:] ))
+        vals = list(map(lambda _:self.k_xv_fmt  % _, self.cu[n,1:] ))
         keys = "abcdefghijklmnopqrstuvwxyz" 
-        k_vals = list(map(lambda _:" %7s " % keys[_], range(len(self.cu[n,1:])) ))
+        k_vals = list(map(lambda _:self.k_xv_fmt % keys[_], range(len(self.cu[n,1:])) ))
 
         idif = self.idif[n] if len(vals) == 2 else None
-        idif = " %4d " % idif if idif is not None else " " 
-        k_idif = " %4s " % "a-b" if idif is not None else " "
+        idif = self.idif_fmt % idif if idif is not None else " " 
+        k_idif = self.k_idif_fmt % "a-b" if idif is not None else " "
 
-        label = self.labels[n]
-        k_label = "label"
+        label = self.k_label_fmt % self.labels[n]
+        k_label = self.k_label_fmt % "label"
 
-        if self.smry == False:
+        if smry == False:
             nstep = "[%-2d]" % self.label2nstep[label]
             k_nstep = "[ns]"
         else:
@@ -561,14 +609,14 @@ class SeqTable(object):
         pass
 
         if self.c2 is not None:
-            sc2 = "  %10.2f  " % (self.c2[n])
-            k_sc2 = "%14s" % "(a-b)^2/(a+b)" 
+            sc2 = self.sc2_fmt % (self.c2[n])
+            k_sc2 = self.k_sc2_fmt % "(a-b)^2/(a+b)" 
         else:
             sc2 = ""
             k_sc2 = ""
         pass
 
-        if self.ab is not None and self.smry == False:
+        if self.ab is not None and smry == False:
             sab = " %10.3f +- %5.3f " % ( self.ab[n,0], self.ab[n,1] )
             k_sab = " %10s    %5s " % ( "a/b", "" )
         else:
@@ -576,14 +624,13 @@ class SeqTable(object):
             k_sab = ""
         pass
 
-        if self.ba is not None and self.smry == False:
+        if self.ba is not None and smry == False:
             sba = " %10.3f +- %5.3f " % ( self.ba[n,0], self.ba[n,1] )
             k_sba = " %10s    %5s " % ( "b/a", "" )
         else:
             sba = ""
             k_sba = ""
         pass
-
 
         if self.total is not None:
              frac = float(self.cu[n,1])/float(self.total)
@@ -593,10 +640,45 @@ class SeqTable(object):
              frac = ""
              k_frac = ""
         pass
-        cols = [cfo_debug] + [xs+" "] + [frac] + vals + [idif] + ["   "]+ [sc2, sab, sba, nstep, label]
-        k_cols = [k_cfo_debug] + [k_xs+" "] + [k_frac] + k_vals + [k_idif] + ["   "]+ [k_sc2, k_sab, k_sba, k_nstep, k_label]
+
+        cols =   [  cfo_debug,   xn,  xs,   frac] + vals +   [self.div1,  idif  , self.div2,   sc2,   sab,   sba,   nstep, self.div3,   label]
+        k_cols = [k_cfo_debug, k_xn,k_xs, k_frac] + k_vals + [self.div1, k_idif , self.div2, k_sc2, k_sab, k_sba, k_nstep, self.div3, k_label]
+
         u_cols = k_cols if key==True else cols  
-        return " ".join(filter(lambda _:_ != "", u_cols)) 
+        return "".join(filter(lambda _:_ != "", u_cols)) 
+
+    def present(self, smry=False):
+        """
+        title is externally set from evt.present_table
+        """
+        spacer_ = lambda _:"%1s%3s %22s " % (".","",_)
+        space = spacer_("")
+
+        lhs_fmt = self.k_xn_dot + self.k_xs_fmt  
+        lhs_key = lhs_fmt % ("","TOTALS:")
+
+        rhs_fmt = self.div1 + self.k_idif_fmt + self.div2 + self.k_sc2_fmt + self.div3 + self.k_label_fmt
+        rhs_key = rhs_fmt % ( "", self.sc2_fmt % self.c2sum, self.stats ) 
+
+        title = spacer_(getattr(self,'title',"")+"  cfo:"+getattr(self,'cfordering',"-"))
+        body_ = lambda _:" %7s " % _
+
+        head = title + " ".join(map(body_, self.cnames ))
+        #head = title 
+
+        tots = lhs_key + "".join(map(body_, self.tots)) + rhs_key 
+
+        if smry:
+            return "\n".join([tots] + lfilter(None,self.sines[self.sli]) + [tots])
+        else:  
+            return "\n".join([self.shortname,head,tots]+ lfilter(None,self.lines[self.sli]) + [tots])
+        pass
+
+    def __repr__(self):
+        return self.present(smry=False)
+
+    def __str__(self):
+        return self.present(smry=True)
 
     def __call__(self, labels):
         ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 
@@ -606,20 +688,9 @@ class SeqTable(object):
         return np.array(self.lines[1:-1])  # skip the label lines
     ll = property(_get_ll)
 
-    def __repr__(self):
-        """
-        title is externally set from evt.present_table
-        """
-        spacer_ = lambda _:"%1s%3s %22s " % (".","",_)
-        space = spacer_("")
-        title = spacer_(getattr(self,'title',"")+"  cfo:"+getattr(self,'cfordering',"-"))
-        #print("title:[%s]" % title) 
-
-
-        body_ = lambda _:" %7s " % _
-        head = title + " ".join(map(body_, self.cnames ))
-        tail = space + " ".join(map(body_, self.tots ))
-        return "\n".join([self.shortname,head,tail]+ lfilter(None,self.lines[self.sli]) + [tail])
+    def _get_ss(self):
+        return np.array(self.sines[1:-1])  # skip the label lines
+    ss = property(_get_ss)
 
     def __getitem__(self, sli):
          self.sli = sli
@@ -665,7 +736,7 @@ class SeqTable(object):
 
         log.debug("compare dbgseq %x dbgmsk %x " % (self.dbgseq, self.dbgmsk))
 
-        cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, shortname=shortname)    
+        cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, shortname=shortname)    
         cftab.cfordering = ordering 
 
         cfordering_key = list(map(ordering_, u)) 
@@ -700,7 +771,7 @@ class SeqAna(object):
         aseq = ph[:,0,offset]
         return cls(aseq, af, cnames=[tag])
     
-    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, smry=False, table_shortname="no_table_shortname"):
+    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, table_shortname="no_table_shortname"):
         """
         :param aseq: photon length sequence array, eg a.seqhis or a.seqmat 
         :param af: instance of SeqType subclass, which knows what the nibble codes mean 
@@ -715,14 +786,13 @@ class SeqAna(object):
 
         """
         cu = count_unique_sorted(aseq)
-        self.smry = smry 
         self.af = af
         self.dbgseq = dbgseq
         self.dbgmsk = dbgmsk
         self.dbgzero = dbgzero
         self.cmx = cmx
 
-        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, shortname=table_shortname)
+        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, shortname=table_shortname)
 
         self.aseq = aseq
         self.cu = cu

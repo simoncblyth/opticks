@@ -392,8 +392,8 @@ class AB(object):
 
         log.debug( "overridetag %s  atag %s btag %s  " % (self.overridetag, atag, btag) )
 
-        a = Evt(tag=atag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="A", smry=args.smry)
-        b = Evt(tag=btag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="B", smry=args.smry)
+        a = Evt(tag=atag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="A" )
+        b = Evt(tag=btag, src=args.src, det=args.det, pfx=args.pfx, args=args, nom="B" )
 
         pass
         self.a = a

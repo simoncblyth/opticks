@@ -235,10 +235,9 @@ class Evt(object):
         """
         pass
 
-    def __init__(self, tag="1", src="natural", det="g4live", pfx=".", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?", smry=False):
+    def __init__(self, tag="1", src="natural", det="g4live", pfx=".", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?"):
         log.debug("[ %s " % nom)
         self.nom = nom
-        self.smry = smry
         self._psel = None
         self._seqhis = None
         self._seqmat = None
@@ -582,7 +581,7 @@ class Evt(object):
 
 
     def make_pflags_ana(self, pflags, table_shortname):
-        return SeqAna( pflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, table_shortname=table_shortname )
+        return SeqAna( pflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, table_shortname=table_shortname )
 
     def _get_pflags(self):
         if self._pflags is None:
@@ -717,7 +716,7 @@ class Evt(object):
         self.hc4 = hc4
 
         #ipdb.set_trace() 
-        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, table_shortname="hflags_ana" )
+        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[self.cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, table_shortname="hflags_ana" )
  
         self.desc['hwl'] = "(hits) wavelength"
         self.desc['hpost'] = "(hits) final photon step: position, time"
@@ -824,10 +823,10 @@ class Evt(object):
 
 
     def make_seqhis_ana(self, seqhis, table_shortname):
-        return SeqAna( seqhis, self.histype, cnames=[self.cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, table_shortname=table_shortname)
+        return SeqAna( seqhis, self.histype, cnames=[self.cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, table_shortname=table_shortname)
 
     def make_seqmat_ana(self, seqmat, table_shortname):
-        return SeqAna( seqmat, self.mattype, cnames=[self.cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry, table_shortname=table_shortname)
+        return SeqAna( seqmat, self.mattype, cnames=[self.cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx, table_shortname=table_shortname)
 
     def make_seqhis_ls(self):
         return SeqList( self.seqhis, self.histype, slice(0,50) )
