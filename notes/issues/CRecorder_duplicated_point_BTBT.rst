@@ -1,5 +1,14 @@
-CRecorder_duplicated_point_BTBT
+CRecorder_duplicated_point_BTBT 
 ===================================
+
+Summary
+----------
+
+* add dx.npy deluxe double step g4only array : to look into the microStep
+* fix inadventent float narrowing on way into dx buffer
+* add bn.npy boundary buffer 
+* thinking about how to removing the 1e-3 onion, without conclusion
+
 
 tds3gun after suppress microStep : allows comparison to start
 -----------------------------------------------------------------
@@ -502,6 +511,8 @@ in NNVTMCPPMTManager::helper_make_physical_volume
 hmm maybe the reason for the near degenerates is to "contain" the optical surface ?
 --------------------------------------------------------------------------------------
 
+* not convinced by that, why not just make the border between the pyrex outer pmt_solid and vacuum 
+* could be related to the complicated CSG in used in standard offline
 
 ::
 

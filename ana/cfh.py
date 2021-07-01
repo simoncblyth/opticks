@@ -58,14 +58,11 @@ class CFH(Ctx):
     The members are numpy arrays and a single ctx dict
     allowing simple load/save.
 
-
     * :google:`chi2 comparison of normalized histograms`
     * http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
 
-
     """
     NAMES = "lhabc".split()
-
 
     @classmethod
     def load_(cls, ctx):
@@ -97,11 +94,11 @@ class CFH(Ctx):
         :param bn: bin edges array
         :param av: a values array
         :param bv: b values array
-        :param lab:
+        :param lab: list of two labels for av and bv
         :param c2cut: a+b stat requirement to compute chi2
+        :param c2shape: when True, normalize histogram counts before comparison
 
         Called from AB.rhist
-
         """
 
         na = len(av)

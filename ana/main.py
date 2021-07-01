@@ -194,7 +194,16 @@ def opticks_args(**kwa):
     chi2selcut = kwa.get("chi2selcut", 1.1)
     statcut = kwa.get("statcut", 1000)
     nointerpol = kwa.get("nointerpol", False)
-    figsize = kwa.get("figsize", "18,10.2" )
+
+
+    default_dpi = 100. 
+    pixwh=np.array([1280.,720.])  # standard presentation size is 1280px_720px
+    figwh=pixwh/default_dpi
+    old_figwh=np.array([18, 10.2])
+    sfigwh = ",".join(list(map(str, figwh)))
+    figsize = kwa.get("figsize", sfigwh )   
+
+
     size = kwa.get("size", "1920,1080,1" )
     position = kwa.get("position", "100,100" )
     yes = kwa.get("yes", False )

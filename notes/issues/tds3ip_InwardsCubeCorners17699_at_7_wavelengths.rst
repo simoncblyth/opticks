@@ -8,6 +8,17 @@ Related
 * next :doc:`raw_scintillator_material_props`
 * next :doc:`tds3ip_InwardsCubeCorners17699_paired_zeros_in_tail_G4:SR_BT_BT_SA_OK:SR_BT_SA`
 
+
+Summary
+---------
+
+
+* compare first slot splits at 7 wavelengths : using the old coarse domain props 
+* with fine 1nm domain steps the match is better, but there are zeros problems
+* Very rapid change in abslen could explain differences arising from too coarse domain binning
+* switched to 1 nm fine domain default using G4 Value interpolation
+
+
 tds3ip
 ----------
 
@@ -119,8 +130,6 @@ findbndtex was to old way, which was compromised by difficulty of geocache recre
 
 
 
-
-
 compare first slot splits at 7 wavelengths : using the old coarse domain props
 ----------------------------------------------------------------------------------
 
@@ -175,7 +184,7 @@ compare first slot splits at 7 wavelengths : using the old coarse domain props
 
 
 
-with fine 1nm domain steps the match is better, but there zeros problems
+with fine 1nm domain steps the match is better, but there are zeros problems
 -------------------------------------------------------------------------------
 
 ::
@@ -574,10 +583,5 @@ Add::
 Use these from G4OpticksAnaMgr to save 1M wavelength samples direct from DsG4Scintillation process.
 Compare to those from texture in qudarap/tests/QCtxTest.py 
 
-
-
-
-
- 
 
 

@@ -492,7 +492,7 @@ class SeqTable(object):
         self.cnames = cnames
         self.tots = tots
         self.c2sum = c2sum
-        log.info(" tots %s " % repr(tots))
+        log.debug(" tots %s " % repr(tots))
 
         self.af = af
         self.sli = slice(None)
@@ -658,7 +658,12 @@ class SeqTable(object):
         lhs_key = lhs_fmt % ("","TOTALS:")
 
         rhs_fmt = self.div1 + self.k_idif_fmt + self.div2 + self.k_sc2_fmt + self.div3 + self.k_label_fmt
-        rhs_key = rhs_fmt % ( "", self.sc2_fmt % self.c2sum, self.stats ) 
+
+        if self.c2sum is None or self.stats is None:
+            rhs_key = ""
+        else:
+            rhs_key = rhs_fmt % ( "", self.sc2_fmt % self.c2sum, self.stats ) 
+        pass
 
         title = spacer_(getattr(self,'title',"")+"  cfo:"+getattr(self,'cfordering',"-"))
         body_ = lambda _:" %7s " % _

@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 """
+::
+
+    ipython -i gpmt.py 
+
+
+    mkdir -p /Users/blyth/simoncblyth.bitbucket.io/env/presentation/ana/gpmt/
+    cp /tmp/fig/*.png /Users/blyth/simoncblyth.bitbucket.io/env/presentation/ana/gpmt/
+
 
 https://stackoverflow.com/questions/22959698/distance-from-given-point-to-given-ellipse
 
@@ -24,13 +32,18 @@ from j.PMTEfficiencyCheck_ import PMTEfficiencyCheck_
 
 
 if __name__ == '__main__':
-
-   
-
     args = GArgs.parse(__doc__)
+    path = args.gdmlpath(4)    # 3:origin_CGDMLKludge_jun15  4:origin_CGDMLKludge_jun28
+    path = os.path.expandvars(path)
 
+    if not os.path.exists(path):
+        log.fatal("GDML path does not exist: %s " % path )
+        sys.exit(1)
+    else:
+        log.info("parsing GDML path:%s " % path)
+    pass
 
-    g = GDML.parse(args.gdmlpath(3))  # origin_CGDMLKludge.gdml
+    g = GDML.parse(path)  
     g.smry()
 
     NNVT = 1
@@ -63,7 +76,8 @@ if __name__ == '__main__':
 
 
     log.info( "lvs %r" % lvs )
-
+    figpath_suffix  = lv.local_prefix.replace("/","_") 
+    log.info( "lv.local_prefix %s" % lv.local_prefix )
 
 
     plt.ion()
@@ -75,7 +89,7 @@ if __name__ == '__main__':
 
     ax.set_aspect('equal')
     fig.show()
-    path = args.figpath("CombinedFig")
+    path = args.figpath("CombinedFig_%s" % figpath_suffix )
     log.info("saving to %s " % path)
     fig.savefig(path)
     
@@ -87,7 +101,7 @@ if __name__ == '__main__':
     pass
 
     fig.show()
-    path = args.figpath("SplitFig")
+    path = args.figpath("SplitFig_%s" % figpath_suffix )
     log.info("saving to %s " % path)
     fig.savefig(path)
 

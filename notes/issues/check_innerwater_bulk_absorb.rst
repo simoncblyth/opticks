@@ -1,7 +1,5 @@
-check_innerwater_bulk_absorb
-===============================
-
-
+check_innerwater_bulk_absorb : actually RAYLEIGH scattering difference not absorption
+==============================================================================================
 
 Issue : looks to be substantially more bulk absorption in the water in OK than in G4, investigating why
 ---------------------------------------------------------------------------------------------------------
@@ -577,6 +575,9 @@ Unsure how, but for now exclude comparison for missings::
 
 
 
+Lots more OK:SC in the Water
+---------------------------------
+
 * comparison does not show much of an AB difference
 * but does show lots more SC in G4 that in OK
 
@@ -791,14 +792,6 @@ look into a:"TO SC BT SR BT SA" b:"TO SC BT SR BT BT SA" is this a paired zero :
 
 td3ip.sh Water path that scatter back into L3 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-
-
-
-
 
 
 Wildcard selection::

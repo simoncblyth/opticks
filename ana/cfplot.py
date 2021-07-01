@@ -25,23 +25,20 @@ cfplot.py : Comparison Plotter with Chi2 Underplot
 To control this warning, see the rcParam `figure.max_num_figures
 
 
-
 """
 import os, logging, numpy as np
 from collections import OrderedDict as odict
-from opticks.ana.base import opticks_main
+from opticks.ana.main import opticks_main
 from opticks.ana.cfh import CFH 
 log = logging.getLogger(__name__)
-
 
 try:
     import matplotlib.pyplot as plt
     import matplotlib.gridspec as gridspec
     plt.rcParams["figure.max_open_warning"] = 200    # default is 20
 except ImportError:
-    print "matplotlib missing : you need this to make plots"
+    print("matplotlib missing : you need this to make plots")
     plt = None
-
 
 
 def cfplot(fig, gss, h): 
@@ -53,6 +50,7 @@ def cfplot(fig, gss, h):
 
     if h.log:
         ax.set_yscale('log')
+    pass
 
     ax.set_ylim(h.ylim)
     ax.legend()
@@ -136,22 +134,18 @@ def sc_selection_plot(ok, ab, log_=False):
     for page in pages:
         hh = ab.rhist(page, irec, log_)
         qwns_plot( ok, hh, suptitle )
-
+    pass
 
 
 
 if __name__ == '__main__':
     ok = opticks_main()
-    print ok
-
+    print(ok)
     plt.ion()
     plt.close()
 
     from opticks.ana.ab import AB
-
     h = AB.rrandhist()
-
+    assert type(h).__name__  == "CFH"
     one_cfplot(ok, h) 
-
-
 

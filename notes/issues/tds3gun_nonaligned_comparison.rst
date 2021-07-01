@@ -1,7 +1,6 @@
 FIXED OK not absorbing on Tyvek tds3gun_nonaligned_comparison
 ================================================================
 
-
 Confirmed Fix by point-blank shooting the Tyvek
 ---------------------------------------------------
 

@@ -76,7 +76,8 @@ class GArgs(argparse.Namespace):
         tds_ngt
         tds_ngt_pcnk
         tds_ngt_pcnk_sycg
-        origin_CGDMLKludge
+        origin_CGDMLKludge_jun15
+        origin_CGDMLKludge_jun28
         """)
         return labels[idx] 
 

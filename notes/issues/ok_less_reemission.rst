@@ -5,6 +5,16 @@ ok_less_reemission
 * next :doc:`tds3ip_InwardsCubeCorners17699_at_7_wavelengths`
 
 
+Summary
+-----------
+
+* somewhat less OK reemission seen in tds3gun 
+* wildcard reemission selections show ~15%
+* add an input photon type "InwardsCubeCorners17699" to give maximum LS path to focus on this issue
+* fix reemission bookkeeping with input photons
+* 400-420nm absorption very sensitive to wavelength in this range 
+* tds3ip InwardsCubeCorners17699 repeat 10,000 using mono 440nm : do not see reemission discrepancy 
+
 
 After remove the sticks : the poppy becomes somewhat less OK reemission 
 -------------------------------------------------------------------------------------
@@ -804,8 +814,6 @@ tds3ip InwardsCubeCorners17699 repeat 10,000 using mono 440nm
 
 
 
-
-
     In [5]: ab.his[:100]                                                                                                                                                                                    
     Out[5]: 
     ab.his
@@ -889,6 +897,9 @@ tds3ip InwardsCubeCorners17699 repeat 10,000 using mono 440nm
     0068       ccc6cbc66d        65        47     18              2.89         1.383 +- 0.172        0.723 +- 0.105  [10] TO SC SC BT BR BT SC BT BT BT
 
     0069        8caccc66d       108         1    107            105.04       108.000 +- 10.392        0.009 +- 0.009  [9 ] TO SC SC BT BT BT SR BT SA
+
+    ## IN RETROSPECT : THIS IS microStep in reverse for reflected photons getting out of the PMT 
+
 
     0070           4c666d        57        51      6              0.33         1.118 +- 0.148        0.895 +- 0.125  [6 ] TO SC SC SC BT AB
     0071           8cc56d        60        47     13              1.58         1.277 +- 0.165        0.783 +- 0.114  [6 ] TO SC RE BT BT SA
@@ -1004,6 +1015,8 @@ tds3ip InwardsCubeCorners17699 repeat 10,000 using mono 440nm
 * following SR:specular reflection see 2BT with G4 and 1BT with OK
 * probably specific geometry issue : suspect XJfixtureConstruction
 
+  * RETROSPECTIVE : ALMOST CERTAINLY THIS IS microStep IN REVERSE, for photons reflecting in the PMT and getting back out 
+
 ::
 
     In [1]: a.sel = "TO SC BT BT BT SR BT SA"                                                                                                                                                               
@@ -1037,6 +1050,8 @@ tds3ip InwardsCubeCorners17699 repeat 10,000 using mono 440nm
      19 : LS///Acrylic
      16 : Tyvek//Implicit_RINDEX_NoRINDEX_pInnerWater_pCentralDetector/Water
 
+    RETROSPECTIVE : SUSPECT ANALYSIS GEOCACHE AND SIMULATION GEOCACHE DIVERGENCE FOLLOWING SKIPPING THE STICKS
+    WHICH CAN MEAN SOME BOUNDARIES AND MATERIAL NAMES PRESENTED WILL BE WRONG 
 
     epsilon:ana blyth$ ./bidx.py 
       0 :   1 :       1 : Galactic///Galactic 
@@ -1123,10 +1138,6 @@ Use ggeo.sh to find where 0-based bidx 16,17,18,19 are used::
     jcv XJfixtureConstruction
 
 
-
-
-
-
     In [9]: a.seqmat_ana.table                                                                                                                                                                              
     Out[9]: 
     seqmat_ana
@@ -1159,12 +1170,6 @@ Use ggeo.sh to find where 0-based bidx 16,17,18,19 are used::
 
 
 
-
-
-
-
-
-
 jsc : flagReemission requires fStopAndKill track status not at fGeomBoundary step status
 ------------------------------------------------------------------------------------------
 
@@ -1192,11 +1197,5 @@ jsc : flagReemission requires fStopAndKill track status not at fGeomBoundary ste
      236                 && aTrack.GetTrackStatus() == fStopAndKill
      237                 && aStep.GetPostStepPoint()->GetStepStatus() != fGeomBoundary;
      238         }
-
-
-
-
-
-
 
 

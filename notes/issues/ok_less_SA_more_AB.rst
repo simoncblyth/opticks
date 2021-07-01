@@ -932,7 +932,6 @@ Observe missed Water///Pyrex border, hitting instead Pyrex///Pyrex
     -23 : Water///Pyrex
     -27 : Pyrex/HamamatsuR12860_photocathode_logsurf2/HamamatsuR12860_photocathode_logsurf1/Vacuum
 
-
     In [19]: print(a.blib.format(a.bn.reshape(-1,4).view(np.int8)[19]))
      18 : Acrylic///LS          # from center of the LS shoot ray,  find Ac///LS  +ve boundary means are in imat:LS 
      17 : Water///Acrylic       # at the Acrylic shoot another ray, find Wa///Ac  +ve boundary means are in imat:Ac 

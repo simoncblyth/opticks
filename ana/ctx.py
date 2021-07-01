@@ -122,8 +122,6 @@ class Ctx(dict):
         assert len(srec) == 1, (irec, srec, "expecting single char hexint string")
         return srec 
 
-
-
     @classmethod
     def base(cls):
         return os.path.expandvars(cls.BASE)
@@ -217,11 +215,12 @@ class Ctx(dict):
             dir_ = "/tmp/blyth/opticks/CFH/concentric/1/TO_BT_BT_BT_BT_SA/0/X"
             dir_ = "concentric/1/TO_BT_BT_BT_BT_SA/0/X"
 
-        Last element "X" represents the quantity or quantities, with one or more of "XYZTABCR".
+        Last element "X" 
+           quantity or quantities, with one or more of "XYZTABCR".
 
-        Penultimate element "0" represents the irec index within the sequence, with 
-        one or more single chars from "0123456789abcdef". For example "0" points to 
-        the "TO" step for seq0 of "TO_BT_BT_BT_BT_SA".
+        Penultimate element "0" 
+           irec index within the sequence, with one or more single chars from "0123456789abcdef". 
+           For example "0" points to the "TO" step for seq0 of "TO_BT_BT_BT_BT_SA".
 
         """
         pctx, adir = cls.debase_(dir_)
@@ -254,7 +253,7 @@ class Ctx(dict):
     @classmethod
     def pctx2ctx_(cls, pctx, **kwa):
         """
-        :param pctx:
+        :param pctx: path context 
         :return list of ctx:
 
         Full pctx has 5 elem::
@@ -274,9 +273,9 @@ class Ctx(dict):
         e = pctx.split("/")
         ne = len(e)
         if ne == 5:
-            ks = 2
-            kr = 3
-            kq = 4
+            ks = 2   # seq element 
+            kr = 3   # seq hexstring slot element (?)
+            kq = 4   # qwns element 
         elif ne == 3:
             ks = 0
             kr = 1
@@ -297,9 +296,8 @@ class Ctx(dict):
         log.info("pctx2ctx_ ne %d qwns %s e[kr] %s " % (ne, qwns, e[kr]) )
 
 
-        for r in e[kr]:
-            #ir = str(int(r,16))
-            ir = int(r,16)
+        for r in e[kr]:         # over the string  
+            ir = int(r,16)      #  int("a",16) = 10 
             for q in qwns:
                 ctx = dict(seq0=e[ks],irec=ir,qwn=q)
                 if ne == 5:
