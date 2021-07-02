@@ -1268,7 +1268,6 @@ void GGeo::prepareScintillatorLib()
 void GGeo::findScintillatorMaterials(const char* props)
 {
     m_scintillators_raw = getRawMaterialsWithProperties(props, ',');
-    //assert(m_scintillators_raw.size() > 0 );
 }
 
 void GGeo::dumpScintillatorMaterials(const char* msg)

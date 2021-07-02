@@ -42,7 +42,11 @@ except ImportError:
 
 
 def cfplot(fig, gss, h): 
-
+    """
+    :param fig:
+    :param gss: 2 element gridspec list 
+    :param h:  .ahis .bhis .la .lb .ylim .bins .chi2 .c2label .c2_ymax .log 
+    """
     ax = fig.add_subplot(gss[0])
 
     ax.plot( h.bins[:-1], h.ahis , drawstyle="steps", label=h.la  )
@@ -88,6 +92,10 @@ def qwns_plot( ok, hh, suptitle ):
         pass
 
 def one_cfplot(ok, h):
+    """
+    :param ok: used for figsize
+    :param h: CFH instance
+    """
     fig = plt.figure(figsize=ok.figsize)
     fig.suptitle(h.suptitle)
     ny = 2
@@ -102,17 +110,17 @@ def one_cfplot(ok, h):
 def multiplot(ok, ab, start=0, stop=5, log_=False):
     """
     """
-    pages = ok.qwn.split(",")
+    pages = ok.qwn.split(",")    ## default ok.qwn 'XYZT,ABCW'
 
     for i,isel in enumerate(range(start, stop)):
 
         ab.sel = slice(isel, isel+1)
-        nrec = ab.nrec
+        nrec = ab.nrec      ## number of slots with the selected history 
 
-        for irec in range(nrec):
+        for irec in range(nrec):     
 
-            ab.irec = irec 
-            suptitle = ab.suptitle
+            ab.irec = irec           
+            suptitle = ab.suptitle   ## irec "slot" gets highlighted in the title eg "... SI [BT] BT AB "
 
             log.info("multiplot irec %d nrec %d suptitle %s " % (irec, nrec, suptitle))
 
@@ -125,6 +133,13 @@ def multiplot(ok, ab, start=0, stop=5, log_=False):
 
 
 def sc_selection_plot(ok, ab, log_=False):
+    """
+    :param ok:
+    :param ab:
+    :param log_:
+
+    Plotting quantities at first scatter, needs a single selection.
+    """
     pages = ok.qwn.split(",")
     irec = ab.iflg("SC")
 

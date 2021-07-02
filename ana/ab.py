@@ -805,6 +805,14 @@ class AB(object):
 
         slice selection forces into seqhis selection
 
+
+        Have observed that slice selection only works for 
+        single element slices, eg::
+
+            ab.sel = slice(10,11)
+
+        ## TODO: if that is the intent, might as well allow: ab.sel = 10 
+
         ::
 
             ab.sel = "[TO] BT BT BT BT SA" 
@@ -1026,6 +1034,7 @@ class AB(object):
 
     def iflg(self, flg):
         """
+        :param flg: eg "SC"
         :return: number of record points, when a single seq selection is active
         """ 
         a_ifl = self.a.iflg(flg)
@@ -1398,7 +1407,6 @@ class AB(object):
         :param ctxs: list of Ctx 
         :param rehist: bool, when True recreate histograms, otherwise pre-persisted histos are loaded
 
-
         Collects unique seq0 and then interactes 
 
         """
@@ -1419,7 +1427,14 @@ class AB(object):
         return hh
 
     def rhist(self, qwn=None, irec=None, rehist=False, log_=False, c2shape=True ): 
-
+        """
+        :param qwn: eg "XYZT"
+        :param irec: int 
+        :param rehist:
+        :param log_:
+        :param c2shape:
+        :return hh: list of CFH persisted comparison histograms
+        """
         if qwn is None:
             qwn = self.ok.qwns
         assert type(qwn) is str
@@ -1430,7 +1445,7 @@ class AB(object):
 
         hh = []
 
-        srec = CFH.srec_(irec)
+        srec = CFH.srec_(irec)   # (ctx.py) srec:single char hexint 0123456789abcdef
 
         log.debug("AB.rhist qwn %s irec %s srec %s " % (qwn, irec, srec))
 

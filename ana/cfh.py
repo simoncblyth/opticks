@@ -79,13 +79,6 @@ class CFH(Ctx):
     def __init__(self, *args, **kwa):
 
         Ctx.__init__(self, *args, **kwa)
-
-        #if type(ctx) is str:
-        #    ctxs = Ctx.dir2ctx_(ctx)
-        #    assert len(ctxs) == 1, "expect only a single ctx"
-        #    ctx = ctxs[0]
-        #pass
-
         # transients, not persisted
         self._log = False
 
@@ -131,8 +124,8 @@ class CFH(Ctx):
 
         lhabc = np.zeros((nval,5), dtype=np.float32)
 
-        lhabc[:,0] = bn[0:-1] 
-        lhabc[:,1] = bn[1:] 
+        lhabc[:,0] = bn[0:-1]   # left edges 
+        lhabc[:,1] = bn[1:]     # right edges
         lhabc[:,2] = uah
         lhabc[:,3] = ubh
         lhabc[:,4] = c2

@@ -17,7 +17,7 @@ Summary
 * with fine 1nm domain steps the match is better, but there are zeros problems
 * Very rapid change in abslen could explain differences arising from too coarse domain binning
 * switched to 1 nm fine domain default using G4 Value interpolation
-
+* wstimate proportions of AB/SC/RE/BT at different wavelengths in G4 and OK 
 
 tds3ip
 ----------

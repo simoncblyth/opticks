@@ -124,11 +124,11 @@ class OpticksEnv(object):
         self.ext = {}
         self.env = {}
 
-        if "IDPATH" in os.environ:
-            self.legacy_init()
-        else:
-            self.direct_init()
-        pass
+        #if "IDPATH" in os.environ:
+        #    self.legacy_init()
+        #else:
+        self.direct_init()
+        #pass
         self.common_init()
 
 
@@ -153,7 +153,7 @@ class OpticksEnv(object):
         is no longer true.
         """ 
 
-        assert not "IDPATH" in os.environ, "IDPATH envvar as input is forbidden"
+        #assert not "IDPATH" in os.environ, "IDPATH envvar as input is forbidden"
         assert "OPTICKS_KEY" in os.environ, "OPTICKS_KEY envvar is required"
         self.key = Key(os.environ["OPTICKS_KEY"])
 
@@ -161,7 +161,7 @@ class OpticksEnv(object):
         assert os.path.isdir(keydir), "keydir %s is required to exist " % keydir  
 
         ## not defaults 
-        os.environ["IDPATH"] = keydir   ## <-- to be removed, switch to GEOCACHE signally direct workflow 
+        #os.environ["IDPATH"] = keydir   ## <-- to be removed, switch to GEOCACHE signally direct workflow 
         os.environ["GEOCACHE"] = keydir    
 
         log.debug("direct_init keydir %s "  % keydir )

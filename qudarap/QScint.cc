@@ -27,6 +27,18 @@ QScint::QScint(const GScintillatorLib* slib_)
     init(); 
 }
 
+QScint::QScint(const NPY<double>* icdf)
+    :
+    slib(nullptr),
+    dsrc(icdf),
+    src(NPY<double>::MakeFloat(dsrc)),
+    tex(nullptr)
+{
+    INSTANCE = this ; 
+    init(); 
+}
+
+
 void QScint::init()
 {
     makeScintTex(src) ;   
@@ -49,9 +61,20 @@ std::string QScint::desc() const
 void QScint::makeScintTex(const NPY<float>* src)
 {
     LOG(LEVEL) << desc() ; 
-    assert( src->hasShape(1,4096,1) ); 
-    unsigned nj = src->getShape(1) ;  
-    tex = new QTex<float>(nj, 1, src->getValuesConst()) ; 
+    assert( src->hasShape(1,4096,1) ||  src->hasShape(3,4096,1) ); 
+
+    unsigned ni = src->getShape(0); 
+    unsigned nj = src->getShape(1); 
+    unsigned nk = src->getShape(2); 
+
+    assert( ni == 1 || ni == 3); 
+    assert( nj == 4096 ); 
+    assert( nk == 1 ); 
+
+    unsigned ny = ni ; // height  
+    unsigned nx = nj ; // width 
+  
+    tex = new QTex<float>(nx, ny, src->getValuesConst()) ; 
     tex->uploadMeta(); 
 }
 

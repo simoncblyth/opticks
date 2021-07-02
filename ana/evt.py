@@ -1199,6 +1199,8 @@ class Evt(object):
        if a non-single line selection were active or the flg did not 
        appear None is returned.
 
+       iflg('BT') returns 1, in index of the first occurrence 
+
        """ 
        lab0 = self.label0
        if lab0 is None:

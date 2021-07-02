@@ -37,7 +37,24 @@ void QCtx::Init(const GGeo* ggeo)
     QRng* qrng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << qrng->desc(); 
 
-    QScint* qscint = new QScint(slib); 
+
+    QScint* qscint = nullptr ;  
+
+    const char* icdf_path = "/tmp/G4OpticksAnaMgr/X4ScintillationIntegralTest_icdf.npy" ; 
+    NPY<double>* icdf = NPY<double>::load(icdf_path); 
+    if( icdf == nullptr )
+    {
+        LOG(LEVEL) << " booting QScint from standard GScintillatorLib " ; 
+        qscint = new QScint(slib); 
+    }
+    else
+    {
+        LOG(LEVEL) 
+            << " booting QScint from non-standard icdf " << icdf->getShapeString() 
+            << " loaded from icdf_path " << icdf_path 
+            ; 
+        qscint = new QScint(icdf); 
+    }
     LOG(LEVEL) << qscint->desc(); 
 
     QBnd* qbnd = new QBnd(blib); 

@@ -6,13 +6,9 @@
 
 """
 import numpy as np
-
 np.set_printoptions(suppress=True)
-
-from opticks.ana.proplib import PropLib
 from opticks.ana.material import Material
 import matplotlib.pyplot as plt
-
 
 if __name__ == '__main__':
 
@@ -21,17 +17,12 @@ if __name__ == '__main__':
     #matname = "Air"
     #matname = "Water"
     mat = Material(matname)
-
-    #wl = PropLib.COARSE_DOMAIN
-    wl = PropLib.FINE_DOMAIN
-
-    tab = mat.table(wl).reshape(-1,6)
+    tab = mat.table("FINE_DOMAIN").reshape(-1,6)
+    qwn = mat.table_qwn()
 
     #print(mat.hdr())
     #print(tab)
- 
-    #      0       1      2      3       4        5 
-    qwn = "wavelen rindex abslen scatlen reemprob groupvel".split()
+    
     print("".join(list(map(lambda _:" %10s " % _, qwn))))
  
     fmt = " %10.3f " * 6

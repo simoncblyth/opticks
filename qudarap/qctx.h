@@ -44,6 +44,7 @@ struct qctx
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
     QCTX_METHOD float   scint_wavelength(curandStateXORWOW& rng);  
+    QCTX_METHOD float   scint_wavelength_tenfold_extremes(curandStateXORWOW& rng);
     QCTX_METHOD void    scint_dirpol(quad4& p, curandStateXORWOW& rng); 
     QCTX_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
     QCTX_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
@@ -74,6 +75,55 @@ inline QCTX_METHOD float qctx::scint_wavelength(curandStateXORWOW& rng)
     float u0 = curand_uniform(&rng); 
     return tex2D<float>(scint_tex, u0, 0.f);    
 }
+
+/**
+qctx::scint_wavelength_tenfold_extremes
+--------------------------------------------------
+
+Idea is to improve handling of extremes by throwing ten times the bins
+at those regions, using simple and cheap linear mappings.
+
+Perhaps could also use log probabilities to do something similar to 
+this in a fancy way : just like using log scale to give more detail in the low registers. 
+But that has computational disadvantage of expensive mapping functions to get between spaces. 
+
+See::
+
+     extg4/tests/X4ScintillatorIntegralTest.cc
+     extg4/tests/X4ScintillatorIntegralTest.py 
+
+
+Actually looking at the plots would be better to do the extreme splits at 0.05 and 0.95 
+
+**/
+
+inline QCTX_METHOD float qctx::scint_wavelength_tenfold_extremes(curandStateXORWOW& rng) 
+{
+    float u0 = curand_uniform(&rng); 
+    float wl ; 
+
+    float y0 = (float(0u) + 0.5f )/float(3.f) ; 
+    float y1 = (float(1u) + 0.5f )/float(3.f) ; 
+    float y2 = (float(2u) + 0.5f )/float(3.f) ; 
+
+
+    if( u0 < 0.1f )
+    {
+        wl = tex2D<float>(scint_tex, u0*10.f , y1 );    
+    }
+    else if ( u0 > 0.9f )
+    {
+        wl = tex2D<float>(scint_tex, (u0 - 0.9f)*10.f , y2 );    
+    }
+    else
+    {
+        wl = tex2D<float>(scint_tex, u0,  y0 ); 
+    }
+    return wl ; 
+}
+
+
+
 
 inline QCTX_METHOD void qctx::scint_dirpol(quad4& p, curandStateXORWOW& rng)
 {

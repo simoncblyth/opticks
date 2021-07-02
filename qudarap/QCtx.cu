@@ -12,8 +12,10 @@ __global__ void _QCtx_generate_wavelength(qctx* ctx, float* wavelength, unsigned
 
     curandState rng = *(ctx->r + id) ; 
 
-    float wl = ctx->scint_wavelength(rng) ;  
-    if(id % 100 == 0) printf("//_QCtx_generate_wavelength id %d wl %10.4f \n", id, wl  ); 
+    //float wl = ctx->scint_wavelength(rng) ;  
+    float wl = ctx->scint_wavelength_tenfold_extremes(rng) ;  
+
+    if(id % 100000 == 0) printf("//_QCtx_generate_wavelength (tenfold_extremes)  id %d wl %10.4f \n", id, wl  ); 
 
     wavelength[id] = wl ; 
 }

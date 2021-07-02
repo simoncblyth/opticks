@@ -157,6 +157,15 @@ class Material(object):
         return self.lookup(PropLib.L_GROUP_VELOCITY, wavelength)
 
     def table(self, wl):
+        """
+        :param wl: array of wavelengths OR string "FINE_DOMAIN" or "COARSE_DOMAIN" to use standard sets
+        :return tab: array of shape (num_wavelengths, 6) with wavelength and property values 
+        """
+        if type(wl) is str:
+            if wl in "FINE_DOMAIN COARSE_DOMAIN".split():
+                wl = getattr(PropLib, wl)
+            pass  
+        pass
         ri = self.refractive_index(wl)
         al = self.absorption_length(wl)
         sl = self.scattering_length(wl)
@@ -164,6 +173,11 @@ class Material(object):
         gv = self.group_velocity(wl)
         tab = np.dstack([wl,ri,al,sl,rp,gv])
         return tab 
+
+    def table_qwn(self):
+        qwn = "wavelen rindex abslen scatlen reemprob groupvel".split()
+        return qwn 
+ 
 
     def dump(self):
         w = self.mlib.domain

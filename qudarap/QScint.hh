@@ -16,11 +16,13 @@ struct QUDARAP_API QScint
     static const QScint*        Get(); 
 
     const GScintillatorLib* slib ; 
-    NPY<double>*            dsrc ; 
+    const NPY<double>*      dsrc ; 
     NPY<float>*             src ; 
     QTex<float>*            tex ; 
 
     QScint(const GScintillatorLib* slib_); 
+    QScint(const NPY<double>* icdf); 
+
     void init(); 
     void makeScintTex(const NPY<float>* src);
     std::string desc() const ; 
