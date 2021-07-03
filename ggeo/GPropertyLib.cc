@@ -302,9 +302,13 @@ bool GPropertyLib::isOptional() const
 
 
 
-unsigned int GPropertyLib::getNumRaw() const 
+unsigned GPropertyLib::getNumRaw() const 
 {
     return m_raw.size();
+}
+unsigned GPropertyLib::getNumRawEnergy() const 
+{
+    return m_raw_energy.size();
 }
 
 
@@ -773,15 +777,27 @@ void GPropertyLib::addRaw(GPropertyMap<double>* pmap)
     m_raw.push_back(pmap);
 }
 
-GPropertyMap<double>* GPropertyLib::getRaw(unsigned int index) const 
+void GPropertyLib::addRawEnergy(GPropertyMap<double>* pmap)
+{
+    m_raw_energy.push_back(pmap);
+}
+
+
+
+GPropertyMap<double>* GPropertyLib::getRaw(unsigned index) const 
 {
     return index < m_raw.size() ? m_raw[index] : NULL ;
 }
+GPropertyMap<double>* GPropertyLib::getRawEnergy(unsigned index) const 
+{
+    return index < m_raw_energy.size() ? m_raw_energy[index] : NULL ;
+}
+
 
 GPropertyMap<double>* GPropertyLib::getRaw(const char* shortname) const 
 {
-    unsigned int nraw = m_raw.size();
-    for(unsigned int i=0 ; i < nraw ; i++)
+    unsigned num_raw = m_raw.size();
+    for(unsigned i=0 ; i < num_raw ; i++)
     {  
         GPropertyMap<double>* pmap = m_raw[i];
         const char* name = pmap->getShortName();
@@ -790,29 +806,70 @@ GPropertyMap<double>* GPropertyLib::getRaw(const char* shortname) const
     return NULL ; 
 }
 
+GPropertyMap<double>* GPropertyLib::getRawEnergy(const char* shortname) const 
+{
+    unsigned num_raw_energy = m_raw_energy.size();
+    for(unsigned i=0 ; i < num_raw_energy ; i++)
+    {  
+        GPropertyMap<double>* pmap = m_raw_energy[i];
+        const char* name = pmap->getShortName();
+        if(strcmp(shortname, name) == 0) return pmap ;         
+    }
+    return NULL ; 
+}
+
+
 
 
 void GPropertyLib::loadRaw()
 {
+    loadRaw( m_raw, RAW_DIRNAME_SUFFIX, false ); 
+}
+void GPropertyLib::loadRawEnergy()
+{
+    loadRaw( m_raw_energy, RAW_DIRNAME_SUFFIX, true ); 
+}
+
+/**
+GPropertyLib::loadRaw
+-----------------------
+
+*endswith* flips whether to include or excludes directories with the name suffix
+
+**/
+
+const char* GPropertyLib::RAW_DIRNAME_SUFFIX = "_en" ; 
+
+void GPropertyLib::loadRaw( std::vector<GPropertyMap<double>*>& dst, const char* dirname_suffix, bool endswith ) 
+{
     std::string dir = getCacheDir();   // eg $IDPATH/GScintillatorLib
 
     std::vector<std::string> names ; 
-    BDir::dirdirlist(names, dir.c_str() );   // find sub-directory names for all raw items in lib eg GdDopedLS,LiquidScintillator
+
+    BDir::dirdirlist(names, dir.c_str(), dirname_suffix, endswith );   // find sub-directory names for all raw items in lib eg GdDopedLS,LiquidScintillator
+
+    LOG(LEVEL) 
+        << " dir " << dir
+        << " names.size " << names.size()
+        << " dirname_suffix " << dirname_suffix
+        << " endswith " << endswith 
+        ;
    
     for(std::vector<std::string>::iterator it=names.begin() ; it != names.end() ; it++ )
     {
         std::string name = *it ; 
-        LOG(debug) << "GPropertyLib::loadRaw " << name << " " << m_comptype ; 
+        LOG(LEVEL) << name << " " << m_comptype ; 
 
         GPropertyMap<double>* pmap = GPropertyMap<double>::load( dir.c_str(), name.c_str(), m_comptype );
         if(pmap)
         {
-            LOG(debug) << "GPropertyLib::loadRaw " << name << " " << m_comptype << " num properties:" << pmap->getNumProperties() ; 
-            addRaw(pmap);
+            LOG(LEVEL) << name << " " << m_comptype << " num properties:" << pmap->getNumProperties() ; 
+            dst.push_back(pmap);
         }
-
     }
 }
+
+
 
 void GPropertyLib::dumpRaw(const char* msg) const 
 {
@@ -831,13 +888,27 @@ void GPropertyLib::dumpRaw(const char* msg) const
 void GPropertyLib::saveRaw()
 {
     std::string dir = getCacheDir(); 
-    unsigned int nraw = m_raw.size();
-    for(unsigned int i=0 ; i < nraw ; i++)
+    unsigned num_raw = m_raw.size();
+    for(unsigned i=0 ; i < num_raw ; i++)
     {
         GPropertyMap<double>* pmap = m_raw[i] ;
         pmap->save(dir.c_str());
     }
 }
+
+void GPropertyLib::saveRawEnergy()
+{
+    std::string dir = getCacheDir(); 
+    unsigned num_raw_energy = m_raw_energy.size();
+    for(unsigned i=0 ; i < num_raw_energy ; i++)
+    {
+        GPropertyMap<double>* pmap = m_raw_energy[i] ;
+        pmap->save(dir.c_str());
+    }
+}
+
+
+
 
 
 

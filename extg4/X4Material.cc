@@ -80,14 +80,14 @@ GMaterial* X4Material::getMaterial()
 }
 
 X4Material::X4Material( const G4Material* material, char mode ) 
-   :
-   m_material(material),
-   m_mode(mode),
-   m_mpt(material->GetMaterialPropertiesTable()),
-   m_has_efficiency(m_mpt ? HasEfficiencyProperty(m_mpt) : false),
-   m_mat(NULL)
+    :
+    m_material(material),
+    m_mode(mode),
+    m_mpt(material->GetMaterialPropertiesTable()),
+    m_has_efficiency(m_mpt ? HasEfficiencyProperty(m_mpt) : false),
+    m_mat(NULL)
 {
-   init() ;
+    init() ;
 }
 
 bool X4Material::HasEfficiencyProperty(const G4MaterialPropertiesTable* mpt_) // static

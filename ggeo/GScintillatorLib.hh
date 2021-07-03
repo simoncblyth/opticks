@@ -75,18 +75,17 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
         GProperty<double>* legacyConstructInvertedReemissionCDF(GPropertyMap<double>* pmap) const ;
         GItemList*         legacyCreateNames() const ;
     public:
-        void       prepare();
-        void       dumpScintillatorMaterials(const char* msg);
-        unsigned   getNumScintillatorMaterials();
-        GMaterial* getScintillatorMaterial(unsigned int index);
+        //void       prepare();
+        //void       dumpScintillatorMaterials(const char* msg);
+        //unsigned   getNumScintillatorMaterials();
+        //GMaterial* getScintillatorMaterial(unsigned int index);
     private:
         const GMaterialLib*       m_mlib ; 
         unsigned                  m_icdf_length ; 
-        std::vector<GMaterial*>   m_scintillators_raw ; // TODO: eliminate GPropertyLib already has vector of raw pmaps ?
+        //std::vector<GMaterial*>   m_scintillators_raw ; // TODO: eliminate GPropertyLib already has vector of raw pmaps ?
         NPY<double>*              m_g4icdf ; 
 
 };
 
 #include "GGEO_TAIL.hh"
-
 

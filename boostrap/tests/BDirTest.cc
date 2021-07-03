@@ -21,7 +21,7 @@
 #include "BDir.hh"
 #include <iostream>
 
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 typedef std::vector<std::string> VS ; 
@@ -32,11 +32,9 @@ void dump(const char* msg, std::vector<std::string>& names)
     for(VS::const_iterator it=names.begin() ; it != names.end() ; it++ ) std::cerr << *it << std::endl ; 
 }
 
-
-int main(int argc, char** argv)
+void test_dirlist()
 {
-    PLOG_(argc, argv);
-
+    LOG(info); 
     std::string home = BFile::FormPath("~");
     const char* dir = home.c_str();
 
@@ -51,5 +49,48 @@ int main(int argc, char** argv)
     names.clear();
     BDir::dirlist(names, dir, ".json" );
     dump(".json", names);
-  
+}
+
+void test_dirdirlist_0()
+{
+    LOG(info); 
+    std::string home = BFile::FormPath("~");
+    const char* dir = home.c_str();
+
+    VS names ;
+    BDir::dirdirlist(names, dir ); 
+    dump("all", names);
+}
+
+void test_dirdirlist_1()
+{
+    LOG(info); 
+    std::string home = BFile::FormPath("~");
+    const char* dir = home.c_str();
+
+    const char* name_suffix = "_en" ; 
+    bool endswith = true ; 
+
+    VS names ;
+    BDir::dirdirlist(names, dir, name_suffix, endswith ); 
+    dump("dirs with names ending _en", names);
+
+    endswith = false ; 
+    names.clear();
+    BDir::dirdirlist(names, dir, name_suffix, endswith ); 
+    dump("dirs with names NOT ending _en", names);
+
+}
+
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+
+    //test_dirlist();    
+    //test_dirdirlist_0(); 
+    test_dirdirlist_1(); 
+
+    return 0 ; 
 }

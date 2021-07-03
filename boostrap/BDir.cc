@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "SStr.hh"
 #include "BDir.hh"
 
 #include <cstring>
@@ -66,8 +67,18 @@ void BDir::dirlist(std::vector<std::string>& names,  const char* path)
     }
 }
 
+/**
+BDir::dirdirlist
+------------------
 
-void BDir::dirdirlist(std::vector<std::string>& names,  const char* path)
+Collect the *names* of subdirectories within the *path* directory.
+When *name_suffix* is non-null and *endswith* is true only names with the 
+provided suffix are collected. When *endswith* is false only names **NOT** ending 
+with the suffix are collected.   
+
+**/
+
+void BDir::dirdirlist(std::vector<std::string>& names,  const char* path, const char* name_suffix, bool endswith )
 {
     fs::path dir(path);
     if(!( fs::exists(dir) && fs::is_directory(dir))) return ; 
@@ -81,10 +92,15 @@ void BDir::dirdirlist(std::vector<std::string>& names,  const char* path)
         {
             std::string name = it->path().filename().string() ;
             //std::cout << "dirdirlist " << name << std::endl ;
-            names.push_back(name);
+            bool select = name_suffix == nullptr ? true : SStr::EndsWith(name.c_str(), name_suffix ) == endswith  ; 
+            if(select)  names.push_back(name);
         }
     }
 }
 
 
+void BDir::dirdirlist(std::vector<std::string>& names,  const char* path )
+{
+    BDir::dirdirlist(names, path, nullptr, false ); 
+}
 

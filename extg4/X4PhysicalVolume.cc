@@ -81,6 +81,7 @@ template struct nxform<X4Nd> ;
 #include "GGeo.hh"
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
+#include "GScintillatorLib.hh"
 #include "GSurfaceLib.hh"
 #include "GBorderSurface.hh"
 #include "GSkinSurface.hh"
@@ -143,6 +144,7 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_g4codegen(m_ok->isG4CodeGen()),
     m_g4codegendir(m_ok->getG4CodeGenDir()),
     m_mlib(m_ggeo->getMaterialLib()),
+    m_sclib(m_ggeo->getScintillatorLib()),
     m_slib(m_ggeo->getSurfaceLib()),
     m_blib(m_ggeo->getBndLib()),
     m_hlib(m_ggeo->getMeshLib()),
@@ -191,6 +193,7 @@ void X4PhysicalVolume::init()
 
     convertWater();       // special casing in Geant4 forces special casing here
     convertMaterials();   // populate GMaterialLib
+    convertScintillators(); 
 
     convertSurfaces();    // populate GSurfaceLib
     closeSurfaces();
@@ -317,6 +320,43 @@ void X4PhysicalVolume::convertMaterials()
 
     LOG(LEVEL) << "]" ;
     OK_PROFILE("X4PhysicalVolume::convertMaterials");
+}
+
+
+
+
+void X4PhysicalVolume::convertScintillators()
+{
+    LOG(LEVEL) << "[" ; 
+
+    assert( m_sclib ); 
+
+    const char* props = "SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB" ;
+
+    std::vector<GMaterial*>  scintillators_raw = m_mlib->getRawMaterialsWithProperties(props, ',' );  
+
+    unsigned num_scint = scintillators_raw.size() ; 
+
+    if(num_scint == 0)
+    {   
+        LOG(LEVEL) << " found no scintillator materials  " ; 
+    }   
+    else
+    {   
+        LOG(LEVEL) << " found " << num_scint << " scintillator materials  " ; 
+
+        for(unsigned i=0 ; i < num_scint ; i++)
+        {   
+            GMaterial* mat = scintillators_raw[i] ; 
+
+            GPropertyMap<double>* scint = dynamic_cast<GPropertyMap<double>*>(mat);  
+
+            m_sclib->add(scint);
+        }   
+        m_sclib->close();   // creates and sets "THE" buffer 
+    }   
+
+    LOG(LEVEL) << "]" ; 
 }
 
 

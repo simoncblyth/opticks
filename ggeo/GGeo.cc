@@ -1233,14 +1233,14 @@ void GGeo::close()
 GGeo::prepareScintillatorLib
 ------------------------------
 
-TODO: remove this from here by doing it earlier, eg in a new X4PhysicalVolume::convertScintillators invoked from X4PhysicalVolume::init
+Attempting to move this to X4PhysicalVolume::convertScintillators invoked from X4PhysicalVolume::init
 
 **/
 
 void GGeo::prepareScintillatorLib()
 {
-    GScintillatorLib* sclib = getScintillatorLib() ;
-    sclib->prepare(); 
+    //GScintillatorLib* sclib = getScintillatorLib() ;
+    //sclib->prepare(); 
 }
 
 

@@ -51,13 +51,13 @@ class X4_API X4PhysicsVector
         static std::string    Scan(const G4PhysicsVector* vec ) ; 
     public:
         static T _hc_eVnm() ; 
-        static GProperty<T>* Convert(const G4PhysicsVector* vec ) ; 
+        static GProperty<T>* Convert(const G4PhysicsVector* vec, bool nm_domain ) ; 
         static GProperty<T>* Interpolate(const G4PhysicsVector* vec,  const GDomain<T>* dom ) ; 
     private:
-        X4PhysicsVector( const G4PhysicsVector* vec, const GDomain<T>* dom  );
+        X4PhysicsVector( const G4PhysicsVector* vec, const GDomain<T>* dom, bool nm_domain  );
         void init(); 
     private:
-        GProperty<T>* makeDirect() const ; 
+        GProperty<T>* makeDirect(bool nm_domain) const ; 
         size_t getSrcVectorLength() const ;
         T* getSrcValues(bool reverse) const ;
         T* getSrcEnergies(bool reverse) const ;

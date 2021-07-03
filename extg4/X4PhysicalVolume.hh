@@ -47,6 +47,7 @@ class GSkinSurface ;
 class GGeo ; 
 class GMesh ; 
 class GMaterialLib ; 
+class GScintillatorLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
 class GMeshLib ; 
@@ -117,8 +118,8 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertMaterials_old(); 
         void convertWater(); 
         void convertMaterials(); 
+        void convertScintillators(); 
         void convertSurfaces(); 
-
 
         void convertSensors(); 
         void closeSurfaces(); 
@@ -162,6 +163,7 @@ class X4_API X4PhysicalVolume : public X4Named
         const char*                  m_g4codegendir ;
     private:
         GMaterialLib*                m_mlib ; 
+        GScintillatorLib*            m_sclib ; 
         GSurfaceLib*                 m_slib ; 
         GBndLib*                     m_blib ; 
     private:

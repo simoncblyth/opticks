@@ -66,6 +66,7 @@ void GScintillatorLib::save()
 {
     saveToCache();
     saveRaw();
+    saveRawEnergy();
 }
 
 GScintillatorLib* GScintillatorLib::load(Opticks* ok)
@@ -73,6 +74,7 @@ GScintillatorLib* GScintillatorLib::load(Opticks* ok)
     GScintillatorLib* lib = new GScintillatorLib(ok);
     lib->loadFromCache();
     lib->loadRaw();
+    lib->loadRawEnergy();
     return lib ; 
 }
 
@@ -326,7 +328,6 @@ Currently invoked from GGeo::prepare/GGeo::prepareScintillatorLib
 
 TODO: move to invoking it earlier, eg in a new X4PhysicalVolume::convertScintillators invoked from X4PhysicalVolume::init
 
-
 1. collect scintillator raw materials from GMaterialLib into *m_scintillators_raw* identified by the 
    presence of three properties : SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB 
 
@@ -336,6 +337,9 @@ TODO: move to invoking it earlier, eg in a new X4PhysicalVolume::convertScintill
 
 
 **/
+
+
+/**
 
 void GScintillatorLib::prepare()
 {
@@ -369,7 +373,6 @@ void GScintillatorLib::prepare()
     }
 }
 
-
 void GScintillatorLib::dumpScintillatorMaterials(const char* msg)
 {
     LOG(info)<< msg ;
@@ -388,13 +391,12 @@ unsigned int GScintillatorLib::getNumScintillatorMaterials()
     return m_scintillators_raw.size();
 }
 
-
 GMaterial* GScintillatorLib::getScintillatorMaterial(unsigned int index)
 {
     return index < m_scintillators_raw.size() ? m_scintillators_raw[index] : NULL ; 
 }
 
 
-
+**/
 
 

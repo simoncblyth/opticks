@@ -60,7 +60,6 @@ X4MaterialPropertiesTable::AddProperties
 
 Used from X4Material::Convert/X4Material::init
 
-
 **/
 
 void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt, char mode )   //  static
@@ -103,17 +102,25 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
         }
         else if( mode == 'S' )      // Opticks pmap interpolation onto standard domain   
         {
-            prop = X4PhysicsVector<double>::Convert(pvec) ; 
+            bool nm_domain = true ;  
+            prop = X4PhysicsVector<double>::Convert(pvec, nm_domain ) ; 
             pmap->addPropertyStandardized( pname.c_str(), prop );  
         }
-        else if( mode == 'A' )      //  asis : no interpolation 
+        else if( mode == 'A' )      //  asis : no interpolation, but converted to nm  
         {
-            prop = X4PhysicsVector<double>::Convert(pvec) ; 
+            bool nm_domain = true ;  
+            prop = X4PhysicsVector<double>::Convert(pvec, nm_domain ) ; 
+            pmap->addPropertyAsis( pname.c_str(), prop );     
+        }
+        else if( mode == 'E' )      //  asis : no interpolation, NOT converted to nm : Energy domain 
+        {
+            bool nm_domain = false ;  
+            prop = X4PhysicsVector<double>::Convert(pvec, nm_domain ) ; 
             pmap->addPropertyAsis( pname.c_str(), prop );     
         }
         else
         {
-            LOG(fatal) << " mode must be one of G/S/A " ; 
+            LOG(fatal) << " mode must be one of G/S/A/E " ; 
             assert(0); 
         }
 

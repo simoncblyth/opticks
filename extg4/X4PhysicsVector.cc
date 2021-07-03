@@ -39,7 +39,8 @@ template <typename T>
 std::string X4PhysicsVector<T>::Digest(const G4PhysicsVector* vec)  // see cfg4.G4PhysicsOrderedFreeVectorTest
 {   
     if(!vec) return "" ;
-    GProperty<T>* prop = Convert( vec ) ; 
+    bool nm_domain = true ; 
+    GProperty<T>* prop = Convert( vec, nm_domain ) ; 
     return prop->getDigestString(); 
 }
 
@@ -68,9 +69,9 @@ std::string X4PhysicsVector<T>::Digest0(const G4PhysicsVector* vec)  // see cfg4
 
 
 template <typename T>
-GProperty<T>* X4PhysicsVector<T>::Convert(const G4PhysicsVector* vec ) 
+GProperty<T>* X4PhysicsVector<T>::Convert(const G4PhysicsVector* vec, bool nm_domain ) 
 {
-    X4PhysicsVector<T> xvec(vec, nullptr); 
+    X4PhysicsVector<T> xvec(vec, nullptr, nm_domain); 
     GProperty<T>* prop = xvec.getProperty();
     return prop ; 
 }
@@ -78,7 +79,8 @@ GProperty<T>* X4PhysicsVector<T>::Convert(const G4PhysicsVector* vec )
 template <typename T>
 GProperty<T>* X4PhysicsVector<T>::Interpolate(const G4PhysicsVector* vec, const GDomain<T>* dom) 
 {
-    X4PhysicsVector<T> xvec(vec, dom); 
+    bool nm_domain = true ; 
+    X4PhysicsVector<T> xvec(vec, dom, nm_domain ); 
     GProperty<T>* prop = xvec.getProperty();
     return prop ; 
 }
@@ -96,11 +98,11 @@ GProperty<T>* X4PhysicsVector<T>::getProperty() const
 }
 
 template <typename T>
-X4PhysicsVector<T>::X4PhysicsVector( const G4PhysicsVector* vec, const GDomain<T>* dom )
+X4PhysicsVector<T>::X4PhysicsVector( const G4PhysicsVector* vec, const GDomain<T>* dom, bool nm_domain )
     :
     m_vec(vec),
     m_dom(dom),
-    m_prop(m_dom == nullptr ? makeDirect() : makeInterpolated())
+    m_prop(m_dom == nullptr ? makeDirect(nm_domain) : makeInterpolated())
 {
 }
 
@@ -115,13 +117,13 @@ so must reverse ordering.
 **/
 
 template <typename T>
-GProperty<T>* X4PhysicsVector<T>::makeDirect() const
+GProperty<T>* X4PhysicsVector<T>::makeDirect(bool nm_domain) const
 {
-    bool reverse = true ;   
+    bool reverse = nm_domain ;   
     size_t len = getSrcVectorLength() ; 
     LOG(LEVEL) << " src.len " << len ; 
     T* values = getSrcValues(reverse); 
-    T* domain = getSrcWavelengths(reverse); 
+    T* domain = nm_domain ? getSrcWavelengths(reverse) : getSrcEnergies(reverse) ; 
     GProperty<T>* prop = new GProperty<T>( values, domain, len );   
 
     // GProperty ctor copies inputs, so cleanup 

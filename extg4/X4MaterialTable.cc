@@ -122,21 +122,18 @@ void X4MaterialTable::init()
             LOG(LEVEL) << " converting material with mpt " <<  material->GetName() ; 
         }
 
-
-        char mode_g4interpolated = 'G' ;
         //char mode_oldstandardized = 'S' ;
-        char mode_asis = 'A' ;
-
+        char mode_g4interpolated = 'G' ;
         GMaterial* mat = X4Material::Convert( material, mode_g4interpolated );   
-        if(mat->hasProperty("EFFICIENCY"))
-        {
-             m_materials_with_efficiency.push_back(material); 
-        }
+        if(mat->hasProperty("EFFICIENCY")) m_materials_with_efficiency.push_back(material); 
         m_mlib->add(mat) ;    
 
-
-        GMaterial* rawmat = X4Material::Convert( material, mode_asis );   
+        char mode_asis_nm = 'A' ;
+        GMaterial* rawmat = X4Material::Convert( material, mode_asis_nm );   
         m_mlib->addRaw(rawmat) ;
+
+
+
     }
 }
 

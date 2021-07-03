@@ -31,7 +31,8 @@ class BRAP_API BDir {
       static void dirlist(std::vector<std::string>& basenames,  const char* path, const char* ext);
 
      // basenames of directories within the path directory
-      static void dirdirlist(std::vector<std::string>& names,  const char* path);
+      static void dirdirlist(std::vector<std::string>& names,  const char* path, const char* name_suffix, bool endswith );
+      static void dirdirlist(std::vector<std::string>& names,  const char* path );
 
 };
 

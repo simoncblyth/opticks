@@ -150,7 +150,9 @@ void X4PhysicsVectorTest::test_units()
 
 void X4PhysicsVectorTest::test_convert()
 {
-    GProperty<double>* prop = X4PhysicsVector<double>::Convert(pof) ; 
+    bool nm_domain = true ; 
+ 
+    GProperty<double>* prop = X4PhysicsVector<double>::Convert(pof, nm_domain ) ; 
 
     prop->SummaryV("prop", 50);
 

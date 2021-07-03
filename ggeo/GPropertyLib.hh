@@ -116,7 +116,8 @@ class GGEO_API GPropertyLib {
         static unsigned int NUM_MATSUR ;    // number of material/surfaces in the boundary 
         static unsigned int NUM_PROP ; 
         static unsigned int NUM_FLOAT4 ; 
-        static const char* METANAME ; 
+        static const char*  METANAME ; 
+        static const char*  RAW_DIRNAME_SUFFIX ; 
     public:
         static const char* material ; 
         static const char* surface ;
@@ -149,12 +150,21 @@ class GGEO_API GPropertyLib {
         std::string getPreferenceDir();
     public:
         void     dumpRaw(const char* msg="GPropertyLib::dumpRaw") const ;
-        void     addRaw(GPropertyMap<double>* pmap);
-        unsigned getNumRaw() const ;
-        GPropertyMap<double>* getRaw(unsigned int index) const ;
+        void                  addRaw( GPropertyMap<double>* pmap);
+        unsigned              getNumRaw() const ;
+        GPropertyMap<double>* getRaw(unsigned index) const ;
         GPropertyMap<double>* getRaw(const char* shortname) const ;
-        void     saveRaw();
-        void     loadRaw();
+        void                  saveRaw();
+        void                  loadRaw();
+    public:
+        void                  addRawEnergy(GPropertyMap<double>* pmap);
+        unsigned              getNumRawEnergy() const ;
+        GPropertyMap<double>* getRawEnergy(unsigned index) const ;
+        GPropertyMap<double>* getRawEnergy(const char* shortname) const ;
+        void                  saveRawEnergy();
+        void                  loadRawEnergy();
+    private:
+        void     loadRaw( std::vector<GPropertyMap<double>*>& dst, const char* dirname_suffix, bool endswith ) ; 
     public:
         //void setOrder(std::map<std::string, unsigned int>& order);
         std::map<std::string, unsigned int>& getOrder(); 
@@ -261,7 +271,9 @@ class GGEO_API GPropertyLib {
         bool                                 m_noload ;  
     private:
         std::vector<GPropertyMap<double>*>    m_raw ; 
-        std::vector<unsigned>                m_sensor_indices ; 
+        std::vector<GPropertyMap<double>*>    m_raw_energy ; 
+
+        std::vector<unsigned>                 m_sensor_indices ; 
 
 
 };

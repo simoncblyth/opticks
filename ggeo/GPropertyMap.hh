@@ -128,7 +128,9 @@ class GGEO_API GPropertyMap {
 
       bool isMaterial() const ;
       bool hasNonZeroProperty(const char* pname) ;
-     
+
+      void setEnergyDomain(); 
+      bool hasEnergyDomain() const ; 
    public:
       // from metadata
       std::string getBPV1() const ; 
@@ -196,9 +198,8 @@ class GGEO_API GPropertyMap {
 
       GDomain<T>*      m_standard_domain ; 
       GOpticalSurface* m_optical_surface ; 
-
-      BMeta*      m_meta ; 
-
+      BMeta*           m_meta ; 
+      bool             m_energy_domain ; 
 
 };
 

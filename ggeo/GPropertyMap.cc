@@ -118,24 +118,33 @@ std::string GPropertyMap<T>::getSSLV() const
 }
 
 
+template <typename T>
+void GPropertyMap<T>::setEnergyDomain()
+{
+    m_energy_domain = true ;  
+}
 
-
-
+template <typename T>
+bool GPropertyMap<T>::hasEnergyDomain() const 
+{
+    return m_energy_domain ;  
+}
 
 
 
 
 template <typename T>
 GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain) 
-      : 
-      m_name(other ? other->getName() : NOT_DEFINED ),
-      m_shortname(NULL),
-      m_type(other ? other->getType() : "" ),
-      m_index(other ? other->getIndex() : UINT_MAX ),
-      m_valid(other ? other->isValid() : false),
-      m_standard_domain(domain),
-      m_optical_surface(other ? other->getOpticalSurface() : NULL ),
-      m_meta(other && other->getMeta() ? new BMeta(*other->getMeta()) :  new BMeta) 
+    : 
+    m_name(other ? other->getName() : NOT_DEFINED ),
+    m_shortname(NULL),
+    m_type(other ? other->getType() : "" ),
+    m_index(other ? other->getIndex() : UINT_MAX ),
+    m_valid(other ? other->isValid() : false),
+    m_standard_domain(domain),
+    m_optical_surface(other ? other->getOpticalSurface() : NULL ),
+    m_meta(other && other->getMeta() ? new BMeta(*other->getMeta()) :  new BMeta),
+    m_energy_domain(false)  
 {
     init();
 
@@ -1042,8 +1051,6 @@ void GPropertyMap<T>::addMapAsis(GPropertyMap<T>* other, const char* prefix)
     }
 }
 
-
-
 template <typename T>
 void GPropertyMap<T>::addMapStandardized(GPropertyMap<T>* other, const char* prefix)
 {
@@ -1057,24 +1064,22 @@ void GPropertyMap<T>::addMapStandardized(GPropertyMap<T>* other, const char* pre
     }
 }
 
-
-
-
-
 template <typename T>
-void GPropertyMap<T>::save(const char* path)
+void GPropertyMap<T>::save(const char* dir)
 {
-   for(std::vector<std::string>::iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
-   {
-       std::string key = *it ;
-       std::string propname(key) ; 
-       propname += ".npy" ;
+    std::string shortname = m_shortname ; 
+    if(m_energy_domain) shortname += ".en " ;  
 
-       GProperty<T>* prop = m_prop[key] ; 
-       prop->save(path, m_shortname, propname.c_str());
-   } 
+    for(std::vector<std::string>::iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
+    {
+        std::string key = *it ;
+        std::string propname(key) ; 
+        propname += ".npy" ;
+
+        GProperty<T>* prop = m_prop[key] ; 
+        prop->save(dir, shortname.c_str(), propname.c_str());  // dir, reldir, name
+    } 
 }
-
 
 template <typename T>
 GPropertyMap<T>* GPropertyMap<T>::load(const char* path, const char* name, const char* type)
