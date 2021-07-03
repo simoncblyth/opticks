@@ -27,6 +27,9 @@
 #include "GPropertyMap.hh"
 #include "GItemList.hh"
 #include "GScintillatorLib.hh"
+#include "GMaterialLib.hh"
+#include "GMaterial.hh"
+
 
 #include "PLOG.hh"
 
@@ -74,9 +77,10 @@ GScintillatorLib* GScintillatorLib::load(Opticks* ok)
 }
 
 
-GScintillatorLib::GScintillatorLib( Opticks* ok, unsigned int icdf_length) 
+GScintillatorLib::GScintillatorLib( Opticks* ok, unsigned icdf_length) 
     :
     GPropertyLib(ok, "GScintillatorLib", true ),
+    m_mlib(nullptr),
     m_icdf_length(icdf_length)
 {
     init();
@@ -133,6 +137,69 @@ which GPropertyLib::setBuffer is used.
 
 NPY<double>* GScintillatorLib::createBuffer()
 {
+    return m_g4icdf ? m_g4icdf : legacyCreateBuffer() ; 
+}
+
+GItemList*  GScintillatorLib::createNames()
+{
+    return m_g4icdf ? geant4ICDFCreateNames() : legacyCreateNames() ;  
+}
+
+
+GItemList*  GScintillatorLib::geant4ICDFCreateNames() const 
+{
+    unsigned ni = 1 ; // new approach currently limited to only 1 scintillator material
+    GItemList* names = new GItemList(getType());
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        std::string name =  m_g4icdf->getMeta<std::string>("name", "" ); 
+        bool empty = name.empty();  
+        if(empty) LOG(fatal) << "Geant4ICDF must have non-empty name metadata " ; 
+        assert( !empty ); 
+        names->add(name.c_str());
+    }
+    return names ; 
+}
+
+GItemList*  GScintillatorLib::legacyCreateNames() const 
+{
+    unsigned ni = getNumRaw();
+    GItemList* names = new GItemList(getType());
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        GPropertyMap<double>* scint = getRaw(i) ;
+        names->add(scint->getShortName());
+    }
+    return names ; 
+}
+
+
+
+void GScintillatorLib::setGeant4InterpolatedICDF( NPY<double>* g4icdf )
+{
+    m_g4icdf = g4icdf ; 
+}
+NPY<double>* GScintillatorLib::getGeant4InterpolatedICDF() const 
+{
+    return m_g4icdf ; 
+}
+
+
+
+
+/**
+GScintillatorLib::legacyCreateBuffer
+----------------------------------------
+
+The legacy approach was implemenented in the era of Opticks using an export/import approach 
+which made it necessary to reimplement many things that are easier in the current 
+approach to just steal from Geant4.
+
+**/
+
+NPY<double>* GScintillatorLib::legacyCreateBuffer() const 
+{
+    LOG(fatal) << " using legacy approach, avoid this by GScintillatorLib::setGeant4InterpolatedICDF  " ; 
     unsigned int ni = getNumRaw();
     unsigned int nj = m_icdf_length ;
     unsigned int nk = 1 ; 
@@ -150,10 +217,10 @@ NPY<double>* GScintillatorLib::createBuffer()
     for(unsigned int i=0 ; i < ni ; i++)
     {
         GPropertyMap<double>* scint = getRaw(i) ;
-        GProperty<double>* cdf = constructReemissionCDF(scint);
+        GProperty<double>* cdf = legacyConstructReemissionCDF(scint);
         assert(cdf);
 
-        GProperty<double>* icdf = constructInvertedReemissionCDF(scint);
+        GProperty<double>* icdf = legacyConstructInvertedReemissionCDF(scint);
         assert(icdf);
         assert(icdf->getLength() == nj);
 
@@ -167,22 +234,10 @@ NPY<double>* GScintillatorLib::createBuffer()
 }
 
 
-GItemList*  GScintillatorLib::createNames()
-{
-    unsigned int ni = getNumRaw();
-    GItemList* names = new GItemList(getType());
-    for(unsigned int i=0 ; i < ni ; i++)
-    {
-        GPropertyMap<double>* scint = getRaw(i) ;
-        names->add(scint->getShortName());
-    }
-    return names ; 
-}
-
 
 /**
-GScintillatorLib::constructInvertedReemissionCDF
----------------------------------------------------
+GScintillatorLib::legacyConstructInvertedReemissionCDF
+---------------------------------------------------------
 
 This is invoked by the GScintillatorLib::createBuffer method 
 above with the results being persisted to the buffer.
@@ -201,7 +256,7 @@ results than standard sampling ?
 
 **/
 
-GProperty<double>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap<double>* pmap)
+GProperty<double>* GScintillatorLib::legacyConstructInvertedReemissionCDF(GPropertyMap<double>* pmap) const 
 {
     std::string name = pmap->getShortNameString();
 
@@ -241,7 +296,7 @@ GProperty<double>* GScintillatorLib::constructInvertedReemissionCDF(GPropertyMap
     return icdf ; 
 }
 
-GProperty<double>* GScintillatorLib::constructReemissionCDF(GPropertyMap<double>* pmap)
+GProperty<double>* GScintillatorLib::legacyConstructReemissionCDF(GPropertyMap<double>* pmap) const 
 {
     std::string name = pmap->getShortNameString();
 
@@ -258,5 +313,88 @@ GProperty<double>* GScintillatorLib::constructReemissionCDF(GPropertyMap<double>
     delete rrd ; 
     return cdf ;
 }
+
+
+
+
+
+/**
+GScintillatorLib::prepare
+---------------------------
+
+Currently invoked from GGeo::prepare/GGeo::prepareScintillatorLib 
+
+TODO: move to invoking it earlier, eg in a new X4PhysicalVolume::convertScintillators invoked from X4PhysicalVolume::init
+
+
+1. collect scintillator raw materials from GMaterialLib into *m_scintillators_raw* identified by the 
+   presence of three properties : SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB 
+
+2. GPropertyLib::addRaw the scintillator property maps  
+
+3. GPropertyLib::close the lib which invokes GScintillatorLib::createBuffer and sets the buffer
+
+
+**/
+
+void GScintillatorLib::prepare()
+{
+    LOG(LEVEL); 
+
+    m_mlib = GMaterialLib::Get(); 
+
+    assert( m_mlib ) ; 
+
+    const char* props = "SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB" ;
+ 
+    m_scintillators_raw = m_mlib->getRawMaterialsWithProperties(props, ',' ); 
+
+    unsigned int num_scint = m_scintillators_raw.size() ; 
+
+    if(num_scint == 0)
+    {
+        LOG(LEVEL) << " found no scintillator materials  " ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " found " << num_scint << " scintillator materials  " ; 
+
+        for(unsigned int i=0 ; i < num_scint ; i++)
+        {
+            GPropertyMap<double>* scint = dynamic_cast<GPropertyMap<double>*>(getScintillatorMaterial(i));  
+            add(scint);
+        }
+
+        close(); 
+    }
+}
+
+
+void GScintillatorLib::dumpScintillatorMaterials(const char* msg)
+{
+    LOG(info)<< msg ;
+    for(unsigned int i=0; i<m_scintillators_raw.size() ; i++)
+    {
+        GMaterial* mat = m_scintillators_raw[i];
+        //mat->Summary();
+        std::cout << std::setw(30) << mat->getShortName()
+                  << " keys: " << mat->getKeysString()
+                  << std::endl ; 
+    }              
+}
+
+unsigned int GScintillatorLib::getNumScintillatorMaterials()
+{
+    return m_scintillators_raw.size();
+}
+
+
+GMaterial* GScintillatorLib::getScintillatorMaterial(unsigned int index)
+{
+    return index < m_scintillators_raw.size() ? m_scintillators_raw[index] : NULL ; 
+}
+
+
+
 
 

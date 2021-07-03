@@ -104,11 +104,38 @@ NPY<double>* X4ScintillationIntegral::CreateWavelengthSamples( const G4PhysicsOr
 }
 
 
+/**
+X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF
+-------------------------------------------------------------
 
-NPY<double>* X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF( const G4PhysicsOrderedFreeVector* scint_, unsigned num_bins ) // static
+Reproducing the results of Geant4 dynamic bin finding interpolation 
+using GPU texture lookups demands very high resolution textures for some 
+ICDF shapes. This function prepares a three item buffer that can be used
+to create a 2D texture that effectively mimmicks variable bin sizing even 
+though GPU hardware does not support that without paying the cost of
+high resolution across the entire range.
+
+* item 0 : full range "standard" resolution
+* item 1: left hand side high resolution 
+* item 2: right hand side high resolution 
+
+::
+
+    hd_factor                LHS            RHS
+    10          10x bins:    0.00->0.10     0.90->1.00 
+    20          20x bins:    0.00->0.05     0.95->1.00 
+
+**/
+
+NPY<double>* X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF( 
+       const G4PhysicsOrderedFreeVector* ScintillatorIntegral_, 
+       unsigned num_bins, 
+       unsigned hd_factor, 
+       const char* name
+) 
 {
-    G4PhysicsOrderedFreeVector* scint =  const_cast<G4PhysicsOrderedFreeVector*>(scint_) ;  // tut tut : G4 GetMaxValue() GetEnergy() non-const 
-    double mx = scint->GetMaxValue() ;   // dataVector.back(); because its **ORDERED** to be increasing on Insert
+    G4PhysicsOrderedFreeVector* ScintillatorIntegral = const_cast<G4PhysicsOrderedFreeVector*>(ScintillatorIntegral_) ;  // tut tut : G4 GetMaxValue() GetEnergy() non-const 
+    double mx = ScintillatorIntegral->GetMaxValue() ;   // dataVector.back(); because its **ORDERED** to be increasing on Insert
 
     NPY<double>* icdf = NPY<double>::make(3, num_bins, 1 );  
     icdf->zero(); 
@@ -123,24 +150,43 @@ NPY<double>* X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF( const 
     int k = 0 ; 
     int l = 0 ;  
 
+    assert( hd_factor == 10 || hd_factor == 20 ); 
+    double edge = 1./double(hd_factor) ;  
+
+    icdf->setMeta<std::string>("name", name ); 
+    icdf->setMeta<std::string>("creator", "X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF" ); 
+    icdf->setMeta<int>("hd_factor", hd_factor ); 
+    icdf->setMeta<int>("num_bins", num_bins ); 
+    icdf->setMeta<double>("edge", edge ); 
+
+
+    LOG(LEVEL) 
+        << " num_bins " << num_bins
+        << " hd_factor " << hd_factor
+        << " mx " << std::fixed << std::setw(10) << std::setprecision(4) << mx
+        << " mx*1e9 " << std::fixed << std::setw(10) << std::setprecision(4) << mx*1e9
+        << " edge " << std::fixed << std::setw(10) << std::setprecision(4) << edge 
+        << " icdf " << icdf->getShapeString()
+        ;
+
     for(int j=0 ; j < nj ; j++)
     {
-        double u_0 = double(j)/double(nj) ; 
-        double u_10 = double(j)/double(10*nj) ; 
-        double u_90 = 0.9 + double(j)/double(10*nj) ; 
+        double u_all = double(j)/double(nj) ;                         // 0 -> (nj-1)/nj = 1-1/nj
+        double u_lhs = double(j)/double(hd_factor*nj) ;              
+        double u_rhs = 1. - edge + double(j)/double(hd_factor*nj) ; 
 
-        double energy_0 = scint->GetEnergy( u_0*mx ); 
-        double energy_10 = scint->GetEnergy( u_10*mx );
-        double energy_90 = scint->GetEnergy( u_90*mx );
+        double energy_all = ScintillatorIntegral->GetEnergy( u_all*mx ); 
+        double energy_lhs = ScintillatorIntegral->GetEnergy( u_lhs*mx );
+        double energy_rhs = ScintillatorIntegral->GetEnergy( u_rhs*mx );
  
-        double wavelength_0 = h_Planck*c_light/energy_0/nm ;
-        double wavelength_10 = h_Planck*c_light/energy_10/nm ;
-        double wavelength_90 = h_Planck*c_light/energy_90/nm ;
+        double wavelength_all = h_Planck*c_light/energy_all/nm ;
+        double wavelength_lhs = h_Planck*c_light/energy_lhs/nm ;
+        double wavelength_rhs = h_Planck*c_light/energy_rhs/nm ;
 
-        bool chk = false ; 
-        icdf->setValue(0, j, k, l,  chk ? u_0   : wavelength_0 ); 
-        icdf->setValue(1, j, k, l,  chk ? u_10  : wavelength_10 ); 
-        icdf->setValue(2, j, k, l,  chk ? u_90  : wavelength_90 ); 
+        bool chk_dom = false ; 
+        icdf->setValue(0, j, k, l,  chk_dom ? u_all : wavelength_all ); 
+        icdf->setValue(1, j, k, l,  chk_dom ? u_lhs : wavelength_lhs ); 
+        icdf->setValue(2, j, k, l,  chk_dom ? u_rhs : wavelength_rhs ); 
     }
     return icdf ; 
 } 

@@ -23,6 +23,9 @@ struct X4_API X4PhysicsOrderedFreeVector
     static const plog::Severity LEVEL ; 
     static std::string Desc(const G4PhysicsOrderedFreeVector* vec );
 
+    template<typename T> 
+    static NPY<T>* Convert(const G4PhysicsOrderedFreeVector* vec) ;
+
     G4PhysicsOrderedFreeVector* vec ; 
 
     X4PhysicsOrderedFreeVector( G4PhysicsOrderedFreeVector* vec_ ) ; 

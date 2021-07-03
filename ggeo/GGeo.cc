@@ -1233,68 +1233,15 @@ void GGeo::close()
 GGeo::prepareScintillatorLib
 ------------------------------
 
-TODO : MOVE SCINT HANDLING INTO THE LIB
+TODO: remove this from here by doing it earlier, eg in a new X4PhysicalVolume::convertScintillators invoked from X4PhysicalVolume::init
 
 **/
 
 void GGeo::prepareScintillatorLib()
 {
-    LOG(verbose) << "GGeo::prepareScintillatorLib " ; 
-
-    findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
-
-    unsigned int nscint = getNumScintillatorMaterials() ;
-
-    if(nscint == 0)
-    {
-        LOG(LEVEL) << " found no scintillator materials  " ; 
-    }
-    else
-    {
-        LOG(LEVEL) << " found " << nscint << " scintillator materials  " ; 
-
-        GScintillatorLib* sclib = getScintillatorLib() ;
-
-        for(unsigned int i=0 ; i < nscint ; i++)
-        {
-            GPropertyMap<double>* scint = dynamic_cast<GPropertyMap<double>*>(getScintillatorMaterial(i));  
-            sclib->add(scint);
-        }
-
-        sclib->close(); 
-    }
+    GScintillatorLib* sclib = getScintillatorLib() ;
+    sclib->prepare(); 
 }
-
-void GGeo::findScintillatorMaterials(const char* props)
-{
-    m_scintillators_raw = getRawMaterialsWithProperties(props, ',');
-}
-
-void GGeo::dumpScintillatorMaterials(const char* msg)
-{
-    LOG(info)<< msg ;
-    for(unsigned int i=0; i<m_scintillators_raw.size() ; i++)
-    {
-        GMaterial* mat = m_scintillators_raw[i];
-        //mat->Summary();
-        std::cout << std::setw(30) << mat->getShortName()
-                  << " keys: " << mat->getKeysString()
-                  << std::endl ; 
-    }              
-}
-
-unsigned int GGeo::getNumScintillatorMaterials()
-{
-    return m_scintillators_raw.size();
-}
-
-GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
-{
-    return index < m_scintillators_raw.size() ? m_scintillators_raw[index] : NULL ; 
-}
-
-
-//////////////////////
 
 
 

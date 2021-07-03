@@ -14,6 +14,27 @@
 
 const plog::Severity X4PhysicsOrderedFreeVector::LEVEL = PLOG::EnvLevel("X4PhysicsOrderedFreeVector", "DEBUG" ); 
 
+
+template<typename T>
+NPY<T>* X4PhysicsOrderedFreeVector::Convert(const G4PhysicsOrderedFreeVector* vec )   // static 
+{
+    size_t num_val = vec->GetVectorLength() ; 
+    NPY<T>* a = NPY<T>::make( num_val, 2 ); 
+    a->zero(); 
+    int k=0 ; 
+    int l=0 ; 
+    for(size_t i=0 ; i < num_val ; i++)
+    {
+        G4double energy = vec->Energy(i); 
+        G4double value = (*vec)[i] ; 
+        a->setValue(i, 0, k, l,  T(energy) ); 
+        a->setValue(i, 1, k, l,  T(value) ); 
+    }
+    return a ;  
+}
+
+
+
 std::string X4PhysicsOrderedFreeVector::Desc(const G4PhysicsOrderedFreeVector* vec ) // static
 {
     std::stringstream ss ; 
@@ -84,23 +105,15 @@ void X4PhysicsOrderedFreeVector::putValues( G4double new_value )
 template<typename T>
 NPY<T>* X4PhysicsOrderedFreeVector::convert()
 {
-    size_t num_val = vec->GetVectorLength() ; 
-    NPY<T>* a = NPY<T>::make( num_val, 2 ); 
-    a->zero(); 
-    int k=0 ; 
-    int l=0 ; 
-    for(size_t i=0 ; i < num_val ; i++)
-    {
-        G4double energy = vec->Energy(i); 
-        G4double value = (*vec)[i] ; 
-        a->setValue(i, 0, k, l,  T(energy) ); 
-        a->setValue(i, 1, k, l,  T(value) ); 
-    }
-    return a ;  
+    return Convert<T>(vec);  
 }
-
-
 
 template NPY<float>*  X4PhysicsOrderedFreeVector::convert() ; 
 template NPY<double>* X4PhysicsOrderedFreeVector::convert() ; 
+
+template NPY<float>*  X4PhysicsOrderedFreeVector::Convert(const G4PhysicsOrderedFreeVector* vec) ; 
+template NPY<double>* X4PhysicsOrderedFreeVector::Convert(const G4PhysicsOrderedFreeVector* vec) ; 
+
+
+
 

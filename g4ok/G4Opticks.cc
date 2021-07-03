@@ -976,7 +976,7 @@ void G4Opticks::standardizeGeant4MaterialProperties()
 {
     LOG(fatal) << "[" ; 
     G4MaterialTable* mtab = G4Material::GetMaterialTable();   
-    const GMaterialLib* mlib = GMaterialLib::GetInstance(); 
+    const GMaterialLib* mlib = GMaterialLib::Get(); 
     X4MaterialLib::Standardize( mtab, mlib ) ;  
     LOG(fatal) << "]" ; 
 }

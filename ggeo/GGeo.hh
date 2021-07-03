@@ -352,16 +352,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         GSkinSurface*   findSkinSurface(const char* lv) const ;  
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2) const ;  
 
-
         void dumpSkinSurface(const char* msg="GGeo::dumpSkinSurface") const ;
         void dumpRawSkinSurface(const char* name=NULL) const ;
         void dumpRawBorderSurface(const char* name=NULL) const ;
-
-    public:
-        void findScintillatorMaterials(const char* props);
-        void dumpScintillatorMaterials(const char* msg="GGeo::dumpScintillatorMaterials");
-        unsigned int getNumScintillatorMaterials();
-        GMaterial* getScintillatorMaterial(unsigned int index);
     public:
     public:
         GPropertyMap<double>* findMaterial(const char* shortname) const ;
@@ -423,7 +416,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         std::vector<GVolume*>           m_sensor_volumes ; 
         std::unordered_set<std::string> m_cathode_lv ; 
 
-        std::vector<GMaterial*>       m_scintillators_raw ; 
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
         NLookup*                      m_lookup ; 

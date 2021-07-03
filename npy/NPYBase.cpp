@@ -1096,11 +1096,13 @@ BMeta* NPYBase::LoadMeta( const char* path, const char* ext) // static
 template NPY_API void NPYBase::setMeta(const char* key, unsigned value);
 template NPY_API void NPYBase::setMeta(const char* key, int value);
 template NPY_API void NPYBase::setMeta(const char* key, float value);
+template NPY_API void NPYBase::setMeta(const char* key, double value);
 template NPY_API void NPYBase::setMeta(const char* key, std::string value);
 
 template NPY_API unsigned NPYBase::getMeta(const char* key, const char* fallback) const ; 
 template NPY_API int NPYBase::getMeta(const char* key, const char* fallback) const ; 
 template NPY_API float NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API double NPYBase::getMeta(const char* key, const char* fallback) const ; 
 template NPY_API std::string NPYBase::getMeta(const char* key, const char* fallback) const ; 
 
 

@@ -74,9 +74,12 @@ int main(int argc, char** argv)
 
 
     unsigned num_bins = 4096 ; 
-    NPY<double>* icdf = X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF(ScintillatorIntegral, num_bins ) ; 
+    unsigned hd_factor = 20 ; 
+    const char* name = "LS" ; 
+    NPY<double>* icdf = X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF(ScintillatorIntegral, num_bins, hd_factor, name ) ; 
 
-    const char* icdf_name = "icdf.npy" ; 
+
+    const char* icdf_name = "X4ScintillationIntegralTest_g4icdf.npy" ; 
     LOG(info) << " save to " << icdf_name ; 
     icdf->save(dir, icdf_name);  
 

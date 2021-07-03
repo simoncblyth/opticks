@@ -69,7 +69,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
    public:
        static const plog::Severity  LEVEL ;
        static const GMaterialLib* INSTANCE ; 
-       static const GMaterialLib* GetInstance() ; 
+       static const GMaterialLib* Get() ; 
        static bool  IsUnset(unsigned index); 
    public:
        friend class X4PhysicalVolume ; 

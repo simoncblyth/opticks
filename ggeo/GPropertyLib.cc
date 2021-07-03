@@ -156,12 +156,12 @@ Opticks* GPropertyLib::getOpticks() const
     return m_ok ; 
 }
 
-const char* GPropertyLib::getType()
+const char* GPropertyLib::getType() const 
 {
     return m_type ; 
 }
 
-const char* GPropertyLib::getComponentType()
+const char* GPropertyLib::getComponentType() const 
 {
     return m_comptype ; 
 }
@@ -302,7 +302,7 @@ bool GPropertyLib::isOptional() const
 
 
 
-unsigned int GPropertyLib::getNumRaw()
+unsigned int GPropertyLib::getNumRaw() const 
 {
     return m_raw.size();
 }
@@ -635,16 +635,13 @@ GProperty<double>* GPropertyLib::makeRampProperty()
 }
 
 
-GProperty<double>* GPropertyLib::getProperty(GPropertyMap<double>* pmap, const char* dkey)
+GProperty<double>* GPropertyLib::getProperty(GPropertyMap<double>* pmap, const char* dkey) const 
 {
     assert(pmap);
 
     const char* lkey = getLocalKey(dkey); assert(lkey);  // missing local key mapping 
 
     GProperty<double>* prop = pmap->getProperty(lkey) ;
-
-    //assert(prop);
-    //if(!prop) LOG(warning) << "GPropertyLib::getProperty failed to find property " << dkey << "/" << lkey ;
 
     return prop ;  
 }
@@ -776,12 +773,12 @@ void GPropertyLib::addRaw(GPropertyMap<double>* pmap)
     m_raw.push_back(pmap);
 }
 
-GPropertyMap<double>* GPropertyLib::getRaw(unsigned int index)
+GPropertyMap<double>* GPropertyLib::getRaw(unsigned int index) const 
 {
     return index < m_raw.size() ? m_raw[index] : NULL ;
 }
 
-GPropertyMap<double>* GPropertyLib::getRaw(const char* shortname)
+GPropertyMap<double>* GPropertyLib::getRaw(const char* shortname) const 
 {
     unsigned int nraw = m_raw.size();
     for(unsigned int i=0 ; i < nraw ; i++)
@@ -817,7 +814,7 @@ void GPropertyLib::loadRaw()
     }
 }
 
-void GPropertyLib::dumpRaw(const char* msg)
+void GPropertyLib::dumpRaw(const char* msg) const 
 {
     LOG(info) << msg ; 
     unsigned int nraw = m_raw.size();

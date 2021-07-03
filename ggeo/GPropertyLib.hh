@@ -142,19 +142,19 @@ class GGEO_API GPropertyLib {
         virtual ~GPropertyLib();
     public:
         unsigned    getUNSET();
-        const char* getType();
-        const char* getComponentType();
+        const char* getType() const ;
+        const char* getComponentType() const ;
         Opticks*    getOpticks() const ; 
         std::string getCacheDir();
         std::string getPreferenceDir();
     public:
-        void dumpRaw(const char* msg="GPropertyLib::dumpRaw");
-        void addRaw(GPropertyMap<double>* pmap);
-        unsigned int getNumRaw();
-        GPropertyMap<double>* getRaw(unsigned int index);
-        GPropertyMap<double>* getRaw(const char* shortname);
-        void saveRaw();
-        void loadRaw();
+        void     dumpRaw(const char* msg="GPropertyLib::dumpRaw") const ;
+        void     addRaw(GPropertyMap<double>* pmap);
+        unsigned getNumRaw() const ;
+        GPropertyMap<double>* getRaw(unsigned int index) const ;
+        GPropertyMap<double>* getRaw(const char* shortname) const ;
+        void     saveRaw();
+        void     loadRaw();
     public:
         //void setOrder(std::map<std::string, unsigned int>& order);
         std::map<std::string, unsigned int>& getOrder(); 
@@ -190,7 +190,7 @@ class GGEO_API GPropertyLib {
         //GProperty<double>*    getItemProperty(const char* item, const char* pname) const ;
     public:
         GProperty<double>*    getPropertyOrDefault(GPropertyMap<double>* pmap, const char* pname);
-        GProperty<double>*    getProperty(GPropertyMap<double>* pmap, const char* dkey);
+        GProperty<double>*    getProperty(GPropertyMap<double>* pmap, const char* dkey) const ;
         GProperty<double>*    makeConstantProperty(double value);
         GProperty<double>*    makeRampProperty();
     public:

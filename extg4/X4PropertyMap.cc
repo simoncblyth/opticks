@@ -39,7 +39,7 @@ X4PropertyMap::X4PropertyMap(const GPropertyMap<double>* pmap)
     :
     m_pmap(pmap),
     m_mpt(new G4MaterialPropertiesTable),
-    m_mlib(GMaterialLib::GetInstance())
+    m_mlib(GMaterialLib::Get())
 {
     init();
 }

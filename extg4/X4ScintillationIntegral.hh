@@ -14,7 +14,7 @@ struct X4_API X4ScintillationIntegral
 
     static G4PhysicsOrderedFreeVector* Integral( const G4MaterialPropertyVector* theFastLightVector ) ;
     static NPY<double>* CreateWavelengthSamples(            const G4PhysicsOrderedFreeVector* ScintillatorIntegral, G4int num_samples=1000000 ) ;
-    static NPY<double>* CreateGeant4InterpolatedInverseCDF( const G4PhysicsOrderedFreeVector* ScintillatorIntegral, unsigned num_bins ); 
+    static NPY<double>* CreateGeant4InterpolatedInverseCDF( const G4PhysicsOrderedFreeVector* ScintillatorIntegral, unsigned num_bins, unsigned hd_factor, const char* name ); 
 
 }; 
 

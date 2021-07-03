@@ -63,7 +63,7 @@ For legacy GDML this has some issues
 void X4MaterialLib::Standardize()
 {
     G4MaterialTable* mtab = G4Material::GetMaterialTable();
-    const GMaterialLib* mlib = GMaterialLib::GetInstance();
+    const GMaterialLib* mlib = GMaterialLib::Get();
     X4MaterialLib::Standardize( mtab, mlib ) ; 
 }
 

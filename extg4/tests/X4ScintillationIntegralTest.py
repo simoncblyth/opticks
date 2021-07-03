@@ -8,19 +8,37 @@ X4ScintillationIntegralTest.py
     ipython -i tests/X4ScintillationIntegralTest.py
 
 """
-import numpy as np
+import logging
+log = logging.getLogger(__name__)
+import json, numpy as np
 import matplotlib.pyplot as plt 
 
 class X4ScintillationIntegralTest(object):
     DIR="/tmp/G4OpticksAnaMgr" 
-    NAME= "X4ScintillationIntegralTest_icdf.npy"
+    NAME= "X4ScintillationIntegralTest_g4icdf.npy"
     def __init__(self):
-        self.icdf = np.load(os.path.join(self.DIR,self.NAME)).reshape(3,-1)
+        path = os.path.join(self.DIR,self.NAME) 
+        self.icdf = np.load(path).reshape(3,-1)
+        jspath = path.replace(".npy",".json")
+        log.info("jspath:%s" % jspath)
+        meta = json.load(open(jspath)) if os.path.exists(jspath) else {}
+        for kv in meta.items():
+            log.info(" %s : %s " % tuple(kv))
+        pass
+        self.meta = meta 
+        self.hd_factor = float(meta.get("hd_factor", "10"))
+        self.edge      = float(meta.get("edge", "0.1"))
     pass
+    
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     xs = X4ScintillationIntegralTest()
-    print("xs.icdf:%s " % repr(xs.icdf.shape))
+
+    hd_factor = xs.hd_factor
+    edge = xs.edge
+
+    print("xs.icdf:%s  hd_factor:%s edge:%s " % (repr(xs.icdf.shape),hd_factor,edge))
     icdf = xs.icdf 
 
     i0 = icdf[0]
@@ -33,28 +51,30 @@ if __name__ == '__main__':
 
     x0 = np.linspace(0, 1, n)
 
-
     num = 1000000
- 
-    u0 = np.random.rand(num)  
-    u1 = (u0-0.0)*10.    # map 0.0->0.1 to 0->1
-    u2 = (u0-0.9)*10.    # map 0.9->1.0 to 0->1
+    u = np.random.rand(num)  
 
-    w0 = np.interp(u0, x0, i0 )   
-    w1 = np.interp(u1, x0, i1 )    
-    w2 = np.interp(u2, x0, i2 )   
+    lhs_ledge = 0.
+    rhs_ledge = 1.-edge 
 
-    w0_10 = np.interp(0.1, x0, i0)
-    w0_90 = np.interp(0.9, x0, i0)
+    ul = (u-lhs_ledge)*float(hd_factor)     # map 0.0->0.05 to 0->1
+    ur = (u-rhs_ledge)*float(hd_factor)    # map 0.95->1.0 to 0->1
 
-    s0 = np.logical_and(u > 0.1, u < 0.9) 
-    s1 = u < 0.1
-    s2 = u > 0.9
+    wa = np.interp(u,  x0, i0 )   
+    wl = np.interp(ul, x0, i1 )    
+    wr = np.interp(ur, x0, i2 )   
+
+    wa_lhs = np.interp(edge, x0, i0)
+    wa_rhs = np.interp(rhs_ledge, x0, i0)
+
+    s_mid = np.logical_and(u > edge, u < rhs_ledge) 
+    s_lhs = u < edge
+    s_rhs = u > rhs_ledge
 
     w = np.zeros(num)
-    w[s0] = w0[s0]
-    w[s1] = w1[s1] 
-    w[s2] = w2[s2] 
+    w[s_mid] = wa[s_mid]
+    w[s_lhs] = wl[s_lhs] 
+    w[s_rhs] = wr[s_rhs] 
     
     #ax = axs[0]
     #ax.plot( x0, i0, label="i0" )
@@ -66,17 +86,17 @@ if __name__ == '__main__':
     #ax = axs[1] 
 
     h,_ = np.histogram( w, bins )
-    h0,_ = np.histogram( w0, bins )
-    h1,_ = np.histogram( w1, bins )
-    h2,_ = np.histogram( w2, bins )
+    ha,_ = np.histogram( wa, bins )
+    hl,_ = np.histogram( wl, bins )
+    hr,_ = np.histogram( wr, bins )
 
     ax.plot( bins[:-1], h, label="h", drawstyle="steps")
-    #ax.plot( bins[:-1], h0, label="h0", drawstyle="steps")
-    #ax.plot( bins[:-1], h1, label="h1")
-    #ax.plot( bins[:-1], h2, label="h2")
+    #ax.plot( bins[:-1], ha, label="ha", drawstyle="steps")
+    #ax.plot( bins[:-1], hl, label="hl")
+    #ax.plot( bins[:-1], hr, label="hr")
 
     ylim = np.array(ax.get_ylim())
-    for x in [w0_10,w0_90]:
+    for x in [wa_lhs,wa_rhs]:
         ax.plot( [x,x], ylim*1.1 )    
     pass
     ax.legend()

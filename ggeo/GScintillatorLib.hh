@@ -25,6 +25,8 @@
 class BMeta ; 
 class Opticks ; 
 class GItemList ;
+class GMaterialLib ; 
+class GMaterial ; 
 
 template <typename T> class GPropertyMap ;
 
@@ -59,11 +61,29 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
        GItemList*  createNames();
     private:
         void init();
+
     public:
-        GProperty<double>* constructReemissionCDF(GPropertyMap<double>* pmap);
-        GProperty<double>* constructInvertedReemissionCDF(GPropertyMap<double>* pmap);
+        // current approach uses external Geant4 based processing to yield the ICDF
+        // with GScintillatorLib relegated to only handling the persisting of the ICDF 
+        // via the normal GPropertyLib buffer mechanism 
+        void               setGeant4InterpolatedICDF( NPY<double>* g4icdf );
+        NPY<double>*       getGeant4InterpolatedICDF() const ; 
+        GItemList*         geant4ICDFCreateNames() const  ; 
+    public:
+        NPY<double>*       legacyCreateBuffer() const ;
+        GProperty<double>* legacyConstructReemissionCDF(GPropertyMap<double>* pmap) const ;
+        GProperty<double>* legacyConstructInvertedReemissionCDF(GPropertyMap<double>* pmap) const ;
+        GItemList*         legacyCreateNames() const ;
+    public:
+        void       prepare();
+        void       dumpScintillatorMaterials(const char* msg);
+        unsigned   getNumScintillatorMaterials();
+        GMaterial* getScintillatorMaterial(unsigned int index);
     private:
-        unsigned int m_icdf_length ; 
+        const GMaterialLib*       m_mlib ; 
+        unsigned                  m_icdf_length ; 
+        std::vector<GMaterial*>   m_scintillators_raw ; // TODO: eliminate GPropertyLib already has vector of raw pmaps ?
+        NPY<double>*              m_g4icdf ; 
 
 };
 
