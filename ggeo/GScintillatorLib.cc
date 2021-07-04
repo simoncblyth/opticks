@@ -34,7 +34,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity GScintillatorLib::LEVEL = debug ; 
+const plog::Severity GScintillatorLib::LEVEL = PLOG::EnvLevel("GScintillatorLib", "DEBUG") ; 
 
 const char* GScintillatorLib::slow_component    = "slow_component" ;
 const char* GScintillatorLib::fast_component    = "fast_component" ;
@@ -64,9 +64,11 @@ void GScintillatorLib::dump(const char* msg)
 
 void GScintillatorLib::save()
 {
+    LOG(LEVEL) << "[" ; 
     saveToCache();
     saveRaw();
-    saveRawEnergy();
+    saveRawOriginal();
+    LOG(LEVEL) << "]" ; 
 }
 
 GScintillatorLib* GScintillatorLib::load(Opticks* ok)
@@ -74,7 +76,7 @@ GScintillatorLib* GScintillatorLib::load(Opticks* ok)
     GScintillatorLib* lib = new GScintillatorLib(ok);
     lib->loadFromCache();
     lib->loadRaw();
-    lib->loadRawEnergy();
+    lib->loadRawOriginal();
     return lib ; 
 }
 
@@ -102,24 +104,30 @@ void GScintillatorLib::init()
     defineDefaults(getDefaults());
 }
 
+
+/**
+This kinda do nothing pass thru method is in this case confusing
+because its hiding whats happening. Caller needs to be aware of subclass.
+
 void GScintillatorLib::add(GPropertyMap<double>* scint)
 {
     assert(!isClosed());
     addRaw(scint);
 }
+**/
+
 
 void GScintillatorLib::defineDefaults(GPropertyMap<double>* /*defaults*/)
 {
-    LOG(debug) << "GScintillatorLib::defineDefaults"  ; 
+    LOG(LEVEL); 
 }
 void GScintillatorLib::sort()
 {
-    LOG(debug) << "GScintillatorLib::sort"  ; 
+    LOG(LEVEL); 
 }
 void GScintillatorLib::import()
 {
-    LOG(debug) << "GScintillatorLib::import "  ; 
-    //m_buffer->Summary("GScintillatorLib::import");
+    LOG(LEVEL); 
 }
 
 BMeta* GScintillatorLib::createMeta()

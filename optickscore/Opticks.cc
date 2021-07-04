@@ -4329,6 +4329,7 @@ Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 
 
 
+const char*     Opticks::getKeyDir() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
 const char*     Opticks::getIdPath() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
 
 

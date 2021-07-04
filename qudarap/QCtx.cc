@@ -1,5 +1,6 @@
 
 #include "PLOG.hh"
+#include "SSys.hh"
 #include "scuda.h"
 
 #include "NPY.hpp"
@@ -17,7 +18,6 @@
 #include "QScint.hh"
 #include "QBnd.hh"
 #include "QCtx.hh"
-
 
 const plog::Severity QCtx::LEVEL = PLOG::EnvLevel("QCtx", "INFO"); 
 const QCtx* QCtx::INSTANCE = nullptr ; 
@@ -40,8 +40,8 @@ void QCtx::Init(const GGeo* ggeo)
 
     QScint* qscint = nullptr ;  
 
-    const char* icdf_path = "/tmp/G4OpticksAnaMgr/X4ScintillationIntegralTest_icdf.npy" ; 
-    NPY<double>* icdf = NPY<double>::load(icdf_path); 
+    const char* qctx_icdf_path = SSys::getenvvar("QCTX_ICDF_PATH", nullptr ); 
+    NPY<double>* icdf = qctx_icdf_path == nullptr ? nullptr : NPY<double>::load(qctx_icdf_path) ; 
     if( icdf == nullptr )
     {
         LOG(LEVEL) << " booting QScint from standard GScintillatorLib " ; 
@@ -51,7 +51,7 @@ void QCtx::Init(const GGeo* ggeo)
     {
         LOG(LEVEL) 
             << " booting QScint from non-standard icdf " << icdf->getShapeString() 
-            << " loaded from icdf_path " << icdf_path 
+            << " loaded from QCTX_ICDF_PATH " << qctx_icdf_path 
             ; 
         qscint = new QScint(icdf); 
     }
@@ -131,7 +131,7 @@ std::string QCtx::desc() const
 }
 
 
-extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength ); 
+extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
 extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon    , unsigned num_photon ); 
 
 
@@ -146,7 +146,7 @@ void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned wid
     numBlocks.z = 1 ; 
 }
 
-void QCtx::generate( float* wavelength, unsigned num_wavelength )
+void QCtx::generate( float* wavelength, unsigned num_wavelength, unsigned hd_factor )
 {
     LOG(LEVEL) << "[" ; 
     dim3 numBlocks ; 
@@ -158,7 +158,7 @@ void QCtx::generate( float* wavelength, unsigned num_wavelength )
     float* d_wavelength ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_wavelength ), size )); 
 
-    QCtx_generate_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength );  
+    QCtx_generate_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength, hd_factor );  
 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( wavelength ), d_wavelength, size, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d_wavelength) ); 

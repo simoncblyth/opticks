@@ -2,7 +2,8 @@
 #include <iomanip>
 #include "G4PhysicsOrderedFreeVector.hh"
 #include "G4MaterialPropertyVector.hh"
-#include "X4ScintillationIntegral.hh"
+#include "X4Scintillation.hh"
+#include "X4MaterialPropertyVector.hh"
 
 #include "Randomize.hh"
 #include "G4SystemOfUnits.hh"
@@ -11,10 +12,35 @@
 #include "NPY.hpp"
 #include "PLOG.hh"
 
-const plog::Severity X4ScintillationIntegral::LEVEL = PLOG::EnvLevel("X4ScintillationIntegral", "DEBUG" ); 
+const plog::Severity X4Scintillation::LEVEL = PLOG::EnvLevel("X4Scintillation", "DEBUG" ); 
 
 
-G4PhysicsOrderedFreeVector* X4ScintillationIntegral::Integral( const G4MaterialPropertyVector* theFastLightVector )
+X4Scintillation::X4Scintillation( const NPY<double>* fast_, const NPY<double>* slow_ )
+    :
+    fast(fast_),
+    slow(slow_),
+    mismatch(NPY<double>::compare(fast, slow, true)), 
+    theFastLightVector(X4MaterialPropertyVector::FromArray(fast)),
+    theSlowLightVector(X4MaterialPropertyVector::FromArray(slow)),
+    ScintillationIntegral(Integral(theFastLightVector))
+{
+    assert( mismatch == 0 ); 
+}
+
+
+NPY<double>* X4Scintillation::createWavelengthSamples( unsigned num_samples )
+{
+    return CreateWavelengthSamples(ScintillationIntegral, num_samples ); 
+} 
+NPY<double>* X4Scintillation::createGeant4InterpolatedInverseCDF( unsigned num_bins, unsigned hd_factor, const char* material_name )
+{
+    return CreateGeant4InterpolatedInverseCDF( ScintillationIntegral, num_bins, hd_factor, material_name ); 
+}
+
+
+
+
+G4PhysicsOrderedFreeVector* X4Scintillation::Integral( const G4MaterialPropertyVector* theFastLightVector )
 {
      G4PhysicsOrderedFreeVector* aPhysicsOrderedFreeVector = new G4PhysicsOrderedFreeVector();
 
@@ -71,7 +97,7 @@ G4PhysicsOrderedFreeVector* X4ScintillationIntegral::Integral( const G4MaterialP
 }
 
 
-NPY<double>* X4ScintillationIntegral::CreateWavelengthSamples( const G4PhysicsOrderedFreeVector* ScintillatorIntegral_, G4int num_samples )
+NPY<double>* X4Scintillation::CreateWavelengthSamples( const G4PhysicsOrderedFreeVector* ScintillatorIntegral_, unsigned num_samples )
 {
     G4PhysicsOrderedFreeVector* ScintillatorIntegral = const_cast<G4PhysicsOrderedFreeVector*>(ScintillatorIntegral_) ; 
 
@@ -105,7 +131,7 @@ NPY<double>* X4ScintillationIntegral::CreateWavelengthSamples( const G4PhysicsOr
 
 
 /**
-X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF
+X4Scintillation::CreateGeant4InterpolatedInverseCDF
 -------------------------------------------------------------
 
 Reproducing the results of Geant4 dynamic bin finding interpolation 
@@ -127,11 +153,11 @@ high resolution across the entire range.
 
 **/
 
-NPY<double>* X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF( 
+NPY<double>* X4Scintillation::CreateGeant4InterpolatedInverseCDF( 
        const G4PhysicsOrderedFreeVector* ScintillatorIntegral_, 
        unsigned num_bins, 
        unsigned hd_factor, 
-       const char* name
+       const char* material_name
 ) 
 {
     G4PhysicsOrderedFreeVector* ScintillatorIntegral = const_cast<G4PhysicsOrderedFreeVector*>(ScintillatorIntegral_) ;  // tut tut : G4 GetMaxValue() GetEnergy() non-const 
@@ -153,8 +179,12 @@ NPY<double>* X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF(
     assert( hd_factor == 10 || hd_factor == 20 ); 
     double edge = 1./double(hd_factor) ;  
 
-    icdf->setMeta<std::string>("name", name ); 
-    icdf->setMeta<std::string>("creator", "X4ScintillationIntegral::CreateGeant4InterpolatedInverseCDF" ); 
+    if(material_name)
+    {
+        icdf->setMeta<std::string>("name", material_name ); 
+    }
+
+    icdf->setMeta<std::string>("creator", "X4Scintillation::CreateGeant4InterpolatedInverseCDF" ); 
     icdf->setMeta<int>("hd_factor", hd_factor ); 
     icdf->setMeta<int>("num_bins", num_bins ); 
     icdf->setMeta<double>("edge", edge ); 

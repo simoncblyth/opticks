@@ -45,6 +45,7 @@ struct qctx
 #if defined(__CUDACC__) || defined(__CUDABE__)
     QCTX_METHOD float   scint_wavelength(curandStateXORWOW& rng);  
     QCTX_METHOD float   scint_wavelength_tenfold_extremes(curandStateXORWOW& rng);
+    QCTX_METHOD float   scint_wavelength_twentyfold_extremes(curandStateXORWOW& rng);
     QCTX_METHOD void    scint_dirpol(quad4& p, curandStateXORWOW& rng); 
     QCTX_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
     QCTX_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
@@ -121,6 +122,34 @@ inline QCTX_METHOD float qctx::scint_wavelength_tenfold_extremes(curandStateXORW
     }
     return wl ; 
 }
+
+
+
+inline QCTX_METHOD float qctx::scint_wavelength_twentyfold_extremes(curandStateXORWOW& rng) 
+{
+    float u0 = curand_uniform(&rng); 
+    float wl ; 
+
+    float y0 = (float(0u) + 0.5f )/float(3.f) ; 
+    float y1 = (float(1u) + 0.5f )/float(3.f) ; 
+    float y2 = (float(2u) + 0.5f )/float(3.f) ; 
+
+
+    if( u0 < 0.05f )
+    {
+        wl = tex2D<float>(scint_tex, u0*20.f , y1 );    
+    }
+    else if ( u0 > 0.95f )
+    {
+        wl = tex2D<float>(scint_tex, (u0 - 0.95f)*20.f , y2 );    
+    }
+    else
+    {
+        wl = tex2D<float>(scint_tex, u0,  y0 ); 
+    }
+    return wl ; 
+}
+
 
 
 

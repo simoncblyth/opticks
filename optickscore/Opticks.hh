@@ -258,6 +258,7 @@ class OKCORE_API Opticks {
    public:
        bool        hasGeocache() const ; 
        const char* getIdPath() const ;
+       const char* getKeyDir() const ;
        const char* getIdFold() const ;
 
 

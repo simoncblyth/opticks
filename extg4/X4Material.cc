@@ -63,11 +63,35 @@ std::string X4Material::Digest( const G4Material* material )
     return dig.finalize();
 }
 
+/**
+X4Material::Convert
+----------------------
+
+Canonically invoked from X4MaterialTable::init, mode:
+
+'S'
+    old_standardized no longer in use
+'G'
+    g4interpolated onto the domain 
+'A'
+    asis_nm not interpolated just converted to nm domain
+'E'
+    asis_en not interpolated and with original (energy) domain left with no change to units  
+
+
+The default approach is to convert energy domain to wavelength domain in nm, when 
+such conversion is **NOT** done with mode 'E' the setOriginalDomain label is set.
+
+**/
 
 GMaterial* X4Material::Convert( const G4Material* material, char mode )
 {
     X4Material xmat(material, mode);
     GMaterial* mat = xmat.getMaterial(); 
+    if( mode == 'E')
+    {
+        mat->setOriginalDomain() ;  
+    }
     return mat ; 
 }
 

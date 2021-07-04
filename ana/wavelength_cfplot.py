@@ -26,9 +26,12 @@ if __name__ == '__main__':
 
     #a, b = 1, 3     agreement between 3:localSamples and horsesMouth:1    
 
-    a, b = 0, 3 
+    a, b = 0, 1 
 
     h = CFH()
+    h.log = True 
+    h.ylim = (50., 5e4 )
+
     h(wl.dom[:-1], wl.w[a], wl.w[b], [wl.l[a], wl.l[b]] )
 
     one_cfplot(ok, h )

@@ -100,7 +100,7 @@ set(SOURCES
     X4PhysicalVolume.cc
     X4Sample.cc
 
-    X4ScintillationIntegral.cc 
+    X4Scintillation.cc 
 
     X4OpNoviceMaterials.cc
     OpNoviceDetectorConstruction.cc
@@ -165,7 +165,7 @@ set(HEADERS
     X4PhysicalVolume.hh
     X4Sample.hh
 
-    X4ScintillationIntegral.hh
+    X4Scintillation.hh
 
 
     X4OpNoviceMaterials.hh

@@ -26,6 +26,7 @@
 #include "X4Material.hh"
 
 #include "GMaterial.hh"
+#include "GPropertyMap.hh"
 #include "GMaterialLib.hh"
 #include "Opticks.hh"
 
@@ -94,8 +95,8 @@ X4MaterialTable::X4MaterialTable(GMaterialLib* mlib, std::vector<G4Material*>& m
 X4MaterialTable::init
 -----------------------
 
-For all materials obtained from G4Material::GetMaterialTable() apply X4Material::Convert
-collecting in standardized and raw forms into m_mlib.
+For all m_input_materials G4Materials apply X4Material::Convert creating GMaterial 
+which are collected in standardized and raw forms into m_mlib.
 
 G4Material which have an EFFICIENCY property are collected into m_material_with_efficiency vector.
 
@@ -132,10 +133,13 @@ void X4MaterialTable::init()
         GMaterial* rawmat = X4Material::Convert( material, mode_asis_nm );   
         m_mlib->addRaw(rawmat) ;
 
+        char mode_asis_en = 'E' ;
+        GMaterial* rawmat_en = X4Material::Convert( material, mode_asis_en );   
+        GPropertyMap<double>* pmap_rawmat_en = dynamic_cast<GPropertyMap<double>*>(rawmat_en) ; 
+        m_mlib->addRawOriginal(pmap_rawmat_en) ;  // down to GPropertyLib
 
 
     }
 }
-
 
 

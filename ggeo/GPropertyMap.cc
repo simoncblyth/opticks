@@ -28,6 +28,7 @@ namespace fs = boost::filesystem;
 
 
 // sysrap-
+#include "SConstant.hh"
 #include "SDigest.hh"
 // brap-
 #include "BStr.hh"
@@ -119,15 +120,15 @@ std::string GPropertyMap<T>::getSSLV() const
 
 
 template <typename T>
-void GPropertyMap<T>::setEnergyDomain()
+void GPropertyMap<T>::setOriginalDomain()
 {
-    m_energy_domain = true ;  
+    m_original_domain = true ;  
 }
 
 template <typename T>
-bool GPropertyMap<T>::hasEnergyDomain() const 
+bool GPropertyMap<T>::hasOriginalDomain() const 
 {
-    return m_energy_domain ;  
+    return m_original_domain ;  
 }
 
 
@@ -144,7 +145,7 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain)
     m_standard_domain(domain),
     m_optical_surface(other ? other->getOpticalSurface() : NULL ),
     m_meta(other && other->getMeta() ? new BMeta(*other->getMeta()) :  new BMeta),
-    m_energy_domain(false)  
+    m_original_domain(false)  
 {
     init();
 
@@ -1064,11 +1065,13 @@ void GPropertyMap<T>::addMapStandardized(GPropertyMap<T>* other, const char* pre
     }
 }
 
+
+
 template <typename T>
 void GPropertyMap<T>::save(const char* dir)
 {
     std::string shortname = m_shortname ; 
-    if(m_energy_domain) shortname += ".en " ;  
+    if(m_original_domain) shortname += SConstant::ORIGINAL_DOMAIN_SUFFIX ;  
 
     for(std::vector<std::string>::iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
     {

@@ -696,37 +696,26 @@ T GProperty<T>::getMax() const
     return m_values->max(idx); 
 }
 
-
-
-
-
+template <typename T>
+NPY<T>* GProperty<T>::makeArray() const 
+{
+    unsigned ni = getLength();
+    NPY<T>* a = NPY<T>::make( ni, 2 ); 
+    a->zero(); 
+    for(unsigned i=0 ; i < ni ; i++ )
+    { 
+        a->setValue(i, 0, 0, 0,  m_domain->getValue(i)) ; 
+        a->setValue(i, 1, 0, 0,  m_values->getValue(i)) ; 
+    }
+    return a ; 
+}
 
 template <typename T>
 void GProperty<T>::save(const char* path)
 {
-    std::string metadata = "{}" ; 
-    std::vector<int> shape ; 
-    unsigned int len = getLength();
-    shape.push_back(len);
-    shape.push_back(2);
-
-    std::vector<T> data ; 
-    for(unsigned int i=0 ; i < len ; i++ ){ 
-    for(unsigned int j=0 ; j < 2 ; j++ )
-    { 
-       switch(j)
-       {
-           case 0:data.push_back(m_domain->getValue(i));break;
-           case 1:data.push_back(m_values->getValue(i));break;
-       }
-    }
-    }
-    LOG(debug) << "GProperty::save 2d array of length " << len << " to : " << path ;  
-    NPY<T> npy(shape, data, metadata);
-    npy.save(path);
+    NPY<T>* a = makeArray(); 
+    a->save(path); 
 }
-
-
 
 template <typename T>
 void GProperty<T>::SummaryV(const char* msg, unsigned int nline )

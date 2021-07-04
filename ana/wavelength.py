@@ -48,6 +48,9 @@ class Wavelength(object):
         fold = "/tmp/QCtxTest"
         w[0] = np.load(os.path.join(fold, "wavelength.npy"))
         l[0] = "OK.QCtxTest"
+        ## default is to boot from standard GScintillatorLib icdf buffer
+        ## but the icdf can be overridden with QCTX_ICDF_PATH 
+
 
         path1 = "/tmp/G4OpticksAnaMgr/WavelengthSamples.npy"
         w[1] = np.load(path1) if os.path.exists(path1) else None
@@ -61,7 +64,7 @@ class Wavelength(object):
         l[2] = "OK.GScint.interp"
 
 
-        path2 = "/tmp/G4OpticksAnaMgr/localSamples.npy"
+        path2 = "/tmp/X4ScintillationTest/g4localSamples.npy"
         w[3] = np.load(path2) if os.path.exists(path2) else None
         l[3] = "X4"
  

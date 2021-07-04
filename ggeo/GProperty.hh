@@ -23,6 +23,7 @@
 #include <string>
 
 
+template <typename T> class NPY ; 
 template <typename T> class GDomain ; 
 template <typename T> class GAry ; 
 template <typename T> class GProperty ; 
@@ -93,6 +94,9 @@ public:
    unsigned getLength() const ;
    GAry<T>* getValues() const ;
    GAry<T>* getDomain() const ;
+
+   NPY<T>*  makeArray() const ; 
+
    char* digest();   
    std::string getDigestString();
 public:

@@ -117,7 +117,6 @@ class GGEO_API GPropertyLib {
         static unsigned int NUM_PROP ; 
         static unsigned int NUM_FLOAT4 ; 
         static const char*  METANAME ; 
-        static const char*  RAW_DIRNAME_SUFFIX ; 
     public:
         static const char* material ; 
         static const char* surface ;
@@ -157,12 +156,12 @@ class GGEO_API GPropertyLib {
         void                  saveRaw();
         void                  loadRaw();
     public:
-        void                  addRawEnergy(GPropertyMap<double>* pmap);
-        unsigned              getNumRawEnergy() const ;
-        GPropertyMap<double>* getRawEnergy(unsigned index) const ;
-        GPropertyMap<double>* getRawEnergy(const char* shortname) const ;
-        void                  saveRawEnergy();
-        void                  loadRawEnergy();
+        void                  addRawOriginal(GPropertyMap<double>* pmap);
+        unsigned              getNumRawOriginal() const ;
+        GPropertyMap<double>* getRawOriginal(unsigned index) const ;
+        GPropertyMap<double>* getRawOriginal(const char* shortname) const ;
+        void                  saveRawOriginal();
+        void                  loadRawOriginal();
     private:
         void     loadRaw( std::vector<GPropertyMap<double>*>& dst, const char* dirname_suffix, bool endswith ) ; 
     public:
@@ -249,6 +248,10 @@ class GGEO_API GPropertyLib {
         void setBuffer(NPY<double>* buf);
         void setMeta(BMeta* meta);
         void setNames(GItemList* names);
+    public:
+        static void SelectPropertyMapsWithProperties(std::vector<GPropertyMap<double>*>& dst, const char* props, char delim, const std::vector<GPropertyMap<double>*>& src) ;
+        void findRawMapsWithProperties(       std::vector<GPropertyMap<double>*>& dst, const char* props, char delim );
+        void findRawOriginalMapsWithProperties( std::vector<GPropertyMap<double>*>& dst, const char* props, char delim );
     protected:
         SLog*                                m_log ; 
         Opticks*                             m_ok ; 
@@ -271,7 +274,7 @@ class GGEO_API GPropertyLib {
         bool                                 m_noload ;  
     private:
         std::vector<GPropertyMap<double>*>    m_raw ; 
-        std::vector<GPropertyMap<double>*>    m_raw_energy ; 
+        std::vector<GPropertyMap<double>*>    m_raw_original ; 
 
         std::vector<unsigned>                 m_sensor_indices ; 
 

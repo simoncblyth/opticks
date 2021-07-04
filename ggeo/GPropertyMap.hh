@@ -56,6 +56,7 @@ class GGEO_API GPropertyMap {
   static const char* detect ;
   static const char* NOT_DEFINED ;
   typedef std::map<std::string,GProperty<T>*> GPropertyMap_t ;
+
   public:
       GPropertyMap(GPropertyMap* other, GDomain<T>* domain=NULL);  // used for interpolation when domain provided
       GPropertyMap(const char* name);
@@ -129,8 +130,8 @@ class GGEO_API GPropertyMap {
       bool isMaterial() const ;
       bool hasNonZeroProperty(const char* pname) ;
 
-      void setEnergyDomain(); 
-      bool hasEnergyDomain() const ; 
+      void setOriginalDomain(); 
+      bool hasOriginalDomain() const ; 
    public:
       // from metadata
       std::string getBPV1() const ; 
@@ -199,7 +200,7 @@ class GGEO_API GPropertyMap {
       GDomain<T>*      m_standard_domain ; 
       GOpticalSurface* m_optical_surface ; 
       BMeta*           m_meta ; 
-      bool             m_energy_domain ; 
+      bool             m_original_domain ; 
 
 };
 

@@ -28,9 +28,11 @@
 #include <boost/algorithm/string.hpp>
 
 #include "SLog.hh"
+#include "SConstant.hh"
 #include "SAbbrev.hh"
 // brap-
 #include "BMeta.hh"
+#include "BStr.hh"
 #include "BDir.hh"
 #include "Map.hh"
 
@@ -300,16 +302,6 @@ bool GPropertyLib::isOptional() const
 
 
 
-
-
-unsigned GPropertyLib::getNumRaw() const 
-{
-    return m_raw.size();
-}
-unsigned GPropertyLib::getNumRawEnergy() const 
-{
-    return m_raw_energy.size();
-}
 
 
 
@@ -770,17 +762,26 @@ void GPropertyLib::importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>
     }
 }
 
-
-
 void GPropertyLib::addRaw(GPropertyMap<double>* pmap)
 {
     m_raw.push_back(pmap);
 }
 
-void GPropertyLib::addRawEnergy(GPropertyMap<double>* pmap)
+void GPropertyLib::addRawOriginal(GPropertyMap<double>* pmap)
 {
-    m_raw_energy.push_back(pmap);
+    m_raw_original.push_back(pmap);
 }
+
+
+unsigned GPropertyLib::getNumRaw() const 
+{
+    return m_raw.size();
+}
+unsigned GPropertyLib::getNumRawOriginal() const 
+{
+    return m_raw_original.size();
+}
+
 
 
 
@@ -788,9 +789,9 @@ GPropertyMap<double>* GPropertyLib::getRaw(unsigned index) const
 {
     return index < m_raw.size() ? m_raw[index] : NULL ;
 }
-GPropertyMap<double>* GPropertyLib::getRawEnergy(unsigned index) const 
+GPropertyMap<double>* GPropertyLib::getRawOriginal(unsigned index) const 
 {
-    return index < m_raw_energy.size() ? m_raw_energy[index] : NULL ;
+    return index < m_raw_original.size() ? m_raw_original[index] : NULL ;
 }
 
 
@@ -806,12 +807,12 @@ GPropertyMap<double>* GPropertyLib::getRaw(const char* shortname) const
     return NULL ; 
 }
 
-GPropertyMap<double>* GPropertyLib::getRawEnergy(const char* shortname) const 
+GPropertyMap<double>* GPropertyLib::getRawOriginal(const char* shortname) const 
 {
-    unsigned num_raw_energy = m_raw_energy.size();
-    for(unsigned i=0 ; i < num_raw_energy ; i++)
+    unsigned num_raw_original = m_raw_original.size();
+    for(unsigned i=0 ; i < num_raw_original ; i++)
     {  
-        GPropertyMap<double>* pmap = m_raw_energy[i];
+        GPropertyMap<double>* pmap = m_raw_original[i];
         const char* name = pmap->getShortName();
         if(strcmp(shortname, name) == 0) return pmap ;         
     }
@@ -819,15 +820,49 @@ GPropertyMap<double>* GPropertyLib::getRawEnergy(const char* shortname) const
 }
 
 
+void GPropertyLib::SelectPropertyMapsWithProperties(std::vector<GPropertyMap<double>*>& dst, const char* props, char delim, const std::vector<GPropertyMap<double>*>& src) 
+{
+    std::vector<std::string> elem ;
+    BStr::split(elem, props, delim);
+
+    for(unsigned i=0 ; i < src.size() ; i++)
+    {
+        GPropertyMap<double>* s = src[i] ; 
+        unsigned found(0);
+        for(unsigned p=0 ; p < elem.size() ; p++)
+        { 
+           if(s->hasProperty(elem[p].c_str())) found+=1 ;        
+        }
+        if(found == elem.size()) dst.push_back(s);
+    }
+
+    LOG(LEVEL)
+         << props 
+         << " src.size()  " << src.size() 
+         << " dst.size()  " << dst.size() 
+         ; 
+
+}
+
+void GPropertyLib::findRawMapsWithProperties( std::vector<GPropertyMap<double>*>& dst, const char* props, char delim )
+{
+    SelectPropertyMapsWithProperties(dst, props, delim, m_raw ); 
+}
+
+void GPropertyLib::findRawOriginalMapsWithProperties( std::vector<GPropertyMap<double>*>& dst, const char* props, char delim )
+{
+    SelectPropertyMapsWithProperties(dst, props, delim, m_raw_original ); 
+}
+
 
 
 void GPropertyLib::loadRaw()
 {
-    loadRaw( m_raw, RAW_DIRNAME_SUFFIX, false ); 
+    loadRaw( m_raw, SConstant::ORIGINAL_DOMAIN_SUFFIX, false ); 
 }
-void GPropertyLib::loadRawEnergy()
+void GPropertyLib::loadRawOriginal()
 {
-    loadRaw( m_raw_energy, RAW_DIRNAME_SUFFIX, true ); 
+    loadRaw( m_raw_original, SConstant::ORIGINAL_DOMAIN_SUFFIX, true ); 
 }
 
 /**
@@ -838,7 +873,6 @@ GPropertyLib::loadRaw
 
 **/
 
-const char* GPropertyLib::RAW_DIRNAME_SUFFIX = "_en" ; 
 
 void GPropertyLib::loadRaw( std::vector<GPropertyMap<double>*>& dst, const char* dirname_suffix, bool endswith ) 
 {
@@ -889,22 +923,26 @@ void GPropertyLib::saveRaw()
 {
     std::string dir = getCacheDir(); 
     unsigned num_raw = m_raw.size();
+    LOG(LEVEL) << "[ " << dir << " num_raw " << num_raw ; 
     for(unsigned i=0 ; i < num_raw ; i++)
     {
         GPropertyMap<double>* pmap = m_raw[i] ;
         pmap->save(dir.c_str());
     }
+    LOG(LEVEL) << "]" ; 
 }
 
-void GPropertyLib::saveRawEnergy()
+void GPropertyLib::saveRawOriginal()
 {
     std::string dir = getCacheDir(); 
-    unsigned num_raw_energy = m_raw_energy.size();
-    for(unsigned i=0 ; i < num_raw_energy ; i++)
+    unsigned num_raw_original = m_raw_original.size();
+    LOG(LEVEL) << "[ " << dir << " num_raw_original " << num_raw_original ; 
+    for(unsigned i=0 ; i < num_raw_original ; i++)
     {
-        GPropertyMap<double>* pmap = m_raw_energy[i] ;
+        GPropertyMap<double>* pmap = m_raw_original[i] ;
         pmap->save(dir.c_str());
     }
+    LOG(LEVEL) << "]" ; 
 }
 
 

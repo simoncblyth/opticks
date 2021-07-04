@@ -49,7 +49,7 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
         GScintillatorLib(Opticks* cache, unsigned int icdf_length=4096);
         void Summary(const char* msg="GScintillatorLib::Summary");
     public:
-        void add(GPropertyMap<double>* scint);
+        //void add(GPropertyMap<double>* scint);
         unsigned int getNumScintillators();
     public:
        // concretization of GPropertyLib

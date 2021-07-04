@@ -41,6 +41,7 @@
 #include "X4Material.hh"
 #include "X4MaterialWater.hh"
 #include "X4MaterialTable.hh"
+#include "X4Scintillation.hh"
 #include "X4LogicalBorderSurface.hh"
 #include "X4LogicalBorderSurfaceTable.hh"
 #include "X4LogicalSkinSurfaceTable.hh"
@@ -87,6 +88,7 @@ template struct nxform<X4Nd> ;
 #include "GSkinSurface.hh"
 #include "GBndLib.hh"
 #include "GMeshLib.hh"
+#include "GProperty.hh"
 
 #include "Opticks.hh"
 #include "OpticksQuery.hh"
@@ -195,6 +197,7 @@ void X4PhysicalVolume::init()
     convertMaterials();   // populate GMaterialLib
     convertScintillators(); 
 
+
     convertSurfaces();    // populate GSurfaceLib
     closeSurfaces();
     convertSolids();      // populate GMeshLib with GMesh converted from each G4VSolid (postorder traverse processing first occurrence of G4LogicalVolume)  
@@ -288,8 +291,14 @@ void X4PhysicalVolume::convertMaterials_old()
 X4PhysicalVolume::convertMaterials
 -----------------------------------
 
-1. recursive traverse collecting actively used material pointers into m_mtlist 
+1. recursive traverse collecting actively used material pointers into m_mtlist vector 
+2. X4MaterialTable::Convert via X4MaterialTable::init populates GMaterialLib with the methods::
 
+   GMaterialLib::add
+   GMaterialLib::addRaw
+   GPropertyLib::addRawEnergy
+
+   
 **/
 
 void X4PhysicalVolume::convertMaterials()
@@ -324,18 +333,20 @@ void X4PhysicalVolume::convertMaterials()
 
 
 
+const char* X4PhysicalVolume::SCINTILLATOR_PROPERTIES = "SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB" ; 
 
-void X4PhysicalVolume::convertScintillators()
+
+void X4PhysicalVolume::convertScintillators_OLD()
 {
     LOG(LEVEL) << "[" ; 
 
     assert( m_sclib ); 
 
-    const char* props = "SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB" ;
-
-    std::vector<GMaterial*>  scintillators_raw = m_mlib->getRawMaterialsWithProperties(props, ',' );  
+    std::vector<GMaterial*>  scintillators_raw = m_mlib->getRawMaterialsWithProperties(SCINTILLATOR_PROPERTIES, ',' );  
 
     unsigned num_scint = scintillators_raw.size() ; 
+
+    typedef GPropertyMap<double> PMAP ;  
 
     if(num_scint == 0)
     {   
@@ -347,17 +358,129 @@ void X4PhysicalVolume::convertScintillators()
 
         for(unsigned i=0 ; i < num_scint ; i++)
         {   
-            GMaterial* mat = scintillators_raw[i] ; 
+            GMaterial* mat_ = scintillators_raw[i] ; 
 
-            GPropertyMap<double>* scint = dynamic_cast<GPropertyMap<double>*>(mat);  
+            PMAP* mat = dynamic_cast<PMAP*>(mat_);  
 
-            m_sclib->add(scint);
+            m_sclib->addRaw(mat);
         }   
         m_sclib->close();   // creates and sets "THE" buffer 
     }   
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+/**
+X4PhysicalVolume::collectScintillatorMaterials
+------------------------------------------------
+
+1. search GMaterialLib for materials with the three SCINTILLATOR_PROPERTIES, when none found there is nothing to do here
+2. when scintillators are found assert that both wavelength and energy domain versions of the materials are present
+3. copy the raw wavelength and energy material pointers from GMaterialLib to GScintillatorLib in order for these
+   materials to get persisted in the GScintillatorLib geocache directory. 
+
+Note that both wavelength and unusually energy domain materials are collected 
+as some Geant4 integration code is required.
+
+**/
+
+void X4PhysicalVolume::collectScintillatorMaterials()
+{
+    assert( m_sclib ); 
+    std::vector<GMaterial*>  scintillators_raw = m_mlib->getRawMaterialsWithProperties(SCINTILLATOR_PROPERTIES, ',' );  
+
+    typedef GPropertyMap<double> PMAP ;  
+    std::vector<PMAP*> raw_energy_pmaps ;  
+    m_mlib->findRawOriginalMapsWithProperties( raw_energy_pmaps, SCINTILLATOR_PROPERTIES, ',' );
+
+    bool consistent = scintillators_raw.size() == raw_energy_pmaps.size()  ;
+    if(!consistent) 
+        LOG(fatal) 
+            << " scintillators_raw.size " << scintillators_raw.size()
+            << " raw_energy_pmaps.size " << raw_energy_pmaps.size()
+            ; 
+ 
+    assert( consistent ); 
+    unsigned num_scint = scintillators_raw.size() ; 
+
+    if(num_scint == 0)
+    {   
+        LOG(LEVEL) << " found no scintillator materials  " ; 
+        return ; 
+    }   
+
+    LOG(info) << " found " << num_scint << " scintillator materials  " ; 
+
+    // wavelength domain 
+    for(unsigned i=0 ; i < num_scint ; i++)
+    {   
+        GMaterial* mat_ = scintillators_raw[i] ; 
+        PMAP* mat = dynamic_cast<PMAP*>(mat_);
+        m_sclib->addRaw(mat);      
+    }   
+
+    // original energy domain 
+    for(unsigned i=0 ; i < num_scint ; i++)
+    {
+        PMAP* pmap = raw_energy_pmaps[i] ; 
+        m_sclib->addRawOriginal(pmap);      
+    }
+}
+
+void X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF()
+{
+    unsigned num_scint = m_sclib->getNumRawOriginal() ; 
+    if( num_scint == 0 ) return ; 
+    assert( num_scint == 1 ); 
+
+    typedef GPropertyMap<double> PMAP ;  
+    PMAP* pmap_en = m_sclib->getRawOriginal(0u); 
+    assert( pmap_en ); 
+    assert( pmap_en->hasOriginalDomain() ); 
+
+    NPY<double>* slow_en = pmap_en->getProperty("SLOWCOMPONENT")->makeArray(); 
+    NPY<double>* fast_en = pmap_en->getProperty("FASTCOMPONENT")->makeArray(); 
+
+    //slow_en->save("/tmp/slow_en.npy"); 
+    //fast_en->save("/tmp/fast_en.npy"); 
+
+    X4Scintillation xs(slow_en, fast_en); 
+
+    unsigned num_bins = 4096 ; 
+    unsigned hd_factor = 20 ; 
+    const char* material_name = pmap_en->getName() ;  
+
+    NPY<double>* g4icdf = xs.createGeant4InterpolatedInverseCDF(num_bins, hd_factor, material_name ) ;
+
+    LOG(info) 
+        << " slow_en " << slow_en->getShapeString()
+        << " fast_en " << fast_en->getShapeString()
+        << " num_bins " << num_bins
+        << " hd_factor " << hd_factor
+        << " material_name " << material_name
+        << " g4icdf " << g4icdf->getShapeString()
+        ;
+
+    m_sclib->setGeant4InterpolatedICDF(g4icdf);   // trumps legacyCreateBuffer
+    m_sclib->close();   // creates and sets "THE" buffer 
+}
+
+
+
+void X4PhysicalVolume::convertScintillators()
+{
+    LOG(LEVEL) << "[" ; 
+    collectScintillatorMaterials(); 
+    createScintillatorGeant4InterpolatedICDF(); 
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
+
+
+
 
 
 /**

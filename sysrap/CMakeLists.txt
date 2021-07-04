@@ -49,6 +49,7 @@ set(SOURCES
     SRenderer.cc
     SCtrl.cc
     SGeo.cc
+    SConstant.cc
 
     STimes.cc
     SLog.cc
@@ -105,6 +106,7 @@ set(HEADERS
     SRenderer.hh
     SCtrl.hh
     SGeo.hh
+    SConstant.hh
 
     STimes.hh
     SLog.hh

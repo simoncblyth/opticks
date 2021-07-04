@@ -94,6 +94,7 @@ class X4_API X4PhysicalVolume : public X4Named
 {
     public:
         static const char* TMPDIR ; 
+        static const char* SCINTILLATOR_PROPERTIES  ; 
         static const plog::Severity  LEVEL ; 
         static const bool            DBG ; 
         static const G4VPhysicalVolume* const Top();
@@ -118,6 +119,7 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertMaterials_old(); 
         void convertWater(); 
         void convertMaterials(); 
+        void convertScintillators_OLD(); 
         void convertScintillators(); 
         void convertSurfaces(); 
 
@@ -126,6 +128,10 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertSolids(); 
         void convertStructure(); 
         void convertStructureChecks() const ;
+
+    private:
+        void collectScintillatorMaterials();
+        void createScintillatorGeant4InterpolatedICDF();
     private:
         void convertCheck() const ;
         void postConvert() const ; 

@@ -5,25 +5,29 @@
 #include "qgs.h"
 #include "qctx.h"
 
-__global__ void _QCtx_generate_wavelength(qctx* ctx, float* wavelength, unsigned num_wavelength )
+__global__ void _QCtx_generate_wavelength(qctx* ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
 
     curandState rng = *(ctx->r + id) ; 
 
-    //float wl = ctx->scint_wavelength(rng) ;  
-    float wl = ctx->scint_wavelength_tenfold_extremes(rng) ;  
-
-    if(id % 100000 == 0) printf("//_QCtx_generate_wavelength (tenfold_extremes)  id %d wl %10.4f \n", id, wl  ); 
-
+    float wl ; 
+    switch(hd_factor)
+    {
+        case 0:  wl = ctx->scint_wavelength(rng)                     ; break ; 
+        case 10: wl = ctx->scint_wavelength_tenfold_extremes(rng)    ; break ; 
+        case 20: wl = ctx->scint_wavelength_twentyfold_extremes(rng) ; break ; 
+        default: wl = 0.f ; 
+    }
+    if(id % 100000 == 0) printf("//_QCtx_generate_wavelength id %d hd_factor %d wl %10.4f    \n", id, hd_factor, wl  ); 
     wavelength[id] = wl ; 
 }
 
-extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* wavelength, unsigned num_wavelength ) 
+extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ) 
 {
     printf("//QCtx_generate_wavelength num_wavelength %d \n", num_wavelength ); 
-    _QCtx_generate_wavelength<<<numBlocks,threadsPerBlock>>>( ctx, wavelength, num_wavelength );
+    _QCtx_generate_wavelength<<<numBlocks,threadsPerBlock>>>( ctx, wavelength, num_wavelength, hd_factor );
 } 
 
 __global__ void _QCtx_generate_photon(qctx* ctx, quad4* photon, unsigned num_photon )

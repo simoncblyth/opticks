@@ -20,7 +20,9 @@ void test_wavelength(QCtx& qc)
     std::vector<float> wavelength ; 
     wavelength.resize(num_wavelength, 0.f); 
 
-    qc.generate(   wavelength.data(), wavelength.size() ); 
+    unsigned hd_factor = 20 ; // TODO: get this from metadata somehow
+
+    qc.generate(   wavelength.data(), wavelength.size(), hd_factor ); 
     qc.dump(       wavelength.data(), wavelength.size() ); 
     NP::Write( "/tmp/QCtxTest", "wavelength.npy" ,  wavelength ); 
 }

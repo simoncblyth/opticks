@@ -81,6 +81,7 @@ class CFH(Ctx):
         Ctx.__init__(self, *args, **kwa)
         # transients, not persisted
         self._log = False
+        self._ylim = None
 
     def __call__(self, bn, av, bv, lab, c2cut=30, c2shape=False):
         """
@@ -238,11 +239,17 @@ class CFH(Ctx):
     log = property(_get_log, _set_log) 
 
     def _get_ylim(self):
-        ymin = 1 if self.log else 0 
-        yfac = self.logyfac if self.log else self.linyfac
-        ymax = max(self.ahis.max(), self.bhis.max()) 
-        return [ymin,ymax*yfac]
-    ylim = property(_get_ylim)
+        if self._ylim is None:
+            ymin = 1 if self.log else 0 
+            yfac = self.logyfac if self.log else self.linyfac
+            ymax = max(self.ahis.max(), self.bhis.max()) 
+            self._ylim = [ymin,ymax*yfac]
+        pass
+        return self._ylim
+
+    def _set_ylim(self, _ylim):
+        self._ylim = _ylim 
+    ylim = property(_get_ylim, _set_ylim)
 
 
     def _get_ctxstr(self, name, fallback="?"):

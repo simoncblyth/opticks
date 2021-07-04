@@ -48,7 +48,7 @@ struct QUDARAP_API QCtx
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
 
-    void generate( float* wavelength, unsigned num_wavelength ); 
+    void generate( float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
     void dump(     float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 
     void generate( quad4* photon,     unsigned num_photon ); 

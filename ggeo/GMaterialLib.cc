@@ -325,6 +325,20 @@ void GMaterialLib::add(GMaterial* mat)
     assert(!isClosed());
     m_materials.push_back(createStandardMaterial(mat)); 
 }
+
+/**
+HMM: tis confusing the GPropertyLib base class has separate vectors of GPropertyMap<double> m_raw 
+and m_raw_energy which have advantage of save/load into geocache with::
+
+    GPropertyLib::saveRaw 
+    GPropertyLib::saveRawEnergy 
+
+This persisting is used by GScintillatorLib::save GScintillatorLib::load
+
+The only slight advantage with GMaterialLib::m_materials_raw and GMaterialLib::m_materials is that 
+the vectors hold the higher level GMaterial pointers
+
+**/
 void GMaterialLib::addRaw(GMaterial* mat)
 {
     m_materials_raw.push_back(mat);
@@ -1095,10 +1109,6 @@ std::vector<GMaterial*> GMaterialLib::getRawMaterialsWithProperties(const char* 
     }
     return selected ;  
 }
-
-
-
-
 
 
 
