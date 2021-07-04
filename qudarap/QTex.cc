@@ -8,7 +8,7 @@
 #include "QTex.hh"
 
 template<typename T>
-QTex<T>::QTex(size_t width_, size_t height_ , const void* src_)
+QTex<T>::QTex(size_t width_, size_t height_ , const void* src_ )
     :   
     width(width_),
     height(height_),
@@ -22,6 +22,18 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_)
     d_meta(nullptr)
 {
     init(); 
+}
+
+template<typename T>
+void QTex<T>::setHDFactor(unsigned hd_factor) 
+{
+    meta->q0.u.w = hd_factor ; 
+}
+
+template<typename T>
+unsigned QTex<T>::getHDFactor() const 
+{
+    return meta->q0.u.w ; 
 }
 
 template<typename T>
@@ -151,18 +163,14 @@ void QTex<T>::rotate(float theta)
     cudaMemcpy(dst, d_dst, width*height*sizeof(T), cudaMemcpyDeviceToHost);
 }
 
-
 /**
 Do nothing template specialization for float and float4 textures, rotation is only relevant to uchar4 2d images
 **/
 template<>  void QTex<float>::rotate(float theta){}
 template<>  void QTex<float4>::rotate(float theta){}
 
-
-
 // API export is essential on this template struct, otherwise get all symbols missing 
 template struct QUDARAP_API QTex<uchar4>;
 template struct QUDARAP_API QTex<float>;
 template struct QUDARAP_API QTex<float4>;
-
 

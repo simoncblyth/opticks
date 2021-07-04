@@ -14,6 +14,7 @@ struct QUDARAP_API QScint
     static const plog::Severity LEVEL ; 
     static const QScint*        INSTANCE ; 
     static const QScint*        Get(); 
+    static unsigned HDFactor(const NPY<double>* dsrc) ;
 
     const GScintillatorLib* slib ; 
     const NPY<double>*      dsrc ; 

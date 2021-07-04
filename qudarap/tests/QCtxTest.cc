@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "Opticks.hh"
 #include "SPath.hh"
 #include "NP.hh"
@@ -13,18 +15,26 @@
 
 void test_wavelength(QCtx& qc)
 {
-    LOG(info); 
-
     unsigned num_wavelength = 1000000 ; 
 
     std::vector<float> wavelength ; 
     wavelength.resize(num_wavelength, 0.f); 
 
-    unsigned hd_factor = 20 ; // TODO: get this from metadata somehow
-
+    unsigned hd_factor(~0u) ; 
     qc.generate(   wavelength.data(), wavelength.size(), hd_factor ); 
     qc.dump(       wavelength.data(), wavelength.size() ); 
-    NP::Write( "/tmp/QCtxTest", "wavelength.npy" ,  wavelength ); 
+
+    std::stringstream ss ; 
+    ss << "wavelength_" << hd_factor << ".npy" ; 
+    std::string s = ss.str();
+    const char* name = s.c_str(); 
+   
+    LOG(info) 
+        << " hd_factor " << hd_factor
+        << " name " << name
+        ; 
+
+    NP::Write( "/tmp/QCtxTest", name ,  wavelength ); 
 }
 
 void test_photon(QCtx& qc)

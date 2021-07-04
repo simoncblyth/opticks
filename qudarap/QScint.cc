@@ -58,6 +58,11 @@ std::string QScint::desc() const
     return s ; 
 }
 
+unsigned QScint::HDFactor(const NPY<double>* dsrc)
+{
+    return dsrc ? dsrc->getMeta<unsigned>("hd_factor", "0" ) : 0 ; 
+}
+
 void QScint::makeScintTex(const NPY<float>* src)
 {
     LOG(LEVEL) << desc() ; 
@@ -74,8 +79,19 @@ void QScint::makeScintTex(const NPY<float>* src)
     unsigned ny = ni ; // height  
     unsigned nx = nj ; // width 
   
-    tex = new QTex<float>(nx, ny, src->getValuesConst()) ; 
+    tex = new QTex<float>(nx, ny, src->getValuesConst() ) ; 
+
+    tex->setHDFactor(HDFactor(dsrc)); 
     tex->uploadMeta(); 
+
+    LOG(LEVEL)
+        << " src " << src->getShapeString()
+        << " nx (width) " << nx
+        << " ny (height) " << ny
+        << " tex.HDFactor " << tex->getHDFactor() 
+        ;
+
+
 }
 
 extern "C" void QScint_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height  ); 

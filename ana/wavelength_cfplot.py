@@ -24,9 +24,13 @@ if __name__ == '__main__':
     kd = keydir(os.environ["OPTICKS_KEY"])
     wl = Wavelength(kd)
 
-    #a, b = 1, 3     agreement between 3:localSamples and horsesMouth:1    
 
-    a, b = 0, 1 
+     
+
+
+
+    a, b = 0, 1   # horses mouth, _20
+    #a, b = 0, 2   # horses mouth, _0
 
     h = CFH()
     h.log = True 

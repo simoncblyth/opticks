@@ -52,13 +52,17 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
         //void add(GPropertyMap<double>* scint);
         unsigned int getNumScintillators();
     public:
-       // concretization of GPropertyLib
-       void defineDefaults(GPropertyMap<double>* defaults); 
-       void import();
-       void sort();
-       NPY<double>* createBuffer();
-       BMeta*      createMeta();
-       GItemList*  createNames();
+        // concretization of GPropertyLib
+        void defineDefaults(GPropertyMap<double>* defaults); 
+        void import();
+        void sort();
+        NPY<double>* createBuffer();
+        BMeta*      createMeta();
+        GItemList*  createNames();
+    public:
+        // from BufferMeta
+        unsigned getHDFactor() const ; 
+        double   getEdge() const ; 
     private:
         void init();
 

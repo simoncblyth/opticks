@@ -375,15 +375,19 @@ int SSys::getenvint( const char* envkey, int fallback )
     return ival ; 
 }
 
+unsigned SSys::getenvunsigned( const char* envkey, unsigned fallback )
+{
+    char* val = getenv(envkey);
+    unsigned uval = val ? atoi_(val) : fallback ;
+    return uval ; 
+}
+
 float SSys::getenvfloat( const char* envkey, float fallback )
 {
     char* val = getenv(envkey);
     float fval = val ? atof_(val) : fallback ;
     return fval ; 
 }
-
-
-
 
 bool SSys::getenvbool( const char* envkey )
 {

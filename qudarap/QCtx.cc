@@ -37,9 +37,16 @@ void QCtx::Init(const GGeo* ggeo)
     QRng* qrng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << qrng->desc(); 
 
+    QScint* qscint = MakeScint(slib); 
+    LOG(LEVEL) << qscint->desc(); 
 
+    QBnd* qbnd = new QBnd(blib); 
+    LOG(LEVEL) << qbnd->desc(); 
+}
+
+QScint* QCtx::MakeScint(const GScintillatorLib* slib)
+{
     QScint* qscint = nullptr ;  
-
     const char* qctx_icdf_path = SSys::getenvvar("QCTX_ICDF_PATH", nullptr ); 
     NPY<double>* icdf = qctx_icdf_path == nullptr ? nullptr : NPY<double>::load(qctx_icdf_path) ; 
     if( icdf == nullptr )
@@ -55,10 +62,7 @@ void QCtx::Init(const GGeo* ggeo)
             ; 
         qscint = new QScint(icdf); 
     }
-    LOG(LEVEL) << qscint->desc(); 
-
-    QBnd* qbnd = new QBnd(blib); 
-    LOG(LEVEL) << qbnd->desc(); 
+    return qscint ; 
 }
 
 
@@ -91,6 +95,11 @@ void QCtx::init()
         << " d_ctx " << d_ctx 
         ;  
 
+    unsigned hd_factor = scint->tex->getHDFactor() ;  // HMM: perhaps get this from ctx rather than occupying an argument slot  
+    LOG(LEVEL) 
+        << " hd_factor " << hd_factor  
+        ;
+
     if(rng)
     {
         LOG(LEVEL) << " rng " << rng->desc() ; 
@@ -98,7 +107,7 @@ void QCtx::init()
     } 
     if(scint)
     {
-        LOG(LEVEL) << " scint " << scint->desc() ; 
+        LOG(LEVEL) << " scint.desc " << scint->desc() ; 
         ctx->scint_tex = scint->tex->texObj ; 
         ctx->scint_meta = scint->tex->d_meta ; 
     } 
@@ -146,9 +155,29 @@ void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned wid
     numBlocks.z = 1 ; 
 }
 
-void QCtx::generate( float* wavelength, unsigned num_wavelength, unsigned hd_factor )
+
+/**
+QCtx::generate
+-----------------
+
+Setting envvar QCTX_DISABLE_HD disables multiresolution handling
+and causes the returned hd_factor to be zero rather then 
+the typical values of 10 or 20 which depend on the buffer creation.
+
+**/
+
+void QCtx::generate( float* wavelength, unsigned num_wavelength, unsigned& hd_factor )
 {
-    LOG(LEVEL) << "[" ; 
+    bool qctx_disable_hd = SSys::getenvbool("QCTX_DISABLE_HD"); 
+    hd_factor = qctx_disable_hd ? 0u : scint->tex->getHDFactor() ; 
+    // HMM: perhaps get this from ctx rather than occupying an argument slot  
+
+    LOG(LEVEL) 
+        << "[" 
+        << " qctx_disable_hd " << qctx_disable_hd 
+        << " hd_factor " << hd_factor 
+        ; 
+
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, num_wavelength, 1 ); 

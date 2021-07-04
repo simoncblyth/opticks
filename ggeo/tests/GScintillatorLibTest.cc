@@ -132,21 +132,8 @@ Out[9]: (1, 4096, 1)
 
 const char* TMPDIR = "$TMP/ggeo/GScintillatorLibTest" ; 
 
-
-int main(int argc, char** argv)
+void test_getRaw(const GScintillatorLib* slib, const char* name  )
 {
-    OPTICKS_LOG(argc,argv);
-
-
-    Opticks* ok = new Opticks(argc, argv);
-    ok->configure();
-
-    GScintillatorLib* slib = GScintillatorLib::load(ok);
-    slib->dump();
-
-    //const char* name = "LiquidScintillator" ;
-    const char* name = "LS" ;
-
     GPropertyMap<double>* ls = slib->getRaw(name);
     LOG(info) << " ls " << ls ; 
     if(ls)
@@ -156,11 +143,11 @@ int main(int argc, char** argv)
     else
     {
          LOG(error) << " FAILED TO FIND " << name ;
-         return 0 ; 
     }
+}
 
-
-
+void test_getBuffer(const GScintillatorLib* slib)
+{
     NPY<double>* buf = slib->getBuffer();
     buf->Summary();
     const char* name_ = "GScintillatorLib.npy" ;
@@ -184,9 +171,33 @@ int main(int argc, char** argv)
               ; 
 
     buf0->save(TMPDIR, name0);
+}
 
-    
+void test_getBufferMeta(const GScintillatorLib* slib)
+{
+    unsigned hd_factor = slib->getHDFactor(); 
+    double edge = slib->getEdge(); 
 
+    LOG(info) 
+        << " hd_factor " << hd_factor
+        << " edge " << std::setw(10) << std::setprecision(4) << std::fixed << edge 
+        ;
+}
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc,argv);
+
+    Opticks ok(argc, argv);
+    ok.configure();
+
+    GScintillatorLib* slib = GScintillatorLib::load(&ok);
+    slib->dump();
+
+    //test_getRaw(slib, "LS" ); 
+    //test_getBuffer(slib); 
+    test_getBufferMeta(slib); 
 
     return 0 ;
 }

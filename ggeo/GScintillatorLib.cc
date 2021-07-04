@@ -185,6 +185,19 @@ GItemList*  GScintillatorLib::legacyCreateNames() const
 
 
 
+unsigned GScintillatorLib::getHDFactor() const 
+{
+    return getBufferMeta<unsigned>("hd_factor", "0" ); 
+}
+double GScintillatorLib::getEdge() const 
+{
+    return getBufferMeta<double>("edge", "0" ); 
+}
+
+
+
+
+
 void GScintillatorLib::setGeant4InterpolatedICDF( NPY<double>* g4icdf )
 {
     m_g4icdf = g4icdf ; 

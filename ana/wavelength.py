@@ -45,28 +45,29 @@ class Wavelength(object):
         w = {}
         l = {}
 
-        fold = "/tmp/QCtxTest"
-        w[0] = np.load(os.path.join(fold, "wavelength.npy"))
-        l[0] = "OK.QCtxTest"
-        ## default is to boot from standard GScintillatorLib icdf buffer
-        ## but the icdf can be overridden with QCTX_ICDF_PATH 
+        ## horses mouth
+        path0 = "/tmp/G4OpticksAnaMgr/WavelengthSamples.npy"
+        w[0] = np.load(path0) if os.path.exists(path0) else None
+        l[0] = "DsG4Scintillator.G4OpticksAnaMgr" 
+
+        w[1] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_20.npy"))
+        l[1] = "OK.QCtxTest.20"
+
+        w[2] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_0.npy"))
+        l[2] = "OK.QCtxTest.0"
 
 
-        path1 = "/tmp/G4OpticksAnaMgr/WavelengthSamples.npy"
-        w[1] = np.load(path1) if os.path.exists(path1) else None
-        l[1] = "G4"
- 
         aa = np.load(os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy"))
         a = aa[0,:,0]
         b = np.linspace(0,1,len(a))
         u = np.random.rand(1000000)  
-        w[2] = np.interp(u, b, a )  
-        l[2] = "OK.GScint.interp"
+        w[3] = np.interp(u, b, a )  
+        l[3] = "OK.GScint.np_interp"
 
 
         path2 = "/tmp/X4ScintillationTest/g4localSamples.npy"
-        w[3] = np.load(path2) if os.path.exists(path2) else None
-        l[3] = "X4"
+        w[4] = np.load(path2) if os.path.exists(path2) else None
+        l[4] = "X4"
  
         #dom = np.arange(80, 800, 4)  
         #dom = np.arange(300, 600, 1)  
@@ -78,6 +79,7 @@ class Wavelength(object):
         h[1],_ = np.histogram( w[1] , dom )
         h[2],_ = np.histogram( w[2] , dom )
         h[3],_ = np.histogram( w[3] , dom )
+        h[4],_ = np.histogram( w[4] , dom )
 
         self.w = w  
         self.l = l

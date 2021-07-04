@@ -226,6 +226,12 @@ NPY<double>* GPropertyLib::getBuffer() const
     return m_buffer ;
 }
 
+template <typename T>
+T GPropertyLib::getBufferMeta(const char* key, const char* fallback) const 
+{
+    return m_buffer->getMeta<T>(key, fallback);  
+} 
+
 
 void GPropertyLib::setMeta(BMeta* meta)
 {
@@ -1039,4 +1045,12 @@ void GPropertyLib::dumpSensorIndices(const char* msg) const
     LOG(info) << msg << " " << desc ; 
 }
   
+
+
+template GGEO_API unsigned    GPropertyLib::getBufferMeta(const char* key, const char* fallback) const ; 
+template GGEO_API int         GPropertyLib::getBufferMeta(const char* key, const char* fallback) const ; 
+template GGEO_API float       GPropertyLib::getBufferMeta(const char* key, const char* fallback) const ; 
+template GGEO_API double      GPropertyLib::getBufferMeta(const char* key, const char* fallback) const ; 
+template GGEO_API std::string GPropertyLib::getBufferMeta(const char* key, const char* fallback) const ; 
+
 

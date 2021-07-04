@@ -14,6 +14,7 @@ struct QUDARAP_API QTex
     size_t       width ; 
     size_t       height ; 
     const void*  src ;
+
     T*           dst ; 
     T*           d_dst ; 
 
@@ -25,6 +26,11 @@ struct QUDARAP_API QTex
     quad4*              d_meta ; 
 
     QTex( size_t width, size_t height, const void* src );
+
+    void     setHDFactor(unsigned hd_factor_) ; 
+    unsigned getHDFactor() const ; 
+
+
     virtual ~QTex();  
 
     void init(); 
