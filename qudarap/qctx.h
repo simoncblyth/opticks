@@ -73,8 +73,9 @@ struct qctx
 #if defined(__CUDACC__) || defined(__CUDABE__)
 inline QCTX_METHOD float qctx::scint_wavelength_hd0(curandStateXORWOW& rng) 
 {
+    constexpr float y0 = 0.5f/3.f ; 
     float u0 = curand_uniform(&rng); 
-    return tex2D<float>(scint_tex, u0, 0.f);    
+    return tex2D<float>(scint_tex, u0, y0 );    
 }
 
 /**

@@ -44,6 +44,8 @@ struct QUDARAP_API QCtx
 
     QCtx();
     void init(); 
+    char getScintTexFilterMode() const ;
+
     std::string desc() const ; 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );

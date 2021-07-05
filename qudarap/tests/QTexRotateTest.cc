@@ -24,7 +24,8 @@ int main(int argc, char** argv)
     std::cout << img.desc() << std::endl ;
     assert( img.channels == 4 );
 
-    QTex<uchar4> qtex(img.width, img.height, img.data);
+    char filterMode = 'P' ; // cudaFilterModePoint : no interpolation, necessary with uchar4 
+    QTex<uchar4> qtex(img.width, img.height, img.data, filterMode );
 
     float theta = 1.f ; // radian
     qtex.rotate(theta); 

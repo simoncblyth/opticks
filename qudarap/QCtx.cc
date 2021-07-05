@@ -25,12 +25,14 @@ const QCtx* QCtx::Get(){ return INSTANCE ; }
 
 void QCtx::Init(const GGeo* ggeo)
 {
+    bool qctx_dump = SSys::getenvbool("QCTX_DUMP"); 
+
     GScintillatorLib* slib = ggeo->getScintillatorLib(); 
-    slib->dump();
+    if(qctx_dump) slib->dump();
 
     GBndLib* blib = ggeo->getBndLib(); 
     blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
-    blib->dump(); 
+    if(qctx_dump) blib->dump(); 
 
     // on heap, to avoid dtors
 
@@ -121,6 +123,11 @@ void QCtx::init()
     d_ctx = QU::UploadArray<qctx>(ctx, 1 );  
 
     LOG(LEVEL) << desc() ; 
+}
+
+char QCtx::getScintTexFilterMode() const 
+{
+    return scint->tex->getFilterMode() ; 
 }
 
 

@@ -14,6 +14,7 @@ struct QUDARAP_API QTex
     size_t       width ; 
     size_t       height ; 
     const void*  src ;
+    char         filterMode ;  // 'L':cudaFilterModeLinear OR 'P':cudaFilterModePoint 
 
     T*           dst ; 
     T*           d_dst ; 
@@ -25,11 +26,11 @@ struct QUDARAP_API QTex
     quad4*              meta ; 
     quad4*              d_meta ; 
 
-    QTex( size_t width, size_t height, const void* src );
+    QTex( size_t width, size_t height, const void* src, char filterMode  );
 
     void     setHDFactor(unsigned hd_factor_) ; 
     unsigned getHDFactor() const ; 
-
+    char     getFilterMode() const ; 
 
     virtual ~QTex();  
 

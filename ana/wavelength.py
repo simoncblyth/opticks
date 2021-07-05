@@ -56,19 +56,23 @@ class Wavelength(object):
         w[2] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_0.npy"))
         l[2] = "Opticks_QCtxTest_hd0"
 
+        w[3] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_20_cudaFilterModePoint.npy"))
+        l[3] = "Opticks_QCtxTest_hd20_cudaFilterModePoint"
+
+        w[4] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_0_cudaFilterModePoint.npy"))
+        l[4] = "Opticks_QCtxTest_hd0_cudaFilterModePoint"
 
         aa = np.load(os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy"))
         a = aa[0,:,0]
         b = np.linspace(0,1,len(a))
         u = np.random.rand(1000000)  
-        w[3] = np.interp(u, b, a )  
-        l[3] = "OK_GScint_np_interp"
+        w[5] = np.interp(u, b, a )  
+        l[5] = "OK_GScint_np_interp"
         self.aa = aa
 
-
         path2 = "/tmp/X4ScintillationTest/g4localSamples.npy"
-        w[4] = np.load(path2) if os.path.exists(path2) else None
-        l[4] = "X4"
+        w[6] = np.load(path2) if os.path.exists(path2) else None
+        l[6] = "X4"
  
         #dom = np.arange(80, 800, 4)  
         #dom = np.arange(300, 600, 1)  
@@ -76,11 +80,9 @@ class Wavelength(object):
         #dom = np.arange(385, 475, 1)  
 
         h = {}
-        h[0],_ = np.histogram( w[0] , dom )
-        h[1],_ = np.histogram( w[1] , dom )
-        h[2],_ = np.histogram( w[2] , dom )
-        h[3],_ = np.histogram( w[3] , dom )
-        h[4],_ = np.histogram( w[4] , dom )
+        for i in range(len(w)):
+            h[i],_ = np.histogram( w[i] , dom )
+        pass
 
         self.w = w  
         self.l = l

@@ -21,16 +21,21 @@ void test_wavelength(QCtx& qc)
     wavelength.resize(num_wavelength, 0.f); 
 
     unsigned hd_factor(~0u) ; 
-    qc.generate(   wavelength.data(), wavelength.size(), hd_factor ); 
+    qc.generate(   wavelength.data(), wavelength.size(), hd_factor );  // hd_factor is an output argument
     qc.dump(       wavelength.data(), wavelength.size() ); 
 
+    char scintTexFilterMode = qc.getScintTexFilterMode() ; 
     std::stringstream ss ; 
-    ss << "wavelength_" << hd_factor << ".npy" ; 
+    ss << "wavelength_" << hd_factor ; 
+    if(scintTexFilterMode == 'P') ss << "_cudaFilterModePoint" ; 
+    ss  << ".npy" ; 
+
     std::string s = ss.str();
     const char* name = s.c_str(); 
    
     LOG(info) 
         << " hd_factor " << hd_factor
+        << " scintTexFilterMode " << scintTexFilterMode 
         << " name " << name
         ; 
 

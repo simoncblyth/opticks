@@ -1,5 +1,6 @@
 
 #include "PLOG.hh"
+#include "SSys.hh"
 #include "scuda.h"
 
 #include <sstream>
@@ -79,7 +80,15 @@ void QScint::makeScintTex(const NPY<float>* src)
     unsigned ny = ni ; // height  
     unsigned nx = nj ; // width 
   
-    tex = new QTex<float>(nx, ny, src->getValuesConst() ) ; 
+
+    bool qscint_disable_interpolation = SSys::getenvbool("QSCINT_DISABLE_INTERPOLATION"); 
+    char filterMode = qscint_disable_interpolation ? 'P' : 'L' ; 
+
+    if(qscint_disable_interpolation)
+        LOG(fatal) << "QSCINT_DISABLE_INTERPOLATION active using filterMode " << filterMode 
+        ; 
+
+    tex = new QTex<float>(nx, ny, src->getValuesConst(), filterMode ) ; 
 
     tex->setHDFactor(HDFactor(dsrc)); 
     tex->uploadMeta(); 
@@ -89,8 +98,8 @@ void QScint::makeScintTex(const NPY<float>* src)
         << " nx (width) " << nx
         << " ny (height) " << ny
         << " tex.HDFactor " << tex->getHDFactor() 
+        << " tex.filterMode " << tex->getFilterMode()
         ;
-
 
 }
 

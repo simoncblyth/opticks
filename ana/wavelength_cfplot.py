@@ -5,7 +5,12 @@ wavelength_cfplot.py
 
 ::
 
-    an ; ipython -i wavelength_cfplot.py
+    an ; 
+
+    ARG=0 ipython -i wavelength_cfplot.py
+    ARG=1 ipython -i wavelength_cfplot.py
+    ARG=2 ipython -i wavelength_cfplot.py
+    ARG=3 ipython -i wavelength_cfplot.py
 
     mkdir -p ~/simoncblyth.bitbucket.io/env/presentation/ana/wavelength_cfplot
     cp /tmp/ana/wavelength_cfplot/*.png ~/simoncblyth.bitbucket.io/env/presentation/ana/wavelength_cfplot/
@@ -23,7 +28,6 @@ from opticks.ana.wavelength import Wavelength
 from opticks.ana.cfplot import one_cfplot
 from opticks.ana.cfh import CFH
 
-
 from matplotlib import pyplot as plt 
 
 if __name__ == '__main__':
@@ -31,17 +35,27 @@ if __name__ == '__main__':
     kd = keydir(os.environ["OPTICKS_KEY"])
     wl = Wavelength(kd)
 
-
-    #a, b = 0, 1   # horses mouth, _20
-    a, b = 0, 2   # horses mouth, _0
+    arg = int(os.environ.get("ARG","0")) 
+  
+    if arg == 0:
+        a, b = 0, 1   # horses mouth, _20
+    elif arg == 1:
+        a, b = 0, 2   # horses mouth, _0
+    elif arg == 2:
+        a, b = 0, 3   # horses mouth, _20_cudaFilterModePoint
+    elif arg == 3:
+        a, b = 0, 4   # horses mouth, _0_cudaFilterModePoint
+    else:
+        assert 0
+    pass
 
     h = CFH()
     h.log = True 
     h.ylim = (50., 5e4 )
     h.suptitle = "Compare two 1M sample LS scintillation wavelength distributions in 1nm bins"
 
-
-    h(wl.dom[:-1], wl.w[a], wl.w[b], [wl.l[a], wl.l[b]] )
+    c2cut = 10 
+    h(wl.dom[:-1], wl.w[a], wl.w[b], [wl.l[a], wl.l[b]], c2cut=c2cut )
 
     xline = [wl.interp(0.05), wl.interp(0.95)]
     fig = one_cfplot(ok, h, xline=xline )
@@ -51,7 +65,6 @@ if __name__ == '__main__':
 
     print(h.lhabc)   
 
-
     path="/tmp/ana/wavelength_cfplot/%s_%s.png" % ( wl.l[a], wl.l[b] )
     fold=os.path.dirname(path)
     if not os.path.isdir(fold):
@@ -59,7 +72,5 @@ if __name__ == '__main__':
     pass 
     log.info("save to %s " % path)
     fig.savefig(path)
-
-
 
 

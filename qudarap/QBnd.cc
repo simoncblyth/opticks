@@ -64,7 +64,8 @@ void QBnd::makeBoundaryTex(const NPY<float>* buf )
     unsigned ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
 
     const float* values = buf->getValuesConst(); 
-    tex = new QTex<float4>(nx, ny, values ) ; 
+    char filterMode = 'L' ; 
+    tex = new QTex<float4>(nx, ny, values, filterMode ) ; 
     tex->uploadMeta(); 
 }
 
