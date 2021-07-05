@@ -43,9 +43,9 @@ struct qctx
     unsigned            photon_id ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-    QCTX_METHOD float   scint_wavelength(curandStateXORWOW& rng);  
-    QCTX_METHOD float   scint_wavelength_tenfold_extremes(curandStateXORWOW& rng);
-    QCTX_METHOD float   scint_wavelength_twentyfold_extremes(curandStateXORWOW& rng);
+    QCTX_METHOD float   scint_wavelength_hd0(curandStateXORWOW& rng);  
+    QCTX_METHOD float   scint_wavelength_hd10(curandStateXORWOW& rng);
+    QCTX_METHOD float   scint_wavelength_hd20(curandStateXORWOW& rng);
     QCTX_METHOD void    scint_dirpol(quad4& p, curandStateXORWOW& rng); 
     QCTX_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
     QCTX_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
@@ -71,14 +71,14 @@ struct qctx
 // TODO: get the below to work on CPU with mocked curand and tex2D
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-inline QCTX_METHOD float qctx::scint_wavelength(curandStateXORWOW& rng) 
+inline QCTX_METHOD float qctx::scint_wavelength_hd0(curandStateXORWOW& rng) 
 {
     float u0 = curand_uniform(&rng); 
     return tex2D<float>(scint_tex, u0, 0.f);    
 }
 
 /**
-qctx::scint_wavelength_tenfold_extremes
+qctx::scint_wavelength_hd10
 --------------------------------------------------
 
 Idea is to improve handling of extremes by throwing ten times the bins
@@ -90,23 +90,22 @@ But that has computational disadvantage of expensive mapping functions to get be
 
 See::
 
-     extg4/tests/X4ScintillatorIntegralTest.cc
-     extg4/tests/X4ScintillatorIntegralTest.py 
+     extg4/tests/X4ScintillatorTest.cc
+     extg4/tests/X4ScintillatorTest.py 
 
 
 Actually looking at the plots would be better to do the extreme splits at 0.05 and 0.95 
 
 **/
 
-inline QCTX_METHOD float qctx::scint_wavelength_tenfold_extremes(curandStateXORWOW& rng) 
+inline QCTX_METHOD float qctx::scint_wavelength_hd10(curandStateXORWOW& rng) 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
 
-    float y0 = (float(0u) + 0.5f )/float(3.f) ; 
-    float y1 = (float(1u) + 0.5f )/float(3.f) ; 
-    float y2 = (float(2u) + 0.5f )/float(3.f) ; 
-
+    constexpr float y0 = 0.5f/3.f ; 
+    constexpr float y1 = 1.5f/3.f ; 
+    constexpr float y2 = 2.5f/3.f ; 
 
     if( u0 < 0.1f )
     {
@@ -125,15 +124,14 @@ inline QCTX_METHOD float qctx::scint_wavelength_tenfold_extremes(curandStateXORW
 
 
 
-inline QCTX_METHOD float qctx::scint_wavelength_twentyfold_extremes(curandStateXORWOW& rng) 
+inline QCTX_METHOD float qctx::scint_wavelength_hd20(curandStateXORWOW& rng) 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
 
-    float y0 = (float(0u) + 0.5f )/float(3.f) ; 
-    float y1 = (float(1u) + 0.5f )/float(3.f) ; 
-    float y2 = (float(2u) + 0.5f )/float(3.f) ; 
-
+    constexpr float y0 = 0.5f/3.f ; 
+    constexpr float y1 = 1.5f/3.f ; 
+    constexpr float y2 = 2.5f/3.f ; 
 
     if( u0 < 0.05f )
     {

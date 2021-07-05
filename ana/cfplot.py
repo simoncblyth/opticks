@@ -41,7 +41,7 @@ except ImportError:
     plt = None
 
 
-def cfplot(fig, gss, h): 
+def cfplot(fig, gss, h, xline=[]): 
     """
     :param fig:
     :param gss: 2 element gridspec list 
@@ -56,7 +56,14 @@ def cfplot(fig, gss, h):
         ax.set_yscale('log')
     pass
 
-    ax.set_ylim(h.ylim)
+    ylim0 = h.ylim
+    if len(xline) > 0:
+        for x in xline:
+            ax.plot( [x,x], ylim0, linestyle="dashed" )
+        pass
+    pass
+
+    ax.set_ylim(ylim0)
     ax.legend()
 
     xlim = ax.get_xlim()
@@ -67,7 +74,17 @@ def cfplot(fig, gss, h):
 
     ax.set_xlim(xlim) 
     ax.legend()
-    ax.set_ylim([0,h.c2_ymax]) 
+
+    ylim1 = [0,h.c2_ymax*1.05]
+    if len(xline) > 0:
+        for x in xline:
+            ax.plot( [x,x], ylim1, linestyle="dashed" )
+        pass
+    pass
+    ax.set_ylim(ylim1) 
+
+    return ax
+
 
 
 def qwns_plot( ok, hh, suptitle ):
@@ -91,7 +108,7 @@ def qwns_plot( ok, hh, suptitle ):
             cfplot(fig, gss, hh[ix] )
         pass
 
-def one_cfplot(ok, h):
+def one_cfplot(ok, h, xline=[]):
     """
     :param ok: used for figsize
     :param h: CFH instance
@@ -103,8 +120,9 @@ def one_cfplot(ok, h):
     gs = gridspec.GridSpec(ny, nx, height_ratios=[3,1])
     for ix in range(nx):
         gss = [gs[ix], gs[nx+ix]]
-        cfplot(fig, gss, h )
+        cfplot(fig, gss, h, xline=xline )
     pass
+    return fig 
 
 
 def multiplot(ok, ab, start=0, stop=5, log_=False):

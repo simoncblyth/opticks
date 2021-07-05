@@ -109,8 +109,14 @@ class Ctx(dict):
         return subs
     
     def _get_suptitle(self):
-        return " %s/%s %s " % (self.det, self.tag, self.reclab )
-    suptitle = property(_get_suptitle)
+        if not "suptitle" in self:
+            self["suptitle"] = " %s/%s %s " % (self.det, self.tag, self.reclab )
+        return self["suptitle"]
+
+    def _set_suptitle(self, suptitle):
+        self["suptitle"] = suptitle
+    suptitle = property(_get_suptitle, _set_suptitle)
+
 
     @classmethod
     def srec_(cls, irec):

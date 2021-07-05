@@ -115,8 +115,8 @@ void QTex<T>::createTextureObject()
     texDesc.addressMode[0] = cudaAddressModeWrap;
     texDesc.addressMode[1] = cudaAddressModeWrap;
 
-    //texDesc.filterMode = cudaFilterModeLinear;
-    texDesc.filterMode = cudaFilterModePoint;    // switch off interpolation, as that gives error with non-float texture  
+    texDesc.filterMode = cudaFilterModeLinear;
+    //texDesc.filterMode = cudaFilterModePoint;    // switch off interpolation, as that gives error with non-float texture  
 
     texDesc.readMode = cudaReadModeElementType;  // return data of the type of the underlying buffer
     texDesc.normalizedCoords = 1 ;            // addressing into the texture with floats in range 0:1

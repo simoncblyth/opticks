@@ -15,9 +15,9 @@ __global__ void _QCtx_generate_wavelength(qctx* ctx, float* wavelength, unsigned
     float wl ; 
     switch(hd_factor)
     {
-        case 0:  wl = ctx->scint_wavelength(rng)                     ; break ; 
-        case 10: wl = ctx->scint_wavelength_tenfold_extremes(rng)    ; break ; 
-        case 20: wl = ctx->scint_wavelength_twentyfold_extremes(rng) ; break ; 
+        case 0:  wl = ctx->scint_wavelength_hd0(rng)  ; break ; 
+        case 10: wl = ctx->scint_wavelength_hd10(rng) ; break ; 
+        case 20: wl = ctx->scint_wavelength_hd20(rng) ; break ; 
         default: wl = 0.f ; 
     }
     if(id % 100000 == 0) printf("//_QCtx_generate_wavelength id %d hd_factor %d wl %10.4f    \n", id, hd_factor, wl  ); 

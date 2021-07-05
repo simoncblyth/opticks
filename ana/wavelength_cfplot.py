@@ -3,6 +3,13 @@
 wavelength_cfplot.py
 =======================
 
+::
+
+    an ; ipython -i wavelength_cfplot.py
+
+    mkdir -p ~/simoncblyth.bitbucket.io/env/presentation/ana/wavelength_cfplot
+    cp /tmp/ana/wavelength_cfplot/*.png ~/simoncblyth.bitbucket.io/env/presentation/ana/wavelength_cfplot/
+
 
 """
 
@@ -25,23 +32,34 @@ if __name__ == '__main__':
     wl = Wavelength(kd)
 
 
-     
-
-
-
-    a, b = 0, 1   # horses mouth, _20
-    #a, b = 0, 2   # horses mouth, _0
+    #a, b = 0, 1   # horses mouth, _20
+    a, b = 0, 2   # horses mouth, _0
 
     h = CFH()
     h.log = True 
     h.ylim = (50., 5e4 )
+    h.suptitle = "Compare two 1M sample LS scintillation wavelength distributions in 1nm bins"
+
 
     h(wl.dom[:-1], wl.w[a], wl.w[b], [wl.l[a], wl.l[b]] )
 
-    one_cfplot(ok, h )
+    xline = [wl.interp(0.05), wl.interp(0.95)]
+    fig = one_cfplot(ok, h, xline=xline )
 
     plt.ion()
     plt.show()
 
     print(h.lhabc)   
+
+
+    path="/tmp/ana/wavelength_cfplot/%s_%s.png" % ( wl.l[a], wl.l[b] )
+    fold=os.path.dirname(path)
+    if not os.path.isdir(fold):
+       os.makedirs(fold)
+    pass 
+    log.info("save to %s " % path)
+    fig.savefig(path)
+
+
+
 

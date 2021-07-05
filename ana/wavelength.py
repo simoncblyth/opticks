@@ -48,13 +48,13 @@ class Wavelength(object):
         ## horses mouth
         path0 = "/tmp/G4OpticksAnaMgr/WavelengthSamples.npy"
         w[0] = np.load(path0) if os.path.exists(path0) else None
-        l[0] = "DsG4Scintillator.G4OpticksAnaMgr" 
+        l[0] = "DsG4Scintillator_G4OpticksAnaMgr" 
 
         w[1] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_20.npy"))
-        l[1] = "OK.QCtxTest.20"
+        l[1] = "Opticks_QCtxTest_hd20"
 
         w[2] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_0.npy"))
-        l[2] = "OK.QCtxTest.0"
+        l[2] = "Opticks_QCtxTest_hd0"
 
 
         aa = np.load(os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy"))
@@ -62,7 +62,8 @@ class Wavelength(object):
         b = np.linspace(0,1,len(a))
         u = np.random.rand(1000000)  
         w[3] = np.interp(u, b, a )  
-        l[3] = "OK.GScint.np_interp"
+        l[3] = "OK_GScint_np_interp"
+        self.aa = aa
 
 
         path2 = "/tmp/X4ScintillationTest/g4localSamples.npy"
@@ -85,6 +86,11 @@ class Wavelength(object):
         self.l = l
         self.h = h   
         self.dom = dom 
+
+    def interp(self, u):
+        a = self.aa[0,:,0]
+        b = np.linspace(0,1,len(a))
+        return np.interp( u, b, a )
  
 
 
