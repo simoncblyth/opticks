@@ -657,10 +657,17 @@ void GPropertyMap<T>::addConstantProperty(const char* pname, T value, const char
    addPropertyAsis(pname, prop, prefix);
 }
 
+/**
+GPropertyMap<T>::addPropertyStandardized from raw arrays
+-----------------------------------------------------------
+
+Not in general usage, only used from GMaterialTest 
+
+**/
+
 template <typename T>
 void GPropertyMap<T>::addPropertyStandardized(const char* pname, T* values, T* domain, unsigned int length, const char* prefix)
 {
-   assert(0) ; // checking where this gets used
    assert(length < 10000);
 
    GAry<T>* vals = new GAry<T>( length, values );

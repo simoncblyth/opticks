@@ -29,15 +29,15 @@
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG_COLOR__(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     X4OpNoviceMaterials opnov ; 
 
     G4Material* water = opnov.water ;
 
-    bool standardized = true ; 
+    char mode_g4_interpolated_onto_domain = 'G' ;
 
-    GMaterial* wine = X4Material::Convert(water, standardized ) ; 
+    GMaterial* wine = X4Material::Convert(water, mode_g4_interpolated_onto_domain ) ; 
 
     wine->Summary();
 

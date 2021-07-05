@@ -166,11 +166,14 @@ class GGEO_API GPropertyMap {
       void addConstantProperty(const char* pname, T value, const char* prefix=NULL);
 
       // when a standard domain is defined these methods interpolates the values provided onto that domain
-      void addPropertyStandardized(const char* pname, T* values, T* domain, unsigned int length, const char* prefix=NULL);
       void addPropertyStandardized(const char* pname,  GProperty<T>* orig, const char* prefix=NULL);
 
        // this one does not interpolate  
       void addPropertyAsis(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
+
+   private:
+      friend struct GMaterialTest ; 
+      void addPropertyStandardized(const char* pname, T* values, T* domain, unsigned int length, const char* prefix=NULL);
   public:
       // adding other map of properties
       void addMapStandardized(GPropertyMap<T>* other, const char* prefix=NULL);

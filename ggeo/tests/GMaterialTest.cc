@@ -24,32 +24,38 @@
 #include "OPTICKS_LOG.hh"
 
 
-void test_zero()
+struct GMaterialTest
 {
-    GMaterial* mat = new GMaterial("test", 0);
-    mat->Summary(); 
-}
+    static void test_zero()
+    {
+        LOG(info); 
+        GMaterial* mat = new GMaterial("test", 0);
+        mat->Summary(); 
+    }
 
-void test_addProperty()
-{
-    GMaterial* mat = new GMaterial("demo", 0);
+    static void test_addProperty()
+    {
+        LOG(info); 
+        GMaterial* mat = new GMaterial("demo", 0);
 
-    double domain[]={1.f,2.f,3.f,4.f,5.f,6.f,7.f};
-    double vals[]  ={10.f,20.f,30.f,40.f,50.f,60.f,70.f};
+        double domain[]={1.,2.,3.,4.,5.,6.,7.};
+        double vals[]  ={10.,20.,30.,40.,50.,60.,70.};
 
-    mat->addPropertyStandardized("pname", vals, domain, sizeof(domain)/sizeof(domain[0]) );
+        mat->addPropertyStandardized("pname", vals, domain, sizeof(domain)/sizeof(domain[0]) );
 
-    GProperty<double>* prop = mat->getProperty("pname");
-    prop->Summary("prop dump");
-}
+        GProperty<double>* prop = mat->getProperty("pname");
+        prop->Summary("prop dump");
+    }
+}; 
+
 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    test_zero();
-    test_addProperty();
+    GMaterialTest::test_zero();
+    GMaterialTest::test_addProperty();
 
 
     return 0 ;
