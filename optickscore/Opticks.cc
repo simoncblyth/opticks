@@ -100,7 +100,7 @@
 
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
-const int            Opticks::GEOCACHE_CODE_VERSION = 12 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+const int            Opticks::GEOCACHE_CODE_VERSION = 13 ;  // (incremented when code changes invalidate loading old geocache dirs)   
 
 /**
 3: starting point 
@@ -120,6 +120,9 @@ const int            Opticks::GEOCACHE_CODE_VERSION = 12 ;  // (incremented when
 12: switch to fine 1nm domain steps as the default for all material/surface properties using Geant4 G4PhysicsVector::Value interpolation 
     to populate all the GProperty in this fine domain
  
+13: rejig of GScintillatorLib persisting, now with _ori energy domain properties to facilitate postcache Geant4 testing
+    such as for scintillator ICDF creation + plus move to effective multi resolution scintillator/reemission texture
+
 **/
 
 
