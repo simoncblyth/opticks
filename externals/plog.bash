@@ -110,7 +110,7 @@ plog-icd(){  cd $(plog-idir); }
 
 
 plog-url-upstream(){  echo https://github.com/SergiusTheBest/plog ; }
-plog-url-pinned(){  echo https://github.com/simoncblyth/plog ; }
+plog-url-pinned(){  echo https://github.com/simoncblyth/plog.git ; }
 plog-url(){  plog-url-pinned ; }
 
 
@@ -128,9 +128,7 @@ plog-get(){
    local url=$(plog-url)
    echo $msg url $url 
    if [ ! -d plog ]; then  
-       local cmd="git clone $url"
-       echo $cmd
-       eval $cmd
+       opticks-git-clone $url 
    else
        echo $msg plog already cloned
    fi 

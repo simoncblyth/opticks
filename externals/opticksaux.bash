@@ -142,9 +142,7 @@ opticksaux-get(){
    local nam=$(basename $url)
    nam=${nam/.git}
    if [ ! -d "$nam/.git" ]; then
-        local cmd="git clone $url "
-        echo $msg proceeding with \"$cmd\" from $dir 
-        eval $cmd
+        opticks-git-clone $url 
    else
         echo $msg ALREADY CLONED from $url to $(opticksaux-dir) 
         opticksaux-update

@@ -274,13 +274,13 @@ gleq-cd(){  cd $(gleq-dir); }
 gleq-scd(){  cd $(gleq-sdir); }
 gleq-edit(){ vi $(opticks-home)/cmake/Modules/FindGLEQ.cmake ; }  ## no such module, header just copied in ? 
 
-gleq-url(){ echo https://github.com/simoncblyth/gleq ; }
+gleq-url(){ echo https://github.com/simoncblyth/gleq.git ; }
 
 gleq-get(){
    local iwd=$PWD
    local rc=0
    local dir=$(dirname $(gleq-dir)) &&  mkdir -p $dir && cd $dir
-   [ ! -d gleq ] && git clone $(gleq-url)
+   [ ! -d gleq ] && opticks-git-clone $(gleq-url)
 
    [ -d gleq ] 
    rc=$?

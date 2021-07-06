@@ -186,7 +186,7 @@ bcm-get(){
    local iwd=$PWD
    local dir=$(dirname $(bcm-dir)) &&  mkdir -p $dir && cd $dir
    if [ ! -d "bcm" ]; then 
-       git clone $(bcm-url)
+       opticks-git-clone $(bcm-url)
    fi 
    cd $iwd
    [ ! -f "$(bcm-dir)/CMakeLists.txt" ] && return 1 

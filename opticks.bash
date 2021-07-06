@@ -554,6 +554,29 @@ opticks-externals-dist-scp(){
    done
 }
 
+opticks-externals-git-scp(){
+   : emit git clone and scp commands to populate the remote opticks_download_cache with bare git repos
+   local ext
+   local url
+   local cmd
+
+   local dir=/tmp/$FUNCNAME
+   mkdir -p $dir
+   cd $dir
+
+   for ext in $(opticks-externals) ; do 
+       $ext-
+       url=$($ext-url 2>/dev/null)
+       if [ -n "$url" ]; then 
+           if [ "${url:(-4)}" == ".git" ]; then
+               local repo=$(basename $url)
+               echo git clone --bare $url   
+               echo scp -r $repo P:/data/opticks_download_cache/
+           fi 
+       fi
+   done
+}
+
 
 
 opticks-preqs-pc(){      opticks-pc- $(opticks-preqs) ; }
@@ -1658,6 +1681,33 @@ opticks-ext-status(){
    cd $iwd
 }
 
+
+
+opticks-git-clone-notes(){  cat << EOC
+
+git clone wrapper similar to opticks-curl that will clone 
+from local bare repos in $OPTICKS_DOWNLOAD_CACHE in order to avoid the sometimes 
+very slow or failing cloning thru the GFW
+
+EOC
+}
+
+opticks-git-clone(){
+   local msg="=== $FUNCNAME :"
+   local dir=$PWD
+   local url=$1
+   local repo=$(basename $url)
+
+   if [ -z "$url" -o -z "$dist" ]; then
+       cmd="echo $msg BAD url $url dist $dir"
+   elif [ -n "$OPTICKS_DOWNLOAD_CACHE" -a -d "$OPTICKS_DOWNLOAD_CACHE/$repo" ]; then 
+       cmd="git clone $OPTICKS_DOWNLOAD_CACHE/$repo"  
+   else
+       cmd="git clone $url"
+   fi  
+   echo $msg dir $dir url $url dist $dist OPTICKS_DOWNLOAD_CACHE $OPTICKS_DOWNLOAD_CACHE cmd $cmd 
+   eval $cmd
+}
 
 
 opticks-curl(){
