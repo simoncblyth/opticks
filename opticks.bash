@@ -1697,9 +1697,8 @@ opticks-git-clone(){
    local dir=$PWD
    local url=$1
    local repo=$(basename $url)
-
-   if [ -z "$url" -o -z "$dist" ]; then
-       cmd="echo $msg BAD url $url dist $dir"
+   if [ -z "$url" -o -z "$repo" ]; then
+       cmd="echo $msg BAD url $url repo $repo"
    elif [ -n "$OPTICKS_DOWNLOAD_CACHE" -a -d "$OPTICKS_DOWNLOAD_CACHE/$repo" ]; then 
        cmd="git clone $OPTICKS_DOWNLOAD_CACHE/$repo"  
    else
