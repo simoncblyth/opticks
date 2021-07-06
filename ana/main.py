@@ -161,7 +161,8 @@ def opticks_args(**kwa):
     compare = kwa.get("compare", True)
     terse = kwa.get("terse", False)
     mat = kwa.get("mat", "GdDopedLS")
-    msli = kwa.get("msli", "0:100k")   # 0:1M  mmap_mode slice for quick analysis
+    #msli = kwa.get("msli", "0:100k")   # 0:1M  mmap_mode slice for quick analysis
+    msli = kwa.get("msli", "0:1M")   # 0:1M  mmap_mode slice for quick analysis
     sli = kwa.get("sli", "::")
     sel = kwa.get("sel", "0:5:1")
     qwn = kwa.get("qwn", "XYZT,ABCW")

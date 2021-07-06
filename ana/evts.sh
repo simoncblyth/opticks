@@ -1,3 +1,6 @@
 #!/bin/bash 
 
-ipython --pdb -i evts.py -- --pfx tds3gun --src natural 
+pfx=tds3ip
+#pfx=tds3gun
+
+ipython --pdb -i evts.py -- --pfx $pfx --src natural 
