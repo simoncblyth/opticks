@@ -341,7 +341,18 @@ EON
 
 glfw-pc(){ 
    local msg="=== $FUNCNAME :"
-   local path="$OPTICKS_PREFIX/externals/lib/pkgconfig/glfw3.pc"
+
+   local path0="$OPTICKS_PREFIX/externals/lib/pkgconfig/glfw3.pc"
+   local path1="$OPTICKS_PREFIX/externals/lib64/pkgconfig/glfw3.pc"
+   local path
+   if [ -f "$path0" ]; then  
+       path=$path0
+   elif [ -f "$path1" ]; then
+       path=$path1
+   else
+       path=/dev/null
+   fi 
+
    local path2="$OPTICKS_PREFIX/externals/lib/pkgconfig/OpticksGLFW.pc"
    local rc=0
    if [ -f "$path2" -a ! -f "$path" ]; then  
