@@ -1,5 +1,10 @@
 #/usr/bin/env python
+"""
+::
 
+     ipython -i L4CerenkovTest.py 
+
+"""
 import os, numpy as np
 
 try:
@@ -11,9 +16,9 @@ pass
 np.set_printoptions(suppress=False, precision=8)   
 
 class L4CerenkovTest(object):
-    def __init__(self, dir_="/tmp"):
-        a = np.load(os.path.join(dir_, "L4CerenkovTest.npy"))
-        n = list(map(str.strip,open(os.path.join(dir_, "L4CerenkovTest.txt")).readlines()))
+    def __init__(self, dir_="/tmp/L4CerenkovTest"):
+        a = np.load(os.path.join(dir_, "BetaInverseScan.npy"))
+        n = list(map(str.strip,open(os.path.join(dir_, "BetaInverseScan.txt")).readlines()))
         i = np.array(n).reshape(4,4) 
 
         jk = np.where( i == "materialIndex_branch" )
@@ -31,6 +36,10 @@ class L4CerenkovTest(object):
         self.materialIndex = materialIndex
         self.branch = branch 
 
+        w = np.load(os.path.join(dir_, "SampleWavelengths.npy"))
+        self.w = w 
+
+
     def __call__(self, name):
         a = self.a
         if name in ['materialIndex', 'branch']:
@@ -46,42 +55,57 @@ class L4CerenkovTest(object):
     def __repr__(self):
         return repr(self.i)
 
+    def plot_BetaInverseScan(self):
+        t = self
+        charge = t('charge')
+        beta = t('beta')
+        Rfact = t('Rfact')
+        BetaInverse = t('BetaInverse')
+
+        Pmin = t('Pmin')
+        Pmax = t('Pmax')
+        nMin = t('nMin')
+        nMax = t('nMax')
+
+        CAImax = t('CAImax')
+        materialIndex, branch = t('materialIndex'), t('branch')
+        dp = t('dp')
+        ge = t('ge')
+
+        CAImin = t('CAImin')
+        NumPhotons = t('NumPhotons')
+        gamma = t('gamma')
+        Padding0 = t('Padding0')
+
+        fig, axs = plt.subplots(4, sharex=True)
+        col = "rgb"
+        for i in range(3):
+            ax = axs[i]
+            sel = np.where( branch == i )
+            ax.plot( BetaInverse[sel], NumPhotons[sel], label="branch %d" % i, c=col[i])
+            axs[3].plot( BetaInverse[sel], NumPhotons[sel], c=col[i])
+            pass
+               
+        pass
+        fig.legend() 
+        fig.show()
+
+
 
 if __name__ == '__main__':
     t = L4CerenkovTest()  
     print(t)
 
-    charge = t('charge')
-    beta = t('beta')
-    Rfact = t('Rfact')
-    BetaInverse = t('BetaInverse')
+    t.plot_BetaInverseScan()
 
-    Pmin = t('Pmin')
-    Pmax = t('Pmax')
-    nMin = t('nMin')
-    nMax = t('nMax')
-
-    CAImax = t('CAImax')
-    materialIndex, branch = t('materialIndex'), t('branch')
-    dp = t('dp')
-    ge = t('ge')
-
-    CAImin = t('CAImin')
-    NumPhotons = t('NumPhotons')
-    gamma = t('gamma')
-    Padding0 = t('Padding0')
-
-    fig, axs = plt.subplots(4, sharex=True)
-    col = "rgb"
-    for i in range(3):
-        ax = axs[i]
-        sel = np.where( branch == i )
-        ax.plot( BetaInverse[sel], NumPhotons[sel], label="branch %d" % i, c=col[i])
-        axs[3].plot( BetaInverse[sel], NumPhotons[sel], c=col[i])
-        pass
-           
-    pass
-    fig.legend() 
+    dom = np.arange(250,650,1) 
+    h,_ = np.histogram(t.w, dom) 
+    
+    fig, ax = plt.subplots()
+    ax.plot( dom[:-1], h )
     fig.show()
+
+
+
 
 

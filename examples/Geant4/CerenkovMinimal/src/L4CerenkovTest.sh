@@ -16,7 +16,10 @@ the NP.hh header from https://github.com/simoncblyth/np/
 EOU
 }
 
-compile(){ local name=$1 ; cat << EOC
+compile(){ 
+    local name=$1 ; 
+    mkdir -p /tmp/$name
+    cat << EOC
     gcc $name.cc -std=c++11 \
        -I. \
        -I$HOME/np \
@@ -28,7 +31,7 @@ compile(){ local name=$1 ; cat << EOC
        -lG4global \
        -lG4materials \
        -lCLHEP-$(clhep-ver) \
-       -o /tmp/$name 
+       -o /tmp/$name/$name 
 EOC
 }
 
@@ -41,7 +44,7 @@ run(){
     esac
 
     cat << EOC
-$var=$(g4-prefix)/lib:$(clhep-prefix)/lib /tmp/$name 
+$var=$(g4-prefix)/lib:$(clhep-prefix)/lib /tmp/$name/$name 
 EOC
 }
 
