@@ -96,7 +96,7 @@ if __name__ == '__main__':
         w[i,2] = hc/en 
         w[i,3]=boundary_sample_reciprocal_domain_v3(u) 
 
-        print "%10.4f : %10.4f : %10.4f : %10.4f : %10.4f : %10.4f " % (u, w[i,0], w[i,1], w[i,2], w[i,3], en  )
+        print("%10.4f : %10.4f : %10.4f : %10.4f : %10.4f : %10.4f " % (u, w[i,0], w[i,1], w[i,2], w[i,3], en  ))
     pass
 
 
