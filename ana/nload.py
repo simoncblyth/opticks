@@ -57,8 +57,9 @@ from opticks.ana.num  import _slice, slice_, Num
 
 
 def time_(path): 
-    st = os.stat(path)  
-    return datetime.datetime.fromtimestamp(st.st_ctime)
+    st = os.stat(path) if os.path.exists(path) else None
+    t = None if st is None else datetime.datetime.fromtimestamp(st.st_ctime) 
+    return t 
 
 def tfmt_(dt, fmt="%Y%m%d-%H%M"):
     return dt.strftime(fmt) if not dt is None else "-" 
@@ -360,15 +361,15 @@ class I(dict):
             pass
             d = ini_(path)
         else:
-            #log.warning("cannot load %s " % path)
-            raise IOError("cannot load %s " % path)
+            log.warning("cannot load %s " % path)
+            #raise IOError("cannot load %s " % path)
             d = {}
         return d  
 
     @classmethod
     def load_(cls, typ, tag, det="dayabay", pfx="source", name="DeltaTime.ini", dbg=False):
         path = path_(typ, tag, det, name=name, pfx=pfx )
-        i = cls(path, typ=typ, tag=tag, det=det, name=name)
+        i = cls(path, typ=typ, tag=tag, det=det, name=name) 
         return i
 
     def __init__(self, path, typ=None, tag=None, det=None, name=None, dbg=False):

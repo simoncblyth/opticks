@@ -1,8 +1,21 @@
-wavelength_cfplot_shows_zeros_in_2nm_bins_in_350nm_range
-===========================================================
+wavelength_cfplot_shows_zeros_in_2nm_bins_in_350nm_range FIXED
+=================================================================
+
+FIXED 
+-------
+
+* this was a problem with quadrap QCtx/QTex the GPU filtermode was Point not Linear so the 
+  GPU interpolation was not being done...
+
+* initially I did not realise that and devised the multiresolution tex approach to effectively 20x the bins
+  in the tail while only pay 3x 
+
+* switching on the interpolation avoiding the severe initial problem, but the multi-resolution approach 
+  still improves things futher reducing wavelength_cfplot.py chi2 
 
 
-
+issue
+--------
 
 Looks like some technical artifact clumping up the bins::
 

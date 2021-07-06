@@ -46,6 +46,10 @@ class ABProfile(object):
             boa = -2 
         pass 
         self.boa = boa
+
+    def _get_missing(self):
+        return self.ap.missing or self.bp.missing
+    missing = property(_get_missing)
   
     def brief(self): 
         return "      ap.tim %-10.4f     bp.tim %-10.4f      bp.tim/ap.tim %-10.4f    " % (self.ap.tim, self.bp.tim, self.boa )   

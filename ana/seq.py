@@ -432,10 +432,14 @@ class SeqTable(object):
             cfcount = None
             ab = None
             ba = None
+            ia = None
+            ib = None
             idif = None
             stats = None
             c2sum = None
         pass
+        self.ia = ia
+        self.ib = ib
         self.idif = idif
 
 

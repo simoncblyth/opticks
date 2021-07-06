@@ -58,10 +58,15 @@ class DeltaTime(object):
     PROPAGATE_G4 = "CG4::propagate_0"
     PROPAGATE_OK = "OPropagator::launch_0"
 
-    def __init__(self, base, tag):
-        path = os.path.join(base, self.NAME)
+    @classmethod
+    def Path(cls, base, tag): 
+        path = os.path.join(base, cls.NAME)
         log.debug("path %s " % path)
-        ini = ini_(path) 
+        return path
+
+    def __init__(self, base, tag):
+        path = self.Path(base, tag)
+        ini = ini_(path) if os.path.exists(path) else {} 
         itag = int(tag)        
         key = self.PROPAGATE_OK if itag > 0 else self.PROPAGATE_G4
         propagate = ini.get(key,-1)         
@@ -218,6 +223,9 @@ class Metadata(object):
 
     date_ptn = re.compile("\d{8}_\d{6}")  # eg 20160817_141731
 
+
+
+
     def __init__(self, path, base=None):
         """
         Path assumed to be a directory with one of two forms::
@@ -234,7 +242,13 @@ class Metadata(object):
         if base is not None:
             path = os.path.join(base, path)
         pass 
+
+        jsonpath = os.path.join(path, "parameters.json")
+        parameters = json_(jsonpath) if os.path.exists(jsonpath) else {}
+
         self.path = path
+        self.parameters = parameters
+
         basename = os.path.basename(path)
         if self.date_ptn.match(basename):
              datefold = basename
@@ -248,7 +262,6 @@ class Metadata(object):
         self.datefold = datefold
         self.tag = tag 
         self.timestamp = timestamp 
-        self.parameters = json_(os.path.join(self.path, "parameters.json"))
 
         self.delta_times = DeltaTime(self.path, tag)
         self.launch_times = LaunchTimes(self.path, tag)

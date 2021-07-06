@@ -303,7 +303,9 @@ class AB(object):
     def dump(self):
         log.debug("[")
         if self.is_comparable: 
-            self.print_(self.pro)  
+            if not self.pro.missing: 
+                self.print_(self.pro)  
+            pass
             self.print_("#ab.cfm")  
             self.print_(self.cfm)  
             self.print_("#ab.mal")  

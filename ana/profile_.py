@@ -161,6 +161,8 @@ class Profile(object):
 
     def init(self):
         log.debug("[")
+        self.missing = False  # optimistic start, may be flipped on attempting to load
+
         self.loadProfile() 
         self.loadAcc()    ## Accumulated timings 
         self.loadMeta()
@@ -197,6 +199,10 @@ class Profile(object):
         t_path2 = time_(path2)
         t_path3 = time_(path3) if path3 is not None else None
 
+        if t_path1 is None or t_path2 is None:
+            return "profile_.pfmt missing paths "
+        pass
+
         flag = 0 
 
         if t_path3 is not None:
@@ -207,7 +213,11 @@ class Profile(object):
             #assert adt3.seconds < 1  
         pass 
 
+       
+
+
         adt = abs(t_path1 - t_path2)
+
         if adt.seconds > 1:
             flag += 1 
         pass
@@ -262,12 +272,20 @@ class Profile(object):
 
         """
         log.debug("[")
+
+
         path = self.path("")
         lpath = self.path("Labels")
         qpath = self.path("Lis")
-
         self.prfmt = self.pfmt(path, lpath)
-        a = np.load(path)
+
+        if not os.path.exists(path):
+            log.warning("path %s does not exist " % path)
+            self.missing = True 
+            return   
+        pass
+
+        a = np.load(path) 
         assert a.ndim == 2
         log.debug("path:%s a.shape:%r" % (path,a.shape)) 
 
@@ -318,6 +336,12 @@ class Profile(object):
         lacpath = self.path("AccLabels")
 
         self.acfmt = self.pfmt(acpath, lacpath, path)
+
+        if not os.path.exists(acpath):
+            log.warning("path %s does not exist " % acpath )
+            self.missing = True 
+            return 
+        pass 
 
         ac = np.load(acpath)
         assert ac.ndim == 2
@@ -458,6 +482,10 @@ class Profile(object):
         """
         intervals only defined with "--multievent 2+" running 
         """
+        if self.missing:
+            return 
+        pass 
+
         log.debug("[ %r" % self.launch)
 
         if len(self.launch) > 0:
