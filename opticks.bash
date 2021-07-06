@@ -539,6 +539,22 @@ opticks-externals-dir(){     echo $FUNCNAME ; opticks-externals | opticks-ext-di
 opticks-externals-status(){  echo $FUNCNAME ; opticks-externals | opticks-ext-status ; }
 
 
+opticks-externals-dist-scp(){
+   : emit scp commands to copy distribution tarballs/zips to a remote opticks_download_cache, a GFW workaround 
+   local ext
+   local dist
+   local cmd
+   for ext in $(opticks-externals) ; do 
+       $ext-
+       dist=$($ext-dist 2>/dev/null)
+       if [ -n "$dist" ]; then 
+           cmd="scp $dist P:/data/opticks_download_cache/"
+           echo $cmd
+       fi
+   done
+}
+
+
 
 opticks-preqs-pc(){      opticks-pc- $(opticks-preqs) ; }
 opticks-foreign-pc(){  opticks-pc- $(opticks-foreign) ; }
@@ -1610,6 +1626,8 @@ opticks-ext-dist(){
    done
 }
 
+
+
 opticks-ext-dir(){
    local ext
    local dir
@@ -1638,6 +1656,25 @@ opticks-ext-status(){
         fi 
    done
    cd $iwd
+}
+
+
+
+opticks-curl(){
+   local msg="=== $FUNCNAME :"
+   local dir=$PWD
+   local url=$1
+   local dist=$(basename $url)
+   local cmd
+   if [ -z "$url" -o -z "$dist" ]; then
+       cmd="echo $msg BAD url $url dist $dir"
+   elif [ -n "$OPTICKS_DOWNLOAD_CACHE" -a -f "$OPTICKS_DOWNLOAD_CACHE/$dist" ]; then 
+       cmd="cp $OPTICKS_DOWNLOAD_CACHE/$dist $dist"  
+   else
+       cmd="curl -L -O $url"
+   fi  
+   echo $msg dir $dir url $url dist $dist OPTICKS_DOWNLOAD_CACHE $OPTICKS_DOWNLOAD_CACHE cmd $cmd 
+   eval $cmd
 }
 
 

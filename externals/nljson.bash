@@ -12,16 +12,16 @@ nljson-url(){ echo https://github.com/nlohmann/json/releases/download/v3.9.1/jso
 
 nljson-prefix(){ echo $(opticks-prefix)/externals ; }
 nljson-path(){   echo $(opticks-prefix)/externals/include/nljson/json.hpp ; }
+nljson-dist(){   echo $(nljson-path) ; }
 nljson-get()
 {
    local msg="=== $FUNCNAME :"
    local dir=$(dirname $(nljson-path)) &&  mkdir -p $dir && cd $dir
 
    local url=$(nljson-url)
-   local cmd="curl -L -O $url"
    local name=$(basename $url)
 
-   [ ! -s "$name" ] && echo $cmd && eval $cmd
+   [ ! -s "$name" ] && opticks-curl $url 
    [ ! -s "$name" ] && echo $msg FAILED TO DOWNLOAD $name
    [ -s "$name" ]   # set rc 
 }

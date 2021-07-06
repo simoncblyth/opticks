@@ -101,7 +101,7 @@ glew-get(){
    local nam=${zip/.zip}
    local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
 
-   [ ! -f "$zip" ] && curl -L -O $url
+   [ ! -f "$zip" ] && opticks-curl $url
    [ ! -d "$nam" ] && unzip $opt $zip 
 
    [ -d "$nam" ] 

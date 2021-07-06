@@ -394,7 +394,7 @@ glfw-get(){
    local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
 
    local nam=${zip/.zip}
-   [ ! -f "$zip" ] && curl -L -O $url
+   [ ! -f "$zip" ] && opticks-curl $url
    [ ! -d "$nam" ] && unzip $opt $zip 
    
    [ ! -d "$nam" ] && rc=1

@@ -243,8 +243,7 @@ glm-get(){
    local nam=$(glm-name)
    local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
 
-   local cmd="curl -L -O $url"
-   [ ! -s "$zip" ] && echo $cmd && eval $cmd 
+   [ ! -s "$zip" ] && opticks-curl $url  
    [ ! -f "$zip" ] && echo $msg fFAILED TO DOWNLOAD FROM $url && return 1
    [ ! -s "$zip" ] && echo $msg sFAILED TO DOWNLOAD FROM $url && return 1
    [ ! -d "$nam" ] && unzip $opt $zip -d $nam
