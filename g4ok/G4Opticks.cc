@@ -22,6 +22,8 @@
 #include <cstring>
 #include <set>
 
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4PVPlacement.hh"
 
 #include "SSys.hh"
@@ -1624,6 +1626,18 @@ CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(
     G4double      t0 = pPreStepPoint->GetGlobalTime();
     G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
 
+    G4double wmin_nm = h_Planck*c_light/pmax/nm ; 
+    G4double wmax_nm = h_Planck*c_light/pmin/nm ; 
+    bool wl_minmax = true ; 
+
+    LOG(LEVEL)
+        << " pmin/eV " << std::setw(10) << std::fixed << std::setprecision(3) << pmin/eV
+        << " pmax/eV " << std::setw(10) << std::fixed << std::setprecision(3) << pmax/eV
+        << " wmin_nm  " << std::setw(10) << std::fixed << std::setprecision(3) << wmin_nm
+        << " wmax_nm  " << std::setw(10) << std::fixed << std::setprecision(3) << wmax_nm
+        << " wl_minmax " << wl_minmax
+        ;
+
     const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
     const G4Material* aMaterial = aTrack->GetMaterial();
 
@@ -1654,8 +1668,8 @@ CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(
          preVelocity,                                   // preVelocity 
 
          betaInverse,                                   //                    (4) 
-         pmin,
-         pmax,
+         wl_minmax ? wmin_nm : pmin,
+         wl_minmax ? wmax_nm : pmax,
          maxCos,
 
          maxSin2,                                       //                    (5)

@@ -28,8 +28,8 @@ struct QUDARAP_API QBnd
 
     const GBndLib*    blib ; 
     const NPY<double>* dsrc ;  
-    const NPY<float>* src ;  
-    QTex<float4>*     tex ; 
+    const NPY<float>*  src ;  
+    QTex<float4>*      tex ; 
 
     QBnd(const GBndLib* blib); 
     void init(); 

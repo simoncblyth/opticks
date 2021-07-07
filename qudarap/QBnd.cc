@@ -47,6 +47,9 @@ Example of mapping from 5D array of floats into 2D texture of float4::
 
          nx*ny = 11232
 
+
+TODO: need to get boundary domain range metadata into buffer json sidecar and get it uploaded with the tex
+
 **/
 
 void QBnd::makeBoundaryTex(const NPY<float>* buf )  
@@ -55,8 +58,8 @@ void QBnd::makeBoundaryTex(const NPY<float>* buf )
     unsigned nj = buf->getShape(1);  // (4)    number of species : omat/osur/isur/imat 
     unsigned nk = buf->getShape(2);  // (2)    number of float4 property groups per species 
     unsigned nl = buf->getShape(3);  // (39 or 761)   number of wavelength samples of the property
-    unsigned nm = buf->getShape(4);  // (4)    number of prop within the float4
 
+    unsigned nm = buf->getShape(4);  // (4)    number of prop within the float4
     LOG(LEVEL) << " buf " << ( buf ? buf->getShapeString() : "-" ) ;  
     assert( nm == 4 ); 
 
@@ -64,9 +67,30 @@ void QBnd::makeBoundaryTex(const NPY<float>* buf )
     unsigned ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
 
     const float* values = buf->getValuesConst(); 
+    
+    quad domainX ; 
+    // TODO: pass the metadata when do MakeFloat, so do not have to remember to get the meta from the original double buf
+    domainX.f.x = dsrc->getMeta<float>("domain_low", "0" ); 
+    domainX.f.y = dsrc->getMeta<float>("domain_high", "0" ); 
+    domainX.f.z = dsrc->getMeta<float>("domain_step", "0" ); 
+    domainX.f.w = dsrc->getMeta<float>("domain_range", "0" ); 
+
+    LOG(LEVEL)
+        << " domain_low " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.x  
+        << " domain_high " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.y  
+        << " domain_step " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.z 
+        << " domain_range " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.w  
+        ;
+
+    assert( domainX.f.y > domainX.f.x ); 
+    assert( domainX.f.z > 0.f ); 
+    assert( domainX.f.w == domainX.f.y - domainX.f.x ); 
+
     char filterMode = 'L' ; 
     tex = new QTex<float4>(nx, ny, values, filterMode ) ; 
+    tex->setMetaDomainX(&domainX); 
     tex->uploadMeta(); 
+
 }
 
 std::string QBnd::desc() const
@@ -126,7 +150,7 @@ NPY<float>* QBnd::lookup()
 }
 
 
-extern "C" void QBnd_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height ); 
+extern "C" void QBnd_lookup_0(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height ); 
 
 void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned height )
 {
@@ -140,7 +164,7 @@ void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned h
     quad* d_lookup  ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_lookup ), size )); 
 
-    QBnd_lookup(numBlocks, threadsPerBlock, tex->texObj, tex->d_meta, d_lookup, num_lookup, width, height );  
+    QBnd_lookup_0(numBlocks, threadsPerBlock, tex->texObj, tex->d_meta, d_lookup, num_lookup, width, height );  
 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>(lookup), d_lookup, size, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d_lookup) ); 

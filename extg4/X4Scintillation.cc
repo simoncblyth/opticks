@@ -110,7 +110,7 @@ NPY<double>* X4Scintillation::CreateWavelengthSamples( const G4PhysicsOrderedFre
     wl->zero();
     double* v_wl = wl->getValues(); 
 
-    for(G4int i=0 ; i < num_samples ; i++)
+    for(unsigned i=0 ; i < num_samples ; i++)
     {
         G4double u = G4UniformRand() ; 
         G4double CIIvalue = u*mx;

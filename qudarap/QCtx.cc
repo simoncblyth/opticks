@@ -147,8 +147,12 @@ std::string QCtx::desc() const
 }
 
 
-extern "C" void QCtx_generate_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
-extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon    , unsigned num_photon ); 
+// see QCtx.cu
+extern "C" void QCtx_generate_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
+extern "C" void QCtx_generate_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength ); 
+extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon , unsigned num_photon ); 
+extern "C" void QCtx_boundary_lookup(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad* lookup  , unsigned width, unsigned height ); 
+
 
 
 void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
@@ -163,9 +167,28 @@ void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned wid
 }
 
 
+
+template<typename T>
+T* QCtx::device_alloc( unsigned num_items )
+{
+    size_t size = num_items*sizeof(T) ; 
+    T* d ;  
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
+    return d ; 
+}
+
+template<typename T>
+void QCtx::copy_device_to_host( T* h, T* d,  unsigned num_items)
+{
+    size_t size = num_items*sizeof(T) ; 
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
+    QUDA_CHECK( cudaFree(d) ); 
+}
+
+
 /**
-QCtx::generate
------------------
+QCtx::generate_scint
+----------------------
 
 Setting envvar QCTX_DISABLE_HD disables multiresolution handling
 and causes the returned hd_factor to be zero rather then 
@@ -173,33 +196,50 @@ the typical values of 10 or 20 which depend on the buffer creation.
 
 **/
 
-void QCtx::generate( float* wavelength, unsigned num_wavelength, unsigned& hd_factor )
+void QCtx::generate_scint( float* wavelength, unsigned num_wavelength, unsigned& hd_factor )
 {
     bool qctx_disable_hd = SSys::getenvbool("QCTX_DISABLE_HD"); 
     hd_factor = qctx_disable_hd ? 0u : scint->tex->getHDFactor() ; 
     // HMM: perhaps get this from ctx rather than occupying an argument slot  
-
-    LOG(LEVEL) 
-        << "[" 
-        << " qctx_disable_hd " << qctx_disable_hd 
-        << " hd_factor " << hd_factor 
-        ; 
+    LOG(LEVEL) << "[" << " qctx_disable_hd " << qctx_disable_hd << " hd_factor " << hd_factor ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, num_wavelength, 1 ); 
 
-    size_t size = num_wavelength*sizeof(float) ; 
+    float* d_wavelength = device_alloc<float>(num_wavelength); 
 
-    float* d_wavelength ;  
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_wavelength ), size )); 
+    QCtx_generate_scint_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength, hd_factor );  
 
-    QCtx_generate_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength, hd_factor );  
+    copy_device_to_host<float>( wavelength, d_wavelength, num_wavelength ); 
 
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( wavelength ), d_wavelength, size, cudaMemcpyDeviceToHost )); 
-    QUDA_CHECK( cudaFree(d_wavelength) ); 
     LOG(LEVEL) << "]" ; 
 }
+
+
+/**
+QCtx::generate_cerenkov
+-------------------------
+
+**/
+
+void QCtx::generate_cerenkov( float* wavelength, unsigned num_wavelength )
+{
+    LOG(LEVEL) << "[" ; 
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, num_wavelength, 1 ); 
+
+    float* d_wavelength = device_alloc<float>(num_wavelength); 
+
+    QCtx_generate_cerenkov_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength );  
+
+    copy_device_to_host<float>( wavelength, d_wavelength, num_wavelength ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
 
 void QCtx::dump( float* wavelength, unsigned num_wavelength, unsigned edgeitems )
 {
@@ -220,17 +260,64 @@ void QCtx::dump( float* wavelength, unsigned num_wavelength, unsigned edgeitems 
 void QCtx::generate( quad4* photon, unsigned num_photon )
 {
     LOG(LEVEL) << "[" ; 
+
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, num_photon, 1 ); 
-    quad4* d_photon ;  
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_photon ), num_photon*sizeof(quad4) )); 
+
+    quad4* d_photon = device_alloc<quad4>(num_photon) ; 
 
     QCtx_generate_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon );  
 
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( photon ), d_photon, sizeof(quad4)*num_photon, cudaMemcpyDeviceToHost )); 
-    QUDA_CHECK( cudaFree(d_photon) ); 
+    copy_device_to_host<quad4>( photon, d_photon, num_photon ); 
+
     LOG(LEVEL) << "]" ; 
+}
+
+
+
+
+void QCtx::boundary_lookup(quad* lookup, unsigned width, unsigned height )
+{
+    LOG(LEVEL) << "[" ; 
+    assert( bnd ); 
+    assert( width <= getBoundaryTexWidth()  ); 
+    assert( height <= getBoundaryTexHeight()  ); 
+
+    unsigned num_lookup = width*height ; 
+    LOG(LEVEL) 
+        << " width " << width 
+        << " height " << height 
+        << " num_lookup " << num_lookup
+        ;
+   
+
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, width, height ); 
+
+    quad* d_lookup = device_alloc<quad>(num_lookup) ; 
+
+    QCtx_boundary_lookup(numBlocks, threadsPerBlock, d_ctx, d_lookup, width, height );  
+
+    copy_device_to_host<quad>( lookup, d_lookup, num_lookup ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
+unsigned QCtx::getBoundaryTexWidth() const 
+{
+    return bnd->tex->width ; 
+}
+unsigned QCtx::getBoundaryTexHeight() const 
+{
+    return bnd->tex->height ; 
+}
+const NPY<float>* QCtx::getBoundaryTexSrc() const
+{
+    return bnd->src ; 
 }
 
 void QCtx::dump( quad4* photon, unsigned num_photon, unsigned edgeitems )
@@ -256,4 +343,8 @@ void QCtx::dump( quad4* photon, unsigned num_photon, unsigned edgeitems )
         }
     }
 }
+
+
+
+
 

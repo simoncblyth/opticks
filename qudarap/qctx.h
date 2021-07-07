@@ -43,12 +43,17 @@ struct qctx
     unsigned            photon_id ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
+
+    QCTX_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
+
     QCTX_METHOD float   scint_wavelength_hd0(curandStateXORWOW& rng);  
     QCTX_METHOD float   scint_wavelength_hd10(curandStateXORWOW& rng);
     QCTX_METHOD float   scint_wavelength_hd20(curandStateXORWOW& rng);
     QCTX_METHOD void    scint_dirpol(quad4& p, curandStateXORWOW& rng); 
     QCTX_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
     QCTX_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
+
+    QCTX_METHOD float   cerenkov_wavelength(const GS& g, curandStateXORWOW& rng);
 #else
     qctx()
         :
@@ -71,6 +76,17 @@ struct qctx
 // TODO: get the below to work on CPU with mocked curand and tex2D
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
+
+inline QCTX_METHOD float4 qctx::boundary_lookup( unsigned ix, unsigned iy )
+{
+    unsigned nx = boundary_meta->q0.u.x  ; 
+    unsigned ny = boundary_meta->q0.u.y  ; 
+    float x = (float(ix)+0.5f)/float(nx) ;
+    float y = (float(iy)+0.5f)/float(ny) ;
+    float4 props = tex2D<float4>( boundary_tex, x, y );     
+    return props ; 
+}
+
 inline QCTX_METHOD float qctx::scint_wavelength_hd0(curandStateXORWOW& rng) 
 {
     constexpr float y0 = 0.5f/3.f ; 
@@ -149,9 +165,59 @@ inline QCTX_METHOD float qctx::scint_wavelength_hd20(curandStateXORWOW& rng)
     return wl ; 
 }
 
+inline QCTX_METHOD float qctx::cerenkov_wavelength(const GS& g, curandStateXORWOW& rng) 
+{
+    float u ; 
+    float w ; 
+    float wavelength ;
+    float sampledRI ;
+    float cosTheta ;
+    float sin2Theta ;
+    float u_maxSin2 ;
+
+    do {
+
+        u = curand_uniform(&rng) ;
+
+        w = g.ck1.Wmin + u*(g.ck1.Wmax - g.ck1.Wmin) ; // avoid lerp compilation issue
+
+        wavelength = g.ck1.Wmin*g.ck1.Wmax/w ;  
+
+        // wavelength between Wmin and Wmax uniform-reciprocal-sampled to mimic uniform energy range sampling 
+
+        float4 props = boundary_lookup(0, 0); 
+        //float4 props = boundary_lookup(wavelength, g.st.MaterialIndex, 0); 
+
+        sampledRI = props.x ;
+
+        cosTheta = g.ck1.BetaInverse / sampledRI ;
+
+        sin2Theta = fmaxf( 0.0001f, (1.f - cosTheta)*(1.f + cosTheta));  // avoid going -ve 
+
+        u = curand_uniform(&rng) ;
+
+        u_maxSin2 = u*g.ck1.maxSin2 ;
+
+    } while ( u_maxSin2 > sin2Theta);
+
+    return wavelength ; 
+}
 
 
 
+
+/**
+qctx::scint_dirpol
+--------------------
+
+Fills the photon quad4 struct with the below:
+
+* direction, weight
+* polarization, wavelength 
+
+NB no position, time.
+
+**/
 
 inline QCTX_METHOD void qctx::scint_dirpol(quad4& p, curandStateXORWOW& rng)
 {
@@ -182,7 +248,7 @@ inline QCTX_METHOD void qctx::scint_dirpol(quad4& p, curandStateXORWOW& rng)
     p.q2.f.x = pol1.x ; 
     p.q2.f.y = pol1.y ; 
     p.q2.f.z = pol1.z ; 
-    p.q2.f.w = tex2D<float>(scint_tex, u0, 0.f);  // wavelength 
+    p.q2.f.w = scint_wavelength_hd20(rng); // hmm should this switch on hd_factor  
 }
 
 /**

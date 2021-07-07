@@ -258,7 +258,7 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
     
         u = curand_uniform(&rng) ; 
 
-        wavelength = boundary_sample_reciprocal_domain_v3(u);   
+        wavelength = boundary_sample_reciprocal_domain_v3(u);  // TODO: sampling range needs to come from the genstep not default domain
 
         float4 props = boundary_lookup(wavelength, cs.MaterialIndex, 0);  // USING cs.MaterialIndex not using geometry 
 

@@ -433,8 +433,8 @@ CGenstep CGenstepCollector::collectCerenkovStep
             G4double             preVelocity, 
 
             G4double             betaInverse,
-            G4double             pmin,
-            G4double             pmax,
+            G4double             wmin_nm,
+            G4double             wmax_nm,
             G4double             maxCos,
 
             G4double             maxSin2,
@@ -493,8 +493,8 @@ CGenstep CGenstepCollector::collectCerenkovStep
      cs[3*4+3] = preVelocity ;
 
      cs[4*4+0] = betaInverse ;  
-     cs[4*4+1] = pmin ;
-     cs[4*4+2] = pmax ;
+     cs[4*4+1] = wmin_nm ;
+     cs[4*4+2] = wmax_nm ;
      cs[4*4+3] = maxCos ;
 
      cs[5*4+0] = maxSin2 ;  

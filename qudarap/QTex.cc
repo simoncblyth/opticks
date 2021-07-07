@@ -67,6 +67,25 @@ void QTex<T>::init()
 }
 
 template<typename T>
+void QTex<T>::setMetaDomainX( const quad* domx )
+{
+    meta->q1.f.x = domx->f.x ; 
+    meta->q1.f.y = domx->f.y ; 
+    meta->q1.f.z = domx->f.z ; 
+    meta->q1.f.w = domx->f.w ; 
+}
+
+template<typename T>
+void QTex<T>::setMetaDomainY( const quad* domy )
+{
+    meta->q2.f.x = domy->f.x ; 
+    meta->q2.f.y = domy->f.y ; 
+    meta->q2.f.z = domy->f.z ; 
+    meta->q2.f.w = domy->f.w ; 
+}
+
+
+template<typename T>
 std::string QTex<T>::desc() const
 {
     std::stringstream ss ; 

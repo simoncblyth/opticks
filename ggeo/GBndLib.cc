@@ -933,8 +933,14 @@ unsigned GBndLib::getMaterialIndexFromLine(unsigned line) const
 }
 
 
+/**
+GBndLib::createBuffer
+----------------------
+
+Q: is this canonically invoked postcache ?
 
 
+**/
 
 NPY<double>* GBndLib::createBuffer()
 {
@@ -994,6 +1000,10 @@ NPY<double>* GBndLib::createBufferForTex2d()
 
 
     assert( nl == Opticks::DOMAIN_LENGTH || nl == Opticks::FINE_DOMAIN_LENGTH ) ;
+    bool fine = nl == Opticks::FINE_DOMAIN_LENGTH ;
+    glm::vec4 dom = Opticks::getDomainSpec(fine) ;
+
+
 
     if( mat && sur )
     {
@@ -1012,6 +1022,18 @@ NPY<double>* GBndLib::createBufferForTex2d()
 
     NPY<double>* wav = NPY<double>::make( ni, nj, nk, nl, nm) ;
     wav->fill( GSurfaceLib::SURFACE_UNSET ); 
+
+    float domain_low = dom.x ; 
+    float domain_high = dom.y ; 
+    float domain_step = dom.z ; 
+    float domain_range = dom.w ; 
+
+    wav->setMeta("domain_low",   domain_low ); 
+    wav->setMeta("domain_high",  domain_high ); 
+    wav->setMeta("domain_step",  domain_step ); 
+    wav->setMeta("domain_range", domain_range ); 
+
+
 
     LOG(debug) << "GBndLib::createBufferForTex2d"
                << " mat " << ( mat ? mat->getShapeString() : "NULL" )

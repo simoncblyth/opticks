@@ -23,7 +23,7 @@ struct ST
 
 }; 
 
-struct CK
+struct CK0
 {
     int   code; 
     float charge ;
@@ -40,6 +40,25 @@ struct CK
     float MeanNumberOfPhotons2 ; 
     float postVelocity ; 
 };
+
+struct CK1
+{
+    int   code; 
+    float charge ;
+    float weight ;
+    float preVelocity ; 
+
+    float BetaInverse ; 
+    float Wmin ; 
+    float Wmax ; 
+    float maxCos ; 
+
+    float maxSin2 ;
+    float MeanNumberOfPhotons1 ; 
+    float MeanNumberOfPhotons2 ; 
+    float postVelocity ; 
+};
+
 
 struct SC0
 {
@@ -82,7 +101,8 @@ struct GS
     ST st ; 
     union
     {
-        CK  ck ; 
+        CK0 ck0 ; 
+        CK1 ck1 ; 
         SC0 sc0 ; 
         SC1 sc1 ; 
     };

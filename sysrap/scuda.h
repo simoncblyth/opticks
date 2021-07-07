@@ -104,6 +104,9 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float lerp(const float a, const float b, const flo
   return a + t*(b-a);
 }
 
+
+
+
 /** bilerp */
 SUTIL_INLINE SUTIL_HOSTDEVICE float bilerp(const float x00, const float x10, const float x01, const float x11,
                                          const float u, const float v)

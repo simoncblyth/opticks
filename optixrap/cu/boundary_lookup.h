@@ -84,6 +84,13 @@ static __device__ __inline__ unsigned boundary_lookup_ijk( unsigned int i, unsig
     return iy ; 
 }
 
+/**
+
+Its advantageous to keep k (grp index) separate as the 
+number of groups is the thing that can be easily changed. 
+
+**/
+
 static __device__ __inline__ unsigned boundary_lookup_linek( unsigned int line, unsigned int k)
 {
     // line :    i*nj + j    

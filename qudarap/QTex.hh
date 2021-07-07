@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <texture_types.h>
 struct quad4 ; 
+union quad ; 
 
 #include "QUDARAP_API_EXPORT.hh"
 
@@ -27,6 +28,9 @@ struct QUDARAP_API QTex
     quad4*              d_meta ; 
 
     QTex( size_t width, size_t height, const void* src, char filterMode  );
+
+    void     setMetaDomainX( const quad* domx ); 
+    void     setMetaDomainY( const quad* domy ); 
 
     void     setHDFactor(unsigned hd_factor_) ; 
     unsigned getHDFactor() const ; 

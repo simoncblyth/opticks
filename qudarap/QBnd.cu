@@ -6,7 +6,7 @@
 #include "qctx.h"
 
 
-__global__ void _QBnd_lookup(cudaTextureObject_t tex, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height )
+__global__ void _QBnd_lookup_0(cudaTextureObject_t tex, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height )
 {
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned iy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -37,9 +37,13 @@ __global__ void _QBnd_lookup(cudaTextureObject_t tex, quad4* meta, quad* lookup,
     lookup[index] = q ; 
 }
 
-extern "C" void QBnd_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t tex, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height  ) 
+extern "C" void QBnd_lookup_0(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t tex, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height  ) 
 {
-    _QBnd_lookup<<<numBlocks,threadsPerBlock>>>( tex, meta, lookup, num_lookup, width, height );
+    _QBnd_lookup_0<<<numBlocks,threadsPerBlock>>>( tex, meta, lookup, num_lookup, width, height );
 } 
+
+
+
+
 
 
