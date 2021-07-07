@@ -33,6 +33,8 @@ struct qctx
     cudaTextureObject_t scint_tex ; 
     quad4*              scint_meta ;
 
+    enum { _BOUNDARY_NUM_MATSUR = 4,  _BOUNDARY_NUM_FLOAT4 = 2 }; 
+
     cudaTextureObject_t boundary_tex ; 
     quad4*              boundary_meta ; 
 
@@ -45,6 +47,7 @@ struct qctx
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
     QCTX_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
+    QCTX_METHOD float4  boundary_lookup( float nm, unsigned line, unsigned k ); 
 
     QCTX_METHOD float   scint_wavelength_hd0(curandStateXORWOW& rng);  
     QCTX_METHOD float   scint_wavelength_hd10(curandStateXORWOW& rng);
@@ -86,6 +89,22 @@ inline QCTX_METHOD float4 qctx::boundary_lookup( unsigned ix, unsigned iy )
     float4 props = tex2D<float4>( boundary_tex, x, y );     
     return props ; 
 }
+
+inline QCTX_METHOD float4 qctx::boundary_lookup( float nm, unsigned line, unsigned k )
+{
+    unsigned nx = boundary_meta->q0.u.x  ; 
+    unsigned ny = boundary_meta->q0.u.y  ; 
+
+    float fx = (nm - boundary_meta->q1.f.x)/boundary_meta->q1.f.z ;  
+    float x = (fx+0.5f)/float(nx) ;   // ?? +0.5f ??
+
+    unsigned iy = _BOUNDARY_NUM_FLOAT4*line + k ;   
+    float y = (float(iy)+0.5f)/float(ny) ; 
+
+    float4 props = tex2D<float4>( boundary_tex, x, y );     
+    return props ; 
+}
+
 
 inline QCTX_METHOD float qctx::scint_wavelength_hd0(curandStateXORWOW& rng) 
 {

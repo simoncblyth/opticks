@@ -1,5 +1,7 @@
 
 #include <cuda_runtime.h>
+#include <sstream>
+
 #include "scuda.h"
 #include "QUDA_CHECK.h"
 
@@ -18,6 +20,7 @@ const QBnd* QBnd::Get(){ return INSTANCE ; }
 QBnd::QBnd(const GBndLib* blib_ )
     :
     blib(blib_),
+    bnames(blib->getNameList()),
     dsrc(blib->getBuffer()),
     src(NPY<double>::MakeFloat(dsrc)),
     tex(nullptr)
@@ -31,6 +34,37 @@ void QBnd::init()
     makeBoundaryTex(src); 
 }
 
+std::string QBnd::descBoundary() const
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < bnames.size() ; i++) 
+       ss << std::setw(2) << i << " " << bnames[i] << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+} 
+
+unsigned QBnd::getBoundaryIndex(const char* spec) const 
+{
+    unsigned idx = ~0u ; 
+    for(unsigned i=0 ; i < bnames.size() ; i++) 
+    {
+        if(spec && strcmp(bnames[i].c_str(), spec) == 0) 
+        {
+            idx = i ; 
+            break ; 
+        }
+    }
+    return idx ;  
+}
+
+unsigned QBnd::getBoundaryLine(const char* spec, unsigned j) const 
+{
+    unsigned idx = getBoundaryIndex(spec); 
+    assert( idx < bnames.size() ); 
+    unsigned line = 4*idx + j ;    
+    return line ;  
+}
+
 /**
 QBnd::makeBoundaryTex
 ------------------------
@@ -38,11 +72,18 @@ QBnd::makeBoundaryTex
 Creates GPU texture with material and surface properties as a function of wavelenth.
 Example of mapping from 5D array of floats into 2D texture of float4::
 
-    .     ni nj nk nl nm
-    blib  36, 4, 2,39, 4
+    .     ni nj nk  nl nm
+    blib  36, 4, 2,761, 4
+
+          ni : boundaries
+          nj : 0:omat/1:osur/2:isur/3:imat  
+          nk : 0 or 1 property group
+          nl :  
+
+
 
           ni*nk*nk         -> ny  36*4*2 = 288
-                   nl      -> nx            39    
+                   nl      -> nx           761 (fine domain, 39 when using coarse domain)
                       nm   -> float4 elem    4    
 
          nx*ny = 11232

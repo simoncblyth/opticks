@@ -168,7 +168,7 @@ extern "C" void QCtx_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx*
 
 
 
-__global__ void _QCtx_boundary_lookup(qctx* ctx, quad* lookup, unsigned width, unsigned height )
+__global__ void _QCtx_boundary_lookup_all(qctx* ctx, quad* lookup, unsigned width, unsigned height )
 {
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned iy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -180,10 +180,29 @@ __global__ void _QCtx_boundary_lookup(qctx* ctx, quad* lookup, unsigned width, u
     lookup[index] = q ; 
 }
 
-extern "C" void QCtx_boundary_lookup(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad* lookup, unsigned width, unsigned height )
+extern "C" void QCtx_boundary_lookup_all(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad* lookup, unsigned width, unsigned height )
 {
     printf("//QCtx_boundary_lookup width %d  height %d \n", width, height ); 
-    _QCtx_boundary_lookup<<<numBlocks,threadsPerBlock>>>( ctx, lookup, width, height );
+    _QCtx_boundary_lookup_all<<<numBlocks,threadsPerBlock>>>( ctx, lookup, width, height );
+}
+
+
+
+__global__ void _QCtx_boundary_lookup_line(qctx* ctx, quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    if (id >= num_lookup) return;
+    float wavelength = domain[id] ;  
+    quad q ; 
+    q.f = ctx->boundary_lookup( wavelength, line, k ); 
+    lookup[id] = q ; 
+}
+
+
+extern "C" void QCtx_boundary_lookup_line(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k )
+{
+    printf("//QCtx_boundary_lookup_line num_lookup %d line %d k %d  \n", num_lookup, line, k ); 
+    _QCtx_boundary_lookup_line<<<numBlocks,threadsPerBlock>>>( ctx, lookup, domain, num_lookup, line, k );
 }
 
 

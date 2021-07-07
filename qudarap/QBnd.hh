@@ -8,6 +8,7 @@ CUDA-centric equivalent for optixrap/OBndLib
 
 **/
 
+#include <vector>
 #include <string>
 #include "plog/Severity.h"
 #include "QUDARAP_API_EXPORT.hh"
@@ -26,14 +27,19 @@ struct QUDARAP_API QBnd
     static const QBnd*          INSTANCE ; 
     static const QBnd*          Get(); 
 
-    const GBndLib*    blib ; 
-    const NPY<double>* dsrc ;  
-    const NPY<float>*  src ;  
-    QTex<float4>*      tex ; 
+    const GBndLib*                  blib ; 
+    const std::vector<std::string>& bnames ; 
+    const NPY<double>*              dsrc ;  
+    const NPY<float>*               src ;  
+    QTex<float4>*                   tex ; 
 
     QBnd(const GBndLib* blib); 
     void init(); 
+
+    std::string descBoundary() const ;
     std::string desc() const ; 
+    unsigned getBoundaryIndex(const char* spec) const ;
+    unsigned getBoundaryLine(const char* spec, unsigned j) const ; 
 
     void makeBoundaryTex(const NPY<float>* buf ) ;
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );

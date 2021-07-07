@@ -239,6 +239,8 @@ class GGEO_API GPropertyLib {
 
         BMeta*        getMeta() const  ;
         GItemList*    getNames() const ;
+        const std::vector<std::string>& getNameList() const ;
+
         void saveNames(const char* idpath, const char* reldir, const char* txtname) const ; 
 
         OpticksAttrSeq*    getAttrNames();

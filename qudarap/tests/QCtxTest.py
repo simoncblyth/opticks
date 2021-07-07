@@ -17,7 +17,7 @@ from matplotlib import pyplot as plt
 
 class QCtxTest(object):
     FOLD = "/tmp/QCtxTest"
-    def test_scint_wavelength(self):
+    def scint_wavelength(self):
         """
         See::
  
@@ -64,12 +64,12 @@ class QCtxTest(object):
         self.w1 = w1
         self.w2 = w2
 
-    def test_cerenkov_wavelength(self):
+    def cerenkov_wavelength(self):
         w0 = np.load(os.path.join(self.FOLD, "wavelength_cerenkov.npy"))
 
-    def test_boundary_lookup(self):
-        l = np.load(os.path.join(self.FOLD, "boundary_lookup.npy"))
-        s_ = np.load(os.path.join(self.FOLD, "boundary_tex_src.npy"))
+    def boundary_lookup_all(self):
+        l = np.load(os.path.join(self.FOLD, "boundary_lookup_all.npy"))
+        s_ = np.load(os.path.join(self.FOLD, "boundary_lookup_all_src.npy"))
         s = s_.reshape(l.shape)  
         assert np.allclose(s, l)   
 
@@ -77,10 +77,33 @@ class QCtxTest(object):
         self.s = s 
         self.l = l 
 
+    def boundary_lookup_line(self):
+        p = np.load(os.path.join(self.FOLD, "boundary_lookup_line_props.npy"))
+        w = np.load(os.path.join(self.FOLD, "boundary_lookup_line_wavelength.npy"))
+        self.p = p
+        self.w = w
+ 
+
 if __name__ == '__main__':
     qc = QCtxTest()    
-    #qc.test_scint_wavelength()
-    qc.test_boundary_lookup() 
-    s = qc.s 
-    l = qc.l 
+    #qc.scint_wavelength()
+    #qc.boundary_lookup_all() 
+    qc.boundary_lookup_line() 
+    p = qc.p
+    w = qc.w
+ 
+    fig, ax = plt.subplots()
+
+    #ax.plot( w, p[:,0], drawstyle="steps", label="ri" )
+    #ax.plot( w, p[:,1], drawstyle="steps", label="abslen" )
+    #ax.plot( w, p[:,2], drawstyle="steps", label="scatlen" )
+    ax.plot( w, p[:,3], drawstyle="steps", label="reemprob" )
+
+    ax.legend()
+    fig.show()
+
+
+
+
+
 

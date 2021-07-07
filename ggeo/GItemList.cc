@@ -394,4 +394,7 @@ void GItemList::add(GItemList* other)
     for(unsigned int i=0 ; i < ok ; i++) add(other->getKey(i));
 }
 
-
+const std::vector<std::string>& GItemList::getList() const
+{
+   return m_list ; 
+}

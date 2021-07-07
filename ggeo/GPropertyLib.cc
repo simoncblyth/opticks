@@ -246,6 +246,12 @@ GItemList* GPropertyLib::getNames() const
 {
     return m_names ;
 }
+
+const std::vector<std::string>& GPropertyLib::getNameList() const 
+{
+    return m_names->getList(); 
+}
+
 OpticksAttrSeq* GPropertyLib::getAttrNames()
 {
     return m_attrnames ;

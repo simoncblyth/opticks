@@ -94,7 +94,7 @@ number of groups is the thing that can be easily changed.
 static __device__ __inline__ unsigned boundary_lookup_linek( unsigned int line, unsigned int k)
 {
     // line :    i*nj + j    
-    unsigned nk = BOUNDARY_NUM_FLOAT4 ;     
+    unsigned nk = BOUNDARY_NUM_FLOAT4 ;       // 2 
     unsigned iy = line*nk + k ;      // iy: 0->ny-1
     return iy ; 
 }

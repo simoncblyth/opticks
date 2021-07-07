@@ -59,14 +59,16 @@ struct QUDARAP_API QCtx
     void dump(     quad4* photon,     unsigned num_photon, unsigned egdeitems=10 ); 
 
     template<typename T> T* device_alloc( unsigned num_items ) ; 
+    template<typename T> void device_free( T* d ) ; 
     template<typename T> void copy_device_to_host( T* h, T* d,  unsigned num_items);
+    template<typename T> void copy_host_to_device( T* d, T* h,  unsigned num_items);
 
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;
     const NPY<float>* getBoundaryTexSrc() const ; 
 
-    void boundary_lookup(quad* lookup, unsigned width, unsigned height ) ; 
-
+    void boundary_lookup_all(  quad* lookup, unsigned width, unsigned height ) ; 
+    void boundary_lookup_line( quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k ) ; 
 
 };

@@ -28,6 +28,16 @@ int main(int argc, char** argv)
     blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
 
     QBnd qb(blib) ; 
+    const char* spec = "Acrylic///LS"  ; 
+    unsigned idx = qb.getBoundaryIndex(spec); 
+    LOG(info) 
+        << "qb.descBoundary " 
+        << std::endl 
+        << qb.descBoundary()
+        << std::endl 
+        << " spec " << spec 
+        << " idx " << idx  
+        ; 
 
     test_lookup(qb); 
 

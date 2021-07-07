@@ -69,6 +69,7 @@ class GGEO_API GItemList : public NSequence {
        int  findIndexWithKeyStarting( const char* starting ) const ;  // first index is returned, gives -1 if none found
        int  findIndex( const char* key ) const ;  // first index is returned, gives -1 if none found
        unsigned getIndex(const char* key) const ;    // 0-based index of first matching name, OR UINT_MAX if no match
+       const std::vector<std::string>& getList() const ; 
    public:
        bool operator()(const std::string& a_, const std::string& b_);
        void setOrder(std::map<std::string, unsigned int>& order);

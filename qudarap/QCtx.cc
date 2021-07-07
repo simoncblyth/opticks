@@ -147,14 +147,6 @@ std::string QCtx::desc() const
 }
 
 
-// see QCtx.cu
-extern "C" void QCtx_generate_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
-extern "C" void QCtx_generate_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength ); 
-extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon , unsigned num_photon ); 
-extern "C" void QCtx_boundary_lookup(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad* lookup  , unsigned width, unsigned height ); 
-
-
-
 void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
 {
     threadsPerBlock.x = 512 ; 
@@ -178,12 +170,27 @@ T* QCtx::device_alloc( unsigned num_items )
 }
 
 template<typename T>
+void QCtx::device_free( T* d)
+{
+    QUDA_CHECK( cudaFree(d) ); 
+}
+
+
+template<typename T>
 void QCtx::copy_device_to_host( T* h, T* d,  unsigned num_items)
 {
     size_t size = num_items*sizeof(T) ; 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d) ); 
 }
+
+template<typename T>
+void QCtx::copy_host_to_device( T* d, T* h, unsigned num_items)
+{
+    size_t size = num_items*sizeof(T) ; 
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d ), h , size, cudaMemcpyHostToDevice )); 
+}
+
 
 
 /**
@@ -196,6 +203,7 @@ the typical values of 10 or 20 which depend on the buffer creation.
 
 **/
 
+extern "C" void QCtx_generate_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
 void QCtx::generate_scint( float* wavelength, unsigned num_wavelength, unsigned& hd_factor )
 {
     bool qctx_disable_hd = SSys::getenvbool("QCTX_DISABLE_HD"); 
@@ -216,13 +224,13 @@ void QCtx::generate_scint( float* wavelength, unsigned num_wavelength, unsigned&
     LOG(LEVEL) << "]" ; 
 }
 
-
 /**
 QCtx::generate_cerenkov
 -------------------------
 
 **/
 
+extern "C" void QCtx_generate_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength ); 
 void QCtx::generate_cerenkov( float* wavelength, unsigned num_wavelength )
 {
     LOG(LEVEL) << "[" ; 
@@ -257,6 +265,9 @@ void QCtx::dump( float* wavelength, unsigned num_wavelength, unsigned edgeitems 
     }
 }
 
+
+
+extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon , unsigned num_photon ); 
 void QCtx::generate( quad4* photon, unsigned num_photon )
 {
     LOG(LEVEL) << "[" ; 
@@ -275,9 +286,8 @@ void QCtx::generate( quad4* photon, unsigned num_photon )
 }
 
 
-
-
-void QCtx::boundary_lookup(quad* lookup, unsigned width, unsigned height )
+extern "C" void QCtx_boundary_lookup_all(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad* lookup  , unsigned width, unsigned height ); 
+void QCtx::boundary_lookup_all(quad* lookup, unsigned width, unsigned height )
 {
     LOG(LEVEL) << "[" ; 
     assert( bnd ); 
@@ -298,12 +308,48 @@ void QCtx::boundary_lookup(quad* lookup, unsigned width, unsigned height )
 
     quad* d_lookup = device_alloc<quad>(num_lookup) ; 
 
-    QCtx_boundary_lookup(numBlocks, threadsPerBlock, d_ctx, d_lookup, width, height );  
+    QCtx_boundary_lookup_all(numBlocks, threadsPerBlock, d_ctx, d_lookup, width, height );  
 
     copy_device_to_host<quad>( lookup, d_lookup, num_lookup ); 
 
     LOG(LEVEL) << "]" ; 
+
 }
+
+
+
+extern "C" void QCtx_boundary_lookup_line(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k ); 
+void QCtx::boundary_lookup_line( quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k ) 
+{
+    LOG(LEVEL) 
+        << "[" 
+        << " num_lookup " << num_lookup
+        << " line " << line 
+        << " k " << k 
+        ; 
+
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, num_lookup, 1  ); 
+
+    float* d_domain = device_alloc<float>(num_lookup) ; 
+
+    copy_host_to_device<float>( d_domain, domain, num_lookup ); 
+
+    quad* d_lookup = device_alloc<quad>(num_lookup) ; 
+
+    QCtx_boundary_lookup_line(numBlocks, threadsPerBlock, d_ctx, d_lookup, d_domain, num_lookup, line, k );  
+
+    copy_device_to_host<quad>( lookup, d_lookup, num_lookup ); 
+
+    device_free<float>( d_domain ); 
+
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
 
 
 

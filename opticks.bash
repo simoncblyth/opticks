@@ -2458,6 +2458,7 @@ okg(){         okg-;         okg-cd $* ; }
 oglrap(){   oglrap-  ; oglrap-cd $* ; }
 cudarap(){  cudarap- ; cudarap-cd $* ; }
 qudarap(){  qudarap- ; qudarap-cd $* ; }
+qu(){ qudarap $* ; }
 thrap(){    thrap-   ; thrap-cd $* ; }
 oxrap(){    oxrap-   ; oxrap-cd $* ; }
 
