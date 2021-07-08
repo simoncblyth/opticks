@@ -287,6 +287,14 @@ g4-cls G4Cerenkov::
           ->    1         ultra-relativistic, maximum cone angle th  arccos(1/n)     
  
 
+     Corresponds to BetaInverse range 
+
+           BetaInverse =  n            slowest, cos th = 1, th = 0    cone in particle direction 
+    
+           BetaInverse  = 1           
+
+
+
                 
      The above considers a fixed refractive index.
      Actually refractive index varies with wavelength resulting in 

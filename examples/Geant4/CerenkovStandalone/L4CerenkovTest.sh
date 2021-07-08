@@ -22,6 +22,7 @@ compile(){
     cat << EOC
     gcc $name.cc -std=c++11 \
        -I. \
+       -g \
        -I$HOME/np \
        -I$(g4-prefix)/include/Geant4 \
        -I$(clhep-prefix)/include \
@@ -43,9 +44,15 @@ run(){
         Linux) var=LD_LIBRARY_PATH ;;
     esac
 
+    case $(uname) in 
+       Darwin) DEBUG=lldb__ ;;
+        Linux) DEBUG=gdb    ;;
+    esac
+
     cat << EOC
-$var=$(g4-prefix)/lib:$(clhep-prefix)/lib /tmp/$name/$name 
+$var=$(g4-prefix)/lib:$(clhep-prefix)/lib $DEBUG /tmp/$name/$name 
 EOC
+
 }
 
 
@@ -55,8 +62,8 @@ compile $name
 eval $(compile $name)
 [ $? -ne 0 ] && echo compile FAIL && exit 1 
 
-run $name
-eval $(run $name)
+run $name 
+eval $(run $name) $*
 [ $? -ne 0 ] && echo run FAIL && exit 2
 
 echo run succeeds

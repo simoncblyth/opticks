@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <csignal>
 
 #include "NP.hh"
 
@@ -15,14 +16,126 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
-struct DetectorConstruction
+
+
+
+struct UU
 {
-    static G4MaterialPropertyVector* MakeWaterRI() ; 
-    static G4Material* MakeWater();
-    static void AddProperty( G4Material* mat , const char* name, G4MaterialPropertyVector* mpv ) ;
+   unsigned x ; 
+   unsigned y ; 
 };
 
-G4MaterialPropertyVector* DetectorConstruction::MakeWaterRI()
+union DUU
+{
+   double d ; 
+   UU     uu ; 
+};
+
+/**
+
+
+::
+
+    g4-cls G4MaterialPropertyVector
+    g4-cls G4PhysicsOrderedFreeVector
+
+**/
+
+struct L4Cerenkov
+{
+    static NP* LoadArray(const char* kdpath);
+    static G4MaterialPropertyVector* MakeProperty(const NP* a);
+    static G4MaterialPropertyVector* MakeWaterRI(); 
+    static G4Material* MakeMaterial(G4MaterialPropertyVector* rindex) ; 
+
+    L4Cerenkov(G4MaterialPropertyVector* rindex); 
+
+    const G4Material*          aMaterial ; 
+    G4MaterialPropertiesTable* aMaterialPropertiesTable ;
+    G4MaterialPropertyVector*  Rindex ; 
+    G4PhysicsTable*            thePhysicsTable ; 
+
+
+    void BuildThePhysicsTable(); 
+    G4double GetAverageNumberOfPhotons(const G4double charge, const G4double beta) ; 
+    void SampleWavelengths(G4double BetaInverse ) ;
+    bool looping_condition(unsigned& count);
+    void BetaInverseScan();
+
+
+    int append_group ; 
+
+    static constexpr unsigned itemsize0 = 16 ; 
+    std::vector<std::string> names0 ; 
+    std::vector<double>      dbg0 ; 
+
+    static constexpr unsigned itemsize1 = 8 ; 
+    std::vector<std::string> names1 ; 
+    std::vector<double>      dbg1 ; 
+
+    static constexpr unsigned itemsize2 = 8 ; 
+    std::vector<std::string> names2 ; 
+    std::vector<double>      dbg2 ; 
+
+
+
+    std::vector<double>      wavelengths ; 
+
+
+    unsigned branch ; 
+    void dump(); 
+    void dump(const std::vector<double>& dbg, const std::vector<std::string>& names, unsigned itemsize); 
+
+    void WriteDbg(const char* dir, unsigned group);
+    void Write(const char* dir);
+
+    void append( double x, const char* name );
+    void append( unsigned x, unsigned y, const char* name ); 
+};
+
+
+NP* L4Cerenkov::LoadArray(const char* kdpath)
+{
+    const char* keydir = getenv("OPTICKS_KEYDIR") ; 
+    assert( keydir ); 
+    std::stringstream ss ; 
+    ss << keydir << "/" << kdpath ;  
+    std::string s = ss.str(); 
+    const char* path = s.c_str(); 
+    std::cout << "L4Cerenkov::LoadArray " << path << std::endl ; 
+    NP* a = NP::Load(path); 
+    return a ; 
+}
+
+G4MaterialPropertyVector* L4Cerenkov::MakeProperty(const NP* a)
+{
+    unsigned nv = a->num_values() ; 
+    std::cout << "a " << a->desc() << " num_values " << nv << std::endl ; 
+    const double* vv = a->values<double>() ; 
+
+    assert( nv %  2 == 0 ); 
+    unsigned entries = nv/2 ; 
+    std::vector<double> e(entries, 0.); 
+    std::vector<double> v(entries, 0.); 
+
+    for(unsigned i=0 ; i < entries ; i++)
+    {
+        e[i] = vv[2*i+0] ; 
+        v[i] = vv[2*i+1] ; 
+        std::cout 
+            << " e[i]/eV " << std::fixed << std::setw(10) << std::setprecision(4) << e[i]/eV
+            << " v[i] " << std::fixed << std::setw(10) << std::setprecision(4) << v[i] 
+            << std::endl 
+            ;     
+    }
+    G4MaterialPropertyVector* mpv = new G4MaterialPropertyVector(e.data(), v.data(), entries ); 
+    return mpv ; 
+}
+
+
+
+
+G4MaterialPropertyVector* L4Cerenkov::MakeWaterRI()
 {
     using CLHEP::eV ; 
     G4double photonEnergy[] =
@@ -50,9 +163,10 @@ G4MaterialPropertyVector* DetectorConstruction::MakeWaterRI()
     return new G4MaterialPropertyVector(photonEnergy, refractiveIndex,nEntries ); 
 }
 
-
-G4Material* DetectorConstruction::MakeWater()
+G4Material* L4Cerenkov::MakeMaterial(G4MaterialPropertyVector* rindex)  // static
 {
+    // its Water, but that makes no difference for Cerenkov 
+    // the only thing that matters us the rindex property
     G4double a, z, density;
     G4int nelements;
     G4Element* O = new G4Element("Oxygen"  , "O", z=8 , a=16.00*CLHEP::g/CLHEP::mole);
@@ -61,161 +175,66 @@ G4Material* DetectorConstruction::MakeWater()
     mat->AddElement(H, 2);
     mat->AddElement(O, 1);
 
-    G4MaterialPropertyVector* ri = MakeWaterRI() ; 
-    ri->SetSpline(false);
-    //ri->SetSpline(true);
+    rindex->SetSpline(false);
+    //rindex->SetSpline(true);
 
-    AddProperty( mat, "RINDEX" , ri );  
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
+    mpt->AddProperty("RINDEX", rindex );   
+    mat->SetMaterialPropertiesTable(mpt) ;
     return mat ; 
 }
 
 
-void DetectorConstruction::AddProperty( G4Material* mat , const char* name, G4MaterialPropertyVector* mpv )
-{
-    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable(); 
-    if( mpt == NULL ) mpt = new G4MaterialPropertiesTable();
-    mpt->AddProperty(name, mpv );   
-    mat->SetMaterialPropertiesTable(mpt) ;
-}  
-
-
-
-struct UU
-{
-   unsigned x ; 
-   unsigned y ; 
-};
-
-union DUU
-{
-   double d ; 
-   UU     uu ; 
-};
-
-
-
-G4MaterialPropertyVector* LoadProperty(const char* kdpath)
-{
-    const char* keydir = getenv("OPTICKS_KEYDIR") ; 
-    assert( keydir ); 
-
-    std::stringstream ss ; 
-    ss << keydir << "/" << kdpath ;  
-    std::string s = ss.str(); 
-    const char* path = s.c_str(); 
-    std::cout << "load " << path << std::endl ; 
-    NP* a = NP::Load(path); 
-
-    unsigned nv = a->num_values() ; 
-    std::cout << "a " << a->desc() << " num_values " << nv << std::endl ; 
-    double* vv = a->values<double>() ; 
-
-    assert( nv %  2 == 0 ); 
-
-    unsigned entries = nv/2 ; 
-    std::vector<double> e(entries, 0.); 
-    std::vector<double> v(entries, 0.); 
-
-    for(unsigned i=0 ; i < entries ; i++)
-    {
-        e[i] = vv[2*i+0] ; 
-        v[i] = vv[2*i+1] ; 
-        std::cout 
-            << " e[i]/eV " << std::fixed << std::setw(10) << std::setprecision(4) << e[i]/eV
-            << " v[i] " << std::fixed << std::setw(10) << std::setprecision(4) << v[i] 
-            << std::endl 
-            ;     
-    }
-    //a->dump(); 
-
-    G4MaterialPropertyVector* mpv = new G4MaterialPropertyVector(e.data(), v.data(), entries ); 
-    G4cout << *mpv << G4endl ;  
-
-    return mpv ; 
-}
-
-
-
-
-struct L4Cerenkov
-{
-    L4Cerenkov( const G4Material*  aMaterial ); 
-
-    const G4Material*          aMaterial ; 
-    G4MaterialPropertiesTable* aMaterialPropertiesTable ;
-    G4MaterialPropertyVector*  Rindex ; 
-    G4PhysicsTable*            thePhysicsTable ; 
-    bool appending ; 
-
-
-
-    void BuildThePhysicsTable(); 
-    G4double GetAverageNumberOfPhotons(const G4double charge, const G4double beta) ; 
-    void SampleWavelengths(G4double BetaInverse ) ;
-    void BetaInverseScan();
-
-
-    std::vector<std::string> names ; 
-    std::vector<double> dbg ; 
-    std::vector<double> wavelengths ; 
-
-    unsigned branch ; 
-
-    void Dump(); 
-    void Write(const char* dir);
-
-    void append( double x, const char* name );
-    void append( unsigned x, unsigned y, const char* name ); 
-
-};
-
-
-
-
-
-
-L4Cerenkov::L4Cerenkov(const G4Material* aMaterial_)
+L4Cerenkov::L4Cerenkov(G4MaterialPropertyVector* rindex)
     :
-    aMaterial(aMaterial_),
+    aMaterial(MakeMaterial(rindex)),
     aMaterialPropertiesTable(aMaterial ? aMaterial->GetMaterialPropertiesTable() : nullptr),
     Rindex(aMaterialPropertiesTable ? aMaterialPropertiesTable->GetProperty("RINDEX") : nullptr),
     thePhysicsTable(nullptr),
-    appending(true)
+    append_group(-1)
 {
     assert(aMaterialPropertiesTable) ; 
     assert(Rindex) ;
-    G4cout << *Rindex << G4endl ; 
-
+    assert(Rindex == rindex ) ;
+    //G4cout << *Rindex << G4endl ; 
     BuildThePhysicsTable(); 
 }
 
 
 void L4Cerenkov::append( double x, const char* name )
 {
-    if(!appending) return ; 
-    dbg.push_back(x); 
-    names.push_back(name); 
+    if( append_group == 0 )
+    {
+        dbg0.push_back(x);  
+        if( names0.size() <= itemsize0 ) names0.push_back(name); 
+    }
+    else if( append_group == 1 )
+    {
+        dbg1.push_back(x);  
+        if( names1.size() <= itemsize1 ) names1.push_back(name); 
+    }
+    else if( append_group == 2 )
+    {
+        dbg2.push_back(x);  
+        if( names2.size() <= itemsize2 ) names2.push_back(name); 
+    }
 } 
 void L4Cerenkov::append( unsigned x, unsigned y, const char* name )
 {
-    if(!appending) return ; 
     assert( sizeof(unsigned)*2 == sizeof(double) ); 
     DUU duu ; 
     duu.uu.x = x ; 
     duu.uu.y = y ;            // union trickery to place two unsigned into the slot of a double  
-    dbg.push_back(duu.d);  
-    names.push_back(name); 
+    append(duu.d, name); 
 }
-
-
 
 void L4Cerenkov::BuildThePhysicsTable()
 {
 	if (thePhysicsTable) return;
 
-	const G4MaterialTable* theMaterialTable=
-	 		       G4Material::GetMaterialTable();
+	const G4MaterialTable* theMaterialTable= G4Material::GetMaterialTable(); 
 	G4int numOfMaterials = G4Material::GetNumberOfMaterials();
+    assert( numOfMaterials == 1 ); 
 
 	// create new physics table
 	
@@ -350,6 +369,9 @@ L4Cerenkov::GetAverageNumberOfPhotons(const G4double charge, const G4double beta
     append(Pmax, "Pmax"); 
 
 	// Min and Max Refraction Indices 
+
+    // g4-cls G4PhysicsOrderedFreeVector
+    // these are the values from the first and last bin, NOT the miniumum and maximum value across the range 
 	G4double nMin = Rindex->GetMinValue();	
 	G4double nMax = Rindex->GetMaxValue();
 
@@ -423,13 +445,24 @@ L4Cerenkov::GetAverageNumberOfPhotons(const G4double charge, const G4double beta
 	return NumPhotons;		
 }
 
-void L4Cerenkov::Dump()
+
+
+void L4Cerenkov::dump()
 {
-    assert( dbg.size() == names.size() ); 
+    switch(append_group)
+    {
+       case 0: dump( dbg0, names0, itemsize0 ) ; break ; 
+       case 1: dump( dbg1, names1, itemsize1 ) ; break ; 
+       case 2: dump( dbg2, names2, itemsize2 ) ; break ; 
+    }
+}
+
+void L4Cerenkov::dump(const std::vector<double>& dbg, const std::vector<std::string>& names, unsigned itemsize)
+{
     unsigned n = dbg.size() ; 
     for( unsigned i=0 ; i < n ; i++)
     {
-        const std::string& name = names[i] ; 
+        const std::string& name = names[i % itemsize] ; 
         double value = dbg[i] ; 
         int w = 25 ; 
         std::cout 
@@ -440,8 +473,13 @@ void L4Cerenkov::Dump()
             << std::fixed << std::setprecision(5) << value 
             << std::endl 
             ;
- 
     }
+}
+
+bool L4Cerenkov::looping_condition(unsigned& count)
+{
+    count += 1 ; 
+    return true ; 
 }
 
 
@@ -449,62 +487,137 @@ void L4Cerenkov::SampleWavelengths(G4double BetaInverse )
 {
     G4double beta   = 1./BetaInverse ; 
 
-  G4double Pmin = Rindex->GetMinLowEdgeEnergy();
-  G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
-  G4double dp = Pmax - Pmin;
+    G4double Pmin = Rindex->GetMinLowEdgeEnergy();
+    G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
+    G4double dp = Pmax - Pmin;
 
-  G4double nMax = Rindex->GetMaxValue();
+    G4double nMax0 = Rindex->GetMaxValue();
+    G4double nMax = 0. ; 
+    // extract from "jcv G4Cerenkov_modified" to get the real maximum rindex over the domain 
+    for (size_t i = 0; i < Rindex->GetVectorLength(); ++i) if ((*Rindex)[i]>nMax) nMax = (*Rindex)[i];
 
-  G4double maxCos = BetaInverse / nMax;
-  G4double maxSin2 = (1.0 - maxCos) * (1.0 + maxCos);
+    std::cout 
+        << "[ L4Cerenkov::SampleWavelengths" 
+        << " BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse 
+        << " nMax0 "       << std::fixed << std::setw(10) << std::setprecision(4) << nMax0
+        << " nMax "        << std::fixed << std::setw(10) << std::setprecision(4) << nMax
+        << std::endl 
+        ; 
 
-  G4double charge = 1. ; 
-  G4double MeanNumberOfPhotons = GetAverageNumberOfPhotons(charge,beta );
+
+    G4double maxCos = BetaInverse / nMax;
+    G4double maxSin2 = (1.0 - maxCos) * (1.0 + maxCos);
+
+    G4double charge = 1. ; 
+    G4double MeanNumberOfPhotons = GetAverageNumberOfPhotons(charge,beta );
 
     wavelengths.resize(1000000, 0.f); 
 
+    append_group = 2 ; 
+
+    append( BetaInverse, "BetaInverse" ); 
+    append( beta       , "beta" ); 
+    append( Pmin       , "Pmin" ); 
+    append( Pmax       , "Pmax" ); 
+
+    append( nMax       , "nMax" ); 
+    append( maxCos     , "maxCos" ); 
+    append( maxSin2    , "maxSin2" ); 
+    append( MeanNumberOfPhotons    , "MeanNumberOfPhotons" ); 
+
+    append_group = 1 ; 
+
     for(unsigned i=0 ; i < wavelengths.size() ; i++)
     {
+        // Determine photon energy
 
-     // Determine photon energy
+        G4double rand;
+        G4double sampledEnergy, sampledRI;
+        G4double cosTheta, sin2Theta;
 
-      G4double rand;
-      G4double sampledEnergy, sampledRI;
-      G4double cosTheta, sin2Theta;
+        // sample an energy
 
-      // sample an energy
+        unsigned head_count = 0 ; 
+        unsigned tail_count = 0 ; 
+        unsigned continue_count = 0 ; 
+        unsigned condition_count = 0 ; 
 
-      do {
-         rand = G4UniformRand();
-         sampledEnergy = Pmin + rand * dp;
-         sampledRI = Rindex->Value(sampledEnergy);
-         cosTheta = BetaInverse / sampledRI;
+        do {
 
-         sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);
-         rand = G4UniformRand();
+            head_count += 1 ; 
+            rand = G4UniformRand();
+            sampledEnergy = Pmin + rand * dp;
+            sampledRI = Rindex->Value(sampledEnergy);
 
-        // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
-      } while (rand*maxSin2 > sin2Theta);
+            // G4Cerenkov_modified attempts to continue 
+            // to the next turn of the  while loop 
+            //  
+            // That looks like a bug as as could
+            // in prinipal result in cosTheta sin2Theta  
+            // being used uninitialized. 
+            //
+            //
+            // check if n(E) > 1/beta
+            if (sampledRI < BetaInverse) {
+               continue_count += 1 ; 
+               continue;
+            }   
 
+            tail_count += 1 ; 
+            cosTheta = BetaInverse / sampledRI;
 
-      G4double sampledWavelength_nm = h_Planck*c_light/sampledEnergy/nm ; 
-      wavelengths[i] = sampledWavelength_nm ; 
+            sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);
+            rand = G4UniformRand();
+
+            // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
+        } while ( looping_condition(condition_count) && rand*maxSin2 > sin2Theta  );
+
+        G4double sampledWavelength_nm = h_Planck*c_light/sampledEnergy/nm ; 
+
+        append( sampledEnergy ,           "sampledEnergy" ); 
+        append( sampledWavelength_nm ,    "sampledWavelength" ); 
+        append( sampledRI ,               "sampledRI" ); 
+        append( cosTheta ,                "cosTheta" ); 
+
+        append( sin2Theta ,               "sin2Theta" ); 
+        append( head_count ,     tail_count,       "head_tail" ); 
+        append( continue_count , condition_count,  "continue_condition" ); 
+        append( BetaInverse , "BetaInverse" ); 
+
+        wavelengths[i] = sampledWavelength_nm ; 
     }
+
+    append_group = -1 ; 
+
+    std::cout 
+        << "] L4Cerenkov::SampleWavelengths BetaInverse " 
+        << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse 
+        << std::endl 
+        ; 
 }
 
 
 void L4Cerenkov::BetaInverseScan()
 {
-    std::cout << "[ BetaInverseScan " << dbg.size() << std::endl ;
-   	// Min and Max Refraction Indices 
-	G4double nMin = Rindex->GetMinValue();	
-	G4double nMax = Rindex->GetMaxValue();
+    append_group = 0 ; 
 
-    std::cout << " nMin " << nMin << std::endl ; 
-    std::cout << " nMax " << nMax << std::endl ; 
+	G4double nMin = 1000. ; 
+    for (size_t i = 0; i < Rindex->GetVectorLength(); ++i) if ((*Rindex)[i]<nMin) nMin = (*Rindex)[i];
+
+	G4double nMax = 0. ;
+    for (size_t i = 0; i < Rindex->GetVectorLength(); ++i) if ((*Rindex)[i]>nMax) nMax = (*Rindex)[i];
+
+    std::cout 
+        << "[ BetaInverseScan " 
+        << " nMin " << nMin 
+        << " nMax " << nMax 
+        << std::endl 
+        ; 
 
     const G4double charge = 1.0 ; 
     G4double BetaInverse ; 
+
+    unsigned count = 0 ; 
 
     for( BetaInverse=1.0 ; BetaInverse < nMax+0.1 ; BetaInverse += 0.001 )
     {
@@ -514,7 +627,9 @@ void L4Cerenkov::BetaInverseScan()
         G4double AverageNumberOfPhotons = GetAverageNumberOfPhotons(charge, beta ); 
         append(gamma, "gamma" );  
         append(0., "Padding0"); 
-        std::cout 
+
+        if(count % 100 == 0 ) std::cout 
+            << " count " << std::setw(4) << count   
             << " gamma " << std::setw(15) << std::fixed << std::setprecision(10) << gamma 
             << " BetaInverse " << std::setw(15) << std::fixed << std::setprecision(10) << BetaInverse
             << " beta " << std::setw(15) << std::fixed << std::setprecision(10) << beta
@@ -522,57 +637,120 @@ void L4Cerenkov::BetaInverseScan()
             << " AverageNumberOfPhotons " << std::setw(15) << std::fixed << std::setprecision(10) << AverageNumberOfPhotons 
             << std::endl 
             ;
+
+        count += 1 ; 
     }
-    std::cout << "] BetaInverseScan dbg.size " << dbg.size() << " dbg.size % 16 : " << dbg.size() % 16 << std::endl ;
+    std::cout << "] BetaInverseScan dbg0.size " << dbg0.size() << " dbg0.size % 16 : " << dbg0.size() % 16 << std::endl ;
+    append_group = -1 ; 
 }
 
 
-void L4Cerenkov::Write(const char* dir  )
+void L4Cerenkov::WriteDbg(const char* dir, unsigned group)
 {
-    unsigned itemsize = 16 ; 
-    bool expected_size = dbg.size() % itemsize == 0  ; 
-    unsigned ni = dbg.size() / itemsize  ; 
+
+    unsigned itemsize = 0 ; 
+    const std::vector<double>* dbg = nullptr ;     
+    const std::vector<std::string>* names = nullptr ;     
+
+    if( group == 0 )
+    {
+        itemsize = itemsize0 ; 
+        dbg = &dbg0 ; 
+        names = &names0 ;
+ 
+    }
+    else if( group == 1 )
+    {
+        itemsize = itemsize1 ; 
+        dbg = &dbg1 ; 
+        names = &names1 ;
+    }
+    else if( group == 2 )
+    {
+        itemsize = itemsize2 ; 
+        dbg = &dbg2 ; 
+        names = &names2 ;
+    }
+  
+
+    bool expected_size = dbg->size() % itemsize == 0  ; 
+    unsigned ni = dbg->size() / itemsize  ; 
+
     if(!expected_size)
     {
        std::cout 
            << " UNEXPECTED SIZE "
-           << " dbg.size " << dbg.size()
+           << " dbg->size " << dbg->size()
+           << " itemsize " << itemsize 
            << " ni " << ni
            << std::endl 
            ;
     }
     assert( expected_size ); 
 
-
-    NP::Write(     dir, "BetaInverseScan.npy", dbg.data(), ni, 4, 4 ); 
-    NP::WriteNames(dir, "BetaInverseScan.txt", names, itemsize ); 
-    NP::Write(     dir, "SampleWavelengths.npy", wavelengths.data(), wavelengths.size() ); 
+    if( group == 0 )
+    {
+        NP::Write(     dir, "BetaInverseScan.npy", dbg->data(), ni, 4, 4 ); 
+        NP::WriteNames(dir, "BetaInverseScan.txt", *names, itemsize ); 
+    }
+    else if( group == 1 )
+    {
+        NP::Write(     dir, "SampleWavelengths.npy", dbg->data(), ni, 2, 4 ); 
+        NP::WriteNames(dir, "SampleWavelengths.txt", *names, itemsize ); 
+    }
+    else if( group == 2 )
+    {
+        NP::Write(     dir, "Params.npy", dbg->data(), itemsize ); 
+        NP::WriteNames(dir, "Params.txt", *names, itemsize ); 
+    }
 }
 
 
+void L4Cerenkov::Write(const char* dir  )
+{
+    WriteDbg(dir, 0); 
+    WriteDbg(dir, 1); 
+    WriteDbg(dir, 2); 
 
-
+    NP::Write(     dir, "SampleWavelengths_.npy", wavelengths.data(), wavelengths.size() ); 
+}
 
 
 int main(int argc, char** argv)
 {
-    G4MaterialPropertyVector* rindex = LoadProperty("GScintillatorLib/LS_ori/RINDEX.npy") ; 
+    double BetaInverse = argc > 1 ? std::stod(argv[1]) : 1.02 ;  
+
+    const char* path = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
+    std::cout 
+         << " path " << path 
+         << " BetaInverse " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse 
+         << std::endl 
+         ;
+
+
+    const char* FOLD = "/tmp/L4CerenkovTest" ; 
+
+    G4MaterialPropertyVector* rindex = nullptr ; 
+    if( strcmp(path, "Water") == 0 )
+    {
+        rindex = L4Cerenkov::MakeWaterRI(); 
+    }
+    else
+    {
+        std::cout << "load from " << path << std::endl ;  
+        NP* a = L4Cerenkov::LoadArray(path) ; 
+        a->save(FOLD, "RINDEX.npy");  
+        rindex = L4Cerenkov::MakeProperty(a); 
+    }
     assert( rindex );  
-    // TODO: use this loaded rindex instead of the hardcoded one
 
+    L4Cerenkov l4c(rindex) ; 
 
-    G4Material* water = DetectorConstruction::MakeWater(); 
-    G4cout << *water << G4endl ; 
-
-    L4Cerenkov l4c(water) ; 
     l4c.BetaInverseScan(); 
-    l4c.appending = false ; 
 
-    G4double BetaInverse = 1.02 ; 
     l4c.SampleWavelengths(BetaInverse); 
 
-    l4c.Write("/tmp/L4CerenkovTest"); 
-
+    l4c.Write(FOLD); 
 
     return 0 ; 
 }
