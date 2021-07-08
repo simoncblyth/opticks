@@ -1,6 +1,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -92,6 +93,50 @@ union DUU
 };
 
 
+
+G4MaterialPropertyVector* LoadProperty(const char* kdpath)
+{
+    const char* keydir = getenv("OPTICKS_KEYDIR") ; 
+    assert( keydir ); 
+
+    std::stringstream ss ; 
+    ss << keydir << "/" << kdpath ;  
+    std::string s = ss.str(); 
+    const char* path = s.c_str(); 
+    std::cout << "load " << path << std::endl ; 
+    NP* a = NP::Load(path); 
+
+    unsigned nv = a->num_values() ; 
+    std::cout << "a " << a->desc() << " num_values " << nv << std::endl ; 
+    double* vv = a->values<double>() ; 
+
+    assert( nv %  2 == 0 ); 
+
+    unsigned entries = nv/2 ; 
+    std::vector<double> e(entries, 0.); 
+    std::vector<double> v(entries, 0.); 
+
+    for(unsigned i=0 ; i < entries ; i++)
+    {
+        e[i] = vv[2*i+0] ; 
+        v[i] = vv[2*i+1] ; 
+        std::cout 
+            << " e[i]/eV " << std::fixed << std::setw(10) << std::setprecision(4) << e[i]/eV
+            << " v[i] " << std::fixed << std::setw(10) << std::setprecision(4) << v[i] 
+            << std::endl 
+            ;     
+    }
+    //a->dump(); 
+
+    G4MaterialPropertyVector* mpv = new G4MaterialPropertyVector(e.data(), v.data(), entries ); 
+    G4cout << *mpv << G4endl ;  
+
+    return mpv ; 
+}
+
+
+
+
 struct L4Cerenkov
 {
     L4Cerenkov( const G4Material*  aMaterial ); 
@@ -102,11 +147,12 @@ struct L4Cerenkov
     G4PhysicsTable*            thePhysicsTable ; 
     bool appending ; 
 
+
+
     void BuildThePhysicsTable(); 
     G4double GetAverageNumberOfPhotons(const G4double charge, const G4double beta) ; 
     void SampleWavelengths(G4double BetaInverse ) ;
     void BetaInverseScan();
-
 
 
     std::vector<std::string> names ; 
@@ -122,6 +168,9 @@ struct L4Cerenkov
     void append( unsigned x, unsigned y, const char* name ); 
 
 };
+
+
+
 
 
 
@@ -507,6 +556,11 @@ void L4Cerenkov::Write(const char* dir  )
 
 int main(int argc, char** argv)
 {
+    G4MaterialPropertyVector* rindex = LoadProperty("GScintillatorLib/LS_ori/RINDEX.npy") ; 
+    assert( rindex );  
+    // TODO: use this loaded rindex instead of the hardcoded one
+
+
     G4Material* water = DetectorConstruction::MakeWater(); 
     G4cout << *water << G4endl ; 
 

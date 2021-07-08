@@ -2526,6 +2526,7 @@ fn-(){              . $(opticks-home)/bin/fn.bash && fn-env $* ; }
 geocache-(){      . $(opticks-home)/ana/geocache.bash  && geocache-env $* ; }
 ckm-(){           . $(opticks-home)/bin/ckm.bash  && ckm-env $* ; }
 ckm(){            ckm- ; ckm-cd $* ; }
+cks(){            cd $(opticks-home)/examples/Geant4/CerenkovStandalone ; }
 
 ####### below functions support analysis on machines without a full opticks install
 ####### by copying some parts of an opticks install to corresponding local locations 
