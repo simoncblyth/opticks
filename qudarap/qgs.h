@@ -12,7 +12,7 @@ struct ST
 {
     int Id    ;
     int ParentId ;
-    int MaterialIndex  ;
+    int MaterialIndex  ; // MaterialLine is clearer
     int NumPhotons ;
 
     float3 x0 ;

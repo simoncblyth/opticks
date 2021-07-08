@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #include <sstream>
 
+#include "SStr.hh"
 #include "scuda.h"
 #include "QUDA_CHECK.h"
 
@@ -43,6 +44,11 @@ std::string QBnd::descBoundary() const
     return s ; 
 } 
 
+unsigned QBnd::getNumBoundary() const
+{
+    return bnames.size(); 
+}
+
 unsigned QBnd::getBoundaryIndex(const char* spec) const 
 {
     unsigned idx = ~0u ; 
@@ -64,6 +70,31 @@ unsigned QBnd::getBoundaryLine(const char* spec, unsigned j) const
     unsigned line = 4*idx + j ;    
     return line ;  
 }
+
+unsigned QBnd::getMaterialLine( const char* material ) const 
+{
+    unsigned line = ~0u ; 
+    for(unsigned i=0 ; i < bnames.size() ; i++) 
+    {
+        std::vector<std::string> elem ; 
+        SStr::Split(bnames[i].c_str(), '/', elem );  
+        const char* omat = elem[0].c_str(); 
+        const char* imat = elem[3].c_str(); 
+
+        if(strcmp( material, omat ) == 0 )
+        {
+            line = i*4 + 0 ; 
+            break ; 
+        }
+        if(strcmp( material, imat ) == 0 )
+        {
+            line = i*4 + 3 ; 
+            break ; 
+        }
+    }
+    return line ; 
+}
+
 
 /**
 QBnd::makeBoundaryTex

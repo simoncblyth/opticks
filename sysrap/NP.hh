@@ -35,6 +35,8 @@ struct NP
 
     template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
     template<typename T> static void Write(const char* dir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
+    template<typename T> static void Write(const char* dir, const char* reldir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
+
     template<typename T> static void Write(const char* path                 , const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
 
     static void WriteNames(const char* dir, const char* name, const std::vector<std::string>& names, unsigned num_names=0 ); 
@@ -60,10 +62,12 @@ struct NP
     int load(const char* path);   
     int load(const char* dir, const char* name);   
     static std::string form_path(const char* dir, const char* name);   
+    static std::string form_path(const char* dir, const char* reldir, const char* name);   
 
     void save_header(const char* path);   
     void save(const char* path);   
     void save(const char* dir, const char* name);   
+    void save(const char* dir, const char* reldir, const char* name);   
 
 
     std::string get_jsonhdr_path() const ; // .npy -> .npj on loaded path
@@ -524,6 +528,16 @@ inline std::string NP::form_path(const char* dir, const char* name)
     return ss.str(); 
 }
 
+inline std::string NP::form_path(const char* dir, const char* reldir, const char* name)
+{
+    std::stringstream ss ; 
+    ss << dir ; 
+    if(name) ss << "/" << name ; 
+    if(reldir) ss << "/" << reldir ; 
+    return ss.str(); 
+}
+
+
 inline int NP::load(const char* dir, const char* name)
 {
     std::string path = form_path(dir, name); 
@@ -576,6 +590,12 @@ inline void NP::save(const char* path)
     std::ofstream stream(path, std::ios::out|std::ios::binary);
     stream << _hdr ; 
     stream.write( bytes(), arr_bytes() );
+}
+
+inline void NP::save(const char* dir, const char* reldir, const char* name)
+{
+    std::string path = form_path(dir, reldir, name); 
+    save(path.c_str()); 
 }
 
 inline void NP::save(const char* dir, const char* name)
@@ -823,6 +843,33 @@ template <typename T> void NP::Write(const char* dir, const char* name, const T*
     a.read(data); 
     a.save(dir, name); 
 }
+
+// TODO: eliminate duplication between these methods
+
+template <typename T> void NP::Write(const char* dir, const char* reldir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_ ) // static
+{
+    std::string dtype = descr_<T>::dtype() ; 
+
+    std::cout 
+        << "xNP::Write"
+        << " dtype " << dtype
+        << " ni  " << std::setw(7) << ni_
+        << " nj  " << nj_
+        << " nk  " << nk_
+        << " nl  " << nl_
+        << " nm  " << nm_
+        << " dir " << std::setw(50) << dir
+        << " reldir " << std::setw(50) << reldir
+        << " name " << name
+        << std::endl 
+        ;   
+
+    NP a(dtype.c_str(), ni_,nj_,nk_,nl_,nm_) ;    
+    a.read(data); 
+    a.save(dir, reldir, name); 
+}
+
+
 
 template <typename T> void NP::Write(const char* path, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_ ) // static
 {

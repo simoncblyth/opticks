@@ -26,7 +26,7 @@ struct QCtxTest
     void wavelength(char mode) ; 
     void photon(); 
     void boundary_lookup_all();
-    void boundary_lookup_line();
+    void boundary_lookup_line(const char* material);
 }; 
 
 const char* QCtxTest::FOLD = "/tmp/QCtxTest" ; 
@@ -58,7 +58,7 @@ void QCtxTest::wavelength(char mode)
     }
     else if( mode == 'C' )
     {
-        qc.generate_cerenkov(   w.data(), w.size() ); 
+        qc.generate_cerenkov( w.data(), w.size() ); 
         ss << "_cerenkov" ; 
     }
     ss << ".npy" ; 
@@ -87,7 +87,7 @@ void QCtxTest::photon()
 test_boundary_lookup
 ----------------------
 
-Does lookups at every point of the 2d float4 boundary texture 
+Does lookups at every texel of the 2d float4 boundary texture 
 
 **/
 
@@ -107,24 +107,29 @@ void QCtxTest::boundary_lookup_all()
 }
 
 
-void QCtxTest::boundary_lookup_line()
+void QCtxTest::boundary_lookup_line(const char* material)
 {
     LOG(info); 
 
     unsigned num_lookup = 100 ; 
     std::vector<quad> lookup(num_lookup); 
 
-    const char* spec = SSys::getenvvar("QCTX_SPEC", "Acrylic///LS" ); 
-    unsigned imat = 3 ;  // picking LS 
-    unsigned line = qc.bnd->getBoundaryLine(spec, imat); 
-    unsigned k = 0 ; 
+    unsigned line = qc.bnd->getMaterialLine(material); 
+    if( line == ~0u )
+    {
+        LOG(fatal) << " material not in boundary tex " << material ; 
+        assert(0); 
+    }
 
+    unsigned k = 0 ;    // 0 or 1 picking the property float4 group to collect 
     float nm0 = 300.f ; 
     float nm1 = 600.f ; 
+
     std::vector<float> domain(num_lookup); 
     for(unsigned i=0 ; i < num_lookup ; i++) domain[i] = nm0 + (nm1 - nm0)*float(i)/float(num_lookup) ; 
 
     qc.boundary_lookup_line( lookup.data(), domain.data(), num_lookup, line, k ); 
+
 
     NP::Write( FOLD, "boundary_lookup_line_props.npy" ,       (float*)lookup.data(), num_lookup, 4  ); 
     NP::Write( FOLD, "boundary_lookup_line_wavelength.npy" ,          domain.data(), num_lookup ); 
@@ -133,7 +138,7 @@ void QCtxTest::boundary_lookup_line()
 
 int main(int argc, char** argv)
 {
-    char test = argc > 1 ? argv[1][0] : 'L' ; 
+    char test = argc > 1 ? argv[1][0] : 'C' ; 
     OPTICKS_LOG(argc, argv); 
     LOG(info) << " test " << test ; 
 
@@ -147,11 +152,12 @@ int main(int argc, char** argv)
     QCtxTest qtc(qc); 
     switch(test)
     {
-        case 'S': qtc.wavelength('S')        ; break ; 
-        case 'C': qtc.wavelength('C')        ; break ; 
-        case 'P': qtc.photon();              ; break ; 
-        case 'A': qtc.boundary_lookup_all()  ; break ;  
-        case 'L': qtc.boundary_lookup_line() ; break ;  
+        case 'S': qtc.wavelength('S')               ; break ; 
+        case 'C': qtc.wavelength('C')               ; break ; 
+        case 'P': qtc.photon();                     ; break ; 
+        case 'A': qtc.boundary_lookup_all()         ; break ;  
+        case 'W': qtc.boundary_lookup_line("Water") ; break ;  
+        case 'L': qtc.boundary_lookup_line("LS")    ; break ;  
     }
     return 0 ; 
 }

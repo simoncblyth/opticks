@@ -37,6 +37,9 @@ struct qctx
 
     cudaTextureObject_t boundary_tex ; 
     quad4*              boundary_meta ; 
+    unsigned            boundary_tex_MaterialLine_Water ;
+    unsigned            boundary_tex_MaterialLine_LS ; 
+ 
 
     quad6*              genstep ; 
     unsigned            genstep_id ; 
@@ -55,8 +58,11 @@ struct qctx
     QCTX_METHOD void    scint_dirpol(quad4& p, curandStateXORWOW& rng); 
     QCTX_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
     QCTX_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
+    QCTX_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);
 
     QCTX_METHOD float   cerenkov_wavelength(const GS& g, curandStateXORWOW& rng);
+    QCTX_METHOD float   cerenkov_wavelength_flat_energy_sample(const GS& g, curandStateXORWOW& rng); 
+    QCTX_METHOD float   cerenkov_wavelength(curandStateXORWOW& rng) ; 
 #else
     qctx()
         :
@@ -80,22 +86,40 @@ struct qctx
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
+/**
+qctx::boundary_lookup ix iy : Low level integer addressing lookup
+--------------------------------------------------------------------
+
+**/
 inline QCTX_METHOD float4 qctx::boundary_lookup( unsigned ix, unsigned iy )
 {
-    unsigned nx = boundary_meta->q0.u.x  ; 
-    unsigned ny = boundary_meta->q0.u.y  ; 
+    const unsigned& nx = boundary_meta->q0.u.x  ; 
+    const unsigned& ny = boundary_meta->q0.u.y  ; 
     float x = (float(ix)+0.5f)/float(nx) ;
     float y = (float(iy)+0.5f)/float(ny) ;
     float4 props = tex2D<float4>( boundary_tex, x, y );     
     return props ; 
 }
 
+/**
+qctx::boundary_lookup nm line k 
+----------------------------------
+
+nm:    float wavelength 
+line:  4*boundary_index + OMAT/OSUR/ISUR/IMAT   (0/1/2/3)
+k   :  property group index 0/1 
+
+return float4 props 
+
+**/
 inline QCTX_METHOD float4 qctx::boundary_lookup( float nm, unsigned line, unsigned k )
 {
-    unsigned nx = boundary_meta->q0.u.x  ; 
-    unsigned ny = boundary_meta->q0.u.y  ; 
+    const unsigned& nx = boundary_meta->q0.u.x  ; 
+    const unsigned& ny = boundary_meta->q0.u.y  ; 
+    const float& nm0 = boundary_meta->q1.f.x ; 
+    const float& nms = boundary_meta->q1.f.z ; 
 
-    float fx = (nm - boundary_meta->q1.f.x)/boundary_meta->q1.f.z ;  
+    float fx = (nm - nm0)/nms ;  
     float x = (fx+0.5f)/float(nx) ;   // ?? +0.5f ??
 
     unsigned iy = _BOUNDARY_NUM_FLOAT4*line + k ;   
@@ -119,18 +143,6 @@ qctx::scint_wavelength_hd10
 
 Idea is to improve handling of extremes by throwing ten times the bins
 at those regions, using simple and cheap linear mappings.
-
-Perhaps could also use log probabilities to do something similar to 
-this in a fancy way : just like using log scale to give more detail in the low registers. 
-But that has computational disadvantage of expensive mapping functions to get between spaces. 
-
-See::
-
-     extg4/tests/X4ScintillatorTest.cc
-     extg4/tests/X4ScintillatorTest.py 
-
-
-Actually looking at the plots would be better to do the extreme splits at 0.05 and 0.95 
 
 **/
 
@@ -184,28 +196,132 @@ inline QCTX_METHOD float qctx::scint_wavelength_hd20(curandStateXORWOW& rng)
     return wl ; 
 }
 
+/**
+qctx::cerenkov_wavelength
+--------------------------
+
+wavelength between Wmin and Wmax is uniform-reciprocal-sampled 
+to mimic uniform energy range sampling without taking reciprocals
+twice
+
+g4-cls G4Cerenkov::
+
+    251   G4double Pmin = Rindex->GetMinLowEdgeEnergy();
+    252   G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
+    253   G4double dp = Pmax - Pmin;
+    254 
+    255   G4double nMax = Rindex->GetMaxValue();
+    256 
+    257   G4double BetaInverse = 1./beta;
+    258 
+    259   G4double maxCos = BetaInverse / nMax;
+    260   G4double maxSin2 = (1.0 - maxCos) * (1.0 + maxCos);
+    261 
+    ...
+    270   for (G4int i = 0; i < fNumPhotons; i++) {
+    271   
+    272       // Determine photon energy
+    273   
+    274       G4double rand;
+    275       G4double sampledEnergy, sampledRI;
+    276       G4double cosTheta, sin2Theta;
+    277 
+    278       // sample an energy
+    279 
+    280       do {
+    281          rand = G4UniformRand();
+    282          sampledEnergy = Pmin + rand * dp;                // linear energy sample in Pmin -> Pmax
+    283          sampledRI = Rindex->Value(sampledEnergy);
+    284          cosTheta = BetaInverse / sampledRI;              // what cone angle that energy sample corresponds to 
+    285 
+    286          sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);   
+    287          rand = G4UniformRand();
+    288 
+    289         // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
+    290       } while (rand*maxSin2 > sin2Theta);                // constrain   
+    291 
+
+::
+
+                        
+                        
+                  \    B    /                        
+              \    .   |   .    /                            AC     ct / n          1         i       BetaInverse 
+          \    C       |       C    /             cos th =  ---- =  --------   =  ------ =   ---  =  -------------
+      \    .    \      |      /    .     /                   AB       bct           b n       n        sampledRI
+       .         \    bct    /          .
+                  \    |    /                                  BetaInverse
+                   \   |   /  ct                  maxCos  =  ----------------- 
+                    \  |th/  ----                                nMax                                                
+                     \ | /    n
+                      \|/
+                       A
+
+    Particle travels AB, light travels AC,  ACB is right angle 
+
+
+     Only get Cerenkov radiation when   
+
+            cos th <= 1 , 
+
+            beta >= beta_min = 1/n        BetaInverse <= BetaInverse_max = n 
+
+
+     At the small beta threshold AB = AC,   beta = beta_min = 1/n     eg for n = 1.333, beta_min = 0.75  
+
+            cos th = 1,  th = 0         light is in direction of the particle 
+
+
+     For ultra relativistic particle beta = 1, there is a maximum angle 
+
+            th = arccos( 1/n )      
+
+    In [5]: np.arccos(0.75)*180./np.pi
+    Out[5]: 41.40962210927086
+
+
+     So the beta range to have Cerenkov is  : 
+
+                1/n       slowest, cos th = 1, th = 0   
+
+          ->    1         ultra-relativistic, maximum cone angle th  arccos(1/n)     
+ 
+
+                
+     The above considers a fixed refractive index.
+     Actually refractive index varies with wavelength resulting in 
+     a range of cone angles for a fixed particle beta.
+
+
+    * https://www2.physics.ox.ac.uk/sites/default/files/2013-08-20/external_pergamon_jelley_pdf_18410.pdf
+    * ~/opticks_refs/external_pergamon_jelley_pdf_18410.pdf
+
+
+**/
+
 inline QCTX_METHOD float qctx::cerenkov_wavelength(const GS& g, curandStateXORWOW& rng) 
 {
-    float u ; 
+    float u0 ;
+    float u1 ; 
     float w ; 
     float wavelength ;
+
     float sampledRI ;
     float cosTheta ;
     float sin2Theta ;
     float u_maxSin2 ;
 
+    // should be MaterialLine no ?
+    unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
+
     do {
+        u0 = curand_uniform(&rng) ;
 
-        u = curand_uniform(&rng) ;
-
-        w = g.ck1.Wmin + u*(g.ck1.Wmax - g.ck1.Wmin) ; // avoid lerp compilation issue
+        w = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
 
         wavelength = g.ck1.Wmin*g.ck1.Wmax/w ;  
 
-        // wavelength between Wmin and Wmax uniform-reciprocal-sampled to mimic uniform energy range sampling 
-
-        float4 props = boundary_lookup(0, 0); 
-        //float4 props = boundary_lookup(wavelength, g.st.MaterialIndex, 0); 
+        float4 props = boundary_lookup(wavelength, line, 0u); 
 
         sampledRI = props.x ;
 
@@ -213,16 +329,87 @@ inline QCTX_METHOD float qctx::cerenkov_wavelength(const GS& g, curandStateXORWO
 
         sin2Theta = fmaxf( 0.0001f, (1.f - cosTheta)*(1.f + cosTheta));  // avoid going -ve 
 
-        u = curand_uniform(&rng) ;
+        u1 = curand_uniform(&rng) ;
 
-        u_maxSin2 = u*g.ck1.maxSin2 ;
+        u_maxSin2 = u1*g.ck1.maxSin2 ;
 
     } while ( u_maxSin2 > sin2Theta);
+
 
     return wavelength ; 
 }
 
 
+inline QCTX_METHOD float qctx::cerenkov_wavelength_flat_energy_sample(const GS& g, curandStateXORWOW& rng) 
+{
+    float u0 = curand_uniform(&rng) ;
+    float w = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
+    float wavelength = g.ck1.Wmin*g.ck1.Wmax/w ;  
+    return wavelength ; 
+}
+
+
+/**
+qctx::cerenkov_wavelength with a fabricated genstep for testing
+-----------------------------------------------------------------
+
+**/
+inline QCTX_METHOD float qctx::cerenkov_wavelength(curandStateXORWOW& rng) 
+{
+    QG qg ;      
+    qg.zero();  
+
+    GS& g = qg.g ; 
+
+    // picks the material line from which to get RINDEX
+    unsigned MaterialLine = boundary_tex_MaterialLine_LS ;  
+    //unsigned MaterialLine = boundary_tex_MaterialLine_Water ; 
+
+    // nMax : maximum refractive index of material across wavelength domain
+
+    float nMax = MaterialLine == boundary_tex_MaterialLine_Water ? 1.36f : 1.526f ; 
+
+    //float BetaInverse = nMax ;      // at nMax just get flat energy distrib, rejection sampling has no teeth
+    //float BetaInverse = 1.f ;       // super relativistic maximum cone angle,  only small decrease at low energy end 
+    float BetaInverse = 1.f + (nMax-1.f)/2.f ; // middle range 
+
+    float maxCos = BetaInverse / nMax;
+    float maxSin2 = (1.f - maxCos) * (1.f + maxCos) ;
+
+
+    g.st.Id = 0 ; 
+    g.st.ParentId = 0 ; 
+    g.st.MaterialIndex = MaterialLine ; 
+    g.st.NumPhotons = 0 ; 
+
+    g.st.x0.x = 100.f ; 
+    g.st.x0.y = 100.f ; 
+    g.st.x0.z = 100.f ; 
+    g.st.t0 = 20.f ; 
+
+    g.st.DeltaPosition.x = 1000.f ; 
+    g.st.DeltaPosition.y = 1000.f ; 
+    g.st.DeltaPosition.z = 1000.f ; 
+    g.st.step_length = 1000.f ; 
+
+    g.ck1.code = 0 ; 
+    g.ck1.charge = 1.f ; 
+    g.ck1.weight = 1.f ; 
+    g.ck1.preVelocity = 0.f ; 
+
+    g.ck1.BetaInverse = BetaInverse ;      //  g.ck1.BetaInverse/sampledRI  : yields the cone angle cosTheta
+    g.ck1.Wmin = 300.f ;                   //  min wavelength 
+    g.ck1.Wmax = 600.f ;                   //  max wavelength 
+    g.ck1.maxCos = maxCos  ;               //  is this used?          
+
+    g.ck1.maxSin2 = maxSin2 ;              // constrains cone angle rejection sampling   
+    g.ck1.MeanNumberOfPhotons1 = 0.f ; 
+    g.ck1.MeanNumberOfPhotons2 = 0.f ; 
+    g.ck1.postVelocity = 0.f ; 
+
+    float wavelength = cerenkov_wavelength(g, rng);   
+    return wavelength ; 
+}
 
 
 /**
@@ -324,5 +511,49 @@ inline QCTX_METHOD void qctx::scint_photon(quad4& p, GS& g, curandStateXORWOW& r
     p.q0.f.z = g.st.x0.z + fraction*g.st.DeltaPosition.z ; 
     p.q0.f.w = g.st.t0   + fraction*g.st.step_length/g.sc1.midVelocity - g.sc1.ScintillationTime*logf(u4) ;
 }
+
+
+inline QCTX_METHOD void qctx::scint_photon(quad4& p, curandStateXORWOW& rng)
+{
+    QG qg ;      
+    qg.zero();  
+
+    GS& g = qg.g ; 
+
+    // fabricate some values for the genstep
+    g.st.Id = 0 ; 
+    g.st.ParentId = 0 ; 
+    g.st.MaterialIndex = 0 ; 
+    g.st.NumPhotons = 0 ; 
+
+    g.st.x0.x = 100.f ; 
+    g.st.x0.y = 100.f ; 
+    g.st.x0.z = 100.f ; 
+    g.st.t0 = 20.f ; 
+
+    g.st.DeltaPosition.x = 1000.f ; 
+    g.st.DeltaPosition.y = 1000.f ; 
+    g.st.DeltaPosition.z = 1000.f ; 
+    g.st.step_length = 1000.f ; 
+
+    g.sc1.code = 1 ; 
+    g.sc1.charge = 1.f ;
+    g.sc1.weight = 1.f ;
+    g.sc1.midVelocity = 0.f ; 
+
+    g.sc1.scnt = 0 ;
+    g.sc1.f41 = 0.f ;   
+    g.sc1.f42 = 0.f ;   
+    g.sc1.f43 = 0.f ;   
+
+    g.sc1.ScintillationTime = 10.f ;
+    g.sc1.f51 = 0.f ;
+    g.sc1.f52 = 0.f ;
+    g.sc1.f53 = 0.f ;
+
+    scint_photon(p, g, rng); 
+}
+
+
 #endif
 

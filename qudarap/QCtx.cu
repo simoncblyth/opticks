@@ -53,43 +53,7 @@ __global__ void _QCtx_generate_cerenkov_wavelength(qctx* ctx, float* wavelength,
 
     curandState rng = *(ctx->r + id) ; 
 
-    QG qg ;      
-    qg.zero();  
-
-    GS& g = qg.g ; 
-
-    // fabricate some values for the genstep
-    g.st.Id = 0 ; 
-    g.st.ParentId = 0 ; 
-    g.st.MaterialIndex = 0 ; 
-    g.st.NumPhotons = 0 ; 
-
-    g.st.x0.x = 100.f ; 
-    g.st.x0.y = 100.f ; 
-    g.st.x0.z = 100.f ; 
-    g.st.t0 = 20.f ; 
-
-    g.st.DeltaPosition.x = 1000.f ; 
-    g.st.DeltaPosition.y = 1000.f ; 
-    g.st.DeltaPosition.z = 1000.f ; 
-    g.st.step_length = 1000.f ; 
-
-    g.ck1.code = 0 ; 
-    g.ck1.charge = 1.f ; 
-    g.ck1.weight = 1.f ; 
-    g.ck1.preVelocity = 0.f ; 
-
-    g.ck1.BetaInverse = 1.2f ; 
-    g.ck1.Wmin = 300.f ; 
-    g.ck1.Wmax = 600.f ; 
-    g.ck1.maxCos = 0.f ; 
-
-    g.ck1.maxSin2 = 0.f ; 
-    g.ck1.MeanNumberOfPhotons1 = 0.f ; 
-    g.ck1.MeanNumberOfPhotons2 = 0.f ; 
-    g.ck1.postVelocity = 0.f ; 
-
-    float wl = ctx->cerenkov_wavelength(g, rng);   
+    float wl = ctx->cerenkov_wavelength(rng);   
 
     if(id % 100000 == 0) printf("//_QCtx_generate_cerenkov_wavelength id %d wl %10.4f    \n", id, wl  ); 
     wavelength[id] = wl ; 
@@ -103,7 +67,6 @@ extern "C" void QCtx_generate_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPe
 } 
 
 
-
 __global__ void _QCtx_generate_photon(qctx* ctx, quad4* photon, unsigned num_photon )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
@@ -114,47 +77,8 @@ __global__ void _QCtx_generate_photon(qctx* ctx, quad4* photon, unsigned num_pho
 
     curandState rng = *(ctx->r + id) ; 
 
-    // TODO: this kinda stuff, all non-glue stuff,  should be in headers, not here 
-
-    QG qg ;      
-    qg.zero();  
-
-    GS& g = qg.g ; 
-
-    // fabricate some values for the genstep
-    g.st.Id = 0 ; 
-    g.st.ParentId = 0 ; 
-    g.st.MaterialIndex = 0 ; 
-    g.st.NumPhotons = 0 ; 
-
-    g.st.x0.x = 100.f ; 
-    g.st.x0.y = 100.f ; 
-    g.st.x0.z = 100.f ; 
-    g.st.t0 = 20.f ; 
-
-    g.st.DeltaPosition.x = 1000.f ; 
-    g.st.DeltaPosition.y = 1000.f ; 
-    g.st.DeltaPosition.z = 1000.f ; 
-    g.st.step_length = 1000.f ; 
-
-    g.sc1.code = 1 ; 
-    g.sc1.charge = 1.f ;
-    g.sc1.weight = 1.f ;
-    g.sc1.midVelocity = 0.f ; 
-
-    g.sc1.scnt = 0 ;
-    g.sc1.f41 = 0.f ;   
-    g.sc1.f42 = 0.f ;   
-    g.sc1.f43 = 0.f ;   
-
-    g.sc1.ScintillationTime = 10.f ;
-    g.sc1.f51 = 0.f ;
-    g.sc1.f52 = 0.f ;
-    g.sc1.f53 = 0.f ;
-
-
     quad4 p ;   
-    ctx->scint_photon(p, g, rng); 
+    ctx->scint_photon(p, rng); 
 
     photon[id] = p ; 
 }

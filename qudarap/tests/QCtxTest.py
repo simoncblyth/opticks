@@ -64,9 +64,6 @@ class QCtxTest(object):
         self.w1 = w1
         self.w2 = w2
 
-    def cerenkov_wavelength(self):
-        w0 = np.load(os.path.join(self.FOLD, "wavelength_cerenkov.npy"))
-
     def boundary_lookup_all(self):
         l = np.load(os.path.join(self.FOLD, "boundary_lookup_all.npy"))
         s_ = np.load(os.path.join(self.FOLD, "boundary_lookup_all_src.npy"))
@@ -80,28 +77,75 @@ class QCtxTest(object):
     def boundary_lookup_line(self):
         p = np.load(os.path.join(self.FOLD, "boundary_lookup_line_props.npy"))
         w = np.load(os.path.join(self.FOLD, "boundary_lookup_line_wavelength.npy"))
+
+        fig, ax = plt.subplots()
+        ax.plot( w, p[:,0], drawstyle="steps", label="ri" )
+        #ax.plot( w, p[:,1], drawstyle="steps", label="abslen" )
+        #ax.plot( w, p[:,2], drawstyle="steps", label="scatlen" )
+        #ax.plot( w, p[:,3], drawstyle="steps", label="reemprob" )
+
+        ax.legend()
+        fig.show()
+
         self.p = p
         self.w = w
+
+    def cerenkov_wavelength(self):
+
+        hc_eVnm = 1240. 
+        nm_dom = [200, 700, 1]
+
+        name = "wavelength_cerenkov"
+        w0 = np.load(os.path.join(self.FOLD, "%s.npy" % name))
+        e0 = hc_eVnm/w0 
+        wdom = np.arange(*nm_dom)
+
+        edom0 = hc_eVnm/wdom[::-1]      
+        # Convert to energy and reverse order for ascending energy domain
+        # but thats a funny variable energy bin domain (with fixed 1 nm wavelength bin) 
+        #
+        # Instead use equal energy bin domain across same range as wavelenth one
+        # with same number of bins.
+        edom = np.linspace( hc_eVnm/nm_dom[1], hc_eVnm/nm_dom[0], len(wdom) )  
+
+
+        h_w0,_ = np.histogram(w0, wdom )
+        h_e0,_ = np.histogram(e0, edom )
+
+        fig, axs = plt.subplots(1,2)
+        fig.suptitle(name) 
+
+        ax = axs[0]
+        ax.plot( wdom[:-1], h_w0, label="h_w0", drawstyle="steps" )
+        ax.legend()
+
+        ax = axs[1]
+        ax.plot( edom[:-1], h_e0, label="h_e0", drawstyle="steps" )
+        ax.legend()
+
+
+        fig.show()
+
+        self.w0 = w0
+        self.e0 = e0
+        self.h_w0 = h_w0 
+        self.h_e0 = h_e0 
+
+        self.edom = edom
  
 
 if __name__ == '__main__':
     qc = QCtxTest()    
+
+
     #qc.scint_wavelength()
     #qc.boundary_lookup_all() 
-    qc.boundary_lookup_line() 
-    p = qc.p
-    w = qc.w
+    #qc.boundary_lookup_line() 
+    qc.cerenkov_wavelength() 
+
+    #w0 = qc.w0
+    #e0 = qc.e0
  
-    fig, ax = plt.subplots()
-
-    #ax.plot( w, p[:,0], drawstyle="steps", label="ri" )
-    #ax.plot( w, p[:,1], drawstyle="steps", label="abslen" )
-    #ax.plot( w, p[:,2], drawstyle="steps", label="scatlen" )
-    ax.plot( w, p[:,3], drawstyle="steps", label="reemprob" )
-
-    ax.legend()
-    fig.show()
-
 
 
 

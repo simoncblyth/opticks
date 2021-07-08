@@ -118,6 +118,8 @@ void QCtx::init()
         LOG(LEVEL) << " bnd " << bnd->desc() ; 
         ctx->boundary_tex = bnd->tex->texObj ; 
         ctx->boundary_meta = bnd->tex->d_meta ; 
+        ctx->boundary_tex_MaterialLine_Water = bnd->getMaterialLine("Water") ; 
+        ctx->boundary_tex_MaterialLine_LS    = bnd->getMaterialLine("LS") ; 
     } 
 
     d_ctx = QU::UploadArray<qctx>(ctx, 1 );  

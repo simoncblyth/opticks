@@ -38,8 +38,11 @@ struct QUDARAP_API QBnd
 
     std::string descBoundary() const ;
     std::string desc() const ; 
+
+    unsigned getNumBoundary() const ; 
     unsigned getBoundaryIndex(const char* spec) const ;
     unsigned getBoundaryLine(const char* spec, unsigned j) const ; 
+    unsigned getMaterialLine( const char* material ) const ; 
 
     void makeBoundaryTex(const NPY<float>* buf ) ;
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
