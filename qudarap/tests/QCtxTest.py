@@ -17,6 +17,8 @@ from matplotlib import pyplot as plt
 
 class QCtxTest(object):
     FOLD = "/tmp/QCtxTest"
+    hc_eVnm = 1240. 
+
     def scint_wavelength(self):
         """
         See::
@@ -90,38 +92,58 @@ class QCtxTest(object):
         self.p = p
         self.w = w
 
+
+    def cerenkov_photon(self):
+        name = "cerenkov_photon"
+        p = np.load(os.path.join(self.FOLD, "%s.npy" % name))
+        self.p = p         
+         
+
     def cerenkov_wavelength(self):
 
-        hc_eVnm = 1240. 
-        nm_dom = [200, 700, 1]
+        nm_dom = [80, 800, 1]
 
         name = "wavelength_cerenkov"
         w0 = np.load(os.path.join(self.FOLD, "%s.npy" % name))
-        e0 = hc_eVnm/w0 
+        e0 = self.hc_eVnm/w0 
         wdom = np.arange(*nm_dom)
 
-        edom0 = hc_eVnm/wdom[::-1]      
+        edom0 = self.hc_eVnm/wdom[::-1]      
         # Convert to energy and reverse order for ascending energy domain
         # but thats a funny variable energy bin domain (with fixed 1 nm wavelength bin) 
         #
         # Instead use equal energy bin domain across same range as wavelenth one
         # with same number of bins.
-        edom = np.linspace( hc_eVnm/nm_dom[1], hc_eVnm/nm_dom[0], len(wdom) )  
+        edom = np.linspace( self.hc_eVnm/nm_dom[1], self.hc_eVnm/nm_dom[0], len(wdom) )  
 
 
-        h_w0,_ = np.histogram(w0, wdom )
-        h_e0,_ = np.histogram(e0, edom )
+        h_w0 = np.histogram(w0, wdom )
+        h_e0 = np.histogram(e0, edom )
 
-        fig, axs = plt.subplots(1,2)
+        h_w100 = np.histogram(w0, 100 )
+        h_e100 = np.histogram(e0, edom )
+
+
+
+        fig, axs = plt.subplots(2,2)
         fig.suptitle(name) 
 
-        ax = axs[0]
-        ax.plot( wdom[:-1], h_w0, label="h_w0", drawstyle="steps" )
+        ax = axs[0,0]
+        ax.plot( h_w0[1][:-1], h_w0[0], label="h_w0", drawstyle="steps" )
         ax.legend()
 
-        ax = axs[1]
-        ax.plot( edom[:-1], h_e0, label="h_e0", drawstyle="steps" )
+        ax = axs[0,1]
+        ax.plot( h_e0[1][:-1], h_e0[0], label="h_e0", drawstyle="steps" )
         ax.legend()
+
+        ax = axs[1,0]
+        ax.plot( h_w100[1][:-1], h_w100[0], label="h_w100", drawstyle="steps" )
+        ax.legend()
+
+        ax = axs[1,1]
+        ax.plot( h_e100[1][:-1], h_e100[0], label="h_e100", drawstyle="steps" )
+        ax.legend()
+
 
 
         fig.show()
@@ -141,11 +163,14 @@ if __name__ == '__main__':
     #qc.scint_wavelength()
     #qc.boundary_lookup_all() 
     #qc.boundary_lookup_line() 
-    qc.cerenkov_wavelength() 
+    #qc.cerenkov_wavelength() 
+    qc.cerenkov_photon() 
 
     #w0 = qc.w0
     #e0 = qc.e0
  
+    p = qc.p
+
 
 
 

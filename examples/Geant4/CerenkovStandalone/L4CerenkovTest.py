@@ -5,7 +5,8 @@
      ipython -i L4CerenkovTest.py 
 
 """
-import os, numpy as np
+import os, numpy as np, logging
+log = logging.getLogger(__name__)
 
 try:
     import matplotlib.pyplot as plt
@@ -39,6 +40,11 @@ class L4CerenkovTest(object):
         return q 
 
 
+class Params(L4CerenkovTest):
+    def __init__(self):
+        self.load(self.__class__.__name__)
+
+
 class BetaInverseScan(L4CerenkovTest):
     def __init__(self):
         self.load(self.__class__.__name__)
@@ -48,6 +54,7 @@ class BetaInverseScan(L4CerenkovTest):
 
         a = self.a 
         n = self.n 
+        i = self.i 
 
         jk = np.where( i == "materialIndex_branch" )
         j = jk[0][0]  
@@ -139,10 +146,29 @@ if 0:
     bis.plot()
 
 if 1:
+    logging.basicConfig(level=logging.INFO)
+
     t = SampleWavelengths()
+    p = Params()
+
+    BetaInverse = p('BetaInverse')[0]  
+    beta = p('beta')[0]
+    Pmin = p('Pmin')[0]*1e6
+    Pmax = p('Pmax')[0]*1e6
+    nMax = p('nMax')[0]
+    maxCos = p('maxCos')[0]
+    maxSin2 = p('maxSin2')[0]
+    MeanNumberOfPhotons = p('MeanNumberOfPhotons')[0]
+
+
+    qwn = "BetaInverse beta Pmin Pmax nMax maxCos maxSin2 MeanNumberOfPhotons".split()
+    fmt = " ".join(map(lambda q:"%s %%7.3f" % q, qwn)) 
+    val = tuple(map(lambda q:globals()[q], qwn )) 
+    title = fmt % val
+    print(title)
+
 
     rindex = t.rindex
-
 
     e = t("sampledEnergy")*1e6 
     w = t("sampledWavelength") 
@@ -162,13 +188,19 @@ if 1:
 
     nrows = 2
     ncols = 3 
-    fig, axs = plt.subplots(nrows,ncols)
+    figsize = [12.8, 7.2]
+    fig, axs = plt.subplots(nrows,ncols, figsize=figsize)
 
+
+    fig.suptitle(title)
 
 
     ax = axs[0,0]
     ax.plot( h_e[1][:-1], h_e[0], label="e", drawstyle="steps" )
     ax.set_ylim( 0, h_e[0].max()*1.1 )
+    ylim = ax.get_ylim() 
+    ax.plot( [Pmin, Pmin], ylim,  color="r", linestyle="dashed" )
+    ax.plot( [Pmax, Pmax], ylim,  color="r", linestyle="dashed" )
     ax.legend()
 
     ax = axs[0,1]
@@ -177,29 +209,48 @@ if 1:
     ax.legend()
 
     ax = axs[0,2]
-    ax.plot( h_r[1][:-1], h_r[0], label="r", drawstyle="steps" )
+    ax.plot( h_r[1][:-1], h_r[0], label="ri", drawstyle="steps" )
     ax.set_ylim( 0, h_r[0].max()*1.1 )
+    ylim = ax.get_ylim() 
+    ax.plot( [nMax, nMax], ylim,  color="r", linestyle="dashed" )
     ax.legend()
 
     ax = axs[1,0]
     ax.plot( h_c[1][:-1], h_c[0], label="c", drawstyle="steps" )
     ax.set_ylim( 0, h_c[0].max()*1.1 )
+    ylim = ax.get_ylim() 
+    ax.plot( [maxCos, maxCos], ylim,  color="r", linestyle="dashed" )
     ax.legend()
 
     ax = axs[1,1]
     ax.plot( h_s2[1][:-1], h_s2[0], label="s2", drawstyle="steps" )
     ax.set_ylim( 0, h_s2[0].max()*1.1 )
+    ylim = ax.get_ylim() 
+    ax.plot( [maxSin2, maxSin2], ylim,  color="r", linestyle="dashed" )
     ax.legend()
 
     ax = axs[1,2]
     ax.plot( rindex[:,0]*1e6, rindex[:,1], label="rindex", drawstyle="steps" )
+    xlim = ax.get_xlim() 
+    ax.plot( xlim, [nMax, nMax], color="r", linestyle="dashed" )
+    ax.plot( xlim, [BetaInverse, BetaInverse], color="b", linestyle="dashed" )
+
     ax.set_ylim( 1, 2 )
     ax.legend()
 
-
-
-
     fig.show()
+
+
+    sBetaInverse = str(BetaInverse).replace(".","p")
+    path=os.path.join(L4CerenkovTest.DIR, "pngs", "BetaInverse_%s.png" % sBetaInverse ) 
+    fold=os.path.dirname(path)
+    if not os.path.isdir(fold):
+       os.makedirs(fold)
+    pass 
+    log.info("save to %s " % path)
+    fig.savefig(path)
+
+
 
 
 

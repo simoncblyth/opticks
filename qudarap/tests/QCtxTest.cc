@@ -23,8 +23,9 @@ struct QCtxTest
     QCtx qc ; 
     QCtxTest(QCtx& qc_); 
 
-    void wavelength(char mode) ; 
-    void photon(); 
+    void wavelength(char mode, unsigned num_wavelength) ; 
+    void photon(unsigned num_photon); 
+    void cerenkov_photon(unsigned num_photon); 
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material);
 }; 
@@ -37,10 +38,9 @@ QCtxTest::QCtxTest(QCtx& qc_)
 {
 }
 
-void QCtxTest::wavelength(char mode)
+void QCtxTest::wavelength(char mode, unsigned num_wavelength )
 {
     assert( mode == 'S' || mode == 'C' ) ;
-    unsigned num_wavelength = 1000000 ; 
 
     std::vector<float> w ; 
     w.resize(num_wavelength, 0.f); 
@@ -71,10 +71,9 @@ void QCtxTest::wavelength(char mode)
     NP::Write( FOLD, name ,  w ); 
 }
 
-void QCtxTest::photon()
+void QCtxTest::photon(unsigned num_photon)
 {
     LOG(info); 
-    unsigned num_photon = 100 ; 
     std::vector<quad4> p ; 
     p.resize(num_photon); 
 
@@ -82,6 +81,21 @@ void QCtxTest::photon()
     qc.dump(       p.data(), p.size() ); 
     NP::Write( FOLD, "photon.npy" ,  (float*)p.data(), p.size(), 4, 4  ); 
 }
+
+
+void QCtxTest::cerenkov_photon(unsigned num_photon)
+{
+    LOG(info); 
+    std::vector<quad4> p ; 
+    p.resize(num_photon); 
+
+    qc.generate_cerenkov_photon(   p.data(), p.size() ); 
+    qc.dump(       p.data(), p.size() ); 
+    NP::Write( FOLD, "cerenkov_photon.npy" ,  (float*)p.data(), p.size(), 4, 4  ); 
+}
+
+
+
 
 /**
 test_boundary_lookup
@@ -122,8 +136,8 @@ void QCtxTest::boundary_lookup_line(const char* material)
     }
 
     unsigned k = 0 ;    // 0 or 1 picking the property float4 group to collect 
-    float nm0 = 300.f ; 
-    float nm1 = 600.f ; 
+    float nm0 =  80.f ; 
+    float nm1 = 800.f ; 
 
     std::vector<float> domain(num_lookup); 
     for(unsigned i=0 ; i < num_lookup ; i++) domain[i] = nm0 + (nm1 - nm0)*float(i)/float(num_lookup) ; 
@@ -138,9 +152,11 @@ void QCtxTest::boundary_lookup_line(const char* material)
 
 int main(int argc, char** argv)
 {
-    char test = argc > 1 ? argv[1][0] : 'C' ; 
+    unsigned num = argc > 1 ? std::atoi(argv[1]) : 1000000 ; 
+    char test = argc > 2 ? argv[2][0] : 'K' ; 
+    
     OPTICKS_LOG(argc, argv); 
-    LOG(info) << " test " << test ; 
+    LOG(info) << " num " << num << " test " << test ; 
 
     Opticks ok(argc, argv); 
     ok.configure(); 
@@ -152,9 +168,10 @@ int main(int argc, char** argv)
     QCtxTest qtc(qc); 
     switch(test)
     {
-        case 'S': qtc.wavelength('S')               ; break ; 
-        case 'C': qtc.wavelength('C')               ; break ; 
-        case 'P': qtc.photon();                     ; break ; 
+        case 'S': qtc.wavelength('S', num)          ; break ; 
+        case 'C': qtc.wavelength('C', num)          ; break ; 
+        case 'P': qtc.photon(num);                  ; break ; 
+        case 'K': qtc.cerenkov_photon(num);         ; break ; 
         case 'A': qtc.boundary_lookup_all()         ; break ;  
         case 'W': qtc.boundary_lookup_line("Water") ; break ;  
         case 'L': qtc.boundary_lookup_line("LS")    ; break ;  

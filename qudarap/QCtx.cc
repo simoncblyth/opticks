@@ -235,7 +235,8 @@ QCtx::generate_cerenkov
 extern "C" void QCtx_generate_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength ); 
 void QCtx::generate_cerenkov( float* wavelength, unsigned num_wavelength )
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "[ num_wavelength " << num_wavelength ;
+ 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, num_wavelength, 1 ); 
@@ -248,6 +249,28 @@ void QCtx::generate_cerenkov( float* wavelength, unsigned num_wavelength )
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+
+
+extern "C" void QCtx_generate_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon, unsigned num_photon );
+void QCtx::generate_cerenkov_photon( quad4* photon, unsigned num_photon )
+{
+    LOG(LEVEL) << "[ num_photon " << num_photon ;
+ 
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, num_photon, 1 ); 
+
+    quad4* d_photon = device_alloc<quad4>(num_photon); 
+
+    QCtx_generate_cerenkov_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon );  
+
+    copy_device_to_host<quad4>( photon, d_photon, num_photon ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
 
 
 
@@ -266,7 +289,6 @@ void QCtx::dump( float* wavelength, unsigned num_wavelength, unsigned edgeitems 
         }
     }
 }
-
 
 
 extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon , unsigned num_photon ); 

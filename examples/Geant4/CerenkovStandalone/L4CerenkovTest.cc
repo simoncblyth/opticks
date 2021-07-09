@@ -700,7 +700,7 @@ void L4Cerenkov::WriteDbg(const char* dir, unsigned group)
     }
     else if( group == 2 )
     {
-        NP::Write(     dir, "Params.npy", dbg->data(), itemsize ); 
+        NP::Write(     dir, "Params.npy", dbg->data(), 1, 2, 4 ); 
         NP::WriteNames(dir, "Params.txt", *names, itemsize ); 
     }
 }

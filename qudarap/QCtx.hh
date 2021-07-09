@@ -53,6 +53,9 @@ struct QUDARAP_API QCtx
 
     void generate_scint(    float* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
     void generate_cerenkov( float* wavelength, unsigned num_wavelength ); 
+    void generate_cerenkov_photon( quad4* photon, unsigned num_photon ) ; 
+
+
     void dump(              float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 
     void generate( quad4* photon,     unsigned num_photon ); 
