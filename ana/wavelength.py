@@ -3,10 +3,7 @@
 wavelength.py
 ===============
 
-w0
-    qudarap/tests/QCtxTest wavelength samples from GPU texture   
-
-w1
+0
     /tmp/G4OpticksAnaMgr/wavelength.npy from the horses mouth DsG4Scintillation 
     collected by G4OpticksAnaMgr at BeginOfRun
     Use ana/G4OpticksAnaMgr.sh to grab the outputs, see::
@@ -14,7 +11,6 @@ w1
        jcv G4OpticksAnaMgr DsG4Scintillation
        extg4/tests/X4ScintillationIntegralTest.cc
 
-w2
     np.interp results from the icdf obtained from GScintillatorLib, this
     closely matches w0 showing that the GPU texture lookups is working fine.
 
@@ -39,54 +35,99 @@ from opticks.ana.key import keydir
 class Wavelength(object):
     """
     Comparing localSamples with horsed
-
     """
+    def get_key(self, label):
+        key = None 
+        for k,v in self.l.items(): 
+            if v == label:
+                key = k
+            pass
+        pass
+        return key 
+
+    def get_keys(self, a_label, b_label):
+        a = self.get_key(a_label)
+        b = self.get_key(b_label)
+        return a, b 
+
+    def __call__(self, label):
+        return self.get_key(label) 
+
     def __init__(self, kd):
-        w = {}
+        p = {}
         l = {}
 
-        ## horses mouth
-        path0 = "/tmp/G4OpticksAnaMgr/WavelengthSamples.npy"
-        w[0] = np.load(path0) if os.path.exists(path0) else None
-        l[0] = "DsG4Scintillator_G4OpticksAnaMgr" 
+        l[0] = "DsG4Scintillator_G4OpticksAnaMgr"    ## horses mouth
+        p[0] = "/tmp/G4OpticksAnaMgr/WavelengthSamples.npy"
 
-        w[1] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_20.npy"))
         l[1] = "Opticks_QCtxTest_hd20"
+        p[1] = os.path.join("/tmp/QCtxTest", "wavelength_20.npy")
 
-        w[2] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_0.npy"))
         l[2] = "Opticks_QCtxTest_hd0"
+        p[2] = os.path.join("/tmp/QCtxTest", "wavelength_0.npy")
 
-        w[3] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_20_cudaFilterModePoint.npy"))
         l[3] = "Opticks_QCtxTest_hd20_cudaFilterModePoint"
+        p[3] = os.path.join("/tmp/QCtxTest", "wavelength_20_cudaFilterModePoint.npy")
 
-        w[4] = np.load(os.path.join("/tmp/QCtxTest", "wavelength_0_cudaFilterModePoint.npy"))
         l[4] = "Opticks_QCtxTest_hd0_cudaFilterModePoint"
+        p[4] = os.path.join("/tmp/QCtxTest", "wavelength_0_cudaFilterModePoint.npy")
 
-        aa = np.load(os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy"))
-        a = aa[0,:,0]
-        b = np.linspace(0,1,len(a))
-        u = np.random.rand(1000000)  
-        w[5] = np.interp(u, b, a )  
-        l[5] = "OK_GScint_np_interp"
-        self.aa = aa
+        l[5] = "X4"
+        p[5] = "/tmp/X4ScintillationTest/g4localSamples.npy"
 
-        path2 = "/tmp/X4ScintillationTest/g4localSamples.npy"
-        w[6] = np.load(path2) if os.path.exists(path2) else None
-        l[6] = "X4"
+        l[6] = "GScintillatorLib_np_interp"
+        p[6] = os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy") 
+
+        l[7] = "ck_photon"
+        p[7] = os.path.join("/tmp/QCtxTest", "cerenkov_photon.npy")
+      
+        l[8] = "G4Cerenkov_modified_SKIP_CONTINUE"
+        p[8] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_step_length_100000.000_SKIP_CONTINUE", "GenWavelength.npy")
+
+        l[9] = "G4Cerenkov_modified_ASIS"
+        p[9] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_step_length_100000.000_ASIS", "GenWavelength.npy")
+
  
-        #dom = np.arange(80, 800, 4)  
+        dom = np.arange(80, 400, 4)  
         #dom = np.arange(300, 600, 1)  
-        dom = np.arange(350, 550, 1)  
         #dom = np.arange(385, 475, 1)  
 
-        h = {}
-        for i in range(len(w)):
-            h[i],_ = np.histogram( w[i] , dom )
-        pass
 
+        #dom = np.arange(350, 550, 1)  
+
+
+        a = {}
+        w = {}
+        h = {}
+        for i in range(len(l)):
+            if not os.path.exists(p[i]):
+                a[i] = None
+                w[i] = None
+                h[i] = None
+            else:
+                a[i] = np.load(p[i])
+                if l[i] == "ck_photon":
+                    w[i] = a[i][:,0,1] 
+                elif l[i].startswith("G4Cerenkov_modified"):
+                    w[i] = a[i][:,0,1] 
+                elif l[i] == "GScintillatorLib_np_interp":
+                    aa = a[i] 
+                    self.aa = aa
+                    aa0 = aa[0,:,0]
+                    bb0 = np.linspace(0,1,len(aa0))
+                    u = np.random.rand(1000000)  
+                    w[i] = np.interp(u, bb0, aa0 )  
+                else:
+                    w[i] = a[i]
+                pass
+                h[i] = np.histogram( w[i] , dom ) 
+            pass
+        pass
+        self.p = p  
         self.w = w  
         self.l = l
         self.h = h   
+        self.a = a   
         self.dom = dom 
 
     def interp(self, u):

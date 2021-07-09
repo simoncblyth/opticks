@@ -152,7 +152,7 @@ void QCtxTest::boundary_lookup_line(const char* material)
 
 int main(int argc, char** argv)
 {
-    unsigned num = argc > 1 ? std::atoi(argv[1]) : 1000000 ; 
+    unsigned num = argc > 1 ? std::atoi(argv[1]) : 2820932 ; 
     char test = argc > 2 ? argv[2][0] : 'K' ; 
     
     OPTICKS_LOG(argc, argv); 

@@ -37,7 +37,7 @@ class OpticksDebug(object):
         q = a[:,j,k]
         return q 
 
- 
+
 
 class G4Cerenkov_modifiedTest(object):
     FOLD = "/tmp/G4Cerenkov_modifiedTest" 
@@ -119,11 +119,17 @@ for t in tt.values():
     cc = t.gen("continue_condition").copy().view(np.uint32).reshape(-1,2)
 
     nbin = 100 
-    h_e = np.histogram(e, nbin)
-    h_w = np.histogram(w, nbin)
-    h_r = np.histogram(r, nbin)
-    h_c = np.histogram(c, nbin)
-    h_s2 = np.histogram(s2, nbin)
+    e_dom = np.linspace(Pmin, Pmax, nbin)
+    w_dom = np.linspace(1240./Pmax, 1240./Pmin/2, nbin)
+    r_dom = np.linspace(1.5, 1.8, nbin)
+    c_dom = np.linspace(0.83, 1., nbin)
+    s2_dom = np.linspace(0, 0.3, nbin) 
+
+    h_e = np.histogram(e, e_dom)
+    h_w = np.histogram(w, w_dom)
+    h_r = np.histogram(r, r_dom)
+    h_c = np.histogram(c, c_dom)
+    h_s2 = np.histogram(s2, s2_dom)
 
     nrows = 2
     ncols = 3 
@@ -202,6 +208,9 @@ for t in tt.values():
 
 
     for i in range(10): print(" head:%2d tail:%2d continue:%2d condition:%2d cosTheta %10.3f  " % ( ht[i,0],ht[i,1],cc[i,0],cc[i,1], c[i] ))                                                     
+
+
+
 
 """
  head: 2 tail: 1 continue: 1 condition: 2 cosTheta      0.918  
