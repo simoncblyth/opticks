@@ -6,6 +6,12 @@ gplt.py : 2d debugging/presentation of solids with rotational symmetry
 Make connection between GDML parsing and the simple 2d matplotlib plotting 
 of xplt.py while avoiding the need for manual translation as done in the x018.py etc..
 
+::
+
+    ipython --pdb -i gplt.py 
+
+
+
 """
 
 import os, sys, argparse, logging
@@ -271,6 +277,7 @@ def pmt_annotate( ax, pmt):
 if __name__ == '__main__':
     args = GArgs.parse(__doc__)
     lvx = args.lvname(1)
+    lvx = "lAddition"
 
     g = GDML.parse(args.gdmlpath(0))
     g.smry()
@@ -289,9 +296,20 @@ if __name__ == '__main__':
 
     ax.set_aspect('equal')
 
+    if lvx == "lAddition":
+        ax.set_xlim(-500,500)  
+        ax.set_ylim(-150,50)  
+        ax.plot( [-500,500], [0,0], linestyle="dotted", color="blue" )
+    pass
+
+
     fig.show()
 
     combpath = args.figpath("CombinedFig")
+
+    if lvx == "lAddition": 
+        combpath = "/tmp/lAddition_uni_acrylic3.png"  
+    pass
     log.info("saving to %s " % combpath)
     fig.savefig(combpath)
     

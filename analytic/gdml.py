@@ -367,12 +367,19 @@ class Boolean(Geometry):
         xyz = transform[3,:3]
 
         log.debug(xyz)
-        assert xyz[0] == xyz[1] == 0, ("only z shifts handled ", xyz)        
+
+        no_xy_shifts = xyz[0] == xyz[1] == 0  
+        if not no_xy_shifts:
+            log.fatal("xy_shifts not handled %s " % repr(xyz))
+        pass
+        #assert no_xy_shifts, ("only z shifts handled ", xyz)        
+        
 
         assert left, " left fail as_shape for first : %r self: %r " % (self.first, self)
         assert right, "right fail as_shape for second : %r self: %r " % (self.second, self)
 
-        tr = np.array( [0, xyz[2]] )
+        #tr = np.array( [0, xyz[2]] )
+        tr = np.array( [xyz[0], xyz[2]] )
         shape = self.shape_kls(self.name, [left, right, tr], **kwa)      
         return shape   
  
