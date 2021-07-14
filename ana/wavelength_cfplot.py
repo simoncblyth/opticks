@@ -62,8 +62,8 @@ if __name__ == '__main__':
         title = "Compare two 1M sample LS scintillation wavelength distributions in 1nm bins" 
         xline = [wl.interp(0.05), wl.interp(0.95)]
     else:
-        h.log = True 
-        title = "title"
+        h.log = True
+        title = "Compare two 2.82M samples of Cerenkov wavelength distributions in 1nm bins : poor chi2, interpolation artifact ?  " 
         xline = []
     pass 
 
@@ -71,7 +71,33 @@ if __name__ == '__main__':
     c2cut = 10 
     h(wl.dom[:-1], wl.w[a], wl.w[b], [wl.l[a], wl.l[b]], c2cut=c2cut )
 
-    fig = one_cfplot(ok, h, xline=xline )
+    fig, axs = one_cfplot(ok, h, xline=xline )
+
+    if arg == 4:
+
+        rindex = np.load(os.path.join(kd, "GScintillatorLib/LS_ori/RINDEX.npy"))
+        rindex[:,0] *= 1e6   
+        rindex[:,0] = 1240./rindex[:,0]
+        rindex = rindex[::-1]       
+
+        ax = axs[0]
+
+        ylim = ax.get_ylim()
+        for i in range(len(rindex)):
+            ax.plot( [rindex[i,0], rindex[i,0]], ylim , linestyle="dotted", color="b" )
+        pass
+
+
+        axr = ax.twinx() 
+        axr.set_ylabel("rindex")
+        axr.spines['right'].set_position(('outward', 0))
+
+        p3, = axr.plot( rindex[:,0] , rindex[:,1], drawstyle="steps", label="rindex", color="b" )
+        axs[0].set_xlim(100,400)
+        axs[1].set_xlim(100,400)
+
+        axs[1].set_ylim(0,300)
+    pass
 
     plt.ion()
     plt.show()

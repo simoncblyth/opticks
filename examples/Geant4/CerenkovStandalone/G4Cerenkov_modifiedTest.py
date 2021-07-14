@@ -183,8 +183,6 @@ for t in tt.values():
 
 
 
-
-
     ax = axs[1,2]
     ax.plot( rindex[:,0]*1e6, rindex[:,1], label="rindex", drawstyle="steps" )
     xlim = ax.get_xlim() 
@@ -206,47 +204,11 @@ for t in tt.values():
     log.info("save to %s " % path)
     fig.savefig(path)
 
+    for i in range(10): 
+        fmt = " head:%2d tail:%2d continue:%2d condition:%2d cosTheta %10.3f  "
+        qwn = ( ht[i,0],ht[i,1],cc[i,0],cc[i,1], c[i] )
+        print(fmt % qwn)
+    pass
 
-    for i in range(10): print(" head:%2d tail:%2d continue:%2d condition:%2d cosTheta %10.3f  " % ( ht[i,0],ht[i,1],cc[i,0],cc[i,1], c[i] ))                                                     
-
-
-
-
-"""
- head: 2 tail: 1 continue: 1 condition: 2 cosTheta      0.918  
- head: 9 tail: 2 continue: 7 condition: 9 cosTheta      0.994  
- head: 1 tail: 1 continue: 0 condition: 1 cosTheta      0.896  
- head: 1 tail: 0 continue: 1 condition: 1 cosTheta      0.896  
- head: 1 tail: 0 continue: 1 condition: 1 cosTheta      0.896  
- head: 1 tail: 0 continue: 1 condition: 1 cosTheta      0.896  
- head: 1 tail: 0 continue: 1 condition: 1 cosTheta      0.896  
- head: 1 tail: 1 continue: 0 condition: 1 cosTheta      0.897  
- head: 1 tail: 0 continue: 1 condition: 1 cosTheta      0.897  
- head:12 tail: 3 continue: 9 condition:12 cosTheta      1.000  
-
-
-In [17]: np.where( cc[:,0] == 1 )                                                                                                                                                                    
-Out[17]: (array([   0,    3,    4, ..., 7309, 7310, 7311]),)
-
-In [18]: sel =  cc[:,0] == 1                                                                                                                                                                         
-
-In [19]: cc[:,1][sel]                                                                                                                                                                                
-Out[19]: array([2, 1, 1, ..., 1, 1, 1], dtype=uint32)
-
-In [20]: ht[:,1][sel]                                                                                                                                                                                
-Out[20]: array([1, 0, 0, ..., 0, 0, 0], dtype=uint32)
-
-In [21]: np.count_nonzero(ht[:,1][sel] == 0)                                                                                                                                                         
-Out[21]: 4294
-
-In [22]: cc[:,1][sel].shape                                                                                                                                                                          
-Out[22]: (4670,)
-
-In [23]: cc.shape                                                                                                                                                                                    
-Out[23]: (7312, 2)
-
-
-
-"""
 
 

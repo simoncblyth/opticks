@@ -760,9 +760,9 @@ void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, con
 
 
 
-void GSurfaceLib::dumpImplicitBorderSurfaces(const char* msg) const 
+void GSurfaceLib::dumpImplicitBorderSurfaces(const char* msg, unsigned edgeitems) const 
 {
-    LOG(info) << msg << std::endl << descImplicitBorderSurfaces() ; 
+    LOG(info) << msg << std::endl << descImplicitBorderSurfaces(edgeitems) ; 
 }
 
 unsigned GSurfaceLib::getNumImplicitBorderSurface() const
@@ -780,17 +780,29 @@ unsigned GSurfaceLib::getNumImplicitBorderSurface() const
 
 
 
-std::string GSurfaceLib::descImplicitBorderSurfaces() const 
+std::string GSurfaceLib::descImplicitBorderSurfaces(unsigned edgeitems) const 
 {
+    unsigned num_implicit_border_surfaces = getNumImplicitBorderSurface() ; 
     std::stringstream ss ; 
     ss 
-        << " num_implicit_border_surfaces " << getNumImplicitBorderSurface()  << std::endl ; 
+        << " num_implicit_border_surfaces " << num_implicit_border_surfaces 
+        << " edgeitems " << edgeitems 
+        << std::endl
+        ; 
 
+    unsigned count = 0 ; 
     for(unsigned i=0 ; i < m_border_surfaces.size() ; i++)
     {
         const  GBorderSurface* bs = m_border_surfaces[i] ; 
         bool implicit = bs->isImplicit(); 
-        if( implicit ) ss << bs->desc() << std::endl ; 
+        if( implicit ) 
+        {
+            if( count < edgeitems || count > num_implicit_border_surfaces - edgeitems) 
+            {              
+                ss << bs->desc() << std::endl ; 
+            }
+            count += 1 ; 
+        }
     }
     return ss.str(); 
 }
@@ -889,10 +901,10 @@ void GSurfaceLib::collectSensorIndices()
 }
 
 
-void GSurfaceLib::dumpSurfaces(const char* msg)
+void GSurfaceLib::dumpSurfaces(const char* msg, unsigned edgeitems )
 {
     unsigned ni = getNumSurfaces();
-    LOG(info) << msg << " num_surfaces " << ni ; 
+    LOG(info) << msg << " num_surfaces " << ni << " edgeitems " << edgeitems ; 
 
     for(unsigned i=0 ; i < ni ; i++)
     {
@@ -900,6 +912,10 @@ void GSurfaceLib::dumpSurfaces(const char* msg)
         const char* name = surf->getShortName() ;
         const char* type = surf->getType() ; 
         bool is_sensor = surf->isSensor() ; 
+
+        bool edge = i < edgeitems || i > ni - edgeitems ;  
+        if(!edge) continue ; 
+
         std::cout 
              << " index : " << std::setw(2) << i 
              << " is_sensor : " << ( is_sensor ? "Y" : "N" )

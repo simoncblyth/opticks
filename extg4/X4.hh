@@ -20,8 +20,13 @@
 #pragma once
 
 #include "X4_API_EXPORT.hh"
+
+template <typename T> struct SLabelCache ; 
+
+#include "plog/Severity.h"
 #include <string>
 #include <vector>
+#include <map>
 
 class G4Material ; 
 class G4LogicalSurface ; 
@@ -55,6 +60,11 @@ Value
 class X4_API X4 
 {
     public: 
+        static const plog::Severity LEVEL ; 
+        static SLabelCache<int>* surface_index_cache ; 
+        static SLabelCache<int>* MakeSurfaceIndexCache() ; 
+        static const int MISSING_SURFACE ; 
+    public: 
         static const char* X4GEN_DIR ; 
     public: 
         static const char* Name( const std::string& name );
@@ -76,6 +86,8 @@ class X4_API X4
         template<typename T> static std::string Argument( T v );  
         static std::string Array( const double* a, unsigned nv, const char* identifier );  
 
+    private:
+        std::map<void*,int>*  m_surface_index_cache ; 
 };
 
 

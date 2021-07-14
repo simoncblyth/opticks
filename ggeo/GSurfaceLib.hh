@@ -124,10 +124,10 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
    public:
        void Summary(const char* msg="GSurfaceLib::Summary");
        void dump(const char* msg="GSurfaceLib::dump");
-       void dumpSurfaces(const char* msg="GSurfaceLib::dumpSurfaces");
+       void dumpSurfaces(const char* msg="GSurfaceLib::dumpSurfaces", unsigned edgeitems=100 );
 
-       void dumpImplicitBorderSurfaces(const char* msg="GSurfaceLib::dumpImplicitBorderSurfaces") const ; 
-       std::string descImplicitBorderSurfaces() const ; 
+       void dumpImplicitBorderSurfaces(const char* msg="GSurfaceLib::dumpImplicitBorderSurfaces", unsigned edgeitems=100 ) const ; 
+       std::string descImplicitBorderSurfaces(unsigned edgeitems=100) const ; 
 
 
        void dump(GPropertyMap<double>* surf);

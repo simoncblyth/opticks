@@ -392,7 +392,8 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
 
         cosTheta = g.ck1.BetaInverse / sampledRI ;
 
-        sin2Theta = fmaxf( 0.0001f, (1.f - cosTheta)*(1.f + cosTheta));  // avoid going -ve 
+        //sin2Theta = fmaxf( 0.0001f, (1.f - cosTheta)*(1.f + cosTheta));  // avoid going -ve 
+        sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);  // avoid going -ve 
 
         u1 = curand_uniform(&rng) ;
 
@@ -475,7 +476,7 @@ inline QCTX_METHOD void qctx::cerenkov_fabricate_genstep(GS& g )
     g.ck1.preVelocity = 0.f ; 
 
     g.ck1.BetaInverse = BetaInverse ;      //  g.ck1.BetaInverse/sampledRI  : yields the cone angle cosTheta
-    g.ck1.Wmin = 80.f ;                   //  min wavelength 
+    g.ck1.Wmin = 1240./10.33f ;            //  min wavelength from low edge of high energy bin
     g.ck1.Wmax = 800.f ;                   //  max wavelength 
     g.ck1.maxCos = maxCos  ;               //  is this used?          
 
@@ -483,6 +484,21 @@ inline QCTX_METHOD void qctx::cerenkov_fabricate_genstep(GS& g )
     g.ck1.MeanNumberOfPhotons1 = 0.f ; 
     g.ck1.MeanNumberOfPhotons2 = 0.f ; 
     g.ck1.postVelocity = 0.f ; 
+
+/**
+
+In [2]: rindex[:,0]*1e6                                                                                                                                                                        
+Out[2]: array([ 1.55  ,  1.7951,  2.105 ,  2.2708,  2.5511,  2.845 ,  3.0636,  4.1328,  6.2   ,  6.526 ,  6.889 ,  7.294 ,  7.75  ,  8.267 ,  8.857 ,  9.538 , 10.33  , 15.5   ])
+
+In [3]: 1240./10.33                                                                                                                                                                            
+Out[3]: 120.03872216844144
+
+In [4]: 1240./15.5                                                                                                                                                                             
+Out[4]: 80.0
+
+
+**/
+
 } 
 
 

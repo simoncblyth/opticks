@@ -89,11 +89,11 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
     //test_Name();
-    test_GDMLName();
+    //test_GDMLName();
 
-    test_ptr_format_0();
-    test_ptr_format_1();
-    test_ptr_format_2();
+    //test_ptr_format_0();
+    //test_ptr_format_1();
+    //test_ptr_format_2();
 
 
     return 0 ; 

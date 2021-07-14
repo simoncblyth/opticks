@@ -47,7 +47,9 @@ def cfplot(fig, gss, h, xline=[]):
     :param gss: 2 element gridspec list 
     :param h:  .ahis .bhis .la .lb .ylim .bins .chi2 .c2label .c2_ymax .log 
     """
+
     ax = fig.add_subplot(gss[0])
+    ax0 = ax
 
     ax.plot( h.bins[:-1], h.ahis , drawstyle="steps", label=h.la  )
     ax.plot( h.bins[:-1], h.bhis , drawstyle="steps", label=h.lb  )
@@ -69,6 +71,7 @@ def cfplot(fig, gss, h, xline=[]):
     xlim = ax.get_xlim()
 
     ax = fig.add_subplot(gss[1])
+    ax1 = ax
 
     ax.plot( h.bins[:-1], h.chi2, drawstyle='steps', label=h.c2label )
 
@@ -83,7 +86,7 @@ def cfplot(fig, gss, h, xline=[]):
     pass
     ax.set_ylim(ylim1) 
 
-    return ax
+    return [ax0,ax1]
 
 
 
@@ -118,11 +121,11 @@ def one_cfplot(ok, h, xline=[]):
     ny = 2
     nx = 1
     gs = gridspec.GridSpec(ny, nx, height_ratios=[3,1])
-    for ix in range(nx):
-        gss = [gs[ix], gs[nx+ix]]
-        cfplot(fig, gss, h, xline=xline )
-    pass
-    return fig 
+
+    ix = 0 
+    gss = [gs[ix], gs[nx+ix]]
+    axs = cfplot(fig, gss, h, xline=xline )
+    return fig, axs 
 
 
 def multiplot(ok, ab, start=0, stop=5, log_=False):

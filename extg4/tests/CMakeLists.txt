@@ -41,6 +41,8 @@ set(TEST_SOURCES
     X4MaterialPropertyVectorTest.cc
 
     X4ScintillationTest.cc
+
+    X4SurfaceTest.cc
 )
 
 

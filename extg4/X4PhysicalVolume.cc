@@ -1138,29 +1138,34 @@ void X4PhysicalVolume::generateTestG4Code( int lvIdx, const G4VSolid* const soli
 
 
 
-void X4PhysicalVolume::dumpLV() const 
+void X4PhysicalVolume::dumpLV(unsigned edgeitems) const 
 {
    LOG(info)
-        << " m_lvidx.size() " << m_lvidx.size() 
-        << " m_lvlist.size() " << m_lvlist.size() 
-        ;
+       << " m_lvidx.size() " << m_lvidx.size() 
+       << " m_lvlist.size() " << m_lvlist.size()
+       << " edgeitems " << edgeitems 
+       ;
 
-   assert( m_lvlist.size() == m_lvname.size() );  
-   assert( m_lvlist.size() == m_soname.size() );  
+   unsigned num_lv = m_lvlist.size() ;  
 
-   for(unsigned i=0 ; i < m_lvlist.size() ; i++)
+   assert( num_lv == m_lvname.size() );  
+   assert( num_lv == m_soname.size() );  
+
+   for(unsigned i=0 ; i < num_lv ; i++)
    {
-       const G4LogicalVolume* lv = m_lvlist[i] ; 
+       if( i < edgeitems || i > num_lv - edgeitems ) 
+       {
+           const G4LogicalVolume* lv = m_lvlist[i] ; 
+           const std::string& lvn =  lv->GetName() ; 
+           assert( strcmp(lvn.c_str(), m_lvname[i].c_str() ) == 0 ); 
 
-       const std::string& lvn =  lv->GetName() ; 
-       assert( strcmp(lvn.c_str(), m_lvname[i].c_str() ) == 0 ); 
-
-       std::cout 
-           << " i " << std::setw(5) << i
-           << " idx " << std::setw(5) << m_lvidx.at(lv)  
-           << " lvname " << std::setw(50) << m_lvname[i]
-           << " soname " << std::setw(50) << m_soname[i]
-           << std::endl ;  
+           std::cout 
+               << " i " << std::setw(5) << i
+               << " idx " << std::setw(5) << m_lvidx.at(lv)  
+               << " lvname " << std::setw(50) << m_lvname[i]
+               << " soname " << std::setw(50) << m_soname[i]
+               << std::endl ;  
+       }
    }
 }
 

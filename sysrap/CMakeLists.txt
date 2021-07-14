@@ -75,6 +75,7 @@ set(SOURCES
     CheckGeo.cc
 
     SGLM.cc
+    SLabelCache.cc
 ) 
 
 set(HEADERS
@@ -137,6 +138,7 @@ set(HEADERS
 
     CheckGeo.hh
     SGLM.hh
+    SLabelCache.hh
     scuda.h
 )
 

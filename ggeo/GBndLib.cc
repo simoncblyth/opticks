@@ -658,26 +658,35 @@ std::string GBndLib::getSensorBoundaryReport() const
 
 
 
-std::string GBndLib::getAddBoundaryReport(const char* msg) const 
+std::string GBndLib::getAddBoundaryReport(const char* msg, unsigned edgeitems) const 
 {
+    unsigned num_boundary_add = m_boundary_add_count.size() ;  
     std::stringstream ss ; 
-    ss << msg << std::endl ; 
+    ss << msg 
+       << " edgeitems " << edgeitems 
+       << " num_boundary_add " << num_boundary_add
+       << std::endl
+       ; 
 
     typedef std::map<unsigned, unsigned>::const_iterator IT ; 
-
+    unsigned count = 0 ; 
     unsigned add_total = 0 ; 
     for(IT it=m_boundary_add_count.begin() ; it != m_boundary_add_count.end() ; it++)
     {
         unsigned boundary = it->first ; 
         unsigned add_count = it->second ; 
-        ss 
-            << " boundary " << std::setw(3) << boundary
-            << " b+1 " << std::setw(3) << boundary+1
-            << " add_count " << std::setw(6) << add_count
-            << " " << shortname(boundary)
-            << std::endl 
-            ;
+        if( count < edgeitems || count > num_boundary_add - edgeitems )
+        {
+            ss 
+                << " boundary " << std::setw(3) << boundary
+                << " b+1 " << std::setw(3) << boundary+1
+                << " add_count " << std::setw(6) << add_count
+                << " " << shortname(boundary)
+                << std::endl 
+                ;
+        }
         add_total += add_count ; 
+        count += 1 ; 
     }
 
     ss 

@@ -141,7 +141,7 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertMaterials_r(const G4VPhysicalVolume* const pv, int depth) ;
         void convertImplicitSurfaces_r(const G4VPhysicalVolume* const pv, int depth) ; 
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
-        void dumpLV() const ;
+        void dumpLV(unsigned edgeitems=100) const ;
         void dumpTorusLV() const ;
         GMesh* convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname, bool balancetree ) const ;
         void generateTestG4Code( int lvIdx, const G4VSolid* const solid, const nnode* raw) const ; 

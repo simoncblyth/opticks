@@ -69,6 +69,7 @@ set(TEST_SOURCES
 
    SGLMTest.cc
    SConstantTest.cc
+   SLabelCacheTest.cc
 
    CastTest.cc
 )

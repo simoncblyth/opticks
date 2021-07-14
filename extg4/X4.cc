@@ -21,12 +21,19 @@
 #include <cstring>
 #include <algorithm>
 
+#include "SLabelCache.hh"
 #include "X4.hh"
 #include "X4LogicalBorderSurfaceTable.hh"
 
 #include "SGDML.hh"
 #include "BStr.hh"
 #include "BFile.hh"
+
+#include "PLOG.hh"
+
+const plog::Severity X4::LEVEL = PLOG::EnvLevel("X4", "debug" ); 
+
+SLabelCache<int>* X4::surface_index_cache = nullptr ; 
 
 const char* X4::X4GEN_DIR = "$TMP/x4gen" ; 
 
@@ -289,10 +296,12 @@ std::string X4::Array( const double* a, unsigned nv, const char* identifier )
 }
 
 
-
 /**
-size_t X4::GetOpticksIndex( const G4LogicalSurface* const surf )
-==================================================================
+X4::MakeSurfaceIndexCache
+===========================
+
+Implicit assumption that are not going to be adding more surfaces, 
+so only use this once that is true. 
 
 Border and skin surfaces are listed separately by G4 but together by Opticks
 so need to define the following convention for surface indices: 
@@ -303,33 +312,62 @@ so need to define the following convention for surface indices:
 * NB for these indices to remain valid, clearly must not add/remove 
   surfaces after accessing the indices 
 
+
+This was implemeted to avoid the issue::
+
+   notes/issues/zike_reports_slow_surface_initization_with_geant4_1071_when_have_thousands_of_surfaces.rst
+
+**/
+
+const int X4::MISSING_SURFACE = -1 ; 
+
+SLabelCache<int>* X4::MakeSurfaceIndexCache()
+{
+    SLabelCache<int>* _cache = new SLabelCache<int>(MISSING_SURFACE) ; 
+
+    size_t num_lbs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ; 
+    size_t num_sks = G4LogicalSkinSurface::GetNumberOfSkinSurfaces() ; 
+    LOG(LEVEL) << "[ " << " num_lbs " << num_lbs << " num_sks " << num_sks ; 
+
+    const G4LogicalBorderSurfaceTable* lbs_table = G4LogicalBorderSurface::GetSurfaceTable() ; 
+    const std::vector<G4LogicalBorderSurface*>* lbs_vec = X4LogicalBorderSurfaceTable::PrepareVector(lbs_table); 
+    assert( num_lbs == lbs_vec->size() );
+  
+    for(int ibs=0 ; ibs < lbs_vec->size() ; ibs++)
+    {
+        const G4LogicalBorderSurface* bs = (*lbs_vec)[ibs] ; 
+        _cache->add( bs, ibs ); 
+    }
+
+    const G4LogicalSkinSurfaceTable*   sks_vec = G4LogicalSkinSurface::GetSurfaceTable() ; 
+    assert( num_sks == sks_vec->size() );
+    for(int isk=0 ; isk < sks_vec->size() ; isk++)
+    {
+        const G4LogicalSkinSurface* sk = (*sks_vec)[isk] ; 
+        _cache->add( sk, isk + num_lbs ); 
+    }
+
+    LOG(LEVEL) << "]" ; 
+    return _cache ; 
+}
+
+
+/**
+size_t X4::GetOpticksIndex( const G4LogicalSurface* const surf )
+==================================================================
+
+NB Implicit assumption that are not going to be adding more surfaces, 
+so only use this once that is true. 
  
 **/
 
 size_t X4::GetOpticksIndex( const G4LogicalSurface* const surf )
 {
-    size_t num_lbs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ; 
-    size_t num_sks = G4LogicalSkinSurface::GetNumberOfSkinSurfaces() ; 
-
-    const G4LogicalBorderSurfaceTable* lbs_table = G4LogicalBorderSurface::GetSurfaceTable() ; 
-    const std::vector<G4LogicalBorderSurface*>* lbs_vec = X4LogicalBorderSurfaceTable::PrepareVector(lbs_table); 
-
-    const G4LogicalSkinSurfaceTable*   sks_vec = G4LogicalSkinSurface::GetSurfaceTable() ; 
-
-    assert( num_lbs == lbs_vec->size() );
-    assert( num_sks == sks_vec->size() );
-
-    const G4LogicalBorderSurface* const lbs = dynamic_cast<const G4LogicalBorderSurface* const>(surf);
-    const G4LogicalSkinSurface*   const sks = dynamic_cast<const G4LogicalSkinSurface* const>(surf);
-
-    assert( (lbs == NULL) ^ (sks == NULL) );   // one or other must be NULL, but not both   
-
-    int idx_lbs = lbs ? GetItemIndex<G4LogicalBorderSurface>( lbs_vec  , lbs ) : -1 ;    
-    int idx_sks = sks ? GetItemIndex<G4LogicalSkinSurface>(   sks_vec  , sks ) : -1 ;    
-
-    assert( (idx_lbs == -1) ^ (idx_sks == -1) ); // one or other must be -1, but not both 
-
-    return idx_lbs > -1 ? idx_lbs : idx_sks + num_lbs ;     
+    if( surface_index_cache == nullptr ) surface_index_cache = MakeSurfaceIndexCache() ; 
+    int index = surface_index_cache->find(surf ); 
+    assert( index != MISSING_SURFACE );  
+    //LOG(LEVEL) << " index " << index ; 
+    return index ; 
 }
 
  
