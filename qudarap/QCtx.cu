@@ -11,6 +11,25 @@ MORE EASILY TESTED FROM MULTIPLE ENVIRONMENTS HEADERS
 #include "qgs.h"
 #include "qctx.h"
 
+
+__global__ void _QCtx_rng_sequence(qctx* ctx, float* rs, unsigned num_items )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    if (id >= num_items) return;
+    curandState rng = *(ctx->r + id) ; 
+    float u = curand_uniform(&rng) ;
+    if(id % 100000 == 0) printf("//_QCtx_rng_sequence id %d u %10.4f    \n", id, u  ); 
+    rs[id] = u ; 
+}
+
+extern "C" void QCtx_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* rs, unsigned num_items )
+{
+    printf("//QCtx_rng_sequence num_items %d \n", num_items ); 
+    _QCtx_rng_sequence<<<numBlocks,threadsPerBlock>>>( ctx, rs, num_items );
+} 
+
+
+
 /**
 HMM hd_factor is more appropriate as a property of the uploaded texture than it is an input argument 
 TODO: rearrange hd_factor 

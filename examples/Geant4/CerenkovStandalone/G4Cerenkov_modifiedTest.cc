@@ -11,6 +11,8 @@
 #include "G4VParticleChange.hh"
 
 #include "OpticksDebug.hh"
+#include "OpticksRandom.hh"
+
 #include "NP.hh"
 
 struct G4Cerenkov_modifiedTest
@@ -24,8 +26,9 @@ struct G4Cerenkov_modifiedTest
     G4Cerenkov_modified*      proc ; 
     OpticksDebug*             par ; 
     OpticksDebug*             gen ; 
+    OpticksRandom*            rnd ; 
 
-    G4Cerenkov_modifiedTest(const char* path) ;  
+    G4Cerenkov_modifiedTest(const char* rindex_path, const char* random_path) ;  
 
     void scanBetaInverse(double v0, double v1, double st) ; 
     void PSDI(double BetaInverse, double step_length );
@@ -35,16 +38,22 @@ struct G4Cerenkov_modifiedTest
 
 const char* G4Cerenkov_modifiedTest::FOLD = "/tmp/G4Cerenkov_modifiedTest" ; 
 
-G4Cerenkov_modifiedTest::G4Cerenkov_modifiedTest( const char* path )
+G4Cerenkov_modifiedTest::G4Cerenkov_modifiedTest( const char* rindex_path, const char* random_path )
     :
-    a(OpticksDebug::LoadArray(path)),
+    a(OpticksDebug::LoadArray(rindex_path)),
     rindex( a ? OpticksDebug::MakeProperty(a) : nullptr),
     material( rindex ? OpticksDebug::MakeMaterial(rindex) : nullptr), 
     proc(new G4Cerenkov_modified()),
     par(new OpticksDebug(8,"Params")),
-    gen(new OpticksDebug(8,"GenWavelength"))
+    gen(new OpticksDebug(8,"GenWavelength")),
+    rnd(random_path ? new OpticksRandom(random_path) : nullptr )
 {
-    std::cout << "loaded from " << path << std::endl ;  
+    std::cout 
+        << "loaded from "
+        << " rindex_path " << rindex_path 
+        << " random_path " << ( random_path ? random_path : "-" )
+        << std::endl
+        ;  
 
     assert( a ); 
     assert( rindex ); 
@@ -52,10 +61,9 @@ G4Cerenkov_modifiedTest::G4Cerenkov_modifiedTest( const char* path )
     assert( proc ) ; 
 
     proc->BuildThePhysicsTable() ; 
-
-
     proc->par = par ; 
     proc->gen = gen ; 
+    proc->rnd = rnd ; 
 }
 
 
@@ -239,18 +247,27 @@ void G4Cerenkov_modifiedTest::save(const G4VParticleChange* pc, const char* reld
 
 int main(int argc, char** argv)
 {
-    double BetaInverse = argc > 1 ? std::stod(argv[1]) : 1.5 ;  
-    double step_length = argc > 2 ? std::stod(argv[2]) : 100.*1000. ; 
-    const char* path = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
+
+    double default_BetaInverse = 1.5 ; 
+    double default_step_length = 100.*1000. ;  // (mm) : large to bump up the photon stats
+    default_step_length = 100. ; 
+
+    double BetaInverse = argc > 1 ? std::stod(argv[1]) : default_BetaInverse ;  
+    double step_length = argc > 2 ? std::stod(argv[2]) : default_step_length ; 
+
+
+    const char* rindex_path = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
+    const char* random_path = "/tmp/blyth/opticks/TRngBufTest_0.npy" ; 
 
     std::cout 
-         << " RINDEX path " << path 
+         << " rindex_path " << rindex_path 
+         << " random_path " << ( random_path ? random_path : "-" ) 
          << " BetaInverse " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse 
          << " step_length " << std::setw(10) << std::fixed << std::setprecision(4) << step_length
          << std::endl 
          ;
 
-    G4Cerenkov_modifiedTest t(path); 
+    G4Cerenkov_modifiedTest t(rindex_path, random_path); 
     t.scanBetaInverse(1., 2., 0.1); 
 
     t.PSDI(BetaInverse, step_length); 

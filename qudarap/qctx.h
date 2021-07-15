@@ -367,7 +367,7 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
 {
     float u0 ;
     float u1 ; 
-    float w ; 
+    float w_linear ; 
     float wavelength ;
 
     float sampledRI ;
@@ -378,32 +378,33 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
     // should be MaterialLine no ?
     unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
 
+    unsigned loop = 0u ; 
+
     do {
         u0 = curand_uniform(&rng) ;
 
-        w = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
+        w_linear = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
 
-        wavelength = g.ck1.Wmin*g.ck1.Wmax/w ;  
+        wavelength = g.ck1.Wmin*g.ck1.Wmax/w_linear ;  
 
-        float4 props = boundary_lookup(wavelength, line, 0u); 
+        float4 props = boundary_lookup( wavelength, line, 0u); 
 
         sampledRI = props.x ;
-
 
         cosTheta = g.ck1.BetaInverse / sampledRI ;
 
         //sin2Theta = fmaxf( 0.0001f, (1.f - cosTheta)*(1.f + cosTheta));  // avoid going -ve 
-        sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);  // avoid going -ve 
+        sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);  
 
         u1 = curand_uniform(&rng) ;
 
         u_maxSin2 = u1*g.ck1.maxSin2 ;
 
-    } while ( u_maxSin2 > sin2Theta);
+        loop += 1 ; 
 
-   
+    } while ( u_maxSin2 > sin2Theta );
+
     float energy = 1240.f/wavelength ; 
-
 
     p.q0.f.x = energy ; 
     p.q0.f.y = wavelength ; 
@@ -415,13 +416,13 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
     p.q1.u.z = 0u ; 
     p.q1.f.w = g.ck1.BetaInverse ; 
 
-    p.q2.f.x = 0.f ; 
-    p.q2.f.y = 0.f ; 
-    p.q2.f.z = 0.f ; 
-    p.q2.f.w = 0.f ; 
+    p.q2.f.x = w_linear ;    // linear sampled wavelenth
+    p.q2.f.y = wavelength ;  // reciprocalized trick : does it really work  
+    p.q2.f.z = u0 ; 
+    p.q2.f.w = u1 ; 
 
-    p.q3.f.x = 0.f ; 
-    p.q3.f.y = 0.f ; 
+    p.q3.u.x = line ; 
+    p.q3.u.y = loop ; 
     p.q3.f.z = 0.f ; 
     p.q3.f.w = 0.f ; 
 } 

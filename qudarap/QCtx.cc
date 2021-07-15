@@ -195,6 +195,24 @@ void QCtx::copy_host_to_device( T* d, T* h, unsigned num_items)
 
 
 
+extern "C" void QCtx_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* rs, unsigned num_items ); 
+void QCtx::rng_sequence( float* rs, unsigned num_items )
+{
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, num_items, 1 ); 
+
+    float* d_rs = device_alloc<float>(num_items ); 
+
+    QCtx_rng_sequence(numBlocks, threadsPerBlock, d_ctx, d_rs, num_items );  
+
+    copy_device_to_host<float>( rs, d_rs, num_items ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
 /**
 QCtx::generate_scint
 ----------------------

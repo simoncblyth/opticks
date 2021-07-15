@@ -51,6 +51,7 @@ struct QUDARAP_API QCtx
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
 
+    void rng_sequence( float* rs, unsigned num_items );
     void generate_scint(    float* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
     void generate_cerenkov( float* wavelength, unsigned num_wavelength ); 
     void generate_cerenkov_photon( quad4* photon, unsigned num_photon ) ; 

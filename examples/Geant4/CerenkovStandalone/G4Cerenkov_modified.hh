@@ -80,6 +80,7 @@
 
 #ifdef INSTRUMENTED
 struct OpticksDebug ; 
+struct OpticksRandom ; 
 #endif 
 
 
@@ -92,6 +93,7 @@ public:
    bool looping_condition(unsigned& count); 
    OpticksDebug* gen ; 
    OpticksDebug* par ; 
+   OpticksRandom* rnd ; 
 #endif
 
 

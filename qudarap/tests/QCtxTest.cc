@@ -23,11 +23,12 @@ struct QCtxTest
     QCtx qc ; 
     QCtxTest(QCtx& qc_); 
 
+    void rng_sequence(unsigned num_rng); 
     void wavelength(char mode, unsigned num_wavelength) ; 
     void photon(unsigned num_photon); 
     void cerenkov_photon(unsigned num_photon); 
     void boundary_lookup_all();
-    void boundary_lookup_line(const char* material);
+    void boundary_lookup_line(const char* material, double nm0=80., double nm1=800., double nm_step=1. ); 
 }; 
 
 const char* QCtxTest::FOLD = "/tmp/QCtxTest" ; 
@@ -37,6 +38,16 @@ QCtxTest::QCtxTest(QCtx& qc_)
     qc(qc_)
 {
 }
+
+void QCtxTest::rng_sequence(unsigned num_rng )
+{
+    std::vector<float> rs ; 
+    rs.resize(num_rng, 0.f); 
+    qc.rng_sequence( rs.data(), rs.size() ); 
+    NP::Write( FOLD, "rng_sequence.npy" ,  rs ); 
+}
+
+
 
 void QCtxTest::wavelength(char mode, unsigned num_wavelength )
 {
@@ -98,8 +109,8 @@ void QCtxTest::cerenkov_photon(unsigned num_photon)
 
 
 /**
-test_boundary_lookup
-----------------------
+QCtxTest::boundary_lookup_all
+-------------------------------
 
 Does lookups at every texel of the 2d float4 boundary texture 
 
@@ -120,13 +131,15 @@ void QCtxTest::boundary_lookup_all()
     src->save( FOLD, "boundary_lookup_all_src.npy" ); 
 }
 
+/**
+QCtxTest::boundary_lookup_line
+-------------------------------
 
-void QCtxTest::boundary_lookup_line(const char* material)
+
+**/
+void QCtxTest::boundary_lookup_line(const char* material, double nm0 , double nm1, double nm_step )
 {
     LOG(info); 
-
-    unsigned num_lookup = 100 ; 
-    std::vector<quad> lookup(num_lookup); 
 
     unsigned line = qc.bnd->getMaterialLine(material); 
     if( line == ~0u )
@@ -135,14 +148,20 @@ void QCtxTest::boundary_lookup_line(const char* material)
         assert(0); 
     }
 
+    LOG(info) << " material " << material << " line " << line ; 
     unsigned k = 0 ;    // 0 or 1 picking the property float4 group to collect 
-    float nm0 =  80.f ; 
-    float nm1 = 800.f ; 
 
-    std::vector<float> domain(num_lookup); 
-    for(unsigned i=0 ; i < num_lookup ; i++) domain[i] = nm0 + (nm1 - nm0)*float(i)/float(num_lookup) ; 
+    std::vector<double> domain ; 
+    for(double nm=nm0 ; nm < nm1 ; nm += nm_step ) domain.push_back(nm) ; 
+    unsigned num_lookup = domain.size() ; 
+    LOG(info) << " nm0 " << nm0 << " nm1 " << nm1 << " nm_step " << nm_step << " num_lookup " << num_lookup ; 
 
-    qc.boundary_lookup_line( lookup.data(), domain.data(), num_lookup, line, k ); 
+    std::vector<float> fdomain(domain.size()); 
+    for(unsigned i=0 ; i < domain.size() ; i++ ) fdomain[i] = float(domain[i]) ;  
+
+    std::vector<quad> lookup(num_lookup) ; 
+
+    qc.boundary_lookup_line( lookup.data(), fdomain.data(), num_lookup, line, k ); 
 
 
     NP::Write( FOLD, "boundary_lookup_line_props.npy" ,       (float*)lookup.data(), num_lookup, 4  ); 
@@ -153,7 +172,7 @@ void QCtxTest::boundary_lookup_line(const char* material)
 int main(int argc, char** argv)
 {
     unsigned num = argc > 1 ? std::atoi(argv[1]) : 2820932 ; 
-    char test = argc > 2 ? argv[2][0] : 'K' ; 
+    char test = argc > 2 ? argv[2][0] : 'R' ; 
     
     OPTICKS_LOG(argc, argv); 
     LOG(info) << " num " << num << " test " << test ; 
@@ -168,13 +187,14 @@ int main(int argc, char** argv)
     QCtxTest qtc(qc); 
     switch(test)
     {
+        case 'R': qtc.rng_sequence(num)             ; break ; 
         case 'S': qtc.wavelength('S', num)          ; break ; 
         case 'C': qtc.wavelength('C', num)          ; break ; 
         case 'P': qtc.photon(num);                  ; break ; 
         case 'K': qtc.cerenkov_photon(num);         ; break ; 
         case 'A': qtc.boundary_lookup_all()         ; break ;  
         case 'W': qtc.boundary_lookup_line("Water") ; break ;  
-        case 'L': qtc.boundary_lookup_line("LS")    ; break ;  
+        case 'L': qtc.boundary_lookup_line("LS",80., 800., 0.1)    ; break ;  
     }
     return 0 ; 
 }

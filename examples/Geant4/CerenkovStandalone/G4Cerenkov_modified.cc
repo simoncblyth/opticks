@@ -75,6 +75,7 @@
 
 #ifdef INSTRUMENTED
 #include "OpticksDebug.hh"
+#include "OpticksRandom.hh"
 #endif
 
 
@@ -335,7 +336,7 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   for (G4int i = 0; i < fNumPhotons; i++) {
       // Determine photon energy
 
-      G4double rand;
+      G4double rand, rand0, rand1 ;
       G4double sampledEnergy, sampledRI; 
       G4double cosTheta, sin2Theta;
 
@@ -345,6 +346,10 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
       unsigned tail_count = 0 ; 
       unsigned continue_count = 0 ; 
       unsigned condition_count = 0 ; 
+      if(rnd)
+      {
+          rnd->setSequenceIndex(i); 
+      }
 #endif
 
 
@@ -355,8 +360,8 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #ifdef INSTRUMENTED
          head_count += 1 ; 
 #endif
-         rand = G4UniformRand();  
-         sampledEnergy = Pmin + rand * dp; 
+         rand0 = G4UniformRand();  
+         sampledEnergy = Pmin + rand0 * dp; 
          sampledRI = Rindex->Value(sampledEnergy);
 
 
@@ -386,13 +391,22 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
          //        << G4endl;
 
          sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);
-         rand = G4UniformRand();  
+         rand1 = G4UniformRand();  
 
         // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
 #ifdef INSTRUMENTED
-      } while ( looping_condition(condition_count) && rand*maxSin2 > sin2Theta  );
+
+         if( i == 0 ) std::cout 
+             << " i " << std::setw(6) << i 
+             << " rand0 " << std::fixed << std::setw(10) << std::setprecision(5) << rand0 
+             << " rand1 " << std::fixed << std::setw(10) << std::setprecision(5) << rand1
+             << std::endl 
+             ; 
+
+
+      } while ( looping_condition(condition_count) && rand1*maxSin2 > sin2Theta  );
 #else
-      } while (rand*maxSin2 > sin2Theta);
+      } while (rand1*maxSin2 > sin2Theta);
 #endif
 
 #ifdef INSTRUMENTED
@@ -407,6 +421,11 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         gen->append( head_count ,     tail_count,       "head_tail" ); 
         gen->append( continue_count , condition_count,  "continue_condition" ); 
         gen->append( BetaInverse , "BetaInverse" ); 
+ 
+        if(rnd)
+        {
+           rnd->setSequenceIndex(-1); 
+        }
 #endif
  
 

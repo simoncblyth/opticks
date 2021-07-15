@@ -80,8 +80,20 @@ class QCtxTest(object):
         p = np.load(os.path.join(self.FOLD, "boundary_lookup_line_props.npy"))
         w = np.load(os.path.join(self.FOLD, "boundary_lookup_line_wavelength.npy"))
 
+        path = "/tmp/RINDEXTest/g4_line_lookup.npy"
+        g = np.load(path) if os.path.exists(path) else None 
+
         fig, ax = plt.subplots()
-        ax.plot( w, p[:,0], drawstyle="steps", label="ri" )
+        ax.plot( w, p[:,0], drawstyle="steps", label="ri.qctx" )
+
+        if not g is None:
+            assert np.all( w  == g[:,0] ) 
+            ax.plot( w, g[:,1], drawstyle="steps", label="ri.g4" ) 
+            ri_diff = p[:,0] - g[:,1] 
+            self.ri_diff = ri_diff
+            print("ri_diff.min %s ri_diff.max %s " % (ri_diff.min(), ri_diff.max()))
+        pass
+
         #ax.plot( w, p[:,1], drawstyle="steps", label="abslen" )
         #ax.plot( w, p[:,2], drawstyle="steps", label="scatlen" )
         #ax.plot( w, p[:,3], drawstyle="steps", label="reemprob" )
@@ -91,12 +103,34 @@ class QCtxTest(object):
 
         self.p = p
         self.w = w
+        self.g = g 
+
 
 
     def cerenkov_photon(self):
         name = "cerenkov_photon"
         p = np.load(os.path.join(self.FOLD, "%s.npy" % name))
         self.p = p         
+
+    def rng_sequence(self):
+        name = "rng_sequence"
+        r = np.load(os.path.join(self.FOLD, "%s.npy" % name))
+        self.r = r         
+
+        fig, axs = plt.subplots()
+        fig.suptitle(name) 
+
+        r_dom = np.linspace(0,1,100)
+        h_r = np.histogram(r, r_dom )
+
+        ax = axs
+        ax.plot( h_r[1][:-1], h_r[0], label="h_r", drawstyle="steps" )
+
+        ax.set_ylim( 0, h_r[0].max()*2. )
+
+        ax.legend()
+
+        fig.show()
          
 
     def cerenkov_wavelength(self):
@@ -164,12 +198,13 @@ if __name__ == '__main__':
     #qc.boundary_lookup_all() 
     #qc.boundary_lookup_line() 
     #qc.cerenkov_wavelength() 
-    qc.cerenkov_photon() 
+    #qc.cerenkov_photon() 
+    qc.rng_sequence() 
 
     #w0 = qc.w0
     #e0 = qc.e0
  
-    p = qc.p
+    #p = qc.p
 
 
 

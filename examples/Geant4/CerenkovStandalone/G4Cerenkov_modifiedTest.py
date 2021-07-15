@@ -82,6 +82,8 @@ if __name__ == '__main__':
         tt[reldir] = t
     pass
 
+    qpath = "/tmp/QCtxTest/cerenkov_photon.npy"
+    q = np.load(qpath) if os.path.exists(qpath) else None
 
 for t in tt.values():
 
@@ -113,6 +115,13 @@ for t in tt.values():
     r = t.gen("sampledRI")  
     c = t.gen("cosTheta") 
 
+    if not q is None:
+        qe = q[:,0,0]
+        qw = q[:,0,1]
+        qr = q[:,0,2]
+        qc = q[:,0,3]
+    pass
+
     s2 = t.gen("sin2Theta")
     bi = t.gen("BetaInverse") 
     ht = t.gen("head_tail").copy().view(np.uint32).reshape(-1,2)
@@ -130,6 +139,13 @@ for t in tt.values():
     h_r = np.histogram(r, r_dom)
     h_c = np.histogram(c, c_dom)
     h_s2 = np.histogram(s2, s2_dom)
+
+    if not q is None:
+       q_e = np.histogram( qw, e_dom ) 
+       q_w = np.histogram( qw, w_dom ) 
+       q_r = np.histogram( qr, r_dom ) 
+       q_c = np.histogram( qc, c_dom ) 
+    pass
 
     nrows = 2
     ncols = 3 
@@ -149,11 +165,20 @@ for t in tt.values():
 
     ax = axs[0,1]
     ax.plot( h_w[1][:-1], h_w[0], label="w", drawstyle="steps" )
+    if not q is None:
+        ax.plot( q_w[1][:-1], q_w[0], label="q_w", drawstyle="steps" )
+    pass   
+
     ax.set_ylim( 0, h_w[0].max()*1.1 )
     ax.legend()
 
     ax = axs[0,2]
     ax.plot( h_r[1][:-1], h_r[0], label="ri", drawstyle="steps" )
+    if not q is None:
+        ax.plot( q_r[1][:-1], q_r[0], label="q_r", drawstyle="steps" )
+    pass   
+
+
     ax.set_ylim( 0, h_r[0].max()*1.1 )
     ylim = ax.get_ylim() 
     ax.plot( [nMax, nMax], ylim,  color="r", linestyle="dashed" )
@@ -161,6 +186,11 @@ for t in tt.values():
 
     ax = axs[1,0]
     ax.plot( h_c[1][:-1], h_c[0], label="c", drawstyle="steps" )
+    if not q is None:
+        ax.plot( q_c[1][:-1], q_c[0], label="q_c", drawstyle="steps" )
+    pass   
+
+
     ax.set_ylim( 0, h_c[0].max()*1.1 )
 
     h_c_imx = np.argmax(h_c[0])
