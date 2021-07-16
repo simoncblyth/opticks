@@ -200,7 +200,7 @@ void TRngBuf<T>::operator()(unsigned id)
         unsigned uoffset = uid*m_nj+j ;
         if(uoffset < m_num_elem)
         {
-            m_dev[uoffset] = curand_uniform(&s)  ; 
+            m_dev[uoffset] = curand_uniform(&s)  ;   // ? PROMOTING RANDOM FLOAT TO DOUBLE WHEN T=double ? NOT GENERATING A DOUBLE 
         }
     }
 } 

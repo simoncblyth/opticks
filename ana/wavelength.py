@@ -34,7 +34,7 @@ from opticks.ana.key import keydir
 
 class Wavelength(object):
     """
-    Comparing localSamples with horsed
+    Comparing wavelength distribs between many different samples
     """
     def get_key(self, label):
         key = None 
@@ -78,8 +78,8 @@ class Wavelength(object):
         l[6] = "GScintillatorLib_np_interp"
         p[6] = os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy") 
 
-        l[7] = "ck_photon"
-        p[7] = os.path.join("/tmp/QCtxTest", "cerenkov_photon.npy")
+        l[7] = "ck_photon_10k"
+        p[7] = os.path.join("/tmp/QCtxTest", "cerenkov_photon_10000.npy")
       
         l[8] = "G4Cerenkov_modified_SKIP_CONTINUE"
         p[8] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_step_length_100000.000_SKIP_CONTINUE", "GenWavelength.npy")
@@ -87,7 +87,14 @@ class Wavelength(object):
         l[9] = "G4Cerenkov_modified_ASIS"
         p[9] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_step_length_100000.000_ASIS", "GenWavelength.npy")
 
- 
+        l[10] = "G4Cerenkov_modified_SKIP_CONTINUE_10k"
+        p[10] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_10000_SKIP_CONTINUE", "GenWavelength.npy")
+
+        l[11] = "G4Cerenkov_modified_SKIP_CONTINUE_3M"
+        p[11] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_3000000_SKIP_CONTINUE", "GenWavelength.npy")
+
+
+
         dom = np.arange(80, 400, 4)  
         #dom = np.arange(300, 600, 1)  
         #dom = np.arange(385, 475, 1)  
@@ -106,7 +113,7 @@ class Wavelength(object):
                 h[i] = None
             else:
                 a[i] = np.load(p[i])
-                if l[i] == "ck_photon":
+                if l[i].startswith("ck_photon"):
                     w[i] = a[i][:,0,1] 
                 elif l[i].startswith("G4Cerenkov_modified"):
                     w[i] = a[i][:,0,1] 

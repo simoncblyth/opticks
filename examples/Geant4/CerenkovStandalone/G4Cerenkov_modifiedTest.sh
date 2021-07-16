@@ -19,6 +19,7 @@ else
     interactive=1
 fi 
 
+
 if [ $docompile -eq 1 ]; then
     cks-compile ${srcs[@]}
     eval $(cks-compile ${srcs[@]})
@@ -31,12 +32,16 @@ eval $(cks-run $name) $*
 echo cks-run succeeds
 
 
-if [ $interactive -eq 1 ]; then 
-    ipython -i $name.py
-    [ $? -ne 0 ] && echo analysis FAIL && exit 3
-else
-    python $name.py
-    [ $? -ne 0 ] && echo analysis FAIL && exit 3
-fi
+analysis=0
+if [ $analysis -eq 1 ]; then 
+    if [ $interactive -eq 1 ]; then 
+        ipython -i $name.py
+        [ $? -ne 0 ] && echo analysis FAIL && exit 3
+    else
+        python $name.py
+        [ $? -ne 0 ] && echo analysis FAIL && exit 3
+    fi
+fi 
+
 
 

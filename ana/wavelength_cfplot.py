@@ -13,6 +13,8 @@ wavelength_cfplot.py
     ARG=3 ipython -i wavelength_cfplot.py
 
     ARG=4 ipython -i wavelength_cfplot.py
+    ARG=5 ipython -i wavelength_cfplot.py
+    ARG=6 ipython -i wavelength_cfplot.py
 
 
     mkdir -p ~/simoncblyth.bitbucket.io/env/presentation/ana/wavelength_cfplot
@@ -50,6 +52,10 @@ if __name__ == '__main__':
         a, b = wl.get_keys('DsG4Scintillator_G4OpticksAnaMgr', 'Opticks_QCtxTest_hd0_cudaFilterModePoint')
     elif arg == 4:
         a, b = wl.get_keys('G4Cerenkov_modified_SKIP_CONTINUE', 'ck_photon' )
+    elif arg == 5:
+        a, b = wl.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_10k', 'ck_photon_10k' )
+    elif arg == 6:
+        a, b = wl.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_3M', 'ck_photon' )
     else:
         assert 0
     pass
@@ -73,7 +79,7 @@ if __name__ == '__main__':
 
     fig, axs = one_cfplot(ok, h, xline=xline )
 
-    if arg == 4:
+    if arg in [4,5]:
 
         rindex = np.load(os.path.join(kd, "GScintillatorLib/LS_ori/RINDEX.npy"))
         rindex[:,0] *= 1e6   
@@ -87,16 +93,19 @@ if __name__ == '__main__':
             ax.plot( [rindex[i,0], rindex[i,0]], ylim , linestyle="dotted", color="b" )
         pass
 
-
         axr = ax.twinx() 
         axr.set_ylabel("rindex")
         axr.spines['right'].set_position(('outward', 0))
 
         p3, = axr.plot( rindex[:,0] , rindex[:,1], drawstyle="steps", label="rindex", color="b" )
-        axs[0].set_xlim(100,400)
-        axs[1].set_xlim(100,400)
 
-        axs[1].set_ylim(0,300)
+        #wmin, wmax = 100., 400.
+        wmin, wmax = 80., 800.
+        
+        axs[0].set_xlim(wmin,wmax)
+        axs[1].set_xlim(wmin,wmax)
+
+        axs[1].set_ylim(0,1)
     pass
 
     plt.ion()

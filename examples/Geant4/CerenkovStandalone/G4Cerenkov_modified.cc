@@ -105,6 +105,9 @@ G4Cerenkov_modified::G4Cerenkov_modified(const G4String& processName, G4ProcessT
              fMaxBetaChange(0.0),
              fMaxPhotons(0),
              fStackingFlag(true),
+#ifdef INSTRUMENTED
+             override_fNumPhotons(0),
+#endif
              fNumPhotons(0)
 {
   SetProcessSubType(fCerenkov);
@@ -233,6 +236,14 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   MeanNumberOfPhotons = MeanNumberOfPhotons * step_length;
 
   fNumPhotons = (G4int) G4Poisson(MeanNumberOfPhotons);
+
+#ifdef INSTRUMENTED
+   if( override_fNumPhotons > 0 )
+   { 
+       fNumPhotons = override_fNumPhotons ; 
+   }
+#endif
+
 
   // calculate the fNumPhotons1 and fNumPhotons2 {
 
@@ -399,6 +410,13 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
          if( i == 0 ) std::cout 
              << " i " << std::setw(6) << i 
              << " rand0 " << std::fixed << std::setw(10) << std::setprecision(5) << rand0 
+             << " Pmin/eV " << std::fixed << std::setw(10) << std::setprecision(5) << Pmin/eV
+             << " Pmax/eV " << std::fixed << std::setw(10) << std::setprecision(5) << Pmax/eV
+             << " dp " << std::fixed << std::setw(10) << std::setprecision(5) << dp
+             << " sampledEnergy/eV " << std::fixed << std::setw(10) << std::setprecision(5) << sampledEnergy/eV
+             << " sampledRI " << std::fixed << std::setw(10) << std::setprecision(5) << sampledRI
+             << " cosTheta " << std::fixed << std::setw(10) << std::setprecision(5) << cosTheta
+             << " sin2Theta " << std::fixed << std::setw(10) << std::setprecision(5) << sin2Theta
              << " rand1 " << std::fixed << std::setw(10) << std::setprecision(5) << rand1
              << std::endl 
              ; 
@@ -410,9 +428,10 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 #ifdef INSTRUMENTED
+        G4double sampledEnergy_eV = sampledEnergy/eV ; 
         G4double sampledWavelength_nm = h_Planck*c_light/sampledEnergy/nm ;
 
-        gen->append( sampledEnergy ,           "sampledEnergy" ); 
+        gen->append( sampledEnergy_eV ,       "sampledEnergy" ); 
         gen->append( sampledWavelength_nm ,    "sampledWavelength" ); 
         gen->append( sampledRI ,               "sampledRI" ); 
         gen->append( cosTheta ,                "cosTheta" ); 

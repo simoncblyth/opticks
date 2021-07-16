@@ -20,6 +20,8 @@
 struct QCtxTest
 {
     static const char* FOLD ; 
+    static std::string MakeName(const char* prefix, unsigned num, const char* ext);
+
     QCtx qc ; 
     QCtxTest(QCtx& qc_); 
 
@@ -44,7 +46,9 @@ void QCtxTest::rng_sequence(unsigned num_rng )
     std::vector<float> rs ; 
     rs.resize(num_rng, 0.f); 
     qc.rng_sequence( rs.data(), rs.size() ); 
-    NP::Write( FOLD, "rng_sequence.npy" ,  rs ); 
+
+    std::string name = MakeName("rng_sequence_", num_rng, ".npy" ); 
+    NP::Write( FOLD, name.c_str() ,  rs ); 
 }
 
 
@@ -72,7 +76,8 @@ void QCtxTest::wavelength(char mode, unsigned num_wavelength )
         qc.generate_cerenkov( w.data(), w.size() ); 
         ss << "_cerenkov" ; 
     }
-    ss << ".npy" ; 
+
+    ss << "_" << num_wavelength << ".npy" ; 
     std::string s = ss.str();
     const char* name = s.c_str(); 
 
@@ -90,7 +95,17 @@ void QCtxTest::photon(unsigned num_photon)
 
     qc.generate(   p.data(), p.size() ); 
     qc.dump(       p.data(), p.size() ); 
-    NP::Write( FOLD, "photon.npy" ,  (float*)p.data(), p.size(), 4, 4  ); 
+
+    std::string name = MakeName("photon_", num_photon, ".npy" ); 
+    NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
+}
+
+
+std::string QCtxTest::MakeName(const char* prefix, unsigned num, const char* ext)
+{
+    std::stringstream ss ; 
+    ss << prefix << num << ext ; 
+    return ss.str(); 
 }
 
 
@@ -102,7 +117,10 @@ void QCtxTest::cerenkov_photon(unsigned num_photon)
 
     qc.generate_cerenkov_photon(   p.data(), p.size() ); 
     qc.dump(       p.data(), p.size() ); 
-    NP::Write( FOLD, "cerenkov_photon.npy" ,  (float*)p.data(), p.size(), 4, 4  ); 
+
+  
+    std::string name = MakeName("cerenkov_photon_", num_photon, ".npy" ); 
+    NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
 }
 
 
@@ -171,8 +189,12 @@ void QCtxTest::boundary_lookup_line(const char* material, double nm0 , double nm
 
 int main(int argc, char** argv)
 {
-    unsigned num = argc > 1 ? std::atoi(argv[1]) : 2820932 ; 
-    char test = argc > 2 ? argv[2][0] : 'R' ; 
+    //unsigned num_default = 2820932 ; 
+    unsigned num_default = 10000 ; 
+    //unsigned num_default = 3000000 ; 
+
+    unsigned num = argc > 1 ? std::atoi(argv[1]) : num_default ; 
+    char test = argc > 2 ? argv[2][0] : 'K' ; 
     
     OPTICKS_LOG(argc, argv); 
     LOG(info) << " num " << num << " test " << test ; 

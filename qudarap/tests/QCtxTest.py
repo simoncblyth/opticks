@@ -19,6 +19,12 @@ class QCtxTest(object):
     FOLD = "/tmp/QCtxTest"
     hc_eVnm = 1240. 
 
+    @classmethod
+    def LoadCK(cls, num=10000):
+        path = os.path.join( cls.FOLD, "cerenkov_photon_%d.npy" % num )
+        p = np.load(path)
+        return p 
+
     def scint_wavelength(self):
         """
         See::
@@ -191,20 +197,42 @@ class QCtxTest(object):
  
 
 if __name__ == '__main__':
-    qc = QCtxTest()    
+    q = QCtxTest()    
 
 
-    #qc.scint_wavelength()
-    #qc.boundary_lookup_all() 
-    #qc.boundary_lookup_line() 
-    #qc.cerenkov_wavelength() 
-    #qc.cerenkov_photon() 
-    qc.rng_sequence() 
+    #q.scint_wavelength()
+    #q.boundary_lookup_all() 
+    #q.boundary_lookup_line() 
+    #q.cerenkov_wavelength() 
+    q.cerenkov_photon() 
+    #q.rng_sequence() 
 
-    #w0 = qc.w0
-    #e0 = qc.e0
+    #w0 = q.w0
+    #e0 = q.e0
  
-    #p = qc.p
+    #p = q.p
+
+
+    en = p[0,0,0]
+    wl = p[0,0,1]
+    ri = p[0,0,2]
+    ct = p[0,0,3]
+
+    s2 = p[0,1,0]
+    bi = p[0,1,3]
+
+    w0 = p[0,2,0]
+    w1 = p[0,2,1]
+    u0 = p[0,2,2] 
+    u1 = p[0,2,3]  
+
+    li = p[0,3,0].view(np.int32)
+    lo = p[0,3,1].view(np.int32)
+
+
+
+
+ 
 
 
 

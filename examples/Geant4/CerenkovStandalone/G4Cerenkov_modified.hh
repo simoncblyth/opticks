@@ -196,6 +196,7 @@ public:
   // Return the boolean for whether or not the scint. photons are stacked
 
   G4int GetNumPhotons() const;
+
   G4int GetNumPhotons1() const;
   G4int GetNumPhotons2() const;
   // Returns the current number of scint. photons (after PostStepDoIt)
@@ -242,6 +243,12 @@ private:
   G4int  fMaxPhotons;
 
   G4bool fStackingFlag;
+
+#ifdef INSTRUMENTED
+public:
+  G4int override_fNumPhotons ;  
+private:
+#endif
 
   G4int fNumPhotons;
   G4int fNumPhotons1; // mean

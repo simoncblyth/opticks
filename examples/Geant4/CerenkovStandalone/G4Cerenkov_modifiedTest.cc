@@ -18,7 +18,7 @@
 struct G4Cerenkov_modifiedTest
 {
     static const char* FOLD ; 
-    static std::string MakeLabel( double BetaInverse, double step_length_ ); 
+    static std::string MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons ); 
 
     NP*                       a ;  
     G4MaterialPropertyVector* rindex ; 
@@ -31,7 +31,7 @@ struct G4Cerenkov_modifiedTest
     G4Cerenkov_modifiedTest(const char* rindex_path, const char* random_path) ;  
 
     void scanBetaInverse(double v0, double v1, double st) ; 
-    void PSDI(double BetaInverse, double step_length );
+    void PSDI(double BetaInverse, double step_length, int override_fNumPhotons=-1 );
     void save(const G4VParticleChange* pc, const char* reldir  );
 
 }; 
@@ -84,14 +84,20 @@ void G4Cerenkov_modifiedTest::scanBetaInverse(double v0, double v1, double st)
 }
 
 
-std::string G4Cerenkov_modifiedTest::MakeLabel( double BetaInverse, double step_length_ )
+std::string G4Cerenkov_modifiedTest::MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons  )
 {
     std::stringstream ss ; 
 
-    ss 
-       << "BetaInverse_" << std::fixed << std::setprecision(3) << BetaInverse  << "_" 
-       << "step_length_" << std::fixed << std::setprecision(3) << step_length_ << "_"
-       ; 
+    ss << "BetaInverse_" << std::fixed << std::setprecision(3) << BetaInverse  << "_" ; 
+
+    if( override_fNumPhotons <= 0 )
+    {
+       ss << "step_length_" << std::fixed << std::setprecision(3) << step_length_ << "_" ;
+    }
+    else
+    {
+       ss << "override_fNumPhotons_" << override_fNumPhotons << "_" ;
+    }
 
 #ifdef SKIP_CONTINUE
     ss << "SKIP_CONTINUE" ;  
@@ -103,9 +109,9 @@ std::string G4Cerenkov_modifiedTest::MakeLabel( double BetaInverse, double step_
 } 
 
 
-void G4Cerenkov_modifiedTest::PSDI(double BetaInverse, double step_length_)
+void G4Cerenkov_modifiedTest::PSDI(double BetaInverse, double step_length_, int override_fNumPhotons )
 {
-    std::string label = MakeLabel(BetaInverse, step_length_); 
+    std::string label = MakeLabel(BetaInverse, step_length_ , override_fNumPhotons ); 
     const char* reldir = label.c_str(); 
     std::cout << "G4Cerenkov_modifiedTest::PSDI [" << label << "]" << std::endl ; 
 
@@ -153,14 +159,15 @@ void G4Cerenkov_modifiedTest::PSDI(double BetaInverse, double step_length_)
    
     track->SetStep(step); 
 
+    if( override_fNumPhotons > 0 )
+    {
+        proc->override_fNumPhotons = override_fNumPhotons ;  
+    }
+
     G4VParticleChange* change = proc->PostStepDoIt(*track, *step) ; 
 
     assert( change ) ;
     save(change, reldir); 
-
-
-
-
 }
 
 
@@ -251,26 +258,37 @@ int main(int argc, char** argv)
     double default_BetaInverse = 1.5 ; 
     double default_step_length = 100.*1000. ;  // (mm) : large to bump up the photon stats
     default_step_length = 100. ; 
+    int default_override_fNumPhotons = 3000000 ;  // -ve to use standard depending on step_length
 
     double BetaInverse = argc > 1 ? std::stod(argv[1]) : default_BetaInverse ;  
     double step_length = argc > 2 ? std::stod(argv[2]) : default_step_length ; 
+    int override_fNumPhotons = argc > 3 ? atoi(argv[3]) : default_override_fNumPhotons ; 
 
 
     const char* rindex_path = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
-    const char* random_path = "/tmp/blyth/opticks/TRngBufTest_0.npy" ; 
+    //const char* random_path = "/tmp/blyth/opticks/TRngBufTest_0.npy" ; 
+    const char* random_path = nullptr ; 
+    
 
+    double hc_eVnm = h_Planck*c_light/(eV*nm) ; 
     std::cout 
          << " rindex_path " << rindex_path 
          << " random_path " << ( random_path ? random_path : "-" ) 
          << " BetaInverse " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse 
          << " step_length " << std::setw(10) << std::fixed << std::setprecision(4) << step_length
+         << " override_fNumPhotons " << override_fNumPhotons
+         << " hc_eVnm " << std::setw(20) << std::fixed << std::setprecision(10) << hc_eVnm  
          << std::endl 
          ;
 
     G4Cerenkov_modifiedTest t(rindex_path, random_path); 
     t.scanBetaInverse(1., 2., 0.1); 
 
-    t.PSDI(BetaInverse, step_length); 
+    t.PSDI(BetaInverse, step_length, override_fNumPhotons ); 
+
+
+
+
 
     return 0 ;
 }

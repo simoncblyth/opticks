@@ -39,6 +39,8 @@ struct qctx
     quad4*              boundary_meta ; 
     unsigned            boundary_tex_MaterialLine_Water ;
     unsigned            boundary_tex_MaterialLine_LS ; 
+
+    static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
  
 
     quad6*              genstep ; 
@@ -402,9 +404,15 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
 
         loop += 1 ; 
 
+        if( id == 0 )
+        {
+            printf("//qctx::cerenkov_photon id %d u0 %10.4f sampledRI %10.4f cosTheta %10.4f sin2Theta %10.4f u1 %10.4f \n", id, u0, sampledRI, cosTheta, sin2Theta, u1 );
+        }
+
+
     } while ( u_maxSin2 > sin2Theta );
 
-    float energy = 1240.f/wavelength ; 
+    float energy = hc_eVnm/wavelength ; 
 
     p.q0.f.x = energy ; 
     p.q0.f.y = wavelength ; 
@@ -476,29 +484,18 @@ inline QCTX_METHOD void qctx::cerenkov_fabricate_genstep(GS& g )
     g.ck1.weight = 1.f ; 
     g.ck1.preVelocity = 0.f ; 
 
+    float Pmin = 1.55f ; 
+    float Pmax = 15.5f ; 
+
     g.ck1.BetaInverse = BetaInverse ;      //  g.ck1.BetaInverse/sampledRI  : yields the cone angle cosTheta
-    g.ck1.Wmin = 1240./10.33f ;            //  min wavelength from low edge of high energy bin
-    g.ck1.Wmax = 800.f ;                   //  max wavelength 
+    g.ck1.Wmin = hc_eVnm/Pmax ;   // close to: 1240./15.5 = 80.               
+    g.ck1.Wmax = hc_eVnm/Pmin ;   // close to: 1240./1.55 = 800.              
     g.ck1.maxCos = maxCos  ;               //  is this used?          
 
     g.ck1.maxSin2 = maxSin2 ;              // constrains cone angle rejection sampling   
     g.ck1.MeanNumberOfPhotons1 = 0.f ; 
     g.ck1.MeanNumberOfPhotons2 = 0.f ; 
     g.ck1.postVelocity = 0.f ; 
-
-/**
-
-In [2]: rindex[:,0]*1e6                                                                                                                                                                        
-Out[2]: array([ 1.55  ,  1.7951,  2.105 ,  2.2708,  2.5511,  2.845 ,  3.0636,  4.1328,  6.2   ,  6.526 ,  6.889 ,  7.294 ,  7.75  ,  8.267 ,  8.857 ,  9.538 , 10.33  , 15.5   ])
-
-In [3]: 1240./10.33                                                                                                                                                                            
-Out[3]: 120.03872216844144
-
-In [4]: 1240./15.5                                                                                                                                                                             
-Out[4]: 80.0
-
-
-**/
 
 } 
 
