@@ -153,3 +153,38 @@ std::string OpticksDebug::prepare_path(const char* dir_, const char* reldir_, co
 }
 
 
+/**
+OpticksDebug::ListDir
+-----------------------
+
+From BDir::dirlist, collect names of files within directory *path* with names ending with *ext*.
+
+**/
+
+void OpticksDebug::ListDir(std::vector<std::string>& names,  const char* path, const char* ext) // static
+{
+    fs::path dir(path);
+    if(!( fs::exists(dir) && fs::is_directory(dir))) return ; 
+
+    fs::directory_iterator it(dir) ;
+    fs::directory_iterator end ;
+   
+    for(; it != end ; ++it)
+    {   
+        std::string fname = it->path().filename().string() ;
+        const char* fnam = fname.c_str();
+
+        if(strlen(fnam) > strlen(ext) && strcmp(fnam + strlen(fnam) - strlen(ext), ext)==0)
+        {   
+            names.push_back(fnam);
+        }   
+    }   
+
+    std::sort( names.begin(), names.end() ); 
+
+
+}
+
+
+
+

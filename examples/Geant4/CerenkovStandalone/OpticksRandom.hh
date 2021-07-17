@@ -38,8 +38,8 @@ struct OpticksRandom : public CLHEP::HepRandomEngine
 
     CLHEP::HepRandomEngine*  m_default ;
 
+    OpticksRandom(const NP* seq); 
 
-    OpticksRandom(const char* path); 
     virtual ~OpticksRandom(); 
 
     void setSequenceIndex(int seq_index);  

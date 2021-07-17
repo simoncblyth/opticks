@@ -28,6 +28,14 @@
 
 namespace fs = boost::filesystem;
 
+/**
+BDir::dirlist
+---------------
+
+Collect basenames (aka stems) of files within directory *path* with names ending with *ext*.
+
+**/
+
 void BDir::dirlist(std::vector<std::string>& basenames,  const char* path, const char* ext)
 {
     fs::path dir(path);

@@ -30,6 +30,8 @@ struct OpticksDebug
     OpticksDebug(unsigned itemsize, const char* name); 
 
     static std::string prepare_path(const char* dir_, const char* reldir_, const char* name );
+    static void ListDir(std::vector<std::string>& names,  const char* path, const char* ext); 
+
     static NP* LoadArray(const char* kdpath);
     static G4MaterialPropertyVector* MakeProperty(const NP* a);
     static G4Material* MakeMaterial(G4MaterialPropertyVector* rindex) ; 

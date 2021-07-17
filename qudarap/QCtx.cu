@@ -12,7 +12,7 @@ MORE EASILY TESTED FROM MULTIPLE ENVIRONMENTS HEADERS
 #include "qctx.h"
 
 
-__global__ void _QCtx_rng_sequence(qctx* ctx, float* rs, unsigned num_items )
+__global__ void _QCtx_rng_sequence_0(qctx* ctx, float* rs, unsigned num_items )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_items) return;
@@ -22,11 +22,57 @@ __global__ void _QCtx_rng_sequence(qctx* ctx, float* rs, unsigned num_items )
     rs[id] = u ; 
 }
 
-extern "C" void QCtx_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* rs, unsigned num_items )
+extern "C" void QCtx_rng_sequence_0(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* rs, unsigned num_items )
 {
-    printf("//QCtx_rng_sequence num_items %d \n", num_items ); 
-    _QCtx_rng_sequence<<<numBlocks,threadsPerBlock>>>( ctx, rs, num_items );
+    printf("//QCtx_rng_sequence_0 num_items %d \n", num_items ); 
+    _QCtx_rng_sequence_0<<<numBlocks,threadsPerBlock>>>( ctx, rs, num_items );
 } 
+
+
+
+
+
+
+__global__ void _QCtx_rng_sequence_f(qctx* ctx, float* seq, unsigned ni, unsigned nv, unsigned ioffset )
+{
+    unsigned i = blockIdx.x*blockDim.x + threadIdx.x;
+    if (i >= ni) return;
+    curandState rng = *(ctx->r + i + ioffset) ; 
+    unsigned ibase = i*nv ; 
+
+    for(unsigned v=0 ; v < nv ; v++)
+    {
+        float u = curand_uniform(&rng) ;
+        seq[ibase+v] = u ;
+    } 
+}
+extern "C" void QCtx_rng_sequence_f(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float*  seq, unsigned ni, unsigned nv, unsigned ioffset )
+{
+    printf("//QCtx_rng_sequence_f ni %d nv %d ioffset %d  \n", ni, nv, ioffset ); 
+    _QCtx_rng_sequence_f<<<numBlocks,threadsPerBlock>>>( ctx, seq, ni, nv, ioffset );
+
+}
+
+__global__ void _QCtx_rng_sequence_d(qctx* ctx, double* seq, unsigned ni, unsigned nv, unsigned ioffset )
+{
+    unsigned i = blockIdx.x*blockDim.x + threadIdx.x;
+    if (i >= ni) return;
+    curandState rng = *(ctx->r + i + ioffset) ; 
+    unsigned ibase = i*nv ; 
+
+    for(unsigned v=0 ; v < nv ; v++)
+    {
+        double u = curand_uniform_double(&rng) ;
+        seq[ibase+v] = u ;
+    } 
+}
+extern "C" void QCtx_rng_sequence_d(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, double* seq, unsigned ni, unsigned nv, unsigned ioffset )
+{
+    printf("//QCtx_rng_sequence_d ni %d nv %d ioffset %d  \n", ni, nv, ioffset ); 
+    _QCtx_rng_sequence_d<<<numBlocks,threadsPerBlock>>>( ctx, seq, ni, nv, ioffset );
+}
+
+
 
 
 

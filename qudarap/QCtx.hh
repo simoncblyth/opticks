@@ -32,6 +32,7 @@ union  quad ;
 struct QUDARAP_API QCtx
 {
     static const plog::Severity LEVEL ; 
+    static const char* PREFIX ; 
     static const QCtx* INSTANCE ; 
     static const QCtx* Get(); 
     static QScint* MakeScint(const GScintillatorLib* slib);
@@ -50,8 +51,15 @@ struct QUDARAP_API QCtx
     std::string desc() const ; 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
+    void rng_sequence_0( float* rs, unsigned num_items );
 
-    void rng_sequence( float* rs, unsigned num_items );
+    template <typename T> void rng_sequence_( dim3 numblocks, dim3 threadsPerBlock, qctx* d_ctx, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
+    template <typename T> static char typecode() ; 
+    template <typename T> static std::string rng_sequence_name(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset );
+    template <typename T> void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset ); 
+    template <typename T> void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
+
+
     void generate_scint(    float* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
     void generate_cerenkov( float* wavelength, unsigned num_wavelength ); 
     void generate_cerenkov_photon( quad4* photon, unsigned num_photon ) ; 
@@ -65,6 +73,7 @@ struct QUDARAP_API QCtx
     template<typename T> T* device_alloc( unsigned num_items ) ; 
     template<typename T> void device_free( T* d ) ; 
     template<typename T> void copy_device_to_host( T* h, T* d,  unsigned num_items);
+    template<typename T> void copy_device_to_host_and_free( T* h, T* d,  unsigned num_items);
     template<typename T> void copy_host_to_device( T* d, T* h,  unsigned num_items);
 
 

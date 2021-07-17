@@ -178,8 +178,16 @@ void QCtx::device_free( T* d)
 }
 
 
+
 template<typename T>
 void QCtx::copy_device_to_host( T* h, T* d,  unsigned num_items)
+{
+    size_t size = num_items*sizeof(T) ; 
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
+}
+
+template<typename T>
+void QCtx::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items)
 {
     size_t size = num_items*sizeof(T) ; 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
@@ -195,8 +203,8 @@ void QCtx::copy_host_to_device( T* d, T* h, unsigned num_items)
 
 
 
-extern "C" void QCtx_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* rs, unsigned num_items ); 
-void QCtx::rng_sequence( float* rs, unsigned num_items )
+extern "C" void QCtx_rng_sequence_0(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* rs, unsigned num_items ); 
+void QCtx::rng_sequence_0( float* rs, unsigned num_items )
 {
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
@@ -204,12 +212,166 @@ void QCtx::rng_sequence( float* rs, unsigned num_items )
 
     float* d_rs = device_alloc<float>(num_items ); 
 
-    QCtx_rng_sequence(numBlocks, threadsPerBlock, d_ctx, d_rs, num_items );  
+    QCtx_rng_sequence_0(numBlocks, threadsPerBlock, d_ctx, d_rs, num_items );  
 
-    copy_device_to_host<float>( rs, d_rs, num_items ); 
+    copy_device_to_host_and_free<float>( rs, d_rs, num_items ); 
 
     LOG(LEVEL) << "]" ; 
 }
+
+/**
+QCtx::rng_sequence mass production with multiple launches...
+--------------------------------------------------------------
+
+Split output files too ?::
+
+    epsilon:opticks blyth$ np.py *.npy 
+    a :                                            TRngBufTest_0.npy :      (10000, 16, 16) : 8f9b27c9416a0121574730baa742b5c9 : 20210715-1227 
+    epsilon:opticks blyth$ du -h TRngBufTest_0.npy
+     20M	TRngBufTest_0.npy
+
+    In [6]: (16*16*4*2*10000)/1e6
+    Out[6]: 20.48
+
+Upping to 1M would be 100x 20M = 2000M  2GB
+
+* using floats would half storage to 1GB, just promote to double in cks/OpticksRandom::flat 
+  THIS MAKES SENSE AS curand_uniform IS GENERATING float anyhow 
+* 100k blocks would mean 10*100Mb files for 1M : can do in 10 launches to work on any GPU 
+
+**/
+
+
+extern "C" void QCtx_rng_sequence_f(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float*  seq, unsigned ni, unsigned nj, unsigned ioffset ); 
+extern "C" void QCtx_rng_sequence_d(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, double* seq, unsigned ni, unsigned nj, unsigned ioffset ); 
+
+
+
+/**
+QCtx::rng_sequence_
+---------------------
+
+This is a workaround for not being able to template extern C symbols 
+using template specialization for float and double.
+With useful implementation only in the template specializations.
+
+**/
+
+template <typename T>
+void QCtx::rng_sequence_( dim3 numblocks, dim3 threadsPerBlock, qctx* d_ctx, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset )
+{
+    assert(0); 
+}
+template<>
+void QCtx::rng_sequence_<float>(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset )
+{
+    QCtx_rng_sequence_f( numBlocks, threadsPerBlock, d_ctx, d_seq, ni_tranche, nv, ioffset );     
+}
+template<>
+void QCtx::rng_sequence_<double>(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, double* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset )
+{
+    QCtx_rng_sequence_d( numBlocks, threadsPerBlock, d_ctx, d_seq, ni_tranche, nv, ioffset );     
+}
+
+
+
+
+
+template <typename T> char QCtx::typecode(){ return '?' ; }  // static 
+template <> char QCtx::typecode<float>(){  return 'f' ; }
+template <> char QCtx::typecode<double>(){ return 'd' ; }
+
+template <typename T>
+std::string QCtx::rng_sequence_name(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) // static 
+{
+    std::stringstream ss ; 
+    ss << prefix
+       << "_" << typecode<T>()
+       << "_ni" << ni 
+       << "_nj" << nj 
+       << "_nk" << nk 
+       << "_ioffset" << std::setw(6) << std::setfill('0') << ioffset 
+       << ".npy"
+       ; 
+
+    std::string name = ss.str(); 
+    return name ; 
+}
+template std::string QCtx::rng_sequence_name<float>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) ; 
+template std::string QCtx::rng_sequence_name<double>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) ; 
+
+
+template <typename T>
+void QCtx::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned ioffset )
+{
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, ni_tranche, 1 ); 
+
+    unsigned num_rng = ni_tranche*nv ;  
+
+    T* d_seq = device_alloc<T>(num_rng); 
+
+    rng_sequence_<T>(numBlocks, threadsPerBlock, d_ctx, d_seq, ni_tranche, nv, ioffset );  
+
+    copy_device_to_host_and_free<T>( seq, d_seq, num_rng ); 
+}
+
+
+const char* QCtx::PREFIX = "rng_sequence" ; 
+
+/**
+QCtx::rng_sequence
+---------------------
+
+Structured reldir with appropriate name 
+
+**/
+
+template <typename T>
+void QCtx::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  )
+{
+    assert( ni % ni_tranche_size == 0 ); 
+    unsigned num_tranche = ni/ni_tranche_size ; 
+    unsigned nv = nj*nk ; 
+    unsigned size = ni_tranche_size*nv ; 
+
+    std::cout 
+        << "QCtx::rng_sequence" 
+        << " ni " << ni
+        << " ni_tranche_size " << ni_tranche_size
+        << " num_tranche " << num_tranche 
+        << " nj " << nj
+        << " nk " << nk
+        << " nv(nj*nk) " << nv 
+        << " size(ni_tranche_size*nv) " << size 
+        << " typecode " << typecode<T>() 
+        << std::endl 
+        ; 
+
+    NPY<T>* seq = NPY<T>::make(ni_tranche_size, nj, nk) ; 
+    seq->zero(); 
+    T* values = seq->getValues(); 
+
+    for(unsigned t=0 ; t < num_tranche ; t++)
+    {
+        unsigned ioffset = ni_tranche_size*t ; 
+        std::string name = rng_sequence_name<T>(PREFIX, ni_tranche_size, nj, nk, ioffset ) ;  
+
+        std::cout 
+            << std::setw(3) << t 
+            << std::setw(10) << ioffset 
+            << std::setw(100) << name.c_str()
+            << std::endl 
+            ; 
+
+        rng_sequence<T>( values, ni_tranche_size, nv, ioffset );  
+        seq->save(dir, name.c_str()); 
+    }
+}
+template void QCtx::rng_sequence<float>( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  ); 
+template void QCtx::rng_sequence<double>( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  ); 
+
 
 
 
@@ -239,7 +401,7 @@ void QCtx::generate_scint( float* wavelength, unsigned num_wavelength, unsigned&
 
     QCtx_generate_scint_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength, hd_factor );  
 
-    copy_device_to_host<float>( wavelength, d_wavelength, num_wavelength ); 
+    copy_device_to_host_and_free<float>( wavelength, d_wavelength, num_wavelength ); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -263,7 +425,7 @@ void QCtx::generate_cerenkov( float* wavelength, unsigned num_wavelength )
 
     QCtx_generate_cerenkov_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength );  
 
-    copy_device_to_host<float>( wavelength, d_wavelength, num_wavelength ); 
+    copy_device_to_host_and_free<float>( wavelength, d_wavelength, num_wavelength ); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -284,7 +446,7 @@ void QCtx::generate_cerenkov_photon( quad4* photon, unsigned num_photon )
 
     QCtx_generate_cerenkov_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon );  
 
-    copy_device_to_host<quad4>( photon, d_photon, num_photon ); 
+    copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -322,7 +484,7 @@ void QCtx::generate( quad4* photon, unsigned num_photon )
 
     QCtx_generate_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon );  
 
-    copy_device_to_host<quad4>( photon, d_photon, num_photon ); 
+    copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -352,7 +514,7 @@ void QCtx::boundary_lookup_all(quad* lookup, unsigned width, unsigned height )
 
     QCtx_boundary_lookup_all(numBlocks, threadsPerBlock, d_ctx, d_lookup, width, height );  
 
-    copy_device_to_host<quad>( lookup, d_lookup, num_lookup ); 
+    copy_device_to_host_and_free<quad>( lookup, d_lookup, num_lookup ); 
 
     LOG(LEVEL) << "]" ; 
 
@@ -382,7 +544,7 @@ void QCtx::boundary_lookup_line( quad* lookup, float* domain, unsigned num_looku
 
     QCtx_boundary_lookup_line(numBlocks, threadsPerBlock, d_ctx, d_lookup, d_domain, num_lookup, line, k );  
 
-    copy_device_to_host<quad>( lookup, d_lookup, num_lookup ); 
+    copy_device_to_host_and_free<quad>( lookup, d_lookup, num_lookup ); 
 
     device_free<float>( d_domain ); 
 
@@ -433,6 +595,6 @@ void QCtx::dump( quad4* photon, unsigned num_photon, unsigned edgeitems )
 }
 
 
-
+ 
 
 

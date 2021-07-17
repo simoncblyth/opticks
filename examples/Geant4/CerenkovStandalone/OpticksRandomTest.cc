@@ -1,8 +1,9 @@
-
+#include "NP.hh"
 #include "OpticksRandom.hh"
 
 struct OpticksRandomTest
 {
+    const NP* seq ; 
     OpticksRandom r ; 
     OpticksRandomTest(const char* path); 
     void basics(); 
@@ -10,7 +11,8 @@ struct OpticksRandomTest
 
 OpticksRandomTest::OpticksRandomTest(const char* path)
     :
-    r(path)
+    seq(NP::Load(path)),
+    r(seq)
 {
 }
 

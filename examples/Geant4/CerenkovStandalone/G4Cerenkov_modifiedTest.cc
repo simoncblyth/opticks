@@ -19,13 +19,15 @@ struct G4Cerenkov_modifiedTest
 {
     static const char* FOLD ; 
     static std::string MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons ); 
+    static NP*         LoadRandom(const char* random_path);
 
     NP*                       a ;  
     G4MaterialPropertyVector* rindex ; 
     G4Material*               material ; 
     G4Cerenkov_modified*      proc ; 
     OpticksDebug*             par ; 
-    OpticksDebug*             gen ; 
+    OpticksDebug*             gen ;
+    NP*                       seq ;  
     OpticksRandom*            rnd ; 
 
     G4Cerenkov_modifiedTest(const char* rindex_path, const char* random_path) ;  
@@ -38,6 +40,32 @@ struct G4Cerenkov_modifiedTest
 
 const char* G4Cerenkov_modifiedTest::FOLD = "/tmp/G4Cerenkov_modifiedTest" ; 
 
+/**
+G4Cerenkov_modifiedTest::LoadRandom
+------------------------------------
+
+When the path does not end in ".npy" it is assumed to be a directory path
+that contains ".npy" arrays to be concatenated.
+**/
+
+NP* G4Cerenkov_modifiedTest::LoadRandom(const char* random_path)
+{
+    NP* seq = nullptr ; 
+    if(random_path && strlen(random_path) > 4 && strcmp(random_path+strlen(random_path)-4, ".npy") == 0)
+    {
+        seq = NP::Load(random_path);  
+    }   
+    else if( random_path )
+    {
+        std::vector<std::string> names ; 
+        OpticksDebug::ListDir(names, random_path, ".npy");   
+        std::cout << "assumed directory " << random_path << " contains names.size " << names.size() << " .npy" << std::endl ;  
+        seq = NP::Concatenate(random_path, names); 
+    }
+    return seq ; 
+}
+
+
 G4Cerenkov_modifiedTest::G4Cerenkov_modifiedTest( const char* rindex_path, const char* random_path )
     :
     a(OpticksDebug::LoadArray(rindex_path)),
@@ -46,12 +74,14 @@ G4Cerenkov_modifiedTest::G4Cerenkov_modifiedTest( const char* rindex_path, const
     proc(new G4Cerenkov_modified()),
     par(new OpticksDebug(8,"Params")),
     gen(new OpticksDebug(8,"GenWavelength")),
-    rnd(random_path ? new OpticksRandom(random_path) : nullptr )
+    seq(LoadRandom(random_path)),
+    rnd(seq ? new OpticksRandom(seq) : nullptr )
 {
     std::cout 
         << "loaded from "
         << " rindex_path " << rindex_path 
         << " random_path " << ( random_path ? random_path : "-" )
+        << " seq " << ( seq ? seq->desc() : "-" )
         << std::endl
         ;  
 

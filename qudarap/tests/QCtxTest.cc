@@ -25,7 +25,8 @@ struct QCtxTest
     QCtx qc ; 
     QCtxTest(QCtx& qc_); 
 
-    void rng_sequence(unsigned num_rng); 
+    void rng_sequence_0(unsigned num_rng); 
+    void rng_sequence_f(unsigned ni); 
     void wavelength(char mode, unsigned num_wavelength) ; 
     void photon(unsigned num_photon); 
     void cerenkov_photon(unsigned num_photon); 
@@ -41,16 +42,24 @@ QCtxTest::QCtxTest(QCtx& qc_)
 {
 }
 
-void QCtxTest::rng_sequence(unsigned num_rng )
+void QCtxTest::rng_sequence_0(unsigned num_rng )
 {
     std::vector<float> rs ; 
     rs.resize(num_rng, 0.f); 
-    qc.rng_sequence( rs.data(), rs.size() ); 
+    qc.rng_sequence_0( rs.data(), rs.size() ); 
 
-    std::string name = MakeName("rng_sequence_", num_rng, ".npy" ); 
+    std::string name = MakeName("rng_sequence_0_", num_rng, ".npy" ); 
     NP::Write( FOLD, name.c_str() ,  rs ); 
 }
 
+void QCtxTest::rng_sequence_f(unsigned ni)
+{
+    unsigned nj = 16 ; 
+    unsigned nk = 16 ; 
+    unsigned ni_tranche_size = 100000 ; // 100k
+
+    qc.rng_sequence<float>(FOLD, ni, nj, nk, ni_tranche_size ); 
+}
 
 
 void QCtxTest::wavelength(char mode, unsigned num_wavelength )
@@ -190,11 +199,12 @@ void QCtxTest::boundary_lookup_line(const char* material, double nm0 , double nm
 int main(int argc, char** argv)
 {
     //unsigned num_default = 2820932 ; 
-    unsigned num_default = 10000 ; 
+    //unsigned num_default = 10000 ; 
+    unsigned num_default = 1000000 ; 
     //unsigned num_default = 3000000 ; 
 
     unsigned num = argc > 1 ? std::atoi(argv[1]) : num_default ; 
-    char test = argc > 2 ? argv[2][0] : 'K' ; 
+    char test = argc > 2 ? argv[2][0] : 'F' ; 
     
     OPTICKS_LOG(argc, argv); 
     LOG(info) << " num " << num << " test " << test ; 
@@ -209,7 +219,8 @@ int main(int argc, char** argv)
     QCtxTest qtc(qc); 
     switch(test)
     {
-        case 'R': qtc.rng_sequence(num)             ; break ; 
+        case '0': qtc.rng_sequence_0(num)           ; break ; 
+        case 'F': qtc.rng_sequence_f(num)           ; break ; 
         case 'S': qtc.wavelength('S', num)          ; break ; 
         case 'C': qtc.wavelength('C', num)          ; break ; 
         case 'P': qtc.photon(num);                  ; break ; 

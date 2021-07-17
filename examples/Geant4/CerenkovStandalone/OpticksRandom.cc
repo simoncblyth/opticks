@@ -10,9 +10,9 @@ OpticksRandom* OpticksRandom::Get(){ return INSTANCE ; }
 
 const char* OpticksRandom::NAME = "OpticksRandom" ;  
 
-OpticksRandom::OpticksRandom(const char* path)
+OpticksRandom::OpticksRandom(const NP* seq)
     :
-    m_seq(NP::Load(path)),
+    m_seq(seq),
     m_seq_values(m_seq ? m_seq->values<double>() : nullptr ),
     m_seq_ni(m_seq ? m_seq->shape[0] : 0 ),
     m_seq_nv(m_seq ? m_seq->shape[1]*m_seq->shape[2] : 0 ),
@@ -25,7 +25,6 @@ OpticksRandom::OpticksRandom(const char* path)
     INSTANCE = this ; 
     if( m_seq )
     {
-        std::cout << " loaded " << path << std::endl ; 
         std::cout << " m_seq " << ( m_seq ? m_seq->desc() : "-" ) << std::endl ; 
         std::cout << " desc " << desc() << std::endl ; 
         std::cout << " m_cur " << ( m_cur ? m_cur->desc() : "-" ) << std::endl ; 
