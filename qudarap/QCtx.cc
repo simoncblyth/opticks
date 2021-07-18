@@ -281,6 +281,9 @@ template <typename T> char QCtx::typecode(){ return '?' ; }  // static
 template <> char QCtx::typecode<float>(){  return 'f' ; }
 template <> char QCtx::typecode<double>(){ return 'd' ; }
 
+
+
+
 template <typename T>
 std::string QCtx::rng_sequence_name(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) // static 
 {
@@ -299,6 +302,31 @@ std::string QCtx::rng_sequence_name(const char* prefix, unsigned ni, unsigned nj
 }
 template std::string QCtx::rng_sequence_name<float>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) ; 
 template std::string QCtx::rng_sequence_name<double>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) ; 
+
+
+
+template <typename T>
+std::string QCtx::rng_sequence_reldir(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ) // static 
+{
+    std::stringstream ss ; 
+    ss << prefix
+       << "_" << typecode<T>()
+       << "_ni" << ni 
+       << "_nj" << nj 
+       << "_nk" << nk 
+       << "_tranche" << ni_tranche_size 
+       ; 
+
+    std::string reldir = ss.str(); 
+    return reldir ; 
+}
+template std::string QCtx::rng_sequence_reldir<float>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ) ; 
+template std::string QCtx::rng_sequence_reldir<double>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ) ; 
+
+
+
+
+
 
 
 template <typename T>
@@ -335,12 +363,14 @@ void QCtx::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
     unsigned num_tranche = ni/ni_tranche_size ; 
     unsigned nv = nj*nk ; 
     unsigned size = ni_tranche_size*nv ; 
+    std::string reldir = rng_sequence_reldir<T>(PREFIX, ni, nj, nk, ni_tranche_size  ) ;  
 
     std::cout 
         << "QCtx::rng_sequence" 
         << " ni " << ni
         << " ni_tranche_size " << ni_tranche_size
         << " num_tranche " << num_tranche 
+        << " reldir " << reldir.c_str()
         << " nj " << nj
         << " nk " << nk
         << " nv(nj*nk) " << nv 
@@ -366,7 +396,7 @@ void QCtx::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
             ; 
 
         rng_sequence<T>( values, ni_tranche_size, nv, ioffset );  
-        seq->save(dir, name.c_str()); 
+        seq->save(dir, reldir.c_str(), name.c_str()); 
     }
 }
 template void QCtx::rng_sequence<float>( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  ); 

@@ -8,8 +8,7 @@ msg="=== $BASH_SOURCE :"
 srcs=(OpticksDebugTest.cc OpticksDebug.cc)
 for src in ${srcs[@]} ; do echo $src ; done
 
-name=${srcs[0]}
-name=${name/.cc}
+name=${srcs[0]/.cc}
 
 echo $msg srcs : ${srcs[@]} name : $name
 
@@ -26,4 +25,4 @@ eval $(cks-run $name) $*
 [ $? -ne 0 ] && echo run FAIL && exit 2
 echo run succeeds
 
-
+exit 0

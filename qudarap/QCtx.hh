@@ -55,6 +55,7 @@ struct QUDARAP_API QCtx
 
     template <typename T> void rng_sequence_( dim3 numblocks, dim3 threadsPerBlock, qctx* d_ctx, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
     template <typename T> static char typecode() ; 
+    template <typename T> static std::string rng_sequence_reldir(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
     template <typename T> static std::string rng_sequence_name(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset );
     template <typename T> void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset ); 
     template <typename T> void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
