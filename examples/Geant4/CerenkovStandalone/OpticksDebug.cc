@@ -133,6 +133,16 @@ void OpticksDebug::write(const char* dir, const char* reldir, unsigned nj, unsig
 }
 
 
+bool OpticksDebug::ExistsPath(const char* base_, const char* reldir_, const char* name_ )
+{
+    fs::path fpath(base_);
+    if(reldir_) fpath /= reldir_ ;
+    if(name_) fpath /= name_ ;
+    bool x = fs::exists(fpath); 
+    std::cout << "OpticksDebug::ExistsPath " << ( x ? "Y" : "N" ) << " " << fpath.string().c_str() << std::endl ; 
+    return x ; 
+}
+
 std::string OpticksDebug::prepare_path(const char* dir_, const char* reldir_, const char* name )
 {   
     fs::path fdir(dir_);

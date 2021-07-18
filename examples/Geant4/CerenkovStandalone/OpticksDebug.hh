@@ -29,6 +29,7 @@ struct OpticksDebug
 
     OpticksDebug(unsigned itemsize, const char* name); 
 
+    static bool ExistsPath(const char* base_, const char* reldir_=nullptr, const char* name_=nullptr );
     static std::string prepare_path(const char* dir_, const char* reldir_, const char* name );
     static void ListDir(std::vector<std::string>& names,  const char* path, const char* ext); 
 
