@@ -34,7 +34,7 @@ void test_Concatenate()
     const char* ext = ".npy" ; 
     std::vector<std::string> names ; 
     OpticksDebug::ListDir( names, a_dir, ext ); 
-    NP* a = NP::Concatenate(dir, names); 
+    NP* a = NP::Concatenate(a_dir, names); 
     std::cout << " a " << a->desc() << std::endl ; 
 
 
