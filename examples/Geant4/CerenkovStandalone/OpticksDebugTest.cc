@@ -42,8 +42,6 @@ void test_Concatenate()
     NP* b = NP::Load(bpath); 
     std::cout << " b " << b->desc() << std::endl ; 
 
-
-
 }
 
 
@@ -51,5 +49,6 @@ void test_Concatenate()
 
 int main(int argc, char** argv)
 {
+    test_Concatenate(); 
     return 0 ; 
 }

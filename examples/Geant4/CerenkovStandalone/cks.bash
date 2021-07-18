@@ -5,11 +5,6 @@ cks-env(){
     boost-
 }
 
-
-# clhep- overrides  as clhep-prefix/ver do not match what the geant4 was built against 
-cks-clhep-prefix(){  echo /usr/local/opticks_externals/clhep ; }
-cks-clhep-ver(){    echo 2.4.1.0 ; }
-
 cks-usage(){ cat << EOU
 
 In addition to geant4 and clhep this also uses 
@@ -34,9 +29,10 @@ cks-compile(){
        -I$HOME/np \
        -I$(boost-prefix)/include \
        -I$(g4-prefix)/include/Geant4 \
-       -I$(cks-clhep-prefix)/include \
+       -I$(clhep-prefix)/include \
        -L$(g4-prefix)/lib \
-       -L$(cks-clhep-prefix)/lib \
+       -L$(g4-prefix)/lib64 \
+       -L$(clhep-prefix)/lib \
        -L$(boost-prefix)/lib \
        -lstdc++ \
        -lboost_system \
@@ -47,7 +43,7 @@ cks-compile(){
        -lG4track \
        -lG4tracking \
        -lG4processes \
-       -lCLHEP-$(cks-clhep-ver) \
+       -lCLHEP \
        -o /tmp/$name/$name 
 EOC
 }
@@ -68,11 +64,12 @@ cks-run(){
        Darwin) DEBUG=lldb__ ;;
         Linux) DEBUG=gdb    ;;
     esac
+    unset DEBUG
 
     mkdir -p /tmp/$name
 
     cat << EOC
-$var=$(boost-prefix)/lib:$(g4-prefix)/lib:$(cks-clhep-prefix)/lib $DEBUG /tmp/$name/$name 
+$var=$(boost-prefix)/lib:$(g4-prefix)/lib:$(g4-prefix)/lib64:$(clhep-prefix)/lib $DEBUG /tmp/$name/$name 
 EOC
 
 }
