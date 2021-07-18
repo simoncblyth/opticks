@@ -26,7 +26,7 @@ struct QCtxTest
     QCtxTest(QCtx& qc_); 
 
     void rng_sequence_0(unsigned num_rng); 
-    void rng_sequence_f(unsigned ni); 
+    void rng_sequence_f(unsigned ni, int ni_tranche_size); 
     void wavelength(char mode, unsigned num_wavelength) ; 
     void photon(unsigned num_photon); 
     void cerenkov_photon(unsigned num_photon); 
@@ -52,11 +52,11 @@ void QCtxTest::rng_sequence_0(unsigned num_rng )
     NP::Write( FOLD, name.c_str() ,  rs ); 
 }
 
-void QCtxTest::rng_sequence_f(unsigned ni)
+void QCtxTest::rng_sequence_f(unsigned ni, int ni_tranche_size_)
 {
     unsigned nj = 16 ; 
     unsigned nk = 16 ; 
-    unsigned ni_tranche_size = 100000 ; // 100k
+    unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
 
     qc.rng_sequence<float>(FOLD, ni, nj, nk, ni_tranche_size ); 
 }
@@ -200,14 +200,20 @@ int main(int argc, char** argv)
 {
     //unsigned num_default = 2820932 ; 
     //unsigned num_default = 10000 ; 
-    unsigned num_default = 1000000 ; 
+    unsigned num_default = 1000000 ;   // 1M
     //unsigned num_default = 3000000 ; 
 
     unsigned num = argc > 1 ? std::atoi(argv[1]) : num_default ; 
     char test = argc > 2 ? argv[2][0] : 'F' ; 
+
+    int ni_tranche_size = SSys::getenvint("NI_TRANCHE_SIZE", 100000 ); // default 100k usable with any GPU 
     
     OPTICKS_LOG(argc, argv); 
-    LOG(info) << " num " << num << " test " << test ; 
+    LOG(info) 
+        << " num " << num 
+        << " ni_tranche_size " << ni_tranche_size
+        << " test " << test
+        ; 
 
     Opticks ok(argc, argv); 
     ok.configure(); 
@@ -219,15 +225,15 @@ int main(int argc, char** argv)
     QCtxTest qtc(qc); 
     switch(test)
     {
-        case '0': qtc.rng_sequence_0(num)           ; break ; 
-        case 'F': qtc.rng_sequence_f(num)           ; break ; 
-        case 'S': qtc.wavelength('S', num)          ; break ; 
-        case 'C': qtc.wavelength('C', num)          ; break ; 
-        case 'P': qtc.photon(num);                  ; break ; 
-        case 'K': qtc.cerenkov_photon(num);         ; break ; 
-        case 'A': qtc.boundary_lookup_all()         ; break ;  
-        case 'W': qtc.boundary_lookup_line("Water") ; break ;  
-        case 'L': qtc.boundary_lookup_line("LS",80., 800., 0.1)    ; break ;  
+        case '0': qtc.rng_sequence_0(num)                        ; break ; 
+        case 'F': qtc.rng_sequence_f(num, ni_tranche_size)       ; break ; 
+        case 'S': qtc.wavelength('S', num)                       ; break ; 
+        case 'C': qtc.wavelength('C', num)                       ; break ; 
+        case 'P': qtc.photon(num);                               ; break ; 
+        case 'K': qtc.cerenkov_photon(num);                      ; break ; 
+        case 'A': qtc.boundary_lookup_all()                      ; break ;  
+        case 'W': qtc.boundary_lookup_line("Water")              ; break ;  
+        case 'L': qtc.boundary_lookup_line("LS",80., 800., 0.1)  ; break ;  
     }
     return 0 ; 
 }
