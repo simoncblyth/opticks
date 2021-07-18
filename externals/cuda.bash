@@ -37,6 +37,20 @@ See Also
 
 
 
+cudaMemcpyToArray deprecated
+------------------------------
+
+* https://forums.developer.nvidia.com/t/cudamemcpytoarray-is-deprecated/71385/9
+
+::
+
+    data/blyth/junotop/opticks/qudarap/QTex.cc: In member function ‘void QTex<T>::uploadToArray()’:
+    /data/blyth/junotop/opticks/qudarap/QTex.cc:121:5: warning: ‘cudaError_t cudaMemcpyToArray(cudaArray_t, size_t, size_t, const void*, size_t, cudaMemcpyKind)’ is deprecated (declared at /usr/local/cuda/include/cuda_runtime_api.h:6595) [-Wdeprecated-declarations]
+         cudaMemcpyToArray(dst, wOffset, hOffset, src, count, kind );
+         ^
+
+
+
 128bit uint ?
 ----------------
 

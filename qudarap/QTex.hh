@@ -42,6 +42,7 @@ struct QUDARAP_API QTex
     std::string desc() const ; 
 
     void createArray(); 
+    void uploadToArray_deprecated(); 
     void uploadToArray(); 
     void uploadMeta(); 
 

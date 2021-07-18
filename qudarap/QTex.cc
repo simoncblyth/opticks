@@ -1,5 +1,6 @@
 
 #include <sstream>
+#include <cstring>
 #include <cassert>
 #include "scuda.h"
 #include <cuda_runtime.h>
@@ -109,8 +110,9 @@ void QTex<T>::createArray()
     cudaCheckErrors("cudaMallocArray");
 }
 
+
 template<typename T>
-void QTex<T>::uploadToArray()
+void QTex<T>::uploadToArray_deprecated()
 {
     cudaArray_t dst = cuArray ;
     size_t wOffset = 0 ;
@@ -120,6 +122,70 @@ void QTex<T>::uploadToArray()
     cudaMemcpyToArray(dst, wOffset, hOffset, src, count, kind );
     cudaCheckErrors("cudaMemcpyToArray");
 }
+
+
+/**
+QTex::uploadToArray
+----------------------
+
+::
+
+    cudaError_t 
+    cudaMemcpy2DToArray(
+       struct cudaArray* dst, 
+       size_t wOffset, 
+       size_t hOffset, 
+       const void* src, 
+       size_t spitch, 
+       size_t width, 
+       size_t height, 
+       enum cudaMemcpyKind kind) 
+
+Copies a matrix (height rows of width bytes each) from the memory area pointed to by src 
+to the CUDA array dst starting at the upper left corner (wOffset, hOffset) where kind is one of 
+cudaMemcpyHostToHost, cudaMemcpyHostToDevice, cudaMemcpyDeviceToHost, or cudaMemcpyDeviceToDevice,
+and specifies the direction of the copy. 
+spitch is the width in memory in bytes of the 2D array pointed to by src, 
+including any padding added to the end of each row. 
+wOffset + width must not exceed the width of the CUDA array dst. 
+width must not exceed spitch. 
+
+cudaMemcpy2DToArray() returns an error if spitch exceeds the maximum allowed.
+
+dst - Destination memory address 
+wOffset - Destination starting X offset
+hOffset - Destination starting Y offset
+src - Source memory address
+spitch - Pitch of source memory
+width - Width of matrix transfer (columns in bytes) 
+height - Height of matrix transfer (rows)
+kind - Type of transfer
+
+
+* https://forums.developer.nvidia.com/t/cudamemcpytoarray-is-deprecated/71385/10
+
+**/
+
+template<typename T>
+void QTex<T>::uploadToArray()
+{
+    cudaArray_t dst = cuArray ;
+    size_t wOffset = 0 ;
+    size_t hOffset = 0 ;
+    cudaMemcpyKind kind = cudaMemcpyHostToDevice ;
+
+    size_t spitch = width*sizeof(T);  
+    size_t width_bytes = width*sizeof(T); 
+    size_t height_rows = height ; 
+
+    cudaMemcpy2DToArray(dst, wOffset, hOffset, src, spitch, width_bytes, height_rows, kind );
+
+    cudaCheckErrors("cudaMemcpy2DToArray");
+}
+
+
+
+
 
 template<typename T>
 void QTex<T>::uploadMeta()
@@ -203,6 +269,11 @@ template<>  void QTex<float4>::rotate(float theta){}
 
 // API export is essential on this template struct, otherwise get all symbols missing 
 template struct QUDARAP_API QTex<uchar4>;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+// quell warning: type attributes ignored after type is already defined [-Wattributes]
 template struct QUDARAP_API QTex<float>;
 template struct QUDARAP_API QTex<float4>;
+#pragma GCC diagnostic pop
 
