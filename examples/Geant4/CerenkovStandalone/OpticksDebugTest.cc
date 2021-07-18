@@ -27,14 +27,29 @@ void test_ListDir()
     }
 }
 
-
-int main(int argc, char** argv)
+void test_Concatenate()
 {
-    const char* dir = "/tmp/QCtxTest/rng_sequence_f" ; 
+    const char* a_dir = "/tmp/QCtxTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ; 
+
     const char* ext = ".npy" ; 
     std::vector<std::string> names ; 
     OpticksDebug::ListDir( names, dir, ext ); 
     NP* a = NP::Concatenate(dir, names); 
+    std::cout << " a " << a->desc() << std::endl ; 
 
+
+    const char* bpath = "/tmp/QCtxTest/rng_sequence_f_ni1000000_nj16_nk16_tranche1000000/rng_sequence_f_ni1000000_nj16_nk16_ioffset000000.npy" ; 
+    NP* b = NP::Load(bpath); 
+    std::cout << " b " << b->desc() << std::endl ; 
+
+
+
+}
+
+
+
+
+int main(int argc, char** argv)
+{
     return 0 ; 
 }

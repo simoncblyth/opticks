@@ -576,10 +576,10 @@ EON
 
 
 
-g4-prefix(){          echo $(g4-prefix-default) ; }
+g4-prefix-old(){      echo $(g4-prefix-default) ; }
 g4-prefix-frompath(){ echo $(opticks-setup-find-geant4-prefix) ; }
 g4-prefix-default(){  echo $(opticks-prefix)_externals/g4_$(g4-ver)  ; }
-g4-prefix-old(){      echo ${OPTICKS_GEANT4_PREFIX:-$(g4-prefix-default)}  ; }
+g4-prefix(){          echo ${OPTICKS_GEANT4_PREFIX:-$(g4-prefix-default)}  ; }
 
 g4-dir(){   echo $(g4-prefix).build/$(g4-name) ; }  # exploded distribution dir
 
