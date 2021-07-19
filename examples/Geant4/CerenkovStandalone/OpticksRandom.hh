@@ -27,22 +27,32 @@ struct OpticksRandom : public CLHEP::HepRandomEngine
     static OpticksRandom* Get(); 
 
     const NP*                m_seq;  
-    const double*            m_seq_values ; 
+    const float*             m_seq_values ; 
     int                      m_seq_ni ; 
     int                      m_seq_nv ; 
+
     int                      m_seq_index ; 
+
+    const NP*                m_seqmask ; 
+    int                      m_seqmask_ni ; 
+    const size_t*            m_seqmask_values ; 
+
 
     NP*                      m_cur ; 
     int*                     m_cur_values ; 
     bool                     m_recycle ; 
 
     CLHEP::HepRandomEngine*  m_default ;
+    static void SetSeed(long seed) ;  // non-zero seed required 
 
-    OpticksRandom(const NP* seq); 
+    OpticksRandom(const NP* seq, const NP* seqmask); 
 
     virtual ~OpticksRandom(); 
 
-    void setSequenceIndex(int seq_index);  
+    size_t getNumIndices() const ;
+    size_t getMaskedIndex(int index_);
+    void setSequenceIndex(int index_);  
+    int  getSequenceIndex() const ;
 
 
     // mandatory CLHEP::HepRandomEngine methods

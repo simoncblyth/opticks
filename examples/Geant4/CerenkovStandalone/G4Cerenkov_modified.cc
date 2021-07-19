@@ -174,8 +174,7 @@ void G4Cerenkov_modified::BuildPhysicsTable(const G4ParticleDefinition&)
 // PostStepDoIt
 // -------------
 //
-G4VParticleChange*
-G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+G4VParticleChange* G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 // This routine is called for each tracking Step of a charged particle
 // in a radiator. A Poisson-distributed number of photons is generated
@@ -265,12 +264,16 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   }
 
   ////////////////////////////////////////////////////////////////
-
   G4double Pmin = Rindex->GetMinLowEdgeEnergy();
   G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
   G4double dp = Pmax - Pmin;
 
+
+#ifdef FLOAT_TEST
+  float nMax = Rindex->GetMaxValue();
+#else
   G4double nMax = Rindex->GetMaxValue();
+#endif
   if (Rindex) {
       // nMax = Rindex->GetMaxValue();
       size_t ri_sz = Rindex->GetVectorLength();
@@ -282,9 +285,13 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
   G4double BetaInverse = 1./beta;
 
+#ifdef FLOAT_TEST
+  float maxCos = BetaInverse / nMax; 
+  float maxSin2 = (1.f - maxCos) * (1.f + maxCos);
+#else
   G4double maxCos = BetaInverse / nMax; 
-
   G4double maxSin2 = (1.0 - maxCos) * (1.0 + maxCos);
+#endif
 
   G4double beta1 = pPreStepPoint ->GetBeta();
   G4double beta2 = pPostStepPoint->GetBeta();
@@ -347,23 +354,39 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   for (G4int i = 0; i < fNumPhotons; i++) {
       // Determine photon energy
 
+#ifdef FLOAT_TEST
+      float rand, rand0, rand1 ;
+      float sampledEnergy, sampledRI; 
+      float cosTheta, sin2Theta;
+#else
       G4double rand, rand0, rand1 ;
       G4double sampledEnergy, sampledRI; 
       G4double cosTheta, sin2Theta;
-
+#endif
 
 #ifdef INSTRUMENTED
       unsigned head_count = 0 ; 
       unsigned tail_count = 0 ; 
       unsigned continue_count = 0 ; 
-      unsigned condition_count = 0 ; 
+      unsigned condition_count = 0 ;
+      int seqidx = -1 ;  
       if(rnd)
       {
           rnd->setSequenceIndex(i); 
+          seqidx = rnd->getSequenceIndex(); 
+
+          if(i < 10) std::cout 
+              << " i " << std::setw(6) << i 
+              << " seqidx " << std::setw(7) << seqidx
+              << " Pmin/eV " << std::fixed << std::setw(10) << std::setprecision(5) << Pmin/eV
+              << " Pmax/eV " << std::fixed << std::setw(10) << std::setprecision(5) << Pmax/eV
+              << " dp/eV " << std::fixed << std::setw(10) << std::setprecision(5) << dp/eV
+              << " maxSin2 "  << std::fixed << std::setw(10) << std::setprecision(5) << maxSin2
+              << std::endl 
+              ;
+
       }
 #endif
-
-
 
       // sample an energy
 
@@ -401,23 +424,26 @@ G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
          //        << " cosTheta : " << cosTheta
          //        << G4endl;
 
+#ifdef FLOAT_TEST
+         sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);
+#else
          sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);
+#endif
          rand1 = G4UniformRand();  
 
         // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
 #ifdef INSTRUMENTED
 
-         if( i == 0 ) std::cout 
-             << " i " << std::setw(6) << i 
-             << " rand0 " << std::fixed << std::setw(10) << std::setprecision(5) << rand0 
-             << " Pmin/eV " << std::fixed << std::setw(10) << std::setprecision(5) << Pmin/eV
-             << " Pmax/eV " << std::fixed << std::setw(10) << std::setprecision(5) << Pmax/eV
-             << " dp " << std::fixed << std::setw(10) << std::setprecision(5) << dp
-             << " sampledEnergy/eV " << std::fixed << std::setw(10) << std::setprecision(5) << sampledEnergy/eV
-             << " sampledRI " << std::fixed << std::setw(10) << std::setprecision(5) << sampledRI
-             << " cosTheta " << std::fixed << std::setw(10) << std::setprecision(5) << cosTheta
-             << " sin2Theta " << std::fixed << std::setw(10) << std::setprecision(5) << sin2Theta
-             << " rand1 " << std::fixed << std::setw(10) << std::setprecision(5) << rand1
+         if( i < 10 ) std::cout 
+             << " tc " << std::setw(6) << tail_count 
+             << " u0 " << std::fixed << std::setw(10) << std::setprecision(5) << rand0 
+             << " eV " << std::fixed << std::setw(10) << std::setprecision(5) << sampledEnergy/eV
+             << " ri " << std::fixed << std::setw(10) << std::setprecision(5) << sampledRI
+             << " ct " << std::fixed << std::setw(10) << std::setprecision(5) << cosTheta
+             << " s2 " << std::fixed << std::setw(10) << std::setprecision(5) << sin2Theta
+             << " rand1*maxSin2 " << std::fixed << std::setw(10) << std::setprecision(5) << rand1*maxSin2
+             << " rand1*maxSin2 - sin2Theta " <<  std::fixed << std::setw(10) << std::setprecision(5) << rand1*maxSin2 - sin2Theta
+             << " loop " << ( rand1*maxSin2 > sin2Theta ? "Y" : "N" )
              << std::endl 
              ; 
 

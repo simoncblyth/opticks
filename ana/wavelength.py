@@ -3,27 +3,10 @@
 wavelength.py
 ===============
 
-0
-    /tmp/G4OpticksAnaMgr/wavelength.npy from the horses mouth DsG4Scintillation 
-    collected by G4OpticksAnaMgr at BeginOfRun
-    Use ana/G4OpticksAnaMgr.sh to grab the outputs, see::
+::
 
-       jcv G4OpticksAnaMgr DsG4Scintillation
-       extg4/tests/X4ScintillationIntegralTest.cc
-
-    np.interp results from the icdf obtained from GScintillatorLib, this
-    closely matches w0 showing that the GPU texture lookups is working fine.
-
-w3
-    localSamples obtained from tests/X4ScintillationIntegralTest.cc
-    using G4PhysicsOrderedFreeVector::GetEnergy interpolation.
-    This clearly matches the horses mouth w1 in wavelength_cfplot.py 
-    with chi2/ndf close to 1.
-    
-
-But w0 and w2 clearly exhibit some artifact of 20nm binning 
-in the preparation of the icdf. The gross problem was fixed by avoiding 
-the unintended standardization of raw material properties.
+   ARG=6 ipython -i wavelength.py 
+   ARG=7 ipython -i wavelength.py 
 
 
 """
@@ -78,8 +61,8 @@ class Wavelength(object):
         l[6] = "GScintillatorLib_np_interp"
         p[6] = os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy") 
 
-        l[7] = "ck_photon_10k"
-        p[7] = os.path.join("/tmp/QCtxTest", "cerenkov_photon_10000.npy")
+        l[7] = "ck_photon_1M"
+        p[7] = os.path.join("/tmp/QCtxTest", "cerenkov_photon_1000000.npy")
       
         l[8] = "G4Cerenkov_modified_SKIP_CONTINUE"
         p[8] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_step_length_100000.000_SKIP_CONTINUE", "GenWavelength.npy")
@@ -90,9 +73,26 @@ class Wavelength(object):
         l[10] = "G4Cerenkov_modified_SKIP_CONTINUE_10k"
         p[10] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_10000_SKIP_CONTINUE", "GenWavelength.npy")
 
-        l[11] = "G4Cerenkov_modified_SKIP_CONTINUE_3M"
-        p[11] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_3000000_SKIP_CONTINUE", "GenWavelength.npy")
+        l[11] = "G4Cerenkov_modified_SKIP_CONTINUE_1M"
+        p[11] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUE", "GenWavelength.npy")
 
+        l[12] = "G4Cerenkov_modified_SKIP_CONTINUE_1M_seed1" 
+        p[12] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUEseed_1_", "GenWavelength.npy")
+
+        l[13] = "G4Cerenkov_modified_SKIP_CONTINUE_1M_seed2" 
+        p[13] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUEseed_2_", "GenWavelength.npy")
+
+        l[14] = "G4Cerenkov_modified_SKIP_CONTINUE_1M_FLOAT_TEST"
+        p[14] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUE_FLOAT_TEST", "GenWavelength.npy")
+
+        l[15] = "ck_photon_1M_FLIP_RANDOM"
+        p[15] = os.path.join("/tmp/QCtxTest", "cerenkov_photon_FLIP_RANDOM_1000000.npy")
+ 
+        l[16] = "G4Cerenkov_modified_SKIP_CONTINUE_1M_seed1f" 
+        p[16] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUE_FLOAT_TEST_seed_1_", "GenWavelength.npy")
+
+        l[17] = "G4Cerenkov_modified_SKIP_CONTINUE_1M_seed2f" 
+        p[17] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUE_FLOAT_TEST_seed_2_", "GenWavelength.npy")
 
 
         dom = np.arange(80, 400, 4)  
@@ -141,10 +141,72 @@ class Wavelength(object):
         a = self.aa[0,:,0]
         b = np.linspace(0,1,len(a))
         return np.interp( u, b, a )
- 
+
+
+    def cf(self, arg):
+        if arg == 0:
+            a, b = self.get_keys('DsG4Scintillator_G4OpticksAnaMgr', "Opticks_QCtxTest_hd20") 
+        elif arg == 1:
+            a, b = self.get_keys('DsG4Scintillator_G4OpticksAnaMgr', "Opticks_QCtxTest_hd0") 
+        elif arg == 2:
+            a, b = self.get_keys('DsG4Scintillator_G4OpticksAnaMgr', 'Opticks_QCtxTest_hd20_cudaFilterModePoint') 
+        elif arg == 3:
+            a, b = self.get_keys('DsG4Scintillator_G4OpticksAnaMgr', 'Opticks_QCtxTest_hd0_cudaFilterModePoint')
+        elif arg == 4:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE', 'ck_photon' )
+        elif arg == 5:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_10k', 'ck_photon_10k' )
+        elif arg == 6:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M', 'ck_photon_1M' )
+        elif arg == 7:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_seed1', 'G4Cerenkov_modified_SKIP_CONTINUE_1M_seed2' )
+        elif arg == 8:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_FLOAT_TEST', 'ck_photon_1M' )
+        elif arg == 9:
+            a, b = self.get_keys('ck_photon_1M', 'ck_photon_1M_FLIP_RANDOM' )
+        elif arg == 10:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_seed1f', 'G4Cerenkov_modified_SKIP_CONTINUE_1M_seed2f' )
+        else:
+            assert 0
+        pass
+        return a, b
+
 
 
 if __name__ == '__main__':
     kd = keydir(os.environ["OPTICKS_KEY"])
     wl = Wavelength(kd)
+    arg = int(os.environ.get("ARG","0")) 
+    ia,ib = wl.cf(arg)
+
+    a = wl.a[ia]
+    b = wl.a[ib]
+
+    wa = wl.w[ia] 
+    wb = wl.w[ib]
+    la = wl.l[ia]
+    lb = wl.l[ib]
+
+    dev = np.abs( wa - wb ) > 1e-4
+    num_dev = np.count_nonzero(dev) 
+    print("num_dev:%d " % num_dev )
+
+    np.set_printoptions(edgeitems=16)    
+
+    print("a[dev]\n",a[dev].reshape(-1,8))
+    print("b[dev]\n",b[dev].reshape(-1,16))
+  
+    b_ri = b[dev][:,0,2] 
+
+    # are deviants mostly where sampled rindex bin values 
+    # TODO: enable dumping of deviants, to understand the reason  
+
+    fig, ax = plt.subplots() 
+    ax.hist( b_ri, bins=50 )  
+    fig.show() 
+ 
+    #mask = np.where(dev)[0]    
+    #np.save("/tmp/wavelength_deviant_mask.npy", mask) 
+ 
+
 

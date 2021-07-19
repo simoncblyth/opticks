@@ -27,6 +27,22 @@ void test_setTheEngine(bool flip)
     }
 }
 
+void test_setSeed(long seed)
+{
+    CLHEP::HepRandomEngine* engine = CLHEP::HepRandom::getTheEngine(); 
+    int dummy = 0 ; 
+    engine->setSeed(seed, dummy); 
+    std::cout << "test_setSeed " << seed << std::endl ; 
+    for( unsigned i=0 ; i < 100 ; i++)
+    {
+        double u = Z4UniformRand(); 
+        if( i % 10 == 0 ) std::cout << std::endl ; 
+        std::cout << " " << std::fixed << std::setw(10) << std::setprecision(5) << u ; 
+    }
+    std::cout << std::endl ; 
+}
+
+
 void test_setTheta()
 {
     Z4ThreeVector v(0.,0.,100.); 
@@ -50,8 +66,14 @@ void test_setTheta()
 
 int main(int argc, char** )
 {
-    test_setTheEngine(argc > 1 ); 
-    test_setTheta(); 
+    //test_setTheEngine(argc > 1 ); 
+    //test_setTheta(); 
+
+    test_setSeed(1); 
+    test_setSeed(2); 
+    test_setSeed(1); 
+    test_setSeed(-1); 
+
 
     return 0 ; 
 }

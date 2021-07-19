@@ -68,8 +68,8 @@ struct qctx
     QCTX_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g);
     QCTX_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng) ; 
 
-    QCTX_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g ) ; 
-    QCTX_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng ) ; 
+    QCTX_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
+    QCTX_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
 
 #else
     qctx()
@@ -365,7 +365,7 @@ inline QCTX_METHOD float qctx::cerenkov_wavelength(unsigned id, curandStateXORWO
 FOR NOW NOT THE USUAL PHOTON : BUT DEBUGGING THE WAVELENGTH SAMPLING 
 **/
 
-inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g )
+inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
 {
     float u0 ;
     float u1 ; 
@@ -375,7 +375,7 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
     float sampledRI ;
     float cosTheta ;
     float sin2Theta ;
-    float u_maxSin2 ;
+    float u_mxs2_s2 ;
 
     // should be MaterialLine no ?
     unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
@@ -383,7 +383,12 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
     unsigned loop = 0u ; 
 
     do {
+
+#ifdef FLIP_RANDOM
+        u0 = 1.f - curand_uniform(&rng) ;
+#else
         u0 = curand_uniform(&rng) ;
+#endif
 
         w_linear = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
 
@@ -395,22 +400,25 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
 
         cosTheta = g.ck1.BetaInverse / sampledRI ;
 
-        //sin2Theta = fmaxf( 0.0001f, (1.f - cosTheta)*(1.f + cosTheta));  // avoid going -ve 
         sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);  
 
+#ifdef FLIP_RANDOM
+        u1 = 1.f - curand_uniform(&rng) ;
+#else
         u1 = curand_uniform(&rng) ;
+#endif
 
-        u_maxSin2 = u1*g.ck1.maxSin2 ;
+        u_mxs2_s2 = u1*g.ck1.maxSin2 - sin2Theta ;
 
         loop += 1 ; 
 
-        if( id == 0 )
+        if( id == print_id )
         {
-            printf("//qctx::cerenkov_photon id %d u0 %10.4f sampledRI %10.4f cosTheta %10.4f sin2Theta %10.4f u1 %10.4f \n", id, u0, sampledRI, cosTheta, sin2Theta, u1 );
+            printf("//qctx::cerenkov_photon id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
         }
 
 
-    } while ( u_maxSin2 > sin2Theta );
+    } while ( u_mxs2_s2 > 0.f );
 
     float energy = hc_eVnm/wavelength ; 
 
@@ -510,13 +518,13 @@ inline QCTX_METHOD float qctx::cerenkov_wavelength(unsigned id, curandStateXORWO
     return wavelength ; 
 }
 
-inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng ) 
+inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
 {
     QG qg ;      
     qg.zero();  
     GS& g = qg.g ; 
     cerenkov_fabricate_genstep(g); 
-    cerenkov_photon(p, id, rng, g); 
+    cerenkov_photon(p, id, rng, g, print_id); 
 }
 
 

@@ -15,6 +15,10 @@ wavelength_cfplot.py
     ARG=4 ipython -i wavelength_cfplot.py
     ARG=5 ipython -i wavelength_cfplot.py
     ARG=6 ipython -i wavelength_cfplot.py
+    ARG=7 ipython -i wavelength_cfplot.py
+    ARG=8 ipython -i wavelength_cfplot.py
+    ARG=9 ipython -i wavelength_cfplot.py
+    ARG=10 ipython -i wavelength_cfplot.py
 
 
     mkdir -p ~/simoncblyth.bitbucket.io/env/presentation/ana/wavelength_cfplot
@@ -39,26 +43,13 @@ if __name__ == '__main__':
     ok = opticks_main()
     kd = keydir(os.environ["OPTICKS_KEY"])
     wl = Wavelength(kd)
-
     arg = int(os.environ.get("ARG","0")) 
-  
-    if arg == 0:
-        a, b = wl.get_keys('DsG4Scintillator_G4OpticksAnaMgr', "Opticks_QCtxTest_hd20") 
-    elif arg == 1:
-        a, b = wl.get_keys('DsG4Scintillator_G4OpticksAnaMgr', "Opticks_QCtxTest_hd0") 
-    elif arg == 2:
-        a, b = wl.get_keys('DsG4Scintillator_G4OpticksAnaMgr', 'Opticks_QCtxTest_hd20_cudaFilterModePoint') 
-    elif arg == 3:
-        a, b = wl.get_keys('DsG4Scintillator_G4OpticksAnaMgr', 'Opticks_QCtxTest_hd0_cudaFilterModePoint')
-    elif arg == 4:
-        a, b = wl.get_keys('G4Cerenkov_modified_SKIP_CONTINUE', 'ck_photon' )
-    elif arg == 5:
-        a, b = wl.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_10k', 'ck_photon_10k' )
-    elif arg == 6:
-        a, b = wl.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_3M', 'ck_photon' )
-    else:
-        assert 0
-    pass
+    a,b = wl.cf(arg)
+
+    wa = wl.w[a] 
+    wb = wl.w[b]
+    la = wl.l[a]
+    lb = wl.l[b]
 
     h = CFH()
 
@@ -75,11 +66,11 @@ if __name__ == '__main__':
 
     h.suptitle = title
     c2cut = 10 
-    h(wl.dom[:-1], wl.w[a], wl.w[b], [wl.l[a], wl.l[b]], c2cut=c2cut )
+    h(wl.dom[:-1], wa, wb, [la, lb], c2cut=c2cut )
 
     fig, axs = one_cfplot(ok, h, xline=xline )
 
-    if arg in [4,5]:
+    if arg in [4,5,6,9]:
 
         rindex = np.load(os.path.join(kd, "GScintillatorLib/LS_ori/RINDEX.npy"))
         rindex[:,0] *= 1e6   
@@ -105,7 +96,7 @@ if __name__ == '__main__':
         axs[0].set_xlim(wmin,wmax)
         axs[1].set_xlim(wmin,wmax)
 
-        axs[1].set_ylim(0,1)
+        axs[1].set_ylim(0,0.01)
     pass
 
     plt.ion()

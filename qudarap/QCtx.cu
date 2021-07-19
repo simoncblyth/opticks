@@ -135,7 +135,7 @@ extern "C" void QCtx_generate_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPe
 
 
 
-__global__ void _QCtx_generate_cerenkov_photon(qctx* ctx, quad4* photon, unsigned num_photon )
+__global__ void _QCtx_generate_cerenkov_photon(qctx* ctx, quad4* photon, unsigned num_photon, int print_id )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_photon) return;
@@ -143,16 +143,16 @@ __global__ void _QCtx_generate_cerenkov_photon(qctx* ctx, quad4* photon, unsigne
     curandState rng = *(ctx->r + id) ; 
 
     quad4 p ;   
-    ctx->cerenkov_photon(p, id, rng);   
+    ctx->cerenkov_photon(p, id, rng, print_id);   
 
     if(id % 100000 == 0) printf("//_QCtx_generate_cerenkov_photon id %d \n", id  ); 
     photon[id] = p ; 
 }
 
-extern "C" void QCtx_generate_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad4* photon, unsigned num_photon ) 
+extern "C" void QCtx_generate_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad4* photon, unsigned num_photon, int print_id ) 
 {
     printf("//QCtx_generate_cerenkov_photon num_photon %d \n", num_photon ); 
-    _QCtx_generate_cerenkov_photon<<<numBlocks,threadsPerBlock>>>( ctx, photon, num_photon );
+    _QCtx_generate_cerenkov_photon<<<numBlocks,threadsPerBlock>>>( ctx, photon, num_photon, print_id );
 } 
 
 

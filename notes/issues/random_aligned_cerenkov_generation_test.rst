@@ -2,6 +2,61 @@ random_aligned_cerenkov_generation_test
 ==========================================
 
 
+summary 
+---------
+
+* chi2 comparison between cks:G4Cerenkov_modifiedTest.cc and qu:QCtxTest.cc:K "cerenkov_photon" is poor
+  although the distributions look reasonable 
+
+* random aligned comparison using the same random sequence (1M,16,16)  
+  cks:G4Cerenkov_modifiedTest.cc and qu:QCtxTest.cc:K "cerenkov_photon" 
+  give chi2 zero with 109/1M wavelength deviants ( > 1e-4 nm) 
+
+::
+
+    In [3]: 1. - 109./1e6, 109./1e6                                                                                                                                                           
+    Out[3]: (0.999891, 0.000109)
+
+      
+  * examining dumps of the first ~15 deviants suggests the cause is cut-edges and float/double difference
+  * so the GPU implementation effectively reproduces the G4Cerenkov_modified one **WHEN USING SAME RANDOMS**
+  * more deviation tends to happen with energy sample close to 7.3eV : that in on the RINDEX peak
+
+* comparing 1M samples of cks:G4Cerenkov_modifiedTest.cc against itself with different seeds gives chi2/ndf 1.03
+
+* comparing 1M samples of cks:G4Cerenkov_modifiedTest.cc against itself (seeds 1 and 2) with FLOAT_TEST restriction s
+  still shows OK chi2/ndf 1.03::
+
+  ARG=10 ipython -i wavelength_cfplot.py
+
+* trying G4Cerenkov_modifiedTest with FLOAT_TEST restricting the rejection sampling to float precision 
+  still gives poor chi2 comparing to cks : so the explanation is not all float/double 
+
+* statistically comparing QCtxTest.cc:K against itself by flipping randoms u -> 1-u shows poor chi2
+  with similar type of disagreement "infinity wiggle pattern" to that between cks and qu with multiple 2nm bins 
+  below and then above in range 250-350 nm:: 
+
+  ARG=9 ipython -i wavelength_cfplot.py
+  
+* HMM how to explain lumps on the wavelength distrib ? Need to favor one range above another ?
+  Does the RINDEX mountain cause a "lobe" effect where the random sampling will flip one side or the 
+  other yieldins broadly similar RINDEX on either side ?
+
+
+
+TO CHECK
+----------
+
+* the deviation wiggles are happening all within a huge RINDEX bins, 
+  so reconsider the algorithm in the light of constant RINDEX
+
+* compare RINDEX interpolation results across energy bin edges to see 
+  in detail how the "step" between bins differs with Geant4 and texture access ?  
+
+* create energy binned texture and use it from an qctx::en_cerenkov_photon 
+
+
+
 qudarap/tests/QCtxTest  QCtxTest::rng_sequence
 -------------------------------------------------
 
@@ -611,6 +666,378 @@ BUT : comparing non-aligned 1M samples in wavelength_cfplot.py still get bad chi
 
 * so the problem is finding the cause of extreme fragility in some regions 
 
-TODO: cook (3M, 16,16) randoms in qctx and check using that 
+DONE: cooked (1M, 16,16) randoms in qctx and check using that 
+
+
+
+::
+
+    epsilon:ana blyth$ ARG=6 ipython -i wavelength.py 
+
+    In [1]: wa                                                                                                                                                                         
+    Out[1]: array([141.497, 199.916, 241.879, ..., 159.323, 234.615, 163.714])
+
+    In [2]: wb                                                                                                                                                                         
+    Out[2]: array([141.497, 199.916, 241.879, ..., 159.323, 234.615, 163.714], dtype=float32)
+
+    In [3]: wab = np.abs(wa - wb)                   
+
+
+    In [7]: np.where( wab > 1e-4 )                                                                                                                                                     
+    Out[7]: 
+    (array([ 11264,  35904,  37969,  57112,  69670,  69761,  70952,  77035,  77501,  81643, 105525, 106447, 120673, 132599, 148922, 172494, 176234, 195173, 198025, 203785, 205613, 211717, 212547, 255649,
+            256969, 258248, 262498, 264640, 276232, 286639, 322426, 359703, 370264, 371478, 387119, 387515, 394157, 394967, 400192, 400739, 401858, 404798, 406048, 414252, 420658, 439106, 441025, 452366,
+            456014, 486019, 502414, 502648, 506567, 507707, 512139, 517370, 530743, 538441, 541806, 545645, 561119, 561918, 567720, 569773, 571278, 572149, 585078, 599422, 602754, 607974, 611131, 641770,
+            647384, 671380, 674386, 675539, 678265, 678858, 691496, 701648, 705779, 712878, 740118, 741500, 768456, 773621, 776522, 787463, 795257, 799561, 807476, 814903, 823558, 842623, 847850, 884195,
+            888557, 896674, 928872, 931275, 932706, 937849, 939082, 950967, 953438, 972014, 977639, 987635, 991957]),)
+
+    In [8]:                                                                                                                                                                            
+
+    In [8]:                                                                                                                                                                            
+
+    In [8]: np.where( wab > 1e-4 )[0].shape                                                                                                                                            
+    Out[8]: (109,)
+
+
+109/1M deviants, mostly way off::
+
+    In [10]: dev = np.where( wab > 1e-4 )                                                                                                                                              
+    In [12]: np.c_[wa[dev],wb[dev]]                                                                                                                                                    
+    Out[12]: 
+    array([[160.056, 169.41 ],
+           [206.383, 169.873],
+           [144.358, 169.576],
+           [208.995, 169.812],
+           [180.896, 140.112],
+           [158.538, 165.391],
+           [131.332, 138.672],
+           [138.121, 168.259],
+           [149.294, 160.428],
+           [131.209, 244.854],
+           [159.717, 235.169],
+           [159.907, 162.419],
+           [128.353, 150.621],
+           [125.189, 160.932],
+           [143.04 , 227.904],
+
+
+Run just the 109 in 1M deviants : where rand1*maxSin2 - sin2Theta gets very close to zero float/double difference can fall either way::
+
+    G4Cerenkov_modifiedTest::PSDI rnd seq or seqmask constrains the number of photon indices to 109
+    G4Cerenkov_modifiedTest::PSDI [BetaInverse_1.500_override_fNumPhotons_109_SKIP_CONTINUE]
+     i      0 seqidx   11264 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.16277 eV    3.82060 ri    1.51834 ct    0.98792 s2    0.02401 rand1*maxSin2    0.21889 rand1*maxSin2 - sin2Theta    0.19488 loop Y
+     tc      2 u0    0.41352 eV    7.31858 ri    1.56736 ct    0.95702 s2    0.08410 rand1*maxSin2    0.08429 rand1*maxSin2 - sin2Theta    0.00019 loop Y
+     tc      3 u0    0.72366 eV   11.64508 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.10068 rand1*maxSin2 - sin2Theta    0.16554 loop Y
+     tc      4 u0    0.60160 eV    9.94235 ri    1.50299 ct    0.99801 s2    0.00397 rand1*maxSin2    0.29380 rand1*maxSin2 - sin2Theta    0.28983 loop Y
+     tc      5 u0    0.27100 eV    5.33041 ri    1.57976 ct    0.94951 s2    0.09842 rand1*maxSin2    0.13884 rand1*maxSin2 - sin2Theta    0.04042 loop Y
+     tc      6 u0    0.78736 eV   12.53364 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.02526 rand1*maxSin2 - sin2Theta    0.09012 loop Y
+     tc      7 u0    0.44418 eV    7.74628 ri    1.79106 ct    0.83749 s2    0.29860 rand1*maxSin2    0.06050 rand1*maxSin2 - sin2Theta   -0.23811 loop N
+
+    epsilon:qudarap blyth$ PINDEX=11264 QCtxTest 
+    //_QCtx_generate_cerenkov_photon id 0 
+    //qctx::cerenkov_photon id 11264 loop   1 u0    0.16277 ri    1.51834 ct    0.98792 s2    0.02401 u_mxs2_s2    0.19488 
+    //qctx::cerenkov_photon id 11264 loop   2 u0    0.41352 ri    1.56754 ct    0.95691 s2    0.08432 u_mxs2_s2   -0.00002 
+
+
+     i      1 seqidx   35904 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.65123 eV   10.63469 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.03328 rand1*maxSin2 - sin2Theta    0.09814 loop Y
+     tc      2 u0    0.76881 eV   12.27492 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.15708 rand1*maxSin2 - sin2Theta    0.22194 loop Y
+     tc      3 u0    0.17597 eV    4.00473 ri    1.52309 ct    0.98484 s2    0.03010 rand1*maxSin2    0.21724 rand1*maxSin2 - sin2Theta    0.18714 loop Y
+     tc      4 u0    0.41209 eV    7.29864 ri   *1.55693*ct    0.96344 s2    0.07179 rand1*maxSin2    0.07216 rand1*maxSin2 - sin2Theta    0.00037 loop Y
+     tc      5 u0    0.10045 eV    2.95123 ri    1.49710 ct    1.00193 s2   -0.00387 rand1*maxSin2    0.05687 rand1*maxSin2 - sin2Theta    0.06074 loop Y
+     tc      6 u0    0.83771 eV   13.23605 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.14369 rand1*maxSin2 - sin2Theta    0.20855 loop Y
+     tc      7 u0    0.71750 eV   11.55914 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.11813 rand1*maxSin2 - sin2Theta    0.18299 loop Y
+     tc      8 u0    0.85208 eV   13.43656 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.00927 rand1*maxSin2 - sin2Theta    0.07413 loop Y
+     tc      9 u0    0.12719 eV    3.32431 ri    1.50553 ct    0.99633 s2    0.00733 rand1*maxSin2    0.14743 rand1*maxSin2 - sin2Theta    0.14010 loop Y
+     tc     10 u0    0.29738 eV    5.69840 ri    1.59615 ct    0.93976 s2    0.11685 rand1*maxSin2    0.24078 rand1*maxSin2 - sin2Theta    0.12393 loop Y
+     tc     11 u0    0.90887 eV   14.22870 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.11009 rand1*maxSin2 - sin2Theta    0.17495 loop Y
+     tc     12 u0    0.99516 eV   15.43251 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.22275 rand1*maxSin2 - sin2Theta    0.28761 loop Y
+     tc     13 u0    0.31953 eV    6.00748 ri    1.60992 ct    0.93172 s2    0.13189 rand1*maxSin2    0.04203 rand1*maxSin2 - sin2Theta   -0.08987 loop N
+
+    epsilon:qudarap blyth$ PINDEX=35904 QCtxTest 
+    //qctx::cerenkov_photon id 35904 loop   1 u0    0.65123 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.09814 
+    //qctx::cerenkov_photon id 35904 loop   2 u0    0.76881 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.22194 
+    //qctx::cerenkov_photon id 35904 loop   3 u0    0.17597 ri    1.52309 ct    0.98484 s2    0.03010 u_mxs2_s2    0.18714 
+    //qctx::cerenkov_photon id 35904 loop   4 u0    0.41209 ri   *1.55731*ct    0.96320 s2    0.07224 u_mxs2_s2   -0.00008 
+
+                WHY THE DIFFERENT RI ?  RI BIN EDGE ? 
+
+        [  1.55  ,   1.4781, 800.    ,   1.4781],
+        [  1.7951,   1.48  , 690.7886,   1.48  ],
+        [  2.105 ,   1.4842, 589.0764,   1.4842],
+        [  2.2708,   1.4861, 546.0703,   1.4861],
+        [  2.5511,   1.4915, 486.0629,   1.4915],
+        [  2.845 ,   1.4955, 435.8554,   1.4955],
+        [  3.0636,   1.4988, 404.7513,   1.4988],
+        [  4.1328,   1.5264, 300.038 ,   1.5264],
+        [  6.2   ,   1.6185, 200.    ,   1.6185],
+        [  6.526 ,   1.6176, 190.0092,   1.6176],
+        [  6.889 ,   1.527 , 179.9971,   1.527 ],
+       *[  7.294 ,   1.5545, 170.0027,   1.5545],*
+        [  7.75  ,   1.793 , 160.    ,   1.793 ],
+        [  8.267 ,   1.7826, 149.994 ,   1.7826],
+        [  8.857 ,   1.6642, 140.0023,   1.6642],
+        [  9.538 ,   1.5545, 130.0063,   1.5545],
+        [ 10.33  ,   1.4536, 120.0387,   1.4536],
+        [ 15.5   ,   1.4536,  80.    ,   1.4536]])
+
+
+
+
+    //_QCtx_generate_cerenkov_photon id 0 
+    //qctx::cerenkov_photon id 35904 u0     0.6512 sampledRI     1.4536 cosTheta     1.0319 sin2Theta    -0.0649 u1     0.1109 
+    //qctx::cerenkov_photon id 35904 u0     0.7688 sampledRI     1.4536 cosTheta     1.0319 sin2Theta    -0.0649 u1     0.5234 
+    //qctx::cerenkov_photon id 35904 u0     0.1760 sampledRI     1.5231 cosTheta     0.9848 sin2Theta     0.0301 u1     0.7238 
+    //qctx::cerenkov_photon id 35904 u0     0.4121 sampledRI     1.5573 cosTheta     0.9632 sin2Theta     0.0722 u1     0.2404 
+    //_QCtx_generate_cerenkov_photon id 100000 
+    //_QCtx_generate_cerenkov_photon id 200000 
+
+
+
+     i      2 seqidx   37969 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.95147 eV   14.82301 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.21398 rand1*maxSin2 - sin2Theta    0.27884 loop Y
+     tc      2 u0    0.77318 eV   12.33582 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.01378 rand1*maxSin2 - sin2Theta    0.07865 loop Y
+     tc      3 u0    0.08577 eV    2.74643 ri    1.49416 ct    1.00391 s2   -0.00783 rand1*maxSin2    0.15107 rand1*maxSin2 - sin2Theta    0.15890 loop Y
+     tc      4 u0    0.11242 eV    3.11830 ri    1.50021 ct    0.99986 s2    0.00028 rand1*maxSin2    0.09906 rand1*maxSin2 - sin2Theta    0.09878 loop Y
+     tc      5 u0    0.01777 eV    1.79792 ri    1.48004 ct    1.01349 s2   -0.02716 rand1*maxSin2    0.10909 rand1*maxSin2 - sin2Theta    0.13624 loop Y
+     tc      6 u0    0.98852 eV   15.33979 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.24481 rand1*maxSin2 - sin2Theta    0.30967 loop Y
+     tc      7 u0    0.78130 eV   12.44908 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.16663 rand1*maxSin2 - sin2Theta    0.23149 loop Y
+     tc      8 u0    0.23526 eV    4.83185 ri    1.55754 ct    0.96305 s2    0.07253 rand1*maxSin2    0.09766 rand1*maxSin2 - sin2Theta    0.02513 loop Y
+
+     tc      9 u0    0.41300 eV    7.31142 ri    1.56361 ct    0.95932 s2    0.07971 rand1*maxSin2    0.07975 rand1*maxSin2 - sin2Theta    0.00004 loop Y
+
+     tc     10 u0    0.27359 eV    5.36665 ri    1.58137 ct    0.94854 s2    0.10026 rand1*maxSin2    0.21361 rand1*maxSin2 - sin2Theta    0.11335 loop Y
+     tc     11 u0    0.53549 eV    9.02009 ri    1.63793 ct    0.91579 s2    0.16133 rand1*maxSin2    0.29529 rand1*maxSin2 - sin2Theta    0.13396 loop Y
+     tc     12 u0    0.14305 eV    3.54558 ri    1.51124 ct    0.99256 s2    0.01482 rand1*maxSin2    0.13950 rand1*maxSin2 - sin2Theta    0.12468 loop Y
+     tc     13 u0    0.20872 eV    4.46168 ri    1.54105 ct    0.97336 s2    0.05257 rand1*maxSin2    0.19031 rand1*maxSin2 - sin2Theta    0.13774 loop Y
+     tc     14 u0    0.33341 eV    6.20110 ri    1.61850 ct    0.92679 s2    0.14107 rand1*maxSin2    0.28035 rand1*maxSin2 - sin2Theta    0.13928 loop Y
+     tc     15 u0    0.24960 eV    5.03188 ri    1.56646 ct    0.95758 s2    0.08305 rand1*maxSin2    0.13278 rand1*maxSin2 - sin2Theta    0.04973 loop Y
+     tc     16 u0    0.81286 eV   12.88946 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.21760 rand1*maxSin2 - sin2Theta    0.28246 loop Y
+     tc     17 u0    0.64523 eV   10.55094 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.29589 rand1*maxSin2 - sin2Theta    0.36075 loop Y
+     tc     18 u0    0.31051 eV    5.88158 ri    1.60431 ct    0.93498 s2    0.12581 rand1*maxSin2    0.21354 rand1*maxSin2 - sin2Theta    0.08773 loop Y
+     tc     19 u0    0.00786 eV    1.65959 ri    1.47895 ct    1.01423 s2   -0.02867 rand1*maxSin2    0.08108 rand1*maxSin2 - sin2Theta    0.10975 loop Y
+     tc     20 u0    0.84745 eV   13.37191 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.05782 rand1*maxSin2 - sin2Theta    0.12268 loop Y
+     tc     21 u0    0.81947 eV   12.98167 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.01439 rand1*maxSin2 - sin2Theta    0.07925 loop Y
+     tc     22 u0    0.96168 eV   14.96544 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.02420 rand1*maxSin2 - sin2Theta    0.08906 loop Y
+     tc     23 u0    0.58786 eV    9.75064 ri    1.52741 ct    0.98205 s2    0.03557 rand1*maxSin2    0.15284 rand1*maxSin2 - sin2Theta    0.11728 loop Y
+     tc     24 u0    0.50456 eV    8.58867 ri    1.71805 ct    0.87308 s2    0.23772 rand1*maxSin2    0.06501 rand1*maxSin2 - sin2Theta   -0.17272 loop N
+
+
+    //_QCtx_generate_cerenkov_photon id 0 
+    //qctx::cerenkov_photon id 37969 loop   1 u0    0.95147 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.27884 
+    //qctx::cerenkov_photon id 37969 loop   2 u0    0.77318 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.07865 
+    //qctx::cerenkov_photon id 37969 loop   3 u0    0.08577 ri    1.49416 ct    1.00391 s2   -0.00783 u_mxs2_s2    0.15890 
+    //qctx::cerenkov_photon id 37969 loop   4 u0    0.11242 ri    1.50021 ct    0.99986 s2    0.00028 u_mxs2_s2    0.09878 
+    //qctx::cerenkov_photon id 37969 loop   5 u0    0.01777 ri    1.48004 ct    1.01349 s2   -0.02716 u_mxs2_s2    0.13624 
+    //qctx::cerenkov_photon id 37969 loop   6 u0    0.98852 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.30967 
+    //qctx::cerenkov_photon id 37969 loop   7 u0    0.78130 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.23149 
+    //qctx::cerenkov_photon id 37969 loop   8 u0    0.23526 ri    1.55755 ct    0.96305 s2    0.07253 u_mxs2_s2    0.02513 
+    //qctx::cerenkov_photon id 37969 loop   9 u0    0.41300 ri    1.56390 ct    0.95914 s2    0.08005 u_mxs2_s2   -0.00030 
+    //_QCtx_generate_cerenkov_photon id 200000 
+
+
+
+     i      3 seqidx   57112 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.96256 eV   14.97773 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.09842 rand1*maxSin2 - sin2Theta    0.16328 loop Y
+     tc      2 u0    0.04524 eV    2.18113 ri    1.48507 ct    1.01005 s2   -0.02020 rand1*maxSin2    0.00984 rand1*maxSin2 - sin2Theta    0.03004 loop Y
+     tc      3 u0    0.77217 eV   12.32171 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.12101 rand1*maxSin2 - sin2Theta    0.18587 loop Y
+     tc      4 u0    0.77843 eV   12.40907 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.11029 rand1*maxSin2 - sin2Theta    0.17515 loop Y
+     tc      5 u0    0.41228 eV    7.30128 ri    1.55831 ct    0.96258 s2    0.07344 rand1*maxSin2    0.07374 rand1*maxSin2 - sin2Theta    0.00030 loop Y
+
+     tc      6 u0    0.64143 eV   10.49792 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.09615 rand1*maxSin2 - sin2Theta    0.16101 loop Y
+     tc      7 u0    0.25953 eV    5.17051 ri    1.57263 ct    0.95381 s2    0.09024 rand1*maxSin2    0.11015 rand1*maxSin2 - sin2Theta    0.01991 loop Y
+     tc      8 u0    0.31415 eV    5.93239 ri    1.60658 ct    0.93366 s2    0.12828 rand1*maxSin2    0.00485 rand1*maxSin2 - sin2Theta   -0.12342 loop N
+
+
+    //_QCtx_generate_cerenkov_photon id 0 
+    //qctx::cerenkov_photon id 57112 loop   1 u0    0.96256 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.16328 
+    //qctx::cerenkov_photon id 57112 loop   2 u0    0.04524 ri    1.48507 ct    1.01005 s2   -0.02020 u_mxs2_s2    0.03004 
+    //qctx::cerenkov_photon id 57112 loop   3 u0    0.77217 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.18587 
+    //qctx::cerenkov_photon id 57112 loop   4 u0    0.77843 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.17515 
+    //qctx::cerenkov_photon id 57112 loop   5 u0    0.41228 ri    1.55861 ct    0.96240 s2    0.07379 u_mxs2_s2   -0.00006 
+
+          ANOTHER ONE DEVIATING AT CLOSE TO 7.3 eV 
+
+
+
+     i      4 seqidx   69670 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.10435 eV    3.00563 ri    1.49792 ct    1.00139 s2   -0.00277 rand1*maxSin2    0.21707 rand1*maxSin2 - sin2Theta    0.21984 loop Y
+     tc      2 u0    0.88072 eV   13.83602 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.02204 rand1*maxSin2 - sin2Theta    0.08690 loop Y
+     tc      3 u0    0.18484 eV    4.12852 ri    1.52629 ct    0.98278 s2    0.03415 rand1*maxSin2    0.12525 rand1*maxSin2 - sin2Theta    0.09110 loop Y
+     tc      4 u0    0.38021 eV    6.85388 ri    1.53577 ct    0.97671 s2    0.04603 rand1*maxSin2    0.04601 rand1*maxSin2 - sin2Theta   -0.00003 loop N
+
+    //qctx::cerenkov_photon id 69670 loop   1 u0    0.10435 ri    1.49793 ct    1.00139 s2   -0.00277 u_mxs2_s2    0.21984 
+    //qctx::cerenkov_photon id 69670 loop   2 u0    0.88072 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.08690 
+    //qctx::cerenkov_photon id 69670 loop   3 u0    0.18484 ri    1.52629 ct    0.98278 s2    0.03415 u_mxs2_s2    0.09110 
+    //qctx::cerenkov_photon id 69670 loop   4 u0    0.38021 ri    1.53574 ct    0.97673 s2    0.04601 u_mxs2_s2    0.00000 
+    //qctx::cerenkov_photon id 69670 loop   5 u0    0.52322 ri    1.66583 ct    0.90045 s2    0.18918 u_mxs2_s2   -0.17099 
+
+
+
+
+     i      5 seqidx   69761 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.72333 eV   11.64046 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.09165 rand1*maxSin2 - sin2Theta    0.15651 loop Y
+     tc      2 u0    0.43039 eV    7.55389 ri    1.69043 ct    0.88735 s2    0.21261 rand1*maxSin2    0.28231 rand1*maxSin2 - sin2Theta    0.06970 loop Y
+     tc      3 u0    0.55687 eV    9.31835 ri    1.58988 ct    0.94347 s2    0.10987 rand1*maxSin2    0.25522 rand1*maxSin2 - sin2Theta    0.14535 loop Y
+     tc      4 u0    0.41501 eV    7.33942 ri    1.57825 ct    0.95042 s2    0.09671 rand1*maxSin2    0.12314 rand1*maxSin2 - sin2Theta    0.02643 loop Y
+     tc      5 u0    0.92436 eV   14.44486 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.15244 rand1*maxSin2 - sin2Theta    0.21730 loop Y
+     tc      6 u0    0.83171 eV   13.15238 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.17171 rand1*maxSin2 - sin2Theta    0.23658 loop Y
+     tc      7 u0    0.42627 eV    7.49643 ri    1.66038 ct    0.90341 s2    0.18385 rand1*maxSin2    0.18386 rand1*maxSin2 - sin2Theta    0.00001 loop Y
+
+                      7.49 not near bin edge 
+
+     tc      8 u0    0.83247 eV   13.16290 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.21731 rand1*maxSin2 - sin2Theta    0.28217 loop Y
+     tc      9 u0    0.07905 eV    2.65279 ri    1.49288 ct    1.00477 s2   -0.00956 rand1*maxSin2    0.21548 rand1*maxSin2 - sin2Theta    0.22504 loop Y
+     tc     10 u0    0.10878 eV    3.06752 ri    1.49890 ct    1.00073 s2   -0.00147 rand1*maxSin2    0.19377 rand1*maxSin2 - sin2Theta    0.19523 loop Y
+     tc     11 u0    0.34725 eV    6.39408 ri    1.61796 ct    0.92709 s2    0.14050 rand1*maxSin2    0.20454 rand1*maxSin2 - sin2Theta    0.06404 loop Y
+     tc     12 u0    0.44950 eV    7.82049 ri    1.79158 ct    0.83725 s2    0.29901 rand1*maxSin2    0.18097 rand1*maxSin2 - sin2Theta   -0.11805 loop N
+
+    //qctx::cerenkov_photon id 69761 loop   1 u0    0.72333 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.15651 
+    //qctx::cerenkov_photon id 69761 loop   2 u0    0.43039 ri    1.69045 ct    0.88734 s2    0.21263 u_mxs2_s2    0.06968 
+    //qctx::cerenkov_photon id 69761 loop   3 u0    0.55687 ri    1.58989 ct    0.94346 s2    0.10988 u_mxs2_s2    0.14534 
+    //qctx::cerenkov_photon id 69761 loop   4 u0    0.41501 ri    1.57825 ct    0.95042 s2    0.09670 u_mxs2_s2    0.02644 
+    //qctx::cerenkov_photon id 69761 loop   5 u0    0.92436 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.21730 
+    //qctx::cerenkov_photon id 69761 loop   6 u0    0.83171 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.23657 
+    //qctx::cerenkov_photon id 69761 loop   7 u0    0.42627 ri    1.66042 ct    0.90339 s2    0.18389 u_mxs2_s2   -0.00003 
+
+
+
+     i      6 seqidx   70952 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.91380 eV   14.29750 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.29951 rand1*maxSin2 - sin2Theta    0.36437 loop Y
+     tc      2 u0    0.17346 eV    3.96975 ri    1.52219 ct    0.98542 s2    0.02894 rand1*maxSin2    0.20108 rand1*maxSin2 - sin2Theta    0.17213 loop Y
+     tc      3 u0    0.17906 eV    4.04787 ri    1.52421 ct    0.98412 s2    0.03151 rand1*maxSin2    0.23341 rand1*maxSin2 - sin2Theta    0.20190 loop Y
+     tc      4 u0    0.65641 eV   10.70686 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.25349 rand1*maxSin2 - sin2Theta    0.31835 loop Y
+     tc      5 u0    0.76884 eV   12.27526 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.05198 rand1*maxSin2 - sin2Theta    0.11684 loop Y
+     tc      6 u0    0.01979 eV    1.82606 ri    1.48042 ct    1.01323 s2   -0.02663 rand1*maxSin2    0.01037 rand1*maxSin2 - sin2Theta    0.03699 loop Y
+     tc      7 u0    0.70850 eV   11.43356 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.03084 rand1*maxSin2 - sin2Theta    0.09570 loop Y
+     tc      8 u0    0.26270 eV    5.21466 ri    1.57460 ct    0.95262 s2    0.09251 rand1*maxSin2    0.25519 rand1*maxSin2 - sin2Theta    0.16268 loop Y
+     tc      9 u0    0.63738 eV   10.44140 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.05090 rand1*maxSin2 - sin2Theta    0.11576 loop Y
+     tc     10 u0    0.64227 eV   10.50964 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.29375 rand1*maxSin2 - sin2Theta    0.35861 loop Y
+     tc     11 u0    0.88112 eV   13.84156 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.19409 rand1*maxSin2 - sin2Theta    0.25895 loop Y
+     tc     12 u0    0.04071 eV    2.11796 ri    1.48435 ct    1.01054 s2   -0.02120 rand1*maxSin2    0.20665 rand1*maxSin2 - sin2Theta    0.22785 loop Y
+     tc     13 u0    0.98530 eV   15.29490 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.18633 rand1*maxSin2 - sin2Theta    0.25119 loop Y
+     tc     14 u0    0.06283 eV    2.42652 ri    1.48910 ct    1.00732 s2   -0.01469 rand1*maxSin2    0.22140 rand1*maxSin2 - sin2Theta    0.23610 loop Y
+     tc     15 u0    0.56563 eV    9.44052 ri    1.57020 ct    0.95529 s2    0.08742 rand1*maxSin2    0.08741 rand1*maxSin2 - sin2Theta   -0.00001 loop N
+
+
+    //qctx::cerenkov_photon id 70952 loop   1 u0    0.91380 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.36437 
+    //qctx::cerenkov_photon id 70952 loop   2 u0    0.17346 ri    1.52219 ct    0.98542 s2    0.02894 u_mxs2_s2    0.17213 
+    //qctx::cerenkov_photon id 70952 loop   3 u0    0.17906 ri    1.52421 ct    0.98412 s2    0.03151 u_mxs2_s2    0.20190 
+    //qctx::cerenkov_photon id 70952 loop   4 u0    0.65641 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.31835 
+    //qctx::cerenkov_photon id 70952 loop   5 u0    0.76884 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.11684 
+    //qctx::cerenkov_photon id 70952 loop   6 u0    0.01979 ri    1.48042 ct    1.01323 s2   -0.02663 u_mxs2_s2    0.03699 
+    //qctx::cerenkov_photon id 70952 loop   7 u0    0.70850 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.09570 
+    //qctx::cerenkov_photon id 70952 loop   8 u0    0.26270 ri    1.57460 ct    0.95262 s2    0.09251 u_mxs2_s2    0.16268 
+    //qctx::cerenkov_photon id 70952 loop   9 u0    0.63738 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.11576 
+    //qctx::cerenkov_photon id 70952 loop  10 u0    0.64227 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.35861 
+    //qctx::cerenkov_photon id 70952 loop  11 u0    0.88112 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.25895 
+    //qctx::cerenkov_photon id 70952 loop  12 u0    0.04071 ri    1.48435 ct    1.01054 s2   -0.02120 u_mxs2_s2    0.22785 
+    //qctx::cerenkov_photon id 70952 loop  13 u0    0.98530 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.25119 
+    //qctx::cerenkov_photon id 70952 loop  14 u0    0.06283 ri    1.48910 ct    1.00732 s2   -0.01469 u_mxs2_s2    0.23610 
+    //qctx::cerenkov_photon id 70952 loop  15 u0    0.56563 ri    1.57018 ct    0.95530 s2    0.08740 u_mxs2_s2    0.00001 
+    //qctx::cerenkov_photon id 70952 loop  16 u0    0.52981 ri    1.65068 ct    0.90872 s2    0.17423 u_mxs2_s2   -0.13066 
+
+
+
+     i      7 seqidx   77035 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.38414 eV    6.90879 ri    1.52834 ct    0.98145 s2    0.03675 rand1*maxSin2    0.15183 rand1*maxSin2 - sin2Theta    0.11509 loop Y
+     tc      2 u0    0.32376 eV    6.06651 ri    1.61255 ct    0.93020 s2    0.13472 rand1*maxSin2    0.17722 rand1*maxSin2 - sin2Theta    0.04250 loop Y
+     tc      3 u0    0.51447 eV    8.72684 ri    1.69032 ct    0.88741 s2    0.21251 rand1*maxSin2    0.23260 rand1*maxSin2 - sin2Theta    0.02009 loop Y
+     tc      4 u0    0.06684 eV    2.48243 ri    1.49018 ct    1.00659 s2   -0.01323 rand1*maxSin2    0.01703 rand1*maxSin2 - sin2Theta    0.03026 loop Y
+     tc      5 u0    0.43190 eV    7.57503 ri    1.70149 ct    0.88158 s2    0.22281 rand1*maxSin2    0.25045 rand1*maxSin2 - sin2Theta    0.02764 loop Y
+     tc      6 u0    0.94901 eV   14.78865 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.00431 rand1*maxSin2 - sin2Theta    0.06917 loop Y
+     tc      7 u0    0.41711 eV    7.36864 ri    1.59354 ct    0.94130 s2    0.11395 rand1*maxSin2    0.11396 rand1*maxSin2 - sin2Theta    0.00001 loop Y
+
+     tc      8 u0    0.99869 eV   15.48173 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.20907 rand1*maxSin2 - sin2Theta    0.27393 loop Y
+     tc      9 u0    0.94692 eV   14.75948 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.01769 rand1*maxSin2 - sin2Theta    0.08255 loop Y
+     tc     10 u0    0.73283 eV   11.77301 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.26386 rand1*maxSin2 - sin2Theta    0.32872 loop Y
+     tc     11 u0    0.17093 eV    3.93442 ri    1.52128 ct    0.98601 s2    0.02778 rand1*maxSin2    0.07192 rand1*maxSin2 - sin2Theta    0.04414 loop Y
+     tc     12 u0    0.53237 eV    8.97650 ri    1.64495 ct    0.91188 s2    0.16847 rand1*maxSin2    0.14618 rand1*maxSin2 - sin2Theta   -0.02229 loop N
+
+    //qctx::cerenkov_photon id 77035 loop   1 u0    0.38414 ri    1.52850 ct    0.98136 s2    0.03694 u_mxs2_s2    0.11489 
+    //qctx::cerenkov_photon id 77035 loop   2 u0    0.32376 ri    1.61255 ct    0.93020 s2    0.13473 u_mxs2_s2    0.04250 
+    //qctx::cerenkov_photon id 77035 loop   3 u0    0.51447 ri    1.69029 ct    0.88742 s2    0.21248 u_mxs2_s2    0.02011 
+    //qctx::cerenkov_photon id 77035 loop   4 u0    0.06684 ri    1.49018 ct    1.00659 s2   -0.01323 u_mxs2_s2    0.03026 
+    //qctx::cerenkov_photon id 77035 loop   5 u0    0.43190 ri    1.70150 ct    0.88158 s2    0.22282 u_mxs2_s2    0.02763 
+    //qctx::cerenkov_photon id 77035 loop   6 u0    0.94901 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.06917 
+    //qctx::cerenkov_photon id 77035 loop   7 u0    0.41711 ri    1.59360 ct    0.94127 s2    0.11402 u_mxs2_s2   -0.00005 
+
+
+
+     i      8 seqidx   77501 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.60134 eV    9.93866 ri    1.50346 ct    0.99770 s2    0.00459 rand1*maxSin2    0.13484 rand1*maxSin2 - sin2Theta    0.13025 loop Y
+     tc      2 u0    0.74981 eV   12.00981 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.22144 rand1*maxSin2 - sin2Theta    0.28630 loop Y
+     tc      3 u0    0.10063 eV    2.95383 ri    1.49714 ct    1.00191 s2   -0.00382 rand1*maxSin2    0.23485 rand1*maxSin2 - sin2Theta    0.23867 loop Y
+     tc      4 u0    0.80985 eV   12.84747 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.10910 rand1*maxSin2 - sin2Theta    0.17396 loop Y
+     tc      5 u0    0.96392 eV   14.99671 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.06149 rand1*maxSin2 - sin2Theta    0.12635 loop Y
+     tc      6 u0    0.48421 eV    8.30468 ri    1.77504 ct    0.84505 s2    0.28589 rand1*maxSin2    0.28588 rand1*maxSin2 - sin2Theta   -0.00000 loop N
+
+    //qctx::cerenkov_photon id 77501 loop   1 u0    0.60134 ri    1.50345 ct    0.99771 s2    0.00458 u_mxs2_s2    0.13026 
+    //qctx::cerenkov_photon id 77501 loop   2 u0    0.74981 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.28630 
+    //qctx::cerenkov_photon id 77501 loop   3 u0    0.10063 ri    1.49714 ct    1.00191 s2   -0.00382 u_mxs2_s2    0.23867 
+    //qctx::cerenkov_photon id 77501 loop   4 u0    0.80985 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.17396 
+    //qctx::cerenkov_photon id 77501 loop   5 u0    0.96392 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.12635 
+    //qctx::cerenkov_photon id 77501 loop   6 u0    0.48421 ri    1.77493 ct    0.84510 s2    0.28580 u_mxs2_s2    0.00008 
+
+    //qctx::cerenkov_photon id 77501 loop   7 u0    0.19367 ri    1.53170 ct    0.97930 s2    0.04096 u_mxs2_s2    0.12786 
+    //qctx::cerenkov_photon id 77501 loop   8 u0    0.38280 ri    1.52736 ct    0.98208 s2    0.03551 u_mxs2_s2    0.19009 
+    //qctx::cerenkov_photon id 77501 loop   9 u0    0.98008 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.18380 
+    //qctx::cerenkov_photon id 77501 loop  10 u0    0.26729 ri    1.57745 ct    0.95090 s2    0.09579 u_mxs2_s2    0.18082 
+    //qctx::cerenkov_photon id 77501 loop  11 u0    0.28075 ri    1.58582 ct    0.94588 s2    0.10531 u_mxs2_s2    0.19156 
+    //qctx::cerenkov_photon id 77501 loop  12 u0    0.85420 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.25783 
+    //qctx::cerenkov_photon id 77501 loop  13 u0    0.16042 ri    1.51750 ct    0.98847 s2    0.02293 u_mxs2_s2    0.04417 
+    //qctx::cerenkov_photon id 77501 loop  14 u0    0.14016 ri    1.51020 ct    0.99325 s2    0.01346 u_mxs2_s2    0.03445 
+    //qctx::cerenkov_photon id 77501 loop  15 u0    0.71971 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.12184 
+    //qctx::cerenkov_photon id 77501 loop  16 u0    0.44289 ri    1.78176 ct    0.84186 s2    0.29127 u_mxs2_s2   -0.14472 
+
+
+
+
+     i      9 seqidx   81643 Pmin/eV    1.55000 Pmax/eV   15.50000 dp/eV   13.95000 maxSin2    0.30012
+     tc      1 u0    0.24282 eV    4.93735 ri    1.56224 ct    0.96016 s2    0.07810 rand1*maxSin2    0.09242 rand1*maxSin2 - sin2Theta    0.01432 loop Y
+     tc      2 u0    0.98302 eV   15.26312 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.17711 rand1*maxSin2 - sin2Theta    0.24197 loop Y
+     tc      3 u0    0.06673 eV    2.48091 ri    1.49015 ct    1.00661 s2   -0.01327 rand1*maxSin2    0.27202 rand1*maxSin2 - sin2Theta    0.28529 loop Y
+     tc      4 u0    0.26372 eV    5.22886 ri    1.57523 ct    0.95224 s2    0.09324 rand1*maxSin2    0.27110 rand1*maxSin2 - sin2Theta    0.17786 loop Y
+     tc      5 u0    0.04646 eV    2.19809 ri    1.48527 ct    1.00992 s2   -0.01994 rand1*maxSin2    0.21834 rand1*maxSin2 - sin2Theta    0.23827 loop Y
+     tc      6 u0    0.97055 eV   15.08917 ri    1.45360 ct    1.03192 s2   -0.06486 rand1*maxSin2    0.11778 rand1*maxSin2 - sin2Theta    0.18264 loop Y
+     tc      7 u0    0.27440 eV    5.37794 ri    1.58187 ct    0.94824 s2    0.10084 rand1*maxSin2    0.27769 rand1*maxSin2 - sin2Theta    0.17686 loop Y
+     tc      8 u0    0.32912 eV    6.14116 ri    1.61588 ct    0.92829 s2    0.13828 rand1*maxSin2    0.26658 rand1*maxSin2 - sin2Theta    0.12830 loop Y
+     tc      9 u0    0.56627 eV    9.44940 ri    1.56877 ct    0.95616 s2    0.08575 rand1*maxSin2    0.08575 rand1*maxSin2 - sin2Theta   -0.00000 loop N
+
+    //qctx::cerenkov_photon id 81643 loop   1 u0    0.24282 ri    1.56225 ct    0.96016 s2    0.07810 u_mxs2_s2    0.01432 
+    //qctx::cerenkov_photon id 81643 loop   2 u0    0.98302 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.24197 
+    //qctx::cerenkov_photon id 81643 loop   3 u0    0.06673 ri    1.49015 ct    1.00661 s2   -0.01327 u_mxs2_s2    0.28529 
+    //qctx::cerenkov_photon id 81643 loop   4 u0    0.26372 ri    1.57523 ct    0.95224 s2    0.09324 u_mxs2_s2    0.17786 
+    //qctx::cerenkov_photon id 81643 loop   5 u0    0.04646 ri    1.48527 ct    1.00992 s2   -0.01994 u_mxs2_s2    0.23827 
+    //qctx::cerenkov_photon id 81643 loop   6 u0    0.97055 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.18264 
+    //qctx::cerenkov_photon id 81643 loop   7 u0    0.27440 ri    1.58187 ct    0.94824 s2    0.10084 u_mxs2_s2    0.17686 
+    //qctx::cerenkov_photon id 81643 loop   8 u0    0.32912 ri    1.61588 ct    0.92829 s2    0.13828 u_mxs2_s2    0.12830 
+    //qctx::cerenkov_photon id 81643 loop   9 u0    0.56627 ri    1.56874 ct    0.95618 s2    0.08572 u_mxs2_s2    0.00004 
+
+    //qctx::cerenkov_photon id 81643 loop  10 u0    0.09310 ri    1.49556 ct    1.00297 s2   -0.00595 u_mxs2_s2    0.13416 
+    //qctx::cerenkov_photon id 81643 loop  11 u0    0.02792 ri    1.48196 ct    1.01217 s2   -0.02450 u_mxs2_s2    0.03925 
+    //qctx::cerenkov_photon id 81643 loop  12 u0    0.03671 ri    1.48362 ct    1.01104 s2   -0.02221 u_mxs2_s2    0.15285 
+    //qctx::cerenkov_photon id 81643 loop  13 u0    0.11091 ri    1.49967 ct    1.00022 s2   -0.00044 u_mxs2_s2    0.00418 
+    //qctx::cerenkov_photon id 81643 loop  14 u0    0.92990 ri    1.45360 ct    1.03192 s2   -0.06486 u_mxs2_s2    0.36377 
+    //qctx::cerenkov_photon id 81643 loop  15 u0    0.25187 ri    1.56787 ct    0.95671 s2    0.08470 u_mxs2_s2   -0.01139 
+
+
+
+Try comparing G4Cerenkov_modified against itself with different seeds
+------------------------------------------------------------------------
+
+* chi2 ok 1.03  
+
+::
+
+    epsilon:CerenkovStandalone blyth$ SEED=1 ./G4Cerenkov_modifiedTest.sh
+    epsilon:CerenkovStandalone blyth$ SEED=2 ./G4Cerenkov_modifiedTest.sh
+
+    /tmp/G4Cerenkov_modifiedTest/BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUEseed_1_/
+    /tmp/G4Cerenkov_modifiedTest/BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUEseed_2_/
+
+    epsilon:ana blyth$ ARG=7 ipython -i wavelength_cfplot.py 
+
 
 

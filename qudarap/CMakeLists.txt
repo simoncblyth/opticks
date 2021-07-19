@@ -70,7 +70,7 @@ get_target_property(ILL ${name} INTERFACE_LINK_LIBRARIES)
 message(STATUS "${name} INTERFACE_LINK_LIBRARIES:${ILL} " )
 
 target_link_libraries( ${name} ${LIBS})
-target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
+target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP FLIP_RANDOM )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

@@ -23,6 +23,7 @@ cks-compile(){
         $* \
         -DINSTRUMENTED \
         -DSKIP_CONTINUE \
+        -DFLOAT_TEST \
          -std=c++11 \
        -I. \
        -g \

@@ -10,13 +10,16 @@ OpticksRandom* OpticksRandom::Get(){ return INSTANCE ; }
 
 const char* OpticksRandom::NAME = "OpticksRandom" ;  
 
-OpticksRandom::OpticksRandom(const NP* seq)
+OpticksRandom::OpticksRandom(const NP* seq, const NP* seqmask)
     :
     m_seq(seq),
-    m_seq_values(m_seq ? m_seq->values<double>() : nullptr ),
+    m_seq_values(m_seq ? m_seq->values<float>() : nullptr ),
     m_seq_ni(m_seq ? m_seq->shape[0] : 0 ),
     m_seq_nv(m_seq ? m_seq->shape[1]*m_seq->shape[2] : 0 ),
     m_seq_index(-1),
+    m_seqmask(seqmask),
+    m_seqmask_ni( m_seqmask ? m_seqmask->shape[0] : 0 ),
+    m_seqmask_values(m_seqmask ? m_seqmask->values<size_t>() : nullptr), 
     m_cur(NP::Make<int>(m_seq_ni)),
     m_cur_values(m_cur->values<int>()),
     m_recycle(true),
@@ -26,37 +29,72 @@ OpticksRandom::OpticksRandom(const NP* seq)
     if( m_seq )
     {
         std::cout << " m_seq " << ( m_seq ? m_seq->desc() : "-" ) << std::endl ; 
+        std::cout << " m_seqmask " << ( m_seqmask ? m_seqmask->desc() : "-" ) << std::endl ; 
         std::cout << " desc " << desc() << std::endl ; 
         std::cout << " m_cur " << ( m_cur ? m_cur->desc() : "-" ) << std::endl ; 
     }
 }
 
 
-void OpticksRandom::setSequenceIndex(int seq_index)
+size_t OpticksRandom::getNumIndices() const
 {
-    bool have_seq = seq_index < m_seq_ni ; 
-    if(!have_seq) 
-        std::cout 
-            << "FATAL : OUT OF RANGE : " 
-            << " m_seq_ni " << m_seq_ni 
-            << " seq_index " << seq_index << " (must be < m_seq_ni ) "  
-            << " desc "  << desc()
-            ; 
-    assert( have_seq );
-  
-    m_seq_index = seq_index ; 
+   return m_seq && m_seqmask ? m_seqmask_ni : ( m_seq ? m_seq_ni : 0 ) ; 
+}
 
-    if( m_seq_index < 0)  
-    {   
-        disable(); 
-    }   
-    else 
-    {   
-        enable();
-    }   
+void OpticksRandom::SetSeed(long seed)  // static
+{
+    CLHEP::HepRandomEngine* engine = CLHEP::HepRandom::getTheEngine(); 
+    int dummy = 0 ; 
+    engine->setSeed(seed, dummy); 
 }
 
 
+/**
+OpticksRandom::getMaskedIndex
+------------------------------
+
+When no seqmask is active this just returns the argument.
+When a seqmask selection is active indices from the mask are returned.
+
+**/
+
+size_t OpticksRandom::getMaskedIndex(int index_)
+{
+    if( m_seqmask == nullptr  ) return index_ ; 
+    assert( index_ < m_seqmask_ni ); 
+    size_t idx = m_seqmask_values[index_] ;  
+    return idx ; 
+}
+
+int OpticksRandom::getSequenceIndex() const 
+{
+    return m_seq_index ; 
+}
+void OpticksRandom::setSequenceIndex(int index_)
+{
+    if( index_ < 0 )
+    {
+        m_seq_index = index_ ; 
+        disable() ;
+    }
+    else
+    {
+        size_t idx = getMaskedIndex(index_); 
+        bool idx_in_range = idx < m_seq_ni ; 
+
+        if(!idx_in_range) 
+            std::cout 
+                << "FATAL : OUT OF RANGE : " 
+                << " m_seq_ni " << m_seq_ni 
+                << " index_ " << index_ 
+                << " idx " << idx << " (must be < m_seq_ni ) "  
+                << " desc "  << desc()
+                ; 
+        assert( idx_in_range );
+        m_seq_index = idx ; 
+        enable();
+    }   
+}
 
 
 std::string OpticksRandom::desc() const
@@ -104,6 +142,7 @@ double OpticksRandom::flat()
         if(m_recycle == false)
         {
             std::cout 
+                << "OpticksRandom::flat"
                 << " FATAL : not enough precooked randoms and recycle not enabled " 
                 << " m_seq_index " << m_seq_index 
                 << " m_seq_nv " << m_seq_nv 
@@ -115,6 +154,7 @@ double OpticksRandom::flat()
         else
         {
             std::cout 
+                << "OpticksRandom::flat"
                 << " WARNING : not enough precooked randoms are recycling randoms " 
                 << " m_seq_index " << m_seq_index 
                 << " m_seq_nv " << m_seq_nv 
@@ -127,11 +167,12 @@ double OpticksRandom::flat()
 
     int idx = m_seq_index*m_seq_nv + cursor ;
 
-    double u = m_seq_values[idx] ;
+    float  f = m_seq_values[idx] ;
+    double d = f ;     // promote random float to double 
 
     *(m_cur_values + m_seq_index) += 1 ;          // increment the cursor in the array, for the next generation 
 
-    return u ; 
+    return d ; 
 }
 
 

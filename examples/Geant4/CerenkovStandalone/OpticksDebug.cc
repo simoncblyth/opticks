@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <boost/filesystem.hpp>
@@ -142,6 +143,14 @@ bool OpticksDebug::ExistsPath(const char* base_, const char* reldir_, const char
     std::cout << "OpticksDebug::ExistsPath " << ( x ? "Y" : "N" ) << " " << fpath.string().c_str() << std::endl ; 
     return x ; 
 }
+
+int OpticksDebug::getenvint(const char* envkey, int fallback)
+{
+    char* val = getenv(envkey);
+    int ival = val ? std::atoi(val) : fallback ;
+    return ival ; 
+}
+
 
 std::string OpticksDebug::prepare_path(const char* dir_, const char* reldir_, const char* name )
 {   

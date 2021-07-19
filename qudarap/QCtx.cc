@@ -463,8 +463,8 @@ void QCtx::generate_cerenkov( float* wavelength, unsigned num_wavelength )
 
 
 
-extern "C" void QCtx_generate_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon, unsigned num_photon );
-void QCtx::generate_cerenkov_photon( quad4* photon, unsigned num_photon )
+extern "C" void QCtx_generate_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon, unsigned num_photon, int print_id );
+void QCtx::generate_cerenkov_photon( quad4* photon, unsigned num_photon, int print_id )
 {
     LOG(LEVEL) << "[ num_photon " << num_photon ;
  
@@ -474,7 +474,7 @@ void QCtx::generate_cerenkov_photon( quad4* photon, unsigned num_photon )
 
     quad4* d_photon = device_alloc<quad4>(num_photon); 
 
-    QCtx_generate_cerenkov_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon );  
+    QCtx_generate_cerenkov_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon, print_id );  
 
     copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 
