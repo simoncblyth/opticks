@@ -19,6 +19,7 @@ wavelength_cfplot.py
     ARG=8 ipython -i wavelength_cfplot.py
     ARG=9 ipython -i wavelength_cfplot.py
     ARG=10 ipython -i wavelength_cfplot.py
+    ARG=11 ipython -i wavelength_cfplot.py
 
 
     mkdir -p ~/simoncblyth.bitbucket.io/env/presentation/ana/wavelength_cfplot
@@ -48,8 +49,20 @@ if __name__ == '__main__':
 
     wa = wl.w[a] 
     wb = wl.w[b]
+
     la = wl.l[a]
     lb = wl.l[b]
+
+    energy = True
+    hc_eVnm = 1240.
+
+    dom = wl.dom[:-1]
+
+    if energy:
+        wa = hc_eVnm/wa
+        wb = hc_eVnm/wb
+        dom = hc_eVnm/dom[::-1]
+    pass
 
     h = CFH()
 
@@ -59,23 +72,25 @@ if __name__ == '__main__':
         title = "Compare two 1M sample LS scintillation wavelength distributions in 1nm bins" 
         xline = [wl.interp(0.05), wl.interp(0.95)]
     else:
-        h.log = True
+        h.log = False
         title = "Compare two 2.82M samples of Cerenkov wavelength distributions in 1nm bins : poor chi2, interpolation artifact ?  " 
         xline = []
     pass 
 
     h.suptitle = title
     c2cut = 10 
-    h(wl.dom[:-1], wa, wb, [la, lb], c2cut=c2cut )
+    h(dom, wa, wb, [la, lb], c2cut=c2cut )
 
     fig, axs = one_cfplot(ok, h, xline=xline )
 
-    if arg in [4,5,6,9]:
+    if arg in [4,5,6,8, 9]:
 
         rindex = np.load(os.path.join(kd, "GScintillatorLib/LS_ori/RINDEX.npy"))
         rindex[:,0] *= 1e6   
-        rindex[:,0] = 1240./rindex[:,0]
-        rindex = rindex[::-1]       
+        if not energy:
+            rindex[:,0] = hc_eVnm/rindex[:,0]
+            rindex = rindex[::-1]       
+        pass
 
         ax = axs[0]
 
@@ -88,15 +103,22 @@ if __name__ == '__main__':
         axr.set_ylabel("rindex")
         axr.spines['right'].set_position(('outward', 0))
 
-        p3, = axr.plot( rindex[:,0] , rindex[:,1], drawstyle="steps", label="rindex", color="b" )
+        p3, = axr.plot( rindex[:,0] , rindex[:,1], drawstyle="steps-post", label="rindex", color="b" )
 
-        #wmin, wmax = 100., 400.
-        wmin, wmax = 80., 800.
-        
-        axs[0].set_xlim(wmin,wmax)
-        axs[1].set_xlim(wmin,wmax)
+        #wmin, wmax = 80., 800.
+        wmin, wmax = 100., 400.
+        emin, emax = hc_eVnm/wmax, hc_eVnm/wmin
+                
+        if energy:
+            xlim = [emin, emax]
+        else:
+            xlim = [wmin, wmax]
+        pass
 
-        axs[1].set_ylim(0,0.01)
+        axs[0].set_xlim(*xlim)
+        axs[1].set_xlim(*xlim)
+
+        axs[1].set_ylim(0,h.chi2.max()*1.1)
     pass
 
     plt.ion()

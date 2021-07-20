@@ -6,7 +6,30 @@ summary
 ---------
 
 * chi2 comparison between cks:G4Cerenkov_modifiedTest.cc and qu:QCtxTest.cc:K "cerenkov_photon" is poor
-  although the distributions look reasonable 
+  although the distributions look reasonable::
+
+  ARG=8 ipython -i wavelength_cfplot.py
+
+* examining the plot in energy with RINDEX bins shows most of 
+  the largest chi2 contributions come from close to bin edges 
+
+* the very largest chi2 contib is just in the region where the 
+  distribution vs energy is the steepest at close to 7.3 eV
+  (this is also where most of the 109/1M deviants are from) 
+
+  * so chief suspect is the "energy" interpolation in 1nm wavelength bins procedure 
+  * clearly the energies corresponding to 1nm wavelength bin edges do not 
+    correspond to the RINDEX energy bin edges : to the interpolation 
+    can clearly suffer  
+
+  * TODO: CUDA port of G4PhysicsVector::Value
+
+  * TODO: create RINDEX texture standalone from the original energy RINDEX 
+    and use that in QCtxtTest rather than using the standard bndlib to 
+    facilitate moving to HD rindex 
+
+    * can make a dedicated LS ck texture for this, as clearly this 
+      is more important than general property access 
 
 * random aligned comparison using the same random sequence (1M,16,16)  
   cks:G4Cerenkov_modifiedTest.cc and qu:QCtxTest.cc:K "cerenkov_photon" 
@@ -41,6 +64,143 @@ summary
 * HMM how to explain lumps on the wavelength distrib ? Need to favor one range above another ?
   Does the RINDEX mountain cause a "lobe" effect where the random sampling will flip one side or the 
   other yieldins broadly similar RINDEX on either side ?
+
+
+* ana/ck.py 2d scatter plots of:
+
+  1. (u0,u1) 
+  2. (en,ct) with overlay of BetaInverse/rindex bins with drawstyle="steps-post"
+     this makes the relationship of (en,ct) with the rindex bins very plain 
+
+
+
+
+G4PhysicsVector::Value
+------------------------
+
+* g4-cls G4PhysicsVector
+
+::
+
+    498 G4double G4PhysicsVector::Value(G4double theEnergy, size_t& lastIdx) const
+    499 {
+    500   G4double y;
+    501   if(theEnergy <= edgeMin) {
+    502     lastIdx = 0;
+    503     y = dataVector[0];
+    504   } else if(theEnergy >= edgeMax) {
+    505     lastIdx = numberOfNodes-1;
+    506     y = dataVector[lastIdx];
+    507   } else {
+    508     lastIdx = FindBin(theEnergy, lastIdx);
+    509     y = Interpolation(lastIdx, theEnergy);
+    510   }
+    511   return y;
+    512 }
+
+    215 inline size_t G4PhysicsVector::FindBin(G4double e, size_t idx) const
+    216 { 
+    217   size_t id = idx;
+    218   if(e < binVector[1]) { 
+    219     id = 0;
+    220   } else if(e >= binVector[numberOfNodes-2]) {
+    221     id = numberOfNodes - 2;
+    222   } else if(idx >= numberOfNodes || e < binVector[idx]
+    223             || e > binVector[idx+1]) {
+    224     id = FindBinLocation(e);
+    225   }
+    226   return id;
+    227 }
+
+    inline
+     G4double G4PhysicsVector::LinearInterpolation(size_t idx, G4double e) const
+    { 
+      // Linear interpolation is used to get the value. Before this method
+      // is called it is ensured that the energy is inside the bin
+      // 0 < idx < numberOfNodes-1
+      
+      return dataVector[idx] +
+             ( dataVector[idx + 1]-dataVector[idx] ) * (e - binVector[idx])
+             /( binVector[idx + 1]-binVector[idx] );
+    }
+
+
+
+* https://bitbucket.org/simoncblyth/chroma/src/master/chroma/cuda/interpolate.h
+
+
+::
+
+    __device__ float
+    interp(float x, int n, float *xp, float *fp)
+    {
+        int lower = 0;
+        int upper = n-1;
+
+        if (x <= xp[lower])
+        return fp[lower];
+
+        if (x >= xp[upper])
+        return fp[upper];
+
+        while (lower < upper-1)
+        {
+        int half = (lower+upper)/2;
+
+        if (x < xp[half])
+            upper = half;
+        else
+            lower = half;
+        }
+
+        float df = fp[upper] - fp[lower];
+        float dx = xp[upper] - xp[lower];
+
+        return fp[lower] + df*(x-xp[lower])/dx;
+    }
+
+
+
+
+
+G4Cerenkov
+--------------
+
+::
+
+    251   G4double Pmin = Rindex->GetMinLowEdgeEnergy();
+    252   G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
+    253   G4double dp = Pmax - Pmin;
+    254 
+    255   G4double nMax = Rindex->GetMaxValue();
+    256 
+    257   G4double BetaInverse = 1./beta;
+    258 
+    259   G4double maxCos = BetaInverse / nMax;
+    260   G4double maxSin2 = (1.0 - maxCos) * (1.0 + maxCos);
+    261 
+
+
+    280       do {
+    281          rand = G4UniformRand();
+    282          sampledEnergy = Pmin + rand * dp;      
+
+    ///   start with flat energy sampling 
+
+    283          sampledRI = Rindex->Value(sampledEnergy);
+    284          cosTheta = BetaInverse / sampledRI;
+    286          sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);
+
+    ///  across entire bins of rindex only one value for : ct, s2 
+
+    285 
+    287          rand = G4UniformRand();
+
+    ///  another sampling dimension 
+
+    288 
+    290       } while (rand*maxSin2 > sin2Theta);
+    291 
 
 
 

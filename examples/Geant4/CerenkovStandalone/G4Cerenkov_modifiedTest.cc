@@ -17,7 +17,7 @@
 struct G4Cerenkov_modifiedTest
 {
     static const char* FOLD ; 
-    static std::string MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons, long seed ); 
+    static std::string MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons, long seed, bool precooked ); 
     static NP*         LoadRandom(const char* random_path);
 
     NP*                       a ;  
@@ -159,7 +159,7 @@ void G4Cerenkov_modifiedTest::scanBetaInverse(double v0, double v1, double st)
 }
 
 
-std::string G4Cerenkov_modifiedTest::MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons, long seed  )
+std::string G4Cerenkov_modifiedTest::MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons, long seed, bool precooked  )
 {
     std::stringstream ss ; 
 
@@ -186,6 +186,11 @@ std::string G4Cerenkov_modifiedTest::MakeLabel( double BetaInverse, double step_
     ss << "" ; 
 #endif
 
+    if( precooked )
+    {
+        ss << "_PRECOOKED" ; 
+    }
+
 
     if( seed != 0 )
     {
@@ -211,7 +216,8 @@ void G4Cerenkov_modifiedTest::PSDI(double BetaInverse, double step_length_, int 
             ;
     }
 
-    std::string label = MakeLabel(BetaInverse, step_length_ , override_fNumPhotons, seed ); 
+    bool precooked = rnd != nullptr ; 
+    std::string label = MakeLabel(BetaInverse, step_length_ , override_fNumPhotons, seed, precooked ); 
     const char* reldir = label.c_str(); 
     std::cout << "G4Cerenkov_modifiedTest::PSDI [" << label << "]" << std::endl ; 
 
@@ -366,7 +372,8 @@ int main(int argc, char** argv)
     long seed = OpticksDebug::getenvint("SEED", 0 ); 
 
     const char* rindex_path = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
-    const char* random_path = nullptr ; // "/tmp/QCtxTest/rng_sequence_f" ; 
+    //const char* random_path = nullptr ; 
+    const char* random_path = "/tmp/QCtxTest/rng_sequence_f" ; 
     const char* mask_path = nullptr ;   // "/tmp/wavelength_deviant_mask.npy" ; 
     
 

@@ -83,20 +83,74 @@ def x_(_):
 txt_ = lambda _:np.loadtxt(StringIO(_))
 
 
+
+
+
+def np_paths(fold):
+    """
+    :param fold: directory containing .npy arrays 
+    :return paths: list of file paths of .npy arrays in *fold*
+    """
+    paths = []
+    for name in os.listdir(fold):
+        if not name.endswith(".npy"): continue 
+        path = os.path.join(fold, name)
+        paths.append(path)
+    pass
+    return sorted(paths)
+
+def np_concatenate(paths):
+    """
+    :param paths: list of paths of .npy arrays 
+    :return c: concatenated array  
+    """
+    aa = []
+    print("\n".join(paths))
+    for path in paths:
+        a = np.load(path)
+        aa.append(a)
+    pass
+    c = np.concatenate(aa)
+    return c 
+
+
 def np_load(base,sub=None,rel=None):
     """
-    Loads np array, returning None if non-existing 
+    Loads single np array or loads and concats a directory of them, 
+    returning None if non-existing 
+
+    :param arg: path to .npy array or directory containing .npy to be concatenated
+    :return c: array 
     """
     path_ = os.path.join(*filter(None,[base,sub,rel]))    
     path = os.path.expandvars(path_)
 
     if os.path.exists(path):
-        a = np.load(path)
+        if path.endswith(".npy"):
+            a = np.load(path)
+            paths = [path]
+        elif os.path.isdir(path):
+            paths = np_paths(path)
+            a = np_concatenate(paths)
+        else:
+            a = None
+            paths = []
+        pass 
     else: 
         log.debug("np_load path_:%s path:%s DOES NOT EXIST " % ( path_, path ))
         a = None 
+        paths = []
     pass
-    return a
+    return a, paths
+
+
+
+
+
+
+
+
+
 
 
 DEFAULT_BASE = "$OPTICKS_EVENT_BASE/$0/evt"

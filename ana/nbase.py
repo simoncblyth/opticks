@@ -53,7 +53,6 @@ def np_fromstring(values, coldim=2, scale=1e6):
 
 
 
-
 class Buf(np.ndarray): pass
 
 

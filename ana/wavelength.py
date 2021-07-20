@@ -7,6 +7,8 @@ wavelength.py
 
    ARG=6 ipython -i wavelength.py 
    ARG=7 ipython -i wavelength.py 
+   ARG=8 ipython -i wavelength.py 
+   ARG=11 ipython -i wavelength.py 
 
 
 """
@@ -94,6 +96,12 @@ class Wavelength(object):
         l[17] = "G4Cerenkov_modified_SKIP_CONTINUE_1M_seed2f" 
         p[17] = os.path.join("/tmp/G4Cerenkov_modifiedTest", "BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUE_FLOAT_TEST_seed_2_", "GenWavelength.npy")
 
+        l[18] = "ana_ck_1M"
+        p[18] = "/tmp/ck/ck_1000000.npy"
+
+        l[19] = "G4Cerenkov_modified_SKIP_CONTINUE_1M_PRECOOKED"
+        p[19] = "/tmp/G4Cerenkov_modifiedTest/BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUE_PRECOOKED/GenWavelength.npy"
+
 
         dom = np.arange(80, 400, 4)  
         #dom = np.arange(300, 600, 1)  
@@ -114,6 +122,8 @@ class Wavelength(object):
             else:
                 a[i] = np.load(p[i])
                 if l[i].startswith("ck_photon"):
+                    w[i] = a[i][:,0,1] 
+                elif l[i].startswith("ana_ck"):
                     w[i] = a[i][:,0,1] 
                 elif l[i].startswith("G4Cerenkov_modified"):
                     w[i] = a[i][:,0,1] 
@@ -166,6 +176,8 @@ class Wavelength(object):
             a, b = self.get_keys('ck_photon_1M', 'ck_photon_1M_FLIP_RANDOM' )
         elif arg == 10:
             a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_seed1f', 'G4Cerenkov_modified_SKIP_CONTINUE_1M_seed2f' )
+        elif arg == 11:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_PRECOOKED', 'ana_ck_1M' )
         else:
             assert 0
         pass
@@ -179,6 +191,9 @@ if __name__ == '__main__':
     arg = int(os.environ.get("ARG","0")) 
     ia,ib = wl.cf(arg)
 
+    pa = wl.p[ia] 
+    pb = wl.p[ib] 
+
     a = wl.a[ia]
     b = wl.a[ib]
 
@@ -186,6 +201,12 @@ if __name__ == '__main__':
     wb = wl.w[ib]
     la = wl.l[ia]
     lb = wl.l[ib]
+
+    print("la:%s" % la)
+    print("pa:%s" % pa)
+    print("lb:%s" % lb)
+    print("pb:%s" % pb)
+
 
     dev = np.abs( wa - wb ) > 1e-4
     num_dev = np.count_nonzero(dev) 

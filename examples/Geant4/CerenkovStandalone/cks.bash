@@ -10,6 +10,10 @@ cks-usage(){ cat << EOU
 In addition to geant4 and clhep this also uses 
 the NP.hh header from https://github.com/simoncblyth/np/ 
 
+::
+
+        -DFLOAT_TEST \
+
 EOU
 }
 
@@ -23,7 +27,6 @@ cks-compile(){
         $* \
         -DINSTRUMENTED \
         -DSKIP_CONTINUE \
-        -DFLOAT_TEST \
          -std=c++11 \
        -I. \
        -g \

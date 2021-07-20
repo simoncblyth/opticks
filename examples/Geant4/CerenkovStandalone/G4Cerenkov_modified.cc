@@ -429,7 +429,11 @@ G4VParticleChange* G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack, cons
 #else
          sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);
 #endif
+
          rand1 = G4UniformRand();  
+#ifdef ONE_RAND
+         rand1 = 1.0 ; 
+#endif
 
         // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
 #ifdef INSTRUMENTED
