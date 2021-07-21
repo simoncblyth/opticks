@@ -199,7 +199,7 @@ def opticks_args(**kwa):
 
     default_dpi = 100. 
     pixwh=np.array([1280.,720.])  # standard presentation size is 1280px_720px
-    figwh=pixwh/default_dpi
+    figwh=pixwh/default_dpi       # [12.8,7.2]
     old_figwh=np.array([18, 10.2])
     sfigwh = ",".join(list(map(str, figwh)))
     figsize = kwa.get("figsize", sfigwh )   

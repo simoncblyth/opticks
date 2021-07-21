@@ -78,6 +78,49 @@ void test_MakeFloat()
 }
 
 
+
+
+
+void test_interp()
+{
+    unsigned na = 3 ; 
+    NPY<float>* a = NPY<float>::make(na,2); 
+    a->zero(); 
+    for(unsigned i=0 ; i < na ; i++)
+    {
+        a->setValue(i,0,0,0,  float(i)) ; 
+        a->setValue(i,1,0,0,  10.f*float(i+1)) ;  
+    }
+
+    unsigned nb = 100 ; 
+    NPY<float>* b = NPY<float>::make(nb,2); 
+    b->zero(); 
+ 
+    for(unsigned i=0 ; i < nb ; i++)
+    {
+        float x = -0.5f + i*0.1f ; 
+        float y = a->interp(x); 
+
+        std::cout  
+            << std::setw(3) << i 
+            << " x " << std::setw(10) << std::setprecision(5) << std::fixed << x 
+            << " y " << std::setw(10) << std::setprecision(5) << std::fixed << y 
+            << std::endl 
+            ;
+
+        b->setValue(i,0,0,0,  x) ; 
+        b->setValue(i,1,0,0,  y) ;  
+    }
+    const char* FOLD = "/tmp/NPY7Test/test_interp" ; 
+
+    a->save(FOLD, "src.npy"); 
+    b->save(FOLD, "dst.npy"); 
+
+    LOG(info) << " saved to " << FOLD ; 
+}
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -87,7 +130,8 @@ int main(int argc, char** argv)
 
     //test_setAllValue(); 
 
-    test_MakeFloat(); 
+    //test_MakeFloat(); 
+    test_interp(); 
 
     return 0 ; 
 }

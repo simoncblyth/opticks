@@ -211,6 +211,11 @@ class NPY_API NPY : public NPYBase {
        NPY<T>* transform(glm::mat4& tr);
        NPY<T>* scale(float factor);
    public:
+       // property shape is (n,2) where n > 1 
+       bool is_pshaped() const ; 
+       void pscale(T scale, unsigned column);
+       void pdump(const char* msg="NPY::pdump") const; 
+   public:
        bool equals(const NPY<T>* other, bool dump=false) const ;
        T maxdiff(const NPY<T>* other, bool dump=false) const ;
    public:
@@ -400,6 +405,9 @@ class NPY_API NPY : public NPYBase {
 
        void         copyTo(std::vector<T>& dst );
 
+   public:
+       // interpolation of property shaped (ni,2) arrays 
+       T            interp(T x) const ; 
    public:
        // Msk is used to keep note of the mask applied to an 
        // array created with *make_masked*. This enables the   

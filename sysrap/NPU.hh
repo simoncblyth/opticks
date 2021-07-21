@@ -181,6 +181,22 @@ struct NPS
         return sh.size(); 
     }
 
+    static int copy_shape(std::vector<int>& dst, const std::vector<int>& src) 
+    {
+        for(unsigned i=0 ; i < src.size() ; i++) dst.push_back(src[i]); 
+        return size(dst); 
+    }
+
+    static int copy_shape(std::vector<int>& dst, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1) 
+    {
+        if(ni > 0) dst.push_back(ni); 
+        if(nj > 0) dst.push_back(nj); 
+        if(nk > 0) dst.push_back(nk); 
+        if(nl > 0) dst.push_back(nl); 
+        if(nm > 0) dst.push_back(nm); 
+        return size(dst); 
+    }
+
     void set_shape(int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1)
     {
         if(ni > 0) shape.push_back(ni); 
@@ -188,6 +204,10 @@ struct NPS
         if(nk > 0) shape.push_back(nk); 
         if(nl > 0) shape.push_back(nl); 
         if(nm > 0) shape.push_back(nm); 
+    }
+    void set_shape(const std::vector<int>& other)
+    {
+        copy_shape(shape, other); 
     }
 
     static std::string desc(const std::vector<int>& shape)
@@ -218,6 +238,14 @@ struct NPS
         for(int i=0; i<int(shape.size()); ++i) sz *= shape[i] ;
         return sz ;  
     }
+
+    static int itemsize(const std::vector<int>& shape)
+    {
+        int sz = 1;
+        for(int i=1; i<int(shape.size()); ++i) sz *= shape[i] ;
+        return sz ;  
+    }
+
 
     std::string desc() const { return desc(shape) ; }
     std::string json() const { return json(shape) ; }

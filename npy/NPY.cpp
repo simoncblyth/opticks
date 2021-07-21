@@ -2634,6 +2634,54 @@ NPY<T>* NPY<T>::scale(float factor)
    return transform(m);
 }
 
+template <typename T>
+bool NPY<T>::is_pshaped() const 
+{
+    const std::vector<int>& shape = getShapeVector(); 
+    bool property_shaped = shape.size() == 2 && shape[1] == 2 && shape[0] > 1 ;
+    return property_shaped ;
+}
+
+template <typename T>
+void NPY<T>::pscale(T scale, unsigned column)
+{
+    assert( is_pshaped() );
+    assert( column < 2 );
+    T* vv = getValues();
+    unsigned ni = getNumItems(); 
+    for(unsigned i=0 ; i < ni ; i++) 
+    {
+        vv[2*i+column] = vv[2*i+column]*scale ;
+    }
+}
+
+template<typename T> 
+void NPY<T>::pdump(const char* msg) const
+{
+    bool property_shaped = is_pshaped();
+    assert( property_shaped );
+
+    unsigned ni = getNumItems() ;
+    std::cout << msg << " ni " << ni << std::endl ;
+
+    const T* vv = getValuesConst();
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        std::cout
+             << " i " << std::setw(3) << i
+             << " px " << std::fixed << std::setw(10) << std::setprecision(5) << vv[2*i+0]
+             << " py " << std::fixed << std::setw(10) << std::setprecision(5) << vv[2*i+1]
+             << std::endl
+             ;
+    }
+}
+
+
+
+
+
+
 
 template <typename T>
 NPY<T>* NPY<T>::transform(glm::mat4& mat)
@@ -3598,15 +3646,57 @@ void NPY<T>::copyTo(std::vector<glm::ivec4>& dst )
 }
 
 
+/**
+NPY::interp
+-------------
 
+From NP::interp, see also ~/np/tests/NPInterpTest.cc
 
+**/
 
+template <typename T> 
+T NPY<T>::interp(T x) const 
+{
+    const std::vector<int>& shape = getShapeVector() ; 
+    assert( shape.size() == 2 && shape[1] == 2 && shape[0] > 1);  
+    unsigned ni = shape[0] ; 
 
+    const T* vv = getValuesConst(); 
 
+    int lo = 0 ;
+    int hi = ni-1 ;
 
+    /*   
+    std::cout 
+         << " NPY::interp "
+         << " x " << x 
+         << " ni " << ni 
+         << " lo " << lo
+         << " hi " << hi
+         << " vx_lo " << vv[2*lo+0] 
+         << " vy_lo " <<  vv[2*lo+1] 
+         << " vx_hi " << vv[2*hi+0] 
+         << " vy_hi " <<  vv[2*hi+1] 
+         << std::endl
+         ; 
 
+    */
 
+    if( x <= vv[2*lo+0] ) return vv[2*lo+1] ; 
+    if( x >= vv[2*hi+0] ) return vv[2*hi+1] ; 
 
+    while (lo < hi-1)
+    {    
+        int mi = (lo+hi)/2;
+        if (x < vv[2*mi+0]) hi = mi ; 
+        else lo = mi;
+    }    
+
+    T dy = vv[2*hi+1] - vv[2*lo+1] ;
+    T dx = vv[2*hi+0] - vv[2*lo+0] ;
+    T y = vv[2*lo+1] + dy*(x-vv[2*lo+0])/dx ;
+    return y ;
+}
 
 
 

@@ -10,9 +10,57 @@
 
 
 #include "NPY.hpp"
+#include "NP.hh"
 #include "PLOG.hh"
 
 const plog::Severity X4PhysicsOrderedFreeVector::LEVEL = PLOG::EnvLevel("X4PhysicsOrderedFreeVector", "DEBUG" ); 
+
+
+X4PhysicsOrderedFreeVector* X4PhysicsOrderedFreeVector::Load(const char* base, const char* name, double en_scale )   // static 
+{
+    NPY<double>* a = NPY<double>::load(base, name); 
+    if(en_scale > 0.) a->pscale(en_scale, 0u); 
+    return X4PhysicsOrderedFreeVector::FromArray( a ); 
+}
+
+X4PhysicsOrderedFreeVector* X4PhysicsOrderedFreeVector::FromArray(const NPY<double>* a )   // static 
+{
+    assert( a && a->getNumDimensions() == 2 && a->hasShape(-1,2) && a->getNumItems() > 1 );  
+    unsigned ni = a->getNumItems(); 
+    const double* pdata = a->getValuesConst(); 
+    X4PhysicsOrderedFreeVector* xvec = FromPairData( pdata, ni ); 
+    xvec->src = a ; 
+    return xvec ; 
+}
+
+X4PhysicsOrderedFreeVector* X4PhysicsOrderedFreeVector::FromArray(const NP* a )   // static 
+{
+    assert( a->is_pshaped() ); 
+    unsigned ni = a->shape[0]; 
+    const double* pdata = a->cvalues<double>(); 
+    X4PhysicsOrderedFreeVector* xvec = FromPairData( pdata, ni ); 
+    xvec->asrc = a ; 
+    return xvec ; 
+}
+ 
+X4PhysicsOrderedFreeVector* X4PhysicsOrderedFreeVector::FromPairData(const double* pdata, unsigned npair )   // static 
+{
+    std::vector<double> energy(npair, 0.) ; 
+    std::vector<double> value(npair, 0.) ; 
+    for(unsigned i=0 ; i < npair ; i++)
+    {
+        energy[i] = pdata[2*i+0]; 
+        value[i] = pdata[2*i+1]; 
+    }
+    G4PhysicsOrderedFreeVector* vec = new G4PhysicsOrderedFreeVector( energy.data(), value.data() , npair ); 
+    X4PhysicsOrderedFreeVector* xvec = new X4PhysicsOrderedFreeVector(vec); 
+    return xvec ; 
+}
+ 
+
+
+
+
 
 
 template<typename T>
@@ -62,6 +110,8 @@ std::string X4PhysicsOrderedFreeVector::Desc(const G4PhysicsOrderedFreeVector* v
 
 X4PhysicsOrderedFreeVector::X4PhysicsOrderedFreeVector( G4PhysicsOrderedFreeVector* vec_ )
     :
+    src(nullptr),
+    asrc(nullptr),
     vec(vec_)
 {
 }
