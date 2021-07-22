@@ -71,11 +71,11 @@ struct QUDARAP_API QCtx
     void generate( quad4* photon,     unsigned num_photon ); 
     void dump(     quad4* photon,     unsigned num_photon, unsigned egdeitems=10 ); 
 
-    template<typename T> T* device_alloc( unsigned num_items ) ; 
-    template<typename T> void device_free( T* d ) ; 
-    template<typename T> void copy_device_to_host( T* h, T* d,  unsigned num_items);
-    template<typename T> void copy_device_to_host_and_free( T* h, T* d,  unsigned num_items);
-    template<typename T> void copy_host_to_device( T* d, T* h,  unsigned num_items);
+    template<typename T> static T* device_alloc( unsigned num_items ) ; 
+    template<typename T> static void device_free( T* d ) ; 
+    template<typename T> static void copy_device_to_host( T* h, T* d,  unsigned num_items);
+    template<typename T> static void copy_device_to_host_and_free( T* h, T* d,  unsigned num_items);
+    template<typename T> static void copy_host_to_device( T* d, const T* h,  unsigned num_items);
 
 
     unsigned getBoundaryTexWidth() const ;

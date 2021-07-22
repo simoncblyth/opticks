@@ -13,6 +13,7 @@ set(TEST_SOURCES
    QPolyTest.cc
    QCtxTest.cc
    QBndTest.cc 
+   QPropTest.cc 
 
 )
 

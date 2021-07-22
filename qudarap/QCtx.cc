@@ -195,7 +195,7 @@ void QCtx::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items)
 }
 
 template<typename T>
-void QCtx::copy_host_to_device( T* d, T* h, unsigned num_items)
+void QCtx::copy_host_to_device( T* d, const T* h, unsigned num_items)
 {
     size_t size = num_items*sizeof(T) ; 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d ), h , size, cudaMemcpyHostToDevice )); 

@@ -26,6 +26,7 @@ Just copy into your project and ``#include "NP.hh"`` to use.
 struct NP
 {
     template<typename T> static NP*  Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1 );  // dtype from template type
+    template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx ); 
 
 
     NP(const char* dtype_="<f4", int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
@@ -1035,6 +1036,15 @@ template <typename T> void NP::read(const T* data)
     }   
 }
 
+template <typename T> NP* NP::Linspace( T x0, T x1, unsigned nx )
+{
+    assert( x1 > x0 ); 
+    assert( nx > 1 ) ; 
+    NP* dom = NP::Make<T>(nx); 
+    T* vv = dom->values<T>(); 
+    for(unsigned i=0 ; i < nx ; i++) vv[i] = x0 + (x1-x0)*T(i)/T(nx-1) ;
+    return dom ; 
+}
 
 template <typename T> NP* NP::Make( int ni_, int nj_, int nk_, int nl_, int nm_ )
 {

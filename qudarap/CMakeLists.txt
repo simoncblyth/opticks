@@ -39,6 +39,9 @@ set(SOURCES
 
     QCtx.cc
     QCtx.cu
+
+    QProp.cc
+    QProp.cu
 )
 
 SET(HEADERS
@@ -54,6 +57,9 @@ SET(HEADERS
     QScint.hh
     QPoly.hh
     QCtx.hh
+
+    QProp.hh
+
 )
 
 set(LIBS
