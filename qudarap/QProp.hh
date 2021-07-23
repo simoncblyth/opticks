@@ -31,9 +31,11 @@ struct NP ;
 struct QUDARAP_API QProp
 {
     static const plog::Severity LEVEL ;
+    static const char*  DEFAULT_PATH ;
     static const QProp*       INSTANCE ; 
     static const QProp*       Get(); 
 
+    const char* path ; 
     const NP* a  ;  
     const float* pp ; 
     unsigned nv ; 
@@ -43,16 +45,17 @@ struct QUDARAP_API QProp
     qprop* prop ; 
     qprop* d_prop ; 
 
-    QProp(const NP* a_); 
 
+    QProp(const char* path=nullptr); 
+    virtual ~QProp(); 
     void init(); 
-    void dump(); 
     void uploadProps(); 
 
-    void lookup( float* lookup, const float* domain,  unsigned lookup_prop, unsigned domain_width ); 
-
-    void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
-
+    void dump() const ; 
+    std::string desc() const ;
+    qprop* getDevicePtr() const ;
+    void lookup( float* lookup, const float* domain,  unsigned lookup_prop, unsigned domain_width ) const ; 
+    void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const ;
 };
 
 

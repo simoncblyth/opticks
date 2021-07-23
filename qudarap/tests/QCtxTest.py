@@ -15,6 +15,33 @@ import os, numpy as np
 from opticks.ana.key import keydir
 from matplotlib import pyplot as plt 
 
+
+class PropLookup(object):
+    FOLD = "/tmp/QCtxTest"
+    def __init__(self):
+        pp = np.load(os.path.join(self.FOLD,"prop_lookup_pp.npy"))
+        x = np.load(os.path.join(self.FOLD,"prop_lookup_x.npy"))
+        yy = np.load(os.path.join(self.FOLD,"prop_lookup_yy.npy"))
+
+        self.pp = pp 
+        self.x = x 
+        self.yy = yy 
+
+        colors = "rgbcmyk"
+        
+        fig, ax = plt.subplots(figsize=[12.8,7.2])
+        for i,y in enumerate(yy):
+            ax.plot( x, y, color=colors[i] ) 
+        pass
+        for i,p in enumerate(pp):
+            pr = p.reshape(-1,2)
+            ax.scatter( pr[:,0], pr[:,1], color=colors[i] ) 
+        pass
+        fig.show()
+
+
+
+
 class QCtxTest(object):
     FOLD = "/tmp/QCtxTest"
     hc_eVnm = 1240. 
@@ -118,6 +145,24 @@ class QCtxTest(object):
         p = np.load(os.path.join(self.FOLD, "%s.npy" % name))
         self.p = p         
 
+        en = p[0,0,0]
+        wl = p[0,0,1]
+        ri = p[0,0,2]
+        ct = p[0,0,3]
+
+        s2 = p[0,1,0]
+        bi = p[0,1,3]
+
+        w0 = p[0,2,0]
+        w1 = p[0,2,1]
+        u0 = p[0,2,2] 
+        u1 = p[0,2,3]  
+
+        li = p[0,3,0].view(np.int32)
+        lo = p[0,3,1].view(np.int32)
+
+
+
     def rng_sequence(self):
         name = "rng_sequence"
         r = np.load(os.path.join(self.FOLD, "%s.npy" % name))
@@ -138,6 +183,8 @@ class QCtxTest(object):
 
         fig.show()
          
+
+
 
     def cerenkov_wavelength(self):
 
@@ -197,40 +244,15 @@ class QCtxTest(object):
  
 
 if __name__ == '__main__':
-    q = QCtxTest()    
-
-
+    #q = QCtxTest()    
     #q.scint_wavelength()
     #q.boundary_lookup_all() 
     #q.boundary_lookup_line() 
     #q.cerenkov_wavelength() 
-    q.cerenkov_photon() 
+    #q.cerenkov_photon() 
     #q.rng_sequence() 
 
-    #w0 = q.w0
-    #e0 = q.e0
- 
-    #p = q.p
-
-
-    en = p[0,0,0]
-    wl = p[0,0,1]
-    ri = p[0,0,2]
-    ct = p[0,0,3]
-
-    s2 = p[0,1,0]
-    bi = p[0,1,3]
-
-    w0 = p[0,2,0]
-    w1 = p[0,2,1]
-    u0 = p[0,2,2] 
-    u1 = p[0,2,3]  
-
-    li = p[0,3,0].view(np.int32)
-    lo = p[0,3,1].view(np.int32)
-
-
-
+    t = PropLookup()
 
  
 

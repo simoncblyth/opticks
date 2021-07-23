@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
 
@@ -10,7 +11,8 @@ QCtx
 
 TODO: 
 
-1. genstep provisioning 
+1. genstep provisioning/seeding etc : formerly this was Thrust based, same again ? 
+2. integration with csgoptix (optix 7) to enable propagation within a geometry 
 
 **/
 
@@ -24,6 +26,7 @@ template <typename T> struct QTex ;
 struct QRng ; 
 struct QScint ;
 struct QBnd ; 
+struct QProp ; 
 
 struct qctx ; 
 struct quad4 ; 
@@ -41,6 +44,7 @@ struct QUDARAP_API QCtx
     const QRng*    rng ; 
     const QScint*  scint ; 
     const QBnd*    bnd ; 
+    const QProp*   prop ; 
     qctx*          ctx ;  
     qctx*          d_ctx ;  
 
@@ -51,6 +55,7 @@ struct QUDARAP_API QCtx
     std::string desc() const ; 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
+    void configureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
     void rng_sequence_0( float* rs, unsigned num_items );
 
     template <typename T> void rng_sequence_( dim3 numblocks, dim3 threadsPerBlock, qctx* d_ctx, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
@@ -84,5 +89,7 @@ struct QUDARAP_API QCtx
 
     void boundary_lookup_all(  quad* lookup, unsigned width, unsigned height ) ; 
     void boundary_lookup_line( quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k ) ; 
+
+    void prop_lookup( float* lookup, const float* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
 
 };

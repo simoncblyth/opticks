@@ -25,6 +25,7 @@ Hmm:
 **/
 
 struct curandStateXORWOW ; 
+struct qprop ; 
 
 struct qctx
 {
@@ -32,6 +33,7 @@ struct qctx
 
     cudaTextureObject_t scint_tex ; 
     quad4*              scint_meta ;
+    // hmm could encapsulate the above group into a qscint ?
 
     enum { _BOUNDARY_NUM_MATSUR = 4,  _BOUNDARY_NUM_FLOAT4 = 2 }; 
 
@@ -39,10 +41,12 @@ struct qctx
     quad4*              boundary_meta ; 
     unsigned            boundary_tex_MaterialLine_Water ;
     unsigned            boundary_tex_MaterialLine_LS ; 
+    // hmm could encapsulate the above group into a qbnd ?
+
+    qprop*              prop ;  
 
     static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
  
-
     quad6*              genstep ; 
     unsigned            genstep_id ; 
 
@@ -79,6 +83,7 @@ struct qctx
         scint_meta(nullptr),
         boundary_tex(0),
         boundary_meta(nullptr),
+        prop(nullptr),
         genstep(nullptr),
         genstep_id(~0u),
         photon(nullptr),

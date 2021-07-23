@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "SStr.hh"
+#include "SPath.hh"
 #include "scuda.h"
 #include "QUDA_CHECK.h"
 #include "NP.hh"
@@ -13,16 +14,24 @@
 
 const plog::Severity QProp::LEVEL = PLOG::EnvLevel("QProp", "INFO"); 
 
+const char* QProp::DEFAULT_PATH = SPath::Resolve("/tmp/np/test_compound_np_interp.npy") ; 
+
 const QProp* QProp::INSTANCE = nullptr ; 
 const QProp* QProp::Get(){ return INSTANCE ; }
 
-QProp::QProp(const NP* a_)
+qprop* QProp::getDevicePtr() const
+{
+    return d_prop ; 
+}
+
+QProp::QProp(const char* path_)
     :
-    a(a_),
-    pp(a->cvalues<float>()),
-    nv(a->num_values()),
-    ni(a->shape[0]),
-    nj(a->shape[1]),
+    path(path_ ? strdup(path_) : DEFAULT_PATH),
+    a(path ? NP::Load(path) : nullptr),
+    pp(a ? a->cvalues<float>() : nullptr),
+    nv(a ? a->num_values() : 0),
+    ni(a ? a->shape[0] : 0 ),
+    nj(a ? a->shape[1] : 0 ),
     prop(new qprop),
     d_prop(nullptr)
 {
@@ -30,13 +39,32 @@ QProp::QProp(const NP* a_)
     init(); 
 } 
 
+QProp::~QProp()
+{
+    QUDA_CHECK(cudaFree(prop->pp)); 
+    QUDA_CHECK(cudaFree(d_prop)); 
+}
+
+std::string QProp::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "QProp::desc"
+       << " path " << ( path ? path : "-" ) 
+       << " a " << ( a ? a->desc() : "-" )
+       << " nv " << nv
+       << " ni " << ni
+       << " nj " << nj
+       ;
+    return ss.str(); 
+}
+
 void QProp::init()
 {
     assert( a->uifc == 'f' ); 
     assert( a->ebyte == 4 );  
     assert( a->shape.size() == 2 ); 
 
-    dump(); 
+    //dump(); 
     uploadProps(); 
 }
 
@@ -51,10 +79,10 @@ void QProp::uploadProps()
     d_prop = QU::UploadArray<qprop>(prop, 1 );  
 }
 
-void QProp::dump()
+void QProp::dump() const 
 {
+    LOG(info) << desc() ; 
     UIF u1, u2 ;
-  
     for(unsigned i=0 ; i < ni ; i++)
     {
         for(unsigned j=0 ; j < nj ; j++)
@@ -93,7 +121,7 @@ extern "C" void QProp_lookup(
     unsigned domain_width
 ); 
 
-void QProp::lookup( float* lookup, const float* domain,  unsigned lookup_prop, unsigned domain_width )
+void QProp::lookup( float* lookup, const float* domain,  unsigned lookup_prop, unsigned domain_width ) const 
 {
     unsigned num_lookup = lookup_prop*domain_width ; 
 
@@ -121,7 +149,7 @@ void QProp::lookup( float* lookup, const float* domain,  unsigned lookup_prop, u
 }
 
 
-void QProp::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
+void QProp::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const 
 {
     threadsPerBlock.x = 16 ; 
     threadsPerBlock.y = 16 ; 

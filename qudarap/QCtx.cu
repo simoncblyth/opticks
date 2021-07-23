@@ -9,6 +9,7 @@ MORE EASILY TESTED FROM MULTIPLE ENVIRONMENTS HEADERS
 #include "curand_kernel.h"
 #include "scuda.h"
 #include "qgs.h"
+#include "qprop.h"
 #include "qctx.h"
 
 
@@ -223,5 +224,28 @@ extern "C" void QCtx_boundary_lookup_line(dim3 numBlocks, dim3 threadsPerBlock, 
     printf("//QCtx_boundary_lookup_line num_lookup %d line %d k %d  \n", num_lookup, line, k ); 
     _QCtx_boundary_lookup_line<<<numBlocks,threadsPerBlock>>>( ctx, lookup, domain, num_lookup, line, k );
 }
+
+
+
+__global__ void _QCtx_prop_lookup(qctx* ctx, float* lookup, const float* domain, unsigned domain_width, unsigned* pids, unsigned num_pids )
+{
+
+    unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned iy = blockIdx.y * blockDim.y + threadIdx.y;
+    if (ix >= domain_width || iy >= num_pids  ) return;
+
+    float x = domain[ix] ;  
+    unsigned pid = pids[iy] ; 
+
+    float y = ctx->prop->interpolate( pid, x ); 
+    lookup[iy*domain_width + ix] = y ; 
+}
+
+extern "C" void QCtx_prop_lookup( dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* lookup, const float* domain, unsigned domain_width, unsigned* pids, unsigned num_pids )
+{
+    printf("//QCtx_prop_lookup domain_width %d num_pids %d  \n", domain_width, num_pids ); 
+    _QCtx_prop_lookup<<<numBlocks,threadsPerBlock>>>( ctx, lookup, domain, domain_width, pids, num_pids );
+}
+
 
 

@@ -11,6 +11,7 @@
 
 #include "QRng.hh"
 #include "QBnd.hh"
+#include "QProp.hh"
 #include "QCtx.hh"
 #include "scuda.h"
 
@@ -32,6 +33,8 @@ struct QCtxTest
     void cerenkov_photon(unsigned num_photon, int print_id); 
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material, double nm0=80., double nm1=800., double nm_step=1. ); 
+    void prop_lookup( int iprop=-1, float x0=0.f, float x1=10.f, unsigned nx=101u  ); 
+
 }; 
 
 const char* QCtxTest::FOLD = "/tmp/QCtxTest" ; 
@@ -202,6 +205,42 @@ void QCtxTest::boundary_lookup_line(const char* material, double nm0 , double nm
 }
 
 
+void QCtxTest::prop_lookup( int iprop, float x0, float x1, unsigned nx  )
+{
+    unsigned tot_prop = qc.prop->ni ; 
+    const NP* pp = qc.prop->a ; 
+
+    std::vector<unsigned> pids ; 
+    if( iprop == -1 )
+    { 
+        for(unsigned i=0 ; i < tot_prop ; i++ ) pids.push_back(i);
+    }
+    else
+    {
+        pids.push_back(iprop); 
+    } 
+
+    unsigned num_prop = pids.size() ; 
+
+    LOG(info) 
+        << " tot_prop " << tot_prop
+        << " iprop " << iprop
+        << " pids.size " << pids.size()
+        << " num_prop " << num_prop 
+        << " pp " << pp->desc()
+        ; 
+
+
+    NP* yy = NP::Make<float>(num_prop, nx) ; 
+    NP* x = NP::Linspace<float>(x0,x1,nx); 
+
+    qc.prop_lookup( yy->values<float>(), x->cvalues<float>(), nx, pids ) ;
+
+    pp->save(FOLD, "prop_lookup_pp.npy" ); 
+    x->save(FOLD, "prop_lookup_x.npy" ); 
+    yy->save(FOLD, "prop_lookup_yy.npy" ); 
+}
+
 int main(int argc, char** argv)
 {
     //unsigned num_default = 2820932 ; 
@@ -210,7 +249,7 @@ int main(int argc, char** argv)
     //unsigned num_default = 3000000 ; 
 
     unsigned num = argc > 1 ? std::atoi(argv[1]) : num_default ; 
-    char test = argc > 2 ? argv[2][0] : 'K' ; 
+    char test = argc > 2 ? argv[2][0] : 'Y' ; 
 
     int ni_tranche_size = SSys::getenvint("NI_TRANCHE_SIZE", 100000 ); // default 100k usable with any GPU 
     int print_id = SSys::getenvint("PINDEX", -1 ); 
@@ -241,6 +280,7 @@ int main(int argc, char** argv)
         case 'A': qtc.boundary_lookup_all()                      ; break ;  
         case 'W': qtc.boundary_lookup_line("Water")              ; break ;  
         case 'L': qtc.boundary_lookup_line("LS",80., 800., 0.1)  ; break ;  
+        case 'Y': qtc.prop_lookup(-1, -1.f,10.f,111)               ; break ;  
     }
     return 0 ; 
 }

@@ -87,15 +87,15 @@ struct NP
     static std::string form_path(const char* dir, const char* reldir, const char* name);   
 
     void save_header(const char* path);   
-    void save(const char* path) ;  // *save* methods cannot be const because of update_headers
-    void save(const char* dir, const char* name) ;   
-    void save(const char* dir, const char* reldir, const char* name) ;   
-
+    void old_save(const char* path) ;  // formerly the *save* methods could not be const because of update_headers
+    void save(const char* path) const ;  // *save* methods now can be const due to dynamic creation of header
+    void save(const char* dir, const char* name) const ;   
+    void save(const char* dir, const char* reldir, const char* name) const ;   
 
     std::string get_jsonhdr_path() const ; // .npy -> .npj on loaded path
-    void save_jsonhdr();    
-    void save_jsonhdr(const char* path);   
-    void save_jsonhdr(const char* dir, const char* name);   
+    void save_jsonhdr() const ;    
+    void save_jsonhdr(const char* path) const ;   
+    void save_jsonhdr(const char* dir, const char* name) const ;   
 
     std::string desc() const ; 
 
@@ -205,6 +205,8 @@ Updates network header "prefix" and array header descriptions of the object.
 
 Cannot do this automatically in setters that change shape, dtype or metadata
 because are using a struct.  So just have to invoke this before streaming.  
+
+HMM : do not like this as it prevents NP::save from being const 
 
 **/
 
@@ -796,7 +798,7 @@ inline void NP::save_header(const char* path)
     stream << _hdr ; 
 }
 
-inline void NP::save(const char* path) 
+inline void NP::old_save(const char* path)  // non-const due to update_headers
 {
     std::cout << "NP::save path [" << path  << "]" << std::endl ; 
     update_headers(); 
@@ -805,27 +807,36 @@ inline void NP::save(const char* path)
     stream.write( bytes(), arr_bytes() );
 }
 
-inline void NP::save(const char* dir, const char* reldir, const char* name)
+inline void NP::save(const char* path) const 
+{
+    std::cout << "NP::save path [" << path  << "]" << std::endl ; 
+    std::string hdr = make_header(); 
+    std::ofstream stream(path, std::ios::out|std::ios::binary);
+    stream << hdr ; 
+    stream.write( bytes(), arr_bytes() );
+}
+
+inline void NP::save(const char* dir, const char* reldir, const char* name) const 
 {
     std::cout << "NP::save dir [" << ( dir ? dir : "-" )  << "] reldir [" << ( reldir ? reldir : "-" )  << "] name [" << name << "]" << std::endl ; 
     std::string path = form_path(dir, reldir, name); 
     save(path.c_str()); 
 }
 
-inline void NP::save(const char* dir, const char* name) 
+inline void NP::save(const char* dir, const char* name) const 
 {
     std::string path = form_path(dir, name); 
     save(path.c_str()); 
 }
 
-inline void NP::save_jsonhdr(const char* path)
+inline void NP::save_jsonhdr(const char* path) const 
 {
     std::string json = make_jsonhdr(); 
     std::ofstream stream(path, std::ios::out|std::ios::binary);
     stream << json ; 
 }
 
-inline void NP::save_jsonhdr(const char* dir, const char* name)
+inline void NP::save_jsonhdr(const char* dir, const char* name) const 
 {
     std::string path = form_path(dir, name); 
     save_jsonhdr(path.c_str()); 
@@ -839,7 +850,7 @@ inline std::string NP::get_jsonhdr_path() const
     return path ; 
 }
 
-inline void NP::save_jsonhdr()
+inline void NP::save_jsonhdr() const 
 {
     std::string path = get_jsonhdr_path() ; 
     std::cout << "NP::save_jsonhdr to " << path << std::endl  ; 

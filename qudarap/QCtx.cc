@@ -17,6 +17,7 @@
 #include "QTex.hh"
 #include "QScint.hh"
 #include "QBnd.hh"
+#include "QProp.hh"
 #include "QCtx.hh"
 
 const plog::Severity QCtx::LEVEL = PLOG::EnvLevel("QCtx", "INFO"); 
@@ -39,11 +40,15 @@ void QCtx::Init(const GGeo* ggeo)
     QRng* qrng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << qrng->desc(); 
 
-    QScint* qscint = MakeScint(slib); 
+    QScint* qscint = MakeScint(slib); // custom high-definition inverse CDF for scintillation generation
     LOG(LEVEL) << qscint->desc(); 
 
-    QBnd* qbnd = new QBnd(blib); 
+    QBnd* qbnd = new QBnd(blib); // boundary texture with standard domain, used for standard fast property lookup 
     LOG(LEVEL) << qbnd->desc(); 
+
+    QProp* qprop = new QProp ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
+    LOG(LEVEL) << qprop->desc(); 
+
 }
 
 QScint* QCtx::MakeScint(const GScintillatorLib* slib)
@@ -73,6 +78,7 @@ QCtx::QCtx()
     rng(QRng::Get()),
     scint(QScint::Get()),
     bnd(QBnd::Get()),
+    prop(QProp::Get()),
     ctx(new qctx),
     d_ctx(nullptr)
 {
@@ -103,6 +109,7 @@ void QCtx::init()
         << " rng " << rng 
         << " scint " << scint
         << " bnd " << bnd
+        << " prop " << prop
         << " ctx " << ctx 
         << " d_ctx " << d_ctx 
         ;  
@@ -131,6 +138,12 @@ void QCtx::init()
         ctx->boundary_tex_MaterialLine_Water = bnd->getMaterialLine("Water") ; 
         ctx->boundary_tex_MaterialLine_LS    = bnd->getMaterialLine("LS") ; 
     } 
+
+    if(prop)
+    {
+        LOG(LEVEL) << " prop " << prop->desc() ; 
+        ctx->prop = prop->getDevicePtr() ; 
+    }
 
     d_ctx = QU::UploadArray<qctx>(ctx, 1 );  
 
@@ -169,6 +182,20 @@ void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned wid
     numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
     numBlocks.z = 1 ; 
 }
+
+
+void QCtx::configureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
+{
+    threadsPerBlock.x = 16 ; 
+    threadsPerBlock.y = 16 ; 
+    threadsPerBlock.z = 1 ; 
+ 
+    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
+    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
+    numBlocks.z = 1 ; 
+}
+
+
 
 
 
@@ -591,6 +618,50 @@ void QCtx::boundary_lookup_line( quad* lookup, float* domain, unsigned num_looku
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+
+
+
+extern "C" void QCtx_prop_lookup( dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* lookup, const float* domain, unsigned domain_width, unsigned* pids, unsigned num_pids ); 
+void QCtx::prop_lookup( float* lookup, const float* domain, unsigned domain_width, const std::vector<unsigned>& pids ) 
+{
+    unsigned num_pids = pids.size() ; 
+    unsigned num_lookup = num_pids*domain_width ; 
+    LOG(LEVEL) 
+        << "[" 
+        << " num_pids " << num_pids
+        << " domain_width " << domain_width 
+        << " num_lookup " << num_lookup
+        ; 
+
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, domain_width, num_pids  ); 
+
+    float* d_domain = device_alloc<float>(domain_width) ; 
+    unsigned* d_pids = device_alloc<unsigned>(num_pids) ; 
+
+    copy_host_to_device<float>( d_domain, domain, domain_width ); 
+    copy_host_to_device<unsigned>( d_pids, pids.data(), num_pids ); 
+
+    float* d_lookup = device_alloc<float>(num_lookup) ; 
+
+    QCtx_prop_lookup(numBlocks, threadsPerBlock, d_ctx, d_lookup, d_domain, domain_width, d_pids, num_pids );  
+
+    copy_device_to_host_and_free<float>( lookup, d_lookup, num_lookup ); 
+
+    device_free<float>( d_domain ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
+
+
+
+
 
 
 
