@@ -5,6 +5,14 @@
 
 const char* FOLD = "/tmp/QPropTest" ; 
 
+/**
+test_lookup
+-------------
+
+nx lookups in x0->x1 inclusive for each property yielding nx*qp.ni values.
+
+**/
+
 void test_lookup(QProp& qp, float x0, float x1, unsigned nx)
 {
     NP* x = NP::Linspace<float>( x0, x1, nx ); 
@@ -38,3 +46,4 @@ int main(int argc, char** argv)
 
     return 0 ; 
 }
+

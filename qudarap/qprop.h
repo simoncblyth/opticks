@@ -6,7 +6,6 @@
    #define QPROP_METHOD 
 #endif 
 
-
 /**
 qprop
 =======
@@ -15,26 +14,25 @@ qprop
 
 struct qprop
 {
-    const float* pp ; 
+    float* pp ; 
     unsigned width ; 
     unsigned height ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-    qprop( const float* pp, unsigned width, unsigned height ); 
-    float interpolate( unsigned iprop, float x );  
+    QPROP_METHOD float interpolate( unsigned iprop, float x );  
+#else
+    qprop()
+        :
+        pp(nullptr),
+        width(0),
+        height(0)
+    {
+    }
 #endif
 
 }; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-
-inline QPROP_METHOD qprop::qprop( const float* pp_, unsigned width_, unsigned height_ )
-    :
-    pp(pp_), 
-    width(width_),
-    height(height_)
-{
-}
 
 inline QPROP_METHOD float qprop::interpolate( unsigned iprop, float x )
 {

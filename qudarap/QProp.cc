@@ -7,6 +7,8 @@
 #include "NP.hh"
 #include "QCtx.hh"
 #include "QProp.hh"
+#include "QU.hh"
+#include "qprop.h"
 #include "PLOG.hh"
 
 const plog::Severity QProp::LEVEL = PLOG::EnvLevel("QProp", "INFO"); 
@@ -14,14 +16,15 @@ const plog::Severity QProp::LEVEL = PLOG::EnvLevel("QProp", "INFO");
 const QProp* QProp::INSTANCE = nullptr ; 
 const QProp* QProp::Get(){ return INSTANCE ; }
 
-QProp::QProp(const NP* prop_)
+QProp::QProp(const NP* a_)
     :
-    prop(prop_),
-    pp(prop->cvalues<float>()),
-    nv(prop->num_values()),
-    ni(prop->shape[0]),
-    nj(prop->shape[1]),
-    d_pp(nullptr)
+    a(a_),
+    pp(a->cvalues<float>()),
+    nv(a->num_values()),
+    ni(a->shape[0]),
+    nj(a->shape[1]),
+    prop(new qprop),
+    d_prop(nullptr)
 {
     INSTANCE = this ; 
     init(); 
@@ -29,26 +32,24 @@ QProp::QProp(const NP* prop_)
 
 void QProp::init()
 {
-    assert( prop->uifc == 'f' ); 
-    assert( prop->ebyte == 4 );  
-    assert( prop->shape.size() == 2 ); 
+    assert( a->uifc == 'f' ); 
+    assert( a->ebyte == 4 );  
+    assert( a->shape.size() == 2 ); 
 
     dump(); 
-    upload(); 
+    uploadProps(); 
 }
 
-void QProp::upload()
+void QProp::uploadProps()
 {
-    d_pp = QCtx::device_alloc<float>(nv) ; 
-    QCtx::copy_host_to_device<float>( d_pp, pp, nv ); 
-}
+    prop->pp = QCtx::device_alloc<float>(nv) ; 
+    prop->height = ni ; 
+    prop->width =  nj ; 
 
-void QProp::clear()
-{
-    QCtx::device_free<float>( d_pp );  
-    d_pp = nullptr ; 
-}
+    QCtx::copy_host_to_device<float>( prop->pp, pp, nv ); 
 
+    d_prop = QU::UploadArray<qprop>(prop, 1 );  
+}
 
 void QProp::dump()
 {
@@ -66,40 +67,30 @@ void QProp::dump()
         u1.f = pp[nj*i+nj-1] ; 
         u2.f = pp[nj*i+nj-2] ; 
 
-        unsigned pp_ni  = u1.u ; 
-        unsigned pp_idx = u2.u ; 
+        unsigned prop_ni  = u1.u ; 
+        unsigned prop_idx = u2.u ; 
 
         std::cout 
-            << " pp_idx:" << std::setw(5) << pp_idx
-            << " pp_ni :" << std::setw(5) << pp_ni 
+            << " prop_idx:" << std::setw(5) << prop_idx
+            << " prop_ni :" << std::setw(5) << prop_ni 
             << " nj/2  :" << std::setw(5) << nj/2 
             << std::endl
             ; 
 
-        assert( pp_ni < nj/2 ) ;
+        assert( prop_ni < nj/2 ) ;  // factor 2 as domain and values are interleaved for each property
     }
 }
 
 
-void QProp::lookup(float x0, float x1, unsigned nx)
-{
-   // hmm this makes more sense to be in QPropTest  
-    NP* x = NP::Linspace<float>( x0, x1, nx ); 
-    NP* y = NP::Make<float>(ni, nx ); 
-
-    lookup(y->values<float>(), x->cvalues<float>(), ni, nx ); 
-}
 
 extern "C" void QProp_lookup(
     dim3 numBlocks, 
     dim3 threadsPerBlock, 
+    qprop* prop, 
     float* lookup, 
     const float* domain, 
     unsigned lookup_prop, 
-    unsigned domain_width, 
-    const float* pp, 
-    unsigned pp_height, 
-    unsigned pp_width 
+    unsigned domain_width
 ); 
 
 void QProp::lookup( float* lookup, const float* domain,  unsigned lookup_prop, unsigned domain_width )
@@ -111,8 +102,6 @@ void QProp::lookup( float* lookup, const float* domain,  unsigned lookup_prop, u
         << " lookup_prop " << lookup_prop
         << " domain_width " << domain_width
         << " num_lookup " << num_lookup
-        << " ni " << ni
-        << " nj " << nj
         ; 
 
     float* d_domain = QCtx::device_alloc<float>(domain_width) ; 
@@ -124,7 +113,7 @@ void QProp::lookup( float* lookup, const float* domain,  unsigned lookup_prop, u
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, lookup_prop, domain_width ); 
 
-    QProp_lookup(numBlocks, threadsPerBlock, d_lookup, d_domain, lookup_prop, domain_width, d_pp, ni, nj );  
+    QProp_lookup(numBlocks, threadsPerBlock, d_prop, d_lookup, d_domain, lookup_prop, domain_width );  
 
     QCtx::copy_device_to_host_and_free<float>( lookup, d_lookup, num_lookup ); 
      

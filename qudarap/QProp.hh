@@ -24,6 +24,7 @@ TODO:
 union quad ; 
 struct float4 ; 
 struct dim3 ; 
+struct qprop ; 
 
 struct NP ; 
 
@@ -33,22 +34,21 @@ struct QUDARAP_API QProp
     static const QProp*       INSTANCE ; 
     static const QProp*       Get(); 
 
-    const NP* prop  ;  
+    const NP* a  ;  
     const float* pp ; 
     unsigned nv ; 
     unsigned ni ; 
     unsigned nj ; 
 
-    float* d_pp ; 
+    qprop* prop ; 
+    qprop* d_prop ; 
 
-    QProp(const NP* prop_); 
+    QProp(const NP* a_); 
 
     void init(); 
     void dump(); 
-    void upload(); 
-    void clear(); 
+    void uploadProps(); 
 
-    void lookup(float x0, float x1, unsigned nx);
     void lookup( float* lookup, const float* domain,  unsigned lookup_prop, unsigned domain_width ); 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );

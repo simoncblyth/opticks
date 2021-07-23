@@ -84,7 +84,17 @@ QCtx::QCtx()
 QCtx::init
 ------------
 
-Collect device side refs/handles into qctx(ctx) and upload it to d_ctx
+NB .ctx (qctx.h) is a host side instance that is populated
+with device side pointers and handles and then uploaded 
+to the device d_ctx.
+
+Many device pointers and handles are then accessible from 
+the qctx.h instance at the cost of only a single launch 
+parameter argument: the d_ctx pointer.
+
+The advantage of this approach is it avoids kernel 
+launches having very long argument lists and provides a natural 
+place (qctx.h) to add GPU side functionality. 
 
 **/
 void QCtx::init()

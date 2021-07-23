@@ -3,6 +3,7 @@
 #include "QU.hh"
 #include "curand_kernel.h"
 #include "qctx.h"
+#include "qprop.h"
 
 
 /**
@@ -53,5 +54,14 @@ template curandState* QU::DownloadArray<curandState>(const curandState* d_array,
 
 template qctx* QU::UploadArray<qctx>(const qctx* array, unsigned num_items) ;
 template qctx* QU::DownloadArray<qctx>(const qctx* d_array, unsigned num_items) ;
+
+template qprop* QU::UploadArray<qprop>(const qprop* array, unsigned num_items) ;
+template qprop* QU::DownloadArray<qprop>(const qprop* d_array, unsigned num_items) ;
+
+
+
+
+
+
 
 
