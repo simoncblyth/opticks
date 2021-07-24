@@ -328,6 +328,9 @@ struct NPU
     static int  _dtype_ebyte(const char* dtype);
     static char _dtype_uifc(const char* dtype);
 
+    static std::string _make_descr(bool little_endian, char uifc, int width );
+    static std::string _make_narrow(const char* descr);  
+    static std::string _make_other(const char* descr, char other);  
 
     static std::string _make_preamble( int major=1, int minor=0 );
     static std::string _make_header(const std::vector<int>& shape, const char* descr="<f4" );
@@ -677,6 +680,32 @@ inline char NPU::_dtype_uifc(const char* dtype) // static
     assert( c_uifc == 'u' || c_uifc == 'i' || c_uifc == 'f' );  // dont bother with 'c' complex  
     return c_uifc ; 
 }
+
+inline std::string NPU::_make_descr(bool little_endian, char uifc, int width ) // static
+{
+    std::stringstream ss ; 
+    ss << ( little_endian ? '<' : '>' ) << uifc << width ;  
+    return ss.str(); 
+}
+
+inline std::string NPU::_make_narrow(const char* descr) // static
+{
+    bool little_endian ; 
+    char uifc ; 
+    int ebyte ; 
+    _parse_descr( little_endian, uifc, ebyte, descr ); 
+    return _make_descr(little_endian, uifc, ebyte/2  ); 
+} 
+
+inline std::string NPU::_make_other(const char* descr, char other) // static
+{
+    bool little_endian ; 
+    char uifc ; 
+    int ebyte ; 
+    _parse_descr( little_endian, uifc, ebyte, descr ); 
+    return _make_descr(little_endian, other, ebyte  ); 
+} 
+ 
 
 
  
