@@ -32,12 +32,9 @@ class QPropTest(object):
     def plot(self):
         t = self
         fig, ax = plt.subplots(figsize=[12.8,7.2])
-        for i,p in enumerate(t.prop):
-            lp = p.view(t.utype)[-1]
-            i2 = p.view(t.utype)[-2]
-            assert i2 == i
-            pr = p.reshape(-1,2)
-            ax.scatter( pr[:lp,0], pr[:lp,1], label="src-%d-lp-%d" % (i,lp) )
+        for i in range(len(t.prop)):
+            lp = t.prop.view(t.utype)[i,-1,-1]
+            ax.scatter( t.prop[i,:lp,0], t.prop[i,:lp,1], label="src-%d-lp-%d" % (i,lp) )
             ax.plot(  t.domain, t.lookup[i], label="dst-%d" % i )
         pass
         ax.legend()
@@ -53,5 +50,7 @@ if __name__ == '__main__':
     t = QPropTest()  
     t.plot()
 
-
+    prop = t.prop
+    domain = t.domain
+    lookup = t.lookup
 

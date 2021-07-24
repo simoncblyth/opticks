@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     ok.configure(); 
 
     QProp qp ; 
-    test_lookup(qp, 0.f, 10.f, 11u ); 
+    test_lookup(qp, 0.f, 16.f, 1601u ); 
 
     return 0 ; 
 }

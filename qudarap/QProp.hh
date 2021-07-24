@@ -39,12 +39,15 @@ struct QUDARAP_API QProp
     const NP* a  ;  
     const float* pp ; 
     unsigned nv ; 
+
     unsigned ni ; 
     unsigned nj ; 
+    unsigned nk ; 
 
     qprop* prop ; 
     qprop* d_prop ; 
 
+    static const NP* Load(const char* path_ ); 
 
     QProp(const char* path=nullptr); 
     virtual ~QProp(); 
