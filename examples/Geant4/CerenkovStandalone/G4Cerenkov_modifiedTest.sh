@@ -5,7 +5,7 @@ msg="=== $BASH_SOURCE :"
 source cks.bash
 cks-env
 
-srcs=(G4Cerenkov_modifiedTest.cc G4Cerenkov_modified.cc OpticksDebug.cc OpticksRandom.cc)
+srcs=(G4Cerenkov_modifiedTest.cc G4Cerenkov_modified.cc OpticksDebug.cc OpticksRandom.cc OpticksUtil.cc)
 name=${srcs[0]}
 name=${name/.cc}
 

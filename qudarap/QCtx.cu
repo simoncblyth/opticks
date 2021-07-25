@@ -82,7 +82,7 @@ HMM hd_factor is more appropriate as a property of the uploaded texture than it 
 TODO: rearrange hd_factor 
 **/
 
-__global__ void _QCtx_generate_scint_wavelength(qctx* ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor )
+__global__ void _QCtx_scint_wavelength(qctx* ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
@@ -97,14 +97,14 @@ __global__ void _QCtx_generate_scint_wavelength(qctx* ctx, float* wavelength, un
         case 20: wl = ctx->scint_wavelength_hd20(rng) ; break ; 
         default: wl = 0.f ; 
     }
-    if(id % 100000 == 0) printf("//_QCtx_generate_scint_wavelength id %d hd_factor %d wl %10.4f    \n", id, hd_factor, wl  ); 
+    if(id % 100000 == 0) printf("//_QCtx_scint_wavelength id %d hd_factor %d wl %10.4f    \n", id, hd_factor, wl  ); 
     wavelength[id] = wl ; 
 }
 
-extern "C" void QCtx_generate_scint_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ) 
+extern "C" void QCtx_scint_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ) 
 {
-    printf("//QCtx_generate_scint_wavelength num_wavelength %d \n", num_wavelength ); 
-    _QCtx_generate_scint_wavelength<<<numBlocks,threadsPerBlock>>>( ctx, wavelength, num_wavelength, hd_factor );
+    printf("//QCtx_scint_wavelength num_wavelength %d \n", num_wavelength ); 
+    _QCtx_scint_wavelength<<<numBlocks,threadsPerBlock>>>( ctx, wavelength, num_wavelength, hd_factor );
 } 
 
 /**
@@ -112,7 +112,7 @@ genstep provisioning ? gensteps need to be uploaded with pointer held in qctx
 but for testing need to be able to manually fabricate a genstep
 **/
 
-__global__ void _QCtx_generate_cerenkov_wavelength(qctx* ctx, float* wavelength, unsigned num_wavelength )
+__global__ void _QCtx_cerenkov_wavelength(qctx* ctx, float* wavelength, unsigned num_wavelength )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
@@ -121,22 +121,22 @@ __global__ void _QCtx_generate_cerenkov_wavelength(qctx* ctx, float* wavelength,
 
     float wl = ctx->cerenkov_wavelength(id, rng);   
 
-    if(id % 100000 == 0) printf("//_QCtx_generate_cerenkov_wavelength id %d wl %10.4f    \n", id, wl  ); 
+    if(id % 100000 == 0) printf("//_QCtx_cerenkov_wavelength id %d wl %10.4f    \n", id, wl  ); 
     wavelength[id] = wl ; 
 }
 
 
-extern "C" void QCtx_generate_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* wavelength, unsigned num_wavelength ) 
+extern "C" void QCtx_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* wavelength, unsigned num_wavelength ) 
 {
-    printf("//QCtx_generate_cerenkov_wavelength num_wavelength %d \n", num_wavelength ); 
-    _QCtx_generate_cerenkov_wavelength<<<numBlocks,threadsPerBlock>>>( ctx, wavelength, num_wavelength );
+    printf("//QCtx_cerenkov_wavelength num_wavelength %d \n", num_wavelength ); 
+    _QCtx_cerenkov_wavelength<<<numBlocks,threadsPerBlock>>>( ctx, wavelength, num_wavelength );
 } 
 
 
 
 
 
-__global__ void _QCtx_generate_cerenkov_photon(qctx* ctx, quad4* photon, unsigned num_photon, int print_id )
+__global__ void _QCtx_cerenkov_photon(qctx* ctx, quad4* photon, unsigned num_photon, int print_id )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_photon) return;
@@ -146,14 +146,36 @@ __global__ void _QCtx_generate_cerenkov_photon(qctx* ctx, quad4* photon, unsigne
     quad4 p ;   
     ctx->cerenkov_photon(p, id, rng, print_id);   
 
-    if(id % 100000 == 0) printf("//_QCtx_generate_cerenkov_photon id %d \n", id  ); 
+    if(id % 100000 == 0) printf("//_QCtx_cerenkov_photon id %d \n", id  ); 
     photon[id] = p ; 
 }
 
-extern "C" void QCtx_generate_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad4* photon, unsigned num_photon, int print_id ) 
+extern "C" void QCtx_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad4* photon, unsigned num_photon, int print_id ) 
 {
-    printf("//QCtx_generate_cerenkov_photon num_photon %d \n", num_photon ); 
-    _QCtx_generate_cerenkov_photon<<<numBlocks,threadsPerBlock>>>( ctx, photon, num_photon, print_id );
+    printf("//QCtx_cerenkov_photon num_photon %d \n", num_photon ); 
+    _QCtx_cerenkov_photon<<<numBlocks,threadsPerBlock>>>( ctx, photon, num_photon, print_id );
+} 
+
+
+
+__global__ void _QCtx_cerenkov_photon_enprop(qctx* ctx, quad4* photon, unsigned num_photon, int print_id )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    if (id >= num_photon) return;
+
+    curandState rng = *(ctx->r + id) ; 
+
+    quad4 p ;   
+    ctx->cerenkov_photon_enprop(p, id, rng, print_id);   
+
+    if(id % 100000 == 0) printf("//_QCtx_cerenkov_photon_enprop id %d \n", id  ); 
+    photon[id] = p ; 
+}
+
+extern "C" void QCtx_cerenkov_photon_enprop(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad4* photon, unsigned num_photon, int print_id ) 
+{
+    printf("//QCtx_cerenkov_photon_enprop num_photon %d \n", num_photon ); 
+    _QCtx_cerenkov_photon_enprop<<<numBlocks,threadsPerBlock>>>( ctx, photon, num_photon, print_id );
 } 
 
 
@@ -163,7 +185,10 @@ extern "C" void QCtx_generate_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlo
 
 
 
-__global__ void _QCtx_generate_photon(qctx* ctx, quad4* photon, unsigned num_photon )
+
+
+
+__global__ void _QCtx_scint_photon(qctx* ctx, quad4* photon, unsigned num_photon )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_photon) return;
@@ -179,10 +204,10 @@ __global__ void _QCtx_generate_photon(qctx* ctx, quad4* photon, unsigned num_pho
     photon[id] = p ; 
 }
 
-extern "C" void QCtx_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad4* photon, unsigned num_photon ) 
+extern "C" void QCtx_scint_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, quad4* photon, unsigned num_photon ) 
 {
-    printf("//QCtx_generate_photon num_photon %d \n", num_photon ); 
-    _QCtx_generate_photon<<<numBlocks,threadsPerBlock>>>( ctx, photon, num_photon );
+    printf("//QCtx_scint_photon num_photon %d \n", num_photon ); 
+    _QCtx_scint_photon<<<numBlocks,threadsPerBlock>>>( ctx, photon, num_photon );
 } 
 
 
@@ -247,5 +272,27 @@ extern "C" void QCtx_prop_lookup( dim3 numBlocks, dim3 threadsPerBlock, qctx* ct
     _QCtx_prop_lookup<<<numBlocks,threadsPerBlock>>>( ctx, lookup, domain, domain_width, pids, num_pids );
 }
 
+
+/**
+ipid : index of the lookup outputs for that pid, which may differ from index of the pid   
+**/
+
+__global__ void _QCtx_prop_lookup_one(qctx* ctx, float* lookup, const float* domain, unsigned domain_width, unsigned num_pids, unsigned pid, unsigned ipid )
+{
+    unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
+    if (ix >= domain_width || pid >= num_pids  ) return;
+
+    float x = domain[ix] ;  
+    float y = ctx->prop->interpolate( pid, x ); 
+
+    lookup[ipid*domain_width + ix] = y ; 
+}
+
+extern "C" 
+void QCtx_prop_lookup_one(dim3 numBlocks, dim3 threadsPerBlock, qctx* ctx, float* lookup, const float* domain, unsigned domain_width, unsigned num_pids, unsigned pid, unsigned ipid )
+{
+    printf("//QCtx_prop_lookup_one domain_width %d num_pids %d pid %d ipid %d \n", domain_width, num_pids, pid, ipid ); 
+    _QCtx_prop_lookup_one<<<numBlocks,threadsPerBlock>>>( ctx, lookup, domain, domain_width, num_pids, pid, ipid );
+}
 
 

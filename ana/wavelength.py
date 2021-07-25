@@ -9,13 +9,15 @@ wavelength.py
    ARG=7 ipython -i wavelength.py 
    ARG=8 ipython -i wavelength.py 
    ARG=11 ipython -i wavelength.py 
-
+   ARG=12 ipython -i wavelength.py 
+   ARG=13 ipython -i wavelength.py 
 
 """
 
 import os, numpy as np, logging
 log = logging.getLogger(__name__)
 from opticks.ana.key import keydir
+from opticks.ana.nbase import chi2
 
 class Wavelength(object):
     """
@@ -39,6 +41,8 @@ class Wavelength(object):
         return self.get_key(label) 
 
     def __init__(self, kd):
+
+
         p = {}
         l = {}
 
@@ -102,6 +106,9 @@ class Wavelength(object):
         l[19] = "G4Cerenkov_modified_SKIP_CONTINUE_1M_PRECOOKED"
         p[19] = "/tmp/G4Cerenkov_modifiedTest/BetaInverse_1.500_override_fNumPhotons_1000000_SKIP_CONTINUE_PRECOOKED/GenWavelength.npy"
 
+        l[20] = "ck_photon_enprop_1M"
+        p[20] = os.path.join("/tmp/QCtxTest", "cerenkov_photon_enprop_1000000.npy")
+ 
 
         dom = np.arange(80, 400, 4)  
         #dom = np.arange(300, 600, 1)  
@@ -112,8 +119,11 @@ class Wavelength(object):
 
 
         a = {}
+        e = {}
         w = {}
         h = {}
+        r = {}
+
         for i in range(len(l)):
             if not os.path.exists(p[i]):
                 a[i] = None
@@ -122,11 +132,15 @@ class Wavelength(object):
             else:
                 a[i] = np.load(p[i])
                 if l[i].startswith("ck_photon"):
+                    e[i] = a[i][:,0,0] 
                     w[i] = a[i][:,0,1] 
+                    r[i] = a[i][:,0,2] 
                 elif l[i].startswith("ana_ck"):
                     w[i] = a[i][:,0,1] 
                 elif l[i].startswith("G4Cerenkov_modified"):
+                    e[i] = a[i][:,0,0] 
                     w[i] = a[i][:,0,1] 
+                    r[i] = a[i][:,0,2] 
                 elif l[i] == "GScintillatorLib_np_interp":
                     aa = a[i] 
                     self.aa = aa
@@ -142,6 +156,8 @@ class Wavelength(object):
         pass
         self.p = p  
         self.w = w  
+        self.e = e  
+        self.r = r  
         self.l = l
         self.h = h   
         self.a = a   
@@ -178,6 +194,12 @@ class Wavelength(object):
             a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_seed1f', 'G4Cerenkov_modified_SKIP_CONTINUE_1M_seed2f' )
         elif arg == 11:
             a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_PRECOOKED', 'ana_ck_1M' )
+        elif arg == 12:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_PRECOOKED', 'ck_photon_enprop_1M' )
+        elif arg == 13:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M', 'ck_photon_enprop_1M' )
+        elif arg == 14:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_FLOAT_TEST', 'ck_photon_enprop_1M' )
         else:
             assert 0
         pass
@@ -187,6 +209,11 @@ class Wavelength(object):
 
 if __name__ == '__main__':
     kd = keydir(os.environ["OPTICKS_KEY"])
+    ri = np.load(os.path.join(kd, "GScintillatorLib/LS_ori/RINDEX.npy"))
+    ri[:,0] *= 1e6 
+    ri_ = lambda e:np.interp(e, ri[:,0], ri[:,1] ) 
+
+
     wl = Wavelength(kd)
     arg = int(os.environ.get("ARG","0")) 
     ia,ib = wl.cf(arg)
@@ -199,16 +226,25 @@ if __name__ == '__main__':
 
     wa = wl.w[ia] 
     wb = wl.w[ib]
+
     la = wl.l[ia]
     lb = wl.l[ib]
+
+    ea = wl.e[ia]
+    eb = wl.e[ib]
+
+    ra = wl.r[ia]
+    rb = wl.r[ib]
+
 
     print("la:%s" % la)
     print("pa:%s" % pa)
     print("lb:%s" % lb)
     print("pb:%s" % pb)
 
+    wab = np.abs(wa-wb)  
 
-    dev = np.abs( wa - wb ) > 1e-4
+    dev = wab > 1e-4
     num_dev = np.count_nonzero(dev) 
     print("num_dev:%d " % num_dev )
 
@@ -222,12 +258,64 @@ if __name__ == '__main__':
     # are deviants mostly where sampled rindex bin values 
     # TODO: enable dumping of deviants, to understand the reason  
 
-    fig, ax = plt.subplots() 
-    ax.hist( b_ri, bins=50 )  
-    fig.show() 
- 
-    #mask = np.where(dev)[0]    
-    #np.save("/tmp/wavelength_deviant_mask.npy", mask) 
- 
+    if 0:
+        fig, ax = plt.subplots() 
+        ax.hist( b_ri, bins=50 )  
+        fig.show() 
+     
+        #mask = np.where(dev)[0]    
+        #np.save("/tmp/wavelength_deviant_mask.npy", mask) 
+     
+    if 0:
+        # 2d 
+        n = 1000000
+        fig, ax = plt.subplots() 
+        ax.scatter( ea[:n], ra[:n], color="r", label="a", s=0.1 )
+        ax.scatter( eb[:n], rb[:n], color="b", label="b", s=0.1  )
+        ax.legend()
+        fig.show()
+    pass
+
+    if 1:
+        # energy histogram in a lot of bins
+
+        dom = 3,10,1001 
+        edom = np.linspace(*dom)  
+        ea_h = np.histogram( ea, edom ) 
+        eb_h = np.histogram( eb, edom ) 
+
+        c2 = chi2(ea_h[0],eb_h[0],cut=10)     
+        c2ndf = c2[0].sum()/c2[1]
+        c2_smry = " c2/ndf = %6.2f/%3d = %4.2f " % ( c2[0].sum(), c2[1], c2ndf )
+        dom_smry = " edom %s %s nbin:%s " % (dom[0], dom[1], dom[2] - 1)
+        title = "\n".join([c2_smry,dom_smry])
+
+        print(title)
+
+        figsize = [12.8, 7.2]
+        fig, ax = plt.subplots(1, figsize=figsize) 
+        fig.suptitle( title )
+
+        ax.plot( edom[:-1], ea_h[0], label="a", drawstyle="steps-post" )
+        ax.plot( edom[:-1], eb_h[0], label="b", drawstyle="steps-post" )
+        ax.plot( edom[:-1], -300*c2[0]/c2[0].max(), drawstyle="steps-post", label="chi2")
+
+        eri = ri[:,0] 
+        eris = eri[np.logical_and(eri>edom[0], eri<edom[-1])]   
+
+        ylim = ax.get_ylim()
+        for e in eris:
+            ax.plot( [e,e], ylim, linestyle="dotted", color="b" )
+        pass
+
+        ax.legend()
+
+        #x0,x1 = 3,7
+        #x0,x1 = 7,10
+        #ax.set_xlim(x0,x1) 
+        pass
+        fig.show()
+    pass
+
 
 

@@ -62,6 +62,7 @@ class SYSRAP_API SSys {
 
      static void WaitForInput(const char* msg="Enter any key to continue...\n");
      static int  getenvint( const char* envkey, int fallback=-1 );
+     static char getenvchar( const char* envkey, char fallback='?' ); 
      static unsigned getenvunsigned( const char* envkey, unsigned fallback=~0u );
      static float getenvfloat( const char* envkey, float fallback=-1.f );
      static bool getenvbool( const char* envkey );

@@ -12,7 +12,6 @@ the NP.hh header from https://github.com/simoncblyth/np/
 
 ::
 
-        -DFLOAT_TEST \
 
 EOU
 }
@@ -26,6 +25,7 @@ cks-compile(){
     gcc \
         $* \
         -DINSTRUMENTED \
+        -DFLOAT_TEST \
         -DSKIP_CONTINUE \
          -std=c++11 \
        -I. \

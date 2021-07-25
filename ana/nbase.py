@@ -248,10 +248,10 @@ def chi2_pvalue( c2obs, ndf ):
 def chi2one(a, b):
     return (a-b)*(a-b)/(a+b)
 
-def chi2(a, b, cut=30):
+def chi2(a_, b_, cut=30):
     """
-    :param a: array of counts
-    :param b: array of counts
+    :param a_: array of counts
+    :param b_: array of counts
     :param cut: applied to sum of and and b excludes low counts from the chi2 
     :return c2,c2n,c2c:
 
@@ -259,13 +259,13 @@ def chi2(a, b, cut=30):
          array with elementwise square of difference over the sum 
          (masked by the cut on the sum, zeros provided for low stat entries)
     *c2n*
-         number of counts within the mask
+         number of bins within the count cut
     *c2c*
-         number of counts not within the mask
+         number of bins not within count cut 
   
     ::
 
-        c2, c2n = chi2(a, b)
+        c2, c2n, c2c = chi2(a, b)
         c2ndf = c2.sum()/c2n
 
     # ChiSquared or KS
@@ -274,6 +274,9 @@ def chi2(a, b, cut=30):
     # http://stats.stackexchange.com/questions/7400/how-to-assess-the-similarity-of-two-histograms
     # http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
     """
+    a = a_.astype(np.float32)
+    b = b_.astype(np.float32)
+
     msk = a+b > cut
     c2 = np.zeros_like(a)
     c2[msk] = np.power(a-b,2)[msk]/(a+b)[msk]

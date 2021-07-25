@@ -375,6 +375,13 @@ int SSys::getenvint( const char* envkey, int fallback )
     return ival ; 
 }
 
+char SSys::getenvchar( const char* envkey, char fallback )
+{
+    char* val = getenv(envkey);
+    char c = val ? val[0] : fallback ;
+    return c ; 
+}
+
 unsigned SSys::getenvunsigned( const char* envkey, unsigned fallback )
 {
     char* val = getenv(envkey);

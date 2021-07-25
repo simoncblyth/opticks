@@ -72,6 +72,46 @@ summary
   2. (en,ct) with overlay of BetaInverse/rindex bins with drawstyle="steps-post"
      this makes the relationship of (en,ct) with the rindex bins very plain 
 
+* (July 25, 2021) random aligned comparison using QCtx::cerenkov_photon_enprop using the new QProp/qprop 
+  interpolation functionality gives perfect match chi2 zero with zero (nm 1e-4) deviants out of 1M, max deviation is ~7e-5::
+
+  In [6]: np.abs(wa-wb).max()
+  Out[6]: 7.145989718537749e-05
+
+  ARG=12 ipython -i wavelength.py
+  ARG=12 ipython -i wavelength_cfplot.py
+
+    In [10]: h_wab =  np.histogram(wab)
+
+    In [11]: h_wab[0]
+    Out[11]: array([379545, 326842, 196659,  71002,  18147,   5159,   1876,    592,    155,     23])
+
+    In [12]: h_wab[1]
+    Out[12]: array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+
+    In [13]: h_wab[1]*1e6
+    Out[13]: array([ 0.   ,  7.146, 14.292, 21.438, 28.584, 35.73 , 42.876, 50.022, 57.168, 64.314, 71.46 ])
+
+
+
+* (July 25, 2021) wow : statistical comparison still poor chi2/ndf:15 even with enprop 
+
+   ARG=13 ipython -i wavelength_cfplot.py 
+
+* using cks FLOAT_TEST does not change thr poor chi2/ndf:15
+
+   ARG=14 ipython -i wavelength_cfplot.py 
+
+
+* compare 2d : energy vs ri : no apparent offsets : red and blue scatter all on top of each other
+
+  ARG=14 ipython -i wavelength.py   
+
+* what is left to try ? 
+
+  * check cks FLOAT_TEST still using lots of double, eg OpticksDebug collection  
+  * doing it in double precision on GPU !
+
 
 
 
@@ -160,6 +200,12 @@ G4PhysicsVector::Value
     }
 
 
+Developed this into::
+
+   NP::Interp
+   NPY::Interp 
+   qudarap/QProp.cc
+   qudarap/qprop.h  qprop::interpolate 
 
 
 

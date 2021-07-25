@@ -13,13 +13,13 @@ const char* OpticksRandom::NAME = "OpticksRandom" ;
 OpticksRandom::OpticksRandom(const NP* seq, const NP* seqmask)
     :
     m_seq(seq),
-    m_seq_values(m_seq ? m_seq->values<float>() : nullptr ),
+    m_seq_values(m_seq ? m_seq->cvalues<float>() : nullptr ),
     m_seq_ni(m_seq ? m_seq->shape[0] : 0 ),
     m_seq_nv(m_seq ? m_seq->shape[1]*m_seq->shape[2] : 0 ),
     m_seq_index(-1),
     m_seqmask(seqmask),
     m_seqmask_ni( m_seqmask ? m_seqmask->shape[0] : 0 ),
-    m_seqmask_values(m_seqmask ? m_seqmask->values<size_t>() : nullptr), 
+    m_seqmask_values(m_seqmask ? m_seqmask->cvalues<size_t>() : nullptr), 
     m_cur(NP::Make<int>(m_seq_ni)),
     m_cur_values(m_cur->values<int>()),
     m_recycle(true),

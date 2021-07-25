@@ -11,21 +11,22 @@
 #include "G4VParticleChange.hh"
 
 #include "OpticksDebug.hh"
+#include "OpticksUtil.hh"
 #include "OpticksRandom.hh"
 #include "NP.hh"
 
+template <typename T>
 struct G4Cerenkov_modifiedTest
 {
     static const char* FOLD ; 
     static std::string MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons, long seed, bool precooked ); 
-    static NP*         LoadRandom(const char* random_path);
 
     NP*                       a ;  
     G4MaterialPropertyVector* rindex ; 
     G4Material*               material ; 
     G4Cerenkov_modified*      proc ; 
-    OpticksDebug*             par ; 
-    OpticksDebug*             gen ;
+    OpticksDebug<T>*          par ; 
+    OpticksDebug<T>*          gen ;
     NP*                       seq ;  
     NP*                       seqmask ;  
     OpticksRandom*            rnd ; 
@@ -39,7 +40,8 @@ struct G4Cerenkov_modifiedTest
 
 }; 
 
-const char* G4Cerenkov_modifiedTest::FOLD = "/tmp/G4Cerenkov_modifiedTest" ; 
+template <typename T>
+const char* G4Cerenkov_modifiedTest<T>::FOLD = "/tmp/G4Cerenkov_modifiedTest" ; 
 
 /**
 G4Cerenkov_modifiedTest::LoadRandom
@@ -49,50 +51,17 @@ When the path does not end in ".npy" it is assumed to be a directory path
 that contains ".npy" arrays to be concatenated.
 **/
 
-NP* G4Cerenkov_modifiedTest::LoadRandom(const char* random_path)
-{
-    NP* seq = nullptr ; 
-    if(random_path && OpticksDebug::ExistsPath(random_path))
-    {   
-        if(strlen(random_path) > 4 && strcmp(random_path+strlen(random_path)-4, ".npy") == 0)
-        {
-            seq = NP::Load(random_path);  
-        }   
-        else
-        {
-            std::vector<std::string> names ; 
-            OpticksDebug::ListDir(names, random_path, ".npy");   
-            std::cout 
-                << "G4Cerenkov_modifiedTest::LoadRandom" 
-                << " directory " << random_path 
-                << " contains names.size " << names.size() 
-                << " .npy" 
-                << std::endl
-                ;  
-            seq = NP::Concatenate(random_path, names); 
-        }
-    }
-    else
-    {
-        std::cout 
-            << "G4Cerenkov_modifiedTest::LoadRandom"
-            << " non-existing random_path " << ( random_path ? random_path : "-" ) 
-            << std::endl
-            ;   
-    }
-    return seq ; 
-}
 
-
-G4Cerenkov_modifiedTest::G4Cerenkov_modifiedTest( const char* rindex_path, const char* random_path, const char* seqmask_path, long seed_ )
+template <typename T>
+G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, const char* random_path, const char* seqmask_path, long seed_ )
     :
-    a(OpticksDebug::LoadArray(rindex_path)),
-    rindex( a ? OpticksDebug::MakeProperty(a) : nullptr),
-    material( rindex ? OpticksDebug::MakeMaterial(rindex) : nullptr), 
+    a(OpticksUtil::LoadArray(rindex_path)),
+    rindex( a ? OpticksUtil::MakeProperty(a) : nullptr),
+    material( rindex ? OpticksUtil::MakeMaterial(rindex) : nullptr), 
     proc(new G4Cerenkov_modified()),
-    par(new OpticksDebug(8,"Params")),
-    gen(new OpticksDebug(8,"GenWavelength")),
-    seq(LoadRandom(random_path)),
+    par(new OpticksDebug<T>(8,"Params")),
+    gen(new OpticksDebug<T>(8,"GenWavelength")),
+    seq(OpticksUtil::LoadRandom(random_path)),
     seqmask(seqmask_path ? NP::Load(seqmask_path) : nullptr),
     rnd(seq ? new OpticksRandom(seq, seqmask) : nullptr ),
     seed(seed_)
@@ -142,7 +111,8 @@ G4Cerenkov_modifiedTest::G4Cerenkov_modifiedTest( const char* rindex_path, const
 }
 
 
-void G4Cerenkov_modifiedTest::scanBetaInverse(double v0, double v1, double st)
+template <typename T>
+void G4Cerenkov_modifiedTest<T>::scanBetaInverse(double v0, double v1, double st)
 {
     G4double charge = 1. ; 
     for(double bi=v0 ; bi <= v1 ; bi += st )
@@ -159,7 +129,8 @@ void G4Cerenkov_modifiedTest::scanBetaInverse(double v0, double v1, double st)
 }
 
 
-std::string G4Cerenkov_modifiedTest::MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons, long seed, bool precooked  )
+template <typename T>
+std::string G4Cerenkov_modifiedTest<T>::MakeLabel( double BetaInverse, double step_length_, int override_fNumPhotons, long seed, bool precooked  )
 {
     std::stringstream ss ; 
 
@@ -201,7 +172,8 @@ std::string G4Cerenkov_modifiedTest::MakeLabel( double BetaInverse, double step_
 } 
 
 
-void G4Cerenkov_modifiedTest::PSDI(double BetaInverse, double step_length_, int override_fNumPhotons )
+template <typename T>
+void G4Cerenkov_modifiedTest<T>::PSDI(double BetaInverse, double step_length_, int override_fNumPhotons )
 {
     if(rnd)
     {
@@ -277,7 +249,8 @@ void G4Cerenkov_modifiedTest::PSDI(double BetaInverse, double step_length_, int 
 }
 
 
-void G4Cerenkov_modifiedTest::save(const G4VParticleChange* pc, const char* reldir )
+template <typename T>
+void G4Cerenkov_modifiedTest<T>::save(const G4VParticleChange* pc, const char* reldir )
 {
     G4int numberOfSecondaries = pc->GetNumberOfSecondaries();
     std::vector<double> v ;  
@@ -341,7 +314,7 @@ void G4Cerenkov_modifiedTest::save(const G4VParticleChange* pc, const char* reld
    if( num_items > 0 ) 
    {
        // creates reldir if needed
-       std::string path = OpticksDebug::prepare_path( FOLD, reldir, "photons.npy" ); 
+       std::string path = OpticksUtil::prepare_path( FOLD, reldir, "photons.npy" ); 
        std::cout << " saving to " << path << std::endl ; 
 
        NP::Write( FOLD, reldir, "photons.npy", v.data(), num_items, 4, 4 ); 
@@ -357,6 +330,24 @@ void G4Cerenkov_modifiedTest::save(const G4VParticleChange* pc, const char* reld
        ;
 }
 
+/**
+G4Cerenkov_modifiedTest.cc
+=============================
+
+For random aligned running prepare 256M PRECOOKED randoms (1M,16,16) 
+in 10 files summing to 1GB with::
+
+    cd ~/opticks/qudarap
+    TEST=F QCtxTest
+    
+And uncomment the below random_path to use the precooked
+const char* random_path = "/tmp/QCtxTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ; 
+
+Then::
+
+    ./G4Cerenkov_modifiedTest.sh 
+
+**/
 
 int main(int argc, char** argv)
 {
@@ -369,13 +360,13 @@ int main(int argc, char** argv)
     double BetaInverse = argc > 1 ? std::stod(argv[1]) : default_BetaInverse ;  
     double step_length = argc > 2 ? std::stod(argv[2]) : default_step_length ; 
     int override_fNumPhotons = argc > 3 ? atoi(argv[3]) : default_override_fNumPhotons ; 
-    long seed = OpticksDebug::getenvint("SEED", 0 ); 
+    long seed = OpticksUtil::getenvint("SEED", 0 ); 
 
     const char* rindex_path = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
-    //const char* random_path = nullptr ; 
-    const char* random_path = "/tmp/QCtxTest/rng_sequence_f" ; 
+
+    //const char* random_path = "/tmp/QCtxTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ; 
+    const char* random_path = nullptr ; 
     const char* mask_path = nullptr ;   // "/tmp/wavelength_deviant_mask.npy" ; 
-    
 
     double hc_eVnm = h_Planck*c_light/(eV*nm) ; 
     std::cout 
@@ -388,7 +379,7 @@ int main(int argc, char** argv)
          << std::endl 
          ;
 
-    G4Cerenkov_modifiedTest t(rindex_path, random_path, mask_path, seed); 
+    G4Cerenkov_modifiedTest<double> t(rindex_path, random_path, mask_path, seed); 
 
     //t.scanBetaInverse(1., 2., 0.1); 
     t.PSDI(BetaInverse, step_length, override_fNumPhotons ); 

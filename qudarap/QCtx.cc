@@ -172,7 +172,7 @@ std::string QCtx::desc() const
 }
 
 
-void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
+void QCtx::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) // static
 {
     threadsPerBlock.x = 512 ; 
     threadsPerBlock.y = 1 ; 
@@ -183,8 +183,13 @@ void QCtx::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned wid
     numBlocks.z = 1 ; 
 }
 
+void QCtx::configureLaunch(unsigned width, unsigned height ) 
+{
+    ConfigureLaunch(numBlocks, threadsPerBlock, width, height); 
+}
 
-void QCtx::configureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
+
+void QCtx::ConfigureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) // static
 {
     threadsPerBlock.x = 16 ; 
     threadsPerBlock.y = 16 ; 
@@ -193,6 +198,11 @@ void QCtx::configureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned w
     numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
     numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
     numBlocks.z = 1 ; 
+}
+
+void QCtx::configureLaunch2D(unsigned width, unsigned height ) 
+{
+    ConfigureLaunch2D(numBlocks, threadsPerBlock, width, height); 
 }
 
 
@@ -243,9 +253,7 @@ void QCtx::copy_host_to_device( T* d, const T* h, unsigned num_items)
 extern "C" void QCtx_rng_sequence_0(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* rs, unsigned num_items ); 
 void QCtx::rng_sequence_0( float* rs, unsigned num_items )
 {
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, num_items, 1 ); 
+    configureLaunch(num_items, 1 ); 
 
     float* d_rs = device_alloc<float>(num_items ); 
 
@@ -369,9 +377,7 @@ template std::string QCtx::rng_sequence_reldir<double>(const char* prefix, unsig
 template <typename T>
 void QCtx::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned ioffset )
 {
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, ni_tranche, 1 ); 
+    configureLaunch(ni_tranche, 1 ); 
 
     unsigned num_rng = ni_tranche*nv ;  
 
@@ -443,8 +449,8 @@ template void QCtx::rng_sequence<double>( const char* dir, unsigned ni, unsigned
 
 
 /**
-QCtx::generate_scint
-----------------------
+QCtx::scint_wavelength
+----------------------------------
 
 Setting envvar QCTX_DISABLE_HD disables multiresolution handling
 and causes the returned hd_factor to be zero rather then 
@@ -452,21 +458,19 @@ the typical values of 10 or 20 which depend on the buffer creation.
 
 **/
 
-extern "C" void QCtx_generate_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
-void QCtx::generate_scint( float* wavelength, unsigned num_wavelength, unsigned& hd_factor )
+extern "C" void QCtx_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
+void QCtx::scint_wavelength( float* wavelength, unsigned num_wavelength, unsigned& hd_factor )
 {
     bool qctx_disable_hd = SSys::getenvbool("QCTX_DISABLE_HD"); 
     hd_factor = qctx_disable_hd ? 0u : scint->tex->getHDFactor() ; 
     // HMM: perhaps get this from ctx rather than occupying an argument slot  
     LOG(LEVEL) << "[" << " qctx_disable_hd " << qctx_disable_hd << " hd_factor " << hd_factor ; 
 
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, num_wavelength, 1 ); 
+    configureLaunch(num_wavelength, 1 ); 
 
     float* d_wavelength = device_alloc<float>(num_wavelength); 
 
-    QCtx_generate_scint_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength, hd_factor );  
+    QCtx_scint_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength, hd_factor );  
 
     copy_device_to_host_and_free<float>( wavelength, d_wavelength, num_wavelength ); 
 
@@ -474,23 +478,21 @@ void QCtx::generate_scint( float* wavelength, unsigned num_wavelength, unsigned&
 }
 
 /**
-QCtx::generate_cerenkov
--------------------------
+QCtx::cerenkov_wavelength
+---------------------------
 
 **/
 
-extern "C" void QCtx_generate_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength ); 
-void QCtx::generate_cerenkov( float* wavelength, unsigned num_wavelength )
+extern "C" void QCtx_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* wavelength, unsigned num_wavelength ); 
+void QCtx::cerenkov_wavelength( float* wavelength, unsigned num_wavelength )
 {
     LOG(LEVEL) << "[ num_wavelength " << num_wavelength ;
  
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, num_wavelength, 1 ); 
+    configureLaunch(num_wavelength, 1 ); 
 
     float* d_wavelength = device_alloc<float>(num_wavelength); 
 
-    QCtx_generate_cerenkov_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength );  
+    QCtx_cerenkov_wavelength(numBlocks, threadsPerBlock, d_ctx, d_wavelength, num_wavelength );  
 
     copy_device_to_host_and_free<float>( wavelength, d_wavelength, num_wavelength ); 
 
@@ -500,18 +502,34 @@ void QCtx::generate_cerenkov( float* wavelength, unsigned num_wavelength )
 
 
 
-extern "C" void QCtx_generate_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon, unsigned num_photon, int print_id );
-void QCtx::generate_cerenkov_photon( quad4* photon, unsigned num_photon, int print_id )
+extern "C" void QCtx_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon, unsigned num_photon, int print_id );
+void QCtx::cerenkov_photon( quad4* photon, unsigned num_photon, int print_id )
 {
     LOG(LEVEL) << "[ num_photon " << num_photon ;
  
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, num_photon, 1 ); 
+    configureLaunch(num_photon, 1 ); 
 
     quad4* d_photon = device_alloc<quad4>(num_photon); 
 
-    QCtx_generate_cerenkov_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon, print_id );  
+    QCtx_cerenkov_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon, print_id );  
+
+    copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
+extern "C" void QCtx_cerenkov_photon_enprop(dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon, unsigned num_photon, int print_id );
+void QCtx::cerenkov_photon_enprop( quad4* photon, unsigned num_photon, int print_id )
+{
+    LOG(LEVEL) << "[ num_photon " << num_photon ;
+ 
+    configureLaunch(num_photon, 1 ); 
+
+    quad4* d_photon = device_alloc<quad4>(num_photon); 
+
+    QCtx_cerenkov_photon_enprop(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon, print_id );  
 
     copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 
@@ -521,7 +539,8 @@ void QCtx::generate_cerenkov_photon( quad4* photon, unsigned num_photon, int pri
 
 
 
-void QCtx::dump( float* wavelength, unsigned num_wavelength, unsigned edgeitems )
+
+void QCtx::dump_wavelength( float* wavelength, unsigned num_wavelength, unsigned edgeitems )
 {
     LOG(LEVEL); 
     for(unsigned i=0 ; i < num_wavelength ; i++)
@@ -538,18 +557,16 @@ void QCtx::dump( float* wavelength, unsigned num_wavelength, unsigned edgeitems 
 }
 
 
-extern "C" void QCtx_generate_photon(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon , unsigned num_photon ); 
-void QCtx::generate( quad4* photon, unsigned num_photon )
+extern "C" void QCtx_scint_photon(    dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, quad4* photon , unsigned num_photon ); 
+void QCtx::scint_photon( quad4* photon, unsigned num_photon )
 {
     LOG(LEVEL) << "[" ; 
 
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, num_photon, 1 ); 
+    configureLaunch( num_photon, 1 ); 
 
     quad4* d_photon = device_alloc<quad4>(num_photon) ; 
 
-    QCtx_generate_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon );  
+    QCtx_scint_photon(numBlocks, threadsPerBlock, d_ctx, d_photon, num_photon );  
 
     copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 
@@ -573,9 +590,7 @@ void QCtx::boundary_lookup_all(quad* lookup, unsigned width, unsigned height )
         ;
    
 
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, width, height ); 
+    configureLaunch(width, height ); 
 
     quad* d_lookup = device_alloc<quad>(num_lookup) ; 
 
@@ -599,9 +614,7 @@ void QCtx::boundary_lookup_line( quad* lookup, float* domain, unsigned num_looku
         << " k " << k 
         ; 
 
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, num_lookup, 1  ); 
+    configureLaunch(num_lookup, 1  ); 
 
     float* d_domain = device_alloc<float>(num_lookup) ; 
 
@@ -623,6 +636,16 @@ void QCtx::boundary_lookup_line( quad* lookup, float* domain, unsigned num_looku
 
 
 
+/**
+QCtx::prop_lookup
+--------------------
+
+suspect problem when have fine domain and many pids due to 2d launch config,
+BUT when have 1d launch there is no problem to launch millions of threads : hence the 
+below *prop_lookup_onebyone* 
+
+**/
+
 extern "C" void QCtx_prop_lookup( dim3 numBlocks, dim3 threadsPerBlock, qctx* d_ctx, float* lookup, const float* domain, unsigned domain_width, unsigned* pids, unsigned num_pids ); 
 void QCtx::prop_lookup( float* lookup, const float* domain, unsigned domain_width, const std::vector<unsigned>& pids ) 
 {
@@ -635,19 +658,67 @@ void QCtx::prop_lookup( float* lookup, const float* domain, unsigned domain_widt
         << " num_lookup " << num_lookup
         ; 
 
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, domain_width, num_pids  ); 
+    configureLaunch(domain_width, num_pids  ); 
 
     float* d_domain = device_alloc<float>(domain_width) ; 
     unsigned* d_pids = device_alloc<unsigned>(num_pids) ; 
+    float* d_lookup = device_alloc<float>(num_lookup) ; 
 
     copy_host_to_device<float>( d_domain, domain, domain_width ); 
     copy_host_to_device<unsigned>( d_pids, pids.data(), num_pids ); 
 
+    QCtx_prop_lookup(numBlocks, threadsPerBlock, d_ctx, d_lookup, d_domain, domain_width, d_pids, num_pids );  
+
+    copy_device_to_host_and_free<float>( lookup, d_lookup, num_lookup ); 
+    device_free<float>( d_domain ); 
+    device_free<unsigned>( d_pids ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
+/**
+Hmm doing lookups like this is a very common pattern, could do with 
+a sub context to carry the pieces to simplify doing that.
+**/
+
+extern "C" void QCtx_prop_lookup_one(
+    dim3 numBlocks, 
+    dim3 threadsPerBlock, 
+    qctx* ctx, 
+    float* lookup, 
+    const float* domain, 
+    unsigned domain_width, 
+    unsigned num_pids, 
+    unsigned pid, 
+    unsigned ipid 
+);
+
+void QCtx::prop_lookup_onebyone( float* lookup, const float* domain, unsigned domain_width, const std::vector<unsigned>& pids ) 
+{
+    unsigned num_pids = pids.size() ; 
+    unsigned num_lookup = num_pids*domain_width ; 
+    LOG(LEVEL) 
+        << "[" 
+        << " num_pids " << num_pids
+        << " domain_width " << domain_width 
+        << " num_lookup " << num_lookup
+        ; 
+
+    configureLaunch(domain_width, 1  ); 
+
+    float* d_domain = device_alloc<float>(domain_width) ; 
+    copy_host_to_device<float>( d_domain, domain, domain_width ); 
+
     float* d_lookup = device_alloc<float>(num_lookup) ; 
 
-    QCtx_prop_lookup(numBlocks, threadsPerBlock, d_ctx, d_lookup, d_domain, domain_width, d_pids, num_pids );  
+    // separate launches for each pid
+    for(unsigned ipid=0 ; ipid < num_pids ; ipid++)
+    {
+        unsigned pid = pids[ipid] ; 
+        QCtx_prop_lookup_one(numBlocks, threadsPerBlock, d_ctx, d_lookup, d_domain, domain_width, num_pids, pid, ipid );  
+    }
 
     copy_device_to_host_and_free<float>( lookup, d_lookup, num_lookup ); 
 
@@ -655,13 +726,6 @@ void QCtx::prop_lookup( float* lookup, const float* domain, unsigned domain_widt
 
     LOG(LEVEL) << "]" ; 
 }
-
-
-
-
-
-
-
 
 
 
@@ -681,7 +745,7 @@ const NPY<float>* QCtx::getBoundaryTexSrc() const
     return bnd->src ; 
 }
 
-void QCtx::dump( quad4* photon, unsigned num_photon, unsigned edgeitems )
+void QCtx::dump_photon( quad4* photon, unsigned num_photon, unsigned edgeitems )
 {
     LOG(LEVEL); 
     for(unsigned i=0 ; i < num_photon ; i++)

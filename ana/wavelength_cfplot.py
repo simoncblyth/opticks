@@ -53,7 +53,7 @@ if __name__ == '__main__':
     la = wl.l[a]
     lb = wl.l[b]
 
-    energy = True
+    energy = False
     hc_eVnm = 1240.
 
     dom = wl.dom[:-1]
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         title = "Compare two 1M sample LS scintillation wavelength distributions in 1nm bins" 
         xline = [wl.interp(0.05), wl.interp(0.95)]
     else:
-        h.log = False
+        h.log = True
         title = "Compare two 2.82M samples of Cerenkov wavelength distributions in 1nm bins : poor chi2, interpolation artifact ?  " 
         xline = []
     pass 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     fig, axs = one_cfplot(ok, h, xline=xline )
 
-    if arg in [4,5,6,8, 9]:
+    if 1:
 
         rindex = np.load(os.path.join(kd, "GScintillatorLib/LS_ori/RINDEX.npy"))
         rindex[:,0] *= 1e6   

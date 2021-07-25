@@ -79,7 +79,7 @@
 /////////////////////
 
 #ifdef INSTRUMENTED
-struct OpticksDebug ; 
+template <typename T> struct OpticksDebug ; 
 struct OpticksRandom ; 
 #endif 
 
@@ -89,10 +89,10 @@ class G4Cerenkov_modified : public G4VProcess
 public:
 
 #ifdef INSTRUMENTED
-   friend struct G4Cerenkov_modifiedTest ;  
+   template <typename T> friend struct G4Cerenkov_modifiedTest ;  
    bool looping_condition(unsigned& count); 
-   OpticksDebug* gen ; 
-   OpticksDebug* par ; 
+   OpticksDebug<double>* gen ; 
+   OpticksDebug<double>* par ; 
    OpticksRandom* rnd ; 
 #endif
 

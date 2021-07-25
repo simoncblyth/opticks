@@ -48,14 +48,22 @@ struct QUDARAP_API QCtx
     qctx*          ctx ;  
     qctx*          d_ctx ;  
 
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+
+
     QCtx();
     void init(); 
     char getScintTexFilterMode() const ;
 
     std::string desc() const ; 
 
-    void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
-    void configureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
+    void configureLaunch( unsigned width, unsigned height );
+    void configureLaunch2D( unsigned width, unsigned height );
+
+    static void ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
+    static void ConfigureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
+
     void rng_sequence_0( float* rs, unsigned num_items );
 
     template <typename T> void rng_sequence_( dim3 numblocks, dim3 threadsPerBlock, qctx* d_ctx, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
@@ -66,17 +74,17 @@ struct QUDARAP_API QCtx
     template <typename T> void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
 
 
-    void generate_scint(    float* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
-    void generate_cerenkov( float* wavelength, unsigned num_wavelength ); 
-    void generate_cerenkov_photon( quad4* photon, unsigned num_photon, int print_id ) ; 
+    void scint_wavelength(    float* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
+    void cerenkov_wavelength( float* wavelength, unsigned num_wavelength ); 
+    void dump_wavelength(     float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
+
+    void scint_photon(           quad4* photon, unsigned num_photon ); 
+    void cerenkov_photon(        quad4* photon, unsigned num_photon, int print_id ) ; 
+    void cerenkov_photon_enprop( quad4* photon, unsigned num_photon, int print_id ) ;
+    void dump_photon(            quad4* photon, unsigned num_photon, unsigned egdeitems=10 ); 
 
 
-    void dump(              float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
-
-    void generate( quad4* photon,     unsigned num_photon ); 
-    void dump(     quad4* photon,     unsigned num_photon, unsigned egdeitems=10 ); 
-
-    template<typename T> static T* device_alloc( unsigned num_items ) ; 
+    template<typename T> static T*   device_alloc( unsigned num_items ) ; 
     template<typename T> static void device_free( T* d ) ; 
     template<typename T> static void copy_device_to_host( T* h, T* d,  unsigned num_items);
     template<typename T> static void copy_device_to_host_and_free( T* h, T* d,  unsigned num_items);
@@ -91,5 +99,6 @@ struct QUDARAP_API QCtx
     void boundary_lookup_line( quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k ) ; 
 
     void prop_lookup( float* lookup, const float* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
+    void prop_lookup_onebyone( float* lookup, const float* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
 
 };

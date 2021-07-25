@@ -29,8 +29,11 @@ struct QCtxTest
     void rng_sequence_0(unsigned num_rng); 
     void rng_sequence_f(unsigned ni, int ni_tranche_size); 
     void wavelength(char mode, unsigned num_wavelength) ; 
-    void photon(unsigned num_photon); 
+
+    void scint_photon(unsigned num_photon); 
     void cerenkov_photon(unsigned num_photon, int print_id); 
+    void cerenkov_photon_enprop(unsigned num_photon, int print_id); 
+
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material, double nm0=80., double nm1=800., double nm_step=1. ); 
     void prop_lookup( int iprop=-1, float x0=0.f, float x1=10.f, unsigned nx=101u  ); 
@@ -69,15 +72,14 @@ void QCtxTest::wavelength(char mode, unsigned num_wavelength )
 {
     assert( mode == 'S' || mode == 'C' ) ;
 
-    std::vector<float> w ; 
-    w.resize(num_wavelength, 0.f); 
+    std::vector<float> w(num_wavelength, 0.f) ; 
 
     std::stringstream ss ; 
     ss << "wavelength" ; ; 
     if( mode == 'S' )
     {
         unsigned hd_factor(~0u) ; 
-        qc.generate_scint(   w.data(), w.size(), hd_factor );  // hd_factor is an output argument
+        qc.scint_wavelength(   w.data(), w.size(), hd_factor );  // hd_factor is an output argument
         assert( hd_factor == 0 || hd_factor == 10 || hd_factor == 20 ); 
         ss << "_scint_hd" << hd_factor ; 
         char scintTexFilterMode = qc.getScintTexFilterMode() ; 
@@ -85,7 +87,7 @@ void QCtxTest::wavelength(char mode, unsigned num_wavelength )
     }
     else if( mode == 'C' )
     {
-        qc.generate_cerenkov( w.data(), w.size() ); 
+        qc.cerenkov_wavelength( w.data(), w.size() ); 
         ss << "_cerenkov" ; 
     }
 
@@ -93,23 +95,22 @@ void QCtxTest::wavelength(char mode, unsigned num_wavelength )
     std::string s = ss.str();
     const char* name = s.c_str(); 
 
-    qc.dump(             w.data(), w.size() ); 
+    qc.dump_wavelength( w.data(), w.size() ); 
    
     LOG(info) << " name " << name ; 
     NP::Write( FOLD, name ,  w ); 
 }
 
-void QCtxTest::photon(unsigned num_photon)
+void QCtxTest::scint_photon(unsigned num_photon)
 {
-    LOG(info); 
-    std::vector<quad4> p ; 
-    p.resize(num_photon); 
-
-    qc.generate(   p.data(), p.size() ); 
-    qc.dump(       p.data(), p.size() ); 
-
     std::string name = MakeName("photon_", num_photon, ".npy" ); 
-    NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
+    LOG(info) << name ; 
+
+    std::vector<quad4> p(num_photon) ; 
+    qc.scint_photon( p.data(), p.size() ); 
+    qc.dump_photon(  p.data(), p.size() ); 
+
+    NP::Write( FOLD, name.c_str(),  (float*)p.data(), p.size(), 4, 4  ); 
 }
 
 
@@ -123,24 +124,32 @@ std::string QCtxTest::MakeName(const char* prefix, unsigned num, const char* ext
 
 void QCtxTest::cerenkov_photon(unsigned num_photon, int print_id)
 {
-    LOG(info); 
-    std::vector<quad4> p ; 
-    p.resize(num_photon); 
-
-    qc.generate_cerenkov_photon(   p.data(), p.size(), print_id ); 
-    qc.dump(       p.data(), p.size() ); 
-
- 
 #ifdef FLIP_RANDOM 
     std::string name = MakeName("cerenkov_photon_FLIP_RANDOM_", num_photon, ".npy" ); 
 #else
     std::string name = MakeName("cerenkov_photon_", num_photon, ".npy" ); 
 #endif
-
-
+    LOG(info) << name << " print_id " << print_id ; 
+    std::vector<quad4> p(num_photon) ; 
+    qc.cerenkov_photon(   p.data(), p.size(), print_id ); 
+    qc.dump_photon(       p.data(), p.size() ); 
     NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
 }
 
+
+void QCtxTest::cerenkov_photon_enprop(unsigned num_photon, int print_id)
+{
+#ifdef FLIP_RANDOM 
+    std::string name = MakeName("cerenkov_photon_enprop_FLIP_RANDOM_", num_photon, ".npy" ); 
+#else
+    std::string name = MakeName("cerenkov_photon_enprop_", num_photon, ".npy" ); 
+#endif
+    LOG(info) << name << " print_id " << print_id ; 
+    std::vector<quad4> p(num_photon) ; 
+    qc.cerenkov_photon_enprop(   p.data(), p.size(), print_id ); 
+    qc.dump_photon(              p.data(), p.size() ); 
+    NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
+}
 
 
 
@@ -234,7 +243,8 @@ void QCtxTest::prop_lookup( int iprop, float x0, float x1, unsigned nx  )
     NP* yy = NP::Make<float>(num_prop, nx) ; 
     NP* x = NP::Linspace<float>(x0,x1,nx); 
 
-    qc.prop_lookup( yy->values<float>(), x->cvalues<float>(), nx, pids ) ;
+    //qc.prop_lookup( yy->values<float>(), x->cvalues<float>(), nx, pids ) ;
+    qc.prop_lookup_onebyone( yy->values<float>(), x->cvalues<float>(), nx, pids ) ;
 
     pp->save(FOLD, "prop_lookup_pp.npy" ); 
     x->save(FOLD, "prop_lookup_x.npy" ); 
@@ -243,22 +253,20 @@ void QCtxTest::prop_lookup( int iprop, float x0, float x1, unsigned nx  )
 
 int main(int argc, char** argv)
 {
-    //unsigned num_default = 2820932 ; 
-    //unsigned num_default = 10000 ; 
-    unsigned num_default = 1000000 ;   // 1M
-    //unsigned num_default = 3000000 ; 
+    OPTICKS_LOG(argc, argv); 
 
+    unsigned num_default = SSys::getenvunsigned("NUM", 1000000u )  ;   
     unsigned num = argc > 1 ? std::atoi(argv[1]) : num_default ; 
-    char test = argc > 2 ? argv[2][0] : 'Y' ; 
-
+    char test = SSys::getenvchar("TEST", 'E'); 
     int ni_tranche_size = SSys::getenvint("NI_TRANCHE_SIZE", 100000 ); // default 100k usable with any GPU 
     int print_id = SSys::getenvint("PINDEX", -1 ); 
- 
-    OPTICKS_LOG(argc, argv); 
+
     LOG(info) 
+        << " num_default " << num_default 
         << " num " << num 
-        << " ni_tranche_size " << ni_tranche_size
         << " test " << test
+        << " ni_tranche_size " << ni_tranche_size
+        << " print_id " << print_id
         ; 
 
     Opticks ok(argc, argv); 
@@ -267,20 +275,22 @@ int main(int argc, char** argv)
 
     QCtx::Init(gg); 
     QCtx qc ;  
-
     QCtxTest qtc(qc); 
+
     switch(test)
     {
         case '0': qtc.rng_sequence_0(num)                        ; break ; 
         case 'F': qtc.rng_sequence_f(num, ni_tranche_size)       ; break ; 
         case 'S': qtc.wavelength('S', num)                       ; break ; 
         case 'C': qtc.wavelength('C', num)                       ; break ; 
-        case 'P': qtc.photon(num);                               ; break ; 
+        case 'P': qtc.scint_photon(num);                         ; break ; 
         case 'K': qtc.cerenkov_photon(num, print_id);            ; break ; 
+        case 'E': qtc.cerenkov_photon_enprop(num, print_id);     ; break ; 
         case 'A': qtc.boundary_lookup_all()                      ; break ;  
         case 'W': qtc.boundary_lookup_line("Water")              ; break ;  
         case 'L': qtc.boundary_lookup_line("LS",80., 800., 0.1)  ; break ;  
-        case 'Y': qtc.prop_lookup(-1, -1.f,10.f,111)               ; break ;  
+        case 'Y': qtc.prop_lookup(-1, -1.f,16.f,1701)            ; break ;  
+        default : std::cout << "test unimplemented" << std::endl ; break ; 
     }
     return 0 ; 
 }

@@ -7,6 +7,7 @@
 #endif 
 
 #include "qgs.h"
+#include "qprop.h"
 
 /**
 qctx
@@ -67,13 +68,16 @@ struct qctx
     QCTX_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);
 
 
-    QCTX_METHOD void    cerenkov_fabricate_genstep(GS& g );
+    QCTX_METHOD void    cerenkov_fabricate_genstep(GS& g, bool energy_range );
 
     QCTX_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g);
     QCTX_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng) ; 
 
     QCTX_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
     QCTX_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
+
+    QCTX_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
+    QCTX_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
 
 #else
     qctx()
@@ -370,10 +374,14 @@ inline QCTX_METHOD float qctx::cerenkov_wavelength(unsigned id, curandStateXORWO
 FOR NOW NOT THE USUAL PHOTON : BUT DEBUGGING THE WAVELENGTH SAMPLING 
 **/
 
+
+
 inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
 {
     float u0 ;
     float u1 ; 
+
+
     float w_linear ; 
     float wavelength ;
 
@@ -449,15 +457,88 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
 } 
 
 
-/*
-inline QCTX_METHOD float qctx::cerenkov_wavelength_flat_energy_sample(const GS& g, curandStateXORWOW& rng) 
+
+/**
+qctx::cerenkov_photon_enprop
+------------------------------
+
+Variation assuming Wmin, Wmax contain Pmin Pmax and using qprop::interpolate 
+to sample the RINDEX
+
+**/
+
+inline QCTX_METHOD void qctx::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
 {
-    float u0 = curand_uniform(&rng) ;
-    float w = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
-    float wavelength = g.ck1.Wmin*g.ck1.Wmax/w ;  
-    return wavelength ; 
-}
-*/
+    float u0 ;
+    float u1 ; 
+    float energy ; 
+    float sampledRI ;
+    float cosTheta ;
+    float sin2Theta ;
+    float u_mxs2_s2 ;
+
+    // should be MaterialLine no ?
+    unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
+
+    unsigned loop = 0u ; 
+
+    do {
+
+#ifdef FLIP_RANDOM
+        u0 = 1.f - curand_uniform(&rng) ;
+#else
+        u0 = curand_uniform(&rng) ;
+#endif
+        energy = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
+
+        sampledRI = prop->interpolate( 0u, energy ); 
+
+        cosTheta = g.ck1.BetaInverse / sampledRI ;
+
+        sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);  
+
+#ifdef FLIP_RANDOM
+        u1 = 1.f - curand_uniform(&rng) ;
+#else
+        u1 = curand_uniform(&rng) ;
+#endif
+
+        u_mxs2_s2 = u1*g.ck1.maxSin2 - sin2Theta ;
+
+        loop += 1 ; 
+
+        if( id == print_id )
+        {
+            printf("//qctx::cerenkov_photon_enprop id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
+        }
+
+
+    } while ( u_mxs2_s2 > 0.f );
+
+
+    float wavelength = hc_eVnm/energy ; 
+
+    p.q0.f.x = energy ; 
+    p.q0.f.y = wavelength ; 
+    p.q0.f.z = sampledRI ; 
+    p.q0.f.w = cosTheta ; 
+
+    p.q1.f.x = sin2Theta ; 
+    p.q1.u.y = 0u ; 
+    p.q1.u.z = 0u ; 
+    p.q1.f.w = g.ck1.BetaInverse ; 
+
+    p.q2.f.x = 0.f ; 
+    p.q2.f.y = 0.f ; 
+    p.q2.f.z = u0 ; 
+    p.q2.f.w = u1 ; 
+
+    p.q3.u.x = line ; 
+    p.q3.u.y = loop ; 
+    p.q3.f.z = 0.f ; 
+    p.q3.f.w = 0.f ; 
+} 
+
 
 
 
@@ -467,7 +548,7 @@ qctx::cerenkov_wavelength with a fabricated genstep for testing
 
 **/
 
-inline QCTX_METHOD void qctx::cerenkov_fabricate_genstep(GS& g )
+inline QCTX_METHOD void qctx::cerenkov_fabricate_genstep(GS& g, bool energy_range )
 {
     // picks the material line from which to get RINDEX
     unsigned MaterialLine = boundary_tex_MaterialLine_LS ;  
@@ -501,8 +582,18 @@ inline QCTX_METHOD void qctx::cerenkov_fabricate_genstep(GS& g )
     float Pmax = 15.5f ; 
 
     g.ck1.BetaInverse = BetaInverse ;      //  g.ck1.BetaInverse/sampledRI  : yields the cone angle cosTheta
-    g.ck1.Wmin = hc_eVnm/Pmax ;   // close to: 1240./15.5 = 80.               
-    g.ck1.Wmax = hc_eVnm/Pmin ;   // close to: 1240./1.55 = 800.              
+
+    if(energy_range)
+    {
+        g.ck1.Wmin = Pmin ;    
+        g.ck1.Wmax = Pmax ; 
+    }
+    else
+    {
+        g.ck1.Wmin = hc_eVnm/Pmax ;            // close to: 1240./15.5 = 80.               
+        g.ck1.Wmax = hc_eVnm/Pmin ;            // close to: 1240./1.55 = 800.              
+    }
+
     g.ck1.maxCos = maxCos  ;               //  is this used?          
 
     g.ck1.maxSin2 = maxSin2 ;              // constrains cone angle rejection sampling   
@@ -518,7 +609,8 @@ inline QCTX_METHOD float qctx::cerenkov_wavelength(unsigned id, curandStateXORWO
     QG qg ;      
     qg.zero();  
     GS& g = qg.g ; 
-    cerenkov_fabricate_genstep(g); 
+    bool energy_range = false ; 
+    cerenkov_fabricate_genstep(g, energy_range); 
     float wavelength = cerenkov_wavelength(id, rng, g);   
     return wavelength ; 
 }
@@ -528,9 +620,22 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
     QG qg ;      
     qg.zero();  
     GS& g = qg.g ; 
-    cerenkov_fabricate_genstep(g); 
+    bool energy_range = false ; 
+    cerenkov_fabricate_genstep(g, energy_range); 
     cerenkov_photon(p, id, rng, g, print_id); 
 }
+
+inline QCTX_METHOD void qctx::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
+{
+    QG qg ;      
+    qg.zero();  
+    GS& g = qg.g ; 
+    bool energy_range = true ; 
+    cerenkov_fabricate_genstep(g, energy_range); 
+    cerenkov_photon_enprop(p, id, rng, g, print_id); 
+}
+
+
 
 
 
