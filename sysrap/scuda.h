@@ -2622,6 +2622,12 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float4 make_float4(const float2& v0, const float2&
 /** @} */
 
 
+
+
+
+
+
+
 union UIF
 {
    float    f ; 

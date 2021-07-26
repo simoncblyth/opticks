@@ -112,6 +112,10 @@ summary
   * check cks FLOAT_TEST still using lots of double, eg OpticksDebug collection  
   * doing it in double precision on GPU !
 
+* resorting to double precision gets cerenkov chi2 to match 
+
+  ARG=15 ipython -i wavelength.py   
+  ARG=15 ipython -i wavelength_cfplot.py   
 
 
 

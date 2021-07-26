@@ -20,6 +20,7 @@ wavelength_cfplot.py
     ARG=9 ipython -i wavelength_cfplot.py
     ARG=10 ipython -i wavelength_cfplot.py
     ARG=11 ipython -i wavelength_cfplot.py
+    ARG=15 ipython -i wavelength_cfplot.py
 
 
     mkdir -p ~/simoncblyth.bitbucket.io/env/presentation/ana/wavelength_cfplot

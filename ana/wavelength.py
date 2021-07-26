@@ -11,6 +11,7 @@ wavelength.py
    ARG=11 ipython -i wavelength.py 
    ARG=12 ipython -i wavelength.py 
    ARG=13 ipython -i wavelength.py 
+   ARG=15 ipython -i wavelength.py 
 
 """
 
@@ -108,6 +109,9 @@ class Wavelength(object):
 
         l[20] = "ck_photon_enprop_1M"
         p[20] = os.path.join("/tmp/QCtxTest", "cerenkov_photon_enprop_1000000.npy")
+
+        l[21] = "ck_photon_expt_1M"
+        p[21] = os.path.join("/tmp/QCtxTest", "cerenkov_photon_expt_1000000.npy")
  
 
         dom = np.arange(80, 400, 4)  
@@ -200,6 +204,8 @@ class Wavelength(object):
             a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M', 'ck_photon_enprop_1M' )
         elif arg == 14:
             a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_FLOAT_TEST', 'ck_photon_enprop_1M' )
+        elif arg == 15:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M', 'ck_photon_expt_1M' )
         else:
             assert 0
         pass

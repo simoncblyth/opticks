@@ -8,6 +8,7 @@
 
 #include "qgs.h"
 #include "qprop.h"
+#include "qcurand.h"
 
 /**
 qctx
@@ -28,6 +29,8 @@ Hmm:
 struct curandStateXORWOW ; 
 template <typename T> struct qprop ; 
 
+
+template <typename T>
 struct qctx
 {
     curandStateXORWOW*  r ; 
@@ -38,13 +41,15 @@ struct qctx
 
     enum { _BOUNDARY_NUM_MATSUR = 4,  _BOUNDARY_NUM_FLOAT4 = 2 }; 
 
+    static constexpr T one = T(1.) ;   
+
     cudaTextureObject_t boundary_tex ; 
     quad4*              boundary_meta ; 
     unsigned            boundary_tex_MaterialLine_Water ;
     unsigned            boundary_tex_MaterialLine_LS ; 
     // hmm could encapsulate the above group into a qbnd ?
 
-    qprop<float>*       prop ;  
+    qprop<T>*           prop ;  
 
     static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
  
@@ -79,7 +84,7 @@ struct qctx
     QCTX_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
     QCTX_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
 
-    QCTX_METHOD void    cerenkov_photon_enprop_double(quad4& p, unsigned id, curandStateXORWOW& rng ); 
+    QCTX_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ); 
 
 
 #else
@@ -111,7 +116,9 @@ qctx::boundary_lookup ix iy : Low level integer addressing lookup
 --------------------------------------------------------------------
 
 **/
-inline QCTX_METHOD float4 qctx::boundary_lookup( unsigned ix, unsigned iy )
+
+template <typename T>
+inline QCTX_METHOD float4 qctx<T>::boundary_lookup( unsigned ix, unsigned iy )
 {
     const unsigned& nx = boundary_meta->q0.u.x  ; 
     const unsigned& ny = boundary_meta->q0.u.y  ; 
@@ -132,7 +139,8 @@ k   :  property group index 0/1
 return float4 props 
 
 **/
-inline QCTX_METHOD float4 qctx::boundary_lookup( float nm, unsigned line, unsigned k )
+template <typename T>
+inline QCTX_METHOD float4 qctx<T>::boundary_lookup( float nm, unsigned line, unsigned k )
 {
     const unsigned& nx = boundary_meta->q0.u.x  ; 
     const unsigned& ny = boundary_meta->q0.u.y  ; 
@@ -150,11 +158,12 @@ inline QCTX_METHOD float4 qctx::boundary_lookup( float nm, unsigned line, unsign
 }
 
 
-inline QCTX_METHOD float qctx::scint_wavelength_hd0(curandStateXORWOW& rng) 
+template <typename T>
+inline QCTX_METHOD float qctx<T>::scint_wavelength_hd0(curandStateXORWOW& rng) 
 {
     constexpr float y0 = 0.5f/3.f ; 
     float u0 = curand_uniform(&rng); 
-    return tex2D<float>(scint_tex, u0, y0 );    
+    return tex2D<float>(scint_tex, u0, y0 ); 
 }
 
 /**
@@ -166,7 +175,8 @@ at those regions, using simple and cheap linear mappings.
 
 **/
 
-inline QCTX_METHOD float qctx::scint_wavelength_hd10(curandStateXORWOW& rng) 
+template <typename T>
+inline QCTX_METHOD float qctx<T>::scint_wavelength_hd10(curandStateXORWOW& rng) 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
@@ -192,7 +202,8 @@ inline QCTX_METHOD float qctx::scint_wavelength_hd10(curandStateXORWOW& rng)
 
 
 
-inline QCTX_METHOD float qctx::scint_wavelength_hd20(curandStateXORWOW& rng) 
+template <typename T>
+inline QCTX_METHOD float qctx<T>::scint_wavelength_hd20(curandStateXORWOW& rng) 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
@@ -327,7 +338,8 @@ g4-cls G4Cerenkov::
 
 **/
 
-inline QCTX_METHOD float qctx::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g) 
+template <typename T>
+inline QCTX_METHOD float qctx<T>::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g) 
 {
     float u0 ;
     float u1 ; 
@@ -379,7 +391,8 @@ FOR NOW NOT THE USUAL PHOTON : BUT DEBUGGING THE WAVELENGTH SAMPLING
 
 
 
-inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
+template <typename T>
+inline QCTX_METHOD void qctx<T>::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
 {
     float u0 ;
     float u1 ; 
@@ -470,15 +483,19 @@ to sample the RINDEX
 
 **/
 
-inline QCTX_METHOD void qctx::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
+
+
+
+template <typename T>
+inline QCTX_METHOD void qctx<T>::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
 {
-    float u0 ;
-    float u1 ; 
-    float energy ; 
-    float sampledRI ;
-    float cosTheta ;
-    float sin2Theta ;
-    float u_mxs2_s2 ;
+    T u0 ;
+    T u1 ; 
+    T energy ; 
+    T sampledRI ;
+    T cosTheta ;
+    T sin2Theta ;
+    T u_mxs2_s2 ;
 
     // should be MaterialLine no ?
     unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
@@ -487,24 +504,17 @@ inline QCTX_METHOD void qctx::cerenkov_photon_enprop(quad4& p, unsigned id, cura
 
     do {
 
-#ifdef FLIP_RANDOM
-        u0 = 1.f - curand_uniform(&rng) ;
-#else
-        u0 = curand_uniform(&rng) ;
-#endif
+        u0 = qcurand<T>::uniform(&rng) ;
+
         energy = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
 
         sampledRI = prop->interpolate( 0u, energy ); 
 
         cosTheta = g.ck1.BetaInverse / sampledRI ;
 
-        sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);  
+        sin2Theta = (one - cosTheta)*(one + cosTheta);  
 
-#ifdef FLIP_RANDOM
-        u1 = 1.f - curand_uniform(&rng) ;
-#else
-        u1 = curand_uniform(&rng) ;
-#endif
+        u1 = qcurand<T>::uniform(&rng) ;
 
         u_mxs2_s2 = u1*g.ck1.maxSin2 - sin2Theta ;
 
@@ -551,15 +561,20 @@ inline QCTX_METHOD void qctx::cerenkov_photon_enprop(quad4& p, unsigned id, cura
 
 
 /**
-qctx::cerenkov_photon_enprop_double
+qctx::cerenkov_photon_expt
 -------------------------------------
 
-hmm : which things have most need to be  double to make any difference ?
-start by making almost every thing double in here 
+This does the sampling all in double, narrowing to 
+float just for the photon output.
+
+Note that this is not using a genstep.
+
+Which things have most need to be  double to make any difference ?
 
 **/
 
-inline QCTX_METHOD void qctx::cerenkov_photon_enprop_double(quad4& p, unsigned id, curandStateXORWOW& rng )
+template <typename T>
+inline QCTX_METHOD void qctx<T>::cerenkov_photon_expt(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id )
 {
     double BetaInverse = 1.5 ; 
     double Pmin = 1.55 ; 
@@ -567,9 +582,6 @@ inline QCTX_METHOD void qctx::cerenkov_photon_enprop_double(quad4& p, unsigned i
     double nMax = 1.793 ; 
     double maxCos = BetaInverse / nMax;
     double maxSin2 = ( 1. - maxCos )*( 1. + maxCos ); 
-    // this stuff is the same for all photons from the genstep so should be constants there, 
-    // but this is double experiemntation only currently 
-
 
     double u0 ;
     double u1 ; 
@@ -602,11 +614,10 @@ inline QCTX_METHOD void qctx::cerenkov_photon_enprop_double(quad4& p, unsigned i
     } while ( u_mxs2_s2 > 0. );
 
 
-    // narrow to float for the output 
-    float wavelength = hc_eVnm/energy ; 
 
+    // narrowing for output 
     p.q0.f.x = energy ; 
-    p.q0.f.y = wavelength ; 
+    p.q0.f.y = hc_eVnm/energy ;
     p.q0.f.z = sampledRI ; 
     p.q0.f.w = cosTheta ; 
 
@@ -642,7 +653,8 @@ qctx::cerenkov_wavelength with a fabricated genstep for testing
 
 **/
 
-inline QCTX_METHOD void qctx::cerenkov_fabricate_genstep(GS& g, bool energy_range )
+template <typename T>
+inline QCTX_METHOD void qctx<T>::cerenkov_fabricate_genstep(GS& g, bool energy_range )
 {
     // picks the material line from which to get RINDEX
     unsigned MaterialLine = boundary_tex_MaterialLine_LS ;  
@@ -698,7 +710,8 @@ inline QCTX_METHOD void qctx::cerenkov_fabricate_genstep(GS& g, bool energy_rang
 } 
 
 
-inline QCTX_METHOD float qctx::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng ) 
+template <typename T>
+inline QCTX_METHOD float qctx<T>::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng ) 
 {
     QG qg ;      
     qg.zero();  
@@ -709,7 +722,8 @@ inline QCTX_METHOD float qctx::cerenkov_wavelength(unsigned id, curandStateXORWO
     return wavelength ; 
 }
 
-inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
+template <typename T>
+inline QCTX_METHOD void qctx<T>::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
 {
     QG qg ;      
     qg.zero();  
@@ -719,7 +733,8 @@ inline QCTX_METHOD void qctx::cerenkov_photon(quad4& p, unsigned id, curandState
     cerenkov_photon(p, id, rng, g, print_id); 
 }
 
-inline QCTX_METHOD void qctx::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
+template <typename T>
+inline QCTX_METHOD void qctx<T>::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
 {
     QG qg ;      
     qg.zero();  
@@ -748,7 +763,8 @@ NB no position, time.
 
 **/
 
-inline QCTX_METHOD void qctx::scint_dirpol(quad4& p, curandStateXORWOW& rng)
+template <typename T>
+inline QCTX_METHOD void qctx<T>::scint_dirpol(quad4& p, curandStateXORWOW& rng)
 {
     float u0 = curand_uniform(&rng) ; 
     float u1 = curand_uniform(&rng) ; 
@@ -814,14 +830,16 @@ epsilon:offline blyth$
 
 **/
 
-inline QCTX_METHOD void qctx::reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng)
+template <typename T>
+inline QCTX_METHOD void qctx<T>::reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng)
 {
     scint_dirpol(p, rng); 
     float u4 = curand_uniform(&rng) ; 
     p.q0.f.w += -scintillationTime*logf(u4) ;
 }
 
-inline QCTX_METHOD void qctx::scint_photon(quad4& p, GS& g, curandStateXORWOW& rng)
+template <typename T>
+inline QCTX_METHOD void qctx<T>::scint_photon(quad4& p, GS& g, curandStateXORWOW& rng)
 {
     p.zero(); 
     scint_dirpol(p, rng); 
@@ -836,7 +854,8 @@ inline QCTX_METHOD void qctx::scint_photon(quad4& p, GS& g, curandStateXORWOW& r
 }
 
 
-inline QCTX_METHOD void qctx::scint_photon(quad4& p, curandStateXORWOW& rng)
+template <typename T>
+inline QCTX_METHOD void qctx<T>::scint_photon(quad4& p, curandStateXORWOW& rng)
 {
     QG qg ;      
     qg.zero();  

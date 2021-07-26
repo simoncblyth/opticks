@@ -23,18 +23,7 @@ class QCtxTest(object):
     hc_eVnm = 1240. 
     colors = "rgbcmyk"
     figsize = [12.8,7.2]
-
-    def name(self, stem, num=None, flip_random=False):
-        ss = ""
-        ss += stem 
-        if flip_random:
-           ss += "_FLIP_RANDOM"
-        pass
-        if not num is None: 
-           ss += "_%d" % num
-        pass
-        ss += ".npy"
-        return ss
+    num = int(os.environ.get("NUM", "1000000"))
 
     def globals(self, *args):
         assert len(args) % 2 == 0 
@@ -45,12 +34,28 @@ class QCtxTest(object):
             globals()[k] = v 
         pass
 
-    def path(self, stem, num=None, flip_random=False):
-        name = self.name(stem, num=num, flip_random=flip_random)
+
+    def name(self, stem, suffix=None, num=None, flip_random=False):
+        ss = ""
+        ss += stem 
+        if not suffix is None:
+           ss += suffix 
+        pass
+        if flip_random:
+           ss += "_FLIP_RANDOM"
+        pass
+        if not num is None: 
+           ss += "_%d" % num
+        pass
+        ss += ".npy"
+        return ss
+
+    def path(self, stem, suffix=None, num=None, flip_random=False):
+        name = self.name(stem, suffix=suffix, num=num, flip_random=flip_random)
         return os.path.join(self.FOLD, name)
 
-    def load(self, stem, num=None, flip_random=False):
-        path = self.path(stem, num=num, flip_random=flip_random)
+    def load(self, stem, suffix=None, num=None, flip_random=False):
+        path = self.path(stem, suffix=suffix, num=num, flip_random=flip_random)
         a = np.load(path)
         print("QCtxTest.load %s : %s " % (str(a.shape), path))
         return a 
@@ -89,9 +94,11 @@ class PropLookup(QCtxTest):
         globals()["yy"] = yy
 
 
-class CerenkovPhoton(QCtxTest):
-    def __init__(self, num, flip_random=False):
-        p = self.load("cerenkov_photon", num, flip_random=flip_random)
+
+
+class CerenkovPhotonBase(QCtxTest):
+    def __init__(self, suffix, num):
+        p = self.load("cerenkov_photon", suffix=suffix, num=num)
 
         en = p[:,0,0]
         wl = p[:,0,1]
@@ -112,27 +119,19 @@ class CerenkovPhoton(QCtxTest):
         self.globals("p",p,"en",en,"wl",wl)
 
 
-class CerenkovPhotonEnprop(QCtxTest):
-    def __init__(self, num, flip_random=False):
-        p = self.load("cerenkov_photon_enprop", num=num, flip_random=flip_random)
+class CerenkovPhoton(CerenkovPhotonBase):
+    def __init__(self):
+        CerenkovPhotonBase.__init__(self, suffix="", num=1000000) 
 
-        en = p[:,0,0]
-        wl = p[:,0,1]
-        ri = p[:,0,2]
-        ct = p[:,0,3]
+class CerenkovPhotonEnprop(CerenkovPhotonBase):
+    def __init__(self):
+        CerenkovPhotonBase.__init__(self, suffix="_enprop", num=1000000) 
 
-        s2 = p[:,1,0]
-        bi = p[:,1,3]
+class CerenkovPhotonExpt(CerenkovPhotonBase):
+    def __init__(self):
+        CerenkovPhotonBase.__init__(self, suffix="_expt", num=1000000) 
 
-        w0 = p[:,2,0]
-        w1 = p[:,2,1]
-        u0 = p[:,2,2] 
-        u1 = p[:,2,3]  
 
-        li = p[:,3,0].view(np.int32)
-        lo = p[:,3,1].view(np.int32)
-
-        self.globals("p",p,"en",en,"wl",wl,"ri",ri) 
 
 
 class RngSequence(QCtxTest):
@@ -315,24 +314,18 @@ class OldQCtxTest(object):
  
 
 if __name__ == '__main__':
-    #q = QCtxTest()    
-    #q.scint_wavelength()
-    #q.boundary_lookup_all() 
-    #q.boundary_lookup_line() 
-    #q.cerenkov_wavelength() 
-    #q.cerenkov_photon() 
-    #q.rng_sequence() 
 
-    test = os.environ.get("TEST", "K")
-    num = int(os.environ.get("NUM", "1000000"))
+    test = os.environ.get("TEST", "X")
 
-    print("test [%s] num [%d]" % (test, num))
+    print("test [%s] " % (test))
     if test == 'Y':
         t = PropLookup()
     elif test == 'K':
-        t = CerenkovPhoton(num)
+        t = CerenkovPhoton()
     elif test == 'E':
-        t = CerenkovPhotonEnprop(num)
+        t = CerenkovPhotonEnprop()
+    elif test == 'X':
+        t = CerenkovPhotonExpt()
     elif test == 'F':
         reldir = "rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
         t = RngSequence(reldir)
