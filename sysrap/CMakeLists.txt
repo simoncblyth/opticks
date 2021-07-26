@@ -139,7 +139,9 @@ set(HEADERS
     CheckGeo.hh
     SGLM.hh
     SLabelCache.hh
+
     scuda.h
+    sview.h
 )
 
 

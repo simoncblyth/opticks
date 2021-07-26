@@ -12,14 +12,18 @@ qprop
 
 **/
 
+#include "sview.h"
+
+
+template<typename T>
 struct qprop
 {
-    float* pp ; 
+    T* pp ; 
     unsigned width ; 
     unsigned height ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-    QPROP_METHOD float interpolate( unsigned iprop, float x );  
+    QPROP_METHOD T  interpolate( unsigned iprop, T x );  
 #else
     qprop()
         :
@@ -32,22 +36,18 @@ struct qprop
 
 }; 
 
+
+
+
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
-inline QPROP_METHOD float qprop::interpolate( unsigned iprop, float x )
+template <typename T>
+inline QPROP_METHOD T qprop<T>::interpolate( unsigned iprop, T x )
 {
-    const float* vv = pp + width*iprop ; 
+    const T* vv = pp + width*iprop ; 
 
-    union UIF
-    {
-       float f ; 
-       int   i ; 
-    }; 
-
-
-    UIF u ; 
-    u.f = *(vv+width-1) ; 
-    int ni = u.i ; 
+    int ni = sview::int_from<T>( *(vv+width-1) ) ; 
 
     int lo = 0 ;
     int hi = ni-1 ;
@@ -62,11 +62,12 @@ inline QPROP_METHOD float qprop::interpolate( unsigned iprop, float x )
         else lo = mi;
     }    
 
-    float dy = vv[2*hi+1] - vv[2*lo+1] ; 
-    float dx = vv[2*hi+0] - vv[2*lo+0] ; 
-    float y = vv[2*lo+1] + dy*(x-vv[2*lo+0])/dx ; 
+    T dy = vv[2*hi+1] - vv[2*lo+1] ; 
+    T dx = vv[2*hi+0] - vv[2*lo+0] ; 
+    T  y = vv[2*lo+1] + dy*(x-vv[2*lo+0])/dx ; 
     return y ;  
 }
+
 
 #endif
 

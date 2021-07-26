@@ -26,7 +26,7 @@ Hmm:
 **/
 
 struct curandStateXORWOW ; 
-struct qprop ; 
+template <typename T> struct qprop ; 
 
 struct qctx
 {
@@ -44,7 +44,7 @@ struct qctx
     unsigned            boundary_tex_MaterialLine_LS ; 
     // hmm could encapsulate the above group into a qbnd ?
 
-    qprop*              prop ;  
+    qprop<float>*       prop ;  
 
     static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
  
@@ -78,6 +78,9 @@ struct qctx
 
     QCTX_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
     QCTX_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
+
+    QCTX_METHOD void    cerenkov_photon_enprop_double(quad4& p, unsigned id, curandStateXORWOW& rng ); 
+
 
 #else
     qctx()
@@ -538,6 +541,97 @@ inline QCTX_METHOD void qctx::cerenkov_photon_enprop(quad4& p, unsigned id, cura
     p.q3.f.z = 0.f ; 
     p.q3.f.w = 0.f ; 
 } 
+
+
+
+
+
+
+
+
+
+/**
+qctx::cerenkov_photon_enprop_double
+-------------------------------------
+
+hmm : which things have most need to be  double to make any difference ?
+start by making almost every thing double in here 
+
+**/
+
+inline QCTX_METHOD void qctx::cerenkov_photon_enprop_double(quad4& p, unsigned id, curandStateXORWOW& rng )
+{
+    double BetaInverse = 1.5 ; 
+    double Pmin = 1.55 ; 
+    double Pmax = 15.5 ; 
+    double nMax = 1.793 ; 
+    double maxCos = BetaInverse / nMax;
+    double maxSin2 = ( 1. - maxCos )*( 1. + maxCos ); 
+    // this stuff is the same for all photons from the genstep so should be constants there, 
+    // but this is double experiemntation only currently 
+
+
+    double u0 ;
+    double u1 ; 
+    double energy ; 
+    double sampledRI ;
+    double cosTheta ;
+    double sin2Theta ;
+    double u_mxs2_s2 ;
+
+    unsigned loop = 0u ; 
+
+    do {
+
+        u0 = curand_uniform_double(&rng) ;
+
+        energy = Pmin + u0*(Pmax - Pmin) ; 
+
+        sampledRI = prop->interpolate( 0u, energy ); 
+
+        cosTheta = BetaInverse / sampledRI ;
+
+        sin2Theta = (1. - cosTheta)*(1. + cosTheta);  
+
+        u1 = curand_uniform_double(&rng) ;
+
+        u_mxs2_s2 = u1*maxSin2 - sin2Theta ;
+
+        loop += 1 ; 
+
+    } while ( u_mxs2_s2 > 0. );
+
+
+    // narrow to float for the output 
+    float wavelength = hc_eVnm/energy ; 
+
+    p.q0.f.x = energy ; 
+    p.q0.f.y = wavelength ; 
+    p.q0.f.z = sampledRI ; 
+    p.q0.f.w = cosTheta ; 
+
+    p.q1.f.x = sin2Theta ; 
+    p.q1.u.y = 0u ; 
+    p.q1.u.z = 0u ; 
+    p.q1.f.w = BetaInverse ; 
+
+    p.q2.f.x = 0.f ; 
+    p.q2.f.y = 0.f ; 
+    p.q2.f.z = u0 ; 
+    p.q2.f.w = u1 ; 
+
+    p.q3.f.x = 0.f ; 
+    p.q3.u.y = loop ; 
+    p.q3.f.z = 0.f ; 
+    p.q3.f.w = 0.f ; 
+} 
+
+
+
+
+
+
+
 
 
 

@@ -55,8 +55,11 @@ template curandState* QU::DownloadArray<curandState>(const curandState* d_array,
 template qctx* QU::UploadArray<qctx>(const qctx* array, unsigned num_items) ;
 template qctx* QU::DownloadArray<qctx>(const qctx* d_array, unsigned num_items) ;
 
-template qprop* QU::UploadArray<qprop>(const qprop* array, unsigned num_items) ;
-template qprop* QU::DownloadArray<qprop>(const qprop* d_array, unsigned num_items) ;
+template qprop<float>* QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items) ;
+template qprop<float>* QU::DownloadArray<qprop<float>>(const qprop<float>* d_array, unsigned num_items) ;
+
+template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items) ;
+template qprop<double>* QU::DownloadArray<qprop<double>>(const qprop<double>* d_array, unsigned num_items) ;
 
 
 

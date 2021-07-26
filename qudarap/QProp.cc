@@ -12,15 +12,25 @@
 #include "qprop.h"
 #include "PLOG.hh"
 
-const plog::Severity QProp::LEVEL = PLOG::EnvLevel("QProp", "INFO"); 
+
+template<typename T>
+const plog::Severity QProp<T>::LEVEL = PLOG::EnvLevel("QProp", "INFO"); 
+
+template<typename T>
+const char* QProp<T>::DEFAULT_PATH = "$OPTICKS_KEYDIR/GScintillatorLib/LS_ori/RINDEX.npy" ;
 
 //const char* QProp::DEFAULT_PATH = "/tmp/np/test_compound_np_interp.npy" ; 
-const char* QProp::DEFAULT_PATH = "$OPTICKS_KEYDIR/GScintillatorLib/LS_ori/RINDEX.npy" ;
 
-const QProp* QProp::INSTANCE = nullptr ; 
-const QProp* QProp::Get(){ return INSTANCE ; }
 
-qprop* QProp::getDevicePtr() const
+
+template<typename T>
+const QProp<T>* QProp<T>::INSTANCE = nullptr ; 
+
+template<typename T>
+const QProp<T>* QProp<T>::Get(){ return INSTANCE ; }
+
+template<typename T>
+qprop<T>* QProp<T>::getDevicePtr() const
 {
     return d_prop ; 
 }
@@ -30,11 +40,15 @@ qprop* QProp::getDevicePtr() const
 QProp::Load
 --------------
 
-Mockup a real set of multiple properties
+Mockup a real set of multiple properties.
+The source properties are assumed to be provided in double precision 
+(ie direct from Geant4) and these are narrowed to float 
+when the template type is float.
 
 **/
 
-const NP* QProp::Load(const char* path_ )  // static 
+template<typename T>
+const NP* QProp<T>::Load(const char* path_ )  // static 
 {
     const char* path = SPath::Resolve(path_); 
     LOG(LEVEL) 
@@ -55,42 +69,101 @@ const NP* QProp::Load(const char* path_ )  // static
     c->pscale<double>(1e6, 0u); 
     c->pscale<double>(0.95, 1u); 
 
-    NP* an = NP::MakeNarrow( a );
-    NP* bn = NP::MakeNarrow( b );
-    NP* cn = NP::MakeNarrow( c );
+    std::vector<const NP*> aa = {a, b, c } ; 
+    const NP* com = Combine(aa); 
 
-    std::vector<const NP*> aa = {an, bn, cn} ;
-    NP* com = NP::Combine(aa) ; 
-    LOG(LEVEL) 
+   LOG(LEVEL) 
         << " com " << ( com ? com->desc() : "-" )
         ;
 
     return com ; 
 }
 
-QProp::QProp(const char* path_)
+template<typename T>
+const NP* QProp<T>::Combine(const std::vector<const NP*>& aa )   // static
+{
+    assert(0); 
+    return nullptr ;  
+}
+
+template<>
+const NP* QProp<float>::Combine(const std::vector<const NP*>& aa )   // static
+{
+    LOG(LEVEL) << " narrowing double to float " ; 
+    std::vector<const NP*> nn ; 
+    for(unsigned i=0 ; i < aa.size() ; i++)
+    {
+        const NP* a = aa[i] ; 
+        const NP* n = NP::MakeNarrow( a );
+        nn.push_back(n); 
+    }
+    NP* com = NP::Combine(nn) ; 
+    return com ;  
+}
+
+template<>
+const NP* QProp<double>::Combine(const std::vector<const NP*>& aa )   // static
+{
+    LOG(LEVEL) << " not-narrowing retaining double " ; 
+    NP* com = NP::Combine(aa) ;
+    return com ;  
+}
+
+
+
+
+
+template<typename T>
+QProp<T>::QProp(const char* path_)
     :
     path(path_ ? strdup(path_) : DEFAULT_PATH),
     a(Load(path)),
-    pp(a ? a->cvalues<float>() : nullptr),
+    pp(a ? a->cvalues<T>() : nullptr),
     nv(a ? a->num_values() : 0),
     ni(a ? a->shape[0] : 0 ),
     nj(a ? a->shape[1] : 0 ),
     nk(a ? a->shape[2] : 0 ),
-    prop(new qprop),
+    prop(new qprop<T>),
     d_prop(nullptr)
 {
     INSTANCE = this ; 
     init(); 
 } 
 
-QProp::~QProp()
+template<typename T>
+void QProp<T>::init()
+{
+    assert( a->uifc == 'f' ); 
+    assert( a->ebyte == sizeof(T) );  
+    assert( a->shape.size() == 3 ); 
+
+    //dump(); 
+    uploadProps(); 
+}
+
+template<typename T>
+void QProp<T>::uploadProps()
+{
+    prop->pp = QCtx::device_alloc<T>(nv) ; 
+    prop->height = ni ; 
+    prop->width =  nj*nk ; 
+
+    QCtx::copy_host_to_device<T>( prop->pp, pp, nv ); 
+
+    d_prop = QU::UploadArray<qprop<T>>(prop, 1 );  
+}
+
+
+
+template<typename T>
+QProp<T>::~QProp()
 {
     QUDA_CHECK(cudaFree(prop->pp)); 
     QUDA_CHECK(cudaFree(d_prop)); 
 }
 
-std::string QProp::desc() const 
+template<typename T>
+std::string QProp<T>::desc() const 
 {
     std::stringstream ss ; 
     ss << "QProp::desc"
@@ -104,31 +177,12 @@ std::string QProp::desc() const
     return ss.str(); 
 }
 
-void QProp::init()
-{
-    assert( a->uifc == 'f' ); 
-    assert( a->ebyte == 4 );  
-    assert( a->shape.size() == 3 ); 
 
-    //dump(); 
-    uploadProps(); 
-}
 
-void QProp::uploadProps()
-{
-    prop->pp = QCtx::device_alloc<float>(nv) ; 
-    prop->height = ni ; 
-    prop->width =  nj*nk ; 
-
-    QCtx::copy_host_to_device<float>( prop->pp, pp, nv ); 
-
-    d_prop = QU::UploadArray<qprop>(prop, 1 );  
-}
-
-void QProp::dump() const 
+template<typename T>
+void QProp<T>::dump() const 
 {
     LOG(info) << desc() ; 
-    UIF u  ;
     for(unsigned i=0 ; i < ni ; i++)
     {
         for(unsigned j=0 ; j < nj ; j++)
@@ -140,8 +194,8 @@ void QProp::dump() const
                     ; 
             }
     
-            u.f = pp[nk*nj*i+j*nk+nk-1] ; 
-            unsigned prop_ni  = u.u ; 
+            T f = pp[nk*nj*i+j*nk+nk-1] ; 
+            unsigned prop_ni  = sview::uint_from<T>(f); 
             std::cout 
                 << " prop_ni :" << std::setw(5) << prop_ni 
                 << std::endl
@@ -154,17 +208,21 @@ void QProp::dump() const
 
 
 
-extern "C" void QProp_lookup(
+// NB this cannot be extern "C" as need C++ name mangling for template types
+
+template <typename T>
+extern void QProp_lookup(
     dim3 numBlocks, 
     dim3 threadsPerBlock, 
-    qprop* prop, 
-    float* lookup, 
-    const float* domain, 
+    qprop<T>* prop, 
+    T* lookup, 
+    const T* domain, 
     unsigned iprop, 
     unsigned domain_width
 ); 
 
-void QProp::lookup( float* lookup, const float* domain,  unsigned lookup_prop, unsigned domain_width ) const 
+template<typename T>
+void QProp<T>::lookup( T* lookup, const T* domain,  unsigned lookup_prop, unsigned domain_width ) const 
 {
     unsigned num_lookup = lookup_prop*domain_width ; 
 
@@ -175,10 +233,10 @@ void QProp::lookup( float* lookup, const float* domain,  unsigned lookup_prop, u
         << " num_lookup " << num_lookup
         ; 
 
-    float* d_domain = QCtx::device_alloc<float>(domain_width) ; 
-    QCtx::copy_host_to_device<float>( d_domain, domain, domain_width  ); 
+    T* d_domain = QCtx::device_alloc<T>(domain_width) ; 
+    QCtx::copy_host_to_device<T>( d_domain, domain, domain_width  ); 
 
-    float* d_lookup = QCtx::device_alloc<float>(num_lookup) ; 
+    T* d_lookup = QCtx::device_alloc<T>(num_lookup) ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
@@ -189,13 +247,14 @@ void QProp::lookup( float* lookup, const float* domain,  unsigned lookup_prop, u
         QProp_lookup(numBlocks, threadsPerBlock, d_prop, d_lookup, d_domain, iprop, domain_width );  
     }
 
-    QCtx::copy_device_to_host_and_free<float>( lookup, d_lookup, num_lookup ); 
+    QCtx::copy_device_to_host_and_free<T>( lookup, d_lookup, num_lookup ); 
      
     LOG(LEVEL) << "]" ; 
 }
 
 
-void QProp::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const 
+template<typename T>
+void QProp<T>::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const 
 {
     threadsPerBlock.x = 512 ; 
     threadsPerBlock.y = 1 ; 
@@ -205,4 +264,7 @@ void QProp::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned wi
     numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
     numBlocks.z = 1 ; 
 }
+
+template struct QUDARAP_API QProp<float>;
+template struct QUDARAP_API QProp<double>;
 

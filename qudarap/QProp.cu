@@ -1,13 +1,16 @@
+#include "QUDARAP_API_EXPORT.hh"
 #include <stdio.h>
 #include "qprop.h"
 
-__global__ void _QProp_lookup( qprop* prop, float* lookup , const float* domain , unsigned iprop, unsigned domain_width )
+
+template <typename T>
+__global__ void _QProp_lookup( qprop<T>* prop, T* lookup , const T* domain , unsigned iprop, unsigned domain_width )
 {
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
     if (ix >= domain_width ) return;
 
-    float x = domain[ix] ; 
-    float y = prop->interpolate( iprop, x ); 
+    T x = domain[ix] ; 
+    T y = prop->interpolate( iprop, x ); 
     unsigned index = iprop * domain_width + ix ;
 
     if( iprop == 0 )
@@ -16,16 +19,25 @@ __global__ void _QProp_lookup( qprop* prop, float* lookup , const float* domain 
     lookup[index] = y ; 
 }
 
-extern "C" void QProp_lookup(
+// NB this cannot be extern "C" as need C++ name mangling for template types
+
+template <typename T> extern void QProp_lookup(
     dim3 numBlocks, 
     dim3 threadsPerBlock, 
-    qprop* prop, 
-    float* lookup, 
-    const float* domain, 
+    qprop<T>* prop, 
+    T* lookup, 
+    const T* domain, 
     unsigned iprop, 
     unsigned domain_width
 )
 {
-    _QProp_lookup<<<numBlocks,threadsPerBlock>>>( prop, lookup, domain, iprop, domain_width ) ;
+    _QProp_lookup<T><<<numBlocks,threadsPerBlock>>>( prop, lookup, domain, iprop, domain_width ) ;
 } 
+
+
+
+template void QProp_lookup(dim3, dim3, qprop<double>*, double*, double const*, unsigned int, unsigned int) ; 
+template void QProp_lookup(dim3, dim3, qprop<float>*, float*, float const*, unsigned int, unsigned int) ; 
+
+
 

@@ -22,11 +22,11 @@ class GBndLib ;
 
 template <typename T> class NPY ; 
 template <typename T> struct QTex ; 
+template <typename T> struct QProp ; 
 
 struct QRng ; 
 struct QScint ;
 struct QBnd ; 
-struct QProp ; 
 
 struct qctx ; 
 struct quad4 ; 
@@ -44,7 +44,7 @@ struct QUDARAP_API QCtx
     const QRng*    rng ; 
     const QScint*  scint ; 
     const QBnd*    bnd ; 
-    const QProp*   prop ; 
+    const QProp<float>*  prop ; 
     qctx*          ctx ;  
     qctx*          d_ctx ;  
 

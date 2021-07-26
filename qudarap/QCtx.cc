@@ -46,7 +46,7 @@ void QCtx::Init(const GGeo* ggeo)
     QBnd* qbnd = new QBnd(blib); // boundary texture with standard domain, used for standard fast property lookup 
     LOG(LEVEL) << qbnd->desc(); 
 
-    QProp* qprop = new QProp ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
+    QProp<float>* qprop = new QProp<float> ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
     LOG(LEVEL) << qprop->desc(); 
 
 }
@@ -78,7 +78,7 @@ QCtx::QCtx()
     rng(QRng::Get()),
     scint(QScint::Get()),
     bnd(QBnd::Get()),
-    prop(QProp::Get()),
+    prop(QProp<float>::Get()),
     ctx(new qctx),
     d_ctx(nullptr)
 {
@@ -247,6 +247,10 @@ void QCtx::copy_host_to_device( T* d, const T* h, unsigned num_items)
     size_t size = num_items*sizeof(T) ; 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d ), h , size, cudaMemcpyHostToDevice )); 
 }
+
+template void QCtx::copy_host_to_device( float* d, const float* h, unsigned num_items);
+template void QCtx::copy_host_to_device( double* d, const double* h, unsigned num_items);
+
 
 
 

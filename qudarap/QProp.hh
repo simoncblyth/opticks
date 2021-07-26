@@ -24,30 +24,33 @@ TODO:
 union quad ; 
 struct float4 ; 
 struct dim3 ; 
-struct qprop ; 
+template <typename T> struct qprop ; 
 
 struct NP ; 
 
+
+template <typename T>
 struct QUDARAP_API QProp
 {
     static const plog::Severity LEVEL ;
     static const char*  DEFAULT_PATH ;
-    static const QProp*       INSTANCE ; 
-    static const QProp*       Get(); 
+    static const QProp<T>*  INSTANCE ; 
+    static const QProp<T>*  Get(); 
 
     const char* path ; 
     const NP* a  ;  
-    const float* pp ; 
+    const T* pp ; 
     unsigned nv ; 
 
     unsigned ni ; 
     unsigned nj ; 
     unsigned nk ; 
 
-    qprop* prop ; 
-    qprop* d_prop ; 
+    qprop<T>* prop ; 
+    qprop<T>* d_prop ; 
 
     static const NP* Load(const char* path_ ); 
+    static const NP* Combine(const std::vector<const NP*>& aa ); 
 
     QProp(const char* path=nullptr); 
     virtual ~QProp(); 
@@ -56,8 +59,8 @@ struct QUDARAP_API QProp
 
     void dump() const ; 
     std::string desc() const ;
-    qprop* getDevicePtr() const ;
-    void lookup( float* lookup, const float* domain,  unsigned lookup_prop, unsigned domain_width ) const ; 
+    qprop<T>* getDevicePtr() const ;
+    void lookup( T* lookup, const T* domain,  unsigned lookup_prop, unsigned domain_width ) const ; 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) const ;
 };
 
