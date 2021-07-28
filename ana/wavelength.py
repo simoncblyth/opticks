@@ -24,6 +24,7 @@ class Wavelength(object):
     """
     Comparing wavelength distribs between many different samples
     """
+    FOLD = "/tmp/wavelength"
     def get_key(self, label):
         key = None 
         for k,v in self.l.items(): 
@@ -285,16 +286,21 @@ if __name__ == '__main__':
     if 1:
         # energy histogram in a lot of bins
 
-        dom = 3,10,1001 
+        dom = 3,10,100 
+        #dom = 3,10,1001 
         edom = np.linspace(*dom)  
         ea_h = np.histogram( ea, edom ) 
         eb_h = np.histogram( eb, edom ) 
+
+        prefix = "energy_chi2_dom%d_arg%d" % (dom[2], arg)
+        stem = "%s_%s_%s" % (prefix,la,lb)
+        figpath = os.path.join(wl.FOLD, "%s.png" % stem )
 
         c2 = chi2(ea_h[0],eb_h[0],cut=10)     
         c2ndf = c2[0].sum()/c2[1]
         c2_smry = " c2/ndf = %6.2f/%3d = %4.2f " % ( c2[0].sum(), c2[1], c2ndf )
         dom_smry = " edom %s %s nbin:%s " % (dom[0], dom[1], dom[2] - 1)
-        title = "\n".join([c2_smry,dom_smry])
+        title = "\n".join([figpath,c2_smry,dom_smry])
 
         print(title)
 
@@ -302,8 +308,8 @@ if __name__ == '__main__':
         fig, ax = plt.subplots(1, figsize=figsize) 
         fig.suptitle( title )
 
-        ax.plot( edom[:-1], ea_h[0], label="a", drawstyle="steps-post" )
-        ax.plot( edom[:-1], eb_h[0], label="b", drawstyle="steps-post" )
+        ax.plot( edom[:-1], ea_h[0], label=la, drawstyle="steps-post" )
+        ax.plot( edom[:-1], eb_h[0], label=lb, drawstyle="steps-post" )
         ax.plot( edom[:-1], -300*c2[0]/c2[0].max(), drawstyle="steps-post", label="chi2")
 
         eri = ri[:,0] 
@@ -321,6 +327,15 @@ if __name__ == '__main__':
         #ax.set_xlim(x0,x1) 
         pass
         fig.show()
+
+
+        figfold = os.path.dirname(figpath)
+        if not os.path.exists(figfold):
+            os.makedirs(figfold)
+        pass
+        print("figpath : %s " % figpath)
+        fig.savefig(figpath)
+
     pass
 
 

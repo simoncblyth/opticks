@@ -6,6 +6,10 @@
    #define QSCINT_METHOD 
 #endif 
 
+/**
+NOT USED ANYMORE : MOVED TO COLLECTIVE HANDLING IN qgs.h TO AVOID DUPLICATION
+**/
+
 struct qscint
 {
     // gs0

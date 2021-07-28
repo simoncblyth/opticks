@@ -18,14 +18,14 @@ log = logging.getLogger(__name__)
 
 
 class CK(object):
+    FIGPATH="/tmp/ck/ck_rejection_sampling.png" 
     PATH="/tmp/ck/ck_%d.npy" 
 
     kd = keydir()
     rindex_path = os.path.join(kd, "GScintillatorLib/LS_ori/RINDEX.npy")
 
     #random_path = os.path.expandvars("/tmp/$USER/opticks/TRngBufTest_0.npy")
-    #random_path="/tmp/QCtxTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
-    random_path="/tmp/QCtxTest/rng_sequence_f"
+    random_path="/tmp/QCtxTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
 
     def __init__(self, num=None):
         rnd, paths = np_load(self.random_path)
@@ -170,6 +170,7 @@ if 1:
 
     p = ck.p
 
+
 if 1:
     u0 = p[:,2,0]   
     u1 = p[:,2,1] 
@@ -180,6 +181,14 @@ if 1:
 
     plt.ion()
     fig, axs = plt.subplots(2,3,figsize=ok.figsize) 
+
+    title = "\n".join(
+          ["Cerenkov Rejection Sampling, for JUNO LS refractive index (en:energy in eV ct:cosTheta s2:sin2Theta) ", 
+           "2d plots:  (u0,u1) (en,ct) (en,ct)        (Pmin+u0*(Pmax-Pmin),u1*maxSin2) (s2,en) (s2,en) ",
+           "RHS compares with interpolated expectation"
+          ])  
+
+    fig.suptitle(title) 
 
     ax = axs[0,0]
     ax.set_xlim(0,1)
@@ -236,7 +245,15 @@ if 1:
     ax.set_ylim( ct_lim ) 
     xlim = ax.get_xlim()
 
-    ax.plot( ck.rindex[:,0], ck.BetaInverse/ck.rindex[:,1], drawstyle="steps-post" )
+
+    #ax.plot( ck.rindex[:,0], ck.BetaInverse/ck.rindex[:,1], drawstyle="steps-post" )
+
+    ri_interp = ck.rindex_(ck.rindex[:,0])   ## makes more sense to interpolate
+    ct_interp = ck.BetaInverse/ri_interp 
+
+    ax.plot( ck.rindex[:,0], ct_interp, color="r" )  
+
+
     ax.set_xlim(xlim) 
     ax.plot( xlim, [1.,1.], linestyle="dotted", color="r" )
 
@@ -260,8 +277,14 @@ if 1:
     ax.set_ylim( s2_lim )
     xlim = ax.get_xlim()
 
-    ri_s2 = (1.-ck.BetaInverse/ck.rindex[:,1])*(1.+ck.BetaInverse/ck.rindex[:,1]) 
-    ax.plot( ck.rindex[:,0], ri_s2, drawstyle="steps-post", label="ri_s2" )
+
+    ri = ck.rindex_(ck.rindex[:,0])   ## makes more sense to interpolate
+    ri_s2 = (1.-ck.BetaInverse/ri)*(1.+ck.BetaInverse/ck.rindex[:,1]) 
+    #ax.plot( ck.rindex[:,0], ri_s2, drawstyle="steps-post", label="ri_s2" )
+
+    s2_interp = (1. - ct_interp)*(1. + ct_interp )
+    ax.plot( ck.rindex[:,0], s2_interp, label="s2_interp", color="r" )
+
     ax.set_xlim(xlim) 
 
     ylim = ax.get_ylim()
@@ -270,11 +293,15 @@ if 1:
     pass 
     ax.plot( xlim, [0.,0.], linestyle="dotted", color="r" )
 
-
     fig.show() 
 
 
-if 1:
+    path = ck.FIGPATH
+    print("save to %s " % path)
+    fig.savefig(path)
+
+
+if 0:
     fig3, ax = plt.subplots(figsize=ok.figsize) 
 
     h = np.histogram( en )

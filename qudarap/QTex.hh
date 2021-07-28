@@ -51,6 +51,3 @@ struct QUDARAP_API QTex
 };
 
 
-
-
-

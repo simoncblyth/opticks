@@ -72,7 +72,6 @@ struct qctx
     QCTX_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
     QCTX_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);
 
-
     QCTX_METHOD void    cerenkov_fabricate_genstep(GS& g, bool energy_range );
 
     QCTX_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g);
@@ -85,7 +84,6 @@ struct qctx
     QCTX_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
 
     QCTX_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ); 
-
 
 #else
     qctx()
