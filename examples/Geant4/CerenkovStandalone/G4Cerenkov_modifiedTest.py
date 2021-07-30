@@ -79,7 +79,12 @@ class G4Cerenkov_modifiedTest(object):
 
     def __init__(self, reldir): 
         self.dir = os.path.join(self.FOLD, reldir)
-        self.rindex = np.load(os.path.join(self.dir,  "RINDEX.npy"))  
+
+
+        rindex = np.load(os.path.join(self.dir,  "RINDEX.npy"))  
+        rindex[:,0] *= 1e6 
+
+        self.rindex = rindex
         self.pho = np.load(os.path.join(self.dir,"photons.npy"))
         self.par = OpticksDebug(self.dir, "Params")
         self.gen = OpticksDebug(self.dir, "GenWavelength")
@@ -98,6 +103,9 @@ if __name__ == '__main__':
 
     qpath = "/tmp/QCtxTest/cerenkov_photon.npy"
     q = np.load(qpath) if os.path.exists(qpath) else None
+    if not q is None:
+        os.system("ls -l %s " % qpath)
+    pass
 
     for t in tt.values():
 
@@ -124,7 +132,7 @@ if __name__ == '__main__':
 
         rindex = t.rindex
 
-        e = t.gen("sampledEnergy")*1e6 
+        e = t.gen("sampledEnergy")
         w = t.gen("sampledWavelength") 
         r = t.gen("sampledRI")  
         c = t.gen("cosTheta") 
@@ -228,12 +236,13 @@ if __name__ == '__main__':
 
 
         ax = axs[1,2]
-        ax.plot( rindex[:,0]*1e6, rindex[:,1], label="rindex", drawstyle="steps" )
+        # steps makes no sense for rindex as it is inherently interpolated between measured points 
+        ax.plot( rindex[:,0], rindex[:,1], label="rindex" )  
         xlim = ax.get_xlim() 
         ax.plot( xlim, [nMax, nMax], color="r", linestyle="dashed" )
         ax.plot( xlim, [BetaInverse, BetaInverse], color="b", linestyle="dashed" )
 
-        ax.set_ylim( 1, 2 )
+        ax.set_ylim( BetaInverse-0.1, nMax+0.1 )
         ax.legend()
 
         fig.show()

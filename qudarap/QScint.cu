@@ -11,7 +11,8 @@ Instead implement in simple headers for flexibility of usage and testing.
 
 TODO
 
-* simplify this using a context argument that collects all the common args : rng_states, texObj, photon,  etc..
+* simplify this using a qscint.h helper instance that collects the resources : texObj, photon,  etc.. 
+  in order to modularize  
 
 **/
 

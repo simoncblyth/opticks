@@ -10,6 +10,7 @@ set(TEST_SOURCES
    QRngTest.cc
    QGenTest.cc
    QScintTest.cc
+   QCerenkovTest.cc
    QPolyTest.cc
    QCtxTest.cc
    QBndTest.cc 

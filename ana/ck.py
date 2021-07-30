@@ -27,8 +27,12 @@ class CK(object):
     #random_path = os.path.expandvars("/tmp/$USER/opticks/TRngBufTest_0.npy")
     random_path="/tmp/QCtxTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
 
-    def __init__(self, num=None):
+    def __init__(self, num=None, BetaInverse=1.5):
         rnd, paths = np_load(self.random_path)
+        if len(paths) == 0:
+            log.fatal("failed to find any precooked randoms, create them with : TEST=F QCtxTest")
+            assert 0 
+        pass
         if num is None:
             num = len(rnd)
         else:
@@ -52,6 +56,17 @@ class CK(object):
         Pmax = rindex[-1,0]  
         nMax = rindex[:,1].max() 
 
+        maxCos = BetaInverse / nMax
+        maxSin2 = (1.0 - maxCos) * (1.0 + maxCos)
+
+        smry = "nMax %6.4f BetaInverse %6.4f maxCos %6.4f maxSin2 %6.4f" % (nMax, BetaInverse, maxCos, maxSin2) 
+        print(smry)
+
+        self.BetaInverse = BetaInverse
+        self.maxCos = maxCos
+        self.maxCosi = 1. - maxCos
+        self.maxSin2 = maxSin2 
+
         self.rindex = rindex
         self.Pmin = Pmin
         self.Pmax = Pmax
@@ -61,18 +76,48 @@ class CK(object):
         self.cursors = cursors
         self.p = np.zeros( (num,4,4), dtype=np.float64 )
 
-    def energy_sample_all(self, BetaInverse=1.5):
+    def energy_sample_all(self, method="mxs2"):
         for idx in range(self.num):
-            self.energy_sample(idx, BetaInverse=BetaInverse) 
+            self.energy_sample(idx, method=method) 
             if idx % 1000 == 0:
                 print(" idx %d num %d " % (idx, self.num))
             pass
         pass
 
-    def energy_sample(self, idx, BetaInverse=1.5):
+    def energy_sample(self, idx, method="mxs2"):
+        """
+        Why the small difference between s2 when sampling and "expectation-interpolating" 
+        in energy regions far from achoring points ? 
 
-        self.BetaInverse = BetaInverse
+        The difference is also visible in ct but less clearly.
+        Comparising directly the sampled rs and rindex its difficult 
+        to see any difference. 
 
+        When sampling the energy is a random value taked from a flat 
+        energy distribution and interpolated individually to give the 
+        refractive index.
+
+        When "expectation-interpolating" the energy domain is an abstract analytic ideal
+        sort of like a "sample" taken from an infinity of possible values.
+
+        Hmm : this begs the question : how to profit from the simplicity of this
+        that enables the quasi-analytic approach ?
+
+        Seems that the rejection looping does not need to use sin2Theta.
+        Using 1.-cosTheta seems to be an equivalent approach which avoids flops
+        and precision loss.
+
+                      BetaInverse
+        cosTheta =  -------------------
+                       sampledRI
+
+
+                           sampledRI - BetaInverse
+        1 - cosTheta =    ---------------------------
+                                 sampledRI 
+
+
+        """
         rnd = self.rnd
         rindex = self.rindex
         rindex_ = self.rindex_
@@ -81,16 +126,15 @@ class CK(object):
         Pmin = self.Pmin
         Pmax = self.Pmax  
         nMax = self.nMax
+        BetaInverse = self.BetaInverse
+        maxSin2 = self.maxSin2
+        maxCosi = self.maxCosi
 
         uu = rnd[idx].ravel()
-        maxCos = BetaInverse / nMax
-        maxSin2 = (1.0 - maxCos) * (1.0 + maxCos)
-
-        self.maxSin2 = maxSin2 
 
         dump = idx < 10 or idx > num - 10  
         loop = 0 
- 
+
         while True:
             u0 = uu[cursors[idx]]
             cursors[idx] += 1 
@@ -103,14 +147,21 @@ class CK(object):
             cosTheta = BetaInverse/sampledRI
             sin2Theta = (1.-cosTheta)*(1.+cosTheta)
 
-            u1_maxSin2 = u1*maxSin2
-            keep_sampling = u1_maxSin2 > sin2Theta
+            if method == "mxs2": 
+                u1_maxSin2 = u1*maxSin2
+                keep_sampling = u1_maxSin2 > sin2Theta
+            elif method == "mxct":
+                u1_maxCosi = u1*maxCosi
+                keep_sampling = u1_maxCosi > 1.-cosTheta
+            else:
+                assert 0
+            pass
 
             loop += 1  
 
             if dump:
-                fmt = "idx %5d u0 %10.5f sampledEnergy %10.5f sampledRI %10.5f cosTheta %10.5f sin2Theta %10.5f u1 %10.5f"
-                vals = (idx, u0, sampledEnergy, sampledRI, cosTheta, sin2Theta, u1 )
+                fmt = "method %s idx %5d u0 %10.5f sampledEnergy %10.5f sampledRI %10.5f cosTheta %10.5f sin2Theta %10.5f u1 %10.5f"
+                vals = (method, idx, u0, sampledEnergy, sampledRI, cosTheta, sin2Theta, u1 )
                 print(fmt % vals) 
             pass
 
@@ -138,6 +189,37 @@ class CK(object):
 
         i[3,1] = loop
 
+    def globals_(self, *args):
+        assert len(args) % 2 == 0
+        for i in range(len(args)//2):
+            k = args[2*i+0]
+            v = args[2*i+1]
+            print("%10s : %s " % (k, str(v.shape)))
+            globals()[k] = v 
+        pass 
+
+    def globals(self):
+        p = self.p
+        u0 = p[:,2,0]   
+        u1 = p[:,2,1] 
+       
+        en = p[:,0,0]
+        wl = p[:,0,1]
+        rs = p[:,0,2]
+        ct = p[:,0,3]
+
+        s2 = p[:,1,0]
+
+        self.globals_(
+           "p",p,
+           "u0",u0,
+           "u1",u1,
+           "en",en,
+           "ct",ct,
+           "s2",s2,
+           "rs",rs
+         )
+
     def save(self):
         path = self.PATH % self.num
         fold = os.path.dirname(path)
@@ -156,30 +238,172 @@ class CK(object):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    plt.ion()
 
     ok = opticks_main()
     kd = keydir(os.environ["OPTICKS_KEY"])
  
-    num = 10000 
+    num = 10000   # 10k    s2 deviations visible with these stats 
+    #num = 100000  # 100k   still visible
+    #num = 1000000 # 1M      still visible
     #num = None
-    ck = CK(num)
+    ck = CK(num, BetaInverse=1.5)
 
 if 1:
-    ck.energy_sample_all(BetaInverse=1.5)
+    #method = "mxs2"
+    method = "mxct"
+    ck.energy_sample_all(method=method)
     ck.save()
+    ck.globals()
 
-    p = ck.p
+    ri  = ck.rindex 
+    edom = ri[:,0] 
+
+    #en_lim = np.array([edom[0],edom[-1]])
+    en_lim = np.array([2,10])    ## hmm need to find s2_ roots 
+
+    s2_lim = np.array([-0.01, 0.31])
+    ct_lim = np.array([ 0.83, 1.01])
+    rs_lim = np.array([ ri[:,1].min(), ri[:,1].max() ])
+
+    
+    # lambda functions of energy using np.interpolate inside ck.rindex_
+    ri_ = ck.rindex_
+    ct_ = lambda e:ck.BetaInverse/ri_(e)
+    s2_ = lambda e:(1.-ck.BetaInverse/ri_(e))*(1.+ck.BetaInverse/ri_(e)) 
+
+    ri_interp = ri_(edom)   
+    ct_interp = ct_(edom)
+    s2_interp = (1. - ct_interp)*(1. + ct_interp )
+
+    en_u0 = ck.Pmin+u0*(ck.Pmax-ck.Pmin)
+    s2_u1 = ck.maxSin2*u1
+
+
+    # pick energy  bin look at the s2 sampled within
+    # compare with expectations from interpolation 
+    # is the deviation a statistical thing : the sampling
+    # can only ever approach the expectation never getting there without 
+    # infinite statistics  
+    ebin = [5,5.1]
+    a_s2 = s2[np.logical_and(en > ebin[0], en < ebin[1])]  
+    a_s2_0 = s2_(ebin[0])
+    a_s2_1 = s2_(ebin[1])
 
 
 if 1:
-    u0 = p[:,2,0]   
-    u1 = p[:,2,1] 
-   
-    en = p[:,0,0]
-    ct = p[:,0,3]
-    s2 = p[:,1,0]
+    fig, ax = plt.subplots(figsize=ok.figsize) 
+    fig.suptitle("s2 vs en : deviation between sampling and interpolated, more further from anchor points")
 
-    plt.ion()
+    ax.scatter( en, s2, s=0.1, label="sampled en vs s2") 
+
+    ax.set_xlabel("en")
+    ax.set_ylabel("s2")
+    ax.set_xlim( en_lim )
+    ax.set_ylim( s2_lim )
+    xlim = ax.get_xlim()
+
+    ax.plot( ri[:,0], s2_interp, label="s2_interp", color="r" )
+    ax.scatter( ri[:,0] , s2_(ri[:,0]), color="b", label="en s2" ) 
+
+
+    ax.set_xlim(xlim) 
+    ylim = ax.get_ylim()
+    #for e in ri[:,0]:
+    #    ax.plot( [e,e], ylim , linestyle="dotted", color="b") 
+    #pass 
+    for i in list(range(len(ri)-1)):
+        e0,v0 = ri[i]
+        e1,v1 = ri[i+1]
+        ax.plot( [e0,e1], [s2_(e0), s2_(e1)], linestyle="dotted", color="b" )
+        #ax.plot( [e,e], ylim , linestyle="dotted", color="b") 
+    pass 
+
+    ax.plot( xlim, [0.,0.], linestyle="dotted", color="r" )
+    ax.legend()
+
+    fig.show()
+
+
+
+if 1:
+    fig, ax = plt.subplots(figsize=ok.figsize) 
+    fig.suptitle("1-ct vs en : deviation between sampling and interpolated, more further from anchor points")
+
+    ax.scatter( en, 1-ct, s=0.1, label="sampled en vs 1-ct") 
+
+    ax.set_xlabel("en")
+    ax.set_ylabel("1-ct")
+    ax.set_xlim( en_lim )
+    ax.set_ylim( 1-ct_lim[::-1] )
+    xlim = ax.get_xlim()
+
+    ax.plot( ri[:,0], 1 - ct_interp, label="1-ct_interp", color="r" )
+    ax.scatter( ri[:,0] , 1 - ct_(ri[:,0]), color="b", label="en 1-ct" ) 
+
+
+    ax.set_xlim(xlim) 
+    ylim = ax.get_ylim()
+    #for e in ri[:,0]:
+    #    ax.plot( [e,e], ylim , linestyle="dotted", color="b") 
+    #pass 
+    for i in list(range(len(ri)-1)):
+        e0,v0 = ri[i]
+        e1,v1 = ri[i+1]
+        ax.plot( [e0,e1], [1-ct_(e0), 1-ct_(e1)], linestyle="dotted", color="b" )
+        #ax.plot( [e,e], ylim , linestyle="dotted", color="b") 
+    pass 
+
+    ax.plot( xlim, [0.,0.], linestyle="dotted", color="r" )
+    ax.legend()
+
+    fig.show()
+
+
+
+
+if 1:
+    fig, ax = plt.subplots(figsize=ok.figsize) 
+    fig.suptitle("rs/ri vs en : deviation between sampling and interpolated, more further from anchor points")
+
+    ax.scatter( en, rs, s=0.1, label="sampled en vs rs") 
+
+    ax.set_xlabel("en")
+    ax.set_ylabel("rs")
+    ax.set_xlim( en_lim )
+    ax.set_ylim( rs_lim )
+    xlim = ax.get_xlim()
+
+    ax.plot(    ri[:,0],  ri_(ri[:,0]), label="ri", color="r" )
+    ax.scatter( ri[:,0] , ri[:,1],      label="en ri", color="b" ) 
+
+
+    ax.set_xlim(xlim) 
+    ylim = ax.get_ylim()
+    #for e in ri[:,0]:
+    #    ax.plot( [e,e], ylim , linestyle="dotted", color="b") 
+    #pass 
+    for i in list(range(len(ri)-1)):
+        e0,v0 = ri[i]
+        e1,v1 = ri[i+1]
+        ax.plot( [e0,e1], [ri_(e0), ri_(e1)], linestyle="dotted", color="b" )
+        #ax.plot( [e,e], ylim , linestyle="dotted", color="b") 
+    pass 
+
+    ax.plot( xlim, [0.,0.], linestyle="dotted", color="r" )
+    ax.legend()
+    fig.show()
+
+
+
+
+
+
+
+
+
+if 0:
+
     fig, axs = plt.subplots(2,3,figsize=ok.figsize) 
 
     title = "\n".join(
@@ -198,38 +422,32 @@ if 1:
     ax.scatter( u0, u1, s=0.1) 
     ax.set_aspect('equal')  
 
-
-    s2_lim = -0.01, 0.31
-    ct_lim =  0.83, 1.01 
-
     ax = axs[1,0]
-    ax.set_xlabel("Pmin+u0*(Pmax-Pmin)")
-    ax.set_ylabel("u1*maxSin2")
+    ax.set_xlabel("en_u0 : Pmin+u0*(Pmax-Pmin)")
+    ax.set_ylabel("s2_u1 : u1*maxSin2")
     ax.set_ylim( s2_lim )
-
-    x = ck.Pmin+u0*(ck.Pmax-ck.Pmin)
-    y = ck.maxSin2*u1
-    ax.scatter( x, y, s=0.1) 
+    ax.scatter( en_u0, s2_u1, s=0.1) 
+    xlim = ax.get_xlim()
+    ax.plot( xlim, [ck.maxSin2, ck.maxSin2] , linestyle="dotted", color="r") 
 
     ax = axs[0,1]
-    ax.scatter( en, ct, s=0.1) 
+    ax.scatter( en, 1.-ct, s=0.1) 
     ax.set_xlabel("en")
-    ax.set_ylabel("ct")
-    ax.set_ylim( ct_lim ) 
-
+    ax.set_ylabel("1-ct")
+    ax.set_ylim( 1-ct_lim[::-1] ) 
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
     for e in ck.rindex[:,0]:
         ax.plot( [e,e], ylim , linestyle="dotted", color="b") 
     pass
     ax.set_xlim(xlim)
+    ax.plot( xlim, [1.-ck.maxCos, 1.-ck.maxCos] , linestyle="dotted", color="r") 
    
     ax = axs[1,1]
     ax.scatter( en, s2, s=0.1) 
     ax.set_xlabel("en")
     ax.set_ylabel("s2")
     ax.set_ylim( s2_lim )
-
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
     for e in ck.rindex[:,0]:
@@ -237,26 +455,16 @@ if 1:
     pass
     ax.set_xlim(xlim)
  
-
     ax = axs[0,2]
     ax.scatter( en, ct, s=0.1) 
     ax.set_xlabel("en")
     ax.set_ylabel("ct")
     ax.set_ylim( ct_lim ) 
     xlim = ax.get_xlim()
-
-
     #ax.plot( ck.rindex[:,0], ck.BetaInverse/ck.rindex[:,1], drawstyle="steps-post" )
-
-    ri_interp = ck.rindex_(ck.rindex[:,0])   ## makes more sense to interpolate
-    ct_interp = ck.BetaInverse/ri_interp 
-
     ax.plot( ck.rindex[:,0], ct_interp, color="r" )  
-
-
     ax.set_xlim(xlim) 
     ax.plot( xlim, [1.,1.], linestyle="dotted", color="r" )
-
     ylim = ax.get_ylim()
     for e in ck.rindex[:,0]:
         ax.plot( [e,e], ylim , linestyle="dotted", color="b") 
@@ -267,7 +475,6 @@ if 1:
             ax.plot( xlim, [v,v] , linestyle="dotted", color="b") 
         pass 
     pass
-        
 
 
     ax = axs[1,2]
@@ -276,29 +483,23 @@ if 1:
     ax.set_ylabel("s2")
     ax.set_ylim( s2_lim )
     xlim = ax.get_xlim()
-
-
-    ri = ck.rindex_(ck.rindex[:,0])   ## makes more sense to interpolate
-    ri_s2 = (1.-ck.BetaInverse/ri)*(1.+ck.BetaInverse/ck.rindex[:,1]) 
-    #ax.plot( ck.rindex[:,0], ri_s2, drawstyle="steps-post", label="ri_s2" )
-
-    s2_interp = (1. - ct_interp)*(1. + ct_interp )
     ax.plot( ck.rindex[:,0], s2_interp, label="s2_interp", color="r" )
-
     ax.set_xlim(xlim) 
-
     ylim = ax.get_ylim()
     for e in ck.rindex[:,0]:
         ax.plot( [e,e], ylim , linestyle="dotted", color="b") 
     pass 
     ax.plot( xlim, [0.,0.], linestyle="dotted", color="r" )
 
+
     fig.show() 
-
-
     path = ck.FIGPATH
     print("save to %s " % path)
     fig.savefig(path)
+
+
+
+
 
 
 if 0:

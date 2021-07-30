@@ -34,6 +34,9 @@ set(SOURCES
     QScint.cc
     QScint.cu
 
+    QCerenkov.cc
+    QCerenkov.cu 
+
     QPoly.cc
     QPoly.cu
 
@@ -55,6 +58,9 @@ SET(HEADERS
     QTex.hh
     QBnd.hh
     QScint.hh
+    QCerenkov.hh
+
+
     QPoly.hh
     QCtx.hh
 

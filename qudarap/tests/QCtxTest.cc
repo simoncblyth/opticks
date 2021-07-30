@@ -309,7 +309,7 @@ void QCtxTest<T>::main(int argc, char** argv, char test )
     switch(test)
     {
         case '0': rng_sequence_0(num)                        ; break ; 
-        case 'F': rng_sequence(num, ni_tranche_size)       ; break ; 
+        case 'F': rng_sequence(num, ni_tranche_size)         ; break ; 
         case 'S': wavelength('S', num)                       ; break ; 
         case 'C': wavelength('C', num)                       ; break ; 
         case 'P': scint_photon(num);                         ; break ; 

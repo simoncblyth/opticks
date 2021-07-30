@@ -578,45 +578,45 @@ inline QCTX_METHOD void qctx<T>::cerenkov_photon_expt(quad4& p, unsigned id, cur
     double Pmin = 1.55 ; 
     double Pmax = 15.5 ; 
     double nMax = 1.793 ; 
+
+    //double maxOneMinusCosTheta = (nMax - BetaInverse) / nMax;   
+
     double maxCos = BetaInverse / nMax;
     double maxSin2 = ( 1. - maxCos )*( 1. + maxCos ); 
+    double cosTheta ;
+    double sin2Theta ;
 
+    double reject ;
     double u0 ;
     double u1 ; 
     double energy ; 
     double sampledRI ;
-    double cosTheta ;
-    double sin2Theta ;
-    double u_mxs2_s2 ;
+
+    //double oneMinusCosTheta ;
 
     unsigned loop = 0u ; 
 
     do {
-
         u0 = curand_uniform_double(&rng) ;
-
-        energy = Pmin + u0*(Pmax - Pmin) ; 
-
-        sampledRI = prop->interpolate( 0u, energy ); 
-
-        cosTheta = BetaInverse / sampledRI ;
-
-        sin2Theta = (1. - cosTheta)*(1. + cosTheta);  
-
         u1 = curand_uniform_double(&rng) ;
-
-        u_mxs2_s2 = u1*maxSin2 - sin2Theta ;
-
+        energy = Pmin + u0*(Pmax - Pmin) ; 
+        sampledRI = prop->interpolate( 0u, energy ); 
+        //oneMinusCosTheta = (sampledRI - BetaInverse) / sampledRI ; 
+        //reject = u1*maxOneMinusCosTheta - oneMinusCosTheta ;
         loop += 1 ; 
 
-    } while ( u_mxs2_s2 > 0. );
+        cosTheta = BetaInverse / sampledRI ;
+        sin2Theta = (1. - cosTheta)*(1. + cosTheta);  
+        reject = u1*maxSin2 - sin2Theta ;
 
+    } while ( reject > 0. );
 
 
     // narrowing for output 
     p.q0.f.x = energy ; 
     p.q0.f.y = hc_eVnm/energy ;
     p.q0.f.z = sampledRI ; 
+    //p.q0.f.w = 1. - oneMinusCosTheta ; 
     p.q0.f.w = cosTheta ; 
 
     p.q1.f.x = sin2Theta ; 
@@ -624,7 +624,7 @@ inline QCTX_METHOD void qctx<T>::cerenkov_photon_expt(quad4& p, unsigned id, cur
     p.q1.u.z = 0u ; 
     p.q1.f.w = BetaInverse ; 
 
-    p.q2.f.x = 0.f ; 
+    p.q2.f.x = reject ; 
     p.q2.f.y = 0.f ; 
     p.q2.f.z = u0 ; 
     p.q2.f.w = u1 ; 

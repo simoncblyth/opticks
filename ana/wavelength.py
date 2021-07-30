@@ -42,6 +42,10 @@ class Wavelength(object):
     def __call__(self, label):
         return self.get_key(label) 
 
+
+    def format(self, i):
+        return " %2d : %d : %50s : %s " % (i, os.path.exists(self.p[i]), self.l[i], self.p[i])
+
     def __init__(self, kd):
 
 
@@ -113,7 +117,12 @@ class Wavelength(object):
 
         l[21] = "ck_photon_expt_1M"
         p[21] = os.path.join("/tmp/QCtxTest", "cerenkov_photon_expt_1000000.npy")
+
+        l[22] = "rindex_en_integrated_1M"
+        p[22] = "/tmp/rindex/en_integrated_lookup_1M.npy"
  
+        self.p = p  
+        self.l = l  
 
         dom = np.arange(80, 400, 4)  
         #dom = np.arange(300, 600, 1)  
@@ -130,7 +139,9 @@ class Wavelength(object):
         r = {}
 
         for i in range(len(l)):
-            if not os.path.exists(p[i]):
+            p_exists = os.path.exists(p[i])
+            print(self.format(i)) 
+            if not p_exists:
                 a[i] = None
                 w[i] = None
                 h[i] = None
@@ -140,6 +151,10 @@ class Wavelength(object):
                     e[i] = a[i][:,0,0] 
                     w[i] = a[i][:,0,1] 
                     r[i] = a[i][:,0,2] 
+                elif l[i].startswith("rindex_en_integrated"):
+                    e[i] = a[i]
+                    w[i] = 1240./e[i]
+                    r[i] = np.zeros( len(a[i]) )
                 elif l[i].startswith("ana_ck"):
                     w[i] = a[i][:,0,1] 
                 elif l[i].startswith("G4Cerenkov_modified"):
@@ -159,11 +174,9 @@ class Wavelength(object):
                 h[i] = np.histogram( w[i] , dom ) 
             pass
         pass
-        self.p = p  
         self.w = w  
         self.e = e  
         self.r = r  
-        self.l = l
         self.h = h   
         self.a = a   
         self.dom = dom 
@@ -207,9 +220,15 @@ class Wavelength(object):
             a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M_FLOAT_TEST', 'ck_photon_enprop_1M' )
         elif arg == 15:
             a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M', 'ck_photon_expt_1M' )
+        elif arg == 16:
+            a, b = self.get_keys('G4Cerenkov_modified_SKIP_CONTINUE_1M', 'rindex_en_integrated_1M' )
         else:
             assert 0
         pass
+
+        print("arg:%d -> a:%d b:%d " % (arg,a,b))
+        print(self.format(a)) 
+        print(self.format(b)) 
         return a, b
 
 
@@ -249,18 +268,19 @@ if __name__ == '__main__':
     print("lb:%s" % lb)
     print("pb:%s" % pb)
 
-    wab = np.abs(wa-wb)  
 
-    dev = wab > 1e-4
-    num_dev = np.count_nonzero(dev) 
-    print("num_dev:%d " % num_dev )
+    if 0:
+        wab = np.abs(wa-wb)  
 
-    np.set_printoptions(edgeitems=16)    
+        dev = wab > 1e-4
+        num_dev = np.count_nonzero(dev) 
+        print("num_dev:%d " % num_dev )
 
-    print("a[dev]\n",a[dev].reshape(-1,8))
-    print("b[dev]\n",b[dev].reshape(-1,16))
-  
-    b_ri = b[dev][:,0,2] 
+        np.set_printoptions(edgeitems=16)    
+
+        print("a[dev]\n",a[dev].reshape(-1,8))
+        print("b[dev]\n",b[dev].reshape(-1,16))
+        b_ri = b[dev][:,0,2] 
 
     # are deviants mostly where sampled rindex bin values 
     # TODO: enable dumping of deviants, to understand the reason  
@@ -310,7 +330,7 @@ if __name__ == '__main__':
 
         ax.plot( edom[:-1], ea_h[0], label=la, drawstyle="steps-post" )
         ax.plot( edom[:-1], eb_h[0], label=lb, drawstyle="steps-post" )
-        ax.plot( edom[:-1], -300*c2[0]/c2[0].max(), drawstyle="steps-post", label="chi2")
+        ax.plot( edom[:-1], -2000*c2[0]/c2[0].max(), drawstyle="steps-post", label="chi2")
 
         eri = ri[:,0] 
         eris = eri[np.logical_and(eri>edom[0], eri<edom[-1])]   
