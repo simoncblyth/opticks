@@ -97,27 +97,42 @@ if __name__ == '__main__':
     #BetaInverse = [1.5]
     #BetaInverse = np.linspace(nMin, nMax, 10) 
 
-    BetaInverse = [1.457]   
-    # how to handle one crossing ? depends on the sign 
+    #BetaInverse = [1.457]   
+    # with one crossing, need to form a range with one side or the other 
+    # depending on "rindex - BetaInverse" at domain edges  
 
+    #BetaInverse = np.linspace( 1., nMax, 10)  
+    BetaInverse = [1.] 
+    # what about zero crossing 
 
     xri = {}
     xrg = {}
     for bi in BetaInverse:
         xri[bi] = find_cross(ri, BetaInverse=bi)
+
+        lhs = ri[0,1] - bi > 0   # ck allowed at left edge ?
+        rhs = ri[-1,1] - bi > 0  # ck allowed at right edge ?  
+
         if len(xri[bi]) > 1:
             xrg[bi] = np.array( [xri[bi].min(), xri[bi].max()])
         elif len(xri[bi]) == 1:
             # one crossing needs special handling as need to define an energy range with one side or the other
-            log.info("one crossing bi %s ri[0,1] %s ri[-1,1] %s  " % (bi, ri[0,1],ri[-1,1] ) )
-            if ri[0,1] - bi > 0 and ri[-1,1] - bi < 0:
-                xrg[bi] = np.array( ri[0,0], xri[bi][0] )
-            elif bi - ri[0,1] < 0 and bi - ri[-1,1] > 0:   
-                xrg[bi] = np.array( xri[bi][0], ri[-1,0] )
+            if lhs and not rhs:
+                xrg[bi] = np.array([ ri[0,0], xri[bi][0] ])
+            elif not lhs and rhs:   
+                xrg[bi] = np.array([ xri[bi][0], ri[-1,0] ])
             else:
                 log.fatal("unexpected 1-crossing")
                 assert 0 
             pass
+            log.info("bi %s one crossing : lhs %s rhs %s xrg[bi] %s  " % (bi, lhs, rhs, str(xrg[bi]) ))
+        elif len(xri[bi]) == 0:
+            if lhs and rhs:
+                xrg[bi] = np.array( [ ri[0,0], ri[-1,0] ])
+            else:
+                xrg[bi] = None
+            pass
+            log.info("bi %s zero crossing : lhs %s rhs %s xrg[bi] %s  " % (bi, lhs, rhs, str(xrg[bi]) ))
         else:
             xrg[bi] = None
         pass

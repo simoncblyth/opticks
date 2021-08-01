@@ -34,7 +34,9 @@ struct G4Cerenkov_modifiedTest
 
     G4Cerenkov_modifiedTest(const char* rindex_path, const char* random_path, const char* seqmask_path, long seed ) ;  
 
-    void scanBetaInverse(double v0, double v1, double st) ; 
+    double GetAverageNumberOfPhotons(double BetaInverse, double charge);
+    NP* scan_GetAverageNumberOfPhotons(double v0, double v1, unsigned nx) ; 
+
     void PSDI(double BetaInverse, double step_length, int override_fNumPhotons=-1 );
     void save(const G4VParticleChange* pc, const char* reldir  );
 
@@ -111,14 +113,33 @@ G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, co
 }
 
 
+
 template <typename T>
-void G4Cerenkov_modifiedTest<T>::scanBetaInverse(double v0, double v1, double st)
+double G4Cerenkov_modifiedTest<T>::GetAverageNumberOfPhotons(double BetaInverse, double charge)
 {
+    G4double beta = 1./BetaInverse ; 
+    G4double averageNumberOfPhotons = proc->GetAverageNumberOfPhotons( charge, beta, material, rindex ); 
+    return averageNumberOfPhotons ;
+}
+
+
+
+template <typename T>
+NP* G4Cerenkov_modifiedTest<T>::scan_GetAverageNumberOfPhotons(double v0, double v1, unsigned nx)
+{
+
+    NP* a = NP::Make<double>(2, nx ); 
+    double* aa = a->values<double>();   
+
     G4double charge = 1. ; 
-    for(double bi=v0 ; bi <= v1 ; bi += st )
+    for(unsigned i=0 ; i < nx ; i++)
     {
-        G4double beta = 1./bi ; 
-        G4double averageNumberOfPhotons = proc->GetAverageNumberOfPhotons( charge, beta, material, rindex ); 
+        double bi = v0 + (v1-v0)*(double(i)/ double(nx - 1)) ;  
+
+        G4double averageNumberOfPhotons = GetAverageNumberOfPhotons( bi, charge ); 
+
+        aa[2*i+0] = bi ; 
+        aa[2*i+1] = averageNumberOfPhotons ; 
 
         std::cout 
             << " bi " << std::setw(10) << std::fixed << std::setprecision(4) << bi 
@@ -126,6 +147,7 @@ void G4Cerenkov_modifiedTest<T>::scanBetaInverse(double v0, double v1, double st
             << std::endl 
             ;
     }
+    return a ; 
 }
 
 
@@ -381,8 +403,13 @@ int main(int argc, char** argv)
 
     G4Cerenkov_modifiedTest<double> t(rindex_path, random_path, mask_path, seed); 
 
-    //t.scanBetaInverse(1., 2., 0.1); 
-    t.PSDI(BetaInverse, step_length, override_fNumPhotons ); 
+    //double numPhotons = t.GetAverageNumberOfPhotons(1.5, 1.) ; 
+
+    NP* a = t.scan_GetAverageNumberOfPhotons(1., 2., 101); 
+    a->save("/tmp/scanBetaInverse.npy"); 
+ 
+
+    //t.PSDI(BetaInverse, step_length, override_fNumPhotons ); 
 
     return 0 ;
 }

@@ -287,7 +287,10 @@ void UseGeant4::physical_constants()
 
     double one_over_fine_structure_const = 1.0/fine_structure_const ; 
 
-    const G4double Rfact = 369.81/(eV * cm);
+    const G4double Rfact = 369.81/(eV * cm);   // G4Cerenkov::GetAverageNumberOfPhotons uses this Rfact
+
+
+    const G4double Rfact_approx = 2.*pi*1e7/(1240.*137.) ; 
 
     int w = 50 ; 
     int p = 8 ; 
@@ -298,7 +301,10 @@ void UseGeant4::physical_constants()
         << std::setw(w) << " one_over_fine_structure_const " << one_over_fine_structure_const << std::endl 
         << std::setw(w) << " fine_structure_const_over_hbarc*(eV*cm) " << std::fixed << std::setprecision(5) << fine_structure_const_over_hbarc*(eV*cm) << std::endl 
         << std::setw(w) << " fine_structure_const_over_hbarc " << std::fixed << std::setprecision(5) << fine_structure_const_over_hbarc << std::endl 
-        << std::setw(w) << " Rfact =  369.81/(eV * cm)  " << std::fixed << std::setprecision(5) << Rfact  << std::endl 
+        << std::setw(w) << " Rfact =  369.81/(eV * cm) " << std::fixed << std::setprecision(5) << Rfact  
+        << "[as used by G4Cerenkov::GetAverageNumberOfPhotons] "
+        << std::endl 
+        << std::setw(w) << " 2*pi*1e7/(1240*137) " << std::fixed << std::setprecision(5) << Rfact_approx << std::endl 
         << std::setw(w) << " eplus " << std::fixed << std::setprecision(5) << eplus << std::endl 
         << std::setw(w) << " electron_mass_c2 " << std::fixed << std::setprecision(p) << electron_mass_c2 << std::endl
         << std::setw(w) << " proton_mass_c2 " << std::fixed << std::setprecision(p) << proton_mass_c2 << std::endl

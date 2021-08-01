@@ -819,6 +819,17 @@ G4double
 
   const G4double Rfact = 369.81/(eV * cm);
 
+#ifdef X_INSTRUMENTED
+  std::cout 
+       << "G4Cerenkov_modified::GetAverageNumberOfPhotons"
+       << " Rfact " << std::fixed << std::setw(10) << std::setprecision(5) << Rfact
+       << " eV " << std::fixed << std::setw(10) << std::setprecision(7) << eV
+       << " cm " << std::fixed << std::setw(10) << std::setprecision(5) << cm
+       << " charge " << std::fixed << std::setw(10) << std::setprecision(5) << charge
+       << std::endl
+       ;
+#endif
+
   if(beta <= 0.0)return 0.0;
 
   G4double BetaInverse = 1./beta;
@@ -909,6 +920,8 @@ G4double
          if (currentRI > maxRI) maxRI = currentRI;
          if (currentRI < minRI) minRI = currentRI;
      }
+
+
 
      if (BetaInverse <= minRI) { // All range is OK!
 
@@ -1063,6 +1076,40 @@ G4double
   //                               (dp - ge * BetaInverse*BetaInverse);
   G4double NumPhotons = Rfact * charge/eplus * charge/eplus *
          (dp1 - ge1 * BetaInverse*BetaInverse);
+
+
+#ifdef X_INSTRUMENTED
+  std::cout 
+       << "G4Cerenkov_modified::GetAverageNumberOfPhotons"
+       << " BetaInverse " << std::fixed << std::setw(10) << std::setprecision(5) << BetaInverse
+       << " maxRI " << std::fixed << std::setw(10) << std::setprecision(5) << maxRI
+       << " minRI " << std::fixed << std::setw(10) << std::setprecision(5) << minRI
+       << " cross_num " << cross_num
+       << " dp1 " << std::fixed << std::setw(10) << std::setprecision(5) << dp1
+       << " dp1/eV " << std::fixed << std::setw(10) << std::setprecision(5) << dp1/eV
+       << " ge1 " << std::fixed << std::setw(10) << std::setprecision(5) << ge1
+       << " NumPhotons " << std::fixed << std::setw(10) << std::setprecision(5) << NumPhotons
+       << std::endl
+       ;
+
+  for(int i=0 ; i < cross_num ; i++)
+  {
+
+      G4bool isOutRange;
+      G4double cai0 = CerenkovAngleIntegrals->GetValue(the_energies_threshold[2*i+0], isOutRange);
+      G4double cai1 = CerenkovAngleIntegrals->GetValue(the_energies_threshold[2*i+1], isOutRange);
+
+      std::cout 
+           << "G4Cerenkov_modified::GetAverageNumberOfPhotons"
+           << " the_energies_threshold[2*i+0]/eV " << std::fixed << std::setw(10) << std::setprecision(5) << the_energies_threshold[2*i+0]/eV
+           << " the_energies_threshold[2*i+1]/eV " << std::fixed << std::setw(10) << std::setprecision(5) << the_energies_threshold[2*i+1]/eV
+           << " cai0 " << std::fixed << std::setw(20) << std::setprecision(10) << cai0
+           << " cai1 " << std::fixed << std::setw(20) << std::setprecision(10) << cai1
+           << std::endl 
+           ;
+  } 
+#endif
+
 
   return NumPhotons;    
 }
