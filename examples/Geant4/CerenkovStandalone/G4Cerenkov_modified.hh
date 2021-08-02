@@ -225,6 +225,14 @@ private:
                                      const G4Material *aMaterial,
                                      G4MaterialPropertyVector* Rindex); //const;
 
+
+  G4double GetAverageNumberOfPhotons_s2(const G4double charge,
+                                     const G4double beta,
+                                     const G4Material *aMaterial,
+                                     G4MaterialPropertyVector* Rindex) const;
+
+
+
   ///////////////////////
   // Class Data Members
   ///////////////////////

@@ -36,12 +36,13 @@ class CKN(object):
         self.ri = ri
         self.ri_ = ri_
         self.BuildThePhysicsTable()
+        self.BuildThePhysicsTable_2()
+        assert np.allclose( self.cai, self.cai2 )
 
     def BuildThePhysicsTable(self, dump=False):
         """
         See G4Cerenkov_modified::BuildThePhysicsTable
 
-        https://numpy.org/doc/stable/reference/generated/numpy.trapz.html
 
         This is applying the composite trapezoidal rule to do a 
         numerical energy integral  of  n^(-2) = 1./(ri[:,1]*ri[:,1])
@@ -57,27 +58,39 @@ class CKN(object):
         assert len(mir2) == len(ri) - 1       # averaging points looses one value 
         mir2_de = mir2*de 
 
-        cai = np.zeros(len(ri))               # leading zero regains value 
+        cai = np.zeros(len(ri))               # leading zero regains one value 
         np.cumsum(mir2_de, out=cai[1:])  
 
         if dump:
             print("cai", cai)
         pass
 
-        cai2 = np.zeros(len(ri))
-        for i in range(len(ri)):
-            cai2[i] = np.trapz( ir2[:i+1], en[:i+1] ) 
-        pass
-        assert np.allclose( cai, cai2 )
-
         self.cai = cai
-        self.cai2 = cai2
-
         self.ir2 = ir2
         self.mir2 = mir2
         self.de = de
         self.mir2_de = mir2_de
 
+
+    def BuildThePhysicsTable_2(self, dump=False):
+        """
+        np.trapz does the same thing as above : applying composite trapezoidal integration
+
+        https://numpy.org/doc/stable/reference/generated/numpy.trapz.html
+        """
+        ri = self.ri
+        en = ri[:,0]
+        ir2 = 1./(ri[:,1]*ri[:,1])
+
+        cai2 = np.zeros(len(ri))
+        for i in range(len(ri)):
+            cai2[i] = np.trapz( ir2[:i+1], en[:i+1] ) 
+        pass
+        self.cai2 = cai2
+
+        if dump:
+            print("cai2", cai2)
+        pass
 
 
     @classmethod
@@ -85,7 +98,6 @@ class CKN(object):
         """
         """
         en = ri[:,0]
-
         s2i = np.zeros(len(ri))
         for i in range(len(ri)):
             s2i[i] = np.trapz( s2[:i+1], en[:i+1] ) 
@@ -94,6 +106,45 @@ class CKN(object):
 
     def GetAverageNumberOfPhotons_s2(self, BetaInverse, charge=1, dump=False ):
         """
+        Simplfied Alternative to _s2messy following C++ implementation. 
+        Allowed regions are identified by s2 being positive avoiding the need for 
+        separately getting crossings. Instead get the crossings and do the trapezoidal 
+        numerical integration in one pass, improving simplicity and accuracy.  
+    
+        See opticks/examples/Geant4/CerenkovStandalone/G4Cerenkov_modified.cc
+        """
+        s2integral = 0.
+        for i in range(len(self.ri)-1):
+            en = np.array([self.ri[i,0], self.ri[i+1,0] ]) 
+            ri = np.array([self.ri[i,1], self.ri[i+1,1] ]) 
+            ct = BetaInverse/ri
+            s2 = (1.-ct)*(1.+ct) 
+
+            if s2[0] <= 0. and s2[1] <= 0.:
+                pass
+            elif s2[0] < 0. and s2[1] > 0.:
+                en_cross = (s2[1]*en[0] - s2[0]*en[1])/(s2[1] - s2[0])
+                s2_cross = 0.
+                s2integral +=  (en[1] - en_cross)*(s2_cross + s2[1])*0.5
+            elif s2[0] >= 0. and s2[1] >= 0.:
+                s2integral += (en[1] - en[0])*(s2[0] + s2[1])*0.5
+            elif s2[0] > 0. and s2[1] < 0.:
+                en_cross = (s2[1]*en[0] - s2[0]*en[1])/(s2[1] - s2[0]) 
+                s2_cross = 0. 
+                s2integral +=  (en_cross - en[0])*(s2_cross + s2[0])*0.5
+            else:
+                print( " en_0 %10.5f ri_0 %10.5f s2_0 %10.5f  en_1 %10.5f ri_1 %10.5f s2_1 %10.5f " % (en[0], ri[0], s2[0], en[1], ri[1], s2[1] )) 
+                assert 0 
+            pass
+        pass
+        Rfact = 369.81 / 10. #        Geant4 mm=1 cm=10    
+        NumPhotons = Rfact * charge * charge * s2integral
+        return NumPhotons 
+
+    def GetAverageNumberOfPhotons_s2messy(self, BetaInverse, charge=1, dump=False ):
+        """
+        NB see GetAverageNumberOfPhotons_s2 it gives exactly the same results as this and is simpler
+
         Alternate approach doing the numerical integration directly of s2 rather than 
         doing it on n^-2 and combining it later with the integral of the 1 and the 
         BetaInverse*BetaInverse
@@ -112,17 +163,20 @@ class CKN(object):
         en = ri[:,0]
 
         s2 = np.zeros( (len(ri), 2), dtype=np.float64 )
+        ct = BetaInverse/ri[:,1]
         s2[:,0] = ri[:,0]
-        s2[:,1] = 1. - (BetaInverse*BetaInverse)/(ri[:,1]*ri[:,1])
+        s2[:,1] = (1. - ct)*(1. + ct )
 
         cross = ckn.FindCrossings( s2, 0. )
         s2integral = 0. 
         for i in range(len(cross)//2):
             en0 = cross[2*i+0]
             en1 = cross[2*i+1]
+            # select bins within the range 
             s2_sel = s2[np.logical_and(s2[:,0]>=en0, s2[:,0] <= en1)] 
 
-            # hmm will this always work like this : adding points for the crossings on the ends 
+            # fabricate partial bins before and after the full ones 
+            # that correspond to s2 zeros 
             fs2 = np.zeros( (2+len(s2_sel),2), dtype=np.float64 )  
             fs2[0] = [en0, 0.]
             fs2[1:-1] = s2_sel
@@ -131,7 +185,7 @@ class CKN(object):
             s2integral += np.trapz( fs2[:,1], fs2[:,0] )   # trapezoidal integration
         pass
         Rfact =  369.81   #  (eV * cm)^-1
-        Rfact *= 0.1      # cm to mm ?
+        Rfact *= 0.1      # cm to mm ?  Geant4: mm = 1. cm = 10.  
 
         NumPhotons = Rfact * charge * charge * s2integral
         self.NumPhotons = NumPhotons
@@ -140,23 +194,30 @@ class CKN(object):
         pass
         return NumPhotons
 
-    def GetAverageNumberOfPhotons(self, BetaInverse, charge=1, dump=False ):
+    def GetAverageNumberOfPhotons_asis(self, BetaInverse, charge=1, dump=False ):
         """
-        # duplicate algorithm from G4Cerenkov_modified::GetAverageNumberOfPhotons
+        This duplicates the results from G4Cerenkov_modified::GetAverageNumberOfPhotons
+        including negative numbers of photons for BetaInverse close to the rindex peak.
 
-        Frank–Tamm::
+        Frank–Tamm formula gives number of Cerenkov photons per mm as an energy integral::
 
                                                         BetaInverse^2    
               N_photon  =     370.     Integral ( 1 - -----------------  )  dE      
                                                           ri(E)^2      
 
-
-        Need to integrate over regions where :    ri(E) > BetaInverse 
+        Where the integration is over regions where :    ri(E) > BetaInverse 
         which corresponds to a real cone angle and the above bracket being positive::
         
                         BetaInverse
               cos th = --------------   < 1  
                            ri(E) 
+
+        The bracket above is in fact :    1 - cos^2 th = sin^2 th  which must be +ve 
+        so getting -ve numbers of photons is clearly a bug from the numerical approximations
+        being made.  Presumably the problem is due to the splitting of the integral into  
+        CerenkovAngleIntegral "cai" which is the cumulative integral of   1./ri(E)^2
+        followed by linear interpolation of this in order to get the integral between 
+        crossings.
 
         G4Cerenkov::
 
@@ -169,22 +230,37 @@ class CKN(object):
 
         hc = 1240 eV nm = 1240 eV cm * 1e-7    ( nm:1e-9 cm 1e-2)
 
-        In [8]: 2*np.pi*1e7/(137*1240)
+        In [8]: 2*np.pi*1e7/(137*1240)     # fine-structure-constant 1/137 and hc = 1240 eV nm 
         Out[8]: 369.860213514221
 
         alpha/hc = 370 (eV.cm)^-1
 
-        See ~/opticks/examples/UseGeant4/UseGeant4.cc UseGeant4::physical_constants
+        See ~/opticks/examples/UseGeant4/UseGeant4.cc UseGeant4::physical_constants::
+
+            UseGeant4::physical_constants
+                                                   eV 1e-06
+                                                   cm 10
+                                 fine_structure_const 0.00729735
+                        one_over_fine_structure_const 137.036
+              fine_structure_const_over_hbarc*(eV*cm) 369.81021
+                      fine_structure_const_over_hbarc 36981020.84589
+                            Rfact =  369.81/(eV * cm) 36981000.00000[as used by G4Cerenkov::GetAverageNumberOfPhotons] 
+                                  2*pi*1e7/(1240*137) 369.86021
+                                                eplus 1.00000
+                                     electron_mass_c2 0.51099891
+                                       proton_mass_c2 938.27201300
+                                      neutron_mass_c2 939.56536000
 
 
-                x - prevPM =  (BetaInverse-prevRI)/(currentRI-prevRI)*(currentPM-prevPM) 
+        Crossing points from similar triangles:: 
 
-        Similar triangles                  
 
-                x - prevPM                            currentPM - prevPM
+             x - prevPM                            currentPM - prevPM
              ------------------------------   =     ------------------------ 
-               BetaInverse - prevRI                   currentRI - prevRI 
+             BetaInverse - prevRI                   currentRI - prevRI 
 
+
+             x - prevPM =  (BetaInverse-prevRI)/(currentRI-prevRI)*(currentPM-prevPM) 
 
 
 
@@ -210,7 +286,6 @@ class CKN(object):
         self.BetaInverse = BetaInverse
         ri = self.ri
         cai = self.cai
-
         en = ri[:,0]
 
         cross = self.FindCrossings( ri, BetaInverse )
@@ -290,19 +365,29 @@ class CKN(object):
         return cross
 
     def test_GetAverageNumberOfPhotons(self, BetaInverse):
-        NumPhotons = self.GetAverageNumberOfPhotons(BetaInverse)
+        NumPhotons_asis = self.GetAverageNumberOfPhotons_asis(BetaInverse)
         NumPhotons_s2 = self.GetAverageNumberOfPhotons_s2(BetaInverse)
-        fmt = "BetaInverse %6.4f NumPhotons %6.4f  NumPhotons_s2 %6.4f  " 
-        print( fmt % ( BetaInverse, NumPhotons, NumPhotons_s2 ))
+        NumPhotons_s2messy = self.GetAverageNumberOfPhotons_s2messy(BetaInverse)
+        fmt = "BetaInverse %6.4f _asis %6.4f  _s2 %6.4f _s2messy %6.4f    " 
+        print( fmt % ( BetaInverse, NumPhotons_asis, NumPhotons_s2, NumPhotons_s2messy ))
 
-    def scan_GetAverageNumberOfPhotons(self):
-        for BetaInverse in np.linspace(1., 2., 101 ):
-            NumPhotons = self.GetAverageNumberOfPhotons(BetaInverse)
+    def scan_GetAverageNumberOfPhotons(self, x0=1., x1=2., nx=101 ):
+        scan = np.zeros( (nx, 4), dtype=np.float64 )
+        for i, BetaInverse in enumerate(np.linspace(x0, x1, nx )):
+            NumPhotons_asis = self.GetAverageNumberOfPhotons_asis(BetaInverse)
             NumPhotons_s2 = self.GetAverageNumberOfPhotons_s2(BetaInverse)
-            delta = NumPhotons_s2 - NumPhotons
-            fmt = "BetaInverse %7.3f NumPhotons %7.3f  NumPhotons_s2 %7.3f  NumPhotons_s2 - NumPhotons %7.3f " 
-            print( fmt % ( BetaInverse, NumPhotons, NumPhotons_s2, delta ))
+            NumPhotons_s2messy = self.GetAverageNumberOfPhotons_s2messy(BetaInverse)
+            scan[i] = [BetaInverse, NumPhotons_asis, NumPhotons_s2, NumPhotons_s2messy ]
+            fmt = "  bi %7.3f _asis %7.3f _s2 %7.3f _s2messy %7.3f "  
+            print( fmt % tuple(scan[i]) )
         pass
+        self.scan = scan   
+
+        path="/tmp/G4Cerenkov_modifiedTest/scan_GetAverageNumberOfPhotons.npy"
+        if os.path.exists(path):
+            self.scan2 = np.load(path)
+        pass 
+
 
 
 if __name__ == '__main__':
@@ -312,6 +397,61 @@ if __name__ == '__main__':
 
     #ckn.test_GetAverageNumberOfPhotons(1.78)
     ckn.scan_GetAverageNumberOfPhotons()
+
+    numPhoton_ = lambda bi:np.interp( bi, ckn.scan[:,0], ckn.scan[:,1] )    
+    numPhotonS2_ = lambda bi:np.interp( bi, ckn.scan[:,0], ckn.scan[:,2] )    
+
+
+    nMin = ckn.ri[:,1].min()  
+    nMax = ckn.ri[:,1].max()  
+
+    bi = [nMin, nMax]
+    numPhotonMax = numPhotonS2_( np.linspace(bi[0], bi[1], 101) ).max()  # max in the BetaInverse range 
+
+
+    fig, ax = plt.subplots(figsize=ok.figsize) 
+    ax.set_xlim( *bi )
+    ax.set_ylim(  -1., numPhotonMax )
+
+    ax.scatter( ckn.scan[:,0], ckn.scan[:,1], label="GetAverageNumberOfPhotons", s=3 )
+    ax.plot( ckn.scan[:,0], ckn.scan[:,1], label="GetAverageNumberOfPhotons" )
+
+    ax.plot( ckn.scan[:,0], ckn.scan[:,2], label="GetAverageNumberOfPhotons_s2" )
+    ax.scatter( ckn.scan[:,0], ckn.scan[:,2], label="GetAverageNumberOfPhotons_s2", s=3 )
+
+    xlim = ax.get_xlim()
+    ax.plot( xlim, [0,0], linestyle="dotted", label="zero" )
+
+
+    ax.legend()
+    fig.show()      
+
+
+
+
+
+    fig, ax = plt.subplots(figsize=ok.figsize) 
+    ax.set_xlim( *bi )
+    #ax.set_ylim(  -1., numPhotonMax )
+
+    ax.scatter( ckn.scan[:,0], ckn.scan[:,2] - ckn.scan[:,1], label="GetAverageNumberOfPhotons_s2 - GetAverageNumberOfPhotons", s=3 )
+    ax.plot( ckn.scan[:,0], ckn.scan[:,2] - ckn.scan[:,1], label="GetAverageNumberOfPhotons_s2 - GetAverageNumberOfPhotons" )
+
+    ylim = ax.get_ylim()
+
+    for n in ckn.ri[:,1]:
+        ax.plot( [n, n], ylim, label="%s" % n  ) 
+    pass
+
+    #ax.legend()
+    fig.show()      
+
+
+
+
+
+
+
 
 
 if 0:
@@ -336,7 +476,6 @@ if 0:
 
     ax.legend() 
 
-
     ax = axs[1]
     ax.plot( ri[:,0], cai, label="cai" ) 
     ylim = ax.get_ylim()
@@ -346,7 +485,6 @@ if 0:
     ax.legend() 
 
     fig.show()
-
 
 
 

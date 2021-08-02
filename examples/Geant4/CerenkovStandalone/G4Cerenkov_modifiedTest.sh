@@ -9,6 +9,9 @@ srcs=(G4Cerenkov_modifiedTest.cc G4Cerenkov_modified.cc OpticksDebug.cc OpticksR
 name=${srcs[0]}
 name=${name/.cc}
 
+mkdir -p /tmp/$name
+
+
 echo $msg srcs : ${srcs[@]} name : $name
 
 if [ -n "$SCAN" ]; then 

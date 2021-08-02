@@ -1114,6 +1114,94 @@ G4double
   return NumPhotons;    
 }
 
+/**
+G4Cerenkov_modified::s2Integrate
+----------------------------------
+
+See:
+
+* ~/opticks/ana/ckn.py 
+* ~/np/NP.hh NP::trapz
+
+**/
+
+G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge, const G4double beta, const G4Material*, G4MaterialPropertyVector* Rindex) const
+{
+    if(beta <= 0.0)return 0.0;
+    G4double BetaInverse = 1./beta;
+    G4double half(0.5) ; 
+    G4double s2integral(0.) ; 
+
+    for(unsigned i=0 ; i < Rindex->GetVectorLength()-1 ; i++)
+    {
+        G4double en_0 = Rindex->Energy(i) ; 
+        G4double en_1 = Rindex->Energy(i+1) ; 
+
+        G4double ri_0 = (*Rindex)[i] ;
+        G4double ri_1 = (*Rindex)[i+1] ;
+
+        G4double ct_0 = BetaInverse/ri_0 ; 
+        G4double ct_1 = BetaInverse/ri_1 ; 
+
+        G4double s2_0 = (1.-ct_0)*(1.+ct_0) ; 
+        G4double s2_1 = (1.-ct_1)*(1.+ct_1) ; 
+
+        if( s2_0 <= 0. and s2_1 <= 0. )   // entire bin disallowed : no contribution 
+        {
+            s2integral += 0. ; 
+        }    
+        else if( s2_0 < 0. and s2_1 > 0. )  // s2 becomes +ve within the bin
+        {
+            G4double en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
+            G4double s2_cross = 0. ; 
+            s2integral +=  (en_1 - en_cross)*(s2_cross + s2_1)*half ;  
+        }
+        else if( s2_0 >= 0. and s2_1 >= 0. )   // s2 +ve across full bin 
+        {
+            s2integral += (en_1 - en_0)*(s2_0 + s2_1)*half ;  
+        }     
+        else if( s2_0 > 0. and s2_1 < 0. )  // s2 becomes -ve within the bin
+        {
+            G4double en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
+            G4double s2_cross = 0. ; 
+            s2integral +=  (en_cross - en_0)*(s2_cross + s2_0)*half ;  
+        }
+        else
+        {
+            std::cout 
+                << "G4Cerenkov_modified::GetAverageNumberOfPhotons_s2"
+                << " FATAL "
+                << " s2_0 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_0
+                << " s2_1 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_1
+                << " en_0 " << std::fixed << std::setw(10) << std::setprecision(5) << en_0
+                << " en_1 " << std::fixed << std::setw(10) << std::setprecision(5) << en_1
+                << " ri_0 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_0
+                << " ri_1 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_1
+                << std::endl 
+                ;
+            assert(0); 
+        }
+    }
+    const G4double Rfact = 369.81/(eV * cm);
+    G4double NumPhotons = Rfact * charge/eplus * charge/eplus * s2integral ; 
+
+#ifdef X_INSTRUMENTED
+  std::cout 
+       << "G4Cerenkov_modified::GetAverageNumberOfPhotons_s2"
+       << " Rfact " << std::fixed << std::setw(10) << std::setprecision(5) << Rfact
+       << " eV " << std::fixed << std::setw(10) << std::setprecision(7) << eV
+       << " cm " << std::fixed << std::setw(10) << std::setprecision(5) << cm
+       << " mm " << std::fixed << std::setw(10) << std::setprecision(5) << mm
+       << " charge " << std::fixed << std::setw(10) << std::setprecision(5) << charge
+       << " s2integral " << std::fixed << std::setw(10) << std::setprecision(5) << s2integral
+       << " NumPhotons " << std::fixed << std::setw(10) << std::setprecision(5) << NumPhotons
+       << std::endl
+       ;
+#endif
+    return NumPhotons ; 
+} 
+
+
 void G4Cerenkov_modified::DumpPhysicsTable() const
 {
   G4int PhysicsTableSize = thePhysicsTable->entries();
