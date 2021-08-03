@@ -7,6 +7,7 @@
 #include <cassert>
 #include <fstream>
 #include <cstdint>
+#include <limits>
 
 #include "NPU.hh"
 
@@ -90,6 +91,9 @@ struct NP
     template<typename T> void pscale(T scale, unsigned column);
     template<typename T> void pscale_add(T scale, T add, unsigned column);
     template<typename T> void pdump(const char* msg="NP::pdump") const ; 
+    template<typename T> void minmax(T& mn, T&mx, unsigned j=1 ) const ; 
+    template<typename T> void linear_crossings( T value, std::vector<T>& crossings ) const ; 
+    template<typename T> T    trapz() const ;    // composite trapezoidal integration, requires pshaped
     template<typename T> T    interp(T x) const ;                  // requires pshaped 
     template<typename T> T    interp(unsigned iprop, T x) const ;  // requires NP::Combine of pshaped arrays 
 
@@ -637,6 +641,135 @@ template<typename T> inline void NP::pdump(const char* msg) const
     }
 }
 
+template<typename T> inline void NP::minmax(T& mn, T&mx, unsigned j ) const 
+{
+    assert( shape.size() == 2 ); 
+    unsigned ni = shape[0] ; 
+    unsigned nj = shape[1] ; 
+    assert( j < nj ); 
+
+    mn = std::numeric_limits<T>::max() ; 
+    mx = std::numeric_limits<T>::min() ; 
+
+    const T* vv = cvalues<T>(); 
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        T v = vv[nj*i+j] ; 
+        if( v > mx ) mx = v; 
+        if( v < mn ) mn = v; 
+    }
+}
+
+
+
+
+/**
+NP::linear_crossings
+------------------------
+
+As linearly interpolated properties eg RINDEX using NP::interp 
+are piecewise linear functions it is possible to find the 
+crossings between such functions and constant values 
+without using optimization. Simply observing sign changes to identify 
+crossing bins and then some linear calc provides the roots::
+
+             
+                  (x1,v1)
+                   *
+                  / 
+                 /
+                /
+        -------?(x,v)----    v = 0    when values are "ri_ - BetaInverse"
+              /
+             /
+            /
+           /
+          * 
+        (x0,v0)      
+
+
+         Only x is unknown 
+
+
+              v1 - v        v - v0
+             ----------  =  ----------
+              x1 - x        x - x0  
+
+
+           v1 (x - x0 ) =  -v0  (x1 - x )
+
+           v1.x - v1.x0 = - v0.x1 + v0.x  
+
+           ( v1 - v0 ) x = v1*x0 - v0*x1
+
+
+                         v1*x0 - v0*x1
+               x    =   -----------------
+                          ( v1 - v0 ) 
+
+
+Developed in opticks/ana/rindex.py for an attempt to developing inverse transform Cerenkov RINDEX 
+sampling.
+
+**/
+
+template<typename T> inline void NP::linear_crossings( T value, std::vector<T>& crossings ) const 
+{
+    assert( shape.size() == 2 && shape[1] == 2 && shape[0] > 1); 
+    unsigned ni = shape[0] ; 
+    const T* vv = cvalues<T>(); 
+    crossings.clear(); 
+
+    for(unsigned i=0 ; i < ni-1 ; i++ )
+    { 
+        T x0 = vv[2*(i+0)+0] ; 
+        T x1 = vv[2*(i+1)+0] ; 
+        T v0 = value - vv[2*(i+0)+1] ; 
+        T v1 = value - vv[2*(i+1)+1] ; 
+        if( v0*v1 < T(0.))
+        {
+            T x = (v1*x0 - v0*x1)/(v1-v0) ; 
+            //printf("i %d x0 %6.4f x1 %6.4f v0 %6.4f v1 %6.4f x %6.4f \n", i, x0,x1,v0,v1,x) ; 
+            crossings.push_back(x) ; 
+        }
+    }
+} 
+
+/**
+NP::trapz
+-----------
+
+Composite trapezoidal numerical integration
+
+* https://en.wikipedia.org/wiki/Trapezoidal_rule
+
+**/
+
+template<typename T> inline T NP::trapz() const 
+{
+    assert( shape.size() == 2 && shape[1] == 2 && shape[0] > 1); 
+    unsigned ni = shape[0] ; 
+    const T* vv = cvalues<T>(); 
+
+    T half(0.5); 
+    T integral = T(0.);  
+    for(unsigned i=0 ; i < ni-1 ; i++)
+    {
+        unsigned i0 = i+0 ; 
+        unsigned i1 = i+1 ; 
+
+        T x0 = vv[2*i0+0] ; 
+        T y0 = vv[2*i0+1] ; 
+
+        T x1 = vv[2*i1+0] ; 
+        T y1 = vv[2*i1+1] ; 
+
+        integral += (x1 - x0)*(y0 + y1)*half ;  
+    } 
+    return integral ;  
+}
+
+
 
 /**
 NP::interp
@@ -689,6 +822,8 @@ template<typename T> inline T NP::interp(T x) const
     T y = vv[2*lo+1] + dy*(x-vv[2*lo+0])/dx ; 
     return y ; 
 }
+
+
 
 
 

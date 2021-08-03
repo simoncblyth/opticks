@@ -1,4 +1,5 @@
 #include <sstream>
+#include <algorithm>
 
 #include "PLOG.hh"
 #include "SSys.hh"
@@ -34,6 +35,8 @@ QCerenkov::QCerenkov(const char* path_ )
     :
     path( path_ ? path_ : DEFAULT_PATH ),
     dsrc(Load(path)),
+    dmin(0.),
+    dmax(0.),
     src(dsrc->ebyte == 4 ? dsrc : NP::MakeNarrow(dsrc)),
     tex(nullptr)
 {
@@ -44,6 +47,8 @@ QCerenkov::QCerenkov(const char* path_ )
 
 void QCerenkov::init()
 {
+    dsrc->pscale<double>(1e6, 0u) ; //  change energy scale from MeV to eV,   1.55 to 15.5 eV
+    dsrc->minmax<double>(dmin, dmax, 0u ); 
     makeTex(src) ;   
 }
 
@@ -60,6 +65,97 @@ std::string QCerenkov::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+/**
+
+TODO: bring in an equivalent to ana/rindex.py:s2sliver_integrate
+
+**/
+
+
+template <typename T>
+void QCerenkov::GetAverageNumberOfPhotons_s2(T& numPhotons, T& emin,  T& emax, const T BetaInverse, const T  charge ) const 
+{
+    emin = dmax ;   // start with range inverted 
+    emax = dmin ; 
+ 
+    const T* vv = dsrc->cvalues<T>(); 
+    unsigned ni = dsrc->shape[0] ; 
+    unsigned nj = dsrc->shape[1] ; 
+    assert( nj == 2 && ni > 1 ); 
+
+    const T one(1.) ; 
+    const T half(0.5) ; 
+    T s2integral(0.) ;  
+    T en_cross(0.); 
+
+    for(unsigned i=0 ; i < ni - 1 ; i++)
+    {
+        T en_0 = vv[2*(i+0)+0] ; 
+        T en_1 = vv[2*(i+1)+0] ; 
+
+        T ri_0 = vv[2*(i+0)+1] ; 
+        T ri_1 = vv[2*(i+1)+1] ; 
+
+        T ct_0 = BetaInverse/ri_0 ; 
+        T ct_1 = BetaInverse/ri_1 ; 
+
+        T s2_0 = ( one - ct_0 )*( one + ct_0 ); 
+        T s2_1 = ( one - ct_1 )*( one + ct_1 ); 
+
+        if( s2_0 <= 0. and s2_1 <= 0. )   // entire bin disallowed : no contribution 
+        {    
+            s2integral += 0. ; 
+        }    
+        else if( s2_0 < 0. and s2_1 > 0. )  // s2 becomes +ve within the bin
+        {    
+            en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
+            s2integral +=  (en_1 - en_cross)*s2_1*half ;  
+
+            emin = std::min<T>( emin, en_cross );  
+            emax = std::max<T>( emax, en_1 );
+        }    
+        else if( s2_0 >= 0. and s2_1 >= 0. )   // s2 +ve across full bin 
+        {    
+            s2integral += (en_1 - en_0)*(s2_0 + s2_1)*half ;  
+
+            emin = std::min<T>( emin, en_0 );  
+            emax = std::max<T>( emax, en_1 );
+        }     
+        else if( s2_0 > 0. and s2_1 < 0. )  // s2 becomes -ve within the bin
+        {    
+            en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
+            s2integral +=  (en_cross - en_0)*s2_0*half ;  
+
+            emin = std::min<T>( emin, en_0 );  
+            emax = std::max<T>( emax, en_cross );
+        }    
+        else 
+        {    
+            std::cout 
+                << "QCerenkov::GetAverageNumberOfPhotons_s2"
+                << " FATAL "
+                << " s2_0 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_0 
+                << " s2_1 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_1 
+                << " en_0 " << std::fixed << std::setw(10) << std::setprecision(5) << en_0 
+                << " en_1 " << std::fixed << std::setw(10) << std::setprecision(5) << en_1 
+                << " ri_0 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_0 
+                << " ri_1 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_1 
+                << std::endl
+                ;
+            assert(0);
+        }
+    }
+    const T Rfact = 369.81/10. ;    // energies assumed to be in eV, result is photon yield along 1 mm 
+    numPhotons = Rfact * charge * charge * s2integral ;
+}
+
+
+template void QCerenkov::GetAverageNumberOfPhotons_s2<double>(double& numPhotons, double& emin,  double& emax, const double BetaInverse, const double  charge ) const ; 
+template void QCerenkov::GetAverageNumberOfPhotons_s2<float>( float&  numPhotons, float& emin,   float&  emax, const float  BetaInverse, const float   charge ) const ; 
+
+
 
 
 void QCerenkov::makeTex(const NP* src)

@@ -26,6 +26,9 @@ struct QUDARAP_API QCerenkov
 
     const char*             path ; 
     NP*                     dsrc ; 
+    double                  dmin ; 
+    double                  dmax ; 
+
     NP*                     src ; 
     QTex<float>*            tex ; 
 
@@ -34,6 +37,8 @@ struct QUDARAP_API QCerenkov
     void init(); 
     void makeTex(const NP* dsrc);
     std::string desc() const ; 
+
+    template <typename T> void GetAverageNumberOfPhotons_s2(T& numPhotons, T& emin,  T& emax, const T BetaInverse, const T  charge ) const ; 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
 
