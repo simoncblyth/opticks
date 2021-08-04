@@ -432,7 +432,7 @@ void X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF()
 {
     unsigned num_scint = m_sclib->getNumRawOriginal() ; 
     if( num_scint == 0 ) return ; 
-    assert( num_scint == 1 ); 
+    //assert( num_scint == 1 ); 
 
     typedef GPropertyMap<double> PMAP ;  
     PMAP* pmap_en = m_sclib->getRawOriginal(0u); 
@@ -454,6 +454,7 @@ void X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF()
     NPY<double>* g4icdf = xs.createGeant4InterpolatedInverseCDF(num_bins, hd_factor, material_name ) ;
 
     LOG(info) 
+        << " num_scint " << num_scint
         << " slow_en " << slow_en->getShapeString()
         << " fast_en " << fast_en->getShapeString()
         << " num_bins " << num_bins
