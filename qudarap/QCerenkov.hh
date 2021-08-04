@@ -22,6 +22,9 @@ struct QUDARAP_API QCerenkov
     static const QCerenkov*        INSTANCE ; 
     static const QCerenkov*        Get(); 
     static const char* DEFAULT_PATH ; 
+    static const double FINE_STRUCTURE_OVER_HBARC_EVMM ; 
+
+
     static NP* Load(const char* path_) ; 
 
     const char*             path ; 
@@ -38,7 +41,11 @@ struct QUDARAP_API QCerenkov
     void makeTex(const NP* dsrc);
     std::string desc() const ; 
 
-    template <typename T> void GetAverageNumberOfPhotons_s2(T& numPhotons, T& emin,  T& emax, const T BetaInverse, const T  charge ) const ; 
+    template <typename T> T GetAverageNumberOfPhotons_s2(T& emin,  T& emax, const T BetaInverse, const T  charge ) const ; 
+    template <typename T> T   getS2Integral(        T& emin, T& emax, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1 ) const ; 
+    template <typename T> NP* getS2SliverIntegrals( T& emin, T& emax, const T BetaInverse, const NP* edom ) const ; 
+    template <typename T> NP* getS2SliverIntegrals( const NP* bis, const NP* edom ) const  ; 
+
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
 

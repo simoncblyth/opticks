@@ -68,16 +68,31 @@ std::string QCerenkov::desc() const
 
 
 /**
+QCerenkov::GetAverageNumberOfPhotons_s
+---------------------------------------
 
-TODO: bring in an equivalent to ana/rindex.py:s2sliver_integrate
+This was prototyped and tested in::
+
+    ~/opticks/ana/ckn.py 
+    ~/opticks/examples/Geant4/CerenkovStandalone/G4Cerenkov_modifiedTest.cc
+
+
+"charge" argument is typically 1. or -1, units of Rfact are (eV cm)^-1 so energies must be in eV 
+to give Cerenkov photon yield per mm. Essentially Rfact is : "2*pi*fine_structure_constant/hc", approx::
+
+    In [1]: 2.*np.pi*(1./137.)*(1./1240.)*1e6  # hc ~ 1240 eV nm, nm = 1e-6 mm, fine_structure_const ~ 1/137.   
+    Out[1]: 36.9860213514221
+
+To understand the more precise Rfact value see ~/opticks/examples/UseGeant4/UseGeant4.cc and google "Frank Tamm Formula" 
 
 **/
 
 
+
 template <typename T>
-void QCerenkov::GetAverageNumberOfPhotons_s2(T& numPhotons, T& emin,  T& emax, const T BetaInverse, const T  charge ) const 
+T QCerenkov::GetAverageNumberOfPhotons_s2(T& emin,  T& emax, const T BetaInverse, const T  charge ) const 
 {
-    emin = dmax ;   // start with range inverted 
+    emin = dmax ; // start with inverted range
     emax = dmin ; 
  
     const T* vv = dsrc->cvalues<T>(); 
@@ -85,11 +100,7 @@ void QCerenkov::GetAverageNumberOfPhotons_s2(T& numPhotons, T& emin,  T& emax, c
     unsigned nj = dsrc->shape[1] ; 
     assert( nj == 2 && ni > 1 ); 
 
-    const T one(1.) ; 
-    const T half(0.5) ; 
     T s2integral(0.) ;  
-    T en_cross(0.); 
-
     for(unsigned i=0 ; i < ni - 1 ; i++)
     {
         T en_0 = vv[2*(i+0)+0] ; 
@@ -98,62 +109,171 @@ void QCerenkov::GetAverageNumberOfPhotons_s2(T& numPhotons, T& emin,  T& emax, c
         T ri_0 = vv[2*(i+0)+1] ; 
         T ri_1 = vv[2*(i+1)+1] ; 
 
-        T ct_0 = BetaInverse/ri_0 ; 
-        T ct_1 = BetaInverse/ri_1 ; 
-
-        T s2_0 = ( one - ct_0 )*( one + ct_0 ); 
-        T s2_1 = ( one - ct_1 )*( one + ct_1 ); 
-
-        if( s2_0 <= 0. and s2_1 <= 0. )   // entire bin disallowed : no contribution 
-        {    
-            s2integral += 0. ; 
-        }    
-        else if( s2_0 < 0. and s2_1 > 0. )  // s2 becomes +ve within the bin
-        {    
-            en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
-            s2integral +=  (en_1 - en_cross)*s2_1*half ;  
-
-            emin = std::min<T>( emin, en_cross );  
-            emax = std::max<T>( emax, en_1 );
-        }    
-        else if( s2_0 >= 0. and s2_1 >= 0. )   // s2 +ve across full bin 
-        {    
-            s2integral += (en_1 - en_0)*(s2_0 + s2_1)*half ;  
-
-            emin = std::min<T>( emin, en_0 );  
-            emax = std::max<T>( emax, en_1 );
-        }     
-        else if( s2_0 > 0. and s2_1 < 0. )  // s2 becomes -ve within the bin
-        {    
-            en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
-            s2integral +=  (en_cross - en_0)*s2_0*half ;  
-
-            emin = std::min<T>( emin, en_0 );  
-            emax = std::max<T>( emax, en_cross );
-        }    
-        else 
-        {    
-            std::cout 
-                << "QCerenkov::GetAverageNumberOfPhotons_s2"
-                << " FATAL "
-                << " s2_0 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_0 
-                << " s2_1 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_1 
-                << " en_0 " << std::fixed << std::setw(10) << std::setprecision(5) << en_0 
-                << " en_1 " << std::fixed << std::setw(10) << std::setprecision(5) << en_1 
-                << " ri_0 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_0 
-                << " ri_1 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_1 
-                << std::endl
-                ;
-            assert(0);
-        }
+        s2integral += getS2Integral<T>( emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1 ); 
     }
-    const T Rfact = 369.81/10. ;    // energies assumed to be in eV, result is photon yield along 1 mm 
-    numPhotons = Rfact * charge * charge * s2integral ;
+    const T numPhotons = charge * charge * s2integral ;
+    return numPhotons ; 
 }
 
 
-template void QCerenkov::GetAverageNumberOfPhotons_s2<double>(double& numPhotons, double& emin,  double& emax, const double BetaInverse, const double  charge ) const ; 
-template void QCerenkov::GetAverageNumberOfPhotons_s2<float>( float&  numPhotons, float& emin,   float&  emax, const float  BetaInverse, const float   charge ) const ; 
+template double QCerenkov::GetAverageNumberOfPhotons_s2<double>(double& emin,  double& emax, const double BetaInverse, const double  charge ) const ;
+template float  QCerenkov::GetAverageNumberOfPhotons_s2<float>( float& emin,   float&  emax, const float  BetaInverse, const float   charge ) const ;
+
+
+
+const double QCerenkov::FINE_STRUCTURE_OVER_HBARC_EVMM = 36.981 ; 
+
+
+template<typename T>
+T QCerenkov::getS2Integral( T& emin, T& emax, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1 ) const
+{
+    const T zero(0.) ; 
+    const T one(1.) ; 
+    const T half(0.5) ; 
+    T s2integral(0.) ;  
+    T en_cross(0.); 
+
+    T ct_0 = BetaInverse/ri_0 ; 
+    T ct_1 = BetaInverse/ri_1 ; 
+
+    T s2_0 = ( one - ct_0 )*( one + ct_0 ); 
+    T s2_1 = ( one - ct_1 )*( one + ct_1 ); 
+
+    if( s2_0 <= zero and s2_1 <= zero )   // entire bin disallowed : no contribution 
+    {    
+        s2integral = zero ; 
+    }    
+    else if( s2_0 < zero and s2_1 > zero )  // s2 becomes +ve within the bin
+    {    
+        en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
+        s2integral =  (en_1 - en_cross)*s2_1*half ;  
+
+        emin = std::min<T>( emin, en_cross );  
+        emax = std::max<T>( emax, en_1 );
+    }    
+    else if( s2_0 >= zero and s2_1 >= zero )   // s2 +ve across full bin 
+    {    
+        s2integral = (en_1 - en_0)*(s2_0 + s2_1)*half ;  
+
+        emin = std::min<T>( emin, en_0 );  
+        emax = std::max<T>( emax, en_1 );
+    }     
+    else if( s2_0 > zero and s2_1 < zero )  // s2 becomes -ve within the bin
+    {    
+        en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
+        s2integral =  (en_cross - en_0)*s2_0*half ;  
+
+        emin = std::min<T>( emin, en_0 );  
+        emax = std::max<T>( emax, en_cross );
+    }    
+    else 
+    {    
+        std::cout 
+            << "QCerenkov::getS2Integral"
+            << " FATAL "
+            << " s2_0 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_0 
+            << " s2_1 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_1 
+            << " en_0 " << std::fixed << std::setw(10) << std::setprecision(5) << en_0 
+            << " en_1 " << std::fixed << std::setw(10) << std::setprecision(5) << en_1 
+            << " ri_0 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_0 
+            << " ri_1 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_1 
+            << std::endl
+            ;
+        assert(0);
+    }
+    const T Rfact = FINE_STRUCTURE_OVER_HBARC_EVMM ;     
+    return Rfact*s2integral ; 
+}
+
+
+template double QCerenkov::getS2Integral( double& emin, double& emax, const double BetaInverse, const double en_0, const double en_1 , const double ri_0, const double ri_1 ) const ; 
+template float  QCerenkov::getS2Integral( float& emin, float& emax, const float BetaInverse, const float en_0, const float en_1 , const float ri_0, const float ri_1 ) const ; 
+
+/**
+QCerenkov::getS2SliverIntegrals
+----------------------------------
+
+See ana/rindex.py:s2sliver_integrate
+
+**/
+
+template <typename T>
+NP* QCerenkov::getS2SliverIntegrals( T& emin, T& emax, const T BetaInverse, const NP* edom ) const 
+{
+     emin = dmax ; 
+     emax = dmin ; 
+
+     unsigned ni = edom->shape[0] ; 
+     const T* ee = edom->cvalues<T>(); 
+
+     NP* s2slv = NP::Make<T>(ni) ; 
+     T* ss = s2slv->values<T>(); 
+
+     for(unsigned i=0 ; i < ni-1 ; i++)
+     {
+         T en_0 = ee[i] ; 
+         T en_1 = ee[i+1] ; 
+
+         T ri_0 = dsrc->interp<T>(en_0) ; 
+         T ri_1 = dsrc->interp<T>(en_1) ; 
+
+         ss[i+1] = getS2Integral( emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1 );  
+     }
+     return s2slv ; 
+}
+
+template NP* QCerenkov::getS2SliverIntegrals( double& emin, double& emax, const double BetaInverse, const NP* edom ) const ; 
+template NP* QCerenkov::getS2SliverIntegrals( float& emin, float& emax, const float BetaInverse, const NP* edom ) const ; 
+
+
+/**
+QCerenkov::getS2SliverIntegrals
+---------------------------------
+
+Hmm unlike ana/rindex.py this is using 
+the same energy domain for all BetaInverse.
+
+As are immediately going to invert the CDF  
+it is better to use an energy range specific to 
+each BetaInverse to make the best use of the bins.
+
+**/
+
+template <typename T>
+NP* QCerenkov::getS2SliverIntegrals( const NP* bis, const NP* edom ) const 
+{
+     unsigned ni = bis->shape[0] ; 
+     const T* bb = bis->cvalues<T>(); 
+
+     unsigned nj = edom->shape[0] ; 
+     const T* ee = edom->cvalues<T>(); 
+
+     NP* s2slv = NP::Make<T>(ni, nj) ; 
+     T* ss = s2slv->values<T>(); 
+
+     for(unsigned i=0 ; i < ni ; i++)
+     {
+         const T BetaInverse = bb[i] ; 
+         T emin = dmax ; 
+         T emax = dmin ; 
+
+         for(unsigned j=0 ; j < nj-1 ; j++)
+         {
+             T en_0 = ee[j] ; 
+             T en_1 = ee[j+1] ; 
+
+             T ri_0 = dsrc->interp<T>(en_0) ; 
+             T ri_1 = dsrc->interp<T>(en_1) ; 
+
+             ss[i*nj+j] = getS2Integral( emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1 );  
+         }
+         // emin,emax not currently used
+     }
+     return s2slv ; 
+}
+
+template NP* QCerenkov::getS2SliverIntegrals<double>( const NP* bis, const NP* edom ) const ; 
+template NP* QCerenkov::getS2SliverIntegrals<float>(  const NP* bis, const NP* edom ) const ; 
 
 
 

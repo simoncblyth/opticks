@@ -412,7 +412,7 @@ int main(int argc, char** argv)
 
     //double numPhotons = t.GetAverageNumberOfPhotons(1.5, 1.) ; 
 
-    NP* a = t.scan_GetAverageNumberOfPhotons(1., 2., 101); 
+    NP* a = t.scan_GetAverageNumberOfPhotons(1., 2., 1001); 
     a->save("/tmp/G4Cerenkov_modifiedTest/scan_GetAverageNumberOfPhotons.npy"); 
  
 

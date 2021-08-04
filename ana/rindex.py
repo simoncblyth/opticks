@@ -412,9 +412,10 @@ class CKRindex(object):
         sign of s2 shows that with no further effort.
 
         HMM the "cdf" is going above 1 for the top bin for BetaInverse below nMin 
-        where CK can happen across entire range. That was a "<" which 
-        on changing to "<=" avoided the problem of not properly 
-        accounting for the last bin.
+        where CK can happen across entire range. 
+
+        * That was a "<" which on changing to "<=" avoided the problem of not properly 
+          accounting for the last bin.
 
         Also when BetaInverse = 1.4536 = ckr.ri[:,1].min() that 
         exactly matches the rindex of the last two energy points::
@@ -555,6 +556,11 @@ class CKRindex(object):
 
     def s2sliver_integrate_(self, BetaInverse, edom):
         """
+        :param BetaInverse: scalar
+        :param edom: array of energy values in eV 
+        :return s2slv: array with same shape as edom containing s2 definite integral values within energy slivers 
+
+
         Possible dispositions of the energy sliver with respect to the bin: 
                                         
         1. sliver fully inside a bin:: 
@@ -575,8 +581,8 @@ class CKRindex(object):
 
 
         Within the sliver there is the possibility of s2 crossings
-        that will require constriction of the sliver.
-
+        that will require constriction of the sliver, this is handled 
+        by s2_integrate__
         """
         ri_ = self.ri_
         s2slv = np.zeros( (len(edom)), dtype=edom.dtype )
@@ -791,6 +797,13 @@ class CKRindex(object):
         xrg = self.xrg
         cs2e = self.cs2e
         ed = self.ed
+
+
+        ## THIS IS THE CRUCIAL INVERSION OF CDF : 
+        ## FORMING A FUNCTION THAT TAKES RANDOM u(normalized CDF value)  AND BetaInverse 
+        ## AS INPUT AND RETURNS AN ENERGY SAMPLE
+        ## IMPLEMENTED VIA LINEAR INTERPOLATION OF THE RELEVANT CDF FOR THE BetaInverse
+        ## 
         look_ = lambda bi,u:np.interp(u, cs2e[bi], ed[bi] )
 
         l = {}
@@ -834,6 +847,15 @@ class CKRindex(object):
         fig.show()
 
 
+    def load_QCerenkov_s2slv(self):
+        """
+        see also ckn.py for comparison with the numPhotons 
+        """
+        path = "/tmp/blyth/opticks/QCerenkovTest/test_getS2SliverIntegrals_many.npy"
+        log.info("load %s " % path )
+        s2slv = np.load(path) if os.path.exists(path) else None
+        self.s2slv = s2slv 
+        globals()["ss"] = s2slv
 
 if __name__ == '__main__':
 
@@ -873,5 +895,8 @@ if 1:
     ckr.s2sliver_integrate_plot(bis)
 
     ckr.comparison_plot(sbis)
+
+
+    ckr.load_QCerenkov_s2slv()
 
 

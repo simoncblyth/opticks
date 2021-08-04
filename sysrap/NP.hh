@@ -85,6 +85,7 @@ struct NP
     template<typename T> void _fillIndexFlat(T offset=0); 
     template<typename T> void _dump(int i0=-1, int i1=-1) const ;   
 
+    static NP* MakeLike(  const NP* src);  
     static NP* MakeNarrow(const NP* src); 
 
     bool is_pshaped() const ; 
@@ -96,6 +97,8 @@ struct NP
     template<typename T> T    trapz() const ;    // composite trapezoidal integration, requires pshaped
     template<typename T> T    interp(T x) const ;                  // requires pshaped 
     template<typename T> T    interp(unsigned iprop, T x) const ;  // requires NP::Combine of pshaped arrays 
+    template<typename T> NP*  cumsum(int axis=0) const ; 
+    template<typename T> void divide_by_last() ; 
 
 
     template<typename T> void read(const T* data);
@@ -563,8 +566,12 @@ template<> inline       unsigned long long* NP::values<unsigned long long>()    
 template   void NP::_fillIndexFlat<unsigned long long>(unsigned long long) ;
 
 
-
-
+inline NP* NP::MakeLike(const NP* src) // static 
+{
+    NP* dst = new NP(src->dtype); 
+    dst->set_shape(src->shape) ; 
+    return dst ; 
+}
 
 inline NP* NP::MakeNarrow(const NP* a) // static 
 {
@@ -884,7 +891,62 @@ template<typename T> inline T NP::interp(unsigned iprop, T x) const
     return y ; 
 }
 
+template<typename T> inline NP* NP::cumsum(int axis) const  
+{
+    assert( axis == 1 && "for now only axis=1 implemented" ); 
+    const T* vv = cvalues<T>(); 
+    NP* cs = NP::MakeLike(this) ; 
+    T* ss = cs->values<T>(); 
+    for(unsigned p=0 ; p < size ; p++) ss[p] = vv[p] ;   // flat copy 
 
+    unsigned ndim = shape.size() ; 
+
+    if( ndim == 1 )
+    {
+        unsigned ni = shape[0] ; 
+        for(unsigned i=1 ; i < ni ; i++) ss[i] += ss[i-1] ;  
+    }
+    else if( ndim == 2 )
+    {
+        unsigned ni = shape[0] ; 
+        unsigned nj = shape[1] ; 
+        for(unsigned i=0 ; i < ni ; i++)
+        { 
+            for(unsigned j=1 ; j < nj ; j++) ss[i*nj+j] += ss[i*nj+j-1] ;  
+        }
+    }
+    else
+    {
+        assert( 0 && "for now only 1d or 2d implemented");  
+    }
+    return cs ; 
+}
+
+
+template<typename T> inline void NP::divide_by_last() 
+{
+    unsigned ndim = shape.size() ; 
+    T* vv = values<T>(); 
+
+    if( ndim == 1 )
+    {
+        unsigned ni = shape[0] ; 
+        for(unsigned i=0 ; i < ni ; i++) vv[i] = vv[i]/vv[ni-1] ;  
+    }
+    else if( ndim == 2 )
+    {
+        unsigned ni = shape[0] ; 
+        unsigned nj = shape[1] ; 
+        for(unsigned i=0 ; i < ni ; i++)
+        { 
+            for(unsigned j=1 ; j < nj ; j++) vv[i*nj+j] = vv[i*nj+j]/vv[i*nj+nj-1] ;  
+        }
+    }
+    else
+    {
+        assert( 0 && "for now only 1d or 2d implemented");  
+    }
+}
 
 
 

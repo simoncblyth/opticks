@@ -371,7 +371,7 @@ class CKN(object):
         fmt = "BetaInverse %6.4f _asis %6.4f  _s2 %6.4f _s2messy %6.4f    " 
         print( fmt % ( BetaInverse, NumPhotons_asis, NumPhotons_s2, NumPhotons_s2messy ))
 
-    def scan_GetAverageNumberOfPhotons(self, x0=1., x1=2., nx=101 ):
+    def scan_GetAverageNumberOfPhotons(self, x0=1., x1=2., nx=1001 ):
         scan = np.zeros( (nx, 4), dtype=np.float64 )
         for i, BetaInverse in enumerate(np.linspace(x0, x1, nx )):
             NumPhotons_asis = self.GetAverageNumberOfPhotons_asis(BetaInverse)
@@ -382,12 +382,213 @@ class CKN(object):
             print( fmt % tuple(scan[i]) )
         pass
         self.scan = scan   
+        self.numPhotonASIS_ = lambda bi:np.interp( bi, self.scan[:,0], self.scan[:,1] )    
+        self.numPhotonS2_ = lambda bi:np.interp( bi,  self.scan[:,0], self.scan[:,2] )    
+        self.nMin = self.ri[:,1].min()  
+        self.nMax = self.ri[:,1].max()  
 
-        path="/tmp/G4Cerenkov_modifiedTest/scan_GetAverageNumberOfPhotons.npy"
-        if os.path.exists(path):
-            self.scan2 = np.load(path)
+
+    def scan_GetAverageNumberOfPhotons_plot(self):
+
+        ckn = self
+        en = ckn.scan[:,0]
+
+        titls = [
+        "ana/ckn.py : scan_GetAverageNumberOfPhotons_plot ", 
+        "_asis goes slightly negative near rindex peak due to linear interpolation approx on top of trapezoidal integration",
+        "_s2 avoids that by doing the integration in one pass directly on s2 (sin^2 theta) and using s2 zero crossings to improve accuracy"
+        ]
+
+        title = "\n".join(titls)
+
+        bi = [self.nMin, self.nMax]
+        numPhotonMax = self.numPhotonS2_( np.linspace(bi[0], bi[1], 101) ).max()  # max in the BetaInverse range 
+
+        fig, ax = plt.subplots(figsize=ok.figsize)
+        fig.suptitle(title) 
+        ax.set_xlim( *bi )
+        ax.set_ylim(  -1., numPhotonMax )
+
+        ax.scatter( en, ckn.scan[:,1], label="GetAverageNumberOfPhotons_asis", s=3 )
+        ax.plot(    en, ckn.scan[:,1], label="GetAverageNumberOfPhotons_asis" )
+
+        ax.plot(    en, ckn.scan[:,2], label="GetAverageNumberOfPhotons_s2" )
+        ax.scatter( en, ckn.scan[:,2], label="GetAverageNumberOfPhotons_s2", s=3 )
+
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        ax.plot( xlim, [0,0], linestyle="dotted", label="zero" )
+
+        for n in ckn.ri[:,1]:
+            ax.plot( [n, n], ylim, label="%s" % n  ) 
+        pass
+
+        ax.legend()
+        fig.show()      
+
+
+    def scan_GetAverageNumberOfPhotons_difference_plot(self):
+
+        ckn = self
+        bi = ckn.scan[:,0]
+
+        titls = [
+        "ana/ckn.py : scan_GetAverageNumberOfPhotons_difference_plot : GetAverageNumberOfPhotons_s2 - GetAverageNumberOfPhotons_asis vs BetaInverse ",
+        "refractive index values show by vertical lines",
+        "parabolic nature of the difference because  _asis as using a linear approximation for a parabolic integral "
+        ]
+
+        title = "\n".join(titls)
+
+        bi_range = [self.nMin, self.nMax]
+
+        fig, ax = plt.subplots(figsize=ok.figsize) 
+        fig.suptitle(title) 
+
+        ax.set_xlim( *bi_range )
+        #ax.set_ylim(  -1., numPhotonMax )
+
+        ax.scatter( bi, ckn.scan[:,2] - ckn.scan[:,1], s=3 )
+        ax.plot(    bi, ckn.scan[:,2] - ckn.scan[:,1] )
+
+        ylim = ax.get_ylim()
+
+        for n in ckn.ri[:,1]:
+            ax.plot( [n, n], ylim, label="%s" % n  ) 
+        pass
+        ax.legend()   
+        fig.show()      
+
+
+
+
+
+
+    def loadOtherScans(self):
+        cks_path="/tmp/G4Cerenkov_modifiedTest/scan_GetAverageNumberOfPhotons.npy"
+        if os.path.exists(cks_path):
+            self.cks_scan = np.load(cks_path)
+        pass 
+        qck_path="/tmp/blyth/opticks/QCerenkovTest/test_GetAverageNumberOfPhotons_s2.npy"
+        if os.path.exists(qck_path):
+            self.qck_scan = np.load(qck_path)
         pass 
 
+    def compareOtherScans(self):
+        """
+        This compares the python and C++ implementations 
+        of the same double precision algorithms,
+        agreement should be very good eg 1e-13 level 
+        """
+        ckn = self 
+
+        cf_qck_dom = np.abs( ckn.scan[:,0] - ckn.qck_scan[:,0] )
+        cf_qck_num = np.abs( ckn.scan[:,2] - ckn.qck_scan[:,1] )
+
+        assert cf_qck_dom.max() < 1e-10
+        assert cf_qck_num.max() < 1e-10 
+
+
+        cf_cks_dom = np.abs( ckn.scan[:,0] - ckn.cks_scan[:,0] )
+        cf_cks_num_asis = np.abs( ckn.scan[:,1] - ckn.cks_scan[:,1] )
+        cf_cks_num_s2 = np.abs( ckn.scan[:,2] - ckn.cks_scan[:,2] )
+
+        assert cf_cks_dom.max() < 1e-10
+        assert cf_cks_num_asis.max() < 1e-10
+        assert cf_cks_num_s2.max() < 1e-10
+
+
+    def test_GetAverageNumberOfPhotons_plot(self, BetaInverse = 1.7):
+        ckn = self
+        ckn.test_GetAverageNumberOfPhotons(BetaInverse)
+
+        titls = ["ana/ckn.py : test_GetAverageNumberOfPhotons_plot : BetaInverse %7.4f " % BetaInverse, 
+                 "attempt to understand how _asis manages to go negative  "
+                 ] 
+
+        title = "\n".join(titls)
+
+        cross = ckn.cross
+        ri = ckn.ri
+        cai = ckn.cai
+
+        fig, axs = plt.subplots(1, 2, figsize=ok.figsize) 
+        fig.suptitle(title)
+     
+        ax = axs[0]
+        ax.plot(ri[:,0], ri[:,1] , label="linear interpolation" )
+        ax.scatter(ri[:,0], ri[:,1], label="ri" )
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        ax.plot( xlim, [BetaInverse, BetaInverse], label="BetaInverse:%6.4f" % BetaInverse)
+        for e in cross:
+            ax.plot( [e, e], ylim, label="cross" )
+        pass
+
+        ax.legend() 
+
+        ax = axs[1]
+        ax.plot( ri[:,0], cai, label="cai" ) 
+        ylim = ax.get_ylim()
+        for e in cross:
+            ax.plot( [e, e], ylim, label="cross" )
+        pass
+        ax.legend() 
+
+        fig.show()
+
+
+    def load_QCerenkov_s2slv(self):
+        s2slv_path = "/tmp/blyth/opticks/QCerenkovTest/test_getS2SliverIntegrals_many.npy"
+
+        log.info("load %s " % s2slv_path )
+        s2slv = np.load(s2slv_path) if os.path.exists(s2slv_path) else None
+        globals()["ss"] = s2slv
+
+        cs2slv_path = "/tmp/blyth/opticks/QCerenkovTest/test_getS2SliverIntegrals_many_cs2slv.npy"
+        log.info("load %s " % cs2slv_path )
+        cs2slv = np.load(cs2slv_path) if os.path.exists(cs2slv_path) else None
+        cs2slv_last = cs2slv[:,-1]   
+
+        cs2slv_norm_path = "/tmp/blyth/opticks/QCerenkovTest/test_getS2SliverIntegrals_many_cs2slv_norm.npy"
+        log.info("load %s " % cs2slv_norm_path )
+        cs2slv_norm = np.load(cs2slv_norm_path) if os.path.exists(cs2slv_norm_path) else None
+
+        globals()["cs"] = cs2slv
+        globals()["csl"] = cs2slv_last
+        globals()["csn"] = cs2slv_norm
+
+        self.s2slv = s2slv 
+        self.cs2slv = cs2slv 
+        self.cs2slv_last = cs2slv_last 
+        self.cs2slv_norm = cs2slv_norm 
+
+        s2slv_sum = s2slv.sum(axis=1)
+        self.s2slv_sum = s2slv_sum
+
+    def load_QCerenkov_s2slv_plot(self):
+
+        titls = [
+        "ana/ckn.py : load_QCerenkov_s2slv_plot : compare sum of s2slv from many sliver bins to the rindex big bin result",
+        "deviation of up to 0.4 of a photon between the sum of sliver integrals and the big bin integrals is as yet unexplained"
+        ]
+        title = "\n".join(titls)
+
+        fig, ax = plt.subplots(figsize=ok.figsize) 
+        fig.suptitle(title)
+
+        ax.plot( self.qck_scan[:,0], self.qck_scan[:,1], label="qck_scan" ) 
+        ax.plot( self.qck_scan[:,0], self.s2slv_sum, label="s2slv_sum" ) 
+        ax.plot( self.qck_scan[:,0], self.cs2slv_last,   label="cs2slv_last" ) 
+        ax.legend()
+
+        axr = ax.twinx()
+        axr.plot( self.qck_scan[:,0], self.s2slv_sum - self.qck_scan[:,1], label="diff", linestyle="dotted" ) 
+        axr.legend(loc='lower right')
+
+        fig.show()
+
+        self.ax = ax
 
 
 if __name__ == '__main__':
@@ -395,96 +596,19 @@ if __name__ == '__main__':
     ok = opticks_main()
     ckn = CKN()
 
-    #ckn.test_GetAverageNumberOfPhotons(1.78)
     ckn.scan_GetAverageNumberOfPhotons()
+    ckn.scan_GetAverageNumberOfPhotons_plot()
+    ckn.scan_GetAverageNumberOfPhotons_difference_plot()
 
-    numPhoton_ = lambda bi:np.interp( bi, ckn.scan[:,0], ckn.scan[:,1] )    
-    numPhotonS2_ = lambda bi:np.interp( bi, ckn.scan[:,0], ckn.scan[:,2] )    
+    ckn.loadOtherScans() 
+    ckn.compareOtherScans() 
 
-
-    nMin = ckn.ri[:,1].min()  
-    nMax = ckn.ri[:,1].max()  
-
-    bi = [nMin, nMax]
-    numPhotonMax = numPhotonS2_( np.linspace(bi[0], bi[1], 101) ).max()  # max in the BetaInverse range 
-
-
-    fig, ax = plt.subplots(figsize=ok.figsize) 
-    ax.set_xlim( *bi )
-    ax.set_ylim(  -1., numPhotonMax )
-
-    ax.scatter( ckn.scan[:,0], ckn.scan[:,1], label="GetAverageNumberOfPhotons", s=3 )
-    ax.plot( ckn.scan[:,0], ckn.scan[:,1], label="GetAverageNumberOfPhotons" )
-
-    ax.plot( ckn.scan[:,0], ckn.scan[:,2], label="GetAverageNumberOfPhotons_s2" )
-    ax.scatter( ckn.scan[:,0], ckn.scan[:,2], label="GetAverageNumberOfPhotons_s2", s=3 )
-
-    xlim = ax.get_xlim()
-    ax.plot( xlim, [0,0], linestyle="dotted", label="zero" )
-
-
-    ax.legend()
-    fig.show()      
-
-
-
-
-
-    fig, ax = plt.subplots(figsize=ok.figsize) 
-    ax.set_xlim( *bi )
-    #ax.set_ylim(  -1., numPhotonMax )
-
-    ax.scatter( ckn.scan[:,0], ckn.scan[:,2] - ckn.scan[:,1], label="GetAverageNumberOfPhotons_s2 - GetAverageNumberOfPhotons", s=3 )
-    ax.plot( ckn.scan[:,0], ckn.scan[:,2] - ckn.scan[:,1], label="GetAverageNumberOfPhotons_s2 - GetAverageNumberOfPhotons" )
-
-    ylim = ax.get_ylim()
-
-    for n in ckn.ri[:,1]:
-        ax.plot( [n, n], ylim, label="%s" % n  ) 
-    pass
-
-    #ax.legend()
-    fig.show()      
-
-
-
-
-
-
-
-
-
-if 0:
-    BetaInverse = ckn.BetaInverse
-
-    cross = ckn.cross
-    ri = ckn.ri
-    cai = ckn.cai
+    ckn.test_GetAverageNumberOfPhotons_plot(BetaInverse=1.788)
+   
+    ckn.load_QCerenkov_s2slv()
+    ckn.load_QCerenkov_s2slv_plot()
     
 
-    fig, axs = plt.subplots(1, 2, figsize=ok.figsize) 
- 
-    ax = axs[0]
-    ax.plot(ri[:,0], ri[:,1] , label="linear interpolation" )
-    ax.scatter(ri[:,0], ri[:,1], label="ri" )
-    xlim = ax.get_xlim()
-    ylim = ax.get_ylim()
-    ax.plot( xlim, [BetaInverse, BetaInverse], label="BetaInverse:%6.4f" % BetaInverse)
-    for e in cross:
-        ax.plot( [e, e], ylim, label="cross" )
-    pass
-
-    ax.legend() 
-
-    ax = axs[1]
-    ax.plot( ri[:,0], cai, label="cai" ) 
-    ylim = ax.get_ylim()
-    for e in cross:
-        ax.plot( [e, e], ylim, label="cross" )
-    pass
-    ax.legend() 
-
-    fig.show()
 
 
 
