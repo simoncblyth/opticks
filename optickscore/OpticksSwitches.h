@@ -50,7 +50,7 @@ NB when searching for switches in python include the space at the end, eg::
 
 #define WITH_SENSORLIB 1
 
-//#define WITH_SKIPAHEAD 1
+#define WITH_SKIPAHEAD 1
 
 
 // have observed flaky fails when WITH_DEBUG_BUFFER is enabled
