@@ -196,7 +196,14 @@ double GScintillatorLib::getEdge() const
 
 
 
+/**
+GScintillatorLib::setGeant4InterpolatedICDF
+---------------------------------------------
 
+Invoked from X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF
+which trumps the ICDF from GScintillatorLib::legacyCreateBuffer
+
+**/
 
 void GScintillatorLib::setGeant4InterpolatedICDF( NPY<double>* g4icdf )
 {

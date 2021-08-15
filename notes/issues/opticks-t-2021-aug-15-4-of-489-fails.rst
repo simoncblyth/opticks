@@ -168,3 +168,83 @@ IntegrationTests.tboolean.box : failing as the code is expecting double precisio
      90 /Users/blyth/opticks/bin/o.sh: line 362: 62523 Abort trap: 6           /usr/local/opticks/lib/OKG4Test --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile     --generateoverride 10000 --envkey --rendermode +global,+axis --geocenter --stack 2180 --eye 1,0,0 --up 0,0,1 --test --testconfig mode=PyCsgInBox_analytic=1_name=tboolean-box_csgpath=/tmp/    blyth/opticks/tboolean-box_outerfirst=1_autocontainer=Rock//perfectAbsorbSurface/Vacuum_autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_autoemitconfig=photons:600000,wavelength:38    0,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.5
 
 
+
+
+
+Linux
+--------
+
+::
+
+
+    SLOW: tests taking longer that 15 seconds
+      2  /5   Test #2  : OKTest.OKTest                                 Subprocess aborted***Exception:  15.89  
+      31 /31  Test #31 : ExtG4Test.X4SurfaceTest                       Passed                         45.11  
+      8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  40.47  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Subprocess aborted***Exception:  52.84  
+      1  /2   Test #1  : G4OKTest.G4OKTest                             Subprocess aborted***Exception:  15.66  
+
+
+    FAILS:  6   / 489   :  Sun Aug 15 22:30:30 2021   
+      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      4.40   
+      2  /5   Test #2  : OKTest.OKTest                                 Subprocess aborted***Exception:  15.89  
+      8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  40.47  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Subprocess aborted***Exception:  52.84  
+      1  /2   Test #1  : G4OKTest.G4OKTest                             Subprocess aborted***Exception:  15.66  
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.86   
+    O[blyth@localhost opticks]$ 
+    O[blyth@localhost opticks]$ 
+
+
+
+interpolationTest FAIL from using a python without numpy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2021-08-15 22:26:23.363 INFO  [337406] [SSys::RunPythonScript@625]  script interpolationTest_interpol.py script_path /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py python_executable /data/blyth/junotop/ExternalLibs/Python/3.8.8/bin/python
+    Traceback (most recent call last):
+      File "/data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py", line 22, in <module>
+        import os,sys, numpy as np, logging
+    ModuleNotFoundError: No module named 'numpy'
+    2021-08-15 22:26:23.449 INFO  [337406] [SSys::run@100] /data/blyth/junotop/ExternalLibs/Python/3.8.8/bin/python /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  rc_raw : 256 rc : 1
+    2021-08-15 22:26:23.449 ERROR [337406] [SSys::run@107] FAILED with  cmd /data/blyth/junotop/ExternalLibs/Python/3.8.8/bin/python /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  RC 1
+    2021-08-15 22:26:23.449 INFO  [337406] [SSys::RunPythonScript@632]  RC 1
+
+
+
+
+
+
+
+OKTest
+~~~~~~~~~
+
+::
+
+
+    2/5 Test #2: OKTest.OKTest ....................Subprocess aborted***Exception:  15.89 sec
+    2021-08-15 22:26:50.036 INFO  [340052] [OpticksHub::loadGeometry@283] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/8956e10c5fc58f16c7caa69da241a40d/1
+    2021-08-15 22:26:51.319 INFO  [340052] [OpticksHub::loadGeometry@315] ]
+    ...
+    2021-08-15 22:26:53.949 INFO  [340052] [OpticksRun::createOKEvent@158]  tagoffset 0 skipaheadstep 0 skipahead 0
+    2021-08-15 22:26:53.954 INFO  [340052] [OpEngine::close@168]  sensorlib NULL : defaulting it with zero sensors 
+    2021-08-15 22:26:53.954 ERROR [340052] [SensorLib::close@374]  SKIP as m_sensor_num zero 
+    2021-08-15 22:26:53.954 FATAL [340052] [OCtx::create_buffer@300] skip upload_buffer as num_bytes zero key:OSensorLib_sensor_data
+    2021-08-15 22:26:53.954 FATAL [340052] [OCtx::create_buffer@300] skip upload_buffer as num_bytes zero key:OSensorLib_texid
+    2021-08-15 22:26:59.768 INFO  [340052] [OPropagator::prelaunch@202] 0 : (0;0,0) 
+    OPropagator::prelaunch
+                  validate000                 0.045146
+                   compile000                    6e-06
+                 prelaunch000                  5.38628
+
+    2021-08-15 22:26:59.768 FATAL [340052] [ORng::setSkipAhead@156] WITH_SKIPAHEAD skipahead 0
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (700): Illegal address)
+
+
+
+
+
+
+
