@@ -3,6 +3,7 @@
 #include "PLOG.hh"
 #include "SPath.hh"
 #include "QRng.hh"
+#include "qrng.h"
 #include "QU.hh"
 
 #include "QUDA_CHECK.h"
@@ -14,24 +15,26 @@ const QRng* QRng::Get(){ return INSTANCE ;  }
 const char* QRng::DEFAULT_PATH = SPath::Resolve("$HOME/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin") ; 
 //const char* QRng::DEFAULT_PATH = SPath::Resolve("$HOME/.opticks/rngcache/RNG/cuRANDWrapper_3000000_0_0.bin") ; 
 
-QRng::QRng(const char* path_)
+QRng::QRng(const char* path_, unsigned skipahead_event_offset)
     :
     path(path_ ? strdup(path_) : DEFAULT_PATH),
     rngmax(0),
-    d_rng_states(nullptr)
+    rng_states(Load(rngmax, path)),
+    qr(new qrng(skipahead_event_offset)),
+    d_qr(nullptr)
 {
     INSTANCE = this ; 
-    load_and_upload(); 
+    upload(); 
 }
 
 QRng::~QRng()
 {
-    QUDA_CHECK(cudaFree(d_rng_states)); 
+    QUDA_CHECK(cudaFree(qr->rng_states)); 
 }
 
 
 /**
-QRng::load
+QRng::Load
 ------------
 
 Find that file_size is not a mutiple of item content. 
@@ -40,12 +43,12 @@ in the curandState which is typedef to curandStateXORWOW.
 
 **/
 
-void QRng::load_and_upload()
+curandState* QRng::Load(long& rngmax, const char* path)  // static 
 {
     FILE *fp = fopen(path,"rb");
     if(fp == NULL) {
         LOG(fatal) << " error opening file " << path ; 
-        return ; 
+        return nullptr ; 
     }   
 
     fseek(fp, 0L, SEEK_END);
@@ -81,9 +84,19 @@ void QRng::load_and_upload()
     }   
     fclose(fp);
 
-    d_rng_states = QU::UploadArray<curandState>(rng_states, rngmax ) ;   
+    return rng_states ; 
+}
+
+
+
+void QRng::upload()
+{
+    qr->rng_states = QU::UploadArray<curandState>(rng_states, rngmax ) ;   
 
     free(rng_states); 
+    rng_states = nullptr ; 
+
+    d_qr = QU::UploadArray<qrng>(qr, 1 ); 
 }
 
 
@@ -93,7 +106,8 @@ std::string QRng::desc() const
     ss << "QRng"
        << " path " << path 
        << " rngmax " << rngmax 
-       << " d_rng_states " << d_rng_states
+       << " qr " << qr
+       << " d_qr " << d_qr
        ;
 
     std::string s = ss.str(); 
@@ -121,7 +135,7 @@ void QRng::generate( T* uu, unsigned ni, unsigned nv, unsigned long long skipahe
 
     QU::ConfigureLaunch(numBlocks, threadsPerBlock, ni, 1 );  
 
-    QRng_generate<T>(numBlocks, threadsPerBlock, d_uu, ni, nv, d_rng_states, skipahead_ ); 
+    QRng_generate<T>(numBlocks, threadsPerBlock, d_uu, ni, nv, qr->rng_states, skipahead_ ); 
 
     QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv );
 }
@@ -129,6 +143,34 @@ void QRng::generate( T* uu, unsigned ni, unsigned nv, unsigned long long skipahe
 
 template void QRng::generate<float>( float*,   unsigned, unsigned, unsigned long long ); 
 template void QRng::generate<double>( double*, unsigned, unsigned, unsigned long long ); 
+
+
+
+
+
+
+
+
+template <typename T>
+extern void QRng_generate_2(dim3, dim3, qrng*, unsigned, T*, unsigned, unsigned );
+
+
+template<typename T>
+void QRng::generate_2( T* uu, unsigned ni, unsigned nv, unsigned event_idx )
+{
+    T* d_uu = QU::device_alloc<T>(ni*nv);
+
+    QU::ConfigureLaunch(numBlocks, threadsPerBlock, ni, 1 );  
+
+    QRng_generate_2<T>(numBlocks, threadsPerBlock, d_qr, event_idx, d_uu, ni, nv ); 
+
+    QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv );
+}
+
+
+template void QRng::generate_2<float>( float*,   unsigned, unsigned, unsigned ); 
+template void QRng::generate_2<double>( double*, unsigned, unsigned, unsigned ); 
+
 
 
 

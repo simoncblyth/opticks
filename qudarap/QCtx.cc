@@ -11,6 +11,7 @@
 #include "QUDA_CHECK.h"
 #include "QU.hh"
 
+#include "qrng.h"
 #include "qctx.h"
 
 #include "QRng.hh"
@@ -132,7 +133,7 @@ void QCtx<T>::init()
     if(rng)
     {
         LOG(LEVEL) << " rng " << rng->desc() ; 
-        ctx->r = rng->d_rng_states ; 
+        ctx->r = rng->qr->rng_states ; 
     } 
     if(scint)
     {

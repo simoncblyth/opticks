@@ -4,6 +4,7 @@
 #include "curand_kernel.h"
 #include "qctx.h"
 #include "qprop.h"
+#include "qrng.h"
 
 
 template <typename T> 
@@ -89,6 +90,7 @@ template qctx<float>*   QU::UploadArray<qctx<float>>(const qctx<float>* array, u
 template qctx<double>*  QU::UploadArray<qctx<double>>(const qctx<double>* array, unsigned num_items) ;
 template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items) ;
 template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items) ;
+template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items) ;
 
 
 /**

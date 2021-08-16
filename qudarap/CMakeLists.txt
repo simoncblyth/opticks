@@ -24,9 +24,6 @@ set(SOURCES
     QRng.cc  
     QRng.cu
 
-    QGen.cc  
-    QGen.cu
-
     QTex.cc
     QTex.cu
 
@@ -56,7 +53,6 @@ SET(HEADERS
     QU.hh
     QRng.hh
 
-    QGen.hh
     QTex.hh
     QBnd.hh
     QScint.hh

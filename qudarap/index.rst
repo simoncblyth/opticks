@@ -65,9 +65,6 @@ qpoly.h QPoly.hh
 qscint.h
      NOT USED ANYMORE : MOVED TO COLLECTIVE HANDLING IN qgs.h TO AVOID DUPLICATION
 
-QGen.hh
-    for testing QRng : IS THIS NEEDED NOW : PERHAPS MOVE TO QRngTest ? 
-
 
 
 

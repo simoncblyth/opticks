@@ -4,14 +4,6 @@
  
     ipython -i QRngTest.py 
 
-
-When using skipaheadstep of 1::
-
-
-   In [21]: np.all( uu[1,:,:-1] == uu[0,:,1:] )
-   Out[21]: True
-
-
 """
 import logging 
 log = logging.getLogger(__name__)
@@ -47,6 +39,13 @@ class QRngTest(object):
 
 
     def check_skipahead_shifts(self, offset):
+        """
+        For example when using skipaheadstep of 1::
+
+           In [21]: np.all( uu[1,:,:-1] == uu[0,:,1:] )
+           Out[21]: True
+
+        """
         uu = self.uu
         assert len(uu.shape) == 3
         ni, nj, nk = uu.shape 

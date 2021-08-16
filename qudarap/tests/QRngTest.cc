@@ -68,6 +68,31 @@ void test_generate_skipahead( QRng& qr, unsigned num_event, unsigned num_item, u
 
 
 
+
+template <typename T>
+void test_generate_2( QRng& qr, unsigned num_event, unsigned num_item, unsigned num_value, const char* reldir )
+{
+    NP* uu = NP::Make<T>( num_event, num_item, num_value ); 
+
+    for( unsigned i=0 ; i < num_event ; i++)
+    {
+        unsigned event_idx = i ; 
+
+        T* target = uu->values<T>() + num_item*num_value*i ; 
+
+        qr.generate_2<T>( target, num_item, num_value, event_idx );
+    }
+
+    uu->save(FOLD, reldir, "uu.npy" ); 
+
+    LOG(info) << "save to " << FOLD << "/" << reldir  ; 
+}
+
+
+
+
+
+
 int main(int argc, char** argv)
 {   
     OPTICKS_LOG(argc, argv); 
@@ -79,15 +104,18 @@ int main(int argc, char** argv)
     //test_generate<float>(qr, 1000u, "float" ); 
 
 
+
     unsigned num_event = 10u ; 
     unsigned num_item = 100u ; 
     unsigned num_value = 256u ; 
-    unsigned skipahead_event_offset = 1u ; 
-    // would normally be estimate of maximum number of random values for the items
-    // setting to 1 allows to check are getting the expected offsets into the sequence
-    // from "event" to "event"
 
-    test_generate_skipahead<float>(qr, num_event, num_item, num_value, skipahead_event_offset, "float" ); 
+    // *skipahead_event_offset* would normally be estimate of maximum number of random 
+    // values for the items : setting to 1 allows to check are getting the expected offsets into the sequence
+    // from "event" to "event"
+    // unsigned skipahead_event_offset = 1u ; 
+    // test_generate_skipahead<float>(qr, num_event, num_item, num_value, skipahead_event_offset, "float" ); 
+
+    test_generate_2<float>(qr, num_event, num_item, num_value, "float" ); 
 
     return 0 ; 
 }
