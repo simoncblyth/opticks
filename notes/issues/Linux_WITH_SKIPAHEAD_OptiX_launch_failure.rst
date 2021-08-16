@@ -134,3 +134,42 @@ OK. Any work day within 09:00-18:00 UK time is OK with me this week.
 Simon
 
 
+
+Try simplification by minimizing WITH_SKIPAHEAD differences
+--------------------------------------------------------------
+
+
+::
+
+
+    581 
+    582     curandState rng = rng_states[photon_id];
+    583     
+    584     //unsigned long long rng_skipahead_ = rng_skipahead ;   // see ORng.hh
+    585     //unsigned long long rng_skipahead_ = 10ull ; 
+    586     //rtPrintf("// rng_skipahead %d  %llu \n", rng_skipahead, rng_skipahead_); 
+    587     //skipahead(rng_skipahead_ , &rng) ;  
+    588     // ^^^^^^^^ see notes/issues/Linux_WITH_SKIPAHEAD_OptiX_launch_failure.rst
+    589     
+
+
+
+Seems no way round it.  Any use of skipahead with optix launch
+is giving optix::Exception::
+
+
+    2021-08-16 23:18:22.739 FATAL [412810] [ORng::setSkipAhead@155] skipahead 0
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (700): Illegal address)
+    Aborted (core dumped)
+
+
+
+BUT have seen no such problems with pure CUDA quadarap QRngTest.
+
+
+
+Next : prototype using qudarap with csgoptix 
+------------------------------------------------
+ 
+
