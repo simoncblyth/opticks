@@ -15,8 +15,14 @@ When using skipaheadstep of 1::
 """
 import logging 
 log = logging.getLogger(__name__)
-import matplotlib.pyplot as plt 
 import os, numpy as np
+if os.environ.get("DISPLAY", None): 
+    import matplotlib.pyplot as plt 
+else:
+    plt = None
+pass
+
+np.set_printoptions(suppress=True, edgeitems=4, precision=3, linewidth=200 )
 
 
 class QRngTest(object):
@@ -52,6 +58,7 @@ class QRngTest(object):
         pass
 
     def plot(self):
+        if plt is None: return 
         t = self
         h = self.h 
 

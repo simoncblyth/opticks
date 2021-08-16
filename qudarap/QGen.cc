@@ -50,7 +50,7 @@ void QGen::dump(float* dst, unsigned num_gen)
 {
     LOG(LEVEL) << "[" ; 
     if( dst == nullptr ) return ; 
-    for(int i=0 ; i < num_gen ; i++ ) 
+    for(unsigned i=0 ; i < num_gen ; i++ ) 
     {
         std::cout 
             << std::setw(4) << i 

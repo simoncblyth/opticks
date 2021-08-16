@@ -110,7 +110,7 @@ void QTex<T>::createArray()
     cudaCheckErrors("cudaMallocArray");
 }
 
-
+/*
 template<typename T>
 void QTex<T>::uploadToArray_deprecated()
 {
@@ -122,7 +122,7 @@ void QTex<T>::uploadToArray_deprecated()
     cudaMemcpyToArray(dst, wOffset, hOffset, src, count, kind );
     cudaCheckErrors("cudaMemcpyToArray");
 }
-
+*/
 
 /**
 QTex::uploadToArray
