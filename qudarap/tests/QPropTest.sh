@@ -5,7 +5,7 @@ name=$(basename $path)
 stem=${name/.sh}
 echo path $path name $name stem $stem
 
-fold=/tmp/QRngTest 
+fold=/tmp/QPropTest
 mkdir -p $fold/float
 mkdir -p $fold/double
 

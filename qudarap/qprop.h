@@ -42,6 +42,17 @@ struct qprop
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
+/**
+qprop<T>::interpolate
+-----------------------
+
+1. access property data for index iprop
+2. interpret the last column to obtain the number of payload values
+3. binary search to find the bin relevant to domain argument x  
+4. linear interpolation to yield the y value at x
+
+**/
+
 template <typename T>
 inline QPROP_METHOD T qprop<T>::interpolate( unsigned iprop, T x )
 {

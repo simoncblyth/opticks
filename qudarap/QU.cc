@@ -198,6 +198,26 @@ template void QU::copy_host_to_device( unsigned* d, const unsigned* h, unsigned 
 
 
 
+void QU::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) // static
+{
+    threadsPerBlock.x = 512 ; 
+    threadsPerBlock.y = 1 ; 
+    threadsPerBlock.z = 1 ; 
+ 
+    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
+    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
+    numBlocks.z = 1 ; 
+}
 
+void QU::ConfigureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) // static
+{
+    threadsPerBlock.x = 16 ; 
+    threadsPerBlock.y = 16 ; 
+    threadsPerBlock.z = 1 ; 
+ 
+    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
+    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
+    numBlocks.z = 1 ; 
+}
 
 

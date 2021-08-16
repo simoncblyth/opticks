@@ -100,3 +100,36 @@ std::string QRng::desc() const
     return s ; 
 }
 
+
+
+template <typename T>
+extern void QRng_generate(
+    dim3, 
+    dim3, 
+    T*, 
+    unsigned,
+    unsigned,
+    curandState*,
+    unsigned long long 
+);
+
+
+template<typename T>
+void QRng::generate( T* uu, unsigned ni, unsigned nv, unsigned long long skipahead_ )
+{
+    T* d_uu = QU::device_alloc<T>(ni*nv);
+
+    QU::ConfigureLaunch(numBlocks, threadsPerBlock, ni, 1 );  
+
+    QRng_generate<T>(numBlocks, threadsPerBlock, d_uu, ni, nv, d_rng_states, skipahead_ ); 
+
+    QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv );
+}
+
+
+template void QRng::generate<float>( float*,   unsigned, unsigned, unsigned long long ); 
+template void QRng::generate<double>( double*, unsigned, unsigned, unsigned long long ); 
+
+
+
+

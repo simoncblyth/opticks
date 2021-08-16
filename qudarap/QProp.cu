@@ -13,8 +13,8 @@ __global__ void _QProp_lookup( qprop<T>* prop, T* lookup , const T* domain , uns
     T y = prop->interpolate( iprop, x ); 
     unsigned index = iprop * domain_width + ix ;
 
-    if( iprop == 0 )
-    printf("//_QProp_lookup ix %3d x %10.4f  iprop %d  y %10.4f prop->width %3d prop->height %3d \n", ix, x, iprop, y, prop->width, prop->height ); 
+    //if( iprop == 0 )
+    //printf("//_QProp_lookup ix %3d x %10.4f  iprop %d  y %10.4f prop->width %3d prop->height %3d \n", ix, x, iprop, y, prop->width, prop->height ); 
 
     lookup[index] = y ; 
 }

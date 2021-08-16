@@ -18,9 +18,7 @@ const plog::Severity QProp<T>::LEVEL = PLOG::EnvLevel("QProp", "INFO");
 
 template<typename T>
 const char* QProp<T>::DEFAULT_PATH = "$OPTICKS_KEYDIR/GScintillatorLib/LS_ori/RINDEX.npy" ;
-
 //const char* QProp::DEFAULT_PATH = "/tmp/np/test_compound_np_interp.npy" ; 
-
 
 
 template<typename T>
@@ -37,18 +35,18 @@ qprop<T>* QProp<T>::getDevicePtr() const
 
 
 /**
-QProp::Load
---------------
+QProp::Load_Mockup
+-------------------
 
 Mockup a real set of multiple properties.
 The source properties are assumed to be provided in double precision 
-(ie direct from Geant4) and these are narrowed to float 
-when the template type is float.
+(ie direct from Geant4) with energies in MeV which are scaled to eV.
+Also the properties are narrowed to float when the template type is float.
 
 **/
 
 template<typename T>
-const NP* QProp<T>::Load(const char* path_ )  // static 
+const NP* QProp<T>::Load_Mockup(const char* path_ )  // static 
 {
     const char* path = SPath::Resolve(path_); 
     LOG(LEVEL) 
@@ -78,6 +76,19 @@ const NP* QProp<T>::Load(const char* path_ )  // static
 
     return com ; 
 }
+
+
+/**
+QProp<T>::Combine
+-------------------
+
+Only implemented for float template specialization.
+
+Combination using NP::Combine which pads shorter properties
+allowing all to be combined into a single array, with final 
+extra column used to record the payload column count.
+
+**/
 
 template<typename T>
 const NP* QProp<T>::Combine(const std::vector<const NP*>& aa )   // static
@@ -110,14 +121,25 @@ const NP* QProp<double>::Combine(const std::vector<const NP*>& aa )   // static
 }
 
 
+/**
+QProp<T>::QProp
+-----------------
 
+Instanciation:
 
+1. loads properties from file
+2. creates host qprop<T> instance, and populates it 
+   with device pointers and metadata such as dimensions 
+3. uploads the host qprop<T> instance to the device, 
+   retaining device pointer d_prop
+
+**/
 
 template<typename T>
 QProp<T>::QProp(const char* path_)
     :
     path(path_ ? strdup(path_) : DEFAULT_PATH),
-    a(Load(path)),
+    a(Load_Mockup(path)),
     pp(a ? a->cvalues<T>() : nullptr),
     nv(a ? a->num_values() : 0),
     ni(a ? a->shape[0] : 0 ),

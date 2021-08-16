@@ -20,7 +20,9 @@ set(SOURCES
     QUDARAP_LOG.cc
 
     QU.cc
+
     QRng.cc  
+    QRng.cu
 
     QGen.cc  
     QGen.cu

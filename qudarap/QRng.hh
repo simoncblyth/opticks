@@ -31,8 +31,16 @@ struct QUDARAP_API QRng
     QRng(const char* path=nullptr); 
     virtual ~QRng(); 
 
+
     void load_and_upload(); 
     std::string desc() const ; 
+
+    template <typename T>
+    void generate( T* u, unsigned ni, unsigned nv, unsigned long long skipahead_ ) ; 
+
+
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
 
 };
 

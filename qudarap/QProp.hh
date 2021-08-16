@@ -49,7 +49,7 @@ struct QUDARAP_API QProp
     qprop<T>* prop ; 
     qprop<T>* d_prop ; 
 
-    static const NP* Load(const char* path_ ); 
+    static const NP* Load_Mockup(const char* path_ ); 
     static const NP* Combine(const std::vector<const NP*>& aa ); 
 
     QProp(const char* path=nullptr); 
