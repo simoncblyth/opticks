@@ -152,12 +152,8 @@ ORng::setSkipAhead
 void ORng::setSkipAhead( unsigned skipahead )
 {
     m_rng_skipahead = skipahead ; 
-#ifdef WITH_SKIPAHEAD
-    LOG(fatal) << "WITH_SKIPAHEAD skipahead " << skipahead ; 
+    LOG(fatal) << "skipahead " << skipahead ; 
     m_context["rng_skipahead"]->setUint(m_rng_skipahead) ; 
-#else
-    LOG(LEVEL) << " skip as as WITH_SKIPAHEAD not enabled " ; 
-#endif
 }
 unsigned ORng::getSkipAhead() const 
 {

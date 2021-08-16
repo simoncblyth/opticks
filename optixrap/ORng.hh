@@ -24,10 +24,7 @@
 #ifdef __CUDACC__
 
 rtBuffer<curandState, 1>         rng_states ;
-#ifdef WITH_SKIPAHEAD
 rtDeclareVariable(unsigned int,  rng_skipahead, , );
-// TODO: pack ull into uint2 ? as this number can get real big 
-#endif
 
 #else
 
