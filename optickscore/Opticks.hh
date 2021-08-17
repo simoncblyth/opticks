@@ -655,6 +655,7 @@ class OKCORE_API Opticks {
        const glm::uvec4& getSize() const ;
        unsigned          getWidth() const ;
        unsigned          getHeight() const ;
+       unsigned          getDepth() const ;
    public:
        const glm::uvec4& getPosition();
    public:

@@ -3110,6 +3110,11 @@ unsigned Opticks::getHeight() const
 {
     return m_size.y ; 
 }
+unsigned Opticks::getDepth() const 
+{
+    return 1u ; 
+}
+
 
 
 
