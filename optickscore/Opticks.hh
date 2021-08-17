@@ -465,8 +465,13 @@ class OKCORE_API Opticks {
        unsigned             getSkipAheadStep() const ;  // --skipaheadstep 1000
        int                  getRTX() const ; 
    public:
+       // used by CSGOptiX
        int                     getOneGASIAS() const ;   // --one_gas_ias
        void                    setOneGASIAS(int one_gas_ias) ; 
+
+       int                     getRaygenMode() const ;   // --raygenmode
+       void                    setRaygenMode(int raygenmode) ; 
+
        const char*             getSolidLabel() const ;  // --solid_label    
        std::vector<unsigned>&  getSolidSelection() ; 
        const std::vector<unsigned>& getSolidSelection() const ;
@@ -841,6 +846,7 @@ class OKCORE_API Opticks {
        SRngSpec*            m_rngspec ; 
        SensorLib*           m_sensorlib ; 
        int                  m_one_gas_ias ; 
+       int                  m_raygenmode ; 
        std::vector<unsigned>  m_solid_selection ; 
        bool                 m_save ; 
 

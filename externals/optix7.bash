@@ -34,6 +34,19 @@ See Also
 * owl-;owl-vi  Higher Level Layer on top of OptiX7 including 
 
 
+* https://github.com/nvpro-samples/optix_advanced_samples/tree/master/src/optixIntroduction
+
+
+Multiple pipelines, SBT, ...
+--------------------------------
+
+* https://forums.developer.nvidia.com/t/multiple-pipelines-and-shared-instancing/170735/2
+
+* https://forums.developer.nvidia.com/t/multiple-raygen-functions-within-same-pipeline-in-optix-7/122305
+
+* https://forums.developer.nvidia.com/t/how-to-handle-multiple-ray-generators/83446
+
+
 
 From OptiX 7.2 Release Notes : **Specialization**
 -----------------------------------------------------

@@ -1263,6 +1263,14 @@ GParts::add
 
 Basis for combination of analytic geometry.
 
+Notice the --gparts_transform_offset option which 
+is necessary for CSG_GGeo creation of CSGFoundry as in that case the 
+entire geometry is treated together. 
+Without it get JUNO Chimney in middle of CD !
+
+Whereas for pre-7 running each GMergedMesh transforms 
+are handled separately, hence --gparts_transform_offset
+should not be used. 
 
 **/
 

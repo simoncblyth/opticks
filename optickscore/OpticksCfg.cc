@@ -118,6 +118,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_skipaheadstep(0),     
     m_rtx(0),
     m_one_gas_ias(-1),
+    m_raygenmode(0),     // use by CSGOptiX __raygen__rg, 0:rendering 1:simulation 
     m_renderlooplimit(0),
     m_annolineheight(24), 
     m_rngmax(3),     
@@ -266,6 +267,11 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("one_gas_ias",  boost::program_options::value<int>(&m_one_gas_ias), one_gas_ias );
 
+
+   char raygenmode[128];
+   snprintf(raygenmode,128, "Configure CSGOptiX raygen mode used by case statement in __raygen__rg program. Default %d  (0:is standard raytrace rendering).", m_raygenmode );
+   m_desc.add_options()
+       ("raygenmode",  boost::program_options::value<int>(&m_raygenmode), raygenmode );
 
 
 
@@ -2075,6 +2081,12 @@ template <class Listener>
 int OpticksCfg<Listener>::getOneGASIAS() const  // --one_gas_ias 
 {
     return m_one_gas_ias ; 
+}
+
+template <class Listener>
+int OpticksCfg<Listener>::getRaygenMode() const  // --raygenmode
+{
+    return m_raygenmode ; 
 }
 
 template <class Listener>

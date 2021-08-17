@@ -1397,6 +1397,19 @@ void Opticks::setOneGASIAS(int one_gas_ias)
 {
     m_one_gas_ias = one_gas_ias ; 
 }
+
+int Opticks::getRaygenMode() const  // returns value from commandline option --raygenmode but may be overriden by setRaygenMode
+{
+    return m_raygenmode == -1 ? m_cfg->getRaygenMode() : m_raygenmode ;
+}
+void Opticks::setRaygenMode(int raygenmode)
+{
+    m_raygenmode = raygenmode ; 
+}
+
+
+
+
 std::vector<unsigned>& Opticks::getSolidSelection()
 {
     return m_solid_selection ; 
