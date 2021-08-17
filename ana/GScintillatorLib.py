@@ -35,9 +35,9 @@ if __name__ == '__main__':
     
     ok = opticks_main()
     kd = keydir(os.environ["OPTICKS_KEY"])
-    aa = np_load(os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy"))
-    fc = np_load(os.path.join(kd,"GScintillatorLib/LS/FASTCOMPONENT.npy"))
-    sc = np_load(os.path.join(kd,"GScintillatorLib/LS/SLOWCOMPONENT.npy"))
+    aa,aa_paths = np_load(os.path.join(kd,"GScintillatorLib/GScintillatorLib.npy"))
+    fc,fc_paths = np_load(os.path.join(kd,"GScintillatorLib/LS/FASTCOMPONENT.npy"))
+    sc,sc_paths = np_load(os.path.join(kd,"GScintillatorLib/LS/SLOWCOMPONENT.npy"))
     a0 = aa[0,:,0]
     a1 = aa[1,:,0]
     a2 = aa[2,:,0]

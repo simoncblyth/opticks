@@ -118,8 +118,8 @@ class PropLib(object):
 
     @classmethod
     def load_GBndLib(cls, base):
-        t = np_load(base,"GBndLib/GBndLib.npy")
-        o = np_load(base,"GBndLib/GBndLibOptical.npy")
+        t, t_paths = np_load(base,"GBndLib/GBndLib.npy")
+        o, o_paths = np_load(base,"GBndLib/GBndLibOptical.npy")
         if t is None or o is None:
             log.warning("missing GBndLib data : cannot create blib Proplib")
             blib = None

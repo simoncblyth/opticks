@@ -480,7 +480,9 @@ class AB(object):
         else: 
             upath = upath0
         pass
-        u = np_load(upath)
+        u,u_paths = np_load(upath)
+        log.info("\n".join(u_paths))
+
         u = None if u is None else u.astype(np.float32)
         self.u = u 
         log.debug("]")

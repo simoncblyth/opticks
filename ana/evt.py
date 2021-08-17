@@ -812,7 +812,7 @@ class Evt(object):
         :: 
 
             path = "$TMP/CRandomEngine_jump_photons.npy"
-            jp = np_load(path)
+            jp, jp_paths = np_load(path)
             a_jpsc = ab.a.pflags_subsample_where(jp, "SC")
             b_jpsc = ab.b.pflags_subsample_where(jp, "SC")
 
