@@ -14,6 +14,7 @@ set(TEST_SOURCES
    QCtxTest.cc
    QBndTest.cc 
    QPropTest.cc 
+   QSeedTest.cc 
 
 )
 

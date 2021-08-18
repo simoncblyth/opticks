@@ -103,8 +103,6 @@ int main(int argc, char** argv)
 
     //test_generate<float>(qr, 1000u, "float" ); 
 
-
-
     unsigned num_event = 10u ; 
     unsigned num_item = 100u ; 
     unsigned num_value = 256u ; 

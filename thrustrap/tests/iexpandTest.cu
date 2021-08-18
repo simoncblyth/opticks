@@ -22,7 +22,7 @@
 #include "THRAP_HEAD.hh"
 #include "iexpand.h"
 #include <thrust/device_vector.h>
-#include <thrust/copy.h>
+//#include <thrust/copy.h>
 #include "THRAP_TAIL.hh"
 
 #include <ostream>
@@ -39,11 +39,9 @@ int main(void)
   thrust::device_vector<int> d_output(output_size, 0);
 
   // expand 0:N-1 indices of counts according to count values
-  iexpand(d_counts.begin(), 
-          d_counts.end(), 
-          d_output.begin(),
-          d_output.end()
-         );
+  std::cout << "[ iexpand " << std::endl ;  
+  iexpand(d_counts.begin(), d_counts.end(), d_output.begin(), d_output.end()); 
+  std::cout << "] iexpand " << std::endl ;  
 
   std::cout << "iExpanding indices according to counts" << std::endl;
   print(" counts ", d_counts);

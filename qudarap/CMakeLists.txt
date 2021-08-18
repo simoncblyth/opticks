@@ -44,6 +44,9 @@ set(SOURCES
 
     QProp.cc
     QProp.cu
+
+    QSeed.cc
+    QSeed.cu
 )
 
 SET(HEADERS
@@ -64,6 +67,7 @@ SET(HEADERS
 
     QProp.hh
 
+    QSeed.hh
 )
 
 set(LIBS

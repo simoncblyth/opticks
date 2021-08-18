@@ -40,6 +40,11 @@ For example::
     iexpand([1,3,2]) -> [0,1,1,1,2,2]  1*0, 3*1, 2*2 
 
 
+NB the output device must be zeroed prior to calling iexpand. 
+This is because the iexpand is implemented ending with an inclusive_scan 
+to fill in the non-transition values which relies on initial zeroing.
+
+
 A more specific example:
 
 Every optical photon generating genstep (Cerenkov or scintillation) 
@@ -86,8 +91,8 @@ void iexpand(InputIterator  counts_first,
 {
   typedef typename thrust::iterator_difference<InputIterator>::type difference_type;
   
-  difference_type counts_size = thrust::distance(counts_first, counts_last);
-  difference_type output_size = thrust::distance(output_first, output_last);
+  difference_type counts_size = thrust::distance(counts_first, counts_last);  // eg number of gensteps
+  difference_type output_size = thrust::distance(output_first, output_last);  // eg number of photon "seeds" : back referencing genstep index 
 
 #ifdef DEBUG
   std::cout << "iexpand " 

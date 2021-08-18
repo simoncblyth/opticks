@@ -48,11 +48,11 @@
 const plog::Severity OpSeeder::LEVEL = PLOG::EnvLevel("OpSeeder", "DEBUG") ; 
 
 OpSeeder::OpSeeder(Opticks* ok, OEvent* oevt)  
-   :
-     m_ok(ok),
-     m_dbg(m_ok->hasOpt("dbgseed")),
-     m_oevt(oevt),
-     m_ocontext(oevt->getOContext())
+    :
+    m_ok(ok),
+    m_dbg(m_ok->hasOpt("dbgseed")),
+    m_oevt(oevt),
+    m_ocontext(oevt->getOContext())
 {
 }
 
@@ -245,7 +245,7 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
         s_ox.Summary("OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_ox --dbgseed");
     }
 
-    TBuf tgs("tgs", s_gs, " ");
+    TBuf tgs("tgs", s_gs, " ");   // ctor just copies
     TBuf tox("tox", s_ox, " ");
     
 
@@ -263,10 +263,11 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
                  << " num_genstep_values " << num_genstep_values
                  ;
        tgs.dump<unsigned>("OpSeeder::seedPhotonsFromGenstepsImp tgs.dump --dbgseed", 6*4, 3, num_genstep_values ); // stride, begin, end 
+       // the last element of the first quad in the 6 quads of genstep is the number of photons 
     }
 
 
-    unsigned num_photons = getNumPhotonsCheck(tgs);
+    unsigned num_photons = getNumPhotonsCheck(tgs);  // compare GPU reduction result on the gensteps with CPU num_photons 
 
     OpticksBufferControl* ph_ctrl = evt->getPhotonCtrl();
 

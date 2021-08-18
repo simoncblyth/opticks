@@ -24,7 +24,7 @@
 #include "expand.h"
 
 #include <thrust/device_vector.h>
-#include <thrust/copy.h>
+//#include <thrust/copy.h>
 #include "THRAP_TAIL.hh"
 
 #include <ostream>
@@ -43,9 +43,7 @@ int main(void)
   thrust::device_vector<int> d_output(output_size);
 
   // expand values according to counts
-  expand(d_counts.begin(), d_counts.end(),
-         d_values.begin(),
-         d_output.begin());
+  expand(d_counts.begin(), d_counts.end(), d_values.begin(), d_output.begin());
 
   std::cout << "Expanding values according to counts" << std::endl;
   print(" counts ", d_counts);

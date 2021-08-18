@@ -49,9 +49,10 @@ SET(HEADERS
     TSparse.hh
     TUtil.hh
 
-    strided_range.h 
-    iexpand.h 
 )
+
+# strided_range.h and iexpand.h are moved to SysRap
+
 
 
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS )

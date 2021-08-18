@@ -29,6 +29,7 @@ TBufTest.cu
 TRngBufTest.cu
 expandTest.cu
 iexpandTest.cu
+iexpand_stridedTest.cu
 issue628Test.cu
 printfTest.cu
 repeated_rangeTest.cu

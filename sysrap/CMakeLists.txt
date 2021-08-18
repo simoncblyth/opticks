@@ -140,8 +140,14 @@ set(HEADERS
     SGLM.hh
     SLabelCache.hh
 
+
+    QUDA_CHECK.h
+    SBuf.hh
     scuda.h
     sview.h
+    strided_range.h 
+    iexpand.h 
+
 )
 
 

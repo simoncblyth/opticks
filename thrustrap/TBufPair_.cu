@@ -27,12 +27,21 @@
 
 template <typename T>
 TBufPair<T>::TBufPair(CBufSlice src, CBufSlice dst, bool verbose )
-   :
-   m_src(src),
-   m_dst(dst),
-   m_verbose(verbose)
+    :
+    m_src(src),
+    m_dst(dst),
+    m_verbose(verbose)
 {
 }
+
+
+/**
+TBufPair::seedDestination
+--------------------------
+
+Used for example from okop/OpSeeder.cc OpSeeder::seedPhotonsFromGenstepsImp
+
+**/
 
 template <typename T>
 void TBufPair<T>::seedDestination()
@@ -45,7 +54,7 @@ void TBufPair<T>::seedDestination()
 
     typedef typename thrust::device_vector<T>::iterator Iterator;
       
-    thrust::device_ptr<T> psrc = thrust::device_pointer_cast((T*)m_src.dev_ptr) ;
+    thrust::device_ptr<T> psrc = thrust::device_pointer_cast((T*)m_src.dev_ptr) ;  // CBufSlice.dev_ptr is void* 
     thrust::device_ptr<T> pdst = thrust::device_pointer_cast((T*)m_dst.dev_ptr) ;
     
     strided_range<Iterator> si( psrc + m_src.begin, psrc + m_src.end, m_src.stride );
