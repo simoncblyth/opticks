@@ -581,11 +581,13 @@ RT_PROGRAM void generate()
 
     curandState rng = rng_states[photon_id];
 
-    //unsigned long long rng_skipahead_ = rng_skipahead ;   // see ORng.hh
+#ifdef WITH_SKIPAHEAD
     //unsigned long long rng_skipahead_ = 10ull ; 
+    unsigned long long rng_skipahead_ = rng_skipahead ;   // see ORng.hh
+    skipahead(rng_skipahead_ , &rng) ;  
     //rtPrintf("// rng_skipahead %d  %llu \n", rng_skipahead, rng_skipahead_); 
-    //skipahead(rng_skipahead_ , &rng) ;  
     // ^^^^^^^^ see notes/issues/Linux_WITH_SKIPAHEAD_OptiX_launch_failure.rst
+#endif
 
     State s ;   
     Photon p ;  
