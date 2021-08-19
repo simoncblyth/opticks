@@ -50,6 +50,8 @@ struct NP
     void init(); 
     void set_shape( int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1); 
     void set_shape( const std::vector<int>& src_shape ); 
+    bool has_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ) const ;  
+
     void set_dtype(const char* dtype_); // *set_dtype* may change shape and size of array while retaining the same underlying bytes 
 
     static void sizeof_check(); 
@@ -62,6 +64,7 @@ struct NP
 
     static NP* Load(const char* path); 
     static NP* Load(const char* dir, const char* name); 
+    static NP* Load(const char* dir, const char* reldir, const char* name); 
     static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
 
     template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
@@ -110,7 +113,11 @@ struct NP
 
     void clear();   
     int load(const char* path);   
+    int load_meta( const char* path ); 
+
     int load(const char* dir, const char* name);   
+
+    static std::string form_name(const char* stem, const char* ext); 
     static std::string form_path(const char* dir, const char* name);   
     static std::string form_path(const char* dir, const char* reldir, const char* name);   
 
@@ -126,6 +133,8 @@ struct NP
     void save_jsonhdr(const char* dir, const char* name) const ;   
 
     std::string desc() const ; 
+    void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
+    void get_meta( std::vector<std::string>& lines,       char delim='\n' ); 
 
     char*       bytes();  
     const char* bytes() const ;  
@@ -467,6 +476,29 @@ inline void NP::set_shape(const std::vector<int>& src_shape)
     init(); 
 }
 
+inline bool NP::has_shape(int ni, int nj, int nk, int nl, int nm) const 
+{
+    unsigned ndim = shape.size() ; 
+    return 
+           ( ni == -1 || ( ndim > 0 && int(shape[0]) == ni)) && 
+           ( nj == -1 || ( ndim > 1 && int(shape[1]) == nj)) && 
+           ( nk == -1 || ( ndim > 2 && int(shape[2]) == nk)) && 
+           ( nl == -1 || ( ndim > 3 && int(shape[3]) == nl)) && 
+           ( nm == -1 || ( ndim > 4 && int(shape[4]) == nm))  
+           ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 template<typename T> inline const T*  NP::cvalues() const { return (T*)data.data() ;  } 
 template<typename T> inline T*  NP::values() { return (T*)data.data() ;  } 
 
@@ -783,7 +815,7 @@ NP::interp
 ------------
 
 CAUTION: using the wrong type here somehow scrambles the array contents, 
-so always be explicitly define the template type : DO NOT RELY ON COMPILER WORKING IT OUT.
+so always explicitly define the template type : DO NOT RELY ON COMPILER WORKING IT OUT.
 
 **/
 
@@ -1045,6 +1077,25 @@ inline std::string NP::desc() const
     return ss.str(); 
 }
 
+inline void NP::set_meta( const std::vector<std::string>& lines, char delim )
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < lines.size() ; i++) ss << lines[i] << delim  ; 
+    meta = ss.str(); 
+}
+
+inline void NP::get_meta( std::vector<std::string>& lines, char delim  )
+{
+    if(meta.empty()) return ; 
+
+    std::stringstream ss ; 
+    ss.str(meta.c_str())  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) lines.push_back(s) ; 
+}
+
+
+
 inline int NP::Memcmp(const NP* a, const NP* b ) // static
 {
     unsigned a_bytes = a->arr_bytes() ; 
@@ -1241,6 +1292,20 @@ inline NP* NP::Load(const char* dir, const char* name)
     return Load(path.c_str());
 }
 
+inline NP* NP::Load(const char* dir, const char* reldir, const char* name)
+{
+    std::string path = form_path(dir, reldir, name); 
+    return Load(path.c_str());
+}
+
+
+inline std::string NP::form_name(const char* stem, const char* ext)
+{
+    std::stringstream ss ; 
+    ss << stem ; 
+    ss << ext ; 
+    return ss.str(); 
+}
 inline std::string NP::form_path(const char* dir, const char* name)
 {
     std::stringstream ss ; 
@@ -1301,8 +1366,27 @@ inline int NP::load(const char* path)
 
     fp.read(bytes(), arr_bytes() );
 
+    load_meta( path ); 
+
     return 0 ; 
 }
+
+inline int NP::load_meta( const char* path )
+{
+    std::string metapath = U::ChangeExt(path, ".npy", ".txt"); 
+    std::ifstream fp(metapath.c_str(), std::ios::in);
+    if(fp.fail()) return 1 ; 
+
+    std::stringstream ss ;                       
+    std::string line ; 
+    while (std::getline(fp, line))
+    {
+        ss << line << std::endl ;   // getline swallows new lines  
+    }
+    meta = ss.str(); 
+    return 0 ; 
+}
+
 
 inline void NP::save_header(const char* path)
 {
@@ -1324,9 +1408,17 @@ inline void NP::save(const char* path) const
 {
     std::cout << "NP::save path [" << path  << "]" << std::endl ; 
     std::string hdr = make_header(); 
-    std::ofstream stream(path, std::ios::out|std::ios::binary);
-    stream << hdr ; 
-    stream.write( bytes(), arr_bytes() );
+    std::ofstream fpa(path, std::ios::out|std::ios::binary);
+    fpa << hdr ; 
+    fpa.write( bytes(), arr_bytes() );
+
+    if( not meta.empty() )
+    {
+        std::string metapath = U::ChangeExt(path, ".npy", ".txt"); 
+        std::cout << "NP::save metapath [" << metapath  << "]" << std::endl ; 
+        std::ofstream fpm(metapath.c_str(), std::ios::out);
+        fpm << meta ;  
+    }  
 }
 
 inline void NP::save(const char* dir, const char* reldir, const char* name) const 
@@ -1445,11 +1537,7 @@ template <typename T> inline void NP::_dump(int i0_, int i1_) const
 
 
     std::cout 
-        << "meta:[" 
-        << std::endl
-        << meta
-        << std::endl
-        << "]"
+        << "meta:[" << meta << "]"
         << std::endl
         ; 
 }

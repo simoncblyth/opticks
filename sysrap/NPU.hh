@@ -451,11 +451,15 @@ NumPy np.save / np.load
     std::string PREAMBLE = _make_preamble(); 
     assert( preamble.compare(PREAMBLE) == 0 );  
 
-    char hlen_lsb = hdr[8] ;  
-    char hlen_msb = hdr[9] ;  
+    // previously used "char" here,
+    // but thats a bug as when the header exceeds 128 bytes 
+    // it flips -ve (twos complement)
+    // observed this first with the bnd.npy which has 5 dimensions
+    // causing the header to be larger than for example icdf.npy with 3 dimensions
+ 
+    unsigned char hlen_lsb = hdr[8] ;  
+    unsigned char hlen_msb = hdr[9] ;  
     int hlen = hlen_msb << 8 | hlen_lsb ; 
-    assert( (hlen+10) % 16 == 0 ) ;  
-    assert( hlen+10 == hdr.size() ) ; 
 
 #ifdef NPU_DEBUG
     std::cout 
@@ -476,6 +480,10 @@ NumPy np.save / np.load
         ; 
 
 #endif
+    assert( hlen > 0 ); 
+    assert( (hlen+10) % 16 == 0 ) ;  
+    assert( hlen+10 == hdr.size() ) ; 
+
     return hlen ; 
 }
 
