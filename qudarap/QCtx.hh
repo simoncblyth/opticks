@@ -12,15 +12,25 @@ QCtx
 TODO: 
 
 1. genstep provisioning/seeding etc : formerly this was Thrust based, same again ? 
+
+   * DONE in QSeed 
+
 2. integration with csgoptix (optix 7) to enable propagation within a geometry 
+
+   * WIP : removing GGeo dependency  
 
 **/
 
+
+#ifdef OLD_WAY
 class GGeo ; 
 class GScintillatorLib ; 
 class GBndLib ; 
+//template <typename T> class NPY ; 
+#endif
 
-template <typename T> class NPY ; 
+
+struct NP ; 
 template <typename T> struct QTex ; 
 template <typename T> struct QProp ; 
 template <typename T> struct qctx ; 
@@ -40,10 +50,15 @@ struct QUDARAP_API QCtx
     static const char* PREFIX ; 
     static const QCtx* INSTANCE ; 
     static const QCtx* Get(); 
-    static QScint* MakeScint(const GScintillatorLib* slib);
-    static void Init(const GGeo* ggeo); 
 
-    // need to template these too 
+#ifdef OLD_WAY
+    static void Init(const GGeo* ggeo); 
+#else
+    static void Init(const NP* icdf, const NP* bnd );   
+    // could boot from full live CSGFoundry but simpler to pull just whats needed out of the cfbase/CSGFoundry/
+#endif
+
+    // need to template these too ?
     const QRng*    rng ; 
     const QScint*  scint ; 
     const QBnd*    bnd ; 
@@ -86,7 +101,7 @@ struct QUDARAP_API QCtx
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;
-    const NPY<float>* getBoundaryTexSrc() const ; 
+    const NP* getBoundaryTexSrc() const ; 
 
     void boundary_lookup_all(  quad* lookup, unsigned width, unsigned height ) ; 
     void boundary_lookup_line( quad* lookup, T* domain, unsigned num_lookup, unsigned line, unsigned k ) ; 
@@ -94,4 +109,5 @@ struct QUDARAP_API QCtx
     void prop_lookup(          T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
     void prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
 };
+
 

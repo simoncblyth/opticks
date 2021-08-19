@@ -10,7 +10,8 @@ endif()
 
 set(FLAGS_VERBOSE ON)
 
-find_package(GGeo REQUIRED CONFIG)
+find_package(SysRap REQUIRED CONFIG)
+#find_package(GGeo REQUIRED CONFIG)    # OLD_WAY needs GGeo
 
 set(OpticksCUDA_VERBOSE ON)
 find_package(OpticksCUDA REQUIRED MODULE)
@@ -71,8 +72,12 @@ SET(HEADERS
 )
 
 set(LIBS
-    Opticks::GGeo
+    Opticks::SysRap
 )
+
+# OLD_WAY needed GGeo
+# Opticks::GGeo
+
 if(UNIX AND NOT APPLE)
   set(LIBS ${LIBS} ssl )  
 endif()

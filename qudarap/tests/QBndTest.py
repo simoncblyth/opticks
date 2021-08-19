@@ -11,6 +11,9 @@ QBndTest.py
 """
 import os 
 import numpy as np
+
+np.set_printoptions(suppress=True, precision=3, edgeitems=5 )
+
 fold="$TMP/QBndTest"
 load_ = lambda name:np.load(os.path.expandvars("%s/%s" % (fold,name)))
 

@@ -30,6 +30,8 @@
 #include "SLog.hh"
 #include "SConstant.hh"
 #include "SAbbrev.hh"
+#include "NP.hh"
+
 // brap-
 #include "BMeta.hh"
 #include "BStr.hh"
@@ -225,6 +227,19 @@ NPY<double>* GPropertyLib::getBuffer() const
 {
     return m_buffer ;
 }
+
+NP* GPropertyLib::getBuf() const
+{
+    NP* buf = m_buffer->spawn() ; 
+    const std::vector<std::string>& names = getNameList(); 
+    if(names.size() > 0)
+    {
+        buf->set_meta(names); 
+    }
+    return buf ; 
+}
+
+
 
 template <typename T>
 T GPropertyLib::getBufferMeta(const char* key, const char* fallback) const 

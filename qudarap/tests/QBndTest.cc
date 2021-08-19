@@ -2,22 +2,18 @@
 #include "scuda.h"
 #include "SStr.hh"
 #include "SSys.hh"
-#include "NPY.hpp"
+#include "SPath.hh"
+#include "NP.hh"
+
+#ifdef OLD_WAY
 #include "Opticks.hh"
 #include "GGeo.hh"
 #include "GBndLib.hh"
+#endif
+
 #include "QBnd.hh"
 #include "QTex.hh"
 #include "OPTICKS_LOG.hh"
-
-void test_lookup(QBnd& qb)
-{
-    NPY<float>* lookup = qb.lookup(); 
-    const char* dir = "$TMP/QBndTest" ; 
-    LOG(info) << " save to " << dir  ; 
-    lookup->save(dir, "dst.npy"); 
-    qb.src->save(dir, "src.npy") ; 
-}
 
 
 void test_descBoundary(QBnd& qb)
@@ -30,7 +26,6 @@ void test_descBoundary(QBnd& qb)
         << qb.descBoundary()
         ;
 }
-
 
 void test_getBoundaryLine(QBnd& qb)
 {
@@ -64,7 +59,6 @@ void test_getBoundaryLine(QBnd& qb)
     assert( linek_max + 1 == qb.tex->height ); 
 }
 
-
 void test_getMaterialLine(QBnd& qb)
 {
     std::vector<std::string> materials ; 
@@ -83,20 +77,33 @@ void test_getMaterialLine(QBnd& qb)
     }
 }
 
+void test_lookup(QBnd& qb)
+{
+    NP* lookup = qb.lookup(); 
+    const char* dir = SPath::Resolve("$TMP/QBndTest") ; 
+    LOG(info) << " save to " << dir  ; 
+    lookup->save(dir, "dst.npy"); 
+    qb.src->save(dir, "src.npy") ; 
+}
 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+#ifdef OLD_WAY
     Opticks ok(argc, argv); 
     ok.configure(); 
-
     GGeo* gg = GGeo::Load(&ok); 
     GBndLib* blib = gg->getBndLib(); 
     blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
+    NP* bnd = blib->getBuf(); 
+#else
+    const char* cfbase = SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ));
+    NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
+#endif
 
-    QBnd qb(blib) ; 
+    QBnd qb(bnd) ; 
 
     test_descBoundary(qb); 
     test_getBoundaryLine(qb); 

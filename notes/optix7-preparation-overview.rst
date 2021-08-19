@@ -20,12 +20,23 @@ CMake project dependencies
 
       CSG_GGeo :  CUDA CSG GGeo  
 
+
+Previously::
+
       CSGOptiX : CUDA OpticksCore CSG 
 
       QudaRap : GGeo OpticksCUDA
 
          * using GGeo NPY Sysrap
          * aiming to lower to Sysrap only : using NP arrays   
+
+Now::
+
+      QudaRap : SysRap OpticksCUDA
+
+      CSGOptiX : CUDA OpticksCore CSG QudaRap
+
+
 
 
 Project summaries
@@ -81,7 +92,7 @@ Remove QudaRap GGeo,NPY  dependency ? YES PROCEEDING WITH THIS
 Progress
 ~~~~~~~~~~
 
-* added "NP* NPY::spawn" to yield NP arrays from NPY ones so can convert NPY 
+* DONE : added "NP* NPY::spawn" to yield NP arrays from NPY ones so can convert NPY 
   coming out of GGeo into NP for holding by CSGFoundry model 
 
   * use this in CSG_GGeo
@@ -91,6 +102,21 @@ Progress
 * also to remove NPY usage from quadrap/QScint 
   in preparation for CSGFoundry model carrying NP arrays of the properties needed by 
   QScint and QBnd 
+
+* DONE : removed GGeo/GScintillatorLib/GBndLib usage in QudaRap arranging 
+  for material props to be passed via NP 
+
+  * but how to do that : do I  want to force use of full CSGFoundry 
+    when just want the material/surface props ?  
+
+  * persisted CSGFoundry geometry is really fast and simple, less than 10 .npy arrays 
+    in $TMP/CSG_GGeo/CSGFoundry/ so for simplicity of workflow it makes sense to 
+    include the bbnd icdf within it and for testing could just load individuals arrays 
+    such as $TMP/CSG_GGeo/CSGFoundry/bbnd.npy  
+    then qudarap tests would not need to depend on CSGFoundry just its directory path 
+
+  * canonical usage in CSGOptiX has CSGFoundry available, so in that case 
+    can directly access the bbnd, icdf  etc.. from CSGFoundry 
 
 
 
@@ -112,8 +138,8 @@ TODO
 * bring CSG, CSG_GGeo and CSGOptiX under opticks umbrella joining QudaRap  
 
 
-How much of a separation between rendering and simulation ?
---------------------------------------------------------------
+How much of a separation between rendering and simulation ? DECIDED AS LITTLE AS POSSIBLE
+---------------------------------------------------------------------------------------------
 
 * raytrace rendering means the ability to save jpg files viewing geometry, it adds no dependencies 
 * separation is just for clarity of organization, no strong technical need 
@@ -182,8 +208,21 @@ Prototype thoughts
     as geometry access/translation happens only once  
  
 
+First objectives for CSGOptiX with QudaRap
+-------------------------------------------
+
 * start with purely numerical approach : fabricate a torch genstep and check intersects of 
   generated photons with the optix 7 geometry 
+
+* create planar 2d torch gensteps as an exercise in checking genstep handling 
+  and geometry/intersection positions : populate the render frame during simulation 
+  with the 3d intersect positions projected onto the input plane of the gensteps
+  
+  * this should yield 2d renders of planar cuts thru the geometry, in the 
+    process checking genstep handling and geometry intersects. Also this 
+    benefits from the rendering machinery together with the simulation 
+    machinery.  Plus it should much less resource heavy than 3d, making 
+    it good for working with complex geometry on laptop GPU.   
 
 * technically how to get access to the qctx "physics context" from optix 7 intersect code ? 
   look at how the geometry data is uploaded 

@@ -1,13 +1,15 @@
-
 #include "PLOG.hh"
 #include "SSys.hh"
 #include "scuda.h"
 
+#ifdef OLD_WAY
 #include "NPY.hpp"
 #include "GGeo.hh"
 #include "GBndLib.hh"
 #include "GScintillatorLib.hh"
+#endif
 
+#include "NP.hh"
 #include "QUDA_CHECK.h"
 #include "QU.hh"
 
@@ -31,54 +33,54 @@ template <typename T>
 const QCtx<T>* QCtx<T>::Get(){ return INSTANCE ; }
 
 template <typename T>
-void QCtx<T>::Init(const GGeo* ggeo)
+void QCtx<T>::Init(
+#ifdef OLD_WAY
+    const GGeo* ggeo
+#else
+    const NP* icdf, 
+    const NP* bnd 
+#endif
+)
 {
-    bool qctx_dump = SSys::getenvbool("QCTX_DUMP"); 
 
+
+#ifdef OLD_WAY
     GScintillatorLib* slib = ggeo->getScintillatorLib(); 
-    if(qctx_dump) slib->dump();
+    NP* icdf = slib->getBuf();  
 
     GBndLib* blib = ggeo->getBndLib(); 
-    blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
-    if(qctx_dump) blib->dump(); 
+    blib->createDynamicBuffers();       // hmm perhaps this is done already on loading now ?
+    NP* bnd = blib->getBuf(); 
+
+    bool qctx_dump = SSys::getenvbool("QCTX_DUMP"); 
+    if(qctx_dump)
+    { 
+        slib->dump();
+        blib->dump(); 
+    }
+#else
+
+
+#endif
 
     // on heap, to avoid dtors
 
     QRng* qrng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << qrng->desc(); 
 
-    QScint* qscint = MakeScint(slib); // custom high-definition inverse CDF for scintillation generation
+    const char* qctx_icdf_path = SSys::getenvvar("QCTX_ICDF_PATH", nullptr ); 
+    if( qctx_icdf_path ) icdf = NP::Load(qctx_icdf_path) ; 
+    unsigned hd_factor = 0u ;   // 0/10/20
+
+    QScint* qscint = new QScint(icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
     LOG(LEVEL) << qscint->desc(); 
 
-    QBnd* qbnd = new QBnd(blib); // boundary texture with standard domain, used for standard fast property lookup 
+    QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
     LOG(LEVEL) << qbnd->desc(); 
 
     QProp<T>* qprop = new QProp<T> ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
     LOG(LEVEL) << qprop->desc(); 
 
-
-}
-
-template <typename T>
-QScint* QCtx<T>::MakeScint(const GScintillatorLib* slib)
-{
-    QScint* qscint = nullptr ;  
-    const char* qctx_icdf_path = SSys::getenvvar("QCTX_ICDF_PATH", nullptr ); 
-    NPY<double>* icdf = qctx_icdf_path == nullptr ? nullptr : NPY<double>::load(qctx_icdf_path) ; 
-    if( icdf == nullptr )
-    {
-        LOG(LEVEL) << " booting QScint from standard GScintillatorLib " ; 
-        qscint = new QScint(slib); 
-    }
-    else
-    {
-        LOG(LEVEL) 
-            << " booting QScint from non-standard icdf " << icdf->getShapeString() 
-            << " loaded from QCTX_ICDF_PATH " << qctx_icdf_path 
-            ; 
-        qscint = new QScint(icdf); 
-    }
-    return qscint ; 
 }
 
 
@@ -293,9 +295,8 @@ void QCtx<T>::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned 
         << std::endl 
         ; 
 
-    NPY<T>* seq = NPY<T>::make(ni_tranche_size, nj, nk) ; 
-    seq->zero(); 
-    T* values = seq->getValues(); 
+    NP* seq = NP::Make<T>(ni_tranche_size, nj, nk) ; 
+    T* values = seq->values<T>(); 
 
     for(unsigned t=0 ; t < num_tranche ; t++)
     {
@@ -663,7 +664,7 @@ unsigned QCtx<T>::getBoundaryTexHeight() const
     return bnd->tex->height ; 
 }
 template <typename T>
-const NPY<float>* QCtx<T>::getBoundaryTexSrc() const
+const NP* QCtx<T>::getBoundaryTexSrc() const
 {
     return bnd->src ; 
 }

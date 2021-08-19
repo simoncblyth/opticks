@@ -1,13 +1,15 @@
 #include <sstream>
 
-#include "Opticks.hh"
 #include "SSys.hh"
 #include "SPath.hh"
 #include "NP.hh"
-#include "NPY.hpp"
+
+#ifdef OLD_WAY
+#include "Opticks.hh"
 #include "GGeo.hh"
 #include "GBndLib.hh"
 #include "GScintillatorLib.hh"
+#endif
 
 #include "QRng.hh"
 #include "QBnd.hh"
@@ -193,7 +195,7 @@ void QCtxTest<T>::boundary_lookup_all()
     LOG(info); 
     unsigned width = qc.getBoundaryTexWidth(); 
     unsigned height = qc.getBoundaryTexHeight(); 
-    const NPY<float>* src = qc.getBoundaryTexSrc(); 
+    const NP* src = qc.getBoundaryTexSrc(); 
     unsigned num_lookup = width*height ; 
 
     std::vector<quad> lookup(num_lookup); 
@@ -330,9 +332,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    Opticks ok(argc, argv); 
-    ok.configure(); 
-    GGeo* gg = GGeo::Load(&ok); 
+    const char* cfbase =  SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" )) ; 
+    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); 
+    NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 
     char test = SSys::getenvchar("TEST", 'X'); 
     char type = SSys::getenvchar("TYPE", 'F'); 
@@ -340,14 +342,14 @@ int main(int argc, char** argv)
 
     if( type == 'F')
     { 
-        QCtx<float>::Init(gg); 
+        QCtx<float>::Init(icdf, bnd); 
         QCtx<float> qc ; 
         QCtxTest<float> qtc(qc) ; 
         qtc.main( argc, argv, test ); 
     }
     else if( type == 'D' )
     {
-        QCtx<double>::Init(gg); 
+        QCtx<double>::Init(icdf, bnd); 
         QCtx<double> qc ; 
         QCtxTest<double> qtc(qc) ; 
         qtc.main( argc, argv, test ); 

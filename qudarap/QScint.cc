@@ -4,8 +4,8 @@
 #include "scuda.h"
 
 #include <sstream>
-#include "NPY.hpp"
-#include "GScintillatorLib.hh"
+
+#include "NP.hh"
 
 #include "QUDA_CHECK.h"
 #include "QRng.hh"
@@ -17,40 +17,22 @@ const plog::Severity QScint::LEVEL = PLOG::EnvLevel("QScint", "INFO");
 const QScint* QScint::INSTANCE = nullptr ; 
 const QScint* QScint::Get(){ return INSTANCE ;  }
 
-QScint::QScint(const GScintillatorLib* slib_)
+
+QScint::QScint(const NP* icdf, unsigned hd_factor )
     :
-    slib(slib_),
-    dsrc(slib->getBuffer()),
-    src(NPY<double>::MakeFloat(dsrc)),
-    tex(nullptr)
+    dsrc(icdf->ebyte == 8 ? icdf : nullptr),
+    src( icdf->ebyte == 4 ? icdf : NP::MakeNarrow(dsrc) ), 
+    tex(MakeScintTex(src, hd_factor))
 {
     INSTANCE = this ; 
-    init(); 
-}
-
-QScint::QScint(const NPY<double>* icdf)
-    :
-    slib(nullptr),
-    dsrc(icdf),
-    src(NPY<double>::MakeFloat(dsrc)),
-    tex(nullptr)
-{
-    INSTANCE = this ; 
-    init(); 
-}
-
-
-void QScint::init()
-{
-    makeScintTex(src) ;   
 }
 
 std::string QScint::desc() const
 {
     std::stringstream ss ; 
     ss << "QScint"
-       << " dsrc " << ( dsrc ? dsrc->getShapeString() : "-" )
-       << " src " << ( src ? src->getShapeString() : "-" )
+       << " dsrc " << ( dsrc ? dsrc->desc() : "-" )
+       << " src " << ( src ? src->desc() : "-" )
        << " tex " << ( tex ? tex->desc() : "-" )
        << " tex " << tex 
        ; 
@@ -59,19 +41,15 @@ std::string QScint::desc() const
     return s ; 
 }
 
-unsigned QScint::HDFactor(const NPY<double>* dsrc)
+QTex<float>* QScint::MakeScintTex(const NP* src, unsigned hd_factor )  // static 
 {
-    return dsrc ? dsrc->getMeta<unsigned>("hd_factor", "0" ) : 0 ; 
-}
+    assert( src->has_shape(1,4096,1) ||  src->has_shape(3,4096,1) ); 
+    assert( src->uifc == 'f' ); 
+    assert( src->ebyte == 4 );    // expecting float src array, possible narrowed from double dsrc array  
 
-void QScint::makeScintTex(const NPY<float>* src)
-{
-    LOG(LEVEL) << desc() ; 
-    assert( src->hasShape(1,4096,1) ||  src->hasShape(3,4096,1) ); 
-
-    unsigned ni = src->getShape(0); 
-    unsigned nj = src->getShape(1); 
-    unsigned nk = src->getShape(2); 
+    unsigned ni = src->shape[0]; 
+    unsigned nj = src->shape[1]; 
+    unsigned nk = src->shape[2]; 
 
     assert( ni == 1 || ni == 3); 
     assert( nj == 4096 ); 
@@ -88,19 +66,20 @@ void QScint::makeScintTex(const NPY<float>* src)
         LOG(fatal) << "QSCINT_DISABLE_INTERPOLATION active using filterMode " << filterMode 
         ; 
 
-    tex = new QTex<float>(nx, ny, src->getValuesConst(), filterMode ) ; 
+    QTex<float>* tx = new QTex<float>(nx, ny, src->cvalues<float>(), filterMode ) ; 
 
-    tex->setHDFactor(HDFactor(dsrc)); 
-    tex->uploadMeta(); 
+    tx->setHDFactor(hd_factor); 
+    tx->uploadMeta(); 
 
     LOG(LEVEL)
-        << " src " << src->getShapeString()
+        << " src " << src->desc()
         << " nx (width) " << nx
         << " ny (height) " << ny
-        << " tex.HDFactor " << tex->getHDFactor() 
-        << " tex.filterMode " << tex->getFilterMode()
+        << " tx.HDFactor " << tx->getHDFactor() 
+        << " tx.filterMode " << tx->getFilterMode()
         ;
 
+    return tx ; 
 }
 
 extern "C" void QScint_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height  ); 
@@ -154,7 +133,7 @@ void QScint::check()
 }
 
 
-NPY<float>* QScint::lookup()
+NP* QScint::lookup()
 {
     unsigned width = tex->width ; 
     unsigned height = tex->height ; 
@@ -166,10 +145,9 @@ NPY<float>* QScint::lookup()
         << " lookup " << num_lookup
         ;
 
-    NPY<float>* out = NPY<float>::make(height, width ); 
-    out->zero();  
+    NP* out = NP::Make<float>(height, width ); 
 
-    float* out_ = out->getValues(); 
+    float* out_ = out->values<float>(); 
     lookup( out_ , num_lookup, width, height ); 
 
     return out ; 

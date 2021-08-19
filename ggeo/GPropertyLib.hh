@@ -36,6 +36,7 @@
 
 class SLog ; 
 template <typename T> class NPY ;
+struct NP ; 
 class NPYBase ; 
 
 class BMeta ; 
@@ -232,7 +233,8 @@ class GGEO_API GPropertyLib {
         bool isOptional() const ;
 
         std::string  getBufferName(const char* suffix=NULL);
-        NPY<double>*  getBuffer() const ;
+        NPY<double>* getBuffer() const ;
+        NP*          getBuf() const ;
 
         template <typename T> T getBufferMeta(const char* key, const char* fallback) const ;
 

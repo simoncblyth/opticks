@@ -1,5 +1,4 @@
 #include "NP.hh"
-#include "Opticks.hh"
 #include "QProp.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -32,9 +31,6 @@ void test_lookup(const QProp<T>& qp, T x0, T x1, T nx, const char* reldir)
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-
-    Opticks ok(argc, argv); 
-    ok.configure(); 
 
     unsigned nx = 1601u ; 
     //unsigned nx = 161u ; 

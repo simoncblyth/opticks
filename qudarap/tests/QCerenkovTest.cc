@@ -1,4 +1,4 @@
-#include "Opticks.hh"
+
 #include "SPath.hh"
 #include "NP.hh"
 #include "QCerenkov.hh"
@@ -126,9 +126,6 @@ void test_getS2SliverIntegrals_many(const QCerenkov& ck )
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-
-    Opticks ok(argc, argv); 
-    ok.configure(); 
 
     QCerenkov ck ;  
     const double BetaInverse = 1.5 ; 

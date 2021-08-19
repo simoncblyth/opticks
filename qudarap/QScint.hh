@@ -4,34 +4,31 @@
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
 
-class GScintillatorLib ; 
-template <typename T> class NPY ; 
-template <typename T> struct QTex ; 
 struct dim3 ; 
+struct NP ; 
+template <typename T> struct QTex ; 
 
 struct QUDARAP_API QScint
 {
     static const plog::Severity LEVEL ; 
     static const QScint*        INSTANCE ; 
     static const QScint*        Get(); 
-    static unsigned HDFactor(const NPY<double>* dsrc) ;
 
-    const GScintillatorLib* slib ; 
-    const NPY<double>*      dsrc ; 
-    NPY<float>*             src ; 
-    QTex<float>*            tex ; 
+    const NP*      dsrc ; 
+    const NP*      src ; 
+    QTex<float>*    tex ; 
 
-    QScint(const GScintillatorLib* slib_); 
-    QScint(const NPY<double>* icdf); 
+    QScint(const NP* icdf, unsigned hd_factor); 
 
     void init(); 
-    void makeScintTex(const NPY<float>* src);
+    static QTex<float>* MakeScintTex(const NP* src, unsigned hd_factor);
     std::string desc() const ; 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
 
     void check();
-    NPY<float>* lookup();
+    NP*  lookup();
+
     void lookup( float* lookup, unsigned num_lookup, unsigned width, unsigned height ); 
     void dump(   float* lookup, unsigned num_lookup, unsigned edgeitems=10 ); 
 

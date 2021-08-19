@@ -134,7 +134,7 @@ struct NP
 
     std::string desc() const ; 
     void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
-    void get_meta( std::vector<std::string>& lines,       char delim='\n' ); 
+    void get_meta( std::vector<std::string>& lines,       char delim='\n' ) const ; 
 
     char*       bytes();  
     const char* bytes() const ;  
@@ -1084,7 +1084,7 @@ inline void NP::set_meta( const std::vector<std::string>& lines, char delim )
     meta = ss.str(); 
 }
 
-inline void NP::get_meta( std::vector<std::string>& lines, char delim  )
+inline void NP::get_meta( std::vector<std::string>& lines, char delim  ) const 
 {
     if(meta.empty()) return ; 
 

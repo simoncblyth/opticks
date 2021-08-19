@@ -5,9 +5,8 @@
 #include "SStr.hh"
 #include "scuda.h"
 #include "QUDA_CHECK.h"
+#include "NP.hh"
 
-#include "NPY.hpp"
-#include "GBndLib.hh"
 #include "QTex.hh"
 #include "QBnd.hh"
 #include "PLOG.hh"
@@ -18,22 +17,20 @@ const QBnd* QBnd::INSTANCE = nullptr ;
 const QBnd* QBnd::Get(){ return INSTANCE ; }
 
 
-QBnd::QBnd(const GBndLib* blib_ )
+QBnd::QBnd(const NP* buf)
     :
-    blib(blib_),
-    bnames(blib->getNameList()),
-    dsrc(blib->getBuffer()),
-    src(NPY<double>::MakeFloat(dsrc)),
-    tex(nullptr)
+    dsrc(buf->ebyte == 8 ? buf : nullptr),
+    src(buf->ebyte == 4 ? buf : NP::MakeNarrow(dsrc)),
+    tex(MakeBoundaryTex(src))
 {
+    buf->get_meta(bnames) ; 
+
+    std::cout << "QBnd::QBnd bnames " << bnames.size() << std::endl ; 
+    for(unsigned i=0 ; i < bnames.size() ; i++) std::cout << bnames[i] << std::endl ; 
+    assert( bnames.size() > 0 ); 
     INSTANCE = this ; 
-    init();
 } 
 
-void QBnd::init()
-{
-    makeBoundaryTex(src); 
-}
 
 std::string QBnd::descBoundary() const
 {
@@ -97,7 +94,7 @@ unsigned QBnd::getMaterialLine( const char* material ) const
 
 
 /**
-QBnd::makeBoundaryTex
+QBnd::MakeBoundaryTex
 ------------------------
 
 Creates GPU texture with material and surface properties as a function of wavelenth.
@@ -124,22 +121,28 @@ TODO: need to get boundary domain range metadata into buffer json sidecar and ge
 
 **/
 
-void QBnd::makeBoundaryTex(const NPY<float>* buf )  
+QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static 
 {
-    unsigned ni = buf->getShape(0);  // (~123) number of boundaries 
-    unsigned nj = buf->getShape(1);  // (4)    number of species : omat/osur/isur/imat 
-    unsigned nk = buf->getShape(2);  // (2)    number of float4 property groups per species 
-    unsigned nl = buf->getShape(3);  // (39 or 761)   number of wavelength samples of the property
+    assert( buf->uifc == 'f' && buf->ebyte == 4 );  
 
-    unsigned nm = buf->getShape(4);  // (4)    number of prop within the float4
-    LOG(LEVEL) << " buf " << ( buf ? buf->getShapeString() : "-" ) ;  
+    unsigned ni = buf->shape[0];  // (~123) number of boundaries 
+    unsigned nj = buf->shape[1];  // (4)    number of species : omat/osur/isur/imat 
+    unsigned nk = buf->shape[2];  // (2)    number of float4 property groups per species 
+    unsigned nl = buf->shape[3];  // (39 or 761)   number of wavelength samples of the property
+    unsigned nm = buf->shape[4];  // (4)    number of prop within the float4
+
+    LOG(LEVEL) << " buf " << ( buf ? buf->desc() : "-" ) ;  
     assert( nm == 4 ); 
 
     unsigned nx = nl ;           // wavelength samples
     unsigned ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
 
-    const float* values = buf->getValuesConst(); 
-    
+    const float* values = buf->cvalues<float>(); 
+
+    char filterMode = 'L' ; 
+    QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode ) ; 
+
+    /*    
     quad domainX ; 
     // TODO: pass the metadata when do MakeFloat, so do not have to remember to get the meta from the original double buf
     domainX.f.x = dsrc->getMeta<float>("domain_low", "0" ); 
@@ -158,18 +161,18 @@ void QBnd::makeBoundaryTex(const NPY<float>* buf )
     assert( domainX.f.z > 0.f ); 
     assert( domainX.f.w == domainX.f.y - domainX.f.x ); 
 
-    char filterMode = 'L' ; 
-    tex = new QTex<float4>(nx, ny, values, filterMode ) ; 
-    tex->setMetaDomainX(&domainX); 
-    tex->uploadMeta(); 
+    btex->setMetaDomainX(&domainX); 
+    btex->uploadMeta(); 
+    */
 
+    return btex ; 
 }
 
 std::string QBnd::desc() const
 {
     std::stringstream ss ; 
     ss << "QBnd"
-       << " src " << ( src ? src->getShapeString() : "-" )
+       << " src " << ( src ? src->desc() : "-" )
        << " tex " << ( tex ? tex->desc() : "-" )
        << " tex " << tex 
        ; 
@@ -206,16 +209,15 @@ void QBnd::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned wid
         ;
 }
 
-NPY<float>* QBnd::lookup()
+NP* QBnd::lookup()
 {
     unsigned width = tex->width ; 
     unsigned height = tex->height ; 
     unsigned num_lookup = width*height ; 
 
-    NPY<float>* out = NPY<float>::make(height, width, 4 ); 
-    out->zero();  
+    NP* out = NP::Make<float>(height, width, 4 ); 
 
-    quad* out_ = (quad*)out->getValues(); 
+    quad* out_ = (quad*)out->values<float>(); 
     lookup( out_ , num_lookup, width, height ); 
 
     return out ; 
@@ -227,6 +229,13 @@ extern "C" void QBnd_lookup_0(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureO
 void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned height )
 {
     LOG(LEVEL) << "[" ; 
+
+    if( tex->d_meta == nullptr )
+    {
+        tex->uploadMeta(); 
+    }
+    assert( tex->d_meta != nullptr && "must QTex::uploadMeta() before lookups" );
+
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, width, height ); 
