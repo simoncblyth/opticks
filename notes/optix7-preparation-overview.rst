@@ -1,12 +1,80 @@
 optix7-preparation-overview
 ==============================
 
+Accessors / Building
+-----------------------
+
+New accessors from opticks/opticks.bash::
+
+    # optix7 expts 
+    c(){  cd $(opticks-home)/CSG ; pwd ; }
+    cg(){ cd $(opticks-home)/CSG_GGeo ; pwd ; }
+    cx(){ cd $(opticks-home)/CSGOptiX ; pwd ; }
+    qu(){ qudarap $* ; }
+
+* TODO: make CSG, CSG_GGeo, CSGOptiX into propa Opticks sub-projs 
+* TODO: arrange an alternate proj sequence for collective building 
+
+
+Old accessors from .opticks_config::
+
+    #c(){   cd ~/CSG ; git status ;  }
+    #cg(){  cd ~/CSG_GGeo ; git status ;  }
+    #cx(){  cd ~/CSGOptiX ; git status ;  }
+    #cto(){ open https://github.com/simoncblyth/CSG/commits ; }
+    #cxo(){ open https://github.com/simoncblyth/CSGOptiX/commits ; }
+
+
+
+Repos now sub folders under Opticks umbrella
+-----------------------------------------------
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/CSG/
+* https://bitbucket.org/simoncblyth/opticks/src/master/CSG_GGeo/
+* https://bitbucket.org/simoncblyth/opticks/src/master/CSGOptiX/
+
+Old Repos
+-----------
+
+* https://github.com/simoncblyth/CSG/
+* https://github.com/simoncblyth/CSG_GGeo/
+* https://github.com/simoncblyth/CSGOptiX/
+
+Migrating old repos under Opticks umbrella
+---------------------------------------------
+
 ::
 
-    c() {  cd ~/CSG ; git status ; }
-    cg() { cd ~/CSG_GGeo; git status ; }
-    cx() { cd ~/CSGOptiX; git status ; }
-    qu() { quadarap ; }
+    git-export () 
+    { 
+        local outdir=$1;
+        local msg="=== $FUNCNAME :";
+        local name=$(basename $PWD);
+        local tmpdir=/tmp/$USER/git-export;
+        mkdir -p $tmpdir;
+        echo $msg name $name into $tmpdir/$name;
+        git archive --format=tar --prefix=$name/ HEAD | ( cd_func $tmpdir && tar xf - )
+    }
+
+::
+    
+    cd ~/CSG
+    git-export
+    rm /tmp/$USER/git-export/CSG/.gitignore
+    rm /tmp/$USER/git-export/CSG/README.rst
+    cp -r /tmp/$USER/git-export/CSG ~/opticks/
+
+    cd ~/CSG_GGeo
+    git-export
+    rm /tmp/$USER/git-export/CSG_GGeo/.gitignore
+    rm /tmp/$USER/git-export/CSG_GGeo/README.rst
+    cp -r /tmp/$USER/git-export/CSG_GGeo ~/opticks/
+
+    cd ~/CSGOptiX
+    git-export
+    rm /tmp/$USER/git-export/CSGOptiX/.gitignore
+    rm /tmp/$USER/git-export/CSGOptiX/README.rst
+    cp -r /tmp/$USER/git-export/CSGOptiX ~/opticks/
 
 
 

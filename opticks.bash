@@ -2458,7 +2458,16 @@ okg(){         okg-;         okg-cd $* ; }
 oglrap(){   oglrap-  ; oglrap-cd $* ; }
 cudarap(){  cudarap- ; cudarap-cd $* ; }
 qudarap(){  qudarap- ; qudarap-cd $* ; }
+
+
+# optix7 expts 
+c(){  cd $(opticks-home)/CSG ; pwd ; }
+cg(){ cd $(opticks-home)/CSG_GGeo ; pwd ; }
+cx(){ cd $(opticks-home)/CSGOptiX ; pwd ; }
 qu(){ qudarap $* ; }
+
+
+
 thrap(){    thrap-   ; thrap-cd $* ; }
 oxrap(){    oxrap-   ; oxrap-cd $* ; }
 
