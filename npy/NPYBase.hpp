@@ -83,7 +83,7 @@ class NPY_API NPYBase {
         virtual ~NPYBase();
         void setHasData(bool has_data=true);
         bool hasData() const ;
-        static void transfer(NPYBase* dst, NPYBase* src); 
+        static void transfer(NPYBase* dst, const NPYBase* src); 
    public:
         const char* getName() const ; 
         void setName(const char* name); 

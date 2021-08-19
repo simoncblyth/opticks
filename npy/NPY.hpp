@@ -47,6 +47,7 @@ struct BBufSpec ;
 struct NSlice ; 
 struct nmat4pair ; 
 struct nmat4triple ; 
+struct NP ; 
 
 template <typename T> struct nmat4triple_ ; 
 
@@ -150,7 +151,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_from_vec(const std::vector<T>& vals);
        static NPY<T>* make_from_str(const char* s, char delim=',');
 
-       static NPY<T>* make_like(NPY<T>* src);      // same shape as source, zeroed
+       static NPY<T>* make_like(const NPY<T>* src);      // same shape as source, zeroed
        static NPY<T>* make_dbg_like(NPY<T>* src, int label_=0);  // same shape as source, values based on indices controlled with label_
 
    public:
@@ -202,9 +203,14 @@ class NPY_API NPY : public NPYBase {
        void save(          const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det) const ;
        static NPY<T>* load(const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det, bool quietly=false); 
        bool exists(        const char* pfx, const char* tfmt, const char* targ, const char* tag, const char* det ) const ;
-   public:
-       NPY<T>* clone();
-       static NPY<T>* copy(NPY<T>* src);
+    public:
+       // between old and new array types
+       NP* spawn() const ; 
+       static NP* copy_(const NPY<T>* src) ;
+    public:
+       NPY<T>* clone() const ;
+       static NPY<T>* copy(const NPY<T>* src) ;
+    public:
        NPY<T>* make_slice(const char* slice);
        NPY<T>* make_slice(NSlice* slice);
    public:

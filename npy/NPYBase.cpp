@@ -639,7 +639,7 @@ Used via NPY::copy by NPY::clone
 
 **/
 
-void NPYBase::transfer(NPYBase* dst, NPYBase* src)
+void NPYBase::transfer(NPYBase* dst, const NPYBase* src)
 {
     const NPYSpec* spec = src->getBufferSpec();
 

@@ -41,6 +41,7 @@ namespace fs = boost::filesystem;
 
 #include "NPYSpec.hpp"
 #include "NPY.hpp"
+#include "NP.hh"
 
 #include "PLOG.hh"
 
@@ -92,7 +93,6 @@ T* NPY<T>::fill( T value)
     std::fill(m_data.begin(), m_data.end(), value);
     return m_data.data(); 
 }
-
 
 
 
@@ -1789,7 +1789,7 @@ unsigned NPY<T>::_copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned
 
 
 template <typename T>
-NPY<T>* NPY<T>::make_like(NPY<T>* src)
+NPY<T>* NPY<T>::make_like(const NPY<T>* src)
 {
      NPY<T>* dst = NPY<T>::make(src->getShapeVector());
      dst->zero();
@@ -1912,15 +1912,42 @@ NPY<T>* NPY<T>::make_identity_transforms(unsigned ni, unsigned nj)
      return dst ; 
 }
 
+template <typename T>
+NP* NPY<T>::spawn() const 
+{
+    return NPY<T>::copy_(this) ; 
+}
+
+template <typename T> 
+NP* NPY<T>::copy_(const NPY<T>* src)   // static  
+{
+    const std::vector<int>& sh = src->getShapeVector();    
+
+    NP* dst = NP::Make<T>(); 
+    dst->set_shape(sh);   
+   
+    unsigned long long src_bytes = src->getNumBytes(0);  // total size in bytes 
+    unsigned long long dst_bytes = dst->arr_bytes() ;  
+    assert( src_bytes == dst_bytes ) ;  
+
+    char* sbytes = (char*)src->getBytes();
+    char* dbytes = (char*)dst->bytes();
+    memcpy( (void*)dbytes, (void*)sbytes, src_bytes );
+
+    // currently no metadata transfer between old and new array types  
+
+    return dst ; 
+}
+
 
 template <typename T>
-NPY<T>* NPY<T>::clone()
+NPY<T>* NPY<T>::clone() const 
 {
     return NPY<T>::copy(this) ;
 }
 
-template <typename T>
-NPY<T>* NPY<T>::copy(NPY<T>* src)
+template <typename T> 
+NPY<T>* NPY<T>::copy(const NPY<T>* src) // static 
 {
     NPY<T>* dst = NPY<T>::make_like(src);
    

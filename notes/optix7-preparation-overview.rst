@@ -24,6 +24,8 @@ CMake project dependencies
 
       QudaRap : GGeo OpticksCUDA
 
+         * using GGeo NPY Sysrap
+         * aiming to lower to Sysrap only : using NP arrays   
 
 
 Project summaries
@@ -34,12 +36,62 @@ CSG
 
 CSG_GGeo
     loads GGeo geometry and creates and saves as CSGFoundary 
+
+    * hmm : currently just geometry, no material properties 
+
+    * workflow and Qudarap dependencies can be kept simpler if 
+      this translation also collects the things needed 
+      from GScintillatorLib and GBndLib for formation of the textures. 
+      So can get the GGeo dependency over with in one go.
+
   
 CSGOptiX
     renders CSGFoundary geometry using either OptiX pre-7 or 7 
 
 QudaRap
     pure CUDA photon generation, revolving around GPU side qctx.h 
+
+    * **dependency on GGeo seems a bit out of place**
+
+
+Remove QudaRap GGeo,NPY  dependency ? YES PROCEEDING WITH THIS
+-----------------------------------------------------------------
+
+* hmm : GGeo dependency of Qudarap is fairly weak
+
+* bringing the simulation into CSGOptiX means depending on QudaRap, 
+  so its beneficial for QudaRap to have few dependencies 
+
+* GGeo is used only in QCtx/QScint/QBnd to access GScintillatorLib and GBndLib for forming 
+  scintillation and boundary textures. 
+
+* using lower level types in the interface (think NP rather than GGeo, GScintillatorLib) 
+  drastically improved flexibility 
+
+* Direct use of GGeo could be eliminated by changing interface to communicate 
+  properties via NP arrays.  
+
+* GGeo is loaded and used in QBndTest QCtxTest 
+
+* hmm adding GGeo dependency for the tests only is a possibility, but its cleaner to 
+  load NP from within the persisted CSGFoundry 
+
+
+
+Progress
+~~~~~~~~~~
+
+* added "NP* NPY::spawn" to yield NP arrays from NPY ones so can convert NPY 
+  coming out of GGeo into NP for holding by CSGFoundry model 
+
+  * use this in CSG_GGeo
+  * an alternative is to load NP from persisted NPY : but do not want to assume 
+    things have been persisted to file 
+
+* also to remove NPY usage from quadrap/QScint 
+  in preparation for CSGFoundry model carrying NP arrays of the properties needed by 
+  QScint and QBnd 
+
 
 
 TODO
@@ -63,7 +115,7 @@ TODO
 How much of a separation between rendering and simulation ?
 --------------------------------------------------------------
 
-* rendering means the ability to save jpg files viewing geometry, so it adds no dependencies 
+* raytrace rendering means the ability to save jpg files viewing geometry, it adds no dependencies 
 * separation is just for clarity of organization, no strong technical need 
 
 
@@ -72,6 +124,7 @@ rendering
 
 simulation
     genstep input yields buffer of photons 
+
 
 
 optix 7 rdr/sim separation at what level PIP/SBT or within the raygen function ?  
@@ -117,6 +170,18 @@ Prototype thoughts
 
 * new package depending on CSGOptiX and QudaRap ?
 
+  * current thinking is to remove GGeo dependency on QudaRap, instead 
+    focus use of GGeo within CSG_GGeo with material properties needed for the 
+    reemission and boundary textures and QProp persisted within CSGFoundary 
+    model as NP arrays     
+  
+  * CSGOptiX can then depend on the lowered QudaRap and access all geometry 
+    and properties from the CSGFoundry model 
+
+  * advantage is cleaner workflow and dependencies : which means flexible + fast code
+    as geometry access/translation happens only once  
+ 
+
 * start with purely numerical approach : fabricate a torch genstep and check intersects of 
   generated photons with the optix 7 geometry 
 
@@ -128,15 +193,38 @@ Prototype thoughts
 * CSGOptiX is too render specific need a lower level intermediate struct
   that can be common to both rendering and simulation  
 
+  * current thinking is to not effect much of a split between rendering/simulation, 
+    just using raygenmode to make a switch in __raygen__rg   
+
 
 
 Creating seed buffer : associating photons to gensteps
 ----------------------------------------------------------
 
-okop/OpSeeder.cc
-okop/tests/OpSeederTest.cc
+new way : actually same as previous, just organized in simpler way
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* move general basis functionality into Sysrap::
+
+    SBuf.hh
+
+    (formerly from thrap)
+    iexpand.h        
+    strided_range.h   
+
+* initial development in thrustrap/tests/iexpand_stridedTest.cu 
+  and applying that experience to create focussed functionality in qudarap/QSeed
+
+
+reviewing the old way
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* too dispersed with implementation smeared over cudarap, thrustrap, okop
 
 ::
+
+    okop/OpSeeder.cc
+    okop/tests/OpSeederTest.cc
 
     060 void OpSeeder::seedPhotonsFromGensteps()
      61 {
@@ -156,7 +244,6 @@ okop/tests/OpSeederTest.cc
      75 
      76    // if(m_ok->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
      77 }
-
 
     226 /**
     227 OpSeeder::seedPhotonsFromGenstepsImp
@@ -418,22 +505,8 @@ okop/tests/OpSeederTest.cc
     133 
 
 
-
-
-
-* need a pure CUDA way of doing this for qudarap 
-
-
 * https://stackoverflow.com/questions/16900837/replicate-a-vector-multiple-times-using-cuda-thrust
 
 
-
-thrap tests
--------------
-
-* TODO: study iexpandTest.cu,  add an iexpandStridedTest.cu 
-
-
-* current iexpand 
 
 
