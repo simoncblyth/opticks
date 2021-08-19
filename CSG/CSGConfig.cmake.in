@@ -1,0 +1,8 @@
+@PACKAGE_INIT@ 
+
+set_and_check ( CSG_INCLUDE_DIRS "@PACKAGE_CSG_INCLUDE_DIRS@")
+
+include("${CMAKE_CURRENT_LIST_DIR}/CSGTargets.cmake")
+
+
+
