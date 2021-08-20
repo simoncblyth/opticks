@@ -241,8 +241,8 @@ void CSGOptiX::prepareRenderParam()
 
 void CSGOptiX::prepareSimulateParam()
 {
-    std::vector<int> counts = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
-    SBuf<quad6> gs = QSeed::UploadFakeGensteps(counts) ;
+    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
+    SBuf<quad6> gs = QSeed::UploadFakeGensteps(photon_counts_per_genstep) ;
     SBuf<int> se = QSeed::CreatePhotonSeeds(gs);
   
     params->gensteps = gs.ptr ; 

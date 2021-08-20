@@ -152,19 +152,20 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 }
  
 /**
-simulate : use params for gensteps, seeds input and photons output 
+simulate : uses params for input: gensteps, seeds and output photons 
 ----------------------------------------------------------------------
 
 **/
 
 static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim )
 {
-    // generate single photon from input params.gensteps[0]  
-    // propagate photon 
     unsigned photon_id = idx.x ; 
     unsigned genstep_id = params.seeds[photon_id] ; 
     const quad6& gs = params.gensteps[genstep_id] ; 
-    printf("//simulate photon_id %d genstep_id  gs.q0.i ( %d %d %d %d ) \n", photon_id, genstep_id, 
+
+    printf("//simulate photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d ) \n", 
+       photon_id, 
+       genstep_id, 
        gs.q0.i.x, 
        gs.q0.i.y,
        gs.q0.i.z, 
