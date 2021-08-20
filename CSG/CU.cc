@@ -1,5 +1,8 @@
 #include <iostream>
-#include "sutil_vec_math.h"    
+
+//#include "sutil_vec_math.h"    
+#include "scuda.h"    
+#include "squad.h"
 
 #include "cuda_runtime.h"
 #include "CUDA_CHECK.h"
@@ -11,7 +14,7 @@
 #include "CSGSolid.h"
 #include "CSGPrim.h"
 #include "CSGNode.h"
-#include "Quad.h"
+
 #include "qat4.h"
 
 #include "CU.h"

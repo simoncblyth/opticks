@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "Quad.h"
+#include "squad.h"
 
 struct CSGFoundry ; 
 struct CSGSolid ; 

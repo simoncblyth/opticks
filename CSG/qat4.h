@@ -17,7 +17,7 @@
    #include <algorithm>
 #endif 
 
-#include "Quad.h"
+#include "squad.h"
 
 struct qat4 
 {

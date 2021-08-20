@@ -6,7 +6,9 @@
 #include <iomanip>
 #include <vector_types.h>
 
-#include "sutil_vec_math.h"
+//#include "sutil_vec_math.h"
+#include "scuda.h"
+
 #include "OpticksCSG.h"
 #include "PLOG.hh"
 

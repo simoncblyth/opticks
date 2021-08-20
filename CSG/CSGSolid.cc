@@ -1,5 +1,7 @@
 
-#include "sutil_vec_math.h"
+//#include "sutil_vec_math.h"
+#include "scuda.h"
+
 #include "CSGSolid.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)

@@ -144,6 +144,7 @@ set(HEADERS
     QUDA_CHECK.h
     SBuf.hh
     scuda.h
+    squad.h
     sview.h
     strided_range.h 
     iexpand.h 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Quad.h"
+#include "squad.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
    #define PRIM_METHOD __device__

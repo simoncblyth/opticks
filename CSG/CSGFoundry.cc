@@ -14,7 +14,9 @@
 #include "NP.hh"
 #include "PLOG.hh"
 
-#include "sutil_vec_math.h"
+//#include "sutil_vec_math.h"
+#include "scuda.h"
+
 #include "OpticksCSG.h"
 #include "CSGSolid.h"
 #include "CU.h"

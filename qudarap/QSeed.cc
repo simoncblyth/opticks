@@ -35,7 +35,7 @@ SBuf<quad6> QSeed::UploadFakeGensteps(const std::vector<int>& counts) // static
     for(unsigned i=0 ; i < ni ; i++)
     {   
         quad6 qq ; 
-        qq.q0.i.x = -1 ;   qq.q0.i.y = -1 ;   qq.q0.i.z = -1 ;   qq.q0.i.w = counts[i] ; 
+        qq.q0.i.x = i  ;   qq.q0.i.y = -1 ;   qq.q0.i.z = -1 ;   qq.q0.i.w = counts[i] ; 
         qq.q1.i.x = -1 ;   qq.q1.i.y = -1 ;   qq.q1.i.z = -1 ;   qq.q1.i.w = -1 ; 
         qq.q2.i.x = -1 ;   qq.q2.i.y = -1 ;   qq.q2.i.z = -1 ;   qq.q2.i.w = -1 ; 
         qq.q3.i.x = -1 ;   qq.q3.i.y = -1 ;   qq.q3.i.z = -1 ;   qq.q3.i.w = -1 ; 

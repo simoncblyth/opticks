@@ -2,7 +2,9 @@
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 
-#include "sutil_vec_math.h"
+//#include "sutil_vec_math.h"
+#include "scuda.h"
+
 #include "qat4.h"
 #include "CSGPrim.h"
 

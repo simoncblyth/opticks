@@ -1,4 +1,6 @@
-#include "sutil_vec_math.h"
+//#include "sutil_vec_math.h"
+#include "scuda.h"
+
 #include "NP.hh"
 #include "qat4.h"
 

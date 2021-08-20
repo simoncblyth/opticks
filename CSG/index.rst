@@ -39,7 +39,6 @@ TODO
 
 
     InstanceId.h
-    Quad.h
     Sys.h
     Tran.h
     csg_classify.h
@@ -52,7 +51,9 @@ TODO
     csg_stack.h
     csg_tranche.h
     qat4.h
-    sutil_vec_math.h
+    
+    //Quad.h
+    //sutil_vec_math.h
 
 
 

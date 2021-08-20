@@ -33,7 +33,7 @@ float __int_as_float(int i)
 
 
 #include "OpticksCSG.h"
-#include "Quad.h"
+#include "squad.h"
 
 #include "CSGNode.h"
 #include "CSGPrim.h"

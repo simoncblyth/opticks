@@ -1,6 +1,8 @@
 #include "PLOG.hh"
 
-#include "sutil_vec_math.h"
+//#include "sutil_vec_math.h"
+#include "scuda.h"
+
 #include "CSGFoundry.h"
 #include "CSGTarget.h"
 

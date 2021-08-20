@@ -9,7 +9,9 @@
 #include <cassert>
 #include <cstring>
 
-#include "sutil_vec_math.h"
+//#include "sutil_vec_math.h"
+#include "scuda.h"
+
 #include "CSGPrim.h"
 #include "CSGPrimSpec.h"
 #include "CU.h"

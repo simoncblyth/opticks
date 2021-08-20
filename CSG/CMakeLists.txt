@@ -55,10 +55,11 @@ list(APPEND SOURCES
     CSGScan.cc
     CSGView.cc
 )
+    
+#sutil_vec_math.h
+#Quad.h 
 
 list(APPEND CSG_HEADERS
-    sutil_vec_math.h
-    Quad.h 
     CSGNode.h 
 
     CU.h
