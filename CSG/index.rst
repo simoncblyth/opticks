@@ -1,6 +1,16 @@
 CSG
 =====
 
+
+TODO
+------
+
+
+* get the tests into ctest 
+* document some code 
+
+
+
 ::
 
     CSGNode.h
