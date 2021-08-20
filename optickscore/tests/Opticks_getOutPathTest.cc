@@ -1,6 +1,16 @@
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
 
+void test_getOutPath(const Opticks* ok)
+{
+    const char* namestem = "namestem" ; 
+    for(int idx=-1 ; idx < 10 ; idx++ )
+    {    
+        const char* outpath = ok->getOutPath( namestem, ".jpg", idx ); 
+        std::cout << outpath << std::endl ; 
+    }
+}
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc,argv);
@@ -10,13 +20,9 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     ok.configure();
 
-    const char* namestem = "namestem" ; 
-
-    for(int idx=-1 ; idx < 10 ; idx++ )
-    {    
-        const char* outpath = ok.getOutPath( namestem, ".jpg", idx ); 
-        std::cout << outpath << std::endl ; 
-    }
+    test_getOutPath(&ok); 
+    ok.setOutDir("$TMP/CSGOptiX"); 
+    test_getOutPath(&ok) ;
 
     return 0 ; 
 }

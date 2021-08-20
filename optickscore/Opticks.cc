@@ -430,7 +430,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_frame_renderer(NULL),
     m_rngspec(NULL),
     m_sensorlib(NULL),
-    m_one_gas_ias(-1)
+    m_one_gas_ias(-1), 
+    m_outdir(nullptr)
 {
 
     m_profile->setStamp(m_sargs->hasArg("--stamp"));
@@ -2513,7 +2514,13 @@ const char* Opticks::getSnapOutDir() const    // --snapoutdir
 const char* Opticks::getOutDir() const    // --outdir
 {
     const std::string& outdir = m_cfg->getOutDir() ; 
-    return outdir.empty() ? NULL : outdir.c_str() ;
+    const char* default_outdir = outdir.empty() ? NULL : outdir.c_str() ;
+    return m_outdir ? m_outdir : default_outdir ; 
+}
+
+void Opticks::setOutDir( const char* outdir )  // overrides --outdir 
+{
+    if(outdir) m_outdir = strdup(outdir); 
 }
 
 const char* Opticks::getNamePrefix() const    // --nameprefix
@@ -2605,7 +2612,18 @@ const char* Opticks::getOutPath(const char* namestem, const char* ext, int index
     if(ext)        ss << ext ; 
 
     std::string s = ss.str(); 
-    return strdup(s.c_str()) ;
+    const char* outpath = SPath::Resolve(s.c_str()) ;
+
+    LOG(LEVEL)
+       << " outdir " << outdir
+       << " nameprefix " << nameprefix 
+       << " namestem " << namestem 
+       << " index " << index
+       << " ext " << ext 
+       << " outpath " << outpath 
+       ;
+
+    return outpath ; 
 }
 
 int Opticks::ExtractIndex(const char* path)  // static 

@@ -11,21 +11,32 @@ Census
 -------
 
 
-=====================  ====================  =================
- commandline             Darwin/OptiX 5        Linux/OptiX 7      
-=====================  ====================  =================
+=====================  ====================  =================   ========================
+ commandline             A:Darwin/OptiX 5      B:Linux/OptiX 6    C:Linux/OptiX 7
+=====================  ====================  =================   ========================
 CSGOptiXRender            fail 1 
-./cxr_overview.sh         OK
-./cxr_view.sh 
-./cxr_solid.sh            fail 1  
-=====================  ====================  =================
+./cxr_overview.sh         OK                   fail 1              OK 
+./cxr_view.sh                                                      OK : PMTs, no struts 
+./cxr_solid.sh            fail 1                                   OK 
+=====================  ====================  =================   ========================
+
+
+A
+   build : cd ~/opticks/CSGOptiX ; om 
+B
+   build : cd ~/opticks/CSGOptiX ; om 
+   grab  : cd ~/opticks/CSGOptiX ; ./grab.sh 
+C
+   build : cd ~/opticks/CSGOptiX ; ./build7.sh 
+   grab  : cd ~/opticks/CSGOptiX ; ./grab.sh 
+
 
 
 
 Failure Modes
 ----------------
 
-Fail 1::
+1::
 
     2021-08-20 10:47:27.933 INFO  [1880522] [CSGOptiX::render@287] [
     2021-08-20 10:47:27.933 INFO  [1880522] [Six::launch@437] [ params.width 1920 params.height 1080

@@ -39,7 +39,8 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     Opticks ok(argc, argv); 
     ok.configure(); 
-    ok.setRaygenMode(0); // override --raygenmode option 
+    ok.setRaygenMode(0);             // override --raygenmode option 
+    ok.setOutDir("$TMP/CSGOptiX");   // override --outdir option 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
@@ -132,11 +133,11 @@ int main(int argc, char** argv)
 
                 const char* ext = ".jpg" ; 
                 int index = -1 ;  
-                const char* path = ok.getOutPath(namestem, ext, index ); 
-                LOG(error) << " path " << path ; 
+                const char* outpath = ok.getOutPath(namestem, ext, index ); 
+                LOG(error) << " outpath " << outpath ; 
 
                 std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
-                cx.snap(path, bottom_line.c_str(), topline  );   
+                cx.snap(outpath, bottom_line.c_str(), topline  );   
             }
         }
         else

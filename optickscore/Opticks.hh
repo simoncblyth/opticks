@@ -381,6 +381,7 @@ class OKCORE_API Opticks {
        const char* getFlightOutDir() const ;  // --flightoutdir
        const char* getSnapOutDir() const ;    // --snapoutdir
        const char* getOutDir() const ;        // --outdir
+       void        setOutDir(const char* outdir) ; 
 
        const char* getNamePrefix() const ;    // --nameprefix
        FlightPath* getFlightPath();  // lazy cannot be const  
@@ -850,6 +851,7 @@ class OKCORE_API Opticks {
        int                  m_raygenmode ; 
        std::vector<unsigned>  m_solid_selection ; 
        bool                 m_save ; 
+       const char*          m_outdir ; 
 
 };
 
