@@ -42,7 +42,7 @@ void test_GetAverageNumberOfPhotons_s2(const QCerenkov& ck)
     NP* scan = NP::Make<double>(ni, 4);   
     double* ss = scan->values<double>();  
 
-    for(unsigned i=0 ; i < bis->shape[0] ; i++ )
+    for(unsigned i=0 ; i < unsigned(bis->shape[0]) ; i++ )
     {
         const double BetaInverse = bb[i] ; 
         numPhotons = ck.GetAverageNumberOfPhotons_s2<double>(emin, emax, BetaInverse, charge ); 

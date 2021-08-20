@@ -333,7 +333,7 @@ SLabelCache<int>* X4::MakeSurfaceIndexCache()
     const std::vector<G4LogicalBorderSurface*>* lbs_vec = X4LogicalBorderSurfaceTable::PrepareVector(lbs_table); 
     assert( num_lbs == lbs_vec->size() );
   
-    for(int ibs=0 ; ibs < lbs_vec->size() ; ibs++)
+    for(unsigned ibs=0 ; ibs < lbs_vec->size() ; ibs++)
     {
         const G4LogicalBorderSurface* bs = (*lbs_vec)[ibs] ; 
         _cache->add( bs, ibs ); 
@@ -341,7 +341,7 @@ SLabelCache<int>* X4::MakeSurfaceIndexCache()
 
     const G4LogicalSkinSurfaceTable*   sks_vec = G4LogicalSkinSurface::GetSurfaceTable() ; 
     assert( num_sks == sks_vec->size() );
-    for(int isk=0 ; isk < sks_vec->size() ; isk++)
+    for(unsigned isk=0 ; isk < sks_vec->size() ; isk++)
     {
         const G4LogicalSkinSurface* sk = (*sks_vec)[isk] ; 
         _cache->add( sk, isk + num_lbs ); 

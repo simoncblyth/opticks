@@ -1,25 +1,14 @@
 CSGOptiX : expt with OptiX 7 geometry and rendering 
 ======================================================
 
-Issues
---------
+TODO
+-----
 
-Direct running of CSGOptiXRender currently failing with::
-
-    2021-08-20 10:47:27.933 INFO  [1880522] [CSGOptiX::render@287] [
-    2021-08-20 10:47:27.933 INFO  [1880522] [Six::launch@437] [ params.width 1920 params.height 1080
-    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (700): Illegal address)
-    Abort trap: 6
-    epsilon:CSGOptiX blyth$ 
+* arrange default env settings such that the bare executable can run 
 
 
-But running via some scripts is working.
-
-TODO: arrange default env settings for the bare executable to avoid failure 
-
-
-census of scripts
-------------------------
+Census
+-------
 
 
 =====================  ====================  =================
@@ -29,8 +18,21 @@ CSGOptiXRender            fail 1
 ./cxr_overview.sh         OK
 ./cxr_view.sh 
 ./cxr_solid.sh            fail 1  
-
 =====================  ====================  =================
+
+
+
+Failure Modes
+----------------
+
+Fail 1::
+
+    2021-08-20 10:47:27.933 INFO  [1880522] [CSGOptiX::render@287] [
+    2021-08-20 10:47:27.933 INFO  [1880522] [Six::launch@437] [ params.width 1920 params.height 1080
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (700): Illegal address)
+    Abort trap: 6
+    epsilon:CSGOptiX blyth$ 
+
 
 
 code

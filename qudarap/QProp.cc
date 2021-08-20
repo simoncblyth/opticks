@@ -287,6 +287,14 @@ void QProp<T>::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned
     numBlocks.z = 1 ; 
 }
 
+
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+// quell warning: type attributes ignored after type is already defined [-Wattributes]
 template struct QUDARAP_API QProp<float>;
 template struct QUDARAP_API QProp<double>;
+#pragma GCC diagnostic pop
+
+
 

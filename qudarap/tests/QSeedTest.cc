@@ -15,7 +15,7 @@ void ExpectedSeeds(std::vector<int>& seeds,  const std::vector<int>& counts )
     for(unsigned i=0 ; i < ni ; i++)
     {
         int np = counts[i] ; 
-        for(unsigned p=0 ; p < np ; p++) seeds.push_back(i) ; 
+        for(int p=0 ; p < np ; p++) seeds.push_back(i) ; 
     }
     assert( seeds.size() == total );  
 }
