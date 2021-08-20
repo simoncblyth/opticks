@@ -5,8 +5,18 @@ CSGOptiXRender
 With option --arglist /path/to/arglist.txt each line of the arglist file 
 is taken as an MOI specifying the center_extent box to target. 
 Without an --arglist option the MOI envvar or default value  "sWorld:0:0" 
-is consulted to set the target box.
- 
+is used to set the viewpoint target box.
+
+
+important envvars
+
+MOI 
+    specifies the viewpoint target box, default "sWorld:0:0" 
+TOP
+    selects the part of the geometry to use, default i0 
+CFBASE
+    directory to load the CSGFoundry geometry from, default "$TMP/CSG_GGeo" 
+
 
 **/
 
@@ -20,6 +30,7 @@ is consulted to set the target box.
 #include "sutil_vec_math.h"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
+
 
 int main(int argc, char** argv)
 {
@@ -74,6 +85,7 @@ int main(int argc, char** argv)
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
 
+    // arglist allows multiple snaps with different viewpoints to be created  
     std::vector<std::string> args ; 
     if( arglist.size() > 0 )
     {    
