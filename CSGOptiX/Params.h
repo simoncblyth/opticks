@@ -53,17 +53,20 @@ struct Params
     float      tmax ; 
 
 
-    // simulation 
+    // simulation  : TODO: move these within qctx 
     uint32_t   num_photons ; 
     uint32_t   num_gensteps ; 
-
     int*       seeds ; 
     quad6*     gensteps ; 
     quad4*     photons ; 
 
 
 #ifndef __CUDACC__
+    static Params* d_param ; 
     Params(int raygenmode, unsigned width, unsigned height, unsigned depth); 
+    void device_alloc(); 
+    void upload(); 
+
     void setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_ );
     void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ );
     void setCamera(float tmin_, float tmax_, unsigned cameratype_ ) ;

@@ -162,6 +162,7 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     unsigned photon_id = idx.x ; 
     unsigned genstep_id = params.seeds[photon_id] ; 
     const quad6& gs = params.gensteps[genstep_id] ; 
+    int gencode = gs.q0.i.x ; 
 
     printf("//simulate photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d ) \n", 
        photon_id, 
@@ -171,6 +172,11 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
        gs.q0.i.z, 
        gs.q0.i.w 
       ); 
+
+
+    
+
+
 
 }
 

@@ -20,6 +20,8 @@ Fortunately thats easy to do by linking with Opticks::OKConf.
 find_package(OKConf REQUIRED CONFIG)
 find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
+#find_package(OpticksCUDA REQUIRED MODULE)
+
 
 set(WITH_PLOG YES)
 
@@ -77,6 +79,8 @@ set(SOURCES
     SGLM.cc
     SLabelCache.cc
 ) 
+    
+
 
 set(HEADERS
     OPTICKS_LOG.hh
@@ -141,7 +145,6 @@ set(HEADERS
     SLabelCache.hh
 
 
-    QUDA_CHECK.h
     SBuf.hh
     scuda.h
     squad.h
@@ -195,6 +198,8 @@ set_property( TARGET ${name} PROPERTY INTERFACE_DESCRIPTION ${desc} )
 
 
 target_link_libraries( ${name} PUBLIC Opticks::PLog Opticks::OKConf )
+
+#Opticks::OpticksCUDA 
 
 if(NLJSON_FOUND)
 target_link_libraries(${name} PUBLIC Opticks::NLJSON)

@@ -3,7 +3,7 @@
 #include "scuda.h"
 #include "squad.h"
 
-#include "SBuf.hh"
+#include "QBuf.hh"
 #include "iexpand.h"
 #include "strided_range.h"
 #include <thrust/device_vector.h>
@@ -16,7 +16,7 @@ See thrustrap/tests/iexpand_stridedTest.cu for the lead up to this
 
 **/
 
-extern SBuf<int> QSeed_create_photon_seeds(SBuf<quad6> gs)
+extern QBuf<int> QSeed_create_photon_seeds(QBuf<quad6> gs)
 {
     printf("//QSeed_create_photon_seeds \n");      
 
@@ -28,7 +28,7 @@ extern SBuf<int> QSeed_create_photon_seeds(SBuf<quad6> gs)
 
     int num_photons = thrust::reduce(np.begin(), np.end() );
 
-    SBuf<int> dseed = SBuf<int>::Alloc(num_photons); 
+    QBuf<int> dseed = QBuf<int>::Alloc(num_photons); 
 
     thrust::device_ptr<int> pseed = thrust::device_pointer_cast((int*)dseed.ptr) ; 
 

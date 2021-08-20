@@ -1,7 +1,5 @@
-Qudarap
+QUDARap
 ==========
-
-
 
 Opticks GPU Context Prototyping
 ----------------------------------
@@ -43,6 +41,15 @@ qcurand.h
 
 QU.hh
     utilitles : eg device<->host copies
+
+TODO
+------
+
+QEvent/qevent  
+   hold refs to gensteps, seeds, photons, ...
+
+   * coordinate with OpticksEvent or lower level NP based SEvent
+
 
 
 Observations

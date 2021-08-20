@@ -21,15 +21,6 @@ TODO:
 
 **/
 
-
-#ifdef OLD_WAY
-class GGeo ; 
-class GScintillatorLib ; 
-class GBndLib ; 
-//template <typename T> class NPY ; 
-#endif
-
-
 struct NP ; 
 template <typename T> struct QTex ; 
 template <typename T> struct QProp ; 
@@ -38,6 +29,7 @@ template <typename T> struct qctx ;
 struct QRng ; 
 struct QScint ;
 struct QBnd ; 
+struct QEvent ; 
 
 struct quad4 ; 
 union  quad ; 
@@ -51,25 +43,20 @@ struct QUDARAP_API QCtx
     static const QCtx* INSTANCE ; 
     static const QCtx* Get(); 
 
-#ifdef OLD_WAY
-    static void Init(const GGeo* ggeo); 
-#else
     static void Init(const NP* icdf, const NP* bnd );   
-    // could boot from full live CSGFoundry but simpler to pull just whats needed out of the cfbase/CSGFoundry/
-#endif
 
-    // need to template these too ?
-    const QRng*    rng ; 
+    const QRng*    rng ;          // need to template these too ?
     const QScint*  scint ; 
     const QBnd*    bnd ; 
-
     const QProp<T>*  prop ; 
+
+    QEvent*  event ; 
+
     qctx<T>*          ctx ;  
     qctx<T>*          d_ctx ;  
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
-
 
     QCtx();
     void init(); 

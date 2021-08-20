@@ -347,9 +347,5 @@ QAT4_FUNCTION void qat4::dump(const std::vector<qat4>& qv)
     }
 }
 
-
-
-
-
 #endif 
 

@@ -1,6 +1,14 @@
 optix7-preparation-overview
 ==============================
 
+Next Steps
+-------------
+
+* complete QUDARap/qctx photon generation with gencode generate switch  
+* get it to work within cx:CSGOptiXSimulate 
+* event handling encapsulated into a QEvent with qevent GPU counterpart 
+
+
 Accessors / Building
 -----------------------
 
@@ -23,7 +31,6 @@ Old accessors from .opticks_config::
     #cx(){  cd ~/CSGOptiX ; git status ;  }
     #cto(){ open https://github.com/simoncblyth/CSG/commits ; }
     #cxo(){ open https://github.com/simoncblyth/CSGOptiX/commits ; }
-
 
 
 Repos now sub folders under Opticks umbrella
@@ -105,6 +112,17 @@ Now::
       CSGOptiX : CUDA OpticksCore CSG QudaRap
 
 
+Where to develop what, General Principal 
+------------------------------------------
+
+* do not implement anything in CSGOptiX that can be done in QUDARap or SysRap
+
+Event Handling : follow approach of optixrap/OEvent but no OptiX, QEvent ?
+-------------------------------------------------------------------------------
+
+* QEvent encapsulation
+* need to make connection with OpticksEvent ? make QUDARap depend on OKC/OpticksEvent 
+* OR start with lower level SEvent, built of NP arrays ?
 
 
 Project summaries
@@ -127,16 +145,16 @@ CSG_GGeo
 CSGOptiX
     renders CSGFoundary geometry using either OptiX pre-7 or 7 
 
-QudaRap
+QUDARap
     pure CUDA photon generation, revolving around GPU side qctx.h 
 
     * **dependency on GGeo seems a bit out of place**
 
 
-Remove QudaRap GGeo,NPY  dependency ? YES PROCEEDING WITH THIS
+DONE : Removed QUDARap GGeo,NPY  dependency
 -----------------------------------------------------------------
 
-* hmm : GGeo dependency of Qudarap is fairly weak
+* hmm : GGeo dependency of QUDArap is fairly weak
 
 * bringing the simulation into CSGOptiX means depending on QudaRap, 
   so its beneficial for QudaRap to have few dependencies 
@@ -154,7 +172,6 @@ Remove QudaRap GGeo,NPY  dependency ? YES PROCEEDING WITH THIS
 
 * hmm adding GGeo dependency for the tests only is a possibility, but its cleaner to 
   load NP from within the persisted CSGFoundry 
-
 
 
 Progress
@@ -202,8 +219,9 @@ TODO
     * separate Param.h ? its simple enough that having common param seems not so problematic
     * tuck rendering stuff into separate struct or just separate methods ?
 
-
-* bring CSG, CSG_GGeo and CSGOptiX under opticks umbrella joining QudaRap  
+* DONE : bring CSG, CSG_GGeo and CSGOptiX under opticks umbrella joining QudaRap  
+ 
+  * needs to be standardized, turn tests into ctest etc..
 
 
 How much of a separation between rendering and simulation ? DECIDED AS LITTLE AS POSSIBLE

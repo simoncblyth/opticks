@@ -3,8 +3,6 @@
 #include <iomanip>
 
 #include "Ctx.h"
-#include "AS.h"
-#include "Params.h"
 
 #include <optix.h>
 #include <optix_stubs.h>
@@ -24,9 +22,8 @@ void Ctx::context_log_cb( unsigned int level, const char* tag, const char* messa
         << message << "\n";
 }
 
-Ctx::Ctx(Params* params_)
+Ctx::Ctx()
     :
-    params(params_),
     props(nullptr)
 {
     CUDA_CHECK( cudaFree( 0 ) ); 
@@ -38,19 +35,8 @@ Ctx::Ctx(Params* params_)
     options.logCallbackLevel          = 4;
     OPTIX_CHECK( optixDeviceContextCreate( cuCtx, &options, &context ) );
 
-    props = new Properties ; 
+    props = new Properties ;   // instanciation gets the properties
+    props->dump(); 
 }
-
-void Ctx::uploadParams()
-{
-    // TODO: avoid allocation on every upload 
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_param ), sizeof( Params ) ) );
-    CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( d_param ),
-                params, sizeof( Params ),
-                cudaMemcpyHostToDevice
-                ) );
-}
-
 
 

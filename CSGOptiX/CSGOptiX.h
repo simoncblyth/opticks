@@ -62,6 +62,7 @@ struct CSGOptiX : public SRenderer
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
 
     void init(); 
+    void initParams();
     void initGeometry();
     void initRender();
     void initSimulate();

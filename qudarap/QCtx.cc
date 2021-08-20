@@ -1,13 +1,7 @@
 #include "PLOG.hh"
 #include "SSys.hh"
 #include "scuda.h"
-
-#ifdef OLD_WAY
-#include "NPY.hpp"
-#include "GGeo.hh"
-#include "GBndLib.hh"
-#include "GScintillatorLib.hh"
-#endif
+#include "squad.h"
 
 #include "NP.hh"
 #include "QUDA_CHECK.h"
@@ -21,6 +15,7 @@
 #include "QScint.hh"
 #include "QBnd.hh"
 #include "QProp.hh"
+#include "QEvent.hh"
 #include "QCtx.hh"
 
 template <typename T>
@@ -33,46 +28,18 @@ template <typename T>
 const QCtx<T>* QCtx<T>::Get(){ return INSTANCE ; }
 
 template <typename T>
-void QCtx<T>::Init(
-#ifdef OLD_WAY
-    const GGeo* ggeo
-#else
-    const NP* icdf, 
-    const NP* bnd 
-#endif
-)
+void QCtx<T>::Init( const NP* icdf, const NP* bnd )
 {
-
-
-#ifdef OLD_WAY
-    GScintillatorLib* slib = ggeo->getScintillatorLib(); 
-    NP* icdf = slib->getBuf();  
-
-    GBndLib* blib = ggeo->getBndLib(); 
-    blib->createDynamicBuffers();       // hmm perhaps this is done already on loading now ?
-    NP* bnd = blib->getBuf(); 
-
-    bool qctx_dump = SSys::getenvbool("QCTX_DUMP"); 
-    if(qctx_dump)
-    { 
-        slib->dump();
-        blib->dump(); 
-    }
-#else
-
-
-#endif
-
     // on heap, to avoid dtors
 
     QRng* qrng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << qrng->desc(); 
 
     const char* qctx_icdf_path = SSys::getenvvar("QCTX_ICDF_PATH", nullptr ); 
-    if( qctx_icdf_path ) icdf = NP::Load(qctx_icdf_path) ; 
-    unsigned hd_factor = 0u ;   // 0/10/20
-
-    QScint* qscint = new QScint(icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
+    const NP* override_icdf = qctx_icdf_path ?  NP::Load(qctx_icdf_path) : nullptr ;
+ 
+    unsigned hd_factor = 0u ;  // 0,10,20
+    QScint* qscint = new QScint( override_icdf ? override_icdf : icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
     LOG(LEVEL) << qscint->desc(); 
 
     QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
@@ -91,6 +58,7 @@ QCtx<T>::QCtx()
     scint(QScint::Get()),
     bnd(QBnd::Get()),
     prop(QProp<T>::Get()),
+    event(nullptr),
     ctx(new qctx<T>),
     d_ctx(nullptr)
 {

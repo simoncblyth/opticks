@@ -120,6 +120,7 @@ void test_strided()
 }
 
 
+/*
 SBuf<int> UploadCounts()
 {
     std::vector<int> counts = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
@@ -283,18 +284,21 @@ void test_create_photon_seeds()
     SBuf<int> se = create_photon_seeds( gs ); 
     se.download_dump("se"); 
 }
+*/
+
 
 
 int main(void)
 {
     //test_iexpand(); 
-    //test_strided(); 
+    test_strided(); 
+
     //test_strided_scope(); 
     //test_strided_iexpand();
     //test_strided_iexpand_fake_gensteps();
     //test_strided_iexpand_fake_gensteps();
     //test_strided_iexpand_fake_gensteps_2();
-    test_create_photon_seeds();
+    //test_create_photon_seeds();
  
     return 0;
 }

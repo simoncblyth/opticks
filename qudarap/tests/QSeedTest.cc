@@ -1,7 +1,7 @@
 #include <vector>
 #include <cuda_runtime.h>
 #include "scuda.h"
-#include "SBuf.hh"
+#include "QBuf.hh"
 #include "QSeed.hh"
 
 int main(int argc, char** argv)
@@ -10,9 +10,10 @@ int main(int argc, char** argv)
     std::vector<int> xseeds ; 
     QSeed::ExpectedSeeds(xseeds, counts); 
 
-    SBuf<quad6> gs = QSeed::UploadFakeGensteps(counts) ; 
-    SBuf<int> se = QSeed::CreatePhotonSeeds(gs); 
-    se.download_dump("QSeed::CreatePhotonSeeds"); 
+    QBuf<quad6> gs = QSeed::UploadFakeGensteps(counts) ; 
+    QBuf<int> se = QSeed::CreatePhotonSeeds(gs); 
+    se.download_dump("QSeed::CreatePhotonSeeds", 15 ); 
+
 
     std::vector<int> seeds ; 
     se.download(seeds); 

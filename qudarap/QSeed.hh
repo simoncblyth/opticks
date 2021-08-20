@@ -1,7 +1,7 @@
 #pragma once
 
 struct quad6 ;
-template <typename T> struct SBuf ; 
+template <typename T> struct QBuf ; 
 #include "QUDARAP_API_EXPORT.hh"
 
 /**
@@ -16,11 +16,11 @@ and the genstep required to generate it.
 
 struct QUDARAP_API QSeed
 {
-    static SBuf<int> CreatePhotonSeeds(SBuf<quad6> gs); 
+    static QBuf<int> CreatePhotonSeeds(QBuf<quad6> gs); 
 
     // testing 
     static void ExpectedSeeds(std::vector<int>& seeds,  const std::vector<int>& counts );
-    static SBuf<quad6> UploadFakeGensteps(const std::vector<int>& counts) ; 
+    static QBuf<quad6> UploadFakeGensteps(const std::vector<int>& counts) ; 
     static int    CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ); 
 
 };

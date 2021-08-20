@@ -1,7 +1,9 @@
 #include "Params.h"
 
 #ifndef __CUDACC__
+#include "CUDA_CHECK.h"
 #include <glm/glm.hpp>
+#include <cuda_runtime.h>
 #include <iostream>
 
 void Params::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ )
@@ -78,6 +80,22 @@ void Params::setSize(unsigned width_, unsigned height_, unsigned depth_ )
     origin_x = width_ / 2;
     origin_y = height_ / 2;
 }
+
+
+Params* Params::d_param = nullptr ; 
+
+void Params::device_alloc()
+{
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_param ), sizeof( Params ) ) );   
+    assert( d_param ); 
+}
+void Params::upload()
+{
+    assert( d_param ); 
+    CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( d_param ), this, sizeof( Params ), cudaMemcpyHostToDevice) ); 
+}
+
+
 #endif
 
 

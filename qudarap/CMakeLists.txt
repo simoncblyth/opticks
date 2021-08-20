@@ -11,6 +11,9 @@ endif()
 set(FLAGS_VERBOSE ON)
 
 find_package(SysRap REQUIRED CONFIG)
+
+# hmm will need to depend on OpticksCore to use OpticksEvent in a QEvent 
+
 #find_package(GGeo REQUIRED CONFIG)    # OLD_WAY needs GGeo
 
 set(OpticksCUDA_VERBOSE ON)
@@ -19,6 +22,11 @@ find_package(OpticksCUDA REQUIRED MODULE)
 
 set(SOURCES
     QUDARAP_LOG.cc
+
+    QCtx.cc
+    QCtx.cu
+
+    QEvent.cc
 
     QU.cc
 
@@ -40,19 +48,21 @@ set(SOURCES
     QPoly.cc
     QPoly.cu
 
-    QCtx.cc
-    QCtx.cu
-
     QProp.cc
     QProp.cu
 
     QSeed.cc
     QSeed.cu
+
+    QBuf.cc
 )
 
 SET(HEADERS
     QUDARAP_LOG.hh
     QUDARAP_API_EXPORT.hh
+
+    QCtx.hh
+    QEvent.hh
 
     QU.hh
     QRng.hh
@@ -64,11 +74,11 @@ SET(HEADERS
 
 
     QPoly.hh
-    QCtx.hh
 
     QProp.hh
 
     QSeed.hh
+    QBuf.hh
 )
 
 set(LIBS
@@ -92,6 +102,10 @@ target_link_libraries( ${name} ${LIBS})
 #target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP FLIP_RANDOM )
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
+
+
+
+
 
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 

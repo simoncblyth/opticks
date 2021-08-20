@@ -1,5 +1,13 @@
 #pragma once
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+   #include <iostream>
+   #include <iomanip>
+   #include <sstream>
+#endif
+
+
 union UIF
 {
    float    f ; 
@@ -57,5 +65,26 @@ void quad6::zero()
     q4.u.x = 0 ; q4.u.y = 0 ; q4.u.z = 0 ; q4.u.w = 0 ; 
     q5.u.x = 0 ; q5.u.y = 0 ; q5.u.z = 0 ; q5.u.w = 0 ; 
 } 
+
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+
+inline std::ostream& operator<<(std::ostream& os, const quad6& v)  
+{
+    os  
+       << v.q0.f  
+       << v.q1.f  
+       << v.q2.f  
+       << v.q3.f
+       << v.q4.f
+       << v.q5.f
+       ;   
+    return os; 
+}
+#endif 
+
+
 
 

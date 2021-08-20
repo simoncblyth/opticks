@@ -14,7 +14,7 @@
 #include "SSys.hh"
 #include "SMeta.hh"
 #include "SVec.hh"
-#include "SBuf.hh"
+#include "QBuf.hh"
 
 #include "BTimeStamp.hh"
 #include "PLOG.hh"
@@ -106,6 +106,7 @@ void CSGOptiX::init()
     LOG(LEVEL) << " ptxpath " << ptxpath  ; 
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
+    initParams(); 
     initGeometry();
     initRender(); 
     initSimulate(); 
@@ -113,6 +114,10 @@ void CSGOptiX::init()
     LOG(LEVEL) << "]" ; 
 }
 
+void CSGOptiX::initParams()
+{
+    params->device_alloc(); 
+}
 
 void CSGOptiX::initGeometry()
 {
@@ -241,9 +246,12 @@ void CSGOptiX::prepareRenderParam()
 
 void CSGOptiX::prepareSimulateParam()
 {
+    // TODO: this needs to be encapsulated into    qctx/QEvent with qevent GPU counterpart 
+    // then the hookup here will just be setting params->qevt or params->qctx which hold qevent 
+
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
-    SBuf<quad6> gs = QSeed::UploadFakeGensteps(photon_counts_per_genstep) ;
-    SBuf<int> se = QSeed::CreatePhotonSeeds(gs);
+    QBuf<quad6> gs = QSeed::UploadFakeGensteps(photon_counts_per_genstep) ;
+    QBuf<int> se = QSeed::CreatePhotonSeeds(gs);
   
     params->gensteps = gs.ptr ; 
     params->seeds = se.ptr ; 
@@ -266,7 +274,7 @@ void CSGOptiX::prepareParam()
 #if OPTIX_VERSION < 70000
     six->updateContext(); 
 #else
-    ctx->uploadParams();  
+    params->upload();  
 #endif
 }
 
@@ -343,7 +351,6 @@ void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_l
     }
 }
 
-
 int CSGOptiX::render_flightpath()
 {
     FlightPath* fp = ok->getFlightPath();   // FlightPath lazily instanciated here (held by Opticks)
@@ -376,5 +383,4 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     //const char* npy_path = SStr::ReplaceEnd(jpgpath, ".jpg", ".npy"); 
     //NP::Write(npy_path, (double*)t.data(),  t.size() );
 }
-
 

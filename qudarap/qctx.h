@@ -53,12 +53,6 @@ struct qctx
 
     static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
  
-    quad6*              genstep ; 
-    unsigned            genstep_id ; 
-
-    quad4*              photon ; 
-    unsigned            photon_id ; 
-
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
     QCTX_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
@@ -93,11 +87,7 @@ struct qctx
         scint_meta(nullptr),
         boundary_tex(0),
         boundary_meta(nullptr),
-        prop(nullptr),
-        genstep(nullptr),
-        genstep_id(~0u),
-        photon(nullptr),
-        photon_id(~0u)
+        prop(nullptr)
     {
     }
 #endif
