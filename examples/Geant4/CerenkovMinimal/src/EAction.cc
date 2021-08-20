@@ -1,3 +1,6 @@
+
+#include "G4Event.hh"
+
 #include "G4Opticks.hh"
 #include "G4OpticksRecorder.hh"
 #include "EAction.hh"
@@ -13,9 +16,21 @@ void EAction::BeginOfEventAction(const G4Event* event)
 }
 void EAction::EndOfEventAction(const G4Event* event)
 {
-    okr->EndOfEventAction(event); 
+    std::cout << "[ EAction::EndOfEventAction " << std::endl ; 
 
     G4Opticks* g4ok = G4Opticks::Get(); 
-    g4ok->reset() ;  // crucially this resets the genstep collector
 
+    G4int eventID = event->GetEventID() ; 
+    int num_hits = g4ok->propagateOpticalPhotons(eventID) ;  
+    std::cout 
+        << " eventID " << eventID
+        << " num_hits " << num_hits 
+        << std::endl
+         ; 
+
+    okr->EndOfEventAction(event);   // reset gets done in here 
+    //g4ok->reset() ;  // crucially this resets the genstep collector
+
+
+    std::cout << "] EAction::EndOfEventAction " << std::endl ; 
 }

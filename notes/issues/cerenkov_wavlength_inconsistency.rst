@@ -1,6 +1,106 @@
 cerenkov_wavlength_inconsistency
 ===================================
 
+Fix : G4Opticks::collectGenstep_G4Cerenkov_1042
+--------------------------------------------------
+
+
+optixrap/cu/cerenkovstep.h::
+
+
+    @@ -258,7 +259,10 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
+         
+             u = curand_uniform(&rng) ; 
+     
+    -        wavelength = boundary_sample_reciprocal_domain_v3(u);  // TODO: sampling range needs to come from the genstep not default domain
+    +        //wavelength = boundary_sample_reciprocal_domain_v3(u);  // TODO: sampling range needs to come from the genstep not default domain
+    +
+    +        wavelength = lerp( cs.Pmin, cs.Pmax, u );  // the Pmin, Pmax names are misleading they are Wmin, Wmax
+    +        //rtPrintf(" wavelength %10.4f cs.Pmin %10.4f cs.Pmax %10.4f u %10.4f \n", wavelength, cs.Pmin, cs.Pmax, u ); 
+     
+
+
+
+
+::
+
+    1609 CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(
+    1610      const G4Track*  aTrack,
+    1611      const G4Step*   aStep,
+    1612      G4int       numPhotons,
+    1613 
+    1614      G4double    betaInverse,
+    1615      G4double    pmin,
+    1616      G4double    pmax,
+    1617      G4double    maxCos,
+    1618 
+    1619      G4double    maxSin2,
+    1620      G4double    meanNumberOfPhotons1,
+    1621      G4double    meanNumberOfPhotons2
+    1622     )
+    1623 {
+    1624     G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
+    1625     G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
+    1626 
+    1627     G4ThreeVector x0 = pPreStepPoint->GetPosition();
+    1628     G4double      t0 = pPreStepPoint->GetGlobalTime();
+    1629     G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
+    1630 
+    1631     G4double wmin_nm = h_Planck*c_light/pmax/nm ;
+    1632     G4double wmax_nm = h_Planck*c_light/pmin/nm ;
+    1633     bool wl_minmax = true ;
+    1634 
+    1635     LOG(LEVEL)
+    1636         << " pmin/eV " << std::setw(10) << std::fixed << std::setprecision(3) << pmin/eV
+    1637         << " pmax/eV " << std::setw(10) << std::fixed << std::setprecision(3) << pmax/eV
+    1638         << " wmin_nm  " << std::setw(10) << std::fixed << std::setprecision(3) << wmin_nm
+    1639         << " wmax_nm  " << std::setw(10) << std::fixed << std::setprecision(3) << wmax_nm
+    1640         << " wl_minmax " << wl_minmax
+    1641         ;
+    ....
+    1650     CGenstep gs = m_genstep_collector->collectCerenkovStep(
+    1651 
+    1652          OpticksGenstep_G4Cerenkov_1042,                // (int)gentype       (0)
+    1653          aTrack->GetTrackID(),                          // (int)ParenttId     
+    1654          aMaterial->GetIndex(),                         // (int)MaterialIndex
+    1655          numPhotons,                                    // (int)NumPhotons
+    1656 
+    1657          x0.x(),                                        // x0.x               (1)
+    1658          x0.y(),                                        // x0.y
+    1659          x0.z(),                                        // x0.z
+    1660          t0,                                            // t0 
+    1661 
+    1662          deltaPosition.x(),                             // DeltaPosition.x    (2)
+    1663          deltaPosition.y(),                             // DeltaPosition.y    
+    1664          deltaPosition.z(),                             // DeltaPosition.z    
+    1665          aStep->GetStepLength(),                        // step_length 
+    1666 
+    1667          aParticle->GetDefinition()->GetPDGEncoding(),  // (int)code          (3) 
+    1668          aParticle->GetDefinition()->GetPDGCharge(),    // charge
+    1669          aTrack->GetWeight(),                           // weight 
+    1670          preVelocity,                                   // preVelocity 
+    1671 
+    1672          betaInverse,                                   //                    (4) 
+    1673          wl_minmax ? wmin_nm : pmin,
+    1674          wl_minmax ? wmax_nm : pmax,
+    1675          maxCos,
+    1676 
+    1677          maxSin2,                                       //                    (5)
+    1678          meanNumberOfPhotons1,
+    1679          meanNumberOfPhotons2,
+    1680          postVelocity
+    1681     );
+    1682 
+    1683     LOG(LEVEL)  << gs.desc() ; 
+    1684     return gs ;
+    1685 }
+    1686 
+
+
+
+
+Issue
+--------
 
 Hi Zike, 
 

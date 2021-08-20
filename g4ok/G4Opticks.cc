@@ -1632,7 +1632,7 @@ CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(
     G4double wmax_nm = h_Planck*c_light/pmin/nm ; 
     bool wl_minmax = true ; 
 
-    LOG(LEVEL)
+    LOG(info)
         << " pmin/eV " << std::setw(10) << std::fixed << std::setprecision(3) << pmin/eV
         << " pmax/eV " << std::setw(10) << std::fixed << std::setprecision(3) << pmax/eV
         << " wmin_nm  " << std::setw(10) << std::fixed << std::setprecision(3) << wmin_nm

@@ -6,7 +6,8 @@
 which CerenkovMinimal
 
 #export CKM_OPTICKS_EXTRA="--dbgrec"
-export CKM_OPTICKS_EXTRA="--managermode 2 --nogpu"
+#export CKM_OPTICKS_EXTRA="--managermode 2 --nogpu --print_enabled"
+export CKM_OPTICKS_EXTRA="--managermode 2 --print_enabled"
 
 
 # logging evar control 

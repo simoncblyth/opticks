@@ -44,8 +44,8 @@ struct CerenkovStep
     /// the above first 4 quads are common to both CerenkovStep and ScintillationStep 
 
     float BetaInverse ; 
-    float Pmin ; 
-    float Pmax ; 
+    float Pmin ;   //   misleadingly this may be Wmin see G4Opticks::collectGenstep_G4Cerenkov_1042
+    float Pmax ;   //   misleadingly this may be Wmax see G4Opticks::collectGenstep_G4Cerenkov_1042  
     float maxCos ; 
  
     float maxSin2 ;
@@ -230,6 +230,7 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
         rtPrintf(" wavelength_0 %10.5f wavelength_1 %10.5f \n", wavelength_0, wavelength_1 );  
     }
 #endif
+     
 
 
      float cosTheta ;
@@ -258,7 +259,10 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
     
         u = curand_uniform(&rng) ; 
 
-        wavelength = boundary_sample_reciprocal_domain_v3(u);  // TODO: sampling range needs to come from the genstep not default domain
+        //wavelength = boundary_sample_reciprocal_domain_v3(u);  // TODO: sampling range needs to come from the genstep not default domain
+
+        wavelength = lerp( cs.Pmin, cs.Pmax, u );  // the Pmin, Pmax names are misleading they are Wmin, Wmax
+        //rtPrintf(" wavelength %10.4f cs.Pmin %10.4f cs.Pmax %10.4f u %10.4f \n", wavelength, cs.Pmin, cs.Pmax, u ); 
 
         float4 props = boundary_lookup(wavelength, cs.MaterialIndex, 0);  // USING cs.MaterialIndex not using geometry 
 

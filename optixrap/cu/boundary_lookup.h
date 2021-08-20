@@ -55,7 +55,11 @@ static __device__ __inline__ float boundary_sample_reciprocal_domain(const float
 
 static __device__ __inline__ float boundary_sample_reciprocal_domain_v3(const float& u)
 {
-    // see boundary_lookup.py
+    // see boundary_lookup.py  
+    //
+    // using this for Cerenkov results in a bug, should be using the energy/wavelength range 
+    // from RINDEX properties
+   
     float a = boundary_domain.x ; 
     float b = boundary_domain.y ; 
     return a*b/lerp( a, b, u ) ;

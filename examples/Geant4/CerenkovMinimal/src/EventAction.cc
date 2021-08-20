@@ -56,8 +56,10 @@ void EventAction::BeginOfEventAction(const G4Event* event)
 
 void EventAction::EndOfEventAction(const G4Event* event)
 {
+    G4cout << "\n###[ EventAction::EndOfEventAction \n\n\n\n" << G4endl ; 
     G4HCofThisEvent* HCE = event->GetHCofThisEvent() ;
     assert(HCE); 
+
 
 #ifdef WITH_OPTICKS
     G4cout << "\n###[ EventAction::EndOfEventAction G4Opticks.propagateOpticalPhotons\n" << G4endl ; 
