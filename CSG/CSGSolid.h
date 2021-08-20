@@ -20,7 +20,7 @@ it might be in future, ie keep it simple, no refs,
 
 struct CSGSolid   // Composite shape 
 {
-    char        label[16] ; 
+    char        label[16] ;   // sizeof 4 int 
 
     int         numPrim ; 
     int         primOffset ;

@@ -1,4 +1,4 @@
-// ./qat4.sh 
+// ./qat4Test.sh 
 
 #include "sutil_vec_math.h"
 

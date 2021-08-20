@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-source ../env.sh 
+#source ../env.sh 
 
 CUDA_PREFIX=/usr/local/cuda   # just use some CUDA headers, not using GPU 
 
@@ -8,15 +8,31 @@ CUDA_PREFIX=/usr/local/cuda   # just use some CUDA headers, not using GPU
 opts=""
 
 name=CSGFoundryTest
-srcs="$name.cc ../CSGFoundry.cc ../CSGSolid.cc ../CSGPrim.cc ../CSGPrimSpec.cc ../CSGNode.cc ../CU.cc ../Tran.cc ../Util.cc"
+srcs="$name.cc 
+      ../CSGFoundry.cc 
+      ../CSGSolid.cc 
+      ../CSGPrim.cc  
+      ../CSGPrimSpec.cc 
+      ../CSGNode.cc 
+      ../CSGName.cc 
+      ../CSGTarget.cc 
+      ../CU.cc 
+      ../Tran.cc"
+#srcs="$srcs ../Util.cc"
+
+
 echo compiling $srcs
 gcc -g \
        $srcs \
        -std=c++11 \
        -I.. \
        -I${CUDA_PREFIX}/include \
-       -I$PREFIX/externals/glm/glm \
+       -I${OPTICKS_PREFIX}/externals/glm/glm \
+       -I${OPTICKS_PREFIX}/externals/plog/include \
+       -I${OPTICKS_PREFIX}/include/SysRap \
        -L${CUDA_PREFIX}/lib -lcudart \
+       -L${OPTICKS_PREFIX}/lib \
+       -lSysRap \
        -lstdc++ $opts \
        -o /tmp/$name 
 
@@ -32,7 +48,7 @@ echo var $var dbg $dbg
 
 mkdir -p /tmp/CSGFoundryTest_
 
-cmd="$var=${CUDA_PREFIX}/lib $dbg /tmp/$name $*"
+cmd="$var=${CUDA_PREFIX}/lib:${OPTICKS_PREFIX}/lib $dbg /tmp/$name $*"
 echo $cmd
 eval $cmd
 [ $? -ne 0 ] && echo run error && exit 2

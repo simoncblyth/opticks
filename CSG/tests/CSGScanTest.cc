@@ -1,4 +1,4 @@
-// ./ScanTest.sh
+// ./CSGScanTest.sh
 
 #include <vector>
 #include <cassert>

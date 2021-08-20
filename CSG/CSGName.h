@@ -3,8 +3,9 @@
 #include <vector>
 #include <string>
 
+#include "CSG_API_EXPORT.hh"
 
-struct CSGName
+struct CSG_API CSGName
 {
     const CSGFoundry* foundry ; 
     const std::vector<std::string>& name ; 

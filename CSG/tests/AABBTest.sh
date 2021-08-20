@@ -2,9 +2,11 @@
 
 name=AABB 
 
+CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
+
 gcc $name.cc \
      -I.. \
-     -I/usr/local/cuda/include \
+     -I${CUDA_PREFIX}/include \
      -std=c++11 \
      -lstdc++ -o /tmp/$name  
 

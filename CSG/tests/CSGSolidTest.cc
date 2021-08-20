@@ -1,13 +1,15 @@
 // ./CSGSolidTest.sh
 
+#include "OPTICKS_LOG.hh"
 #include "sutil_vec_math.h"
-
 #include "CSGSolid.h"
 #include "NP.hh"
 #include <iostream>
 
 void test_Make_Write(const char* path)
 {
+    LOG(info) << path ; 
+
     CSGSolid r =  CSGSolid::Make("red"  ,    1, 0 ) ; r.center_extent = {1.f, 1.f, 1.f, 1.f } ;
     CSGSolid g =  CSGSolid::Make("green",    1, 1 ) ; g.center_extent = {2.f, 2.f, 2.f, 2.f } ;
     CSGSolid b =  CSGSolid::Make("blue",     1, 2 ) ; b.center_extent = {2.f, 2.f, 2.f, 2.f } ;
@@ -42,27 +44,25 @@ void test_Make_Write(const char* path)
 
 void test_labelMatch()
 {
-    CSGSolid r =  CSGSolid::Make("red"  ,    1, 0 ) ; r.center_extent = {1.f, 1.f, 1.f, 1.f } ;
+    LOG(info); 
 
+    CSGSolid r =  CSGSolid::Make("red"  ,    1, 0 ) ; r.center_extent = {1.f, 1.f, 1.f, 1.f } ;
 
     bool match_red = r.labelMatch("red") ;
     bool match_green = r.labelMatch("green") ;
 
-
     std::cout << " r.label " << r.label << std::endl ; 
     std::cout << " r.label " << r.label << " match_red " << match_red << std::endl ; 
     std::cout << " r.label " << r.label << " match_green " << match_green << std::endl ; 
-
-
 }
 
 
 int main(int argc, char** argv)
 {
-    //const char* path = argc > 1 ? argv[1] : "/tmp/CSGSolidTest.npy" ; 
-    //test_Make_Write(path); 
+    OPTICKS_LOG(argc, argv); 
 
-
+    const char* path = argc > 1 ? argv[1] : "/tmp/CSGSolidTest.npy" ; 
+    test_Make_Write(path); 
     test_labelMatch(); 
 
     return 0 ; 

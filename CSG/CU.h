@@ -1,11 +1,16 @@
 #pragma once
 
+#ifdef WITH_PLOG
 #include "plog/Severity.h"
+#endif
+
 #include <vector>
 
 struct CU
 {
+#ifdef WITH_PLOG
     static const plog::Severity LEVEL ; 
+#endif
 
     template <typename T>
     static T* UploadArray(const T* array, unsigned num_items ) ; 

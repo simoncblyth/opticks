@@ -3,7 +3,7 @@
 
 ::
 
-   GEOMETRY=zsph ipython -i ScanTest.py 
+   GEOMETRY=zsph ipython -i CSGScanTest.py 
 
 
 
@@ -53,11 +53,7 @@ def plot3d_arrows(pos, nrm, mag=1, grid=False):
     return cp
 
 
-
-
-
-
-class ScanTest(object):
+class CSGScanTest(object):
     def __init__(self, path):
         a = np.load(path) 
 
@@ -107,8 +103,7 @@ def plot2d(st):
 if __name__ == '__main__':
 
 
-    geometry = os.environ["GEOMETRY"]
-
+    geometry = os.environ.get("GEOMETRY", "elli")
     solid = geometry
 
     #solid = "sphe"
@@ -130,10 +125,10 @@ if __name__ == '__main__':
     #scan = "circle"
     scan = "rectangle"
 
-    base = "/tmp/ScanTest_scans"
+    base = "/tmp/CSGScanTest_scans"
     path = "%(base)s/%(scan)s_scan/%(solid)s.npy" % locals()
 
-    st = ScanTest(path)
+    st = CSGScanTest(path)
     print(st)
 
     #plot2d( st );
