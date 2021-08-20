@@ -1,6 +1,8 @@
 
 #include <cuda_runtime.h>
 #include "scuda.h"
+#include "squad.h"
+
 #include "SBuf.hh"
 #include "QSeed.hh"
 

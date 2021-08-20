@@ -1,6 +1,7 @@
 
 #include "curand_kernel.h"
 #include "scuda.h"
+#include "squad.h"
 //#include "qcerenkov.h"
 #include "stdio.h"
 

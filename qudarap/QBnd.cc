@@ -3,7 +3,10 @@
 #include <sstream>
 
 #include "SStr.hh"
+
 #include "scuda.h"
+#include "squad.h"
+
 #include "QUDA_CHECK.h"
 #include "NP.hh"
 

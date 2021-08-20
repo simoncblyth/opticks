@@ -2,7 +2,10 @@
 #include <sstream>
 #include <cstring>
 #include <cassert>
+
 #include "scuda.h"
+#include "squad.h"
+
 #include <cuda_runtime.h>
 #include <iostream>
 #include "cudaCheckErrors.h"

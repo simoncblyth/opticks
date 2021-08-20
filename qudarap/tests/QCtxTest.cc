@@ -16,6 +16,7 @@
 #include "QProp.hh"
 #include "QCtx.hh"
 #include "scuda.h"
+#include "squad.h"
 
 #include "OPTICKS_LOG.hh"
 

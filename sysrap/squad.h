@@ -17,8 +17,6 @@ union quad
 
 
 
-
-
 struct quad4 
 { 
     quad q0 ; 

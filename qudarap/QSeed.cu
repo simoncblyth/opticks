@@ -1,6 +1,8 @@
 #include <stdio.h>
 
 #include "scuda.h"
+#include "squad.h"
+
 #include "SBuf.hh"
 #include "iexpand.h"
 #include "strided_range.h"

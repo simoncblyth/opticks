@@ -1,5 +1,5 @@
 #pragma once
-
+#include "squad.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
    #define QGS_METHOD __device__
