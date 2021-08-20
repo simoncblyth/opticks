@@ -56,9 +56,10 @@ struct Params
     // simulation 
     uint32_t   num_photons ; 
     uint32_t   num_gensteps ; 
-    quad4*     photons ; 
-    quad6*     gensteps ; 
 
+    int*       seeds ; 
+    quad6*     gensteps ; 
+    quad4*     photons ; 
 
 
 #ifndef __CUDACC__

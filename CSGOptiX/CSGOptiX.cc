@@ -14,6 +14,7 @@
 #include "SSys.hh"
 #include "SMeta.hh"
 #include "SVec.hh"
+#include "SBuf.hh"
 
 #include "BTimeStamp.hh"
 #include "PLOG.hh"
@@ -42,6 +43,7 @@
 #endif
 
 #include "CSGOptiX.h"
+#include "QSeed.hh"
 
 
 const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "INFO" ); 
@@ -239,11 +241,17 @@ void CSGOptiX::prepareRenderParam()
 
 void CSGOptiX::prepareSimulateParam()
 {
-    unsigned num_photons = params->num_photons ; 
-    if( num_photons == 0 )
-    {
-        params->num_photons = 1 ; 
-    }
+    std::vector<int> counts = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
+    SBuf<quad6> gs = QSeed::UploadFakeGensteps(counts) ;
+    SBuf<int> se = QSeed::CreatePhotonSeeds(gs);
+  
+    params->gensteps = gs.ptr ; 
+    params->seeds = se.ptr ; 
+    params->num_photons = se.num_items ; 
+    params->photons = nullptr ; 
+
+    LOG(info) << " gs.desc " << gs.desc() ; 
+    LOG(info) << " se.desc " << se.desc() ; 
     LOG(info) << " params.num_photons " << params->num_photons ; 
 }
 
@@ -314,6 +322,11 @@ std::string CSGOptiX::Annotation( double dt, const char* bot_line )  // static
 }
 
 
+/**
+CSGOptiX::snap : Download frame pixels and write to file as jpg.
+------------------------------------------------------------------
+
+**/
 
 void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
 {

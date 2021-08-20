@@ -68,8 +68,8 @@ std::string QCerenkov::desc() const
 
 
 /**
-QCerenkov::GetAverageNumberOfPhotons_s
----------------------------------------
+QCerenkov::GetAverageNumberOfPhotons_s2
+----------------------------------------
 
 This was prototyped and tested in::
 

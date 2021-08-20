@@ -24,6 +24,7 @@ int main(int argc, char** argv)
 
     ORng* orng ; 
     orng = new ORng(&ok, ctx); 
+    assert( orng ); 
  
     unsigned nx = 1000000 ; 
     unsigned ny = 1 ; 

@@ -10,25 +10,50 @@ TODO
 Census
 -------
 
-
 =====================  ====================  =================   ========================
  commandline             A:Darwin/OptiX 5      B:Linux/OptiX 6    C:Linux/OptiX 7
 =====================  ====================  =================   ========================
-CSGOptiXRender            fail 1 
+CSGOptiXRender            fail 1               fail 2 OR hang      OK
+CSGOptiXSimulate                                                   OK 
 ./cxr_overview.sh         OK                   fail 1              OK 
-./cxr_view.sh                                                      OK : PMTs, no struts 
-./cxr_solid.sh            fail 1                                   OK 
+./cxr_view.sh             fail 1               hang                OK : PMTs, no struts 
+./cxr_solid.sh            fail 1               hang                OK 
 =====================  ====================  =================   ========================
 
 
 A
-   build : cd ~/opticks/CSGOptiX ; om 
+   build: cx ; om 
 B
-   build : cd ~/opticks/CSGOptiX ; om 
-   grab  : cd ~/opticks/CSGOptiX ; ./grab.sh 
+   build: cx ; om 
+   rsync: cx ; ./grab.sh 
 C
-   build : cd ~/opticks/CSGOptiX ; ./build7.sh 
-   grab  : cd ~/opticks/CSGOptiX ; ./grab.sh 
+   build: cx ; ./build7.sh 
+   rsync: cx ; ./grab.sh 
+
+
+
+CSGOptiXSimulate
+-----------------
+
+* requires OPTICKS_KEYDIR envvar (+OPTICKS_KEY?) pointing to a recent geocache with LS_ori material 
+
+
+scratch workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CSGOptiX::prepareSimulateParam
+
+1. upload gensteps
+2. create seeds from the gensteps (QSeed)
+3. set gensteps, seeds, photons refs in Params 
+
+
+4. optix7 launch 
+5. download photons 
+
+
+
+
 
 
 
@@ -43,6 +68,15 @@ Failure Modes
     libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: cudaDriver().CuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (700): Illegal address)
     Abort trap: 6
     epsilon:CSGOptiX blyth$ 
+
+
+2::
+
+    2021-08-20 19:21:37.525 INFO  [269834] [Six::createContextBuffer@99] node_buffer 0x7f7445a26c00
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Invalid value (Details: Function "RTresult _rtBufferSetDevicePointer(RTbuffer, int, void*)" caught exception: Setting buffer device pointers for devices on which OptiX isn't being run is disallowed.)
+    Aborted (core dumped)
+
 
 
 

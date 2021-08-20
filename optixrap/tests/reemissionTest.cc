@@ -29,6 +29,7 @@ int main(int argc, char** argv)
 
     ORng* orng ; 
     orng = new ORng(&ok, ctx); 
+    assert( orng ); 
  
     OScintillatorLib* oscin ;  
     oscin = new OScintillatorLib(context, slib );

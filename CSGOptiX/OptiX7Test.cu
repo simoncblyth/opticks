@@ -13,6 +13,13 @@
 
 extern "C" { __constant__ Params params ;  }
 
+
+/**
+trace : pure function, with no use of params, everything via args
+-------------------------------------------------------------------
+
+**/
+
 static __forceinline__ __device__ void trace(
         OptixTraversableHandle handle,
         float3                 ray_origin,
@@ -23,7 +30,7 @@ static __forceinline__ __device__ void trace(
         float*                 t, 
         float3*                position,
         unsigned*              identity
-        )
+        )   // pure 
 {
     uint32_t p0, p1, p2, p3 ;
     uint32_t p4, p5, p6, p7 ;
@@ -38,9 +45,9 @@ static __forceinline__ __device__ void trace(
     p6 = float_as_uint( position->z );
     p7 = *identity ;
  
-    unsigned SBToffset = 0u ; 
-    unsigned SBTstride = 1u ; 
-    unsigned missSBTIndex = 0u ; 
+    const unsigned SBToffset = 0u ; 
+    const unsigned SBTstride = 1u ; 
+    const unsigned missSBTIndex = 0u ; 
     const float rayTime = 0.0f ; 
 
     optixTrace(
@@ -68,10 +75,9 @@ static __forceinline__ __device__ void trace(
     position->y = uint_as_float( p5 );
     position->z = uint_as_float( p6 );
     *identity   = p7 ; 
- 
 }
 
-static __forceinline__ __device__ void setPayload( float3 normal, float t, float3 position, unsigned identity )
+static __forceinline__ __device__ void setPayload( float3 normal, float t, float3 position, unsigned identity ) // pure? 
 {
     optixSetPayload_0( float_as_uint( normal.x ) );
     optixSetPayload_1( float_as_uint( normal.y ) );
@@ -84,7 +90,7 @@ static __forceinline__ __device__ void setPayload( float3 normal, float t, float
     optixSetPayload_7( identity );
 }
 
-__forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity )
+__forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity )  // pure 
 {
     //float scale = iidx % 2u == 0u ? 0.5f : 1.f ; 
     float scale = 1.f ; 
@@ -97,6 +103,13 @@ __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned ide
 }
 
 
+
+
+/**
+render : non-pure, uses params for viewpoint inputs and pixels output 
+-----------------------------------------------------------------------
+
+**/
 
 static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim )
 {
@@ -138,6 +151,11 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     params.isect[index] = make_float4( position.x, position.y, position.z, uint_as_float(identity)) ; 
 }
  
+/**
+simulate : use params for gensteps, seeds input and photons output 
+----------------------------------------------------------------------
+
+**/
 
 static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim )
 {
@@ -145,6 +163,10 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     // propagate photon 
     printf("//simulate idx.x %d \n", idx.x ); 
 }
+
+
+
+
 
 extern "C" __global__ void __raygen__rg()
 {
@@ -228,4 +250,10 @@ extern "C" __global__ void __closesthit__ch()
 
     setPayload( normal, t,  world_position, identity );
 }
+
+
+
+
+
+
 
