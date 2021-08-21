@@ -126,7 +126,7 @@ qsim<T>* QSim<T>::init_upload()
     if(rng)
     {
         LOG(LEVEL) << " rng " << rng->desc() ; 
-        sim->r = rng->qr->rng_states ; 
+        sim->rngstate = rng->qr->rng_states ; 
     } 
     if(scint)
     {
@@ -175,7 +175,7 @@ std::string QSim<T>::desc() const
 {
     std::stringstream ss ; 
     ss << "QSim"
-       << " sim->r " << sim->r 
+       << " sim->rngstate " << sim->rngstate 
        << " sim->scint_tex " << sim->scint_tex 
        << " sim->scint_meta " << sim->scint_meta
        << " sim->boundary_tex " << sim->boundary_tex 
@@ -486,6 +486,44 @@ void QSim<T>::scint_photon( quad4* photon, unsigned num_photon )
 }
 
 
+
+
+template <typename T>
+extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qevent* evt )  ; 
+ 
+
+template <typename T>
+void QSim<T>::generate_photon(QEvent* evt)
+{
+    LOG(LEVEL) << "[" ; 
+
+    unsigned num_photon = evt->getNumPhotons() ;  
+    LOG(info) << " num_photon " << num_photon ; 
+
+    if( num_photon == 0 )
+    {
+        LOG(fatal) 
+           << " num_photon zero : MUST QEvent::setGenstep before QSim::generate_photon "  
+           ; 
+        return ; 
+    }
+
+    qevent* d_evt = evt->getDevicePtr(); 
+
+    assert( d_evt ); 
+    assert( d_sim ); 
+
+    configureLaunch( num_photon, 1 ); 
+
+    LOG(info) << "QSim_generate_photon... " ; 
+
+    QSim_generate_photon(numBlocks, threadsPerBlock, d_sim, d_evt );  
+
+    LOG(LEVEL) << "]" ; 
+}
+
+
+
 template <typename T>
 extern void QSim_boundary_lookup_all(    dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, quad* lookup  , unsigned width, unsigned height ); 
 
@@ -670,29 +708,112 @@ const NP* QSim<T>::getBoundaryTexSrc() const
 }
 
 template <typename T>
-void QSim<T>::dump_photon( quad4* photon, unsigned num_photon, unsigned edgeitems )
+void QSim<T>::dump_photon( quad4* photon, unsigned num_photon, const char* opt_, unsigned edgeitems )
 {
     LOG(LEVEL); 
+
+    std::string opt = opt_ ; 
+
+    bool f0 = opt.find("f0") != std::string::npos ; 
+    bool f1 = opt.find("f1") != std::string::npos ; 
+    bool f2 = opt.find("f2") != std::string::npos ; 
+    bool f3 = opt.find("f3") != std::string::npos ; 
+
+    bool i0 = opt.find("i0") != std::string::npos ; 
+    bool i1 = opt.find("i1") != std::string::npos ; 
+    bool i2 = opt.find("i2") != std::string::npos ; 
+    bool i3 = opt.find("i3") != std::string::npos ; 
+ 
+
     for(unsigned i=0 ; i < num_photon ; i++)
     {
         if( i < edgeitems || i > num_photon - edgeitems)
         {
             const quad4& p = photon[i] ;  
+
+
+
             std::cout 
                 << std::setw(10) << i 
-                << " q1.f.xyz " 
+                ; 
+
+            if(f0) std::cout 
+                << " q0.f.xyzw " 
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q0.f.x  
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q0.f.y
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q0.f.z  
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q0.f.w
+                ;
+
+            if(f1) std::cout 
+                << " q1.f.xyzw " 
                 << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.x  
                 << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.y
                 << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.z  
-                << " q2.f.xyz " 
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.w
+                ;
+
+            if(f2) std::cout 
+                << " q2.f.xyzw " 
                 << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.x  
                 << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.y
                 << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.z  
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.w
+                ;
+
+            if(f3) std::cout 
+                << " q3.f.xyzw " 
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q3.f.x  
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q3.f.y
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q3.f.z  
+                << std::setw(10) << std::fixed << std::setprecision(3) << p.q3.f.w
+                ;
+
+            if(i0) std::cout 
+                << " q0.i.xyzw " 
+                << std::setw(10) << p.q0.i.x  
+                << std::setw(10) << p.q0.i.y
+                << std::setw(10) << p.q0.i.z  
+                << std::setw(10) << p.q0.i.w  
+                ;
+
+            if(i1) std::cout 
+                << " q1.i.xyzw " 
+                << std::setw(10) << p.q1.i.x  
+                << std::setw(10) << p.q1.i.y  
+                << std::setw(10) << p.q1.i.z  
+                << std::setw(10) << p.q1.i.w  
+                ;
+
+            if(i2) std::cout
+                << " q2.i.xyzw " 
+                << std::setw(10) << p.q2.i.x  
+                << std::setw(10) << p.q2.i.y  
+                << std::setw(10) << p.q2.i.z  
+                << std::setw(10) << p.q2.i.w  
+                ;
+
+            if(i3) std::cout
+                << " q3.i.xyzw " 
+                << std::setw(10) << p.q3.i.x  
+                << std::setw(10) << p.q3.i.y  
+                << std::setw(10) << p.q3.i.z  
+                << std::setw(10) << p.q3.i.w  
+                ;
+      
+            std::cout 
                 << std::endl 
                 ; 
         }
     }
 }
+
+
+
+
+
+
+
 
 
 template struct QSim<float> ; 

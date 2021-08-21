@@ -110,6 +110,9 @@ target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 
+# see notes/issues/QUDARap_symbol_visibility_warnings.rst 
+#set_target_properties( ${name} PROPERTIES CXX_VISIBILITY_PRESET hidden )
+
 
 
 

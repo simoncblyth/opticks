@@ -22,9 +22,8 @@ QEvent::QEvent()
     :
     evt(new qevent),
     d_evt(QU::device_alloc<qevent>(1)),
-    gensteps(nullptr),
-    seeds(nullptr),
-    num_photons(0)
+    genstep(nullptr),
+    seed(nullptr)
 {
     INSTANCE = this ; 
 }
@@ -36,29 +35,37 @@ void QEvent::setGenstepsFake(const std::vector<int>& photon_counts_per_genstep )
     LOG(LEVEL) << "]" ; 
 }
 
-void QEvent::setGensteps(QBuf<quad6>* gs_ )
+void QEvent::setGensteps(QBuf<quad6>* gs )
 {
-    gensteps = gs_ ; 
-    seeds = QSeed::CreatePhotonSeeds(gensteps);
-    num_photons = seeds->num_items ; 
+    genstep = gs ; 
+    seed = QSeed::CreatePhotonSeeds(genstep);
+
+    evt->genstep = genstep->ptr ; 
+    evt->seed = seed->ptr ; 
+    evt->num_photon = seed->num_items ; 
+    evt->photon = QU::device_alloc<quad4>(evt->num_photon) ; 
+
+    QU::copy_host_to_device<qevent>(d_evt, evt, 1 );  
 }
+
+
+void QEvent::downloadPhoton( std::vector<quad4>& photon )
+{
+    photon.resize(evt->num_photon); 
+    QU::copy_device_to_host_and_free<quad4>( photon.data(), evt->photon, evt->num_photon ); 
+}
+
 
 std::string QEvent::desc() const
 {
     std::stringstream ss ; 
     ss 
-        << " gensteps " << ( gensteps ? gensteps->desc() : "-" ) 
-        << " seeeds " << ( seeds ? seeds->desc() : "-" ) 
+        << " genstep " << ( genstep ? genstep->desc() : "-" ) 
+        << " seed " << ( seed ? seed->desc() : "-" ) 
         ;
     return ss.str(); 
 }
 
-void QEvent::uploadEvt()  // Evt is tiny, just a few pointers
-{ 
-    evt->gs = gensteps->ptr ; 
-    evt->se = seeds->ptr ; 
-    QU::copy_host_to_device<qevent>(d_evt, evt, 1 );  
-}
 
 qevent* QEvent::getDevicePtr() const
 {
@@ -66,7 +73,7 @@ qevent* QEvent::getDevicePtr() const
 }
 unsigned QEvent::getNumPhotons() const
 {
-    return num_photons ; 
+    return evt->num_photon ; 
 }
 
 
@@ -74,7 +81,7 @@ extern "C" void QEvent_checkEvt(dim3 numBlocks, dim3 threadsPerBlock, qevent* ev
 
 void QEvent::checkEvt() 
 { 
-    unsigned width = seeds->num_items ; 
+    unsigned width = getNumPhotons() ; 
     unsigned height = 1 ; 
     LOG(info) << " width " << width << " height " << height ; 
 
@@ -85,7 +92,6 @@ void QEvent::checkEvt()
     assert( d_evt ); 
     QEvent_checkEvt(numBlocks, threadsPerBlock, d_evt, width, height );   
 }
-
 
 
 

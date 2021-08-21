@@ -11,6 +11,7 @@
 #include "QBnd.hh"
 #include "QProp.hh"
 #include "QSim.hh"
+#include "QEvent.hh"
 
 
 template <typename T>
@@ -32,8 +33,12 @@ struct QSimTest
     void cerenkov_photon_enprop(unsigned num_photon, int print_id); 
     void cerenkov_photon_expt(  unsigned num_photon, int print_id); 
 
+    void generate_photon(); 
+
+
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material, T x0, T x1, unsigned nx ); 
+
 
     void prop_lookup( int iprop, T x0, T x1, unsigned nx ); 
 
@@ -168,10 +173,28 @@ void QSimTest<T>::cerenkov_photon_expt(unsigned num_photon, int print_id)
     NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
 }
 
+template <typename T>
+void QSimTest<T>::generate_photon()
+{
+    LOG(info) << "[" ; 
 
+    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
+    unsigned x_total = 0 ; 
+    for(unsigned i=0 ; i < photon_counts_per_genstep.size() ; i++) x_total += photon_counts_per_genstep[i] ; 
 
+    QEvent* evt = new QEvent  ; 
+    evt->setGenstepsFake(photon_counts_per_genstep); 
+    qs.generate_photon(evt);  
 
+    std::vector<quad4> photon ; 
+    evt->downloadPhoton(photon); 
+    LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
 
+    qs.dump_photon( photon.data(), photon.size(), "i0,i1,i2,i3" ); 
+
+    LOG(info) << "]" ; 
+}
+ 
 
 
 /**
@@ -311,6 +334,7 @@ void QSimTest<T>::main(int argc, char** argv, char test )
         case 'K': cerenkov_photon(num, print_id);            ; break ; 
         case 'E': cerenkov_photon_enprop(num, print_id);     ; break ; 
         case 'X': cerenkov_photon_expt(  num, print_id);     ; break ; 
+        case 'G': generate_photon();                         ; break ; 
         case 'A': boundary_lookup_all()                      ; break ;  
         case 'W': boundary_lookup_line("Water", x0, x1, nx)  ; break ;  
         case 'L': boundary_lookup_line("LS",    x0, x1, nx)  ; break ;  
@@ -341,8 +365,8 @@ int main(int argc, char** argv)
         return 1 ; 
     }
 
-
-    char test = SSys::getenvchar("TEST", 'X'); 
+    char dtest = 'G' ; 
+    char test = SSys::getenvchar("TEST", dtest); 
     char type = SSys::getenvchar("TYPE", 'F'); 
     if( test == 'X') type = 'D' ;   // forced double 
 

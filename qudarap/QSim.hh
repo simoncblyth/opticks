@@ -26,6 +26,7 @@ template <typename T> struct qsim ;
 struct QRng ; 
 struct QScint ;
 struct QBnd ; 
+struct QEvent ; 
 
 struct quad4 ; 
 union  quad ; 
@@ -80,7 +81,9 @@ struct QUDARAP_API QSim
     void cerenkov_photon_enprop( quad4* photon, unsigned num_photon, int print_id ) ;
     void cerenkov_photon_expt(   quad4* photon, unsigned num_photon, int print_id ) ;
 
-    void dump_photon(            quad4* photon, unsigned num_photon, unsigned egdeitems=10 ); 
+    void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 
+
+    void generate_photon(QEvent* evt); 
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;

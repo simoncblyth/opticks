@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "QUDARAP_API_EXPORT.hh"
 #include <stdexcept>
 #include <sstream>
 
@@ -15,7 +16,7 @@
             ss << "CUDA call (" << #call << " ) failed with error: '"          \
                << cudaGetErrorString( error )                                  \
                << "' (" __FILE__ << ":" << __LINE__ << ")\n";                  \
-            throw sutil::QUDA_Exception( ss.str().c_str() );                        \
+            throw QUDA_Exception( ss.str().c_str() );                        \
         }                                                                      \
     } while( 0 )
 
@@ -31,16 +32,14 @@
             ss << "CUDA error on synchronize with error '"                     \
                << cudaGetErrorString( error )                                  \
                << "' (" __FILE__ << ":" << __LINE__ << ")\n";                  \
-            throw sutil::QUDA_Exception( ss.str().c_str() );                        \
+            throw QUDA_Exception( ss.str().c_str() );                        \
         }                                                                      \
     } while( 0 )
 
 
 
-namespace sutil
-{
 
-class QUDA_Exception : public std::runtime_error
+class QUDARAP_API QUDA_Exception : public std::runtime_error
 {
  public:
      QUDA_Exception( const char* msg )
@@ -51,4 +50,3 @@ class QUDA_Exception : public std::runtime_error
 
 
 
-} // end namespace sutil

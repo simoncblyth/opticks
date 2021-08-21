@@ -1,6 +1,7 @@
 #pragma once
 
 struct qevent ; 
+struct quad4 ;
 struct quad6 ;
 template <typename T> struct QBuf ; 
 
@@ -25,14 +26,15 @@ struct QUDARAP_API QEvent
 
     qevent*      evt ; 
     qevent*      d_evt ; 
-    QBuf<quad6>* gensteps ; 
-    QBuf<int>*   seeds  ;
-    unsigned     num_photons ; 
+    QBuf<quad6>* genstep ; 
+    QBuf<int>*   seed  ;
 
     void setGenstepsFake(const std::vector<int>& photons_per_genstep ); 
     void setGensteps(QBuf<quad6>* gs_ ); 
-    void uploadEvt(); 
-    void checkEvt() ; 
+
+    void downloadPhoton( std::vector<quad4>& photon ); 
+ 
+    void checkEvt() ;  // GPU side 
 
     qevent* getDevicePtr() const ;
     unsigned getNumPhotons() const ;  

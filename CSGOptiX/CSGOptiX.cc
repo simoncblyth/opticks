@@ -174,14 +174,17 @@ void CSGOptiX::initRender()
 void CSGOptiX::initSimulate() // once only (not per-event) simulate setup tasks .. 
 {
     qsim<float>* d_sim = sim->getDevicePtr(); 
-    params->sim = d_sim ; 
-
     qevent* d_evt = evt->getDevicePtr();  
+
+    params->sim = d_sim ; 
     params->evt = d_evt ; 
 }
 
 void CSGOptiX::prepareSimulateParam()   // per-event simulate setup prior to optix launch 
 {
+    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
+    evt->setGenstepsFake(photon_counts_per_genstep); 
+
     params->num_photons = evt->getNumPhotons() ; 
 }
 
@@ -304,7 +307,10 @@ double CSGOptiX::simulate()
     assert( raygenmode > 0 ); 
     LOG(LEVEL) << "[" ; 
 
-    double dt = launch(params->num_photons, 1u, 1u );
+    unsigned num_photons = params->num_photons ; 
+    assert( num_photons > 0 ); 
+
+    double dt = launch(num_photons, 1u, 1u );
 
     simulate_times.push_back(dt);  
     LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 

@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <optix.h>
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
+#include "squad.h"
 #include "qat4.h"
+#include "qevent.h"
 
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
@@ -168,23 +170,28 @@ simulate : uses params for input: gensteps, seeds and output photons
 static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim )
 {
     unsigned photon_id = idx.x ; 
-    unsigned genstep_id = params.seeds[photon_id] ; 
-    const quad6& gs = params.gensteps[genstep_id] ; 
-    int gencode = gs.q0.i.x ; 
+    qevent* evt      = params.evt ; 
+    if (photon_id >= evt->num_photon) return;
 
-    printf("//simulate photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d )  gencode %d \n", 
+    unsigned genstep_id = evt->seed[photon_id] ; 
+    const quad6& gs     = evt->genstep[genstep_id] ; 
+
+    printf("//cx.simulate photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d ) \n", 
        photon_id, 
        genstep_id, 
        gs.q0.i.x, 
        gs.q0.i.y,
        gs.q0.i.z, 
-       gs.q0.i.w,
-       gencode 
+       gs.q0.i.w
       ); 
+        
+    qsim<float>* sim = params.sim ; 
+    curandState rng = sim->rngstate[photon_id] ; 
 
+    quad4 p ;   
+    sim->generate_photon(p, rng, gs, photon_id, genstep_id );  
+    evt->photon[photon_id] = p ; 
 }
-
-
 
 
 

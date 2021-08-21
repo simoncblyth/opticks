@@ -9,11 +9,12 @@ __global__ void _QEvent_checkEvt(qevent* evt, unsigned width, unsigned height)
     if( ix >= width ) return ;  
 
     unsigned photon_id = ix ; 
-    unsigned genstep_id = evt->se[photon_id] ; 
-    const quad6& gs = evt->gs[genstep_id] ; 
+    unsigned genstep_id = evt->seed[photon_id] ; 
+    const quad6& gs = evt->genstep[genstep_id] ; 
     int gencode = gs.q0.i.x ; 
+    unsigned num_photon = evt->num_photon ; 
 
-    printf("//_QEvent_checkEvt width %d height %d photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d )  gencode %d \n", 
+    printf("//_QEvent_checkEvt width %d height %d photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d )  gencode %d num_photon %d \n", 
        width,
        height,
        photon_id, 
@@ -22,7 +23,8 @@ __global__ void _QEvent_checkEvt(qevent* evt, unsigned width, unsigned height)
        gs.q0.i.y,
        gs.q0.i.z, 
        gs.q0.i.w,
-       gencode 
+       gencode, 
+       num_photon 
       );  
 }
 

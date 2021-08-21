@@ -12,6 +12,7 @@ MORE EASILY TESTED FROM MULTIPLE ENVIRONMENTS HEADERS
 #include "qprop.h"
 #include "qsim.h"
 #include "qcurand.h"
+#include "qevent.h"
 
 
 template <typename T>
@@ -19,7 +20,7 @@ __global__ void _QSim_rng_sequence_0(qsim<T>* sim, T* rs, unsigned num_items )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_items) return;
-    curandState rng = *(sim->r + id) ; 
+    curandState rng = sim->rngstate[id]; 
     T u = qcurand<T>::uniform(&rng) ;
     if(id % 100000 == 0) printf("//_QSim_rng_sequence id %d u %10.4f    \n", id, u  ); 
     rs[id] = u ; 
@@ -40,12 +41,12 @@ template void QSim_rng_sequence_0(dim3, dim3, qsim<double>*, double*, unsigned);
 
 
 template <typename T>
-__global__ void _QSim_rng_sequence(qsim<T>* sim, T* seq, unsigned ni, unsigned nv, unsigned ioffset )
+__global__ void _QSim_rng_sequence(qsim<T>* sim, T* seq, unsigned ni, unsigned nv, unsigned id_offset )
 {
-    unsigned i = blockIdx.x*blockDim.x + threadIdx.x;
-    if (i >= ni) return;
-    curandState rng = *(sim->r + i + ioffset) ; 
-    unsigned ibase = i*nv ; 
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    if (id >= ni) return;
+    curandState rng = sim->rngstate[id+id_offset]; 
+    unsigned ibase = id*nv ; 
 
     for(unsigned v=0 ; v < nv ; v++)
     {
@@ -82,7 +83,7 @@ __global__ void _QSim_scint_wavelength(qsim<T>* sim, T* wavelength, unsigned num
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
 
-    curandState rng = *(sim->r + id) ; 
+    curandState rng = sim->rngstate[id]; 
 
     T wl ; 
     switch(hd_factor)
@@ -123,7 +124,7 @@ __global__ void _QSim_cerenkov_wavelength(qsim<T>* sim, T* wavelength, unsigned 
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
 
-    curandState rng = *(sim->r + id) ; 
+    curandState rng = sim->rngstate[id]; 
 
     T wl = sim->cerenkov_wavelength(id, rng);   
 
@@ -151,7 +152,7 @@ __global__ void _QSim_cerenkov_photon(qsim<T>* sim, quad4* photon, unsigned num_
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_photon) return;
 
-    curandState rng = *(sim->r + id) ; 
+    curandState rng = sim->rngstate[id]; 
 
     quad4 p ;   
     sim->cerenkov_photon(p, id, rng, print_id);   
@@ -183,7 +184,7 @@ __global__ void _QSim_cerenkov_photon_enprop(qsim<T>* sim, quad4* photon, unsign
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_photon) return;
 
-    curandState rng = *(sim->r + id) ; 
+    curandState rng = sim->rngstate[id]; 
 
     quad4 p ;   
     sim->cerenkov_photon_enprop(p, id, rng, print_id);   
@@ -215,7 +216,7 @@ __global__ void _QSim_cerenkov_photon_expt(qsim<T>* sim, quad4* photon, unsigned
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_photon) return;
 
-    curandState rng = *(sim->r + id) ; 
+    curandState rng = sim->rngstate[id]; 
 
     quad4 p ;   
     sim->cerenkov_photon_expt(p, id, rng, print_id);   
@@ -246,7 +247,6 @@ template void QSim_cerenkov_photon_expt(dim3, dim3, qsim<float>*, quad4*, unsign
 
 
 
-
 template <typename T>
 __global__ void _QSim_scint_photon(qsim<T>* sim, quad4* photon, unsigned num_photon )
 {
@@ -256,7 +256,7 @@ __global__ void _QSim_scint_photon(qsim<T>* sim, quad4* photon, unsigned num_pho
     //sim->r += id ;   
     //  would be problematic, do not want to change the the rng_states in global mem and get interference between threads
 
-    curandState rng = *(sim->r + id) ; 
+    curandState rng = sim->rngstate[id] ; 
 
     quad4 p ;   
     sim->scint_photon(p, rng); 
@@ -273,6 +273,49 @@ extern void QSim_scint_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim
 
 template void QSim_scint_photon(dim3, dim3, qsim<double>*, quad4*, unsigned ); 
 template void QSim_scint_photon(dim3, dim3, qsim<float>*, quad4*, unsigned ); 
+
+
+
+template <typename T>
+__global__ void _QSim_generate_photon(qsim<T>* sim, qevent* evt )
+{
+    unsigned photon_id = blockIdx.x*blockDim.x + threadIdx.x;
+    
+   if (photon_id >= evt->num_photon) return;
+    
+    curandState rng = sim->rngstate[photon_id] ; 
+    unsigned genstep_id = evt->seed[photon_id] ; 
+    const quad6& gs     = evt->genstep[genstep_id] ; 
+
+    //printf("//_QSim_generate_photon photon_id %d evt->num_photon %d genstep_id %d  \n", photon_id, evt->num_photon, genstep_id );  
+
+    quad4 p ;   
+    sim->generate_photon(p, rng, gs, photon_id, genstep_id ); 
+
+    evt->photon[photon_id] = p ; 
+
+}
+
+template <typename T>
+extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qevent* evt ) 
+{
+    printf("//QSim_generate_photon sim %p evt %p \n", sim, evt ); 
+    // NB trying to use the the sim and evt pointers here gives "Bus error" 
+    // thats because this is not yet on GPU, despite being compiled by nvcc
+    _QSim_generate_photon<T><<<numBlocks,threadsPerBlock>>>( sim, evt );
+} 
+
+template void QSim_generate_photon(dim3, dim3, qsim<double>*, qevent* ); 
+template void QSim_generate_photon(dim3, dim3, qsim<float>*,  qevent* ); 
+
+
+
+
+
+
+
+
+
 
 
 
@@ -379,5 +422,7 @@ extern  void QSim_prop_lookup_one(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>*
 
 template void QSim_prop_lookup_one(dim3, dim3, qsim<double>*, double*, const double*, unsigned, unsigned, unsigned, unsigned ) ; 
 template void QSim_prop_lookup_one(dim3, dim3, qsim<float>*, float*, const float*, unsigned, unsigned, unsigned, unsigned ) ; 
+
+
 
 

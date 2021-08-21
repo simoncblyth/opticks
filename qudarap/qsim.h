@@ -33,7 +33,7 @@ template <typename T> struct qprop ;
 template <typename T>
 struct qsim
 {
-    curandStateXORWOW*  r ; 
+    curandStateXORWOW*  rngstate ; 
 
     cudaTextureObject_t scint_tex ; 
     quad4*              scint_meta ;
@@ -79,10 +79,14 @@ struct qsim
 
     QSIM_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ); 
 
+
+    QSIM_METHOD void    generate_photon(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
+
+
 #else
     qsim()
         :
-        r(nullptr),
+        rngstate(nullptr),
         scint_tex(0),
         scint_meta(nullptr),
         boundary_tex(0),
@@ -627,9 +631,27 @@ inline QSIM_METHOD void qsim<T>::cerenkov_photon_expt(quad4& p, unsigned id, cur
 
 
 
+template <typename T>
+inline QSIM_METHOD void qsim<T>::generate_photon(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
+{
+    int gencode = gs.q0.i.x ; 
+    printf("//qsim::generate_photon  photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d )  gencode %d \n", 
+       photon_id, 
+       genstep_id, 
+       gs.q0.i.x, 
+       gs.q0.i.y,
+       gs.q0.i.z, 
+       gs.q0.i.w,
+       gencode 
+      );  
 
+   // TODO: switch(gencode) to various generate methods 
 
-
+    p.q0.i.x = 1 ; p.q0.i.y = 2 ; p.q0.i.z = 3 ; p.q0.i.w = 4 ; 
+    p.q1.i.x = 1 ; p.q1.i.y = 2 ; p.q1.i.z = 3 ; p.q1.i.w = 4 ; 
+    p.q2.i.x = 1 ; p.q2.i.y = 2 ; p.q2.i.z = 3 ; p.q2.i.w = 4 ; 
+    p.q3.i.x = 1 ; p.q3.i.y = 2 ; p.q3.i.z = 3 ; p.q3.i.w = 4 ; 
+}
 
 
 
