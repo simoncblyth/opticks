@@ -6,7 +6,6 @@
 #include "scuda.h"
 #include "QUDA_CHECK.h"
 #include "NP.hh"
-#include "QCtx.hh"
 #include "QProp.hh"
 #include "QU.hh"
 #include "qprop.h"

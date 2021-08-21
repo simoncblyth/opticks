@@ -21,6 +21,13 @@ struct QUDARAP_API QBuf
     T* ptr ; 
     unsigned num_items ; 
 
+    QBuf()
+        :
+        ptr(nullptr),
+        num_items(0)
+    {
+    }
+
     void device_alloc(unsigned num_items_)
     {   
         num_items = num_items_ ; 
@@ -56,22 +63,22 @@ struct QUDARAP_API QBuf
 
     void download_dump(const char* msg, unsigned edgeitems);
  
-    static QBuf<T> Upload( const T* data, unsigned num_items )
+    static QBuf<T>* Upload( const T* data, unsigned num_items )
     {   
-        QBuf<T> buf ; 
-        buf.device_alloc(num_items); 
-        buf.upload( data, num_items );  
+        QBuf<T>* buf = new QBuf<T> ; 
+        buf->device_alloc(num_items); 
+        buf->upload( data, num_items );  
         return buf ; 
     }   
-    static QBuf<T> Upload( const std::vector<T>& vec  )
+    static QBuf<T>* Upload( const std::vector<T>& vec  )
     {   
         return Upload( vec.data(), vec.size() );  
     }   
-    static QBuf<T> Alloc( unsigned num_items  )
+    static QBuf<T>* Alloc( unsigned num_items  )
     {   
-        QBuf<T> buf ; 
-        buf.device_alloc(num_items); 
-        buf.device_set(0); 
+        QBuf<T>* buf = new QBuf<T> ; 
+        buf->device_alloc(num_items); 
+        buf->device_set(0); 
         return buf ; 
     }   
 };

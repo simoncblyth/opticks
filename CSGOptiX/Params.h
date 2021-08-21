@@ -13,6 +13,8 @@ struct CSGNode ;
 struct qat4 ; 
 struct quad4 ; 
 struct quad6 ; 
+template <typename T> struct qsim ; 
+struct qevent ; 
 
 
 struct Params
@@ -53,12 +55,10 @@ struct Params
     float      tmax ; 
 
 
-    // simulation  : TODO: move these within qctx 
-    uint32_t   num_photons ; 
-    uint32_t   num_gensteps ; 
-    int*       seeds ; 
-    quad6*     gensteps ; 
-    quad4*     photons ; 
+    // simulation 
+    qsim<float>* sim ; 
+    qevent*      evt ;  
+    uint32_t     num_photons ; 
 
 
 #ifndef __CUDACC__

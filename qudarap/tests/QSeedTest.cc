@@ -10,13 +10,12 @@ int main(int argc, char** argv)
     std::vector<int> xseeds ; 
     QSeed::ExpectedSeeds(xseeds, counts); 
 
-    QBuf<quad6> gs = QSeed::UploadFakeGensteps(counts) ; 
-    QBuf<int> se = QSeed::CreatePhotonSeeds(gs); 
-    se.download_dump("QSeed::CreatePhotonSeeds", 15 ); 
-
+    QBuf<quad6>* gs = QSeed::UploadFakeGensteps(counts) ; 
+    QBuf<int>* se = QSeed::CreatePhotonSeeds(gs); 
+    se->download_dump("QSeed::CreatePhotonSeeds", 15 ); 
 
     std::vector<int> seeds ; 
-    se.download(seeds); 
+    se->download(seeds); 
 
     int mismatch = QSeed::CompareSeeds( seeds, xseeds ); 
     std::cout << " mismatch " << mismatch << std::endl ; 

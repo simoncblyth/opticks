@@ -3,7 +3,6 @@
 #include "curand_kernel.h"
 #include "scuda.h"
 #include "qgs.h"
-#include "qctx.h"
 
 
 __global__ void _QBnd_lookup_0(cudaTextureObject_t tex, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height )
@@ -41,9 +40,5 @@ extern "C" void QBnd_lookup_0(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureO
 {
     _QBnd_lookup_0<<<numBlocks,threadsPerBlock>>>( tex, meta, lookup, num_lookup, width, height );
 } 
-
-
-
-
 
 

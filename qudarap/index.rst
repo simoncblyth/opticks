@@ -4,7 +4,7 @@ QUDARap
 Opticks GPU Context Prototyping
 ----------------------------------
 
-qctx.h QCtx.hh
+qsim.h QSim.hh
     GPU context and CPU counterpart that preps it 
     acting as coordinator of all the below
 
@@ -57,7 +57,7 @@ Observations
 
 The pattern of having GPU and CPU counterparts is a useful one
 
-* do more of that to keep qctx/QCtx simple by encapsulating the pieces 
+* do more of that to keep qsim/QSim simple by encapsulating the pieces 
   like texture handling into qtex/QTex  
 
 

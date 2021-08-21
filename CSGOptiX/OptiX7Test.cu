@@ -35,6 +35,7 @@ static __forceinline__ __device__ void trace(
     uint32_t p0, p1, p2, p3 ;
     uint32_t p4, p5, p6, p7 ;
 
+    // hmm: why ? no need to input these ?
     p0 = float_as_uint( normal->x );
     p1 = float_as_uint( normal->y );
     p2 = float_as_uint( normal->z );
@@ -77,6 +78,13 @@ static __forceinline__ __device__ void trace(
     *identity   = p7 ; 
 }
 
+/**
+*setPayload* is used from __closesthit__ and __miss__ resulting 
+in the optixTrace output argument uints converted back to float above.
+Notice that could squeeze the payload in half by not including 
+the position and t. This is possible as the t output argument allows 
+to recalculate intersect position from from ray_position, ray_direction.
+**/
 static __forceinline__ __device__ void setPayload( float3 normal, float t, float3 position, unsigned identity ) // pure? 
 {
     optixSetPayload_0( float_as_uint( normal.x ) );
@@ -164,19 +172,15 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     const quad6& gs = params.gensteps[genstep_id] ; 
     int gencode = gs.q0.i.x ; 
 
-    printf("//simulate photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d ) \n", 
+    printf("//simulate photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d )  gencode %d \n", 
        photon_id, 
        genstep_id, 
        gs.q0.i.x, 
        gs.q0.i.y,
        gs.q0.i.z, 
-       gs.q0.i.w 
+       gs.q0.i.w,
+       gencode 
       ); 
-
-
-    
-
-
 
 }
 
@@ -196,15 +200,6 @@ extern "C" __global__ void __raygen__rg()
 } 
 
 
-extern "C" __global__ void __miss__ms()
-{
-    MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
-    float3 normal = make_float3( ms->r, ms->g, ms->b );   
-    float t_cand = 0.f ; 
-    float3 position = make_float3( 0.f, 0.f, 0.f ); 
-    unsigned identity = 0u ; 
-    setPayload( normal,  t_cand, position, identity );
-}
 
 /**
 __intersection__is
@@ -267,7 +262,15 @@ extern "C" __global__ void __closesthit__ch()
     setPayload( normal, t,  world_position, identity );
 }
 
-
+extern "C" __global__ void __miss__ms()
+{
+    MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
+    float3 normal = make_float3( ms->r, ms->g, ms->b );   
+    float t_cand = 0.f ; 
+    float3 position = make_float3( 0.f, 0.f, 0.f ); 
+    unsigned identity = 0u ; 
+    setPayload( normal,  t_cand, position, identity );
+}
 
 
 

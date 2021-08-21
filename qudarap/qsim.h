@@ -1,9 +1,9 @@
 #pragma once
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-   #define QCTX_METHOD __device__
+   #define QSIM_METHOD __device__
 #else
-   #define QCTX_METHOD 
+   #define QSIM_METHOD 
 #endif 
 
 #include "qgs.h"
@@ -11,14 +11,14 @@
 #include "qcurand.h"
 
 /**
-qctx
+qsim
 =====
 
 This is aiming to replace the OptiX 6 context in a CUDA-centric way.
 
 Hmm:
 
-* qctx encompasses global info relevant to to all photons, making any changes
+* qsim encompasses global info relevant to to all photons, making any changes
   to it from single threads must only be into thread-owned slots to avoid interference 
  
 * temporary working state local to each photon is currently being passed by reference args, 
@@ -31,7 +31,7 @@ template <typename T> struct qprop ;
 
 
 template <typename T>
-struct qctx
+struct qsim
 {
     curandStateXORWOW*  r ; 
 
@@ -55,32 +55,32 @@ struct qctx
  
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
-    QCTX_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
-    QCTX_METHOD float4  boundary_lookup( float nm, unsigned line, unsigned k ); 
+    QSIM_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
+    QSIM_METHOD float4  boundary_lookup( float nm, unsigned line, unsigned k ); 
 
-    QCTX_METHOD float   scint_wavelength_hd0(curandStateXORWOW& rng);  
-    QCTX_METHOD float   scint_wavelength_hd10(curandStateXORWOW& rng);
-    QCTX_METHOD float   scint_wavelength_hd20(curandStateXORWOW& rng);
-    QCTX_METHOD void    scint_dirpol(quad4& p, curandStateXORWOW& rng); 
-    QCTX_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
-    QCTX_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
-    QCTX_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);
+    QSIM_METHOD float   scint_wavelength_hd0(curandStateXORWOW& rng);  
+    QSIM_METHOD float   scint_wavelength_hd10(curandStateXORWOW& rng);
+    QSIM_METHOD float   scint_wavelength_hd20(curandStateXORWOW& rng);
+    QSIM_METHOD void    scint_dirpol(quad4& p, curandStateXORWOW& rng); 
+    QSIM_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
+    QSIM_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
+    QSIM_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);
 
-    QCTX_METHOD void    cerenkov_fabricate_genstep(GS& g, bool energy_range );
+    QSIM_METHOD void    cerenkov_fabricate_genstep(GS& g, bool energy_range );
 
-    QCTX_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g);
-    QCTX_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng) ; 
+    QSIM_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g);
+    QSIM_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng) ; 
 
-    QCTX_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
-    QCTX_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
+    QSIM_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
+    QSIM_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
 
-    QCTX_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
-    QCTX_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
+    QSIM_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
+    QSIM_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
 
-    QCTX_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ); 
+    QSIM_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ); 
 
 #else
-    qctx()
+    qsim()
         :
         r(nullptr),
         scint_tex(0),
@@ -100,13 +100,13 @@ struct qctx
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
 /**
-qctx::boundary_lookup ix iy : Low level integer addressing lookup
+qsim::boundary_lookup ix iy : Low level integer addressing lookup
 --------------------------------------------------------------------
 
 **/
 
 template <typename T>
-inline QCTX_METHOD float4 qctx<T>::boundary_lookup( unsigned ix, unsigned iy )
+inline QSIM_METHOD float4 qsim<T>::boundary_lookup( unsigned ix, unsigned iy )
 {
     const unsigned& nx = boundary_meta->q0.u.x  ; 
     const unsigned& ny = boundary_meta->q0.u.y  ; 
@@ -117,7 +117,7 @@ inline QCTX_METHOD float4 qctx<T>::boundary_lookup( unsigned ix, unsigned iy )
 }
 
 /**
-qctx::boundary_lookup nm line k 
+qsim::boundary_lookup nm line k 
 ----------------------------------
 
 nm:    float wavelength 
@@ -128,7 +128,7 @@ return float4 props
 
 **/
 template <typename T>
-inline QCTX_METHOD float4 qctx<T>::boundary_lookup( float nm, unsigned line, unsigned k )
+inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, unsigned k )
 {
     const unsigned& nx = boundary_meta->q0.u.x  ; 
     const unsigned& ny = boundary_meta->q0.u.y  ; 
@@ -147,7 +147,7 @@ inline QCTX_METHOD float4 qctx<T>::boundary_lookup( float nm, unsigned line, uns
 
 
 template <typename T>
-inline QCTX_METHOD float qctx<T>::scint_wavelength_hd0(curandStateXORWOW& rng) 
+inline QSIM_METHOD float qsim<T>::scint_wavelength_hd0(curandStateXORWOW& rng) 
 {
     constexpr float y0 = 0.5f/3.f ; 
     float u0 = curand_uniform(&rng); 
@@ -155,7 +155,7 @@ inline QCTX_METHOD float qctx<T>::scint_wavelength_hd0(curandStateXORWOW& rng)
 }
 
 /**
-qctx::scint_wavelength_hd10
+qsim::scint_wavelength_hd10
 --------------------------------------------------
 
 Idea is to improve handling of extremes by throwing ten times the bins
@@ -164,7 +164,7 @@ at those regions, using simple and cheap linear mappings.
 **/
 
 template <typename T>
-inline QCTX_METHOD float qctx<T>::scint_wavelength_hd10(curandStateXORWOW& rng) 
+inline QSIM_METHOD float qsim<T>::scint_wavelength_hd10(curandStateXORWOW& rng) 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
@@ -191,7 +191,7 @@ inline QCTX_METHOD float qctx<T>::scint_wavelength_hd10(curandStateXORWOW& rng)
 
 
 template <typename T>
-inline QCTX_METHOD float qctx<T>::scint_wavelength_hd20(curandStateXORWOW& rng) 
+inline QSIM_METHOD float qsim<T>::scint_wavelength_hd20(curandStateXORWOW& rng) 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
@@ -216,7 +216,7 @@ inline QCTX_METHOD float qctx<T>::scint_wavelength_hd20(curandStateXORWOW& rng)
 }
 
 /**
-qctx::cerenkov_wavelength
+qsim::cerenkov_wavelength
 --------------------------
 
 wavelength between Wmin and Wmax is uniform-reciprocal-sampled 
@@ -327,7 +327,7 @@ g4-cls G4Cerenkov::
 **/
 
 template <typename T>
-inline QCTX_METHOD float qctx<T>::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g) 
+inline QSIM_METHOD float qsim<T>::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g) 
 {
     float u0 ;
     float u1 ; 
@@ -367,7 +367,7 @@ inline QCTX_METHOD float qctx<T>::cerenkov_wavelength(unsigned id, curandStateXO
 
     if( id == 0u )
     {
-        printf("// qctx::cerenkov_wavelength id %d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f \n", id, sampledRI, cosTheta, sin2Theta, wavelength );  
+        printf("// qsim::cerenkov_wavelength id %d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f \n", id, sampledRI, cosTheta, sin2Theta, wavelength );  
     }
 
     return wavelength ; 
@@ -380,7 +380,7 @@ FOR NOW NOT THE USUAL PHOTON : BUT DEBUGGING THE WAVELENGTH SAMPLING
 
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
+inline QSIM_METHOD void qsim<T>::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
 {
     float u0 ;
     float u1 ; 
@@ -431,7 +431,7 @@ inline QCTX_METHOD void qctx<T>::cerenkov_photon(quad4& p, unsigned id, curandSt
 
         if( id == print_id )
         {
-            printf("//qctx::cerenkov_photon id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
+            printf("//qsim::cerenkov_photon id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
         }
 
 
@@ -463,7 +463,7 @@ inline QCTX_METHOD void qctx<T>::cerenkov_photon(quad4& p, unsigned id, curandSt
 
 
 /**
-qctx::cerenkov_photon_enprop
+qsim::cerenkov_photon_enprop
 ------------------------------
 
 Variation assuming Wmin, Wmax contain Pmin Pmax and using qprop::interpolate 
@@ -475,7 +475,7 @@ to sample the RINDEX
 
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
+inline QSIM_METHOD void qsim<T>::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
 {
     T u0 ;
     T u1 ; 
@@ -510,7 +510,7 @@ inline QCTX_METHOD void qctx<T>::cerenkov_photon_enprop(quad4& p, unsigned id, c
 
         if( id == print_id )
         {
-            printf("//qctx::cerenkov_photon_enprop id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
+            printf("//qsim::cerenkov_photon_enprop id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
         }
 
 
@@ -549,7 +549,7 @@ inline QCTX_METHOD void qctx<T>::cerenkov_photon_enprop(quad4& p, unsigned id, c
 
 
 /**
-qctx::cerenkov_photon_expt
+qsim::cerenkov_photon_expt
 -------------------------------------
 
 This does the sampling all in double, narrowing to 
@@ -562,7 +562,7 @@ Which things have most need to be  double to make any difference ?
 **/
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::cerenkov_photon_expt(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id )
+inline QSIM_METHOD void qsim<T>::cerenkov_photon_expt(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id )
 {
     double BetaInverse = 1.5 ; 
     double Pmin = 1.55 ; 
@@ -636,13 +636,13 @@ inline QCTX_METHOD void qctx<T>::cerenkov_photon_expt(quad4& p, unsigned id, cur
 
 
 /**
-qctx::cerenkov_wavelength with a fabricated genstep for testing
+qsim::cerenkov_wavelength with a fabricated genstep for testing
 -----------------------------------------------------------------
 
 **/
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::cerenkov_fabricate_genstep(GS& g, bool energy_range )
+inline QSIM_METHOD void qsim<T>::cerenkov_fabricate_genstep(GS& g, bool energy_range )
 {
     // picks the material line from which to get RINDEX
     unsigned MaterialLine = boundary_tex_MaterialLine_LS ;  
@@ -699,7 +699,7 @@ inline QCTX_METHOD void qctx<T>::cerenkov_fabricate_genstep(GS& g, bool energy_r
 
 
 template <typename T>
-inline QCTX_METHOD float qctx<T>::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng ) 
+inline QSIM_METHOD float qsim<T>::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng ) 
 {
     QG qg ;      
     qg.zero();  
@@ -711,7 +711,7 @@ inline QCTX_METHOD float qctx<T>::cerenkov_wavelength(unsigned id, curandStateXO
 }
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
+inline QSIM_METHOD void qsim<T>::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
 {
     QG qg ;      
     qg.zero();  
@@ -722,7 +722,7 @@ inline QCTX_METHOD void qctx<T>::cerenkov_photon(quad4& p, unsigned id, curandSt
 }
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
+inline QSIM_METHOD void qsim<T>::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
 {
     QG qg ;      
     qg.zero();  
@@ -739,7 +739,7 @@ inline QCTX_METHOD void qctx<T>::cerenkov_photon_enprop(quad4& p, unsigned id, c
 
 
 /**
-qctx::scint_dirpol
+qsim::scint_dirpol
 --------------------
 
 Fills the photon quad4 struct with the below:
@@ -752,7 +752,7 @@ NB no position, time.
 **/
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::scint_dirpol(quad4& p, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim<T>::scint_dirpol(quad4& p, curandStateXORWOW& rng)
 {
     float u0 = curand_uniform(&rng) ; 
     float u1 = curand_uniform(&rng) ; 
@@ -797,29 +797,10 @@ Prefer to just hold it in the context, and provide G4Opticks::setReemissionScint
 for setting it (default 0.) that is used from detector specific code which can read from 
 the Geant4 properties directly.  What about geocache ? Can hold/persist with GScintillatorLib metadata.
 
-
-epsilon:podio blyth$ jsc
-2 files to edit
-./Simulation/DetSimV2/PhysiSim/include/DsG4Scintillation.h
-./Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
-epsilon:offline blyth$ jsc
-2 files to edit
-./Simulation/DetSimV2/PhysiSim/include/DsG4Scintillation.h
-./Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
-epsilon:offline blyth$ jgr OpticalCONSTANT
-./Simulation/DetSimV2/PhysiSim/src/DsG4ScintSimple.cc:      Ratio_timeconstant = aMaterialPropertiesTable->GetProperty("OpticalCONSTANT");
-./Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc:      Ratio_timeconstant = aMaterialPropertiesTable->GetProperty("OpticalCONSTANT");
-./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:        LSMPT->AddProperty("OpticalCONSTANT",OpticalTimeConstant,OpticalYieldRatio,1);
-./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:        helper_mpt(LSMPT, "OpticalCONSTANT",         mcgt.data(), "Material.LS.OpticalCONSTANT");
-epsilon:offline blyth$ jgr OpticalTimeConstant
-./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstructionMaterial.icc:        LSMPT->AddProperty("OpticalCONSTANT",OpticalTimeConstant,OpticalYieldRatio,1);
-./Simulation/DetSimV2/DetSimOptions/src/OpticalProperty.icc:  double OpticalTimeConstant[1] = {1.50*ns };
-epsilon:offline blyth$ 
-
 **/
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim<T>::reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng)
 {
     scint_dirpol(p, rng); 
     float u4 = curand_uniform(&rng) ; 
@@ -827,7 +808,7 @@ inline QCTX_METHOD void qctx<T>::reemit_photon(quad4& p, float scintillationTime
 }
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::scint_photon(quad4& p, GS& g, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim<T>::scint_photon(quad4& p, GS& g, curandStateXORWOW& rng)
 {
     p.zero(); 
     scint_dirpol(p, rng); 
@@ -843,7 +824,7 @@ inline QCTX_METHOD void qctx<T>::scint_photon(quad4& p, GS& g, curandStateXORWOW
 
 
 template <typename T>
-inline QCTX_METHOD void qctx<T>::scint_photon(quad4& p, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim<T>::scint_photon(quad4& p, curandStateXORWOW& rng)
 {
     QG qg ;      
     qg.zero();  

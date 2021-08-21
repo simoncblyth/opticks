@@ -11,9 +11,7 @@ endif()
 set(FLAGS_VERBOSE ON)
 
 find_package(SysRap REQUIRED CONFIG)
-
 # hmm will need to depend on OpticksCore to use OpticksEvent in a QEvent 
-
 #find_package(GGeo REQUIRED CONFIG)    # OLD_WAY needs GGeo
 
 set(OpticksCUDA_VERBOSE ON)
@@ -23,10 +21,11 @@ find_package(OpticksCUDA REQUIRED MODULE)
 set(SOURCES
     QUDARAP_LOG.cc
 
-    QCtx.cc
-    QCtx.cu
+    QSim.cc
+    QSim.cu
 
     QEvent.cc
+    QEvent.cu
 
     QU.cc
 
@@ -61,8 +60,15 @@ SET(HEADERS
     QUDARAP_LOG.hh
     QUDARAP_API_EXPORT.hh
 
-    QCtx.hh
+    QSim.hh
+    qsim.h
+
+    qgs.h
+    qprop.h
+    qcurand.h
+ 
     QEvent.hh
+    qevent.h
 
     QU.hh
     QRng.hh

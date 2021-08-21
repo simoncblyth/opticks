@@ -11,10 +11,11 @@ set(TEST_SOURCES
    QScintTest.cc
    QCerenkovTest.cc
    QPolyTest.cc
-   QCtxTest.cc
+   QSimTest.cc
    QBndTest.cc 
    QPropTest.cc 
    QSeedTest.cc 
+   QEventTest.cc 
 
 )
 

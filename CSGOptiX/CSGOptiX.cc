@@ -22,7 +22,6 @@
 #include "Composition.hh"
 #include "FlightPath.hh"
 
-
 #include "sutil_vec_math.h"
 
 #include "CSGPrim.h"
@@ -43,7 +42,13 @@
 #endif
 
 #include "CSGOptiX.h"
+
+// simulation
+#include "QSim.hh"
+#include "qsim.h"
 #include "QSeed.hh"
+#include "QEvent.hh"
+
 
 
 const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "INFO" ); 
@@ -57,13 +62,11 @@ const char* CSGOptiX::PTXNAME = "OptiX7Test" ;
 const char* CSGOptiX::GEO_PTXNAME = nullptr ; 
 #endif
 
-
 const char* CSGOptiX::ENV(const char* key, const char* fallback)
 {
     const char* value = getenv(key) ; 
     return value ? value : fallback ; 
 }
-
 
 CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_) 
     :
@@ -87,12 +90,14 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
 #if OPTIX_VERSION < 70000
     six(new Six(ok, ptxpath, geoptxpath, params)),
 #else
-    ctx(new Ctx(params)),
+    ctx(new Ctx),
     pip(new PIP(ptxpath)), 
     sbt(new SBT(ok, pip)),
     frame(new Frame(params->width, params->height, params->depth)),  // CUDA holds the pixels 
 #endif
-    meta(new SMeta)
+    meta(new SMeta),
+    sim(new QSim<float>),
+    evt(new QEvent)
 {
     init(); 
 }
@@ -135,33 +140,7 @@ void CSGOptiX::initGeometry()
 #else
     sbt->setFoundry(foundry); 
 #endif
-
 }
-
-void CSGOptiX::initRender()
-{
-#if OPTIX_VERSION < 70000
-    six->initFrame();     // sets params->pixels, isect from optix device pointers
-#else
-    params->pixels = frame->getDevicePixels(); 
-    params->isect  = frame->getDeviceIsect(); 
-#endif
-}
-
-void CSGOptiX::initSimulate()
-{
-    params->gensteps = nullptr ; 
-    params->photons = nullptr ; 
-
-    if( raygenmode > 0 )
-    {
-        LOG(LEVEL) << " raygenmode " << raygenmode ;         
-        params->num_photons = 0 ;  // TODO: get from input gensteps 
-    }
-}
-
-
-
 
 void CSGOptiX::setTop(const char* tspec)
 {
@@ -177,6 +156,36 @@ void CSGOptiX::setTop(const char* tspec)
 
     LOG(LEVEL) << "]" << " tspec " << tspec ; 
 }
+
+
+
+
+
+void CSGOptiX::initRender()
+{
+#if OPTIX_VERSION < 70000
+    six->initFrame();     // sets params->pixels, isect from optix device pointers
+#else
+    params->pixels = frame->getDevicePixels(); 
+    params->isect  = frame->getDeviceIsect(); 
+#endif
+}
+
+void CSGOptiX::initSimulate() // once only (not per-event) simulate setup tasks .. 
+{
+    qsim<float>* d_sim = sim->getDevicePtr(); 
+    params->sim = d_sim ; 
+
+    qevent* d_evt = evt->getDevicePtr();  
+    params->evt = d_evt ; 
+}
+
+void CSGOptiX::prepareSimulateParam()   // per-event simulate setup prior to optix launch 
+{
+    params->num_photons = evt->getNumPhotons() ; 
+}
+
+
 
 /**
 CSGOptiX::setCE
@@ -206,7 +215,6 @@ void CSGOptiX::setCE(const glm::vec4& ce )
 
     composition->setNear(tmin); 
 }
-
 
 void CSGOptiX::prepareRenderParam()
 {
@@ -244,25 +252,6 @@ void CSGOptiX::prepareRenderParam()
         ; 
 }
 
-void CSGOptiX::prepareSimulateParam()
-{
-    // TODO: this needs to be encapsulated into    qctx/QEvent with qevent GPU counterpart 
-    // then the hookup here will just be setting params->qevt or params->qctx which hold qevent 
-
-    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
-    QBuf<quad6> gs = QSeed::UploadFakeGensteps(photon_counts_per_genstep) ;
-    QBuf<int> se = QSeed::CreatePhotonSeeds(gs);
-  
-    params->gensteps = gs.ptr ; 
-    params->seeds = se.ptr ; 
-    params->num_photons = se.num_items ; 
-    params->photons = nullptr ; 
-
-    LOG(info) << " gs.desc " << gs.desc() ; 
-    LOG(info) << " se.desc " << se.desc() ; 
-    LOG(info) << " params.num_photons " << params->num_photons ; 
-}
-
 void CSGOptiX::prepareParam()
 {
     switch(raygenmode)
@@ -286,9 +275,11 @@ double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
     // hmm width, heigth, deth not used pre-7 ?
     six->launch(); 
 #else
+    CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
+    assert( d_param && "must alloc and upload params before launch"); 
     CUstream stream;
     CUDA_CHECK( cudaStreamCreate( &stream ) );
-    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, ctx->d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
     CUDA_SYNC_CHECK();
 #endif
     t1 = BTimeStamp::RealTime();
@@ -312,7 +303,9 @@ double CSGOptiX::simulate()
     prepareParam(); 
     assert( raygenmode > 0 ); 
     LOG(LEVEL) << "[" ; 
+
     double dt = launch(params->num_photons, 1u, 1u );
+
     simulate_times.push_back(dt);  
     LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
@@ -333,7 +326,6 @@ std::string CSGOptiX::Annotation( double dt, const char* bot_line )  // static
 /**
 CSGOptiX::snap : Download frame pixels and write to file as jpg.
 ------------------------------------------------------------------
-
 **/
 
 void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
@@ -366,11 +358,9 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     double mn, mx, av ;
     SVec<double>::MinMaxAvg(t,mn,mx,av);
 
-    const char* nameprefix = ok->getNamePrefix() ;
-
     nlohmann::json& js = meta->js ;
     js["argline"] = ok->getArgLine();
-    js["nameprefix"] = nameprefix ; 
+    js["nameprefix"] = ok->getNamePrefix() ;
     js["jpg"] = jpg_path ; 
     js["emm"] = ok->getEnabledMergedMesh() ;
     js["mn"] = mn ;

@@ -6,60 +6,56 @@
 #include "plog/Severity.h"
 
 /**
-QCtx
+QSim
 ======
 
-TODO: 
+QSim is mostly constant and needs initializing once only 
+corresponding to the geometry and the physics process
+implementations.  Perhaps call it QPhys or QSim ?
 
-1. genstep provisioning/seeding etc : formerly this was Thrust based, same again ? 
-
-   * DONE in QSeed 
-
-2. integration with csgoptix (optix 7) to enable propagation within a geometry 
-
-   * WIP : removing GGeo dependency  
+Contrast with the QEvent with a very 
+different event-by-event lifecycle  
 
 **/
 
 struct NP ; 
 template <typename T> struct QTex ; 
 template <typename T> struct QProp ; 
-template <typename T> struct qctx ; 
+template <typename T> struct qsim ; 
 
 struct QRng ; 
 struct QScint ;
 struct QBnd ; 
-struct QEvent ; 
 
 struct quad4 ; 
 union  quad ; 
 
-
 template <typename T>
-struct QUDARAP_API QCtx
+struct QUDARAP_API QSim
 {
     static const plog::Severity LEVEL ; 
     static const char* PREFIX ; 
-    static const QCtx* INSTANCE ; 
-    static const QCtx* Get(); 
+    static const QSim* INSTANCE ; 
+    static const QSim* Get(); 
 
-    static void Init(const NP* icdf, const NP* bnd );   
+    static void UploadComponents(const NP* icdf, const NP* bnd );   
 
-    const QRng*    rng ;          // need to template these too ?
+    const QRng*    rng ;     // need to template these too ?
     const QScint*  scint ; 
     const QBnd*    bnd ; 
     const QProp<T>*  prop ; 
 
-    QEvent*  event ; 
-
-    qctx<T>*          ctx ;  
-    qctx<T>*          d_ctx ;  
+    qsim<T>*          sim ;  
+    qsim<T>*          d_sim ;  
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
 
-    QCtx();
-    void init(); 
+    QSim();
+    qsim<T>* init_upload(); 
+    qsim<T>* getDevicePtr() const ; 
+
+
     char getScintTexFilterMode() const ;
 
     std::string desc() const ; 
@@ -68,7 +64,7 @@ struct QUDARAP_API QCtx
     void configureLaunch2D( unsigned width, unsigned height );
 
     void rng_sequence_0( T* rs, unsigned num_items );
-    void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qctx<T>* d_ctx, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
+    void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
 
     void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset ); 
     void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );

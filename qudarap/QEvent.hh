@@ -1,13 +1,12 @@
 #pragma once
 
-//struct quad6 ;
-//template <typename T> struct QBuf ; 
+struct qevent ; 
+struct quad6 ;
+template <typename T> struct QBuf ; 
 
-#include <cuda_runtime.h>
-#include "scuda.h"
-#include "squad.h"
-#include "QBuf.hh"
-
+#include <vector>
+#include <string>
+#include "plog/Severity.h"
 #include "QUDARAP_API_EXPORT.hh"
 
 /**
@@ -18,12 +17,26 @@ QEvent
 
 struct QUDARAP_API QEvent
 {
-    QBuf<quad6> gs ; 
-    QBuf<int>   se ; 
+    static const plog::Severity LEVEL ; 
+    static const QEvent* INSTANCE ; 
+    static const QEvent* Get(); 
 
-    void setGensteps( QBuf<quad6> gs_ ); 
+    QEvent(); 
 
-    static QEvent* MakeFake(); 
+    qevent*      evt ; 
+    qevent*      d_evt ; 
+    QBuf<quad6>* gensteps ; 
+    QBuf<int>*   seeds  ;
+    unsigned     num_photons ; 
+
+    void setGenstepsFake(const std::vector<int>& photons_per_genstep ); 
+    void setGensteps(QBuf<quad6>* gs_ ); 
+    void uploadEvt(); 
+    void checkEvt() ; 
+
+    qevent* getDevicePtr() const ;
+    unsigned getNumPhotons() const ;  
+    std::string desc() const ; 
 };
 
 

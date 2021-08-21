@@ -10,7 +10,7 @@ Minimize the code here, as this "junction" code cannot be easily tested/mocked f
 Instead implement in simple headers like qcerenkov.h for flexibility of usage and testing and for modularization.
 
 * TODO: qcerenkov.h GPU side helper instance collecting resources, metadata etc.. : texObj, photon,  etc.. 
-  in order to modularize  and keep qctx.h simple
+  in order to modularize  and keep qsim.h simple
 
 **/
 

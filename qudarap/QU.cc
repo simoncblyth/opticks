@@ -2,9 +2,11 @@
 #include "QUDA_CHECK.h"
 #include "QU.hh"
 #include "curand_kernel.h"
-#include "qctx.h"
+
+#include "qsim.h"
 #include "qprop.h"
 #include "qrng.h"
+#include "qevent.h"
 
 
 template <typename T> 
@@ -86,11 +88,12 @@ template float*         QU::UploadArray<float>(const float* array, unsigned num_
 template unsigned*      QU::UploadArray<unsigned>(const unsigned* array, unsigned num_items) ;
 template quad4*         QU::UploadArray<quad4>(const quad4* array, unsigned num_items) ;
 template curandState*   QU::UploadArray<curandState>(const curandState* array, unsigned num_items) ;
-template qctx<float>*   QU::UploadArray<qctx<float>>(const qctx<float>* array, unsigned num_items) ;
-template qctx<double>*  QU::UploadArray<qctx<double>>(const qctx<double>* array, unsigned num_items) ;
+template qsim<float>*   QU::UploadArray<qsim<float>>(const qsim<float>* array, unsigned num_items) ;
+template qsim<double>*  QU::UploadArray<qsim<double>>(const qsim<double>* array, unsigned num_items) ;
 template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items) ;
 template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items) ;
 template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items) ;
+template qevent*        QU::UploadArray<qevent>(const qevent* array, unsigned num_items) ;
 
 
 /**
@@ -114,8 +117,8 @@ template float*         QU::DownloadArray<float>(const float* d_array, unsigned 
 template unsigned*      QU::DownloadArray<unsigned>(const unsigned* d_array, unsigned num_items) ;
 template quad4*         QU::DownloadArray<quad4>(const quad4* d_array, unsigned num_items) ;
 template curandState*   QU::DownloadArray<curandState>(const curandState* d_array, unsigned num_items) ;
-template qctx<float>*   QU::DownloadArray<qctx<float>>(const qctx<float>* d_array, unsigned num_items) ;
-template qctx<double>*  QU::DownloadArray<qctx<double>>(const qctx<double>* d_array, unsigned num_items) ;
+template qsim<float>*   QU::DownloadArray<qsim<float>>(const qsim<float>* d_array, unsigned num_items) ;
+template qsim<double>*  QU::DownloadArray<qsim<double>>(const qsim<double>* d_array, unsigned num_items) ;
 template qprop<float>*  QU::DownloadArray<qprop<float>>(const qprop<float>* d_array, unsigned num_items) ;
 template qprop<double>* QU::DownloadArray<qprop<double>>(const qprop<double>* d_array, unsigned num_items) ;
 
@@ -148,6 +151,7 @@ template double*    QU::device_alloc<double>(unsigned num_items) ;
 template unsigned*  QU::device_alloc<unsigned>(unsigned num_items) ;
 template quad*      QU::device_alloc<quad>(unsigned num_items) ;
 template quad4*     QU::device_alloc<quad4>(unsigned num_items) ;
+template qevent*    QU::device_alloc<qevent>(unsigned num_items) ;
 
 
 
@@ -196,6 +200,7 @@ void QU::copy_host_to_device( T* d, const T* h, unsigned num_items)
 template void QU::copy_host_to_device( float* d, const float* h, unsigned num_items);
 template void QU::copy_host_to_device( double* d, const double* h, unsigned num_items);
 template void QU::copy_host_to_device( unsigned* d, const unsigned* h, unsigned num_items);
+template void QU::copy_host_to_device( qevent* d, const qevent* h, unsigned num_items);
 
 
 

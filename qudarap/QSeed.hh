@@ -16,11 +16,11 @@ and the genstep required to generate it.
 
 struct QUDARAP_API QSeed
 {
-    static QBuf<int> CreatePhotonSeeds(QBuf<quad6> gs); 
+    static QBuf<int>* CreatePhotonSeeds(QBuf<quad6>* gs); 
 
     // testing 
     static void ExpectedSeeds(std::vector<int>& seeds,  const std::vector<int>& counts );
-    static QBuf<quad6> UploadFakeGensteps(const std::vector<int>& counts) ; 
+    static QBuf<quad6>* UploadFakeGensteps(const std::vector<int>& counts) ; 
     static int    CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ); 
 
 };

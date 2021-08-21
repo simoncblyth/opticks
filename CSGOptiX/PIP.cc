@@ -3,6 +3,7 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
+#include <cassert>
 
 #include <optix.h>
 #include <optix_stubs.h>

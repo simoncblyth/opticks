@@ -6,9 +6,9 @@
 #include "QBuf.hh"
 #include "QSeed.hh"
 
-extern QBuf<int> QSeed_create_photon_seeds(QBuf<quad6> gs); 
+extern QBuf<int>* QSeed_create_photon_seeds(QBuf<quad6>* gs); 
 
-QBuf<int> QSeed::CreatePhotonSeeds(QBuf<quad6> gs)  // static 
+QBuf<int>* QSeed::CreatePhotonSeeds(QBuf<quad6>* gs)  // static 
 {
     return QSeed_create_photon_seeds(gs); 
 }
@@ -29,7 +29,7 @@ void QSeed::ExpectedSeeds(std::vector<int>& seeds,  const std::vector<int>& coun
 }
 
 
-QBuf<quad6> QSeed::UploadFakeGensteps(const std::vector<int>& counts) // static 
+QBuf<quad6>* QSeed::UploadFakeGensteps(const std::vector<int>& counts) // static 
 {
     std::vector<quad6> gs ; 
     unsigned ni = counts.size(); 

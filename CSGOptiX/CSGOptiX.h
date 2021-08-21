@@ -10,6 +10,9 @@ struct SMeta ;
 struct CSGFoundry ; 
 struct CSGView ; 
 
+template <typename T> struct QSim ; 
+struct QEvent ; 
+
 struct Params ; 
 class Opticks ; 
 
@@ -58,6 +61,10 @@ struct CSGOptiX : public SRenderer
     Frame* frame ; 
 #endif
     SMeta* meta ; 
+
+    QSim<float>* sim ; 
+    QEvent*      evt ;  
+
 
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
 
