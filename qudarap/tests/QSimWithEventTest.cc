@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     qe.downloadPhoton(photon); 
     LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
 
-    qs.dump_photon( photon.data(), photon.size(), "i0,i1,i2,i3" );  
+    qs.dump_photon( photon.data(), photon.size(), "f0,f1,f2,i3" );  
 
     cudaDeviceSynchronize(); 
 

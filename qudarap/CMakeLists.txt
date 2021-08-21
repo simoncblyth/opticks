@@ -10,9 +10,9 @@ endif()
 
 set(FLAGS_VERBOSE ON)
 
-find_package(SysRap REQUIRED CONFIG)
-# hmm will need to depend on OpticksCore to use OpticksEvent in a QEvent 
-#find_package(GGeo REQUIRED CONFIG)    # OLD_WAY needs GGeo
+#find_package(SysRap REQUIRED CONFIG)
+find_package(OpticksCore REQUIRED CONFIG) # needed for OpticksEvent OpticksGenstep enum 
+#find_package(GGeo REQUIRED CONFIG)       # OLD_WAY needed GGeo, but thats too high level for comfort
 
 set(OpticksCUDA_VERBOSE ON)
 find_package(OpticksCUDA REQUIRED MODULE)
@@ -88,10 +88,11 @@ SET(HEADERS
 )
 
 set(LIBS
-    Opticks::SysRap
+    Opticks::OpticksCore
 )
 
 # OLD_WAY needed GGeo
+# Opticks::SysRap
 # Opticks::GGeo
 
 if(UNIX AND NOT APPLE)
@@ -109,10 +110,8 @@ target_link_libraries( ${name} ${LIBS})
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-
 # see notes/issues/QUDARap_symbol_visibility_warnings.rst 
 #set_target_properties( ${name} PROPERTIES CXX_VISIBILITY_PRESET hidden )
-
 
 
 

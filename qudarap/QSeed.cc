@@ -3,6 +3,8 @@
 #include "scuda.h"
 #include "squad.h"
 
+#include "OpticksGenstep.h"
+
 #include "QBuf.hh"
 #include "QSeed.hh"
 
@@ -36,9 +38,11 @@ QBuf<quad6>* QSeed::UploadFakeGensteps(const std::vector<int>& counts) // static
 
     for(unsigned i=0 ; i < ni ; i++)
     {   
+        int gencode = OpticksGenstep_TORCH ; 
+
         quad6 qq ; 
-        qq.q0.i.x = i  ;   qq.q0.i.y = -1 ;   qq.q0.i.z = -1 ;   qq.q0.i.w = counts[i] ; 
-        qq.q1.i.x = -1 ;   qq.q1.i.y = -1 ;   qq.q1.i.z = -1 ;   qq.q1.i.w = -1 ; 
+        qq.q0.i.x = gencode  ;   qq.q0.i.y = -1 ;   qq.q0.i.z = -1 ;   qq.q0.i.w = counts[i] ; 
+        qq.q1.f.x = 0.f ;  qq.q1.f.y = 0.f ;  qq.q1.f.z = 0.f ;   qq.q1.f.w = 0.f ; 
         qq.q2.i.x = -1 ;   qq.q2.i.y = -1 ;   qq.q2.i.z = -1 ;   qq.q2.i.w = -1 ; 
         qq.q3.i.x = -1 ;   qq.q3.i.y = -1 ;   qq.q3.i.z = -1 ;   qq.q3.i.w = -1 ; 
         qq.q4.i.x = -1 ;   qq.q4.i.y = -1 ;   qq.q4.i.z = -1 ;   qq.q4.i.w = -1 ; 

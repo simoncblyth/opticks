@@ -16,6 +16,7 @@ CSGOptiXSimulate
 #include "CSGOptiX.h"
 
 #include "QSim.hh"
+#include "QEvent.hh"
 
 
 int main(int argc, char** argv)
@@ -51,8 +52,17 @@ int main(int argc, char** argv)
 
     double dt = cx.simulate();  
     LOG(info) << " dt " << dt ;
- 
-    // TODO : save gensteps and photons
+
+
+    QSim<float>* sim = cx.sim ; 
+    QEvent* evt = cx.evt ; 
+
+    std::vector<quad4> photon ; 
+    evt->downloadPhoton(photon); 
+    LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
+    sim->dump_photon( photon.data(), photon.size(), "i0,i1,i2,i3" );  
+
+    cudaDeviceSynchronize(); 
 
     return 0 ; 
 }

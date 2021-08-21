@@ -6,6 +6,8 @@
    #define QSIM_METHOD 
 #endif 
 
+#include "OpticksGenstep.h"
+
 #include "qgs.h"
 #include "qprop.h"
 #include "qcurand.h"
@@ -79,8 +81,9 @@ struct qsim
 
     QSIM_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ); 
 
-
-    QSIM_METHOD void    generate_photon(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
+    QSIM_METHOD void    generate_photon(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
+    QSIM_METHOD void    generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
+    QSIM_METHOD void    generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
 
 #else
@@ -631,27 +634,62 @@ inline QSIM_METHOD void qsim<T>::cerenkov_photon_expt(quad4& p, unsigned id, cur
 
 
 
+/**
+HMM ? state struct to collect this thread locals ?
+**/
+
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
     int gencode = gs.q0.i.x ; 
-    printf("//qsim::generate_photon  photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d )  gencode %d \n", 
+    switch(gencode)
+    {
+        case OpticksGenstep_TORCH: generate_photon_torch(p, rng, gs, photon_id, genstep_id) ; break ; 
+        default:                   generate_photon_dummy(p, rng, gs, photon_id, genstep_id) ; break ; 
+    }
+}
+
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
+{
+    p.q0.f.x = gs.q1.f.x ;   // position   
+    p.q0.f.y = gs.q1.f.y ;  
+    p.q0.f.z = gs.q1.f.z ;  
+    p.q0.f.w = 0.f ;         // time 
+
+    float u = curand_uniform(&rng); 
+    float sinPhi, cosPhi;
+    sincosf(2.f*M_PIf*u,&sinPhi,&cosPhi);
+
+    printf("// qsim::generate_photon_torch sinPhi %10.4f cosPhi %10.4f \n", sinPhi, cosPhi ); 
+
+    p.q0.f.x = cosPhi ;   // direction
+    p.q0.f.y = sinPhi ;  
+    p.q0.f.z = 0.f ;  
+    p.q0.f.w = 1.f ;         // weight
+} 
+
+
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
+{
+    printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n", 
        photon_id, 
        genstep_id, 
        gs.q0.i.x, 
        gs.q0.i.y,
        gs.q0.i.z, 
-       gs.q0.i.w,
-       gencode 
+       gs.q0.i.w
       );  
-
-   // TODO: switch(gencode) to various generate methods 
 
     p.q0.i.x = 1 ; p.q0.i.y = 2 ; p.q0.i.z = 3 ; p.q0.i.w = 4 ; 
     p.q1.i.x = 1 ; p.q1.i.y = 2 ; p.q1.i.z = 3 ; p.q1.i.w = 4 ; 
     p.q2.i.x = 1 ; p.q2.i.y = 2 ; p.q2.i.z = 3 ; p.q2.i.w = 4 ; 
     p.q3.i.x = 1 ; p.q3.i.y = 2 ; p.q3.i.z = 3 ; p.q3.i.w = 4 ; 
 }
+
 
 
 

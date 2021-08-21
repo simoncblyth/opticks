@@ -4,6 +4,10 @@
 #include "scuda.h"
 #include "squad.h"
 #include "qat4.h"
+
+// simulation 
+#include <curand_kernel.h>
+#include "qsim.h"
 #include "qevent.h"
 
 #include "csg_intersect_node.h"
@@ -187,9 +191,38 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
         
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[photon_id] ; 
-
+    // TODO: skipahead using an event_id 
     quad4 p ;   
     sim->generate_photon(p, rng, gs, photon_id, genstep_id );  
+
+    const float3 origin    = make_float3( p.q0.f.x, p.q0.f.y, p.q0.f.z ) ; 
+    const float3 direction = make_float3( p.q1.f.x, p.q1.f.y, p.q1.f.z ) ; 
+
+    float    t = 0.f ; 
+    float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
+    float3   position = make_float3(  0.f, 0.f, 0.f );
+    unsigned identity = 0u ; 
+
+    trace( 
+        params.handle,
+        origin,
+        direction,
+        params.tmin,
+        params.tmax,
+        &normal, 
+        &t, 
+        &position,
+        &identity
+    );
+
+    p.q0.f.x = position.x ; 
+    p.q0.f.y = position.y ; 
+    p.q0.f.z = position.z ; 
+
+    p.q1.f.x = direction.x ; 
+    p.q1.f.y = direction.y ; 
+    p.q1.f.z = direction.z ; 
+
     evt->photon[photon_id] = p ; 
 }
 
