@@ -180,6 +180,7 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     unsigned genstep_id = evt->seed[photon_id] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
 
+/*
     printf("//cx.simulate photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d ) \n", 
        photon_id, 
        genstep_id, 
@@ -188,15 +189,16 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
        gs.q0.i.z, 
        gs.q0.i.w
       ); 
-        
+*/  
+      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[photon_id] ; 
     // TODO: skipahead using an event_id 
     quad4 p ;   
     sim->generate_photon(p, rng, gs, photon_id, genstep_id );  
 
-    const float3 origin    = make_float3( p.q0.f.x, p.q0.f.y, p.q0.f.z ) ; 
-    const float3 direction = make_float3( p.q1.f.x, p.q1.f.y, p.q1.f.z ) ; 
+    float3 origin    = make_float3( p.q0.f.x, p.q0.f.y, p.q0.f.z ) ; 
+    float3 direction = make_float3( p.q1.f.x, p.q1.f.y, p.q1.f.z ) ; 
 
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
@@ -218,10 +220,22 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     p.q0.f.x = position.x ; 
     p.q0.f.y = position.y ; 
     p.q0.f.z = position.z ; 
+    p.q0.f.w = 101.f ; 
 
     p.q1.f.x = direction.x ; 
     p.q1.f.y = direction.y ; 
     p.q1.f.z = direction.z ; 
+    p.q1.f.w = 202.f ; 
+
+    p.q2.f.x = params.tmin ; 
+    p.q2.f.y = params.tmax ; 
+    p.q2.f.z = t ; 
+    p.q2.f.w = 303.f ; 
+
+    p.q3.f.x = normal.x ; 
+    p.q3.f.y = normal.y ; 
+    p.q3.f.z = normal.z ; 
+    p.q3.u.w = identity ; 
 
     evt->photon[photon_id] = p ; 
 }

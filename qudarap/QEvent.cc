@@ -1,11 +1,13 @@
 #include <cuda_runtime.h>
 
+#include "SPath.hh"
 #include "scuda.h"
 #include "squad.h"
-#include "QBuf.hh"
-
+#include "NP.hh"
 #include "PLOG.hh"
+
 #include "QEvent.hh"
+#include "QBuf.hh"
 #include "QBuf.hh"
 #include "QSeed.hh"
 #include "QU.hh"
@@ -53,6 +55,15 @@ void QEvent::downloadPhoton( std::vector<quad4>& photon )
 {
     photon.resize(evt->num_photon); 
     QU::copy_device_to_host_and_free<quad4>( photon.data(), evt->photon, evt->num_photon ); 
+}
+
+void QEvent::savePhoton( const char* dir_, const char* name )
+{
+    const char* dir = SPath::Resolve(dir_); 
+    LOG(info) << dir ; 
+    std::vector<quad4> photon ; 
+    downloadPhoton(photon); 
+    NP::Write( dir, name,  (float*)photon.data(), photon.size(), 4, 4  );
 }
 
 

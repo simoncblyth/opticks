@@ -30,6 +30,7 @@ int main(int argc, char** argv)
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
+    const char* outdir = SSys::getenvvar("OUTDIR", "$TMP/CSGOptiXSimulate" );
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
@@ -56,11 +57,16 @@ int main(int argc, char** argv)
 
     QSim<float>* sim = cx.sim ; 
     QEvent* evt = cx.evt ; 
-
+    
+    /*
     std::vector<quad4> photon ; 
     evt->downloadPhoton(photon); 
     LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
-    sim->dump_photon( photon.data(), photon.size(), "i0,i1,i2,i3" );  
+    sim->dump_photon( photon.data(), photon.size(), "f0,f1,f2,f3" );    // TODO: move dumping into QEvent
+    */
+
+    evt->savePhoton(outdir, "photons.npy");  
+
 
     cudaDeviceSynchronize(); 
 

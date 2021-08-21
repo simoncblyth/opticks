@@ -33,6 +33,7 @@ struct QUDARAP_API QEvent
     void setGensteps(QBuf<quad6>* gs_ ); 
 
     void downloadPhoton( std::vector<quad4>& photon ); 
+    void savePhoton( const char* dir, const char* name ); 
  
     void checkEvt() ;  // GPU side 
 

@@ -96,8 +96,8 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     frame(new Frame(params->width, params->height, params->depth)),  // CUDA holds the pixels 
 #endif
     meta(new SMeta),
-    sim(new QSim<float>),
-    evt(new QEvent)
+    sim(raygenmode == 0 ? nullptr : new QSim<float>),
+    evt(raygenmode == 0 ? nullptr : new QEvent)
 {
     init(); 
 }
@@ -173,20 +173,21 @@ void CSGOptiX::initRender()
 
 void CSGOptiX::initSimulate() // once only (not per-event) simulate setup tasks .. 
 {
-    qsim<float>* d_sim = sim->getDevicePtr(); 
-    qevent* d_evt = evt->getDevicePtr();  
-
-    params->sim = d_sim ; 
-    params->evt = d_evt ; 
+    params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
+    params->evt = evt ? evt->getDevicePtr() : nullptr ;  // qevent*
 }
 
 void CSGOptiX::prepareSimulateParam()   // per-event simulate setup prior to optix launch 
 {
     LOG(info) << "[" ; 
+    assert( evt ); 
 
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
     evt->setGenstepsFake(photon_counts_per_genstep); 
     params->num_photons = evt->getNumPhotons() ; 
+
+    params->tmin = 0.f ; 
+    params->tmax = 1000000.f ; 
 
     LOG(info) << "]" ; 
 }

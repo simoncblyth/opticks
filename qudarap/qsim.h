@@ -662,12 +662,12 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
     float sinPhi, cosPhi;
     sincosf(2.f*M_PIf*u,&sinPhi,&cosPhi);
 
-    printf("// qsim::generate_photon_torch sinPhi %10.4f cosPhi %10.4f \n", sinPhi, cosPhi ); 
+    // printf("// qsim::generate_photon_torch photon_id %d genstep_id %d sinPhi %10.4f cosPhi %10.4f \n", photon_id, genstep_id, sinPhi, cosPhi ); 
 
-    p.q0.f.x = cosPhi ;   // direction
-    p.q0.f.y = sinPhi ;  
-    p.q0.f.z = 0.f ;  
-    p.q0.f.w = 1.f ;         // weight
+    p.q1.f.x = cosPhi ;   // direction
+    p.q1.f.y = sinPhi ;  
+    p.q1.f.z = 0.f ;  
+    p.q1.f.w = 1.f ;         // weight
 } 
 
 
