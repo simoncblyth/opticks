@@ -136,6 +136,7 @@ std::string CSGFoundry::desc() const
        << " ins " << ins.size()
        << " gas " << gas.size()
        << " ias " << ias.size()
+       << " name " << name.size()
        ;
 
     return ss.str(); 
@@ -401,6 +402,7 @@ int CSGFoundry::findSolidIdx(const char* label) const
     return idx ; 
 }
 
+
 /**
 CSGFoundry::findSolidIdx
 --------------------------
@@ -435,6 +437,21 @@ void CSGFoundry::findSolidIdx(std::vector<unsigned>& solid_idx, const char* labe
     }
 
 }
+
+std::string CSGFoundry::descSolidIdx( const std::vector<unsigned>& solid_idx )
+{
+    std::stringstream ss ; 
+    ss << "(" ; 
+    for(int i=0 ; i < int(solid_idx.size()) ; i++) ss << solid_idx[i] << " " ; 
+    ss << ")" ; 
+    std::string s = ss.str() ; 
+    return s ; 
+}
+
+
+
+
+
 
 
 void CSGFoundry::dumpPrim() const 
@@ -1572,7 +1589,7 @@ void CSGFoundry::load( const char* dir_ )
     const char* dir = SPath::Resolve(dir_); 
     LOG(info) << dir ; 
 
-    NP::ReadNames( dir, "name.txt", name );
+    NP::ReadNames( dir, "name.txt", name );  // solid(aka mesh) names 
 
     loadArray( solid , dir, "solid.npy" ); 
     loadArray( prim  , dir, "prim.npy" ); 
@@ -1580,7 +1597,8 @@ void CSGFoundry::load( const char* dir_ )
     loadArray( tran  , dir, "tran.npy" ); 
     loadArray( itra  , dir, "itra.npy" ); 
     loadArray( inst  , dir, "inst.npy" ); 
-    loadArray( plan  , dir, "plan.npy" );  // often there are no planes in the geometry 
+    loadArray( plan  , dir, "plan.npy" , true );  
+    // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
     bnd = NP::Load(dir, "bnd.npy"); 
     icdf = NP::Load(dir, "icdf.npy"); 
@@ -1611,14 +1629,16 @@ void CSGFoundry::load( const char* base, const char* rel )
 
 
 template<typename T>
-void CSGFoundry::loadArray( std::vector<T>& vec, const char* dir, const char* name )
+void CSGFoundry::loadArray( std::vector<T>& vec, const char* dir, const char* name, bool optional )
 {
+    bool exists = NP::Exists(dir, name); 
+    if(optional && !exists ) return ; 
+
     NP* a = NP::Load(dir, name);
-    bool quiet = false ; 
-    //if(a == nullptr && strcmp(name, "plan.npy") != 0)   // dont complain about lack of planes, many geometries do not have them 
-    if(a == nullptr)   // dont complain about lack of planes, many geometries do not have them 
+    if(a == nullptr)   
     { 
-        LOG(LEVEL) << "FAIL for " << dir <<  "/" << name ; 
+        LOG(LEVEL) << "FAIL to load non-optional array  " << dir <<  "/" << name ; 
+        assert(0); 
     }
     else
     { 
@@ -1627,9 +1647,7 @@ void CSGFoundry::loadArray( std::vector<T>& vec, const char* dir, const char* na
         unsigned nj = a->shape[1] ; 
         unsigned nk = a->shape[2] ; 
 
-        //std::cout  << " ni " << std::setw(5) << ni << " nj " << std::setw(1) << nj << " nk " << std::setw(1) << nk << " " << dir <<  "/" << name << std::endl ; 
         LOG(info) << " ni " << std::setw(5) << ni << " nj " << std::setw(1) << nj << " nk " << std::setw(1) << nk << " " << dir <<  "/" << name ; 
-        //LOG(LEVEL) << " ni " << std::setw(5) << ni << " nj " << std::setw(1) << nj << " nk " << std::setw(1) << nk << " " << dir <<  "/" << name ; 
 
         vec.clear(); 
         vec.resize(ni); 
@@ -1637,11 +1655,11 @@ void CSGFoundry::loadArray( std::vector<T>& vec, const char* dir, const char* na
     }
 }
 
-template void CSGFoundry::loadArray( std::vector<CSGSolid>& , const char* , const char* ); 
-template void CSGFoundry::loadArray( std::vector<CSGPrim>& , const char* , const char* ); 
-template void CSGFoundry::loadArray( std::vector<CSGNode>& , const char* , const char* ); 
-template void CSGFoundry::loadArray( std::vector<float4>& , const char* , const char* ); 
-template void CSGFoundry::loadArray( std::vector<qat4>& , const char* , const char* ); 
+template void CSGFoundry::loadArray( std::vector<CSGSolid>& , const char* , const char*, bool ); 
+template void CSGFoundry::loadArray( std::vector<CSGPrim>& , const char* , const char* , bool ); 
+template void CSGFoundry::loadArray( std::vector<CSGNode>& , const char* , const char* , bool ); 
+template void CSGFoundry::loadArray( std::vector<float4>& , const char* , const char*  , bool ); 
+template void CSGFoundry::loadArray( std::vector<qat4>& , const char* , const char* , bool ); 
 
 
 void CSGFoundry::upload()
@@ -1650,6 +1668,7 @@ void CSGFoundry::upload()
     LOG(info) << "[ " << desc() ; 
     assert( tran.size() == itra.size() ); 
 
+    // allocates and copies
     d_prim = prim.size() > 0 ? CU::UploadArray<CSGPrim>(prim.data(), prim.size() ) : nullptr ; 
     d_node = node.size() > 0 ? CU::UploadArray<CSGNode>(node.data(), node.size() ) : nullptr ; 
     d_plan = plan.size() > 0 ? CU::UploadArray<float4>(plan.data(), plan.size() ) : nullptr ; 
@@ -1724,7 +1743,15 @@ std::string CSGFoundry::descGAS() const
 CSGFoundry::parseMOI
 -------------------------
 
-MOI lookups Midx-mOrdinal-Iidx mesh/oridinal-of-mesh/instance-index of solid 
+MOI lookups Meshidx-meshOrdinal-Instanceidx, examples of moi strings::
+
+   sWorld:0:0
+   sWorld:0
+   sWorld
+
+   0:0:0
+   0:0
+   0
 
 **/
 void CSGFoundry::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const 

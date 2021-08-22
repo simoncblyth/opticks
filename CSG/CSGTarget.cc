@@ -1,8 +1,5 @@
 #include "PLOG.hh"
-
-//#include "sutil_vec_math.h"
 #include "scuda.h"
-
 #include "CSGFoundry.h"
 #include "CSGTarget.h"
 
@@ -13,6 +10,20 @@ CSGTarget::CSGTarget( const CSGFoundry* foundry_ )
     foundry(foundry_)
 {
 }
+
+/**
+CSGTarget::getCenterExtent
+----------------------------
+
+*ce*
+    center-extent float4 set when return code is zero
+*midx*
+    solid (aka mesh) index
+*mord*
+    solid (aka mesh) ordinal
+*iidx*
+    instance index, >-1 for global instance, -1 for local non-instanced 
+**/
 
 int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx) const 
 {
@@ -29,10 +40,16 @@ int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx) const
     return 0 ; 
 }
 
+/**
+CSGTarget::getLocalCenterExtent
+---------------------------------
+
+Collects prim matching the *midx* and selects the *mord* ordinal one
+
+**/
 
 int CSGTarget::getLocalCenterExtent(float4& lce, int midx, int mord) const 
 {
-    // collect prim matching the MIDX and select the ORDINAL one
     std::vector<CSGPrim> prim ; 
     foundry->getMeshPrim(prim, midx );  
     bool mord_in_range = mord < prim.size() ; 
@@ -58,6 +75,30 @@ int CSGTarget::getLocalCenterExtent(float4& lce, int midx, int mord) const
     LOG(info) << " lce " << lce  ;   
     return 0 ; 
 }
+
+
+
+/**
+CSGTarget::getGlobalCenterExtent
+---------------------------------
+
+1. first find the MORD-inal prim *lpr* which has MIDX for its midx/lvIdx
+2. use the prim to lookup indices for the solid(gas_idx) and prim 
+3. collect instance transforms matching the *gas_idx*
+4. select the *iidx* instance transform to construct a global-prim *gpr* 
+5. fill in *gce* with the global center-extren from  
+
+
+*midx* 
+    solid (aka mesh, aka lv) index
+*mord*
+    solid ordinal : this is particularly useful with the global geometry where there are 
+    no instances to select between. But there are repeated uses of the mesh that 
+    this ordinal picks between. For instanced geometry this will mostly be zero(?)
+*iidx*
+    instance index, for example this could select a particular PMT 
+
+**/
 
 
 int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx) const 

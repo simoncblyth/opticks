@@ -68,6 +68,7 @@ struct CSGFoundry
     void dumpSolid(unsigned solidIdx ) const ;
     int findSolidIdx(const char* label) const  ; // -1 if not found
     void findSolidIdx(std::vector<unsigned>& solid_idx, const char* label) const ; 
+    std::string descSolidIdx( const std::vector<unsigned>& solid_selection ) ; 
 
     void dumpPrim() const ;
     void dumpPrim(unsigned solidIdx ) const ;
@@ -185,7 +186,7 @@ struct CSGFoundry
     void load( const char* base, const char* rel ) ; 
     void load( const char* dir ) ; 
 
-    template<typename T> void loadArray( std::vector<T>& vec, const char* dir, const char* name ); 
+    template<typename T> void loadArray( std::vector<T>& vec, const char* dir, const char* name, bool optional=false ); 
 
     void upload();
     void inst_find_unique(); 

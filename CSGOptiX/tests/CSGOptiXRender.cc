@@ -44,7 +44,9 @@ int main(int argc, char** argv)
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
-    const char* solid_label = ok.getSolidLabel(); 
+
+
+    const char* solid_label = ok.getSolidLabel();  // --solid_label   used for selecting solids from the geometry 
     std::vector<unsigned>& solid_selection = ok.getSolidSelection(); 
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
@@ -53,13 +55,7 @@ int main(int argc, char** argv)
     if( solid_label )
     {
         fd->findSolidIdx(solid_selection, solid_label); 
-
-        std::stringstream ss ; 
-        ss << "(" ; 
-        for(int i=0 ; i < int(solid_selection.size()) ; i++) ss << solid_selection[i] << " " ; 
-        ss << ")" ; 
-        std::string solsel = ss.str() ; 
-
+        std::string solsel = fd->descSolidIdx(solid_selection); 
         LOG(error) 
             << " --solid_label " << solid_label
             << " solid_selection.size  " << solid_selection.size() 

@@ -10,8 +10,8 @@
 #include <cuda_runtime.h>
 
 #include "Opticks.hh"
-
-#include "sutil_vec_math.h"  
+#include "SSys.hh"
+#include "scuda.h"  
 
 #include "OPTIX_CHECK.h"
 #include "CUDA_CHECK.h"
@@ -278,7 +278,28 @@ void SBT::createIAS(unsigned ias_idx)
     assert( num_ias_inst == inst.size() ); 
 
     createIAS(inst); 
+    if(SSys::getenvbool("SBT_DUMP_IAS")) dumpIAS(inst); 
 }
+
+void SBT::dumpIAS(const std::vector<qat4>& inst )
+{
+    LOG(info) << " inst.size " << inst.size() ; 
+    for(unsigned i=0 ; i < inst.size() ; i++)
+    {
+        const qat4& q =cinst[i] ;   
+        unsigned ins_idx, gas_idx, ias_idx ;  
+        q.getIdentity(ins_idx, gas_idx, ias_idx );
+
+        std::cout 
+           << " i "       << std::setw(10) << i 
+           << " ins_idx " << std::setw(10) << ins_idx 
+           << " gas_idx " << std::setw(10) << gas_idx 
+           << " ias_idx " << std::setw(10) << ias_idx 
+           << std::endl
+           ; 
+    }
+}
+
 
 void SBT::createIAS_Selection()
 {

@@ -76,6 +76,7 @@ struct SBT
     void createIAS_Selection();
     void createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection);
     void createIAS(const std::vector<qat4>& inst );
+    void dumpIAS(const std::vector<qat4>& inst );
 
     const IAS& getIAS(unsigned ias_idx) const ;
 

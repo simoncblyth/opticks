@@ -25,10 +25,14 @@
 IAS_Builder::Build
 --------------------
 
-Converts a grid with geometry identity instrumented transforms into
+Converts *ias_inst* a vector of geometry identity instrumented transforms into
 a vector of OptixInstance. The instance.sbtOffset are set using SBT::getOffset
 for the gas_idx and with prim_idx:0 indicating the outer prim(aka layer) 
 of the GAS.
+
+Canonically invoked during CSGOptiX instanciation, from stack::
+
+    CSGOptiX::CSGOptiX/CSGOptiX::init/CSGOptiX::initGeometry/SBT::setFoundry/SBT::createGeom/SBT::createIAS
 
 **/
 

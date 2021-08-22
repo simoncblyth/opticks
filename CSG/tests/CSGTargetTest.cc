@@ -1,4 +1,11 @@
+/**
+CSGTargetTest
+==============
 
+MOI=PMT_20inch:0:1 CSGTargetTest 
+
+
+**/
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 

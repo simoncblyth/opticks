@@ -161,9 +161,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         &identity
     );
 
-    //float3 diddled_normal = normalize( normal * 0.5f + 0.5f );  
-    //uchar4 color = make_color( diddled_normal, identity );
-    uchar4 color = make_color( normal, identity );
+    float3 diddled_normal = normalize(normal)*0.5f + 0.5f ; // lightens render, with mid-grey "pedestal" 
+    uchar4 color = make_color( diddled_normal, identity );
     unsigned index = idx.y * params.width + idx.x ;
 
     params.pixels[index] = color ; 
@@ -248,34 +247,7 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 }
 
 /**
-Huh... bizarre normal.z stuck at 0.5 ?  Being diddled.
-
-    336     float3 normal = normalize( optixTransformNormalFromObjectToWorldSpace( isect_normal ) ) * 0.5f + 0.5f ;
-
-
-In [1]: p
-Out[1]: 
-array([[[  -1087.04 ,  -17666.588,       0.   ,     101.   ],
-        [     -0.061,      -0.998,       0.   ,     202.   ],
-        [      0.   , 1000000.   ,   17700.   ,     303.   ],
-        [      0.469,       0.001,       0.5  ,       0.   ]],
-
-       [[  15563.571,   -8430.021,       0.   ,     101.   ],
-        [      0.879,      -0.476,       0.   ,     202.   ],
-        [      0.   , 1000000.   ,   17700.002,     303.   ],
-        [      0.94 ,       0.262,       0.5  ,       0.   ]],
-
-       [[  17170.688,    4296.217,       0.   ,     101.   ],
-        [      0.97 ,       0.243,       0.   ,     202.   ],
-        [      0.   , 1000000.   ,   17700.002,     303.   ],
-        [      0.985,       0.621,       0.5  ,       0.   ]],
-
-
-
-
-
 **/
-
 
 
 extern "C" __global__ void __raygen__rg()
@@ -328,6 +300,23 @@ extern "C" __global__ void __intersection__is()
     }
 }
 
+
+/**
+optix_7_device.h::
+
+    516 ///
+    517 /// For a given OptixBuildInputCustomPrimitiveArray the number of primitives is defined as
+    518 /// numAabbs.  The primitive index returns is the index into the corresponding build array
+    519 /// plus the primitiveIndexOffset.
+    520 ///
+    521 /// In Intersection and AH this corresponds to the currently intersected primitive.
+    522 /// In CH this corresponds to the primitive index of the closest intersected primitive.
+    523 /// In EX with exception code OPTIX_EXCEPTION_CODE_TRAVERSAL_INVALID_HIT_SBT corresponds to the active primitive index. Returns zero for all other exceptions.
+    524 static __forceinline__ __device__ unsigned int optixGetPrimitiveIndex();
+    525 
+
+**/
+
 extern "C" __global__ void __closesthit__ch()
 {
     const float3 isect_normal =
@@ -340,13 +329,23 @@ extern "C" __global__ void __closesthit__ch()
     const float t = uint_as_float( optixGetAttribute_3() ) ;  
 
     unsigned instance_id = optixGetInstanceId() ;        // see IAS_Builder::Build and InstanceId.h 
-    unsigned prim_id  = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI 
+    unsigned prim_id  = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI  (1+index-of-CSGPrim within CSGSolid/GAS)
     unsigned identity = (( prim_id & 0xff ) << 24 ) | ( instance_id & 0x00ffffff ) ; 
 
-    
-    // float3 normal = normalize( optixTransformNormalFromObjectToWorldSpace( isect_normal ) ) * 0.5f + 0.5f ;  
-    // pre-diddling normal for rendering purposes not acceptable when using for both rendering and simulation   
+    // no GAS id ?
+    //
+    //    0xffffff : 16 M    wasted byte 
+    //    0x00ffff : 65535   more reasonable max instances 
+    //
+    // TODO: use primitiveIndexOffset to encode the solid idx in high bytes 
+    //
+    // global is problematic, as lots of prim in the one GAS and only one instance_id
+    // -> use one bit to switch between two packing schemes 
+    // hmm but how to distinguish, as instance_id can be zero ... 1-base it somehow?
+    //
+
     float3 normal = optixTransformNormalFromObjectToWorldSpace( isect_normal ) ;  
+    // pre-diddling normal for rendering purposes not acceptable when using for both rendering and simulation   
 
     const float3 world_origin = optixGetWorldRayOrigin() ; 
     const float3 world_direction = optixGetWorldRayDirection() ; 

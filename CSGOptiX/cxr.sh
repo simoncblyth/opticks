@@ -55,7 +55,7 @@ export TMIN=${TMIN:-$tmin} # evar:TMIN
 export ZOOM=${ZOOM:-$zoom} 
 export CAMERATYPE=$CAM    # okc/Camera::Camera default 
 
-vars="CVD EMM MOI EYE TOP SLA CAM TMIN CAMERATYPE"
+vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
 export BASEDIR=/tmp/$USER/opticks/$pkg/$bin/${CFNAME}/cvd${CVD}/$(CSGOptiXVersion)

@@ -1,12 +1,10 @@
 #include "SStr.hh"
 #include "PLOG.hh"
 
-//#include "sutil_vec_math.h"
 #include "scuda.h"
 
 #include "CSGFoundry.h"
 #include "CSGName.h"
-
 
 
 CSGName::CSGName( const CSGFoundry* foundry_ )
@@ -15,7 +13,6 @@ CSGName::CSGName( const CSGFoundry* foundry_ )
     name(foundry->name)
 {
 }
-
 
 unsigned CSGName::getNumName() const
 {
@@ -142,6 +139,15 @@ int CSGName::findIndex(const char* starting, unsigned& count, unsigned max_count
     return (max_count == -1 || count <= max_count)  ? result : -1 ;   
 }
 
+/**
+CSGName::parseArg
+-------------------
+
+If the entire arg can be parsed as an integer that interger is
+returned otherwise the index of the first ocuurence of the 
+string in the name list is returned or -1 if not found. 
+
+**/
 
 int CSGName::parseArg(const char* arg, unsigned& count) const 
 {
@@ -158,7 +164,16 @@ int CSGName::parseArg(const char* arg, unsigned& count) const
     return idx ; 
 }
 
-int CSGName::ParseIntString(const char* arg, int fallback)
+/**
+CSGName::ParseIntString
+-------------------------
+
+If the entire arg can be parsed as an integer that is returned,  
+otherwise the fallback integer is returned.
+
+**/
+
+int CSGName::ParseIntString(const char* arg, int fallback)  // static 
 {
     char* end ;   
     char** endptr = &end ; 
@@ -168,6 +183,25 @@ int CSGName::ParseIntString(const char* arg, int fallback)
     int result = int(uli) ; 
     return end_points_to_terminator ? result : fallback ;
 }
+
+/**
+CSGName::parseMOI
+-------------------
+
+MOI are strings delimited by colons of form <string>:<int>:<int> for example::
+
+    sWorld:0:0 
+    sWorld:0      # skipped integers default to zero 
+    sWorld        # skipped integers default to zero 
+
+    0:0:0
+    0:0
+    0
+
+The first element of the string can be a string such as "sWorld" or an integer, 
+subsequent elements are expected to be integers. 
+
+**/
 
 void CSGName::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const 
 {
@@ -185,6 +219,5 @@ void CSGName::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const
     mord = num_elem > 1 ? ParseIntString( elem[1].c_str() ) : 0 ; 
     iidx = num_elem > 2 ? ParseIntString( elem[2].c_str() ) : 0 ; 
 }
-
 
 

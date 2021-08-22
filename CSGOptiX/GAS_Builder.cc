@@ -60,13 +60,14 @@ void GAS_Builder::Build_11N( GAS& gas, const CSGPrimSpec& psd )
 GAS_Builder::MakeCustomPrimitivesBI_11N
 -----------------------------------------
 
-Uploads the aabb for all prim (aka layers) of the Shape 
+Creates buildInput using device refs of pre-uploaded aabb for all prim (aka layers) of the Shape 
 and arranges for separate SBT records for each prim.
 
 **/
 
 BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
 {
+    assert( ps.device == true ); 
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
     unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
     unsigned primitiveIndexOffset = 0 ; // offsets the normal 0,1,2,... result of optixGetPrimitiveIndex()  
@@ -76,37 +77,12 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
     bi.flags = new unsigned[ps.num_prim];
     for(unsigned i=0 ; i < ps.num_prim ; i++) bi.flags[i] = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ; 
 
-    assert( ps.device == true ); 
+    // http://www.cudahandbook.com/2013/08/why-does-cuda-cudeviceptr-use-unsigned-int-instead-of-void/ 
+    // CUdeviceptr is typedef to unsigned long long 
+    // uintptr_t is an unsigned integer type that is capable of storing a data pointer.
 
-/*
-    if( ps.device == false )
-    {
-        std::vector<float> tmp ; 
-        ps.gather(tmp); 
-        CSGPrimSpec::Dump(tmp); 
-        LOG(error) << "YUCK : RE-UPLOADING bbox/sbtIndexOffset " ; 
-
-        bi.sbt_index = new unsigned[ps.num_prim];
-        for(unsigned i=0 ; i < ps.num_prim ; i++) bi.sbt_index[i] = i ; 
-
-        CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>(&bi.d_aabb), 6*sizeof(float)*ps.num_prim ));
-        CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>(bi.d_aabb), tmp.data(), sizeof(float)*tmp.size(), cudaMemcpyHostToDevice ));
-
-        CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &bi.d_sbt_index ), sizeof(unsigned)*ps.num_prim ) ); 
-        CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>(bi.d_sbt_index), bi.sbt_index, sizeof(unsigned)*ps.num_prim, cudaMemcpyHostToDevice ) ); 
-    }
-    else
-*/
-    {
-        // http://www.cudahandbook.com/2013/08/why-does-cuda-cudeviceptr-use-unsigned-int-instead-of-void/ 
-        // CUdeviceptr is typedef to unsigned long long 
-        // uintptr_t is an unsigned integer type that is capable of storing a data pointer.
-
-        //std::cout << "GAS_Builder::MakeCustomPrimitivesBI_11N using pre-uploaded Prim bbox/sbtIndexOffset " << std::endl ; 
-
-        bi.d_aabb = (CUdeviceptr) (uintptr_t) ps.aabb ; 
-        bi.d_sbt_index = (CUdeviceptr) (uintptr_t) ps.sbtIndexOffset ; 
-    }
+    bi.d_aabb = (CUdeviceptr) (uintptr_t) ps.aabb ; 
+    bi.d_sbt_index = (CUdeviceptr) (uintptr_t) ps.sbtIndexOffset ; 
 
     bi.buildInput = {};
     bi.buildInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;

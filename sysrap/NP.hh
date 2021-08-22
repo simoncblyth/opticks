@@ -112,10 +112,13 @@ struct NP
     void dump(int i0=-1, int i1=-1) const ; 
 
     void clear();   
+
+    static bool Exists(const char* dir, const char* name);   
+    static bool Exists(const char* path);   
+    int load(const char* dir, const char* name);   
     int load(const char* path);   
     int load_meta( const char* path ); 
 
-    int load(const char* dir, const char* name);   
 
     static std::string form_name(const char* stem, const char* ext); 
     static std::string form_path(const char* dir, const char* name);   
@@ -1330,6 +1333,17 @@ inline void NP::clear()
     shape[0] = 0 ;  
 }
 
+inline bool NP::Exists(const char* dir, const char* name) // static 
+{
+    std::string path = form_path(dir, name); 
+    return Exists(path.c_str()); 
+}
+inline bool NP::Exists(const char* path) // static 
+{
+    std::ifstream fp(path, std::ios::in|std::ios::binary);
+    return fp.fail() ? false : true ; 
+}
+
 inline int NP::load(const char* dir, const char* name)
 {
     std::string path = form_path(dir, name); 
@@ -1355,7 +1369,7 @@ inline int NP::load(const char* path)
     std::ifstream fp(path, std::ios::in|std::ios::binary);
     if(fp.fail())
     {
-        std::cerr << "Failed to load from path " << path << std::endl ; 
+        std::cerr << "NP::load Failed to load from path " << path << std::endl ; 
         return 1 ; 
     }
 
