@@ -24,6 +24,9 @@ extern "C" { __constant__ Params params ;  }
 trace : pure function, with no use of params, everything via args
 -------------------------------------------------------------------
 
+optixTrace ray_origin ray_direction args passed by float3 value, 
+but could use reference args float4& here and make_float3 from them 
+
 **/
 
 static __forceinline__ __device__ void trace(
@@ -158,6 +161,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         &identity
     );
 
+    //float3 diddled_normal = normalize( normal * 0.5f + 0.5f );  
+    //uchar4 color = make_color( diddled_normal, identity );
     uchar4 color = make_color( normal, identity );
     unsigned index = idx.y * params.width + idx.x ;
 
@@ -173,10 +178,10 @@ simulate : uses params for input: gensteps, seeds and output photons
 
 static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim )
 {
-    unsigned photon_id = idx.x ; 
     qevent* evt      = params.evt ; 
-    if (photon_id >= evt->num_photon) return;
+    if (idx.x >= evt->num_photon) return;
 
+    unsigned photon_id = idx.x ; 
     unsigned genstep_id = evt->seed[photon_id] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
 
@@ -205,6 +210,8 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     float3   position = make_float3(  0.f, 0.f, 0.f );
     unsigned identity = 0u ; 
 
+    // CONSIDER: ox,oy,oz,px,py,pz args so can avoid origin, direction
+    // or directly use a floa44& arguments so can p.q0 p.q1  
     trace( 
         params.handle,
         origin,
@@ -239,6 +246,35 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 
     evt->photon[photon_id] = p ; 
 }
+
+/**
+Huh... bizarre normal.z stuck at 0.5 ?  Being diddled.
+
+    336     float3 normal = normalize( optixTransformNormalFromObjectToWorldSpace( isect_normal ) ) * 0.5f + 0.5f ;
+
+
+In [1]: p
+Out[1]: 
+array([[[  -1087.04 ,  -17666.588,       0.   ,     101.   ],
+        [     -0.061,      -0.998,       0.   ,     202.   ],
+        [      0.   , 1000000.   ,   17700.   ,     303.   ],
+        [      0.469,       0.001,       0.5  ,       0.   ]],
+
+       [[  15563.571,   -8430.021,       0.   ,     101.   ],
+        [      0.879,      -0.476,       0.   ,     202.   ],
+        [      0.   , 1000000.   ,   17700.002,     303.   ],
+        [      0.94 ,       0.262,       0.5  ,       0.   ]],
+
+       [[  17170.688,    4296.217,       0.   ,     101.   ],
+        [      0.97 ,       0.243,       0.   ,     202.   ],
+        [      0.   , 1000000.   ,   17700.002,     303.   ],
+        [      0.985,       0.621,       0.5  ,       0.   ]],
+
+
+
+
+
+**/
 
 
 
@@ -277,7 +313,7 @@ extern "C" __global__ void __intersection__is()
     const float3 ray_origin = optixGetObjectRayOrigin();
     const float3 ray_direction = optixGetObjectRayDirection();
 
-    float4 isect ; 
+    float4 isect ; // .xyz normal .w distance  
     if(intersect_prim(isect, numNode, node, plan, itra, t_min , ray_origin, ray_direction ))
     {
         const unsigned hitKind = 0u ; 
@@ -307,26 +343,25 @@ extern "C" __global__ void __closesthit__ch()
     unsigned prim_id  = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI 
     unsigned identity = (( prim_id & 0xff ) << 24 ) | ( instance_id & 0x00ffffff ) ; 
 
-    float3 normal = normalize( optixTransformNormalFromObjectToWorldSpace( isect_normal ) ) * 0.5f + 0.5f ;  
+    
+    // float3 normal = normalize( optixTransformNormalFromObjectToWorldSpace( isect_normal ) ) * 0.5f + 0.5f ;  
+    // pre-diddling normal for rendering purposes not acceptable when using for both rendering and simulation   
+    float3 normal = optixTransformNormalFromObjectToWorldSpace( isect_normal ) ;  
 
     const float3 world_origin = optixGetWorldRayOrigin() ; 
     const float3 world_direction = optixGetWorldRayDirection() ; 
     const float3 world_position = world_origin + t*world_direction ; 
 
-    setPayload( normal, t,  world_position, identity );
+    setPayload( normal, t,  world_position, identity );  // communicate to raygen 
 }
 
 extern "C" __global__ void __miss__ms()
 {
     MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
-    float3 normal = make_float3( ms->r, ms->g, ms->b );   
+    float3 normal = make_float3( ms->r, ms->g, ms->b );   // this is render specific pre-diddling too
     float t_cand = 0.f ; 
     float3 position = make_float3( 0.f, 0.f, 0.f ); 
     unsigned identity = 0u ; 
     setPayload( normal,  t_cand, position, identity );
 }
-
-
-
-
 

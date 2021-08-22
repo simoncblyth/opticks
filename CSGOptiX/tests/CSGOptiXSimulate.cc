@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
-    const char* outdir = SSys::getenvvar("OUTDIR", "$TMP/CSGOptiXSimulate" );
+    const char* outdir = SSys::getenvvar("OUTDIR", "$TMP/CSGOptiX/CSGOptiXSimulate" );
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
