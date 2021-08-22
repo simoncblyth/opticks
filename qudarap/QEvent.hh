@@ -3,6 +3,7 @@
 struct qevent ; 
 struct quad4 ;
 struct quad6 ;
+struct NP ; 
 template <typename T> struct QBuf ; 
 
 #include <vector>
@@ -14,10 +15,15 @@ template <typename T> struct QBuf ;
 QEvent
 =======
 
+TODO: follow OEvent technique of initial allocation and resizing at each event 
+
 **/
 
 struct QUDARAP_API QEvent
 {
+    static NP* MakeFakeGensteps(); 
+    static NP* MakeFakeGensteps(const std::vector<int>& photon_counts_per_genstep); 
+
     static const plog::Severity LEVEL ; 
     static const QEvent* INSTANCE ; 
     static const QEvent* Get(); 
@@ -26,11 +32,11 @@ struct QUDARAP_API QEvent
 
     qevent*      evt ; 
     qevent*      d_evt ; 
-    QBuf<quad6>* genstep ; 
+    QBuf<float>* genstep ; 
     QBuf<int>*   seed  ;
 
-    void setGenstepsFake(const std::vector<int>& photons_per_genstep ); 
-    void setGensteps(QBuf<quad6>* gs_ ); 
+    void setGensteps(const NP* gs);
+    void setGensteps(QBuf<float>* dgs ); 
 
     void downloadPhoton( std::vector<quad4>& photon ); 
     void savePhoton( const char* dir, const char* name ); 

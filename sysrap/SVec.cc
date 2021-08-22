@@ -66,7 +66,9 @@ T SVec<T>::MaxDiff(const std::vector<T>& a, const std::vector<T>& b, bool dump)
     T mx = 0.f ;     
     for(unsigned i=0 ; i < a.size() ; i++)
     {
-        T df = std::abs(a[i] - b[i]) ; 
+        T df = a[i] - b[i] ;   // std::abs ambiguous when T=unsigned 
+        if( df < 0 ) df = -df ;  
+
         if(df > mx) mx = df ; 
 
         if(dump)
@@ -89,7 +91,10 @@ int SVec<T>::FindIndexOfValue(const std::vector<T>& a, T value, T tolerance)
     int idx = -1 ; 
     for(unsigned i=0 ; i < a.size() ; i++)
     {   
-        T df = std::abs(a[i] - value) ; 
+        //T df = std::abs(a[i] - value) ;   // std::abs ambiguous when T=unsigned 
+        T df = a[i] - value ; 
+        if(df < 0) df = -df ; 
+
         if(df < tolerance)
         {   
             idx = i ; 

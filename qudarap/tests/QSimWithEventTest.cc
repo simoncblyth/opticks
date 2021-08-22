@@ -38,7 +38,9 @@ int main(int argc, char** argv)
     unsigned x_total = 0 ; 
     for(unsigned i=0 ; i < photon_counts_per_genstep.size() ; i++) x_total += photon_counts_per_genstep[i] ; 
 
-    qe.setGenstepsFake(photon_counts_per_genstep); 
+    const NP* gs = QEvent::MakeFakeGensteps(photon_counts_per_genstep) ; 
+
+    qe.setGensteps(gs); 
     assert( qe.getNumPhotons() == x_total ); 
 
     LOG(info) << qe.desc() ; 

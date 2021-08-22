@@ -302,18 +302,18 @@ extern "C" __global__ void __intersection__is()
 
 
 /**
-optix_7_device.h::
+__closesthit__ch
+==================
 
-    516 ///
-    517 /// For a given OptixBuildInputCustomPrimitiveArray the number of primitives is defined as
-    518 /// numAabbs.  The primitive index returns is the index into the corresponding build array
-    519 /// plus the primitiveIndexOffset.
-    520 ///
-    521 /// In Intersection and AH this corresponds to the currently intersected primitive.
-    522 /// In CH this corresponds to the primitive index of the closest intersected primitive.
-    523 /// In EX with exception code OPTIX_EXCEPTION_CODE_TRAVERSAL_INVALID_HIT_SBT corresponds to the active primitive index. Returns zero for all other exceptions.
-    524 static __forceinline__ __device__ unsigned int optixGetPrimitiveIndex();
-    525 
+optixGetInstanceId 
+    flat instance_idx over all transforms in the single IAS, 
+    JUNO maximum ~50,000 (fits with 0xffff = 65535)
+
+optixGetPrimitiveIndex
+    index of the AABB within the GAS, 
+    instanced solids adds little to the number of AABB, 
+    most come from unfortunate repeated usage of prims in the non-instanced global
+    GAS with repeatIdx 0 (JUNO up to ~4000)
 
 **/
 
@@ -328,22 +328,9 @@ extern "C" __global__ void __closesthit__ch()
     
     const float t = uint_as_float( optixGetAttribute_3() ) ;  
 
-    unsigned instance_id = optixGetInstanceId() ;        // see IAS_Builder::Build and InstanceId.h 
-    unsigned prim_id  = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
-
-    unsigned identity = (( prim_id & 0xff ) << 24 ) | ( instance_id & 0x00ffffff ) ; 
-
-    // no GAS id ?
-    //
-    //    0xffffff : 16 M    wasted byte 
-    //    0x00ffff : 65535   more reasonable max instances 
-    //
-    // TODO: use primitiveIndexOffset to encode the solid idx in high bytes 
-    //
-    // global is problematic, as lots of prim in the one GAS and only one instance_id
-    // -> use one bit to switch between two packing schemes 
-    // hmm but how to distinguish, as instance_id can be zero ... 1-base it somehow?
-    //
+    unsigned instance_idx = optixGetInstanceId() ;    // see IAS_Builder::Build and InstanceId.h 
+    unsigned prim_idx  = optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+    unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_idx & 0xffff ) ; 
 
     float3 normal = optixTransformNormalFromObjectToWorldSpace( isect_normal ) ;  
     // pre-diddling normal for rendering purposes not acceptable when using for both rendering and simulation   

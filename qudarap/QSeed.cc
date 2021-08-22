@@ -8,17 +8,16 @@
 #include "QBuf.hh"
 #include "QSeed.hh"
 
-extern QBuf<int>* QSeed_create_photon_seeds(QBuf<quad6>* gs); 
+extern QBuf<int>* QSeed_create_photon_seeds(QBuf<float>* gs); 
 
-QBuf<int>* QSeed::CreatePhotonSeeds(QBuf<quad6>* gs)  // static 
+QBuf<int>* QSeed::CreatePhotonSeeds(QBuf<float>* gs)  // static 
 {
     return QSeed_create_photon_seeds(gs); 
 }
 
-
-void QSeed::ExpectedSeeds(std::vector<int>& seeds,  const std::vector<int>& counts ) // static 
+void QSeed::ExpectedSeeds(std::vector<int>& seeds,  unsigned& total, const std::vector<int>& counts ) // static 
 {
-    unsigned total = 0 ;  
+    total = 0 ; 
     for(unsigned i=0 ; i < counts.size() ; i++)  total += counts[i] ; 
 
     unsigned ni = counts.size(); 
@@ -30,29 +29,6 @@ void QSeed::ExpectedSeeds(std::vector<int>& seeds,  const std::vector<int>& coun
     assert( seeds.size() == total );  
 }
 
-
-QBuf<quad6>* QSeed::UploadFakeGensteps(const std::vector<int>& counts) // static 
-{
-    std::vector<quad6> gs ; 
-    unsigned ni = counts.size(); 
-
-    for(unsigned i=0 ; i < ni ; i++)
-    {   
-        int gencode = OpticksGenstep_TORCH ; 
-
-        quad6 qq ; 
-        qq.q0.i.x = gencode  ;   qq.q0.i.y = -1 ;   qq.q0.i.z = -1 ;   qq.q0.i.w = counts[i] ; 
-        qq.q1.f.x = 0.f ;  qq.q1.f.y = 0.f ;  qq.q1.f.z = 0.f ;   qq.q1.f.w = 0.f ; 
-        qq.q2.i.x = -1 ;   qq.q2.i.y = -1 ;   qq.q2.i.z = -1 ;   qq.q2.i.w = -1 ; 
-        qq.q3.i.x = -1 ;   qq.q3.i.y = -1 ;   qq.q3.i.z = -1 ;   qq.q3.i.w = -1 ; 
-        qq.q4.i.x = -1 ;   qq.q4.i.y = -1 ;   qq.q4.i.z = -1 ;   qq.q4.i.w = -1 ; 
-        qq.q5.i.x = -1 ;   qq.q5.i.y = -1 ;   qq.q5.i.z = -1 ;   qq.q5.i.w = -1 ; 
-        gs.push_back(qq); 
-    }   
-    return QBuf<quad6>::Upload(gs) ; 
-}
-
-
 int QSeed::CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ) // static 
 {
     assert( seeds.size() == xseeds.size() ); 
@@ -60,6 +36,4 @@ int QSeed::CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& 
     for(unsigned i=0 ; i < seeds.size() ; i++) if( seeds[i] != xseeds[i] ) mismatch += 1 ; 
     return mismatch ; 
 }
-
-
 

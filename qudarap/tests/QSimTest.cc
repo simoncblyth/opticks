@@ -182,15 +182,18 @@ void QSimTest<T>::generate_photon()
     unsigned x_total = 0 ; 
     for(unsigned i=0 ; i < photon_counts_per_genstep.size() ; i++) x_total += photon_counts_per_genstep[i] ; 
 
+    const NP* gs = QEvent::MakeFakeGensteps(photon_counts_per_genstep) ; 
+
+
     QEvent* evt = new QEvent  ; 
-    evt->setGenstepsFake(photon_counts_per_genstep); 
+    evt->setGensteps(gs); 
     qs.generate_photon(evt);  
 
     std::vector<quad4> photon ; 
     evt->downloadPhoton(photon); 
     LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
 
-    qs.dump_photon( photon.data(), photon.size(), "i0,i1,i2,i3" ); 
+    qs.dump_photon( photon.data(), photon.size(), "f0,f1,i2,i3" ); 
 
     LOG(info) << "]" ; 
 }

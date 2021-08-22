@@ -13,6 +13,7 @@ QBuf.hh : header only CUDA device buffer
 
 #include "QUDA_CHECK.h"
 #include "QUDARAP_API_EXPORT.hh"
+#include "NP.hh"
 
 
 template <typename T>
@@ -70,10 +71,19 @@ struct QUDARAP_API QBuf
         buf->upload( data, num_items );  
         return buf ; 
     }   
+
+    // caution : this is allocating every time
+    // for event by event handling better to allocate one and resize ?
+    static QBuf<T>* Upload( const NP* a  )
+    {   
+        return Upload( a->cvalues<T>(), a->num_values() );  
+    }   
+
     static QBuf<T>* Upload( const std::vector<T>& vec  )
     {   
         return Upload( vec.data(), vec.size() );  
     }   
+
     static QBuf<T>* Alloc( unsigned num_items  )
     {   
         QBuf<T>* buf = new QBuf<T> ; 

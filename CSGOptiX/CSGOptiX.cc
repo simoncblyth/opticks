@@ -175,7 +175,13 @@ void CSGOptiX::initSimulate() // once only (not per-event) simulate setup tasks 
 {
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
     params->evt = evt ? evt->getDevicePtr() : nullptr ;  // qevent*
+    params->tmin = 0.f ;      // perhaps needs to be epsilon to avoid self-intersection off boundaries ?
+    params->tmax = 1000000.f ; 
 }
+
+
+void CSGOptiX::setGensteps(
+
 
 void CSGOptiX::prepareSimulateParam()   // per-event simulate setup prior to optix launch 
 {
@@ -184,10 +190,8 @@ void CSGOptiX::prepareSimulateParam()   // per-event simulate setup prior to opt
 
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
     evt->setGenstepsFake(photon_counts_per_genstep); 
-    params->num_photons = evt->getNumPhotons() ; 
 
-    params->tmin = 0.f ; 
-    params->tmax = 1000000.f ; 
+    params->num_photons = evt->getNumPhotons() ; 
 
     LOG(info) << "]" ; 
 }

@@ -12,17 +12,18 @@ The photon seed buffer is a device buffer containing integer indices referencing
 into the genstep buffer. The seeds provide the association between the photon 
 and the genstep required to generate it.
 
+TODO: All event releated uploading/downloading should be controlled from one place : QEvent (not here)
+
 **/
 
 struct QUDARAP_API QSeed
 {
-    static QBuf<int>* CreatePhotonSeeds(QBuf<quad6>* gs); 
+    // on GPU seeding using thrust 
+    static QBuf<int>* CreatePhotonSeeds(QBuf<float>* gs); 
 
     // testing 
-    static void ExpectedSeeds(std::vector<int>& seeds,  const std::vector<int>& counts );
-    static QBuf<quad6>* UploadFakeGensteps(const std::vector<int>& counts) ; 
-    static int    CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ); 
-
+    static void ExpectedSeeds(std::vector<int>& seeds,  unsigned& total, const std::vector<int>& counts );
+    static int  CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ); 
 };
 
 

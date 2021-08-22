@@ -38,7 +38,6 @@ int main(int argc, char** argv)
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
     QSim<float>::UploadComponents(fd->icdf, fd->bnd ); 
 
-
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 
@@ -54,7 +53,6 @@ int main(int argc, char** argv)
     double dt = cx.simulate();  
     LOG(info) << " dt " << dt ;
 
-
     QSim<float>* sim = cx.sim ; 
     QEvent* evt = cx.evt ; 
     
@@ -67,8 +65,6 @@ int main(int argc, char** argv)
 
     evt->savePhoton(outdir, "photons.npy");  
 
-
     cudaDeviceSynchronize(); 
-
     return 0 ; 
 }

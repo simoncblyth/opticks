@@ -5,22 +5,29 @@
     cx ; ipython -i tests/CSGOptiXSimulate.py
 
 
-::
 
-    314     unsigned instance_id = optixGetInstanceId() ;        // see IAS_Builder::Build and InstanceId.h 
-    315     unsigned prim_id  = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI 
-    316     unsigned identity = (( prim_id & 0xff ) << 24 ) | ( instance_id & 0x00ffffff ) ;
+__closesthit__ch::
 
+    331     unsigned instance_idx = optixGetInstanceId() ;    // see IAS_Builder::Build and InstanceId.h 
+    332     unsigned prim_idx  = optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+    333     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_idx & 0xffff ) ;
 
-    prim_id = i >> 24 
-    prim_idx = ( i >> 24 ) - 1     ## index of the shape within the GAS 
-    instance_id = i & 0x00ffffff
+    prim_idx = ( i >> 16 )      ## index of bbox within within the GAS 
+    instance_idx = i & 0xffff   ## flat 
 
-NB getting zero for the flat instance_id (single IAS, all transforms in it) 
-**DOES** tell you that you have a global intersect 
+NB getting zero for the flat instance_idx (single IAS, all transforms in it) 
+**DOES** tell you that its a global intersect 
 
 Now how to lookup what a prim_id corresponds to ?
 Currently the only names CSGFoundry holds are mesh names
+
+
+In [2]: prim_idx
+Out[2]: array([19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19], dtype=uint32)
+
+In [3]: instance_id
+Out[3]: array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=uint32)
+
 
 """
 import os, numpy as np
@@ -49,9 +56,12 @@ if __name__ == '__main__':
     print(ui)
     print(ui_counts)
 
-    prim_id = i >> 24 
-    prim_idx = ( i >> 24 ) - 1 
-    instance_id = i & 0x00ffffff
-
+    prim_idx = ( i >> 16 ) 
+    instance_idx = i & 0xffff
+ 
+    print("prim_idx")
+    print(prim_idx)
+    print("instance_idx")
+    print(instance_idx)
 
 

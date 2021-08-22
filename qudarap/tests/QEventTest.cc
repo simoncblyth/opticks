@@ -12,9 +12,10 @@ int main(int argc, char** argv)
     unsigned x_total = 0 ; 
     for(unsigned i=0 ; i < photon_counts_per_genstep.size() ; i++) x_total += photon_counts_per_genstep[i] ; 
 
+    const NP* gs = QEvent::MakeFakeGensteps(photon_counts_per_genstep) ; 
 
     QEvent* event = new QEvent ; 
-    event->setGenstepsFake(photon_counts_per_genstep); 
+    event->setGensteps(gs); 
     assert( event->getNumPhotons() == x_total ); 
 
     LOG(info) << event->desc() ; 
