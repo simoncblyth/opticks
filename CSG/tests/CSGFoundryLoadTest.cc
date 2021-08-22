@@ -1,5 +1,5 @@
 #include "SSys.hh"
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "CSGFoundry.h"
 
 #ifdef OPTICKS_CSG
@@ -117,6 +117,7 @@ void test_parseMOI(const CSGFoundry* fd)
 
 void test_findSolidIdx(const CSGFoundry* fd, int argc, char** argv)
 {
+    LOG(info) << "[" ; 
     std::vector<unsigned> solid_selection ; 
     for(int i=1 ; i < argc ; i++)
     {
@@ -140,6 +141,7 @@ void test_findSolidIdx(const CSGFoundry* fd, int argc, char** argv)
              LOG(info) << fd->descTran(solidIdx) ;  
          }
     }
+    LOG(info) << "]" ; 
 }
 
 int main(int argc, char** argv)

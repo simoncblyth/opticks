@@ -29,7 +29,7 @@ struct CSGPrimSpec
     void downloadDump(const char* msg="CSGPrimSpec::downloadDump") const ; 
     void gather(std::vector<float>& out) const ;
     static void Dump(std::vector<float>& out);
-    void dump(const char* msg="CSGPrimSpec::Dump") const ; 
+    void dump(const char* msg="CSGPrimSpec::dump") const ; 
 #endif
 };
 

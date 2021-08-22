@@ -115,10 +115,25 @@ void SVec<T>::MinMaxAvg(const std::vector<T>& t, T& mn, T& mx, T& av)
 }
 
 
+template <typename T>
+void SVec<T>::MinMax(const std::vector<T>& t, T& mn, T& mx ) 
+{
+    typedef typename std::vector<T>::const_iterator IT ;    
+    IT mn_ = std::min_element( t.begin(), t.end()  );  
+    IT mx_ = std::max_element( t.begin(), t.end()  );  
+    mn = *mn_ ; 
+    mx = *mx_ ; 
+}
+
+
+
+
+
 
 
 
 template struct SVec<int>;
+template struct SVec<unsigned>;
 template struct SVec<float>;
 template struct SVec<double>;
 

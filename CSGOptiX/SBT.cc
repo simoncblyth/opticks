@@ -11,6 +11,7 @@
 
 #include "Opticks.hh"
 #include "SSys.hh"
+#include "SVec.hh"
 #include "scuda.h"  
 
 #include "OPTIX_CHECK.h"
@@ -267,6 +268,17 @@ void SBT::createIAS_Standard()
     }
 }
 
+/**
+SBT::createIAS
+----------------
+
+Hmm: usually only one IAS. 
+
+Seems like should be caching the inst used to construct the GPU geometry in use.  
+For ease of lookup using the flat instance_id obtained from intersect identity.  
+
+**/
+
 void SBT::createIAS(unsigned ias_idx)
 {
     unsigned num_inst = foundry->getNumInst(); 
@@ -278,25 +290,160 @@ void SBT::createIAS(unsigned ias_idx)
     assert( num_ias_inst == inst.size() ); 
 
     createIAS(inst); 
-    if(SSys::getenvbool("SBT_DUMP_IAS")) dumpIAS(inst); 
+    dumpIAS(inst); 
 }
+
+/** 
+SBT::dumpIAS
+---------------
+
+ins_idx flatly proceeds across the entire instanced geometry (actually the IAS but there is only one of those)
+
+* the flat ins_idx can be used to lookup the tranform and its instrumented geometry info (gas_idx, ias_idx) from the instances vector
+* so bit packing the gas_idx into GPU side instanceId would be just a convenience to avoid having to do that lookup, 
+  better to keep things as simple as possible GPU side and just provide CSGFoundry API to do that lookup 
+  from the unadorned flat:: 
+
+      unsigned instance_id = optixGetInstanceId() ;        // see IAS_Builder::Build and InstanceId.h 
+
+  * will probably need to lookup the transform anyhow  
+
+* BUT the ins_idx does not help to identify within the globals, all of them being in the first line with ins_idx 0 gas_idx 0 
+
+:: 
+
+    2021-08-22 22:51:53.931 INFO  [52005] [SBT::dumpIAS@289]  inst.size 46117 SBT_DUMP_IAS 1
+     i          0 ins_idx          0 gas_idx          0 ias_idx          0
+     i          1 ins_idx          1 gas_idx          1 ias_idx          0
+     i          2 ins_idx          2 gas_idx          1 ias_idx          0
+     i          3 ins_idx          3 gas_idx          1 ias_idx          0
+     i          4 ins_idx          4 gas_idx          1 ias_idx          0
+     i          5 ins_idx          5 gas_idx          1 ias_idx          0
+     i          6 ins_idx          6 gas_idx          1 ias_idx          0
+     ...
+     i      25591 ins_idx      25591 gas_idx          1 ias_idx          0
+     i      25592 ins_idx      25592 gas_idx          1 ias_idx          0
+     i      25593 ins_idx      25593 gas_idx          1 ias_idx          0
+     i      25594 ins_idx      25594 gas_idx          1 ias_idx          0
+     i      25595 ins_idx      25595 gas_idx          1 ias_idx          0
+     i      25596 ins_idx      25596 gas_idx          1 ias_idx          0
+     i      25597 ins_idx      25597 gas_idx          1 ias_idx          0
+     i      25598 ins_idx      25598 gas_idx          1 ias_idx          0
+     i      25599 ins_idx      25599 gas_idx          1 ias_idx          0
+     i      25600 ins_idx      25600 gas_idx          1 ias_idx          0
+     i      25601 ins_idx      25601 gas_idx          2 ias_idx          0
+     i      25602 ins_idx      25602 gas_idx          2 ias_idx          0
+     i      25603 ins_idx      25603 gas_idx          2 ias_idx          0
+     i      25604 ins_idx      25604 gas_idx          2 ias_idx          0
+     ...
+     i      38208 ins_idx      38208 gas_idx          2 ias_idx          0
+     i      38209 ins_idx      38209 gas_idx          2 ias_idx          0
+     i      38210 ins_idx      38210 gas_idx          2 ias_idx          0
+     i      38211 ins_idx      38211 gas_idx          2 ias_idx          0
+     i      38212 ins_idx      38212 gas_idx          2 ias_idx          0
+     i      38213 ins_idx      38213 gas_idx          3 ias_idx          0
+     i      38214 ins_idx      38214 gas_idx          3 ias_idx          0
+     i      38215 ins_idx      38215 gas_idx          3 ias_idx          0
+     i      38216 ins_idx      38216 gas_idx          3 ias_idx          0
+     i      38217 ins_idx      38217 gas_idx          3 ias_idx          0
+     i      38218 ins_idx      38218 gas_idx          3 ias_idx          0
+     ...
+     i      43206 ins_idx      43206 gas_idx          3 ias_idx          0
+     i      43207 ins_idx      43207 gas_idx          3 ias_idx          0
+     i      43208 ins_idx      43208 gas_idx          3 ias_idx          0
+     i      43209 ins_idx      43209 gas_idx          3 ias_idx          0
+     i      43210 ins_idx      43210 gas_idx          3 ias_idx          0
+     i      43211 ins_idx      43211 gas_idx          3 ias_idx          0
+     i      43212 ins_idx      43212 gas_idx          3 ias_idx          0
+     i      43213 ins_idx      43213 gas_idx          4 ias_idx          0
+     i      43214 ins_idx      43214 gas_idx          4 ias_idx          0
+     i      43215 ins_idx      43215 gas_idx          4 ias_idx          0
+     i      43216 ins_idx      43216 gas_idx          4 ias_idx          0
+    ...
+     i      45605 ins_idx      45605 gas_idx          4 ias_idx          0
+     i      45606 ins_idx      45606 gas_idx          4 ias_idx          0
+     i      45607 ins_idx      45607 gas_idx          4 ias_idx          0
+     i      45608 ins_idx      45608 gas_idx          4 ias_idx          0
+     i      45609 ins_idx      45609 gas_idx          4 ias_idx          0
+     i      45610 ins_idx      45610 gas_idx          4 ias_idx          0
+     i      45611 ins_idx      45611 gas_idx          4 ias_idx          0
+     i      45612 ins_idx      45612 gas_idx          4 ias_idx          0
+     i      45613 ins_idx      45613 gas_idx          5 ias_idx          0
+     i      45614 ins_idx      45614 gas_idx          5 ias_idx          0
+     i      45615 ins_idx      45615 gas_idx          5 ias_idx          0
+     i      45616 ins_idx      45616 gas_idx          5 ias_idx          0
+     ..
+     i      46112 ins_idx      46112 gas_idx          5 ias_idx          0
+     i      46113 ins_idx      46113 gas_idx          5 ias_idx          0
+     i      46114 ins_idx      46114 gas_idx          5 ias_idx          0
+     i      46115 ins_idx      46115 gas_idx          5 ias_idx          0
+     i      46116 ins_idx      46116 gas_idx          5 ias_idx          0
+
+      2021-08-22 22:49:12.346 INFO  [47848] [SBT::dumpIAS@289]  inst.size 46117 SBT_DUMP_IAS 0
+     gas_idx          0 num_ins_idx          1 ins_idx_mn          0 ins_idx_mx          0 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)          1
+     gas_idx          1 num_ins_idx      25600 ins_idx_mn          1 ins_idx_mx      25600 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)      25600
+     gas_idx          2 num_ins_idx      12612 ins_idx_mn      25601 ins_idx_mx      38212 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)      12612
+     gas_idx          3 num_ins_idx       5000 ins_idx_mn      38213 ins_idx_mx      43212 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)       5000
+     gas_idx          4 num_ins_idx       2400 ins_idx_mn      43213 ins_idx_mx      45612 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)       2400
+     gas_idx          5 num_ins_idx        504 ins_idx_mn      45613 ins_idx_mx      46116 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)        504
+    2021-08-22 22:49:12.352 INFO  [47848] [SBT::createHitgroup@645]  num_solid 6 num_gas 6 tot_rec 2473
+
+**/
 
 void SBT::dumpIAS(const std::vector<qat4>& inst )
 {
-    LOG(info) << " inst.size " << inst.size() ; 
+    bool sbt_dump_ias = SSys::getenvbool("SBT_DUMP_IAS") ; 
+
+    LOG(info) 
+        << " inst.size " << inst.size()
+        << " SBT_DUMP_IAS " << sbt_dump_ias 
+        ; 
+
+    typedef std::map<unsigned, std::vector<unsigned>> MUV ; 
+    MUV ins_idx_per_gas ; 
+
     for(unsigned i=0 ; i < inst.size() ; i++)
     {
-        const qat4& q =cinst[i] ;   
+        const qat4& q = inst[i] ;   
         unsigned ins_idx, gas_idx, ias_idx ;  
         q.getIdentity(ins_idx, gas_idx, ias_idx );
 
-        std::cout 
+        // collect ins_idx for each gas_idx 
+        ins_idx_per_gas[gas_idx].push_back(ins_idx); 
+
+        if(sbt_dump_ias) std::cout 
            << " i "       << std::setw(10) << i 
            << " ins_idx " << std::setw(10) << ins_idx 
            << " gas_idx " << std::setw(10) << gas_idx 
            << " ias_idx " << std::setw(10) << ias_idx 
            << std::endl
            ; 
+    }
+
+    MUV::const_iterator b = ins_idx_per_gas.begin(); 
+    MUV::const_iterator e = ins_idx_per_gas.end(); 
+    MUV::const_iterator i ; 
+
+    for( i=b ; i != e ; i++)
+    {
+        unsigned gas_idx = i->first ; 
+        const std::vector<unsigned>& v = i->second ; 
+        unsigned num_ins_idx = v.size() ; 
+
+        unsigned ins_idx_mn, ins_idx_mx ; 
+        SVec<unsigned>::MinMax(v, ins_idx_mn, ins_idx_mx)  ; 
+        unsigned num_ins_idx2 = ins_idx_mx - ins_idx_mn + 1 ; 
+
+        std::cout 
+            << " gas_idx " << std::setw(10) <<  gas_idx 
+            << " num_ins_idx " << std::setw(10) << num_ins_idx
+            << " ins_idx_mn " << std::setw(10) << ins_idx_mn
+            << " ins_idx_mx " << std::setw(10) << ins_idx_mx
+            << " ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2) " << std::setw(10) << num_ins_idx2 
+            << std::endl 
+            ; 
+
+        assert( num_ins_idx == num_ins_idx2 ); 
     }
 }
 

@@ -5,6 +5,8 @@ project(${name} VERSION 0.1.0)
 
 set(TEST_SOURCES
     CSGNodeTest.cc
+    CSGPrimImpTest.cc
+    CSGPrimSpecTest.cc
     CSGPrimTest.cc
     CSGSolidTest.cc
     CSGFoundryTest.cc

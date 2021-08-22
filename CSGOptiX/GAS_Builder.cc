@@ -24,6 +24,8 @@
 GAS_Builder::Build
 -------------------
 
+Canonically invoked from SBT::createGeom/SBT::createGAS using CSGPrimSpec from foundry 
+
 **/
 
 void GAS_Builder::Build( GAS& gas, const  CSGPrimSpec& ps )  // static

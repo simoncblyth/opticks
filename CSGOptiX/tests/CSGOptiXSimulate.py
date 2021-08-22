@@ -16,7 +16,11 @@
     prim_idx = ( i >> 24 ) - 1     ## index of the shape within the GAS 
     instance_id = i & 0x00ffffff
 
+NB getting zero for the flat instance_id (single IAS, all transforms in it) 
+**DOES** tell you that you have a global intersect 
 
+Now how to lookup what a prim_id corresponds to ?
+Currently the only names CSGFoundry holds are mesh names
 
 """
 import os, numpy as np

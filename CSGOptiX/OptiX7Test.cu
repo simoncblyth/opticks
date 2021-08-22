@@ -329,7 +329,8 @@ extern "C" __global__ void __closesthit__ch()
     const float t = uint_as_float( optixGetAttribute_3() ) ;  
 
     unsigned instance_id = optixGetInstanceId() ;        // see IAS_Builder::Build and InstanceId.h 
-    unsigned prim_id  = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI  (1+index-of-CSGPrim within CSGSolid/GAS)
+    unsigned prim_id  = 1u + optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+
     unsigned identity = (( prim_id & 0xff ) << 24 ) | ( instance_id & 0x00ffffff ) ; 
 
     // no GAS id ?
