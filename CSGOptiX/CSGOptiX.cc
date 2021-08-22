@@ -180,17 +180,15 @@ void CSGOptiX::initSimulate() // once only (not per-event) simulate setup tasks 
 }
 
 
-void CSGOptiX::setGensteps(
-
+void CSGOptiX::setGensteps(const NP* gs)
+{
+    assert( evt ); 
+    evt->setGensteps(gs); 
+}
 
 void CSGOptiX::prepareSimulateParam()   // per-event simulate setup prior to optix launch 
 {
     LOG(info) << "[" ; 
-    assert( evt ); 
-
-    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
-    evt->setGenstepsFake(photon_counts_per_genstep); 
-
     params->num_photons = evt->getNumPhotons() ; 
 
     LOG(info) << "]" ; 

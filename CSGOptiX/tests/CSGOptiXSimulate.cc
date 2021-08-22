@@ -4,6 +4,7 @@ CSGOptiXSimulate
 
 **/
 
+#include <cuda_runtime.h>
 #include <algorithm>
 #include <iterator>
 
@@ -11,7 +12,7 @@ CSGOptiXSimulate
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
 
@@ -49,6 +50,10 @@ int main(int argc, char** argv)
         LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::render cx.raygenmode " << cx.raygenmode ; 
         assert(0); 
     }
+
+    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
+    const NP* gs = QEvent::MakeFakeGensteps(photon_counts_per_genstep) ;
+    cx.setGensteps(gs); 
 
     double dt = cx.simulate();  
     LOG(info) << " dt " << dt ;
