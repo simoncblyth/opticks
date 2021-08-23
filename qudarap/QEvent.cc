@@ -23,17 +23,41 @@ const QEvent* QEvent::INSTANCE = nullptr ;
 const QEvent* QEvent::Get(){ return INSTANCE ; }
 
 
-NP* QEvent::MakeFakeGensteps()
+NP* QEvent::MakeGensteps(const std::vector<quad6>& gs ) // static 
 {
-    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
-    return MakeFakeGensteps(photon_counts_per_genstep); 
+    NP* a = NP::Make<float>( gs.size(), 6, 4 ); 
+    a->read2<float>( (float*)gs.data() ); 
+    return a ; 
 }
-
-NP* QEvent::MakeFakeGensteps(const std::vector<int>& counts)
+NP* QEvent::MakeCenterExtentGensteps(const float4& ce, float scale) // stati:w
 {
     std::vector<quad6> gs ; 
-    unsigned ni = counts.size(); 
-    for(unsigned i=0 ; i < ni ; i++)
+    int gencode = OpticksGenstep_TORCH ; 
+    quad6 qq ; 
+    qq.q0.i.x = gencode  ;  qq.q0.i.y = -1 ;   qq.q0.i.z = -1 ;   qq.q0.i.w = -1 ; 
+
+    qq.q1.f.x = ce.x ;  
+    qq.q1.f.y = ce.y ;  
+    qq.q1.f.z = ce.z ;   
+    qq.q1.f.w = 0.f ; 
+
+    qq.q2.i.x = -1 ;   qq.q2.i.y = -1 ;   qq.q2.i.z = -1 ;   qq.q2.i.w = -1 ; 
+    qq.q3.i.x = -1 ;   qq.q3.i.y = -1 ;   qq.q3.i.z = -1 ;   qq.q3.i.w = -1 ; 
+    qq.q4.i.x = -1 ;   qq.q4.i.y = -1 ;   qq.q4.i.z = -1 ;   qq.q4.i.w = -1 ; 
+    qq.q5.i.x = -1 ;   qq.q5.i.y = -1 ;   qq.q5.i.z = -1 ;   qq.q5.i.w = -1 ; 
+    gs.push_back(qq); 
+    return MakeGensteps(gs); 
+}
+
+NP* QEvent::MakeCountGensteps() // static 
+{
+    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
+    return MakeCountGensteps(photon_counts_per_genstep); 
+}
+NP* QEvent::MakeCountGensteps(const std::vector<int>& counts) // static 
+{
+    std::vector<quad6> gs ; 
+    for(unsigned i=0 ; i < counts.size() ; i++)
     {   
         int gencode = OpticksGenstep_TORCH ; 
         quad6 qq ; 
@@ -45,11 +69,13 @@ NP* QEvent::MakeFakeGensteps(const std::vector<int>& counts)
         qq.q5.i.x = -1 ;   qq.q5.i.y = -1 ;   qq.q5.i.z = -1 ;   qq.q5.i.w = -1 ; 
         gs.push_back(qq); 
     }  
-
-    NP* a = NP::Make<float>( gs.size(), 6, 4 ); 
-    a->read2<float>( (float*)gs.data() ); 
-    return a ; 
+    return MakeGensteps(gs); 
 }
+
+
+
+
+
 
 QEvent::QEvent()
     :

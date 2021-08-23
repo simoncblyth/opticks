@@ -39,7 +39,7 @@ RT_PROGRAM void closest_hit_propagate()
      unsigned boundaryIndex = ( instanceIdentity.z & 0xffff ) ; 
      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;   
      prd.identity = instanceIdentity ; 
-     prd.surface_normal = cos_theta > 0.f ? -n : n ;   
+     prd.surface_normal = cos_theta > 0.f ? -n : n ;  // "back-at-you/in-the-eye" normal from m2 to m1  
 }
 
 

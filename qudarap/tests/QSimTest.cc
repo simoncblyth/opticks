@@ -182,7 +182,7 @@ void QSimTest<T>::generate_photon()
     unsigned x_total = 0 ; 
     for(unsigned i=0 ; i < photon_counts_per_genstep.size() ; i++) x_total += photon_counts_per_genstep[i] ; 
 
-    const NP* gs = QEvent::MakeFakeGensteps(photon_counts_per_genstep) ; 
+    const NP* gs = QEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
 
 
     QEvent* evt = new QEvent  ; 

@@ -21,8 +21,10 @@ TODO: follow OEvent technique of initial allocation and resizing at each event
 
 struct QUDARAP_API QEvent
 {
-    static NP* MakeFakeGensteps(); 
-    static NP* MakeFakeGensteps(const std::vector<int>& photon_counts_per_genstep); 
+    static NP* MakeGensteps(const std::vector<quad6>& gs ); 
+    static NP* MakeCenterExtentGensteps(const float4& ce, float scale); 
+    static NP* MakeCountGensteps(); 
+    static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep); 
 
     static const plog::Severity LEVEL ; 
     static const QEvent* INSTANCE ; 
