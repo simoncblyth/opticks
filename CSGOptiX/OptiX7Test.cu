@@ -187,14 +187,15 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 
     float3 position = origin + t*direction ; 
 
-
-    float window = 5.f ; 
-    float fx = 0.5f*(1.f+(position.x - params.center_extent.x)/(window*params.center_extent.w)) ;   // 0.:1.
-    float fz = 0.5f*(1.f+(position.z - params.center_extent.z)/(window*params.center_extent.w)) ;   // 0.:1.
+    float wx = float(params.cegs.x) ;
+    float wz = float(params.cegs.z) ;
+    float fx = 0.5f*(1.f+(position.x - params.center_extent.x)/(wx*params.center_extent.w)) ;   // 0.:1.
+    float fz = 0.5f*(1.f+(position.z - params.center_extent.z)/(wz*params.center_extent.w)) ;   // 0.:1.
     unsigned ix = fx > 0.f && fx < 1.f ? unsigned( fx*params.width ) : 0 ;  
     unsigned iz = fz > 0.f && fz < 1.f ? unsigned( fz*params.height ) : 0 ; 
     unsigned index = iz * params.width + ix ;
-    params.pixels[index] = make_uchar4( 0u, 0u, 0u, 255u) ;
+
+    params.pixels[index] = make_uchar4( 255u, 0u, 0u, 255u) ;
     params.isect[index] = make_float4( position.x, position.y, position.z, uint_as_float(identity)) ; 
 
     
@@ -210,10 +211,17 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     p.q0.f.z = position.z ; 
     p.q0.f.w = spare1 ; 
 
+    /*
     p.q1.f.x = direction.x ; 
     p.q1.f.y = direction.y ; 
     p.q1.f.z = direction.z ; 
     p.q1.f.w = spare2 ; 
+    */
+    p.q1.f.x = fx ; 
+    p.q1.f.y = fz ; 
+    p.q1.i.z = ix ; 
+    p.q1.i.w = iz ; 
+ 
 
     p.q2.f.x = params.tmin ; 
     p.q2.f.y = params.tmax ; 

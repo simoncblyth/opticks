@@ -55,6 +55,7 @@ struct Params
     float      tmin ; 
     float      tmax ; 
     float4     center_extent ; 
+    uint4      cegs ; 
 
     // simulation 
     qsim<float>* sim ; 
@@ -75,6 +76,7 @@ struct Params
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
 
     void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering 
+    void setCEGS(const uint4& cegs); 
 #endif
 
 };

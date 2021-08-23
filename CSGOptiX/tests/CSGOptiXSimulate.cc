@@ -4,7 +4,8 @@ CSGOptiXSimulate
 
 ::
 
-     MOI=PMT_20inch CEG=10:0:10:1000 CSGOptiXSimulate
+     MOI=Hama CEG=5:0:5:1000 CSGOptiXSimulate
+     MOI=Hama CEG=10:0:10:1000 CSGOptiXSimulate
 
 **/
 
@@ -36,7 +37,6 @@ int main(int argc, char** argv)
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
-//    const char* outdir = SSys::getenvvar("OUTDIR", "$TMP/CSGOptiX/CSGOptiXSimulate" );
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
 
@@ -75,18 +75,21 @@ int main(int argc, char** argv)
         int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
         LOG(info) << " rc " << rc << " ce " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w ;  
          
-        std::vector<int> ceg ; 
-        SSys::getenvintvec("CEG", ceg, ':', "5:0:5:1000" ); 
-        unsigned nx = ceg.size() > 0 ? ceg[0] : 5  ; 
-        unsigned ny = ceg.size() > 1 ? ceg[1] : 0  ; 
-        unsigned nz = ceg.size() > 2 ? ceg[2] : 5 ; 
-        unsigned pg = ceg.size() > 3 ? ceg[3] : 1000 ; 
-        unsigned photons_per_genstep = pg ; 
+        std::vector<int> vcegs ; 
+        SSys::getenvintvec("CEGS", vcegs, ':', "5:0:5:1000" ); 
+        uint4 cegs ; 
+        cegs.x = vcegs.size() > 0 ? vcegs[0] : 5  ; 
+        cegs.y = vcegs.size() > 1 ? vcegs[1] : 0  ; 
+        cegs.z = vcegs.size() > 2 ? vcegs[2] : 5 ; 
+        cegs.w = vcegs.size() > 3 ? vcegs[3] : 1000 ; 
+
         LOG(info) 
-            << " CEG nx:ny:nz:photons_per_genstep " << nx << ":" << ny << ":" << nz << ":" << photons_per_genstep 
+            << " CEGS nx:ny:nz:photons_per_genstep " << cegs.x << ":" << cegs.y << ":" << cegs.z << ":" << cegs.w 
             ;   
 
-        gs = QEvent::MakeCenterExtentGensteps(ce, nx, ny, nz, photons_per_genstep ); 
+        gs = QEvent::MakeCenterExtentGensteps(ce, cegs); 
+        cx.setCE(ce); 
+        cx.setCEGS(cegs); 
     }
 
     cx.setGensteps(gs); 
@@ -97,7 +100,8 @@ int main(int argc, char** argv)
     QSim<float>* sim = cx.sim ; 
     QEvent* evt = cx.evt ; 
     
-    evt->savePhoton(ok.getOutDir(), "photons.npy");  
+    evt->savePhoton(ok.getOutDir(),  "photons.npy");  
+    evt->saveGenstep(ok.getOutDir(), "genstep.npy");  
 
     const char* namestem = "CSGOptiXSimulate" ; 
     const char* ext = ".jpg" ; 

@@ -5,8 +5,8 @@ pkg=CSGOptiX
 bin=CSGOptiXSimulate
 
 
-export MOI=${MOI:-PMT_20inch}
-export CEG=10:0:10:1000
+export MOI=${MOI:-Hama}
+export CEG=5:0:5:1000
 
 $bin
 

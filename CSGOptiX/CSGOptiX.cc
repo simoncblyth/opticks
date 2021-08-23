@@ -205,6 +205,11 @@ void CSGOptiX::setCE(const float4& v )
     glm::vec4 ce(v.x, v.y, v.z, v.w); 
     setCE(ce); 
 }
+void CSGOptiX::setCEGS(const uint4& cegs_)
+{
+    params->setCEGS(cegs_); 
+}
+
 void CSGOptiX::setCE(const glm::vec4& ce )
 {
     bool aim = true ; 

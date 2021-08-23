@@ -30,10 +30,15 @@ NP* QEvent::MakeGensteps(const std::vector<quad6>& gs ) // static
     a->read2<float>( (float*)gs.data() ); 
     return a ; 
 }
-NP* QEvent::MakeCenterExtentGensteps(const float4& ce, unsigned nx, unsigned ny, unsigned nz, unsigned photons_per_genstep  ) // stati:w
+NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs  ) // stati:w
 {
     quad6 qq ; 
     qq.zero(); 
+
+    unsigned nx = cegs.x ; 
+    unsigned ny = cegs.y ; 
+    unsigned nz = cegs.z ; 
+    unsigned photons_per_genstep = cegs.w ; 
 
     qq.q0.i.x = OpticksGenstep_TORCH ;  
     qq.q0.i.w = photons_per_genstep ; 
@@ -100,8 +105,10 @@ QEvent::QEvent()
     INSTANCE = this ; 
 }
 
-void QEvent::setGensteps(const NP* gs) 
+void QEvent::setGensteps(const NP* gs_) 
 { 
+    gs = gs_ ; 
+
     assert( gs->uifc == 'f' && gs->ebyte == 4 ); 
     assert( gs->has_shape(-1, 6, 4) ); 
     unsigned num_gs = gs->shape[0] ; 
@@ -140,6 +147,12 @@ void QEvent::savePhoton( const char* dir_, const char* name )
     std::vector<quad4> photon ; 
     downloadPhoton(photon); 
     NP::Write( dir, name,  (float*)photon.data(), photon.size(), 4, 4  );
+}
+
+void QEvent::saveGenstep( const char* dir_, const char* name)
+{
+    if(!gs) return ; 
+    gs->save(dir_, name); 
 }
 
 
