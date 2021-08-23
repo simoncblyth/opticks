@@ -17,14 +17,8 @@ int main(int argc, char** argv)
     */
 
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f ); 
-
-    unsigned nx = 3 ; 
-    unsigned ny = 0 ; 
-    unsigned nz = 3 ; 
-    unsigned photons_per_genstep = 100 ; 
-
-    const NP* gs = QEvent::MakeCenterExtentGensteps(ce, nx, ny, nz, photons_per_genstep ) ; 
-
+    uint4 cegs = make_uint4( 3, 0, 3, 100 ); 
+    const NP* gs = QEvent::MakeCenterExtentGensteps(ce, cegs); 
 
     QEvent* event = new QEvent ; 
     event->setGensteps(gs); 

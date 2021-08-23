@@ -4,8 +4,8 @@ CSGOptiXSimulate
 
 ::
 
-     MOI=Hama CEG=5:0:5:1000 CSGOptiXSimulate
-     MOI=Hama CEG=10:0:10:1000 CSGOptiXSimulate
+     MOI=Hama CEGS=5:0:5:1000   CSGOptiXSimulate
+     MOI=Hama CEGS=10:0:10:1000 CSGOptiXSimulate
 
 **/
 

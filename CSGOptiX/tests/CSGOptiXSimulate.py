@@ -39,7 +39,8 @@ import matplotlib.pyplot as plt
 
 
 class CSGOptiXSimulate(object):
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulate")
+    #FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulate")
+    FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX")
     def __init__(self):
         p = np.load(os.path.join(self.FOLD, "photons.npy"))
         globals()["p"] = p 

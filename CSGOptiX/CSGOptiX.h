@@ -77,6 +77,7 @@ struct CSGOptiX : public SRenderer
     void setTop(const char* tspec); 
 
     // render related 
+    void setCEGS(const uint4& cegs_); 
     void setCE(const float4& ce); 
     void setCE(const glm::vec4& ce); 
 
