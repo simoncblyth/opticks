@@ -57,11 +57,22 @@ if __name__ == '__main__':
     print(ui_counts)
 
     prim_idx = ( i >> 16 ) 
-    instance_idx = i & 0xffff
+    instance_id = i & 0xffff
  
     print("prim_idx")
     print(prim_idx)
-    print("instance_idx")
-    print(instance_idx)
+    print("instance_id")
+    print(instance_id)
+
+    boundary = p[:,2,3].view(np.uint32)
+
+    print("boundary")
+    print(boundary)
+
+
+
+    
+
+
 
 

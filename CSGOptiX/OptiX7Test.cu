@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <optix.h>
 
 #include "scuda.h"
@@ -16,16 +15,12 @@
 #include "Binding.h"
 #include "Params.h"
 
-
 extern "C" { __constant__ Params params ;  }
 
 
 /**
 trace : pure function, with no use of params, everything via args
 -------------------------------------------------------------------
-
-optixTrace ray_origin ray_direction args passed by float3 value, 
-but could use reference args float4& here and make_float3 from them 
 
 **/
 
@@ -37,28 +32,19 @@ static __forceinline__ __device__ void trace(
         float                  tmax,
         float3*                normal, 
         float*                 t, 
-        float3*                position,
-        unsigned*              identity
+        unsigned*              identity,
+        unsigned*              boundary,
+        float*                 spare1,
+        float*                 spare2
         )   // pure 
 {
-    uint32_t p0, p1, p2, p3 ;
-    uint32_t p4, p5, p6, p7 ;
-
-    // hmm: why ? no need to input these ?
-    p0 = float_as_uint( normal->x );
-    p1 = float_as_uint( normal->y );
-    p2 = float_as_uint( normal->z );
-    p3 = float_as_uint( *t );
-
-    p4 = float_as_uint( position->x );
-    p5 = float_as_uint( position->y );
-    p6 = float_as_uint( position->z );
-    p7 = *identity ;
- 
     const unsigned SBToffset = 0u ; 
     const unsigned SBTstride = 1u ; 
     const unsigned missSBTIndex = 0u ; 
     const float rayTime = 0.0f ; 
+
+    unsigned p0, p1, p2, p3 ; 
+    unsigned p4, p5, p6, p7 ; 
 
     optixTrace(
             handle,
@@ -80,32 +66,13 @@ static __forceinline__ __device__ void trace(
     normal->y = uint_as_float( p1 );
     normal->z = uint_as_float( p2 );
     *t        = uint_as_float( p3 ); 
-
-    position->x = uint_as_float( p4 );
-    position->y = uint_as_float( p5 );
-    position->z = uint_as_float( p6 );
-    *identity   = p7 ; 
+    *identity = p4 ; 
+    *boundary = p5 ; 
+    *spare1   = uint_as_float( p6 ); 
+    *spare2   = uint_as_float( p7 ); 
+    // max of 8, perhaps need f_theta, f_phi ?
 }
 
-/**
-*setPayload* is used from __closesthit__ and __miss__ resulting 
-in the optixTrace output argument uints converted back to float above.
-Notice that could squeeze the payload in half by not including 
-the position and t. This is possible as the t output argument allows 
-to recalculate intersect position from from ray_position, ray_direction.
-**/
-static __forceinline__ __device__ void setPayload( float3 normal, float t, float3 position, unsigned identity ) // pure? 
-{
-    optixSetPayload_0( float_as_uint( normal.x ) );
-    optixSetPayload_1( float_as_uint( normal.y ) );
-    optixSetPayload_2( float_as_uint( normal.z ) );
-    optixSetPayload_3( float_as_uint( t ) );
-
-    optixSetPayload_4( float_as_uint( position.x ) );
-    optixSetPayload_5( float_as_uint( position.y ) );
-    optixSetPayload_6( float_as_uint( position.z ) );
-    optixSetPayload_7( identity );
-}
 
 __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity )  // pure 
 {
@@ -118,8 +85,6 @@ __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned ide
             255u
             );
 }
-
-
 
 
 /**
@@ -146,8 +111,10 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
-    float3   position = make_float3(  0.f, 0.f, 0.f );
     unsigned identity = 0u ; 
+    unsigned boundary = 0u ; 
+    float spare1 = 0.f ; 
+    float spare2 = 0.f ; 
 
     trace( 
         params.handle,
@@ -157,14 +124,16 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         params.tmax,
         &normal, 
         &t, 
-        &position,
-        &identity
+        &identity,
+        &boundary,
+        &spare1,
+        &spare2
     );
 
+    float3 position = origin + t*direction ; 
     float3 diddled_normal = normalize(normal)*0.5f + 0.5f ; // lightens render, with mid-grey "pedestal" 
     uchar4 color = make_color( diddled_normal, identity );
     unsigned index = idx.y * params.width + idx.x ;
-
     params.pixels[index] = color ; 
     params.isect[index] = make_float4( position.x, position.y, position.z, uint_as_float(identity)) ; 
 }
@@ -183,21 +152,9 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     unsigned photon_id = idx.x ; 
     unsigned genstep_id = evt->seed[photon_id] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
-
-/*
-    printf("//cx.simulate photon_id %3d genstep_id %3d  gs.q0.i ( %3d %3d %3d %3d ) \n", 
-       photon_id, 
-       genstep_id, 
-       gs.q0.i.x, 
-       gs.q0.i.y,
-       gs.q0.i.z, 
-       gs.q0.i.w
-      ); 
-*/  
-      
+     
     qsim<float>* sim = params.sim ; 
-    curandState rng = sim->rngstate[photon_id] ; 
-    // TODO: skipahead using an event_id 
+    curandState rng = sim->rngstate[photon_id] ;    // TODO: skipahead using an event_id 
     quad4 p ;   
     sim->generate_photon(p, rng, gs, photon_id, genstep_id );  
 
@@ -206,11 +163,12 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
-    float3   position = make_float3(  0.f, 0.f, 0.f );
     unsigned identity = 0u ; 
+    unsigned boundary = 0u ; 
 
-    // CONSIDER: ox,oy,oz,px,py,pz args so can avoid origin, direction
-    // or directly use a floa44& arguments so can p.q0 p.q1  
+    float spare1 = 0.f ; 
+    float spare2 = 0.f ; 
+
     trace( 
         params.handle,
         origin,
@@ -219,24 +177,35 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
         params.tmax,
         &normal, 
         &t, 
-        &position,
-        &identity
+        &identity,
+        &boundary,
+        &spare1,  
+        &spare2
     );
+
+    float3 position = origin + t*direction ; 
+    
+    //float cos_theta = dot(normal,direction);
+    // can "sign/orient the boundary" up here in raygen, unlike oxrap/cu/closest_hit_propagate.cu,
+    // which avoids having to pass the information from lower level
+    //
+    // what about angular efficiency ? need intersection point in object frame to get the angle 
+
 
     p.q0.f.x = position.x ; 
     p.q0.f.y = position.y ; 
     p.q0.f.z = position.z ; 
-    p.q0.f.w = 101.f ; 
+    p.q0.f.w = spare1 ; 
 
     p.q1.f.x = direction.x ; 
     p.q1.f.y = direction.y ; 
     p.q1.f.z = direction.z ; 
-    p.q1.f.w = 202.f ; 
+    p.q1.f.w = spare2 ; 
 
     p.q2.f.x = params.tmin ; 
     p.q2.f.y = params.tmax ; 
     p.q2.f.z = t ; 
-    p.q2.f.w = 303.f ; 
+    p.q2.u.w = boundary ; 
 
     p.q3.f.x = normal.x ; 
     p.q3.f.y = normal.y ; 
@@ -249,7 +218,6 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 /**
 **/
 
-
 extern "C" __global__ void __raygen__rg()
 {
     const uint3 idx = optixGetLaunchIndex();
@@ -261,6 +229,87 @@ extern "C" __global__ void __raygen__rg()
     }
 } 
 
+
+/**
+*setPayload* is used from __closesthit__ and __miss__ providing communication to __raygen__ optixTrace call
+**/
+static __forceinline__ __device__ void setPayload( float3 normal, float t, unsigned identity, unsigned boundary, float spare1, float spare2  ) // pure? 
+{
+    optixSetPayload_0( float_as_uint( normal.x ) );
+    optixSetPayload_1( float_as_uint( normal.y ) );
+    optixSetPayload_2( float_as_uint( normal.z ) );
+    optixSetPayload_3( float_as_uint( t ) );
+    optixSetPayload_4( identity );
+    optixSetPayload_5( boundary );
+    optixSetPayload_6( float_as_uint(spare1) );
+    optixSetPayload_7( float_as_uint(spare2) );
+    // maximum of 8 payload values configured in PIP::PIP 
+}
+
+
+extern "C" __global__ void __miss__ms()
+{
+    MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
+    float3 normal = make_float3( ms->r, ms->g, ms->b );   // hmm: this is render specific, but easily ignored
+    float t = 0.f ; 
+    unsigned identity = 0u ; 
+    unsigned boundary = 0u ; 
+    setPayload( normal, t, identity, boundary, 0.f, 0.f  );
+}
+
+/**
+__closesthit__ch : pass attributes from __intersection__ into setPayload
+============================================================================
+
+optixGetInstanceId 
+    flat instance_idx over all transforms in the single IAS, 
+    JUNO maximum ~50,000 (fits with 0xffff = 65535)
+
+optixGetPrimitiveIndex
+    local index of AABB within the GAS, 
+    instanced solids adds little to the number of AABB, 
+    most come from unfortunate repeated usage of prims in the non-instanced global
+    GAS with repeatIdx 0 (JUNO up to ~4000)
+
+optixGetRayTmax
+    In intersection and CH returns the current smallest reported hitT or the tmax passed into rtTrace 
+    if no hit has been reported
+
+
+**/
+
+extern "C" __global__ void __closesthit__ch()
+{
+    const float3 local_normal =    // geometry object frame normal at intersection point 
+        make_float3(
+                uint_as_float( optixGetAttribute_0() ),
+                uint_as_float( optixGetAttribute_1() ),
+                uint_as_float( optixGetAttribute_2() )
+                );
+   
+
+    const float t = uint_as_float( optixGetAttribute_3() ) ;  
+    unsigned boundary = optixGetAttribute_4() ; 
+
+    const float3 local_point =    // geometry object frame normal at intersection point 
+        make_float3(
+                uint_as_float( optixGetAttribute_5() ),
+                uint_as_float( optixGetAttribute_6() ),
+                uint_as_float( optixGetAttribute_7() )
+                );
+
+    const float spare1 = optixGetRayTmax() ; 
+    const float spare2 = local_point.x ; 
+
+    //unsigned instance_index = optixGetInstanceIndex() ;  0-based index within IAS
+    unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
+    unsigned prim_idx = optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+    unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ; 
+
+    float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
+
+    setPayload( normal, t, identity, boundary, spare1, spare2 );  // communicate to raygen 
+}
 
 
 /**
@@ -288,70 +337,24 @@ extern "C" __global__ void __intersection__is()
     float4 isect ; // .xyz normal .w distance 
     if(intersect_prim(isect, numNode, node, plan, itra, t_min , ray_origin, ray_direction ))  
     {
-        const unsigned hitKind = 0u ;   // only 8bit 
-        unsigned a0, a1, a2, a3, a4 ;      
+        const unsigned hitKind = 0u ;   // only 8bit : could use to customize how attributes interpreted
+        unsigned a0, a1, a2, a3, a4, a5, a6, a7 ;      
         const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
 
-        a0 = float_as_uint( isect.x );
+        float3 local_point = ray_origin + isect.w*ray_direction ;        
+
+        a0 = float_as_uint( isect.x );  // isect.xyz is object frame normal of geometry at intersection point 
         a1 = float_as_uint( isect.y );
         a2 = float_as_uint( isect.z );
-        a3 = float_as_uint( isect.w ) ; 
+        a3 = float_as_uint( isect.w ) ; // perhaps no need to pass the "t", should be standard access to "t"
         a4 = boundary ; 
+        a5 = float_as_uint( local_point.x ); 
+        a6 = float_as_uint( local_point.y ); 
+        a7 = float_as_uint( local_point.z ); 
 
-        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4 );   
-        // 5 attribute registers, see PIP::PIP   [max is 8]
+        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4, a5, a6, a7 );   
+        // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 
+        // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch 
     }
 }
-
-
-/**
-__closesthit__ch
-==================
-
-optixGetInstanceId 
-    flat instance_idx over all transforms in the single IAS, 
-    JUNO maximum ~50,000 (fits with 0xffff = 65535)
-
-optixGetPrimitiveIndex
-    local index of AABB within the GAS, 
-    instanced solids adds little to the number of AABB, 
-    most come from unfortunate repeated usage of prims in the non-instanced global
-    GAS with repeatIdx 0 (JUNO up to ~4000)
-
-**/
-
-extern "C" __global__ void __closesthit__ch()
-{
-    const float3 isect_normal =
-        make_float3(
-                uint_as_float( optixGetAttribute_0() ),
-                uint_as_float( optixGetAttribute_1() ),
-                uint_as_float( optixGetAttribute_2() )
-                );
-    
-    const float t = uint_as_float( optixGetAttribute_3() ) ;  
-
-    unsigned instance_idx = optixGetInstanceId() ;    // see IAS_Builder::Build and InstanceId.h 
-    unsigned prim_idx  = optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
-    unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_idx & 0xffff ) ; 
-
-    float3 normal = optixTransformNormalFromObjectToWorldSpace( isect_normal ) ;  
-    // pre-diddling normal for rendering purposes not acceptable when using for both rendering and simulation   
-
-    const float3 world_origin = optixGetWorldRayOrigin() ; 
-    const float3 world_direction = optixGetWorldRayDirection() ; 
-    const float3 world_position = world_origin + t*world_direction ; 
-
-    setPayload( normal, t,  world_position, identity );  // communicate to raygen 
-}
-
-extern "C" __global__ void __miss__ms()
-{
-    MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
-    float3 normal = make_float3( ms->r, ms->g, ms->b );   // this is render specific pre-diddling too
-    float t_cand = 0.f ; 
-    float3 position = make_float3( 0.f, 0.f, 0.f ); 
-    unsigned identity = 0u ; 
-    setPayload( normal,  t_cand, position, identity );
-}
-
+// story begins with intersection
