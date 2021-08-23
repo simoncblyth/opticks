@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
 
     fig, ax = plt.subplots()
-    ax.scatter( p[:,0,0], p[:,0,1] )
+    ax.scatter( p[:,0,0], p[:,0,2], s=0.1 )
     fig.show()
 
     

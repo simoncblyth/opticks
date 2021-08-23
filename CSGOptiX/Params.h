@@ -54,7 +54,7 @@ struct Params
     float3     W ;
     float      tmin ; 
     float      tmax ; 
-
+    float4     center_extent ; 
 
     // simulation 
     qsim<float>* sim ; 
@@ -73,6 +73,8 @@ struct Params
     void setCamera(float tmin_, float tmax_, unsigned cameratype_ ) ;
     void setRaygenMode(int raygenmode_ );
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
+
+    void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering 
 #endif
 
 };

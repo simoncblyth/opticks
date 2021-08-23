@@ -2,6 +2,10 @@
 CSGOptiXSimulate
 =================
 
+::
+
+     MOI=PMT_20inch CEG=10:0:10:1000 CSGOptiXSimulate
+
 **/
 
 #include <cuda_runtime.h>
@@ -28,10 +32,14 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
+    ok.setOutDir("$TMP/CSGOptiX");   // override --outdir option 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
-    const char* outdir = SSys::getenvvar("OUTDIR", "$TMP/CSGOptiX/CSGOptiXSimulate" );
+//    const char* outdir = SSys::getenvvar("OUTDIR", "$TMP/CSGOptiX/CSGOptiXSimulate" );
+    const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
+    const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
+
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
@@ -66,11 +74,17 @@ int main(int argc, char** argv)
         LOG(info) << " moi " << moi << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
         int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
         LOG(info) << " rc " << rc << " ce " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w ;  
-
-        unsigned nx = 3 ; 
-        unsigned ny = 0 ; 
-        unsigned nz = 3 ; 
-        unsigned photons_per_genstep = 100 ; 
+         
+        std::vector<int> ceg ; 
+        SSys::getenvintvec("CEG", ceg, ':', "5:0:5:1000" ); 
+        unsigned nx = ceg.size() > 0 ? ceg[0] : 5  ; 
+        unsigned ny = ceg.size() > 1 ? ceg[1] : 0  ; 
+        unsigned nz = ceg.size() > 2 ? ceg[2] : 5 ; 
+        unsigned pg = ceg.size() > 3 ? ceg[3] : 1000 ; 
+        unsigned photons_per_genstep = pg ; 
+        LOG(info) 
+            << " CEG nx:ny:nz:photons_per_genstep " << nx << ":" << ny << ":" << nz << ":" << photons_per_genstep 
+            ;   
 
         gs = QEvent::MakeCenterExtentGensteps(ce, nx, ny, nz, photons_per_genstep ); 
     }
@@ -83,14 +97,17 @@ int main(int argc, char** argv)
     QSim<float>* sim = cx.sim ; 
     QEvent* evt = cx.evt ; 
     
-    /*
-    std::vector<quad4> photon ; 
-    evt->downloadPhoton(photon); 
-    LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
-    sim->dump_photon( photon.data(), photon.size(), "f0,f1,f2,f3" );    // TODO: move dumping into QEvent
-    */
+    evt->savePhoton(ok.getOutDir(), "photons.npy");  
 
-    evt->savePhoton(outdir, "photons.npy");  
+    const char* namestem = "CSGOptiXSimulate" ; 
+    const char* ext = ".jpg" ; 
+    int index = -1 ;  
+    const char* outpath = ok.getOutPath(namestem, ext, index ); 
+    LOG(error) << " outpath " << outpath ; 
+
+    std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
+    cx.snap(outpath, bottom_line.c_str(), topline  );   
+
 
     cudaDeviceSynchronize(); 
     return 0 ; 

@@ -6,6 +6,15 @@
 #include <cuda_runtime.h>
 #include <iostream>
 
+
+void Params::setCenterExtent(float x, float y, float z, float w)  // used for "simulation" planar rendering 
+{
+    center_extent.x = x ; 
+    center_extent.y = y ; 
+    center_extent.z = z ; 
+    center_extent.w = w ; 
+}
+
 void Params::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ )
 {
     eye.x = eye_.x ;

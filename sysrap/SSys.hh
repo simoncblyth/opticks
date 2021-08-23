@@ -66,7 +66,7 @@ class SYSRAP_API SSys {
      static unsigned getenvunsigned( const char* envkey, unsigned fallback=~0u );
      static float getenvfloat( const char* envkey, float fallback=-1.f );
      static bool getenvbool( const char* envkey );
-     static int getenvintvec( const char* envkey, std::vector<int>& ivec, char delim=',' );
+     static int getenvintvec( const char* envkey, std::vector<int>& ivec, char delim=',', const char* fallback="0,0,0");
 
 
      static int   atoi_( const char* a );

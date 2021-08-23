@@ -49,8 +49,7 @@ struct CSGOptiX : public SRenderer
     float             tmin_model ; 
     int               jpg_quality ; 
 
-    std::vector<double>  render_times ;
-    std::vector<double>  simulate_times ;
+    std::vector<double>  launch_times ;
 
     Params*           params  ; 
 #if OPTIX_VERSION < 70000

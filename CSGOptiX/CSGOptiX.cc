@@ -158,9 +158,6 @@ void CSGOptiX::setTop(const char* tspec)
 }
 
 
-
-
-
 void CSGOptiX::initRender()
 {
 #if OPTIX_VERSION < 70000
@@ -262,6 +259,9 @@ void CSGOptiX::prepareRenderParam()
 
 void CSGOptiX::prepareParam()
 {
+    glm::vec4& ce = composition->getCenterExtent();   
+    params->setCenterExtent(ce.x, ce.y, ce.z, ce.w); 
+
     switch(raygenmode)
     {
        case 0:prepareRenderParam() ; break ; 
@@ -277,6 +277,7 @@ void CSGOptiX::prepareParam()
 
 double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
 {
+    LOG(LEVEL) << "[" ; 
     double t0, t1 ; 
     t0 = BTimeStamp::RealTime();
 #if OPTIX_VERSION < 70000
@@ -292,6 +293,8 @@ double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
 #endif
     t1 = BTimeStamp::RealTime();
     double dt = t1 - t0 ; 
+    launch_times.push_back(dt);  
+    LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
 }
 
@@ -299,10 +302,7 @@ double CSGOptiX::render()
 {
     prepareParam(); 
     assert( raygenmode == 0 ); 
-    LOG(LEVEL) << "[" ; 
     double dt = launch(params->width, params->height, params->depth );
-    render_times.push_back(dt);  
-    LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
 }
 
@@ -310,15 +310,9 @@ double CSGOptiX::simulate()
 {
     prepareParam(); 
     assert( raygenmode > 0 ); 
-    LOG(LEVEL) << "[" ; 
-
     unsigned num_photons = params->num_photons ; 
     assert( num_photons > 0 ); 
-
     double dt = launch(num_photons, 1u, 1u );
-
-    simulate_times.push_back(dt);  
-    LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
     return dt ; 
 }
 
@@ -365,18 +359,22 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
 {
     const char* json_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".json"); 
 
-    const std::vector<double>& t = render_times ;
-    double mn, mx, av ;
-    SVec<double>::MinMaxAvg(t,mn,mx,av);
-
     nlohmann::json& js = meta->js ;
     js["argline"] = ok->getArgLine();
     js["nameprefix"] = ok->getNamePrefix() ;
     js["jpg"] = jpg_path ; 
     js["emm"] = ok->getEnabledMergedMesh() ;
-    js["mn"] = mn ;
-    js["mx"] = mx ;
-    js["av"] = av ;
+
+    const std::vector<double>& t = launch_times ;
+    if( t.size() > 0 )
+    {
+        double mn, mx, av ;
+        SVec<double>::MinMaxAvg(t,mn,mx,av);
+
+        js["mn"] = mn ;
+        js["mx"] = mx ;
+        js["av"] = av ;
+    }
 
     meta->save(json_path);
     LOG(info) << json_path ; 

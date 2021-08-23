@@ -133,7 +133,9 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     float3 position = origin + t*direction ; 
     float3 diddled_normal = normalize(normal)*0.5f + 0.5f ; // lightens render, with mid-grey "pedestal" 
     uchar4 color = make_color( diddled_normal, identity );
+
     unsigned index = idx.y * params.width + idx.x ;
+
     params.pixels[index] = color ; 
     params.isect[index] = make_float4( position.x, position.y, position.z, uint_as_float(identity)) ; 
 }
@@ -184,6 +186,17 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     );
 
     float3 position = origin + t*direction ; 
+
+
+    float window = 5.f ; 
+    float fx = 0.5f*(1.f+(position.x - params.center_extent.x)/(window*params.center_extent.w)) ;   // 0.:1.
+    float fz = 0.5f*(1.f+(position.z - params.center_extent.z)/(window*params.center_extent.w)) ;   // 0.:1.
+    unsigned ix = fx > 0.f && fx < 1.f ? unsigned( fx*params.width ) : 0 ;  
+    unsigned iz = fz > 0.f && fz < 1.f ? unsigned( fz*params.height ) : 0 ; 
+    unsigned index = iz * params.width + ix ;
+    params.pixels[index] = make_uchar4( 0u, 0u, 0u, 255u) ;
+    params.isect[index] = make_float4( position.x, position.y, position.z, uint_as_float(identity)) ; 
+
     
     //float cos_theta = dot(normal,direction);
     // can "sign/orient the boundary" up here in raygen, unlike oxrap/cu/closest_hit_propagate.cu,

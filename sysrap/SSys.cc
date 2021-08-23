@@ -406,13 +406,11 @@ bool SSys::getenvbool( const char* envkey )
 
 
 
-int SSys::getenvintvec( const char* envkey, std::vector<int>& ivec, char delim )
+int SSys::getenvintvec( const char* envkey, std::vector<int>& ivec, char delim, const char* fallback  )
 {
     char* line = getenv(envkey);
-    if(!line) return 0 ; 
-
     std::stringstream ss; 
-    ss.str(line)  ;
+    ss.str(line ? line : fallback)  ;
 
     std::string s;
     while (std::getline(ss, s, delim)) ivec.push_back(atoi_(s.c_str())) ; 

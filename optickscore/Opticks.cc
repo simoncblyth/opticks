@@ -2608,13 +2608,13 @@ const char* Opticks::getOutPath(const char* namestem, const char* ext, int index
     if(outdir)     ss << outdir << "/" ; 
     if(nameprefix) ss << nameprefix ; 
     if(namestem)   ss << namestem ; 
-    if( index > -1 ) ss << std::setfill('0') << std::setw(5) << index ; 
+    if(index > -1 ) ss << std::setfill('0') << std::setw(5) << index ; 
     if(ext)        ss << ext ; 
 
     std::string s = ss.str(); 
     const char* outpath = SPath::Resolve(s.c_str()) ;
 
-    LOG(LEVEL)
+    LOG(info)
        << " outdir " << outdir
        << " nameprefix " << nameprefix 
        << " namestem " << namestem 
