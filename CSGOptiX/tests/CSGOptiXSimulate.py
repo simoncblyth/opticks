@@ -33,6 +33,11 @@ Out[3]: array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 import os, numpy as np
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
+import matplotlib.pyplot as plt
+
+
+
+
 class CSGOptiXSimulate(object):
     FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulate")
     def __init__(self):
@@ -45,9 +50,9 @@ if __name__ == '__main__':
 
     print(p)
 
-    n = p[:,3,:3]  # check normalization of the normal 
-    nn = np.sum(n*n, axis=1)
-    assert np.allclose( nn, 1. )
+    #n = p[:,3,:3]  # check normalization of the normal 
+    #nn = np.sum(n*n, axis=1)
+    #assert np.allclose( nn, 1. )
 
 
     i = p[:,3,3].view(np.uint32)
@@ -70,6 +75,9 @@ if __name__ == '__main__':
     print(boundary)
 
 
+    fig, ax = plt.subplots()
+    ax.scatter( p[:,0,0], p[:,0,1] )
+    fig.show()
 
     
 

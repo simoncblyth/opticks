@@ -656,7 +656,7 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
     p.q0.f.x = gs.q1.f.x ;   // position   
     p.q0.f.y = gs.q1.f.y ;  
     p.q0.f.z = gs.q1.f.z ;  
-    p.q0.f.w = 0.f ;         // time 
+    p.q0.f.w = 0.f ;         
 
     float u = curand_uniform(&rng); 
     float sinPhi, cosPhi;
@@ -665,9 +665,9 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
     // printf("// qsim::generate_photon_torch photon_id %d genstep_id %d sinPhi %10.4f cosPhi %10.4f \n", photon_id, genstep_id, sinPhi, cosPhi ); 
 
     p.q1.f.x = cosPhi ;   // direction
-    p.q1.f.y = sinPhi ;  
-    p.q1.f.z = 0.f ;  
-    p.q1.f.w = 1.f ;         // weight
+    p.q1.f.y = 0.f    ;  
+    p.q1.f.z = sinPhi ;  
+    p.q1.f.w = 1.f    ;         // weight
 } 
 
 

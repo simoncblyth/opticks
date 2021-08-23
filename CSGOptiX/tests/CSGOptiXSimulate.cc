@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     if( strcmp(moi, "FAKE") == 0 )
     { 
         std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
-        gs = QEvent::MakeFakeGensteps(photon_counts_per_genstep) ;
+        gs = QEvent::MakeCountGensteps(photon_counts_per_genstep) ;
     }
     else
     {
@@ -66,8 +66,13 @@ int main(int argc, char** argv)
         LOG(info) << " moi " << moi << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
         int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
         LOG(info) << " rc " << rc << " ce " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w ;  
-        float scale = 2.f ; 
-        gs = QEvent::MakeCenterExtentGensteps(ce, scale); 
+
+        unsigned nx = 3 ; 
+        unsigned ny = 0 ; 
+        unsigned nz = 3 ; 
+        unsigned photons_per_genstep = 100 ; 
+
+        gs = QEvent::MakeCenterExtentGensteps(ce, nx, ny, nz, photons_per_genstep ); 
     }
 
     cx.setGensteps(gs); 

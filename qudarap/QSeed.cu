@@ -27,14 +27,18 @@ extern QBuf<int>* QSeed_create_photon_seeds(QBuf<float>* gs)
 
     strided_range<Iterator> np( pgs + 3, pgs + gs->num_items, itemsize );    // begin, end, stride 
 
-    int num_photons = thrust::reduce(np.begin(), np.end() );
+    int num_seeds = thrust::reduce(np.begin(), np.end() );
 
-    QBuf<int>* dseed = QBuf<int>::Alloc(num_photons); 
+    QBuf<int>* dseed = nullptr ; 
 
-    thrust::device_ptr<int> pseed = thrust::device_pointer_cast((int*)dseed->ptr) ; 
+    if( num_seeds > 0 )
+    {
+        dseed = QBuf<int>::Alloc(num_seeds); 
 
-    iexpand(np.begin(), np.end(), pseed, pseed + dseed->num_items );  
+        thrust::device_ptr<int> pseed = thrust::device_pointer_cast((int*)dseed->ptr) ; 
 
+        iexpand(np.begin(), np.end(), pseed, pseed + dseed->num_items );  
+    }
     return dseed ; 
 } 
 

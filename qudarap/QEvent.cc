@@ -25,27 +25,40 @@ const QEvent* QEvent::Get(){ return INSTANCE ; }
 
 NP* QEvent::MakeGensteps(const std::vector<quad6>& gs ) // static 
 {
+    assert( gs.size() > 0); 
     NP* a = NP::Make<float>( gs.size(), 6, 4 ); 
     a->read2<float>( (float*)gs.data() ); 
     return a ; 
 }
-NP* QEvent::MakeCenterExtentGensteps(const float4& ce, float scale) // stati:w
+NP* QEvent::MakeCenterExtentGensteps(const float4& ce, unsigned nx, unsigned ny, unsigned nz, unsigned photons_per_genstep  ) // stati:w
 {
-    std::vector<quad6> gs ; 
-    int gencode = OpticksGenstep_TORCH ; 
     quad6 qq ; 
-    qq.q0.i.x = gencode  ;  qq.q0.i.y = -1 ;   qq.q0.i.z = -1 ;   qq.q0.i.w = -1 ; 
+    qq.zero(); 
 
-    qq.q1.f.x = ce.x ;  
-    qq.q1.f.y = ce.y ;  
-    qq.q1.f.z = ce.z ;   
-    qq.q1.f.w = 0.f ; 
+    qq.q0.i.x = OpticksGenstep_TORCH ;  
+    qq.q0.i.w = photons_per_genstep ; 
 
-    qq.q2.i.x = -1 ;   qq.q2.i.y = -1 ;   qq.q2.i.z = -1 ;   qq.q2.i.w = -1 ; 
-    qq.q3.i.x = -1 ;   qq.q3.i.y = -1 ;   qq.q3.i.z = -1 ;   qq.q3.i.w = -1 ; 
-    qq.q4.i.x = -1 ;   qq.q4.i.y = -1 ;   qq.q4.i.z = -1 ;   qq.q4.i.w = -1 ; 
-    qq.q5.i.x = -1 ;   qq.q5.i.y = -1 ;   qq.q5.i.z = -1 ;   qq.q5.i.w = -1 ; 
-    gs.push_back(qq); 
+    std::vector<quad6> gs ; 
+    for(int ix=-int(nx) ; ix < int(nx)+1 ; ix++ )
+    for(int iy=-int(ny) ; iy < int(ny)+1 ; iy++ )
+    for(int iz=-int(nz) ; iz < int(nz)+1 ; iz++ )
+    {
+        //std::cout << " ix " << ix << " iy " << iy << " iz " << iz << std::endl ; 
+        qq.q1.f.x = ce.x + float(ix)*ce.w ;  
+        qq.q1.f.y = ce.y + float(iy)*ce.w ;  
+        qq.q1.f.z = ce.z + float(iz)*ce.w ;   
+        qq.q1.f.w = 0.f ; 
+        gs.push_back(qq); 
+    }
+
+    std::cout 
+       << " nx " << nx 
+       << " ny " << ny 
+       << " nz " << nz 
+       << " gs " << gs.size()
+       << std::endl 
+       ;
+
     return MakeGensteps(gs); 
 }
 
@@ -102,6 +115,8 @@ void QEvent::setGensteps(QBuf<float>* dgs) // QBuf::ptr references already uploa
 {
     genstep = dgs ; 
     seed = QSeed::CreatePhotonSeeds(genstep);
+    if(!seed) LOG(fatal) << " FAILED to QSeed::CreatePhotonSeeds : problem with gensteps ? " ; 
+    assert( seed ); 
 
     evt->genstep = (quad6*)genstep->ptr ; 
     evt->seed = seed->ptr ; 
