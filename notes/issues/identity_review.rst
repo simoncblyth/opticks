@@ -23,6 +23,88 @@ Questions
 1. how/where to use the sensor data  
 
 
+
+Where does instancedIdentity come from ?
+--------------------------------------------
+
+::
+
+    864 void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
+    865 {
+    866     bool last = false ;
+    867 
+    868     //const GNode* root = m_nodelib->getNode(0);
+    869     assert(m_root);
+    870     GNode* base = NULL ;
+    871 
+    872 
+    873     // passes thru to GMergedMesh::create with management of the mm in GGeoLib
+    874     unsigned ridx0 = 0 ;
+    875     GMergedMesh* mm0 = m_geolib->makeMergedMesh(ridx0, base, m_root);
+    876 
+    877 
+    878     std::vector<const GNode*> placements = getPlacements(ridx0);  // just m_root
+    879     assert(placements.size() == 1 );
+    880     mm0->addInstancedBuffers(placements);  // call for global for common structure 
+    881 
+    882     unsigned numRepeats = getNumRepeats();
+    883     unsigned numRidx = 1 + numRepeats ;
+    884 
+    885     LOG(LEVEL) << " numRepeats " << numRepeats << " numRidx " << numRidx ;
+    886 
+    887     for(unsigned ridx=1 ; ridx < numRidx ; ridx++)  // 1-based index
+    888     {
+    889          const GNode*   rbase  = last ? getLastRepeatExample(ridx)  : getRepeatExample(ridx) ;
+    890 
+    891          LOG(LEVEL) << " ridx " << ridx << " rbase " << rbase ;
+    892 
+    893          GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, m_root );
+    894 
+    895          std::vector<const GNode*> placements_ = getPlacements(ridx);
+    896 
+    897          mm->addInstancedBuffers(placements_);
+    898 
+    899          std::string dmesh = mm->descMeshUsage( m_ggeo, "GInstancer::makeMergedMeshAndInstancedBuffers.descMeshUsage" );
+    900          LOG(LEVEL) << dmesh ;
+    901 
+    902          std::string dskip = mm->descBoundarySkip(m_ggeo, "GInstancer::makeMergedMeshAndInstancedBuffers.descBoundarySkip" );
+    903          LOG(LEVEL) << dskip ;
+    904     }
+    905 
+    906 
+    907 }
+
+    1245 /**
+    1246 GMergedMesh::addInstancedBuffers
+    1247 -----------------------------------
+    1248 
+    1249 itransforms InstanceTransformsBuffer
+    1250     (num_instances, 4, 4)
+    1251 
+    1252     collect GNode placement transforms into buffer
+    1253 
+    1254 iidentity InstanceIdentityBuffer
+    1255     From Aug 2020: (num_instances, num_volumes_per_instance, 4 )
+    1256     Before:        (num_instances*num_volumes_per_instance, 4 )
+    1257 
+    1258     collects the results of GVolume::getIdentity for all volumes within all instances. 
+    1259 
+    1260 **/
+    1261 
+    1262 void GMergedMesh::addInstancedBuffers(const std::vector<const GNode*>& placements)
+    1263 {
+    1264     LOG(LEVEL) << " placements.size() " << placements.size() ;
+    1265 
+    1266     NPY<float>* itransforms = GTree::makeInstanceTransformsBuffer(placements);
+    1267     setITransformsBuffer(itransforms);
+    1268 
+    1269     NPY<unsigned int>* iidentity  = GTree::makeInstanceIdentityBuffer(placements);
+    1270     setInstancedIdentityBuffer(iidentity);
+    1271 }
+    1272 
+
+
+
 TODO: Identity Packing
 ------------------------
 
@@ -519,6 +601,219 @@ The identity info is the same, the difference between these is the indexing.
     1205     setInstancedIdentityBuffer(iidentity);
     1206 }
 
+
+
+
+QUDARap identity
+------------------
+
+Old school identity : using identityBuffer
+-------------------------------------------------
+
+* see notes/issues/identity_review.rst 
+
+
+oxrap/cu/intersect_analytic.cu::
+
+    094 rtDeclareVariable(unsigned int, instance_index,  ,);
+     95 // optix::GeometryInstance instance_index into the identity buffer, 
+     96 // set by oxrap/OGeo.cc, 0 for non-instanced 
+     97 
+     98 rtDeclareVariable(unsigned int, primitive_count, ,);
+     99 rtDeclareVariable(unsigned int, repeat_index, ,);
+    100 
+    101 
+    102 rtBuffer<Part> partBuffer;
+    103 
+    104 rtBuffer<Matrix4x4> tranBuffer;
+    105 
+    106 rtBuffer<Prim>  primBuffer;
+    107 
+    108 rtBuffer<uint4>  identityBuffer;
+        
+
+oxrap/cu/csg_intersect_boolean.h::
+
+    0707 static __device__
+     708 void evaluative_csg( const Prim& prim, const int primIdx )   // primIdx just used for identity access
+     709 {
+    ...
+    1023         if(rtPotentialIntersection( fabsf(ret.w) ))
+    1024         {
+    1025             shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
+    1026             instanceIdentity = identityBuffer[instance_index*primitive_count+primIdx] ;
+
+    // NB: THIS IS FROM A GEOMETRY MODEL SPLIT ON GMergedMesh 
+    //
+    // HMM : THIS IS FINE FOR THE INSTANCES BECAUSE NOT MANY PRIMITIVES EACH 
+    // BUT TRYING TO HANDLE GLOBAL INTERSECTS TOO LIKE THIS WOULD LEAD TO MOSTLY EMPTY identityBuffer 
+
+oxrap/cu/closest_hit_propagate.cu::
+
+     26 rtDeclareVariable(uint4,  instanceIdentity, attribute instance_identity, );
+     27      
+     28 rtDeclareVariable(PerRayData_propagate, prd, rtPayload, );
+     29 rtDeclareVariable(optix::Ray,           ray, rtCurrentRay, );
+     30 rtDeclareVariable(float,                  t, rtIntersectionDistance, );
+     31 
+     32 RT_PROGRAM void closest_hit_propagate()
+     33 {    
+     34      const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ;
+     35      float cos_theta = dot(n,ray.direction);
+     36      
+     37      prd.distance_to_boundary = t ;   // standard semantic attrib for this not available in raygen, so must pass it
+     38 
+     39      unsigned boundaryIndex = ( instanceIdentity.z & 0xffff ) ;
+     40      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;
+     41      prd.identity = instanceIdentity ; 
+     42      prd.surface_normal = cos_theta > 0.f ? -n : n ;   
+     43 }
+
+CSG/CSGFoundry identity
+--------------------------
+
+CSG/csg_intersect_node.h::
+
+    1091 INTERSECT_FUNC
+    1092 bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
+    1093 {
+    1094     return numNode == 1
+    1095                ?
+    1096                   intersect_node(isect,          node, plan, itra, t_min, ray_origin, ray_direction )
+    1097                :
+    1098                   intersect_tree(isect, numNode, node, plan, itra, t_min, ray_origin, ray_direction )
+    1099                ;
+    1100 }
+
+* CSGPrim is either one CSGNode or a sequence of them
+* the CSG model has greater focus on the CSGNode : so can see why identity/boundary info should be held there 
+  even if repeated across all CSGNode of a CSGPrim
+
+* is a separate identity buffer needed ? or is there enough space to keep inside the CSGNode 
+* hmm maybe it cannot be kept there because its not "mesh" level, its "structure" level 
+  because of G4LogicalBorderSurface depending on pv pairs   
+
+
+Could q3.u.w hold the boundary::  
+
+    166     QAT4_METHOD void getIdentity(unsigned& ins_idx, unsigned& gas_idx, unsigned& ias_idx ) const
+    167     {
+    168         ins_idx = q0.u.w - 1u ;
+    169         gas_idx = q1.u.w - 1u ;
+    170         ias_idx = q2.u.w - 1u ;
+    171     }
+    172     QAT4_METHOD void setIdentity(unsigned ins_idx, unsigned gas_idx, unsigned ias_idx )
+    173     {
+    174         q0.u.w = ins_idx + 1u ;
+    175         q1.u.w = gas_idx + 1u ;
+    176         q2.u.w = ias_idx + 1u ;
+    177     }
+
+
+
+
+CSGFoundry Intersect Identity : missing *boundary*
+---------------------------------------------------
+
+
+CSGNode::setBoundary not used yet, hmm why not boundary on CSGPrim ?
+
+* because the CSG model focus is on CSGNode
+
+::
+
+
+    088 struct CSGNode
+    089 {
+    ...
+    154     NODE_METHOD unsigned boundary()  const {      return q1.u.z ; }
+    155     NODE_METHOD void setBoundary(unsigned bnd){          q1.u.z = bnd ; }
+
+
+* need to review intersect code 
+
+
+
+GGeo -> CSGFoundry : minimal identity handling
+---------------------------------------------------------
+
+::
+
+    140 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
+    141 {   
+    142     unsigned nmm = ggeo->getNumMergedMesh();
+    143     assert( repeatIdx < nmm ); 
+    144     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx);
+    145     unsigned num_inst = mm->getNumITransforms() ;
+    146     
+    147     //LOG(LEVEL) << " nmm " << nmm << " repeatIdx " << repeatIdx << " num_inst " << num_inst ; 
+    148     
+    149     for(unsigned i=0 ; i < num_inst ; i++)
+    150     {   
+    151         glm::mat4 it = mm->getITransform_(i);
+    152         qat4 instance(glm::value_ptr(it)) ;   
+    153         unsigned ins_idx = foundry->inst.size() ;
+    154         unsigned gas_idx = repeatIdx ;
+    155         unsigned ias_idx = 0 ; 
+    156         instance.setIdentity( ins_idx, gas_idx, ias_idx );
+    ///    TODO: retain the "i" here so can backtrack
+    157         foundry->inst.push_back( instance );
+    158     }
+    159 }
+
+
+Need to find a place for the iid in the CSGFoundry model::
+
+    2021-08-23 12:00:06.632 INFO  [1753424] [CSG_GGeo_Convert::addInstances@148]  reapeatIdx 0 iid 1,3084,4
+    2021-08-23 12:00:06.632 INFO  [1753424] [CSG_GGeo_Convert::addInstances@148]  reapeatIdx 1 iid 25600,5,4
+    2021-08-23 12:00:06.635 INFO  [1753424] [CSG_GGeo_Convert::addInstances@148]  reapeatIdx 2 iid 12612,3,4
+    2021-08-23 12:00:06.638 INFO  [1753424] [CSG_GGeo_Convert::addInstances@148]  reapeatIdx 3 iid 5000,3,4
+    2021-08-23 12:00:06.638 INFO  [1753424] [CSG_GGeo_Convert::addInstances@148]  reapeatIdx 4 iid 2400,4,4
+    2021-08-23 12:00:06.639 INFO  [1753424] [CSG_GGeo_Convert::addInstances@148]  reapeatIdx 5 iid 590,1,4
+    2021-08-23 12:00:06.639 INFO  [1753424] [CSG_GGeo_Convert::addInstances@148]  reapeatIdx 6 iid 590,1,4
+    2021-08-23 12:00:06.639 INFO  [1753424] [CSG_GGeo_Convert::addInstances@148]  reapeatIdx 7 iid 590,1,4
+
+Now to handle identity info with such different shapes in a collective way ?
+
+* flatten into (n, 4) and keep the flat index in CSGFoundry model 
+* but there is currently nowhere to keep that flat index (only have the inst)
+* could consolidate into (n,4) for upload and calculate an array of pointers to give split access for each ridx
+* keep split asis and work out how to do lookups
+
+::
+
+    xNP::Write dtype <i4 ni       10 nj  3 nk  4 nl  -1 nm  -1 dir             /tmp/blyth/opticks/CSG_GGeo/CSGFoundry name solid.npy
+    xNP::Write dtype <f4 ni     3233 nj  4 nk  4 nl  -1 nm  -1 dir             /tmp/blyth/opticks/CSG_GGeo/CSGFoundry name prim.npy
+    xNP::Write dtype <f4 ni    17619 nj  4 nk  4 nl  -1 nm  -1 dir             /tmp/blyth/opticks/CSG_GGeo/CSGFoundry name node.npy
+    xNP::Write dtype <f4 ni     8184 nj  4 nk  4 nl  -1 nm  -1 dir             /tmp/blyth/opticks/CSG_GGeo/CSGFoundry name tran.npy
+    xNP::Write dtype <f4 ni     8184 nj  4 nk  4 nl  -1 nm  -1 dir             /tmp/blyth/opticks/CSG_GGeo/CSGFoundry name itra.npy
+    xNP::Write dtype <f4 ni    48477 nj  4 nk  4 nl  -1 nm  -1 dir             /tmp/blyth/opticks/CSG_GGeo/CSGFoundry name inst.npy
+
+* exactly what identity info is needed on GPU  : boundary for sure
+* is mesh-level vs structure-level for boundary really needed ? OR can the info be placed on the prim/node ?
+ 
+Current simple identity.::
+
+    331     unsigned instance_idx = optixGetInstanceId() ;    // see IAS_Builder::Build and InstanceId.h 
+    332     unsigned prim_idx  = optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+    333     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_idx & 0xffff ) ;
+
+* flat instance_idx could via the inst give repeatIdx and the split GMergedMesh instance index "i" above, then prim_idx gives the 2nd index  
+* so can get back to the uint4 identity CPU side easily : BUT what is needed GPU side ? 
+
+  * CAN the boundary live in the CSGPrim/CSGNode ? 
+
+  * boundary index is defined as a unique set of four indices (omat, osur, isur, imat) 
+    that summarizes surface/material information of a geometry during a volume traverse that 
+    looks at parent/child G4VPhysicalVolume and G4LogicalVolume (see X4PhysicalVolume::convertNode/X4PhysicalVolume::addBoundary)
+
+  * although border surfaces depend on PV pairs making them a bit more structural(PV level) than mesh/shape(LV) level, 
+    the reality of usage is that things like boundary do not vary by instance : so should 
+    be able to plant them on the CSGPrim/CSGNode 
+ 
+    * need a way to check this ?
+
+  * one thing that always does vary by instance is the sensor identifier and sensor efficiencies 
 
 
 

@@ -22,7 +22,8 @@ struct Params
     // render/simulation switch 
     int32_t    raygenmode ;
 
-    // geometry : from Foundry 
+    // geometry : from Foundry
+    // notice no CSGPrim here as that is just a sequence of CSGNode handled by  
     CSGNode*   node ; 
     float4*    plan ; 
     qat4*      tran ; 

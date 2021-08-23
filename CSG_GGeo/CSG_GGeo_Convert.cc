@@ -137,12 +137,32 @@ void CSG_GGeo_Convert::convertScintillatorLib()
 }
 
 
+/**
+CSG_GGeo_Convert::addInstances
+---------------------------------
+
+Invoked from tail of CSG_GGeo_Convert::convertSolid which 
+gets called for all repeatIdx, including global repeatIdx 0 
+
+Notice the flattening effect, this is consolidating the 
+transforms from all GMergedMesh into one foundry->inst vector of qat4.
+
+TODO: put the iid somewhere 
+
+**/
+
 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
 {
     unsigned nmm = ggeo->getNumMergedMesh(); 
     assert( repeatIdx < nmm ); 
     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx); 
     unsigned num_inst = mm->getNumITransforms() ;
+    NPY<unsigned>* iid = mm->getInstancedIdentityBuffer(); 
+
+    LOG(info) 
+        << " reapeatIdx " << repeatIdx
+        << " iid " << iid->getShapeString()
+        ;
 
     //LOG(LEVEL) << " nmm " << nmm << " repeatIdx " << repeatIdx << " num_inst " << num_inst ; 
 
@@ -167,7 +187,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx); 
     unsigned num_inst = mm->getNumITransforms() ;
 
-    const GParts* comp = ggeo->getCompositeParts(repeatIdx) ; 
+    const GParts* comp = ggeo->getCompositeParts(repeatIdx) ;  
     unsigned numPrim = comp->getNumPrim();
     std::string rlabel = CSGSolid::MakeLabel('r',repeatIdx) ; 
 
@@ -185,7 +205,8 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 
     AABB bb = {} ;
 
-    for(unsigned primIdx=0 ; primIdx < numPrim ; primIdx++)
+    // over the "layers/volumes" of the solid (eg multiple vols of PMT) 
+    for(unsigned primIdx=0 ; primIdx < numPrim ; primIdx++) 
     {   
         unsigned globalPrimIdx = so->primOffset + primIdx ;
         unsigned globalPrimIdx_0 = foundry->getNumPrim() ; 
@@ -200,6 +221,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 
         prim->setRepeatIdx(repeatIdx); 
         prim->setPrimIdx(primIdx); 
+ 
 
         //LOG(info) << prim->desc() ;
     }   
@@ -308,6 +330,8 @@ partIdxRel
     the partOffset of the Prim to yield the absolute partIdx within the composite
 
 
+Recall that GParts are concatenated to form the composite.
+
 Note that repeatedly getting the same gtran for different part(aka node) 
 will repeatedly add that same transform to the foundry even when its the identity transform.
 So this is profligate in duplicated transforms.
@@ -325,6 +349,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     unsigned partIdx = partOffset + partIdxRel ;
     unsigned idx = comp->getIndex(partIdx);
     assert( idx == partIdx ); 
+    unsigned boundary = comp->getBoundary(partIdx); // EXPT
 
     std::string tag = comp->getTag(partIdx); 
     unsigned tc = comp->getTypeCode(partIdx);
@@ -349,6 +374,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     n->setAABBLocal(); 
     n->setTransform(tranIdx); 
     n->setComplement(complement); 
+    n->setBoundary(boundary);       // EXPT
 
     if(complement) 
         std::cout 

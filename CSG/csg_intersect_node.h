@@ -1068,12 +1068,13 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_CYLINDER:         valid_isect = intersect_node_cylinder(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_DISC:             valid_isect = intersect_node_disc(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
     }
-    if(valid_isect && q )
+    if(valid_isect)
     {
-        q->left_multiply_inplace( isect, 0.f ) ;  
+        if(q) q->left_multiply_inplace( isect, 0.f ) ;  
         // normals transform differently : with inverse-transform-transposed 
         // so left_multiply the normal by the inverse-transform rather than the right_multiply 
         // done above to get the inverse transformed origin and direction
+        //const unsigned boundary = node->boundary();  ???
     }   
     if(complement)  // flip normal, even for miss need to signal the complement with a -0.f  
     {
@@ -1081,6 +1082,8 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
         isect.y = -isect.y ;
         isect.z = -isect.z ;
     }
+
+
     return valid_isect ; 
 }
 

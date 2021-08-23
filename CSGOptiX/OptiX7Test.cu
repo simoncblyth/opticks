@@ -274,7 +274,7 @@ Which Prim gets intersected relies on the CSGPrim::setSbtIndexOffset
 extern "C" __global__ void __intersection__is()
 {
     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();  
-    int numNode = hg->numNode ;      
+    int numNode = hg->numNode ;        // equivalent of CSGPrim 
     int nodeOffset = hg->nodeOffset ; 
 
     const CSGNode* node = params.node + nodeOffset ;  
@@ -285,18 +285,21 @@ extern "C" __global__ void __intersection__is()
     const float3 ray_origin = optixGetObjectRayOrigin();
     const float3 ray_direction = optixGetObjectRayDirection();
 
-    float4 isect ; // .xyz normal .w distance  
-    if(intersect_prim(isect, numNode, node, plan, itra, t_min , ray_origin, ray_direction ))
+    float4 isect ; // .xyz normal .w distance 
+    if(intersect_prim(isect, numNode, node, plan, itra, t_min , ray_origin, ray_direction ))  
     {
-        const unsigned hitKind = 0u ; 
-        unsigned a0, a1, a2, a3;      
+        const unsigned hitKind = 0u ;   // only 8bit 
+        unsigned a0, a1, a2, a3, a4 ;      
+        const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
 
         a0 = float_as_uint( isect.x );
         a1 = float_as_uint( isect.y );
         a2 = float_as_uint( isect.z );
         a3 = float_as_uint( isect.w ) ; 
+        a4 = boundary ; 
 
-        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3 );
+        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4 );   
+        // 5 attribute registers, see PIP::PIP   [max is 8]
     }
 }
 
@@ -310,7 +313,7 @@ optixGetInstanceId
     JUNO maximum ~50,000 (fits with 0xffff = 65535)
 
 optixGetPrimitiveIndex
-    index of the AABB within the GAS, 
+    local index of AABB within the GAS, 
     instanced solids adds little to the number of AABB, 
     most come from unfortunate repeated usage of prims in the non-instanced global
     GAS with repeatIdx 0 (JUNO up to ~4000)

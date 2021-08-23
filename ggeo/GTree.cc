@@ -60,15 +60,33 @@ NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<const GNode*>&
 
 
 /**
-GTree::makeInstanceIdentityBuffer
------------------------------------
+GTree::CountNodes
+--------------------
+
+Loop over base and progeny GNode to obtain *skips* and *count* totals 
+
+**/
+
+void GTree::CountNodes( const GNode* base, const std::vector<GNode*>& progeny, unsigned& count, unsigned& skips )
+{
+    count = 0 ; 
+    skips = 0 ;  
+    for(int i=0 ; i < 1 + int(progeny.size()) ; i++)
+    {
+        const GNode* node = i == 0 ? base : progeny[i-1] ; 
+        bool skip = node->isCSGSkip() ; 
+        skips += int(skip) ; 
+        count += int(!skip) ; 
+    }
+}
+
+/**
+GTree::makeInstanceIdentityBuffer : (numPlacements, numVolumes, 4 )
+----------------------------------------------------------------------
 
 Canonically invoked by GMergedMesh::addInstancedBuffers
 
 Collects identity quads from the GVolume(GNode) tree into an array, 
-
-
-
 
 Repeating identity guint4 for all volumes of an instance (typically ~5 volumes for 1 instance)
 into all the instances (typically large 500-36k).
@@ -85,7 +103,6 @@ ie need buffer of size: num_transforms * num_triangles-per-instance
 The triangulated version can be created from the analytic one
 by duplication according to the number of triangles.
 
-
 Prior to Aug 2020 this returned an iidentity buffer with all nodes 
 when invoked on the root node, eg::  
 
@@ -100,21 +117,6 @@ is now used which selects the collected nodes based on the ridx (getRepeatIndex(
 being zero.
 
 **/
-
-
-void GTree::CountNodes( const GNode* base, const std::vector<GNode*>& progeny, unsigned& count, unsigned& skips )
-{
-    count = 0 ; 
-    skips = 0 ;  
-    for(int i=0 ; i < 1 + int(progeny.size()) ; i++)
-    {
-        const GNode* node = i == 0 ? base : progeny[i-1] ; 
-        bool skip = node->isCSGSkip() ; 
-        skips += int(skip) ; 
-        count += int(!skip) ; 
-    }
-}
-
 
 NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNode*>& placements)  // static
 {
