@@ -17,6 +17,23 @@
  * limitations under the License.
  */
 
+#include <cstdlib>
+#include <cassert>
 #include "OpticksVersionNumber.hh"
+
+
+// converts preprocessor macro into a string 
+#define xstr(s) str(s)
+#define str(s) #s
+
+
+unsigned OpticksVersionNumber::Integer()
+{
+    const char* s_version = xstr(OPTICKS_VERSION_NUMBER); 
+    int i_version = atoi(s_version);
+    assert( i_version > 0 ); 
+    return i_version ; 
+}
+
 
 

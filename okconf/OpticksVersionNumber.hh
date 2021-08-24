@@ -19,6 +19,7 @@
 
 #pragma once
 
+
 /**
 OpticksVersionNumber
 =====================
@@ -29,6 +30,13 @@ Definition of version integer
 
 
 #define OPTICKS_VERSION_NUMBER 10
+
+
+#include "OKCONF_API_EXPORT.hh"
+struct OKCONF_API OpticksVersionNumber 
+{
+    static unsigned Integer(); 
+};
 
 
 
