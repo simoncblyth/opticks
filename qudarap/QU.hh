@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 struct QU
 {
@@ -18,10 +19,16 @@ struct QU
     static T* DownloadArray(const T* array, unsigned num_items ) ;    
 
     template <typename T>
+    static void Download(std::vector<T>& vec, const T* d_array, unsigned num_items) ;    
+
+    template <typename T>
     static T*   device_alloc( unsigned num_items ) ; 
 
     template <typename T>
     static void device_free( T* d ) ; 
+
+    template <typename T>
+    static void device_free_and_alloc(T* d, unsigned num_items ); 
 
     template <typename T>
     static void copy_device_to_host( T* h, T* d,  unsigned num_items);

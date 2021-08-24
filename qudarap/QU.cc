@@ -123,17 +123,37 @@ template  qprop<float>*  QU::DownloadArray<qprop<float>>(const qprop<float>* d_a
 template  qprop<double>* QU::DownloadArray<qprop<double>>(const qprop<double>* d_array, unsigned num_items) ;
 
 
+template <typename T>
+void QU::Download(std::vector<T>& vec, const T* d_array, unsigned num_items)  // static
+{
+    vec.resize( num_items); 
+    QUDA_CHECK( cudaMemcpy( static_cast<void*>( vec.data() ), d_array, num_items*sizeof(T), cudaMemcpyDeviceToHost)); 
+}
+
+
+template void QU::Download<uchar4>(std::vector<uchar4>& vec, const uchar4* d_array, unsigned num_items); 
+template void QU::Download<float4>(std::vector<float4>& vec, const float4* d_array, unsigned num_items); 
 
 
 
 
+template<typename T>
+void QU::device_free_and_alloc(T* d, unsigned num_items )
+{
+    size_t size = num_items*sizeof(T) ; 
+    QUDA_CHECK( cudaFree( reinterpret_cast<void*>( d ) ) );
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
+}
 
 
-
-
-
-
-
+template void  QU::device_free_and_alloc<float>(float* d, unsigned num_items) ;
+template void  QU::device_free_and_alloc<double>(double* d, unsigned num_items) ;
+template void  QU::device_free_and_alloc<unsigned>(unsigned* d, unsigned num_items) ;
+template void  QU::device_free_and_alloc<int>(int* d, unsigned num_items) ;
+template void  QU::device_free_and_alloc<quad>(quad* d, unsigned num_items) ;
+template void  QU::device_free_and_alloc<uchar4>(uchar4* d, unsigned num_items) ;
+template void  QU::device_free_and_alloc<float4>(float4* d, unsigned num_items) ;
+template void  QU::device_free_and_alloc<quad4>(quad4* d, unsigned num_items) ;
 
 
 

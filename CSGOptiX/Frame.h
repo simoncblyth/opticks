@@ -26,8 +26,6 @@ struct Frame
     Frame(int width, int height, int depth );
  
     void init(); 
-    void init_pixels();
-    void init_isect();
  
     void download(); 
     void download_pixels();
