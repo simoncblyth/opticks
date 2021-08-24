@@ -72,6 +72,8 @@ set(TEST_SOURCES
    SLabelCacheTest.cc
 
    CastTest.cc
+
+   SOpticksVersionNumberTest.cc
 )
 
 

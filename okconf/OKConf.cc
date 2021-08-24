@@ -26,16 +26,24 @@
 
 #include "OKConf.hh"
 #include "OKConf_Config.hh"
+#include "OpticksVersionNumber.hh"
+
+
 
 
 int OKConf::Check()
 {
    int rc = 0 ;  
 
+   if(OpticksVersionInteger() == 0)
+   {
+       rc += 1 ; 
+   }
    if(CUDAVersionInteger() == 0)
    {
        rc += 1 ; 
    }
+
    if(OptiXVersionInteger() == 0)
    {
        rc += 1 ; 
@@ -70,6 +78,7 @@ int OKConf::Check()
 void OKConf::Dump(const char* msg)
 {
     std::cout << msg << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::OpticksVersionInteger() "   << OKConf::OpticksVersionInteger() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::OpticksInstallPrefix() "    << OKConf::OpticksInstallPrefix() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::CMAKE_CXX_FLAGS() "         << OKConf::CMAKE_CXX_FLAGS() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::CUDAVersionInteger() "      << OKConf::CUDAVersionInteger() << std::endl ; 
@@ -147,6 +156,7 @@ unsigned OKConf::Geant4VersionInteger()
    return 0 ; 
 #endif    
 }
+
 
 unsigned OKConf::ComputeCapabilityInteger()
 {
@@ -265,5 +275,15 @@ const char* OKConf::ShaderDir()
 
 
 
+// converts preprocessor macro into a string 
+#define xstr(s) str(s)
+#define str(s) #s
+
+unsigned OKConf::OpticksVersionInteger()
+{
+    const char* s_version = xstr(OPTICKS_VERSION_NUMBER); 
+    int i_version = atoi(s_version);
+    return i_version ; 
+}
 
 
