@@ -2,7 +2,7 @@
 
 #include <cstring>
 #include <iostream>
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "Quad.h"
 
 

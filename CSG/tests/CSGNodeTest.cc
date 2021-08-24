@@ -5,7 +5,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "CSGNode.h"
 #include "Sys.h"
 

@@ -1,7 +1,7 @@
 
 // ./qat4.sh 
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 
 #include <cmath>
 #include <vector>

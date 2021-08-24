@@ -1,7 +1,7 @@
 // ./CSGSolidTest.sh
 
 #include "OPTICKS_LOG.hh"
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "CSGSolid.h"
 #include "NP.hh"
 #include <iostream>

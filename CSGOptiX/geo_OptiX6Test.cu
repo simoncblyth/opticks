@@ -1,4 +1,4 @@
-#include "sutil_vec_math.h"
+#include "scuda.h"
 
 #include "qat4.h"
 #include "csg_intersect_node.h"

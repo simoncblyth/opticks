@@ -17,6 +17,7 @@ set(TEST_SOURCES
    QSeedTest.cc 
    QEventTest.cc 
    QSimWithEventTest.cc 
+   QUTest.cc
 
 )
 

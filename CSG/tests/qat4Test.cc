@@ -1,6 +1,6 @@
 // ./qat4Test.sh 
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 
 #include <cmath>
 #include <sstream>

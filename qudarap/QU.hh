@@ -1,7 +1,8 @@
 #pragma once
+#include "QUDARAP_API_EXPORT.hh"
 #include <vector>
 
-struct QU
+struct QUDARAP_API QU
 {
     template <typename T>
     static char typecode() ; 
@@ -28,7 +29,7 @@ struct QU
     static void device_free( T* d ) ; 
 
     template <typename T>
-    static void device_free_and_alloc(T* d, unsigned num_items ); 
+    static void device_free_and_alloc(T** dd, unsigned num_items );  // dd : pointer-to-device-pointer
 
     template <typename T>
     static void copy_device_to_host( T* h, T* d,  unsigned num_items);

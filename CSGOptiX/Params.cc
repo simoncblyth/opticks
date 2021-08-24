@@ -1,6 +1,9 @@
 #include "Params.h"
 
 #ifndef __CUDACC__
+
+#include <iostream>
+#include <iomanip>
 #include "CUDA_CHECK.h"
 #include <glm/glm.hpp>
 #include <cuda_runtime.h>
@@ -74,6 +77,36 @@ void Params::setCamera(float tmin_, float tmax_, unsigned cameratype_ )
               << std::endl 
               ;  
 
+}
+
+void Params::dump(const char* msg) const 
+{
+    std::cout 
+        << msg << std::endl 
+        << std::endl 
+        << "(values)" << std::endl 
+        << std::setw(20) << " raygenmode " << std::setw(10) << raygenmode  << std::endl 
+        << std::setw(20) << " handle " << std::setw(10) << handle  << std::endl 
+        << std::setw(20) << " width " << std::setw(10) << width  << std::endl 
+        << std::setw(20) << " height " << std::setw(10) << height  << std::endl 
+        << std::setw(20) << " depth " << std::setw(10) << depth  << std::endl 
+        << std::setw(20) << " cameratype " << std::setw(10) << cameratype  << std::endl 
+        << std::setw(20) << " origin_x " << std::setw(10) << origin_x  << std::endl 
+        << std::setw(20) << " origin_y " << std::setw(10) << origin_y  << std::endl 
+        << std::setw(20) << " tmin " << std::setw(10) << tmin  << std::endl 
+        << std::setw(20) << " tmax " << std::setw(10) << tmax  << std::endl 
+        << std::setw(20) << " num_photons " << std::setw(10) << num_photons  << std::endl 
+        << std::endl 
+        << "(device pointers)" << std::endl 
+        << std::setw(20) << " node " << std::setw(10) << node  << std::endl 
+        << std::setw(20) << " plan " << std::setw(10) << plan  << std::endl 
+        << std::setw(20) << " tran " << std::setw(10) << tran  << std::endl 
+        << std::setw(20) << " itra " << std::setw(10) << itra  << std::endl 
+        << std::setw(20) << " pixels " << std::setw(10) << pixels  << std::endl 
+        << std::setw(20) << " isect " << std::setw(10) << isect  << std::endl 
+        << std::setw(20) << " sim " << std::setw(10) << sim  << std::endl 
+        << std::setw(20) << " evt " << std::setw(10) << evt  << std::endl 
+        ;
 }
 
 

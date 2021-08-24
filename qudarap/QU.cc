@@ -1,3 +1,4 @@
+#include <cassert>
 #include "scuda.h"
 #include "QUDA_CHECK.h"
 #include "QU.hh"
@@ -138,22 +139,23 @@ template void QU::Download<float4>(std::vector<float4>& vec, const float4* d_arr
 
 
 template<typename T>
-void QU::device_free_and_alloc(T* d, unsigned num_items )
+void QU::device_free_and_alloc(T** dd, unsigned num_items ) // dd: pointer-to-device-pointer
 {
     size_t size = num_items*sizeof(T) ; 
-    QUDA_CHECK( cudaFree( reinterpret_cast<void*>( d ) ) );
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
+    QUDA_CHECK( cudaFree( reinterpret_cast<void*>( *dd ) ) );
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( dd ), size )); 
+    assert( *dd ); 
 }
 
 
-template void  QU::device_free_and_alloc<float>(float* d, unsigned num_items) ;
-template void  QU::device_free_and_alloc<double>(double* d, unsigned num_items) ;
-template void  QU::device_free_and_alloc<unsigned>(unsigned* d, unsigned num_items) ;
-template void  QU::device_free_and_alloc<int>(int* d, unsigned num_items) ;
-template void  QU::device_free_and_alloc<quad>(quad* d, unsigned num_items) ;
-template void  QU::device_free_and_alloc<uchar4>(uchar4* d, unsigned num_items) ;
-template void  QU::device_free_and_alloc<float4>(float4* d, unsigned num_items) ;
-template void  QU::device_free_and_alloc<quad4>(quad4* d, unsigned num_items) ;
+template void  QU::device_free_and_alloc<float>(float** dd, unsigned num_items) ;
+template void  QU::device_free_and_alloc<double>(double** dd, unsigned num_items) ;
+template void  QU::device_free_and_alloc<unsigned>(unsigned** dd, unsigned num_items) ;
+template void  QU::device_free_and_alloc<int>(int** dd, unsigned num_items) ;
+template void  QU::device_free_and_alloc<quad>(quad** dd, unsigned num_items) ;
+template void  QU::device_free_and_alloc<uchar4>(uchar4** dd, unsigned num_items) ;
+template void  QU::device_free_and_alloc<float4>(float4** dd, unsigned num_items) ;
+template void  QU::device_free_and_alloc<quad4>(quad4** dd, unsigned num_items) ;
 
 
 
@@ -193,6 +195,16 @@ void QU::copy_device_to_host( T* h, T* d,  unsigned num_items)
     size_t size = num_items*sizeof(T) ; 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
 }
+
+
+template void QU::copy_device_to_host<float>(  float* h, float* d,  unsigned num_items);
+template void QU::copy_device_to_host<double>( double* h, double* d,  unsigned num_items);
+template void QU::copy_device_to_host<quad>( quad* h, quad* d,  unsigned num_items);
+template void QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_items);
+
+
+
+
 
 template<typename T>
 void QU::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items)

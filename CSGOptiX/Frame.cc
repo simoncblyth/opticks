@@ -28,8 +28,9 @@ Frame::Frame(int width_, int height_, int depth_)
 }
 
 
-uchar4* Frame::getDevicePixels() const { return d_pixels ;  }
+uchar4* Frame::getDevicePixel() const { return d_pixel ;  }
 float4* Frame::getDeviceIsect() const  { return d_isect ;  }
+quad4*  Frame::getDevicePhoton() const  { return d_photon ;  }
 
 
 /**
@@ -42,29 +43,23 @@ Allocates pixels and isect on device.
 void Frame::init()
 {
     assert( depth == 1 ); 
-    QU::device_free_and_alloc<uchar4>( d_pixels, width*height );  
-    QU::device_free_and_alloc<float4>( d_isect, width*height );  
+    QU::device_free_and_alloc<uchar4>( &d_pixel,  width*height );  
+    QU::device_free_and_alloc<float4>( &d_isect,  width*height );  
+    QU::device_free_and_alloc<quad4>(  &d_photon,  width*height );  
 }
 
 void Frame::download()
 {
-    download_pixels();  
-    download_isect();  
-}
+    QU::Download<uchar4>(pixel, d_pixel, width*height ); 
+    QU::Download<float4>(isect, d_isect, width*height ); 
+    QU::Download<quad4>(photon, d_photon, width*height ); 
 
-void Frame::download_pixels()
-{
-    QU::Download<uchar4>(pixels, d_pixels, width*height ); 
     img->setData( getPixelsData() ); 
 }
 
-void Frame::download_isect()
-{
-    QU::Download<float4>(isect, d_isect, width*height ); 
-}
-
-unsigned char* Frame::getPixelsData() const { return (unsigned char*)pixels.data();  }
+unsigned char* Frame::getPixelData() const {     return (unsigned char*)pixel.data();  }
 float*         Frame::getIntersectData() const { return (float*)isect.data(); }
+quad4*         Frame::getPhotonData() const {    return (quad4*)photon.data(); }
 
 
 void Frame::annotate( const char* bottom_line, const char* top_line, int line_height )
@@ -74,9 +69,10 @@ void Frame::annotate( const char* bottom_line, const char* top_line, int line_he
 
 void Frame::write(const char* outdir, int jpg_quality) const 
 {
-    writePNG(outdir, "pixels.png");  
-    writeJPG(outdir, "pixels.jpg", jpg_quality);  
-    writeNP(  outdir, "posi.npy" );
+    writePNG(outdir, "f_pixels.png");  
+    writeJPG(outdir, "f_pixels.jpg", jpg_quality);  
+    writeIsect(outdir, "f_isect.npy" ); // formerly posi.npy
+    writePhoton(outdir, "f_photon.npy" ); 
 }
 
 void Frame::writePNG(const char* dir, const char* name) const 
@@ -97,8 +93,13 @@ void Frame::writeJPG(const char* path, int quality) const
     img->writeJPG(path, quality); 
 }
 
-void Frame::writeNP( const char* dir, const char* name) const 
+
+void Frame::writeIsect( const char* dir, const char* name) const 
 {
     NP::Write(dir, name, getIntersectData(), height, width, 4 );
+}
+void Frame::writePhoton( const char* dir, const char* name) const 
+{
+    NP::Write(dir, name, getPhotonData(), height, width, 4, 4 );
 }
 

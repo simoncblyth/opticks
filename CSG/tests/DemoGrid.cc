@@ -4,7 +4,7 @@
 
 #include "SStr.hh"
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 
 #include "DemoGrid.h"
 #include "AABB.h"

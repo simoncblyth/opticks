@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <vector_types.h>
+#include "scuda.h"
+#include "squad.h"
 #include "plog/Severity.h"
 
 struct SIMG ; 
@@ -18,18 +19,17 @@ struct Frame
     SIMG*      img ; 
 
     std::vector<float4> isect ; 
-    std::vector<uchar4> pixels ; 
+    std::vector<uchar4> pixel ; 
+    std::vector<quad4>  photon ; 
 
-    uchar4* d_pixels = nullptr ; 
+    uchar4* d_pixel = nullptr ; 
     float4* d_isect = nullptr ; 
+    quad4*  d_photon = nullptr ; 
 
     Frame(int width, int height, int depth );
  
     void init(); 
- 
     void download(); 
-    void download_pixels();
-    void download_isect();
 
     void annotate( const char* bottom_line=nullptr, const char* top_line=nullptr, int line_height=24  );
 
@@ -40,14 +40,17 @@ struct Frame
     void writePNG(const char* path) const ;
     void writeJPG(const char* path, int quality) const ;
 
-    void writeNP( const char* dir, const char* name) const ;
+    void writeIsect(  const char* dir, const char* name) const ;
+    void writePhoton( const char* dir, const char* name) const ;
 
 
-    unsigned char* getPixelsData() const ;
+    unsigned char* getPixelData() const ;
     float*         getIntersectData() const ;
+    quad4*         getPhotonData() const ;
 
-    uchar4* getDevicePixels() const ; 
+    uchar4* getDevicePixel() const ; 
     float4* getDeviceIsect() const ; 
+    quad4*  getDevicePhoton() const ; 
 
 }; 
 

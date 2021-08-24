@@ -3,7 +3,7 @@
 #include <vector>
 #include "CU.h"
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "CSGPrim.h"
 #include "CSGPrimSpec.h"
 

@@ -9,7 +9,7 @@
 #include <optix_stubs.h>
 
 #include <cuda_runtime.h>
-#include "sutil_vec_math.h"    // roundUp
+#include "scuda.h"    // roundUp
 #include "OPTIX_CHECK.h"
 
 #include "Ctx.h"

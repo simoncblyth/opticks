@@ -14,7 +14,7 @@
 
 #include "Params.h"
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "OpticksCSG.h"
 #include "CSGFoundry.h"
 #include "CSGSolid.h"

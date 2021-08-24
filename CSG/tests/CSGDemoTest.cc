@@ -10,7 +10,7 @@ This is typically invoked via the scripts::
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "CSGFoundry.h"
 #include "DemoGeo.h"
 

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cassert>
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "CSGFoundry.h"
 #include "qat4.h"
 

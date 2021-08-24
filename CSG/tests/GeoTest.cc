@@ -4,7 +4,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "CSGFoundry.h"
 #include "CSGSolid.h"
 

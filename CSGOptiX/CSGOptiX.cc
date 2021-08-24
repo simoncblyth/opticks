@@ -22,7 +22,7 @@
 #include "Composition.hh"
 #include "FlightPath.hh"
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 
 #include "CSGPrim.h"
 #include "CSGFoundry.h"
@@ -277,6 +277,7 @@ void CSGOptiX::prepareParam()
     six->updateContext(); 
 #else
     params->upload();  
+    params->dump(" CSGOptiX::prepareParam"); 
 #endif
 }
 

@@ -1,4 +1,4 @@
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include <optix_device.h>
 
 rtDeclareVariable(float3,        eye, , );

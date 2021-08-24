@@ -4,7 +4,7 @@
 #include <cassert>
 #include "cuda.h"
 
-#include "sutil_vec_math.h"
+#include "scuda.h"
 #include "CSGPrim.h"
 #include "CU.h"
 

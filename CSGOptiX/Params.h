@@ -65,9 +65,11 @@ struct Params
 
 #ifndef __CUDACC__
     static Params* d_param ; 
+
     Params(int raygenmode, unsigned width, unsigned height, unsigned depth); 
     void device_alloc(); 
     void upload(); 
+    void dump(const char* msg="Params::dump") const ; 
 
     void setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_ );
     void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ );

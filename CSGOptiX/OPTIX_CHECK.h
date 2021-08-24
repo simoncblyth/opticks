@@ -23,7 +23,7 @@
             std::stringstream ss;                                              \
             ss << "Optix call '" << #call << "' failed: " __FILE__ ":"         \
                << __LINE__ << ")\n";                                           \
-            throw sutil::OPTIX_Exception( res, ss.str().c_str() );                   \
+            throw OPTIX_Exception( res, ss.str().c_str() );                   \
         }                                                                      \
     } while( 0 )
 
@@ -39,14 +39,12 @@
                << __LINE__ << ")\nLog:\n" << log                               \
                << ( sizeof_log > sizeof( log ) ? "<TRUNCATED>" : "" )          \
                << "\n";                                                        \
-            throw sutil::OPTIX_Exception( res, ss.str().c_str() );                   \
+            throw OPTIX_Exception( res, ss.str().c_str() );                   \
         }                                                                      \
     } while( 0 )
 
 
 
-namespace sutil
-{
 
 class OPTIX_Exception : public std::runtime_error
 {
@@ -66,4 +64,3 @@ class OPTIX_Exception : public std::runtime_error
 
 
 
-} 
