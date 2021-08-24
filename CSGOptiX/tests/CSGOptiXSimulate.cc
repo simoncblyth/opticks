@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
-    ok.setOutDir("$TMP/CSGOptiX");   // override --outdir option 
+    ok.setOutDir("$TMP/CSGOptiX/CSGOptiXSimulate");   // override --outdir option and OPTICKS_OUTDIR envvar from OpticksCfg
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
@@ -111,6 +111,7 @@ int main(int argc, char** argv)
 
     std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
     cx.snap(outpath, bottom_line.c_str(), topline  );   
+    cx.writeFramePhoton(ok.getOutDir(), "fphoton.npy" ); 
 
 
     cudaDeviceSynchronize(); 

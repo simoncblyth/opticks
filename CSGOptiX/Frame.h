@@ -46,7 +46,7 @@ struct Frame
 
     unsigned char* getPixelData() const ;
     float*         getIntersectData() const ;
-    quad4*         getPhotonData() const ;
+    float*         getPhotonData() const ;
 
     uchar4* getDevicePixel() const ; 
     float4* getDeviceIsect() const ; 

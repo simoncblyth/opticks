@@ -94,6 +94,8 @@ struct CSGOptiX : public SRenderer
     void snap(const char* path, const char* bottom_line, const char* top_line=nullptr, unsigned line_height=24); 
     // ]
 
+    void writeFramePhoton(const char* dir, const char* name);
+
     void setGensteps(const NP* gs);
     double simulate();    
     double launch(unsigned width, unsigned height, unsigned depth) ; 

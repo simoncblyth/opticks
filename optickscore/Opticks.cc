@@ -2515,7 +2515,8 @@ const char* Opticks::getOutDir() const    // --outdir
 {
     const std::string& outdir = m_cfg->getOutDir() ; 
     const char* default_outdir = outdir.empty() ? NULL : outdir.c_str() ;
-    return m_outdir ? m_outdir : default_outdir ; 
+    const char* dir = m_outdir ? m_outdir : default_outdir ; 
+    return SPath::Resolve(dir); 
 }
 
 void Opticks::setOutDir( const char* outdir )  // overrides --outdir 

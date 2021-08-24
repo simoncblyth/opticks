@@ -38,6 +38,7 @@ struct Params
     // frame rendering 
     uchar4*    pixels ;
     float4*    isect ;
+    quad4*     fphoton ;
 
     // render control 
     uint32_t   width;

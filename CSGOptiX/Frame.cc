@@ -43,23 +43,25 @@ Allocates pixels and isect on device.
 void Frame::init()
 {
     assert( depth == 1 ); 
-    QU::device_free_and_alloc<uchar4>( &d_pixel,  width*height );  
-    QU::device_free_and_alloc<float4>( &d_isect,  width*height );  
-    QU::device_free_and_alloc<quad4>(  &d_photon,  width*height );  
+    unsigned num_pixels = width*height ; 
+    QU::device_free_and_alloc<uchar4>( &d_pixel,  num_pixels );  
+    QU::device_free_and_alloc<float4>( &d_isect,  num_pixels );  
+    QU::device_free_and_alloc<quad4>(  &d_photon, num_pixels );  
 }
 
 void Frame::download()
 {
-    QU::Download<uchar4>(pixel, d_pixel, width*height ); 
-    QU::Download<float4>(isect, d_isect, width*height ); 
-    QU::Download<quad4>(photon, d_photon, width*height ); 
+    unsigned num_pixels = width*height ; 
+    QU::Download<uchar4>(pixel, d_pixel, num_pixels ); 
+    QU::Download<float4>(isect, d_isect, num_pixels ); 
+    QU::Download<quad4>(photon, d_photon, num_pixels ); 
 
-    img->setData( getPixelsData() ); 
+    img->setData( getPixelData() ); 
 }
 
 unsigned char* Frame::getPixelData() const {     return (unsigned char*)pixel.data();  }
 float*         Frame::getIntersectData() const { return (float*)isect.data(); }
-quad4*         Frame::getPhotonData() const {    return (quad4*)photon.data(); }
+float*         Frame::getPhotonData() const {    return (float*)photon.data(); }
 
 
 void Frame::annotate( const char* bottom_line, const char* top_line, int line_height )

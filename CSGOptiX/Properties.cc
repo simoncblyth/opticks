@@ -17,8 +17,6 @@ Properties::Properties()
     OPTIX_CHECK( optixDeviceContextGetProperty(Ctx::context, OPTIX_DEVICE_PROPERTY_LIMIT_NUM_BITS_INSTANCE_VISIBILITY_MASK , &limitNumBitsInstanceVisibilityMask , sizeof(unsigned int)) );
     OPTIX_CHECK( optixDeviceContextGetProperty(Ctx::context, OPTIX_DEVICE_PROPERTY_LIMIT_MAX_SBT_RECORDS_PER_GAS           , &limitMaxSbtRecordsPerGas           , sizeof(unsigned int)) );
     OPTIX_CHECK( optixDeviceContextGetProperty(Ctx::context, OPTIX_DEVICE_PROPERTY_LIMIT_MAX_SBT_OFFSET                    , &limitMaxSbtOffset                  , sizeof(unsigned int)) );
-
-    dump(); 
 }
 
 void Properties::dump() const 

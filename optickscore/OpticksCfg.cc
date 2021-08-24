@@ -74,7 +74,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_flightconfig(""),
     m_flightoutdir("$TMP/flight"),
     m_snapoutdir("$TMP/snap"),
-    m_outdir(SSys::getenvvar("OUTDIR","$TMP/outdir")),
+    m_outdir(SSys::getenvvar("OPTICKS_OUTDIR","$TMP/outdir")),
     m_nameprefix("frame"),
     m_snapconfig("steps=0,ext=.jpg"),        // --snapconfig
     m_snapoverrideprefix(""),

@@ -163,8 +163,9 @@ void CSGOptiX::initRender()
 #if OPTIX_VERSION < 70000
     six->initFrame();     // sets params->pixels, isect from optix device pointers
 #else
-    params->pixels = frame->getDevicePixels(); 
+    params->pixels = frame->getDevicePixel(); 
     params->isect  = frame->getDeviceIsect(); 
+    params->fphoton = frame->getDevicePhoton(); 
 #endif
 }
 
@@ -322,8 +323,6 @@ double CSGOptiX::simulate()
     return dt ; 
 }
 
-
-
 std::string CSGOptiX::Annotation( double dt, const char* bot_line )  // static 
 {
     std::stringstream ss ; 
@@ -354,7 +353,13 @@ void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_l
     }
 }
 
-int CSGOptiX::render_flightpath()
+void CSGOptiX::writeFramePhoton(const char* dir, const char* name)
+{
+    frame->writePhoton(dir, name); 
+}
+
+
+int CSGOptiX::render_flightpath() // for making mp4 movies
 {
     FlightPath* fp = ok->getFlightPath();   // FlightPath lazily instanciated here (held by Opticks)
     int rc = fp->render( (SRenderer*)this  );

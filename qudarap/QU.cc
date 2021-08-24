@@ -132,9 +132,12 @@ void QU::Download(std::vector<T>& vec, const T* d_array, unsigned num_items)  //
 }
 
 
-template void QU::Download<uchar4>(std::vector<uchar4>& vec, const uchar4* d_array, unsigned num_items); 
-template void QU::Download<float4>(std::vector<float4>& vec, const float4* d_array, unsigned num_items); 
-
+template void QU::Download<float>(   std::vector<float>& vec,    const float* d_array,    unsigned num_items); 
+template void QU::Download<unsigned>(std::vector<unsigned>& vec, const unsigned* d_array, unsigned num_items); 
+template void QU::Download<int>(     std::vector<int>& vec,      const int* d_array,      unsigned num_items); 
+template void QU::Download<uchar4>(  std::vector<uchar4>& vec,   const uchar4* d_array,   unsigned num_items); 
+template void QU::Download<float4>(  std::vector<float4>& vec,   const float4* d_array,   unsigned num_items); 
+template void QU::Download<quad4>(   std::vector<quad4>& vec,    const quad4* d_array,    unsigned num_items); 
 
 
 
