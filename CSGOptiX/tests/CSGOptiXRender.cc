@@ -40,7 +40,6 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
     ok.setRaygenMode(0);             // override --raygenmode option 
-    ok.setOutDir("$TMP/CSGOptiX");   // override --outdir option 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );

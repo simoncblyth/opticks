@@ -67,12 +67,12 @@ export NAMEPREFIX=${NAMEPREFIX:-$nameprefix}
 reldir=top_${TOP}_
 export RELDIR=${RELDIR:-$reldir}
 
-export OUTDIR=${BASEDIR}/${RELDIR}
-mkdir -p $OUTDIR
+export OPTICKS_OUTDIR=${BASEDIR}/${RELDIR}
+mkdir -p $OPTICKS_OUTDIR
 
-arglist=$OUTDIR/arglist.txt
+arglist=$OPTICKS_OUTDIR/arglist.txt
 
-export LOGDIR=${OUTDIR}.logs
+export LOGDIR=${OPTICKS_OUTDIR}.logs
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
@@ -126,8 +126,8 @@ else
     render $*                               ## single MOI via envvar 
 
     if [ $? -eq 0 ]; then 
-        ls -1rt `find $OUTDIR -name '*.jpg' `
-        jpg=$(ls -1rt `find $OUTDIR -name '*.jpg' ` | tail -1)
+        ls -1rt `find $OPTICKS_OUTDIR -name '*.jpg' `
+        jpg=$(ls -1rt `find $OPTICKS_OUTDIR -name '*.jpg' ` | tail -1)
         echo $msg jpg $jpg 
         ls -l $jpg
         [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg

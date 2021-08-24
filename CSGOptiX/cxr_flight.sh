@@ -14,7 +14,7 @@ Before taking flight check a single render with eg::
     ./cxr_overview.sh 
 
 Developments here need to follow cxr.sh to some extent. 
-This requires the invoked script to set OUTDIR to the 
+This requires the invoked script to set OPTICKS_OUTDIR to the 
 directory with the jpg renders and to name the jpg smth_00000.jpg 
 etc..
 
@@ -63,8 +63,8 @@ flight-make-mp4()
 
 flight-render-jpg $*
 
-echo $msg OUTDIR $OUTDIR 
-cd $OUTDIR 
+echo $msg OPTICKS_OUTDIR $OPTICKS_OUTDIR 
+cd $OPTICKS_OUTDIR 
 
 flight-make-mp4
 
