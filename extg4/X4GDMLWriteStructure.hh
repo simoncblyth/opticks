@@ -63,6 +63,7 @@ class X4_API X4GDMLWriteStructure : public G4GDMLWriteStructure
         xercesc::DOMElement* gdml ; 
         xercesc::DOMImplementation* impl ;
 
+        XMLCh local_tempStr[10000]  ;
 
 };
 

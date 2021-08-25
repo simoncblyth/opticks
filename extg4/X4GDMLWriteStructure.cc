@@ -51,23 +51,28 @@ std::string X4GDMLWriteStructure::to_string( const G4VSolid* solid )
 }
 
 
+/**
+X4GDMLWriteStructure::init
+---------------------------
 
+At some point after 1070 geant4 removes fixed size tempStr member variable XMLCh tempStr[10000].
+To avoid having to change code with Geant4 versions the below uses its own local_tempStr member variable.
 
+**/
 
 void X4GDMLWriteStructure::init(bool refs)
 {
 
    SchemaLocation = "SchemaLocation";
    addPointerToName = refs ;
-   XMLCh* tempStr = nullptr ;
-   xercesc::XMLString::transcode("LS", tempStr, 9999);
-   xercesc::DOMImplementationRegistry::getDOMImplementation(tempStr);
-   xercesc::XMLString::transcode("Range", tempStr, 9999);
+   xercesc::XMLString::transcode("LS", local_tempStr, 9999);
+   xercesc::DOMImplementationRegistry::getDOMImplementation(local_tempStr);
+   xercesc::XMLString::transcode("Range", local_tempStr, 9999);
 
-   impl = xercesc::DOMImplementationRegistry::getDOMImplementation(tempStr);
+   impl = xercesc::DOMImplementationRegistry::getDOMImplementation(local_tempStr);
 
-   xercesc::XMLString::transcode("gdml", tempStr, 9999);
-   doc = impl->createDocument(0,tempStr,0);
+   xercesc::XMLString::transcode("gdml", local_tempStr, 9999);
+   doc = impl->createDocument(0,local_tempStr,0);
 
    gdml = doc->getDocumentElement();
 
