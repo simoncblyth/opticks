@@ -24,9 +24,9 @@ struct X4SurfaceTest
 
     static std::string MakeName(const char* prefix, int ix, int iy, int iz); 
 
-    static constexpr int nx = 10 ; 
-    static constexpr int ny = 10 ; 
-    static constexpr int nz = 10 ; 
+    static constexpr int nx = 5 ; 
+    static constexpr int ny = 5 ; 
+    static constexpr int nz = 5 ; 
     static unsigned Index(int ix, int iy, int iz);   
     static unsigned Count();   
 
