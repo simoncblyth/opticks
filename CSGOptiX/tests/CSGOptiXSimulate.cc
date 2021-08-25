@@ -116,7 +116,7 @@ int main(int argc, char** argv)
     QSim<float>* sim = cx.sim ; 
     QEvent* evt = cx.evt ; 
     
-    evt->savePhoton(ok.getOutDir(),  "photons.npy");  
+    //evt->savePhoton(ok.getOutDir(),  "photons.npy");   // this one gets very big 
     evt->saveGenstep(ok.getOutDir(), "genstep.npy");  
 
     const char* namestem = "CSGOptiXSimulate" ; 

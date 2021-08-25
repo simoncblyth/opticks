@@ -103,8 +103,9 @@ if __name__ == '__main__':
     prim_idx = i >> 16    
     instance_id = i & 0xffff   
 
+    pick_b = b[b>0] 
     #pick_b = b[instance_id == 0]    # global boundaries
-    pick_b = b[instance_id > 0]    # instance boundaries
+    #pick_b = b[instance_id > 0]    # instance boundaries
 
 
     ubs, ubs_counts = np.unique(pick_b, return_counts=True)   
@@ -118,7 +119,35 @@ if __name__ == '__main__':
 
     fpos = f[b>0][:,0,:3]
 
-    pl = pv.Plotter()
+    
+    size = np.array( [1024, 768] )*2
+    eye =  (94006.38845416412, 86640.65749713287, 95402.39480182037)
+    look = (7365.73095703125, 0.0, 8761.7373046875)
+    up = (0.0, 0.0, 1.0)
+
+    pl = pv.Plotter(window_size=size )
+    pl.view_xz() 
+   
+    pl.camera.ParallelProjectionOn()  
+
+    eye = (17700, -17700, 0 )
+    look = (17700, 0, 0 )
+    up = (0,0,1)
+    #scale = 100 
+
+    pl.set_position( eye, reset=False )
+    pl.set_focus(    look )
+    pl.set_viewup(   up )
+    #pl.set_scale( scale )
+
+
+    pl.add_points( g[:,1,:3] , color="white" )
+
+
+    #pl.camera.position = (0, -17000, 0.0)
+    #pl.camera.focal_point = (0, 0, 0)
+    #pl.camera.up = (0.0, 0.0, 1.0)
+
 
     for ub, ub_count in zip(ubs, ubs_counts):
         color = colors[ub % len(colors)]
@@ -130,7 +159,8 @@ if __name__ == '__main__':
 
         pl.add_points( fpos, color=color )
     pass
-    pl.show_grid()
+
+    #pl.show_grid()
     cp = pl.show()
 
 
