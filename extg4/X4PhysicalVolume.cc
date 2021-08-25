@@ -375,6 +375,9 @@ void X4PhysicalVolume::convertScintillators_OLD()
 X4PhysicalVolume::collectScintillatorMaterials
 ------------------------------------------------
 
+Invoked by X4PhysicalVolume::init/X4PhysicalVolume::convertScintillators
+
+
 1. search GMaterialLib for materials with the three SCINTILLATOR_PROPERTIES, when none found there is nothing to do here
 2. when scintillators are found assert that both wavelength and energy domain versions of the materials are present
 3. copy the raw wavelength and energy material pointers from GMaterialLib to GScintillatorLib in order for these
@@ -426,6 +429,8 @@ void X4PhysicalVolume::collectScintillatorMaterials()
         PMAP* pmap = raw_energy_pmaps[i] ; 
         m_sclib->addRawOriginal(pmap);      
     }
+
+    m_sclib->dump("X4PhysicalVolume::collectScintillatorMaterials"); 
 }
 
 void X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF()

@@ -51,7 +51,7 @@ const char* GPropertyMap<T>::NOT_DEFINED = "-" ;
 
 
 template <typename T>
-const plog::Severity GPropertyMap<T>::LEVEL = debug ;
+const plog::Severity GPropertyMap<T>::LEVEL = PLOG::EnvLevel("GPropertyMap","DEBUG") ;
 
 
 
@@ -173,32 +173,33 @@ GPropertyMap<T>::GPropertyMap(const char* name)
     m_shortname(NULL),
     m_standard_domain(NULL),
     m_optical_surface(NULL),
-    m_meta(new BMeta)
+    m_meta(new BMeta),
+    m_original_domain(false)  
 {
-   m_name = name ;   // m_name is std::string, no need for strdup 
-   m_index = UINT_MAX ;
-   m_valid = false ;
-   m_type = "" ;
+    m_name = name ;   // m_name is std::string, no need for strdup 
+    m_index = UINT_MAX ;
+    m_valid = false ;
+    m_type = "" ;
 
-   init();
+    init();
 }
 
 
 // this ctor is used in eg GSurfaceLib::importForTex2d
 template <typename T>
 GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface, BMeta* meta) 
-   : 
-   m_index(index), 
-   m_valid(false),
-   m_standard_domain(NULL),
-   m_optical_surface(optical_surface),
-   m_meta(meta ? new BMeta(*meta) : new BMeta)
+    : 
+    m_index(index), 
+    m_valid(false),
+    m_standard_domain(NULL),
+    m_optical_surface(optical_surface),
+    m_meta(meta ? new BMeta(*meta) : new BMeta),
+    m_original_domain(false)  
 {
-   // set the std::string
-   m_name = name ; 
-   m_type = type ; 
-
-   init();
+    // set the std::string
+    m_name = name ; 
+    m_type = type ; 
+    init();
 }
 
 template <typename T>
@@ -436,7 +437,7 @@ const char* GPropertyMap<T>::getName() const
 
 template <typename T>
 std::string GPropertyMap<T>::getShortNameString() const 
-{    
+{   
     return getShortName(); 
 }
 template <typename T>
@@ -493,7 +494,6 @@ const char* GPropertyMap<T>::FindShortName(const char* name, const char* prefix)
 
     return shortname ? strdup(shortname) : NULL ; 
 }
-
 
 
 template <typename T>
@@ -1074,11 +1074,15 @@ void GPropertyMap<T>::addMapStandardized(GPropertyMap<T>* other, const char* pre
 
 
 
+
+
 template <typename T>
 void GPropertyMap<T>::save(const char* dir)
 {
     std::string shortname = m_shortname ; 
     if(m_original_domain) shortname += SConstant::ORIGINAL_DOMAIN_SUFFIX ;  
+
+    LOG(LEVEL) << " save shortname (+_ori?) [" << shortname << "] m_original_domain " << m_original_domain  ; 
 
     for(std::vector<std::string>::iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
     {

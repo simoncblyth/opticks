@@ -34,6 +34,17 @@ template <typename T> class GPropertyMap ;
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
+/**
+GScintillatorLib
+===================
+
+Summer 2021 : current approach uses external Geant4 based processing (see X4Scintillation)
+to yield the ICDF with GScintillatorLib relegated to only handling the persisting 
+of the ICDF  via the normal GPropertyLib buffer mechanism 
+
+
+**/
+
 class GGEO_API GScintillatorLib : public GPropertyLib {
     public:
         static const plog::Severity LEVEL ; 
@@ -67,9 +78,6 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
         void init();
 
     public:
-        // current approach uses external Geant4 based processing to yield the ICDF
-        // with GScintillatorLib relegated to only handling the persisting of the ICDF 
-        // via the normal GPropertyLib buffer mechanism 
         void               setGeant4InterpolatedICDF( NPY<double>* g4icdf );
         NPY<double>*       getGeant4InterpolatedICDF() const ; 
         GItemList*         geant4ICDFCreateNames() const  ; 

@@ -1,6 +1,8 @@
 opticks-t-fails-aug-2021-13-of-493
 ======================================
 
+Aug 25 11:39 13/493 
+----------------------
 
 ::
 
@@ -16,17 +18,19 @@ opticks-t-fails-aug-2021-13-of-493
       18 /31  Test #18 : ExtG4Test.X4CSGTest                           ***Exception: SegFault         0.13     FIXED WITH local_tempStr
       20 /31  Test #20 : ExtG4Test.X4GDMLParserTest                    ***Exception: SegFault         0.14   
       21 /31  Test #21 : ExtG4Test.X4GDMLBalanceTest                   ***Exception: SegFault         0.15   
+      32 /46  Test #32 : CFG4Test.CTreeJUNOTest                        ***Exception: SegFault         0.22     SAME ISSUE : IT USES GDML SNIPPET WRITING    
 
 
-      8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  53.21       BAD FLAG 
+
+      8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  53.21       BAD FLAG  : FROM LACK OF INIT WITH TORCH GENSTEPS
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Subprocess aborted***Exception:  67.93       
 
         2021-08-25 19:40:24.060 INFO  [90759] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 6 : BAD_FLAG
         CG4Test: /home/blyth/opticks/cfg4/CCtx.cc:104: unsigned int CCtx::step_limit() const: Assertion `_ok_event_init' failed.
 
 
-      32 /46  Test #32 : CFG4Test.CTreeJUNOTest                        ***Exception: SegFault         0.22   
 
-      1  /46  Test #1  : CFG4Test.CMaterialLibTest                     Subprocess aborted***Exception:   2.40   
+      1  /46  Test #1  : CFG4Test.CMaterialLibTest                     Subprocess aborted***Exception:   2.40      SCINTILLATOR REJIG ISSUE
       2  /46  Test #2  : CFG4Test.CMaterialTest                        Subprocess aborted***Exception:   2.38   
       30 /46  Test #30 : CFG4Test.CGROUPVELTest                        Subprocess aborted***Exception:   2.44   
       38 /46  Test #38 : CFG4Test.CCerenkovGeneratorTest               Subprocess aborted***Exception:   2.38   
@@ -34,25 +38,137 @@ opticks-t-fails-aug-2021-13-of-493
 
 
 
-      1  /1   Test #1  : OKG4Test.OKG4Test                             Subprocess aborted***Exception:  67.93  
 
       2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.87   
     O[blyth@localhost opticks]$ 
 
 
 
+Aug 25 16:16 : Now there are 4/493
+-------------------------------------
 
-Quick Look at causes
-----------------------
-
-
-
-1. interpolationTest : python without numpy issue, SSys::RunPythonScript needs envvar to steer to correct python
+::
 
 
-CFG4 : CG4Test 
-------------------
+    FAILS:  4   / 493   :  Wed Aug 25 23:15:49 2021   
+      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      4.96         ## py: No numpy module  
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.90         ## py: No module named 'opticks'
 
+      8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  53.31  
+      1  /1   Test #1  : OKG4Test.OKG4Test                             Subprocess aborted***Exception:  66.72  
+    O[blyth@localhost cfg4]$ 
+
+
+
+
+CG4Test + OKG4Test : need to call the init with torch gensteps   
+----------------------------------------------------------------
+
+::
+
+    2021-08-25 23:14:40.956 INFO  [436572] [OpticksRun::createOKEvent@158]  tagoffset 0 skipaheadstep 0 skipahead 0
+    2021-08-25 23:14:40.956 INFO  [436572] [OKG4Mgr::propagate_@222]  numPhotons 20000 cgs T  idx   0 pho20000 off      0
+    2021-08-25 23:14:40.968 INFO  [436572] [CG4::propagate@396]  calling BeamOn numG4Evt 1
+    2021-08-25 23:15:29.375 INFO  [436572] [CScint::Check@16]  pmanager 0xae6a000 proc 0
+    2021-08-25 23:15:29.375 INFO  [436572] [CScint::Check@21] CProMgr n:[4] (0) name Transportation left -1 (1) name OpAbsorption left -1 (2) name OpRayleigh left -1 (3) name OpBoundary left -1
+    2021-08-25 23:15:29.375 INFO  [436572] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 6 : BAD_FLAG
+    OKG4Test: /home/blyth/opticks/cfg4/CCtx.cc:104: unsigned int CCtx::step_limit() const: Assertion `_ok_event_init' failed.
+
+
+    2021-08-25 23:28:15.555 INFO  [457070] [CScint::Check@16]  pmanager 0x1d83b7d0 proc 0
+    2021-08-25 23:28:15.556 INFO  [457070] [CScint::Check@21] CProMgr n:[4] (0) name Transportation left -1 (1) name OpAbsorption left -1 (2) name OpRayleigh left -1 (3) name OpBoundary left -1
+    2021-08-25 23:28:15.556 INFO  [457070] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 6 : BAD_FLAG
+    CG4Test: /home/blyth/opticks/cfg4/CCtx.cc:104: unsigned int CCtx::step_limit() const: Assertion `_ok_event_init' failed.
+
+    (gdb) bt
+    #3  0x00007fffe8787252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7b36add in CCtx::step_limit (this=0xab34680) at /home/blyth/opticks/cfg4/CCtx.cc:104
+    #5  0x00007ffff7acc530 in CRec::add (this=0x1d864d60, boundary_status=FresnelRefraction) at /home/blyth/opticks/cfg4/CRec.cc:286
+    #6  0x00007ffff7b1123c in CRecorder::Record (this=0x1d864c60, boundary_status=FresnelRefraction) at /home/blyth/opticks/cfg4/CRecorder.cc:345
+    #7  0x00007ffff7b3e1c4 in CManager::setStep (this=0x1d835120, step=0xaac0cc0) at /home/blyth/opticks/cfg4/CManager.cc:502
+    #8  0x00007ffff7b3de18 in CManager::UserSteppingAction (this=0x1d835120, step=0xaac0cc0) at /home/blyth/opticks/cfg4/CManager.cc:429
+    #9  0x00007ffff7b35d12 in CSteppingAction::UserSteppingAction (this=0xa94ad60, step=0xaac0cc0) at /home/blyth/opticks/cfg4/CSteppingAction.cc:41
+    #10 0x00007ffff4936ba2 in G4SteppingManager::Stepping() () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4tracking.so
+    #11 0x00007ffff49409cd in G4TrackingManager::ProcessOneTrack(G4Track*) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4tracking.so
+    #12 0x00007ffff4b76f61 in G4EventManager::DoProcessing(G4Event*) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4event.so
+    #13 0x00007ffff4e0ee87 in G4RunManager::ProcessOneEvent(int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #14 0x00007ffff4e080f3 in G4RunManager::DoEventLoop(int, char const*, int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #15 0x00007ffff4e07ebe in G4RunManager::BeamOn(int, char const*, int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #16 0x00007ffff7b3b299 in CG4::propagate (this=0xa934430) at /home/blyth/opticks/cfg4/CG4.cc:399
+    #17 0x0000000000404556 in main (argc=1, argv=0x7fffffff65e8) at /home/blyth/opticks/cfg4/tests/CG4Test.cc:76
+    (gdb) 
+
+
+
+
+::
+
+    102 unsigned CCtx::step_limit() const
+    103 {
+    104     assert( _ok_event_init );
+    105     return 1 + 2*( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+    106 }
+
+    205 /**
+    206 CCtx::initEvent
+    207 --------------------
+    208 
+    209 Collect the parameters of the OpticksEvent which 
+    210 dictate what needs to be collected.
+    211 
+    212 **/
+    213 
+    214 void CCtx::initEvent(const OpticksEvent* evt)
+    215 {
+    216     _ok_event_init = true ;
+    217     _photons_per_g4event = evt->getNumPhotonsPerG4Event() ;
+    218     _steps_per_photon = evt->getMaxRec() ;   // number of points to be recorded into record buffer   
+    219     _record_max = evt->getNumPhotons();      // from the genstep summation, hmm with dynamic running this will start as zero 
+    220 
+    221     _bounce_max = evt->getBounceMax();       // maximum bounce allowed before truncation will often be 1 less than _steps_per_photon but need not be 
+    222     unsigned bounce_max_2 = evt->getMaxBounce();
+    223     assert( _bounce_max == bounce_max_2 ) ; // TODO: eliminate or rename one of those
+    224 
+
+
+    238 /**
+    239 CManager::initEvent : configure event recording, limits/shapes etc.. 
+    240 ------------------------------------------------------------------------
+    241 
+    242 Invoked from CManager::BeginOfEventAction/CManager::presave
+    243 
+    244 **/
+    245 
+    246 void CManager::initEvent(OpticksEvent* evt)
+    247 {
+    248     LOG(LEVEL) << " m_mode " << m_mode ;
+    249     assert( m_mode > 1 );
+    250 
+    251     m_ctx->initEvent(evt);
+    252     m_recorder->initEvent(evt);
+    253 
+    254     NPY<float>* nopstep = evt->getNopstepData();
+    255     if(!nopstep) LOG(fatal) << " nopstep NULL " << " evt " << evt->getShapeString() ;
+    256     assert(nopstep);
+    257     m_noprec->initEvent(nopstep);
+    258 }
+
+
+
+Huh why not inited?::
+
+     45 void CEventAction::BeginOfEventAction(const G4Event* event)
+     46 {
+     47     m_manager->BeginOfEventAction(event);
+     48 }
+
+
+
+
+
+
+CPropLib::addScintillatorMaterialProperties assert now FIXED : was misnaming LS to LS_ori due to only init m_original_domain in one GPropertMap ctor
+------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ::
 
@@ -106,6 +222,256 @@ CFG4 : CG4Test
     368 }
 
 
+
+Curious. CMaterialTest not failing on Darwin. Must be from whats in geocache.
+
+::
+
+   O[blyth@localhost cfg4]$ CMaterialLib=INFO CMaterialTest 
+
+
+::
+
+     431 void X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF()
+     432 {
+     433     unsigned num_scint = m_sclib->getNumRawOriginal() ;
+     434     if( num_scint == 0 ) return ;
+     435     //assert( num_scint == 1 ); 
+     436 
+     437     typedef GPropertyMap<double> PMAP ;
+     438     PMAP* pmap_en = m_sclib->getRawOriginal(0u);
+     439     assert( pmap_en );
+     440     assert( pmap_en->hasOriginalDomain() );
+     441 
+     442     NPY<double>* slow_en = pmap_en->getProperty("SLOWCOMPONENT")->makeArray();
+     443     NPY<double>* fast_en = pmap_en->getProperty("FASTCOMPONENT")->makeArray();
+     444 
+     445     //slow_en->save("/tmp/slow_en.npy"); 
+     446     //fast_en->save("/tmp/fast_en.npy"); 
+     447 
+     448     X4Scintillation xs(slow_en, fast_en);
+     449 
+     450     unsigned num_bins = 4096 ;
+     451     unsigned hd_factor = 20 ;
+     452     const char* material_name = pmap_en->getName() ;
+     453 
+     454     NPY<double>* g4icdf = xs.createGeant4InterpolatedInverseCDF(num_bins, hd_factor, material_name ) ;
+     455 
+     456     LOG(info)
+     457         << " num_scint " << num_scint
+     458         << " slow_en " << slow_en->getShapeString()
+     459         << " fast_en " << fast_en->getShapeString()
+     460         << " num_bins " << num_bins
+     461         << " hd_factor " << hd_factor
+     462         << " material_name " << material_name
+     463         << " g4icdf " << g4icdf->getShapeString()
+     464         ;
+     465 
+     466     m_sclib->setGeant4InterpolatedICDF(g4icdf);   // trumps legacyCreateBuffer
+     467     m_sclib->close();   // creates and sets "THE" buffer 
+     468 }
+     469 
+
+
+
+::
+
+    epsilon:extg4 blyth$ opticks-f getRawOriginal
+    ./extg4/X4PhysicalVolume.cc:    PMAP* pmap_en = m_sclib->getRawOriginal(0u); 
+    ./ggeo/GPropertyLib.cc:GPropertyMap<double>* GPropertyLib::getRawOriginal(unsigned index) const 
+    ./ggeo/GPropertyLib.cc:GPropertyMap<double>* GPropertyLib::getRawOriginal(const char* shortname) const 
+    ./ggeo/GPropertyLib.hh:        GPropertyMap<double>* getRawOriginal(unsigned index) const ;
+    ./ggeo/GPropertyLib.hh:        GPropertyMap<double>* getRawOriginal(const char* shortname) const ;
+
+    epsilon:opticks blyth$ opticks-f addRawOriginal
+    ./extg4/X4PhysicalVolume.cc:        m_sclib->addRawOriginal(pmap);      
+    ./extg4/X4MaterialTable.cc:        m_mlib->addRawOriginal(pmap_rawmat_en) ;  // down to GPropertyLib
+    ./ggeo/GPropertyLib.cc:void GPropertyLib::addRawOriginal(GPropertyMap<double>* pmap)
+    ./ggeo/GPropertyLib.hh:        void                  addRawOriginal(GPropertyMap<double>* pmap);
+    epsilon:opticks blyth$ 
+
+
+
+::
+
+     388 void X4PhysicalVolume::collectScintillatorMaterials()
+     389 {   
+     390     assert( m_sclib ); 
+     391     std::vector<GMaterial*>  scintillators_raw = m_mlib->getRawMaterialsWithProperties(SCINTILLATOR_PROPERTIES, ',' );
+     392     
+     393     typedef GPropertyMap<double> PMAP ;  
+     394     std::vector<PMAP*> raw_energy_pmaps ;  
+     395     m_mlib->findRawOriginalMapsWithProperties( raw_energy_pmaps, SCINTILLATOR_PROPERTIES, ',' );
+     396     
+     397     bool consistent = scintillators_raw.size() == raw_energy_pmaps.size()  ;
+     398     if(!consistent)
+     399         LOG(fatal) 
+     400             << " scintillators_raw.size " << scintillators_raw.size()
+     401             << " raw_energy_pmaps.size " << raw_energy_pmaps.size()
+     402             ;
+     403     
+     404     assert( consistent ); 
+     405     unsigned num_scint = scintillators_raw.size() ;
+     406     
+     407     if(num_scint == 0)
+     408     {   
+     409         LOG(LEVEL) << " found no scintillator materials  " ;
+     410         return ;
+     411     }
+     412     
+     413     LOG(info) << " found " << num_scint << " scintillator materials  " ;
+     414     
+     415     // wavelength domain 
+     416     for(unsigned i=0 ; i < num_scint ; i++)
+     417     {   
+     418         GMaterial* mat_ = scintillators_raw[i] ;
+     419         PMAP* mat = dynamic_cast<PMAP*>(mat_);
+     420         m_sclib->addRaw(mat);
+     421     }
+     422     
+     423     // original energy domain 
+     424     for(unsigned i=0 ; i < num_scint ; i++)
+     425     {   
+     426         PMAP* pmap = raw_energy_pmaps[i] ;
+     427         m_sclib->addRawOriginal(pmap);
+     428     }
+     429 }
+
+
+
+
+FIXED : was an uninitialized m_domain_original : causing unexpected : GScintillatorLib.getNumRaw  0 GScintillatorLib.getNumRawOriginal  1  : should be the same
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+::
+
+    2021-08-25 22:14:49.023 INFO  [333605] [CMaterialLib::convertMaterial@239]  name LS sname LS materialIndex 0
+    2021-08-25 22:14:49.025 FATAL [333605] [CPropLib::addScintillatorMaterialProperties@358]  FAILED to find material in m_sclib (GScintillatorLib) with name LS
+    2021-08-25 22:14:49.025 INFO  [333605] [GScintillatorLib::Summary@51] CPropLib::addScintillatorMaterialProperties GScintillatorLib.getNumRaw  0 GScintillatorLib.getNumRawOriginal  1
+    2021-08-25 22:14:49.025 INFO  [333605] [GPropertyLib::dumpRaw@937] CPropLib::addScintillatorMaterialProperties
+    CMaterialTest: /home/blyth/opticks/cfg4/CPropLib.cc:361: void CPropLib::addScintillatorMaterialProperties(G4MaterialPropertiesTable*, const char*): Assertion `scintillator && "non-zero reemission prob materials should has an associated raw scintillator"' failed.
+    Aborted (core dumped)
+    O[blyth@localhost cfg4]$ 
+
+
+geocache-kcd::
+
+    O[blyth@localhost 1]$ cd GScintillatorLib
+    O[blyth@localhost GScintillatorLib]$ l
+    total 112
+      4 -rw-rw-r--.  1 blyth blyth   120 Aug 17 16:45 GScintillatorLib.json
+    100 -rw-rw-r--.  1 blyth blyth 98384 Aug 17 16:45 GScintillatorLib.npy
+      4 drwxrwxr-x. 13 blyth blyth  4096 Aug 17 16:44 ..
+      4 drwxrwxr-x.  2 blyth blyth  4096 Jul  7 20:52 LS_ori
+      0 drwxrwxr-x.  3 blyth blyth    77 Jul  7 20:52 .
+    O[blyth@localhost GScintillatorLib]$ 
+
+Darwin, geocache-kcd::
+
+    epsilon:1 blyth$ cd GScintillatorLib/
+    epsilon:GScintillatorLib blyth$ l
+    total 208
+      0 drwxr-xr-x  17 blyth  staff    544 Jul  7 17:26 ..
+      0 drwxr-xr-x  34 blyth  staff   1088 Jul  7 17:26 LS_ori
+      0 drwxr-xr-x   6 blyth  staff    192 Jul  7 17:26 .
+      0 drwxr-xr-x  34 blyth  staff   1088 Jul  7 17:26 LS
+    200 -rw-r--r--   1 blyth  staff  98384 Jul  7 17:26 GScintillatorLib.npy
+      8 -rw-r--r--   1 blyth  staff    120 Jul  7 17:26 GScintillatorLib.json
+    epsilon:GScintillatorLib blyth$ 
+
+
+
+::
+
+    105 void X4MaterialTable::init()
+    106 {
+    107     unsigned num_input_materials = m_input_materials.size() ;
+    108 
+    109     LOG(LEVEL) << ". G4 nmat " << num_input_materials ;
+    110 
+    111     for(unsigned i=0 ; i < num_input_materials ; i++)
+    112     {
+    113         G4Material* material = m_input_materials[i] ;
+    114         G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
+    115 
+    116         if( mpt == NULL )
+    117         {
+    118             LOG(error) << "PROCEEDING TO convert material with no mpt " << material->GetName() ;
+    119             // continue ;  
+    120         }
+    121         else
+    122         {
+    123             LOG(LEVEL) << " converting material with mpt " <<  material->GetName() ;
+    124         }
+    125 
+    126         //char mode_oldstandardized = 'S' ;
+    127         char mode_g4interpolated = 'G' ;
+    128         GMaterial* mat = X4Material::Convert( material, mode_g4interpolated );
+    129         if(mat->hasProperty("EFFICIENCY")) m_materials_with_efficiency.push_back(material);
+    130         m_mlib->add(mat) ;
+    131 
+    132         char mode_asis_nm = 'A' ;
+    133         GMaterial* rawmat = X4Material::Convert( material, mode_asis_nm );
+    134         m_mlib->addRaw(rawmat) ;
+    135 
+    136         char mode_asis_en = 'E' ;
+    137         GMaterial* rawmat_en = X4Material::Convert( material, mode_asis_en );
+    138         GPropertyMap<double>* pmap_rawmat_en = dynamic_cast<GPropertyMap<double>*>(rawmat_en) ;
+    139         m_mlib->addRawOriginal(pmap_rawmat_en) ;  // down to GPropertyLib
+    140 
+    141 
+    142     }
+    143 }
+
+
+
+::
+
+    tds3 onlt LS_ori is appearing 
+
+
+    2021-08-25 22:36:30.378 INFO  [365931] [GPropertyLib::saveToCache@553] ]
+    2021-08-25 22:36:30.378 INFO  [365931] [GPropertyLib::saveToCache@509]  dir /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GSurfaceLib name GSurfaceLibOptical.npy type GSurfaceLib
+    2021-08-25 22:36:30.378 INFO  [365931] [GPropertyLib::saveToCache@531] [
+    2021-08-25 22:36:30.379 INFO  [365931] [GPropertyLib::saveToCache@553] ]
+    2021-08-25 22:36:30.379 INFO  [365931] [GPropertyLib::saveRaw@953] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GScintillatorLib num_raw 1
+    2021-08-25 22:36:30.381 INFO  [365931] [GPropertyLib::saveRaw@959] ]
+    2021-08-25 22:36:30.381 INFO  [365931] [GPropertyLib::saveRawOriginal@966] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GScintillatorLib num_raw_original 1
+    2021-08-25 22:36:30.394 INFO  [365931] [GPropertyLib::saveRawOriginal@972] ]
+    2021-08-25 22:36:30.394 INFO  [365931] [GPropertyLib::saveToCache@531] [
+    2021-08-25 22:36:30.394 INFO  [365931] [GPropertyLib::saveToCache@553] ]
+    2021-08-25 22:36:30.395 INFO  [365931] [GPropertyLib::saveToCache@509]  dir /home/blyth/.
+
+
+Seems are not properly initializing m_original_domain, causing misnaming to LS_ori for both raw and raw_original when should be LS and LS_ori::
+
+    2021-08-25 23:03:14.858 INFO  [410087] [GPropertyLib::saveToCache@531] [
+    2021-08-25 23:03:14.859 INFO  [410087] [GPropertyLib::saveToCache@553] ]
+    2021-08-25 23:03:14.859 INFO  [410087] [GPropertyLib::saveRaw@953] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GScintillatorLib num_raw 1
+    2021-08-25 23:03:14.859 INFO  [410087] [GPropertyMap<T>::save@1084]  save shortname (+_ori?) [LS_ori] m_original_domain 90
+    2021-08-25 23:03:14.861 INFO  [410087] [GPropertyLib::saveRaw@959] ]
+    2021-08-25 23:03:14.861 INFO  [410087] [GPropertyLib::saveRawOriginal@966] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GScintillatorLib num_raw_original 1
+    2021-08-25 23:03:14.861 INFO  [410087] [GPropertyMap<T>::save@1084]  save shortname (+_ori?) [LS_ori] m_original_domain 1
+    2021-08-25 23:03:14.874 INFO  [410087] [GPropertyLib::saveRawOriginal@972] ]
+    2021-08-25 23:03:14.874 INFO  [410087] [GPropertyLib::saveToCache@531] [
+
+
+Fixed that, was only initializing in one of the three ctors::
+
+    2021-08-25 23:07:47.292 INFO  [418537] [GPropertyLib::saveToCache@553] ]
+    2021-08-25 23:07:47.292 INFO  [418537] [GPropertyLib::saveToCache@509]  dir /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GSurfaceLib name GSurfaceLibOptical.npy type GSurfaceLib
+    2021-08-25 23:07:47.292 INFO  [418537] [GPropertyLib::saveToCache@531] [
+    2021-08-25 23:07:47.293 INFO  [418537] [GPropertyLib::saveToCache@553] ]
+    2021-08-25 23:07:47.293 INFO  [418537] [GPropertyLib::saveRaw@953] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GScintillatorLib num_raw 1
+    2021-08-25 23:07:47.293 INFO  [418537] [GPropertyMap<T>::save@1085]  save shortname (+_ori?) [LS] m_original_domain 0
+    2021-08-25 23:07:47.293 INFO  [418537] [BFile::preparePath@836] created directory /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GScintillatorLib/LS
+    2021-08-25 23:07:47.299 INFO  [418537] [GPropertyLib::saveRaw@959] ]
+    2021-08-25 23:07:47.299 INFO  [418537] [GPropertyLib::saveRawOriginal@966] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GScintillatorLib num_raw_original 1
+    2021-08-25 23:07:47.299 INFO  [418537] [GPropertyMap<T>::save@1085]  save shortname (+_ori?) [LS_ori] m_original_domain 1
+    2021-08-25 23:07:47.301 INFO  [418537] [GPropertyLib::saveRawOriginal@972] ]
+    2021-08-25 23:07:47.301 INFO  [418537] [GPropertyLib::saveToCache@531] [
+    2021-08-25 23:07:47.302 INFO  [418537] [GPropertyLib::saveToCache@553] ]
+    2021-08-25 23:07:47.302 INFO  [418537] [GPropertyLib::saveToCache@509]  dir /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1/GBndLib name GBndLibIndex.npy type GBndLib
 
 
 

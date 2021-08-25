@@ -48,18 +48,17 @@ const char* GScintillatorLib::keyspec =
 
 void GScintillatorLib::Summary(const char* msg)
 {
-   LOG(info) << msg 
-             << " num_scintillators " << getNumRaw() 
-             ;
+    LOG(info) 
+        << msg 
+        << " GScintillatorLib.getNumRaw  " << getNumRaw() 
+        << " GScintillatorLib.getNumRawOriginal  " << getNumRawOriginal() 
+        ;
 }
 
 void GScintillatorLib::dump(const char* msg)
 {
-   LOG(info) << msg 
-             << " num_scintillators " << getNumRaw() 
-             ;
-
-   dumpRaw(msg); 
+    Summary(msg); 
+    dumpRaw(msg); 
 }
 
 void GScintillatorLib::save()

@@ -58,6 +58,13 @@ GPropertyLib
 ==============
 
 
+Summer 2021
+-------------
+
+Added "RawOriginals" : which are energy domain properties intended to perfectly 
+hold the information from Geant4. This is relevant mostly for scintillation.  
+
+
 Subclasses
 -----------
 
