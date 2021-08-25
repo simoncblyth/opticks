@@ -154,6 +154,7 @@ Invoked by CManager::initEvent, configures and prepares for recording.
 
 void CRecorder::initEvent(OpticksEvent* evt)
 {
+    LOG(LEVEL); 
     assert(evt);
     m_writer->initEvent(evt);
     m_crec->initEvent(evt);

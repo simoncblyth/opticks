@@ -23,6 +23,9 @@
 #include "CEventAction.hh"
 #include "PLOG.hh"
 
+const plog::Severity CEventAction::LEVEL = PLOG::EnvLevel("CEventAction", "DEBUG" ); 
+
+
 /**
 CEventAction
 =================
@@ -32,9 +35,9 @@ Canonical instance (m_ea) is ctor resident of CG4
 **/
 
 CEventAction::CEventAction(CManager* manager)
-   : 
-   G4UserEventAction(),
-   m_manager(manager)
+    : 
+    G4UserEventAction(),
+    m_manager(manager)
 { 
 }
 
@@ -44,11 +47,13 @@ CEventAction::~CEventAction()
 
 void CEventAction::BeginOfEventAction(const G4Event* event)
 {
+    LOG(LEVEL); 
     m_manager->BeginOfEventAction(event); 
 }
 
 void CEventAction::EndOfEventAction(const G4Event* event)
 {
+    LOG(LEVEL); 
     m_manager->EndOfEventAction(event); 
 }
 

@@ -209,6 +209,8 @@ CCtx::initEvent
 Collect the parameters of the OpticksEvent which 
 dictate what needs to be collected.
 
+Invoked by 
+
 **/
 
 void CCtx::initEvent(const OpticksEvent* evt)

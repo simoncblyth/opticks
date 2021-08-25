@@ -56,7 +56,7 @@
 
 #include "PLOG.hh"
 
-
+const plog::Severity CTorchSource::LEVEL = PLOG::EnvLevel("CTorchSource", "DEBUG") ; 
 
 void CTorchSource::setVerbosity(int verbosity) 
 {
@@ -279,20 +279,20 @@ void CTorchSource::configure()
 
 void CTorchSource::GeneratePrimaryVertex(G4Event *event) 
 {
-    if (m_verbosity > 1)
-        LOG(info) << " NumberOfParticlesToBeGenerated: "
-				  << m_num_photons
-                  << " verbosityLevel " << m_verbosity 
-                   ;
-
+    LOG(LEVEL)
+        << " NumberOfParticlesToBeGenerated: "
+		<< m_num_photons
+        ;
 
     //unsigned event_gencode = TORCH ;   
     unsigned event_gencode = OpticksGenstep_TORCH ; 
     event->SetUserInformation( new CEventInfo(event_gencode)) ;
 
+    unsigned photon_flag = OpticksGenstep::GenstepToPhotonFlag(event_gencode); 
+
    LOG(info)
         << " event_gencode " << event_gencode
-        << " : " << OpticksFlags::Flag(event_gencode)
+        << " : " << OpticksFlags::Flag(photon_flag)
         ; 
 
 

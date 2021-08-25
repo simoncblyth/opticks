@@ -41,6 +41,7 @@ CWriter
 =========
 
 Canonical m_writer instance is resident of CRecorder and is instanciated with it.
+Only CRecorder includes this header. 
 
 Writes G4StepPoint to buffer, ie writes step records, final photons and sequence(aka history) entries 
 collected from Geant4 into buffers in the "g4evt" OpticksEvent.

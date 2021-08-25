@@ -39,28 +39,28 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ;
 
-    Opticks ok(argc, argv);
+    Opticks ok(argc, argv, "--save");
 
     OpticksHub hub(&ok) ; 
-    LOG(warning) << " post hub " ; 
+    LOG(info) << " post hub " ; 
 
     OpticksRun* run = ok.getRun();
-    LOG(warning) << " post run " ; 
+    LOG(info) << " post run " ; 
     OpticksGen* gen = hub.getGen();
     
     CG4* g4 = new CG4(&hub) ; 
-    LOG(warning) << " post CG4 " ; 
+    LOG(info) << " post CG4 " ; 
 
     g4->interactive();
 
-    LOG(warning) << "  post CG4::interactive"  ;
+    LOG(info) << "  post CG4::interactive"  ;
 
     if(ok.isFabricatedGensteps())  // eg TORCH running
     { 
         NPY<float>* gs = gen->getInputGensteps() ;
         unsigned numPhotons = G4StepNPY::CountPhotons(gs); 
 
-        LOG(error) << " setting gensteps " << gs << " numPhotons " << numPhotons ; 
+        LOG(info) << " setting gensteps " << gs << " numPhotons " << numPhotons ; 
         char ctrl = '=' ; 
         ok.createEvent(gs, ctrl);
 

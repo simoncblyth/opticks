@@ -284,6 +284,13 @@ int CGenstepCollector::getReservation() const
 CGenstepCollector::addGenstep
 -------------------------------
 
+Invoked from::
+
+    CGenstepCollector::collectScintillationStep
+    CGenstepCollector::collectCerenkovStep
+    CGenstepCollector::collectMachineryStep
+    CGenstepCollector::collectTorchGenstep    ## SUSPECT NOT BEING CALLED, CAUSING CG4Test OKG4Test FAILs
+
 The automatic invokation of BeginOfGenstep from CGenstepCollector 
 is convenient for C+S gensteps but it is too early with input_photon 
 torch gensteps as the OpticksEvent is not yet created.  
@@ -310,7 +317,9 @@ CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
     m_photon_count += numPhotons ; 
 
     CManager* mgr = CManager::Get(); 
-    if(mgr && (gentype == 'C' || gentype == 'S'))
+    assert( mgr ); 
+
+    if(mgr && (gentype == 'C' || gentype == 'S' || gentype == 'T'))
     {
         mgr->BeginOfGenstep(genstep_index, gentype, numPhotons, photon_offset); 
     }

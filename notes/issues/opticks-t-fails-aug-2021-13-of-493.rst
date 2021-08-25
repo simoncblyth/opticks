@@ -22,7 +22,7 @@ Aug 25 11:39 13/493
 
 
 
-      8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  53.21       BAD FLAG  : FROM LACK OF INIT WITH TORCH GENSTEPS
+      8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  53.21     LACK OF INIT WITH TORCH GENSTEPS
       1  /1   Test #1  : OKG4Test.OKG4Test                             Subprocess aborted***Exception:  67.93       
 
         2021-08-25 19:40:24.060 INFO  [90759] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 6 : BAD_FLAG
@@ -155,13 +155,306 @@ CG4Test + OKG4Test : need to call the init with torch gensteps
 
 
 
-Huh why not inited?::
+Huh CEventAction should have called that::
 
      45 void CEventAction::BeginOfEventAction(const G4Event* event)
      46 {
      47     m_manager->BeginOfEventAction(event);
      48 }
 
+::
+
+    O[blyth@localhost cfg4]$ export CEventAction=INFO
+    O[blyth@localhost cfg4]$ export CManager=INFO
+    O[blyth@localhost cfg4]$ gdb CG4Test
+
+    2021-08-25 23:42:59.142 INFO  [22136] [CManager::BeginOfRunAction@110]  m_mode 3
+    2021-08-25 23:42:59.142 INFO  [22136] [CScint::Check@16]  pmanager 0x1d83b900 proc 0
+    2021-08-25 23:42:59.143 INFO  [22136] [CScint::Check@21] CProMgr n:[4] (0) name Transportation left -1 (1) name OpAbsorption left -1 (2) name OpRayleigh left -1 (3) name OpBoundary left -1
+    2021-08-25 23:42:59.143 INFO  [22136] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 6 : BAD_FLAG
+    2021-08-25 23:42:59.154 INFO  [22136] [CManager::BeginOfEventAction@130]  m_mode 3
+    2021-08-25 23:42:59.463 INFO  [22136] [CManager::BeginOfEventAction@142]  not calling presave, creating OpticksEvent 
+    CG4Test: /home/blyth/opticks/cfg4/CCtx.cc:104: unsigned int CCtx::step_limit() const: Assertion `_ok_event_init' failed.
+
+    Program received signal SIGABRT, Aborted.
+    0x00007fffe878e387 in raise () from /lib64/libc.so.6
+
+
+Hmm looks like the problem is lack of "--save" probably from a change of default::
+
+    128 void CManager::BeginOfEventAction(const G4Event* event)
+    129 {
+    130     LOG(LEVEL) << " m_mode " << m_mode ;
+    131     if(m_mode == 0 ) return ;
+    132 
+    133     m_ctx->setEvent(event);
+    134 
+    135     if(m_ok->isSave())
+    136     {
+    137         LOG(LEVEL) << " calling presave to create OpticksEvent " ;
+    138         presave();   // creates the OpticksEvent
+    139     }
+    140     else
+    141     {
+    142         LOG(LEVEL) << " not calling presave, creating OpticksEvent " ;
+    143     }
+    144 
+
+
+Gets further with "--save" but lots of "[CWriter::writeStepPoint@207]  SKIP  unexpected record_id 9999 m_ni 65"::
+
+    O[blyth@localhost cfg4]$ gdb --args CG4Test --save
+    ...
+    2021-08-25 23:48:06.118 INFO  [29968] [CManager::BeginOfRunAction@110]  m_mode 3
+    2021-08-25 23:48:06.119 INFO  [29968] [CScint::Check@16]  pmanager 0x1d83bc30 proc 0
+    2021-08-25 23:48:06.119 INFO  [29968] [CScint::Check@21] CProMgr n:[4] (0) name Transportation left -1 (1) name OpAbsorption left -1 (2) name OpRayleigh left -1 (3) name OpBoundary left -1
+    2021-08-25 23:48:06.119 INFO  [29968] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 6 : BAD_FLAG
+    2021-08-25 23:48:06.130 INFO  [29968] [CManager::BeginOfEventAction@130]  m_mode 3
+    2021-08-25 23:48:06.422 INFO  [29968] [CManager::BeginOfEventAction@137]  calling presave to create OpticksEvent 
+    2021-08-25 23:48:06.422 INFO  [29968] [CManager::presave@217]  mode 3
+    2021-08-25 23:48:06.422 INFO  [29968] [CManager::presave@223]  [--save] creating OpticksEvent   m_ctx->_event_id(tagoffset) 0 ctrl [-]
+    2021-08-25 23:48:06.423 INFO  [29968] [CManager::initEvent@248]  m_mode 3
+    2021-08-25 23:48:06.428 FATAL [29968] [CWriter::writeStepPoint@207]  SKIP  unexpected record_id 9999 m_ni 65
+    2021-08-25 23:48:06.429 FATAL [29968] [CWriter::writeStepPoint@207]  SKIP  unexpected record_id 9998 m_ni 65
+    2021-08-25 23:48:06.429 FATAL [29968] [CWriter::writeStepPoint@207]  SKIP  unexpected record_id 9997 m_ni 65
+    2021-08-25 23:48:06.429 FATAL [29968] [CWriter::writeStepPoint@207]  SKIP  unexpected record_id 9996 m_ni 65
+    ...
+    2021-08-25 23:48:16.041 FATAL [29968] [CWriter::writeStepPoint@207]  SKIP  unexpected record_id 67 m_ni 65
+    2021-08-25 23:48:16.041 FATAL [29968] [CWriter::writeStepPoint@207]  SKIP  unexpected record_id 66 m_ni 65
+    2021-08-25 23:48:16.041 FATAL [29968] [CWriter::writeStepPoint@207]  SKIP  unexpected record_id 65 m_ni 65
+    2021-08-25 23:48:16.041 FATAL [29968] [NPY<T>::setValue@2965]  i 64 m_ni 0
+    CG4Test: /home/blyth/opticks/npy/NPY.cpp:2966: void NPY<T>::setValue(int, int, int, int, T) [with T = double]: Assertion `in_range' failed.
+
+    Program received signal SIGABRT, Aborted.
+    0x00007fffe878e387 in raise () from /lib64/libc.so.6
+    Missing separate debuginfos, use: debuginfo-install bzip2-libs-1.0.6-13.el7.x86_64 cyrus-sasl-lib-2.1.26-23.el7.x86_64 expat-2.1.0-10.el7_3.x86_64 freetype-2.8-12.el7_6.1.x86_64 glibc-2.17-307.el7.1.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libICE-1.0.9-9.el7.x86_64 libSM-1.2.2-2.el7.x86_64 libX11-1.6.7-3.el7_9.x86_64 libXau-1.0.8-2.1.el7.x86_64 libXext-1.3.3-3.el7.x86_64 libcom_err-1.42.9-13.el7.x86_64 libcurl-7.29.0-59.el7_9.1.x86_64 libgcc-4.8.5-44.el7.x86_64 libidn-1.28-4.el7.x86_64 libpng-1.5.13-7.el7_2.x86_64 libselinux-2.5-14.1.el7.x86_64 libssh2-1.8.0-3.el7.x86_64 libstdc++-4.8.5-44.el7.x86_64 libuuid-2.23.2-59.el7_6.1.x86_64 libxcb-1.13-1.el7.x86_64 nspr-4.19.0-1.el7_5.x86_64 nss-3.36.0-7.1.el7_6.x86_64 nss-softokn-freebl-3.36.0-5.el7_5.x86_64 nss-util-3.36.0-1.1.el7_6.x86_64 openldap-2.4.44-23.el7_9.x86_64 openssl-libs-1.0.2k-21.el7_9.x86_64 pcre-8.32-17.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007fffe878e387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe878fa78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe87871a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe8787252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffef6f478e in NPY<double>::setValue (this=0x23356af0, i=64, j=0, k=0, l=0, value=0) at /home/blyth/opticks/npy/NPY.cpp:2966
+    #5  0x00007fffef6f504a in NPY<double>::setQuad_ (this=0x23356af0, vec=..., i=64, j=0, k=0) at /home/blyth/opticks/npy/NPY.cpp:3257
+    #6  0x00007ffff7b1c475 in CWriter::writeStepPoint_ (this=0x1d864e90, point=0xaadc350, photon=..., record_id=64) at /home/blyth/opticks/cfg4/CWriter.cc:301
+    #7  0x00007ffff7b1c010 in CWriter::writeStepPoint (this=0x1d864e90, point=0xaadc350, flag=4096, material=1, last=false) at /home/blyth/opticks/cfg4/CWriter.cc:231
+    #8  0x00007ffff7b13068 in CRecorder::WriteStepPoint (this=0x1d8650c0, point=0xaadc350, flag=4096, material=1, boundary_status=Undefined, last=false) at /home/blyth/opticks/cfg4/CRecorder.cc:755
+    #9  0x00007ffff7b1262d in CRecorder::postTrackWriteSteps (this=0x1d8650c0) at /home/blyth/opticks/cfg4/CRecorder.cc:645
+    #10 0x00007ffff7b109ef in CRecorder::postTrack (this=0x1d8650c0) at /home/blyth/opticks/cfg4/CRecorder.cc:213
+    #11 0x00007ffff7b3dcae in CManager::postTrack (this=0x1d835580) at /home/blyth/opticks/cfg4/CManager.cc:349
+    #12 0x00007ffff7b3dc1c in CManager::PostUserTrackingAction (this=0x1d835580, track=0x23522d60) at /home/blyth/opticks/cfg4/CManager.cc:317
+    #13 0x00007ffff7b366a2 in CTrackingAction::PostUserTrackingAction (this=0xab28dc0, track=0x23522d60) at /home/blyth/opticks/cfg4/CTrackingAction.cc:79
+    #14 0x00007ffff4940a1d in G4TrackingManager::ProcessOneTrack(G4Track*) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4tracking.so
+    #15 0x00007ffff4b76f61 in G4EventManager::DoProcessing(G4Event*) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4event.so
+    #16 0x00007ffff4e0ee87 in G4RunManager::ProcessOneEvent(int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #17 0x00007ffff4e080f3 in G4RunManager::DoEventLoop(int, char const*, int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #18 0x00007ffff4e07ebe in G4RunManager::BeamOn(int, char const*, int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #19 0x00007ffff7b3b299 in CG4::propagate (this=0xa934750) at /home/blyth/opticks/cfg4/CG4.cc:399
+    #20 0x0000000000404556 in main (argc=2, argv=0x7fffffff65a8) at /home/blyth/opticks/cfg4/tests/CG4Test.cc:76
+    (gdb) 
+
+
+The *CWriter* machinery is expecting to be informed at *BeginOfGenstep*, probably that only happening at BeginOfEvent::
+
+    143 /**
+    144 CWriter::BeginOfGenstep
+    145 -------------------------
+    146 
+    147 Invoked from CRecorder::BeginOfGenstep, expands the buffers to accomodate the photons of this genstep.
+    148 
+    149 **/
+    150 
+    151 void CWriter::BeginOfGenstep()
+    152 {   
+    153     unsigned genstep_num_photons =  m_ctx._genstep_num_photons ;
+    154     m_ni = expand(genstep_num_photons);
+    155     
+    156     LOG(LEVEL)
+    157         << " m_ctx._gentype [" <<  m_ctx._gentype << "]" 
+    158         << " m_ctx._genstep_index " << m_ctx._genstep_index
+    159         << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons
+    160         << " m_ni " << m_ni
+    161         ;
+    162 
+    163 
+    164 }
+
+
+CGenstepCollector::addGenstep needs to be called to prime the CWriter::
+
+    283 /**
+    284 CGenstepCollector::addGenstep
+    285 -------------------------------
+    286 
+    287 Invoked from::
+    288 
+    289     CGenstepCollector::collectScintillationStep
+    290     CGenstepCollector::collectCerenkovStep
+    291     CGenstepCollector::collectMachineryStep
+    292     CGenstepCollector::collectTorchGenstep    
+    293 
+    294 The automatic invokation of BeginOfGenstep from CGenstepCollector 
+    295 is convenient for C+S gensteps but it is too early with input_photon 
+    296 torch gensteps as the OpticksEvent is not yet created.  
+    297 Instead the BeginOfGenstep for input photons is special case called 
+    298 from CManager::BeginOfEventAction when input photons are detected 
+    299 in CCtx::setEvent 
+    300 
+    301 **/
+    302 
+    303 CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
+    304 {
+    305     unsigned genstep_index = getNumGensteps();
+    306     unsigned photon_offset = getNumPhotons();
+    307 
+    308     CGenstep gs(genstep_index, numPhotons, photon_offset, gentype) ;
+    309 
+    310     LOG(LEVEL) << " gs.desc " << gs.desc() ;
+    311 
+    312     m_gs.push_back(gs);
+    313     m_gs_photons.push_back(numPhotons);
+    314     m_gs_offset.push_back(photon_offset);
+    315     m_gs_type.push_back(gentype);
+    316 
+    317     m_photon_count += numPhotons ;
+    318 
+    319     CManager* mgr = CManager::Get();
+    320     if(mgr && (gentype == 'C' || gentype == 'S'))   
+
+    //// hmm : missed 'T' 
+
+    321     {
+    322         mgr->BeginOfGenstep(genstep_index, gentype, numPhotons, photon_offset);
+    323     }
+    324 
+    325     return gs  ;
+    326 }
+
+
+CG4Test.cc is adding 'T' gensteps::
+
+    051     CG4* g4 = new CG4(&hub) ;
+     52     LOG(warning) << " post CG4 " ;
+     53 
+     54     g4->interactive();
+     55 
+     56     LOG(warning) << "  post CG4::interactive"  ;
+     57 
+     58     if(ok.isFabricatedGensteps())  // eg TORCH running
+     59     {
+     60         NPY<float>* gs = gen->getInputGensteps() ;
+     61         unsigned numPhotons = G4StepNPY::CountPhotons(gs);
+     62 
+     63         LOG(error) << " setting gensteps " << gs << " numPhotons " << numPhotons ;
+     64         char ctrl = '=' ;
+     65         ok.createEvent(gs, ctrl);
+     66 
+     67         CGenstep cgs = g4->addGenstep(numPhotons, 'T' );
+     68         LOG(info) << " cgs " << cgs.desc() ;
+     69 
+     70     }
+
+    295 CGenstep CG4::addGenstep( unsigned num_photons, char gentype )
+    296 {
+    297     assert( m_collector );
+    298     return m_collector->addGenstep( num_photons, gentype );
+    299 }
+
+
+
+::
+
+    2021-08-26 02:07:28.525 INFO  [246640] [OpticksRun::createOKEvent@158]  tagoffset 0 skipaheadstep 0 skipahead 0
+    2021-08-26 02:07:28.526 FATAL [246640] [CWriter::expand@129]  Cannot expand as CWriter::initEvent has not been called, check CManager logging 
+
+
+    O[blyth@localhost cfg4]$ export CManager=INFO
+    O[blyth@localhost cfg4]$ gdb CG4Test 
+
+
+
+
+::
+
+    072 /**
+     73 CWriter::initEvent
+     74 -------------------
+     75 
+     76 Gets refs to the history, photons and records buffers from the event.
+     77 When dynamic the records target is single item dynamic_records otherwise
+     78 goes direct to the records_buffer.
+     79 
+     80 **/
+     81 
+     82 void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::initEvent
+     83 {
+     84     m_evt = evt ;
+     85     assert(m_evt && m_evt->isG4());
+     86 
+     87     m_evt->setDynamic(1) ;
+     88 
+     89     LOG(LEVEL)
+     90         << " _record_max " << m_ctx._record_max
+     91         << " _bounce_max  " << m_ctx._bounce_max
+     92         << " _steps_per_photon " << m_ctx._steps_per_photon
+     93         << " num_g4event " << m_evt->getNumG4Event()
+     94         ;
+     95 
+     96     m_history_buffer = m_evt->getSequenceData();  // ph : seqhis/seqmat
+     97     m_photons_buffer = m_evt->getPhotonData();    // ox : final photon
+     98     m_records_buffer = m_evt->getRecordData();    // rx :  step records
+     99     m_deluxe_buffer  = m_evt->getDeluxeData();    // dx :  step records
+    100 
+    101     LOG(LEVEL) << desc() ;
+    102 }
+
+    117 /**
+    118 CWriter::expand
+    119 ----------------
+    120 
+    121 Invoked by CWriter::BeginOfGenstep
+    122 
+    123 
+    124 **/
+    125 unsigned CWriter::expand(unsigned gs_photons)
+    126 {
+    127     if(!m_history_buffer)
+    128     {
+    129         LOG(fatal) << " Cannot expand as CWriter::initEvent has not been called, check CManager logging " ;
+    130         return 0 ;
+    131     }
+    132     assert( m_history_buffer );
+    133     unsigned ni, ni1, ni2, ni3 ;
+    134     ni = m_history_buffer->expand(gs_photons);
+    135     ni1 = m_photons_buffer->expand(gs_photons);
+    136     ni2 = m_records_buffer->expand(gs_photons);
+    137     ni3 = m_deluxe_buffer->expand(gs_photons);
+    138     assert( ni1 == ni && ni2 == ni && ni3 == ni );
+    139     return ni ;
+    140 }
+    141 
+
+
+    338 /**
+    339 CG4::initEvent
+    340 ----------------
+    341 
+    342 Invoked by CG4::propagate with the G4 OpticksEvent 
+    343 
+    344 **/
+    345 
+    346 void CG4::initEvent(OpticksEvent* evt)
+    347 {
+    348     LOG(LEVEL) << "[" ;
+    349     m_generator->configureEvent(evt);
+    350 
+    351     // this should happen from CEventAction::BeginOfEventAction
+    352     //m_manager->initEvent(evt); 
+    353 
+    354     LOG(LEVEL) << "]" ;
+    355 }
+
+
+Need to follow the pattern of G4OpticksRecorder and its CManager instance with CG4 playmng same role as G4OpticksRecorder.
 
 
 

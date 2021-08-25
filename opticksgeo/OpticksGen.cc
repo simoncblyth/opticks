@@ -50,7 +50,16 @@
 const plog::Severity OpticksGen::LEVEL = PLOG::EnvLevel("OpticksGen", "DEBUG") ; 
 
 
-NPY<float>* OpticksGen::getInputGensteps() const { return m_direct_gensteps ? m_direct_gensteps : m_legacy_gensteps ; }
+NPY<float>* OpticksGen::getInputGensteps() const 
+{ 
+    NPY<float>* input_gensteps = m_direct_gensteps ? m_direct_gensteps : m_legacy_gensteps ; 
+    LOG(LEVEL)
+        << " m_direct_gensteps " << m_direct_gensteps
+        << " m_legacy_gensteps " << m_legacy_gensteps
+        << " input_gensteps " << input_gensteps
+        ;
+    return input_gensteps ; 
+}
 NPY<float>* OpticksGen::getInputPhotons() const {   return m_input_photons ; }
 
 

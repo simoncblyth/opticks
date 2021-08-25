@@ -27,6 +27,7 @@
 #include <string>
 #include "G4UserEventAction.hh"
 #include "globals.hh"
+#include "plog/Severity.h"
 
 class G4Event ; 
 struct CManager ; 
@@ -36,6 +37,7 @@ struct CManager ;
 
 class CFG4_API CEventAction : public G4UserEventAction
 {
+    static const plog::Severity LEVEL ; 
   public:
     virtual ~CEventAction();
     CEventAction(CManager* manager);

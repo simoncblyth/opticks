@@ -20,6 +20,8 @@
 #pragma once
 
 #include <string>
+#include "plog/Severity.h"
+
 template <typename T> class NPY ; 
 struct NStep ; 
 class TorchStepNPY ; 
@@ -45,6 +47,7 @@ and is instanciated by CGenerator::initSource
 
 class CFG4_API CTorchSource: public CSource
 {
+        static const plog::Severity LEVEL ; 
     public:
         CTorchSource(Opticks* ok, TorchStepNPY* torch, unsigned int verbosity);
     private:

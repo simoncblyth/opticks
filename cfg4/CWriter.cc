@@ -77,6 +77,8 @@ Gets refs to the history, photons and records buffers from the event.
 When dynamic the records target is single item dynamic_records otherwise
 goes direct to the records_buffer.
 
+Invoked by CRecorder::initEvent
+
 **/
 
 void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::initEvent
