@@ -241,9 +241,8 @@ This gets invoked from CGDMLDetector::addMPTLegacyGDML
 bringing together the geometry from ancient GDML 
 with the material properties from ancient G4DAE.
 
-Materials with name "Bialkali" are termed sensor materials
-and when present a sensor surface is required to be 
-in the surface lib.
+GMaterial which are identified as scintillators by having non-zero "reemission_probability" 
+have extra properties added via CPropLib::addScintillatorMaterialProperties
 
 **/
 
@@ -252,24 +251,26 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     const char* name = ggmat->getShortName();
     GMaterial* _ggmat = const_cast<GMaterial*>(ggmat) ; // not changed 
 
-    bool is_sensor_material = strcmp(name, SENSOR_MATERIAL) == 0 ;
+
+    //bool is_sensor_material = strcmp(name, SENSOR_MATERIAL) == 0 ; // HUH: still checking for Bialkaki : shows this code very old
     bool is_scintillator = _ggmat->hasNonZeroProperty("reemission_prob") ;
 
     LOG(LEVEL) 
          << " name " << name
-         << " " << ( is_sensor_material ? "is_sensor_material" : "" ) 
+     //    << " " << ( is_sensor_material ? "is_sensor_material" : "" ) 
          << " " << ( is_scintillator ? "is_scintillator" : "" ) 
          ; 
         
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB,GROUPVEL");
 
+/*
     bool legacy = Opticks::IsLegacyGeometryEnabled() ; 
     if(is_sensor_material && legacy)
     {
         addSensorMaterialProperties(mpt, name ) ; 
     }
-
+*/
 
     if(is_scintillator)
     {
@@ -351,6 +352,12 @@ CPropLib::addScintillatorMaterialProperties
 void CPropLib::addScintillatorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name )
 {
     GPropertyMap<double>* scintillator = m_sclib->getRaw(name);
+
+    if( scintillator == nullptr )
+    {
+        LOG(fatal) << " FAILED to find material in m_sclib (GScintillatorLib) with name " << name ; 
+        m_sclib->dump("CPropLib::addScintillatorMaterialProperties");  
+    }
     assert(scintillator && "non-zero reemission prob materials should has an associated raw scintillator");
     LOG(LEVEL) 
         << " found corresponding scintillator from sclib " 

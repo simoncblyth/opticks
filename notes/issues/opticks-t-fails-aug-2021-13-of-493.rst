@@ -5,24 +5,37 @@ opticks-t-fails-aug-2021-13-of-493
 ::
 
     SLOW: tests taking longer that 15 seconds
-      31 /31  Test #31 : ExtG4Test.X4SurfaceTest                       Passed                         45.15  
+      31 /31  Test #31 : ExtG4Test.X4SurfaceTest                       Passed                         45.15        REDUCED TEST SIZE
       8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  53.21  
       1  /1   Test #1  : OKG4Test.OKG4Test                             Subprocess aborted***Exception:  67.93  
 
 
     FAILS:  13  / 493   :  Wed Aug 25 18:39:55 2021   
-      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      4.97   
-      18 /31  Test #18 : ExtG4Test.X4CSGTest                           ***Exception: SegFault         0.13   
+      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      4.97     FINDING PYTHON WITH NUMPY 
+
+      18 /31  Test #18 : ExtG4Test.X4CSGTest                           ***Exception: SegFault         0.13     FIXED WITH local_tempStr
       20 /31  Test #20 : ExtG4Test.X4GDMLParserTest                    ***Exception: SegFault         0.14   
       21 /31  Test #21 : ExtG4Test.X4GDMLBalanceTest                   ***Exception: SegFault         0.15   
+
+
+      8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  53.21       BAD FLAG 
+
+        2021-08-25 19:40:24.060 INFO  [90759] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 6 : BAD_FLAG
+        CG4Test: /home/blyth/opticks/cfg4/CCtx.cc:104: unsigned int CCtx::step_limit() const: Assertion `_ok_event_init' failed.
+
+
+      32 /46  Test #32 : CFG4Test.CTreeJUNOTest                        ***Exception: SegFault         0.22   
+
       1  /46  Test #1  : CFG4Test.CMaterialLibTest                     Subprocess aborted***Exception:   2.40   
       2  /46  Test #2  : CFG4Test.CMaterialTest                        Subprocess aborted***Exception:   2.38   
-      8  /46  Test #8  : CFG4Test.CG4Test                              Subprocess aborted***Exception:  53.21  
       30 /46  Test #30 : CFG4Test.CGROUPVELTest                        Subprocess aborted***Exception:   2.44   
-      32 /46  Test #32 : CFG4Test.CTreeJUNOTest                        ***Exception: SegFault         0.22   
       38 /46  Test #38 : CFG4Test.CCerenkovGeneratorTest               Subprocess aborted***Exception:   2.38   
       39 /46  Test #39 : CFG4Test.CGenstepSourceTest                   Subprocess aborted***Exception:   2.35   
+
+
+
       1  /1   Test #1  : OKG4Test.OKG4Test                             Subprocess aborted***Exception:  67.93  
+
       2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.87   
     O[blyth@localhost opticks]$ 
 
@@ -37,9 +50,67 @@ Quick Look at causes
 1. interpolationTest : python without numpy issue, SSys::RunPythonScript needs envvar to steer to correct python
 
 
+CFG4 : CG4Test 
+------------------
 
-X4 GDML tempStr fails
-------------------------
+
+::
+
+    39/46 Test #39: CFG4Test.CGenstepSourceTest ...............Subprocess aborted***Exception:   2.32 sec
+    2021-08-25 19:40:43.807 INFO  [93237] [OpticksHub::loadGeometry@283] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1
+    2021-08-25 19:40:45.212 INFO  [93237] [OpticksHub::loadGeometry@315] ]
+    2021-08-25 19:40:45.212 INFO  [93237] [Opticks::makeSimpleTorchStep@4218] [ts.setFrameTransform
+    CGenstepSourceTest: /home/blyth/opticks/cfg4/CPropLib.cc:354: void CPropLib::addScintillatorMaterialProperties(G4MaterialPropertiesTable*, const char*): Assertion `scintillator && "non-zero reemission prob materials should has an associated raw scintillator"' failed.
+
+    O[blyth@localhost opticks]$ gdb CMaterialTest 
+    (gdb) r
+    Starting program: /data/blyth/junotop/ExternalLibs/opticks/head/lib/CMaterialTest 
+    [Thread debugging using libthread_db enabled]
+    Using host libthread_db library "/lib64/libthread_db.so.1".
+    2021-08-25 19:45:43.569 INFO  [101555] [main@74] /data/blyth/junotop/ExternalLibs/opticks/head/lib/CMaterialTest
+    2021-08-25 19:45:43.579 INFO  [101555] [OpticksHub::loadGeometry@283] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1
+    2021-08-25 19:45:45.002 INFO  [101555] [OpticksHub::loadGeometry@315] ]
+    2021-08-25 19:45:45.003 INFO  [101555] [Opticks::makeSimpleTorchStep@4218] [ts.setFrameTransform
+    2021-08-25 19:45:45.003 INFO  [101555] [main@82] /data/blyth/junotop/ExternalLibs/opticks/head/lib/CMaterialTest convert 
+    CMaterialTest: /home/blyth/opticks/cfg4/CPropLib.cc:354: void CPropLib::addScintillatorMaterialProperties(G4MaterialPropertiesTable*, const char*): Assertion `scintillator && "non-zero reemission prob materials should has an associated raw scintillator"' failed.
+
+    (gdb) bt
+    #3  0x00007fffe8788252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7ad0e56 in CPropLib::addScintillatorMaterialProperties (this=0xa8facc0, mpt=0xa925420, name=0x712bd0 "LS") at /home/blyth/opticks/cfg4/CPropLib.cc:354
+    #5  0x00007ffff7ad09bd in CPropLib::makeMaterialPropertiesTable (this=0xa8facc0, ggmat=0x712ad0) at /home/blyth/opticks/cfg4/CPropLib.cc:276
+    #6  0x00007ffff7ae2563 in CMaterialLib::convertMaterial (this=0xa8facc0, kmat=0x712ad0) at /home/blyth/opticks/cfg4/CMaterialLib.cc:261
+    #7  0x00007ffff7ae18bb in CMaterialLib::convert (this=0xa8facc0) at /home/blyth/opticks/cfg4/CMaterialLib.cc:154
+    #8  0x0000000000403eaf in main (argc=1, argv=0x7fffffffa188) at /home/blyth/opticks/cfg4/tests/CMaterialTest.cc:84
+    (gdb) 
+
+
+::
+
+    351 void CPropLib::addScintillatorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name )
+    352 {
+    353     GPropertyMap<double>* scintillator = m_sclib->getRaw(name);
+    354     assert(scintillator && "non-zero reemission prob materials should has an associated raw scintillator");
+    355     LOG(LEVEL)
+    356         << " found corresponding scintillator from sclib "
+    357         << " name " << name
+    358         << " keys " << scintillator->getKeysString()
+    359         ;
+    360 
+    361     bool keylocal = false ;
+    362     bool constant = false ;
+    363     addProperties(mpt, scintillator, "SLOWCOMPONENT,FASTCOMPONENT", keylocal, constant);
+    364     addProperties(mpt, scintillator, "SCINTILLATIONYIELD,RESOLUTIONSCALE,YIELDRATIO,FASTTIMECONSTANT,SLOWTIMECONSTANT", keylocal, constant ); // this used constant=true formerly
+    365 
+    366     // NB the above skips prefixed versions of the constants: Alpha, 
+    367     //addProperties(mpt, scintillator, "ALL",          keylocal=false, constant=true );
+    368 }
+
+
+
+
+
+X4 GDML tempStr fails : fixed by decoupling from Geant4 so dont have to vary by Geant4 version
+-----------------------------------------------------------------------------------------------------
 
 
 ::
@@ -190,5 +261,25 @@ New way::
 
 
 * https://github.com/Geant4/geant4/blob/master/source/persistency/gdml/include/G4GDMLWrite.hh
+
+
+
+::
+
+    epsilon:opticks blyth$ git add . 
+    epsilon:opticks blyth$ git commit -m "try to avoid needing to change X4GDMLWriteStructure with Geant4 version by using XMLCh local_tempStr[10000] " 
+    [master 29a47cb7d] try to avoid needing to change X4GDMLWriteStructure with Geant4 version by using XMLCh local_tempStr[10000]
+     3 files changed, 207 insertions(+), 7 deletions(-)
+     create mode 100644 notes/issues/opticks-t-fails-aug-2021-13-of-493.rst
+    epsilon:opticks blyth$ git push 
+    Counting objects: 8, done.
+    Delta compression using up to 8 threads.
+    Compressing objects: 100% (8/8), done.
+    Writing objects: 100% (8/8), 3.00 KiB | 3.00 MiB/s, done.
+    Total 8 (delta 6), reused 0 (delta 0)
+    To bitbucket.org:simoncblyth/opticks.git
+       31a2c9e75..29a47cb7d  master -> master
+    epsilon:opticks blyth$ 
+
 
 

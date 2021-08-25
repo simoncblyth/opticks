@@ -143,20 +143,19 @@ void CMaterialLib::convert()
 
     unsigned int ngg = getNumMaterials() ;
     LOG(LEVEL) << "[ ngg " << ngg  ; 
+    for(unsigned i=0 ; i < ngg ; i++)
+    {
+        const GMaterial* ggmat = getMaterial(i);
+        const char* name = ggmat->getShortName() ;
+        LOG(LEVEL) << std::setw(3) << i << " : " << name ; 
+    }
 
     for(unsigned int i=0 ; i < ngg ; i++)
     {
         const GMaterial* ggmat = getMaterial(i);
         const char* name = ggmat->getShortName() ;
 
-        //if(strcmp(name, "Bialkali") == 0) continue ; 
-
         const G4Material* g4mat = convertMaterial(ggmat);
-
-        // special cased GROUPVEL getter invokes setGROUPVEL which adds the property to the MPT 
-        // derived from RINDEX id the GROUPVEL property is not already present
-        //G4MaterialPropertyVector* groupvel = g4mat->GetMaterialPropertiesTable()->GetProperty("GROUPVEL") ;
-        //assert(groupvel);
 
         G4MaterialPropertyVector* rindex = g4mat->GetMaterialPropertiesTable()->GetProperty("RINDEX") ;
         assert(rindex);
@@ -237,11 +236,11 @@ const G4Material* CMaterialLib::convertMaterial(const GMaterial* kmat)
 
     G4String sname = name ; 
 
-    LOG(debug) << "CMaterialLib::convertMaterial  " 
-              << " name " << name
-              << " sname " << sname
-              << " materialIndex " << materialIndex
-              ;
+    LOG(LEVEL)
+        << " name " << name
+        << " sname " << sname
+        << " materialIndex " << materialIndex
+        ;
 
     G4Material* material(NULL);
     if(strcmp(name,"MainH2OHale")==0)
