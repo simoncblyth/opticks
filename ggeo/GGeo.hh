@@ -44,6 +44,7 @@ class OpticksColors ;
 class OpticksFlags ; 
 class OpticksResource ; 
 class OpticksAttrSeq ; 
+class OpticksGenstep ; 
 class Composition ; 
 
 // ggeo-
@@ -78,7 +79,7 @@ class GItemList ;
 class GMergedMesh ;
 
 struct GGeoDump ; 
-
+class  GGeoGen ; 
 
 #include "SGeo.hh"
 #include "GGeoBase.hh"
@@ -188,10 +189,13 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void prepareOpticks(); 
         void deferred(); 
         void deferredCreateGParts(); 
-        void deferredCreateGGeoDump();
+        void deferredCreateGGeo();
     public:
         GParts* getCompositeParts(unsigned index) const ;
         void dumpParts(const char* msg, int repeatIdx, int primIdx, int partIdxRel) const ;
+    public:
+        // via GGeoGen m_gen 
+        const OpticksGenstep* createDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID) const ; 
     public:
         // via m_bndlib
         unsigned int getMaterialLine(const char* shortname);
@@ -445,6 +449,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
     private:
         bool                               m_save_mismatch_placements ;
         GGeoDump*                          m_dump ; 
+        GGeoGen*                           m_gen ; 
         int                                m_placeholder_last ; 
 
 };

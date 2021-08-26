@@ -121,13 +121,15 @@ class CFG4_API CG4
         void cleanup();
         bool isDynamic(); // true for G4GUN without gensteps ahead of time, false for TORCH with gensteps ahead of time
    public:
-        NPY<float>* propagate();
+        void propagate();
    private:
         void postinitialize();
         void postinitializeMaterialLookup(); 
         void postpropagate();
    public:
-        CGenstep addGenstep( unsigned num_photons, char gentype );
+        //CGenstep addGenstep( unsigned num_photons, char gentype );
+        CGenstep collectDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID ); 
+
         int getPrintIndex() const ;
         void addRandomNote(const char* note, int value=-1); 
         void addRandomCut( const char* ckey, double cvalue); 
@@ -194,7 +196,7 @@ class CFG4_API CG4
         CGenerator*           m_generator ; 
         CManager*             m_manager ; 
    private:
-        CGenstepCollector*           m_collector ; 
+        CGenstepCollector*    m_genstep_collector ; 
         CPrimaryCollector*    m_primary_collector ; 
    private:
         G4VisManager*         m_visManager ; 

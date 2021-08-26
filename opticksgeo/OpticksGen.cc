@@ -521,4 +521,26 @@ NPY<float>* OpticksGen::loadLegacyGenstepFile(const char* label)
     return gs ; 
 }
 
+/**
+OpticksGen::collectDefaultTorchStep
+-------------------------------------
+
+Wanted to use G4Opticks::collectDefaultTorchStep from CG4Test OKG4Test but the 
+dependency order prevents that.  
+
+So where to move the implemmentation down here to OpticksGen.
+
+Seeking a home with m_genstep_collector and m_ggeo 
+
+
+
+
+void OpticksGen::collectDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID )
+{
+
+
+}
+
+**/
+
 

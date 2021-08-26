@@ -69,6 +69,7 @@ set(SOURCES
     GVolumeList.cc
     GGeoLib.cc
     GGeoCfg.cc
+    GGeoGen.cc
     GSolidRec.cc
 
     GGeoTest.cc
@@ -122,6 +123,7 @@ set(HEADERS
     GGeoBase.hh
     GGeo.hh
     GGeoCfg.hh
+    GGeoGen.hh
     GSolidRec.hh
 
     GMaterial.hh

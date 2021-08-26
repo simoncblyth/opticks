@@ -355,6 +355,16 @@ void G4OKTest::collectInputPhotons(int eventID, const char* path)
     m_g4ok->setInputPhotons(path); 
 }
 
+
+/**
+G4OKTest::collectGensteps
+--------------------------
+
+Invokes G4Opticks::collectDefaultTorchStep which uses 
+the genstep creation and collection machinery. 
+
+**/
+
 void G4OKTest::collectGensteps(int eventID)
 {
     unsigned num_genstep_photons = getNumGenstepPhotons(eventID); 
@@ -373,7 +383,8 @@ void G4OKTest::propagate(int eventID)
 {
     LOG(LEVEL) << "[" ; 
     int num_hit = m_g4ok->propagateOpticalPhotons(eventID);
-    unsigned num_genstep_photons = getNumGenstepPhotons(eventID); 
+    unsigned num_genstep_photons = getNumGenstepPhotons(eventID);  
+    // looking at the input is cheating, the genstep collection machinery should be able to return this
 
     LOG(error) 
         << " eventID " << eventID

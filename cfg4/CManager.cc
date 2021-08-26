@@ -1,4 +1,4 @@
-
+#include <csignal>
 #include "G4TransportationManager.hh"
 
 
@@ -30,25 +30,10 @@ CManager* CManager::fINSTANCE = nullptr ;
 CManager* CManager::Get(){  return fINSTANCE ; } 
 
 
-CRecorder* CManager::getRecorder() const 
-{ 
-    return m_recorder ; 
-}
-CStepRec*  CManager::getStepRec() const 
-{
-    return m_noprec ; 
-}
-
-
-
-CRandomEngine* CManager::getRandomEngine() const 
-{ 
-    return m_engine ; 
-}
-CCtx& CManager::getCtx()
-{
-    return *m_ctx ; 
-}
+CRecorder* CManager::getRecorder() const {  return m_recorder ; }
+CStepRec*  CManager::getStepRec() const  {  return m_noprec ;  }
+CRandomEngine* CManager::getRandomEngine() const { return m_engine ; }
+CCtx& CManager::getCtx(){ return *m_ctx ;  }
 
 double CManager::flat_instrumented(const char* file, int line)
 {
@@ -71,8 +56,6 @@ CManager::CManager
    * do not create OpticksEvent 
    * make no changes to the propagation 
    * do no recording
-
-
 
 **/
 
@@ -107,6 +90,7 @@ void CManager::setMaterialBridge(const CMaterialBridge* material_bridge)
 
 void CManager::BeginOfRunAction(const G4Run*)
 {
+    std::raise(SIGINT);     
     LOG(LEVEL) << " m_mode " << m_mode ;
     CScint::Check(); 
 }
@@ -123,10 +107,13 @@ CManager::BeginOfEventAction
 Hmm note that with dynamic running do not have gensteps ahead of time with which 
 to create the pre-sized OpticksEvent.
 
+When "--save" is enabled this creates OpticksEvent to prepare for saving in *presave* 
+
 **/
 
 void CManager::BeginOfEventAction(const G4Event* event)
 {
+    std::raise(SIGINT);     
     LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 

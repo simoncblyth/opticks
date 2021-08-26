@@ -243,8 +243,3 @@ void CGDMLDetector::standardizeGeant4MaterialProperties()
 
 
 
-
-
-
-
- 

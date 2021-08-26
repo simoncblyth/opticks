@@ -32,6 +32,15 @@
 
 #include "OPTICKS_LOG.hh"
 
+/**
+CG4Test
+========
+
+Excercises Opticks instrumentation without GPU propagation.
+
+
+**/
+
 
 int main(int argc, char** argv)
 {
@@ -46,7 +55,7 @@ int main(int argc, char** argv)
 
     OpticksRun* run = ok.getRun();
     LOG(info) << " post run " ; 
-    OpticksGen* gen = hub.getGen();
+    //OpticksGen* gen = hub.getGen();
     
     CG4* g4 = new CG4(&hub) ; 
     LOG(info) << " post CG4 " ; 
@@ -55,23 +64,29 @@ int main(int argc, char** argv)
 
     LOG(info) << "  post CG4::interactive"  ;
 
+
     if(ok.isFabricatedGensteps())  // eg TORCH running
     { 
-        NPY<float>* gs = gen->getInputGensteps() ;
-        unsigned numPhotons = G4StepNPY::CountPhotons(gs); 
+        //NPY<float>* gs = gen->getInputGensteps() ;
+        //unsigned numPhotons = G4StepNPY::CountPhotons(gs); 
+        //LOG(info) << " setting gensteps " << gs << " numPhotons " << numPhotons ; 
+        //char ctrl = '=' ; 
+        //ok.createEvent(gs, ctrl);
+        // ??????  CManager::BeginOfEventAction/CManager::presave creates event 
+        //CGenstep cgs = g4->addGenstep(numPhotons, 'T' ); 
+        // need to collect the genstep, not just bookkeep it
 
-        LOG(info) << " setting gensteps " << gs << " numPhotons " << numPhotons ; 
-        char ctrl = '=' ; 
-        ok.createEvent(gs, ctrl);
-
-        CGenstep cgs = g4->addGenstep(numPhotons, 'T' ); 
+        unsigned num_photons = 100 ; 
+        int node_index = -1 ; 
+        unsigned originTrackID = 101 ;  
+        CGenstep cgs = g4->collectDefaultTorchStep(num_photons, node_index, originTrackID );
         LOG(info) << " cgs " << cgs.desc() ; 
-
     }
     else
     {
         LOG(error) << " not setting gensteps " ; 
     }
+
 
     g4->propagate();
 

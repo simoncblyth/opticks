@@ -1694,50 +1694,23 @@ G4Opticks::collectDefaultTorchStep
 
 Used from G4OKTest for debugging only.
 
+Would like to use from CG4Test OKG4Test so need 
+to split/move this to lower level.
+
+Split off helper method to create the default TORCH OpticksGenstep
+OpticksGen is the natural place for that : but that seems 
+to be in decline : not used from G4Opticks world. So adding 
+in 
+
+Needs m_ggeo and m_genstep_collector (CGenstepCollector)
+but using frame_transform argument would allow to not need
+m_ggeo so could move this to within CGenstepCollector
+
 **/
 
 CGenstep G4Opticks::collectDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID )
 {
-    unsigned gentype = OpticksGenstep_TORCH  ; 
-    unsigned num_step = 1 ; 
-
-    const char* config = NULL ;   
-    // encompasses a default number of photons, distribution, polarization
-
-    assert( OpticksGenstep::IsTorchLike(gentype) ); 
-
-    LOG(LEVEL) << " gentype " << gentype ; 
-
-    TorchStepNPY* ts = new TorchStepNPY(gentype, config);
-    ts->setOriginTrackID(originTrackID); 
-
-    if(node_index == -1)
-    {
-        node_index = m_ggeo->getFirstNodeIndexForGDMLAuxTargetLVName()  ;
-    }
-
-    if(node_index == -1)
-    {
-        LOG(error) << " failed to find target node_index " << node_index << " (reset to zero) " ;  
-        node_index = 0 ; 
-    }
-
-
-    glm::mat4 frame_transform = m_ggeo->getTransform( node_index ); 
-    ts->setFrameTransform(frame_transform);
- 
-
-    for(unsigned i=0 ; i < num_step ; i++) 
-    {
-        if(num_photons > 0) ts->setNumPhotons(num_photons);  // otherwise use default
-        ts->addStep(); 
-    }
-
-    NPY<float>* arr = ts->getNPY(); 
-
-    //arr->save("$TMP/debugging/collectDefaultTorchStep/gs.npy");  
-
-    const OpticksGenstep* ogs = new OpticksGenstep(arr); 
+    const OpticksGenstep* ogs = m_ggeo->createDefaultTorchStep(num_photons, node_index, originTrackID); 
     assert( m_genstep_collector ); 
     CGenstep gs = m_genstep_collector->collectTorchGenstep(ogs);  
     return gs ; 

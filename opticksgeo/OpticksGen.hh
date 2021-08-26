@@ -54,6 +54,8 @@ m_gen pointers are available in the principal users
 * ok/OKMgr 
 * okg4/OKG4Mgr
 
+Hmm seems not used in G4Opticks world, so its in decline ?
+
 **/
 
 

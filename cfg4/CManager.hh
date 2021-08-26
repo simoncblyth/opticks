@@ -26,12 +26,24 @@ struct CCtx ;
 CManager  (maybe CRouter is better name) 
 =============================================
 
+Rationale
+------------
+
 Middle management operating beneath CG4 and G4OpticksRecorder levels 
 such that it can be used by both those.
 
 So for example the manager will be what the geant4 actions talk to, 
 rather than CG4 which is too high level for reusabliity. 
 
+Responsibilities
+-----------------
+
+1. steering via hooking into Geant4 workflow methods 
+2. 
+
+
+Step handling
+---------------
 
 CManager accepts steps from Geant4, routing them to either:
 

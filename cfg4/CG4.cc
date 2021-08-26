@@ -41,6 +41,7 @@
 
 //ggeo-
 #include "GBndLib.hh"
+#include "GGeo.hh"
 
 #include "CFG4_PUSH.hh"
 //g4-
@@ -116,7 +117,7 @@ CSensitiveDetector* CG4::getSensitiveDetector() const { return m_sd ;    }
 CSteppingAction*   CG4::getSteppingAction() const { return m_sa ;    } 
 
 double             CG4::getCtxRecordFraction() const { return getCtx()._record_fraction ; }
-NPY<float>*        CG4::getGensteps() const { return m_collector->getGensteps(); } 
+NPY<float>*        CG4::getGensteps() const { return m_genstep_collector->getGensteps(); } 
 
 const std::map<std::string, unsigned>& CG4::getMaterialMap() const 
 {
@@ -169,7 +170,7 @@ CG4::CG4(OpticksHub* hub)
     m_detector(m_geometry->getDetector()),
     m_generator(new CGenerator(m_hub->getGen(), this)),
     m_manager(new CManager(m_ok)),
-    m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
+    m_genstep_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
     m_primary_collector(new CPrimaryCollector),
     m_visManager(NULL),
     m_uiManager(NULL),
@@ -289,14 +290,38 @@ void CG4::postinitializeMaterialLookup()
     NLookup* lookup = m_hub->getLookup();
     lookup->close() ;  // hmm what about B (from GBndLiB)  
 
-    m_collector = new CGenstepCollector(lookup) ; 
+    m_genstep_collector = new CGenstepCollector(lookup) ; 
 }
+
+/**
+CG4::addGenstep
+
+   Need to use : CGenstep CGenstepCollector::collectTorchGenstep(const OpticksGenstep* gs)
+
 
 CGenstep CG4::addGenstep( unsigned num_photons, char gentype )
 {
-    assert( m_collector ); 
-    return m_collector->addGenstep( num_photons, gentype );  
+    assert( m_genstep_collector ); 
+    return m_genstep_collector->addGenstep( num_photons, gentype );  
 }
+**/
+
+
+
+CGenstep CG4::collectDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID )
+{
+    const GGeo* ggeo = m_hub->getGGeo(); 
+    assert( ggeo ); 
+    const OpticksGenstep* ogs = ggeo->createDefaultTorchStep(num_photons, node_index, originTrackID); 
+    assert( m_genstep_collector ); 
+    CGenstep gs = m_genstep_collector->collectTorchGenstep(ogs);
+    return gs ;
+}
+
+
+
+
+
 
 
 void CG4::execute(const char* path)
@@ -360,20 +385,33 @@ void CG4::initEvent(OpticksEvent* evt)
 CG4::propagate
 -----------------
 
-Note that this is assuming more Geant4 events than Opticks ones
+This was formerly used with large opticks event with many millions of photons 
+that were split up into many geant4 events as the Geant4 cannot handle so many primaries.
 
 **/
 
-NPY<float>* CG4::propagate()
+void CG4::propagate()
 {
+
+
     LOG(LEVEL) << "[" ;
+
+/*
+    THIS STUFF AND SHOULD HAPPEN VIA CManager::BeginOfEvent
+    ITS TOO SOON HERE 
+
     OpticksEvent* evt = m_run->getG4Event();
     LOG(LEVEL) << evt->brief() <<  " " << evt->getShapeString() ;
 
     bool isg4evt = evt && evt->isG4() ;  
 
-    if(!isg4evt)
-        LOG(fatal) << "CG4::propagate expecting G4 Opticks Evt " ; 
+    if(!isg4evt) LOG(fatal)
+        << "expecting G4 Opticks Evt " 
+        << " evt " << evt
+        << " evt.isG4 " << ( evt ? evt->isG4() : false )
+        << " evt.brief " << ( evt ? evt->brief() : "-" )
+        << " evt.getShapeString " << ( evt ? evt->getShapeString() : "-" )
+        ; 
 
     assert(isg4evt);
 
@@ -391,23 +429,21 @@ NPY<float>* CG4::propagate()
     initEvent(evt);
 
     unsigned int numG4Evt = evt->getNumG4Event();
-
-
     LOG(info) << " calling BeamOn numG4Evt " << numG4Evt ; 
+
     OK_PROFILE("_CG4::propagate");
 
-    m_runManager->BeamOn(numG4Evt);
+*/
 
-    OK_PROFILE("CG4::propagate");
-    LOG(info) << " calling BeamOn numG4Evt " << numG4Evt << " DONE " ; 
+    m_runManager->BeamOn(1);
+
 
     std::string runmac = m_cfg->getG4RunMac();
     if(!runmac.empty()) execute(runmac.c_str());
 
     postpropagate();
 
-    NPY<float>* gs = m_collector->getGensteps(); 
-
+    //NPY<float>* gs = m_genstep_collector->getGensteps(); 
 
     LOG(LEVEL) << "idpath " << m_ok->getIdPath();  
 
@@ -415,7 +451,6 @@ NPY<float>* CG4::propagate()
     //pr->save("$TMP/cg4/primary.npy");   // debugging primary position issue 
 
     LOG(LEVEL) << "]" ;
-    return gs ; 
 }
 
 /**
