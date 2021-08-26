@@ -3,7 +3,11 @@ set(name OKG4Test)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+
 set(TEST_SOURCES
+)
+
+set(_TEST_SOURCES    # create the executable by do not add_test for these
     OKX4Test.cc
 )
 

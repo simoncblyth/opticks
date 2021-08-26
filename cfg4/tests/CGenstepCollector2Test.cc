@@ -1,7 +1,8 @@
 #include <iostream>
 #include "OPTICKS_LOG.hh"
+#include "Opticks.hh"
 #include "CGenstepCollector.hh"
-
+#include "CManager.hh"
 
 struct CGenstepCollector2Test 
 {
@@ -22,6 +23,10 @@ struct CGenstepCollector2Test
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+    LOG(info) << " ok.isSave " << ok.isSave() ; 
+    CManager mgr(&ok); 
     CGenstepCollector2Test gsct ; 
     return 0 ; 
 }

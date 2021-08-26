@@ -65,6 +65,7 @@ class CFG4_API CWriter
         CWriter(CCtx& ctx, CPhoton& photon);        
         void setEnabled(bool enabled);
         std::string desc(const char* msg=nullptr) const ; 
+        std::string dbgdesc() const ; 
     public:
         // *initEvent*
         //     configures recording and prepares buffer pointers

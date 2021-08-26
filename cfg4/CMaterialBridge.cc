@@ -37,20 +37,48 @@ const plog::Severity CMaterialBridge::LEVEL = PLOG::EnvLevel("CMaterialBridge", 
 
 CMaterialBridge::CMaterialBridge(const GMaterialLib* mlib) 
     :
-    m_mlib(mlib)
+    m_mlib(mlib),
+    m_mlib_materials(m_mlib->getNumMaterials()),
+    m_g4_materials(G4Material::GetNumberOfMaterials())
 {
-    initMap();
-    if(LEVEL < info)   // fatal:1, error:2, warning:3, info:4, debug:5, verbose:6
-        dump("CMaterialBridge::CMaterialBridge");
+    if(isValid())
+    {
+        initMap();
+        if(LEVEL < debug) dump("CMaterialBridge::CMaterialBridge");
+        // fatal:1, error:2, warning:3, info:4, debug:5, verbose:6
+    }
+    else
+    {
+         LOG(error) << "cannot boot CMaterialBridge without geant4 materials " ; 
+    }
+
 }
 
+bool CMaterialBridge::isValid() const
+{
+    return m_g4_materials > 0 && m_mlib_materials > 0 ; 
+}
 
 void CMaterialBridge::initMap()
 {
     const G4MaterialTable* mtab = G4Material::GetMaterialTable();
-    unsigned nmat = G4Material::GetNumberOfMaterials();
-    unsigned nmat_mlib = m_mlib->getNumMaterials(); 
+    unsigned nmat = m_g4_materials ; 
+    unsigned nmat_mlib = m_mlib_materials ; 
 
+    if( nmat == 0 )
+        LOG(fatal) 
+            << " THERE ARE NO Geant4 materials "
+            << " nmat (G4Material::GetNumberOfMaterials) " << nmat 
+            << " nmat_mlib (GMaterialLib::getNumMaterials) " << nmat_mlib 
+            ; 
+    assert( nmat > 0 ); 
+
+
+    LOG(LEVEL)
+        << " mtab " << mtab
+        << " nmat (G4Material::GetNumberOfMaterials) " << nmat 
+        << " nmat_mlib (GMaterialLib::getNumMaterials) " << nmat_mlib 
+        ;
 
     std::stringstream ss ; 
     ss
@@ -108,7 +136,16 @@ void CMaterialBridge::initMap()
     // for matching with GDML exports the GMaterialLib has changed to handling only the 
     // materials that are used, not all G4 materials that are present 
     // so the below constraints now use nmat_mlib rather than nmat
-    //  
+
+    if( m_g4toix.size() != nmat_mlib )
+        LOG(fatal) << " MISMATCH : m_g4toix.size() " << m_g4toix.size() << " nmat_mlib " << nmat_mlib ; 
+
+    if( m_ixtoname.size() != nmat_mlib )
+        LOG(fatal) << " MISMATCH : m_ixtoname.size() " << m_ixtoname.size() << " nmat_mlib " << nmat_mlib ; 
+
+    if( m_ixtoabbr.size() != nmat_mlib )
+        LOG(fatal) << " MISMATCH : m_ixtoabbr.size() " << m_ixtoabbr.size() << " nmat_mlib " << nmat_mlib ; 
+
     assert( m_g4toix.size() == nmat_mlib );
     assert( m_ixtoname.size() == nmat_mlib && "there is probably a duplicated material name");
     assert( m_ixtoabbr.size() == nmat_mlib && "there is probably a duplicated material name");

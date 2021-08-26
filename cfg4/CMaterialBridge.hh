@@ -63,10 +63,14 @@ class CFG4_API CMaterialBridge
         void dump(const char* msg="CMaterialBridge::dump") const ;
         void dumpMap(const char* msg="CMaterialBridge::dumpMap") const ;
         bool operator()(const G4Material* a, const G4Material* b);
+
+        bool isValid() const ; 
     private:
         void initMap();
     private:
         const GMaterialLib*   m_mlib ; 
+        const unsigned m_mlib_materials ; 
+        const unsigned m_g4_materials ; 
 
         std::map<const G4Material*, unsigned> m_g4toix ; 
         std::map<unsigned int, std::string>   m_ixtoname ; 

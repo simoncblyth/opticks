@@ -23,11 +23,14 @@ This is used from the **OPTIONAL** JUNO code G4OpticksAnaMgr
 
 The recorder receives Geant4 objects : G4Run, G4Event, G4Track, G4Step 
 and writes full step-by-step photon histories of all photons 
-into OpticksEvent format arrays, using Opticks CFG4/CRecorder/CWriter machinery. 
+into OpticksEvent format arrays, using Opticks CFG4/CManager/CRecorder/CWriter machinery. 
 
 Note that the setGeometry and setGenstep, endGenstep methods
 are invoked from G4Opticks via G4OpticksRecorder::Get() 
 only when there is G4OpticksRecorder instance. 
+
+This means that if OpticksEvent are to be saved, then a G4OpticksRecorder instance
+is required. 
 
 **/
 

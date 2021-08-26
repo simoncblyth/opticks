@@ -4,6 +4,7 @@
 #include "SSys.hh"
 #include "G4PVPlacement.hh"
 #include "G4Opticks.hh"
+#include "G4OpticksRecorder.hh"
 #include "G4OpticksHit.hh"
 #include "OpticksFlags.hh"
 
@@ -134,6 +135,7 @@ class G4OKTest
         bool         m_savehits ; 
         int          m_torchtarget ; 
         G4Opticks*   m_g4ok ; 
+        G4OpticksRecorder* m_recorder ; 
         bool         m_debug ; 
         bool         m_snap ; 
         const char*  m_tmpdir ; 
@@ -152,6 +154,7 @@ G4OKTest::G4OKTest(int argc, char** argv)
     m_savehits(    m_opticksCtrl && strstr(m_opticksCtrl, "savehits")     != nullptr),
     m_torchtarget(PLOG::instance->get_int_after("--torchtarget", "-1")),
     m_g4ok(new G4Opticks),
+    m_recorder(new G4OpticksRecorder),
     m_debug(true),
     m_snap(PLOG::instance->has_arg("--snap")),
     m_tmpdir("$TMP/G4OKTest")

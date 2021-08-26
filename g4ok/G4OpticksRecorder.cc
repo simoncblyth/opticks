@@ -60,6 +60,9 @@ void G4OpticksRecorder::setGeometry(const GGeo* ggeo_)
 {
     m_ggeo = ggeo_ ; 
     m_ok = m_ggeo->getOpticks(); 
+
+    
+
     m_material_bridge = new CMaterialBridge(m_ggeo->getMaterialLib()) ; 
     m_manager = new CManager(m_ok);
     m_manager->setMaterialBridge(m_material_bridge); 

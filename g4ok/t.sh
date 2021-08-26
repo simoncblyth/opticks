@@ -7,11 +7,23 @@ oe  # opticks env setup
 ##    can get the default torch target from GDML rather than gaving 
 ##    to specify on commandline  
 
-G4Opticks=INFO \
-Opticks=INFO \
-OpticksGenstep=INFO \
-CGenstepCollector=INFO \
-OpticksRun=INFO \
-  \
-lldb_ G4OKTest -o r -- $*
 
+bin=G4OKTest 
+
+export CMaterialBridge=INFO
+export G4Opticks=INFO
+export Opticks=INFO
+export OpticksGenstep=INFO
+export CGenstepCollector=INFO
+export OpticksRun=INFO
+ 
+
+if [ "$(uname)" == "Linux" ]; then 
+
+gdb -ex r --args $bin $* 
+
+else
+
+lldb_ $bin -o r -- $*
+
+fi 

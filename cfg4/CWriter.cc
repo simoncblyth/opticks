@@ -116,6 +116,22 @@ std::string CWriter::desc(const char* msg) const
     return s ; 
 }
 
+std::string CWriter::dbgdesc() const 
+{
+    std::stringstream ss ; 
+    ss << "CWriter " 
+       << " m_enabled " << m_enabled
+       << " m_evt " << m_evt
+       << " m_ni " << m_ni 
+       << " m_records_buffer " << m_records_buffer
+       << " m_deluxe_buffer " <<  m_deluxe_buffer 
+       << " m_photons_buffer " << m_photons_buffer 
+       << " m_history_buffer " << m_history_buffer 
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 /**
 CWriter::expand
 ----------------
@@ -128,7 +144,12 @@ unsigned CWriter::expand(unsigned gs_photons)
 {
     if(!m_history_buffer) 
     {
-        LOG(fatal) << " Cannot expand as CWriter::initEvent has not been called, check CManager logging " ;
+        LOG(fatal) 
+            << " gs_photons " << gs_photons
+            << " Cannot expand as CWriter::initEvent has not been called "
+            << "  check CManager logging, perhaps --save not enabled  " 
+            << std::endl << dbgdesc() 
+            ;
         return 0 ;  
     } 
     assert( m_history_buffer );  

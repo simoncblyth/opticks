@@ -30,6 +30,7 @@
 #include "OpticksHub.hh"
 #include "OpticksGenstep.h"
 
+#include "CManager.hh"
 #include "CGenstepCollector.hh"
 
 #include "OPTICKS_LOG.hh"
@@ -72,8 +73,12 @@ int main(int argc, char** argv)
 
     unsigned mock_numevt = 10 ; 
 
-/*
     Opticks ok(argc, argv);
+    ok.configure(); 
+
+    CManager mgr(&ok);  // CGenstepCollector requires CManager instance
+
+/*
     OpticksHub hub(&ok);
     NLookup* lookup = hub.getLookup(); 
 

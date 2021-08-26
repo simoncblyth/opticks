@@ -1,6 +1,45 @@
 opticks-t-fails-aug-2021-13-of-493
 ======================================
 
+
+
+
+Aug 26 14:03
+-------------
+
+::
+
+
+    FAILS:  4   / 492   :  Thu Aug 26 21:03:18 2021   
+      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      4.93   
+      1  /1   Test #1  : OKG4Test.OKX4Test                             Subprocess aborted***Exception:   0.79    trips on null gdmlpath : inadvertently added test 
+      1  /2   Test #1  : G4OKTest.G4OKTest                             Subprocess aborted***Exception:  10.40    LACKS CManager f
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.87   
+    O[blyth@localhost opticks]$ 
+
+
+Aug 26 12:58
+-------------
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+
+
+    FAILS:  6   / 492   :  Thu Aug 26 19:56:50 2021   
+      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      5.07   
+
+      23 /45  Test #23 : CFG4Test.CGenstepCollectorTest                Subprocess aborted***Exception:   0.22     FIXED : NEEDS CManager instance
+      24 /45  Test #24 : CFG4Test.CGenstepCollector2Test               Subprocess aborted***Exception:   0.25   
+      
+
+      1  /1   Test #1  : OKG4Test.OKX4Test                             Subprocess aborted***Exception:   0.27   
+      1  /2   Test #1  : G4OKTest.G4OKTest                             Subprocess aborted***Exception:   9.50   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.89   
+    O[blyth@localhost opticks]$ 
+
+
+
 Aug 25 11:39 13/493 
 ----------------------
 

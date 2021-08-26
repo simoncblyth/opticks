@@ -101,7 +101,7 @@ void CGenstepCollector::reset()
 
     unsigned num_gs = getNumGensteps() ; 
     bool zero_gs = num_gs == 0 ; 
-    LOG(fatal) << " num_gs " << num_gs ; 
+    LOG(LEVEL) << " after reset num_gs " << num_gs ; 
     assert(zero_gs); 
 
 }
@@ -317,6 +317,8 @@ CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
     m_photon_count += numPhotons ; 
 
     CManager* mgr = CManager::Get(); 
+
+    if(mgr == nullptr) LOG(fatal) << "no CManager instance, genstep bookkeeping + event save not operational " ; 
     assert( mgr ); 
 
     if(mgr && (gentype == 'C' || gentype == 'S' || gentype == 'T'))

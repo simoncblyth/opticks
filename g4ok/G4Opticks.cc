@@ -681,6 +681,10 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     {
         m_recorder->setGeometry(ggeo);  
     }
+    else
+    {
+        LOG(error) << " no G4OpticksRecorder instance, meaning probably no CManager " ; 
+    } 
 }
 
 bool G4Opticks::isWayEnabled() const 
