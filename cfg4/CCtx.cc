@@ -270,7 +270,7 @@ void CCtx::setEvent(const G4Event* event)
     _gsc = CGenstepCollector::Get() ; 
 
     _event = const_cast<G4Event*>(event) ; 
-    _event_id = event->GetEventID() ;
+    _event_id = event ? event->GetEventID() : 0 ;
 
     _event_total += 1 ; 
     _event_track_count = 0 ; 
@@ -278,7 +278,7 @@ void CCtx::setEvent(const G4Event* event)
 
     _genstep_index = -1 ; 
 
-    _number_of_input_photons = CEvent::NumberOfInputPhotons(event); 
+    _number_of_input_photons = event ? CEvent::NumberOfInputPhotons(event) : 0 ; 
     LOG(LEVEL) 
         << "_number_of_input_photons " << _number_of_input_photons 
         << "_genstep_index " << _genstep_index
@@ -321,7 +321,7 @@ void CCtx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int
             << " _gentype " << _gentype
             ;
         
-    //assert( genstep_index_match ); 
+    //assert( genstep_index_match );   // HMM: not matching when  not --save as the CCtx::setEvent not called? 
 
     setGentype(gentype); 
 }

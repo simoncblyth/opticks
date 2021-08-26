@@ -10,12 +10,14 @@ oe  # opticks env setup
 
 bin=G4OKTest 
 
-export CMaterialBridge=INFO
-export G4Opticks=INFO
-export Opticks=INFO
-export OpticksGenstep=INFO
+#export CMaterialBridge=INFO
+#export G4Opticks=INFO
+#export Opticks=INFO
+#export OpticksGenstep=INFO
+export CManager=INFO
+export CCtx=INFO
 export CGenstepCollector=INFO
-export OpticksRun=INFO
+#export OpticksRun=INFO
  
 
 if [ "$(uname)" == "Linux" ]; then 

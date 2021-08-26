@@ -90,7 +90,7 @@ void CManager::setMaterialBridge(const CMaterialBridge* material_bridge)
 
 void CManager::BeginOfRunAction(const G4Run*)
 {
-    std::raise(SIGINT);     
+    //std::raise(SIGINT);     
     LOG(LEVEL) << " m_mode " << m_mode ;
     CScint::Check(); 
 }
@@ -113,7 +113,7 @@ When "--save" is enabled this creates OpticksEvent to prepare for saving in *pre
 
 void CManager::BeginOfEventAction(const G4Event* event)
 {
-    std::raise(SIGINT);     
+    //std::raise(SIGINT);     
     LOG(LEVEL) << " m_mode " << m_mode ;
     if(m_mode == 0 ) return ; 
 

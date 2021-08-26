@@ -4,7 +4,7 @@
 #include "SSys.hh"
 #include "G4PVPlacement.hh"
 #include "G4Opticks.hh"
-#include "G4OpticksRecorder.hh"
+#include "G4OpticksRecorder.hh"  
 #include "G4OpticksHit.hh"
 #include "OpticksFlags.hh"
 
@@ -16,6 +16,7 @@ G4OKTest
 
 This test is intended to provide a way of testing G4Opticks machinery 
 without ascending to the level of the experiment.
+And without the Geant4 BeginOfEvent etc.. notifications being in control.
 
 Running with extra hit info using the way buffer
 --------------------------------------------------
@@ -102,6 +103,21 @@ So add::
     collectTorchStep(unsigned num_photons, int node_index);  
 
 
+Mocking for testing without Geant4 in control
+-----------------------------------------------
+
+Standard workflow uses G4OpticksRecorder/CManager to hookup 
+with the Geant4 objects run/event/track/step BUT in 
+testing without Geant4 objects driving things are left flailing 
+around with test code very different from standard workflow.
+
+Mock calls to the below with nullptr G4Event
+are used to enable much of the standard code to 
+be used without Geant4 calling the shots.::
+
+    G4OpticksRecorder::BeginOfEventAction
+    G4OpticksRecorder::EndOfEventAction
+
 **/
 
 
@@ -127,6 +143,9 @@ class G4OKTest
         void     propagate(int eventID); 
         void     checkHits(int eventID) const ; 
         int      rc() const ; 
+    public: 
+        void mockBeginOfEvent(int eventID);
+        void mockEndOfEvent(int eventID);
     private:
         int          m_log ; 
         const char*  m_gdmlpath ; 
@@ -135,7 +154,16 @@ class G4OKTest
         bool         m_savehits ; 
         int          m_torchtarget ; 
         G4Opticks*   m_g4ok ; 
-        G4OpticksRecorder* m_recorder ; 
+
+        // G4OpticksRecorder (and lower level CManger inside it) 
+        // hooks into Geant4 run/event/track/step notifications 
+        // so they dont really belong here. 
+        // However the aim of G4OKTest is to test G4Opticks functionality without 
+        // Geant4 being in control so have to mockup some of the Geant4 lifecycle
+        // with null objects.
+        //
+        G4OpticksRecorder* m_recorder ;   
+
         bool         m_debug ; 
         bool         m_snap ; 
         const char*  m_tmpdir ; 
@@ -382,6 +410,21 @@ void G4OKTest::collectGensteps(int eventID)
         ;  
 }
 
+void G4OKTest::mockBeginOfEvent(int eventID)
+{
+    LOG(error) << eventID ; 
+    m_recorder->BeginOfEventAction(nullptr); 
+}
+
+void G4OKTest::mockEndOfEvent(int eventID)
+{
+    LOG(error) << eventID ; 
+    m_recorder->EndOfEventAction(nullptr); 
+}
+
+
+
+
 void G4OKTest::propagate(int eventID)
 {
     LOG(LEVEL) << "[" ; 
@@ -510,6 +553,8 @@ int main(int argc, char** argv)
     {
        std::cout << banner(ievt,'['); 
 
+       t.mockBeginOfEvent(ievt); 
+
        if(input_photons_path)
        {
            t.collectInputPhotons(ievt, input_photons_path);
@@ -521,6 +566,8 @@ int main(int argc, char** argv)
 
        t.propagate(ievt);
        //std::cout << banner(ievt,']'); 
+
+       t.mockEndOfEvent(ievt); 
     }
 
     return t.rc() ;

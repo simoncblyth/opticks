@@ -289,7 +289,7 @@ Invoked from::
     CGenstepCollector::collectScintillationStep
     CGenstepCollector::collectCerenkovStep
     CGenstepCollector::collectMachineryStep
-    CGenstepCollector::collectTorchGenstep    ## SUSPECT NOT BEING CALLED, CAUSING CG4Test OKG4Test FAILs
+    CGenstepCollector::collectTorchGenstep    
 
 The automatic invokation of BeginOfGenstep from CGenstepCollector 
 is convenient for C+S gensteps but it is too early with input_photon 
@@ -302,12 +302,15 @@ in CCtx::setEvent
 
 CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
 {
-    unsigned genstep_index = getNumGensteps(); 
+    unsigned genstep_index = getNumGensteps();  // initial count prior to collection is 0-based index
     unsigned photon_offset = getNumPhotons(); 
 
     CGenstep gs(genstep_index, numPhotons, photon_offset, gentype) ; 
 
-    LOG(LEVEL) << " gs.desc " << gs.desc() ; 
+    LOG(LEVEL) 
+        << " genstep_index(0-based) " << genstep_index
+        << " gs.desc " << gs.desc() 
+        ; 
 
     m_gs.push_back(gs); 
     m_gs_photons.push_back(numPhotons); 
