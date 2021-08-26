@@ -14,7 +14,6 @@ set(TEST_SOURCES
     CGDMLPropertyTest.cc
 
     CGeometryTest.cc
-    CG4Test.cc
     G4MaterialTest.cc
     G4StringTest.cc
     G4SphereTest.cc
@@ -71,6 +70,14 @@ set(_TEST_SOURCES
 
     CX4GDMLTest.cc
 )
+
+set(FORMER_TEST_SOURCES
+
+    CG4Test.cc   ## NEEDS RE-IMPLEMENTATION FOR CManager WORKLOW : UNCLEAR HOW TO GET TORCH GENSTEPS INTO THAT 
+
+)
+
+
 
 
 foreach(SRC ${TEST_SOURCES} ${_TEST_SOURCES})

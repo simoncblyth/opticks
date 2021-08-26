@@ -4,14 +4,16 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 set(TEST_SOURCES
-    OKG4Test.cc
-)
-
-set(_TEST_SOURCES
     OKX4Test.cc
 )
 
-foreach(SRC ${TEST_SOURCES} ${_TEST_SOURCES})
+set(FORMER_TEST_SOURCES
+    OKG4Test.cc
+)
+
+
+
+foreach(SRC ${TEST_SOURCES})
 
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})

@@ -390,7 +390,7 @@ that were split up into many geant4 events as the Geant4 cannot handle so many p
 
 **/
 
-void CG4::propagate()
+NPY<float>* CG4::propagate()
 {
 
 
@@ -443,14 +443,13 @@ void CG4::propagate()
 
     postpropagate();
 
-    //NPY<float>* gs = m_genstep_collector->getGensteps(); 
+    NPY<float>* output_gs = m_genstep_collector->getGensteps(); 
 
     LOG(LEVEL) << "idpath " << m_ok->getIdPath();  
 
-    //NPY<float>* pr = m_primary_collector->getPrimary(); 
-    //pr->save("$TMP/cg4/primary.npy");   // debugging primary position issue 
-
     LOG(LEVEL) << "]" ;
+
+    return output_gs ;     
 }
 
 /**

@@ -121,7 +121,7 @@ class CFG4_API CG4
         void cleanup();
         bool isDynamic(); // true for G4GUN without gensteps ahead of time, false for TORCH with gensteps ahead of time
    public:
-        void propagate();
+        NPY<float>* propagate();
    private:
         void postinitialize();
         void postinitializeMaterialLookup(); 

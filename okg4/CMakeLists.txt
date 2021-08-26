@@ -7,6 +7,14 @@ if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
     cmake_policy(SET CMP0077 OLD)
 endif()
 
+#[=[
+ONLY THING OF RELEVANCE IN OKG4 IS THE OKX4Test executable
+AND THAT DOES NOT USE OKG4Mgr
+
+TODO: MOVE OKX4Test elsewhere and remove this pkg from standand build  
+
+#]=]
+
 
 find_package(OK REQUIRED CONFIG)
 find_package(CFG4 REQUIRED CONFIG)

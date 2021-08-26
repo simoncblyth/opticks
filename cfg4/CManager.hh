@@ -35,11 +35,22 @@ such that it can be used by both those.
 So for example the manager will be what the geant4 actions talk to, 
 rather than CG4 which is too high level for reusabliity. 
 
+
 Responsibilities
 -----------------
 
-1. steering via hooking into Geant4 workflow methods 
-2. 
+1. routes Geant4 run/event/track/step objects to CRecorder
+2. creates/saves OpticksEvent at BeginOfEvent/EndOfEvent when --save active
+
+
+Issue : how to integrate artificial gensteps with this
+--------------------------------------------------------
+
+CManager works fine with real 'C' + 'S' gensteps that arise from 
+Geant4 and get collected in the processes and are then propagated
+at EndOfEvent. 
+
+But what about artificial 'T' ones ? Where to do that.
 
 
 Step handling

@@ -179,6 +179,10 @@ void OKG4Mgr::propagate()
 OKG4Mgr::propagate_
 ---------------------
 
+THIS NEEDS RETHINK AS DOES NOT 
+FIT WITH THE CManager APPROACH 
+
+
 Hmm propagate implies just photons to me, so this name 
 is misleading as it does a G4 beamOn with the hooked up 
 CSource subclass providing the primaries, which can be 
@@ -195,11 +199,9 @@ parsed  kernel pindex log during lldb python scripted G4 debugging.
 Hmm it would be cleaner if m_gen was in charge if the branching 
 here as its kinda similar to initSourceCode.
 
-
 Notice the different genstep handling between this and OKMgr 
 because this has G4 available, so gensteps can come from the
 horses mouth.
-
 
 TOFIX: when using --nog4propagate it should not be necessary to
 instanciate m_g4 and m_generator : but the machinery forces to do so
@@ -238,7 +240,7 @@ void OKG4Mgr::propagate_()
     }
     else   // no-gensteps : G4GUN or PRIMARYSOURCE
     {
-         NPY<float>* gs = m_g4->propagate() ;
+         NPY<float>* gs = m_g4->propagate() ; ;
 
          if(!gs) LOG(fatal) << "CG4::propagate failed to return gensteps" ; 
          assert(gs);

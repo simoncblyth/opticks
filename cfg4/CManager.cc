@@ -159,9 +159,6 @@ void CManager::EndOfEventAction(const G4Event*)
         ; 
 
     if(m_ok->isSave()) save() ; 
-
-    
-
 }
 
 
