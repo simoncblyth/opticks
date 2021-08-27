@@ -62,9 +62,22 @@ struct NP
 
     static NP* Combine(const std::vector<const NP*>& aa, bool annotate=true); 
 
+    // load array asis 
     static NP* Load(const char* path); 
     static NP* Load(const char* dir, const char* name); 
     static NP* Load(const char* dir, const char* reldir, const char* name); 
+
+    // load float OR double array and if float(4 bytes per element) widens it to double(8 bytes per element)  
+    static NP* LoadWide(const char* path); 
+    static NP* LoadWide(const char* dir, const char* name); 
+    static NP* LoadWide(const char* dir, const char* reldir, const char* name); 
+
+    // load float OR double array and if double(8 bytes per element) narrows it to float(4 bytes per element)  
+    static NP* LoadNarrow(const char* path); 
+    static NP* LoadNarrow(const char* dir, const char* name); 
+    static NP* LoadNarrow(const char* dir, const char* reldir, const char* name); 
+
+
     static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
 
     template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
@@ -90,6 +103,8 @@ struct NP
 
     static NP* MakeLike(  const NP* src);  
     static NP* MakeNarrow(const NP* src); 
+    static NP* MakeWide(  const NP* src); 
+    static NP* MakeCopy(  const NP* src); 
 
     bool is_pshaped() const ; 
     template<typename T> void pscale(T scale, unsigned column);
@@ -639,6 +654,134 @@ inline NP* NP::MakeNarrow(const NP* a) // static
 
     return b ; 
 }
+
+
+inline NP* NP::MakeWide(const NP* a) // static 
+{
+    assert( a->ebyte == 4 ); 
+    std::string b_dtype = NPU::_make_wide(a->dtype); 
+
+    NP* b = new NP(b_dtype.c_str()); 
+    b->set_shape( a->shape ); 
+
+    assert( a->num_values() == b->num_values() ); 
+    unsigned nv = a->num_values(); 
+
+    if( a->uifc == 'f' && b->uifc == 'f')
+    {
+        const float* aa = a->cvalues<float>() ;  
+        double* bb = b->values<double>() ;  
+        for(unsigned i=0 ; i < nv ; i++)
+        {
+            bb[i] = double(aa[i]); 
+        }
+    }
+
+    std::cout 
+        << "NP::MakeWide"
+        << " a.dtype " << a->dtype
+        << " b.dtype " << b->dtype
+        << std::endl 
+        ;
+
+    return b ; 
+}
+
+inline NP* NP::MakeCopy(const NP* a) // static 
+{
+    NP* b = new NP(a->dtype); 
+    b->set_shape( a->shape ); 
+    assert( a->arr_bytes() == b->arr_bytes() ); 
+
+    memcpy( b->bytes(), a->bytes(), a->arr_bytes() );    
+    unsigned nv = a->num_values(); 
+
+    std::cout 
+        << "NP::MakeCopy"
+        << " a.dtype " << a->dtype
+        << " b.dtype " << b->dtype
+        << " nv " << nv
+        << std::endl 
+        ;
+
+    return b ; 
+}
+
+
+inline NP* NP::LoadWide(const char* dir, const char* reldir, const char* name)
+{
+    std::string path = form_path(dir, reldir, name); 
+    return LoadWide(path.c_str());
+}
+
+inline NP* NP::LoadWide(const char* dir, const char* name)
+{
+    std::string path = form_path(dir, name); 
+    return LoadWide(path.c_str());
+}
+
+/**
+NP::LoadWide
+--------------
+
+Loads array and widens it to 8 bytes per element if not already wide.
+
+**/
+inline NP* NP::LoadWide(const char* path)
+{
+    NP* a = NP::Load(path);  
+
+    assert( a->uifc == 'f' && ( a->ebyte == 8 || a->ebyte == 4 ));  
+    // cannot think of application for doing this with  ints, so restrict to float OR double 
+
+    NP* b = a->ebyte == 8 ? NP::MakeCopy(a) : NP::MakeWide(a) ;  
+
+    a->clear(); 
+
+    return b ; 
+}
+
+
+inline NP* NP::LoadNarrow(const char* dir, const char* reldir, const char* name)
+{
+    std::string path = form_path(dir, reldir, name); 
+    return LoadNarrow(path.c_str());
+}
+
+inline NP* NP::LoadNarrow(const char* dir, const char* name)
+{
+    std::string path = form_path(dir, name); 
+    return LoadNarrow(path.c_str());
+}
+
+
+/**
+NP::LoadNarrow
+---------------
+
+Loads array and narrows to 4 bytes per element if not already narrow.
+
+**/
+inline NP* NP::LoadNarrow(const char* path)
+{
+    NP* a = NP::Load(path);  
+
+    assert( a->uifc == 'f' && ( a->ebyte == 8 || a->ebyte == 4 ));  
+    // cannot think of application for doing this with  ints, so restrict to float OR double 
+
+    NP* b = a->ebyte == 4 ? NP::MakeCopy(a) : NP::MakeNarrow(a) ;  
+
+    a->clear(); 
+
+    return b ; 
+}
+
+
+
+
+
+
+
 
 
 inline bool NP::is_pshaped() const

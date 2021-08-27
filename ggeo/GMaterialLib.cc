@@ -21,6 +21,7 @@
 #include <limits>
 #include <csignal>
 
+#include "SPath.hh"
 
 #include "BStr.hh"
 #include "BMeta.hh"
@@ -1175,14 +1176,15 @@ void GMaterialLib::addTestMaterials()
     for(VSS::const_iterator it=rix.begin() ; it != rix.end() ; it++)
     {
         std::string name = it->first ; 
-        std::string path = it->second ; 
+        std::string path_ = it->second ; 
+        const char* path = SPath::Resolve(path_.c_str()); 
 
         LOG(LEVEL) 
-                  << " name " << std::setw(30) << name 
-                  << " path " << path 
-                  ;
+           << " name " << std::setw(30) << name 
+           << " path " << path 
+           ;
 
-        GProperty<double>* rif = GProperty<double>::load(path.c_str());
+        GProperty<double>* rif = GProperty<double>::AdjustLoad(path);
         if(!rif) continue ; 
 
         GMaterial* raw = makeRaw(name.c_str());

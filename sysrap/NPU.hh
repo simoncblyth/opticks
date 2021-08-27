@@ -330,6 +330,7 @@ struct NPU
 
     static std::string _make_descr(bool little_endian, char uifc, int width );
     static std::string _make_narrow(const char* descr);  
+    static std::string _make_wide(const char* descr);  
     static std::string _make_other(const char* descr, char other);  
 
     static std::string _make_preamble( int major=1, int minor=0 );
@@ -704,6 +705,16 @@ inline std::string NPU::_make_narrow(const char* descr) // static
     _parse_descr( little_endian, uifc, ebyte, descr ); 
     return _make_descr(little_endian, uifc, ebyte/2  ); 
 } 
+
+inline std::string NPU::_make_wide(const char* descr) // static
+{
+    bool little_endian ; 
+    char uifc ; 
+    int ebyte ; 
+    _parse_descr( little_endian, uifc, ebyte, descr ); 
+    return _make_descr(little_endian, uifc, ebyte*2  ); 
+} 
+
 
 inline std::string NPU::_make_other(const char* descr, char other) // static
 {

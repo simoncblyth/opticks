@@ -52,7 +52,8 @@ public:
 public: 
    static T maxdiff(GProperty<T>* a, GProperty<T>* b, bool dump=false);
    static bool hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta=-1, bool dump=false);
-   static GProperty<T>* load(const char* path);
+   static GProperty<T>* load(const char* path);  // persisted type must match the template type 
+   static GProperty<T>* AdjustLoad(const char* path);  // adjusting load that widens/narrows to correspond to template type  
    static GProperty<T>* from_constant(T value, T* domain, unsigned int length );
    static GProperty<T>* from_constant(T value, T dlow, T dhigh);
    static GProperty<T>* make_one_minus(GProperty<T>* a);
@@ -79,6 +80,7 @@ public:
    static GProperty<T>* planck_spectral_radiance(GDomain<T>* nm, T blackbody_temp_kelvin=6500.);
 public:
    GProperty<T>* copy() const ;
+   //GProperty(const NP* np);
    GProperty(const GProperty<T>* other);
    GProperty(T* values, T* domain, unsigned int length );
    GProperty( GAry<T>* vals, GAry<T>* dom ); // stealing ctor, use with newly allocated GAry<T> 

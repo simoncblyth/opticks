@@ -2,6 +2,102 @@ opticks-t-fails-aug-2021-13-of-493
 ======================================
 
 
+Aug 27 10:44
+---------------
+
+::
+
+    FAILS:  1   / 491   :  Fri Aug 27 17:35:33 2021   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      4.66   
+    O[blyth@localhost ~]$ 
+
+
+Failing to load resources because not updated to double yet::
+
+
+    === o-main : /data/blyth/junotop/ExternalLibs/opticks/head/lib/OKG4Test --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile --generateoverride 10000 --envkey --rendermode +global,+axis --geocenter --stack 2180 --eye 1,0,0 --up 0,0,1 --test --testconfig mode=PyCsgInBox_analytic=1_name=tboolean-box_csgpath=/tmp/blyth/opticks/tboolean-box_outerfirst=1_autocontainer=Rock//perfectAbsorbSurface/Vacuum_autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_autoemitconfig=photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0_autoseqmap=TO:0,SR:1,SA:0 --torch --torchconfig type=disc_photons=100000_mode=fixpol_polarization=1,1,0_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000_source=0,0,599_target=0,0,0_time=0.0_radius=300_distance=200_zenithazimuth=0,1,0,1_material=Vacuum_wavelength=500 --torchdbg --tag 1 --anakey tboolean --args --save ======= PWD /data/blyth/junotop/ExternalLibs/opticks/head/build/integration/tests Fri Aug 27 17:35:30 CST 2021
+    /data/blyth/junotop/ExternalLibs/opticks/head/lib/OKG4Test --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile --generateoverride 10000 --envkey --rendermode +global,+axis --geocenter --stack 2180 --eye 1,0,0 --up 0,0,1 --test --testconfig mode=PyCsgInBox_analytic=1_name=tboolean-box_csgpath=/tmp/blyth/opticks/tboolean-box_outerfirst=1_autocontainer=Rock//perfectAbsorbSurface/Vacuum_autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_autoemitconfig=photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0_autoseqmap=TO:0,SR:1,SA:0 --torch --torchconfig type=disc_photons=100000_mode=fixpol_polarization=1,1,0_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000_source=0,0,599_target=0,0,0_time=0.0_radius=300_distance=200_zenithazimuth=0,1,0,1_material=Vacuum_wavelength=500 --torchdbg --tag 1 --anakey tboolean --args --save 
+    2021-08-27 17:35:30.718 INFO  [339652] [OpticksHub::loadGeometry@283] [ /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/b8bc31e2cdf88b66e3dfa9afd5ac1f2b/1
+    2021-08-27 17:35:32.122 INFO  [339652] [OpticksHub::setupTestGeometry@358] --test modifying geometry
+    2021-08-27 17:35:32.126 ERROR [339652] [NPY<T>::load@1093] NPY<T>::load failed for path [/data/blyth/junotop/ExternalLibs/opticks/head/opticksaux/refractiveindex/tmp/glass/schott/F2.npy] use debugload with NPYLoadTest to investigate (problems are usually from dtype mismatches) 
+    2021-08-27 17:35:32.126 ERROR [339652] [GProperty<T>::load@122] GProperty<T>::load FAILED for path $OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy
+    2021-08-27 17:35:32.126 ERROR [339652] [NPY<T>::load@1093] NPY<T>::load failed for path [/data/blyth/junotop/ExternalLibs/opticks/head/opticksaux/refractiveindex/tmp/main/H2O/Hale.npy] use debugload with NPYLoadTest to investigate (problems are usually from dtype mismatches) 
+    2021-08-27 17:35:32.126 ERROR [339652] [GProperty<T>::load@122] GProperty<T>::load FAILED for path $OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/main/H2O/Hale.npy
+    2021-08-27 17:35:32.126 FATAL [339652] [GMaterialLib::reuseBasisMaterial@1124] reuseBasisMaterial requires basis library to be present and to contain the material  GlassSchottF2
+    OKG4Test: /home/blyth/opticks/ggeo/GMaterialLib.cc:1125: void GMaterialLib::reuseBasisMaterial(const char*): Assertion `mat' failed.
+    /data/blyth/junotop/ExternalLibs/opticks/head/bin/o.sh: line 362: 339652 Aborted                 (core dumped) /data/blyth/junotop/ExternalLibs/opticks/head/
+
+
+Either create double versions OR find a way to accomodate float resources::
+
+    epsilon:opticks blyth$ opticks-f schott 
+    ./externals/opticksdata.bash:refractiveindex/tmp/glass/schott/F2.npy
+    ./ggeo/tests/GPropertyTest.cc:   P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
+    ./ggeo/tests/GPropertyTest.cc:    P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
+    ./ggeo/tests/GMaterialLibTest.cc:    GProperty<double>* f2 = GProperty<double>::load("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
+    ./ggeo/tests/GPropertyMapTest.cc:    const char* path = "$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy";
+    ./ggeo/GMaterialLib.cc:    rix.push_back(SS("GlassSchottF2", "$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy"));
+    epsilon:opticks blyth$ 
+
+
+Added flexible loading that adjusts the data to work with the float/double template type with::
+
+    GProperty::AdjustLoad
+    NP::LoadWide
+    NP::LoadNarrow 
+
+
+
+Aug 27 09:52
+--------------
+
+::
+
+    FAILS:  2   / 491   :  Fri Aug 27 16:50:43 2021   
+      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      5.05   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.90   
+    O[blyth@localhost opticks]$ 
+
+
+
+::
+
+    2021-08-27 16:48:55.054 INFO  [250714] [interpolationTest::launch@165]  save  base $TMP/optixrap/interpolationTest name interpolationTest_interpol.npy
+    2021-08-27 16:48:55.107 INFO  [250714] [SSys::RunPythonScript@623]  script interpolationTest_interpol.py script_path /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py python_executable /home/blyth/local/env/tools/conda/miniconda3/bin/python
+    Traceback (most recent call last):
+      File "/data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py", line 23, in <module>
+        from opticks.ana.proplib import PropLib
+    ModuleNotFoundError: No module named 'opticks'
+    2021-08-27 16:48:55.312 INFO  [250714] [SSys::run@100] /home/blyth/local/env/tools/conda/miniconda3/bin/python /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  rc_raw : 256 rc : 1
+    2021-08-27 16:48:55.312 ERROR [250714] [SSys::run@107] FAILED with  cmd /home/blyth/local/env/tools/conda/miniconda3/bin/python /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  RC 1
+    2021-08-27 16:48:55.312 INFO  [250714] [SSys::RunPythonScript@630]  RC 1
+    2021-08-27 16:48:55.312 ERROR [250714] [SSys::RunPythonScript@633]  control which python to use by setting the OPTICKS_PYTHON envvar to the python executable name or path 
+    2021-08-27 16:48:55.312 ERROR [250714] [SSys::RunPythonScript@634]  pick a python that has the numpy module, set envvar in .bash_profile with eg:: 
+    2021-08-27 16:48:55.312 ERROR [250714] [SSys::RunPythonScript@635] 
+    2021-08-27 16:48:55.312 ERROR [250714] [SSys::RunPythonScript@636]       export OPTICKS_PYTHON=/Users/blyth/miniconda3/bin/python 
+
+
+    2/2 Test #2: IntegrationTests.tboolean.box ......***Failed    0.90 sec
+    mo .bashrc OPTICKS_MODE:dev O : ordinary opticks dev ontop of juno externals CMTEXTRATAGS:opticks
+    ====== /data/blyth/junotop/ExternalLibs/opticks/head/bin/tboolean.sh --generateoverride 10000 ====== PWD /data/blyth/junotop/ExternalLibs/opticks/head/build/integration/tests =================
+    tboolean-lv --generateoverride 10000
+    === tboolean-lv : tboolean-box cmdline --generateoverride 10000 binopt --okg4test
+    Traceback (most recent call last):
+      File "<stdin>", line 3, in <module>
+    ModuleNotFoundError: No module named 'opticks'
+    === tboolean-box : testconfig
+
+
+
+Config python via envvars in .bash_profile::
+
+    export OPTICKS_PYTHON=/home/blyth/local/env/tools/conda/miniconda3/bin/python
+    export PYTHONPATH=$PYTHONPATH:$(opticks-fold)
+
+
+
+
+
 Aug 26 17:09 : DOWN TO THE PYTHON RELATED FAILS
 ----------------------------------------------------
 

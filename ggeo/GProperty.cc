@@ -30,6 +30,8 @@
 
 // sysrap-
 #include "SDigest.hh"
+#include "NP.hh"
+
 // brap-
 #include "BFile.hh"
 #include "BMap.hh"
@@ -109,8 +111,42 @@ GAry<T>* GProperty<T>::getDomain() const
 }
 
 
+template <typename T>
+GProperty<T>* GProperty<T>::AdjustLoad(const char* path)
+{
+    NP* a = nullptr ; 
+    switch(sizeof(T))
+    {
+       case 4: a = NP::LoadNarrow(path) ; break ;      
+       case 8: a = NP::LoadWide(path)   ; break ;      
+    }
+    // loads and widens/narrows to suit the template type if not aready wide/narrow 
 
+    assert( a->shape.size() == 2 ); 
+    unsigned ni = a->shape[0] ; 
+    unsigned nj = a->shape[1] ; 
+    assert( nj == 2 ); 
 
+    const T* data = a->cvalues<T>(); 
+
+    GAry<T>* doms = new GAry<T>(ni);
+    GAry<T>* vals = new GAry<T>(ni);
+
+    for(unsigned i=0 ; i < ni ; i++){
+    for(unsigned j=0 ; j < nj ; j++)
+    {
+        unsigned int index = i*nj + j ;
+        T v = data[index];
+        switch(j)
+        {
+            case 0:doms->setValue(i, v); break ; 
+            case 1:vals->setValue(i, v); break ;
+        }      
+    }
+    }
+    a->clear(); 
+    return new GProperty<T>(vals, doms) ; 
+}
 
 
 template <typename T>

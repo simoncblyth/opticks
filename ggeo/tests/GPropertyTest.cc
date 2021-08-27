@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstdio>
 
+#include "SPath.hh"
 #include "BOpticksResource.hh"
 
 
@@ -69,19 +70,20 @@
 
 typedef GAry<float> A ;
 typedef GProperty<float> P ;
+typedef GProperty<double> Q ;
 typedef GDomain<float> D ;
 
 
+template <typename T>
 void test_loadRefractiveIndex()
 {
-   P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
-   if(ri == NULL)
-   {
-       LOG(error) << " load failed " ;
-       return ;  
-   } 
+    const char* path = SPath::Resolve("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
+    LOG(info) << " sizeof(T) " << sizeof(T) << " path " << path ; 
 
-   ri->Summary("F2 ri", 100);
+    GProperty<T>* ri = GProperty<T>::AdjustLoad(path); 
+    assert(ri); 
+
+    ri->Summary("F2 ri", 100);
 }
 
 void test_planck()
@@ -94,10 +96,13 @@ void test_planck()
 
 void test_createSliced()
 {
-    P* slow = P::load("$TMP/slowcomponent.npy");
+    const char* path = SPath::Resolve("$TMP/slowcomponent.npy");
+    LOG(info) << " path " << path ; 
+
+    Q* slow = Q::AdjustLoad(path); 
     //slow->Summary("slow",20);
 
-    P* sslow = slow->createSliced(2, slow->getLength());
+    Q* sslow = slow->createSliced(2, slow->getLength());
     //sslow->Summary("sslow", 20);
 
     assert(sslow->getLength() == slow->getLength() - 2);
@@ -253,10 +258,12 @@ int main(int argc, char** argv)
     //test_traditional_remission_cdf_sampling();
     //test_inverseCDF_lookup();
 
-    //test_loadRefractiveIndex();
+    test_loadRefractiveIndex<float>();
+    test_loadRefractiveIndex<double>();
+
     //test_planck();
 
-    test_GROUPVEL();
+    //test_GROUPVEL();
 
     return 0 ;
 }
