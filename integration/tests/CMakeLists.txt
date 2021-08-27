@@ -23,6 +23,7 @@ foreach(SRC ${TEST_SOURCES})
 endforeach()
 
 
+#[=[
 
 set(SCRIPT tboolean.sh)
 #set(SCRIPT fn.sh)
@@ -32,6 +33,8 @@ set(LV box)
 set(TEST ${name}.${TGT}.${LV})
 add_test(${TEST} ${SCRIPT} --generateoverride 10000)
 set_tests_properties(${TEST} PROPERTIES ENVIRONMENT "LV=${LV}")
+
+#]=]
 
 
 

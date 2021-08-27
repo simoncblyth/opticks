@@ -3,6 +3,96 @@ opticks-t-fails-aug-2021-13-of-493
 
 
 
+OKG4Test is build but not add_test::
+
+
+    2021-08-27 23:07:01.690 INFO  [444278] [OGeo::convert@321] ] nmm 10
+    2021-08-27 23:07:01.699 INFO  [444278] [NPY<T>::MakeFloat@2030]  nv 876672
+    2021-08-27 23:07:01.863 ERROR [444278] [cuRANDWrapper::setItems@154] CAUTION : are resizing the launch sequence 
+    2021-08-27 23:07:02.742 FATAL [444278] [ORng::setSkipAhead@155] skipahead 0
+    2021-08-27 23:07:02.823 FATAL [444278] [CWriter::expand@153]  gs_photons 100 Cannot expand as CWriter::initEvent has not been called   check CManager logging, perhaps --save not enabled   m_ok->isSave() 0 OR BeginOfGenstep notifications not received  m_BeginOfGenstep_count 1
+    CWriter  m_enabled 1 m_evt 0 m_ni 0 m_BeginOfGenstep_count 1 m_records_buffer 0 m_deluxe_buffer 0 m_photons_buffer 0 m_history_buffer 0
+    2021-08-27 23:07:50.862 INFO  [444278] [CScint::Check@16]  pmanager 0x1e37d880 proc 0
+    2021-08-27 23:07:50.863 INFO  [444278] [CScint::Check@21] CProMgr n:[4] (0) name Transportation left -1 (1) name OpAbsorption left -1 (2) name OpRayleigh left -1 (3) name OpBoundary left -1
+    2021-08-27 23:07:50.863 INFO  [444278] [CTorchSource::GeneratePrimaryVertex@293]  event_gencode 6 : TORCH
+    OKG4Test: /home/blyth/opticks/cfg4/CCtx.cc:104: unsigned int CCtx::step_limit() const: Assertion `_ok_event_init' failed.
+    Aborted (core dumped)
+    O[blyth@localhost tests]$ 
+
+
+
+Aug 27 16:01
+---------------
+
+::
+
+    FAILS:  1   / 491   :  Fri Aug 27 23:00:54 2021   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      12.77  
+    O[blyth@localhost opticks]$ 
+
+Hmm, getting confused by input photons::
+
+    2021-08-27 23:00:47.457 INFO  [433735] [NPY<T>::MakeFloat@2030]  nv 73056
+    2021-08-27 23:00:47.539 ERROR [433735] [cuRANDWrapper::setItems@154] CAUTION : are resizing the launch sequence 
+    2021-08-27 23:00:48.402 FATAL [433735] [ORng::setSkipAhead@155] skipahead 0
+    2021-08-27 23:00:48.544 FATAL [433735] [CWriter::expand@153]  gs_photons 100 Cannot expand as CWriter::initEvent has not been called   check CManager logging, perhaps --save not enabled   m_ok->isSave() 1 OR BeginOfGenstep notifications not received  m_BeginOfGenstep_count 1
+    CWriter  m_enabled 1 m_evt 0 m_ni 0 m_BeginOfGenstep_count 1 m_records_buffer 0 m_deluxe_buffer 0 m_photons_buffer 0 m_history_buffer 0
+    HepRandomEngine::put called -- no effect!
+    2021-08-27 23:00:48.951 INFO  [433735] [CScint::Check@16]  pmanager 0xbd1b4f0 proc 0
+    2021-08-27 23:00:48.951 INFO  [433735] [CScint::Check@21] CProMgr n:[4] (0) name Transportation left -1 (1) name OpAbsorption left -1 (2) name OpRayleigh left -1 (3) name OpBoundary left -1
+    2021-08-27 23:00:48.951 INFO  [433735] [CInputPhotonSource::GeneratePrimaryVertex@214]  num_photons 10000 gpv_count 0 event_gencode 6 : BAD_FLAG
+    terminate called after throwing an instance of 'thrust::system::system_error'
+      what():  for_each: failed to synchronize: cudaErrorIllegalAddress: an illegal memory access was encountered
+    /data/blyth/junotop/ExternalLibs/opticks/head/bin/o.sh: line 362: 433735 Aborted                 (core dumped) /data/blyth/junotop/ExternalLibs/opticks/head/lib/OKG4Test --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile --generateoverride 10000 --envkey --rendermode +global,+axis --geocenter --stac
+
+
+Huh, tis trying to generate randoms ? This is from the align option::
+
+
+    021-08-27 23:04:11.964 INFO  [439759] [CCtx::setTrackOptical@475]  _pho CPho gs 0 ix 9999 id 9999 gn 0 _photon_id 9999 _record_id 9999 _pho.gn 0 mtrack.GetGlobalTime 0 _debug 0 _other 0 _dump 0 _print 0 _dump_count 0
+    terminate called after throwing an instance of 'thrust::system::system_error'
+      what():  for_each: failed to synchronize: cudaErrorIllegalAddress: an illegal memory access was encountered
+
+    Program received signal SIGABRT, Aborted.
+    0x00007fffe5714387 in raise () from /lib64/libc.so.6
+    Missing separate debuginfos, use: debuginfo-install bzip2-libs-1.0.6-13.el7.x86_64 cyrus-sasl-lib-2.1.26-23.el7.x86_64 expat-2.1.0-10.el7_3.x86_64 freetype-2.8-12.el7_6.1.x86_64 glibc-2.17-307.el7.1.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libICE-1.0.9-9.el7.x86_64 libSM-1.2.2-2.el7.x86_64 libX11-1.6.7-3.el7_9.x86_64 libXau-1.0.8-2.1.el7.x86_64 libXext-1.3.3-3.el7.x86_64 libcom_err-1.42.9-13.el7.x86_64 libcurl-7.29.0-59.el7_9.1.x86_64 libgcc-4.8.5-44.el7.x86_64 libglvnd-1.0.1-0.8.git5baa1e5.el7.x86_64 libglvnd-glx-1.0.1-0.8.git5baa1e5.el7.x86_64 libidn-1.28-4.el7.x86_64 libpng-1.5.13-7.el7_2.x86_64 libselinux-2.5-14.1.el7.x86_64 libssh2-1.8.0-3.el7.x86_64 libstdc++-4.8.5-44.el7.x86_64 libuuid-2.23.2-59.el7_6.1.x86_64 libxcb-1.13-1.el7.x86_64 nspr-4.19.0-1.el7_5.x86_64 nss-3.36.0-7.1.el7_6.x86_64 nss-softokn-freebl-3.36.0-5.el7_5.x86_64 nss-util-3.36.0-1.1.el7_6.x86_64 openldap-2.4.44-23.el7_9.x86_64 openssl-libs-1.0.2k-21.el7_9.x86_64 pcre-8.32-17.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007fffe5714387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe5715a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe6024a95 in __gnu_cxx::__verbose_terminate_handler() () from /lib64/libstdc++.so.6
+    #3  0x00007fffe6022a06 in ?? () from /lib64/libstdc++.so.6
+    #4  0x00007fffe6022a33 in std::terminate() () from /lib64/libstdc++.so.6
+    #5  0x00007fffe6022c53 in __cxa_throw () from /lib64/libstdc++.so.6
+    #6  0x00007fffecf2c09b in TRngBuf<double>::generate(unsigned int, unsigned int, unsigned int) () from /data/blyth/junotop/ExternalLibs/opticks/head/lib/../lib64/libThrustRap.so
+    #7  0x00007fffecf2c574 in TRngBuf<double>::generate() () from /data/blyth/junotop/ExternalLibs/opticks/head/lib/../lib64/libThrustRap.so
+    #8  0x00007fffecf0b980 in TCURANDImp<double>::generate() () from /data/blyth/junotop/ExternalLibs/opticks/head/lib/../lib64/libThrustRap.so
+    #9  0x00007fffecf0bd16 in TCURANDImp<double>::setIBase(unsigned int) () from /data/blyth/junotop/ExternalLibs/opticks/head/lib/../lib64/libThrustRap.so
+    #10 0x00007fffecf069a0 in TCURAND<double>::setIBase (this=0xae36ca0, ibase=0) at /home/blyth/opticks/thrustrap/TCURAND.cc:39
+    #11 0x00007ffff4ad670e in CRandomEngine::setupTranche (this=0xae36b30, tranche_id=0) at /home/blyth/opticks/cfg4/CRandomEngine.cc:262
+    #12 0x00007ffff4ad67f6 in CRandomEngine::setupCurandSequence (this=0xae36b30, record_id=9999) at /home/blyth/opticks/cfg4/CRandomEngine.cc:299
+    #13 0x00007ffff4ad81dc in CRandomEngine::preTrack (this=0xae36b30) at /home/blyth/opticks/cfg4/CRandomEngine.cc:766
+    #14 0x00007ffff4acbb15 in CManager::preTrack (this=0xae36980) at /home/blyth/opticks/cfg4/CManager.cc:315
+    #15 0x00007ffff4acba55 in CManager::PreUserTrackingAction (this=0xae36980, track=0x26d82fe0) at /home/blyth/opticks/cfg4/CManager.cc:289
+    #16 0x00007ffff4ac480a in CTrackingAction::PreUserTrackingAction (this=0xbab3280, track=0x26d82fe0) at /home/blyth/opticks/cfg4/CTrackingAction.cc:74
+    #17 0x00007ffff18cd960 in G4TrackingManager::ProcessOneTrack(G4Track*) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4tracking.so
+    #18 0x00007ffff1b03f61 in G4EventManager::DoProcessing(G4Event*) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4event.so
+    #19 0x00007ffff1d9be87 in G4RunManager::ProcessOneEvent(int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #20 0x00007ffff1d950f3 in G4RunManager::DoEventLoop(int, char const*, int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #21 0x00007ffff1d94ebe in G4RunManager::BeamOn(int, char const*, int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #22 0x00007ffff4ac9219 in CG4::propagate (this=0xabd6f40) at /home/blyth/opticks/cfg4/CG4.cc:438
+    #23 0x00007ffff7bab731 in OKG4Mgr::propagate_ (this=0x7fffffff1690) at /home/blyth/opticks/okg4/OKG4Mgr.cc:269
+    #24 0x00007ffff7baafda in OKG4Mgr::propagate (this=0x7fffffff1690) at /home/blyth/opticks/okg4/OKG4Mgr.cc:162
+    #25 0x0000000000403949 in main (argc=33, argv=0x7fffffff19d8) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:28
+    (gdb) 
+
+
+This is getting too much into the weeds of code that does not have long to live...
+
+
+
+
+
+
 
 Aug 27 15:28
 -----------------
