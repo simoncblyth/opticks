@@ -280,8 +280,8 @@ void CCtx::setEvent(const G4Event* event)
 
     _number_of_input_photons = event ? CEvent::NumberOfInputPhotons(event) : 0 ; 
     LOG(LEVEL) 
-        << "_number_of_input_photons " << _number_of_input_photons 
-        << "_genstep_index " << _genstep_index
+        << " _number_of_input_photons " << _number_of_input_photons 
+        << " _genstep_index " << _genstep_index
         ; 
 }
 
@@ -303,11 +303,19 @@ Invoked by CGenstepCollector::addGenstep from the CGenstepCollector::collect met
 
 void CCtx::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
 {
+    LOG(LEVEL); 
     setGenstep(genstep_index, gentype, num_photons, offset); 
 }
 
 void CCtx::setGenstep(unsigned genstep_index, char gentype, int num_photons, int offset)
 {
+    LOG(LEVEL)
+        << " genstep_index(argument) " << genstep_index
+        << " gentype " << gentype
+        << " num_photons " << num_photons
+        << " offset " << offset 
+        ; 
+
     _genstep_index += 1 ;    // _genstep_index starts at -1 and is reset to -1 by CCtx::setEvent, so it becomes a zero based event local index
     _genstep_num_photons = num_photons ; 
 

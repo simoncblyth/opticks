@@ -103,6 +103,7 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_hub(new OpticksHub(m_ok)),            // configure, loadGeometry and setupInputGensteps immediately
     m_load(m_ok->isLoad()),
     m_nog4propagate(m_ok->isNoG4Propagate()),
+    m_nogpu(m_ok->isNoGPU()),
     m_production(m_ok->isProduction()), 
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // huh : m_gen should be in change of the number of events ? 
@@ -110,7 +111,7 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_g4(        m_load ? NULL : new CG4(m_hub)),   // configure and initialize immediately 
     m_generator( m_load ? NULL : m_g4->getGenerator()),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
-    m_propagator(new OKPropagator(m_hub, m_idx, m_viz))
+    m_propagator(m_nogpu ? nullptr : new OKPropagator(m_hub, m_idx, m_viz))
 {
     (*m_log)("DONE");
     init(); 
@@ -209,18 +210,20 @@ instanciate m_g4 and m_generator : but the machinery forces to do so
 
 **/
 
-void OKG4Mgr::propagate_()
+void OKG4Mgr::old_style_propagate_()
 { 
     bool align = m_ok->isAlign();
 
     if(m_generator->hasGensteps())   // TORCH
     {
-
-      // old style 
          NPY<float>* gs = m_generator->getGensteps() ;
          m_ok->createEvent(gs, '=');
 
          unsigned numPhotons = G4StepNPY::CountPhotons(gs); 
+         LOG(LEVEL) 
+             << " G4StepNPY::CountPhotons " << numPhotons
+             ;   
+
          CGenstep cgs = m_g4->addGenstep( numPhotons, 'T' ); 
 
          LOG(info)
@@ -228,8 +231,7 @@ void OKG4Mgr::propagate_()
              << " cgs " << cgs.desc()
              ;           
 
-
-         if(align)
+         if(align && m_propagator)
              m_propagator->propagate();
 
          if(!m_nog4propagate) 
@@ -245,8 +247,31 @@ void OKG4Mgr::propagate_()
          m_ok->createEvent(gs, '=' );
     }
             
-    if(!align)
+    if(!align && m_propagator)
         m_propagator->propagate();
+}
+
+
+void OKG4Mgr::propagate_()
+{
+    LOG(LEVEL) << "[" ; 
+    unsigned numPhotons = 100 ; 
+    int node_index = 0 ; 
+    unsigned originTrackID = 101 ; 
+    CGenstep cgs = m_g4->collectDefaultTorchStep(numPhotons, node_index, originTrackID );  
+
+    LOG(LEVEL)
+        << " numPhotons " << numPhotons 
+        << " cgs " << cgs.desc()
+        ;           
+
+    if(!m_nog4propagate) 
+        m_g4->propagate();
+
+    if(m_propagator)
+        m_propagator->propagate();
+
+    LOG(LEVEL) << "]" ; 
 }
 
 

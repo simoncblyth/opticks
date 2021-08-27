@@ -473,6 +473,14 @@ void CG4::postpropagate()
     if(!finmac.empty()) execute(finmac.c_str());
 
     OpticksEvent* evt = m_run->getG4Event();
+    if(evt == nullptr)
+    {
+        LOG(fatal) 
+            << " OpticksRun::getG4Event gives NULL "
+            << " m_ok.isSave " << m_ok->isSave()
+            ; 
+
+    }
     assert(evt);
 
     NPY<float>* so = m_generator->getSourcePhotons(); 

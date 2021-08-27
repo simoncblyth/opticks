@@ -106,6 +106,7 @@ class CFG4_API CWriter
         bool               m_enabled ; 
         OpticksEvent*      m_evt ; 
         unsigned           m_ni ; 
+        unsigned           m_BeginOfGenstep_count ; 
 
         NPY<short>*               m_records_buffer ; 
         NPY<double>*              m_deluxe_buffer ; 

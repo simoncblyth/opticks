@@ -643,12 +643,14 @@ Common causes of error when running python scripts via SSys::RunPythonScript are
 
 1. using a python which does not have the *numpy* module
 2. not configuring PYTHONPATH such that the *opticks* modules can be found 
+3. not configuring PATH to allow SSys::Which to find the python scripts 
 
 Example settings of envvars to configure within .bash_profile or .bashrc which 
 control the python that opticks C++ will use with SSys::RunPythonScript are::
 
    export OPTICKS_PYTHON=/Users/blyth/miniconda3/bin/python
    export PYTHONPATH=$PYTHONPATH:$(opticks-fold)
+   export PATH=$PATH:$(opticks-home)/bin
 
 Note that opticks-fold is the directory above opticks-home "/home/blyth/opticks" 
 so that will often be the HOME directory, eg /home/blyth

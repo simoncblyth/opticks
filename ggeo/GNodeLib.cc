@@ -475,8 +475,19 @@ void GNodeLib::addVolume(const GVolume* volume)
         << " origin_copyNumber " << origin_copyNumber 
         ;
 
-    assert( origin ); 
-    m_origin2index[std::make_pair(origin, origin_copyNumber)] = index ; 
+    //assert( origin ); 
+    if( origin == nullptr )
+    {
+        LOG(error) 
+            << " GVolume::getOriginNode giving NULL (test geometry perhaps) "
+            << " origin " << origin
+            << " origin_copyNumber " << origin_copyNumber 
+            ;
+    }
+    else
+    { 
+        m_origin2index[std::make_pair(origin, origin_copyNumber)] = index ; 
+    }
 }
 
 /**

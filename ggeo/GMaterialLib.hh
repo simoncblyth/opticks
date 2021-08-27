@@ -108,9 +108,10 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        static void dump(GMaterial* mat, const char* msg);
        static void dump(GMaterial* mat);
    public:
-       void Summary(const char* msg="GMaterialLib::Summary");
-       void dump(const char* msg="GMaterialLib::dump");
-       void dump(unsigned int index);
+       void Summary(const char* msg="GMaterialLib::Summary") const ;
+       void dump(const char* msg="GMaterialLib::dump") const ;
+       void dump(unsigned int index) const ;
+       std::string desc() const ;
    private:
        void init();
        void initInterpolatingCopy(GMaterialLib* src, GDomain<double>* domain);

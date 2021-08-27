@@ -21,9 +21,13 @@
 #include <sstream>
 #include <iomanip>
 
+
+
 #include "G4StepPoint.hh"
 #include "G4Material.hh"
 #include "G4MaterialTable.hh"
+
+#include "Opticks.hh"
 
 #include "GMaterialLib.hh"
 #include "CStep.hh"
@@ -38,6 +42,8 @@ const plog::Severity CMaterialBridge::LEVEL = PLOG::EnvLevel("CMaterialBridge", 
 CMaterialBridge::CMaterialBridge(const GMaterialLib* mlib) 
     :
     m_mlib(mlib),
+    m_ok(mlib->getOpticks()),
+    m_test(m_ok->isTest()),
     m_mlib_materials(m_mlib->getNumMaterials()),
     m_g4_materials(G4Material::GetNumberOfMaterials())
 {
@@ -136,19 +142,40 @@ void CMaterialBridge::initMap()
     // for matching with GDML exports the GMaterialLib has changed to handling only the 
     // materials that are used, not all G4 materials that are present 
     // so the below constraints now use nmat_mlib rather than nmat
+    //
+    // BUT : it seems the artifical addition of test materials doesnt fit in with this
+    //
 
+    bool mismatch = false ; 
     if( m_g4toix.size() != nmat_mlib )
+    {
+        mismatch = true ; 
         LOG(fatal) << " MISMATCH : m_g4toix.size() " << m_g4toix.size() << " nmat_mlib " << nmat_mlib ; 
+    }
 
     if( m_ixtoname.size() != nmat_mlib )
+    {
+        mismatch = true ; 
         LOG(fatal) << " MISMATCH : m_ixtoname.size() " << m_ixtoname.size() << " nmat_mlib " << nmat_mlib ; 
+    }
 
     if( m_ixtoabbr.size() != nmat_mlib )
+    {
+        mismatch = true ; 
         LOG(fatal) << " MISMATCH : m_ixtoabbr.size() " << m_ixtoabbr.size() << " nmat_mlib " << nmat_mlib ; 
+    }
 
-    assert( m_g4toix.size() == nmat_mlib );
-    assert( m_ixtoname.size() == nmat_mlib && "there is probably a duplicated material name");
-    assert( m_ixtoabbr.size() == nmat_mlib && "there is probably a duplicated material name");
+    if(mismatch)
+    {
+        LOG(error) << " MISMATCH mlib.desc " <<  m_mlib->desc(); 
+    }
+
+    if( m_test == false )
+    {
+        assert( m_g4toix.size() == nmat_mlib );
+        assert( m_ixtoname.size() == nmat_mlib && "there is probably a duplicated material name");
+        assert( m_ixtoabbr.size() == nmat_mlib && "there is probably a duplicated material name");
+    }
 }
 
 

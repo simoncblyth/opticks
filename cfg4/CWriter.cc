@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <sstream>
+#include <csignal>
 
 #include "G4StepPoint.hh"
 #include "G4VPhysicalVolume.hh"
@@ -56,6 +57,8 @@ CWriter::CWriter(CCtx& ctx, CPhoton& photon)
     m_ok(m_ctx.getOpticks()),
     m_enabled(true),
     m_evt(NULL),
+    m_ni(0),
+    m_BeginOfGenstep_count(0),
 
     m_records_buffer(NULL),
     m_deluxe_buffer(NULL),
@@ -93,6 +96,7 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
         << " _bounce_max  " << m_ctx._bounce_max 
         << " _steps_per_photon " << m_ctx._steps_per_photon 
         << " num_g4event " << m_evt->getNumG4Event() 
+        << " m_BeginOfGenstep_count " << m_BeginOfGenstep_count
         ;
 
     m_history_buffer = m_evt->getSequenceData();  // ph : seqhis/seqmat
@@ -112,6 +116,7 @@ std::string CWriter::desc(const char* msg) const
     ss << " m_photons_buffer " << m_photons_buffer->getShapeString() ; 
     ss << " m_records_buffer " << m_records_buffer->getShapeString() ; 
     ss << " m_deluxe_buffer " << m_deluxe_buffer->getShapeString() ; 
+    ss << " m_BeginOfGenstep_count " << m_BeginOfGenstep_count ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -123,6 +128,7 @@ std::string CWriter::dbgdesc() const
        << " m_enabled " << m_enabled
        << " m_evt " << m_evt
        << " m_ni " << m_ni 
+       << " m_BeginOfGenstep_count " << m_BeginOfGenstep_count
        << " m_records_buffer " << m_records_buffer
        << " m_deluxe_buffer " <<  m_deluxe_buffer 
        << " m_photons_buffer " << m_photons_buffer 
@@ -148,6 +154,9 @@ unsigned CWriter::expand(unsigned gs_photons)
             << " gs_photons " << gs_photons
             << " Cannot expand as CWriter::initEvent has not been called "
             << "  check CManager logging, perhaps --save not enabled  " 
+            << " m_ok->isSave() " << m_ok->isSave() 
+            << " OR BeginOfGenstep notifications not received "
+            << " m_BeginOfGenstep_count " << m_BeginOfGenstep_count
             << std::endl << dbgdesc() 
             ;
         return 0 ;  
@@ -173,14 +182,17 @@ Invoked from CRecorder::BeginOfGenstep, expands the buffers to accomodate the ph
 
 void CWriter::BeginOfGenstep()
 {
+    m_BeginOfGenstep_count += 1 ; 
+
     unsigned genstep_num_photons =  m_ctx._genstep_num_photons ; 
     m_ni = expand(genstep_num_photons);  
 
     LOG(LEVEL)
         << " m_ctx._gentype [" <<  m_ctx._gentype << "]" 
         << " m_ctx._genstep_index " << m_ctx._genstep_index
-        << " m_ctx._genstep_num_photons " << m_ctx._genstep_num_photons
+        << " m_ctx._genstep_num_photons (from CCtx::BeginOfGenstep) " << m_ctx._genstep_num_photons
         << " m_ni " << m_ni 
+        << " m_BeginOfGenstep_count " << m_BeginOfGenstep_count
         ;
 
 
@@ -223,6 +235,7 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
         << " m_ctx._photon_id " << m_ctx._photon_id 
         << " m_ctx._record_id " << m_ctx._record_id 
         << " m_ni " << m_ni 
+        << " m_BeginOfGenstep_count " << m_BeginOfGenstep_count
         ;
   
     if( record_id >= m_ni )
@@ -231,7 +244,10 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
             << " SKIP "
             << " unexpected record_id " << record_id
             << " m_ni " << m_ni 
-            ;   
+            << " m_BeginOfGenstep_count " << m_BeginOfGenstep_count
+            ;  
+
+        std::raise(SIGINT);  
         return true ; 
     }  
     //assert( record_id < m_ni ); 

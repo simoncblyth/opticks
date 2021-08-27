@@ -69,6 +69,8 @@ class CFG4_API CMaterialBridge
         void initMap();
     private:
         const GMaterialLib*   m_mlib ; 
+        const Opticks* m_ok ; 
+        const bool m_test ; 
         const unsigned m_mlib_materials ; 
         const unsigned m_g4_materials ; 
 

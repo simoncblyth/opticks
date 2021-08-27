@@ -285,14 +285,17 @@ const char* GMaterialLib::propertyName(unsigned int k)
     return "?" ;
 }
 
-void GMaterialLib::Summary(const char* msg)
+void GMaterialLib::Summary(const char* msg) const 
 {
-    LOG(info) << msg  
-              << " NumMaterials " << getNumMaterials() 
-              << " NumFloat4 " << NUM_FLOAT4
-              ;
-}
+    LOG(info) 
+        << msg  
+        << " NumMaterials " << getNumMaterials() 
+        << " NumFloat4 " << NUM_FLOAT4
+        ;
 
+
+
+}
 
 
 /**
@@ -873,7 +876,7 @@ bool GMaterialLib::setMaterialPropertyValues(const char* matname, const char* pr
 
 
 
-void GMaterialLib::dump(const char* msg)
+void GMaterialLib::dump(const char* msg) const 
 {
     Summary(msg);
 
@@ -898,7 +901,25 @@ void GMaterialLib::dump(const char* msg)
 }
 
 
-void GMaterialLib::dump(unsigned int index)
+
+std::string GMaterialLib::desc() const 
+{
+    std::stringstream ss ; 
+    unsigned num_materials = getNumMaterials() ; 
+    ss << "GMaterialLib::desc NumMaterials " << num_materials << "[" << std::endl ; 
+
+    for(unsigned i=0 ; i < num_materials ; i++ ) 
+    {
+        GMaterial* mat = getMaterial(i);
+        ss << mat->description() << std::endl ; 
+    }
+    ss << "]" ; 
+    std::string s = ss.str(); 
+    return s; 
+}
+
+
+void GMaterialLib::dump(unsigned int index) const 
 {
     GMaterial* mat = getMaterial(index);
     dump(mat);

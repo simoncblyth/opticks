@@ -3,43 +3,116 @@ opticks-t-fails-aug-2021-13-of-493
 
 
 
-Aug 27 19:20
+
+Aug 27 14:40
+-------------------
+
+::
+
+    2021-08-27 14:40:57.816 FATAL [41326] [CWriter::writeStepPoint@232]  SKIP  unexpected record_id 9999 m_ni 0
+
+    Process 10205 launched: '/usr/local/opticks/lib/OKG4Test' (x86_64)
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGINT
+      * frame #0: 0x00007fff5dacfb66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff5dc9a080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff5d9dd6fe libsystem_c.dylib`raise + 26
+        frame #3: 0x000000010362a5bc libCFG4.dylib`CWriter::writeStepPoint(this=<unavailable>, point=<unavailable>, flag=<unavailable>, material=<unavailable>, last=<unavailable>) at CWriter.cc:238 [opt]
+        frame #4: 0x000000010362359d libCFG4.dylib`CRecorder::WriteStepPoint(this=<unavailable>, point=<unavailable>, flag=<unavailable>, material=<unavailable>, boundary_status=<unavailable>, (null)=<unavailable>, last=<unavailable>) at CRecorder.cc:756 [opt]
+        frame #5: 0x000000010362286e libCFG4.dylib`CRecorder::postTrackWriteSteps(this=<unavailable>) at CRecorder.cc:646 [opt]
+        frame #6: 0x000000010362143c libCFG4.dylib`CRecorder::postTrack(this=<unavailable>) at CRecorder.cc:214 [opt]
+        frame #7: 0x0000000103642c3d libCFG4.dylib`CManager::PostUserTrackingAction(G4Track const*) [inlined] CManager::postTrack(this=<unavailable>) at CManager.cc:333 [opt]
+        frame #8: 0x0000000103642c29 libCFG4.dylib`CManager::PostUserTrackingAction(this=<unavailable>, track=<unavailable>) at CManager.cc:301 [opt]
+        frame #9: 0x000000010551c937 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x000000011ce84f50, apValueG4Track=0x000000014543a8d0) at G4TrackingManager.cc:140
+        frame #10: 0x00000001053e271a libG4event.dylib`G4EventManager::DoProcessing(this=0x000000011ce84ec0, anEvent=0x0000000174ed4270) at G4EventManager.cc:185
+        frame #11: 0x00000001053e3c2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x000000011ce84ec0, anEvent=0x0000000174ed4270) at G4EventManager.cc:338
+        frame #12: 0x00000001052ef9e5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000011cdcdd30, i_event=0) at G4RunManager.cc:399
+        frame #13: 0x00000001052ef815 libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000011cdcdd30, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #14: 0x00000001052edcd1 libG4run.dylib`G4RunManager::BeamOn(this=0x000000011cdcdd30, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #15: 0x0000000103640b89 libCFG4.dylib`CG4::propagate(this=<unavailable>) at CG4.cc:438 [opt]
+        frame #16: 0x00000001000df3ee libOKG4.dylib`OKG4Mgr::propagate_(this=0x00007ffeefbfdc40) at OKG4Mgr.cc:236
+        frame #17: 0x00000001000df0ab libOKG4.dylib`OKG4Mgr::propagate(this=0x00007ffeefbfdc40) at OKG4Mgr.cc:161
+        frame #18: 0x0000000100011d3f OKG4Test`main(argc=33, argv=0x00007ffeefbfdd10) at OKG4Test.cc:29
+        frame #19: 0x00007fff5d97f015 libdyld.dylib`start + 1
+    (lldb) ^D
+
+
+
+Aug 27 12:58 material mismatch in tboolean box  : be permissive about that
+-----------------------------------------------------------------------------
+
+* thats probably the Hale water thats not being used in test geometry 
+
+::
+
+    2021-08-27 12:58:26.859 INFO  [4921610] [CDetector::traverse@124] [
+    2021-08-27 12:58:26.860 INFO  [4921610] [CDetector::traverse@132] ]
+    2021-08-27 12:58:26.861 FATAL [4921610] [Opticks::setSpaceDomain@3352]  changing w 60000 -> 451
+    2021-08-27 12:58:28.184 INFO  [4921610] [CDevice::Dump@265] visible devices[0:GeForce_GT_750M]
+    2021-08-27 12:58:28.184 INFO  [4921610] [CDevice::Dump@269] idx/ord/mpc/cc:0/0/2/30   2.000 GB  GeForce GT 750M
+
+      C4FPEDetection::InvalidOperationDetection_Disable       NOT IMPLEMENTED 
+    2021-08-27 12:58:28.503 INFO  [4921610] [CMaterialBridge::initMap@77]  mtab 0x108e30ad0 nmat (G4Material::GetNumberOfMaterials) 3 nmat_mlib (GMaterialLib::getNumMaterials) 4
+    2021-08-27 12:58:28.503 INFO  [4921610] [CMaterialBridge::initMap@134] 
+     nmat (G4Material::GetNumberOfMaterials) 3 nmat_mlib (GMaterialLib::getNumMaterials) materials used by geometry 4
+     i   0 name                                Rock shortname                                Rock abbr                                Rock index     2 mlib_unset     0
+     i   1 name                              Vacuum shortname                              Vacuum abbr                              Vacuum index     3 mlib_unset     0
+     i   2 name                       GlassSchottF2 shortname                       GlassSchottF2 abbr                       GlassSchottF2 index     0 mlib_unset     0
+     nmat 3 nmat_mlib 4 m_g4toix.size() 3 m_ixtoname.size() 3 m_ixtoabbr.size() 3
+
+    2021-08-27 12:58:28.503 FATAL [4921610] [CMaterialBridge::initMap@141]  MISMATCH : m_g4toix.size() 3 nmat_mlib 4
+    2021-08-27 12:58:28.503 FATAL [4921610] [CMaterialBridge::initMap@144]  MISMATCH : m_ixtoname.size() 3 nmat_mlib 4
+    2021-08-27 12:58:28.503 FATAL [4921610] [CMaterialBridge::initMap@147]  MISMATCH : m_ixtoabbr.size() 3 nmat_mlib 4
+    Assertion failed: (m_g4toix.size() == nmat_mlib), function initMap, file /Users/blyth/opticks/cfg4/CMaterialBridge.cc, line 149.
+    Process 80911 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff537fbb66 libsystem_kernel.dylib`__pthread_kill + 
+
+
+
+* Geant4 sees 3, GMaterialLib 4 (with extra HaleH20).
+* so why did the back conversion of materials miss that one ?
+
+::
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff537fbb66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff539c6080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff537571ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff5371f1ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x000000010360dd4b libCFG4.dylib`CMaterialBridge::initMap(this=<unavailable>) at CMaterialBridge.cc:164 [opt]
+        frame #5: 0x000000010360cbb5 libCFG4.dylib`CMaterialBridge::CMaterialBridge(this=<unavailable>, mlib=<unavailable>) at CMaterialBridge.cc:46 [opt]
+        frame #6: 0x00000001035f0009 libCFG4.dylib`CGeometry::postinitialize(this=<unavailable>) at CGeometry.cc:143 [opt]
+        frame #7: 0x0000000103640249 libCFG4.dylib`CG4::postinitialize(this=<unavailable>) at CG4.cc:250 [opt]
+        frame #8: 0x000000010363ffbf libCFG4.dylib`CG4::initialize(this=<unavailable>) at CG4.cc:226 [opt]
+        frame #9: 0x000000010363fe00 libCFG4.dylib`CG4::init(this=<unavailable>) at CG4.cc:196 [opt]
+        frame #10: 0x000000010363fc7a libCFG4.dylib`CG4::CG4(this=<unavailable>, hub=<unavailable>) at CG4.cc:187 [opt]
+        frame #11: 0x00000001000deaa9 libOKG4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007ffeefbfdc40, argc=33, argv=0x00007ffeefbfdd10) at OKG4Mgr.cc:110
+        frame #12: 0x00000001000ded83 libOKG4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007ffeefbfdc40, argc=33, argv=0x00007ffeefbfdd10) at OKG4Mgr.cc:114
+        frame #13: 0x0000000100011d33 OKG4Test`main(argc=33, argv=0x00007ffeefbfdd10) at OKG4Test.cc:28
+        frame #14: 0x00007fff536ab015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+
+Aug 27 10:20
 ---------------
 
 ::
 
     FAILS:  2   / 491   :  Fri Aug 27 19:20:29 2021   
-      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      4.99   
       2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      4.58   
     O[blyth@localhost opticks]$ 
 
 
+::
 
+    cd ~/opticks/integration/tests
 
-    2021-08-27 19:18:35.000 INFO  [52685] [NPY<T>::MakeFloat@2030]  nv 876672
-    2021-08-27 19:18:35.127 INFO  [52685] [main@189]  ok 
-    2021-08-27 19:18:35.141 INFO  [52685] [interpolationTest::init@115]  name interpolationTest_interpol.npy base $TMP/optixrap/interpolationTest script interpolationTest_interpol.py nb    36 nx   761 ny   288 progname              interpolationTest
-    2021-08-27 19:18:35.142 INFO  [52685] [OLaunchTest::init@69] OLaunchTest entry   0 width       1 height       1 ptx                               interpolationTest.cu prog                                  interpolationTest
-    2021-08-27 19:18:35.142 INFO  [52685] [OLaunchTest::launch@80] OLaunchTest entry   0 width     761 height      36 ptx                               interpolationTest.cu prog                                  interpolationTest
-    2021-08-27 19:18:36.189 INFO  [52685] [interpolationTest::launch@158] OLaunchTest entry   0 width     761 height      36 ptx                               interpolationTest.cu prog                                  interpolationTest
-    2021-08-27 19:18:36.193 INFO  [52685] [interpolationTest::launch@165]  save  base $TMP/optixrap/interpolationTest name interpolationTest_interpol.npy
-    2021-08-27 19:18:36.245 INFO  [52685] [SSys::RunPythonScript@623]  script interpolationTest_interpol.py script_path /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py python_executable /home/blyth/local/env/tools/conda/miniconda3/bin/python
-    Traceback (most recent call last):
-      File "/data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py", line 23, in <module>
-        from opticks.ana.proplib import PropLib
-    ModuleNotFoundError: No module named 'opticks'
-    2021-08-27 19:18:36.430 INFO  [52685] [SSys::run@100] /home/blyth/local/env/tools/conda/miniconda3/bin/python /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  rc_raw : 256 rc : 1
-    2021-08-27 19:18:36.431 ERROR [52685] [SSys::run@107] FAILED with  cmd /home/blyth/local/env/tools/conda/miniconda3/bin/python /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  RC 1
-    2021-08-27 19:18:36.431 INFO  [52685] [SSys::RunPythonScript@630]  RC 1
-    2021-08-27 19:18:36.431 ERROR [52685] [SSys::RunPythonScript@633]  control which python to use by setting the OPTICKS_PYTHON envvar to the python executable name or path 
-    2021-08-27 19:18:36.431 ERROR [52685] [SSys::RunPythonScript@634]  pick a python that has the numpy module, set envvar in .bash_profile with eg:: 
-    2021-08-27 19:18:36.431 ERROR [52685] [SSys::RunPythonScript@635] 
-    2021-08-27 19:18:36.431 ERROR [52685] [SSys::RunPythonScript@636]       export OPTICKS_PYTHON=/Users/blyth/miniconda3/bin/python 
-
-
-
-
-
+    O[blyth@localhost tests]$ ./tboolean_box.sh
+    ...
 
     2021-08-27 19:20:27.772 FATAL [58652] [NCSG::polygonize@1144] NCSG::polygonize requires compilation with the optional OpenMesh : using bbox triangles placeholder 
     2021-08-27 19:20:27.772 FATAL [58652] [NCSG::polygonize@1144] NCSG::polygonize requires compilation with the optional OpenMesh : using bbox triangles placeholder 
@@ -49,6 +122,69 @@ Aug 27 19:20
     === o-main : runline PWD /data/blyth/junotop/ExternalLibs/opticks/head/build/integration/tests RC 134 Fri Aug 27 19:20:28 CST 2021
     /data/blyth/junotop/ExternalLibs/opticks/head/lib/OKG4Test --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile --generateoverride 10000 --envkey --rendermode +global,+axis --geocenter --stack 2180 --eye 1,0,0 --up 0,0,1 --test --testconfig mode=PyCsgInBox_analytic=1_name=tboolean-box_csgpath=/tmp/blyth/opticks/tboolean-box_outerfirst=1_autocontainer=Rock//perfectAbsorbSurface/Vacuum_autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_autoemitconfig=photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0_autoseqmap=TO:0,SR:1,SA:0 --torch --torchconfig type=disc_photons=100000_mode=fixpol_polarization=1,1,0_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000_source=0,0,599_target=0,0,0_time=0.0_radius=300_distance=200_zenithazimuth=0,1,0,1_material=Vacuum_wavelength=500 --torchdbg --tag 1 --anakey tboolean --args --save
     echo o-postline : dummy
+
+    (gdb) bt
+    #0  0x00007fffe5716387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffe5717a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffe570f1a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffe570f252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffed661146 in GNodeLib::addVolume (this=0x9efceb0, volume=0x9fa4de0) at /home/blyth/opticks/ggeo/GNodeLib.cc:478
+    #5  0x00007fffed637833 in GGeoTest::collectNodes_r (this=0x9e82000, node=0x9fa4de0, depth=0) at /home/blyth/opticks/ggeo/GGeoTest.cc:466
+    #6  0x00007fffed6377d4 in GGeoTest::collectNodes (this=0x9e82000, root=0x9fa4de0) at /home/blyth/opticks/ggeo/GGeoTest.cc:461
+    #7  0x00007fffed636eb7 in GGeoTest::initCreateCSG (this=0x9e82000) at /home/blyth/opticks/ggeo/GGeoTest.cc:287
+    #8  0x00007fffed63651b in GGeoTest::init (this=0x9e82000) at /home/blyth/opticks/ggeo/GGeoTest.cc:177
+    #9  0x00007fffed636266 in GGeoTest::GGeoTest (this=0x9e82000, ok=0x699cd0, basis=0x71a1a0) at /home/blyth/opticks/ggeo/GGeoTest.cc:162
+    #10 0x00007fffed90a8e1 in OpticksHub::setupTestGeometry (this=0x703e00) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:364
+    #11 0x00007fffed90a340 in OpticksHub::loadGeometry (this=0x703e00) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:300
+    #12 0x00007fffed909f04 in OpticksHub::init (this=0x703e00) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:250
+    #13 0x00007fffed909d4c in OpticksHub::OpticksHub (this=0x703e00, ok=0x699cd0) at /home/blyth/opticks/opticksgeo/OpticksHub.cc:217
+    #14 0x00007ffff7baaa06 in OKG4Mgr::OKG4Mgr (this=0x7ffffffef3e0, argc=33, argv=0x7ffffffef728) at /home/blyth/opticks/okg4/OKG4Mgr.cc:103
+    #15 0x000000000040393a in main (argc=33, argv=0x7ffffffef728) at /home/blyth/opticks/okg4/tests/OKG4Test.cc:27
+    (gdb) 
+
+
+
+origin is null with test geometry 
+
+::
+
+    423 void GNodeLib::addVolume(const GVolume* volume)
+    424 {
+    425     unsigned index = volume->getIndex();
+    426     m_volumes.push_back(volume);
+    ...
+    470     const void* origin = volume->getOriginNode() ;
+    471     int origin_copyNumber = volume->getOriginCopyNumber() ;
+    472 
+    473     LOG(LEVEL)
+    474         << " origin " << origin
+    475         << " origin_copyNumber " << origin_copyNumber
+    476         ;
+    477 
+    478     assert( origin );
+    479     m_origin2index[std::make_pair(origin, origin_copyNumber)] = index ;
+    480 }
+
+
+    153 /**
+    154 GVolume::getOriginNode
+    155 ------------------------
+    156 
+    157 *OriginNode* set in ctor is used to record the G4VPhysicalVolume from whence the GVolume 
+    158 was converted, see X4PhysicalVolume::convertNode
+    159 
+    160 **/
+    161 
+    162 void* GVolume::getOriginNode() const
+    163 {
+    164     return m_origin_node ;
+    165 }
+    166 
+    167 int GVolume::getOriginCopyNumber() const
+    168 {
+    169     return m_origin_copyNumber ;
+    170 }
+
 
 
 

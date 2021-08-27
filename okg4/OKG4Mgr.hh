@@ -59,6 +59,7 @@ class OKG4_API OKG4Mgr {
        void visualize();
        int rc() const ;
    private:
+       void old_style_propagate_();
        void propagate_();
        void cleanup();
    private:
@@ -69,6 +70,7 @@ class OKG4_API OKG4Mgr {
        OpticksHub*    m_hub ; 
        bool           m_load ; 
        bool           m_nog4propagate ; 
+       bool           m_nogpu ; 
        bool           m_production ; 
        OpticksIdx*    m_idx ; 
        int            m_num_event ; 
