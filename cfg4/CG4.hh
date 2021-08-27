@@ -127,7 +127,7 @@ class CFG4_API CG4
         void postinitializeMaterialLookup(); 
         void postpropagate();
    public:
-        //CGenstep addGenstep( unsigned num_photons, char gentype );
+        CGenstep addGenstep( unsigned num_photons, char gentype );  // old approach 
         CGenstep collectDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID ); 
 
         int getPrintIndex() const ;

@@ -217,7 +217,6 @@ void OKG4Mgr::propagate_()
     {
 
       // old style 
-      /*
          NPY<float>* gs = m_generator->getGensteps() ;
          m_ok->createEvent(gs, '=');
 
@@ -228,8 +227,6 @@ void OKG4Mgr::propagate_()
              << " numPhotons " << numPhotons 
              << " cgs " << cgs.desc()
              ;           
-
-       */
 
 
          if(align)

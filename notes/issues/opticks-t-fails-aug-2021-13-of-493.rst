@@ -2,6 +2,14 @@ opticks-t-fails-aug-2021-13-of-493
 ======================================
 
 
+Aug 26 17:09 : DOWN TO THE PYTHON RELATED FAILS
+----------------------------------------------------
+
+::
+
+    FAILS:  2   / 491   :  Fri Aug 27 00:09:19 2021   
+      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      4.95     Needs OPTICKS_PYTHON envvar set to a python name or path which has numpy   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.92    HMM : this uses OKG4Test 
 
 
 Aug 26 14:03
@@ -13,7 +21,10 @@ Aug 26 14:03
     FAILS:  4   / 492   :  Thu Aug 26 21:03:18 2021   
       25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      4.93   
       1  /1   Test #1  : OKG4Test.OKX4Test                             Subprocess aborted***Exception:   0.79    trips on null gdmlpath : inadvertently added test 
-      1  /2   Test #1  : G4OKTest.G4OKTest                             Subprocess aborted***Exception:  10.40    LACKS CManager f
+      1  /2   Test #1  : G4OKTest.G4OKTest                             Subprocess aborted***Exception:  10.40    LACKS CManager :  
+
+                         ADDED G4 MOCKING APPROACH FOR G4OpticksRecoder/CManager machinery to be usable without Geant4 calling the shots 
+
       2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      0.87   
     O[blyth@localhost opticks]$ 
 

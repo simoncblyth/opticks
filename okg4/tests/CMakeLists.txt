@@ -9,10 +9,10 @@ set(TEST_SOURCES
 
 set(_TEST_SOURCES    # create the executable by do not add_test for these
     OKX4Test.cc
+    OKG4Test.cc
 )
 
 set(FORMER_TEST_SOURCES
-    OKG4Test.cc
 )
 
 

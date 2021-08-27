@@ -295,17 +295,17 @@ void CG4::postinitializeMaterialLookup()
 
 /**
 CG4::addGenstep
+------------------
 
-   Need to use : CGenstep CGenstepCollector::collectTorchGenstep(const OpticksGenstep* gs)
+Old approach pre-dating G4OpticksRecorder/CManager used by OKG4Mgr::propagate_
 
+**/
 
 CGenstep CG4::addGenstep( unsigned num_photons, char gentype )
 {
     assert( m_genstep_collector ); 
     return m_genstep_collector->addGenstep( num_photons, gentype );  
 }
-**/
-
 
 
 CGenstep CG4::collectDefaultTorchStep(unsigned num_photons, int node_index, unsigned originTrackID )

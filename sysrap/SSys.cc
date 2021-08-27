@@ -628,6 +628,14 @@ int SSys::RunPythonScript(const char* script)
 
     int RC = script_path.empty() ? 101 : SSys::exec(python_executable,script_path.c_str()) ;
     LOG(info) << " RC " << RC ; 
+    if( RC != 0 )
+    {
+         LOG(error) << " control which python to use by setting the OPTICKS_PYTHON envvar to the python executable name or path " ;   
+         LOG(error) << " pick a python that has the numpy module, set envvar in .bash_profile with eg:: " ;
+         LOG(error) ;  
+         LOG(error) << "      export OPTICKS_PYTHON=/Users/blyth/miniconda3/bin/python " ; 
+    }
+
     return RC ; 
 }
 

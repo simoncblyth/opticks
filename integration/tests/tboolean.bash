@@ -720,7 +720,9 @@ tboolean-lv()
    local testname=$(tboolean-testname)
    local RC
    local cmdline="$*"
-   echo $msg $testname cmdline $cmdline
+   local binopt="--okg4test"  
+
+   echo $msg $testname cmdline $cmdline binopt $binopt
 
    if [ "${cmdline/--ip}" != "${cmdline}" ]; then
        TESTNAME=$testname tboolean-ipy- $* 
@@ -731,9 +733,9 @@ tboolean-lv()
    elif [ "${cmdline/--oktest}" != "${cmdline}" ]; then
        $funcname $* --nog4propagate  
    elif [ "${cmdline/--noalign}" != "${cmdline}" ]; then
-       $funcname --okg4test  $*   
+       $funcname $binopt  $*   
    else
-       $funcname --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile $*   
+       $funcname $binopt --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile $*   
        RC=$?
    fi 
    echo $msg $funcname RC $RC
