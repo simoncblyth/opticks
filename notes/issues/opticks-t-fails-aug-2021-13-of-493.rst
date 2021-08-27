@@ -4,6 +4,26 @@ opticks-t-fails-aug-2021-13-of-493
 
 
 
+Aug 27 15:28
+-----------------
+
+
+::
+
+    FAILS:  3   / 491   :  Fri Aug 27 22:28:51 2021   
+      24 /45  Test #24 : CFG4Test.CGenstepCollector2Test               ***Exception: Interrupt        0.06   
+      1  /2   Test #1  : G4OKTest.G4OKTest                             ***Exception: Interrupt        4.83   
+
+    FAILS from accidently left std::raise(SIGINT) in CManager::BeginOfGenstep  showing that this aint being called much at all 
+
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      7.21   
+    O[blyth@localhost opticks]$ 
+
+
+
+
+
+
 Aug 27 14:40
 -------------------
 

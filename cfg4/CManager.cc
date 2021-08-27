@@ -172,7 +172,7 @@ Invoked by CGenstepCollector::addGenstep for 'S' and 'C' gensteps.
 
 void CManager::BeginOfGenstep(unsigned genstep_index, char gentype, int num_photons, int offset )
 {
-    std::raise(SIGINT); 
+    //std::raise(SIGINT); 
 
     if(m_mode == 0 ) return ; 
     LOG(LEVEL) << " gentype " << gentype << " num_photons " << num_photons ; 
