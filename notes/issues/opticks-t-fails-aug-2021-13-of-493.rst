@@ -2,6 +2,56 @@ opticks-t-fails-aug-2021-13-of-493
 ======================================
 
 
+
+Aug 27 19:20
+---------------
+
+::
+
+    FAILS:  2   / 491   :  Fri Aug 27 19:20:29 2021   
+      25 /35  Test #25 : OptiXRapTest.interpolationTest                ***Failed                      4.99   
+      2  /2   Test #2  : IntegrationTests.tboolean.box                 ***Failed                      4.58   
+    O[blyth@localhost opticks]$ 
+
+
+
+
+    2021-08-27 19:18:35.000 INFO  [52685] [NPY<T>::MakeFloat@2030]  nv 876672
+    2021-08-27 19:18:35.127 INFO  [52685] [main@189]  ok 
+    2021-08-27 19:18:35.141 INFO  [52685] [interpolationTest::init@115]  name interpolationTest_interpol.npy base $TMP/optixrap/interpolationTest script interpolationTest_interpol.py nb    36 nx   761 ny   288 progname              interpolationTest
+    2021-08-27 19:18:35.142 INFO  [52685] [OLaunchTest::init@69] OLaunchTest entry   0 width       1 height       1 ptx                               interpolationTest.cu prog                                  interpolationTest
+    2021-08-27 19:18:35.142 INFO  [52685] [OLaunchTest::launch@80] OLaunchTest entry   0 width     761 height      36 ptx                               interpolationTest.cu prog                                  interpolationTest
+    2021-08-27 19:18:36.189 INFO  [52685] [interpolationTest::launch@158] OLaunchTest entry   0 width     761 height      36 ptx                               interpolationTest.cu prog                                  interpolationTest
+    2021-08-27 19:18:36.193 INFO  [52685] [interpolationTest::launch@165]  save  base $TMP/optixrap/interpolationTest name interpolationTest_interpol.npy
+    2021-08-27 19:18:36.245 INFO  [52685] [SSys::RunPythonScript@623]  script interpolationTest_interpol.py script_path /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py python_executable /home/blyth/local/env/tools/conda/miniconda3/bin/python
+    Traceback (most recent call last):
+      File "/data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py", line 23, in <module>
+        from opticks.ana.proplib import PropLib
+    ModuleNotFoundError: No module named 'opticks'
+    2021-08-27 19:18:36.430 INFO  [52685] [SSys::run@100] /home/blyth/local/env/tools/conda/miniconda3/bin/python /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  rc_raw : 256 rc : 1
+    2021-08-27 19:18:36.431 ERROR [52685] [SSys::run@107] FAILED with  cmd /home/blyth/local/env/tools/conda/miniconda3/bin/python /data/blyth/junotop/ExternalLibs/opticks/head/bin/interpolationTest_interpol.py  RC 1
+    2021-08-27 19:18:36.431 INFO  [52685] [SSys::RunPythonScript@630]  RC 1
+    2021-08-27 19:18:36.431 ERROR [52685] [SSys::RunPythonScript@633]  control which python to use by setting the OPTICKS_PYTHON envvar to the python executable name or path 
+    2021-08-27 19:18:36.431 ERROR [52685] [SSys::RunPythonScript@634]  pick a python that has the numpy module, set envvar in .bash_profile with eg:: 
+    2021-08-27 19:18:36.431 ERROR [52685] [SSys::RunPythonScript@635] 
+    2021-08-27 19:18:36.431 ERROR [52685] [SSys::RunPythonScript@636]       export OPTICKS_PYTHON=/Users/blyth/miniconda3/bin/python 
+
+
+
+
+
+
+    2021-08-27 19:20:27.772 FATAL [58652] [NCSG::polygonize@1144] NCSG::polygonize requires compilation with the optional OpenMesh : using bbox triangles placeholder 
+    2021-08-27 19:20:27.772 FATAL [58652] [NCSG::polygonize@1144] NCSG::polygonize requires compilation with the optional OpenMesh : using bbox triangles placeholder 
+    2021-08-27 19:20:27.774 INFO  [58652] [BFile::preparePath@836] created directory /tmp/blyth/opticks/tboolean-box/GItemList
+    OKG4Test: /home/blyth/opticks/ggeo/GNodeLib.cc:478: void GNodeLib::addVolume(const GVolume*): Assertion `origin' failed.
+    /data/blyth/junotop/ExternalLibs/opticks/head/bin/o.sh: line 362: 58652 Aborted                 (core dumped) /data/blyth/junotop/ExternalLibs/opticks/head/lib/OKG4Test --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile --generateoverride 10000 --envkey --rendermode +global,+axis --geocenter --stack 2180 --eye 1,0,0 --up 0,0,1 --test --testconfig mode=PyCsgInBox_analytic=1_name=tboolean-box_csgpath=/tmp/blyth/opticks/tboolean-box_outerfirst=1_autocontainer=Rock//perfectAbsorbSurface/Vacuum_autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_autoemitconfig=photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0_autoseqmap=TO:0,SR:1,SA:0 --torch --torchconfig type=disc_photons=100000_mode=fixpol_polarization=1,1,0_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000_source=0,0,599_target=0,0,0_time=0.0_radius=300_distance=200_zenithazimuth=0,1,0,1_material=Vacuum_wavelength=500 --torchdbg --tag 1 --anakey tboolean --args --save
+    === o-main : runline PWD /data/blyth/junotop/ExternalLibs/opticks/head/build/integration/tests RC 134 Fri Aug 27 19:20:28 CST 2021
+    /data/blyth/junotop/ExternalLibs/opticks/head/lib/OKG4Test --okg4test --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero --profile --generateoverride 10000 --envkey --rendermode +global,+axis --geocenter --stack 2180 --eye 1,0,0 --up 0,0,1 --test --testconfig mode=PyCsgInBox_analytic=1_name=tboolean-box_csgpath=/tmp/blyth/opticks/tboolean-box_outerfirst=1_autocontainer=Rock//perfectAbsorbSurface/Vacuum_autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_autoemitconfig=photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0_autoseqmap=TO:0,SR:1,SA:0 --torch --torchconfig type=disc_photons=100000_mode=fixpol_polarization=1,1,0_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000_source=0,0,599_target=0,0,0_time=0.0_radius=300_distance=200_zenithazimuth=0,1,0,1_material=Vacuum_wavelength=500 --torchdbg --tag 1 --anakey tboolean --args --save
+    echo o-postline : dummy
+
+
+
 Aug 27 10:44
 ---------------
 

@@ -616,6 +616,8 @@ Control which python to use with envvar OPTICKS_PYTHON eg::
 
 **/
 
+
+
 int SSys::RunPythonScript(const char* script)
 {
     std::string script_path = SSys::Which(script);
@@ -628,16 +630,32 @@ int SSys::RunPythonScript(const char* script)
 
     int RC = script_path.empty() ? 101 : SSys::exec(python_executable,script_path.c_str()) ;
     LOG(info) << " RC " << RC ; 
-    if( RC != 0 )
-    {
-         LOG(error) << " control which python to use by setting the OPTICKS_PYTHON envvar to the python executable name or path " ;   
-         LOG(error) << " pick a python that has the numpy module, set envvar in .bash_profile with eg:: " ;
-         LOG(error) ;  
-         LOG(error) << "      export OPTICKS_PYTHON=/Users/blyth/miniconda3/bin/python " ; 
-    }
+    if( RC != 0 ) LOG(error) << std::endl << RunPythonScript_NOTES  ; 
 
     return RC ; 
 }
+
+const char* SSys::RunPythonScript_NOTES  = R"LITERAL(
+SSys::RunPythonScript_NOTES 
+------------------------------
+
+Common causes of error when running python scripts via SSys::RunPythonScript are:
+
+1. using a python which does not have the *numpy* module
+2. not configuring PYTHONPATH such that the *opticks* modules can be found 
+
+Example settings of envvars to configure within .bash_profile or .bashrc which 
+control the python that opticks C++ will use with SSys::RunPythonScript are::
+
+   export OPTICKS_PYTHON=/Users/blyth/miniconda3/bin/python
+   export PYTHONPATH=$PYTHONPATH:$(opticks-fold)
+
+Note that opticks-fold is the directory above opticks-home "/home/blyth/opticks" 
+so that will often be the HOME directory, eg /home/blyth
+
+)LITERAL";
+
+
 
 int SSys::RunPythonCode(const char* code)
 {

@@ -97,6 +97,8 @@ class SYSRAP_API SSys {
      static const char* ResolveExecutable(const char* envvar_key, const char* default_executable);
      static const char* ResolvePython();
      static int RunPythonScript(const char* script);
+     static const char* RunPythonScript_NOTES ; 
+
      static int RunPythonCode(const char* code);
 
 

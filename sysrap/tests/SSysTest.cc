@@ -38,6 +38,12 @@ int test_RC(int irc)
     return SSys::run(s.c_str());
 }
 
+void test_RunPythonScript()
+{
+    const char* script = "np.py" ; 
+    SSys::RunPythonScript(script); 
+}
+
 
 void test_RC()
 {
@@ -245,6 +251,8 @@ int main(int argc , char** argv )
     //test_getenvintvec(); 
     test_getenvfloat(); 
     //test_atof(); 
+
+    test_RunPythonScript(); 
 
     return rc  ; 
 }
