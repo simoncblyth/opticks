@@ -23,6 +23,16 @@ OpticksVersionNumber.hh from OKConf package
 
 
 
+Opticks::GEOCACHE_CODE_VERSION from optickscore/Opticks.cc 
+----------------------------------------------------------------
+
+Bumping Opticks::GEOCACHE_CODE_VERSION to force recreation of old geocache 
+will often be appropriate together with the OPTICKS_VERSION_NUMBER bump::
+
+    epsilon:opticks blyth$ vi okconf/OpticksVersionNumber.hh optickscore/Opticks.cc 
+
+
+
 Using **OPTICKS_VERSION_NUMBER**  to navigate API changes
 ----------------------------------------------------------
 
@@ -159,6 +169,16 @@ When it is a good time to snapshot. Make the tag::
    * https://github.com/simoncblyth/opticks/tags
    * https://bitbucket.org/simoncblyth/opticks/src/v0.1.0-rc2/
 
+
+
+Snapshot History
+------------------
+
++------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------+  
+| date       | tag               | OPTICKS_VERSION_NUMBER             | GEOCACHE_CODE_VERSION      | Notes                                             |
++============+===================+====================================+============================+===================================================+  
+| 2021/08/28 | v0.1.1            | 11                                 | 14                         | Snapshot requested by Fermilab Geant4 team        |   
++------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------+  
 
 
 

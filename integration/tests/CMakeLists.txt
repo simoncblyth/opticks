@@ -24,6 +24,8 @@ endforeach()
 
 
 #[=[
+# see notes/issues/opticks-t-fails-aug-2021-13-of-493.rst
+# for attempts to resusitate  
 
 set(SCRIPT tboolean.sh)
 #set(SCRIPT fn.sh)

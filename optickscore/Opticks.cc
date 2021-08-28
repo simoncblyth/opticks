@@ -100,7 +100,7 @@
 
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
-const int            Opticks::GEOCACHE_CODE_VERSION = 13 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+const int            Opticks::GEOCACHE_CODE_VERSION = 14 ;  // (incremented when code changes invalidate loading old geocache dirs)   
 
 /**
 3: starting point 
@@ -122,6 +122,9 @@ const int            Opticks::GEOCACHE_CODE_VERSION = 13 ;  // (incremented when
  
 13: rejig of GScintillatorLib persisting, now with _ori energy domain properties to facilitate postcache Geant4 testing
     such as for scintillator ICDF creation + plus move to effective multi resolution scintillator/reemission texture
+
+14: following bug fix (some ggeo/GPropertyMap ctor with non-initialized original_domain) old geocache 
+    have some probability of missing/corrupted scintillation materials and should be rebuilt  
 
 **/
 
