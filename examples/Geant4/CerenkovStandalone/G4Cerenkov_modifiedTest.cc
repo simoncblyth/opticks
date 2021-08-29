@@ -2,6 +2,7 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <chrono>
 
 #include "G4Cerenkov_modified.hh"
 #include "G4Electron.hh"
@@ -34,7 +35,7 @@ struct G4Cerenkov_modifiedTest
 
     G4Cerenkov_modifiedTest(const char* rindex_path, const char* random_path, const char* seqmask_path, long seed ) ;  
 
-    double GetAverageNumberOfPhotons(double BetaInverse, double charge, bool s2 );
+    double GetAverageNumberOfPhotons(double BetaInverse, double charge, bool s2, double& dt );
     NP* scan_GetAverageNumberOfPhotons(double v0, double v1, unsigned nx) ; 
 
     void PSDI(double BetaInverse, double step_length, int override_fNumPhotons=-1 );
@@ -115,24 +116,38 @@ G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, co
 
 
 template <typename T>
-double G4Cerenkov_modifiedTest<T>::GetAverageNumberOfPhotons(double BetaInverse, double charge, bool s2)
+double G4Cerenkov_modifiedTest<T>::GetAverageNumberOfPhotons(double BetaInverse, double charge, bool s2, double& dt )
 {
+
+    typedef std::chrono::high_resolution_clock::time_point TP ; 
+    TP t0 = std::chrono::high_resolution_clock::now() ; 
+
     G4double beta = 1./BetaInverse ; 
     G4double numPhotons = s2 == false  ? 
                        proc->GetAverageNumberOfPhotons( charge, beta, material, rindex )
                     :
                        proc->GetAverageNumberOfPhotons_s2( charge, beta, material, rindex )
                     ;
+
+    TP t1 = std::chrono::high_resolution_clock::now() ; 
+    std::chrono::duration<double> t10 = t1 - t0; 
+    dt = t10.count()*1e6 ;    
+
     return numPhotons ;
 }
 
+/**
+G4Cerenkov_modifiedTest::scan_GetAverageNumberOfPhotons
+-----------------------------------------------------------
 
+For analysis and plotting see ana/ckn.py 
+
+**/
 
 template <typename T>
 NP* G4Cerenkov_modifiedTest<T>::scan_GetAverageNumberOfPhotons(double v0, double v1, unsigned nx)
 {
-
-    NP* a = NP::Make<double>(nx, 3); 
+    NP* a = NP::Make<double>(nx, 5); 
     double* aa = a->values<double>();   
 
     G4double charge = 1. ; 
@@ -140,17 +155,24 @@ NP* G4Cerenkov_modifiedTest<T>::scan_GetAverageNumberOfPhotons(double v0, double
     {
         double bi = v0 + (v1-v0)*(double(i)/ double(nx - 1)) ;  
 
-        G4double averageNumberOfPhotons = GetAverageNumberOfPhotons( bi, charge, false ); 
-        G4double averageNumberOfPhotons_s2 = GetAverageNumberOfPhotons( bi, charge, true ); 
+        double dt ; 
+        double dt_s2 ; 
 
-        aa[3*i+0] = bi ; 
-        aa[3*i+1] = averageNumberOfPhotons ; 
-        aa[3*i+2] = averageNumberOfPhotons_s2 ; 
+        G4double averageNumberOfPhotons = GetAverageNumberOfPhotons( bi, charge, false,   dt ); 
+        G4double averageNumberOfPhotons_s2 = GetAverageNumberOfPhotons( bi, charge, true, dt_s2 ); 
+
+        aa[5*i+0] = bi ; 
+        aa[5*i+1] = averageNumberOfPhotons ; 
+        aa[5*i+2] = averageNumberOfPhotons_s2 ; 
+        aa[5*i+3] = dt ; 
+        aa[5*i+4] = dt_s2 ; 
 
         std::cout 
             << " bi " << std::setw(10) << std::fixed << std::setprecision(4) << bi 
             << " averageNumberOfPhotons " << std::setw(10) << std::fixed << std::setprecision(4) <<  averageNumberOfPhotons
             << " averageNumberOfPhotons_s2 " << std::setw(10) << std::fixed << std::setprecision(4) <<  averageNumberOfPhotons_s2
+            << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt
+            << " dt_s2 " << std::setw(10) << std::fixed << std::setprecision(4) << dt_s2 
             << std::endl 
             ;
     }
@@ -200,6 +222,15 @@ std::string G4Cerenkov_modifiedTest<T>::MakeLabel( double BetaInverse, double st
     return ss.str(); 
 } 
 
+/**
+G4Cerenkov_modifiedTest::PSDI
+--------------------------------
+
+Cooks up the environment of objects (G4DynamicParticle/G4Track/G4StepPoint/G4Step) 
+needed to be able to call the Cerenkov PostStepDoIt and then calls it
+with the resulting G4VParticleChange Cerenkov photons saved to .npy file.
+
+**/
 
 template <typename T>
 void G4Cerenkov_modifiedTest<T>::PSDI(double BetaInverse, double step_length_, int override_fNumPhotons )

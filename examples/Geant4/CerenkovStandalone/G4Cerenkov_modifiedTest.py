@@ -39,9 +39,12 @@ class OpticksDebug(object):
 
 
 class G4Cerenkov_modifiedTest(object):
+    """
+    SKIP_CONTINUE avoids the famous rejection sampling continue-do-while bug 
+    """
     FOLD = "/tmp/G4Cerenkov_modifiedTest" 
     #RELDIR = "BetaInverse_1.500_step_length_100.000_SKIP_CONTINUE"
-    RELDIR = "BetaInverse_1.500_override_fNumPhotons_10000_SKIP_CONTINUE"
+    RELDIR = "BetaInverse_1.500_override_fNumPhotons_10000_SKIP_CONTINUE"  
     NAMES = "RINDEX.npy"
 
     @classmethod

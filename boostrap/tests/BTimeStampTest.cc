@@ -146,10 +146,10 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     LOG(info); 
 
-    //test_timing_1s(); 
+    test_timing_1s(); 
     //test_counting(); 
     //test_counting_2(); 
-    test_quickfire(); 
+    //test_quickfire(); 
 
     return 0 ; 
 }

@@ -1123,6 +1123,15 @@ See:
 * ~/opticks/ana/ckn.py 
 * ~/np/NP.hh NP::trapz
 
+Comparing the speed of _s2 with _asis shows that this takes
+an almost constant time no matter what the BetaInverse
+unlike _asis which varies greatly.  The only situation where 
+_s2 is slower is when the number of photons is zero.  
+
+Hence could short circuit that situation to make this always faster. 
+But its better to do that in the caller scope as max Rindex is 
+already available there. 
+
 **/
 
 G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge, const G4double beta, const G4Material*, G4MaterialPropertyVector* Rindex) const
@@ -1153,8 +1162,7 @@ G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge
         else if( s2_0 < 0. and s2_1 > 0. )  // s2 becomes +ve within the bin
         {
             G4double en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
-            G4double s2_cross = 0. ; 
-            s2integral +=  (en_1 - en_cross)*(s2_cross + s2_1)*half ;  
+            s2integral +=  (en_1 - en_cross)*s2_1*half ;  
         }
         else if( s2_0 >= 0. and s2_1 >= 0. )   // s2 +ve across full bin 
         {
@@ -1163,8 +1171,7 @@ G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge
         else if( s2_0 > 0. and s2_1 < 0. )  // s2 becomes -ve within the bin
         {
             G4double en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
-            G4double s2_cross = 0. ; 
-            s2integral +=  (en_cross - en_0)*(s2_cross + s2_0)*half ;  
+            s2integral +=  (en_cross - en_0)*s2_0*half ;  
         }
         else
         {

@@ -7,6 +7,11 @@ ckn.py : reproduce G4Cerenkov_modified::GetAverageNumberOfPhotons
 
     ipython -i ckn.py 
 
+::
+
+    cp /tmp/blyth/opticks/ana/ckn/* /Users/blyth/simoncblyth.bitbucket.io/env/presentation/ana/ckn/
+
+
 
 """
 import os, logging, numpy as np
@@ -15,7 +20,7 @@ from opticks.ana.main import opticks_main
 from opticks.ana.key import keydir
 from opticks.ana.nload import np_load
 
-from scipy import integrate 
+#from scipy import integrate 
 
 
 log = logging.getLogger(__name__)
@@ -25,6 +30,7 @@ class CKN(object):
     Reproduces the G4Cerenkov Frank-Tamm integration to give average number of photons
     for a BetaInverse and RINDEX profile.
     """
+    FOLD = os.path.expandvars("/tmp/$USER/opticks/ana/ckn")
     kd = keydir()
     rindex_path = os.path.join(kd, "GScintillatorLib/LS_ori/RINDEX.npy")
 
@@ -38,6 +44,7 @@ class CKN(object):
         self.BuildThePhysicsTable()
         self.BuildThePhysicsTable_2()
         assert np.allclose( self.cai, self.cai2 )
+        self.paths = []
 
     def BuildThePhysicsTable(self, dump=False):
         """
@@ -96,6 +103,7 @@ class CKN(object):
     @classmethod
     def BuildThePhysicsTable_s2i(cls, ri, BetaInverse, dump=False):
         """
+        No need for a physics table when do integral directly on s2
         """
         en = ri[:,0]
         s2i = np.zeros(len(ri))
@@ -124,14 +132,12 @@ class CKN(object):
                 pass
             elif s2[0] < 0. and s2[1] > 0.:
                 en_cross = (s2[1]*en[0] - s2[0]*en[1])/(s2[1] - s2[0])
-                s2_cross = 0.
-                s2integral +=  (en[1] - en_cross)*(s2_cross + s2[1])*0.5
+                s2integral +=  (en[1] - en_cross)*s2[1]*0.5
             elif s2[0] >= 0. and s2[1] >= 0.:
                 s2integral += (en[1] - en[0])*(s2[0] + s2[1])*0.5
             elif s2[0] > 0. and s2[1] < 0.:
                 en_cross = (s2[1]*en[0] - s2[0]*en[1])/(s2[1] - s2[0]) 
-                s2_cross = 0. 
-                s2integral +=  (en_cross - en[0])*(s2_cross + s2[0])*0.5
+                s2integral +=  (en_cross - en[0])*s2[0]*0.5
             else:
                 print( " en_0 %10.5f ri_0 %10.5f s2_0 %10.5f  en_1 %10.5f ri_1 %10.5f s2_1 %10.5f " % (en[0], ri[0], s2[0], en[1], ri[1], s2[1] )) 
                 assert 0 
@@ -364,22 +370,50 @@ class CKN(object):
         assert len(cross) % 2 == 0, cross
         return cross
 
-    def test_GetAverageNumberOfPhotons(self, BetaInverse):
+    def test_GetAverageNumberOfPhotons(self, BetaInverse, dump=False):
         NumPhotons_asis = self.GetAverageNumberOfPhotons_asis(BetaInverse)
         NumPhotons_s2 = self.GetAverageNumberOfPhotons_s2(BetaInverse)
         NumPhotons_s2messy = self.GetAverageNumberOfPhotons_s2messy(BetaInverse)
-        fmt = "BetaInverse %6.4f _asis %6.4f  _s2 %6.4f _s2messy %6.4f    " 
-        print( fmt % ( BetaInverse, NumPhotons_asis, NumPhotons_s2, NumPhotons_s2messy ))
+        res = np.array([BetaInverse, NumPhotons_asis, NumPhotons_s2, NumPhotons_s2messy ])
+        if dump:
+            fmt = "BetaInverse %6.4f _asis %6.4f  _s2 %6.4f _s2messy %6.4f    " 
+            print( fmt % tuple(res) )
+        pass
+        return res 
 
     def scan_GetAverageNumberOfPhotons(self, x0=1., x1=2., nx=1001 ):
+        """
+        Creates ckn.scan comparing GetAverageNumberOfPhotons from three algorithms
+        across the domain of BetaInverse.
+
+        * GetAverageNumberOfPhotons_asis 
+        * GetAverageNumberOfPhotons_s2
+        * GetAverageNumberOfPhotons_s2messy
+
+        ::
+
+            In [12]: ckn.scan
+            Out[12]: 
+            array([[  1.    , 293.2454, 293.2454, 293.2454],
+                   [  1.001 , 292.7999, 292.7999, 292.7999],
+                   [  1.002 , 292.354 , 292.354 , 292.354 ],
+                   ...,
+                   [  1.998 ,   0.    ,   0.    ,   0.    ],
+                   [  1.999 ,   0.    ,   0.    ,   0.    ],
+                   [  2.    ,   0.    ,   0.    ,   0.    ]])
+
+            In [13]: ckn.scan.shape
+            Out[13]: (1001, 4)
+
+        """
         scan = np.zeros( (nx, 4), dtype=np.float64 )
         for i, BetaInverse in enumerate(np.linspace(x0, x1, nx )):
             NumPhotons_asis = self.GetAverageNumberOfPhotons_asis(BetaInverse)
             NumPhotons_s2 = self.GetAverageNumberOfPhotons_s2(BetaInverse)
             NumPhotons_s2messy = self.GetAverageNumberOfPhotons_s2messy(BetaInverse)
             scan[i] = [BetaInverse, NumPhotons_asis, NumPhotons_s2, NumPhotons_s2messy ]
-            fmt = "  bi %7.3f _asis %7.3f _s2 %7.3f _s2messy %7.3f "  
-            print( fmt % tuple(scan[i]) )
+            fmt = " bi %7.3f _asis %7.3f _s2 %7.3f _s2messy %7.3f "  
+            if i % 100 == 0: print( "%5d : %s " % (i, fmt % tuple(scan[i])) )
         pass
         self.scan = scan   
         self.numPhotonASIS_ = lambda bi:np.interp( bi, self.scan[:,0], self.scan[:,1] )    
@@ -388,24 +422,29 @@ class CKN(object):
         self.nMax = self.ri[:,1].max()  
 
 
-    def scan_GetAverageNumberOfPhotons_plot(self):
+    def scan_GetAverageNumberOfPhotons_plot(self, bir=None):
 
         ckn = self
         en = ckn.scan[:,0]
 
+        bi = [self.nMin, self.nMax] if bir is None else bir
+        numPhotonMax = self.numPhotonS2_( np.linspace(bi[0], bi[1], 101) ).max()  # max in the BetaInverse range 
+
+        extra = "%6.4f_%6.4f" % (bi[0], bi[1])
+
+
         titls = [
-        "ana/ckn.py : scan_GetAverageNumberOfPhotons_plot ", 
+        "ana/ckn.py : scan_GetAverageNumberOfPhotons_plot %s " % extra , 
         "_asis goes slightly negative near rindex peak due to linear interpolation approx on top of trapezoidal integration",
         "_s2 avoids that by doing the integration in one pass directly on s2 (sin^2 theta) and using s2 zero crossings to improve accuracy"
         ]
 
         title = "\n".join(titls)
-
-        bi = [self.nMin, self.nMax]
-        numPhotonMax = self.numPhotonS2_( np.linspace(bi[0], bi[1], 101) ).max()  # max in the BetaInverse range 
+  
 
         fig, ax = plt.subplots(figsize=ok.figsize)
-        fig.suptitle(title) 
+        fig.suptitle(title)  
+
         ax.set_xlim( *bi )
         ax.set_ylim(  -1., numPhotonMax )
 
@@ -420,11 +459,24 @@ class CKN(object):
         ax.plot( xlim, [0,0], linestyle="dotted", label="zero" )
 
         for n in ckn.ri[:,1]:
-            ax.plot( [n, n], ylim, label="%s" % n  ) 
+            ax.plot( [n, n], ylim  ) 
+            #ax.plot( [n, n], ylim, label="%s" % n  ) 
         pass
 
         ax.legend()
         fig.show()      
+
+        self.save_fig( fig, "scan_GetAverageNumberOfPhotons_plot_%s.png" % extra )
+
+    def save_fig(self, fig, name):
+        path = os.path.join(self.FOLD, name)
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+        pass
+        log.info("save to %s " % path)
+        fig.savefig(path)
+        assert os.path.exists(path)
+        self.paths.append(path)
 
 
     def scan_GetAverageNumberOfPhotons_difference_plot(self):
@@ -454,31 +506,45 @@ class CKN(object):
         ylim = ax.get_ylim()
 
         for n in ckn.ri[:,1]:
-            ax.plot( [n, n], ylim, label="%s" % n  ) 
+            #ax.plot( [n, n], ylim, label="%s" % n  ) 
+            ax.plot( [n, n], ylim ) 
         pass
         ax.legend()   
         fig.show()      
 
-
-
-
+        self.save_fig( fig, "scan_GetAverageNumberOfPhotons_difference_plot.png" )
 
 
     def loadOtherScans(self):
+        """
+        Create the other scan arrays with::
+
+            cks
+            ./G4Cerenkov_modifiedTest.sh
+
+            qu
+            cd tests
+            ./QCerenkovTest.sh 
+
+        """
         cks_path="/tmp/G4Cerenkov_modifiedTest/scan_GetAverageNumberOfPhotons.npy"
         if os.path.exists(cks_path):
             self.cks_scan = np.load(cks_path)
+        else:
+            log.error("missing %s " % cks_path)
         pass 
-        qck_path="/tmp/blyth/opticks/QCerenkovTest/test_GetAverageNumberOfPhotons_s2.npy"
+        qck_path=os.path.expandvars("/tmp/$USER/opticks/QCerenkovTest/test_GetAverageNumberOfPhotons_s2.npy")
         if os.path.exists(qck_path):
             self.qck_scan = np.load(qck_path)
+        else:
+            log.error("missing %s " % qck_path)
         pass 
 
     def compareOtherScans(self):
         """
         This compares the python and C++ implementations 
         of the same double precision algorithms,
-        agreement should be very good eg 1e-13 level 
+        agreement should be (and is) very good eg 1e-13 level 
         """
         ckn = self 
 
@@ -499,10 +565,14 @@ class CKN(object):
 
 
     def test_GetAverageNumberOfPhotons_plot(self, BetaInverse = 1.7):
+        """
+        runs test_GetAverageNumberOfPhotons for a particular BetaInverse 
+        in order to get the internals : cross, cai 
+        """
         ckn = self
-        ckn.test_GetAverageNumberOfPhotons(BetaInverse)
+        res = ckn.test_GetAverageNumberOfPhotons(BetaInverse)
 
-        titls = ["ana/ckn.py : test_GetAverageNumberOfPhotons_plot : BetaInverse %7.4f " % BetaInverse, 
+        titls = ["ana/ckn.py : test_GetAverageNumberOfPhotons_plot : %s " % str(res), 
                  "attempt to understand how _asis manages to go negative  "
                  ] 
 
@@ -536,11 +606,40 @@ class CKN(object):
         ax.legend() 
 
         fig.show()
+        self.save_fig( fig, "test_GetAverageNumberOfPhotons_plot.png" )
 
 
     def load_QCerenkov_s2slv(self):
-        s2slv_path = "/tmp/blyth/opticks/QCerenkovTest/test_getS2SliverIntegrals_many.npy"
+        """
+        s2slv: sliver integrals across domains of BetaInverse and energy 
 
+            In [4]: ckn.s2slv.shape
+            Out[4]: (1001, 280)           
+
+        cs2slv: is cumulative sum of the above sliver integrals with the same shape
+
+            In [5]: ckn.cs2slv.shape
+            Out[5]: (1001, 280)
+
+        s2slv_sum: sum over energy domain of s2slv
+
+            In [8]: ckn.s2slv_sum.shape
+            Out[8]: (1001,)
+
+        cs2slv_last: last of the (energy axis) cumulative sum values : this very closely matches s2slv_sum
+
+            In [9]: ckn.cs2slv_last.shape
+            Out[9]: (1001,)
+
+        c2slv_norm: energy axis cumsum divided by the last : making this the CDF 
+
+            In [10]: ckn.cs2slv_norm.shape
+            Out[10]: (1001, 280)
+
+            Notice lots of nan, for CK disallowed BetaInverse
+
+        """
+        s2slv_path = "/tmp/blyth/opticks/QCerenkovTest/test_getS2SliverIntegrals_many.npy"
         log.info("load %s " % s2slv_path )
         s2slv = np.load(s2slv_path) if os.path.exists(s2slv_path) else None
         globals()["ss"] = s2slv
@@ -566,6 +665,13 @@ class CKN(object):
         s2slv_sum = s2slv.sum(axis=1)
         self.s2slv_sum = s2slv_sum
 
+        sum_vs_last = np.abs( s2slv_sum - cs2slv_last )
+        sum_vs_last_mx = sum_vs_last.max()
+        log.info( "sum_vs_last_mx %s " % sum_vs_last_mx )
+        assert sum_vs_last_mx < 1e-10 
+            
+
+
     def load_QCerenkov_s2slv_plot(self):
 
         titls = [
@@ -578,7 +684,7 @@ class CKN(object):
         fig.suptitle(title)
 
         ax.plot( self.qck_scan[:,0], self.qck_scan[:,1], label="qck_scan" ) 
-        ax.plot( self.qck_scan[:,0], self.s2slv_sum, label="s2slv_sum" ) 
+        ax.plot( self.qck_scan[:,0], self.s2slv_sum,     label="s2slv_sum" ) 
         ax.plot( self.qck_scan[:,0], self.cs2slv_last,   label="cs2slv_last" ) 
         ax.legend()
 
@@ -597,7 +703,10 @@ if __name__ == '__main__':
     ckn = CKN()
 
     ckn.scan_GetAverageNumberOfPhotons()
+
+    ckn.scan_GetAverageNumberOfPhotons_plot(bir=[1,2])
     ckn.scan_GetAverageNumberOfPhotons_plot()
+    ckn.scan_GetAverageNumberOfPhotons_plot(bir=[1.7,1.8])
     ckn.scan_GetAverageNumberOfPhotons_difference_plot()
 
     ckn.loadOtherScans() 
@@ -608,6 +717,7 @@ if __name__ == '__main__':
     ckn.load_QCerenkov_s2slv()
     ckn.load_QCerenkov_s2slv_plot()
     
+    print("\n".join(ckn.paths))
 
 
 

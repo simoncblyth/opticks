@@ -38,7 +38,7 @@ class CK(object):
 
         rnd, paths = np_load(self.random_path)
         if len(paths) == 0:
-            log.fatal("failed to find any precooked randoms, create them with : TEST=F QCtxTest")
+            log.fatal("failed to find any precooked randoms, create them with : TEST=F QSimTest")
             assert 0 
         pass
         if num is None:
@@ -263,23 +263,6 @@ class CK(object):
         When "expectation-interpolating" the energy domain is an abstract analytic ideal
         sort of like a "sample" taken from an infinity of possible values.
 
-        Hmm : this begs the question : how to profit from the simplicity of this
-        that enables the quasi-analytic approach ?
-
-        Seems that the rejection looping does not need to use sin2Theta.
-        Using 1.-cosTheta seems to be an equivalent approach which avoids flops
-        and precision loss.
-
-                      BetaInverse
-        cosTheta =  -------------------
-                       sampledRI
-
-
-                           sampledRI - BetaInverse
-        1 - cosTheta =    ---------------------------
-                                 sampledRI 
-
-
         """
         rnd = self.rnd
         rindex = self.rindex
@@ -313,7 +296,7 @@ class CK(object):
             if method == "mxs2": 
                 u1_maxSin2 = u1*maxSin2
                 keep_sampling = u1_maxSin2 > sin2Theta
-            elif method == "mxct":
+            elif method == "mxct":  ## CANNOT DO THIS : MUST USE THE "CONTROLLING" S2 PDF
                 u1_maxCosi = u1*maxCosi
                 keep_sampling = u1_maxCosi > 1.-cosTheta
             else:
@@ -422,8 +405,8 @@ if __name__ == '__main__':
     enplot = False
 
 if enplot:
-    #method = "mxs2"
-    method = "mxct"
+    method = "mxs2"
+    #method = "mxct"
     ck.energy_sample_all(method=method)
     ck.save()
     ck.energy_sample_globals()

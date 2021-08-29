@@ -11,13 +11,13 @@ void test_check(QCerenkov& ck)
     ck.check(); 
 }
 
-void test_lookup(QCerenkov& sc)
+void test_lookup(QCerenkov& ck)
 {
-    NP* dst = sc.lookup(); 
+    NP* dst = ck.lookup(); 
     const char* fold = "$TMP/QCerenkovTest" ; 
     LOG(info) << " save to " << fold ; 
     dst->save(fold, "dst.npy"); 
-    sc.src->save(fold, "src.npy") ; 
+    ck.src->save(fold, "src.npy") ; 
 }
 
 /**

@@ -21,7 +21,6 @@ import os, numpy as np, logging
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt 
-from scipy import optimize   
 from opticks.ana.main import opticks_main 
 from opticks.ana.key import keydir
 
@@ -163,6 +162,17 @@ class CKRindex(object):
 
 
     def find_energy_range(self, bis):
+        """
+        :param bis: array of BetaInverse 
+
+        For each BetaInverse bi sets:
+ 
+        self.xri[bi]
+             array of domain energy values at which BetaInverse equals the RINDEX
+        self.xrg[bi]
+             array of two values energy domain values (min, max) were Cerenkov is allowed OR None 
+
+        """
         log.info("find_energy_range")
         ri = self.ri 
         xri = {} 
@@ -205,9 +215,13 @@ class CKRindex(object):
     pass
 
     def find_energy_range_plot(self, bis):
+        """
+        """
         ri = self.ri 
         xri = self.xri
-        title = "rindex.py : ind_energy_range_plot"
+        xrg = self.xrg
+
+        title = "rindex.py : find_energy_range_plot"
 
         fig, ax = plt.subplots(figsize=ok.figsize); 
         fig.suptitle(title)
@@ -221,23 +235,37 @@ class CKRindex(object):
         ax.plot( xlim, [self.nMax,self.nMax], label="nMax", linestyle="dotted", color="r" )
         ax.plot( xlim, [self.nMin,self.nMin], label="nMin", linestyle="dotted", color="r" )
 
-        for bi in bis:
-            ax.plot( xlim, [bi,bi], linestyle="dotted", color="r" )
-        pass  
+        # horizontal bi lines
+        #for bi in bis:
+        #    ax.plot( xlim, [bi,bi], linestyle="dotted", color="r" )
+        #pass  
         ax.plot( [ri[0,0], ri[0,0]], ylim, linestyle="dotted", color="r" )
         ax.plot( [ri[-1,0], ri[-1,0]], ylim, linestyle="dotted", color="r" )
 
         for bi in bis:
-            for x in xri[bi]:
-                ax.plot( [x,x], ylim, linestyle="dotted", color="r" )
-            pass
+            print(" bi %7.4f xrg[bi] %s " % (bi, xrg[bi]) )
+            ax.plot( xrg[bi], [bi, bi], label="xrg %s " % xrg[bi] )
+            xx = xri[bi]
+            ax.scatter( xx, np.repeat(bi, len(xx)) )
+        pass
+
+        #for bi in bis:
+        #    for x in xri[bi]:
+        #        ax.plot( [x,x], ylim, linestyle="dotted", color="r" )
+        #    pass
         pass
         ax.scatter( ri[:,0], ri[:,1] )
+
+
+
+        ax.legend()
         fig.show()
 
 
     def s2_cumsum(self, bis):
         """
+        cheap and cheerful s2 CDF
+
         This uses a lot of energy bins across the allowed Cerenkov range 
         so probably no need for careful bin crossing the allowed edges ?
         """
@@ -272,7 +300,7 @@ class CKRindex(object):
         xrg = self.xrg
         ed = self.ed 
         cs2e = self.cs2e
-        title = "rindex.py : s2_cumsum_plot"
+        title = "rindex.py : quick and dirty s2cdf : s2_cumsum_plot"
 
         fig, axs = plt.subplots(figsize=ok.figsize) 
         fig.suptitle(title)
@@ -355,7 +383,10 @@ class CKRindex(object):
         nj = len(self.ri)-1
         s2ij = np.zeros( (ni,nj), dtype=edom.dtype)
 
-        # for each energy cut, sum contributions from each rindex bin
+        # for each energy cut, find contributions from each rindex bin
+        # hmm this seems crazily repetitive, 
+        # also are just going to sum over the rindex bins in the end
+
         for i in range(ni):        
             en_cut = edom[i]  
             ri_cut = ri_(en_cut)
@@ -368,10 +399,10 @@ class CKRindex(object):
                 ri1_b = self.ri[j+1,1]
 
                 allowed = True
-                if en0_b < en_cut and en1_b <= en_cut:                          # full bin included in cumulative range     
+                if en0_b < en_cut and en1_b <= en_cut:      # full bin included in cumulative range     
                     en_0, en_1 = en0_b, en1_b  
                     ri_0, ri_1 = ri0_b, ri1_b 
-                elif en0_b <= en_cut and en_cut <= en1_b:                        #  en0_b < ecut < en1_b :  ecut divides the bin 
+                elif en0_b <= en_cut and en_cut <= en1_b:   #  en0_b < ecut < en1_b :  ecut divides the bin 
                     en_0, en_1 = en0_b, en_cut 
                     ri_0, ri_1 = ri0_b, ri_cut
                 else:
@@ -383,6 +414,40 @@ class CKRindex(object):
             pass    
         pass
         return s2ij
+
+
+    def s2_integrate_again_(self, BetaInverse, edom ):
+        """
+        :param BetaInverser: scalar
+        :param edom: array of shape (n,)
+        :return s2ji: array of shape (n,)
+        """
+        pass
+        ni = len(edom)
+        nj = len(self.ri)-1
+
+        ## s2 integrals in each rindex bin 
+        s2j = np.zeros( nj, dtype=edom.dtype )
+
+        ## cumulative s2 integrals across a fine energy domain 
+        s2i = np.zeros( ni, dtype=edom.dtype)
+
+        for j in range(nj):
+            en_0 = self.ri[j,0]
+            en_1 = self.ri[j+1,0]
+            ri_0 = self.ri[j,1]
+            ri_1 = self.ri[j+1,1]
+            s2j[j] = self.s2_integrate__( BetaInverse, en_0, en_1, ri_0, ri_1 ) 
+        pass
+
+
+        #for i in range(ni):        
+        #    s2i[i] = 
+        #pass
+         
+
+
+
 
 
     def s2_integrate(self, bis, nx=4096):
@@ -407,6 +472,8 @@ class CKRindex(object):
         an increasing energy range that will progressively 
         cover more and more rindex bins until eventually 
         covering them all.
+
+        Remember that there can be holes in permissability.
 
         Notice no need to compute permissable ranges as the 
         sign of s2 shows that with no further effort.
@@ -609,6 +676,11 @@ class CKRindex(object):
         Then get the total integral by np.cumsum adding the pieces.
         This will be much more efficient too as just does 
         the integral over each energy sliver once. 
+
+        But suspect that having too many slivers will be an accuracy problem.
+        As the underlying RINDEX is linearly interpolated between measured
+        points it is more accurate to have fewer slivers in the all but the final bin ? 
+        Need to try and see.
         """
         log.info("s2sliver_integrate")
 
@@ -795,7 +867,7 @@ class CKRindex(object):
         """
         log.info("make_lookup_samples")
         xrg = self.xrg
-        cs2e = self.cs2e
+        cs2e = self.cs2e   # dict of cumulative sums across energy domain keyed by BetaInverse
         ed = self.ed
 
 
@@ -838,8 +910,13 @@ class CKRindex(object):
         fig.suptitle(title)
         for i, bi in enumerate(bis):
             if xrg[bi] is None: continue
+
             ax = axs if axs.__class__.__name__ == 'AxesSubplot' else axs[i] 
-            hd = np.arange(xrg[bi][0],xrg[bi][1],0.1)   
+            hd = np.arange(xrg[bi][0],xrg[bi][1],0.1)
+            log.info("make_lookup_samples_plot i %3d bi %7.4f  xrg[bi] %s  len(hd) %d " % (i, bi, str(xrg[bi]), len(hd) )) 
+  
+            if len(hd) == 0: continue
+ 
             h = np.histogram(l[bi], hd )
             ax.plot( h[1][:-1], h[0][0:], drawstyle="steps-post", label="bi %6.4f " % bi)  
             ax.legend()
@@ -875,13 +952,18 @@ if __name__ == '__main__':
 
 
 
-if 1:
+   
+
+
+
+if 0:
     ckr.find_energy_range(bis)
-    ckr.find_energy_range_plot(bis)
+    #ckr.find_energy_range_plot(bis)
 
     ckr.s2_cumsum(bis)
     ckr.s2_cumsum_plot(bis)
 
+if 0:
     ckr.make_lookup_samples(bis)
     #ckr.save_lookup_samples(bis)        # allows chi2 comparison using ana/wavelength_cfplot.py 
     ckr.make_lookup_samples_plot(bis)
@@ -890,7 +972,6 @@ if 1:
     #ckr.s2_integrate_plot(bis)
 
 
-if 1:
     ckr.s2sliver_integrate(bis)
     ckr.s2sliver_integrate_plot(bis)
 

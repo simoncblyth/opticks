@@ -21,14 +21,12 @@ summary
     correspond to the RINDEX energy bin edges : to the interpolation 
     can clearly suffer  
 
-  * TODO: CUDA port of G4PhysicsVector::Value
+  * DONE: CUDA port of G4PhysicsVector::Value, in QUDARap/QProp/qprop
 
-  * TODO: create RINDEX texture standalone from the original energy RINDEX 
-    and use that in QCtxtTest rather than using the standard bndlib to 
+  * DONE: create RINDEX QProp/qprop from the original energy RINDEX 
+    and use that in QSimTest rather than using the standard bndlib to 
     facilitate moving to HD rindex 
 
-    * can make a dedicated LS ck texture for this, as clearly this 
-      is more important than general property access 
 
 * random aligned comparison using the same random sequence (1M,16,16)  
   cks:G4Cerenkov_modifiedTest.cc and qu:QCtxTest.cc:K "cerenkov_photon" 
@@ -54,7 +52,7 @@ summary
 * trying G4Cerenkov_modifiedTest with FLOAT_TEST restricting the rejection sampling to float precision 
   still gives poor chi2 comparing to cks : so the explanation is not all float/double 
 
-* statistically comparing QCtxTest.cc:K against itself by flipping randoms u -> 1-u shows poor chi2
+* statistically comparing QSimTest.cc:K against itself by flipping randoms u -> 1-u shows poor chi2
   with similar type of disagreement "infinity wiggle pattern" to that between cks and qu with multiple 2nm bins 
   below and then above in range 250-350 nm:: 
 
@@ -71,7 +69,7 @@ summary
   2. (en,ct) with overlay of BetaInverse/rindex bins with drawstyle="steps-post"
      this makes the relationship of (en,ct) with the rindex bins very plain 
 
-* (July 25, 2021) random aligned comparison using QCtx::cerenkov_photon_enprop using the new QProp/qprop 
+* (July 25, 2021) random aligned comparison using QSim::cerenkov_photon_enprop using the new QProp/qprop 
   interpolation functionality gives perfect match chi2 zero with zero (nm 1e-4) deviants out of 1M, max deviation is ~7e-5::
 
   In [6]: np.abs(wa-wb).max()
@@ -121,6 +119,21 @@ summary
 * (Aug 1, 2021) ana/ckn.py GetAverageNumberOfPhotons_s2 avoids small -ve numPhotons close to rindex peak and is a simpler algorithm  
   implemented in C++ in opticks/examples/Geant4/CerenkovStandalone/G4Cerenkov_modified.cc G4Cerenkov_modified::GetAverageNumberOfPhotons_s2
 
+
+
+See Also
+-----------
+
+ana/ck.py 
+
+ana/ckn.py
+    comparing G4Cerenkov GetAverageNumberOfPhotons implementations
+
+ana/rindex.py 
+    attempt to form a Cerenkov 2d ICDF, using the s2sliver integrals
+
+ana/rindex.sh 
+    run rindex.py with ipython
 
 
 

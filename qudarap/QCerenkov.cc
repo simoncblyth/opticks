@@ -181,7 +181,7 @@ T QCerenkov::getS2Integral( T& emin, T& emax, const T BetaInverse, const T en_0,
             ;
         assert(0);
     }
-    const T Rfact = FINE_STRUCTURE_OVER_HBARC_EVMM ;     
+    const T Rfact = FINE_STRUCTURE_OVER_HBARC_EVMM ;      // hmm maybe better scale once the total ? 
     return Rfact*s2integral ; 
 }
 
@@ -194,6 +194,9 @@ QCerenkov::getS2SliverIntegrals
 ----------------------------------
 
 See ana/rindex.py:s2sliver_integrate
+
+Hmm all the energy slivers potential precision issue when the total rindex bins are covered anyhow ?
+
 
 **/
 
