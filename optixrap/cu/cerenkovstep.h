@@ -261,7 +261,10 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
         //wavelength = boundary_sample_reciprocal_domain_v3(u);  // TODO: sampling range needs to come from the genstep not default domain
 
-        wavelength = lerp( cs.Pmin, cs.Pmax, u );  // the Pmin, Pmax names are misleading they are Wmin, Wmax
+        //wavelength = lerp( cs.Pmin, cs.Pmax, u );  // the Pmin, Pmax names are misleading they are Wmin, Wmax
+
+        wavelength = cs.Pmin*cs.Pmax/lerp( cs.Pmin, cs.Pmax, u );   // reciprocalization is needed to match Geant4 energy domain sampling 
+
         //rtPrintf(" wavelength %10.4f cs.Pmin %10.4f cs.Pmax %10.4f u %10.4f \n", wavelength, cs.Pmin, cs.Pmax, u ); 
 
         float4 props = boundary_lookup(wavelength, cs.MaterialIndex, 0);  // USING cs.MaterialIndex not using geometry 
