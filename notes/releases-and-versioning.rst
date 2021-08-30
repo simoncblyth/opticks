@@ -149,38 +149,41 @@ Infrequently (seasonally) or when users request it. Consider making a "snapshot"
 2. check how many *opticks-t* test fails
 3. decide if now is a good time to "snapshot" tag
 
-When it is a good time to snapshot. Make the tag::
+When it is a good time to snapshot. Make the tag:
 
-1. Following a consistent pattern, decide on the next tag string eg "v0.1.0-rc2" and corresponding incremented *OPTICKS_VERSION_NUMBER* eg 10
-2. set the incremented *OPTICKS_VERSION_NUMBER* in okconf/OpticksVersionNumber.hh, commit and push to BOTH bitbucket and github::
+1. Following a consistent pattern, decide on the next tag string eg "v0.1.2" and corresponding incremented *OPTICKS_VERSION_NUMBER* eg 12
 
-      git push 
-      git push github 
 
-3. make the git tag, and push tags to both bitbucket and github::
+2. set the incremented *OPTICKS_VERSION_NUMBER* in `okconf/OpticksVersionNumber.hh`, commit and push to **BOTH bitbucket and github**::
 
-      git tag -a v0.1.0-rc3 -m "Mid-summer snapshot corresponding to OPTICKS_VERSION_NUMBER 10"
-      git push --tags
-      git push github --tags
+    vi okconf/OpticksVersionNumber.hh
+    git add . 
+    git commit -m "bump OPTICKS_VERSION_NUMBER 12"
+    git push 
+    git push github 
+
+3. make the git tag, and push tags to **BOTH bitbucket and github**::
+
+   git tag -a v0.1.2 -m "OPTICKS_VERSION_NUMBER 12, fixed Cerenkov wavelength bug""
+   git push --tags
+   git push github --tags
  
 
 4. check the web interfaces
 
    * https://github.com/simoncblyth/opticks/tags
-   * https://bitbucket.org/simoncblyth/opticks/src/v0.1.0-rc2/
-
 
 
 Snapshot History
 ------------------
 
-+------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------+  
-| date       | tag               | OPTICKS_VERSION_NUMBER             | GEOCACHE_CODE_VERSION      | Notes                                             |
-+============+===================+====================================+============================+===================================================+  
-| 2021/08/28 | v0.1.1            | 11                                 | 14                         | Snapshot requested by Fermilab Geant4 team        |   
-+------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------+  
-
-
++------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------------------------------------+  
+| date       | tag               | OPTICKS_VERSION_NUMBER             | GEOCACHE_CODE_VERSION      | Notes                                                                           |
++============+===================+====================================+============================+=================================================================================+  
+| 2021/08/28 | v0.1.1            | 11                                 | 14                         | Fermilab Geant4 team request, severe Cerenkov Wavelength bug found, DO NOT USE  | 
++------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------------------------------------+  
+| 2021/08/30 | v0.1.2            | 12                                 | 14                         | Fixed Cerenkov wavelength bug                                                   |
++------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------------------------------------+  
 
 
 
