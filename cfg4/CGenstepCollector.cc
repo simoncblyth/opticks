@@ -321,7 +321,7 @@ CGenstep CGenstepCollector::addGenstep(unsigned numPhotons, char gentype)
 
     CManager* mgr = CManager::Get(); 
 
-    if(mgr == nullptr) LOG(fatal) << "no CManager instance, genstep bookkeeping + event save not operational " ; 
+    //if(mgr == nullptr) LOG(fatal) << "no CManager instance, genstep bookkeeping + event save not operational " ; 
     //assert( mgr ); 
 
     if(mgr && (gentype == 'C' || gentype == 'S' || gentype == 'T'))
