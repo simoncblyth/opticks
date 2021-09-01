@@ -112,7 +112,7 @@ class CKN(object):
         pass
         return s2i
 
-    def GetAverageNumberOfPhotons_s2(self, BetaInverse, charge=1, dump=False ):
+    def GetAverageNumberOfPhotons_s2(self, BetaInverse, charge=1, dump=False, s2cross=False ):
         """
         Simplfied Alternative to _s2messy following C++ implementation. 
         Allowed regions are identified by s2 being positive avoiding the need for 
@@ -128,18 +128,28 @@ class CKN(object):
             ct = BetaInverse/ri
             s2 = (1.-ct)*(1.+ct) 
 
-            if s2[0] <= 0. and s2[1] <= 0.:
-                pass
-            elif s2[0] < 0. and s2[1] > 0.:
-                en_cross = (s2[1]*en[0] - s2[0]*en[1])/(s2[1] - s2[0])
-                s2integral +=  (en[1] - en_cross)*s2[1]*0.5
-            elif s2[0] >= 0. and s2[1] >= 0.:
-                s2integral += (en[1] - en[0])*(s2[0] + s2[1])*0.5
-            elif s2[0] > 0. and s2[1] < 0.:
-                en_cross = (s2[1]*en[0] - s2[0]*en[1])/(s2[1] - s2[0]) 
-                s2integral +=  (en_cross - en[0])*s2[0]*0.5
+            en_0, en_1 = en
+            ri_0, ri_1 = ri
+            s2_0, s2_1 = s2
+
+            if s2_0*s2_1 < 0.:
+                en_cross_A = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0)
+                en_cross_B = en_0 + (BetaInverse - ri_0)*(en_1 - en_0)/(ri_1 - ri_0)
+                en_cross = en_cross_A if s2cross else en_cross_B
             else:
-                print( " en_0 %10.5f ri_0 %10.5f s2_0 %10.5f  en_1 %10.5f ri_1 %10.5f s2_1 %10.5f " % (en[0], ri[0], s2[0], en[1], ri[1], s2[1] )) 
+                en_cross = np.nan
+            pass
+
+            if s2_0 <= 0. and s2_1 <= 0.:
+                pass
+            elif s2_0 < 0. and s2_1 > 0.:
+                s2integral +=  (en_1 - en_cross)*s2_1*0.5
+            elif s2_0 >= 0. and s2_1 >= 0.:
+                s2integral += (en_1 - en_0)*(s2_0 + s2_1)*0.5
+            elif s2_0 > 0. and s2_1 < 0.:
+                s2integral +=  (en_cross - en_0)*s2_0*0.5
+            else:
+                print( " en_0 %10.5f ri_0 %10.5f s2_0 %10.5f  en_1 %10.5f ri_1 %10.5f s2_1 %10.5f " % (en_0, ri_0, s2_0, en_1, ri_1, s2_1 )) 
                 assert 0 
             pass
         pass
@@ -205,7 +215,7 @@ class CKN(object):
         This duplicates the results from G4Cerenkov_modified::GetAverageNumberOfPhotons
         including negative numbers of photons for BetaInverse close to the rindex peak.
 
-        Frank–Tamm formula gives number of Cerenkov photons per mm as an energy integral::
+        Frank-Tamm formula gives number of Cerenkov photons per mm as an energy::
 
                                                         BetaInverse^2    
               N_photon  =     370.     Integral ( 1 - -----------------  )  dE      
@@ -409,10 +419,11 @@ class CKN(object):
         scan = np.zeros( (nx, 4), dtype=np.float64 )
         for i, BetaInverse in enumerate(np.linspace(x0, x1, nx )):
             NumPhotons_asis = self.GetAverageNumberOfPhotons_asis(BetaInverse)
-            NumPhotons_s2 = self.GetAverageNumberOfPhotons_s2(BetaInverse)
-            NumPhotons_s2messy = self.GetAverageNumberOfPhotons_s2messy(BetaInverse)
-            scan[i] = [BetaInverse, NumPhotons_asis, NumPhotons_s2, NumPhotons_s2messy ]
-            fmt = " bi %7.3f _asis %7.3f _s2 %7.3f _s2messy %7.3f "  
+            NumPhotons_s2 = self.GetAverageNumberOfPhotons_s2(BetaInverse, s2cross=False)
+            NumPhotons_s2cross = self.GetAverageNumberOfPhotons_s2(BetaInverse, s2cross=True)
+            #NumPhotons_s2messy = self.GetAverageNumberOfPhotons_s2messy(BetaInverse)
+            scan[i] = [BetaInverse, NumPhotons_asis, NumPhotons_s2, NumPhotons_s2cross ]
+            fmt = " bi %7.3f _asis %7.3f _s2 %7.3f _s2cross %7.3f "  
             if i % 100 == 0: print( "%5d : %s " % (i, fmt % tuple(scan[i])) )
         pass
         self.scan = scan   
@@ -420,6 +431,10 @@ class CKN(object):
         self.numPhotonS2_ = lambda bi:np.interp( bi,  self.scan[:,0], self.scan[:,2] )    
         self.nMin = self.ri[:,1].min()  
         self.nMax = self.ri[:,1].max()  
+
+        d23 = scan[:,2] - scan[:,3]
+        log.info(" d23.max %10.4f d23.min %10.4f " % (d23.max(), d23.min()))
+
 
 
     def scan_GetAverageNumberOfPhotons_plot(self, bir=None):
@@ -515,16 +530,48 @@ class CKN(object):
         self.save_fig( fig, "scan_GetAverageNumberOfPhotons_difference_plot.png" )
 
 
-    def loadOtherScans(self):
+    def compareOtherScans(self):
         """
-        Create the other scan arrays with::
+        This compares the python and C++ implementations 
+        of the same double precision algorithms,
+        agreement should be (and is) very good eg 1e-13 level 
+        """
+        self.compare_with_QCerenkovTest()
+        self.compare_with_G4Cerenkov_modified()
 
-            cks
-            ./G4Cerenkov_modifiedTest.sh
+    def compare_with_QCerenkovTest(self):
+        """
+        Create/update QCerenkovTest scan with::
 
             qu
             cd tests
             ./QCerenkovTest.sh 
+
+        """
+        qck_path=os.path.expandvars("/tmp/$USER/opticks/QCerenkovTest/test_GetAverageNumberOfPhotons_s2.npy")
+        if os.path.exists(qck_path):
+            self.qck_scan = np.load(qck_path)
+        else:
+            log.error("missing %s " % qck_path)
+        pass 
+
+        ckn = self 
+        cf_qck_dom = np.abs( ckn.scan[:,0] - ckn.qck_scan[:,0] )
+        cf_qck_num = np.abs( ckn.scan[:,2] - ckn.qck_scan[:,1] )
+
+        log.info("cf_qck_dom.min*1e6 %10.4f cf_qck_dom.max*1e6 %10.4f " % (cf_qck_dom.min()*1e6, cf_qck_dom.max()*1e6 ))
+        log.info("cf_qck_num.min*1e6 %10.4f cf_qck_num.max*1e6 %10.4f " % (cf_qck_num.min()*1e6, cf_qck_num.max()*1e6 ))
+
+        assert cf_qck_dom.max() < 1e-10
+        assert cf_qck_num.max() < 1e-10 
+
+
+    def compare_with_G4Cerenkov_modified(self):
+        """
+        Create/update scan arrays with::
+
+            cks
+            ./G4Cerenkov_modifiedTest.sh
 
         """
         cks_path="/tmp/G4Cerenkov_modifiedTest/scan_GetAverageNumberOfPhotons.npy"
@@ -533,31 +580,15 @@ class CKN(object):
         else:
             log.error("missing %s " % cks_path)
         pass 
-        qck_path=os.path.expandvars("/tmp/$USER/opticks/QCerenkovTest/test_GetAverageNumberOfPhotons_s2.npy")
-        if os.path.exists(qck_path):
-            self.qck_scan = np.load(qck_path)
-        else:
-            log.error("missing %s " % qck_path)
-        pass 
 
-    def compareOtherScans(self):
-        """
-        This compares the python and C++ implementations 
-        of the same double precision algorithms,
-        agreement should be (and is) very good eg 1e-13 level 
-        """
         ckn = self 
-
-        cf_qck_dom = np.abs( ckn.scan[:,0] - ckn.qck_scan[:,0] )
-        cf_qck_num = np.abs( ckn.scan[:,2] - ckn.qck_scan[:,1] )
-
-        assert cf_qck_dom.max() < 1e-10
-        assert cf_qck_num.max() < 1e-10 
-
-
-        cf_cks_dom = np.abs( ckn.scan[:,0] - ckn.cks_scan[:,0] )
+        cf_cks_dom = np.abs(      ckn.scan[:,0] - ckn.cks_scan[:,0] )
         cf_cks_num_asis = np.abs( ckn.scan[:,1] - ckn.cks_scan[:,1] )
-        cf_cks_num_s2 = np.abs( ckn.scan[:,2] - ckn.cks_scan[:,2] )
+        cf_cks_num_s2 = np.abs(   ckn.scan[:,2] - ckn.cks_scan[:,2] )
+
+        log.info("cf_cks_dom.min*1e6 %10.4f cf_cks_dom.max*1e6 %10.4f " % (cf_cks_dom.min()*1e6, cf_cks_dom.max()*1e6 ))
+        log.info("cf_cks_num_asis.min*1e6 %10.4f cf_cks_num_asis.max*1e6 %10.4f " % (cf_cks_num_asis.min()*1e6, cf_cks_num_asis.max()*1e6 ))
+        log.info("cf_cks_num_s2.min*1e6 %10.4f cf_cks_num_s2.max*1e6 %10.4f " % (cf_cks_num_s2.min()*1e6, cf_cks_num_s2.max()*1e6 ))
 
         assert cf_cks_dom.max() < 1e-10
         assert cf_cks_num_asis.max() < 1e-10
@@ -673,7 +704,9 @@ class CKN(object):
 
 
     def load_QCerenkov_s2slv_plot(self):
+        """
 
+        """
         titls = [
         "ana/ckn.py : load_QCerenkov_s2slv_plot : compare sum of s2slv from many sliver bins to the rindex big bin result",
         "deviation of up to 0.4 of a photon between the sum of sliver integrals and the big bin integrals is as yet unexplained"
@@ -709,7 +742,6 @@ if __name__ == '__main__':
     ckn.scan_GetAverageNumberOfPhotons_plot(bir=[1.7,1.8])
     ckn.scan_GetAverageNumberOfPhotons_difference_plot()
 
-    ckn.loadOtherScans() 
     ckn.compareOtherScans() 
 
     ckn.test_GetAverageNumberOfPhotons_plot(BetaInverse=1.788)

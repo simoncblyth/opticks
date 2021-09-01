@@ -69,6 +69,48 @@ void test_GetAverageNumberOfPhotons_s2(const QCerenkov& ck)
 }
 
 
+void test_getS2CumulativeIntegrals_one( const QCerenkov& ck, double BetaInverse )
+{
+    unsigned nx = 100 ; 
+    NP* s2c = ck.getS2CumulativeIntegrals(BetaInverse, nx); 
+
+    LOG(info) 
+        << " BetaInverse " <<  std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse
+        << " s2c " << s2c->desc()
+        ; 
+
+    const char* path = SPath::Resolve("$TMP/QCerenkovTest/test_getS2CumulativeIntegrals_one.npy"); 
+    LOG(info) << " save to " << path ; 
+    s2c->save(path); 
+}
+
+
+void test_getS2CumulativeIntegrals_many(const QCerenkov& ck )
+{
+    const NP* bis  = NP::Linspace<double>( 1., 2. , 1001 );     // BetaInverse
+    unsigned nx = 100u ; 
+
+    NP* s2c = ck.getS2CumulativeIntegrals<double>(bis, nx ); 
+
+    LOG(info) 
+        << std::endl
+        << " bis    " << bis->desc()
+        << std::endl
+        << " s2c " << s2c->desc()
+        ; 
+
+    const char* s2c_path = SPath::Resolve("$TMP/QCerenkovTest/test_getS2CumulativeIntegrals_many_s2c.npy"); 
+    LOG(info) << " save to " << s2c_path ; 
+    s2c->save(s2c_path); 
+
+    const char* s2cn_path = SPath::Resolve("$TMP/QCerenkovTest/test_getS2CumulativeIntegrals_many_s2cn.npy"); 
+    s2c->divide_by_last<double>();  
+    s2c->save(s2cn_path); 
+}
+
+
+
+
 void test_getS2SliverIntegrals_one(const QCerenkov& ck, double BetaInverse )
 {
     double emin, emax ; 
@@ -85,6 +127,7 @@ void test_getS2SliverIntegrals_one(const QCerenkov& ck, double BetaInverse )
     const char* path = SPath::Resolve("$TMP/QCerenkovTest/test_getS2SliverIntegrals_one.npy"); 
     LOG(info) << " save to " << path ; 
     s2slv->save(path); 
+
 }
 
 
@@ -128,14 +171,19 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     QCerenkov ck ;  
-    const double BetaInverse = 1.5 ; 
+    //const double BetaInverse = 1.5 ; 
+    const double BetaInverse = 1.0 ; 
 
     //test_lookup(ck); 
     //test_check(ck); 
 
-    test_GetAverageNumberOfPhotons_s2(ck); 
-    test_getS2SliverIntegrals_one(ck,BetaInverse) ; 
-    test_getS2SliverIntegrals_many(ck) ; 
+    //test_GetAverageNumberOfPhotons_s2(ck); 
+    //test_getS2SliverIntegrals_one(ck,BetaInverse) ; 
+    //test_getS2SliverIntegrals_many(ck) ; 
+
+    test_getS2CumulativeIntegrals_one(ck,BetaInverse) ; 
+    test_getS2CumulativeIntegrals_many(ck) ; 
+
 
     return 0 ; 
 }

@@ -56,6 +56,9 @@ struct NP
 
     static void sizeof_check(); 
 
+
+    template<typename T> static int DumpCompare( const NP* a, const NP* b, unsigned a_column, unsigned b_column, const T epsilon ); 
+
     static int Memcmp( const NP* a, const NP* b ); 
     static NP* Concatenate(const std::vector<NP*>& aa); 
     static NP* Concatenate(const char* dir, const std::vector<std::string>& names); 
@@ -107,16 +110,23 @@ struct NP
     static NP* MakeCopy(  const NP* src); 
 
     bool is_pshaped() const ; 
+    template<typename T> T    plhs(unsigned column ) const ;  
+    template<typename T> T    prhs(unsigned column ) const ;  
+    template<typename T> int  pfindbin(const T value, unsigned column ) const ;  
+    template<typename T> T    pdomain(const T value, int item=-1 ) const ; 
+
+    template<typename T> T    psum(unsigned column ) const ;  
     template<typename T> void pscale(T scale, unsigned column);
     template<typename T> void pscale_add(T scale, T add, unsigned column);
     template<typename T> void pdump(const char* msg="NP::pdump") const ; 
     template<typename T> void minmax(T& mn, T&mx, unsigned j=1 ) const ; 
     template<typename T> void linear_crossings( T value, std::vector<T>& crossings ) const ; 
-    template<typename T> T    trapz() const ;    // composite trapezoidal integration, requires pshaped
+    template<typename T> T    trapz() const ;                      // composite trapezoidal integration, requires pshaped
     template<typename T> T    interp(T x) const ;                  // requires pshaped 
     template<typename T> T    interp(unsigned iprop, T x) const ;  // requires NP::Combine of pshaped arrays 
     template<typename T> NP*  cumsum(int axis=0) const ; 
     template<typename T> void divide_by_last() ; 
+
 
 
     template<typename T> void read(const T* data);
@@ -790,6 +800,218 @@ inline bool NP::is_pshaped() const
     return property_shaped ;  
 }
 
+
+template<typename T> inline T NP::plhs(unsigned column) const 
+{
+    const T* vv = cvalues<T>(); 
+
+    unsigned ndim = shape.size() ; 
+    assert( ndim == 1 || ndim == 2); 
+
+    unsigned nj = ndim == 1 ? 1 : shape[1] ; 
+    assert( column < nj ); 
+ 
+    const T lhs = vv[nj*(0)+column] ; 
+    return lhs ;  
+}
+
+
+template<typename T> inline T NP::prhs(unsigned column) const 
+{
+    const T* vv = cvalues<T>(); 
+
+    unsigned ndim = shape.size() ; 
+    unsigned ni = shape[0] ;
+    unsigned nj = ndim == 1 ? 1 : shape[1] ; 
+    assert( column < nj ); 
+
+    const T rhs = vv[nj*(ni-1)+column] ; 
+
+#ifdef DEBUG
+    /*
+    std::cout 
+        << "NP::prhs"
+        << " column " << std::setw(3) << column 
+        << " ndim " << std::setw(3) << ndim 
+        << " ni " << std::setw(3) << ni 
+        << " nj " << std::setw(3) << nj 
+        << " rhs " << std::setw(10) << std::fixed << std::setprecision(4) << rhs 
+        << std::endl 
+        ;
+     */
+#endif
+
+    return rhs ;  
+}
+
+
+
+/**
+NP::pfindbin
+---------------
+
+Return index of bin containing the argument value.
+
+Example indices for bins array of shape (4,) with 3 bins and 4 values::
+
+        
+                +-------------+--------------+-------------+         
+                |             |              |             |
+                |             |              |             |
+                +-------------+--------------+-------------+         
+              0        1             2               3            4 
+
+                lhs                                       rhs
+
+Note this numbering matches that used by np.digitize
+**/
+
+template<typename T> inline int  NP::pfindbin(const T value, unsigned column) const 
+{
+    const T* vv = cvalues<T>(); 
+
+    unsigned ndim = shape.size() ; 
+    unsigned ni = shape[0] ;
+    unsigned nj = ndim == 1 ? 1 : shape[1] ; 
+    assert( column < nj ); 
+ 
+    const T lhs = vv[nj*(0)+column] ; 
+    const T rhs = vv[nj*(ni-1)+column] ; 
+   
+    int ibin = -1 ; 
+    if( value <= lhs )
+    {
+         ibin = 0 ; 
+    }
+    else if( value >= rhs )
+    {
+         ibin = ni ; 
+    }
+    else if ( value >= lhs && value < rhs )
+    {
+        for(unsigned i=0 ; i < ni-1 ; i++) 
+        {
+            const T v0 = vv[nj*(i+0)+column] ; 
+            const T v1 = vv[nj*(i+1)+column] ; 
+            if( value >= v0 && value < v1 )
+            {
+                 ibin = i + 1 ;  // maximum i from here is: ni-1-1 -> max ibin is ni-1
+                 break ; 
+            } 
+        }
+    } 
+    return ibin ; 
+}
+
+/**
+NP::pdomain
+-------------
+
+Returns the domain (eg energy or wavelength) corresponding 
+to the property value argument. 
+
+Requires arrays of shape (num_dom, 2) when item is at default value of -1 
+
+TODO: support arrys of shape (num_item, num_dom, 2 ) when item is used to pick the item. 
+Perhapd should pull a sub NP out of the effective composite, to effect this.
+
+
+
+
+   
+                                                        1  (x1,y1)     (  binVector[bin+1], dataVector[bin+1] )
+                                                       /
+                                                      /
+                                                     *  ( xv,yv )       ( res, aValue )      
+                                                    /
+                                                   /
+                                                  0  (x0,y0)          (  binVector[bin], dataVector[bin] )
+
+
+              Similar triangles::
+               
+                 xv - x0       x1 - x0 
+               ---------- =   -----------
+                 yv - y0       y1 - y0 
+
+                                                   x1 - x0
+                   xv  =    x0  +   (yv - y0) *  -------------- 
+                                                   y1 - y0
+
+**/
+
+template<typename T> inline T  NP::pdomain(const T value, int item ) const 
+{
+    unsigned ndim = shape.size() ; 
+    assert( ndim == 2 ); 
+
+    unsigned ni = shape[0]; 
+    unsigned nj = shape[1]; 
+    assert( nj == 2 ); 
+
+    const T zero = 0. ; 
+    const T lhs = plhs<T>(0u); 
+    const T rhs = prhs<T>(0u); 
+
+    unsigned ibin = pfindbin<T>( value, 1u ); 
+    const T* vv = cvalues<T>(); 
+
+    T xv ; 
+    if(ibin == 0 )  
+    {
+        xv = lhs ; 
+    }
+    else if( ibin == ni ) 
+    {
+        xv = rhs ; 
+    }
+    else
+    {
+        assert( ibin > 0 && ibin < ni ); 
+        unsigned i = ibin - 1 ; 
+        const T x0 = vv[nj*(i+0)+0] ; 
+        const T y0 = vv[nj*(i+0)+1] ; 
+        const T x1 = vv[nj*(i+1)+0] ; 
+        const T y1 = vv[nj*(i+1)+1] ; 
+        const T dy = y1 - y0 ;  
+        assert( dy >= zero );   // must be monotonic for this to make sense
+        const T yv = value ; 
+
+        xv = x0 ; 
+        if( dy > zero ) xv += (yv-y0) * (x1 - x0) / dy ; 
+    }    
+
+#ifdef DEBUG
+    std::cout 
+        << "NP::pdomain"
+        << " value " << std::setw(10) << std::fixed << std::setprecision(4) << value 
+        << " lhs " << std::setw(10) << std::fixed << std::setprecision(4) << lhs
+        << " rhs " << std::setw(10) << std::fixed << std::setprecision(4) << rhs
+        << " ibin " << std::setw(4) << ibin
+        << " ni " << std::setw(4) << ni
+        << " xv " << std::setw(10) << std::fixed << std::setprecision(4) << xv
+        << std::endl 
+        ;
+#endif
+    return xv ; 
+}
+
+
+template<typename T> inline T  NP::psum(unsigned column) const 
+{
+    const T* vv = cvalues<T>(); 
+    unsigned ni = shape[0] ;
+    unsigned ndim = shape.size() ; 
+    unsigned nj = ndim == 1 ? 1 : shape[1] ; 
+    assert( column < nj ); 
+
+    T sum = 0. ; 
+    for(unsigned i=0 ; i < ni ; i++) sum += vv[nj*i+column] ;  
+    return sum ; 
+}
+
+
+
 template<typename T> inline void NP::pscale_add(T scale, T add, unsigned column)
 {
     assert( is_pshaped() ); 
@@ -1102,10 +1324,18 @@ template<typename T> inline NP* NP::cumsum(int axis) const
 }
 
 
+/**
+NP::divide_by_last
+--------------------
+
+
+**/
+
 template<typename T> inline void NP::divide_by_last() 
 {
     unsigned ndim = shape.size() ; 
     T* vv = values<T>(); 
+    const T zero(0.); 
 
     if( ndim == 1 )
     {
@@ -1117,13 +1347,28 @@ template<typename T> inline void NP::divide_by_last()
         unsigned ni = shape[0] ; 
         unsigned nj = shape[1] ; 
         for(unsigned i=0 ; i < ni ; i++)
-        { 
-            for(unsigned j=1 ; j < nj ; j++) vv[i*nj+j] = vv[i*nj+j]/vv[i*nj+nj-1] ;  
+        {
+            const T last = vv[i*nj+nj-1] ;  
+            for(unsigned j=0 ; j < nj ; j++) if(last != zero) vv[i*nj+j] /= last ;  
+        }
+    }
+    else if( ndim == 3 )   // eg (1000, 100, 2)    1000(diff BetaInverse) * 100 * (energy, integral)  
+    {
+        unsigned ni = shape[0] ; 
+        unsigned nj = shape[1] ; 
+        unsigned nk = shape[2] ; 
+        assert( nk == 2 ); // not required by below, but for sanity of understanding 
+
+        for(unsigned i=0 ; i < ni ; i++)
+        {
+            unsigned k = nk - 1 ;                         // eg the property, not the domain energy in k=0
+            const T last = vv[i*nj*nk+(nj-1)*nk+k] ;  
+            for(unsigned j=0 ; j < nj ; j++) if(last != zero) vv[i*nj*nk+j*nk+k] /= last ;  
         }
     }
     else
     {
-        assert( 0 && "for now only 1d or 2d implemented");  
+        assert( 0 && "for now only ndim 1,2,3 implemented");  
     }
 }
 
@@ -1241,6 +1486,53 @@ inline void NP::get_meta( std::vector<std::string>& lines, char delim  ) const
     while (std::getline(ss, s, delim)) lines.push_back(s) ; 
 }
 
+template<typename T>
+inline int NP::DumpCompare( const NP* a, const NP* b , unsigned a_column, unsigned b_column, const T epsilon ) // static
+{
+    const T* aa = a->cvalues<T>(); 
+    const T* bb = b->cvalues<T>(); 
+
+    unsigned a_ndim = a->shape.size() ; 
+    unsigned a_ni = a->shape[0] ;
+    unsigned a_nj = a_ndim == 1 ? 1 : a->shape[1] ; 
+    assert( a_column < a_nj ); 
+ 
+    unsigned b_ndim = b->shape.size() ; 
+    unsigned b_ni = b->shape[0] ;
+    unsigned b_nj = b_ndim == 1 ? 1 : b->shape[1] ; 
+    assert( b_column < b_nj ); 
+ 
+    assert( a_ni == b_ni ); 
+
+    T av_sum = 0. ; 
+    T bv_sum = 0. ; 
+    int mismatch = 0 ; 
+
+    for(unsigned i=0 ; i < a_ni ; i++)
+    {
+        const T av = aa[a_nj*i+a_column] ; 
+        const T bv = bb[b_nj*i+b_column] ; 
+        av_sum += av ; 
+        bv_sum += bv ; 
+        std::cout 
+            << std::setw(4) << i 
+            << " a " << std::setw(10) << std::fixed << std::setprecision(4) << av 
+            << " b " << std::setw(10) << std::fixed << std::setprecision(4) << bv 
+            << " a-b " << std::setw(10) << std::fixed << std::setprecision(4) << av-bv
+            << std::endl 
+            ;
+        if(std::abs(av-bv) > epsilon) mismatch += 1 ;  
+    }
+    std::cout 
+        << std::setw(4) << "sum" 
+        << " a " << std::setw(10) << std::fixed << std::setprecision(4) << av_sum 
+        << " b " << std::setw(10) << std::fixed << std::setprecision(4) << bv_sum 
+        << " a-b " << std::setw(10) << std::fixed << std::setprecision(4) << av_sum-bv_sum
+        << " mismatch " << mismatch
+        << std::endl 
+        ;
+    return mismatch ; 
+}
 
 
 inline int NP::Memcmp(const NP* a, const NP* b ) // static

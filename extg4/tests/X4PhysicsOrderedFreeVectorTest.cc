@@ -1,6 +1,7 @@
 #include "G4PhysicsOrderedFreeVector.hh"
 #include "X4PhysicsOrderedFreeVector.hh"
 #include "NPY.hpp"
+#include "NP.hh"
 
 #include "OPTICKS_LOG.hh"
 
@@ -117,14 +118,53 @@ void test_Value()
         dst->setValue(i,2,0,0,   v1 ); 
 
         assert( dv == 0. ); 
+    }
+
+    dst->save(FOLD, "dst.npy"); 
+}
+
+void test_GetEnergy()
+{
+    LOG(info); 
+    const char* fold = "/tmp/NPpdomainTest" ; 
+    NP* a = NP::Load(fold, "a.npy");
+    NP* b = NP::Load(fold, "b.npy");
+    if( a == nullptr || b == nullptr ) return ; 
+
+    const double* bb = b->cvalues<double>(); 
+
+    X4PhysicsOrderedFreeVector* xa = X4PhysicsOrderedFreeVector::FromArray(a); 
+    X4PhysicsOrderedFreeVector* xb = X4PhysicsOrderedFreeVector::FromArray(b);     
+    G4PhysicsOrderedFreeVector* ga  = xa->vec ; 
+    G4PhysicsOrderedFreeVector* gb  = xb->vec ; 
+    //const NPY<double>* src = xvec->src ; 
+    VecDump(ga); 
+    VecDump(gb); 
+
+
+    for(unsigned i=0 ; i < b->shape[0] ; i++)
+    {
+        double b0 = bb[i*2+0] ; 
+        //double b1 = bb[i*2+1] ; 
+
+        double gval = ga->GetEnergy(b0); 
+        double lval = a->pdomain<double>(b0) ; 
+        double delta = std::abs( lval - gval  ); 
+
+        std::cout 
+            << " i " << std::setw(4) << i 
+            << " gval " << std::setw(10) << std::setprecision(5) << std::fixed << gval 
+            << " lval " << std::setw(10) << std::setprecision(5) << std::fixed << lval 
+            << " delta*1e6 " << std::setw(10) << std::setprecision(5) << std::fixed << delta*1e6
+            << std::endl 
+            ;
 
     }
 
 
-    dst->save(FOLD, "dst.npy"); 
+
 
 }
-
 
 
 
@@ -134,6 +174,9 @@ int main(int argc, char** argv)
     //test_convert(); 
     //test_Load0();  
     //test_Load1();  
-    test_Value();  
+    //test_Value();  
+
+    test_GetEnergy(); 
+
     return 0 ; 
 }

@@ -328,6 +328,8 @@ class CKRindex(object):
 
         When there is an s2 zero crossing a linear calculation is used to find 
         the crossing point and the triangle area is returned that excludes negative contributions. 
+
+        See s2.py : better to find en_cross from ri-BetaInverse crossings as that is linear, unlike s2.
         """
         ct_0 = BetaInverse/ri_0
         ct_1 = BetaInverse/ri_1
@@ -545,7 +547,7 @@ class CKRindex(object):
         yrg = {}
 
         for BetaInverse in bis:
-            numPhotons_s2, emin, emax = self.GetAverageNumberOfPhotons_s2(BetaInverse)
+            numPhotons_s2, emin, emax = self.GetAverageNumberOfPhotons_s2(BetaInverse)  # get energy range for the BetaInverse
             yrg[BetaInverse] = [numPhotons_s2, emin, emax]
             if numPhotons_s2 <= 0.: continue
             edom[BetaInverse] = np.linspace(emin, emax, nx) 
@@ -670,7 +672,7 @@ class CKRindex(object):
         to make monotonic inevitable, by storing "sliver" integrals and np.cumsum adding them up
         to give the cumulative CDF.
 
-        Do this by slicing the energy range for each BetaInverse into small "slivers" 
+       Do this by slicing the energy range for each BetaInverse into small "slivers" 
         Can assume that the sliver size is smaller than smallest rindex energy bin size, 
         so the sliver can either be fully inside the bin or straddling the bin edge.
         Then get the total integral by np.cumsum adding the pieces.
@@ -680,7 +682,10 @@ class CKRindex(object):
         But suspect that having too many slivers will be an accuracy problem.
         As the underlying RINDEX is linearly interpolated between measured
         points it is more accurate to have fewer slivers in the all but the final bin ? 
-        Need to try and see.
+
+        See s2.py that fixes the non-monotonic issue by ensuring en_cross only 
+        obtained once for a bin and uses ri-BetaInverse rather than s2 zero 
+        crossings as linear nature will make it more precise. 
         """
         log.info("s2sliver_integrate")
 

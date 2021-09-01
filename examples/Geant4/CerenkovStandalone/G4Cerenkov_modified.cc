@@ -1132,6 +1132,39 @@ Hence could short circuit that situation to make this always faster.
 But its better to do that in the caller scope as max Rindex is 
 already available there. 
 
+s2 numerical integral using trapezoidal approximation, 
+
+* x,y: s2 zero crossings corresponding to RINDEX(E) == BetaInverse
+* B,C,D : trapezoids
+* A,E   : edge triangles  
+
+                                 *
+                                /|\
+                               / | \
+                              /  |  \
+                             /   |   \
+                            /    |    \
+                           /     |     \
+                          /      |      \
+                 *-------*       |       *
+                /|       |       |       |\
+               / |       |       |       | \
+              / A|  B    |   C   |   D   |E \
+     -----0--x---1-------2-------3-------4---y----5----------
+            /                                 \
+
+* determine x,y energy crossings from BetaInverse-RINDEX(E) crossings, as that is linear 
+  so the linear interpolation to give crossings will be precise.
+  Using s2 zero crossing not as precise, as non-linear. 
+
+
+Formerly did::
+
+   G4double en_cross =  cross ? (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) : -1. ; 
+
+But it is more precise to find en_cross from BetaInverse-ri crossings directly 
+rather than the derived and non-linear s2
+
 **/
 
 G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge, const G4double beta, const G4Material*, G4MaterialPropertyVector* Rindex) const
@@ -1155,13 +1188,15 @@ G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge
         G4double s2_0 = (1.-ct_0)*(1.+ct_0) ; 
         G4double s2_1 = (1.-ct_1)*(1.+ct_1) ; 
 
-        if( s2_0 <= 0. and s2_1 <= 0. )   // entire bin disallowed : no contribution 
+        G4bool cross = s2_0*s2_1 < 0. ; 
+        G4double en_cross =  cross ? en_0 + (BetaInverse - ri_0)*(en_1 - en_0)/(ri_1 - ri_0) : -1. ; 
+
+        if( s2_0 <= 0. and s2_1 <= 0. )  // no CK
         {
-            s2integral += 0. ; 
-        }    
+            // noop
+        }
         else if( s2_0 < 0. and s2_1 > 0. )  // s2 becomes +ve within the bin
         {
-            G4double en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
             s2integral +=  (en_1 - en_cross)*s2_1*half ;  
         }
         else if( s2_0 >= 0. and s2_1 >= 0. )   // s2 +ve across full bin 
@@ -1170,7 +1205,6 @@ G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge
         }     
         else if( s2_0 > 0. and s2_1 < 0. )  // s2 becomes -ve within the bin
         {
-            G4double en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) ;   // see ~/np/NP.hh NP::linear_crossings   
             s2integral +=  (en_cross - en_0)*s2_0*half ;  
         }
         else
@@ -1180,8 +1214,8 @@ G4double G4Cerenkov_modified::GetAverageNumberOfPhotons_s2(const G4double charge
                 << " FATAL "
                 << " s2_0 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_0
                 << " s2_1 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_1
-                << " en_0 " << std::fixed << std::setw(10) << std::setprecision(5) << en_0
-                << " en_1 " << std::fixed << std::setw(10) << std::setprecision(5) << en_1
+                << " en_0/eV " << std::fixed << std::setw(10) << std::setprecision(5) << en_0/eV
+                << " en_1/eV " << std::fixed << std::setw(10) << std::setprecision(5) << en_1/eV
                 << " ri_0 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_0
                 << " ri_1 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_1
                 << std::endl 

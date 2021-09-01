@@ -38,7 +38,14 @@ NPY<double>* X4Scintillation::createGeant4InterpolatedInverseCDF( unsigned num_b
 }
 
 
+/**
+X4Scintillation::Integral
+---------------------------
 
+Returns cumulative sum of the input property on the same energy domain, 
+with values starting at 0. and increasing monotonically.
+
+**/
 
 G4PhysicsOrderedFreeVector* X4Scintillation::Integral( const G4MaterialPropertyVector* theFastLightVector )
 {
@@ -150,6 +157,73 @@ high resolution across the entire range.
     hd_factor                LHS            RHS
     10          10x bins:    0.00->0.10     0.90->1.00 
     20          20x bins:    0.00->0.05     0.95->1.00 
+
+
+The ICDF is formed using Geant4s "domain lookup from value" functionality 
+in the form of G4PhysicsOrderedFreeVector::GetEnergy 
+
+::
+
+    g4-cls G4PhysicsOrderedFreeVector
+
+    096 G4double G4PhysicsOrderedFreeVector::GetEnergy(G4double aValue)
+     97 {
+     98         G4double e;
+     99         if (aValue <= GetMinValue()) {
+    100           e = edgeMin;
+    101         } else if (aValue >= GetMaxValue()) {
+    102           e = edgeMax;
+    103         } else {
+    104           size_t closestBin = FindValueBinLocation(aValue);
+    105           e = LinearInterpolationOfEnergy(aValue, closestBin);
+    106     }
+    107         return e;
+    108 }
+
+    118 G4double G4PhysicsOrderedFreeVector::LinearInterpolationOfEnergy(G4double aValue,
+    119                                  size_t bin)
+    120 {
+    121         G4double res = binVector[bin];
+    122         G4double del = dataVector[bin+1] - dataVector[bin];
+    123         if(del > 0.0) { 
+    124           res += (aValue - dataVector[bin])*(binVector[bin+1] - res)/del;
+    125         }
+    126         return res;
+    127 }
+
+
+
+   
+                                                        1  (x1,y1)     (  binVector[bin+1], dataVector[bin+1] )
+                                                       /
+                                                      /
+                                                     *  ( xv,yv )       ( res, aValue )      
+                                                    /
+                                                   /
+                                                  0  (x0,y0)          (  binVector[bin], dataVector[bin] )
+
+
+              Similar triangles::
+               
+                 xv - x0       x1 - x0 
+               ---------- =   -----------
+                 yv - y0       y1 - y0 
+
+
+
+
+                  res - binVector[bin]             binVector[bin+1] - binVector[bin]
+               ----------------------------  =     -----------------------------------
+                 aValue - dataVector[bin]          dataVector[bin+1] - dataVector[bin] 
+
+
+                                                                              binVector[bin+1] - binVector[bin]
+                   res  = binVector[bin] +  ( aValue - dataVector[bin] ) *  -------------------------------------
+                                                                              dataVector[bin+1] - dataVector[bin] 
+
+                                                   x1 - x0
+                   xv  =    x0  +   (yv - y0) *  -------------- 
+                                                   y1 - y0
 
 **/
 

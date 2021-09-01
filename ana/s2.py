@@ -2,26 +2,6 @@
 """
 
 
-       [ 8.857,  9.3  ,  0.188,  0.113, -1.   ,  0.067,  0.   ,  0.676,  0.743, 15.   ,  9.3  , 55.   ,  0.743],
-       [ 8.857,  9.441,  0.188,  0.087, -1.   ,  0.08 ,  0.   ,  0.676,  0.756, 15.   ,  9.441, 56.   ,  0.756],
-
-       [ 9.538,  9.582,  0.069,  0.062, -1.   ,  0.003,  0.   ,  0.763,  0.766, 16.   ,  9.582, 57.   ,  0.766],
-       [ 9.538,  9.723,  0.069,  0.04 , -1.   ,  0.01 ,  0.   ,  0.763,  0.773, 16.   ,  9.723, 58.   ,  0.773],
-       [ 9.538,  9.864,  0.069,  0.017, -1.   ,  0.014,  0.   ,  0.763,  0.777, 16.   ,  9.864, 59.   ,  0.777],
-       [ 9.538, 10.005,  0.069, -0.007,  9.964,  0.015,  0.   ,  0.763,  0.778, 16.   , 10.005, 60.   ,  0.778],
-       [ 9.538, 10.145,  0.069, -0.031,  9.956, *0.014*, 0.   ,  0.763,  0.778, 16.   , 10.145, 61.   ,  0.778],
-       [ 9.538, 10.286,  0.069, -0.057,  9.948,  0.014,  0.   ,  0.763,  0.778, 16.   , 10.286, 62.   ,  0.778],
-
-       [10.33 , 10.427, -0.065, -0.065, -1.   ,  0.   ,  0.   ,  0.777,  0.777, 17.   , 10.427, 63.   ,  0.777],
-       [10.33 , 10.568, -0.065, -0.065, -1.   ,  0.   ,  0.   ,  0.777,  0.777, 17.   , 10.568, 64.   ,  0.777],
-       [10.33 , 10.709, -0.065, -0.065, -1.   ,  0.   ,  0.   ,  0.777,  0.777, 17.   , 10.709, 65.   ,  0.777],
-       [10.33 , 10.85 , -0.065, -0.065, -1.   ,  0.   ,  0.   ,  0.777,  0.777, 17.   , 10.85 , 66.   ,  0.777],
-       [10.33 , 10.991, -0.065, -0.065, -1.   ,  0.   ,  0.   ,  0.777,  0.777, 17.   , 10.991, 67.   ,  0.777],
-       [10.33 , 11.132, -0.065, -0.065, -1.   ,  0.   ,  0.   ,  0.777,  0.777, 17.   , 11.132, 68.   ,  0.777],
-       [10.33 , 11.273, -0.065, -0.065, -1.   ,  0.   ,  0.   ,  0.777,  0.777, 17.   , 11.273, 69.   ,  0.777],
-
-
-        en_0     en_1    s2_0    s2_1
 
 In [25]: np.c_[s2.ri, np.arange(len(s2.ri))+1 ]
 Out[25]: 
@@ -56,8 +36,6 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as plt 
 from opticks.ana.main import opticks_main 
 from opticks.ana.key import keydir
-
-
 
 def test_digitize():
     edom = np.linspace(-1., 12., 131 )
@@ -121,13 +99,11 @@ class S2(object):
             print( " idx %3d  en %20s   ri %20s  s2i %10.4f  " % (idx, str(en), str(ri), s2i ))
         pass
 
-
-    def linear_integral(self, en_0, en_1, s2_0, s2_1, fix_en_cross=None ):
+    def s2_linear_integral(self, en_, ri_, BetaInverse, fix_en_cross=None):
         """
-        :param en_0:
-        :param en_1:
-        :param s2_0:
-        :param s2_1:
+        :param en_:
+        :param ri_:
+        :param BetaInverse:
         :param fix_en_cross:
 
         Consider integrating in a region close to 
@@ -151,55 +127,38 @@ class S2(object):
         same en_cross is used for all integrals relevant to a bin.
 
 
-             .  
+             0.  
              |  .
              |     .
              +-------X----------
                         .
-                           .
+                           1
+
+
+         Similar triangles to find the en_cross where ri == BetaInverse.
+         This has advantage over s2 crossing zero in that it is more linear, 
+         so the crossing should be a bit more precise. 
+
+
+             en_cross - en_0            en_1 - en_0
+             -------------------  =  --------------------
+             BetaInverse - ri_0         ri_1 - ri_0 
+
+             en_cross_0 =  en_0 + (BetaInverse - ri_0)*(en_1 - en_0)/(ri_1 - ri_0)
+
+
+             en_1 - en_cross            en_1 - en_0
+             -------------------  =  --------------------
+             ri_1 - BetaInverse         ri_1 - ri_0 
+  
+             en_cross_1 =  en_1 - (ri_1 - BetaInverse)*(en_1 - en_0)/(ri_1 - ri_0)
+             en_cross_1 =  en_1 + (BetaInverse - ri_1)*(en_1 - en_0)/(ri_1 - ri_0)
+
+
+             ## when there is no crossing in the range en_cross will not be between en_0 and en_1
+             ## note potential infinities for flat ri bins,  ri_1 == ri_0 
 
         """
-        ret = 0.
-        en_cross = np.nan
-        branch = -1
-        if s2_0 <= 0. and s2_1 <= 0.: 
-            ret = 0.
-            branch = 1
-        elif s2_0 < 0. and s2_1 > 0.:    # s2 goes +ve 
-            en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) if fix_en_cross is None else fix_en_cross
-            ret = (en_1 - en_cross)*s2_1*0.5
-            branch = 2
-        elif s2_0 >= 0. and s2_1 >= 0.:   # s2 +ve or zero across full range 
-            ret = (en_1 - en_0)*(s2_0 + s2_1)*0.5
-            branch = 3
-        elif s2_0 > 0. and s2_1 <= 0.:     # s2 goes -ve or to zero 
-            en_cross = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0) if fix_en_cross is None else fix_en_cross
-            ret = (en_cross - en_0)*s2_0*0.5
-            branch = 4
-        else:
-            assert 0 
-        pass
-        meta = np.zeros(12)
-
-        meta[0] = en_0
-        meta[1] = en_1
-        meta[2] = s2_0
-        meta[3] = s2_1
-
-        meta[4] = en_cross
-        meta[5] = ret 
-        meta[6] = 0.
-        meta[7] = 0.
-
-        meta[8] = 0.
-        meta[9] = 0.
-        meta[10] = 0.
-        meta[11] = 0.
-
-        #assert ret >= 0.  
-        return ret, en_cross, branch, meta 
-
-    def s2_linear_integral(self, en_, ri_, BetaInverse, fix_en_cross=None):
 
         en = np.asarray(en_)
         ri = np.asarray(ri_)
@@ -208,9 +167,73 @@ class S2(object):
         s2 = (1.-ct)*(1.+ct) 
 
         en_0, en_1 = en
+        ri_0, ri_1 = ri 
         s2_0, s2_1 = s2
 
-        return self.linear_integral( en_0, en_1, s2_0, s2_1, fix_en_cross=fix_en_cross )
+        branch = 0
+        if s2_0 <= 0. and s2_1 <= 0.:      # s2 -ve OR 0.      : no CK in bin 
+            branch = 1
+        elif s2_0 < 0. and s2_1 > 0.:      # s2 goes +ve       : CK on RHS of bin
+            branch = 2
+        elif s2_0 >= 0. and s2_1 >= 0.:    # s2 +ve or zero    : CK across full bin
+            branch = 3
+        elif s2_0 > 0. and s2_1 <= 0.:     # s2 goes -ve or 0. : CK on LHS of bin
+            branch = 4
+        else:
+            assert 0 
+        pass
+        
+        if branch == 2 or branch == 4:     
+            en_cross_A = (s2_1*en_0 - s2_0*en_1)/(s2_1 - s2_0)    ## s2 zeros should occur at ~same en_cross, but non-linear so less precision 
+            en_cross_B = en_0 + (BetaInverse - ri_0)*(en_1 - en_0)/(ri_1 - ri_0)
+            en_cross_C = en_1 + (BetaInverse - ri_1)*(en_1 - en_0)/(ri_1 - ri_0)
+            en_cross = en_cross_B if fix_en_cross is None else fix_en_cross
+        else:
+            en_cross_A = np.nan
+            en_cross_B = np.nan
+            en_cross_C = np.nan
+            en_cross = np.nan
+        pass
+
+        if branch == 1.: 
+            area = 0.
+        elif branch == 2:                            # s2 goes +ve 
+            area = (en_1 - en_cross)*s2_1*0.5
+        elif branch == 3:                            # s2 +ve or zero across full range 
+            area = (en_1 - en_0)*(s2_0 + s2_1)*0.5
+        elif branch == 4:                            # s2 goes -ve or to zero 
+            area = (en_cross - en_0)*s2_0*0.5
+        else:
+            assert 0 
+        pass
+
+        Rfact = 369.81 / 10.
+        s2i = Rfact * area
+        
+        meta = np.zeros(16)
+
+        meta[0] = en_0
+        meta[1] = en_1
+        meta[2] = s2_0
+        meta[3] = s2_1
+    
+        meta[4] = ri_0
+        meta[5] = ri_1
+        meta[6] = float(branch)
+        meta[7] = s2i
+
+        meta[8] = en_cross_A
+        meta[9] = en_cross_B
+        meta[10] = en_cross_C
+        meta[11] = en_cross
+
+        meta[12] = 0.
+        meta[13] = 0.
+        meta[14] = 0.
+        meta[15] = 0.
+
+        assert s2i >= 0.  
+        return s2i, en_cross, branch, meta 
  
     def bin_integral(self, idx, BetaInverse, fix_en_cross=None): 
         """
@@ -221,15 +244,27 @@ class S2(object):
         en, ri = self.bin(idx) 
         return self.s2_linear_integral(en, ri, BetaInverse, fix_en_cross=fix_en_cross )
 
-    def bin_integral_check(self):
+    def full_integral(self, BetaInverse): 
+        """
+        :param idx: 0-based bin index  
+        :param BetaInverse: scalar
+        :return s2integral: scalar sin^2 ck_angle integral in energy range  
+        """
+        s2integral = 0. 
+        for idx in range(1, len(self.ri)):
+            s2i, en_cross, branch, meta  = self.bin_integral(idx, BetaInverse)
+            s2integral += s2i 
+        pass
+        return s2integral   
+
+    def full_integral_scan(self):
         bis = np.linspace(1, 2, 11)
         for BetaInverse in bis:
-            en = (self.ebin[0], self.ebin[-1])
-            s2i, en_cross, branch, meta = self.bin_integral(en, BetaInverse)
-            print(" bi %7.4f s2i  %7.4f branch %d en_cross %7.4f  " % (BetaInverse, s2i, branch, en_cross ))
+            s2integral = self.full_integral(BetaInverse)
+            print(" bi %7.4f s2integral  %7.4f  " % (BetaInverse, s2integral))
         pass
 
-    def ecut_integral(self, line, ecut, BetaInverse=1.5, dump=False):
+    def cut_integral(self, ecut, BetaInverse=1.5, dump=False, line=0 ):
         """
         """
         ## find index of the bin containing the ecut value  
@@ -239,63 +274,83 @@ class S2(object):
 
         ## first add up integrals from full bins to the left of idx bin 
         for i in range(1,idx):  
-            s2integral[i], en_cross, branch,  _ = self.bin_integral(i, BetaInverse)
+            s2integral[i], _en_cross, _branch, _meta = self.bin_integral(i, BetaInverse)
         pass
 
         ## find details of the idx bin 
         en, ri = self.bin(idx)
 
-        ## use full bin integral to fix the en_cross 
+        ## use full bin integral to obtain en_cross 
         full, full_en_cross, full_branch,  _ = self.bin_integral(idx, BetaInverse, fix_en_cross=None)
 
         ## add s2integral over the partial bin 
         en_0, en_1 = en[0], ecut
         ri_0, ri_1 = ri[0], self.ri_(ecut)
 
+        # fix_en_cross only gets used when appropriate  
         s2integral[-1], en_cross, branch, meta = self.s2_linear_integral( [en_0, en_1], [ri_0, ri_1], BetaInverse, fix_en_cross=full_en_cross )
 
-        meta[-5] = s2integral[:-1].sum()
-        meta[-4] = s2integral.sum()
+        tot = s2integral.sum()
+
+        meta[-4] = tot
         meta[-3] = float(idx)
         meta[-2] = ecut
         meta[-1] = float(line)
 
         if dump:
-            print(" ecut %10.4f idx %3d  en %15s ri %15s  s2integral %s  " % (ecut, idx, str(en), str(ri), str(s2integral) ))     
+            print("cut_integral  %10.4f idx %3d  en %15s ri %15s  tot %10.4f  " % (ecut, idx, str(en), str(ri), tot ))     
         pass 
         return s2integral, meta
 
-
     def cs2_integral(self, efin, BetaInverse=1.5):
         """
-        Slight non-monotonic all from the partial bin.
-
-        Non-monotonic fixed by forcing use of common en_cross obtained from the full bin integral
-        in the partial bin integrals. 
+        Fixed slight non-monotonic by forcing use of common en_cross obtained from the full bin integral
+        in the partial bin integrals.  Further improvement using ri-BetaInverse cross rather than s2 cross, 
+        as thats more linear.
         """
         cs2i = np.zeros( [len(efin), len(self.ri)+1])
-        meta = np.zeros( [len(efin), 12])
+        meta = np.zeros( [len(efin), 16])
 
         for line,ecut in enumerate(efin):
-            cs2i[line], meta[line] = self.ecut_integral(line, ecut, BetaInverse)
+            cs2i[line], meta[line] = self.cut_integral(ecut, BetaInverse, line=line)
         pass  
+        s_cs2i = cs2i.sum(axis=1)  # sum over full bins and the partial bin for each cut 
+
+        monotonic = np.all(np.diff(s_cs2i) >= 0.)
+        assert monotonic
         return cs2i, meta
+
+
+def test_full_vs_cut(s2, dump=False):
+    bis = np.linspace(1., 2., 101)
+    res = np.zeros( (len(bis), 4) )
+    for i, BetaInverse in enumerate(bis): 
+        full = s2.full_integral(BetaInverse)
+        cut , _cut_meta = s2.cut_integral(s2.ri[-1,0], BetaInverse, dump=dump)
+        cut_tot = cut.sum() 
+        res[i] = [BetaInverse, full, cut_tot, np.abs(full-cut_tot)*1e10 ]
+        assert np.abs(full - cut_tot) < 1e-10 
+    pass
+    return res 
+
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     np.set_printoptions(edgeitems=50, precision=4)
 
     s2 = S2()
+
+if 0:
     s2.bin_dump() 
+    s2.full_integral_scan()
+    res = test_full_vs_cut(s2) 
 
-    s2.ecut_integral(0, 15.5, dump=True)
-
+if 1:
     nx = 100 
     efin = np.linspace( s2.ri[0,0], s2.ri[-1,0], nx )
     cs2i, meta = s2.cs2_integral(efin, BetaInverse=1.5)
 
     # np.c_[cs2i, np.arange(len(efin)), cs2i.sum(axis=1), efin  ]
-
-    print(np.diff(cs2i.sum(axis=1)))
 
  
