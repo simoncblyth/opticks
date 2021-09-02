@@ -2,6 +2,8 @@
 #include "SPath.hh"
 #include "NP.hh"
 #include "QCerenkov.hh"
+#include "QCK.hh"
+
 #include "scuda.h"
 #include "OPTICKS_LOG.hh"
 
@@ -89,9 +91,9 @@ void test_getS2CumulativeIntegrals_many(const QCerenkov& ck )
 {
     const NP* bis  = NP::Linspace<double>( 1., 2. , 1001 );     // BetaInverse
     unsigned nx = 100u ; 
-
     NP* s2c = ck.getS2CumulativeIntegrals<double>(bis, nx ); 
 
+ 
     LOG(info) 
         << std::endl
         << " bis    " << bis->desc()
@@ -108,6 +110,24 @@ void test_getS2CumulativeIntegrals_many(const QCerenkov& ck )
     s2c->save(s2cn_path); 
 }
 
+
+void test_makeICDF(const QCerenkov& ck )
+{
+    unsigned ny = 1000u ; 
+    unsigned nx = 100u ; 
+
+    QCK icdf = ck.makeICDF<double>( ny, nx ); 
+
+    LOG(info)
+        << std::endl  
+        << " icdf.bis  " << icdf.bis->desc()
+        << std::endl  
+        << " icdf.s2c  " << icdf.s2c->desc() 
+        << std::endl  
+        << " icdf.s2cn " << icdf.s2cn->desc()
+        << std::endl  
+        ;
+}
 
 
 
@@ -172,7 +192,7 @@ int main(int argc, char** argv)
 
     QCerenkov ck ;  
     //const double BetaInverse = 1.5 ; 
-    const double BetaInverse = 1.0 ; 
+    //const double BetaInverse = 1.0 ; 
 
     //test_lookup(ck); 
     //test_check(ck); 
@@ -181,8 +201,10 @@ int main(int argc, char** argv)
     //test_getS2SliverIntegrals_one(ck,BetaInverse) ; 
     //test_getS2SliverIntegrals_many(ck) ; 
 
-    test_getS2CumulativeIntegrals_one(ck,BetaInverse) ; 
-    test_getS2CumulativeIntegrals_many(ck) ; 
+    //test_getS2CumulativeIntegrals_one(ck,BetaInverse) ; 
+    //test_getS2CumulativeIntegrals_many(ck) ; 
+
+    test_makeICDF(ck); 
 
 
     return 0 ; 

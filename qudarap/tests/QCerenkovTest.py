@@ -5,6 +5,7 @@ QCerenkovTest.py
 
 ::
 
+    QCerenkovTest 
     ipython -i tests/QCerenkovTest.py
 
 
@@ -16,7 +17,12 @@ class QCerenkovTest(object):
     FOLD = os.path.expandvars("/tmp/$USER/opticks/QCerenkovTest") 
     def __init__(self):
         s2c_path = os.path.join(self.FOLD, "test_getS2CumulativeIntegrals_many_s2c.npy")
-        self.s2c = np.load(s2c_path) if os.path.exists(s2c_path) else None
+        s2c = np.load(s2c_path) if os.path.exists(s2c_path) else None
+        if s2c is None:
+            log.error("recreate input arrays by running : QCerenkovTest" ); 
+        pass
+        self.s2c = s2c
+
 
         s2cn_path = os.path.join(self.FOLD, "test_getS2CumulativeIntegrals_many_s2cn.npy")
         self.s2cn = np.load(s2cn_path) if os.path.exists(s2cn_path) else None

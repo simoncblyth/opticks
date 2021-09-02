@@ -1,6 +1,12 @@
 #!/bin/bash -l 
 
-mkdir -p /tmp/$USER/opticks/QCerenkovTest 
+fold=$(dirname $BASH_SOURCE)
+bin=QCerenkovTest 
+tmpdir=/tmp/$USER/opticks/$bin
+mkdir -p $tmpdir
 
-QCerenkovTest 
+which $bin
+$bin
+
+ipython -i $fold/$bin.py  
 

@@ -13,6 +13,9 @@
 #include "QCerenkov.hh"
 #include "QTex.hh"
 
+#include "QCK.hh"
+
+
 const plog::Severity QCerenkov::LEVEL = PLOG::EnvLevel("QCerenkov", "INFO"); 
 
 const QCerenkov* QCerenkov::INSTANCE = nullptr ; 
@@ -35,8 +38,10 @@ QCerenkov::QCerenkov(const char* path_ )
     :
     path( path_ ? path_ : DEFAULT_PATH ),
     dsrc(Load(path)),
-    dmin(0.),
-    dmax(0.),
+    emn(0.),
+    emx(0.),
+    rmn(0.),
+    rmx(0.),
     src(dsrc->ebyte == 4 ? dsrc : NP::MakeNarrow(dsrc)),
     tex(nullptr)
 {
@@ -48,7 +53,16 @@ QCerenkov::QCerenkov(const char* path_ )
 void QCerenkov::init()
 {
     dsrc->pscale<double>(1e6, 0u) ; //  change energy scale from MeV to eV,   1.55 to 15.5 eV
-    dsrc->minmax<double>(dmin, dmax, 0u ); 
+    dsrc->minmax<double>(emn, emx, 0u ); 
+    dsrc->minmax<double>(rmn, rmx, 1u ); 
+
+    LOG(info) 
+        << " emn " << std::setw(10) << std::fixed << std::setprecision(4) << emn 
+        << " emx " << std::setw(10) << std::fixed << std::setprecision(4) << emx 
+        << " rmn " << std::setw(10) << std::fixed << std::setprecision(4) << rmn 
+        << " rmx " << std::setw(10) << std::fixed << std::setprecision(4) << rmx 
+        ;
+
     makeTex(src) ;   
 }
 
@@ -92,8 +106,8 @@ To understand the more precise Rfact value see ~/opticks/examples/UseGeant4/UseG
 template <typename T>
 NP* QCerenkov::GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInverse, const T  charge ) const 
 {
-    emin = dmax ; // start with inverted range
-    emax = dmin ; 
+    emin = emx ; // start with inverted range
+    emax = emn ; 
  
     const T* vv = dsrc->cvalues<T>(); 
     unsigned ni = dsrc->shape[0] ; 
@@ -281,7 +295,7 @@ NP* QCerenkov::getS2CutIntegral_( const T BetaInverse, const T ecut ) const
             bool is_partial = partial <= full ;  // 
             if(!is_partial)
             {
-                std::cout 
+                LOG(debug)
                     << " is_partial " << is_partial
                     << " en_cross " << std::fixed << std::setw(10) << std::setprecision(4) << en_cross
                     << " BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse 
@@ -292,7 +306,6 @@ NP* QCerenkov::getS2CutIntegral_( const T BetaInverse, const T ecut ) const
                     << " full " << std::fixed << std::setw(10) << std::setprecision(4) << full 
                     << " partial " << std::fixed << std::setw(10) << std::setprecision(4) << partial
                     << " full-partial " << std::fixed << std::setw(10) << std::setprecision(4) << full-partial
-                    << std::endl 
                     ; 
             }
             //assert( is_partial ); 
@@ -352,7 +365,7 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
 
     NP* full_s2i = GetAverageNumberOfPhotons_s2_<T>(emin, emax, BetaInverse, charge );
 
-    LOG(info) 
+    LOG(debug) 
         << " BetaInverse " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse
         << " emin " << std::setw(10) << std::fixed << std::setprecision(4) << emin
         << " emax " << std::setw(10) << std::fixed << std::setprecision(4) << emax
@@ -458,12 +471,42 @@ template NP* QCerenkov::getS2CumulativeIntegrals<double>( const NP* , unsigned )
 template NP* QCerenkov::getS2CumulativeIntegrals<float>(  const NP* , unsigned ) const ; 
 
 
+/**
+QCK QCerenkov::makeICDF     
+--------------------------
+
+ny 
+    number BetaInverse values "height"
+nx
+    number of energy domain values "width"
+
+**/
+
+template <typename T>
+QCK QCerenkov::makeICDF( unsigned ny, unsigned nx ) const 
+{
+    NP* bis = NP::Linspace<T>( 1. , rmx,  ny ) ;  
+    NP* s2c = getS2CumulativeIntegrals<T>( bis, nx ); 
+    NP* s2cn = s2c->copy(); 
+    s2cn->divide_by_last<T>(); 
+
+    QCK icdf ; 
+    icdf.bis = bis ;  
+    icdf.s2c = s2c ;
+    icdf.s2cn = s2cn ; 
+
+    return icdf ; 
+}
+template QCK QCerenkov::makeICDF<double>( unsigned , unsigned ) const ; 
+template QCK QCerenkov::makeICDF<float>(  unsigned , unsigned ) const ; 
+
+
 
 
 
 /**
-QCerenkov::getS2SliverIntegrals
-----------------------------------
+QCerenkov::getS2SliverIntegrals TODO: REMOVE
+-----------------------------------------------
 
 See ana/rindex.py:s2sliver_integrate
 
@@ -474,8 +517,8 @@ Hmm all the energy slivers potential precision issue when the total rindex bins 
 template <typename T>
 NP* QCerenkov::getS2SliverIntegrals( T& emin, T& emax, const T BetaInverse, const NP* edom ) const 
 {
-     emin = dmax ; 
-     emax = dmin ; 
+     emin = emx ; 
+     emax = emn ; 
 
      unsigned ni = edom->shape[0] ; 
      const T* ee = edom->cvalues<T>(); 
@@ -504,8 +547,8 @@ template NP* QCerenkov::getS2SliverIntegrals( float& emin, float& emax, const fl
 
 
 /**
-QCerenkov::getS2SliverIntegrals
----------------------------------
+QCerenkov::getS2SliverIntegrals TODO: REMOVE 
+-----------------------------------------------
 
 Hmm unlike ana/rindex.py this is using 
 the same energy domain for all BetaInverse.
@@ -531,8 +574,8 @@ NP* QCerenkov::getS2SliverIntegrals( const NP* bis, const NP* edom ) const
      for(unsigned i=0 ; i < ni ; i++)
      {
          const T BetaInverse = bb[i] ; 
-         T emin = dmax ; 
-         T emax = dmin ; 
+         T emin = emx ; 
+         T emax = emn ; 
 
          for(unsigned j=0 ; j < nj-1 ; j++)
          {

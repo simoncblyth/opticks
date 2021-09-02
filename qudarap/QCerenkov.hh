@@ -8,6 +8,8 @@ struct NP ;
 template <typename T> struct QTex ; 
 struct dim3 ; 
 
+
+
 /**
 QCerenkov
 ===========
@@ -15,6 +17,9 @@ QCerenkov
 Prototyping/experimentation done in ana/rindex.py 
 
 **/
+
+struct QCK ; 
+
 
 struct QUDARAP_API QCerenkov
 {
@@ -28,9 +33,12 @@ struct QUDARAP_API QCerenkov
     static NP* Load(const char* path_) ; 
 
     const char*             path ; 
-    NP*                     dsrc ; 
-    double                  dmin ; 
-    double                  dmax ; 
+    NP*                     dsrc ;  // RINDEX array 
+
+    double                  emn ; 
+    double                  emx ; 
+    double                  rmn ; 
+    double                  rmx ; 
 
     NP*                     src ; 
     QTex<float>*            tex ; 
@@ -49,8 +57,12 @@ struct QUDARAP_API QCerenkov
     template <typename T> NP* getS2CutIntegral_( const T BetaInverse, const T ecut ) const ; 
     template <typename T> T   getS2CutIntegral( const T BetaInverse, const T ecut ) const ; 
 
+    // hmm "make" rather than "get" 
     template <typename T> NP* getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) const ; 
     template <typename T> NP* getS2CumulativeIntegrals( const NP* bis, unsigned nx ) const  ; 
+
+    template <typename T> QCK makeICDF( unsigned ny, unsigned nx ) const ; 
+
 
     // TODO: remove the slivers as too approximate  
     template <typename T> NP* getS2SliverIntegrals( T& emin, T& emax, const T BetaInverse, const NP* edom ) const ; 
