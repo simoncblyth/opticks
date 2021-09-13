@@ -44,6 +44,9 @@ set(SOURCES
     QCerenkov.cc
     QCerenkov.cu 
 
+    QCK.cc
+    QCK.hh
+
     QPoly.cc
     QPoly.cu
 

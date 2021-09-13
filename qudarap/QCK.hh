@@ -6,7 +6,13 @@
 QCK : carrier struct holding Cerenkov lookup arrays, created by QCerenkov  
 ===========================================================================
 
+Instances of QCK are created by *QCerenkov::makeICDF*
+
 Contains NP arrays:
+
+rindex
+    (ni, 2)  refractive index values together with energy domain values (eV) 
+    for a single material 
 
 bis
     (ny,) : BetaInverse domain values in range from from 1. to RINDEX_max
@@ -30,13 +36,19 @@ struct NP ;
 
 struct QUDARAP_API QCK
 {
+    NP* rindex ; 
     NP* bis ;  // BetaInverse 
     NP* s2c ;  // cumulative s2 integral 
     NP* s2cn ; // normalized *s2c*, aka *icdf* 
 
-     // template<typename T> T energy_lookup( const T BetaInverse, const T u) ;  
 
-    // TODO: add save and load to allow using testing separate from the QCerenkov creator 
+    void save(const char* base, const char* reldir=nullptr) const ; 
+    static QCK* Load(const char* base, const char* reldir=nullptr); 
+
+    template<typename T> bool is_permissable( const T BetaInverse) const ; 
+    template<typename T> T energy_lookup( const T BetaInverse, const T u) const ;  
+    template<typename T> NP* energy_lookup( const T BetaInverse, const NP* uu) const ; 
+
 
 }; 
 

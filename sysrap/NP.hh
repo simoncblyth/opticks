@@ -8,6 +8,7 @@
 #include <fstream>
 #include <cstdint>
 #include <limits>
+#include <random>
 
 #include "NPU.hh"
 
@@ -44,6 +45,7 @@ struct NP
 
     template<typename T> static NP*  Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1 );  // dtype from template type
     template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx ); 
+    template<typename T> static NP*  MakeUniform( unsigned ni, unsigned seed=0u );  
     template<typename T> static unsigned NumSteps( T x0, T x1, T dx ); 
 
     NP(const char* dtype_="<f4", int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
@@ -104,6 +106,7 @@ struct NP
     template<typename T> void _fillIndexFlat(T offset=0); 
     template<typename T> void _dump(int i0=-1, int i1=-1) const ;   
 
+
     static NP* MakeLike(  const NP* src);  
     static NP* MakeNarrow(const NP* src); 
     static NP* MakeWide(  const NP* src); 
@@ -113,10 +116,10 @@ struct NP
     bool is_pshaped() const ; 
     template<typename T> T    plhs(unsigned column ) const ;  
     template<typename T> T    prhs(unsigned column ) const ;  
-    template<typename T> int  pfindbin(const T value, unsigned column ) const ;  
+    template<typename T> int  pfindbin(const T value, unsigned column, bool& in_range ) const ;  
     template<typename T> void get_edges(T& lo, T& hi, unsigned column, int ibin) const ; 
 
-    template<typename T> T    pdomain(const T value, int item=-1 ) const ; 
+    template<typename T> T    pdomain(const T value, int item=-1, bool dump=false  ) const ; 
 
     template<typename T> T    psum(unsigned column ) const ;  
     template<typename T> void pscale(T scale, unsigned column);
@@ -630,6 +633,15 @@ template<> inline       unsigned long long* NP::values<unsigned long long>()    
 template   void NP::_fillIndexFlat<unsigned long long>(unsigned long long) ;
 
 
+/**
+NP::MakeLike
+--------------
+
+Creates an array of the same shape and type as the *src* array.
+Values are *NOT* copied from *src*. 
+
+**/
+
 inline NP* NP::MakeLike(const NP* src) // static 
 {
     NP* dst = new NP(src->dtype); 
@@ -858,9 +870,24 @@ template<typename T> inline T NP::prhs(unsigned column) const
 NP::pfindbin
 ---------------
 
-Return index of bin containing the argument value.
+Return *ibin* index of bin corresponding to the argument value.
 
-Example indices for bins array of shape (4,) with 3 bins and 4 values::
++---------------------+------------------+----------------------+ 
+|  condition          |   ibin           |  in_range            |
++=====================+==================+======================+
+|  value < lhs        |   0              |   false              | 
++---------------------+------------------+----------------------+ 
+|  value == lhs       |   1              |   true               | 
++---------------------+------------------+----------------------+ 
+|  lhs < value < rhs  |   1 .. ni-1      |   true               |
++---------------------+------------------+----------------------+ 
+|  value == rhs       |   ni             |   false              | 
++---------------------+------------------+----------------------+ 
+|  value > rhs        |   ni             |   false              | 
++---------------------+------------------+----------------------+ 
+
+Example indices for bins array of shape (4,) with 3 bins and 4 values (ni=4)
+This numbering scheme matches that used by np.digitize::
 
         
                 +-------------+--------------+-------------+         
@@ -871,10 +898,9 @@ Example indices for bins array of shape (4,) with 3 bins and 4 values::
 
                 lhs                                       rhs
 
-Note this numbering matches that used by np.digitize
 **/
 
-template<typename T> inline int  NP::pfindbin(const T value, unsigned column) const 
+template<typename T> inline int  NP::pfindbin(const T value, unsigned column, bool& in_range) const 
 {
     const T* vv = cvalues<T>(); 
 
@@ -887,16 +913,18 @@ template<typename T> inline int  NP::pfindbin(const T value, unsigned column) co
     const T rhs = vv[nj*(ni-1)+column] ; 
    
     int ibin = -1 ; 
-    if( value <= lhs )
+    in_range = false ; 
+    if( value < lhs )         // value==lhs is in_range 
     {
-         ibin = 0 ; 
+        ibin = 0 ; 
     }
-    else if( value >= rhs )
+    else if( value >= rhs )   // value==rhs is NOT in_range 
     {
-         ibin = ni ; 
+        ibin = ni ; 
     }
     else if ( value >= lhs && value < rhs )
     {
+        in_range = true ; 
         for(unsigned i=0 ; i < ni-1 ; i++) 
         {
             const T v0 = vv[nj*(i+0)+column] ; 
@@ -910,6 +938,10 @@ template<typename T> inline int  NP::pfindbin(const T value, unsigned column) co
     } 
     return ibin ; 
 }
+ 
+
+
+
 
 /**
 NP::get_edges
@@ -962,10 +994,7 @@ to the property value argument.
 
 Requires arrays of shape (num_dom, 2) when item is at default value of -1 
 
-TODO: support arrys of shape (num_item, num_dom, 2 ) when item is used to pick the item. 
-Perhapd should pull a sub NP out of the effective composite, to effect this.
-
-
+Also support arrys of shape (num_item, num_dom, 2 ) when item is used to pick the item. 
 
 
    
@@ -990,7 +1019,7 @@ Perhapd should pull a sub NP out of the effective composite, to effect this.
 
 **/
 
-template<typename T> inline T  NP::pdomain(const T value, int item ) const 
+template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) const 
 {
     const T zero = 0. ; 
     unsigned ndim = shape.size() ; 
@@ -1015,6 +1044,7 @@ template<typename T> inline T  NP::pdomain(const T value, int item ) const
     const T rhs_val = vv[nj*(ni-1)+VAL];
     assert( rhs_val > lhs_val ); 
 
+
     const T yv = value ; 
     T xv ;   
 
@@ -1038,10 +1068,31 @@ template<typename T> inline T  NP::pdomain(const T value, int item ) const
             const T dy = y1 - y0 ;  
             assert( dy >= zero );   // must be monotonic for this to make sense
 
-            xv = x0 ; 
-            if( dy > zero ) xv += (yv-y0)*(x1-x0)/dy ; 
+            if( y0 <= yv && yv < y1 )
+            { 
+                xv = x0 ; 
+                if( dy > zero ) xv += (yv-y0)*(x1-x0)/dy ; 
+                break ;   
+            }
         }
     } 
+
+    if(dump)
+    {
+        std::cout 
+            << "NP::pdomain.dump "
+            << " item " << std::setw(4) << item
+            << " ni " << std::setw(4) << ni
+            << " lhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_dom
+            << " rhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_dom
+            << " lhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_val
+            << " rhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_val
+            << " yv " << std::setw(10) << std::fixed << std::setprecision(4) << yv
+            << " xv " << std::setw(10) << std::fixed << std::setprecision(4) << xv
+            << std::endl 
+            ; 
+    }
+
 
 #ifdef DEBUG
     std::cout 
@@ -2091,6 +2142,27 @@ template <typename T> NP* NP::Linspace( T x0, T x1, unsigned nx )
     for(unsigned i=0 ; i < nx ; i++) vv[i] = x0 + (x1-x0)*T(i)/T(nx-1) ;
     return dom ; 
 }
+
+/**
+NP::MakeUniform
+----------------
+
+Create array of uniform random numbers between 0 and 1 using std::mt19937_64
+
+**/
+
+template <typename T> NP* NP::MakeUniform(unsigned ni, unsigned seed) // static 
+{
+    std::mt19937_64 rng;
+    rng.seed(seed); 
+    std::uniform_real_distribution<T> unif(0, 1);
+
+    NP* uu = NP::Make<T>(ni); 
+    T* vv = uu->values<T>(); 
+    for(unsigned i=0 ; i < ni ; i++) vv[i] = unif(rng) ; 
+    return uu ; 
+}
+
 
 template <typename T> unsigned NP::NumSteps( T x0, T x1, T dx )
 {

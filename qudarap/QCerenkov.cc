@@ -129,7 +129,7 @@ NP* QCerenkov::GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInve
 
         T ecross ;  
 
-        T bin_integral = charge*charge*getS2Integral<T>( emin, emax, ecross, BetaInverse, en_0, en_1, ri_0, ri_1, false );
+        T bin_integral = charge*charge*GetS2Integral<T>( emin, emax, ecross, BetaInverse, en_0, en_1, ri_0, ri_1, false );
         s2i_vv[i] = bin_integral ; 
 
         s2integral += bin_integral ; 
@@ -159,7 +159,7 @@ const double QCerenkov::FINE_STRUCTURE_OVER_HBARC_EVMM = 36.981 ;
 
 
 template<typename T>
-T QCerenkov::getS2Integral( T& emin, T& emax, T& en_cross, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, bool fix_cross ) const
+T QCerenkov::GetS2Integral( T& emin, T& emax, T& en_cross, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, bool fix_cross ) // static 
 {
     const T zero(0.) ; 
     const T one(1.) ; 
@@ -236,8 +236,8 @@ T QCerenkov::getS2Integral( T& emin, T& emax, T& en_cross, const T BetaInverse, 
 }
 
 
-template double QCerenkov::getS2Integral( double& , double&, double&, const double, const double, const double, const double, const double, bool ) const ; 
-template float  QCerenkov::getS2Integral( float& ,  float& , float&,  const float , const float , const float , const float , const float , bool ) const ; 
+template double QCerenkov::GetS2Integral( double& , double&, double&, const double, const double, const double, const double, const double, bool ) ; 
+template float  QCerenkov::GetS2Integral( float& ,  float& , float&,  const float , const float , const float , const float , const float , bool ) ; 
 
 
 
@@ -277,18 +277,18 @@ NP* QCerenkov::getS2CutIntegral_( const T BetaInverse, const T ecut ) const
 
         if( en_0 < ecut && en_1 <= ecut)  // full bin integral 
         {
-            T bin_integral =  getS2Integral<T>( emin, emax, en_cross, BetaInverse, en_0, en_1, ri_0, ri_1, false );  
+            T bin_integral =  GetS2Integral<T>( emin, emax, en_cross, BetaInverse, en_0, en_1, ri_0, ri_1, false );  
             s2i_vv[i] = bin_integral ;    
             s2integral += bin_integral ; 
         }
         else if ( en_0 < ecut && ecut < en_1 )  // partial bin integral 
         {
             // full bin integral to get en_cross 
-            T full = getS2Integral<T>( emin, emax, en_cross, BetaInverse, en_0, en_1, ri_0, ri_1, false  ); 
+            T full = GetS2Integral<T>( emin, emax, en_cross, BetaInverse, en_0, en_1, ri_0, ri_1, false  ); 
 
             // partial bin integral using the fixed en_cross ; 
             T ri_cut = dsrc->interp<T>(ecut) ; 
-            T partial  = getS2Integral<T>( emin, emax, en_cross, BetaInverse, en_0, ecut, ri_0, ri_cut, true );
+            T partial  = GetS2Integral<T>( emin, emax, en_cross, BetaInverse, en_0, ecut, ri_0, ri_cut, true );
 
             s2i_vv[ni] = partial ; 
    
@@ -491,6 +491,8 @@ QCK QCerenkov::makeICDF( unsigned ny, unsigned nx ) const
     s2cn->divide_by_last<T>(); 
 
     QCK icdf ; 
+
+    icdf.rindex = dsrc ; 
     icdf.bis = bis ;  
     icdf.s2c = s2c ;
     icdf.s2cn = s2cn ; 
@@ -501,99 +503,6 @@ template QCK QCerenkov::makeICDF<double>( unsigned , unsigned ) const ;
 template QCK QCerenkov::makeICDF<float>(  unsigned , unsigned ) const ; 
 
 
-
-
-
-/**
-QCerenkov::getS2SliverIntegrals TODO: REMOVE
------------------------------------------------
-
-See ana/rindex.py:s2sliver_integrate
-
-Hmm all the energy slivers potential precision issue when the total rindex bins are covered anyhow ?
-
-**/
-
-template <typename T>
-NP* QCerenkov::getS2SliverIntegrals( T& emin, T& emax, const T BetaInverse, const NP* edom ) const 
-{
-     emin = emx ; 
-     emax = emn ; 
-
-     unsigned ni = edom->shape[0] ; 
-     const T* ee = edom->cvalues<T>(); 
-
-     NP* s2slv = NP::Make<T>(ni) ; 
-     T* ss = s2slv->values<T>(); 
-
-     for(unsigned i=0 ; i < ni-1 ; i++)
-     {
-         T en_0 = ee[i] ; 
-         T en_1 = ee[i+1] ; 
-
-         T ri_0 = dsrc->interp<T>(en_0) ; 
-         T ri_1 = dsrc->interp<T>(en_1) ; 
-         // hmm this is too approximate ... should only do for the partial bin when have no choice
-
-         T ecross ; 
-
-         ss[i+1] = getS2Integral( emin, emax, ecross, BetaInverse, en_0, en_1, ri_0, ri_1, false );  
-     }
-     return s2slv ; 
-}
-
-template NP* QCerenkov::getS2SliverIntegrals( double& emin, double& emax, const double BetaInverse, const NP* edom ) const ; 
-template NP* QCerenkov::getS2SliverIntegrals( float& emin, float& emax, const float BetaInverse, const NP* edom ) const ; 
-
-
-/**
-QCerenkov::getS2SliverIntegrals TODO: REMOVE 
------------------------------------------------
-
-Hmm unlike ana/rindex.py this is using 
-the same energy domain for all BetaInverse.
-
-As are immediately going to invert the CDF  
-it is better to use an energy range specific to 
-each BetaInverse to make the best use of the bins.
-
-**/
-
-template <typename T>
-NP* QCerenkov::getS2SliverIntegrals( const NP* bis, const NP* edom ) const 
-{
-     unsigned ni = bis->shape[0] ; 
-     const T* bb = bis->cvalues<T>(); 
-
-     unsigned nj = edom->shape[0] ; 
-     const T* ee = edom->cvalues<T>(); 
-
-     NP* s2slv = NP::Make<T>(ni, nj) ; 
-     T* ss = s2slv->values<T>(); 
-
-     for(unsigned i=0 ; i < ni ; i++)
-     {
-         const T BetaInverse = bb[i] ; 
-         T emin = emx ; 
-         T emax = emn ; 
-
-         for(unsigned j=0 ; j < nj-1 ; j++)
-         {
-             T en_0 = ee[j] ; 
-             T en_1 = ee[j+1] ; 
-
-             T ri_0 = dsrc->interp<T>(en_0) ; 
-             T ri_1 = dsrc->interp<T>(en_1) ; 
-             T ecross ; 
-
-             ss[i*nj+j] = getS2Integral( emin, emax, ecross,  BetaInverse, en_0, en_1, ri_0, ri_1, false );  
-         }
-     }
-     return s2slv ; 
-}
-
-template NP* QCerenkov::getS2SliverIntegrals<double>( const NP* bis, const NP* edom ) const ; 
-template NP* QCerenkov::getS2SliverIntegrals<float>(  const NP* bis, const NP* edom ) const ; 
 
 
 
