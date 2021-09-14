@@ -43,6 +43,8 @@ for ix in [0,1]:
         drawstyle = ds[ix][iy]
        
         ax.plot( edges, values, drawstyle=drawstyle, label=drawstyle )
+        ax.scatter( edges, values )
+
         ax.set_ylim(ylim)
         ax.set_xlim(xlim)
         ax.legend()

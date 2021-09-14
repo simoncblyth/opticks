@@ -34,6 +34,7 @@ s2cn
 
 struct NP ; 
 
+template <typename T>
 struct QUDARAP_API QCK
 {
     NP* rindex ; 
@@ -41,14 +42,24 @@ struct QUDARAP_API QCK
     NP* s2c ;  // cumulative s2 integral 
     NP* s2cn ; // normalized *s2c*, aka *icdf* 
 
+    T emn ; 
+    T emx ; 
+    T rmn ; 
+    T rmx ; 
+
+    void init() ;  
 
     void save(const char* base, const char* reldir=nullptr) const ; 
     static QCK* Load(const char* base, const char* reldir=nullptr); 
 
-    template<typename T> bool is_permissable( const T BetaInverse) const ; 
-    template<typename T> T energy_lookup( const T BetaInverse, const T u) const ;  
-    template<typename T> NP* energy_lookup( const T BetaInverse, const NP* uu) const ; 
+    // lookup from sets of ICDF, normalized s2 energy integrals  
+    bool is_permissable( const T BetaInverse) const ; 
+    T   energy_lookup_( const T BetaInverse, const T u) const ;  
+    NP* energy_lookup(  const T BetaInverse, const NP* uu) const ; 
 
+    // traditional s2 rejection sampling using rindex as function of energy 
+    T   energy_sample_( const T BetaInverse,  const std::function<T()>& rng ) const ; 
+    NP* energy_sample(  const T BetaInverse,  const std::function<T()>& rng, unsigned ni ) const ; 
 
 }; 
 

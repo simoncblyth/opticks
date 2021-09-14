@@ -111,12 +111,9 @@ void test_getS2CumulativeIntegrals_many(const QCerenkov& ck )
 }
 
 
-void test_makeICDF(const QCerenkov& ck )
+void test_makeICDF(const QCerenkov& ck, unsigned ny, unsigned nx )
 {
-    unsigned ny = 1000u ; 
-    unsigned nx = 100u ; 
-
-    QCK icdf = ck.makeICDF<double>( ny, nx ); 
+    QCK<double> icdf = ck.makeICDF<double>( ny, nx ); 
 
     LOG(info)
         << std::endl  
@@ -151,7 +148,11 @@ int main(int argc, char** argv)
     //test_getS2CumulativeIntegrals_one(ck,BetaInverse) ; 
     //test_getS2CumulativeIntegrals_many(ck) ; 
 
-    test_makeICDF(ck); 
+
+    unsigned ny = 2000u ; 
+    unsigned nx = 2000u ; 
+
+    test_makeICDF(ck, ny, nx ); 
 
 
     return 0 ; 

@@ -483,14 +483,14 @@ nx
 **/
 
 template <typename T>
-QCK QCerenkov::makeICDF( unsigned ny, unsigned nx ) const 
+QCK<T> QCerenkov::makeICDF( unsigned ny, unsigned nx ) const 
 {
     NP* bis = NP::Linspace<T>( 1. , rmx,  ny ) ;  
     NP* s2c = getS2CumulativeIntegrals<T>( bis, nx ); 
     NP* s2cn = s2c->copy(); 
     s2cn->divide_by_last<T>(); 
 
-    QCK icdf ; 
+    QCK<T> icdf ; 
 
     icdf.rindex = dsrc ; 
     icdf.bis = bis ;  
@@ -499,8 +499,8 @@ QCK QCerenkov::makeICDF( unsigned ny, unsigned nx ) const
 
     return icdf ; 
 }
-template QCK QCerenkov::makeICDF<double>( unsigned , unsigned ) const ; 
-template QCK QCerenkov::makeICDF<float>(  unsigned , unsigned ) const ; 
+template QCK<double> QCerenkov::makeICDF<double>( unsigned , unsigned ) const ; 
+template QCK<float>  QCerenkov::makeICDF<float>(  unsigned , unsigned ) const ; 
 
 
 

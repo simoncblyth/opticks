@@ -136,6 +136,21 @@ template const char* SStr::Format3<256>( const char* , const char*, const char* 
 template const char* SStr::Format1<16>( const char* , const char* );
 
 
+template<typename T>
+const char* SStr::FormatReal(const T value, int w, int p, char fill )
+{
+    std::stringstream ss ; 
+    ss << std::fixed << std::setfill(fill) << std::setw(w) << std::setprecision(p) << value ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()) ; 
+} 
+
+template const char* SStr::FormatReal<float>(const float, int, int, char );
+template const char* SStr::FormatReal<double>(const double, int, int, char );
+
+
+
+
 bool SStr::Contains( const char* s_ , const char* q_ )
 {
     std::string s(s_); 
@@ -148,12 +163,6 @@ bool SStr::EndsWith( const char* s, const char* q)
     int pos = strlen(s) - strlen(q) ;
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
-
-
-
-
-
-
 
 
 

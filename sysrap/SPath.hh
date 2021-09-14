@@ -42,6 +42,9 @@ class SYSRAP_API SPath {
       static const char* Resolve(const char* dir, const char* reldir, const char* name);
 
       static bool LooksLikePath(const char* path);
+      static int MakeDirs( const char* path, int mode=0 ) ; 
+
+      template<typename T> static const char* MakePath( const char* prefix, const char* reldir, const T real, const char* name); 
 
 };
 

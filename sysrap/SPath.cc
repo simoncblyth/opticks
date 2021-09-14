@@ -24,6 +24,15 @@
 #include <fstream>
 #include <iostream>
 
+
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
+#include <errno.h>
+// Linux specific, but works on Darwin via some compat presumably  
+#include <sys/stat.h>
+
+#include "SStr.hh"
 #include "SPath.hh"
 
 const char* SPath::Stem( const char* name ) // static
@@ -163,7 +172,49 @@ bool SPath::LooksLikePath(const char* path)
     return path[0] == '/' || path[0] == '$' ; 
 }
 
+/**
+SPath::MakeDirs
+----------------
+
+See sysrap/tests/mkdirp.cc
+
+**/
+
+int SPath::MakeDirs( const char* path_, int mode_ )
+{
+    mode_t default_mode = S_IRWXU | S_IRGRP |  S_IXGRP | S_IROTH | S_IXOTH ;
+    mode_t mode = mode_ == 0 ? default_mode : mode_ ;  
+
+    char* path = strdup(path_);
+    char* p = path ;  
+    int rc = 0 ;  
+
+    while (*p != '\0' && rc == 0)
+    {   
+        p++;                                 // advance past leading character, probably slash, and subsequent slashes the next line gets to  
+        while(*p != '\0' && *p != '/') p++;  // advance p until subsequent slash 
+        char v = *p;                         // store the slash      
+        *p = '\0' ;                          // replace slash with string terminator
+        //printf("%s\n", path );                   
+        rc = mkdir(path, mode) == -1 && errno != EEXIST ? 1 : 0 ;  // set rc non-zero for mkdir errors other than exists already  
+        *p = v;                              // put back the slash  
+    }       
+    free(path);
+    return rc ;
+}
 
 
+template<typename T>
+const char* SPath::MakePath( const char* prefix, const char* reldir, const T real, const char* name)  // static
+{
+    const char* sreal = SStr::FormatReal<T>(real, 6, 4, '0');
+    const char* fold = SPath::Resolve(prefix, reldir, sreal ); 
+    int rc = SPath::MakeDirs(fold); 
+    assert( rc == 0 );  
+    const char* path = SPath::Resolve(fold, name) ; 
+    return path ; 
+} 
 
+template const char* SPath::MakePath<float>( const char*, const char*, const float, const char* ); 
+template const char* SPath::MakePath<double>( const char*, const char*, const double, const char* ); 
 

@@ -6,6 +6,7 @@
 
 struct NP ; 
 template <typename T> struct QTex ; 
+template <typename T> struct QCK ; 
 struct dim3 ; 
 
 
@@ -17,8 +18,6 @@ QCerenkov
 Prototyping/experimentation done in ana/rindex.py 
 
 **/
-
-struct QCK ; 
 
 
 struct QUDARAP_API QCerenkov
@@ -61,7 +60,7 @@ struct QUDARAP_API QCerenkov
     template <typename T> NP* getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) const ; 
     template <typename T> NP* getS2CumulativeIntegrals( const NP* bis, unsigned nx ) const  ; 
 
-    template <typename T> QCK makeICDF( unsigned ny, unsigned nx ) const ; 
+    template <typename T> QCK<T> makeICDF( unsigned ny, unsigned nx ) const ; 
 
 
     // TODO: remove the slivers as too approximate  

@@ -3,8 +3,10 @@
 #include <iomanip>
 #include "NP.hh"
 #include "QCK.hh"
+#include "PLOG.hh"
 
-void QCK::save(const char* base, const char* reldir) const 
+template<typename T>
+void QCK<T>::save(const char* base, const char* reldir) const 
 {
     rindex->save(base, reldir, "rindex.npy"); 
     bis->save(base, reldir, "bis.npy"); 
@@ -12,14 +14,15 @@ void QCK::save(const char* base, const char* reldir) const
     s2cn->save(base, reldir, "s2cn.npy"); 
 }
 
-QCK* QCK::Load(const char* base, const char* reldir)   // static
+template<typename T>
+QCK<T>* QCK<T>::Load(const char* base, const char* reldir)   // static
 {
     NP* rindex = NP::Load(base, reldir, "rindex.npy"); 
     NP* bis = NP::Load(base, reldir, "bis.npy"); 
     NP* s2c = NP::Load(base, reldir, "s2c.npy"); 
     NP* s2cn = NP::Load(base, reldir, "s2cn.npy"); 
 
-    QCK* qck = new QCK ; 
+    QCK* qck = new QCK<T> ; 
 
     qck->rindex = rindex ; 
     qck->bis = bis ; 
@@ -29,6 +32,26 @@ QCK* QCK::Load(const char* base, const char* reldir)   // static
     return qck ; 
 }
 
+template<typename T> 
+void QCK<T>::init()
+{
+    assert( rindex ) ; 
+    assert( rindex->shape.size() == 2 ); 
+    rindex->minmax<T>(emn, emx, 0u ); 
+    rindex->minmax<T>(rmn, rmx, 1u ); 
+
+    int w = 10 ; 
+    int p = 5 ; 
+
+    LOG(info)  
+        << " emn " << std::setw(w) << std::fixed << std::setprecision(p) << emn 
+        << " emx " << std::setw(w) << std::fixed << std::setprecision(p) << emx 
+        << " rmn " << std::setw(w) << std::fixed << std::setprecision(p) << rmn 
+        << " rmx " << std::setw(w) << std::fixed << std::setprecision(p) << rmx 
+        ;
+
+
+}
 
 
 /*
@@ -55,7 +78,7 @@ see ~/np/tests/NPget_edgesTest.cc
 
 */
 
-template<typename T> T QCK::energy_lookup( const T BetaInverse, const T u) const 
+template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u) const 
 {
     bool in_range ; 
     unsigned column = 0u ; // placeholder, as bis is 1d
@@ -85,13 +108,33 @@ template<typename T> T QCK::energy_lookup( const T BetaInverse, const T u) const
 
     return en  ; 
 }
-template float  QCK::energy_lookup( const float, const float ) const ; 
-template double QCK::energy_lookup( const double, const double ) const ; 
 
 
+template<typename T> T QCK<T>::energy_sample_( const T BetaInverse,  const std::function<T()>& rng ) const 
+{
+    const T one(1.) ; 
+    T u0, u1, en, ri, ct, s2, u1_s2max ; 
+
+    const T ctmax = BetaInverse/rmx ; 
+    const T s2max = ( one - ctmax )*( one + ctmax ) ; 
+
+    do {
+        u0 = rng() ; 
+        u1 = rng() ; 
+
+        en = emn + u0*(emx-emn) ; 
+        ri = rindex->interp<T>(en) ;   
+        ct = BetaInverse/ri ; 
+        s2 = ( one - ct )*( one + ct ) ;
+        u1_s2max = u1*s2max ; 
+
+    } while ( u1_s2max > s2 ) ; 
+
+    return en ; 
+}
 
 
-template<typename T> NP* QCK::energy_lookup( const T BetaInverse, const NP* uu) const 
+template<typename T> NP* QCK<T>::energy_lookup( const T BetaInverse, const NP* uu) const 
 {
     unsigned ndim = uu->shape.size() ; 
     assert( ndim == 1 ); 
@@ -100,17 +143,27 @@ template<typename T> NP* QCK::energy_lookup( const T BetaInverse, const NP* uu) 
 
     NP* en = NP::MakeLike(uu); 
     T* ee = en->values<T>(); 
-    for(unsigned i=0 ; i < ni ; i++) ee[i] = energy_lookup( BetaInverse, vv[i] ) ; 
-
+    for(unsigned i=0 ; i < ni ; i++) ee[i] = energy_lookup_( BetaInverse, vv[i] ) ; 
     return en ; 
 }
-template NP* QCK::energy_lookup( const float, const NP* uu ) const ; 
-template NP* QCK::energy_lookup( const double, const NP* uu ) const ; 
+
+
+
+template<typename T> NP* QCK<T>::energy_sample( const T BetaInverse, const std::function<T()>& rng, unsigned ni ) const 
+{
+    NP* en = NP::Make<T>(ni); 
+    T* ee = en->values<T>(); 
+    for(unsigned i=0 ; i < ni ; i++) ee[i] = energy_sample_( BetaInverse, rng ) ; 
+    return en ; 
+}
 
 
 
 
-template<typename T> bool QCK::is_permissable( const T BetaInverse) const 
+
+
+
+template<typename T> bool QCK<T>::is_permissable( const T BetaInverse) const 
 {
     assert( bis->shape.size() == 1 ); 
 
@@ -137,9 +190,8 @@ template<typename T> bool QCK::is_permissable( const T BetaInverse) const
     assert( BetaInverse >= lo && BetaInverse <= hi ); 
     return in_range ; 
 }
-template bool QCK::is_permissable( const float ) const ; 
-template bool QCK::is_permissable( const double ) const ; 
 
 
-
+template struct QCK<float> ; 
+template struct QCK<double> ; 
 

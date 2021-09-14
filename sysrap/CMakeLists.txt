@@ -144,7 +144,7 @@ set(HEADERS
     SGLM.hh
     SLabelCache.hh
 
-
+    SRng.hh
     SBuf.hh
     scuda.h
     squad.h

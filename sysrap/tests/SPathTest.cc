@@ -154,11 +154,30 @@ void test_ChangeName()
     assert( 0 == strcmp( path, xpath ) ) ;
 }
 
+void test_MakeDirs()
+{
+    const char* path = "/tmp/SPathTest/red/green/blue" ; 
+    int rc = SPath::MakeDirs(path); 
+    LOG(info) << " path " << path << " rc " << rc ; 
+}
+
+
+void test_MakePath()
+{
+    const char* path = SPath::MakePath<double>("/tmp/SPathTest", "test_MakePath", 1.123, "demo.npy" );  
+    LOG(info) << " path " << path  ; 
+}
+
+
+
+
+
 
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
 
+/*
     test_Stem();  
     test_GetHomePath();  
     test_IsReadable();  
@@ -167,6 +186,9 @@ int main(int argc , char** argv )
     test_UserTmpDir(); 
     test_Resolve(); 
     test_ChangeName(); 
+    test_MakeDirs(); 
+*/
+    test_MakePath(); 
 
     return 0  ; 
 }

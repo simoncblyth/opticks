@@ -351,6 +351,21 @@ void test_ISplit()
 }
 
 
+void test_FormatReal()
+{
+    double value = 1.1 ; 
+    const char* s = SStr::FormatReal<double>(value, 6, 4, '0'); 
+
+    std::cout 
+        << " value " << value 
+        << " s [" << s  << "]" 
+        << std::endl 
+        ;
+
+
+}
+
+
 
 int main(int argc , char** argv )
 {
@@ -374,8 +389,9 @@ int main(int argc , char** argv )
     test_AsInt(); 
     test_ExtractInt(); 
     test_SimpleMatch_WildMatch(); 
-    */
     test_ISplit(); 
+    */
+    test_FormatReal(); 
 
 
     return 0  ; 
