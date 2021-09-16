@@ -133,15 +133,26 @@ summary
     (the old issue of the partial integrals slightly exceeding full bin integrals was never fixed, so this
     looks) 
 
-  * TODO: pragmatic fix for the partial discrep if cannot fix : just limit the integral to the full one 
-
-  * TODO: rindex is piecewise linear and transforming that into s2 is rather simple suggesting that 
+  * rindex is piecewise linear and transforming that into s2 is rather simple suggesting that 
     might be able to use sympy to arrive at a piecewise analytic expression for the cumulative integral and hence the CDF
 
+    * **did this in ana/piecewise.py : but it fails to integrate (could try doing it bin-by-bin and adding up)**
     * that would have the advantage of being an analytic function rather than estimates at edges
     * https://docs.sympy.org/latest/modules/functions/elementary.html#piecewise
     * can use the analytic answer to check the numerical approximations and find where the problem is perhaps
     * more ambitiously could find a way to export the sympy analytic integral function into generated CUDA/C code 
+
+* Sep 16, 2021 QUDARap/QCerenkov switching to `getS2Integral_WithCut_` which fixes the problem of cutting rhs triangle into trapezoid
+  greatly improves chi2/ndf for BetaInverse 1->1.4 but still chi2/ndf is not good for BetaInverse=1.5,1.6 
+  with the same single bin causing the troubles 
+ 
+  * BetaInverse 1.7 : c2poppy at upper edge of allowed : hmm need to change energy range of comparison
+    as the permitted energy range shrinks otherwise the bins are effectively getting huge  
+ 
+  * TODO: plotting s2 together with chi2 
+  * DONE: plotting s2cn (the CDF) together with chi2 
+  * TODO: check with divide_edges to avoid bin migration effects
+
 
 
 See Also

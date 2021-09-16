@@ -89,30 +89,58 @@ class QCKTest(object):
         pass
     pass
 
-    def s2cn_plot(self, ii):
+    def s2cn_plot(self, istep):
         """
         :param ii: list of first dimension indices, corresponding to BetaInverse values
         """
         s2cn = self.s2cn
+        ii = np.arange( 0,len(s2cn), istep )  
+
+        title_ = "QCKTest.py : s2cn_plot : s2cn.shape %s  istep %d " % (str(s2cn.shape), istep) 
+        desc_ = "JUNO LS : Cerenkov S2 integral CDF for sample of BetaInverse values" 
+
+        title = "\n".join([title_, desc_])   
         fig, ax = plt.subplots(figsize=[12.8, 7.2])
+        fig.suptitle(title)
         for i in ii:
             ax.plot( s2cn[i,:,0], s2cn[i,:,1] , label="%d" % i )
         pass
         #ax.legend()
         fig.show()
 
+
+    def one_s2cn_plot(self, BetaInverse ):
+        s2cn = self.s2cn
+        ibi = self.getBetaInverseIndex(BetaInverse)
+        title_ = "QCKTest.py : one_s2cn_plot BetaInverse %6.4f  ibi %d s2cn[ibi] %s " % (BetaInverse, ibi, str(s2cn[ibi].shape))
+        desc_ = " cdf (normalized s2 integral) for single BetaInverse " 
+
+        title = "\n".join([title_, desc_]) ;  
+        fig, ax = plt.subplots(figsize=[12.8, 7.2])
+        fig.suptitle(title)
+
+        ax.plot( s2cn[ibi,:,0], s2cn[ibi,:,1] , label="s2cn[%d]" % ibi )
+        ax.legend()
+        fig.show()
+
+
+    def getBetaInverseIndex(self, BetaInverse):
+        bis = self.bis
+        ibi = np.abs(bis - BetaInverse).argmin()
+        return ibi
+
     def rindex_plot(self):
         ri = self.rindex
         c2 = self.c2
-        c2where = self.c2where
+        c2poppy = self.c2poppy
         bi = self.bi
         edges = self.edges
         c2riscale = self.c2riscale
 
-
         title = "\n".join(["QCKTest.py : rindex_plot"]) ;  
         fig, ax = plt.subplots(figsize=[12.8, 7.2])
         fig.suptitle(title)
+
         ax.scatter( ri[:,0], ri[:,1], label="ri" )
         ax.plot(    ri[:,0], ri[:,1], label="ri" )
         ax.plot(    edges[:-1], c2*c2riscale,    label="c2", drawstyle="steps-post" )
@@ -123,7 +151,7 @@ class QCKTest(object):
 
         ylim = ax.get_ylim()
 
-        for i in c2where:
+        for i in c2poppy:
             ax.plot( [edges[i], edges[i]], ylim , label="edge %d " % i, linestyle="dotted" )
             ax.plot( [edges[i+1], edges[i+1]], ylim , label="edge+1 %d " % (i+1), linestyle="dotted" )
         pass
@@ -131,86 +159,135 @@ class QCKTest(object):
         ax.legend()
         fig.show() 
 
-    def en_plot(self, bi):
-        ri = self.rindex
-        base = os.path.expandvars("$TMP/QCKTest/%6.4f" % bi )
+
+    BASE = "$TMP/QCKTest"
+
+    def bislist(self):
+        names = sorted(os.listdir(os.path.expandvars(self.BASE)))
+        print(names)
+        bis = list(map(float, names))
+        return bis
+
+    def en_load(self, bi):
+        base = os.path.expandvars("%s/%6.4f" % (self.BASE, bi) )
         log.info("load from %s " % base)
         el = np.load(os.path.join(base,"test_energy_lookup_many.npy"))
         es = np.load(os.path.join(base,"test_energy_sample_many.npy"))
 
-        #edges = np.linspace(1.55,15.5,100)  # including rightmost 
-        edges = divide_edges( ri[:,0], mul=4 )  
+        self.base = base
+        self.el = el
+        self.es = es
+
+    def en_compare(self, bi): 
+
+        ri = self.rindex
+        el = self.el
+        es = self.es
+        
+        edges = np.linspace(1.55,15.5,100)  # including rightmost 
+        #edges = divide_edges( ri[:,0], mul=4 )  
 
         hl = np.histogram( el, bins=edges )
         hs = np.histogram( es, bins=edges )
 
         c2, c2n, c2c = chi2( hl[0], hs[0] )
         ndf = max(c2n - 1, 1)
-        c2p = c2.sum()/ndf
-        c2l = "chi2/ndf %4.2f [%d]" % (c2p, ndf)
+        c2sum = c2.sum()
+        c2p = c2sum/ndf
+        c2label = "chi2/ndf %4.2f [%d] %.2f " % (c2p, ndf, c2sum)
 
         c2amx = c2.argmax()
-        ri = self.rindex
         rimax = ri[:,1].max()
         c2max = c2.max()
         c2riscale = rimax/c2max
-        c2where = np.where( c2 > c2max/3. )[0]
-
+        c2poppy = np.where( c2 > c2max/3. )[0]
 
         hmax = max(hl[0].max(), hs[0].max())
         c2hscale = hmax/c2max
 
-        extra = " c2max:%4.2f c2amx:%d c2[c2amx] %4.2f edges[c2amx] %5.3f edges[c2amx+1] %5.3f " % (c2max, c2amx, c2[c2amx], edges[c2amx], edges[c2amx+1] ) 
+        cf = " c2max:%4.2f c2amx:%d c2[c2amx] %4.2f edges[c2amx] %5.3f edges[c2amx+1] %5.3f " % (c2max, c2amx, c2[c2amx], edges[c2amx], edges[c2amx+1] ) 
 
-        self.c2riscale = c2riscale
-        self.bi = bi
-        self.edges = edges
-        self.c2 = c2
-        self.c2max = c2max
-        self.c2where = c2where
+        print("cf", cf)
 
-        icdf_shape = str(self.s2cn.shape)
+        #print("c2", c2)
+        print("c2n", c2n)
+        print("c2c", c2c)
 
-        title_ = ["QCKTest.py : en_plot : icdf_shape %s : lookup vs sampled : %s " % ( icdf_shape, c2l ), 
-                   base, 
-                   extra
+        qq = "hl hs c2 c2label c2n c2c c2riscale c2hscale hmax edges c2max c2poppy cf"
+        for q in qq.split():
+            globals()[q] = locals()[q]
+            setattr(self, q, locals()[q] )
+        pass
+
+
+        t = self
+        print("np.c_[t.c2, t.hs[0], t.hl[0]][t.c2 > 0]")
+        print(np.c_[t.c2, t.hs[0], t.hl[0]][t.c2 > 0] )
+
+       
+
+    def en_plot(self, bi, c2overlay=False):
+        """
+
+        Using divide_edges is good for chi2 checking as it prevents 
+        bin migrations or "edge" effects.  But it leads to rather 
+        differently sized bins resulting in a strange histogram shape. 
+
+        """
+        ri = self.rindex
+        s2cn = self.s2cn 
+        ibi = self.getBetaInverseIndex(bi)
+        c2 = self.c2 
+        c2hscale = self.c2hscale
+        hmax = self.hmax
+        hl = self.hl 
+        hs = self.hs 
+        edges = self.edges
+
+        icdf_shape = str(s2cn.shape)
+
+        title_ = ["QCKTest.py : en_plot : lookup cf sampled : icdf_shape %s : %s " % ( icdf_shape, self.base ), 
+                  "%s : %s " % ( self.c2label, self.cf)
                  ]
  
         title = "\n".join(title_)
         print(title)
-        print("c2", c2)
-        print("c2n", c2n)
-        print("c2c", c2c)
-
-        for q in "el es hl hs c2 c2n c2c".split(): globals()[q] = locals()[q]
-
         fig, ax = plt.subplots(figsize=[12.8, 7.2])
         fig.suptitle(title)
 
-        ax.scatter( hl[1][:-1], hl[0], label="lookup" )
-        ax.scatter( hs[1][:-1], hs[0], label="sample" )
+        #ax.scatter( hl[1][:-1], hl[0], label="lookup" )
+        #ax.scatter( hs[1][:-1], hs[0], label="sample" )
 
         ax.plot( edges[:-1], hl[0], drawstyle="steps-post" )
         ax.plot( edges[:-1], hs[0], drawstyle="steps-post" )
-        ax.plot( edges[:-1], c2*c2hscale , label="c2", drawstyle="steps-post" )
+
+        if c2overlay:
+            ax.plot( edges[:-1], c2*c2hscale , label="c2", drawstyle="steps-post" )
+        pass    
+
+        ax.plot( s2cn[ibi,:,0], s2cn[ibi,:,1]*hmax , label="s2cn[%d]*hmax" % ibi )
 
         ax.legend()
         fig.show() 
         
 
 
-
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     t = QCKTest()
-    #ii = np.arange( 0, 1000, 10 )
-    #t.s2cn_plot(ii)
+    #t.s2cn_plot(istep=20)
 
-    #bi = 1.7920
-    bi = 1.5
-    t.en_plot(bi) 
-    t.rindex_plot() 
+
+    for bi in t.bislist():
+        t.en_load(bi)
+        t.en_compare(bi)
+        t.en_plot(bi) 
+    pass
+
+
+    #t.rindex_plot() 
+    #t.one_s2cn_plot(bi) 
+
 
 
 

@@ -116,6 +116,9 @@ NP* QCerenkov::GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInve
 
     T s2integral(0.) ;  
 
+    const T en_cut = -1. ; 
+    const T ri_cut = -1. ; 
+
     NP* s2i = NP::Make<T>(ni+1) ; 
     T* s2i_vv = s2i->values<T>(); 
 
@@ -127,11 +130,9 @@ NP* QCerenkov::GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInve
         T ri_0 = vv[2*(i+0)+1] ; 
         T ri_1 = vv[2*(i+1)+1] ; 
 
-        T ecross ;  
+        T bin_integral = charge*charge*GetS2Integral_WithCut<T>( emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1, en_cut, ri_cut );
 
-        T bin_integral = charge*charge*GetS2Integral<T>( emin, emax, ecross, BetaInverse, en_0, en_1, ri_0, ri_1, false );
         s2i_vv[i] = bin_integral ; 
-
         s2integral += bin_integral ; 
     }
     return s2i ; 
@@ -209,12 +210,13 @@ on how en_cut compares with en_cross.::
 
 
 template<typename T>
-T QCerenkov::GetS2Integral_WithCut( const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, const T en_cut, const T ri_cut ) // static 
+T QCerenkov::GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, const T en_cut, const T ri_cut ) // static 
 {
-    enum { NONE, CUT, FULL, PART, ERR };  
+    enum { NONE, UNCUT, CUT, FULL, PART, ERR };  
 
     int state = NONE ; 
-    if(      en_0 >= en_cut && en_1 >  en_cut )  state = CUT ;   
+    if(      en_cut <= 0.  )                     state = UNCUT ;   
+    else if( en_0 >= en_cut && en_1 >  en_cut )  state = CUT ;   
     else if( en_0 < en_cut  && en_1 <= en_cut )  state = FULL ;  // edges of this bin both below en_cut (or en_1 == en_cut), so full bin integral 
     else if( en_0 < en_cut  && en_cut < en_1 )   state = PART ;  // edges of this bin straddle ecut, so partial bin integral  
     else                                         state = ERR ; 
@@ -229,14 +231,13 @@ T QCerenkov::GetS2Integral_WithCut( const T BetaInverse, const T en_0, const T e
             ;   
     }
 
-    T s2integral(0.) ;  
-    if( state == CUT ) return s2integral ; 
-    assert( state == FULL || state == PART ); 
-
-
     const T zero(0.) ; 
+    if( state == CUT ) return zero ; 
+    assert( state == FULL || state == PART || state == UNCUT ); 
+
     const T one(1.) ; 
     const T half(0.5) ; 
+    T s2integral(0.) ;  
 
     T ct_0 = BetaInverse/ri_0 ; 
     T ct_1 = BetaInverse/ri_1 ; 
@@ -254,294 +255,69 @@ T QCerenkov::GetS2Integral_WithCut( const T BetaInverse, const T en_0, const T e
     {    
         assert( en_cross > zero ); 
 
-        if( state == FULL )
+        if( state == FULL || state == UNCUT )
         {  
             s2integral =  (en_1 - en_cross)*s2_1*half ;     // left triangle 
+
+            emin = std::min<T>( emin, en_cross );  
+            emax = std::max<T>( emax, en_1 );
         }
         else if (state == PART )
         {
             s2integral = en_cut <= en_cross ? zero : (en_cut - en_cross)*s2_cut*half ; 
+
+            emin = std::min<T>( emin, en_cut <= en_cross ? emin : en_cross );  
+            emax = std::max<T>( emax, emax );
         }
     }    
     else if( s2_0 >= zero && s2_1 >= zero )   // s2 +ve across full bin 
     {    
-        if( state == FULL )
+        if( state == FULL || state == UNCUT )
         {  
             s2integral = (en_1 - en_0)*(s2_0 + s2_1)*half ;  
+
+            emin = std::min<T>( emin, en_0 );  
+            emax = std::max<T>( emax, en_1 );
         }
         else if( state == PART )
         {
             s2integral = (en_cut - en_0)*(s2_0 + s2_cut)*half ;  
+
+            emin = std::min<T>( emin, en_0 );  
+            emax = std::max<T>( emax, en_cut );
         }
     }     
-    else if( s2_0 > zero && s2_1 < zero )  // s2 becomes -ve within the bin
+    else if( s2_0 > zero && s2_1 < zero )  // s2 becomes -ve within the bin : rhs triangle 
     {    
         assert( en_cross > zero ); 
 
-        if( state == FULL )
+        if( state == FULL || state == UNCUT )
         {  
             s2integral =  (en_cross - en_0)*s2_0*half ;  
+
+            emin = std::min<T>( emin, en_0 );  
+            emax = std::max<T>( emax, en_cross );
+
         }
         else if( state == PART )
         {
             s2integral = en_cut >= en_cross ? (en_cross - en_0)*s2_0*half : (en_cut - en_0)*(s2_0+s2_cut)*half ;   
+
+            emin = std::min<T>( emin, en_0 );  
+            emax = std::max<T>( emax, en_cut >= en_cross ? en_cross : en_cut );
         }
     }    
-    return s2integral ; 
-}
-
-template float QCerenkov::GetS2Integral_WithCut( const float, const float, const float, const float, const float, const float, const float ); 
-template double QCerenkov::GetS2Integral_WithCut( const double, const double, const double, const double, const double, const double, const double ); 
-
-/**
-
-See cks:G4Cerenkov_modified::GetAverageNumberOfPhotons_s2
-
-s2 numerical integral using trapezoidal approximation, 
-
-* x,y: s2 zero crossings corresponding to RINDEX(E) == BetaInverse
-* B,C,D : trapezoids
-* A,E   : edge triangles  
-
-                                 *
-                                /|\
-                               / | \
-                              /  |  \
-                             /   |   \
-                            /    |    \
-                           /     |     \
-                          /      |      \
-                 *-------*       |       *
-                /|       |       |       |\
-               / |       |       |       | \
-              / A|  B    |   C   |   D   |E \
-     -----0--x---1-------2-------3-------4---y----5----------
-            /                                 \
-
-* determine x,y energy crossings from BetaInverse-RINDEX(E) crossings, as that is linear 
-  so the linear interpolation to give crossings will be precise.
-  Using s2 zero crossing not as precise, as non-linear. 
-
-
-**WARNING : SLIGHTLY INACCURATE WHEN CUT : HOPEFULLY FIXED IN ABOVE _WithCut**
-
-**/
-
-template<typename T>
-T QCerenkov::GetS2Integral( T& emin, T& emax, T& en_cross, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, bool fix_cross ) // static 
-{
-    const T zero(0.) ; 
-    const T one(1.) ; 
-    const T half(0.5) ; 
-    T s2integral(0.) ;  
-
-    T ct_0 = BetaInverse/ri_0 ; 
-    T ct_1 = BetaInverse/ri_1 ; 
-
-    T s2_0 = ( one - ct_0 )*( one + ct_0 ); 
-    T s2_1 = ( one - ct_1 )*( one + ct_1 ); 
-
-
-    bool cross = s2_0*s2_1 < zero ; 
-    if( cross )
-    {
-        if(fix_cross)  // using input en_cross
-        {
-            assert( en_cross > zero );  
-        }
-        else           // calulate en_cross for use in calling scope
-        {
-            en_cross = en_0 + (BetaInverse - ri_0)*(en_1 - en_0)/(ri_1 - ri_0) ; // compute en_cross for this range 
-        }
-    }
-    else               // set en_cross to dummy placeholder, as not used when no crossings ... hmm bit risky 
-    {
-         en_cross = -one ; 
-    }
-
-
-    if( s2_0 <= zero && s2_1 <= zero )   // entire bin disallowed : no contribution 
-    {    
-        s2integral = zero ; 
-    }    
-    else if( s2_0 < zero && s2_1 > zero )  // s2 becomes +ve within the bin
-    {    
-        assert( en_cross > zero ); 
-        s2integral =  (en_1 - en_cross)*s2_1*half ;  
-
-        emin = std::min<T>( emin, en_cross );  
-        emax = std::max<T>( emax, en_1 );
-    }    
-    else if( s2_0 >= zero && s2_1 >= zero )   // s2 +ve across full bin 
-    {    
-        s2integral = (en_1 - en_0)*(s2_0 + s2_1)*half ;  
-
-        emin = std::min<T>( emin, en_0 );  
-        emax = std::max<T>( emax, en_1 );
-    }     
-    else if( s2_0 > zero && s2_1 < zero )  // s2 becomes -ve within the bin
-    {    
-        assert( en_cross > zero ); 
-        s2integral =  (en_cross - en_0)*s2_0*half ;  
-
-        emin = std::min<T>( emin, en_0 );  
-        emax = std::max<T>( emax, en_cross );
-    }    
-    else 
-    {    
-        std::cout 
-            << "QCerenkov::getS2Integral"
-            << " FATAL "
-            << " s2_0 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_0 
-            << " s2_1 " << std::fixed << std::setw(10) << std::setprecision(5) << s2_1 
-            << " en_0 " << std::fixed << std::setw(10) << std::setprecision(5) << en_0 
-            << " en_1 " << std::fixed << std::setw(10) << std::setprecision(5) << en_1 
-            << " ri_0 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_0 
-            << " ri_1 " << std::fixed << std::setw(10) << std::setprecision(5) << ri_1 
-            << std::endl
-            ;
-        assert(0);
-    }
-    const T Rfact = FINE_STRUCTURE_OVER_HBARC_EVMM ;      // hmm maybe better scale once the total ? 
+    const T Rfact = FINE_STRUCTURE_OVER_HBARC_EVMM ;  
     return Rfact*s2integral ; 
 }
 
-
-template double QCerenkov::GetS2Integral( double& , double&, double&, const double, const double, const double, const double, const double, bool ) ; 
-template float  QCerenkov::GetS2Integral( float& ,  float& , float&,  const float , const float , const float , const float , const float , bool ) ; 
-
+template float QCerenkov::GetS2Integral_WithCut( float& , float&,   const float, const float, const float, const float, const float, const float, const float ); 
+template double QCerenkov::GetS2Integral_WithCut( double&, double&, const double, const double, const double, const double, const double, const double, const double ); 
 
 
 
-/**
-QCerenkov::getS2CutIntegral
--------------------------------------
 
-See ana/s2.py : the full bin integral is done to 
-fix en_cross to avoid imprecision arising from 
-repeatedly obtaining slightly different en_cross
-as the range of the cumulative integral is extended.
-
-Each bin is consided for its contribution to the integral 
-by comparison of ecut with the edge energies.
-Full contrib for this bin:: 
-                
-                                   ecut 
-                                    |
-     +------+---------+=======+-----*------+
-                    en_0     en_1   |
-                                    | 
-
-
-
-Hmm potentially a problem when the ecut chops into the s2 rampup triangle, 
-from unhandled conditions ?
-      
-The contortions to be able to reuse GetS2Integral may be misplaced : 
-simpler to consider the cut integral separately ?
-
-
-**/
-
-template <typename T>
-NP* QCerenkov::getS2CutIntegral_( const T BetaInverse, const T ecut ) const 
-{
-    T emin, emax, en_cross ; 
-
-    const T* vv = dsrc->cvalues<T>(); 
-    unsigned ni = dsrc->shape[0] ; 
-    unsigned nj = dsrc->shape[1] ; 
-    assert( nj == 2 && ni > 1 ); 
-
-    NP* s2i = NP::Make<T>(ni+1);  // indices 0...ni inclusive, ni used for the partial 
-    T* s2i_vv = s2i->values<T>();  
-
-    T s2integral(0.) ;  
-    for(unsigned i=0 ; i < ni - 1 ; i++)
-    {
-        T en_0 = vv[2*(i+0)+0] ; 
-        T en_1 = vv[2*(i+1)+0] ; 
-
-        T ri_0 = vv[2*(i+0)+1] ; 
-        T ri_1 = vv[2*(i+1)+1] ; 
-
-        if( en_0 == ecut )                 // no contribution from this bin 
-        {
-        }
-        else if( en_0 < ecut && en_1 <= ecut)  // edges of this bin both below ecut (or en_1 == ecut), so full bin integral 
-        {
-            T bin_integral =  GetS2Integral<T>( emin, emax, en_cross, BetaInverse, en_0, en_1, ri_0, ri_1, false );  
-            s2i_vv[i] = bin_integral ;    
-            s2integral += bin_integral ; 
-        }
-        else if ( en_0 < ecut && ecut < en_1 )  // edges of this bin straddle ecut, so partial bin integral  
-        {
-            // full bin integral to get en_cross 
-            T full = GetS2Integral<T>( emin, emax, en_cross, BetaInverse, en_0, en_1, ri_0, ri_1, false  ); 
-
-            // partial bin integral using the fixed en_cross ; 
-            T ri_cut = dsrc->interp<T>(ecut) ; 
-            T partial  = GetS2Integral<T>( emin, emax, en_cross, BetaInverse, en_0, ecut, ri_0, ri_cut, true );
-
-            // hmm: s2 can be increasing or decreasing here ... so need to handle the two cases ? 
-
-            s2i_vv[ni] = partial ; 
-   
-            bool is_partial = partial <= full ;  // 
-            if(!is_partial)
-            {
-                LOG(info)
-                    << " is_partial " << is_partial
-                    << " en_cross " << std::fixed << std::setw(10) << std::setprecision(4) << en_cross
-                    << " BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse 
-                    << " en_0 " << std::fixed << std::setw(10) << std::setprecision(4) << en_0
-                    << " en_1 " << std::fixed << std::setw(10) << std::setprecision(4) << en_1
-                    << " ecut " << std::fixed << std::setw(10) << std::setprecision(4) << ecut
-                    << " ri_cut " << std::fixed << std::setw(10) << std::setprecision(4) << ri_cut
-                    << " full " << std::fixed << std::setw(10) << std::setprecision(4) << full 
-                    << " partial " << std::fixed << std::setw(10) << std::setprecision(4) << partial
-                    << " full-partial " << std::fixed << std::setw(10) << std::setprecision(4) << full-partial
-                    ; 
-            }
-            //assert( is_partial ); 
-
-            s2integral += partial ; 
-        }
-        else if(  en_0 > ecut && en_1 > ecut )  // bin fully above the cut, so no contribution
-        {
-        }
-        else
-        {
-            LOG(warning) 
-                << " missing  ?"
-                << " en_0 " << en_0 
-                << " en_1 " << en_1 
-                << " ecut " << ecut 
-                ;   
-        }
-
-
-    }
-    return s2i ; 
-}     
-
-
-template NP* QCerenkov::getS2CutIntegral_( const double, const double  ) const ; 
-template NP* QCerenkov::getS2CutIntegral_( const float, const float  ) const ; 
-
-template <typename T>
-T QCerenkov::getS2CutIntegral( const T BetaInverse, const T ecut ) const 
-{
-    NP* s2i = getS2CutIntegral_<T>(BetaInverse, ecut); 
-    T s2integral = s2i->psum<T>(0u); 
-    return s2integral ; 
-}  
-template double QCerenkov::getS2CutIntegral( const double, const double  ) const ; 
-template float  QCerenkov::getS2CutIntegral( const float, const float  ) const ; 
-
-
-
-template <typename T> NP* QCerenkov::getS2Integral_WithCut_( const T BetaInverse, const T en_cut ) const 
+template <typename T> NP* QCerenkov::getS2Integral_WithCut_( T& emin, T& emax, const T BetaInverse, const T en_cut ) const 
 {
     const T* vv = dsrc->cvalues<T>(); 
     unsigned ni = dsrc->shape[0] ; 
@@ -561,25 +337,25 @@ template <typename T> NP* QCerenkov::getS2Integral_WithCut_( const T BetaInverse
         T ri_0 = vv[2*(i+0)+1] ; 
         T ri_1 = vv[2*(i+1)+1] ; 
 
-        s2i_vv[i] = GetS2Integral_WithCut<T>(BetaInverse, en_0, en_1, ri_0, ri_1, en_cut, ri_cut );
+        s2i_vv[i] = GetS2Integral_WithCut<T>(emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1, en_cut, ri_cut );
     }
     return s2i ; 
 }
  
-template NP* QCerenkov::getS2Integral_WithCut_( const double, const double  ) const ; 
-template NP* QCerenkov::getS2Integral_WithCut_( const float, const float  ) const ; 
+template NP* QCerenkov::getS2Integral_WithCut_( double&, double&, const double, const double  ) const ; 
+template NP* QCerenkov::getS2Integral_WithCut_( float&,  float&,  const float, const float  ) const ; 
 
 
 
 template <typename T>
-T QCerenkov::getS2Integral_WithCut( const T BetaInverse, const T en_cut ) const 
+T QCerenkov::getS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const T en_cut ) const 
 {
-    NP* s2i = getS2Integral_WithCut_<T>(BetaInverse, en_cut); 
+    NP* s2i = getS2Integral_WithCut_<T>(emin, emax, BetaInverse, en_cut); 
     T s2integral = s2i->psum<T>(0u); 
     return s2integral ; 
 }  
-template double QCerenkov::getS2Integral_WithCut( const double, const double  ) const ; 
-template float  QCerenkov::getS2Integral_WithCut( const float, const float  ) const ; 
+template double QCerenkov::getS2Integral_WithCut( double&, double&, const double, const double  ) const ; 
+template float  QCerenkov::getS2Integral_WithCut( float&,  float&,  const float, const float  ) const ; 
 
 
 
@@ -634,8 +410,7 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
     {
         T ecut = ee[i] ; 
         
-        //NP* s2i = getS2CutIntegral_<T>( BetaInverse, ecut ); 
-        NP* s2i = getS2Integral_WithCut_<T>( BetaInverse, ecut ); 
+        NP* s2i = getS2Integral_WithCut_<T>(emin, emax, BetaInverse, ecut ); 
         T s2integral = s2i->psum<T>(0u); 
 
         cc[2*i+0] = ecut ;   
@@ -697,6 +472,8 @@ NP* QCerenkov::getS2CumulativeIntegrals( const NP* bis, unsigned nx ) const
     unsigned nj = nx ; 
 
     NP* s2c = NP::Make<T>(ni, nj, 2) ; 
+    LOG(info) << "[ creating s2c " << s2c->sstr() ; 
+
     for(unsigned i=0 ; i < ni ; i++)
     {
         const T BetaInverse = bb[i] ; 
@@ -716,6 +493,7 @@ NP* QCerenkov::getS2CumulativeIntegrals( const NP* bis, unsigned nx ) const
         memcpy( s2c->bytes() + i*s2c_one_bytes, s2c_one->bytes(), s2c_one_bytes ); 
         s2c_one->clear(); 
     }
+    LOG(info) << "] creating s2c " << s2c->sstr() ; 
     return s2c ; 
 }
 

@@ -49,19 +49,14 @@ struct QUDARAP_API QCerenkov
     std::string desc() const ; 
 
 
-    template <typename T> T   getS2Integral_WithCut(  const T BetaInverse, const T en_cut ) const  ; 
-    template <typename T> NP* getS2Integral_WithCut_( const T BetaInverse, const T en_cut ) const  ; 
-    template <typename T> static T GetS2Integral_WithCut( const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, const T en_cut, const T ri_cut ) ; 
+    template <typename T> T   getS2Integral_WithCut(  T& emin, T& emax, const T BetaInverse, const T en_cut ) const  ; 
+    template <typename T> NP* getS2Integral_WithCut_( T& emin, T& emax, const T BetaInverse, const T en_cut ) const  ; 
+    template <typename T> static T GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, const T en_cut, const T ri_cut ) ; 
 
-
-
-    template <typename T> static T GetS2Integral( T& emin, T& emax, T& ecross, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, bool fix_cross ) ; 
+   // template <typename T> static T GetS2Integral( T& emin, T& emax, T& ecross, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, bool fix_cross ) ; 
 
     template <typename T> NP* GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInverse, const T  charge ) const ; 
     template <typename T> T   GetAverageNumberOfPhotons_s2(T& emin,  T& emax, const T BetaInverse, const T  charge ) const ; 
-
-    template <typename T> NP* getS2CutIntegral_( const T BetaInverse, const T ecut ) const ; 
-    template <typename T> T   getS2CutIntegral( const T BetaInverse, const T ecut ) const ; 
 
     // hmm "make" rather than "get" 
     template <typename T> NP* getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) const ; 

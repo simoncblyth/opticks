@@ -168,6 +168,7 @@ struct NP
     void save_jsonhdr(const char* dir, const char* name) const ;   
 
     std::string desc() const ; 
+    std::string sstr() const ; 
     void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
     void get_meta( std::vector<std::string>& lines,       char delim='\n' ) const ; 
 
@@ -1164,6 +1165,15 @@ template<typename T> inline void NP::pdump(const char* msg) const
     }
 }
 
+/**
+NP::minmax
+------------
+
+Finds minimum and maximum values of column j, assuming a 2d array, 
+by looping over the first array dimension and comparing all values. 
+
+**/
+
 template<typename T> inline void NP::minmax(T& mn, T&mx, unsigned j ) const 
 {
     unsigned ndim = shape.size() ; 
@@ -1570,6 +1580,12 @@ inline void NP::dump(int i0, int i1) const
     }   
 }
 
+inline std::string NP::sstr() const 
+{
+    std::stringstream ss ; 
+    ss << NPS::desc(shape) ; 
+    return ss.str(); 
+}
 inline std::string NP::desc() const 
 {
     std::stringstream ss ; 
