@@ -17,7 +17,7 @@ set(FORMER_TEST_SOURCES
 
 
 
-foreach(SRC ${TEST_SOURCES})
+foreach(SRC ${TEST_SOURCES} ${_TEST_SOURCES})
 
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
