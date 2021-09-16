@@ -109,7 +109,7 @@ summary
   * check cks FLOAT_TEST still using lots of double, eg OpticksDebug collection  
   * doing it in double precision on GPU !
 
-* resorting to double precision gets cerenkov chi2 to match 
+* **resorting to double precision gets cerenkov chi2 to match**::
 
   ARG=15 ipython -i wavelength.py   
   ARG=15 ipython -i wavelength_cfplot.py   
@@ -119,6 +119,29 @@ summary
 * (Aug 1, 2021) ana/ckn.py GetAverageNumberOfPhotons_s2 avoids small -ve numPhotons close to rindex peak and is a simpler algorithm  
   implemented in C++ in opticks/examples/Geant4/CerenkovStandalone/G4Cerenkov_modified.cc G4Cerenkov_modified::GetAverageNumberOfPhotons_s2
 
+
+* (Sep 15, 2021) QUDARap/QCerenkov,QCK provides both energy sampling and icdf lookup *energy_lookup* *energy_sample*
+
+  * the number of BetaInverse and energy edges is configurable, currently using (2000,2000) but suspect that 
+    it is not necessary to use so many the c2 was similar with much less, just increased to try to 
+    see the impact on c2 
+
+  * tests/QCKTest.py compares histograms of energy distribs : the distribs broadly match at various BetaInverse
+    but the chi2/ndf is not good (~6) 
+
+  * all c2 poppies are just below rindex edges : this suggests a problem with the cumulative integral 
+    (the old issue of the partial integrals slightly exceeding full bin integrals was never fixed, so this
+    looks) 
+
+  * TODO: pragmatic fix for the partial discrep if cannot fix : just limit the integral to the full one 
+
+  * TODO: rindex is piecewise linear and transforming that into s2 is rather simple suggesting that 
+    might be able to use sympy to arrive at a piecewise analytic expression for the cumulative integral and hence the CDF
+
+    * that would have the advantage of being an analytic function rather than estimates at edges
+    * https://docs.sympy.org/latest/modules/functions/elementary.html#piecewise
+    * can use the analytic answer to check the numerical approximations and find where the problem is perhaps
+    * more ambitiously could find a way to export the sympy analytic integral function into generated CUDA/C code 
 
 
 See Also

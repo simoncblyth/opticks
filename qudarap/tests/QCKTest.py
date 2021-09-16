@@ -104,9 +104,11 @@ class QCKTest(object):
     def rindex_plot(self):
         ri = self.rindex
         c2 = self.c2
+        c2where = self.c2where
         bi = self.bi
         edges = self.edges
         c2riscale = self.c2riscale
+
 
         title = "\n".join(["QCKTest.py : rindex_plot"]) ;  
         fig, ax = plt.subplots(figsize=[12.8, 7.2])
@@ -118,6 +120,13 @@ class QCKTest(object):
 
         bi0 = 1.75     
         ax.plot( [ri[0,0], ri[-1,0]], [bi0, bi0], label="bi0 %6.4f " % bi0 )       
+
+        ylim = ax.get_ylim()
+
+        for i in c2where:
+            ax.plot( [edges[i], edges[i]], ylim , label="edge %d " % i, linestyle="dotted" )
+            ax.plot( [edges[i+1], edges[i+1]], ylim , label="edge+1 %d " % (i+1), linestyle="dotted" )
+        pass
 
         ax.legend()
         fig.show() 
@@ -145,6 +154,8 @@ class QCKTest(object):
         rimax = ri[:,1].max()
         c2max = c2.max()
         c2riscale = rimax/c2max
+        c2where = np.where( c2 > c2max/3. )[0]
+
 
         hmax = max(hl[0].max(), hs[0].max())
         c2hscale = hmax/c2max
@@ -155,6 +166,8 @@ class QCKTest(object):
         self.bi = bi
         self.edges = edges
         self.c2 = c2
+        self.c2max = c2max
+        self.c2where = c2where
 
         icdf_shape = str(self.s2cn.shape)
 
