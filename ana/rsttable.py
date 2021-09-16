@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import logging
 import numpy as np
+log = logging.getLogger(__name__)
 
 class RSTTable(object):
      def divider(self, widths, char="-"):
@@ -19,6 +21,20 @@ class RSTTable(object):
          tab.wids += tab.pre 
          tab.wids += tab.post 
          return str(tab)
+
+     @classmethod
+     def Rdr(cls, t, labels, wid=10, hfm="%10s", rfm="%10.4f", pre_="", post_=""  ):
+
+         nlab = len(labels)
+
+         wids = np.repeat( wid, nlab ) 
+         hfmt = np.repeat( hfm, nlab )
+         rfmt = np.repeat( rfm, nlab )
+         pre  = np.repeat( pre_, nlab )
+         post  = np.repeat( post_, nlab )
+
+         rst = cls.Render(t, labels, wids, hfmt, rfmt, pre, post )
+         return rst 
 
      def __init__(self, t):
          self.t = t  
@@ -47,8 +63,9 @@ class RSTTable(object):
          return "\n".join(lines)    
 
 
-if __name__ == '__main__':
 
+def test_Render():
+     log.info("test_Render")
      t = np.empty( [2,2], dtype=np.object )
      t[0] = ["a", "b" ]
      t[1] = ["c", "d" ]
@@ -58,8 +75,39 @@ if __name__ == '__main__':
      hfmt = [ "%10s", "%10s" ]
      rfmt = [ "%10s", "%10s" ]
      pre  = [ "" ,    "   " ]
+     post = [ "" ,    "   " ]
 
-     rst = RSTTable.Render(t, labels, wids, hfmt, rfmt, pre )
-
+     rst = RSTTable.Render(t, labels, wids, hfmt, rfmt, pre, post )
      print(rst)
+
+
+def test_Rdr2x2():
+     log.info("test_Rdr2x2")
+     t = np.zeros( [2,2], dtype=np.object )
+     t[0] = [ 1.1 , 1.2 ]
+     t[1] = [ 2.2 , 3.1 ]
+     labels = ["A", "B"] 
+     rst = RSTTable.Rdr(t, labels )
+     print(rst)
+
+
+def test_Rdr3x3():
+     log.info("test_Rdr3x3")
+     t = np.zeros( [3,3], dtype=np.object )
+     t[0] = [ 1.1 , 1.2 , 1.3 ]
+     t[1] = [ 2.2 , 3.1 , 4.1 ]
+     t[2] = [ 3.2 , 4.1 , 5.1 ]
+     labels = ["A", "B", "C" ] 
+     rst = RSTTable.Rdr(t, labels )
+     print(rst)
+
+
+
+
+if __name__ == '__main__':
+     logging.basicConfig(level=logging.INFO)
+     test_Render()
+     test_Rdr2x2()
+     test_Rdr3x3()
+
 

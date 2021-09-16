@@ -1027,7 +1027,13 @@ template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) 
     assert( ndim == 2 || ndim == 3 ); 
     unsigned ni = shape[ndim-2]; 
     unsigned nj = shape[ndim-1]; 
-    assert( nj == 2 ); 
+    assert( nj == 2 || nj == 3 ); 
+
+    unsigned jdom = 0 ;       // 1st payload slot is "domain"
+    unsigned jval = nj - 1 ;  // last payload slot is "value" 
+
+    // note that with nj > 2 this allows other values to be carried 
+
 
     unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
     assert( item < int(num_items) ); 
@@ -1035,48 +1041,70 @@ template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) 
 
     const T* vv = cvalues<T>() + item_offset ;  // shortcut approach to handling multiple items 
 
-    enum { DOM=0 , VAL=1 } ; 
 
-    const T lhs_dom = vv[nj*(0)+DOM]; 
-    const T rhs_dom = vv[nj*(ni-1)+DOM];
+    const T lhs_dom = vv[nj*(0)+jdom]; 
+    const T rhs_dom = vv[nj*(ni-1)+jdom];
     assert( rhs_dom > lhs_dom ); 
 
-    const T lhs_val = vv[nj*(0)+VAL]; 
-    const T rhs_val = vv[nj*(ni-1)+VAL];
+    const T lhs_val = vv[nj*(0)+jval]; 
+    const T rhs_val = vv[nj*(ni-1)+jval];
     assert( rhs_val > lhs_val ); 
 
 
     const T yv = value ; 
     T xv ;   
+    bool xv_set = false ; 
+
 
     if( yv <= lhs_val )
     {
         xv = lhs_dom ; 
+        xv_set = true ; 
     }
     else if( yv >= rhs_val )
     {
         xv = rhs_dom  ; 
+        xv_set = true ; 
     }
     else if ( yv >= lhs_val && yv < rhs_val  )
     {
         for(unsigned i=0 ; i < ni-1 ; i++) 
         {
-            const T x0 = vv[nj*(i+0)+DOM] ; 
-            const T y0 = vv[nj*(i+0)+VAL] ; 
-            const T x1 = vv[nj*(i+1)+DOM] ; 
-            const T y1 = vv[nj*(i+1)+VAL] ;
-
+            const T x0 = vv[nj*(i+0)+jdom] ; 
+            const T y0 = vv[nj*(i+0)+jval] ; 
+            const T x1 = vv[nj*(i+1)+jdom] ; 
+            const T y1 = vv[nj*(i+1)+jval] ;
             const T dy = y1 - y0 ;  
-            assert( dy >= zero );   // must be monotonic for this to make sense
+
+            //assert( dy >= zero );   // must be monotonic for this to make sense
+            /*
+            if( dy < zero )
+            {  
+                std::cout 
+                    << "NP::pdomain ERROR : non-monotonic dy less than zero  " 
+                    << " i " << std::setw(5) << i
+                    << " x0 " << std::setw(10) << std::fixed << std::setprecision(6) << x0
+                    << " x1 " << std::setw(10) << std::fixed << std::setprecision(6) << x1 
+                    << " y0 " << std::setw(10) << std::fixed << std::setprecision(6) << y0
+                    << " y1 " << std::setw(10) << std::fixed << std::setprecision(6) << y1 
+                    << " yv " << std::setw(10) << std::fixed << std::setprecision(6) << yv
+                    << " dy " << std::setw(10) << std::fixed << std::setprecision(6) << dy 
+                    << std::endl 
+                    ;
+            }
+            */
 
             if( y0 <= yv && yv < y1 )
             { 
                 xv = x0 ; 
+                xv_set = true ; 
                 if( dy > zero ) xv += (yv-y0)*(x1-x0)/dy ; 
                 break ;   
             }
         }
     } 
+
+    assert( xv_set == true ); 
 
     if(dump)
     {
@@ -1084,6 +1112,7 @@ template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) 
             << "NP::pdomain.dump "
             << " item " << std::setw(4) << item
             << " ni " << std::setw(4) << ni
+            << " nj " << std::setw(4) << nj
             << " lhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_dom
             << " rhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_dom
             << " lhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_val
@@ -1093,22 +1122,6 @@ template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) 
             << std::endl 
             ; 
     }
-
-
-#ifdef DEBUG
-    std::cout 
-        << "NP::pdomain"
-        << " item " << std::setw(4) << item
-        << " ni " << std::setw(4) << ni
-        << " yv " << std::setw(10) << std::fixed << std::setprecision(4) << yv
-        << " xv " << std::setw(10) << std::fixed << std::setprecision(4) << xv
-        << " lhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_dom
-        << " rhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_dom
-        << " lhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_val
-        << " rhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_val
-        << std::endl 
-        ;
-#endif
     return xv ; 
 }
 
@@ -1481,16 +1494,16 @@ template<typename T> inline void NP::divide_by_last()
     }
     else if( ndim == 3 )   // eg (1000, 100, 2)    1000(diff BetaInverse) * 100 * (energy, integral)  
     {
-        unsigned ni = shape[0] ; 
-        unsigned nj = shape[1] ; 
-        unsigned nk = shape[2] ; 
-        assert( nk == 2 ); // not required by below, but for sanity of understanding 
+        unsigned ni = shape[0] ;  // eg BetaInverse dimension
+        unsigned nj = shape[1] ;  // eg energy dimension 
+        unsigned nk = shape[2] ;  // eg payload carrying  [energy,s2,s2integral]
+        assert( nk == 1 || nk == 2 || nk == 3 ) ; // not required by the below, but restrict for understanding 
 
         for(unsigned i=0 ; i < ni ; i++)
         {
-            unsigned k = nk - 1 ;                         // eg the property, not the domain energy in k=0
-            const T last = vv[i*nj*nk+(nj-1)*nk+k] ;  
-            for(unsigned j=0 ; j < nj ; j++) if(last != zero) vv[i*nj*nk+j*nk+k] /= last ;  
+            unsigned k = nk - 1 ;  // last payload property, eg s2integral
+            const T last = vv[i*nj*nk+(nj-1)*nk+k] ;  // for each item i, pluck the last payload value at the last energy value 
+            for(unsigned j=0 ; j < nj ; j++) if(last != zero) vv[i*nj*nk+j*nk+k] /= last ;  // traverse energy dimension normalizing the last payload items by last energy brethren
         }
     }
     else

@@ -89,9 +89,17 @@ int main(int argc, char** argv)
 
     unsigned ni = 1000000 ; 
 
-    for( double bi=1.0 ; bi < qck->rmx ; bi+=0.1 )
+    std::vector<double> bis ;  
+    for( double bi=1.0 ; bi < qck->rmx ; bi+=0.05 ) bis.push_back(bi); 
+
+    //bis.push_back(1.75);   // about mean of 1 photon 
+    //bis.push_back(1.792);  // extreme peak : some tiny fraction of a photon  
+    //bis.push_back(1.45);   // pdomain assert, from going slightly non-monotonic
+
+
+    for(unsigned i=0 ; i < bis.size() ; i++)
     {
-        double BetaInverse = bi ; 
+        double BetaInverse = bis[i] ; 
         LOG(info) 
             << " BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse
             ; 

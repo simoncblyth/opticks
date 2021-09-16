@@ -149,10 +149,100 @@ summary
   * BetaInverse 1.7 : c2poppy at upper edge of allowed : hmm need to change energy range of comparison
     as the permitted energy range shrinks otherwise the bins are effectively getting huge  
  
-  * TODO: plotting s2 together with chi2 
+  * DONE: plotting s2 together with chi2 
   * DONE: plotting s2cn (the CDF) together with chi2 
-  * TODO: check with divide_edges to avoid bin migration effects
+  * DONE: check with divide_edges to avoid bin migration effects
 
+
+Comparing with s2 things look pretty good with sampling and lookup taking the same form 
+until get down to fractions of a photon, when things fall to pieces. 
+But the chi2/ndf, aint that good : mostly from extremes. 
+ 
++----------+----------+----------+----------+----------+----------+----------+
+|        bi|     c2sum|       ndf|       c2p|       emn|       emx|     avgph|
++==========+==========+==========+==========+==========+==========+==========+
+|    1.0000|   80.2314|   99.0000|    0.8104|    1.5500|   15.5000|  293.2454|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.0500|   93.2445|   99.0000|    0.9419|    1.5500|   15.5000|  270.4324|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.1000|   95.2011|   99.0000|    0.9616|    1.5500|   15.5000|  246.5068|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.1500|   81.5968|   99.0000|    0.8242|    1.5500|   15.5000|  221.4688|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.2000|   98.5169|   99.0000|    0.9951|    1.5500|   15.5000|  195.3183|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.2500|  121.6160|   99.0000|    1.2284|    1.5500|   15.5000|  168.0553|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.3000|  120.5107|   99.0000|    1.2173|    1.5500|   15.5000|  139.6798|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.3500|   95.7665|   99.0000|    0.9673|    1.5500|   15.5000|  110.1918|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.4000|  111.3815|   99.0000|    1.1251|    1.5500|   15.5000|   79.5914|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.4500|  300.7510|   99.0000|    3.0379|    1.5500|   15.5000|   47.8784|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.5000|  294.1136|   99.0000|    2.9708|    3.1039|    9.9670|   28.8255|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.5500|  646.9821|   91.0000|    7.1097|    4.6586|    9.5747|   16.5780|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.6000|  464.0584|   77.0000|    6.0267|    5.7805|    9.2567|    9.1903|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.6500|  739.3216|   99.0000|    7.4679|    7.4770|    8.9440|    5.3722|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.7000| 1272.2710|   99.0000|   12.8512|    7.5725|    8.6777|    2.8450|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.7500|  134.5231|   99.0000|    1.3588|    7.6681|    8.4287|    0.9755|
++----------+----------+----------+----------+----------+----------+----------+
+|    1.7920|50563.7852|   99.0000|  510.7453|    7.7477|    7.8092|    0.0015|
++----------+----------+----------+----------+----------+----------+----------+
+
+
+
+BetaInverse 1.45 slightly non-monotonic::
+
+    (lldb) p item
+    (int) $1 = 1134
+    (lldb) f 4
+    frame #4: 0x00000001001745f7 libQUDARap.dylib`double NP::pdomain<double>(this=0x00000001014026a0, value=0.99214520962982877, item=1134, dump=false) const at NP.hh:1075
+       1072	            const T y1 = vv[nj*(i+1)+jval] ;
+       1073	
+       1074	            const T dy = y1 - y0 ;  
+    -> 1075	            assert( dy >= zero );   // must be monotonic for this to make sense
+       1076	
+       1077	            if( y0 <= yv && yv < y1 )
+       1078	            { 
+    (lldb) p dy
+    (const double) $2 = -0.0000030085381202971107
+    (lldb) p y1
+    (const double) $3 = 0.97945642413092681
+    (lldb) p y0
+    (const double) $4 = 0.97945943266904711
+    (lldb) p jval
+    (unsigned int) $5 = 2
+
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.986214 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.988575 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.999524 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.998180 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.991240 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.994275 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.995296 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.980150 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.982399 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.988238 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.992084 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.983232 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.991422 dy  -0.000003
+    NP::pdomain ERROR : non-monotonic dy less than zero   i  1257 x0  10.321961 x1  10.328939 y0   0.979459 y1   0.979456 yv   0.995707 dy  -0.000003
+
+
+
+What are the relative merits of: 
+
+* inverse transform sampling 
+* rejection sampling 
+
+* https://math.stackexchange.com/questions/1311282/why-use-rejection-sampling-in-monte-carlo-simulations
 
 
 See Also

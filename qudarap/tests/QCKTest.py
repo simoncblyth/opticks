@@ -66,6 +66,7 @@ import os, logging, numpy as np
 
 from opticks.ana.nbase import chi2
 from opticks.ana.edges import divide_edges
+from opticks.ana.rsttable import RSTTable
 
 log = logging.getLogger(__name__)
 
@@ -178,13 +179,26 @@ class QCKTest(object):
         self.el = el
         self.es = es
 
-    def en_compare(self, bi): 
+    def en_compare(self, bi, num_edges=101): 
 
         ri = self.rindex
         el = self.el
         es = self.es
-        
-        edges = np.linspace(1.55,15.5,100)  # including rightmost 
+        s2cn = self.s2cn
+        s2c  = self.s2c
+
+        ibi = self.getBetaInverseIndex(bi)
+        emn = s2cn[ibi, 0,0] 
+        emx = s2cn[ibi,-1,0] 
+        avgph = s2c[ibi,-1,2] 
+
+        edom = emx - emn 
+        edif = edom/(num_edges-1)
+        edges0 = np.linspace( emn, emx, num_edges )    # across Cerenkov permissable range 
+        edges = np.linspace( emn-edif, emx+edif, num_edges + 2 )   # push out with extra bins either side
+       
+        #edges = np.linspace(1.55,15.5,100)  # including rightmost 
+        #edges = np.linspace(1.55,15.5,200)  # including rightmost 
         #edges = divide_edges( ri[:,0], mul=4 )  
 
         hl = np.histogram( el, bins=edges )
@@ -213,20 +227,21 @@ class QCKTest(object):
         print("c2n", c2n)
         print("c2c", c2c)
 
-        qq = "hl hs c2 c2label c2n c2c c2riscale c2hscale hmax edges c2max c2poppy cf"
+        qq = "hl hs c2 c2label c2n c2c c2riscale c2hscale hmax edges c2max c2poppy cf bi ibi avgph"
         for q in qq.split():
             globals()[q] = locals()[q]
             setattr(self, q, locals()[q] )
         pass
 
-
         t = self
         print("np.c_[t.c2, t.hs[0], t.hl[0]][t.c2 > 0]")
         print(np.c_[t.c2, t.hs[0], t.hl[0]][t.c2 > 0] )
 
-       
+        return [bi, c2sum, ndf, c2p, emn, emx, avgph ] 
 
-    def en_plot(self, bi, c2overlay=False):
+    LABELS = "bi c2sum ndf c2p emn emx avgph".split()   
+
+    def en_plot(self, c2overlay=0., c2poppy_=True):
         """
 
         Using divide_edges is good for chi2 checking as it prevents 
@@ -235,9 +250,12 @@ class QCKTest(object):
 
         """
         ri = self.rindex
+        s2c = self.s2c 
         s2cn = self.s2cn 
-        ibi = self.getBetaInverseIndex(bi)
+        bi = self.bi
+        ibi = self.ibi
         c2 = self.c2 
+        c2poppy = self.c2poppy 
         c2hscale = self.c2hscale
         hmax = self.hmax
         hl = self.hl 
@@ -246,8 +264,11 @@ class QCKTest(object):
 
         icdf_shape = str(s2cn.shape)
 
+
+
         title_ = ["QCKTest.py : en_plot : lookup cf sampled : icdf_shape %s : %s " % ( icdf_shape, self.base ), 
-                  "%s : %s " % ( self.c2label, self.cf)
+                  "%s : %s " % ( self.c2label, self.cf), 
+                  " avgph %6.2f " % avgph
                  ]
  
         title = "\n".join(title_)
@@ -258,18 +279,49 @@ class QCKTest(object):
         #ax.scatter( hl[1][:-1], hl[0], label="lookup" )
         #ax.scatter( hs[1][:-1], hs[0], label="sample" )
 
-        ax.plot( edges[:-1], hl[0], drawstyle="steps-post" )
-        ax.plot( edges[:-1], hs[0], drawstyle="steps-post" )
+        ax.plot( edges[:-1], hl[0], drawstyle="steps-post", label="lookup" )
+        ax.plot( edges[:-1], hs[0], drawstyle="steps-post", label="sampled" )
 
-        if c2overlay:
-            ax.plot( edges[:-1], c2*c2hscale , label="c2", drawstyle="steps-post" )
+        if c2overlay != 0.:
+            ax.plot( edges[:-1], c2*c2hscale*c2overlay , label="c2", drawstyle="steps-post" )
         pass    
 
-        ax.plot( s2cn[ibi,:,0], s2cn[ibi,:,1]*hmax , label="s2cn[%d]*hmax" % ibi )
+
+        s2max = s2cn[ibi,:,1].max() 
+
+        ax.plot( s2cn[ibi,:,0], s2cn[ibi,:,1]*hmax/s2max , label="s2cn[%d,:,1]*hmax/s2max (s2)" % ibi )
+        ax.plot( s2cn[ibi,:,0], s2cn[ibi,:,2]*hmax , label="s2cn[%d,:,2]*hmax (cdf)" % ibi )
+
+        ylim = ax.get_ylim() 
+        emn = s2cn[ibi, 0,0] 
+        emx = s2cn[ibi,-1,0] 
+
+        ax.plot( [emx, emx], ylim, linestyle="dotted" )
+        ax.plot( [emn, emn], ylim, linestyle="dotted" )
+
+        if c2poppy_:
+            for i in c2poppy:
+                ax.plot( [edges[i], edges[i]], ylim , label="c2poppy edge %d " % i, linestyle="dotted" )
+                ax.plot( [edges[i+1], edges[i+1]], ylim , label="c2poppy edge+1 %d " % (i+1), linestyle="dotted" )
+            pass
+        pass
 
         ax.legend()
         fig.show() 
-        
+
+    def compare(t, bis):
+        res = np.zeros( (len(bis), len(t.LABELS)) )
+        for i, bi in enumerate(bis):
+            t.en_load(bi)
+            res[i] = t.en_compare(bi)
+            t.en_plot(c2overlay=0.5, c2poppy_=False) 
+            #t.rindex_plot() 
+        pass
+        t.res = res
+
+    def __str__(self):
+        rst = RSTTable.Rdr(self.res, self.LABELS )
+        return rst 
 
 
 if __name__ == '__main__':
@@ -277,21 +329,10 @@ if __name__ == '__main__':
     t = QCKTest()
     #t.s2cn_plot(istep=20)
 
+    bis = t.bislist()
+    #bis = bis[-2:-1]
+    #bis = [1.45,]
 
-    for bi in t.bislist():
-        t.en_load(bi)
-        t.en_compare(bi)
-        t.en_plot(bi) 
-    pass
-
-
-    #t.rindex_plot() 
-    #t.one_s2cn_plot(bi) 
-
-
-
-
-
-
-
+    t.compare(bis)
+    print(t)
 

@@ -101,8 +101,6 @@ To understand the more precise Rfact value see ~/opticks/examples/UseGeant4/UseG
 
 **/
 
-
-
 template <typename T>
 NP* QCerenkov::GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInverse, const T  charge ) const 
 {
@@ -119,7 +117,7 @@ NP* QCerenkov::GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInve
     const T en_cut = -1. ; 
     const T ri_cut = -1. ; 
 
-    NP* s2i = NP::Make<T>(ni+1) ; 
+    NP* s2i = NP::Make<T>(ni) ;   // hmm: top value will always be zero 
     T* s2i_vv = s2i->values<T>(); 
 
     for(unsigned i=0 ; i < ni - 1 ; i++)
@@ -315,7 +313,13 @@ template float QCerenkov::GetS2Integral_WithCut( float& , float&,   const float,
 template double QCerenkov::GetS2Integral_WithCut( double&, double&, const double, const double, const double, const double, const double, const double, const double ); 
 
 
+/**
+QCerenkov::getS2Integral_WithCut_
+------------------------------------
 
+For debugging purposes the contributions to the integral from each rindex bin are returned in an array.
+
+**/
 
 template <typename T> NP* QCerenkov::getS2Integral_WithCut_( T& emin, T& emax, const T BetaInverse, const T en_cut ) const 
 {
@@ -359,6 +363,18 @@ template float  QCerenkov::getS2Integral_WithCut( float&,  float&,  const float,
 
 
 
+template <typename T>
+T QCerenkov::getS2( const T BetaInverse, const T en ) const 
+{
+    const T one(1.) ; 
+    T ri = dsrc->interp<T>(en) ;  // linear interpolation of the rindex values at edges 
+    T ct = BetaInverse/ri ; 
+    T s2 = ( one - ct )*( one + ct ); 
+    return s2 ; 
+}
+
+template double QCerenkov::getS2( const double, const double ) const ; 
+template float  QCerenkov::getS2( const float, const float ) const ; 
 
 
 
@@ -386,7 +402,7 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
     T avgNumPhotons = GetAverageNumberOfPhotons_s2<T>(emin, emax, BetaInverse, charge ); 
     if(avgNumPhotons <= 0. ) return nullptr ; 
 
-    NP* s2c = NP::Make<T>(nx, 2) ; 
+    NP* s2c = NP::Make<T>(nx, 3) ; 
     T* cc = s2c->values<T>();
 
     NP* full_s2i = GetAverageNumberOfPhotons_s2_<T>(emin, emax, BetaInverse, charge );
@@ -412,9 +428,11 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
         
         NP* s2i = getS2Integral_WithCut_<T>(emin, emax, BetaInverse, ecut ); 
         T s2integral = s2i->psum<T>(0u); 
+        T s2 = getS2<T>( BetaInverse, ecut ); 
 
-        cc[2*i+0] = ecut ;   
-        cc[2*i+1] = s2integral ; 
+        cc[3*i+0] = ecut ;   
+        cc[3*i+1] = s2 ; 
+        cc[3*i+2] = s2integral ;   // qty to be normalized needs to be in the last payload slot  
 
         if( i == nx - 1 )
         {
@@ -446,7 +464,7 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
             << std::endl 
             ;
     }
-    //assert(close);   // last cut integral should be close to the avgNumPhotons
+    assert(close);   // last cut integral should be close to the avgNumPhotons
 
     return s2c ; 
 }
@@ -471,7 +489,7 @@ NP* QCerenkov::getS2CumulativeIntegrals( const NP* bis, unsigned nx ) const
     const T* bb = bis->cvalues<T>(); 
     unsigned nj = nx ; 
 
-    NP* s2c = NP::Make<T>(ni, nj, 2) ; 
+    NP* s2c = NP::Make<T>(ni, nj, 3) ; 
     LOG(info) << "[ creating s2c " << s2c->sstr() ; 
 
     for(unsigned i=0 ; i < ni ; i++)
@@ -481,7 +499,7 @@ NP* QCerenkov::getS2CumulativeIntegrals( const NP* bis, unsigned nx ) const
  
         if(s2c_one == nullptr)
         {
-            LOG(debug) 
+            LOG(info) 
                 << " s2c_one NULL " 
                 << " i " << i 
                 << " ni " << ni 
