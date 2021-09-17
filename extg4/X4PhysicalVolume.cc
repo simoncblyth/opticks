@@ -519,7 +519,7 @@ void X4PhysicalVolume::convertWater()
     X4MaterialWater Water ;  
     assert(Water.rayleigh);  
 
-    G4PhysicsOrderedFreeVector* RAYLEIGH = X4MaterialWater::GetRAYLEIGH() ; 
+    G4MaterialPropertyVector* RAYLEIGH = X4MaterialWater::GetRAYLEIGH() ; 
     assert( RAYLEIGH == Water.rayleigh ); 
 }
 
