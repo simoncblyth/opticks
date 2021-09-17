@@ -126,6 +126,8 @@ void test_makeICDF(const QCerenkov& ck, unsigned ny, unsigned nx )
         ;
 
     const char* icdf_path = SPath::Resolve("$TMP/QCerenkovTest/test_makeICDF"); 
+    int rc = SPath::MakeDirs(icdf_path);   
+    assert( rc == 0 ); 
     icdf.save(icdf_path); 
 }
 

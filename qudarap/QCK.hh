@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include "QUDARAP_API_EXPORT.hh"
 
 /**
@@ -37,6 +38,8 @@ struct NP ;
 template <typename T>
 struct QUDARAP_API QCK
 {
+    static const double DT_SCALE ; 
+
     NP* rindex ; 
     NP* bis ;  // BetaInverse 
     NP* s2c ;  // cumulative s2 integral 
@@ -54,12 +57,12 @@ struct QUDARAP_API QCK
 
     // lookup from sets of ICDF, normalized s2 energy integrals  
     bool is_permissable( const T BetaInverse) const ; 
-    T   energy_lookup_( const T BetaInverse, const T u) const ;  
-    NP* energy_lookup(  const T BetaInverse, const NP* uu) const ; 
+    T   energy_lookup_( const T BetaInverse, const T u, double& dt ) const ;  
+    NP* energy_lookup(  const T BetaInverse, const NP* uu, NP* tt) const ; 
 
     // traditional s2 rejection sampling using rindex as function of energy 
-    T   energy_sample_( const T BetaInverse,  const std::function<T()>& rng ) const ; 
-    NP* energy_sample(  const T BetaInverse,  const std::function<T()>& rng, unsigned ni ) const ; 
+    T   energy_sample_( const T BetaInverse,  const std::function<T()>& rng, double& dt, unsigned& count ) const ; 
+    NP* energy_sample(  const T BetaInverse,  const std::function<T()>& rng, unsigned ni, NP* tt ) const ; 
 
 }; 
 

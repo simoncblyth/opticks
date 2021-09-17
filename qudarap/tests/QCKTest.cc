@@ -11,13 +11,15 @@
 
 void test_energy_lookup_one( const QCK<double>* qck, double BetaInverse, double u  )
 {
-    double en = qck->energy_lookup_( BetaInverse, u ); 
+    double dt ; 
+    double en = qck->energy_lookup_( BetaInverse, u, dt ); 
     int p = 7 ; 
     int w = p + 10 ; 
     LOG(info)
         << " BetaInverse " << std::fixed << std::setw(w) << std::setprecision(p) << BetaInverse 
         << " u " << std::fixed << std::setw(w) << std::setprecision(p) << u 
         << " en " << std::fixed << std::setw(w) << std::setprecision(p) << en
+        << " dt " << std::fixed << std::setw(w) << std::setprecision(p) << dt
         ;
 }
 
@@ -32,19 +34,25 @@ void test_energy_lookup_many( const QCK<double>* qck, double BetaInverse, unsign
         return ; 
     }
 
+    NP* tt = NP::Make<double>( ni ); 
     NP* uu = NP::MakeUniform<double>( ni ) ; 
-    NP* en = qck->energy_lookup(BetaInverse, uu ) ; 
+    NP* en = qck->energy_lookup(BetaInverse, uu, tt ) ; 
     const char* path = SPath::MakePath<double>( "$TMP/QCKTest", nullptr, BetaInverse, "test_energy_lookup_many.npy" ); 
     en->save(path);     
+
+    const char* tt_path = SPath::MakePath<double>( "$TMP/QCKTest", nullptr, BetaInverse, "test_energy_lookup_many_tt.npy" ); 
+    tt->save(tt_path);     
 }
 
 
 void test_energy_sample_one( const QCK<double>* qck, double BetaInverse )
 {
+    double dt ; 
     unsigned seed = 0u ; 
     SRng<double> rng(seed) ;  
 
-    double en = qck->energy_sample_( BetaInverse, rng ); 
+    unsigned count ; 
+    double en = qck->energy_sample_( BetaInverse, rng, dt, count ); 
 
     int p = 7 ; 
     int w = p + 10 ; 
@@ -52,6 +60,8 @@ void test_energy_sample_one( const QCK<double>* qck, double BetaInverse )
     LOG(info)
         << " BetaInverse " << std::fixed << std::setw(w) << std::setprecision(p) << BetaInverse 
         << " en " << std::fixed << std::setw(w) << std::setprecision(p) << en
+        << " dt " << std::fixed << std::setw(w) << std::setprecision(p) << dt
+        << " count " << std::setw(7) << count 
         ;
 }
 
@@ -69,9 +79,13 @@ void test_energy_sample_many( const QCK<double>* qck, double BetaInverse, unsign
     unsigned seed = 0u ; 
     SRng<double> rng(seed) ;  
     
-    NP* en = qck->energy_sample( BetaInverse, rng, ni ) ; 
+    NP* tt = NP::Make<double>( ni ); 
+    NP* en = qck->energy_sample( BetaInverse, rng, ni, tt ) ; 
     const char* path = SPath::MakePath<double>( "$TMP/QCKTest", nullptr, BetaInverse, "test_energy_sample_many.npy" ); 
     en->save(path) ;     
+
+    const char* tt_path = SPath::MakePath<double>( "$TMP/QCKTest", nullptr, BetaInverse, "test_energy_sample_many_tt.npy" ); 
+    tt->save(tt_path) ;     
 }
 
 
@@ -90,20 +104,16 @@ int main(int argc, char** argv)
     unsigned ni = 1000000 ; 
 
     std::vector<double> bis ;  
-    for( double bi=1.0 ; bi < qck->rmx ; bi+=0.05 ) bis.push_back(bi); 
+    //for( double bi=1.0 ; bi < qck->rmx ; bi+=0.05 ) bis.push_back(bi); 
 
     //bis.push_back(1.75);   // about mean of 1 photon 
-    //bis.push_back(1.792);  // extreme peak : some tiny fraction of a photon  
+    bis.push_back(1.792);  // extreme peak : some tiny fraction of a photon  
     //bis.push_back(1.45);   // pdomain assert, from going slightly non-monotonic
-
 
     for(unsigned i=0 ; i < bis.size() ; i++)
     {
         double BetaInverse = bis[i] ; 
-        LOG(info) 
-            << " BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse
-            ; 
- 
+        LOG(info) << " BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse ;
         test_energy_lookup_many( qck, BetaInverse, ni ); 
         test_energy_sample_many( qck, BetaInverse, ni ); 
     }

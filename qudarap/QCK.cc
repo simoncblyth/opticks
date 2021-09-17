@@ -1,6 +1,8 @@
 
 #include <iostream>
 #include <iomanip>
+#include <chrono>
+
 #include "NP.hh"
 #include "QCK.hh"
 #include "PLOG.hh"
@@ -29,12 +31,28 @@ QCK<T>* QCK<T>::Load(const char* base, const char* reldir)   // static
     qck->s2c = s2c ; 
     qck->s2cn = s2cn ; 
 
+    if(rindex == nullptr || bis == nullptr || s2c == nullptr || s2cn == nullptr )
+    {
+        LOG(fatal)
+            << " QCK::Load incomplete "
+            << " base " << base
+            << " reldir " << reldir
+            << std::endl 
+            << " rindex " << rindex 
+            << " bis " << bis
+            << " s2c " << s2c
+            << " s2cn " << s2cn
+            << std::endl 
+            << " use QCerenkovTest:test_makeICDF to recreate these arrays "
+            ;
+    }
     return qck ; 
 }
 
 template<typename T> 
 void QCK<T>::init()
 {
+
     assert( rindex ) ; 
     assert( rindex->shape.size() == 2 ); 
     rindex->minmax<T>(emn, emx, 0u ); 
@@ -78,8 +96,11 @@ see ~/np/tests/NPget_edgesTest.cc
 
 */
 
-template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u) const 
+template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u, double& dt ) const 
 {
+    typedef std::chrono::high_resolution_clock::time_point TP ;
+    TP t0 = std::chrono::high_resolution_clock::now() ;
+
     bool in_range ; 
     unsigned column = 0u ; // placeholder, as bis is 1d
     int ibin = bis->pfindbin<T>(BetaInverse, column, in_range ); 
@@ -106,17 +127,27 @@ template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u) c
         ;
 */
 
+    TP t1 = std::chrono::high_resolution_clock::now() ; 
+    std::chrono::duration<double> t10 = t1 - t0; 
+    dt = t10.count()*DT_SCALE ;        
+
     return en  ; 
 }
 
+template<typename T> const double QCK<T>::DT_SCALE = 1e6 ; 
 
-template<typename T> T QCK<T>::energy_sample_( const T BetaInverse,  const std::function<T()>& rng ) const 
+template<typename T> T QCK<T>::energy_sample_( const T BetaInverse,  const std::function<T()>& rng, double& dt, unsigned& count  ) const 
 {
+    typedef std::chrono::high_resolution_clock::time_point TP ;
+    TP t0 = std::chrono::high_resolution_clock::now() ;
+
     const T one(1.) ; 
     T u0, u1, en, ri, ct, s2, u1_s2max ; 
 
     const T ctmax = BetaInverse/rmx ; 
     const T s2max = ( one - ctmax )*( one + ctmax ) ; 
+
+    count = 0 ; 
 
     do {
         u0 = rng() ; 
@@ -128,32 +159,74 @@ template<typename T> T QCK<T>::energy_sample_( const T BetaInverse,  const std::
         s2 = ( one - ct )*( one + ct ) ;
         u1_s2max = u1*s2max ; 
 
+        count += 1 ; 
+
     } while ( u1_s2max > s2 ) ; 
+
+
+    TP t1 = std::chrono::high_resolution_clock::now() ; 
+    std::chrono::duration<double> t10 = t1 - t0; 
+    dt = t10.count()*DT_SCALE ;        
 
     return en ; 
 }
 
 
-template<typename T> NP* QCK<T>::energy_lookup( const T BetaInverse, const NP* uu) const 
+template<typename T> NP* QCK<T>::energy_lookup( const T BetaInverse, const NP* uu, NP* tt ) const 
 {
     unsigned ndim = uu->shape.size() ; 
     assert( ndim == 1 ); 
     unsigned ni = uu->shape[0] ; 
-    const T* vv = uu->cvalues<T>(); 
+    const T* uu_v = uu->cvalues<T>(); 
+
+    if(tt) assert( tt->shape.size() == 1 && tt->shape[0] == ni ); 
+    T* tt_v = tt ? tt->values<T>() : nullptr ; 
+
 
     NP* en = NP::MakeLike(uu); 
-    T* ee = en->values<T>(); 
-    for(unsigned i=0 ; i < ni ; i++) ee[i] = energy_lookup_( BetaInverse, vv[i] ) ; 
+    T* en_v = en->values<T>(); 
+    double dt ; 
+
+    for(unsigned i=0 ; i < ni ; i++) 
+    {
+        en_v[i] = energy_lookup_( BetaInverse, uu_v[i],  dt ) ; 
+        if(tt_v) tt_v[i] = dt ; 
+    }
     return en ; 
 }
 
 
 
-template<typename T> NP* QCK<T>::energy_sample( const T BetaInverse, const std::function<T()>& rng, unsigned ni ) const 
+template<typename T> NP* QCK<T>::energy_sample( const T BetaInverse, const std::function<T()>& rng, unsigned ni, NP* tt ) const 
 {
     NP* en = NP::Make<T>(ni); 
-    T* ee = en->values<T>(); 
-    for(unsigned i=0 ; i < ni ; i++) ee[i] = energy_sample_( BetaInverse, rng ) ; 
+    T* en_v = en->values<T>(); 
+
+    if(tt) assert( tt->shape.size() == 1 && tt->shape[0] == ni ); 
+    T* tt_v = tt ? tt->values<T>() : nullptr ; 
+
+    double dt ; 
+    unsigned count_max(0); 
+    unsigned count(0) ; 
+
+    for(unsigned i=0 ; i < ni ; i++) 
+    {
+        en_v[i] = energy_sample_( BetaInverse, rng, dt, count  ) ; 
+        if(tt_v) tt_v[i] = dt ; 
+
+        if( count > count_max ) count_max = count ; 
+
+        if(count > 1000) 
+            std::cout 
+                << "QCK::energy_sample " 
+                << " i " << std::setw(7) << i 
+                << " count " << std::setw(7) << count
+                << std::endl 
+                ; 
+
+    }
+
+    LOG(info) << " count_max " << count_max ; 
     return en ; 
 }
 

@@ -175,9 +175,15 @@ class QCKTest(object):
         el = np.load(os.path.join(base,"test_energy_lookup_many.npy"))
         es = np.load(os.path.join(base,"test_energy_sample_many.npy"))
 
+        tl = np.load(os.path.join(base,"test_energy_lookup_many_tt.npy"))
+        ts = np.load(os.path.join(base,"test_energy_sample_many_tt.npy"))
+
         self.base = base
         self.el = el
         self.es = es
+        self.tl = tl
+        self.ts = ts
+
 
     def en_compare(self, bi, num_edges=101): 
 
