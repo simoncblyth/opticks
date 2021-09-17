@@ -9,7 +9,7 @@
 #include "G4Material.hh"
 
 #include "X4OpRayleigh.hh"
-#include "X4PhysicsOrderedFreeVector.hh"
+#include "X4Array.hh"
 #include "X4MaterialWater.hh"
 
 const plog::Severity X4MaterialWater::LEVEL = PLOG::EnvLevel("X4MaterialWater", "DEBUG" ); 
@@ -51,6 +51,9 @@ See notes/issues/X4MaterialWater_g4_11_compilation_error_G4PhysicsFreeVector_G4P
    1042,1062: typedef G4PhysicsOrderedFreeVector G4MaterialPropertyVector;
    1100.beta: typedef G4PhysicsFreeVector        G4MaterialPropertyVector;
 
+Changed X4OpRayleigh::WaterScatteringLength() to return G4PhysicsVector as that 
+is what thePhysicsTable provides in all the Geant4 versions.
+
 **/
 
 G4MaterialPropertyVector* X4MaterialWater::GetProperty(const G4int index)
@@ -68,7 +71,7 @@ X4MaterialWater::X4MaterialWater()
     Water(G4Material::GetMaterial("Water")),
     WaterMPT(Water ? Water->GetMaterialPropertiesTable() : nullptr),
     rayleigh0(WaterMPT ? WaterMPT->GetProperty(kRAYLEIGH) : nullptr ),
-    rayleigh(rayleigh0 ? rayleigh0 : X4OpRayleigh::WaterScatteringLength() )
+    rayleigh(rayleigh0 ? rayleigh0 : static_cast<G4MaterialPropertyVector*>(X4OpRayleigh::WaterScatteringLength()) )
 {
     init(); 
 }
@@ -142,12 +145,12 @@ void X4MaterialWater::rayleigh_scan() const
 
 void X4MaterialWater::rayleigh_scan2() const
 {
-    X4PhysicsOrderedFreeVector rayleighx(rayleigh); 
+    X4Array rayleighx(rayleigh); 
     LOG(info) << rayleighx.desc() ; 
 } 
 void X4MaterialWater::changeRayleighToMidBin()
 {
-    X4PhysicsOrderedFreeVector rayleighx(rayleigh); 
+    X4Array rayleighx(rayleigh); 
     rayleighx.changeAllToMidBinValue() ;     
 }
 

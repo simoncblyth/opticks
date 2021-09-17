@@ -89,7 +89,7 @@ set(SOURCES
     X4LogicalSurface.cc
     X4OpticalSurface.cc
 
-    X4PhysicsOrderedFreeVector.cc
+    X4Array.cc
     X4MaterialPropertyVector.cc
     X4PhysicsVector.cc
 
@@ -154,7 +154,7 @@ set(HEADERS
     X4LogicalSurface.hh
     X4OpticalSurface.hh
 
-    X4PhysicsOrderedFreeVector.hh
+    X4Array.hh
     X4MaterialPropertyVector.hh
     X4PhysicsVector.hh
 

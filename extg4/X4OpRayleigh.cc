@@ -15,16 +15,29 @@ does not have a "RAYLEIGH" property.
 
 **/
 
-G4PhysicsOrderedFreeVector* X4OpRayleigh::WaterScatteringLength() // static 
+G4PhysicsVector* X4OpRayleigh::WaterScatteringLength() // static 
 {
     X4OpRayleigh proc ; 
     return proc.rayleigh ; 
 }  
 
-G4PhysicsOrderedFreeVector* X4OpRayleigh::GetFromPhysicsTable(const G4OpRayleigh* proc, size_t index ) // static 
+/**
+X4OpRayleigh::GetFromPhysicsTable
+----------------------------------
+
+G4PhysicsTable ISA std::vector<G4PhysicsVector*>
+
+Formerly returned G4PhysicsOrderedFreeVector.
+
+See notes/issues/X4MaterialWater_g4_11_compilation_error_G4PhysicsFreeVector_G4PhysicsOrderedFreeVector.rst
+
+**/
+
+G4PhysicsVector* X4OpRayleigh::GetFromPhysicsTable(const G4OpRayleigh* proc, size_t index ) // static 
 {
     G4PhysicsTable* thePhysicsTable = proc->GetPhysicsTable()  ; 
-    return static_cast<G4PhysicsOrderedFreeVector*>((*thePhysicsTable)(index));
+    G4PhysicsVector* vec = (*thePhysicsTable)(index) ; 
+    return vec ;
 }
 
 X4OpRayleigh::X4OpRayleigh()

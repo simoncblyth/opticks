@@ -1,12 +1,13 @@
+#include "G4PhysicsVector.hh"
 #include "G4PhysicsOrderedFreeVector.hh"
-#include "X4PhysicsOrderedFreeVector.hh"
+#include "X4Array.hh"
 #include "NPY.hpp"
 #include "NP.hh"
 
 #include "OPTICKS_LOG.hh"
 
 
-const char* FOLD = "/tmp/X4PhysicsOrderedFreeVectorTest" ; 
+const char* FOLD = "/tmp/X4ArrayTest" ; 
 
 
 void test_convert()
@@ -22,7 +23,7 @@ void test_convert()
     }
 
     G4PhysicsOrderedFreeVector* vec = new G4PhysicsOrderedFreeVector(energy, value, len);  
-    X4PhysicsOrderedFreeVector* xvec = new X4PhysicsOrderedFreeVector(vec); 
+    X4Array* xvec = new X4Array(vec); 
 
     NPY<double>* d = xvec->convert<double>(); 
     d->dump(); 
@@ -65,6 +66,10 @@ void VecDump(G4PhysicsOrderedFreeVector* vec)
 
 }
 
+void VecDump(G4PhysicsVector* vec)
+{
+    VecDump( static_cast<G4PhysicsOrderedFreeVector*>( vec )); 
+}
 
 void test_Load1()
 {
@@ -72,7 +77,7 @@ void test_Load1()
     if( keydir == nullptr ) return ; 
 
     double en_scale = 1e6 ; 
-    X4PhysicsOrderedFreeVector* xvec = X4PhysicsOrderedFreeVector::Load(keydir, "GScintillatorLib/LS_ori/RINDEX.npy", en_scale );     
+    X4Array* xvec = X4Array::Load(keydir, "GScintillatorLib/LS_ori/RINDEX.npy", en_scale );     
     VecDump(xvec->vec); 
 }
 
@@ -84,8 +89,8 @@ void test_Value()
 
     double en_scale = 1e6 ; 
 
-    X4PhysicsOrderedFreeVector* xvec = X4PhysicsOrderedFreeVector::Load(keydir, "GScintillatorLib/LS_ori/RINDEX.npy", en_scale );     
-    G4PhysicsOrderedFreeVector* vec = xvec->vec ; 
+    X4Array* xvec = X4Array::Load(keydir, "GScintillatorLib/LS_ori/RINDEX.npy", en_scale );     
+    G4PhysicsVector* vec = xvec->vec ; 
     const NPY<double>* src = xvec->src ; 
     VecDump(vec); 
 
@@ -133,10 +138,11 @@ void test_GetEnergy()
 
     const double* bb = b->cvalues<double>(); 
 
-    X4PhysicsOrderedFreeVector* xa = X4PhysicsOrderedFreeVector::FromArray(a); 
-    X4PhysicsOrderedFreeVector* xb = X4PhysicsOrderedFreeVector::FromArray(b);     
-    G4PhysicsOrderedFreeVector* ga  = xa->vec ; 
-    G4PhysicsOrderedFreeVector* gb  = xb->vec ; 
+    X4Array* xa = X4Array::FromArray(a); 
+    X4Array* xb = X4Array::FromArray(b);     
+
+    G4PhysicsOrderedFreeVector* ga  = static_cast<G4PhysicsOrderedFreeVector*>(xa->vec) ; 
+    G4PhysicsOrderedFreeVector* gb  = static_cast<G4PhysicsOrderedFreeVector*>(xb->vec) ; 
     //const NPY<double>* src = xvec->src ; 
     VecDump(ga); 
     VecDump(gb); 
@@ -172,11 +178,10 @@ void test_GetEnergy()
 
 int main(int argc, char** argv)
 {  
-    //test_convert(); 
-    //test_Load0();  
-    //test_Load1();  
-    //test_Value();  
-
+    test_convert(); 
+    test_Load0();  
+    test_Load1();  
+    test_Value();  
     test_GetEnergy(); 
 
     return 0 ; 

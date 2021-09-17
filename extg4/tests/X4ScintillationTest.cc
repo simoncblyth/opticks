@@ -4,7 +4,7 @@ X4ScintillationTest
 
 1. loads /tmp/G4OpticksAnaMgr/FASTCOMPONENT.npy 
 2. performs the numerical integration just like DsG4Scintillation with X4Scintillation
-3. converts to X4PhysicsOrderedFreeVector to allow persisting
+3. converts to X4Array to allow persisting
 4. persists to /tmp/G4OpticksAnaMgr/X4ScintillationTest.npy
 
 ::
@@ -16,7 +16,7 @@ X4ScintillationTest
 #include "Opticks.hh"
 
 #include "X4MaterialPropertyVector.hh"
-#include "X4PhysicsOrderedFreeVector.hh"
+#include "X4Array.hh"
 #include "X4Scintillation.hh"
 
 #include "G4PhysicalConstants.hh"
@@ -32,7 +32,7 @@ void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<doubl
     G4MaterialPropertyVector* theFastLightVector = X4MaterialPropertyVector::FromArray(fast_en) ; 
     G4PhysicsOrderedFreeVector* ScintillatorIntegral = X4Scintillation::Integral(theFastLightVector) ; 
 
-    NPY<double>* si = X4PhysicsOrderedFreeVector::Convert<double>(ScintillatorIntegral) ; 
+    NPY<double>* si = X4Array::Convert<double>(ScintillatorIntegral) ; 
     const char* derived_name = "ScintillatorIntegral.npy" ; 
     LOG(info) << " save to " << outdir << "/" << derived_name ; 
     si->save(outdir, derived_name ); 

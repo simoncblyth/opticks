@@ -4,67 +4,77 @@
 
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4PhysicsFreeVector.hh"
+#include "G4PhysicsVector.hh"
+#include "G4DataVector.hh"
 
-#include "X4PhysicsOrderedFreeVector.hh"
+#include "X4Array.hh"
 
 
 #include "NPY.hpp"
 #include "NP.hh"
 #include "PLOG.hh"
 
-const plog::Severity X4PhysicsOrderedFreeVector::LEVEL = PLOG::EnvLevel("X4PhysicsOrderedFreeVector", "DEBUG" ); 
+const plog::Severity X4Array::LEVEL = PLOG::EnvLevel("X4Array", "DEBUG" ); 
 
 
-X4PhysicsOrderedFreeVector* X4PhysicsOrderedFreeVector::Load(const char* base, const char* name, double en_scale )   // static 
+X4Array* X4Array::Load(const char* base, const char* name, double en_scale )   // static 
 {
     NPY<double>* a = NPY<double>::load(base, name); 
     if(en_scale > 0.) a->pscale(en_scale, 0u); 
-    return X4PhysicsOrderedFreeVector::FromArray( a ); 
+    return X4Array::FromArray( a ); 
 }
 
-X4PhysicsOrderedFreeVector* X4PhysicsOrderedFreeVector::FromArray(const NPY<double>* a )   // static 
+X4Array* X4Array::FromArray(const NPY<double>* a )   // static 
 {
     assert( a && a->getNumDimensions() == 2 && a->hasShape(-1,2) && a->getNumItems() > 1 );  
     unsigned ni = a->getNumItems(); 
     const double* pdata = a->getValuesConst(); 
-    X4PhysicsOrderedFreeVector* xvec = FromPairData( pdata, ni ); 
+    X4Array* xvec = FromPairData( pdata, ni ); 
     xvec->src = a ; 
     return xvec ; 
 }
 
-X4PhysicsOrderedFreeVector* X4PhysicsOrderedFreeVector::FromArray(const NP* a )   // static 
+X4Array* X4Array::FromArray(const NP* a )   // static 
 {
     assert( a->is_pshaped() ); 
     unsigned ni = a->shape[0]; 
     const double* pdata = a->cvalues<double>(); 
-    X4PhysicsOrderedFreeVector* xvec = FromPairData( pdata, ni ); 
+    X4Array* xvec = FromPairData( pdata, ni ); 
     xvec->asrc = a ; 
     return xvec ; 
 }
+
+/**
+X4Array::FromPairData
+-----------------------
+
+G4PhysicsVector bizarrely has no convenient ctor so use the G4PhysicsFreeVector ctor
+and cast down to G4PhysicsVector using G4DataVector to fill that. 
  
-X4PhysicsOrderedFreeVector* X4PhysicsOrderedFreeVector::FromPairData(const double* pdata, unsigned npair )   // static 
+**/
+
+X4Array* X4Array::FromPairData(const double* pdata, unsigned npair )   // static 
 {
-    std::vector<double> energy(npair, 0.) ; 
-    std::vector<double> value(npair, 0.) ; 
+    G4DataVector energy(npair, 0.) ;   // G4DataVector ISA std::vector<double>
+    G4DataVector value(npair, 0.) ; 
+
     for(unsigned i=0 ; i < npair ; i++)
     {
         energy[i] = pdata[2*i+0]; 
         value[i] = pdata[2*i+1]; 
     }
-    G4PhysicsOrderedFreeVector* vec = new G4PhysicsOrderedFreeVector( energy.data(), value.data() , npair ); 
-    X4PhysicsOrderedFreeVector* xvec = new X4PhysicsOrderedFreeVector(vec); 
-    return xvec ; 
+
+    G4PhysicsFreeVector* pfv = new G4PhysicsFreeVector( energy, value ); 
+    G4PhysicsVector* pv = static_cast<G4PhysicsVector*>( pfv ) ; 
+
+    X4Array* xa = new X4Array(pv); 
+    return xa ; 
 }
  
 
-
-
-
-
-
 template<typename T>
-NPY<T>* X4PhysicsOrderedFreeVector::Convert(const G4PhysicsOrderedFreeVector* vec )   // static 
+NPY<T>* X4Array::Convert(const G4PhysicsVector* vec )   // static 
 {
     size_t num_val = vec->GetVectorLength() ; 
     NPY<T>* a = NPY<T>::make( num_val, 2 ); 
@@ -83,12 +93,12 @@ NPY<T>* X4PhysicsOrderedFreeVector::Convert(const G4PhysicsOrderedFreeVector* ve
 
 
 
-std::string X4PhysicsOrderedFreeVector::Desc(const G4PhysicsOrderedFreeVector* vec ) // static
+std::string X4Array::Desc(const G4PhysicsVector* vec ) // static
 {
     std::stringstream ss ; 
     
     size_t num_val = vec->GetVectorLength() ; 
-    ss << "X4PhysicsOrderedFreeVector::Desc num_val " << num_val << std::endl ; 
+    ss << "X4Array::Desc num_val " << num_val << std::endl ; 
     for(size_t i=0 ; i < num_val ; i++)
     {
         G4double energy = vec->Energy(i); 
@@ -108,7 +118,7 @@ std::string X4PhysicsOrderedFreeVector::Desc(const G4PhysicsOrderedFreeVector* v
 }
 
 
-X4PhysicsOrderedFreeVector::X4PhysicsOrderedFreeVector( G4PhysicsOrderedFreeVector* vec_ )
+X4Array::X4Array( G4PhysicsVector* vec_ )
     :
     src(nullptr),
     asrc(nullptr),
@@ -116,12 +126,12 @@ X4PhysicsOrderedFreeVector::X4PhysicsOrderedFreeVector( G4PhysicsOrderedFreeVect
 {
 }
 
-std::string X4PhysicsOrderedFreeVector::desc() const 
+std::string X4Array::desc() const 
 {
     return Desc(vec); 
 }
 
-G4double X4PhysicsOrderedFreeVector::getMidBinValue() const 
+G4double X4Array::getMidBinValue() const 
 {
     size_t num_val = vec->GetVectorLength() ; 
     size_t mid_bin = num_val/2 ; 
@@ -129,13 +139,13 @@ G4double X4PhysicsOrderedFreeVector::getMidBinValue() const
 }
 
 
-void X4PhysicsOrderedFreeVector::changeAllToMidBinValue()
+void X4Array::changeAllToMidBinValue()
 {
     G4double midBinValue = getMidBinValue() ;
     putValues(midBinValue); 
 }
 
-void X4PhysicsOrderedFreeVector::putValues( G4double new_value )
+void X4Array::putValues( G4double new_value )
 {
     size_t num_val = vec->GetVectorLength() ; 
     for(size_t i=0 ; i < num_val ; i++)
@@ -153,16 +163,16 @@ void X4PhysicsOrderedFreeVector::putValues( G4double new_value )
 
 
 template<typename T>
-NPY<T>* X4PhysicsOrderedFreeVector::convert()
+NPY<T>* X4Array::convert()
 {
     return Convert<T>(vec);  
 }
 
-template NPY<float>*  X4PhysicsOrderedFreeVector::convert() ; 
-template NPY<double>* X4PhysicsOrderedFreeVector::convert() ; 
+template NPY<float>*  X4Array::convert() ; 
+template NPY<double>* X4Array::convert() ; 
 
-template NPY<float>*  X4PhysicsOrderedFreeVector::Convert(const G4PhysicsOrderedFreeVector* vec) ; 
-template NPY<double>* X4PhysicsOrderedFreeVector::Convert(const G4PhysicsOrderedFreeVector* vec) ; 
+template NPY<float>*  X4Array::Convert(const G4PhysicsVector* vec) ; 
+template NPY<double>* X4Array::Convert(const G4PhysicsVector* vec) ; 
 
 
 
