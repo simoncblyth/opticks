@@ -1444,15 +1444,17 @@ NPY<T>* NPY<T>::make_repeat(NPY<T>* src, int n)
 
     if( n < 0 ) //  "inner" repeat each item of the array 
     {
+        unsigned _n = -n ; 
         for(unsigned i=0 ; i < ni ; i++)
-        for(unsigned r=0 ; r < -n ;  r++)
-        memcpy( (void*)(dbytes + i*(-n)*size + r*size ),(void*)(sbytes + size*i), size ) ; 
+        for(unsigned r=0 ; r < _n ;  r++)
+        memcpy( (void*)(dbytes + i*(_n)*size + r*size ),(void*)(sbytes + size*i), size ) ; 
     }
     else if( n > 0 )  //  "outer" repeat the entire array 
     {
-        for(unsigned r=0 ; r < n ;  r++)
+        unsigned _n = n ; 
+        for(unsigned r=0 ; r < _n ;  r++)
         for(unsigned i=0 ; i < ni ; i++)
-        memcpy( (void*)(dbytes + i*n*size + r*size ),(void*)(sbytes + size*i), size ) ; 
+        memcpy( (void*)(dbytes + i*(_n)*size + r*size ),(void*)(sbytes + size*i), size ) ; 
     }
     return dst ; 
 }
@@ -2961,7 +2963,7 @@ charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k, unsi
 template <typename T> 
 void NPY<T>::setValue(int i, int j, int k, int l, T value)
 {
-    bool in_range = i < m_ni ; 
+    bool in_range = unsigned(i) < m_ni ; 
     if(!in_range) LOG(fatal) << " i " << i <<  " m_ni " << m_ni ;     
     assert( in_range ); 
     unsigned int idx = getValueIndex(i,j,k,l);
@@ -2972,7 +2974,7 @@ void NPY<T>::setValue(int i, int j, int k, int l, T value)
 template <typename T> 
 void NPY<T>::setAllValue(int j, int k, int l, T value)
 {
-    for(int i=0 ; i < m_ni ; i++) setValue(i, j, k, l, value); 
+    for(int i=0 ; unsigned(i) < m_ni ; i++) setValue(i, j, k, l, value); 
 }
 
 

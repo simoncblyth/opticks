@@ -216,7 +216,7 @@ struct Devices
             char name[256];
             char busid[256];
             int computeCaps[2];
-            int compat[MAX_DEVICES+1];
+            //int compat[MAX_DEVICES+1];
             int ordinal = -1 ; 
 #if OPTIX_VERSION < 70000
             RTsize total_mem;
@@ -260,7 +260,7 @@ struct Devices
 
             if(!args.quiet())
             {
-                printf(" Device %d: %30s %15s ordinal:%d compat[0]:%d ", i, name, busid, ordinal, compat[0] );
+                printf(" Device %d: %30s %15s ordinal:%d ", i, name, busid, ordinal );
                 printf(" Compute Support: %d %d ", computeCaps[0], computeCaps[1]);
                 printf(" Total Memory: %llu bytes \n", (unsigned long long)total_mem);
             }
