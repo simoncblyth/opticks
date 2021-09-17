@@ -29,9 +29,17 @@ and add the resulting scattering lengths to the Water G4Material in order to ena
 Opticks conversion to benefit from the same fallback calculation as Geant4.
 
 
-Note annoying typedef::
+Note annoying G4MaterialPropertyVector typedef::
 
    typedef G4PhysicsOrderedFreeVector G4MaterialPropertyVector
+
+Note that even more annoyingly this typedef changes in 1100.beta to::
+
+   typedef G4PhysicsFreeVector G4MaterialPropertyVector
+
+Because of this change, have in the below switched uses of "G4PhysicsOrderedFreeVector" 
+into "G4MaterialPropertyVector"
+
 
 **/
 
@@ -39,22 +47,24 @@ Note annoying typedef::
 #include "plog/Severity.h"
 #include "G4Types.hh"
 
+
 class G4Material ; 
 class G4MaterialPropertiesTable ; 
-class G4PhysicsOrderedFreeVector ; 
+#include "G4MaterialPropertyVector.hh"  // typedef 
+
 
 struct X4_API X4MaterialWater
 {
     static const plog::Severity  LEVEL ; 
     static bool IsApplicable();   // returns true when "Water" G4Material has RINDEX but not RAYLEIGH
-    static G4PhysicsOrderedFreeVector* GetRAYLEIGH(); 
-    static G4PhysicsOrderedFreeVector* GetRINDEX(); 
-    static G4PhysicsOrderedFreeVector* GetProperty(const G4int index); 
+    static G4MaterialPropertyVector* GetRAYLEIGH(); 
+    static G4MaterialPropertyVector* GetRINDEX(); 
+    static G4MaterialPropertyVector* GetProperty(const G4int index); 
 
     G4Material*                  Water ; 
     G4MaterialPropertiesTable*   WaterMPT ;  
-    G4PhysicsOrderedFreeVector*  rayleigh0 ; // from the material, possibly null         
-    G4PhysicsOrderedFreeVector*  rayleigh ;  // from the material if present otherwise calculated from RINDEX     
+    G4MaterialPropertyVector*  rayleigh0 ; // from the material, possibly null         
+    G4MaterialPropertyVector*  rayleigh ;  // from the material if present otherwise calculated from RINDEX     
     
     X4MaterialWater(); 
     void init(); 

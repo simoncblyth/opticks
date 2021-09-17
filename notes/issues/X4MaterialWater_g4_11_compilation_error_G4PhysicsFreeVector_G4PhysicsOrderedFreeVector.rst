@@ -1,0 +1,122 @@
+X4MaterialWater_g4_11_compilation_error_G4PhysicsFreeVector_G4PhysicsOrderedFreeVector
+=========================================================================================
+
+
+::
+
+    Hi Hans,
+
+    It looks that there are still remaining API issues between opticks (v0.1.3, the latest tag) 
+    and Geant4 11 (beta for this testing): see compilation errors below, for an example.
+    Since the CaTS example will be integrated with Geant4 11, I guess that we
+    need to protect these errors with the G4VERSION guard.
+
+    Regards,
+    ---Soon
+
+    [ 16%] Building CXX object CMakeFiles/ExtG4.dir/X4MaterialWater.cc.o
+    /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4MaterialWater.cc: In static member function ‘static G4PhysicsOrderedFreeVector* X4MaterialWater::GetProperty(G4int)’:
+    /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4MaterialWater.cc:47:67: error: cannot convert ‘G4MaterialPropertyVector*’ {aka ‘G4PhysicsFreeVector*’} to ‘G4PhysicsOrderedFreeVector*’ in initialization
+         G4PhysicsOrderedFreeVector* PROP = WaterMPT->GetProperty(index) ;
+                                                                       ^
+    /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4MaterialWater.cc: In constructor ‘X4MaterialWater::X4MaterialWater()’:
+    /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4MaterialWater.cc:55:99: error: invalid static_cast from type ‘G4MaterialPropertyVector*’ {aka ‘G4PhysicsFreeVector*’} to type ‘G4PhysicsOrderedFreeVector*’
+         rayleigh0(WaterMPT ? static_cast<G4PhysicsOrderedFreeVector*>(WaterMPT->GetProperty(kRAYLEIGH)) : nullptr ),
+                                                                                                       ^
+    /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4MaterialWater.cc: In member function ‘void X4MaterialWater::init()’:
+    /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4MaterialWater.cc:78:90: error: invalid static_cast from type ‘G4PhysicsOrderedFreeVector*’ to type ‘G4MaterialPropertyVector*’ {aka ‘G4PhysicsFreeVector*’}
+             WaterMPT->AddProperty("RAYLEIGH", static_cast<G4MaterialPropertyVector*>(rayleigh) );
+                                                                                              ^
+    /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4MaterialWater.cc: In member function ‘G4double X4MaterialWater::GetMeanFreePath(G4double) const’:
+    /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4MaterialWater.cc:95:31: error: invalid use of incomplete type ‘class G4PhysicsOrderedFreeVector’
+         return rayleigh ? rayleigh->Value( photonMomentum ) : DBL_MAX ;
+                                   ^~
+    In file included from /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4MaterialWater.cc:11:
+    /work1/g4gpu/syjun/products/src/opticks.v0.1.3-g4.11.beta/extg4/X4OpRayleigh.hh:9:7: note: forward declaration of ‘class G4PhysicsOrderedFreeVector’
+     class G4PhysicsOrderedFreeVector ;
+           ^~~~~~~~~~~~~~~~~~~~~~~~~~
+    gmake[2]: *** [CMakeFiles/ExtG4.dir/X4MaterialWater.cc.o] Error 1
+    gmake[1]: *** [CMakeFiles/ExtG4.dir/all] Error 2
+    gmake: *** [all] Error 2
+    === om-one-or-all install : non-zero rc 2
+    === om-all om-install : ERROR bdir /work1/g4gpu/syjun/products/build/opticks.v0.1.3-local-g4.11.beta/opticks/build/extg4 : non-zero rc 2
+    === om-one-or-all install : non-zero rc 2
+    === opticks-full : ERR from opticks-full-make
+
+
+
+::
+
+     41 G4PhysicsOrderedFreeVector* X4MaterialWater::GetProperty(const G4int index)
+     42 {
+     43     G4Material* Water = G4Material::GetMaterial("Water");
+     44     if(Water == nullptr) return nullptr ;
+     45     G4MaterialPropertiesTable* WaterMPT = Water->GetMaterialPropertiesTable() ;
+     46     if(WaterMPT == nullptr) return nullptr ;
+     47     G4PhysicsOrderedFreeVector* PROP = WaterMPT->GetProperty(index) ;
+     48     return PROP ;
+     49 }
+
+
+::
+
+    epsilon:issues blyth$ g4-cls G4MaterialPropertiesTable
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02
+    vi -R source/materials/include/G4MaterialPropertiesTable.hh source/materials/include/G4MaterialPropertiesTable.icc source/materials/src/G4MaterialPropertiesTable.cc
+    3 files to edit
+
+    109 
+    110     G4MaterialPropertyVector* GetProperty(const char *key,
+    111                                           G4bool warning=false);
+    112     // Get the property from the table corresponding to the key-name.
+    113 
+    114     G4MaterialPropertyVector* GetProperty(const G4int index,
+    115                                           G4bool warning=false);
+    116     // Get the property from the table corresponding to the key-index.
+    117 
+
+
+
+    epsilon:issues blyth$ g4-cls G4MaterialPropertyVector
+    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02
+    vi -R source/materials/include/G4MaterialPropertyVector.hh
+    epsilon:issues blyth$ 
+
+
+    56 #include "G4PhysicsOrderedFreeVector.hh"
+    57 
+    58 /////////////////////
+    59 // Class Definition
+    60 /////////////////////
+    61 
+    62 typedef G4PhysicsOrderedFreeVector G4MaterialPropertyVector;
+    63 
+    64 #endif /* G4MaterialPropertyVector_h */
+
+
+
+1062
+-----
+
+::
+
+    (base) [simon@localhost extg4]$ grep ^typedef /home/simon/local/opticks_externals/g4_1062.build/geant4.10.06.p02/source/materials/include/G4MaterialPropertyVector.hh
+    typedef G4PhysicsOrderedFreeVector G4MaterialPropertyVector;
+
+
+
+
+Huh : 1100 has lost the "Ordered"
+------------------------------------
+
+
+* https://github.com/Geant4/geant4/blob/master/source/materials/include/G4MaterialPropertyVector.hh
+* https://github.com/Geant4/geant4
+
+
+::
+
+    typedef G4PhysicsFreeVector G4MaterialPropertyVector;
+
+
+

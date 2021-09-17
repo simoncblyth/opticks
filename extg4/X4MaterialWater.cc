@@ -22,8 +22,8 @@ X4MaterialWater::IsApplicable
 
 bool X4MaterialWater::IsApplicable()  // static 
 {
-    G4PhysicsOrderedFreeVector* RAYLEIGH = GetRAYLEIGH();
-    G4PhysicsOrderedFreeVector* RINDEX = GetRINDEX();
+    G4MaterialPropertyVector* RAYLEIGH = GetRAYLEIGH();
+    G4MaterialPropertyVector* RINDEX = GetRINDEX();
     bool applicable = RAYLEIGH == nullptr && RINDEX != nullptr ; 
 
     LOG(LEVEL)
@@ -35,16 +35,31 @@ bool X4MaterialWater::IsApplicable()  // static
     return applicable ; 
 }
 
-G4PhysicsOrderedFreeVector* X4MaterialWater::GetRAYLEIGH(){ return GetProperty(kRAYLEIGH) ; }
-G4PhysicsOrderedFreeVector* X4MaterialWater::GetRINDEX(){  return GetProperty(kRINDEX) ; }
 
-G4PhysicsOrderedFreeVector* X4MaterialWater::GetProperty(const G4int index)
+G4MaterialPropertyVector* X4MaterialWater::GetRAYLEIGH(){ return GetProperty(kRAYLEIGH) ; }
+G4MaterialPropertyVector* X4MaterialWater::GetRINDEX(){  return GetProperty(kRINDEX) ; }
+
+
+/**
+X4MaterialWater::GetProperty
+------------------------------
+
+See notes/issues/X4MaterialWater_g4_11_compilation_error_G4PhysicsFreeVector_G4PhysicsOrderedFreeVector.rst
+
+1100 beta has lost its "Ordered"::
+
+   1042,1062: typedef G4PhysicsOrderedFreeVector G4MaterialPropertyVector;
+   1100.beta: typedef G4PhysicsFreeVector        G4MaterialPropertyVector;
+
+**/
+
+G4MaterialPropertyVector* X4MaterialWater::GetProperty(const G4int index)
 {
     G4Material* Water = G4Material::GetMaterial("Water");
     if(Water == nullptr) return nullptr ; 
     G4MaterialPropertiesTable* WaterMPT = Water->GetMaterialPropertiesTable() ; 
     if(WaterMPT == nullptr) return nullptr ; 
-    G4PhysicsOrderedFreeVector* PROP = WaterMPT->GetProperty(index) ;
+    G4MaterialPropertyVector* PROP = WaterMPT->GetProperty(index) ;
     return PROP ;     
 }
 
@@ -52,7 +67,7 @@ X4MaterialWater::X4MaterialWater()
     :
     Water(G4Material::GetMaterial("Water")),
     WaterMPT(Water ? Water->GetMaterialPropertiesTable() : nullptr),
-    rayleigh0(WaterMPT ? static_cast<G4PhysicsOrderedFreeVector*>(WaterMPT->GetProperty(kRAYLEIGH)) : nullptr ),
+    rayleigh0(WaterMPT ? WaterMPT->GetProperty(kRAYLEIGH) : nullptr ),
     rayleigh(rayleigh0 ? rayleigh0 : X4OpRayleigh::WaterScatteringLength() )
 {
     init(); 
@@ -75,7 +90,7 @@ void X4MaterialWater::init()
     if( rayleigh0 == nullptr ) 
     {
         LOG(LEVEL) << " adding RAYLEIGH property to \"Water\" G4Material " ; 
-        WaterMPT->AddProperty("RAYLEIGH", static_cast<G4MaterialPropertyVector*>(rayleigh) ); 
+        WaterMPT->AddProperty("RAYLEIGH", rayleigh ); 
     }
     else
     {
