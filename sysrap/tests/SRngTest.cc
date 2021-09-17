@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <functional>
 #include "SRng.hh"
 
 template <typename T> void test_rng( const std::function<T()>& fn )

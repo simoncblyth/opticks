@@ -141,8 +141,9 @@ void test_GetEnergy()
     VecDump(ga); 
     VecDump(gb); 
 
+    unsigned ni = b->shape[0] ; 
 
-    for(unsigned i=0 ; i < b->shape[0] ; i++)
+    for(unsigned i=0 ; i < ni  ; i++)
     {
         double b0 = bb[i*2+0] ; 
         //double b1 = bb[i*2+1] ; 
