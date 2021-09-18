@@ -49,8 +49,7 @@ struct QUDARAP_API QCerenkov
     std::string desc() const ; 
 
 
-
-
+    template <typename T> NP* getS2Integral_Cumulative(const T BetaInverse, const NP* ee ) const ; 
 
     template <typename T> T   getS2Integral_WithCut(  T& emin, T& emax, const T BetaInverse, const T en_cut ) const  ; 
     template <typename T> NP* getS2Integral_WithCut_( T& emin, T& emax, const T BetaInverse, const T en_cut ) const  ; 

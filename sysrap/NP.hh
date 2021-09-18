@@ -58,7 +58,6 @@ struct NP
 
     static void sizeof_check(); 
 
-
     template<typename T> static int DumpCompare( const NP* a, const NP* b, unsigned a_column, unsigned b_column, const T epsilon ); 
 
     static int Memcmp( const NP* a, const NP* b ); 
@@ -101,6 +100,8 @@ struct NP
 
     template<typename T> T*       values() ; 
     template<typename T> const T*  cvalues() const  ; 
+    template<typename T> unsigned  index( int i,  int j=0,  int k=0,  int l=0, int m=0) const ; 
+    template<typename T> T           get( int i,  int j=0,  int k=0,  int l=0, int m=0) const ; 
 
     template<typename T> void fill(T value); 
     template<typename T> void _fillIndexFlat(T offset=0); 
@@ -125,7 +126,7 @@ struct NP
     template<typename T> void pscale(T scale, unsigned column);
     template<typename T> void pscale_add(T scale, T add, unsigned column);
     template<typename T> void pdump(const char* msg="NP::pdump") const ; 
-    template<typename T> void minmax(T& mn, T&mx, unsigned j=1 ) const ; 
+    template<typename T> void minmax(T& mn, T&mx, unsigned j=1, int item=-1 ) const ; 
     template<typename T> void linear_crossings( T value, std::vector<T>& crossings ) const ; 
     template<typename T> T    trapz() const ;                      // composite trapezoidal integration, requires pshaped
     template<typename T> T    interp(T x) const ;                  // requires pshaped 
@@ -536,7 +537,34 @@ inline bool NP::has_shape(int ni, int nj, int nk, int nl, int nm) const
 
 
 template<typename T> inline const T*  NP::cvalues() const { return (T*)data.data() ;  } 
-template<typename T> inline T*  NP::values() { return (T*)data.data() ;  } 
+template<typename T> inline T*        NP::values() { return (T*)data.data() ;  } 
+
+
+template<typename T> inline unsigned NP::index( int i,  int j,  int k,  int l, int m) const 
+{
+    unsigned nd = shape.size() ; 
+    unsigned ni = nd > 0 ? shape[0] : 1 ; 
+    unsigned nj = nd > 1 ? shape[1] : 1 ; 
+    unsigned nk = nd > 2 ? shape[2] : 1 ; 
+    unsigned nl = nd > 3 ? shape[3] : 1 ; 
+    unsigned nm = nd > 4 ? shape[4] : 1 ; 
+
+    unsigned ii = i < 0 ? ni + i : i ; 
+    unsigned jj = j < 0 ? nj + j : j ; 
+    unsigned kk = k < 0 ? nk + k : k ; 
+    unsigned ll = l < 0 ? nl + l : l ; 
+    unsigned mm = m < 0 ? nm + m : m ; 
+
+    return  ii*nj*nk*nl*nm + jj*nk*nl*nm + kk*nl*nm + ll*nm + mm ;
+}
+
+template<typename T> inline T NP::get( int i,  int j,  int k,  int l, int m) const 
+{
+    unsigned idx = index<T>(i, j, k, l, m); 
+    const T* vv = cvalues<T>();  
+    return vv[idx] ; 
+}
+
 
 template<typename T> inline void NP::fill(T value)
 {
@@ -1187,19 +1215,23 @@ by looping over the first array dimension and comparing all values.
 
 **/
 
-template<typename T> inline void NP::minmax(T& mn, T&mx, unsigned j ) const 
+template<typename T> inline void NP::minmax(T& mn, T&mx, unsigned j, int item ) const 
 {
     unsigned ndim = shape.size() ; 
+    assert( ndim == 2 || ndim == 3);  
 
-    assert( ndim == 2 );   // TODO: support ndim 3 with item argument 
-    unsigned ni = shape[0] ; 
-    unsigned nj = shape[1] ; 
+    unsigned ni = shape[ndim-2] ; 
+    unsigned nj = shape[ndim-1] ; 
     assert( j < nj ); 
+
+    unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
+    assert( item < int(num_items) ); 
+    unsigned item_offset = item == -1 ? 0 : ni*nj*item ; 
+    const T* vv = cvalues<T>() + item_offset ;  // shortcut approach to handling multiple items 
 
     mn = std::numeric_limits<T>::max() ; 
     mx = std::numeric_limits<T>::min() ; 
-
-    const T* vv = cvalues<T>(); 
+ 
     for(unsigned i=0 ; i < ni ; i++)
     {
         T v = vv[nj*i+j] ; 

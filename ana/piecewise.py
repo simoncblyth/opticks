@@ -13,6 +13,28 @@ Hmm seems that sympy doesnt like a mix of symbolic and floating point,
 see cumtrapz.py for attempt to use scipy.integrate.cumtrapz to
 check my s2 integrals.
 
+
+https://stackoverflow.com/questions/43852159/wrong-result-when-integrating-piecewise-function-in-sympy
+
+
+Programming for Computations, Hans Petter Langtangen
+------------------------------------------------------
+
+http://hplgit.github.io
+
+http://hplgit.github.io/prog4comp/doc/pub/p4c-sphinx-Python/._pylight004.html
+
+http://hplgit.github.io/prog4comp/doc/pub/p4c-sphinx-Python/index.html
+
+
+
+Solvers seem not to work with sympy, so role simple bisection solver ?
+-------------------------------------------------------------------------
+
+
+https://personal.math.ubc.ca/~pwalls/math-python/roots-optimization/bisection/
+
+
 """
 import logging
 log = logging.getLogger(__name__)
@@ -20,73 +42,129 @@ import numpy as np
 import matplotlib.pyplot as plt 
 
 from sympy.plotting import plot
-from sympy import Piecewise, log, piecewise_fold, Symbol, Interval, integrate
+from sympy import Piecewise, piecewise_fold, Symbol, Interval, integrate, Max, Min
 from sympy.abc import x, y
+from sympy.solvers import solve
+
+from opticks.ana.bisect import bisect
+
+ri = np.array([
+       [ 1.55 ,  1.478],
+       [ 1.795,  1.48 ],
+       [ 2.105,  1.484],
+       [ 2.271,  1.486],
+       [ 2.551,  1.492],
+       [ 2.845,  1.496],
+       [ 3.064,  1.499],
+       [ 4.133,  1.526],
+       [ 6.2  ,  1.619],
+       [ 6.526,  1.618],
+       [ 6.889,  1.527],
+       [ 7.294,  1.554],
+       [ 7.75 ,  1.793],
+       [ 8.267,  1.783],
+       [ 8.857,  1.664],
+       [ 9.538,  1.554],
+       [10.33 ,  1.454],
+       [15.5  ,  1.454]
+      ])
+
+
+class PieceMaker(object):
+    def __init__(self):
+        pass
+
+    def make_part(self, e, i, b=1.):
+        e0, r0 = ri[i]
+        e1, r1 = ri[i+1]
+
+        v0 = ( 1 - b/r0 ) * ( 1 + b/r0 )
+        v1 = ( 1 - b/r1 ) * ( 1 + b/r1 )
+
+        fr = (e-e0)/(e1-e0)
+        pt = ( v0*(1-fr) + v1*fr,  (e > e0) & (e < e1) ) 
+        return pt 
+
+    def make_piece(self, e, i, b=1.):
+        """
+        Max complicates the integrals, alternative is to manually control the range to keep s2 +ve 
+        """
+        e0, r0 = ri[i]
+        e1, r1 = ri[i+1]
+
+        v0 = ( 1 - b/r0 ) * ( 1 + b/r0 )
+        v1 = ( 1 - b/r1 ) * ( 1 + b/r1 )
+
+        fr = (e-e0)/(e1-e0)
+        pt = ( Max(v0*(1-fr) + v1*fr,0),  (e > e0) & (e < e1) )    
+        ot = (0, True )
+
+        pw = Piecewise( pt, ot ) 
+        return pw
+
+    def make_parts(self, e):
+        parts = []
+        #parts.append( ( ri[0,1], e < ri[0,0] ) )
+        for i in range(len(ri)-1):
+            pt = self.make_part(e, i)
+            parts.append(pt)
+        pass
+        #parts.append( ( ri[-1,1], e > ri[-1,0] ) )
+        return parts    
+
+ 
+
+
+  
 
 if __name__ == '__main__':
 
+    logging.basicConfig(level=logging.INFO)    
+
+    emn = ri[0,0]
+    emx = ri[-1,0]
+    emi = (emn+emx)/2.
+
+    ck = np.zeros_like(ri)  
+    ck[:,0] = ri[:,0]
+    ck[:,1] = (1. - 1./ri[:,1])*(1.+1./ri[:,1])    
+
     e = Symbol('e', positive=True)
-    b = Symbol('b', positive=True)
 
-    ri = np.array([
-           [ 1.55 ,  1.478],
-           [ 1.795,  1.48 ],
-           [ 2.105,  1.484],
-           [ 2.271,  1.486],
-           [ 2.551,  1.492],
-           [ 2.845,  1.496],
-           [ 3.064,  1.499],
-           [ 4.133,  1.526],
-           [ 6.2  ,  1.619],
-           [ 6.526,  1.618],
-           [ 6.889,  1.527],
-           [ 7.294,  1.554],
-           [ 7.75 ,  1.793],
-           [ 8.267,  1.783],
-           [ 8.857,  1.664],
-           [ 9.538,  1.554],
-           [10.33 ,  1.454],
-           [15.5  ,  1.454]
-          ])
+    pm = PieceMaker()
 
-
-    parts = []
-    parts.append( ( ri[0,1], e < ri[0,0] ) )
-    for i in range(len(ri)-1):
-        e0, v0 = ri[i]
-        e1, v1 = ri[i+1]
-        fr = (e-e0)/(e1-e0)
-        #parts.append( ( v1, (e > e0) & (e < e1) )  )
-        parts.append( ( v0*(1-fr) + v1*fr,  (e > e0) & (e < e1) )  )
+    # separate functions and integrals for each bin 
+    s2 = {}
+    is2 = {}
+    for i in range( len(ri)-1 ):
+        s2[i] = pm.make_piece( e, i, b=1.55 ) 
+        is2[i] = integrate( s2[i], e )
+        print("s2[%d]" % i, s2[i])
+        print("is2[%d]" % i, is2[i])
     pass
-    parts.append( ( ri[-1,1], e > ri[-1,0] ) )
-      
 
-    log.info("Piecewise... p ")
-    p = Piecewise( *parts )
+    plot( *is2.values(), (e, emn, emx), show=True, adaptive=False, nb_of_points=500)   # cliff edges from each bin  
 
-    log.info("p.subs... ")
-    log.info(p.subs(e,1))
-    log.info(p.subs(e,5))
+    is2a = sum(is2.values())    # dumb sum 
 
-    log.info("s2...")
-    s2 = ( 1 - 1/p )*( 1 + 1/p )
-    s2s = s2.simplify()
+    #plot( is2a, (e, emn, emx), show=True )     
 
-    #log.info("s2_1...")
-    #s2_1 = s2.subs(b, 1)
+    is2a_norm = is2a/is2a.subs(e, emx)
 
-    log.info("integrate... s2_1i ")
-    s2i = integrate( s2, e )
+    plot(is2a_norm, (e, emn, emx), show=True )
 
-    log.info("plot...")
-    p1 = plot( s2i, (e, 0, 16), show=False )
+    #def curry(u): return lambda x:is2a_norm.subs(e, x) - u  
+    #fn = curry(0.5)
 
-    log.info("show...")
-    p1.show()
+    fn = lambda x:is2a_norm.subs(e, x) - 0.5
+    #en = fsolve( fn, 9 )    
 
-    log.info("done...")
-    s2si = integrate( s2s, (e, 1.55, 15.5) )
+    #u = 0.5
+    #en = solve( is2a_norm - u, e )    # just hangs
 
+    en = bisect( fn, emn, emx, 20 )
 
+    #en2 = nsolve( is2a_norm, e, emi )
+
+    # scipy.optimize.newton( fn, 11 )   # fails
 

@@ -185,6 +185,13 @@ class QCKTest(object):
         self.ts = ts
 
 
+    def check_s2c_monotonic(self):
+        s2c = self.s2c 
+        for i in range(len(s2c)):  
+            w = np.where( np.diff(s2c[i,:,2]) < 0 )[0]  
+            print(" %5d : %s " % (i, str(w)))
+        pass
+
     def en_compare(self, bi, num_edges=101): 
 
         ri = self.rindex

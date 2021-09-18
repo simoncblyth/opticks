@@ -55,6 +55,11 @@ struct QUDARAP_API QCK
     void save(const char* base, const char* reldir=nullptr) const ; 
     static QCK* Load(const char* base, const char* reldir=nullptr); 
 
+
+    int find_bisIdx( const T BetaInverse ) const ; 
+    void energy_range( T& emin, T& emax, const T BetaInverse, bool dump ) const ; 
+
+
     // lookup from sets of ICDF, normalized s2 energy integrals  
     bool is_permissable( const T BetaInverse) const ; 
     T   energy_lookup_( const T BetaInverse, const T u, double& dt ) const ;  

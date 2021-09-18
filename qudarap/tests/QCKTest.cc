@@ -101,21 +101,27 @@ int main(int argc, char** argv)
     LOG(info) << " qck.s2c  " << qck->s2c->desc(); 
     LOG(info) << " qck.s2cn " << qck->s2cn->desc(); 
 
-    unsigned ni = 1000000 ; 
 
     std::vector<double> bis ;  
-    //for( double bi=1.0 ; bi < qck->rmx ; bi+=0.05 ) bis.push_back(bi); 
-
-    //bis.push_back(1.75);   // about mean of 1 photon 
+    for( double bi=1.0 ; bi < qck->rmx ; bi+=0.05 ) bis.push_back(bi); 
     bis.push_back(1.792);  // extreme peak : some tiny fraction of a photon  
     //bis.push_back(1.45);   // pdomain assert, from going slightly non-monotonic
 
+
+    double emin, emax ; 
     for(unsigned i=0 ; i < bis.size() ; i++)
     {
         double BetaInverse = bis[i] ; 
+        qck->energy_range( emin, emax, BetaInverse, true ); 
+    }
+
+    for(unsigned i=0 ; i < bis.size() ; i++)
+    {
+        unsigned num_gen = 1000000 ; 
+        double BetaInverse = bis[i] ; 
         LOG(info) << " BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse ;
-        test_energy_lookup_many( qck, BetaInverse, ni ); 
-        test_energy_sample_many( qck, BetaInverse, ni ); 
+        test_energy_lookup_many( qck, BetaInverse, num_gen ); 
+        test_energy_sample_many( qck, BetaInverse, num_gen ); 
     }
 
     return 0 ; 

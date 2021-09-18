@@ -72,6 +72,33 @@ void QCK<T>::init()
 }
 
 
+template<typename T> int QCK<T>::find_bisIdx( const T BetaInverse ) const 
+{
+    bool in_range ; 
+    unsigned column = 0u ; // placeholder, as bis is 1d
+    int ibin = bis->pfindbin<T>(BetaInverse, column, in_range ); 
+    assert( in_range == true ); 
+    int item = ibin - 1 ;  // ibin is 1-based for in_range bins, so item is 0-based  
+    assert( item > -1 );  
+
+/*
+    int w = 10 ; 
+    int p = 6 ; 
+    std::cout  
+        << "QCK::find_bisIdx"  
+        << " BetaInverse "      << std::fixed << std::setw(w) << std::setprecision(p) << BetaInverse 
+        << " in_range "         << std::setw(5) << in_range 
+        << " ibin "             << std::setw(5) << ibin
+        << " item "             << std::setw(5) << item
+        << std::endl
+        ;
+*/
+
+    return item ; 
+}
+
+
+
 /*
 QCK::energy_lookup
 ----------------------
@@ -101,31 +128,10 @@ template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u, d
     typedef std::chrono::high_resolution_clock::time_point TP ;
     TP t0 = std::chrono::high_resolution_clock::now() ;
 
-    bool in_range ; 
-    unsigned column = 0u ; // placeholder, as bis is 1d
-    int ibin = bis->pfindbin<T>(BetaInverse, column, in_range ); 
-    assert( in_range == true ); 
-
-    int item = ibin - 1 ;  // ibin is 1-based for in_range bins, so item is 0-based  
-    assert( item > -1 );  
+    int item = find_bisIdx(BetaInverse); 
 
     bool dump = false ;  
     T en = s2cn->pdomain<T>(u, item, dump );
-
-/*
-    int w = 10 ; 
-    int p = 6 ; 
-    std::cout  
-        << "QCK::energy_lookup"  
-        << " BetaInverse "      << std::fixed << std::setw(w) << std::setprecision(p) << BetaInverse 
-        << " in_range "         << std::setw(5) << in_range 
-        << " ibin "             << std::setw(5) << ibin
-        << " item "             << std::setw(5) << item
-        << " u  "               << std::fixed << std::setw(w) << std::setprecision(p) << u 
-        << " en  "              << std::fixed << std::setw(w) << std::setprecision(p) << en 
-        << std::endl
-        ;
-*/
 
     TP t1 = std::chrono::high_resolution_clock::now() ; 
     std::chrono::duration<double> t10 = t1 - t0; 
@@ -134,9 +140,41 @@ template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u, d
     return en  ; 
 }
 
+template<typename T> void QCK<T>::energy_range( T& emin, T& emax, const T BetaInverse, bool dump ) const 
+{
+    int bisIdx = find_bisIdx(BetaInverse); 
+    emin = s2cn->get<T>(bisIdx,  0, 0) ;  
+    emax = s2cn->get<T>(bisIdx, -1, 0) ;  
+    T edom = emax - emin ; 
+    if(dump) std::cout 
+        << "QCK::energy_range" 
+        << " BetaInverse " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse
+        << " bisIdx " << std::setw(10) << bisIdx
+        << " bis[bisIdx] " <<  std::setw(10) << std::fixed << std::setprecision(4) << bis->get<T>(bisIdx) 
+        << " emin " << std::setw(10) << std::fixed << std::setprecision(4) << emin 
+        << " emax " << std::setw(10) << std::fixed << std::setprecision(4) << emax 
+        << " edom " << std::setw(10) << std::fixed << std::setprecision(4) << edom 
+        << std::endl 
+        ;
+}
+
+
 template<typename T> const double QCK<T>::DT_SCALE = 1e6 ; 
 
-template<typename T> T QCK<T>::energy_sample_( const T BetaInverse,  const std::function<T()>& rng, double& dt, unsigned& count  ) const 
+/**
+QCK::energy_sample_
+----------------------
+
+*u1_s2max* needs to be less than s2 for the energy to be accepted 
+
+Using full emn to emx range is problematic for BetaInverse close to the 
+RINDEX peak as most of the randoms will be wasted because the vast majority 
+of the range is not Cerenkov permitted. 
+
+
+**/
+
+template<typename T> T QCK<T>::energy_sample_( const T BetaInverse,  const std::function<T()>& rng, double& dt, unsigned& count ) const 
 {
     typedef std::chrono::high_resolution_clock::time_point TP ;
     TP t0 = std::chrono::high_resolution_clock::now() ;
@@ -147,17 +185,21 @@ template<typename T> T QCK<T>::energy_sample_( const T BetaInverse,  const std::
     const T ctmax = BetaInverse/rmx ; 
     const T s2max = ( one - ctmax )*( one + ctmax ) ; 
 
+    T emin = emn ; 
+    T emax = emx ; 
+    energy_range( emin, emax, BetaInverse, false);  
+
     count = 0 ; 
 
     do {
         u0 = rng() ; 
         u1 = rng() ; 
 
-        en = emn + u0*(emx-emn) ; 
+        en = emin + u0*(emax-emin) ; 
         ri = rindex->interp<T>(en) ;   
         ct = BetaInverse/ri ; 
         s2 = ( one - ct )*( one + ct ) ;
-        u1_s2max = u1*s2max ; 
+        u1_s2max = u1*s2max ;  
 
         count += 1 ; 
 

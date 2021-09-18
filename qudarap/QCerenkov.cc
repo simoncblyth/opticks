@@ -362,6 +362,145 @@ template double QCerenkov::getS2Integral_WithCut( double&, double&, const double
 template float  QCerenkov::getS2Integral_WithCut( float&,  float&,  const float, const float  ) const ; 
 
 
+/**
+QCerenkov::getS2Integral_Cumulative
+-------------------------------------
+
+Trying to avoid slightly non-mono by not repeating the integral... but there is 
+still lots of repetition.
+
+Hmm could, store the full bin integrals to reduce the repeat...
+
+Need to flip the order of the loops, the small ecut bins within the
+big rindex bins.
+
+
+Why smaller sub-bins are needed ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Objective is to effectively provide an inverse-CDF such that
+a random number lookup yields an energy. 
+As s2 is piecewise linear with energy(from the piecewise linear RINDEX) 
+the cumulative integral will be piecewise parabolic. 
+Hence linear interpolation on that parabolic is not going to be a very 
+good approximation, so want to make the binning smaller than the
+rindex bins. 
+
+Simplification : by bin-splitting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Avoid complexity and imprecision arising from differences between 
+rindex energy edges and the smaller sub bins by adopting approach of ana/edges.py:divide_edges 
+
+* there is no need for the sub-bins to all be equally spaced, the motivation for 
+  the sub-bins is to profit from the piecewise linear nature of s2 which means that 
+  s2 can be linearly interpolated with effectively no error unlike the cubic 
+  cumulative integral for which linear interpolation is a poor approximation 
+
+* splitting the edges into sub-bins allows to simply loop within each big rindex 
+  bin saving the partials off into the cumulative integral array   
+
+
+prev/next cumulative approach of Geant4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Prev/next approach commonly used in Geant4 BuildThePhysicsTable 
+for cumulative integration could slightly reduce computation as en_1 ri_1 s2_1 
+becomes en_0 ri_0 s2_0 for next bin. 
+
+Maybe that helps avoid non-monotonic ?
+
+
+Whacky Parabolic Ideas
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://en.wikipedia.org/wiki/Simpson%27s_rule
+* https://en.wikipedia.org/wiki/Adaptive_Simpson%27s_method
+
+Looks like storing the mid-bin value of the cumulative integral 
+would be sufficient to give you the parabola. Allowing in principal
+to recover the equation of the parabola from 3 points and giving 
+energy lookup. 
+
+* y = a x^2 + b x + c 
+
+* 3 points -> 3 equations in 3 unknowns (a,b,c) : matrix inversion gives you (a,b,c)
+
+
+                  2   
+             .    
+          .  
+        1
+      .  
+    0
+
+
+Obtaining piecewise parabolic cumulative integral by storing 
+(a,b,c) parameters of the parabola ? 
+Which would avoid the need for loadsa bins.
+
+* TODO: explore this by ana/piecewise.py sympy expts handling 
+  each bin separately to avoid symbolic integration troubles
+  and construct the symbolic cumulative integral   
+
+* hmm: better to solve once and store (a,b,c) for each bin 
+* then can do energy lookup by solving quadratic, it will be monotonic
+  so no problem of picking the parabolic piece applicable and then 
+  picking the root ?
+
+
+**/
+
+template <typename T>
+NP* QCerenkov::getS2Integral_Cumulative(const T BetaInverse, const NP* ee ) const 
+{
+    const T* ee_v = ee->cvalues<T>(); 
+    unsigned ee_ni = ee->shape[0] ; 
+
+    NP* s2c = NP::MakeLike(ee); 
+    T* s2c_v = s2c->values<T>(); 
+
+    const T* ri_v = dsrc->cvalues<T>(); 
+    unsigned ri_ni = dsrc->shape[0] ; 
+    unsigned ri_nj = dsrc->shape[1] ; 
+    assert( ri_nj == 2 && ri_ni > 1 ); 
+
+
+    for(unsigned e=0 ; e < ee_ni ; e++)
+    {
+        T en_cut = ee_v[e] ; 
+        T ri_cut = dsrc->interp<T>(en_cut) ; 
+        T emin ; 
+        T emax ; 
+
+        T s2integral = 0. ; 
+        for(unsigned i=0 ; i < ri_ni - 1 ; i++)
+        {
+            T en_0 = ri_v[2*(i+0)+0] ; 
+            T en_1 = ri_v[2*(i+1)+0] ; 
+
+            T ri_0 = ri_v[2*(i+0)+1] ; 
+            T ri_1 = ri_v[2*(i+1)+1] ; 
+
+            s2integral += GetS2Integral_WithCut<T>(emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1, en_cut, ri_cut );
+        }
+
+        s2c_v[e] = s2integral ; 
+    }
+    return s2c ; 
+} 
+
+
+template NP* QCerenkov::getS2Integral_Cumulative( const double, const NP* ) const ; 
+template NP* QCerenkov::getS2Integral_Cumulative( const float,  const NP* ) const ; 
+
+
+
+
+
+
+
+
 
 template <typename T>
 T QCerenkov::getS2( const T BetaInverse, const T en ) const 
@@ -389,6 +528,11 @@ permissable range of Cerenkov for the BetaInverse to
 make best use of the available bins. 
 
 The cumulative integral values are not normalized. 
+
+
+HMM: getting slightly non-monotonic again in some regions, 
+idea to avoid that is to avoid repeating the calc just save the cumulative 
+result in the one pass
 
 **/
 
@@ -421,12 +565,19 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
     T last_ecut = 0. ; 
     T last_s2integral = 0. ; 
     NP* last_s2i = nullptr ; 
+
+
+    // This is doing the full integral with increasing ecut at each turn 
+    // so it slightly grows, problem with this is that its very repetitive and hence slow
+    // and also it risks going slightly non-monotonic from numberical imprecision.
+    //
  
     for(unsigned i=0 ; i < nx ; i++)
     {
         T ecut = ee[i] ; 
         
         NP* s2i = getS2Integral_WithCut_<T>(emin, emax, BetaInverse, ecut ); 
+
         T s2integral = s2i->psum<T>(0u); 
         T s2 = getS2<T>( BetaInverse, ecut ); 
 
