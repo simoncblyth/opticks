@@ -87,6 +87,8 @@ void test_getS2CumulativeIntegrals_one( const QCerenkov& ck, double BetaInverse 
 }
 
 
+
+
 void test_getS2CumulativeIntegrals_many(const QCerenkov& ck )
 {
     const NP* bis  = NP::Linspace<double>( 1., 2. , 1001 );     // BetaInverse
@@ -101,13 +103,38 @@ void test_getS2CumulativeIntegrals_many(const QCerenkov& ck )
         << " s2c " << s2c->desc()
         ; 
 
-    const char* s2c_path = SPath::Resolve("$TMP/QCerenkovTest/test_getS2CumulativeIntegrals_many_s2c.npy"); 
-    LOG(info) << " save to " << s2c_path ; 
-    s2c->save(s2c_path); 
 
-    const char* s2cn_path = SPath::Resolve("$TMP/QCerenkovTest/test_getS2CumulativeIntegrals_many_s2cn.npy"); 
+    const char* fold = SPath::Resolve("$TMP/QCerenkovTest/test_getS2CumulativeIntegrals"); 
+    SPath::MakeDirs(fold); 
+    LOG(info) << " save to " << fold ; 
+    s2c->save(fold,"s2c.npy"); 
+
     s2c->divide_by_last<double>();  
-    s2c->save(s2cn_path); 
+    s2c->save(fold,"s2cn.npy"); 
+}
+
+
+void test_getS2Integral_Cumulative( const QCerenkov& ck, const char* bis_, unsigned mul )
+{
+    const NP* bis  = bis_ == nullptr ? NP::Linspace<double>( 1., 2. , 1001 ) : NP::FromString<double>(bis_);     
+
+    NP* s2c = ck.getS2Integral_Cumulative<double>(bis, mul); 
+
+    LOG(info) 
+        << std::endl
+        << " bis " << bis->desc()
+        << std::endl
+        << " s2c " << s2c->desc()
+        << " mul " << mul 
+        ; 
+
+    const char* fold = SPath::Resolve("$TMP/QCerenkovTest/test_getS2Integral_Cumulative"); 
+    SPath::MakeDirs(fold); 
+    LOG(info) << " save to " << fold ; 
+    s2c->save(fold, "s2c.npy"); 
+
+    s2c->divide_by_last<double>();  
+    s2c->save(fold, "s2cn.npy"); 
 }
 
 
@@ -139,7 +166,6 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     QCerenkov ck ;  
-    //const double BetaInverse = 1.5 ; 
     //const double BetaInverse = 1.0 ; 
 
     //test_lookup(ck); 
@@ -150,11 +176,14 @@ int main(int argc, char** argv)
     //test_getS2CumulativeIntegrals_one(ck,BetaInverse) ; 
     //test_getS2CumulativeIntegrals_many(ck) ; 
 
+    //const char* bis = "1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.792" ; 
+    const char* bis = "1.0" ; 
+    unsigned mul = 2 ; 
+    test_getS2Integral_Cumulative(ck, bis, mul ) ; 
 
-    unsigned ny = 2000u ; 
-    unsigned nx = 2000u ; 
-
-    test_makeICDF(ck, ny, nx ); 
+    //unsigned ny = 2000u ; 
+    //unsigned nx = 2000u ; 
+    //test_makeICDF(ck, ny, nx ); 
 
 
     return 0 ; 

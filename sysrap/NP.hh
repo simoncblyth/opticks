@@ -45,6 +45,11 @@ struct NP
 
     template<typename T> static NP*  Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1 );  // dtype from template type
     template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx ); 
+    template<typename T> static NP*  MakeDiv( const NP* src, unsigned mul  ); 
+    template<typename T> static T To( const char* a ); 
+    template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
+
+
     template<typename T> static NP*  MakeUniform( unsigned ni, unsigned seed=0u );  
     template<typename T> static unsigned NumSteps( T x0, T x1, T dx ); 
 
@@ -564,6 +569,9 @@ template<typename T> inline T NP::get( int i,  int j,  int k,  int l, int m) con
     const T* vv = cvalues<T>();  
     return vv[idx] ; 
 }
+
+
+
 
 
 template<typename T> inline void NP::fill(T value)
@@ -2197,12 +2205,152 @@ template <typename T> void NP::read2(const T* data)
 template <typename T> NP* NP::Linspace( T x0, T x1, unsigned nx )
 {
     assert( x1 > x0 ); 
-    assert( nx > 1 ) ; 
+    assert( nx > 0 ) ; 
     NP* dom = NP::Make<T>(nx); 
     T* vv = dom->values<T>(); 
-    for(unsigned i=0 ; i < nx ; i++) vv[i] = x0 + (x1-x0)*T(i)/T(nx-1) ;
+
+    if( nx == 1 )
+    {
+        vv[0] = x0 ;  
+    }
+    else
+    {
+        for(unsigned i=0 ; i < nx ; i++) vv[i] = x0 + (x1-x0)*T(i)/T(nx-1)  ;
+    }
+
     return dom ; 
 }
+
+/**
+NP::MakeDiv
+-------------
+
+Divides bin edges by integer multiple *mul*. 
+For a src array of length ni the output array is of length::
+
+    (ni - 1)*mul + 1  
+
+For example, 
+
+* mul=1 -> ni
+* mul=2 -> (ni-1)*2+1 = 2*ni-1 
+* mul=3 -> (ni-1)*3+1 = 3*ni-2 
+
+That is easier to understand in terms of the number of bins:
+
+* mul=1   ni-1 -> 1*(ni-1)
+* mul=2   ni-1 -> 2*(ni-1) 
+* mul=3   ni-1 -> 3*(ni-1) 
+
+Avoids repeating the top sub-edge of one bin that is the same as the first sub-edge 
+of the next bin by skipping the last sub-edge unless it is from the last bin. 
+
+
+         +-----------------+     2 values, 1 bin    (mul 1)
+
+         +--------+--------+     3 values, 2 bins   (mul 2)
+
+         +----+---+---+----+     5 values, 4 bins   (mul 4)
+
+         +--+-+-+-+-+-+--+-+     9 values, 8 bins   (mul 8)  
+
+**/
+
+
+template <typename T> NP* NP::MakeDiv( const NP* src, unsigned mul  )
+{
+    assert( mul > 0 ); 
+    unsigned ndim = src->shape.size(); 
+    assert( ndim == 1 ); 
+    const T* src_v = src->cvalues<T>(); 
+
+    unsigned src_ni = src->shape[0] ; 
+    unsigned src_bins = src_ni - 1 ; 
+    unsigned dst_bins = src_bins*mul ;   
+    unsigned dst_ni = dst_bins + 1 ; 
+
+#ifdef DEBUG
+    std::cout 
+        << " mul " << std::setw(3) << mul
+        << " src_ni " << std::setw(3) << src_ni
+        << " src_bins " << std::setw(3) << src_bins
+        << " dst_bins " << std::setw(3) << dst_bins
+        << " dst_ni " << std::setw(3) << dst_ni
+        << std::endl
+        ; 
+#endif
+
+    NP* dst = NP::Make<T>( dst_ni ); 
+    T* dst_v = dst->values<T>(); 
+
+    for(unsigned i=0 ; i < src_ni - 1 ; i++)
+    {
+        //bool last_i = i == src_ni - 2 ; 
+        bool first_i = i == 0 ; 
+        const T s0 = src_v[i] ; 
+        const T s1 = src_v[i+1] ; 
+
+#ifdef DEBUG
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " first_i " << std::setw(1) << first_i 
+            << " s0 " << std::setw(10) << std::fixed << std::setprecision(4) << s0
+            << " s1 " << std::setw(10) << std::fixed << std::setprecision(4) << s1
+            << std::endl  
+            ; 
+#endif
+        for(unsigned s=0 ; s < 1+mul ; s++) // s=0,1,2,... mul 
+        {
+            //bool last_s = s == mul ; 
+            bool first_s = s == 0 ; 
+            //if( last_s && !last_i ) continue ;  // avoid repeating idx from bin to bin  
+            if( first_s && !first_i ) continue ;  // avoid repeating idx from bin to bin  
+
+
+            const T frac = T(s)/T(mul) ;    //  frac(s=0)=0  frac(s=mul)=1   
+            const T ss = s0 + (s1 - s0)*frac ;  
+            unsigned idx = i*mul + s ; 
+
+#ifdef DEBUG
+            std::cout 
+                << " s " << std::setw(3) << s 
+                << " first_s " << std::setw(1) << first_s
+                << " idx " << std::setw(3) << idx
+                << " ss " << std::setw(10) << std::fixed << std::setprecision(4) << ss 
+                << std::endl  
+                ; 
+#endif
+
+            assert( idx < dst_ni ); 
+            dst_v[idx] = ss ; 
+        }
+    }
+    return dst ; 
+}
+
+
+template <typename T> T NP::To( const char* a )   // static 
+{   
+    std::string s(a);
+    std::istringstream iss(s);
+    T v ;   
+    iss >> v ; 
+    return v ; 
+}
+
+template <typename T> NP* NP::FromString(const char* str, char delim)  // static 
+{   
+    std::vector<T> vec ; 
+    std::stringstream ss(str);
+    std::string s ; 
+    while(getline(ss, s, delim)) vec.push_back(To<T>(s.c_str()));
+
+    NP* a = NP::Make<T>(vec.size()); 
+    a->read(vec.data()); 
+    return a ; 
+}
+
+
 
 /**
 NP::MakeUniform

@@ -28,6 +28,15 @@ struct QUDARAP_API QCerenkov
     static const char* DEFAULT_PATH ; 
     static const double FINE_STRUCTURE_OVER_HBARC_EVMM ; 
 
+    enum { NONE, UNCUT, CUT, FULL, PART, ERR };  
+
+    static const char* NONE_ ; 
+    static const char* UNCUT_ ; 
+    static const char* CUT_ ; 
+    static const char* FULL_ ; 
+    static const char* PART_ ; 
+    static const char* ERR_ ; 
+    static const char* State(int state); 
 
     static NP* Load(const char* path_) ; 
 
@@ -48,12 +57,15 @@ struct QUDARAP_API QCerenkov
     void makeTex(const NP* dsrc);
     std::string desc() const ; 
 
+    // fixed bin subdiv, wastes bins but its simpler and should avoid slight non-monotonic issue
+    template<typename T> unsigned getS2Edges(unsigned mul ) const ;
+    template <typename T> NP* getS2Integral_Cumulative( const NP* bis, unsigned mul ) const ; 
+    template <typename T> NP* getS2Integral_Cumulative(const T BetaInverse, unsigned mul ) const ; 
 
-    template <typename T> NP* getS2Integral_Cumulative(const T BetaInverse, const NP* ee ) const ; 
 
-    template <typename T> T   getS2Integral_WithCut(  T& emin, T& emax, const T BetaInverse, const T en_cut ) const  ; 
-    template <typename T> NP* getS2Integral_WithCut_( T& emin, T& emax, const T BetaInverse, const T en_cut ) const  ; 
-    template <typename T> static T GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, const T en_cut, const T ri_cut ) ; 
+    template <typename T> T   getS2Integral_WithCut(  T& emin, T& emax, const T BetaInverse, const T en_cut, bool dump ) const  ; 
+    template <typename T> NP* getS2Integral_WithCut_( T& emin, T& emax, const T BetaInverse, const T en_cut, bool dump  ) const  ; 
+    template <typename T> static T GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, const T en_cut, const T ri_cut, bool dump ) ; 
 
     template <typename T> T getS2( const T BetaInverse, const T en ) const ; 
 

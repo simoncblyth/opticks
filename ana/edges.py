@@ -27,26 +27,26 @@ ri = np.array([
       ])
 
 
-def divide_edges( e, mul ):
+def divide_bins( e, mul ):
     """
     :param e: 1d array of monotonic edges
     :param mul: integer multiplicity with which to divide edges, eg 2 or 3 splits each edge into 2 or 3 etc.. 
     :return ee: array with extra edges obtained by splitting the input edges  
 
 
-         +--------+--------+     3 values, 2 edges 
+         +--------+--------+     3 values, 2 bins
 
-         +----+---+---+----+     5 values, 4 edges    (mul 2)
+         +----+---+---+----+     5 values, 4 bins    (mul 2)
 
-         +--+-+-+-+-+-+--+-+     9 values, 8 edges     
+         +--+-+-+-+-+-+--+-+     9 values, 8 bins     
 
 
     """
-    ne = len(e)-1           # number of edges is one less than number of values 
-    nee = ne*mul            # edges multiply  
-    ee = np.zeros(nee+1)    # add one to to give number of values 
+    nb = len(e)-1           # number of bins is one less than number of values 
+    nbb = nb*mul            # bins multiply  
+    ee = np.zeros(nbb+1)    # add one to to give number of values 
  
-    print(" divide_edges mul %d len(e) %d len(ee) %d " % ( mul, len(e), len(ee) )) 
+    print(" divide_bins mul %d len(e) %d len(ee) %d " % ( mul, len(e), len(ee) )) 
 
     for i in range(len(e)-1):
         a = np.linspace( e[i], e[i+1], 1+mul )
@@ -69,7 +69,7 @@ def divide_edges( e, mul ):
 def edges_plot(e):
     fig, ax = plt.subplots(figsize=[12.8, 7.2])
     for m in range(1,10):
-        ee = divide_edges(e, mul=m)
+        ee = divide_bins(e, mul=m)
         yy = np.repeat( m, len(ee) )
         ax.scatter( ee, yy, label="mul %d " % m ) 
     pass
@@ -81,7 +81,7 @@ def edges_plot(e):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     e = ri[:,0]
-    #ee = divide_edges(e, mul=2 )
+    #ee = divide_bins(e, mul=2 )
     edges_plot(e) 
 
 

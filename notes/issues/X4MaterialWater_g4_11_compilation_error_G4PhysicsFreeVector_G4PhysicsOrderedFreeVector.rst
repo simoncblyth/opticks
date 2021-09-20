@@ -186,3 +186,137 @@ Soon Followup
     === opticks-full : ERR from opticks-full-make
 
 
+
+
+::
+
+    Hi Simon,
+
+    I find that there are still many other files where
+    G4PhysicsOrderedFreeVector is used:
+
+    extg4/X4Scintillation.cc
+    extg4/X4Scintillation.hh
+
+    extg4/tests/X4ArrayTest.cc
+    extg4/tests/X4PhysicsVectorTest.cc
+    extg4/tests/X4ScintillationTest.cc
+
+    and also many files under
+
+    cfg4
+    cfg4/tests
+
+    It looks that replacing G4PhysicsOrderedFreeVector by G4MaterialPropertyVector
+    will resolve all errors.   It would be great if you can update all codes accordingly
+    and tag it with v0.1.4.  Thanks.
+
+    Regards,
+    ---Soon
+
+
+::
+
+    epsilon:opticks blyth$ opticks-fl G4PhysicsOrderedFreeVector
+    ./cfg4/CVec.hh
+    ./cfg4/Scintillation.hh
+    ./cfg4/C4Cerenkov1042.cc
+    ./cfg4/C4Cerenkov1042.hh
+    ./cfg4/DsG4OpRayleigh.cc
+    ./cfg4/DsG4Cerenkov.cc
+    ./cfg4/tests/CVecTest.cc
+    ./cfg4/tests/CMakeLists.txt
+    ./cfg4/tests/G4PhysicsOrderedFreeVectorTest.cc
+    ./cfg4/tests/WaterTest.cc
+    ./cfg4/Scintillation.cc
+    ./cfg4/DsG4Cerenkov.h
+    ./cfg4/CVec.cc
+    ./cfg4/DsG4Scintillation.cc
+    ./cfg4/Cerenkov.hh
+    ./cfg4/DsG4Scintillation.h
+    ./cfg4/OpRayleigh.hh
+    ./cfg4/CMPT.hh
+    ./cfg4/G4Cerenkov1042.cc
+    ./cfg4/CMPT.cc
+    ./cfg4/OpRayleigh.cc
+    ./cfg4/G4Cerenkov1042.hh
+    ./cfg4/Cerenkov.cc
+    ./cfg4/DsG4OpRayleigh.h
+    ./extg4/X4MaterialWater.cc
+    ./extg4/X4Scintillation.hh
+    ./extg4/X4Scintillation.cc
+    ./extg4/tests/X4ScintillationTest.cc
+    ./extg4/tests/X4PhysicsVectorTest.cc
+    ./extg4/tests/X4ArrayTest.cc
+    ./extg4/X4MaterialWater.hh
+    ./extg4/X4OpRayleigh.cc
+    ./extg4/X4Array.hh
+    ./extg4/X4PhysicsVector.cc
+    ./notes/geant4/opnovice.bash
+    ./examples/Geant4/CerenkovMinimal/src/CKMScintillation.h
+    ./examples/Geant4/CerenkovMinimal/src/CKMScintillation.cc
+    ./examples/Geant4/CerenkovMinimal/src/L4Cerenkov.cc
+    ./examples/Geant4/CerenkovMinimal/src/Cerenkov.cc
+    ./examples/Geant4/CerenkovMinimal/src/L4Cerenkov.hh
+    ./examples/Geant4/CerenkovStandalone/G4Cerenkov_modified.hh
+    ./examples/Geant4/CerenkovStandalone/L4CerenkovTest.cc
+    ./examples/Geant4/CerenkovStandalone/G4Cerenkov_modified.cc
+    epsilon:opticks blyth$ 
+
+
+
+
+
+Kludge 1042 to preview problems with 1100.beta
+---------------------------------------------------
+
+
+::
+
+    epsilon:Geant4 blyth$ cp G4MaterialPropertyVector.hh G4MaterialPropertyVector.hh.orig
+    epsilon:Geant4 blyth$ vi G4MaterialPropertyVector.hh
+    epsilon:Geant4 blyth$ vi G4MaterialPropertyVector.hh
+    epsilon:Geant4 blyth$ 
+    epsilon:Geant4 blyth$ pwd
+    /usr/local/opticks_externals/g4_1042/include/Geant4
+    epsilon:Geant4 blyth$ 
+
+
+::
+
+    epsilon:Geant4 blyth$ diff G4MaterialPropertyVector.hh.orig G4MaterialPropertyVector.hh
+    56c56,57
+    < #include "G4PhysicsOrderedFreeVector.hh"
+    ---
+    > //#include "G4PhysicsOrderedFreeVector.hh"
+    > #include "G4PhysicsFreeVector.hh"
+    62c63,64
+    < typedef G4PhysicsOrderedFreeVector G4MaterialPropertyVector;
+    ---
+    > //typedef G4PhysicsOrderedFreeVector G4MaterialPropertyVector;
+    > typedef G4PhysicsFreeVector G4MaterialPropertyVector;
+    epsilon:Geant4 blyth$ 
+
+
+
+What are these Geant4 guys smoking ?
+--------------------------------------
+
+* https://github.com/Geant4/geant4/blob/master/source/global/management/include/G4PhysicsFreeVector.hh
+
+::
+
+     // - 04 Feb. 2021, V.Ivanchenko moved implementation of all free vectors 
+     //                 to this class
+
+
+
+     explicit G4PhysicsFreeVector(const G4double* energies, const G4double* values,
+                                   std::size_t length, G4bool spline = false);
+      // The vector is filled in this constructor;
+      // 'energies' and 'values' need to have the same vector length;
+      // 'energies' assumed to be ordered in the user code.
+
+
+
+
