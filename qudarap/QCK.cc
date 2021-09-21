@@ -12,6 +12,7 @@ void QCK<T>::save(const char* base, const char* reldir) const
 {
     rindex->save(base, reldir, "rindex.npy"); 
     bis->save(base, reldir, "bis.npy"); 
+    avph->save(base, reldir, "avph.npy"); 
     s2c->save(base, reldir, "s2c.npy"); 
     s2cn->save(base, reldir, "s2cn.npy"); 
 }
@@ -21,6 +22,7 @@ QCK<T>* QCK<T>::Load(const char* base, const char* reldir)   // static
 {
     NP* rindex = NP::Load(base, reldir, "rindex.npy"); 
     NP* bis = NP::Load(base, reldir, "bis.npy"); 
+    NP* avph = NP::Load(base, reldir, "avph.npy"); 
     NP* s2c = NP::Load(base, reldir, "s2c.npy"); 
     NP* s2cn = NP::Load(base, reldir, "s2cn.npy"); 
 
@@ -28,10 +30,11 @@ QCK<T>* QCK<T>::Load(const char* base, const char* reldir)   // static
 
     qck->rindex = rindex ; 
     qck->bis = bis ; 
+    qck->avph = avph ; 
     qck->s2c = s2c ; 
     qck->s2cn = s2cn ; 
 
-    if(rindex == nullptr || bis == nullptr || s2c == nullptr || s2cn == nullptr )
+    if(rindex == nullptr || bis == nullptr || s2c == nullptr || s2cn == nullptr || avph == nullptr)
     {
         LOG(fatal)
             << " QCK::Load incomplete "
@@ -128,10 +131,10 @@ template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u, d
     typedef std::chrono::high_resolution_clock::time_point TP ;
     TP t0 = std::chrono::high_resolution_clock::now() ;
 
-    int item = find_bisIdx(BetaInverse); 
+    int ibis = find_bisIdx(BetaInverse); 
 
     bool dump = false ;  
-    T en = s2cn->pdomain<T>(u, item, dump );
+    T en = s2cn->pdomain<T>(u, ibis, dump );
 
     TP t1 = std::chrono::high_resolution_clock::now() ; 
     std::chrono::duration<double> t10 = t1 - t0; 
@@ -140,23 +143,57 @@ template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u, d
     return en  ; 
 }
 
-template<typename T> void QCK<T>::energy_range( T& emin, T& emax, const T BetaInverse, bool dump ) const 
+/**
+QCK::energy_range_s2cn
+------------------------
+
+For _SplitBin the energy range obtained from s2cn is the full energy range.
+
+**/
+
+template<typename T> void QCK<T>::energy_range_s2cn( T& emin, T& emax, const T BetaInverse, bool dump ) const 
 {
-    int bisIdx = find_bisIdx(BetaInverse); 
-    emin = s2cn->get<T>(bisIdx,  0, 0) ;  
-    emax = s2cn->get<T>(bisIdx, -1, 0) ;  
+    int ibis = find_bisIdx(BetaInverse); 
+    unsigned k = 0 ; // 1st payload slot is domain, the energy 
+    emin = s2cn->get<T>(ibis,  0, k) ;   // first energy 
+    emax = s2cn->get<T>(ibis, -1, k) ;   // last energy 
+
     T edom = emax - emin ; 
     if(dump) std::cout 
-        << "QCK::energy_range" 
+        << "QCK::energy_range_s2cn" 
         << " BetaInverse " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse
-        << " bisIdx " << std::setw(10) << bisIdx
-        << " bis[bisIdx] " <<  std::setw(10) << std::fixed << std::setprecision(4) << bis->get<T>(bisIdx) 
+        << " ibis " << std::setw(10) << ibis
+        << " bis[ibis] " <<  std::setw(10) << std::fixed << std::setprecision(4) << bis->get<T>(ibis) 
         << " emin " << std::setw(10) << std::fixed << std::setprecision(4) << emin 
         << " emax " << std::setw(10) << std::fixed << std::setprecision(4) << emax 
         << " edom " << std::setw(10) << std::fixed << std::setprecision(4) << edom 
         << std::endl 
         ;
 }
+
+template<typename T> void QCK<T>::energy_range_avph( T& emin, T& emax, const T BetaInverse, bool dump ) const 
+{
+    int ibis = find_bisIdx(BetaInverse); 
+    T BetaInverse2 = avph->get<T>(ibis,0) ; 
+    emin = avph->get<T>(ibis,1) ;  
+    emax = avph->get<T>(ibis,2) ; 
+    T averageNumPhotons = avph->get<T>(ibis,3) ; 
+
+    T edom = emax - emin ; 
+    if(dump) std::cout 
+        << "QCK::energy_range_avph" 
+        << " BetaInverse " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse
+        << " BetaInverse2 " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse2
+        << " ibis " << std::setw(10) << ibis
+        << " bis[ibis] " <<  std::setw(10) << std::fixed << std::setprecision(4) << bis->get<T>(ibis) 
+        << " emin " << std::setw(10) << std::fixed << std::setprecision(4) << emin 
+        << " emax " << std::setw(10) << std::fixed << std::setprecision(4) << emax 
+        << " edom " << std::setw(10) << std::fixed << std::setprecision(4) << edom 
+        << " averageNumPhotons " << std::setw(10) << std::fixed << std::setprecision(4) << averageNumPhotons
+        << std::endl 
+        ;
+}
+
 
 
 template<typename T> const double QCK<T>::DT_SCALE = 1e6 ; 
@@ -174,7 +211,7 @@ of the range is not Cerenkov permitted.
 
 **/
 
-template<typename T> T QCK<T>::energy_sample_( const T BetaInverse,  const std::function<T()>& rng, double& dt, unsigned& count ) const 
+template<typename T> T QCK<T>::energy_sample_( const T emin, const T emax, const T BetaInverse, const std::function<T()>& rng, double& dt, unsigned& count ) const 
 {
     typedef std::chrono::high_resolution_clock::time_point TP ;
     TP t0 = std::chrono::high_resolution_clock::now() ;
@@ -184,11 +221,6 @@ template<typename T> T QCK<T>::energy_sample_( const T BetaInverse,  const std::
 
     const T ctmax = BetaInverse/rmx ; 
     const T s2max = ( one - ctmax )*( one + ctmax ) ; 
-
-    T emin = emn ; 
-    T emax = emx ; 
-    energy_range( emin, emax, BetaInverse, false);  
-
     count = 0 ; 
 
     do {
@@ -237,7 +269,13 @@ template<typename T> NP* QCK<T>::energy_lookup( const T BetaInverse, const NP* u
     return en ; 
 }
 
+/**
+QCK::energy_sample
+-------------------
 
+Returns array of energy samples of shape (ni,) and if argument tt is non-null and of shape (ni,) sets cputimes
+
+**/
 
 template<typename T> NP* QCK<T>::energy_sample( const T BetaInverse, const std::function<T()>& rng, unsigned ni, NP* tt ) const 
 {
@@ -251,9 +289,15 @@ template<typename T> NP* QCK<T>::energy_sample( const T BetaInverse, const std::
     unsigned count_max(0); 
     unsigned count(0) ; 
 
+    T emin ; 
+    T emax ; 
+    bool dump = false ; 
+    energy_range_avph( emin, emax, BetaInverse, dump); 
+
+
     for(unsigned i=0 ; i < ni ; i++) 
     {
-        en_v[i] = energy_sample_( BetaInverse, rng, dt, count  ) ; 
+        en_v[i] = energy_sample_( emin, emax, BetaInverse, rng, dt, count  ) ; 
         if(tt_v) tt_v[i] = dt ; 
 
         if( count > count_max ) count_max = count ; 
@@ -274,9 +318,13 @@ template<typename T> NP* QCK<T>::energy_sample( const T BetaInverse, const std::
 
 
 
+/**
+QCK::is_permissable
+----------------------
 
+Look for the BetaInverse value within the bis array, returning true when in range.  
 
-
+**/
 
 template<typename T> bool QCK<T>::is_permissable( const T BetaInverse) const 
 {
@@ -297,8 +345,10 @@ template<typename T> bool QCK<T>::is_permissable( const T BetaInverse) const
         << " BetaInverse "      << std::fixed << std::setw(w) << std::setprecision(p) << BetaInverse 
         << " bis.ibin "         << std::setw(5) << ibin
         << " bis.in_range "     << std::setw(5) << in_range 
-        << " bis.get_edges.lo " << std::fixed << std::setw(w) << std::setprecision(p) << lo 
-        << " bis.get_edges.hi " << std::fixed << std::setw(w) << std::setprecision(p) << hi 
+        << " bis.get_edges [" 
+        << " " << std::fixed << std::setw(w) << std::setprecision(p) << lo 
+        << " " << std::fixed << std::setw(w) << std::setprecision(p) << hi 
+        << "]"
         << std::endl
         ;
          

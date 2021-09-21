@@ -27,37 +27,71 @@ class QCerenkovTest(object):
     def __init__(self):
         pass
 
-    def load(self, qwn, name):
+    def load(self, qwn, pfx, nam):
+        name = os.path.join(pfx, nam) 
         path = name if name[0] == "/" else os.path.join(self.FOLD, name)
-        log.info("load %s " % path )
+        log.debug("load %s " % path )
         a = np.load(path) if os.path.exists(path) else None
         if a is None:
             log.fatal("failed to load %s " % path )
+        else:
+            os.system("ls -l %s" % path )
         pass
         setattr(self, qwn, a )
 
-    def load_getS2CumulativeIntegrals_many(self):
-        self.load("a_s2c",  "test_getS2CumulativeIntegrals/s2c.npy")
-        self.load("a_s2cn", "test_getS2CumulativeIntegrals/s2cn.npy")
+    def load_getS2Integral_UpperCut(self):
+        pfx = "test_getS2Integral_UpperCut"
+        self.load("a_s2c",  pfx, "s2c.npy")
+        self.load("a_s2cn", pfx, "s2cn.npy")
 
-    def load_getS2Integral_Cumulative_many(self):
-        self.load("b_s2c",  "test_getS2Integral_Cumulative/s2c.npy")
-        self.load("b_s2cn", "test_getS2Integral_Cumulative/s2cn.npy")
+    def load_getS2Integral_SplitBin(self):
+        pfx = "test_getS2Integral_SplitBin"
+        self.load("b_s2c",  pfx, "s2c.npy")
+        self.load("b_s2cn", pfx, "s2cn.npy")
+        self.load("b_bis",  pfx, "bis.npy")
 
     def load_piecewise(self):
-        self.load("p_s2c",  "/tmp/ana/piecewise/scan.npy")
+        pfx = "/tmp/ana/piecewise"  
+        self.load("p_s2c", pfx, "scan.npy")
+        self.load("p_bis", pfx, "bis.npy")
 
     def plot(self, qwns, ii):
         fig, ax = plt.subplots(figsize=[12.8, 7.2])
         for qwn in qwns: 
             a = getattr(self, qwn)
+            #ken = 1 if qwn[0] == "b" else 0 
+            ken = 0   # reajjanged to put en_b into payload slot 0 
+            log.debug("qwn %s shape %s ken %d " % (qwn, str(a.shape), ken)) 
             assert len(a.shape) == 3  
             for i in ii:
-                ax.plot( a[i,:,0], a[i,:,-1] , label="%s  %d" % (qwn, i) )
+                if qwn[0] == "b":
+                    ax.scatter( a[i,:,ken], a[i,:,-1] , label="%s  %d" % (qwn, i) )
+                else:
+                    ax.plot( a[i,:,ken], a[i,:,-1] , label="%s  %d" % (qwn, i) )
+                pass
             pass
             ax.legend()
         pass
         fig.show()
+
+
+    def compare(self, ii, sa, sb, ):
+        """
+        * with mul=1 this is giving excellent agreement less than 1e-12
+        * huh, after adding SUB handling discrep up to almost 0.1 photon
+        """
+        t = self
+        a = getattr(t, sa)
+        b = getattr(t, sb)
+        log.info(" sa:%s a:%s sb:%s b:%s " % (sa, str(a.shape), sb, str(b.shape)))
+        for i in ii:
+            BetaInverse = t.b_bis[i]
+            df = np.abs(a[i,:,-1] - b[i,:,-1])
+            dfmax = df.max()
+
+            #print("BetaInverse : %10.4f  dfmax %10.4g  df %s " % (BetaInverse, dfmax, str(df))  )
+            print("BetaInverse : %10.4f  dfmax %10.4g " % (BetaInverse, dfmax )  )
+        pass 
 
    
      
@@ -78,9 +112,10 @@ if __name__ == '__main__':
 
     #ii = np.arange( 0, 1000, 100 )
     ii = np.arange(9)
+    #ii = [0]
 
-    #t.load_getS2CumulativeIntegrals_many()
-    t.load_getS2Integral_Cumulative_many() 
+    #t.load_getS2Integral_UpperCut()
+    t.load_getS2Integral_SplitBin() 
     t.load_piecewise()
 
     #t.plot(["a_s2cn",], ii)
@@ -90,15 +125,8 @@ if __name__ == '__main__':
 
     #plot_s2(t)
 
-
-    # with mul=1 this is giving excellent agreement less than 1e-12
-    for i in ii:
-        df = t.p_s2c[i,:,-1] - t.b_s2c[i,:,-1]
-        print(df)
-        print(df.max())
-    pass 
-
-
+    assert np.all( t.p_bis == t.b_bis )
+    t.compare(ii, "p_s2c", "b_s2c")
 
 
 

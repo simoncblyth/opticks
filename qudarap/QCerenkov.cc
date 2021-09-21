@@ -16,10 +16,15 @@
 #include "QCK.hh"
 
 
-const plog::Severity QCerenkov::LEVEL = PLOG::EnvLevel("QCerenkov", "INFO"); 
+const plog::Severity QCerenkov::LEVEL = PLOG::EnvLevel("QCerenkov", "DEBUG"); 
 
 const QCerenkov* QCerenkov::INSTANCE = nullptr ; 
 const QCerenkov* QCerenkov::Get(){ return INSTANCE ;  }
+
+
+const unsigned QCerenkov::SPLITBIN_PAYLOAD_SIZE = 8 ; 
+const unsigned QCerenkov::UPPERCUT_PAYLOAD_SIZE = 3 ; 
+
 
 /**
 For now restrict to handling RINDEX from a single material . 
@@ -114,8 +119,10 @@ NP* QCerenkov::GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInve
 
     T s2integral(0.) ;  
 
-    const T en_cut = -1. ; 
-    const T ri_cut = -1. ; 
+    T en_a = -1. ; 
+    T ri_a = -1. ; 
+    T en_b = -1. ; 
+    T ri_b = -1. ; 
 
     NP* s2i = NP::Make<T>(ni) ;   // hmm: top value will always be zero 
     T* s2i_vv = s2i->values<T>(); 
@@ -129,7 +136,7 @@ NP* QCerenkov::GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInve
         T ri_0 = vv[2*(i+0)+1] ; 
         T ri_1 = vv[2*(i+1)+1] ; 
 
-        T bin_integral = charge*charge*GetS2Integral_WithCut<T>( emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1, en_cut, ri_cut, dump );
+        T bin_integral = charge*charge*GetS2Integral_WithCut<T>( emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1, en_a, ri_a, en_b, ri_b, dump );
 
         s2i_vv[i] = bin_integral ; 
         s2integral += bin_integral ; 
@@ -154,8 +161,67 @@ template float  QCerenkov::GetAverageNumberOfPhotons_s2<float>( float& emin,   f
 
 
 
+template <typename T>
+NP* QCerenkov::getAverageNumberOfPhotons_s2( const NP* bis ) const   
+{
+    T emin ; 
+    T emax ; 
+    T charge = T(1.) ;  
+
+    unsigned ni = bis->shape[0] ; 
+    NP* avph = NP::Make<T>(ni, 4 ); 
+    T* avph_v = avph->values<T>(); 
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        const T BetaInverse = bis->get<T>(i) ; 
+        T avgNumPhotons = GetAverageNumberOfPhotons_s2<T>(emin, emax, BetaInverse, charge ); 
+
+        avph_v[4*i+0] = BetaInverse ; 
+        avph_v[4*i+1] = emin  ; 
+        avph_v[4*i+2] = emax ; 
+        avph_v[4*i+3] = avgNumPhotons ; 
+    }
+    return avph ; 
+}
+
+template NP* QCerenkov::getAverageNumberOfPhotons_s2<float>( const NP* ) const ; 
+template NP* QCerenkov::getAverageNumberOfPhotons_s2<double>( const NP* ) const ; 
+
+
+
+
+
+
+
+
+
 
 const double QCerenkov::FINE_STRUCTURE_OVER_HBARC_EVMM = 36.981 ; 
+
+const char* QCerenkov::NONE_ = "NONE" ; 
+const char* QCerenkov::UNCUT_ = "UNCUT" ; 
+const char* QCerenkov::SUB_ = "SUB" ; 
+const char* QCerenkov::CUT_ = "CUT" ; 
+const char* QCerenkov::FULL_ = "FULL" ; 
+const char* QCerenkov::PART_ = "PART" ; 
+const char* QCerenkov::ERR_ = "ERR" ; 
+
+const char* QCerenkov::State(int state)
+{
+    const char* s = nullptr ; 
+    switch(state)
+    {
+       case NONE:  s = NONE_  ; break ; 
+       case SUB:   s = SUB_   ; break ; 
+       case UNCUT: s = UNCUT_ ; break ; 
+       case CUT:   s = CUT_   ; break ; 
+       case FULL:  s = FULL_  ; break ; 
+       case PART:  s = PART_  ; break ; 
+       case ERR:   s = ERR_   ; break ; 
+    }
+    return s ; 
+}
 
 
 
@@ -184,9 +250,9 @@ on how en_cut compares with en_cross.::
              ./.A|  B    |   C   |   D   |E.\.
      -----0--x-.-1-------2-------3-------4-.-y----5----------
              . .                           . .
-             . en_cut                      . en_cross
+             . en_b                        . en_cross
              .                             .          
-             en_cross                      en_cut 
+             en_cross                      en_b   
 
 
     full A:  (en_1 - en_cross)*s2_1*half
@@ -201,72 +267,50 @@ on how en_cut compares with en_cross.::
     part E:  (en_cross - en_0)*s2_0*half           en_cut >= en_cross
     part E:  (en_cut - en_0)*(s2_0+s2_cut)*half    en_cut < en_cross       *rhs triangle becomes trapezoid* 
 
+* en_b (formerly known as en_cut) is used for multi-bin integrals up to en_b(en_cut)
+* en_b turns triangle E into a trapezoid for en_b < en_cross 
+* en_b can only turn triangle A into a smaller triangle  
 
-* en_cut turns triangle E into a trapezoid for en_cut < en_cross 
-* en_cut can only turn triangle A into a smaller triangle  
+* subsequently the en_a argument was added to provide SUB-bin integrals between en_a and en_b 
+  which are both required to be within en_0 en_1 of a single bin 
+
 
 
               en_0                 en_1 
                +--------------------+
                |                    |
-         ^^^^^^|                    |                     ( en_0 > en_cut && en_1 > en_cut )     -> CUT     bin above the cut 
+         bbbbbb|                    |                     ( en_0 > en_b  && en_1 > en_b )     -> CUT     bin above the cut 
                |                    |
-               |                    |^^^^^                ( en_0 < en_cut  && en_1 <= en_cut )   -> FULL    bin below the cut                      
+               |                    |bbbbb                ( en_0 < en_b  && en_1 <= en_b )    -> FULL    bin below the cut                      
                |                    |
-               ^^^^^^^^^^^^^^^^^^^^^|                     ( en_0 <= en_cut  && en_cut < en_1 )   -> PART           
+               bbbbbbbbbbbbbbbbbbbbb|                     ( en_0 <= en_b && en_b < en_1 )     -> PART           
                |                    |
-
-
+               aaaaaaaabbbbbbbbbbbbbb                     ( en_a >= en_0 && en_b <= en_1 )     -> SUB 
+               |                    |
+               |                    |
+               |                    |
+               +--------------------+
 
 **/
 
-const char* QCerenkov::NONE_ = "NONE" ; 
-const char* QCerenkov::UNCUT_ = "UNCUT" ; 
-const char* QCerenkov::CUT_ = "CUT" ; 
-const char* QCerenkov::FULL_ = "FULL" ; 
-const char* QCerenkov::PART_ = "PART" ; 
-const char* QCerenkov::ERR_ = "ERR" ; 
-
-const char* QCerenkov::State(int state)
-{
-    const char* s = nullptr ; 
-    switch(state)
-    {
-       case NONE:  s = NONE_  ; break ; 
-       case UNCUT: s = UNCUT_ ; break ; 
-       case CUT:   s = CUT_   ; break ; 
-       case FULL:  s = FULL_  ; break ; 
-       case PART:  s = PART_  ; break ; 
-       case ERR:   s = ERR_   ; break ; 
-    }
-    return s ; 
-}
-
-
 template<typename T>
-T QCerenkov::GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const T en_0, const T en_1 , const T ri_0, const T ri_1, const T en_cut, const T ri_cut, bool dump ) // static 
+T QCerenkov::GetS2Integral_WithCut( T& emin, T& emax, T BetaInverse, T en_0, T en_1 , T ri_0, T ri_1, T en_a, T ri_a, T en_b, T ri_b, bool dump ) // static 
 {
 
     int state = NONE ; 
-    if(      en_cut <= 0.  )                     state = UNCUT ;   
-    else if( en_0 >  en_cut && en_1 >  en_cut )  state = CUT ;   
-    else if( en_0 <  en_cut && en_1 <= en_cut )  state = FULL ;  // edges of this bin both below en_cut (or en_1 == en_cut), so full bin integral 
-    else if( en_0 <= en_cut && en_cut < en_1 )   state = PART ;  // edges of this bin straddle ecut, so partial bin integral  
-    else                                         state = ERR ; 
+    if(      en_b <= 0.  )                   state = UNCUT ;   
+    else if( en_a >= en_0 && en_b <= en_1 )  state = SUB ;   // SUB-bin integral with sub-range en_a:en_b entirely within(including edge) range of big bin en_0:en_1
+    else if( en_0 >  en_b && en_1 >  en_b )  state = CUT ;   
+    else if( en_0 <  en_b && en_1 <= en_b )  state = FULL ;  // edges of this bin both below en_b (or en_1 == en_b), so full bin integral 
+    else if( en_0 <= en_b && en_b <  en_1 )  state = PART ;  // edges of this bin straddle ecut, so partial bin integral  
+    else                                     state = ERR ; 
     
-    if( state == ERR || state == NONE )
-    {
-        LOG(error) 
-            << " missed condition ?"
-            << " en_0 " << en_0 
-            << " en_1 " << en_1 
-            << " en_cut " << en_cut 
-            ;   
-    }
-
+    if( state == ERR || state == NONE ) LOG(error) << " missed condition ?" << " en_0 " << en_0 << " en_1 " << en_1 << " en_a " << en_a << " en_b " << en_b ;  
+ 
     const T zero(0.) ; 
     if( state == CUT ) return zero ; 
-    assert( state == FULL || state == PART || state == UNCUT ); 
+    assert( state == FULL || state == PART || state == UNCUT || state == SUB ); 
+    if(state == SUB) assert( en_a >= en_0 && en_b <= en_1 ); 
 
     const T one(1.) ; 
     const T half(0.5) ; 
@@ -274,21 +318,23 @@ T QCerenkov::GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const
 
     T ct_0 = BetaInverse/ri_0 ; 
     T ct_1 = BetaInverse/ri_1 ; 
-    T ct_cut = BetaInverse/ri_cut ; 
-
+    T ct_a = en_a > 0 ? BetaInverse/ri_a : -1 ; 
+    T ct_b = en_b > 0 ? BetaInverse/ri_b : -1 ; 
     T s2_0 = ( one - ct_0 )*( one + ct_0 ); 
-    T s2_1 = ( one - ct_1 )*( one + ct_1 ); 
-    T s2_cut = ( one - ct_cut )*( one + ct_cut ); 
-
+    T s2_1 = ( one - ct_1 )*( one + ct_1 );
+    T s2_a = en_a > 0 ? ( one - ct_a )*( one + ct_a ) : -1 ; 
+    T s2_b = en_b > 0 ? ( one - ct_b )*( one + ct_b ) : -1 ; 
 
     if(dump) std::cout 
         << "QCerenkov::GetS2Integral_WithCut"
         << " en_0 " << en_0 
         << " en_1 " << en_1 
-        << " en_cut " << en_cut 
+        << " en_a " << en_a 
+        << " en_b " << en_b 
         << " s2_0 " << s2_0 
         << " s2_1 " << s2_1 
-        << " s2_cut " << s2_cut
+        << " s2_a " << s2_a
+        << " s2_b " << s2_b
         << " state " << State(state)
         << " BetaInverse " << BetaInverse
         << std::endl
@@ -299,7 +345,7 @@ T QCerenkov::GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const
     T en_cross = cross ? en_0 + (BetaInverse - ri_0)*(en_1 - en_0)/(ri_1 - ri_0) : -one  ;
 
 
-    if( s2_0 < zero && s2_1 > zero )  // s2 becomes +ve within the bin, eg bin A
+    if( s2_0 < zero && s2_1 > zero )  // s2 becomes +ve within the bin, eg bin A : lhs triangle 
     {    
         assert( en_cross > zero ); 
 
@@ -312,10 +358,51 @@ T QCerenkov::GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const
         }
         else if (state == PART )
         {
-            s2integral = en_cut <= en_cross ? zero : (en_cut - en_cross)*s2_cut*half ; 
+            s2integral = en_b <= en_cross ? zero : (en_b - en_cross)*s2_b*half ; 
 
-            emin = std::min<T>( emin, en_cut <= en_cross ? emin : en_cross );  
+            emin = std::min<T>( emin, en_b <= en_cross ? emin : en_cross );  
             emax = std::max<T>( emax, emax );
+        }
+        else if (state == SUB )
+        {
+            /**
+             Three possibilites for en_a and en_b wrt en_cross : both below, straddling, both above 
+                                  /
+                 en_a     en_b   / 
+               +---+-------+----*---------------+         zero        
+              en_0            en_cross         en_1
+            
+                                  /
+                          en_a   /  en_b                  triangle from en_cross to en_b 
+               +-----------+----*----+----------+                
+              en_0             en_cross        en_1
+            
+                                  /
+                                 /  en_a  en_b            trapezoid independent of en_cross
+               +----------------*----+-----+----+                
+              en_0           en_cross          en_1
+            
+            **/
+
+            if( en_a <= en_cross && en_b <= en_cross )
+            {
+                 s2integral = zero ; 
+            }
+            else
+            {
+                 if( en_a <= en_cross && en_b >= en_cross )
+                 {
+                     s2integral = (en_b - en_cross)*s2_b*half ; 
+                     emin = std::min<T>( emin, en_cross ) ; 
+                     emax = std::min<T>( emax, en_b ) ; 
+                 }
+                 else
+                 {
+                     s2integral = (en_b - en_a)*(s2_a + s2_b)*half ; 
+                     emin = std::min<T>( emin, en_a ) ; 
+                     emax = std::min<T>( emax, en_b ) ; 
+                 }
+            }
         }
     }    
     else if( s2_0 >= zero && s2_1 >= zero )   // s2 +ve across full bin 
@@ -329,19 +416,19 @@ T QCerenkov::GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const
         }
         else if( state == PART )
         {
-            s2integral = (en_cut - en_0)*(s2_0 + s2_cut)*half ;  
-
-            if(dump) std::cout 
-                << " s2 +ve across full bin "
-                << " s2integral " << s2integral
-                << std::endl 
-                ;
-
+            s2integral = (en_b - en_0)*(s2_0 + s2_b)*half ;  
+            if(dump) std::cout << " s2 +ve across full bin " << " s2integral " << s2integral << std::endl ; 
             emin = std::min<T>( emin, en_0 );  
-            emax = std::max<T>( emax, en_cut );
+            emax = std::max<T>( emax, en_b );
+        }
+        else if (state == SUB )
+        {
+            s2integral = (en_b - en_a)*(s2_a + s2_b)*half ;  
+            emin = std::min<T>( emin, en_a );  
+            emax = std::max<T>( emax, en_b );
         }
     }     
-    else if( s2_0 > zero && s2_1 < zero )  // s2 becomes -ve within the bin : rhs triangle 
+    else if( s2_0 > zero && s2_1 < zero )  // s2 becomes -ve within the bin, eg bin E :  rhs triangle 
     {    
         assert( en_cross > zero ); 
 
@@ -355,18 +442,62 @@ T QCerenkov::GetS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const
         }
         else if( state == PART )
         {
-            s2integral = en_cut >= en_cross ? (en_cross - en_0)*s2_0*half : (en_cut - en_0)*(s2_0+s2_cut)*half ;   
+            s2integral = en_b >= en_cross ? (en_cross - en_0)*s2_0*half : (en_b - en_0)*(s2_0+s2_b)*half ;   
 
             emin = std::min<T>( emin, en_0 );  
-            emax = std::max<T>( emax, en_cut >= en_cross ? en_cross : en_cut );
+            emax = std::max<T>( emax, en_b >= en_cross ? en_cross : en_b );
+        }
+        else if (state == SUB )
+        {
+            /**
+             Three possibilites for en_a and en_b wrt en_cross : both below, straddling, both above 
+
+                             \
+                              \
+                 en_a     en_b \
+               +---+-------+----*---------------+         trapezoid independent of en_cross        
+              en_0            en_cross         en_1
+            
+                             \
+                              \
+                          en_a \    en_b                  triangle from en_a to en_cross 
+               +-----------+----*----+----------+                
+              en_0             en_cross        en_1
+            
+                             \
+                              \
+                               \    en_a  en_b            zero
+               +----------------*----+-----+----+                
+              en_0           en_cross          en_1
+            
+            **/
+            if( en_a <= en_cross && en_b <= en_cross )
+            {
+                 s2integral = (en_b - en_a)*(s2_a + s2_b)*half ; 
+                 emin = std::min<T>( emin, en_a ) ; 
+                 emax = std::min<T>( emax, en_b ) ; 
+            }
+            else
+            {
+                 if( en_a <= en_cross && en_b >= en_cross )
+                 {
+                     s2integral = (en_cross - en_a)*s2_a*half ; 
+                     emin = std::min<T>( emin, en_a ) ; 
+                     emax = std::min<T>( emax, en_cross ) ; 
+                 }
+                 else
+                 {
+                     s2integral = zero ; 
+                 }
+            }
         }
     }    
     const T Rfact = FINE_STRUCTURE_OVER_HBARC_EVMM ;  
     return Rfact*s2integral ; 
 }
 
-template float QCerenkov::GetS2Integral_WithCut( float& , float&,   const float, const float, const float, const float, const float, const float, const float, bool  ); 
-template double QCerenkov::GetS2Integral_WithCut( double&, double&, const double, const double, const double, const double, const double, const double, const double, bool  ); 
+template float QCerenkov::GetS2Integral_WithCut( float& , float&,    float,  float,  float,  float,  float,  float,  float, float, float, bool  ); 
+template double QCerenkov::GetS2Integral_WithCut( double&, double&,  double,  double,  double,  double,  double,  double,  double, double, double, bool  ); 
 
 
 /**
@@ -377,7 +508,7 @@ For debugging purposes the contributions to the integral from each rindex bin ar
 
 **/
 
-template <typename T> NP* QCerenkov::getS2Integral_WithCut_( T& emin, T& emax, const T BetaInverse, const T en_cut, bool dump ) const 
+template <typename T> NP* QCerenkov::getS2Integral_WithCut_( T& emin, T& emax, T BetaInverse, T en_a, T en_b, bool dump ) const 
 {
     const T* vv = dsrc->cvalues<T>(); 
     unsigned ni = dsrc->shape[0] ; 
@@ -387,7 +518,8 @@ template <typename T> NP* QCerenkov::getS2Integral_WithCut_( T& emin, T& emax, c
     NP* s2i = NP::Make<T>(ni);
     T* s2i_vv = s2i->values<T>();  
 
-    T ri_cut = dsrc->interp<T>(en_cut) ; 
+    T ri_a = en_a > 0 ? dsrc->interp<T>(en_a) : -1 ; 
+    T ri_b = en_b > 0 ? dsrc->interp<T>(en_b) : -1 ; 
 
     for(unsigned i=0 ; i < ni - 1 ; i++)
     {
@@ -397,38 +529,41 @@ template <typename T> NP* QCerenkov::getS2Integral_WithCut_( T& emin, T& emax, c
         T ri_0 = vv[2*(i+0)+1] ; 
         T ri_1 = vv[2*(i+1)+1] ; 
 
-        s2i_vv[i] = GetS2Integral_WithCut<T>(emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1, en_cut, ri_cut, dump );
+        s2i_vv[i] = GetS2Integral_WithCut<T>(emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1, en_a, ri_a, en_b, ri_b, dump );
     }
     return s2i ; 
 }
  
-template NP* QCerenkov::getS2Integral_WithCut_( double&, double&, const double, const double, bool  ) const ; 
-template NP* QCerenkov::getS2Integral_WithCut_( float&,  float&,  const float, const float, bool  ) const ; 
+template NP* QCerenkov::getS2Integral_WithCut_( double&, double&, double, double, double, bool  ) const ; 
+template NP* QCerenkov::getS2Integral_WithCut_( float&,  float&,  float,  float,  float,  bool  ) const ; 
 
 
 
 template <typename T>
-T QCerenkov::getS2Integral_WithCut( T& emin, T& emax, const T BetaInverse, const T en_cut, bool dump ) const 
+T QCerenkov::getS2Integral_WithCut( T& emin, T& emax, T BetaInverse, T en_a, T en_b, bool dump ) const 
 {
-    NP* s2i = getS2Integral_WithCut_<T>(emin, emax, BetaInverse, en_cut, dump ); 
+    NP* s2i = getS2Integral_WithCut_<T>(emin, emax, BetaInverse, en_a, en_b, dump ); 
     T s2integral = s2i->psum<T>(0u); 
     return s2integral ; 
 }  
-template double QCerenkov::getS2Integral_WithCut( double&, double&, const double, const double, bool  ) const ; 
-template float  QCerenkov::getS2Integral_WithCut( float&,  float&,  const float, const float, bool   ) const ; 
+template double QCerenkov::getS2Integral_WithCut( double&, double&, double, double, double, bool  ) const ; 
+template float  QCerenkov::getS2Integral_WithCut( float&,  float&,  float, float, float, bool   ) const ; 
 
 
 /**
-QCerenkov::getS2Integral_Cumulative
+QCerenkov::getS2Integral_splitbin
 -------------------------------------
 
-Returns *s2c* array of shape (s2_edges, 3) with 
-(en_cut, s2, s2integral) 
+Returns *s2c* array of shape (s2_edges, PAYLOAD_SIZE(=8)) 
+with the last payload entry being s2integral.
 
 The s2 value of evaluated at en_cut and s2integral 
 is the cululative integral up to en_cut.  The first 
 value of s2integral is zero. 
 
+* this approach leads to lots of zero bins because of the fixed full energy range 
+* would be simple to restrict to big bins with contributions allowing mul to be increased at the same cost 
+  by greatly reducing zeros
 
 Why smaller sub-bins are needed ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -450,11 +585,31 @@ and more directly NP::MakeDiv
 
 * there is no need for the sub-bins to all be equally spaced, the motivation for 
   the sub-bins is to profit from the piecewise linear nature of s2 which means that 
-  s2 can be linearly interpolated with very small errors unlike the cubic 
+  s2 can be linearly interpolated with very small errors unlike the parabolic
   cumulative integral for which linear interpolation is a poor approximation 
 
 * splitting the edges into sub-bins allows to simply loop within each big rindex 
   bin saving the partials off into the cumulative integral array   
+
+
+not easy to avoid lots of s2c zero bins in this _SplitBin approach
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* with _UpperCut the number of energy bins is imposed to 
+  be equal for all BetaInverse and different Cerenkov permissable 
+  energy ranges are used for each BetaInverse
+
+* to do something similar here in _SplitBin would need to have the 
+  number of energy bins different for each BetaInverse, 
+  for example including only sub-bins within big-bins with contributions
+  
+* would need to NP::Combine ragged individual BetaInverse s2c 
+* complexity seems not worth it, especially as s2c/s2cn are just 
+  intermediaries on way to creating fixed 0:1 domain icdf array 
+  that is the input to creating the GPU texture 
+
+* that icdf is inherently regular fixed domain as created by NP::pdomain 
+  inversion of s2cn across 0->1 range  
 
 
 prev/next cumulative approach of Geant4
@@ -476,12 +631,17 @@ See Also
 
 
 template <typename T>
-NP* QCerenkov::getS2Integral_Cumulative(const T BetaInverse, unsigned mul ) const 
+NP* QCerenkov::getS2Integral_SplitBin(const T BetaInverse, unsigned mul, bool dump ) const 
 {
     T emin, emax ; 
     T charge = T(1.) ;  
     T avgNumPhotons = GetAverageNumberOfPhotons_s2<T>(emin, emax, BetaInverse, charge ); 
     if(avgNumPhotons <= 0. ) return nullptr ; 
+
+    LOG(debug)
+       << " emin " << std::setw(10) << std::fixed << std::setprecision(4) << emin
+       << " emax " << std::setw(10) << std::fixed << std::setprecision(4) << emax
+       ;
 
     const T* ri_v = dsrc->cvalues<T>(); 
 
@@ -490,32 +650,31 @@ NP* QCerenkov::getS2Integral_Cumulative(const T BetaInverse, unsigned mul ) cons
     assert( ri_nj == 2 && ri_ni > 1 );
 
     unsigned ns = 1+mul ;                // sub divisions of one bin 
-    unsigned s2_edges = getS2Edges<T>(mul); 
+    unsigned s2_edges = getNumEdges_SplitBin<T>(mul); 
 
-    NP* s2c = NP::Make<T>(s2_edges, 3) ; // number of values/edges is one more than bins
+    NP* s2c = NP::Make<T>(s2_edges, SPLITBIN_PAYLOAD_SIZE) ; // number of values/edges is one more than bins
     T* s2c_v = s2c->values<T>(); 
 
-    // hmm this approach leads to lots of zero bins 
-
-    bool dump = false ; 
+    std::vector<unsigned> idxs ;  
+    unsigned idx = 0 ; 
+    for(unsigned p=0 ; p < SPLITBIN_PAYLOAD_SIZE ; p++) s2c_v[SPLITBIN_PAYLOAD_SIZE*idx + p] = ( p == 0 || p == 1) ? emn : 0. ; 
+    // artifical cumulative integral zero for 1st entry 
+    idxs.push_back(idx); 
 
     T s2integral = 0. ; 
 
     for(unsigned i=0 ; i < ri_ni - 1 ; i++)
     {
-        bool first_i = i == 0 ; 
-        //bool last_i = i == ri_ni - 2 ; 
-
         T en_0 = ri_v[2*(i+0)+0] ; 
-        T en_1 = ri_v[2*(i+1)+0] ; 
-        T en_01 = en_1 - en_0 ; 
-
         T ri_0 = ri_v[2*(i+0)+1] ; 
+
+        T en_1 = ri_v[2*(i+1)+0] ; 
         T ri_1 = ri_v[2*(i+1)+1] ; 
 
-        std::cout 
-             << std::endl 
-             << std::endl 
+        T en_01 = en_1 - en_0 ; 
+
+        if(dump) std::cout 
+             << "QCerenkov::getS2Integral_splitbin"
              << " i " << std::setw(3) << i 
              << " ns " << std::setw(3) << ns 
              << " en_0 " << std::setw(10) << std::fixed << std::setprecision(4) << en_0
@@ -523,56 +682,48 @@ NP* QCerenkov::getS2Integral_Cumulative(const T BetaInverse, unsigned mul ) cons
              << std::endl 
              ;
 
-        for(unsigned s=0 ; s < 1+mul  ; s++)   // mul=1  s=0,1
+        // starting from s=1 skips first sub-edge as that is the same as the last edge from prior bin
+        for(unsigned s=1 ; s < 1+mul  ; s++)   
         { 
-            bool first_s = s == 0 ;     
-            //bool last_s = s == mul ;
-            // if( last_s && !last_i ) continue ;  // avoid repeating idx from bin to bin  
- 
-            if( first_s && !first_i ) continue ;   
-            // skip first sub-edge for bins other than the first, as same as the last edge from prior bin
+            T en_a = en_0 + en_01*T(s-1)/T(mul) ;  // mul=1 ->s=1 only : en_a=en_0      
+            T en_b = en_0 + en_01*T(s+0)/T(mul) ;  // mul=1 ->s=1 only : en_b=en_1     
 
+            T ri_a = en_a > 0. ? dsrc->interp<T>(en_a) : -1 ; 
+            T ri_b = en_b > 0. ? dsrc->interp<T>(en_b) : -1 ; 
 
-            const T frac = T(s)/T(mul) ;    //  frac(s=0)=0  frac(s=mul)=1  
-            T en_cut = en_0 + en_01*frac ;    
-            T ri_cut = dsrc->interp<T>(en_cut) ; 
+            T s2_a = getS2<T>( BetaInverse, en_a ); 
+            T s2_b = getS2<T>( BetaInverse, en_b ); 
 
-            // sub is zero when en_cut = en_0 
-            T sub = GetS2Integral_WithCut<T>(emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1, en_cut, ri_cut, dump );
-            T s2 = getS2<T>( BetaInverse, en_cut ); 
+            T sub = GetS2Integral_WithCut<T>(emin, emax, BetaInverse, en_0, en_1, ri_0, ri_1, en_a, ri_a, en_b, ri_b, dump );
 
             s2integral += sub  ; 
 
             unsigned idx = i*mul + s ; 
+            idxs.push_back(idx); 
+            assert( idx < s2_edges ); 
 
-            std::cout 
-                 << " s " << std::setw(3) << s
-                 << " idx " << std::setw(3) << idx
-                 << " en_cut " << std::setw(10) << std::fixed << std::setprecision(4) << en_cut 
-                 << " ri_cut " << std::setw(10) << std::fixed << std::setprecision(4) << ri_cut
-                 << " s2 " << std::setw(10) << std::fixed << std::setprecision(4) << s2
-                 << " sub " << std::setw(10) << std::fixed << std::setprecision(4) << sub
-                 << " s2integral " << std::setw(10) << std::fixed << std::setprecision(4) << s2integral
-                 << std::endl 
-                 ;
-
-            s2c_v[3*idx + 0 ] = en_cut ;  
-            s2c_v[3*idx + 1 ] = s2 ;  
-            s2c_v[3*idx + 2 ] = s2integral ;  
-
+            s2c_v[SPLITBIN_PAYLOAD_SIZE*idx + 0 ] = en_b ;        // 1st payload slot must be "domain" for NP::pdomain lookup ... 
+            s2c_v[SPLITBIN_PAYLOAD_SIZE*idx + 1 ] = en_a ;        // en_b en_a inversion needed .. as 1st entry is auto set to emn 
+            s2c_v[SPLITBIN_PAYLOAD_SIZE*idx + 2 ] = ri_a ;  
+            s2c_v[SPLITBIN_PAYLOAD_SIZE*idx + 3 ] = ri_b ;  
+            s2c_v[SPLITBIN_PAYLOAD_SIZE*idx + 4 ] = s2_a ;  
+            s2c_v[SPLITBIN_PAYLOAD_SIZE*idx + 5 ] = s2_b ;  
+            s2c_v[SPLITBIN_PAYLOAD_SIZE*idx + 6 ] = sub ;  
+            s2c_v[SPLITBIN_PAYLOAD_SIZE*idx + 7 ] = s2integral ;   // last payload slot must be "value" for NP::pdomain lookup
         }
     }
+
+    for(unsigned i=0 ; i < idxs.size() ; i++) assert( idxs[i] == i );  // check idx has it covered 
     return s2c ; 
 } 
 
 
-template NP* QCerenkov::getS2Integral_Cumulative( const double, unsigned ) const ; 
-template NP* QCerenkov::getS2Integral_Cumulative( const float,  unsigned ) const ; 
-
+template NP* QCerenkov::getS2Integral_SplitBin( const double, unsigned, bool ) const ; 
+template NP* QCerenkov::getS2Integral_SplitBin( const float,  unsigned, bool ) const ; 
 
 
 template<typename T>
-unsigned QCerenkov::getS2Edges(unsigned mul ) const 
+unsigned QCerenkov::getNumEdges_SplitBin(unsigned mul ) const 
 {
     unsigned ri_ni = dsrc->shape[0] ; 
     unsigned ri_bins = ri_ni - 1 ;       // number of bins is one less than number of values 
@@ -580,26 +731,28 @@ unsigned QCerenkov::getS2Edges(unsigned mul ) const
     return s2_bins + 1 ; 
 }
 
-template unsigned QCerenkov::getS2Edges<float>(unsigned ) const ; 
-template unsigned QCerenkov::getS2Edges<double>(unsigned ) const ; 
 
 
+
+
+template unsigned QCerenkov::getNumEdges_SplitBin<float>(unsigned ) const ; 
+template unsigned QCerenkov::getNumEdges_SplitBin<double>(unsigned ) const ; 
 
 template <typename T>
-NP* QCerenkov::getS2Integral_Cumulative( const NP* bis, unsigned mul ) const 
+NP* QCerenkov::getS2Integral_SplitBin( const NP* bis, unsigned mul, bool dump) const 
 {
     unsigned ni = bis->shape[0] ; 
-    const T* bb = bis->cvalues<T>(); 
-    unsigned s2_edges = getS2Edges<T>(mul); 
+    unsigned s2_edges = getNumEdges_SplitBin<T>(mul); 
     unsigned nj = s2_edges ; 
 
-    NP* s2c = NP::Make<T>(ni, nj, 3) ; 
-    LOG(info) << "[ creating s2c " << s2c->sstr() ; 
+    NP* s2c = NP::Make<T>(ni, nj, SPLITBIN_PAYLOAD_SIZE) ; 
+
+    LOG(LEVEL) << "[ creating s2c " << s2c->sstr() ; 
 
     for(unsigned i=0 ; i < ni ; i++)
     {
-        const T BetaInverse = bb[i] ; 
-        NP* s2c_one = getS2Integral_Cumulative<T>(BetaInverse, mul ); 
+        const T BetaInverse = bis->get<T>(i) ; 
+        NP* s2c_one = getS2Integral_SplitBin<T>(BetaInverse, mul, dump ); 
  
         if(s2c_one == nullptr)
         {
@@ -615,20 +768,12 @@ NP* QCerenkov::getS2Integral_Cumulative( const NP* bis, unsigned mul ) const
         memcpy( s2c->bytes() + i*s2c_one_bytes, s2c_one->bytes(), s2c_one_bytes ); 
         s2c_one->clear(); 
     }
-    LOG(info) << "] creating s2c " << s2c->sstr() ; 
+    LOG(LEVEL) << "] creating s2c " << s2c->sstr() ; 
     return s2c ; 
 }
 
-template NP* QCerenkov::getS2Integral_Cumulative<float>(  const NP*, unsigned) const ; 
-template NP* QCerenkov::getS2Integral_Cumulative<double>( const NP*, unsigned) const ; 
-
-
-
-
-
-
-
-
+template NP* QCerenkov::getS2Integral_SplitBin<float>(  const NP*, unsigned, bool) const ; 
+template NP* QCerenkov::getS2Integral_SplitBin<double>( const NP*, unsigned, bool) const ; 
 
 
 
@@ -649,7 +794,7 @@ template float  QCerenkov::getS2( const float, const float ) const ;
 
 
 /**
-QCerenkov::getS2CumulativeIntegrals
+QCerenkov::getS2Integral_UpperCut
 -------------------------------------
 
 Returns array of shape (nx, 2) with energies and 
@@ -668,7 +813,7 @@ result in the one pass
 **/
 
 template <typename T>
-NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) const 
+NP* QCerenkov::getS2Integral_UpperCut( const T BetaInverse, unsigned nx ) const   
 {
     T emin ; 
     T emax ; 
@@ -677,7 +822,8 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
     T avgNumPhotons = GetAverageNumberOfPhotons_s2<T>(emin, emax, BetaInverse, charge ); 
     if(avgNumPhotons <= 0. ) return nullptr ; 
 
-    NP* s2c = NP::Make<T>(nx, 3) ; 
+
+    NP* s2c = NP::Make<T>(nx, UPPERCUT_PAYLOAD_SIZE) ; 
     T* cc = s2c->values<T>();
 
     NP* full_s2i = GetAverageNumberOfPhotons_s2_<T>(emin, emax, BetaInverse, charge );
@@ -698,27 +844,28 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
     NP* last_s2i = nullptr ; 
     bool dump = false ; 
 
-    // This is doing the full integral with increasing ecut at each turn 
+    // This is doing the full integral with increasing ecut=en_b at each turn 
     // so it slightly grows, problem with this is that its very repetitive and hence slow
-    // and also it risks going slightly non-monotonic from numberical imprecision.
+    // and also it risks going slightly non-monotonic from numerical imprecision.
     //
  
     for(unsigned i=0 ; i < nx ; i++)
     {
-        T ecut = ee[i] ; 
+        T en_a = -1. ; 
+        T en_b = ee[i] ; 
         
-        NP* s2i = getS2Integral_WithCut_<T>(emin, emax, BetaInverse, ecut, dump ); 
+        NP* s2i = getS2Integral_WithCut_<T>(emin, emax, BetaInverse, en_a, en_b, dump ); 
 
         T s2integral = s2i->psum<T>(0u); 
-        T s2 = getS2<T>( BetaInverse, ecut ); 
+        T s2_b = getS2<T>( BetaInverse, en_b ); 
 
-        cc[3*i+0] = ecut ;   
-        cc[3*i+1] = s2 ; 
-        cc[3*i+2] = s2integral ;   // qty to be normalized needs to be in the last payload slot  
+        cc[UPPERCUT_PAYLOAD_SIZE*i+0] = en_b ;         // domain qty must be 1st payload entry for NP::pdomain
+        cc[UPPERCUT_PAYLOAD_SIZE*i+1] = s2_b ; 
+        cc[UPPERCUT_PAYLOAD_SIZE*i+2] = s2integral ;   // qty to be normalized needs to be in the last payload slot for NP::divide_by_last  
 
         if( i == nx - 1 )
         {
-            last_ecut = ecut ; 
+            last_ecut = en_b ; 
             last_s2integral = s2integral ; 
             last_s2i = s2i ; 
         }
@@ -736,7 +883,7 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
         NP::DumpCompare<double>( full_s2i, last_s2i, 0u, 0u, 1e-6 ); 
 
         std::cout 
-            << " QCerenkov::getS2CumulativeIntegrals "
+            << " QCerenkov::getS2Integral_UpperCut "
             << " BetaInverse " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse
             << " avgNumPhotons " << std::setw(10) << std::fixed << std::setprecision(4) << avgNumPhotons   
             << " last_ecut " << std::setw(10) << std::fixed << std::setprecision(4) << last_ecut 
@@ -751,12 +898,12 @@ NP* QCerenkov::getS2CumulativeIntegrals( const T BetaInverse, unsigned nx ) cons
     return s2c ; 
 }
 
-template NP* QCerenkov::getS2CumulativeIntegrals( const double BetaInverse, unsigned nx ) const ; 
-template NP* QCerenkov::getS2CumulativeIntegrals( const float  BetaInverse, unsigned nx ) const ; 
+template NP* QCerenkov::getS2Integral_UpperCut( const double BetaInverse, unsigned nx ) const ; 
+template NP* QCerenkov::getS2Integral_UpperCut( const float  BetaInverse, unsigned nx ) const ; 
 
 
 /**
-NP* QCerenkov::getS2CumulativeIntegrals
+NP* QCerenkov::getS2Integral_UpperCut
 -----------------------------------------
 
 BetaInverse beyond which get no photons could be used to determine 
@@ -765,7 +912,7 @@ the bis range, avoiding a large chunk of the output array containing just zeros.
 **/
 
 template <typename T>
-NP* QCerenkov::getS2CumulativeIntegrals( const NP* bis, unsigned nx ) const 
+NP* QCerenkov::getS2Integral_UpperCut( const NP* bis, unsigned nx ) const 
 {
     unsigned ni = bis->shape[0] ; 
     const T* bb = bis->cvalues<T>(); 
@@ -777,7 +924,7 @@ NP* QCerenkov::getS2CumulativeIntegrals( const NP* bis, unsigned nx ) const
     for(unsigned i=0 ; i < ni ; i++)
     {
         const T BetaInverse = bb[i] ; 
-        NP* s2c_one = getS2CumulativeIntegrals<T>(BetaInverse, nx ); 
+        NP* s2c_one = getS2Integral_UpperCut<T>(BetaInverse, nx ); 
  
         if(s2c_one == nullptr)
         {
@@ -797,8 +944,8 @@ NP* QCerenkov::getS2CumulativeIntegrals( const NP* bis, unsigned nx ) const
     return s2c ; 
 }
 
-template NP* QCerenkov::getS2CumulativeIntegrals<double>( const NP* , unsigned ) const ; 
-template NP* QCerenkov::getS2CumulativeIntegrals<float>(  const NP* , unsigned ) const ; 
+template NP* QCerenkov::getS2Integral_UpperCut<double>( const NP* , unsigned ) const ; 
+template NP* QCerenkov::getS2Integral_UpperCut<float>(  const NP* , unsigned ) const ; 
 
 
 /**
@@ -813,10 +960,11 @@ nx
 **/
 
 template <typename T>
-QCK<T> QCerenkov::makeICDF( unsigned ny, unsigned nx ) const 
+QCK<T> QCerenkov::makeICDF_UpperCut( unsigned ny, unsigned nx) const 
 {
     NP* bis = NP::Linspace<T>( 1. , rmx,  ny ) ;  
-    NP* s2c = getS2CumulativeIntegrals<T>( bis, nx ); 
+    NP* avph = getAverageNumberOfPhotons_s2<T>(bis ); 
+    NP* s2c = getS2Integral_UpperCut<T>( bis, nx ); 
     NP* s2cn = s2c->copy(); 
     s2cn->divide_by_last<T>(); 
 
@@ -824,13 +972,48 @@ QCK<T> QCerenkov::makeICDF( unsigned ny, unsigned nx ) const
 
     icdf.rindex = dsrc ; 
     icdf.bis = bis ;  
+    icdf.avph = avph ; 
     icdf.s2c = s2c ;
     icdf.s2cn = s2cn ; 
 
     return icdf ; 
 }
-template QCK<double> QCerenkov::makeICDF<double>( unsigned , unsigned ) const ; 
-template QCK<float>  QCerenkov::makeICDF<float>(  unsigned , unsigned ) const ; 
+template QCK<double> QCerenkov::makeICDF_UpperCut<double>( unsigned , unsigned ) const ; 
+template QCK<float>  QCerenkov::makeICDF_UpperCut<float>(  unsigned , unsigned ) const ; 
+
+
+
+template <typename T>
+QCK<T> QCerenkov::makeICDF_SplitBin( unsigned ny, unsigned mul, bool dump) const 
+{
+    NP* bis = NP::Linspace<T>( 1. , rmx,  ny ) ;  
+    std::stringstream ss ; 
+    ss << "name:makeICDF_SplitBin,mul:" << mul ; 
+    bis->meta = ss.str(); 
+
+    NP* avph = getAverageNumberOfPhotons_s2<T>(bis ); 
+    NP* s2c = getS2Integral_SplitBin<T>( bis, mul, dump ); 
+    NP* s2cn = s2c->copy(); 
+    s2cn->divide_by_last<T>(); 
+
+    QCK<T> icdf ; 
+
+    icdf.rindex = dsrc ; 
+    icdf.bis = bis ;  
+    icdf.avph = avph ; 
+    icdf.s2c = s2c ;
+    icdf.s2cn = s2cn ; 
+
+    return icdf ; 
+}
+template QCK<double> QCerenkov::makeICDF_SplitBin<double>( unsigned , unsigned, bool ) const ; 
+template QCK<float>  QCerenkov::makeICDF_SplitBin<float>(  unsigned , unsigned, bool ) const ; 
+
+
+
+
+
+
 
 
 

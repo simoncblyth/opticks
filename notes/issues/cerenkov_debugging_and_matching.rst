@@ -261,6 +261,70 @@ ana/rindex.sh
 
 
 
+
+mul 1 getS2Integral_Cumulative comparing with sympy ana/piecewise.py discrepancy at <0.1 photon level
+-------------------------------------------------------------------------------------------------------
+
+::
+
+    epsilon:qudarap blyth$ ipython -i tests/QCerenkovTest.py 
+    -rw-r--r--  1 blyth  wheel  10496 Sep 21 11:28 /tmp/blyth/opticks/QCerenkovTest/test_getS2Integral_Cumulative/s2c.npy
+    -rw-r--r--  1 blyth  wheel  10496 Sep 21 11:28 /tmp/blyth/opticks/QCerenkovTest/test_getS2Integral_Cumulative/s2cn.npy
+    -rw-r--r--  1 blyth  wheel  200 Sep 21 11:28 /tmp/blyth/opticks/QCerenkovTest/test_getS2Integral_Cumulative/bis.npy
+    -rw-r--r--  1 blyth  wheel  2720 Sep 21 11:29 /tmp/ana/piecewise/scan.npy
+    -rw-r--r--  1 blyth  wheel  200 Sep 21 11:29 /tmp/ana/piecewise/bis.npy
+    INFO:__main__: sa:p_s2c a:(9, 18, 2) sb:b_s2c b:(9, 18, 8) 
+    BetaInverse :     1.0000  dfmax  5.684e-14  df [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.] 
+    BetaInverse :     1.1000  dfmax  5.684e-14  df [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.] 
+    BetaInverse :     1.2000  dfmax  1.705e-13  df [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.] 
+    BetaInverse :     1.3000  dfmax    2.7e-13  df [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.] 
+    BetaInverse :     1.4000  dfmax  1.563e-13  df [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.] 
+    BetaInverse :     1.5000  dfmax    0.02608  df [0.    0.    0.    0.    0.    0.    0.    0.001 0.001 0.001 0.001 0.001 0.001 0.001 0.001 0.001 0.026 0.026] 
+    BetaInverse :     1.6000  dfmax     0.0978  df [0.    0.    0.    0.    0.    0.    0.    0.    0.012 0.012 0.014 0.014 0.074 0.074 0.074 0.098 0.098 0.098] 
+    BetaInverse :     1.7000  dfmax    0.06422  df [0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.042 0.042 0.064 0.064 0.064 0.064] 
+    BetaInverse :     1.7920  dfmax  1.571e-05  df [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.] 
+
+
+* dont understand why getting differences up to almost 0.1 photon 
+
+  * a bug or numerical imprecision ?
+
+* as s2 is piecewise linear would expect the numerical integral to be at something like 1e-4 level to the analytic one 
+  (hmm lots of flops both numerically and analytic) 
+ 
+
+
+::
+
+    epsilon:qudarap blyth$ ipython -i tests/QCerenkovTest.py 
+    -rw-r--r--  1 blyth  wheel  20288 Sep 21 11:58 /tmp/blyth/opticks/QCerenkovTest/test_getS2Integral_Cumulative/s2c.npy
+    -rw-r--r--  1 blyth  wheel  20288 Sep 21 11:58 /tmp/blyth/opticks/QCerenkovTest/test_getS2Integral_Cumulative/s2cn.npy
+    -rw-r--r--  1 blyth  wheel  200 Sep 21 11:58 /tmp/blyth/opticks/QCerenkovTest/test_getS2Integral_Cumulative/bis.npy
+    -rw-r--r--  1 blyth  wheel  5168 Sep 21 11:56 /tmp/ana/piecewise/scan.npy
+    -rw-r--r--  1 blyth  wheel  200 Sep 21 11:56 /tmp/ana/piecewise/bis.npy
+    INFO:__main__: sa:p_s2c a:(9, 35, 2) sb:b_s2c b:(9, 35, 8) 
+    BetaInverse :     1.0000  dfmax     0.1478  df [0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.001 0.002 0.022 0.042 0.042 0.042 0.045 0.049 0.049 0.05  0.073 0.096 0.096 0.096 0.102 0.109 0.117 0.126 0.137 0.148
+     0.148 0.148] 
+    BetaInverse :     1.1000  dfmax     0.1788  df [0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.001 0.003 0.027 0.051 0.051 0.051 0.055 0.059 0.06  0.06  0.088 0.116 0.116 0.116 0.124 0.132 0.142 0.152 0.166 0.179
+     0.179 0.179] 
+    BetaInverse :     1.2000  dfmax     0.2128  df [0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.002 0.003 0.032 0.061 0.061 0.061 0.065 0.07  0.071 0.071 0.105 0.138 0.138 0.138 0.147 0.157 0.169 0.181 0.197 0.213
+     0.213 0.213] 
+    BetaInverse :     1.3000  dfmax     0.2497  df [0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.002 0.004 0.037 0.071 0.071 0.071 0.077 0.083 0.083 0.084 0.123 0.162 0.162 0.162 0.173 0.184 0.198 0.213 0.231 0.25
+     0.25  0.25 ] 
+    BetaInverse :     1.4000  dfmax     0.2896  df [0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.002 0.004 0.043 0.082 0.082 0.082 0.089 0.096 0.096 0.097 0.142 0.188 0.188 0.188 0.201 0.213 0.23  0.247 0.268 0.29
+     0.29  0.29 ] 
+    BetaInverse :     1.5000  dfmax     0.3106  df [0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.003 0.005 0.05  0.095 0.095 0.095 0.102 0.11  0.111 0.112 0.164 0.216 0.216 0.216 0.23  0.245 0.264 0.283 0.308 0.311
+     0.311 0.311] 
+    BetaInverse :     1.6000  dfmax     0.1925  df [0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.012 0.012 0.012 0.014 0.014 0.014 0.014 0.072 0.131 0.131 0.131 0.148 0.164 0.186 0.192 0.192 0.192
+     0.192 0.192] 
+    BetaInverse :     1.7000  dfmax    0.07452  df [0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.    0.042 0.042 0.043 0.061 0.075 0.075 0.075 0.075 0.075
+     0.075 0.075] 
+    BetaInverse :     1.7920  dfmax  1.571e-05  df [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.] 
+
+
+     
+
+
 Checking GetAverageNumberOfPhotons_s2
 -----------------------------------------
 

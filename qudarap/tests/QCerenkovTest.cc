@@ -71,17 +71,17 @@ void test_GetAverageNumberOfPhotons_s2(const QCerenkov& ck)
 }
 
 
-void test_getS2CumulativeIntegrals_one( const QCerenkov& ck, double BetaInverse )
+void test_getS2Integral_UpperCut_one( const QCerenkov& ck, double BetaInverse )
 {
     unsigned nx = 100 ; 
-    NP* s2c = ck.getS2CumulativeIntegrals(BetaInverse, nx); 
+    NP* s2c = ck.getS2Integral_UpperCut(BetaInverse, nx); 
 
     LOG(info) 
         << " BetaInverse " <<  std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse
         << " s2c " << s2c->desc()
         ; 
 
-    const char* path = SPath::Resolve("$TMP/QCerenkovTest/test_getS2CumulativeIntegrals_one.npy"); 
+    const char* path = SPath::Resolve("$TMP/QCerenkovTest/test_getS2Integral_UpperCut_one.npy"); 
     LOG(info) << " save to " << path ; 
     s2c->save(path); 
 }
@@ -89,11 +89,11 @@ void test_getS2CumulativeIntegrals_one( const QCerenkov& ck, double BetaInverse 
 
 
 
-void test_getS2CumulativeIntegrals_many(const QCerenkov& ck )
+void test_getS2Integral_UpperCut(const QCerenkov& ck )
 {
     const NP* bis  = NP::Linspace<double>( 1., 2. , 1001 );     // BetaInverse
     unsigned nx = 100u ; 
-    NP* s2c = ck.getS2CumulativeIntegrals<double>(bis, nx ); 
+    NP* s2c = ck.getS2Integral_UpperCut<double>(bis, nx ); 
 
  
     LOG(info) 
@@ -104,7 +104,7 @@ void test_getS2CumulativeIntegrals_many(const QCerenkov& ck )
         ; 
 
 
-    const char* fold = SPath::Resolve("$TMP/QCerenkovTest/test_getS2CumulativeIntegrals"); 
+    const char* fold = SPath::Resolve("$TMP/QCerenkovTest/test_getS2Integral_UpperCut"); 
     SPath::MakeDirs(fold); 
     LOG(info) << " save to " << fold ; 
     s2c->save(fold,"s2c.npy"); 
@@ -114,33 +114,35 @@ void test_getS2CumulativeIntegrals_many(const QCerenkov& ck )
 }
 
 
-void test_getS2Integral_Cumulative( const QCerenkov& ck, const char* bis_, unsigned mul )
+void test_getS2Integral_SplitBin( const QCerenkov& ck, const char* bis_, unsigned mul, bool dump )
 {
+    LOG(info) << "[" ; 
     const NP* bis  = bis_ == nullptr ? NP::Linspace<double>( 1., 2. , 1001 ) : NP::FromString<double>(bis_);     
+    NP* s2c = ck.getS2Integral_SplitBin<double>(bis, mul, dump); 
 
-    NP* s2c = ck.getS2Integral_Cumulative<double>(bis, mul); 
+    const char* fold = SPath::Resolve("$TMP/QCerenkovTest/test_getS2Integral_SplitBin"); 
+    SPath::MakeDirs(fold); 
 
     LOG(info) 
-        << std::endl
-        << " bis " << bis->desc()
-        << std::endl
-        << " s2c " << s2c->desc()
+        << " bis_ " << bis_
         << " mul " << mul 
+        << " dump " << dump
+        << " s2c " << s2c->sstr() 
+        << std::endl 
+        << " fold " << fold 
         ; 
 
-    const char* fold = SPath::Resolve("$TMP/QCerenkovTest/test_getS2Integral_Cumulative"); 
-    SPath::MakeDirs(fold); 
-    LOG(info) << " save to " << fold ; 
+    bis->save(fold, "bis.npy"); 
     s2c->save(fold, "s2c.npy"); 
-
     s2c->divide_by_last<double>();  
     s2c->save(fold, "s2cn.npy"); 
+    LOG(info) << "]" ; 
 }
 
 
-void test_makeICDF(const QCerenkov& ck, unsigned ny, unsigned nx )
+void test_makeICDF_UpperCut(const QCerenkov& ck, unsigned ny, unsigned nx )
 {
-    QCK<double> icdf = ck.makeICDF<double>( ny, nx ); 
+    QCK<double> icdf = ck.makeICDF_UpperCut<double>( ny, nx ); 
 
     LOG(info)
         << std::endl  
@@ -152,7 +154,29 @@ void test_makeICDF(const QCerenkov& ck, unsigned ny, unsigned nx )
         << std::endl  
         ;
 
-    const char* icdf_path = SPath::Resolve("$TMP/QCerenkovTest/test_makeICDF"); 
+    const char* icdf_path = SPath::Resolve("$TMP/QCerenkovTest/test_makeICDF_UpperCut"); 
+    int rc = SPath::MakeDirs(icdf_path);   
+    assert( rc == 0 ); 
+    icdf.save(icdf_path); 
+}
+
+
+
+void test_makeICDF_SplitBin(const QCerenkov& ck, unsigned ny, unsigned mul, bool dump )
+{
+    QCK<double> icdf = ck.makeICDF_SplitBin<double>( ny, mul, dump ); 
+
+    LOG(info)
+        << std::endl  
+        << " icdf.bis  " << icdf.bis->desc()
+        << std::endl  
+        << " icdf.s2c  " << icdf.s2c->desc() 
+        << std::endl  
+        << " icdf.s2cn " << icdf.s2cn->desc()
+        << std::endl  
+        ;
+
+    const char* icdf_path = SPath::Resolve("$TMP/QCerenkovTest/test_makeICDF_SplitBin"); 
     int rc = SPath::MakeDirs(icdf_path);   
     assert( rc == 0 ); 
     icdf.save(icdf_path); 
@@ -161,30 +185,48 @@ void test_makeICDF(const QCerenkov& ck, unsigned ny, unsigned nx )
 
 
 
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+    char d = 'S' ; 
+    char t = argc > 1 ? argv[1][0] : d  ; 
+    LOG(info) << " t " << t ; 
 
     QCerenkov ck ;  
-    //const double BetaInverse = 1.0 ; 
 
-    //test_lookup(ck); 
-    //test_check(ck); 
-
-    //test_GetAverageNumberOfPhotons_s2(ck); 
-
-    //test_getS2CumulativeIntegrals_one(ck,BetaInverse) ; 
-    //test_getS2CumulativeIntegrals_many(ck) ; 
-
-    //const char* bis = "1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.792" ; 
-    const char* bis = "1.0" ; 
-    unsigned mul = 2 ; 
-    test_getS2Integral_Cumulative(ck, bis, mul ) ; 
-
-    //unsigned ny = 2000u ; 
-    //unsigned nx = 2000u ; 
-    //test_makeICDF(ck, ny, nx ); 
-
+    if( t == 'L' )
+    {
+        test_lookup(ck); 
+        //test_check(ck); 
+    }
+    else if( t == 'N' )
+    {
+        test_GetAverageNumberOfPhotons_s2(ck); 
+    }
+    else if( t == 'A' )
+    {
+        const char* bis = "1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.792" ; 
+        //const char* bis = "1.0" ; 
+        unsigned mul = 10 ; 
+        bool dump = true ; 
+        test_getS2Integral_SplitBin(ck, bis, mul, dump) ; 
+    }
+    else if ( t == 'U' )
+    {
+        unsigned ny = 2000u ; 
+        unsigned nx = 2000u ; 
+        test_makeICDF_UpperCut(ck, ny, nx ); 
+    }
+    else if ( t == 'S' )
+    {
+        unsigned ny = 1000u ; 
+        unsigned mul = 100u ; 
+        bool dump = false ; 
+        test_makeICDF_SplitBin(ck, ny, mul, dump ); 
+    }
 
     return 0 ; 
 }

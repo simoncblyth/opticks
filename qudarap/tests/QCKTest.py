@@ -65,7 +65,7 @@ See also::
 import os, logging, numpy as np
 
 from opticks.ana.nbase import chi2
-from opticks.ana.edges import divide_edges
+from opticks.ana.edges import divide_bins
 from opticks.ana.rsttable import RSTTable
 
 log = logging.getLogger(__name__)
@@ -165,6 +165,7 @@ class QCKTest(object):
 
     def bislist(self):
         names = sorted(os.listdir(os.path.expandvars(self.BASE)))
+        names = filter(lambda n:not n.startswith("bis"), names)
         print(names)
         bis = list(map(float, names))
         return bis
@@ -212,7 +213,7 @@ class QCKTest(object):
        
         #edges = np.linspace(1.55,15.5,100)  # including rightmost 
         #edges = np.linspace(1.55,15.5,200)  # including rightmost 
-        #edges = divide_edges( ri[:,0], mul=4 )  
+        #edges = divide_bins( ri[:,0], mul=4 )  
 
         hl = np.histogram( el, bins=edges )
         hs = np.histogram( es, bins=edges )

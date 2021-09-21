@@ -330,44 +330,45 @@ class S2Integral(object):
         fig.show() 
 
     @classmethod
-    def Scan(cls, tt, mul=2):
+    def Scan(cls, tt, mul):
         """
         see QUDARap/tests/QCerenkovTest.cc .py for comparison with numerical integral  
         """
         ee = divide_bins(ri[:,0], mul)   
         pass
         sc = np.zeros( (len(tt), len(ee), 2) )
+        bis = np.zeros( len(tt) )
+
         for i, k in enumerate(sorted(tt)):
             t = tt[k]
             BetaInverse = t.b 
+            bis[i] = BetaInverse
             for j,en in enumerate(ee):
                 is2sum_val = t.is2sum_(en)
                 sc[i, j] = en, is2sum_val 
                 print("BetaInverse %10.5f en %10.5f is2sum_val : %10.5f " % (BetaInverse, en, is2sum_val) )
             pass
         pass
-        path = "/tmp/ana/piecewise/scan.npy"
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
+        fold = "/tmp/ana/piecewise"
+        if not os.path.exists(fold):
+            os.makedirs(fold)
         pass
-        log.info("save scan to %s " % path )
-        np.save(path, sc)
+        log.info("save scan to %s " % fold )
+        np.save(os.path.join(fold, "scan.npy"), sc)
+        np.save(os.path.join(fold, "bis.npy"), bis)
         return sc
 
 
 if __name__ == '__main__':
-
     logging.basicConfig(level=logging.INFO)    
-
     plt.ion()
 
-    #bis_ = "1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.792"
-    bis_ = "1"
-    bis = list(map(float, bis_.split()))
-
-    mul = 2 
+    bis_ = "1 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.792"
+    #bis_ = "1"
+    mul = 10
 
     tt = {}
+    bis = list(map(float, bis_.split()))
     for BetaInverse in bis:
         tt[BetaInverse] = S2Integral(BetaInverse=BetaInverse)
     pass
@@ -378,6 +379,6 @@ if __name__ == '__main__':
     #t.export_as_c_code()
     #is2a_val = t.is2a_(t.emx)
 
-    S2Integral.Scan(tt)
+    S2Integral.Scan(tt, mul=mul)
 
 

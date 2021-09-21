@@ -42,10 +42,10 @@ struct NP
         double         f ;  
     };            
 
-
     template<typename T> static NP*  Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1 );  // dtype from template type
     template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx ); 
     template<typename T> static NP*  MakeDiv( const NP* src, unsigned mul  ); 
+    template<typename T> static NP*  Make( const std::vector<T>& src ); 
     template<typename T> static T To( const char* a ); 
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
 
@@ -1063,8 +1063,8 @@ template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) 
     assert( ndim == 2 || ndim == 3 ); 
     unsigned ni = shape[ndim-2]; 
     unsigned nj = shape[ndim-1]; 
-    assert( nj == 2 || nj == 3 ); 
 
+    assert( nj <= 8 );        // not needed for below, just for sanity of payload
     unsigned jdom = 0 ;       // 1st payload slot is "domain"
     unsigned jval = nj - 1 ;  // last payload slot is "value" 
 
@@ -1537,7 +1537,7 @@ template<typename T> inline void NP::divide_by_last()
         unsigned ni = shape[0] ;  // eg BetaInverse dimension
         unsigned nj = shape[1] ;  // eg energy dimension 
         unsigned nk = shape[2] ;  // eg payload carrying  [energy,s2,s2integral]
-        assert( nk == 1 || nk == 2 || nk == 3 ) ; // not required by the below, but restrict for understanding 
+        assert( nk <= 8  ) ;      // not required by the below, but restrict for understanding 
 
         for(unsigned i=0 ; i < ni ; i++)
         {
@@ -2329,6 +2329,13 @@ template <typename T> NP* NP::MakeDiv( const NP* src, unsigned mul  )
 }
 
 
+template <typename T> NP*  NP::Make( const std::vector<T>& src ) // static
+{
+    NP* a = NP::Make<T>(src.size()); 
+    a->read(src.data()); 
+    return a ; 
+}
+
 template <typename T> T NP::To( const char* a )   // static 
 {   
     std::string s(a);
@@ -2344,11 +2351,12 @@ template <typename T> NP* NP::FromString(const char* str, char delim)  // static
     std::stringstream ss(str);
     std::string s ; 
     while(getline(ss, s, delim)) vec.push_back(To<T>(s.c_str()));
-
-    NP* a = NP::Make<T>(vec.size()); 
-    a->read(vec.data()); 
+    NP* a = NP::Make<T>(vec) ; 
     return a ; 
 }
+
+
+
 
 
 

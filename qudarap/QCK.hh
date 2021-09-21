@@ -42,6 +42,7 @@ struct QUDARAP_API QCK
 
     NP* rindex ; 
     NP* bis ;  // BetaInverse 
+    NP* avph ; // for each BetaInverse payload : (BetaInverse, emin, emax, averageNumberOfPhotons)
     NP* s2c ;  // cumulative s2 integral 
     NP* s2cn ; // normalized *s2c*, aka *icdf* 
 
@@ -57,7 +58,8 @@ struct QUDARAP_API QCK
 
 
     int find_bisIdx( const T BetaInverse ) const ; 
-    void energy_range( T& emin, T& emax, const T BetaInverse, bool dump ) const ; 
+    void energy_range_s2cn( T& emin, T& emax, const T BetaInverse, bool dump ) const ; 
+    void energy_range_avph( T& emin, T& emax, const T BetaInverse, bool dump ) const ; 
 
 
     // lookup from sets of ICDF, normalized s2 energy integrals  
@@ -66,7 +68,7 @@ struct QUDARAP_API QCK
     NP* energy_lookup(  const T BetaInverse, const NP* uu, NP* tt) const ; 
 
     // traditional s2 rejection sampling using rindex as function of energy 
-    T   energy_sample_( const T BetaInverse,  const std::function<T()>& rng, double& dt, unsigned& count ) const ; 
+    T   energy_sample_( const T emin, const T emax, const T BetaInverse,  const std::function<T()>& rng, double& dt, unsigned& count ) const ; 
     NP* energy_sample(  const T BetaInverse,  const std::function<T()>& rng, unsigned ni, NP* tt ) const ; 
 
 }; 
