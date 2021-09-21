@@ -24,217 +24,76 @@ g4-usage(){ cat << \EOU
 Geant4
 ========
 
-
-
-
-GDML auxiliary
----------------
-
-* https://github.com/hanswenzel/G4OpticksTest/blob/master/gdml/G4Opticks.gdml
+Install non-default Geant4 version
+------------------------------------
 
 ::
 
-
-    166         <volume name="Obj">
-    167             <materialref ref="LS0x4b61c70"/>
-    168             <solidref ref="Obj"/>
-    169             <colorref ref="blue"/>
-    170             <auxiliary auxtype="StepLimit" auxvalue="0.4" auxunit="mm"/>
-    171             <auxiliary auxtype="SensDet" auxvalue="lArTPC"/>
-    172             <physvol name="Det">
-    173                 <volumeref ref="Det"/>
-    174                 <position name="Det" unit="mm" x="0" y="0" z="100"/>
-    175             </physvol>
-    176         </volume>
+   // comment the line prefix hookup and open new session
+   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4-info
+   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4--
 
 
+opticks-setup does the below, which is looking at the CMAKE_PREFIX_PATH to determine
+the Geant4 in use::
+
+    276 # opticks-setup-geant4-  
+    277 
+    278 export OPTICKS_GEANT4_PREFIX=$(opticks-setup-find-geant4-prefix)
+    279 
+    280 if [ -n "$OPTICKS_GEANT4_PREFIX" ]; then
+    281     if [ -f "$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then
+    282         source $OPTICKS_GEANT4_PREFIX/bin/geant4.sh
+    283     else
+    284         echo ERROR no $OPTICKS_GEANT4_PREFIX/bin/geant4.sh at OPTICKS_GEANT4_PREFIX : $OPTICKS_GEANT4_PREFIX
+    285         return 1
+    286     fi
+    287 fi 
+
+    O[blyth@localhost ~]$ t opticks-setup-find-geant4-prefix
+    opticks-setup-find-geant4-prefix () 
+    { 
+        opticks-setup-find-config-prefix Geant4
+    }
+    O[blyth@localhost ~]$ t opticks-setup-find-config-prefix
+    opticks-setup-find-config-prefix () 
+    { 
+        : mimick CMake "find_package name CONFIG" identifing the first prefix in the path;
+        local name=${1:-Geant4};
+        local prefix="";
+        local ifs=$IFS;
+        IFS=:;
+        for pfx in $CMAKE_PREFIX_PATH;
+        do
+            ls -1 $pfx/lib*/$name-*/${name}Config.cmake 2> /dev/null 1>&2;
+            [ $? -eq 0 ] && prefix=$pfx && break;
+            ls -1 $pfx/lib*/cmake/$name-*/${name}Config.cmake 2> /dev/null 1>&2;
+            [ $? -eq 0 ] && prefix=$pfx && break;
+        done;
+        IFS=$ifs;
+        echo $prefix
+    }
+    O[blyth@localhost ~]$ 
 
 
-::
-
-    epsilon:geant4.10.04.p02 blyth$ g4-hh G4GDMLAuxMapType
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:typedef std::map<G4LogicalVolume*,G4GDMLAuxListType> G4GDMLAuxMapType;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   const G4GDMLAuxMapType* GetAuxMap() const {return &auxMap;}
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   G4GDMLAuxMapType auxMap;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   inline const G4GDMLAuxMapType* GetAuxMap() const;
-    epsilon:geant4.10.04.p02 blyth$ 
-
-
-    epsilon:geant4.10.04.p02 blyth$ g4-hh G4GDMLAuxMapType
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:typedef std::map<G4LogicalVolume*,G4GDMLAuxListType> G4GDMLAuxMapType;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   const G4GDMLAuxMapType* GetAuxMap() const {return &auxMap;}
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   G4GDMLAuxMapType auxMap;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   inline const G4GDMLAuxMapType* GetAuxMap() const;
-    epsilon:geant4.10.04.p02 blyth$ g4-hh G4GDMLAuxListType
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLRead.hh:   const G4GDMLAuxListType* GetAuxList() const;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLRead.hh:   G4GDMLAuxListType auxGlobalList;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLAuxStructType.hh:typedef std::vector<G4GDMLAuxStructType> G4GDMLAuxListType;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLWriteStructure.hh:   std::map<const G4LogicalVolume*, G4GDMLAuxListType> auxmap;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:typedef std::map<G4LogicalVolume*,G4GDMLAuxListType> G4GDMLAuxMapType;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLReadStructure.hh:   G4GDMLAuxListType GetVolumeAuxiliaryInformation(G4LogicalVolume*) const;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   inline G4GDMLAuxListType GetVolumeAuxiliaryInformation(G4LogicalVolume* lvol) const;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   inline const G4GDMLAuxListType* GetAuxList() const;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLParser.hh:   G4GDMLAuxListType *rlist, *ullist;
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLWrite.hh:    void AddAuxInfo(G4GDMLAuxListType* auxInfoList, xercesc::DOMElement* element);
-    /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/persistency/gdml/include/G4GDMLWrite.hh:    G4GDMLAuxListType auxList;
-    epsilon:geant4.10.04.p02 blyth$ 
-
-
-
-
-::
-
-    epsilon:src blyth$ grep AuxiliaryRead *.*
-    G4GDMLRead.cc:AuxiliaryRead(const xercesc::DOMElement* const auxiliaryElement)
-    G4GDMLRead.cc:        G4Exception("G4GDMLRead::AuxiliaryRead()",
-    G4GDMLRead.cc:         G4Exception("G4GDMLRead::AuxiliaryRead()",
-    G4GDMLRead.cc:         auxList->push_back(AuxiliaryRead(child));
-
-           
-
-    G4GDMLRead.cc:        auxGlobalList.push_back(AuxiliaryRead(child));
-    G4GDMLReadStructure.cc:        { auxList.push_back(AuxiliaryRead(child)); } else
-           from volume elements 
-
-    epsilon:src blyth$ 
+Hence to build a new Geant4 its best to start by commenting use of opticks-setup and starting from scratch. 
 
 
 
-    322 void G4GDMLRead::UserinfoRead(const xercesc::DOMElement* const userinfoElement)
-    323 {
-    324 #ifdef G4VERBOSE
-    325    G4cout << "G4GDML: Reading userinfo..." << G4endl;
-    326 #endif
-    327    for (xercesc::DOMNode* iter = userinfoElement->getFirstChild();
-    328         iter != 0; iter = iter->getNextSibling())
-    329    {
-    330       if (iter->getNodeType() != xercesc::DOMNode::ELEMENT_NODE)  { continue; }
-    331 
-    332       const xercesc::DOMElement* const child
-    333             = dynamic_cast<xercesc::DOMElement*>(iter);
-    334       if (!child)
-    335       {
-    336         G4Exception("G4GDMLRead::UserinfoRead()",
-    337                     "InvalidRead", FatalException, "No child found!");
-    338         return;
-    339       }
-    340       const G4String tag = Transcode(child->getTagName());
-    341 
-    342       if (tag=="auxiliary")
-    343       {
-    344         auxGlobalList.push_back(AuxiliaryRead(child));
-    345       }
-
-    474 const G4GDMLAuxListType* G4GDMLRead::GetAuxList() const
-    475 {
-    476    return &auxGlobalList;
-    477 }
-
-
-    111 void G4GDMLWrite::UserinfoWrite(xercesc::DOMElement* gdmlElement)
-    112 {
-    113   if(auxList.size()>0)
-    114   {
-    115 #ifdef G4VERBOSE
-    116     G4cout << "G4GDML: Writing userinfo..." << G4endl;
-    117 #endif
-    118     userinfoElement = NewElement("userinfo");
-    119     gdmlElement->appendChild(userinfoElement);
-    120     AddAuxInfo(&auxList, userinfoElement);
-    121   }
-    122 }
-
-
-    352 void G4GDMLWrite::AddAuxiliary(G4GDMLAuxStructType myaux)
-    353 {
-    354    auxList.push_back(myaux);
-    355 }
-
-    epsilon:src blyth$ grep AddAuxiliary *.*
-    G4GDMLParser.cc:    AddAuxiliary(raux);
-    G4GDMLWrite.cc:void G4GDMLWrite::AddAuxiliary(G4GDMLAuxStructType myaux)
-
-    epsilon:src blyth$ g4-cc AddAuxiliary
-    /usr/local/opticks_externals/g4.build/geant4.10.04.p02/source/persistency/gdml/src/G4GDMLParser.cc:    AddAuxiliary(raux);
-    /usr/local/opticks_externals/g4.build/geant4.10.04.p02/source/persistency/gdml/src/G4GDMLWrite.cc:void G4GDMLWrite::AddAuxiliary(G4GDMLAuxStructType myaux)
-
-
-Looks like can use GDML like below::  
-
-      <gdml>
-           <userinfo>
-               <auxiliary auxtype="type" auxvalue="value" auxunit="" />
-           </userinfo>
-      </gdml>
-
+Darwin
+--------
 
 ::
 
-    160 inline
-    161 G4GDMLAuxListType
-    162 G4GDMLParser::GetVolumeAuxiliaryInformation(G4LogicalVolume* logvol) const
-    163 {
-    164   return reader->GetVolumeAuxiliaryInformation(logvol);
-    165 }
-    166 
-    167 inline
-    168 const G4GDMLAuxMapType* G4GDMLParser::GetAuxMap() const
-    169 {
-    170   return reader->GetAuxMap();
-    171 }
-    172 
-    173 inline
-    174 const G4GDMLAuxListType* G4GDMLParser::GetAuxList() const
-    175 {
-    176   return reader->GetAuxList();
-    177 }
-    178 
-    179 inline
-    180 void G4GDMLParser::AddAuxiliary(G4GDMLAuxStructType myaux)
-    181 {
-    182   return writer->AddAuxiliary(myaux);
-    183 }
-
-
-
-
-
-g4-cls G4GDMLWriteStructure::
-
-    95    std::map<const G4LogicalVolume*, G4GDMLAuxListType> auxmap;
-
-    580 void
-    581 G4GDMLWriteStructure::AddVolumeAuxiliary(G4GDMLAuxStructType myaux,
-    582                                          const G4LogicalVolume* const lvol)
-    583 {
-    584   std::map<const G4LogicalVolume*,
-    585            G4GDMLAuxListType>::iterator pos = auxmap.find(lvol);
-    586 
-    587   if (pos == auxmap.end())  { auxmap[lvol] = G4GDMLAuxListType(); }
-    588 
-    589   auxmap[lvol].push_back(myaux);
-    590 }
-
-g4-cls G4GDMLAuxStructType::
-
-    042 struct G4GDMLAuxStructType
-     43 {
-     44    G4String type;
-     45    G4String value;
-     46    G4String unit;
-     47    std::vector<G4GDMLAuxStructType>* auxList;
-     48 };
-     49 
-     50 typedef std::vector<G4GDMLAuxStructType> G4GDMLAuxListType;
-
-g4-cls G4GDMLParser::
-
-    119    inline G4VPhysicalVolume* GetWorldVolume(const G4String& setupName="Default") const;
-    120    inline G4GDMLAuxListType GetVolumeAuxiliaryInformation(G4LogicalVolume* lvol) const;
-    121    inline const G4GDMLAuxMapType* GetAuxMap() const;
-    122    inline const G4GDMLAuxListType* GetAuxList() const;
-    123    inline void AddAuxiliary(G4GDMLAuxStructType myaux);
-
+    -- Detecting CXX compile features - done
+    -- Checking C++ feature CXXSTDLIB_FILESYSTEM_NATIVE - Failed
+    -- Checking C++ feature CXXSTDLIB_FILESYSTEM_STDCXXFS - Failed
+    -- Checking C++ feature CXXSTDLIB_FILESYSTEM_CXXFS - Failed
+    CMake Error at cmake/Modules/G4BuildSettings.cmake:249 (message):
+      No support for C++ filesystem found for compiler 'Clang', '10.0.1'
+    Call Stack (most recent call first):
+      cmake/Modules/G4CMakeMain.cmake:53 (include)
+      CMakeLists.txt:48 (include)
 
 
 
@@ -253,18 +112,6 @@ Introductions
 * http://www.niser.ac.in/sercehep2017/notes/serc17_geant4.pdf
 
   111 slides of Geant4 intro 
-
-
-Install non-default Geant4 version
-------------------------------------
-
-::
-
-
-   OPTICKS_GEANT4_PREFIX=/usr/local/foreign OPTICKS_GEANT4_NOM=geant4.10.05.p01  g4-info
-   OPTICKS_GEANT4_PREFIX=/usr/local/foreign OPTICKS_GEANT4_NOM=geant4.10.05.p01  g4--
-
-
 
 
 
@@ -301,40 +148,6 @@ data : G4NDL failed repeatedly, so copy from epsilon
     8.1M	RadioactiveDecay-4.3.1
     2.1M	RealSurface-1.0
     epsilon:Externals blyth$ 
-
-
-Not finding xercesc
---------------------
-
-::
-
-    In file included from /usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/include/G4GDMLReadDefine.hh:45:
-    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/include/G4GDMLRead.hh:42:10: fatal error: 'xercesc/parsers/XercesDOMParser.hpp' file not found
-    #include <xercesc/parsers/XercesDOMParser.hpp>
-             ^
-    1 error generated.
-
-::
-
-	/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/include -I/home/blyth/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/mctruth/include  -W -Wall -pedantic -Wno-non-virtual-dtor -Wno-long-long -Wwrite-strings -Wpointer-arith -Woverloaded-virtual -Wno-variadic-macros -Wshadow -pipe -DG4USE_STD11 -O2 -g -fPIC   -std=c++11 -o CMakeFiles/G4persistency.dir/mctruth/src/G4VPHitsCollectionIO.cc.o -c /home/blyth/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/mctruth/src/G4VPHitsCollectionIO.cc
-	gmake[2]: *** No rule to make target `/home/blyth/local/opticks/externals/lib/libxerces-c-3-1.so', needed by `BuildProducts/lib64/libG4persistency.so'.  Stop.
-	gmake[2]: Leaving directory `/home/blyth/local/opticks/externals/g4/geant4_10_02_p01.Debug.build'
-	gmake[1]: *** [source/persistency/CMakeFiles/G4persistency.dir/all] Error 2
-	gmake[1]: Leaving directory `/home/blyth/local/opticks/externals/g4/geant4_10_02_p01.Debug.build'
-	gmake: *** [all] Error 2
-	-bash: /home/blyth/local/opticks/externals/bin/geant4.sh: No such file or directory
-	=== g4-export-ini : writing G4 environment to /home/blyth/local/opticks/externals/config/geant4.ini
-	[blyth@localhost geant4_10_02_p01.Debug.build]$ 
-
-
-
-
-Expat
--------
-
-::
-
-    yum install expat-devel
 
 
 
@@ -490,8 +303,9 @@ Changing g4 version in ~/.opticks_config::
     #   uncomment above temporary setting whilst building a new geant4 
     #   make sure to comment the below standard g4_1042 prepend whilst building the new geant4 version
     #   for ease of testing multiple versions of geant4 with opticks a convenient approach is to
-    #   create separate user accounts for each geant4 version and make them all user the same opticks
+    #   create separate user accounts for each geant4 version and make them all use the same opticks
     #   code via a symbolic "opticks" link to /Users/blyth/opticks
+    #   This is done on Dell Precision Workstation at IHEP using account "simon" for non-standard Geant4.
 
     ## hookup paths to access "foreign" externals 
     opticks-prepend-prefix /usr/local/opticks_externals/boost
@@ -501,8 +315,6 @@ Changing g4 version in ~/.opticks_config::
 
     #opticks-prepend-prefix /usr/local/opticks_externals/g4_1042
     # comment this whilst getting a building a new geant4 version
-
-
 
 
 When using a pre-existing Geant4 installation in a build the CMAKE_PREFIX_PATH determines 
@@ -590,6 +402,7 @@ g4-nom(){
      1042) echo geant4_10_04_p02 ;;
      1062) echo geant4.10.06.p02 ;;
      1070) echo geant4.10.07 ;;
+     1100) echo geant4.11.00.b01 ;;
   esac
 }
 
@@ -613,8 +426,10 @@ g4-url(){
         geant4.10.05.p01) echo http://cern.ch/geant4-data/releases/geant4.10.05.p01.tar.gz ;; 
         geant4.10.06.p02) echo http://cern.ch/geant4-data/releases/geant4.10.06.p02.tar.gz ;;
         geant4.10.07)     echo http://cern.ch/geant4-data/releases/geant4.10.07.tar.gz ;;
+        geant4.11.00.b01) echo https://geant4-data.web.cern.ch/releases/geant4.11.00.b01.tar.gz ;;
    esac
 }
+
 
 g4-title()
 {
@@ -709,10 +524,6 @@ comparisons between separate invokations or runs on different systems.
 
 EON
 }
-
-
-
-
 
 
 # the below inline version approach is not recommended, 

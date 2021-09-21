@@ -627,6 +627,15 @@ See Also
 
 * ana/piecewise.py for some whacky parabolic Ideas
 
+TODO:
+
+* create the icdf float4 payload array, by baking NP::pdomain results from 0->1 for each BetaInverse 
+* check lookups using it still OK chi2 with sampling 
+* turn into GPU texture and check again, will probably need the hd_factor trick from 
+  X4Scintillation::CreateGeant4InterpolatedInverseCDF in the energy extremes where the CDF 
+  tends to get very flat (and hence ICDF is very steep)
+  
+
 **/
 
 
@@ -949,8 +958,8 @@ template NP* QCerenkov::getS2Integral_UpperCut<float>(  const NP* , unsigned ) c
 
 
 /**
-QCK QCerenkov::makeICDF     
---------------------------
+QCK QCerenkov::makeICDF_UpperCut
+------------------------------------
 
 ny 
     number BetaInverse values "height"

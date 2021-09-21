@@ -1,6 +1,6 @@
 
 #include <iomanip>
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "X4PhysicsOrderedFreeVector.hh"
 #include "G4MaterialPropertyVector.hh"
 #include "X4Scintillation.hh"
 #include "X4MaterialPropertyVector.hh"
