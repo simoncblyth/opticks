@@ -33,53 +33,6 @@ Install non-default Geant4 version
    g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4-info
    g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4--
 
-
-opticks-setup does the below, which is looking at the CMAKE_PREFIX_PATH to determine
-the Geant4 in use::
-
-    276 # opticks-setup-geant4-  
-    277 
-    278 export OPTICKS_GEANT4_PREFIX=$(opticks-setup-find-geant4-prefix)
-    279 
-    280 if [ -n "$OPTICKS_GEANT4_PREFIX" ]; then
-    281     if [ -f "$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then
-    282         source $OPTICKS_GEANT4_PREFIX/bin/geant4.sh
-    283     else
-    284         echo ERROR no $OPTICKS_GEANT4_PREFIX/bin/geant4.sh at OPTICKS_GEANT4_PREFIX : $OPTICKS_GEANT4_PREFIX
-    285         return 1
-    286     fi
-    287 fi 
-
-    O[blyth@localhost ~]$ t opticks-setup-find-geant4-prefix
-    opticks-setup-find-geant4-prefix () 
-    { 
-        opticks-setup-find-config-prefix Geant4
-    }
-    O[blyth@localhost ~]$ t opticks-setup-find-config-prefix
-    opticks-setup-find-config-prefix () 
-    { 
-        : mimick CMake "find_package name CONFIG" identifing the first prefix in the path;
-        local name=${1:-Geant4};
-        local prefix="";
-        local ifs=$IFS;
-        IFS=:;
-        for pfx in $CMAKE_PREFIX_PATH;
-        do
-            ls -1 $pfx/lib*/$name-*/${name}Config.cmake 2> /dev/null 1>&2;
-            [ $? -eq 0 ] && prefix=$pfx && break;
-            ls -1 $pfx/lib*/cmake/$name-*/${name}Config.cmake 2> /dev/null 1>&2;
-            [ $? -eq 0 ] && prefix=$pfx && break;
-        done;
-        IFS=$ifs;
-        echo $prefix
-    }
-    O[blyth@localhost ~]$ 
-
-
-Hence to build a new Geant4 its best to start by commenting use of opticks-setup and starting from scratch. 
-
-
-
 Darwin
 --------
 
@@ -94,6 +47,79 @@ Darwin
     Call Stack (most recent call first):
       cmake/Modules/G4CMakeMain.cmake:53 (include)
       CMakeLists.txt:48 (include)
+
+Linux
+--------
+
+* https://geant4-data.web.cern.ch/ReleaseNotes/Beta4.11.0-1.txt
+
+* Requiring C++17 as minimum standard to compile Geant4.
+
+* Bumped minimum CMake version to 3.12.
+
+
+N fails as gcc version not supported::
+
+    CMake Error at cmake/Modules/G4BuildSettings.cmake:199 (message):
+      Geant4 requested compilation using C++ standard '17' with compiler
+
+      'GNU', version '4.8.5'
+
+      but CMake 3.13.4 is not aware of any support for that standard by this
+      compiler.  You may need a newer CMake and/or compiler.
+
+
+S has devtoolset sourced to use newer gcc and gets further::
+
+    -- Checking C++ feature CXXSTDLIB_FILESYSTEM_CXXFS - Failed
+    CMake Error at cmake/Modules/G4OptionalComponents.cmake:64 (find_package):
+      Could not find a configuration file for package "CLHEP" that is compatible
+      with requested version "2.4.4.0".
+
+      The following configuration files were considered but not accepted:
+
+        /home/simon/local/opticks_externals/clhep/lib/CLHEP-2.4.1.0/CLHEPConfig.cmake, version: 2.4.1.0
+
+    Call Stack (most recent call first):
+      cmake/Modules/G4CMakeMain.cmake:59 (include)
+      CMakeLists.txt:48 (include)
+
+
+S, after clhep-- with 2440 proceed to g4-wipe g4-configure g4-build::
+
+    Scanning dependencies of target G4global
+    [  3%] Building CXX object source/CMakeFiles/G4global.dir/global/HEPNumerics/src/G4AnalyticalPolSolver.cc.o
+    [  3%] Building CXX object source/CMakeFiles/G4global.dir/global/HEPNumerics/src/G4ChebyshevApproximation.cc.o
+    In file included from /home/simon/local/opticks_externals/g4_1100.build/geant4.11.00.b01/source/global/HEPNumerics/src/G4ChebyshevApproximation.cc:32:
+    /home/simon/local/opticks_externals/g4_1100.build/geant4.11.00.b01/source/global/management/include/G4PhysicalConstants.hh:69:14: error: ‘CLHEP::Bohr_magneton’ has not been declared
+     using CLHEP::Bohr_magneton;
+                  ^~~~~~~~~~~~~
+    /home/simon/local/opticks_externals/g4_1100.build/geant4.11.00.b01/source/global/management/include/G4PhysicalConstants.hh:70:14: error: ‘CLHEP::nuclear_magneton’ has not been declared
+     using CLHEP::nuclear_magneton;
+                  ^~~~~~~~~~~~~~~~
+    gmake[2]: *** [source/CMakeFiles/G4global.dir/global/HEPNumerics/src/G4ChebyshevApproximation.cc.o] Error 1
+    gmake[1]: *** [source/CMakeFiles/G4global.dir/all] Error 2
+    gmake: *** [all] Error 2
+    Wed Sep 22 03:57:37 CST 2021
+
+
+Bump clhep to 2.4.5.1 and clhep--::
+
+    epsilon:CLHEP blyth$ find . -type f -exec grep -H magneton {} \;
+    ./ChangeLog:     Added constants: Bohr_magneton and nuclear_magneton.
+    ./Units/ChangeLog:     Added constants: Bohr_magneton and nuclear_magneton.
+    ./Units/Units/PhysicalConstants.h:// 06.05.21 Added Bohr_magneton and nuclear_magneton constants
+    ./Units/Units/PhysicalConstants.h:static constexpr double Bohr_magneton = (eplus*hbarc*c_light)/(2*electron_mass_c2);
+    ./Units/Units/PhysicalConstants.h:static constexpr double nuclear_magneton = (eplus*hbarc*c_light)/(2*proton_mass_c2);
+    epsilon:CLHEP blyth$ 
+    epsilon:CLHEP blyth$ 
+    epsilon:CLHEP blyth$ pwd
+    /usr/local/opticks_externals/clhep.build/2.4.5.1/CLHEP
+    epsilon:CLHEP blyth$ 
+
+
+
+
 
 
 

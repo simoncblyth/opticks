@@ -19,6 +19,7 @@ https://proj-clhep.web.cern.ch/proj-clhep/
 
 The latest releases are::
 
+   2.4.5.1, released August 30, 2021.
    2.4.4.0, released November 9, 2020.
    2.3.4.6, released February 15, 2018.
 
@@ -30,7 +31,9 @@ EOU
 clhep-prefix-default(){  echo $(opticks-prefix)_externals/clhep_$(clhep-version)  ; }
 clhep-prefix(){  echo ${OPTICKS_CLHEP_PREFIX:-$(clhep-prefix-default)}  ; }
 #clhep-ver(){     echo 2.4.1.0 ; }
-clhep-ver(){     echo 2.4.4.0 ; }
+#clhep-ver(){     echo 2.4.4.0 ; }
+clhep-ver(){     echo 2.4.5.1 ; }
+
 clhep-version(){  local v=$(clhep-ver) ; echo ${v//./} ; }
 
 #clhep-url(){     echo http://proj-clhep.web.cern.ch/proj-clhep/DISTRIBUTION/tarFiles/clhep-$(clhep-ver).tgz ; }
