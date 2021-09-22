@@ -72,6 +72,7 @@ class OKCONF_API OKConf
 
        static const char* PTXPath( const char* cmake_target, const char* cu_name, const char* ptxrel=nullptr );
        static const char* ShaderDir();
+       static const char* DefaultSTTFPath();  
 
 };
 

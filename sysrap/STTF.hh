@@ -14,12 +14,15 @@ Based on:
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "OKConf.hh"
 
 struct STTF
 {
     static const char* KEY ; 
+    static const char* GetFontPath(); 
     static unsigned char* Load(const char* path); 
 
+    const    char* fontPath ;
     unsigned char* fontBuffer ;
     void* font_ ;   // stbtt_fontinfo*   good to keep foreign types out of definition when easy to do so 
     bool  valid ; 
@@ -72,9 +75,15 @@ struct STTF
 
 
 
-
 const char* STTF::KEY = "OPTICKS_STTF_PATH" ; 
 
+inline const char* STTF::GetFontPath() // static
+{
+    const char* dpath = OKConf::DefaultSTTFPath() ;
+    const char* epath = getenv(KEY) ; 
+    printf("STTF::GetFontPath dpath %s epath %s \n", ( dpath ? dpath : "" ), ( epath ? epath : "" ) );    
+    return epath ? epath : dpath ; 
+}
 
 inline unsigned char* STTF::Load(const char* path) // static 
 {
@@ -106,7 +115,8 @@ inline unsigned char* STTF::Load(const char* path) // static
 
 inline STTF::STTF()
     :
-    fontBuffer(Load(getenv(KEY))),
+    fontPath(GetFontPath()),
+    fontBuffer(Load(fontPath)),
     font_(nullptr),
     valid(false)
 {

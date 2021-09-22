@@ -118,6 +118,30 @@ Bump clhep to 2.4.5.1 and clhep--::
     epsilon:CLHEP blyth$ 
 
 
+After Geant4 build change the prefix setup in ~/.opticks_config to::
+
+     30 ## hookup paths to access "foreign" externals 
+     31 ext=/home/simon/local/opticks_externals
+     32 opticks-prepend-prefix $ext/boost
+     33 opticks-prepend-prefix $ext/clhep_2451
+     34 opticks-prepend-prefix $ext/xercesc
+     35 
+     36 opticks-prepend-prefix $ext/g4_1100 
+     37 
+     38 # it is necessary to keep this override envvar set when using non-default version
+     39 # if you want to use the g4- functions such as g4-cls 
+     40 #export OPTICKS_GEANT4_VER=1062
+     41 export OPTICKS_GEANT4_VER=1100
+     42 
+     43 opticks-setup > /dev/null
+     44 [ $? -ne 0 ] && echo ERROR running opticks-setup && sleep 1000000000 
+
+Then::
+
+    o
+    om-
+    om-clean   # must clean in order to do full CMake reconfigure
+    om-conf 
 
 
 

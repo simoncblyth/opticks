@@ -98,6 +98,7 @@ void OKConf::Dump(const char* msg)
 
     std::cout << std::setw(50) << "OKConf::Geant4VersionInteger() "    << OKConf::Geant4VersionInteger() << std::endl ; 
     std::cout << std::setw(50) << "OKConf::ShaderDir()            "    << OKConf::ShaderDir() << std::endl ; 
+    std::cout << std::setw(50) << "OKConf::DefaultSTTFPath()      "    << OKConf::DefaultSTTFPath() << std::endl ; 
     std::cout << std::endl ; 
 }
 
@@ -260,7 +261,7 @@ const char* OKConf::PTXPath( const char* cmake_target, const char* cu_name, cons
 }
 
 
-const char* OKConf::ShaderDir()
+const char* OKConf::ShaderDir() // static
 {
     std::stringstream ss ; 
     ss << OKConf::OpticksInstallPrefix()
@@ -270,7 +271,15 @@ const char* OKConf::ShaderDir()
     return strdup(shaderdir.c_str()); 
 }
 
-
+const char* OKConf::DefaultSTTFPath()  // static
+{
+    std::stringstream ss ; 
+    ss << OKConf::OpticksInstallPrefix()
+       << "/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf"
+       ;
+    std::string shaderdir = ss.str();
+    return strdup(shaderdir.c_str()); 
+}
 
 
 
