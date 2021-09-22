@@ -19,6 +19,7 @@
 
 #include "X4OpNoviceMaterials.hh" 
 
+#include "G4Version.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
@@ -117,16 +118,28 @@ X4OpNoviceMaterials::X4OpNoviceMaterials()
         ->SetSpline(true);
   myMPT1->AddProperty("ABSLENGTH",    photonEnergy, absorption,     nEntries)
         ->SetSpline(true);
+
+#if G4VERSION_NUMBER < 1100
   myMPT1->AddProperty("FASTCOMPONENT",photonEnergy, scintilFast,     nEntries)
         ->SetSpline(true);
   myMPT1->AddProperty("SLOWCOMPONENT",photonEnergy, scintilSlow,     nEntries)
         ->SetSpline(true);
-
-  myMPT1->AddConstProperty("SCINTILLATIONYIELD",50./MeV);
-  myMPT1->AddConstProperty("RESOLUTIONSCALE",1.0);
   myMPT1->AddConstProperty("FASTTIMECONSTANT", 1.*ns);
   myMPT1->AddConstProperty("SLOWTIMECONSTANT",10.*ns);
   myMPT1->AddConstProperty("YIELDRATIO",0.8);
+#else
+   G4bool createNewKey = true ; 
+  myMPT1->AddProperty("FASTCOMPONENT",photonEnergy, scintilFast,     nEntries, createNewKey)
+        ->SetSpline(true);
+  myMPT1->AddProperty("SLOWCOMPONENT",photonEnergy, scintilSlow,     nEntries, createNewKey)
+        ->SetSpline(true);
+  myMPT1->AddConstProperty("FASTTIMECONSTANT", 1.*ns, createNewKey);
+  myMPT1->AddConstProperty("SLOWTIMECONSTANT",10.*ns, createNewKey);
+  myMPT1->AddConstProperty("YIELDRATIO",0.8, createNewKey);
+#endif
+
+  myMPT1->AddConstProperty("SCINTILLATIONYIELD",50./MeV);
+  myMPT1->AddConstProperty("RESOLUTIONSCALE",1.0);
 
   G4double energy_water[] = {
      1.56962*eV, 1.58974*eV, 1.61039*eV, 1.63157*eV,

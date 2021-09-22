@@ -30,7 +30,7 @@ X4ScintillationTest
 void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<double>* fast_en, const NPY<double>* THE_buffer  )
 {
     G4MaterialPropertyVector* theFastLightVector = X4MaterialPropertyVector::FromArray(fast_en) ; 
-    G4PhysicsOrderedFreeVector* ScintillatorIntegral = X4Scintillation::Integral(theFastLightVector) ; 
+    G4MaterialPropertyVector* ScintillatorIntegral = X4Scintillation::Integral(theFastLightVector) ; 
 
     NPY<double>* si = X4Array::Convert<double>(ScintillatorIntegral) ; 
     const char* derived_name = "ScintillatorIntegral.npy" ; 
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 
     if( slow_en == nullptr || fast_en == nullptr ) return 0 ; 
 
-    const char* outdir = "/tmp/X4ScintillationTest" ; 
+    const char* outdir = "$TMP/X4ScintillationTest" ; 
     test_manual(outdir, slow_en, fast_en, THE_buffer ); 
     test_auto(outdir, slow_en, fast_en, THE_buffer ); 
 

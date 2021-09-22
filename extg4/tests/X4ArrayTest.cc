@@ -1,5 +1,5 @@
 #include "G4PhysicsVector.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 #include "X4Array.hh"
 #include "NPY.hpp"
 #include "NP.hh"
@@ -22,7 +22,7 @@ void test_convert()
         value[i] = 100.*G4double(i); 
     }
 
-    G4PhysicsOrderedFreeVector* vec = new G4PhysicsOrderedFreeVector(energy, value, len);  
+    G4MaterialPropertyVector* vec = new G4MaterialPropertyVector(energy, value, len);  
     X4Array* xvec = new X4Array(vec); 
 
     NPY<double>* d = xvec->convert<double>(); 
@@ -44,11 +44,11 @@ void test_Load0()
 }
 
 
-void VecDump(G4PhysicsOrderedFreeVector* vec)
+void VecDump(G4MaterialPropertyVector* vec)
 {
     std::cout << "VecDump" << std::endl ; 
     G4cout << *vec << G4endl ;
-    std::cout << "G4PhysicsOrderedFreeVector:: " << std::endl ;  
+    std::cout << "G4MaterialPropertyVector:: " << std::endl ;  
     std::cout 
         << std::setw(30) << "GetMinLowEdgeEnergy() " 
         << std::fixed << std::setw(10) << std::setprecision(5) << vec->GetMinLowEdgeEnergy() 
@@ -68,7 +68,7 @@ void VecDump(G4PhysicsOrderedFreeVector* vec)
 
 void VecDump(G4PhysicsVector* vec)
 {
-    VecDump( static_cast<G4PhysicsOrderedFreeVector*>( vec )); 
+    VecDump( static_cast<G4MaterialPropertyVector*>( vec )); 
 }
 
 void test_Load1()
@@ -141,8 +141,8 @@ void test_GetEnergy()
     X4Array* xa = X4Array::FromArray(a); 
     X4Array* xb = X4Array::FromArray(b);     
 
-    G4PhysicsOrderedFreeVector* ga  = static_cast<G4PhysicsOrderedFreeVector*>(xa->vec) ; 
-    G4PhysicsOrderedFreeVector* gb  = static_cast<G4PhysicsOrderedFreeVector*>(xb->vec) ; 
+    G4MaterialPropertyVector* ga  = static_cast<G4MaterialPropertyVector*>(xa->vec) ; 
+    G4MaterialPropertyVector* gb  = static_cast<G4MaterialPropertyVector*>(xb->vec) ; 
     //const NPY<double>* src = xvec->src ; 
     VecDump(ga); 
     VecDump(gb); 

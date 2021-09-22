@@ -33,6 +33,7 @@
 #define FOR_OPTICKS 1
 
 
+#include "G4Version.hh"
 #include "G4Material.hh"
 #include "G4Element.hh"
 #include "G4LogicalBorderSurface.hh"
@@ -148,16 +149,34 @@ G4VPhysicalVolume* OpNoviceDetectorConstruction::Construct()
         ->SetSpline(true);
   myMPT1->AddProperty("ABSLENGTH",    photonEnergy, absorption,     nEntries)
         ->SetSpline(true);
+
+#if G4VERSION_NUMBER < 1100
   myMPT1->AddProperty("FASTCOMPONENT",photonEnergy, scintilFast,     nEntries)
         ->SetSpline(true);
   myMPT1->AddProperty("SLOWCOMPONENT",photonEnergy, scintilSlow,     nEntries)
         ->SetSpline(true);
 
-  myMPT1->AddConstProperty("SCINTILLATIONYIELD",50./MeV);
-  myMPT1->AddConstProperty("RESOLUTIONSCALE",1.0);
   myMPT1->AddConstProperty("FASTTIMECONSTANT", 1.*ns);
   myMPT1->AddConstProperty("SLOWTIMECONSTANT",10.*ns);
   myMPT1->AddConstProperty("YIELDRATIO",0.8);
+
+#else
+  {
+      G4bool createNewKey = true ;    
+      myMPT1->AddProperty("FASTCOMPONENT",photonEnergy, scintilFast,     nEntries, createNewKey)
+            ->SetSpline(true);
+      myMPT1->AddProperty("SLOWCOMPONENT",photonEnergy, scintilSlow,     nEntries, createNewKey)
+            ->SetSpline(true);
+
+      myMPT1->AddConstProperty("FASTTIMECONSTANT", 1.*ns, createNewKey);
+      myMPT1->AddConstProperty("SLOWTIMECONSTANT",10.*ns, createNewKey);
+      myMPT1->AddConstProperty("YIELDRATIO",0.8, createNewKey);
+
+  }
+#endif
+
+  myMPT1->AddConstProperty("SCINTILLATIONYIELD",50./MeV);
+  myMPT1->AddConstProperty("RESOLUTIONSCALE",1.0);
 
   G4double energy_water[] = {
      1.56962*eV, 1.58974*eV, 1.61039*eV, 1.63157*eV,
@@ -215,7 +234,12 @@ G4VPhysicalVolume* OpNoviceDetectorConstruction::Construct()
   myMPT1->AddConstProperty("MIEHG_FORWARD_RATIO",mie_water_const[2]);
 
   G4cout << "Water G4MaterialPropertiesTable" << G4endl;
+
+#if G4VERSION_NUMBER < 1100
   myMPT1->DumpTable();
+#else
+  G4cout << " SKIP myMPT1->DumpTable() as it segments in 1100 " <<  G4endl;
+#endif
 
   water->SetMaterialPropertiesTable(myMPT1);
 

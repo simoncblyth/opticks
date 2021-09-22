@@ -22,6 +22,7 @@
 // /usr/local/opticks/externals/g4/geant4_10_02_p01/examples/extended/optical/LXe/src/LXeDetectorConstruction.cc
 // /usr/local/opticks/externals/g4/geant4_10_02_p01/examples/extended/optical/LXe/include/LXeDetectorConstruction.hh
 
+#include "G4Version.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
@@ -100,15 +101,28 @@ LXe_Materials::LXe_Materials()
   G4double lxe_ABSL[]  = { 35.*cm, 35.*cm, 35.*cm};
   assert(sizeof(lxe_ABSL) == sizeof(lxe_Energy));
   fLXe_mt = new G4MaterialPropertiesTable();
+
+#if G4VERSION_NUMBER < 1100
   fLXe_mt->AddProperty("FASTCOMPONENT", lxe_Energy, lxe_SCINT, lxenum);
   fLXe_mt->AddProperty("SLOWCOMPONENT", lxe_Energy, lxe_SCINT, lxenum);
+  fLXe_mt->AddConstProperty("FASTTIMECONSTANT",20.*ns);
+  fLXe_mt->AddConstProperty("SLOWTIMECONSTANT",45.*ns);
+  fLXe_mt->AddConstProperty("YIELDRATIO",1.0);
+#else
+  {
+      G4bool createNewKey = true ; 
+      fLXe_mt->AddProperty("FASTCOMPONENT", lxe_Energy, lxe_SCINT, lxenum, createNewKey);
+      fLXe_mt->AddProperty("SLOWCOMPONENT", lxe_Energy, lxe_SCINT, lxenum, createNewKey);
+      fLXe_mt->AddConstProperty("FASTTIMECONSTANT",20.*ns, createNewKey);
+      fLXe_mt->AddConstProperty("SLOWTIMECONSTANT",45.*ns, createNewKey);
+      fLXe_mt->AddConstProperty("YIELDRATIO",1.0, createNewKey);
+  }
+#endif
+
   fLXe_mt->AddProperty("RINDEX",        lxe_Energy, lxe_RIND,  lxenum);
   fLXe_mt->AddProperty("ABSLENGTH",     lxe_Energy, lxe_ABSL,  lxenum);
   fLXe_mt->AddConstProperty("SCINTILLATIONYIELD",12000./MeV);
   fLXe_mt->AddConstProperty("RESOLUTIONSCALE",1.0);
-  fLXe_mt->AddConstProperty("FASTTIMECONSTANT",20.*ns);
-  fLXe_mt->AddConstProperty("SLOWTIMECONSTANT",45.*ns);
-  fLXe_mt->AddConstProperty("YIELDRATIO",1.0);
   fLXe->SetMaterialPropertiesTable(fLXe_mt);
 
   // Set the Birks Constant for the LXe scintillator
@@ -145,10 +159,20 @@ LXe_Materials::LXe_Materials()
   fMPTPStyrene = new G4MaterialPropertiesTable();
   fMPTPStyrene->AddProperty("RINDEX",wls_Energy,rIndexPstyrene,wlsnum);
   fMPTPStyrene->AddProperty("ABSLENGTH",wls_Energy,absorption1,wlsnum);
+
+#if G4VERSION_NUMBER < 1100
   fMPTPStyrene->AddProperty("FASTCOMPONENT",wls_Energy, scintilFast,wlsnum);
+  fMPTPStyrene->AddConstProperty("FASTTIMECONSTANT", 10.*ns);
+#else
+  {
+      G4bool createNewKey = true ; 
+      fMPTPStyrene->AddProperty("FASTCOMPONENT",wls_Energy, scintilFast,wlsnum,createNewKey);
+      fMPTPStyrene->AddConstProperty("FASTTIMECONSTANT", 10.*ns, createNewKey);
+  }
+#endif
+
   fMPTPStyrene->AddConstProperty("SCINTILLATIONYIELD",10./keV);
   fMPTPStyrene->AddConstProperty("RESOLUTIONSCALE",1.0);
-  fMPTPStyrene->AddConstProperty("FASTTIMECONSTANT", 10.*ns);
   fPstyrene->SetMaterialPropertiesTable(fMPTPStyrene);
 
   // Set the Birks Constant for the Polystyrene scintillator

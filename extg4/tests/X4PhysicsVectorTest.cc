@@ -18,7 +18,7 @@
  */
 
 
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
@@ -35,7 +35,7 @@ struct X4PhysicsVectorTest
     size_t    veclen ; 
     G4double* energies ; 
     G4double* values   ;
-    G4PhysicsOrderedFreeVector*  pof ; 
+    G4MaterialPropertyVector*  pof ; 
 
     X4PhysicsVectorTest();
 
@@ -48,9 +48,9 @@ struct X4PhysicsVectorTest
     void test_g4interpolate(); 
 
 
-    G4PhysicsOrderedFreeVector* make_pof()
+    G4MaterialPropertyVector* make_pof()
     {
-        return new G4PhysicsOrderedFreeVector(energies, values, veclen) ; 
+        return new G4MaterialPropertyVector(energies, values, veclen) ; 
     } 
 };
 

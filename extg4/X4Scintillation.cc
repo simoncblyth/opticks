@@ -47,9 +47,9 @@ with values starting at 0. and increasing monotonically.
 
 **/
 
-G4PhysicsOrderedFreeVector* X4Scintillation::Integral( const G4MaterialPropertyVector* theFastLightVector )
+G4MaterialPropertyVector* X4Scintillation::Integral( const G4MaterialPropertyVector* theFastLightVector )
 {
-     G4PhysicsOrderedFreeVector* aPhysicsOrderedFreeVector = new G4PhysicsOrderedFreeVector();
+     G4MaterialPropertyVector* aMaterialPropertyVector = new G4MaterialPropertyVector();
 
           if (theFastLightVector) { 
 
@@ -65,7 +65,7 @@ G4PhysicsOrderedFreeVector* X4Scintillation::Integral( const G4MaterialPropertyV
 
                     G4double currentCII = 0.0;
 
-                    aPhysicsOrderedFreeVector->
+                    aMaterialPropertyVector->
                         InsertValues(currentPM , currentCII);
 
                     // Set previous values to current ones prior to loop
@@ -90,7 +90,7 @@ G4PhysicsOrderedFreeVector* X4Scintillation::Integral( const G4MaterialPropertyV
                         currentCII = prevCII +
                             (currentPM - prevPM) * currentCII;
 
-                        aPhysicsOrderedFreeVector->
+                        aMaterialPropertyVector->
                             InsertValues(currentPM, currentCII);
 
                         prevPM  = currentPM;
@@ -100,13 +100,13 @@ G4PhysicsOrderedFreeVector* X4Scintillation::Integral( const G4MaterialPropertyV
                }
             }
 
-    return aPhysicsOrderedFreeVector ; 
+    return aMaterialPropertyVector ; 
 }
 
 
-NPY<double>* X4Scintillation::CreateWavelengthSamples( const G4PhysicsOrderedFreeVector* ScintillatorIntegral_, unsigned num_samples )
+NPY<double>* X4Scintillation::CreateWavelengthSamples( const G4MaterialPropertyVector* ScintillatorIntegral_, unsigned num_samples )
 {
-    G4PhysicsOrderedFreeVector* ScintillatorIntegral = const_cast<G4PhysicsOrderedFreeVector*>(ScintillatorIntegral_) ; 
+    G4MaterialPropertyVector* ScintillatorIntegral = const_cast<G4MaterialPropertyVector*>(ScintillatorIntegral_) ; 
 
     double mx = ScintillatorIntegral->GetMaxValue() ;  
     LOG(LEVEL)
@@ -160,11 +160,11 @@ high resolution across the entire range.
 
 
 The ICDF is formed using Geant4s "domain lookup from value" functionality 
-in the form of G4PhysicsOrderedFreeVector::GetEnergy 
+in the form of G4MaterialPropertyVector::GetEnergy 
 
 ::
 
-    g4-cls G4PhysicsOrderedFreeVector
+    g4-cls G4MaterialPropertyVector
 
     096 G4double G4PhysicsOrderedFreeVector::GetEnergy(G4double aValue)
      97 {
@@ -228,13 +228,13 @@ in the form of G4PhysicsOrderedFreeVector::GetEnergy
 **/
 
 NPY<double>* X4Scintillation::CreateGeant4InterpolatedInverseCDF( 
-       const G4PhysicsOrderedFreeVector* ScintillatorIntegral_, 
+       const G4MaterialPropertyVector* ScintillatorIntegral_, 
        unsigned num_bins, 
        unsigned hd_factor, 
        const char* material_name
 ) 
 {
-    G4PhysicsOrderedFreeVector* ScintillatorIntegral = const_cast<G4PhysicsOrderedFreeVector*>(ScintillatorIntegral_) ;  // tut tut : G4 GetMaxValue() GetEnergy() non-const 
+    G4MaterialPropertyVector* ScintillatorIntegral = const_cast<G4MaterialPropertyVector*>(ScintillatorIntegral_) ;  // tut tut : G4 GetMaxValue() GetEnergy() non-const 
     double mx = ScintillatorIntegral->GetMaxValue() ;   // dataVector.back(); because its **ORDERED** to be increasing on Insert
 
     NPY<double>* icdf = NPY<double>::make(3, num_bins, 1 );  
