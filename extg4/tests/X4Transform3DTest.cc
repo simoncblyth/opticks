@@ -96,7 +96,7 @@ void test_transform_0(float ax, float ay, float az, float angle_, float tx, floa
 {
     glm::vec4 axis_angle(ax,ay,az, angle_ * CLHEP::pi/180.f );
     glm::vec3 tlat(tx,ty,tz) ; 
-    glm::vec3 scal(1,1,1) ; 
+    //glm::vec3 scal(1,1,1) ; 
     std::string order = "trs" ; 
 
     glm::mat4 mat(1.f) ;

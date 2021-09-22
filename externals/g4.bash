@@ -144,6 +144,38 @@ Then::
     om-conf 
 
 
+::
+
+     9/31 Test  #9: ExtG4Test.X4MaterialTest ................................Child aborted***Exception:   0.14 sec
+    STTF::GetFontPath dpath /home/simon/local/opticks/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf epath  
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : mat220
+          issued by : G4MaterialPropertiesTable::AddProperty()
+    Attempting to create a new material property key FASTCOMPONENT without setting
+    createNewKey parameter of AddProperty to true.
+    *** Fatal Exception ***
+
+
+From 1100 adds createNewKey bool needed for some key::
+
+     84     G4MaterialPropertyVector* AddProperty(const char     *key,
+     85                                           G4double *PhotonEnergies,
+     86                                           G4double *PropertyValues,
+     87                                           G4int     NumEntries);
+
+
+Try readonly sharing geocache, so "simon" reads from "blyth", that fixes many geocache version fails from x4 om-test::
+
+    (base) [simon@localhost .opticks]$ mv geocache geocache_simon
+    (base) [simon@localhost .opticks]$ ln -s /home/blyth/.opticks/geocache
+
+
+
+
+
 
 
 

@@ -38,15 +38,31 @@ void test_Load0()
     const char* keydir = getenv("OPTICKS_KEYDIR"); 
     if( keydir == nullptr ) return ; 
 
-    NPY<double>* a = NPY<double>::load(keydir, "GScintillatorLib/LS_ori/RINDEX.npy") ; 
-    a->pscale(1e6, 0u); 
-    a->pdump("test_Load0"); 
+    const char* name = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
+
+    NPY<double>* a = NPY<double>::load(keydir, name ) ; 
+    //assert(a);  
+    if(a == nullptr)
+    {
+        LOG(fatal) 
+           << " failed to load "
+           << " keydir " << keydir
+           << " name " << name
+           ;
+    }
+    else
+    {
+        a->pscale(1e6, 0u); 
+        a->pdump("test_Load0"); 
+    }
+
 }
 
 
 void VecDump(G4MaterialPropertyVector* vec)
 {
     std::cout << "VecDump" << std::endl ; 
+    if( vec == nullptr ) return ; 
     G4cout << *vec << G4endl ;
     std::cout << "G4MaterialPropertyVector:: " << std::endl ;  
     std::cout 
@@ -78,7 +94,7 @@ void test_Load1()
 
     double en_scale = 1e6 ; 
     X4Array* xvec = X4Array::Load(keydir, "GScintillatorLib/LS_ori/RINDEX.npy", en_scale );     
-    VecDump(xvec->vec); 
+    VecDump( xvec ? xvec->vec : nullptr ); 
 }
 
 void test_Value()
@@ -87,9 +103,21 @@ void test_Value()
     const char* keydir = getenv("OPTICKS_KEYDIR"); 
     if( keydir == nullptr ) return ; 
 
+    const char* name = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
     double en_scale = 1e6 ; 
 
-    X4Array* xvec = X4Array::Load(keydir, "GScintillatorLib/LS_ori/RINDEX.npy", en_scale );     
+    X4Array* xvec = X4Array::Load(keydir, name, en_scale );     
+    if( xvec == nullptr )
+    {
+        LOG(fatal) 
+            << " failed to load "
+            << " keydir " << keydir
+            << " name " << name
+            ;
+        return ; 
+    }
+
+
     G4PhysicsVector* vec = xvec->vec ; 
     const NPY<double>* src = xvec->src ; 
     VecDump(vec); 
@@ -178,6 +206,8 @@ void test_GetEnergy()
 
 int main(int argc, char** argv)
 {  
+    OPTICKS_LOG(argc, argv); 
+
     test_convert(); 
     test_Load0();  
     test_Load1();  

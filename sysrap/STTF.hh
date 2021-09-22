@@ -81,7 +81,7 @@ inline const char* STTF::GetFontPath() // static
 {
     const char* dpath = OKConf::DefaultSTTFPath() ;
     const char* epath = getenv(KEY) ; 
-    printf("STTF::GetFontPath dpath %s epath %s \n", ( dpath ? dpath : "" ), ( epath ? epath : "" ) );    
+    //printf("STTF::GetFontPath dpath %s epath %s \n", ( dpath ? dpath : "" ), ( epath ? epath : "" ) );    
     return epath ? epath : dpath ; 
 }
 

@@ -21,8 +21,18 @@ const plog::Severity X4Array::LEVEL = PLOG::EnvLevel("X4Array", "DEBUG" );
 X4Array* X4Array::Load(const char* base, const char* name, double en_scale )   // static 
 {
     NPY<double>* a = NPY<double>::load(base, name); 
-    if(en_scale > 0.) a->pscale(en_scale, 0u); 
-    return X4Array::FromArray( a ); 
+
+    if( a == nullptr )
+    {
+        LOG(fatal)
+            << " failed to load array from "
+            << " base " << base
+            << " name " << name 
+            ;
+    }    
+
+    if(a != nullptr && en_scale > 0.) a->pscale(en_scale, 0u); 
+    return a == nullptr ? nullptr : X4Array::FromArray( a ); 
 }
 
 X4Array* X4Array::FromArray(const NPY<double>* a )   // static 
