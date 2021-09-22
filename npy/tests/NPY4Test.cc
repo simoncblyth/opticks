@@ -25,7 +25,8 @@ void test_make_modulo_selection()
     tr2->dump("tr2"); 
 
     bool dump = true ; 
-    unsigned mismatch_items = NPY<float>::compare( tr, tr2, dump ); 
+    float epsilon = 1e-6 ; 
+    unsigned mismatch_items = NPY<float>::compare( tr, tr2, epsilon, dump ); 
     assert( mismatch_items == 0 ); 
 
 }
@@ -74,7 +75,8 @@ void test_write_item_big()
     NPY<unsigned char>* ab2 = NPY<unsigned char>::make_interleaved( srcs ); 
      
     bool dump = true ; 
-    assert( NPY<unsigned char>::compare(ab,ab2,dump) == 0 ); 
+    unsigned char eps = 0; 
+    assert( NPY<unsigned char>::compare(ab,ab2,eps, dump) == 0 ); 
 }
 
 
@@ -202,7 +204,8 @@ void test_setQuad_()
         glm::tvec4<unsigned char> q = a->getQuad_(i); 
         b->setQuad_( q, i); 
     }
-    assert( NPY<unsigned char>::compare(a,b,true) == 0 ); 
+    unsigned char eps = 0 ; 
+    assert( NPY<unsigned char>::compare(a,b,eps, true) == 0 ); 
 }
 
 

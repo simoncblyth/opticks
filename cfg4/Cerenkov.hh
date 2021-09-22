@@ -67,7 +67,7 @@
 #include "G4PhysicsTable.hh"
 #include "G4MaterialPropertyVector.hh"
 #include "G4MaterialPropertiesTable.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 
 // Class Description:
 // Discrete Process -- Generation of Cerenkov Photons.
@@ -253,11 +253,11 @@ inline
 void Cerenkov::DumpPhysicsTable() const
 {
         G4int PhysicsTableSize = thePhysicsTable->entries();
-        G4PhysicsOrderedFreeVector *v;
+        G4MaterialPropertyVector *v;
 
         for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
         {
-        	v = (G4PhysicsOrderedFreeVector*)(*thePhysicsTable)[i];
+        	v = (G4MaterialPropertyVector*)(*thePhysicsTable)[i];
         	v->DumpValues();
         }
 }

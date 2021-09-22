@@ -195,6 +195,14 @@ int main( int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+
+    bool seq_readable = CAlignEngine::SeqPathExists();
+    if(!seq_readable)
+    {
+        LOG(fatal) << " input sequence of random numbers does not exist : early exit " ;  
+        return 0 ;  
+    } 
+
     CAlignEngineTest aet ; 
     aet.brief(0, 16); 
     aet.brief(16,32); 

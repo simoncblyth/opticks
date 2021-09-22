@@ -20,7 +20,7 @@
 
 #include "OPTICKS_LOG.hh"
 
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 #include "CVec.hh"
 
 int main(int argc, char** argv)
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 
     CVec* v = CVec::MakeDummy(5); 
 
-    G4PhysicsOrderedFreeVector* vec = v->getVec() ;  
+    G4MaterialPropertyVector* vec = v->getVec() ;  
 
     LOG(info) << *vec  ; 
 

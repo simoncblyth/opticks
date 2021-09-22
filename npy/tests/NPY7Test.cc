@@ -111,7 +111,7 @@ void test_interp()
         b->setValue(i,0,0,0,  x) ; 
         b->setValue(i,1,0,0,  y) ;  
     }
-    const char* FOLD = "/tmp/NPY7Test/test_interp" ; 
+    const char* FOLD = "$TMP/NPY7Test/test_interp" ; 
 
     a->save(FOLD, "src.npy"); 
     b->save(FOLD, "dst.npy"); 

@@ -70,7 +70,9 @@ class CFG4_API CAlignEngine : public CLHEP::HepRandomEngine
         friend struct CAlignEngineTest ; 
     public:
         static const plog::Severity LEVEL ; 
+        static const char* SEQ_PATH ; 
     public:
+        static bool SeqPathExists(); 
         static bool Initialize(const char* ssdir); 
         static void Finalize(); 
         static void SetSequenceIndex(int record_id); 

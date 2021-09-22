@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <vector>
 
+#include "G4Version.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4Types.hh"
@@ -41,11 +42,18 @@ void ScintTest::init()
   double NeutronYieldRatio[3] = { 0.65, 0.231, 0.119};
   double NeutronTimeConstant[3] = { 4.93*ns, 34*ns ,220*ns};
 
+#if G4VERSION_NUMBER < 1100
     LSMPT->AddProperty("OpticalCONSTANT",OpticalTimeConstant,OpticalYieldRatio,2);
     LSMPT->AddProperty("GammaCONSTANT", GammaTimeConstant , GammaYieldRatio, 3);
     LSMPT->AddProperty("AlphaCONSTANT", AlphaTimeConstant , AlphaYieldRatio, 3);
     LSMPT->AddProperty("NeutronCONSTANT", NeutronTimeConstant , NeutronYieldRatio, 3);
-
+#else
+    G4bool createNewKey = true ;  
+    LSMPT->AddProperty("OpticalCONSTANT",OpticalTimeConstant,OpticalYieldRatio,2,createNewKey);
+    LSMPT->AddProperty("GammaCONSTANT", GammaTimeConstant , GammaYieldRatio, 3,createNewKey);
+    LSMPT->AddProperty("AlphaCONSTANT", AlphaTimeConstant , AlphaYieldRatio, 3,createNewKey);
+    LSMPT->AddProperty("NeutronCONSTANT", NeutronTimeConstant , NeutronYieldRatio, 3,createNewKey);
+#endif
 }
 
 

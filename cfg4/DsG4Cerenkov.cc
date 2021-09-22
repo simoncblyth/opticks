@@ -569,8 +569,8 @@ void DsG4Cerenkov::BuildThePhysicsTable()
 
 	for (G4int i=0 ; i < numOfMaterials; i++)
 	{
-		G4PhysicsOrderedFreeVector* aPhysicsOrderedFreeVector =
-					new G4PhysicsOrderedFreeVector();
+		G4MaterialPropertyVector* aMaterialPropertyVector =
+					new G4MaterialPropertyVector();
 
 		// Retrieve vector of refraction indices for the material
 		// from the material's optical properties table 
@@ -612,7 +612,7 @@ void DsG4Cerenkov::BuildThePhysicsTable()
 			 G4double currentPM = theRefractionIndexVector->
 			 			 GetPhotonEnergy();
 #endif
-			 aPhysicsOrderedFreeVector->
+			 aMaterialPropertyVector->
 			 	 InsertValues(currentPM , currentCAI);
 
 
@@ -646,7 +646,7 @@ void DsG4Cerenkov::BuildThePhysicsTable()
 				currentCAI = prevCAI + 
 					     (currentPM - prevPM) * currentCAI;
 
-				aPhysicsOrderedFreeVector->
+				aMaterialPropertyVector->
 				    InsertValues(currentPM, currentCAI);
 
 				prevPM  = currentPM;
@@ -663,7 +663,7 @@ void DsG4Cerenkov::BuildThePhysicsTable()
 	// according to the position of the material in
 	// the material table. 
 
-	thePhysicsTable->insertAt(i,aPhysicsOrderedFreeVector); 
+	thePhysicsTable->insertAt(i,aMaterialPropertyVector); 
 
 	}
 }
@@ -806,7 +806,7 @@ DsG4Cerenkov::GetAverageNumberOfPhotons(const G4double charge,
 
 	// Vectors used in computation of Cerenkov Angle Integral:
 	// 	- Refraction Indices for the current material
-	//	- new G4PhysicsOrderedFreeVector allocated to hold CAI's
+	//	- new G4MaterialPropertyVector allocated to hold CAI's
  
         //G4cerr << "In Material getting index: " << aMaterial->GetName() << G4endl;
 	G4int materialIndex = aMaterial->GetIndex();
@@ -814,14 +814,14 @@ DsG4Cerenkov::GetAverageNumberOfPhotons(const G4double charge,
 
 	// Retrieve the Cerenkov Angle Integrals for this material  
     // G4PhysicsVector* pv = (*thePhysicsTable)(materialIndex);
-	G4PhysicsOrderedFreeVector* CerenkovAngleIntegrals =
-	(G4PhysicsOrderedFreeVector*)((*thePhysicsTable)(materialIndex));
+	G4MaterialPropertyVector* CerenkovAngleIntegrals =
+	(G4MaterialPropertyVector*)((*thePhysicsTable)(materialIndex));
 
         if(!(CerenkovAngleIntegrals->IsFilledVectorExist()))return 0.0;
 
 	// Min and Max photon energies 
 #if ( G4VERSION_NUMBER > 1000 )
-    // NB poorly named methods, actually back/front see G4PhysicsOrderedFreeVector.icc
+    // NB poorly named methods, actually back/front see G4MaterialPropertyVector.icc
 	G4double Pmin = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMinLowEdgeEnergy();
 	G4double Pmax = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMaxLowEdgeEnergy();
 

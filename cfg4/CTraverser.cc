@@ -22,6 +22,7 @@
 #include <sstream>
 
 #include "CFG4_PUSH.hh"
+#include "G4Version.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4LogicalVolume.hh"
 #include "G4VSolid.hh"
@@ -663,6 +664,8 @@ void CTraverser::dumpMaterial(const G4Material* material) const
     G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
     if(!mpt) return ;
 
+#if G4VERSION_NUMBER < 1100
+
     typedef std::map<G4String,G4MaterialPropertyVector*,std::less<G4String> >  PMAP ;
     //typedef std::map< G4String, G4double,std::less<G4String> > CMAP ; 
 
@@ -681,6 +684,9 @@ void CTraverser::dumpMaterial(const G4Material* material) const
     std::string props = ss.str() ;
 
     LOG(info) <<  props ; 
+#endif
+
+
 }
 
 

@@ -45,8 +45,9 @@ NPY<unsigned char>*  test_LoadPPMConcat(const char* path, const bool yflip, cons
     LOG(info) << " array " << a->getShapeString() ; 
     LOG(info) << " array " << b->getShapeString() ; 
 
-    bool dump = true ; 
-    unsigned diffs = NPY<unsigned char>::compare(a,b,dump);  
+    bool dump = false ;   // dumping causes funny char problems with opticks-tl
+    unsigned char epsilon = 0 ; 
+    unsigned diffs = NPY<unsigned char>::compare(a,b,epsilon, dump);  
     LOG(info) << " diffs " ;  
 
     const char* a_path = SStr::ReplaceEnd(path, ".ppm", "_old_concat.npy" ) ;

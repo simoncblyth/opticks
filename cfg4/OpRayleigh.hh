@@ -63,7 +63,7 @@
 #include "G4Material.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4PhysicsTable.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 
 // okc-
 #include "OpticksSwitches.h"
@@ -108,7 +108,7 @@ private:
 
 public:
 
-       void dump(G4Material* material, G4PhysicsOrderedFreeVector* rayleigh);
+       void dump(G4Material* material, G4MaterialPropertyVector* rayleigh);
        void check_GetMeanFreePath(const G4Material* material);
 
 
@@ -151,7 +151,7 @@ private:
         ///
         /// @param[in] material information
         /// @return the mean free path vector
-        G4PhysicsOrderedFreeVector* 
+        G4MaterialPropertyVector* 
         CalculateRayleighMeanFreePaths( const G4Material* material ) const;
 
         ///////////////////////
@@ -190,11 +190,11 @@ void OpRayleigh::DumpPhysicsTable() const
 
 {
         G4int PhysicsTableSize = thePhysicsTable->entries();
-        G4PhysicsOrderedFreeVector *v;
+        G4MaterialPropertyVector *v;
 
         for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
         {
-                v = (G4PhysicsOrderedFreeVector*)(*thePhysicsTable)[i];
+                v = (G4MaterialPropertyVector*)(*thePhysicsTable)[i];
                 v->DumpValues();
         }
 }

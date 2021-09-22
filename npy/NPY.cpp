@@ -2244,7 +2244,7 @@ Itemwise comparison of array values.
 **/
 
 template <typename T>
-unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, bool dump )
+unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bool dump, unsigned dumplimit  )
 {
     if(dump)
     {
@@ -2258,7 +2258,7 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, bool dump )
 
     if(dump)
     {
-        LOG(info) << " ni " << ni << " nv " << nv ; 
+        LOG(info) << " ni " << ni << " nv " << nv << " dumplimit " << dumplimit << " epsilon " << epsilon ; 
     }     
 
     unsigned mismatch_items(0); 
@@ -2271,11 +2271,13 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, bool dump )
         unsigned mismatch_values(0); 
         for(unsigned v=0 ; v < nv ;v++)
         {
-            bool match = av[v] == bv[v] ; 
+            T df = av[v] - bv[v] ;
+            if(df < 0 ) df = -df ;  
+            bool match = df < epsilon ;
             if(!match)
             {
                 mismatch_values++ ; 
-                if(dump) 
+                if(dump && mismatch_values < dumplimit ) 
                 {
                     std::cout 
                         << " mismatch_values " << std::setw(4) << mismatch_values
@@ -2283,12 +2285,21 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, bool dump )
                         << " v " << std::setw(4) << v
                         << " a " << std::setw(4) << av[v]
                         << " b " << std::setw(4) << bv[v]
+                        << " df " << std::setw(4) << df
                         << std::endl 
                         ;
                 }
             }
         }       
-        if(mismatch_values > 0) mismatch_items++ ; 
+        if(mismatch_values > 0) 
+        {
+            std::cout 
+                 << " i " << std::setw(4) << i 
+                 << " mismatch_values " << std::setw(4) << mismatch_values
+                 << std::endl 
+                 ;
+            mismatch_items++ ; 
+        }
     }
     if( dump || mismatch_items > 0 )
     {

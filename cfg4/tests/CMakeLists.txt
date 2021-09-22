@@ -20,7 +20,7 @@ set(TEST_SOURCES
     G4TrackTest.cc
     CSolidTest.cc
 
-    G4PhysicsOrderedFreeVectorTest.cc
+    G4MaterialPropertyVectorTest.cc
     CVecTest.cc
 
     G4MaterialPropertiesTableTest.cc

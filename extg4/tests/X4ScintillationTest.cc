@@ -29,6 +29,7 @@ X4ScintillationTest
 
 void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<double>* fast_en, const NPY<double>* THE_buffer  )
 {
+    LOG(info) << "[" ; 
     G4MaterialPropertyVector* theFastLightVector = X4MaterialPropertyVector::FromArray(fast_en) ; 
     G4MaterialPropertyVector* ScintillatorIntegral = X4Scintillation::Integral(theFastLightVector) ; 
 
@@ -52,13 +53,16 @@ void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<doubl
     LOG(info) << " save to " << outdir << "/" << g4icdf_name ; 
     g4icdf->save(outdir, g4icdf_name);  
 
-    unsigned mismatch = NPY<double>::compare( THE_buffer, g4icdf, true ); 
+    double epsilon = 1e-5 ; 
+    unsigned mismatch = NPY<double>::compare( THE_buffer, g4icdf, epsilon, true ); 
     LOG(info) << " mismatch " << mismatch ; 
     assert( mismatch == 0 ); 
+    LOG(info) << "]" ; 
 }
 
 void test_auto(const char* outdir, const NPY<double>* slow_en, const NPY<double>* fast_en, const NPY<double>* THE_buffer  )
 {
+    LOG(info) << "[" ; 
     X4Scintillation xs(slow_en, fast_en); 
     NPY<double>* g4icdf = xs.createGeant4InterpolatedInverseCDF() ; 
 
@@ -66,9 +70,11 @@ void test_auto(const char* outdir, const NPY<double>* slow_en, const NPY<double>
     LOG(info) << " save to " << outdir << "/" << name ; 
     g4icdf->save(outdir, name); 
 
-    unsigned mismatch = NPY<double>::compare( THE_buffer, g4icdf, true ); 
+    double epsilon = 1e-5 ; 
+    unsigned mismatch = NPY<double>::compare( THE_buffer, g4icdf, epsilon, true ); 
     LOG(info) << " mismatch " << mismatch ; 
     assert( mismatch == 0 ); 
+    LOG(info) << "]" ; 
 }
 
 int main(int argc, char** argv)

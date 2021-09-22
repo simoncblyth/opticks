@@ -27,12 +27,13 @@
 #include "BStr.hh"
 #include "SDigest.hh"
 
+#include "G4Version.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
 #include "G4MaterialPropertiesTable.hh"
 #include "G4MaterialPropertyVector.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 #include "GProperty.hh"
 #include "GAry.hh"
 
@@ -68,6 +69,7 @@ void CMPT::Dump_OLD(G4MaterialPropertiesTable* mpt, const char* msg)
     LOG(info) << msg ; 
     LOG(info) << "digest : " << CMPT::Digest(mpt) ; 
 
+#if G4VERSION_NUMBER < 110
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
     MKP* pm = mpt->GetPropertiesMap() ;
 
@@ -80,6 +82,12 @@ void CMPT::Dump_OLD(G4MaterialPropertiesTable* mpt, const char* msg)
  
         LOG(info) << pname << "\n" << *pvec ; 
     }   
+
+#else
+   LOG(info) << "1100 drops G4MaterialPropertiesTable::GetPropertiesMap" ; 
+#endif
+
+
 }
 
 
@@ -151,16 +159,6 @@ std::string CMPT::description(const char* msg)
    return ss.str();
 }
 
-std::vector<std::string> CMPT::getPropertyKeys_OLD()
-{
-    std::vector<std::string> keys ; 
-
-    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
-    MKP* pm = m_mpt->GetPropertiesMap() ;
-    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  keys.push_back(it->first) ;
-    return keys ; 
-}
-
 std::vector<std::string> CMPT::getPropertyKeys() const 
 {
     std::vector<std::string> keys ; 
@@ -197,7 +195,15 @@ void CMPT::AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, un
         ddom[nval-1-j] = j*100. ; 
         dval[nval-1-j] = j*1000. ; 
     }   
+
+#if G4VERSION_NUMBER < 1100
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval); 
+#else
+    G4String skey(lkey); 
+    G4int keyIdx = mpt->GetPropertyIndex(skey, false); 
+    G4bool createNewKey = keyIdx == -1  ; 
+    G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval, createNewKey); 
+#endif
     mpv->SetSpline(false); 
 
     delete [] ddom ;
@@ -207,7 +213,15 @@ void CMPT::AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, un
 
 void CMPT::AddConstProperty(G4MaterialPropertiesTable* mpt, const char* lkey, G4double pval)
 {
+#if G4VERSION_NUMBER < 1100
     mpt->AddConstProperty(lkey, pval); 
+#else
+    G4String skey(lkey); 
+    G4int keyIdx = mpt->GetConstPropertyIndex(skey, false); 
+    G4bool createNewKey = keyIdx == -1 ; 
+
+    mpt->AddConstProperty(lkey, pval, createNewKey); 
+#endif
 }
 
 
@@ -251,27 +265,6 @@ std::string CMPT::Digest(G4MaterialPropertiesTable* mpt)
 }
 
 
-std::string CMPT::Digest_OLD(G4MaterialPropertiesTable* mpt)  
-{
-    if(!mpt) return "" ; 
-
-    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
-    MKP* pm = mpt->GetPropertiesMap() ;
-
-    SDigest dig ;
-    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  
-    {
-        const std::string&  n = it->first ;
-        G4MaterialPropertyVector* v = it->second ; 
-
-        std::string vs = CVec::Digest(v) ; 
-        dig.update( const_cast<char*>(n.data()),  n.size() );  
-        dig.update( const_cast<char*>(vs.data()), vs.size() );  
-    }
-    return dig.finalize();
-}
-
-
 
 
 
@@ -280,40 +273,6 @@ std::string CMPT::Digest_OLD(G4MaterialPropertiesTable* mpt)
 std::string CMPT::digest() const 
 {
     return Digest(m_mpt) ; 
-}
-
-
-std::vector<std::string> CMPT::getPropertyDesc_OLD() const
-{
-    std::vector<std::string> desc ; 
-
-
-    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
-    MKP* pm = m_mpt->GetPropertiesMap() ;
-    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  
-    {
-        G4String pname = it->first ;
-        G4MaterialPropertyVector* pvec = it->second ; 
-
-
-        double pmin = pvec->GetMinValue() ;
-        double pmax = pvec->GetMaxValue() ;
-
-        std::stringstream ss ; 
-        ss << pname << ":"  ;
-
-        if(pmin == pmax)
-           ss << ":" << pmin ;
-        else 
-           ss << ":" << pmin
-              << ":" << pmax
-              << ":" << pvec->GetMaxEnergy()  
-           // << ":" << pvec->GetVectorLength()
-               ;
-
-        desc.push_back(ss.str()) ;
-    }
-    return desc ; 
 }
 
 
@@ -357,18 +316,6 @@ std::vector<std::string> CMPT::getPropertyDesc() const
 
 
 
-
-
-std::vector<std::string> CMPT::getConstPropertyKeys_OLD()
-{
-    std::vector<std::string> keys ; 
-
-    typedef const std::map< G4String, G4double, std::less<G4String> > MKC ; 
-    MKC* cm = m_mpt->GetPropertiesCMap() ;
-    for(MKC::const_iterator it=cm->begin() ; it != cm->end() ; it++)  keys.push_back(it->first) ;
-    return keys ; 
-}
-
 std::vector<std::string> CMPT::getConstPropertyKeys() const 
 {
     std::vector<std::string> keys ; 
@@ -387,17 +334,6 @@ std::vector<std::string> CMPT::getConstPropertyKeys() const
 }
 
  
-
-std::vector<double> CMPT::getConstPropertyValues_OLD()
-{
-    std::vector<double> vals ; 
-
-    typedef const std::map< G4String, G4double, std::less<G4String> > MKC ; 
-    MKC* cm = m_mpt->GetPropertiesCMap() ;
-    for(MKC::const_iterator it=cm->begin() ; it != cm->end() ; it++)  vals.push_back(it->second) ;
-    return vals ; 
-}
-
 std::vector<double> CMPT::getConstPropertyValues() const 
 {
     std::vector<double> vals ; 
@@ -483,12 +419,12 @@ void CMPT::dumpProperty(const char* _keys)
 
     unsigned nkey = keys.size();
 
-    std::vector<G4PhysicsOrderedFreeVector*> vecs ; 
+    std::vector<G4MaterialPropertyVector*> vecs ; 
     for(unsigned i=0 ; i < nkey ; i++ )
     {
         const char* key = keys[i].c_str(); 
         G4MaterialPropertyVector* mpv = m_mpt->GetProperty(key); 
-        G4PhysicsOrderedFreeVector* pofv = static_cast<G4PhysicsOrderedFreeVector*>(mpv);
+        G4MaterialPropertyVector* pofv = static_cast<G4MaterialPropertyVector*>(mpv);
         vecs.push_back(pofv);
     }
  
@@ -507,7 +443,7 @@ void CMPT::dumpProperty(const char* _keys)
 
          for(unsigned i=0 ; i < nkey ; i++)
          {
-              G4PhysicsOrderedFreeVector* pofv = vecs[i] ;
+              G4MaterialPropertyVector* pofv = vecs[i] ;
               G4double value = pofv->Value( photonMomentum );
               std::cout  << std::setw(15) << value ;
          }
@@ -527,7 +463,7 @@ unsigned CMPT::getVecLength(const char* _keys)
     for(unsigned i=0 ; i < nkey ; i++ )
     {
         const char* key = keys[i].c_str(); 
-        G4PhysicsOrderedFreeVector* v = getVec(key);
+        G4MaterialPropertyVector* v = getVec(key);
 
         if(vlen == 0)
         {
@@ -561,7 +497,7 @@ NPY<double>* CMPT::makeArray(const char* _keys, bool reverse)
     for(unsigned i=0 ; i < nkey ; i++ )
     {
         const char* key = keys[i].c_str(); 
-        G4PhysicsOrderedFreeVector* v = getVec(key);
+        G4MaterialPropertyVector* v = getVec(key);
         assert( v->GetVectorLength() == vlen );
 
         for(unsigned j=0 ; j < vlen ; j++)
@@ -594,7 +530,7 @@ void CMPT::dumpRaw(const char* _keys)
     for(unsigned i=0 ; i < nkey ; i++ )
     {
         const char* key = keys[i].c_str(); 
-        G4PhysicsOrderedFreeVector* v = getVec(key);
+        G4MaterialPropertyVector* v = getVec(key);
 
         unsigned vlen = v->GetVectorLength() ;
 
@@ -633,17 +569,17 @@ void CMPT::dumpRaw(const char* _keys)
 
 
 
-G4PhysicsOrderedFreeVector* CMPT::getVec(const char* key) const 
+G4MaterialPropertyVector* CMPT::getVec(const char* key) const 
 {
-    G4PhysicsOrderedFreeVector* pofv = NULL ; 
+    G4MaterialPropertyVector* pofv = NULL ; 
     G4MaterialPropertyVector* mpv = m_mpt->GetProperty(key); 
-    if(mpv) pofv = static_cast<G4PhysicsOrderedFreeVector*>(mpv);
+    if(mpv) pofv = static_cast<G4MaterialPropertyVector*>(mpv);
     return pofv ; 
 }
 
 CVec* CMPT::getCVec(const char* lkey) const
 {
-    G4PhysicsOrderedFreeVector* vec = getVec(lkey) ;
+    G4MaterialPropertyVector* vec = getVec(lkey) ;
     return new CVec(vec);
 }
 
@@ -690,7 +626,7 @@ void CMPT::sample(NPY<double>* a, unsigned offset, const char* _keys, double low
         for(unsigned m=0 ; m < nm_ ; m++)
         {
             const char* key = keys[m].c_str(); 
-            G4PhysicsOrderedFreeVector* pofv = getVec(key);
+            G4MaterialPropertyVector* pofv = getVec(key);
             G4double value = pofv ? pofv->Value( photonMomentum ) : 0.f ;
             *(values + l*nm_ + m) = value ;
         }
@@ -704,7 +640,7 @@ void CMPT::sample(NPY<double>* a, unsigned offset, const char* _keys, double low
 
 GProperty<double>* CMPT::makeProperty(const char* key, double low, double step, unsigned nstep)
 {
-    G4PhysicsOrderedFreeVector* vec = key == NULL ? NULL : getVec(key);
+    G4MaterialPropertyVector* vec = key == NULL ? NULL : getVec(key);
 
     GAry<double>* dom = new GAry<double>(nstep);
     GAry<double>* val = new GAry<double>(nstep);

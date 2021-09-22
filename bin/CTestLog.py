@@ -69,6 +69,7 @@ class CTestLog(object):
                     continue
                 pass
                 path = os.path.join(dirpath, cls.NAME)
+                log.debug("reading %s " % path)
                 lines = list(map(str.rstrip, open(path,"r").readlines() ))
                 lg = cls(lines, path=path, reldir=reldir)
                 logs.append(lg)
@@ -124,14 +125,17 @@ class CTestLog(object):
 
 
 if __name__ == '__main__':
-    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
-    logging.basicConfig(level=logging.INFO, format=fmt)
 
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument( "base", nargs="*",  help="Dump tree" )
     parser.add_argument( "--withtop", action="store_true", help="Switch on handling of the usually skipped top level test results" )
     parser.add_argument( "--slow", default="15", help="Slow test time cut in seconds" )
+    parser.add_argument( "--level", default="info", help="log level" )
     args = parser.parse_args()
+
+    level = getattr( logging, args.level.upper() )
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=level, format=fmt)
 
     if len(args.base) == 0:
         args.base = os.getcwd()

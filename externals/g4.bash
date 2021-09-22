@@ -173,8 +173,11 @@ Try readonly sharing geocache, so "simon" reads from "blyth", that fixes many ge
     (base) [simon@localhost .opticks]$ ln -s /home/blyth/.opticks/geocache
 
 
+* hmm suspect that geocache sharing like this is the cause of X4ScintillationTest to fail 
+  as it sees a mismatch between interpolation from geocache creation with 1042 and a re-run 
+  of interpolation with 1100 
 
-
+  * TODO: find out how Geant4 ::GetEnergy interpolation has changed 
 
 
 

@@ -508,12 +508,12 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     G4int materialIndex = aMaterial->GetIndex();
 
-    //G4PhysicsOrderedFreeVector* ReemissionIntegral = NULL;
+    //G4MaterialPropertyVector* ReemissionIntegral = NULL;
     //ReemissionIntegral =
-    //    (G4PhysicsOrderedFreeVector*)((*theReemissionIntegralTable)(materialIndex));
+    //    (G4MaterialPropertyVector*)((*theReemissionIntegralTable)(materialIndex));
 
     // Retrieve the Scintillation Integral for this material  
-    // new G4PhysicsOrderedFreeVector allocated to hold CII's
+    // new G4MaterialPropertyVector allocated to hold CII's
 
     G4int Num = NumTracks; //# tracks is now the loop control
 	
@@ -595,19 +595,19 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     for (G4int scnt = 1; scnt <= nscnt; scnt++) {
 
         G4double ScintillationTime = 0.*ns;
-        G4PhysicsOrderedFreeVector* ScintillationIntegral = NULL;
+        G4MaterialPropertyVector* ScintillationIntegral = NULL;
          
         if (scnt == 1) {//fast
             if (nscnt == 1) {
                 if(Fast_Intensity){
                     ScintillationTime   = fastTimeConstant;
                     ScintillationIntegral =
-                        (G4PhysicsOrderedFreeVector*)((*theFastIntegralTable)(materialIndex));
+                        (G4MaterialPropertyVector*)((*theFastIntegralTable)(materialIndex));
                 }
                 if(Slow_Intensity){
                     ScintillationTime   = slowTimeConstant;
                     ScintillationIntegral =
-                        (G4PhysicsOrderedFreeVector*)((*theSlowIntegralTable)(materialIndex));
+                        (G4MaterialPropertyVector*)((*theSlowIntegralTable)(materialIndex));
                 }
             }
             else {
@@ -626,14 +626,14 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 		}
                 ScintillationTime   = fastTimeConstant;
                 ScintillationIntegral =
-                    (G4PhysicsOrderedFreeVector*)((*theFastIntegralTable)(materialIndex));
+                    (G4MaterialPropertyVector*)((*theFastIntegralTable)(materialIndex));
             }
         }
         else {//slow
             Num = NumTracks - Num;
             ScintillationTime   =   slowTimeConstant;
             ScintillationIntegral =
-                (G4PhysicsOrderedFreeVector*)((*theSlowIntegralTable)(materialIndex));
+                (G4MaterialPropertyVector*)((*theSlowIntegralTable)(materialIndex));
         }
 	if (verboseLevel > 0) {
 	  G4cout << "generate " << Num << " optical photons with scintTime " << ScintillationTime 
@@ -964,12 +964,12 @@ void DsG4Scintillation::BuildThePhysicsTable()
     // loop for materials
 
     for (G4int i=0 ; i < numOfMaterials; i++) {
-        G4PhysicsOrderedFreeVector* aPhysicsOrderedFreeVector =
-            new G4PhysicsOrderedFreeVector();
-        G4PhysicsOrderedFreeVector* bPhysicsOrderedFreeVector =
-            new G4PhysicsOrderedFreeVector();
-        G4PhysicsOrderedFreeVector* cPhysicsOrderedFreeVector =
-            new G4PhysicsOrderedFreeVector();
+        G4MaterialPropertyVector* aMaterialPropertyVector =
+            new G4MaterialPropertyVector();
+        G4MaterialPropertyVector* bMaterialPropertyVector =
+            new G4MaterialPropertyVector();
+        G4MaterialPropertyVector* cMaterialPropertyVector =
+            new G4MaterialPropertyVector();
 
         // Retrieve vector of scintillation wavelength intensity for
         // the material from the material's optical properties table.
@@ -1012,7 +1012,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
 #else
                     G4double currentPM = theFastLightVector->GetPhotonEnergy();
 #endif
-                    aPhysicsOrderedFreeVector->InsertValues(currentPM , currentCII);
+                    aMaterialPropertyVector->InsertValues(currentPM , currentCII);
 
                     // Set previous values to current ones prior to loop
 
@@ -1039,7 +1039,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
                         currentCII = prevCII +
                             (currentPM - prevPM) * currentCII;
 
-                        aPhysicsOrderedFreeVector->InsertValues(currentPM, currentCII);
+                        aMaterialPropertyVector->InsertValues(currentPM, currentCII);
 
                         prevPM  = currentPM;
                         prevCII = currentCII;
@@ -1087,7 +1087,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
 #else
                     G4double currentPM = theSlowLightVector->GetPhotonEnergy();
 #endif
-                    bPhysicsOrderedFreeVector->InsertValues(currentPM , currentCII);
+                    bMaterialPropertyVector->InsertValues(currentPM , currentCII);
 
                     // Set previous values to current ones prior to loop
 
@@ -1117,7 +1117,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
                         currentCII = prevCII +
                             (currentPM - prevPM) * currentCII;
 
-                         bPhysicsOrderedFreeVector->InsertValues(currentPM, currentCII);
+                         bMaterialPropertyVector->InsertValues(currentPM, currentCII);
 
                         prevPM  = currentPM;
                         prevCII = currentCII;
@@ -1159,7 +1159,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
 #else
                      G4double currentPM = theReemissionVector->GetPhotonEnergy();
 #endif
-                     cPhysicsOrderedFreeVector->InsertValues(currentPM , currentCII);
+                     cMaterialPropertyVector->InsertValues(currentPM , currentCII);
                     // Set previous values to current ones prior to loop
 
                     G4double prevPM  = currentPM;
@@ -1187,7 +1187,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
                         currentCII = prevCII +
                             (currentPM - prevPM) * currentCII;
 
-                        cPhysicsOrderedFreeVector-> InsertValues(currentPM, currentCII);
+                        cMaterialPropertyVector-> InsertValues(currentPM, currentCII);
 
                         prevPM  = currentPM;
                         prevCII = currentCII;
@@ -1203,9 +1203,9 @@ void DsG4Scintillation::BuildThePhysicsTable()
         // will be inserted in the table(s) according to the
         // position of the material in the material table.
 
-        theFastIntegralTable->insertAt(i,aPhysicsOrderedFreeVector);
-        theSlowIntegralTable->insertAt(i,bPhysicsOrderedFreeVector);
-        theReemissionIntegralTable->insertAt(i,cPhysicsOrderedFreeVector);
+        theFastIntegralTable->insertAt(i,aMaterialPropertyVector);
+        theSlowIntegralTable->insertAt(i,bMaterialPropertyVector);
+        theReemissionIntegralTable->insertAt(i,cMaterialPropertyVector);
     }
 }
 

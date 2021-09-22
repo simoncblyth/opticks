@@ -23,8 +23,9 @@
 #include <map>
 #include <string>
 
+
+#include "G4MaterialPropertyVector.hh"
 class CVec ; 
-class G4PhysicsOrderedFreeVector ;
 class G4MaterialPropertiesTable ;
 template <typename T> class GProperty ; 
 template <typename T> class NPY ; 
@@ -43,7 +44,6 @@ class CFG4_API CMPT {
    public:
        static CMPT* MakeDummy(); 
 
-       static std::string Digest_OLD(G4MaterialPropertiesTable* mpt); 
        static std::string Digest(G4MaterialPropertiesTable* mpt); 
 
        static void AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, unsigned nval) ;
@@ -72,7 +72,7 @@ class CFG4_API CMPT {
        void sampleSurf(NPY<double>* a, unsigned offset, double low, double step, unsigned nstep, bool specular );
 
        GProperty<double>* makeProperty(const char* key, double low, double step, unsigned nstep);
-       G4PhysicsOrderedFreeVector* getVec(const char* lkey) const ;
+       G4MaterialPropertyVector* getVec(const char* lkey) const ;
        CVec* getCVec(const char* lkey) const ;
 
        unsigned splitKeys(std::vector<std::string>& keys, const char* _keys);
@@ -81,16 +81,12 @@ class CFG4_API CMPT {
 
 
        std::string description(const char* msg);
-       std::vector<std::string> getPropertyKeys_OLD();
        std::vector<std::string> getPropertyKeys() const ;
 
-       std::vector<std::string> getPropertyDesc_OLD() const ;
        std::vector<std::string> getPropertyDesc() const ;
 
-       std::vector<std::string> getConstPropertyKeys_OLD();
        std::vector<std::string> getConstPropertyKeys() const ;
 
-       std::vector<double> getConstPropertyValues_OLD();
        std::vector<double> getConstPropertyValues() const ;
 
    private:

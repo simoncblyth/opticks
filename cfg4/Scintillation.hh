@@ -72,7 +72,7 @@
 #include "G4Material.hh" 
 #include "G4PhysicsTable.hh"
 #include "G4MaterialPropertiesTable.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 
 #include "G4EmSaturation.hh"
 

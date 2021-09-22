@@ -103,7 +103,7 @@
 #include "G4Material.hh" 
 #include "G4PhysicsTable.hh"
 #include "G4MaterialPropertiesTable.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 #include "G4UImessenger.hh"
 //#include "DsPhysConsOptical.h"
 #include <fstream>
@@ -407,33 +407,33 @@ void DsG4Scintillation::DumpPhysicsTable() const
 {
         if (theFastIntegralTable) {
            G4int PhysicsTableSize = theFastIntegralTable->entries();
-           G4PhysicsOrderedFreeVector *v;
+           G4MaterialPropertyVector *v;
 
            for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
            {
-        	v = (G4PhysicsOrderedFreeVector*)(*theFastIntegralTable)[i];
+        	v = (G4MaterialPropertyVector*)(*theFastIntegralTable)[i];
         	v->DumpValues();
            }
          }
 
         if (theSlowIntegralTable) {
            G4int PhysicsTableSize = theSlowIntegralTable->entries();
-           G4PhysicsOrderedFreeVector *v;
+           G4MaterialPropertyVector *v;
 
            for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
            {
-                v = (G4PhysicsOrderedFreeVector*)(*theSlowIntegralTable)[i];
+                v = (G4MaterialPropertyVector*)(*theSlowIntegralTable)[i];
                 v->DumpValues();
            }
          }
 
         if (theReemissionIntegralTable) {
            G4int PhysicsTableSize = theReemissionIntegralTable->entries();
-           G4PhysicsOrderedFreeVector *v;
+           G4MaterialPropertyVector *v;
 
            for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
            {
-                v = (G4PhysicsOrderedFreeVector*)(*theReemissionIntegralTable)[i];
+                v = (G4MaterialPropertyVector*)(*theReemissionIntegralTable)[i];
                 v->DumpValues();
            }
          }

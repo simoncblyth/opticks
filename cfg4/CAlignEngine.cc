@@ -21,6 +21,7 @@
 #include <cassert>
 #include "Randomize.hh"
 
+#include "SPath.hh"
 #include "BFile.hh"
 #include "PLOG.hh"
 #include "NPY.hpp"
@@ -79,9 +80,19 @@ CAlignEngine::~CAlignEngine()
 }
 
 
+const char* CAlignEngine::SEQ_PATH = "$TMP/TRngBufTest_0.npy" ;
+
+bool CAlignEngine::SeqPathExists() // static
+{ 
+    const char* path = SPath::Resolve(SEQ_PATH); 
+    bool readable = SPath::IsReadable(path); 
+    LOG(LEVEL) << " path " << path << " readable " << readable ; 
+    return readable ; 
+}
+
 CAlignEngine::CAlignEngine(const char* ssdir)
     :
-    m_seq_path("$TMP/TRngBufTest_0.npy"),
+    m_seq_path(SEQ_PATH),
     m_seq(NPY<double>::load(m_seq_path)),
     m_seq_values(m_seq ? m_seq->getValues() : NULL),
     m_seq_ni(m_seq ? m_seq->getShape(0) : 0 ),

@@ -253,8 +253,8 @@ void DsG4OpRayleigh::BuildThePhysicsTable()
 
         for (G4int i=0 ; i < numOfMaterials; i++)
         {
-            G4PhysicsOrderedFreeVector* ScatteringLengths =
-                                new G4PhysicsOrderedFreeVector();
+            G4MaterialPropertyVector* ScatteringLengths =
+                                new G4MaterialPropertyVector();
 
             G4MaterialPropertiesTable *aMaterialPropertiesTable =
                          (*theMaterialTable)[i]->GetMaterialPropertiesTable();
@@ -344,7 +344,7 @@ G4double DsG4OpRayleigh::GetMeanFreePath(const G4Track& aTrack,
 // ------------------------------------
 // Private method to compute Rayleigh Scattering Lengths (for water)
 //
-G4PhysicsOrderedFreeVector* 
+G4MaterialPropertyVector* 
 DsG4OpRayleigh::RayleighAttenuationLengthGenerator(G4MaterialPropertiesTable *aMPT) 
 {
         // Physical Constants
@@ -372,8 +372,8 @@ DsG4OpRayleigh::RayleighAttenuationLengthGenerator(G4MaterialPropertiesTable *aM
         G4double Dist;
         G4double refraction_index;
 
-        G4PhysicsOrderedFreeVector *RayleighScatteringLengths = 
-				new G4PhysicsOrderedFreeVector();
+        G4MaterialPropertyVector *RayleighScatteringLengths = 
+				new G4MaterialPropertyVector();
 
         if (Rindex ) {
 

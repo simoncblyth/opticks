@@ -34,6 +34,7 @@ struct X4_API X4Scintillation
 
     const NPY<double>* fast ;
     const NPY<double>* slow ;
+    const double epsilon ; 
     unsigned mismatch ; 
 
     const G4MaterialPropertyVector* theFastLightVector ; 

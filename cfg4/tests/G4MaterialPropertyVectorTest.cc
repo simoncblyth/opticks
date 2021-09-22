@@ -22,13 +22,15 @@
 #include <sstream>
 
 #include "CVec.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
-#include "PLOG.hh"
+#include "G4MaterialPropertyVector.hh"
+#include "OPTICKS_LOG.hh"
 
 #include "SDirect.hh"
 
+// this was formerly named G4PhysicsOrderedFreeVectorTest.cc
 
-void test_redirected( G4PhysicsOrderedFreeVector& vec, bool ascii )
+
+void test_redirected( G4MaterialPropertyVector& vec, bool ascii )
 {
     std::ofstream fp("/dev/null", std::ios::out); 
     std::stringstream ss ;     
@@ -41,7 +43,7 @@ void test_redirected( G4PhysicsOrderedFreeVector& vec, bool ascii )
 
 
 
-void test_caveman( G4PhysicsOrderedFreeVector& vec, bool ascii )
+void test_caveman( G4MaterialPropertyVector& vec, bool ascii )
 {
     std::vector<char> buf(512);
     for(unsigned j=0 ; j < buf.size() ; j++ ) buf[j] = '*' ; 
@@ -62,11 +64,11 @@ void test_caveman( G4PhysicsOrderedFreeVector& vec, bool ascii )
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     CVec* v = CVec::MakeDummy(5); 
 
-    G4PhysicsOrderedFreeVector& vec  = *v->getVec() ; 
+    G4MaterialPropertyVector& vec  = *v->getVec() ; 
 
     std::cout << vec << std::endl ; 
 

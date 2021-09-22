@@ -39,6 +39,7 @@
 #include "GMaterial.hh"
 
 // g4-
+#include "G4Version.hh"
 #include "G4MaterialTable.hh"
 #include "G4Material.hh"
 #include "globals.hh"
@@ -527,7 +528,14 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
     }
 
     //LOG(info) << "CPropLib::addProperty lkey " << lkey ; 
+#if G4VERSION_NUMBER < 1100
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval);
+#else
+    G4String skey(lkey); 
+    G4int keyIdx = mpt->GetPropertyIndex(skey, false); 
+    G4bool createNewKey = keyIdx == -1  ; 
+    G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval, createNewKey );
+#endif
 
     if(abslength)
     {
@@ -578,21 +586,6 @@ std::string CPropLib::getMaterialKeys(const G4Material* mat)
     return ss.str(); 
 }
 
-
-
-std::string CPropLib::getMaterialKeys_OLD(const G4Material* mat)
-{   
-    std::stringstream ss ;
-    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
-    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ; 
-    MKP* kp = mpt->GetPropertiesMap() ;
-    for(MKP::const_iterator it=kp->begin() ; it != kp->end() ; it++)
-    {
-        G4String k = it->first ; 
-        ss << k << " " ; 
-    } 
-    return ss.str(); 
-}
 
 
 
@@ -653,47 +646,6 @@ GPropertyMap<double>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, con
 }
 
 
-
-
-GPropertyMap<double>* CPropLib::convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name)
-{    
-    GPropertyMap<double>* pmap = new GPropertyMap<double>(name);
-    
-    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ; 
-    MKP* pm = mpt->GetPropertiesMap() ;
-    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)
-    {
-        G4String k = it->first ; 
-        G4MaterialPropertyVector* pvec = it->second ; 
-        GProperty<double>* prop = convertVector(pvec);        
-        pmap->addPropertyAsis( k.c_str(), prop );  
-   }
-
-   typedef const std::map< G4String, G4double, std::less<G4String> > MKC ; 
-   MKC* cmap = mpt->GetPropertiesCMap() ;
-   for(MKC::const_iterator it=cmap->begin() ; it != cmap->end() ; it++)
-   {
-        G4String k = it->first ; 
-        double v = double(it->second) ;
-
-        // express standard Opticks nm range in MeV, and swap order
-        double dlow  = m_dscale/m_domain->getHigh() ; 
-        double dhigh = m_dscale/m_domain->getLow() ;  
-
-        LOG(info) << "CPropLib::convertTable" 
-                  << " domlow (nm) "  << m_domain->getLow()  
-                  << " domhigh (nm) " << m_domain->getHigh()
-                  << " dscale MeV/nm " << m_dscale 
-                  << " dlow  (MeV)  " << dlow 
-                  << " dhigh (MeV) " << dhigh
-                  ;
-
-
-        GProperty<double>* prop = GProperty<double>::from_constant(v, dlow, dhigh );        
-        pmap->addPropertyAsis( k.c_str(), prop );  
-   }
-   return pmap ;    
-}
 
 GProperty<double>* CPropLib::convertVector(G4PhysicsVector* pvec)
 {

@@ -452,7 +452,7 @@ void C4Cerenkov1042::BuildThePhysicsTable()
 
   for (G4int i=0 ; i < numOfMaterials; i++) {
 
-      G4PhysicsOrderedFreeVector* aPhysicsOrderedFreeVector = 0;
+      G4MaterialPropertyVector* aMaterialPropertyVector = 0;
 
       // Retrieve vector of refraction indices for the material
       // from the material's optical properties table 
@@ -463,7 +463,7 @@ void C4Cerenkov1042::BuildThePhysicsTable()
                                       aMaterial->GetMaterialPropertiesTable();
 
       if (aMaterialPropertiesTable) {
-         aPhysicsOrderedFreeVector = new G4PhysicsOrderedFreeVector();
+         aMaterialPropertyVector = new G4MaterialPropertyVector();
          G4MaterialPropertyVector* theRefractionIndexVector = 
                               aMaterialPropertiesTable->GetProperty(kRINDEX);
 
@@ -482,7 +482,7 @@ void C4Cerenkov1042::BuildThePhysicsTable()
                G4double currentPM = theRefractionIndexVector->Energy(0);
                G4double currentCAI = 0.0;
 
-               aPhysicsOrderedFreeVector->InsertValues(currentPM , currentCAI);
+               aMaterialPropertyVector->InsertValues(currentPM , currentCAI);
 
                // Set previous values to current ones prior to loop
 
@@ -504,7 +504,7 @@ void C4Cerenkov1042::BuildThePhysicsTable()
 
                    currentCAI = prevCAI + (currentPM - prevPM) * currentCAI;
 
-                   aPhysicsOrderedFreeVector->
+                   aMaterialPropertyVector->
                                          InsertValues(currentPM, currentCAI);
 
                    prevPM  = currentPM;
@@ -521,7 +521,7 @@ void C4Cerenkov1042::BuildThePhysicsTable()
       // according to the position of the material in
       // the material table. 
 
-      thePhysicsTable->insertAt(i,aPhysicsOrderedFreeVector); 
+      thePhysicsTable->insertAt(i,aMaterialPropertyVector); 
 
   }
 }
@@ -661,14 +661,14 @@ G4double
 
   // Vectors used in computation of Cerenkov Angle Integral:
   // 	- Refraction Indices for the current material
-  //	- new G4PhysicsOrderedFreeVector allocated to hold CAI's
+  //	- new G4MaterialPropertyVector allocated to hold CAI's
  
   G4int materialIndex = aMaterial->GetIndex();
 
   // Retrieve the Cerenkov Angle Integrals for this material  
 
-  G4PhysicsOrderedFreeVector* CerenkovAngleIntegrals =
-             (G4PhysicsOrderedFreeVector*)((*thePhysicsTable)(materialIndex));
+  G4MaterialPropertyVector* CerenkovAngleIntegrals =
+             (G4MaterialPropertyVector*)((*thePhysicsTable)(materialIndex));
 
   if(!(CerenkovAngleIntegrals->IsFilledVectorExist()))return 0.0;
 
@@ -731,10 +731,10 @@ G4double
 void C4Cerenkov1042::DumpPhysicsTable() const
 {
   G4int PhysicsTableSize = thePhysicsTable->entries();
-  G4PhysicsOrderedFreeVector *v;
+  G4MaterialPropertyVector *v;
 
   for (G4int i = 0 ; i < PhysicsTableSize ; i++ ) {
-      v = (G4PhysicsOrderedFreeVector*)(*thePhysicsTable)[i];
+      v = (G4MaterialPropertyVector*)(*thePhysicsTable)[i];
       v->DumpValues();
   }
 }

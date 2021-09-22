@@ -93,7 +93,7 @@
 #include "G4Material.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4PhysicsTable.hh"
-#include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 
 // Class Description:
 // Discrete Process -- Rayleigh scattering of optical photons.
@@ -161,7 +161,7 @@ private:
         // Helper Functions
         /////////////////////
 
-	G4PhysicsOrderedFreeVector* RayleighAttenuationLengthGenerator(
+	G4MaterialPropertyVector* RayleighAttenuationLengthGenerator(
 					G4MaterialPropertiesTable *aMPT);
 
         ///////////////////////
@@ -196,11 +196,11 @@ void DsG4OpRayleigh::DumpPhysicsTable() const
 
 {
         G4int PhysicsTableSize = thePhysicsTable->entries();
-        G4PhysicsOrderedFreeVector *v;
+        G4MaterialPropertyVector *v;
 
         for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
         {
-                v = (G4PhysicsOrderedFreeVector*)(*thePhysicsTable)[i];
+                v = (G4MaterialPropertyVector*)(*thePhysicsTable)[i];
                 v->DumpValues();
         }
 }

@@ -19,7 +19,8 @@ X4Scintillation::X4Scintillation( const NPY<double>* fast_, const NPY<double>* s
     :
     fast(fast_),
     slow(slow_),
-    mismatch(NPY<double>::compare(fast, slow, true)), 
+    epsilon(0.), 
+    mismatch(NPY<double>::compare(fast, slow, epsilon, true)), 
     theFastLightVector(X4MaterialPropertyVector::FromArray(fast)),
     theSlowLightVector(X4MaterialPropertyVector::FromArray(slow)),
     ScintillationIntegral(Integral(theFastLightVector))

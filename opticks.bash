@@ -1963,11 +1963,8 @@ EON
 }
 
 
-opticks-tl()
-{
-   om-
-   om-testlog
-}
+opticks-tl(){ om- ; om-testlog $* ; }
+opticks-tld(){ opticks-tl --level debug ; }
 
 
 opticks-ts()

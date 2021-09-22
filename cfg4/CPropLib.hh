@@ -85,7 +85,6 @@ class CFG4_API CPropLib {
        bool hasMaterial(const char* shortname); 
    public:
        std::string getMaterialKeys(const G4Material* mat);
-       std::string getMaterialKeys_OLD(const G4Material* mat);
    public:
        G4LogicalBorderSurface* makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, double effi=0.f, double refl=0.f);
        G4LogicalBorderSurface* makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2);
@@ -102,7 +101,6 @@ class CFG4_API CPropLib {
        void addConstProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<double>* prop );
        GProperty<double>* convertVector(G4PhysicsVector* pvec);
        GPropertyMap<double>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
-       GPropertyMap<double>* convertTable_OLD(G4MaterialPropertiesTable* mpt, const char* name);
    private:
        void addSensorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name ); 
        void addScintillatorMaterialProperties( G4MaterialPropertiesTable* mpt, const char* name ); 

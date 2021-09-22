@@ -417,7 +417,7 @@ om-echo-all(){      om-all ${FUNCNAME/-all} $* ; return $? ; }
 om-clean-all(){     om-all ${FUNCNAME/-all} $* ; return $? ; }
 om-find-all(){      om-all ${FUNCNAME/-all} $* ; return $? ; }
 
-om-testlog(){      CTestLog.py $(om-bdir)  ; }
+om-testlog(){      CTestLog.py $(om-bdir) $* ; }
 
 
 om-conf-xcode(){ OPTICKS_CMAKE_GENERATOR=Xcode om-conf ; }

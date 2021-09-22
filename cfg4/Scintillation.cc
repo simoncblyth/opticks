@@ -157,22 +157,22 @@ void Scintillation::DumpPhysicsTable() const
 {
         if (fFastIntegralTable) {
            G4int PhysicsTableSize = fFastIntegralTable->entries();
-           G4PhysicsOrderedFreeVector *v;
+           G4MaterialPropertyVector *v;
 
            for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
            {
-        	v = (G4PhysicsOrderedFreeVector*)(*fFastIntegralTable)[i];
+        	v = (G4MaterialPropertyVector*)(*fFastIntegralTable)[i];
         	v->DumpValues();
            }
          }
 
         if (fSlowIntegralTable) {
            G4int PhysicsTableSize = fSlowIntegralTable->entries();
-           G4PhysicsOrderedFreeVector *v;
+           G4MaterialPropertyVector *v;
 
            for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
            {
-                v = (G4PhysicsOrderedFreeVector*)(*fSlowIntegralTable)[i];
+                v = (G4MaterialPropertyVector*)(*fSlowIntegralTable)[i];
                 v->DumpValues();
            }
          }
@@ -381,7 +381,7 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         G4int materialIndex = aMaterial->GetIndex();
 
         // Retrieve the Scintillation Integral for this material
-        // new G4PhysicsOrderedFreeVector allocated to hold CII's
+        // new G4MaterialPropertyVector allocated to hold CII's
 
         G4int Num = NumPhotons;
 
@@ -389,7 +389,7 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
             G4double ScintillationTime = 0.*ns;
             G4double ScintillationRiseTime = 0.*ns;
-            G4PhysicsOrderedFreeVector* ScintillationIntegral = NULL;
+            G4MaterialPropertyVector* ScintillationIntegral = NULL;
 
             if (scnt == 1) {
                if (nscnt == 1) {
@@ -401,7 +401,7 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                                   GetConstProperty("FASTSCINTILLATIONRISETIME");
                    }
                    ScintillationIntegral =
-                   (G4PhysicsOrderedFreeVector*)
+                   (G4MaterialPropertyVector*)
                                        ((*fFastIntegralTable)(materialIndex));
                  }
                  if (Slow_Intensity) {
@@ -412,7 +412,7 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                                   GetConstProperty("SLOWSCINTILLATIONRISETIME");
                    }
                    ScintillationIntegral =
-                   (G4PhysicsOrderedFreeVector*)
+                   (G4MaterialPropertyVector*)
                                        ((*fSlowIntegralTable)(materialIndex));
                  }
                }
@@ -432,7 +432,7 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                                  GetConstProperty("FASTSCINTILLATIONRISETIME");
                  }
                  ScintillationIntegral =
-                 (G4PhysicsOrderedFreeVector*)
+                 (G4MaterialPropertyVector*)
                                       ((*fFastIntegralTable)(materialIndex));
                }
             }
@@ -445,7 +445,7 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                                  GetConstProperty("SLOWSCINTILLATIONRISETIME");
                }
                ScintillationIntegral =
-               (G4PhysicsOrderedFreeVector*)
+               (G4MaterialPropertyVector*)
                                       ((*fSlowIntegralTable)(materialIndex));
             }
 
@@ -630,10 +630,10 @@ void Scintillation::BuildThePhysicsTable()
 
         for (G4int i=0 ; i < numOfMaterials; i++)
         {
-                G4PhysicsOrderedFreeVector* aPhysicsOrderedFreeVector =
-					new G4PhysicsOrderedFreeVector();
-                G4PhysicsOrderedFreeVector* bPhysicsOrderedFreeVector =
-                                        new G4PhysicsOrderedFreeVector();
+                G4MaterialPropertyVector* aMaterialPropertyVector =
+					new G4MaterialPropertyVector();
+                G4MaterialPropertyVector* bMaterialPropertyVector =
+                                        new G4MaterialPropertyVector();
 
                 // Retrieve vector of scintillation wavelength intensity for
                 // the material from the material's optical properties table.
@@ -664,7 +664,7 @@ void Scintillation::BuildThePhysicsTable()
 
                          G4double currentCII = 0.0;
 
-                         aPhysicsOrderedFreeVector->
+                         aMaterialPropertyVector->
                                  InsertValues(currentPM , currentCII);
 
                          // Set previous values to current ones prior to loop
@@ -688,7 +688,7 @@ void Scintillation::BuildThePhysicsTable()
                                 currentCII = prevCII +
                                              (currentPM - prevPM) * currentCII;
 
-                                aPhysicsOrderedFreeVector->
+                                aMaterialPropertyVector->
                                     InsertValues(currentPM, currentCII);
 
                                 prevPM  = currentPM;
@@ -718,7 +718,7 @@ void Scintillation::BuildThePhysicsTable()
 
                          G4double currentCII = 0.0;
 
-                         bPhysicsOrderedFreeVector->
+                         bMaterialPropertyVector->
                                  InsertValues(currentPM , currentCII);
 
                          // Set previous values to current ones prior to loop
@@ -742,7 +742,7 @@ void Scintillation::BuildThePhysicsTable()
                                 currentCII = prevCII +
                                              (currentPM - prevPM) * currentCII;
 
-                                bPhysicsOrderedFreeVector->
+                                bMaterialPropertyVector->
                                     InsertValues(currentPM, currentCII);
 
                                 prevPM  = currentPM;
@@ -758,8 +758,8 @@ void Scintillation::BuildThePhysicsTable()
         // will be inserted in the table(s) according to the
         // position of the material in the material table.
 
-        fFastIntegralTable->insertAt(i,aPhysicsOrderedFreeVector);
-        fSlowIntegralTable->insertAt(i,bPhysicsOrderedFreeVector);
+        fFastIntegralTable->insertAt(i,aMaterialPropertyVector);
+        fSlowIntegralTable->insertAt(i,bMaterialPropertyVector);
 
         }
 }

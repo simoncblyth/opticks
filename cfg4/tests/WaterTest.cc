@@ -29,7 +29,7 @@ struct CWater
     G4ParticleDefinition*        OpticalPhoton ; 
     G4OpRayleigh*                RayleighProcess ; 
     G4PhysicsTable*              thePhysicsTable; 
-    G4PhysicsOrderedFreeVector*  rayleigh ; 
+    G4MaterialPropertyVector*  rayleigh ; 
     std::array<double, 36>       fPP_Water_RIN ; 
     std::array<double, 36>       fWaterRINDEX ; 
 
@@ -66,7 +66,7 @@ CWater::CWater()
     WaterMPT->AddProperty("RINDEX", fPP_Water_RIN.data(), fWaterRINDEX.data() ,36); 
     RayleighProcess->BuildPhysicsTable(*OpticalPhoton);  
     thePhysicsTable = RayleighProcess->GetPhysicsTable()  ; 
-    rayleigh = static_cast<G4PhysicsOrderedFreeVector*>((*thePhysicsTable)(WaterIndex));
+    rayleigh = static_cast<G4MaterialPropertyVector*>((*thePhysicsTable)(WaterIndex));
 }
 
 

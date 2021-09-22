@@ -22,19 +22,18 @@
 
 #include "CVec.hh"
 
-#include "G4PhysicsOrderedFreeVector.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
 #include "PLOG.hh"
 
-CVec::CVec(G4PhysicsOrderedFreeVector* vec ) 
+CVec::CVec(G4MaterialPropertyVector* vec ) 
    :
    m_vec(vec)
 {
 }
 
-G4PhysicsOrderedFreeVector* CVec::getVec()
+G4MaterialPropertyVector* CVec::getVec()
 {
     return m_vec ; 
 }
@@ -50,7 +49,7 @@ CVec* CVec::MakeDummy(size_t n )
         v[i] = double(i)*1000 + 0.2 ;  
     }   
 
-    G4PhysicsOrderedFreeVector* _vec = new G4PhysicsOrderedFreeVector(e, v, n ); 
+    G4MaterialPropertyVector* _vec = new G4MaterialPropertyVector(e, v, n ); 
     CVec* vec = new CVec(_vec) ; 
     return vec ; 
  }
@@ -66,7 +65,7 @@ std::string CVec::Digest(CVec* vec)
     return Digest(vec ? vec->getVec() : NULL ); 
 }
 
-std::string CVec::Digest(G4PhysicsOrderedFreeVector* vec)  // see G4PhysicsOrderedFreeVectorTest
+std::string CVec::Digest(G4MaterialPropertyVector* vec)  // see G4PhysicsOrderedFreeVectorTest
 {      
     if(!vec) return "" ; 
 
