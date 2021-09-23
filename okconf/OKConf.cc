@@ -31,6 +31,7 @@
 
 
 
+
 int OKConf::Check()
 {
    int rc = 0 ;  
@@ -101,6 +102,9 @@ void OKConf::Dump(const char* msg)
     std::cout << std::setw(50) << "OKConf::DefaultSTTFPath()      "    << OKConf::DefaultSTTFPath() << std::endl ; 
     std::cout << std::endl ; 
 }
+
+
+
 
 unsigned OKConf::CUDAVersionInteger()
 {

@@ -130,6 +130,29 @@ Compare the icdf directly with each other, not with cache::
         
 
 
+Huh, comparing in energy shows no change::
+
+    (base) [simon@localhost extg4]$ ipython 
+    Python 3.7.7 (default, May  7 2020, 21:25:33) 
+    Type 'copyright', 'credits' or 'license' for more information
+    IPython 7.18.1 -- An enhanced Interactive Python. Type '?' for help.
+
+    In [1]: import numpy as np
+
+    In [2]: a = np.load("/tmp/simon/opticks/X4ScintillationTest/g4icdf_energy_manual.npy")
+
+    In [3]: b = np.load("/tmp/blyth/opticks/X4ScintillationTest/g4icdf_energy_manual.npy")
+
+    In [4]: ab = np.abs(a-b)
+
+    In [5]: ab.min()
+    Out[5]: 0.0
+
+    In [6]: ab.max()
+    Out[6]: 0.0
+
+
+
 Compare the constants, very small change in h_Planck::
 
 

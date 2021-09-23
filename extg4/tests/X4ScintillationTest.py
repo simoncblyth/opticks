@@ -8,16 +8,19 @@ X4ScintillationTest.py
     ipython -i tests/X4ScintillationTest.py
 
 """
-import logging, os
+import logging, os, subprocess
 log = logging.getLogger(__name__)
 import json, numpy as np
 # dont import matplotlib at top level as it fails remotely, do it in the _plt method
 
+G4_VERSION = int(subprocess.getoutput("Geant4VersionInteger"))
+CLHEP_VERSION = int(subprocess.getoutput("CLHEPVersionInteger"))
+
 class X4ScintillationTest(object):
     DIR=os.path.expandvars("$TMP/X4ScintillationTest")
-    #NAME= "g4icdf_manual.npy"
     NAME= "g4icdf_auto.npy"
     LIBNAME = "GScintillatorLib.npy" 
+    ENERGY_NAME= "g4icdf_energy_manual.npy"
 
     def __init__(self):
         icdf0_path = os.path.join(self.DIR, self.LIBNAME )
@@ -30,6 +33,9 @@ class X4ScintillationTest(object):
         self.icdf_path = icdf_path
         self.icdf = icdf
 
+        energy_icdf = np.load(os.path.join(self.DIR,"g4icdf_energy_manual.npy")).reshape(3,-1)
+        self.energy_icdf = energy_icdf
+
         icdf_jspath = icdf_path.replace(".npy",".json")
         log.info("icdf_jspath:%s" % icdf_jspath)
         meta = json.load(open(icdf_jspath)) if os.path.exists(icdf_jspath) else {}
@@ -39,7 +45,8 @@ class X4ScintillationTest(object):
         self.meta = meta 
         self.hd_factor = float(meta.get("hd_factor", "10"))
         self.edge      = float(meta.get("edge", "0.1"))
-    pass
+        self.constants = np.load(os.path.expandvars("$TMP/X4PhysicalConstantsTest/%d.npy" % G4_VERSION ))
+        self.constants_txt = np.loadtxt(os.path.expandvars("$TMP/X4PhysicalConstantsTest/%d.txt" % G4_VERSION ), dtype=np.object)
 
     def icdf_compare(self):
         a = self.icdf0
@@ -51,11 +58,27 @@ class X4ScintillationTest(object):
         print("ab:%s ab.min %10g ab.max %10g" % (str(ab.shape),ab.min(), ab.max()))
 
         qwns = "a b ab"
-
         for qwn in qwns.split():
             globals()[qwn] = locals()[qwn] 
             setattr(self, qwn, locals()[qwn])
         pass
+
+    def e2w_reciprocal_check(self):
+        fac = self.constants[3]   #  G4:1042 CLHEP:2451  'h_Planck*c_light/nm'  0.0012398419843320022  1/806.5543937349214   
+        energy_icdf = self.energy_icdf
+        icdf = self.icdf
+
+        wl_icdf = fac/energy_icdf
+        ab = np.abs(wl_icdf - t.icdf)
+        abmax = ab.max()
+        print("compare wl_icdf obtained from energy_icdf from standard(wavelength) icdf" ) 
+        print("abmax:%20g "  % abmax)
+
+        
+        qwns = "wl_icdf"
+        for qwn in qwns.split():
+            globals()[qwn] = locals()[qwn] 
+        pass 
 
 
     def interp_plt(self):
@@ -129,6 +152,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     t = X4ScintillationTest()
     t.icdf_compare()
+    t.e2w_reciprocal_check()
+
     #t.interp_plt()
 
 

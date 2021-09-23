@@ -66,6 +66,7 @@ class OKCONF_API OKConf
        static int OptiXVersionMinor() ; 
        static int OptiXVersionMicro() ; 
 
+       // static unsigned CLHEPVersionInteger();    see x4/tests/CLHEPVersionInteger.cc
        static unsigned Geant4VersionInteger() ; 
        static unsigned CUDAVersionInteger() ; 
        static unsigned OpticksVersionInteger(); 
