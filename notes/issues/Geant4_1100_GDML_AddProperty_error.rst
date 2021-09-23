@@ -19,6 +19,87 @@ Last four fails are from a GDML issue : it appears that 1100 cannot read GDML wi
 because of a lack of createNewKey bool. 
 
 
+X4ScintillationTest
+-----------------------
+
+
+
+No problem with 1042, O:: 
+
+    x4 ; ipython -i tests/X4ScintillationTest.py 
+
+    O[blyth@localhost extg4]$ ipython -i tests/X4ScintillationTest.py 
+    Python 2.7.5 (default, Nov 16 2020, 22:23:17) 
+    Type "copyright", "credits" or "license" for more information.
+
+    IPython 3.2.1 -- An enhanced Interactive Python.
+    ?         -> Introduction and overview of IPython's features.
+    %quickref -> Quick reference.
+    help      -> Python's own help system.
+    object?   -> Details about 'object', use 'object??' for extra details.
+    INFO:__main__:icdf_jspath:/tmp/blyth/opticks/X4ScintillationTest/g4icdf_auto.json
+    INFO:__main__: num_bins : 4096 
+    INFO:__main__: edge : 0.05 
+    INFO:__main__: hd_factor : 20 
+    INFO:__main__: name : LS 
+    INFO:__main__: creator : X4Scintillation::CreateGeant4InterpolatedInverseCDF 
+    INFO:__main__:icdf_compare
+    a:(3, 4096) a.min    200.118 a.max    799.898
+    b.(3, 4096) b.min    200.118 b.max    799.898
+    ab:(3, 4096) ab.min          0 ab.max          0
+
+    In [1]: a
+    Out[1]: 
+    array([[ 799.89798414,  785.89756342,  772.37880425, ...,  208.95408887,
+             205.87260891,  202.8806943 ],
+           [ 799.89798414,  799.18612661,  798.47553497, ...,  485.01049867,
+             485.004202  ,  484.99794481],
+           [ 391.46193947,  391.46039661,  391.45885375, ...,  200.40510648,
+             200.26136376,  200.11782709]])
+
+    In [2]: ab
+    Out[2]: 
+    array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+           [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+           [ 0.,  0.,  0., ...,  0.,  0.,  0.]])
+
+
+With 1100 using same geoache as O, not just a few values off, all values are off at 1e-5/1e-4 level::
+
+    x4 ; ipython -i tests/X4ScintillationTest.py 
+
+    NFO:__main__: num_bins : 4096 
+    INFO:__main__:icdf_compare
+    a:(3, 4096) a.min    200.118 a.max    799.898
+    b.(3, 4096) b.min    200.118 b.max    799.898
+    ab:(3, 4096) ab.min 1.7579e-05 ab.max 7.02658e-05
+
+    In [1]: a
+    Out[1]: 
+    array([[799.89798414, 785.89756342, 772.37880425, ..., 208.95408887,
+            205.87260891, 202.8806943 ],
+           [799.89798414, 799.18612661, 798.47553497, ..., 485.01049867,
+            485.004202  , 484.99794481],
+           [391.46193947, 391.46039661, 391.45885375, ..., 200.40510648,
+            200.26136376, 200.11782709]])
+
+    In [2]: ab
+    Out[2]: 
+    array([[7.02658095e-05, 6.90359639e-05, 6.78484295e-05, ...,
+            1.83552509e-05, 1.80845630e-05, 1.78217429e-05],
+           [7.02658095e-05, 7.02032775e-05, 7.01408566e-05, ...,
+            4.26050020e-05, 4.26044490e-05, 4.26038993e-05],
+           [3.43873726e-05, 3.43872371e-05, 3.43871016e-05, ...,
+            1.76042787e-05, 1.75916518e-05, 1.75790431e-05]])
+
+    In [3]: ab.shape
+    Out[3]: (3, 4096)
+
+
+
+
+
+
 
 ::
 

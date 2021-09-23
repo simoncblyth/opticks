@@ -8,9 +8,10 @@ X4ScintillationTest.py
     ipython -i tests/X4ScintillationTest.py
 
 """
-import logging
+import logging, os
 log = logging.getLogger(__name__)
 import json, numpy as np
+# dont import matplotlib at top level as it fails remotely, do it in the _plt method
 
 class X4ScintillationTest(object):
     DIR=os.path.expandvars("$TMP/X4ScintillationTest")
@@ -127,8 +128,8 @@ class X4ScintillationTest(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     t = X4ScintillationTest()
-    #t.icdf_compare()
-    t.interp_plt()
+    t.icdf_compare()
+    #t.interp_plt()
 
 
 
