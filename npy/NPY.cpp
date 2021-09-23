@@ -2234,6 +2234,27 @@ NPY<T>* NPY<T>::make_interleaved( const std::vector<NPYBase*>& srcs )
     return dst ;  
 }
 
+
+
+template <typename T>
+unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>&  epsilons,  bool dump, unsigned dumplimit  )
+{
+    unsigned mismatch_tot = 0 ; 
+    for(unsigned i=0 ; i < epsilons.size() ; i++)
+    {   
+        double epsilon = epsilons[i] ; 
+        unsigned mismatch = NPY<T>::compare( a, b, epsilon, dump, dumplimit  );
+        std::cout 
+            << " epsilon " << std::setw(10) << epsilon 
+            << " mismatch " << mismatch
+            << std::endl 
+            ;   
+        mismatch_tot += mismatch ; 
+    }   
+    return mismatch_tot ; 
+}
+
+
 /**
 NPY<T>::compare
 -----------------

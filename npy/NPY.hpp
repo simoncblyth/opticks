@@ -171,6 +171,8 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_modulo_selection(const NPY<T>* src, unsigned modulo, unsigned index); 
        static NPY<T>* make_interleaved( const std::vector<NPYBase*>& srcs ); 
    public:
+
+       static unsigned compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>&  epsilons,  bool dump=false, unsigned dumplimit=100  ); 
        static unsigned compare( const NPY<T>* a, const NPY<T>* b, const T epsilon, bool dump, unsigned dumplimit=100  ); 
        static unsigned compare_element_jk(const NPY<T>* a, const NPY<T>* b, int j, int k, bool dump );
    public:

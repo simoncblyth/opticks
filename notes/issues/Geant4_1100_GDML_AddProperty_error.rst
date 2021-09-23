@@ -1,24 +1,23 @@
 Geant4_1100_GDML_AddProperty_error
 =====================================
 
-
-* it appears that 1100 cannot read GDML with non-standard material property keys such as FASTCOMPONENT 
-  because of a lack of createNewKey bool 
+1100 beta fails now stand at::
 
 
-::
+    FAILS:  5   / 492   :  Thu Sep 23 18:54:04 2021   
+      30 /31  Test #30 : ExtG4Test.X4ScintillationTest                 Child aborted***Exception:     0.55   
+      3  /45  Test #3  : CFG4Test.CTestDetectorTest                    Child aborted***Exception:     4.72   
+      5  /45  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     4.62   
+      7  /45  Test #7  : CFG4Test.CGeometryTest                        Child aborted***Exception:     5.04   
+      27 /45  Test #27 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     4.76   
 
-    91% tests passed, 4 tests failed out of 45
 
-    Total Test time (real) =  37.00 sec
+First X4ScintillationTest is from a difference in the ICDF persisted into the geocache and the one created in the test : 
+suggesting an domain interpolation "::GetEnergy" difference between Geant4 1042 that created the geocache and 1100 that ran the test.
 
-    The following tests FAILED:
-          3 - CFG4Test.CTestDetectorTest (Child aborted)
-          5 - CFG4Test.CGDMLDetectorTest (Child aborted)
-          7 - CFG4Test.CGeometryTest (Child aborted)
-         27 - CFG4Test.CInterpolationTest (Child aborted)
-    Errors while running CTest
-    Thu Sep 23 03:16:15 CST 2021
+Last four fails are from a GDML issue : it appears that 1100 cannot read GDML with non-standard material property keys such as FASTCOMPONENT 
+because of a lack of createNewKey bool. 
+
 
 
 ::

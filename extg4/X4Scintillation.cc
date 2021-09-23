@@ -46,6 +46,9 @@ X4Scintillation::Integral
 Returns cumulative sum of the input property on the same energy domain, 
 with values starting at 0. and increasing monotonically.
 
+The is using trapezoidal numerical integration.
+
+
 **/
 
 G4MaterialPropertyVector* X4Scintillation::Integral( const G4MaterialPropertyVector* theFastLightVector )
@@ -122,13 +125,13 @@ NPY<double>* X4Scintillation::CreateWavelengthSamples( const G4MaterialPropertyV
     {
         G4double u = G4UniformRand() ; 
         G4double CIIvalue = u*mx;
-        G4double sampledEnergy = ScintillatorIntegral->GetEnergy(CIIvalue);
+        G4double sampledEnergy = ScintillatorIntegral->GetEnergy(CIIvalue);  // from value to domain 
 
         G4double sampledWavelength_nm = h_Planck*c_light/sampledEnergy/nm ; 
 
         v_wl[i] = sampledWavelength_nm ;  
 
-        if( i < 100 ) std::cout 
+        if( i < 10 ) std::cout 
             << " sampledEnergy/eV " << std::fixed << std::setw(10) << std::setprecision(4) << sampledEnergy/eV
             << " sampledWavelength_nm " <<  std::fixed << std::setw(10) << std::setprecision(4) <<  sampledWavelength_nm
             << std::endl 
@@ -238,6 +241,8 @@ NPY<double>* X4Scintillation::CreateGeant4InterpolatedInverseCDF(
     G4MaterialPropertyVector* ScintillatorIntegral = const_cast<G4MaterialPropertyVector*>(ScintillatorIntegral_) ;  // tut tut : G4 GetMaxValue() GetEnergy() non-const 
     double mx = ScintillatorIntegral->GetMaxValue() ;   // dataVector.back(); because its **ORDERED** to be increasing on Insert
 
+
+    // hmm more extensible (eg for Cerenkov [BetaInverse,u,payload] icdf)  with the 3 for the different resolutions in the payload ?
     NPY<double>* icdf = NPY<double>::make(3, num_bins, 1 );  
     icdf->zero(); 
 
