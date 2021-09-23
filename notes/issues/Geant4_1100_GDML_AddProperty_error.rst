@@ -98,6 +98,58 @@ With 1100 using same geoache as O, not just a few values off, all values are off
 
 
 
+Compare the constants::
+
+
+    In [2]: import numpy as np
+
+    In [3]: a = np.load("/tmp/simon/opticks/X4PhysicalConstantsTest/1100.npy")
+
+    In [4]: b = np.load("/tmp/blyth/opticks/X4PhysicalConstantsTest/1042.npy")
+
+    In [5]: a
+    Out[5]: 
+    array([4.13566770e-12, 2.99792458e+02, 1.23984198e-09, 1.23984198e-03,
+           1.00000000e-06])
+
+    In [6]: b
+    Out[6]: 
+    array([4.13566733e-12, 2.99792458e+02, 1.23984188e-09, 1.23984188e-03,
+           1.00000000e-06])
+
+    In [7]: a-b
+    Out[7]: 
+    array([3.63291343e-19, 0.00000000e+00, 1.08912005e-16, 1.08912005e-10,
+           0.00000000e+00])
+
+
+
+Compare the integrals, they match exactly::
+
+    In [1]: import numpy as np
+
+    In [2]: a = np.load("/tmp/simon/opticks/X4ScintillationTest/ScintillatorIntegral.npy")
+
+    In [3]: b = np.load("/tmp/blyth/opticks/X4ScintillationTest/ScintillatorIntegral.npy")
+
+
+    In [9]: ab = np.abs(a - b )
+
+    In [10]: ab.min()
+    Out[10]: 0.0
+
+    In [11]: ab.max()
+    Out[11]: 0.0
+
+
+
+
+
+
+
+
+
+
 
 
 

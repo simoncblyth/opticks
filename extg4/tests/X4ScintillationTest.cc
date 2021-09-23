@@ -33,6 +33,22 @@ void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<doubl
     G4MaterialPropertyVector* theFastLightVector = X4MaterialPropertyVector::FromArray(fast_en) ; 
     G4MaterialPropertyVector* ScintillatorIntegral = X4Scintillation::Integral(theFastLightVector) ; 
 
+    double e0 = ScintillatorIntegral->GetMaxLowEdgeEnergy();
+    double e1 = ScintillatorIntegral->GetMinLowEdgeEnergy();
+    double v0 = ScintillatorIntegral->GetMinValue() ;  
+    double v1 = ScintillatorIntegral->GetMaxValue() ;  
+
+    NPY<double>* meta = NPY<double>::make(5); 
+    meta->zero(); 
+    int j = 0 ; 
+    int k = 0 ; 
+    int l = 0 ; 
+    meta->setValue(0,j,k,l, e0 ); 
+    meta->setValue(1,j,k,l, e1 ); 
+    meta->setValue(2,j,k,l, v0); 
+    meta->setValue(3,j,k,l, v1); 
+    meta->save(outdir, "meta.npy");  
+
     NPY<double>* si = X4Array::Convert<double>(ScintillatorIntegral) ; 
     const char* derived_name = "ScintillatorIntegral.npy" ; 
     LOG(info) << " save to " << outdir << "/" << derived_name ; 
@@ -58,6 +74,8 @@ void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<doubl
     const char* g4icdf_name = "g4icdf_manual.npy" ; 
     LOG(info) << " save to " << outdir << "/" << g4icdf_name ; 
     g4icdf->save(outdir, g4icdf_name);  
+
+
 
     LOG(info) << "]" ; 
 }
