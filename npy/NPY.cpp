@@ -2245,7 +2245,7 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>
         double epsilon = epsilons[i] ; 
         unsigned mismatch = NPY<T>::compare( a, b, epsilon, dump, dumplimit  );
         std::cout 
-            << " epsilon " << std::setw(10) << epsilon 
+            << " epsilon " << std::setw(10) << std::scientific << epsilon 
             << " mismatch " << mismatch
             << std::endl 
             ;   

@@ -11,7 +11,6 @@ X4ScintillationTest.py
 import logging
 log = logging.getLogger(__name__)
 import json, numpy as np
-import matplotlib.pyplot as plt 
 
 class X4ScintillationTest(object):
     DIR=os.path.expandvars("$TMP/X4ScintillationTest")
@@ -58,7 +57,7 @@ class X4ScintillationTest(object):
         pass
 
 
-    def interp(self):
+    def interp_plt(self):
         t = self
         hd_factor = t.hd_factor
         edge = t.edge
@@ -69,6 +68,9 @@ class X4ScintillationTest(object):
         i0 = icdf[0]
         i1 = icdf[1]
         i2 = icdf[2]
+
+        import matplotlib.pyplot as plt 
+        plt.ion()
 
         fig, ax = plt.subplots(figsize=[12.8, 7.2])
         n = 4096  
@@ -125,8 +127,8 @@ class X4ScintillationTest(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     t = X4ScintillationTest()
-    t.icdf_compare()
-    #t.interp()
+    #t.icdf_compare()
+    t.interp_plt()
 
 
 
