@@ -33,9 +33,9 @@ NPY<double>* X4Scintillation::createWavelengthSamples( unsigned num_samples )
 {
     return CreateWavelengthSamples(ScintillationIntegral, num_samples ); 
 } 
-NPY<double>* X4Scintillation::createGeant4InterpolatedInverseCDF( unsigned num_bins, unsigned hd_factor, const char* material_name )
+NPY<double>* X4Scintillation::createGeant4InterpolatedInverseCDF( unsigned num_bins, unsigned hd_factor, const char* material_name, bool energy_not_wavelength  )
 {
-    return CreateGeant4InterpolatedInverseCDF( ScintillationIntegral, num_bins, hd_factor, material_name ); 
+    return CreateGeant4InterpolatedInverseCDF( ScintillationIntegral, num_bins, hd_factor, material_name, energy_not_wavelength  ); 
 }
 
 
@@ -235,8 +235,9 @@ NPY<double>* X4Scintillation::CreateGeant4InterpolatedInverseCDF(
        const G4MaterialPropertyVector* ScintillatorIntegral_, 
        unsigned num_bins, 
        unsigned hd_factor, 
-       const char* material_name
-) 
+       const char* material_name, 
+       bool energy_not_wavelength
+)   // static
 {
     G4MaterialPropertyVector* ScintillatorIntegral = const_cast<G4MaterialPropertyVector*>(ScintillatorIntegral_) ;  // tut tut : G4 GetMaxValue() GetEnergy() non-const 
     double mx = ScintillatorIntegral->GetMaxValue() ;   // dataVector.back(); because its **ORDERED** to be increasing on Insert
@@ -293,10 +294,9 @@ NPY<double>* X4Scintillation::CreateGeant4InterpolatedInverseCDF(
         double wavelength_lhs = h_Planck*c_light/energy_lhs/nm ;
         double wavelength_rhs = h_Planck*c_light/energy_rhs/nm ;
 
-        bool chk_dom = false ; 
-        icdf->setValue(0, j, k, l,  chk_dom ? u_all : wavelength_all ); 
-        icdf->setValue(1, j, k, l,  chk_dom ? u_lhs : wavelength_lhs ); 
-        icdf->setValue(2, j, k, l,  chk_dom ? u_rhs : wavelength_rhs ); 
+        icdf->setValue(0, j, k, l,  energy_not_wavelength ? energy_all :  wavelength_all ); 
+        icdf->setValue(1, j, k, l,  energy_not_wavelength ? energy_lhs :  wavelength_lhs ); 
+        icdf->setValue(2, j, k, l,  energy_not_wavelength ? energy_rhs :  wavelength_rhs ); 
     }
     return icdf ; 
 } 

@@ -62,8 +62,9 @@ void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<doubl
     unsigned num_bins = 4096 ; 
     unsigned hd_factor = 20 ; 
     const char* name = "LS" ; 
+    bool energy_not_wavelength = false ; 
 
-    NPY<double>* g4icdf = X4Scintillation::CreateGeant4InterpolatedInverseCDF(ScintillatorIntegral, num_bins, hd_factor, name ) ; 
+    NPY<double>* g4icdf = X4Scintillation::CreateGeant4InterpolatedInverseCDF(ScintillatorIntegral, num_bins, hd_factor, name, energy_not_wavelength ) ; 
 
     LOG(info) << " compare THE_buffer and g4icdf with various epsilon " ; 
     std::vector<double> epsilons = { 1e-12, 1e-6 , 1e-4, 1e-3 } ; 
@@ -76,6 +77,11 @@ void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<doubl
     g4icdf->save(outdir, g4icdf_name);  
 
 
+
+    energy_not_wavelength = true ; 
+    NPY<double>* g4icdf_energy = X4Scintillation::CreateGeant4InterpolatedInverseCDF(ScintillatorIntegral, num_bins, hd_factor, name, energy_not_wavelength ) ; 
+    const char* g4icdf_energy_name = "g4icdf_energy_manual.npy" ; 
+    g4icdf_energy->save(outdir, g4icdf_energy_name );  
 
     LOG(info) << "]" ; 
 }
