@@ -2,7 +2,7 @@
 """
 ::
 
-    ipython -i ImageNPYLayeredTest.py
+    ipython -i ImageNPYConcatTest.py
 
 
 """
@@ -10,18 +10,29 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt 
 
-if 1:
-    p1 = "/tmp/SPPMTest_MakeTestImage_concat.npy" 
-    b = np.load(p1)
-    print(b.shape)
-    assert b.shape[0] < 4       
-    layers = b.shape[0]
-    fig, axs = plt.subplots(layers)
-    fig.suptitle("%s %r" % (p1,b.shape))
-    for i in range(layers): 
-        axs[i].imshow(b[i], origin='lower')
+if __name__ == '__main__':
+
+    plt.ion()
+
+    ap = os.path.expandvars("$TMP/SPPMTest_MakeTestImage_old_concat.npy")
+    bp = os.path.expandvars("$TMP/SPPMTest_MakeTestImage_new_concat.npy")
+    paths = [ap,bp]
+
+    a = np.load(ap)
+    b = np.load(bp)
+    imgs = [a,b]
+
+    for path,img in zip(paths,imgs):
+        print(img.shape)
+        assert img.shape[0] < 4       
+        layers = img.shape[0]
+        fig, axs = plt.subplots(layers, figsize=[12.8, 7.2])
+        fig.suptitle("%s %r" % (imgpath,img.shape))
+        for i in range(layers): 
+            axs[i].imshow(img[i], origin='lower')
+        pass
+        plt.show()                           
     pass
-    plt.show()                           
 
 
 

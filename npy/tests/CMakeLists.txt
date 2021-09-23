@@ -101,6 +101,7 @@ NPY9SpawnTest.cc
 
 NPYminmaxTest.cc
 NPYreshapeTest.cc
+NPYCompareTest.cc
 
 NLoadTest.cc
 

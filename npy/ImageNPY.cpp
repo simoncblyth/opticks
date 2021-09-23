@@ -53,28 +53,36 @@ NPY<unsigned char>* ImageNPY::LoadPPMConcat(const std::vector<std::string>& path
     return comb  ; 
 }
 
+/**
+ImageNPY::SavePPMConcat
+-------------------------
 
+Requires a 4d array representing layered images, eg with shape::
+
+     (3,      512,    1024,  3)   
+     (layers, height, width, payload-rgb )
+
+The path argument is expected to end with ".ppm".
+Each layer of the array is saved to separate files
+with path argument ending modified to "_0.ppm" "_1.ppm" "_2.ppm"
+
+**/
 
 void ImageNPY::SavePPMConcat(const NPY<unsigned char>* imgs, const char* path, const bool yflip)
 {
-    assert( imgs->getDimensions() == 4 ); 
+    assert( imgs->getDimensions() == 4 );  
     assert( SStr::EndsWith(path, ".ppm")); 
 
     unsigned ni = imgs->getShape(0); 
     assert( ni < 10 ); 
     for(unsigned item=0 ; item < ni ; item++)
     { 
-        const char* end = SStr::Concat("_", item, ".ppm" );  
+        const char* end = SStr::Concat("_", item, ".ppm" );              // _0.ppm
         const char* outpath = SStr::ReplaceEnd( path, ".ppm", end ); 
         LOG(info) << " outpath " << outpath ; 
         ImageNPY::SavePPM( outpath,  imgs, yflip, item );   
     }
 }
-
-
-
-
-
 
 
 

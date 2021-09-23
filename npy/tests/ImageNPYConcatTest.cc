@@ -12,6 +12,19 @@ See ImageNPYConcatTest.py for imshow plotting
 
 **/
 
+/**
+test_LoadPPMConcat
+-------------------
+
+Mockup of the concat of three different image paths into a single array,
+but repeatedly uses a single path for testing convenience. 
+To visually distinguish the 3 "layers" a different config 
+is applied to each. 
+
+The ImageNPY::LoadPPMConcat is done twice with old_concat true and false
+and the resulting arrays are compared element by element using NPY<unsigned char>::compare.
+
+**/
 
 NPY<unsigned char>*  test_LoadPPMConcat(const char* path, const bool yflip, const unsigned num_concat)
 {

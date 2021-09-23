@@ -2253,8 +2253,8 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
     }
 
     assert( a->hasSameShape(b) ); 
-    unsigned ni = a->getNumItems(); 
-    unsigned nv = a->getNumValues(1); 
+    unsigned ni = a->getNumItems();      // first dimension 
+    unsigned nv = a->getNumValues(1);    //  
 
     if(dump)
     {
@@ -2272,8 +2272,8 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
         for(unsigned v=0 ; v < nv ;v++)
         {
             T df = av[v] - bv[v] ;
-            if(df < 0 ) df = -df ;  
-            bool match = df < epsilon ;
+            if(df < 0 ) df = -df ;     // hmm dodgy for eg unsigned char, but template specializations for unsigned types would be tedious 
+            bool match = df <= epsilon ;
             if(!match)
             {
                 mismatch_values++ ; 

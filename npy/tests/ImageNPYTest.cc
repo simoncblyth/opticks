@@ -66,15 +66,18 @@ NPY<unsigned char>*  test_LoadPPM(const char* path, const bool yflip)
 
     bool layer_dimension = false ; 
     NPY<unsigned char>* a = ImageNPY::LoadPPM(path, yflip, ncomp, config, layer_dimension ) ; 
-    //a->dump();   // dumping of unsigned char array gives mess 
-
-    LOG(info) << " array " << a->getShapeString() ; 
-
-    const char* opath = SStr::ReplaceEnd(path, ".ppm", ".npy" ) ;
-    LOG(info) << "saving array to " << opath ; 
-
-    a->save(opath); 
-
+    if( a == nullptr )
+    {
+        LOG(fatal) << " failed to load from " << path ; 
+    }
+    else
+    {
+        //a->dump();   // dumping of unsigned char array gives mess 
+        LOG(info) << " array " << a->getShapeString() ; 
+        const char* opath = SStr::ReplaceEnd(path, ".ppm", ".npy" ) ;
+        LOG(info) << "saving array to " << opath ; 
+        a->save(opath); 
+    }
     return a ; 
 }
 
@@ -94,6 +97,7 @@ int main(int argc, char** argv)
     LOG(info) << " load ipath " << ipath ; 
     bool yflip0 = false ; 
     NPY<unsigned char>* a = test_LoadPPM(ipath, yflip0); 
+    if( a == nullptr ) return 0 ; 
 
     LOG(info) << " save to opath " << opath ; 
     bool yflip1 = false ;  
