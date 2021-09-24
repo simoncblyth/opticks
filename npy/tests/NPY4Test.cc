@@ -24,9 +24,11 @@ void test_make_modulo_selection()
     NPY<float>* tr2 = NPY<float>::make_interleaved( srcs ); 
     tr2->dump("tr2"); 
 
-    bool dump = true ; 
     float epsilon = 1e-6 ; 
-    unsigned mismatch_items = NPY<float>::compare( tr, tr2, epsilon, dump ); 
+    bool dump = true ; 
+    unsigned dumplimit = 100 ; 
+    char mode = 'A' ; 
+    unsigned mismatch_items = NPY<float>::compare( tr, tr2, epsilon, dump, dumplimit, mode ); 
     assert( mismatch_items == 0 ); 
 
 }
@@ -76,7 +78,9 @@ void test_write_item_big()
      
     bool dump = true ; 
     unsigned char eps = 0; 
-    assert( NPY<unsigned char>::compare(ab,ab2,eps, dump) == 0 ); 
+    unsigned dumplimit = 100 ; 
+    char mode = 'A' ; 
+    assert( NPY<unsigned char>::compare(ab,ab2,eps, dump, dumplimit, mode) == 0 ); 
 }
 
 
@@ -205,7 +209,11 @@ void test_setQuad_()
         b->setQuad_( q, i); 
     }
     unsigned char eps = 0 ; 
-    assert( NPY<unsigned char>::compare(a,b,eps, true) == 0 ); 
+    bool dump = true ; 
+    unsigned dumplimit = 100 ; 
+    char mode = 'A' ; 
+
+    assert( NPY<unsigned char>::compare(a,b,eps,dump, dumplimit, mode) == 0 ); 
 }
 
 

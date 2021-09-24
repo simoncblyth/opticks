@@ -218,7 +218,9 @@ void test_GGeo_getTransform(const GGeo* gg)
  
     bool dump = true ; 
     float eps = 1e-6 ; 
-    unsigned mismatch = NPY<float>::compare(transforms0, transforms, eps, dump);  
+    unsigned dumplimit = 100 ; 
+    char mode = 'A' ; 
+    unsigned mismatch = NPY<float>::compare(transforms0, transforms, eps, dump, dumplimit, mode);  
     LOG(info) << "mismatch " << mismatch ; 
 }
 

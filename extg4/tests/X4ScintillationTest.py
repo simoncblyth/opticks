@@ -7,14 +7,25 @@ X4ScintillationTest.py
 
     ipython -i tests/X4ScintillationTest.py
 
+
+See notes/issues/X4ScintillationTest_1100_icdf_all_values_slightly_off.rst
+
 """
-import logging, os, subprocess
+
+# changes with python version
+try:
+   import commands as cmds
+except ImportError:
+   import subprocess as cmds
+pass
+
+import logging, os
 log = logging.getLogger(__name__)
 import json, numpy as np
 # dont import matplotlib at top level as it fails remotely, do it in the _plt method
 
-G4_VERSION = int(subprocess.getoutput("Geant4VersionInteger"))
-CLHEP_VERSION = int(subprocess.getoutput("CLHEPVersionInteger"))
+rc,G4_VERSION = map(int,cmds.getstatusoutput("Geant4VersionInteger"))
+rc,CLHEP_VERSION = map(int,cmds.getstatusoutput("CLHEPVersionInteger"))
 
 class X4ScintillationTest(object):
     DIR=os.path.expandvars("$TMP/X4ScintillationTest")
@@ -49,8 +60,47 @@ class X4ScintillationTest(object):
         self.constants_txt = np.loadtxt(os.path.expandvars("$TMP/X4PhysicalConstantsTest/%d.txt" % G4_VERSION ), dtype=np.object)
 
     def icdf_compare(self):
-        a = self.icdf0
-        b = self.icdf
+        """
+        on S:
+
+        * icdf0 comes from geocache which is using CLHEP_VERSION 2410
+        * icdf from X4Scintillation uses CLHEP_VERSION 2451      
+
+            In [7]: r = b/a
+
+            In [14]: r.min(), r.max()
+            Out[14]: (1.0000000878434632, 1.000000087843464)
+
+            In [12]: np.set_printoptions(precision=20)
+
+            In [13]: np.unique(r, return_counts=True)
+            Out[13]: 
+            (array([1.0000000878434632, 1.0000000878434634, 1.0000000878434636,
+                    1.0000000878434638, 1.000000087843464 ]),
+             array([   3, 1520, 9662, 1102,    1]))
+
+
+        See notes/issues/X4ScintillationTest_1100_icdf_all_values_slightly_off.rst
+
+
+        X4Scintillation::CreateGeant4InterpolatedInverseCDF::
+
+            289         double energy_all = ScintillatorIntegral->GetEnergy( u_all*mx );
+            293         double wavelength_all = h_Planck*c_light/energy_all/nm ;
+
+        Comparing t.constants[3]
+
+            In [17]: 0.0012398419843320022/0.0012398418754199976
+            Out[17]: 1.0000000878434636
+
+        So the changed constants looks to explain the difference.
+
+        Hmm, things become clear when looking at the ratios because the 
+        thing that changed in the scaling factor. Unlike when looking at the differences. 
+
+        """
+        a = self.icdf0  # 2410 
+        b = self.icdf   # 2451
         ab = np.abs(a-b) 
         log.info("icdf_compare")
         print("a:%s a.min %10g a.max %10g" % (str(a.shape),a.min(), a.max()))

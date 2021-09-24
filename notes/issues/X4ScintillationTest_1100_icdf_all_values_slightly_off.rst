@@ -10,6 +10,34 @@ X4ScintillationTest_1100_icdf_all_values_slightly_off
       7  /45  Test #7  : CFG4Test.CGeometryTest                        Child aborted***Exception:     5.04   
       27 /45  Test #27 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     4.76   
 
+Conclusion on X4ScintillationTest
+-----------------------------------
+
+The change in the icdf(wavelength) is completely explained by 
+an increase in h_Planck between the CLHEP(G4) versions in use [2410(1042) -> 2451(1100)]::
+
+    In [24]: 1.00000008784346383628 - 1
+    Out[24]: 8.784346383627906e-08
+
+    In [25]: 8.784346383627906e-08*800
+    Out[25]: 7.027477106902325e-05
+
+X4Scintillation::CreateGeant4InterpolatedInverseCDF::
+
+        289         double energy_all = ScintillatorIntegral->GetEnergy( u_all*mx );
+        293         double wavelength_all = h_Planck*c_light/energy_all/nm ;
+
+Using x4/tests/X4ScintillationTest.py comparing t.constants[3]::
+
+    In [17]: 0.0012398419843320022/0.0012398418754199976
+    Out[17]: 1.0000000878434636
+
+So the changed constants looks to explain the difference.
+
+Hmm, things become clear when looking at the ratios because the 
+thing that changed in a scaling factor (h_Planck) used to convert from energy to wavelength. 
+Looking at the difference in absolute nm gave an inflated sense of the size of the issue. 
+
 
 X4ScintillationTest
 -----------------------
@@ -54,7 +82,7 @@ No problem with 1042, O::
            [ 0.,  0.,  0., ...,  0.,  0.,  0.]])
 
 
-With 1100 using same geoache as O, not just a few values off, all values are off at 1e-5/1e-4 level::
+With 1100 using same geoache as O, not just a few values off, all values are off at ~1e-5 absolute nm::
 
     x4 ; ipython -i tests/X4ScintillationTest.py 
 
@@ -84,99 +112,6 @@ With 1100 using same geoache as O, not just a few values off, all values are off
 
     In [3]: ab.shape
     Out[3]: (3, 4096)
-
-
-Compare the icdf directly with each other, not with cache::
-
-    In [2]: import numpy as np
-
-    In [3]: a = np.load("/tmp/simon/opticks/X4ScintillationTest/g4icdf_manual.npy")
-
-    In [4]: b = np.load("/tmp/blyth/opticks/X4ScintillationTest/g4icdf_manual.npy")
-
-    In [5]: ab = np.abs(a - b )
-
-    In [6]: a
-    Out[6]: 
-    array([[[ 799.89805441],
-            [ 785.89763246],
-            [ 772.3788721 ],
-            ..., 
-            [ 208.95410723],
-            [ 205.872627  ],
-            [ 202.88071212]],
-
-           [[ 799.89805441],
-            [ 799.18619681],
-            [ 798.47560511],
-            ..., 
-            [ 485.01054128],
-            [ 485.00424461],
-            [ 484.99798742]],
-
-           [[ 391.46197386],
-            [ 391.46043099],
-            [ 391.45888814],
-            ..., 
-            [ 200.40512408],
-            [ 200.26138135],
-            [ 200.11784467]]])
-
-    In [7]: ab.min()
-    Out[7]: 1.7579043060322874e-05
-
-    In [8]: ab.max()
-    Out[8]: 7.026580954061501e-05
-        
-
-
-Huh, comparing in energy shows no change::
-
-    (base) [simon@localhost extg4]$ ipython 
-    Python 3.7.7 (default, May  7 2020, 21:25:33) 
-    Type 'copyright', 'credits' or 'license' for more information
-    IPython 7.18.1 -- An enhanced Interactive Python. Type '?' for help.
-
-    In [1]: import numpy as np
-
-    In [2]: a = np.load("/tmp/simon/opticks/X4ScintillationTest/g4icdf_energy_manual.npy")
-
-    In [3]: b = np.load("/tmp/blyth/opticks/X4ScintillationTest/g4icdf_energy_manual.npy")
-
-    In [4]: ab = np.abs(a-b)
-
-    In [5]: ab.min()
-    Out[5]: 0.0
-
-    In [6]: ab.max()
-    Out[6]: 0.0
-
-
-
-Compare the constants, very small change in h_Planck::
-
-
-    In [2]: import numpy as np
-
-    In [3]: a = np.load("/tmp/simon/opticks/X4PhysicalConstantsTest/1100.npy")
-
-    In [4]: b = np.load("/tmp/blyth/opticks/X4PhysicalConstantsTest/1042.npy")
-
-    In [5]: a
-    Out[5]: 
-    array([4.13566770e-12, 2.99792458e+02, 1.23984198e-09, 1.23984198e-03,
-           1.00000000e-06])
-
-    In [6]: b
-    Out[6]: 
-    array([4.13566733e-12, 2.99792458e+02, 1.23984188e-09, 1.23984188e-03,
-           1.00000000e-06])
-
-    In [7]: a-b
-    Out[7]: 
-    array([3.63291343e-19, 0.00000000e+00, 1.08912005e-16, 1.08912005e-10,
-           0.00000000e+00])
-
 
 
 Compare the integrals, they match exactly::
@@ -227,6 +162,134 @@ Compare metadata on the ScintillatorIntegral, get exact match::
     Out[9]: 0.0
 
 
+Compare the icdf directly with each other, not with cache, see the same difference::
+
+    In [2]: import numpy as np
+
+    In [3]: a = np.load("/tmp/simon/opticks/X4ScintillationTest/g4icdf_manual.npy")
+
+    In [4]: b = np.load("/tmp/blyth/opticks/X4ScintillationTest/g4icdf_manual.npy")
+
+    In [5]: ab = np.abs(a - b )
+
+    In [6]: a
+    Out[6]: 
+    array([[[ 799.89805441],
+            [ 785.89763246],
+            [ 772.3788721 ],
+            ..., 
+            [ 208.95410723],
+            [ 205.872627  ],
+            [ 202.88071212]],
+
+           [[ 799.89805441],
+            [ 799.18619681],
+            [ 798.47560511],
+            ..., 
+            [ 485.01054128],
+            [ 485.00424461],
+            [ 484.99798742]],
+
+           [[ 391.46197386],
+            [ 391.46043099],
+            [ 391.45888814],
+            ..., 
+            [ 200.40512408],
+            [ 200.26138135],
+            [ 200.11784467]]])
+
+    In [7]: ab.min()
+    Out[7]: 1.7579043060322874e-05
+
+    In [8]: ab.max()
+    Out[8]: 7.026580954061501e-05
+        
+
+Its more useful to look at the ratio::
+
+    In [9]: a = np.load("/tmp/simon/opticks/X4ScintillationTest/g4icdf_manual.npy")
+
+    In [10]: b = np.load("/tmp/blyth/opticks/X4ScintillationTest/g4icdf_manual.npy")
+
+    In [11]: s = a/b
+
+    In [12]: s.min()
+    Out[12]: 1.0000000878434632
+
+    In [13]: s.max()
+    Out[13]: 1.0000000878434641
+
+
+Looking at the absolute wavelength difference in nm was misleading because wavelength 
+values are fairly numerically large. In this case clearer to look at how much the ratio differs from 1::
+
+    In [22]: 800*0.0000000878434632
+    Out[22]: 7.027477056e-05
+
+    In [23]: 200*0.0000000878434632
+    Out[23]: 1.756869264e-05
+
+
+Huh, omparing in energy shows no change::
+
+    (base) [simon@localhost extg4]$ ipython 
+    Python 3.7.7 (default, May  7 2020, 21:25:33) 
+    Type 'copyright', 'credits' or 'license' for more information
+    IPython 7.18.1 -- An enhanced Interactive Python. Type '?' for help.
+
+    In [1]: import numpy as np
+
+    In [2]: a = np.load("/tmp/simon/opticks/X4ScintillationTest/g4icdf_energy_manual.npy")
+
+    In [3]: b = np.load("/tmp/blyth/opticks/X4ScintillationTest/g4icdf_energy_manual.npy")
+
+    In [4]: ab = np.abs(a-b)
+
+    In [5]: ab.min()
+    Out[5]: 0.0
+
+    In [6]: ab.max()
+    Out[6]: 0.0
+
+
+
+Compare the constants, very small increase in h_Planck with the CLHEP version update::
+
+
+    In [2]: import numpy as np
+
+    In [3]: a = np.load("/tmp/simon/opticks/X4PhysicalConstantsTest/1100.npy")
+
+    In [4]: b = np.load("/tmp/blyth/opticks/X4PhysicalConstantsTest/1042.npy")
+
+    In [5]: a
+    Out[5]: 
+    array([4.13566770e-12, 2.99792458e+02, 1.23984198e-09, 1.23984198e-03,
+           1.00000000e-06])
+
+    In [6]: b
+    Out[6]: 
+    array([4.13566733e-12, 2.99792458e+02, 1.23984188e-09, 1.23984188e-03,
+           1.00000000e-06])
+
+    In [7]: a-b
+    Out[7]: 
+    array([3.63291343e-19, 0.00000000e+00, 1.08912005e-16, 1.08912005e-10,
+           0.00000000e+00])
+
+
+    In [5]: a/b
+    Out[5]: array([ 1.00000009,  1.        ,  1.00000009,  1.00000009,  0.99999991,  1.        ])
+
+    In [6]: r = a/b
+
+    In [7]: np.set_printoptions(precision=20)
+
+    In [8]: r
+    Out[8]: 
+    array([ 1.00000008784346383628,  1.                    ,
+            1.00000008784346361423,  1.00000008784346361423,
+            0.99999991215654415733,  1.                    ])
 
 
 

@@ -60,7 +60,10 @@ NPY<unsigned char>*  test_LoadPPMConcat(const char* path, const bool yflip, cons
 
     bool dump = false ;   // dumping causes funny char problems with opticks-tl
     unsigned char epsilon = 0 ; 
-    unsigned diffs = NPY<unsigned char>::compare(a,b,epsilon, dump);  
+    unsigned dumplimit = 100 ; 
+    char mode = 'I' ; 
+
+    unsigned diffs = NPY<unsigned char>::compare(a,b,epsilon, dump, dumplimit, mode);  
     LOG(info) << " diffs " ;  
 
     const char* a_path = SStr::ReplaceEnd(path, ".ppm", "_old_concat.npy" ) ;

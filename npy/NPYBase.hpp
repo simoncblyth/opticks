@@ -65,19 +65,23 @@ class NPY_API NPYBase {
        static bool IsNPDump(); 
    public:
 
-       static const char* FLOAT_ ; 
-       static const char* SHORT_ ; 
-       static const char* DOUBLE_ ; 
-       static const char* INT_ ; 
-       static const char* UINT_ ; 
-       static const char* CHAR_ ; 
-       static const char* UCHAR_ ; 
-       static const char* ULONGLONG_ ; 
+    static const char* FLOAT_ ; 
+    static const char* SHORT_ ; 
+    static const char* DOUBLE_ ; 
+    static const char* INT_ ; 
+    static const char* UINT_ ; 
+    static const char* CHAR_ ; 
+    static const char* UCHAR_ ; 
+    static const char* ULONGLONG_ ; 
 
-       static const char* TypeName(Type_t type);
+    static const char* TypeName(Type_t type);
+    static bool IsRealType(Type_t type); 
+    static bool IsIntegerType(Type_t type); 
+    static bool IsUnsignedType(Type_t type); 
+    static bool IsCharType(Type_t type); 
 
-       static bool GLOBAL_VERBOSE ; 
-       static int checkNumItems(NPYBase* data);
+    static bool GLOBAL_VERBOSE ; 
+    static int checkNumItems(NPYBase* data);
    public:
         NPYBase(const std::vector<int>& shape, unsigned long long sizeoftype, Type_t type, std::string& metadata, bool has_data);
         virtual ~NPYBase();

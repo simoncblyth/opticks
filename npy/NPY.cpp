@@ -2237,13 +2237,13 @@ NPY<T>* NPY<T>::make_interleaved( const std::vector<NPYBase*>& srcs )
 
 
 template <typename T>
-unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>&  epsilons,  bool dump, unsigned dumplimit  )
+unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>&  epsilons,  bool dump, unsigned dumplimit, char mode )
 {
     unsigned mismatch_tot = 0 ; 
     for(unsigned i=0 ; i < epsilons.size() ; i++)
     {   
         double epsilon = epsilons[i] ; 
-        unsigned mismatch = NPY<T>::compare( a, b, epsilon, dump, dumplimit  );
+        unsigned mismatch = NPY<T>::compare( a, b, epsilon, dump, dumplimit, mode  );
         std::cout 
             << " epsilon " << std::setw(10) << std::scientific << epsilon 
             << " mismatch " << mismatch
@@ -2255,18 +2255,66 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>
 }
 
 
+template <typename T>
+bool NPY<T>::compare_value( const T a, const T b, const T epsilon,  char mode  )
+{
+     bool match(false) ; 
+     if( mode == 'I' )
+     {
+         match = a == b ; 
+     }
+     else if ( mode == 'A' )
+     {
+         T d = a - b ;
+         if(d < 0) d = -d ;  // std::abs has trouble with some types, but are here avoiding those with the mode
+         match = d <= epsilon ;
+     }
+     else if ( mode == 'R' )
+     {
+         T r = b == 0. ? 1. : 1. - (a/b) ; 
+         if( r < 0.) r = -r ; 
+         match = r <= epsilon ; 
+     }
+     else
+     {
+         assert( 0 && "mode must be one of 'I' 'A' 'R' " );  
+     }
+     return match ; 
+}
+
+
 /**
 NPY<T>::compare
 -----------------
 
 Itemwise comparison of array values. 
 
-
 **/
 
 template <typename T>
-unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bool dump, unsigned dumplimit  )
+unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bool dump, unsigned dumplimit, char mode  )
 {
+    if(IsInteger())
+    {
+        bool expect = mode == 'I' ; 
+        if(!expect)   
+            LOG(fatal) << " for integer types the comparison mode must be 'I' and the epsilon is ignored " ; 
+        assert(expect); 
+    }   
+    else if( IsReal() )
+    {
+        bool expect = mode == 'A' || mode == 'R' ; 
+        if(!expect)   LOG(fatal) << " for real types the comparison mode must be 'A' or 'R' and the epsilon is used " ; 
+        assert(expect); 
+    }
+    else
+    {
+        LOG(fatal) << " unexpected type " ;  
+        assert(0); 
+    }
+
+    bool is_char = IsChar() ; 
+
     if(dump)
     {
         LOG(info) << " a " << a->getShapeString(); 
@@ -2279,7 +2327,7 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
 
     if(dump)
     {
-        LOG(info) << " ni " << ni << " nv " << nv << " dumplimit " << dumplimit << " epsilon " << epsilon ; 
+        LOG(info) << " ni " << ni << " nv " << nv << " dumplimit " << dumplimit << " epsilon " << epsilon << " mode " << mode << " is_char " << is_char ; 
     }     
 
     unsigned mismatch_items(0); 
@@ -2292,9 +2340,7 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
         unsigned mismatch_values(0); 
         for(unsigned v=0 ; v < nv ;v++)
         {
-            T df = av[v] - bv[v] ;
-            if(df < 0 ) df = -df ;     // hmm dodgy for eg unsigned char, but template specializations for unsigned types would be tedious 
-            bool match = df <= epsilon ;
+            bool match = compare_value( av[v], bv[v], epsilon, mode );  
             if(!match)
             {
                 mismatch_values++ ; 
@@ -2304,9 +2350,9 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
                         << " mismatch_values " << std::setw(4) << mismatch_values
                         << " i " << std::setw(4) << i 
                         << " v " << std::setw(4) << v
-                        << " a " << std::setw(4) << av[v]
-                        << " b " << std::setw(4) << bv[v]
-                        << " df " << std::setw(4) << df
+                        << " a " << std::setw(4) << ( is_char ? (int)av[v] : av[v] )
+                        << " b " << std::setw(4) << ( is_char ? (int)bv[v] : bv[v] )
+                        << " epsilon " << std::scientific << epsilon 
                         << std::endl 
                         ;
                 }
@@ -3758,6 +3804,31 @@ T NPY<T>::interp(T x) const
     T y = vv[2*lo+1] + dy*(x-vv[2*lo+0])/dx ;
     return y ;
 }
+
+
+
+
+
+template <typename T> bool NPY<T>::IsReal() // static 
+{
+    return IsRealType(type); 
+}
+
+template <typename T> bool NPY<T>::IsInteger() // static 
+{
+    return IsIntegerType(type); 
+}
+
+template <typename T> bool NPY<T>::IsUnsigned() // static 
+{
+    return IsUnsignedType(type); 
+}
+
+template <typename T> bool NPY<T>::IsChar() // static 
+{
+    return IsCharType(type); 
+}
+
 
 
 

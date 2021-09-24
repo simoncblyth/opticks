@@ -81,6 +81,29 @@ const char* NPYBase::TypeName(Type_t type)
 }
 
 
+bool NPYBase::IsRealType(Type_t type) // static 
+{
+    return type == FLOAT || type == DOUBLE ; 
+}
+
+bool NPYBase::IsIntegerType(Type_t type) // static 
+{
+    return type == INT || type == SHORT || type == CHAR || type == UCHAR || type == UINT || type == ULONGLONG ; 
+}
+
+bool NPYBase::IsUnsignedType(Type_t type) // static 
+{
+    return type == UCHAR || type == UINT || type == ULONGLONG ; 
+}
+
+bool NPYBase::IsCharType(Type_t type) // static 
+{
+    return type == CHAR || type == UCHAR ;  
+}
+
+
+
+
 
 
 NPYBase* NPYBase::Load( const char* path, NPYBase::Type_t type )

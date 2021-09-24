@@ -88,7 +88,11 @@ void OSensorLibTest::compareToOriginal( const NPY<float>* dupe ) const
 {
     const NPY<float>* original = m_osenlib->getSensorAngularEfficiencyArray(); 
     float eps = 1e-6 ; 
-    unsigned mismatch = NPY<float>::compare( original, dupe, eps, true ); 
+    bool dump = true ; 
+    unsigned dumplimit = 100 ; 
+    char mode = 'A' ; 
+
+    unsigned mismatch = NPY<float>::compare( original, dupe, eps, dump, dumplimit, mode ); 
     LOG(info) << " mismatch " << mismatch ; 
     assert( mismatch == 0 ); 
 }

@@ -70,12 +70,14 @@ Real World Usage
    okc     # change directory to optickscore
    vi OpticksSwitches.h 
 
+   om      # build just current dir project 
    om :    # build current dir project and all subsequent 
    om +    # build all subsequent proj (not including current)
-   om      # build just current dir project 
+   ## a bug preventing "om :" and "om +" from working has been fixed 
  
    om-subs :    #  list this project and all subsequent 
    om-subs +    #  list all subsequent projects 
+
 
 
 SUBPROJ FUNCTIONS 
@@ -467,7 +469,7 @@ om-all()
     rc=$?
     [ "$rc" != "0" ] && echo $msg ERROR om-check failed && return $rc
 
-    local subs=$(om-subs) 
+    local subs=$(om-subs $*)    # need to accept the argument to handle :/+ for building from here onwards
     local name
     : switched to for loop is easier for error propagation than piping 
     for name in $subs 

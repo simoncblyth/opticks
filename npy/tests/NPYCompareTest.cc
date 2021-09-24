@@ -35,8 +35,10 @@ int main(int argc, char** argv)
 
     bool dump = false ;   // dumping causes funny char problems with opticks-tl
     unsigned char epsilon = 0 ; 
-    
-    unsigned diffs = NPY<unsigned char>::compare(a,b,epsilon, dump);  
+    unsigned dumplimit = 100 ; 
+    char mode = 'I' ;     
+
+    unsigned diffs = NPY<unsigned char>::compare(a,b,epsilon, dump, dumplimit, mode);  
     LOG(info) << " diffs " << diffs ; 
 
     unsigned i = 0 ; 
@@ -46,8 +48,7 @@ int main(int argc, char** argv)
     for(unsigned v=0 ; v < nv ; v++)
     {
         unsigned char df = av[v] - bv[v] ;   
-        if( df < 0 ) df = -df ;
-        bool match = df <= epsilon ;  
+        if( df < 0 ) df = -df ;   // dodgy for unsigned 
 
         if( v % 10000 == 0 ) std::cout 
              << " v " << std::setw(6) << v 
@@ -57,11 +58,6 @@ int main(int argc, char** argv)
              << std::endl 
              ;
     }
- 
-
-
-
-
     return 0 ; 
 }
 

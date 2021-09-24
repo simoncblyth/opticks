@@ -68,9 +68,12 @@ void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<doubl
 
     LOG(info) << " compare THE_buffer and g4icdf with various epsilon " ; 
     std::vector<double> epsilons = { 1e-12, 1e-6 , 1e-4, 1e-3 } ; 
-    unsigned mismatch_tot = NPY<double>::compare( THE_buffer, g4icdf, epsilons ); 
+    bool dump = true ; 
+    unsigned dumplimit = 100 ; 
+    char mode = 'R' ; 
+    unsigned mismatch_tot = NPY<double>::compare( THE_buffer, g4icdf, epsilons, dump, dumplimit, mode ); 
     LOG(info) << " mismatch_tot " << mismatch_tot ; 
-    //assert( mismatch_tot == 0 );  
+    assert( mismatch_tot == 0 );  
 
     const char* g4icdf_name = "g4icdf_manual.npy" ; 
     LOG(info) << " save to " << outdir << "/" << g4icdf_name ; 
@@ -98,9 +101,12 @@ void test_auto(const char* outdir, const NPY<double>* slow_en, const NPY<double>
 
     LOG(info) << " compare THE_buffer and g4icdf with various epsilon " ; 
     std::vector<double> epsilons = { 1e-12, 1e-6 , 1e-4, 1e-3 } ; 
-    unsigned mismatch_tot = NPY<double>::compare( THE_buffer, g4icdf, epsilons ); 
+    bool dump = true ; 
+    unsigned dumplimit = 100 ; 
+    char mode = 'R' ; 
+    unsigned mismatch_tot = NPY<double>::compare( THE_buffer, g4icdf, epsilons, dump, dumplimit, mode ); 
     LOG(info) << " mismatch_tot " << mismatch_tot ; 
-    //assert( mismatch_tot == 0 );  
+    assert( mismatch_tot == 0 );  
     LOG(info) << "]" ; 
 }
 
