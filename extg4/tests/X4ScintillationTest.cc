@@ -67,7 +67,7 @@ void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<doubl
     NPY<double>* g4icdf = X4Scintillation::CreateGeant4InterpolatedInverseCDF(ScintillatorIntegral, num_bins, hd_factor, name, energy_not_wavelength ) ; 
 
     LOG(info) << " compare THE_buffer and g4icdf with various epsilon " ; 
-    std::vector<double> epsilons = { 1e-12, 1e-6 , 1e-4, 1e-3 } ; 
+    std::vector<double> epsilons = { 1e-6 , 1e-4, 1e-3 } ; // fails for 1e-8 from CLHEP h_Planck change
     bool dump = true ; 
     unsigned dumplimit = 100 ; 
     char mode = 'R' ; 
@@ -100,7 +100,7 @@ void test_auto(const char* outdir, const NPY<double>* slow_en, const NPY<double>
     g4icdf->save(outdir, name); 
 
     LOG(info) << " compare THE_buffer and g4icdf with various epsilon " ; 
-    std::vector<double> epsilons = { 1e-12, 1e-6 , 1e-4, 1e-3 } ; 
+    std::vector<double> epsilons = { 1e-6 , 1e-4, 1e-3 } ; 
     bool dump = true ; 
     unsigned dumplimit = 100 ; 
     char mode = 'R' ; 

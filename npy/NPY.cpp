@@ -2255,6 +2255,43 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const std::vector<T>
 }
 
 
+
+
+template <typename T>
+std::string NPY<T>::compare_diff( const T a, const T b, const T epsilon,  char mode  ) // static
+{
+    std::stringstream ss ; 
+    if( IsReal() )
+    {
+        ss 
+             << " a " << std::setw(10) << std::fixed << std::setprecision(5) << a 
+             << " b " << std::setw(10) << std::fixed << std::setprecision(5) << b
+             << " epsilon " << std::scientific << epsilon 
+             << " mode " << mode
+             ;
+    }
+    else if( IsChar() )
+    {
+        ss 
+             << " a " << std::setw(10) << (int)a 
+             << " b " << std::setw(10) << (int)b
+             << " mode " << mode
+             << " IsChar " 
+             ;
+    }
+    else
+    {
+        ss 
+             << " a " << std::setw(10) << a 
+             << " b " << std::setw(10) << b
+             << " mode " << mode
+             ;
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+ 
+
 template <typename T>
 bool NPY<T>::compare_value( const T a, const T b, const T epsilon,  char mode  )
 {
@@ -2313,7 +2350,6 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
         assert(0); 
     }
 
-    bool is_char = IsChar() ; 
 
     if(dump)
     {
@@ -2327,7 +2363,7 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
 
     if(dump)
     {
-        LOG(info) << " ni " << ni << " nv " << nv << " dumplimit " << dumplimit << " epsilon " << epsilon << " mode " << mode << " is_char " << is_char ; 
+        LOG(info) << " ni " << ni << " nv " << nv << " dumplimit " << dumplimit << " epsilon " << epsilon << " mode " << mode ; 
     }     
 
     unsigned mismatch_items(0); 
@@ -2350,9 +2386,7 @@ unsigned NPY<T>::compare( const NPY<T>* a, const NPY<T>* b, const T epsilon,  bo
                         << " mismatch_values " << std::setw(4) << mismatch_values
                         << " i " << std::setw(4) << i 
                         << " v " << std::setw(4) << v
-                        << " a " << std::setw(4) << ( is_char ? (int)av[v] : av[v] )
-                        << " b " << std::setw(4) << ( is_char ? (int)bv[v] : bv[v] )
-                        << " epsilon " << std::scientific << epsilon 
+                        << compare_diff( av[v], bv[v], epsilon, mode ) 
                         << std::endl 
                         ;
                 }
