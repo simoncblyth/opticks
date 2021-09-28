@@ -210,6 +210,43 @@ struct NPS
         copy_shape(shape, other); 
     }
 
+    static int change_shape(std::vector<int>& shp, int ni_, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1)
+    {
+        unsigned nv0 = size(shp); 
+        unsigned nv1 = std::max(1,ni_)*std::max(1,nj_)*std::max(1,nk_)*std::max(1,nl_)*std::max(1,nm_) ; 
+
+        if( nv0 != nv1 )  // try to devine a missing -1 entry 
+        {
+            if(      ni_ < 0 ) ni_ = nv0/nv1 ; 
+            else if( nj_ < 0 ) nj_ = nv0/nv1 ; 
+            else if( nk_ < 0 ) nk_ = nv0/nv1 ; 
+            else if( nl_ < 0 ) nl_ = nv0/nv1 ; 
+            else if( nm_ < 0 ) nm_ = nv0/nv1 ; 
+
+            unsigned nv2 = std::max(1,ni_)*std::max(1,nj_)*std::max(1,nk_)*std::max(1,nl_)*std::max(1,nm_) ; 
+            bool expect = nv0 % nv1 == 0 && nv2 == nv0 ; 
+
+            if(!expect) std::cout 
+                << " NPS::change_shape INVALID SHAPE CHANGE : SIZE MUST STAY CONSTANT : ONLY ONE -1 ENTRY CAN BE AUTO-FILLED  "
+                << std::endl 
+                << " nv0 " << nv0
+                << " nv1 " << nv1
+                << " nv2 " << nv2
+                << " ni_ " << ni_
+                << " nj_ " << nj_
+                << " nk_ " << nk_
+                << " nl_ " << nl_
+                << " nm_ " << nm_
+                << std::endl
+                ;
+
+            assert(expect); 
+        }
+         
+        shp.clear(); 
+        return copy_shape(shp, ni_, nj_, nk_, nl_, nm_ ); 
+    }
+
     static std::string desc(const std::vector<int>& shape)
     {
         std::stringstream ss ; 

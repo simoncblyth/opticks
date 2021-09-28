@@ -24,6 +24,14 @@ g4-usage(){ cat << \EOU
 Geant4
 ========
 
+
+
+1100_beta Updates in optical physics, Daren Sawkey, Geant4 Collaboration Meeting Sept 22, 2021
+-----------------------------------------------------------------------------------------------
+
+* https://indico.cern.ch/event/1052654/contributions/4528557/attachments/2313908/3939383/sawkey_optical.pdf
+
+
 Install non-default Geant4 version
 ------------------------------------
 

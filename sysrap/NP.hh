@@ -43,14 +43,13 @@ struct NP
     };            
 
     template<typename T> static NP*  Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1 );  // dtype from template type
-    template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx ); 
+    template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
     template<typename T> static NP*  MakeDiv( const NP* src, unsigned mul  ); 
     template<typename T> static NP*  Make( const std::vector<T>& src ); 
     template<typename T> static T To( const char* a ); 
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
 
 
-    template<typename T> static NP*  MakeUniform( unsigned ni, unsigned seed=0u );  
     template<typename T> static unsigned NumSteps( T x0, T x1, T dx ); 
 
     NP(const char* dtype_="<f4", int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
@@ -58,6 +57,7 @@ struct NP
     void set_shape( int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1); 
     void set_shape( const std::vector<int>& src_shape ); 
     bool has_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ) const ;  
+    void change_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1) ;   // one dimension entry left at -1 can be auto-set
 
     void set_dtype(const char* dtype_); // *set_dtype* may change shape and size of array while retaining the same underlying bytes 
 
@@ -107,6 +107,7 @@ struct NP
     template<typename T> const T*  cvalues() const  ; 
     template<typename T> unsigned  index( int i,  int j=0,  int k=0,  int l=0, int m=0) const ; 
     template<typename T> T           get( int i,  int j=0,  int k=0,  int l=0, int m=0) const ; 
+    template<typename T> void        set( T val, int i,  int j=0,  int k=0,  int l=0, int m=0) ; 
 
     template<typename T> void fill(T value); 
     template<typename T> void _fillIndexFlat(T offset=0); 
@@ -117,6 +118,15 @@ struct NP
     static NP* MakeNarrow(const NP* src); 
     static NP* MakeWide(  const NP* src); 
     static NP* MakeCopy(  const NP* src); 
+
+    template<typename T> static NP* MakeCDF(  const NP* src );
+    template<typename T> static NP* MakeICDF(  const NP* src, unsigned nu, unsigned hd_factor );
+    template<typename T> static NP* MakeProperty(const NP* a, unsigned hd_factor ); 
+    template<typename T> static NP* MakeLookupSample(const NP* icdf_prop, unsigned ni, unsigned seed=0u, unsigned hd_factor=0u );  
+    template<typename T> static NP* MakeUniform( unsigned ni, unsigned seed=0u );  
+
+
+ 
     NP* copy() const ; 
 
     bool is_pshaped() const ; 
@@ -133,8 +143,9 @@ struct NP
     template<typename T> void pdump(const char* msg="NP::pdump") const ; 
     template<typename T> void minmax(T& mn, T&mx, unsigned j=1, int item=-1 ) const ; 
     template<typename T> void linear_crossings( T value, std::vector<T>& crossings ) const ; 
-    template<typename T> T    trapz() const ;                      // composite trapezoidal integration, requires pshaped
+    template<typename T> NP*  trapz() const ;                      // composite trapezoidal integration, requires pshaped
     template<typename T> T    interp(T x) const ;                  // requires pshaped 
+    template<typename T> T    interpHD(T u, unsigned hd_factor) const ; 
     template<typename T> T    interp(unsigned iprop, T x) const ;  // requires NP::Combine of pshaped arrays 
     template<typename T> NP*  cumsum(int axis=0) const ; 
     template<typename T> void divide_by_last() ; 
@@ -531,7 +542,20 @@ inline bool NP::has_shape(int ni, int nj, int nk, int nl, int nm) const
 }
 
 
+/**
+NP::change_shape
+------------------
 
+One dimension can be -1 causing it to be filled automatically.
+See tests/NPchange_shapeTest.cc
+
+**/
+
+inline void NP::change_shape(int ni, int nj, int nk, int nl, int nm)
+{
+    int size2 = NPS::change_shape(shape, ni, nj, nk, nl, nm); 
+    assert( size == size2 ); 
+}
 
 
 
@@ -570,8 +594,12 @@ template<typename T> inline T NP::get( int i,  int j,  int k,  int l, int m) con
     return vv[idx] ; 
 }
 
-
-
+template<typename T> inline void NP::set( T val, int i,  int j,  int k,  int l, int m) 
+{
+    unsigned idx = index<T>(i, j, k, l, m); 
+    T* vv = values<T>();  
+    vv[idx] = val ; 
+}
 
 
 template<typename T> inline void NP::fill(T value)
@@ -768,6 +796,273 @@ inline NP* NP::MakeCopy(const NP* a) // static
 
     return b ; 
 }
+
+
+/**
+NP::MakeCDF
+------------
+
+Creating a CDF like this with just plain trapz will usually yield a jerky 
+cumulative integral curve. To avoid that need to play some tricks to have 
+integral values are more points.
+
+For example by using NP::MakeDiv to split the bins and linearly interpolate
+the values. 
+ 
+**/
+
+template<typename T>
+inline NP* NP::MakeCDF(const NP* dist )  // static 
+{
+    NP* cdf = dist->trapz<T>() ;   
+    cdf->divide_by_last<T>(); 
+    return cdf ; 
+}
+ 
+
+/**
+NP::MakeICDF
+-------------
+
+Inverts CDF using *nu* NP::pdomain lookups in range 0->1
+The input CDF must contain domain and values in the payload last dimension. 
+3d or 2d input CDF are accepted where 3d input CDF is interpreted as 
+a collection of multiple CDF to be inverted. 
+
+The ICDF created has shape (num_items, nu, hd_factor == 0 ? 1 : 4) 
+where num_items is 1 for 2d input CDF and the number of items for 3d input CDF.
+
+Notice that domain information is not included in the output ICDF, this is 
+to facilitate direct conversion of the ICDF array into GPU textures.
+The *hd_factor* convention regarding domain ranges is used.
+
+Use NP::MakeProperty to add domain infomation using this convention.
+ 
+
+**/
+
+template<typename T>
+inline NP* NP::MakeICDF(const NP* cdf, unsigned nu, unsigned hd_factor )  // static 
+{
+    unsigned ndim = cdf->shape.size(); 
+    assert( ndim == 2 || ndim == 3 ); 
+
+    unsigned num_items = ndim == 3 ? cdf->shape[0] : 1 ; 
+    int item = -1 ; 
+
+    assert( hd_factor == 0 || hd_factor == 10 || hd_factor == 20 );  
+    T edge = hd_factor > 0 ? T(1.)/T(hd_factor) : 0. ;   
+
+    NP* icdf = new NP(cdf->dtype, num_items, nu, hd_factor == 0 ? 1 : 4 );  
+    T* vv = icdf->values<T>(); 
+
+    unsigned ni = icdf->shape[0] ; 
+    unsigned nj = icdf->shape[1] ; 
+    unsigned nk = icdf->shape[2] ; 
+#ifdef DEBUG
+    std::cout 
+        << "NP::MakeICDF"
+        << " nu " << nu
+        << " ni " << ni
+        << " nj " << nj
+        << " nk " << nk
+        << " hd_factor " << hd_factor
+        << std::endl 
+        ;
+#endif
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        int item = i ;  
+        for(unsigned j=0 ; j < nj ; j++)
+        {
+            T y_all = T(j)/T(nj) ; //        // 0 -> (nj-1)/nj = 1-1/nj 
+            T x_all = cdf->pdomain<T>( y_all, item );    
+#ifdef DEBUG
+            std::cout 
+                <<  " y_all " << std::setw(10) << std::setprecision(4) << std::fixed << y_all 
+                <<  " x_all " << std::setw(10) << std::setprecision(4) << std::fixed << x_all 
+                << std::endl
+                ;
+#endif
+            unsigned offset = i*nj*nk+j*nk ;  
+
+            vv[offset+0] = x_all ;
+
+            if( hd_factor > 0 )
+            {
+                T y_lhs = T(j)/T(hd_factor*nj) ;
+                T y_rhs = T(1.) - edge + T(j)/T(hd_factor*nj) ; 
+
+                T x_lhs = cdf->pdomain<T>( y_lhs, item );    
+                T x_rhs = cdf->pdomain<T>( y_rhs, item );    
+
+                vv[offset+1] = x_lhs ;
+                vv[offset+2] = x_rhs ;
+                vv[offset+3] = 0. ;
+            }
+        }
+    }
+    return icdf ; 
+} 
+
+/**
+NP::MakeProperty
+-----------------
+
+For hd_factor=0 converts a one dimensional array of values with shape (ni,)
+into 2d array of shape (ni, 2) with the domain a range of values 
+from 0 -> (ni-1)/ni = 1-1/ni 
+Thinking in one dimensional terms that means that values and 
+corresponding domains get interleaved.
+The resulting property array can then be used with NP::pdomain or NP::interp.
+
+For hd_factor=10 or hd_factor=20 the input array is required to have shape (ni,4)
+where "all" is in payload slot 0 and lhs and rhs high resolution zooms are in 
+payload slots 1 and 2.  (Slot 3 is currently spare, normally containing zero). 
+
+The output array has an added dimension with shape  (ni,4,2) 
+adding domain values interleaved with the values. 
+The domain values follow the hd_factor convention of scaling the resolution 
+in the 1/hd_factor tails
+
+TODO: a version of NP::interp that is hd_factor aware and uses the relevant 
+portion of the composite property array depending on the random u value 
+
+**/
+
+template <typename T> NP* NP::MakeProperty(const NP* a, unsigned hd_factor ) // static 
+{
+    NP* prop = nullptr ; 
+    unsigned ndim = a->shape.size(); 
+    if( ndim == 1 )
+    {
+        assert( hd_factor == 0 );  
+
+        unsigned ni = a->shape[0] ; 
+        unsigned nj = 2 ; 
+        prop = NP::Make<T>(ni, nj) ; 
+        T* prop_v = prop->values<T>(); 
+        for(unsigned i=0 ; i < ni ; i++)
+        {
+            prop_v[nj*i+0] = T(i)/T(ni) ;  // 0 -> (ni-1)/ni = 1-1/ni 
+            prop_v[nj*i+1] = a->get<T>(i) ; 
+        }
+    } 
+    else if( ndim == 2 )
+    {
+        assert( hd_factor == 10 || hd_factor == 20 ); 
+
+        T edge = 1./T(hd_factor) ;
+
+        unsigned ni = a->shape[0] ; 
+        unsigned nj = a->shape[1] ; 
+        unsigned nk = 2 ; 
+        assert( nj == 4 ); 
+
+
+        prop = NP::Make<T>(ni, nj, nk) ; 
+        T* prop_v = prop->values<T>(); 
+
+        for(unsigned i=0 ; i < ni ; i++)
+        {
+            T u_all =  T(i)/T(ni) ; 
+            T u_lhs =  T(i)/T(hd_factor*ni) ; 
+            T u_rhs =  1. - edge + T(i)/T(hd_factor*ni) ; 
+
+            for(unsigned j=0 ; j < nj ; j++)   // 0,1,2,3
+            {
+                unsigned k=0 ; 
+                switch(j)
+                {
+                    case 0:prop_v[nk*nj*i+nk*j+k] = u_all ; break ; 
+                    case 1:prop_v[nk*nj*i+nk*j+k] = u_lhs ; break ; 
+                    case 2:prop_v[nk*nj*i+nk*j+k] = u_rhs ; break ; 
+                    case 3:prop_v[nk*nj*i+nk*j+k] = 0.    ; break ; 
+                }
+                k=1 ;  
+                prop_v[nk*nj*i+nk*j+k] = a->get<T>(i,j) ; 
+            }
+        }
+    }
+    return prop ; 
+}
+
+/**
+NP::MakeLookupSample
+-----------------------
+
+Create a lookup sample of shape (ni,) using the 2d icdf_prop and ni uniform random numbers 
+Hmm in regions where the CDF is flat (and ICDF is steep), the ICDF lookup does not do very well.
+That is the reason for hd_factor, to increase resolution at the extremes where this 
+issue usually occurs without paying the cost of higher resolution across the entire range.
+
+TODO: compare what this provides directly on the ICDF (using NP::interp) 
+      with what the CDF directly can provide (using NP::pdomain)
+     
+**/
+
+template <typename T> NP* NP::MakeLookupSample(const NP* icdf_prop, unsigned ni, unsigned seed, unsigned hd_factor ) // static 
+{
+    unsigned ndim = icdf_prop->shape.size() ; 
+    unsigned npay = icdf_prop->shape[ndim-1] ; 
+    assert( npay == 2 ); 
+
+    if(ndim == 2)
+    {
+        assert( hd_factor == 0 ); 
+    }
+    else if( ndim == 3 )
+    {
+        assert( hd_factor == 10 || hd_factor == 20  ); 
+        assert( icdf_prop->shape[1] == 4 ); 
+    }
+
+    std::mt19937_64 rng;
+    rng.seed(seed); 
+    std::uniform_real_distribution<T> unif(0, 1);
+
+    NP* sample = NP::Make<T>(ni); 
+    T* sample_v = sample->values<T>(); 
+    for(unsigned i=0 ; i < ni ; i++) 
+    {
+        T u = unif(rng) ;  
+        T y = hd_factor > 0 ? icdf_prop->interpHD<T>(u, hd_factor ) : icdf_prop->interp<T>(u) ; 
+        sample_v[i] = y ; 
+    }
+    return sample ; 
+}
+
+
+
+/**
+NP::MakeUniform
+----------------
+
+Create array of uniform random numbers between 0 and 1 using std::mt19937_64
+
+**/
+
+template <typename T> NP* NP::MakeUniform(unsigned ni, unsigned seed) // static 
+{
+    std::mt19937_64 rng;
+    rng.seed(seed); 
+    std::uniform_real_distribution<T> unif(0, 1);
+
+    NP* uu = NP::Make<T>(ni); 
+    T* vv = uu->values<T>(); 
+    for(unsigned i=0 ; i < ni ; i++) vv[i] = unif(rng) ; 
+    return uu ; 
+}
+
+
+
+
+
+
+
+
+
 
 inline NP* NP::copy() const 
 {
@@ -1067,24 +1362,38 @@ template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) 
     assert( nj <= 8 );        // not needed for below, just for sanity of payload
     unsigned jdom = 0 ;       // 1st payload slot is "domain"
     unsigned jval = nj - 1 ;  // last payload slot is "value" 
-
     // note that with nj > 2 this allows other values to be carried 
-
 
     unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
     assert( item < int(num_items) ); 
-    unsigned item_offset = item == -1 ? 0 : ni*nj*item ; 
+    unsigned item_offset = item == -1 ? 0 : ni*nj*item ;   // using item = 0 will have the same effect
 
     const T* vv = cvalues<T>() + item_offset ;  // shortcut approach to handling multiple items 
 
 
     const T lhs_dom = vv[nj*(0)+jdom]; 
     const T rhs_dom = vv[nj*(ni-1)+jdom];
-    assert( rhs_dom > lhs_dom ); 
+    bool dom_expect = rhs_dom > lhs_dom  ; 
+
+    if(!dom_expect) std::cout 
+        << "NP::pdomain FATAL dom_expect : rhs_dom > lhs_dom "
+        << " lhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_dom 
+        << " rhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_dom 
+        << std::endl 
+        ;
+    assert( dom_expect ); 
 
     const T lhs_val = vv[nj*(0)+jval]; 
     const T rhs_val = vv[nj*(ni-1)+jval];
-    assert( rhs_val > lhs_val ); 
+
+    bool val_expect = rhs_val > lhs_val ; 
+    if(!val_expect) std::cout 
+        << "NP::pdomain FATAL val_expect : rhs_val > lhs_val "
+        << " lhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_val 
+        << " rhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_val 
+        << std::endl 
+        ;
+    assert( val_expect ); 
 
 
     const T yv = value ; 
@@ -1333,29 +1642,46 @@ Composite trapezoidal numerical integration
 
 **/
 
-template<typename T> inline T NP::trapz() const 
+template<typename T> inline NP* NP::trapz() const 
 {
     assert( shape.size() == 2 && shape[1] == 2 && shape[0] > 1); 
     unsigned ni = shape[0] ; 
-    const T* vv = cvalues<T>(); 
-
     T half(0.5); 
-    T integral = T(0.);  
+    T xmn = get<T>(0, 0); 
+
+    NP* integral = NP::MakeLike(this); 
+    T* integral_v = integral->values<T>(); 
+    integral_v[0] = xmn ; 
+    integral_v[1] = 0. ; 
+
     for(unsigned i=0 ; i < ni-1 ; i++)
     {
-        unsigned i0 = i+0 ; 
-        unsigned i1 = i+1 ; 
+        T x0 = get<T>(i, 0);
+        T y0 = get<T>(i, 1);
 
-        T x0 = vv[2*i0+0] ; 
-        T y0 = vv[2*i0+1] ; 
+        T x1 = get<T>(i+1, 0); 
+        T y1 = get<T>(i+1, 1); 
 
-        T x1 = vv[2*i1+0] ; 
-        T y1 = vv[2*i1+1] ; 
-
-        integral += (x1 - x0)*(y0 + y1)*half ;  
+#ifdef DEBUG
+        std::cout 
+            << " x0 " << std::setw(10) << std::fixed << std::setprecision(4) << x0 
+            << " y0 " << std::setw(10) << std::fixed << std::setprecision(4) << y0
+            << " x1 " << std::setw(10) << std::fixed << std::setprecision(4) << x1
+            << " y1 " << std::setw(10) << std::fixed << std::setprecision(4) << y1
+            << std::endl 
+            ;
+#endif
+        integral_v[2*(i+1)+0] = x1 ;  // x0 of first bin covered with xmn
+        integral_v[2*(i+1)+1] = integral_v[2*(i+0)+1] + (x1 - x0)*(y0 + y1)*half ;  
     } 
     return integral ;  
 }
+
+
+
+
+
+
 
 
 
@@ -1370,11 +1696,11 @@ so always explicitly define the template type : DO NOT RELY ON COMPILER WORKING 
 
 template<typename T> inline T NP::interp(T x) const  
 {
-    assert( shape.size() == 2 && shape[1] == 2 && shape[0] > 1); 
+    unsigned ndim = shape.size() ; 
     unsigned ni = shape[0] ; 
+    unsigned npay = shape[ndim-1] ; 
 
-    //pdump<T>("NP::interp.pdump (not being explicit with the type managed to scramble array content) ");  
-
+    assert( ndim == 2 && npay == 2 && ni > 1); 
     const T* vv = cvalues<T>(); 
 
     int lo = 0 ;
@@ -1395,9 +1721,11 @@ template<typename T> inline T NP::interp(T x) const
          ; 
 */
 
+    // for x out of domain range return values at edges
     if( x <= vv[2*lo+0] ) return vv[2*lo+1] ; 
     if( x >= vv[2*hi+0] ) return vv[2*hi+1] ; 
 
+    // binary search for domain bin containing x 
     while (lo < hi-1)
     {
         int mi = (lo+hi)/2;
@@ -1405,13 +1733,58 @@ template<typename T> inline T NP::interp(T x) const
         else lo = mi;
     }
 
+    // linear interpolation across the bin 
     T dy = vv[2*hi+1] - vv[2*lo+1] ; 
     T dx = vv[2*hi+0] - vv[2*lo+0] ; 
     T y = vv[2*lo+1] + dy*(x-vv[2*lo+0])/dx ; 
+
     return y ; 
 }
 
+/**
+NP::interpHD
+--------------
 
+Interpolation within domain 0->1 using hd_factor convention for lhs, rhs high resolution zooms. 
+
+**/
+
+template<typename T> inline T NP::interpHD(T u, unsigned hd_factor) const  
+{
+    unsigned ndim = shape.size() ; 
+    assert( ndim == 3 ); 
+    unsigned ni = shape[0] ; 
+    unsigned nj = shape[1] ; 
+    unsigned nk = shape[2] ; 
+    assert( nj == 4 && nk == 2 ); 
+
+    // pick *j* resolution zoom depending on u 
+    T lhs = T(1.)/T(hd_factor) ; 
+    T rhs = T(1.) - lhs ; 
+    unsigned j = u > lhs && u < rhs ? 0 : ( u < lhs ? 1 : 2 ) ;  
+
+    int lo = 0 ;
+    int hi = ni-1 ;
+
+    // for u out of domain range return values at edges
+    if( u <= get<T>(lo,j,0) ) return get<T>(lo,j,1) ; 
+    if( u >= get<T>(hi,j,0) ) return get<T>(hi,j,1) ; 
+
+    // binary search for domain bin containing x 
+    while (lo < hi-1)
+    {
+        int mi = (lo+hi)/2;
+        if (u < get<T>(mi,j,0) ) hi = mi ;
+        else lo = mi;
+    }
+
+    // linear interpolation across the bin 
+    T dy = get<T>(hi,j,1) - get<T>(lo,j,1) ; 
+    T du = get<T>(hi,j,0) - get<T>(lo,j,0) ; 
+    T y = get<T>(lo,j,1) + + dy*(u-get<T>(lo,j,0))/du ; 
+
+    return y ; 
+}
 
 
 
@@ -1485,7 +1858,7 @@ template<typename T> inline NP* NP::cumsum(int axis) const
     if( ndim == 1 )
     {
         unsigned ni = shape[0] ; 
-        for(unsigned i=1 ; i < ni ; i++) ss[i] += ss[i-1] ;  
+        for(unsigned i=1 ; i < ni ; i++) ss[i] += ss[i-1] ;   // cute recursive summation
     }
     else if( ndim == 2 )
     {
@@ -1508,6 +1881,7 @@ template<typename T> inline NP* NP::cumsum(int axis) const
 NP::divide_by_last
 --------------------
 
+Normalization by last payload entry implemented for 1d, 2d and 3d arrays.
 
 **/
 
@@ -1520,16 +1894,27 @@ template<typename T> inline void NP::divide_by_last()
     if( ndim == 1 )
     {
         unsigned ni = shape[0] ; 
-        for(unsigned i=0 ; i < ni ; i++) vv[i] = vv[i]/vv[ni-1] ;  
+        const T last = get<T>(-1) ; 
+        for(unsigned i=0 ; i < ni ; i++) vv[i] /= last  ;  
     }
     else if( ndim == 2 )
     {
         unsigned ni = shape[0] ; 
         unsigned nj = shape[1] ; 
+#ifdef DEBUG
+        std::cout 
+            << "NP::divide_by_last 2d "
+            << " ni " << ni  
+            << " nj " << nj
+            << std::endl
+            ;  
+#endif
+        // 2d case ni*(domain,value) pairs : there is only one last value to divide by : like the below 3d case with ni=1, i=0 
+        const T last = get<T>(-1,-1) ;
+        unsigned j = nj - 1 ;    // last payload slot    
         for(unsigned i=0 ; i < ni ; i++)
         {
-            const T last = vv[i*nj+nj-1] ;  
-            for(unsigned j=0 ; j < nj ; j++) if(last != zero) vv[i*nj+j] /= last ;  
+            if(last != zero) vv[i*nj+j] /= last ;  
         }
     }
     else if( ndim == 3 )   // eg (1000, 100, 2)    1000(diff BetaInverse) * 100 * (energy, integral)  
@@ -1538,10 +1923,11 @@ template<typename T> inline void NP::divide_by_last()
         unsigned nj = shape[1] ;  // eg energy dimension 
         unsigned nk = shape[2] ;  // eg payload carrying  [energy,s2,s2integral]
         assert( nk <= 8  ) ;      // not required by the below, but restrict for understanding 
+        unsigned k = nk - 1 ;     // last payload property, eg s2integral
 
         for(unsigned i=0 ; i < ni ; i++)
         {
-            unsigned k = nk - 1 ;  // last payload property, eg s2integral
+            // get<T>(i, -1, -1 )
             const T last = vv[i*nj*nk+(nj-1)*nk+k] ;  // for each item i, pluck the last payload value at the last energy value 
             for(unsigned j=0 ; j < nj ; j++) if(last != zero) vv[i*nj*nk+j*nk+k] /= last ;  // traverse energy dimension normalizing the last payload items by last energy brethren
         }
@@ -2132,10 +2518,15 @@ template<>  inline std::string NP::_present(double v) const
     return ss.str();
 }
 
+/**
+NP::_dump
+-----------
 
+
+**/
 template <typename T> inline void NP::_dump(int i0_, int i1_) const 
 {
-    int ni = NPS::ni_(shape) ;
+    int ni = NPS::ni_(shape) ;  // ni_ nj_ nk_ returns shape dimension size or 1 if no such dimension
     int nj = NPS::nj_(shape) ;
     int nk = NPS::nk_(shape) ;
 
@@ -2202,33 +2593,36 @@ template <typename T> void NP::read2(const T* data)
 }
 
 
-template <typename T> NP* NP::Linspace( T x0, T x1, unsigned nx )
+template <typename T> NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload ) 
 {
     assert( x1 > x0 ); 
     assert( nx > 0 ) ; 
-    NP* dom = NP::Make<T>(nx); 
-    T* vv = dom->values<T>(); 
+    NP* a = NP::Make<T>(nx, npayload );  // npayload default is -1
 
     if( nx == 1 )
     {
-        vv[0] = x0 ;  
+        a->set<T>(x0, 0 ); 
     }
     else
     {
-        for(unsigned i=0 ; i < nx ; i++) vv[i] = x0 + (x1-x0)*T(i)/T(nx-1)  ;
+        for(unsigned i=0 ; i < nx ; i++) a->set<T>( x0 + (x1-x0)*T(i)/T(nx-1), i )  ; 
     }
-
-    return dom ; 
+    return a ; 
 }
 
 /**
 NP::MakeDiv
 -------------
 
-Divides bin edges by integer multiple *mul*. 
-For a src array of length ni the output array is of length::
+When applied to a 1d array the contents are assummed to be domain edges 
+that are divided by an integer multiple *mul*. For a src array of length ni 
+the output array length is::
 
     (ni - 1)*mul + 1  
+
+When applied to a 2d array the contents are assumed to be (ni,2) with 
+(domain,value) pairs. The domain is divided as in the 1d case and values
+are filled in via linear interpolation.
 
 For example, 
 
@@ -2261,13 +2655,14 @@ template <typename T> NP* NP::MakeDiv( const NP* src, unsigned mul  )
 {
     assert( mul > 0 ); 
     unsigned ndim = src->shape.size(); 
-    assert( ndim == 1 ); 
-    const T* src_v = src->cvalues<T>(); 
+    assert( ndim == 1 || ndim == 2 ); 
 
     unsigned src_ni = src->shape[0] ; 
     unsigned src_bins = src_ni - 1 ; 
     unsigned dst_bins = src_bins*mul ;   
-    unsigned dst_ni = dst_bins + 1 ; 
+
+    int dst_ni = dst_bins + 1 ; 
+    int dst_nj = ndim == 2 ? src->shape[1] : -1 ; 
 
 #ifdef DEBUG
     std::cout 
@@ -2276,19 +2671,19 @@ template <typename T> NP* NP::MakeDiv( const NP* src, unsigned mul  )
         << " src_bins " << std::setw(3) << src_bins
         << " dst_bins " << std::setw(3) << dst_bins
         << " dst_ni " << std::setw(3) << dst_ni
+        << " dst_nj " << std::setw(3) << dst_nj
         << std::endl
         ; 
 #endif
 
-    NP* dst = NP::Make<T>( dst_ni ); 
+    NP* dst = NP::Make<T>( dst_ni, dst_nj ); 
     T* dst_v = dst->values<T>(); 
 
     for(unsigned i=0 ; i < src_ni - 1 ; i++)
     {
-        //bool last_i = i == src_ni - 2 ; 
         bool first_i = i == 0 ; 
-        const T s0 = src_v[i] ; 
-        const T s1 = src_v[i+1] ; 
+        const T s0 = src->get<T>(i,0) ; 
+        const T s1 = src->get<T>(i+1,0) ; 
 
 #ifdef DEBUG
         std::cout 
@@ -2301,11 +2696,8 @@ template <typename T> NP* NP::MakeDiv( const NP* src, unsigned mul  )
 #endif
         for(unsigned s=0 ; s < 1+mul ; s++) // s=0,1,2,... mul 
         {
-            //bool last_s = s == mul ; 
             bool first_s = s == 0 ; 
-            //if( last_s && !last_i ) continue ;  // avoid repeating idx from bin to bin  
             if( first_s && !first_i ) continue ;  // avoid repeating idx from bin to bin  
-
 
             const T frac = T(s)/T(mul) ;    //  frac(s=0)=0  frac(s=mul)=1   
             const T ss = s0 + (s1 - s0)*frac ;  
@@ -2322,7 +2714,16 @@ template <typename T> NP* NP::MakeDiv( const NP* src, unsigned mul  )
 #endif
 
             assert( idx < dst_ni ); 
-            dst_v[idx] = ss ; 
+    
+            if( dst_nj == -1 )
+            {
+                dst_v[idx] = ss ; 
+            }
+            else if( dst_nj == 2 )
+            {
+                dst_v[2*idx+0] = ss ; 
+                dst_v[2*idx+1] = src->interp<T>(ss) ; 
+            }
         }
     }
     return dst ; 
@@ -2359,26 +2760,6 @@ template <typename T> NP* NP::FromString(const char* str, char delim)  // static
 
 
 
-
-/**
-NP::MakeUniform
-----------------
-
-Create array of uniform random numbers between 0 and 1 using std::mt19937_64
-
-**/
-
-template <typename T> NP* NP::MakeUniform(unsigned ni, unsigned seed) // static 
-{
-    std::mt19937_64 rng;
-    rng.seed(seed); 
-    std::uniform_real_distribution<T> unif(0, 1);
-
-    NP* uu = NP::Make<T>(ni); 
-    T* vv = uu->values<T>(); 
-    for(unsigned i=0 ; i < ni ; i++) vv[i] = unif(rng) ; 
-    return uu ; 
-}
 
 
 template <typename T> unsigned NP::NumSteps( T x0, T x1, T dx )

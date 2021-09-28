@@ -948,10 +948,14 @@ See tests/NPY4Test.cc:test_getQuad_crossType_cast_FAILS_RESHAPE
 void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm)
 {
     unsigned int nvals = std::max(1u,m_ni)*std::max(1u,m_nj)*std::max(1u,m_nk)*std::max(1u,m_nl)*std::max(1u,m_nm) ; 
-    unsigned int njklm = std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl)*std::max(1u,nm) ;
-    unsigned int ni    = ni_ < 0 ? nvals/njklm : ni_ ;    // auto resizing of 1st dimension, when -ve
 
+
+    unsigned int njklm = std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl)*std::max(1u,nm) ; // NB excludes ni_
+    unsigned int ni    = ni_ < 0 ? nvals/njklm : ni_ ;    // auto resizing of 1st dimension, when -ve
     unsigned int nvals2 = std::max(1u,ni)*std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl)*std::max(1u,nm) ; 
+
+    // HMM: the -1 should bo need to be in the first slot : just needs to be only one of them within 
+
 
     if(nvals != nvals2) 
     {

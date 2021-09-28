@@ -747,6 +747,15 @@ unsigned QCerenkov::getNumEdges_SplitBin(unsigned mul ) const
 template unsigned QCerenkov::getNumEdges_SplitBin<float>(unsigned ) const ; 
 template unsigned QCerenkov::getNumEdges_SplitBin<double>(unsigned ) const ; 
 
+/**
+QCerenkov::getS2Integral_SplitBin
+-----------------------------------
+
+Note that this is requiring the same number of s2c s2_edges for all BetaInverse.
+Directly using the s2c to yield the icdf would remove that requirement.
+
+**/
+
 template <typename T>
 NP* QCerenkov::getS2Integral_SplitBin( const NP* bis, unsigned mul, bool dump) const 
 {
@@ -989,6 +998,16 @@ QCK<T> QCerenkov::makeICDF_UpperCut( unsigned ny, unsigned nx) const
 }
 template QCK<double> QCerenkov::makeICDF_UpperCut<double>( unsigned , unsigned ) const ; 
 template QCK<float>  QCerenkov::makeICDF_UpperCut<float>(  unsigned , unsigned ) const ; 
+
+
+/*
+
+template <typename T>
+NP* QCerenkov::createICDF( const NP* s2cn )
+{
+}
+
+*/
 
 
 

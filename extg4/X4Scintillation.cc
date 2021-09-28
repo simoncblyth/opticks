@@ -243,7 +243,10 @@ NPY<double>* X4Scintillation::CreateGeant4InterpolatedInverseCDF(
     double mx = ScintillatorIntegral->GetMaxValue() ;   // dataVector.back(); because its **ORDERED** to be increasing on Insert
 
 
-    // hmm more extensible (eg for Cerenkov [BetaInverse,u,payload] icdf)  with the 3 for the different resolutions in the payload ?
+    // hmm more extensible (eg for Cerenkov [BetaInverse,u,payload] icdf)  
+    // with the 3 for the different resolutions to be in the payload rather than as separate items ?
+    // would of course use 4 to map to float4 after narrowing 
+
     NPY<double>* icdf = NPY<double>::make(3, num_bins, 1 );  
     icdf->zero(); 
 
@@ -283,8 +286,9 @@ NPY<double>* X4Scintillation::CreateGeant4InterpolatedInverseCDF(
     for(int j=0 ; j < nj ; j++)
     {
         double u_all = double(j)/double(nj) ;                         // 0 -> (nj-1)/nj = 1-1/nj
-        double u_lhs = double(j)/double(hd_factor*nj) ;              
-        double u_rhs = 1. - edge + double(j)/double(hd_factor*nj) ; 
+        double u_lhs = double(j)/double(hd_factor*nj) ;               // hd_factor=10(20) u_lhs=0.0->0.1  (0.0  ->~0.05) 
+        double u_rhs = 1. - edge + double(j)/double(hd_factor*nj) ;   // hd_factor=10(20) u_rhs=0.9->~1.0 (0.95 ->~1.0)
+        // u_lhs and u_rhs mean there are hd_factor more lookups at the extremes 
 
         double energy_all = ScintillatorIntegral->GetEnergy( u_all*mx ); 
         double energy_lhs = ScintillatorIntegral->GetEnergy( u_lhs*mx );
