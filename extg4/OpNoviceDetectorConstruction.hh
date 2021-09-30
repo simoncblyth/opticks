@@ -1,40 +1,18 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#pragma once
+/**
+OpNoviceDetectorConstruction 
+=============================
 
-#ifndef OpNoviceDetectorConstruction_h
-#define OpNoviceDetectorConstruction_h 1
+OpNoviceDetectorConstruction is used by X4Sample for the creation of simple geometries
+that are used for testing.
+
+Due to Geant4 API changes circa September 2021 the former setting 
+of spline interpolation for some properties has been removed. 
+
+**/
 
 #include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
 #include "X4_API_EXPORT.hh"
@@ -62,6 +40,4 @@ class X4_API OpNoviceDetectorConstruction : public G4VUserDetectorConstruction
     G4double fBubble_z;
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif /*OpNoviceDetectorConstruction_h*/

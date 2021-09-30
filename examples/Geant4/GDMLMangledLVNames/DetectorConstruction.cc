@@ -50,7 +50,6 @@ G4Material* DetectorConstruction::MakeWater()
     mat->AddElement(O, 1);
 
     G4MaterialPropertyVector* ri = MakeWaterRI() ; 
-    ri->SetSpline(false);
 
     AddProperty( mat, "RINDEX" , ri );  
     return mat ; 
@@ -68,7 +67,6 @@ G4Material* DetectorConstruction::MakeAir()
     mat->AddElement(O, 30.*CLHEP::perCent);
 
     G4MaterialPropertyVector* ri = MakeAirRI() ; 
-    ri->SetSpline(false);
 
     AddProperty( mat, "RINDEX" , ri );  
     return mat ; 
@@ -88,7 +86,6 @@ G4Material* DetectorConstruction::MakeGlass()
     mat->AddElement(H,8.467*CLHEP::perCent);
 
     G4MaterialPropertyVector* ri = MakeGlassRI() ; 
-    ri->SetSpline(false);
 
     AddProperty( mat, "RINDEX" , ri );  
     return mat ; 

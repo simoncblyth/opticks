@@ -145,16 +145,12 @@ G4VPhysicalVolume* OpNoviceDetectorConstruction::Construct()
 
   G4MaterialPropertiesTable* myMPT1 = new G4MaterialPropertiesTable();
 
-  myMPT1->AddProperty("RINDEX",       photonEnergy, refractiveIndex1,nEntries)
-        ->SetSpline(true);
-  myMPT1->AddProperty("ABSLENGTH",    photonEnergy, absorption,     nEntries)
-        ->SetSpline(true);
+  myMPT1->AddProperty("RINDEX",       photonEnergy, refractiveIndex1,nEntries); 
+  myMPT1->AddProperty("ABSLENGTH",    photonEnergy, absorption,     nEntries); 
 
 #if G4VERSION_NUMBER < 1100
-  myMPT1->AddProperty("FASTCOMPONENT",photonEnergy, scintilFast,     nEntries)
-        ->SetSpline(true);
-  myMPT1->AddProperty("SLOWCOMPONENT",photonEnergy, scintilSlow,     nEntries)
-        ->SetSpline(true);
+  myMPT1->AddProperty("FASTCOMPONENT",photonEnergy, scintilFast,     nEntries); 
+  myMPT1->AddProperty("SLOWCOMPONENT",photonEnergy, scintilSlow,     nEntries); 
 
   myMPT1->AddConstProperty("FASTTIMECONSTANT", 1.*ns);
   myMPT1->AddConstProperty("SLOWTIMECONSTANT",10.*ns);
@@ -163,10 +159,8 @@ G4VPhysicalVolume* OpNoviceDetectorConstruction::Construct()
 #else
   {
       G4bool createNewKey = true ;    
-      myMPT1->AddProperty("FASTCOMPONENT",photonEnergy, scintilFast,     nEntries, createNewKey)
-            ->SetSpline(true);
-      myMPT1->AddProperty("SLOWCOMPONENT",photonEnergy, scintilSlow,     nEntries, createNewKey)
-            ->SetSpline(true);
+      myMPT1->AddProperty("FASTCOMPONENT",photonEnergy, scintilFast,     nEntries, createNewKey); 
+      myMPT1->AddProperty("SLOWCOMPONENT",photonEnergy, scintilSlow,     nEntries, createNewKey); 
 
       myMPT1->AddConstProperty("FASTTIMECONSTANT", 1.*ns, createNewKey);
       myMPT1->AddConstProperty("SLOWTIMECONSTANT",10.*ns, createNewKey);
@@ -227,8 +221,7 @@ G4VPhysicalVolume* OpNoviceDetectorConstruction::Construct()
   // gforward, gbackward, forward backward ratio
   G4double mie_water_const[3]={0.99,0.99,0.8};
 
-  myMPT1->AddProperty("MIEHG",energy_water,mie_water,numentries_water)
-        ->SetSpline(true);
+  myMPT1->AddProperty("MIEHG",energy_water,mie_water,numentries_water); 
   myMPT1->AddConstProperty("MIEHG_FORWARD",mie_water_const[0]);
   myMPT1->AddConstProperty("MIEHG_BACKWARD",mie_water_const[1]);
   myMPT1->AddConstProperty("MIEHG_FORWARD_RATIO",mie_water_const[2]);

@@ -40,21 +40,52 @@ Install non-default Geant4 version
    standard versions of externals used from other user accounts but the install directories and external prefix 
    environment are different.
 
-2. In the config for the non-standard user comment two lines of prefix setup for CLHEP and G4, usually in ~/.opticks_config
-3. Open a new session with the modified CLHEP/G4-less environment 
+2. In the config for the non-standard user comment prefix setup for G4, usually in ~/.opticks_config
+   as well as the opticks setup line. The idea is to return to a pre-opticks and pre-geant4 environment.
+
+   * NB often new versions of Geant4 will require new versions of CLHEP also, the clhep- functions can be used 
+
+3. Open a new session with the modified environment without G4 and Opticks
 4. Check that the g4.bash functions have everything needed for the new version, including the new url::
 
-   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4-info
+   ##g4-;OPTICKS_GEANT4_PREFIX=/home/simon/local/opticks_externals/g4_1072 OPTICKS_GEANT4_VER=1072  g4-info
+   ##  actually its safer not to override like this, better to just change the environment setup and use it:
+
+   g4-;g4-info
+
+* check that g4-info gives no errors, fix problems by g4.bash updates over in O account 
+* check values dumped by g4-info are as expected for the Geant4 version
+* check install directories are writable from this account 
 
 5. Proceed with the download and build::
 
-   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4--
+   ##g4-;OPTICKS_GEANT4_PREFIX=/home/simon/local/opticks_externals/g4_1072 OPTICKS_GEANT4_VER=1072  g4--
+   ## safer not to override 
+
+   g4-;g4--   # this downloads and installs into S owned directories
 
 
+NB to work in this split source manner need two sessions, as S does not have write permission into Opticks source
+
+* O: to update opticks in the standard account 
+* S: to build opticks in the non-standard account with non-standard externals 
+
+
+Build Opticks against non-default Geant4 version
+---------------------------------------------------
+
+Now that a different Geant4 is installed, configure Opticks to use it in ~/.opticks_config::
+
+     opticks-prepend-prefix $ext/g4_1072
 
 ::
 
-   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1072 OPTICKS_GEANT4_VER=10720  g4-info
+    o
+    om-
+    om-clean    ## deletes all the build dirs 
+    om-conf     ## run CMake checking have all needed externals and generating Makefile
+    om--        ## build 
+
 
 
 Darwin

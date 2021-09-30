@@ -19,6 +19,14 @@
 
 #pragma once
 
+/**
+X4Sample
+===========
+
+Creates simple geometries for use by tests.
+
+**/
+
 class G4VPhysicalVolume ; 
 
 #include "X4_API_EXPORT.hh"

@@ -536,19 +536,15 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
     G4bool createNewKey = keyIdx == -1  ; 
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval, createNewKey );
 #endif
-
-    if(abslength)
-    {
-       // see issue/optical_local_time_goes_backward.rst
-        mpv->SetSpline(false);
-    }
-    else
-    {
-        //mpv->SetSpline(true);
-       // see issue/geant4_ok_integration/interpol_mismatch.rst
-        mpv->SetSpline(false);
-
-    } 
+    assert( mpv ); 
+  
+    // NB spline interpolation is expected to not be used
+    // formerly explicitly Set_Spline(false) but Geant4 API changes 
+    // make that problematic : so currently assuming
+    // a sensible default of false for spline interpolation
+    //
+    // see notes/issue/optical_local_time_goes_backward.rst
+    // see notes/issue/geant4_ok_integration/interpol_mismatch.rst
 
     delete [] ddom ; 
     delete [] dval ; 

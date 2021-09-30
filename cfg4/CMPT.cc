@@ -204,7 +204,7 @@ void CMPT::AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, un
     G4bool createNewKey = keyIdx == -1  ; 
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval, createNewKey); 
 #endif
-    mpv->SetSpline(false); 
+    assert( mpv ); 
 
     delete [] ddom ;
     delete [] dval ; 
@@ -370,10 +370,14 @@ CMPT::addProperty
 Adds an Opticks GProperty to a Geant4 MPT doing the 
 wavelength to energy swap. 
 
+Spline argument is requires to be false, 
+see issue/optical_local_time_goes_backward.rst
+
 **/
 
 void CMPT::addProperty(const char* lkey,  GProperty<double>* prop, bool spline)
 {
+    assert( spline == false ); 
     unsigned int nval  = prop->getLength();
 
     LOG(debug) << "CMPT::addProperty" 
@@ -401,8 +405,7 @@ void CMPT::addProperty(const char* lkey,  GProperty<double>* prop, bool spline)
     }
 
     G4MaterialPropertyVector* mpv = m_mpt->AddProperty(lkey, ddom, dval, nval);
-    mpv->SetSpline(spline);
-    // see issue/optical_local_time_goes_backward.rst
+    assert( mpv ); 
 
     delete [] ddom ; 
     delete [] dval ; 

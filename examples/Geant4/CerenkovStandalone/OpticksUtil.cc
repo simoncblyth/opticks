@@ -64,9 +64,6 @@ G4Material* OpticksUtil::MakeMaterial(G4MaterialPropertyVector* rindex)  // stat
     mat->AddElement(H, 2);
     mat->AddElement(O, 1);
 
-    rindex->SetSpline(false);
-    //rindex->SetSpline(true);
-
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     mpt->AddProperty("RINDEX", rindex );   
     mat->SetMaterialPropertiesTable(mpt) ;
