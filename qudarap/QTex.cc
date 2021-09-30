@@ -12,6 +12,7 @@
 #include "QU.hh"
 #include "QTex.hh"
 
+
 template<typename T>
 QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_ )
     :   
@@ -19,8 +20,8 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_
     height(height_),
     src(src_),
     filterMode(filterMode_),
-    dst(new T[width*height]),
-    d_dst(nullptr),
+    rotate_dst(nullptr),
+    d_rotate_dst(nullptr),
     cuArray(nullptr),
     channelDesc(cudaCreateChannelDesc<T>()),
     texObj(0),
@@ -53,14 +54,14 @@ QTex<T>::~QTex()
 {
     cudaDestroyTextureObject(texObj);
     cudaFreeArray(cuArray);
-    delete[] dst ; 
-    cudaFree(d_dst);
+    delete[] rotate_dst ; 
+    cudaFree(d_rotate_dst);
 }
 
 template<typename T>
 void QTex<T>::init()
 {
-    createArray();
+    createArray();   // cudaMallocArray using channelDesc for T 
     uploadToArray();
     createTextureObject();
 
@@ -236,18 +237,23 @@ potentially with some spare threads at edge when workspace is not an exact multi
 template<typename T>
 void QTex<T>::rotate(float theta)
 {
-    cudaMalloc(&d_dst, width*height*sizeof(T));
+    cudaMalloc(&d_rotate_dst, width*height*sizeof(T));
 
     dim3 threadsPerBlock(16, 16);
     dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
-    QTex_uchar4_rotate_kernel( numBlocks, threadsPerBlock, d_dst, texObj, width, height, theta );
+    QTex_uchar4_rotate_kernel( numBlocks, threadsPerBlock, d_rotate_dst, texObj, width, height, theta );
 
     cudaDeviceSynchronize();
     cudaCheckErrors("cudaDeviceSynchronize");
     // Fatal error: cudaDeviceSynchronize (linear filtering not supported for non-float type at SIMGStandaloneTest.cu:123)
 
-    cudaMemcpy(dst, d_dst, width*height*sizeof(T), cudaMemcpyDeviceToHost);
+    if(rotate_dst == nullptr)
+    {
+        rotate_dst = new T[width*height] ;  
+    }
+
+    cudaMemcpy(rotate_dst, d_rotate_dst, width*height*sizeof(T), cudaMemcpyDeviceToHost);
 }
 
 /**

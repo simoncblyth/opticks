@@ -22,8 +22,10 @@ struct QUDARAP_API QTex
     const void*  src ;
     char         filterMode ;  // 'L':cudaFilterModeLinear OR 'P':cudaFilterModePoint 
 
-    T*           dst ; 
-    T*           d_dst ; 
+    // TODO: split off rotation elsewhere "QTexRotate?", it is not typically needed 
+    T*           rotate_dst ; 
+    T*           d_rotate_dst ; 
+
 
     cudaArray*   cuArray ; 
     cudaChannelFormatDesc channelDesc ;

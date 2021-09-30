@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     NP* icdf = slib->getBuf(); 
 #else
     const char* cfbase = SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ));
-    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); 
+    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); // HMM: this needs a more destinctive name/location  
     //icdf->dump(); 
 #endif
 

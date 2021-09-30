@@ -19,6 +19,7 @@ set(TEST_SOURCES
    QEventTest.cc 
    QSimWithEventTest.cc 
    QUTest.cc
+   QTexMakerTest.cc
 
 )
 

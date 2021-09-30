@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
     std::cout << "writing to " << opath << std::endl ;
 
-    SIMG img2(img.width, img.height, img.channels, (unsigned char*)qtex.dst );
+    SIMG img2(img.width, img.height, img.channels, (unsigned char*)qtex.rotate_dst );
     img2.writePNG(opath);
 
     return 0;
