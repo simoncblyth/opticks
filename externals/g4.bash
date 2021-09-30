@@ -35,11 +35,27 @@ Geant4
 Install non-default Geant4 version
 ------------------------------------
 
+1. With a separate user account (using S "simon" account on Precision for this) as liable to long standing breakage.
+   It is convenient to use a symbolically linked "opticks" folder such that the opticks source is the same as with 
+   standard versions of externals used from other user accounts but the install directories and external prefix 
+   environment are different.
+
+2. In the config for the non-standard user comment two lines of prefix setup for CLHEP and G4, usually in ~/.opticks_config
+3. Open a new session with the modified CLHEP/G4-less environment 
+4. Check that the g4.bash functions have everything needed for the new version, including the new url::
+
+   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4-info
+
+5. Proceed with the download and build::
+
+   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4--
+
+
+
 ::
 
-   // comment the line prefix hookup and open new session
-   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4-info
-   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1100 OPTICKS_GEANT4_VER=1100  g4--
+   g4-;OPTICKS_GEANT4_PREFIX=/usr/local/opticks_externals/g4_1072 OPTICKS_GEANT4_VER=10720  g4-info
+
 
 Darwin
 --------
@@ -495,6 +511,7 @@ g4-nom(){
      1042) echo geant4_10_04_p02 ;;
      1062) echo geant4.10.06.p02 ;;
      1070) echo geant4.10.07 ;;
+     1072) echo geant4.10.07.p02 ;;
      1100) echo geant4.11.00.b01 ;;
   esac
 }
@@ -504,6 +521,15 @@ g4-nom-notes(){ cat << EON
 The nom identifier needs to match the name of the folder created by exploding the zip or tarball, 
 unfortunately this is not simply connected with the basename of the url and also Geant4 continues to 
 reposition URLs and names so these are liable to going stale.
+
+EON
+}
+
+g4-url-notes(){ cat << EON
+
+To get the url of a download with Safari start the download and then immediately 
+pause it. Then use ctrl-click on the download item to "Copy Address" and paste 
+the url into the below g4-url function, then delete the download. 
 
 EON
 }
@@ -519,6 +545,7 @@ g4-url(){
         geant4.10.05.p01) echo http://cern.ch/geant4-data/releases/geant4.10.05.p01.tar.gz ;; 
         geant4.10.06.p02) echo http://cern.ch/geant4-data/releases/geant4.10.06.p02.tar.gz ;;
         geant4.10.07)     echo http://cern.ch/geant4-data/releases/geant4.10.07.tar.gz ;;
+        geant4.10.07.p02) echo https://geant4-data.web.cern.ch/releases/geant4.10.07.p02.tar.gz ;;
         geant4.11.00.b01) echo https://geant4-data.web.cern.ch/releases/geant4.11.00.b01.tar.gz ;;
    esac
 }
