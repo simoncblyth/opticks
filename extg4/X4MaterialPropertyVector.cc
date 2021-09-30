@@ -2,6 +2,57 @@
 #include "X4MaterialPropertyVector.hh"
 #include "NPY.hpp"
 #include "NP.hh"
+#include "G4Version.hh"
+
+
+G4double X4MaterialPropertyVector::GetMinLowEdgeEnergy( const G4MaterialPropertyVector* mpv ) // static 
+{
+#if G4VERSION_NUMBER < 1100
+    return const_cast<G4MaterialPropertyVector*>(mpv)->GetMinLowEdgeEnergy(); 
+#else
+    return 0. ;   // ??
+#endif   
+}
+
+G4double X4MaterialPropertyVector::GetMinLowEdgeEnergy() const
+{
+    return GetMinLowEdgeEnergy(vec); 
+}
+
+G4double X4MaterialPropertyVector::GetMaxLowEdgeEnergy( const G4MaterialPropertyVector* mpv ) // static 
+{
+#if G4VERSION_NUMBER < 1100
+    return const_cast<G4MaterialPropertyVector*>(mpv)->GetMaxLowEdgeEnergy(); 
+#else
+    return 0. ;   // ??
+#endif   
+}
+
+G4double X4MaterialPropertyVector::GetMaxLowEdgeEnergy() const
+{
+    return GetMaxLowEdgeEnergy(vec); 
+}
+
+
+
+
+G4bool X4MaterialPropertyVector::IsFilledVectorExist( const G4MaterialPropertyVector* mpv ) // static 
+{
+#if G4VERSION_NUMBER < 1100
+    return mpv->IsFilledVectorExist() ; 
+#else
+    return mpv->GetVectorLength() > 0 ; 
+#endif   
+}
+
+G4bool X4MaterialPropertyVector::IsFilledVectorExist() const 
+{
+    return IsFilledVectorExist(vec); 
+}
+
+
+
+
 
 G4MaterialPropertyVector* X4MaterialPropertyVector::FromArray(const NP* a ) // static 
 {
