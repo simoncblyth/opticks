@@ -156,7 +156,7 @@ When it is a good time to snapshot. Make the tag:
 
 2. set the incremented *OPTICKS_VERSION_NUMBER* in `okconf/OpticksVersionNumber.hh`, commit and push to **BOTH bitbucket and github**::
 
-    vi okconf/OpticksVersionNumber.hh
+    vi okconf/OpticksVersionNumber.hh notes/releases-and-versioning.rst
     git add . 
     git commit -m "bump OPTICKS_VERSION_NUMBER 12"
     git push 
@@ -189,8 +189,10 @@ Snapshot History
 | 2021/09/24 | v0.1.4            | 14                                 | 14                         | Changes for Geant4 1100 beta, 4 cfg4 test fails remain, needing G4 GDML read fix|
 |            |                   |                                    |                            | see notes/issues/Geant4_1100_GDML_AddProperty_error.rst                         |
 +------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------------------------------------+  
+| 2021/09/30 | v0.1.5            | 15                                 | 14                         | All use of G4PhysicsVector::SetSpline removed due to Geant4 API change,         |
+|            |                   |                                    |                            | see notes/issues/Geant4_Soon_SetSpline_change.rst                               |
++------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------------------------------------+  
 
-    
 
 
 
