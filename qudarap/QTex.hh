@@ -1,5 +1,10 @@
 #pragma once
+/**
+QTex
+=====
 
+
+**/
 #include <string>
 #include <cstddef>
 #include <texture_types.h>
@@ -42,7 +47,6 @@ struct QUDARAP_API QTex
     std::string desc() const ; 
 
     void createArray(); 
-    //void uploadToArray_deprecated(); 
     void uploadToArray(); 
     void uploadMeta(); 
 

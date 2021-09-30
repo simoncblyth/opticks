@@ -107,7 +107,7 @@ struct NP
     template<typename T> const T*  cvalues() const  ; 
     template<typename T> unsigned  index( int i,  int j=0,  int k=0,  int l=0, int m=0) const ; 
     template<typename T> T           get( int i,  int j=0,  int k=0,  int l=0, int m=0) const ; 
-    template<typename T> void        set( T val, int i,  int j=0,  int k=0,  int l=0, int m=0) ; 
+    template<typename T> void        set( T val, int i,  int j=0,  int k=0,  int l=0, int m=0 ) ; 
 
     template<typename T> void fill(T value); 
     template<typename T> void _fillIndexFlat(T offset=0); 
@@ -120,7 +120,7 @@ struct NP
     static NP* MakeCopy(  const NP* src); 
 
     template<typename T> static NP* MakeCDF(  const NP* src );
-    template<typename T> static NP* MakeICDF(  const NP* src, unsigned nu, unsigned hd_factor );
+    template<typename T> static NP* MakeICDF(  const NP* src, unsigned nu, unsigned hd_factor, bool dump );
     template<typename T> static NP* MakeProperty(const NP* a, unsigned hd_factor ); 
     template<typename T> static NP* MakeLookupSample(const NP* icdf_prop, unsigned ni, unsigned seed=0u, unsigned hd_factor=0u );  
     template<typename T> static NP* MakeUniform( unsigned ni, unsigned seed=0u );  
@@ -135,7 +135,6 @@ struct NP
     template<typename T> int  pfindbin(const T value, unsigned column, bool& in_range ) const ;  
     template<typename T> void get_edges(T& lo, T& hi, unsigned column, int ibin) const ; 
 
-    template<typename T> T    pdomain(const T value, int item=-1, bool dump=false  ) const ; 
 
     template<typename T> T    psum(unsigned column ) const ;  
     template<typename T> void pscale(T scale, unsigned column);
@@ -144,8 +143,10 @@ struct NP
     template<typename T> void minmax(T& mn, T&mx, unsigned j=1, int item=-1 ) const ; 
     template<typename T> void linear_crossings( T value, std::vector<T>& crossings ) const ; 
     template<typename T> NP*  trapz() const ;                      // composite trapezoidal integration, requires pshaped
-    template<typename T> T    interp(T x) const ;                  // requires pshaped 
-    template<typename T> T    interpHD(T u, unsigned hd_factor) const ; 
+
+    template<typename T> T    pdomain(const T value, int item=-1, bool dump=false  ) const ; 
+    template<typename T> T    interp(T x, int item=-1) const ;                  // requires pshaped 
+    template<typename T> T    interpHD(T u, unsigned hd_factor, int item=-1 ) const ; 
     template<typename T> T    interp(unsigned iprop, T x) const ;  // requires NP::Combine of pshaped arrays 
     template<typename T> NP*  cumsum(int axis=0) const ; 
     template<typename T> void divide_by_last() ; 
@@ -169,6 +170,7 @@ struct NP
     int load_meta( const char* path ); 
 
 
+
     static std::string form_name(const char* stem, const char* ext); 
     static std::string form_path(const char* dir, const char* name);   
     static std::string form_path(const char* dir, const char* reldir, const char* name);   
@@ -189,6 +191,11 @@ struct NP
     void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
     void get_meta( std::vector<std::string>& lines,       char delim='\n' ) const ; 
 
+    std::string get_meta_string(const char* key) const ;  
+    template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
+    template<typename T> void set_meta(const char* key, T value ) ;  
+
+
     char*       bytes();  
     const char* bytes() const ;  
 
@@ -204,8 +211,9 @@ struct NP
     std::vector<int>  shape ; 
     std::string       meta ; 
 
-    // transient
+    // non-persisted transients, set on loading 
     std::string lpath ; 
+    std::string lfold ; 
 
     // headers used for transport 
     std::string _hdr ; 
@@ -216,7 +224,6 @@ struct NP
     char        uifc ;    // element type code 
     int         ebyte ;   // element bytes  
     int         size ;    // number of elements from shape
-
 
     void        update_headers();     
 
@@ -518,6 +525,9 @@ inline void NP::init()
     _hdr = make_header(); 
 }
 
+
+
+
 inline void NP::set_shape(int ni, int nj, int nk, int nl, int nm)
 {
     size = NPS::copy_shape(shape, ni, nj, nk, nl, nm); 
@@ -590,14 +600,14 @@ template<typename T> inline unsigned NP::index( int i,  int j,  int k,  int l, i
 template<typename T> inline T NP::get( int i,  int j,  int k,  int l, int m) const 
 {
     unsigned idx = index<T>(i, j, k, l, m); 
-    const T* vv = cvalues<T>();  
+    const T* vv = cvalues<T>() ;  
     return vv[idx] ; 
 }
 
 template<typename T> inline void NP::set( T val, int i,  int j,  int k,  int l, int m) 
 {
     unsigned idx = index<T>(i, j, k, l, m); 
-    T* vv = values<T>();  
+    T* vv = values<T>() ;  
     vv[idx] = val ; 
 }
 
@@ -842,13 +852,11 @@ Use NP::MakeProperty to add domain infomation using this convention.
 **/
 
 template<typename T>
-inline NP* NP::MakeICDF(const NP* cdf, unsigned nu, unsigned hd_factor )  // static 
+inline NP* NP::MakeICDF(const NP* cdf, unsigned nu, unsigned hd_factor, bool dump)  // static 
 {
     unsigned ndim = cdf->shape.size(); 
     assert( ndim == 2 || ndim == 3 ); 
-
     unsigned num_items = ndim == 3 ? cdf->shape[0] : 1 ; 
-    int item = -1 ; 
 
     assert( hd_factor == 0 || hd_factor == 10 || hd_factor == 20 );  
     T edge = hd_factor > 0 ? T(1.)/T(hd_factor) : 0. ;   
@@ -859,25 +867,29 @@ inline NP* NP::MakeICDF(const NP* cdf, unsigned nu, unsigned hd_factor )  // sta
     unsigned ni = icdf->shape[0] ; 
     unsigned nj = icdf->shape[1] ; 
     unsigned nk = icdf->shape[2] ; 
-#ifdef DEBUG
-    std::cout 
+
+    if(dump) std::cout 
         << "NP::MakeICDF"
         << " nu " << nu
         << " ni " << ni
         << " nj " << nj
         << " nk " << nk
         << " hd_factor " << hd_factor
+        << " ndim " << ndim
+        << " icdf " << icdf->sstr()
         << std::endl 
         ;
-#endif
 
     for(unsigned i=0 ; i < ni ; i++)
     {
         int item = i ;  
+        if(dump) std::cout << "NP::MakeICDF" << " item " << item << std::endl ; 
+
         for(unsigned j=0 ; j < nj ; j++)
         {
             T y_all = T(j)/T(nj) ; //        // 0 -> (nj-1)/nj = 1-1/nj 
             T x_all = cdf->pdomain<T>( y_all, item );    
+
 #ifdef DEBUG
             std::cout 
                 <<  " y_all " << std::setw(10) << std::setprecision(4) << std::fixed << y_all 
@@ -917,7 +929,7 @@ Thinking in one dimensional terms that means that values and
 corresponding domains get interleaved.
 The resulting property array can then be used with NP::pdomain or NP::interp.
 
-For hd_factor=10 or hd_factor=20 the input array is required to have shape (ni,4)
+For hd_factor=10 or hd_factor=20 the input array is required to have shape (ni,4) or (ni,nj,4)
 where "all" is in payload slot 0 and lhs and rhs high resolution zooms are in 
 payload slots 1 and 2.  (Slot 3 is currently spare, normally containing zero). 
 
@@ -926,8 +938,6 @@ adding domain values interleaved with the values.
 The domain values follow the hd_factor convention of scaling the resolution 
 in the 1/hd_factor tails
 
-TODO: a version of NP::interp that is hd_factor aware and uses the relevant 
-portion of the composite property array depending on the random u value 
 
 **/
 
@@ -935,6 +945,8 @@ template <typename T> NP* NP::MakeProperty(const NP* a, unsigned hd_factor ) // 
 {
     NP* prop = nullptr ; 
     unsigned ndim = a->shape.size(); 
+    assert( ndim == 1 || ndim == 2 || ndim == 3 ); 
+
     if( ndim == 1 )
     {
         assert( hd_factor == 0 );  
@@ -949,17 +961,13 @@ template <typename T> NP* NP::MakeProperty(const NP* a, unsigned hd_factor ) // 
             prop_v[nj*i+1] = a->get<T>(i) ; 
         }
     } 
-    else if( ndim == 2 )
+    else if( ndim == 2 )   
     {
         assert( hd_factor == 10 || hd_factor == 20 ); 
-
         T edge = 1./T(hd_factor) ;
-
         unsigned ni = a->shape[0] ; 
-        unsigned nj = a->shape[1] ; 
+        unsigned nj = a->shape[1] ; assert( nj == 4 ); 
         unsigned nk = 2 ; 
-        assert( nj == 4 ); 
-
 
         prop = NP::Make<T>(ni, nj, nk) ; 
         T* prop_v = prop->values<T>(); 
@@ -969,19 +977,58 @@ template <typename T> NP* NP::MakeProperty(const NP* a, unsigned hd_factor ) // 
             T u_all =  T(i)/T(ni) ; 
             T u_lhs =  T(i)/T(hd_factor*ni) ; 
             T u_rhs =  1. - edge + T(i)/T(hd_factor*ni) ; 
+            T u_spa =  0. ; 
 
             for(unsigned j=0 ; j < nj ; j++)   // 0,1,2,3
             {
-                unsigned k=0 ; 
+                unsigned k;
+                k=0 ; 
                 switch(j)
                 {
                     case 0:prop_v[nk*nj*i+nk*j+k] = u_all ; break ; 
                     case 1:prop_v[nk*nj*i+nk*j+k] = u_lhs ; break ; 
                     case 2:prop_v[nk*nj*i+nk*j+k] = u_rhs ; break ; 
-                    case 3:prop_v[nk*nj*i+nk*j+k] = 0.    ; break ; 
+                    case 3:prop_v[nk*nj*i+nk*j+k] = u_spa ; break ; 
                 }
                 k=1 ;  
                 prop_v[nk*nj*i+nk*j+k] = a->get<T>(i,j) ; 
+            }
+        }
+    }
+    else if( ndim == 3 )
+    {
+        assert( hd_factor == 10 || hd_factor == 20 ); 
+        T edge = 1./T(hd_factor) ;
+        unsigned ni = a->shape[0] ; 
+        unsigned nj = a->shape[1] ; 
+        unsigned nk = a->shape[2] ; assert( nk == 4 );   // hd_factor convention
+        unsigned nl = 2 ; 
+
+        prop = NP::Make<T>(ni, nj, nk, nl) ; 
+
+        for(unsigned i=0 ; i < ni ; i++)
+        {
+            for(unsigned j=0 ; j < nj ; j++)
+            {
+                T u_all =  T(j)/T(nj) ; 
+                T u_lhs =  T(j)/T(hd_factor*nj) ; 
+                T u_rhs =  1. - edge + T(j)/T(hd_factor*nj) ; 
+                T u_spa =  0. ; 
+
+                for(unsigned k=0 ; k < nk ; k++)   // 0,1,2,3
+                {
+                    unsigned l ; 
+                    l=0 ; 
+                    switch(k)
+                    {
+                        case 0:prop->set<T>(u_all, i,j,k,l) ; break ; 
+                        case 1:prop->set<T>(u_lhs, i,j,k,l) ; break ; 
+                        case 2:prop->set<T>(u_rhs, i,j,k,l) ; break ; 
+                        case 3:prop->set<T>(u_spa, i,j,k,l) ; break ; 
+                    }
+                    l=1 ;  
+                    prop->set<T>( a->get<T>(i,j,k), i,j,k,l );   
+                }
             }
         }
     }
@@ -1317,159 +1364,6 @@ template<typename T> inline void  NP::get_edges(T& lo, T& hi, unsigned column, i
 
 
 
-/**
-NP::pdomain
--------------
-
-Returns the domain (eg energy or wavelength) corresponding 
-to the property value argument. 
-
-Requires arrays of shape (num_dom, 2) when item is at default value of -1 
-
-Also support arrys of shape (num_item, num_dom, 2 ) when item is used to pick the item. 
-
-
-   
-                                                        1  (x1,y1)     (  binVector[bin+1], dataVector[bin+1] )
-                                                       /
-                                                      /
-                                                     *  ( xv,yv )       ( res, aValue )      
-                                                    /
-                                                   /
-                                                  0  (x0,y0)          (  binVector[bin], dataVector[bin] )
-
-
-              Similar triangles::
-               
-                 xv - x0       x1 - x0 
-               ---------- =   -----------
-                 yv - y0       y1 - y0 
-
-                                                   x1 - x0
-                   xv  =    x0  +   (yv - y0) *  -------------- 
-                                                   y1 - y0
-
-**/
-
-template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) const 
-{
-    const T zero = 0. ; 
-    unsigned ndim = shape.size() ; 
-    assert( ndim == 2 || ndim == 3 ); 
-    unsigned ni = shape[ndim-2]; 
-    unsigned nj = shape[ndim-1]; 
-
-    assert( nj <= 8 );        // not needed for below, just for sanity of payload
-    unsigned jdom = 0 ;       // 1st payload slot is "domain"
-    unsigned jval = nj - 1 ;  // last payload slot is "value" 
-    // note that with nj > 2 this allows other values to be carried 
-
-    unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
-    assert( item < int(num_items) ); 
-    unsigned item_offset = item == -1 ? 0 : ni*nj*item ;   // using item = 0 will have the same effect
-
-    const T* vv = cvalues<T>() + item_offset ;  // shortcut approach to handling multiple items 
-
-
-    const T lhs_dom = vv[nj*(0)+jdom]; 
-    const T rhs_dom = vv[nj*(ni-1)+jdom];
-    bool dom_expect = rhs_dom > lhs_dom  ; 
-
-    if(!dom_expect) std::cout 
-        << "NP::pdomain FATAL dom_expect : rhs_dom > lhs_dom "
-        << " lhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_dom 
-        << " rhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_dom 
-        << std::endl 
-        ;
-    assert( dom_expect ); 
-
-    const T lhs_val = vv[nj*(0)+jval]; 
-    const T rhs_val = vv[nj*(ni-1)+jval];
-
-    bool val_expect = rhs_val > lhs_val ; 
-    if(!val_expect) std::cout 
-        << "NP::pdomain FATAL val_expect : rhs_val > lhs_val "
-        << " lhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_val 
-        << " rhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_val 
-        << std::endl 
-        ;
-    assert( val_expect ); 
-
-
-    const T yv = value ; 
-    T xv ;   
-    bool xv_set = false ; 
-
-
-    if( yv <= lhs_val )
-    {
-        xv = lhs_dom ; 
-        xv_set = true ; 
-    }
-    else if( yv >= rhs_val )
-    {
-        xv = rhs_dom  ; 
-        xv_set = true ; 
-    }
-    else if ( yv >= lhs_val && yv < rhs_val  )
-    {
-        for(unsigned i=0 ; i < ni-1 ; i++) 
-        {
-            const T x0 = vv[nj*(i+0)+jdom] ; 
-            const T y0 = vv[nj*(i+0)+jval] ; 
-            const T x1 = vv[nj*(i+1)+jdom] ; 
-            const T y1 = vv[nj*(i+1)+jval] ;
-            const T dy = y1 - y0 ;  
-
-            //assert( dy >= zero );   // must be monotonic for this to make sense
-            /*
-            if( dy < zero )
-            {  
-                std::cout 
-                    << "NP::pdomain ERROR : non-monotonic dy less than zero  " 
-                    << " i " << std::setw(5) << i
-                    << " x0 " << std::setw(10) << std::fixed << std::setprecision(6) << x0
-                    << " x1 " << std::setw(10) << std::fixed << std::setprecision(6) << x1 
-                    << " y0 " << std::setw(10) << std::fixed << std::setprecision(6) << y0
-                    << " y1 " << std::setw(10) << std::fixed << std::setprecision(6) << y1 
-                    << " yv " << std::setw(10) << std::fixed << std::setprecision(6) << yv
-                    << " dy " << std::setw(10) << std::fixed << std::setprecision(6) << dy 
-                    << std::endl 
-                    ;
-            }
-            */
-
-            if( y0 <= yv && yv < y1 )
-            { 
-                xv = x0 ; 
-                xv_set = true ; 
-                if( dy > zero ) xv += (yv-y0)*(x1-x0)/dy ; 
-                break ;   
-            }
-        }
-    } 
-
-    assert( xv_set == true ); 
-
-    if(dump)
-    {
-        std::cout 
-            << "NP::pdomain.dump "
-            << " item " << std::setw(4) << item
-            << " ni " << std::setw(4) << ni
-            << " nj " << std::setw(4) << nj
-            << " lhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_dom
-            << " rhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_dom
-            << " lhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_val
-            << " rhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_val
-            << " yv " << std::setw(10) << std::fixed << std::setprecision(4) << yv
-            << " xv " << std::setw(10) << std::fixed << std::setprecision(4) << xv
-            << std::endl 
-            ; 
-    }
-    return xv ; 
-}
-
 
 template<typename T> inline T  NP::psum(unsigned column) const 
 {
@@ -1685,6 +1579,160 @@ template<typename T> inline NP* NP::trapz() const
 
 
 
+
+/**
+NP::pdomain
+-------------
+
+Returns the domain (eg energy or wavelength) corresponding 
+to the property value argument. 
+
+Requires arrays of shape (num_dom, 2) when item is at default value of -1 
+
+Also support arrys of shape (num_item, num_dom, 2 ) when item is used to pick the item. 
+
+
+   
+                                                        1  (x1,y1)     (  binVector[bin+1], dataVector[bin+1] )
+                                                       /
+                                                      /
+                                                     *  ( xv,yv )       ( res, aValue )      
+                                                    /
+                                                   /
+                                                  0  (x0,y0)          (  binVector[bin], dataVector[bin] )
+
+
+              Similar triangles::
+               
+                 xv - x0       x1 - x0 
+               ---------- =   -----------
+                 yv - y0       y1 - y0 
+
+                                                   x1 - x0
+                   xv  =    x0  +   (yv - y0) *  -------------- 
+                                                   y1 - y0
+
+**/
+
+template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) const 
+{
+    const T zero = 0. ; 
+    unsigned ndim = shape.size() ; 
+    assert( ndim == 2 || ndim == 3 ); 
+    unsigned ni = shape[ndim-2]; 
+    unsigned nj = shape[ndim-1]; 
+
+    assert( nj <= 8 );        // not needed for below, just for sanity of payload
+    unsigned jdom = 0 ;       // 1st payload slot is "domain"
+    unsigned jval = nj - 1 ;  // last payload slot is "value" 
+    // note that with nj > 2 this allows other values to be carried 
+
+    unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
+    assert( item < int(num_items) ); 
+    unsigned item_offset = item == -1 ? 0 : ni*nj*item ;   // using item = 0 will have the same effect
+
+    const T* vv = cvalues<T>() + item_offset ;  // shortcut approach to handling multiple items 
+
+
+    const T lhs_dom = vv[nj*(0)+jdom]; 
+    const T rhs_dom = vv[nj*(ni-1)+jdom];
+    bool dom_expect = rhs_dom >= lhs_dom  ;  // allow equal as getting zeros at extremes 
+
+    const T lhs_val = vv[nj*(0)+jval]; 
+    const T rhs_val = vv[nj*(ni-1)+jval];
+    bool val_expect = rhs_val >= lhs_val ; 
+
+    if(!dom_expect) std::cout 
+        << "NP::pdomain FATAL dom_expect : rhs_dom > lhs_dom "
+        << " lhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_dom 
+        << " rhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_dom 
+        << std::endl 
+        ;
+    assert( dom_expect ); 
+
+    if(!val_expect) std::cout 
+        << "NP::pdomain FATAL val_expect : rhs_val > lhs_val "
+        << " lhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_val 
+        << " rhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_val 
+        << std::endl 
+        ;
+    assert( val_expect ); 
+
+    const T yv = value ; 
+    T xv ;   
+    bool xv_set = false ; 
+
+
+    if( yv <= lhs_val )
+    {
+        xv = lhs_dom ; 
+        xv_set = true ; 
+    }
+    else if( yv >= rhs_val )
+    {
+        xv = rhs_dom  ; 
+        xv_set = true ; 
+    }
+    else if ( yv >= lhs_val && yv < rhs_val  )
+    {
+        for(unsigned i=0 ; i < ni-1 ; i++) 
+        {
+            const T x0 = vv[nj*(i+0)+jdom] ; 
+            const T y0 = vv[nj*(i+0)+jval] ; 
+            const T x1 = vv[nj*(i+1)+jdom] ; 
+            const T y1 = vv[nj*(i+1)+jval] ;
+            const T dy = y1 - y0 ;  
+
+            //assert( dy >= zero );   // must be monotonic for this to make sense
+            /*
+            if( dy < zero )
+            {  
+                std::cout 
+                    << "NP::pdomain ERROR : non-monotonic dy less than zero  " 
+                    << " i " << std::setw(5) << i
+                    << " x0 " << std::setw(10) << std::fixed << std::setprecision(6) << x0
+                    << " x1 " << std::setw(10) << std::fixed << std::setprecision(6) << x1 
+                    << " y0 " << std::setw(10) << std::fixed << std::setprecision(6) << y0
+                    << " y1 " << std::setw(10) << std::fixed << std::setprecision(6) << y1 
+                    << " yv " << std::setw(10) << std::fixed << std::setprecision(6) << yv
+                    << " dy " << std::setw(10) << std::fixed << std::setprecision(6) << dy 
+                    << std::endl 
+                    ;
+            }
+            */
+
+            if( y0 <= yv && yv < y1 )
+            { 
+                xv = x0 ; 
+                xv_set = true ; 
+                if( dy > zero ) xv += (yv-y0)*(x1-x0)/dy ; 
+                break ;   
+            }
+        }
+    } 
+
+    assert( xv_set == true ); 
+
+    if(dump)
+    {
+        std::cout 
+            << "NP::pdomain.dump "
+            << " item " << std::setw(4) << item
+            << " ni " << std::setw(4) << ni
+            << " nj " << std::setw(4) << nj
+            << " lhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_dom
+            << " rhs_dom " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_dom
+            << " lhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << lhs_val
+            << " rhs_val " << std::setw(10) << std::fixed << std::setprecision(4) << rhs_val
+            << " yv " << std::setw(10) << std::fixed << std::setprecision(4) << yv
+            << " xv " << std::setw(10) << std::fixed << std::setprecision(4) << xv
+            << std::endl 
+            ; 
+    }
+    return xv ; 
+}
+
+
 /**
 NP::interp
 ------------
@@ -1694,14 +1742,24 @@ so always explicitly define the template type : DO NOT RELY ON COMPILER WORKING 
 
 **/
 
-template<typename T> inline T NP::interp(T x) const  
+template<typename T> inline T NP::interp(T x, int item) const  
 {
     unsigned ndim = shape.size() ; 
-    unsigned ni = shape[0] ; 
-    unsigned npay = shape[ndim-1] ; 
+    assert( ndim == 2 || ndim == 3 ); 
 
-    assert( ndim == 2 && npay == 2 && ni > 1); 
-    const T* vv = cvalues<T>(); 
+    unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
+    assert( item < int(num_items) ); 
+    unsigned ni = shape[ndim-2]; 
+    unsigned nj = shape[ndim-1];  // typically 2, but can be more 
+    unsigned item_offset = item == -1 ? 0 : ni*nj*item ;   // item=-1 same as item=0
+
+    assert( ni > 1 ); 
+    assert( nj <= 8 );        // not needed for below, just for sanity of payload
+    unsigned jdom = 0 ;       // 1st payload slot is "domain"
+    unsigned jval = nj - 1 ;  // last payload slot is "value" 
+    // note that with nj > 2 this allows other values to be carried 
+
+    const T* vv = cvalues<T>() + item_offset ; 
 
     int lo = 0 ;
     int hi = ni-1 ;
@@ -1722,21 +1780,21 @@ template<typename T> inline T NP::interp(T x) const
 */
 
     // for x out of domain range return values at edges
-    if( x <= vv[2*lo+0] ) return vv[2*lo+1] ; 
-    if( x >= vv[2*hi+0] ) return vv[2*hi+1] ; 
+    if( x <= vv[nj*lo+jdom] ) return vv[nj*lo+jval] ; 
+    if( x >= vv[nj*hi+jdom] ) return vv[nj*hi+jval] ; 
 
     // binary search for domain bin containing x 
     while (lo < hi-1)
     {
         int mi = (lo+hi)/2;
-        if (x < vv[2*mi+0]) hi = mi ;
+        if (x < vv[nj*mi+jdom]) hi = mi ;
         else lo = mi;
     }
 
     // linear interpolation across the bin 
-    T dy = vv[2*hi+1] - vv[2*lo+1] ; 
-    T dx = vv[2*hi+0] - vv[2*lo+0] ; 
-    T y = vv[2*lo+1] + dy*(x-vv[2*lo+0])/dx ; 
+    T dy = vv[nj*hi+jval] - vv[nj*lo+jval] ; 
+    T dx = vv[nj*hi+jdom] - vv[nj*lo+jdom] ; 
+    T y = vv[nj*lo+jval] + dy*(x-vv[nj*lo+jdom])/dx ; 
 
     return y ; 
 }
@@ -1747,41 +1805,62 @@ NP::interpHD
 
 Interpolation within domain 0->1 using hd_factor convention for lhs, rhs high resolution zooms. 
 
+Previously tried to avoid the dimensional duplication using set_offset 
+which attempts to enable get/set addressing with the "wrong" number of dimensions.
+The offset is like moving a cursor around the array allowing portions of it 
+to be in-situ addressed as if they were smaller sub-arrays. 
+
+The set_offset approach is problematic as the get/set methods are using the 
+absolute "correct" ni,nj,nk etc.. whereas when using the lower level cvalues approach 
+are able to shift the meanings of those in a local fashion that can work 
+across different numbers of dimensions.
+
 **/
 
-template<typename T> inline T NP::interpHD(T u, unsigned hd_factor) const  
+template<typename T> inline T NP::interpHD(T u, unsigned hd_factor, int item) const 
 {
     unsigned ndim = shape.size() ; 
-    assert( ndim == 3 ); 
-    unsigned ni = shape[0] ; 
-    unsigned nj = shape[1] ; 
-    unsigned nk = shape[2] ; 
-    assert( nj == 4 && nk == 2 ); 
+    assert( ndim == 3 || ndim == 4 ); 
+
+    unsigned num_items = ndim == 4 ? shape[0] : 1 ; 
+    assert( item < int(num_items) ); 
+
+    unsigned ni = shape[ndim-3] ; 
+    unsigned nj = shape[ndim-2] ; 
+    unsigned nk = shape[ndim-1] ; 
+    assert( nj == 4 );
+    assert( nk == 2 ); // not required by the below 
+
+    unsigned kdom = 0 ; 
+    unsigned kval = nk - 1 ; 
 
     // pick *j* resolution zoom depending on u 
     T lhs = T(1.)/T(hd_factor) ; 
     T rhs = T(1.) - lhs ; 
     unsigned j = u > lhs && u < rhs ? 0 : ( u < lhs ? 1 : 2 ) ;  
 
+    unsigned item_offset = item == -1 ? 0 : ni*nj*nk*item ;   // item=-1 same as item=0
+    const T* vv = cvalues<T>() + item_offset ; 
+
+    // lo and hi are standins for *i*
     int lo = 0 ;
     int hi = ni-1 ;
 
-    // for u out of domain range return values at edges
-    if( u <= get<T>(lo,j,0) ) return get<T>(lo,j,1) ; 
-    if( u >= get<T>(hi,j,0) ) return get<T>(hi,j,1) ; 
+    if( u <= vv[lo*nj*nk+j*nk+kdom] ) return vv[lo*nj*nk+j*nk+kval] ; 
+    if( u >= vv[hi*nj*nk+j*nk+kdom] ) return vv[hi*nj*nk+j*nk+kval] ; 
 
     // binary search for domain bin containing x 
     while (lo < hi-1)
     {
         int mi = (lo+hi)/2;
-        if (u < get<T>(mi,j,0) ) hi = mi ;
+        if (u < vv[mi*nj*nk+j*nk+kdom] ) hi = mi ;
         else lo = mi;
     }
 
     // linear interpolation across the bin 
-    T dy = get<T>(hi,j,1) - get<T>(lo,j,1) ; 
-    T du = get<T>(hi,j,0) - get<T>(lo,j,0) ; 
-    T y = get<T>(lo,j,1) + + dy*(u-get<T>(lo,j,0))/du ; 
+    T dy = vv[hi*nj*nk+j*nk+kval] - vv[lo*nj*nk+j*nk+kval] ; 
+    T du = vv[hi*nj*nk+j*nk+kdom] - vv[lo*nj*nk+j*nk+kdom] ; 
+    T y  = vv[lo*nj*nk+j*nk+kval] + dy*(u-vv[lo*nj*nk+j*nk+kdom])/du ; 
 
     return y ; 
 }
@@ -2057,6 +2136,148 @@ inline void NP::get_meta( std::vector<std::string>& lines, char delim  ) const
     std::string s;
     while (std::getline(ss, s, delim)) lines.push_back(s) ; 
 }
+
+
+/**
+NP::get_meta_string
+-------------------
+
+Assumes metadata layout of form::
+
+    key1:value1
+    key2:value2
+
+With each key-value pair separated by newlines and the key and value
+delimited by a colon.
+
+**/
+
+inline std::string NP::get_meta_string(const char* key) const 
+{
+    std::string value ; 
+
+    std::stringstream ss;
+    ss.str(meta);
+    std::string s;
+    char delim = ':' ; 
+
+    while (std::getline(ss, s))
+    { 
+       size_t pos = s.find(delim); 
+       if( pos != std::string::npos )
+       {
+           std::string k = s.substr(0, pos);
+           std::string v = s.substr(pos+1);
+           if(strcmp(k.c_str(), key) == 0 ) value = v ; 
+#ifdef DEBUG
+           std::cout 
+               << "NP::get_meta_string " 
+               << " s[" << s << "]"
+               << " k[" << k << "]" 
+               << " v[" << v << "]" 
+               << std::endl
+               ;   
+#endif
+       }
+#ifdef DEBUG
+       else
+       {
+           std::cout 
+               << "NP::get_meta_string " 
+               << "s[" << s << "] SKIP "   
+               << std::endl
+               ;   
+       }
+#endif
+    } 
+    return value ; 
+}
+
+
+template<typename T> inline T NP::get_meta(const char* key, T fallback) const 
+{
+    std::string s = get_meta_string(key); 
+    if(s.empty()) return fallback ; 
+    return To<T>(s.c_str()) ; 
+}
+
+template int      NP::get_meta<int>(const char*, int ) const ; 
+template unsigned NP::get_meta<unsigned>(const char*, unsigned ) const  ; 
+template float    NP::get_meta<float>(const char*, float ) const ; 
+template double   NP::get_meta<double>(const char*, double ) const ; 
+template std::string NP::get_meta<std::string>(const char*, std::string ) const ; 
+
+/**
+NP::set_meta
+--------------
+
+A preexisting keyed k:v pair is changed by this otherwise if there is no 
+such pre-existing key a new k:v pair is added. 
+
+**/
+template<typename T> inline void NP::set_meta(const char* key, T value)  
+{
+    std::stringstream nn;
+    std::stringstream ss;
+    ss.str(meta);
+    std::string s;
+    char delim = ':' ; 
+    bool changed = false ; 
+    while (std::getline(ss, s))
+    { 
+       size_t pos = s.find(delim); 
+       if( pos != std::string::npos )
+       {
+           std::string k = s.substr(0, pos);
+           std::string v = s.substr(pos+1);
+           if(strcmp(k.c_str(), key) == 0 )  // key already present, so change it 
+           {
+               changed = true ; 
+               nn << key << delim << value << std::endl ;   
+           }
+           else
+           {
+               nn << s << std::endl ;  
+           }
+       }
+       else
+       {
+           nn << s << std::endl ;  
+       }    
+    }
+    if(!changed) nn << key << delim << value << std::endl ; 
+    meta = nn.str(); 
+}
+
+template void     NP::set_meta<int>(const char*, int ); 
+template void     NP::set_meta<unsigned>(const char*, unsigned ); 
+template void     NP::set_meta<float>(const char*, float ); 
+template void     NP::set_meta<double>(const char*, double ); 
+template void     NP::set_meta<std::string>(const char*, std::string ); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 template<typename T>
 inline int NP::DumpCompare( const NP* a, const NP* b , unsigned a_column, unsigned b_column, const T epsilon ) // static
@@ -2373,6 +2594,7 @@ newline from the stream without returning it.
 inline int NP::load(const char* path)
 {
     lpath = path ;  // loadpath 
+    lfold = U::DirName(path); 
 
     std::ifstream fp(path, std::ios::in|std::ios::binary);
     if(fp.fail())
@@ -2408,6 +2630,9 @@ inline int NP::load_meta( const char* path )
     meta = ss.str(); 
     return 0 ; 
 }
+
+
+
 
 
 inline void NP::save_header(const char* path)

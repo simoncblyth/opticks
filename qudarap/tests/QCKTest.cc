@@ -12,7 +12,8 @@
 void test_energy_lookup_one( const QCK<double>* qck, double BetaInverse, double u  )
 {
     double dt ; 
-    double en = qck->energy_lookup_( BetaInverse, u, dt ); 
+    bool icdf_ = true ; 
+    double en = qck->energy_lookup_( BetaInverse, u, dt, icdf_ ); 
     int p = 7 ; 
     int w = p + 10 ; 
     LOG(info)
@@ -23,7 +24,7 @@ void test_energy_lookup_one( const QCK<double>* qck, double BetaInverse, double 
         ;
 }
 
-void test_energy_lookup_many( const QCK<double>* qck, double BetaInverse, unsigned ni, const char* base )
+void test_energy_lookup_many( const QCK<double>* qck, double BetaInverse, unsigned ni, const char* base, bool icdf_ )
 {
     bool biok = qck->is_permissable(BetaInverse); 
     if(biok == false)
@@ -36,8 +37,9 @@ void test_energy_lookup_many( const QCK<double>* qck, double BetaInverse, unsign
 
     NP* tt = NP::Make<double>( ni ); 
     NP* uu = NP::MakeUniform<double>( ni ) ; 
-    NP* en = qck->energy_lookup(BetaInverse, uu, tt ) ; 
-    const char* path = SPath::MakePath<double>(base, nullptr, BetaInverse, "test_energy_lookup_many.npy" ); 
+
+    NP* en = qck->energy_lookup(BetaInverse, uu, tt, icdf_ ) ; 
+    const char* path = SPath::MakePath<double>(base, nullptr, BetaInverse, icdf_ ? "test_energy_lookup_many_icdf.npy" :  "test_energy_lookup_many_s2cn.npy" ); 
     en->save(path);     
 
     const char* tt_path = SPath::MakePath<double>(base, nullptr, BetaInverse, "test_energy_lookup_many_tt.npy" ); 
@@ -98,20 +100,35 @@ int main(int argc, char** argv)
     char d = 'S' ; 
     char t = argc > 1 ? argv[1][0] : d ; 
 
-    const char* reldir = t == 'S' ? "test_makeICDF_SplitBin" :  "test_makeICDF_UpperCut" ; 
-    const char* icdf_path = SPath::Resolve("$TMP/QCerenkovTest", reldir );
-    LOG(info) << " t " << t << " icdf_path " << icdf_path ; 
- 
-    QCK<double>* qck = QCK<double>::Load(icdf_path); 
-    qck->init(); 
+    const char* reldir = nullptr ; 
+    switch(t)
+    {
+        case 'S': reldir = "test_makeICDF_SplitBin" ; break ; 
+        case 'U': reldir = "test_makeICDF_UpperCut" ; break ; 
+    } 
+    assert( reldir && "require S or U argument to pick ICDF reldir" ); 
+    const char* icdf_base = SPath::Resolve("$TMP/QCerenkovTest");
+    LOG(info) << " t " << t << " icdf_base " << icdf_base << " reldir " << reldir ; 
 
+    // hmm: save samples into ICDF subdir to explicitly record the vital connection 
+ 
+    QCK<double>* qck = QCK<double>::Load(icdf_base, reldir); 
+    if( qck == nullptr ) return 0 ; 
+
+    qck->init(); 
+    const char* lfold = qck->lfold.c_str() ; 
+
+    LOG(info) << " qck.lfold " << lfold ; 
     LOG(info) << " qck.bis  " << qck->bis->desc(); 
     LOG(info) << " qck.bis->meta  " << qck->bis->meta; 
 
     LOG(info) << " qck.s2c  " << qck->s2c->desc(); 
     LOG(info) << " qck.s2cn " << qck->s2cn->desc(); 
 
-    const char* base = "$TMP/QCKTest" ; 
+    const char* sample_base = SPath::Resolve(lfold , "QCKTest") ; 
+    int rc = SPath::MakeDirs(sample_base);  
+    LOG(info) << " sample_base " << sample_base ; 
+    assert( rc == 0 ); 
 
     std::vector<double> vbis ;  
     for( double bi=1.0 ; bi < qck->rmx ; bi+=0.05 ) vbis.push_back(bi); 
@@ -121,7 +138,7 @@ int main(int argc, char** argv)
     NP* bis = NP::Make<double>(vbis);
 
     std::stringstream ss ; 
-    ss << "icdf_path:" << icdf_path 
+    ss << "qck.lfold:" << lfold
        << std::endl 
        << "qck.bis.meta:" << qck->bis->meta 
        << std::endl 
@@ -137,21 +154,29 @@ int main(int argc, char** argv)
     }
 
     unsigned num_gen = 1000000 ; 
+
     for(unsigned i=0 ; i < bis->shape[0] ; i++)
     {
         double BetaInverse = bis->get<double>(i) ; 
-        LOG(info) << " lookup BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse ;
-        test_energy_lookup_many( qck, BetaInverse, num_gen, base ); 
+        LOG(info) << " lookup BetaInverse icdf:1 " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse ;
+        test_energy_lookup_many( qck, BetaInverse, num_gen, sample_base, true ); 
+    }
+
+    for(unsigned i=0 ; i < bis->shape[0] ; i++)
+    {
+        double BetaInverse = bis->get<double>(i) ; 
+        LOG(info) << " lookup BetaInverse icdf:0 " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse ;
+        test_energy_lookup_many( qck, BetaInverse, num_gen, sample_base, false ); 
     }
 
     for(unsigned i=0 ; i < bis->shape[0] ; i++)
     {
         double BetaInverse = bis->get<double>(i) ; 
         LOG(info) << " sampling BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse ;
-        test_energy_sample_many( qck, BetaInverse, num_gen, base ); 
+        test_energy_sample_many( qck, BetaInverse, num_gen, sample_base ); 
     }
 
-    const char* bis_path = SPath::Resolve(base, "bis.npy") ;  
+    const char* bis_path = SPath::Resolve(sample_base, "bis.npy") ;  
     bis->save(bis_path);  
 
     return 0 ; 

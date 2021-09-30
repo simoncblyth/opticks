@@ -83,7 +83,7 @@ struct QUDARAP_API QCerenkov
 
     template <typename T> NP* getS2Integral_UpperCut( const T BetaInverse, unsigned nx ) const ; 
     template <typename T> NP* getS2Integral_UpperCut( const NP* bis, unsigned nx ) const  ; 
-    template <typename T> QCK<T> makeICDF_UpperCut( unsigned ny, unsigned nx ) const ; 
+    template <typename T> QCK<T> makeICDF_UpperCut( unsigned ny, unsigned nx, bool dump ) const ; 
 
 
 

@@ -321,6 +321,7 @@ struct U
 {
     static bool EndsWith( const char* s, const char* q) ; 
     static std::string ChangeExt( const char* s, const char* x1, const char* x2) ; 
+    static std::string DirName( const char* path ); 
 };
 
 inline bool U::EndsWith( const char* s, const char* q)
@@ -341,7 +342,12 @@ inline std::string U::ChangeExt( const char* s, const char* x1, const char* x2)
     return ss.str() ; 
 }
 
-
+inline std::string U::DirName( const char* path )
+{
+    std::string p = path ; 
+    std::size_t pos = p.find_last_of("/") ; 
+    return pos == std::string::npos ? "" : p.substr(0, pos); 
+}
 
 
 struct NPU

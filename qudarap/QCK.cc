@@ -15,6 +15,8 @@ void QCK<T>::save(const char* base, const char* reldir) const
     avph->save(base, reldir, "avph.npy"); 
     s2c->save(base, reldir, "s2c.npy"); 
     s2cn->save(base, reldir, "s2cn.npy"); 
+    icdf->save(base, reldir, "icdf.npy"); 
+    icdf_prop->save(base, reldir, "icdf_prop.npy"); 
 }
 
 template<typename T>
@@ -25,19 +27,14 @@ QCK<T>* QCK<T>::Load(const char* base, const char* reldir)   // static
     NP* avph = NP::Load(base, reldir, "avph.npy"); 
     NP* s2c = NP::Load(base, reldir, "s2c.npy"); 
     NP* s2cn = NP::Load(base, reldir, "s2cn.npy"); 
+    NP* icdf = NP::Load(base, reldir, "icdf.npy"); 
+    NP* icdf_prop = NP::Load(base, reldir, "icdf_prop.npy"); 
 
-    QCK* qck = new QCK<T> ; 
-
-    qck->rindex = rindex ; 
-    qck->bis = bis ; 
-    qck->avph = avph ; 
-    qck->s2c = s2c ; 
-    qck->s2cn = s2cn ; 
-
-    if(rindex == nullptr || bis == nullptr || s2c == nullptr || s2cn == nullptr || avph == nullptr)
+    QCK* qck = nullptr ; 
+    if(rindex == nullptr || bis == nullptr || s2c == nullptr || s2cn == nullptr || avph == nullptr || icdf == nullptr || icdf_prop == nullptr)
     {
         LOG(fatal)
-            << " QCK::Load incomplete "
+            << " QCK::Load FAILURE "
             << " base " << base
             << " reldir " << reldir
             << std::endl 
@@ -45,9 +42,23 @@ QCK<T>* QCK<T>::Load(const char* base, const char* reldir)   // static
             << " bis " << bis
             << " s2c " << s2c
             << " s2cn " << s2cn
+            << " icdf " << icdf
+            << " icdf_prop " << icdf_prop
             << std::endl 
-            << " use QCerenkovTest:test_makeICDF to recreate these arrays "
+            << " use QCerenkovTest to create QCK input arrays "
             ;
+    }
+    else
+    {
+        qck = new QCK<T> ; 
+        qck->lfold = rindex->lfold ; 
+        qck->rindex = rindex ; 
+        qck->bis = bis ; 
+        qck->avph = avph ; 
+        qck->s2c = s2c ; 
+        qck->s2cn = s2cn ; 
+        qck->icdf = icdf ; 
+        qck->icdf_prop = icdf_prop ; 
     }
     return qck ; 
 }
@@ -124,17 +135,40 @@ that returns true from QCK::is_permissable.
  
 see ~/np/tests/NPget_edgesTest.cc
 
+NB this is currently using NP::pdomain binary bin search and lookups on the CDF rather 
+than NP::interp/NP::interpHD direct readoffs from the ICDF.
+However for usage on GPU the ICDF is typically required for the GPU texture array, 
+so forming the ICDF is normally necessary.  
+
+Actually a GPU equivalent of NP::pdomain (qprop?) could also be used, but 
+the performance of that is expected to be dramatically less than texture lookups, 
+although this needs to be measured. 
+
 */
 
-template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u, double& dt ) const 
+template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u, double& dt, bool icdf_ ) const 
 {
     typedef std::chrono::high_resolution_clock::time_point TP ;
     TP t0 = std::chrono::high_resolution_clock::now() ;
 
     int ibis = find_bisIdx(BetaInverse); 
+    T en ; 
 
-    bool dump = false ;  
-    T en = s2cn->pdomain<T>(u, ibis, dump );
+    if(icdf_)
+    {
+        // *NP::interpHD* asserts with GPU ready icdf of shape (1000, 1000, 4)
+        // need to use icdf_prop of shape eg (1000, 1000, 4, 2 ) with the interleaved domain
+        // for CPU testing 
+
+        unsigned hd_factor = icdf_prop->get_meta<unsigned>("hd_factor", 0u); 
+        en = icdf_prop->interpHD<T>(u, hd_factor, ibis );
+    }
+    else
+    {
+        bool dump = false ;  
+        en = s2cn->pdomain<T>(u, ibis, dump );
+    }
+
 
     TP t1 = std::chrono::high_resolution_clock::now() ; 
     std::chrono::duration<double> t10 = t1 - t0; 
@@ -142,6 +176,8 @@ template<typename T> T QCK<T>::energy_lookup_( const T BetaInverse, const T u, d
 
     return en  ; 
 }
+
+
 
 /**
 QCK::energy_range_s2cn
@@ -246,7 +282,7 @@ template<typename T> T QCK<T>::energy_sample_( const T emin, const T emax, const
 }
 
 
-template<typename T> NP* QCK<T>::energy_lookup( const T BetaInverse, const NP* uu, NP* tt ) const 
+template<typename T> NP* QCK<T>::energy_lookup( const T BetaInverse, const NP* uu, NP* tt, bool icdf_ ) const 
 {
     unsigned ndim = uu->shape.size() ; 
     assert( ndim == 1 ); 
@@ -263,9 +299,12 @@ template<typename T> NP* QCK<T>::energy_lookup( const T BetaInverse, const NP* u
 
     for(unsigned i=0 ; i < ni ; i++) 
     {
-        en_v[i] = energy_lookup_( BetaInverse, uu_v[i],  dt ) ; 
+        en_v[i] = energy_lookup_( BetaInverse, uu_v[i],  dt, icdf_ ) ; 
         if(tt_v) tt_v[i] = dt ; 
     }
+
+    en->set_meta<std::string>("qck_lfold", lfold ); 
+
     return en ; 
 }
 
@@ -313,6 +352,8 @@ template<typename T> NP* QCK<T>::energy_sample( const T BetaInverse, const std::
     }
 
     LOG(info) << " count_max " << count_max ; 
+    en->set_meta<std::string>("qck_lfold", lfold ); 
+
     return en ; 
 }
 

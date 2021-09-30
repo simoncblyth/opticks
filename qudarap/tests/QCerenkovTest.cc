@@ -140,9 +140,9 @@ void test_getS2Integral_SplitBin( const QCerenkov& ck, const char* bis_, unsigne
 }
 
 
-void test_makeICDF_UpperCut(const QCerenkov& ck, unsigned ny, unsigned nx )
+void test_makeICDF_UpperCut(const QCerenkov& ck, unsigned ny, unsigned nx, bool dump )
 {
-    QCK<double> icdf = ck.makeICDF_UpperCut<double>( ny, nx ); 
+    QCK<double> icdf = ck.makeICDF_UpperCut<double>( ny, nx, dump ); 
 
     LOG(info)
         << std::endl  
@@ -218,13 +218,14 @@ int main(int argc, char** argv)
     {
         unsigned ny = 2000u ; 
         unsigned nx = 2000u ; 
-        test_makeICDF_UpperCut(ck, ny, nx ); 
+        bool dump = true ; 
+        test_makeICDF_UpperCut(ck, ny, nx, dump ); 
     }
     else if ( t == 'S' )
     {
         unsigned ny = 1000u ; 
         unsigned mul = 100u ; 
-        bool dump = false ; 
+        bool dump = true ; 
         test_makeICDF_SplitBin(ck, ny, mul, dump ); 
     }
 

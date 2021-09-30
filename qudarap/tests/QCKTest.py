@@ -34,26 +34,6 @@ of photons is less than 1
     array([[8.45 , 1.113, 1.746],
            [8.448, 1.1  , 1.746],
            [8.446, 1.087, 1.747],
-           [8.444, 1.075, 1.747],
-           [8.443, 1.062, 1.747],
-           [8.441, 1.05 , 1.748],
-           [8.439, 1.037, 1.748],
-           [8.437, 1.025, 1.749],
-           [8.435, 1.012, 1.749],
-           [8.433, 1.   , 1.749],
-           [8.431, 0.988, 1.75 ],
-           [8.429, 0.976, 1.75 ],
-           [8.427, 0.963, 1.751],
-           [8.425, 0.951, 1.751],
-           [8.423, 0.939, 1.751],
-           [8.421, 0.927, 1.752],
-           [8.419, 0.915, 1.752],
-           [8.417, 0.903, 1.753],
-           [8.415, 0.891, 1.753],
-           [8.413, 0.879, 1.753]])
-
-
-
 
 
 See also::
@@ -73,8 +53,13 @@ log = logging.getLogger(__name__)
 
 class QCKTest(object):
     FOLD = os.path.expandvars("/tmp/$USER/opticks/QCerenkovTest") 
-    def __init__(self):
-        base_path = os.path.join(self.FOLD, "test_makeICDF")
+
+    def __init__(self, approach="UpperCut", use_icdf=False):
+        assert approach in ["UpperCut", "SplitBin"] 
+        self.approach = approach
+        self.use_icdf = use_icdf
+
+        base_path = os.path.join(self.FOLD, "test_makeICDF_%s" % approach)
         if not os.path.exists(base_path):
             log.fatal("base_path %s does not exist" % base_path)
             return 
@@ -88,7 +73,16 @@ class QCKTest(object):
             print( " t.%5s  %s " % (stem, str(a.shape))) 
             setattr(self, stem, a )
         pass
+        sample_base = os.path.join(base_path, "QCKTest")
+        self.sample_base = sample_base
     pass
+
+    def bislist(self):
+        names = sorted(os.listdir(os.path.expandvars(self.sample_base)))
+        names = filter(lambda n:not n.startswith("bis"), names)
+        print(names)
+        bis = list(map(float, names))
+        return bis
 
     def s2cn_plot(self, istep):
         """
@@ -160,26 +154,20 @@ class QCKTest(object):
         ax.legend()
         fig.show() 
 
-
-    BASE = "$TMP/QCKTest"
-
-    def bislist(self):
-        names = sorted(os.listdir(os.path.expandvars(self.BASE)))
-        names = filter(lambda n:not n.startswith("bis"), names)
-        print(names)
-        bis = list(map(float, names))
-        return bis
-
     def en_load(self, bi):
-        base = os.path.expandvars("%s/%6.4f" % (self.BASE, bi) )
-        log.info("load from %s " % base)
-        el = np.load(os.path.join(base,"test_energy_lookup_many.npy"))
-        es = np.load(os.path.join(base,"test_energy_sample_many.npy"))
+        bi_base = os.path.expandvars("%s/%6.4f" % (self.sample_base, bi) )
 
-        tl = np.load(os.path.join(base,"test_energy_lookup_many_tt.npy"))
-        ts = np.load(os.path.join(base,"test_energy_sample_many_tt.npy"))
+        use_icdf = self.use_icdf 
+        ext = ["s2cn","icdf"][int(use_icdf)] ; 
+        log.info("load from bi_base %s ext %s " % (bi_base, ext))
 
-        self.base = base
+        el = np.load(os.path.join(bi_base,"test_energy_lookup_many_%s.npy" % ext ))
+        es = np.load(os.path.join(bi_base,"test_energy_sample_many.npy"))
+
+        tl = np.load(os.path.join(bi_base,"test_energy_lookup_many_tt.npy"))
+        ts = np.load(os.path.join(bi_base,"test_energy_sample_many_tt.npy"))
+
+        self.bi_base = bi_base
         self.el = el
         self.es = es
         self.tl = tl
@@ -194,17 +182,43 @@ class QCKTest(object):
         pass
 
     def en_compare(self, bi, num_edges=101): 
-
+        """
+        Compare the energy samples created by QCKTest for a single BetaInverse
+        """
         ri = self.rindex
         el = self.el
         es = self.es
         s2cn = self.s2cn
+        avph = self.avph
         s2c  = self.s2c
 
         ibi = self.getBetaInverseIndex(bi)
-        emn = s2cn[ibi, 0,0] 
-        emx = s2cn[ibi,-1,0] 
-        avgph = s2c[ibi,-1,2] 
+
+        approach = self.approach
+        if approach == "UpperCut":  # see QCerenkov::getS2Integral_UpperCut
+            en_slot = 0  
+            s2_slot = 1
+            cdf_slot = 2
+            emn = s2cn[ibi, 0,en_slot] 
+            emx = s2cn[ibi,-1,en_slot] 
+            avp = s2c[ibi, -1,cdf_slot] 
+        elif approach == "SplitBin":  # see QCerenkov::getS2Integral_SplitBin
+            en_slot = 0   # en_b
+            s2_slot = 5   # s2_b 
+            cdf_slot = 7  # s2integral
+            emn = avph[ibi, 1]
+            emx = avph[ibi, 2]
+            avp = avph[ibi, 3]
+        else:
+            assert 0, "unknown approach %s " % approach
+        pass 
+
+        self.en_slot = en_slot
+        self.s2_slot = s2_slot
+        self.cdf_slot = cdf_slot
+        self.emn = emn
+        self.emx = emx 
+        self.avp = avp 
 
         edom = emx - emn 
         edif = edom/(num_edges-1)
@@ -241,7 +255,7 @@ class QCKTest(object):
         print("c2n", c2n)
         print("c2c", c2c)
 
-        qq = "hl hs c2 c2label c2n c2c c2riscale c2hscale hmax edges c2max c2poppy cf bi ibi avgph"
+        qq = "hl hs c2 c2label c2n c2c c2riscale c2hscale hmax edges c2max c2poppy cf bi ibi"
         for q in qq.split():
             globals()[q] = locals()[q]
             setattr(self, q, locals()[q] )
@@ -251,9 +265,9 @@ class QCKTest(object):
         print("np.c_[t.c2, t.hs[0], t.hl[0]][t.c2 > 0]")
         print(np.c_[t.c2, t.hs[0], t.hl[0]][t.c2 > 0] )
 
-        return [bi, c2sum, ndf, c2p, emn, emx, avgph ] 
+        return [bi, c2sum, ndf, c2p, emn, emx, avp ] 
 
-    LABELS = "bi c2sum ndf c2p emn emx avgph".split()   
+    LABELS = "bi c2sum ndf c2p emn emx avp".split()   
 
     def en_plot(self, c2overlay=0., c2poppy_=True):
         """
@@ -275,23 +289,26 @@ class QCKTest(object):
         hl = self.hl 
         hs = self.hs 
         edges = self.edges
+        en_slot = self.en_slot
+        s2_slot = self.s2_slot
+        cdf_slot = self.cdf_slot
+
+        emn = self.emn
+        emx = self.emx
+        avp = self.avp
+
 
         icdf_shape = str(s2cn.shape)
 
-
-
-        title_ = ["QCKTest.py : en_plot : lookup cf sampled : icdf_shape %s : %s " % ( icdf_shape, self.base ), 
+        title_ = ["QCKTest.py : en_plot : lookup cf sampled : icdf_shape %s : %s " % ( icdf_shape, self.bi_base ), 
                   "%s : %s " % ( self.c2label, self.cf), 
-                  " avgph %6.2f " % avgph
+                  "approach:%s use_icdf:%s avp %6.2f " % (self.approach, self.use_icdf, avp )
                  ]
  
         title = "\n".join(title_)
         print(title)
         fig, ax = plt.subplots(figsize=[12.8, 7.2])
         fig.suptitle(title)
-
-        #ax.scatter( hl[1][:-1], hl[0], label="lookup" )
-        #ax.scatter( hs[1][:-1], hs[0], label="sample" )
 
         ax.plot( edges[:-1], hl[0], drawstyle="steps-post", label="lookup" )
         ax.plot( edges[:-1], hs[0], drawstyle="steps-post", label="sampled" )
@@ -300,28 +317,31 @@ class QCKTest(object):
             ax.plot( edges[:-1], c2*c2hscale*c2overlay , label="c2", drawstyle="steps-post" )
         pass    
 
+        ylim = ax.get_ylim()
+        xlim = ax.get_xlim()
 
-        s2max = s2cn[ibi,:,1].max() 
+        s2max = s2cn[ibi,:,s2_slot].max() 
+        ax.plot( s2cn[ibi,:,en_slot], s2cn[ibi,:,s2_slot]*hmax/s2max , label="s2cn[%d,:,%d]*hmax/s2max (s2)" % (ibi,s2_slot) )
+        ax.plot( s2cn[ibi,:,en_slot], s2cn[ibi,:,cdf_slot]*hmax ,       label="s2cn[%d,:,%d]*hmax      (cdf)" % (ibi, cdf_slot) )
 
-        ax.plot( s2cn[ibi,:,0], s2cn[ibi,:,1]*hmax/s2max , label="s2cn[%d,:,1]*hmax/s2max (s2)" % ibi )
-        ax.plot( s2cn[ibi,:,0], s2cn[ibi,:,2]*hmax , label="s2cn[%d,:,2]*hmax (cdf)" % ibi )
-
-        ylim = ax.get_ylim() 
-        emn = s2cn[ibi, 0,0] 
-        emx = s2cn[ibi,-1,0] 
+        ax.set_xlim(xlim) 
+        ax.set_ylim(ylim) 
 
         ax.plot( [emx, emx], ylim, linestyle="dotted" )
         ax.plot( [emn, emn], ylim, linestyle="dotted" )
 
         if c2poppy_:
             for i in c2poppy:
-                ax.plot( [edges[i], edges[i]], ylim , label="c2poppy edge %d " % i, linestyle="dotted" )
+                ax.plot( [edges[i], edges[i]], ylim ,     label="c2poppy edge   %d " % i    , linestyle="dotted" )
                 ax.plot( [edges[i+1], edges[i+1]], ylim , label="c2poppy edge+1 %d " % (i+1), linestyle="dotted" )
             pass
         pass
 
         ax.legend()
         fig.show() 
+        figpath = os.path.join(self.bi_base, "en_plot.png")
+        log.info("savefig %s " % figpath)
+        fig.savefig(figpath)
 
     def compare(t, bis):
         res = np.zeros( (len(bis), len(t.LABELS)) )
@@ -334,19 +354,29 @@ class QCKTest(object):
         t.res = res
 
     def __str__(self):
+        title = "%s use_icdf:%s" % ( self.sample_base, self.use_icdf )
+        underline = "=" * len(title)
         rst = RSTTable.Rdr(self.res, self.LABELS )
-        return rst 
+        return "\n".join(["", title, underline, "", rst]) 
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    t = QCKTest()
-    #t.s2cn_plot(istep=20)
 
+    approach = "UpperCut"
+    #approach = "SplitBin"
+    use_icdf = False 
+
+    t = QCKTest(approach=approach, use_icdf=use_icdf)
+    #t.s2cn_plot(istep=20)
     bis = t.bislist()
+
     #bis = bis[-2:-1]
     #bis = [1.45,]
+    #bis = [1.6,]
 
     t.compare(bis)
     print(t)
+
+
 

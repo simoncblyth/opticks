@@ -978,7 +978,7 @@ nx
 **/
 
 template <typename T>
-QCK<T> QCerenkov::makeICDF_UpperCut( unsigned ny, unsigned nx) const 
+QCK<T> QCerenkov::makeICDF_UpperCut( unsigned ny, unsigned nx, bool dump) const 
 {
     NP* bis = NP::Linspace<T>( 1. , rmx,  ny ) ;  
     NP* avph = getAverageNumberOfPhotons_s2<T>(bis ); 
@@ -986,28 +986,33 @@ QCK<T> QCerenkov::makeICDF_UpperCut( unsigned ny, unsigned nx) const
     NP* s2cn = s2c->copy(); 
     s2cn->divide_by_last<T>(); 
 
-    QCK<T> icdf ; 
+    unsigned nu = 1000 ; 
+    unsigned hd_factor = 10 ;
+ 
+    NP* icdf = NP::MakeICDF<T>(s2cn, nu, hd_factor, dump); 
+    icdf->set_meta<std::string>("creator", "QCerenkov::makeICDF_UpperCut") ;  
+    icdf->set_meta<unsigned>("hd_factor", hd_factor );
 
-    icdf.rindex = dsrc ; 
-    icdf.bis = bis ;  
-    icdf.avph = avph ; 
-    icdf.s2c = s2c ;
-    icdf.s2cn = s2cn ; 
+    NP* icdf_prop = NP::MakeProperty<T>( icdf, hd_factor ) ;
+    icdf_prop->set_meta<std::string>("creator", "QCerenkov::makeICDF_UpperCut") ;  
+    icdf_prop->set_meta<unsigned>("hd_factor", hd_factor );
 
-    return icdf ; 
+
+    QCK<T> qck ; 
+
+    qck.rindex = dsrc ; 
+    qck.bis = bis ;  
+    qck.avph = avph ; 
+    qck.s2c = s2c ;
+    qck.s2cn = s2cn ; 
+    qck.icdf = icdf ; 
+    qck.icdf_prop = icdf_prop ; 
+
+    return qck ; 
 }
-template QCK<double> QCerenkov::makeICDF_UpperCut<double>( unsigned , unsigned ) const ; 
-template QCK<float>  QCerenkov::makeICDF_UpperCut<float>(  unsigned , unsigned ) const ; 
+template QCK<double> QCerenkov::makeICDF_UpperCut<double>( unsigned , unsigned, bool ) const ; 
+template QCK<float>  QCerenkov::makeICDF_UpperCut<float>(  unsigned , unsigned, bool ) const ; 
 
-
-/*
-
-template <typename T>
-NP* QCerenkov::createICDF( const NP* s2cn )
-{
-}
-
-*/
 
 
 
@@ -1024,15 +1029,28 @@ QCK<T> QCerenkov::makeICDF_SplitBin( unsigned ny, unsigned mul, bool dump) const
     NP* s2cn = s2c->copy(); 
     s2cn->divide_by_last<T>(); 
 
-    QCK<T> icdf ; 
+    unsigned nu = 1000 ; 
+    unsigned hd_factor = 10 ; 
+    NP* icdf = NP::MakeICDF<T>(s2cn, nu, hd_factor, dump); 
+    icdf->set_meta<std::string>("creator", "QCerenkov::makeICDF_SplitBin") ;  
+    icdf->set_meta<unsigned>("hd_factor", hd_factor );
 
-    icdf.rindex = dsrc ; 
-    icdf.bis = bis ;  
-    icdf.avph = avph ; 
-    icdf.s2c = s2c ;
-    icdf.s2cn = s2cn ; 
+    NP* icdf_prop = NP::MakeProperty<T>( icdf, hd_factor ) ;
+    icdf_prop->set_meta<std::string>("creator", "QCerenkov::makeICDF_UpperCut") ;  
+    icdf_prop->set_meta<unsigned>("hd_factor", hd_factor );
 
-    return icdf ; 
+
+    QCK<T> qck ; 
+
+    qck.rindex = dsrc ; 
+    qck.bis = bis ;  
+    qck.avph = avph ; 
+    qck.s2c = s2c ;
+    qck.s2cn = s2cn ; 
+    qck.icdf = icdf ; 
+    qck.icdf_prop = icdf_prop ; 
+
+    return qck ; 
 }
 template QCK<double> QCerenkov::makeICDF_SplitBin<double>( unsigned , unsigned, bool ) const ; 
 template QCK<float>  QCerenkov::makeICDF_SplitBin<float>(  unsigned , unsigned, bool ) const ; 

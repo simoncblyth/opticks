@@ -113,20 +113,6 @@ void QTex<T>::createArray()
     cudaCheckErrors("cudaMallocArray");
 }
 
-/*
-template<typename T>
-void QTex<T>::uploadToArray_deprecated()
-{
-    cudaArray_t dst = cuArray ;
-    size_t wOffset = 0 ;
-    size_t hOffset = 0 ;
-    size_t count = width*height*sizeof(T) ;
-    cudaMemcpyKind kind = cudaMemcpyHostToDevice ;
-    cudaMemcpyToArray(dst, wOffset, hOffset, src, count, kind );
-    cudaCheckErrors("cudaMemcpyToArray");
-}
-*/
-
 /**
 QTex::uploadToArray
 ----------------------
