@@ -1,8 +1,13 @@
+
 #include "NP.hh"
-#include "QTex.hh"
-#include "QTexMaker.hh"
+#include "SPath.hh"
 #include "OPTICKS_LOG.hh"
 
+#include "QTex.hh"
+#include "QTexMaker.hh"
+#include "QTexLookup.hh"
+
+const char* FOLD = "$TMP/QTexLookupTest" ; 
 
 NP* make_array(unsigned ni, unsigned nj, unsigned nk)
 {
@@ -26,21 +31,29 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const NP* a = make_array( 5, 10, 4 ); 
+    const NP* origin = make_array( 5, 10, 4 ); 
     char filterMode = 'P' ; 
-    unsigned hd_factor = a->get_meta<unsigned>("hd_factor"); 
+    unsigned hd_factor = origin->get_meta<unsigned>("hd_factor"); 
     assert( hd_factor > 0 ); 
 
-    QTex<float4>* tex = QTexMaker::Make2d_f4(a, filterMode ); 
+    QTex<float4>* tex = QTexMaker::Make2d_f4(origin, filterMode ); 
     assert(tex); 
 
     tex->setHDFactor(hd_factor); 
     tex->uploadMeta(); 
 
-    // TODO: lookup checks on the GPU texture, like QScint 
+    QTexLookup<float4> look(tex); 
+    NP* out = look.lookup(); 
 
+    const char* fold = SPath::Resolve(FOLD); 
+    int rc = SPath::MakeDirs(fold); 
+    assert( rc == 0); 
+
+    out->save(fold, "lookup.npy"); 
+    origin->save(fold, "origin.npy"); 
 
     return 0 ; 
 }
+
 
 

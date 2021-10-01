@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+QTexMaker
+==========
+
+This struct exists instead of an additional QTex ctor
+because of the need to create different texture types
+with different template types so a single ctor 
+would not be convenient as the signature excluding 
+the return type needs to be distinctive. 
+
+**/
 struct NP ; 
 struct float4 ; 
 template <typename T> struct QTex ;  

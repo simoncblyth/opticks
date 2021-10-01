@@ -4,6 +4,7 @@
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
 
+struct float4 ; 
 struct NP ; 
 template <typename T> struct QTex ; 
 template <typename T> struct QCK ; 
@@ -31,8 +32,6 @@ struct QUDARAP_API QCerenkov
     static const unsigned UPPERCUT_PAYLOAD_SIZE ; 
     static const unsigned SPLITBIN_PAYLOAD_SIZE ; 
 
-
-
     enum { NONE, UNCUT, CUT, SUB, FULL, PART, ERR };  
 
     static const char* NONE_ ; 
@@ -45,8 +44,8 @@ struct QUDARAP_API QCerenkov
 
     static const char* State(int state); 
 
-
     static NP* Load(const char* path_) ; 
+    static QTex<float4>* MakeTex(const NP* icdf) ; 
 
     const char*             path ; 
     NP*                     dsrc ;  // RINDEX array 
@@ -57,12 +56,13 @@ struct QUDARAP_API QCerenkov
     double                  rmx ; 
 
     NP*                     src ; 
-    QTex<float>*            tex ; 
+    QTex<float4>*           tex ; 
 
     QCerenkov(const char* path=nullptr); 
 
     void init(); 
-    void makeTex(const NP* dsrc);
+    void makeTex(const NP* icdf);
+
     std::string desc() const ; 
     template <typename T> NP* GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInverse, const T  charge ) const ; 
     template <typename T> T   GetAverageNumberOfPhotons_s2(T& emin,  T& emax, const T BetaInverse, const T  charge ) const ; 

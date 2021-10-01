@@ -35,6 +35,8 @@ set(SOURCES
     QTex.cc
     QTex.cu
     QTexMaker.cc
+    QTexLookup.cc
+    QTexLookup.cu
 
     QBnd.cc
     QBnd.cu
@@ -79,6 +81,8 @@ SET(HEADERS
 
     QTex.hh
     QTexMaker.hh
+    QTexLookup.hh
+
     QBnd.hh
     QScint.hh
     QCerenkov.hh

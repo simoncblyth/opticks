@@ -20,6 +20,7 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_
     height(height_),
     src(src_),
     filterMode(filterMode_),
+    origin(nullptr),
     rotate_dst(nullptr),
     d_rotate_dst(nullptr),
     cuArray(nullptr),
@@ -29,6 +30,17 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_
     d_meta(nullptr)
 {
     init(); 
+}
+
+template<typename T>
+void QTex<T>::setOrigin(const void* origin_) 
+{
+    origin = origin_  ; 
+}
+template<typename T>
+const void* QTex<T>::getOrigin() const  
+{
+    return origin ; 
 }
 
 template<typename T>

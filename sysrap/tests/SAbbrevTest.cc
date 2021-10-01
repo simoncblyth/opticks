@@ -28,6 +28,7 @@
 
 void test_0()
 {
+    LOG(info); 
     std::vector<std::string> ss = { 
         "Acrylic",
         "Air", 
@@ -64,6 +65,7 @@ void test_0()
 
 void test_1()
 {
+    LOG(info); 
     std::vector<std::string> ss = { 
         "Acrylic",
         "Air", 
@@ -106,7 +108,16 @@ void test_1()
 }
 
 
-
+void test_2()
+{
+    LOG(info); 
+    std::vector<std::string> ss = {
+        "PipeSteel",
+        "PipeStainlessSteel"
+    };
+    SAbbrev ab(ss);
+    ab.dump(); 
+}
 
 
 
@@ -114,8 +125,9 @@ int main(int argc, char** argv )
 {
     OPTICKS_LOG(argc, argv);
  
-    //test_0(); 
+    test_0(); 
     test_1(); 
+    test_2(); 
 
     return 0 ; 
 }

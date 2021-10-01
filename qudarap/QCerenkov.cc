@@ -1056,39 +1056,42 @@ template QCK<double> QCerenkov::makeICDF_SplitBin<double>( unsigned , unsigned, 
 template QCK<float>  QCerenkov::makeICDF_SplitBin<float>(  unsigned , unsigned, bool ) const ; 
 
 
-
-
-
-
-
-
-
-
-
-
-void QCerenkov::makeTex(const NP* src)
+QTex<float4>* QCerenkov::MakeTex(const NP* icdf) // static
 {
-    LOG(LEVEL) << desc() ; 
-
-    unsigned nx = 0 ; 
-    unsigned ny = 0 ; 
-
-
-    //tex = new QTex<float>(nx, ny, src->getValuesConst(), filterMode ) ; 
-
-    //tex->setHDFactor(HDFactor(dsrc)); 
-    //tex->uploadMeta(); 
+    unsigned ndim = icdf->shape.size(); 
+    unsigned hd_factor = icdf->get_meta<unsigned>("hd_factor", 0) ; 
+    char filterMode = 'P' ;   // 'P' for testing only 
 
     LOG(LEVEL)
-        << " src " << src->desc()
-        << " nx (width) " << nx
-        << " ny (height) " << ny
+        << "["  
+        << " icdf " << icdf->sstr()
+        << " ndim " << ndim 
+        << " hd_factor " << hd_factor 
+        << " filterMode " << filterMode 
         ;
 
+    assert( ndim == 3 && icdf->shape[ndim-1] == 4 ); 
+
+    QTex<float4>* tx = QTexMaker::Make2d_f4(icdf, filterMode ); 
+    tx->setHDFactor(hd_factor); 
+    tx->uploadMeta(); 
+
+    LOG(LEVEL) << "]" ; 
+
+    return tx ; 
 }
 
+void QCerenkov::makeTex(const NP* icdf)
+{
+    tex = MakeTex(icdf); 
+}
+
+
 extern "C" void QCerenkov_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height  ); 
-extern "C" void QCerenkov_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, float* lookup, unsigned num_lookup, unsigned width, unsigned height  ); 
+
+template <typename T>
+extern void QCerenkov_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, T* lookup, unsigned num_lookup, unsigned width, unsigned height  ); 
+
 
 void QCerenkov::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
 {
@@ -1189,6 +1192,9 @@ void QCerenkov::lookup( float* lookup, unsigned num_lookup, unsigned width, unsi
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+
 
 void QCerenkov::dump( float* lookup, unsigned num_lookup, unsigned edgeitems  )
 {

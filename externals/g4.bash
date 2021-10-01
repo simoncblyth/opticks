@@ -543,6 +543,7 @@ g4-nom(){
      1062) echo geant4.10.06.p02 ;;
      1070) echo geant4.10.07 ;;
      1072) echo geant4.10.07.p02 ;;
+     1078) echo geant4.10.07.r08 ;;    # unreleased dist for testing 
      1100) echo geant4.11.00.b01 ;;
   esac
 }
@@ -578,6 +579,7 @@ g4-url(){
         geant4.10.07)     echo http://cern.ch/geant4-data/releases/geant4.10.07.tar.gz ;;
         geant4.10.07.p02) echo https://geant4-data.web.cern.ch/releases/geant4.10.07.p02.tar.gz ;;
         geant4.11.00.b01) echo https://geant4-data.web.cern.ch/releases/geant4.11.00.b01.tar.gz ;;
+        geant4.10.7.r08)  echo https://dummy/geant4.10.7.r08.tar.gz ;;     # unreleased dummy 
    esac
 }
 
@@ -588,6 +590,7 @@ g4-title()
       1021) echo Geant4 10.2 first released 4 December 2015 \(patch-03, released 27 January 2017\) ;;
       1041) echo Geant4 10.4 patch-01, released 28 February 2018 ;; 
       1042) echo Geant4 10.4 patch-02, released 25 May 2018 ;; 
+      1078) echo Dummy version for unreleased dist from OPTICKS_DOWNLOAD_CACHE ;; 
    esac
 }
 
@@ -718,6 +721,12 @@ g4-get-info(){ cat << EOI
    g4-nom : $(g4-nom)
    g4-url : $(g4-url)
 
+   OPTICKS_DOWNLOAD_CACHE : $OPTICKS_DOWNLOAD_CACHE
+
+   As opticks-curl is used distributions present within the 
+   directory pointed to by OPTICKS_DOWNLOAD_CACHE envvar are 
+   used ahead of downloads. 
+
 EOI
 }
 
@@ -732,7 +741,7 @@ g4-get(){
 
    g4-get-info
 
-   [ ! -f "$dst" ] && echo getting $url && curl -L -O $url
+   [ ! -f "$dst" ] && echo opticks-curl getting $url && opticks-curl $url
 
    if [ "${dst/.zip}" != "${dst}" ]; then
         [ ! -d "$nam" ] && unzip $dst

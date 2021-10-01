@@ -22,6 +22,8 @@ QTex<float4>* QTexMaker::Make2d_f4( const NP* a, char filterMode )  // static
     // is a more appropriate ordering than the usual contrary convention  
     
     QTex<float4>* tex = new QTex<float4>( width, height, src, filterMode  );
+    tex->setOrigin(a); 
+
     return tex ; 
 }
 

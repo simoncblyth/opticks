@@ -615,7 +615,7 @@ int main(int argc, char** argv)
    //test_CreateDir();
    //test_ParentDir();
    //test_FormPath();
-   //test_Name_ParentDir();
+   test_Name_ParentDir();
    //test_ChangeExt();
 
    //test_FormPath_reldir();
@@ -654,7 +654,7 @@ int main(int argc, char** argv)
 
    //test_UserTmpPath();  
    //test_expandvar();  
-   test_FormPath_nulldir();  
+   //test_FormPath_nulldir();  
 
    return 0 ; 
 }

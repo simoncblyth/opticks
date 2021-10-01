@@ -1708,6 +1708,19 @@ opticks-git-clone(){
 }
 
 
+opticks-curl-notes(){ cat << EON
+
+*opticks-curl url*
+    when OPTICKS_DOWNLOAD_CACHE envvar is defined and OPTICKS_DOWNLOAD_CACHE/dist
+    exists where dist is the basename obtained from the url then the dist is 
+    copied to the pwd instead of being curled there 
+
+    Precision account O "blyth" defines in .bashrc the OPTICKS_DOWNLOAD_CACHE as /data/opticks_download_cache
+
+EON
+}
+
+
 opticks-curl(){
    local msg="=== $FUNCNAME :"
    local dir=$PWD

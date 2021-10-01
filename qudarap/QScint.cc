@@ -154,9 +154,8 @@ NP* QScint::lookup()
         ;
 
     NP* out = NP::Make<float>(height, width ); 
-
-    float* out_ = out->values<float>(); 
-    lookup( out_ , num_lookup, width, height ); 
+    float* out_v = out->values<float>(); 
+    lookup( out_v , num_lookup, width, height ); 
 
     return out ; 
 }
