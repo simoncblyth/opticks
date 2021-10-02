@@ -399,3 +399,95 @@ epsilon:opticks blyth$
     134 }
 
 
+
+
+1042::
+
+    153 G4int G4MaterialPropertiesTable::GetConstPropertyIndex(const G4String& key,
+    154                                                        G4bool warning) const
+    155 {
+    156   // Returns the constant material property index corresponding to a key
+    157 
+    158   size_t index = std::distance(G4MaterialConstPropertyName.begin(),
+    159                      std::find(G4MaterialConstPropertyName.begin(),
+    160                                      G4MaterialConstPropertyName.end(), key));
+    161   if(index < G4MaterialConstPropertyName.size()) return index;
+    162   if (warning) {
+    163     G4ExceptionDescription ed;
+    164     ed << "Constant Material Property Index for key " << key << " not found.";
+    165     G4Exception("G4MaterialPropertiesTable::GetConstPropertyIndex()","mat206",
+    166                 JustWarning, ed);
+    167   }
+    168   return -1;
+    169 }
+
+
+91072::
+
+    171 G4int G4MaterialPropertiesTable::GetConstPropertyIndex(const G4String& key,
+    172                                                        G4bool warning) const
+    173 {
+    174   // Returns the constant material property index corresponding to a key
+    175 
+    176   size_t index = std::distance(
+    177     fMatConstPropNames.begin(),
+    178     std::find(fMatConstPropNames.begin(), fMatConstPropNames.end(), key));
+    179   if(index < fMatConstPropNames.size())
+    180     return index;
+    181   if(warning)
+    182   {
+    183     G4ExceptionDescription ed;
+    184     ed << "Constant Material Property Index for key " << key << " not found.";
+    185     G4Exception("G4MaterialPropertiesTable::GetConstPropertyIndex()", "mat200",
+    186                 JustWarning, ed);
+    187   }
+    188   return -1;
+    189 }
+
+
+
+
+Old behavior::
+
+
+    epsilon:extg4 blyth$ X4MaterialPropertiesTable=INFO X4MaterialTest 
+    PLOG::EnvLevel adjusting loglevel by envvar   key X4MaterialPropertiesTable level INFO fallback DEBUG
+    2021-10-02 20:00:16.598 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@71]  MaterialPropertyNames pns.size 23
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                         RINDEX pidx :     0 pvec :   0x7fab99d1c830
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                   REFLECTIVITY pidx :     1 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                     REALRINDEX pidx :     2 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                IMAGINARYRINDEX pidx :     3 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                     EFFICIENCY pidx :     4 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                  TRANSMITTANCE pidx :     5 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :           SPECULARLOBECONSTANT pidx :     6 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :          SPECULARSPIKECONSTANT pidx :     7 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :            BACKSCATTERCONSTANT pidx :     8 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                       GROUPVEL pidx :     9 pvec :   0x7fab99d1ce00
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                          MIEHG pidx :    10 pvec :   0x7fab99d1da60
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                       RAYLEIGH pidx :    11 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                   WLSCOMPONENT pidx :    12 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                   WLSABSLENGTH pidx :    13 pvec :              0x0
+    2021-10-02 20:00:16.599 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                      ABSLENGTH pidx :    14 pvec :   0x7fab99d1ce90
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                  FASTCOMPONENT pidx :    15 pvec :   0x7fab99d1d480
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :                  SLOWCOMPONENT pidx :    16 pvec :   0x7fab99d1d710
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :       PROTONSCINTILLATIONYIELD pidx :    17 pvec :              0x0
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :     DEUTERONSCINTILLATIONYIELD pidx :    18 pvec :              0x0
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :       TRITONSCINTILLATIONYIELD pidx :    19 pvec :              0x0
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :        ALPHASCINTILLATIONYIELD pidx :    20 pvec :              0x0
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :          IONSCINTILLATIONYIELD pidx :    21 pvec :              0x0
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@82]  pname :     ELECTRONSCINTILLATIONYIELD pidx :    22 pvec :              0x0
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@135]  pns 23 pns_null 17
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@161]  pname :                  MIEHG_FORWARD pidx :     5 pval :             0.99
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@161]  pname :                 MIEHG_BACKWARD pidx :     6 pval :             0.99
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@161]  pname :            MIEHG_FORWARD_RATIO pidx :     7 pval :              0.8
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@161]  pname :             SCINTILLATIONYIELD pidx :     8 pval :               50
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@161]  pname :                RESOLUTIONSCALE pidx :     9 pval :                1
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@161]  pname :               FASTTIMECONSTANT pidx :    10 pval :                1
+    2021-10-02 20:00:16.600 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@161]  pname :               SLOWTIMECONSTANT pidx :    12 pval :               10
+    2021-10-02 20:00:16.601 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@161]  pname :                     YIELDRATIO pidx :    14 pval :              0.8
+    2021-10-02 20:00:16.601 INFO  [14291299] [X4MaterialPropertiesTable::AddProperties@173]  cpns 33 cpns_null 25
+    GMaterial::Summary material 1 a07b91ac42b48c542fcb22267597ef6b Water
+    RINDEX : e5f2b7a6407555de81972d7bee759738 : 761 
+
+
+

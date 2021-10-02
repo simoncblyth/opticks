@@ -68,7 +68,8 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
     G4bool warning ; 
 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
-
+    LOG(LEVEL) << " MaterialPropertyNames pns.size " << pns.size() ; 
+        
     GDomain<double>* dom = GDomain<double>::GetDefaultDomain(); 
     unsigned pns_null = 0 ; 
 
@@ -139,6 +140,8 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
 
     std::vector<G4String> cpns = mpt->GetMaterialConstPropertyNames() ;
 
+
+
     unsigned cpns_null = 0 ; 
 
     for( unsigned i=0 ; i < cpns.size() ; i++)
@@ -150,10 +153,11 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
             cpns_null += 1 ; 
             continue ; 
         } 
- 
-        G4int pidx = mpt->GetConstPropertyIndex(pname, warning=true); 
-        assert( pidx > -1 );  
-        G4double pval = mpt->GetConstProperty(pidx);  
+
+        bool warning = false ;  
+        G4int pidx = mpt->GetConstPropertyIndex(pname, warning); 
+        //assert( pidx > -1 );  // comment assert to investigate behavior change with 91702(aka 1100)
+        G4double pval = pidx > -1 ? mpt->GetConstProperty(pidx) : -1. ;  
 
         LOG(LEVEL)
             << " pname : " 
