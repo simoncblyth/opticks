@@ -7,6 +7,7 @@
 struct float4 ; 
 struct NP ; 
 template <typename T> struct QTex ; 
+template <typename T> struct QTexLookup ; 
 template <typename T> struct QCK ; 
 struct dim3 ; 
 
@@ -45,7 +46,7 @@ struct QUDARAP_API QCerenkov
     static const char* State(int state); 
 
     static NP* Load(const char* path_) ; 
-    static QTex<float4>* MakeTex(const NP* icdf) ; 
+    static QTex<float4>* MakeTex(const NP* icdf, char filterMode) ; 
 
     const char*             path ; 
     NP*                     dsrc ;  // RINDEX array 
@@ -56,12 +57,17 @@ struct QUDARAP_API QCerenkov
     double                  rmx ; 
 
     NP*                     src ; 
+
+    const NP*               icdf ;   
     QTex<float4>*           tex ; 
+    QTexLookup<float4>*     look ; 
 
     QCerenkov(const char* path=nullptr); 
-
     void init(); 
-    void makeTex(const NP* icdf);
+    void setICDF(const NP* icdf); 
+
+
+
 
     std::string desc() const ; 
     template <typename T> NP* GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T BetaInverse, const T  charge ) const ; 
@@ -91,7 +97,6 @@ struct QUDARAP_API QCerenkov
 
     void check();
     NP* lookup();
-    void lookup( float* lookup, unsigned num_lookup, unsigned width, unsigned height ); 
     void dump(   float* lookup, unsigned num_lookup, unsigned edgeitems=10 ); 
 
 };

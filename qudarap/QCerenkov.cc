@@ -12,6 +12,8 @@
 #include "QRng.hh"
 #include "QCerenkov.hh"
 #include "QTex.hh"
+#include "QTexMaker.hh"
+#include "QTexLookup.hh"
 
 #include "QCK.hh"
 
@@ -48,11 +50,36 @@ QCerenkov::QCerenkov(const char* path_ )
     rmn(0.),
     rmx(0.),
     src(dsrc->ebyte == 4 ? dsrc : NP::MakeNarrow(dsrc)),
-    tex(nullptr)
+    icdf(nullptr),
+    tex(nullptr),
+    look(nullptr)
 {
     INSTANCE = this ; 
     init(); 
 }
+
+
+void QCerenkov::setICDF(const NP* icdf_ )
+{
+    icdf = icdf_->ebyte == 4 ? icdf_ : NP::MakeNarrow(icdf_) ; 
+
+    char filterMode = 'P' ; 
+    tex = MakeTex(icdf, filterMode ); 
+    look = new QTexLookup<float4>( tex ); 
+}
+
+
+
+NP* QCerenkov::lookup() 
+{
+    if(look == nullptr)
+    {
+        LOG(fatal) << " must QCerenkov::setTex before QCerenkov::lookup " ; 
+        return nullptr ;   
+    }
+    return look->lookup(); 
+}
+
 
 
 void QCerenkov::init()
@@ -68,7 +95,8 @@ void QCerenkov::init()
         << " rmx " << std::setw(10) << std::fixed << std::setprecision(4) << rmx 
         ;
 
-    makeTex(src) ;   
+    // cannot makeTex here as the icdf is not yet formed 
+    // it takes a lot of integrals and CDF inversion to form it 
 }
 
 std::string QCerenkov::desc() const
@@ -551,19 +579,20 @@ template float  QCerenkov::getS2Integral_WithCut( float&,  float&,  float, float
 
 
 /**
-QCerenkov::getS2Integral_splitbin
+QCerenkov::getS2Integral_SplitBin
 -------------------------------------
 
 Returns *s2c* array of shape (s2_edges, PAYLOAD_SIZE(=8)) 
 with the last payload entry being s2integral.
 
 The s2 value of evaluated at en_cut and s2integral 
-is the cululative integral up to en_cut.  The first 
+is the cumulative integral up to en_cut.  The first 
 value of s2integral is zero. 
 
 * this approach leads to lots of zero bins because of the fixed full energy range 
 * would be simple to restrict to big bins with contributions allowing mul to be increased at the same cost 
   by greatly reducing zeros
+
 
 Why smaller sub-bins are needed ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -817,7 +846,7 @@ QCerenkov::getS2Integral_UpperCut
 
 Returns array of shape (nx, 2) with energies and 
 cululative integrals up to those energies. 
-Note that the energy range isadapted to correspond to the
+Note that the energy range is adapted to correspond to the
 permissable range of Cerenkov for the BetaInverse to 
 make best use of the available bins. 
 
@@ -1008,6 +1037,8 @@ QCK<T> QCerenkov::makeICDF_UpperCut( unsigned ny, unsigned nx, bool dump) const
     qck.icdf = icdf ; 
     qck.icdf_prop = icdf_prop ; 
 
+    setICDF(icdf); 
+
     return qck ; 
 }
 template QCK<double> QCerenkov::makeICDF_UpperCut<double>( unsigned , unsigned, bool ) const ; 
@@ -1050,17 +1081,20 @@ QCK<T> QCerenkov::makeICDF_SplitBin( unsigned ny, unsigned mul, bool dump) const
     qck.icdf = icdf ; 
     qck.icdf_prop = icdf_prop ; 
 
+    setICDF(icdf); 
+
     return qck ; 
 }
 template QCK<double> QCerenkov::makeICDF_SplitBin<double>( unsigned , unsigned, bool ) const ; 
 template QCK<float>  QCerenkov::makeICDF_SplitBin<float>(  unsigned , unsigned, bool ) const ; 
 
 
-QTex<float4>* QCerenkov::MakeTex(const NP* icdf) // static
+QTex<float4>* QCerenkov::MakeTex(const NP* icdf, char filterMode ) // static
 {
     unsigned ndim = icdf->shape.size(); 
     unsigned hd_factor = icdf->get_meta<unsigned>("hd_factor", 0) ; 
-    char filterMode = 'P' ;   // 'P' for testing only 
+
+    if( filterMode == 'P' ) LOG(fatal) << " filtermode 'P' without interpolation is in use : appropriate for basic tex machinery tests only " ; 
 
     LOG(LEVEL)
         << "["  
@@ -1079,11 +1113,6 @@ QTex<float4>* QCerenkov::MakeTex(const NP* icdf) // static
     LOG(LEVEL) << "]" ; 
 
     return tx ; 
-}
-
-void QCerenkov::makeTex(const NP* icdf)
-{
-    tex = MakeTex(icdf); 
 }
 
 
@@ -1139,61 +1168,6 @@ void QCerenkov::check()
 
     cudaDeviceSynchronize();
 }
-
-
-NP* QCerenkov::lookup()
-{
-    unsigned width = tex->width ; 
-    unsigned height = tex->height ; 
-    unsigned num_lookup = width*height ; 
-
-    LOG(LEVEL)
-        << " width " << width
-        << " height " << height
-        << " lookup " << num_lookup
-        ;
-
-    NP* out = NP::Make<float>(height, width ); 
-
-    float* out_ = out->values<float>(); 
-    lookup( out_ , num_lookup, width, height ); 
-
-    return out ; 
-}
-
-void QCerenkov::lookup( float* lookup, unsigned num_lookup, unsigned width, unsigned height  )
-{
-    LOG(LEVEL) << "[" ; 
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    configureLaunch( numBlocks, threadsPerBlock, width, height ); 
-    
-    size_t size = width*height*sizeof(float) ; 
-  
-    LOG(LEVEL) 
-        << " num_lookup " << num_lookup
-        << " width " << width 
-        << " height " << height
-        << " size " << size 
-        << " tex->texObj " << tex->texObj
-        << " tex->meta " << tex->meta
-        << " tex->d_meta " << tex->d_meta
-        ; 
-
-    float* d_lookup = nullptr ;  
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_lookup ), size )); 
-
-    QCerenkov_lookup(numBlocks, threadsPerBlock, tex->texObj, tex->d_meta, d_lookup, num_lookup, width, height );  
-
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( lookup ), d_lookup, size, cudaMemcpyDeviceToHost )); 
-    QUDA_CHECK( cudaFree(d_lookup) ); 
-
-    cudaDeviceSynchronize();
-
-    LOG(LEVEL) << "]" ; 
-}
-
-
 
 
 void QCerenkov::dump( float* lookup, unsigned num_lookup, unsigned edgeitems  )

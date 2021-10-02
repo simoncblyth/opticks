@@ -15,11 +15,30 @@ const plog::Severity QTexLookup<T>::LEVEL = PLOG::EnvLevel("QTexLookup", "DEBUG"
  
 
 template<typename T>
+NP* QTexLookup<T>::Look( const QTex<T>* tex_ )  // static 
+{
+    QTexLookup<T> look(tex_) ; 
+    return look.lookup(); 
+}
+
+
+template<typename T>
 QTexLookup<T>::QTexLookup( const QTex<T>* tex_ )
     :
     tex(tex_)
 {
 }
+
+/**
+QTexLookup::lookup
+--------------------
+
+First tried using float4 and float template specialization for this but gave linker errors. 
+Instead kludged *is_float4* from the size of the template type. 
+
+This needs a revisit if wish to get this working with uchar "image" textures.
+
+**/
 
 template<typename T> NP* QTexLookup<T>::lookup()
 {
@@ -37,7 +56,6 @@ template<typename T> NP* QTexLookup<T>::lookup()
     return out ; 
 }
 
-// tried using float4 and float template specialization for this but getting linker errors 
 
 
 template <typename T>

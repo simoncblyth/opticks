@@ -16,6 +16,8 @@ void test_check(QCerenkov& ck)
 void test_lookup(QCerenkov& ck)
 {
     NP* dst = ck.lookup(); 
+    if( dst == nullptr ) return ; 
+
     const char* fold = "$TMP/QCerenkovTest" ; 
     LOG(info) << " save to " << fold ; 
     dst->save(fold, "dst.npy"); 
@@ -142,44 +144,44 @@ void test_getS2Integral_SplitBin( const QCerenkov& ck, const char* bis_, unsigne
 
 void test_makeICDF_UpperCut(const QCerenkov& ck, unsigned ny, unsigned nx, bool dump )
 {
-    QCK<double> icdf = ck.makeICDF_UpperCut<double>( ny, nx, dump ); 
+    QCK<double> qck = ck.makeICDF_UpperCut<double>( ny, nx, dump ); 
 
     LOG(info)
         << std::endl  
-        << " icdf.bis  " << icdf.bis->desc()
+        << " qck.bis  " << qck.bis->desc()
         << std::endl  
-        << " icdf.s2c  " << icdf.s2c->desc() 
+        << " qck.s2c  " << qck.s2c->desc() 
         << std::endl  
-        << " icdf.s2cn " << icdf.s2cn->desc()
+        << " qck.s2cn " << qck.s2cn->desc()
         << std::endl  
         ;
 
-    const char* icdf_path = SPath::Resolve("$TMP/QCerenkovTest/test_makeICDF_UpperCut"); 
-    int rc = SPath::MakeDirs(icdf_path);   
+    const char* qck_path = SPath::Resolve("$TMP/QCerenkovTest/test_makeICDF_UpperCut"); 
+    int rc = SPath::MakeDirs(qck_path);   
     assert( rc == 0 ); 
-    icdf.save(icdf_path); 
+    qck.save(qck_path); 
 }
 
 
 
 void test_makeICDF_SplitBin(const QCerenkov& ck, unsigned ny, unsigned mul, bool dump )
 {
-    QCK<double> icdf = ck.makeICDF_SplitBin<double>( ny, mul, dump ); 
+    QCK<double> qck = ck.makeICDF_SplitBin<double>( ny, mul, dump ); 
 
     LOG(info)
         << std::endl  
-        << " icdf.bis  " << icdf.bis->desc()
+        << " qck.bis  " << qck.bis->desc()
         << std::endl  
-        << " icdf.s2c  " << icdf.s2c->desc() 
+        << " qck.s2c  " << qck.s2c->desc() 
         << std::endl  
-        << " icdf.s2cn " << icdf.s2cn->desc()
+        << " qck.s2cn " << qck.s2cn->desc()
         << std::endl  
         ;
 
-    const char* icdf_path = SPath::Resolve("$TMP/QCerenkovTest/test_makeICDF_SplitBin"); 
-    int rc = SPath::MakeDirs(icdf_path);   
+    const char* qck_path = SPath::Resolve("$TMP/QCerenkovTest/test_makeICDF_SplitBin"); 
+    int rc = SPath::MakeDirs(qck_path);   
     assert( rc == 0 ); 
-    icdf.save(icdf_path); 
+    qck.save(qck_path); 
 }
 
 
@@ -200,7 +202,10 @@ int main(int argc, char** argv)
     if( t == 'L' )
     {
         test_lookup(ck); 
-        //test_check(ck); 
+    }
+    else if( t == 'C' )
+    {
+        test_check(ck); 
     }
     else if( t == 'N' )
     {
