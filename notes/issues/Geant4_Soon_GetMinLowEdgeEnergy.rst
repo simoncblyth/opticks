@@ -46,7 +46,7 @@ in 1042 so I plumped for "->Energy(0)" with the below one liners to do all the e
 
    perl -pi -e 's/GetMinLowEdgeEnergy\(\)/Energy(0)/' $(find . -name '*.cc' -exec grep -l GetMinLowEdgeEnergy {} \;)
 
-   perl -pi -e 's/Rindex->GetMaxLowEdgeEnergy\(\)/Rindex->Energy(Rindex->GetVectorLength()-1)/' $(find . -name '*.cc' -exec grep -l GetMaxLowEdgeEnergy {} \;)
+   perl -pi -e 's/\s(\w*)->GetMaxLowEdgeEnergy\(\)/ $1->Energy($1->GetVectorLength()-1)/' $(find . -name '*.cc' -exec grep -l GetMaxLowEdgeEnergy {} \;)
 
    perl -pi -e 's/IsFilledVectorExist\(\)/GetVectorLength()>0/' $(find . -name '*.cc' -exec grep -l IsFilledVectorExist {} \;)
     
@@ -83,8 +83,147 @@ So thank you for the tarball that was useful to check my changes.
 
 
 
+::
+
+    SLOW: tests taking longer that 15 seconds
+      3  /45  Test #3  : CFG4Test.CTestDetectorTest                    Child aborted***Exception:     37.12  
+      5  /45  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     36.97  
+      7  /45  Test #7  : CFG4Test.CGeometryTest                        Child aborted***Exception:     37.01  
+      27 /45  Test #27 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     37.90  
 
 
+    FAILS:  12  / 497   :  Sun Oct  3 02:18:39 2021   
+      9  /35  Test #9  : ExtG4Test.X4MaterialTest                      Child aborted***Exception:     0.16   
+      12 /35  Test #12 : ExtG4Test.X4MaterialTableTest                 Child aborted***Exception:     0.18   
+      13 /35  Test #13 : ExtG4Test.X4PhysicalVolumeTest                Child aborted***Exception:     0.18   
+      14 /35  Test #14 : ExtG4Test.X4PhysicalVolume2Test               Child aborted***Exception:     0.18   
+      34 /35  Test #34 : ExtG4Test.X4SurfaceTest                       Child aborted***Exception:     0.47   
+      1  /45  Test #1  : CFG4Test.CMaterialLibTest                     Child aborted***Exception:     3.76   
+      7  /45  Test #7  : CFG4Test.CGeometryTest                        Child aborted***Exception:     37.01  
+      29 /45  Test #29 : CFG4Test.CGROUPVELTest                        Child aborted***Exception:     3.17   
+
+      3  /45  Test #3  : CFG4Test.CTestDetectorTest                    Child aborted***Exception:     37.12  
+      5  /45  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     36.97  
+      15 /45  Test #15 : CFG4Test.G4MaterialPropertiesTableTest        Child aborted***Exception:     0.25   
+      27 /45  Test #27 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     37.90  
+    (base) [simon@localhost opticks]$ 
+
+
+
+
+x4 fails
+---------
+
+::
+
+     9/35 Test  #9: ExtG4Test.X4MaterialTest ................................Child aborted***Exception:   0.16 sec
+
+    -------- WWWW ------- G4Exception-START -------- WWWW -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : mat200
+          issued by : G4MaterialPropertiesTable::GetConstPropertyIndex()
+    Constant Material Property Index for key RINDEX not found.
+    *** This is just a warning message. ***
+    -------- WWWW ------- G4Exception-END -------- WWWW -------
+
+    X4MaterialTest: /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:155: static void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>*, const G4MaterialPropertiesTable*, char): Assertion `pidx > -1' failed.
+
+          Start 10: ExtG4Test.X4MaterialWaterStandaloneTest
+    10/35 Test #10: ExtG4Test.X4MaterialWaterStandaloneTest .................   Passed    0.10 sec
+          Start 11: ExtG4Test.X4MaterialWaterTest
+    11/35 Test #11: ExtG4Test.X4MaterialWaterTest ...........................   Passed    0.17 sec
+          Start 12: ExtG4Test.X4MaterialTableTest
+    12/35 Test #12: ExtG4Test.X4MaterialTableTest ...........................Child aborted***Exception:   0.18 sec
+    2021-10-03 02:15:35.852 FATAL [259008] [Opticks::envkey@348]  --allownokey option prevents key checking : this is for debugging of geocache creation 
+    2021-10-03 02:15:35.857 FATAL [259008] [OpticksResource::init@122]  CAUTION : are allowing no key 
+
+    -------- WWWW ------- G4Exception-START -------- WWWW -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : mat200
+          issued by : G4MaterialPropertiesTable::GetConstPropertyIndex()
+    Constant Material Property Index for key RINDEX not found.
+    *** This is just a warning message. ***
+    -------- WWWW ------- G4Exception-END -------- WWWW -------
+
+    X4MaterialTableTest: /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:155: static void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>*, const G4MaterialPropertiesTable*, char): Assertion `pidx > -1' failed.
+
+          Start 13: ExtG4Test.X4PhysicalVolumeTest
+    13/35 Test #13: ExtG4Test.X4PhysicalVolumeTest ..........................Child aborted***Exception:   0.18 sec
+
+    -------- WWWW ------- G4Exception-START -------- WWWW -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : mat200
+          issued by : G4MaterialPropertiesTable::GetConstPropertyIndex()
+    Constant Material Property Index for key RINDEX not found.
+    *** This is just a warning message. ***
+    -------- WWWW ------- G4Exception-END -------- WWWW -------
+
+
+
+
+
+X4MaterialTest
+-----------------
+
+::
+
+    -------- WWWW ------- G4Exception-START -------- WWWW -------
+
+    *** ExceptionHandler is not defined ***
+    *** G4Exception : mat200
+          issued by : G4MaterialPropertiesTable::GetConstPropertyIndex()
+    Constant Material Property Index for key RINDEX not found.
+    *** This is just a warning message. ***
+    -------- WWWW ------- G4Exception-END -------- WWWW -------
+
+
+    (gdb) bt
+    #0  0x00007fffeb015387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffeb016a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffeb00e1a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffeb00e252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff7b693e4 in X4MaterialPropertiesTable::AddProperties (pmap=0x6d9b40, mpt=0x6d41e0, mode=71 'G') at /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:155
+    #5  0x00007ffff7b68c0f in X4MaterialPropertiesTable::init (this=0x7fffffffc4e0) at /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:54
+    #6  0x00007ffff7b68bdb in X4MaterialPropertiesTable::X4MaterialPropertiesTable (this=0x7fffffffc4e0, pmap=0x6d9b40, mpt=0x6d41e0, mode=71 'G')
+        at /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:49
+    #7  0x00007ffff7b68b6a in X4MaterialPropertiesTable::Convert (pmap=0x6d9b40, mpt=0x6d41e0, mode=71 'G') at /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:40
+    #8  0x00007ffff7b6421a in X4Material::init (this=0x7fffffffc760) at /home/simon/opticks/extg4/X4Material.cc:161
+    #9  0x00007ffff7b63f34 in X4Material::X4Material (this=0x7fffffffc760, material=0x6d3db0, mode=71 'G') at /home/simon/opticks/extg4/X4Material.cc:114
+    #10 0x00007ffff7b63e6c in X4Material::Convert (material=0x6d3db0, mode=71 'G') at /home/simon/opticks/extg4/X4Material.cc:89
+    #11 0x0000000000402b27 in main (argc=1, argv=0x7fffffffc8f8) at /home/simon/opticks/extg4/tests/X4MaterialTest.cc:40
+    (gdb) 
+
+    (gdb) f 11
+    #11 0x0000000000402b27 in main (argc=1, argv=0x7fffffffc8f8) at /home/simon/opticks/extg4/tests/X4MaterialTest.cc:40
+    40	    GMaterial* wine = X4Material::Convert(water, mode_g4_interpolated_onto_domain ) ; 
+    (gdb) f 10
+    #10 0x00007ffff7b63e6c in X4Material::Convert (material=0x6d3db0, mode=71 'G') at /home/simon/opticks/extg4/X4Material.cc:89
+    89	    X4Material xmat(material, mode);
+    (gdb) f 9
+    #9  0x00007ffff7b63f34 in X4Material::X4Material (this=0x7fffffffc760, material=0x6d3db0, mode=71 'G') at /home/simon/opticks/extg4/X4Material.cc:114
+    114	    init() ;
+    (gdb) f 8
+    #8  0x00007ffff7b6421a in X4Material::init (this=0x7fffffffc760) at /home/simon/opticks/extg4/X4Material.cc:161
+    161	        X4MaterialPropertiesTable::Convert( m_mat, m_mpt, m_mode );
+    (gdb) f 7
+    #7  0x00007ffff7b68b6a in X4MaterialPropertiesTable::Convert (pmap=0x6d9b40, mpt=0x6d41e0, mode=71 'G') at /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:40
+    40	    X4MaterialPropertiesTable xtab(pmap, mpt, mode);
+    (gdb) f 6
+    #6  0x00007ffff7b68bdb in X4MaterialPropertiesTable::X4MaterialPropertiesTable (this=0x7fffffffc4e0, pmap=0x6d9b40, mpt=0x6d41e0, mode=71 'G')
+        at /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:49
+    49	    init();
+    (gdb) f 5
+    #5  0x00007ffff7b68c0f in X4MaterialPropertiesTable::init (this=0x7fffffffc4e0) at /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:54
+    54	    AddProperties( m_pmap, m_mpt, m_mode );    
+    (gdb) f 4
+    #4  0x00007ffff7b693e4 in X4MaterialPropertiesTable::AddProperties (pmap=0x6d9b40, mpt=0x6d41e0, mode=71 'G') at /home/simon/opticks/extg4/X4MaterialPropertiesTable.cc:155
+    155	        assert( pidx > -1 );  
+    (gdb) p pidx
+    $1 = -1
+    (gdb) 
 
 
 
@@ -156,10 +295,12 @@ epsilon:opticks blyth$ opticks-fl GetMaxLowEdgeEnergy
 ./cfg4/OpRayleigh.cc
 ./cfg4/CCerenkovGenerator.cc
 ./cfg4/Cerenkov.cc
+
 ./extg4/tests/X4ScintillationTest.cc
 ./extg4/tests/X4ArrayTest.cc
 ./extg4/X4MaterialPropertyVector.cc
 ./extg4/X4MaterialPropertyVector.hh
+
 ./qudarap/qsim.h
 ./examples/Geant4/CerenkovMinimal/src/L4Cerenkov.cc
 ./examples/Geant4/CerenkovStandalone/L4CerenkovTest.cc

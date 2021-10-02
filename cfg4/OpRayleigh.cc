@@ -285,9 +285,9 @@ void OpRayleigh::dump(G4Material* material, G4MaterialPropertyVector* rayleigh)
 {
      LOG(info) << "OpRayleigh::dump"
                << " mat " << std::setw(35) << material->GetName()
-               << " fdom(Min) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMinLowEdgeEnergy()
+               << " fdom(Min) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->Energy(0)
                << " fval(Min) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMinValue()
-               << " bdom(Max) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMaxLowEdgeEnergy()
+               << " bdom(Max) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->Energy(rayleigh->GetVectorLength()-1)
                << " bval(Max) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMaxValue()
                << " num " << std::setw(10) << rayleigh->GetVectorLength()
                ;

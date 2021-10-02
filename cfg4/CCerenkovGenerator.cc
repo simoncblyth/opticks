@@ -218,8 +218,8 @@ G4VParticleChange* CCerenkovGenerator::GeneratePhotonsFromGenstep( const Opticks
 
     G4MaterialPropertyVector* Rindex = GetRINDEX(materialIndex) ;  // NB straight G4, no range standardization
 
-    G4double Pmin2 = Rindex->GetMinLowEdgeEnergy();
-    G4double Pmax2 = Rindex->GetMaxLowEdgeEnergy();
+    G4double Pmin2 = Rindex->Energy(0);
+    G4double Pmax2 = Rindex->Energy(Rindex->GetVectorLength()-1);
     G4double dp2 = Pmax2 - Pmin2;
 
     G4double epsilon = 1e-6 ; 

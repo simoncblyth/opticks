@@ -93,7 +93,7 @@
 //              > add G4ProcessType to constructor
 //              2001-09-17, migration of Materials to pure STL (mma) 
 //              2000-11-12 by Peter Gumplinger
-//              > add check on CerenkovAngleIntegrals->IsFilledVectorExist()
+//              > add check on CerenkovAngleIntegrals->GetVectorLength()>0
 //              in method GetAverageNumberOfPhotons 
 //              > and a test for MeanNumberOfPhotons <= 0.0 in DoIt
 //              2000-09-18 by Peter Gumplinger
@@ -311,9 +311,10 @@ DsG4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	////////////////////////////////////////////////////////////////
 
 #if ( G4VERSION_NUMBER > 1000 )
-	G4double Pmin = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMinLowEdgeEnergy();
-	G4double Pmax = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMaxLowEdgeEnergy();  // 1-bin different ?
-	G4double nMax = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMaxValue();
+    G4MaterialPropertyVector* Rindex_ = const_cast<G4MaterialPropertyVector*>(Rindex) ; 
+	G4double Pmin = Rindex_->Energy(0);
+	G4double Pmax = Rindex_->Energy(Rindex_->GetVectorLength()-1);  
+	G4double nMax = Rindex_->GetMaxValue();
 #else
 	G4double Pmin = Rindex->GetMinPhotonEnergy();
 	G4double Pmax = Rindex->GetMaxPhotonEnergy();
@@ -712,7 +713,8 @@ G4double DsG4Cerenkov::PostStepGetPhysicalInteractionLength(
         G4double nMax;
         if (Rindex) {
 #if ( G4VERSION_NUMBER > 1000 )
-           nMax = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMaxValue();
+           G4MaterialPropertyVector* Rindex_ = const_cast<G4MaterialPropertyVector*>(Rindex) ; 
+           nMax = Rindex_->GetMaxValue();
 #else
            nMax = Rindex->GetMaxProperty();
 #endif
@@ -796,8 +798,9 @@ G4double
 DsG4Cerenkov::GetAverageNumberOfPhotons(const G4double charge,
                               const G4double beta, 
 			      const G4Material* aMaterial,
-			      const G4MaterialPropertyVector* Rindex) const
+			      const G4MaterialPropertyVector* Rindex_) const
 {
+    G4MaterialPropertyVector* Rindex = const_cast<G4MaterialPropertyVector*>(Rindex_); 
 	const G4double Rfact = 369.81/(eV * cm);
 
         if(beta <= 0.0)return 0.0;
@@ -817,17 +820,17 @@ DsG4Cerenkov::GetAverageNumberOfPhotons(const G4double charge,
 	G4MaterialPropertyVector* CerenkovAngleIntegrals =
 	(G4MaterialPropertyVector*)((*thePhysicsTable)(materialIndex));
 
-        if(!(CerenkovAngleIntegrals->IsFilledVectorExist()))return 0.0;
+        if(!(CerenkovAngleIntegrals->GetVectorLength()>0))return 0.0;
 
 	// Min and Max photon energies 
 #if ( G4VERSION_NUMBER > 1000 )
     // NB poorly named methods, actually back/front see G4MaterialPropertyVector.icc
-	G4double Pmin = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMinLowEdgeEnergy();
-	G4double Pmax = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMaxLowEdgeEnergy();
+	G4double Pmin = Rindex->Energy(0);
+	G4double Pmax = Rindex->Energy(Rindex->GetVectorLength()-1);
 
 	// Min and Max Refraction Indices 
-	G4double nMin = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMinValue();	
-	G4double nMax = const_cast<G4MaterialPropertyVector*>(Rindex)->GetMaxValue();
+	G4double nMin = Rindex->GetMinValue();	
+	G4double nMax = Rindex->GetMaxValue();
 #else
 	G4double Pmin = Rindex->GetMinPhotonEnergy();
 	G4double Pmax = Rindex->GetMaxPhotonEnergy();

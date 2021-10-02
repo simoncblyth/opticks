@@ -540,8 +540,8 @@ void CMPT::dumpRaw(const char* _keys)
         LOG(info) << std::setw(15) << key 
                   << " MinValue " << v->GetMinValue()
                   << " MaxValue " << v->GetMaxValue()
-                  << " MaxLowEdgeEnergy " << v->GetMaxLowEdgeEnergy()
-                  << " MinLowEdgeEnergy " << v->GetMinLowEdgeEnergy()
+                  << " MaxLowEdgeEnergy " << v->Energy(v->GetVectorLength()-1)
+                  << " MinLowEdgeEnergy " << v->Energy(0)
                   << " VectorLength " << vlen
                   << " c_light " << c_light 
                   << " c_light*ns/nm " << c_light*ns/nm 

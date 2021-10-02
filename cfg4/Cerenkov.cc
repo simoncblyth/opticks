@@ -65,7 +65,7 @@
 //              > add G4ProcessType to constructor
 //              2001-09-17, migration of Materials to pure STL (mma) 
 //              2000-11-12 by Peter Gumplinger
-//              > add check on CerenkovAngleIntegrals->IsFilledVectorExist()
+//              > add check on CerenkovAngleIntegrals->GetVectorLength()>0
 //              in method GetAverageNumberOfPhotons 
 //              > and a test for MeanNumberOfPhotons <= 0.0 in DoIt
 //              2000-09-18 by Peter Gumplinger
@@ -231,8 +231,8 @@ Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	
 	////////////////////////////////////////////////////////////////
 
-	G4double Pmin = Rindex->GetMinLowEdgeEnergy();
-	G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
+	G4double Pmin = Rindex->Energy(0);
+	G4double Pmax = Rindex->Energy(Rindex->GetVectorLength()-1);
 	G4double dp = Pmax - Pmin;
 
 	G4double nMax = Rindex->GetMaxValue();
@@ -657,11 +657,11 @@ Cerenkov::GetAverageNumberOfPhotons(const G4double charge,
 	G4MaterialPropertyVector* CerenkovAngleIntegrals =
 	(G4MaterialPropertyVector*)((*thePhysicsTable)(materialIndex));
 
-        if(!(CerenkovAngleIntegrals->IsFilledVectorExist()))return 0.0;
+        if(!(CerenkovAngleIntegrals->GetVectorLength()>0))return 0.0;
 
 	// Min and Max photon energies 
-	G4double Pmin = Rindex->GetMinLowEdgeEnergy();
-	G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
+	G4double Pmin = Rindex->Energy(0);
+	G4double Pmax = Rindex->Energy(Rindex->GetVectorLength()-1);
 
 	// Min and Max Refraction Indices 
 	G4double nMin = Rindex->GetMinValue();	

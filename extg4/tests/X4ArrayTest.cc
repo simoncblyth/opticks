@@ -66,14 +66,14 @@ void VecDump(G4MaterialPropertyVector* vec)
     G4cout << *vec << G4endl ;
     std::cout << "G4MaterialPropertyVector:: " << std::endl ;  
     std::cout 
-        << std::setw(30) << "GetMinLowEdgeEnergy() " 
-        << std::fixed << std::setw(10) << std::setprecision(5) << vec->GetMinLowEdgeEnergy() 
+        << std::setw(30) << "Energy(0) " 
+        << std::fixed << std::setw(10) << std::setprecision(5) << vec->Energy(0) 
         << std::endl 
         << std::setw(30) << "GetMinValue() " 
         << std::fixed << std::setw(10) << std::setprecision(5) << vec->GetMinValue() 
         << std::endl 
         << std::setw(30) << "GetMaxLowEdgeEnergy() " 
-        << std::fixed << std::setw(10) << std::setprecision(5) << vec->GetMaxLowEdgeEnergy() 
+        << std::fixed << std::setw(10) << std::setprecision(5) << vec->Energy(vec->GetVectorLength()-1) 
         << std::endl 
         << std::setw(30) << "GetMaxValue() " 
         << std::fixed << std::setw(10) << std::setprecision(5) << vec->GetMaxValue() 

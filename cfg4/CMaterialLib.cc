@@ -160,8 +160,8 @@ void CMaterialLib::convert()
         G4MaterialPropertyVector* rindex = g4mat->GetMaterialPropertiesTable()->GetProperty("RINDEX") ;
         assert(rindex);
 
-        G4double Pmin = rindex->GetMinLowEdgeEnergy();
-        G4double Pmax = rindex->GetMaxLowEdgeEnergy();
+        G4double Pmin = rindex->Energy(0);
+        G4double Pmax = rindex->Energy(rindex->GetVectorLength()-1);
 
         G4double Wmin = h_Planck*c_light/Pmax ;
         G4double Wmax = h_Planck*c_light/Pmin ;

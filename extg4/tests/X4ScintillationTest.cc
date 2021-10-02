@@ -33,8 +33,8 @@ void test_manual(const char* outdir, const NPY<double>* slow_en, const NPY<doubl
     G4MaterialPropertyVector* theFastLightVector = X4MaterialPropertyVector::FromArray(fast_en) ; 
     G4MaterialPropertyVector* ScintillatorIntegral = X4Scintillation::Integral(theFastLightVector) ; 
 
-    double e0 = ScintillatorIntegral->GetMaxLowEdgeEnergy();
-    double e1 = ScintillatorIntegral->GetMinLowEdgeEnergy();
+    double e0 = ScintillatorIntegral->Energy(ScintillatorIntegral->GetVectorLength()-1);
+    double e1 = ScintillatorIntegral->Energy(0);
     double v0 = ScintillatorIntegral->GetMinValue() ;  
     double v1 = ScintillatorIntegral->GetMaxValue() ;  
 
