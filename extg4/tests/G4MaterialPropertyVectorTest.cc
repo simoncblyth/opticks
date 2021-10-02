@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     G4MaterialPropertyVectorTest t(arr); 
 
     NP* vv = NP::Linspace<double>(-10., 100., 111 );     
-    for(unsigned i=0 ; i < vv->shape[0] ; i++)
+    for(unsigned i=0 ; i < unsigned(vv->shape[0]) ; i++)
     {
         double v = vv->get<double>(i); 
         double df = t.GetEnergyDiff(v); 

@@ -83,8 +83,8 @@ Now that a different Geant4 is installed, configure Opticks to use it in ~/.opti
     o
     om-
     om-clean    ## deletes all the build dirs 
-    om-conf     ## run CMake checking have all needed externals and generating Makefile
-    om--        ## build 
+    om-conf     ## visit the standard packages running CMake checking have all needed externals and generating Makefile
+    om--        ## visit standard package build dirs, running make 
 
 
 
@@ -543,7 +543,7 @@ g4-nom(){
      1062) echo geant4.10.06.p02 ;;
      1070) echo geant4.10.07 ;;
      1072) echo geant4.10.07.p02 ;;
-     1078) echo geant4.10.07.r08 ;;    # unreleased dist for testing 
+    91072) echo geant4.10.07.r08 ;;    # unreleased dist for testing 
      1100) echo geant4.11.00.b01 ;;
   esac
 }
@@ -579,7 +579,7 @@ g4-url(){
         geant4.10.07)     echo http://cern.ch/geant4-data/releases/geant4.10.07.tar.gz ;;
         geant4.10.07.p02) echo https://geant4-data.web.cern.ch/releases/geant4.10.07.p02.tar.gz ;;
         geant4.11.00.b01) echo https://geant4-data.web.cern.ch/releases/geant4.11.00.b01.tar.gz ;;
-        geant4.10.7.r08)  echo https://dummy/geant4.10.7.r08.tar.gz ;;     # unreleased dummy 
+        geant4.10.07.r08) echo https://dummy/geant4.10.7.r08.tar ;;     # unreleased dummy 
    esac
 }
 
@@ -590,7 +590,7 @@ g4-title()
       1021) echo Geant4 10.2 first released 4 December 2015 \(patch-03, released 27 January 2017\) ;;
       1041) echo Geant4 10.4 patch-01, released 28 February 2018 ;; 
       1042) echo Geant4 10.4 patch-02, released 25 May 2018 ;; 
-      1078) echo Dummy version for unreleased dist from OPTICKS_DOWNLOAD_CACHE ;; 
+     91072) echo Dummy pre-release for 1100 beta version grabbed from OPTICKS_DOWNLOAD_CACHE ;; 
    esac
 }
 
@@ -691,7 +691,7 @@ g4-tag(){   echo g4 ; }
 g4-dist(){ echo $(dirname $(g4-dir))/$(basename $(g4-url)) ; }
 
 g4-filename(){  echo $(basename $(g4-url)) ; }
-g4-name(){  local name=$(g4-filename) ; name=${name/.tar.gz} ; name=${name/.zip} ; echo ${name} ; }  
+g4-name(){  local name=$(g4-filename) ; name=${name/.tar.gz} ; name=${name/.tar} ; name=${name/.zip} ; echo ${name} ; }  
 
 g4-txt(){ vi $(g4-dir)/CMakeLists.txt ; }
 
@@ -736,18 +736,20 @@ g4-get(){
    local url=$(g4-url)
    local dst=$(basename $url)
    local nam=$dst
-   nam=${nam/.zip}
-   nam=${nam/.tar.gz}
 
    g4-get-info
 
    [ ! -f "$dst" ] && echo opticks-curl getting $url && opticks-curl $url
 
    if [ "${dst/.zip}" != "${dst}" ]; then
+        nam=${nam/.zip}
         [ ! -d "$nam" ] && unzip $dst
-   fi
-   if [ "${dst/.tar.gz}" != "${dst}" ]; then
+   elif [ "${dst/.tar.gz}" != "${dst}" ]; then
+        nam=${nam/.tar.gz}
         [ ! -d "$nam" ] && tar zxvf $dst
+   elif [ "${dst/.tar}" != "${dst}" ]; then
+        nam=${nam/.tar}
+        [ ! -d "$nam" ] && tar xvf $dst
    fi
 
    [ -d "$nam" ]

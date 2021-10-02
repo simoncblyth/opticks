@@ -24,7 +24,7 @@ PhysicsFreeVector::PhysicsFreeVector(const NP* a )
 {
     assert( a->shape.size() == 2 && a->shape[1] == 2 ); 
 
-    for(unsigned i=0 ; i < a->shape[0] ; i++)
+    for(unsigned i=0 ; i < unsigned(a->shape[0]) ; i++)
     {
         binVector.push_back( a->get<double>(i, 0) ); 
         dataVector.push_back( a->get<double>(i, 1) ); 
