@@ -75,7 +75,10 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     OpticksHub hub(&ok) ;
 
+    LOG(error) << "[ CG4::CG4" ; 
     CG4 g4(&hub);
+    LOG(error) << "] CG4::CG4" ; 
+
     CMaterialBridge* mbr = g4.getMaterialBridge();
     CSurfaceBridge*  sbr = g4.getSurfaceBridge();
     //mbr->dump();
