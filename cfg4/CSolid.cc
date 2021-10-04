@@ -43,6 +43,14 @@ CSolid::CSolid(const G4VSolid* solid)
 {
 }
 
+/**
+CSolid::extent
+------------------
+
+G4VSolid::CalculateExtent calls probable cause of slowdown in 91072
+
+**/
+
 void CSolid::extent(const G4Transform3D& tran, glm::vec3& low, glm::vec3& high, glm::vec4& ce)
 {
     G4AffineTransform  atran = CMath::make_affineTransform(tran);
