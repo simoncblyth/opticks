@@ -164,13 +164,16 @@ void CTraverser::Traverse()
 
 void CTraverser::VolumeTreeTraverse()
 {
+     LOG(LEVEL) << "[" ; 
      assert(m_top) ;
      G4LogicalVolume* lv = m_top->GetLogicalVolume() ;
      VolumeTreeTraverse(lv, 0 );
+     LOG(LEVEL) << "]" ; 
 }
 
 void CTraverser::AncestorTraverse()
 {
+     LOG(LEVEL) << "[" ; 
      assert(m_top) ;
      m_pvnames.clear();
      m_pvs.clear();
@@ -182,6 +185,7 @@ void CTraverser::AncestorTraverse()
 
      AncestorTraverse(ancestors, m_top, 0, false);
 
+     LOG(LEVEL) << "]" ; 
      LOG(debug) << description() ;
 }
 

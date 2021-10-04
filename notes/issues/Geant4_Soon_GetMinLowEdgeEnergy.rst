@@ -925,3 +925,51 @@ Confirmed::
     G4MaterialPropertiesTableTest: /home/simon/opticks/cfg4/tests/G4MaterialPropertiesTableTest.cc:92: void test_GetProperty_NonExisting(const G4MaterialPropertiesTable*): Assertion `mpv == nullptr' failed.
     Aborted (core dumped)
     (base) [simon@localhost cfg4]$ 
+
+
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      3  /45  Test #3  : CFG4Test.CTestDetectorTest                    Passed                         35.90  
+      5  /45  Test #5  : CFG4Test.CGDMLDetectorTest                    Passed                         35.61  
+      7  /45  Test #7  : CFG4Test.CGeometryTest                        Passed                         36.09  
+      27 /45  Test #27 : CFG4Test.CInterpolationTest                   Passed                         36.32  
+
+
+    FAILS:  1   / 497   :  Mon Oct  4 19:58:42 2021   
+      15 /45  Test #15 : CFG4Test.G4MaterialPropertiesTableTest        Child aborted***Exception:     0.24   
+
+    ## THIS FAIL IS VERY CLEARLY GetProperty fMP[-1] BUG 
+
+
+
+What is taking the time. Look at logging from CInterpolationTest 
+
+O 1042, 4s::
+
+    2021-10-04 20:39:18.676 INFO  [118237] [CDetector::traverse@124] [
+    2021-10-04 20:39:22.193 INFO  [118237] [CDetector::traverse@132] ]
+
+S 91072, 30s::
+
+    2021-10-04 20:37:00.826 INFO  [113796] [CDetector::traverse@124] [
+    2021-10-04 20:37:30.715 INFO  [113796] [CDetector::traverse@132] ]
+
+
+
+    20 void CDetector::traverse(G4VPhysicalVolume* /*top*/)
+    121 {
+    122     // invoked from CGDMLDetector::init OR CTestDetector::init via CDetector::setTop
+    123 
+    124     LOG(info) << "[" ;
+    125 
+    126     m_check = new CCheck(m_ok, m_top );
+    127 
+    128     m_traverser = new CTraverser(m_ok, m_top, m_bbox, m_query);
+    129     m_traverser->Traverse();
+    130     m_traverser->Summary("CDetector::traverse");
+    131 
+    132     LOG(info) << "]" ;
+    133 }
+
