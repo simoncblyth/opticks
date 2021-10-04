@@ -919,4 +919,9 @@ Add a test to try to capture this in isolation::
      93 }
 
 
+Confirmed::
 
+    2021-10-04 19:42:20.211 INFO  [15129] [test_GetProperty_NonExisting@91]  key NonExistingKey mpv 0x1b0
+    G4MaterialPropertiesTableTest: /home/simon/opticks/cfg4/tests/G4MaterialPropertiesTableTest.cc:92: void test_GetProperty_NonExisting(const G4MaterialPropertiesTable*): Assertion `mpv == nullptr' failed.
+    Aborted (core dumped)
+    (base) [simon@localhost cfg4]$ 

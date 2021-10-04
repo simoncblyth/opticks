@@ -571,13 +571,21 @@ void CMPT::dumpRaw(const char* _keys)
 }
 
 
+/**
+CMPT::getVec
+-------------
+
+Formerly this tickled a 91072 bug, see G4MaterialPropertiesTableTest::test_GetProperty_NonExisting 
+Avoid that issue by checking the property index. 
+
+**/
 
 G4MaterialPropertyVector* CMPT::getVec(const char* key) const 
 {
-    G4MaterialPropertyVector* pofv = NULL ; 
-    G4MaterialPropertyVector* mpv = m_mpt->GetProperty(key); 
-    if(mpv) pofv = static_cast<G4MaterialPropertyVector*>(mpv);
-    return pofv ; 
+    G4bool warning = false ; 
+    G4int index = m_mpt->GetPropertyIndex(key, warning ) ;   // this avoids ticking 91072 bug when the key is non-existing
+    G4MaterialPropertyVector* mpv = index < 0 ? nullptr : m_mpt->GetProperty(index, warning); 
+    return mpv ; 
 }
 
 CVec* CMPT::getCVec(const char* lkey) const
