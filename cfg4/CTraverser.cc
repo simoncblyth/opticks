@@ -171,6 +171,17 @@ void CTraverser::VolumeTreeTraverse()
      LOG(LEVEL) << "]" ; 
 }
 
+
+/**
+CTraverser::AncestorTraverse
+------------------------------
+
+pre-order recursive traversal collecting and passing ancestor vectors between generations
+
+* slows down by factor of 10 with 91072 compared to 1042 !
+
+**/
+
 void CTraverser::AncestorTraverse()
 {
      LOG(LEVEL) << "[" ; 
@@ -246,7 +257,7 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
     LOG(verbose) << " lvn " << lvn ; 
 
 
-    updateBoundingBox(lv->GetSolid(), T, selected);
+    updateBoundingBox(lv->GetSolid(), T, selected);  // ALL 91072 SLOWDOWN INSIDE HERE
 
     LOG(debug) 
         << " size " << std::setw(3) << ancestors.size() 
@@ -291,6 +302,13 @@ void CTraverser::dumpLV(const char* msg) const
 }
 
 
+/**
+CTraverser::updateBoundingBox
+-------------------------------
+
+Massive ~30s slowdown in 91072 all coming from here.
+
+**/
 
 void CTraverser::updateBoundingBox(const G4VSolid* solid, const G4Transform3D& transform, bool selected)
 {
