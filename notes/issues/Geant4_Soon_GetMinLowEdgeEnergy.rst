@@ -661,3 +661,262 @@ S opticks-tl::
     (base) [simon@localhost ~]$ 
 
 
+
+Following constprop and X4PropertyMap fixes down to 4 slow and 1 fail
+
+    SLOW: tests taking longer that 15 seconds
+      3  /45  Test #3  : CFG4Test.CTestDetectorTest                    Passed                         36.00  
+      5  /45  Test #5  : CFG4Test.CGDMLDetectorTest                    Passed                         35.63  
+      7  /45  Test #7  : CFG4Test.CGeometryTest                        Passed                         35.82  
+      27 /45  Test #27 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     37.78  
+
+
+    FAILS:  1   / 497   :  Mon Oct  4 18:53:27 2021   
+      27 /45  Test #27 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     37.78  
+    (base) [simon@localhost opticks]$ 
+     
+
+
+Contrast with standard on O (1042) : looks like factor 5 GDML slowdown::
+
+      3  /45  Test #3  : CFG4Test.CTestDetectorTest                    Passed                         7.71   
+      4  /45  Test #4  : CFG4Test.CGDMLTest                            Passed                         0.07   
+      5  /45  Test #5  : CFG4Test.CGDMLDetectorTest                    Passed                         7.44   
+      6  /45  Test #6  : CFG4Test.CGDMLPropertyTest                    Passed                         0.07   
+      7  /45  Test #7  : CFG4Test.CGeometryTest                        Passed                         7.76   
+      8  /45  Test #8  : CFG4Test.G4MaterialTest                       Passed                         0.07   
+
+
+    SLOW: tests taking longer that 15 seconds
+
+
+    FAILS:  0   / 497   :  Mon Oct  4 18:59:00 2021   
+    O[blyth@localhost opticks]$ 
+
+
+
+
+CInterpolationTest : SEGV from bad property address
+-------------------------------------------------------
+
+::
+
+     
+    12    PMT_3inch_photocathode_logsurf1          Photocathode_opsurf_3inch pv1 PMT_3inch_inner1_phys0x6f2c580 #0 pv2 PMT_3inch_body_phys0x6f2c500 #0
+    13    PMT_3inch_photocathode_logsurf2          Photocathode_opsurf_3inch pv1 PMT_3inch_body_phys0x6f2c500 #0 pv2 PMT_3inch_inner1_phys0x6f2c580 #0
+    14           UpperChimneyTyvekSurface    UpperChimneyTyvekOpticalSurface pv1 pUpperChimneyLS0x79eb640 #0 pv2 pUpperChimneyTyvek0x79eb7e0 #0
+
+    2021-10-04 19:02:50.213 INFO  [410139] [main@116]  interpolate (control with option: --nointerpol) 1 name CInterpolationTest_interpol.npy tex 38,4,2,761,4 out 38,4,2,761,4
+    2021-10-04 19:02:50.213 INFO  [410139] [main@132]  wlow 60 wstep 1 nl 761
+    2021-10-04 19:02:50.213 INFO  [410139] [main@156]  nb 38
+    2021-10-04 19:02:50.213 INFO  [410139] [main@166]  i   0 omat  18 osur 4294967295 isur 4294967295 imat  18
+
+    Program received signal SIGSEGV, Segmentation fault.
+    0x00007ffff7a96857 in G4PhysicsVector::Value (this=0x1b1, e=2.0664033072200039e-05) at /data/simon/local/opticks_externals/g4_91072/include/Geant4/G4PhysicsVector.icc:213
+    213	  if(e > edgeMin && e < edgeMax)
+    (gdb) bt
+    #0  0x00007ffff7a96857 in G4PhysicsVector::Value (this=0x1b1, e=2.0664033072200039e-05) at /data/simon/local/opticks_externals/g4_91072/include/Geant4/G4PhysicsVector.icc:213
+    #1  0x00007ffff7ae75a5 in CMPT::sample (this=0xd078c10, a=0xd0784c0, offset=3044, _keys=0x409241 "GROUPVEL,,, ", low=60, step=1, nstep=761) at /home/simon/opticks/cfg4/CMPT.cc:633
+    #2  0x0000000000404d81 in main (argc=1, argv=0x7fffffffcf28) at /home/simon/opticks/cfg4/tests/CInterpolationTest.cc:196
+    (gdb) 
+
+    (gdb) bt
+    #0  0x00007ffff7a96857 in G4PhysicsVector::Value (this=0x1b1, e=2.0664033072200039e-05) at /data/simon/local/opticks_externals/g4_91072/include/Geant4/G4PhysicsVector.icc:213
+    #1  0x00007ffff7ae75a5 in CMPT::sample (this=0xd078c10, a=0xd0784c0, offset=3044, _keys=0x409241 "GROUPVEL,,, ", low=60, step=1, nstep=761) at /home/simon/opticks/cfg4/CMPT.cc:633
+    #2  0x0000000000404d81 in main (argc=1, argv=0x7fffffffcf28) at /home/simon/opticks/cfg4/tests/CInterpolationTest.cc:196
+    (gdb) f 2
+    #2  0x0000000000404d81 in main (argc=1, argv=0x7fffffffcf28) at /home/simon/opticks/cfg4/tests/CInterpolationTest.cc:196
+    196	            ompt->sample(out, om_offset, mkeys, wlow, wstep, nl );  
+    (gdb) p om_offset
+    $1 = 3044
+    (gdb) p mkeys
+    $2 = 0x409241 "GROUPVEL,,, "
+    (gdb) p wlow
+    $3 = 60
+    (gdb) p wstep
+    $4 = 1
+    (gdb) p nl
+    $5 = 761
+    (gdb) f 1
+    #1  0x00007ffff7ae75a5 in CMPT::sample (this=0xd078c10, a=0xd0784c0, offset=3044, _keys=0x409241 "GROUPVEL,,, ", low=60, step=1, nstep=761) at /home/simon/opticks/cfg4/CMPT.cc:633
+    633	            G4double value = pofv ? pofv->Value( photonMomentum ) : 0.f ;
+    (gdb) p pofv
+    $6 = (G4MaterialPropertyVector *) 0x1b1
+    (gdb) p *pofv
+    Cannot access memory at address 0x1b1
+    (gdb) p photonMomentum
+    $7 = 2.0664033072200039e-05
+    (gdb) 
+
+
+
+::
+
+    595 void CMPT::sample(NPY<double>* a, unsigned offset, const char* _keys, double low, double step, unsigned nstep )
+    596 {
+    597    // CAUTION: used by cfg4/tests/CInterpolationTest.cc 
+    598 
+    599     std::vector<std::string> keys ;
+    600     BStr::split(keys, _keys, ',') ;
+    601 
+    602     unsigned nkey = keys.size();
+    603 
+    604     unsigned ndim = a->getDimensions() ;
+    605     assert(ndim == 5);
+    606     unsigned nl = a->getShape(3);
+    607     unsigned nm_ = a->getShape(4);  // 4 corresponding to double4 of props used in tex 
+    608 
+    609     double* values = a->getValues() + offset ;
+    610 
+    611 
+    612     assert( nl == nstep );
+    613 
+    614     if( nm_ != nkey )
+    615     {
+    616         LOG(fatal) << " unexpected _keys " << _keys
+    617                    << " nkey " << nkey
+    618                    << " nm_ " << nm_
+    619                    << " a " << a->getShapeString()
+    620                    ;
+    621     }
+    622     assert( nm_ == nkey );
+    623 
+    624     for(unsigned l=0 ; l < nl ; l++)
+    625     {  
+    626         G4double wavelength = (low + l*step)*CLHEP::nm ;
+    627         G4double photonMomentum = h_Planck*c_light/wavelength ;
+    628 
+    629         for(unsigned m=0 ; m < nm_ ; m++)
+    630         {
+    631             const char* key = keys[m].c_str();
+    632             G4MaterialPropertyVector* pofv = getVec(key);
+    633             G4double value = pofv ? pofv->Value( photonMomentum ) : 0.f ;
+    634             *(values + l*nm_ + m) = value ;
+    635         }
+    636     }  
+    637 }
+
+
+
+Hmm blank key beyond GROUPVEL::
+
+    629	        for(unsigned m=0 ; m < nm_ ; m++)
+    630	        {
+    631	            const char* key = keys[m].c_str(); 
+    632	            G4MaterialPropertyVector* pofv = getVec(key);
+    633	            G4double value = pofv ? pofv->Value( photonMomentum ) : 0.f ;
+    634	            *(values + l*nm_ + m) = value ;
+    635	        }
+    636	    }   
+    637	}
+    (gdb) p key
+    $8 = 0xd078a08 ""
+
+getVec should be giving null with blank key ?
+
+
+    575 G4MaterialPropertyVector* CMPT::getVec(const char* key) const
+    576 {
+    577     G4MaterialPropertyVector* pofv = NULL ;
+    578     G4MaterialPropertyVector* mpv = m_mpt->GetProperty(key);
+    579     if(mpv) pofv = static_cast<G4MaterialPropertyVector*>(mpv);
+    580     return pofv ;
+    581 }
+
+
+::
+
+    259 G4MaterialPropertyVector* G4MaterialPropertiesTable::GetProperty(
+    260   const G4String& key, G4bool warning) const
+    261 {
+    262   // Returns a Material Property Vector corresponding to a key
+    263   const G4int index = GetPropertyIndex(key, warning);
+    264   return GetProperty(index);
+    265 }
+    266 
+    267 G4MaterialPropertyVector* G4MaterialPropertiesTable::GetProperty(
+    268   const char* key, G4bool warning) const
+    269 {
+    270   const G4int index = GetPropertyIndex(G4String(key), warning);
+    271   return GetProperty(index, warning);
+    272 }
+
+
+A non-found key in the above gives index -1 which is passed to the below giving "random" addess fMP[-1]:: 
+
+    273 
+    274 G4MaterialPropertyVector* G4MaterialPropertiesTable::GetProperty(
+    275   const G4int index, G4bool warning) const
+    276 {
+    277   // Returns a Material Property Vector corresponding to an index
+    278 
+    279   if(index < (G4int) fMP.size())
+    280     return fMP[index];
+    281   if(warning)
+    282   {
+    283     G4ExceptionDescription ed;
+    284     ed << "Material Property for index " << index << " not found.";
+    285     G4Exception("G4MaterialPropertiesTable::GetPropertyIndex()", "mat203",
+    286                 JustWarning, ed);
+    287   }
+    288   return nullptr;
+    289 }
+
+
+91072::
+
+    191 G4int G4MaterialPropertiesTable::GetPropertyIndex(const G4String& key,
+    192                                                   G4bool warning) const
+    193 {
+    194   // Returns the material property index corresponding to a key
+    195   size_t index =
+    196     std::distance(fMatPropNames.begin(),
+    197                   std::find(fMatPropNames.begin(), fMatPropNames.end(), key));
+    198   if(index < fMatPropNames.size())
+    199     return index;
+    200   if(warning)
+    201   {
+    202     G4ExceptionDescription ed;
+    203     ed << "Material Property Index for key " << key << " not found.";
+    204     G4Exception("G4MaterialPropertiesTable::GetPropertyIndex()", "mat201",
+    205                 JustWarning, ed);
+    206   }
+    207   return -1;
+    208 }
+
+
+
+1042::
+
+    231 G4MaterialPropertyVector*
+    232 G4MaterialPropertiesTable::GetProperty(const G4int index, G4bool warning)
+    233 {
+    234   // Returns a Material Property Vector corresponding to an index
+    235   MPiterator i;
+    236   i = MP.find(index);
+    237   if ( i != MP.end() ) return i->second;
+    238   if (warning) {
+    239     G4ExceptionDescription ed;
+    240     ed << "Material Property for index " << index << " not found.";
+    241     G4Exception("G4MaterialPropertiesTable::GetPropertyIndex()","mat208",
+    242                  JustWarning, ed);
+    243   }
+    244   return nullptr;
+    245 }
+    246 
+
+
+Add a test to try to capture this in isolation::
+
+     85 void test_GetProperty_NonExisting(const G4MaterialPropertiesTable* mpt_)
+     86 {
+     87     G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // tut tut GetProperty is not const correct 
+     88     const char* key = "NonExistingKey" ;
+     89     G4bool warning = false ;
+     90     G4MaterialPropertyVector* mpv = mpt->GetProperty(key, warning);
+     91     LOG(info) << " key " << key << " mpv " << mpv ;
+     92     assert( mpv == nullptr );
+     93 }
+
+
+

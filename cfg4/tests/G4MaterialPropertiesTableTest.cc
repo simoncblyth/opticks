@@ -82,10 +82,21 @@ void test_MPTConst(G4MaterialPropertiesTable* mpt)
 }
 
 
+void test_GetProperty_NonExisting(const G4MaterialPropertiesTable* mpt_)
+{
+    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // tut tut GetProperty is not const correct 
+    const char* key = "NonExistingKey" ; 
+    G4bool warning = false ; 
+    G4MaterialPropertyVector* mpv = mpt->GetProperty(key, warning); 
+    LOG(info) << " key " << key << " mpv " << mpv ; 
+    assert( mpv == nullptr ); 
+}
+
+
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG__(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable(); 
 
@@ -104,6 +115,8 @@ int main(int argc, char** argv)
 
     test_MPT(mpt); 
     test_MPTConst(mpt); 
+
+    test_GetProperty_NonExisting(mpt); 
 
 
     return 0 ; 
