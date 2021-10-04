@@ -53,6 +53,23 @@ const plog::Severity CTraverser::LEVEL = PLOG::EnvLevel("CTraverser", "DEBUG");
 
 const char* CTraverser::GROUPVEL = "GROUPVEL" ; 
 
+/**
+CTraverser::CTraverser
+------------------------
+
+For logging "LEVEL <= info" an accumulator is enabled to measure total time doing CSolid extent. 
+This is not standardly enabled as the measurement takes considerable time itself.
+
+At first glance "LEVEL <= info" seems back-to-front but that is not so because the 
+default logging LEVEL is debug:5 and verbosity is typically increased by reducing LEVEL down to info:4.
+(fatal:1 error:2 warning:3 info:4 debug:5 verbose:6) 
+
+Thus for example enable the accumulator with::
+
+   CTraverser=INFO CInterpolationTest
+
+**/
+
 CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query ) 
     :
     m_ok(ok),
@@ -60,7 +77,7 @@ CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, 
     m_bbox(bbox ? bbox : new NBoundingBox),
     m_query(query),
     m_verbosity(0),
-    m_CSolid_extent_acc(LEVEL > info ? m_ok->accumulateAdd("CSolid::extent") : -1 ),
+    m_CSolid_extent_acc(LEVEL <= info ? m_ok->accumulateAdd("CSolid::extent") : -1 ),   
     m_lcount(0),
     m_ltransforms(NULL),
     m_gcount(0),
