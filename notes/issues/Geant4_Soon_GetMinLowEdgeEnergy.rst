@@ -1093,7 +1093,7 @@ Reviewing the code, I suspect CSolid and voxel releated extent calls within upda
 
 
 
-O 1042 adding the accumulator causes considerable slowdown::
+O 1042 using the accumulator causes considerable ~10s slowdown::
 
     2021-10-04 22:07:02.618 INFO  [269428] [CDetector::traverse@124] [
     2021-10-04 22:07:02.619 INFO  [269428] [CTraverser::VolumeTreeTraverse@168] [
@@ -1106,7 +1106,7 @@ O 1042 adding the accumulator causes considerable slowdown::
 
 
 
-S 91072::
+S 91072 accumultor does show severe slowdown::
 
     2021-10-04 22:08:17.789 INFO  [271359] [CDetector::traverse@124] [
     2021-10-04 22:08:17.789 INFO  [271359] [CTraverser::VolumeTreeTraverse@168] [
@@ -1115,4 +1115,95 @@ S 91072::
     2021-10-04 22:09:11.738 INFO  [271359] [CTraverser::AncestorTraverse@200]  m_CSolid_extent_acc 0 accumulateDesc Acc                                     CSolid::extent n    319036 t   40.4717 v    0.0000
     2021-10-04 22:09:11.739 INFO  [271359] [CTraverser::AncestorTraverse@205] ]
     2021-10-04 22:09:11.739 INFO  [271359] [CTraverser::Summary@130] CDetector::traverse numMaterials 19 numMaterialsWithoutMPT 5
+
+
+Considerations for slowdown in G4VSolid::CalculateExtent of 300k solids
+---------------------------------------------------------------------------
+
+* TODO: find which solids are slow ? 
+* CSolid is only used by CTraverser, although G4Opticks has CTraverser* m_traverser it is not used
+* so mainline x4 Opticks not using the extents from CSolid ? 
+* Highly probable that from Opticks point of view this is just a problem of slow tests
+* How is x4 doing this ? Possibly its does not use G4VSolid::CalculateExtent 
+  instead it converts into Opticks geometry first and used Opticks to find extents ?
+
+  * looks to be so, the mainline center_extents are collected in GNodeLib::addVolume
+
+* hmm what uses the info in CTraverser anyhow ? Can it be skipped ?
+
+* **MAJOR TODO: pruning near dead code from CFG4, relocate mainline code into X4 or another pkg**
+
+opticks-deps::
+
+    160            OK :            ok :            ok :            OK : OpticksGL  
+    165            X4 :         extg4 :            x4 :         ExtG4 : G4 GGeo OpticksXercesC CLHEP  
+    170          CFG4 :          cfg4 :          cfg4 :          CFG4 : G4 ExtG4 OpticksXercesC OpticksGeo ThrustRap  
+    180          OKG4 :          okg4 :          okg4 :          OKG4 : OK CFG4  
+    190          G4OK :          g4ok :          g4ok :          G4OK : CFG4 ExtG4 OKOP  
+
+
+
+
+
+::
+
+    348 void CTraverser::updateBoundingBox(const G4VSolid* solid, const G4Transform3D& transform, bool selected)
+    349 {
+    350     glm::vec3 low ;
+    351     glm::vec3 high ;
+    352     glm::vec4 center_extent ;
+    353 
+    354     if(m_CSolid_extent_acc > -1)  m_ok->accumulateStart(m_CSolid_extent_acc) ;
+    355 
+    356     CSolid csolid(solid);
+    357     csolid.extent(transform, low, high, center_extent);
+    358 
+    359     if(m_CSolid_extent_acc > -1) m_ok->accumulateStop(m_CSolid_extent_acc) ;
+    360 
+    361 
+    362     m_center_extent->add(center_extent);
+    363 
+    364     if(selected)
+    365     {
+    366         m_bbox->update(low, high);
+    367     }
+    368 
+    369     LOG(debug)
+    370         << " low " << gformat(low)
+    371         << " high " << gformat(high)
+    372         << " ce " << gformat(center_extent)
+    373         << " bb " << m_bbox->description()
+    374         ;
+    375 
+    376 }
+
+
+Mainline GGeo populates m_center_extent without use of Geant4::
+
+    423 void GNodeLib::addVolume(const GVolume* volume)
+    424 {
+    425     unsigned index = volume->getIndex();
+    426     m_volumes.push_back(volume);
+    427     assert( m_volumes.size() - 1 == index && "indices of the geometry volumes added to GNodeLib must follow the sequence : 0,1,2,... " ); // formerly only for m_test
+    428     m_volumemap[index] = volume ;
+    429 
+    430     glm::mat4 transform = volume->getTransformMat4();
+    431     m_transforms->add(transform);
+    432 
+    433     glm::mat4 inverse_transform = volume->getInverseTransformMat4();
+    434     m_inverse_transforms->add(inverse_transform);
+    435 
+    436 
+    437     nbbox* bb = volume->getVerticesBBox();
+    438     glm::vec4 min(bb->min, 1.f);
+    439     glm::vec4 max(bb->max, 1.f);
+    440     m_bounding_box->add( min, max);
+    441 
+    442     glm::vec4 ce = bb->ce();
+    443     m_center_extent->add(ce);
+    444 
+    445     m_lvlist->add(volume->getLVName());
+    446     m_pvlist->add(volume->getPVName());
+    447     // NB added in tandem, so same counts and same index as the volumes  
+
 

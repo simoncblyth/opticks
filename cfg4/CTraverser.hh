@@ -56,6 +56,9 @@ class NBoundingBox ;
 CTraverser
 =============
 
+Canonical *m_traverser* instance is instanciated by CDetector::traverse
+
+
 Recursively traverses a Geant4 geometry tree, collecting 
 instances of G4Material and determining the bounding box
 of the geometry.  Optionally an OpticksQuery instance
@@ -68,6 +71,9 @@ AncestorTraverse
    collects m_pvs m_lvs m_lvm m_pvnames
     
 TODO: get rid of the VolumeTreeTraverse
+
+TODO: what is using this, can it be eliminated ? AncestorTraverse updateBoundingBox
+      uses G4VSolid::CalculateExtent which is dramatically slower in 91072(aka 1100)
 
 **/
 
