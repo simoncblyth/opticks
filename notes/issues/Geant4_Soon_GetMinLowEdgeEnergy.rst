@@ -491,3 +491,173 @@ Old behavior::
 
 
 
+91072 huh looks like some mixup between props and const-props::
+
+    (base) [simon@localhost extg4]$ X4MaterialPropertiesTable=INFO X4MaterialTest
+    PLOG::EnvLevel adjusting loglevel by envvar   key X4MaterialPropertiesTable level INFO fallback DEBUG
+    2021-10-03 03:07:18.550 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@71]  MaterialPropertyNames pns.size 28
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                         RINDEX pidx :     0 pvec :        0x1837470
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                   REFLECTIVITY pidx :     1 pvec :                0
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                     REALRINDEX pidx :     2 pvec :                0
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                IMAGINARYRINDEX pidx :     3 pvec :                0
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                     EFFICIENCY pidx :     4 pvec :                0
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                  TRANSMITTANCE pidx :     5 pvec :                0
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :           SPECULARLOBECONSTANT pidx :     6 pvec :                0
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :          SPECULARSPIKECONSTANT pidx :     7 pvec :                0
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :            BACKSCATTERCONSTANT pidx :     8 pvec :                0
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                       GROUPVEL pidx :     9 pvec :        0x1837730
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                          MIEHG pidx :    10 pvec :        0x1837250
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                       RAYLEIGH pidx :    11 pvec :                0
+    2021-10-03 03:07:18.551 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                   WLSCOMPONENT pidx :    12 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                   WLSABSLENGTH pidx :    13 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                  WLSCOMPONENT2 pidx :    14 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                  WLSABSLENGTH2 pidx :    15 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                      ABSLENGTH pidx :    16 pvec :        0x1837360
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :       PROTONSCINTILLATIONYIELD pidx :    17 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :     DEUTERONSCINTILLATIONYIELD pidx :    18 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :       TRITONSCINTILLATIONYIELD pidx :    19 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :        ALPHASCINTILLATIONYIELD pidx :    20 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :          IONSCINTILLATIONYIELD pidx :    21 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :     ELECTRONSCINTILLATIONYIELD pidx :    22 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :        SCINTILLATIONCOMPONENT1 pidx :    23 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :        SCINTILLATIONCOMPONENT2 pidx :    24 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :        SCINTILLATIONCOMPONENT3 pidx :    25 pvec :                0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                  FASTCOMPONENT pidx :    26 pvec :        0x1835eb0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@82]  pname :                  SLOWCOMPONENT pidx :    27 pvec :        0x18381b0
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@135]  pns 28 pns_null 22
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                         RINDEX pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                   REFLECTIVITY pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                     REALRINDEX pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                IMAGINARYRINDEX pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                     EFFICIENCY pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                  TRANSMITTANCE pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.552 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :           SPECULARLOBECONSTANT pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :          SPECULARSPIKECONSTANT pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :            BACKSCATTERCONSTANT pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                       GROUPVEL pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                          MIEHG pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                       RAYLEIGH pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                   WLSCOMPONENT pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                   WLSABSLENGTH pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                  WLSCOMPONENT2 pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                  WLSABSLENGTH2 pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                      ABSLENGTH pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :       PROTONSCINTILLATIONYIELD pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :     DEUTERONSCINTILLATIONYIELD pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :       TRITONSCINTILLATIONYIELD pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :        ALPHASCINTILLATIONYIELD pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :          IONSCINTILLATIONYIELD pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :     ELECTRONSCINTILLATIONYIELD pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :        SCINTILLATIONCOMPONENT1 pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.553 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :        SCINTILLATIONCOMPONENT2 pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.554 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :        SCINTILLATIONCOMPONENT3 pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.554 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                  FASTCOMPONENT pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.554 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@162]  pname :                  SLOWCOMPONENT pidx :    -1 pval :               -1
+    2021-10-03 03:07:18.554 INFO  [352166] [X4MaterialPropertiesTable::AddProperties@174]  cpns 28 cpns_null 0
+    2021-10-03 03:07:18.554 FATAL [352166] [GPropertyMap<T>::getNumProperties@1026] GPropertyMap<T>::getNumProperties prop/keys mismatch  prop 28 keys 34
+    X4MaterialTest: /home/simon/opticks/ggeo/GPropertyMap.cc:1032: unsigned int GPropertyMap<T>::getNumProperties() const [with T = double]: Assertion `m_prop.size() == m_keys.size()' failed.
+    Aborted (core dumped)
+    (base) [simon@localhost extg4]$ 
+
+
+Old::
+
+    523 std::vector<G4String> G4MaterialPropertiesTable::GetMaterialPropertyNames() const
+    524 {
+    525   return G4MaterialPropertyName;;
+    526 }
+    527 
+    528 std::vector<G4String> G4MaterialPropertiesTable::GetMaterialConstPropertyNames() const
+    529 {
+    530   return G4MaterialConstPropertyName;
+    531 }
+
+
+New::
+
+    140   // the next four methods are used in persistency/GDML:
+    141   const std::vector<G4String> GetMaterialPropertyNames() const
+    142   {
+    143     return fMatPropNames;
+    144   }
+    145   const std::vector<G4String> GetMaterialConstPropertyNames() const
+    146   {
+    147     return fMatPropNames;
+    148   }
+
+
+Adhoc fixes on S
+------------------
+
+Fix the assumed typo wrt fMatConstPropNames::
+
+    (base) [simon@localhost ~]$ g4-cls G4MaterialPropertiesTable 
+    /data/simon/local/opticks_externals/g4_91072.build/geant4.10.7.r08
+    vi -R source/materials/include/G4MaterialPropertiesTable.hh source/materials/src/G4MaterialPropertiesTable.cc
+    2 files to edit
+    (base) [simon@localhost ~]$ vi source/materials/include/G4MaterialPropertiesTable.hh source/materials/src/G4MaterialPropertiesTable.cc
+    2 files to edit
+    (base) [simon@localhost ~]$ cd /data/simon/local/opticks_externals/g4_91072.build/geant4.10.7.r08
+    (base) [simon@localhost geant4.10.7.r08]$ vi source/materials/include/G4MaterialPropertiesTable.hh source/materials/src/G4MaterialPropertiesTable.cc
+
+
+    140   // the next four methods are used in persistency/GDML:
+    141   const std::vector<G4String> GetMaterialPropertyNames() const
+    142   {
+    143     return fMatPropNames;
+    144   }
+    145   const std::vector<G4String> GetMaterialConstPropertyNames() const
+    146   {
+    147     return fMatConstPropNames;
+    148   }
+
+
+Hmm the AddProperty createNewKey=true is already there. Must be some other problem with GDML?::
+
+    (base) [simon@localhost src]$ grep AddProperty *.cc
+    G4GDMLReadMaterials.cc:    matprop->AddProperty(Strip(name), propvect, true);
+    G4GDMLReadSolids.cc:    matprop->AddProperty(Strip(name), propvect, true);
+    (base) [simon@localhost src]$ 
+    (base) [simon@localhost src]$ pwd
+    /data/simon/local/opticks_externals/g4_91072.build/geant4.10.7.r08/source/persistency/gdml/src
+    (base) [simon@localhost src]$ 
+
+S hmm building after this change will take a long time as the bugfix is in the header. Another reason to minimize headers::
+
+    g4-build
+
+S opticks-tl::
+
+
+    SLOW: tests taking longer that 15 seconds
+      3  /45  Test #3  : CFG4Test.CTestDetectorTest                    Child aborted***Exception:     37.12  
+      5  /45  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     36.97  
+      7  /45  Test #7  : CFG4Test.CGeometryTest                        Child aborted***Exception:     37.01  
+      27 /45  Test #27 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     37.90  
+
+
+    FAILS:  12  / 497   :  Sun Oct  3 02:18:39 2021   
+      9  /35  Test #9  : ExtG4Test.X4MaterialTest                      Child aborted***Exception:     0.16   
+      12 /35  Test #12 : ExtG4Test.X4MaterialTableTest                 Child aborted***Exception:     0.18   
+      ## maybe constprop change can fix these
+
+      13 /35  Test #13 : ExtG4Test.X4PhysicalVolumeTest                Child aborted***Exception:     0.18   
+      14 /35  Test #14 : ExtG4Test.X4PhysicalVolume2Test               Child aborted***Exception:     0.18   
+      34 /35  Test #34 : ExtG4Test.X4SurfaceTest                       Child aborted***Exception:     0.47   
+      ## ?
+
+      3  /45  Test #3  : CFG4Test.CTestDetectorTest                    Child aborted***Exception:     37.12  
+      5  /45  Test #5  : CFG4Test.CGDMLDetectorTest                    Child aborted***Exception:     36.97  
+      7  /45  Test #7  : CFG4Test.CGeometryTest                        Child aborted***Exception:     37.01  
+      27 /45  Test #27 : CFG4Test.CInterpolationTest                   Child aborted***Exception:     37.90  
+      ## change to X4PropertyMap.cc may fix these fails
+
+      1  /45  Test #1  : CFG4Test.CMaterialLibTest                     Child aborted***Exception:     3.76   
+      15 /45  Test #15 : CFG4Test.G4MaterialPropertiesTableTest        Child aborted***Exception:     0.25   
+      29 /45  Test #29 : CFG4Test.CGROUPVELTest                        Child aborted***Exception:     3.17   
+      ## might be fixed by constprop bugfix
+
+
+    (base) [simon@localhost ~]$ 
+
+

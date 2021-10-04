@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-
+#include "G4Version.hh"
 #include "G4MaterialPropertyVector.hh"
 #include "G4MaterialPropertiesTable.hh"
 
@@ -62,7 +62,13 @@ void X4PropertyMap::init()
 
          G4MaterialPropertyVector* mpv =  dynamic_cast<G4MaterialPropertyVector*>(pvec); 
 
+#if G4VERSION_NUMBER < 1100
          m_mpt->AddProperty( lkey, mpv ); 
+#else
+         G4bool createNewKey = true ; 
+         m_mpt->AddProperty( lkey, mpv, createNewKey ); 
+#endif
+
     }
 }
 
