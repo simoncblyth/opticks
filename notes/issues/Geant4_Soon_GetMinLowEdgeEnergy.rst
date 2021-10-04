@@ -1093,3 +1093,26 @@ Reviewing the code, I suspect CSolid and voxel releated extent calls within upda
 
 
 
+O 1042 adding the accumulator causes considerable slowdown::
+
+    2021-10-04 22:07:02.618 INFO  [269428] [CDetector::traverse@124] [
+    2021-10-04 22:07:02.619 INFO  [269428] [CTraverser::VolumeTreeTraverse@168] [
+    2021-10-04 22:07:02.808 INFO  [269428] [CTraverser::VolumeTreeTraverse@172] ]
+    2021-10-04 22:07:02.808 INFO  [269428] [CTraverser::AncestorTraverse@188] [
+    2021-10-04 22:07:28.812 INFO  [269428] [CTraverser::AncestorTraverse@200]  m_CSolid_extent_acc 0 accumulateDesc Acc                                     CSolid::extent n    319036 t   13.6556 v    0.0000
+    2021-10-04 22:07:28.812 INFO  [269428] [CTraverser::AncestorTraverse@205] ]
+    2021-10-04 22:07:28.812 INFO  [269428] [CTraverser::Summary@130] CDetector::traverse numMaterials 19 numMaterialsWithoutMPT 5
+    2021-10-04 22:07:28.812 INFO  [269428] [CDetector::traverse@132] ]
+
+
+
+S 91072::
+
+    2021-10-04 22:08:17.789 INFO  [271359] [CDetector::traverse@124] [
+    2021-10-04 22:08:17.789 INFO  [271359] [CTraverser::VolumeTreeTraverse@168] [
+    2021-10-04 22:08:18.101 INFO  [271359] [CTraverser::VolumeTreeTraverse@172] ]
+    2021-10-04 22:08:18.101 INFO  [271359] [CTraverser::AncestorTraverse@188] [
+    2021-10-04 22:09:11.738 INFO  [271359] [CTraverser::AncestorTraverse@200]  m_CSolid_extent_acc 0 accumulateDesc Acc                                     CSolid::extent n    319036 t   40.4717 v    0.0000
+    2021-10-04 22:09:11.739 INFO  [271359] [CTraverser::AncestorTraverse@205] ]
+    2021-10-04 22:09:11.739 INFO  [271359] [CTraverser::Summary@130] CDetector::traverse numMaterials 19 numMaterialsWithoutMPT 5
+

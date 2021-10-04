@@ -157,7 +157,7 @@ class CFG4_API CTraverser {
         NBoundingBox*                  m_bbox ; 
         OpticksQuery*                  m_query ; 
         unsigned                       m_verbosity ; 
-        unsigned                       m_CSolid_extent_acc ; 
+        int                            m_CSolid_extent_acc ; 
 
     private:
         // collected by VolumeTreeTraverse
