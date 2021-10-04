@@ -59,7 +59,8 @@ CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, 
     m_top(top),
     m_bbox(bbox ? bbox : new NBoundingBox),
     m_query(query),
-    m_verbosity(1),
+    m_verbosity(0),
+    m_CSolid_extent_acc(m_ok->accumulateAdd("CSolid::extent")),
     m_lcount(0),
     m_ltransforms(NULL),
     m_gcount(0),
@@ -185,10 +186,25 @@ void CTraverser::AncestorTraverse()
 
      AncestorTraverse(ancestors, m_top, 0, false);
 
+     LOG(info) 
+         << " m_CSolid_extent_acc " << m_CSolid_extent_acc 
+         << " accumulateDesc " << m_ok->accumulateDesc(m_CSolid_extent_acc)
+         ;
+
      LOG(LEVEL) << "]" ; 
      LOG(debug) << description() ;
 }
 
+/**
+CTraverser::AncestorTraverse
+------------------------------
+
+pre-order recursive traversal collecting and passing ancestor vectors between generations
+
+* slows down by factor of 10 with 91072 compared to 1042 !
+
+
+**/
 
 void CTraverser::AncestorTraverse(std::vector<const G4VPhysicalVolume*> ancestors, const G4VPhysicalVolume* pv, unsigned int depth, bool recursive_select )
 {
@@ -269,7 +285,6 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
 }
 
 
-
 void CTraverser::dumpLV(const char* msg) const
 {
     LOG(info) << msg ; 
@@ -298,8 +313,15 @@ void CTraverser::updateBoundingBox(const G4VSolid* solid, const G4Transform3D& t
     glm::vec3 high ; 
     glm::vec4 center_extent ; 
 
+
+    m_ok->accumulateStart(m_CSolid_extent_acc) ;
+
     CSolid csolid(solid);
     csolid.extent(transform, low, high, center_extent);
+
+    m_ok->accumulateStop(m_CSolid_extent_acc) ;
+
+
     m_center_extent->add(center_extent);
 
     if(selected)

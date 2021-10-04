@@ -973,3 +973,123 @@ S 91072, 30s::
     132     LOG(info) << "]" ;
     133 }
 
+
+
+"CTraverser=INFO CInterpolationTest" shows 10x for CTraverser::AncestorTraverse
+
+91072 CTraverser::AncestorTraverse 30s::
+
+    2021-10-04 20:49:08.709 INFO  [146794] [CDetector::traverse@124] [
+    2021-10-04 20:49:08.709 INFO  [146794] [CTraverser::VolumeTreeTraverse@167] [
+    2021-10-04 20:49:09.023 INFO  [146794] [CTraverser::VolumeTreeTraverse@171] ]
+    2021-10-04 20:49:09.023 INFO  [146794] [CTraverser::AncestorTraverse@176] [
+    2021-10-04 20:49:38.868 INFO  [146794] [CTraverser::AncestorTraverse@188] ]
+    2021-10-04 20:49:38.868 INFO  [146794] [CTraverser::Summary@129] CDetector::traverse numMaterials 19 numMaterialsWithoutMPT 5
+    2021-10-04 20:49:38.868 INFO  [146794] [CDetector::traverse@132] ]
+
+1042 CTraverser::AncestorTraverse 3s::
+
+    2021-10-04 20:50:38.955 INFO  [149193] [CDetector::traverse@124] [
+    2021-10-04 20:50:38.955 INFO  [149193] [CTraverser::VolumeTreeTraverse@167] [
+    2021-10-04 20:50:39.140 INFO  [149193] [CTraverser::VolumeTreeTraverse@171] ]
+    2021-10-04 20:50:39.140 INFO  [149193] [CTraverser::AncestorTraverse@176] [
+    2021-10-04 20:50:42.422 INFO  [149193] [CTraverser::AncestorTraverse@188] ]
+    2021-10-04 20:50:42.422 INFO  [149193] [CTraverser::Summary@129] CDetector::traverse numMaterials 19 numMaterialsWithoutMPT 5
+    2021-10-04 20:50:42.422 INFO  [149193] [CDetector::traverse@132] ]
+
+
+Reviewing the code, I suspect CSolid and voxel releated extent calls within updateBoundingBox are the most likely source of slowdown::
+
+    229 void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, bool selected)
+    230 {
+    231     G4Transform3D T ;
+    232 
+    233     for(unsigned int i=0 ; i < ancestors.size() ; i++)
+    234     {
+    235         const G4VPhysicalVolume* apv = ancestors[i] ;
+    236 
+    237         G4RotationMatrix rot, invrot;
+    238         if (apv->GetFrameRotation() != 0)
+    239         {   
+    240             rot = *(apv->GetFrameRotation());
+    241             invrot = rot.inverse();
+    242         }
+    243 
+    244         G4Transform3D P(invrot,apv->GetObjectTranslation());
+    245 
+    246         T = T*P ;
+    247     }
+    248     const G4VPhysicalVolume* pv = ancestors.back() ;
+    249     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+    250 
+    251 
+    252     const std::string& pvn = pv->GetName();
+    253     const std::string& lvn = lv->GetName();
+    254 
+    255     LOG(verbose) << " pvn " << pvn ;
+    256     LOG(verbose) << " lvn " << lvn ;
+    257 
+    258 
+    259     updateBoundingBox(lv->GetSolid(), T, selected);
+    260 
+    261     LOG(debug)
+    262         << " size " << std::setw(3) << ancestors.size()
+    263         << " gcount " << std::setw(6) << m_gcount
+    264         << " pvname " << pv->GetName()
+    265         ;
+    266     m_gcount += 1 ;
+    267 
+    268 
+    269     collectTransformT(m_gtransforms, T );
+    270     m_pvnames.push_back(pvn);
+    271 
+    272     m_pvs.push_back(pv);
+    273     m_lvs.push_back(lv);  // <-- hmm will be many of the same lv in m_lvs 
+    274 
+    275     m_lvm[lvn] = lv ;
+    276 
+    277 
+    278     m_ancestor_index += 1 ;
+    279 }
+
+
+::
+
+    248 
+    249     //updateBoundingBox(lv->GetSolid(), T, selected);  // TEMPORARY COMMENT TO LOOK FOR BOTTLENECK
+
+
+91072, after temporary comment of updateBoundingBox, AncestorTraverse goes from 30s to under 1s::
+
+    2021-10-04 21:26:49.711 INFO  [205745] [CDetector::traverse@124] [
+    2021-10-04 21:26:49.711 INFO  [205745] [CTraverser::VolumeTreeTraverse@167] [
+    2021-10-04 21:26:50.024 INFO  [205745] [CTraverser::VolumeTreeTraverse@171] ]
+    2021-10-04 21:26:50.024 INFO  [205745] [CTraverser::AncestorTraverse@176] [
+    2021-10-04 21:26:50.989 INFO  [205745] [CTraverser::AncestorTraverse@188] ]
+    2021-10-04 21:26:50.989 INFO  [205745] [CTraverser::Summary@129] CDetector::traverse numMaterials 19 numMaterialsWithoutMPT 5
+    2021-10-04 21:26:50.989 INFO  [205745] [CDetector::traverse@132] ]
+
+
+
+::
+
+     265 // Calculate extent under transform and specified limit
+     266 
+     267 G4bool G4Sphere::CalculateExtent( const EAxis pAxis,
+     268                                   const G4VoxelLimits& pVoxelLimit,
+     269                                   const G4AffineTransform& pTransform,
+     270                                         G4double& pMin, G4double& pMax ) const
+     271 {
+     272   G4ThreeVector bmin, bmax;
+     273 
+     274   // Get bounding box
+     275   BoundingLimits(bmin,bmax);
+     276 
+     277   // Find extent
+     278   G4BoundingEnvelope bbox(bmin,bmax);
+     279   return bbox.CalculateExtent(pAxis,pVoxelLimit,pTransform,pMin,pMax);
+     280 }
+     281 
+
+
+

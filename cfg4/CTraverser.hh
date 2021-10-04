@@ -156,7 +156,8 @@ class CFG4_API CTraverser {
         G4VPhysicalVolume*             m_top ; 
         NBoundingBox*                  m_bbox ; 
         OpticksQuery*                  m_query ; 
-        unsigned int                   m_verbosity ; 
+        unsigned                       m_verbosity ; 
+        unsigned                       m_CSolid_extent_acc ; 
 
     private:
         // collected by VolumeTreeTraverse
