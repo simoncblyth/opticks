@@ -107,7 +107,7 @@ int main(int argc, char** argv)
         case 'U': reldir = "test_makeICDF_UpperCut" ; break ; 
     } 
     assert( reldir && "require S or U argument to pick ICDF reldir" ); 
-    const char* icdf_base = SPath::Resolve("$TMP/QCerenkovTest");
+    const char* icdf_base = SPath::Resolve("$TMP/QCerenkovIntegralTest");
     LOG(info) << " t " << t << " icdf_base " << icdf_base << " reldir " << reldir ; 
 
     // hmm: save samples into ICDF subdir to explicitly record the vital connection 

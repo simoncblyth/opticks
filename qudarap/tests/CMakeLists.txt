@@ -9,6 +9,7 @@ set(TEST_SOURCES
    QTexRotateTest.cc
    QRngTest.cc
    QScintTest.cc
+   QCerenkovIntegralTest.cc
    QCerenkovTest.cc
    QCKTest.cc
    QPolyTest.cc

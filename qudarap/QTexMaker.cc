@@ -3,8 +3,41 @@
 #include "scuda.h"
 #include "NP.hh"
 #include "QTex.hh"
+#include "PLOG.hh"
 
-QTex<float4>* QTexMaker::Make2d_f4( const NP* a, char filterMode )  // static 
+const plog::Severity QTexMaker::LEVEL = PLOG::EnvLevel("QTexMaker", "DEBUG"); 
+
+
+QTex<float4>* QTexMaker::Make2d_f4( const NP* icdf, char filterMode )  // static 
+{
+    unsigned ndim = icdf->shape.size(); 
+    unsigned hd_factor = icdf->get_meta<unsigned>("hd_factor", 0) ; 
+
+    if( filterMode == 'P' ) LOG(fatal) << " filtermode 'P' without interpolation is in use : appropriate for basic tex machinery tests only " ; 
+
+    LOG(LEVEL)
+        << "["  
+        << " icdf " << icdf->sstr()
+        << " ndim " << ndim 
+        << " hd_factor " << hd_factor 
+        << " filterMode " << filterMode 
+        ;
+
+    assert( ndim == 3 && icdf->shape[ndim-1] == 4 ); 
+
+    QTex<float4>* tex = QTexMaker::Make2d_f4_(icdf, filterMode ); 
+    tex->setHDFactor(hd_factor); 
+    tex->uploadMeta(); 
+
+    LOG(LEVEL) << "]" ; 
+
+    return tex ; 
+}
+
+
+
+
+QTex<float4>* QTexMaker::Make2d_f4_( const NP* a, char filterMode )  // static 
 {
     assert( a->ebyte == 4 && "need to narrow double precision arrays first ");  
     unsigned ndim = a->shape.size(); 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-QCerenkovTest.py
-==================
+QCerenkovIntegralTest.py
+============================
 
 ::
 
-    QCerenkovTest 
-    ipython -i tests/QCerenkovTest.py
+    QCerenkovIntegralTest 
+    ipython -i tests/QCerenkovIntegralTest.py
 
 
 Getting very close match with symbolic integral results::
@@ -16,14 +16,12 @@ Getting very close match with symbolic integral results::
     Out[10]: array([ 0.   ,  0.006,  0.009,  0.007,  0.007,  0.014,  0.018,  0.014,  0.028,  0.014,  0.   , -0.014,  0.028,  0.028,  0.028,  0.028,  0.057,  0.057])
 
 
-
-
 """
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
-class QCerenkovTest(object):
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/QCerenkovTest") 
+class QCerenkovIntegralTest(object):
+    FOLD = os.path.expandvars("/tmp/$USER/opticks/QCerenkovIntegralTest") 
     def __init__(self):
         pass
 
@@ -108,7 +106,7 @@ def plot_s2(t):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    t = QCerenkovTest()
+    t = QCerenkovIntegralTest()
 
     #ii = np.arange( 0, 1000, 100 )
     ii = np.arange(9)

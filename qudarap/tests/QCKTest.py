@@ -5,7 +5,7 @@ QCKTest.py
 
 ::
 
-    QCerenkovTest 
+    QCerenkovIntegralTest 
     ipython -i tests/QCKTest.py
 
 
@@ -22,7 +22,7 @@ is informative as then there is only a very small range
 of possible energies. 
 
 Hmm: generating millions of photons just there is a kinda 
-extreme test, as in reality will only be 1.
+extreme test, as in reality will be less than 1. 
 
 Hmm maybe should exclude BetaInverse where the average number
 of photons is less than 1 
@@ -52,7 +52,7 @@ log = logging.getLogger(__name__)
 
 
 class QCKTest(object):
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/QCerenkovTest") 
+    FOLD = os.path.expandvars("/tmp/$USER/opticks/QCerenkovIntegralTest") 
 
     def __init__(self, approach="UpperCut", use_icdf=False):
         assert approach in ["UpperCut", "SplitBin"] 
