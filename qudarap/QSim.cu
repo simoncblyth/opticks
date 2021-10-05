@@ -15,30 +15,13 @@ MORE EASILY TESTED FROM MULTIPLE ENVIRONMENTS HEADERS
 #include "qevent.h"
 
 
-template <typename T>
-__global__ void _QSim_rng_sequence_0(qsim<T>* sim, T* rs, unsigned num_items )
-{
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_items) return;
-    curandState rng = sim->rngstate[id]; 
-    T u = qcurand<T>::uniform(&rng) ;
-    if(id % 100000 == 0) printf("//_QSim_rng_sequence id %d u %10.4f    \n", id, u  ); 
-    rs[id] = u ; 
-}
+/**
+_QSim_rng_sequence
+--------------------
 
-template <typename T>
-extern void QSim_rng_sequence_0(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, T* rs, unsigned num_items )
-{
-    printf("//QSim_rng_sequence_0 num_items %d \n", num_items ); 
-    _QSim_rng_sequence_0<T><<<numBlocks,threadsPerBlock>>>( sim, rs, num_items );
-} 
+id_offset : applies to sim.rngstate array controlling which curandState to use
 
-
-template void QSim_rng_sequence_0(dim3, dim3, qsim<float>*, float*, unsigned); 
-template void QSim_rng_sequence_0(dim3, dim3, qsim<double>*, double*, unsigned); 
-
-
-
+**/
 
 template <typename T>
 __global__ void _QSim_rng_sequence(qsim<T>* sim, T* seq, unsigned ni, unsigned nv, unsigned id_offset )
@@ -57,10 +40,10 @@ __global__ void _QSim_rng_sequence(qsim<T>* sim, T* seq, unsigned ni, unsigned n
 
 
 template <typename T>
-extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, T*  seq, unsigned ni, unsigned nv, unsigned ioffset )
+extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, T*  seq, unsigned ni, unsigned nv, unsigned id_offset )
 {
-    printf("//QSim_rng_sequence_f ni %d nv %d ioffset %d  \n", ni, nv, ioffset ); 
-    _QSim_rng_sequence<T><<<numBlocks,threadsPerBlock>>>( sim, seq, ni, nv, ioffset );
+    printf("//QSim_rng_sequence_f ni %d nv %d id_offset %d  \n", ni, nv, id_offset ); 
+    _QSim_rng_sequence<T><<<numBlocks,threadsPerBlock>>>( sim, seq, ni, nv, id_offset );
 
 }
 

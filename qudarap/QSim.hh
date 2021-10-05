@@ -73,7 +73,6 @@ struct QUDARAP_API QSim
     void configureLaunch( unsigned width, unsigned height );
     void configureLaunch2D( unsigned width, unsigned height );
 
-    void rng_sequence_0( T* rs, unsigned num_items );
     void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
 
     void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset ); 

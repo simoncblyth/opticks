@@ -24,7 +24,6 @@ struct QSimTest
     QSimTest(QSim<T>& qs); 
     void main(int argc, char** argv, char test); 
 
-    void rng_sequence_0(unsigned num_rng); 
     void rng_sequence(unsigned ni, int ni_tranche_size); 
     void wavelength(char mode, unsigned num_wavelength) ; 
 
@@ -55,16 +54,6 @@ QSimTest<T>::QSimTest(QSim<T>& qs_)
 }
 
 
-template <typename T>
-void QSimTest<T>::rng_sequence_0(unsigned num_rng )
-{
-    std::vector<T> rs(num_rng) ; 
-    qs.rng_sequence_0( rs.data(), rs.size() ); 
-
-    std::string name = MakeName("rng_sequence_0_", num_rng, ".npy" ); 
-
-    NP::Write( FOLD, name.c_str() ,  rs ); 
-}
 
 template <typename T>
 void QSimTest<T>::rng_sequence(unsigned ni, int ni_tranche_size_)
@@ -73,7 +62,8 @@ void QSimTest<T>::rng_sequence(unsigned ni, int ni_tranche_size_)
     unsigned nk = 16 ; 
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
 
-    qs.rng_sequence(FOLD, ni, nj, nk, ni_tranche_size ); 
+    const char* fold = SPath::Resolve(FOLD); 
+    qs.rng_sequence(fold, ni, nj, nk, ni_tranche_size ); 
 }
 
 
@@ -330,7 +320,6 @@ void QSimTest<T>::main(int argc, char** argv, char test )
 
     switch(test)
     {
-        case '0': rng_sequence_0(num)                        ; break ; 
         case 'F': rng_sequence(num, ni_tranche_size)         ; break ; 
         case 'S': wavelength('S', num)                       ; break ; 
         case 'C': wavelength('C', num)                       ; break ; 

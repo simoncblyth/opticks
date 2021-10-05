@@ -17,7 +17,6 @@ is no point to do that here and bake it into the
 persisted CSGFoundry geometry. As would then need
 to manage lots of different directories of CF geometry.
 
-
 --gparts_tranform_offset
 --------------------------
 
@@ -78,13 +77,8 @@ ggeo/GParts.cc::
     1307         LOG(LEVEL) << " NOT --gparts_transform_offset " ;
     1308     }
 
-
-
-
-
 EOU
 }
-
 
 msg="=== $BASH_SOURCE :"
 sdir=$(pwd)

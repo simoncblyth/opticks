@@ -1,5 +1,6 @@
 #include "PLOG.hh"
 #include "SSys.hh"
+#include "SPath.hh"
 #include "scuda.h"
 #include "squad.h"
 
@@ -89,12 +90,12 @@ QSim<T>::QSim()
 }
 
 /**
-QSim::init
-------------
+QSim::init_upload
+--------------------
 
-NB .sim (qsim.h) is a host side instance that is populated
+*sim* (qsim.h) is a host side instance that is populated
 with device side pointers and handles and then uploaded 
-to the device d_sim.
+to the device *d_sim*.
 
 Many device pointers and handles are then accessible from 
 the qsim.h instance at the cost of only a single launch 
@@ -104,6 +105,8 @@ or with optix launches a single Params member.
 The advantage of this approach is it avoids kernel 
 launches having very long argument lists and provides a natural 
 place (qsim.h) to add GPU side functionality. 
+
+In a very real sense it is object oriented GPU launches. 
 
 **/
 template <typename T>
@@ -201,29 +204,11 @@ void QSim<T>::configureLaunch2D(unsigned width, unsigned height )
 }
 
 
-template <typename T>
-extern void QSim_rng_sequence_0(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* rs, unsigned num_items ); 
-
-
-template<typename T>
-void QSim<T>::rng_sequence_0( T* rs, unsigned num_items )
-{
-    configureLaunch(num_items, 1 ); 
-
-    T* d_rs = QU::device_alloc<T>(num_items ); 
-
-    QSim_rng_sequence_0<T>(numBlocks, threadsPerBlock, d_sim, d_rs, num_items );  
-
-    QU::copy_device_to_host_and_free<T>( rs, d_rs, num_items ); 
-
-    LOG(LEVEL) << "]" ; 
-}
-
 /**
 QSim::rng_sequence mass production with multiple launches...
 --------------------------------------------------------------
 
-Split output files too ?::
+The output files are split too::
 
     epsilon:opticks blyth$ np.py *.npy 
     a :                                            TRngBufTest_0.npy :      (10000, 16, 16) : 8f9b27c9416a0121574730baa742b5c9 : 20210715-1227 
@@ -243,11 +228,25 @@ Upping to 1M would be 100x 20M = 2000M  2GB
 
 
 template <typename T>
-extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, T*  seq, unsigned ni, unsigned nj, unsigned ioffset ); 
+extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* seq, unsigned ni, unsigned nj, unsigned id_offset ); 
 
+
+/**
+QSim::rng_sequence generate randoms in single CUDA launch
+-------------------------------------------------------------
+
+Each launch generates ni_tranche*nv randoms writing them into seq
+
+ni_tranche : item tranche size
+
+nv : number randoms to generate for each item
+
+id_offset : acts on the rngstates array 
+
+**/
 
 template <typename T>
-void QSim<T>::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned ioffset )
+void QSim<T>::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_offset )
 {
     configureLaunch(ni_tranche, 1 ); 
 
@@ -255,7 +254,7 @@ void QSim<T>::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned i
 
     T* d_seq = QU::device_alloc<T>(num_rng); 
 
-    QSim_rng_sequence<T>(numBlocks, threadsPerBlock, d_sim, d_seq, ni_tranche, nv, ioffset );  
+    QSim_rng_sequence<T>(numBlocks, threadsPerBlock, d_sim, d_seq, ni_tranche, nv, id_offset );  
 
     QU::copy_device_to_host_and_free<T>( seq, d_seq, num_rng ); 
 }
@@ -268,7 +267,12 @@ const char* QSim<T>::PREFIX = "rng_sequence" ;
 QSim::rng_sequence
 ---------------------
 
-The ni is split into tranches of ni_tranche_size each.
+*ni* is the total number of items across all launches that is 
+split into tranches of *ni_tranche_size* each. 
+
+As separate CPU and GPU memory allocations, launches and output files are made 
+for each tranche the total generated size may exceed the total available memory of the GPU.  
+Splitting the output files also eases management by avoiding huge files. 
 
 **/
 
@@ -295,23 +299,35 @@ void QSim<T>::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned 
         << std::endl 
         ; 
 
+
+    // NB seq array memory gets reused for each launch and saved to different paths
     NP* seq = NP::Make<T>(ni_tranche_size, nj, nk) ; 
     T* values = seq->values<T>(); 
 
     for(unsigned t=0 ; t < num_tranche ; t++)
     {
-        unsigned ioffset = ni_tranche_size*t ; 
-        std::string name = QU::rng_sequence_name<T>(PREFIX, ni_tranche_size, nj, nk, ioffset ) ;  
+        // *id_offset* controls which rngstates/curandState to use
+        unsigned id_offset = ni_tranche_size*t ; 
+        std::string name = QU::rng_sequence_name<T>(PREFIX, ni_tranche_size, nj, nk, id_offset ) ;  
 
         std::cout 
             << std::setw(3) << t 
-            << std::setw(10) << ioffset 
+            << std::setw(10) << id_offset 
             << std::setw(100) << name.c_str()
             << std::endl 
             ; 
 
-        rng_sequence( values, ni_tranche_size, nv, ioffset );  
-        seq->save(dir, reldir.c_str(), name.c_str()); 
+        rng_sequence( values, ni_tranche_size, nv, id_offset );  
+
+        const char* fold = SPath::Resolve(dir, reldir.c_str()); 
+
+        int rc = SPath::MakeDirs(fold);   
+
+        assert( rc == 0 ); 
+
+        const char* path = SPath::Resolve(fold, name.c_str());
+
+        seq->save(path); 
     }
 }
 
