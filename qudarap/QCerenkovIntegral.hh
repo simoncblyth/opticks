@@ -10,13 +10,14 @@ template <typename T> struct QCK ;
 
 
 /**
-QCerenkovIntegral
-===================
+QCerenkovIntegral : creates set of ICDF for many different BetaInverse values
+================================================================================
+
+TODO : this integration is not using CUDA at all...  so  this and QCK needs to be moved elsewhere, maybe SCerenkovIntegral, SCK ?
+That will enable Cerenkov ICDF creation pre-cache in CSG_GGeo
 
 Prototyping/experimentation done in ana/rindex.py 
-
 **/
-
 
 struct QUDARAP_API QCerenkovIntegral
 {

@@ -46,6 +46,16 @@ QTex<float4>* QCerenkov::MakeTex(const NP* icdf, char filterMode ) // static
 }
 
 
+/**
+QCerenkov::QCerenkov
+----------------------
+
+Currently relies on icdf created by QCerenkovIntegralTest
+
+TODO: formalize icdf creation into the pre-cache geometry conversion and icdf location into geocache  
+
+**/
+
 QCerenkov::QCerenkov(const char* fold_ )
     :
     fold( fold_ ? fold_ : DEFAULT_FOLD ),

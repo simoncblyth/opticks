@@ -62,7 +62,7 @@ class QCKTest(object):
         base_path = os.path.join(self.FOLD, "test_makeICDF_%s" % approach)
         if not os.path.exists(base_path):
             log.fatal("base_path %s does not exist" % base_path)
-            return 
+            assert 0
         pass 
         names = os.listdir(base_path)
         log.info("loading from base_path %s " % base_path)
@@ -363,8 +363,8 @@ class QCKTest(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    approach = "UpperCut"
-    #approach = "SplitBin"
+    #approach = "UpperCut"
+    approach = "SplitBin"
     use_icdf = False 
 
     t = QCKTest(approach=approach, use_icdf=use_icdf)

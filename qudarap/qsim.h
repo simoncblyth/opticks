@@ -20,8 +20,9 @@ This is aiming to replace the OptiX 6 context in a CUDA-centric way.
 
 Hmm:
 
-* qsim encompasses global info relevant to to all photons, making any changes
-  to it from single threads must only be into thread-owned slots to avoid interference 
+* qsim encompasses global info relevant to to all photons, meaning that any changes
+  make to the qsim instance from single photon threads must be into thread-owned slots 
+  to avoid interference 
  
 * temporary working state local to each photon is currently being passed by reference args, 
   would be cleaner to use a collective state struct to hold this local structs 
@@ -39,7 +40,10 @@ struct qsim
 
     cudaTextureObject_t scint_tex ; 
     quad4*              scint_meta ;
-    // hmm could encapsulate the above group into a qscint ?
+    // hmm could encapsulate the above group into a qscint ? 
+    // and follow a similar approach for qcerenkov 
+    // ... hmm there is commonality between the icdf textures with hd_factor on top 
+    // that needs to be profited from 
 
     enum { _BOUNDARY_NUM_MATSUR = 4,  _BOUNDARY_NUM_FLOAT4 = 2 }; 
 
@@ -70,8 +74,8 @@ struct qsim
 
     QSIM_METHOD void    cerenkov_fabricate_genstep(GS& g, bool energy_range );
 
-    QSIM_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g);
-    QSIM_METHOD float   cerenkov_wavelength(unsigned id, curandStateXORWOW& rng) ; 
+    QSIM_METHOD float   cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng, const GS& g);
+    QSIM_METHOD float   cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng) ; 
 
     QSIM_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
     QSIM_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
@@ -168,6 +172,9 @@ qsim::scint_wavelength_hd10
 Idea is to improve handling of extremes by throwing ten times the bins
 at those regions, using simple and cheap linear mappings.
 
+TODO: move hd "layers" into float4 payload so the 2d cerenkov and 1d scintillation
+icdf texture can share some of teh implementation
+
 **/
 
 template <typename T>
@@ -223,8 +230,8 @@ inline QSIM_METHOD float qsim<T>::scint_wavelength_hd20(curandStateXORWOW& rng)
 }
 
 /**
-qsim::cerenkov_wavelength
---------------------------
+qsim::cerenkov_wavelength_rejection_sampled
+---------------------------------------------
 
 wavelength between Wmin and Wmax is uniform-reciprocal-sampled 
 to mimic uniform energy range sampling without taking reciprocals
@@ -334,7 +341,7 @@ g4-cls G4Cerenkov::
 **/
 
 template <typename T>
-inline QSIM_METHOD float qsim<T>::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng, const GS& g) 
+inline QSIM_METHOD float qsim<T>::cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng, const GS& g) 
 {
     float u0 ;
     float u1 ; 
@@ -374,7 +381,7 @@ inline QSIM_METHOD float qsim<T>::cerenkov_wavelength(unsigned id, curandStateXO
 
     if( id == 0u )
     {
-        printf("// qsim::cerenkov_wavelength id %d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f \n", id, sampledRI, cosTheta, sin2Theta, wavelength );  
+        printf("// qsim::cerenkov_wavelength_rejection_sampled id %d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f \n", id, sampledRI, cosTheta, sin2Theta, wavelength );  
     }
 
     return wavelength ; 
@@ -759,14 +766,14 @@ inline QSIM_METHOD void qsim<T>::cerenkov_fabricate_genstep(GS& g, bool energy_r
 
 
 template <typename T>
-inline QSIM_METHOD float qsim<T>::cerenkov_wavelength(unsigned id, curandStateXORWOW& rng ) 
+inline QSIM_METHOD float qsim<T>::cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng ) 
 {
     QG qg ;      
     qg.zero();  
     GS& g = qg.g ; 
     bool energy_range = false ; 
     cerenkov_fabricate_genstep(g, energy_range); 
-    float wavelength = cerenkov_wavelength(id, rng, g);   
+    float wavelength = cerenkov_wavelength_rejection_sampled(id, rng, g);   
     return wavelength ; 
 }
 

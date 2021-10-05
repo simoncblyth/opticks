@@ -16,6 +16,12 @@ implementations.  Perhaps call it QPhys or QSim ?
 Contrast with the QEvent with a very 
 different event-by-event lifecycle  
 
+TODO: 
+
+too much of implementation is directly done in QSim, 
+it needs to be more of an umbrella holding individually 
+functional/testable components 
+
 **/
 
 struct NP ; 
@@ -61,6 +67,9 @@ struct QUDARAP_API QSim
 
     std::string desc() const ; 
 
+
+    // TODO : split these off into separte individially testable objects 
+
     void configureLaunch( unsigned width, unsigned height );
     void configureLaunch2D( unsigned width, unsigned height );
 
@@ -71,9 +80,9 @@ struct QUDARAP_API QSim
     void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
 
 
-    void scint_wavelength(    T* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
-    void cerenkov_wavelength( T* wavelength, unsigned num_wavelength ); 
-    void dump_wavelength(     T* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
+    void scint_wavelength(                      T* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
+    void cerenkov_wavelength_rejection_sampled( T* wavelength, unsigned num_wavelength ); 
+    void dump_wavelength(                       T* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 
     // hmm need to template quad4 ? or narrowing on output ?
     void scint_photon(           quad4* photon, unsigned num_photon ); 

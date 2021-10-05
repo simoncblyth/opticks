@@ -4,6 +4,17 @@
 #include "qcurand.h"
 #include "qrng.h"
 
+/**
+_QRng_generate
+-----------------
+
+Simple curand generation with skipahead, no encapsulation. 
+
+* ni: number of items, eg photons
+* nv: number of values to generate for each item 
+
+**/
+
 
 template <typename T>
 __global__ void _QRng_generate(T* uu, unsigned ni, unsigned nv, curandStateXORWOW* r, unsigned long long skipahead_  )
@@ -39,7 +50,17 @@ template void QRng_generate(dim3, dim3, double*, unsigned, unsigned, curandState
 
 
 
+/**
+_QRng_generate_2
+--------------------
 
+Try with a little bit of encapsulation into qrng. 
+Would moving more into qrng be appropriate ?
+
+Using light touch encapsulation of setup only as want generation 
+of randoms to be familiar/standard and suffer no overheads.
+
+**/
 
 template <typename T>
 __global__ void _QRng_generate_2(qrng* qr, unsigned event_idx, T* uu, unsigned ni, unsigned nv )
@@ -71,10 +92,5 @@ extern void QRng_generate_2(dim3 numBlocks, dim3 threadsPerBlock, qrng* qr, unsi
 
 template void QRng_generate_2(dim3, dim3, qrng*, unsigned, float*,  unsigned, unsigned ); 
 template void QRng_generate_2(dim3, dim3, qrng*, unsigned, double*, unsigned, unsigned ); 
-
-
-
-
-
 
 

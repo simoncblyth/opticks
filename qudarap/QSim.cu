@@ -119,29 +119,29 @@ but for testing need to be able to manually fabricate a genstep
 **/
 
 template <typename T>
-__global__ void _QSim_cerenkov_wavelength(qsim<T>* sim, T* wavelength, unsigned num_wavelength )
+__global__ void _QSim_cerenkov_wavelength_rejection_sampled(qsim<T>* sim, T* wavelength, unsigned num_wavelength )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
 
     curandState rng = sim->rngstate[id]; 
 
-    T wl = sim->cerenkov_wavelength(id, rng);   
+    T wl = sim->cerenkov_wavelength_rejection_sampled(id, rng);   
 
-    if(id % 100000 == 0) printf("//_QSim_cerenkov_wavelength id %d wl %10.4f    \n", id, wl  ); 
+    if(id % 100000 == 0) printf("//_QSim_cerenkov_wavelength_rejection_sampled id %d wl %10.4f    \n", id, wl  ); 
     wavelength[id] = wl ; 
 }
 
 
 template <typename T>
-extern void QSim_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, T* wavelength, unsigned num_wavelength ) 
+extern void QSim_cerenkov_wavelength_rejection_sampled(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, T* wavelength, unsigned num_wavelength ) 
 {
-    printf("//QSim_cerenkov_wavelength num_wavelength %d \n", num_wavelength ); 
-    _QSim_cerenkov_wavelength<T><<<numBlocks,threadsPerBlock>>>( sim, wavelength, num_wavelength );
+    printf("//QSim_cerenkov_wavelength_rejection_sampled num_wavelength %d \n", num_wavelength ); 
+    _QSim_cerenkov_wavelength_rejection_sampled<T><<<numBlocks,threadsPerBlock>>>( sim, wavelength, num_wavelength );
 } 
 
-template void QSim_cerenkov_wavelength(dim3, dim3, qsim<double>*, double*, unsigned ); 
-template void QSim_cerenkov_wavelength(dim3, dim3, qsim<float>*, float*, unsigned ); 
+template void QSim_cerenkov_wavelength_rejection_sampled(dim3, dim3, qsim<double>*, double*, unsigned ); 
+template void QSim_cerenkov_wavelength_rejection_sampled(dim3, dim3, qsim<float>*, float*, unsigned ); 
 
 
 

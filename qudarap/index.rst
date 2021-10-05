@@ -45,6 +45,9 @@ QU.hh
 TODO
 ------
 
+QCerenkov 
+   treat it like QScint now that have workable icdf  
+
 QEvent/qevent  
    hold refs to gensteps, seeds, photons, ...
 

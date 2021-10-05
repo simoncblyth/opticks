@@ -45,7 +45,7 @@ struct QSimTest
 }; 
 
 template <typename T>
-const char* QSimTest<T>::FOLD = "/tmp/QSimTest" ; 
+const char* QSimTest<T>::FOLD = "$TMP/QSimTest" ; 
 
 template <typename T>
 QSimTest<T>::QSimTest(QSim<T>& qs_)
@@ -62,6 +62,7 @@ void QSimTest<T>::rng_sequence_0(unsigned num_rng )
     qs.rng_sequence_0( rs.data(), rs.size() ); 
 
     std::string name = MakeName("rng_sequence_0_", num_rng, ".npy" ); 
+
     NP::Write( FOLD, name.c_str() ,  rs ); 
 }
 
@@ -96,7 +97,7 @@ void QSimTest<T>::wavelength(char mode, unsigned num_wavelength )
     }
     else if( mode == 'C' )
     {
-        qs.cerenkov_wavelength( w.data(), w.size() ); 
+        qs.cerenkov_wavelength_rejection_sampled( w.data(), w.size() ); 
         ss << "_cerenkov" ; 
     }
 
@@ -352,8 +353,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    // TODO: this needs formalization, ie not in the test, and inclusion of QCerenkovIntegral prep 
+
     const char* cfbase =  SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" )) ; 
-    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); 
+    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy");  // need better naming, see CSG_GGeo_Convert::convertScintillatorLib 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 
     if(icdf == nullptr || bnd == nullptr)

@@ -357,10 +357,10 @@ QSim::cerenkov_wavelength
 **/
 
 template <typename T>
-extern void QSim_cerenkov_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* wavelength, unsigned num_wavelength ); 
+extern void QSim_cerenkov_wavelength_rejection_sampled(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* wavelength, unsigned num_wavelength ); 
 
 template <typename T>
-void QSim<T>::cerenkov_wavelength( T* wavelength, unsigned num_wavelength )
+void QSim<T>::cerenkov_wavelength_rejection_sampled( T* wavelength, unsigned num_wavelength )
 {
     LOG(LEVEL) << "[ num_wavelength " << num_wavelength ;
  
@@ -368,7 +368,7 @@ void QSim<T>::cerenkov_wavelength( T* wavelength, unsigned num_wavelength )
 
     T* d_wavelength = QU::device_alloc<T>(num_wavelength); 
 
-    QSim_cerenkov_wavelength(numBlocks, threadsPerBlock, d_sim, d_wavelength, num_wavelength );  
+    QSim_cerenkov_wavelength_rejection_sampled(numBlocks, threadsPerBlock, d_sim, d_wavelength, num_wavelength );  
 
     QU::copy_device_to_host_and_free<T>( wavelength, d_wavelength, num_wavelength ); 
 
