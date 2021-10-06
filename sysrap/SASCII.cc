@@ -24,6 +24,8 @@
 #include <cassert>
 #include <sstream>
 
+#include "SDice.hh"
+
 #include "SASCII.hh"
 
 
@@ -38,6 +40,42 @@ const char SASCII::ALLOWED[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 "_"
 "-"
  ; 
+
+
+void SASCII::dump() const 
+{
+    unsigned num_upper = sizeof(UPPER)/sizeof(char) ; 
+    unsigned num_lower = sizeof(LOWER)/sizeof(char) ; 
+    unsigned num_number = sizeof(NUMBER)/sizeof(char) ; 
+    unsigned num_other = sizeof(OTHER)/sizeof(char) ; 
+
+    std::cout << " num_upper " << num_upper  << std::endl ; 
+    std::cout << " num_lower " << num_lower  << std::endl ; 
+    std::cout << " num_number " << num_number  << std::endl ; 
+    std::cout << " num_other " << num_other  << std::endl ; 
+
+    assert( num_upper == 26+1 );  // +1 from the "invisible" string terminator  
+    assert( num_lower == 26+1 ); 
+    assert( num_number == 10+1 ); 
+    assert( num_other == 1+1 );
+ 
+    SDice<26> rng ;  // inclusive range   
+    
+    for(unsigned i=0 ; i < 100 ; i++ ) 
+    {
+        unsigned u = rng(); 
+        char c = UPPER[u] ; 
+        std::cout 
+            << " i " << std::setw(4) << i 
+            << " u " << std::setw(4) << u 
+            << " c [" << std::setw(1) << c << "]" 
+            << std::endl
+            ; 
+    }
+
+
+}
+
 
 unsigned SASCII::Count( char c, const char* list )
 {
@@ -215,5 +253,17 @@ std::string SASCII::getTwoChar(unsigned first, unsigned second) const
     }
     return ss.str();  
 }
+
+
+std::string SASCII::getTwoRandom(SDice<26>& rng ) const 
+{
+    std::stringstream ss ; 
+    unsigned u0 = rng(); 
+    unsigned u1 = rng(); 
+    ss << UPPER[u0] << UPPER[u1] ; 
+    return ss.str() ; 
+}
+
+
 
 

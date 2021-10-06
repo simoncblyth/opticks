@@ -31,14 +31,27 @@ SAbbrev
 
 #include "SYSRAP_API_EXPORT.hh"
 
+class SASCII ; 
+
+
 struct SYSRAP_API SAbbrev
 {
     static const plog::Severity LEVEL ;
+    static SAbbrev* Load(const char* path); 
+    static SAbbrev* FromString( const char* str ); 
 
     SAbbrev( const std::vector<std::string>& names_ ); 
+
     void init(); 
+
+
+    std::string form_candidate( const SASCII* n ); 
+
     bool isFree(const std::string& ab) const ;
     void dump() const ; 
+    void save(const char* path_) const ; 
+    void save(const char* fold, const char* name) const ; 
+
    
     const std::vector<std::string>& names ; 
     std::vector<std::string> abbrev ; 

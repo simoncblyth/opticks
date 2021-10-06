@@ -2,6 +2,194 @@ LHCb_RICH_YunlongLi
 ======================
 
 
+
+
+> Hi Simon,
+>
+> Thank you very much for your reply. 
+>
+> Since the gdml and log files are too large to deliver as attachments, I
+> uploaded the gdml file of the RICH detector and the log files to bitbucket
+> ( https://bitbucket.org/yl-li/opticks_lhcb_rich/src/master/), so that you can
+> reproduce the problems I mentioned before.
+> ...
+> I executed the command: 
+>
+>
+>     OKX4Test --deletegeocache \
+>              --gdmlpath ~/liyu/geometry/rich1_new.gdml \
+>              --cvd 1 --rtx 1 \
+>              --envkey --xanalytic \
+>              --timemax 400 --animtimemax 400 \
+>              --target 1 --eye -1,-1,-1 \
+>              --SYSRAP debug
+>
+>
+> and from the OKX4Test_SAbbrev.log (as attached to this email) in the last few
+> lines, you can see [PipeBeTV56] and [PipeTitaniumG5] give the same abbrievation
+> as [P5]. And after changing the code a bit as I wrote before, this problem can
+> be solved.
+
+
+Regarding your commandline notice that controlling the logging level 
+at the project level with "--SYSRAP debug" tends to yield huge amounts of output.
+Instead of doing that you can control the logging level for each class/struct 
+by setting envvars named after the class/struct.  For example::
+
+    export SAbbrev=INFO
+
+Also note that the option "--cvd 1" is internally setting CUDA_VISIBLE_DEVICES envvar 
+to 1 which will only work if you have more than one GPU attached.  
+In this case with OKX4Test that does not matter, as the GPU is not being used, 
+but in other cases using an inappropriate "--cvd" will cause crashes.  
+
+Regarding the SAbbrev assert I added SAbbrevTest.cc test_3 for the issue::
+
+void test_3()
+{
+     SAbbrev::FromString(R"LITERAL(
+Copper
+PipeAl6061
+C4F10
+PipeAl2219F
+VeloStainlessSteel
+Vacuum
+PipeBeTV56
+PipeSteel316LN
+PipeBe
+Celazole
+PipeTitaniumG5
+AW7075
+PipeAl6082
+FutureFibre
+Technora
+Brass
+PipeSteel
+BakeOutAerogel
+Rich2CarbonFibre
+RichSoftIron
+Rich1GasWindowQuartz
+Kovar
+HpdIndium
+HpdWindowQuartz
+HpdS20PhCathode
+HpdChromium
+HpdKapton
+Supra36Hpd
+RichHpdSilicon
+RichHpdVacuum
+Rich1Nitrogen
+Rich1MirrorCarbonFibre
+R1RadiatorGas
+Rich1MirrorGlassSimex
+Rich1Mirror2SupportMaterial
+Rich1G10
+Rich1PMI
+Rich1DiaphramMaterial
+Air
+)LITERAL")->dump() ; 
+
+} 
+
+And I fixed the issue by using random abbreviations when the usual attempts 
+to abbreviate failed to come up with something unique.  
+
+
+
+
+> 2. In this file only the polished, polished front-painted and ground mirrors
+> are considered, other cases will cause the assertion in line 239 failed. Are
+> you planning to handle other types of mirrors?
+>
+>
+>   I have no plan to implement more surface types until I need them.
+>
+>   I am very willing to incorporate your pull requests with more surface types added.
+>   However I suggest you discuss with me how you plan to do that first to ensure your
+>   work can be incorporated into Opticks.
+>
+> The main reason why I asked this problem is that in this gdml file, there are some ground frontpainted mirrors (type 4), which can cause the command
+>
+> OKX4Test --deletegeocache --gdmlpath ~/liyu/geometry/rich1_new.gdml --cvd 1 --rtx 1 --envkey --xanalytic --timemax 400 --animtimemax 400 --target 1 --eye -1,-1,-1
+>
+> failed (See OKX4Test_GOpticalSurface.log). Right now, in order to make the test running, we just added
+> if(strncmp(m_finish,"4",strlen(m_finish))==0)  return false ;
+> to GOpticalSurface::isSpecular() function.
+
+
+
+
+
+https://bitbucket.org/simoncblyth/opticks/src/02b098569330585dc6303275b1c84a1855a7e1f9/extg4/X4Solid.cc#lines-1105,
+
+3. In this file why are the startphi and deltaphi not allowed to be 0 and 360
+at the same time? I see in G4Polycone class, such case is allowed.
+
+
+   1091 void X4Solid::convertPolycone()
+   1092 {
+   1093     // G4GDMLWriteSolids::PolyconeWrite
+   1094     // G4GDMLWriteSolids::ZplaneWrite
+   1095     // ../analytic/gdml.py
+   1096
+   1097     //LOG(error) << "START" ;
+   1098
+   1099     const G4Polycone* const solid = static_cast<const G4Polycone*>(m_solid);
+   1100     assert(solid);
+   1101     const G4PolyconeHistorical* ph = solid->GetOriginalParameters() ;
+   1102
+   1103     float startphi = ph->Start_angle/degree ;
+   1104     float deltaphi = ph->Opening_angle/degree ;
+   1105     assert( startphi == 0.f && deltaphi == 360.f );
+   1106
+
+
+   The assertion on line 1105 is requiring that startphi=0 and deltaphi=360 constraining that
+   there is no phi segment applied to the polycone.
+
+   The assert is there just because that has not been needed in the geometries so far faced.
+   You are very welcome to do the development work of adding that in a pull request. Make
+   sure to include a unit test that tests the new functionality you are adding.
+
+This case exists in this gdml file. if you correct all the things above and run the command:
+OKX4Test --deletegeocache --gdmlpath ~/liyu/geometry/rich1_new.gdml --cvd 1 --rtx 1 --envkey --xanalytic --timemax 400 --animtimemax 400 --target 1 --eye -1,-1,-1 --X4 debug
+the assertion here will fail (see OKX4Test_X4Solid.log file).
+
+At present, we just remove this assertion and I am willing to find a better solution here.
+
+https://bitbucket.org/simoncblyth/opticks/src/02b098569330585dc6303275b1c84a1855a7e1f9/extg4/X4PhysicalVolume.cc#lines-1398,
+
+
+4. In this file the names of the inner material and outer material are
+extracted and then used in line 1524, 1530, 1536 for GBndLib->addBoundary
+function.  In extg4/X4PhysicalVolume.cc, omat and imat are directly extracted
+from logical volumes, and may follow this style "_dd_Materials_Air",
+"_dd_Materials_Vacuum" But in GBndLib::add function, omat and imat are
+extracted from GMaterialLib according to their indexes, and follow this style
+"Air", "Vacuum".  Such difference can cause an assertion failed.
+
+
+   The geometries I work with currently do not have prefixes such as "/dd/Material/"
+   on material names, so there could well be a missing X4::BaseName or equivalent somewhere ?
+   However the way you reported the issue makes me unsure of what the issue is !
+
+Sorry if my description confuses you. You can refer to OKX4Test_GBndLIb.log file, which are generated by this command
+OKX4Test --deletegeocache --gdmlpath ~/liyu/geometry/rich1_new.gdml --cvd 1 --rtx 1 --envkey --xanalytic --timemax 400 --animtimemax 400 --target 1 --eye -1,-1,-1 --X4 debug.
+In line 126191, you can see the names of omat and imat with prefixed as "_dd_Materials".
+
+Let's see if you can reproduce these problems and then we can deal with others.
+
+Thank you very much for your help and patience.
+
+Best wishes,
+
+Yunlong
+
+
+
+
+
+
 Hi Yunlong, 
 
 > I hope all is well with you. 

@@ -27,8 +27,10 @@ SASCII
 
 #include <string>
 #include <cstddef>
-
 #include "SYSRAP_API_EXPORT.hh"
+
+template <unsigned> struct SDice ; 
+
 
 class SYSRAP_API SASCII 
 {
@@ -58,6 +60,10 @@ class SYSRAP_API SASCII
       std::string getFirstUpper(unsigned n) const ; 
       std::string getFirstLast() const ; 
       std::string getTwoChar(unsigned first, unsigned second) const ; 
+      std::string getTwoRandom(SDice<26>& rng ) const ; 
+
+      void dump() const ; 
+
   private:
       void init();   
   public:

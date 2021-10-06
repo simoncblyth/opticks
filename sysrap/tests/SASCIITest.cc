@@ -22,13 +22,13 @@
 #include <string>
 #include <vector>
 
+#include "SDice.hh"
 #include "SASCII.hh"
 #include "SAbbrev.hh"
 
 #include "OPTICKS_LOG.hh"
 
-
-int main(int argc, char** argv )
+void test_0()
 {
     SASCII::DumpAllowed(); 
 
@@ -77,9 +77,31 @@ int main(int argc, char** argv )
               << " firstUpper(4) " << std::setw(5) << n.getFirstUpper(4)
               << std::endl ;  
     }
+}
 
-    return 0 ; 
 
+void test_dump()
+{
+    SASCII n("Hello"); 
+    n.dump(); 
+
+    SDice<26> rng ; 
+
+    for(unsigned i=0 ; i < 10 ; i++)
+    {
+        std::string ab = n.getTwoRandom(rng); 
+        std::cout << ab << std::endl ; 
+    }
+
+}
+
+
+
+int main(int argc, char** argv )
+{
+   test_dump(); 
+
+   return 0 ; 
 }
 
 

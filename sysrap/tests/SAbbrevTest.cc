@@ -119,15 +119,65 @@ void test_2()
     ab.dump(); 
 }
 
+void test_3()
+{
+     SAbbrev::FromString(R"LITERAL(
+Copper
+PipeAl6061
+C4F10
+PipeAl2219F
+VeloStainlessSteel
+Vacuum
+PipeBeTV56
+PipeSteel316LN
+PipeBe
+Celazole
+PipeTitaniumG5
+AW7075
+PipeAl6082
+FutureFibre
+Technora
+Brass
+PipeSteel
+BakeOutAerogel
+Rich2CarbonFibre
+RichSoftIron
+Rich1GasWindowQuartz
+Kovar
+HpdIndium
+HpdWindowQuartz
+HpdS20PhCathode
+HpdChromium
+HpdKapton
+Supra36Hpd
+RichHpdSilicon
+RichHpdVacuum
+Rich1Nitrogen
+Rich1MirrorCarbonFibre
+R1RadiatorGas
+Rich1MirrorGlassSimex
+Rich1Mirror2SupportMaterial
+Rich1G10
+Rich1PMI
+Rich1DiaphramMaterial
+Air
+)LITERAL")->dump() ; 
+
+} 
+
+
+
+
 
 
 int main(int argc, char** argv )
 {
     OPTICKS_LOG(argc, argv);
  
-    test_0(); 
-    test_1(); 
-    test_2(); 
+    //test_0(); 
+    //test_1(); 
+    //test_2(); 
+    test_3(); 
 
     return 0 ; 
 }
