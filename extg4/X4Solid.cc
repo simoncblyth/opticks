@@ -75,6 +75,18 @@ void X4Solid::SetVerbosity(unsigned verbosity) // static
 }
 
 
+void X4Solid::Banner( int lvIdx, int soIdx, const std::string& lvname, const std::string& soname ) // static 
+{
+    LOG(LEVEL)
+         << " lvIdx " << std::setw(5) << lvIdx 
+         << " soIdx " << std::setw(5) << soIdx 
+         << " soname " << soname
+         << " lvname " << lvname
+         ;
+}
+
+
+
 /**
 X4Solid::Convert
 -----------------
@@ -632,10 +644,25 @@ nnode* X4Solid::convertTubs_disc()
     return tube ; 
 }
 
+/**
+X4Solid::convertTubs
+---------------------
+
+TODO: calculate what the segment prism segR size  should be rather 
+than this adhoc choice.
+As are intersecting it doesnt matter if the segR is too big, 
+but being too small could result in partial segmenting of the base shape
+
+Is 50% bigger than rmax always a safe choice ?
+
+See also
+
+* cf ../analytic/gdml.py:Tube
+
+
+**/
 void X4Solid::convertTubs()
 {  
-    // cf ../analytic/gdml.py:Tube
-
     const G4Tubs* const solid = static_cast<const G4Tubs*>(m_solid);
     assert(solid); 
     //LOG(info) << "\n" << *solid ; 
@@ -656,13 +683,6 @@ void X4Solid::convertTubs()
 
     float segZ = z*1.01 ; 
     float segR = rmax*1.5 ;   
-
-    // TODO: calculate what the segment prism segR size  should be rather 
-    //       than this adhoc choice.
-    //       As are intersecting it doesnt matter if the segR is too big, 
-    //       but being too small could result in partial segmenting of the base shape
-    //
-    //       Is 50% bigger than rmax always a safe choice ?
 
     nnode* result =  has_deltaPhi && deltaPhi_segment_enabled 
                   ?
@@ -782,13 +802,31 @@ Following
     setG4Args(param, keys);
 }
 
+/**
+X4Solid::convertCons_
+----------------------
+
+startPhi/deltaPhi is implemented using X4Solid::intersectWithPhiSegment
+
+TODO
+    calculate what the segment prism segR size  should be rather 
+    than this adhoc choice.
+    As are intersecting it doesnt matter if the segR is too big, 
+    but being too small could result in partial segmenting of the base shape
+    
+    Is 50% bigger than rmax always a safe choice ?
+
+See also:
+
+* G4GDMLWriteSolids::ConeWrite
+
+
+**/
 
 nnode* X4Solid::convertCons_(bool only_inner)
 {
     const G4Cons* const cone = static_cast<const G4Cons*>(m_solid);
     assert(cone); 
-
-    // G4GDMLWriteSolids::ConeWrite
 
     float rmax1    = cone->GetOuterRadiusMinusZ()/mm ;
     float rmax2    = cone->GetOuterRadiusPlusZ()/mm  ;
@@ -814,19 +852,11 @@ nnode* X4Solid::convertCons_(bool only_inner)
     nnode* ret = has_inner ? nnode::make_operator(CSG_DIFFERENCE, cn, inner) : cn ; 
     if(has_inner) ret->label = BStr::concat(m_name, "_ndifference", NULL ) ; 
 
-
     bool deltaPhi_segment_enabled = true ; 
     bool has_deltaPhi = deltaPhi < 360.f ; 
 
     float segZ = z*1.01 ; 
     float segR = std::max(rmax1, rmax2)*1.5 ;   
-
-    // TODO: calculate what the segment prism segR size  should be rather 
-    //       than this adhoc choice.
-    //       As are intersecting it doesnt matter if the segR is too big, 
-    //       but being too small could result in partial segmenting of the base shape
-    //
-    //       Is 50% bigger than rmax always a safe choice ?
 
     nnode* result =  has_deltaPhi && deltaPhi_segment_enabled 
                   ?
@@ -1088,46 +1118,49 @@ void X4Solid::convertPolyconePrimitives( const std::vector<zplane>& zp,  std::ve
 
 const bool X4Solid::convertPolycone_duplicate_py_inner_omission = true ; 
 
+/**
+X4Solid::convertPolycone
+--------------------------
+
+Note that phi segmented polycones are not handled. 
+
+See also:
+
+* G4GDMLWriteSolids::PolyconeWrite
+* G4GDMLWriteSolids::ZplaneWrite
+* ../analytic/gdml.py 
+
+**/
+
 void X4Solid::convertPolycone()
 {  
-    // G4GDMLWriteSolids::PolyconeWrite
-    // G4GDMLWriteSolids::ZplaneWrite
-    // ../analytic/gdml.py 
-
-    //LOG(error) << "START" ; 
+    bool deltaPhi_segment_enabled = false ; 
 
     const G4Polycone* const solid = static_cast<const G4Polycone*>(m_solid);
     assert(solid); 
     const G4PolyconeHistorical* ph = solid->GetOriginalParameters() ;
 
-    float startphi = ph->Start_angle/degree ;  
-    float deltaphi = ph->Opening_angle/degree ;
-    assert( startphi == 0.f && deltaphi == 360.f ); 
+    float startPhi = ph->Start_angle/degree ;  
+    float deltaPhi = ph->Opening_angle/degree ;
+    bool  has_deltaPhi = deltaPhi < 360.f  ; 
+
+    if(deltaPhi_segment_enabled == false)
+    { 
+        LOG(fatal) << " skipped !has_deltaPhi assert " ; 
+        //assert( !has_deltaPhi ); 
+    }
 
     unsigned nz = ph->Num_z_planes ; 
 
-    //LOG(error) << " nz " << nz ; 
-
     std::vector<zplane> zp(nz) ; 
     std::set<double> Rmin ; 
+    std::set<double> Rmax ; 
 
     for (int i=0; i < int(nz) ; i++) 
     {
         zp[i] = { ph->Rmin[i], ph->Rmax[i], ph->Z_values[i] } ;  
         Rmin.insert( ph->Rmin[i] );
-
-/*
-        LOG(error) << " zp[i] (rmin,rmax,z)" << i  
-                   << " (" 
-                   << zp[i].rmin 
-                   << " , "
-                   << zp[i].rmax
-                   << " , "
-                   << zp[i].z
-                   << ")"
-                   ;
-*/
-
+        Rmax.insert( ph->Rmax[i] );
     }
 
     bool zascend(true);
@@ -1136,7 +1169,6 @@ void X4Solid::convertPolycone()
         zascend = zp[i-1].z < zp[i].z ; 
     }
 
-
     //if( zp.size() == 2 && zp[0].z > zp[1].z )  // Aug 2018 FIX: was [0] [0] 
     if(!zascend)
     {
@@ -1144,13 +1176,13 @@ void X4Solid::convertPolycone()
         std::reverse( std::begin(zp), std::end(zp) ) ; 
     }
 
+    double zmin = zp[0].z ; 
+    double zmax = zp[nz-1].z ; 
+
     std::vector<nnode*> prims ; 
     convertPolyconePrimitives( zp, prims ); 
 
-    //LOG(info) << "pre-UnionTree" ; 
     nnode* cn = NTreeBuilder<nnode>::UnionTree(prims) ;
-    //LOG(info) << "post-UnionTree" ; 
-
 
     bool multi_Rmin = Rmin.size() > 1 ; 
     if( multi_Rmin ) 
@@ -1160,13 +1192,26 @@ void X4Solid::convertPolycone()
     //assert( !multi_Rmin ) ; 
 
     double rmin = *Rmin.begin() ; 
+    double rmax = 0.  ; 
+    for(std::set<double>::const_iterator it = Rmax.begin() ; it != Rmax.end() ; it++ ) rmax = std::max( rmax, *it );
+
+    float segZ = (zmax-zmin)*1.01 ; 
+    float segR = rmax*1.5 ;   
+
+    LOG(LEVEL)
+        << " zmin " << std::setw(10) << std::fixed << std::setprecision(4) << zmin
+        << " zmax " << std::setw(10) << std::fixed << std::setprecision(4) << zmax
+        << " rmin " << std::setw(10) << std::fixed << std::setprecision(4) << rmin
+        << " rmax " << std::setw(10) << std::fixed << std::setprecision(4) << rmax
+        << " segZ " << std::setw(10) << std::fixed << std::setprecision(4) << segZ
+        << " segR " << std::setw(10) << std::fixed << std::setprecision(4) << segR
+        ;
+
     bool has_inner = rmin > 0. ; 
 
     nnode* inner = NULL ; 
     if(has_inner)
     {
-        double zmin = zp[0].z ; 
-        double zmax = zp[nz-1].z ; 
         inner = make_cylinder(rmin, zmin, zmax);
         inner->label = BStr::concat( m_name, "_inner_cylinder", NULL  ); 
     }
@@ -1181,7 +1226,16 @@ void X4Solid::convertPolycone()
     }
 
     nnode* result = inner ? nnode::make_operator(CSG_DIFFERENCE, cn, inner )  : cn ; 
-    setRoot(result); 
+
+    nnode* end_result =  has_deltaPhi && deltaPhi_segment_enabled 
+                      ?
+                         intersectWithPhiSegment(result, startPhi, deltaPhi, segZ, segR ) 
+                      :
+                         result 
+                      ;
+
+
+    setRoot(end_result); 
 
     convertPolycone_g4code();
     //LOG(error) << "DONE" ; 
@@ -1267,11 +1321,37 @@ void X4Solid::convertHype()
     setG4Args(param, keys);
 }
 
+/**
+X4Solid::convertHype_
+------------------------
+
+Opticks CSG_HYPERBOLOID uses::
+
+    x^2 +  y^2  =  r0^2 * (  (z/zf)^2  +  1 )
+
+G4Hype uses::
+
+    x^2 + y^2 = (z*tanphi)^2 + r^2
+    x^2 + y^2 =  r0^2 * ( (z*tanphi/r0)^2 + 1 )
+
+So::
+
+    tanphi/r0 = 1/zf
+    zf = r0/tanphi
+    tanphi = r0/zf
+    phi = arctan(r0/zf)
+
+
+See also:
+
+* G4GDMLWriteSolids::HypeWrite
+
+**/
+
 nnode* X4Solid::convertHype_(bool only_inner)
 {
     const G4Hype* const solid = static_cast<const G4Hype*>(m_solid);
 
-    // G4GDMLWriteSolids::HypeWrite
     float rmin = solid->GetInnerRadius()/mm ; 
     float rmax = solid->GetOuterRadius()/mm ;
     float inst = solid->GetInnerStereo()/degree ; 
@@ -1284,26 +1364,6 @@ nnode* X4Solid::convertHype_(bool only_inner)
 
     float radius = only_inner ? rmin : rmax ;   
     float stereo = only_inner ? inst : outst ; 
-
-    /*
-     Opticks CSG_HYPERBOLOID uses
-                x^2 +  y^2  =  r0^2 * (  (z/zf)^2  +  1 )
-
-     G4Hype uses
-                x^2 + y^2 = (z*tanphi)^2 + r^2
-                x^2 + y^2 =  r0^2 * ( (z*tanphi/r0)^2 + 1 )
-
-     So     
-               tanphi/r0 = 1/zf
-
-               zf = r0/tanphi
-
-               tanphi = r0/zf
-
-                  phi = arctan(r0/zf)
-
-    */
-
     float zf = radius/std::tan(stereo*CLHEP::pi/180.) ;
     float z2 =  z/2.0 ; 
     float z1 = -z/2.0 ;

@@ -514,6 +514,8 @@ class OKCORE_API Opticks {
        bool isOtherPhoton(unsigned record_id) const ;
        bool isMaskPhoton(unsigned record_id) const ;
        bool isX4PolySkip(unsigned lvIdx) const ;
+       bool isX4BalanceSkip(unsigned lvIdx) const ; 
+
 
        bool isCSGSkipLV(unsigned lvIdx) const ;          // --csgskiplv
        unsigned getNumCSGSkipLV() const ;

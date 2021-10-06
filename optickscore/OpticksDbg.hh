@@ -58,6 +58,7 @@ class OKCORE_API OpticksDbg
        unsigned getNumGenPhoton() const ;
        unsigned getNumMaskPhoton() const ;
        unsigned getNumX4PolySkip() const ;
+       unsigned getNumX4BalanceSkip() const ;
        unsigned getNumCSGSkipLV() const ;
        unsigned getNumDeferredCSGSkipLV() const ;
     public:
@@ -71,6 +72,7 @@ class OKCORE_API OpticksDbg
        bool isGenPhoton(unsigned record_id) const ;
        bool isMaskPhoton(unsigned record_id) const ;
        bool isX4PolySkip(unsigned lvIdx) const ;
+       bool isX4BalanceSkip(unsigned lvIdx) const ;
        bool isCSGSkipLV(unsigned lvIdx) const ;   // --csgskiplv
        bool isDeferredCSGSkipLV(unsigned lvIdx) const ;   // --deferredcsgskiplv
        bool isSkipSolidIdx(unsigned lvIdx) const ;  // --skipsolidname 
@@ -107,6 +109,7 @@ class OKCORE_API OpticksDbg
        std::vector<unsigned> m_gen_photon ; 
        std::vector<unsigned> m_mask ; 
        std::vector<unsigned> m_x4polyskip ; 
+       std::vector<unsigned> m_x4balanceskip ; 
        std::vector<unsigned> m_csgskiplv ; 
        std::vector<unsigned> m_deferredcsgskiplv ; 
        std::vector<unsigned> m_skipsolididx ;        // from --skipsolidname 

@@ -94,6 +94,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_dbghitmask("SD"),
     //m_dbghitmask("TO,SC,BT,SA"),  // see OEvent::OEvent
     m_x4polyskip(""),
+    m_x4balanceskip(""),
     m_csgskiplv(""),
     m_deferredcsgskiplv(""),
     m_accel(""),
@@ -1087,6 +1088,15 @@ void OpticksCfg<Listener>::init()
  
          );
 
+   m_desc.add_options()
+       ("x4balanceskip",    boost::program_options::value<std::string>(&m_x4balanceskip), 
+                  "comma delimited string listing lvIdx indices, no size limit," 
+                  "specifying solids to skip from deep tree balancing. "
+                  "THIS IS FOR DEBUGGING WITH SOLIDS THAT HANG BALANCING"
+         );
+
+
+
    char csgskiplv[256];
    snprintf(csgskiplv,256, "comma delimited string listing lvIdx indices to skip in direct geometry conversion. Default %s", m_csgskiplv.c_str() );
    m_desc.add_options()
@@ -1908,6 +1918,15 @@ const std::string& OpticksCfg<Listener>::getX4PolySkip() const
 {
     return m_x4polyskip ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getX4BalanceSkip() const 
+{
+    return m_x4balanceskip ;
+}
+
+
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getCSGSkipLV() const   // --csgskiplv

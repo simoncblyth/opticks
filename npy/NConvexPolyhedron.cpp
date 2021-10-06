@@ -499,16 +499,15 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1
 }
 
 
-nconvexpolyhedron* nconvexpolyhedron::make_segment(float phi0, float phi1, float sz, float sr ) // static
-{
-/**
 
+
+
+/**
 nconvexpolyhedron::make_segment
 ==================================
 
 Prism intended for deltaphi intersecting with
 vertices 0 and 3 on the z-axis at -sz/2 and sz/2
-
 
 From ../analytic/prism.py:make_segment
 
@@ -531,15 +530,16 @@ From ../analytic/prism.py:make_segment
       /         \
      0-----------1        base plane at z = -sz/2
           sr   (x1,y1)
-
                                                  
                                    Z    
                                    |  Y
                                    | /
                                    |/
                                    +------ X
-
 **/
+
+nconvexpolyhedron* nconvexpolyhedron::make_segment(float phi0, float phi1, float sz, float sr ) // static
+{
     const float pi = glm::pi<float>() ;
    
     float x0 = 0.f ;
@@ -550,7 +550,6 @@ From ../analytic/prism.py:make_segment
 
     float x2 = sr*std::cos(phi1*pi/180.) ;
     float y2 = sr*std::sin(phi1*pi/180.) ;
- 
  
     std::vector<glm::vec3> v(6) ; 
 

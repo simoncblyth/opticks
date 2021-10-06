@@ -772,6 +772,11 @@ bool Opticks::isX4PolySkip(unsigned lvIdx) const
 {
    return m_dbg->isX4PolySkip(lvIdx);
 }
+bool Opticks::isX4BalanceSkip(unsigned lvIdx) const 
+{
+   return m_dbg->isX4BalanceSkip(lvIdx);
+}
+
 
 bool Opticks::isCSGSkipLV(unsigned lvIdx) const 
 {

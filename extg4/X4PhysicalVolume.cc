@@ -1021,9 +1021,6 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
             } 
         }
 
-
-
-
         m_lvname.push_back( lvname ); 
         m_soname.push_back( soname ); 
  
@@ -1083,12 +1080,18 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
           << " soname " << soname
           << " lvname " << lvname
           ;
+
+
+     bool is_x4balanceskip = m_ok->isX4BalanceSkip(lvIdx) ; 
+     if( is_x4balanceskip ) LOG(fatal) << " is_x4balanceskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+
+     X4Solid::Banner( lvIdx, soIdx, lvname, soname ); 
  
      nnode* raw = X4Solid::Convert(solid, m_ok)  ; 
 
      if(m_g4codegen) generateTestG4Code(lvIdx, solid, raw); 
 
-     nnode* root = balance_deep_tree ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw ;  
+     nnode* root = balance_deep_tree && !is_x4balanceskip ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw ;  
      root->other = raw ; 
 
      const NSceneConfig* config = NULL ; 
