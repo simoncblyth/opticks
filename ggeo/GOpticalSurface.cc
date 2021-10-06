@@ -50,6 +50,11 @@ const char* GOpticalSurface::getFinish() const
 {
     return m_finish ; 
 }
+int GOpticalSurface::getFinishInt() const 
+{
+    return std::atoi(m_finish); 
+}
+
 const char* GOpticalSurface::getValue() const 
 {
     return m_value ; 
@@ -61,6 +66,7 @@ const char* GOpticalSurface::getShortName() const
 
 
 /*
+g4-cls G4OpticalSurface
  source/materials/include/G4OpticalSurface.hh 
 
  61 enum G4OpticalSurfaceFinish
@@ -98,6 +104,19 @@ const char* GOpticalSurface::Finish(unsigned finish)
     } 
     return s ;  
 }
+
+
+bool GOpticalSurface::IsPolished(unsigned finish) // static 
+{
+    return finish == 0 || finish == 1 || finish == 2 ; 
+}
+bool GOpticalSurface::IsGround(unsigned finish) // static 
+{
+    return finish == 3 || finish == 4 || finish == 5 ; 
+}
+
+
+
 
 
 
@@ -210,22 +229,84 @@ void GOpticalSurface::init()
     checkValue();
 }
 
+/**
+GOpticalSurface::findShortName
+--------------------------------
+
+dyb names start /dd/... which is translated to __dd__
+so detect this and apply the shortening by effectively 
+trimminng the prefix 
+     
+juno names do not have the prefix so make shortname
+the same as the full one
+    
+have to have different treatment as juno has multiple names ending _opsurf
+which otherwise get shortened to "opsurf" and tripup the digest checking
+
+**/
+
+void GOpticalSurface::findShortName(char marker)
+{
+    if(m_shortname) return ;
+
+    // strrchr : returns pointer to last occurrence of the marker "_" in m_name 
+
+    m_shortname = m_name[0] == marker ? strrchr(m_name, marker) + 1 : m_name ; 
+
+    LOG(debug) << __func__
+              << " name [" << m_name << "]" 
+              << " shortname [" << m_shortname << "]" 
+              ;
+}
+
+/**
+GOpticalSurface::checkValue
+-----------------------------
+
+Value must be between 0 and 1 inclusive
+
+**/
+
 void GOpticalSurface::checkValue() const 
 {
     float value = boost::lexical_cast<float>(m_value) ; 
-    bool is_fraction = value >= 0.f && value <= 1.f ; 
-    if(!is_fraction)
+    bool is_allowed = value >= 0.f && value <= 1.f ; 
+    if(!is_allowed)
         LOG(fatal) 
             << " value unexpected " 
             << " value " << value 
             << " m_value " << m_value 
             << " m_name " << m_name
             ;
-    assert( is_fraction ); 
+    assert( is_allowed ); 
 }
 
 
-bool GOpticalSurface::isSpecular() const 
+bool GOpticalSurface::isGround()   const { return IsGround(  getFinishInt()) ; } 
+bool GOpticalSurface::isPolished() const { return IsPolished(getFinishInt()) ; } 
+
+/**
+GOpticalSurface::isSpecular
+---------------------------
+
+Now returns true for all three polished finishes : polished, polishedfrontpainted, polishedbackpainted
+Opticks treats all these three finishes as a specular surface. 
+
+**/
+bool GOpticalSurface::isSpecular() const { return isPolished() ; }
+
+
+
+/**
+GOpticalSurface::isSpecularOld
+--------------------------------
+
+Old way constrains finish to those that have been compared with Geant4
+
+
+**/
+
+bool GOpticalSurface::isSpecularOld() const 
 {
     if(strncmp(m_finish,"0",strlen(m_finish))==0)  return true ;
     if(strncmp(m_finish,"1",strlen(m_finish))==0)  return true ;  // used by JUNO.Mirror_opsurf m_finish 1
@@ -240,30 +321,6 @@ bool GOpticalSurface::isSpecular() const
     return false ; 
 }
 
-
-
-
-void GOpticalSurface::findShortName(char marker)
-{
-    if(m_shortname) return ;
-
-    // dyb names start /dd/... which is translated to __dd__
-    // so detect this and apply the shortening
-    // 
-    // juno names do not have the prefix so make shortname
-    // the same as the full one
-    //
-    // have to have different treatment as juno has multiple names ending _opsurf
-    // which otherwise get shortened to "opsurf" and tripup the digest checking
-    //
-    m_shortname = m_name[0] == marker ? strrchr(m_name, marker) + 1 : m_name ; 
-
-    LOG(debug) << __func__
-              << " name [" << m_name << "]" 
-              << " shortname [" << m_shortname << "]" 
-              ;
-
-}
 
 
 GOpticalSurface::~GOpticalSurface()
@@ -290,11 +347,14 @@ void GOpticalSurface::Summary(const char* msg, unsigned int /*imod*/) const
 std::string GOpticalSurface::description() const 
 {
     std::stringstream ss ; 
-
     ss << " GOpticalSurface " 
        << " type " << m_type 
        << " model " << m_model 
        << " finish " << m_finish
+       << " finishInt " << getFinishInt()
+       << " isPolished " << isPolished()
+       << " isGround "   << isGround()
+       << " isSpecular " << isSpecular()
        << " value " << std::setw(5) << m_value
        << std::setw(30) << m_shortname 
        ;

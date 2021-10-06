@@ -27,6 +27,8 @@ set(TEST_SOURCES
     GBndLibTest.cc
     GBndLibInitTest.cc
 
+    GOpticalSurfaceTest.cc 
+
     GMeshTest.cc
     GNodeTest.cc
     GVolumeTest.cc

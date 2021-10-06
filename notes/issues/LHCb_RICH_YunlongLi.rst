@@ -91,8 +91,10 @@ Air
 
 } 
 
-And I fixed the issue by using random abbreviations when the usual attempts 
-to abbreviate failed to come up with something unique.  
+I fixed the issue by using random abbreviations when the usual attempts 
+to abbreviate fail to come up with something unique.  See the commit:
+
+https://bitbucket.org/simoncblyth/opticks/commits/574be3f0366be3f0c94a6a9edd1a43d2039e2d1c
 
 
 
@@ -116,7 +118,72 @@ to abbreviate failed to come up with something unique.
 > if(strncmp(m_finish,"4",strlen(m_finish))==0)  return false ;
 > to GOpticalSurface::isSpecular() function.
 
+In this case is does not matter as you provided the GDML, but in general you will need to provide stack traces 
+of problems using the gdb debugger and the "bt" command.  The below is from lldb on macOS however its simular with gdb on Linux::
 
+    ...
+    2021-10-06 16:14:03.770 INFO  [17614518] [X4PhysicalVolume::convertMaterials@322]  used_materials.size 39 num_material_with_efficiency 0
+    2021-10-06 16:14:03.770 INFO  [17614518] [GMaterialLib::dumpSensitiveMaterials@1257] X4PhysicalVolume::convertMaterials num_sensitive_materials 0
+    2021-10-06 16:14:03.770 NONE  [17614518] [*X4::MakeSurfaceIndexCache@330] [  num_lbs 1984 num_sks 0
+    2021-10-06 16:14:03.771 NONE  [17614518] [*X4::MakeSurfaceIndexCache@350] ]
+    2021-10-06 16:14:03.773 INFO  [17614518] [GOpticalSurface::isSpecular@234] GOpticalSurface::isSpecular  m_shortname RichHPDEnvLargeTubeMetalSurface0000x110f3550 m_finish 4
+    Assertion failed: (0 && "expecting m_finish to be 0:polished or 3:ground "), function isSpecular, file /Users/blyth/opticks/ggeo/GOpticalSurface.cc, line 239.
+    Process 38346 stopped
+
+    Process 38346 launched: '/usr/local/opticks/lib/OKX4Test' (x86_64)
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #3: 0x00007fff7101f1ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x00000001097fb6fc libGGeo.dylib`GOpticalSurface::isSpecular(this=0x000000010ed45f30) const at GOpticalSurface.cc:239
+        frame #5: 0x00000001098a5d97 libGGeo.dylib`GSurfaceLib::createStandardSurface(this=0x000000011440a630, src=0x000000010ed464c0) at GSurfaceLib.cc:524
+        frame #6: 0x00000001098a4ec2 libGGeo.dylib`GSurfaceLib::addStandardized(this=0x000000011440a630, surf=0x000000010ed464c0) at GSurfaceLib.cc:441
+        frame #7: 0x00000001098a4e04 libGGeo.dylib`GSurfaceLib::addBorderSurface(this=0x000000011440a630, surf=0x000000010ed464c0, pv1="_dd_Geometry_BeforeMagnetRegion_Rich1_RichHPDMasterLogList_lvRich1HPDMaster000_pvRich1HPDSMaster0000x1120b9d0", pv2="_dd_Geometry_BeforeMagnetRegion_Rich1_RichHPDSMasterLogList_lvRich1HPDSMaster000_pvRichHPDEnvLargeTub0xd090ff0", direct=false) at GSurfaceLib.cc:373
+        frame #8: 0x00000001098a4ac7 libGGeo.dylib`GSurfaceLib::add(this=0x000000011440a630, raw=0x000000010ed464c0, implicit=false, direct=false) at GSurfaceLib.cc:346
+        frame #9: 0x00000001037aef86 libExtG4.dylib`X4LogicalBorderSurfaceTable::init(this=<unavailable>) at X4LogicalBorderSurfaceTable.cc:128 [opt]
+        frame #10: 0x00000001037aecc9 libExtG4.dylib`X4LogicalBorderSurfaceTable::Convert(GSurfaceLib*, char) [inlined] X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(this=<unavailable>, dst=<unavailable>, mode=<unavailable>) at X4LogicalBorderSurfaceTable.cc:107 [opt]
+        frame #11: 0x00000001037aecaf libExtG4.dylib`X4LogicalBorderSurfaceTable::Convert(GSurfaceLib*, char) [inlined] X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(this=<unavailable>, dst=<unavailable>, mode=<unavailable>) at X4LogicalBorderSurfaceTable.cc:106 [opt]
+        frame #12: 0x00000001037aecaf libExtG4.dylib`X4LogicalBorderSurfaceTable::Convert(dst=<unavailable>, mode='\x10') at X4LogicalBorderSurfaceTable.cc:43 [opt]
+        frame #13: 0x00000001037c3e42 libExtG4.dylib`X4PhysicalVolume::convertSurfaces(this=<unavailable>) at X4PhysicalVolume.cc:662 [opt]
+        frame #14: 0x00000001037c3445 libExtG4.dylib`X4PhysicalVolume::init(this=<unavailable>) at X4PhysicalVolume.cc:201 [opt]
+        frame #15: 0x00000001037c2fc0 libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=<unavailable>, ggeo=<unavailable>, top=<unavailable>) at X4PhysicalVolume.cc:182 [opt]
+        frame #16: 0x0000000100015736 OKX4Test`main(argc=12, argv=0x00007ffeefbfcec8) at OKX4Test.cc:108
+    (lldb) 
+
+    (lldb) f 5
+    frame #5: 0x00000001098a5d97 libGGeo.dylib`GSurfaceLib::createStandardSurface(this=0x000000011440a630, src=0x000000010ed464c0) at GSurfaceLib.cc:524
+       521 	            }
+       522 	            assert(_REFLECTIVITY && os && "non-sensor surfaces must have a reflectivity " );
+       523 	
+    -> 524 	            if(os->isSpecular())
+       525 	            {
+       526 	                _detect  = makeConstantProperty(0.0) ;    
+       527 	                _reflect_specular = _REFLECTIVITY ;
+    (lldb) 
+
+    (lldb) f 4
+    frame #4: 0x00000001097fb6fc libGGeo.dylib`GOpticalSurface::isSpecular(this=0x000000010ed45f30) const at GOpticalSurface.cc:239
+       236 	              << " m_finish "    << ( m_finish ? m_finish : "-" ) 
+       237 	              ;
+       238 	   
+    -> 239 	    assert(0 && "expecting m_finish to be 0:polished or 3:ground ");
+       240 	    return false ; 
+       241 	}
+       242 	
+    (lldb) 
+
+
+The assert is avoided with::
+
+    288 /**
+    289 GOpticalSurface::isSpecular
+    290 ---------------------------
+    291 
+    292 Now returns true for all three polished finishes : polished, polishedfrontpainted, polishedbackpainted
+    293 Opticks treats all these three finishes as a specular surface. 
+    294 
+    295 **/
+    296 bool GOpticalSurface::isSpecular() const { return isPolished() ; }
+    297 
 
 
 

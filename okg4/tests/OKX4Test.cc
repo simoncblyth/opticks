@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     BMeta* auxmeta = NULL ; 
     G4VPhysicalVolume* top = CGDML::Parse( gdmlpath, &auxmeta ) ; 
     if( top == NULL ) return 0 ; 
-    if(auxmeta) auxmeta->dump("auxmeta"); 
+    //if(auxmeta) auxmeta->dump("auxmeta"); 
 
 
     if(PLOG::instance->has_arg("--earlyexit"))

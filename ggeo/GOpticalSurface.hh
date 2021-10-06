@@ -26,10 +26,14 @@ struct guint4 ;
 
 class GGEO_API GOpticalSurface {
   public:
+      // type related
       static const char* dielectric_dielectric_ ;
       static const char* dielectric_metal_      ;
       static const char* Type(unsigned type);
+
+      const char* getType() const ;
   public:
+      // finish related
       static const char* polished_ ;
       static const char* polishedfrontpainted_ ;
       static const char* polishedbackpainted_  ;
@@ -37,6 +41,15 @@ class GGEO_API GOpticalSurface {
       static const char* groundfrontpainted_ ;
       static const char* groundbackpainted_  ;
       static const char* Finish(unsigned finish);
+      static bool IsPolished(unsigned finish); 
+      static bool IsGround(  unsigned finish); 
+
+      const char* getFinish() const ;
+      int getFinishInt() const ; 
+      bool isPolished() const ;
+      bool isGround() const ;
+      bool isSpecular() const ;
+      bool isSpecularOld() const ;
   public:
       static std::string brief(const guint4& optical); 
   public:
@@ -51,20 +64,15 @@ class GGEO_API GOpticalSurface {
       virtual ~GOpticalSurface();
 
       guint4 getOptical() const ;
-      bool isSpecular() const ;
-       
+      
       std::string description() const ;
       void Summary(const char* msg="GOpticalSurface::Summary", unsigned int imod=1) const ;
       const char* digest() const ;
-
   public:
       const char* getName() const ;
-      const char* getType() const ;
       const char* getModel() const ;
-      const char* getFinish() const ;
       const char* getValue() const ;
       const char* getShortName() const ;
-
   private:
       const char* m_name ;  
       const char* m_type ;  
