@@ -192,6 +192,10 @@ Snapshot History
 | 2021/09/30 | v0.1.5            | 15                                 | 14                         | All use of G4PhysicsVector::SetSpline removed due to Geant4 API change,         |
 |            |                   |                                    |                            | see notes/issues/Geant4_Soon_SetSpline_change.rst                               |
 +------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------------------------------------+  
+| 2021/10/06 | v0.1.6            | 16                                 | 14                         | More updates for Geant4 API in flux and fixing test fails,                      |
+|            |                   |                                    |                            | see notes/issues/Geant4_Soon_GetMinLowEdgeEnergy.rst                            |
++------------+-------------------+------------------------------------+----------------------------+---------------------------------------------------------------------------------+  
+
 
 
 
