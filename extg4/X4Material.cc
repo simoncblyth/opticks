@@ -29,7 +29,7 @@
 #include "PLOG.hh"
 
 
-const plog::Severity X4Material::LEVEL = debug ; 
+const plog::Severity X4Material::LEVEL = PLOG::EnvLevel("X4Material", "DEBUG") ; 
 
 
 std::string X4Material::Digest()
@@ -154,6 +154,13 @@ void X4Material::init()
 
     std::string name = BFile::Name( matname ); 
     unsigned index = m_material->GetIndex() ;
+
+    LOG(LEVEL)
+        << " index " << index
+        << " matname " << matname
+        << " name " << name 
+        ;
+
 
     m_mat = new GMaterial(name.c_str(), index) ; 
     if( m_mpt )

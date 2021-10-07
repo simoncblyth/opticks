@@ -20,6 +20,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include "SSys.hh"
 #include "SGDML.hh"
 
 
@@ -41,6 +42,27 @@ std::string SGDML::GenerateName(const char* name, const void* const ptr, bool ad
     return nameOut;
 }
 
+/**
+SGDML::PREFIX
+---------------
+
+Provides a common prefix to be stripped from the names of Geant4 object types.
+Used from:
+
+* ggeo/GPropertyMap.cc
+* extg4/X4.cc
+
+**/
+
+const char* SGDML::PREFIX(const char* ekey)  // static 
+{
+    const char* prefix = nullptr ; 
+    if( strcmp(ekey, "OPTICKS_SGDML_PREFIX_G4Material") == 0 )
+    {
+        prefix = SSys::getenvvar(ekey, "_dd_Materials_") ;
+    }
+    return prefix ; 
+}
 
 
 // after G4GDMLRead::Strip

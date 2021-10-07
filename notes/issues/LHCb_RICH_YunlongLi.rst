@@ -31,8 +31,8 @@ LHCb_RICH_YunlongLi
 > be solved.
 
 
-Regarding your commandline notice that controlling the logging level 
-at the project level with "--SYSRAP debug" tends to yield huge amounts of output.
+Regarding your commandline notice that controlling the logging level at the project level 
+with "--SYSRAP debug" tends to yield huge amounts of output.
 Instead of doing that you can control the logging level for each class/struct 
 by setting envvars named after the class/struct.  For example::
 
@@ -43,59 +43,59 @@ to 1 which will only work if you have more than one GPU attached.
 In this case with OKX4Test that does not matter, as the GPU is not being used, 
 but in other cases using an inappropriate "--cvd" will cause crashes.  
 
-Regarding the SAbbrev assert I added SAbbrevTest.cc test_3 for the issue::
+Regarding the SAbbrev assert I added SAbbrevTest.cc test_3 to look into the issue
+with your material names::
 
-void test_3()
-{
-     SAbbrev::FromString(R"LITERAL(
-Copper
-PipeAl6061
-C4F10
-PipeAl2219F
-VeloStainlessSteel
-Vacuum
-PipeBeTV56
-PipeSteel316LN
-PipeBe
-Celazole
-PipeTitaniumG5
-AW7075
-PipeAl6082
-FutureFibre
-Technora
-Brass
-PipeSteel
-BakeOutAerogel
-Rich2CarbonFibre
-RichSoftIron
-Rich1GasWindowQuartz
-Kovar
-HpdIndium
-HpdWindowQuartz
-HpdS20PhCathode
-HpdChromium
-HpdKapton
-Supra36Hpd
-RichHpdSilicon
-RichHpdVacuum
-Rich1Nitrogen
-Rich1MirrorCarbonFibre
-R1RadiatorGas
-Rich1MirrorGlassSimex
-Rich1Mirror2SupportMaterial
-Rich1G10
-Rich1PMI
-Rich1DiaphramMaterial
-Air
-)LITERAL")->dump() ; 
+    void test_3()
+    {
+         SAbbrev::FromString(R"LITERAL(
+    Copper
+    PipeAl6061
+    C4F10
+    PipeAl2219F
+    VeloStainlessSteel
+    Vacuum
+    PipeBeTV56
+    PipeSteel316LN
+    PipeBe
+    Celazole
+    PipeTitaniumG5
+    AW7075
+    PipeAl6082
+    FutureFibre
+    Technora
+    Brass
+    PipeSteel
+    BakeOutAerogel
+    Rich2CarbonFibre
+    RichSoftIron
+    Rich1GasWindowQuartz
+    Kovar
+    HpdIndium
+    HpdWindowQuartz
+    HpdS20PhCathode
+    HpdChromium
+    HpdKapton
+    Supra36Hpd
+    RichHpdSilicon
+    RichHpdVacuum
+    Rich1Nitrogen
+    Rich1MirrorCarbonFibre
+    R1RadiatorGas
+    Rich1MirrorGlassSimex
+    Rich1Mirror2SupportMaterial
+    Rich1G10
+    Rich1PMI
+    Rich1DiaphramMaterial
+    Air
+    )LITERAL")->dump() ; 
 
-} 
+    } 
 
 I fixed the issue by using random abbreviations when the usual attempts 
 to abbreviate fail to come up with something unique.  See the commit:
 
-https://bitbucket.org/simoncblyth/opticks/commits/574be3f0366be3f0c94a6a9edd1a43d2039e2d1c
-
+* https://bitbucket.org/simoncblyth/opticks/commits/574be3f0366be3f0c94a6a9edd1a43d2039e2d1c
 
 
 
@@ -119,7 +119,8 @@ https://bitbucket.org/simoncblyth/opticks/commits/574be3f0366be3f0c94a6a9edd1a43
 > to GOpticalSurface::isSpecular() function.
 
 In this case is does not matter as you provided the GDML, but in general you will need to provide stack traces 
-of problems using the gdb debugger and the "bt" command.  The below is from lldb on macOS however its simular with gdb on Linux::
+of problems using the gdb debugger and the "bt" command.  The below is from lldb on macOS however it
+behaves in a simular way to gdb on Linux::
 
     ...
     2021-10-06 16:14:03.770 INFO  [17614518] [X4PhysicalVolume::convertMaterials@322]  used_materials.size 39 num_material_with_efficiency 0
@@ -172,7 +173,7 @@ of problems using the gdb debugger and the "bt" command.  The below is from lldb
     (lldb) 
 
 
-The assert is avoided with::
+The assert is avoided via a change to::
 
     288 /**
     289 GOpticalSurface::isSpecular
@@ -274,17 +275,21 @@ There is no easy fix to extend the solid implementation to handle phi segmented 
 > https://bitbucket.org/simoncblyth/opticks/src/02b098569330585dc6303275b1c84a1855a7e1f9/extg4/X4PhysicalVolume.cc#lines-1398,
 
 
+
 The place to implement this is in X4Solid::convertPolycone
 using X4Solid::intersectWithPhiSegment as other shapes do already.
 The phi segment shape is a prism described by a set of planes
 to form the convex polyhedron. 
 
-Although using X4Solid::intersectWithPhiSegment can be done very easily
-with only a few lines of code following the example of other shapes
-that use intersectWithPhiSegment the performance and correctness 
-of such segmented shapes has not been well tested.  
+My recent commits implement this but it is disabled as
+it needs debugging, and your geometry seems to have numerous 
+other problems with the translation. 
 
-So most if the work would be in validation and comparison with Geant4. 
+Note that the performance and correctness of of shapes using 
+intersectWithPhiSegment for such phi segmented shapes has not been well tested.  
+
+So if it is essential for you, then you will need work on 
+validation and comparison with Geant4. 
 Also the performance would need to be measured as the segment that 
 is intersected with is implemented using a CSG convexpolyhedron   
 implemented with a set of planes. 
@@ -297,200 +302,141 @@ Whether it is worthwhile for you to do this implementation depends on
 how optically important the shape is within your geometry. 
 
 
-Some complicated solid (lvIdx 74) is hanging the conversion.  Using "export X4Solid=INFO"::
+Regarding the numerous other problems, I have added several --x4*skip 
+options to skip parts of the conversion in order to try and assess 
+how many of your solid are having problems.
 
-    2021-10-06 20:26:38.199 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.199 INFO  [18037644] [*X4Solid::Convert@116] ]
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::Banner@80]  lvIdx    74 soIdx    74 soname UX85-2-CollarAttMainSub0xdca8d50 lvname _dd_Geometry_MagnetRegion_PipeSupportsInMagnet_lvUX852CollarAtt0xdca8f80
-    2021-10-06 20:26:38.206 INFO  [18037644] [*X4Solid::Convert@104] [ convert UX85-2-CollarAttMainSub0xdca8d50
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier a entityType                    3 entityName   G4SubtractionSolid name         UX85-2-CollarAttMainSub0xdca8d50 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::convertBooleanSolid@300]  _operator 3 CSG::Name difference
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier b entityType                    3 entityName   G4SubtractionSolid name UX85-2-CollarAttMain-Child_For_UX85-2-CollarAttMainSub0xdca89e0 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::convertBooleanSolid@300]  _operator 3 CSG::Name difference
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier c entityType                    3 entityName   G4SubtractionSolid name UX85-2-CollarAttMain-Child_For_UX85-2-CollarAttMainSub0xdca8670 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::convertBooleanSolid@300]  _operator 3 CSG::Name difference
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier d entityType                    3 entityName   G4SubtractionSolid name UX85-2-CollarAttMain-Child_For_UX85-2-CollarAttMainSub0xdca8300 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::convertBooleanSolid@300]  _operator 3 CSG::Name difference
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier e entityType                    3 entityName   G4SubtractionSolid name UX85-2-CollarAttMain-Child_For_UX85-2-CollarAttMainSub0xdca7f90 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::convertBooleanSolid@300]  _operator 3 CSG::Name difference
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier f entityType                    3 entityName   G4SubtractionSolid name UX85-2-CollarAttMain-Child_For_UX85-2-CollarAttMainSub0xdca7c20 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::convertBooleanSolid@300]  _operator 3 CSG::Name difference
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier g entityType                    3 entityName   G4SubtractionSolid name UX85-2-CollarAttMain-Child_For_UX85-2-CollarAttMainSub0xdca7940 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::convertBooleanSolid@300]  _operator 3 CSG::Name difference
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier h entityType                    3 entityName   G4SubtractionSolid name UX85-2-CollarAttMain-Child_For_UX85-2-CollarAttMainSub0xdca7660 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::convertBooleanSolid@300]  _operator 3 CSG::Name difference
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier i entityType                    5 entityName                G4Box name            UX85-2-CollarAttMain0xdca2120 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier j entityType                    0 entityName     G4DisplacedSolid name                                  placedB root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier k entityType                    5 entityName                G4Box name        UX85-2-CollarAttMainSub10xdca7510 root 0x0
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.206 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier l entityType                    0 entityName     G4DisplacedSolid name                                  placedB root 0x0
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier m entityType                    5 entityName                G4Box name        UX85-2-CollarAttMainSub20xdca7890 root 0x0
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier n entityType                    0 entityName     G4DisplacedSolid name                                  placedB root 0x0
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier o entityType                    5 entityName                G4Box name        UX85-2-CollarAttMainSub30xdca7b70 root 0x0
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier p entityType                    0 entityName     G4DisplacedSolid name                                  placedB root 0x0
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier q entityType                   25 entityName               G4Tubs name      UX85-2-CollarAttMain-Hole10xdca7e50 root 0x0
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier r entityType                    0 entityName     G4DisplacedSolid name                                  placedB root 0x0
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier s entityType                   25 entityName               G4Tubs name      UX85-2-CollarAttMain-Hole20xdca81c0 root 0x0
-    2021-10-06 20:26:38.207 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier t entityType                    0 entityName     G4DisplacedSolid name                                  placedB root 0x0
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier u entityType                   25 entityName               G4Tubs name UX85-2-CollarAttMain-RoundEdge10xdca8530 root 0x0
-    2021-10-06 20:26:38.208 ERROR [18037644] [*X4Solid::intersectWithPhiSegment@736]  special cased startPhi == 0.f && deltaPhi == 180.f 
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier v entityType                    0 entityName     G4DisplacedSolid name                                  placedB root 0x0
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier w entityType                   25 entityName               G4Tubs name UX85-2-CollarAttMain-RoundEdge20xdca88a0 root 0x0
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier x entityType                    0 entityName     G4DisplacedSolid name                                  placedB root 0x0
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@163] [ X4SolidBase identifier y entityType                   25 entityName               G4Tubs name UX85-2-CollarAttMain-RoundEdge2b0xdca8c10 root 0x0
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.208 INFO  [18037644] [X4Solid::init@199] ]
-    2021-10-06 20:26:38.209 INFO  [18037644] [*X4Solid::Convert@116] ]
-    2021-10-06 20:26:38.209 FATAL [18037644] [*NTreeBalance<nnode>::create_balanced@101] balancing trees of this structure not implemented
-    ^C^C^C^C^CProcess 84649 stopped
-    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGKILL
-        frame #0: 0x000000010a208b67 libNPY.dylib`glm::vec<4, float, (glm::qualifier)0>& glm::vec<4, float, (this=0x00007ffeefbf96a0, v=0x00007ffeefbf9750)0>::operator*=<float>(glm::vec<4, float, (glm::qualifier)0> const&) at type_vec4.inl:597
-       594 		template<typename U>
-       595 		GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, Q> & vec<4, T, Q>::operator*=(vec<4, U, Q> const& v)
-       596 		{
-    -> 597 			return (*this = detail::compute_vec4_mul<T, Q, detail::is_aligned<Q>::value>::call(*this, vec<4, T, Q>(v)));
-       598 		}
-       599 	
-       600 		template<typename T, qualifier Q>
-    Target 0: (OKX4Test) stopped.
+The below script uses these options to skip problems with some solids, 
+that are identified by lvIdx (logical volume indices, which match the soIdx solid indices)::
 
-    Process 84649 launched: '/usr/local/opticks/lib/OKX4Test' (x86_64)
-    (lldb) 
-    error: No auto repeat.
-    (lldb) bt
-    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGKILL
-      * frame #0: 0x000000010a208b67 libNPY.dylib`glm::vec<4, float, (glm::qualifier)0>& glm::vec<4, float, (this=0x00007ffeefbf96a0, v=0x00007ffeefbf9750)0>::operator*=<float>(glm::vec<4, float, (glm::qualifier)0> const&) at type_vec4.inl:597
-        frame #1: 0x000000010a208a90 libNPY.dylib`glm::vec<4, float, (glm::qualifier)0> glm::operator*<float, (v1=0x0000000117576d44, v2=0x00007ffeefbf9750)0>(glm::vec<4, float, (glm::qualifier)0> const&, glm::vec<4, float, (glm::qualifier)0> const&) at type_vec4.inl:890
-        frame #2: 0x000000010a0c51f0 libNPY.dylib`glm::mat<4, 4, float, (glm::qualifier)0>::col_type glm::operator*<float, (m=0x0000000117576d14, v=0x00007ffeefbf9858)0>(glm::mat<4, 4, float, (glm::qualifier)0> const&, glm::mat<4, 4, float, (glm::qualifier)0>::row_type const&) at type_mat4x4.inl:569
-        frame #3: 0x000000010a345b80 libNPY.dylib`ncylinder::operator(this=0x00000001175767b0, x_=10.1814461, y_=-11.9151802, z_=3.02999997)(float, float, float) const at NCylinder.cpp:74
-        frame #4: 0x000000010a2e1f63 libNPY.dylib`ndifference::operator(this=0x0000000117575f90, x=10.1814461, y=-11.9151802, z=3.02999997)(float, float, float) const at NNode.cpp:1152
-        frame #5: 0x000000010a2e1e3c libNPY.dylib`nintersection::operator(this=0x0000000117576b90, x=10.1814461, y=-11.9151802, z=3.02999997)(float, float, float) const at NNode.cpp:1144
-        frame #6: 0x000000010a2e1e63 libNPY.dylib`nintersection::operator(this=0x000000011941cde8, x=10.1814461, y=-11.9151802, z=3.02999997)(float, float, float) const at NNode.cpp:1145
-        frame #7: 0x000000010a2f47e2 libNPY.dylib`float std::__1::__invoke_void_return_wrapper<float>::__call<nintersection&, float, float, float>(nintersection&&&, float&&, float&&, float&&) [inlined] decltype(__f=0x000000011941cde8, __args=0x00007ffeefbf9a6c, __args=0x00007ffeefbf9a68, __args=0x00007ffeefbf9a64)(std::__1::forward<float, float, float>(fp0))) std::__1::__invoke<nintersection&, float, float, float>(nintersection&&&, float&&, float&&, float&&) at type_traits:4291
-        frame #8: 0x000000010a2f479b libNPY.dylib`float std::__1::__invoke_void_return_wrapper<float>::__call<nintersection&, float, float, float>(__args=0x000000011941cde8, __args=0x00007ffeefbf9a6c, __args=0x00007ffeefbf9a68, __args=0x00007ffeefbf9a64) at __functional_base:328
-        frame #9: 0x000000010a2f4599 libNPY.dylib`std::__1::__function::__func<nintersection, std::__1::allocator<nintersection>, float (float, float, float)>::operator(this=0x000000011941cde0, __arg=0x00007ffeefbf9a6c, __arg=0x00007ffeefbf9a68, __arg=0x00007ffeefbf9a64)(float&&, float&&, float&&) at functional:1552
-        frame #10: 0x000000010a32058f libNPY.dylib`std::__1::function<float (float, float, float)>::operator(this=0x000000011941cde0, __arg=10.1814461, __arg=-11.9151802, __arg=3.02999997)(float, float, float) const at functional:1903
-        frame #11: 0x000000010a31e84b libNPY.dylib`NNodePoints::selectBySDF(this=0x000000011757b2d0, prim=0x000000011941be10, prim_idx=10, pointmask=2) at NNodePoints.cpp:271
-        frame #12: 0x000000010a31db25 libNPY.dylib`NNodePoints::collectCompositePoints(this=0x000000011757b2d0, level=9, margin=0, pointmask=2) at NNodePoints.cpp:207
-        frame #13: 0x000000010a31cac0 libNPY.dylib`NNodePoints::collect_surface_points(this=0x000000011757b2d0) at NNodePoints.cpp:155
-        frame #14: 0x000000010a3b519f libNPY.dylib`NCSG::collect_surface_points(this=0x0000000117577b20) at NCSG.cpp:1170
-        frame #15: 0x000000010a3b40ce libNPY.dylib`NCSG::postchange(this=0x0000000117577b20) at NCSG.cpp:204
-        frame #16: 0x000000010a3b457b libNPY.dylib`NCSG::Adopt(root=0x00000001175770d0, config=0x0000000000000000, soIdx=74, lvIdx=74) at NCSG.cpp:173
-        frame #17: 0x00000001037c80b4 libExtG4.dylib`X4PhysicalVolume::convertSolid(this=<unavailable>, lvIdx=<unavailable>, soIdx=<unavailable>, solid=<unavailable>, lvname=<unavailable>, balance_deep_tree=<unavailable>) const at X4PhysicalVolume.cc:1094 [opt]
-        frame #18: 0x00000001037c6d7e libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=<unavailable>, pv=<unavailable>, depth=<unavailable>) at X4PhysicalVolume.cc:980 [opt]
-        frame #19: 0x00000001037c6af6 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=<unavailable>, pv=<unavailable>, depth=<unavailable>) at X4PhysicalVolume.cc:964 [opt]
-        frame #20: 0x00000001037c4051 libExtG4.dylib`X4PhysicalVolume::convertSolids(this=<unavailable>) at X4PhysicalVolume.cc:926 [opt]
-        frame #21: 0x00000001037c3366 libExtG4.dylib`X4PhysicalVolume::init(this=<unavailable>) at X4PhysicalVolume.cc:203 [opt]
-        frame #22: 0x00000001037c2ec0 libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=<unavailable>, ggeo=<unavailable>, top=<unavailable>) at X4PhysicalVolume.cc:182 [opt]
-        frame #23: 0x0000000100015736 OKX4Test`main(argc=12, argv=0x00007ffeefbfce38) at OKX4Test.cc:108
-        frame #24: 0x00007fff70fab015 libdyld.dylib`start + 1
-        frame #25: 0x00007fff70fab015 libdyld.dylib`start + 1
-    (lldb) 
+    #!/bin/bash -l 
+
+    # more verbose logging LEVEL for these classes/structs
+    export GBndLib=INFO
+    export X4PhysicalVolume=INFO
+    export X4Solid=INFO
+    export NCSG=INFO
+
+    PFX=""
+    case $(uname) in
+       Darwin) PFX=lldb__ ;;
+    esac
+
+    $PFX \
+        OKX4Test \
+            --deletegeocache \
+            --gdmlpath \
+                $PWD/rich1_new.gdml \
+            --x4balanceskip 74,90,94 \
+            --x4nudgeskip 857,867 \
+            --x4pointskip 74,867
 
 
+There are severe problems with the conversion of around 5/869 solids. 
+Examples of the backtraces and logging from problem solids are in notes/issues/LHCb_RICH_YunlongLi_backtraces.rst
 
-    (lldb) bt
-    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGKILL
-      * frame #0: 0x000000010a209aa9 libNPY.dylib`glm::vec<4, float, (glm::qualifier)0> glm::operator*<float, (v1=0x0000000118094a24, v2=0x00007ffeefbf9690)0>(glm::vec<4, float, (glm::qualifier)0> const&, glm::vec<4, float, (glm::qualifier)0> const&) at type_vec4.inl:890
-        frame #1: 0x000000010a0c6106 libNPY.dylib`glm::mat<4, 4, float, (glm::qualifier)0>::col_type glm::operator*<float, (m=0x0000000118094a24, v=0x00007ffeefbf97b8)0>(glm::mat<4, 4, float, (glm::qualifier)0> const&, glm::mat<4, 4, float, (glm::qualifier)0>::row_type const&) at type_mat4x4.inl:563
-        frame #2: 0x000000010a3422a9 libNPY.dylib`nbox::sdf_(this=0x000000011808f550, pos=0x00007ffeefbf9800, triple=0x00000001180949e0)0> const&, nmat4triple const*) const at NBox.cpp:85
-        frame #3: 0x000000010a342242 libNPY.dylib`nbox::operator(this=0x000000011808f550, x_=-122.745415, y_=43.5319595, z_=-3.38671875)(float, float, float) const at NBox.cpp:52
-        frame #4: 0x000000010a2e2f3c libNPY.dylib`ndifference::operator(this=0x000000011808feb0, x=-122.745415, y=43.5319595, z=-3.38671875)(float, float, float) const at NNode.cpp:1151
-        frame #5: 0x000000010a2e2f3c libNPY.dylib`ndifference::operator(this=0x0000000118090520, x=-122.745415, y=43.5319595, z=-3.38671875)(float, float, float) const at NNode.cpp:1151
-        frame #6: 0x000000010a2e2f3c libNPY.dylib`ndifference::operator(this=0x0000000118091430, x=-122.745415, y=43.5319595, z=-3.38671875)(float, float, float) const at NNode.cpp:1151
-        frame #7: 0x000000010a2e2f3c libNPY.dylib`ndifference::operator(this=0x0000000118091eb0, x=-122.745415, y=43.5319595, z=-3.38671875)(float, float, float) const at NNode.cpp:1151
-        frame #8: 0x000000010a2e2f3c libNPY.dylib`ndifference::operator(this=0x0000000118092f10, x=-122.745415, y=43.5319595, z=-3.38671875)(float, float, float) const at NNode.cpp:1151
-        frame #9: 0x000000010a2e2e3c libNPY.dylib`nintersection::operator(this=0x0000000119c03008, x=-122.745415, y=43.5319595, z=-3.38671875)(float, float, float) const at NNode.cpp:1144
-        frame #10: 0x000000010a2f57e2 libNPY.dylib`float std::__1::__invoke_void_return_wrapper<float>::__call<nintersection&, float, float, float>(nintersection&&&, float&&, float&&, float&&) [inlined] decltype(__f=0x0000000119c03008, __args=0x00007ffeefbf9acc, __args=0x00007ffeefbf9ac8, __args=0x00007ffeefbf9ac4)(std::__1::forward<float, float, float>(fp0))) std::__1::__invoke<nintersection&, float, float, float>(nintersection&&&, float&&, float&&, float&&) at type_traits:4291
-        frame #11: 0x000000010a2f579b libNPY.dylib`float std::__1::__invoke_void_return_wrapper<float>::__call<nintersection&, float, float, float>(__args=0x0000000119c03008, __args=0x00007ffeefbf9acc, __args=0x00007ffeefbf9ac8, __args=0x00007ffeefbf9ac4) at __functional_base:328
-        frame #12: 0x000000010a2f5599 libNPY.dylib`std::__1::__function::__func<nintersection, std::__1::allocator<nintersection>, float (float, float, float)>::operator(this=0x0000000119c03000, __arg=0x00007ffeefbf9acc, __arg=0x00007ffeefbf9ac8, __arg=0x00007ffeefbf9ac4)(float&&, float&&, float&&) at functional:1552
-        frame #13: 0x000000010a32158f libNPY.dylib`std::__1::function<float (float, float, float)>::operator(this=0x0000000119c03000, __arg=-122.745415, __arg=43.5319595, __arg=-3.38671875)(float, float, float) const at functional:1903
-        frame #14: 0x000000010a31f84b libNPY.dylib`NNodePoints::selectBySDF(this=0x0000000118097b40, prim=0x000000011808fab0, prim_idx=1, pointmask=2) at NNodePoints.cpp:271
-        frame #15: 0x000000010a31eb25 libNPY.dylib`NNodePoints::collectCompositePoints(this=0x0000000118097b40, level=9, margin=0, pointmask=2) at NNodePoints.cpp:207
-        frame #16: 0x000000010a31dac0 libNPY.dylib`NNodePoints::collect_surface_points(this=0x0000000118097b40) at NNodePoints.cpp:155
-        frame #17: 0x000000010a3b619f libNPY.dylib`NCSG::collect_surface_points(this=0x00000001180943a0) at NCSG.cpp:1170
-        frame #18: 0x000000010a3b50ce libNPY.dylib`NCSG::postchange(this=0x00000001180943a0) at NCSG.cpp:204
-        frame #19: 0x000000010a3b557b libNPY.dylib`NCSG::Adopt(root=0x0000000118094190, config=0x0000000000000000, soIdx=94, lvIdx=94) at NCSG.cpp:173
-        frame #20: 0x00000001037c808a libExtG4.dylib`X4PhysicalVolume::convertSolid(this=<unavailable>, lvIdx=<unavailable>, soIdx=<unavailable>, solid=<unavailable>, lvname=<unavailable>, balance_deep_tree=<unavailable>) const at X4PhysicalVolume.cc:1098 [opt]
-        frame #21: 0x00000001037c6c4e libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=<unavailable>, pv=<unavailable>, depth=<unavailable>) at X4PhysicalVolume.cc:980 [opt]
-        frame #22: 0x00000001037c69c6 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=<unavailable>, pv=<unavailable>, depth=<unavailable>) at X4PhysicalVolume.cc:964 [opt]
-        frame #23: 0x00000001037c3f21 libExtG4.dylib`X4PhysicalVolume::convertSolids(this=<unavailable>) at X4PhysicalVolume.cc:926 [opt]
-        frame #24: 0x00000001037c3236 libExtG4.dylib`X4PhysicalVolume::init(this=<unavailable>) at X4PhysicalVolume.cc:203 [opt]
-        frame #25: 0x00000001037c2d90 libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=<unavailable>, ggeo=<unavailable>, top=<unavailable>) at X4PhysicalVolume.cc:182 [opt]
-        frame #26: 0x0000000100015736 OKX4Test`main(argc=6, argv=0x00007ffeefbfce90) at OKX4Test.cc:108
-        frame #27: 0x00007fff70fab015 libdyld.dylib`start + 1
-    (lldb) 
+After getting through solid conversion the next issue I found was::
 
 
+    2021-10-07 12:29:00.213 INFO  [18602665] [GGeo::prepareVolumes@1301] ]
+    2021-10-07 12:29:00.966 INFO  [18602665] [GGeo::prepare@678] ]
+    Assertion failed: (imat && omat), function fillMaterialLineMap, file /Users/blyth/opticks/ggeo/GBndLib.cc, line 823.
+    Process 85577 stopped
 
-
-    2021-10-06 20:59:24.040 INFO  [18087330] [X4Solid::Banner@80]  lvIdx   867 soIdx   867 soname Rich1MasterWithSubtract0xcf514d0 lvname _dd_Geometry_BeforeMagnetRegion_Rich1_lvRich1Master0xcf516c0
-    2021-10-06 20:59:24.040 INFO  [18087330] [*X4Solid::Convert@104] [ convert Rich1MasterWithSubtract0xcf514d0
-    2021-10-06 20:59:24.040 INFO  [18087330] [X4Solid::init@163] [ X4SolidBase identifier a entityType                    3 entityName   G4SubtractionSolid name         Rich1MasterWithSubtract0xcf514d0 root 0x0
-    ...
-    2021-10-06 20:59:24.041 INFO  [18087330] [*X4Solid::Convert@116] ]
-    2021-10-06 20:59:24.041 FATAL [18087330] [nnode::get_primitive_bbox@1060] Need to add upcasting for type: 0 name zero
-    Assertion failed: (0), function get_primitive_bbox, file /Users/blyth/opticks/npy/NNode.cpp, line 1061.
-
+    Process 85577 launched: '/usr/local/opticks/lib/OKX4Test' (x86_64)
     (lldb) bt
     * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
       * frame #0: 0x00007fff710fbb66 libsystem_kernel.dylib`__pthread_kill + 10
         frame #1: 0x00007fff712c6080 libsystem_pthread.dylib`pthread_kill + 333
         frame #2: 0x00007fff710571ae libsystem_c.dylib`abort + 127
         frame #3: 0x00007fff7101f1ac libsystem_c.dylib`__assert_rtn + 320
-        frame #4: 0x000000010a2e285b libNPY.dylib`nnode::get_primitive_bbox(this=0x00000001350c7d20, bb=0x00007ffeefbfa340) const at NNode.cpp:1061
-        frame #5: 0x000000010a2e2bb3 libNPY.dylib`nnode::bbox(this=0x00000001350c7d20) const at NNode.cpp:1099
-        frame #6: 0x000000010a32ab6d libNPY.dylib`NNodeNudger::update_prim_bb(this=0x00000001350c80b0) at NNodeNudger.cpp:105
-        frame #7: 0x000000010a32a208 libNPY.dylib`NNodeNudger::init(this=0x00000001350c80b0) at NNodeNudger.cpp:82
-        frame #8: 0x000000010a329d36 libNPY.dylib`NNodeNudger::NNodeNudger(this=0x00000001350c80b0, root_=0x00000001350c7320, epsilon_=0.00000999999974, (null)=0) at NNodeNudger.cpp:67
-        frame #9: 0x000000010a32a57d libNPY.dylib`NNodeNudger::NNodeNudger(this=0x00000001350c80b0, root_=0x00000001350c7320, epsilon_=0.00000999999974, (null)=0) at NNodeNudger.cpp:65
-        frame #10: 0x000000010a3b6bcf libNPY.dylib`NCSG::make_nudger(this=0x00000001350c8000, msg="Adopt root ctor") const at NCSG.cpp:1412
-        frame #11: 0x000000010a3b64e7 libNPY.dylib`NCSG::NCSG(this=0x00000001350c8000, root=0x00000001350c7320) at NCSG.cpp:282
-        frame #12: 0x000000010a3b55fd libNPY.dylib`NCSG::NCSG(this=0x00000001350c8000, root=0x00000001350c7320) at NCSG.cpp:297
-        frame #13: 0x000000010a3b551f libNPY.dylib`NCSG::Adopt(root=0x00000001350c7320, config=0x0000000000000000, soIdx=867, lvIdx=867) at NCSG.cpp:166
-        frame #14: 0x00000001037c808a libExtG4.dylib`X4PhysicalVolume::convertSolid(this=<unavailable>, lvIdx=<unavailable>, soIdx=<unavailable>, solid=<unavailable>, lvname=<unavailable>, balance_deep_tree=<unavailable>) const at X4PhysicalVolume.cc:1098 [opt]
-        frame #15: 0x00000001037c6c4e libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=<unavailable>, pv=<unavailable>, depth=<unavailable>) at X4PhysicalVolume.cc:980 [opt]
-        frame #16: 0x00000001037c69c6 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=<unavailable>, pv=<unavailable>, depth=<unavailable>) at X4PhysicalVolume.cc:964 [opt]
-        frame #17: 0x00000001037c3f21 libExtG4.dylib`X4PhysicalVolume::convertSolids(this=<unavailable>) at X4PhysicalVolume.cc:926 [opt]
-        frame #18: 0x00000001037c3236 libExtG4.dylib`X4PhysicalVolume::init(this=<unavailable>) at X4PhysicalVolume.cc:203 [opt]
-        frame #19: 0x00000001037c2d90 libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=<unavailable>, ggeo=<unavailable>, top=<unavailable>) at X4PhysicalVolume.cc:182 [opt]
-        frame #20: 0x0000000100015736 OKX4Test`main(argc=6, argv=0x00007ffeefbfce88) at OKX4Test.cc:108
-        frame #21: 0x00007fff70fab015 libdyld.dylib`start + 1
-        frame #22: 0x00007fff70fab015 libdyld.dylib`start + 1
+        frame #4: 0x00000001098c7c6b libGGeo.dylib`GBndLib::fillMaterialLineMap(this=0x000000010eb3fcd0, msu=size=0) at GBndLib.cc:823
+        frame #5: 0x00000001098c82f1 libGGeo.dylib`GBndLib::fillMaterialLineMap(this=0x000000010eb3fcd0) at GBndLib.cc:842
+        frame #6: 0x000000010995e08f libGGeo.dylib`GGeo::postDirectTranslation(this=0x000000010eb3fb00) at GGeo.cc:586
+        frame #7: 0x000000010001575a OKX4Test`main(argc=10, argv=0x00007ffeefbfce30) at OKX4Test.cc:113
+        frame #8: 0x00007fff70fab015 libdyld.dylib`start + 1
+    (lldb) f 7
+    frame #7: 0x000000010001575a OKX4Test`main(argc=10, argv=0x00007ffeefbfce30) at OKX4Test.cc:113
+       110 	    m_ok->profile("OKX4Test:X4PhysicalVolume"); 
+       111 	
+       112 	
+    -> 113 	    m_ggeo->postDirectTranslation();   // closing libs, finding repeat instances, merging meshes, saving 
+       114 	
+       115 	    if(m_ok->isDumpSensor())
+       116 	    {
+    (lldb) f 6
+    frame #6: 0x000000010995e08f libGGeo.dylib`GGeo::postDirectTranslation(this=0x000000010eb3fb00) at GGeo.cc:586
+       583 	
+       584 	    LOG(LEVEL) << "( GBndLib::fillMaterialLineMap " ; 
+       585 	    GBndLib* blib = getBndLib();
+    -> 586 	    blib->fillMaterialLineMap();
+       587 	    LOG(LEVEL) << ") GBndLib::fillMaterialLineMap " ; 
+       588 	
+       589 	    LOG(LEVEL) << "( GGeo::save " ; 
+    (lldb) f 5
+    frame #5: 0x00000001098c82f1 libGGeo.dylib`GBndLib::fillMaterialLineMap(this=0x000000010eb3fcd0) at GBndLib.cc:842
+       839 	
+       840 	void GBndLib::fillMaterialLineMap()
+       841 	{
+    -> 842 	    if(m_materialLineMap.size() == 0) fillMaterialLineMap(m_materialLineMap) ;
+       843 	}
+       844 	
+       845 	const std::map<std::string, unsigned int>& GBndLib::getMaterialLineMapConst() const
+
+    (lldb) f 4
+    frame #4: 0x00000001098c7c6b libGGeo.dylib`GBndLib::fillMaterialLineMap(this=0x000000010eb3fcd0, msu=size=0) at GBndLib.cc:823
+       820 	        const guint4& bnd = m_bnd[i] ;
+       821 	        const char* omat = m_mlib->getName(bnd[OMAT]);
+       822 	        const char* imat = m_mlib->getName(bnd[IMAT]);
+    -> 823 	        assert(imat && omat);
+       824 	        if(msu.count(imat) == 0) msu[imat] = getLine(i, IMAT) ;
+       825 	        if(msu.count(omat) == 0) msu[omat] = getLine(i, OMAT) ; 
+       826 	    }
+    (lldb) p bnd
+    (const guint4) $0 = (x = 4294967295, y = 4294967295, z = 4294967295, w = 4294967295)
+    (lldb) p i
+    (unsigned int) $1 = 0
     (lldb) 
+    (lldb) p getNumBnd()
+    (unsigned int) $2 = 7
+    (lldb) 
+    (lldb) p m_bnd
+    (std::__1::vector<guint4, std::__1::allocator<guint4> >) $3 = size=7 {
+      [0] = (x = 4294967295, y = 4294967295, z = 4294967295, w = 4294967295)
+      [1] = (x = 4294967295, y = 4294967295, z = 1984, w = 4294967295)
+      [2] = (x = 4294967295, y = 4294967295, z = 1985, w = 4294967295)
+      [3] = (x = 4294967295, y = 4294967295, z = 1986, w = 4294967295)
+      [4] = (x = 4294967295, y = 4294967295, z = 1987, w = 4294967295)
+      [5] = (x = 4294967295, y = 4294967295, z = 1988, w = 4294967295)
+      [6] = (x = 4294967295, y = 4294967295, z = 1989, w = 4294967295)
+    }
+
+
+The boundaries are stored via sets of 4 ints, (omat,osur,isur,imat) 
+so the above shows that only isur is ever being set. 
+
+This seems to be due to "_dd_material" prefixes on the G4Material::GetName 
+which Opticks seems to strip the prefix in one place but not another. 
+Opticks was expecting prefixes of form "/dd/Materials/" not "_dd_materials_"
+
+
+    2021-10-07 13:00:33.086 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeAl2219F
+    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                      _dd_Materials_Pipe_PipeBeTV56 omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                      _dd_Materials_Pipe_PipeBeTV56
+    2021-10-07 13:00:33.087 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeBeTV56
+    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                               _dd_Materials_Vacuum omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                               _dd_Materials_Vacuum
+    2021-10-07 13:00:33.087 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Vacuum
+    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                      _dd_Materials_Pipe_PipeBeTV56 omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                      _dd_Materials_Pipe_PipeBeTV56
+    2021-10-07 13:00:33.087 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeBeTV56
+    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                      _dd_Materials_Pipe_PipeBeTV56 omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                      _dd_Materials_Pipe_PipeBeTV56
+    2021-10-07 13:00:33.087 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeBeTV56
+    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                      _dd_Materials_Pipe_PipeBeTV56 omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                      _dd_Materials_Pipe_PipeBeTV56
+    2021-10-07 13:00:33.088 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeBeTV56
+    2021-10-07 13:00:33.088 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                               _dd_Materials_Vacuum omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                               _dd_Materials_Vacuum
 
 
 
-2021-10-06 20:54:46.195 INFO  [18081422] [*X4Solid::Convert@116] ]
-2021-10-06 20:54:46.198 INFO  [18081422] [X4Solid::Banner@80]  lvIdx    90 soIdx    90 soname UX85-3-BigRingQuarter-Sub0xdcefce0 lvname _dd_Geometry_MagnetRegion_PipeSupportsInMagnet_lvUX853BigRingQuarter0xdceff10
-2021-10-06 20:54:46.198 INFO  [18081422] [*X4Solid::Convert@104] [ convert UX85-3-BigRingQuarter-Sub0xdcefce0
-2021-10-06 20:54:46.198 INFO  [18081422] [X4Solid::init@163] [ X4SolidBase identifier a entityType                
 
 
-
-Add "--x4balanceskip" option
 
 >
 > 4. In this file the names of the inner material and outer material are

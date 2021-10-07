@@ -101,10 +101,10 @@ class GGEO_API GPropertyMap {
   public:
       GPropertyMap<T>* spawn_interpolated(T nm=1.0f);
   public:
-      static const char* FindShortName(const char* name, const char* prefix);
+      static const char* FindShortName(const char* name, const char* prefix0, const char* prefix1 );
   private:
-      void findShortName(const char* prefix="__dd__Materials__");
-      //char* trimSuffixPrefix(const char* origname, const char* prefix=NULL);
+      // formerly prefix was defaulted to "__dd__Materials__" some old prefix
+      void findShortName(const char* prefix=nullptr);
 
   public:
       std::string brief() const ; 

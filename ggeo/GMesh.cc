@@ -26,10 +26,11 @@
 #include <iomanip>
 #include <algorithm>
 
+// TODO: eliminate direct use of boost, should always go thru my wrapper instead
 #include <boost/filesystem.hpp>
 
+#include "SStr.hh"
 #include "BFile.hh"
-#include "BStr.hh"
 
 
 #include "NGLM.hpp"
@@ -2194,7 +2195,7 @@ GMesh* GMesh::load_deduped(const char* dir, const char* typedir, const char* ins
 void GMesh::findShortName()
 {
    if(!m_name) return ; 
-   m_shortname = BStr::trimPointerSuffixPrefix(m_name, NULL );   
+   m_shortname = SStr::TrimPointerSuffix(m_name);   
 }
 
 

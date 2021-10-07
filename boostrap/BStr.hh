@@ -52,7 +52,6 @@ class BRAP_API BStr {
 
      static const char* negate(const char* tag);
      static bool listHasKey(const char* dlist, const char* key, const char* delim=",");
-     static char* trimPointerSuffixPrefix(const char* origname, const char* prefix);
      static char* DAEIdToG4( const char* daeid, bool trimPtr);
 
      static bool Contains( const char* s_ , const char* q_, char delim=',' ); 

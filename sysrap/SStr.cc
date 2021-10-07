@@ -164,11 +164,29 @@ bool SStr::EndsWith( const char* s, const char* q)
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
 
+const char* SStr::StripPrefix_(const char* s, const char* pfx )
+{
+    const char* ss = pfx && StartsWith(s, pfx ) ? s + strlen(pfx) : s ;
+    return strdup(ss); 
+}
+
+const char* SStr::StripPrefix(const char* s, const char* pfx0, const char* pfx1, const char* pfx2 )
+{
+    if(      pfx0 && StartsWith(s,pfx0) )  return StripPrefix_(s, pfx0) ; 
+    else if( pfx1 && StartsWith(s,pfx1) )  return StripPrefix_(s, pfx1) ;
+    else if( pfx2 && StartsWith(s,pfx2) )  return StripPrefix_(s, pfx2) ;
+    return strdup(s); 
+}
+
+const char* SStr::MaterialBaseName(const char* s )
+{
+    return StripPrefix(s, "/dd/Materials/", "_dd_Materials_" );  
+}
 
 
 bool SStr::StartsWith( const char* s, const char* q)
 {
-    return strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
+    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
 }
 
 /**
@@ -287,8 +305,7 @@ int SStr::GetPointerSuffixDigits( const char* name )
     int num = 0 ; 
     for(int i=0 ; i < l ; i++ )  
     {
-         char c = *(name + l - 1 - i) ; 
-         //std::cout << c << " " ; 
+         char c = *(name + l - 1 - i) ;  // reverse order chars
          bool hexdigit = ( c >= '0' && c <= '9' ) || ( c >= 'a' && c <= 'f' ) ; 
          if(!hexdigit) break ;  
          num += 1 ; 
@@ -303,13 +320,36 @@ int SStr::GetPointerSuffixDigits( const char* name )
     return  c1 == 'x' && c2 == '0'  ?  num : -1 ; 
 }
 
+/**
+SStr::HasPointerSuffix
+------------------------
+
+Returns true when the number of hex digits is within the inclusive min-max range.
+
+**/
 
 bool SStr::HasPointerSuffix( const char* name, unsigned min_hexdigits, unsigned max_hexdigits )
 {    
     int num_hexdigits = GetPointerSuffixDigits( name ); 
-    //std::cout << " num_hexdigits " << num_hexdigits << std::endl ; 
     return  num_hexdigits > -1 && num_hexdigits >= int(min_hexdigits) && num_hexdigits <= int(max_hexdigits) ; 
 }
+
+const char* SStr::TrimPointerSuffix( const char* name )
+{
+    int num_hexdigits = GetPointerSuffixDigits( name ); 
+    char* trim = strdup(name); 
+
+    if( num_hexdigits >= 6 && num_hexdigits <= 12 )   // sanity check for the pointer suffix
+    {
+        int ip = strlen(name) - num_hexdigits - 2 ;
+        assert( ip >= 0 ); 
+        char* p = trim + ip ; 
+        assert( *p == '0' ); 
+        *p = '\0' ;    // terminate string chopping off the suffix eg "0xdeadbeef"
+    }    
+    return trim ; 
+}
+
 
 
 

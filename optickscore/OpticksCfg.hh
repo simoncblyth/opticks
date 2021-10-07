@@ -111,6 +111,8 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getDbgHitMask() const ;
      const std::string& getX4PolySkip() const ;
      const std::string& getX4BalanceSkip() const ;
+     const std::string& getX4NudgeSkip() const ;
+     const std::string& getX4PointSkip() const ;
      const std::string& getCSGSkipLV() const ;            // --csgskiplv
      const std::string& getDeferredCSGSkipLV() const ;    // --deferredcsgskiplv
      const std::string& getSkipSolidName() const ;        // --skipsolidname
@@ -279,6 +281,8 @@ private:
      std::string m_dbghitmask ;
      std::string m_x4polyskip ;
      std::string m_x4balanceskip ;
+     std::string m_x4nudgeskip ;
+     std::string m_x4pointskip ;
      std::string m_csgskiplv ; 
      std::string m_deferredcsgskiplv ; 
      std::string m_skipsolidname ; 

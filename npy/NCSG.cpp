@@ -149,6 +149,14 @@ NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvI
     return csg ; 
 }
 
+/**
+NCSG::Adopt
+------------
+
+NCSG instanciation via ctor taking nnode argument 
+
+**/
+
 NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
 {
     PrepTree(root);
@@ -201,7 +209,9 @@ void NCSG::postchange()
     }
 
     assert( getGTransformBuffer() );
-    collect_surface_points();
+
+    bool pointskip = m_root->is_pointskip() ;  
+    if(!pointskip) collect_surface_points();
 }
 
 
@@ -232,6 +242,7 @@ Private constructor used by NCSG::Load deserialization of a tree directory
 **/
 NCSG::NCSG(const char* treedir) 
     :
+    m_meta(new NPYMeta),
     m_treedir(treedir ? strdup(treedir) : NULL),
     m_index(0),
     m_surface_epsilon(SURFACE_EPSILON),
@@ -242,7 +253,6 @@ NCSG::NCSG(const char* treedir)
     m_uncoincide(NULL),
     m_nudger(NULL),
     m_csgdata(new NCSGData),
-    m_meta(new NPYMeta),
     m_adopted(false), 
     m_boundary(NULL),
     m_config(NULL),
@@ -258,19 +268,51 @@ NCSG::NCSG(const char* treedir)
 {
 }
 
+
+
+/**
+NCSG::MakeNudger
+----------------
+
+static helper used from ctor. 
+A static method is is appropriate as most member variables are 
+not yet initialized when this is called.
+
+**/
+
+NNodeNudger* NCSG::MakeNudger(const char* msg, nnode* root, float surface_epsilon )   // static  
+{
+    int treeidx = root->get_treeidx(); 
+    bool nudgeskip = root->is_nudgeskip() ; 
+
+    LOG(LEVEL) 
+        << " treeidx " << treeidx 
+        << " nudgeskip " << nudgeskip 
+         ; 
+
+    NNodeNudger* nudger = nudgeskip ? nullptr : new NNodeNudger(root, surface_epsilon, root->verbosity);
+    return nudger ; 
+}
+
+
+
+
+
+
 /**
 NCSG::NCSG(nnode* root )
 -----------------------------
 
 Private constructor used by NCSG::Adopt booting from in memory nnode tree
 
-* cannot be const because of the nudger 
-* TODO: nudger should know the lvIdx for identificatoin of problem solids
+* the root nnode cannot be const because of the nudger 
+* TODO: nudger should know the lvIdx for identification of problem solids
 
 **/
 
 NCSG::NCSG(nnode* root ) 
     :
+    m_meta(new NPYMeta),
     m_treedir(NULL),
     m_index(0),
     m_surface_epsilon(SURFACE_EPSILON),
@@ -279,9 +321,8 @@ NCSG::NCSG(nnode* root )
     m_root(root),
     m_points(NULL),
     m_uncoincide(make_uncoincide()),
-    m_nudger(make_nudger("Adopt root ctor")),
+    m_nudger(MakeNudger("Adopt root ctor", root, SURFACE_EPSILON)),
     m_csgdata(new NCSGData),
-    m_meta(new NPYMeta),
     m_adopted(true), 
     m_boundary(NULL),
     m_config(NULL),
@@ -444,11 +485,7 @@ void NCSG::import()
 
 void NCSG::postimport()
 {
-    m_nudger = make_nudger("postimport") ; 
-
-    //m_uncoincide = make_uncoincide(); 
-    //m_uncoincide->uncoincide();
-    //postimport_autoscan();
+    m_nudger = MakeNudger("postimport", m_root, SURFACE_EPSILON) ; 
 }
 
 /**
@@ -1157,11 +1194,17 @@ unsigned NCSG::getNumTriangles() const
     return m_tris ? m_tris->getNumTriangles() : 0 ; 
 }
 
+/**
+NCSG::collect_surface_points
+------------------------------
+
+For some solids this seems to hang.
+
+**/
 
 glm::uvec4 NCSG::collect_surface_points() 
 {
-    if(m_verbosity > 3 )
-    LOG(info) << "NCSG::collect_surface_points START " << brief() ; 
+
 
     if(!m_points) 
     {
@@ -1325,15 +1368,13 @@ unsigned NCSG::getLVIdx() const { return m_lvIdx ; }
 
 
 
-unsigned NCSG::get_num_coincidence() const 
+int NCSG::get_num_coincidence() const 
 {
-   assert(m_nudger);
-   return m_nudger->get_num_coincidence() ; 
+   return m_nudger ? m_nudger->get_num_coincidence() : -1 ; 
 }
 std::string NCSG::desc_coincidence() const 
 {
-   assert(m_nudger);
-   return m_nudger->desc_coincidence() ; 
+   return m_nudger ? m_nudger->desc_coincidence() : "" ; 
 }
 
 void NCSG::postimport_autoscan()
@@ -1396,21 +1437,9 @@ NNodeUncoincide* NCSG::make_uncoincide() const
     return NULL ;  
     //return new NNodeUncoincide(m_root, m_surface_epsilon, m_root->verbosity);
 }
-NNodeNudger* NCSG::get_nudger() const 
+NNodeNudger* NCSG::get_nudger() const   // seems unused, TODO: remove
 {
     return m_nudger ; 
-}
-NNodeNudger* NCSG::make_nudger(const char* msg) const 
-{
-    // when test running from nnode there is no metadata or treedir
-    LOG(LEVEL) 
-        <<  " lvIdx " << m_lvIdx
-        <<  " soname " << get_soname() 
-        << " treeNameIdx " << getTreeNameIdx()
-         ; 
-
-    NNodeNudger* nudger = new NNodeNudger(m_root, m_surface_epsilon, m_root->verbosity);
-    return nudger ; 
 }
 
 

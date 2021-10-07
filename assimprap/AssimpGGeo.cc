@@ -17,6 +17,9 @@
  * limitations under the License.
  */
 
+
+assert( 0 && "DEAD CODE" ); 
+
 #include <algorithm>
 #include <iomanip>
 #include <climits>
@@ -24,6 +27,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "SStr.hh"
 #include "SGDML.hh"
 
 #include "BStr.hh"
@@ -773,7 +777,7 @@ GMesh* AssimpGGeo::convertMesh(const char* qname)
     {
         aiMesh* mesh = scene->mMeshes[i] ;
         const char* meshname = mesh->mName.C_Str() ; 
-        std::string tmeshname = BStr::trimPointerSuffixPrefix(meshname, NULL );
+        std::string tmeshname = SStr::TrimPointerSuffix(meshname);
 
         //LOG(verbose) << "AssimpGGeo::convertMesh" << " tmeshname " << tmeshname ; 
 

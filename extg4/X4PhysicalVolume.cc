@@ -1085,14 +1085,26 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
      bool is_x4balanceskip = m_ok->isX4BalanceSkip(lvIdx) ; 
      if( is_x4balanceskip ) LOG(fatal) << " is_x4balanceskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
+     bool is_x4nudgeskip = m_ok->isX4NudgeSkip(lvIdx) ; 
+     if( is_x4nudgeskip ) LOG(fatal) << " is_x4nudgeskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+
+     bool is_x4pointskip = m_ok->isX4PointSkip(lvIdx) ; 
+     if( is_x4pointskip ) LOG(fatal) << " is_x4pointskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+      
+
      X4Solid::Banner( lvIdx, soIdx, lvname, soname ); 
  
      nnode* raw = X4Solid::Convert(solid, m_ok)  ; 
+     raw->set_nudgeskip( is_x4nudgeskip ); 
+     raw->set_pointskip( is_x4pointskip );  
 
      if(m_g4codegen) generateTestG4Code(lvIdx, solid, raw); 
 
      nnode* root = balance_deep_tree && !is_x4balanceskip ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw ;  
+
      root->other = raw ; 
+     root->set_nudgeskip( is_x4nudgeskip ); 
+     root->set_pointskip( is_x4pointskip );  
 
      const NSceneConfig* config = NULL ; 
      NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
@@ -1398,12 +1410,19 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const G4Material* const imat_ = lv->GetMaterial() ;
     const G4Material* const omat_ = lv_p ? lv_p->GetMaterial() : imat_ ;  // top omat -> imat 
 
+    // input material names are not of form "/dd/Materials/Air" but rather "_dd_Materials_Air"
     const char* omat = X4::BaseName(omat_) ; 
     const char* imat = X4::BaseName(imat_) ; 
 
+    LOG(LEVEL)
+        << " imat_.GetName " << std::setw(50) << imat_->GetName()
+        << " omat_.GetName " << std::setw(50) << omat_->GetName()
+        << " omat " << std::setw(50) << omat
+        << " imat " << std::setw(50) << imat
+        ;
 
 #ifdef OLD_ADD_BOUNDARY
-
+    assert(0) ; // NOT EXPECTING OLD_ADD_BOUNDARY to be used 
     static const char* IMPLICIT_PREFIX = "Implicit_RINDEX_NoRINDEX" ; 
     // look for a border surface defined between this and the parent volume, in either direction
     bool first_skin_priority = true ;   // controls fallback skin lv order when bordersurface a->b not found 

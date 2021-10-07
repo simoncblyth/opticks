@@ -70,10 +70,15 @@ class SYSRAP_API SStr {
       static bool SimpleMatch(const char* s, const char* q );
       static bool Match(const char* s, const char* q);    // q may contain wildcard chars '?' for 1 character and '*' for several  
 
+      static const char* StripPrefix_(const char* s, const char* pfx0 ); 
+      static const char* StripPrefix(const char* s, const char* pfx0, const char* pfx1=nullptr, const char* pfx2=nullptr ); 
+      static const char* MaterialBaseName(const char* s ) ; 
+
 
       static bool HasPointerSuffix( const char* name, unsigned hexdigits ) ;   // 12 typically, 9 with Geant4 ???
       static bool HasPointerSuffix( const char* name, unsigned min_hexdigits, unsigned max_hexdigits ) ;
       static int  GetPointerSuffixDigits( const char* name );
+      static const char* TrimPointerSuffix( const char* name ); 
 
       static const char* Concat( const char* a, const char* b, const char* c=NULL  );
       static const char* Concat( const char* a, unsigned b   , const char* c=NULL  );

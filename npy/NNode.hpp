@@ -290,6 +290,15 @@ struct NPY_API nnode
  
 
     void set_treeidx(int idx) ; 
+    int  get_treeidx() const ; 
+
+    void set_nudgeskip(bool nudgeskip_); 
+    bool is_nudgeskip() const ; 
+
+    void set_pointskip(bool pointskip_); 
+    bool is_pointskip() const ; 
+
+
     void set_treedir(const char* treedir) ; 
     void set_boundary(const char* boundary) ; 
     // boundary spec is only actually needed at structure level, 
@@ -324,6 +333,8 @@ struct NPY_API nnode
     const char* label ; 
     const char* treedir ; 
     int         treeidx ;   
+    bool        nudgeskip ; 
+    bool        pointskip ; 
     unsigned    depth ; 
     unsigned    subdepth ; 
     const char* boundary ; 

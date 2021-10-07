@@ -485,6 +485,29 @@ guint4 GBndLib::add( const char* omat_ , const char* osur_, const char* isur_, c
     unsigned osur = m_slib->getIndex(osur_) ;
     unsigned isur = m_slib->getIndex(isur_) ;
     unsigned imat = m_mlib->getIndex(imat_) ;
+
+    bool known_omat =  omat != UINT_MAX ; 
+    bool known_imat =  imat != UINT_MAX ; 
+ 
+    if(! (known_omat && known_imat))
+    {
+        LOG(fatal) 
+            << " material name is not present in the mlib " 
+            << " omat_ " << omat_
+            << " omat " << omat
+            << " imat_ " << imat_
+            << " imat " << imat
+            ;
+
+        LOG(fatal) 
+            << " mlib.desc " << std::endl 
+            << m_mlib->desc()
+             ; 
+    } 
+
+    assert( known_omat ); 
+    assert( known_imat ); 
+
     return add(omat, osur, isur, imat);
 }
 guint4 GBndLib::add( unsigned omat , unsigned osur, unsigned isur, unsigned imat )
@@ -815,7 +838,10 @@ void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned>& msu)
     // first occurence of a material within the boundaries
     // has its material line recorded in the MaterialLineMap
 
-    for(unsigned int i=0 ; i < getNumBnd() ; i++)    
+    unsigned num_bnd = getNumBnd() ; 
+    LOG(LEVEL) << " num_bnd " << num_bnd ; 
+
+    for(unsigned int i=0 ; i < num_bnd ; i++)    
     {
         const guint4& bnd = m_bnd[i] ;
         const char* omat = m_mlib->getName(bnd[OMAT]);

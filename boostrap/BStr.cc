@@ -35,6 +35,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
+#include "SStr.hh"
 #include "BStr.hh"
 
 #include "PLOG.hh"
@@ -128,7 +129,7 @@ char* BStr::DAEIdToG4( const char* daeid, bool trimPtr)
     **/
 
     std::string id = daeid ; 
-    if(trimPtr) id = BStr::trimPointerSuffixPrefix(id.c_str(), NULL);
+    if(trimPtr) id = SStr::TrimPointerSuffix(id.c_str());
 
     std::string rep(id);
  
@@ -147,21 +148,17 @@ char* BStr::DAEIdToG4( const char* daeid, bool trimPtr)
 }
 
 
-char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
-{
-    //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
-    const char* ox = "0x" ;
-    char* name = strdup(origname);       // make a copy to modify 
+/**
+BStr::trimPointerSuffixPrefix REMOVED : MOVE TO SStr::TrimPointerSuffix and SStr::StripPrefix
+------------------------------------------------------------------------------------------------
 
-    if( strlen(name) > 9 )
-    {
-        char* c = name + strlen(name) - 9 ;    
-        if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
-    }
+Hmm this former method made poor assumption of 9 hexdigit suffix which is sometimes not true::
 
-    if(prefix) name += strlen(prefix) ;
-    return name ;   
-}
+      __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
+
+Also does not depend on boost, so it should not be here.
+
+**/
 
 
 unsigned BStr::NumField(const char* name, char delim )

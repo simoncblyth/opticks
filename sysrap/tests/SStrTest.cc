@@ -361,9 +361,95 @@ void test_FormatReal()
         << " s [" << s  << "]" 
         << std::endl 
         ;
-
-
 }
+
+void test_StripPrefix()
+{
+    const char* lines = R"LITERAL(
+/dd/Materials/red
+/dd/Materials/green
+/dd/Materials/blue
+_dd_Materials_red
+_dd_Materials_green
+_dd_Materials_blue
+red
+green
+blue
+)LITERAL" ; 
+
+    std::stringstream ss(lines) ;    
+    std::string line ; 
+    while (std::getline(ss, line))  
+    {   
+        if(line.empty()) continue ;   
+
+        const char* s = line.c_str(); 
+        const char* sp = SStr::StripPrefix(s, "/dd/Materials/", "_dd_Materials_" );          
+        const char* sp2 = SStr::MaterialBaseName(s); 
+        assert( strcmp( sp, sp2 ) == 0 ); 
+        std::cout 
+            << std::setw(50) << line 
+            << " : "
+            << std::setw(50) << sp
+            << std::endl
+            ;
+    }    
+}
+
+
+void test_TrimPointerSuffix()
+{
+    const char* lines = R"LITERAL(
+Hello0xdeadbeef
+Hello0xnope
+Hello0xnope1
+Hello0xnope1
+Hello0x0123
+Hello0x01234
+Hello0x012345
+Hello0x0123456
+Hello0x01234567
+Hello0x012345678
+Hello0x0123456789
+Hello0x0123456789a
+Hello0xa
+Hello0xab
+Hello0xabc
+Hello0xabcd
+Hello0xabcde
+Hello0xabcdef
+Hello0xabcdef0
+Hello0xabcdef01
+Hello0xabcdef012
+0xcafecafe
+0xdeadbeef
+a0xcafecafe
+a0xdeadbeef
+)LITERAL" ; 
+
+    // the suffix chars must be valid hexdigits
+
+    std::stringstream ss(lines) ;    
+    std::string line ; 
+    while (std::getline(ss, line))  
+    {   
+        if(line.empty()) continue ;   
+
+        const char* s = line.c_str(); 
+        const char* sp = SStr::TrimPointerSuffix(s); 
+        std::cout 
+            << std::setw(50) << s
+            << " : "
+            << std::setw(50) << sp
+            << std::endl
+            ;
+    }    
+}
+
+
+
+
+
 
 
 
@@ -390,8 +476,10 @@ int main(int argc , char** argv )
     test_ExtractInt(); 
     test_SimpleMatch_WildMatch(); 
     test_ISplit(); 
-    */
     test_FormatReal(); 
+    test_StripPrefix(); 
+    */
+    test_TrimPointerSuffix(); 
 
 
     return 0  ; 

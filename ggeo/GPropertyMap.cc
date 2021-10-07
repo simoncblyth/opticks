@@ -30,8 +30,9 @@ namespace fs = boost::filesystem;
 // sysrap-
 #include "SConstant.hh"
 #include "SDigest.hh"
+#include "SGDML.hh"
+#include "SStr.hh"
 // brap-
-#include "BStr.hh"
 #include "BDir.hh"
 #include "BMeta.hh"
 
@@ -458,37 +459,44 @@ bool GPropertyMap<T>::hasDefinedName()
     return strcmp(m_shortname, NOT_DEFINED) != 0 ;
 }
 
+/**
+GPropertyMap::FindShortName
+----------------------------
+
+When doesnt match the prefix, eg for surface names
+such as __dd__Geometry__PoolDetails__PoolSurfacesAll__UnistrutRib1Surface
+just provide chars after the last _
+
+**/
+
 
 template <typename T>
-const char* GPropertyMap<T>::FindShortName(const char* name, const char* prefix)
+const char* GPropertyMap<T>::FindShortName(const char* name, const char* prefix0, const char* prefix1 )
 {
-    //printf("GPropertyMap<T>::getShortName %s \n", prefix);
-
     const char* shortname = NULL ; 
 
     if(strcmp(name, NOT_DEFINED) == 0)
     { 
         shortname = NOT_DEFINED ;
     }  
-    else if( prefix && strncmp( name, prefix, strlen(prefix)) == 0)
+    else if( prefix0 && SStr::StartsWith(name, prefix0) )
     { 
-        shortname = BStr::trimPointerSuffixPrefix(name, prefix); 
+        shortname = SStr::TrimPointerSuffix(name + strlen(prefix0)); 
+    }
+    else if( prefix1 && SStr::StartsWith(name, prefix1) )
+    { 
+        shortname = SStr::TrimPointerSuffix(name + strlen(prefix1)); 
     }
     else
     {
-        // when doesnt match the prefix, eg for surface names
-        //     __dd__Geometry__PoolDetails__PoolSurfacesAll__UnistrutRib1Surface
-        // just provide chars after the last _
-
-        if( name[0] == '_') //  detect dyb names by first char 
+        if( name[0] == '_') 
         { 
             const char* p = strrchr(name, '_') ;
             shortname = p ? p + 1 :  NOT_DEFINED ; 
         }
         else
         {
-            //  JUNO names have no prefix and are short, so just trim the 0x tail
-            shortname = BStr::trimPointerSuffixPrefix(name, NULL) ; 
+            shortname = SStr::TrimPointerSuffix(name) ; 
         }
     }
 
@@ -497,10 +505,13 @@ const char* GPropertyMap<T>::FindShortName(const char* name, const char* prefix)
 
 
 template <typename T>
-void GPropertyMap<T>::findShortName(const char* prefix)
+void GPropertyMap<T>::findShortName(const char* prefix )
 {
     const char* name = m_name.empty() ? NOT_DEFINED : m_name.c_str() ; 
-    m_shortname = FindShortName(name, prefix );  
+
+    const char* matprefix = SGDML::PREFIX("OPTICKS_SGDML_PREFIX_G4Material") ;
+
+    m_shortname = FindShortName(name, prefix, matprefix );  
 
 }
 

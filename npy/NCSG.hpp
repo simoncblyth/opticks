@@ -165,6 +165,7 @@ class NPY_API NCSG {
         static const plog::Severity LEVEL ; 
         static const unsigned MAX_EXPORT_HEIGHT ;  
         static const float SURFACE_EPSILON ; 
+        static NNodeNudger* MakeNudger(const char* msg, nnode* root, float surface_epsilon ); 
 
         static std::string TestVolumeName(const char* shapename, const char* suffix, int idx) ; 
         std::string getTestLVName() const ;
@@ -187,9 +188,8 @@ class NPY_API NCSG {
 
 
         NNodeUncoincide* make_uncoincide() const ;
-        NNodeNudger*     make_nudger(const char* msg) const ;
         NNodeNudger*     get_nudger() const ;
-        unsigned         get_num_coincidence() const ;
+        int              get_num_coincidence() const ;
         std::string      desc_coincidence() const ;
 
         void resizeToFit( const nbbox& container, float scale, float delta ) const ;
@@ -385,6 +385,7 @@ class NPY_API NCSG {
         void setOther(NCSG* other); 
         NCSG* getOther() const ;   
     private:
+        NPYMeta*         m_meta ; 
         const char*      m_treedir ; 
         unsigned         m_index ; 
         float            m_surface_epsilon ; 
@@ -397,7 +398,6 @@ class NPY_API NCSG {
         NNodeNudger*     m_nudger ; 
 
         NCSGData*        m_csgdata ; 
-        NPYMeta*         m_meta ; 
 
         bool             m_adopted ; 
         const char*         m_boundary ; 

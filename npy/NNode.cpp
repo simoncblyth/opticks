@@ -199,10 +199,44 @@ void nnode::set_treedir( const char* treedir_)
 {
     treedir = treedir_ ? strdup(treedir_) : NULL ; 
 }
+
+/**
+nnode::set_treeidx
+-------------------
+
+Canonically used from NCSG::Adopt during X4 solid conversion providing 
+solid identification via lvIdx which becomes treeidx. 
+
+**/
 void nnode::set_treeidx(int treeidx_)
 {
     treeidx = treeidx_ ; 
 }
+int nnode::get_treeidx() const 
+{
+    return treeidx ; 
+}
+
+
+void nnode::set_nudgeskip(bool nudgeskip_)
+{
+    nudgeskip = nudgeskip_ ; 
+}
+bool nnode::is_nudgeskip() const 
+{
+    return nudgeskip ; 
+}
+
+
+void nnode::set_pointskip(bool pointskip_)
+{
+    pointskip = pointskip_ ; 
+}
+bool nnode::is_pointskip() const 
+{
+    return pointskip ; 
+}
+
 
 
 
@@ -228,6 +262,8 @@ void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
  
     n->treedir = NULL ; 
     n->treeidx = -1 ; 
+    n->nudgeskip = false ; 
+    n->pointskip = false ; 
     n->depth = 0 ; 
     n->subdepth = 0 ; 
     n->boundary = NULL ;  

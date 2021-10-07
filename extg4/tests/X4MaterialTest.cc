@@ -19,6 +19,7 @@
 
 #include "G4Material.hh"
 
+#include "X4.hh"
 #include "X4Material.hh"
 #include "X4OpNoviceMaterials.hh"
 
@@ -26,6 +27,17 @@
 #include "GMaterialLib.hh"
 
 #include "OPTICKS_LOG.hh"
+
+void test_BaseName(const G4Material* water )
+{
+    const char* basename = X4::BaseName(water); 
+    LOG(info) 
+        << "G4Material::GetName " << water->GetName()
+        << " X4::BaseName [" << basename << "]"
+        ;
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -42,6 +54,11 @@ int main(int argc, char** argv)
     wine->Summary();
 
     GMaterialLib::dump(wine) ; 
+
+
+    test_BaseName(water); 
+    water->SetName("_dd_Materials_Water" ); 
+    test_BaseName(water); 
 
     return 0 ; 
 }

@@ -64,13 +64,14 @@ class X4_API X4
         static SLabelCache<int>* surface_index_cache ; 
         static SLabelCache<int>* MakeSurfaceIndexCache() ; 
         static const int MISSING_SURFACE ; 
+        static const char* PREFIX_G4Material ; 
     public: 
         static const char* X4GEN_DIR ; 
     public: 
         static const char* Name( const std::string& name );
         static const char* ShortName( const std::string& name );
-        static const char* BaseName( const std::string& name );     
-        static const char* BaseNameAsis( const std::string& name );
+        static const char* BaseName_( const std::string& name, const char* prefix);     
+        static const char* BaseNameAsis_( const std::string& name, const char* prefix  );
 
         template<typename T> static const char* Name( const T* const obj ); 
         template<typename T> static const char* ShortName( const T* const obj ); 

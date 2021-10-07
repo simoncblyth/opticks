@@ -56,12 +56,12 @@ void NNodeNudger::SaveBuffer(const char* dir, const char* name)  // static
 
 
 NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/) 
-     :
-     root(root_),
-     epsilon(epsilon_), 
-     verbosity(SSys::getenvint("VERBOSITY",1)),
-     listed(false),
-     enabled(true)
+    :
+    root(root_),
+    epsilon(epsilon_), 
+    verbosity(SSys::getenvint("VERBOSITY",1)),
+    listed(false),
+    enabled(true)
 {
     root->check_tree( FEATURE_GTRANSFORMS | FEATURE_PARENT_LINKS );
     init();
@@ -70,9 +70,6 @@ NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/)
 void NNodeNudger::init()
 {
     LOG(LEVEL) << " init " ; 
-
-    //if( TreeList == NULL )
-    //     TreeList = new std::vector<unsigned> {24, 42, 37, 22};   // iav, oav, lso, gds
 
     listed = TreeList != NULL && std::find(TreeList->begin(), TreeList->end(), root->treeidx ) != TreeList->end() ; 
  
@@ -93,6 +90,18 @@ void NNodeNudger::init()
 
 }
 
+/**
+NNodeNudger::update_prim_bb
+-----------------------------
+
+TODO: rename to find_prim_z_order
+
+The *bb* bounding boxes of all primitives are collected
+and the *zorder* of all the primitives is established 
+by sorting based on bb[i].min.z
+
+**/
+
 void NNodeNudger::update_prim_bb()
 {
     //LOG(info) << "NNodeNudger::update_prim_bb nprim " << prim.size() ;
@@ -105,17 +114,6 @@ void NNodeNudger::update_prim_bb()
         nbbox pbb = p->bbox(); 
         bb.push_back(pbb);
         zorder.push_back(i);
-
-        /*
-        const nmat4triple* gtransform = p->gtransform ; 
-        assert( gtransform ) ; 
-        const glm::mat4& t  = gtransform->t ;                
-        std::cout << " prim " << i << std::endl 
-                  << gpresent("t", t )  
-                  << " pbb " << pbb.desc()
-                  << std::endl ; 
-        */ 
-
     }
     std::sort(zorder.begin(), zorder.end(), *this );   // np.argsort style : sort the indices
 } 
@@ -188,7 +186,9 @@ NNodeNudger::collect_coincidence(unsigned i, unsigned j)
 2. collect JOIN_COINCIDENT pairs recording the pairing type 
 
 
-::
+Label order just picks one of the
+pair as first, eg smaller box in above
+comparisons.::
 
               maxmax      +--+
                /          |  |
@@ -212,9 +212,6 @@ NNodeNudger::collect_coincidence(unsigned i, unsigned j)
            +--+       minmin
            
 
-      Label order just picks one of the
-      pair as first, eg smaller box in above
-      comparisons. 
 
 **/
 

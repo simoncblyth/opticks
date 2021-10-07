@@ -95,6 +95,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     //m_dbghitmask("TO,SC,BT,SA"),  // see OEvent::OEvent
     m_x4polyskip(""),
     m_x4balanceskip(""),
+    m_x4nudgeskip(""),
+    m_x4pointskip(""),
     m_csgskiplv(""),
     m_deferredcsgskiplv(""),
     m_accel(""),
@@ -1085,7 +1087,6 @@ void OpticksCfg<Listener>::init()
                   "specifying solids to skip from Geant4 polygonization. "
                   "Instead bounding box placeholders are used. "
                   "This avoids G4 boolean processor infinite loop issue with some deep CSG trees."
- 
          );
 
    m_desc.add_options()
@@ -1093,6 +1094,20 @@ void OpticksCfg<Listener>::init()
                   "comma delimited string listing lvIdx indices, no size limit," 
                   "specifying solids to skip from deep tree balancing. "
                   "THIS IS FOR DEBUGGING WITH SOLIDS THAT HANG BALANCING"
+         );
+
+   m_desc.add_options()
+       ("x4nudgeskip",    boost::program_options::value<std::string>(&m_x4nudgeskip), 
+                  "comma delimited string listing lvIdx indices, no size limit," 
+                  "specifying solids to skip from primitive nudgeing with NNodeNudger. "
+                  "THIS IS FOR DEBUGGING WITH SOLIDS THAT HANG/CRASH NUDGING"
+         );
+
+   m_desc.add_options()
+       ("x4pointskip",    boost::program_options::value<std::string>(&m_x4pointskip), 
+                  "comma delimited string listing lvIdx indices, no size limit," 
+                  "specifying solids to skip from point collection with NNodePoints. "
+                  "THIS IS FOR DEBUGGING WITH SOLIDS THAT HANG/CRASH POINT COLLECTION"
          );
 
 
@@ -1924,6 +1939,20 @@ const std::string& OpticksCfg<Listener>::getX4BalanceSkip() const
 {
     return m_x4balanceskip ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getX4NudgeSkip() const 
+{
+    return m_x4nudgeskip ;
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getX4PointSkip() const 
+{
+    return m_x4pointskip ;
+}
+
+
 
 
 

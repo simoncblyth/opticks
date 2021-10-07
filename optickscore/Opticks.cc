@@ -776,6 +776,16 @@ bool Opticks::isX4BalanceSkip(unsigned lvIdx) const
 {
    return m_dbg->isX4BalanceSkip(lvIdx);
 }
+bool Opticks::isX4NudgeSkip(unsigned lvIdx) const 
+{
+   return m_dbg->isX4NudgeSkip(lvIdx);
+}
+bool Opticks::isX4PointSkip(unsigned lvIdx) const 
+{
+   return m_dbg->isX4PointSkip(lvIdx);
+}
+
+
 
 
 bool Opticks::isCSGSkipLV(unsigned lvIdx) const 

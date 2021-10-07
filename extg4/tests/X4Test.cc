@@ -26,14 +26,15 @@
 
 void test_Name()
 {
-    std::string name = "/dd/material/Water" ; 
+    std::string name = "_dd_Materials_Water" ; 
+    const char* prefix0 = "_dd_Materials_" ; 
 
     LOG(info) 
         << std::endl 
         << " name      : " << name   << std::endl   
         << " Name      : " << X4::Name(name)  << std::endl    
         << " ShortName : " << X4::ShortName(name) << std::endl     
-        << " BaseName  : " << X4::BaseName(name)     
+        << " BaseName  : " << X4::BaseName_(name, prefix0)     
         ;
 }
 
