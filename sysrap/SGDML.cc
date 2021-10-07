@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <algorithm>
