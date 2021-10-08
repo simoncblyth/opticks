@@ -117,17 +117,15 @@ X4Material::X4Material( const G4Material* material, char mode )
 bool X4Material::HasEfficiencyProperty(const G4MaterialPropertiesTable* mpt_) // static
 {
     G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_) ; // G4 not const-correct 
-
     const char* key = "EFFICIENCY" ; 
-    G4MaterialPropertyVector* mpv = mpt->GetProperty(key) ; 
-
     bool ret = false ; 
-    if(mpv) 
+
+    if( X4MaterialPropertiesTable::PropertyExists(mpt,key) )
     {
-         LOG(LEVEL) << "found mpv for " << key ; 
+         LOG(LEVEL) << "found Property for " << key ; 
          ret = true ; 
     }   
-    else if( mpt->ConstPropertyExists(key) )
+    else if( X4MaterialPropertiesTable::ConstPropertyExists(mpt,key) )
     {
          LOG(LEVEL) << "found ConstProperty  " << key ; 
          ret = true ; 

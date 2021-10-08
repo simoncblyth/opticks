@@ -88,6 +88,9 @@ int main(int argc, char** argv)
 
     test_MaterialPropertyNames(mpt); 
     test_MaterialConstPropertyNames(mpt); 
+
+    bool all = true ; 
+    X4MaterialPropertiesTable::Dump(mpt, all); 
     
     return 0 ; 
 }

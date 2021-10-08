@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-
+#include <map>
 #include "G4MaterialPropertiesTable.hh"
 
 #include "X4MaterialPropertiesTable.hh"
@@ -39,7 +39,7 @@ This provides a workaround for the removal of property discovery functionality
 from Geant4 1100 G4MaterialPropertiesTable::GetPropertyIndex, 
 as that now throws fatal exceptions for non-existing keys.
 
-Also bizarrely there is no *PropertyExists* method but there is *ConstPropertyExists*, 
+Also bizarrely there is no *PropertyExists* method but there is *ConstPropertyExists* (but with bug)
 hence in order to discover if a property exists it is necessary to 
 GetMaterialPropertyNames (bizarrely by value) and then check within that 
 vector of strings. This static method does this, reproducing the old behavior.
@@ -56,9 +56,6 @@ int X4MaterialPropertiesTable::GetPropertyIndex( const G4MaterialPropertiesTable
 /**
 X4MaterialPropertiesTable::GetConstPropertyIndex
 --------------------------------------------------
-
-Suspect flawed implementation in G4 1100 with non-existing keys, so role own. 
-
 **/
 
 int X4MaterialPropertiesTable::GetConstPropertyIndex( const G4MaterialPropertiesTable* mpt, const char* key ) // static
@@ -66,6 +63,36 @@ int X4MaterialPropertiesTable::GetConstPropertyIndex( const G4MaterialProperties
     const std::vector<G4String> constPropNames = mpt->GetMaterialConstPropertyNames() ;
     return GetIndex(constPropNames, key); 
 }
+
+/**
+X4MaterialPropertiesTable::PropertyExists
+------------------------------------------------
+
+**/
+
+bool X4MaterialPropertiesTable::PropertyExists( const G4MaterialPropertiesTable* mpt, const char* key ) // static
+{
+    int idx = GetPropertyIndex(mpt, key); 
+    auto m = mpt->GetPropertyMap(); 
+    return m->count(idx) == 1 ; 
+}
+
+/**
+X4MaterialPropertiesTable::ConstPropertyExists
+------------------------------------------------
+
+Confirmed flawed implementation in G4 1100 of ConstPropertyExists with non-existing keys.
+It can never return false as exception is thrown.
+
+**/
+
+bool X4MaterialPropertiesTable::ConstPropertyExists( const G4MaterialPropertiesTable* mpt, const char* key ) // static
+{
+    int idx = GetConstPropertyIndex(mpt, key);   
+    auto m = mpt->GetConstPropertyMap(); 
+    return m->count(idx) == 1 ; 
+}
+
 
 int X4MaterialPropertiesTable::GetIndex(const std::vector<G4String>& nn, const char* key ) // static
 {
@@ -77,6 +104,117 @@ int X4MaterialPropertiesTable::GetIndex(const std::vector<G4String>& nn, const c
     VSI p = std::find(b, e, k ); 
     return p == e ? -1 : std::distance(b, p) ; 
 }
+
+
+
+void X4MaterialPropertiesTable::Dump( const G4MaterialPropertiesTable* mpt_, bool all ) // static
+{
+    DumpPropMap(mpt_, all);
+    DumpConstPropMap(mpt_, all); 
+}
+
+void X4MaterialPropertiesTable::DumpPropMap( const G4MaterialPropertiesTable* mpt_, bool all ) // static
+{
+    LOG(info); 
+
+    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_) ; // tut tut G4 not const correct
+    std::vector<G4String> propNames = mpt->GetMaterialPropertyNames();
+    auto m = mpt->GetPropertyMap(); 
+    const char* label = " propName "  ; 
+
+    for(auto it=m->begin() ; it != m->end() ; it++)
+    {
+        G4int k = it->first ; 
+        G4MaterialPropertyVector* v = it->second ; 
+        int vlen = v ? v->GetVectorLength() : -1 ;  
+        std::cout 
+            << " k " << std::setw(5) << k 
+            << std::setw(15) << label 
+            << std::setw(30) << propNames[k] 
+            << " vlen " << std::setw(10) << vlen
+            << std::endl
+           ;  
+    }  
+
+    if(!all) return ; 
+
+
+    for(unsigned i=0 ; i < propNames.size() ; i++ )  
+    {
+        const G4String& name = propNames[i] ; 
+        int idx = GetPropertyIndex( mpt, name.c_str() ); 
+          
+        G4MaterialPropertyVector* v = mpt->GetProperty(name.c_str()); 
+        int vlen = v ? v->GetVectorLength() : -1 ;  
+
+        std::cout 
+            << " idx " << std::setw(5) << idx 
+            << std::setw(15) << label 
+            << std::setw(30) << name
+            << " vlen " << std::setw(10) << vlen
+            << std::endl
+           ; 
+    }
+ 
+
+
+}
+
+void X4MaterialPropertiesTable::DumpConstPropMap( const G4MaterialPropertiesTable* mpt_, bool all) // static
+{
+    LOG(info); 
+
+    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_) ; // tut tut G4 not const correct
+    std::vector<G4String> constPropNames = mpt->GetMaterialConstPropertyNames();
+    auto m = mpt->GetConstPropertyMap(); 
+            
+    const char* label = " constPropName "  ; 
+
+    for(auto it=m->begin() ; it != m->end() ; it++)
+    {
+        G4int k = it->first ; 
+        G4double v = it->second ; 
+        std::cout 
+            << " k " << std::setw(5) << k 
+            << std::setw(15) << label 
+            << std::setw(20) << constPropNames[k] 
+            << " v " << std::setw(10) << std::fixed << std::setprecision(4) << v
+            << std::endl
+           ;  
+    }  
+
+    if(!all) return ; 
+
+
+    for(unsigned i=0 ; i < constPropNames.size() ; i++ )  
+    {
+        const G4String& name_ = constPropNames[i] ; 
+        const char* name = name_.c_str(); 
+
+        int idx = GetConstPropertyIndex( mpt, name ); 
+        bool exists = ConstPropertyExists( mpt, name );
+
+        double v = exists ? mpt->GetConstProperty(name) : -1100 ; 
+
+        std::cout 
+            << " idx " << std::setw(5) << idx 
+            << std::setw(15) << label 
+            << std::setw(30) << name
+            << " exists " << std::setw(10) << exists
+            << " v " << std::setw(10) << std::fixed << std::setprecision(4) << v
+            << std::endl
+           ; 
+    }
+ 
+
+
+}
+
+
+
+
+
+
 
 
 
@@ -242,8 +380,14 @@ std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* m
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& n = pns[i]; 
-        int pidx = X4MaterialPropertiesTable::GetPropertyIndex(mpt, n.c_str()); 
-        assert( pidx > -1 );  
+        const char* name = n.c_str();   
+
+        bool exists = X4MaterialPropertiesTable::PropertyExists(mpt, name); 
+        if(!exists) continue ; 
+
+        int pidx = X4MaterialPropertiesTable::GetPropertyIndex(mpt, name); 
+        assert( pidx > -1 ); 
+ 
         MPV* v = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);  
         if(v == NULL) continue ; 
 
@@ -258,9 +402,11 @@ std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* m
     for( unsigned i=0 ; i < cpns.size() ; i++)
     {   
         const std::string& n = cpns[i]; 
-        int pidx = X4MaterialPropertiesTable::GetConstPropertyIndex(mpt, n.c_str());  
-        if(pidx == -1) continue ; 
+        const char* name = n.c_str();   
+        bool exists = X4MaterialPropertiesTable::ConstPropertyExists(mpt, name);  
+        if(!exists) continue ; 
 
+        int pidx = X4MaterialPropertiesTable::GetConstPropertyIndex(mpt, name); 
         G4double pvalue = mpt->GetConstProperty(pidx);  
 
         dig.update( const_cast<char*>(n.data()), n.size() );  
