@@ -31,6 +31,33 @@
 
 const plog::Severity X4MaterialPropertiesTable::LEVEL = PLOG::EnvLevel("X4MaterialPropertiesTable", "DEBUG"); 
 
+/**
+X4MaterialPropertiesTable::GetPropertyIndex
+--------------------------------------------
+
+This provides a workaround for the removal of property discovery functionality 
+from Geant4 1100 G4MaterialPropertiesTable::GetPropertyIndex, 
+as that now throws fatal exceptions for non-existing keys.
+
+Also bizarrely there is no *PropertyExists* method but there is *ConstPropertyExists*, 
+hence in order to discover if a property exists it is necessary to 
+GetMaterialPropertyNames (bizarrely by value) and then check within that 
+vector of strings. This static method does this, reproducing the old behavior.
+
+**/
+
+int X4MaterialPropertiesTable::GetPropertyIndex( const G4MaterialPropertiesTable* mpt, const char* key ) // static
+{
+    G4String k(key); 
+    typedef std::vector<G4String> VS ; 
+    typedef VS::const_iterator   VSI ; 
+    VS nn = mpt->GetMaterialPropertyNames()  ; 
+    VSI b = nn.begin() ; 
+    VSI e = nn.end() ; 
+    VSI p = std::find(b, e, k ); 
+    return p == e ? -1 : std::distance(b, p) ; 
+}
+
 
 void X4MaterialPropertiesTable::Convert( GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, char mode )
 {
@@ -76,9 +103,9 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
-        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        G4int pidx = X4MaterialPropertiesTable::GetPropertyIndex(mpt, pname.c_str()); 
         assert( pidx > -1 );  
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);  
         LOG(LEVEL)
             << " pname : " 
             << std::setw(30) << pname  

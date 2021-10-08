@@ -39,6 +39,7 @@ set(TEST_SOURCES
 
     X4ArrayTest.cc
     X4MaterialPropertyVectorTest.cc
+    X4MaterialPropertiesTableTest.cc
 
     X4ScintillationTest.cc
     PhysicsFreeVectorTest.cc 

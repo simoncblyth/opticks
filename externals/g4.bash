@@ -88,6 +88,12 @@ Now that a different Geant4 is installed, configure Opticks to use it in ~/.opti
     om-conf     ## visit the standard packages running CMake checking have all needed externals and generating Makefile
     om--        ## visit standard package build dirs, running make 
 
+Or::
+
+    om-
+    om-cleaninstall
+    ## om-prefix-clean is a deeper clean that can be used in case of issues with stale headers
+   
 
 
 Darwin

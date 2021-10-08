@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <string>
 #include "X4_API_EXPORT.hh"
 #include "plog/Severity.h"
 
@@ -38,6 +39,7 @@ class X4_API X4MaterialPropertiesTable
 {
         static const plog::Severity LEVEL ; 
     public:
+        static int GetPropertyIndex( const G4MaterialPropertiesTable* mpt, const char* key ); 
         static void Convert(GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, char mode );
         static std::string Digest(const G4MaterialPropertiesTable* mpt);
     private:
