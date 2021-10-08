@@ -31,6 +31,7 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "X4MaterialPropertiesTable.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4MaterialPropertyVector.hh"
 #include "G4MaterialPropertyVector.hh"
@@ -97,16 +98,15 @@ void CMPT::Dump(G4MaterialPropertiesTable* mpt, const char* msg)
     LOG(info) << "digest : " << CMPT::Digest(mpt) ; 
 
     typedef G4MaterialPropertyVector MPV ; 
-    G4bool warning ; 
 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
     LOG(debug) << " pns " << pns.size() ; 
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
-        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        G4int pidx = mpt->GetPropertyIndex(pname); 
         assert( pidx > -1 );  
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);  
         MPV* pvec2 = mpt->GetProperty(pname.c_str()) ;
         assert( pvec == pvec2 ) ;   
         if(pvec == NULL) continue ; 
@@ -164,15 +164,14 @@ std::vector<std::string> CMPT::getPropertyKeys() const
     std::vector<std::string> keys ; 
 
     typedef G4MaterialPropertyVector MPV ; 
-    G4bool warning ; 
     std::vector<G4String> pns = m_mpt->GetMaterialPropertyNames() ;
     LOG(debug) << " pns " << pns.size() ; 
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
-        G4int pidx = m_mpt->GetPropertyIndex(pname, warning=true); 
+        G4int pidx = m_mpt->GetPropertyIndex(pname); 
         assert( pidx > -1 );  
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(m_mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(m_mpt)->GetProperty(pidx);  
         if(pvec == NULL) continue ;    
 
         keys.push_back(pname); 
@@ -200,7 +199,7 @@ void CMPT::AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, un
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval); 
 #else
     G4String skey(lkey); 
-    G4int keyIdx = mpt->GetPropertyIndex(skey, false); 
+    G4int keyIdx = mpt->GetPropertyIndex(skey); 
     G4bool createNewKey = keyIdx == -1  ; 
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval, createNewKey); 
 #endif
@@ -217,7 +216,7 @@ void CMPT::AddConstProperty(G4MaterialPropertiesTable* mpt, const char* lkey, G4
     mpt->AddConstProperty(lkey, pval); 
 #else
     G4String skey(lkey); 
-    G4int keyIdx = mpt->GetConstPropertyIndex(skey, false); 
+    G4int keyIdx = mpt->GetConstPropertyIndex(skey); 
     G4bool createNewKey = keyIdx == -1 ; 
 
     mpt->AddConstProperty(lkey, pval, createNewKey); 
@@ -245,16 +244,15 @@ std::string CMPT::Digest(G4MaterialPropertiesTable* mpt)
 
     SDigest dig ;
     typedef G4MaterialPropertyVector MPV ;
-    G4bool warning ;
 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
     LOG(debug) << " pns " << pns.size() ;
     for( unsigned i=0 ; i < pns.size() ; i++)
     {
         const std::string& n = pns[i];
-        G4int pidx = mpt->GetPropertyIndex(n, warning=true);
+        G4int pidx = mpt->GetPropertyIndex(n);
         assert( pidx > -1 );
-        MPV* v = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );
+        MPV* v = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);
         if(v == NULL) continue ;
 
         std::string vs = CVec::Digest(v) ; 
@@ -281,15 +279,14 @@ std::vector<std::string> CMPT::getPropertyDesc() const
     std::vector<std::string> desc ; 
 
     typedef G4MaterialPropertyVector MPV ; 
-    G4bool warning ; 
     std::vector<G4String> pns = m_mpt->GetMaterialPropertyNames() ;
     LOG(debug) << " pns " << pns.size() ; 
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
-        G4int pidx = m_mpt->GetPropertyIndex(pname, warning=true); 
+        G4int pidx = m_mpt->GetPropertyIndex(pname); 
         assert( pidx > -1 );  
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(m_mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(m_mpt)->GetProperty(pidx);  
         if(pvec == NULL) continue ;    
  
         double pmin = pvec->GetMinValue() ;
@@ -338,7 +335,6 @@ std::vector<double> CMPT::getConstPropertyValues() const
 {
     std::vector<double> vals ; 
 
-    G4bool warning ; 
     std::vector<G4String> cpns = m_mpt->GetMaterialConstPropertyNames() ;
     LOG(debug) << " cpns " << cpns.size() ; 
 
@@ -348,7 +344,7 @@ std::vector<double> CMPT::getConstPropertyValues() const
         G4bool exists = m_mpt->ConstPropertyExists( pname.c_str() ) ; 
         if(!exists) continue ; 
 
-        G4int pidx = m_mpt->GetConstPropertyIndex(pname, warning=true); 
+        G4int pidx = m_mpt->GetConstPropertyIndex(pname); 
         G4double pval = m_mpt->GetConstProperty(pidx);  
 
         vals.push_back(pval); 
@@ -578,13 +574,14 @@ CMPT::getVec
 Formerly this tickled a 91072 bug, see G4MaterialPropertiesTableTest::test_GetProperty_NonExisting 
 Avoid that issue by checking the property index. 
 
+Subsequently Geant4 changes G4MaterialPropertiesTable to throw exceptions for non-existing keys
+
 **/
 
 G4MaterialPropertyVector* CMPT::getVec(const char* key) const 
 {
-    G4bool warning = false ; 
-    G4int index = m_mpt->GetPropertyIndex(key, warning ) ;   // this avoids ticking 91072 bug when the key is non-existing
-    G4MaterialPropertyVector* mpv = index < 0 ? nullptr : m_mpt->GetProperty(index, warning); 
+    int index = X4MaterialPropertiesTable::GetPropertyIndex(m_mpt, key) ;   // this avoids ticking 91072 bug when the key is non-existing
+    G4MaterialPropertyVector* mpv = index < 0 ? nullptr : m_mpt->GetProperty(index); 
     return mpv ; 
 }
 

@@ -28,15 +28,14 @@
 void test_MPT(G4MaterialPropertiesTable* mpt)
 {
     typedef G4MaterialPropertyVector MPV ; 
-    G4bool warning ; 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
     LOG(info) << "pns:" << pns.size() ; 
     for( unsigned i=0 ; i < pns.size() ; i++)
     {
         const std::string& pn = pns[i]; 
-        G4int idx = mpt->GetPropertyIndex(pn, warning=true); 
+        G4int idx = mpt->GetPropertyIndex(pn); 
         assert( idx > -1 );  
-        MPV* mpv = mpt->GetProperty(idx, warning=false ); 
+        MPV* mpv = mpt->GetProperty(idx); 
 
         std::cout 
             << " pn : " 
@@ -53,7 +52,6 @@ void test_MPT(G4MaterialPropertiesTable* mpt)
 
 void test_MPTConst(G4MaterialPropertiesTable* mpt)
 {
-    G4bool warning ; 
     std::vector<G4String> pns = mpt->GetMaterialConstPropertyNames() ;
     LOG(info) << "pns:" << pns.size() ; 
     for( unsigned i=0 ; i < pns.size() ; i++)
@@ -62,7 +60,7 @@ void test_MPTConst(G4MaterialPropertiesTable* mpt)
 
         G4bool exists = mpt->ConstPropertyExists( pn.c_str() ) ; 
 
-        G4int idx = mpt->GetConstPropertyIndex(pn, warning=true); 
+        G4int idx = mpt->GetConstPropertyIndex(pn); 
         assert( idx > -1 );  
         G4double pval = exists ? mpt->GetConstProperty(idx) : 0. ; 
 
@@ -86,8 +84,7 @@ void test_GetProperty_NonExisting(const G4MaterialPropertiesTable* mpt_)
 {
     G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // tut tut GetProperty is not const correct 
     const char* key = "NonExistingKey" ; 
-    G4bool warning = false ; 
-    G4MaterialPropertyVector* mpv = mpt->GetProperty(key, warning); 
+    G4MaterialPropertyVector* mpv = mpt->GetProperty(key); 
     LOG(info) << " key " << key << " mpv " << mpv ; 
     assert( mpv == nullptr ); 
 }

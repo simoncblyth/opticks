@@ -22,6 +22,7 @@
 #include <string>
 #include "X4_API_EXPORT.hh"
 #include "plog/Severity.h"
+#include "G4String.hh"
 
 class G4MaterialPropertiesTable ; 
 template <typename T> class GPropertyMap ; 
@@ -39,7 +40,10 @@ class X4_API X4MaterialPropertiesTable
 {
         static const plog::Severity LEVEL ; 
     public:
-        static int GetPropertyIndex( const G4MaterialPropertiesTable* mpt, const char* key ); 
+        static int GetPropertyIndex(      const G4MaterialPropertiesTable* mpt, const char* key ); 
+        static int GetConstPropertyIndex( const G4MaterialPropertiesTable* mpt, const char* key ); 
+        static int GetIndex(              const std::vector<G4String>& names,   const char* key ); 
+    public:
         static void Convert(GPropertyMap<double>* pmap,  const G4MaterialPropertiesTable* const mpt, char mode );
         static std::string Digest(const G4MaterialPropertiesTable* mpt);
     private:

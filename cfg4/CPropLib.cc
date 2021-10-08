@@ -49,6 +49,8 @@
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 
+#include "X4MaterialPropertiesTable.hh"
+
 // cg4-
 #include "CPropLib.hh"
 #include "CMPT.hh"
@@ -531,8 +533,7 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
 #if G4VERSION_NUMBER < 1100
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval);
 #else
-    G4String skey(lkey); 
-    G4int keyIdx = mpt->GetPropertyIndex(skey, false); 
+    int keyIdx = X4MaterialPropertiesTable::GetPropertyIndex(mpt, lkey); 
     G4bool createNewKey = keyIdx == -1  ; 
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval, createNewKey );
 #endif
@@ -561,7 +562,6 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
 
 std::string CPropLib::getMaterialKeys(const G4Material* mat)
 {   
-    G4bool warning ; 
     typedef G4MaterialPropertyVector MPV ; 
 
     std::stringstream ss ;
@@ -572,9 +572,9 @@ std::string CPropLib::getMaterialKeys(const G4Material* mat)
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
-        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        G4int pidx = mpt->GetPropertyIndex(pname); 
         assert( pidx > -1 );  
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);  
         if(pvec == NULL) continue ; 
 
         ss << pname << " " ; 
@@ -593,15 +593,14 @@ GPropertyMap<double>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, con
     GPropertyMap<double>* pmap = new GPropertyMap<double>(name);
 
     typedef G4MaterialPropertyVector MPV ; 
-    bool warning ; 
 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
-        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        G4int pidx = mpt->GetPropertyIndex(pname); 
         assert( pidx > -1 );  
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);  
         if(pvec == NULL) continue ; 
 
         GProperty<double>* prop = convertVector(pvec);        
@@ -618,7 +617,7 @@ GPropertyMap<double>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, con
         G4bool exists = mpt->ConstPropertyExists( n.c_str() ) ; 
         if(!exists) continue ; 
 
-        G4int pidx = mpt->GetConstPropertyIndex(n, warning=true); 
+        G4int pidx = mpt->GetConstPropertyIndex(n); 
         assert( pidx > -1 );  
         G4double pvalue = mpt->GetConstProperty(pidx);  
 

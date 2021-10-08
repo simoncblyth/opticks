@@ -170,7 +170,7 @@ int main(int argc, char** argv)
     PhysicsFreeVector vec(a); 
 
     NP* vv = NP::Linspace<double>(-10., 100., 111 );     
-    for(unsigned i=0 ; i < vv->shape[0] ; i++)
+    for(int i=0 ; i < vv->shape[0] ; i++)
     {
         double v = vv->get<double>(i); 
 

@@ -8,6 +8,7 @@
 #include "G4LogicalSkinSurface.hh"
 #include "G4OpticalSurface.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "X4MaterialPropertiesTable.hh"
 #include "G4String.hh"
 
 #include "X4LogicalBorderSurfaceTable.hh"
@@ -56,9 +57,9 @@ void X4Dump::G4MaterialPropertiesTable_(const char* name, const G4MaterialProper
     for(unsigned i=0 ; i < pns.size() ; i++)
     {
         const std::string& pname = pns[i] ; 
-        bool warning = false ; 
-        G4int pidx = mpt->GetPropertyIndex(pname, warning);
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning );
+        int pidx = X4MaterialPropertiesTable::GetPropertyIndex(mpt, pname.c_str());
+        assert( pidx > -1 ); 
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);
         size_t plen = pvec ? pvec->GetVectorLength() : 0 ;
         if(pvec != NULL)
         {

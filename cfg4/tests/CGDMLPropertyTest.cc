@@ -51,9 +51,8 @@ void dump_MPT(const char* name, const G4MaterialPropertiesTable* mpt, unsigned e
     for(unsigned i=0 ; i < pns.size() ; i++)
     {
         const std::string& pname = pns[i] ; 
-        bool warning = false ; 
-        G4int pidx = mpt->GetPropertyIndex(pname, warning);
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning );
+        G4int pidx = mpt->GetPropertyIndex(pname);
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);
         size_t plen = pvec ? pvec->GetVectorLength() : 0 ;
         if(pvec != NULL)
         {
