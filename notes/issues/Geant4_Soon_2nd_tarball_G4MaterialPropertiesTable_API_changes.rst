@@ -316,3 +316,13 @@ G4MaterialPropertiesTable::ConstPropertyExists can never return false::
     187 }
 
 
+
+Now down to 3::
+
+    FAILS:  3   / 501   :  Sat Oct  9 03:18:14 2021   
+      30 /36  Test #30 : ExtG4Test.X4MaterialPropertiesTableTest       Child aborted***Exception:     0.16   
+      15 /45  Test #15 : CFG4Test.G4MaterialPropertiesTableTest        Child aborted***Exception:     0.26   
+      16 /45  Test #16 : CFG4Test.CMPTTest                             Child aborted***Exception:     0.27   
+    (base) [simon@localhost opticks]$ 
+
+

@@ -198,9 +198,8 @@ void CMPT::AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, un
 #if G4VERSION_NUMBER < 1100
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval); 
 #else
-    G4String skey(lkey); 
-    G4int keyIdx = mpt->GetPropertyIndex(skey); 
-    G4bool createNewKey = keyIdx == -1  ; 
+    bool exists = X4MaterialPropertiesTable::PropertyExists(mpt, lkey); 
+    G4bool createNewKey = exists == false ; 
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval, createNewKey); 
 #endif
     assert( mpv ); 

@@ -60,8 +60,8 @@ void test_MaterialConstPropertyNames(const G4MaterialPropertiesTable* mpt)
 #if G4VERSION_NUMBER < 1100
         G4int idx0 = mpt->GetConstPropertyIndex(name) ; 
 #else
-        G4int idx0 = mpt->GetConstPropertyIndex(name) ; 
-        //G4int idx0 = -1100 ; 
+        //G4int idx0 = mpt->GetConstPropertyIndex(name) ;  // throws exception for NonExistingKey in 1100
+        G4int idx0 = -1100 ; 
 #endif
         std::cout 
             << " i " << std::setw(3) << i 

@@ -35,6 +35,8 @@ const plog::Severity X4MaterialPropertiesTable::LEVEL = PLOG::EnvLevel("X4Materi
 X4MaterialPropertiesTable::GetPropertyIndex
 --------------------------------------------
 
+NB index > -1 means the key exists, it does not mean there is a corresponding property
+
 This provides a workaround for the removal of property discovery functionality 
 from Geant4 1100 G4MaterialPropertiesTable::GetPropertyIndex, 
 as that now throws fatal exceptions for non-existing keys.
@@ -43,6 +45,7 @@ Also bizarrely there is no *PropertyExists* method but there is *ConstPropertyEx
 hence in order to discover if a property exists it is necessary to 
 GetMaterialPropertyNames (bizarrely by value) and then check within that 
 vector of strings. This static method does this, reproducing the old behavior.
+
 
 **/
 
@@ -68,12 +71,15 @@ int X4MaterialPropertiesTable::GetConstPropertyIndex( const G4MaterialProperties
 X4MaterialPropertiesTable::PropertyExists
 ------------------------------------------------
 
+NB there is a difference between the existance of a property key and existance of the 
+property corresponding to that key. 
+
 **/
 
 bool X4MaterialPropertiesTable::PropertyExists( const G4MaterialPropertiesTable* mpt, const char* key ) // static
 {
     int idx = GetPropertyIndex(mpt, key); 
-    auto m = mpt->GetPropertyMap(); 
+    auto m = mpt->GetPropertyMap();    // map is created at every call in 1100 
     return m->count(idx) == 1 ; 
 }
 
