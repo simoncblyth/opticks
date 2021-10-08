@@ -215,8 +215,18 @@ void CMPT::AddConstProperty(G4MaterialPropertiesTable* mpt, const char* lkey, G4
     mpt->AddConstProperty(lkey, pval); 
 #else
     G4String skey(lkey); 
-    G4int keyIdx = mpt->GetConstPropertyIndex(skey); 
-    G4bool createNewKey = keyIdx == -1 ; 
+
+    // 1st try: nope throws exception for non-existing key 
+    //G4int keyIdx = mpt->GetConstPropertyIndex(skey);  
+    //G4bool createNewKey = keyIdx == -1 ; 
+
+    // 2nd try: nope again throws exception from GetConstPropertyIndex just like above
+    //G4bool exists = mpt->ConstPropertyExists(lkey); 
+    //G4bool createNewKey = !exists ; 
+   
+    // 3rd try 
+    bool exists = X4MaterialPropertiesTable::ConstPropertyExists(mpt, lkey); 
+    G4bool createNewKey = !exists ; 
 
     mpt->AddConstProperty(lkey, pval, createNewKey); 
 #endif

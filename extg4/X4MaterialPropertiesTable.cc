@@ -32,6 +32,21 @@
 const plog::Severity X4MaterialPropertiesTable::LEVEL = PLOG::EnvLevel("X4MaterialPropertiesTable", "DEBUG"); 
 
 /**
+X4MaterialPropertiesTable::GetProperty
+----------------------------------------
+
+Non-existing keys yield nullptr. 
+This is a workaround for Geant4 1100 new behaviour of throwing exceptions for non-existing keys. 
+
+**/
+
+G4MaterialPropertyVector* X4MaterialPropertiesTable::GetProperty( const G4MaterialPropertiesTable* mpt, const char* key ) // static
+{
+    bool exists = PropertyExists(mpt, key); 
+    return exists ? mpt->GetProperty(key) : nullptr ; 
+}
+
+/**
 X4MaterialPropertiesTable::GetPropertyIndex
 --------------------------------------------
 
@@ -82,6 +97,8 @@ bool X4MaterialPropertiesTable::PropertyExists( const G4MaterialPropertiesTable*
     auto m = mpt->GetPropertyMap();    // map is created at every call in 1100 
     return m->count(idx) == 1 ; 
 }
+
+
 
 /**
 X4MaterialPropertiesTable::ConstPropertyExists

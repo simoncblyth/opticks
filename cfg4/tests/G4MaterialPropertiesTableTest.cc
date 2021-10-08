@@ -83,8 +83,14 @@ void test_MPTConst(G4MaterialPropertiesTable* mpt)
 void test_GetProperty_NonExisting(const G4MaterialPropertiesTable* mpt_)
 {
     G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_);   // tut tut GetProperty is not const correct 
+
     const char* key = "NonExistingKey" ; 
+#if G4VERSION_NUMBER < 1100 
     G4MaterialPropertyVector* mpv = mpt->GetProperty(key); 
+#else
+    G4MaterialPropertyVector* mpv = X4MaterialPropertiesTable::GetProperty(mpt, key); 
+#endif
+
     LOG(info) << " key " << key << " mpv " << mpv ; 
     assert( mpv == nullptr ); 
 }

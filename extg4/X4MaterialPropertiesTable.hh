@@ -40,6 +40,9 @@ class X4_API X4MaterialPropertiesTable
 {
         static const plog::Severity LEVEL ; 
     public:
+        static G4MaterialPropertyVector* 
+                    GetProperty(           const G4MaterialPropertiesTable* mpt, const char* key ); 
+
         static int  GetPropertyIndex(      const G4MaterialPropertiesTable* mpt, const char* key ); 
         static int  GetConstPropertyIndex( const G4MaterialPropertiesTable* mpt, const char* key ); 
         static int  GetIndex(              const std::vector<G4String>& names,   const char* key ); 
