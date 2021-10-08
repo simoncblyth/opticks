@@ -1,20 +1,17 @@
 LHCb_RICH_YunlongLi
 ======================
 
+Hi Yunlong,
 
-
-
-> Hi Simon,
->
-> Thank you very much for your reply. 
->
 > Since the gdml and log files are too large to deliver as attachments, I
 > uploaded the gdml file of the RICH detector and the log files to bitbucket
 > ( https://bitbucket.org/yl-li/opticks_lhcb_rich/src/master/), so that you can
 > reproduce the problems I mentioned before.
+
+Thank you, that had enabled me to reproduce the issues you describe. 
+
 > ...
 > I executed the command: 
->
 >
 >     OKX4Test --deletegeocache \
 >              --gdmlpath ~/liyu/geometry/rich1_new.gdml \
@@ -24,7 +21,6 @@ LHCb_RICH_YunlongLi
 >              --target 1 --eye -1,-1,-1 \
 >              --SYSRAP debug
 >
->
 > and from the OKX4Test_SAbbrev.log (as attached to this email) in the last few
 > lines, you can see [PipeBeTV56] and [PipeTitaniumG5] give the same abbrievation
 > as [P5]. And after changing the code a bit as I wrote before, this problem can
@@ -33,15 +29,15 @@ LHCb_RICH_YunlongLi
 
 Regarding your commandline notice that controlling the logging level at the project level 
 with "--SYSRAP debug" tends to yield huge amounts of output.
-Instead of doing that you can control the logging level for each class/struct 
+Instead of doing that you can control the logging LEVEL for each class/struct 
 by setting envvars named after the class/struct.  For example::
 
     export SAbbrev=INFO
 
 Also note that the option "--cvd 1" is internally setting CUDA_VISIBLE_DEVICES envvar 
 to 1 which will only work if you have more than one GPU attached.  
-In this case with OKX4Test that does not matter, as the GPU is not being used, 
-but in other cases using an inappropriate "--cvd" will cause crashes.  
+In this case with OKX4Test that does not matter, as CUDA is not being used for the translation.
+However in other cases using an inappropriate "--cvd" will cause crashes.  
 
 Regarding the SAbbrev assert I added SAbbrevTest.cc test_3 to look into the issue
 with your material names::
@@ -92,7 +88,7 @@ with your material names::
 
     } 
 
-I fixed the issue by using random abbreviations when the usual attempts 
+I fixed the issue by using random abbreviations when the usual approaches
 to abbreviate fail to come up with something unique.  See the commit:
 
 * https://bitbucket.org/simoncblyth/opticks/commits/574be3f0366be3f0c94a6a9edd1a43d2039e2d1c
@@ -224,56 +220,15 @@ see: https://bitbucket.org/simoncblyth/opticks/commits/ae7f3607c1ee774a24d78811f
 >   You are very welcome to do the development work of adding that in a pull request. Make
 >   sure to include a unit test that tests the new functionality you are adding.
 >
->
->
 > This case exists in this gdml file. if you correct all the things above and run the command:
 > OKX4Test --deletegeocache --gdmlpath ~/liyu/geometry/rich1_new.gdml --cvd 1 --rtx 1 --envkey --xanalytic --timemax 400 --animtimemax 400 --target 1 --eye -1,-1,-1 --X4 debug
 > the assertion here will fail (see OKX4Test_X4Solid.log file).
 >
 
 > At present, we just remove this assertion 
-
-
-There is no easy fix to extend the solid implementation to handle phi segmented polycones::
-
-    2021-10-06 17:47:59.178 INFO  [17852095] [GPropertyLib::dumpSensorIndices@1066] X4PhysicalVolume::convertSurfaces  NumSensorIndices 1 ( 1990  ) 
-    Assertion failed: (startphi == 0.f && deltaphi == 360.f), function convertPolycone, file /Users/blyth/opticks/extg4/X4Solid.cc, line 1105.
-
-    Process 72914 launched: '/usr/local/opticks/lib/OKX4Test' (x86_64)
-    (lldb) bt
-        frame #3: 0x00007fff7101f1ac libsystem_c.dylib`__assert_rtn + 320
-        frame #4: 0x000000010379dc8f libExtG4.dylib`X4Solid::convertPolycone(this=<unavailable>) at X4Solid.cc:1105 [opt]
-        frame #5: 0x000000010379ae87 libExtG4.dylib`X4Solid::init(this=<unavailable>) at X4Solid.cc:170 [opt]
-        frame #6: 0x000000010379a92b libExtG4.dylib`X4Solid::Convert(G4VSolid const*, Opticks*, char const*) [inlined] X4Solid::X4Solid(this=<unavailable>, solid=<unavailable>, ok=<unavailable>, top=<unavailable>) at X4Solid.cc:132 [opt]
-        frame #7: 0x000000010379a905 libExtG4.dylib`X4Solid::Convert(G4VSolid const*, Opticks*, char const*) [inlined] X4Solid::X4Solid(this=<unavailable>, solid=<unavailable>, ok=<unavailable>, top=<unavailable>) at X4Solid.cc:131 [opt]
-        frame #8: 0x000000010379a905 libExtG4.dylib`X4Solid::Convert(solid=<unavailable>, ok=<unavailable>, boundary=<unavailable>) at X4Solid.cc:95 [opt]
-        frame #9: 0x00000001037c813e libExtG4.dylib`X4PhysicalVolume::convertSolid(this=<unavailable>, lvIdx=<unavailable>, soIdx=<unavailable>, solid=<unavailable>, lvname=<unavailable>, balance_deep_tree=<unavailable>) const at X4PhysicalVolume.cc:1087 [opt]
-        frame #10: 0x00000001037c6e7e libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=<unavailable>, pv=<unavailable>, depth=<unavailable>) at X4PhysicalVolume.cc:980 [opt]
-        frame #11: 0x00000001037c6bf6 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=<unavailable>, pv=<unavailable>, depth=<unavailable>) at X4PhysicalVolume.cc:964 [opt]
-        frame #12: 0x00000001037c4151 libExtG4.dylib`X4PhysicalVolume::convertSolids(this=<unavailable>) at X4PhysicalVolume.cc:926 [opt]
-        frame #13: 0x00000001037c3466 libExtG4.dylib`X4PhysicalVolume::init(this=<unavailable>) at X4PhysicalVolume.cc:203 [opt]
-        frame #14: 0x00000001037c2fc0 libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=<unavailable>, ggeo=<unavailable>, top=<unavailable>) at X4PhysicalVolume.cc:182 [opt]
-        frame #15: 0x0000000100015736 OKX4Test`main(argc=12, argv=0x00007ffeefbfcec8) at OKX4Test.cc:108
-        frame #16: 0x00007fff70fab015 libdyld.dylib`start + 1
-        frame #17: 0x00007fff70fab015 libdyld.dylib`start + 1
-    (lldb) 
-    (lldb) f 4
-    libExtG4.dylib was compiled with optimization - stepping may behave oddly; variables may not be available.
-    frame #4: 0x000000010379dc8f libExtG4.dylib`X4Solid::convertPolycone(this=<unavailable>) at X4Solid.cc:1105 [opt]
-       1102	
-       1103	    float startphi = ph->Start_angle/degree ;  
-       1104	    float deltaphi = ph->Opening_angle/degree ;
-    -> 1105	    assert( startphi == 0.f && deltaphi == 360.f ); 
-       1106	
-       1107	    unsigned nz = ph->Num_z_planes ; 
-       1108	
-    (lldb) 
-
-
 > and I am willing to find a better solution here.
 >
 > https://bitbucket.org/simoncblyth/opticks/src/02b098569330585dc6303275b1c84a1855a7e1f9/extg4/X4PhysicalVolume.cc#lines-1398,
-
 
 
 The place to implement this is in X4Solid::convertPolycone
@@ -281,11 +236,11 @@ using X4Solid::intersectWithPhiSegment as other shapes do already.
 The phi segment shape is a prism described by a set of planes
 to form the convex polyhedron. 
 
-My recent commits implement this but it is disabled as
-it needs debugging, and your geometry seems to have numerous 
+My recent commits implement this  but it is currently disabled as
+it needs debugging, and as your geometry seems to have numerous 
 other problems with the translation. 
 
-Note that the performance and correctness of of shapes using 
+Note that the performance and correctness of shapes using 
 intersectWithPhiSegment for such phi segmented shapes has not been well tested.  
 
 So if it is essential for you, then you will need work on 
@@ -294,13 +249,12 @@ Also the performance would need to be measured as the segment that
 is intersected with is implemented using a CSG convexpolyhedron   
 implemented with a set of planes. 
 
-If performance or correctness is poor the next thing I would try 
+If performance/correctness is poor the next thing I would try 
 is to intersect with a segment formed from some other shape
 that does not use the plane defined convex polyhedron.   
 
 Whether it is worthwhile for you to do this implementation depends on 
 how optically important the shape is within your geometry. 
-
 
 Regarding the numerous other problems, I have added several --x4*skip 
 options to skip parts of the conversion in order to try and assess 
@@ -332,11 +286,10 @@ that are identified by lvIdx (logical volume indices, which match the soIdx soli
             --x4pointskip 74,867
 
 
-There are severe problems with the conversion of around 5/869 solids. 
+There are severe problems with the conversion of around 5 of 869 solids. 
 Examples of the backtraces and logging from problem solids are in notes/issues/LHCb_RICH_YunlongLi_backtraces.rst
 
 After getting through solid conversion the next issue I found was::
-
 
     2021-10-07 12:29:00.213 INFO  [18602665] [GGeo::prepareVolumes@1301] ]
     2021-10-07 12:29:00.966 INFO  [18602665] [GGeo::prepare@678] ]
@@ -355,33 +308,6 @@ After getting through solid conversion the next issue I found was::
         frame #6: 0x000000010995e08f libGGeo.dylib`GGeo::postDirectTranslation(this=0x000000010eb3fb00) at GGeo.cc:586
         frame #7: 0x000000010001575a OKX4Test`main(argc=10, argv=0x00007ffeefbfce30) at OKX4Test.cc:113
         frame #8: 0x00007fff70fab015 libdyld.dylib`start + 1
-    (lldb) f 7
-    frame #7: 0x000000010001575a OKX4Test`main(argc=10, argv=0x00007ffeefbfce30) at OKX4Test.cc:113
-       110 	    m_ok->profile("OKX4Test:X4PhysicalVolume"); 
-       111 	
-       112 	
-    -> 113 	    m_ggeo->postDirectTranslation();   // closing libs, finding repeat instances, merging meshes, saving 
-       114 	
-       115 	    if(m_ok->isDumpSensor())
-       116 	    {
-    (lldb) f 6
-    frame #6: 0x000000010995e08f libGGeo.dylib`GGeo::postDirectTranslation(this=0x000000010eb3fb00) at GGeo.cc:586
-       583 	
-       584 	    LOG(LEVEL) << "( GBndLib::fillMaterialLineMap " ; 
-       585 	    GBndLib* blib = getBndLib();
-    -> 586 	    blib->fillMaterialLineMap();
-       587 	    LOG(LEVEL) << ") GBndLib::fillMaterialLineMap " ; 
-       588 	
-       589 	    LOG(LEVEL) << "( GGeo::save " ; 
-    (lldb) f 5
-    frame #5: 0x00000001098c82f1 libGGeo.dylib`GBndLib::fillMaterialLineMap(this=0x000000010eb3fcd0) at GBndLib.cc:842
-       839 	
-       840 	void GBndLib::fillMaterialLineMap()
-       841 	{
-    -> 842 	    if(m_materialLineMap.size() == 0) fillMaterialLineMap(m_materialLineMap) ;
-       843 	}
-       844 	
-       845 	const std::map<std::string, unsigned int>& GBndLib::getMaterialLineMapConst() const
 
     (lldb) f 4
     frame #4: 0x00000001098c7c6b libGGeo.dylib`GBndLib::fillMaterialLineMap(this=0x000000010eb3fcd0, msu=size=0) at GBndLib.cc:823
@@ -392,6 +318,7 @@ After getting through solid conversion the next issue I found was::
        824 	        if(msu.count(imat) == 0) msu[imat] = getLine(i, IMAT) ;
        825 	        if(msu.count(omat) == 0) msu[omat] = getLine(i, OMAT) ; 
        826 	    }
+
     (lldb) p bnd
     (const guint4) $0 = (x = 4294967295, y = 4294967295, z = 4294967295, w = 4294967295)
     (lldb) p i
@@ -415,30 +342,7 @@ After getting through solid conversion the next issue I found was::
 The boundaries are stored via sets of 4 ints, (omat,osur,isur,imat) 
 so the above shows that only isur is ever being set. 
 
-This seems to be due to "_dd_material" prefixes on the G4Material::GetName 
-which Opticks seems to strip the prefix in one place but not another. 
-Opticks was expecting prefixes of form "/dd/Materials/" not "_dd_materials_"
 
-
-    2021-10-07 13:00:33.086 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeAl2219F
-    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                      _dd_Materials_Pipe_PipeBeTV56 omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                      _dd_Materials_Pipe_PipeBeTV56
-    2021-10-07 13:00:33.087 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeBeTV56
-    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                               _dd_Materials_Vacuum omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                               _dd_Materials_Vacuum
-    2021-10-07 13:00:33.087 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Vacuum
-    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                      _dd_Materials_Pipe_PipeBeTV56 omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                      _dd_Materials_Pipe_PipeBeTV56
-    2021-10-07 13:00:33.087 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeBeTV56
-    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                      _dd_Materials_Pipe_PipeBeTV56 omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                      _dd_Materials_Pipe_PipeBeTV56
-    2021-10-07 13:00:33.087 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeBeTV56
-    2021-10-07 13:00:33.087 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                      _dd_Materials_Pipe_PipeBeTV56 omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                      _dd_Materials_Pipe_PipeBeTV56
-    2021-10-07 13:00:33.088 INFO  [18636487] [GBndLib::addBoundary@463]  omat _dd_Materials_Air osur - isur - imat _dd_Materials_Pipe_PipeBeTV56
-    2021-10-07 13:00:33.088 INFO  [18636487] [X4PhysicalVolume::addBoundary@1416]  imat_.GetName                               _dd_Materials_Vacuum omat_.GetName                                  _dd_Materials_Air omat                                  _dd_Materials_Air imat                               _dd_Materials_Vacuum
-
-
-
-
-
-
->
 > 4. In this file the names of the inner material and outer material are
 > extracted and then used in line 1524, 1530, 1536 for GBndLib->addBoundary
 > function.  In extg4/X4PhysicalVolume.cc, omat and imat are directly extracted
@@ -447,7 +351,6 @@ Opticks was expecting prefixes of form "/dd/Materials/" not "_dd_materials_"
 > extracted from GMaterialLib according to their indexes, and follow this style
 > "Air", "Vacuum".  Such difference can cause an assertion failed.
 >
->
 >   The geometries I work with currently do not have prefixes such as "/dd/Material/"
 >   on material names, so there could well be a missing X4::BaseName or equivalent somewhere ?
 >   However the way you reported the issue makes me unsure of what the issue is !
@@ -455,16 +358,86 @@ Opticks was expecting prefixes of form "/dd/Materials/" not "_dd_materials_"
 > Sorry if my description confuses you. You can refer to OKX4Test_GBndLIb.log file, which are generated by this command
 > OKX4Test --deletegeocache --gdmlpath ~/liyu/geometry/rich1_new.gdml --cvd 1 --rtx 1 --envkey --xanalytic --timemax 400 --animtimemax 400 --target 1 --eye -1,-1,-1 --X4 debug.
 > In line 126191, you can see the names of omat and imat with prefixed as "_dd_Materials".
-> 
+>
+
+Trying to fix an issue from a description alone is akin to trying to type with both hands 
+tied behind your back. Reproducing an issue is almost always the essential 
+first step to being able to fix it.
+
+My recent commits fix the inconsistent handling of G4Material name prefix 
+handling between ggeo/GPropertyMap and extg4/X4 by using sysrap/SGDML 
+to provide the common G4Material name prefix. 
+
 > Let's see if you can reproduce these problems and then we can deal with others.
->
 > Thank you very much for your help and patience.
->
-> Best wishes,
-> 
-> Yunlong
->
->
+
+Updating to the lastest Opticks should avoid most of the issues. However parts
+of the translation are being skipped for some solids and there are many 
+error and warning logs from other solids.
+
+    #!/bin/bash -l 
+
+    # logging for material prefixes and boundary issue
+    export GBndLib=INFO
+    export X4PhysicalVolume=INFO
+    export X4MaterialTable=INFO
+    export X4Material=INFO
+
+    # logging for problem solids
+    #export X4Solid=INFO
+    #export NCSG=INFO
+
+    PFX=""
+    case $(uname) in
+       Darwin) PFX=lldb__ ;;
+    esac
+
+    $PFX \
+        OKX4Test \
+            --deletegeocache \
+            --gdmlpath \
+                $PWD/rich1_new.gdml \
+            --x4balanceskip 74,90,94 \
+            --x4nudgeskip 857,867 \
+            --x4pointskip 74,867
+
+
+Also I note that setting the OPTICKS_KEY envvar as reported 
+by the OKX4Test and running other executables, such as OTracerTest, 
+to load that geometry is currently asserting::
+
+    epsilon:~ blyth$ lldb__ OTracerTest 
+    /Applications/Xcode/Xcode_10_1.app/Contents/Developer/usr/bin/lldb -f OTracerTest -o r --
+    (lldb) target create "/usr/local/opticks/lib/OTracerTest"
+    Current executable set to '/usr/local/opticks/lib/OTracerTest' (x86_64).
+    (lldb) r
+    2021-10-07 19:52:35.724 INFO  [19810746] [OpticksHub::loadGeometry@283] [ /usr/local/opticks/geocache/OKX4Test_World0x11431010_PV_g4live/g4ok_gltf/788769803760b2e287e492ade2bc5a3c/1
+    Assertion failed: (unsigned(altindex) < m_meshes.size()), function loadAltReferences, file /Users/blyth/opticks/ggeo/GMeshLib.cc, line 198.
+    Process 51176 stopped
+
+    Process 51176 launched: '/usr/local/opticks/lib/OTracerTest' (x86_64)
+    (lldb) bt
+        frame #3: 0x00007fff7101f1ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x0000000100a64777 libGGeo.dylib`GMeshLib::loadAltReferences(this=0x000000010a7655e0) at GMeshLib.cc:198
+        frame #5: 0x0000000100a63315 libGGeo.dylib`GMeshLib::loadFromCache(this=0x000000010a7655e0) at GMeshLib.cc:79
+        frame #6: 0x0000000100a63258 libGGeo.dylib`GMeshLib::Load(ok=0x000000010834b550) at GMeshLib.cc:67
+        frame #7: 0x0000000100a42256 libGGeo.dylib`GGeo::loadFromCache(this=0x0000000108201380) at GGeo.cc:543
+        frame #8: 0x0000000100a45094 libGGeo.dylib`GGeo::loadGeometry(this=0x0000000108201380) at GGeo.cc:510
+        frame #9: 0x0000000100830c9a libOpticksGeo.dylib`OpticksHub::loadGeometry(this=0x0000000108369350) at OpticksHub.cc:287
+        frame #10: 0x000000010082fd29 libOpticksGeo.dylib`OpticksHub::init(this=0x0000000108369350) at OpticksHub.cc:250
+        frame #11: 0x000000010082fb1c libOpticksGeo.dylib`OpticksHub::OpticksHub(this=0x0000000108369350, ok=0x000000010834b550) at OpticksHub.cc:217
+        frame #12: 0x000000010082ff5d libOpticksGeo.dylib`OpticksHub::OpticksHub(this=0x0000000108369350, ok=0x000000010834b550) at OpticksHub.cc:216
+        frame #13: 0x00000001000d1034 libOK.dylib`OKMgr::OKMgr(this=0x00007ffeefbfcc98, argc=1, argv=0x00007ffeefbfcd50, argforced="--tracer") at OKMgr.cc:57
+        frame #14: 0x00000001000d162b libOK.dylib`OKMgr::OKMgr(this=0x00007ffeefbfcc98, argc=1, argv=0x00007ffeefbfcd50, argforced="--tracer") at OKMgr.cc:65
+        frame #15: 0x0000000100009a0a OTracerTest`main(argc=1, argv=0x00007ffeefbfcd50) at OTracerTest.cc:38
+        frame #16: 0x00007fff70fab015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+That is the first thing to investigate when I can spare some more cycles 
+to look into issues with your geometry. 
+
+Simon
 
 
 

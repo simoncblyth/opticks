@@ -40,16 +40,21 @@ Install non-default Geant4 version
    standard versions of externals used from other user accounts but the install directories and external prefix 
    environment are different.
 
-2. In the config for the non-standard user comment prefix setup for G4, usually in ~/.opticks_config
-   as well as the opticks setup line. The idea is to return to a pre-opticks and pre-geant4 environment.
+2. In this g4.bash add to the g4-nom g4-url and g4-title functions a line for the new version 
+
+3. In the config for the non-standard user in ~/.opticks_config:
+
+   a. comment out the opticks-prepend-prefix line for G4
+   b. also comment the opticks-setup line if present  
+   c. change the export OPTICKS_GEANT4_VER to value corresponding to the desired g4-url 
+
+   The idea is to return to a pre-opticks and pre-geant4 environment, with the version
+   setup to grab and install the desired non-default Geant4 version.
 
    * NB often new versions of Geant4 will require new versions of CLHEP also, the clhep- functions can be used 
 
-3. Open a new session with the modified environment without G4 and Opticks
-4. Check that the g4.bash functions have everything needed for the new version, including the new url::
-
-   ##g4-;OPTICKS_GEANT4_PREFIX=/home/simon/local/opticks_externals/g4_1072 OPTICKS_GEANT4_VER=1072  g4-info
-   ##  actually its safer not to override like this, better to just change the environment setup and use it:
+4. Open a new session with the modified environment without G4 and Opticks
+5. Check that the g4.bash functions have everything needed for the new version, including the new url::
 
    g4-;g4-info
 
@@ -57,10 +62,7 @@ Install non-default Geant4 version
 * check values dumped by g4-info are as expected for the Geant4 version
 * check install directories are writable from this account 
 
-5. Proceed with the download and build::
-
-   ##g4-;OPTICKS_GEANT4_PREFIX=/home/simon/local/opticks_externals/g4_1072 OPTICKS_GEANT4_VER=1072  g4--
-   ## safer not to override 
+6. Proceed with the download and build::
 
    g4-;g4--   # this downloads and installs into S owned directories
 
@@ -387,6 +389,9 @@ g4-libsuffix(){
 
 g4-info(){ cat << EOI
 
+
+  OPTICKS_GEANT4_VER    : $OPTICKS_GEANT4_VER
+
   g4-prefix             : $(g4-prefix)
       installation directory 
   OPTICKS_GEANT4_PREFIX : $OPTICKS_GEANT4_PREFIX
@@ -535,6 +540,21 @@ g4-prefix(){          echo ${OPTICKS_GEANT4_PREFIX:-$(g4-prefix-default)}  ; }
 
 g4-dir(){   echo $(g4-prefix).build/$(g4-name) ; }  # exploded distribution dir
 
+
+g4-nom-url-title-notes(){ cat << EON
+
+The nom identifier needs to match the name of the folder created by exploding the zip or tarball, 
+unfortunately this is not simply connected with the basename of the url and also Geant4 continues to 
+reposition URLs and names so these are liable to going stale.
+
+Geant4 website uses redirection forcing some trickery to get the actual url of 
+the download. To get the url of a download with Safari start the download and then immediately 
+pause it. Then use ctrl-click on the download item to "Copy Address" and paste 
+the url into the below g4-url function, then delete the download. 
+
+EON
+}
+
 g4-nom(){ 
   case $(g4-ver) in 
      1021) echo Geant4-10.2.1 ;;
@@ -544,26 +564,9 @@ g4-nom(){
      1070) echo geant4.10.07 ;;
      1072) echo geant4.10.07.p02 ;;
     91072) echo geant4.10.07.r08 ;;    # unreleased dist for testing 
+   100072) echo geant4.master100721 ;; 
      1100) echo geant4.11.00.b01 ;;
   esac
-}
-
-g4-nom-notes(){ cat << EON
-
-The nom identifier needs to match the name of the folder created by exploding the zip or tarball, 
-unfortunately this is not simply connected with the basename of the url and also Geant4 continues to 
-reposition URLs and names so these are liable to going stale.
-
-EON
-}
-
-g4-url-notes(){ cat << EON
-
-To get the url of a download with Safari start the download and then immediately 
-pause it. Then use ctrl-click on the download item to "Copy Address" and paste 
-the url into the below g4-url function, then delete the download. 
-
-EON
 }
 
 g4-url(){   
@@ -579,10 +582,10 @@ g4-url(){
         geant4.10.07)     echo http://cern.ch/geant4-data/releases/geant4.10.07.tar.gz ;;
         geant4.10.07.p02) echo https://geant4-data.web.cern.ch/releases/geant4.10.07.p02.tar.gz ;;
         geant4.11.00.b01) echo https://geant4-data.web.cern.ch/releases/geant4.11.00.b01.tar.gz ;;
-        geant4.10.07.r08) echo https://dummy/geant4.10.7.r08.tar ;;     # unreleased dummy 
+        geant4.10.07.r08) echo https://cached/geant4.10.7.r08.tar ;;         # unreleased dummy 
+        geant4.master100721) echo https://cached/geant4.master100721.tar ;;  # unreleased dummy 
    esac
 }
-
 
 g4-title()
 {
@@ -590,7 +593,8 @@ g4-title()
       1021) echo Geant4 10.2 first released 4 December 2015 \(patch-03, released 27 January 2017\) ;;
       1041) echo Geant4 10.4 patch-01, released 28 February 2018 ;; 
       1042) echo Geant4 10.4 patch-02, released 25 May 2018 ;; 
-     91072) echo Dummy pre-release for 1100 beta version grabbed from OPTICKS_DOWNLOAD_CACHE ;; 
+     91072) echo 1st Soon tarball pre-release for 1100 beta version grabbed from OPTICKS_DOWNLOAD_CACHE ;; 
+    100721) echo 2nd Soon tarball pre-release for 1100 beta version grabbed from OPTICKS_DOWNLOAD_CACHE ;;
    esac
 }
 

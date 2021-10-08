@@ -8,6 +8,7 @@ set(TEST_SOURCES
     OKConfTest.cc
     OpticksVersionNumberTest.cc
     Geant4VersionInteger.cc
+    CPPVersionInteger.cc
 )
 
 
