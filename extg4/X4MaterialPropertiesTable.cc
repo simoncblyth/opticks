@@ -40,8 +40,9 @@ This is a workaround for Geant4 1100 new behaviour of throwing exceptions for no
 
 **/
 
-G4MaterialPropertyVector* X4MaterialPropertiesTable::GetProperty( const G4MaterialPropertiesTable* mpt, const char* key ) // static
+G4MaterialPropertyVector* X4MaterialPropertiesTable::GetProperty( const G4MaterialPropertiesTable* mpt_, const char* key ) // static
 {
+    G4MaterialPropertiesTable* mpt = const_cast<G4MaterialPropertiesTable*>(mpt_); 
     bool exists = PropertyExists(mpt, key); 
     return exists ? mpt->GetProperty(key) : nullptr ; 
 }

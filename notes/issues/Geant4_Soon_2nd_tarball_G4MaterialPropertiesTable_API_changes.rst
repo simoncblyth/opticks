@@ -326,3 +326,21 @@ Now down to 3::
     (base) [simon@localhost opticks]$ 
 
 
+
+
+* https://bitbucket.org/simoncblyth/opticks/commits/b51aa2eb441aacb334b1790d839e9513ecb31dbb
+
+* https://bitbucket.org/simoncblyth/opticks/commits/e9b8c97d90efeae70fd9c6b0d6dccd1cd5f0624c
+
+* https://bitbucket.org/simoncblyth/opticks/commits/2c9ec1679edb5b9a6df6126adfc95a913dcc495e
+
+* https://bitbucket.org/simoncblyth/opticks/commits/f1c3b0fe5d77de00f2975ba896fc556d22c691c7
+
+* https://bitbucket.org/simoncblyth/opticks/commits/9aaa6708ceae8080a648c8681c0f05bdfca93207
+
+
+
+
+
+
+

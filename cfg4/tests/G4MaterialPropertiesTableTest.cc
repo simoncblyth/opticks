@@ -20,7 +20,9 @@
 // TEST=G4MaterialPropertiesTableTest om-t
 
 #include <iomanip>
+#include "G4Version.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "X4MaterialPropertiesTable.hh"
 
 #include "CMPT.hh"
 #include "OPTICKS_LOG.hh"

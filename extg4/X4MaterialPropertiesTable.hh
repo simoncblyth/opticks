@@ -23,6 +23,7 @@
 #include "X4_API_EXPORT.hh"
 #include "plog/Severity.h"
 #include "G4String.hh"
+#include "G4MaterialPropertyVector.hh"
 
 class G4MaterialPropertiesTable ; 
 template <typename T> class GPropertyMap ; 
