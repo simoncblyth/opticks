@@ -22,6 +22,7 @@ set(TEST_SOURCES
    QUTest.cc
    QTexMakerTest.cc
    QTexLookupTest.cc
+   QBufTest.cc
 
 )
 

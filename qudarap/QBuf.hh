@@ -29,6 +29,7 @@ struct QUDARAP_API QBuf
     {
     }
 
+
     void device_alloc(unsigned num_items_)
     {   
         num_items = num_items_ ; 
