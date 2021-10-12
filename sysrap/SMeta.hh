@@ -17,6 +17,7 @@ For a more heavy weight approach (with more historical baggage) see brap/BMeta.h
 
 struct SYSRAP_API SMeta
 {
+   static SMeta* Load(const char* path); 
    static SMeta* Load(const char* dir, const char* name); 
    static const plog::Severity LEVEL ; 
 
