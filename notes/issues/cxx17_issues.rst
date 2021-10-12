@@ -131,3 +131,63 @@ Without CUDA/nvcc in the mix it compiles fine, eg with QBufTest
 
 
 
+::
+
+    [ 28%] Building CXX object CMakeFiles/QUDARap.dir/QSeed.cc.o
+    In file included from /home/blyth/opticks/qudarap/QRng.cc:9:
+    /home/blyth/opticks/qudarap/QRng.cc: In destructor ‘virtual QRng::~QRng()’:
+    /home/blyth/opticks/qudarap/QUDA_CHECK.h:19:52: warning: throw will always call terminate() [-Wterminate]
+                 throw QUDA_Exception( ss.str().c_str() );                        \
+                                                        ^
+    /home/blyth/opticks/qudarap/QRng.cc:32:5: note: in expansion of macro ‘QUDA_CHECK’
+         QUDA_CHECK(cudaFree(qr->rng_states));
+         ^~~~~~~~~~
+    /home/blyth/opticks/qudarap/QUDA_CHECK.h:19:52: note: in C++11 destructors default to noexcept
+                 throw QUDA_Exception( ss.str().c_str() );                        \
+                                                        ^
+    /home/blyth/opticks/qudarap/QRng.cc:32:5: note: in expansion of macro ‘QUDA_CHECK’
+         QUDA_CHECK(cudaFree(qr->rng_states));
+         ^~~~~~~~~~
+    In file included from /home/blyth/opticks/qudarap/QProp.cc:7:
+
+
+
+Alarming that the below compilation fails with normal pointer arrow style::
+
+    088     /**
+     89     method tickles CUDA/cxx17/devtoolset-8 bug causing compilation to fail with 
+     90     error: cannot call member function without object
+     91 
+     92     See notes/issues/cxx17_issues.rst
+     93 
+     94     https://forums.developer.nvidia.com/t/cuda-10-1-nvidia-youre-now-fixing-gcc-bugs-that-gcc-doesnt-even-have/71063
+     95 
+     96     **/
+     97 
+     98     static QBuf<T>* Alloc( unsigned num_items  )
+     99     {   
+    100         QBuf<T>* buf = new QBuf<T> ; 
+    101         (*buf).device_alloc(num_items); 
+    102         (*buf).device_set(0); 
+    103         return buf ; 
+    104     }   
+
+
+cxx17 throwing up new templated undefined errors:: 
+
+
+    [ 76%] Built target QTexRotateTest
+    [ 77%] Built target QSeedTest
+    CMakeFiles/QTexMakerTest.dir/QTexMakerTest.cc.o: In function `main':
+    /home/blyth/opticks/qudarap/tests/QTexMakerTest.cc:37: undefined reference to `QTex<float4>::setHDFactor(unsigned int)'
+    /home/blyth/opticks/qudarap/tests/QTexMakerTest.cc:38: undefined reference to `QTex<float4>::uploadMeta()'
+    collect2: error: ld returned 1 exit status
+    make[2]: *** [tests/QTexMakerTest] Error 1
+    make[1]: *** [tests/CMakeFiles/QTexMakerTest.dir/all] Error 2
+    make[1]: *** Waiting for unfinished jobs....
+    [ 80%] Built target QCerenkovTest
+    [ 80%] Built target QBufTest
+    [ 82%] Built target QPropTest
+
+
+

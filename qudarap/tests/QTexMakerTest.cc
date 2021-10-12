@@ -4,6 +4,9 @@
 #include "OPTICKS_LOG.hh"
 
 
+struct QTex<float4> ; 
+
+
 NP* make_array(unsigned ni, unsigned nj, unsigned nk)
 {
     std::vector<float> src ; 
