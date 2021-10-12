@@ -19,7 +19,9 @@ that it is necessary to:
 3. om-conf
 
 The reason for this black magic is that FindCUDA.cmake which comes 
-with CMake is being treated as a black box.   
+with CMake is being treated as a black box. However the primary 
+way that FindCUDA operates is effectively from where nvcc is
+found in the PATH.   
 
 
 #]=]

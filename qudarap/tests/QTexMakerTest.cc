@@ -3,8 +3,7 @@
 #include "QTexMaker.hh"
 #include "OPTICKS_LOG.hh"
 
-
-struct QTex<float4> ; 
+//struct QTex<float4> ; 
 
 
 NP* make_array(unsigned ni, unsigned nj, unsigned nk)

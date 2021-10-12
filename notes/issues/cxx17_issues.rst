@@ -191,3 +191,84 @@ cxx17 throwing up new templated undefined errors::
 
 
 
+
+Try with CUDA 11 on Precision
+---------------------------------
+
+* Hmh, defer that updating to 11.4 will require a new driver, I dont like doing that remotely 
+
+::
+
+    O[blyth@localhost qudarap]$ l /usr/local/
+    total 2261216
+         0 drwxr-xr-x.  7 blyth blyth        75 May  2 02:05 csg
+         4 drwxr-xr-x. 18 root  root       4096 Apr 30 18:03 .
+     44500 -rw-r--r--.  1 blyth blyth  45564234 Feb  6  2021 NVIDIA-OptiX-SDK-7.1.0-linux64-x86_64.sh
+     43532 -rw-r--r--.  1 blyth blyth  44573802 Feb  6  2021 NVIDIA-OptiX-SDK-7.2.0-linux64-x86_64.sh
+    141004 -rw-rw-r--.  1 blyth blyth 144387574 Sep 19  2019 NVIDIA-Linux-x86_64-435.21.run
+     28256 -rw-rw-r--.  1 blyth blyth  28930132 Sep 10  2019 NVIDIA-OptiX-SDK-7.0.0-linux64.sh
+    124648 -rw-r--r--.  1 blyth blyth 127636318 Sep 10  2019 NVIDIA-OptiX-SDK-6.5.0-linux64.sh
+         0 lrwxrwxrwx.  1 root  root         30 May 22  2019 OptiX_511 -> NVIDIA-OptiX-SDK-5.1.1-linux64
+         0 drwxr-xr-x.  7 root  root         87 May 22  2019 NVIDIA-OptiX-SDK-5.1.1-linux64
+    620024 -rw-rw-r--.  1 blyth blyth 634901022 May  9  2019 NVIDIA-OptiX-SDK-5.1.1-linux64-25109142.sh
+         0 drwxr-xr-x.  9 root  root        123 Apr 10  2019 NVIDIA-OptiX-SDK-6.0.0-linux64
+         0 lrwxrwxrwx.  1 root  root         30 Apr  9  2019 OptiX_600 -> NVIDIA-OptiX-SDK-6.0.0-linux64
+    627268 -rw-rw-r--.  1 blyth blyth 642319364 Apr  9  2019 NVIDIA-OptiX-SDK-6.0.0-linux64-25650775.sh
+         0 lrwxrwxrwx.  1 root  root         30 Jul  6  2018 OptiX_510 -> NVIDIA-OptiX-SDK-5.1.0-linux64
+         0 drwxr-xr-x.  7 root  root         87 Jul  6  2018 NVIDIA-OptiX-SDK-5.1.0-linux64
+    631976 -rw-r--r--.  1 root  root  647141137 Jul  5  2018 NVIDIA-OptiX-SDK-5.1.0-linux64_24109458.sh
+         0 drwxr-xr-x. 13 root  root        155 Jul  5  2018 ..
+
+
+
+         0 drwxr-xr-x. 18 root  root        249 Jul  5  2018 cuda-9.2
+         4 drwxr-xr-x. 18 root  root       4096 Apr  8  2019 cuda-10.1
+         0 lrwxrwxrwx.  1 root  root         21 Apr  8  2019 cuda -> /usr/local/cuda-10.1/
+
+
+
+Confirm the issue is coming from cxx17/devtoolset-8 by downgrading
+----------------------------------------------------------------------
+
+cmake/Modules/OpticksCXXFlags.cmake switch back from 17 to 14 on Linux::
+
+     68 else()
+     69 
+     70   if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+     71      set(CMAKE_CXX_STANDARD 14)
+     72      set(CMAKE_CXX_STANDARD_REQUIRED on)
+     73   else ()
+     74      set(CMAKE_CXX_STANDARD 14)
+     75      #set(CMAKE_CXX_STANDARD 17)   ## Geant4 1100 forces c++17 gcc 5+ devtoolset-8 on centos7 : dangerous for CUDA 
+     76      set(CMAKE_CXX_STANDARD_REQUIRED on)
+     77   endif ()
+
+
+
+.local.bash comment out devtoolset-8::
+
+     25 # default gcc is 4.8.5 
+     26 #source /opt/rh/devtoolset-9/enable    ## gcc 9.3.1 : cannot be used with CUDA 10.1
+     27 #source /opt/rh/devtoolset-8/enable    ## gcc 8.3.1 
+     28 #source /opt/rh/devtoolset-7/enable    ## gcc 7.3.1 
+     29 
+
+
+start new session and check gcc version is back to 4.8.5::
+
+    epsilon:tests blyth$ O
+    mo .bashrc VIP_MODE:dev O : ordinary opticks dev ontop of juno externals CMTEXTRATAGS:opticks
+
+    O[blyth@localhost ~]$ gcc --version
+    gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-44)
+    Copyright (C) 2015 Free Software Foundation, Inc.
+    This is free software; see the source for copying conditions.  There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+    O[blyth@localhost ~]$ 
+
+Cleaninstall::
+
+    O[blyth@localhost opticks]$ om- ; om-cleaninstall
+
+

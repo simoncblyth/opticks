@@ -36,6 +36,21 @@ See Also
 * env-;cudatex-
 
 
+Getting CUDA : follow NVIDIA instructions
+--------------------------------------------
+
+* https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=CentOS&target_version=7&target_type=runfile_local
+
+::
+
+    wget https://developer.download.nvidia.com/compute/cuda/11.4.2/local_installers/cuda_11.4.2_470.57.02_linux.run
+    sudo sh cuda_11.4.2_470.57.02_linux.run
+
+
+* https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+
+* https://docs.nvidia.com/deploy/cuda-compatibility/
+
 
 cudaMemcpyToArray deprecated
 ------------------------------
