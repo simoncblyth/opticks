@@ -25,10 +25,12 @@ SPath
 
 **/
 
+#include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
 class SYSRAP_API SPath {
   public:
+      static const plog::Severity LEVEL ; 
       static const char* Stem( const char* name );
       static bool IsReadable(const char* path);
       static const char* GetHomePath(const char* rel); 
@@ -39,9 +41,9 @@ class SYSRAP_API SPath {
       static const char* UserTmpDir(const char* pfx="/tmp", const char* user_envvar="USER", const char* sub="opticks", char sep='/'  );
 
       // recommend create_dirs false unless are intending to write to avoid permissions issues
-      static const char* Resolve(const char* path, bool create_dirs); 
-      static const char* Resolve(const char* dir, const char* name, bool create_dirs);
-      static const char* Resolve(const char* dir, const char* reldir, const char* name, bool create_dirs);
+      static const char* Resolve(const char* path, int create_dirs); 
+      static const char* Resolve(const char* dir, const char* name, int create_dirs);
+      static const char* Resolve(const char* dir, const char* reldir, const char* name, int create_dirs);
 
 
       static bool LooksLikePath(const char* path);

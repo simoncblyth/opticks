@@ -34,6 +34,11 @@
 
 #include "SStr.hh"
 #include "SPath.hh"
+#include "PLOG.hh"
+
+
+const plog::Severity SPath::LEVEL = PLOG::EnvLevel("SPath", "DEBUG"); 
+
 
 const char* SPath::Stem( const char* name ) // static
 {
@@ -113,8 +118,13 @@ the TMP envvar to "/tmp/username/opticks"
 
 **/
 
-const char* SPath::Resolve(const char* spec_, bool create_dirs)
+const char* SPath::Resolve(const char* spec_, int create_dirs)
 {
+    LOG(LEVEL) 
+        << " spec_ [" << spec_ << "]"
+        << " create_dirs [" << create_dirs << "]"
+        ;
+
     if(!spec_) return NULL ;       
 
     char* spec = strdup(spec_);            // copy to allow modifications 
@@ -154,16 +164,29 @@ const char* SPath::Resolve(const char* spec_, bool create_dirs)
 }
 
 
-const char* SPath::Resolve(const char* dir, const char* name, bool create_dirs)
+const char* SPath::Resolve(const char* dir, const char* name, int create_dirs)
 {
+    LOG(LEVEL) 
+        << " dir [" << dir << "]"
+        << " name [" << name << "]"
+        << " create_dirs [" << create_dirs << "]"
+        ;
+
     std::stringstream ss ; 
     ss << dir << "/" << name ; 
     std::string s = ss.str(); 
     return Resolve(s.c_str(), create_dirs); 
 }
 
-const char* SPath::Resolve(const char* dir, const char* reldir, const char* name, bool create_dirs)
+const char* SPath::Resolve(const char* dir, const char* reldir, const char* name, int create_dirs)
 {
+    LOG(LEVEL) 
+        << " dir [" << dir << "]"
+        << " reldir [" << reldir << "]"
+        << " name [" << name << "]"
+        << " create_dirs [" << create_dirs << "]"
+        ;
+
     std::stringstream ss ; 
     ss << dir << "/" ; 
     if(reldir) ss << reldir << "/" ; 
@@ -217,10 +240,11 @@ template<typename T>
 const char* SPath::MakePath( const char* prefix, const char* reldir, const T real, const char* name)  // static
 {
     const char* sreal = SStr::FormatReal<T>(real, 6, 4, '0');
-    const char* fold = SPath::Resolve(prefix, reldir, sreal ); 
+    int create_dirs = 0 ; 
+    const char* fold = SPath::Resolve(prefix, reldir, sreal, create_dirs ); 
     int rc = SPath::MakeDirs(fold); 
     assert( rc == 0 );  
-    const char* path = SPath::Resolve(fold, name) ; 
+    const char* path = SPath::Resolve(fold, name, create_dirs ) ; 
     return path ; 
 } 
 
