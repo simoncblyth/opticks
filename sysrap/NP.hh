@@ -621,7 +621,7 @@ template<typename T> inline void NP::fill(T value)
 template<typename T> inline void NP::_fillIndexFlat(T offset)
 {
     T* vv = values<T>(); 
-    for(unsigned i=0 ; i < size ; i++) *(vv+i) = T(i) + offset ; 
+    for(int i=0 ; i < size ; i++) *(vv+i) = T(i) + offset ; 
 }
 
 
