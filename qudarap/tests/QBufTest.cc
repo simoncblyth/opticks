@@ -1,6 +1,8 @@
 
 // name=QBufTest ; gcc $name.cc -I.. -I/usr/local/cuda/include -L/usr/local/cuda/lib -I$HOME/np -std=c++11 -lstdc++ -lcudart -o /tmp/$name && /tmp/$name
 
+// name=QBufTest ; gcc $name.cc -I.. -I/usr/local/cuda/include -L/usr/local/cuda/lib64 -I$HOME/np -std=c++11 -lstdc++ -lcudart -o /tmp/$name && /tmp/$name
+// name=QBufTest ; gcc $name.cc -I.. -I/usr/local/cuda/include -L/usr/local/cuda/lib64 -I$HOME/np -std=c++17 -lstdc++ -lcudart -o /tmp/$name && /tmp/$name
 
 #include <cassert>
 #include <cuda_runtime.h>

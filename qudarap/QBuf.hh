@@ -85,11 +85,21 @@ struct QUDARAP_API QBuf
         return Upload( vec.data(), vec.size() );  
     }   
 
+    /**
+    method tickles CUDA/cxx17/devtoolset-8 bug causing compilation to fail with 
+    error: cannot call member function without object
+
+    See notes/issues/cxx17_issues.rst
+
+    https://forums.developer.nvidia.com/t/cuda-10-1-nvidia-youre-now-fixing-gcc-bugs-that-gcc-doesnt-even-have/71063
+
+    **/
+
     static QBuf<T>* Alloc( unsigned num_items  )
     {   
         QBuf<T>* buf = new QBuf<T> ; 
-        buf->device_alloc(num_items); 
-        buf->device_set(0); 
+        (*buf).device_alloc(num_items); 
+        (*buf).device_set(0); 
         return buf ; 
     }   
 };

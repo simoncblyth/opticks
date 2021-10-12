@@ -118,3 +118,16 @@ Bizarre : error: cannot call member function ‘void QBuf<T>::device_alloc(unsig
 
 
 
+Without CUDA/nvcc in the mix it compiles fine, eg with QBufTest
+------------------------------------------------------------------
+
+
+* https://stackoverflow.com/questions/36551469/triggering-c11-support-in-nvcc-with-cmake
+
+* https://github.com/microsoft/onnxruntime/issues/661
+
+* https://forums.developer.nvidia.com/t/cuda-10-1-nvidia-youre-now-fixing-gcc-bugs-that-gcc-doesnt-even-have/71063
+
+
+
+
