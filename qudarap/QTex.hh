@@ -24,10 +24,6 @@ struct QUDARAP_API QTex
     const void*  origin ;  // typically an NP array 
 
 
-    // TODO: split off rotation elsewhere "QTexRotate?", it is not typically needed 
-    T*           rotate_dst ; 
-    T*           d_rotate_dst ; 
-
 
     cudaArray*   cuArray ; 
     cudaChannelFormatDesc channelDesc ;
@@ -59,7 +55,8 @@ struct QUDARAP_API QTex
     void uploadMeta(); 
 
     void createTextureObject(); 
-    void rotate(float theta);
 };
+
+
 
 

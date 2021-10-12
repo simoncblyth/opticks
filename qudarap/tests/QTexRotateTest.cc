@@ -1,4 +1,5 @@
 #include "QTex.hh"
+#include "QTexRotate.hh"
 
 #include <vector_types.h>
 #include <vector_functions.h>
@@ -27,13 +28,17 @@ int main(int argc, char** argv)
     char filterMode = 'P' ; // cudaFilterModePoint : no interpolation, necessary with uchar4 
     QTex<uchar4> qtex(img.width, img.height, img.data, filterMode );
 
+
+    QTexRotate<uchar4> qrot(&qtex); 
+
     float theta = 1.f ; // radian
-    qtex.rotate(theta); 
+    qrot.rotate(theta); 
+
     cudaDeviceSynchronize();
 
     std::cout << "writing to " << opath << std::endl ;
 
-    SIMG img2(img.width, img.height, img.channels, (unsigned char*)qtex.rotate_dst );
+    SIMG img2(img.width, img.height, img.channels, (unsigned char*)qrot.rotate_dst );
     img2.writePNG(opath);
 
     return 0;

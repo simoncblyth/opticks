@@ -21,8 +21,7 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_
     src(src_),
     filterMode(filterMode_),
     origin(nullptr),
-    rotate_dst(nullptr),
-    d_rotate_dst(nullptr),
+
     cuArray(nullptr),
     channelDesc(cudaCreateChannelDesc<T>()),
     texObj(0),
@@ -66,8 +65,8 @@ QTex<T>::~QTex()
 {
     cudaDestroyTextureObject(texObj);
     cudaFreeArray(cuArray);
-    delete[] rotate_dst ; 
-    cudaFree(d_rotate_dst);
+
+
 }
 
 template<typename T>
@@ -226,7 +225,11 @@ void QTex<T>::createTextureObject()
 }
 
 
-extern "C" void QTex_uchar4_rotate_kernel(dim3 dimGrid, dim3 dimBlock, uchar4* d_output, cudaTextureObject_t texObj,  size_t width, size_t height, float theta );
+
+
+
+
+
 
 /**
 https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
@@ -246,34 +249,6 @@ potentially with some spare threads at edge when workspace is not an exact multi
 
 **/
 
-template<typename T>
-void QTex<T>::rotate(float theta)
-{
-    cudaMalloc(&d_rotate_dst, width*height*sizeof(T));
-
-    dim3 threadsPerBlock(16, 16);
-    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x, (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
-
-    QTex_uchar4_rotate_kernel( numBlocks, threadsPerBlock, d_rotate_dst, texObj, width, height, theta );
-
-    cudaDeviceSynchronize();
-    cudaCheckErrors("cudaDeviceSynchronize");
-    // Fatal error: cudaDeviceSynchronize (linear filtering not supported for non-float type at SIMGStandaloneTest.cu:123)
-
-    if(rotate_dst == nullptr)
-    {
-        rotate_dst = new T[width*height] ;  
-    }
-
-    cudaMemcpy(rotate_dst, d_rotate_dst, width*height*sizeof(T), cudaMemcpyDeviceToHost);
-}
-
-/**
-Do nothing template specialization for float and float4 textures, rotation is only relevant to uchar4 2d images
-**/
-template<>  void QTex<float>::rotate(float theta){}
-template<>  void QTex<float4>::rotate(float theta){}
-
 // API export is essential on this template struct, otherwise get all symbols missing 
 template struct QUDARAP_API QTex<uchar4>;
 
@@ -283,4 +258,10 @@ template struct QUDARAP_API QTex<uchar4>;
 template struct QUDARAP_API QTex<float>;
 template struct QUDARAP_API QTex<float4>;
 #pragma GCC diagnostic pop
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 

@@ -272,3 +272,8 @@ Cleaninstall::
     O[blyth@localhost opticks]$ om- ; om-cleaninstall
 
 
+
+Hmm even back with cxx14 getting problems from QTex : maybe the template specializations ?
+Try avoiding the complexity by moving rotation to different struct.
+
+

@@ -33,6 +33,7 @@ set(SOURCES
     QRng.cu
 
     QTex.cc
+    QTexRotate.cc
     QTex.cu
     QTexMaker.cc
     QTexLookup.cc
@@ -81,6 +82,7 @@ SET(HEADERS
     QRng.hh
 
     QTex.hh
+    QTexRotate.hh
     QTexMaker.hh
     QTexLookup.hh
 
