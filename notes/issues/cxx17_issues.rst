@@ -227,8 +227,8 @@ Try with CUDA 11 on Precision
 
 
 
-Confirm the issue is coming from cxx17/devtoolset-8 by downgrading
-----------------------------------------------------------------------
+Check if issue happens following cxx17/devtoolset-8 leap by downgrading
+-------------------------------------------------------------------------
 
 cmake/Modules/OpticksCXXFlags.cmake switch back from 17 to 14 on Linux::
 
@@ -242,7 +242,6 @@ cmake/Modules/OpticksCXXFlags.cmake switch back from 17 to 14 on Linux::
      75      #set(CMAKE_CXX_STANDARD 17)   ## Geant4 1100 forces c++17 gcc 5+ devtoolset-8 on centos7 : dangerous for CUDA 
      76      set(CMAKE_CXX_STANDARD_REQUIRED on)
      77   endif ()
-
 
 
 .local.bash comment out devtoolset-8::
@@ -272,8 +271,14 @@ Cleaninstall::
     O[blyth@localhost opticks]$ om- ; om-cleaninstall
 
 
-
 Hmm even back with cxx14 getting problems from QTex : maybe the template specializations ?
 Try avoiding the complexity by moving rotation to different struct.
+
+Yep splitting off QTexRotate so can eliminate the template specializations does 
+simplify and gets it past gcc (clang had no problems with it). 
+
+ 
+
+
 
 

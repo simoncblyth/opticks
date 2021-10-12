@@ -412,7 +412,7 @@ inline std::string NPU::make_jsonhdr(const std::vector<int>& shape )
 inline std::string NPU::xxdisplay(const std::string& hdr, int width, char non_printable)
 {
     std::stringstream ss ; 
-    for(int i=0 ; i < hdr.size() ; i++) 
+    for(unsigned i=0 ; i < hdr.size() ; i++) 
     {   
         char c = hdr[i] ; 
         bool printable = c >= ' ' && c <= '~' ;  // https://en.wikipedia.org/wiki/ASCII
@@ -526,7 +526,7 @@ NumPy np.save / np.load
 #endif
     assert( hlen > 0 ); 
     assert( (hlen+10) % 16 == 0 ) ;  
-    assert( hlen+10 == hdr.size() ) ; 
+    assert( hlen+10 == int(hdr.size()) ) ; 
 
     return hlen ; 
 }
