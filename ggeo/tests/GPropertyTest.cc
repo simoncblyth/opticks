@@ -77,7 +77,7 @@ typedef GDomain<float> D ;
 template <typename T>
 void test_loadRefractiveIndex()
 {
-    const char* path = SPath::Resolve("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy");
+    const char* path = SPath::Resolve("$OPTICKS_INSTALL_PREFIX/opticksaux/refractiveindex/tmp/glass/schott/F2.npy", false);
     LOG(info) << " sizeof(T) " << sizeof(T) << " path " << path ; 
 
     GProperty<T>* ri = GProperty<T>::AdjustLoad(path); 
@@ -96,7 +96,7 @@ void test_planck()
 
 void test_createSliced()
 {
-    const char* path = SPath::Resolve("$TMP/slowcomponent.npy");
+    const char* path = SPath::Resolve("$TMP/slowcomponent.npy", false);
     LOG(info) << " path " << path ; 
 
     Q* slow = Q::AdjustLoad(path); 

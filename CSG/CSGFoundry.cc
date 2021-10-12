@@ -1636,7 +1636,9 @@ void CSGFoundry::loadArray( std::vector<T>& vec, const char* dir, const char* na
     NP* a = NP::Load(dir, name);
     if(a == nullptr)   
     { 
-        LOG(LEVEL) << "FAIL to load non-optional array  " << dir <<  "/" << name ; 
+        LOG(fatal) << "FAIL to load non-optional array  " << dir <<  "/" << name ; 
+        LOG(fatal) << "convert geocache into CSGFoundry model using CSG_GGeo/run.sh " ; 
+        // TODO: the CSGFoundry model should live inside the geocache rather than in tmp to avoid having to redo this frequently 
         assert(0); 
     }
     else

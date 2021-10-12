@@ -31,7 +31,7 @@
 
 int main(void)
 {
-    const char* path = SPath::Resolve("$TMP/S_freopen_redirect_test.log") ;
+    const char* path = SPath::Resolve("$TMP/S_freopen_redirect_test.log", false ) ;
     SSys::Dump(path); 
     {
        S_freopen_redirect fr(stdout, path) ; 

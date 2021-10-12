@@ -6,7 +6,7 @@
 
 void test_MakeTestImage()
 {
-    const char* path = SPath::Resolve("$TMP/SPPMTest_MakeTestImage.ppm") ;
+    const char* path = SPath::Resolve("$TMP/SPPMTest_MakeTestImage.ppm", true) ;
     const char* config = "vertical_gradient" ; 
 
     const int width = 1024 ; 
@@ -34,7 +34,7 @@ void test_MakeTestImage()
 
 void test_MakeWriteRead()
 {
-    const char* path = SPath::Resolve("$TMP/SPPMTest.ppm") ;
+    const char* path = SPath::Resolve("$TMP/SPPMTest.ppm", true) ;
 
     //const char* config = "checkerboard" ; 
     //const char* config = "horizontal_gradient" ; 

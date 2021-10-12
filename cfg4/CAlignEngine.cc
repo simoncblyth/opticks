@@ -84,7 +84,7 @@ const char* CAlignEngine::SEQ_PATH = "$TMP/TRngBufTest_0.npy" ;
 
 bool CAlignEngine::SeqPathExists() // static
 { 
-    const char* path = SPath::Resolve(SEQ_PATH); 
+    const char* path = SPath::Resolve(SEQ_PATH, false); 
     bool readable = SPath::IsReadable(path); 
     LOG(LEVEL) << " path " << path << " readable " << readable ; 
     return readable ; 

@@ -1,5 +1,24 @@
 #!/bin/bash -l 
 
+notes(){ cat << EON
+
+Switching between OptiX versions is 
+achieved by setting the OPTICKS_OPTIX_PREFIX envvar
+which is used for example by cmake/Modules/FindOpticksOptiX.cmake
+
+Hmm : how to generalize with am om7 ?
+
+Attempting to discern the OPTIX_VERSION by sourcing a 
+buildenv.sh script generated at config time is an 
+inherently flawed approach.
+Are now using the CSGOptiXVersion executable that is built and 
+installed together with the library, so can get the version in 
+scripts by capturing the output from that executable.
+
+EON
+}
+
+
 ver=${1:-6}
 [ "$(uname)" == "Darwin" ] && ver=5
 
@@ -32,14 +51,6 @@ chkvar()
 
 chkvar OPTICKS_PREFIX OPTICKS_HOME OPTICKS_OPTIX_PREFIX
 [ $? -ne 0 ] && echo $msg checkvar FAIL && exit 1
-
-
-# Attempting to discern the OPTIX_VERSION by sourcing a 
-# buildenv.sh script generated at config time is an 
-# inherently flawed approach.
-# Are now using the CSGOptiXVersion executable that is built and 
-# installed together with the library, so can get the version in 
-# scripts by capturing the output from that executable.
 
 bdir=/tmp/$USER/opticks/${name}.build
 rm -rf $bdir && mkdir -p $bdir 

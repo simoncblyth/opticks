@@ -4,6 +4,8 @@ pkg=$(basename $(pwd))
 from=P:/tmp/$USER/opticks/$pkg/
 to=/tmp/$USER/opticks/$pkg/
 
+mkdir -p $to
+
 echo pkg $pkg from $from to $to
 
 if [ "$1" != "ls" ]; then

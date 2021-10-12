@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     f0->save("$TMP/NPY9SpawnTest/f0.npy"); 
 
     NP* f1 = f0->spawn(); 
-    f1->save(SPath::Resolve("$TMP/NPY9SpawnTest/f1.npy")); 
+    f1->save(SPath::Resolve("$TMP/NPY9SpawnTest/f1.npy", true)); 
 
 
     NPY<double>* d0 = NPY<double>::make_identity_transforms(5) ; 
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     d0->save("$TMP/NPY9SpawnTest/d0.npy"); 
 
     NP* d1 = d0->spawn(); 
-    d1->save(SPath::Resolve("$TMP/NPY9SpawnTest/d1.npy")); 
+    d1->save(SPath::Resolve("$TMP/NPY9SpawnTest/d1.npy", true)); 
 
 
     NPY<int>* i0 = NPY<int>::make(10,4,4) ;  
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     i0->save("$TMP/NPY9SpawnTest/i0.npy"); 
 
     NP* i1 = i0->spawn(); 
-    i1->save(SPath::Resolve("$TMP/NPY9SpawnTest/i1.npy")); 
+    i1->save(SPath::Resolve("$TMP/NPY9SpawnTest/i1.npy", true)); 
 
 
 

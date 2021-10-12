@@ -146,7 +146,7 @@ int main(int argc, char** argv)
     LOG(info) << "OKConf::Geant4VersionInteger() : " << OKConf::Geant4VersionInteger()  ;
 
     const char* path_ = argc > 1 ? argv[1] : "$TMP/v1.gdml" ; 
-    const char* path = SPath::Resolve(path_); 
+    const char* path = SPath::Resolve(path_, false); 
 
     if(!path) LOG(error) << " expecting path to GDML " ; 
     if(!path) return 0 ; 

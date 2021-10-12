@@ -37,9 +37,12 @@ class SYSRAP_API SPath {
       static const char* ChangeName(const char* srcpath, const char* name) ;
 
       static const char* UserTmpDir(const char* pfx="/tmp", const char* user_envvar="USER", const char* sub="opticks", char sep='/'  );
-      static const char* Resolve(const char* path); 
-      static const char* Resolve(const char* dir, const char* name);
-      static const char* Resolve(const char* dir, const char* reldir, const char* name);
+
+      // recommend create_dirs false unless are intending to write to avoid permissions issues
+      static const char* Resolve(const char* path, bool create_dirs); 
+      static const char* Resolve(const char* dir, const char* name, bool create_dirs);
+      static const char* Resolve(const char* dir, const char* reldir, const char* name, bool create_dirs);
+
 
       static bool LooksLikePath(const char* path);
       static int MakeDirs( const char* path, int mode=0 ) ; 

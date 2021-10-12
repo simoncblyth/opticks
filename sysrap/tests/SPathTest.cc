@@ -24,6 +24,7 @@
 #include <string>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 
 #include "SPath.hh"
 
@@ -134,7 +135,7 @@ $
     while (std::getline(ss, line, '\n'))
     {
         if(line.empty()) continue ; 
-        const char* path = SPath::Resolve(line.c_str()); 
+        const char* path = SPath::Resolve(line.c_str(), false); 
         std::cout 
             << std::setw(60) << line
             << " : "
@@ -168,8 +169,18 @@ void test_MakePath()
     LOG(info) << " path " << path  ; 
 }
 
+void test_Resolve_createdirs()
+{
+    const char* path = "$TMP/red/green/blue/file.txt" ; 
+    bool create_dirs = true ; 
+    const char* p = SPath::Resolve(path, create_dirs); 
 
+    LOG(info) << path << " " << p ; 
 
+    std::ofstream fp(p, std::ios::out); 
+    fp << path ; 
+    fp.close(); 
+}
 
 
 
@@ -187,8 +198,9 @@ int main(int argc , char** argv )
     test_Resolve(); 
     test_ChangeName(); 
     test_MakeDirs(); 
-*/
     test_MakePath(); 
+*/
+    test_Resolve_createdirs(); 
 
     return 0  ; 
 }

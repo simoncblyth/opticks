@@ -355,7 +355,11 @@ void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_l
 
 void CSGOptiX::writeFramePhoton(const char* dir, const char* name)
 {
+#if OPTIX_VERSION < 70000
+    assert(0 && "not implemented pre-7"); 
+#else
     frame->writePhoton(dir, name); 
+#endif
 }
 
 

@@ -69,6 +69,7 @@ const char* SPath::Dirname(const char* path)
     return strdup( dir.c_str() ) ; 
 }
 
+
 const char* SPath::ChangeName(const char* srcpath, const char* name)
 {
     const char* dir = Dirname(srcpath); 
@@ -112,7 +113,7 @@ the TMP envvar to "/tmp/username/opticks"
 
 **/
 
-const char* SPath::Resolve(const char* spec_)
+const char* SPath::Resolve(const char* spec_, bool create_dirs)
 {
     if(!spec_) return NULL ;       
 
@@ -141,19 +142,27 @@ const char* SPath::Resolve(const char* spec_)
         ss << spec ; 
     }
     std::string s = ss.str(); 
+
+    if( create_dirs )
+    {
+        const char* dirname = Dirname(s.c_str()); 
+        int rc = MakeDirs(dirname) ; 
+        assert( rc == 0 ); 
+    }
+
     return strdup(s.c_str()) ; 
 }
 
 
-const char* SPath::Resolve(const char* dir, const char* name)
+const char* SPath::Resolve(const char* dir, const char* name, bool create_dirs)
 {
     std::stringstream ss ; 
     ss << dir << "/" << name ; 
     std::string s = ss.str(); 
-    return Resolve(s.c_str()); 
+    return Resolve(s.c_str(), create_dirs); 
 }
 
-const char* SPath::Resolve(const char* dir, const char* reldir, const char* name)
+const char* SPath::Resolve(const char* dir, const char* reldir, const char* name, bool create_dirs)
 {
     std::stringstream ss ; 
     ss << dir << "/" ; 
@@ -161,7 +170,7 @@ const char* SPath::Resolve(const char* dir, const char* reldir, const char* name
     ss << name ; 
 
     std::string s = ss.str(); 
-    return Resolve(s.c_str()); 
+    return Resolve(s.c_str(), create_dirs); 
 }
 
 

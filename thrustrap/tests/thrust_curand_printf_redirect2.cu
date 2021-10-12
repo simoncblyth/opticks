@@ -127,7 +127,7 @@ int main(int argc, char** argv)
 
      char* LOGF = getenv("LOGF") ; 
      bool logf = LOGF != NULL ; 
-     const char* path = SPath::Resolve("$TMP/thrust_curand_printf_redirect2.log") ;     
+     const char* path = SPath::Resolve("$TMP/thrust_curand_printf_redirect2.log", true) ;     
 
      std::cout 
          << argv[0]

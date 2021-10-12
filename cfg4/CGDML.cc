@@ -67,7 +67,7 @@ CGDML::CGDML()
 
 void CGDML::read(const char* path_)
 {
-    const char* path = SPath::Resolve(path_); 
+    const char* path = SPath::Resolve(path_, false); 
     LOG(info) << " resolved path_ " << path_ << " as path " << path ;   
     m_parser->SetStripFlag(m_read_trimPtr),
     m_parser->Read(path, m_read_validate);
