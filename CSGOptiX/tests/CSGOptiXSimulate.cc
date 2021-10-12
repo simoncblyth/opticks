@@ -2,6 +2,14 @@
 CSGOptiXSimulate
 =================
 
+Using as much as possible the CSGOptiX rendering machinery 
+to do simulation. Using CSGOptiX raygen mode 1 which flips the case statement 
+in the __raygen__rg program. 
+
+The idea is to minimize code divergence between ray trace rendering and 
+ray trace enabled simulation. Because after all the point of the rendering 
+is to be able to see the exact same geometry that the simulation is using.
+
 ::
 
      MOI=Hama CEGS=5:0:5:1000   CSGOptiXSimulate

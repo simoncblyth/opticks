@@ -105,8 +105,9 @@ bool X4MaterialPropertiesTable::PropertyExists( const G4MaterialPropertiesTable*
 X4MaterialPropertiesTable::ConstPropertyExists
 ------------------------------------------------
 
-Confirmed flawed implementation in G4 1100 of ConstPropertyExists with non-existing keys.
-It can never return false as exception is thrown.
+Confirmed flawed implementation in G4 1100 of G4MaterialPropertiesTable::ConstPropertyExists 
+with non-existing keys : it can never return false as a fatal exception is thrown.
+This method provides a workaround for the removal of introspection. 
 
 **/
 
