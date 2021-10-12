@@ -1,6 +1,8 @@
 #!/bin/bash -l 
 
-pkg=$(basename $(pwd))
+#pkg=$(basename $(pwd))
+pkg="outdir"
+
 from=P:/tmp/$USER/opticks/$pkg/
 to=/tmp/$USER/opticks/$pkg/
 
