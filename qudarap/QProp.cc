@@ -47,7 +47,8 @@ Also the properties are narrowed to float when the template type is float.
 template<typename T>
 const NP* QProp<T>::Load_Mockup(const char* path_ )  // static 
 {
-    const char* path = SPath::Resolve(path_, false); 
+    int create_dirs = 0 ; 
+    const char* path = SPath::Resolve(path_, create_dirs); 
     LOG(LEVEL) 
         << "path_ " << path_  
         << "path " << path  

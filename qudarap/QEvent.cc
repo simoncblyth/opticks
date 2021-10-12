@@ -142,7 +142,11 @@ void QEvent::downloadPhoton( std::vector<quad4>& photon )
 
 void QEvent::savePhoton( const char* dir_, const char* name )
 {
-    const char* dir = SPath::Resolve(dir_, true); 
+    int create_dirs = 0 ; 
+    const char* dir = SPath::Resolve(dir_, create_dirs); 
+    int rc = SPath::MakeDirs(dir); 
+    assert( rc == 0 ); 
+
     LOG(info) << dir ; 
     std::vector<quad4> photon ; 
     downloadPhoton(photon); 

@@ -66,7 +66,7 @@ const char* SPath::GetHomePath(const char* rel)  // static
     return strdup(path.c_str()) ; 
 }
 
-const char* SPath::Dirname(const char* path)
+const char* SPath::Dirname(const char* path)  
 {
     std::string p = path ; 
     std::size_t pos = p.find_last_of("/");
@@ -115,6 +115,8 @@ SPath::Resolve
 Resolves tokenized paths such as "$PREFIX/name.ext" where PREFIX must 
 be an existing envvar. Special handling if "$TMP" is provided that defaults 
 the TMP envvar to "/tmp/username/opticks" 
+
+Hmm need to distinguish when the path is a folder or a file for create_dirs ?
 
 **/
 
