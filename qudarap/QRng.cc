@@ -12,8 +12,8 @@ const plog::Severity QRng::LEVEL = PLOG::EnvLevel("QRng", "INFO");
 const QRng* QRng::INSTANCE = nullptr ; 
 const QRng* QRng::Get(){ return INSTANCE ;  }
 
-const char* QRng::DEFAULT_PATH = SPath::Resolve("$HOME/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin") ; 
-//const char* QRng::DEFAULT_PATH = SPath::Resolve("$HOME/.opticks/rngcache/RNG/cuRANDWrapper_3000000_0_0.bin") ; 
+const char* QRng::DEFAULT_PATH = SPath::Resolve("$HOME/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin", false) ; 
+//const char* QRng::DEFAULT_PATH = SPath::Resolve("$HOME/.opticks/rngcache/RNG/cuRANDWrapper_3000000_0_0.bin", false) ; 
 
 QRng::QRng(const char* path_, unsigned skipahead_event_offset)
     :

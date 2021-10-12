@@ -80,7 +80,7 @@ void test_getMaterialLine(QBnd& qb)
 void test_lookup(QBnd& qb)
 {
     NP* lookup = qb.lookup(); 
-    const char* dir = SPath::Resolve("$TMP/QBndTest") ; 
+    const char* dir = SPath::Resolve("$TMP/QBndTest", true) ; 
     LOG(info) << " save to " << dir  ; 
     lookup->save(dir, "dst.npy"); 
     qb.src->save(dir, "src.npy") ; 
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
     NP* bnd = blib->getBuf(); 
 #else
-    const char* cfbase = SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ));
+    const char* cfbase = SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo"), false);
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 #endif
 

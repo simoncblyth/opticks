@@ -20,7 +20,7 @@ void test_check(QScint& sc)
 void test_lookup(QScint& sc)
 {
     NP* dst = sc.lookup(); 
-    const char* fold = SPath::Resolve("$TMP/QScintTest") ; 
+    const char* fold = SPath::Resolve("$TMP/QScintTest", true) ; 
     LOG(info) << " save to " << fold ; 
     dst->save(fold, "dst.npy"); 
     sc.src->save(fold, "src.npy") ; 
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     slib->dump();
     NP* icdf = slib->getBuf(); 
 #else
-    const char* cfbase = SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ));
+    const char* cfbase = SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), false);
     NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); // HMM: this needs a more destinctive name/location  
     //icdf->dump(); 
 #endif
