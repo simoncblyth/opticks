@@ -69,8 +69,9 @@ void Frame::annotate( const char* bottom_line, const char* top_line, int line_he
     img->annotate( bottom_line, top_line, line_height ); 
 }
 
-void Frame::write(const char* outdir, int jpg_quality) const 
+void Frame::write(const char* outdir_, int jpg_quality) const 
 {
+    const char* outdir = SPath::Resolve(outdir_, true)
     writePNG(outdir, "f_pixels.png");  
     writeJPG(outdir, "f_pixels.jpg", jpg_quality);  
     writeIsect(outdir, "f_isect.npy" ); // formerly posi.npy
