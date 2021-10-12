@@ -54,7 +54,8 @@ void test_GetAverageNumberOfPhotons_s2(const QCerenkovIntegral& ck)
                 ; 
     }
 
-    const char* path = SPath::Resolve(BASE, "test_GetAverageNumberOfPhotons_s2.npy"); 
+    int create_dirs = 1 ; 
+    const char* path = SPath::Resolve(BASE, "test_GetAverageNumberOfPhotons_s2.npy", create_dirs ); 
     LOG(info) << " save to " << path ; 
     scan->save(path); 
 }
@@ -70,7 +71,9 @@ void test_getS2Integral_UpperCut_one( const QCerenkovIntegral& ck, double BetaIn
         << " s2c " << s2c->desc()
         ; 
 
-    const char* path = SPath::Resolve(BASE, "test_getS2Integral_UpperCut_one.npy"); 
+  
+    int create_dirs = 1 ; 
+    const char* path = SPath::Resolve(BASE, "test_getS2Integral_UpperCut_one.npy", create_dirs ); 
     LOG(info) << " save to " << path ; 
     s2c->save(path); 
 }
@@ -93,7 +96,8 @@ void test_getS2Integral_UpperCut(const QCerenkovIntegral& ck )
         ; 
 
 
-    const char* fold = SPath::Resolve(BASE, "test_getS2Integral_UpperCut"); 
+    int create_dirs = 0 ; 
+    const char* fold = SPath::Resolve(BASE, "test_getS2Integral_UpperCut", create_dirs ); 
     SPath::MakeDirs(fold); 
     LOG(info) << " save to " << fold ; 
     s2c->save(fold,"s2c.npy"); 
@@ -109,7 +113,8 @@ void test_getS2Integral_SplitBin( const QCerenkovIntegral& ck, const char* bis_,
     const NP* bis  = bis_ == nullptr ? NP::Linspace<double>( 1., 2. , 1001 ) : NP::FromString<double>(bis_);     
     NP* s2c = ck.getS2Integral_SplitBin<double>(bis, mul, dump); 
 
-    const char* fold = SPath::Resolve(BASE, "test_getS2Integral_SplitBin"); 
+    int create_dirs = 0 ; 
+    const char* fold = SPath::Resolve(BASE, "test_getS2Integral_SplitBin", create_dirs); 
     SPath::MakeDirs(fold); 
 
     LOG(info) 
@@ -143,7 +148,8 @@ void test_makeICDF_UpperCut(const QCerenkovIntegral& ck, unsigned ny, unsigned n
         << std::endl  
         ;
 
-    const char* qck_path = SPath::Resolve(BASE, "test_makeICDF_UpperCut"); 
+    int create_dirs = 0 ; 
+    const char* qck_path = SPath::Resolve(BASE, "test_makeICDF_UpperCut",  create_dirs); 
     int rc = SPath::MakeDirs(qck_path);   
     assert( rc == 0 ); 
     qck.save(qck_path); 
@@ -165,7 +171,8 @@ void test_makeICDF_SplitBin(const QCerenkovIntegral& ck, unsigned ny, unsigned m
         << std::endl  
         ;
 
-    const char* qck_path = SPath::Resolve(BASE, "test_makeICDF_SplitBin"); 
+    int create_dirs = 0 ; 
+    const char* qck_path = SPath::Resolve(BASE, "test_makeICDF_SplitBin",  create_dirs); 
     int rc = SPath::MakeDirs(qck_path);   
     assert( rc == 0 ); 
     qck.save(qck_path); 

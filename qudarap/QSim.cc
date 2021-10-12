@@ -318,14 +318,9 @@ void QSim<T>::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned 
             ; 
 
         rng_sequence( values, ni_tranche_size, nv, id_offset );  
-
-        const char* fold = SPath::Resolve(dir, reldir.c_str()); 
-
-        int rc = SPath::MakeDirs(fold);   
-
-        assert( rc == 0 ); 
-
-        const char* path = SPath::Resolve(fold, name.c_str());
+         
+        int create_dirs = 1 ; 
+        const char* path = SPath::Resolve(dir, reldir.c_str(), name.c_str(), create_dirs ); 
 
         seq->save(path); 
     }

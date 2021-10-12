@@ -19,7 +19,8 @@ void test_lookup(QCerenkov& ck)
     NP* icdf_dst = ck.lookup(); 
     if( icdf_dst == nullptr ) return ; 
 
-    const char* fold = SPath::Resolve("$TMP/QCerenkovTest", "test_lookup") ; 
+    int create_dirs = 0 ; 
+    const char* fold = SPath::Resolve("$TMP/QCerenkovTest", "test_lookup", create_dirs) ; 
     int rc = SPath::MakeDirs(fold); 
     assert( rc == 0); 
     LOG(info) << " save to " << fold ; 
