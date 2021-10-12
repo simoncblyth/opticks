@@ -81,3 +81,40 @@ So cleaninstall::
     -- Set runtime path of "/data/blyth/junotop/ExternalLibs/opticks/head/lib/CSG_GGeo" to "$ORIGIN/../lib64:$ORIGIN/../externals/lib:$ORIGIN/../externals/lib64:$ORIGIN/../externals/OptiX/lib64"
     O[blyth@localhost CSG_GGeo]$ 
 
+
+
+
+Bizarre : error: cannot call member function ‘void QBuf<T>::device_alloc(unsigned int) [with T = int]’ without object
+----------------------------------------------------------------------------------------------------------------------------
+
+::
+
+     67     static QBuf<T>* Upload( const T* data, unsigned num_items )
+     68     {   
+     69         QBuf<T>* buf = new QBuf<T>() ;
+     //                                   ^^^   had omitted the ctor brackets 
+     70         buf->device_alloc(num_items);
+     71         buf->upload( data, num_items );
+     72         return buf ;
+     73     }   
+     74 
+
+
+
+
+::
+
+    /home/blyth/opticks/qudarap/QBuf.hh: In instantiation of ‘static QBuf<T>* QBuf<T>::Alloc(unsigned int) [with T = int]’:
+    /home/blyth/opticks/qudarap/QSeed.cu:36:22:   required from here
+    /home/blyth/opticks/qudarap/QBuf.hh:90:1: error: cannot call member function ‘void QBuf<T>::device_alloc(unsigned int) [with T = int]’ without object
+             buf->device_alloc(num_items);
+     ^       ~~~~
+    /home/blyth/opticks/qudarap/QBuf.hh:91:1: error: cannot call member function ‘void QBuf<T>::device_set(int) [with T = int]’ without object
+             buf->device_set(0);
+     ^       ~~
+    CMake Error at QUDARap_generated_QSeed.cu.o.Debug.cmake:276 (message):
+      Error generating file
+      /data/blyth/junotop/ExternalLibs/opticks/head/build/qudarap/CMakeFiles/QUDARap.dir//./QUDARap_generated_QSeed.cu.o
+
+
+
