@@ -27,9 +27,18 @@ QRng::QRng(const char* path_, unsigned skipahead_event_offset)
     upload(); 
 }
 
-QRng::~QRng()
+
+void QRng::cleanup()
 {
     QUDA_CHECK(cudaFree(qr->rng_states)); 
+}
+
+/**
+calling exceptions from dtor is bad, causes warning
+**/
+
+QRng::~QRng()
+{
 }
 
 

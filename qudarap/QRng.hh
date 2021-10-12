@@ -42,6 +42,7 @@ struct QUDARAP_API QRng
     virtual ~QRng(); 
 
     void upload(); 
+    void cleanup(); 
     std::string desc() const ; 
 
 

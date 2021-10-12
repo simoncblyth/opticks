@@ -56,6 +56,7 @@ struct QUDARAP_API QProp
     virtual ~QProp(); 
     void init(); 
     void uploadProps(); 
+    void cleanup(); 
 
     void dump() const ; 
     std::string desc() const ;

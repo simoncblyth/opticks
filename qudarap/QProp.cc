@@ -177,10 +177,15 @@ void QProp<T>::uploadProps()
 
 
 template<typename T>
-QProp<T>::~QProp()
+void QProp<T>::cleanup()
 {
     QUDA_CHECK(cudaFree(prop->pp)); 
     QUDA_CHECK(cudaFree(d_prop)); 
+}
+
+template<typename T>
+QProp<T>::~QProp()
+{
 }
 
 template<typename T>

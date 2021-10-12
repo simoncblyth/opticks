@@ -289,7 +289,7 @@ template<typename T> NP* QCK<T>::energy_lookup( const T BetaInverse, const NP* u
     unsigned ni = uu->shape[0] ; 
     const T* uu_v = uu->cvalues<T>(); 
 
-    if(tt) assert( tt->shape.size() == 1 && tt->shape[0] == ni ); 
+    if(tt) assert( tt->shape.size() == 1u && tt->shape[0] == ni ); 
     T* tt_v = tt ? tt->values<T>() : nullptr ; 
 
 
@@ -321,7 +321,7 @@ template<typename T> NP* QCK<T>::energy_sample( const T BetaInverse, const std::
     NP* en = NP::Make<T>(ni); 
     T* en_v = en->values<T>(); 
 
-    if(tt) assert( tt->shape.size() == 1 && tt->shape[0] == ni ); 
+    if(tt) assert( tt->shape.size() == 1u && tt->shape[0] == ni ); 
     T* tt_v = tt ? tt->values<T>() : nullptr ; 
 
     double dt ; 
