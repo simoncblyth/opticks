@@ -529,6 +529,8 @@ const char* SSys::hostname()
 SSys::setenvvar
 -----------------
 
+When overwrite is false a preexisting envvar is not overridden. 
+
 As shell handling of empty strings is inconvenient the special_empty_token char 
 allows a single char to represent the empty string, eg '-' 
 

@@ -21,6 +21,7 @@ opticks-(){         source $(opticks-source) && opticks-env $* ; }
 
 o(){ opticks- ; cd $(opticks-home) ; git status ; } 
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ;  }
+oot(){ oo ; opticks-t ; }
 t(){ typeset -f $* ; } 
 rc(){ local RC=$?; echo RC $RC; return $RC ; }
 

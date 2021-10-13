@@ -2,11 +2,15 @@
 CSGOptiXRender
 =================
 
+This executable is typically run via cxr_*.sh specialized bash scripts 
+each dedicated to different types of renders. 
+The scripts control what this executable does and where it writes via envvars.  
+See CSGOptiX/index.rst for details on the scripts. 
+
 With option --arglist /path/to/arglist.txt each line of the arglist file 
 is taken as an MOI specifying the center_extent box to target. 
 Without an --arglist option the MOI envvar or default value  "sWorld:0:0" 
 is used to set the viewpoint target box.
-
 
 important envvars
 
@@ -37,6 +41,10 @@ int main(int argc, char** argv)
     for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
 
     OPTICKS_LOG(argc, argv); 
+
+    bool overwrite = false ;  // allows commandline and envvars to override this default setting, see Opticks::getOutDir
+    SSys::setenvvar("OPTICKS_OUTDIR", "$TMP/CSGOptiX", overwrite );
+
     Opticks ok(argc, argv); 
     ok.configure(); 
     ok.setRaygenMode(0);             // override --raygenmode option 
@@ -108,7 +116,7 @@ int main(int argc, char** argv)
         }
         else
         {
-            int midx, mord, iidx ; 
+            int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
             fd->parseMOI(midx, mord, iidx,  arg.c_str() );  
             LOG(info) << " i " << i << " arg " << arg << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
             rc = fd->getCenterExtent(ce, midx, mord, iidx) ;

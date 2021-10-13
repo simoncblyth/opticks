@@ -290,18 +290,38 @@ EOS
 }
 
 
-om-subs--partial(){  cat << EOS
-#boostrap
-#optickscore
-ggeo
-extg4
+om-subs-alt-notes(){ cat << EON
+
+TODO: 
+
+* need to generalize om/opticks-deps machinery to work with new OptiX7 chain of sub pkgs, 
+  so far have been manually building them and relying on the old chain too using 
+  new pkg shortcuts : c, cg, qu, cx  
+
+* subs are pkg directory names, some new pkgs dirs not using lowercase convention
+
+* have been avoiding boostrap and npy dependency in new developments
+  moving instead to sysrap/NP and SPath but have been using optickscore and ggeo 
+
+* it will take considerable effort to migrate away from boostrap and npy usage in ggeo, 
+  not worthwhile currently 
+
+
+EON
+}
+
+
+om-subs--alt(){  cat << EOS
+CSG
+CSG_GGeo
+qudarap
+CSGOptiX
 EOS
 }
 
 om-subs--()
 {
    om-subs--all
-   #om-subs--partial
 }
 
 
@@ -338,7 +358,8 @@ EON
 om-subs(){
 
    local arg=$1
-   [ -z "$arg" ] && om-subs- && return 
+   [ -z "$arg" ] && om-subs- && return    
+   ## without argument just return the hardcoded list, with argument returns selection from the list
  
    local iwd=$(pwd)
    local name=$(basename $iwd)

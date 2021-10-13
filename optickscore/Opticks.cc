@@ -2529,6 +2529,29 @@ const char* Opticks::getSnapOutDir() const    // --snapoutdir
     return snapoutdir.empty() ? NULL : snapoutdir.c_str() ;
 }
 
+
+/**
+Opticks::getOutDir
+--------------------
+
+Outdir from m_cfg OpticksCfg depends on OPTICKS_OUTDIR envvar defaulting to $TMP/outdir 
+which can be overridden by "--outdir" commandline option.
+
+Alternatively a setting at code level with Opticks::setOutDir overrides the 
+envvars and commandline options. But that is problematic
+for executables that are also used from scripts.  
+
+Typically envvars and commandline are used from bash scripts.
+Setting the envvar in code prior to configuring Opticks
+with overwrite:false is convenient for use from bare executables.
+As this avoids the need to use scripts but does not remove the 
+flexibility of control from scripts.::
+
+   bool overwrite = false ; 
+   SSys::setenvvar("OPTICKS_OUTDIR", "$TMP/CSGOptiX", overwrite ); 
+
+**/
+
 const char* Opticks::getOutDir() const    // --outdir
 {
     const std::string& outdir = m_cfg->getOutDir() ; 
@@ -2538,8 +2561,10 @@ const char* Opticks::getOutDir() const    // --outdir
     return SPath::Resolve(dir, create_dirs); 
 }
 
-void Opticks::setOutDir( const char* outdir )  // overrides --outdir 
+void Opticks::setOutDir( const char* outdir_ )  // overrides --outdir 
 {
+    int create_dirs = 2 ; // 2:dirpath
+    const char* outdir = SPath::Resolve(outdir_, create_dirs ); 
     if(outdir) m_outdir = strdup(outdir); 
 }
 
