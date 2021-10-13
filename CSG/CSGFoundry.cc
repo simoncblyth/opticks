@@ -1585,7 +1585,8 @@ void CSGFoundry::write(const char* dir) const
 
 void CSGFoundry::load( const char* dir_ )
 {
-    const char* dir = SPath::Resolve(dir_, false); 
+    int create_dirs = 0 ; 
+    const char* dir = SPath::Resolve(dir_, create_dirs); 
     LOG(info) << dir ; 
 
     NP::ReadNames( dir, "name.txt", name );  // solid(aka mesh) names 

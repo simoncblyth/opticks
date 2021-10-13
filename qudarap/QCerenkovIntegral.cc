@@ -30,7 +30,7 @@ const char* QCerenkovIntegral::DEFAULT_PATH = "$OPTICKS_KEYDIR/GScintillatorLib/
 
 NP* QCerenkovIntegral::Load(const char* path_)  // static
 {
-    int create_dirs = 0 ; 
+    int create_dirs = 0 ;  // 0:nop
     const char* path = SPath::Resolve(path_, create_dirs);  
     NP* a = NP::Load(path); 
     return a ; 

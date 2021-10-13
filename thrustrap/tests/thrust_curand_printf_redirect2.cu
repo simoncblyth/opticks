@@ -127,7 +127,9 @@ int main(int argc, char** argv)
 
      char* LOGF = getenv("LOGF") ; 
      bool logf = LOGF != NULL ; 
-     const char* path = SPath::Resolve("$TMP/thrust_curand_printf_redirect2.log", true) ;     
+
+     int create_dirs = 1 ; // 1:filepath
+     const char* path = SPath::Resolve("$TMP/thrust_curand_printf_redirect2.log", create_dirs ) ;     
 
      std::cout 
          << argv[0]
@@ -147,7 +149,7 @@ int main(int argc, char** argv)
     assert( q0 < q1 );
 
 
-    SSys::Dump(path);
+    SSys::Dump("before CUDA redirect");
     {   
         S_freopen_redirect sfr(stdout, path) ; 
         thrust::for_each( 
@@ -155,10 +157,10 @@ int main(int argc, char** argv)
                 thrust::counting_iterator<int>(i1), 
                 curand_printf<unsigned long long>(0,0,q0,q1,logf));
         cudaDeviceSynchronize();  
-        SSys::Dump(path);
+        SSys::Dump("during CUDA redirect");
     }
 
-    SSys::Dump(path);
+    SSys::Dump("after CUDA redirect");
     return 0; 
 } 
 

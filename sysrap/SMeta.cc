@@ -12,7 +12,7 @@ const plog::Severity SMeta::LEVEL = PLOG::EnvLevel("SMeta", "DEBUG");
 
 SMeta* SMeta::Load(const char* dir, const char* name) // static 
 {
-    int create_dirs = 0 ; 
+    int create_dirs = 0 ; // 0:nop 
     const char* path = SPath::Resolve(dir, name, create_dirs); 
     return Load(path);   
 }
@@ -38,13 +38,13 @@ SMeta* SMeta::Load(const char* path) // static
 
 void SMeta::save(const char* dir, const char* reldir, const char* name) const
 {
-    bool create_dirs = true ; 
+    bool create_dirs = 1 ;  // 1:filepath
     const char* path = SPath::Resolve(dir, reldir, name, create_dirs); 
     save(path); 
 }
 void SMeta::save(const char* dir, const char* name) const
 {
-    bool create_dirs = true ; 
+    bool create_dirs = 1 ;  // 1:filepath 
     const char* path = SPath::Resolve(dir, name, create_dirs); 
     save(path); 
 }

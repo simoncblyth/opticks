@@ -155,14 +155,42 @@ const char* SPath::Resolve(const char* spec_, int create_dirs)
     }
     std::string s = ss.str(); 
 
-    if( create_dirs )
-    {
-        const char* dirname = Dirname(s.c_str()); 
-        int rc = MakeDirs(dirname) ; 
-        assert( rc == 0 ); 
-    }
+    const char* path = s.c_str(); 
 
-    return strdup(s.c_str()) ; 
+    CreateDirs(path, create_dirs ); 
+
+    return strdup(path) ; 
+}
+
+
+/**
+SPath::CreateDirs
+--------------------
+
+mode:0 
+    do nothing 
+
+mode:1
+    create directories assuming the path argumnent is a file path by using SPath::Dirname 
+    to extract the directory
+
+mode:2
+    create directories assuming the path argumnent is a directory path 
+
+**/
+
+void SPath::CreateDirs(const char* path, int mode)  // static 
+{
+    if(mode == 0) return ; 
+    const char* dirname = mode == 1 ? Dirname(path) : path ; 
+    int rc = MakeDirs(dirname) ; 
+    LOG(LEVEL)
+        << " path " << path 
+        << " mode " << mode
+        << " dirname " << dirname
+        << " rc " << rc
+        ;
+    assert( rc == 0 ); 
 }
 
 
@@ -242,11 +270,9 @@ template<typename T>
 const char* SPath::MakePath( const char* prefix, const char* reldir, const T real, const char* name)  // static
 {
     const char* sreal = SStr::FormatReal<T>(real, 6, 4, '0');
-    int create_dirs = 0 ; 
+    int create_dirs = 2 ;  // 2:dirpath
     const char* fold = SPath::Resolve(prefix, reldir, sreal, create_dirs ); 
-    int rc = SPath::MakeDirs(fold); 
-    assert( rc == 0 );  
-    const char* path = SPath::Resolve(fold, name, create_dirs ) ; 
+    const char* path = SPath::Resolve(fold, name, 0 ) ;  // 0:create_dirs nop
     return path ; 
 } 
 

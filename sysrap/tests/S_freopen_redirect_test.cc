@@ -22,30 +22,48 @@
 
 //  https://stackoverflow.com/questions/5846691/how-to-restore-stdout-after-using-freopen
 
+#include <iostream>
 #include <cassert>
 #include "S_freopen_redirect.hh"
 #include "SPath.hh"
 #include "SSys.hh"
 
 
+/**
+only the std::cerr appears in output, the rest is directed to the file
+**/
 
-int main(void)
+void test_redirect()
 {
-    const char* path = SPath::Resolve("$TMP/S_freopen_redirect_test.log", false ) ;
-    SSys::Dump(path); 
+    const char* path = SPath::Resolve("$TMP/S_freopen_redirect_test.log", 1 ) ; // 1:filepath create_dirs
+    std::cout << "test_redirect writing to " << path << std::endl ;  
+
+    SSys::Dump("before redirect, should appear in output"); 
+
     {
        S_freopen_redirect fr(stdout, path) ; 
-       SSys::Dump(path); 
+       SSys::Dump("during redirect, should NOT appear in output, should be written to file : observe only std::cerr in output"); 
     }
-    SSys::Dump(path); 
+
+    SSys::Dump("after redirect, should appear in output"); 
+}
 
 
+void test_runpython()
+{
     //int rc = SSys::run("tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch ");
     //int rc = SSys::run("python -c 'print \"hello\"' " );
     int rc = SSys::run("python -c 'import sys ; sys.stderr.write(\"hello stderr\\n\")' " );
     //int rc = SSys::run("python -c 'import sys ; sys.stdout.write(\"hello stdout\\n\")' " );
     assert( rc == 0 );
+}
 
+
+
+int main(void)
+{
+    //test_runpython(); 
+    test_redirect(); 
 
     return 0;
 }

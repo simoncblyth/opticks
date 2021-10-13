@@ -28,7 +28,7 @@ const char* QCerenkov::DEFAULT_FOLD = "$TMP/QCerenkovIntegralTest/test_makeICDF_
 
 NP* QCerenkov::Load(const char* fold, const char* name)  // static
 {
-    int create_dirs = 0 ;  
+    int create_dirs = 0 ;  // 0:nop
     const char* path = SPath::Resolve(fold, name, create_dirs);  
     NP* a = NP::Load(path); 
     return a ; 

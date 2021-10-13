@@ -35,7 +35,7 @@ CMixMaxRng::CMixMaxRng()
 
     //out = new std::ostream(std::cout.rdbuf()) ;
 
-    const char* path = SPath::Resolve("$TMP/simstream.txt", true); 
+    const char* path = SPath::Resolve("$TMP/simstream.txt", 1);  // 1:assume filepath argument
     out = new std::ofstream(path) ;
 
 }

@@ -1198,7 +1198,8 @@ void GMaterialLib::addTestMaterials()
     {
         std::string name = it->first ; 
         std::string path_ = it->second ; 
-        const char* path = SPath::Resolve(path_.c_str(), false); 
+        int create_dirs = 0 ; // 0:nop
+        const char* path = SPath::Resolve(path_.c_str(), create_dirs ); 
 
         LOG(LEVEL) 
            << " name " << std::setw(30) << name 

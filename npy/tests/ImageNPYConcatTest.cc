@@ -89,7 +89,9 @@ void test_SavePPMConcat( const NPY<unsigned char>* imgs, const char* basepath, b
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-    const char* path  = argc > 1 ? argv[1] : SPath::Resolve("$TMP/SPPMTest_MakeTestImage.ppm", false) ; 
+
+    int create_dirs = 0 ; // 0:nop
+    const char* path  = argc > 1 ? argv[1] : SPath::Resolve("$TMP/SPPMTest_MakeTestImage.ppm", create_dirs) ; 
 
     bool yflip0 = false ; 
     unsigned num_concat = 3 ; 

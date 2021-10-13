@@ -52,7 +52,7 @@ SAbbrev* SAbbrev::FromString(const char* str) // static
 
 SAbbrev* SAbbrev::Load(const char* path_) // static
 {
-    const char* path = SPath::Resolve(path_, false); 
+    const char* path = SPath::Resolve(path_, 0); //0:no create_dirs
     std::ifstream fp(path, std::ios::in);
     if(fp.fail()) return nullptr ;  
 
@@ -82,14 +82,13 @@ SAbbrev::SAbbrev( const std::vector<std::string>& names_ )
 
 void SAbbrev::save(const char* fold, const char* name) const 
 {
-    int rc = SPath::MakeDirs(fold); assert( rc == 0 ); 
-    const char* path = SPath::Resolve(fold, name, false); 
+    const char* path = SPath::Resolve(fold, name, 1);    // 1:filepath create_dirs 
     save(path); 
 }
 
 void SAbbrev::save(const char* path_) const 
 {
-    const char* path = SPath::Resolve(path_, true); 
+    const char* path = SPath::Resolve(path_, 1); // 1:filepath create_dirs
     LOG(LEVEL) << path ; 
     std::ofstream fp(path, std::ios::out);
     for(unsigned i=0 ; i < names.size() ; i++ ) fp << names[i] << std::endl ; 

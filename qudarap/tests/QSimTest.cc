@@ -62,7 +62,8 @@ void QSimTest<T>::rng_sequence(unsigned ni, int ni_tranche_size_)
     unsigned nk = 16 ; 
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
 
-    const char* fold = SPath::Resolve(FOLD, true); 
+    int create_dirs = 2 ; // 2:dirpath
+    const char* fold = SPath::Resolve(FOLD, create_dirs ); 
     qs.rng_sequence(fold, ni, nj, nk, ni_tranche_size ); 
 }
 
@@ -344,7 +345,8 @@ int main(int argc, char** argv)
 
     // TODO: this needs formalization, ie not in the test, and inclusion of QCerenkovIntegral prep 
 
-    const char* cfbase =  SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), false) ; 
+    int create_dirs = 0 ; // 0:nop
+    const char* cfbase =  SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), create_dirs ) ; 
     NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy");  // need better naming, see CSG_GGeo_Convert::convertScintillatorLib 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 

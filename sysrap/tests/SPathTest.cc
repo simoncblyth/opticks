@@ -135,7 +135,8 @@ $
     while (std::getline(ss, line, '\n'))
     {
         if(line.empty()) continue ; 
-        const char* path = SPath::Resolve(line.c_str(), false); 
+        int create_dirs = 0 ; // noop
+        const char* path = SPath::Resolve(line.c_str(), create_dirs); 
         std::cout 
             << std::setw(60) << line
             << " : "
@@ -172,7 +173,7 @@ void test_MakePath()
 void test_Resolve_createdirs()
 {
     const char* path = "$TMP/red/green/blue/file.txt" ; 
-    bool create_dirs = true ; 
+    int create_dirs = 1 ; // 1:filepath 
     const char* p = SPath::Resolve(path, create_dirs); 
 
     LOG(info) << path << " " << p ; 

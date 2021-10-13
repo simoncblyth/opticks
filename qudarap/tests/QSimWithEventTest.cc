@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase =  SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), false) ; 
+    const char* cfbase =  SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), 0) ; 
     NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 

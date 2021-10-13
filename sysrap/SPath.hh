@@ -40,11 +40,13 @@ class SYSRAP_API SPath {
 
       static const char* UserTmpDir(const char* pfx="/tmp", const char* user_envvar="USER", const char* sub="opticks", char sep='/'  );
 
-      // recommend create_dirs false unless are intending to write to avoid permissions issues
+      // create_dirs:(0 do nothing, 1:assume file path, 2:assume dir path)
       static const char* Resolve(const char* path, int create_dirs); 
       static const char* Resolve(const char* dir, const char* name, int create_dirs);
       static const char* Resolve(const char* dir, const char* reldir, const char* name, int create_dirs);
 
+      // mode:(0 do nothing, 1:assume file path, 2:assume dir path) 
+      static void CreateDirs(const char* path, int mode); 
 
       static bool LooksLikePath(const char* path);
       static int MakeDirs( const char* path, int mode=0 ) ; 

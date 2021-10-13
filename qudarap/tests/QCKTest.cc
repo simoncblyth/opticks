@@ -125,11 +125,9 @@ int main(int argc, char** argv)
     LOG(info) << " qck.s2c  " << qck->s2c->desc(); 
     LOG(info) << " qck.s2cn " << qck->s2cn->desc(); 
 
-    int create_dirs = 0 ; 
+    int create_dirs = 2 ;  //2:dirpath
     const char* sample_base = SPath::Resolve(lfold , "QCKTest", create_dirs ) ; 
-    int rc = SPath::MakeDirs(sample_base);  
     LOG(info) << " sample_base " << sample_base ; 
-    assert( rc == 0 ); 
 
     std::vector<double> vbis ;  
     for( double bi=1.0 ; bi < qck->rmx ; bi+=0.05 ) vbis.push_back(bi); 
@@ -177,8 +175,7 @@ int main(int argc, char** argv)
         test_energy_sample_many( qck, BetaInverse, num_gen, sample_base ); 
     }
 
-    const char* bis_path = SPath::Resolve(sample_base, "bis.npy", create_dirs) ;  
-    bis->save(bis_path);  
+    bis->save(sample_base, "bis.npy" );  
 
     return 0 ; 
 }

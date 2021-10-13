@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     std::string s = nn.str(); 
     const char* name = s.c_str(); 
 
-    const char* fold = SPath::Resolve("$TMP/X4PhysicalConstantsTest", true); 
+    const char* fold = SPath::Resolve("$TMP/X4PhysicalConstantsTest", 2); // 2:dirpath 
     a->save( fold, name ); 
 
     return 0 ; 

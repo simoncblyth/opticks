@@ -22,7 +22,7 @@ void test_1()
     SMeta sm ; 
     Populate(sm); 
 
-    bool create_dirs = true ; 
+    bool create_dirs = 1 ; // 1:filepath
     const char* path = SPath::Resolve("$TMP", "SMetaTest.json", create_dirs ); 
     LOG(info) << path ; 
     sm.save(path);
@@ -37,7 +37,7 @@ void test_2()
     SMeta sm ; 
     Populate(sm); 
 
-    int create_dirs = 1 ; 
+    int create_dirs = 1 ; // 1::filepath 
     const char* path = SPath::Resolve("$TMP/red/green/blue", "SMetaTest.json", create_dirs); 
     LOG(info) << path ; 
 

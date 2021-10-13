@@ -576,6 +576,14 @@ int SSys::setenvvar( const char* ekey, const char* value, bool overwrite, char s
 
 unsigned SSys::COUNT = 0 ; 
 
+/**
+SSys::Dump_
+--------------
+
+Dump the message using std::cout std::cerr printf and std::printf, used for testing stream redirection
+
+**/
+
 void SSys::Dump_(const char* msg)
 {
     std::cout << std::setw(3) << COUNT << "[" << std::setw(20) << "std::cout" << "] " << msg << std::endl;  

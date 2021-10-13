@@ -45,7 +45,8 @@ int main(int argc, char** argv)
     QTexLookup<float4> look(tex); 
     NP* out = look.lookup(); 
 
-    const char* fold = SPath::Resolve(FOLD, true); 
+    int create_dirs = 2 ; // 2:dirpath
+    const char* fold = SPath::Resolve(FOLD, create_dirs); 
 
     out->save(fold, "lookup.npy"); 
     origin->save(fold, "origin.npy"); 

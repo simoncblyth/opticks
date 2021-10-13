@@ -72,7 +72,7 @@ void Frame::annotate( const char* bottom_line, const char* top_line, int line_he
 
 void Frame::write(const char* outdir_, int jpg_quality) const 
 {
-    int create_dirs = 1 ; 
+    int create_dirs = 2 ; // 2:create directory path argument
     const char* outdir = SPath::Resolve(outdir_, create_dirs); 
     writePNG(outdir, "f_pixels.png");  
     writeJPG(outdir, "f_pixels.jpg", jpg_quality);  

@@ -319,7 +319,7 @@ void QSim<T>::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned 
 
         rng_sequence( values, ni_tranche_size, nv, id_offset );  
          
-        int create_dirs = 1 ; 
+        int create_dirs = 1 ;  // 1:filepath
         const char* path = SPath::Resolve(dir, reldir.c_str(), name.c_str(), create_dirs ); 
 
         seq->save(path); 
