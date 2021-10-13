@@ -13,6 +13,7 @@
 #include "SStr.hh"
 #include "SSys.hh"
 #include "SMeta.hh"
+#include "SPath.hh"
 #include "SVec.hh"
 #include "QBuf.hh"
 
@@ -338,8 +339,11 @@ CSGOptiX::snap : Download frame pixels and write to file as jpg.
 ------------------------------------------------------------------
 **/
 
-void CSGOptiX::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
+void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_line, unsigned line_height)
 {
+    int create_dirs = 1 ; // 1:filepath 
+    const char* path = SPath::Resolve(path_, create_dirs ); 
+
 #if OPTIX_VERSION < 70000
     six->snap(path, bottom_line, top_line, line_height); 
 #else
