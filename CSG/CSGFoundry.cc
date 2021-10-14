@@ -1565,8 +1565,10 @@ void CSGFoundry::write(const char* base, const char* rel) const
     std::string dir = ss.str();   
     write(dir.c_str()); 
 }
-void CSGFoundry::write(const char* dir) const 
+void CSGFoundry::write(const char* dir_) const 
 {
+    int create_dirs = 2 ; // 2:dirpath 
+    const char* dir = SPath::Resolve(dir_, create_dirs); 
     LOG(info) << dir ; 
 
     NP::WriteNames( dir, "name.txt", name );

@@ -10,7 +10,14 @@ class CSGFoundry(object):
         self.load(fold)
 
     def load(self, fold):
-        logging.info("load %s " % fold)
+        log.info("load %s " % fold)
+
+        if not os.path.isdir(fold):
+            log.fatal("CSGFoundry folder %s does not exist " % fold)
+            log.fatal("create foundry folder from OPTICKS_KEY geocache with CSG_GGeo/run.sh " )
+            assert 0 
+        pass
+
         names = os.listdir(fold)
         for name in filter(lambda name:name.endswith(".npy") or name.endswith(".txt"), names):
             path = os.path.join(fold, name)

@@ -154,7 +154,9 @@ void QEvent::savePhoton( const char* dir_, const char* name )
 void QEvent::saveGenstep( const char* dir_, const char* name)
 {
     if(!gs) return ; 
-    gs->save(dir_, name); 
+    int create_dirs = 1 ;  // 1:filepath 
+    const char* path = SPath::Resolve(dir_, name, create_dirs); 
+    gs->save(path); 
 }
 
 

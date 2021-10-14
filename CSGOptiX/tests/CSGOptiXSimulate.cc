@@ -38,10 +38,12 @@ int main(int argc, char** argv)
     for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
 
     OPTICKS_LOG(argc, argv); 
+
+    SSys::setenvvar("OPTICKS_OUTDIR", "$TMP/CSGOptiX/CSGOptiXSimulate", false );  // change default, allow override
+
     Opticks ok(argc, argv); 
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
-    ok.setOutDir("$TMP/CSGOptiX/CSGOptiXSimulate");   // override --outdir option and OPTICKS_OUTDIR envvar from OpticksCfg
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
