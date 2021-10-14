@@ -16,6 +16,32 @@ the fphoton.npy intersects
   and geometries are changed frequently 
 
 
+pyvista interaction
+----------------------
+
+The plot tends to start in a very zoomed in position. 
+
+* to zoom out/in : slide two fingers up/down on trackpad. 
+* to pan : hold down shift and one finger tap-lock, then move finger around  
+
+
+TODO : identity info improvements
+------------------------------------
+
+* retaining the sign of the boundary would be helpful also b=0 is swamped
+
+
+plotting a selection of boundaries only, picked by descending frequency index
+----------------------------------------------------------------------------------
+
+::
+
+    ipython -i CSGOptiXSimulate.py             # all boundaries
+    ISEL=0,1 ipython -i CSGOptiXSimulate.py    # just the 2 most frequent boundaries
+    ISEL=0,1,2,3,4 ipython -i CSGOptiXSimulate.py 
+
+
+
 AVOIDING INCORRECT IDENTITY INFO ?
 ------------------------------------
 
@@ -66,8 +92,10 @@ import matplotlib.pyplot as plt
 
 try:
     import pyvista as pv
+    from pyvista.plotting.colors import hexcolors  
 except ImportError:
     pv = None
+    hexcolors = None
 pass
 
 class CSGOptiXSimulate(object):
@@ -108,6 +136,26 @@ def look_photon(p):
 
 
 
+def make_colors():
+    """
+    :return colors: large list of color names with easily recognisable ones first 
+    """
+    #colors = ["red","green","blue","cyan","magenta","yellow","pink","purple"]
+    all_colors = list(hexcolors.keys())
+    easy_colors = "white red green blue cyan magenta yellow pink".split()
+    skip_colors = "aliceblue".split()    # skip colors that look too alike 
+
+    colors = easy_colors 
+    for c in all_colors:
+        if c in skip_colors: 
+            continue
+        if not c in colors: 
+            colors.append(c) 
+        pass
+    pass
+    return colors
+
+
 
 if __name__ == '__main__':
 
@@ -132,12 +180,15 @@ if __name__ == '__main__':
 
 
     ubs, ubs_counts = np.unique(pick_b, return_counts=True)   
+    ubs_descending = np.argsort(ubs_counts)[::-1]
+
+
     # hmm b=0 is meaningful, but is swamped by no-hits : need to make it 1-based 
+
+    # hmm need to assign recognizable colors to the most frequently occuring boundaries 
 
     print("ubs",ubs)
     print("ubs_counts",ubs_counts)
-    colors = ["red","green","blue","cyan","magenta","yellow","pink","purple"]
-
 
     fpos = f[b>0][:,0,:3]
 
@@ -162,7 +213,6 @@ if __name__ == '__main__':
     pl.set_viewup(   up )
     #pl.set_scale( scale )
 
-
     # genstep grid
     #pl.add_points( g[:,1,:3] , color="white" )
 
@@ -171,13 +221,24 @@ if __name__ == '__main__':
     #pl.camera.focal_point = (0, 0, 0)
     #pl.camera.up = (0.0, 0.0, 1.0)
 
+    colors = make_colors()
 
-    for ub, ub_count in zip(ubs, ubs_counts):
-        color = colors[ub % len(colors)]
+    # set this to something other than -1 to only plot that line item 
+    isel = list(map(int, list(filter(None,os.environ.get("ISEL", "").split(","))) ))
+
+    print( "isel: %s " % str(isel))
+
+    for idesc,upos in enumerate(ubs_descending): # iterate over boundaries in descending frequency order
+        if len(isel) > 0 and not idesc in isel: continue 
+
+        ub = ubs[upos]
+        ub_count = ubs_counts[upos] 
         bname = cf.bndname[ub]
+        
+        color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
         #if bname != "Water///Acrylic": continue
 
-        print( " %4d : %6d : %10s : %40s " % (ub, ub_count, color, bname ))            
+        print( " %2d : %4d : %6d : %20s : %40s " % (idesc, ub, ub_count, color, bname ))            
         fpos = f[b==ub][:,0,:3]
 
         pl.add_points( fpos, color=color )

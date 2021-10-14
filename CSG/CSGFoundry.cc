@@ -135,7 +135,7 @@ std::string CSGFoundry::desc() const
        << " ins " << ins.size()
        << " gas " << gas.size()
        << " ias " << ias.size()
-       << " name " << name.size()
+       << " meshname " << meshname.size()
        ;
 
     return ss.str(); 
@@ -1571,7 +1571,7 @@ void CSGFoundry::write(const char* dir_) const
     const char* dir = SPath::Resolve(dir_, create_dirs); 
     LOG(info) << dir ; 
 
-    NP::WriteNames( dir, "name.txt", name );
+    NP::WriteNames( dir, "meshname.txt", meshname );
               
     if(solid.size() > 0 ) NP::Write(dir, "solid.npy",  (int*)solid.data(),  solid.size(), 3, 4 ); 
     if(prim.size() > 0 ) NP::Write(dir, "prim.npy",   (float*)prim.data(), prim.size(),   4, 4 ); 
@@ -1591,7 +1591,7 @@ void CSGFoundry::load( const char* dir_ )
     const char* dir = SPath::Resolve(dir_, create_dirs); 
     LOG(info) << dir ; 
 
-    NP::ReadNames( dir, "name.txt", name );  // solid(aka mesh) names 
+    NP::ReadNames( dir, "meshname.txt", meshname );  
 
     loadArray( solid , dir, "solid.npy" ); 
     loadArray( prim  , dir, "prim.npy" ); 

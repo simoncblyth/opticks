@@ -216,7 +216,9 @@ struct CSGFoundry
     void kludgeScalePrimBBox( unsigned solidIdx, float dscale );
 
 
-    std::vector<std::string> name ;  // meshNames from GGeo/GMeshLib (G4VSolid names from Geant4)
+    std::vector<std::string> meshname ;  // meshNames from GGeo/GMeshLib (G4VSolid names from Geant4) 
+    // hmm should that be primname in CF model ?
+
     std::vector<CSGSolid>  solid ;   
     std::vector<CSGPrim>   prim ; 
     std::vector<CSGNode>   node ; 

@@ -10,7 +10,7 @@
 CSGName::CSGName( const CSGFoundry* foundry_ )
     :
     foundry(foundry_),
-    name(foundry->name)
+    name(foundry->meshname)
 {
 }
 
@@ -188,7 +188,17 @@ int CSGName::ParseIntString(const char* arg, int fallback)  // static
 CSGName::parseMOI
 -------------------
 
-MOI are strings delimited by colons of form <string>:<int>:<int> for example::
+Parses MOI string into three integers:
+
+midx
+    mesh index
+mord
+    mesh ordinal 
+iidx
+    instance index
+
+
+MOI are strings delimited by colons of form::
 
     sWorld:0:0 
     sWorld:0      # skipped integers default to zero 

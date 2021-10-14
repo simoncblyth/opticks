@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+CSGName.h
+===========
+
+Identity machinery using the foundry list of meshnames (aka solid names) 
+
+**/
+
 #include <vector>
 #include <string>
 
