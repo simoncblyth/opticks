@@ -15,14 +15,17 @@ CSGTarget::CSGTarget( const CSGFoundry* foundry_ )
 CSGTarget::getCenterExtent
 ----------------------------
 
+Used by CSGFoundry::getCenterExtent
+
 *ce*
     center-extent float4 set when return code is zero
 *midx*
-    solid (aka mesh) index
+    solid (aka mesh) index : identify the shape
 *mord*
-    solid (aka mesh) ordinal
+    solid (aka mesh) ordinal : pick between shapes when there are more than one, used with global(non-instanced) geometry 
 *iidx*
     instance index, >-1 for global instance, -1 for local non-instanced 
+
 **/
 
 int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx) const 
@@ -45,6 +48,7 @@ CSGTarget::getLocalCenterExtent
 ---------------------------------
 
 Collects prim matching the *midx* and selects the *mord* ordinal one
+from which to read the localCE 
 
 **/
 

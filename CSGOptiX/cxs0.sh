@@ -42,19 +42,20 @@ Otherwise inner layers can be missed.
 EOU
 }
 
-cfg=2
+cxs=${CXS:-1}   # collect sets of config underneath CXS
 
-if [ "$cfg" == "1" ]; then
+if [ "$cxs" == "1" ]; then
     moi=Hama
     cegs=16:0:9:1000:18700:0:0:100
 
-elif [ "$cfg" == "2" ]; then
+elif [ "$cxs" == "2" ]; then
     moi=uni_acrylic3
     cegs=16:0:9:1000
 fi 
 
 export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
+export CXS=${CXS:-$cxs}
 
 CSGOptiXSimulate
 

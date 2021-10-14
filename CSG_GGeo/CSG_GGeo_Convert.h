@@ -18,7 +18,7 @@ struct CSG_GGeo_Convert
     const GGeo* ggeo ; 
     const Opticks* ok ; 
     bool reverse ; 
-
+    int dump_ridx ; 
 
     CSG_GGeo_Convert(CSGFoundry* foundry, const GGeo* ggeo ) ; 
     void init();

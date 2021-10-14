@@ -30,6 +30,25 @@ NP* QEvent::MakeGensteps(const std::vector<quad6>& gs ) // static
     a->read2<float>( (float*)gs.data() ); 
     return a ; 
 }
+
+/**
+QEvent::MakeCenterExtentGensteps
+----------------------------------
+
+Creates grid of gensteps centered at ce.xyz with the grid specified 
+by integer ranges that are used to scale the extent parameter to yield
+offsets from the center. 
+
+ce(float4)
+   cx:cy:cz:extent  
+
+cegs(uint4)
+   nx:ny:nz:photons_per_genstep
+   specifies a grid of integers -nx:nx -ny:ny -nz:nz inclusive used to scale the extent 
+
+**/
+
+
 NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs  ) // stati:w
 {
     quad6 qq ; 

@@ -55,6 +55,11 @@ bool CSGSolid::labelMatch(const char* label_) const
 }
 
 
+
+
+
+
+
 std::string CSGSolid::MakeLabel(const char* typ0, unsigned idx0, char delim )
 {
     std::stringstream ss ; 
@@ -65,13 +70,37 @@ std::string CSGSolid::MakeLabel(const char* typ0, unsigned idx0, char delim )
     return s ; 
 }
 
-std::string CSGSolid::MakeLabel(char typ0, unsigned idx0 )
+std::string CSGSolid::MakeLabel(char typ0, unsigned idx0 ) // static
 {
     std::stringstream ss ; 
     ss << typ0 << idx0 ; 
     std::string s = ss.str();  
     return s ; 
 }
+
+int CSGSolid::ParseLabel( const char* label_, char& typ0, unsigned& idx0 ) // static 
+{
+    size_t sz = strlen(label_); 
+    if( sz < 2 ) return 1 ; 
+    typ0 = label_[0] ; 
+    idx0 = std::atoi(label_+1) ; 
+    return 0 ; 
+}
+
+int CSGSolid::get_ridx() const 
+{
+    char typ0 ; 
+    unsigned idx0 ; 
+    int rc = ParseLabel(label, typ0, idx0 ); 
+    return rc == 0 ? idx0 : -1 ;    
+}
+
+
+
+
+
+
+
 std::string CSGSolid::MakeLabel(char typ0, unsigned idx0, char typ1, unsigned idx1  )
 {
     std::stringstream ss ; 
@@ -86,6 +115,9 @@ std::string CSGSolid::MakeLabel(char typ0, unsigned idx0, char typ1, unsigned id
     std::string s = ss.str();  
     return s ; 
 }
+
+
+
 
 #endif
 

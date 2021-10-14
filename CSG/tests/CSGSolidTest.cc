@@ -56,6 +56,39 @@ void test_labelMatch()
     std::cout << " r.label " << r.label << " match_green " << match_green << std::endl ; 
 }
 
+void test_ParseLabel()
+{
+    LOG(info); 
+
+    char t0 = 'r' ; 
+    unsigned idx0 = 8 ; 
+    std::string label = CSGSolid::MakeLabel(t0, idx0); 
+
+    char t1 ; 
+    unsigned idx1 ; 
+    int rc = CSGSolid::ParseLabel(label.c_str(), t1, idx1 ); 
+
+    assert( rc == 0 ); 
+    assert( t0 == t1 ); 
+    assert( idx0 == idx1 );  
+}
+
+void test_get_ridx()
+{
+    LOG(info); 
+
+    char t0 = 'r' ; 
+    unsigned idx0 = 8 ; 
+    std::string label = CSGSolid::MakeLabel(t0, idx0); 
+
+    unsigned numPrim = 1 ; 
+    unsigned primOffset = 0 ; 
+    CSGSolid so = CSGSolid::Make(label.c_str(), numPrim, primOffset );  
+
+    assert( so.get_ridx() == int(idx0) ); 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -64,6 +97,8 @@ int main(int argc, char** argv)
     const char* path = argc > 1 ? argv[1] : "/tmp/CSGSolidTest.npy" ; 
     test_Make_Write(path); 
     test_labelMatch(); 
+    test_ParseLabel(); 
+    test_get_ridx(); 
 
     return 0 ; 
 }

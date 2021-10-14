@@ -252,9 +252,16 @@ std::string CSGFoundry::descInst(unsigned ias_idx_, unsigned long long emm ) con
 }
 
 
-// bbox of the IAS by tranforming the center_extent cubes of all instances
-// hmm: could get a smaller bbox by using the bbox and not the ce of the instances 
-// need to add bb to solid...
+/**
+CSGFoundry::iasBB
+--------------------
+
+bbox of the IAS obtained by tranforming the center_extent cubes of all instances
+hmm: could get a smaller bbox by using the bbox and not the ce of the instances 
+need to add bb to solid...
+
+**/
+
 AABB CSGFoundry::iasBB(unsigned ias_idx_, unsigned long long emm ) const
 {
     AABB bb = {} ;
@@ -1766,6 +1773,15 @@ const char* CSGFoundry::getName(unsigned midx) const
 {
     return id->getName(midx); 
 }
+
+/**
+CSGFoundry::getCenterExtent
+-------------------------------
+
+For midx -1 returns ce obtained from the ias bbox, otherwise
+uses CSGTarget to lookup the center extent. 
+
+**/
 
 int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx) const 
 {

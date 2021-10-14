@@ -37,10 +37,12 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
     foundry(foundry_),
     ggeo(ggeo_),
     ok(ggeo->getOpticks()),
-    reverse(SSys::getenvbool("REVERSE"))
+    reverse(SSys::getenvbool("REVERSE")),
+    dump_ridx(SSys::getenvint("DUMP_RIDX", -1))
 {
     LOG(info) 
         << " reverse " << reverse
+        << " dump_ridx (DUMP_RIDX) " << dump_ridx
         ;  
 
     init(); 
@@ -49,10 +51,10 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
 
 void CSG_GGeo_Convert::init()
 {
-    ggeo->getMeshNames(foundry->name); 
+    ggeo->getMeshNames(foundry->meshname); 
     LOG(info) 
        << std::endl
-       << " foundry.name.size " << foundry->name.size() 
+       << " foundry.meshname.size " << foundry->meshname.size() 
        ;
 }
 
@@ -179,6 +181,18 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
 }
 
 
+/**
+CSG_GGeo_Convert::convertSolid NB this "solid" corresponds to ggeo/GMergedMesh
+----------------------------------------------------------------------------------
+
+1. declare ahead the number of prim(~G4VSolid) in the "solid"(repeatIdx ~MergedMesh)
+2. CSG_GGeo_Convert::convertPrim using the primIdx 
+3. collect the prim.AABB 
+4. set the solid center_extent using the combination of the prim.AABB
+5. CSG_GGeo_Convert::addInstances for the repeatIdx
+6. return the solid 
+
+**/
 
 CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 {
@@ -191,13 +205,16 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
     unsigned numPrim = comp->getNumPrim();
     std::string rlabel = CSGSolid::MakeLabel('r',repeatIdx) ; 
 
+    bool dump = dump_ridx > -1 && dump_ridx == int(repeatIdx) ;  
+
     LOG(info)
-        << "CSG_GGeo_Convert::convertSolid"
         << " repeatIdx " << repeatIdx 
         << " nmm " << nmm
-        << " numPrim " << numPrim
+        << " numPrim(GParts.getNumPrim) " << numPrim
         << " rlabel " << rlabel 
         << " num_inst " << num_inst 
+        << " dump_ridx " << dump_ridx
+        << " dump " << dump  
         ;   
 
     CSGSolid* so = foundry->addSolid(numPrim, rlabel.c_str() );  // primOffset captured into CSGSolid 
@@ -221,8 +238,6 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 
         prim->setRepeatIdx(repeatIdx); 
         prim->setPrimIdx(primIdx); 
- 
-
         //LOG(info) << prim->desc() ;
     }   
     so->center_extent = bb.center_extent() ;  
@@ -256,7 +271,9 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     unsigned meshIdx = comp->getMeshIndex(primIdx);    // aka lvIdx
 
     assert( foundry->last_added_solid ); 
-    bool is_r8 = foundry->last_added_solid->labelMatch("r8"); 
+
+    int last_ridx = foundry->last_added_solid->get_ridx();  
+    bool dump = last_ridx == dump_ridx ; 
 
     int nodeOffset_ = -1 ; 
     CSGPrim* prim = foundry->addPrim(numParts, nodeOffset_ );   
@@ -266,19 +283,28 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     AABB bb = {} ;
 
     //bool kludge_skip_aabb = false ; 
+
+    if(dump) 
+        std::cout 
+            << "CSG_GGeo_Convert::convertPrim" 
+            << " primIdx " << primIdx 
+            << " numPrim " << numPrim
+            << " numParts " << numParts 
+            << " meshIdx " << meshIdx 
+            << " last_ridx " << last_ridx
+            << " dump " << dump
+            << std::endl
+            ; 
    
     for(unsigned partIdxRel=0 ; partIdxRel < numParts ; partIdxRel++ )
     {
         CSGNode* n = convertNode(comp, primIdx, partIdxRel); 
         float* naabb = n->AABB();  
 
-        if(is_r8)
+        if(dump)
         {
             std::cout 
-                << "CSG_GGeo_Convert::convertPrim is_r8" 
-                << " primIdx " << std::setw(3) << primIdx 
-                << " partIdxRel " << std::setw(3) << partIdxRel
-                << AABB::Desc(naabb)
+                << n->desc()
                 << std::endl 
                 ;   
         } 
@@ -308,9 +334,9 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
     const float* bb_data = bb.data(); 
 
-    if(is_r8)
+    if(dump)
     {
-        std::cout << "is_r8.Prim.AABB " << AABB::Desc(bb_data) << std::endl ; 
+        std::cout << "dump.Prim.AABB " << AABB::Desc(bb_data) << std::endl ; 
     }       
 
     prim->setAABB( bb_data ); 
@@ -376,7 +402,8 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     n->setComplement(complement); 
     n->setBoundary(boundary);       // EXPT
 
-    if(complement) 
+    bool dump_complement = false ; 
+    if(complement && dump_complement) 
         std::cout 
             << "CSG_GGeo_Convert::convertNode"
             << " repeatIdx " << repeatIdx 
