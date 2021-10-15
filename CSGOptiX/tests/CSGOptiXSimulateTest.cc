@@ -52,13 +52,17 @@ int main(int argc, char** argv)
     ok.setRaygenMode(1) ; // override --raygenmode option 
 
     const char* outdir = ok.getOutDir(); 
-    LOG(info) << " cxs " << cxs << " outdir " << outdir ; 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
 
+    const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
+    float gridscale = SSys::getenvfloat("GRIDSCALE", 1.0 ); 
+
+
+    LOG(info) << " cxs " << cxs << " outdir " << outdir << " gridscale " << gridscale ; 
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
@@ -78,7 +82,6 @@ int main(int argc, char** argv)
         assert(0); 
     }
 
-    const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
     const NP* gs = nullptr ; 
     if( strcmp(moi, "FAKE") == 0 )
     { 
@@ -98,7 +101,7 @@ int main(int argc, char** argv)
         uint4 cegs ; 
         CSGOptiXSimulate::ParseCEGS(cegs, ce ); 
 
-        gs = QEvent::MakeCenterExtentGensteps(ce, cegs); 
+        gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale ); 
         cx.setCE(ce); 
         cx.setCEGS(cegs); 
     }

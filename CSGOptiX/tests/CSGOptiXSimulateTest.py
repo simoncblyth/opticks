@@ -99,9 +99,10 @@ except ImportError:
 pass
 
 class CSGOptiXSimulateTest(object):
-    CXS = os.environ("CXS", "0")
+    CXS = os.environ.get("CXS", "1")
     FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest/%s" % CXS)
     def __init__(self, fold=FOLD):
+        print("CXS : %s : loading from fold : %s " % (self.CXS,fold) )
         names = os.listdir(fold)
         for name in filter(lambda n:n.endswith(".npy"),names):
             path = os.path.join(fold, name)

@@ -18,7 +18,9 @@ int main(int argc, char** argv)
 
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f ); 
     uint4 cegs = make_uint4( 3, 0, 3, 100 ); 
-    const NP* gs = QEvent::MakeCenterExtentGensteps(ce, cegs); 
+    float gridscale = 1.f ; 
+
+    const NP* gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale); 
 
     QEvent* event = new QEvent ; 
     event->setGensteps(gs); 

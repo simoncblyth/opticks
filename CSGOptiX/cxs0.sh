@@ -47,14 +47,16 @@ cxs=${CXS:-1}   # collect sets of config underneath CXS
 if [ "$cxs" == "1" ]; then
     moi=Hama
     cegs=16:0:9:1000:18700:0:0:100
-
+    gridscale=1.0
 elif [ "$cxs" == "2" ]; then
     moi=uni_acrylic3
     cegs=16:0:9:1000
+    gridscale=0.2
 fi 
 
 export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
+export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS=${CXS:-$cxs}
 
 CSGOptiXSimulateTest

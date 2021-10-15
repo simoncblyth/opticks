@@ -46,10 +46,18 @@ cegs(uint4)
    nx:ny:nz:photons_per_genstep
    specifies a grid of integers -nx:nx -ny:ny -nz:nz inclusive used to scale the extent 
 
+gridscale
+   float multiplier applied to the grid integers, values less than 1. (eg 0.2) 
+   increase the concentration of the genstep grid on the target geometry giving a 
+   better intersect rendering of a smaller region 
+
+   To expand the area when using a finer grid increase the nx:ny:nz, however
+   that will lead to a slower render. 
+
 **/
 
 
-NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs  ) // stati:w
+NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale ) // static
 {
     quad6 qq ; 
     qq.zero(); 
@@ -68,9 +76,9 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs  ) // s
     for(int iz=-int(nz) ; iz < int(nz)+1 ; iz++ )
     {
         //std::cout << " ix " << ix << " iy " << iy << " iz " << iz << std::endl ; 
-        qq.q1.f.x = ce.x + float(ix)*ce.w ;  
-        qq.q1.f.y = ce.y + float(iy)*ce.w ;  
-        qq.q1.f.z = ce.z + float(iz)*ce.w ;   
+        qq.q1.f.x = ce.x + float(ix)*gridscale*ce.w ;  
+        qq.q1.f.y = ce.y + float(iy)*gridscale*ce.w ;  
+        qq.q1.f.z = ce.z + float(iz)*gridscale*ce.w ;   
         qq.q1.f.w = 0.f ; 
         gs.push_back(qq); 
     }
