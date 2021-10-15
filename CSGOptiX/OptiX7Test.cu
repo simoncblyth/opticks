@@ -167,55 +167,45 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
     unsigned identity = 0u ; 
     unsigned boundary = 0u ; 
-
     float spare1 = 0.f ; 
     float spare2 = 0.f ; 
 
-    trace( 
-        params.handle,
-        origin,
-        direction,
-        params.tmin,
-        params.tmax,
-        &normal, 
-        &t, 
-        &identity,
-        &boundary,
-        &spare1,  
-        &spare2
-    );
+    bool do_trace = true ; 
 
+    if( do_trace )
+    { 
+        trace( 
+            params.handle,
+            origin,
+            direction,
+            params.tmin,
+            params.tmax,
+            &normal, 
+            &t, 
+            &identity,
+            &boundary,
+            &spare1,  
+            &spare2
+        );
+    }
+
+
+    // transform (x,z) intersect position into pixel coordinates (ix,iz)
     float3 position = origin + t*direction ; 
 
+    float wx = float(params.cegs.x == 0 ? 1 : params.cegs.x) ;
+    float wz = float(params.cegs.z == 0 ? 1 : params.cegs.z) ;
 
-    // transform (x,z) intersect positioninto pixel coordinates (ix,iz)
-
-    float wx = float(params.cegs.x) ;
-    float wz = float(params.cegs.z) ;
     float fx = 0.5f*(1.f+(position.x - params.center_extent.x)/(wx*params.center_extent.w)) ;   // 0.f -> 1.f 
     float fz = 0.5f*(1.f+(position.z - params.center_extent.z)/(wz*params.center_extent.w)) ;   // 0.f -> 1.f
     unsigned ix = fx > 0.f && fx < 1.f ? unsigned( fx*params.width ) : 0 ;  
     unsigned iz = fz > 0.f && fz < 1.f ? unsigned( fz*params.height ) : 0 ; 
-    
-    //float cos_theta = dot(normal,direction);
-    // 
-    // * cos_theta "sign/orient-ing the boundary" up here in raygen unlike oxrap/cu/closest_hit_propagate.cu,
-    //   avoids having to pass the information from lower level
-    //
-    // * for angular efficiency need intersection point in object frame to get the angles  
-    //
-
+     
     p.q0.f.x = position.x ; 
     p.q0.f.y = position.y ; 
     p.q0.f.z = position.z ; 
     p.q0.f.w = spare1 ; 
 
-    /*
-    p.q1.f.x = direction.x ; 
-    p.q1.f.y = direction.y ; 
-    p.q1.f.z = direction.z ; 
-    p.q1.f.w = spare2 ; 
-    */
     p.q1.f.x = fx ; 
     p.q1.f.y = fz ; 
     p.q1.i.z = ix ; 
@@ -226,9 +216,9 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     p.q2.f.z = t ; 
     p.q2.u.w = boundary ; 
 
-    p.q3.f.x = normal.x ; 
-    p.q3.f.y = normal.y ; 
-    p.q3.f.z = normal.z ; 
+    p.q3.f.x = direction.x ;   // previously normal, direction now to check generation   
+    p.q3.f.y = direction.y ; 
+    p.q3.f.z = direction.z ; 
     p.q3.u.w = identity ; 
 
     evt->photon[photon_id] = p ; 
@@ -250,6 +240,13 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 }
 
 /**
+float cos_theta = dot(normal,direction);
+
+* cos_theta "sign/orient-ing the boundary" up here in raygen unlike oxrap/cu/closest_hit_propagate.cu,
+  avoids having to pass the information from lower level
+  
+* for angular efficiency need intersection point in object frame to get the angles  
+
 **/
 
 extern "C" __global__ void __raygen__rg()

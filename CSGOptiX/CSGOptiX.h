@@ -7,6 +7,7 @@
 
 struct SMeta ; 
 struct NP ; 
+struct quad4 ; 
 
 struct CSGFoundry ; 
 struct CSGView ; 
@@ -61,6 +62,7 @@ struct CSGOptiX : public SRenderer
     Frame* frame ; 
 #endif
     SMeta* meta ; 
+    quad4* peta ; 
 
     QSim<float>* sim ; 
     QEvent*      evt ;  

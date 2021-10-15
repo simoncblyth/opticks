@@ -60,5 +60,9 @@ export CEGS=${CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS=${CXS:-$cxs}
 
-CSGOptiXSimulateTest
+if [ "$1" == "py" ]; then 
+    ipython -i tests/CSGOptiXSimulateTest.py 
+else
+    CSGOptiXSimulateTest
+fi 
 

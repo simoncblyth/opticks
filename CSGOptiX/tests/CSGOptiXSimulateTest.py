@@ -162,12 +162,26 @@ def parse_isel():
     return isel 
 
 
+def photons_plot(p):
+    fig, ax = plt.subplots(figsize=[12.8, 7.2])
+    X,Y,Z = 0,1,2
+    ax.scatter( p[:,0,X], p[:,0,Z], label="xz" )
+    #ax.scatter( p[:,3,X], p[:,3,Z], label="xz" )   # when q3 is direction, should give a circle
+
+    ax.set_aspect('equal')
+    ax.legend()
+    fig.show()
+
+
+
 if __name__ == '__main__':
 
     cf = CSGFoundry()
     cxs = CSGOptiXSimulateTest()
 
+    photons_plot(photons)
 
+if 0:
     g = genstep
     f = fphoton
     #print(f)
@@ -199,7 +213,6 @@ if __name__ == '__main__':
 
     # hmm b=0 is meaningful, but is swamped by no-hits : need to make it 1-based 
 
-    # hmm need to assign recognizable colors to the most frequently occuring boundaries 
 
     print("ubs",ubs)
     print("ubs_counts",ubs_counts)

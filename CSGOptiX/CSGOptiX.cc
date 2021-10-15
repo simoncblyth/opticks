@@ -24,6 +24,7 @@
 #include "FlightPath.hh"
 
 #include "scuda.h"
+#include "squad.h"
 
 #include "CSGPrim.h"
 #include "CSGFoundry.h"
@@ -97,6 +98,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     frame(new Frame(params->width, params->height, params->depth)),  // CUDA holds the pixels 
 #endif
     meta(new SMeta),
+    peta(new quad4), 
     sim(raygenmode == 0 ? nullptr : new QSim<float>),
     evt(raygenmode == 0 ? nullptr : new QEvent)
 {
@@ -206,14 +208,28 @@ void CSGOptiX::setCE(const float4& v )
 {
     glm::vec4 ce(v.x, v.y, v.z, v.w); 
     setCE(ce); 
+
+
 }
 void CSGOptiX::setCEGS(const uint4& cegs_)
 {
     params->setCEGS(cegs_); 
+
+    peta->q0.u.x = cegs_.x ; 
+    peta->q0.u.y = cegs_.y ; 
+    peta->q0.u.z = cegs_.z ; 
+    peta->q0.u.w = cegs_.w ; 
+
 }
 
 void CSGOptiX::setCE(const glm::vec4& ce )
 {
+    peta->q1.u.x = ce.x ; 
+    peta->q1.u.y = ce.y ; 
+    peta->q1.u.z = ce.z ; 
+    peta->q1.u.w = ce.w ; 
+
+
     bool aim = true ; 
     composition->setCenterExtent(ce, aim);  // model2world view setup 
 
@@ -384,6 +400,7 @@ int CSGOptiX::render_flightpath() // for making mp4 movies
 void CSGOptiX::saveMeta(const char* jpg_path) const
 {
     const char* json_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".json"); 
+    const char* npy_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".npy"); 
 
     nlohmann::json& js = meta->js ;
     js["argline"] = ok->getArgLine();
@@ -405,7 +422,7 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     meta->save(json_path);
     LOG(info) << json_path ; 
 
-    //const char* npy_path = SStr::ReplaceEnd(jpgpath, ".jpg", ".npy"); 
-    //NP::Write(npy_path, (double*)t.data(),  t.size() );
+    NP::Write(npy_path, (float*)(&peta->q0.f.x), 1, 4, 4 );
+
 }
 
