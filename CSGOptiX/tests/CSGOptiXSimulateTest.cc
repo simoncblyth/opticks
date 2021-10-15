@@ -113,9 +113,12 @@ int main(int argc, char** argv)
 
     QSim<float>* sim = cx.sim ; 
     QEvent* evt = cx.evt ; 
-    
-    //evt->savePhoton(ok.getOutDir(),  "photons.npy");   // this one gets very big 
-    evt->saveGenstep(ok.getOutDir(), "genstep.npy");  
+
+
+    evt->savePhoton( outdir, "photons.npy");   // this one can get very big 
+    evt->saveGenstep(outdir, "genstep.npy");  
+    cx.writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
+
 
     const char* namestem = "CSGOptiXSimulateTest" ; 
     const char* ext = ".jpg" ; 
@@ -125,7 +128,6 @@ int main(int argc, char** argv)
 
     std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
     cx.snap(outpath, bottom_line.c_str(), topline  );   
-    cx.writeFramePhoton(ok.getOutDir(), "fphoton.npy" ); 
 
 
     cudaDeviceSynchronize(); 
