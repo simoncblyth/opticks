@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-tests/CSGOptiXSimulate.py
-============================
+tests/CSGOptiXSimulateTest.py
+==============================
 
 This is useful as it allows interactive visualization of workstation 
 generated intersect data fphoton.npy on remote machines such as 
@@ -36,15 +36,15 @@ plotting a selection of boundaries only, picked by descending frequency index
 
 ::
 
-    ipython -i tests/CSGOptiXSimulate.py             # all boundaries
+    cx ; ipython -i tests/CSGOptiXSimulateTest.py   # all boundaries
 
-    ISEL=0,1         ipython -i tests/CSGOptiXSimulate.py    # just the 2 most frequent boundaries
-    ISEL=0,1,2,3,4   ipython -i tests/CSGOptiXSimulate.py 
-    ISEL=Hama        ipython -i tests/CSGOptiXSimulate.py 
-    ISEL=NNVT        ipython -i tests/CSGOptiXSimulate.py 
-    ISEL=Pyrex       ipython -i tests/CSGOptiXSimulate.py 
-    ISEL=Pyrex,Water ipython -i tests/CSGOptiXSimulate.py 
+    ISEL=0,1         ipython -i tests/CSGOptiXSimulateTest.py    # just the 2 most frequent boundaries
+    ISEL=0,1,2,3,4   ipython -i tests/CSGOptiXSimulateTest.py 
 
+    ISEL=Hama        ipython -i tests/CSGOptiXSimulateTest.py    # select boundaries via strings in the bndnames
+    ISEL=NNVT        ipython -i tests/CSGOptiXSimulateTest.py 
+    ISEL=Pyrex       ipython -i tests/CSGOptiXSimulateTest.py 
+    ISEL=Pyrex,Water ipython -i tests/CSGOptiXSimulateTest.py 
 
 
 AVOIDING INCORRECT IDENTITY INFO ?
@@ -68,11 +68,6 @@ FOUNDRY IDENTITY INFO
 ------------------------
 
 Currently the only names CSGFoundry holds are mesh names
-
-
-::
-
-    cx ; ipython -i tests/CSGOptiXSimulate.py
 
 
 __closesthit__ch::
@@ -103,8 +98,9 @@ except ImportError:
     hexcolors = None
 pass
 
-class CSGOptiXSimulate(object):
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulate")
+class CSGOptiXSimulateTest(object):
+    CXS = os.environ("CXS", "0")
+    FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest/%s" % CXS)
     def __init__(self, fold=FOLD):
         names = os.listdir(fold)
         for name in filter(lambda n:n.endswith(".npy"),names):
@@ -114,7 +110,6 @@ class CSGOptiXSimulate(object):
             print(" %10s : %15s : %s " % (stem, str(a.shape), path )) 
             globals()[stem] = a
         pass
-
 
 
 def look_photon(p):
@@ -169,7 +164,7 @@ def parse_isel():
 if __name__ == '__main__':
 
     cf = CSGFoundry()
-    cxs = CSGOptiXSimulate()
+    cxs = CSGOptiXSimulateTest()
 
 
     g = genstep

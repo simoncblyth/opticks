@@ -57,5 +57,5 @@ export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
 export CXS=${CXS:-$cxs}
 
-CSGOptiXSimulate
+CSGOptiXSimulateTest
 

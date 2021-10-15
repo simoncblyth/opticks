@@ -1,5 +1,12 @@
-#include "CSGOptiXSimulate.h"
+#include <vector>
+#include <sstream>
+
+#include "SSys.hh"
+#include "SPath.hh"
 #include "PLOG.hh"
+#include "CSGOptiXSimulate.h"
+
+
 
 void CSGOptiXSimulate::ParseCEGS( uint4& cegs, float4& ce )  // static 
 {

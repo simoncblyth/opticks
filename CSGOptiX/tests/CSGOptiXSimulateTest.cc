@@ -22,6 +22,7 @@ is to be able to see the exact same geometry that the simulation is using.
 #include <iterator>
 
 #include "SSys.hh"
+#include "SPath.hh"
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
 
@@ -41,11 +42,17 @@ int main(int argc, char** argv)
 
     OPTICKS_LOG(argc, argv); 
 
-    SSys::setenvvar("OPTICKS_OUTDIR", "$TMP/CSGOptiX/CSGOptiXSimulateTest", false );  // change default, allow override
+    const char* cxs = SSys::getenvvar("CXS", "0" ); 
+    int create_dirs = 0 ;  
+    const char* default_outdir = SPath::Resolve("$TMP/CSGOptiX/CSGOptiXSimulateTest",  cxs, create_dirs );  
+    SSys::setenvvar("OPTICKS_OUTDIR", default_outdir , false );  // change default, but allow override by evar
 
     Opticks ok(argc, argv); 
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
+
+    const char* outdir = ok.getOutDir(); 
+    LOG(info) << " cxs " << cxs << " outdir " << outdir ; 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
@@ -89,7 +96,7 @@ int main(int argc, char** argv)
               << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;           
 
         uint4 cegs ; 
-        CSGOptiXSimulate::parseCEGS(cegs, ce ); 
+        CSGOptiXSimulate::ParseCEGS(cegs, ce ); 
 
         gs = QEvent::MakeCenterExtentGensteps(ce, cegs); 
         cx.setCE(ce); 
