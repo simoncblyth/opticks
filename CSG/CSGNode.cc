@@ -49,13 +49,16 @@ std::string CSGNode::desc() const
 {
     const float* aabb = AABB(); 
     unsigned trIdx = gtransformIdx(); 
+
     std::stringstream ss ; 
     ss
         << "CSGNode "
         << std::setw(5) << index() 
-        << " " << CSG::Tag((OpticksCSG_t)typecode())
+        << " " 
+        << ( complement() ? "!" : " " )
+        << CSG::Tag((OpticksCSG_t)typecode())
         << " aabb: " << Desc( aabb, 6, 7, 1 ) 
-        << " trIdx: " << trIdx 
+        << " trIdx: " << std::setw(5) << trIdx 
         ;    
 
     std::string s = ss.str(); 
@@ -155,6 +158,21 @@ bool CSGNode::is_operator() const
     unsigned tc = typecode(); 
     return CSG::IsOperator((OpticksCSG_t)tc) ;
 }
+bool CSGNode::is_intersection() const 
+{
+    unsigned tc = typecode(); 
+    return CSG::IsIntersection((OpticksCSG_t)tc) ;
+}
+bool CSGNode::is_union() const 
+{
+    unsigned tc = typecode(); 
+    return CSG::IsUnion((OpticksCSG_t)tc) ;
+}
+bool CSGNode::is_difference() const 
+{
+    unsigned tc = typecode(); 
+    return CSG::IsDifference((OpticksCSG_t)tc) ;
+}
 bool CSGNode::is_zero() const 
 {
     unsigned tc = typecode(); 
@@ -165,10 +183,61 @@ bool CSGNode::is_leaf() const
     unsigned tc = typecode(); 
     return CSG::IsPrimitive((OpticksCSG_t)tc)  ;
 }
+bool CSGNode::is_complemented_leaf() const 
+{
+    return complement() && is_leaf() ; 
+}
 
 
 
 
+
+
+
+/**
+CSGNode::AncestorTypeMask
+---------------------------
+
+*partIdxRel* is the zero based node index, zero corresponding to root
+
+This iterates up the node tree starting from the parent 
+of the node identified by *partIdxRel* using complete binary tree arithemetic.
+The bitwise-or of the typemasks of the ancestors is returned.  
+When starting from a leaf node this will return the bitwise-or of the 
+operator types. 
+
+**/
+
+unsigned CSGNode::AncestorTypeMask( const CSGNode* root,  unsigned partIdxRel, bool dump  ) // static
+{
+    unsigned atm = 0u ; 
+
+    int parentIdxRel = ((partIdxRel + 1) >> 1) - 1 ;    
+
+    while( parentIdxRel > -1 )  
+    {   
+        const CSGNode* p = root + parentIdxRel ;  
+
+        atm |= p->typemask() ;  // NB typemask NOT typecode to allow meaningful bitwise-ORing  
+
+        if(dump) std::cout << std::setw(3) << parentIdxRel << " " << p->desc() << std::endl ;
+                
+        parentIdxRel = ((parentIdxRel + 1) >> 1) - 1 ;  
+    }   
+
+    return atm ; 
+}
+
+
+bool CSGNode::IsOnlyUnionMask( unsigned atm )  // static 
+{
+     return atm == CSG::UnionMask() ; 
+}
+
+bool CSGNode::IsOnlyIntersectionMask( unsigned atm )  // static 
+{
+     return atm == CSG::IntersectionMask() ; 
+}
 
 
 

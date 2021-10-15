@@ -255,11 +255,38 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 CSG_GGeo_Convert::convertPrim
 --------------------------------
 
-on adding a prim the node/tran/plan offsets are captured into the Prim 
-from the sizes of the foundry vectors
+A CSGPrim (tree of nodes) corresponds to a non-composite GParts selected from a 
+composite with *primIdx*. The CSGPrim is often(but not always) one-to-one related with a G4VSolid. 
 
-TODO: suspect tran and plan offsets are not used, and should be removed
-as are always using absolute tran and plan addressing 
+The AABB of the CSGPrim are vital for GAS construction.
+
+Simple node-by-node bbox combination is an oversimplified way to form the bbox of the CSGPrim.
+For example subtraction of JUNO Acrylic sphere will by positivization appear as an intersect 
+with a ginormous sphere which will lead to a huge bbox.  
+
+The combination needs to be made CSG aware (skip bb inclusion of complemented node with intersect parent perhaps?)
+or grab it from old model ?
+
+Doing the below is too kludgy, as tied to particular geometry::
+
+    bool kludge_skip_aabb = is_r8 && *(naabb+0) < -17810.00 ; 
+
+    if(!kludge_skip_aabb)
+    { 
+        bb.include_aabb( naabb );  
+    }
+    else
+    {
+        std::cout 
+            << "CSG_GGeo_Convert::convertPrim kludge_skip_aabb " 
+            << std::endl
+            ; 
+    }
+
+
+TODO: On adding a prim the node/tran/plan offsets are captured into the Prim 
+from the sizes of the foundry vectors. Suspect tran and plan offsets are not used, 
+and should be removed as are now always using absolute tran and plan addressing 
 
 **/
 
@@ -282,8 +309,6 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
     AABB bb = {} ;
 
-    //bool kludge_skip_aabb = false ; 
-
     if(dump) 
         std::cout 
             << "CSG_GGeo_Convert::convertPrim" 
@@ -296,41 +321,37 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
             << std::endl
             ; 
    
+    CSGNode* root = nullptr ; 
+
     for(unsigned partIdxRel=0 ; partIdxRel < numParts ; partIdxRel++ )
     {
         CSGNode* n = convertNode(comp, primIdx, partIdxRel); 
+
+        if(root == nullptr) root = n ; 
+          
+        unsigned atm = CSGNode::AncestorTypeMask(root, partIdxRel, false ); 
+
+        bool oim = CSGNode::IsOnlyIntersectionMask(atm) ; 
+
+        bool cle = n->is_complemented_leaf();   
+
+        bool bbskip = oim && cle ;  // exclude bbox of complemented leaf with only intersection ancestry 
+
+        if(dump || bbskip) 
+            std::cout 
+                << std::setw(3) << partIdxRel 
+                << " " << n->desc() 
+                << " atm " << atm 
+                << " IsOnlyIntersectionMask " << oim 
+                << " is_complemented_leaf " << cle
+                << " bbskip " << bbskip 
+                << std::endl
+                ;
+
         float* naabb = n->AABB();  
 
-        if(dump)
-        {
-            std::cout 
-                << n->desc()
-                << std::endl 
-                ;   
-        } 
-
-        bb.include_aabb( naabb );  
-
-
-/*
-        kludge_skip_aabb = is_r8 && *(naabb+0) < -17810.00 ; 
-
-        if(!kludge_skip_aabb)
-        { 
-            bb.include_aabb( naabb );  
-        }
-        else
-        {
-            std::cout 
-                << "CSG_GGeo_Convert::convertPrim kludge_skip_aabb " 
-                << std::endl
-                ; 
-        }
-*/
-
-
+        if(!bbskip) bb.include_aabb( naabb );  
     }
-
 
     const float* bb_data = bb.data(); 
 
@@ -347,6 +368,8 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 /**
 CSG_GGeo_Convert::convertNode
 -------------------------------
+
+Add node to foundry and returns pointer to it
 
 primIdx
     0:numPrim-1 identifying the Prim (aka layer) within the composite 

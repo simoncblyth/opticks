@@ -37,7 +37,16 @@ std::string CSGPrim::desc() const
     return s ; 
 }
 
+/**
+CSGPrim::MakeSpec
+-------------------
 
+Specification providing pointers to access all the AABB of *numPrim* CSGPrim, 
+canonically used for all CSGPrim within a CSGSolid 
+This can be done very simply for both host and device due to the contiguous storage 
+of the CSGPrim in the foundry and fixed strides. 
+ 
+**/
 
 CSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned numPrim ) // static 
 {

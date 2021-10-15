@@ -17,11 +17,10 @@
 CSGPrim : contiguous sequence of *numNode* CSGNode starting from *nodeOffset* : complete binary tree of 1,3,7,15,... CSGNode
 ===============================================================================================================================
 
-* although CSGPrim is uploaded to GPU by CSGFoundry::upload, instances of CSGPrim are not needed 
-  GPU side because the Binding.h HitGroupData carries the same information.  
+* although CSGPrim is uploaded to GPU by CSGFoundry::upload, instances of CSGPrim at first glance 
+  appear not to be needed GPU side because the Binding.h HitGroupData carries the same information.  
 
-* But the uploaded CSGPrim AABB are essential for GAS construction 
-
+* But that is disceptive as the uploaded CSGPrim AABB are essential for GAS construction 
 
 * vim replace : shift-R
 

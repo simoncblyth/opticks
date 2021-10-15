@@ -6,6 +6,8 @@ usage(){ cat << EOU
 
     ./run.sh
 
+    DUMP_RIDX=2 ./run.sh 
+
     ONE_PRIM_SOLID=1 ./run.sh 
 
     GDB=lldb_ ./run.sh -- 
@@ -86,7 +88,7 @@ name=$(basename $sdir)
 
 #export ONE_PRIM_SOLID=1 # adds extra debugging solids that reuse existing prim one-by-one
 
-export DUMP_RIDX=8 
+export DUMP_RIDX=${DUMP_RIDX:-8} 
 
 export CFBASE=/tmp/$USER/opticks/CSG_GGeo
 outdir=${CFBASE}/CSGFoundry

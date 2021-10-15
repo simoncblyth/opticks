@@ -188,6 +188,8 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     float3 position = origin + t*direction ; 
 
 
+    // transform (x,z) intersect positioninto pixel coordinates (ix,iz)
+
     float wx = float(params.cegs.x) ;
     float wz = float(params.cegs.z) ;
     float fx = 0.5f*(1.f+(position.x - params.center_extent.x)/(wx*params.center_extent.w)) ;   // 0.f -> 1.f 
@@ -355,10 +357,10 @@ Which Prim gets intersected relies on the CSGPrim::setSbtIndexOffset
 extern "C" __global__ void __intersection__is()
 {
     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();  
-    int numNode = hg->numNode ;        // equivalent of CSGPrim 
+    int numNode = hg->numNode ;        // equivalent to CSGPrim, as same info : specify complete binary tree sequence of CSGNode 
     int nodeOffset = hg->nodeOffset ; 
 
-    const CSGNode* node = params.node + nodeOffset ;  
+    const CSGNode* node = params.node + nodeOffset ;  // root of tree
     const float4* plan = params.plan ;  
     const qat4*   itra = params.itra ;  
 

@@ -236,12 +236,40 @@ struct CSG
         return  (type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
     }
 
+    static bool IsUnion(OpticksCSG_t type)
+    {
+        return  type == CSG_UNION  ; 
+    }
+
+    static bool IsIntersection(OpticksCSG_t type)
+    {
+        return  type == CSG_INTERSECTION  ; 
+    }
+
+    static bool IsDifference(OpticksCSG_t type)
+    {
+        return  type == CSG_DIFFERENCE  ; 
+    }
+
     static bool IsZero(OpticksCSG_t type)
     {
         return  type == CSG_ZERO ; 
     }
 
+    static unsigned UnionMask()
+    {
+        return 1 << CSG_UNION ; 
+    }
 
+    static unsigned IntersectionMask()
+    {
+        return 1 << CSG_INTERSECTION ; 
+    }
+
+    static unsigned DifferenceMask()
+    {
+        return 1 << CSG_DIFFERENCE ; 
+    }
 
 
     static bool HasPlanes(OpticksCSG_t type)

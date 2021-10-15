@@ -160,6 +160,8 @@ struct CSGNode
     NODE_METHOD unsigned typecode()  const {      return q3.u.z ; }  //  OptickCSG_t enum 
     NODE_METHOD void setTypecode(unsigned tc){           q3.u.z = tc ; }
 
+    NODE_METHOD unsigned typemask()  const {      return 1 << q3.u.z ; } //  mask integer suitable for bitwise-oring  
+
     NODE_METHOD void zeroTransformComplement(){         q3.u.w = 0 ; }  
     NODE_METHOD void setTransform(  unsigned idx ){     q3.u.w |= (idx & 0x7fffffff) ; }
     NODE_METHOD void setComplement( bool complement ){  q3.u.w |= ( (int(complement) << 31) & 0x80000000) ; }
@@ -184,9 +186,18 @@ struct CSGNode
     static std::string Desc(const float* fval, int numval=6, int wid=7, int prec=1 ); 
     std::string desc() const ; 
     static void Dump(const CSGNode* n, unsigned ni, const char* label);  
+
     bool is_operator() const ; 
+    bool is_intersection() const ; 
+    bool is_union() const ; 
+    bool is_difference() const ; 
     bool is_leaf() const ; 
+    bool is_complemented_leaf() const ; 
     bool is_zero() const ; 
+
+    static unsigned AncestorTypeMask( const CSGNode* root, unsigned partIdxRel, bool dump  ); 
+    static bool     IsOnlyUnionMask( unsigned atm ); 
+    static bool     IsOnlyIntersectionMask( unsigned atm ); 
 
     static void Copy(CSGNode& b, const CSGNode& a)
     {
