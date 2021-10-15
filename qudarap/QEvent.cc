@@ -71,15 +71,18 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
     qq.q0.i.w = photons_per_genstep ; 
 
     std::vector<quad6> gs ; 
+
     for(int ix=-int(nx) ; ix < int(nx)+1 ; ix++ )
     for(int iy=-int(ny) ; iy < int(ny)+1 ; iy++ )
     for(int iz=-int(nz) ; iz < int(nz)+1 ; iz++ )
     {
-        //std::cout << " ix " << ix << " iy " << iy << " iz " << iz << std::endl ; 
+        LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ; 
+
         qq.q1.f.x = ce.x + float(ix)*gridscale*ce.w ;  
         qq.q1.f.y = ce.y + float(iy)*gridscale*ce.w ;  
         qq.q1.f.z = ce.z + float(iz)*gridscale*ce.w ;   
         qq.q1.f.w = 0.f ; 
+
         gs.push_back(qq); 
     }
 

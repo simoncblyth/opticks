@@ -42,7 +42,7 @@ Otherwise inner layers can be missed.
 EOU
 }
 
-cxs=${CXS:-1}   # collect sets of config underneath CXS
+cxs=${CXS:-2}   # collect sets of config underneath CXS
 
 if [ "$cxs" == "1" ]; then
     moi=Hama
@@ -50,8 +50,9 @@ if [ "$cxs" == "1" ]; then
     gridscale=1.0
 elif [ "$cxs" == "2" ]; then
     moi=uni_acrylic3
-    cegs=16:0:9:1000
-    gridscale=0.2
+    #cegs=16:0:9:1000
+    cegs=0:0:0:1000
+    gridscale=0.05
 fi 
 
 export MOI=${MOI:-$moi}
