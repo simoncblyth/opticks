@@ -114,12 +114,20 @@ void CSGOptiX::init()
     LOG(LEVEL) << " ptxpath " << ptxpath  ; 
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
+    initPeta(); 
     initParams(); 
     initGeometry();
     initRender(); 
     initSimulate(); 
 
     LOG(LEVEL) << "]" ; 
+}
+
+
+void CSGOptiX::initPeta()
+{ 
+    unsigned* ptr = &(peta->q0.u.x) ;  
+    for(unsigned i=0 ; i < 16 ; i++ ) *(ptr + i) = 0u ; 
 }
 
 void CSGOptiX::initParams()
@@ -208,9 +216,10 @@ void CSGOptiX::setCE(const float4& v )
 {
     glm::vec4 ce(v.x, v.y, v.z, v.w); 
     setCE(ce); 
-
-
 }
+
+
+
 void CSGOptiX::setCEGS(const uint4& cegs_)
 {
     params->setCEGS(cegs_); 
@@ -219,16 +228,14 @@ void CSGOptiX::setCEGS(const uint4& cegs_)
     peta->q0.u.y = cegs_.y ; 
     peta->q0.u.z = cegs_.z ; 
     peta->q0.u.w = cegs_.w ; 
-
 }
 
 void CSGOptiX::setCE(const glm::vec4& ce )
 {
-    peta->q1.u.x = ce.x ; 
-    peta->q1.u.y = ce.y ; 
-    peta->q1.u.z = ce.z ; 
-    peta->q1.u.w = ce.w ; 
-
+    peta->q1.f.x = ce.x ; 
+    peta->q1.f.y = ce.y ; 
+    peta->q1.f.z = ce.z ; 
+    peta->q1.f.w = ce.w ; 
 
     bool aim = true ; 
     composition->setCenterExtent(ce, aim);  // model2world view setup 
@@ -400,7 +407,7 @@ int CSGOptiX::render_flightpath() // for making mp4 movies
 void CSGOptiX::saveMeta(const char* jpg_path) const
 {
     const char* json_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".json"); 
-    const char* npy_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".npy"); 
+    //const char* npy_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".npy"); 
 
     nlohmann::json& js = meta->js ;
     js["argline"] = ok->getArgLine();
@@ -421,8 +428,13 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
 
     meta->save(json_path);
     LOG(info) << json_path ; 
+}
 
-    NP::Write(npy_path, (float*)(&peta->q0.f.x), 1, 4, 4 );
-
+void CSGOptiX::savePeta(const char* fold, const char* name) const
+{
+    int create_dirs = 1 ; // 1:filepath
+    const char* path = SPath::Resolve(fold, name, create_dirs) ; 
+    LOG(info) << path ; 
+    NP::Write(path, (float*)(&peta->q0.f.x), 1, 4, 4 );
 }
 

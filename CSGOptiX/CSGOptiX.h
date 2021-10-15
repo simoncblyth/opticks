@@ -71,6 +71,7 @@ struct CSGOptiX : public SRenderer
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
 
     void init(); 
+    void initPeta();
     void initParams();
     void initGeometry();
     void initRender();
@@ -90,6 +91,7 @@ struct CSGOptiX : public SRenderer
 
     int  render_flightpath(); 
     void saveMeta(const char* jpg_path) const ;
+    void savePeta(const char* fold, const char* name) const ; 
     static std::string Annotation( double dt, const char* bot_line ); 
 
     // [ fulfil SRenderer protocol base

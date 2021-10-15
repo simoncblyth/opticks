@@ -105,7 +105,7 @@ int main(int argc, char** argv)
         cx.setCE(ce); 
         cx.setCEGS(cegs); 
 
-        cx.setNear(0.1); 
+        cx.setNear(0.1); // TODO: not getting 0.1., investigate 
     }
 
     cx.setGensteps(gs); 
@@ -130,8 +130,7 @@ int main(int argc, char** argv)
     std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
     cx.snap(outpath, bottom_line.c_str(), topline  );   
     cx.writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
-
-
+    cx.savePeta(outdir, "peta.npy"); 
 
     cudaDeviceSynchronize(); 
     return 0 ; 

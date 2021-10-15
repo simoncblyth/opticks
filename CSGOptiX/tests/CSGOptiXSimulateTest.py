@@ -162,12 +162,34 @@ def parse_isel():
     return isel 
 
 
-def photons_plot(p):
-    fig, ax = plt.subplots(figsize=[12.8, 7.2])
-    X,Y,Z = 0,1,2
-    ax.scatter( p[:,0,X], p[:,0,Z], label="xz" )
-    #ax.scatter( p[:,3,X], p[:,3,Z], label="xz" )   # when q3 is direction, should give a circle
+def photons_plot(p, gs):
+    """
+    Hmm for general origin, 1st intersect plotting need to make the 
+    connection between the gensteps and the photons. 
 
+    But in the simple case of a single genstep can jusr use peta 
+
+
+    Looks like the loss of frame photons is not there when 
+
+    """
+    bnd = p[:,2,3].view(np.int32) 
+    ids = p[:,3,3].view(np.int32) 
+
+    bnd, ubnd_counts = np.unique(bnd, return_counts=True) 
+
+    gs_numpho = gs.view(np.int32)[:,0,3] 
+    gs_centers = gs[:,1,:3] 
+    igs = 0 
+    assert len(p) == gs_numpho[igs] 
+    X,Y,Z = 0,1,2
+
+    x = p[:,0,X] - gs_centers[igs,X]
+    z = p[:,0,Z] - gs_centers[igs,Z]
+
+    fig, ax = plt.subplots(figsize=[12.8, 7.2])
+    ax.scatter( x, z, label="xz" )
+    #ax.scatter( p[:,3,X], p[:,3,Z], label="xz" )   # when q3 is direction, should give a circle
     ax.set_aspect('equal')
     ax.legend()
     fig.show()
@@ -179,7 +201,7 @@ if __name__ == '__main__':
     cf = CSGFoundry()
     cxs = CSGOptiXSimulateTest()
 
-    photons_plot(photons)
+    photons_plot(photons, genstep)
 
 if 0:
     g = genstep
