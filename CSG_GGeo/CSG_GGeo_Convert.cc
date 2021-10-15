@@ -328,16 +328,19 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         CSGNode* n = convertNode(comp, primIdx, partIdxRel); 
 
         if(root == nullptr) root = n ; 
-          
+
+        if(n->is_zero()) continue;  
+        // not skipping the placeholder zero node bbox from inclusion
+        // may unnecessarily increases the bbox in any direction to 100.0 : which will reduce performance           
+        // not always though because it requires a node tree with zeros in it. 
+
         unsigned atm = CSGNode::AncestorTypeMask(root, partIdxRel, false ); 
 
         bool oim = CSGNode::IsOnlyIntersectionMask(atm) ; 
 
         bool cle = n->is_complemented_leaf();   
 
-        bool zero = n->is_zero(); 
-
-        bool bbskip = zero || ( oim && cle ) ;  // exclude bbox of complemented leaf with only intersection ancestry 
+        bool bbskip =  oim && cle  ;  // exclude bbox of complemented leaf with only intersection ancestry 
 
         if(dump || bbskip) 
             std::cout 
@@ -357,10 +360,13 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
     const float* bb_data = bb.data(); 
 
-    if(dump)
-    {
-        std::cout << "dump.Prim.AABB " << AABB::Desc(bb_data) << std::endl ; 
-    }       
+    std::cout 
+        << "CSG_GGeo_Convert::convertPrim " 
+        << " ridx " << std::setw(2) << last_ridx
+        << " primIdx " << std::setw(3) << primIdx 
+        << " AABB " << AABB::Desc(bb_data) 
+        << std::endl
+        ; 
 
     prim->setAABB( bb_data ); 
 
