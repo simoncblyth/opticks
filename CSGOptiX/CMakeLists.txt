@@ -71,10 +71,12 @@ set(CU_SOURCES)
 list(APPEND SOURCES
     Params.cc 
     CSGOptiX.cc
+    CSGOptiXSimulate.cc
 )
 
 list(APPEND HEADERS
     CSGOptiX.h
+    CSGOptiXSimulate.h
 )
 
 if(OpticksOptiX_VERSION GREATER_EQUAL 70000)

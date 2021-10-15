@@ -41,6 +41,36 @@ class CSGFoundry(object):
             print(" %4d : %6d : %s " % (ub, ub_count, bndname[ub]))
         pass 
 
+    def parse_ISEL(self, ISEL, obndnames):
+        """
+        :param ISEL: comma delimited list of strings or integers 
+        :param obndnames: boundary names in descending frequency order
+        :return isels: list of frequency order indices 
+
+        Integers in the ISEL are interpreted as frequency order indices. 
+
+        Strings are interpreted as fragments to look for in the ordered boundary names, 
+        eg use Hama or NNVT to yield the list of frequency order indices 
+        with corresponding bounary names containing those strings. 
+        """
+        ISELS = list(filter(None,ISEL.split(",")))
+
+        isels = []
+        for i in ISELS:
+            if i.isnumeric(): 
+                isels.append(int(i))
+            else:
+                for idesc, bn in enumerate(obndnames):
+                    if i in bn:
+                        isels.append(idesc)
+                    pass
+                pass
+            pass
+        pass         
+        return isels 
+
+
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

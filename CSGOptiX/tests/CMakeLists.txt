@@ -6,7 +6,7 @@ project(${name} VERSION 0.1.0)
 set(SINGLE_SOURCES
     CSGOptiXVersion.cc
     CSGOptiXRender.cc
-    CSGOptiXSimulate.cc
+    CSGOptiXSimulateTest.cc
 )
 
 foreach(SRC ${SINGLE_SOURCES})

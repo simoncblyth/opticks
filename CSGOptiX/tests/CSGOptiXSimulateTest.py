@@ -36,9 +36,14 @@ plotting a selection of boundaries only, picked by descending frequency index
 
 ::
 
-    ipython -i CSGOptiXSimulate.py             # all boundaries
-    ISEL=0,1 ipython -i CSGOptiXSimulate.py    # just the 2 most frequent boundaries
-    ISEL=0,1,2,3,4 ipython -i CSGOptiXSimulate.py 
+    ipython -i tests/CSGOptiXSimulate.py             # all boundaries
+
+    ISEL=0,1         ipython -i tests/CSGOptiXSimulate.py    # just the 2 most frequent boundaries
+    ISEL=0,1,2,3,4   ipython -i tests/CSGOptiXSimulate.py 
+    ISEL=Hama        ipython -i tests/CSGOptiXSimulate.py 
+    ISEL=NNVT        ipython -i tests/CSGOptiXSimulate.py 
+    ISEL=Pyrex       ipython -i tests/CSGOptiXSimulate.py 
+    ISEL=Pyrex,Water ipython -i tests/CSGOptiXSimulate.py 
 
 
 
@@ -156,14 +161,20 @@ def make_colors():
     return colors
 
 
+def parse_isel():
+    isel = list(map(int, list(filter(None,os.environ.get("ISEL", "").split(","))) ))
+    return isel 
+
 
 if __name__ == '__main__':
 
     cf = CSGFoundry()
     cxs = CSGOptiXSimulate()
 
+
+    g = genstep
     f = fphoton
-    print(f)
+    #print(f)
 
     b = f.view(np.uint32)[:,:,2,3]    # boundary   
     i = f.view(np.uint32)[:,:,3,3]    # identity  
@@ -180,7 +191,14 @@ if __name__ == '__main__':
 
 
     ubs, ubs_counts = np.unique(pick_b, return_counts=True)   
+    ubs_bndname = [cf.bndname[ub] for ub in ubs]
     ubs_descending = np.argsort(ubs_counts)[::-1]
+    ubs_obndname = [ubs_bndname[upos] for upos in ubs_descending]
+
+
+    isel = cf.parse_ISEL(os.environ.get("ISEL",""), ubs_obndname) 
+    print( "isel: %s " % str(isel))
+
 
 
     # hmm b=0 is meaningful, but is swamped by no-hits : need to make it 1-based 
@@ -191,7 +209,6 @@ if __name__ == '__main__':
     print("ubs_counts",ubs_counts)
 
     fpos = f[b>0][:,0,:3]
-
     
     size = np.array( [1024, 768] )*2
     eye =  (94006.38845416412, 86640.65749713287, 95402.39480182037)
@@ -214,7 +231,7 @@ if __name__ == '__main__':
     #pl.set_scale( scale )
 
     # genstep grid
-    #pl.add_points( g[:,1,:3] , color="white" )
+    pl.add_points( g[:,1,:3] , color="white" )
 
 
     #pl.camera.position = (0, -17000, 0.0)
@@ -223,18 +240,18 @@ if __name__ == '__main__':
 
     colors = make_colors()
 
-    # set this to something other than -1 to only plot that line item 
-    isel = list(map(int, list(filter(None,os.environ.get("ISEL", "").split(","))) ))
-
-    print( "isel: %s " % str(isel))
-
-    for idesc,upos in enumerate(ubs_descending): # iterate over boundaries in descending frequency order
+    # iterate over boundaries in descending frequency order
+    for idesc,upos in enumerate(ubs_descending): 
         if len(isel) > 0 and not idesc in isel: continue 
 
         ub = ubs[upos]
         ub_count = ubs_counts[upos] 
-        bname = cf.bndname[ub]
-        
+        bname0 = cf.bndname[ub]
+        bname = ubs_bndname[upos]
+        assert bname0 == bname 
+        bname1 = ubs_obndname[idesc]
+        assert bname0 == bname1 
+
         color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
         #if bname != "Water///Acrylic": continue
 
