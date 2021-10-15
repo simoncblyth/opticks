@@ -80,6 +80,7 @@ struct CSGOptiX : public SRenderer
     void setCEGS(const uint4& cegs_); 
     void setCE(const float4& ce); 
     void setCE(const glm::vec4& ce); 
+    void setNear(float near); 
 
     void prepareRenderParam(); 
     void prepareSimulateParam(); 

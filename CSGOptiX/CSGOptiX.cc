@@ -228,6 +228,13 @@ void CSGOptiX::setCE(const glm::vec4& ce )
     composition->setNear(tmin); 
 }
 
+void CSGOptiX::setNear(float near)
+{
+    composition->setNear(near); 
+}
+
+
+
 void CSGOptiX::prepareRenderParam()
 {
     float extent = composition->getExtent(); 

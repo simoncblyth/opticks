@@ -104,6 +104,8 @@ int main(int argc, char** argv)
         gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale ); 
         cx.setCE(ce); 
         cx.setCEGS(cegs); 
+
+        cx.setNear(0.1); 
     }
 
     cx.setGensteps(gs); 
@@ -117,7 +119,6 @@ int main(int argc, char** argv)
 
     evt->savePhoton( outdir, "photons.npy");   // this one can get very big 
     evt->saveGenstep(outdir, "genstep.npy");  
-    cx.writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
 
 
     const char* namestem = "CSGOptiXSimulateTest" ; 
@@ -128,6 +129,8 @@ int main(int argc, char** argv)
 
     std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
     cx.snap(outpath, bottom_line.c_str(), topline  );   
+    cx.writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
+
 
 
     cudaDeviceSynchronize(); 
