@@ -335,13 +335,15 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
         bool cle = n->is_complemented_leaf();   
 
-        bool bbskip = oim && cle ;  // exclude bbox of complemented leaf with only intersection ancestry 
+        bool zero = n->is_zero(); 
+
+        bool bbskip = zero || ( oim && cle ) ;  // exclude bbox of complemented leaf with only intersection ancestry 
 
         if(dump || bbskip) 
             std::cout 
                 << std::setw(3) << partIdxRel 
                 << " " << n->desc() 
-                << " atm " << atm 
+                << " atm " << std::setw(5) << atm 
                 << " IsOnlyIntersectionMask " << oim 
                 << " is_complemented_leaf " << cle
                 << " bbskip " << bbskip 

@@ -191,6 +191,93 @@ Remember to +1 when associating nodes with the above complete binary tree::
 
 
 
+Now try excluding bbox from complemented leaf nodes with only intersect in ancestry::
+
+
+    2021-10-15 12:40:25.893 ERROR [3318882] [CSG_GGeo_Convert::convertAllSolid@112] proceeding with convert for repeatIdx 8
+    2021-10-15 12:40:25.893 INFO  [3318882] [*CSG_GGeo_Convert::convertSolid@210]  repeatIdx 8 nmm 10 numPrim(GParts.getNumPrim) 1 rlabel r8 num_inst 590 dump_ridx 8 dump 1
+    CSG_GGeo_Convert::convertPrim primIdx 0 numPrim 1 numParts 31 meshIdx 96 last_ridx 8 dump 1
+      0 CSGNode     0  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 0 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+      1 CSGNode     1  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      2 CSGNode     2  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      3 CSGNode     3  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      4 CSGNode     4  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      5 CSGNode     5  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      6 CSGNode     6  un aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      7 CSGNode     7  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      8 CSGNode     8  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      9 CSGNode     9  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+     10 CSGNode    10  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+     11 CSGNode    11 !cy aabb:   102.0  -130.0  -140.0   130.0  -102.0   -35.0  trIdx:  8063 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     12 CSGNode    12  un aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+     13 CSGNode    13 !cy aabb:  -208.0  -208.0   -35.2   208.0   208.0    -4.8  trIdx:  8064 atm 6 IsOnlyIntersectionMask 0 is_complemented_leaf 1 bbskip 0
+     14 CSGNode    14  cy aabb:  -120.0  -120.0   -35.4   120.0   120.0    -4.6  trIdx:  8065 atm 6 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     15 CSGNode    15 !sp aabb: -17820.0 -17820.0     0.0 17820.0 17820.0 35640.0  trIdx:  8066 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     16 CSGNode    16 !cy aabb:   150.0   -14.0  -140.0   178.0    14.0   -35.0  trIdx:  8067 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     17 CSGNode    17 !cy aabb:   102.0   102.0  -140.0   130.0   130.0   -35.0  trIdx:  8068 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     18 CSGNode    18 !cy aabb:   -14.0   150.0  -140.0    14.0   178.0   -35.0  trIdx:  8069 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     19 CSGNode    19 !cy aabb:  -130.0   102.0  -140.0  -102.0   130.0   -35.0  trIdx:  8070 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     20 CSGNode    20 !cy aabb:  -178.0   -14.0  -140.0  -150.0    14.0   -35.0  trIdx:  8071 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     21 CSGNode    21 !cy aabb:  -130.0  -130.0  -140.0  -102.0  -102.0   -35.0  trIdx:  8072 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     22 CSGNode    22 !cy aabb:   -14.0  -178.0  -140.0    14.0  -150.0   -35.0  trIdx:  8073 atm 4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     23 CSGNode    23  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm 4100 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     24 CSGNode    24  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm 4100 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     25 CSGNode    25  co aabb:  -450.0  -450.0  -140.0   450.0   450.0     1.0  trIdx:  8074 atm 6 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     26 CSGNode    26  cy aabb:  -450.0  -450.0     0.0   450.0   450.0     5.7  trIdx:  8075 atm 6 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     27 CSGNode    27  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm 4102 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     28 CSGNode    28  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm 4102 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     29 CSGNode    29  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm 4102 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     30 CSGNode    30  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm 4102 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+    dump.Prim.AABB    -450.00    -450.00    -140.00     450.00     450.00     **100.00**   
+    2021-10-15 12:40:25.894 INFO  [3318882] [CSG_GGeo_Convert::addInstances@164]  reapeatIdx 8 iid 590,1,4
+
+
+Page 40 of below presentation has a 2d figure illustrating cross section of geometry.
+
+* http://localhost/env/presentation/juno_opticks_20210712.html
+* https://simoncblyth.bitbucket.io/env/presentation/juno_opticks_20210712.html
+
+Notice that bbmax.z of 100.0 is wrong, seems the placeholder bbox from ze are not being excluded. 
+
+
+After excluding those placeholders, get the expected bbox::
+
+    2021-10-15 12:54:30.676 INFO  [3333474] [*CSG_GGeo_Convert::convertSolid@210]  repeatIdx 8 nmm 10 numPrim(GParts.getNumPrim) 1 rlabel r8 num_inst 590 dump_ridx 8 dump 1
+    CSG_GGeo_Convert::convertPrim primIdx 0 numPrim 1 numParts 31 meshIdx 96 last_ridx 8 dump 1
+      0 CSGNode     0  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     0 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+      1 CSGNode     1  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      2 CSGNode     2  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      3 CSGNode     3  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      4 CSGNode     4  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      5 CSGNode     5  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      6 CSGNode     6  un aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      7 CSGNode     7  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      8 CSGNode     8  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      9 CSGNode     9  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+     10 CSGNode    10  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+     11 CSGNode    11 !cy aabb:   102.0  -130.0  -140.0   130.0  -102.0   -35.0  trIdx:  8063 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     12 CSGNode    12  un aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+     13 CSGNode    13 !cy aabb:  -208.0  -208.0   -35.2   208.0   208.0    -4.8  trIdx:  8064 atm     6 IsOnlyIntersectionMask 0 is_complemented_leaf 1 bbskip 0
+     14 CSGNode    14  cy aabb:  -120.0  -120.0   -35.4   120.0   120.0    -4.6  trIdx:  8065 atm     6 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     15 CSGNode    15 !sp aabb: -17820.0 -17820.0     0.0 17820.0 17820.0 35640.0  trIdx:  8066 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     16 CSGNode    16 !cy aabb:   150.0   -14.0  -140.0   178.0    14.0   -35.0  trIdx:  8067 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     17 CSGNode    17 !cy aabb:   102.0   102.0  -140.0   130.0   130.0   -35.0  trIdx:  8068 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     18 CSGNode    18 !cy aabb:   -14.0   150.0  -140.0    14.0   178.0   -35.0  trIdx:  8069 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     19 CSGNode    19 !cy aabb:  -130.0   102.0  -140.0  -102.0   130.0   -35.0  trIdx:  8070 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     20 CSGNode    20 !cy aabb:  -178.0   -14.0  -140.0  -150.0    14.0   -35.0  trIdx:  8071 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     21 CSGNode    21 !cy aabb:  -130.0  -130.0  -140.0  -102.0  -102.0   -35.0  trIdx:  8072 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     22 CSGNode    22 !cy aabb:   -14.0  -178.0  -140.0    14.0  -150.0   -35.0  trIdx:  8073 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     23 CSGNode    23  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm  4100 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 1
+     24 CSGNode    24  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm  4100 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 1
+     25 CSGNode    25  co aabb:  -450.0  -450.0  -140.0   450.0   450.0     1.0  trIdx:  8074 atm     6 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     26 CSGNode    26  cy aabb:  -450.0  -450.0     0.0   450.0   450.0     5.7  trIdx:  8075 atm     6 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     27 CSGNode    27  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm  4102 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 1
+     28 CSGNode    28  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm  4102 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 1
+     29 CSGNode    29  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm  4102 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 1
+     30 CSGNode    30  ze aabb:  -100.0  -100.0  -100.0   100.0   100.0   100.0  trIdx:     0 atm  4102 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 1
+    dump.Prim.AABB    -450.00    -450.00    -140.00     450.00     450.00       5.70 
+    2021-10-15 12:54:30.677 INFO  [3333474] [CSG_GGeo_Convert::addInstances@164]  reapeatIdx 8 iid 590,1,4
+    2021-10-15 12:54:30.677 INFO  [3333474] [*CSG_GGeo_Convert::convertSolid@247]  solid.bb  [ (-450.000,-450.000,-140.000)  : (450.000,450.000, 5.700)  | (900.000,900.000,145.700)  ] 
 
 
 
