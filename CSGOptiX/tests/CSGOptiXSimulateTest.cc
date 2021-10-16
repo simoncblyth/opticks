@@ -61,7 +61,6 @@ int main(int argc, char** argv)
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
     float gridscale = SSys::getenvfloat("GRIDSCALE", 1.0 ); 
 
-
     LOG(info) << " cxs " << cxs << " outdir " << outdir << " gridscale " << gridscale ; 
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
@@ -105,7 +104,7 @@ int main(int argc, char** argv)
         cx.setCE(ce); 
         cx.setCEGS(cegs); 
 
-        cx.setNear(0.1); // TODO: not getting 0.1., investigate 
+        //cx.setNear(0.1); // TODO: not getting 0.1., investigate 
     }
 
     cx.setGensteps(gs); 
@@ -113,13 +112,11 @@ int main(int argc, char** argv)
     double dt = cx.simulate();  
     LOG(info) << " dt " << dt ;
 
-    QSim<float>* sim = cx.sim ; 
+    //QSim<float>* sim = cx.sim ;
+ 
     QEvent* evt = cx.evt ; 
-
-
     evt->savePhoton( outdir, "photons.npy");   // this one can get very big 
     evt->saveGenstep(outdir, "genstep.npy");  
-
 
     const char* namestem = "CSGOptiXSimulateTest" ; 
     const char* ext = ".jpg" ; 
@@ -131,6 +128,8 @@ int main(int argc, char** argv)
     cx.snap(outpath, bottom_line.c_str(), topline  );   
     cx.writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
     cx.savePeta(outdir, "peta.npy"); 
+
+
 
     cudaDeviceSynchronize(); 
     return 0 ; 
