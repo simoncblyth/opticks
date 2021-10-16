@@ -50,8 +50,8 @@ if [ "$cxs" == "1" ]; then
     gridscale=1.0
 elif [ "$cxs" == "2" ]; then
     moi=uni_acrylic3
-    #cegs=16:0:9:1000
-    cegs=0:0:0:1000
+    cegs=16:0:9:1000
+    #cegs=0:0:0:1000
     gridscale=0.05
 fi 
 
@@ -59,6 +59,7 @@ export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS=${CXS:-$cxs}
+export TOPLINE="CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE"
 
 if [ "$1" == "py" ]; then 
     ipython -i tests/CSGOptiXSimulateTest.py 

@@ -18,7 +18,7 @@
 
 template struct QBuf<quad6> ; 
 
-const plog::Severity QEvent::LEVEL = PLOG::EnvLevel("QEvent", "INFO"); 
+const plog::Severity QEvent::LEVEL = PLOG::EnvLevel("QEvent", "DEBUG"); 
 const QEvent* QEvent::INSTANCE = nullptr ; 
 const QEvent* QEvent::Get(){ return INSTANCE ; }
 

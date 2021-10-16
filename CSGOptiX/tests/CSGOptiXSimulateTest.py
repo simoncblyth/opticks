@@ -16,6 +16,17 @@ the fphoton.npy intersects
   and geometries are changed frequently 
 
 
+FramePhotons vs Photons
+---------------------------
+
+Using frame photons is a trick to effectively see results 
+from many more photons that have to pay the costs for tranfers etc.. 
+
+Frame photons lodge photons onto a frame of pixels limiting 
+the maximumm number of photons to handle. 
+
+
+
 pyvista interaction
 ----------------------
 
@@ -177,6 +188,13 @@ def fromself( l, s, kk ):
     pass
 
 
+def shorten_bname(bname):
+    elem = bname.split("/")
+    assert len(elem) == 4
+    omat,osur,isur,imat = elem
+    return "/".join([omat,osur[:3],isur[:3],imat])
+
+
 class PH(object):
     """
     Photon wrapper for re-usable photon data handling 
@@ -186,6 +204,13 @@ class PH(object):
         self.p = p 
         self.gs = gs
         self.cf = cf
+        self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
+
+        outdir = os.path.join(CSGOptiXSimulateTest.FOLD, "figs")
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir)
+        pass
+        self.outdir = outdir
 
         if p.ndim == 3:
             bnd,ids = self.Photons(p) 
@@ -195,8 +220,8 @@ class PH(object):
         self.boundaries(bnd)
         self.identities(ids)
 
-        colors = make_colors()
-        self.colors = colors
+        self.colors = make_colors()
+        self.size = np.array([1280, 720])
         self.gensteps(gs)
 
     @classmethod
@@ -240,10 +265,8 @@ class PH(object):
 
         copyref( locals(), globals(), self, "i_" ) 
 
-    def positions_plt(self, igs=0, centered=False):
+    def positions_plt(self, sz=1.0):
         """
-        For simplicity this plotting currently handles a single genstep only
-        TODO: expand to multiple genstep perhaps using igs slice(None)
         """
         p = self.p
         gs_centers = self.gs_centers
@@ -254,38 +277,47 @@ class PH(object):
         isel = self.isel
         colors = self.colors
 
-        X,Y,Z = 0,1,2
 
-        fig, ax = plt.subplots(figsize=[12.8, 7.2])
+        X,Y,Z = 0,1,2
+        igs = slice(None) if len(gs_centers) > 1 else 0
+        xlim = np.array([gs_centers[:,X].min(), gs_centers[:,X].max()])
+        ylim = np.array([gs_centers[:,Z].min(), gs_centers[:,Z].max()])  
+        title = [self.topline,]
+
+        fig, ax = plt.subplots(figsize=self.size/100.)  # mpl uses dpi 100
+        fig.suptitle("\n".join(title))
 
         print("positions_plt")
         for idesc,upos in enumerate(ubnd_descending): 
             if len(isel) > 0 and not idesc in isel: continue 
             bname = ubnd_onames[idesc] 
+            label = shorten_bname(bname)
             ub = ubnd[upos]
             ub_count = ubnd_counts[upos] 
             color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
-            print( " %2d : %4d : %6d : %20s : %40s " % (idesc, ub, ub_count, color, bname ))            
+            print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
             if ub==0: continue # for frame photons, empty pixels give zero 
 
             pos = p[bnd==ub][:,0]
-            if centered:
-                pos -= gs_centers[igs]
-            pass
-            ax.scatter( pos[:,X], pos[:,Z], label="xz %d:%s " % (ub, bname), color=color )
+            ax.scatter( pos[:,X], pos[:,Z], label=label, color=color, s=sz )
         pass
 
-        if not centered:
-            ax.scatter( gs_centers[igs, X], gs_centers[igs,Z], label="gs_center XZ" )
-        pass
+        ax.scatter( gs_centers[igs, X], gs_centers[igs,Z], label="gs_center XZ", s=sz )
+
+        ax.set_xlim( xlim )
+        ax.set_ylim( ylim )
 
         ax.set_aspect('equal')
-        ax.legend()
+        ax.legend(loc="upper right", markerscale=4)
         fig.show()
+        outpath = os.path.join(self.outdir,"positions_plt.png") 
+        print(outpath)
+        fig.savefig(outpath)
 
     def positions_pvplt(self):
         """
-        * always starts really zoomed in, requiring two-finger upping to see the intersects
+        * previously always starts really zoomed in, requiring two-finger upping to see the intersects
+        * following hint from https://github.com/pyvista/pyvista/issues/863 now set an adhoc zoom factor
         """
         p = self.p
         colors = self.colors
@@ -296,21 +328,24 @@ class PH(object):
         ubnd_onames = self.ubnd_onames
         gs_centers = self.gs_centers
         isel = self.isel
+        size = self.size
 
-        size = np.array( [1024, 768] )*2
+        zoom = 4./1000.   # why this adhoc value  ?  does it depend on yoffset ?
+        yoffset = -1000.    
 
-        pl = pv.Plotter(window_size=size )
+        pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
         pl.view_xz() 
         pl.camera.ParallelProjectionOn()  
+        pl.camera.Zoom(zoom)
 
         look = peta[0,1,:3]  
-        eye = look + np.array([ 0, -100, 0 ])  
+        eye = look + np.array([ 0, yoffset, 0 ])  
         up = (0,0,1)
 
+        pl.add_text(self.topline)
         pl.set_position( eye, reset=False )
         pl.set_focus(    look )
         pl.set_viewup(   up )
-
         pl.add_points( gs_centers[:,:3], color="white" )           # genstep grid
 
         print("positions_pvplt")
@@ -320,16 +355,18 @@ class PH(object):
             ub = ubnd[upos]
             ub_count = ubnd_counts[upos] 
             bname = ubnd_onames[idesc]
+            label = shorten_bname(bname)
             color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
 
-            print( " %2d : %4d : %6d : %20s : %40s " % (idesc, ub, ub_count, color, bname ))            
+            print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
             if ub==0: continue # for frame photons, empty pixels give zero 
 
             pos = p[bnd==ub][:,0,:3]
             pl.add_points( pos, color=color )
         pass
-        #pl.show_grid()
-        cp = pl.show()
+        outpath = os.path.join(self.outdir,"positions_pvplt.png") 
+        print(outpath)
+        cp = pl.show(screenshot=outpath)
         return cp
 
 
