@@ -54,6 +54,7 @@ struct quad6
     quad q5 ;
 
     SUTIL_INLINE SUTIL_HOSTDEVICE void zero();
+
 };
 
 void quad6::zero() 
@@ -65,6 +66,8 @@ void quad6::zero()
     q4.u.x = 0 ; q4.u.y = 0 ; q4.u.z = 0 ; q4.u.w = 0 ; 
     q5.u.x = 0 ; q5.u.y = 0 ; q5.u.z = 0 ; q5.u.w = 0 ; 
 } 
+
+
 
 
 

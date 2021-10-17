@@ -114,6 +114,14 @@ struct qat4
         q3.f.x = gs.q5.f.x ;  q3.f.y = gs.q5.f.y ;   q3.f.z = gs.q5.f.z ;  q3.f.w = gs.q5.f.w ;   
     } 
 
+    QAT4_METHOD void write( quad6& gs )
+    {
+         gs.q2.f.x = q0.f.x ; gs.q2.f.y = q0.f.y ; gs.q2.f.z = q0.f.z ; gs.q2.f.w = q0.f.w ; 
+         gs.q3.f.x = q1.f.x ; gs.q3.f.y = q1.f.y ; gs.q3.f.z = q1.f.z ; gs.q3.f.w = q1.f.w ; 
+         gs.q4.f.x = q2.f.x ; gs.q4.f.y = q2.f.y ; gs.q4.f.z = q2.f.z ; gs.q4.f.w = q2.f.w ; 
+         gs.q5.f.x = q3.f.x ; gs.q5.f.y = q3.f.y ; gs.q5.f.z = q3.f.z ; gs.q5.f.w = q3.f.w ; 
+    } 
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else

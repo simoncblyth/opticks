@@ -67,16 +67,13 @@ into global frame equivalents.
 
 NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const qat4* qt_ptr) // static
 {
-    qat4 qt ;  // defaults to identity transform 
+    qat4 qt ;  // input transform : defaults to identity
     if(qt_ptr) qat4::copy(qt, *qt_ptr) ; 
+
+    qat4 qc ;  // transform to be varied, starting from input  
 
     quad6 gs ; 
     gs.zero(); 
-
-    qat4 qc ;  // separate transform to be varied    
-    const float* qc_ptr = qc.cdata() ; 
-    float*       gs_ptr = (float*)&gs.q2.f ; 
-
 
     unsigned nx = cegs.x ; 
     unsigned ny = cegs.y ; 
@@ -84,9 +81,16 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
     unsigned photons_per_genstep = cegs.w ; 
 
     gs.q0.i.x = OpticksGenstep_TORCH ;  
+    gs.q0.i.y = 0 ; // could plant enum for XZ planar etc.. here 
+    gs.q0.i.z = 0 ; // 
     gs.q0.i.w = photons_per_genstep ; 
 
-    // reuse gs and c, changing content and copying into genesteps for each position
+    gs.q1.f.x = 0.f ;  // local frame position : currently origin, same for all gensteps : only the transform is changed   
+    gs.q1.f.y = 0.f ;  
+    gs.q1.f.z = 0.f ;   
+    gs.q1.f.w = 1.f ; 
+
+    // reuse gs and qc, changing content and copying into gensteps for each position
 
     std::vector<quad6> gensteps ; 
 
@@ -100,26 +104,14 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
         float ty = float(iy)*gridscale*ce.w ; 
         float tz = float(iz)*gridscale*ce.w ; 
 
-        gs.q1.f.x = ce.x + tx ;  
-        gs.q1.f.y = ce.y + ty ;  
-        gs.q1.f.z = ce.z + tz ;   
-        gs.q1.f.w = 0.f ; 
-
-
-        qat4::copy(qc, qt);              // start with fresh copy of qt 
-        qc.add_translate(tx, ty, tz );   // change qc translation with grid offsets 
-        for(unsigned i=0 ; i < 16 ; i++ ) gs_ptr[i] = qc_ptr[i] ;  // copy qc into gs 
+        qat4::copy(qc, qt);              // fresh copy of qt into qc
+        qc.add_translate(tx, ty, tz );   // change qc translation with grid offsets, hmm is this generally correct? 
+        qc.write(gs);                    // copy qc into gs.q2,q3,q4,q5
 
         gensteps.push_back(gs); 
     }
 
-    std::cout 
-       << " nx " << nx 
-       << " ny " << ny 
-       << " nz " << nz 
-       << " gs " << gensteps.size()
-       << std::endl 
-       ;
+    LOG(LEVEL) << " nx " << nx << " ny " << ny << " nz " << nz << " gs " << gensteps.size() ; 
 
     return MakeGensteps(gensteps); 
 }
