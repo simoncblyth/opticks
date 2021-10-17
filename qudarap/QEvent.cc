@@ -64,6 +64,14 @@ Which needs to use the gensteps data in order to transform the axis
 aligned local frame grid of positions and directions 
 into global frame equivalents. 
 
+
+Instance transforms are best regarded as first doing rotate 
+about a local origin and then translate into global position.
+When wish to create multiple transforms with small local frame offsets 
+to create a grid or plane between them need to first pre-multiply by the 
+small local translation followed by the rotation and large global translation 
+into position. 
+
 **/
 
 NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const qat4* qt_ptr) // static
@@ -94,8 +102,6 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
 
     // reuse gs and qc, changing content and copying into gensteps for each position
 
-
-
     std::vector<quad6> gensteps ; 
 
     for(int ix=-int(nx) ; ix < int(nx)+1 ; ix++ )
@@ -107,15 +113,14 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
         double tx = double(ix)*gridscale*ce.w ; 
         double ty = double(iy)*gridscale*ce.w ; 
         double tz = double(iz)*gridscale*ce.w ; 
+        const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz );  
 
-        const Tran<double>* translate = Tran<double>::make_translate( tx, ty, tz );  
-        bool reverse = false ; 
-        const Tran<double>* transform = Tran<double>::product( translate, instance_transform, reverse ); 
+        //bool reverse = true ;  //   true: individual tilts out of the plane : local XZ going into lots of planes : as does local_translate last 
+        bool reverse = false ;   //  false: all tilted the same so local XZ stay in one plane : as does the local_translate first 
+
+        const Tran<double>* transform = Tran<double>::product( instance_transform, local_translate, reverse ); 
 
         qat4* qc = Tran<double>::ConvertFrom( transform->t ) ; 
-        
-        //qat4::copy(qc, qt);              // fresh copy of qt into qc
-        //qc.add_translate(tx, ty, tz );   // change qc translation with grid offsets, probably not correct when have rotation  
 
         qc->write(gs);                    // copy qc into gs.q2,q3,q4,q5
 

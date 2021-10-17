@@ -168,6 +168,11 @@ Use *reverse=true* when the transforms are in reverse heirarchical order, ie whe
 they have been collected by starting from the leaf node and then following parent 
 links back up to the root node. 
 
+When combining s:scale r:rotation and t:translate the typical ordering is s-r-t 
+because wish to scale and orient about a nearby (local frame) origin before 
+translating into position.  
+
+
 **/
 template<typename T>
 inline const Tran<T>* Tran<T>::product(const std::vector<const Tran<T>*>& tt, bool reverse )
