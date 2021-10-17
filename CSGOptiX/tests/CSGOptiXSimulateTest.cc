@@ -21,12 +21,15 @@ is to be able to see the exact same geometry that the simulation is using.
 #include <algorithm>
 #include <iterator>
 
+#include "scuda.h"
+#include "sqat4.h"
+
 #include "SSys.hh"
 #include "SPath.hh"
+
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
 
-#include "scuda.h"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
 #include "CSGOptiXSimulate.h"
@@ -92,14 +95,18 @@ int main(int argc, char** argv)
         int midx, mord, iidx ; 
         fd->parseMOI(midx, mord, iidx, moi );  
         LOG(info) << " moi " << moi << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
-        int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
+
+        qat4 qt ; qt.zero(); 
+        int rc = fd->getCenterExtent(ce, midx, mord, iidx, &qt ) ;
         LOG(info) << " rc " << rc << " MOI.ce (" 
               << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;           
+
+        LOG(info) << std::endl << "qt" << qt ; 
 
         uint4 cegs ; 
         CSGOptiXSimulate::ParseCEGS(cegs, ce ); 
 
-        gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale ); 
+        gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, &qt ); 
         cx.setCE(ce); 
         cx.setCEGS(cegs); 
 

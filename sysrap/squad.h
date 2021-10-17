@@ -71,6 +71,19 @@ void quad6::zero()
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 
+
+inline std::ostream& operator<<(std::ostream& os, const quad4& v)  
+{
+    os  
+       << v.q0.f  
+       << v.q1.f  
+       << v.q2.f  
+       << v.q3.f
+       ;   
+    return os; 
+}
+
+
 inline std::ostream& operator<<(std::ostream& os, const quad6& v)  
 {
     os  

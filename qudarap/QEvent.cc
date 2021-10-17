@@ -37,6 +37,7 @@ NP* QEvent::MakeGensteps(const std::vector<quad6>& gs ) // static
 QEvent::MakeCenterExtentGensteps
 ----------------------------------
 
+
 Creates grid of gensteps centered at ce.xyz with the grid specified 
 by integer ranges that are used to scale the extent parameter to yield
 offsets from the center. 
@@ -56,79 +57,38 @@ gridscale
    To expand the area when using a finer grid increase the nx:ny:nz, however
    that will lead to a slower render. 
 
-**/
-
-
-NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale ) // static
-{
-    quad6 qq ; 
-    qq.zero(); 
-
-    unsigned nx = cegs.x ; 
-    unsigned ny = cegs.y ; 
-    unsigned nz = cegs.z ; 
-    unsigned photons_per_genstep = cegs.w ; 
-
-    qq.q0.i.x = OpticksGenstep_TORCH ;  
-    qq.q0.i.w = photons_per_genstep ; 
-
-    std::vector<quad6> gs ; 
-
-    for(int ix=-int(nx) ; ix < int(nx)+1 ; ix++ )
-    for(int iy=-int(ny) ; iy < int(ny)+1 ; iy++ )
-    for(int iz=-int(nz) ; iz < int(nz)+1 ; iz++ )
-    {
-        LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ; 
-
-        qq.q1.f.x = ce.x + float(ix)*gridscale*ce.w ;  
-        qq.q1.f.y = ce.y + float(iy)*gridscale*ce.w ;  
-        qq.q1.f.z = ce.z + float(iz)*gridscale*ce.w ;   
-        qq.q1.f.w = 0.f ; 
-
-        gs.push_back(qq); 
-    }
-
-    std::cout 
-       << " nx " << nx 
-       << " ny " << ny 
-       << " nz " << nz 
-       << " gs " << gs.size()
-       << std::endl 
-       ;
-
-    return MakeGensteps(gs); 
-}
-
-
-/**
 
 The gensteps are consumed by qsim::generate_photon_torch
-
 Which needs to use the gensteps data in order to transform the axis 
 aligned local frame grid of positions and directions 
 into global frame equivalents. 
 
 **/
 
-NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const qat4& q) // static
+NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const qat4* qt_ptr) // static
 {
-    quad6 qq ; 
-    qq.zero(); 
+    qat4 qt ;  // defaults to identity transform 
+    if(qt_ptr) qat4::copy(qt, *qt_ptr) ; 
+
+    quad6 gs ; 
+    gs.zero(); 
+
+    qat4 qc ;  // separate transform to be varied    
+    const float* qc_ptr = qc.cdata() ; 
+    float*       gs_ptr = (float*)&gs.q2.f ; 
+
 
     unsigned nx = cegs.x ; 
     unsigned ny = cegs.y ; 
     unsigned nz = cegs.z ; 
     unsigned photons_per_genstep = cegs.w ; 
 
-    qq.q0.i.x = OpticksGenstep_TORCH ;  
-    qq.q0.i.w = photons_per_genstep ; 
+    gs.q0.i.x = OpticksGenstep_TORCH ;  
+    gs.q0.i.w = photons_per_genstep ; 
 
-    const float* src = q.cdata() ;  // copy transform into end 4 quads
-    float* dst = (float*)&qq.q2.f ; 
-    for(unsigned i=0 ; i < 16 ; i++ ) dst[i] = src[i] ;  
+    // reuse gs and c, changing content and copying into genesteps for each position
 
-
-    std::vector<quad6> gs ; 
+    std::vector<quad6> gensteps ; 
 
     for(int ix=-int(nx) ; ix < int(nx)+1 ; ix++ )
     for(int iy=-int(ny) ; iy < int(ny)+1 ; iy++ )
@@ -139,24 +99,29 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
         float tx = float(ix)*gridscale*ce.w ; 
         float ty = float(iy)*gridscale*ce.w ; 
         float tz = float(iz)*gridscale*ce.w ; 
-        
-        qq.q1.f.x = ce.x + tx ;  
-        qq.q1.f.y = ce.y + ty ;  
-        qq.q1.f.z = ce.z + tz ;   
-        qq.q1.f.w = 0.f ; 
 
-        gs.push_back(qq); 
+        gs.q1.f.x = ce.x + tx ;  
+        gs.q1.f.y = ce.y + ty ;  
+        gs.q1.f.z = ce.z + tz ;   
+        gs.q1.f.w = 0.f ; 
+
+
+        qat4::copy(qc, qt);              // start with fresh copy of qt 
+        qc.add_translate(tx, ty, tz );   // change qc translation with grid offsets 
+        for(unsigned i=0 ; i < 16 ; i++ ) gs_ptr[i] = qc_ptr[i] ;  // copy qc into gs 
+
+        gensteps.push_back(gs); 
     }
 
     std::cout 
        << " nx " << nx 
        << " ny " << ny 
        << " nz " << nz 
-       << " gs " << gs.size()
+       << " gs " << gensteps.size()
        << std::endl 
        ;
 
-    return MakeGensteps(gs); 
+    return MakeGensteps(gensteps); 
 }
 
 

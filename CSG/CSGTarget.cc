@@ -28,16 +28,17 @@ Used by CSGFoundry::getCenterExtent
 
 **/
 
-int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx) const 
+int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* qptr ) const 
 {
     if( iidx == -1 )
     {
+        assert( qptr == nullptr ); 
         int lrc = getLocalCenterExtent(ce, midx, mord); 
         if(lrc != 0) return 1 ; 
     }
     else
     {
-        int grc = getGlobalCenterExtent(ce, midx, mord, iidx);
+        int grc = getGlobalCenterExtent(ce, midx, mord, iidx, qptr );
         if(grc != 0) return 2 ;
     }
     return 0 ; 
@@ -102,10 +103,12 @@ CSGTarget::getGlobalCenterExtent
 *iidx*
     instance index, for example this could select a particular PMT 
 
+TODO: check this with global non-instanced geometry 
+
 **/
 
 
-int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx) const 
+int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, qat4* qptr ) const 
 {
     std::vector<CSGPrim> prim ; 
     foundry->getMeshPrim(prim, midx ); // collect prim matching the MIDX 
@@ -142,14 +145,17 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx) 
 
     if(!iidx_in_range) return 2 ; 
 
-    qat4 q(inst[iidx].cdata());   // copy the instance
+    const qat4& qi = inst[iidx] ;  
+    if(qptr) qat4::copy(*qptr, qi); 
+
+    qat4 q(qi.cdata());   // copy the instance
     unsigned ins_idx, gas_idx2, ias_idx ; 
     q.getIdentity(ins_idx, gas_idx2, ias_idx )  ;
     q.clearIdentity();           // clear before doing any transforming 
     assert( gas_idx == gas_idx2 ); 
 
     CSGPrim gpr = {} ; 
-    CSGPrim::Copy(gpr, lpr); 
+    CSGPrim::Copy(gpr, lpr);   // start global prim from local 
     q.transform_aabb_inplace( gpr.AABB_() ); 
 
     LOG(info) 
@@ -172,4 +178,56 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx) 
     return 0 ; 
 }
 
+
+/**
+CSGTarget::getTransform
+--------------------------
+
+TODO: too much duplicated between this and CSGTarget::getGlobalCenterExtent : try to factorize somehow
+
+
+**/
+
+int CSGTarget::getTransform(qat4& q, int midx, int mord, int iidx) const 
+{
+    std::vector<CSGPrim> prim ; 
+    foundry->getMeshPrim(prim, midx ); // collect prim matching the MIDX 
+
+    bool mord_in_range = mord < prim.size() ; 
+    if(!mord_in_range) 
+    {
+        LOG(error)  << " midx " << midx << " mord " << mord << " prim.size " << prim.size() << " mord_in_range " << mord_in_range ;   
+        return 1 ; 
+    }
+
+    // first find the MORD-inal prim which has MIDX for its lvIdx
+    const CSGPrim& lpr = prim[mord] ; 
+    const float4 local_ce = lpr.ce() ; 
+
+    // use the prim to lookup indices for  the solid and prim 
+    unsigned repeatIdx = lpr.repeatIdx(); 
+    unsigned primIdx = lpr.primIdx(); 
+    unsigned gas_idx = repeatIdx ; 
+
+    // collect the instances 
+    std::vector<qat4> inst ; 
+    foundry->getInstanceTransformsGAS(inst, gas_idx ); 
+
+    bool iidx_in_range = iidx < inst.size(); 
+    LOG(info) 
+        << " repeatIdx " << repeatIdx
+        << " primIdx " << primIdx
+        << " inst.size " << inst.size()
+        << " iidx " << iidx
+        << " iidx_in_range " << iidx_in_range 
+        << " local_ce " << local_ce 
+        ; 
+
+    if(!iidx_in_range) return 2 ; 
+
+    const qat4& qi = inst[iidx] ;  
+    qat4::copy(q, qi); 
+
+    return 0 ; 
+}
 

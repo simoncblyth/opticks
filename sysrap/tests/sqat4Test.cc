@@ -1,8 +1,10 @@
 // ./sqat4Test.sh 
 
 #include "scuda.h"
+#include "squad.h"
 #include "sqat4.h"
 #include "saabb.h"
+#include "stran.h"
 
 #include <cmath>
 #include <sstream>
@@ -545,6 +547,45 @@ void test_multiply_ctor()
 }
 
 
+void test_quad6_ctor()
+{
+    quad6 gs ;
+    gs.zero();  
+
+    gs.q2.f.x =  1.f ; gs.q2.f.y = 2.f  ; gs.q2.f.z =  3.f ; gs.q2.f.w =  4.f ; 
+    gs.q3.f.x =  5.f ; gs.q3.f.y = 6.f  ; gs.q3.f.z =  7.f ; gs.q3.f.w =  8.f ; 
+    gs.q4.f.x =  9.f ; gs.q4.f.y = 10.f ; gs.q4.f.z = 11.f ; gs.q4.f.w = 12.f ; 
+    gs.q5.f.x = 13.f ; gs.q5.f.y = 14.f ; gs.q5.f.z = 15.f ; gs.q5.f.w = 16.f ; 
+
+    qat4 qt(gs); 
+    std::cout << qt.desc('q') << std::endl ; 
+}
+
+void test_transform()
+{
+    //const Tran<float>* tr = Tran<float>::make_translate( 100.f , 100.f , 200.f ); 
+    const Tran<float>* tr = Tran<float>::make_rotate( 0.f , 0.f , 1.f , 45.f ); 
+
+    qat4 qt(tr->tdata()); 
+    std::cout << "qt" << qt << std::endl ; 
+
+    quad4 p ;    // local frame position and direction 
+    p.zero(); 
+
+    p.q0.f = make_float4( 0.f, 0.f, 0.f, 1.f ); 
+    p.q1.f = make_float4( 1.f, 0.f, 0.f, 0.f ); 
+    p.q2.f = make_float4( 0.f, 1.f, 0.f, 0.f ); 
+    p.q3.f = make_float4( 0.f, 0.f, 1.f, 0.f ); 
+
+    qt.right_multiply_inplace( p.q0.f, 1.f );   // position 
+    qt.right_multiply_inplace( p.q1.f, 0.f );   // direction 
+    qt.right_multiply_inplace( p.q2.f, 0.f );   // direction 
+    qt.right_multiply_inplace( p.q3.f, 0.f );   // direction 
+ 
+    std::cout << "p " << p << std::endl ; 
+}
+
+
 
 
 int main(int argc, char** argv)
@@ -559,9 +600,11 @@ int main(int argc, char** argv)
     test_transform_aabb_inplace_2();
     test_from_string(); 
     test_copy(); 
-    */
-
     test_multiply_ctor(); 
+    test_quad6_ctor(); 
+    */
+    test_transform(); 
+
 
     return 0 ; 
 }

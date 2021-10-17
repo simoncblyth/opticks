@@ -7,6 +7,7 @@
 #endif 
 
 #include "OpticksGenstep.h"
+#include "sqat4.h"
 
 #include "qgs.h"
 #include "qprop.h"
@@ -657,10 +658,22 @@ inline QSIM_METHOD void qsim<T>::generate_photon(quad4& p, curandStateXORWOW& rn
 }
 
 
+/**
+qsim::generate_photon_torch
+-----------------------------
+
+Acting on the gensteps created eg in QEvent 
+
+
+**/
+
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
-    p.q0.f.x = gs.q1.f.x ;   // position   
+
+    // start with local frame position and direction for the photon 
+
+    p.q0.f.x = gs.q1.f.x ;     
     p.q0.f.y = gs.q1.f.y ;  
     p.q0.f.z = gs.q1.f.z ;  
     p.q0.f.w = 0.f ;         
@@ -674,7 +687,12 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
     p.q1.f.x = cosPhi ;   // direction
     p.q1.f.y = 0.f    ;  
     p.q1.f.z = sinPhi ;  
-    p.q1.f.w = 1.f    ;         // weight
+    p.q1.f.w = 1.f    ;   // weight
+
+
+    qat4 qt(gs) ;  // transform from last 4 quads of genstep 
+    qt.right_multiply_inplace( p.q0.f, 1.f );   // position 
+    qt.right_multiply_inplace( p.q1.f, 0.f );   // direction 
 } 
 
 

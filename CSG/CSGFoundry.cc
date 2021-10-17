@@ -1782,20 +1782,29 @@ uses CSGTarget to lookup the center extent.
 
 **/
 
-int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx) const 
+int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* qptr ) const 
 {
     int rc = 0 ; 
     if( midx == -1 )
-    {
+    { 
+        assert( qptr == nullptr ); 
         unsigned long long emm = 0ull ;   // hmm instance var ?
         iasCE(ce, emm); 
     }
     else
     {
-        rc = target->getCenterExtent(ce, midx, mord, iidx);    // should use emm ?
+        rc = target->getCenterExtent(ce, midx, mord, iidx, qptr );    // should use emm ?
     }
     return rc ; 
 }
+
+
+int CSGFoundry::getTransform(qat4& q, int midx, int mord, int iidx) const 
+{
+    return target->getTransform(q, midx, mord, iidx); 
+}
+
+
 
 
 

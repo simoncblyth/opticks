@@ -23,8 +23,7 @@ TODO: follow OEvent technique of initial allocation and resizing at each event
 struct QUDARAP_API QEvent
 {
     static NP* MakeGensteps(const std::vector<quad6>& gs ); 
-    static NP* MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale ); 
-    static NP* MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const qat4& q ) ; 
+    static NP* MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const qat4* qt_ptr ) ; 
     static NP* MakeCountGensteps(); 
     static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep); 
 

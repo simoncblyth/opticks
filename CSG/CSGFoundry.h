@@ -17,8 +17,7 @@ struct CSGTarget ;
 #include "squad.h"
 #include "sqat4.h"
 #include "saabb.h"
-
-#include "Tran.h"
+#include "stran.h"
 
 /**
 CSGFoundry
@@ -206,7 +205,8 @@ struct CSGFoundry
 
 
     // target  
-    int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1) const ;
+    int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* qptr=nullptr ) const ;
+    int getTransform(   qat4& q   , int midx, int mord, int iidx=-1) const ;
 
     // id 
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ; 

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Tran.h"
+#include "stran.h"
 
 
 void test_make()

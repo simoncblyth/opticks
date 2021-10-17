@@ -76,6 +76,8 @@ set(TEST_SOURCES
    SOpticksVersionNumberTest.cc
    SRngTest.cc 
    SDiceTest.cc
+
+   stranTest.cc
 )
 
 

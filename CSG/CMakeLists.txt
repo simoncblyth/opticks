@@ -48,7 +48,6 @@ list(APPEND SOURCES
     CSGPrim.cc
     CSGPrimSpec.cc
     CSGSolid.cc
-    Tran.cc
     CSGFoundry.cc
     CSGName.cc
     CSGTarget.cc
@@ -67,7 +66,6 @@ list(APPEND CSG_HEADERS
     CSGPrim.h
     CSGSolid.h
 
-    Tran.h
 
     CSGFoundry.h
     CSGName.h

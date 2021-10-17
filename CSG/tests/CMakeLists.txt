@@ -14,7 +14,6 @@ set(TEST_SOURCES
     CSGNameTest.cc
     CSGTargetTest.cc
     CSGScanTest.cc
-    TranTest.cc
     CUTest.cc
 )
 

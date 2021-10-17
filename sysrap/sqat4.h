@@ -24,6 +24,13 @@ struct qat4
 {
     quad q0, q1, q2, q3 ; 
 
+    QAT4_METHOD void zero()
+    {
+        q0.f.x = 0.f ; q0.f.y = 0.f ; q0.f.z = 0.f ; q0.f.w = 0.f ; 
+        q1.f.x = 0.f ; q1.f.y = 0.f ; q1.f.z = 0.f ; q1.f.w = 0.f ; 
+        q2.f.x = 0.f ; q2.f.y = 0.f ; q2.f.z = 0.f ; q2.f.w = 0.f ; 
+        q3.f.x = 0.f ; q3.f.y = 0.f ; q3.f.z = 0.f ; q3.f.w = 0.f ; 
+    }
 
     // notice that with *right_multiply* the .w column (with identity info) is not used
     QAT4_METHOD float3 right_multiply( const float3& v, const float w ) const 
@@ -34,7 +41,7 @@ struct qat4
         ret.z = q0.f.z * v.x + q1.f.z * v.y + q2.f.z * v.z + q3.f.z * w ;
         return ret;
     }
-    QAT4_METHOD void right_multiply_inplace( float4& v, const float w ) const 
+    QAT4_METHOD void right_multiply_inplace( float4& v, const float w ) const   // v.w is ignored
     { 
         float x = q0.f.x * v.x + q1.f.x * v.y + q2.f.x * v.z + q3.f.x * w ;
         float y = q0.f.y * v.x + q1.f.y * v.y + q2.f.y * v.z + q3.f.y * w ;
@@ -99,6 +106,14 @@ struct qat4
          dst[11] = q3.f.z ; 
     }
 
+    QAT4_METHOD qat4(const quad6& gs)   // ctor from genstep, needed for TORCH genstep generation 
+    {
+        q0.f.x = gs.q2.f.x ;  q0.f.y = gs.q2.f.y ;   q0.f.z = gs.q2.f.z ;  q0.f.w = gs.q2.f.w ;   
+        q1.f.x = gs.q3.f.x ;  q1.f.y = gs.q3.f.y ;   q1.f.z = gs.q3.f.z ;  q1.f.w = gs.q3.f.w ;   
+        q2.f.x = gs.q4.f.x ;  q2.f.y = gs.q4.f.y ;   q2.f.z = gs.q4.f.z ;  q2.f.w = gs.q4.f.w ;   
+        q3.f.x = gs.q5.f.x ;  q3.f.y = gs.q5.f.y ;   q3.f.z = gs.q5.f.z ;  q3.f.w = gs.q5.f.w ;   
+    } 
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -137,6 +152,14 @@ struct qat4
     QAT4_METHOD qat4* copy() const 
     {
         return new qat4(cdata()); 
+    }
+
+    static QAT4_METHOD void copy(qat4& b, const qat4& a )
+    {
+        b.q0.f.x = a.q0.f.x ; b.q0.f.y = a.q0.f.y ; b.q0.f.z = a.q0.f.z ; b.q0.f.w = a.q0.f.w ; 
+        b.q1.f.x = a.q1.f.x ; b.q1.f.y = a.q1.f.y ; b.q1.f.z = a.q1.f.z ; b.q1.f.w = a.q1.f.w ; 
+        b.q2.f.x = a.q2.f.x ; b.q2.f.y = a.q2.f.y ; b.q2.f.z = a.q2.f.z ; b.q2.f.w = a.q2.f.w ; 
+        b.q3.f.x = a.q3.f.x ; b.q3.f.y = a.q3.f.y ; b.q3.f.z = a.q3.f.z ; b.q3.f.w = a.q3.f.w ; 
     }
 
     /**
@@ -338,6 +361,34 @@ struct qat4
         q3.f.y += ty ; 
         q3.f.z += tz ; 
     }
+
+
+    static QAT4_METHOD int compare(const qat4& a, const qat4& b, float epsilon=1e-6 ) 
+    {
+        int rc = 0 ; 
+        if( std::abs(a.q0.f.x - b.q0.f.x) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q0.f.y - b.q0.f.y) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q0.f.z - b.q0.f.z) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q0.f.w - b.q0.f.w) > epsilon ) rc += 1 ;  
+
+        if( std::abs(a.q1.f.x - b.q1.f.x) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q1.f.y - b.q1.f.y) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q1.f.z - b.q1.f.z) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q1.f.w - b.q1.f.w) > epsilon ) rc += 1 ;  
+
+        if( std::abs(a.q2.f.x - b.q2.f.x) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q2.f.y - b.q2.f.y) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q2.f.z - b.q2.f.z) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q2.f.w - b.q2.f.w) > epsilon ) rc += 1 ;  
+
+        if( std::abs(a.q3.f.x - b.q3.f.x) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q3.f.y - b.q3.f.y) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q3.f.z - b.q3.f.z) > epsilon ) rc += 1 ;  
+        if( std::abs(a.q3.f.w - b.q3.f.w) > epsilon ) rc += 1 ;  
+
+        return rc ; 
+    }
+
 
     static QAT4_METHOD qat4* from_string(const char* s0, const char* repl="[]()," )
     {

@@ -146,10 +146,13 @@ set(HEADERS
 
     SRng.hh
     SBuf.hh
+
     scuda.h
     squad.h
     sqat4.h
     saabb.h
+    stran.h
+
     sview.h
     strided_range.h 
     iexpand.h 
