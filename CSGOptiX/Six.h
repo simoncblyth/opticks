@@ -3,7 +3,8 @@
 #include <map>
 #include <vector>
 #include <optixu/optixpp_namespace.h>
-#include "qat4.h"
+
+struct qat4 ; 
 
 class Opticks ; 
 

@@ -22,7 +22,6 @@
 #include "CSGFoundry.h"
 #include "CSGName.h"
 #include "CSGTarget.h"
-#include "AABB.h"
 
 const unsigned CSGFoundry::IMAX = 50000 ; 
 

@@ -5,6 +5,9 @@
 #include "SStr.hh"
 #include "SPath.hh"
 #include "NP.hh"
+#include "scuda.h"
+#include "sqat4.h"
+#include "OpticksCSG.h"
 
 #define SIMG_IMPLEMENTATION 1 
 #include "SIMG.hh"
@@ -14,8 +17,6 @@
 
 #include "Params.h"
 
-#include "scuda.h"
-#include "OpticksCSG.h"
 #include "CSGFoundry.h"
 #include "CSGSolid.h"
 #include "CSGPrim.h"

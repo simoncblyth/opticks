@@ -63,13 +63,11 @@ list(APPEND CSG_HEADERS
     CSGNode.h 
 
     CU.h
-    qat4.h
     CSGPrimSpec.h
     CSGPrim.h
     CSGSolid.h
 
     Tran.h
-    AABB.h
 
     CSGFoundry.h
     CSGName.h

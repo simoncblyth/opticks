@@ -2,6 +2,7 @@
 
 struct qevent ; 
 struct quad4 ;
+struct qat4 ; 
 struct quad6 ;
 struct NP ; 
 template <typename T> struct QBuf ; 
@@ -23,6 +24,7 @@ struct QUDARAP_API QEvent
 {
     static NP* MakeGensteps(const std::vector<quad6>& gs ); 
     static NP* MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale ); 
+    static NP* MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const qat4& q ) ; 
     static NP* MakeCountGensteps(); 
     static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep); 
 

@@ -15,9 +15,10 @@ struct CSGTarget ;
 #include "CSGNode.h"
 
 #include "squad.h"
-#include "qat4.h"
+#include "sqat4.h"
+#include "saabb.h"
+
 #include "Tran.h"
-#include "AABB.h"
 
 /**
 CSGFoundry

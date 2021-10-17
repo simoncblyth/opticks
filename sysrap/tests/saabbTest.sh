@@ -1,6 +1,6 @@
 #!/bin/bash -l 
 
-name=AABB 
+name=saabbTest
 
 CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 

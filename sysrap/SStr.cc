@@ -671,3 +671,19 @@ int SStr::ExtractInt(const char* arg, int start, unsigned num, int fallback)
 }
 
 
+/**
+SStr::ReplaceChars
+--------------------
+
+Duplicate the input string and change all occurences of *repl* chars within the string into *to*
+
+**/
+
+const char* SStr::ReplaceChars(const char* str, const char* repl, char to ) 
+{
+    char* s = strdup(str); 
+    for(unsigned i=0 ; i < strlen(s) ; i++) if(strchr(repl, s[i]) != nullptr) s[i] = to ;  
+    return s ; 
+}
+
+

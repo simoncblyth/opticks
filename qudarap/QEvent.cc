@@ -3,6 +3,8 @@
 #include "SPath.hh"
 #include "scuda.h"
 #include "squad.h"
+#include "sqat4.h"
+
 #include "NP.hh"
 #include "PLOG.hh"
 
@@ -96,6 +98,73 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
 
     return MakeGensteps(gs); 
 }
+
+
+/**
+
+The gensteps are consumed by qsim::generate_photon_torch
+
+Which needs to use the gensteps data in order to transform the axis 
+aligned local frame grid of positions and directions 
+into global frame equivalents. 
+
+**/
+
+NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const qat4& q) // static
+{
+    quad6 qq ; 
+    qq.zero(); 
+
+    unsigned nx = cegs.x ; 
+    unsigned ny = cegs.y ; 
+    unsigned nz = cegs.z ; 
+    unsigned photons_per_genstep = cegs.w ; 
+
+    qq.q0.i.x = OpticksGenstep_TORCH ;  
+    qq.q0.i.w = photons_per_genstep ; 
+
+    const float* src = q.cdata() ;  // copy transform into end 4 quads
+    float* dst = (float*)&qq.q2.f ; 
+    for(unsigned i=0 ; i < 16 ; i++ ) dst[i] = src[i] ;  
+
+
+    std::vector<quad6> gs ; 
+
+    for(int ix=-int(nx) ; ix < int(nx)+1 ; ix++ )
+    for(int iy=-int(ny) ; iy < int(ny)+1 ; iy++ )
+    for(int iz=-int(nz) ; iz < int(nz)+1 ; iz++ )
+    {
+        LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ; 
+        
+        float tx = float(ix)*gridscale*ce.w ; 
+        float ty = float(iy)*gridscale*ce.w ; 
+        float tz = float(iz)*gridscale*ce.w ; 
+        
+        qq.q1.f.x = ce.x + tx ;  
+        qq.q1.f.y = ce.y + ty ;  
+        qq.q1.f.z = ce.z + tz ;   
+        qq.q1.f.w = 0.f ; 
+
+        gs.push_back(qq); 
+    }
+
+    std::cout 
+       << " nx " << nx 
+       << " ny " << ny 
+       << " nz " << nz 
+       << " gs " << gs.size()
+       << std::endl 
+       ;
+
+    return MakeGensteps(gs); 
+}
+
+
+
+
+
+
+
 
 NP* QEvent::MakeCountGensteps() // static 
 {

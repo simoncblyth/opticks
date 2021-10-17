@@ -126,6 +126,9 @@ class SYSRAP_API SStr {
       static int ExtractInt(const char* arg, int start, unsigned num, int fallback=-1) ;
 
 
+      static const char* ReplaceChars(const char* str, const char* repl="(),[]", char to=' ') ; 
+
+
 };
 
 

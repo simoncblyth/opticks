@@ -25,7 +25,9 @@
 #include <iterator>
 #include <algorithm>
 #include <numeric>
+#include <sstream>
 
+#include "SStr.hh"
 #include "SVec.hh"
 
 
@@ -119,7 +121,6 @@ void SVec<T>::MinMaxAvg(const std::vector<T>& t, T& mn, T& mx, T& av)
     av = t.size() > 0 ? sum/T(t.size()) : T(-1.) ;   
 }
 
-
 template <typename T>
 void SVec<T>::MinMax(const std::vector<T>& t, T& mn, T& mx ) 
 {
@@ -130,11 +131,25 @@ void SVec<T>::MinMax(const std::vector<T>& t, T& mn, T& mx )
     mx = *mx_ ; 
 }
 
+template <typename T>
+void SVec<T>::Extract(std::vector<T>& a, const char* str0, const char* ignore ) 
+{
+    char swap = ' '; 
+    const char* str1 = SStr::ReplaceChars(str0, ignore, swap); 
+    std::stringstream ss(str1);  
+    std::string s ; 
+    T value ; 
 
-
-
-
-
+    while(std::getline(ss, s, ' '))
+    {
+        if(strlen(s.c_str()) == 0 ) continue;  
+        //std::cout << "[" << s << "]" << std::endl ; 
+        
+        std::stringstream tt(s);  
+        tt >> value ; 
+        a.push_back(value); 
+    }
+}
 
 
 template struct SVec<int>;

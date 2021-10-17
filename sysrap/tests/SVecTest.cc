@@ -144,6 +144,16 @@ void test_Desc()
      LOG(info) << SVec<int>::Desc("v", v); 
 }
 
+void test_Extract()
+{
+     const char* str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ; 
+
+     std::vector<float> v ; 
+     SVec<float>::Extract(v, str); 
+
+     for(unsigned i=0 ; i < v.size() ; i++) std::cout << v[i] << std::endl ; 
+}
+
 
 
 
@@ -157,8 +167,9 @@ int main(int argc, char** argv)
     //test_vector_erase_all(); 
     //test_unique_strings(); 
     //test_MinMaxAvg(); 
+    //test_Desc();  
 
-    test_Desc();  
+    test_Extract();  
 
     return 0 ;
 }

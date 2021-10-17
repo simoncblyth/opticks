@@ -5,6 +5,12 @@
 #include "SStr.hh"
 #include "SSys.hh"
 #include "NP.hh"
+#include "scuda.h"
+#include "sqat4.h"
+#include "saabb.h"
+#include "PLOG.hh"
+
+
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
@@ -17,15 +23,12 @@
 #include "GBndLib.hh"
 #include "GScintillatorLib.hh"
 
-#include "sutil_vec_math.h"
 #include "CSGFoundry.h"
 #include "CSGSolid.h" 
 #include "CSGPrim.h" 
 #include "CSGNode.h" 
-#include "qat4.h"
-#include "AABB.h"
 
-#include "PLOG.hh"
+
 #include "CSG_GGeo_Convert.h"
 
 

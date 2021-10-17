@@ -3,8 +3,8 @@
 #else
 
 #include "scuda.h"
+#include "sqat4.h"
 
-#include "qat4.h"
 #include "CSGPrim.h"
 
 #include <vector>

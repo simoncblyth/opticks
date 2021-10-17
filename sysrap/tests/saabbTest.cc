@@ -1,15 +1,14 @@
 
-// ./qat4.sh 
+// ./saabbTest.sh 
 
 #include "scuda.h"
+#include "sqat4.h"
+#include "saabb.h"
 
 #include <cmath>
 #include <vector>
 #include <iostream>
 #include <iomanip>
-
-#include "AABB.h"
-#include "qat4.h"
 
 
 void test_cube_corners()

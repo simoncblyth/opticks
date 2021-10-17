@@ -1,6 +1,8 @@
-// ./qat4Test.sh 
+// ./sqat4Test.sh 
 
 #include "scuda.h"
+#include "sqat4.h"
+#include "saabb.h"
 
 #include <cmath>
 #include <sstream>
@@ -9,18 +11,15 @@
 #include <iostream>
 #include <iomanip>
 
-#include "qat4.h"
-#include "AABB.h"
 
 #include <glm/mat4x4.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
 #include <glm/gtc/random.hpp>
 
-const float EPSILON = 1e-4 ; 
+const float EPSILON = 1e-6 ; 
 
 
 bool check( const float& a, const float& b,  const char* msg  )
@@ -41,6 +40,20 @@ bool check( const float& a, const float& b,  const char* msg  )
             ; 
      return chk ; 
 }
+
+int check( const float* a , const float* b, unsigned num, const char* msg )
+{
+    int chk = 0 ; 
+    for(unsigned i=0 ; i < num ; i++)
+    {
+        float fa = a[i] ; 
+        float fb = b[i] ; 
+        bool ck = check(fa, fb, msg); 
+        if(!ck) chk += 1 ; 
+    }
+    return chk ; 
+}
+
 
 void check( const glm::vec4& a , const glm::vec4& b, const char* msg )
 {
@@ -461,22 +474,95 @@ void test_transform_aabb_inplace_2()
     std::cout << "aabb " << aabb << std::endl ; 
 }
 
+void test_from_string()
+{
+    const char* str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
+    qat4* q = qat4::from_string(str); 
+    std::cout << q->desc('q') << std::endl ; 
+
+    float s = 1000.f ; 
+    float3 o0 = make_float3(  0.f,  0.f,  0.f); 
+    float3 x0 = make_float3(    s,  0.f,  0.f); 
+    float3 y0 = make_float3(  0.f,    s,  0.f); 
+    float3 z0 = make_float3(  0.f,  0.f,    s); 
+
+    float3 o1 = q->right_multiply(o0, 1.f); 
+    float3 x1 = q->right_multiply(x0, 1.f); 
+    float3 y1 = q->right_multiply(y0, 1.f); 
+    float3 z1 = q->right_multiply(z0, 1.f); 
+
+    std::cout << "o0 " << o0 << std::endl ; 
+    std::cout << "o1 " << o1 << std::endl ; 
+    std::cout << "x0 " << x0 << std::endl ; 
+    std::cout << "x1 " << x1 << std::endl ; 
+    std::cout << "y0 " << y0 << std::endl ; 
+    std::cout << "y1 " << y1 << std::endl ; 
+    std::cout << "z0 " << z0 << std::endl ; 
+    std::cout << "z1 " << z1 << std::endl ; 
+}
 
 
+void test_copy()
+{
+    const char* str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
+    qat4* q = qat4::from_string(str); 
+
+    for(unsigned i=0 ; i < 10 ; i++ )
+    {
+        qat4* c = q->copy(); 
+        c->add_translate( 0.f, 0.f, 1000.f*float(i) ); 
+        std::cout << c->desc('c') << std::endl ; 
+    }
+}
+
+void test_multiply_ctor()
+{
+    const char* a_str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
+    const char* b_str = "1 0 0 0  0 1 0 0  0 0 1 0  1000 0 0 1" ; 
+    //const char* b_str = "1 2 3 4  5 6 7 8  9 10 11 12  13 14 15 16" ; 
+
+    qat4* a = qat4::from_string(a_str); 
+    glm::mat4 A = glm::make_mat4(a->cdata()); 
+
+    qat4* b = qat4::from_string(b_str); 
+    glm::mat4 B = glm::make_mat4(b->cdata()); 
+
+    qat4  ab = qat4(*a, *b, true); 
+    glm::mat4 AB = A*B ; 
+
+    qat4  ba = qat4(*b, *a, true); 
+    glm::mat4 BA = B*A ; 
+
+    std::cout << "AB" << glm::to_string(AB) << std::endl ;     
+    std::cout << "ab" << ab.desc(' ') << std::endl ; 
+    int chk_ab = check( glm::value_ptr(AB), ab.cdata(), 16, "AB" ); 
+    std::cout << "chk_ab " << chk_ab << std::endl ; 
+
+    std::cout << "BA" << glm::to_string(BA) << std::endl ;     
+    std::cout << "ba" << ba.desc(' ') << std::endl ; 
+    int chk_ba = check( glm::value_ptr(BA), ba.cdata(), 16, "BA"  ); 
+    std::cout << "chk_ba " << chk_ba << std::endl ; 
+}
 
 
 
 
 int main(int argc, char** argv)
 {
-    //test_transform_aabb_inplace();
-    //test_find_unique();
-
-    //test_right_multiply_translate(); 
-    //test_right_multiply_scale(); 
-    //test_right_multiply_rotate(); 
-    //test_cube_corners(); 
+    /*
+    test_transform_aabb_inplace();
+    test_find_unique();
+    test_right_multiply_translate(); 
+    test_right_multiply_scale(); 
+    test_right_multiply_rotate(); 
+    test_cube_corners(); 
     test_transform_aabb_inplace_2();
+    test_from_string(); 
+    test_copy(); 
+    */
+
+    test_multiply_ctor(); 
+
     return 0 ; 
 }
 

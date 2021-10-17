@@ -1,6 +1,6 @@
 #!/bin/bash -l 
 
-name=qat4Test 
+name=sqat4Test 
 
 OPTICKS_PREFIX=${OPTICKS_PREFIX:-/usr/local/opticks}
 CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
@@ -8,7 +8,8 @@ CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 gcc $name.cc \
      -I.. \
      -I${CUDA_PREFIX}/include \
-     -I${OPTICKS_PREFIX}/externals/glm/glm  \
+     -I${OPTICKS_PREFIX}/externals/glm/glm \
+     -I${OPTICKS_PREFIX}/include/SysRap \
      -std=c++11 \
      -lstdc++ \
      -o /tmp/$name  

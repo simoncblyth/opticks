@@ -1,6 +1,6 @@
 #include "scuda.h"
+#include "sqat4.h"
 
-#include "qat4.h"
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
 

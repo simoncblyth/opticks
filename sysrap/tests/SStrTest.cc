@@ -447,7 +447,16 @@ a0xdeadbeef
 }
 
 
+void test_ReplaceChars()
+{
+     const char* str0 = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ; 
+     const char* str1 = SStr::ReplaceChars(str0); 
 
+     std::cout 
+         << " str0 " << str0 << std::endl 
+         << " str1 " << str1 << std::endl 
+         ;
+}
 
 
 
@@ -478,8 +487,9 @@ int main(int argc , char** argv )
     test_ISplit(); 
     test_FormatReal(); 
     test_StripPrefix(); 
-    */
     test_TrimPointerSuffix(); 
+    */
+    test_ReplaceChars(); 
 
 
     return 0  ; 

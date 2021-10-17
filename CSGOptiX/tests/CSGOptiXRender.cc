@@ -29,9 +29,10 @@ CFBASE
 
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
+#include "scuda.h"
+
 #include "Opticks.hh"
 
-#include "sutil_vec_math.h"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
 

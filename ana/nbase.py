@@ -50,6 +50,7 @@ def np_fromstring(values, coldim=2, scale=1e6):
     a[:,0] *= scale     
     return a
 
+np_fromtxt = lambda txt, dtype=np.float32:np.fromiter( map(float, txt.replace("("," ").replace(")"," ").replace(","," ").strip().split() ), dtype=dtype ) 
 
 
 

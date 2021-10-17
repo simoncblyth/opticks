@@ -4,10 +4,11 @@
 #include <cassert>
 
 #include "scuda.h"
-#include "CSGFoundry.h"
-#include "qat4.h"
-
+#include "sqat4.h"
 #include "OPTICKS_LOG.hh"
+
+#include "CSGFoundry.h"
+
 
 
 void test_layered()

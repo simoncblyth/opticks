@@ -14,6 +14,7 @@
    #include <iomanip>
    #include <vector>
    #include <sstream>
+   #include <cstring>
    #include <algorithm>
 #endif 
 
@@ -131,6 +132,50 @@ struct qat4
     QAT4_METHOD const float* cdata() const 
     {
         return &q0.f.x ;
+    }
+
+    QAT4_METHOD qat4* copy() const 
+    {
+        return new qat4(cdata()); 
+    }
+
+    /**
+
+
+            a.q0.f.x   a.q0.f.y   a.q0.f.z   a.q0.f.w         b.q0.f.x   b.q0.f.y   b.q0.f.z   b.q0.f.w  
+
+            a.q1.f.x   a.q1.f.y   a.q1.f.z   a.q1.f.w         b.q1.f.x   b.q1.f.y   b.q1.f.z   b.q1.f.w  
+
+            a.q2.f.x   a.q2.f.y   a.q2.f.z   a.q2.f.w         b.q2.f.x   b.q2.f.y   b.q2.f.z   b.q2.f.w  
+
+            a.q3.f.x   a.q3.f.y   a.q3.f.z   a.q3.f.w         b.q3.f.x   b.q3.f.y   b.q3.f.z   b.q3.f.w  
+
+    **/
+
+    QAT4_METHOD qat4(const qat4& a_, const qat4& b_ , bool flip)  // flip=true matches glm A*B  
+    { 
+        const qat4& a = flip ? b_ : a_ ;  
+        const qat4& b = flip ? a_ : b_ ;  
+ 
+        q0.f.x = a.q0.f.x * b.q0.f.x  +  a.q0.f.y * b.q1.f.x  +  a.q0.f.z * b.q2.f.x  + a.q0.f.w * b.q3.f.x ; 
+        q0.f.y = a.q0.f.x * b.q0.f.y  +  a.q0.f.y * b.q1.f.y  +  a.q0.f.z * b.q2.f.y  + a.q0.f.w * b.q3.f.y ; 
+        q0.f.z = a.q0.f.x * b.q0.f.z  +  a.q0.f.y * b.q1.f.z  +  a.q0.f.z * b.q2.f.z  + a.q0.f.w * b.q3.f.z ; 
+        q0.f.w = a.q0.f.x * b.q0.f.w  +  a.q0.f.y * b.q1.f.w  +  a.q0.f.z * b.q2.f.w  + a.q0.f.w * b.q3.f.w ; 
+
+        q1.f.x = a.q1.f.x * b.q0.f.x  +  a.q1.f.y * b.q1.f.x  +  a.q1.f.z * b.q2.f.x  + a.q1.f.w * b.q3.f.x ; 
+        q1.f.y = a.q1.f.x * b.q0.f.y  +  a.q1.f.y * b.q1.f.y  +  a.q1.f.z * b.q2.f.y  + a.q1.f.w * b.q3.f.y ; 
+        q1.f.z = a.q1.f.x * b.q0.f.z  +  a.q1.f.y * b.q1.f.z  +  a.q1.f.z * b.q2.f.z  + a.q1.f.w * b.q3.f.z ; 
+        q1.f.w = a.q1.f.x * b.q0.f.w  +  a.q1.f.y * b.q1.f.w  +  a.q1.f.z * b.q2.f.w  + a.q1.f.w * b.q3.f.w ; 
+
+        q2.f.x = a.q2.f.x * b.q0.f.x  +  a.q2.f.y * b.q1.f.x  +  a.q2.f.z * b.q2.f.x  + a.q2.f.w * b.q3.f.x ; 
+        q2.f.y = a.q2.f.x * b.q0.f.y  +  a.q2.f.y * b.q1.f.y  +  a.q2.f.z * b.q2.f.y  + a.q2.f.w * b.q3.f.y ; 
+        q2.f.z = a.q2.f.x * b.q0.f.z  +  a.q2.f.y * b.q1.f.z  +  a.q2.f.z * b.q2.f.z  + a.q2.f.w * b.q3.f.z ; 
+        q2.f.w = a.q2.f.x * b.q0.f.w  +  a.q2.f.y * b.q1.f.w  +  a.q2.f.z * b.q2.f.w  + a.q2.f.w * b.q3.f.w ; 
+
+        q3.f.x = a.q3.f.x * b.q0.f.x  +  a.q3.f.y * b.q1.f.x  +  a.q3.f.z * b.q2.f.x  + a.q3.f.w * b.q3.f.x ; 
+        q3.f.y = a.q3.f.x * b.q0.f.y  +  a.q3.f.y * b.q1.f.y  +  a.q3.f.z * b.q2.f.y  + a.q3.f.w * b.q3.f.y ; 
+        q3.f.z = a.q3.f.x * b.q0.f.z  +  a.q3.f.y * b.q1.f.z  +  a.q3.f.z * b.q2.f.z  + a.q3.f.w * b.q3.f.z ; 
+        q3.f.w = a.q3.f.x * b.q0.f.w  +  a.q3.f.y * b.q1.f.w  +  a.q3.f.z * b.q2.f.w  + a.q3.f.w * b.q3.f.w ; 
     }
 
 
@@ -286,6 +331,34 @@ struct qat4
         const float4& f = j == 0 ? q0.f : ( j == 1 ? q1.f : ( j == 2 ? q2.f : q3.f ) ) ;  
         return   k == 0  ? f.x : ( k == 1 ? f.y : ( k == 2 ? f.z : f.w )) ; 
     }
+
+    QAT4_METHOD void add_translate(float tx, float ty, float tz) 
+    {
+        q3.f.x += tx ; 
+        q3.f.y += ty ; 
+        q3.f.z += tz ; 
+    }
+
+    static QAT4_METHOD qat4* from_string(const char* s0, const char* repl="[]()," )
+    {
+        char* s1 = strdup(s0); 
+        for(unsigned i=0 ; i < strlen(s1) ; i++) if(strchr(repl, s1[i]) != nullptr) s1[i] = ' ' ;   
+
+        std::stringstream ss(s1);  
+        std::string s ; 
+        std::vector<float> vv ; 
+        float v ; 
+
+        while(std::getline(ss, s, ' '))
+        {   
+            if(strlen(s.c_str()) == 0 ) continue;  
+            std::stringstream tt(s);  
+            tt >> v ; 
+            vv.push_back(v); 
+        }   
+        return vv.size() == 16 ? new qat4(vv.data()) : nullptr ; 
+    }  
+
 
     QAT4_METHOD std::string desc(char mat, unsigned wid=8, unsigned prec=3) const 
     {

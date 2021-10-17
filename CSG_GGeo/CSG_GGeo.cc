@@ -1,9 +1,10 @@
 #include "SSys.hh"
+#include "scuda.h"
+
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
 #include "GGeo.hh"
 
-#include "sutil_vec_math.h"
 #include "CSGFoundry.h"
 
 #include "CSG_GGeo_Convert.h"
