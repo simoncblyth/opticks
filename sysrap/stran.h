@@ -18,6 +18,7 @@ which inevitably risks numerical issues.
 
 **/
 
+#include "sqat4.h"
 #include "glm/glm.hpp"
 #include <vector>
 
@@ -34,6 +35,8 @@ struct Tran
     static const Tran<T>* product(const Tran<T>* a, const Tran<T>* b, const Tran<T>* c, bool reverse);
     static const Tran<T>* product(const std::vector<const Tran<T>*>& tt, bool reverse );
 
+    static Tran<T>* ConvertToTran(const qat4* q ); 
+    static qat4*    ConvertFrom(const glm::tmat4x4<T>& tr ); 
 
     Tran( const T* transform, const T* inverse ) ;
     Tran( const glm::tmat4x4<T>& transform, const glm::tmat4x4<T>& inverse ) ;
@@ -266,6 +269,38 @@ inline std::string Tran<T>::brief(bool only_tlate, char mat, unsigned wid, unsig
     std::string s = ss.str() ; 
     return s ; 
 }
+
+
+template<typename T>
+Tran<T>* Tran<T>::ConvertToTran(const qat4* q )
+{
+    const float* qdata = q->cdata(); 
+
+    glm::tmat4x4<T> tran(1.);
+
+    T* ptr = glm::value_ptr(tran) ;
+
+    for(int i=0 ; i < 16 ; i++) ptr[i] = T(qdata[i]) ; 
+
+    glm::tmat4x4<T> itra = glm::inverse(tran) ;     
+
+    return new Tran<T>(tran, itra) ; 
+}
+
+
+
+template<typename T>
+qat4* Tran<T>::ConvertFrom(const glm::tmat4x4<T>& transform )
+{
+    const T* ptr = glm::value_ptr(transform) ;
+
+    float ff[16] ; 
+
+    for(int i=0 ; i < 16 ; i++ ) ff[i] = float(ptr[i]) ; 
+
+    return new qat4(ff) ; 
+}
+
 
 
 

@@ -21,7 +21,7 @@ find_package(OKConf REQUIRED CONFIG)
 find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
 #find_package(OpticksCUDA REQUIRED MODULE)
-
+find_package(CUDA REQUIRED)
 
 set(WITH_PLOG YES)
 
@@ -152,6 +152,7 @@ set(HEADERS
     sqat4.h
     saabb.h
     stran.h
+    ssincos.h
 
     sview.h
     strided_range.h 
@@ -224,6 +225,7 @@ endif()
 
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+   ${CUDA_INCLUDE_DIRS}
    ${OPTICKS_PREFIX}/externals/glm/glm
 )
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )

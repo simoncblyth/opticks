@@ -70,6 +70,7 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
 {
     qat4 qt ;  // input transform : defaults to identity
     if(qt_ptr) qat4::copy(qt, *qt_ptr) ; 
+    const Tran<double>*  instance_transform = Tran<double>::ConvertToTran( &qt ); 
 
     qat4 qc ;  // transform to be varied, starting from input  
 
@@ -93,6 +94,8 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
 
     // reuse gs and qc, changing content and copying into gensteps for each position
 
+
+
     std::vector<quad6> gensteps ; 
 
     for(int ix=-int(nx) ; ix < int(nx)+1 ; ix++ )
@@ -105,13 +108,16 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
         double ty = double(iy)*gridscale*ce.w ; 
         double tz = double(iz)*gridscale*ce.w ; 
 
-        Tran<double>* tr = Tran<double>::make_translate( tx, ty, tz );  
+        const Tran<double>* translate = Tran<double>::make_translate( tx, ty, tz );  
+        bool reverse = false ; 
+        const Tran<double>* transform = Tran<double>::product( translate, instance_transform, reverse ); 
 
+        qat4* qc = Tran<double>::ConvertFrom( transform->t ) ; 
+        
+        //qat4::copy(qc, qt);              // fresh copy of qt into qc
+        //qc.add_translate(tx, ty, tz );   // change qc translation with grid offsets, probably not correct when have rotation  
 
-
-        qat4::copy(qc, qt);              // fresh copy of qt into qc
-        qc.add_translate(tx, ty, tz );   // change qc translation with grid offsets, probably not correct when have rotation  
-        qc.write(gs);                    // copy qc into gs.q2,q3,q4,q5
+        qc->write(gs);                    // copy qc into gs.q2,q3,q4,q5
 
         gensteps.push_back(gs); 
     }

@@ -586,6 +586,23 @@ void test_transform()
 }
 
 
+void test_transform_from_qat4()
+{
+    const char* t_str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
+    qat4* t = qat4::from_string(t_str); 
+    const float* tdata = t->cdata(); 
+
+    glm::tmat4x4<double> T(1.);
+    double* ptr = glm::value_ptr(T) ; 
+    for(int i=0 ; i < 16 ; i++) ptr[i] = double(tdata[i]) ; 
+
+    glm::mat4 V = glm::inverse(T) ;  
+
+    Tran<double>* tr = new Tran<double>(T, V); 
+    std::cout << *tr << std::endl ; 
+
+}
+
 
 
 int main(int argc, char** argv)
@@ -602,8 +619,9 @@ int main(int argc, char** argv)
     test_copy(); 
     test_multiply_ctor(); 
     test_quad6_ctor(); 
-    */
     test_transform(); 
+    */
+    test_transform_from_qat4(); 
 
 
     return 0 ; 
