@@ -2,7 +2,7 @@
 
 #include "scuda.h"
 #include "squad.h"
-#include "qat4.h"
+#include "sqat4.h"
 
 // simulation 
 #include <curand_kernel.h>

@@ -2,7 +2,7 @@
 
 #include <optix.h>
 #include "IAS.h"
-#include "qat4.h"
+#include "sqat4.h"
 
 struct SBT ; 
 

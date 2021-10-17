@@ -21,11 +21,8 @@ FramePhotons vs Photons
 
 Using frame photons is a trick to effectively see results 
 from many more photons that have to pay the costs for tranfers etc.. 
-
 Frame photons lodge photons onto a frame of pixels limiting 
 the maximumm number of photons to handle. 
-
-
 
 pyvista interaction
 ----------------------
@@ -269,7 +266,7 @@ class PH(object):
         """
         """
         p = self.p
-        gs_centers = self.gs_centers
+        gs_centers = self.gs_centers  # no more 
         bnd = self.bnd
         ubnd = self.ubnd
         ubnd_descending = self.ubnd_descending
@@ -313,6 +310,17 @@ class PH(object):
         outpath = os.path.join(self.outdir,"positions_plt.png") 
         print(outpath)
         fig.savefig(outpath)
+
+    def positions_pvplt_simple(self):
+        size = self.size
+        p = self.p
+
+        pos = p[:,0,:3]
+
+        pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
+        pl.add_points( pos, color="white" )        
+        cp = pl.show()
+        return cp
 
     def positions_pvplt(self):
         """
@@ -381,8 +389,11 @@ if __name__ == '__main__':
 
     #p_or_f = f 
     p_or_f = p 
-
     ph = PH(p_or_f, genstep, cf)
-    ph.positions_plt()
-    ph.positions_pvplt()
+    #ph.positions_plt()
+    #ph.positions_pvplt()
+    ph.positions_pvplt_simple()
+
+
+
 

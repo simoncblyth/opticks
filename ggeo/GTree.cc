@@ -39,6 +39,11 @@ Collects transforms from GNode placement instances into a buffer.
 getPlacement for ridx=0 just returns m_root (which always has identity transform)
 for ridx > 0 returns all GNode subtree bases of the ridx repeats.
 
+Just getting transforms from one place to another, 
+not multiplying them so float probably OK. 
+
+TODO: faster to allocate in one go and set, instead of using NPY::add
+
 **/
 
 NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<const GNode*>& placements) // static

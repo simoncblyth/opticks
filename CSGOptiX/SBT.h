@@ -9,7 +9,7 @@
 #include "Binding.h"
 #include "GAS.h"
 #include "IAS.h"
-#include "qat4.h"
+#include "sqat4.h"
 
 /**
 SBT : RG,MS,HG program data preparation 

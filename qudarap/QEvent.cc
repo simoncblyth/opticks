@@ -4,6 +4,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
+#include "stran.h"
 
 #include "NP.hh"
 #include "PLOG.hh"
@@ -100,12 +101,16 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
     {
         LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ; 
         
-        float tx = float(ix)*gridscale*ce.w ; 
-        float ty = float(iy)*gridscale*ce.w ; 
-        float tz = float(iz)*gridscale*ce.w ; 
+        double tx = double(ix)*gridscale*ce.w ; 
+        double ty = double(iy)*gridscale*ce.w ; 
+        double tz = double(iz)*gridscale*ce.w ; 
+
+        Tran<double>* tr = Tran<double>::make_translate( tx, ty, tz );  
+
+
 
         qat4::copy(qc, qt);              // fresh copy of qt into qc
-        qc.add_translate(tx, ty, tz );   // change qc translation with grid offsets, hmm is this generally correct? 
+        qc.add_translate(tx, ty, tz );   // change qc translation with grid offsets, probably not correct when have rotation  
         qc.write(gs);                    // copy qc into gs.q2,q3,q4,q5
 
         gensteps.push_back(gs); 
