@@ -5,8 +5,9 @@ QCKTest.py
 
 ::
 
-    QCerenkovIntegralTest 
-    ipython -i tests/QCKTest.py
+    QCerenkovIntegralTest         # create and persist ICDF
+    QCKTest                       # load ICDF and create energy samples, persisting into ICDF dirs 
+    ipython -i tests/QCKTest.py   # analysis/plotting comparing rejection and lookup sampling 
 
 
 Hmm largest c2 for different BetaInverse always at 7.6eV 
@@ -55,6 +56,10 @@ class QCKTest(object):
     FOLD = os.path.expandvars("/tmp/$USER/opticks/QCerenkovIntegralTest") 
 
     def __init__(self, approach="UpperCut", use_icdf=False):
+        """
+        :param approach: choosing the ICDF folder
+        :param use_icdf: choosing between energy samples ending _s2cn.npy and _icdf.npy 
+        """
         assert approach in ["UpperCut", "SplitBin"] 
         self.approach = approach
         self.use_icdf = use_icdf
@@ -89,21 +94,36 @@ class QCKTest(object):
         :param ii: list of first dimension indices, corresponding to BetaInverse values
         """
         s2cn = self.s2cn
+        bis = self.bis
+        sample_base = self.sample_base
+
+        assert len(s2cn) == len(bis)
+
         ii = np.arange( 0,len(s2cn), istep )  
 
-        title_ = "QCKTest.py : s2cn_plot : s2cn.shape %s  istep %d " % (str(s2cn.shape), istep) 
+        log.info("s2cn %s istep %s ii %s " % (str(s2cn.shape),istep, str(ii) ))
+
+        sbis = "%6.4f ... %6.4f " % (bis[0], bis[-1])
+
+        title_ = "QCKTest.py : s2cn_plot : s2cn.shape %s bis.shape %s bis %s istep %d " % (str(s2cn.shape), str(bis.shape), sbis, istep) 
         desc_ = "JUNO LS : Cerenkov S2 integral CDF for sample of BetaInverse values" 
 
         title = "\n".join([title_, desc_])   
         fig, ax = plt.subplots(figsize=[12.8, 7.2])
         fig.suptitle(title)
         for i in ii:
-            ax.plot( s2cn[i,:,0], s2cn[i,:,1] , label="%d" % i )
+            label = "%6.4f" % bis[i]
+            #ulabel = label if i % 100 == 0 else None  
+            ulabel = label 
+            ax.plot( s2cn[i,:,0], s2cn[i,:,-1] , label=ulabel )
         pass
-        #ax.legend()
+        ax.legend()
         fig.show()
+        figpath = os.path.join(sample_base, "s2cn_plot.png")
+        fig.savefig(figpath)
+        log.info(figpath)
 
-
+         
     def one_s2cn_plot(self, BetaInverse ):
         s2cn = self.s2cn
         ibi = self.getBetaInverseIndex(BetaInverse)
@@ -114,7 +134,7 @@ class QCKTest(object):
         fig, ax = plt.subplots(figsize=[12.8, 7.2])
         fig.suptitle(title)
 
-        ax.plot( s2cn[ibi,:,0], s2cn[ibi,:,1] , label="s2cn[%d]" % ibi )
+        ax.plot( s2cn[ibi,:,0], s2cn[ibi,:,-1] , label="s2cn[%d]" % ibi )
         ax.legend()
         fig.show()
 
@@ -363,20 +383,24 @@ class QCKTest(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
+    arg = sys.argv[1] if len(sys.argv) > 1 else None
+
     #approach = "UpperCut"
     approach = "SplitBin"
     use_icdf = False 
 
     t = QCKTest(approach=approach, use_icdf=use_icdf)
-    #t.s2cn_plot(istep=20)
-    bis = t.bislist()
 
-    #bis = bis[-2:-1]
-    #bis = [1.45,]
-    #bis = [1.6,]
-
-    t.compare(bis)
-    print(t)
+    if arg == "I":
+        t.s2cn_plot(istep=20)
+    else:
+        bis = t.bislist()
+        #bis = bis[-2:-1]
+        #bis = [1.45,]
+        #bis = [1.6,]
+        t.compare(bis)
+        print(t)
+    pass
 
 
 

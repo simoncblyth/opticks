@@ -1,7 +1,12 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-cxs0.sh : hybrid rendering/simulation machinery
+cxs.sh : hybrid rendering/simulation machinery
 ===================================================
+
+::
+
+    ISEL=0,1,3,4,5 ./cxs.sh py  # select which boundaries to include in plot 
+
 
 Two envvars MOI and CEGS configure the gensteps.
 
@@ -42,25 +47,32 @@ Otherwise inner layers can be missed.
 EOU
 }
 
-cxs=${CXS:-2}   # collect sets of config underneath CXS
+cxs=${CXS:-20}   # collect sets of config underneath CXS
 
 if [ "$cxs" == "1" ]; then
     moi=Hama
     #cegs=16:0:9:1000:18700:0:0:100
-    cegs=16:0:9:1000
-    gridscale=0.1
+    cegs=16:0:9:500
+    gridscale=0.05
 elif [ "$cxs" == "2" ]; then
     moi=uni_acrylic3
-    cegs=16:0:9:1000
+    cegs=16:0:9:100
     #cegs=0:0:0:1000
+    #cegs=16:4:9:100
     gridscale=0.05
+elif [ "$cxs" == "20" ]; then
+    note="very tight grid to get into close corners"
+    moi=uni_acrylic3
+    cegs=16:0:9:100
+    gridscale=0.025
 fi 
 
 export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS=${CXS:-$cxs}
-export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
+export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL ZZ $ZZ"
+export BOTLINE="ZOOM $ZOOM LOOK $LOOK"
 
 if [ "$1" == "py" ]; then 
     ipython --pdb -i tests/CSGOptiXSimulateTest.py 

@@ -1,3 +1,11 @@
+/**
+QCerenkovIntegralTest
+======================
+
+Performs many RINDEX s2 integrals for many BetaInverse values
+in order to construct an ICDF that is saved into $TMP/QCerenkovIntegralTest
+
+**/
 
 #include "SPath.hh"
 #include "NP.hh"

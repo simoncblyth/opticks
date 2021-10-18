@@ -44,8 +44,9 @@ QCK<T>* QCK<T>::Load(const char* base, const char* reldir)   // static
             << " s2cn " << s2cn
             << " icdf " << icdf
             << " icdf_prop " << icdf_prop
-            << std::endl 
-            << " use QCerenkovTest to create QCK input arrays "
+            ;
+        LOG(error)
+            << " use QCerenkovIntegralTest to create the ICDF arrays "
             ;
     }
     else

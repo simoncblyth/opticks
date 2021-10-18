@@ -205,13 +205,15 @@ class PH(object):
     """
     Photon wrapper for re-usable photon data handling 
     """
-    def __init__(self, p, gs, cf, mtr ):
+    def __init__(self, p, gs, cf, mtr, peta ):
 
         self.p = p 
         self.gs = gs
         self.cf = cf
         self.mtr = mtr
+        self.peta = peta
         self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
+        self.botline = os.environ.get("BOTLINE", "cxs")
 
         outdir = os.path.join(CSGOptiXSimulateTest.FOLD, "figs")
         if not os.path.isdir(outdir):
@@ -224,6 +226,7 @@ class PH(object):
         elif p.ndim == 4:
             bnd,ids = self.FramePhotons(p) 
         pass
+        self.metadata(peta)
         self.boundaries(bnd)
         self.identities(ids)
         self.gensteps(gs, mtr)
@@ -247,6 +250,13 @@ class PH(object):
         ids = p.view(np.int32)[:,:,3,3] 
         return bnd, ids
 
+    def metadata(self, peta):
+        nx,ny,nz,photons_per_genstep = peta[0,0].view(np.int32) 
+        self.nx = nx
+        self.ny = ny
+        self.nz = nz
+        self.photons_per_genstep = photons_per_genstep
+
     def boundaries(self, bnd):
         cf = self.cf
         ubnd, ubnd_counts = np.unique(bnd, return_counts=True) 
@@ -254,8 +264,10 @@ class PH(object):
         ubnd_descending = np.argsort(ubnd_counts)[::-1]
         ubnd_onames = [ubnd_names[j] for j in ubnd_descending]
         isel = cf.parse_ISEL(os.environ.get("ISEL",""), ubnd_onames) 
-        print( "isel: %s " % str(isel))
-        copyref( locals(), globals(), self, "bnd ubnd isel" ) 
+        sisel = ",".join(map(str, isel))
+
+        print( "isel: %s sisel %s " % (str(isel), sisel))
+        copyref( locals(), globals(), self, "bnd ubnd isel sisel" ) 
 
     def gensteps(self, gs, mtr):
         """
@@ -310,9 +322,12 @@ class PH(object):
         self.xlim = xlim 
         self.ylim = ylim 
         self.zlim = zlim 
- 
+        self.zz = list(map(float, filter(None, os.environ.get("ZZ","").split(","))))
+        self.sz = float(os.environ.get("SZ","1.0"))
+        self.zoom = float(os.environ.get("ZOOM","3.0"))
+        self.look = np.array( list(map(float, os.environ.get("LOOK","0.,0.,0.").split(","))) )
 
-    def positions_plt(self, sz=1.0):
+    def positions_plt(self):
         """
         """
         bnd = self.bnd
@@ -327,10 +342,12 @@ class PH(object):
 
         xlim = self.xlim
         ylim = self.zlim 
+        sz = self.sz
 
         igs = slice(None) if len(ugsc) > 1 else 0
 
-        title = [self.topline,]
+
+        title = [self.topline,self.botline]
 
         fig, ax = plt.subplots(figsize=self.size/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
@@ -349,16 +366,19 @@ class PH(object):
             pos = upos[bnd==ub] 
             ax.scatter( pos[:,X], pos[:,Z], label=label, color=color, s=sz )
         pass
-
+        for z in self.zz:
+            ax.plot( xlim, [z,z], label="z:%8.4f" % z )
+        pass
         ax.scatter( ugsc[igs, X], ugsc[igs,Z], label="gs_center XZ", s=sz )
 
+        ## hmm follow look ?
         ax.set_xlim( xlim )
         ax.set_ylim( ylim )
 
         ax.set_aspect('equal')
         ax.legend(loc="upper right", markerscale=4)
         fig.show()
-        outpath = os.path.join(self.outdir,"positions_plt.png") 
+        outpath = os.path.join(self.outdir,"positions_plt_%s.png" % self.sisel) 
         print(outpath)
         fig.savefig(outpath)
 
@@ -381,7 +401,14 @@ class PH(object):
         Positioning the eye with a simple global frame y-offset causes distortion 
         and apparent untrue overlaps due to the tilt of the geometry.
         Need to apply the central transform to the gaze vector to get straight on view.
- 
+
+
+        https://docs.pyvista.org/api/core/_autosummary/pyvista.Camera.zoom.html?highlight=zoom
+
+        In perspective mode, decrease the view angle by the specified factor.
+
+        In parallel mode, decrease the parallel scale by the specified factor.
+        A value greater than 1 is a zoom-in, a value less than 1 is a zoom-out.       
         """
         colors = self.colors
         bnd = self.bnd
@@ -391,34 +418,34 @@ class PH(object):
         ubnd_onames = self.ubnd_onames
         isel = self.isel
         size = self.size
-
+        xlim = self.xlim
+        ylim = self.zlim 
+ 
         upos = self.upos
         ugsc = self.ugsc
+        grid = True if self.ny == 0 else False 
 
-
-        zoom = 4./1000.   # why this adhoc value  ?  does it depend on yoffset ?
-        yoffset = -1000.    
+        yoffset = -1000.       ## with parallel projection are rather insensitive to this
+        zoom = self.zoom
+        look = self.look if self.local else peta[0,1,:3]
+        eye = look + np.array([ 0, yoffset, 0 ])     # problematic eye position 
+        up = (0,0,1)                                 # will usually be tilted as global up doesnt match local 
 
         pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
+        self.pl = pl 
+
         pl.view_xz() 
         pl.camera.ParallelProjectionOn()  
-        pl.camera.Zoom(zoom)
-
-        if not self.local:
-            look = peta[0,1,:3]                          # this is fine
-            eye = look + np.array([ 0, yoffset, 0 ])     # problematic eye position 
-            up = (0,0,1)                                 # will usually be tilted as global up doesnt match local 
-        else:
-            look = np.array([0,0,0])
-            eye = look + np.array([ 0, yoffset, 0 ])  
-            up = (0,0,1)
-        pass
-
-        pl.add_text(self.topline)
+        pl.camera.Zoom(zoom/1000.)
+        pl.add_text(self.topline, position="upper_left")
+        pl.add_text(self.botline, position="lower_left")
         pl.set_position( eye, reset=False )
         pl.set_focus(    look )
         pl.set_viewup(   up )
-        pl.add_points( ugsc[:,:3], color="white" )           # genstep grid
+
+        if grid:
+            pl.add_points( ugsc[:,:3], color="white" )           # genstep grid
+        pass   
 
         print("positions_pvplt")
         for idesc,ubx in enumerate(ubnd_descending): 
@@ -436,7 +463,15 @@ class PH(object):
             pos = upos[bnd==ub] 
             pl.add_points( pos[:,:3], color=color )
         pass
-        outpath = os.path.join(self.outdir,"positions_pvplt.png") 
+        for z in self.zz:
+            lhs = np.array( [xlim[0], 0, z] )
+            rhs = np.array( [xlim[1], 0, z] )
+            line = pv.Line(lhs, rhs)
+            pl.add_mesh(line, color="w")
+        pass
+ 
+
+        outpath = os.path.join(self.outdir,"positions_pvplt_%s.png" % self.sisel) 
         print(outpath)
         cp = pl.show(screenshot=outpath)
         return cp
@@ -454,7 +489,7 @@ if __name__ == '__main__':
 
     #p_or_f = f 
     p_or_f = p 
-    ph = PH(p_or_f, genstep, cf, metatran)
+    ph = PH(p_or_f, genstep, cf, metatran, peta)
     ph.positions(local=True)
     ph.positions_plt()
     ph.positions_pvplt()

@@ -1,3 +1,13 @@
+/**
+QCKTest.cc
+=============
+
+Loads ICDF created and persisted by QCerenkovIntegralTest 
+and uses it to create Cerenkov energy samples for a variety of BetaInverse 
+by both lookup sampling and for comparison by the traditional rejection sampling approach.
+
+**/
+
 #include <iostream>
 #include <iomanip>
 #include <random>

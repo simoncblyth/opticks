@@ -591,6 +591,15 @@ void X4Solid::convertBox()
     setG4Args(param, keys);
 }
 
+/**
+X4Solid::convertTubs_cylinder
+--------------------------------
+
+Suspicion that 1% nudge might not be enough of an expansion 
+of the inner to avoid coincidences. 
+
+**/
+
 
 nnode* X4Solid::convertTubs_cylinder()
 {  
@@ -612,7 +621,7 @@ nnode* X4Solid::convertTubs_cylinder()
 
         float nudge_inner = 0.01f ; 
         float dz = hz*nudge_inner ;  
-        inner = make_cylinder(rmin, -(hz+dz), (hz+dz) ); 
+        inner = make_cylinder(rmin, -(hz+dz), (hz+dz) );   // radius, z1, z2    (z2 > z1)
         inner->label = BStr::concat( m_name, "_inner", NULL ); 
     }
 

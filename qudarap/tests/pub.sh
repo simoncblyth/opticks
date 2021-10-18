@@ -1,5 +1,4 @@
 #!/bin/bash -l 
-#which pub.py 
-export SRC_BASE=$TMP/QCerenkovTest 
+export SRC_BASE=$TMP/QCerenkovIntegralTest 
 pub.py $* 
 
