@@ -59,10 +59,10 @@ export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS=${CXS:-$cxs}
-export TOPLINE="CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE"
+export TOPLINE="CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
 
 if [ "$1" == "py" ]; then 
-    ipython -i tests/CSGOptiXSimulateTest.py 
+    ipython --pdb -i tests/CSGOptiXSimulateTest.py 
 else
     CSGOptiXSimulateTest
 fi 

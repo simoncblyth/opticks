@@ -116,6 +116,9 @@ except ImportError:
     hexcolors = None
 pass
 
+X,Y,Z = 0,1,2
+
+
 class CSGOptiXSimulateTest(object):
     CXS = os.environ.get("CXS", "1")
     FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest/%s" % CXS)
@@ -128,6 +131,7 @@ class CSGOptiXSimulateTest(object):
             a = np.load(path)
             print(" %10s : %15s : %s " % (stem, str(a.shape), path )) 
             globals()[stem] = a
+            setattr(self, stem, a )
         pass
 
 
@@ -201,11 +205,12 @@ class PH(object):
     """
     Photon wrapper for re-usable photon data handling 
     """
-    def __init__(self, p, gs, cf ):
+    def __init__(self, p, gs, cf, mtr ):
 
         self.p = p 
         self.gs = gs
         self.cf = cf
+        self.mtr = mtr
         self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
 
         outdir = os.path.join(CSGOptiXSimulateTest.FOLD, "figs")
@@ -221,10 +226,10 @@ class PH(object):
         pass
         self.boundaries(bnd)
         self.identities(ids)
+        self.gensteps(gs, mtr)
 
         self.colors = make_colors()
         self.size = np.array([1280, 720])
-        self.gensteps(gs)
 
     @classmethod
     def Photons(cls, p):
@@ -252,7 +257,7 @@ class PH(object):
         print( "isel: %s " % str(isel))
         copyref( locals(), globals(), self, "bnd ubnd isel" ) 
 
-    def gensteps(self, gs):
+    def gensteps(self, gs, mtr):
         """
         Transform enabled gensteps:
 
@@ -261,9 +266,12 @@ class PH(object):
         * gs[igs,2:] 4x4 transform  
 
         """
+        log.info("gensteps")
         gs_numpho = gs.view(np.int32)[:,0,3] 
         gs_centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
         for igs in range(len(gs)): gs_centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
+
+        gs_centers_local = np.dot( gs_centers, mtr[1] )  # use metatran.v to transform back to local frame
 
         copyref( locals(), globals(), self, "gs_" ) 
       
@@ -277,11 +285,36 @@ class PH(object):
 
         copyref( locals(), globals(), self, "i_" ) 
 
+    def positions(self, local=True):
+        self.local = local
+
+        p = self.p
+        gs_centers = self.gs_centers 
+        gs_centers_local = self.gs_centers_local 
+        mtr = self.mtr
+
+
+        gpos = p[:,0].copy()            # global frame intersect positions
+        gpos[:,3] = 1  
+        lpos = np.dot( gpos, mtr[1] )   # local frame intersect positions
+        upos = lpos if local else gpos
+        ugsc = gs_centers_local if local else gs_centers  
+
+        xlim = np.array([ugsc[:,X].min(), ugsc[:,X].max()])
+        ylim = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
+        zlim = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
+        # with global frame gs_centers this will lead to a non-straight-on view as its tilted
+
+        self.upos = upos
+        self.ugsc = ugsc
+        self.xlim = xlim 
+        self.ylim = ylim 
+        self.zlim = zlim 
+ 
+
     def positions_plt(self, sz=1.0):
         """
         """
-        p = self.p
-        gs_centers = self.gs_centers 
         bnd = self.bnd
         ubnd = self.ubnd
         ubnd_descending = self.ubnd_descending
@@ -289,36 +322,35 @@ class PH(object):
         isel = self.isel
         colors = self.colors
 
+        upos = self.upos
+        ugsc = self.ugsc
 
-        X,Y,Z = 0,1,2
-        igs = slice(None) if len(gs_centers) > 1 else 0
+        xlim = self.xlim
+        ylim = self.zlim 
 
-        # this will lead to a non-straight-on view
-        # because the gs_centers are in the tilted global frame 
+        igs = slice(None) if len(ugsc) > 1 else 0
 
-        xlim = np.array([gs_centers[:,X].min(), gs_centers[:,X].max()])
-        ylim = np.array([gs_centers[:,Z].min(), gs_centers[:,Z].max()])  
         title = [self.topline,]
 
         fig, ax = plt.subplots(figsize=self.size/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
 
         print("positions_plt")
-        for idesc,upos in enumerate(ubnd_descending): 
+        for idesc,ubx in enumerate(ubnd_descending): 
             if len(isel) > 0 and not idesc in isel: continue 
             bname = ubnd_onames[idesc] 
-            label = shorten_bname(bname)
-            ub = ubnd[upos]
-            ub_count = ubnd_counts[upos] 
+            label = "%s:%s" % (idesc, shorten_bname(bname))
+            ub = ubnd[ubx]
+            ub_count = ubnd_counts[ubx] 
             color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
             print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
             if ub==0: continue # for frame photons, empty pixels give zero 
 
-            pos = p[bnd==ub][:,0]
+            pos = upos[bnd==ub] 
             ax.scatter( pos[:,X], pos[:,Z], label=label, color=color, s=sz )
         pass
 
-        ax.scatter( gs_centers[igs, X], gs_centers[igs,Z], label="gs_center XZ", s=sz )
+        ax.scatter( ugsc[igs, X], ugsc[igs,Z], label="gs_center XZ", s=sz )
 
         ax.set_xlim( xlim )
         ax.set_ylim( ylim )
@@ -351,16 +383,18 @@ class PH(object):
         Need to apply the central transform to the gaze vector to get straight on view.
  
         """
-        p = self.p
         colors = self.colors
         bnd = self.bnd
         ubnd = self.ubnd
         ubnd_descending = self.ubnd_descending
         ubnd_counts = self.ubnd_counts
         ubnd_onames = self.ubnd_onames
-        gs_centers = self.gs_centers
         isel = self.isel
         size = self.size
+
+        upos = self.upos
+        ugsc = self.ugsc
+
 
         zoom = 4./1000.   # why this adhoc value  ?  does it depend on yoffset ?
         yoffset = -1000.    
@@ -370,31 +404,37 @@ class PH(object):
         pl.camera.ParallelProjectionOn()  
         pl.camera.Zoom(zoom)
 
-        look = peta[0,1,:3]                          # this is fine
-        eye = look + np.array([ 0, yoffset, 0 ])     # problematic eye position 
-        up = (0,0,1)                                 # will usually be tilted as global up doesnt match local 
+        if not self.local:
+            look = peta[0,1,:3]                          # this is fine
+            eye = look + np.array([ 0, yoffset, 0 ])     # problematic eye position 
+            up = (0,0,1)                                 # will usually be tilted as global up doesnt match local 
+        else:
+            look = np.array([0,0,0])
+            eye = look + np.array([ 0, yoffset, 0 ])  
+            up = (0,0,1)
+        pass
 
         pl.add_text(self.topline)
         pl.set_position( eye, reset=False )
         pl.set_focus(    look )
         pl.set_viewup(   up )
-        pl.add_points( gs_centers[:,:3], color="white" )           # genstep grid
+        pl.add_points( ugsc[:,:3], color="white" )           # genstep grid
 
         print("positions_pvplt")
-        for idesc,upos in enumerate(ubnd_descending): 
+        for idesc,ubx in enumerate(ubnd_descending): 
             if len(isel) > 0 and not idesc in isel: continue 
 
-            ub = ubnd[upos]
-            ub_count = ubnd_counts[upos] 
+            ub = ubnd[ubx]
+            ub_count = ubnd_counts[ubx] 
             bname = ubnd_onames[idesc]
-            label = shorten_bname(bname)
+            label = "%s:%s" % (idesc,shorten_bname(bname))
             color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
 
             print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
             if ub==0: continue # for frame photons, empty pixels give zero 
 
-            pos = p[bnd==ub][:,0,:3]
-            pl.add_points( pos, color=color )
+            pos = upos[bnd==ub] 
+            pl.add_points( pos[:,:3], color=color )
         pass
         outpath = os.path.join(self.outdir,"positions_pvplt.png") 
         print(outpath)
@@ -410,12 +450,14 @@ if __name__ == '__main__':
     g = genstep
     p = photons
     f = fphoton
+    mtr = metatran
 
     #p_or_f = f 
     p_or_f = p 
-    ph = PH(p_or_f, genstep, cf)
+    ph = PH(p_or_f, genstep, cf, metatran)
+    ph.positions(local=True)
     ph.positions_plt()
-    #ph.positions_pvplt()
+    ph.positions_pvplt()
     #ph.positions_pvplt_simple()
 
 
