@@ -302,7 +302,7 @@ struct NPS
 
     int idx(int i, int j, int k, int l, int m)
     {
-        int ni = ni_() ;
+        //int ni = ni_() ;
         int nj = nj_() ; 
         int nk = nk_() ; 
         int nl = nl_() ;

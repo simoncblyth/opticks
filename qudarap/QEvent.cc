@@ -50,6 +50,8 @@ cegs(uint4)
    nx:ny:nz:photons_per_genstep
    specifies a grid of integers -nx:nx -ny:ny -nz:nz inclusive used to scale the extent 
 
+   The number of gensteps becomes: (2*nx+1)*(2*ny+1)*(2*nz+1)
+
 gridscale
    float multiplier applied to the grid integers, values less than 1. (eg 0.2) 
    increase the concentration of the genstep grid on the target geometry giving a 
@@ -72,18 +74,17 @@ to create a grid or plane between them need to first pre-multiply by the
 small local translation followed by the rotation and large global translation 
 into position. 
 
+For example when using reverse=true get individual tilts out of the plane 
+ie the single local XZ plane becomes lots of planes in global frame as the local_translate is done last.
+When using reverse=false get all the tilts the same so local XZ single plane stays one plane in the global 
+frame as are doing the local_translate first. 
+
 **/
 
-NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const qat4* qt_ptr) // static
+NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const Tran<double>* geotran ) // static
 {
-    qat4 qt ;  // input transform : defaults to identity
-    if(qt_ptr) qat4::copy(qt, *qt_ptr) ; 
-    const Tran<double>*  instance_transform = Tran<double>::ConvertToTran( &qt ); 
-
-    qat4 qc ;  // transform to be varied, starting from input  
-
-    quad6 gs ; 
-    gs.zero(); 
+    std::vector<quad6> gensteps ; 
+    quad6 gs ; gs.zero(); 
 
     unsigned nx = cegs.x ; 
     unsigned ny = cegs.y ; 
@@ -100,10 +101,6 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
     gs.q1.f.z = 0.f ;   
     gs.q1.f.w = 1.f ; 
 
-    // reuse gs and qc, changing content and copying into gensteps for each position
-
-    std::vector<quad6> gensteps ; 
-
     for(int ix=-int(nx) ; ix < int(nx)+1 ; ix++ )
     for(int iy=-int(ny) ; iy < int(ny)+1 ; iy++ )
     for(int iz=-int(nz) ; iz < int(nz)+1 ; iz++ )
@@ -113,12 +110,10 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
         double tx = double(ix)*gridscale*ce.w ; 
         double ty = double(iy)*gridscale*ce.w ; 
         double tz = double(iz)*gridscale*ce.w ; 
-        const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz );  
+        const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz );   // TODO: stack not heap ?
 
-        //bool reverse = true ;  //   true: individual tilts out of the plane : local XZ going into lots of planes : as does local_translate last 
-        bool reverse = false ;   //  false: all tilted the same so local XZ stay in one plane : as does the local_translate first 
-
-        const Tran<double>* transform = Tran<double>::product( instance_transform, local_translate, reverse ); 
+        bool reverse = false ; 
+        const Tran<double>* transform = Tran<double>::product( geotran, local_translate, reverse );  
 
         qat4* qc = Tran<double>::ConvertFrom( transform->t ) ; 
 

@@ -23,6 +23,7 @@ is to be able to see the exact same geometry that the simulation is using.
 
 #include "scuda.h"
 #include "sqat4.h"
+#include "stran.h"
 
 #include "SSys.hh"
 #include "SPath.hh"
@@ -102,13 +103,15 @@ int main(int argc, char** argv)
               << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;           
 
         LOG(info) << std::endl << "qt" << qt ; 
+        Tran<double>* geotran = Tran<double>::ConvertToTran( &qt );  // houses transform and inverse
 
         uint4 cegs ; 
         CSGOptiXSimulate::ParseCEGS(cegs, ce ); 
 
-        gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, &qt ); 
+        gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran ); 
         cx.setCE(ce); 
         cx.setCEGS(cegs); 
+        cx.setMetaTran(geotran); 
 
         //cx.setNear(0.1); // TODO: not getting 0.1., investigate 
     }
@@ -133,8 +136,8 @@ int main(int argc, char** argv)
     std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
     cx.snap(outpath, bottom_line.c_str(), topline  );   
     cx.writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
-    cx.savePeta(outdir, "peta.npy"); 
-
+    cx.savePeta(outdir, "peta.npy");   
+    cx.saveMetaTran(outdir, "metatran.npy"); 
 
 
     cudaDeviceSynchronize(); 

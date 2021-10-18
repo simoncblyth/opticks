@@ -99,6 +99,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
 #endif
     meta(new SMeta),
     peta(new quad4), 
+    metatran(nullptr),
     sim(raygenmode == 0 ? nullptr : new QSim<float>),
     evt(raygenmode == 0 ? nullptr : new QEvent)
 {
@@ -129,6 +130,12 @@ void CSGOptiX::initPeta()
     unsigned* ptr = &(peta->q0.u.x) ;  
     for(unsigned i=0 ; i < 16 ; i++ ) *(ptr + i) = 0u ; 
 }
+
+void CSGOptiX::setMetaTran(const Tran<double>* metatran_ )
+{
+    metatran = metatran_ ; 
+}
+
 
 void CSGOptiX::initParams()
 {
@@ -437,4 +444,21 @@ void CSGOptiX::savePeta(const char* fold, const char* name) const
     LOG(info) << path ; 
     NP::Write(path, (float*)(&peta->q0.f.x), 1, 4, 4 );
 }
+
+void CSGOptiX::saveMetaTran(const char* fold, const char* name) const
+{
+    if(metatran == nullptr) return ; 
+
+    int create_dirs = 1 ; // 1:filepath
+    const char* path = SPath::Resolve(fold, name, create_dirs) ; 
+    LOG(info) << path ; 
+
+    NP* mta = NP::Make<double>(3, 4, 4 );  
+    metatran->write( mta->values<double>() ) ; 
+    mta->save(fold, name);  
+}
+
+
+
+
 

@@ -106,6 +106,11 @@ import matplotlib.pyplot as plt
 try:
     import pyvista as pv
     from pyvista.plotting.colors import hexcolors  
+    #theme = "default"
+    theme = "dark"
+    #theme = "paraview"
+    #theme = "document"
+    pv.set_plot_theme(theme)
 except ImportError:
     pv = None
     hexcolors = None
@@ -248,8 +253,18 @@ class PH(object):
         copyref( locals(), globals(), self, "bnd ubnd isel" ) 
 
     def gensteps(self, gs):
+        """
+        Transform enabled gensteps:
+
+        * gs[igs,0,3] photons to generate for genstep *igs* 
+        * gs[igs,1] local frame center position
+        * gs[igs,2:] 4x4 transform  
+
+        """
         gs_numpho = gs.view(np.int32)[:,0,3] 
-        gs_centers = gs[:,1,:3] 
+        gs_centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
+        for igs in range(len(gs)): gs_centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
+
         copyref( locals(), globals(), self, "gs_" ) 
       
     def identities(self, ids):
@@ -266,7 +281,7 @@ class PH(object):
         """
         """
         p = self.p
-        gs_centers = self.gs_centers  # no more 
+        gs_centers = self.gs_centers 
         bnd = self.bnd
         ubnd = self.ubnd
         ubnd_descending = self.ubnd_descending
@@ -277,6 +292,10 @@ class PH(object):
 
         X,Y,Z = 0,1,2
         igs = slice(None) if len(gs_centers) > 1 else 0
+
+        # this will lead to a non-straight-on view
+        # because the gs_centers are in the tilted global frame 
+
         xlim = np.array([gs_centers[:,X].min(), gs_centers[:,X].max()])
         ylim = np.array([gs_centers[:,Z].min(), gs_centers[:,Z].max()])  
         title = [self.topline,]
@@ -326,6 +345,11 @@ class PH(object):
         """
         * previously always starts really zoomed in, requiring two-finger upping to see the intersects
         * following hint from https://github.com/pyvista/pyvista/issues/863 now set an adhoc zoom factor
+ 
+        Positioning the eye with a simple global frame y-offset causes distortion 
+        and apparent untrue overlaps due to the tilt of the geometry.
+        Need to apply the central transform to the gaze vector to get straight on view.
+ 
         """
         p = self.p
         colors = self.colors
@@ -346,9 +370,9 @@ class PH(object):
         pl.camera.ParallelProjectionOn()  
         pl.camera.Zoom(zoom)
 
-        look = peta[0,1,:3]  
-        eye = look + np.array([ 0, yoffset, 0 ])  
-        up = (0,0,1)
+        look = peta[0,1,:3]                          # this is fine
+        eye = look + np.array([ 0, yoffset, 0 ])     # problematic eye position 
+        up = (0,0,1)                                 # will usually be tilted as global up doesnt match local 
 
         pl.add_text(self.topline)
         pl.set_position( eye, reset=False )
@@ -390,9 +414,9 @@ if __name__ == '__main__':
     #p_or_f = f 
     p_or_f = p 
     ph = PH(p_or_f, genstep, cf)
-    #ph.positions_plt()
+    ph.positions_plt()
     #ph.positions_pvplt()
-    ph.positions_pvplt_simple()
+    #ph.positions_pvplt_simple()
 
 
 

@@ -5,6 +5,10 @@
 #include "sqat4.h"
 #include "stran.h"
 
+#include "SPath.hh"
+#include "NP.hh"
+
+
 void test_make()
 {
     const Tran<float>* i = Tran<float>::make_translate( 0.f, 0.f, 0.f ) ; 
@@ -37,11 +41,16 @@ void test_Convert()
 {
     const char* t_str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
     qat4* t = qat4::from_string(t_str); 
+    std::cout  << *t << std::endl ; 
 
     Tran<double>* trd = Tran<double>::ConvertToTran(t); 
     qat4* trd_t = Tran<double>::ConvertFrom(trd->t); 
     qat4* trd_v = Tran<double>::ConvertFrom(trd->v); 
     qat4* trd_i = Tran<double>::ConvertFrom(trd->i); 
+
+    int rc = qat4::compare( *t, *trd_t, 1e-7 ) ; 
+    assert( rc == 0 ); 
+
 
     std::cout  << *trd << std::endl ; 
     std::cout  << "trd_t " << *trd_t << std::endl ; 
@@ -59,10 +68,33 @@ void test_Convert()
     std::cout  << "trf_i " << *trf_i << std::endl ; 
 }
 
+
+template<typename T>
+void test_write(const char* name)
+{
+    int create_dirs = 2 ; // 2:dirpath 
+    const char* fold = SPath::Resolve("$TMP/sysrap/stranTest/test_write", create_dirs); 
+
+    const Tran<T>* tr = Tran<T>::make_rotate(    0.f, 0.f, 1.f, 45.f ) ; 
+
+    NP* a = NP::Make<T>(3, 4, 4 ); 
+    tr->write( a->values<T>() ) ; 
+
+    a->dump(); 
+    a->save(fold, name) ; 
+}
+
+
 int main()
 {
-    //test_make(); 
-    //test_ctor(); 
+    /*
+    test_make(); 
+    test_ctor(); 
     test_Convert();
+    */
+    test_write<float>("f.npy"); 
+    test_write<double>("d.npy"); 
+
+
     return 0 ; 
 }

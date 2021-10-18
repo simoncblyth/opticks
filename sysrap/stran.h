@@ -20,11 +20,14 @@ which inevitably risks numerical issues.
 
 #include "sqat4.h"
 #include "glm/glm.hpp"
+
 #include <vector>
 
 template<typename T>
 struct Tran
 {
+    // TODO: on stack ctors 
+
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz, const T sc);
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz);
     static const Tran<T>* make_identity();
@@ -43,7 +46,9 @@ struct Tran
 
     bool is_identity(char mat='t', T epsilon=1e-6) const ; 
     std::string brief(bool only_tlate=false, char mat='t', unsigned wid=6, unsigned prec=1) const ;  
-  
+ 
+    void write(T* dst, unsigned num_values=3*4*4) const ; 
+
     const T* tdata() const ; 
     const T* vdata() const ; 
  
@@ -164,6 +169,13 @@ inline const Tran<T>* Tran<T>::product(const Tran<T>* a, const Tran<T>* b, const
 Tran::product
 --------------
 
+Tran houses paired transforms with their inverse transforms, the product 
+of the transforms and opposite order product of the inverse transforms
+is done using inclusive indices to access Tran from the vector::
+
+   i: 0 -> ntt - 1      ascending 
+   j: ntt - 1 -> 0      descending (from last transform down to first)
+
 Use *reverse=true* when the transforms are in reverse heirarchical order, ie when
 they have been collected by starting from the leaf node and then following parent 
 links back up to the root node. 
@@ -186,15 +198,11 @@ inline const Tran<T>* Tran<T>::product(const std::vector<const Tran<T>*>& tt, bo
 
     for(unsigned i=0,j=ntt-1 ; i < ntt ; i++,j-- )
     {
-        // inclusive indices:
-        //     i: 0 -> ntt - 1      ascending 
-        //     j: ntt - 1 -> 0      descending (from last transform down to first)
-        //
         const Tran<T>* ii = tt[reverse ? j : i] ;  // with reverse: start from the last (ie root node)
         const Tran<T>* jj = tt[reverse ? i : j] ;  // with reverse: start from the first (ie leaf node)
 
-        t *= ii->t ;  
-        v *= jj->v ;    // inverse-transform product in opposite order
+        if( ii != nullptr )  t *= ii->t ;  
+        if( jj != nullptr )  v *= jj->v ;  // inverse-transform product in opposite order
     }
     return new Tran<T>(t, v) ;
 }
@@ -306,7 +314,20 @@ qat4* Tran<T>::ConvertFrom(const glm::tmat4x4<T>& transform )
     return new qat4(ff) ; 
 }
 
+template<typename T>
+void Tran<T>::write(T* dst, unsigned num_values) const 
+{
+    unsigned matrix_values = 4*4 ; 
+    assert( num_values == 3*matrix_values ); 
+  
+    unsigned matrix_bytes = matrix_values*sizeof(T) ; 
+    char* dst_bytes = (char*)dst ; 
 
+    memcpy( dst_bytes + 0*matrix_bytes , (char*)glm::value_ptr(t), matrix_bytes );
+    memcpy( dst_bytes + 1*matrix_bytes , (char*)glm::value_ptr(v), matrix_bytes );
+    memcpy( dst_bytes + 2*matrix_bytes , (char*)glm::value_ptr(i), matrix_bytes );
+}
+ 
 
 
 template struct Tran<float> ;

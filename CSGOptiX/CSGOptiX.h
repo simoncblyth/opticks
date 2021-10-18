@@ -13,6 +13,7 @@ struct CSGFoundry ;
 struct CSGView ; 
 
 template <typename T> struct QSim ; 
+template <typename T> struct Tran ; 
 struct QEvent ; 
 
 struct Params ; 
@@ -63,6 +64,7 @@ struct CSGOptiX : public SRenderer
 #endif
     SMeta* meta ; 
     quad4* peta ; 
+    const Tran<double>* metatran ; 
 
     QSim<float>* sim ; 
     QEvent*      evt ;  
@@ -83,6 +85,8 @@ struct CSGOptiX : public SRenderer
     void setCEGS(const uint4& cegs_); 
     void setCE(const float4& ce); 
     void setCE(const glm::vec4& ce); 
+    void setMetaTran(const Tran<double>* metatran ); 
+
     void setNear(float near); 
 
     void prepareRenderParam(); 
@@ -92,6 +96,8 @@ struct CSGOptiX : public SRenderer
     int  render_flightpath(); 
     void saveMeta(const char* jpg_path) const ;
     void savePeta(const char* fold, const char* name) const ; 
+    void saveMetaTran(const char* fold, const char* name) const ; 
+
     static std::string Annotation( double dt, const char* bot_line ); 
 
     // [ fulfil SRenderer protocol base

@@ -44,9 +44,10 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz)
 
 
     const char* str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
-    qat4* qt_ptr = qat4::from_string(str); 
+    qat4* qt = qat4::from_string(str); 
+    const Tran<double>* geotran = Tran<double>::ConvertToTran(qt); 
 
-    const NP* gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, qt_ptr ); 
+    const NP* gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran ); 
 
     int create_dirs = 2 ; // 2:dirpath
     const char* fold = SPath::Resolve(BASE, create_dirs ); 
