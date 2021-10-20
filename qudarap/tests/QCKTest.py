@@ -51,6 +51,13 @@ from opticks.ana.rsttable import RSTTable
 
 log = logging.getLogger(__name__)
 
+def isfloat(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+    pass
 
 class QCKTest(object):
     FOLD = os.path.expandvars("/tmp/$USER/opticks/QCerenkovIntegralTest") 
@@ -84,7 +91,7 @@ class QCKTest(object):
 
     def bislist(self):
         names = sorted(os.listdir(os.path.expandvars(self.sample_base)))
-        names = filter(lambda n:not n.startswith("bis"), names)
+        names = list(filter(lambda n:isfloat(n), names))
         print(names)
         bis = list(map(float, names))
         return bis

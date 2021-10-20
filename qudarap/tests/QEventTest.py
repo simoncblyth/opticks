@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """
+QEventTest.py
+=================
 
 ::
 

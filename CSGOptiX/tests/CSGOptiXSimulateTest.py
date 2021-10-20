@@ -16,6 +16,19 @@ the fphoton.npy intersects
   and geometries are changed frequently 
 
 
+TODO: Use the identity info in analogous way to the boundary info
+--------------------------------------------------------------------
+
+* allow selection by frequency index of hitting identity codes just like ISEL 
+* ISEL needs to become IBND or smth, and IID can select identities
+
+
+TODO : identity info improvements
+------------------------------------
+
+* retaining the sign of the boundary would be helpful also b=0 is swamped
+
+
 FramePhotons vs Photons
 ---------------------------
 
@@ -31,12 +44,6 @@ The plot tends to start in a very zoomed in position.
 
 * to zoom out/in : slide two fingers up/down on trackpad. 
 * to pan : hold down shift and one finger tap-lock, then move finger around  
-
-
-TODO : identity info improvements
-------------------------------------
-
-* retaining the sign of the boundary would be helpful also b=0 is swamped
 
 
 plotting a selection of boundaries only, picked by descending frequency index
@@ -316,6 +323,19 @@ class PH(object):
         ylim = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
         zlim = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
         # with global frame gs_centers this will lead to a non-straight-on view as its tilted
+
+
+        nx = self.nx
+        ny = self.ny
+        nz = self.nz
+
+        bins = (np.linspace(*xlim, 2*nx+1), np.linspace(*ylim, max(2*ny+1,2) ), np.linspace(*zlim, 2*nz+2))
+        h3d, bins2 = np.histogramdd(upos[:,:3], bins=bins )   
+        ## TODO: use the 3d histo to sparse-ify gensteps positions, to avoiding shooting rays from big voids 
+
+        self.h3d = h3d
+        self.bins = bins 
+        self.bins2 = bins2 
 
         self.upos = upos
         self.ugsc = ugsc

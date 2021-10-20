@@ -47,7 +47,7 @@ Otherwise inner layers can be missed.
 EOU
 }
 
-cxs=${CXS:-20}   # collect sets of config underneath CXS
+cxs=${CXS:-4}   # collect sets of config underneath CXS
 
 if [ "$cxs" == "1" ]; then
     moi=Hama
@@ -60,6 +60,10 @@ elif [ "$cxs" == "2" ]; then
     #cegs=0:0:0:1000
     #cegs=16:4:9:100
     gridscale=0.05
+elif [ "$cxs" == "4" ]; then
+    moi=uni_acrylic3
+    cegs=32:0:18:100
+    gridscale=0.025
 elif [ "$cxs" == "20" ]; then
     note="very tight grid to get into close corners"
     moi=uni_acrylic3

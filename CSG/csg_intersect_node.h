@@ -677,10 +677,16 @@ bool intersect_node_slab( float4& isect, const quad& q0, const quad& q1, const f
 
 
 /**
+intersect_node_cylinder
+------------------------
 
-ISSUE : rectangle scan reveals lack of axial ray intersects on bottom cap 
+* handling inner radius within the primitive would be useful, but need to simplify first 
+* ideas to simplify
 
-* fixed by offsetting ENDCAP_P ENDCAP_Q endcap values 
+  * adopt natural cylinder frame 
+  * split into separate methods for infinite intersect 
+
+
 
 **/
 

@@ -670,27 +670,16 @@ Acting on the gensteps created eg in QEvent
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
-
-    // start with local frame position and direction for the photon 
-
-    p.q0.f.x = gs.q1.f.x ;     
-    p.q0.f.y = gs.q1.f.y ;  
-    p.q0.f.z = gs.q1.f.z ;  
-    p.q0.f.w = 0.f ;         
+    p.q0.f = gs.q1.f ;  // start with local frame position, eg (0,0,0)   
 
     float u = curand_uniform(&rng); 
     float sinPhi, cosPhi;
     sincosf(2.f*M_PIf*u,&sinPhi,&cosPhi);
 
-    // printf("// qsim::generate_photon_torch photon_id %d genstep_id %d sinPhi %10.4f cosPhi %10.4f \n", photon_id, genstep_id, sinPhi, cosPhi ); 
+    //  local frame XZ plane directions
+    p.q1.f.x = cosPhi ;  p.q1.f.y = 0.f    ;  p.q1.f.z = sinPhi ;  p.q1.f.w = 0.f ;  
 
-    p.q1.f.x = cosPhi ;   // direction
-    p.q1.f.y = 0.f    ;  
-    p.q1.f.z = sinPhi ;  
-    p.q1.f.w = 1.f    ;   // weight
-
-
-    qat4 qt(gs) ;  // transform from last 4 quads of genstep 
+    qat4 qt(gs) ; // copy 4x4 transform from last 4 quads of genstep 
     qt.right_multiply_inplace( p.q0.f, 1.f );   // position 
     qt.right_multiply_inplace( p.q1.f, 0.f );   // direction 
 } 
