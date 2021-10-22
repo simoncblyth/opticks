@@ -138,11 +138,6 @@ qsim<T>* QSim<T>::init_upload()
         << " d_sim " << d_sim 
         ;  
 
-    unsigned hd_factor = scint->tex->getHDFactor() ;  // HMM: perhaps get this from sim rather than occupying an argument slot  
-    LOG(LEVEL) 
-        << " hd_factor " << hd_factor  
-        ;
-
     if(rng)
     {
         LOG(LEVEL) << " rng " << rng->desc() ; 
@@ -150,7 +145,11 @@ qsim<T>* QSim<T>::init_upload()
     } 
     if(scint)
     {
-        LOG(LEVEL) << " scint.desc " << scint->desc() ; 
+        unsigned hd_factor = scint->tex->getHDFactor() ;  // HMM: perhaps get this from sim rather than occupying an argument slot  
+        LOG(LEVEL) 
+            << " scint.desc " << scint->desc() 
+            << " hd_factor " << hd_factor 
+            ;
         sim->scint_tex = scint->tex->texObj ; 
         sim->scint_meta = scint->tex->d_meta ; 
     } 

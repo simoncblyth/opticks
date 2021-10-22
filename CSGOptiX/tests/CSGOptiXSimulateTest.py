@@ -381,7 +381,7 @@ class PH(object):
             ub_count = ubnd_counts[ubx] 
             color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
             print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
-            if ub==0: continue # for frame photons, empty pixels give zero 
+            if ub==0 and not 0 in isel: continue # for frame photons, empty pixels give zero 
 
             pos = upos[bnd==ub] 
             ax.scatter( pos[:,X], pos[:,Z], label=label, color=color, s=sz )
@@ -478,7 +478,7 @@ class PH(object):
             color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
 
             print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
-            if ub==0: continue # for frame photons, empty pixels give zero 
+            if ub==0 and not 0 in isel: continue # for frame photons, empty pixels give zero 
 
             pos = upos[bnd==ub] 
             pl.add_points( pos[:,:3], color=color )
