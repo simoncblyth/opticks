@@ -24,7 +24,9 @@ TODO: pick between multiple IAS with midx -1,-2,...
 EOU
 }
 
-geometry=parade
+geometry=dcyl
+#geometry=dbsp
+#geometry=parade
 #geometry=layered_sphere
 #geometry=sphere_containing_grid_of_spheres
 #geometry=scaled_box3
@@ -43,6 +45,11 @@ elif [ "$GEOMETRY" == "scaled_box3" ]; then
    tmin=1.1 
    #tmin=1.8 
    cam=1
+elif [ "$GEOMETRY" == "dcyl" -o "$GEOMETRY" == "dbsp"  ]; then
+   moi=-1                               # -1 entire-IAS default as it applies to any geometry               
+   eye=-1,-1,1,1                     
+   tmin=0.5
+   cam=0         
 else
    moi=-1                               # -1 entire-IAS default as it applies to any geometry               
    eye=-1,0,1,1                         # 45 degree "tray" view 

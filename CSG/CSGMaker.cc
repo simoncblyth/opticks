@@ -38,6 +38,7 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(strcmp(name, "ibsp") == 0) so = makeIntersectionBoxSphere(name) ;
     else if(strcmp(name, "dbsp") == 0) so = makeDifferenceBoxSphere(name) ;
     else if(strcmp(name, "rcyl") == 0) so = makeRotatedCylinder(name) ;
+    else if(strcmp(name, "dcyl") == 0) so = makeDifferenceCylinder(name) ;
     else LOG(fatal) << "invalid name [" << name << "]" ; 
     assert( so ); 
     return so ;  
@@ -63,6 +64,7 @@ void CSGMaker::makeDemoSolids()
     makeIntersectionBoxSphere();
     makeDifferenceBoxSphere();
     makeRotatedCylinder();
+    makeDifferenceCylinder();
 }
 
 void CSGMaker::makeDemoGrid()
@@ -319,6 +321,13 @@ CSGSolid* CSGMaker::makeBooleanBoxSphere( const char* label, char op_, float rad
     CSGNode op = CSGNode::BooleanOperator(op_); 
     CSGNode bx = CSGNode::Box3(fullside) ; 
     CSGNode sp = CSGNode::Sphere(radius); 
+    return makeBooleanTriplet(label, op_, bx, sp ); 
+}
+
+
+CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, char op_, const CSGNode& left, const CSGNode& right, int meshIdx ) 
+{
+    CSGNode op = CSGNode::BooleanOperator(op_); 
 
     unsigned numPrim = 1 ; 
     CSGSolid* so = fd->addSolid(numPrim, label);
@@ -326,24 +335,42 @@ CSGSolid* CSGMaker::makeBooleanBoxSphere( const char* label, char op_, float rad
     unsigned numNode = 3 ; 
     int nodeOffset_ = -1 ; 
     CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
-    p->setMeshIdx(meshIdx); 
+    if(meshIdx > -1) p->setMeshIdx(meshIdx); 
 
-    fd->addNode(op); 
-    fd->addNode(bx); 
-    fd->addNode(sp); 
+    CSGNode* n = fd->addNode(op); 
+    fd->addNode(left); 
+    fd->addNode(right); 
      
+    // naive bbox combination yields overlarge bbox, not appropriate for production code
     AABB bb = {} ;
-    bb.include_aabb( bx.AABB() );     // assumes any transforms have been applied to the Node AABB
-    bb.include_aabb( sp.AABB() ); 
+    bb.include_aabb( left.AABB() );     // assumes any transforms have been applied to the Node AABB
+    bb.include_aabb( right.AABB() ); 
     p->setAABB( bb.data() );  
 
     so->center_extent = bb.center_extent()  ; 
+
+    // setting transform as otherise loading foundry fails for lack of non-optional tran array 
+    const Tran<double>* tran_identity = Tran<double>::make_identity(); 
+    unsigned transform_idx = 1 + fd->addTran(*tran_identity);   // 1-based idx, 0 meaning None
+    n->setTransform(transform_idx); 
+
+
     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
     return so ; 
 }
 
+CSGSolid* CSGMaker::makeDifferenceCylinder( const char* label, float rmax, float rmin, float z1, float z2, float z_inner_factor   )
+{
+    assert( rmax > rmin ); 
+    assert( z2 > z1 ); 
 
+    float px = 0.f ; // rmax*2.f ; 
+    float py = 0.f ; // rmax*2.f ; 
 
+    CSGNode outer = CSGNode::Cylinder( 0.f, 0.f, rmax, z1, z2 ); 
+    CSGNode inner = CSGNode::Cylinder( px, py,   rmin, z1*z_inner_factor, z2*z_inner_factor ); 
+    return makeBooleanTriplet(label, 'D', outer, inner ); 
+}
 
 
 CSGSolid* CSGMaker::makeUnionBoxSphere( const char* label, float radius, float fullside ){

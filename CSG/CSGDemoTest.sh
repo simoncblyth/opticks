@@ -13,7 +13,7 @@ EOU
 
 bin=CSGDemoTest 
 
-geometry=parade
+#geometry=parade
 #geometry=sphere_containing_grid_of_spheres
 #geometry=layered_sphere
 #geometry=layered_zsphere
@@ -35,6 +35,7 @@ geometry=parade
 #geometry=ibsp 
 #geometry=dbsp
 #geometry=rcyl
+geometry=dcyl
 
 #clusterspec=-3:4:1,-3:4:1,-3:4:1
 clusterspec=-1:2:1,-1:2:1,-1:2:1

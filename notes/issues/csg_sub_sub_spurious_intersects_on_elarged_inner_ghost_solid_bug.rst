@@ -183,10 +183,11 @@ These can be answered without returning all the way to Geant4 geometry, so do no
 need to start from CSG_GGeo can just operate in CSG. 
 
 
-CSGDemo Workflow
-----------------------
+CSGDemo Workflow with new *dcyl* demo solid
+---------------------------------------------
 
-::
+Added *dcyl* to the demo solids to investigate::
+
 
    cd ~/opticks/CSG       ## create foundry geometry and persist 
    ./CSGDemoTest.sh    
