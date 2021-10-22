@@ -43,7 +43,7 @@ instanciation collects together.
 **/
 
 template <typename T>
-void QSim<T>::UploadComponents( const NP* icdf, const NP* bnd )
+void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd )
 {
     // on heap, to avoid dtors
 
@@ -52,13 +52,30 @@ void QSim<T>::UploadComponents( const NP* icdf, const NP* bnd )
 
     const char* qsim_icdf_path = SSys::getenvvar("QSIM_ICDF_PATH", nullptr ); 
     const NP* override_icdf = qsim_icdf_path ?  NP::Load(qsim_icdf_path) : nullptr ;
+    const NP* icdf = override_icdf ? override_icdf : icdf_ ; 
  
-    unsigned hd_factor = 0u ;  // 0,10,20
-    QScint* qscint = new QScint( override_icdf ? override_icdf : icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
-    LOG(LEVEL) << qscint->desc(); 
+    if( icdf == nullptr )
+    {
+        LOG(warning) << " icdf null " ; 
+    }
+    else
+    {
+        unsigned hd_factor = 0u ;  // 0,10,20
+        QScint* qscint = new QScint( icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
+        LOG(LEVEL) << qscint->desc(); 
+    }
 
-    QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
-    LOG(LEVEL) << qbnd->desc(); 
+
+    if( bnd == nullptr )
+    {
+        LOG(warning) << " bnd null " ; 
+    }
+    else
+    {
+        QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
+        LOG(LEVEL) << qbnd->desc(); 
+    }
+
 
     QProp<T>* qprop = new QProp<T> ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
     LOG(LEVEL) << qprop->desc(); 

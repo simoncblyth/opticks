@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 
     const char* outdir = ok.getOutDir(); 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
-    const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
+    const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );  // CFBASE dir must contain CSGFoundry subdir 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  

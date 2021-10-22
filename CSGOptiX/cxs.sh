@@ -47,7 +47,8 @@ Otherwise inner layers can be missed.
 EOU
 }
 
-cxs=${CXS:-4}   # collect sets of config underneath CXS
+cxs=${CXS:-30}         # collect sets of config underneath CXS
+cfbase=$TMP/CSG_GGeo   # default CSGFoundry dir is within cfbase 
 
 if [ "$cxs" == "1" ]; then
     moi=Hama
@@ -69,6 +70,11 @@ elif [ "$cxs" == "20" ]; then
     moi=uni_acrylic3
     cegs=16:0:9:100
     gridscale=0.025
+elif [ "$cxs" == "30" ]; then
+    cfbase=$TMP/CSGDemoTest/dcyl     # non-standard CSGFoundry dir within cfbase
+    moi=0
+    cegs=16:0:9:100
+    gridscale=0.025
 fi 
 
 export MOI=${MOI:-$moi}
@@ -77,10 +83,12 @@ export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS=${CXS:-$cxs}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL ZZ $ZZ"
 export BOTLINE="ZOOM $ZOOM LOOK $LOOK"
+export CFBASE=${CFBASE:-$cfbase}
+
 
 if [ "$1" == "py" -o "$(uname)" == "Darwin" ]; then 
     ipython --pdb -i tests/CSGOptiXSimulateTest.py 
 else
-    CSGOptiXSimulateTest
+    $GDB CSGOptiXSimulateTest
 fi 
 
