@@ -335,7 +335,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
         bool oim = CSGNode::IsOnlyIntersectionMask(atm) ; 
 
-        bool cle = n->is_complemented_leaf();   
+        bool cle = n->is_complemented_primitive();   
 
         bool bbskip =  oim && cle  ;  // exclude bbox of complemented leaf with only intersection ancestry 
 
@@ -441,7 +441,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
             << std::endl 
             ; 
 
-    assert( n->complement() == complement ); 
+    assert( n->is_complement() == complement ); 
 
     if(tranIdx > 0 )
     {    

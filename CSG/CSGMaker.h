@@ -35,8 +35,21 @@ struct CSGMaker
     CSGSolid* makeSolid11(const char* label, CSGNode nd, const std::vector<float4>* pl=nullptr, int meshIdx=-1 );
     CSGSolid* makeBooleanBoxSphere( const char* label, char op, float radius, float fullside, int meshIdx = -1  ) ;
     CSGSolid* makeBooleanTriplet(   const char* label, char op, const CSGNode& left, const CSGNode& right, int meshIdx=-1 ) ; 
+    CSGSolid* makeBooleanSeptuplet( 
+        const char* label, 
+        const CSGNode& top, 
+        const CSGNode& l, 
+        const CSGNode& r, 
+        const CSGNode& ll, 
+        const CSGNode& lr, 
+        const CSGNode& rl, 
+        const CSGNode& rr, 
+        const int meshIdx 
+    ); 
 
-    CSGSolid* makeDifferenceCylinder(     const char* label="dcyl", float rmax=100.f, float rmin=50.f, float z1=-50.f, float z2=50.f, float z_inner_factor=1.01f   ); 
+    CSGSolid* makeDifferenceCylinder( const char* label="dcyl", float rmax=100.f, float rmin=50.f, float z1=-50.f, float z2=50.f, float z_inner_factor=1.01f   ); 
+    CSGSolid* makeBoxSubSubCylinder(  const char* label="bssc", float fullside=300.f, float rmax=100.f, float rmin=50.f, float z1=-50.f, float z2=50.f, float z_inner_factor=1.01 );
+
     CSGSolid* makeUnionBoxSphere(        const char* label="ubsp", float radius=100.f, float fullside=150.f );
     CSGSolid* makeIntersectionBoxSphere( const char* label="ibsp", float radius=100.f, float fullside=150.f );
     CSGSolid* makeDifferenceBoxSphere(   const char* label="dbsp", float radius=100.f, float fullside=150.f );

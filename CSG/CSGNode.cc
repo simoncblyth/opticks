@@ -55,7 +55,7 @@ std::string CSGNode::desc() const
         << "CSGNode "
         << std::setw(5) << index() 
         << " " 
-        << ( complement() ? "!" : " " )
+        << ( is_complement() ? "!" : " " )
         << CSG::Tag((OpticksCSG_t)typecode())
         << " aabb: " << Desc( aabb, 6, 7, 1 ) 
         << " trIdx: " << std::setw(5) << trIdx 
@@ -178,14 +178,14 @@ bool CSGNode::is_zero() const
     unsigned tc = typecode(); 
     return CSG::IsZero((OpticksCSG_t)tc)  ;
 }
-bool CSGNode::is_leaf() const 
+bool CSGNode::is_primitive() const 
 {
     unsigned tc = typecode(); 
     return CSG::IsPrimitive((OpticksCSG_t)tc)  ;
 }
-bool CSGNode::is_complemented_leaf() const 
+bool CSGNode::is_complemented_primitive() const 
 {
-    return complement() && is_leaf() ; 
+    return is_complement() && is_primitive() ; 
 }
 
 
@@ -316,6 +316,13 @@ void CSGNode::setAABBLocal()
 
 }
 
+CSGNode CSGNode::Zero()  // static
+{
+    CSGNode nd = {} ;
+    nd.setAABB(  -0.f, -0.f, -0.f,  0.f, 0.f, 0.f  ); 
+    nd.setTypecode(CSG_ZERO) ; 
+    return nd ; 
+}
 CSGNode CSGNode::Sphere(float radius)  // static
 {
     assert( radius > 0.f); 

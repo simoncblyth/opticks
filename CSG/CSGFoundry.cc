@@ -1015,7 +1015,7 @@ CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
 
 
             // TODO: fix this in CSGNode 
-            bool c0 = cnd.complement(); 
+            bool c0 = cnd.is_complement(); 
             cnd.zeroTransformComplement(); 
             cnd.setComplement(c0) ; 
             cnd.setTransform( c_tranIdx );   

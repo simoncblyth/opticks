@@ -41,17 +41,17 @@ void test_zero()
 
     CSGNode nd = {} ; 
     assert( nd.gtransformIdx() == 0u );  
-    assert( nd.complement() == false );  
+    assert( nd.is_complement() == false );  
 
     unsigned tr = 42u ; 
     nd.setTransform( tr ); 
 
     assert( nd.gtransformIdx() == tr ); 
-    assert( nd.complement() == false ); 
+    assert( nd.is_complement() == false ); 
 
     nd.setComplement(true); 
     assert( nd.gtransformIdx() == tr ); 
-    assert( nd.complement() == true ); 
+    assert( nd.is_complement() == true ); 
 
     LOG(info) << nd.desc() ; 
 }
@@ -80,13 +80,13 @@ void test_change_transform()
         nd.setComplement( u0 % 2 == 0 ); 
         nd.setTransform(u0);   
 
-        bool c0 = nd.complement(); 
+        bool c0 = nd.is_complement(); 
         nd.zeroTransformComplement(); 
 
         nd.setComplement(c0) ; 
         nd.setTransform( u1 );   
 
-        bool c1 = nd.complement(); 
+        bool c1 = nd.is_complement(); 
         assert( c0 == c1 ); 
 
         unsigned u1_chk = nd.gtransformIdx();  

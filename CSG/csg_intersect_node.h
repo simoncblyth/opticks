@@ -1037,7 +1037,7 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
 {
     const unsigned typecode = node->typecode() ;  
     const unsigned gtransformIdx = node->gtransformIdx() ; 
-    const bool complement = node->complement();
+    const bool complement = node->is_complement();
 
     const qat4* q = gtransformIdx > 0 ? itra + gtransformIdx - 1 : nullptr ;  // gtransformIdx is 1-based, 0 meaning None
 

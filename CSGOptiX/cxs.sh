@@ -71,7 +71,9 @@ elif [ "$cxs" == "20" ]; then
     cegs=16:0:9:100
     gridscale=0.025
 elif [ "$cxs" == "30" ]; then
-    cfbase=$TMP/CSGDemoTest/dcyl     # non-standard CSGFoundry dir within cfbase
+    #geometry=dcyl  
+    geometry=bssc  
+    cfbase=$TMP/CSGDemoTest/$geometry     # non-standard CSGFoundry dir within cfbase
     moi=0
     cegs=16:0:9:100
     gridscale=0.025

@@ -169,7 +169,7 @@ struct CSGNode
 
 
     NODE_METHOD unsigned gtransformIdx() const { return q3.u.w & 0x7fffffff ; }  //  gtransformIdx is 1-based, 0 meaning None 
-    NODE_METHOD bool        complement() const { return q3.u.w & 0x80000000 ; } 
+    NODE_METHOD bool     is_complement() const { return q3.u.w & 0x80000000 ; } 
 
 
     NODE_METHOD float radius() const { return q0.f.w ; } ;
@@ -191,8 +191,8 @@ struct CSGNode
     bool is_intersection() const ; 
     bool is_union() const ; 
     bool is_difference() const ; 
-    bool is_leaf() const ; 
-    bool is_complemented_leaf() const ; 
+    bool is_primitive() const ; 
+    bool is_complemented_primitive() const ; 
     bool is_zero() const ; 
 
     static unsigned AncestorTypeMask( const CSGNode* root, unsigned partIdxRel, bool dump  ); 
@@ -214,6 +214,7 @@ struct CSGNode
     static CSGNode Difference(); 
     static CSGNode BooleanOperator(char op); 
 
+    static CSGNode Zero();
     static CSGNode Sphere(float radius);
     static CSGNode ZSphere(float radius, float z1, float z2);
     static CSGNode Cone(float r1, float z1, float r2, float z2); 

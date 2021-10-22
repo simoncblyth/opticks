@@ -35,7 +35,8 @@ bin=CSGDemoTest
 #geometry=ibsp 
 #geometry=dbsp
 #geometry=rcyl
-geometry=dcyl
+#geometry=dcyl
+geometry=bssc
 
 #clusterspec=-3:4:1,-3:4:1,-3:4:1
 clusterspec=-1:2:1,-1:2:1,-1:2:1

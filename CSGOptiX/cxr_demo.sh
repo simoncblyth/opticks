@@ -24,7 +24,8 @@ TODO: pick between multiple IAS with midx -1,-2,...
 EOU
 }
 
-geometry=dcyl
+#geometry=dcyl
+geometry=bssc
 #geometry=dbsp
 #geometry=parade
 #geometry=layered_sphere
