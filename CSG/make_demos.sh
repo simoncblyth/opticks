@@ -1,5 +1,15 @@
 #!/bin/bash -l 
 
+usage(){ cat << EOU
+make_demos.sh
+===============
+
+Gets the list of geometies from CSGDemoTest.sh including the 
+commented out ones. Then for each GEOMETRY invokes CSGDemoTest.sh
+
+EOU
+}
+
 msg="=== $BASH_SOURCE :"
 geometrys=$(perl -n -e 'm,geometry=(\S*), && print "$1\n" '  CSGDemoTest.sh)
 

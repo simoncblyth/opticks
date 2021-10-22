@@ -49,6 +49,7 @@ list(APPEND SOURCES
     CSGPrimSpec.cc
     CSGSolid.cc
     CSGFoundry.cc
+    CSGMaker.cc
     CSGName.cc
     CSGTarget.cc
     CSGScan.cc
@@ -68,6 +69,7 @@ list(APPEND CSG_HEADERS
 
 
     CSGFoundry.h
+    CSGMaker.h
     CSGName.h
     CSGTarget.h
     CSGScan.h

@@ -1,9 +1,18 @@
 /**
+CSGDemoTest.cc
+==================
 
-This is typically invoked via the scripts::
+This executable creates and persists simple demo geometries, using the tests/DemoGeo.h struct. 
+Invoke the executable with::
 
-    ./make_demos.sh 
+    cd ~/opticks/CSG
     ./CSGDemoTest.sh    
+
+To apply the above script to all the demo geometries use ``./make_demos.sh`` 
+Render the geometries with::
+
+    cd ~/opticks/CSGOptiX
+    ./cxr_demo.sh 
 
 **/
 

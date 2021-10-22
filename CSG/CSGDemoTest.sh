@@ -1,5 +1,16 @@
 #!/bin/bash -l 
 
+usage(){ cat << EOU
+CSGDemoTest.sh 
+================
+
+
+
+
+EOU
+}
+
+
 bin=CSGDemoTest 
 
 geometry=parade

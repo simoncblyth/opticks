@@ -54,12 +54,14 @@ ISSUES
     2019-06-13 22:00:53.302 ERROR [385857] [X4CSG::generateTestMain@236]  skip as no g4code 
 
 
-
-
 TODO:
 
 * perhaps more useful to generate a library with an executable that
   takes an argument to the index, rather than executables for every index
+
+* can still have separate structs for each solid, but having separate executables
+  feels like a lots of needless duplication and when there are many hundreds of
+  them it is tedious to build and link all the executables
 
 
 
@@ -131,6 +133,29 @@ Currently::
 3. x4gen-run
 
    Run all the executables, writing test geometries 
+
+
+
+
+Visualizing single solids
+----------------------------
+
+::
+
+    epsilon:issues blyth$ t x4gen-csg
+    x4gen-csg () 
+    { 
+        TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) x4gen-csg--- $*
+    }
+    epsilon:issues blyth$ t x4gen-csg---
+    x4gen-csg--- () 
+    { 
+        local cmdline=$*;
+        local testconfig=$(x4gen-testconfig);
+        echo testconfig $testconfig;
+        op.sh $cmdline --envkey --rendermode +global,+axis --animtimemax 20 --timemax 20 --geocenter --eye 1,0,0 --dbganalytic --test --testconfig "$testconfig" --tracer --printenabled
+    }
+    epsilon:issues blyth$ 
 
 
 

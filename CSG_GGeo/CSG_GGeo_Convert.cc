@@ -68,6 +68,13 @@ void CSG_GGeo_Convert::convert()
     convertScintillatorLib(); 
 }
 
+/**
+CSG_GGeo_Convert::convertGeometry
+------------------------------------
+
+
+**/
+
 void CSG_GGeo_Convert::convertGeometry(int repeatIdx,  int primIdx, int partIdxRel ) // all -1 is the default that calls convertAllSolid
 {
 
@@ -263,29 +270,19 @@ composite with *primIdx*. The CSGPrim is often(but not always) one-to-one relate
 
 The AABB of the CSGPrim are vital for GAS construction.
 
-Simple node-by-node bbox combination is an oversimplified way to form the bbox of the CSGPrim.
-For example subtraction of JUNO Acrylic sphere will by positivization appear as an intersect 
-with a ginormous sphere which will lead to a huge bbox.  
+Previously a naive node-by-node bbox combination was used to obtain the bbox of the CSGPrim.
+For example subtraction of JUNO Acrylic sphere which by positivization appears as an intersect 
+with a ginormous sphere led to a huge bbox which had a terrible impact on ray tracing performance.   
 
-The combination needs to be made CSG aware (skip bb inclusion of complemented node with intersect parent perhaps?)
-or grab it from old model ?
+The bbox combination used below has now been made somewhat CSG aware by using CSGNode::AncestorTypeMask
+and CSGNode::is_complemented_leaf to avoid inappropriate bloating of the bbox. 
+However the approach is still somewhat ad-hoc and could be better grounded in CSG-bbox "theory"
+to improve generality : that means new geometry may still end up with bloated bbox. 
 
-Doing the below is too kludgy, as tied to particular geometry::
-
-    bool kludge_skip_aabb = is_r8 && *(naabb+0) < -17810.00 ; 
-
-    if(!kludge_skip_aabb)
-    { 
-        bb.include_aabb( naabb );  
-    }
-    else
-    {
-        std::cout 
-            << "CSG_GGeo_Convert::convertPrim kludge_skip_aabb " 
-            << std::endl
-            ; 
-    }
-
+Also previously the placeholder zero node bbox were not excluded from inclusion 
+in the CSGPrim bbox which sometimes unnecessarily increased bbox in any direction by up to to 100mm, 
+for some geometry with node trees that include placeholder zeros. Basically this issue meant that 
+the bbox could never approach the origin closer than 100mm in some solids.  
 
 TODO: On adding a prim the node/tran/plan offsets are captured into the Prim 
 from the sizes of the foundry vectors. Suspect tran and plan offsets are not used, 
@@ -333,9 +330,6 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         if(root == nullptr) root = n ; 
 
         if(n->is_zero()) continue;  
-        // not skipping the placeholder zero node bbox from inclusion
-        // may unnecessarily increases the bbox in any direction to 100.0 : which will reduce performance           
-        // not always though because it requires a node tree with zeros in it. 
 
         unsigned atm = CSGNode::AncestorTypeMask(root, partIdxRel, false ); 
 

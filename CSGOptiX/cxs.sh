@@ -78,7 +78,7 @@ export CXS=${CXS:-$cxs}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL ZZ $ZZ"
 export BOTLINE="ZOOM $ZOOM LOOK $LOOK"
 
-if [ "$1" == "py" ]; then 
+if [ "$1" == "py" -o "$(uname)" == "Darwin" ]; then 
     ipython --pdb -i tests/CSGOptiXSimulateTest.py 
 else
     CSGOptiXSimulateTest

@@ -7,6 +7,7 @@
 #include "scuda.h"
 
 #include "CSGFoundry.h"
+#include "CSGMaker.h"
 #include "CSGSolid.h"
 #include "CSGScan.h"
 
@@ -16,10 +17,10 @@ int main(int argc, char** argv)
     const char* dir = "/tmp/CSGScanTest_scans" ; 
     CSGFoundry fd ;  
 
-    //fd.makeDemoSolids(); 
-    fd.makeEllipsoid(); 
+    //fd.maker->makeDemoSolids(); 
+    fd.maker->makeEllipsoid(); 
     //const char* name = "sphe" ; 
-    //fd.makeClustered(name, 0,1,1, 0,1,1,  0,2,1, 100. );  
+    //fd.makeer->makeClustered(name, 0,1,1, 0,1,1,  0,2,1, 100. );  
 
     unsigned numSolid = fd.getNumSolid() ; 
     std::cout << "numSolid " << numSolid << std::endl ; 

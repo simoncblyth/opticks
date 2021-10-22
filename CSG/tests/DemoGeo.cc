@@ -13,6 +13,7 @@
 
 #include "scuda.h"
 #include "CSGFoundry.h"
+#include "CSGMaker.h"
 #include "CSGPrim.h"
 
 #include "DemoGeo.h"
@@ -20,7 +21,8 @@
 
 DemoGeo::DemoGeo(CSGFoundry* foundry_)
     :
-    foundry(foundry_)
+    foundry(foundry_),
+    maker(foundry->maker)
 {
     init();
 }
@@ -77,7 +79,7 @@ Container sphere "extent" needs to be sqrt(3) larger than the grid extent.
 void DemoGeo::init_sphere_containing_grid_of_spheres(unsigned layers )
 {
     LOG(info) << "layers " << layers  ; 
-    foundry->makeDemoSolids();  
+    maker->makeDemoSolids();  
     unsigned num_solid = foundry->getNumSolid() ; 
 
     unsigned ias_idx = 0 ; 
@@ -86,9 +88,10 @@ void DemoGeo::init_sphere_containing_grid_of_spheres(unsigned layers )
     float big_radius = float(ce.w)*sqrtf(3.f) ;
     LOG(info) << " big_radius " << big_radius ; 
 
-    foundry->makeLayered("sphere", 0.7f, layers ); 
-    foundry->makeLayered("sphere", 1.0f, layers ); 
-    foundry->makeLayered("sphere", big_radius, 1 ); 
+
+    maker->makeLayered("sphere", 0.7f, layers ); 
+    maker->makeLayered("sphere", 1.0f, layers ); 
+    maker->makeLayered("sphere", big_radius, 1 ); 
 }
 
 
@@ -96,7 +99,7 @@ void DemoGeo::init_parade()
 {
     LOG(info) << "["  ;
  
-    foundry->makeDemoSolids();  
+    maker->makeDemoSolids();  
     unsigned num_solid = foundry->getNumSolid() ; 
 
     unsigned ias_idx = 0 ; 
@@ -129,7 +132,7 @@ void DemoGeo::init_clustered(const char* name)
     bool inbox = false ; 
     std::array<int,9> cl ; 
     SStr::ParseGridSpec(cl, clusterspec); // string parsed into array of 9 ints 
-    CSGSolid* so = foundry->makeClustered(name, cl[0],cl[1],cl[2],cl[3],cl[4],cl[5],cl[6],cl[7],cl[8], unit, inbox ); 
+    CSGSolid* so = maker->makeClustered(name, cl[0],cl[1],cl[2],cl[3],cl[4],cl[5],cl[6],cl[7],cl[8], unit, inbox ); 
     std::cout << "DemoGeo::init_layered" << name << " so.center_extent " << so->center_extent << std::endl ; 
 
     unsigned gas_idx = 0 ; 
@@ -144,7 +147,7 @@ void DemoGeo::init_scaled(const char* solid_label_base, const char* demo_node_ty
     {
          std::string label = CSGSolid::MakeLabel( solid_label_base, gas_idx );   
 
-        CSGSolid* so = foundry->makeScaled(label.c_str(), demo_node_type, outer, layers ); 
+        CSGSolid* so = maker->makeScaled(label.c_str(), demo_node_type, outer, layers ); 
         LOG(info)
             << " gas_idx " << gas_idx 
             << " label " << label 
@@ -165,7 +168,7 @@ void DemoGeo::init_scaled(const char* solid_label_base, const char* demo_node_ty
 
 void DemoGeo::init_layered(const char* name, float outer, unsigned layers)
 {
-    CSGSolid* so = foundry->makeLayered(name, outer, layers ); 
+    CSGSolid* so = maker->makeLayered(name, outer, layers ); 
     LOG(info) << " name " << name << " so.center_extent " << so->center_extent ; 
 
     unsigned gas_idx = 0 ; 
@@ -174,7 +177,7 @@ void DemoGeo::init_layered(const char* name, float outer, unsigned layers)
 
 void DemoGeo::init(const char* name)
 {
-    CSGSolid* so = foundry->make(name) ; 
+    CSGSolid* so = maker->make(name) ; 
     LOG(info) << " name " << name << " so.center_extent " << so->center_extent ; 
 
     unsigned gas_idx = 0 ; 

@@ -7,11 +7,17 @@ DemoGeo
 
 DemoGeo is for high level definition of specific examples of geometry, 
 that provide tests of the CSG model and rendering thereof.
+
 **/
+
+struct CSGFoundry ; 
+struct CSGMaker ; 
+
 
 struct DemoGeo
 {
     CSGFoundry*  foundry ; 
+    CSGMaker*    maker ; 
 
     DemoGeo(CSGFoundry* foundry_);
 
