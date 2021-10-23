@@ -23,14 +23,14 @@ foreach(SRC ${TEST_SOURCES})
 
     add_test(${name}.${TGT} ${TGT})
 
-    target_link_libraries(${TGT} CSG)
+    target_link_libraries(${TGT} Opticks::CSG Opticks::SysRap)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
 
 set(TGT CSGDemoTest)
 add_executable(${TGT} CSGDemoTest.cc DemoGeo.cc DemoGrid.cc)
-target_link_libraries(${TGT} CSG)
+target_link_libraries(${TGT} Opticks::CSG)
 install(TARGETS ${TGT} DESTINATION lib)
 
 

@@ -196,6 +196,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        NPY<double>* createBufferForTex2d();  
   public:
        GItemList* createNames(); // spec shortnames
+       bool canCreateBuffer() const ; 
        NPY<double>* createBuffer();  // invokes createBufferForTex2d
        void import();
        void sort();

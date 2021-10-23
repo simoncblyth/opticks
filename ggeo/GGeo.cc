@@ -1322,8 +1322,6 @@ void GGeo::deferredCreateGParts()
 
     const std::vector<const NCSG*>& solids = m_meshlib->getSolids(); 
           
-    //unsigned verbosity = 0 ;  
-
     unsigned nmm = m_geolib->getNumMergedMesh(); 
 
     int gparts_debug = SSys::getenvint("GPARTS_DEBUG", ~0u ); 

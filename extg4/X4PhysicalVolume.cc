@@ -1293,7 +1293,7 @@ void X4PhysicalVolume::convertStructure()
 
     OK_PROFILE("_X4PhysicalVolume::convertStructure");
 
-    m_root = convertStructure_r(pv, parent, depth, parent_pv, recursive_select );
+    m_root = convertStructure_r(pv, parent, depth, parent_pv, recursive_select );  // set root GVolume 
 
     m_ggeo->setRootVolume(m_root); 
 
@@ -1381,7 +1381,7 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
      return volume   ; 
 }
 
-
+/
 /**
 X4PhysicalVolume::addBoundary
 ------------------------------
@@ -1653,7 +1653,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     // THIS IS HOT NODE CODE : ~300,000 TIMES FOR JUNO 
 
 
-    const GMesh* mesh = m_hlib->getMeshWithIndex(lvIdx); 
+    const GMesh* mesh = m_hlib->getMeshWithIndex(lvIdx);   // GMeshLib 
 
     const NCSG* csg = mesh->getCSG();  
     unsigned csgIdx = csg->getIndex() ; 
@@ -1790,7 +1790,6 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
                  << " selected " << selected
                  ; 
 
-
     ///////// sensor decision for the volume happens here  ////////////////////////
     //////// TODO: encapsulate into a GBndLib::formSensorIndex ? 
 
@@ -1825,13 +1824,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
          volume->setParent(parent);
     } 
 
-
 #ifdef X4_PROFILE
     float t30 = BTimeStamp::RealTime() ;
     m_convertNode_GVolume_dt     += t30 - t20 ; 
 #endif
-
-
     return volume ; 
 }
 

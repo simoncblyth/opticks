@@ -54,6 +54,8 @@ list(APPEND SOURCES
     CSGTarget.cc
     CSGScan.cc
     CSGView.cc
+
+    CSG_LOG.cc
 )
     
 
@@ -75,6 +77,7 @@ list(APPEND CSG_HEADERS
     CSGEnum.h
 
     CSG_LOG.hh 
+    CSG_API_EXPORT.hh 
 )
 
 list(APPEND INTERSECT_HEADERS
@@ -109,18 +112,18 @@ message(STATUS "CMAKE_BINARY_DIR         : ${CMAKE_BINARY_DIR}")
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_link_libraries(${name} PUBLIC ${CUDA_LIBRARIES} Opticks::SysRap)
 
+target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
+
 target_include_directories(${name}
      PUBLIC
            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
 
 add_subdirectory(tests)
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 
 

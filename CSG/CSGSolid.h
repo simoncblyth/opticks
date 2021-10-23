@@ -4,6 +4,7 @@
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+#include "plog/Severity.h"
 #include <string>
 #endif
 
@@ -20,6 +21,8 @@ it might be in future, ie keep it simple, no refs,
 
 struct CSGSolid   // Composite shape 
 {
+
+
     char        label[16] ;   // sizeof 4 int 
 
     int         numPrim ; 
@@ -32,6 +35,8 @@ struct CSGSolid   // Composite shape
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+    static const plog::Severity LEVEL ;  
+
     bool labelMatch(const char* label) const ;  
 
     static CSGSolid Make( const char* label_, int numPrim_, int primOffset_=-1 ); 

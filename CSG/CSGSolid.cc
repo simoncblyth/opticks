@@ -1,5 +1,4 @@
 
-//#include "sutil_vec_math.h"
 #include "scuda.h"
 
 #include "CSGSolid.h"
@@ -12,6 +11,9 @@
 #include <iomanip>
 #include <cstring>
 
+#include "PLOG.hh"
+
+const plog::Severity CSGSolid::LEVEL = PLOG::EnvLevel("CSGSolid", "DEBUG") ; 
 
 
 CSGSolid CSGSolid::Make( const char* label_, int numPrim_, int primOffset_ )

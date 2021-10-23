@@ -107,6 +107,18 @@ ensure that only the active package tree of headers gets included.
 #include "G4OK_LOG.hh"
 #endif
 
+#ifdef OPTICKS_CSG
+#include "CSG_LOG.hh"
+#endif
+#ifdef OPTICKS_CSG_GGEO
+#include "CSG_GGEO_LOG.hh"
+#endif
+
+
+
+
+
+
 #include "SYSRAP_API_EXPORT.hh"
 
 
@@ -200,6 +212,16 @@ class SYSRAP_API OPTICKS_LOG_ {
 #ifdef OPTICKS_G4OK
     G4OK_LOG::Initialize(instance->prefixlevel_parse( max_level, "G4OK"), app1, NULL );
 #endif
+
+#ifdef OPTICKS_CSG
+    CSG_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSG"), app1, NULL );
+#endif
+#ifdef OPTICKS_CSG_GGEO
+    CSG_GGEO_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSG_GGEO"), app1, NULL );
+#endif
+
+
+
        }
        // checking the loggers in each subproj by emitting message at all loglevels
        static void Check()
@@ -267,6 +289,15 @@ class SYSRAP_API OPTICKS_LOG_ {
 #ifdef OPTICKS_G4OK
     G4OK_LOG::Check("G4OK");
 #endif
+
+#ifdef OPTICKS_CSG
+    CSG_LOG::Check("CSG");
+#endif
+#ifdef OPTICKS_CSG_GGEO
+    CSG_GGEO_LOG::Check("CSG_GGEO");
+#endif
+
+
        }
 };
 

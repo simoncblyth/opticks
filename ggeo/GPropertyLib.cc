@@ -230,9 +230,9 @@ NPY<double>* GPropertyLib::getBuffer() const
 
 NP* GPropertyLib::getBuf() const
 {
-    NP* buf = m_buffer->spawn() ; 
+    NP* buf = m_buffer ? m_buffer->spawn() : nullptr ; 
     const std::vector<std::string>& names = getNameList(); 
-    if(names.size() > 0)
+    if(buf && names.size() > 0)
     {
         buf->set_meta(names); 
     }

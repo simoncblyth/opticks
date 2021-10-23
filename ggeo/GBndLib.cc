@@ -968,6 +968,13 @@ unsigned GBndLib::getMaterialIndexFromLine(unsigned line) const
 }
 
 
+bool GBndLib::canCreateBuffer() const
+{
+    NPY<double>* mat = m_mlib->getBuffer();
+    return mat != nullptr  ; 
+}
+
+
 /**
 GBndLib::createBuffer
 ----------------------
@@ -982,42 +989,42 @@ NPY<double>* GBndLib::createBuffer()
     return createBufferForTex2d() ;
 }
 
+
+/**
+GBndLib::createBufferForTex2d
+-------------------------------
+
+GBndLib double buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
+pulling together data based on the indices for the materials and surfaces 
+from the m_bnd guint4 buffer
+
+Typical dimensions : (128, 4, 2, 39, 4)   
+
+           128 : boundaries, 
+             4 : mat-or-sur for each boundary  
+             2 : payload-categories corresponding to NUM_FLOAT4
+            39 : wavelength samples
+             4 : double4-values
+
+The only dimension that can easily be extended is the middle payload-categories one, 
+the low side is constrained by layout needed to OptiX tex2d<float4> as this 
+buffer is memcpy into the texture buffer
+high side is constained by not wanting to change texture line indices 
+
+The 39 wavelength samples is historical. There is a way to increase this
+to 1nm FINE_DOMAIN binning.
+
+**/
+
 NPY<double>* GBndLib::createBufferForTex2d()
 {
-    /*
-    GBndLib double buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
-    pulling together data based on the indices for the materials and surfaces 
-    from the m_bnd guint4 buffer
-
-    Typical dimensions : (128, 4, 2, 39, 4)   
-
-               128 : boundaries, 
-                 4 : mat-or-sur for each boundary  
-                 2 : payload-categories corresponding to NUM_FLOAT4
-                39 : wavelength samples
-                 4 : double4-values
-
-     The only dimension that can easily be extended is the middle payload-categories one, 
-     the low side is constrained by layout needed to OptiX tex2d<float4> as this 
-     buffer is memcpy into the texture buffer
-     high side is constained by not wanting to change texture line indices 
-
-
-     The 39 wavelength samples is historical. There is a way to increase this
-     to 1nm FINE_DOMAIN binning.
-
-
-    */
-
-    LOG(verbose) << "GBndLib::createBufferForTex2d" ;
-
     NPY<double>* mat = m_mlib->getBuffer();
     NPY<double>* sur = m_slib->getBuffer();
 
-    LOG(LEVEL) << "GBndLib::createBufferForTex2d" 
-               << " mat " << mat 
-               << " sur " << sur
-               ; 
+    LOG(LEVEL) 
+        << " mat " << mat 
+        << " sur " << sur
+        ; 
 
     if(mat == NULL ) LOG(fatal) << "NULL mat buffer" ;
     assert(mat);

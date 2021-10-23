@@ -43,7 +43,7 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
     reverse(SSys::getenvbool("REVERSE")),
     dump_ridx(SSys::getenvint("DUMP_RIDX", -1))
 {
-    LOG(info) 
+    LOG(LEVEL) 
         << " reverse " << reverse
         << " dump_ridx (DUMP_RIDX) " << dump_ridx
         ;  
@@ -55,10 +55,7 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
 void CSG_GGeo_Convert::init()
 {
     ggeo->getMeshNames(foundry->meshname); 
-    LOG(info) 
-       << std::endl
-       << " foundry.meshname.size " << foundry->meshname.size() 
-       ;
+    LOG(LEVEL) << " foundry.meshname.size " << foundry->meshname.size() ; 
 }
 
 void CSG_GGeo_Convert::convert()
@@ -115,6 +112,7 @@ void CSG_GGeo_Convert::convertGeometry(int repeatIdx,  int primIdx, int partIdxR
 void CSG_GGeo_Convert::convertAllSolid()  // default 
 {
     unsigned numRepeat = ggeo->getNumMergedMesh(); 
+    LOG(LEVEL) << "numRepeat " << numRepeat ; 
     for(unsigned repeatIdx=0 ; repeatIdx < numRepeat ; repeatIdx++)
     {
         if(ok->isEnabledMergedMesh(repeatIdx))
@@ -132,11 +130,21 @@ void CSG_GGeo_Convert::convertAllSolid()  // default
 void CSG_GGeo_Convert::convertBndLib() 
 {
     GBndLib* blib = ggeo->getBndLib(); 
-    blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
 
-    NP* bnd = blib->getBuf(); 
-    const std::vector<std::string>& bndnames = blib->getNameList(); 
-    bnd->set_meta( bndnames );  
+    bool can_create = blib->canCreateBuffer() ; 
+    NP* bnd = nullptr ; 
+
+    if( can_create )
+    {
+        blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
+        bnd = blib->getBuf(); 
+        const std::vector<std::string>& bndnames = blib->getNameList(); 
+        bnd->set_meta( bndnames );  
+    }
+    else
+    {
+        LOG(error) << "cannot create GBndLib buffer : no materials ? " ; 
+    }
 
     foundry->bnd = bnd ; 
 }

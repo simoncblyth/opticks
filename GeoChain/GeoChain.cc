@@ -39,7 +39,7 @@ TO MAKE IT USABLE FROM HERE
 
 #include "G4Orb.hh"
 
-#include "SysRap.hh"
+#include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 
 #include "Opticks.hh"
@@ -81,6 +81,11 @@ void GeoChain::convert(const G4VSolid* const solid)
 
     ggeo->add(mesh); 
     ggeo->deferredCreateGParts(); 
+    ggeo->prepareVolumes(); 
+
+    // hmm everything is based on GMergedMesh : so the above do little without 
+    // having any volumes... need an artifical one ?
+
 }
 
 
@@ -88,13 +93,16 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    Opticks ok(argc, argv); 
+    const char* argforced = "--noinstanced" ; 
+    Opticks ok(argc, argv, argforced); 
     ok.configure(); 
 
     GeoChain gc(&ok); 
 
     G4Orb s("orb", 100.) ; 
     G4cout << s << G4endl ; 
+
+
 
     gc.convert(&s);  
 
