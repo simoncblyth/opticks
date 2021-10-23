@@ -143,8 +143,7 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_lvsdname(m_ok->getLVSDName()),
     m_query(m_ok->getQuery()),
     m_gltfpath(m_ok->getGLTFPath()),
-    m_g4codegen(m_ok->isG4CodeGen()),
-    m_g4codegendir(m_ok->getG4CodeGenDir()),
+
     m_mlib(m_ggeo->getMaterialLib()),
     m_sclib(m_ggeo->getScintillatorLib()),
     m_slib(m_ggeo->getSurfaceLib()),
@@ -976,54 +975,12 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
         const std::string& lvname = lv->GetName() ; 
         const std::string& soname = solid->GetName() ; 
 
-        bool balance_deep_tree = true ;  
-        GMesh* mesh = convertSolid( lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
-        mesh->setIndex( lvIdx ) ;   
-
-        // raw unbalanced tree height  
-        const nnode* root = mesh->getRoot(); 
-        assert( root ); 
-        const nnode* unbalanced = root->other ? root->other : root  ; 
-        assert( unbalanced ); 
-
-        unsigned unbalanced_height = unbalanced->maxdepth() ;  
-        bool can_export_unbalanced = unbalanced_height <= NCSG::MAX_EXPORT_HEIGHT ;  
-
-        LOG(LEVEL) 
-           << " lvIdx " << lvIdx   
-           << " soIdx " << soIdx   
-           << " unbalanced_height " << unbalanced_height
-           << " NCSG::MAX_EXPORT_HEIGHT " << NCSG::MAX_EXPORT_HEIGHT
-           << " can_export_unbalanced " << can_export_unbalanced
-           ; 
- 
-        const NCSG* csg = mesh->getCSG(); 
-        if( csg->is_balanced() )  // when balancing done, also convert without it 
-        {
-            if( can_export_unbalanced )
-            {  
-                balance_deep_tree = false ;  
-                GMesh* rawmesh = convertSolid( lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
-                rawmesh->setIndex( lvIdx ) ;   
-
-                const NCSG* rawcsg = rawmesh->getCSG(); 
-                assert( rawmesh->getIndex() == rawcsg->getIndex() ) ;   
-
-                mesh->setAlt(rawmesh);  // <-- this association is preserved (and made symmetric) thru metadata by GMeshLib 
-            } 
-            else
-            {
-                LOG(error)
-                    << " Cannot export the unbalanced tree as raw height exceeds the maximum. " << std::endl 
-                    << " unbalanced_height " << unbalanced_height 
-                    << " NCSG::MAX_EXPORT_HEIGHT " << NCSG::MAX_EXPORT_HEIGHT
-                    ;     
-            } 
-        }
+        GMesh* mesh = ConvertSolid(m_ok, lvIdx, soIdx, solid, lvname ); 
 
         m_lvname.push_back( lvname ); 
         m_soname.push_back( soname ); 
  
+        const nnode* root = mesh->getRoot(); 
         if( root->has_torus() )
         {
             LOG(fatal) << " has_torus lvIdx " << lvIdx << " " << lvname ;  
@@ -1037,8 +994,10 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
 }
 
 
+
+
 /**
-X4PhysicalVolume::convertSolid
+X4PhysicalVolume::ConvertSolid
 --------------------------------
 
 Converts G4VSolid into two things:
@@ -1066,11 +1025,61 @@ used instead of he real shape.
 
 **/
 
+GMesh* X4PhysicalVolume::ConvertSolid( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname ) // static
+{
+    bool balance_deep_tree = true ;  
+    GMesh* mesh = ConvertSolid_( ok, lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
 
-GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname, bool balance_deep_tree ) const 
+    mesh->setIndex( lvIdx ) ;   
+
+    // raw unbalanced tree height  
+    const nnode* root = mesh->getRoot(); 
+    assert( root ); 
+    const nnode* unbalanced = root->other ? root->other : root  ; 
+    assert( unbalanced ); 
+
+    unsigned unbalanced_height = unbalanced->maxdepth() ;  
+    bool can_export_unbalanced = unbalanced_height <= NCSG::MAX_EXPORT_HEIGHT ;  
+
+    LOG(LEVEL) 
+        << " lvIdx " << lvIdx   
+        << " soIdx " << soIdx   
+        << " unbalanced_height " << unbalanced_height
+        << " NCSG::MAX_EXPORT_HEIGHT " << NCSG::MAX_EXPORT_HEIGHT
+        << " can_export_unbalanced " << can_export_unbalanced
+        ; 
+ 
+    const NCSG* csg = mesh->getCSG(); 
+    if( csg->is_balanced() )  // when balancing done, also convert without it 
+    {
+        if( can_export_unbalanced )
+        {  
+            balance_deep_tree = false ;  
+            GMesh* rawmesh = ConvertSolid_( ok, lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
+            rawmesh->setIndex( lvIdx ) ;   
+
+            const NCSG* rawcsg = rawmesh->getCSG(); 
+            assert( rawmesh->getIndex() == rawcsg->getIndex() ) ;   
+
+            mesh->setAlt(rawmesh);  // <-- this association is preserved (and made symmetric) thru metadata by GMeshLib 
+        } 
+        else
+        {
+            LOG(error)
+                << " Cannot export the unbalanced tree as raw height exceeds the maximum. " << std::endl 
+                << " unbalanced_height " << unbalanced_height 
+                << " NCSG::MAX_EXPORT_HEIGHT " << NCSG::MAX_EXPORT_HEIGHT
+                ;     
+        } 
+    }
+    return mesh ; 
+}
+
+
+GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname, bool balance_deep_tree ) // static
 {
      assert( lvIdx == soIdx );  
-     bool dbglv = lvIdx == m_ok->getDbgLV() ; 
+     bool dbglv = lvIdx == ok->getDbgLV() ; 
      const std::string& soname = solid->GetName() ; 
 
      LOG(LEVEL)
@@ -1082,23 +1091,25 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
           ;
 
 
-     bool is_x4balanceskip = m_ok->isX4BalanceSkip(lvIdx) ; 
+     bool is_x4balanceskip = ok->isX4BalanceSkip(lvIdx) ; 
      if( is_x4balanceskip ) LOG(fatal) << " is_x4balanceskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
-     bool is_x4nudgeskip = m_ok->isX4NudgeSkip(lvIdx) ; 
+     bool is_x4nudgeskip = ok->isX4NudgeSkip(lvIdx) ; 
      if( is_x4nudgeskip ) LOG(fatal) << " is_x4nudgeskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
-     bool is_x4pointskip = m_ok->isX4PointSkip(lvIdx) ; 
+     bool is_x4pointskip = ok->isX4PointSkip(lvIdx) ; 
      if( is_x4pointskip ) LOG(fatal) << " is_x4pointskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
       
 
      X4Solid::Banner( lvIdx, soIdx, lvname, soname ); 
  
-     nnode* raw = X4Solid::Convert(solid, m_ok)  ; 
+     nnode* raw = X4Solid::Convert(solid, ok)  ; 
      raw->set_nudgeskip( is_x4nudgeskip ); 
      raw->set_pointskip( is_x4pointskip );  
 
-     if(m_g4codegen) generateTestG4Code(lvIdx, solid, raw); 
+     bool g4codegen = ok->isG4CodeGen() ; 
+
+     if(g4codegen) GenerateTestG4Code(ok, lvIdx, solid, raw); 
 
      nnode* root = balance_deep_tree && !is_x4balanceskip ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw ;  
 
@@ -1117,7 +1128,7 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
      if(is_balanced) assert( balance_deep_tree == true );  
      csg->set_balanced(is_balanced) ;  
 
-     bool is_x4polyskip = m_ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
+     bool is_x4polyskip = ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
      if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
      GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid ) ; 
@@ -1128,23 +1139,23 @@ GMesh* X4PhysicalVolume::convertSolid( int lvIdx, int soIdx, const G4VSolid* con
 }
 
 
-
-void X4PhysicalVolume::generateTestG4Code( int lvIdx, const G4VSolid* const solid, const nnode* raw) const 
+void X4PhysicalVolume::GenerateTestG4Code( const Opticks* ok, int lvIdx, const G4VSolid* const solid, const nnode* raw) // static 
 {
-     bool dbglv = lvIdx == m_ok->getDbgLV() ; 
-     const char* gdmlpath = X4CSG::GenerateTestPath( m_g4codegendir, lvIdx, ".gdml" ) ;  
-     bool refs = false ;  
-     X4GDMLParser::Write( solid, gdmlpath, refs ); 
-     if(dbglv)
-     { 
-         LOG(info) 
-             << ( dbglv ? " --dbglv " : "" ) 
-             << "[--g4codegen]"
-             << " lvIdx " << lvIdx
-             ;
-         raw->dump_g4code();  // just for debug 
-     }
-     X4CSG::GenerateTest( solid, m_ok, m_g4codegendir , lvIdx ) ; 
+    const char* g4codegendir = ok->getG4CodeGenDir(); 
+    bool dbglv = lvIdx == ok->getDbgLV() ; 
+    const char* gdmlpath = X4CSG::GenerateTestPath( g4codegendir, lvIdx, ".gdml" ) ;  
+    bool refs = false ;  
+    X4GDMLParser::Write( solid, gdmlpath, refs ); 
+    if(dbglv)
+    { 
+        LOG(info) 
+            << ( dbglv ? " --dbglv " : "" ) 
+            << "[--g4codegen]"
+            << " lvIdx " << lvIdx
+            ;
+        raw->dump_g4code();  // just for debug 
+    }
+    X4CSG::GenerateTest( solid, ok, g4codegendir , lvIdx ) ; 
 }
 
 

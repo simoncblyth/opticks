@@ -2,6 +2,8 @@
 
 #include "plog/Severity.h"
 
+#include "CSG_GGEO_API_EXPORT.hh"
+
 struct CSGFoundry ;
 struct CSGSolid ; 
 struct CSGPrim ; 
@@ -10,7 +12,7 @@ struct CSGNode ;
 class GGeo ;
 class GParts ; 
 
-struct CSG_GGeo_Convert
+struct CSG_GGEO_API CSG_GGeo_Convert
 {   
     static const plog::Severity LEVEL ; 
 

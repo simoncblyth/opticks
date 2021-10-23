@@ -143,8 +143,11 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void dumpLV(unsigned edgeitems=100) const ;
         void dumpTorusLV() const ;
-        GMesh* convertSolid( int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname, bool balancetree ) const ;
-        void generateTestG4Code( int lvIdx, const G4VSolid* const solid, const nnode* raw) const ; 
+
+    public:
+        static GMesh* ConvertSolid( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname );
+        static GMesh* ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname, bool balancetree );
+        static void GenerateTestG4Code( const Opticks* ok, int lvIdx, const G4VSolid* const solid, const nnode* raw); 
     private:
         void convertSensors_r(const G4VPhysicalVolume* const pv, int depth);
         GVolume* convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
@@ -165,8 +168,6 @@ class X4_API X4PhysicalVolume : public X4Named
         const char*                  m_lvsdname ; 
         OpticksQuery*                m_query ; 
         const char*                  m_gltfpath ; 
-        bool                         m_g4codegen ; 
-        const char*                  m_g4codegendir ;
     private:
         GMaterialLib*                m_mlib ; 
         GScintillatorLib*            m_sclib ; 

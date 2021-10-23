@@ -183,11 +183,10 @@ These can be answered without returning all the way to Geant4 geometry, so do no
 need to start from CSG_GGeo can just operate in CSG. 
 
 
-CSGDemo Workflow with new *dcyl* demo solid
----------------------------------------------
+CSGDemo Workflow with *dcyl* and *bssc* demo solid
+-------------------------------------------------------
 
-Added *dcyl* to the demo solids to investigate::
-
+::
 
    cd ~/opticks/CSG       ## create foundry geometry and persist 
    ./CSGDemoTest.sh    
@@ -195,6 +194,100 @@ Added *dcyl* to the demo solids to investigate::
    cd ~/opticks/CSGOptiX  ## create jpg image ray trace render of geometry 
    ./cxr_demo.sh 
 
+
+* surprised to find bssc:"box-(cyl-cyl)" not showing spurious intersects
+
+  * maybe that points the finger of suspicion at tree balancing ?
+
+
+::
+
+    092 AdditionAcrylicConstruction::makeAdditionLogical(){
+    108         double ZNodes3[3];
+    109         double RminNodes3[3];
+    110         double RmaxNodes3[3];
+    111         ZNodes3[0] = 5.7*mm; RminNodes3[0] = 0*mm; RmaxNodes3[0] = 450.*mm;
+    112         ZNodes3[1] = 0.0*mm; RminNodes3[1] = 0*mm; RmaxNodes3[1] = 450.*mm;
+    113         ZNodes3[2] = -140.0*mm; RminNodes3[2] = 0*mm; RmaxNodes3[2] = 200.*mm;
+    115         solidAddition_down = new G4Polycone("solidAddition_down",0.0*deg,360.0*deg,3,ZNodes3,RminNodes3,RmaxNodes3);
+    ...
+    122     solidAddition_up = new G4Sphere("solidAddition_up",0*mm,17820*mm,0.0*deg,360.0*deg,0.0*deg,180.*deg); 
+    123
+    124     uni_acrylic1 = new G4SubtractionSolid("uni_acrylic1",solidAddition_down,solidAddition_up,0,G4ThreeVector(0*mm,0*mm,+17820.0*mm));
+    125
+    126     solidAddition_up1 = new G4Tubs("solidAddition_up1",120*mm,208*mm,15.2*mm,0.0*deg,360.0*deg);
+    127     uni_acrylic2 = new G4SubtractionSolid("uni_acrylic2",uni_acrylic1,solidAddition_up1,0,G4ThreeVector(0.*mm,0.*mm,-20*mm));
+    128     solidAddition_up2 = new G4Tubs("solidAddition_up2",0,14*mm,52.5*mm,0.0*deg,360.0*deg);
+    130     for(int i=0;i<8;i++)
+    131     {
+    132     uni_acrylic3 = new G4SubtractionSolid("uni_acrylic3",uni_acrylic2,solidAddition_up2,0,G4ThreeVector(164.*cos(i*pi/4)*mm,164.*sin(i*pi/4)*mm,-87.5));
+    133     uni_acrylic2 = uni_acrylic3;
+    135     }
+
+
+
+
+::
+
+    solidAddition_down :   union( smallCyl, bigCone ) 
+
+    solidAddition_up   :   bigSphere 
+
+    uni_acrylic1       :   difference( solidAddition_down,  solidAddition_up  )
+
+    solidAddition_up1  :   difference( outerCyl, innerCyl )
+
+    uni_acrylic2       :   difference( uni_acrylic1 , solidAddition_up1   )
+
+    solidAddition_up2  :   cylCavity
+
+    uni_acrylic3       :   difference(  uni_acrylic2, cylCavity ) 
+
+
+
+How to proceed?
+-----------------
+
+* need to examine the tree structure of the actual uni_acrylic3 eg render all the primitives
+
+
+::
+
+    geocache-29aug2021
+
+    cg 
+    ./run.sh  
+
+
+    2021-10-22 20:56:13.510 INFO  [4536280] [*CSG_GGeo_Convert::convertSolid@220]  repeatIdx 8 nmm 10 numPrim(GParts.getNumPrim) 1 rlabel r8 num_inst 590 dump_ridx 8 dump 1
+    CSG_GGeo_Convert::convertPrim primIdx 0 numPrim 1 numParts 31 meshIdx 96 last_ridx 8 dump 1
+      0 CSGNode     0  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     0 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+      1 CSGNode     1  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      2 CSGNode     2  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      3 CSGNode     3  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      4 CSGNode     4  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      5 CSGNode     5  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      6 CSGNode     6  un aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      7 CSGNode     7  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      8 CSGNode     8  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+      9 CSGNode     9  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+     10 CSGNode    10  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+     11 CSGNode    11 !cy aabb:   102.0  -130.0  -140.0   130.0  -102.0   -35.0  trIdx:  8063 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     12 CSGNode    12  un aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 0 bbskip 0
+     13 CSGNode    13 !cy aabb:  -208.0  -208.0   -35.2   208.0   208.0    -4.8  trIdx:  8064 atm     6 IsOnlyIntersectionMask 0 is_complemented_leaf 1 bbskip 0
+     14 CSGNode    14  cy aabb:  -120.0  -120.0   -35.4   120.0   120.0    -4.6  trIdx:  8065 atm     6 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     15 CSGNode    15 !sp aabb: -17820.0 -17820.0     0.0 17820.0 17820.0 35640.0  trIdx:  8066 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     16 CSGNode    16 !cy aabb:   150.0   -14.0  -140.0   178.0    14.0   -35.0  trIdx:  8067 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     17 CSGNode    17 !cy aabb:   102.0   102.0  -140.0   130.0   130.0   -35.0  trIdx:  8068 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     18 CSGNode    18 !cy aabb:   -14.0   150.0  -140.0    14.0   178.0   -35.0  trIdx:  8069 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     19 CSGNode    19 !cy aabb:  -130.0   102.0  -140.0  -102.0   130.0   -35.0  trIdx:  8070 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     20 CSGNode    20 !cy aabb:  -178.0   -14.0  -140.0  -150.0    14.0   -35.0  trIdx:  8071 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     21 CSGNode    21 !cy aabb:  -130.0  -130.0  -140.0  -102.0  -102.0   -35.0  trIdx:  8072 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     22 CSGNode    22 !cy aabb:   -14.0  -178.0  -140.0    14.0  -150.0   -35.0  trIdx:  8073 atm     4 IsOnlyIntersectionMask 1 is_complemented_leaf 1 bbskip 1
+     25 CSGNode    25  co aabb:  -450.0  -450.0  -140.0   450.0   450.0     1.0  trIdx:  8074 atm     6 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+     26 CSGNode    26  cy aabb:  -450.0  -450.0     0.0   450.0   450.0     5.7  trIdx:  8075 atm     6 IsOnlyIntersectionMask 0 is_complemented_leaf 0 bbskip 0
+    CSG_GGeo_Convert::convertPrim  ridx  8 primIdx   0 AABB    -450.00    -450.00    -140.00     450.00     450.00       5.70 
+    2021-10-22 20:56:13.511 INFO  [4536280] [CSG_GGeo_Convert::addInstances@174]  reapeatIdx 8 iid 590,1,4
 
 
 

@@ -1,7 +1,6 @@
 #include "SSys.hh"
-#include "scuda.h"
-
 #include "OPTICKS_LOG.hh"
+
 #include "Opticks.hh"
 #include "GGeo.hh"
 

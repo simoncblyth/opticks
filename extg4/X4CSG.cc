@@ -55,7 +55,7 @@ match the X4CSG::TAIL string below
 
 const plog::Severity X4CSG::LEVEL = PLOG::EnvLevel("X4CSG","DEBUG"); 
 
-void X4CSG::Serialize( const G4VSolid* solid, Opticks* ok, const char* csgpath ) // static
+void X4CSG::Serialize( const G4VSolid* solid, const Opticks* ok, const char* csgpath ) // static
 {
     X4CSG xcsg(solid, ok);
     std::cerr << xcsg.save(csgpath) << std::endl ;   // NB only stderr emission to be captured by bash 
@@ -71,7 +71,7 @@ const char* X4CSG::GenerateTestPath( const char* prefix, unsigned lvidx, const c
     return strdup(path.c_str()); 
 }
 
-void X4CSG::GenerateTest( const G4VSolid* solid, Opticks* ok, const char* prefix, unsigned lvidx )  // static
+void X4CSG::GenerateTest( const G4VSolid* solid, const Opticks* ok, const char* prefix, unsigned lvidx )  // static
 {
     const char* path = GenerateTestPath(prefix, lvidx, ".cc" ) ; 
     LOG(debug) << "( " << lvidx << " " << path ; 
@@ -113,7 +113,7 @@ std::string X4CSG::desc() const
     return "X4CSG" ; 
 }
 
-X4CSG::X4CSG(const G4VSolid* solid_, Opticks* ok_)
+X4CSG::X4CSG(const G4VSolid* solid_, const Opticks* ok_)
     :
     verbosity(SSys::getenvint("VERBOSITY",0)),
     solid(solid_),

@@ -49,6 +49,7 @@ EOU
 
 cxs=${CXS:-30}         # collect sets of config underneath CXS
 cfbase=$TMP/CSG_GGeo   # default CSGFoundry dir is within cfbase 
+isel=
 
 if [ "$cxs" == "1" ]; then
     moi=Hama
@@ -70,13 +71,19 @@ elif [ "$cxs" == "20" ]; then
     moi=uni_acrylic3
     cegs=16:0:9:100
     gridscale=0.025
-elif [ "$cxs" == "30" ]; then
-    #geometry=dcyl  
-    geometry=bssc  
-    cfbase=$TMP/CSGDemoTest/$geometry     # non-standard CSGFoundry dir within cfbase
+elif [ "$cxs" == "25" ]; then
+    cfbase=$TMP/CSGDemoTest/dcyl     # non-standard CSGFoundry dir within cfbase
     moi=0
     cegs=16:0:9:100
     gridscale=0.025
+    isel=0                           # setting isel to zero, prevents skipping bnd 0 
+elif [ "$cxs" == "30" ]; then
+    note="HMM : box minus sub-sub cylinder NOT showing the spurious intersects"
+    cfbase=$TMP/CSGDemoTest/bssc     # non-standard CSGFoundry dir within cfbase
+    moi=0
+    cegs=16:0:9:100
+    gridscale=0.025
+    isel=0                           # setting isel to zero, prevents skipping bnd 0 
 fi 
 
 export MOI=${MOI:-$moi}
@@ -86,7 +93,7 @@ export CXS=${CXS:-$cxs}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL ZZ $ZZ"
 export BOTLINE="ZOOM $ZOOM LOOK $LOOK"
 export CFBASE=${CFBASE:-$cfbase}
-
+export ISEL=${ISEL:-$isel}
 
 if [ "$1" == "py" -o "$(uname)" == "Darwin" ]; then 
     ipython --pdb -i tests/CSGOptiXSimulateTest.py 

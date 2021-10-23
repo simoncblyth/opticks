@@ -98,6 +98,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         friend class  X4PhysicalVolume ;  // X4PhysicalVolume::init needs afterConvertMaterial 
         friend class  AssimpGGeo ; 
         friend struct GSceneTest ; 
+        friend struct GeoChain ; 
     public:
         static const plog::Severity LEVEL ; 
         static GGeo* Get();  // statically provides the last instanciated GGeo instance

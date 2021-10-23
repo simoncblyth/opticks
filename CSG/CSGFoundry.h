@@ -6,6 +6,14 @@
 #include "plog/Severity.h"
 
 struct NP ; 
+
+#include "scuda.h"
+#include "squad.h"
+#include "sqat4.h"
+#include "saabb.h"
+#include "stran.h"
+
+
 struct CSGName ; 
 struct CSGTarget ; 
 struct CSGMaker ; 
@@ -14,11 +22,6 @@ struct CSGMaker ;
 #include "CSGSolid.h"
 #include "CSGPrim.h"
 #include "CSGNode.h"
-
-#include "squad.h"
-#include "sqat4.h"
-#include "saabb.h"
-#include "stran.h"
 
 /**
 CSGFoundry

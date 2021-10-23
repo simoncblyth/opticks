@@ -99,7 +99,7 @@ with geocache-tds.
 
 **/
 
-nnode* X4Solid::Convert(const G4VSolid* solid, Opticks* ok, const char* boundary)
+nnode* X4Solid::Convert(const G4VSolid* solid, const Opticks* ok, const char* boundary)
 {
     LOG(LEVEL) << "[ convert " << solid->GetName() ; 
 
@@ -136,7 +136,7 @@ nnode* X4Solid::Balance(nnode* raw, unsigned soIdx , unsigned lvIdx )
 }
 
 
-X4Solid::X4Solid(const G4VSolid* solid, Opticks* ok, bool top)
+X4Solid::X4Solid(const G4VSolid* solid, const Opticks* ok, bool top)
    :
    X4SolidBase(solid, ok, top),
    m_displaced(NULL)

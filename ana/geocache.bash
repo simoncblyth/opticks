@@ -401,6 +401,20 @@ geocache-29aug2021(){
     local skipsolidname="mask_PMT_20inch_vetosMask_virtual,NNVTMCPPMT_body_solid,HamamatsuR12860_body_solid_1_9,PMT_20inch_veto_body_solid_1_2"
     GScintillatorLib=INFO GPropertyLib=INFO geocache-create- --gdmlpath $path -D --noviz  --skipsolidname $skipsolidname $*  
 }
+geocache-29aug2021-notes(){ cat << EON
+
+Using skipsolidname is more future safe than using indices. 
+
+O[blyth@localhost GItemList]$ cat.py GMeshLib.txt -s 103,109,126
+103  104  NNVTMCPPMTsMask_virtual
+109  110  HamamatsuR12860sMask_virtual
+126  127  mask_PMT_20inch_vetosMask_virtual
+
+EON
+}
+
+
+
 
 
 geocache-gdml-scp(){ 
@@ -438,6 +452,7 @@ geocache-jun15(){
     GTree=INFO OpticksDbg=INFO GInstancer=INFO geocache-create- --gdmlpath $path -D --noviz  --csgskiplv $csgskiplv $*  
     #--skipsolidname $skipsolidname $*
 }
+
 
 
 

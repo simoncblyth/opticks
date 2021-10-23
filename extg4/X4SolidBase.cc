@@ -187,7 +187,7 @@ G4Sphere* X4SolidBase::MakeSphere(const char* name, float rmax, float rmin)
 
 }
 
-X4SolidBase::X4SolidBase( const G4VSolid* solid, Opticks* ok, bool top )  
+X4SolidBase::X4SolidBase( const G4VSolid* solid, const Opticks* ok, bool top )  
    :
    m_solid(solid),
    m_ok(ok),

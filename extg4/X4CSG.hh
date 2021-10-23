@@ -50,15 +50,15 @@ struct X4_API X4CSG
     static const std::string HEAD ; 
     static const std::string TAIL ; 
 
-    static void Serialize( const G4VSolid* solid, Opticks* ok, const char* csgpath );
-    static void GenerateTest( const G4VSolid* solid, Opticks* ok, const char* prefix, unsigned lvidx );  
+    static void Serialize( const G4VSolid* solid, const Opticks* ok, const char* csgpath );
+    static void GenerateTest( const G4VSolid* solid, const Opticks* ok, const char* prefix, unsigned lvidx );  
     static const char* GenerateTestPath( const char* prefix, unsigned lvidx, const char* ext ) ; 
 
     static G4VSolid* MakeContainer(const G4VSolid* solid, float scale) ; 
     std::string desc() const ;
     std::string configuration(const char* csgpath) const ;
 
-    X4CSG(const G4VSolid* solid, Opticks* ok );
+    X4CSG(const G4VSolid* solid, const Opticks* ok );
 
     void init();
     void checkTree() const ;
@@ -75,7 +75,7 @@ struct X4_API X4CSG
 
     int              verbosity ; 
     const G4VSolid*  solid ; 
-    Opticks*         ok ; 
+    const Opticks*   ok ; 
     std::string      gdml ; 
     const G4VSolid*  container ; 
     const char*      solid_boundary ; 

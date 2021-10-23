@@ -56,8 +56,6 @@ list(APPEND SOURCES
     CSGView.cc
 )
     
-#sutil_vec_math.h
-#Quad.h 
 
 list(APPEND CSG_HEADERS
     CSGNode.h 

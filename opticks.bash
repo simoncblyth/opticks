@@ -2473,6 +2473,7 @@ qudarap(){  qudarap- ; qudarap-cd $* ; }
 # optix7 expts 
 c(){  cd $(opticks-home)/CSG ; pwd ; }
 cg(){ cd $(opticks-home)/CSG_GGeo ; pwd ; }
+gc(){ cd $(opticks-home)/GeoChain ; pwd ; }
 cx(){ cd $(opticks-home)/CSGOptiX ; pwd ; }
 qu(){ qudarap $* ; }
 
