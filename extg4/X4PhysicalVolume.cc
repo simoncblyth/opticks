@@ -1381,7 +1381,6 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
      return volume   ; 
 }
 
-/
 /**
 X4PhysicalVolume::addBoundary
 ------------------------------
