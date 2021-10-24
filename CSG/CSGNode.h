@@ -196,8 +196,10 @@ struct CSGNode
     bool is_zero() const ; 
 
     static unsigned AncestorTypeMask( const CSGNode* root, unsigned partIdxRel, bool dump  ); 
+    static unsigned Depth( unsigned partIdxRel ); 
     static bool     IsOnlyUnionMask( unsigned atm ); 
     static bool     IsOnlyIntersectionMask( unsigned atm ); 
+    static bool     IsOnlyDifferenceMask( unsigned atm ); 
 
     static void Copy(CSGNode& b, const CSGNode& a)
     {

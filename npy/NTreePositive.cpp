@@ -25,9 +25,8 @@
 #include "PLOG.hh"
 
 
-
 template <typename T>
-int NTreePositive<T>::fVerbosity = 3 ; 
+const plog::Severity NTreePositive<T>::LEVEL = PLOG::EnvLevel("NTreePositive", "DEBUG") ; 
  
 
 template <typename T>
@@ -48,23 +47,35 @@ T* NTreePositive<T>::root() const
 template <typename T>
 void NTreePositive<T>::init()
 {
-    if(fVerbosity > 3 )
-        LOG(error) << "positivize" ; 
-
-    positivize_r(m_root, false, 0 );
-
-    if(fVerbosity > 3 )
-        LOG(error) << "positivize DONE" ; 
+    LOG(LEVEL) << "[" ; 
+    positivize_r(m_root, false, 0 );  // NB negate:false root node not negated if its CSG_DIFFERENCE ?
+    LOG(LEVEL) << "]" ; 
 }
+
+/**
+NTreePositive::positivize_r
+-----------------------------
+
+* https://smartech.gatech.edu/bitstream/handle/1853/3371/99-04.pdf?sequence=1&isAllowed=y
+
+* addition: union
+* subtraction: difference
+* product: intersect
+
+Tree positivization (which is not the same as normalization) 
+eliminates subtraction by propagating negations down the tree using deMorgan rules. 
+
+**/
+
 
 template <typename T>
 void NTreePositive<T>::positivize_r(T* node, bool negate, unsigned depth)
 {
-    if(fVerbosity > 3 )
-        LOG(error) << "positivize_r"
-                   << " negate " << negate  
-                   << " depth " << depth 
-                   ; 
+    LOG(LEVEL) 
+        << "positivize_r"
+        << " negate " << negate  
+        << " depth " << depth 
+        ; 
 
     if(node->left == NULL && node->right == NULL)  // primitive 
     {
@@ -77,21 +88,21 @@ void NTreePositive<T>::positivize_r(T* node, bool negate, unsigned depth)
 
         if(node->type == CSG_INTERSECTION || node->type == CSG_UNION)
         {
-            if(negate)
-            {                                   //  !( A*B ) ->  !A + !B       !(A+B) ->     !A * !B
-                 node->type = CSG::DeMorganSwap(node->type) ; 
+            if(negate)                             // !( A*B ) ->  !A + !B       !(A + B) ->     !A * !B
+            {                                
+                 node->type = CSG::DeMorganSwap(node->type) ;   // UNION->INTERSECTION, INTERSECTION->UNION
                  left_negate = true ; 
                  right_negate = true ; 
             }
             else
-            {                                  //  A * B ->  A * B         A+B ->  A+B
+            {                                      //  A * B ->  A * B         A + B ->  A + B
                  left_negate = false ; 
                  right_negate = false ; 
             }
         } 
         else if(node->type == CSG_DIFFERENCE)
         {
-            if(negate)                         //  !(A - B) -> !(A*!B) -> !A + B
+            if(negate)                             //  !(A - B) -> !(A*!B) -> !A + B
             {
                 node->type = CSG_UNION ;
                 left_negate = true ;
@@ -99,7 +110,7 @@ void NTreePositive<T>::positivize_r(T* node, bool negate, unsigned depth)
             }
             else
             {
-                node->type = CSG_INTERSECTION ;  //    A - B ->  A*!B
+                node->type = CSG_INTERSECTION ;    //    A - B ->  A * !B
                 left_negate = false ;
                 right_negate = true ;
             }

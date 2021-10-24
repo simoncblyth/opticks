@@ -30,7 +30,21 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR} 
 )
 
-add_executable(${name} ${name}.cc )
+
+set(SOURCES)
+set(HEADERS)
+
+
+list(APPEND SOURCES
+   GeoChain.cc
+)
+
+list(APPEND HEADERS
+   GeoChain.h
+)
+
+
+add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 target_link_libraries( ${name} PUBLIC
    Opticks::G4
@@ -41,5 +55,16 @@ target_link_libraries( ${name} PUBLIC
    Opticks::CSG_GGeo
 )
 
-install(TARGETS ${name}  DESTINATION lib)
+
+add_executable(${name}Test ${name}Test.cc )
+target_link_libraries( ${name}Test PUBLIC
+   ${name} 
+)
+install(TARGETS ${name}Test DESTINATION lib)
+
+
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+
 

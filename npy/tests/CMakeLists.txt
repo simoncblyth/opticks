@@ -182,6 +182,7 @@ NTreeBuilderTest.cc
 NTreePositiveTest.cc
 NTreeBalanceTest.cc
 NTreeAnalyseTest.cc
+NoTest.cc
 NGPUTest.cc
 
 NNodeCollectorTest.cc

@@ -30,6 +30,10 @@ struct NPY_API no
     static no* copy( const no* a ); // retaining vtable of subclass instances 
     no* make_copy() const ;         // retaining vtable of subclass instances
 
+    no* make_deepcopy() const  ; 
+    static no* deepcopy_r( const no* n ); 
+
+
     const char* label ; 
     no* left ; 
     no* right ; 

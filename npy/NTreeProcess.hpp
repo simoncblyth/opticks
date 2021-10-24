@@ -43,7 +43,7 @@ struct NPY_API NTreeProcess
 {
     static unsigned MaxHeight0 ;  
     static T* Process( T* root_ , unsigned soIdx, unsigned lvIdx );
-    static std::vector<unsigned>*  LVList ;  
+    static std::vector<int>*  LVList ;  
     static NPY<unsigned>* ProcBuffer ; 
     static void SaveBuffer(const char* path) ; 
     static void SaveBuffer(const char* dir, const char* name) ; 

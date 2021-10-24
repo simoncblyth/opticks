@@ -183,6 +183,28 @@ void test_getenvintvec()
     } 
 }
 
+
+
+void test_getenvintvec_ptr()
+{
+    LOG(info); 
+    const char* key = "SSYSTEST_IVEC" ; 
+    std::vector<int>* ivec = SSys::getenvintvec(key); 
+
+    LOG(info) 
+        << " key " << key
+        << " ivec " << ivec 
+        << " ivec.size " << ( ivec ? ivec->size() : 0 )
+        ; 
+   
+    if(ivec) for(unsigned i=0 ; i < ivec->size() ; i++ ) std::cout << (*ivec)[i] << std::endl ; 
+}
+
+
+
+
+
+
 void test_atof()
 {
    const char* s = "45.2" ; 
@@ -249,10 +271,12 @@ int main(int argc , char** argv )
 
 
     //test_getenvintvec(); 
-    test_getenvfloat(); 
+    test_getenvintvec_ptr(); 
+
+    //test_getenvfloat(); 
     //test_atof(); 
 
-    test_RunPythonScript(); 
+    //test_RunPythonScript(); 
 
     return rc  ; 
 }

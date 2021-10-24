@@ -23,6 +23,37 @@
 #include "No.hpp"
 
 
+
+
+/**
+no::deepcopy_r
+--------------------
+
+Copies all tree nodes using the default *no* copy ctor.
+This means that pointer references are just be shallow copied, 
+other than the ones (eg left and right) that are manually fixed. 
+
+That means the "deepcopy" is not deep enough to make the copy fully independent, 
+for *no* members that are pointers. Plain value members are independent. 
+
+**/
+
+no* no::deepcopy_r( const no* n ) // static 
+{
+    if( n == nullptr ) return nullptr ; 
+    no* c = no::copy(n) ;    
+    c->left = deepcopy_r(n->left) ; 
+    c->right = deepcopy_r(n->right) ;  
+    return c ;  
+}
+no* no::make_deepcopy() const  
+{
+    return no::deepcopy_r(this); 
+}
+
+
+
+
 no* no::copy( const no* a )  // static  ... matches nnode::copy where this is actually needed
 {
     no* c = NULL ; 

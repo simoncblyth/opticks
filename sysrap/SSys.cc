@@ -404,6 +404,18 @@ bool SSys::getenvbool( const char* envkey )
 }
 
 
+std::vector<int>* SSys::getenvintvec(const char* envkey, char delim)   // static
+{
+    if(getenv(envkey) == nullptr) return nullptr ; 
+ 
+    std::vector<int>* ivec = new std::vector<int>() ; 
+
+    int nitem = getenvintvec(envkey, *ivec, delim, "" ); 
+
+    LOG(LEVEL) << " nitem " << nitem ; 
+
+    return ivec ; 
+} 
 
 
 int SSys::getenvintvec( const char* envkey, std::vector<int>& ivec, char delim, const char* fallback  )

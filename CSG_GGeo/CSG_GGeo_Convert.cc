@@ -227,7 +227,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 
     bool dump = dump_ridx > -1 && dump_ridx == int(repeatIdx) ;  
 
-    LOG(info)
+    LOG(LEVEL)
         << " repeatIdx " << repeatIdx 
         << " nmm " << nmm
         << " numPrim(GParts.getNumPrim) " << numPrim
@@ -258,14 +258,14 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 
         prim->setRepeatIdx(repeatIdx); 
         prim->setPrimIdx(primIdx); 
-        //LOG(info) << prim->desc() ;
+        //LOG(LEVEL) << prim->desc() ;
     }   
     so->center_extent = bb.center_extent() ;  
 
     addInstances(repeatIdx); 
 
-    LOG(info) << " solid.bb " <<  bb ;
-    LOG(info) << " solid.desc " << so->desc() ;
+    LOG(LEVEL) << " solid.bb " <<  bb ;
+    LOG(LEVEL) << " solid.desc " << so->desc() ;
 
     return so ; 
 }
@@ -288,6 +288,14 @@ The bbox combination used below has now been made somewhat CSG aware by using CS
 and CSGNode::is_complemented_leaf to avoid inappropriate bloating of the bbox. 
 However the approach is still somewhat ad-hoc and could be better grounded in CSG-bbox "theory"
 to improve generality : that means new geometry may still end up with bloated bbox. 
+
+To know if the primitives bbox should be included requires analysis of the 
+entire tree to see if the primitive ends up being negated. 
+For example could have a double difference.
+Hmm this would suggest that should always positivize the tree, 
+not just for overlarge ones that get balanced.  
+Then can just exclude the primitives that end up 
+being complemented.
 
 Also previously the placeholder zero node bbox were not excluded from inclusion 
 in the CSGPrim bbox which sometimes unnecessarily increased bbox in any direction by up to to 100mm, 
@@ -342,12 +350,22 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         if(n->is_zero()) continue;  
 
         unsigned atm = CSGNode::AncestorTypeMask(root, partIdxRel, false ); 
+        unsigned depth = CSGNode::Depth(partIdxRel); 
+
+        // what really want to know is if the primitive is negated 
+     
+        bool odm = CSGNode::IsOnlyDifferenceMask(atm) ; 
 
         bool oim = CSGNode::IsOnlyIntersectionMask(atm) ; 
 
         bool cle = n->is_complemented_primitive();   
 
-        bool bbskip =  oim && cle  ;  // exclude bbox of complemented leaf with only intersection ancestry 
+        bool bbskip_0 =  oim && cle  ;  // exclude bbox of complemented leaf with only intersection ancestry 
+
+        bool bbskip_1 =  odm && depth == 1 && n->is_primitive() && !n->is_complement() ;  
+
+        bool bbskip = bbskip_0 || bbskip_1 ;  
+
 
         if(dump || bbskip) 
             std::cout 

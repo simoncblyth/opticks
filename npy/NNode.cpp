@@ -1266,12 +1266,22 @@ nnode* nnode::make_copy() const
 }
 
 
+/**
+nnode::deepcopy_r
+--------------------
 
+Copies all tree nodes using the default nnode copy ctor.
+This means that pointer references like transforms will just be shallow copied. 
+That means the "deepcopy" is not deep enough to make it fully independent, 
+for nnode members that are pointers. Plain value members like the node type 
+are independent. 
+
+**/
 
 nnode* nnode::deepcopy_r( const nnode* n ) // static 
 {
     if( n == NULL ) return NULL ; 
-    nnode* c = nnode::copy(n) ;       // ARE TRANSFORMS COPIED  ?
+    nnode* c = nnode::copy(n) ;   
     c->left = deepcopy_r(n->left) ; 
     c->right = deepcopy_r(n->right) ;  
     return c ; 

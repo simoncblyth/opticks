@@ -20,6 +20,7 @@
 #include <cassert>
 #include <vector>
 
+#include "SSys.hh"
 #include "NPY.hpp"
 
 #include "NTreeBalance.hpp"
@@ -36,7 +37,7 @@ template <typename T>
 unsigned NTreeProcess<T>::MaxHeight0 = 3 ;   // was discrepantly 4 previously   
 
 template <typename T>
-std::vector<unsigned>* NTreeProcess<T>::LVList = NULL ;  
+std::vector<int>* NTreeProcess<T>::LVList = SSys::getenvintvec("NTREEPROCESS_LVLIST") ;  
 
 template <typename T>
 NPY<unsigned>* NTreeProcess<T>::ProcBuffer = NULL ;  
@@ -66,13 +67,10 @@ NTreeProcess<T>::Process
 template <typename T>
 T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // static
 {
-    //if( LVList == NULL )
-         //LVList = new std::vector<unsigned> { 10, 16, 17, 18, 19, 20, 21, 999 } ; 
-         //LVList = new std::vector<unsigned> {36,  56,  57,  60,  63,  65,  67,  69,  70,  74, 131, 200 } ; 
  
     if( ProcBuffer == NULL ) ProcBuffer = NPY<unsigned>::make(0,4) ; 
 
-    bool listed = LVList != NULL && std::find(LVList->begin(), LVList->end(), lvIdx ) != LVList->end() ; 
+    bool listed = LVList != NULL && std::find(LVList->begin(), LVList->end(), int(lvIdx) ) != LVList->end() ; 
 
     if(listed) LOG(info) << "before\n" << NTreeAnalyse<T>::Desc(root_) ; 
      // dump it here, prior to the inplace positivization 

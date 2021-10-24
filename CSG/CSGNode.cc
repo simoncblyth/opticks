@@ -203,8 +203,8 @@ CSGNode::AncestorTypeMask
 This iterates up the node tree starting from the parent 
 of the node identified by *partIdxRel* using complete binary tree arithemetic.
 The bitwise-or of the typemasks of the ancestors is returned.  
-When starting from a leaf node this will return the bitwise-or of the 
-operator types. 
+When starting from a leaf node this will return the bitwise-or of its 
+ancestors operator types. 
 
 **/
 
@@ -212,7 +212,7 @@ unsigned CSGNode::AncestorTypeMask( const CSGNode* root,  unsigned partIdxRel, b
 {
     unsigned atm = 0u ; 
 
-    int parentIdxRel = ((partIdxRel + 1) >> 1) - 1 ;    
+    int parentIdxRel = ((partIdxRel + 1) >> 1) - 1 ;   // make 1-based, bitshift up tree, return to 0-based   
 
     while( parentIdxRel > -1 )  
     {   
@@ -229,6 +229,48 @@ unsigned CSGNode::AncestorTypeMask( const CSGNode* root,  unsigned partIdxRel, b
 }
 
 
+/**
+CSGNode::Depth
+----------------
+
+Return complete binary tree depth from 0-based node index (aka *partIdxRel*) see CSGNodeTest/test_Depth::
+
+     partIdxRel    0 partIdxRel+1 (dec)    1 (bin) 00000000000000000000000000000001 depth    0
+     partIdxRel    1 partIdxRel+1 (dec)    2 (bin) 00000000000000000000000000000010 depth    1
+     partIdxRel    2 partIdxRel+1 (dec)    3 (bin) 00000000000000000000000000000011 depth    1
+     partIdxRel    3 partIdxRel+1 (dec)    4 (bin) 00000000000000000000000000000100 depth    2
+     partIdxRel    4 partIdxRel+1 (dec)    5 (bin) 00000000000000000000000000000101 depth    2
+     partIdxRel    5 partIdxRel+1 (dec)    6 (bin) 00000000000000000000000000000110 depth    2
+     partIdxRel    6 partIdxRel+1 (dec)    7 (bin) 00000000000000000000000000000111 depth    2
+     partIdxRel    7 partIdxRel+1 (dec)    8 (bin) 00000000000000000000000000001000 depth    3
+     partIdxRel    8 partIdxRel+1 (dec)    9 (bin) 00000000000000000000000000001001 depth    3
+     partIdxRel    9 partIdxRel+1 (dec)   10 (bin) 00000000000000000000000000001010 depth    3
+     partIdxRel   10 partIdxRel+1 (dec)   11 (bin) 00000000000000000000000000001011 depth    3
+     partIdxRel   11 partIdxRel+1 (dec)   12 (bin) 00000000000000000000000000001100 depth    3
+     partIdxRel   12 partIdxRel+1 (dec)   13 (bin) 00000000000000000000000000001101 depth    3
+     partIdxRel   13 partIdxRel+1 (dec)   14 (bin) 00000000000000000000000000001110 depth    3
+     partIdxRel   14 partIdxRel+1 (dec)   15 (bin) 00000000000000000000000000001111 depth    3
+     partIdxRel   15 partIdxRel+1 (dec)   16 (bin) 00000000000000000000000000010000 depth    4
+     partIdxRel   16 partIdxRel+1 (dec)   17 (bin) 00000000000000000000000000010001 depth    4
+     partIdxRel   17 partIdxRel+1 (dec)   18 (bin) 00000000000000000000000000010010 depth    4
+
+**/
+
+unsigned CSGNode::Depth( unsigned partIdxRel ) // static
+{
+    int parentIdxRel = ((partIdxRel + 1) >> 1) - 1 ;   // make 1-based, bitshift up tree, return to 0-based   
+    unsigned depth = 0 ; 
+    while( parentIdxRel > -1 )  
+    {   
+        parentIdxRel = ((parentIdxRel + 1) >> 1) - 1 ;  
+        depth += 1 ; 
+    }   
+    return depth ; 
+}
+
+
+
+
 bool CSGNode::IsOnlyUnionMask( unsigned atm )  // static 
 {
      return atm == CSG::UnionMask() ; 
@@ -237,6 +279,11 @@ bool CSGNode::IsOnlyUnionMask( unsigned atm )  // static
 bool CSGNode::IsOnlyIntersectionMask( unsigned atm )  // static 
 {
      return atm == CSG::IntersectionMask() ; 
+}
+
+bool CSGNode::IsOnlyDifferenceMask( unsigned atm )  // static 
+{
+     return atm == CSG::DifferenceMask() ; 
 }
 
 

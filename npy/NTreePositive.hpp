@@ -40,6 +40,8 @@ The changes effected to the tree are
 
 #include "NPY_API_EXPORT.hh"
 #include "OpticksCSG.h"
+#include "plog/Severity.h"
+
 #include <vector>
 #include <string>
 
@@ -47,6 +49,7 @@ The changes effected to the tree are
 template <typename T>
 class NPY_API NTreePositive
 {
+        static const plog::Severity LEVEL ; 
     public:
         std::string desc() const ;
         NTreePositive(T* root); 
@@ -54,10 +57,10 @@ class NPY_API NTreePositive
     private:
         void  init() ; 
         static void positivize_r(T* node, bool negate, unsigned depth);
-        static int  fVerbosity ; 
     private:
         T*                     m_root ; 
 
-
 };
+
+
 

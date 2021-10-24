@@ -1,5 +1,6 @@
 // ./CSGNodeTest.sh 
 
+#include <bitset>
 #include <vector>
 #include <iomanip>
 #include <iostream>
@@ -94,16 +95,39 @@ void test_change_transform()
     }
 }
 
+void test_Depth()
+{
+    //LOG(info); 
+    for(unsigned i=0 ; i < 32 ; i++)
+    {
+        unsigned partIdxRel = i ; 
+        unsigned depth = CSGNode::Depth(partIdxRel) ; 
+        unsigned levelIdx = partIdxRel + 1 ; 
+
+        std::cout 
+            << " partIdxRel " << std::setw(4) << partIdxRel 
+            << " partIdxRel+1 (dec) " << std::setw(4) << levelIdx  
+            << " (bin) " <<  std::bitset<32>(levelIdx)
+            << " depth " << std::setw(4) << depth
+            << std::endl 
+            ;
+    }
+}
+
 
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv);  
+    //OPTICKS_LOG(argc, argv);  
 
+    /*
     test_zero(); 
     test_sphere(); 
     test_copy();  
     test_change_transform();  
+    */
+
+    test_Depth();  
 
     return 0 ; 
 }
