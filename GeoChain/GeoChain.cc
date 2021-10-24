@@ -57,6 +57,7 @@ struct GeoChain
     Opticks* ok ; 
     GGeo* ggeo ; 
     GMesh* mesh ;
+    GVolume* volume ; 
  
     GeoChain(Opticks* ok ); 
     void convert(const G4VSolid* const solid); 
@@ -66,7 +67,8 @@ GeoChain::GeoChain(Opticks* ok_)
     :
     ok(ok_), 
     ggeo(new GGeo(ok, true)),  // live=true to initLibs and not load from cache
-    mesh(nullptr)
+    mesh(nullptr),
+    volume(nullptr)
 {
 }
 
@@ -80,11 +82,14 @@ void GeoChain::convert(const G4VSolid* const solid)
     LOG(info) << " mesh " << mesh ; 
 
     ggeo->add(mesh); 
-    ggeo->deferredCreateGParts(); 
-    ggeo->prepareVolumes(); 
 
-    // hmm everything is based on GMergedMesh : so the above do little without 
-    // having any volumes... need an artifical one ?
+    // standin for X4PhysicalVolume::convertStructure
+    volume = X4PhysicalVolume::MakePlaceholderNode(); 
+    ggeo->setRootVolume(volume);
+
+    ggeo->prepareVolumes();   // creates GMergedMesh 
+
+    ggeo->deferredCreateGParts(); 
 
 }
 
@@ -93,8 +98,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* argforced = "--noinstanced" ; 
-    Opticks ok(argc, argv, argforced); 
+    //const char* argforced = "--noinstanced" ; 
+    //Opticks ok(argc, argv, argforced); 
+    Opticks ok(argc, argv ); 
     ok.configure(); 
 
     GeoChain gc(&ok); 

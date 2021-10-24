@@ -179,9 +179,10 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     unsigned num_inst = mm->getNumITransforms() ;
     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer(); 
 
-    LOG(info) 
-        << " reapeatIdx " << repeatIdx
-        << " iid " << iid->getShapeString()
+    LOG(LEVEL) 
+        << " repeatIdx " << repeatIdx
+        << " num_inst (GMergedMesh::getNumITransforms) " << num_inst 
+        << " iid " << ( iid ? iid->getShapeString() : "-"  )
         ;
 
     //LOG(LEVEL) << " nmm " << nmm << " repeatIdx " << repeatIdx << " num_inst " << num_inst ; 
@@ -220,6 +221,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
     unsigned num_inst = mm->getNumITransforms() ;
 
     const GParts* comp = ggeo->getCompositeParts(repeatIdx) ;  
+    assert( comp ); 
     unsigned numPrim = comp->getNumPrim();
     std::string rlabel = CSGSolid::MakeLabel('r',repeatIdx) ; 
 

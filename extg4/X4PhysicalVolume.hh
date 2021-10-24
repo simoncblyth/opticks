@@ -92,6 +92,7 @@ struct X4_API X4Nd
 
 class X4_API X4PhysicalVolume : public X4Named 
 {
+        friend struct GeoChain ; 
     public:
         static const char* TMPDIR ; 
         static const char* SCINTILLATOR_PROPERTIES  ; 
@@ -152,6 +153,8 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertSensors_r(const G4VPhysicalVolume* const pv, int depth);
         GVolume* convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         GVolume* convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
+        static GVolume* MakePlaceholderNode(); 
+
         unsigned addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p );
 
     private:

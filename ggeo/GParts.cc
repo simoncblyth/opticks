@@ -1443,20 +1443,21 @@ void GParts::registerBoundaries() // convert boundary spec names into integer co
    unsigned int nbnd = m_bndspec->getNumKeys() ; 
    assert( getNumParts() == nbnd );
 
-   if(m_verbosity > 0)
    LOG(LEVEL) 
          << " verbosity " << m_verbosity
          << " nbnd " << nbnd 
          << " NumParts " << getNumParts() 
          ;
 
-   for(unsigned int i=0 ; i < nbnd ; i++)
+   for(unsigned i=0 ; i < nbnd ; i++)
    {
        const char* spec = m_bndspec->getKey(i);
-       unsigned int boundary = m_bndlib->addBoundary(spec);
+       size_t speclen = (size_t)strlen(spec) ; 
+       if(speclen == 0 ) LOG(error) << "dummy spec detected, using boundary 0 " ; 
+
+       unsigned boundary = speclen == 0 ? 0 : m_bndlib->addBoundary(spec);
        setBoundary(i, boundary);
 
-       if(m_verbosity > 1)
        LOG(LEVEL) 
              << " i " << std::setw(3) << i 
              << " " << std::setw(30) << spec

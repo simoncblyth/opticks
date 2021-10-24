@@ -1347,7 +1347,8 @@ void X4PhysicalVolume::convertStructureChecks() const
 X4PhysicalVolume::convertStructure_r
 --------------------------------------
 
-Preorder traverse.
+Preorder traverse, with recursive call after the visit, that 
+gives access to parent GVolume and G4VPhysicalVolume.
 
 Formerly collected volumes into GGeo/GNodeLib here, 
 but thats too soon for tripletIdentity, so instead the GVolume 
@@ -1395,14 +1396,13 @@ A boundary is a quadruplet of omat/osur/isur/imat indices.
 
 See notes/issues/ab-blib.rst on getting A-B comparisons to match for boundaries.
 
-
-
 OLD_ADD_BOUNDARY 
    skin surface consults the GGeo model but border surface hark back to the Geant4 model ?
    In the new variant, remove this legacy consulting GGeo model for both  
 
 
-Notice that the non-directional skin surface are translated by the osur and isur being the same in the 2nd and 3rd branches.
+Notice that the non-directional skin surface are translated by the osur and isur being the same in the 2nd and 3rd 
+elements of the boundary quad.
  
 **/
 
@@ -1827,6 +1827,54 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     float t30 = BTimeStamp::RealTime() ;
     m_convertNode_GVolume_dt     += t30 - t20 ; 
 #endif
+    return volume ; 
+}
+
+/**
+X4PhysicalVolume::MakePlaceholderNode
+---------------------------------------
+
+Currently use of this is limited to very simple single solid geometries. 
+
+**/
+
+GVolume* X4PhysicalVolume::MakePlaceholderNode() // static
+{
+    int lvIdx = 0 ; 
+    unsigned ndIdx = 0 ; 
+    unsigned csgIdx = 0 ; 
+    const char* boundarySpec = nullptr ; 
+    const char* pvName = "PlaceholderPV" ; 
+    const char* lvName = "PlaceholderLV" ; 
+
+
+    GPt* pt = new GPt( lvIdx, ndIdx, csgIdx, boundarySpec )  ;  
+
+    void* origin_node = nullptr ; 
+    int origin_copyNumber = 0 ;  
+
+    glm::mat4 xf_local(1.f); 
+    glm::mat4 xf_global(1.f); 
+    GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
+    GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
+
+    const GGeo* ggeo = GGeo::Get(); 
+    const GMesh* mesh = ggeo->getMesh(lvIdx);   // GMeshLib 
+
+    unsigned boundary = 0 ; 
+    unsigned sensorIndex = GVolume::SENSOR_UNSET ; 
+    GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node, origin_copyNumber );
+
+    // hmm which GVolume properties are essential ?
+
+    volume->setBoundary(boundary); 
+    volume->setSensorIndex(sensorIndex);   // must set to GVolume::SENSOR_UNSET for non-sensors, for sensor_indices array  
+    volume->setLevelTransform(ltransform); 
+    volume->setPt(pt); 
+
+    volume->setPVName( pvName );
+    volume->setLVName( lvName );
+ 
     return volume ; 
 }
 

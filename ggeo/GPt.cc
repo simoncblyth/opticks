@@ -25,12 +25,14 @@
 #include "GLMFormat.hpp"
 
 
+const char* GPt::DEFAULT_SPEC = "" ; 
+
 GPt::GPt( int lvIdx_, int ndIdx_, int csgIdx_, const char* spec_, const glm::mat4& placement_ )
     :
     lvIdx(lvIdx_),
     ndIdx(ndIdx_),
     csgIdx(csgIdx_),
-    spec(strdup(spec_)),
+    spec(spec_ ? strdup(spec_) : DEFAULT_SPEC),
     placement(placement_)
 {
 } 
@@ -40,7 +42,7 @@ GPt::GPt( int lvIdx_, int ndIdx_, int csgIdx_, const char* spec_ )
     lvIdx(lvIdx_),
     ndIdx(ndIdx_),
     csgIdx(csgIdx_),
-    spec(strdup(spec_)),
+    spec(spec_ ? strdup(spec_) : DEFAULT_SPEC),
     placement(1.0f)
 {
 } 
@@ -57,9 +59,6 @@ void GPt::setPlacement( const glm::mat4& placement_ )
 {
     placement = placement_ ;  
 }
-
-
-
 
 
 std::string GPt::desc() const 

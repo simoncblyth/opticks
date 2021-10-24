@@ -1246,6 +1246,9 @@ float* GMergedMesh::getModelToWorldPtr(unsigned int index)
 GMergedMesh::addInstancedBuffers
 -----------------------------------
 
+Canonically invoked only by GInstancer::makeMergedMeshAndInstancedBuffers
+
+
 itransforms InstanceTransformsBuffer
     (num_instances, 4, 4)
 

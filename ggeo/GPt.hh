@@ -53,6 +53,8 @@ to be deferred postcache.
 
 struct GGEO_API GPt 
 {
+    static const char* DEFAULT_SPEC ; 
+
     int         lvIdx ; 
     int         ndIdx ; 
     int         csgIdx ; 

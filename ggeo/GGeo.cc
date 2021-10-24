@@ -1261,6 +1261,7 @@ As this is creating GMergedMesh it is clearly precache.
 (Now that GMeshLib are persisted this is not so clearly precache, 
 but that remains the case typically.)
 
+
 **/
 
 void GGeo::prepareVolumes()
@@ -1292,7 +1293,9 @@ void GGeo::prepareVolumes()
     else
     {
         LOG(fatal) << "instancing inhibited " ;
-        const GNode* root = getNode(0);
+        //const GNode* root = getNode(0);  // HMM that now returns nullptr because the GVolume are collected by GInstancer::collectNodes
+        
+        const GNode* root = getRootVolume() ; 
         m_geolib->makeMergedMesh(0, NULL, root );  // ridx:0 rbase:NULL 
     }
 

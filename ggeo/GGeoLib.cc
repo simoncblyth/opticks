@@ -106,6 +106,12 @@ GMergedMesh* GGeoLib::getMergedMesh(unsigned index) const
     return mm ; 
 }
 
+/**
+GGeoLib::getCompositeParts
+----------------------------
+
+**/
+
 GParts* GGeoLib::getCompositeParts(unsigned index) const 
 {
     GMergedMesh* mm = getMergedMesh(index);
