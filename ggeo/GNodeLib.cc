@@ -49,6 +49,7 @@ const char* GNodeLib::NI = "all_volume_nodeinfo.npy" ;
 
 const char* GNodeLib::CacheDir(const Opticks* ok)  // static
 {
+    if(!ok->hasIdPath()) return nullptr ; 
     std::string cachedir = ok->getObjectPath(RELDIR) ; 
     return strdup(cachedir.c_str()); 
 }

@@ -3275,6 +3275,15 @@ bool Opticks::hasGeocache() const
     return BFile::ExistsDir(idpath); 
 } 
 
+bool Opticks::hasIdPath() const 
+{
+    const char* idpath = getIdPath(); 
+    return idpath != nullptr ; 
+} 
+
+
+
+
 bool Opticks::isGeocacheAvailable() const 
 {
     bool cache_exists = hasGeocache(); 

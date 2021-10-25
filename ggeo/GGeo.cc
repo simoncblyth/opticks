@@ -354,12 +354,16 @@ void GGeo::init()
 {
     LOG(LEVEL) << "[" ; 
     const char* idpath = m_ok->getIdPath() ;
+    bool allownokey = m_ok->isAllowNoKey();
+
     LOG(LEVEL) << " idpath " << ( idpath ? idpath : "NULL" ) ; 
-    assert(idpath && "GGeo::init idpath is required" );
 
+    if(!allownokey)
+    {
+        assert(idpath && "GGeo::init idpath is required" );
+    }
 
-    bool geocache_available = m_ok->isGeocacheAvailable() ;   // cache exists and is enabled  
-
+    bool geocache_available = allownokey ? false : m_ok->isGeocacheAvailable() ;   // cache exists and is enabled  
     bool will_load_libs = geocache_available && (m_live == false ); 
     bool will_init_libs = !will_load_libs ; 
 
@@ -367,6 +371,7 @@ void GGeo::init()
 
     LOG(LEVEL) 
         << " idpath " << idpath
+        << " allownokey " << allownokey
         << " geocache_available  " << geocache_available
         << " m_live " << m_live 
         << " will_init_libs " << will_init_libs 
