@@ -5,8 +5,9 @@
 #endif
 
 #include <vector>
+#include "CSG_API_EXPORT.hh"
 
-struct CU
+struct CSG_API CU
 {
 #ifdef WITH_PLOG
     static const plog::Severity LEVEL ; 

@@ -114,16 +114,17 @@ ensure that only the active package tree of headers gets included.
 #include "CSG_LOG.hh"
 #endif
 
-#ifdef OPTICKS_QUDARAP
-#include "QUDARAP_LOG.hh"
-#endif
-
 #ifdef OPTICKS_CSG_GGEO
 #include "CSG_GGEO_LOG.hh"
 #endif
 
+#ifdef OPTICKS_QUDARAP
+#include "QUDARAP_LOG.hh"
+#endif
 
-
+#ifdef OPTICKS_CSGOPTIX
+#include "CSGOPTIX_LOG.hh"
+#endif
 
 
 
@@ -219,17 +220,19 @@ class SYSRAP_API OPTICKS_LOG_ {
     G4OK_LOG::Initialize(instance->prefixlevel_parse( max_level, "G4OK"), app1, NULL );
 #endif
 
-
-
 #ifdef OPTICKS_CSG
     CSG_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSG"), app1, NULL );
-#endif
-#ifdef OPTICKS_QUDARAP
-    QUDARAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "QUDARAP"), app1, NULL );
 #endif
 #ifdef OPTICKS_CSG_GGEO
     CSG_GGEO_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSG_GGEO"), app1, NULL );
 #endif
+#ifdef OPTICKS_QUDARAP
+    QUDARAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "QUDARAP"), app1, NULL );
+#endif
+#ifdef OPTICKS_CSGOPTIX
+    CSGOPTIX_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSGOPTIX"), app1, NULL );
+#endif
+
 
 
 
@@ -366,6 +369,13 @@ class SYSRAP_API OPTICKS_LOG_ {
     printf("%s\n", "!OPTICKS_CSG" ); 
 #endif
 
+#ifdef OPTICKS_CSG_GGEO
+    printf("%s\n", "OPTICKS_CSG_GGEO" ); 
+    CSG_GGEO_LOG::Check("CSG_GGEO");
+#else
+    printf("%s\n", "!OPTICKS_CSG_GGEO" ); 
+#endif
+
 #ifdef OPTICKS_QUDARAP
     printf("%s\n", "OPTICKS_QUDARAP" ); 
     QUDARAP_LOG::Check("QUDARAP");
@@ -373,11 +383,11 @@ class SYSRAP_API OPTICKS_LOG_ {
     printf("%s\n", "!OPTICKS_QUDARAP" ); 
 #endif
 
-#ifdef OPTICKS_CSG_GGEO
-    printf("%s\n", "OPTICKS_CSG_GGEO" ); 
-    CSG_GGEO_LOG::Check("CSG_GGEO");
+#ifdef OPTICKS_CSGOPTIX
+    printf("%s\n", "OPTICKS_CSGOPTIX" ); 
+    CSGOPTIX_LOG::Check("CSGOPTIX");
 #else
-    printf("%s\n", "!OPTICKS_CSG_GGEO" ); 
+    printf("%s\n", "!OPTICKS_CSGOPTIX" ); 
 #endif
 
 

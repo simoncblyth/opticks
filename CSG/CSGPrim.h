@@ -13,6 +13,9 @@
 #include "CSGPrimSpec.h"
 #endif
 
+#include "CSG_API_EXPORT.hh"
+
+
 /**
 CSGPrim : contiguous sequence of *numNode* CSGNode starting from *nodeOffset* : complete binary tree of 1,3,7,15,... CSGNode
 ===============================================================================================================================
@@ -57,7 +60,7 @@ CSGPrim : contiguous sequence of *numNode* CSGNode starting from *nodeOffset* : 
 
 
 
-struct CSGPrim  
+struct CSG_API CSGPrim  
 {
     quad q0 ; 
     quad q1 ; 

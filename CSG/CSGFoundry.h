@@ -23,6 +23,9 @@ struct CSGMaker ;
 #include "CSGPrim.h"
 #include "CSGNode.h"
 
+
+#include "CSG_API_EXPORT.hh"
+
 /**
 CSGFoundry
 ============
@@ -33,7 +36,7 @@ CSGFoundry
 **/
 
 
-struct CSGFoundry
+struct CSG_API CSGFoundry
 {
     static const plog::Severity LEVEL ; 
     static const unsigned IMAX ; 

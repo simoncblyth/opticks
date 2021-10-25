@@ -3,12 +3,12 @@
 struct CSGNode ; 
 struct CSGSolid ; 
 
-//#include "CSGNode.h"
+#include "CSG_API_EXPORT.hh"
 #include "plog/Severity.h"
 
 struct CSGFoundry ; 
 
-struct CSGMaker
+struct CSG_API CSGMaker
 {
     static const plog::Severity LEVEL ; 
     static float4 TriPlane( const std::vector<float3>& v, unsigned i, unsigned j, unsigned k );

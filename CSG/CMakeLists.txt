@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CSG)
 project(${name} VERSION 0.1.0)
-
+include(OpticksBuildOptions)
 
 #[=[
 Below extracts BCM hookup for minimal boilerplate package export from the usual "include(OpticksBuildOptions)"
 of Opticks packages
-#]=]
 
 include(GNUInstallDirs)
 set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")  # override the GNUInstallDirs default of "include"
@@ -25,6 +24,10 @@ include(BCMDeploy)
 
 set(CMAKE_CXX_STANDARD 11) 
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
+
+#]=]
+
+
 
 find_package(CUDA REQUIRED) 
 find_package(SysRap REQUIRED)

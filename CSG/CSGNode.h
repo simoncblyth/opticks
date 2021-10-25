@@ -7,6 +7,14 @@
    #define NODE_METHOD 
 #endif 
 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+#endif
+
+#include "CSG_API_EXPORT.hh"
+
+
 /**
 CSGNode (synonymous with Part)
 ==============================
@@ -85,7 +93,7 @@ cx:convexpolyhedron
 
 **/
 
-struct CSGNode
+struct CSG_API CSGNode
 {
     quad q0 ;
     quad q1 ; 

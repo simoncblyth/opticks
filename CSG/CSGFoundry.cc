@@ -489,8 +489,8 @@ std::string CSGFoundry::descNode() const
 std::string CSGFoundry::descNode(unsigned solidIdx) const 
 {
     const CSGSolid* so = solid.data() + solidIdx ; 
-    const CSGPrim* pr0 = prim.data() + so->primOffset ; 
-    const CSGNode* nd0 = node.data() + pr0->nodeOffset() ;  
+    //const CSGPrim* pr0 = prim.data() + so->primOffset ; 
+    //const CSGNode* nd0 = node.data() + pr0->nodeOffset() ;  
 
     std::stringstream ss ;
     ss << std::endl << so->desc() << std::endl  ;
@@ -513,8 +513,8 @@ std::string CSGFoundry::descNode(unsigned solidIdx) const
 std::string CSGFoundry::descTran(unsigned solidIdx) const 
 {
     const CSGSolid* so = solid.data() + solidIdx ; 
-    const CSGPrim* pr0 = prim.data() + so->primOffset ; 
-    const CSGNode* nd0 = node.data() + pr0->nodeOffset() ;  
+    //const CSGPrim* pr0 = prim.data() + so->primOffset ; 
+    //const CSGNode* nd0 = node.data() + pr0->nodeOffset() ;  
 
     std::stringstream ss ;
     ss << std::endl << so->desc() << std::endl  ;

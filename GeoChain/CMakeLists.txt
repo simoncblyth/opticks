@@ -60,6 +60,9 @@ add_executable(${name}Test ${name}Test.cc )
 target_link_libraries( ${name}Test PUBLIC
    ${name} 
 )
+
+target_compile_definitions( ${name} PUBLIC OPTICKS_GEOCHAIN )
+
 install(TARGETS ${name}Test DESTINATION lib)
 
 

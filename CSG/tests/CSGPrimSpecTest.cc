@@ -16,6 +16,12 @@ int main(int argc, char** argv)
     const CSGName* id = fd->id ; 
     unsigned num_prim = fd->getNumPrim() ; 
 
+    LOG(info) 
+        << " id " << id
+        << " num_prim " << num_prim 
+        ;
+
+
     unsigned solidIdx = 0u ; 
     CSGPrimSpec psh = fd->getPrimSpec(solidIdx);   
    

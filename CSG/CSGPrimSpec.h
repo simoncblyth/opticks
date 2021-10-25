@@ -3,6 +3,7 @@
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 #include <vector>
+#include "CSG_API_EXPORT.hh"
 #endif
 
 /**
@@ -21,7 +22,7 @@ from 0 to numPrim-1 for that GAS.
 
 **/
 
-struct CSGPrimSpec
+struct CSG_API CSGPrimSpec
 {
     const float*    aabb ; 
     const unsigned* sbtIndexOffset ;   

@@ -5,6 +5,8 @@
 #include <glm/fwd.hpp>
 #include "plog/Severity.h"
 
+#include "CSGOPTIX_API_EXPORT.hh"
+
 struct SMeta ; 
 struct NP ; 
 struct quad4 ; 
@@ -30,7 +32,7 @@ struct Frame ;
 
 #include "SRenderer.hh"
 
-struct CSGOptiX : public SRenderer 
+struct CSGOPTIX_API CSGOptiX : public SRenderer 
 {
     static const plog::Severity LEVEL ; 
     static const char* PTXNAME ; 

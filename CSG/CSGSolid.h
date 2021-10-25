@@ -6,6 +6,7 @@
 #else
 #include "plog/Severity.h"
 #include <string>
+#include "CSG_API_EXPORT.hh"
 #endif
 
 
@@ -19,7 +20,7 @@ it might be in future, ie keep it simple, no refs,
 
 **/
 
-struct CSGSolid   // Composite shape 
+struct CSG_API CSGSolid   // Composite shape 
 {
 
 

@@ -273,7 +273,7 @@ CSGSolid* CSGMaker::makeClustered(const char* label,  int i0, int i1, int is, in
         int nodeOffset_ = -1 ;  // -1:use current node count as about to add the declared numNode
         CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
         CSGNode bx = CSGNode::Box3(fullside) ;
-        CSGNode* n = fd->addNode(CSGNode::Box3(fullside)); 
+        CSGNode* n = fd->addNode(bx); 
         n->setTransform(transform_idx); 
         t->transform_aabb_inplace( n->AABB() ); 
 
@@ -320,7 +320,7 @@ CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector
 
 CSGSolid* CSGMaker::makeBooleanBoxSphere( const char* label, char op_, float radius, float fullside, int meshIdx )
 {
-    CSGNode op = CSGNode::BooleanOperator(op_); 
+    //CSGNode op = CSGNode::BooleanOperator(op_); 
     CSGNode bx = CSGNode::Box3(fullside) ; 
     CSGNode sp = CSGNode::Sphere(radius); 
     return makeBooleanTriplet(label, op_, bx, sp ); 
@@ -596,8 +596,8 @@ float4 CSGMaker::TriPlane( const std::vector<float3>& v, unsigned i, unsigned j,
     float3 ik = v[k] - v[i] ; 
     float3 n = normalize(cross(ij, ik )) ;
     float di = dot( n, v[i] ) ;
-    float dj = dot( n, v[j] ) ;
-    float dk = dot( n, v[k] ) ;
+    //float dj = dot( n, v[j] ) ;
+    //float dk = dot( n, v[k] ) ;
     //LOG(info) << " di " << di << " dj " << dj << " dk " << dk << " n (" << n.x << "," << n.y << "," << n.z << ")" ; 
     float4 plane = make_float4( n, di ) ; 
     return plane ;  

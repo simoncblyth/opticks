@@ -2,6 +2,49 @@ plog-appender-not-equal-this-assert
 =======================================
 
 
+
+
+FIX via standard OpticksBuildOptions in CSG/CMakeLists.txt : the crucial thing is symbol visibility
+-----------------------------------------------------------------------------------------------------
+
+Fixed issue by adopting standard "include(OpticksBuildOptions)" in CSG/CMakeLists.txt::
+
+     03 project(${name} VERSION 0.1.0)
+      4 include(OpticksBuildOptions)
+      5 
+      6 #[=[
+      7 Below extracts BCM hookup for minimal boilerplate package export from the usual "include(OpticksBuildOptions)"
+      8 of Opticks packages
+      9 
+     10 include(GNUInstallDirs)
+     11 set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")  # override the GNUInstallDirs default of "include"
+     12 
+     13 find_package(BCM CONFIG)
+     14 
+     15 if(NOT BCM_FOUND)
+     16    message(STATUS "CMAKE_MODULE_PATH:${CMAKE_MODULE_PATH}")
+     17    message(STATUS "CMAKE_PREFIX_PATH:${CMAKE_PREFIX_PATH}   expect to find BCM in one of these prefix dirs")
+     18    message(STATUS "typically BCM is found thanks to the CMAKE_PREFIX_PATH envvar including ${OPTICKS_PREFIX}/externals ")
+     19    message(STATUS "see examples/UseBCM to debug failure to find BCM ")
+     20    message(FATAL_ERROR "ABORT " )
+     21 endif()
+     22 
+     23 include(BCMDeploy)
+     24 
+     25 set(CMAKE_CXX_STANDARD 11) 
+     26 set(CMAKE_CXX_STANDARD_REQUIRED YES)
+     27 
+     28 #]=]
+     29 
+
+
+
+
+
+Issue
+----------
+
+
 ::
 
     O[blyth@localhost CSGOptiX]$ ./cxs.sh
@@ -257,5 +300,6 @@ CSG/tests/CSGFoundryLoadTest.cc the below is unhealthy duplication::
         LOG(info) ; 
         return 0 ; 
     }
+
 
 

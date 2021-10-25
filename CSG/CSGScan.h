@@ -4,10 +4,12 @@
 #include <vector>
 #include "squad.h"
 
+#include "CSG_API_EXPORT.hh"
+
 struct CSGFoundry ; 
 struct CSGSolid ; 
 
-struct CSGScan
+struct CSG_API CSGScan
 {
     CSGScan( const char* dir_, const CSGFoundry* foundry_, const CSGSolid* solid_ );   
 
