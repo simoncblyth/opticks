@@ -206,6 +206,10 @@ The bitwise-or of the typemasks of the ancestors is returned.
 When starting from a leaf node this will return the bitwise-or of its 
 ancestors operator types. 
 
+Note that as this only goes upwards in the tree it can be used
+during tree creation/convertion, eg from CSG_GGeo_Convert::convertPrim.
+Of course the CSGNode identified by *partIdxRel* MUST already exist.
+
 **/
 
 unsigned CSGNode::AncestorTypeMask( const CSGNode* root,  unsigned partIdxRel, bool dump  ) // static

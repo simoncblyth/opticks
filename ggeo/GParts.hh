@@ -302,6 +302,8 @@ class GGEO_API GParts {
         nivec4       getPrimInfo(unsigned iprim) const ;
         int          getPartOffset(unsigned primIdx) const ;
         int          getNumParts(unsigned primIdx) const ;
+        unsigned     getTypeMask(unsigned primIdx, bool operators_only) const ; 
+
         int          getTranOffset(unsigned primIdx) const ; 
         int          getPlanOffset(unsigned primIdx) const ;
    public:

@@ -75,6 +75,7 @@ TODO: stick these in a struct
 #ifndef __CUDACC__
 
 #include <string>
+#include <sstream>
 #include <cstring>
 #include <cassert>
 
@@ -271,6 +272,20 @@ struct CSG
         return 1 << CSG_DIFFERENCE ; 
     }
 
+    static bool IsPositiveMask( unsigned mask )
+    {
+        return ( mask & DifferenceMask() ) == 0 ; 
+    }
+
+    static std::string TypeMask( unsigned mask )
+    {
+         std::stringstream ss ; 
+         if((mask & UnionMask()) != 0)        ss << Tag(CSG_UNION) << " " ; 
+         if((mask & IntersectionMask()) != 0) ss << Tag(CSG_INTERSECTION) << " " ; 
+         if((mask & DifferenceMask()) != 0)   ss << Tag(CSG_DIFFERENCE) << " " ; 
+         std::string s = ss.str(); 
+         return s ; 
+    }
 
     static bool HasPlanes(OpticksCSG_t type)
     {

@@ -23,13 +23,12 @@
 #include <iomanip>
 
 #include "OPTICKS_LOG.hh"
-
 #include "OpticksCSG.h"
 
-int main(int argc, char** argv)
-{
-    OPTICKS_LOG(argc, argv);
 
+void test_type()
+{
+    LOG(info); 
     for(unsigned i=0 ; i < 100 ; i++)
     {
         OpticksCSG_t type = (OpticksCSG_t)i ; 
@@ -44,9 +43,40 @@ int main(int argc, char** argv)
 
 
     }
+}
+
+void test_TypeMask()
+{
+    LOG(info); 
+
+    std::vector<unsigned> masks = {{ 
+         CSG::UnionMask(), 
+         CSG::IntersectionMask(), 
+         CSG::DifferenceMask(), 
+         CSG::UnionMask() | CSG::IntersectionMask(),
+         CSG::UnionMask() | CSG::IntersectionMask() | CSG::DifferenceMask()
+    }}; 
+
+    for(unsigned i=0 ; i < masks.size() ; i++)
+    {
+        unsigned mask = masks[i] ; 
+        std::cout 
+            << " mask " << std::setw(5) << mask 
+            << " CSG::TypeMask(mask) " << std::setw(10) << CSG::TypeMask(mask)
+            << " CSG::IsPositiveMask(mask) " << std::setw(2) << CSG::IsPositiveMask(mask)
+            << std::endl 
+            ; 
+    }
+
+}
 
 
-    //int rc = SSys::run("tpmt.py");
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv);
+
+    test_type(); 
+    test_TypeMask(); 
 
     return 0 ; 
 } 

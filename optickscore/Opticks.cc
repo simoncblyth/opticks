@@ -100,7 +100,7 @@
 
 
 const char*          Opticks::GEOCACHE_CODE_VERSION_KEY = "GEOCACHE_CODE_VERSION" ; 
-const int            Opticks::GEOCACHE_CODE_VERSION = 14 ;  // (incremented when code changes invalidate loading old geocache dirs)   
+const int            Opticks::GEOCACHE_CODE_VERSION = 15 ;  // (incremented when code changes invalidate loading old geocache dirs)   
 
 /**
 3: starting point 
@@ -125,6 +125,8 @@ const int            Opticks::GEOCACHE_CODE_VERSION = 14 ;  // (incremented when
 
 14: following bug fix (some ggeo/GPropertyMap ctor with non-initialized original_domain) old geocache 
     have some probability of missing/corrupted scintillation materials and should be rebuilt  
+
+15: switch to allways positive-izing CSG trees no matter what the height in NTreeProcess::init
 
 **/
 

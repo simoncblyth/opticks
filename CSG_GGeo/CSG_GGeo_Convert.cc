@@ -312,8 +312,21 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 {
     unsigned numPrim = comp->getNumPrim();
     assert( primIdx < numPrim ); 
+
     unsigned numParts = comp->getNumParts(primIdx) ;
     unsigned meshIdx = comp->getMeshIndex(primIdx);    // aka lvIdx
+
+    bool operators_only = true ; 
+    unsigned mask = comp->getTypeMask(primIdx, operators_only); 
+    bool positive = CSG::IsPositiveMask( mask ); 
+
+    LOG(info)
+        << " primIdx " << primIdx
+        << " comp.getTypeMask " << mask 
+        << " CSG::TypeMask " << CSG::TypeMask(mask)
+        << " CSG::IsPositiveMask " << positive
+        ;
+
 
     assert( foundry->last_added_solid ); 
 
@@ -349,31 +362,26 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
         if(n->is_zero()) continue;  
 
+        bool negated = n->is_complemented_primitive();   
+
+        // what really want to know is if the primitive is_complement in the positive tree 
+        /*
         unsigned atm = CSGNode::AncestorTypeMask(root, partIdxRel, false ); 
         unsigned depth = CSGNode::Depth(partIdxRel); 
-
-        // what really want to know is if the primitive is negated 
-     
         bool odm = CSGNode::IsOnlyDifferenceMask(atm) ; 
-
         bool oim = CSGNode::IsOnlyIntersectionMask(atm) ; 
-
-        bool cle = n->is_complemented_primitive();   
-
-        bool bbskip_0 =  oim && cle  ;  // exclude bbox of complemented leaf with only intersection ancestry 
-
+        bool bbskip_0 =  oim && negated  ;  // exclude bbox of complemented leaf with only intersection ancestry 
         bool bbskip_1 =  odm && depth == 1 && n->is_primitive() && !n->is_complement() ;  
-
         bool bbskip = bbskip_0 || bbskip_1 ;  
+        */
 
+        bool bbskip = negated ; 
 
         if(dump || bbskip) 
             std::cout 
                 << std::setw(3) << partIdxRel 
                 << " " << n->desc() 
-                << " atm " << std::setw(5) << atm 
-                << " IsOnlyIntersectionMask " << oim 
-                << " is_complemented_leaf " << cle
+                << " negated " << negated
                 << " bbskip " << bbskip 
                 << std::endl
                 ;

@@ -1490,6 +1490,48 @@ are added separtately, see GGeoTest::loadCSG.
 
 **/
 
+
+unsigned GParts::getTypeMask(unsigned primIdx, bool operators_only) const 
+{
+    unsigned mask = 0 ; 
+    unsigned partOffset = getPartOffset(primIdx) ;
+    unsigned numParts = getNumParts(primIdx) ;
+
+    LOG(info)
+        << " primIdx " << primIdx
+        << " partOffset " << partOffset
+        << " numParts " << numParts 
+        ;
+
+    for(unsigned partIdxRel=0 ; partIdxRel < numParts ; partIdxRel++ )
+    {   
+        unsigned partIdx = partOffset + partIdxRel ;
+        unsigned tc = getTypeCode(partIdx); 
+        bool is_operator = CSG::IsOperator((OpticksCSG_t)tc) ; 
+        unsigned tm = 1 << tc ; 
+
+        if(operators_only)
+        {
+            if(is_operator) mask |= tm ; 
+        }
+        else
+        {
+            mask |= tm ; 
+        }
+
+        std::string tag = getTag(partIdx); 
+        std::cout 
+            << " partIdx " << std::setw(4) << partIdx
+            << " tc " << std::setw(4) << tc     
+            << " tm " << std::setw(10) << tm     
+            << " tag " << std::setw(4) << tag
+            << std::endl 
+           ;      
+    }   
+    return mask ; 
+}
+
+
 void GParts::reconstructPartsPerPrim()
 {
     assert(isPartList());

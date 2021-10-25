@@ -118,12 +118,32 @@ NTreeProcess<T>::NTreeProcess( T* root_ )
     init();
 }
 
+/**
+NTreeProcess::init
+---------------------
+
+After a CSG tree has been positivized it is straightforward to 
+decide whether to include a primitive node bbox into the tree bbox 
+as can simply check if a primitive is complemented and when it is 
+exclude its bbox. This makes the sensible assumption that 
+effective node subtractions can never increase the tree bbox. 
+
+Prior to Oct 25, 2021 tree positivization was only applied to 
+trees of a height greater than MaxHeight0(=3). 
+From that date (Opticks::GEOCACHE_CODE_VERSION = 15) 
+positivization is applied to all trees irrespective of 
+their heights. Note that this only has an effect on trees 
+with subtraction operators. 
+
+**/
+
 template <typename T>
 void NTreeProcess<T>::init()
 {
+    positiver = new NTreePositive<T>(root) ;  // inplace changes operator types and sets complements on primitives
     if(balancer->height0 > MaxHeight0 )
     {
-        positiver = new NTreePositive<T>(root) ;  // inplace changes operator types and sets complements on primitives
+        //formerly the positiver ctor was done here, restricting its goodness to trees that need to be balanced
         balanced = balancer->create_balanced() ;  
         result = balanced ; 
     }
