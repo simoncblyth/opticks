@@ -203,9 +203,13 @@ def fromself( l, s, kk ):
 
 def shorten_bname(bname):
     elem = bname.split("/")
-    assert len(elem) == 4
-    omat,osur,isur,imat = elem
-    return "/".join([omat,osur[:3],isur[:3],imat])
+    if len(elem) == 4:
+        omat,osur,isur,imat = elem
+        bn = "/".join([omat,osur[:3],isur[:3],imat])
+    else:
+        bn = bname
+    pass 
+    return bn
 
 
 class PH(object):
@@ -267,10 +271,16 @@ class PH(object):
     def boundaries(self, bnd):
         cf = self.cf
         ubnd, ubnd_counts = np.unique(bnd, return_counts=True) 
-        ubnd_names = [cf.bndname[b] for b in ubnd]
+
+        if cf is None:
+           ubnd_names = [str(b) for b in ubnd]
+        else: 
+           ubnd_names = [cf.bndname[b] for b in ubnd]
+        pass
+
         ubnd_descending = np.argsort(ubnd_counts)[::-1]
         ubnd_onames = [ubnd_names[j] for j in ubnd_descending]
-        isel = cf.parse_ISEL(os.environ.get("ISEL",""), ubnd_onames) 
+        isel = CSGFoundry.parse_ISEL(os.environ.get("ISEL",""), ubnd_onames) 
         sisel = ",".join(map(str, isel))
 
         print( "isel: %s sisel %s " % (str(isel), sisel))
@@ -342,7 +352,11 @@ class PH(object):
         self.xlim = xlim 
         self.ylim = ylim 
         self.zlim = zlim 
-        self.zz = list(map(float, filter(None, os.environ.get("ZZ","").split(","))))
+
+        efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
+        self.xx = efloatlist_("XX")
+        self.yy = efloatlist_("YY")
+        self.zz = efloatlist_("ZZ")
         self.sz = float(os.environ.get("SZ","1.0"))
         self.zoom = float(os.environ.get("ZOOM","3.0"))
         self.look = np.array( list(map(float, os.environ.get("LOOK","0.,0.,0.").split(","))) )
@@ -438,8 +452,10 @@ class PH(object):
         ubnd_onames = self.ubnd_onames
         isel = self.isel
         size = self.size
+
         xlim = self.xlim
-        ylim = self.zlim 
+        ylim = self.ylim
+        zlim = self.zlim   
  
         upos = self.upos
         ugsc = self.ugsc
@@ -483,13 +499,19 @@ class PH(object):
             pos = upos[bnd==ub] 
             pl.add_points( pos[:,:3], color=color )
         pass
-        for z in self.zz:
-            lhs = np.array( [xlim[0], 0, z] )
-            rhs = np.array( [xlim[1], 0, z] )
-            line = pv.Line(lhs, rhs)
+        for z in self.zz:  # ZZ horizontals
+            xhi = np.array( [xlim[1], 0, z] )  # RHS
+            xlo = np.array( [xlim[0], 0, z] )  # LHS
+            line = pv.Line(xlo, xhi)
             pl.add_mesh(line, color="w")
         pass
- 
+        for x in self.xx:    # XX verticals 
+            zhi = np.array( [x, 0, zlim[1]] )  # TOP
+            zlo = np.array( [x, 0, zlim[0]] )  # BOT
+            line = pv.Line(zlo, zhi)
+            pl.add_mesh(line, color="w")
+        pass
+  
 
         outpath = os.path.join(self.outdir,"positions_pvplt_%s.png" % self.sisel) 
         print(outpath)
@@ -499,7 +521,9 @@ class PH(object):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    cf = CSGFoundry()
+
+    #cf = CSGFoundry()
+    cf = None
     cxs = CSGOptiXSimulateTest()
 
     g = genstep

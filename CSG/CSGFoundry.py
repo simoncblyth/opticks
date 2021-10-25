@@ -41,7 +41,8 @@ class CSGFoundry(object):
             print(" %4d : %6d : %s " % (ub, ub_count, bndname[ub]))
         pass 
 
-    def parse_ISEL(self, ISEL, obndnames):
+    @classmethod
+    def parse_ISEL(cls, ISEL, obndnames):
         """
         :param ISEL: comma delimited list of strings or integers 
         :param obndnames: boundary names in descending frequency order

@@ -98,7 +98,7 @@ int main(int argc, char** argv)
         fd->parseMOI(midx, mord, iidx, moi );  
         LOG(info) << " moi " << moi << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
 
-        qat4 qt ; qt.init(); 
+        qat4 qt ; qt.init();  // initize ti identity 
         int rc = fd->getCenterExtent(ce, midx, mord, iidx, &qt ) ;
         LOG(info) << " rc " << rc << " MOI.ce (" 
               << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;           

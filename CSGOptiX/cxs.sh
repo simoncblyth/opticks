@@ -89,7 +89,7 @@ elif [ "$cxs" == "100" ]; then
     cfbase=$TMP/GeoChain/AdditionAcrylicConstruction  
     moi=0
     cegs=16:0:9:100
-    gridscale=0.025
+    gridscale=0.1
     isel=0
 fi 
 
@@ -110,10 +110,10 @@ export ISEL=${ISEL:-$isel}
 
 unset OPTICKS_KEY 
 
-
-#if [ "$1" == "py" -o "$(uname)" == "Darwin" ]; then 
-if [ "$1" == "py" ]; then 
-    ipython --pdb -i tests/CSGOptiXSimulateTest.py 
+if [ "$1" == "run" ]; then
+    $GDB CSGOptiXSimulateTest
+elif [ "$1" == "ana" -o "$(uname)" == "Darwin" ]; then 
+    ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
 else
     $GDB CSGOptiXSimulateTest
 fi 

@@ -6,6 +6,16 @@
 #include "PLOG.hh"
 #include "CSGOptiXSimulate.h"
 
+/**
+CSGOptiXSimulate::ParseCEGS
+-----------------------------
+
+Parses CEGS envvar of form "5:0:5:1000" into uint4 *cegs*
+or of form "5:0:5:1000:20:20:20:2000 into uint4 *cegs* and float4 *ce*
+
+HMM: this has no OptiX dependency, so it should not be here.
+
+**/
 
 
 void CSGOptiXSimulate::ParseCEGS( uint4& cegs, float4& ce )  // static 
