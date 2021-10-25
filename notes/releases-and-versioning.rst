@@ -164,7 +164,7 @@ When it is a good time to snapshot. Make the tag:
 
 3. make the git tag, and push tags to **BOTH bitbucket and github**::
 
-   git tag -a v0.1.2 -m "OPTICKS_VERSION_NUMBER 12, fixed Cerenkov wavelength bug""
+   git tag -a v0.1.2 -m "OPTICKS_VERSION_NUMBER 12, fixed Cerenkov wavelength bug"
    git push --tags
    git push github --tags
  

@@ -21,7 +21,7 @@ int test_getGlobalCenterExtent(const CSGFoundry& fd,  float4& gce, int midx, int
         std::cout << pr.desc() << std::endl ; 
     }
 
-    bool mord_in_range = mord < prim.size() ; 
+    bool mord_in_range = mord < int(prim.size()) ; 
     LOG(info)  
         << " midx " << midx
         << " mord " << mord 
@@ -45,7 +45,7 @@ int test_getGlobalCenterExtent(const CSGFoundry& fd,  float4& gce, int midx, int
     std::vector<qat4> inst ; 
     fd.getInstanceTransformsGAS(inst, gas_idx ); 
 
-    bool iidx_in_range = iidx < inst.size(); 
+    bool iidx_in_range = iidx < int(inst.size()); 
 
     LOG(info) 
         << " repeatIdx " << repeatIdx

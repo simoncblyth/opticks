@@ -76,7 +76,7 @@ void CSGMaker::makeDemoGrid()
     LOG(info) << " num_solids " << num_solids ; 
 
     float gridscale = 100.f ; 
-    std::array<int,9> grid = { -10,11,2,  -10,11,2, -10,11,2  } ;
+    std::array<int,9> grid = {{ -10,11,2,  -10,11,2, -10,11,2  }} ;
 
     unsigned ias_idx = 0 ; 
     unsigned count = 0 ; 

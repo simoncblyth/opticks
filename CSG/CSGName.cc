@@ -38,7 +38,7 @@ const char* CSGName::getAbbr(unsigned idx) const
     unsigned count = 0 ; 
     int idx0 = getIndex(name, count) ; 
 
-    if( idx0 != idx )  return nullptr ;  // happens for 2nd of duplicated
+    if( idx0 != int(idx) )  return nullptr ;  // happens for 2nd of duplicated
     // count is 2 for the first of duplicated 
 
     char* sname = strdup(name); 
@@ -72,7 +72,7 @@ const char* CSGName::getAbbr(unsigned idx) const
                ;
 
 
-        if(idx1 != idx )   
+        if(idx1 != int(idx) )   
         {
             sname[nj-1-j] = name[nj-1-j] ; // repair the string  
             break ;  
@@ -119,11 +119,16 @@ CSGName::findIndex
 
 Returns the index of the first listed name that starts with the query string.
 A count of the number of matches is also provided.
+
+When max_count argument > -1  is provided, eg max_count=1 
+the number of occurences of the match is required to be less than 
+or equal to *max_count*.
+
 Returns -1 if not found.
 
 **/
 
-int CSGName::findIndex(const char* starting, unsigned& count, unsigned max_count ) const 
+int CSGName::findIndex(const char* starting, unsigned& count, int max_count ) const 
 {  
     int result(-1); 
     count = 0 ; 
@@ -136,7 +141,7 @@ int CSGName::findIndex(const char* starting, unsigned& count, unsigned max_count
             count += 1 ;  
         }   
     }   
-    return (max_count == -1 || count <= max_count)  ? result : -1 ;   
+    return (max_count == -1 || count <= unsigned(max_count))  ? result : -1 ;   
 }
 
 /**

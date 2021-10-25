@@ -57,7 +57,7 @@ int CSGTarget::getLocalCenterExtent(float4& lce, int midx, int mord) const
 {
     std::vector<CSGPrim> prim ; 
     foundry->getMeshPrim(prim, midx );  
-    bool mord_in_range = mord < prim.size() ; 
+    bool mord_in_range = mord < int(prim.size()) ; 
 
     LOG(info)  
         << " midx " << midx
@@ -113,7 +113,7 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
     std::vector<CSGPrim> prim ; 
     foundry->getMeshPrim(prim, midx ); // collect prim matching the MIDX 
 
-    bool mord_in_range = mord < prim.size() ; 
+    bool mord_in_range = mord < int(prim.size()) ; 
     if(!mord_in_range) 
     {
         LOG(error)  << " midx " << midx << " mord " << mord << " prim.size " << prim.size() << " mord_in_range " << mord_in_range ;   
@@ -133,7 +133,7 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
     std::vector<qat4> inst ; 
     foundry->getInstanceTransformsGAS(inst, gas_idx ); 
 
-    bool iidx_in_range = iidx < inst.size(); 
+    bool iidx_in_range = iidx < int(inst.size()); 
     LOG(info) 
         << " repeatIdx " << repeatIdx
         << " primIdx " << primIdx
@@ -193,7 +193,7 @@ int CSGTarget::getTransform(qat4& q, int midx, int mord, int iidx) const
     std::vector<CSGPrim> prim ; 
     foundry->getMeshPrim(prim, midx ); // collect prim matching the MIDX 
 
-    bool mord_in_range = mord < prim.size() ; 
+    bool mord_in_range = mord < int(prim.size()) ; 
     if(!mord_in_range) 
     {
         LOG(error)  << " midx " << midx << " mord " << mord << " prim.size " << prim.size() << " mord_in_range " << mord_in_range ;   
@@ -213,7 +213,7 @@ int CSGTarget::getTransform(qat4& q, int midx, int mord, int iidx) const
     std::vector<qat4> inst ; 
     foundry->getInstanceTransformsGAS(inst, gas_idx ); 
 
-    bool iidx_in_range = iidx < inst.size(); 
+    bool iidx_in_range = iidx < int(inst.size()); 
     LOG(info) 
         << " repeatIdx " << repeatIdx
         << " primIdx " << primIdx

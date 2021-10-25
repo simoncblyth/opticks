@@ -28,7 +28,7 @@ void test_findIndex( const CSGName* id )
          const char* name = id->getName(i); 
          unsigned count = 0 ; 
          int idx = id->findIndex(name, count); 
-         char msg = idx == i && count == 1 ? ' ' : '*' ; 
+         char msg = idx == int(i) && count == 1 ? ' ' : '*' ; 
          LOG(info) 
              << " i " << std::setw(4) << i 
              << " idx " << std::setw(4) << idx 

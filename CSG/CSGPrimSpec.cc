@@ -111,7 +111,7 @@ void CSGPrimSpec::downloadDump(const char* msg) const
     CU::DownloadVec(ff,           aabb, nff); 
     CU::DownloadVec(uu, sbtIndexOffset, nuu ); 
 
-    for(int i=0 ; i < num_prim ; i++)
+    for(unsigned i=0 ; i < num_prim ; i++)
     {
         std::cout << std::setw(5) << *(uu.data()+stride_in_values*i + 0) << " " ;
         for(int j=0 ; j < 6 ; j++) 

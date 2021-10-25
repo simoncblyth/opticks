@@ -89,6 +89,7 @@ else()
   else()
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-private-field")
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")  # trying to align warnings between gcc.Linux and clang.Darwin  
   endif()
 
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")

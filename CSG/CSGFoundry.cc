@@ -329,7 +329,7 @@ void CSGFoundry::dumpSolid(unsigned solidIdx) const
     const CSGSolid* so = solid.data() + solidIdx ; 
     LOG(info) << so->desc() ; 
 
-    for(unsigned primIdx=so->primOffset ; primIdx < so->primOffset+so->numPrim ; primIdx++)
+    for(int primIdx=so->primOffset ; primIdx < so->primOffset+so->numPrim ; primIdx++)
     {
         const CSGPrim* pr = prim.data() + primIdx ; 
         LOG(info) 
@@ -337,7 +337,7 @@ void CSGFoundry::dumpSolid(unsigned solidIdx) const
             << pr->desc() 
             ; 
 
-        for(unsigned nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset()+pr->numNode() ; nodeIdx++)
+        for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset()+pr->numNode() ; nodeIdx++)
         {
             const CSGNode* nd = node.data() + nodeIdx ; 
             LOG(info) << nd->desc() ; 
@@ -431,7 +431,7 @@ std::string CSGFoundry::descPrim(unsigned solidIdx) const
     std::stringstream ss ; 
     ss << std::endl << so->desc() << std::endl ;  
 
-    for(unsigned primIdx=so->primOffset ; primIdx < so->primOffset+so->numPrim ; primIdx++)  
+    for(int primIdx=so->primOffset ; primIdx < so->primOffset+so->numPrim ; primIdx++)  
     {
         const CSGPrim* pr = getPrim(primIdx) ;  // note absolute primIdx
         assert(pr) ; 
@@ -495,11 +495,11 @@ std::string CSGFoundry::descNode(unsigned solidIdx) const
     std::stringstream ss ;
     ss << std::endl << so->desc() << std::endl  ;
 
-    for(unsigned primIdx=so->primOffset ; primIdx < so->primOffset+so->numPrim ; primIdx++)
+    for(int primIdx=so->primOffset ; primIdx < so->primOffset+so->numPrim ; primIdx++)
     {
         const CSGPrim* pr = prim.data() + primIdx ; 
         int numNode = pr->numNode() ; 
-        for(unsigned nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset()+numNode ; nodeIdx++)
+        for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset()+numNode ; nodeIdx++)
         {
             const CSGNode* nd = node.data() + nodeIdx ; 
             ss << "    nodeIdx " << std::setw(5) << nodeIdx << " : " << nd->desc() << std::endl ; 
@@ -519,11 +519,11 @@ std::string CSGFoundry::descTran(unsigned solidIdx) const
     std::stringstream ss ;
     ss << std::endl << so->desc() << std::endl  ;
 
-    for(unsigned primIdx=so->primOffset ; primIdx < so->primOffset+so->numPrim ; primIdx++)
+    for(int primIdx=so->primOffset ; primIdx < so->primOffset+so->numPrim ; primIdx++)
     {
         const CSGPrim* pr = prim.data() + primIdx ; 
         int numNode = pr->numNode() ; 
-        for(unsigned nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset()+numNode ; nodeIdx++)
+        for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset()+numNode ; nodeIdx++)
         {
             const CSGNode* nd = node.data() + nodeIdx ; 
             unsigned tranIdx = nd->gtransformIdx(); 
@@ -963,7 +963,7 @@ CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
     CSGSolid* cso = addSolid(numPrim, cso_label.c_str()); 
     cso->type = DEEP_COPY_SOLID ; 
 
-    for(unsigned primIdx=oso->primOffset ; primIdx < oso->primOffset+oso->numPrim ; primIdx++)
+    for(int primIdx=oso->primOffset ; primIdx < oso->primOffset+oso->numPrim ; primIdx++)
     {
         const CSGPrim* opr = prim.data() + primIdx ; 
 
@@ -977,7 +977,7 @@ CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
         cpr->setRepeatIdx(opr->repeatIdx()); 
         cpr->setPrimIdx(opr->primIdx()); 
 
-        for(unsigned nodeIdx=opr->nodeOffset() ; nodeIdx < opr->nodeOffset()+opr->numNode() ; nodeIdx++)
+        for(int nodeIdx=opr->nodeOffset() ; nodeIdx < opr->nodeOffset()+opr->numNode() ; nodeIdx++)
         {
             const CSGNode* ond = node.data() + nodeIdx ; 
             unsigned o_tranIdx = ond->gtransformIdx(); 
