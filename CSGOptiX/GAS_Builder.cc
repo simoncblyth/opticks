@@ -33,15 +33,13 @@ void GAS_Builder::Build( GAS& gas, const  CSGPrimSpec& ps )  // static
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
     unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
 
-    /*
-    LOG(info)
+    LOG(LEVEL)
         << " ps.num_prim " << std::setw(4) << ps.num_prim
         << " ps.stride_in_bytes " << ps.stride_in_bytes 
         << " ps.device " << ps.device
         << " stride_in_floats " << stride_in_floats 
         ; 
 
-    */
     Build_11N(gas, ps);  
 }
 
@@ -71,7 +69,6 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
 {
     assert( ps.device == true ); 
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
-    unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
     unsigned primitiveIndexOffset = 0 ; // offsets the normal 0,1,2,... result of optixGetPrimitiveIndex()  
     
     BI bi = {} ; 

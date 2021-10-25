@@ -603,6 +603,13 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
     return offset_sbt ;  
 }
 
+/**
+SBT::getTotalRec
+------------------
+
+NB no check that 
+
+**/
 
 unsigned SBT::getTotalRec() const 
 {
@@ -613,8 +620,10 @@ unsigned SBT::getTotalRec() const
     for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
         unsigned gas_idx = it->first ; 
+        bool enabled = ok->isEnabledMergedMesh(gas_idx)  ; 
+        if(enabled == false) LOG(error) << "gas_idx " << gas_idx << " enabled " << enabled ; 
+
         const GAS& gas = it->second ; 
-        //assert( ok->isEnabledMergedMesh(gas_idx) ); 
  
         unsigned num_bi = gas.bis.size(); 
         tot_bi += num_bi ; 
@@ -657,7 +666,9 @@ std::string SBT::descGAS() const
     {
         unsigned gas_idx = it->first ; 
         const GAS& gas = it->second ; 
-        //assert( ok->isEnabledMergedMesh(gas_idx) ); 
+
+        bool enabled = ok->isEnabledMergedMesh(gas_idx)  ; 
+        if(enabled == false) LOG(error) << "gas_idx " << gas_idx << " enabled " << enabled ; 
 
         unsigned num_bi = gas.bis.size(); 
         tot_bi += num_bi ; 
@@ -736,7 +747,7 @@ void SBT::createHitgroup()
             const BI& bi = gas.bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
             unsigned num_rec = buildInputCPA.numSbtRecords ; 
-            assert( num_rec == numPrim ) ; 
+            assert( num_rec == unsigned(numPrim) ) ; 
 
             for( unsigned k=0 ; k < num_rec ; k++)
             { 

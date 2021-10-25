@@ -413,13 +413,13 @@ void Six::setTop(const char* spec)
     LOG(info) << "spec " << spec ; 
     if( c == 'i' )
     {
-        assert( idx < groups.size() ); 
+        assert( idx < int(groups.size()) ); 
         optix::Group grp = groups[idx]; 
         context["top_object"]->set( grp );
     }
     else if( c == 'g' )
     {
-        assert( idx < solids.size() ); 
+        assert( idx < int(solids.size()) ); 
 
         optix::GeometryGroup gg = context->createGeometryGroup();
         gg->setChildCount(1);
