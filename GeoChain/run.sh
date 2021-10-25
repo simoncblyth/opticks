@@ -28,6 +28,8 @@ export CSG_GGeo_Convert=INFO
 export DUMP_RIDX=0
 export NTREEPROCESS_LVLIST=0
 
+unset OPTICKS_KEY 
+
 cd $OPTICKS_HOME/GeoChain
 rm GeoChainTest.log 
 

@@ -77,8 +77,8 @@ int main(int argc, char** argv)
     const char* name = "AdditionAcrylicConstruction"  ; 
     const G4VSolid* const solid = make_solid(name);   
 
-
-    Opticks ok(argc, argv ); 
+    const char* argforced = "--allownokey" ; 
+    Opticks ok(argc, argv, argforced); 
     ok.configure(); 
 
     GeoChain chain(&ok); 
