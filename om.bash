@@ -310,12 +310,14 @@ TODO:
 EON
 }
 
+om-alt(){ om-subs--alt ; }
 
 om-subs--alt(){  cat << EOS
 CSG
 CSG_GGeo
 qudarap
 CSGOptiX
+GeoChain
 EOS
 }
 

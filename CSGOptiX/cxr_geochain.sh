@@ -14,7 +14,6 @@ executable. Usage::
     ./cxr_geochain.sh      # render jpg 
     EYE=0,0,1,1 ./cxr_geochain.sh  
 
-
 The EYE, LOOK, UP envvars set the okc/View::home defaults 
 
 EOU

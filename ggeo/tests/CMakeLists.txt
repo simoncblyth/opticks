@@ -82,6 +82,7 @@ set(TEST_SOURCES
     GPhoTest.cc
 
     GGeoDumpTest.cc
+    GLogTest.cc
 )
 
 

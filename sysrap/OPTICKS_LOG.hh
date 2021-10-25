@@ -43,6 +43,8 @@ ensure that only the active package tree of headers gets included.
 
 **/
 
+#include <cstdio>
+
 #ifdef OPTICKS_SYSRAP
 #include "SYSRAP_LOG.hh"
 #endif
@@ -61,9 +63,7 @@ ensure that only the active package tree of headers gets included.
 #ifdef OPTICKS_GGEO
 #include "GGEO_LOG.hh"
 #endif
-#ifdef OPTICKS_QUDARAP
-#include "QUDARAP_LOG.hh"
-#endif
+
 #ifdef OPTICKS_ASIRAP
 #include "ASIRAP_LOG.hh"
 #endif
@@ -107,9 +107,17 @@ ensure that only the active package tree of headers gets included.
 #include "G4OK_LOG.hh"
 #endif
 
+
+
+
 #ifdef OPTICKS_CSG
 #include "CSG_LOG.hh"
 #endif
+
+#ifdef OPTICKS_QUDARAP
+#include "QUDARAP_LOG.hh"
+#endif
+
 #ifdef OPTICKS_CSG_GGEO
 #include "CSG_GGEO_LOG.hh"
 #endif
@@ -167,9 +175,7 @@ class SYSRAP_API OPTICKS_LOG_ {
 #ifdef OPTICKS_GGEO
     GGEO_LOG::Initialize(instance->prefixlevel_parse( max_level, "GGEO"), app1, NULL );
 #endif
-#ifdef OPTICKS_QUDARAP
-    QUDARAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "QUDARAP"), app1, NULL );
-#endif
+
 #ifdef OPTICKS_ASIRAP
     ASIRAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "ASIRAP"), app1, NULL );
 #endif
@@ -213,8 +219,13 @@ class SYSRAP_API OPTICKS_LOG_ {
     G4OK_LOG::Initialize(instance->prefixlevel_parse( max_level, "G4OK"), app1, NULL );
 #endif
 
+
+
 #ifdef OPTICKS_CSG
     CSG_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSG"), app1, NULL );
+#endif
+#ifdef OPTICKS_QUDARAP
+    QUDARAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "QUDARAP"), app1, NULL );
 #endif
 #ifdef OPTICKS_CSG_GGEO
     CSG_GGEO_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSG_GGEO"), app1, NULL );
@@ -227,74 +238,146 @@ class SYSRAP_API OPTICKS_LOG_ {
        static void Check()
        {
 #ifdef OPTICKS_SYSRAP
+    printf("%s\n", "OPTICKS_SYSRAP" ); 
     SYSRAP_LOG::Check("SYSRAP");
+#else
+    printf("%s\n", "!OPTICKS_SYSRAP" ); 
 #endif
 #ifdef OPTICKS_BRAP
+    printf("%s\n", "OPTICKS_BRAP" ); 
     BRAP_LOG::Check("BRAP");
+#else
+    printf("%s\n", "!OPTICKS_BRAP" ); 
 #endif
 #ifdef OPTICKS_NPY
+    printf("%s\n", "OPTICKS_NPY" ); 
     NPY_LOG::Check("NPY");
+#else
+    printf("%s\n", "!OPTICKS_NPY" ); 
 #endif
 #ifdef OPTICKS_YOG
+    printf("%s\n", "OPTICKS_YOG" ); 
     YOG_LOG::Check("YOG");
+#else
+    printf("%s\n", "!OPTICKS_YOG" ); 
 #endif
 #ifdef OPTICKS_OKCORE
+    printf("%s\n", "OPTICKS_OKCORE" ); 
     OKCORE_LOG::Check("OKCORE");
+#else
+    printf("%s\n", "!OPTICKS_OKCORE" ); 
 #endif
 #ifdef OPTICKS_GGEO
+    printf("%s\n", "OPTICKS_GGEO" ); 
     GGEO_LOG::Check("GGEO");
+#else
+    printf("%s\n", "!OPTICKS_GGEO" ); 
 #endif
-#ifdef OPTICKS_QUDARAP
-    QUDARAP_LOG::Check("QUDARAP");
-#endif
+
 #ifdef OPTICKS_ASIRAP
+    printf("%s\n", "OPTICKS_ASIRAP" ); 
     ASIRAP_LOG::Check("ASIRAP");
+#else
+    printf("%s\n", "!OPTICKS_ASIRAP" ); 
 #endif
 #ifdef OPTICKS_MESHRAP
+    printf("%s\n", "OPTICKS_MESHRAP" ); 
     MESHRAP_LOG::Check("MESHRAP");
+#else
+    printf("%s\n", "!OPTICKS_MESHRAP" ); 
 #endif
 #ifdef OPTICKS_OKGEO
+    printf("%s\n", "OPTICKS_OKGEO" ); 
     OKGEO_LOG::Check("OKGEO");
+#else
+    printf("%s\n", "!OPTICKS_OKGEO" ); 
 #endif
 #ifdef OPTICKS_CUDARAP
+    printf("%s\n", "OPTICKS_CUDARAP" ); 
     CUDARAP_LOG::Check("CUDARAP");
+#else
+    printf("%s\n", "!OPTICKS_CUDARAP" ); 
 #endif
 #ifdef OPTICKS_THRAP
+    printf("%s\n", "OPTICKS_THRAP" ); 
     THRAP_LOG::Check("THRAP");
+#else
+    printf("%s\n", "!OPTICKS_THRAP" ); 
 #endif
 #ifdef OPTICKS_OXRAP
+    printf("%s\n", "OPTICKS_OXRAP" ); 
     OXRAP_LOG::Check("OXRAP");
+#else
+    printf("%s\n", "!OPTICKS_OXRAP" ); 
 #endif
 #ifdef OPTICKS_OKOP
+    printf("%s\n", "OPTICKS_OKOP" ); 
     OKOP_LOG::Check("OKOP");
+#else
+    printf("%s\n", "!OPTICKS_OKOP" ); 
 #endif
 #ifdef OPTICKS_OGLRAP
+    printf("%s\n", "OPTICKS_OGLRAP" ); 
     OGLRAP_LOG::Check("OGLRAP");
+#else
+    printf("%s\n", "!OPTICKS_OGLRAP" ); 
 #endif
 #ifdef OPTICKS_OKGL
+    printf("%s\n", "OPTICKS_OKGL" ); 
     OKGL_LOG::Check("OKGL");
+#else
+    printf("%s\n", "!OPTICKS_OKGL" ); 
 #endif
 #ifdef OPTICKS_OK
+    printf("%s\n", "OPTICKS_OK" ); 
     OK_LOG::Check("OK");
+#else
+    printf("%s\n", "!OPTICKS_OK" ); 
 #endif
 #ifdef OPTICKS_X4
+    printf("%s\n", "OPTICKS_X4" ); 
     X4_LOG::Check("X4");
+#else
+    printf("%s\n", "!OPTICKS_X4" ); 
 #endif
 #ifdef OPTICKS_CFG4
+    printf("%s\n", "OPTICKS_CFG4" ); 
     CFG4_LOG::Check("CFG4");
+#else
+    printf("%s\n", "!OPTICKS_CFG4" ); 
 #endif
 #ifdef OPTICKS_OKG4
+    printf("%s\n", "OPTICKS_OKG4" ); 
     OKG4_LOG::Check("OKG4");
+#else
+    printf("%s\n", "!OPTICKS_OKG4" ); 
 #endif
 #ifdef OPTICKS_G4OK
+    printf("%s\n", "OPTICKS_G4OK" ); 
     G4OK_LOG::Check("G4OK");
+#else
+    printf("%s\n", "!OPTICKS_G4OK" ); 
 #endif
 
 #ifdef OPTICKS_CSG
+    printf("%s\n", "OPTICKS_CSG" ); 
     CSG_LOG::Check("CSG");
+#else
+    printf("%s\n", "!OPTICKS_CSG" ); 
 #endif
+
+#ifdef OPTICKS_QUDARAP
+    printf("%s\n", "OPTICKS_QUDARAP" ); 
+    QUDARAP_LOG::Check("QUDARAP");
+#else
+    printf("%s\n", "!OPTICKS_QUDARAP" ); 
+#endif
+
 #ifdef OPTICKS_CSG_GGEO
+    printf("%s\n", "OPTICKS_CSG_GGEO" ); 
     CSG_GGEO_LOG::Check("CSG_GGEO");
+#else
+    printf("%s\n", "!OPTICKS_CSG_GGEO" ); 
 #endif
 
 

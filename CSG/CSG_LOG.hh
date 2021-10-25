@@ -1,4 +1,3 @@
-
 #pragma once
 #include "CSG_API_EXPORT.hh"
 

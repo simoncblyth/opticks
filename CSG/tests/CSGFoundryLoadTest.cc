@@ -2,10 +2,6 @@
 #include "scuda.h"
 #include "CSGFoundry.h"
 
-#ifdef OPTICKS_CSG
-#include "CSG_LOG.hh"
-#endif
-
 #include "OPTICKS_LOG.hh"
 
 

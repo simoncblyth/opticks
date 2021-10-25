@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-cxs.sh : hybrid rendering/simulation machinery
-===================================================
+cxs.sh : hybrid rendering/simulation machinery, eg creating 2D ray trace cross sections
+========================================================================================
 
 ::
 
@@ -47,7 +47,8 @@ Otherwise inner layers can be missed.
 EOU
 }
 
-cxs=${CXS:-30}         # collect sets of config underneath CXS
+msg="=== $BASH_SOURCE : "
+cxs=${CXS:-100}         # collect sets of config underneath CXS
 cfbase=$TMP/CSG_GGeo   # default CSGFoundry dir is within cfbase 
 isel=
 
@@ -72,19 +73,31 @@ elif [ "$cxs" == "20" ]; then
     cegs=16:0:9:100
     gridscale=0.025
 elif [ "$cxs" == "25" ]; then
-    cfbase=$TMP/CSGDemoTest/dcyl     # non-standard CSGFoundry dir within cfbase
+    cfbase=$TMP/CSGDemoTest/dcyl    
     moi=0
     cegs=16:0:9:100
     gridscale=0.025
     isel=0                           # setting isel to zero, prevents skipping bnd 0 
 elif [ "$cxs" == "30" ]; then
     note="HMM : box minus sub-sub cylinder NOT showing the spurious intersects"
-    cfbase=$TMP/CSGDemoTest/bssc     # non-standard CSGFoundry dir within cfbase
+    cfbase=$TMP/CSGDemoTest/bssc    
     moi=0
     cegs=16:0:9:100
     gridscale=0.025
     isel=0                           # setting isel to zero, prevents skipping bnd 0 
+elif [ "$cxs" == "100" ]; then
+    cfbase=$TMP/GeoChain/AdditionAcrylicConstruction  
+    moi=0
+    cegs=16:0:9:100
+    gridscale=0.025
+    isel=0
 fi 
+
+if [ ! -d "$cfbase/CSGFoundry" ]; then
+   echo $msg : ERROR : cfbase directory $cfbase MUST contain CSGFoundry subfolder 
+   exit 1 
+fi 
+
 
 export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
@@ -95,7 +108,8 @@ export BOTLINE="ZOOM $ZOOM LOOK $LOOK"
 export CFBASE=${CFBASE:-$cfbase}
 export ISEL=${ISEL:-$isel}
 
-if [ "$1" == "py" -o "$(uname)" == "Darwin" ]; then 
+#if [ "$1" == "py" -o "$(uname)" == "Darwin" ]; then 
+if [ "$1" == "py" ]; then 
     ipython --pdb -i tests/CSGOptiXSimulateTest.py 
 else
     $GDB CSGOptiXSimulateTest
