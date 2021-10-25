@@ -108,6 +108,9 @@ export BOTLINE="ZOOM $ZOOM LOOK $LOOK"
 export CFBASE=${CFBASE:-$cfbase}
 export ISEL=${ISEL:-$isel}
 
+unset OPTICKS_KEY 
+
+
 #if [ "$1" == "py" -o "$(uname)" == "Darwin" ]; then 
 if [ "$1" == "py" ]; then 
     ipython --pdb -i tests/CSGOptiXSimulateTest.py 

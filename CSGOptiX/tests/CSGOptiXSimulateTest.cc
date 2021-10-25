@@ -51,7 +51,8 @@ int main(int argc, char** argv)
     const char* default_outdir = SPath::Resolve("$TMP/CSGOptiX/CSGOptiXSimulateTest",  cxs, create_dirs );  
     SSys::setenvvar("OPTICKS_OUTDIR", default_outdir , false );  // change default, but allow override by evar
 
-    Opticks ok(argc, argv); 
+    const char* argforced = "--allownokey" ; 
+    Opticks ok(argc, argv, argforced); 
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
 

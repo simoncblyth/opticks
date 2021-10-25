@@ -358,7 +358,7 @@ bool Opticks::envkey()
     BOpticksKey::SetKey(NULL) ;  // use keyspec from OPTICKS_KEY envvar 
 
     key_is_set = BOpticksKey::IsSet() ; 
-    assert( key_is_set == true && "valid geocache and key are required" ); 
+    assert( key_is_set == true && "valid geocache and key are required, for operation without geocache use --allownokey " ); 
 
     return key_is_set ; 
 }
