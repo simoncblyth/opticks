@@ -291,6 +291,37 @@ How to proceed?
 
 
 
+Using GeoChain/GeoChainTest.cc to simplify to see where the spurious intersects start happening
+----------------------------------------------------------------------------------------------------
+
+Simple pipe cylinder has no problem::
+
+   .   di 
+
+   cy      cy
+
+
+
+Subtracting from a cy makes the problem appear::
+
+    2021-10-26 03:44:28.354 INFO  [341315] [NTreeProcess<T>::Process@75] before
+    NTreeAnalyse height 2 count 5
+          di            
+
+      cy          di    
+
+              cy      cy
+
+
+    2021-10-26 03:44:28.355 INFO  [341315] [NTreeProcess<T>::Process@90] after
+    NTreeAnalyse height 2 count 5
+          in            
+
+      cy          un    
+
+             !cy      cy
+
+
 
 
 

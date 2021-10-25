@@ -20,6 +20,7 @@ const G4VSolid* const make_default(const char* name)
 
 const G4VSolid* const make_AdditionAcrylicConstruction(const char* name)
 {
+    G4VSolid*   simple             = nullptr ;
     G4VSolid*   solidAddition_down = nullptr ;
     G4VSolid*   solidAddition_up   = nullptr ;
     G4VSolid*   uni_acrylic1       = nullptr ;
@@ -31,9 +32,12 @@ const G4VSolid* const make_AdditionAcrylicConstruction(const char* name)
     ZNodes3[1] = 0.0*mm; RminNodes3[1] = 0*mm; RmaxNodes3[1] = 450.*mm;
     ZNodes3[2] = -140.0*mm; RminNodes3[2] = 0*mm; RmaxNodes3[2] = 200.*mm;
 
+    bool replace_poly = true ; 
     bool skip_sphere = true ; 
 
-    solidAddition_down = new G4Polycone("solidAddition_down",0.0*deg,360.0*deg,3,ZNodes3,RminNodes3,RmaxNodes3);
+    simple = new G4Tubs("simple", 0*mm, 450*mm, 200*mm, 0.0*deg,360.0*deg);
+    solidAddition_down = replace_poly ? simple : new G4Polycone("solidAddition_down",0.0*deg,360.0*deg,3,ZNodes3,RminNodes3,RmaxNodes3);
+
     solidAddition_up = new G4Sphere("solidAddition_up",0*mm,17820*mm,0.0*deg,360.0*deg,0.0*deg,180.*deg);
     uni_acrylic1 = skip_sphere ? solidAddition_down : new G4SubtractionSolid("uni_acrylic1",solidAddition_down,solidAddition_up,0,G4ThreeVector(0*mm,0*mm,+17820.0*mm));
 
@@ -44,9 +48,11 @@ const G4VSolid* const make_AdditionAcrylicConstruction(const char* name)
 
     G4VSolid*   uni_acrylic2_initial = nullptr ;
 
+    //double zshift = -20*mm ; 
+    double zshift = 0*mm ; 
 
     solidAddition_up1 = new G4Tubs("solidAddition_up1",120*mm,208*mm,15.2*mm,0.0*deg,360.0*deg);
-    uni_acrylic2 = new G4SubtractionSolid("uni_acrylic2",uni_acrylic1,solidAddition_up1,0,G4ThreeVector(0.*mm,0.*mm,-20*mm));
+    uni_acrylic2 = new G4SubtractionSolid("uni_acrylic2",uni_acrylic1,solidAddition_up1,0,G4ThreeVector(0.*mm,0.*mm,zshift));
     uni_acrylic2_initial = uni_acrylic2 ; 
 
 
