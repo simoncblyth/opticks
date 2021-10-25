@@ -5,7 +5,9 @@ cxs.sh : hybrid rendering/simulation machinery, eg creating 2D ray trace cross s
 
 ::
 
-    ISEL=0,1,3,4,5 ./cxs.sh py  # select which boundaries to include in plot 
+    ISEL=0,1,3,4,5 ./cxs.sh ana       # select which boundaries to include in plot 
+
+    XX=-208,208 ZZ=-15.2,15.2 ./cxs.sh 
 
 
 Two envvars MOI and CEGS configure the gensteps.
@@ -103,8 +105,8 @@ export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS=${CXS:-$cxs}
-export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL ZZ $ZZ"
-export BOTLINE="ZOOM $ZOOM LOOK $LOOK"
+export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
+export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX"
 export CFBASE=${CFBASE:-$cfbase}
 export ISEL=${ISEL:-$isel}
 

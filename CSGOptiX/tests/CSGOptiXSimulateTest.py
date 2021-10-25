@@ -375,11 +375,12 @@ class PH(object):
         ugsc = self.ugsc
 
         xlim = self.xlim
-        ylim = self.zlim 
+        ylim = self.ylim 
+        zlim = self.zlim 
+
         sz = self.sz
 
         igs = slice(None) if len(ugsc) > 1 else 0
-
 
         title = [self.topline,self.botline]
 
@@ -400,14 +401,22 @@ class PH(object):
             pos = upos[bnd==ub] 
             ax.scatter( pos[:,X], pos[:,Z], label=label, color=color, s=sz )
         pass
-        for z in self.zz:
+        log.info(" xlim[0] %8.4f xlim[1] %8.4f " % (xlim[0], xlim[1]) )
+        log.info(" ylim[0] %8.4f ylim[1] %8.4f " % (ylim[0], ylim[1]) )
+        log.info(" zlim[0] %8.4f zlim[1] %8.4f " % (zlim[0], zlim[1]) )
+
+        for z in self.zz:   # ZZ horizontals 
             ax.plot( xlim, [z,z], label="z:%8.4f" % z )
+        pass
+        for x in self.xx:    # XX verticals 
+            ax.plot( [x, x], zlim, label="x:%8.4f" % x ) 
         pass
         ax.scatter( ugsc[igs, X], ugsc[igs,Z], label="gs_center XZ", s=sz )
 
-        ## hmm follow look ?
+        ## hmm follow look like pvplt does ?
+
         ax.set_xlim( xlim )
-        ax.set_ylim( ylim )
+        ax.set_ylim( zlim )  # zlim -> ylim 
 
         ax.set_aspect('equal')
         ax.legend(loc="upper right", markerscale=4)
@@ -459,13 +468,14 @@ class PH(object):
  
         upos = self.upos
         ugsc = self.ugsc
-        grid = True if self.ny == 0 else False 
+        grid = True if self.ny == 0 else False   # grid is too obscuring with 3D
 
-        yoffset = -1000.       ## with parallel projection are rather insensitive to this
         zoom = self.zoom
         look = self.look if self.local else peta[0,1,:3]
-        eye = look + np.array([ 0, yoffset, 0 ])     # problematic eye position 
-        up = (0,0,1)                                 # will usually be tilted as global up doesnt match local 
+
+        yoffset = -1000.       ## with parallel projection are rather insensitive to eye position distance
+        eye = look + np.array([ 0, yoffset, 0 ])    
+        up = (0,0,1)                               
 
         pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
         self.pl = pl 
@@ -479,26 +489,33 @@ class PH(object):
         pl.set_focus(    look )
         pl.set_viewup(   up )
 
+        print("positions_pvplt")
+
+        intersects = True
+        if intersects:
+            for idesc,ubx in enumerate(ubnd_descending): 
+                if len(isel) > 0 and not idesc in isel: continue 
+
+                ub = ubnd[ubx]
+                ub_count = ubnd_counts[ubx] 
+                bname = ubnd_onames[idesc]
+                label = "%s:%s" % (idesc,shorten_bname(bname))
+                color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
+
+                print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
+                if ub==0 and not 0 in isel: continue # for frame photons, empty pixels give zero 
+
+                pos = upos[bnd==ub] 
+                pl.add_points( pos[:,:3], color=color )
+            pass
+        pass
+
+        grid = True 
         if grid:
             pl.add_points( ugsc[:,:3], color="white" )           # genstep grid
         pass   
 
-        print("positions_pvplt")
-        for idesc,ubx in enumerate(ubnd_descending): 
-            if len(isel) > 0 and not idesc in isel: continue 
 
-            ub = ubnd[ubx]
-            ub_count = ubnd_counts[ubx] 
-            bname = ubnd_onames[idesc]
-            label = "%s:%s" % (idesc,shorten_bname(bname))
-            color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
-
-            print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
-            if ub==0 and not 0 in isel: continue # for frame photons, empty pixels give zero 
-
-            pos = upos[bnd==ub] 
-            pl.add_points( pos[:,:3], color=color )
-        pass
         for z in self.zz:  # ZZ horizontals
             xhi = np.array( [xlim[1], 0, z] )  # RHS
             xlo = np.array( [xlim[0], 0, z] )  # LHS
@@ -511,8 +528,6 @@ class PH(object):
             line = pv.Line(zlo, zhi)
             pl.add_mesh(line, color="w")
         pass
-  
-
         outpath = os.path.join(self.outdir,"positions_pvplt_%s.png" % self.sisel) 
         print(outpath)
         cp = pl.show(screenshot=outpath)

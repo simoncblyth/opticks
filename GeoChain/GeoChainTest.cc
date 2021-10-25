@@ -31,9 +31,11 @@ const G4VSolid* const make_AdditionAcrylicConstruction(const char* name)
     ZNodes3[1] = 0.0*mm; RminNodes3[1] = 0*mm; RmaxNodes3[1] = 450.*mm;
     ZNodes3[2] = -140.0*mm; RminNodes3[2] = 0*mm; RmaxNodes3[2] = 200.*mm;
 
+    bool skip_sphere = true ; 
+
     solidAddition_down = new G4Polycone("solidAddition_down",0.0*deg,360.0*deg,3,ZNodes3,RminNodes3,RmaxNodes3);
     solidAddition_up = new G4Sphere("solidAddition_up",0*mm,17820*mm,0.0*deg,360.0*deg,0.0*deg,180.*deg);
-    uni_acrylic1 = new G4SubtractionSolid("uni_acrylic1",solidAddition_down,solidAddition_up,0,G4ThreeVector(0*mm,0*mm,+17820.0*mm));
+    uni_acrylic1 = skip_sphere ? solidAddition_down : new G4SubtractionSolid("uni_acrylic1",solidAddition_down,solidAddition_up,0,G4ThreeVector(0*mm,0*mm,+17820.0*mm));
 
     G4VSolid*   solidAddition_up1 = nullptr ;
     G4VSolid*   solidAddition_up2 = nullptr ;
@@ -45,9 +47,10 @@ const G4VSolid* const make_AdditionAcrylicConstruction(const char* name)
 
     solidAddition_up1 = new G4Tubs("solidAddition_up1",120*mm,208*mm,15.2*mm,0.0*deg,360.0*deg);
     uni_acrylic2 = new G4SubtractionSolid("uni_acrylic2",uni_acrylic1,solidAddition_up1,0,G4ThreeVector(0.*mm,0.*mm,-20*mm));
-    solidAddition_up2 = new G4Tubs("solidAddition_up2",0,14*mm,52.5*mm,0.0*deg,360.0*deg);
-
     uni_acrylic2_initial = uni_acrylic2 ; 
+
+
+    solidAddition_up2 = new G4Tubs("solidAddition_up2",0,14*mm,52.5*mm,0.0*deg,360.0*deg);
 
     for(int i=0;i<8;i++)
     {
@@ -68,10 +71,10 @@ const G4VSolid* const make_AdditionAcrylicConstruction(const char* name)
         ;   
 
 
-    //return solidAddition_down ; 
-    return solidAddition_up1 ;    // pipe cylinder 
+    //return solidAddition_down ;  // union of cylinder and cone
+    //return solidAddition_up1 ;     // pipe cylinder 
     //return uni_acrylic1 ; 
-    //return uni_acrylic2_initial ; 
+    return uni_acrylic2_initial ; 
 }
 
 const G4VSolid* const make_solid(const char* name)
