@@ -19,6 +19,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity GAS_Builder::LEVEL = PLOG::EnvLevel("GAS_Builder", "DEBUG"); 
+
 
 /**
 GAS_Builder::Build

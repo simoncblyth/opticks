@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+
+#include "plog/Severity.h"
 #include "GAS.h"
 #include "CSGPrim.h"
 #include "BI.h"
@@ -16,6 +18,7 @@ GAS_Builder
 
 struct GAS_Builder
 {
+    static const plog::Severity LEVEL ; 
     static void Build(     GAS& gas, const CSGPrimSpec& psd );
     static void Build_11N( GAS& gas, const CSGPrimSpec& psd );
     static BI MakeCustomPrimitivesBI_11N(const CSGPrimSpec& psd);
