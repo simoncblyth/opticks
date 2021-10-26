@@ -1,11 +1,13 @@
 #include <cassert>
 #include "OPTICKS_LOG.hh"
+#include "SSys.hh"
 #include "Opticks.hh"
 #include "GeoChain.h"
 
 #include "G4SystemOfUnits.hh"
 #include "G4Polycone.hh"
 #include "G4Sphere.hh"
+#include "G4Box.hh"
 #include "G4Tubs.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4ThreeVector.hh"
@@ -83,11 +85,29 @@ const G4VSolid* const make_AdditionAcrylicConstruction(const char* name)
     return uni_acrylic2_initial ; 
 }
 
+const G4VSolid* const make_BoxMinusTubs(const char* name)
+{
+    G4VSolid*   box  = nullptr ;
+    G4VSolid*   tubs = nullptr ;
+    G4VSolid*   box_minus_tubs = nullptr ;
+
+    box   = new G4Box("box",  250*mm, 250*mm, 100*mm ); 
+    tubs =  new G4Tubs("tubs",120*mm,208*mm,15.2*mm,0.0*deg,360.0*deg);
+
+    double zshift = 0*mm ; 
+    box_minus_tubs = new G4SubtractionSolid(name,box,tubs,0,G4ThreeVector(0.*mm,0.*mm,zshift));
+
+    return box_minus_tubs ; 
+}
+
+
 const G4VSolid* const make_solid(const char* name)
 {
+    LOG(info) << name ; 
     const G4VSolid* solid = nullptr ; 
     if(strcmp(name, "default") == 0)                     solid = make_default(name);  
     if(strcmp(name,"AdditionAcrylicConstruction") == 0 ) solid = make_AdditionAcrylicConstruction(name); 
+    if(strcmp(name,"BoxMinusTubs") == 0 )                solid = make_BoxMinusTubs(name); 
     assert(solid); 
     G4cout << *solid << G4endl ; 
     return solid ; 
@@ -97,7 +117,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* name = "AdditionAcrylicConstruction"  ; 
+    //const char* name_default = "BoxMinusTubs"  ; 
+    const char* name_default = "AdditionAcrylicConstruction"  ; 
+    const char* name = SSys::getenvvar("GEOCHAINTEST", name_default ); 
+
     const G4VSolid* const solid = make_solid(name);   
 
     const char* argforced = "--allownokey" ; 

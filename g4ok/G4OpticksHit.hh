@@ -9,6 +9,21 @@ G4OpticksHit
 
 Type used in G4Opticks interface, NB all Geant4 types no Opticks ones.
 
+Note that Opticks does not use the Geant4 system of units approach, it 
+picks a standard set of units suited to optical physics and uses
+these unless described otherwise. 
+
+* distances (mm)
+* wavelength (nm)
+* energy (eV)
+* time (ns) 
+
+Reasons for this include that Opticks mostly uses float precision only 
+resorting to double precision where that is unavoidable. This is 
+contrary to Geant4 which uses double precision everywhere. 
+Also Opticks compartmentalizes its dependency on Geant4 headers to 
+only a few of its highest level sub-packages.
+
 1**/
 
 struct G4OpticksHit 

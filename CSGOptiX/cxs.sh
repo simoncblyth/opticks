@@ -81,7 +81,7 @@ elif [ "$cxs" == "25" ]; then
     gridscale=0.025
     isel=0                           # setting isel to zero, prevents skipping bnd 0 
 elif [ "$cxs" == "30" ]; then
-    note="HMM : box minus sub-sub cylinder NOT showing the spurious intersects"
+    note="HMM : box minus sub-sub cylinder NOT showing the spurious intersects, maybe nice round demo numbers effect"
     cfbase=$TMP/CSGDemoTest/bssc    
     moi=0
     cegs=16:0:9:100
@@ -89,6 +89,12 @@ elif [ "$cxs" == "30" ]; then
     isel=0                           # setting isel to zero, prevents skipping bnd 0 
 elif [ "$cxs" == "100" ]; then
     cfbase=$TMP/GeoChain/AdditionAcrylicConstruction  
+    moi=0
+    cegs=16:0:9:100
+    gridscale=0.1
+    isel=0
+elif [ "$cxs" == "101" ]; then
+    cfbase=$TMP/GeoChain/BoxMinusTubs
     moi=0
     cegs=16:0:9:100
     gridscale=0.1

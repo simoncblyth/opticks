@@ -322,6 +322,49 @@ Subtracting from a cy makes the problem appear::
              !cy      cy
 
 
+Eliminating the zshift, problem still there. 
 
+
+
+
+
+Try BoxMinusTubs
+------------------
+
+::
+
+
+    2021-10-26 16:37:33.078 INFO  [7428652] [*NTreeProcess<nnode>::Process@75] before
+    NTreeAnalyse height 2 count 5
+          di            
+
+      bo          di    
+
+              cy      cy
+
+
+    inorder (left-to-right) 
+     [ 0:bo] P box_box3 
+     [ 0:di] C di 
+     [ 0:cy] P tubs_outer 
+     [ 0:di] C tubs_difference 
+     [ 0:cy] P tubs_inner 
+
+
+    2021-10-26 16:37:33.079 INFO  [7428652] [*NTreeProcess<nnode>::Process@90] after
+    NTreeAnalyse height 2 count 5
+          in            
+
+      bo          un    
+
+             !cy      cy
+
+
+    inorder (left-to-right) 
+     [ 0:bo] P box_box3 
+     [ 0:in] C di 
+    [ 0:!cy] P tubs_outer 
+     [ 0:un] C tubs_difference 
+     [ 0:cy] P tubs_inner 
 
 
