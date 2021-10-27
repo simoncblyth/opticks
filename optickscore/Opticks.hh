@@ -517,6 +517,7 @@ class OKCORE_API Opticks {
        bool isX4PolySkip(unsigned lvIdx) const ;
        bool isX4BalanceSkip(unsigned lvIdx) const ; 
        bool isX4NudgeSkip(unsigned lvIdx) const ; 
+       bool isX4TubsNudgeSkip(unsigned lvIdx) const ; 
        bool isX4PointSkip(unsigned lvIdx) const ; 
 
 

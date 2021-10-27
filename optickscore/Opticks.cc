@@ -782,6 +782,11 @@ bool Opticks::isX4NudgeSkip(unsigned lvIdx) const
 {
    return m_dbg->isX4NudgeSkip(lvIdx);
 }
+bool Opticks::isX4TubsNudgeSkip(unsigned lvIdx) const 
+{
+   return m_dbg->isX4TubsNudgeSkip(lvIdx);
+}
+
 bool Opticks::isX4PointSkip(unsigned lvIdx) const 
 {
    return m_dbg->isX4PointSkip(lvIdx);

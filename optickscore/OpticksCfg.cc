@@ -96,6 +96,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_x4polyskip(""),
     m_x4balanceskip(""),
     m_x4nudgeskip(""),
+    m_x4tubsnudgeskip(""),
     m_x4pointskip(""),
     m_csgskiplv(""),
     m_deferredcsgskiplv(""),
@@ -1103,6 +1104,15 @@ void OpticksCfg<Listener>::init()
                   "THIS IS FOR DEBUGGING WITH SOLIDS THAT HANG/CRASH NUDGING"
          );
 
+
+   m_desc.add_options()
+       ("x4tubsnudgeskip",    boost::program_options::value<std::string>(&m_x4tubsnudgeskip), 
+                  "comma delimited string listing lvIdx indices, no size limit," 
+                  "specifying solids to skip tubs inner cylinder nudge expansion, see X4Solid::convertTubs_cylinder. "
+                  "THIS IS FOR DEBUGGING SPURIOUS INTERSECTS WITH CSG SUBSUB BUG"
+         );
+
+
    m_desc.add_options()
        ("x4pointskip",    boost::program_options::value<std::string>(&m_x4pointskip), 
                   "comma delimited string listing lvIdx indices, no size limit," 
@@ -1945,6 +1955,15 @@ const std::string& OpticksCfg<Listener>::getX4NudgeSkip() const
 {
     return m_x4nudgeskip ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getX4TubsNudgeSkip() const 
+{
+    return m_x4tubsnudgeskip ;
+}
+
+
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getX4PointSkip() const 

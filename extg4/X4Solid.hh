@@ -81,10 +81,10 @@ class X4_API X4Solid : public X4SolidBase
         static const plog::Severity  LEVEL ; 
         static void SetVerbosity(unsigned verbosity);
         static void Banner( int lvIdx, int soIdx, const std::string& lvname, const std::string& soname ); 
-        static nnode* Convert(const G4VSolid* solid, const Opticks* ok, const char* boundary=NULL);
-        static nnode* Balance(nnode* raw, unsigned soIdx=0 , unsigned lvIdx=0 );  // cannot be const due to inplace positivization
+        static nnode* Convert(const G4VSolid* solid, const Opticks* ok, const char* boundary=NULL, int lvIdx=-1 );
+        static nnode* Balance(nnode* raw, int soIdx=-1 , int lvIdx=-1 );  // cannot be const due to inplace positivization
     public:
-        X4Solid(const G4VSolid* solid, const Opticks* ok, bool top); 
+        X4Solid(const G4VSolid* solid, const Opticks* ok, bool top, int lvIdx=-1); 
 
         bool hasDisplaced() const ; 
         X4Solid* getDisplaced() const ; 
@@ -114,7 +114,7 @@ class X4_API X4Solid : public X4SolidBase
     private:
         static const float hz_disc_cylinder_cut ; 
         nnode* convertTubs_disc();
-        nnode* convertTubs_cylinder();
+        nnode* convertTubs_cylinder(bool do_nudge_inner);
     private:
         nnode* intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR );
         void booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot );

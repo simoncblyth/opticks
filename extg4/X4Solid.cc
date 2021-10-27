@@ -99,12 +99,12 @@ with geocache-tds.
 
 **/
 
-nnode* X4Solid::Convert(const G4VSolid* solid, const Opticks* ok, const char* boundary)
+nnode* X4Solid::Convert(const G4VSolid* solid, const Opticks* ok, const char* boundary, int lvIdx )
 {
-    LOG(LEVEL) << "[ convert " << solid->GetName() ; 
+    LOG(LEVEL) << "[ convert " << solid->GetName() << " lvIdx " << lvIdx ; 
 
     bool top = true ; 
-    X4Solid xs(solid, ok, top);
+    X4Solid xs(solid, ok, top, lvIdx );
     nnode* root = xs.root(); 
 
     root->update_gtransforms(); 
@@ -126,7 +126,7 @@ Used from X4CSG::X4CSG during g4codegen
 
 **/
 
-nnode* X4Solid::Balance(nnode* raw, unsigned soIdx , unsigned lvIdx )
+nnode* X4Solid::Balance(nnode* raw, int soIdx, int lvIdx )
 {
     nnode* root = NTreeProcess<nnode>::Process(raw, soIdx, lvIdx);  // balances deep trees, or if not deep retuns raw
     root->other = raw ; 
@@ -136,9 +136,9 @@ nnode* X4Solid::Balance(nnode* raw, unsigned soIdx , unsigned lvIdx )
 }
 
 
-X4Solid::X4Solid(const G4VSolid* solid, const Opticks* ok, bool top)
+X4Solid::X4Solid(const G4VSolid* solid, const Opticks* ok, bool top, int lvIdx )
    :
-   X4SolidBase(solid, ok, top),
+   X4SolidBase(solid, ok, top, lvIdx),
    m_displaced(NULL)
 {
    init(); 
@@ -310,8 +310,10 @@ void X4Solid::convertBooleanSolid()
 
     assert( !is_left_displaced && "not expecting left displacement " ); 
 
-    X4Solid* xleft = new X4Solid(left, m_ok, false); 
-    X4Solid* xright = new X4Solid(right, m_ok, false); 
+    int lvIdx = get_lvIdx();  // pass lvIdx to children 
+    bool top = false ; 
+    X4Solid* xleft = new X4Solid(left, m_ok, top, lvIdx); 
+    X4Solid* xright = new X4Solid(right, m_ok, top, lvIdx ); 
 
     nnode* a = xleft->root(); 
     nnode* b = xright->root(); 
@@ -598,30 +600,50 @@ X4Solid::convertTubs_cylinder
 Suspicion that 1% nudge might not be enough of an expansion 
 of the inner to avoid coincidences. 
 
+With *do_inner_nudge=true* this expands inner-z by 1%, 
+note that this does not change geometry : 
+as are expanding the inner tube in z which are about to subtract away.
+This is a simple way of avoiding CSG coincident constituent surface glitches.
+
+However when the subtraction is subsequently subtracted this is 
+suspected to cause spurious intersects, see
+notes/issues/csg_sub_sub_spurious_intersects_on_elarged_inner_ghost_solid_bug.rst
+
+
 **/
 
-
-nnode* X4Solid::convertTubs_cylinder()
+nnode* X4Solid::convertTubs_cylinder(bool do_nudge_inner)
 {  
     const G4Tubs* const solid = static_cast<const G4Tubs*>(m_solid);
     assert(solid); 
 
-    float rmin = solid->GetInnerRadius()/mm ; 
-    float rmax = solid->GetOuterRadius()/mm ; 
-    float hz = solid->GetZHalfLength()/mm ;  
+    double rmin = solid->GetInnerRadius()/mm ; 
+    double rmax = solid->GetOuterRadius()/mm ; 
+    double hz = solid->GetZHalfLength()/mm ;  
 
-    bool has_inner = rmin > 0.f ; 
+    bool has_inner = rmin > 0. ; 
+
+    LOG(LEVEL)
+        << " rmin " << rmin
+        << " rmax " << rmax
+        << " hz " << hz
+        << " has_inner " << has_inner
+        << " do_nudge_inner " << do_nudge_inner
+        ;
    
     nnode* inner = NULL ; 
     if(has_inner)
     {
-        // Expand inner-z by 1%, note that this does not change geometry : 
-        // as are expanding the inner tube in z which are about to subtract away.
-        // This is a simple way of avoiding CSG coincident constituent surface glitches.
-
-        float nudge_inner = 0.01f ; 
-        float dz = hz*nudge_inner ;  
-        inner = make_cylinder(rmin, -(hz+dz), (hz+dz) );   // radius, z1, z2    (z2 > z1)
+        if( do_nudge_inner )
+        { 
+            double nudge_inner = 0.01 ; 
+            double dz = hz*nudge_inner ;  
+            inner = make_cylinder(rmin, -(hz+dz), (hz+dz) );   // radius, z1, z2    (z2 > z1)
+        }
+        else
+        {
+            inner = make_cylinder(rmin, -hz, hz );         // radius, z1, z2    (z2 > z1)
+        }
         inner->label = BStr::concat( m_name, "_inner", NULL ); 
     }
 
@@ -676,22 +698,35 @@ void X4Solid::convertTubs()
     assert(solid); 
     //LOG(info) << "\n" << *solid ; 
 
-    float hz = solid->GetZHalfLength()/mm ;  
-    float z = hz*2.0 ;   // <-- this full-length z is what GDML stores
+    // better to stay double until there is a need to narrow to float for storage or GPU 
+    double hz = solid->GetZHalfLength()/mm ;  
+    double  z = hz*2.0 ;   // <-- this full-length z is what GDML stores
 
-    float startPhi = solid->GetStartPhiAngle()/degree ; 
-    float deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
-    float rmax = solid->GetOuterRadius()/mm ; 
+    double startPhi = solid->GetStartPhiAngle()/degree ; 
+    double deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
+    double rmax = solid->GetOuterRadius()/mm ; 
 
     bool pick_disc = hz < hz_disc_cylinder_cut ; 
 
-    nnode* tube = pick_disc ? convertTubs_disc() : convertTubs_cylinder() ; 
+    bool is_x4tubsnudgeskip = isX4TubsNudgeSkip()  ;
+    bool do_nudge_inner = is_x4tubsnudgeskip ? false : true ;   // --x4tubsnudgeskip 0,1,2  # lvIdx of the tree 
+
+    nnode* tube = pick_disc ? convertTubs_disc() : convertTubs_cylinder(do_nudge_inner) ; 
 
     bool deltaPhi_segment_enabled = true ; 
-    bool has_deltaPhi = deltaPhi < 360.f ; 
+    bool has_deltaPhi = deltaPhi < 360. ; 
 
-    float segZ = z*1.01 ; 
-    float segR = rmax*1.5 ;   
+
+    double segZ = z*1.01 ; 
+    double segR = rmax*1.5 ;   
+
+    LOG(LEVEL)
+        << " has_deltaPhi " << has_deltaPhi
+        << " pick_disc " << pick_disc 
+        << " deltaPhi_segment_enabled " << deltaPhi_segment_enabled
+        << " is_x4tubsnudgeskip " << is_x4tubsnudgeskip
+        << " do_nudge_inner " << do_nudge_inner
+        ;
 
     nnode* result =  has_deltaPhi && deltaPhi_segment_enabled 
                   ?

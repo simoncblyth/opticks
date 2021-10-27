@@ -79,6 +79,10 @@ unsigned OpticksDbg::getNumX4NudgeSkip() const
 {
     return m_x4nudgeskip.size() ; 
 }
+unsigned OpticksDbg::getNumX4TubsNudgeSkip() const 
+{
+    return m_x4tubsnudgeskip.size() ; 
+}
 unsigned OpticksDbg::getNumX4PointSkip() const 
 {
     return m_x4pointskip.size() ; 
@@ -161,6 +165,7 @@ void OpticksDbg::postconfigure()
    const std::string& x4polyskip = m_cfg->getX4PolySkip() ;
    const std::string& x4balanceskip = m_cfg->getX4BalanceSkip() ;
    const std::string& x4nudgeskip = m_cfg->getX4NudgeSkip() ;
+   const std::string& x4tubsnudgeskip = m_cfg->getX4TubsNudgeSkip() ;
    const std::string& x4pointskip = m_cfg->getX4PointSkip() ;
    const std::string& csgskiplv = m_cfg->getCSGSkipLV() ;
    const std::string& deferredcsgskiplv = m_cfg->getDeferredCSGSkipLV() ;
@@ -175,6 +180,7 @@ void OpticksDbg::postconfigure()
    postconfigure( x4polyskip, m_x4polyskip );
    postconfigure( x4balanceskip, m_x4balanceskip );
    postconfigure( x4nudgeskip, m_x4nudgeskip );
+   postconfigure( x4tubsnudgeskip, m_x4tubsnudgeskip );
    postconfigure( x4pointskip, m_x4pointskip );
    postconfigure( csgskiplv, m_csgskiplv );
    postconfigure( deferredcsgskiplv, m_deferredcsgskiplv );
@@ -387,6 +393,10 @@ bool OpticksDbg::isX4BalanceSkip(unsigned lvIdx) const
 bool OpticksDbg::isX4NudgeSkip(unsigned lvIdx) const 
 {
     return IsListed(lvIdx, m_x4nudgeskip, false); 
+}
+bool OpticksDbg::isX4TubsNudgeSkip(unsigned lvIdx) const 
+{
+    return IsListed(lvIdx, m_x4tubsnudgeskip, false); 
 }
 bool OpticksDbg::isX4PointSkip(unsigned lvIdx) const 
 {

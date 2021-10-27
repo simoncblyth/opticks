@@ -56,14 +56,6 @@ you handle each solid.
 class X4_API X4SolidBase 
 {
    public:
-
-        /*
-        static const char* IDENTIFIERS ; 
-        static int IDENTIFIER_IDX ; 
-        static void ResetIdentifier(); 
-        static const char* Identifier(bool reset); 
-        */
-
         static SId* NODE_ID ; 
         static SId* OTHER_ID ; 
 
@@ -85,10 +77,12 @@ class X4_API X4SolidBase
         template<typename T>
         static std::string GenInstanciate(const char* cls, const char* identifier, const char* name, const std::vector<T>& param);
     public:
-        X4SolidBase(const G4VSolid* solid, const Opticks* ok, bool top=false); 
+        X4SolidBase(const G4VSolid* solid, const Opticks* ok, bool top=false, int lvIdx=-1); 
         nnode* root() const ;
         std::string desc() const  ; 
         std::string brief() const  ; 
+        bool isX4TubsNudgeSkip() const ; 
+        int  get_lvIdx() const ; 
     private:
         void init();
     protected:
@@ -97,7 +91,6 @@ class X4_API X4SolidBase
         template<typename T>
         void setG4Param(const std::vector<T>& param, const std::vector<std::string>& keys, const char* identifier=NULL );  // sets ordered parameters used by g4code instanciation generation
         void addG4Code( const char* g4code ); 
-
         void setG4Args(const std::vector<double>& param, const std::vector<std::string>& keys ) ;
     private:
         void setG4Code(); // only invoked by setG4Param 
@@ -138,6 +131,7 @@ class X4_API X4SolidBase
         const G4VSolid* m_solid ;  
         const Opticks*  m_ok ;  
         bool            m_top ; 
+        int             m_lvIdx ; // used to control conversion options, such as nudging, differently depending on lvIdx(soIdx) 
         const char*     m_name ; 
         X4Entity_t      m_entityType ; 
         const char*     m_entityName ; 

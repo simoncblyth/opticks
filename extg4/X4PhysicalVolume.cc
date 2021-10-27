@@ -1103,9 +1103,13 @@ GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx,
 
      X4Solid::Banner( lvIdx, soIdx, lvname, soname ); 
  
-     nnode* raw = X4Solid::Convert(solid, ok)  ; 
-     raw->set_nudgeskip( is_x4nudgeskip ); 
+     const char* boundary = nullptr ; 
+     nnode* raw = X4Solid::Convert(solid, ok, boundary, lvIdx )  ; 
+     raw->set_nudgeskip( is_x4nudgeskip );   
      raw->set_pointskip( is_x4pointskip );  
+     // At first glance these settings might look too late to do anything, but that 
+     // is not the case as for example the *nudgeskip* setting is acted upon by the NCSG::NCSG(nnode*) cto, 
+     // which is invoked from NCSG::Adopt below which branches in NCSG::MakeNudger based on the setting.
 
      bool g4codegen = ok->isG4CodeGen() ; 
 

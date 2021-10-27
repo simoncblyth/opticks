@@ -343,12 +343,12 @@ Try BoxMinusTubs
               cy      cy
 
 
-    inorder (left-to-right) 
-     [ 0:bo] P box_box3 
-     [ 0:di] C di 
-     [ 0:cy] P tubs_outer 
-     [ 0:di] C tubs_difference 
-     [ 0:cy] P tubs_inner 
+     bo - (cy - cy)
+
+     bo - (cy.!cy)
+
+     bo . (!cy + cy)
+
 
 
     2021-10-26 16:37:33.079 INFO  [7428652] [*NTreeProcess<nnode>::Process@90] after
@@ -360,11 +360,29 @@ Try BoxMinusTubs
              !cy      cy
 
 
-    inorder (left-to-right) 
-     [ 0:bo] P box_box3 
-     [ 0:in] C di 
-    [ 0:!cy] P tubs_outer 
-     [ 0:un] C tubs_difference 
-     [ 0:cy] P tubs_inner 
+     bo.(!cy + cy)
+
+     bo.!cy + bo.cy  
+      (1)     (2)
+
+
+     (1)  intersection of box and everything not in the big cylinder : box with big cylinder cavity removed
+
+     (2)  intersection of box with the small cylinder giving the whole of small cylinder, as it is contained : small cylinder 
+          HMM: could do geometrical optimization for this term because cy is fully within bo  bo.cy -> cy 
+
+
+      Union of box with big cavity and small cylinder so it fills in the sub-sub hole
+
+
+Hmm: the NNodeNudger is based on bbox z comparison so will not uncoincide in this situation. 
+
+
+
+
+
+
+
+
 
 

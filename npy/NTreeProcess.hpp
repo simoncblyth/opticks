@@ -42,7 +42,7 @@ template <typename T>
 struct NPY_API NTreeProcess
 {
     static unsigned MaxHeight0 ;  
-    static T* Process( T* root_ , unsigned soIdx, unsigned lvIdx );
+    static T* Process( T* root_ , int soIdx, int lvIdx );
     static std::vector<int>*  LVList ;  
     static NPY<unsigned>* ProcBuffer ; 
     static void SaveBuffer(const char* path) ; 

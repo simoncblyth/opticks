@@ -65,12 +65,12 @@ NTreeProcess<T>::Process
 
 
 template <typename T>
-T* NTreeProcess<T>::Process( T* root_ , unsigned soIdx, unsigned lvIdx )  // static
+T* NTreeProcess<T>::Process( T* root_ , int soIdx, int lvIdx )  // static
 {
  
     if( ProcBuffer == NULL ) ProcBuffer = NPY<unsigned>::make(0,4) ; 
 
-    bool listed = LVList != NULL && std::find(LVList->begin(), LVList->end(), int(lvIdx) ) != LVList->end() ; 
+    bool listed = LVList != NULL && std::find(LVList->begin(), LVList->end(), lvIdx ) != LVList->end() ; 
 
     if(listed) LOG(info) << "before\n" << NTreeAnalyse<T>::Desc(root_) ; 
      // dump it here, prior to the inplace positivization 

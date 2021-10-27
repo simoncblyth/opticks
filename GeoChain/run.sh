@@ -22,12 +22,15 @@ EOU
 
 
 #geochaintest=AdditionAcrylicConstruction
-geochaintest=BoxMinusTubs
+#geochaintest=BoxMinusTubs0
+geochaintest=BoxMinusTubs1
 
 
 export GGeo=INFO
 export CSGSolid=INFO
 export CSG_GGeo_Convert=INFO
+export NNodeNudger=INFO
+export X4Solid=INFO
 
 export DUMP_RIDX=0
 export NTREEPROCESS_LVLIST=0
@@ -40,10 +43,13 @@ rm GeoChainTest.log
 
 which GeoChainTest
 
+opts="--x4tubsnudgeskip 0"
+
+
 if [ "$(uname)" == "Darwin" ]; then 
-    lldb__ GeoChainTest
+    lldb__ GeoChainTest $opts 
 else
-    gdb GeoChainTest -ex r  
+    gdb GeoChainTest $opts -ex r  
 fi 
 
 

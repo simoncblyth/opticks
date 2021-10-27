@@ -60,6 +60,7 @@ class OKCORE_API OpticksDbg
        unsigned getNumX4PolySkip() const ;
        unsigned getNumX4BalanceSkip() const ;
        unsigned getNumX4NudgeSkip() const ;
+       unsigned getNumX4TubsNudgeSkip() const ;
        unsigned getNumX4PointSkip() const ;
        unsigned getNumCSGSkipLV() const ;
        unsigned getNumDeferredCSGSkipLV() const ;
@@ -76,6 +77,7 @@ class OKCORE_API OpticksDbg
        bool isX4PolySkip(unsigned lvIdx) const ;
        bool isX4BalanceSkip(unsigned lvIdx) const ;
        bool isX4NudgeSkip(unsigned lvIdx) const ;
+       bool isX4TubsNudgeSkip(unsigned lvIdx) const ;
        bool isX4PointSkip(unsigned lvIdx) const ;
        bool isCSGSkipLV(unsigned lvIdx) const ;   // --csgskiplv
        bool isDeferredCSGSkipLV(unsigned lvIdx) const ;   // --deferredcsgskiplv
@@ -115,6 +117,7 @@ class OKCORE_API OpticksDbg
        std::vector<unsigned> m_x4polyskip ; 
        std::vector<unsigned> m_x4balanceskip ; 
        std::vector<unsigned> m_x4nudgeskip ; 
+       std::vector<unsigned> m_x4tubsnudgeskip ; 
        std::vector<unsigned> m_x4pointskip ; 
        std::vector<unsigned> m_csgskiplv ; 
        std::vector<unsigned> m_deferredcsgskiplv ; 
