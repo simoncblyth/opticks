@@ -39,6 +39,7 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(strcmp(name, "dbsp") == 0) so = makeDifferenceBoxSphere(name) ;
     else if(strcmp(name, "rcyl") == 0) so = makeRotatedCylinder(name) ;
     else if(strcmp(name, "dcyl") == 0) so = makeDifferenceCylinder(name) ;
+    else if(strcmp(name, "icyl") == 0) so = makeInfCylinder(name) ;
     else if(strcmp(name, "bssc") == 0) so = makeBoxSubSubCylinder(name) ;
     else LOG(fatal) << "invalid name [" << name << "]" ; 
     assert( so ); 
@@ -532,9 +533,11 @@ CSGSolid* CSGMaker::makeRotatedCylinder(const char* label, float px, float py, f
 }
 
 
-
-
-
+CSGSolid* CSGMaker::makeInfCylinder(const char* label, float radius, float hz )
+{
+    CSGNode nd = CSGNode::InfCylinder( radius, hz ); 
+    return makeSolid11(label, nd, nullptr, ICYL_MIDX ); 
+}
 
 
 CSGSolid* CSGMaker::makeZSphere(const char* label, float radius, float z1, float z2)

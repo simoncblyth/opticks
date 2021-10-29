@@ -928,6 +928,10 @@ Use standard Z-axial cylinder orientation to see how much it simplifies::
 
     t^2 (Dx^2 + Dy^2) + 2 t ( OxDx + Oy Dy ) + Ox^2 + Oy^2 - r^2  = 0     
 
+Contrast this eqn with that on RTCD p195 "bk-;bk-rtcd 195"  : its a natural simplification.
+Instead of dotting all components and subtracting the axial part can just directly 
+dot the non-axial x and y thanks to the fixed orientation.
+
 **/
 
 INTERSECT_FUNC

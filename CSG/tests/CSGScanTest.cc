@@ -5,6 +5,8 @@
 #include <iostream>
 
 #include "scuda.h"
+#include "SSys.hh"
+#include "SPath.hh"
 
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
@@ -14,13 +16,20 @@
 
 int main(int argc, char** argv)
 {
-    const char* dir = "/tmp/CSGScanTest_scans" ; 
+    //const char* dir = "/tmp/CSGScanTest_scans" ; 
+    int create_dirs = 2 ; // 2: dirpath
+
+    const char* dir_default = SSys::getenvvar("CSGSCANTEST_BASE", "$TMP/CSGScanTest_scans" ); 
+    const char* dir = SPath::Resolve(dir_default, create_dirs) ; 
+    std::cout << " dir " << dir << std::endl ; 
+
+
+    const char* solid = SSys::getenvvar("CSGSCANTEST_SOLID", "elli" ); 
+
     CSGFoundry fd ;  
 
-    //fd.maker->makeDemoSolids(); 
-    fd.maker->makeEllipsoid(); 
-    //const char* name = "sphe" ; 
-    //fd.makeer->makeClustered(name, 0,1,1, 0,1,1,  0,2,1, 100. );  
+    std::cout << "CSGSCANTEST_SOLID " << solid << std::endl; 
+    fd.maker->make( solid ); 
 
     unsigned numSolid = fd.getNumSolid() ; 
     std::cout << "numSolid " << numSolid << std::endl ; 

@@ -103,8 +103,7 @@ def plot2d(st):
 if __name__ == '__main__':
 
 
-    geometry = os.environ.get("GEOMETRY", "elli")
-    solid = geometry
+    solid = os.environ.get("CSGSCANTEST_SOLID", "elli")
 
     #solid = "sphe"
     #solid = "zsph"
@@ -122,10 +121,12 @@ if __name__ == '__main__':
     #solid = "ibsp"
     #solid = "dbsp"
 
+    print("CSGSCANTESTSOLID : %s " % solid )
+
     #scan = "circle"
     scan = "rectangle"
 
-    base = "/tmp/CSGScanTest_scans"
+    base = os.environ.get("CSGSCANTEST_BASE", os.path.expandvars("/tmp/$USER/opticks/CSGScanTest"))
     path = "%(base)s/%(scan)s_scan/%(solid)s.npy" % locals()
 
     st = CSGScanTest(path)

@@ -15,15 +15,9 @@ srcs="$name.cc
       ../CSGScan.cc 
       ../CSGName.cc 
       ../CSGTarget.cc 
+      ../CSGMaker.cc 
       ../CU.cc 
-      ../Tran.cc 
       "
-
-#      ../Util.cc 
-#      ../Geo.cc 
-#      ../Grid.cc 
-#      ../View.cc"
-
 
 gcc \
     $srcs \
@@ -41,8 +35,12 @@ gcc \
 
 [ $? -ne 0 ] && echo compile error && exit 1
 
-#base=/tmp/$USER/opticks/$name
-base=/tmp/CSGScanTest_scans
+base=/tmp/$USER/opticks/$name
+#base=/tmp/CSGScanTest_scans
+
+export CSGSCANTEST_BASE=$base
+export CSGSCANTEST_SOLID=icyl
+
 
 scans="axis rectangle circle"
 for scan in $scans ; do 
@@ -78,7 +76,7 @@ scan-recent(){
 scan-recent 
 
 
-ipython -i --pdb CSGScanTest.py 
+${IPYTHON:-ipython} -i --pdb CSGScanTest.py 
 
 
 exit 0 

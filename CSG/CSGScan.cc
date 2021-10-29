@@ -125,6 +125,13 @@ void CSGScan::circle_scan()
     float extent = ce.w ; 
     float radius = 2.0f*extent ; 
 
+    std::cout 
+        << "CSGScan::circle_scan"
+        << " extent " << extent 
+        << " radius " << radius
+        << std::endl 
+        ;       
+
     // M_PIf from sutil_vec_math.h
     for(float phi=0. ; phi <= M_PIf*2.0 ; phi+=M_PIf*2.0/1000.0 )
     {

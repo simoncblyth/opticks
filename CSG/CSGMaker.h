@@ -17,7 +17,7 @@ struct CSG_API CSGMaker
         SPHE_MIDX, ZSPH_MIDX, CONE_MIDX, HYPE_MIDX, BOX3_MIDX, 
         PLAN_MIDX, SLAB_MIDX, CYLI_MIDX, DISC_MIDX, VCUB_MIDX, 
         VTET_MIDX, ELLI_MIDX, UBSP_MIDX, IBSP_MIDX, DBSP_MIDX, 
-        RCYL_MIDX 
+        RCYL_MIDX, ICYL_MIDX
     }; 
 
     CSGFoundry* fd ; 
@@ -59,6 +59,7 @@ struct CSG_API CSGMaker
 
     CSGSolid* makeRotatedCylinder(const char* label="rcyl", float px=0.f, float py=0.f, float radius=100.f, float z1=-50.f, float z2=50.f, float ax=1.f, float ay=0.f, float az=0.f, float angle_deg=45.f  );
 
+    CSGSolid* makeInfCylinder(const char* label="icyl", float radius=50.f, float hz=25.f ); 
     CSGSolid* makeZSphere(    const char* label="zsph", float r=100.f,  float z1=-50.f , float z2=50.f ); 
     CSGSolid* makeCone(       const char* label="cone", float r1=300.f, float z1=-300.f, float r2=100.f,   float z2=-100.f ); 
     CSGSolid* makeHyperboloid(const char* label="hype", float r0=100.f, float zf=50.f,   float z1=-50.f,   float z2=50.f );

@@ -153,8 +153,8 @@ struct NP
 
 
 
-    template<typename T> void read(const T* data);
-    template<typename T> void read2(const T* data);
+    template<typename T> void read(const T* src);
+    template<typename T> void read2(const T* src);
 
     template<typename T> std::string _present(T v) const ; 
 
@@ -2795,7 +2795,7 @@ template <typename T> inline void NP::_dump(int i0_, int i1_) const
 }
 
 
-template <typename T> void NP::read(const T* data) 
+template <typename T> void NP::read(const T* src) 
 {
     T* v = values<T>(); 
 
@@ -2807,14 +2807,14 @@ template <typename T> void NP::read(const T* data)
     for(int m=0 ; m < sh.nm_() ; m++ )
     {  
         int index = sh.idx(i,j,k,l,m); 
-        *(v + index) = *(data + index ) ; 
+        *(v + index) = *(src + index ) ; 
     }   
 }
 
-template <typename T> void NP::read2(const T* data) 
+template <typename T> void NP::read2(const T* src) 
 {
     assert( sizeof(T) == ebyte ); 
-    memcpy( bytes(), data, arr_bytes() );    
+    memcpy( bytes(), src, arr_bytes() );    
 }
 
 
