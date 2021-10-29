@@ -135,7 +135,12 @@ class OpticksCMakeProj(object):
              'OKG4':180,
              'G4OK':190,
              'Integration':200,
-             'NumpyServer':-1
+             'NumpyServer':-1,
+             'CSG':300,
+             'CSG_GGeo':310,
+             'GeoChain':320,
+             'QUDARap':330,
+             'CSGOptiX':340
             }
 
 

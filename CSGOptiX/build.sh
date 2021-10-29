@@ -15,6 +15,12 @@ Are now using the CSGOptiXVersion executable that is built and
 installed together with the library, so can get the version in 
 scripts by capturing the output from that executable.
 
+
+HMM : the below looks to be almost identical to what om would 
+do anyhow other than the "export OPTICKS_OPTIX_PREFIX"
+But the difficulty is that need to have different settings 
+in different pkgs. 
+
 EON
 }
 

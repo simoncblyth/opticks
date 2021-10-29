@@ -49,7 +49,7 @@ opts="--x4tubsnudgeskip 0"
 if [ "$(uname)" == "Darwin" ]; then 
     lldb__ GeoChainTest $opts 
 else
-    gdb GeoChainTest $opts -ex r  
+    gdb -ex r --args GeoChainTest $opts 
 fi 
 
 

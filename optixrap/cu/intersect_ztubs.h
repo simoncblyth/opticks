@@ -34,15 +34,27 @@ Ericson, Real Time Collision Detection p196-198
    Cylinder
 
             d = Q - P               axis
-            
-            v = X - P               surface vec, X a point on the cylinder
-                                    (point on surface in cylinder frame)
+           
+   X: a point on curved surface of the cylinder
+      thinking of P as cylinder "origin" X is cylinder
+      point in cylinder frame   
+      
+            v = X - P               
+
+            X = v + P 
+
+
+   v: "surface vector" from axis point P to surface point X  
 
                   v.d
-            w =  ----- d            component of v along axis
+            w =  ----- d            component of v (PX) along axis (PW)
                   d.d 
 
+   v-w: surface vector with axial component subtracted is radial vector WX  
+
           r*r = (v - w).(v - w)     surface locus      
+
+
 
 
                                             B
@@ -64,15 +76,15 @@ Ericson, Real Time Collision Detection p196-198
                     |       /|        |                
                     |      / |        |                .
                     |     /  |        | 
-                    |    /   |        |                .
-                    |   /    |        | 
-                    |  /     |        |                .
-                    | /      |        | 
-                    |/       |        |                .
-                    I        |        | 
-                   /|        |        |                .
-                  / |        |        | 
-                 /  |        |        |               n.d
+                    |    /   W--------X                .
+                    |   /    |       /| 
+                    |  /     |      / |                .
+                    | /      |     /  | 
+                    |/     w |  v /   |                .
+                    I        |   /    | 
+                   /|        |  /     |                .
+                  / |        | /      | 
+                 /  |        |/       |               n.d
                 /   +--------P--------+
           n    /            .|   r                     .
               /           .  
@@ -97,51 +109,74 @@ Ericson, Real Time Collision Detection p196-198
         (I-P) - (I-P).(Q-P)
 
 
-     Assume an intersection, equate parametrized ray point with X : L(t) = A + t ( B - A) 
+    Parameterized ray point 
 
-       v = L(t) - P      
+        L(t) = A + t ( B - A) 
+        
+    Assume an intersection, equate parametrized ray point with X : 
 
-         = (A - P) +  t(B - A)
+        v = X - P 
 
+        v = L(t) - P      
 
-      v  =   m + t n
-
-      m  = A - P           ray origin in cylinder frame
-
-      m.d                  axial coordinate of ray origin 
-
-      n  = B - A           ray direction
+          = (A - P) +  t(B - A)
 
 
+         m = A - P              ray origin in cylinder frame   
 
-                  v.d
-            w =  ----- d            component of v along axis
-                  d.d 
+         n = B - A              ray direction
 
+   Ray equation adapted for cylinder frame: 
 
-                  m.d + t n.d
-            w =  -------------- d      
-                      d.d 
+        v =  m + t n
 
-
-         v - w                 component of v perpendicular to axis 
-                               ie radial component of v 
+        m.d                     axial coordinate of ray origin 
 
 
-     Infinite cylinder locus
+              v.d
+        w =  ----- d             component of point on ray v that is along axis
+              d.d 
+
+               m.d + t n.d
+        w =  -------------- d    substitute in ray eqn : v = m + t n    
+                 d.d 
+
+         v - w                   component of v perpendicular to axis 
+                                 ie radial component of v 
+
+
+    Infinite cylinder locus
 
           r*r = (v - w).(v - w)     
 
           r*r  = v.v + w.w - 2 v.w  
 
 
+    Consider the terms one by one:
+
+
           v.v = ( m + t n ).(m + t n)
 
-              = m.m + 2t m.n + t*t n.n 
+               = m.m + 2t m.n + t*t n.n 
+
+
+          w.w =   (m.d + t n.d)^2
+                 ------------------  d.d
+                    (d.d )^2
+
+              =    m.d^2  + t^2 n.d^2 + 2 t m.d n.d 
+                  -----------------------------------
+                             d.d
+
+
+          v.w =  ( m + t n ).( m.d + t n.d )  d
+                  -------------------------------
+                            d.d
 
 
 
-   Intersection with P endcap plane 
+
+    Intersection with P endcap plane 
 
        (X - P).d = 0 
 
@@ -184,6 +219,76 @@ Ericson, Real Time Collision Detection p196-198
    making it a very bad thing to make dot products with...  Nevertheless there is a normal
    to the disc that should be using
 
+
+
+   https://math.stackexchange.com/questions/3248356/calculating-ray-cylinder-intersection-points
+
+        | (x(t) - x1) cross ( x(t) - x2 ) |^2    
+        -------------------------------------     = r^2      
+                      |x1 - x2|^2 
+          
+
+  Where x1 and x2 are points on the axis, x(t) is parametric ray point, and r is radius  
+
+
+  https://math.stackexchange.com/questions/2353288/point-to-line-distance-in-3d-using-cross-product
+
+  https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+
+
+
+  vector formulation : distance from line to point 
+
+  https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+  
+    Line:  x(t) = A + t n       (eg the axis of the cylinder)
+
+           A: point on line
+           n: unit vector in direction of line
+           t: scalar
+
+    Arbitary Point:  p 
+
+    Distance from point to line
+
+          
+                    x(t) 
+                    /
+                   /                  
+                  x.                           
+                 /     .              
+                /          P
+           n   /        .
+              /      .     
+             /    .
+            /  .
+           A
+          /
+         /                  
+    
+
+    Component of PA parallel to line direction
+
+        ((P - A).n)n 
+
+    Point on the line closest to P
+
+        A + ((P - A).n)n 
+
+    Component of PA perpendicular to line direction         
+
+         (P - A) - ((P - A).n)n 
+
+    Distance from P to the line, d 
+
+        d = | (P - A) - ((P - A).n)n |
+
+    Consider special case of a cylinder with axis Z centered at origin, so   
+
+        A = (0,0,0) 
+        n = (0,0,1)
+   
+        d = | P - (P.n)n |
 
 
 

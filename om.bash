@@ -286,6 +286,11 @@ integration
 ana
 analytic
 bin
+CSG
+CSG_GGeo
+GeoChain
+qudarap
+#CSGOptiX
 EOS
 }
 
@@ -303,8 +308,26 @@ TODO:
 * have been avoiding boostrap and npy dependency in new developments
   moving instead to sysrap/NP and SPath but have been using optickscore and ggeo 
 
-* it will take considerable effort to migrate away from boostrap and npy usage in ggeo, 
-  not worthwhile currently 
+  * BUT, it will take considerable effort to migrate away from 
+    boostrap and npy usage in ggeo and elsewhere, not worthwhile currently 
+
+* using an envvar OM_ALT to signal that the alt pkgs should be
+  appended to the usual list seems like a good approach ..
+  because of minimal disruption as needs no new base functions.  
+
+  * actually could just add to standard pkgs all but CSGOptiX 
+    which needs special handling for OptiX7 b7 building ? 
+
+  * could make building of CSGOptiX dependent on OPTICKS_OPTIX7_PREFIX being defined ?
+    hmm : not quite so simple still building it with Six swap without 7 
+
+
+When working on the new pkgs only starting from CSG, build just those with::
+
+    c 
+    om :     # colon means build this pkg and subsequent 
+    cx
+    ./b7
 
 
 EON
@@ -315,9 +338,9 @@ om-alt(){ om-subs--alt ; }
 om-subs--alt(){  cat << EOS
 CSG
 CSG_GGeo
+GeoChain
 qudarap
 CSGOptiX
-GeoChain
 EOS
 }
 
@@ -479,6 +502,17 @@ om-check()
 }
 
 
+om-all-notes(){ cat << EON
+om-all-notes
+==============
+
+om-all runs the func passed in the argument 
+in each of the sub-package bdir 
+
+
+EON
+}
+
 
 om-all()
 {
@@ -501,6 +535,7 @@ om-all()
         local bdir=$(om-bdir $name)
         mkdir -p $bdir
         local udir
+        : only om-find needs sdir the others need bdir 
         case $func in
           om-find) udir=$sdir ;;
                 *) udir=$bdir ;;
@@ -685,9 +720,14 @@ $FUNCNAME
    opticks-buildtype          : $(opticks-buildtype)
    om-prefix                  : $(om-prefix)
 
-   opticks-optix-prefix       : $(opticks-optix-prefix)
+
+   OPTICKS_OPTIX5_PREFIX      : $OPTICKS_OPTIX5_PREFIX
+   OPTICKS_OPTIX6_PREFIX      : $OPTICKS_OPTIX6_PREFIX
+   OPTICKS_OPTIX7_PREFIX      : $OPTICKS_OPTIX7_PREFIX
    OPTICKS_OPTIX_PREFIX       : $OPTICKS_OPTIX_PREFIX
- 
+   opticks-optix-prefix       : $(opticks-optix-prefix)
+
+
    opticks-compute-capability : $(opticks-compute-capability)
    OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY 
 

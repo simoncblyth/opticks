@@ -380,8 +380,10 @@ Hmm: the NNodeNudger is based on bbox z comparison so will not uncoincide in thi
 
 
 
+Switch off tubs inner nudge : as expected the spurious intersects just move inwards slightly
+--------------------------------------------------------------------------------------------------
 
-
+* https://bitbucket.org/simoncblyth/opticks/commits/2b0956a25e2ca3d57652c067bd3664d1e8d147b0
 
 
 

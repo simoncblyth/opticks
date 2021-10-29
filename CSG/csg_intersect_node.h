@@ -619,12 +619,37 @@ bool intersect_node_box3(float4& isect, const quad& q0, const float t_min, const
 }
 
 
+/**
+intersect_node_plane
+-----------------------
+
+* https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
+
+Equation for points p that are in the plane::
+
+   (p - p0).n = 0      
+
+    p0  : point in plane which is pointed to by normal n vector from origin,  
+   p-p0 : vector that lies within the plane, and hence is perpendicular to the normal direction 
+   p0.n : d, distance from plane to origin 
+
+
+  p = o + t v   : parametric ray equation  
+
+   (o + t v - p0).n = 0 
+
+    (p0-o).n  = t v.n
+
+            (p0 - o).n        d - o.n
+       t  = -----------  =   -----------
+               v.n              v.n  
+**/
 
 INTERSECT_FUNC
 bool intersect_node_plane( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
-   const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
-   const float d = q0.f.w ; 
+   const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;   // plane normal direction  
+   const float d = q0.f.w ;                                 // distance to origin 
 
    float idn = 1.f/dot(ray_direction, n );
    float on = dot(ray_origin, n ); 
@@ -680,16 +705,16 @@ bool intersect_node_slab( float4& isect, const quad& q0, const quad& q1, const f
 intersect_node_cylinder
 ------------------------
 
+For ascii art explanation of the maths see optixrap/cu/intersect_ztubs.h
+
 * handling inner radius within the primitive would be useful, but need to simplify first 
 * ideas to simplify
 
-  * adopt natural cylinder frame 
+  * adopt natural cylinder frame, require abs(z1) = abs(z2) ie -z:z 
   * split into separate methods for infinite intersect 
 
 
-
 **/
-
 
 INTERSECT_FUNC
 bool intersect_node_cylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
@@ -698,6 +723,7 @@ bool intersect_node_cylinder( float4& isect, const quad& q0, const quad& q1, con
 
     const float       z1 = q1.f.x  ; 
     const float       z2 = q1.f.y  ; 
+    //if(fabs(z1) != fabs(z2)) return false ;   
     const float  sizeZ = z2 - z1 ; 
     const float3 position = make_float3( q0.f.x, q0.f.y, z1 ); // P: point on axis at base of cylinder
 
@@ -717,6 +743,8 @@ bool intersect_node_cylinder( float4& isect, const quad& q0, const quad& q1, con
     float k = mm - rr ; 
 
     // quadratic coefficients of t,     a tt + 2b t + c = 0 
+    // see bk-;bk-rtcdcy for derivation of these coefficients
+
     float a = dd*nn - nd*nd ;   
     float b = dd*mn - nd*md ;
     float c = dd*k - md*md ; 
@@ -728,7 +756,7 @@ bool intersect_node_cylinder( float4& isect, const quad& q0, const quad& q1, con
 
     enum {  ENDCAP_P=1,  ENDCAP_Q=2 } ; 
 
-    // axial ray endcap handling 
+    // axial ray endcap handling : can treat axial rays in 2d way 
     if(fabs(a) < 1e-6f)     
     {
         if(c > 0.f) return false ;  // ray starts and ends outside cylinder
@@ -882,6 +910,62 @@ bool intersect_node_cylinder( float4& isect, const quad& q0, const quad& q1, con
 
     return false ; 
 }
+
+
+/**
+intersect_node_infcylinder
+----------------------------------
+
+Use standard Z-axial cylinder orientation to see how much it simplifies::
+
+    x^2 + y^2 = r^2
+
+    (Ox + t Dx)^2 + (Oy + t Dy)^2 = r^2 
+
+    Ox ^2 + t^2 Dx^2 + 2 t Ox Dx   
+    Oy ^2 + t^2 Dy^2 + 2 t Oy Dy
+
+
+    t^2 (Dx^2 + Dy^2) + 2 t ( OxDx + Oy Dy ) + Ox^2 + Oy^2 - r^2  = 0     
+
+**/
+
+INTERSECT_FUNC
+bool intersect_node_infcylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+{
+    const float r = q0.f.w ; 
+
+    const float3& O = ray_origin ;    
+    const float3& D = ray_direction ;    
+
+    float a = D.x*D.x + D.y*D.y ; 
+    float b = O.x*D.x + O.y*D.y ; 
+    float c = O.x*O.x + O.y*O.y - r*r ;  
+
+    float disc = b*b-a*c;
+
+    if(disc > 0.0f)  // has intersections with the infinite cylinder
+    {
+        float t_NEAR, t_FAR, sdisc ;   
+
+        robust_quadratic_roots(t_NEAR, t_FAR, disc, sdisc, a, b, c); //  Solving:  a t^2 + 2 b t +  c = 0 
+
+        float t_cand = sdisc > 0.f ? ( t_NEAR > t_min ? t_NEAR : t_FAR ) : t_min ;
+
+        bool valid_isect = t_cand > t_min ; 
+
+        if( valid_isect  )
+        {
+            isect.x = (O.x + t_cand*D.x)/r ;   // normalized by construction
+            isect.y = (O.y + t_cand*D.y)/r ;
+            isect.z = 0.f ;
+            isect.w = t_cand ; 
+            return true ; 
+        }
+    }
+    return false ; 
+}
+ 
 
 
 
@@ -1072,6 +1156,7 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_PLANE:            valid_isect = intersect_node_plane(            isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_SLAB:             valid_isect = intersect_node_slab(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_CYLINDER:         valid_isect = intersect_node_cylinder(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_INFCYLINDER:      valid_isect = intersect_node_infcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_DISC:             valid_isect = intersect_node_disc(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
     }
     if(valid_isect)

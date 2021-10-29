@@ -48,7 +48,8 @@ typedef enum {
    CSG_TORUS=23,
    CSG_HYPERBOLOID=24,
    CSG_CUBIC=25,
- CSG_UNDEFINED=26,
+  CSG_INFCYLINDER=26,
+ CSG_UNDEFINED=27,
 
  CSG_FLAGPARTLIST=100,
  CSG_FLAGNODETREE=101,
@@ -92,6 +93,7 @@ static const char* CSG_PMT_           = "pmt" ;
 static const char* CSG_PRISM_         = "prism" ; 
 static const char* CSG_TUBS_          = "tubs" ; 
 static const char* CSG_CYLINDER_      = "cylinder" ; 
+static const char* CSG_INFCYLINDER_   = "infcylinder" ; 
 static const char* CSG_DISC_          = "disc" ; 
 static const char* CSG_SLAB_          = "slab" ; 
 static const char* CSG_PLANE_         = "plane" ; 
@@ -140,6 +142,7 @@ struct CSG
         else if(strcmp(nodename, CSG_PRISM_) == 0)          tc = CSG_PRISM ;
         else if(strcmp(nodename, CSG_TUBS_) == 0)           tc = CSG_TUBS ;
         else if(strcmp(nodename, CSG_CYLINDER_) == 0)       tc = CSG_CYLINDER ;
+        else if(strcmp(nodename, CSG_INFCYLINDER_) == 0)    tc = CSG_INFCYLINDER ;
         else if(strcmp(nodename, CSG_DISC_) == 0)           tc = CSG_DISC ;
         else if(strcmp(nodename, CSG_SLAB_) == 0)           tc = CSG_SLAB ;
         else if(strcmp(nodename, CSG_PLANE_) == 0)          tc = CSG_PLANE ;
@@ -194,6 +197,7 @@ struct CSG
             case CSG_PRISM:         s = CSG_PRISM_         ; break ; 
             case CSG_TUBS:          s = CSG_TUBS_          ; break ; 
             case CSG_CYLINDER:      s = CSG_CYLINDER_      ; break ; 
+            case CSG_INFCYLINDER:   s = CSG_INFCYLINDER_   ; break ; 
             case CSG_DISC:          s = CSG_DISC_          ; break ; 
             case CSG_SLAB:          s = CSG_SLAB_          ; break ; 
             case CSG_PLANE:         s = CSG_PLANE_         ; break ; 

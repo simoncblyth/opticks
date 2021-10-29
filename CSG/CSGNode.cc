@@ -427,6 +427,18 @@ CSGNode CSGNode::Cylinder(float px, float py, float radius, float z1, float z2)
     nd.setTypecode(CSG_CYLINDER); 
     return nd ; 
 } 
+
+CSGNode CSGNode::InfCylinder(float radius, float hz)
+{
+    assert( hz > 0.f );  // need to bound it ? 
+    CSGNode nd = {} ; 
+    nd.setParam( 0.f, 0.f, 0.f, radius, 0.f,0.f)  ; 
+    nd.setAABB( -radius, -radius, -hz,  radius, radius, hz );   
+    nd.setTypecode(CSG_INFCYLINDER); 
+    return nd ; 
+} 
+
+
 CSGNode CSGNode::Disc(float px, float py, float ir, float r, float z1, float z2)
 {
     CSGNode nd = {} ;

@@ -1,23 +1,4 @@
-#
-# Copyright (c) 2019 Opticks Team. All Rights Reserved.
-#
-# This file is part of Opticks
-# (see https://bitbucket.org/simoncblyth/opticks).
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License.  
-# You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-# See the License for the specific language governing permissions and 
-# limitations under the License.
-#
-
-# generated Sun Aug 13 10:06:00 2017 
+# generated Fri Oct 29 12:31:22 2021 
 # from /Users/blyth/opticks/sysrap 
 # base OpticksCSG.h stem OpticksCSG 
 # with command :  /Users/blyth/opticks/bin/c_enums_to_python.py OpticksCSG.h 
@@ -49,16 +30,17 @@ class CSG_(object):
     TORUS = 23
     HYPERBOLOID = 24
     CUBIC = 25
-    UNDEFINED = 26
+    INFCYLINDER = 26
+    UNDEFINED = 27
     FLAGPARTLIST = 100
     FLAGNODETREE = 101
     FLAGINVISIBLE = 102
-    D2V={'pmt': 9, 'cylinder': 12, 'convexpolyhedron': 19, 'zsphere': 7, 'sphere': 5, 'zero': 0, 'disc': 20, 'cone': 15, 'hyperboloid': 24, 'slab': 13, 'flaginvisible': 102, 'intersection': 2, 'zlens': 8, 'ellipsoid': 22, 'union': 1, 'prism': 10, 'partlist': 4, 'tubs': 11, 'cubic': 25, 'plane': 14, 'multicone': 16, 'difference': 3, 'segment': 21, 'box3': 17, 'box': 6, 'undefined': 26, 'torus': 23, 'trapezoid': 18, 'flagnodetree': 101, 'flagpartlist': 100}
+    D2V={'zero': 0, 'intersection': 2, 'union': 1, 'difference': 3, 'partlist': 4, 'sphere': 5, 'box': 6, 'zsphere': 7, 'zlens': 8, 'pmt': 9, 'prism': 10, 'tubs': 11, 'cylinder': 12, 'infcylinder': 26, 'disc': 20, 'slab': 13, 'plane': 14, 'cone': 15, 'multicone': 16, 'box3': 17, 'trapezoid': 18, 'convexpolyhedron': 19, 'segment': 21, 'ellipsoid': 22, 'torus': 23, 'hyperboloid': 24, 'cubic': 25, 'undefined': 27, 'flagpartlist': 100, 'flagnodetree': 101, 'flaginvisible': 102}
 
 
     @classmethod
     def raw_enum(cls):
-        return list(filter(lambda kv:type(kv[1]) is int,cls.__dict__.items()))
+        return filter(lambda kv:type(kv[1]) is int,cls.__dict__.items())
 
     @classmethod
     def enum(cls):
@@ -66,17 +48,17 @@ class CSG_(object):
 
     @classmethod
     def desc(cls, typ):
-        kvs = list(filter(lambda kv:kv[1] == typ, cls.enum()))
+        kvs = filter(lambda kv:kv[1] == typ, cls.enum())
         return kvs[0][0] if len(kvs) == 1 else "UNKNOWN"
 
     @classmethod
     def descmask(cls, typ):
-        kvs = list(filter(lambda kv:kv[1] & typ, cls.enum())) 
+        kvs = filter(lambda kv:kv[1] & typ, cls.enum()) 
         return ",".join(map(lambda kv:kv[0], kvs))
 
     @classmethod
     def fromdesc(cls, label):
-        kvs = list(filter(lambda kv:kv[0] == label, cls.enum()))
+        kvs = filter(lambda kv:kv[0] == label, cls.enum())
         return kvs[0][1] if len(kvs) == 1 else -1
 
 

@@ -94,7 +94,8 @@ elif [ "$cxs" == "100" ]; then
     gridscale=0.1
     isel=0
 elif [ "$cxs" == "101" ]; then
-    cfbase=$TMP/GeoChain/BoxMinusTubs
+    #cfbase=$TMP/GeoChain/BoxMinusTubs0
+    cfbase=$TMP/GeoChain/BoxMinusTubs1
     moi=0
     cegs=16:0:9:100
     gridscale=0.1
