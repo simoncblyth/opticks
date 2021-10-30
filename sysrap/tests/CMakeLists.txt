@@ -21,6 +21,7 @@ set(TEST_SOURCES
    SVecTest.cc
    SNameVecTest.cc
    SMapTest.cc
+   SCountTest.cc
    SSeqTest.cc
    SProcTest.cc
    SBase36Test.cc

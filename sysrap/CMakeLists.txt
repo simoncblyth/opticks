@@ -43,6 +43,7 @@ set(SOURCES
     SVec.cc
     SNameVec.cc
     SMap.cc
+    SCount.cc
     SDigest.cc
     SDirect.cc
     SArrayDigest.cc
@@ -103,6 +104,7 @@ set(HEADERS
     SVec.hh
     SNameVec.hh
     SMap.hh
+    SCount.hh
     SDigest.hh
     SDirect.hh
     SArrayDigest.hh

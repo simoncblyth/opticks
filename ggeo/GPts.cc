@@ -21,6 +21,7 @@
 #include <iostream>
 #include <csignal>
 
+#include "SCount.hh"
 #include "PLOG.hh"
 #include "NPY.hpp"
 #include "BStr.hh"
@@ -168,10 +169,13 @@ void GPts::add( GPt* pt )
     m_pts.push_back(pt);    
 }
 
+
+
 std::string GPts::brief() const 
 {
-    std::stringstream ss ; 
+    SCount count ;  // count occurrences of lvIdx 
 
+    std::stringstream ss ; 
     unsigned num_pt = getNumPt() ; 
     unsigned edge = 10 ; 
     ss << " GPts.NumPt " << std::setw(5) << num_pt
@@ -181,17 +185,21 @@ std::string GPts::brief() const
     for( unsigned i=0 ; i < num_pt ; i++) 
     {
         const GPt* pt = getPt(i); 
+        int lvIdx = pt->lvIdx ; 
+        count.add(lvIdx); 
+
         if( num_pt > edge*2 )
         {
-            if( i < edge || i > num_pt - edge ) ss << " " << pt->lvIdx  ; 
+            if( i < edge || i > num_pt - edge ) ss << " " << lvIdx  ; 
             else if( i == edge )                ss << " " << "..."  ; 
         }
         else
         {
-            ss << " " << pt->lvIdx  ; 
+            ss << " " << lvIdx  ; 
         }
     } 
-    ss << ")" ; 
+    ss << ")" ;
+    ss << count.desc() ;     
     return ss.str(); 
 }
 
