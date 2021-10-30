@@ -40,9 +40,9 @@ class X4_API X4Mesh
 {
     public:
         static GMesh* Placeholder(const G4VSolid* solid );
-        static GMesh* Convert(const G4VSolid* solid );
+        static GMesh* Convert(const G4VSolid* solid, int lvIdx );
     public:
-        X4Mesh(const G4VSolid* solid); 
+        X4Mesh(const G4VSolid* solid, int lvIdx); 
         std::string desc() const  ; 
         void save(const char* path="/tmp/X4Mesh/name.gltf") const  ; 
         GMesh* getMesh() const ;
@@ -58,6 +58,7 @@ class X4_API X4Mesh
         void collect_tri();
     private:
         const G4VSolid* m_solid ;  
+        int             m_lvIdx ; 
         G4Polyhedron*   m_polyhedron ;
         NPY<float>*     m_vtx ; 
         NPY<unsigned>*  m_raw ; // tris or quads

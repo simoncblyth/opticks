@@ -720,7 +720,7 @@ void evaluative_csg( const Prim& prim, const int primIdx )   // primIdx just use
 #ifdef USE_TWIDDLE_POSTORDER
     if(height > 7)
     {
-        rtPrintf("// evaluative_csg repeat_index %d tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", repeat_index, tranOffset, numParts, height ) ;
+        rtPrintf("// evaluative_csg repeat_index %d primIdx %d tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", repeat_index, primIdx, tranOffset, numParts, height ) ;
         return ; 
     } 
 #else

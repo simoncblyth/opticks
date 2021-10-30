@@ -96,6 +96,7 @@ GVolume* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& para
          case CSG_PMT:
          case CSG_TUBS:
          case CSG_CYLINDER:
+         case CSG_INFCYLINDER:
          case CSG_DISC:
          case CSG_SLAB:
          case CSG_CONE:

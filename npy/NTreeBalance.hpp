@@ -63,9 +63,11 @@ struct NPY_API NTreeBalance
 
     bool is_positive_form() const ;  
     bool is_mono_form()     const ;  
+    bool is_unable_to_balance() const ; 
 
     T*           root ; 
     unsigned     height0 ; 
+    bool         unable_to_balance ; 
 
 };
 

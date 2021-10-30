@@ -101,17 +101,18 @@ The meshindex defaults to zero.
 
 **/
 
-GMesh* X4Mesh::Convert(const G4VSolid* solid ) //static
+GMesh* X4Mesh::Convert(const G4VSolid* solid, int lvIdx ) //static
 {
-    X4Mesh xm(solid); 
+    X4Mesh xm(solid, lvIdx); 
     GMesh* mesh = xm.getMesh();
     mesh->m_g4vsolid = (void*)solid ; 
     return mesh ; 
 }
 
-X4Mesh::X4Mesh( const G4VSolid* solid ) 
+X4Mesh::X4Mesh( const G4VSolid* solid, int lvIdx ) 
    :
    m_solid(solid),
+   m_lvIdx(lvIdx),
    m_polyhedron(NULL),
    m_vtx(NULL),
    m_raw(NULL),
@@ -173,8 +174,8 @@ void X4Mesh::polygonize()
     std::string cout_ = coutbuf.str() ; 
     std::string cerr_ = cerrbuf.str() ; 
 
-    if(cout_.size() > 0) LOG(info) << cout_ ; 
-    if(cerr_.size() > 0) LOG(warning) << cerr_ ; 
+    if(cout_.size() > 0) LOG(info) << "cout from polygonization lvIdx " << m_lvIdx << std::endl << cout_ ; 
+    if(cerr_.size() > 0) LOG(warning) << "cerr from polygonization lvIdx " << m_lvIdx << std::endl << cerr_ ; 
 
     std::string polysmry ; 
     { 

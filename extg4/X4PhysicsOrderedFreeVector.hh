@@ -9,6 +9,9 @@ G4PhysicsOrderedFreeVector from Geant4 11.
 The methods of G4PhysicsOrderedFreeVector have been consolidated into 
 into G4PhysicsFreeVector with Geant4 11.
 
+NB the former X4PhysicsOrderedFreeVector.hh was renamed to X4Array.hh
+
+
 **/
 #include "G4Version.hh"
 

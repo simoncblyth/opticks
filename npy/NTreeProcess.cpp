@@ -21,6 +21,9 @@
 #include <vector>
 
 #include "SSys.hh"
+#include "PLOG.hh"
+
+
 #include "NPY.hpp"
 
 #include "NTreeBalance.hpp"
@@ -32,6 +35,9 @@
 #endif
 
 #include "PLOG.hh"
+
+template <typename T>
+const plog::Severity NTreeProcess<T>::LEVEL = PLOG::EnvLevel("NTreeProcess", "DEBUG") ; 
 
 template <typename T>
 unsigned NTreeProcess<T>::MaxHeight0 = 3 ;   // was discrepantly 4 previously   
@@ -77,7 +83,7 @@ T* NTreeProcess<T>::Process( T* root_ , int soIdx, int lvIdx )  // static
  
     unsigned height0 = root_->maxdepth(); 
 
-    NTreeProcess<T> proc(root_); 
+    NTreeProcess<T> proc(root_ ); 
 
     assert( height0 == proc.balancer->height0 ); 
 
@@ -101,7 +107,12 @@ T* NTreeProcess<T>::Process( T* root_ , int soIdx, int lvIdx )  // static
 
     return result ; 
 } 
- 
+
+/**
+NTreeProcess::NTreeProcess
+---------------------------- 
+
+**/
 
 template <typename T>
 NTreeProcess<T>::NTreeProcess( T* root_ ) 
@@ -146,6 +157,15 @@ void NTreeProcess<T>::init()
         //formerly the positiver ctor was done here, restricting its goodness to trees that need to be balanced
         balanced = balancer->create_balanced() ;  
         result = balanced ; 
+
+        if(balancer->is_unable_to_balance())
+        {
+            LOG(error) 
+                << " unable_to_balance treeidx " << root->get_treeidx() 
+                << " NTreeAnalyse::Desc " << std::endl 
+                << NTreeAnalyse<T>::Desc(root) 
+                ; 
+        }
     }
     else
     {

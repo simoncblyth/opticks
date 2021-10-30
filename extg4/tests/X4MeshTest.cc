@@ -31,7 +31,7 @@ void test_convert_save()
 
     std::cout << *sp << std::endl ; 
 
-    X4Mesh* xm = new X4Mesh(sp) ; 
+    X4Mesh* xm = new X4Mesh(sp, -1) ; 
 
     LOG(info) << xm->desc() ; 
 

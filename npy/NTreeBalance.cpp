@@ -34,9 +34,16 @@ template <typename T>
 NTreeBalance<T>::NTreeBalance(T* root_)
     :
     root(root_),
-    height0(0)
+    height0(0), 
+    unable_to_balance(false)
 {
     init(); 
+}
+
+template <typename T>
+bool NTreeBalance<T>::is_unable_to_balance() const 
+{
+    return unable_to_balance ; 
 }
 
 template <typename T>
@@ -98,8 +105,13 @@ T* NTreeBalance<T>::create_balanced()
     }
     else
     {
-        LOG(fatal) << "balancing trees of this structure not implemented" ; 
-        //assert(0); 
+        int treeidx = root->get_treeidx() ;  
+        LOG(fatal) 
+            << "unable_to_balance : balancing not-implemented for trees of this structure " 
+            << " treeidx " << treeidx 
+            ; 
+        //assert(0);
+        unable_to_balance = true ;  
         balanced = root ; 
     }
     return balanced ; 

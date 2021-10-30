@@ -20,6 +20,7 @@
 #pragma once
 
 #include <vector>
+#include "plog/Severity.h"
 #include "NPY_API_EXPORT.hh"
 
 /**
@@ -42,6 +43,8 @@ template <typename T>
 struct NPY_API NTreeProcess
 {
     static unsigned MaxHeight0 ;  
+    static const plog::Severity LEVEL  ; 
+
     static T* Process( T* root_ , int soIdx, int lvIdx );
     static std::vector<int>*  LVList ;  
     static NPY<unsigned>* ProcBuffer ; 

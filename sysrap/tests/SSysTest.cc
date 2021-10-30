@@ -183,6 +183,17 @@ void test_getenvintvec()
     } 
 }
 
+void test_getenvintvec_non()
+{
+    std::vector<int> m_skip_gencode ; 
+    LOG(info) << " m_skip_gencode.size " << m_skip_gencode.size() ; 
+
+    SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ',', ""); 
+    LOG(info) << " m_skip_gencode.size " << m_skip_gencode.size() ; 
+
+    for(unsigned i=0 ; i < m_skip_gencode.size() ; i++) std::cout << m_skip_gencode[i] << std::endl ; 
+}
+
 
 
 void test_getenvintvec_ptr()
@@ -271,7 +282,8 @@ int main(int argc , char** argv )
 
 
     //test_getenvintvec(); 
-    test_getenvintvec_ptr(); 
+    //test_getenvintvec_ptr(); 
+    test_getenvintvec_non(); 
 
     //test_getenvfloat(); 
     //test_atof(); 

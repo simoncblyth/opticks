@@ -338,7 +338,7 @@ G4Opticks::G4Opticks()
     m_g4hit(NULL),
     m_sensorlib(NULL),
     m_skip_gencode(),
-    m_skip_gencode_count(SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ',')),
+    m_skip_gencode_count(SSys::getenvintvec("OPTICKS_SKIP_GENCODE", m_skip_gencode, ',',"")),
     m_skip_gencode_totals(),
     m_profile(false),
     m_profile_path(SSys::getenvvar("OPTICKS_PROFILE_PATH")),
@@ -354,7 +354,12 @@ G4Opticks::G4Opticks()
 
 void G4Opticks::initSkipGencode() 
 {
-    LOG(fatal) << "OPTICKS_SKIP_GENCODE m_skip_gencode_count " << m_skip_gencode_count ; 
+    const char* OPTICKS_SKIP_GENCODE = SSys::getenvvar("OPTICKS_SKIP_GENCODE", "-" ); 
+    LOG(fatal) 
+        << "OPTICKS_SKIP_GENCODE " << OPTICKS_SKIP_GENCODE
+        << " m_skip_gencode_count " << m_skip_gencode_count
+        ;
+ 
     assert( m_skip_gencode_count == m_skip_gencode.size() ); 
     for(unsigned i=0 ; i < m_skip_gencode.size() ; i++)
     {

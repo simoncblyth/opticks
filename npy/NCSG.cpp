@@ -169,6 +169,13 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
     // XCSG test generation giving lots of these Adopts with zero idx
     // if( soIdx == 0 && lvIdx == 0) std::raise(SIGINT); 
 
+
+    int treeidx = root->get_treeidx() ; 
+    if( treeidx > -1 ) 
+    {
+        assert( unsigned(treeidx) == lvIdx ); 
+    }
+
     root->set_treeidx(lvIdx) ;  // without this no nudging is done
 
     NCSG* tree = new NCSG(root);

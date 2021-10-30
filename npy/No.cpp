@@ -24,6 +24,15 @@
 
 
 
+void no::set_treeidx(int treeidx_) 
+{
+    treeidx = treeidx_ ; 
+}
+int no::get_treeidx() const 
+{
+    return treeidx ; 
+}
+ 
 
 /**
 no::deepcopy_r
@@ -152,6 +161,7 @@ no* no::make_node(OpticksCSG_t type, no* left, no* right )
     n->depth = 0 ; 
     n->type = type ; 
     n->complement = false ; 
+    n->treeidx = -1 ; 
 
     return n ;
 }

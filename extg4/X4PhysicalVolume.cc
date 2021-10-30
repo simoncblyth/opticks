@@ -389,6 +389,7 @@ as some Geant4 integration code is required.
 
 void X4PhysicalVolume::collectScintillatorMaterials()
 {
+    LOG(LEVEL) << "[" ; 
     assert( m_sclib ); 
     std::vector<GMaterial*>  scintillators_raw = m_mlib->getRawMaterialsWithProperties(SCINTILLATOR_PROPERTIES, ',' );  
 
@@ -430,6 +431,7 @@ void X4PhysicalVolume::collectScintillatorMaterials()
     }
 
     m_sclib->dump("X4PhysicalVolume::collectScintillatorMaterials"); 
+    LOG(LEVEL) << "]" ; 
 }
 
 void X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF()
@@ -1107,6 +1109,8 @@ GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx,
      nnode* raw = X4Solid::Convert(solid, ok, boundary, lvIdx )  ; 
      raw->set_nudgeskip( is_x4nudgeskip );   
      raw->set_pointskip( is_x4pointskip );  
+     raw->set_treeidx( lvIdx ); 
+
      // At first glance these settings might look too late to do anything, but that 
      // is not the case as for example the *nudgeskip* setting is acted upon by the NCSG::NCSG(nnode*) cto, 
      // which is invoked from NCSG::Adopt below which branches in NCSG::MakeNudger based on the setting.
@@ -1120,6 +1124,7 @@ GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx,
      root->other = raw ; 
      root->set_nudgeskip( is_x4nudgeskip ); 
      root->set_pointskip( is_x4pointskip );  
+     root->set_treeidx( lvIdx ); 
 
      const NSceneConfig* config = NULL ; 
      NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
@@ -1135,7 +1140,7 @@ GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx,
      bool is_x4polyskip = ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
      if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
-     GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid ) ; 
+     GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid, lvIdx) ; 
      mesh->setCSG( csg ); 
 
      LOG(LEVEL) << "] " << lvIdx ; 

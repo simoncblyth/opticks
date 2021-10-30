@@ -1190,7 +1190,7 @@ void X4Solid::convertPolycone()
 
     if(deltaPhi_segment_enabled == false)
     { 
-        LOG(fatal) << " skipped !has_deltaPhi assert " ; 
+        if(has_deltaPhi == true) LOG(LEVEL) << " skipped has_deltaPhi == false assert " ; 
         //assert( !has_deltaPhi ); 
     }
 

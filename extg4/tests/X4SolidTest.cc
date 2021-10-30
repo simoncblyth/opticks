@@ -100,7 +100,7 @@ void test_solid(G4VSolid* so)
     SSys::run(cmdline); 
 
 
-    X4Mesh* xm = new X4Mesh(so) ; 
+    X4Mesh* xm = new X4Mesh(so, -1) ; 
     std::string pxm = BFile::FormPath(TMPDIR, BStr::concat("", so->GetName().c_str(),".gltf")); 
     xm->save(pxm.c_str()); 
 

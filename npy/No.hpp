@@ -39,10 +39,16 @@ struct NPY_API no
     no* right ; 
     no* parent ; 
 
+    int treeidx ; 
+
     unsigned depth ;
     unsigned subdepth ;
     OpticksCSG_t type ; 
     bool    complement ; 
+
+
+    void set_treeidx(int treeidx_) ; 
+    int  get_treeidx() const ; 
  
     std::string tag() const ;
     std::string id() const ;

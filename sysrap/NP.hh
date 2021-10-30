@@ -615,7 +615,7 @@ template<typename T> inline void NP::set( T val, int i,  int j,  int k,  int l, 
 template<typename T> inline void NP::fill(T value)
 {
     T* vv = values<T>(); 
-    for(unsigned i=0 ; i < size ; i++) *(vv+i) = value ; 
+    for(int i=0 ; i < size ; i++) *(vv+i) = value ; 
 }
 
 template<typename T> inline void NP::_fillIndexFlat(T offset)
@@ -1349,7 +1349,7 @@ template<typename T> inline void  NP::get_edges(T& lo, T& hi, unsigned column, i
         lo = lhs ; 
         hi = lhs ; 
     }   
-    else if( ibin == ni )
+    else if( ibin == int(ni) )
     {
         lo = rhs ; 
         hi = rhs ; 
@@ -1930,7 +1930,7 @@ template<typename T> inline NP* NP::cumsum(int axis) const
     const T* vv = cvalues<T>(); 
     NP* cs = NP::MakeLike(this) ; 
     T* ss = cs->values<T>(); 
-    for(unsigned p=0 ; p < size ; p++) ss[p] = vv[p] ;   // flat copy 
+    for(int p=0 ; p < size ; p++) ss[p] = vv[p] ;   // flat copy 
 
     unsigned ndim = shape.size() ; 
 

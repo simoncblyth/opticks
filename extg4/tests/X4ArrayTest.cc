@@ -23,6 +23,8 @@ void test_convert()
     }
 
     G4MaterialPropertyVector* vec = new G4MaterialPropertyVector(energy, value, len);  
+    // pre 1100 G4MaterialPropertyVector is typedef alias for G4PhysicsOrderedFreeVector 
+
     X4Array* xvec = new X4Array(vec); 
 
     NPY<double>* d = xvec->convert<double>(); 
