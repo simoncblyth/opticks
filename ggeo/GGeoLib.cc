@@ -135,6 +135,12 @@ void GGeoLib::dumpParts(const char* msg) const
     }
 }
 
+/**
+GGeoLib::findMergedMeshWithLV
+------------------------------
+
+**/
+
 void GGeoLib::findMergedMeshWithLV( std::vector<unsigned>& mm, int lvIdx ) const 
 {
     unsigned nmm = getNumMergedMesh(); 
@@ -142,7 +148,7 @@ void GGeoLib::findMergedMeshWithLV( std::vector<unsigned>& mm, int lvIdx ) const
     {
         GParts* comp = getCompositeParts(i);  
         unsigned meshIdx = lvIdx ; 
-        unsigned count = comp->getMeshCount(meshIdx); 
+        unsigned count = comp ? comp->getMeshCount(meshIdx) : 0 ; 
         if(count > 0 ) mm.push_back(i); 
     }
 }
