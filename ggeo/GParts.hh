@@ -397,6 +397,7 @@ class GGEO_API GParts {
         static const unsigned MESH_IDX ; 
         unsigned getVolumeIndex(unsigned i) const ; 
         unsigned getMeshIndex(unsigned i) const ; 
+        unsigned getMeshCount(unsigned meshIdx) const ; 
         unsigned getUIntIdx( unsigned i, unsigned j ) const ; 
     private:
         void     setVolumeIndex(unsigned idx); 

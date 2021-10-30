@@ -20,6 +20,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <map>
 #include "plog/Severity.h"
 
@@ -107,6 +108,8 @@ class GGEO_API GGeoLib {
         GMergedMesh* getMergedMesh(unsigned index) const ;
         GParts*      getCompositeParts(unsigned index) const ; 
         void         dumpParts(const char* msg="GGeoLib::dumpParts") const ; 
+        void         findMergedMeshWithLV( std::vector<unsigned>& mm, int lvIdx ) const ; 
+
  
         void setMergedMesh(unsigned int index, GMergedMesh* mm);
         void eraseMergedMesh(unsigned int index);

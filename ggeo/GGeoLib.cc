@@ -135,7 +135,17 @@ void GGeoLib::dumpParts(const char* msg) const
     }
 }
 
-
+void GGeoLib::findMergedMeshWithLV( std::vector<unsigned>& mm, int lvIdx ) const 
+{
+    unsigned nmm = getNumMergedMesh(); 
+    for(unsigned i=0 ; i < nmm ; i++)
+    {
+        GParts* comp = getCompositeParts(i);  
+        unsigned meshIdx = lvIdx ; 
+        unsigned count = comp->getMeshCount(meshIdx); 
+        if(count > 0 ) mm.push_back(i); 
+    }
+}
 
 
 void GGeoLib::loadFromCache()
@@ -821,4 +831,5 @@ unsigned GGeoLib::getNodeIndex(unsigned ridx, unsigned pidx, unsigned oidx) cons
     glm::uvec4 id = getIdentity(ridx, pidx, oidx);     
     return id.x  ; 
 }
+
 

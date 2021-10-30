@@ -407,6 +407,8 @@ void GGeo::initLibs()
 
    m_meshlib = new GMeshLib(m_ok);
    m_geolib = new GGeoLib(m_ok, m_bndlib );
+   m_meshlib->setGGeoLib(m_geolib); 
+
    m_nodelib = new GNodeLib(m_ok); 
 
    m_instancer = new GInstancer(m_ok, this ) ;
@@ -546,6 +548,9 @@ void GGeo::loadFromCache()
     m_geolib = GGeoLib::Load(m_ok, m_bndlib);
     m_nodelib = GNodeLib::Load(m_ok );        
     m_meshlib = GMeshLib::Load(m_ok );
+
+    m_meshlib->setGGeoLib(m_geolib); 
+
 
     postLoadFromCache(); 
 

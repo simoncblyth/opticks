@@ -224,7 +224,6 @@ void GParts::SetDEBUG(int dbg)
 }
 
 
-
 GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned* num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
 {
     plog::Severity level = DEBUG == 0 ? LEVEL : info ;  
@@ -1417,8 +1416,16 @@ void GParts::setSensorSurface(const char* surface)
 }
 
 
+/**
+GParts::close
+----------------
+
+**/
+
 void GParts::close()
 {
+    //std::raise(SIGINT); 
+
     if(isClosed()) LOG(fatal) << "closed already " ;
     assert(!isClosed()); 
     m_closed = true ; 
@@ -2349,6 +2356,19 @@ unsigned GParts::getMeshIndex(unsigned i) const
 {
     return getUIntIdx(i, MESH_IDX ) ;  
 }
+
+unsigned GParts::getMeshCount(unsigned meshIdx) const 
+{
+    unsigned count(0); 
+    unsigned num = getNumIdx(); 
+    for(unsigned i=0 ; i < num ; i++)
+    {
+         unsigned midx = getMeshIndex(i); 
+         if( midx == meshIdx ) count += 1 ; 
+    }
+    return count ; 
+} 
+
 
 
 void GParts::setUIntIdx(unsigned i, unsigned j, unsigned idx)

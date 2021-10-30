@@ -34,6 +34,7 @@
 #include "GMesh.hh"
 #include "GMeshLib.hh"
 #include "GItemList.hh"
+#include "GGeoLib.hh"
 
 #include "PLOG.hh"
 
@@ -57,7 +58,8 @@ GMeshLib::GMeshLib(Opticks* ok )
     m_direct(ok->isDirect()),
     m_reldir(GMESHLIB),
     m_reldir_solids(GMESHLIB_NCSG),
-    m_meshnames(new GItemList(GMESHLIB_LIST, "GItemList"))
+    m_meshnames(new GItemList(GMESHLIB_LIST, "GItemList")),
+    m_ggeolib(nullptr)
 {
 }
 
@@ -583,19 +585,32 @@ std::map<unsigned int, std::vector<unsigned int> >& GMeshLib::getMeshNodes()
     return m_mesh_nodes ; 
 }
 
+void GMeshLib::setGGeoLib(const GGeoLib* ggeolib)
+{
+    m_ggeolib = ggeolib ; 
+}
+
 void GMeshLib::reportMeshUsage_(std::ostream& out) const 
 {
      typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
-     out << " meshIndex, nvert, nface, nodeCount, nodeCount*nvert, nodeCount*nface, meshName " << std::endl ; 
+     out << " meshIndex, nvert, nface, nodeCount, nodeCount*nvert, nodeCount*nface, meshName, nmm, mm[0] " << std::endl ; 
 
      unsigned tnode(0) ; 
      unsigned tvert(0) ; 
      unsigned tface(0) ; 
 
+     std::vector<unsigned> mm ; 
+
      for(MUUI it=m_mesh_usage.begin() ; it != m_mesh_usage.end() ; it++)
      {
          unsigned int meshIndex = it->first ; 
          unsigned int nodeCount = it->second ; 
+
+         if(m_ggeolib != nullptr)
+         {
+              mm.clear(); 
+              m_ggeolib->findMergedMeshWithLV(mm, meshIndex); 
+         } 
  
          const GMesh* mesh = getMeshWithIndex(meshIndex);
          const char* meshName = mesh->getName() ; 
@@ -612,7 +627,9 @@ void GMeshLib::reportMeshUsage_(std::ostream& out) const
              << " : " << std::setw(7) << nodeCount
              << " : " << std::setw(10) << nodeCount*nvert
              << " : " << std::setw(10) << nodeCount*nface
-             << " : " << meshName 
+             << " : " << std::setw(40) << meshName 
+             << " : " << std::setw(4)  << mm.size()
+             << " : " << std::setw(4)  << ( mm.size() > 0 ? mm[0] : -1 )  
              << std::endl ; 
 
 

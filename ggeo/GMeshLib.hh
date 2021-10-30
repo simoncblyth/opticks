@@ -28,6 +28,7 @@
 class Opticks ; 
 
 class GItemList ;  
+class GGeoLib ; 
 class GMesh ; 
 class NCSG ; 
 
@@ -82,6 +83,8 @@ class GGEO_API GMeshLib
         const GMesh*  getMeshWithName(const char* name, bool startswith) const ;
         const NCSG*   getSolidWithIndex(unsigned aindex) const ;  // first mesh in m_solids addition order with getIndex() matching aindex 
 
+        void setGGeoLib(const GGeoLib* ggeolib); 
+
         const std::vector<const NCSG*>& getSolids() const ; 
         const std::vector<const GMesh*>& getMeshes() const ; 
     private:
@@ -118,5 +121,7 @@ class GGEO_API GMeshLib
         std::vector<const NCSG*>      m_solids ; 
         std::map<unsigned, unsigned>                  m_mesh_usage ; 
         std::map<unsigned, std::vector<unsigned> >    m_mesh_nodes ; 
+
+        const GGeoLib*                m_ggeolib ; 
 
 };
