@@ -1,8 +1,13 @@
 #include <cassert>
 #include "OPTICKS_LOG.hh"
 #include "SSys.hh"
+#include "SStr.hh"
 #include "Opticks.hh"
 #include "GeoChain.h"
+
+#ifdef WITH_PMTSIM
+#include "PMTSim.hh"
+#endif
 
 #include "G4SystemOfUnits.hh"
 #include "G4Polycone.hh"
@@ -105,6 +110,9 @@ const G4VSolid* const make_BoxMinusTubs1(const char* name)
     return box_minus_tubs ; 
 }
 
+
+
+
 const G4VSolid* const make_solid(const char* name)
 {
     LOG(info) << name ; 
@@ -113,6 +121,9 @@ const G4VSolid* const make_solid(const char* name)
     if(strcmp(name,"AdditionAcrylicConstruction") == 0 ) solid = make_AdditionAcrylicConstruction(name); 
     if(strcmp(name,"BoxMinusTubs0") == 0 )               solid = make_BoxMinusTubs0(name); 
     if(strcmp(name,"BoxMinusTubs1") == 0 )               solid = make_BoxMinusTubs1(name); 
+#ifdef WITH_PMTSIM
+    if(SStr::StartsWith(name, "PMTSim"))                 solid = PMTSim::GetSolid(name) ; 
+#endif
     assert(solid); 
     G4cout << *solid << G4endl ; 
     return solid ; 

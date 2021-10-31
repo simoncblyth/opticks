@@ -31,11 +31,12 @@ const plog::Severity NTreeBalance<T>::LEVEL = PLOG::EnvLevel("NTreeBalance","DEB
 
 
 template <typename T>
-NTreeBalance<T>::NTreeBalance(T* root_)
+NTreeBalance<T>::NTreeBalance(T* root_, bool dump_)
     :
     root(root_),
     height0(0), 
-    unable_to_balance(false)
+    unable_to_balance(false),
+    dump(dump_)
 {
     init(); 
 }
@@ -76,18 +77,20 @@ T* NTreeBalance<T>::create_balanced()
     {
         std::vector<T*> prims ; 
         std::vector<T*> otherprim ; 
-        subtrees( prims, 0, otherprim );    // subdepth 0 
+
+        subtrees( prims, 0, otherprim );    // subdepth 0 : all the leaves  
+
         LOG(LEVEL) << " CommonTree prims " << prims.size() ; 
         assert( otherprim.size() == 0 );  
 
-        balanced = NTreeBuilder<T>::CommonTree(prims, op ); 
+        balanced = NTreeBuilder<T>::CommonTree(prims, op, dump ); 
     }
     else if( hop == CSG_INTERSECTION || hop == CSG_UNION ) 
     {
         std::vector<T*> bileafs ; 
         std::vector<T*> otherprim ; 
 
-        subtrees( bileafs, 1, otherprim );  // subdepth 1
+        subtrees( bileafs, 1, otherprim );  // subdepth 1 : all one up from the leaves (see below illustration in subdepth_r docs)
         LOG(LEVEL) 
             << " bileafs " << bileafs.size()
             << " otherprim " << otherprim.size() 
@@ -95,11 +98,13 @@ T* NTreeBalance<T>::create_balanced()
 
         if( otherprim.size() == 0 )
         {
-            balanced = NTreeBuilder<T>::BileafTree(bileafs, hop ); 
+            LOG(LEVEL) << " BileafTree " ; 
+            balanced = NTreeBuilder<T>::BileafTree(bileafs, hop, dump ); 
         }
         else
         {
-            balanced = NTreeBuilder<T>::MixedTree(bileafs, otherprim, hop ); 
+            LOG(LEVEL) << " MixedTree " ; 
+            balanced = NTreeBuilder<T>::MixedTree(bileafs, otherprim, hop, dump ); 
         }
         // can also have bileafs + primitives in a mixed tree, like with sFasterner bolts
     }
@@ -149,11 +154,15 @@ the max height of each node treated as a subtree::
 
                3                    
 
-       1               2            
+      [1]               2            
 
-   0       0       0           1    
+   [0]    [0]       0          [1]    
 
-                           0       0
+                           [0]     [0]
+
+
+bileafs are triplets of nodes with subdepths 1,0,0
+The above tree has two bileafs and one other leaf. 
 
 **/
 
@@ -174,7 +183,7 @@ void NTreeBalance<T>::subdepth_r(T* node, unsigned depth_ )
 
 
 /**
-NTreeBalance<T>::subtrees
+NTreeBalance::subtrees
 ---------------------------
 
 Collect all subtrees of a particular subdepth into *subs*
@@ -191,13 +200,20 @@ void NTreeBalance<T>::subtrees(std::vector<T*>& subs, unsigned subdepth, std::ve
     subtrees_r( root, subs, subdepth, otherprim, 1  );
 }
 
+/**
+NTreeBalance::subtrees_r
+--------------------------
+
+Postorder traversal (ie from leftmost visiting children before their parents)
+
+**/
+
 template <typename T>
 void NTreeBalance<T>::subtrees_r(T* node, std::vector<T*>& subs, unsigned subdepth, std::vector<T*>& otherprim, unsigned pass ) // static
 {
     if( node == NULL ) return ; 
     subtrees_r(node->left , subs, subdepth, otherprim, pass);
     subtrees_r(node->right, subs, subdepth, otherprim, pass);
-    // postorder visit (ie from leftmost visiting children before their parents)
 
     if(pass == 0 ) 
     {

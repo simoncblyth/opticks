@@ -230,7 +230,14 @@ om-bdir(){
                "Xcode") echo $(om-prefix)/build_xcode/$1 ;;
    esac
 }
-om-sdir(){   echo $(om-home)/$1 ; }
+om-sdir(){  
+   : TODO generalize current approach of just special casing pkg names, could use a naming convention jPMTSim 
+   case $1 in 
+      PMTSim) echo $HOME/j/$1 ;; 
+           *) echo $(om-home)/$1 ;;
+   esac
+}
+ 
 
 om-url(){ echo http://bitbucket.org/simoncblyth/$(om-name)/src/$(om-rdir) ; }
 om-open(){ open $(om-url) ; }

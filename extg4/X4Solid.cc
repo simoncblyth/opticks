@@ -1226,7 +1226,8 @@ void X4Solid::convertPolycone()
     std::vector<nnode*> prims ; 
     convertPolyconePrimitives( zp, prims ); 
 
-    nnode* cn = NTreeBuilder<nnode>::UnionTree(prims) ;
+    bool dump = false ; 
+    nnode* cn = NTreeBuilder<nnode>::UnionTree(prims, dump) ;
 
     bool multi_Rmin = Rmin.size() > 1 ; 
     if( multi_Rmin ) 

@@ -393,6 +393,16 @@ g4-libsuffix(){
 }
 
 
+g4-libdir(){
+   local prefix=$(g4-prefix)
+   local ll="lib lib64"
+   for l in $ll ; do 
+      if [ -d $prefix/$l ] ; then
+          echo $prefix/$l 
+      fi 
+   done
+}
+
 g4-info(){ cat << EOI
 
 

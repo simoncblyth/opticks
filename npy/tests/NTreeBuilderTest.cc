@@ -37,7 +37,8 @@ nnode* test_UnionTree_box(unsigned nprim, unsigned verbosity)
         a->verbosity = verbosity ; 
         prims.push_back(a);  
     }
-    nnode* root = NTreeBuilder<nnode>::UnionTree(prims) ; 
+    bool dump = true ; 
+    nnode* root = NTreeBuilder<nnode>::UnionTree(prims, dump) ; 
     assert( root ) ; 
     root->verbosity = verbosity ; 
     return root ; 

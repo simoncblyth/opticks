@@ -19,10 +19,16 @@ include(OpticksBuildOptions)
 
 find_package(CUDA REQUIRED)  # CUDA headers for vector types like float4, not the CUDA runtime
 find_package(CSG_GGeo REQUIRED)
-find_package(ExtG4           REQUIRED CONFIG) 
+find_package(ExtG4  REQUIRED CONFIG) 
+
+find_package(PMTSim CONFIG)
+find_package(jPMTSim CONFIG)   # example of unfound pkg
+
 
 message(STATUS "CSG_FOUND      : ${CSG_FOUND}      CSG_INCLUDE_DIRS      : ${CSG_INCLUDE_DIRS}")
 message(STATUS "GGeo_FOUND     : ${GGeo_FOUND}     GGeo_INCLUDE_DIRS     : ${GGeo_INCLUDE_DIRS}")
+message(STATUS "PMTSim_FOUND   : ${PMTSim_FOUND}  ") 
+message(STATUS "jPMTSim_FOUND   : ${jPMTSim_FOUND}  ") 
 
 include_directories(
     ${CUDA_INCLUDE_DIRS}
@@ -54,6 +60,12 @@ target_link_libraries( ${name} PUBLIC
    Opticks::CSG
    Opticks::CSG_GGeo
 )
+
+
+if(PMTSim_FOUND)
+   target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
+   target_compile_definitions( ${name} PUBLIC WITH_PMTSIM )
+endif()
 
 
 add_executable(${name}Test ${name}Test.cc )

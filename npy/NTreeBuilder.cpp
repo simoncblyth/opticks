@@ -23,10 +23,11 @@
 
 #include "NNodeCollector.hpp"
 #include "NTreeBuilder.hpp"
+#include "NTreeAnalyse.hpp"
 #include "PLOG.hh"
 
 
-template <typename T> const plog::Severity NTreeBuilder<T>::LEVEL = debug ; 
+template <typename T> const plog::Severity NTreeBuilder<T>::LEVEL = PLOG::EnvLevel("NTreeBuilder", "DEBUG")  ; 
 
 template <typename T> const char* NTreeBuilder<T>::PRIM_ = "PRIM" ; 
 template <typename T> const char* NTreeBuilder<T>::BILEAF_ = "BILEAF" ; 
@@ -45,29 +46,29 @@ template <typename T> const char* NTreeBuilder<T>::BuilderMode( NTreeBuilderMode
 
 
 template <typename T>
-T* NTreeBuilder<T>::UnionTree(const std::vector<T*>& prims )  // static
+T* NTreeBuilder<T>::UnionTree(const std::vector<T*>& prims, bool dump )  // static
 {
-    return CommonTree(prims, CSG_UNION ) ; 
+    return CommonTree(prims, CSG_UNION, dump ) ; 
 }
 template <typename T>
-T* NTreeBuilder<T>::CommonTree(const std::vector<T*>& prims, OpticksCSG_t operator_ ) // static
+T* NTreeBuilder<T>::CommonTree(const std::vector<T*>& prims, OpticksCSG_t operator_, bool dump ) // static
 {
     std::vector<T*> otherprim ; 
-    NTreeBuilder tb(prims, otherprim, operator_, PRIM  );  
+    NTreeBuilder tb(prims, otherprim, operator_, PRIM, dump);  
     return tb.root() ; 
 }
 template <typename T>
-T* NTreeBuilder<T>::BileafTree(const std::vector<T*>& bileafs, OpticksCSG_t operator_ ) // static
+T* NTreeBuilder<T>::BileafTree(const std::vector<T*>& bileafs, OpticksCSG_t operator_, bool dump ) // static
 {
     std::vector<T*> otherprim ; 
-    NTreeBuilder tb(bileafs, otherprim, operator_, BILEAF );  
+    NTreeBuilder tb(bileafs, otherprim, operator_, BILEAF, dump );  
     return tb.root() ; 
 }
 
 template <typename T>
-T* NTreeBuilder<T>::MixedTree(const std::vector<T*>& bileafs, const std::vector<T*>& otherprim,  OpticksCSG_t operator_ ) // static
+T* NTreeBuilder<T>::MixedTree(const std::vector<T*>& bileafs, const std::vector<T*>& otherprim,  OpticksCSG_t operator_, bool dump ) // static
 {
-    NTreeBuilder tb(bileafs, otherprim, operator_, MIXED );  
+    NTreeBuilder tb(bileafs, otherprim, operator_, MIXED, dump );  
     return tb.root() ; 
 }
 
@@ -100,7 +101,7 @@ int NTreeBuilder<T>::FindBinaryTreeHeight(unsigned num_leaves) // static
 }
 
 template <typename T>
-NTreeBuilder<T>::NTreeBuilder( const std::vector<T*>& subs, const std::vector<T*>& otherprim, OpticksCSG_t operator_, NTreeBuilderMode_t mode )
+NTreeBuilder<T>::NTreeBuilder( const std::vector<T*>& subs, const std::vector<T*>& otherprim, OpticksCSG_t operator_, NTreeBuilderMode_t mode, bool dump )
     :
     m_subs(subs),
     m_otherprim(otherprim),
@@ -110,7 +111,8 @@ NTreeBuilder<T>::NTreeBuilder( const std::vector<T*>& subs, const std::vector<T*
     m_num_prim(0),
     m_height(0),
     m_root(NULL),
-    m_verbosity(3)
+    m_verbosity(3),
+    m_dump(dump)
 {
     init(); 
 } 
@@ -129,6 +131,7 @@ std::string NTreeBuilder<T>::desc() const
        << " height " << m_height 
        << " mode " << BuilderMode(m_mode)
        << " operator " << CSG::Name(m_operator) 
+       << " dump " << m_dump
        ; 
     return ss.str(); 
 }
@@ -215,13 +218,20 @@ void NTreeBuilder<T>::init()
     {
          T* root = build_r( m_height ) ; 
          setRoot(root);
-
+    
+         if(m_dump) LOG(LEVEL) << "MIXED before populate \n" << NTreeAnalyse<T>::Desc(m_root) ; 
          populate(m_otherprim_copy); 
          populate(m_subs_copy); 
 
-         // see notes/issues/OKX4Test_sFasteners_generalize_tree_balancing.rst 
+         if(m_dump) LOG(LEVEL) << "MIXED after populate \n" << NTreeAnalyse<T>::Desc(m_root) ; 
 
+         // see notes/issues/OKX4Test_sFasteners_generalize_tree_balancing.rst 
          prune();
+
+         if(m_dump) LOG(LEVEL) << "MIXED after prune \n" << NTreeAnalyse<T>::Desc(m_root) ; 
+
+         rootprune(); 
+         if(m_dump) LOG(LEVEL) << "MIXED after rootprune \n" << NTreeAnalyse<T>::Desc(m_root) ; 
     }
 
 
@@ -269,6 +279,13 @@ it from the tree.
 
 Ditto for right slot. 
 
+Initially created new nodes with eg::
+
+     node->left = new T(*back)  
+
+But that caused bbox infinite recursion, as it drops the vtable : see NTreeBuilderTest
+Solution was to make_copy instead.
+
 **/
 
 template <typename T>
@@ -276,6 +293,7 @@ void NTreeBuilder<T>::populate(std::vector<T*>& src)
 {
     std::vector<T*> inorder ; 
     NNodeCollector<T>::Inorder_r( inorder, m_root ) ;  
+    LOG(LEVEL) << " inorder.size " << inorder.size() ; 
 
     for(unsigned i=0 ; i < inorder.size() ; i++)
     {
@@ -286,15 +304,12 @@ void NTreeBuilder<T>::populate(std::vector<T*>& src)
             if(node->left->is_zero() && src.size() > 0)
             {
                 T* back = src.back() ;
-                //node->left = new T(*back) ; // <-- this caused bbox infinite recursion, as it drops the vtable : see NTreeBuilderTest
                 node->left = back->make_copy();
-
                 src.pop_back();  // popping destroys it, so need the copy 
             }         
             if(node->right->is_zero() && src.size() > 0)
             {
                 T* back = src.back() ;
-                //node->right = new T(*back) ;   // ditto
                 node->right = back->make_copy();
                 src.pop_back(); 
             }         
@@ -320,7 +335,6 @@ void NTreeBuilder<T>::prune()
 template <typename T>
 void NTreeBuilder<T>::prune_r(T* node)
 {
-
     if(node == NULL) return ; 
     if(node->is_operator())
     {
@@ -350,6 +364,32 @@ void NTreeBuilder<T>::prune_r(T* node)
         }
     }
 }
+
+/**
+rootprune
+-------------
+
+See notes/issues/deep-tree-balancing-unexpected-un-ze.rst 
+
+MIXED tree pruning sometimes leaves a hanging lonely placeholder "ze" off the root  
+
+**/
+
+template <typename T>
+void NTreeBuilder<T>::rootprune()
+{
+    T* node = root(); 
+
+    if(!node->is_operator()) return ; 
+
+    if(node->left->is_operator() && node->right->is_zero() )
+    {
+        if(m_dump) LOG(LEVEL) << "promoting root.left to root " ; 
+        setRoot( node->left ); 
+    } 
+}
+
+
 
 #include "NNode.hpp"
 #include "No.hpp"

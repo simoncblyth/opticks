@@ -414,15 +414,15 @@ EON
 }
 
 
-
-
-
 geocache-gdml-scp(){ 
    #local digest=${1:-fe48b4d359786b95505117280fb5aac1}
    #local label=${2:-jun28}
 
-   local digest=${1:-50859f8d4163ea73814016bc7008ec4d}
-   local label=${2:-29aug2021} 
+   #local digest=${1:-50859f8d4163ea73814016bc7008ec4d}
+   #local label=${2:-29aug2021} 
+
+   local digest=${1:-3dbec4dc3bdef47884fe48af781a179d}
+   local label=${2:-30oct2021}
 
    local cmd="scp P:.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/$digest/1/origin_CGDMLKludge.gdml  $(opticks-prefix)/origin_CGDMLKludge_$label.gdml"
    echo $cmd

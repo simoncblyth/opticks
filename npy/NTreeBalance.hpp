@@ -43,7 +43,7 @@ struct NPY_API NTreeBalance
 {
     static const plog::Severity LEVEL ; 
 
-    NTreeBalance(T* root_); 
+    NTreeBalance(T* root_, bool dump_); 
 
     T* create_balanced(); 
 
@@ -68,6 +68,7 @@ struct NPY_API NTreeBalance
     T*           root ; 
     unsigned     height0 ; 
     bool         unable_to_balance ; 
+    bool         dump ; 
 
 };
 

@@ -23,13 +23,18 @@ EOU
 
 #geochaintest=AdditionAcrylicConstruction
 #geochaintest=BoxMinusTubs0
-geochaintest=BoxMinusTubs1
-
+#geochaintest=BoxMinusTubs1
+geochaintest=PMTSim_etc
 
 export GGeo=INFO
 export CSGSolid=INFO
 export CSG_GGeo_Convert=INFO
+
+export NTreeProcess=INFO
 export NNodeNudger=INFO
+export NTreeBalance=INFO
+export NTreeBuilder=INFO
+
 export X4Solid=INFO
 
 export DUMP_RIDX=0

@@ -50,14 +50,15 @@ class NPY_API NTreeBuilder
         static const char* BuilderMode( NTreeBuilderMode_t mode ); 
     public:
         static int FindBinaryTreeHeight(unsigned num_leaves); 
-        static T* UnionTree(const std::vector<T*>& prims ); 
-        static T* CommonTree(const std::vector<T*>& prims, OpticksCSG_t operator_ ); 
-        static T* BileafTree(const std::vector<T*>& bileafs, OpticksCSG_t operator_ ); 
-        static T* MixedTree(const std::vector<T*>& bileafs, const std::vector<T*>& others, OpticksCSG_t operator_ ); 
+    public:
+        static T* UnionTree(const std::vector<T*>& prims, bool dump ); 
+        static T* CommonTree(const std::vector<T*>& prims, OpticksCSG_t operator_, bool dump ); 
+        static T* BileafTree(const std::vector<T*>& bileafs, OpticksCSG_t operator_, bool dump ); 
+        static T* MixedTree(const std::vector<T*>& bileafs, const std::vector<T*>& others, OpticksCSG_t operator_, bool dump ); 
         std::string desc() const ;
     private:
     private:
-        NTreeBuilder(const std::vector<T*>& subs, const std::vector<T*>& others, OpticksCSG_t operator_, NTreeBuilderMode_t mode=PRIM ); 
+        NTreeBuilder(const std::vector<T*>& subs, const std::vector<T*>& others, OpticksCSG_t operator_, NTreeBuilderMode_t mode=PRIM, bool dump=false ); 
         void   init();
         unsigned getNumPrim() const ;
 
@@ -65,6 +66,8 @@ class NPY_API NTreeBuilder
         void   populate(std::vector<T*>& src);
         void   prune();
         void   prune_r(T* node);
+
+        void   rootprune();
 
         T*     root() const ;
         void   setRoot(T* root); 
@@ -82,7 +85,7 @@ class NPY_API NTreeBuilder
         int                    m_height ;
         T*                     m_root ; 
         int                    m_verbosity ; 
-
+        bool                   m_dump ; 
 
 };
  

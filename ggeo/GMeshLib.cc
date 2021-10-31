@@ -627,9 +627,9 @@ void GMeshLib::reportMeshUsage_(std::ostream& out) const
              << " : " << std::setw(7) << nodeCount
              << " : " << std::setw(10) << nodeCount*nvert
              << " : " << std::setw(10) << nodeCount*nface
-             << " : " << std::setw(40) << meshName 
-             << " : " << std::setw(4)  << mm.size()
-             << " : " << std::setw(4)  << ( mm.size() > 0 ? mm[0] : -1 )  
+             << " : " << std::setw(50) << meshName 
+             << " : " << std::setw(2)  << mm.size()
+             << " : " << std::setw(4)  << ( mm.size() > 0 ? int(mm[0]) : int(-1) )  
              << std::endl ; 
 
 

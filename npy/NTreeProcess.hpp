@@ -51,7 +51,7 @@ struct NPY_API NTreeProcess
     static void SaveBuffer(const char* path) ; 
     static void SaveBuffer(const char* dir, const char* name) ; 
 
-    NTreeProcess(T* root_); 
+    NTreeProcess(T* root_, bool dump_); 
     void init();
 
     T* root ; 
@@ -63,6 +63,7 @@ struct NPY_API NTreeProcess
 #endif
     NTreeBalance<T>*  balancer ; 
     NTreePositive<T>* positiver ; 
+    bool              dump ; 
 
 };
 

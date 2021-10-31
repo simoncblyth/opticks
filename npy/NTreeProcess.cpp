@@ -83,7 +83,7 @@ T* NTreeProcess<T>::Process( T* root_ , int soIdx, int lvIdx )  // static
  
     unsigned height0 = root_->maxdepth(); 
 
-    NTreeProcess<T> proc(root_ ); 
+    NTreeProcess<T> proc(root_, listed); 
 
     assert( height0 == proc.balancer->height0 ); 
 
@@ -115,7 +115,7 @@ NTreeProcess::NTreeProcess
 **/
 
 template <typename T>
-NTreeProcess<T>::NTreeProcess( T* root_ ) 
+NTreeProcess<T>::NTreeProcess( T* root_, bool dump_ ) 
     :
     root(root_),
     balanced(NULL),
@@ -123,8 +123,9 @@ NTreeProcess<T>::NTreeProcess( T* root_ )
 #ifdef WITH_CHOPPER
     chopper(new NTreeChopper<T>(root_,1e-6)),
 #endif
-    balancer(new NTreeBalance<T>(root_)),    // writes depth, subdepth to all nodes
-    positiver(NULL)
+    balancer(new NTreeBalance<T>(root_, dump_)),    // writes depth, subdepth to all nodes
+    positiver(NULL),
+    dump(dump_)
 {
     init();
 }
@@ -151,6 +152,12 @@ with subtraction operators.
 template <typename T>
 void NTreeProcess<T>::init()
 {
+#ifdef WITH_CHOPPER
+    LOG(LEVEL) << " WITH_CHOPPER chopper " << chopper ; 
+#else
+    LOG(LEVEL) << " NOT WITH_CHOPPER " ; 
+#endif
+
     positiver = new NTreePositive<T>(root) ;  // inplace changes operator types and sets complements on primitives
     if(balancer->height0 > MaxHeight0 )
     {

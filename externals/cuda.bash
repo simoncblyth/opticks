@@ -51,6 +51,11 @@ Getting CUDA : follow NVIDIA instructions
 
 * https://docs.nvidia.com/deploy/cuda-compatibility/
 
+CUDA Complex
+---------------
+
+* https://stackoverflow.com/questions/17473826/cuda-how-to-work-with-complex-numbers
+
 
 cudaMemcpyToArray deprecated
 ------------------------------

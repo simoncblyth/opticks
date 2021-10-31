@@ -157,7 +157,8 @@ nnode* make_tree( int i )
 
 void test_balance_0(nnode* tree)
 {
-    NTreeBalance<nnode> bal(tree);  // writes depth, subdepth to all nodes
+    bool dump = true ; 
+    NTreeBalance<nnode> bal(tree, dump);  // writes depth, subdepth to all nodes
 
     LOG(info) << tree->desc() ; 
     LOG(info) << NTreeAnalyse<nnode>::Desc(tree) ;
@@ -196,7 +197,8 @@ void test_balance(nnode* tree)
     NTreePositive<nnode> pos(tree) ; // eliminate CSG_DIFFERENCE by DeMorgan rules, some leaves may be complemented 
     LOG(info) << "tree positivized\n" << NTreeAnalyse<nnode>::Desc(tree) ; 
 
-    NTreeBalance<nnode> bal(tree);   // writes depth, subdepth to all nodes
+    bool dump = true ; 
+    NTreeBalance<nnode> bal(tree, dump);   // writes depth, subdepth to all nodes
 
     nnode* balanced = bal.create_balanced(); 
 
@@ -207,7 +209,8 @@ void test_process(nnode* tree)
 {
     LOG(info) << "tree initial \n" << NTreeAnalyse<nnode>::Desc(tree) ; 
 
-    NTreeProcess<nnode> proc(tree); 
+    bool dump = true ; 
+    NTreeProcess<nnode> proc(tree, dump); 
 
     nnode* result = proc.result ; 
     LOG(info) << "tree result \n" << NTreeAnalyse<nnode>::Desc(result) ; 
