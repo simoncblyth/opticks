@@ -30,7 +30,7 @@ Canonically invoked from SBT::createGeom/SBT::createGAS using CSGPrimSpec from f
 
 **/
 
-void GAS_Builder::Build( GAS& gas, const  CSGPrimSpec& ps )  // static
+void GAS_Builder::Build( GAS& gas, const CSGPrimSpec& ps )  // static
 {
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
     unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
@@ -65,13 +65,15 @@ GAS_Builder::MakeCustomPrimitivesBI_11N
 Creates buildInput using device refs of pre-uploaded aabb for all prim (aka layers) of the Shape 
 and arranges for separate SBT records for each prim.
 
+Added primitiveIndexOffset to CSGPrimSpec in attempt to get identity info 
+regarding what piece of geometry is intersected/closesthit. 
+
 **/
 
 BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
 {
     assert( ps.device == true ); 
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
-    unsigned primitiveIndexOffset = 0 ; // offsets the normal 0,1,2,... result of optixGetPrimitiveIndex()  
     
     BI bi = {} ; 
     bi.mode = 1 ; 
@@ -91,16 +93,17 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
     buildInputCPA.aabbBuffers = &bi.d_aabb ;  
     buildInputCPA.numPrimitives = ps.num_prim  ;   
     buildInputCPA.strideInBytes = ps.stride_in_bytes ;
-    buildInputCPA.flags = bi.flags;                  // flags per sbt record
-    buildInputCPA.numSbtRecords = ps.num_prim ;              // number of sbt records available to sbt index offset override. 
-    buildInputCPA.sbtIndexOffsetBuffer  = bi.d_sbt_index ;   // Device pointer to per-primitive local sbt index offset buffer, Every entry must be in range [0,numSbtRecords-1]
-    buildInputCPA.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);  // Size of type of the sbt index offset. Needs to be 0,     1, 2 or 4    
+    buildInputCPA.flags = bi.flags;                                  // flags per sbt record
+    buildInputCPA.numSbtRecords = ps.num_prim ;                      // number of sbt records available to sbt index offset override. 
+    buildInputCPA.sbtIndexOffsetBuffer  = bi.d_sbt_index ;           // Device pointer to per-primitive local sbt index offset buffer, Every entry must be in range [0,numSbtRecords-1]
+    buildInputCPA.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);     // Size of type of the sbt index offset. Needs to be 0,     1, 2 or 4    
     buildInputCPA.sbtIndexOffsetStrideInBytes = ps.stride_in_bytes ; // Stride between the index offsets. If set to zero, the offsets are assumed to be tightly packed.
-    buildInputCPA.primitiveIndexOffset = primitiveIndexOffset ;  // Primitive index bias, applied in optixGetPrimitiveIndex()
+    buildInputCPA.primitiveIndexOffset = ps.primitiveIndexOffset ;   // Primitive index bias, applied in optixGetPrimitiveIndex() see OptiX7Test.cu:__closesthit__ch
 
-
-/*
-    std::cout 
+    LOG(LEVEL)
+        << std::endl
+        << " buildInputCPA.primitiveIndexOffset " << buildInputCPA.primitiveIndexOffset
+        << std::endl
         << " buildInputCPA.aabbBuffers[0] " 
         << " " << std::dec << buildInputCPA.aabbBuffers[0] 
         << " " << std::hex << buildInputCPA.aabbBuffers[0]  << std::dec
@@ -111,9 +114,7 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
         << std::endl
         << " buildInputCPA.strideInBytes " << buildInputCPA.strideInBytes
         << " buildInputCPA.sbtIndexOffsetStrideInBytes " << buildInputCPA.sbtIndexOffsetStrideInBytes
-        << std::endl
         ; 
-*/  
      
     return bi ; 
 } 

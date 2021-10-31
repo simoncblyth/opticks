@@ -68,9 +68,59 @@ const char* NNodeEnum::JoinType(NNodeJoinType join )
     return s ; 
 } 
 
-NNodeJoinType NNodeEnum::JoinClassify( float za, float zb, float epsilon )
+/**
+NNodeEnum::JoinClassify
+---------------------------
+
+Illustrations are for MINMAX, see NNodeNudger.
+
+
+JOIN_SPLIT
+    zj-zi > 0.
+
+    +-------+
+    |       |
+    |       |
+    |       |
+    +-------+  zj
+
+    +-------+  zi
+    |       |
+    |       |
+    |       |
+    +-------+
+   
+    
+JOIN_OVERLAP
+    zj-zi < 0.
+
+        +-------+
+        |       |
+        |   +-------+ zi
+        |   |   |   | 
+    zj  +---|---+   |
+            |       |   
+            +-------+
+         
+
+JOIN_COINCIDENT
+    |zj-zi| < epsilon
+
+        +-------+
+        |       |
+        |       |
+        |       |
+     zj +---+---+---+ zi
+            |       |
+            |       | 
+            |       |
+            +-------+       
+
+**/
+
+NNodeJoinType NNodeEnum::JoinClassify( float zi, float zj, float epsilon )
 {
-    float delta = zb - za   ; 
+    float delta = zj - zi   ; 
     NNodeJoinType join = JOIN_UNCLASSIFIED ; 
 
     if( fabsf(delta) < epsilon )

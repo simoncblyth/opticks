@@ -79,7 +79,7 @@ struct NPY_API NNodeNudger
 {
     static const plog::Severity LEVEL ; 
 
-    static std::vector<unsigned>*  TreeList ;  
+    static std::vector<int>*  TreeList ;  
     static NPY<unsigned>* NudgeBuffer ; 
     static void SaveBuffer(const char* path) ; 
     static void SaveBuffer(const char* dir, const char* name) ; 
@@ -101,7 +101,9 @@ struct NPY_API NNodeNudger
     NNodeNudger(nnode* root, float epsilon, unsigned verbosity) ;
   
     void init();
-    void update_prim_bb();  // direct from param, often with gtransform applied
+    void find_prim_z_order();  // direct from param, often with gtransform applied
+    void dump_prim_bb() const ; 
+
     bool operator()( int i, int j)  ;
 
 
@@ -121,6 +123,8 @@ struct NPY_API NNodeNudger
     void znudge_union_maxmin(NNodeCoincidence* coin);
 
     bool can_znudge_difference_minmin(const NNodeCoincidence* coin) const ;
+    std::string desc_znudge_union_maxmin(const NNodeCoincidence* coin) const ; 
+
     void znudge_difference_minmin(NNodeCoincidence* coin);
 
 

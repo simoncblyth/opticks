@@ -57,6 +57,8 @@ CSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned
     ps.sbtIndexOffset = prim->sbtIndexOffsetPtr() ;  
     ps.num_prim = numPrim ; 
     ps.stride_in_bytes = sizeof(CSGPrim); 
+    ps.primitiveIndexOffset = primIdx ; 
+
     return ps ; 
 }
 

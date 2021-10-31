@@ -118,6 +118,14 @@ Binding.h
 PIP.h
     OptiX render pipeline creation from ptx file
 
+OptiX7Test.cu
+    compiled into ptx that gets loaded by PIP to create the GPU pipeline, with OptiX 7 entry points::
+    
+    __raygen__rg
+    __miss__ms
+    __intersection__is
+    __closesthit__ch 
+
 SBT.h
     brings together OptiX 7 geometry and render pipeline programs, nexus of control  
 
@@ -135,6 +143,9 @@ OPTIX_CHECK.h
 
 Six.h
     optix pre-7 rendering of CSGFoundary geometry
+
+OptiX6Test.cu geo_OptiX6Test.cu
+    compiled into ptx that gets loaded by Six to create OptiX < 7 pipeline
 
 
  

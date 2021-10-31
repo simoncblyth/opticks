@@ -39,7 +39,7 @@
 const plog::Severity NNodeNudger::LEVEL = PLOG::EnvLevel("NNodeNudger", "DEBUG"); 
 
 
-std::vector<unsigned>* NNodeNudger::TreeList = NULL ;  
+std::vector<int>* NNodeNudger::TreeList = SSys::getenvintvec("NNODENUDGER_LVLIST") ;  
 
 
 NPY<unsigned>* NNodeNudger::NudgeBuffer = NULL ;  
@@ -69,14 +69,24 @@ NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/)
 
 void NNodeNudger::init()
 {
-    LOG(LEVEL) << " init " ; 
+    listed = TreeList != nullptr && std::find(TreeList->begin(), TreeList->end(), root->treeidx ) != TreeList->end() ; 
+    if(listed)
+    {
+         LOG(LEVEL) 
+             << " root.treeidx " << root->treeidx
+             << " listed (NNODENUDGER_LVLIST) " << listed 
+             ;
+    }
 
-    listed = TreeList != NULL && std::find(TreeList->begin(), TreeList->end(), root->treeidx ) != TreeList->end() ; 
- 
+
     if( NudgeBuffer == NULL ) NudgeBuffer = NPY<unsigned>::make(0,4) ; 
 
     root->collect_prim_for_edit(prim);  // recursive collector 
-    update_prim_bb();                   // find z-order of prim using bb.min.z
+
+    find_prim_z_order();                   // find z-order of prim using bb.min.z
+
+    if(listed) dump_prim_bb(); 
+
     collect_coincidence();
 
     if(enabled)
@@ -91,10 +101,8 @@ void NNodeNudger::init()
 }
 
 /**
-NNodeNudger::update_prim_bb
------------------------------
-
-TODO: rename to find_prim_z_order
+NNodeNudger::find_prim_z_order (formerly misnamed update_prim_bb)
+-------------------------------------------------------------------
 
 The *bb* bounding boxes of all primitives are collected
 and the *zorder* of all the primitives is established 
@@ -102,9 +110,9 @@ by sorting based on bb[i].min.z
 
 **/
 
-void NNodeNudger::update_prim_bb()
+void NNodeNudger::find_prim_z_order()
 {
-    //LOG(info) << "NNodeNudger::update_prim_bb nprim " << prim.size() ;
+    LOG(LEVEL) << "prim.size " << prim.size() ;
     zorder.clear();
     bb.clear(); 
     for(unsigned i=0 ; i < prim.size() ; i++)
@@ -117,6 +125,22 @@ void NNodeNudger::update_prim_bb()
     }
     std::sort(zorder.begin(), zorder.end(), *this );   // np.argsort style : sort the indices
 } 
+
+void NNodeNudger::dump_prim_bb() const 
+{
+    LOG(info); 
+    for(unsigned i=0 ; i < prim.size() ; i++)
+    {
+        const nnode* p = prim[i] ; 
+        nbbox pbb = p->bbox(); 
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " zor " << std::setw(3) << zorder[i] 
+            << " pbb " << pbb.desc() 
+            << std::endl
+            ; 
+    }
+}
 
 bool NNodeNudger::operator()( int i, int j)  
 {
@@ -146,15 +170,10 @@ issues and automated decision making regards fixes. i.e.
 deciding which primitive to nudge and in which direction, 
 so as to avoid the issue and not change geometry.
 
-
 **/
-
-
 
 void NNodeNudger::collect_coincidence()
 {
-    LOG(LEVEL) << " collect_concidence " << root->treeidx ;  
-
     if(root->treeidx < 0) return ; 
 
     coincidence.clear();
@@ -168,12 +187,12 @@ void NNodeNudger::collect_coincidence()
     }
     }
 
-    LOG(debug) << "NNodeNudger::collect_coincidence" 
-              << " root.treeidx " << root->treeidx 
-              << " num_prim " << num_prim 
-              << " num_coincidence " << get_num_coincidence()
-              << " verbosity " << verbosity 
-              ; 
+    LOG(LEVEL)
+        << " root.treeidx " << root->treeidx 
+        << " num_prim " << num_prim 
+        << " num_coincidence " << get_num_coincidence()
+        << " verbosity " << verbosity 
+        ; 
 }
 
 
@@ -217,11 +236,6 @@ comparisons.::
 
 void NNodeNudger::collect_coincidence(unsigned i, unsigned j)
 {
-    LOG(LEVEL) << " collect_concidence " 
-               << " treeidx : " << root->treeidx 
-               << " prim pair (i,j) : (" << i << "," << j << ")" 
-               ;
-  
     for(unsigned p=0 ; p < 4 ; p++)
     {
         NNodePairType pair = (NNodePairType)p ; 
@@ -235,18 +249,19 @@ void NNodeNudger::collect_coincidence(unsigned i, unsigned j)
             case PAIR_MAXMAX: { zi = bb[i].max.z ; zj = bb[j].max.z ; } ; break ;  
         }
 
-
         NNodeJoinType join = NNodeEnum::JoinClassify( zi, zj, epsilon );
-
-        LOG(LEVEL) 
-               << " pair: " << NNodeEnum::PairType(pair) 
-               << " zi: " << std::fixed << std::setw(10) << std::setprecision(3) << zi
-               << " zj: " << std::fixed << std::setw(10) << std::setprecision(3) << zj
-               << " join: " << NNodeEnum::JoinType(join) 
-               ;
 
         if(join == JOIN_COINCIDENT) 
         {
+            LOG(LEVEL) 
+                << " treeidx : " << root->treeidx 
+                << " prim pair (i,j) : (" << i << "," << j << ")" 
+                << " pair: " << NNodeEnum::PairType(pair) 
+                << " zi: " << std::fixed << std::setw(10) << std::setprecision(3) << zi
+                << " zj: " << std::fixed << std::setw(10) << std::setprecision(3) << zj
+                << " join: " << NNodeEnum::JoinType(join) 
+                ;
+
             switch(pair)
             {  
                 case PAIR_MINMIN:  coincidence.push_back({ prim[i], prim[j], pair }); break ;
@@ -276,10 +291,42 @@ void NNodeNudger::uncoincide()
 void NNodeNudger::znudge(NNodeCoincidence* coin)
 {
     // IS THIS MISSING A umaxmax ???
+    if(coin->fixed) return ; 
 
-    if(!coin->fixed && can_znudge_union_maxmin(coin))      znudge_union_maxmin(coin);
-    if(!coin->fixed && can_znudge_difference_minmin(coin)) znudge_difference_minmin(coin);
+    if( can_znudge_union_maxmin(coin) ) 
+    {
+        LOG(LEVEL) << "proceed znudge_union_maxmin " << desc_znudge_union_maxmin(coin) ; 
+        znudge_union_maxmin(coin);
+    }
+    else
+    {
+        LOG(LEVEL)  << "CANNOT  znudge_union_maxmin " << desc_znudge_union_maxmin(coin) ;  
+                    
+    }
+
+    if( can_znudge_difference_minmin(coin) )
+    {
+        LOG(LEVEL) << "proceed znudge_difference_minmin " ; 
+        znudge_difference_minmin(coin) ;   
+    }
+    else
+    {
+        LOG(LEVEL) << "CANNOT  znudge_difference_minmin " ; 
+    }
 }
+
+/**
+NNodeNudger::can_znudge_union_maxmin
+-------------------------------------
+
+Requiring siblings is too restrictive... the binary splitup is an implemntation detail
+what matters is that they are from the same union not the same pair 
+
+TODO:
+    For z-sphere the ability to znudge depends on endcap existance on a side ... ? 
+    Also radius contraints due to this have removed from znudge capable
+
+**/
 
 bool NNodeNudger::can_znudge_union_maxmin(const NNodeCoincidence* coin) const 
 {
@@ -287,13 +334,26 @@ bool NNodeNudger::can_znudge_union_maxmin(const NNodeCoincidence* coin) const
     const nnode* j = coin->j ; 
     const NNodePairType p = coin->p ; 
     return nnode::is_same_union(i,j) && p == PAIR_MAXMIN && i->is_znudge_capable() && j->is_znudge_capable() ;
-
-    // requiring siblings is too restrictive... the binary splitup is an implemntation detail
-    // what matters is that they are from the same union not the same pair 
-    //
-    // for z-sphere the ability to znudge depends on endcap existance on a side ... ? also radius contraints
-    // due to this have removed from znudge capable
 }
+
+std::string NNodeNudger::desc_znudge_union_maxmin(const NNodeCoincidence* coin) const 
+{
+    const nnode* i = coin->i ; 
+    const nnode* j = coin->j ; 
+    const NNodePairType p = coin->p ; 
+
+    std::stringstream ss ; 
+    ss << "ij (" << coin->i << "," << coin->j << ") "
+       << " same_union " << nnode::is_same_union(i,j) 
+       << " i.znudge_capable " << i->is_znudge_capable()
+       << " j.znudge_capable " << j->is_znudge_capable()
+       << " isMAXMIN " << ( p == PAIR_MAXMIN )
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 bool NNodeNudger::can_znudge_difference_minmin(const NNodeCoincidence* coin) const
 {

@@ -29,6 +29,7 @@ struct CSG_API CSGPrimSpec
     unsigned        num_prim ; 
     unsigned        stride_in_bytes ; 
     bool            device ; 
+    unsigned        primitiveIndexOffset ;   // offsets optixGetPrimitiveIndex() see GAS_Builder::MakeCustomPrimitivesBI_11N
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
