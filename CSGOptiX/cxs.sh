@@ -103,7 +103,8 @@ elif [ "$cxs" == "101" ]; then
 elif [ "$cxs" == "200" ]; then
     cfbase=$TMP/GeoChain/PMTSim_Z
     moi=0
-    cegs=16:0:9:100
+    dz=-7
+    cegs=16:0:9:100:0:0:$dz
     gridscale=0.15
     isel=0
 fi 
@@ -115,7 +116,7 @@ fi
 
 
 export MOI=${MOI:-$moi}
-export CEGS=${CEGS:-$cegs}
+export CXS_CEGS=${CXS_CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS=${CXS:-$cxs}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"

@@ -12,8 +12,8 @@ is to be able to see the exact same geometry that the simulation is using.
 
 ::
 
-     MOI=Hama CEGS=5:0:5:1000   CSGOptiXSimulateTest
-     MOI=Hama CEGS=10:0:10:1000 CSGOptiXSimulateTest
+     MOI=Hama CXS_CEGS=5:0:5:1000   CSGOptiXSimulateTest
+     MOI=Hama CXS_CEGS=10:0:10:1000 CSGOptiXSimulateTest
 
 **/
 
@@ -33,7 +33,6 @@ is to be able to see the exact same geometry that the simulation is using.
 
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
-#include "CSGOptiXSimulate.h"
 
 #include "QSim.hh"
 #include "QEvent.hh"
@@ -106,8 +105,26 @@ int main(int argc, char** argv)
         LOG(info) << std::endl << "qt" << qt ; 
         Tran<double>* geotran = Tran<double>::ConvertToTran( &qt );  // houses transform and inverse
 
-        uint4 cegs ; 
-        CSGOptiXSimulate::ParseCEGS(cegs, ce ); 
+
+        std::vector<int> cegs ; 
+        SSys::getenvintvec("CXS_CEGS", cegs, ':', "5:0:5:1000" ); 
+        // expect 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
+
+        QEvent::StandardizeCEGS(cegs); 
+        assert( cegs.size() == 7 ); 
+
+        std::vector<int> override_ce ; 
+        SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" ); 
+
+        if( override_ce.size() == 4 && override_ce[3] > 0 )
+        {
+            ce.x = float(override_ce[0]); 
+            ce.y = float(override_ce[1]); 
+            ce.z = float(override_ce[2]); 
+            ce.w = float(override_ce[3]); 
+            LOG(info) << "override the MOI.ce with CXS_OVERRIDE_CE (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;  
+        } 
+
 
         gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran ); 
         cx.setCE(ce); 

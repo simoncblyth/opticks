@@ -34,6 +34,86 @@ NP* QEvent::MakeGensteps(const std::vector<quad6>& gs ) // static
     return a ; 
 }
 
+
+
+/**
+QEvent::StandardizeCEGS
+--------------------------
+
+The cegs vector configures a grid. 
+Symmetric and offset grid input configs are supported using 
+vectors of length 4 and 7. 
+
+This method standardizes the specification 
+into an absolute index form which is used by 
+QEvent::MakeCenterExtentGensteps
+
+nx:ny:nz:num_photons
+     symmetric grid -nx:nx, -ny:ny, -nz:nz  
+
+nx:ny:nz:dx:dy:dz:num_photons
+     offset grid -nx+dx:nx+dx, -ny+dy:ny+dy, -nz+dz:nz+dz  
+
+ix0:iy0:iz0:ix1:iy1:iz1:num_photons 
+     standardized absolute form of grid specification 
+
+**/
+
+void QEvent::StandardizeCEGS( std::vector<int>& cegs ) // static 
+{
+    int ix0, ix1, iy0, iy1, iz0, iz1, photons_per_genstep ; 
+    if( cegs.size() == 4 )
+    {
+        cegs.resize(7) ; 
+
+        ix0 = -cegs[0] ; ix1 = cegs[0] ; 
+        iy0 = -cegs[1] ; iy1 = cegs[1] ; 
+        iz0 = -cegs[2] ; iz1 = cegs[2] ; 
+        photons_per_genstep = cegs[3] ;
+    }
+    else if( cegs.size() == 7 )
+    {
+        int dx = cegs[3] ; 
+        int dy = cegs[4] ; 
+        int dz = cegs[5] ; 
+        photons_per_genstep = cegs[6] ;
+
+        ix0 = -cegs[0] + dx ; 
+        iy0 = -cegs[1] + dy ; 
+        iz0 = -cegs[2] + dz ; 
+        ix1 =  cegs[0] + dx ; 
+        iy1 =  cegs[1] + dy ; 
+        iz1 =  cegs[2] + dz ; 
+    }
+    else
+    {
+        LOG(fatal) << " unexpected input cegs.size, expect 4 or 7 but find:" << cegs.size()  ; 
+        assert(0); 
+    }
+
+
+    cegs[0] = ix0 ; 
+    cegs[1] = ix1 ;
+    cegs[2] = iy0 ; 
+    cegs[3] = iy1 ;
+    cegs[4] = iz0 ; 
+    cegs[5] = iz1 ;
+    cegs[6] = photons_per_genstep ; 
+
+    LOG(info) 
+        << " CXS_CEGS "
+        << " ix0 ix1 " << ix0 << " " << ix1   
+        << " iy0 iy1 " << iy0 << " " << iy1   
+        << " iz0 iz1 " << iz0 << " " << iz1   
+        << " photons_per_genstep " << photons_per_genstep 
+        ;
+}
+
+
+
+
+
+
 /**
 QEvent::MakeCenterExtentGensteps
 ----------------------------------
@@ -81,15 +161,37 @@ frame as are doing the local_translate first.
 
 **/
 
-NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float gridscale, const Tran<double>* geotran ) // static
+
+
+NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran ) // static
 {
     std::vector<quad6> gensteps ; 
     quad6 gs ; gs.zero(); 
 
-    unsigned nx = cegs.x ; 
-    unsigned ny = cegs.y ; 
-    unsigned nz = cegs.z ; 
-    unsigned photons_per_genstep = cegs.w ; 
+    assert( cegs.size() == 7 ); 
+
+    int ix0 = cegs[0] ; 
+    int ix1 = cegs[1] ;
+    int iy0 = cegs[2] ; 
+    int iy1 = cegs[3] ;
+    int iz0 = cegs[4] ; 
+    int iz1 = cegs[5] ;
+    int photons_per_genstep = cegs[6] ;  
+
+    float x0 = float(ix0)*gridscale ; 
+    float x1 = float(ix1)*gridscale ; 
+    float y0 = float(iy0)*gridscale ; 
+    float y1 = float(iy1)*gridscale ; 
+    float z0 = float(iz0)*gridscale ; 
+    float z1 = float(iz1)*gridscale ; 
+
+    LOG(info) 
+        << " CXS_CEGS "
+        << " x0 x1 " << x0 << " " << x1   
+        << " y0 y1 " << y0 << " " << y1   
+        << " z0 z1 " << z0 << " " << z1   
+        << " photons_per_genstep " << photons_per_genstep 
+        ;
 
     gs.q0.i.x = OpticksGenstep_TORCH ;  
     gs.q0.i.y = 0 ; // could plant enum for XZ planar etc.. here 
@@ -101,9 +203,9 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
     gs.q1.f.z = 0.f ;   
     gs.q1.f.w = 1.f ; 
 
-    for(int ix=-int(nx) ; ix < int(nx)+1 ; ix++ )
-    for(int iy=-int(ny) ; iy < int(ny)+1 ; iy++ )
-    for(int iz=-int(nz) ; iz < int(nz)+1 ; iz++ )
+    for(int ix=ix0 ; ix < ix1+1 ; ix++ )
+    for(int iy=iy0 ; iy < iy1+1 ; iy++ )
+    for(int iz=iz0 ; iz < iz1+1 ; iz++ )
     {
         LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ; 
         
@@ -121,8 +223,7 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const uint4& cegs, float 
 
         gensteps.push_back(gs); 
     }
-
-    LOG(LEVEL) << " nx " << nx << " ny " << ny << " nz " << nz << " gs " << gensteps.size() ; 
+    LOG(LEVEL) << " gensteps.size " << gensteps.size() ; 
 
     return MakeGensteps(gensteps); 
 }

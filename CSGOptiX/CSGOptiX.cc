@@ -227,22 +227,28 @@ void CSGOptiX::setCE(const float4& v )
 
 
 
-void CSGOptiX::setCEGS(const uint4& cegs_)
+void CSGOptiX::setCEGS(const std::vector<int>& cegs)
 {
-    params->setCEGS(cegs_); 
+    //params->setCEGS(cegs_); 
+    assert( cegs.size() == 7 );   // use QEvent::StandardizeCEGS to convert 4 to 7  
 
-    peta->q0.u.x = cegs_.x ; 
-    peta->q0.u.y = cegs_.y ; 
-    peta->q0.u.z = cegs_.z ; 
-    peta->q0.u.w = cegs_.w ; 
+    peta->q0.i.x = cegs[0] ; 
+    peta->q0.i.y = cegs[1] ; 
+    peta->q0.i.z = cegs[2] ; 
+    peta->q0.i.w = cegs[3] ; 
+
+    peta->q1.i.x = cegs[4] ; 
+    peta->q1.i.y = cegs[5] ; 
+    peta->q1.i.z = cegs[6] ; 
+    peta->q1.i.w = 0 ; 
 }
 
 void CSGOptiX::setCE(const glm::vec4& ce )
 {
-    peta->q1.f.x = ce.x ; 
-    peta->q1.f.y = ce.y ; 
-    peta->q1.f.z = ce.z ; 
-    peta->q1.f.w = ce.w ; 
+    peta->q2.f.x = ce.x ;   // moved from q1
+    peta->q2.f.y = ce.y ; 
+    peta->q2.f.z = ce.z ; 
+    peta->q2.f.w = ce.w ; 
 
     bool aim = true ; 
     composition->setCenterExtent(ce, aim);  // model2world view setup 

@@ -34,7 +34,8 @@ const NP* test_MakeCountGensteps()
 const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz)
 {
     float4 ce = make_float4( 1.f, 2.f, 3.f, 100.f ); 
-    uint4 cegs = make_uint4( nx, ny, nz, 10 ); 
+
+    std::vector<int> cegs = {{nx, ny, nz, 10 }} ; 
     float gridscale = 1.f ; 
 
     //bool rot = false ;  // 45 degress around Z   OR identity 
@@ -46,6 +47,9 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz)
     const char* str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
     qat4* qt = qat4::from_string(str); 
     const Tran<double>* geotran = Tran<double>::ConvertToTran(qt); 
+
+     
+
 
     const NP* gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran ); 
 

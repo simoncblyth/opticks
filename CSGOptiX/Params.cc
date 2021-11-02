@@ -18,6 +18,7 @@ void Params::setCenterExtent(float x, float y, float z, float w)  // used for "s
     center_extent.w = w ; 
 }
 
+/*
 void Params::setCEGS(const uint4& _cegs)
 {
     cegs.x = _cegs.x ; 
@@ -25,6 +26,8 @@ void Params::setCEGS(const uint4& _cegs)
     cegs.z = _cegs.z ; 
     cegs.w = _cegs.w ; 
 }
+*/
+
 
 void Params::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ )
 {

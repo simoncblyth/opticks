@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <optix.h>
 #include <string>
 #include <glm/fwd.hpp>
@@ -84,7 +85,8 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void setTop(const char* tspec); 
 
     // render related 
-    void setCEGS(const uint4& cegs_); 
+    void setCEGS(const std::vector<int>& cegs); 
+
     void setCE(const float4& ce); 
     void setCE(const glm::vec4& ce); 
     void setMetaTran(const Tran<double>* metatran ); 

@@ -79,7 +79,7 @@ struct Params
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
 
     void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering 
-    void setCEGS(const uint4& cegs); 
+    //void setCEGS(const uint4& cegs);   // is this used ?
 #endif
 
 };

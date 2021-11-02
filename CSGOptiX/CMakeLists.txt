@@ -48,15 +48,11 @@ set(CU_SOURCES)
 list(APPEND SOURCES
     Params.cc 
     CSGOptiX.cc
-    CSGOptiXSimulate.cc
-
     CSGOPTIX_LOG.cc
 )
 
 list(APPEND HEADERS
     CSGOptiX.h
-    CSGOptiXSimulate.h
-
     CSGOPTIX_API_EXPORT.hh
     CSGOPTIX_LOG.hh
 )
