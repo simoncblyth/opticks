@@ -41,13 +41,16 @@ struct QUDARAP_API QEvent
     const NP* gs ;  
     QBuf<float>* genstep ; 
     QBuf<int>*   seed  ;
+    const char*  meta ; 
 
     void setGensteps(const NP* gs);
     void setGensteps(QBuf<float>* dgs ); 
+    void setMeta( const char* meta ); 
 
     void downloadPhoton( std::vector<quad4>& photon ); 
-    void savePhoton( const char* dir, const char* name ); 
-    void saveGenstep( const char* dir_, const char* name); 
+    void savePhoton( const char* dir, const char* name); 
+    void saveGenstep(const char* dir, const char* name); 
+    void saveMeta(   const char* dir, const char* name); 
  
     void checkEvt() ;  // GPU side 
 

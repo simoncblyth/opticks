@@ -199,6 +199,9 @@ struct NP
     void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
     void get_meta( std::vector<std::string>& lines,       char delim='\n' ) const ; 
 
+    static std::string               get_meta_string_(const char* metadata, const char* key);  
+    template<typename T> static T    get_meta_(const char* metadata, const char* key, T fallback=0) ;  // for T=std::string must set fallback to ""
+
     std::string get_meta_string(const char* key) const ;  
     template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
     template<typename T> void set_meta(const char* key, T value ) ;  
@@ -2147,8 +2150,8 @@ inline void NP::get_meta( std::vector<std::string>& lines, char delim  ) const
 
 
 /**
-NP::get_meta_string
--------------------
+NP::get_meta_string_
+----------------------
 
 Assumes metadata layout of form::
 
@@ -2160,12 +2163,12 @@ delimited by a colon.
 
 **/
 
-inline std::string NP::get_meta_string(const char* key) const 
+inline std::string NP::get_meta_string_(const char* metadata, const char* key) // static 
 {
     std::string value ; 
 
     std::stringstream ss;
-    ss.str(meta);
+    ss.str(metadata);
     std::string s;
     char delim = ':' ; 
 
@@ -2201,13 +2204,29 @@ inline std::string NP::get_meta_string(const char* key) const
     return value ; 
 }
 
-
-template<typename T> inline T NP::get_meta(const char* key, T fallback) const 
+inline std::string NP::get_meta_string(const char* key) const 
 {
-    std::string s = get_meta_string(key); 
+    const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
+    return get_meta_string_( metadata, key ); 
+}
+
+
+
+
+template<typename T> inline T NP::get_meta_(const char* metadata, const char* key, T fallback) // static 
+{
+    std::string s = get_meta_string_(metadata, key); 
     if(s.empty()) return fallback ; 
     return To<T>(s.c_str()) ; 
 }
+
+template<typename T> inline T NP::get_meta(const char* key, T fallback) const 
+{
+    const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
+    return get_meta_<T>( metadata, key, fallback ); 
+}
+
+
 
 template int      NP::get_meta<int>(const char*, int ) const ; 
 template unsigned NP::get_meta<unsigned>(const char*, unsigned ) const  ; 

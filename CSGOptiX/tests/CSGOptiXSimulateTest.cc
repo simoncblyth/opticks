@@ -144,6 +144,7 @@ int main(int argc, char** argv)
     QEvent* evt = cx.evt ; 
     evt->savePhoton( outdir, "photons.npy");   // this one can get very big 
     evt->saveGenstep(outdir, "genstep.npy");  
+    evt->saveMeta(   outdir, "meta.txt" ); 
 
     const char* namestem = "CSGOptiXSimulateTest" ; 
     const char* ext = ".jpg" ; 
