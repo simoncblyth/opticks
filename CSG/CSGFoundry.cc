@@ -1074,6 +1074,7 @@ void CSGFoundry::write(const char* dir_) const
     LOG(info) << dir ; 
 
     NP::WriteNames( dir, "meshname.txt", meshname );
+    NP::WriteString( dir, "meta.txt", meta ); 
               
     if(solid.size() > 0 ) NP::Write(dir, "solid.npy",  (int*)solid.data(),  solid.size(), 3, 4 ); 
     if(prim.size() > 0 ) NP::Write(dir, "prim.npy",   (float*)prim.data(), prim.size(),   4, 4 ); 
@@ -1094,6 +1095,7 @@ void CSGFoundry::load( const char* dir_ )
     LOG(info) << dir ; 
 
     NP::ReadNames( dir, "meshname.txt", meshname );  
+    meta = NP::ReadString( dir, "meta.txt" ); 
 
     loadArray( solid , dir, "solid.npy" ); 
     loadArray( prim  , dir, "prim.npy" ); 

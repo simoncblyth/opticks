@@ -213,9 +213,10 @@ struct CSG_API CSGFoundry
     CSGPrim*    last_added_prim ; 
     CSGNode*    last_added_node ; 
 
-
     NP* bnd ; 
     NP* icdf ; 
+
+    const char* meta ; 
 
 
 };

@@ -21,8 +21,9 @@ struct CSG_GGEO_API CSG_GGeo_Convert
     const Opticks* ok ; 
     bool reverse ; 
     int dump_ridx ; 
+    const char* meta ; 
 
-    CSG_GGeo_Convert(CSGFoundry* foundry, const GGeo* ggeo ) ; 
+    CSG_GGeo_Convert(CSGFoundry* foundry, const GGeo* ggeo, const char* meta ) ; 
     void init();
 
     void convert();   

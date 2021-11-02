@@ -102,6 +102,14 @@ struct NP
     static void ReadNames(const char* dir, const char* name, std::vector<std::string>& names ) ;
     static void ReadNames(const char* path,                  std::vector<std::string>& names ) ;
 
+    static void        WriteString( const char* dir, const char* reldir, const char* name, const char* str ); 
+    static void        WriteString( const char* dir, const char* name, const char* str ); 
+    static void        WriteString( const char* path, const char* str ); 
+
+    static const char* ReadString( const char* dir, const char* reldir, const char* name);
+    static const char* ReadString( const char* dir, const char* name);
+    static const char* ReadString( const char* path );
+
 
     template<typename T> T*       values() ; 
     template<typename T> const T*  cvalues() const  ; 
@@ -2555,6 +2563,7 @@ inline std::string NP::form_path(const char* dir, const char* reldir, const char
     return ss.str(); 
 }
 
+
 inline void NP::clear()
 {
     data.clear(); 
@@ -3103,16 +3112,12 @@ inline void NP::WriteNames(const char* dir, const char* name, const std::vector<
     WriteNames(path.c_str(), names, num_names_ ); 
 }
 
+
 inline void NP::WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names_ )
 {
-    std::stringstream ss ; 
-    ss << dir << "/" ;
-    if(reldir) ss << reldir << "/" ; 
-    ss << name ; 
-    std::string path = ss.str() ; 
+    std::string path = form_path(dir, reldir, name); 
     WriteNames(path.c_str(), names, num_names_ ); 
 }
-
 
 inline void NP::WriteNames(const char* path, const std::vector<std::string>& names, unsigned num_names_ )
 {
@@ -3137,4 +3142,55 @@ inline void NP::ReadNames(const char* path, std::vector<std::string>& names )
     while(std::getline(ifs, line)) names.push_back(line) ; 
 }
 
+
+
+inline void NP::WriteString( const char* dir, const char* reldir, const char* name, const char* str )  // static 
+{
+    std::string path = form_path(dir, reldir, name); 
+    WriteString(path.c_str(), str); 
+}
+
+inline void NP::WriteString( const char* dir, const char* name, const char* str )  // static 
+{
+    std::string path = form_path(dir, name); 
+    WriteString(path.c_str(), str); 
+}
+
+inline void NP::WriteString( const char* path, const char* str )  // static 
+{
+    if(str == nullptr) return ; 
+    std::ofstream fp(path, std::ios::out);
+    fp << str ; 
+    fp.close(); 
+}
+
+
+inline const char* NP::ReadString( const char* dir, const char* reldir, const char* name) // static
+{
+    std::string path = form_path(dir, reldir, name); 
+    return ReadString(path.c_str()); 
+}
+
+inline const char* NP::ReadString( const char* dir, const char* name) // static
+{
+    std::string path = form_path(dir, name); 
+    return ReadString(path.c_str()); 
+}
+
+inline const char* NP::ReadString( const char* path )  // static
+{
+    std::vector<std::string> lines ; 
+    std::string line ; 
+    std::ifstream ifs(path); 
+    while(std::getline(ifs, line)) lines.push_back(line); 
+    unsigned num_lines = lines.size(); 
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < num_lines ; i++)
+    {
+        ss << lines[i] ; 
+        if( i < num_lines - 1 ) ss << std::endl ; 
+    }
+    std::string str = ss.str(); 
+    return str.empty() ? nullptr : strdup(str.c_str()) ; 
+}
 

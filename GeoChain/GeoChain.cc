@@ -29,10 +29,14 @@ GeoChain::GeoChain(Opticks* ok_)
 {
 }
 
-void GeoChain::convert(const G4VSolid* const solid)
+void GeoChain::convert(const G4VSolid* const solid, const std::string& meta_)
 {
+    const char* meta = meta_.empty() ? nullptr : meta_.c_str() ; 
+    LOG(info) << " meta " << meta ; 
+
     int lvIdx = 0 ; 
     int soIdx = 0 ; 
+
     std::string lvname = solid->GetName(); 
 
     mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, solid, lvname ) ; 
@@ -48,8 +52,7 @@ void GeoChain::convert(const G4VSolid* const solid)
 
     ggeo->deferredCreateGParts(); 
 
-
-    CSG_GGeo_Convert conv(fd, ggeo) ; 
+    CSG_GGeo_Convert conv(fd, ggeo, meta ) ; 
     conv.convert(); 
 }
 

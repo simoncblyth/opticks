@@ -17,8 +17,10 @@ int main(int argc, char** argv)
 
     GGeo* ggeo = GGeo::Load(&ok); 
 
+    const char* meta = nullptr ; 
+
     CSGFoundry foundry ; 
-    CSG_GGeo_Convert conv(&foundry, ggeo) ; 
+    CSG_GGeo_Convert conv(&foundry, ggeo, meta) ; 
     conv.convert(); 
 
     bool ops = SSys::getenvbool("ONE_PRIM_SOLID"); 

@@ -35,7 +35,7 @@
 const plog::Severity CSG_GGeo_Convert::LEVEL = PLOG::EnvLevel("CSG_GGeo_Convert", "DEBUG"); 
 
 
-CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ ) 
+CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_, const char* meta ) 
     : 
     foundry(foundry_),
     ggeo(ggeo_),
@@ -48,6 +48,7 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
         << " dump_ridx (DUMP_RIDX) " << dump_ridx
         ;  
 
+    foundry->meta = meta ; 
     init(); 
 }
 

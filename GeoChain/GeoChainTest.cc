@@ -20,8 +20,11 @@
 
 using CLHEP::pi ;
 
-const G4VSolid* const make_PMTSim(const char* name)
+const G4VSolid* const make_PMTSim(const char* name, std::string& meta)
 {
+    std::stringstream ss ; 
+    ss << "creator:make_PMTSim" << std::endl ; 
+
     G4VSolid* solid = nullptr ;  
 #ifdef WITH_PMTSIM
     const char* zcut_ = SSys::getenvvar("PMTSIM_ZCUT") ;          
@@ -30,6 +33,7 @@ const G4VSolid* const make_PMTSim(const char* name)
         double zcut = SStr::ato_<double>(zcut_) ; 
         LOG(info) << "PMTSim::GetZCutSolid " << zcut ; 
         solid = PMTSim::GetZCutSolid(name, zcut) ; 
+        ss << "zcut:" << zcut << std::endl ;  
     }
     else
     {
@@ -37,6 +41,7 @@ const G4VSolid* const make_PMTSim(const char* name)
         solid = PMTSim::GetSolid(name) ; 
     }
 #endif
+    meta = ss.str();   
     return solid ; 
 }
 
@@ -103,13 +108,11 @@ const G4VSolid* const make_AdditionAcrylicConstruction(const char* name)
         << " uni_acrylic3 " << uni_acrylic3
         ;   
 
-
     //return solidAddition_down ;  // union of cylinder and cone
     //return solidAddition_up1 ;     // pipe cylinder 
     //return uni_acrylic1 ; 
     return uni_acrylic2_initial ; 
 }
-
 
 const G4VSolid* const make_BoxMinusTubs0(const char* name)  // is afflicted
 {
@@ -130,10 +133,7 @@ const G4VSolid* const make_BoxMinusTubs1(const char* name)
     return box_minus_tubs ; 
 }
 
-
-
-
-const G4VSolid* const make_solid(const char* name)
+const G4VSolid* const make_solid(const char* name, std::string& meta)
 {
     LOG(info) << name ; 
     const G4VSolid* solid = nullptr ; 
@@ -141,7 +141,7 @@ const G4VSolid* const make_solid(const char* name)
     if(strcmp(name,"AdditionAcrylicConstruction") == 0 ) solid = make_AdditionAcrylicConstruction(name); 
     if(strcmp(name,"BoxMinusTubs0") == 0 )               solid = make_BoxMinusTubs0(name); 
     if(strcmp(name,"BoxMinusTubs1") == 0 )               solid = make_BoxMinusTubs1(name); 
-    if(SStr::StartsWith(name, "PMTSim"))                 solid = make_PMTSim(name) ;  
+    if(SStr::StartsWith(name, "PMTSim"))                 solid = make_PMTSim(name, meta) ;  
     assert(solid); 
     G4cout << *solid << G4endl ; 
     return solid ; 
@@ -154,7 +154,8 @@ int main(int argc, char** argv)
     const char* name_default = "AdditionAcrylicConstruction"  ; 
     const char* name = SSys::getenvvar("GEOCHAINTEST", name_default ); 
 
-    const G4VSolid* const solid = make_solid(name);   
+    std::string meta ; 
+    const G4VSolid* const solid = make_solid(name, meta);   
 
     const char* argforced = "--allownokey" ; 
     Opticks ok(argc, argv, argforced); 
@@ -162,7 +163,7 @@ int main(int argc, char** argv)
     for(int lvIdx=-1 ; lvIdx < 10 ; lvIdx+= 1 ) LOG(info) << " lvIdx " << lvIdx << " ok.isX4TubsNudgeSkip(lvIdx) " << ok.isX4TubsNudgeSkip(lvIdx)  ; 
 
     GeoChain chain(&ok); 
-    chain.convert(solid);  
+    chain.convert(solid, meta);  
     chain.save(name); 
 
     return 0 ; 

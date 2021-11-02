@@ -48,8 +48,6 @@ export PMTSIM_ZCUT=${PMTSIM_ZCUT:-$zcut}
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
 
 
-
-
 unset OPTICKS_KEY 
 
 cd $OPTICKS_HOME/GeoChain
