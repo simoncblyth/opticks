@@ -225,9 +225,13 @@ class PH(object):
         self.cf = cf
         self.mtr = mtr
         self.peta = peta
+
+        self.ce = tuple(peta[0,2])
+        self.sce = ("%7.2f" * 4 ) % self.ce
+
         self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
         self.botline = os.environ.get("BOTLINE", "cxs") 
-        self.thirdline = "fdmeta: " + " ".join(fdmeta) 
+        self.thirdline = " ce: " + self.sce + " fdmeta: " + " ".join(fdmeta) 
 
         outdir = os.path.join(CSGOptiXSimulateTest.FOLD, "figs")
         if not os.path.isdir(outdir):

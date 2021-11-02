@@ -15,7 +15,7 @@ Usage::
    cd ~/opticks/GeoChain
    ./run.sh 
 
-
+   PMTSIM_ZCUT=-1000 ./run.sh 
 
 EOU
 }

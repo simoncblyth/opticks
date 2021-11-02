@@ -108,6 +108,8 @@ elif [ "$cxs" == "200" ]; then
     cegs=16:0:9:0:0:$dz:$num_pho
     gridscale=0.15
     isel=0
+    unset CXS_OVERRIDE_CE
+    export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
 fi 
 
 if [ ! -d "$cfbase/CSGFoundry" ]; then
@@ -120,7 +122,7 @@ export MOI=${MOI:-$moi}
 export CXS_CEGS=${CXS_CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS=${CXS:-$cxs}
-export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
+export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
 export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX"
 export CFBASE=${CFBASE:-$cfbase}
 export ISEL=${ISEL:-$isel}

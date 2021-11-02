@@ -225,8 +225,6 @@ void CSGOptiX::setCE(const float4& v )
     setCE(ce); 
 }
 
-
-
 void CSGOptiX::setCEGS(const std::vector<int>& cegs)
 {
     //params->setCEGS(cegs_); 
