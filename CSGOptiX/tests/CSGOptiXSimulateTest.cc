@@ -142,9 +142,10 @@ int main(int argc, char** argv)
     //QSim<float>* sim = cx.sim ;
  
     QEvent* evt = cx.evt ; 
+    evt->setMeta( fd->meta ); 
     evt->savePhoton( outdir, "photons.npy");   // this one can get very big 
     evt->saveGenstep(outdir, "genstep.npy");  
-    evt->saveMeta(   outdir, "meta.txt" ); 
+    evt->saveMeta(   outdir, "fdmeta.txt" ); 
 
     const char* namestem = "CSGOptiXSimulateTest" ; 
     const char* ext = ".jpg" ; 
