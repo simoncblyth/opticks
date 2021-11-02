@@ -104,7 +104,7 @@ elif [ "$cxs" == "200" ]; then
     cfbase=$TMP/GeoChain/PMTSim_Z
     moi=0
     cegs=16:0:9:100
-    gridscale=0.1
+    gridscale=0.15
     isel=0
 fi 
 

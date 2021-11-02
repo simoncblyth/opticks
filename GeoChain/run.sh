@@ -25,7 +25,7 @@ EOU
 #geochaintest=BoxMinusTubs0
 #geochaintest=BoxMinusTubs1
 geochaintest=PMTSim_Z
-zcut=-300
+zcut=-400
 
 export GGeo=INFO
 export CSGSolid=INFO
