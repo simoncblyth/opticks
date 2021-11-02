@@ -458,8 +458,24 @@ void test_ReplaceChars()
          ;
 }
 
+void test_ato_()
+{
+    const char* a = "104.25" ; 
+
+    float f = SStr::ato_<float>(a);  
+    double d = SStr::ato_<double>(a); 
+    int i = SStr::ato_<int>(a);  
+    unsigned u = SStr::ato_<unsigned>(a);  
 
 
+    LOG(info) 
+       << " a " << a 
+       << " f " << std::setw(10) << std::fixed << std::setprecision(4) << f 
+       << " d " << std::setw(10) << std::fixed << std::setprecision(4) << d
+       << " i " << std::setw(10) << i 
+       << " u " << std::setw(10) << u 
+       ; 
+}
 
 
 int main(int argc , char** argv )
@@ -488,8 +504,9 @@ int main(int argc , char** argv )
     test_FormatReal(); 
     test_StripPrefix(); 
     test_TrimPointerSuffix(); 
-    */
     test_ReplaceChars(); 
+    */
+    test_ato_(); 
 
 
     return 0  ; 

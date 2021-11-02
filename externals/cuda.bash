@@ -1303,6 +1303,8 @@ cuda-samples-find(){
 cuda-samples-tex2D(){  cuda-samples-find tex2D ; }
 cuda-samples-tex3D(){  cuda-samples-find tex3D ; }
 
+cuda-dq(){  /usr/local/cuda/samples/bin/x86_64/linux/release/deviceQuery ; }
+
 
 
 cuda-cd(){           cd $(cuda-dir); }

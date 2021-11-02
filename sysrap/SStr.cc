@@ -628,6 +628,13 @@ T SStr::ato_( const char* a )   // static
     return v ;
 }
 
+
+template double   SStr::ato_<double>( const char* ); 
+template float    SStr::ato_<float>( const char* ); 
+template int      SStr::ato_<int>( const char* ); 
+template unsigned SStr::ato_<unsigned>( const char* ); 
+
+
 void SStr::GridMinMax(const std::array<int,9>& grid, glm::ivec3&mn, glm::ivec3& mx)  // static 
 {   
     mn.x = grid[0] ; mx.x = grid[1] ;

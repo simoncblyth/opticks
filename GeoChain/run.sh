@@ -25,6 +25,7 @@ EOU
 #geochaintest=BoxMinusTubs0
 #geochaintest=BoxMinusTubs1
 geochaintest=PMTSim_Z
+zcut=-300
 
 export GGeo=INFO
 export CSGSolid=INFO
@@ -42,8 +43,11 @@ export NTREEPROCESS_LVLIST=0
 export NNODENUDGER_LVLIST=0
 
 export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
+export PMTSIM_ZCUT=${PMTSIM_ZCUT:-$zcut}
 
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
+
+
 
 
 unset OPTICKS_KEY 

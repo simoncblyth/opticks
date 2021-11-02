@@ -122,7 +122,21 @@ const G4VSolid* const make_solid(const char* name)
     if(strcmp(name,"BoxMinusTubs0") == 0 )               solid = make_BoxMinusTubs0(name); 
     if(strcmp(name,"BoxMinusTubs1") == 0 )               solid = make_BoxMinusTubs1(name); 
 #ifdef WITH_PMTSIM
-    if(SStr::StartsWith(name, "PMTSim"))                 solid = PMTSim::GetSolid(name) ; 
+    if(SStr::StartsWith(name, "PMTSim"))
+    {
+        const char* zcut_ = SSys::getenvvar("PMTSIM_ZCUT") ;          
+        if( zcut_ )
+        {
+            double zcut = SStr::ato_<double>(zcut_) ; 
+            LOG(info) << "PMTSim::GetZCutSolid " << zcut ; 
+            solid = PMTSim::GetZCutSolid(name, zcut) ; 
+        }
+        else
+        {
+            LOG(info) << "PMTSim::GetSolid " ; 
+            solid = PMTSim::GetSolid(name) ; 
+        }
+    }
 #endif
     assert(solid); 
     G4cout << *solid << G4endl ; 
