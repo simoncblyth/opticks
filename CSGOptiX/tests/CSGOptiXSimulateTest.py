@@ -132,11 +132,13 @@ class CSGOptiXSimulateTest(object):
     def __init__(self, fold=FOLD):
         print("CXS : %s : loading from fold : %s " % (self.CXS,fold) )
         names = os.listdir(fold)
-        for name in filter(lambda n:n.endswith(".npy"),names):
+        for name in filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),names):
             path = os.path.join(fold, name)
+            is_npy = name.endswith(".npy")
+            is_txt = name.endswith(".txt")
             stem = name[:-4]
-            a = np.load(path)
-            print(" %10s : %15s : %s " % (stem, str(a.shape), path )) 
+            a = np.load(path) if is_npy else list(map(str.strip,open(path).readlines())) 
+            print(" %10s : %15s : %s " % (stem, str(a.shape) if is_npy else len(a), path )) 
             globals()[stem] = a
             setattr(self, stem, a )
         pass
@@ -216,7 +218,7 @@ class PH(object):
     """
     Photon wrapper for re-usable photon data handling 
     """
-    def __init__(self, p, gs, cf, mtr, peta ):
+    def __init__(self, p, gs, cf, mtr, peta, fdmeta):
 
         self.p = p 
         self.gs = gs
@@ -224,7 +226,8 @@ class PH(object):
         self.mtr = mtr
         self.peta = peta
         self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
-        self.botline = os.environ.get("BOTLINE", "cxs")
+        self.botline = os.environ.get("BOTLINE", "cxs") 
+        self.thirdline = "fdmeta: " + " ".join(fdmeta) 
 
         outdir = os.path.join(CSGOptiXSimulateTest.FOLD, "figs")
         if not os.path.isdir(outdir):
@@ -394,7 +397,7 @@ class PH(object):
 
         igs = slice(None) if len(ugsc) > 1 else 0
 
-        title = [self.topline,self.botline]
+        title = [self.topline, self.botline, self.thirdline]
 
         fig, ax = plt.subplots(figsize=self.size/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
@@ -497,6 +500,7 @@ class PH(object):
         pl.camera.Zoom(zoom/1000.)
         pl.add_text(self.topline, position="upper_left")
         pl.add_text(self.botline, position="lower_left")
+        pl.add_text(self.thirdline, position="lower_right")
         pl.set_position( eye, reset=False )
         pl.set_focus(    look )
         pl.set_viewup(   up )
@@ -552,6 +556,7 @@ if __name__ == '__main__':
     #cf = CSGFoundry()
     cf = None
     cxs = CSGOptiXSimulateTest()
+    # global scope is sneakily populated in cxs ctor
 
     g = genstep
     p = photons
@@ -560,7 +565,7 @@ if __name__ == '__main__':
 
     #p_or_f = f 
     p_or_f = p 
-    ph = PH(p_or_f, genstep, cf, metatran, peta)
+    ph = PH(p_or_f, genstep, cf, metatran, peta, fdmeta )
     ph.positions(local=True)
     ph.positions_plt()
     ph.positions_pvplt()
