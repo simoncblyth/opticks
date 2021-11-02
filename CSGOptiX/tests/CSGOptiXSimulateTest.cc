@@ -110,7 +110,7 @@ int main(int argc, char** argv)
         SSys::getenvintvec("CXS_CEGS", cegs, ':', "5:0:5:1000" ); 
         // expect 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
 
-        QEvent::StandardizeCEGS(cegs); 
+        QEvent::StandardizeCEGS(ce, cegs, gridscale ); 
         assert( cegs.size() == 7 ); 
 
         std::vector<int> override_ce ; 

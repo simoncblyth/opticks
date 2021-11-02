@@ -262,7 +262,19 @@ class PH(object):
         return bnd, ids
 
     def metadata(self, peta):
-        nx,ny,nz,photons_per_genstep = peta[0,0].view(np.int32) 
+        ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
+        iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
+
+        assert photons_per_genstep > 0
+        assert zero == 0 
+        nx = (ix1 - ix0)//2 
+        ny = (iy1 - iy0)//2  
+        nz = (iz1 - iz0)//2  
+
+        log.info(" ix0 %d ix1 %d nx %d  " % (ix0, ix1, nx)) 
+        log.info(" iy0 %d iy1 %d ny %d  " % (iy0, iy1, ny)) 
+        log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
+ 
         self.nx = nx
         self.ny = ny
         self.nz = nz

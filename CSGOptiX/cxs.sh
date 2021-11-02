@@ -103,8 +103,9 @@ elif [ "$cxs" == "101" ]; then
 elif [ "$cxs" == "200" ]; then
     cfbase=$TMP/GeoChain/PMTSim_Z
     moi=0
-    dz=-7
-    cegs=16:0:9:100:0:0:$dz
+    dz=-5
+    num_pho=100
+    cegs=16:0:9:0:0:$dz:$num_pho
     gridscale=0.15
     isel=0
 fi 

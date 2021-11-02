@@ -59,7 +59,7 @@ ix0:iy0:iz0:ix1:iy1:iz1:num_photons
 
 **/
 
-void QEvent::StandardizeCEGS( std::vector<int>& cegs ) // static 
+void QEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gridscale ) // static 
 {
     int ix0, ix1, iy0, iy1, iz0, iz1, photons_per_genstep ; 
     if( cegs.size() == 4 )
@@ -100,6 +100,7 @@ void QEvent::StandardizeCEGS( std::vector<int>& cegs ) // static
     cegs[5] = iz1 ;
     cegs[6] = photons_per_genstep ; 
 
+
     LOG(info) 
         << " CXS_CEGS "
         << " ix0 ix1 " << ix0 << " " << ix1   
@@ -107,6 +108,27 @@ void QEvent::StandardizeCEGS( std::vector<int>& cegs ) // static
         << " iz0 iz1 " << iz0 << " " << iz1   
         << " photons_per_genstep " << photons_per_genstep 
         ;
+
+    float x0 = float(ix0)*gridscale*ce.w ; 
+    float x1 = float(ix1)*gridscale*ce.w ; 
+    float y0 = float(iy0)*gridscale*ce.w ; 
+    float y1 = float(iy1)*gridscale*ce.w ; 
+    float z0 = float(iz0)*gridscale*ce.w ; 
+    float z1 = float(iz1)*gridscale*ce.w ; 
+
+    LOG(info) 
+        << " CXS_CEGS "
+        << " x0 " << std::setw(10) << std::fixed << std::setprecision(3) << x0 
+        << " x1 " << std::setw(10) << std::fixed << std::setprecision(3) << x1
+        << " y0 " << std::setw(10) << std::fixed << std::setprecision(3) << y0 
+        << " y1 " << std::setw(10) << std::fixed << std::setprecision(3) << y1
+        << " z0 " << std::setw(10) << std::fixed << std::setprecision(3) << z0 
+        << " z1 " << std::setw(10) << std::fixed << std::setprecision(3) << z1
+        << " photons_per_genstep " << photons_per_genstep 
+        << " gridscale " << std::setw(10) << std::fixed << std::setprecision(3) << gridscale
+        << " ce.w(extent) " << std::setw(10) << std::fixed << std::setprecision(3) << ce.w
+        ;
+
 }
 
 
@@ -177,21 +199,6 @@ NP* QEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     int iz0 = cegs[4] ; 
     int iz1 = cegs[5] ;
     int photons_per_genstep = cegs[6] ;  
-
-    float x0 = float(ix0)*gridscale ; 
-    float x1 = float(ix1)*gridscale ; 
-    float y0 = float(iy0)*gridscale ; 
-    float y1 = float(iy1)*gridscale ; 
-    float z0 = float(iz0)*gridscale ; 
-    float z1 = float(iz1)*gridscale ; 
-
-    LOG(info) 
-        << " CXS_CEGS "
-        << " x0 x1 " << x0 << " " << x1   
-        << " y0 y1 " << y0 << " " << y1   
-        << " z0 z1 " << z0 << " " << z1   
-        << " photons_per_genstep " << photons_per_genstep 
-        ;
 
     gs.q0.i.x = OpticksGenstep_TORCH ;  
     gs.q0.i.y = 0 ; // could plant enum for XZ planar etc.. here 
