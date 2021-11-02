@@ -379,6 +379,59 @@ void NNodeNudger::znudge_difference_minmin(NNodeCoincidence* coin)
 }
 
 
+
+/**
+NNodeNudger::znudge_union_maxmin
+----------------------------------
+
+Depending on the radius value at the coincident z
+one of the sides has its z decreased or its z increased
+to avoid coincidence. Picking the smaller r side at
+the joint to expand avoids changing geometry::
+
+          +--------+
+          | j      |
+          |        |
+          |       j.r1    i.r2
+   +------+--------+------+       zi = ibb.max.z zj = jbb.min.z
+   | i    ^^^^^^^^^^      |
+   |               .      |
+   |               .      |
+   +----------------------+
+                   .      .
+                   .      .
+                   .      .
+               rj=j.r1   ri=i.r2
+
+    ri > rj so avoid coincidence with j.decrease_z1
+
+
+   +----------------------+
+   | j                    |
+   |                      |
+   |      ~~~~~~~~~~     j.r1
+   +------+--------+------+
+          |       i.r2    .
+          |        |      .
+          | i      |      .
+          +--------+      .
+                   .      .
+               ri=i.r2   rj=j.r1
+
+    rj > ri so avoid coincidence with i.increase_z2
+
+
+
+This relies on nnode methods::
+
+   nnode::r2            // radius at z2
+   nnode::r1            // radius at z1
+   nnode::increase_z2   // expand upwards
+   nnode::decrease_z1   // expand downwards
+
+
+**/
+
 void NNodeNudger::znudge_union_maxmin(NNodeCoincidence* coin)
 {
     assert(can_znudge_union_maxmin(coin));

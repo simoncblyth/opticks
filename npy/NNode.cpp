@@ -194,14 +194,13 @@ nnode::is_znudge_capable
 --------------------------
 
 CSG_ZSPHERE was formerly included, but was removed due to radius constraints
-
-TODO: reinstate CSG_ZSPHERE 
+Now it in reinstated again, to see what the problem is. 
 
 **/
 
 bool nnode::is_znudge_capable() const 
 {
-    return type == CSG_CYLINDER || type == CSG_CONE || type == CSG_DISC ; 
+    return type == CSG_CYLINDER || type == CSG_CONE || type == CSG_DISC || type == CSG_ZSPHERE ; 
 }
 
 void nnode::set_treedir( const char* treedir_)
