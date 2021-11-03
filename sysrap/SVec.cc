@@ -106,6 +106,14 @@ int SVec<T>::FindIndexOfValue(const std::vector<T>& a, T value, T tolerance)
     }           
     return idx ; 
 }
+
+
+template <typename T>
+int SVec<T>::FindIndexOfValue(const std::vector<T>& a, T value )
+{
+    size_t idx = std::distance( a.begin(), std::find( a.begin(), a.end(), value )) ; 
+    return idx < a.size() ? idx : -1 ; 
+}
  
 
 

@@ -40,6 +40,7 @@ struct SYSRAP_API SVec
     static void Dump2(const char* label, const std::vector<T>& a );    
     static T MaxDiff(const std::vector<T>& a, const std::vector<T>& b, bool dump);    
     static int FindIndexOfValue( const std::vector<T>& a, T value, T tolerance ); 
+    static int FindIndexOfValue( const std::vector<T>& a, T value ); 
     static void MinMaxAvg(const std::vector<T>& a, T& mn, T& mx, T& av) ; 
     static void MinMax(const std::vector<T>& a, T& mn, T& mx ) ; 
     static void Extract(std::vector<T>& a, const char* str, const char* ignore="(),[]") ; 

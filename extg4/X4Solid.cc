@@ -266,6 +266,21 @@ void X4Solid::convertSubtractionSolid()
     convertBooleanSolid() ;
 }
 
+/**
+X4Solid::convertDisplacedSolid
+-------------------------------
+
+The constituents of BooleanSolid which have displacements 
+are represented by a G4DisplacedSolid
+
+   G4BooleanSolid
+      |
+      +-- consy
+
+
+
+**/
+
 void X4Solid::convertDisplacedSolid()
 {
     const G4DisplacedSolid* const disp = static_cast<const G4DisplacedSolid*>(m_solid);

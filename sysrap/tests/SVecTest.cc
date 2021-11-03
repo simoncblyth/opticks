@@ -53,6 +53,37 @@ void test_FindIndexOfValue()
 }
 
 
+void test_FindIndexOfValue_NoTolerance_float()
+{
+    LOG(info) ; 
+    std::vector<float> a = {1.1,2.2,3.3,4.4} ;
+    int idx ;  
+
+    idx = SVec<float>::FindIndexOfValue( a, 3.3f);
+    assert( idx == 2 );
+
+    idx = SVec<float>::FindIndexOfValue( a, 5.5f);
+    assert( idx == -1 );
+}
+
+void test_FindIndexOfValue_NoTolerance_int()
+{
+    LOG(info) ;        // 0  1   2   3   4   5   6   7    8
+    std::vector<int> a = {1, 2, 10, 20, 30, 11, 81, 42, 101 } ;
+    int idx ;  
+
+    idx = SVec<int>::FindIndexOfValue( a, 1);
+    assert( idx == 0 );
+
+    idx = SVec<int>::FindIndexOfValue( a, 42);
+    assert( idx == 7 );
+
+    idx = SVec<int>::FindIndexOfValue( a, 1000 );
+    assert( idx == -1 );
+}
+
+
+
 void test_vector_erase_pos()
 {
     LOG(info); 
@@ -161,15 +192,18 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_MaxDiff();
-    //test_FindIndexOfValue();
-    //test_vector_erase_pos(); 
-    //test_vector_erase_all(); 
-    //test_unique_strings(); 
-    //test_MinMaxAvg(); 
-    //test_Desc();  
-
-    test_Extract();  
+    /*
+    test_MaxDiff();
+    test_FindIndexOfValue();
+    test_vector_erase_pos(); 
+    test_vector_erase_all(); 
+    test_unique_strings(); 
+    test_MinMaxAvg(); 
+    test_Desc();  
+    test_Extract();
+    */  
+    test_FindIndexOfValue_NoTolerance_float();
+    test_FindIndexOfValue_NoTolerance_int();
 
     return 0 ;
 }
