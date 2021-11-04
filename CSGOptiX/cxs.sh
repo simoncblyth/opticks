@@ -100,7 +100,7 @@ elif [ "$cxs" == "101" ]; then
     cegs=16:0:9:100
     gridscale=0.1
     isel=0
-elif [ "$cxs" == "200" || "$cxs" == "201" ]; then
+elif [ "$cxs" == "200" -o "$cxs" == "201" ]; then
     case $cxs in 
       200) name=PMTSim_Z      ;; 
       201) name=PMTSim_Zclone ;; 

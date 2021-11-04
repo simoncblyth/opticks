@@ -24,7 +24,8 @@ EOU
 #geochaintest=AdditionAcrylicConstruction
 #geochaintest=BoxMinusTubs0
 #geochaintest=BoxMinusTubs1
-geochaintest=PMTSim_Z
+#geochaintest=PMTSim_Z
+geochaintest=PMTSim_Zclone
 zcut=-400
 
 export GGeo=INFO

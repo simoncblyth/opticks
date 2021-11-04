@@ -16,6 +16,10 @@ the fphoton.npy intersects
   and geometries are changed frequently 
 
 
+TODO: enable comparison of two sets of cxs
+---------------------------------------------
+
+
 TODO: Use the identity info in analogous way to the boundary info
 --------------------------------------------------------------------
 
@@ -128,18 +132,19 @@ X,Y,Z = 0,1,2
 
 class CSGOptiXSimulateTest(object):
     CXS = os.environ.get("CXS", "1")
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest/%s" % CXS)
-    def __init__(self, fold=FOLD):
-        print("CXS : %s : loading from fold : %s " % (self.CXS,fold) )
-        names = os.listdir(fold)
+    FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest" )
+    def __init__(self, cxs=CXS):
+        base = os.path.join(self.FOLD, str(cxs))
+        print("CXS : %s : loading from : %s " % (cxs,base) )
+        names = os.listdir(base)
         for name in filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),names):
-            path = os.path.join(fold, name)
+            path = os.path.join(base, name)
             is_npy = name.endswith(".npy")
             is_txt = name.endswith(".txt")
             stem = name[:-4]
             a = np.load(path) if is_npy else list(map(str.strip,open(path).readlines())) 
             print(" %10s : %15s : %s " % (stem, str(a.shape) if is_npy else len(a), path )) 
-            globals()[stem] = a
+            #globals()[stem] = a
             setattr(self, stem, a )
         pass
 
@@ -511,6 +516,8 @@ class PH(object):
 
         print("positions_pvplt")
 
+        ##  TODO SPLIT BELOW INTO SEPARATE METHOD : FOR COMPARISON
+
         intersects = True
         if intersects:
             for idesc,ubx in enumerate(ubnd_descending): 
@@ -557,19 +564,18 @@ class PH(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
+
     #cf = CSGFoundry()
     cf = None
     cxs = CSGOptiXSimulateTest()
-    # global scope is sneakily populated in cxs ctor
 
-    g = genstep
-    p = photons
-    f = fphoton
-    mtr = metatran
+    g = cxs.genstep
+    p = cxs.photons
+    f = cxs.fphoton
+    mtr = cxs.metatran
 
-    #p_or_f = f 
-    p_or_f = p 
-    ph = PH(p_or_f, genstep, cf, metatran, peta, fdmeta )
+    ph = PH(cxs.photons, cxs.genstep, cf, cxs.metatran, cxs.peta, cxs.fdmeta )
+
     ph.positions(local=True)
     ph.positions_plt()
     ph.positions_pvplt()
