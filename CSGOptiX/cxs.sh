@@ -50,7 +50,7 @@ EOU
 }
 
 msg="=== $BASH_SOURCE : "
-cxs=${CXS:-200}         # collect sets of config underneath CXS
+cxs=${CXS:-201}         # collect sets of config underneath CXS
 cfbase=$TMP/CSG_GGeo   # default CSGFoundry dir is within cfbase 
 isel=
 
@@ -100,8 +100,12 @@ elif [ "$cxs" == "101" ]; then
     cegs=16:0:9:100
     gridscale=0.1
     isel=0
-elif [ "$cxs" == "200" ]; then
-    cfbase=$TMP/GeoChain/PMTSim_Z
+elif [ "$cxs" == "200" || "$cxs" == "201" ]; then
+    case $cxs in 
+      200) name=PMTSim_Z      ;; 
+      201) name=PMTSim_Zclone ;; 
+    esac
+    cfbase=$TMP/GeoChain/$name
     moi=0
     dz=-4
     num_pho=100
