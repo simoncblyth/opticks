@@ -18,6 +18,7 @@
  */
 
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 #include <sstream>
 #include <fstream>
@@ -692,5 +693,19 @@ const char* SStr::ReplaceChars(const char* str, const char* repl, char to )
     for(unsigned i=0 ; i < strlen(s) ; i++) if(strchr(repl, s[i]) != nullptr) s[i] = to ;  
     return s ; 
 }
+
+
+void SStr::Extract( std::vector<long>& vals, const char* s )
+{
+    char* s0 = strdup(s); 
+    char* p = s0 ; 
+    while (*p) 
+    {
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtol(p, &p, 10)) ; 
+        else p++ ;
+    }
+    free(s0); 
+}
+
 
 

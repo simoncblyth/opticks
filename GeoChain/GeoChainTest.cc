@@ -24,22 +24,10 @@ const G4VSolid* const make_PMTSim(const char* name, std::string& meta)
 {
     std::stringstream ss ; 
     ss << "creator:make_PMTSim" << std::endl ; 
-
     G4VSolid* solid = nullptr ;  
 #ifdef WITH_PMTSIM
-    const char* zcut_ = SSys::getenvvar("PMTSIM_ZCUT") ;          
-    if( zcut_ )
-    {
-        double zcut = SStr::ato_<double>(zcut_) ; 
-        LOG(info) << "PMTSim::GetZCutSolid " << zcut ; 
-        solid = PMTSim::GetZCutSolid(name, zcut) ; 
-        ss << "zcut:" << zcut << std::endl ;  
-    }
-    else
-    {
-        LOG(info) << "PMTSim::GetSolid " ; 
-        solid = PMTSim::GetSolid(name) ; 
-    }
+    LOG(info) << "PMTSim::GetSolid " ; 
+    solid = PMTSim::GetSolid(name) ;   // for zcut include integer in name eg "PMTSim_Z-400" 
 #endif
     meta = ss.str();   
     return solid ; 

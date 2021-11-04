@@ -477,6 +477,17 @@ void test_ato_()
        ; 
 }
 
+void test_Extract()
+{
+    const char* s = "asjdhajsdhas-100   -200 300 sajdasjdhakjHDKJ +66 21 23 45 1001 -10 akjdshaHD -42 " ; 
+    LOG(info) << s ; 
+    std::vector<long> vals ; 
+    SStr::Extract(vals, s ); 
+
+    for(unsigned i=0 ; i < vals.size() ; i++ ) std::cout << vals[i] << std::endl;
+
+}
+
 
 int main(int argc , char** argv )
 {
@@ -505,8 +516,9 @@ int main(int argc , char** argv )
     test_StripPrefix(); 
     test_TrimPointerSuffix(); 
     test_ReplaceChars(); 
-    */
     test_ato_(); 
+    */
+    test_Extract(); 
 
 
     return 0  ; 
