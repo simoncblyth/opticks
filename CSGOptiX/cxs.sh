@@ -103,7 +103,7 @@ elif [ "$cxs" == "101" ]; then
 elif [ "$cxs" == "200" -o "$cxs" == "201" ]; then
     case $cxs in 
       200) name=PMTSim_Z      ;; 
-      201) name=PMTSim_Zclone ;; 
+      201) name=PMTSim_ZCut-400 ;; 
     esac
     cfbase=$TMP/GeoChain/$name
     moi=0
@@ -118,7 +118,7 @@ fi
 
 if [ ! -d "$cfbase/CSGFoundry" ]; then
    echo $msg : ERROR : cfbase directory $cfbase MUST contain CSGFoundry subfolder 
-   exit 1 
+   #exit 1 
 fi 
 
 

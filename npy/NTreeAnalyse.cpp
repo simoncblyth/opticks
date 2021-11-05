@@ -47,7 +47,7 @@ NTreeAnalyse<T>::NTreeAnalyse(const T* root_)
     :
     root(root_),
     height(depth_(true)),
-    nodes(new NNodeCollector<T>(root)),
+    nodes(new NNodeCollector<T>(root)),   // NNodeCollector collects preorder,inorder and postorder vectors of nodes
     count(nodes->inorder.size()),
     grid(new NGrid<T>(height+1, count))
 {
@@ -74,11 +74,19 @@ void NTreeAnalyse<T>::initGrid()
 {
     for(unsigned i=0 ; i < count ; i++)
     {
-        const T* node = nodes->inorder[i] ;  
+        const T* node = nodes->inorder[i] ;  // left to right across the tree
         grid->set(node->depth, i, node) ; 
     }
 }
 
+
+/**
+NTreeAnalyse::depth_
+---------------------
+
+Returns the maximum depth that can be reached from the root. 
+
+**/
 
 template <typename T>
 unsigned NTreeAnalyse<T>::depth_(bool label)
