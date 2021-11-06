@@ -21,7 +21,7 @@ char pcls( int cls ) // static
     char pcl = '_' ; 
     switch( cls )
     {
-        case UNDEFINED: pcl = 'U' ; break ; 
+        case UNDEFINED: pcl = ' ' ; break ; 
         case INCLUDE:   pcl = ' ' ; break ; 
         case EXCLUDE:   pcl = 'E' ; break ; 
         case MIXED:     pcl = 'X' ; break ; 
@@ -38,6 +38,7 @@ struct nd
 
     nd( int value, nd* left, nd* right ); 
 
+    const char* desc() const ; 
     bool is_prim() const ; 
     bool is_boolean() const ; 
     bool is_bileaf() const ; 
@@ -67,6 +68,12 @@ nd::nd(int value_, nd* left_, nd* right_)
 {
 }
 
+const char* nd::desc() const 
+{
+    char tmp[30] ; 
+    snprintf(tmp, 30, "%d:%c:%c", value, pcls(cls), mkr );  
+    return strdup(tmp); 
+}
 
 bool nd::is_prim()   const {  return left == nullptr && right == nullptr ; }
 bool nd::is_boolean() const { return left != nullptr && right != nullptr ; }
@@ -78,6 +85,9 @@ bool nd::is_crux() const {        return is_cut_right() ^ is_cut_left() ; }  // 
 
 struct tree
 {
+    static int NumNode(int height); 
+
+    bool verbose ; 
     int count ; 
     int height ; 
     nd* root ; 
@@ -103,14 +113,22 @@ struct tree
     void clear_mkr(); 
     void clear_mkr_r( nd* n ); 
 
+    int num_prim() const ; 
+    int num_prim_r( nd* n ) const ; 
+
+    int num_node(int cls) const ; 
+    int num_node_r( nd* n, int cls) const ; 
+    const char* desc() const ; 
+
     nd* parent( nd* n ) const ;
 
-    void dump_r( nd* n ); 
+    void dump(const char* msg) const ; 
+    void dump_r( nd* n ) const ; 
 
     int maxdepth_r(nd* n, int depth) const ;
     int maxdepth() const  ;
 
-    void draw(const char* msg, int meta=-1); 
+    void draw(const char* msg=nullptr, int meta=-1); 
     void draw_r( nd* n ); 
 
     void apply_cut(int cut);
@@ -118,14 +136,18 @@ struct tree
     void classify( int cut );
     int classify_r( nd* n, int cut );
 
-    void prune(); 
-    void prune( nd* n ); 
+    void prune( bool act ); 
+    void prune( nd* n, bool act ); 
 
 
 };
 
+
+int tree::NumNode(int height){ return (1 << (height+1)) - 1  ; } // static
+
 tree::tree(int height_)
     :
+    verbose(false),
     count(0),
     height(height_),
     root(build_r(height)),
@@ -158,8 +180,49 @@ int tree::maxdepth() const
 {
     return maxdepth_r( root, 0 ); 
 }
+
+int tree::num_prim_r(nd* n) const 
+{
+    if(!n) return 0 ; 
+    return ( n->left && n->right ) ? num_prim_r( n->left) + num_prim_r(n->right) : 1 ; 
+}
+int tree::num_prim() const 
+{
+    return num_prim_r(root); 
+}
+
+int tree::num_node_r(nd* n, int qcls) const 
+{
+    int num = ( n && n->cls == qcls ) ? 1 : 0 ; 
+    if( n && n->left && n->right )
+    { 
+        num += num_node_r( n->left,  qcls ); 
+        num += num_node_r( n->right, qcls ); 
+    }
+    return num ; 
+}
+int tree::num_node(int cls) const 
+{
+    return num_node_r(root, cls); 
+}
+
+const char* tree::desc() const 
+{
+    char tmp[100]; 
+    int num_undefined = num_node(UNDEFINED);  
+    int num_exclude   = num_node(EXCLUDE);  
+    int num_include   = num_node(INCLUDE);  
+    int num_mixed     = num_node(MIXED);  
+    int num_prim_     = num_prim(); 
+
+    snprintf(tmp, 100, "UN:%d EX:%d IN:%d MX:%d prim:%d",num_undefined, num_exclude, num_include, num_mixed, num_prim_ ); 
+    return strdup(tmp); 
+}
+
+
 void tree::instrument()
 {
+    if(!root) return ; 
     clear_mkr();   
 
     inorder.clear();
@@ -174,9 +237,6 @@ void tree::instrument()
 
     depth_r(root, 0); 
 }
-
-
-
 
 nd* tree::parent( nd* n ) const 
 {
@@ -218,27 +278,27 @@ void tree::parent_r( nd* n, int depth )
 
 void tree::apply_cut(int cut)
 {
+    if(verbose) 
     printf("tree::apply_cut %d \n", cut ); 
 
-    classify(cut); 
-
-    unsigned count = 0 ; 
-
-    while( root->cls == MIXED && count < 3 )
+    unsigned cycle = 0 ; 
+    while( root != nullptr && root->cls != INCLUDE && cycle < 5 )
     {
-        draw("tree::apply_cut after classify", count ); 
-        prune(); 
-        
-        //draw("tree::apply_cut after prune" ); 
+        classify(cut);   // set n.cls n.mkr
+        prune(false); 
+
+        if(verbose)
+        draw("tree::apply_cut before prune", count ); 
+
+        prune(true); 
         classify(cut); 
         instrument();
 
-        draw("tree::apply_cut after re-classify", count ); 
+        if(verbose) 
+        draw("tree::apply_cut after prune and re-classify", count ); 
 
-        count++ ; 
+        cycle++ ; 
     }
-
-
 }
 
 
@@ -248,6 +308,7 @@ tree::classify
 
 1. for all tree nodes sets n.cls according to the cut 
 2. for crux nodes sets n.mkr and collects nodes into crux vector
+3. invokes prune(false) that sets prune n.mkr without proceeding with the prune
 
 **/
 
@@ -272,7 +333,7 @@ identification of the crucial MIXED nodes where
 
 int tree::classify_r( nd* n, int cut )
 {
-    assert(n);  
+    if(!n) return UNDEFINED ; 
     n->cls = UNDEFINED ; 
     if( n->left && n->right )
     {
@@ -282,7 +343,10 @@ int tree::classify_r( nd* n, int cut )
         if( n->is_crux() ) 
         {
             n->mkr = '*' ; 
-            crux.push_back(n) ;   
+            crux.push_back(n) ;
+
+            if(verbose) 
+            printf("tree::classify_r set crux %s \n", n->desc() ); 
         }
     }
     else
@@ -338,15 +402,35 @@ Following tree changes need to update tree instrumentation.
 
 **/
 
-void tree::prune()
+void tree::prune(bool act)
 {
+    int num_include = num_node(INCLUDE) ; 
+
+    if(verbose)
+    printf("tree::prune num_include %d \n", num_include);  
+
+    if( num_include == 0)
+    {
+        if(verbose)
+        printf("tree::prune find zero remaining nodes : num_include %d, will set root to nullptr \n", num_include);  
+
+        if(act) 
+        {
+            if(verbose)
+            printf("tree::prune setting root to nullptr \n");  
+
+            root = nullptr ; 
+        }
+    }
+
     if(crux.size() == 0 ) return ; 
-    assert(crux.size() == 1) ;  // more than one crux node not handled
+    assert(crux.size() == 1) ;  // more than one crux node not expected
+
     nd* x = crux[0] ; 
-    prune(x); 
+    prune(x, act); 
 }
 
-void tree::prune( nd* x )
+void tree::prune( nd* x, bool act )
 {
     assert( x && x->is_crux() ); 
     bool cut_left = x->is_cut_left() ; 
@@ -356,7 +440,6 @@ void tree::prune( nd* x )
     nd* survivor = cut_right ? x->left : x->right ; 
     assert( survivor ); 
     survivor->mkr = 'S' ; 
-
     nd* p = parent(x); 
 
     if( p != nullptr )
@@ -370,27 +453,38 @@ void tree::prune( nd* x )
 
         if( x_left_child )
         {
-            p->left = survivor ; 
+            if(act) 
+            {
+                if(verbose)
+                printf("tree:prune setting p->left %s to survivor %s \n", p->left->desc(), survivor->desc() ); 
+                p->left = survivor ; 
+            }
         }
         else if( x_right_child )
         {
-            printf("tree:prune setting p->right to survivor \n" ); 
-            p->right = survivor ; 
+            if(act) 
+            {
+                if(verbose)
+                printf("tree:prune setting p->right %s to survivor %s \n", p->right->desc(), survivor->desc() ); 
+                p->right = survivor ; 
+            }
         }
     }
     else
     {
-        printf("tree::prune changing root to survivor\n"); 
-        root = survivor ;  
+        if( act )
+        { 
+            if(verbose)
+            printf("tree::prune changing root to survivor\n"); 
+            root = survivor ;  
+        }
     }
-    
 
-    instrument(); 
+    if(act)
+    {
+        instrument(); 
+    }
 }
-
-
-
-
 
 void tree::inorder_r( nd* n )
 {
@@ -412,17 +506,24 @@ void tree::preorder_r( nd* n )
     preorder_r(n->right) ; 
 }
 
-void tree::dump_r( nd* n )
+void tree::dump( const char* msg ) const 
+{
+    printf("%s\n",msg); 
+    dump_r(root); 
+}
+
+void tree::dump_r( nd* n ) const
 {
     if( n == nullptr ) return ; 
     dump_r( n->left ); 
     dump_r( n->right ); 
-    printf(" value %d depth %d \n", n->value, n->depth) ; 
+    printf(" value %2d depth %2d mkr %c cls %c\n", n->value, n->depth, n->mkr, pcls(n->cls) ) ; 
 }
 
 void tree::draw(const char* msg, int meta)
 {
-    printf("%s [%d] \n", msg, meta ); 
+    if(!root) return ; 
+    if(msg) printf("%s [%d] \n", msg, meta ); 
     canvas->clear(); 
     draw_r(root); 
     canvas->print(); 
@@ -455,12 +556,43 @@ void test_placement_new( nd* n )
     // placement new creation of new object to replace the nd at same location 
 }
 
+
+
+void test_cuts(int height0)
+{
+    int count0 = tree::NumNode(height0) ; 
+
+    for( int cut=count0 ; cut > 0 ; cut-- )
+    {
+        tree* t = new tree(height0) ;
+        int count0 = t->count ; 
+        t->apply_cut(cut); 
+        printf("count0 %d cut %d t.desc %s\n", count0, cut, t->desc() ); 
+        t->draw(); 
+    }
+}
+
+void test_no_remaining_nodes()
+{
+    int height0 = 3 ; 
+    tree* t = new tree(height0) ;
+    t->draw(); 
+    t->verbose = true ; 
+
+    printf("t.desc %s \n", t->desc() );  
+
+    int count0 = t->count ; 
+    int cut = 3 ; 
+    t->apply_cut(cut); 
+    printf("count0 %d cut %d t.desc %s\n", count0, cut, t->desc() ); 
+    t->draw(); 
+}
+
 int main(int argc, char**argv )
 {
-    tree* t = new tree(3) ; 
+    //test_cuts(4); 
+    test_cuts(3); 
+    //test_no_remaining_nodes();
 
-    int cut = t->count - 8 ; 
-    t->apply_cut(cut); 
- 
     return 0 ; 
 }
