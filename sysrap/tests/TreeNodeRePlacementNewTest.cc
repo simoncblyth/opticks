@@ -440,10 +440,10 @@ in a tree of 4 prim::
 
                    1
                    I    
-
-         2                   3
-         I                   X    
-                
+                   P
+         2           \       3
+         I            \      X    
+                       \
     4         5         6          7
     I         I         I          E
 
@@ -502,6 +502,19 @@ void tree::prune(bool act)
     prune(x, act); 
 }
 
+/**
+
+
+                p
+                 .    
+          o       .    x
+                   .
+      o       o     I      E 
+                    s
+
+
+**/
+
 void tree::prune( nd* x, bool act )
 {
     assert( x && x->is_crux() ); 
@@ -514,16 +527,11 @@ void tree::prune( nd* x, bool act )
     survivor->mkr = 'S' ; 
     nd* p = parent(x); 
 
-    if( p != nullptr )
+    if( p != nullptr )   // non-root prune
     {
         p->mkr = 'P' ; 
 
-        bool x_left_child = x == p->left ; 
-        bool x_right_child = x == p->right ; 
-
-        //printf(" left_child %d right_child %d \n", left_child, right_child ); 
-
-        if( x_left_child )
+        if( x == p->left )
         {
             if(act) 
             {
@@ -532,7 +540,7 @@ void tree::prune( nd* x, bool act )
                 p->left = survivor ; 
             }
         }
-        else if( x_right_child )
+        else if( x == p->right )
         {
             if(act) 
             {
@@ -542,7 +550,7 @@ void tree::prune( nd* x, bool act )
             }
         }
     }
-    else
+    else           // root prune
     {
         if( act )
         { 
@@ -642,7 +650,6 @@ void test_placement_new( nd* n )
 }
 
 
-
 void test_cuts(int height0)
 {
     int count0 = tree::NumNode(height0) ; 
@@ -655,6 +662,15 @@ void test_cuts(int height0)
         printf("count0 %d cut %d t.desc %s\n", count0, cut, t->desc() ); 
         t->draw(); 
     }
+}
+
+void test_unbalanced(int numprim0)
+{
+    tree* t = tree::make_unbalanced(numprim0, POST) ; 
+    t->draw(); 
+
+    
+
 
 }
 
@@ -674,7 +690,6 @@ void test_cuts_unbalanced(int numprim0)
         t->draw(); 
     }
 }
-
 
 void test_no_remaining_nodes()
 {
@@ -698,7 +713,11 @@ int main(int argc, char**argv )
     //test_cuts(3); 
     //test_no_remaining_nodes();
 
-    test_cuts_unbalanced(8); 
+    test_unbalanced(8); 
+
+    //test_cuts_unbalanced(8); 
+
+
 
     return 0 ; 
 }
