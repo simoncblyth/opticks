@@ -16,6 +16,12 @@ enum {
   MIXED     = INCLUDE | EXCLUDE    
 };  
 
+enum {
+  PRE, 
+  IN,
+  POST
+};
+
 char pcls( int cls ) // static
 {
     char pcl = '_' ; 
@@ -36,7 +42,7 @@ struct nd
     nd* left ; 
     nd* right ;    
 
-    nd( int value, nd* left, nd* right ); 
+    nd( int value, nd* left=nullptr, nd* right=nullptr ); 
 
     const char* desc() const ; 
     bool is_prim() const ; 
@@ -51,6 +57,7 @@ struct nd
     int depth ; 
     int in ; 
     int pre ; 
+    int post ; 
     char mkr ; 
 
 }; 
@@ -64,6 +71,7 @@ nd::nd(int value_, nd* left_, nd* right_)
     depth(UNDEFINED),
     in(UNDEFINED),
     pre(UNDEFINED),
+    post(UNDEFINED),
     mkr(' ')
 {
 }
@@ -86,28 +94,32 @@ bool nd::is_crux() const {        return is_cut_right() ^ is_cut_left() ; }  // 
 struct tree
 {
     static int NumNode(int height); 
+    static tree* make_complete(int height, int valueorder); 
+    static tree* make_unbalanced(int numprim, int valueorder); 
+    static nd* build_r(int h, int& count ); 
+    static void initvalue_r( nd* n, int order ); 
+
 
     bool verbose ; 
-    int count ; 
-    int height ; 
     nd* root ; 
+    int width ; 
+    int height ; 
+    SCanvas* canvas ; 
 
     std::vector<nd*> inorder ; 
     std::vector<nd*> preorder ; 
+    std::vector<nd*> postorder ; 
     std::vector<nd*> crux ; 
     std::map<nd*, nd*> parentmap ; 
 
-    int width ; 
-    SCanvas* canvas ; 
+    tree( nd* root ); 
 
-    tree( int height_ ); 
-
-    nd* build_r(int h); 
-    void initvalue_r( nd* n ); 
      
     void instrument();
+    void initvalue(int order) ; 
     void inorder_r( nd* n ); 
     void preorder_r( nd* n ); 
+    void postorder_r( nd* n ); 
     void parent_r( nd* n, int depth ); 
     void depth_r( nd* n, int depth ); 
     void clear_mkr(); 
@@ -116,8 +128,11 @@ struct tree
     int num_prim() const ; 
     int num_prim_r( nd* n ) const ; 
 
-    int num_node(int cls) const ; 
-    int num_node_r( nd* n, int cls) const ; 
+    int num_node(int qcls) const ; 
+    static int num_node_r( nd* n, int qcls); 
+    int num_node() const ; 
+    static int num_node_r( nd* n) ; 
+
     const char* desc() const ; 
 
     nd* parent( nd* n ) const ;
@@ -145,32 +160,91 @@ struct tree
 
 int tree::NumNode(int height){ return (1 << (height+1)) - 1  ; } // static
 
-tree::tree(int height_)
+
+nd* tree::build_r(int h, int& count)  // static 
+{
+    nd* l = h > 0 ? build_r( h-1, count) : nullptr ;  
+    nd* r = h > 0 ? build_r( h-1, count ) : nullptr ;  
+    return new nd( count++, l, r) ; 
+}
+
+tree* tree::make_complete(int height, int valueorder) // static
+{
+    int count = 0 ; 
+    nd* root = build_r(height, count ); 
+    tree* t = new tree(root); 
+    t->initvalue(valueorder); 
+    return t ; 
+}
+
+tree* tree::make_unbalanced(int numprim, int valueorder) // static
+{
+    nd* root = new nd(0) ; 
+    for(unsigned i=1 ; i < numprim ; i++) 
+    {
+        nd* right = new nd(i) ; 
+        root = new nd(i, root, right) ;          
+    }
+    tree* t = new tree(root); 
+    t->initvalue(valueorder); 
+    return t ; 
+}
+
+
+
+tree::tree(nd* root_)
     :
     verbose(false),
-    count(0),
-    height(height_),
-    root(build_r(height)),
-    width(count),
+    root(root_),
+    width(num_node_r(root)),
+    height(maxdepth_r(root,0)),
     canvas(new SCanvas(width,height,5,3))
 {
     instrument();
-    initvalue_r(root);   // must be after instrument, as uses n.pre
-}
-nd* tree::build_r(int h)
-{
-    nd* l = h > 0 ? build_r( h-1) : nullptr ;  
-    nd* r = h > 0 ? build_r( h-1) : nullptr ;  
-    return new nd( count++, l, r) ; 
-}
-void tree::initvalue_r( nd* n )
-{
-    if( n == nullptr ) return ; 
-    initvalue_r( n->left ); 
-    initvalue_r( n->right ); 
-    n->value = n->pre ; 
+    initvalue_r(root, PRE);   // must be after instrument, as uses n.pre
 }
 
+void tree::instrument()
+{
+    if(!root) return ; 
+    clear_mkr();   
+
+    inorder.clear();
+    inorder_r(root); 
+
+    preorder.clear();
+    preorder_r(root); 
+
+    postorder.clear();
+    postorder_r(root); 
+
+    parentmap.clear();
+    parentmap[root] = nullptr ; 
+    parent_r(root, 0 ); 
+
+    depth_r(root, 0); 
+}
+
+
+void tree::initvalue(int order )
+{
+   initvalue_r(root, order);  
+}
+
+void tree::initvalue_r( nd* n, int order ) // static 
+{
+    if( n == nullptr ) return ; 
+    initvalue_r( n->left, order ); 
+    initvalue_r( n->right, order ); 
+
+    switch(order)
+    {
+        case PRE:  n->value = n->pre  ; break ; 
+        case IN:   n->value = n->in   ; break ; 
+        case POST: n->value = n->post ; break ; 
+        default:   n->value = -1     ; break ;  
+    } 
+}
 
 int tree::maxdepth_r(nd* n, int depth) const 
 {
@@ -190,8 +264,21 @@ int tree::num_prim() const
 {
     return num_prim_r(root); 
 }
-
-int tree::num_node_r(nd* n, int qcls) const 
+int tree::num_node() const
+{
+    return num_node_r(root) ; 
+}
+int tree::num_node_r(nd* n) // static
+{
+    int num = n ? 1 : 0 ; 
+    if( n && n->left && n->right )
+    { 
+        num += num_node_r( n->left ); 
+        num += num_node_r( n->right ); 
+    }
+    return num ; 
+} 
+int tree::num_node_r(nd* n, int qcls) // static 
 {
     int num = ( n && n->cls == qcls ) ? 1 : 0 ; 
     if( n && n->left && n->right )
@@ -220,23 +307,6 @@ const char* tree::desc() const
 }
 
 
-void tree::instrument()
-{
-    if(!root) return ; 
-    clear_mkr();   
-
-    inorder.clear();
-    inorder_r(root); 
-
-    preorder.clear();
-    preorder_r(root); 
-
-    parentmap.clear();
-    parentmap[root] = nullptr ; 
-    parent_r(root, 0 ); 
-
-    depth_r(root, 0); 
-}
 
 nd* tree::parent( nd* n ) const 
 {
@@ -281,23 +351,25 @@ void tree::apply_cut(int cut)
     if(verbose) 
     printf("tree::apply_cut %d \n", cut ); 
 
-    unsigned cycle = 0 ; 
-    while( root != nullptr && root->cls != INCLUDE && cycle < 5 )
+    unsigned pass = 0 ; 
+    unsigned maxpass = 10 ; 
+
+    while( root != nullptr && root->cls != INCLUDE && pass < maxpass )
     {
         classify(cut);   // set n.cls n.mkr
         prune(false); 
 
         if(verbose)
-        draw("tree::apply_cut before prune", count ); 
+        draw("tree::apply_cut before prune", pass ); 
 
         prune(true); 
         classify(cut); 
         instrument();
 
         if(verbose) 
-        draw("tree::apply_cut after prune and re-classify", count ); 
+        draw("tree::apply_cut after prune and re-classify", pass ); 
 
-        cycle++ ; 
+        pass++ ; 
     }
 }
 
@@ -506,6 +578,19 @@ void tree::preorder_r( nd* n )
     preorder_r(n->right) ; 
 }
 
+void tree::postorder_r( nd* n )
+{
+    if( n == nullptr ) return ; 
+
+    postorder_r(n->left) ; 
+    postorder_r(n->right) ; 
+
+    n->post = postorder.size() ; postorder.push_back(n);  
+}
+
+
+
+
 void tree::dump( const char* msg ) const 
 {
     printf("%s\n",msg); 
@@ -564,24 +649,43 @@ void test_cuts(int height0)
 
     for( int cut=count0 ; cut > 0 ; cut-- )
     {
-        tree* t = new tree(height0) ;
-        int count0 = t->count ; 
+        tree* t = tree::make_complete(height0, PRE) ;
+        int count0 = t->num_node() ; 
         t->apply_cut(cut); 
         printf("count0 %d cut %d t.desc %s\n", count0, cut, t->desc() ); 
         t->draw(); 
     }
+
 }
+
+void test_cuts_unbalanced(int numprim0)
+{
+    for(int i=0 ; i < 20 ; i++)
+    {
+        tree* t = tree::make_unbalanced(numprim0, POST) ; 
+        //t->draw(); 
+
+        int count0 = t->num_node() ; 
+        int cut = count0 - i ;  
+        if( cut < 1 ) break ; 
+        t->apply_cut(cut); 
+        printf("count0 %d cut %d t.desc %s\n", count0, cut, t->desc() ); 
+
+        t->draw(); 
+    }
+}
+
 
 void test_no_remaining_nodes()
 {
     int height0 = 3 ; 
-    tree* t = new tree(height0) ;
+    tree* t = tree::make_complete(height0, PRE) ;
     t->draw(); 
     t->verbose = true ; 
 
     printf("t.desc %s \n", t->desc() );  
 
-    int count0 = t->count ; 
+    int count0 = t->num_node() ; 
     int cut = 3 ; 
     t->apply_cut(cut); 
     printf("count0 %d cut %d t.desc %s\n", count0, cut, t->desc() ); 
@@ -591,8 +695,10 @@ void test_no_remaining_nodes()
 int main(int argc, char**argv )
 {
     //test_cuts(4); 
-    test_cuts(3); 
+    //test_cuts(3); 
     //test_no_remaining_nodes();
+
+    test_cuts_unbalanced(8); 
 
     return 0 ; 
 }
